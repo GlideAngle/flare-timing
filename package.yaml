@@ -21,9 +21,6 @@ ghc-options: -Wall
 library:
   dependencies:
   - base
-  - ansi-terminal
-  - shake
-  - time
   - parsec
   source-dirs: library
   exposed-modules:
