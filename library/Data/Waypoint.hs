@@ -14,6 +14,8 @@ import Text.ParserCombinators.Parsec
     )
 import qualified Text.ParserCombinators.Parsec as P
 
+data HMS = HMS String String String
+
 data Lat
     = LatN String String
     | LatS String String
@@ -29,6 +31,9 @@ showMinute :: String -> String
 showMinute (m0 : m1 : m) = [m0, m1] ++ "." ++ m ++ "'"
 showMinute m = m 
 
+showHMS :: HMS -> String
+showHMS (HMS hh mm ss) = hh ++ ":" ++ mm ++ ":" ++ ss
+
 showLat :: Lat -> String
 showLat (LatN d m) = showDegree d ++ " " ++ showMinute m ++ " N"
 showLat (LatS d m) = showDegree d ++ " " ++ showMinute m ++ " S"
@@ -37,6 +42,9 @@ showLng :: Lng -> String
 showLng (LngW d m) = showDegree d ++ " " ++ showMinute m ++ " W"
 showLng (LngE d m) = showDegree d ++ " " ++ showMinute m ++ " E"
 
+instance Show HMS where
+    show = showHMS
+
 instance Show Lat where
     show = showLat
 
@@ -44,7 +52,7 @@ instance Show Lng where
     show = showLng
 
 data IgcRecord
-    = B String Lat Lng String String
+    = B HMS Lat Lng String String
     | Ignore
     deriving Show
 
@@ -64,6 +72,13 @@ line = do
     _ <- eol
     return result
 
+hms :: GenParser Char st HMS
+hms = do
+    hh <- count 2 (digit)
+    mm <- count 2 (digit)
+    ss <- count 2 (digit)
+    return $ HMS hh mm ss
+       
 lat :: GenParser Char st Lat
 lat = do
     degs <- count 2 (digit)
@@ -91,14 +106,14 @@ SEE: http://carrier.csi.cam.ac.uk/forsterlewis/soaring/igc_file_format/
 fix :: GenParser Char st IgcRecord
 fix = do
     _ <- char 'B'
-    time <- count 6 (digit)
+    hms' <- hms
     lat' <- lat
     lng' <- lng
     _ <- oneOf "AV"
     altBaro <- count 5 (digit)
     altGps <- count 5 (digit)
     _ <- many (noneOf "\n")
-    return $ B time lat' lng' altBaro altGps
+    return $ B hms' lat' lng' altBaro altGps
 
 ignore :: GenParser Char st IgcRecord
 ignore = do
