@@ -17,12 +17,31 @@ import qualified Text.ParserCombinators.Parsec as P
 data Lat
     = LatN String String
     | LatS String String
-    deriving Show
 
 data Lng
     = LngW String String
     | LngE String String
-    deriving Show
+
+showDegree :: String -> String
+showDegree d = d ++ "°"
+
+showMinute :: String -> String
+showMinute (m0 : m1 : m) = [m0, m1] ++ "." ++ m ++ "'"
+showMinute m = m 
+
+showLat :: Lat -> String
+showLat (LatN d m) = showDegree d ++ " " ++ showMinute m ++ " N"
+showLat (LatS d m) = showDegree d ++ " " ++ showMinute m ++ " S"
+
+showLng :: Lng -> String
+showLng (LngW d m) = showDegree d ++ " " ++ showMinute m ++ " W"
+showLng (LngE d m) = showDegree d ++ " " ++ showMinute m ++ " E"
+
+instance Show Lat where
+    show = showLat
+
+instance Show Lng where
+    show = showLng
 
 data IgcRecord
     = B String Lat Lng String String
