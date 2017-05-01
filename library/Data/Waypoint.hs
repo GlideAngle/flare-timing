@@ -11,6 +11,7 @@ import Text.ParserCombinators.Parsec
     , count
     , digit
     , eof
+    , optionMaybe
     )
 import qualified Text.ParserCombinators.Parsec as P
 
@@ -23,6 +24,9 @@ data Lat
 data Lng
     = LngW String String
     | LngE String String
+
+data AltBaro = AltBaro String
+data AltGps = AltGps String
 
 showDegree :: String -> String
 showDegree d = d ++ "°"
@@ -42,6 +46,9 @@ showLng :: Lng -> String
 showLng (LngW d m) = showDegree d ++ " " ++ showMinute m ++ " W"
 showLng (LngE d m) = showDegree d ++ " " ++ showMinute m ++ " E"
 
+ltrimZero :: String -> String
+ltrimZero = dropWhile ((==) '0')
+
 instance Show HMS where
     show = showHMS
 
@@ -51,8 +58,14 @@ instance Show Lat where
 instance Show Lng where
     show = showLng
 
+instance Show AltBaro where
+    show (AltBaro x) = ltrimZero x ++ "m"
+
+instance Show AltGps where
+    show (AltGps x) = ltrimZero x ++ "m"
+
 data IgcRecord
-    = B HMS Lat Lng String String
+    = B HMS Lat Lng AltBaro (Maybe AltGps)
     | Ignore
     deriving Show
 
@@ -92,6 +105,16 @@ lng = do
     mins <- count 5 (digit)
     f <- const LngW <$> char 'W' <|> const LngE <$> char 'E'
     return $ f degs mins
+
+altBaro :: GenParser Char st AltBaro
+altBaro = do
+    alt <- count 5 (digit)
+    return $ AltBaro alt
+       
+altGps :: GenParser Char st AltGps
+altGps = do
+    alt <- count 5 (digit)
+    return $ AltGps alt
        
 {--
 B: record type is a basic tracklog record
@@ -110,10 +133,10 @@ fix = do
     lat' <- lat
     lng' <- lng
     _ <- oneOf "AV"
-    altBaro <- count 5 (digit)
-    altGps <- count 5 (digit)
+    altBaro' <- altBaro
+    altGps' <- optionMaybe altGps
     _ <- many (noneOf "\n")
-    return $ B hms' lat' lng' altBaro altGps
+    return $ B hms' lat' lng' altBaro' altGps'
 
 ignore :: GenParser Char st IgcRecord
 ignore = do
