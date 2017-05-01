@@ -14,8 +14,18 @@ import Text.ParserCombinators.Parsec
     )
 import qualified Text.ParserCombinators.Parsec as P
 
+data Lat
+    = LatN String String
+    | LatS String String
+    deriving Show
+
+data Lng
+    = LngW String String
+    | LngE String String
+    deriving Show
+
 data IgcRecord
-    = B String String String String String
+    = B String Lat Lng String String
     | Ignore
     deriving Show
 
@@ -34,6 +44,20 @@ line = do
     result <- fix <|> ignore
     _ <- eol
     return result
+
+lat :: GenParser Char st Lat
+lat = do
+    degs <- count 2 (digit)
+    mins <- count 5 (digit)
+    f <- const LatN <$> char 'N' <|> const LatS <$> char 'S'
+    return $ f degs mins
+       
+lng :: GenParser Char st Lng
+lng = do
+    degs <- count 3 (digit)
+    mins <- count 5 (digit)
+    f <- const LngW <$> char 'W' <|> const LngE <$> char 'E'
+    return $ f degs mins
        
 {--
 B: record type is a basic tracklog record
@@ -49,15 +73,13 @@ fix :: GenParser Char st IgcRecord
 fix = do
     _ <- char 'B'
     time <- count 6 (digit)
-    lat <- count 7 (digit)
-    _ <- oneOf "NS"
-    lng <- count 8 (digit)
-    _ <- oneOf "WE"
+    lat' <- lat
+    lng' <- lng
     _ <- oneOf "AV"
     altBaro <- count 5 (digit)
     altGps <- count 5 (digit)
     _ <- many (noneOf "\n")
-    return $ B time lat lng altBaro altGps
+    return $ B time lat' lng' altBaro altGps
 
 ignore :: GenParser Char st IgcRecord
 ignore = do
