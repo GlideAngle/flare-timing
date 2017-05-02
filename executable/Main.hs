@@ -1,7 +1,7 @@
 import Data.Waypoint (parse)
 
 snippet :: String
-snippet = unlines $
+snippet = unlines
     [ "\n"
     , "B1101355206343N00006198WA0058700558\n"
     , "B1101455206259N00006295WA0059300556\n"

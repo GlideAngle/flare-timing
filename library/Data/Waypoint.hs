@@ -25,8 +25,8 @@ data Lng
     = LngW String String
     | LngE String String
 
-data AltBaro = AltBaro String
-data AltGps = AltGps String
+newtype AltBaro = AltBaro String
+newtype AltGps = AltGps String
 
 showDegree :: String -> String
 showDegree d = d ++ "°"
@@ -47,7 +47,7 @@ showLng (LngW d m) = showDegree d ++ " " ++ showMinute m ++ " W"
 showLng (LngE d m) = showDegree d ++ " " ++ showMinute m ++ " E"
 
 ltrimZero :: String -> String
-ltrimZero = dropWhile ((==) '0')
+ltrimZero = dropWhile ('0' ==)
 
 instance Show HMS where
     show = showHMS
@@ -70,7 +70,7 @@ data IgcRecord
     deriving Show
 
 isB :: IgcRecord -> Bool
-isB (B _ _ _ _ _) = True
+isB B{} = True
 isB Ignore = False
 
 igcFile :: GenParser Char st [IgcRecord]
@@ -87,33 +87,33 @@ line = do
 
 hms :: GenParser Char st HMS
 hms = do
-    hh <- count 2 (digit)
-    mm <- count 2 (digit)
-    ss <- count 2 (digit)
+    hh <- count 2 digit
+    mm <- count 2 digit
+    ss <- count 2 digit
     return $ HMS hh mm ss
        
 lat :: GenParser Char st Lat
 lat = do
-    degs <- count 2 (digit)
-    mins <- count 5 (digit)
+    degs <- count 2 digit
+    mins <- count 5 digit
     f <- const LatN <$> char 'N' <|> const LatS <$> char 'S'
     return $ f degs mins
        
 lng :: GenParser Char st Lng
 lng = do
-    degs <- count 3 (digit)
-    mins <- count 5 (digit)
+    degs <- count 3 digit
+    mins <- count 5 digit
     f <- const LngW <$> char 'W' <|> const LngE <$> char 'E'
     return $ f degs mins
 
 altBaro :: GenParser Char st AltBaro
 altBaro = do
-    alt <- count 5 (digit)
+    alt <- count 5 digit
     return $ AltBaro alt
        
 altGps :: GenParser Char st AltGps
 altGps = do
-    alt <- count 5 (digit)
+    alt <- count 5 digit
     return $ AltGps alt
        
 {--
@@ -139,11 +139,10 @@ fix = do
     return $ B hms' lat' lng' altBaro' altGps'
 
 ignore :: GenParser Char st IgcRecord
-ignore = do
-    return Ignore
+ignore = return Ignore
 
 eol :: GenParser Char st Char
 eol = char '\n'
 
 parse :: String -> Either ParseError [IgcRecord]
-parse input = P.parse igcFile "(stdin)" input
+parse = P.parse igcFile "(stdin)"
