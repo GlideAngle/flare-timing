@@ -67,8 +67,8 @@ run :: IO Drive
 run = cmdArgs drive
 
 cmdArgsToDriveArgs :: Drive -> Maybe DriveOptions
-cmdArgsToDriveArgs Drive{ dir = d, file = f } = do
-    return $ DriveOptions { dir = d, file = f }
+cmdArgsToDriveArgs Drive{ dir = d, file = f } =
+    return DriveOptions { dir = d, file = f }
 
 -- SEE: http://stackoverflow.com/questions/2138819/in-haskell-is-there-a-way-to-do-io-in-a-function-guard
 checkedOptions :: DriveOptions -> IO (Either String DriveOptions)
@@ -78,7 +78,8 @@ checkedOptions o@DriveOptions{..} = do
 
         dfe <- liftIO $ doesFileExist file
         dde <- liftIO $ doesDirectoryExist dir
-        unless (dfe || dde) (throwError $ "The --dir argument is not a directory or the --file argument is not a file")
+        unless (dfe || dde) (throwError
+               "The --dir argument is not a directory or the --file argument is not a file")
     case x of
          Left s -> return $ Left s
          Right _ -> return $ Right o
