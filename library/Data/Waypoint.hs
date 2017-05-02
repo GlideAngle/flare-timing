@@ -75,15 +75,15 @@ isB Ignore = False
 
 igcFile :: GenParser Char st [IgcRecord]
 igcFile = do
-    result <- many line
+    lines' <- many line
     _ <- eof
-    return $ filter isB result
+    return $ filter isB lines'
 
 line :: GenParser Char st IgcRecord
 line = do
-    result <- fix <|> ignore
+    line' <- fix <|> ignore
     _ <- eol
-    return result
+    return line'
 
 hms :: GenParser Char st HMS
 hms = do
@@ -107,15 +107,18 @@ lng = do
     return $ f degs mins
 
 altBaro :: GenParser Char st AltBaro
-altBaro = do
-    alt <- count 5 digit
-    return $ AltBaro alt
+altBaro = AltBaro <$> count 5 digit
        
 altGps :: GenParser Char st AltGps
-altGps = do
-    alt <- count 5 digit
-    return $ AltGps alt
+altGps = AltGps <$> count 5 digit
        
+alt :: GenParser Char st (AltBaro, Maybe AltGps)
+alt = do
+    _ <- oneOf "AV"
+    altBaro' <- altBaro
+    altGps' <- optionMaybe altGps
+    return (altBaro', altGps')
+
 {--
 B: record type is a basic tracklog record
 110135: <time> tracklog entry was recorded at 11:01:35 i.e. just after 11am
@@ -132,9 +135,7 @@ fix = do
     hms' <- hms
     lat' <- lat
     lng' <- lng
-    _ <- oneOf "AV"
-    altBaro' <- altBaro
-    altGps' <- optionMaybe altGps
+    (altBaro', altGps') <- alt
     _ <- many (noneOf "\n")
     return $ B hms' lat' lng' altBaro' altGps'
 
