@@ -1,4 +1,6 @@
-module Data.Waypoint (parse) where
+{-# LANGUAGE FlexibleInstances #-}
+
+module Data.Waypoint (parse, parseFromFile) where
 
 import Text.ParserCombinators.Parsec
     ( GenParser
@@ -12,6 +14,7 @@ import Text.ParserCombinators.Parsec
     , digit
     , eof
     , optionMaybe
+    , runParser
     )
 import qualified Text.ParserCombinators.Parsec as P
 
@@ -27,6 +30,11 @@ data Lng
 
 newtype AltBaro = AltBaro String
 newtype AltGps = AltGps String
+
+data IgcRecord
+    = B HMS Lat Lng AltBaro (Maybe AltGps)
+    | Ignore
+    deriving Show
 
 showDegree :: String -> String
 showDegree d = d ++ "°"
@@ -64,10 +72,12 @@ instance Show AltBaro where
 instance Show AltGps where
     show (AltGps x) = ltrimZero x ++ "m"
 
-data IgcRecord
-    = B HMS Lat Lng AltBaro (Maybe AltGps)
-    | Ignore
-    deriving Show
+instance {-# OVERLAPPING #-} Show [ IgcRecord ] where
+    show (x : y : xs) = unlines [ show x
+                                , show y
+                                ,"... plus " ++ show (length xs) ++ " other B records."
+                                ]
+    show xs = show $ length xs
 
 isB :: IgcRecord -> Bool
 isB B{} = True
@@ -140,10 +150,17 @@ fix = do
     return $ B hms' lat' lng' altBaro' altGps'
 
 ignore :: GenParser Char st IgcRecord
-ignore = return Ignore
+ignore = do
+    _ <- many (noneOf "\n")
+    return Ignore
 
 eol :: GenParser Char st Char
 eol = char '\n'
 
 parse :: String -> Either ParseError [IgcRecord]
 parse = P.parse igcFile "(stdin)"
+
+parseFromFile :: FilePath -> IO (Either ParseError [IgcRecord])
+parseFromFile fname = do
+    input <- readFile fname
+    return (runParser igcFile () fname input)
