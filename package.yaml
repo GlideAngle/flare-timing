@@ -42,7 +42,8 @@ library:
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
 name: flight-igc 
-synopsis: A parser for flight IGC files, a waypoint format from the International Gliding Commission of FAI.
+synopsis: A parser for IGC files.
+description: IGC is a waypoint file format from the International Gliding Commission of FAI. This haskell library can parse B records from these files.
 tests:
   hlint:
     dependencies:

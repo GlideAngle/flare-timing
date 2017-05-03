@@ -1,6 +1,28 @@
 {-# LANGUAGE FlexibleInstances #-}
 
-module Data.Waypoint (parse, parseFromFile) where
+{-|
+Module      : Data.Waypoint
+Description : Some stuff
+Copyright   : (c) Block Scope Limited 2017
+License     : BSD3
+Maintainer  : phil.dejoux@blockscope.com
+Stability   : experimental
+
+Parsing of the IGC format for A time and B records, the fixes that make up a tracklog.
+-}
+module Data.Waypoint
+    (
+    -- * Types
+      IgcRecord(..)
+    , HMS(..)
+    , Lat(..)
+    , Lng(..)
+    , AltBaro(..)
+    , AltGps(..)
+    -- * Parsing Functions
+    , parse
+    , parseFromFile
+    ) where
 
 import Text.ParserCombinators.Parsec
     ( GenParser
@@ -18,21 +40,46 @@ import Text.ParserCombinators.Parsec
     )
 import qualified Text.ParserCombinators.Parsec as P
 
+-- | Hours, minutes and seconds.
 data HMS = HMS String String String
 
+-- | A latitude with degrees and minutes.
 data Lat
-    = LatN String String
-    | LatS String String
+    = LatN String String -- ^ North
+    | LatS String String -- ^ South
 
+-- | A longitude with degrees and minutes.
 data Lng
-    = LngW String String
-    | LngE String String
+    = LngW String String -- ^ West
+    | LngE String String -- ^ East
 
+-- | Pressure altitude in metres
 newtype AltBaro = AltBaro String
+
+-- | GPS altitude in metres
 newtype AltGps = AltGps String
 
+-- |
+-- The record types:
+--
+-- * A FR manufacturer and identification
+-- * B Fix
+-- * C Task/declaration
+-- * D Differential GPS
+-- * E Event
+-- * F Constellation
+-- * G Security
+-- * H File header
+-- * I List of extension data included at end of each fix B record
+-- * J List of data included in each extension (K) Record
+-- * K Extension data
+-- * L Logbook/comments
+-- * M, N, etc. - Spare
+--
+-- SOURCE: <http://carrier.csi.cam.ac.uk/forsterlewis/soaring/igc_file_format/igc_format_2008.html>
 data IgcRecord
     = B HMS Lat Lng AltBaro (Maybe AltGps)
+    -- | Any other record type is ignored.
     | Ignore
     deriving Show
 
@@ -73,11 +120,12 @@ instance Show AltGps where
     show (AltGps x) = ltrimZero x ++ "m"
 
 instance {-# OVERLAPPING #-} Show [ IgcRecord ] where
+    show [] = "no B records"
+    show (x : []) = unlines [ show x, "... and no other B records" ]
     show (x : y : xs) = unlines [ show x
                                 , show y
-                                ,"... plus " ++ show (length xs) ++ " other B records."
+                                ,"... plus " ++ show (length xs) ++ " other B records"
                                 ]
-    show xs = show $ length xs
 
 isB :: IgcRecord -> Bool
 isB B{} = True
@@ -157,10 +205,22 @@ ignore = do
 eol :: GenParser Char st Char
 eol = char '\n'
 
-parse :: String -> Either ParseError [IgcRecord]
+-- |
+-- >>> parse "B0200223321354S14756057EA0024400241000\n"
+-- Right B 02:00:22 33° 21.354' S 147° 56.057' E 244m (Just 241m)
+parse
+    :: String -- ^ A string to parse.
+    -> Either ParseError [IgcRecord]
 parse = P.parse igcFile "(stdin)"
 
-parseFromFile :: FilePath -> IO (Either ParseError [IgcRecord])
+-- |
+-- >>> parseFromFile "./YMDCXXXF.IGC"
+-- B 02:00:22 33° 21.354' S 147° 56.057' E 244m (Just 241m)
+-- B 02:00:30 33° 21.354' S 147° 56.057' E 244m (Just 241m)
+-- ... plus 979 other B records
+parseFromFile
+    :: FilePath -- ^ An IGC file to parse.
+    -> IO (Either ParseError [IgcRecord])
 parseFromFile fname = do
     input <- readFile fname
     return (runParser igcFile () fname input)
