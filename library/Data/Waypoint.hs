@@ -2,7 +2,6 @@
 
 {-|
 Module      : Data.Waypoint
-Description : Some stuff
 Copyright   : (c) Block Scope Limited 2017
 License     : BSD3
 Maintainer  : phil.dejoux@blockscope.com
