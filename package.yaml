@@ -28,6 +28,7 @@ executables:
     source-dirs: executable
 extra-source-files:
 - package.yaml
+- changelog.md
 - README.md
 - stack.yaml
 ghc-options: -Wall
