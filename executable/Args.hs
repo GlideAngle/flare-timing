@@ -1,4 +1,3 @@
-{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE MagicHash #-}
 {-# LANGUAGE QuasiQuotes #-}
@@ -8,41 +7,28 @@ module Args
     ( Drive(..)
     , dryRunCmdArgs
     , withCmdArgs
-    , contributorAcks
-    , contributorCopyrightNotices
     ) where
 
 import Paths_flight_igc (version)
 import Data.Version (showVersion)
 import System.Console.CmdArgs.Implicit
+    ( Data
+    , Typeable
+    , Default(def)
+    , summary
+    , program
+    , help
+    , cmdArgs
+    , (&=)
+    )
 import Control.Monad.Except (liftIO, throwError, when, unless)
 import Control.Monad.Trans.Except (runExceptT)
 import System.Directory (doesFileExist, doesDirectoryExist)
 import Text.RawString.QQ (r)
-import EmbedString (embedStr)
 import Options (DriveOptions(..))
 
-contributorAcks :: String
-contributorAcks = [r|
-Copyright Acknowledgements
---------------------------
-Timing is Copyright Neil Mitchell 2011-2014. All rights reserved.
-|]
-
-contributorCopyrightNotices :: String
-contributorCopyrightNotices = intro ++ copyrights
-    where
-        copyrights = $(embedStr (readFile "./executable/Shake/LICENSE"))
-        intro = [r|
-Included Software Copyright Notices
------------------------------------
-The LICENSE for Shake from which the Timing module was taken ...
-SOURCE: https://github.com/ndmitchell/shake/blob/master/LICENSE
-
-|]
-
 description :: String
-description = intro ++ contributorAcks ++ contributorCopyrightNotices
+description = intro
     where
         intro = [r|
 

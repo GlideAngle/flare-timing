@@ -5,17 +5,11 @@ executables:
   flight-igc:
     dependencies:
     - base
-    - time
-    - shake
-    - extra
-    - ansi-terminal
     - directory
     - filepath
     - system-filepath
     - filemanip
-    - template-haskell
     - raw-strings-qq
-    - text
     - cmdargs
     - mtl
     - transformers

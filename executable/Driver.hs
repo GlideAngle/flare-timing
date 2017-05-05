@@ -5,7 +5,6 @@ module Driver (driverMain) where
 
 import Control.Monad (mapM_)
 import Args (withCmdArgs)
-import Shake.General.Timing
 import System.Directory (doesFileExist, doesDirectoryExist)
 import System.FilePath (takeFileName)
 import System.FilePath.Find (FileType(..), find, always, fileType, (==?))
@@ -33,7 +32,4 @@ drive DriveOptions{..} = do
                  Right p' -> print p'
 
 driverMain :: IO ()
-driverMain = do
-    resetTimings
-    withCmdArgs drive
-    printTimings
+driverMain = withCmdArgs drive

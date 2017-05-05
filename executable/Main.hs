@@ -1,4 +1,4 @@
-import qualified Driver
+import qualified Driver (driverMain)
 
 main :: IO ()
 main = Driver.driverMain

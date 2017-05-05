@@ -50,7 +50,7 @@ import Text.ParserCombinators.Parsec
     , optionMaybe
     , runParser
     )
-import qualified Text.ParserCombinators.Parsec as P
+import qualified Text.ParserCombinators.Parsec as P (parse)
 
 -- | An altitude in metres
 type Altitude = String
