@@ -13,7 +13,7 @@ needed for the fixes that include a time but no date.
 -}
 module Data.Waypoint
     (
-    -- * Types
+    -- * Data
       IgcRecord(..)
     , HMS(..)
     , Lat(..)
@@ -23,6 +23,12 @@ module Data.Waypoint
     -- * Parsing Functions
     , parse
     , parseFromFile
+    -- * Types
+    , Altitude
+    , Degree
+    , Hour
+    , Minute
+    , Second
     ) where
 
 import Data.List (partition)
@@ -46,24 +52,41 @@ import Text.ParserCombinators.Parsec
     )
 import qualified Text.ParserCombinators.Parsec as P
 
--- | Hours, minutes and seconds.
-data HMS =HMS String String String
+-- | An altitude in metres
+type Altitude = String
+
+-- | An hour of time.
+type Hour = String
+
+-- | A minute of time or a minute of a degree. If a minute of a degree, the
+-- first two chars are whole minutes and the following chars are the decimal
+-- part. No decimal point character is included.
+type Minute = String
+
+-- | A second of time.
+type Second = String
+
+-- | A whole degree of angle. May have leading zeros. Has no decimal part.
+type Degree = String
+
+-- | A time with hours, minutes and seconds.
+data HMS = HMS Hour Minute Second
 
 -- | A latitude with degrees and minutes.
 data Lat
-    = LatN String String -- ^ North
-    | LatS String String -- ^ South
+    = LatN Degree Minute -- ^ North
+    | LatS Degree Minute -- ^ South
 
 -- | A longitude with degrees and minutes.
 data Lng
-    = LngW String String -- ^ West
-    | LngE String String -- ^ East
+    = LngW Degree Minute -- ^ West
+    | LngE Degree Minute -- ^ East
 
 -- | Pressure altitude in metres
-newtype AltBaro = AltBaro String
+newtype AltBaro = AltBaro Altitude
 
 -- | GPS altitude in metres
-newtype AltGps = AltGps String
+newtype AltGps = AltGps Altitude
 
 -- |
 -- The record types:
