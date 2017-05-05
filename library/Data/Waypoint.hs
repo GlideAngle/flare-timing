@@ -8,7 +8,8 @@ License     : BSD3
 Maintainer  : phil.dejoux@blockscope.com
 Stability   : experimental
 
-Parsing of the IGC format for A time and B records, the fixes that make up a tracklog.
+Parsing the IGC format for waypoint fixes. The date header is parsed too and is
+needed for the fixes that include a time but no date.
 -}
 module Data.Waypoint
     (
@@ -24,12 +25,17 @@ module Data.Waypoint
     , parseFromFile
     ) where
 
+import Data.List (partition)
+import Text.Parsec.Char (endOfLine, anyChar)
 import Text.ParserCombinators.Parsec
     ( GenParser
     , ParseError
     , (<|>)
     , char
+    , string
     , many
+    , manyTill
+    , lookAhead
     , oneOf
     , noneOf
     , count
@@ -41,7 +47,7 @@ import Text.ParserCombinators.Parsec
 import qualified Text.ParserCombinators.Parsec as P
 
 -- | Hours, minutes and seconds.
-data HMS = HMS String String String
+data HMS =HMS String String String
 
 -- | A latitude with degrees and minutes.
 data Lat
@@ -78,7 +84,10 @@ newtype AltGps = AltGps String
 --
 -- SOURCE: <http://carrier.csi.cam.ac.uk/forsterlewis/soaring/igc_file_format/igc_format_2008.html>
 data IgcRecord
+    -- | A location fix.
     = B HMS Lat Lng AltBaro (Maybe AltGps)
+    -- | The date header record.
+    | HFDTE String String String
     -- | Any other record type is ignored.
     | Ignore
     deriving Show
@@ -119,28 +128,51 @@ instance Show AltBaro where
 instance Show AltGps where
     show (AltGps x) = ltrimZero x ++ "m"
 
+showIgc :: [ IgcRecord ] -> String
+showIgc xs =
+    unlines $ f <$> xs
+    where
+        f x = case x of
+                   B{} -> "B"
+                   _ -> show x
+
+showIgcSummarize :: [ IgcRecord ] -> String
+showIgcSummarize xs =
+    (\(bs, ys) -> showIgc ys ++ summarize bs) $ partition isB xs
+    where
+        summarize [] = "no B records"
+        summarize [ x ] = unlines [ show x, "... and no other B records" ]
+        summarize (x : y : _) = unlines [ show x
+                                        , show y
+                                        ,"... plus " ++ show (length xs) ++ " other B records"
+                                        ]
+
 instance {-# OVERLAPPING #-} Show [ IgcRecord ] where
-    show [] = "no B records"
-    show (x : []) = unlines [ show x, "... and no other B records" ]
-    show (x : y : xs) = unlines [ show x
-                                , show y
-                                ,"... plus " ++ show (length xs) ++ " other B records"
-                                ]
+    show = showIgcSummarize
+
 
 isB :: IgcRecord -> Bool
 isB B{} = True
+isB HFDTE{} = False
 isB Ignore = False
 
 igcFile :: GenParser Char st [IgcRecord]
 igcFile = do
-    lines' <- many line
+    hfdte <- manyTill anyChar (lookAhead (string "HFDTE")) *> headerLine
+    lines' <- manyTill anyChar (char 'B') *> many line
     _ <- eof
-    return $ filter isB lines'
+    return $ hfdte : lines'
+
+headerLine :: GenParser Char st IgcRecord
+headerLine = do
+    line' <- date
+    _ <- endOfLine
+    return line'
 
 line :: GenParser Char st IgcRecord
 line = do
     line' <- fix <|> ignore
-    _ <- eol
+    _ <- endOfLine
     return line'
 
 hms :: GenParser Char st HMS
@@ -197,13 +229,18 @@ fix = do
     _ <- many (noneOf "\n")
     return $ B hms' lat' lng' altBaro' altGps'
 
+date :: GenParser Char st IgcRecord
+date = do
+    _ <- string "HFDTE"
+    dd <- count 2 digit
+    mm <- count 2 digit
+    yy <- count 2 digit
+    return $ HFDTE dd mm yy
+
 ignore :: GenParser Char st IgcRecord
 ignore = do
     _ <- many (noneOf "\n")
     return Ignore
-
-eol :: GenParser Char st Char
-eol = char '\n'
 
 -- |
 -- >>> parse "B0200223321354S14756057EA0024400241000\n"
@@ -215,9 +252,22 @@ parse = P.parse igcFile "(stdin)"
 
 -- |
 -- >>> parseFromFile "./YMDCXXXF.IGC"
+-- HFDTE "09" "01" "12"
+-- Ignore
+-- Ignore
+-- Ignore
+-- Ignore
+-- Ignore
+-- Ignore
+-- Ignore
+-- Ignore
+-- Ignore
+-- Ignore
+-- Ignore
+-- Ignore
 -- B 02:00:22 33° 21.354' S 147° 56.057' E 244m (Just 241m)
 -- B 02:00:30 33° 21.354' S 147° 56.057' E 244m (Just 241m)
--- ... plus 979 other B records
+-- ... plus 994 other B records
 parseFromFile
     :: FilePath -- ^ An IGC file to parse.
     -> IO (Either ParseError [IgcRecord])
