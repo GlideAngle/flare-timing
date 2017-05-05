@@ -7,8 +7,9 @@ License     : BSD3
 Maintainer  : phil.dejoux@blockscope.com
 Stability   : experimental
 
-Parsing the IGC format for waypoint fixes. The date header is parsed too and is
-needed for the fixes that include a time but no date.
+Provides parsing the IGC format for waypoint fixes. The date header is also parsed
+as it is needed for the fixes that have only a time and pickup the date in the file
+header.
 -}
 module Data.Waypoint
     (
