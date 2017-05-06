@@ -1,4 +1,4 @@
-The [latest version](https://github.com/blockscope/flight-igc/blob/master/changelog.md) of this changelog.
+The [latest version](https://github.com/blockscope/haskell-flight-igc/blob/master/changelog.md) of this changelog.
 
 ## 0.1.0
 
