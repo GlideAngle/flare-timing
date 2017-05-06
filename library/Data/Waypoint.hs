@@ -15,9 +15,15 @@ module Data.Waypoint
     ) where
 
 import Text.XML.HXT.Core
+import Text.XML.HXT.XPath (getXPathTreesInDoc)
 
 parse :: String -> IO (Either String String)
 parse contents = do
-    let doc = readString [withValidate no, withWarnings no] contents
-    contents <- runX . xshow $ doc >>> indentDoc
-    return $ Right $ unlines contents
+    let doc = readString [ withValidate no, withWarnings no ] contents
+    contents <- runX $
+            doc
+            >>>
+            getXPathTreesInDoc "//Placemark[Metadata[@type='track']]"
+            />
+            hasName "LineString"
+    return $ Right $ show contents
