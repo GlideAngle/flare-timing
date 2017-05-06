@@ -15,15 +15,27 @@ module Data.Waypoint
     ) where
 
 import Text.XML.HXT.Core
-import Text.XML.HXT.XPath (getXPathTreesInDoc)
+import Text.XML.HXT.XPath (getXPathTreesInDoc, getXPathTrees)
 
-parse :: String -> IO (Either String String)
+data Fix = Fix String String String deriving Show
+
+parse :: String -> IO (Either String [ Fix ])
 parse contents = do
     let doc = readString [ withValidate no, withWarnings no ] contents
-    contents <- runX $
-            doc
-            >>>
-            getXPathTreesInDoc "//Placemark[Metadata[@type='track']]"
-            />
-            hasName "LineString"
-    return $ Right $ show contents
+
+    seconds <- runX $ doc
+        >>> getXPathTreesInDoc "//Placemark[Metadata[@type='track']]"
+        >>> getXPathTrees "//SecondsFromTimeOfFirstPoint"
+        /> getText
+
+    baro <- runX $ doc
+        >>> getXPathTreesInDoc "//Placemark[Metadata[@type='track']]"
+        >>> getXPathTrees "//PressureAltitude"
+        /> getText
+
+    tracklog <- runX $ doc
+        >>> getXPathTreesInDoc "//Placemark[Metadata[@type='track']]"
+        >>> getXPathTrees "//LineString/coordinates"
+        /> getText
+
+    return $ Right $ zipWith3 Fix seconds baro tracklog
