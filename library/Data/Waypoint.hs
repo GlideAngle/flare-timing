@@ -22,6 +22,16 @@ module Data.Waypoint
     ) where
 
 import Text.XML.HXT.Core
+    ( (>>>)
+    , (/>)
+    , (>>.)
+    , runX
+    , getText
+    , withValidate
+    , withWarnings
+    , readString
+    , no
+    )
 import Text.XML.HXT.XPath (getXPathTreesInDoc, getXPathTrees)
 import Data.List (concatMap)
 import Text.Parsec.Token as P
