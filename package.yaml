@@ -33,6 +33,7 @@ library:
   - hxt
   - path
   - hxt-xpath
+  - raw-strings-qq
   source-dirs: library
   exposed-modules:
   - Data.Waypoint
