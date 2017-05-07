@@ -60,19 +60,19 @@ parse contents = do
         >>> getXPathTreesInDoc "//Placemark[Metadata[@type='track']]"
         >>> getXPathTrees "//SecondsFromTimeOfFirstPoint"
         /> getText
-        >>. (concatMap parseTime)
+        >>. concatMap parseTime
 
     baro <- runX $ doc
         >>> getXPathTreesInDoc "//Placemark[Metadata[@type='track']]"
         >>> getXPathTrees "//PressureAltitude"
         /> getText
-        >>. (concatMap parseBaro)
+        >>. concatMap parseBaro
 
     track <- runX $ doc
         >>> getXPathTreesInDoc "//Placemark[Metadata[@type='track']]"
         >>> getXPathTrees "//LineString/coordinates"
         /> getText
-        >>. (concatMap parseTrack)
+        >>. concatMap parseTrack
 
     return $ Right $ zipWith3 Fix time baro track
 
@@ -83,9 +83,7 @@ pTimes = do
     return $ concat xs
 
 pTime :: GenParser Char st [ Integer ]
-pTime = do
-    xs <- manyTill anyChar endOfLine *> many1 pNat
-    return xs
+pTime = manyTill anyChar endOfLine *> many1 pNat
 
 parseTime :: String -> [ String ]
 parseTime s =
@@ -100,9 +98,7 @@ pBaros = do
     return $ concat xs
 
 pBaro :: GenParser Char st [ Integer ]
-pBaro = do
-    xs <- manyTill anyChar endOfLine *> many1 pNat
-    return xs
+pBaro = manyTill anyChar endOfLine *> many1 pNat
 
 parseBaro :: String -> [ String ]
 parseBaro s =
@@ -131,8 +127,7 @@ pFix = do
 pTrack :: GenParser Char st [ (Double, Double, Integer) ]
 pTrack = do
     _ <- manyTill anyChar endOfLine
-    xs <- many1 pFix
-    return xs
+    many1 pFix
 
 parseTrack :: String -> [ String ]
 parseTrack s =
