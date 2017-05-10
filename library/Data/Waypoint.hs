@@ -1,3 +1,5 @@
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE PartialTypeSignatures #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE QuasiQuotes #-}
 
@@ -21,6 +23,10 @@ module Data.Waypoint
     , parseTrack
     ) where
 
+
+import Control.Arrow.IOStateListArrow (IOSLA)
+import Text.XML.HXT.Arrow.XmlState.TypeDefs (XIOState)
+import Text.XML.HXT.DOM.TypeDefs (XmlTree)
 import Text.XML.HXT.Core
     ( (>>>)
     , (/>)
@@ -62,27 +68,34 @@ pNat = P.natural lexer
 
 data Fix = Fix String String String deriving Show
 
+getTime :: IOSLA (XIOState ()) XmlTree String
+getTime =
+    getXPathTreesInDoc "//Placemark[Metadata[@type='track']]"
+    >>> getXPathTrees "//SecondsFromTimeOfFirstPoint"
+    /> getText
+    >>. concatMap parseTime
+
+getBaro :: IOSLA (XIOState ()) XmlTree String
+getBaro =
+    getXPathTreesInDoc "//Placemark[Metadata[@type='track']]"
+    >>> getXPathTrees "//PressureAltitude"
+    /> getText
+    >>. concatMap parseBaro
+
+getTrack :: IOSLA (XIOState ()) XmlTree String
+getTrack =
+    getXPathTreesInDoc "//Placemark[Metadata[@type='track']]"
+    >>> getXPathTrees "//LineString/coordinates"
+    /> getText
+    >>. concatMap parseTrack
+
 parse :: String -> IO (Either String [ Fix ])
 parse contents = do
     let doc = readString [ withValidate no, withWarnings no ] contents
 
-    time <- runX $ doc
-        >>> getXPathTreesInDoc "//Placemark[Metadata[@type='track']]"
-        >>> getXPathTrees "//SecondsFromTimeOfFirstPoint"
-        /> getText
-        >>. concatMap parseTime
-
-    baro <- runX $ doc
-        >>> getXPathTreesInDoc "//Placemark[Metadata[@type='track']]"
-        >>> getXPathTrees "//PressureAltitude"
-        /> getText
-        >>. concatMap parseBaro
-
-    track <- runX $ doc
-        >>> getXPathTreesInDoc "//Placemark[Metadata[@type='track']]"
-        >>> getXPathTrees "//LineString/coordinates"
-        /> getText
-        >>. concatMap parseTrack
+    time <- runX $ doc >>> getTime
+    baro <- runX $ doc >>> getBaro
+    track <- runX $ doc >>> getTrack
 
     return $ Right $ zipWith3 Fix time baro track
 
