@@ -42,6 +42,7 @@ import Text.XML.HXT.Core
     , hasAttrValue
     , filterA
     , listA
+    , unlistA
     , arr
     )
 import Data.List (concatMap)
@@ -95,11 +96,12 @@ getFsInfo =
     /> hasName "FsInfo"
     >>. take 1
 
-getFix :: ArrowXml a => a XmlTree [ Fix ]
+getFix :: ArrowXml a => a XmlTree Fix
 getFix =
     getTrack
     >>> (listA getCoord &&& (getFsInfo >>> (listA getTime &&& listA getBaro)))
     >>> arr (\(c, (a, b)) -> zipWith3 Fix a b c)
+    >>> unlistA
 
 getTime :: ArrowXml a => a XmlTree String
 getTime =
@@ -127,7 +129,7 @@ parse :: String -> IO (Either String [ Fix ])
 parse contents = do
     let doc = readString [ withValidate no, withWarnings no ] contents
     xs <- runX $ doc >>> getFix
-    return $ Right $ concat xs
+    return $ Right xs
 
 pTimes :: GenParser Char st [ Integer ]
 pTimes = do
