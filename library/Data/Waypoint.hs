@@ -74,56 +74,56 @@ pNat = P.natural lexer
 
 data Fix = Fix String String String deriving Show
 
-isMetadata :: ArrowXml a => a (NTree XNode) XmlTree
-isMetadata =
-    getChildren
-    >>> hasName "Metadata"
-    >>> hasAttrValue "type" (== "track")
-
-getTrack :: ArrowXml a => a XmlTree XmlTree
-getTrack =
-    getChildren
-    >>> hasName "Document"
-    /> hasName "Folder"
-    /> hasName "Placemark"
-    >>> filterA isMetadata
-    >>. take 1
-
-getFsInfo :: ArrowXml a => a XmlTree XmlTree
-getFsInfo =
-    getChildren
-    >>> hasName "Metadata"
-    /> hasName "FsInfo"
-    >>. take 1
-
 getFix :: ArrowXml a => a XmlTree Fix
 getFix =
     getTrack
     >>> (listA getCoord &&& (getFsInfo >>> (listA getTime &&& listA getBaro)))
     >>> arr (\(c, (a, b)) -> zipWith3 Fix a b c)
     >>> unlistA
+    where
+        isMetadata :: ArrowXml a => a (NTree XNode) XmlTree
+        isMetadata =
+            getChildren
+            >>> hasName "Metadata"
+            >>> hasAttrValue "type" (== "track")
 
-getTime :: ArrowXml a => a XmlTree String
-getTime =
-    getChildren
-    >>> hasName "SecondsFromTimeOfFirstPoint"
-    /> getText
-    >>. concatMap parseTime
+        getTrack :: ArrowXml a => a XmlTree XmlTree
+        getTrack =
+            getChildren
+            >>> hasName "Document"
+            /> hasName "Folder"
+            /> hasName "Placemark"
+            >>> filterA isMetadata
+            >>. take 1
 
-getBaro :: ArrowXml a => a XmlTree String
-getBaro =
-    getChildren
-    >>> hasName "PressureAltitude"
-    /> getText
-    >>. concatMap parseBaro
+        getFsInfo :: ArrowXml a => a XmlTree XmlTree
+        getFsInfo =
+            getChildren
+            >>> hasName "Metadata"
+            /> hasName "FsInfo"
+            >>. take 1
 
-getCoord :: ArrowXml a => a XmlTree String
-getCoord =
-    getChildren
-    >>> hasName "LineString"
-    /> hasName "coordinates"
-    /> getText
-    >>. concatMap parseTrack
+        getTime :: ArrowXml a => a XmlTree String
+        getTime =
+            getChildren
+            >>> hasName "SecondsFromTimeOfFirstPoint"
+            /> getText
+            >>. concatMap parseTime
+
+        getBaro :: ArrowXml a => a XmlTree String
+        getBaro =
+            getChildren
+            >>> hasName "PressureAltitude"
+            /> getText
+            >>. concatMap parseBaro
+
+        getCoord :: ArrowXml a => a XmlTree String
+        getCoord =
+            getChildren
+            >>> hasName "LineString"
+            /> hasName "coordinates"
+            /> getText
+            >>. concatMap parseTrack
 
 parse :: String -> IO (Either String [ Fix ])
 parse contents = do
