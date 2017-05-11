@@ -86,17 +86,19 @@ getTrack =
     /> hasName "Folder"
     /> hasName "Placemark"
     >>> filterA isMetadata
+    >>. take 1
 
 getFsInfo :: ArrowXml a => a XmlTree XmlTree
 getFsInfo =
     getChildren
     >>> hasName "Metadata"
     /> hasName "FsInfo"
+    >>. take 1
 
 getFix :: ArrowXml a => a XmlTree [ Fix ]
 getFix =
-    (getTrack >>. take 1)
-    >>> (listA getCoord &&& ((getFsInfo >>. take 1) >>> (listA getTime &&& listA getBaro)))
+    getTrack
+    >>> (listA getCoord &&& (getFsInfo >>> (listA getTime &&& listA getBaro)))
     >>> arr (\(c, (a, b)) -> zipWith3 Fix a b c)
 
 getTime :: ArrowXml a => a XmlTree String
