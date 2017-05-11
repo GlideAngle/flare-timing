@@ -7,7 +7,7 @@ import Data.Waypoint (parseTime, parseBaro, parseCoord)
 import Test.Tasty
 import Test.Tasty.HUnit
 
-import Data.List.Split (split, dropBlanks, dropDelims, oneOf)
+import Data.List.Split (split, dropBlanks, dropDelims, oneOf, chunksOf)
 import Text.RawString.QQ (r)
 
 main :: IO ()
@@ -68,10 +68,17 @@ baroToParse = [r|
               |]
 
 parsedCoord :: [ String ]
-parsedCoord = parseCoord baroToParse
+parsedCoord = parseCoord coordToParse
+
+triple :: [ String ] -> String
+triple xs =
+    case xs of
+        [a, b, c] -> "(" ++ a ++ "," ++ b ++ "," ++ c ++ ")"
+        _ -> concat xs
 
 expectedCoordStr :: [ String ]
-expectedCoordStr = split (dropBlanks $ dropDelims $ oneOf " \n") coordToParse
+expectedCoordStr = 
+    triple <$> (chunksOf 3 $ split (dropBlanks $ dropDelims $ oneOf " ,\n") coordToParse)
 
 coordToParse :: String
 coordToParse = [r|
