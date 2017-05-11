@@ -23,11 +23,11 @@ module Data.Waypoint
     , parseTrack
     ) where
 
-import Text.XML.HXT.Arrow.XmlState.TypeDefs (IOSArrow)
 import Data.Tree.NTree.TypeDefs (NTree)
 import Text.XML.HXT.DOM.TypeDefs (XmlTree, XNode)
 import Text.XML.HXT.Core
-    ( (>>>)
+    ( ArrowXml
+    , (>>>)
     , (/>)
     , (>>.)
     , runX
@@ -70,13 +70,13 @@ pNat = P.natural lexer
 
 data Fix = Fix String String String deriving Show
 
-isMetadata :: IOSArrow (NTree XNode) XmlTree
+isMetadata :: ArrowXml a => a (NTree XNode) XmlTree
 isMetadata =
     getChildren
     >>> hasName "Metadata"
     >>> hasAttrValue "type" (== "track")
 
-getTrack :: IOSArrow XmlTree XmlTree
+getTrack :: ArrowXml a => a XmlTree XmlTree
 getTrack =
     getChildren
     >>> hasName "Document"
@@ -84,27 +84,27 @@ getTrack =
     /> hasName "Placemark"
     >>> filterA isMetadata
 
-getFsInfo :: IOSArrow XmlTree XmlTree
+getFsInfo :: ArrowXml a => a XmlTree XmlTree
 getFsInfo =
     getChildren
     >>> hasName "Metadata"
     /> hasName "FsInfo"
 
-getTime :: IOSArrow XmlTree String
+getTime :: ArrowXml a => a XmlTree String
 getTime =
     getChildren
     >>> hasName "SecondsFromTimeOfFirstPoint"
     /> getText
     >>. concatMap parseTime
 
-getBaro :: IOSArrow XmlTree String
+getBaro :: ArrowXml a => a XmlTree String
 getBaro =
     getChildren
     >>> hasName "PressureAltitude"
     /> getText
     >>. concatMap parseBaro
 
-getCoord :: IOSArrow XmlTree String
+getCoord :: ArrowXml a => a XmlTree String
 getCoord =
     getChildren
     >>> hasName "LineString"
