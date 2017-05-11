@@ -27,6 +27,7 @@ import Data.Tree.NTree.TypeDefs (NTree)
 import Text.XML.HXT.DOM.TypeDefs (XmlTree, XNode)
 import Text.XML.HXT.Core
     ( ArrowXml
+    , (&&&)
     , (>>>)
     , (/>)
     , (>>.)
@@ -40,6 +41,8 @@ import Text.XML.HXT.Core
     , getChildren
     , hasAttrValue
     , filterA
+    , listA
+    , arr
     )
 import Data.List (concatMap)
 import Text.Parsec.Token as P
@@ -90,6 +93,12 @@ getFsInfo =
     >>> hasName "Metadata"
     /> hasName "FsInfo"
 
+getFix :: ArrowXml a => a XmlTree [ Fix ]
+getFix =
+    (getTrack >>. take 1)
+    >>> (listA getCoord &&& ((getFsInfo >>. take 1) >>> (listA getTime &&& listA getBaro)))
+    >>> arr (\(c, (a, b)) -> zipWith3 Fix a b c)
+
 getTime :: ArrowXml a => a XmlTree String
 getTime =
     getChildren
@@ -115,12 +124,8 @@ getCoord =
 parse :: String -> IO (Either String [ Fix ])
 parse contents = do
     let doc = readString [ withValidate no, withWarnings no ] contents
-
-    time <- runX $ doc >>> getTrack >>> getFsInfo >>> getTime
-    baro <- runX $ doc >>> getTrack >>> getFsInfo >>> getBaro
-    coord <- runX $ doc >>> getTrack >>> getCoord
-
-    return $ Right $ zipWith3 Fix time baro coord
+    xs <- runX $ doc >>> getFix
+    return $ Right $ concat xs
 
 pTimes :: GenParser Char st [ Integer ]
 pTimes = do
