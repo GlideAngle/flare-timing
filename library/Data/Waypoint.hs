@@ -23,10 +23,9 @@ module Data.Waypoint
     , parseTrack
     ) where
 
-
-import Control.Arrow.IOStateListArrow (IOSLA)
-import Text.XML.HXT.Arrow.XmlState.TypeDefs (XIOState)
-import Text.XML.HXT.DOM.TypeDefs (XmlTree)
+import Text.XML.HXT.Arrow.XmlState.TypeDefs (IOSArrow)
+import Data.Tree.NTree.TypeDefs (NTree)
+import Text.XML.HXT.DOM.TypeDefs (XmlTree, XNode)
 import Text.XML.HXT.Core
     ( (>>>)
     , (/>)
@@ -37,8 +36,11 @@ import Text.XML.HXT.Core
     , withWarnings
     , readString
     , no
+    , hasName
+    , getChildren
+    , hasAttrValue
+    , filterA
     )
-import Text.XML.HXT.XPath (getXPathTreesInDoc, getXPathTrees)
 import Data.List (concatMap)
 import Text.Parsec.Token as P
 import Text.Parsec.Char (endOfLine, anyChar)
@@ -68,24 +70,45 @@ pNat = P.natural lexer
 
 data Fix = Fix String String String deriving Show
 
-getTime :: IOSLA (XIOState ()) XmlTree String
+isMetadata :: IOSArrow (NTree XNode) XmlTree
+isMetadata =
+    getChildren
+    >>> hasName "Metadata"
+    >>> hasAttrValue "type" (== "track")
+
+getTrack :: IOSArrow XmlTree XmlTree
+getTrack =
+    getChildren
+    >>> hasName "Document"
+    /> hasName "Folder"
+    /> hasName "Placemark"
+    >>> filterA isMetadata
+
+getFsInfo :: IOSArrow XmlTree XmlTree
+getFsInfo =
+    getChildren
+    >>> hasName "Metadata"
+    /> hasName "FsInfo"
+
+getTime :: IOSArrow XmlTree String
 getTime =
-    getXPathTreesInDoc "//Placemark[Metadata[@type='track']]"
-    >>> getXPathTrees "//SecondsFromTimeOfFirstPoint"
+    getChildren
+    >>> hasName "SecondsFromTimeOfFirstPoint"
     /> getText
     >>. concatMap parseTime
 
-getBaro :: IOSLA (XIOState ()) XmlTree String
+getBaro :: IOSArrow XmlTree String
 getBaro =
-    getXPathTreesInDoc "//Placemark[Metadata[@type='track']]"
-    >>> getXPathTrees "//PressureAltitude"
+    getChildren
+    >>> hasName "PressureAltitude"
     /> getText
     >>. concatMap parseBaro
 
-getTrack :: IOSLA (XIOState ()) XmlTree String
-getTrack =
-    getXPathTreesInDoc "//Placemark[Metadata[@type='track']]"
-    >>> getXPathTrees "//LineString/coordinates"
+getCoord :: IOSArrow XmlTree String
+getCoord =
+    getChildren
+    >>> hasName "LineString"
+    /> hasName "coordinates"
     /> getText
     >>. concatMap parseTrack
 
@@ -93,11 +116,11 @@ parse :: String -> IO (Either String [ Fix ])
 parse contents = do
     let doc = readString [ withValidate no, withWarnings no ] contents
 
-    time <- runX $ doc >>> getTime
-    baro <- runX $ doc >>> getBaro
-    track <- runX $ doc >>> getTrack
+    time <- runX $ doc >>> getTrack >>> getFsInfo >>> getTime
+    baro <- runX $ doc >>> getTrack >>> getFsInfo >>> getBaro
+    coord <- runX $ doc >>> getTrack >>> getCoord
 
-    return $ Right $ zipWith3 Fix time baro track
+    return $ Right $ zipWith3 Fix time baro coord
 
 pTimes :: GenParser Char st [ Integer ]
 pTimes = do
