@@ -23,8 +23,7 @@ module Data.Waypoint
     , parseTrack
     ) where
 
-import Data.Tree.NTree.TypeDefs (NTree)
-import Text.XML.HXT.DOM.TypeDefs (XmlTree, XNode)
+import Text.XML.HXT.DOM.TypeDefs (XmlTree)
 import Text.XML.HXT.Core
     ( ArrowXml
     , (&&&)
@@ -81,13 +80,11 @@ getFix =
     >>> arr (\(c, (a, b)) -> zipWith3 Fix a b c)
     >>> unlistA
     where
-        isMetadata :: ArrowXml a => a (NTree XNode) XmlTree
         isMetadata =
             getChildren
             >>> hasName "Metadata"
             >>> hasAttrValue "type" (== "track")
 
-        getTrack :: ArrowXml a => a XmlTree XmlTree
         getTrack =
             getChildren
             >>> hasName "Document"
@@ -96,28 +93,24 @@ getFix =
             >>> filterA isMetadata
             >>. take 1
 
-        getFsInfo :: ArrowXml a => a XmlTree XmlTree
         getFsInfo =
             getChildren
             >>> hasName "Metadata"
             /> hasName "FsInfo"
             >>. take 1
 
-        getTime :: ArrowXml a => a XmlTree String
         getTime =
             getChildren
             >>> hasName "SecondsFromTimeOfFirstPoint"
             /> getText
             >>. concatMap parseTime
 
-        getBaro :: ArrowXml a => a XmlTree String
         getBaro =
             getChildren
             >>> hasName "PressureAltitude"
             /> getText
             >>. concatMap parseBaro
 
-        getCoord :: ArrowXml a => a XmlTree String
         getCoord =
             getChildren
             >>> hasName "LineString"
