@@ -7,8 +7,9 @@ import Data.Waypoint (parseTime, parseBaro, parseCoord)
 import Test.Tasty
 import Test.Tasty.HUnit
 
-import Data.List.Split (split, dropBlanks, dropDelims, oneOf, chunksOf)
+import Data.List.Split (split, splitOn, dropBlanks, dropDelims, oneOf, chunksOf)
 import Text.RawString.QQ (r)
+import Numeric
 
 main :: IO ()
 main = defaultMain tests
@@ -37,6 +38,15 @@ unitTests = testGroup "Unit tests"
 
     , testCase "Parse coord (same length)" $
         length parsedCoord @?= length expectedCoordStr
+
+    , testCase "Parse time (as expected)" $
+        parsedTime @?= expectedTimeStr
+
+    , testCase "Parse baro (as expected)" $
+        parsedBaro @?= expectedBaroStr
+
+    , testCase "Parse coord (as expected)" $
+        parsedCoord @?= expectedCoordStr
     ]
 
 parsedTime :: [ String ]
@@ -70,10 +80,32 @@ baroToParse = [r|
 parsedCoord :: [ String ]
 parsedCoord = parseCoord coordToParse
 
+rtrimZero :: String -> String
+rtrimZero =
+     reverse . dropWhile (== '0') . reverse
+
+formatFloat :: String -> String
+formatFloat s =
+    case splits of
+         [ a, b ] -> a ++ "." ++ rtrimZero b
+         _ -> s
+    where
+        s' = showFFloat (Just 6) (read s :: Double) ""
+        splits = splitOn "." s'
+
 triple :: [ String ] -> String
 triple xs =
     case xs of
-        [a, b, c] -> "(" ++ a ++ "," ++ b ++ "," ++ c ++ ")"
+        [a, b, c] ->
+            concat [ "("
+                   , formatFloat a
+                   , ","
+                   , formatFloat b
+                   , ","
+                   , c
+                   , ")"
+                   ]
+
         _ -> concat xs
 
 expectedCoordStr :: [ String ]
