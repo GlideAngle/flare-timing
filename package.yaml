@@ -2,7 +2,7 @@
 # Cabal file when you run `stack build`. See the hpack website for help with
 # this file: <https://github.com/sol/hpack>.
 executables:
-  flight-kml:
+  flight-kml-cmd:
     dependencies:
     - base
     - directory
@@ -49,28 +49,38 @@ tests:
   hlint:
     dependencies:
     - base
+    - parsec
+    - hxt
+    - path
+    - hxt-xpath
     - hlint
-    - flight-kml 
     ghc-options:
     - -rtsopts
     - -threaded
     - -with-rtsopts=-N
     main: HLint.hs
-    source-dirs: test-suite
+    source-dirs:
+    - library
+    - test-suite-hlint
   parse:
     dependencies:
     - base
+    - parsec
+    - hxt
+    - path
+    - hxt-xpath
     - raw-strings-qq
     - split
     - tasty
     - tasty-hunit
     - tasty-quickcheck
     - tasty-smallcheck
-    - flight-kml 
     ghc-options:
     - -rtsopts
     - -threaded
     - -with-rtsopts=-N
     main: Parse.hs
-    source-dirs: test-suite
+    source-dirs:
+    - library
+    - test-suite-parse
 version: '0.1.0'

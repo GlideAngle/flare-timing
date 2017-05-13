@@ -1,3 +1,4 @@
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE QuasiQuotes #-}
 
 module Main (main) where
@@ -5,8 +6,11 @@ module Main (main) where
 import Data.Waypoint (parseTime, parseBaro, parseCoord)
 
 import Test.Tasty
+import Test.Tasty.SmallCheck as SC
+import Test.Tasty.QuickCheck as QC
 import Test.Tasty.HUnit
 
+import Data.List (sort)
 import Data.List.Split (split, splitOn, dropBlanks, dropDelims, oneOf, chunksOf)
 import Text.RawString.QQ (r)
 import Numeric
@@ -22,11 +26,26 @@ properties = testGroup "Properties" [scProps, qcProps]
 
 scProps :: TestTree
 scProps = testGroup "(checked by SmallCheck)"
-  []
+    [ SC.testProperty "sort == sort . reverse" $
+        \xs-> sort (xs :: [Int]) == sort (reverse xs)
+
+    -- WARNING: Failing test.
+    --    there exists [0] such that
+    --      condition is false
+    , SC.testProperty "parse time from [ ints ]" parseInts
+    ]
 
 qcProps :: TestTree
 qcProps = testGroup "(checked by QuickCheck)"
-  []
+    [ QC.testProperty "sort == sort . reverse" $
+        \xs-> sort (xs :: [Int]) == sort (reverse xs)
+
+    -- WARNING: Failing test.
+    --    *** Failed! Falsifiable (after 3 tests and 2 shrinks):
+    --    [0]
+    --    Use --quickcheck-replay '2 TFGenR 000000734B462F250000000000989680000000000000E21E000003EC1507D500 0 28 5 0' to reproduce.
+    , QC.testProperty "parse time from [ ints ]" parseInts
+    ]
 
 unitTests :: TestTree
 unitTests = testGroup "Unit tests"
@@ -48,6 +67,19 @@ unitTests = testGroup "Unit tests"
     , testCase "Parse coord (as expected)" $
         parsedCoord @?= expectedCoordStr
     ]
+
+parseInts :: [ Int ] -> Bool
+parseInts xs =
+    let strings ::  [ String ]
+        strings = show <$> (xs :: [Int])
+
+        string :: String
+        string = unwords strings
+
+        parsed :: [ String ]
+        parsed = parseTime string
+
+    in parsed == strings
 
 parsedTime :: [ String ]
 parsedTime = parseTime timeToParse
