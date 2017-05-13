@@ -110,7 +110,7 @@ triple xs =
 
 expectedCoordStr :: [ String ]
 expectedCoordStr = 
-    triple <$> (chunksOf 3 $ split (dropBlanks $ dropDelims $ oneOf " ,\n") coordToParse)
+    triple <$> chunksOf 3 (split (dropBlanks $ dropDelims $ oneOf " ,\n") coordToParse)
 
 coordToParse :: String
 coordToParse = [r|
