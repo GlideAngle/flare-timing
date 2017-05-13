@@ -30,7 +30,7 @@ scProps = testGroup "(checked by SmallCheck)"
         \xs-> sort (xs :: [Int]) == sort (reverse xs)
 
     -- WARNING: Failing test.
-    --    there exists [0] such that
+    --    there exists [-1] such that
     --      condition is false
     , SC.testProperty "parse time from [ ints ]" parseInts
     ]
@@ -41,9 +41,9 @@ qcProps = testGroup "(checked by QuickCheck)"
         \xs-> sort (xs :: [Int]) == sort (reverse xs)
 
     -- WARNING: Failing test.
-    --    *** Failed! Falsifiable (after 3 tests and 2 shrinks):
-    --    [0]
-    --    Use --quickcheck-replay '2 TFGenR 000000734B462F250000000000989680000000000000E21E000003EC1507D500 0 28 5 0' to reproduce.
+    --   *** Failed! Falsifiable (after 5 tests and 4 shrinks):
+    --   [-1]
+    --   Use --quickcheck-replay '4 TFGenR 000000506988C7BD00000000004C4B40000000000000E21E0000065689DE4780 0 62 6 0' to reproduce.
     , QC.testProperty "parse time from [ ints ]" parseInts
     ]
 

@@ -42,7 +42,7 @@ import Text.XML.HXT.Core
     )
 import Data.List (concatMap)
 import Text.Parsec.Token as P
-import Text.Parsec.Char (endOfLine, anyChar)
+import Text.Parsec.Char (endOfLine, anyChar, spaces)
 import Text.ParserCombinators.Parsec
     ( GenParser
     , char
@@ -51,6 +51,7 @@ import Text.ParserCombinators.Parsec
     , manyTill
     , eof
     , option
+    , sepBy
     )
 import qualified Text.ParserCombinators.Parsec as P (parse)
 import Text.Parsec.Language (emptyDef)
@@ -121,12 +122,10 @@ parse contents = do
 
 pTimes :: GenParser Char st [ Integer ]
 pTimes = do
-    xs <- many pTime
+    _ <- spaces
+    xs <- pNat `sepBy` spaces
     _ <- eof
-    return $ concat xs
-
-pTime :: GenParser Char st [ Integer ]
-pTime = manyTill anyChar endOfLine *> many1 pNat
+    return xs
 
 parseTime :: String -> [ String ]
 parseTime s =
