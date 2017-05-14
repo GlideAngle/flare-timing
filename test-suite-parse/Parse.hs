@@ -11,6 +11,7 @@ import Data.Waypoint
     , parseBaroMarks
     , parseCoords
     , showCoords
+    , roundTripCoords
     )
 
 import Test.Tasty (TestTree, testGroup, defaultMain)
@@ -84,8 +85,11 @@ unitTests = testGroup "Unit tests"
     , HU.testCase "Parse coord (as expected)" $
         parsedCoords @?= expectedCoords
 
-    , HU.testCase "Show coords (as expected)" $
+    , HU.testCase "Show coords (0.0, 0.0, 1) (as expected)" $
         showCoords (0.0, 0.0, 1) @?= "0.000000,0.000000,1"
+
+    , HU.testCase "Show coords (0.3909011791596698, 0.3011360590812839,1) (as expected)" $
+        showCoords (0.3909011791596698, 0.3011360590812839, 1) @?= "0.390901,0.301136,1"
     ]
 
 parseInts :: (String -> [ Integer ]) -> [ Integer ] -> Bool
@@ -100,13 +104,19 @@ parseInts parser xs =
 
 parseTriples :: (String -> [ LLA ]) -> [ LLA ] -> Bool
 parseTriples parser xs =
-    let strings ::  [ String ]
+    let ys :: [ (Double, Double, Integer) ]
+        ys = roundTripCoords . (\(LLA lat lng alt) -> (lat, lng, alt)) <$> xs
+
+        zs :: [ LLA ]
+        zs = (\(lat, lng, alt) -> (LLA (toRational lat) (toRational lng) alt)) <$> ys
+
+        strings ::  [ String ]
         strings = showCoords . (\(LLA lat lng alt) -> (lat, lng, alt)) <$> xs
 
         parsed :: [ LLA ]
         parsed = parser $ unwords strings
 
-    in parsed == xs
+    in parsed == zs
 
 parsedTimeOffsets :: [ Seconds ]
 parsedTimeOffsets = parseTimeOffsets timeOffsetsToParse

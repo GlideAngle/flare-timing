@@ -23,6 +23,7 @@ module Data.Waypoint
     , parseBaroMarks
     , parseCoords
     , showCoords
+    , roundTripCoords
     , formatFloat
     ) where
 
@@ -184,6 +185,12 @@ formatFloat s =
     case splitOn "." s of
          [ a, "" ] -> showFFloat (Just 6) (read a :: Double) ""
          _ -> showFFloat (Just 6) (read s :: Double) ""
+
+roundTripCoords :: (Rational, Rational, Integer) -> (Double, Double, Integer)
+roundTripCoords (lat, lng, alt) =
+    let lat' = read $ formatFloat $ show (fromRational lat :: Double)
+        lng' = read $ formatFloat $ show (fromRational lng :: Double)
+    in (lat', lng', alt)
 
 showCoords :: (Rational, Rational, Integer) -> String
 showCoords (lat, lng, alt) =
