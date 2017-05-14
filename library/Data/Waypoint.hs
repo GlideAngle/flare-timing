@@ -12,8 +12,13 @@ Stability   : experimental
 Provides parsing the KML format for waypoint fixes.
 -}
 module Data.Waypoint
-    (
-    parse
+    ( LLA(..)
+    , Fix(..)
+    , Seconds
+    , Latitude
+    , Longitude
+    , Altitude
+    , parse
     , parseTimeOffsets
     , parseBaroMarks
     , parseCoords
@@ -69,13 +74,22 @@ pFloat = P.float lexer
 pNat :: ParsecT String u Identity Integer
 pNat = P.natural lexer 
 
-data Fix = Fix String String String deriving Show
+type Latitude = Double
+type Longitude = Double
+type Altitude = Integer
+type Seconds = Integer
+
+data LLA = LLA Latitude Longitude Altitude deriving (Eq, Show)
+data Fix = Fix Seconds LLA Altitude deriving (Eq, Show)
+
+zipFixes :: [ Seconds ] -> [LLA] -> [ Altitude ] -> [ Fix ]
+zipFixes = zipWith3 Fix
 
 getFix :: ArrowXml a => a XmlTree Fix
 getFix =
     getTrack
     >>> (listA getCoord &&& (getFsInfo >>> (listA getTime &&& listA getBaro)))
-    >>> arr (\(c, (a, b)) -> zipWith3 Fix a b c)
+    >>> arr (\(c, (a, b)) -> zipFixes a c b)
     >>> unlistA
     where
         isMetadata =
@@ -129,17 +143,17 @@ pNats = do
     _ <- eof
     return xs
 
-parseTimeOffsets :: String -> [ String ]
+parseTimeOffsets :: String -> [ Integer ]
 parseTimeOffsets s =
     case P.parse pNats "(stdin)" s of
-         Left msg -> [ show msg ]
-         Right xs -> show <$> xs
+         Left _ -> []
+         Right xs -> xs
 
-parseBaroMarks :: String -> [ String ]
+parseBaroMarks :: String -> [ Integer ]
 parseBaroMarks s =
     case P.parse pNats "(stdin)" s of
-         Left msg -> [ show msg ]
-         Right xs -> show <$> xs
+         Left _ -> []
+         Right xs -> xs
 
 pFix :: GenParser Char st (Double, Double, Integer)
 pFix = do
@@ -181,8 +195,8 @@ showCoords (lat, lng, alt) =
             , show alt
             ]
 
-parseCoords :: String -> [ String ]
+parseCoords :: String -> [ LLA ]
 parseCoords s =
     case P.parse pFixes "(stdin)" s of
-         Left msg -> [ show msg ]
-         Right xs -> showCoords <$> xs
+         Left _ -> []
+         Right xs -> (\(lat, lng, alt) -> LLA lat lng alt) <$> xs

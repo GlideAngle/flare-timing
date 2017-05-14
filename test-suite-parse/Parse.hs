@@ -4,11 +4,13 @@
 module Main (main) where
 
 import Data.Waypoint
-    ( parseTimeOffsets
+    ( LLA(..)
+    , Seconds
+    , Altitude
+    , parseTimeOffsets
     , parseBaroMarks
     , parseCoords
     , showCoords
-    , formatFloat
     )
 
 import Test.Tasty (TestTree, testGroup, defaultMain)
@@ -41,7 +43,8 @@ scProps = testGroup "(checked by SmallCheck)"
     --    there exists [(0.0,0.0,1)] such that
     --      condition is false
     , SC.testProperty "Parse lat,lng,alt triples from [ (Float, Float, Int) ]" $
-        \xs -> parseTriples parseCoords $ (\(lat, lng, alt) -> (lat, lng, SC.getPositive alt)) <$> xs
+        \xs -> parseTriples parseCoords $
+                (\(lat, lng, alt) -> LLA lat lng (SC.getPositive alt)) <$> xs
     ]
 
 qcProps :: TestTree
@@ -52,8 +55,14 @@ qcProps = testGroup "(checked by QuickCheck)"
     , QC.testProperty "Parse barometric pressure from [ Int ]" $
         \xs -> parseInts parseBaroMarks $ QC.getPositive <$> xs
 
+    -- WARNING: Failing test.
+    --    *** Failed! Falsifiable (after 2 tests and 4 shrinks):
+    --    [(0.0,0.0,Positive {getPositive = 1})]
+    --    Use --quickcheck-replay '1 TFGenR 000000245D76C3BD00000000002625A0000000000000E21F000004F94AE6AF80 0 12 4 0' to reproduce.
+
     , QC.testProperty "Parse lat,lng,alt triples from [ (Float, Float, Int) ]" $
-        \xs -> parseTriples parseCoords $ (\(lat, lng, alt) -> (lat, lng, QC.getPositive alt)) <$> xs
+        \xs -> parseTriples parseCoords $
+                (\(lat, lng, alt) -> LLA lat lng (QC.getPositive alt)) <$> xs
     ]
 
 unitTests :: TestTree
@@ -77,31 +86,31 @@ unitTests = testGroup "Unit tests"
         parsedCoords @?= expectedCoords
     ]
 
-parseInts :: (String -> [ String ]) -> [ Int ] -> Bool
+parseInts :: (String -> [ Integer ]) -> [ Integer ] -> Bool
 parseInts parser xs =
     let strings ::  [ String ]
         strings = show <$> xs
 
-        parsed :: [ String ]
+        parsed :: [ Integer ]
         parsed = parser $ unwords strings
 
-    in parsed == strings
+    in parsed == xs
 
-parseTriples :: (String -> [ String ]) -> [ (Double, Double, Integer) ] -> Bool
+parseTriples :: (String -> [ LLA ]) -> [ LLA ] -> Bool
 parseTriples parser xs =
     let strings ::  [ String ]
-        strings = showCoords <$> xs
+        strings = showCoords . (\(LLA lat lng alt) -> (lat, lng, alt)) <$> xs
 
-        parsed :: [ String ]
+        parsed :: [ LLA ]
         parsed = parser $ unwords strings
 
-    in parsed == strings
+    in parsed == xs
 
-parsedTimeOffsets :: [ String ]
+parsedTimeOffsets :: [ Seconds ]
 parsedTimeOffsets = parseTimeOffsets timeOffsetsToParse
         
-expectedTimeOffsets :: [ String ]
-expectedTimeOffsets = split (dropBlanks $ dropDelims $ oneOf " \n") timeOffsetsToParse
+expectedTimeOffsets :: [ Seconds ]
+expectedTimeOffsets = (\x -> read x :: Seconds) <$> split (dropBlanks $ dropDelims $ oneOf " \n") timeOffsetsToParse
 
 timeOffsetsToParse :: String
 timeOffsetsToParse = [r|
@@ -111,11 +120,11 @@ timeOffsetsToParse = [r|
 12644 12649 12654 12659 12664 12669 12674 12679 12684 12689
               |]
 
-parsedBaroMarks :: [ String ]
+parsedBaroMarks :: [ Altitude ]
 parsedBaroMarks = parseBaroMarks baroMarksToParse
 
-expectedBaroMarks :: [ String ]
-expectedBaroMarks = split (dropBlanks $ dropDelims $ oneOf " \n") baroMarksToParse
+expectedBaroMarks :: [ Altitude ]
+expectedBaroMarks = (\x -> read x :: Altitude) <$> split (dropBlanks $ dropDelims $ oneOf " \n") baroMarksToParse
 
 baroMarksToParse :: String
 baroMarksToParse = [r|
@@ -125,23 +134,18 @@ baroMarksToParse = [r|
 312 312 312 312 312 312 312 312 312 312
               |]
 
-parsedCoords :: [ String ]
+parsedCoords :: [ LLA ]
 parsedCoords = parseCoords coordsToParse
 
-triple :: [ String ] -> String
+triple :: [ String ] -> [ LLA ]
 triple xs =
     case xs of
-        [a, b, c] -> mconcat [ formatFloat a
-                             , ","
-                             , formatFloat b
-                             , ","
-                             , c
-                             ]
-        _ -> concat xs
+        [lat, lng, alt] ->  [ LLA (read lat :: Double) (read lng :: Double) (read alt :: Integer) ]
+        _ -> []
 
-expectedCoords :: [ String ]
+expectedCoords :: [ LLA ]
 expectedCoords = 
-    triple <$> chunksOf 3 (split (dropBlanks $ dropDelims $ oneOf " ,\n") coordsToParse)
+    concatMap triple $ chunksOf 3 (split (dropBlanks $ dropDelims $ oneOf " ,\n") coordsToParse)
 
 coordsToParse :: String
 coordsToParse = [r|
