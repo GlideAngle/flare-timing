@@ -39,10 +39,13 @@ scProps = testGroup "(checked by SmallCheck)"
     , SC.testProperty "Parse barometric pressure from [ Int ]" $
         \xs -> parseInts parseBaroMarks $ SC.getPositive <$> xs
 
+    -- WARNING: Failing test.
+    --        Prelude.read: no parse
     , SC.testProperty "Parse lat,lng,alt triples from [ (Float, Float, Int) ]" $
         SC.changeDepth (const 4) $
         \xs -> parseTriples parseCoords $
-                (\(lat, lng, alt) -> LLA lat lng (SC.getPositive alt)) <$> xs
+                (\(lat :: Double, lng :: Double, alt) ->
+                    LLA (toRational lat) (toRational lng) (SC.getPositive alt)) <$> xs
     ]
 
 qcProps :: TestTree
@@ -54,12 +57,13 @@ qcProps = testGroup "(checked by QuickCheck)"
         \xs -> parseInts parseBaroMarks $ QC.getPositive <$> xs
 
     -- WARNING: Failing test.
-    --    *** Failed! Falsifiable (after 2 tests and 2 shrinks):
-    --    [(0.0,7.68200170258344e-2,Positive {getPositive = 1})]
-    --    Use --quickcheck-replay '1 TFGenR 0000000141E4BEEB000000000001312D000000000000E21F00004387ACDFE400 0 12 4 0' to reproduce.
+    --    *** Failed! Exception: 'Prelude.read: no parse' (after 2 tests and 3 shrinks):
+    --    [(0.0,0.8269449168828297,Positive {getPositive = 1})]
+    --    Use --quickcheck-replay '1 TFGenR 000000A37D24830D0000000000989680000000000000E21F0000449C2963E700 0 12 4 0' to reproduce.
     , QC.testProperty "Parse lat,lng,alt triples from [ (Float, Float, Int) ]" $
         \xs -> parseTriples parseCoords $
-                (\(lat, lng, alt) -> LLA lat lng (QC.getPositive alt)) <$> xs
+                (\(lat :: Double, lng :: Double, alt) ->
+                    LLA (toRational lat) (toRational lng) (QC.getPositive alt)) <$> xs
     ]
 
 unitTests :: TestTree
@@ -137,7 +141,11 @@ parsedCoords = parseCoords coordsToParse
 triple :: [ String ] -> [ LLA ]
 triple xs =
     case xs of
-        [lat, lng, alt] ->  [ LLA (read lat :: Double) (read lng :: Double) (read alt :: Integer) ]
+        [lat, lng, alt] ->
+            let lat' = toRational (read lat :: Double)
+                lng' = toRational (read lng :: Double)
+                alt' = read alt :: Integer
+            in [ LLA lat' lng' alt' ]
         _ -> []
 
 expectedCoords :: [ LLA ]

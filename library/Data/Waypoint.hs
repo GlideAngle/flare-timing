@@ -62,20 +62,20 @@ import Text.ParserCombinators.Parsec
 import qualified Text.ParserCombinators.Parsec as P (parse)
 import Text.Parsec.Language (emptyDef)
 import Data.Functor.Identity (Identity)
-import Text.Parsec.Prim (ParsecT)
+import Text.Parsec.Prim (ParsecT, parsecMap)
 import Numeric (showFFloat)
 
 lexer :: GenTokenParser String u Identity
 lexer = P.makeTokenParser emptyDef
 
-pFloat:: ParsecT String u Identity Double
-pFloat = P.float lexer 
+pFloat:: ParsecT String u Identity Rational
+pFloat = parsecMap toRational $ P.float lexer 
 
 pNat :: ParsecT String u Identity Integer
 pNat = P.natural lexer 
 
-type Latitude = Double
-type Longitude = Double
+type Latitude = Rational
+type Longitude = Rational
 type Altitude = Integer
 type Seconds = Integer
 
@@ -155,7 +155,7 @@ parseBaroMarks s =
          Left _ -> []
          Right xs -> xs
 
-pFix :: GenParser Char st (Double, Double, Integer)
+pFix :: GenParser Char st (Rational, Rational, Integer)
 pFix = do
     latSign <- option id $ const negate <$> char '-'
     lat <- pFloat <?> "No latitude"
@@ -167,7 +167,7 @@ pFix = do
     alt <- pNat <?> "No altitude"
     return (latSign lat, lngSign lng, altSign alt)
 
-pFixes :: GenParser Char st [ (Double, Double, Integer) ]
+pFixes :: GenParser Char st [ (Rational, Rational, Integer) ]
 pFixes = do
     _ <- spaces
     xs <- pFix `sepBy` spaces <?> "No fixes"
@@ -177,15 +177,15 @@ pFixes = do
 formatFloat :: String -> String
 formatFloat s =
     -- NOTE: Avoid "0." because ...
-    --    *Main Data.Waypoint> (read "0." :: Double)
+    --    *Main Data.Waypoint> (read "0." :: Rational)
     --    *** Exception: Prelude.read: no parse
-    --    *Main Data.Waypoint> (read "0.0" :: Double)
+    --    *Main Data.Waypoint> (read "0.0" :: Rational)
     --    0.0
     case splitOn "." s of
          [ a, "" ] -> showFFloat (Just 6) (read a :: Double) "0"
          _ -> showFFloat (Just 6) (read s :: Double) "0"
 
-showCoords :: (Double, Double, Integer) -> String
+showCoords :: (Rational, Rational, Integer) -> String
 showCoords (lat, lng, alt) =
     mconcat [ formatFloat $ show lat
             , ","
