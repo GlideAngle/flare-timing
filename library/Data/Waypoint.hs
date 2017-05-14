@@ -14,9 +14,11 @@ Provides parsing the KML format for waypoint fixes.
 module Data.Waypoint
     (
     parse
-    , parseTime
-    , parseBaro
-    , parseCoord
+    , parseTimeOffsets
+    , parseBaroMarks
+    , parseCoords
+    , showCoords
+    , formatFloat
     ) where
 
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
@@ -41,14 +43,13 @@ import Text.XML.HXT.Core
     , arr
     )
 import Data.List (concatMap)
+import Data.List.Split (splitOn)
 import Text.Parsec.Token as P
-import Text.Parsec.Char (endOfLine, anyChar, spaces)
+import Text.Parsec.Char (spaces)
 import Text.ParserCombinators.Parsec
     ( GenParser
+    , (<?>)
     , char
-    , many
-    , many1
-    , manyTill
     , eof
     , option
     , sepBy
@@ -57,6 +58,7 @@ import qualified Text.ParserCombinators.Parsec as P (parse)
 import Text.Parsec.Language (emptyDef)
 import Data.Functor.Identity (Identity)
 import Text.Parsec.Prim (ParsecT)
+import Numeric (showFFloat)
 
 lexer :: GenTokenParser String u Identity
 lexer = P.makeTokenParser emptyDef
@@ -99,20 +101,20 @@ getFix =
             getChildren
             >>> hasName "SecondsFromTimeOfFirstPoint"
             /> getText
-            >>. concatMap parseTime
+            >>. concatMap parseTimeOffsets
 
         getBaro =
             getChildren
             >>> hasName "PressureAltitude"
             /> getText
-            >>. concatMap parseBaro
+            >>. concatMap parseBaroMarks
 
         getCoord =
             getChildren
             >>> hasName "LineString"
             /> hasName "coordinates"
             /> getText
-            >>. concatMap parseCoord
+            >>. concatMap parseCoords
 
 parse :: String -> IO (Either String [ Fix ])
 parse contents = do
@@ -127,43 +129,60 @@ pNats = do
     _ <- eof
     return xs
 
-parseTime :: String -> [ String ]
-parseTime s =
+parseTimeOffsets :: String -> [ String ]
+parseTimeOffsets s =
     case P.parse pNats "(stdin)" s of
          Left msg -> [ show msg ]
          Right xs -> show <$> xs
 
-parseBaro :: String -> [ String ]
-parseBaro s =
+parseBaroMarks :: String -> [ String ]
+parseBaroMarks s =
     case P.parse pNats "(stdin)" s of
          Left msg -> [ show msg ]
          Right xs -> show <$> xs
-
-pCoords :: GenParser Char st [ (Double, Double, Integer) ]
-pCoords = do
-    xs <- many pTrack
-    _ <- eof
-    return $ concat xs
 
 pFix :: GenParser Char st (Double, Double, Integer)
 pFix = do
     latSign <- option id $ const negate <$> char '-'
-    lat <- pFloat
+    lat <- pFloat <?> "No latitude"
     _ <- char ','
     lngSign <- option id $ const negate <$> char '-'
-    lng <- pFloat
+    lng <- pFloat <?> "No longitude"
     _ <- char ','
     altSign <- option id $ const negate <$> char '-'
-    alt <- pNat
+    alt <- pNat <?> "No altitude"
     return (latSign lat, lngSign lng, altSign alt)
 
-pTrack :: GenParser Char st [ (Double, Double, Integer) ]
-pTrack = do
-    _ <- manyTill anyChar endOfLine
-    many1 pFix
+pFixes :: GenParser Char st [ (Double, Double, Integer) ]
+pFixes = do
+    _ <- spaces
+    xs <- pFix `sepBy` spaces <?> "No fixes"
+    _ <- eof
+    return xs
 
-parseCoord :: String -> [ String ]
-parseCoord s =
-    case P.parse pCoords "(stdin)" s of
+formatFloat :: String -> String
+formatFloat s =
+    case splits of
+         [ a, b ] -> a ++ "." ++ rtrimZero b
+         _ -> s
+    where
+        s' = showFFloat (Just 6) (read s :: Double) ""
+        splits = splitOn "." s'
+
+        rtrimZero :: String -> String
+        rtrimZero = reverse . dropWhile (== '0') . reverse
+
+showCoords :: (Double, Double, Integer) -> String
+showCoords (lat, lng, alt) =
+    mconcat [ formatFloat $ show lat
+            , ","
+            , formatFloat $ show lng
+            , ","
+            , show alt
+            ]
+
+parseCoords :: String -> [ String ]
+parseCoords s =
+    case P.parse pFixes "(stdin)" s of
          Left msg -> [ show msg ]
-         Right xs -> show <$> xs
+         Right xs -> showCoords <$> xs

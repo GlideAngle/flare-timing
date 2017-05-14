@@ -29,6 +29,7 @@ ghc-options: -Wall
 library:
   dependencies:
   - base >=4.5 && <5
+  - split
   - parsec
   - hxt
   - path
