@@ -82,11 +82,8 @@ parseInts parser xs =
     let strings ::  [ String ]
         strings = show <$> xs
 
-        string :: String
-        string = unwords strings
-
         parsed :: [ String ]
-        parsed = parser string
+        parsed = parser $ unwords strings
 
     in parsed == strings
 
@@ -101,11 +98,8 @@ parseTriples parser xs =
                              , show alt
                              ]) <$> xs
 
-        string :: String
-        string = unwords strings
-
         parsed :: [ String ]
-        parsed = parser string
+        parsed = parser $ unwords strings
 
     in parsed == strings
 
