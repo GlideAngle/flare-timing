@@ -176,23 +176,14 @@ pFixes = do
 
 formatFloat :: String -> String
 formatFloat s =
-    case splits of
-         [ a, b ] -> a ++ "." ++ rtrimZero b
-         _ -> s
-    where
-        s' = showFFloat (Just 6) (read s :: Double) ""
-        splits = splitOn "." s'
-
-        -- NOTE: Avoid "0." because ...
-        --    *Main Data.Waypoint> (read "0." :: Double)
-        --    *** Exception: Prelude.read: no parse
-        --    *Main Data.Waypoint> (read "0.0" :: Double)
-        --    0.0
-        rtrimZero :: String -> String
-        rtrimZero zs =
-            reverse $ case dropWhile (== '0') . reverse $ zs of
-                         [] -> "0"
-                         _ -> zs
+    -- NOTE: Avoid "0." because ...
+    --    *Main Data.Waypoint> (read "0." :: Double)
+    --    *** Exception: Prelude.read: no parse
+    --    *Main Data.Waypoint> (read "0.0" :: Double)
+    --    0.0
+    case splitOn "." s of
+         [ a, "" ] -> showFFloat (Just 6) (read a :: Double) "0"
+         _ -> showFFloat (Just 6) (read s :: Double) "0"
 
 showCoords :: (Double, Double, Integer) -> String
 showCoords (lat, lng, alt) =
