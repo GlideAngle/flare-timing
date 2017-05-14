@@ -40,7 +40,7 @@ scProps = testGroup "(checked by SmallCheck)"
         \xs -> parseInts parseBaroMarks $ SC.getPositive <$> xs
 
     -- WARNING: Failing test.
-    --    there exists [(0.0,0.0,1)] such that
+    --    there exists [(0.0,0.0,1),(0.0,0.5,1)] such that
     --      condition is false
     , SC.testProperty "Parse lat,lng,alt triples from [ (Float, Float, Int) ]" $
         \xs -> parseTriples parseCoords $
@@ -56,10 +56,9 @@ qcProps = testGroup "(checked by QuickCheck)"
         \xs -> parseInts parseBaroMarks $ QC.getPositive <$> xs
 
     -- WARNING: Failing test.
-    --    *** Failed! Falsifiable (after 2 tests and 4 shrinks):
-    --    [(0.0,0.0,Positive {getPositive = 1})]
-    --    Use --quickcheck-replay '1 TFGenR 000000245D76C3BD00000000002625A0000000000000E21F000004F94AE6AF80 0 12 4 0' to reproduce.
-
+    --    *** Failed! Falsifiable (after 3 tests and 4 shrinks):
+    --    [(0.0,2.6006891159789367,Positive {getPositive = 1})]
+    --    Use --quickcheck-replay '2 TFGenR 0000001DA9A9D6AD00000000001E8480000000000000E21F00000283EC188040 0 28 5 0' to reproduce.
     , QC.testProperty "Parse lat,lng,alt triples from [ (Float, Float, Int) ]" $
         \xs -> parseTriples parseCoords $
                 (\(lat, lng, alt) -> LLA lat lng (QC.getPositive alt)) <$> xs
