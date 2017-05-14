@@ -182,14 +182,14 @@ formatFloat s =
     --    *Main Data.Waypoint> (read "0.0" :: Double)
     --    0.0
     case splitOn "." s of
-         [ a, "" ] -> showFFloat (Just 6) (read a :: Double) "0"
-         _ -> showFFloat (Just 6) (read s :: Double) "0"
+         [ a, "" ] -> showFFloat (Just 6) (read a :: Double) ""
+         _ -> showFFloat (Just 6) (read s :: Double) ""
 
 showCoords :: (Rational, Rational, Integer) -> String
 showCoords (lat, lng, alt) =
-    mconcat [ formatFloat $ show lat
+    mconcat [ formatFloat $ show (fromRational lat :: Double)
             , ","
-            , formatFloat $ show lng
+            , formatFloat $ show (fromRational lng :: Double)
             , ","
             , show alt
             ]

@@ -39,8 +39,6 @@ scProps = testGroup "(checked by SmallCheck)"
     , SC.testProperty "Parse barometric pressure from [ Int ]" $
         \xs -> parseInts parseBaroMarks $ SC.getPositive <$> xs
 
-    -- WARNING: Failing test.
-    --        Prelude.read: no parse
     , SC.testProperty "Parse lat,lng,alt triples from [ (Float, Float, Int) ]" $
         SC.changeDepth (const 4) $
         \xs -> parseTriples parseCoords $
@@ -57,9 +55,9 @@ qcProps = testGroup "(checked by QuickCheck)"
         \xs -> parseInts parseBaroMarks $ QC.getPositive <$> xs
 
     -- WARNING: Failing test.
-    --    *** Failed! Exception: 'Prelude.read: no parse' (after 2 tests and 3 shrinks):
-    --    [(0.0,0.8269449168828297,Positive {getPositive = 1})]
-    --    Use --quickcheck-replay '1 TFGenR 000000A37D24830D0000000000989680000000000000E21F0000449C2963E700 0 12 4 0' to reproduce.
+    --   *** Failed! Falsifiable (after 2 tests):
+    --   [(0.3909011791596698,0.3011360590812839,Positive {getPositive = 1})]
+    --   Use --quickcheck-replay '1 TFGenR 00000002137B7589000000000001E848000000000000E21F000002878F6B1480 0 12 4 0' to reproduce.
     , QC.testProperty "Parse lat,lng,alt triples from [ (Float, Float, Int) ]" $
         \xs -> parseTriples parseCoords $
                 (\(lat :: Double, lng :: Double, alt) ->
@@ -85,6 +83,9 @@ unitTests = testGroup "Unit tests"
 
     , HU.testCase "Parse coord (as expected)" $
         parsedCoords @?= expectedCoords
+
+    , HU.testCase "Show coords (as expected)" $
+        showCoords (0.0, 0.0, 1) @?= "0.000000,0.000000,1"
     ]
 
 parseInts :: (String -> [ Integer ]) -> [ Integer ] -> Bool
