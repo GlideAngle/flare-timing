@@ -5,16 +5,15 @@ module Main (main) where
 
 import Data.Waypoint (parseTime, parseBaro, parseCoord)
 
-import Test.Tasty
+import Test.Tasty (TestTree, testGroup, defaultMain)
 import Test.Tasty.SmallCheck as SC
 import Test.SmallCheck.Series as SC
 import Test.Tasty.QuickCheck as QC
-import Test.Tasty.HUnit
+import Test.Tasty.HUnit as HU ((@?=), testCase)
 
-import Data.List (sort)
 import Data.List.Split (split, splitOn, dropBlanks, dropDelims, oneOf, chunksOf)
 import Text.RawString.QQ (r)
-import Numeric
+import Numeric (showFFloat)
 
 main :: IO ()
 main = defaultMain tests
@@ -27,47 +26,34 @@ properties = testGroup "Properties" [scProps, qcProps]
 
 scProps :: TestTree
 scProps = testGroup "(checked by SmallCheck)"
-    [ SC.testProperty "sort == sort . reverse" $
-        \xs-> sort (xs :: [Int]) == sort (reverse xs)
-
-    -- WARNING: Failing test.
-    --    there exists [-1] such that
-    --      condition is false
-    , SC.testProperty "parse time from [ ints ]" $
+    [ SC.testProperty "parse time from [ ints ]" $
         \xs -> parseInts $ SC.getPositive <$> xs
     ]
 
 qcProps :: TestTree
 qcProps = testGroup "(checked by QuickCheck)"
-    [ QC.testProperty "sort == sort . reverse" $
-        \xs-> sort (xs :: [Int]) == sort (reverse xs)
-
-    -- WARNING: Failing test.
-    --   *** Failed! Falsifiable (after 5 tests and 4 shrinks):
-    --   [-1]
-    --   Use --quickcheck-replay '4 TFGenR 000000506988C7BD00000000004C4B40000000000000E21E0000065689DE4780 0 62 6 0' to reproduce.
-    , QC.testProperty "parse time from [ ints ]" $
+    [ QC.testProperty "parse time from [ ints ]" $
         \xs -> parseInts $ QC.getPositive <$> xs
     ]
 
 unitTests :: TestTree
 unitTests = testGroup "Unit tests"
-    [ testCase "Parse time (same length)" $
+    [ HU.testCase "Parse time (same length)" $
         length parsedTime @?= length expectedTimeStr
 
-    , testCase "Parse baro (same length)" $
+    , HU.testCase "Parse baro (same length)" $
         length parsedBaro @?= length expectedBaroStr
 
-    , testCase "Parse coord (same length)" $
+    , HU.testCase "Parse coord (same length)" $
         length parsedCoord @?= length expectedCoordStr
 
-    , testCase "Parse time (as expected)" $
+    , HU.testCase "Parse time (as expected)" $
         parsedTime @?= expectedTimeStr
 
-    , testCase "Parse baro (as expected)" $
+    , HU.testCase "Parse baro (as expected)" $
         parsedBaro @?= expectedBaroStr
 
-    , testCase "Parse coord (as expected)" $
+    , HU.testCase "Parse coord (as expected)" $
         parsedCoord @?= expectedCoordStr
     ]
 
