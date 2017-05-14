@@ -26,14 +26,27 @@ properties = testGroup "Properties" [scProps, qcProps]
 
 scProps :: TestTree
 scProps = testGroup "(checked by SmallCheck)"
-    [ SC.testProperty "parse time from [ ints ]" $
-        \xs -> parseInts $ SC.getPositive <$> xs
+    [ SC.testProperty "parse positive time offset from [ ints ]" $
+        \xs -> parseInts parseTime $ SC.getPositive <$> xs
+
+    -- WARNING: Failing test.
+    --    there exists [1] such that
+    --      condition is false
+    , SC.testProperty "parse barometric pressure from [ ints ]" $
+        \xs -> parseInts parseBaro $ SC.getPositive <$> xs
     ]
 
 qcProps :: TestTree
 qcProps = testGroup "(checked by QuickCheck)"
-    [ QC.testProperty "parse time from [ ints ]" $
-        \xs -> parseInts $ QC.getPositive <$> xs
+    [ QC.testProperty "parse positive time offsets from [ ints ]" $
+        \xs -> parseInts parseTime $ QC.getPositive <$> xs
+
+    -- WARNING: Failing test.
+    --    *** Failed! Falsifiable (after 2 tests):
+    --    [Positive {getPositive = 1}]
+    --    Use --quickcheck-replay '1 TFGenR 00000019975EBBCF00000000002625A0000000000000E21F00000200F47BA740 0 6 3 0' to reproduce.
+    , QC.testProperty "parse barometric pressure from [ ints ]" $
+        \xs -> parseInts parseBaro $ QC.getPositive <$> xs
     ]
 
 unitTests :: TestTree
@@ -57,8 +70,8 @@ unitTests = testGroup "Unit tests"
         parsedCoord @?= expectedCoordStr
     ]
 
-parseInts :: [ Int ] -> Bool
-parseInts xs =
+parseInts :: (String -> [ String ]) -> [ Int ] -> Bool
+parseInts parser xs =
     let strings ::  [ String ]
         strings = show <$> xs
 
@@ -66,7 +79,7 @@ parseInts xs =
         string = unwords strings
 
         parsed :: [ String ]
-        parsed = parseTime string
+        parsed = parser string
 
     in parsed == strings
 
