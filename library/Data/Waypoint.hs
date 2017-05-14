@@ -120,8 +120,8 @@ parse contents = do
     xs <- runX $ doc >>> getFix
     return $ Right xs
 
-pTimes :: GenParser Char st [ Integer ]
-pTimes = do
+pNats :: GenParser Char st [ Integer ]
+pNats = do
     _ <- spaces
     xs <- pNat `sepBy` spaces
     _ <- eof
@@ -129,22 +129,13 @@ pTimes = do
 
 parseTime :: String -> [ String ]
 parseTime s =
-    case P.parse pTimes "(stdin)" s of
+    case P.parse pNats "(stdin)" s of
          Left msg -> [ show msg ]
          Right xs -> show <$> xs
 
-pBaros :: GenParser Char st [ Integer ]
-pBaros = do
-    xs <- many pBaro
-    _ <- eof
-    return $ concat xs
-
-pBaro :: GenParser Char st [ Integer ]
-pBaro = manyTill anyChar endOfLine *> many1 pNat
-
 parseBaro :: String -> [ String ]
 parseBaro s =
-    case P.parse pBaros "(stdin)" s of
+    case P.parse pNats "(stdin)" s of
          Left msg -> [ show msg ]
          Right xs -> show <$> xs
 

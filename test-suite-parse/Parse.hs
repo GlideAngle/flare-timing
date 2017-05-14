@@ -26,26 +26,19 @@ properties = testGroup "Properties" [scProps, qcProps]
 
 scProps :: TestTree
 scProps = testGroup "(checked by SmallCheck)"
-    [ SC.testProperty "parse positive time offset from [ ints ]" $
+    [ SC.testProperty "Parse positive time offset from [ Int ]" $
         \xs -> parseInts parseTime $ SC.getPositive <$> xs
 
-    -- WARNING: Failing test.
-    --    there exists [1] such that
-    --      condition is false
-    , SC.testProperty "parse barometric pressure from [ ints ]" $
+    , SC.testProperty "Parse barometric pressure from [ Int ]" $
         \xs -> parseInts parseBaro $ SC.getPositive <$> xs
     ]
 
 qcProps :: TestTree
 qcProps = testGroup "(checked by QuickCheck)"
-    [ QC.testProperty "parse positive time offsets from [ ints ]" $
+    [ QC.testProperty "Parse positive time offset from [ Int ]" $
         \xs -> parseInts parseTime $ QC.getPositive <$> xs
 
-    -- WARNING: Failing test.
-    --    *** Failed! Falsifiable (after 2 tests):
-    --    [Positive {getPositive = 1}]
-    --    Use --quickcheck-replay '1 TFGenR 00000019975EBBCF00000000002625A0000000000000E21F00000200F47BA740 0 6 3 0' to reproduce.
-    , QC.testProperty "parse barometric pressure from [ ints ]" $
+    , QC.testProperty "Parse barometric pressure from [ Int ]" $
         \xs -> parseInts parseBaro $ QC.getPositive <$> xs
     ]
 
