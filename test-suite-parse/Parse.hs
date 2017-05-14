@@ -7,6 +7,7 @@ import Data.Waypoint (parseTime, parseBaro, parseCoord)
 
 import Test.Tasty
 import Test.Tasty.SmallCheck as SC
+import Test.SmallCheck.Series as SC
 import Test.Tasty.QuickCheck as QC
 import Test.Tasty.HUnit
 
@@ -32,7 +33,7 @@ scProps = testGroup "(checked by SmallCheck)"
     -- WARNING: Failing test.
     --    there exists [-1] such that
     --      condition is false
-    , SC.testProperty "parse time from [ ints ]" parseInts
+    , SC.testProperty "parse time from [ ints ]" parsePositiveInts'
     ]
 
 qcProps :: TestTree
@@ -44,7 +45,7 @@ qcProps = testGroup "(checked by QuickCheck)"
     --   *** Failed! Falsifiable (after 5 tests and 4 shrinks):
     --   [-1]
     --   Use --quickcheck-replay '4 TFGenR 000000506988C7BD00000000004C4B40000000000000E21E0000065689DE4780 0 62 6 0' to reproduce.
-    , QC.testProperty "parse time from [ ints ]" parseInts
+    , QC.testProperty "parse time from [ ints ]" parsePositiveInts
     ]
 
 unitTests :: TestTree
@@ -68,10 +69,18 @@ unitTests = testGroup "Unit tests"
         parsedCoord @?= expectedCoordStr
     ]
 
+parsePositiveInts' :: [ SC.Positive Int ] -> Bool
+parsePositiveInts' xs =
+    parseInts $ SC.getPositive <$> xs
+
+parsePositiveInts :: [ QC.Positive Int ] -> Bool
+parsePositiveInts xs =
+    parseInts $ QC.getPositive <$> xs
+
 parseInts :: [ Int ] -> Bool
 parseInts xs =
     let strings ::  [ String ]
-        strings = show <$> (xs :: [Int])
+        strings = show <$> xs
 
         string :: String
         string = unwords strings
