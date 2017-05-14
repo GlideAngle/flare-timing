@@ -31,6 +31,12 @@ scProps = testGroup "(checked by SmallCheck)"
 
     , SC.testProperty "Parse barometric pressure from [ Int ]" $
         \xs -> parseInts parseBaro $ SC.getPositive <$> xs
+
+    -- WARNING: Failing test.
+    --    there exists [(0.0,0.0,1)] such that
+    --      condition is false
+    , SC.testProperty "Parse lat,lng,alt triples from [ (Float, Float, Int) ]" $
+        \xs -> parseTriples parseCoord $ (\(lat, lng, alt) -> (lat, lng, SC.getPositive alt)) <$> xs
     ]
 
 qcProps :: TestTree
@@ -40,6 +46,14 @@ qcProps = testGroup "(checked by QuickCheck)"
 
     , QC.testProperty "Parse barometric pressure from [ Int ]" $
         \xs -> parseInts parseBaro $ QC.getPositive <$> xs
+
+    -- WARNING: Failing test.
+    --    *** Failed! Falsifiable (after 2 tests and 1 shrink):
+    --    [(0.0,0.5750920914065719,Positive {getPositive = 1})]
+    --    Use --quickcheck-replay '1 TFGenR 0000007D32389CDB0000000000989680000000000000E21F000002ED6C734B80 0 12 4 0' to reproduce.
+
+    , QC.testProperty "Parse lat,lng,alt triples from [ (Float, Float, Int) ]" $
+        \xs -> parseTriples parseCoord $ (\(lat, lng, alt) -> (lat, lng, QC.getPositive alt)) <$> xs
     ]
 
 unitTests :: TestTree
@@ -67,6 +81,25 @@ parseInts :: (String -> [ String ]) -> [ Int ] -> Bool
 parseInts parser xs =
     let strings ::  [ String ]
         strings = show <$> xs
+
+        string :: String
+        string = unwords strings
+
+        parsed :: [ String ]
+        parsed = parser string
+
+    in parsed == strings
+
+parseTriples :: (String -> [ String ]) -> [ (Double, Double, Int) ] -> Bool
+parseTriples parser xs =
+    let strings ::  [ String ]
+        strings = (\(lat, lng, alt) ->
+                      concat [ formatFloat $ show lat
+                             , ","
+                             , formatFloat $ show lng
+                             , ","
+                             , show alt
+                             ]) <$> xs
 
         string :: String
         string = unwords strings
