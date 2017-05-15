@@ -12,7 +12,18 @@ Stability   : experimental
 Provides parsing the KML format for waypoint fixes.
 -}
 module Data.Flight.Waypoint
-    ( module Data.Flight.Types
+    ( Fix
+    , LLA
+    , T.AtTime(mark)
+    , T.Lat(lat)
+    , T.Lng(lng)
+    , T.AltGps(altGps)
+    , T.AltBaro(altBaro)
+    , Seconds
+    , Latitude
+    , Longitude
+    , Altitude
+    , mkPosition
     , parse
     , parseTimeOffsets
     , parseBaroMarks
@@ -60,6 +71,13 @@ import Text.Parsec.Language (emptyDef)
 import Data.Functor.Identity (Identity)
 import Text.Parsec.Prim (ParsecT, parsecMap)
 import Numeric (showFFloat)
+import qualified Data.Flight.Types as T
+    ( AtTime(..)
+    , Lat(..)
+    , Lng(..)
+    , AltGps(..)
+    , AltBaro(..)
+    )
 import Data.Flight.Types
     ( LLA(..)
     , Fix(..)
@@ -67,6 +85,7 @@ import Data.Flight.Types
     , Latitude
     , Longitude
     , Altitude
+    , mkPosition
     )
 
 lexer :: GenTokenParser String u Identity

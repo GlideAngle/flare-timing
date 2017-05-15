@@ -3,10 +3,18 @@
 
 module Main (main) where
 
+import qualified Data.Flight.Waypoint as W
+    ( Lat(lat)
+    , Lng(lng)
+    , AltGps(altGps)
+    )
 import Data.Flight.Waypoint
-    ( LLA(..)
+    ( LLA
     , Seconds
+    , Latitude
+    , Longitude
     , Altitude
+    , mkPosition
     , parseTimeOffsets
     , parseBaroMarks
     , parseCoords
@@ -44,7 +52,7 @@ scProps = testGroup "(checked by SmallCheck)"
         SC.changeDepth (const 4) $
         \xs -> parseTriples parseCoords $
                 (\(lat :: Double, lng :: Double, alt) ->
-                    LLA (toRational lat) (toRational lng) (SC.getPositive alt)) <$> xs
+                    mkPosition (toRational lat, toRational lng, SC.getPositive alt)) <$> xs
     ]
 
 qcProps :: TestTree
@@ -62,7 +70,7 @@ qcProps = testGroup "(checked by QuickCheck)"
     , QC.testProperty "Parse lat,lng,alt triples from [ (Float, Float, Int) ]" $
         \xs -> parseTriples parseCoords $
                 (\(lat :: Double, lng :: Double, alt) ->
-                    LLA (toRational lat) (toRational lng) (QC.getPositive alt)) <$> xs
+                    mkPosition (toRational lat, toRational lng, QC.getPositive alt)) <$> xs
     ]
 
 unitTests :: TestTree
@@ -104,14 +112,17 @@ parseInts parser xs =
 
 parseTriples :: (String -> [ LLA ]) -> [ LLA ] -> Bool
 parseTriples parser xs =
-    let ys :: [ (Double, Double, Integer) ]
-        ys = roundTripCoords . (\(LLA lat lng alt) -> (lat, lng, alt)) <$> xs
+    let extractCoords :: LLA -> (Latitude, Longitude, Altitude)
+        extractCoords x = (W.lat x, W.lng x, W.altGps x)
+
+        ys :: [ (Double, Double, Integer) ]
+        ys = (roundTripCoords . extractCoords) <$> xs
 
         zs :: [ LLA ]
-        zs = (\(lat, lng, alt) -> (LLA (toRational lat) (toRational lng) alt)) <$> ys
+        zs = (\(lat, lng, alt) -> mkPosition (toRational lat, toRational lng, alt)) <$> ys
 
         strings ::  [ String ]
-        strings = showCoords . (\(LLA lat lng alt) -> (lat, lng, alt)) <$> xs
+        strings = showCoords . extractCoords <$> xs
 
         parsed :: [ LLA ]
         parsed = parser $ unwords strings
@@ -156,7 +167,7 @@ triple xs =
             let lat' = toRational (read lat :: Double)
                 lng' = toRational (read lng :: Double)
                 alt' = read alt :: Integer
-            in [ LLA lat' lng' alt' ]
+            in [ mkPosition (lat', lng', alt') ]
         _ -> []
 
 expectedCoords :: [ LLA ]
