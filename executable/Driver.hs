@@ -9,7 +9,7 @@ import System.Directory (doesFileExist, doesDirectoryExist)
 import System.FilePath (takeFileName)
 import System.FilePath.Find (FileType(..), find, always, fileType, (==?))
 import Options (DriveOptions(..))
-import Data.Waypoint (parse)
+import Data.Flight.Waypoint (parse)
 
 drive :: DriveOptions -> IO ()
 drive DriveOptions{..} = do

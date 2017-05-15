@@ -11,7 +11,7 @@ Stability   : experimental
 
 Provides parsing the KML format for waypoint fixes.
 -}
-module Data.Waypoint
+module Data.Flight.Waypoint
     ( LLA(..)
     , Fix(..)
     , Seconds

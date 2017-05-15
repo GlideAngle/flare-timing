@@ -36,7 +36,7 @@ library:
   - hxt-xpath
   source-dirs: library
   exposed-modules:
-  - Data.Waypoint
+  - Data.Flight.Waypoint
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
 name: flight-kml 

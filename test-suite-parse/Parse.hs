@@ -3,7 +3,7 @@
 
 module Main (main) where
 
-import Data.Waypoint
+import Data.Flight.Waypoint
     ( LLA(..)
     , Seconds
     , Altitude
