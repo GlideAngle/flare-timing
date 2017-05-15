@@ -12,12 +12,7 @@ Stability   : experimental
 Provides parsing the KML format for waypoint fixes.
 -}
 module Data.Flight.Waypoint
-    ( LLA(..)
-    , Fix(..)
-    , Seconds
-    , Latitude
-    , Longitude
-    , Altitude
+    ( module Data.Flight.Types
     , parse
     , parseTimeOffsets
     , parseBaroMarks
@@ -65,6 +60,14 @@ import Text.Parsec.Language (emptyDef)
 import Data.Functor.Identity (Identity)
 import Text.Parsec.Prim (ParsecT, parsecMap)
 import Numeric (showFFloat)
+import Data.Flight.Types
+    ( LLA(..)
+    , Fix(..)
+    , Seconds
+    , Latitude
+    , Longitude
+    , Altitude
+    )
 
 lexer :: GenTokenParser String u Identity
 lexer = P.makeTokenParser emptyDef
@@ -74,14 +77,6 @@ pFloat = parsecMap toRational $ P.float lexer
 
 pNat :: ParsecT String u Identity Integer
 pNat = P.natural lexer 
-
-type Latitude = Rational
-type Longitude = Rational
-type Altitude = Integer
-type Seconds = Integer
-
-data LLA = LLA Latitude Longitude Altitude deriving (Eq, Show)
-data Fix = Fix Seconds LLA Altitude deriving (Eq, Show)
 
 zipFixes :: [ Seconds ] -> [LLA] -> [ Altitude ] -> [ Fix ]
 zipFixes = zipWith3 Fix
