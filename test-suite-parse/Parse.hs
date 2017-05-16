@@ -3,11 +3,7 @@
 
 module Main (main) where
 
-import qualified Data.Flight.Waypoint as W
-    ( Lat(lat)
-    , Lng(lng)
-    , AltGps(altGps)
-    )
+import qualified Data.Flight.Waypoint as W (LatLngAlt(lat, lng, altGps))
 import Data.Flight.Waypoint
     ( LLA
     , Seconds

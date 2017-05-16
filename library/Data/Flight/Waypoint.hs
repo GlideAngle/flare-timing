@@ -14,11 +14,8 @@ Provides parsing the KML format for waypoint fixes.
 module Data.Flight.Waypoint
     ( Fix
     , LLA
-    , T.AtTime(mark)
-    , T.Lat(lat)
-    , T.Lng(lng)
-    , T.AltGps(altGps)
-    , T.AltBaro(altBaro)
+    , T.LatLngAlt(..)
+    , T.FixMark(..)
     , Seconds
     , Latitude
     , Longitude
@@ -71,13 +68,7 @@ import Text.Parsec.Language (emptyDef)
 import Data.Functor.Identity (Identity)
 import Text.Parsec.Prim (ParsecT, parsecMap)
 import Numeric (showFFloat)
-import qualified Data.Flight.Types as T
-    ( AtTime(..)
-    , Lat(..)
-    , Lng(..)
-    , AltGps(..)
-    , AltBaro(..)
-    )
+import qualified Data.Flight.Types as T (LatLngAlt(..), FixMark(..))
 import Data.Flight.Types
     ( LLA(..)
     , Fix(..)

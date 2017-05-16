@@ -1,11 +1,8 @@
 module Data.Flight.Types
     ( Fix(..)
     , LLA(..)
-    , AtTime(..)
-    , Lat(..)
-    , Lng(..)
-    , AltGps(..)
-    , AltBaro(..)
+    , LatLngAlt(..)
+    , FixMark(..)
     , Seconds
     , Latitude
     , Longitude
@@ -24,41 +21,25 @@ data Fix = Fix Seconds LLA Altitude deriving (Eq, Show)
 mkPosition :: (Latitude, Longitude, Altitude) -> LLA
 mkPosition (lat', lng', alt') = LLA lat' lng' alt'
 
-class AtTime a where
-    mark :: a -> Seconds
-
-class Lat a where
+class LatLngAlt a where
     lat :: a -> Latitude
-
-class Lng a where
     lng :: a -> Longitude
-
-class AltGps a where
     altGps :: a -> Altitude
 
-class AltBaro a where
-    altBaro :: a -> Altitude
+instance LatLngAlt LLA where
+    lat (LLA x _ _) = x
+    lng (LLA _ x _) = x
+    altGps (LLA _ _ x) = x
 
-instance AtTime Fix where
-    mark (Fix x _ _) = x
-
-instance Lat Fix where
+instance LatLngAlt Fix where
     lat (Fix _ x _) = lat x
-
-instance Lng Fix where
     lng (Fix _ x _) = lng x
-
-instance AltGps Fix where
     altGps (Fix _ x _) = altGps x
 
-instance AltBaro Fix where
+class LatLngAlt a => FixMark a where
+    mark :: a -> Seconds
+    altBaro :: a -> Altitude
+
+instance FixMark Fix where
+    mark (Fix x _ _) = x
     altBaro (Fix _ _ x) = x
-
-instance Lat LLA where
-    lat (LLA x _ _) = x
-
-instance Lng LLA where
-    lng (LLA _ x _) = x
-
-instance AltGps LLA where
-    altGps (LLA _ _ x) = x
