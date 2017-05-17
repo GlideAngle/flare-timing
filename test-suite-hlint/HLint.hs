@@ -7,7 +7,8 @@ arguments :: [String]
 arguments =
     [ "executable"
     , "library"
-    , "test-suite"
+    , "test-suite-hlint"
+    , "test-suite-score"
     ]
 
 main :: IO ()

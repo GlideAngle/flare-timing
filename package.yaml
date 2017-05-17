@@ -38,7 +38,7 @@ maintainer: phil.dejoux@blockscope.com
 name: flight-gap 
 synopsis: GAP Scoring.
 description: GAP scoring for hang gliding and paragliding competitons.
-category: Data, Parsing
+category: Flight
 license: BSD3
 license-file: LICENSE.md
 github: BlockScope/haskell-flight-gap
@@ -53,5 +53,23 @@ tests:
     - -threaded
     - -with-rtsopts=-N
     main: HLint.hs
-    source-dirs: test-suite
+    source-dirs:
+    - library
+    - test-suite-hlint
+  score:
+    dependencies:
+    - base
+    - tasty
+    - tasty-hunit
+    - tasty-quickcheck
+    - tasty-smallcheck
+    - smallcheck
+    ghc-options:
+    - -rtsopts
+    - -threaded
+    - -with-rtsopts=-N
+    main: Score.hs
+    source-dirs:
+    - library
+    - test-suite-score
 version: '0.1.0'

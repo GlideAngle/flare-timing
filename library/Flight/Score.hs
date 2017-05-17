@@ -1,4 +1,7 @@
-{-# LANGUAGE FlexibleInstances #-}
+{-# OPTIONS_GHC -fno-warn-unused-binds #-}
+{-# lANGUAGE PatternSynonyms #-}
+{-# lANGUAGE ViewPatterns #-}
+{-# lANGUAGE ScopedTypeVariables #-}
 
 {-|
 Module      : Flight.Score
@@ -10,26 +13,14 @@ Stability   : experimental
 Provides GAP scoring for hang gliding and paragliding competitons.
 -}
 module Flight.Score
-    ( MinimumDist
-    , NominalDist
-    , NominalTime
-    , NominalGoal
-    , DayQuality
-    , DistancePoint
-    , SpeedPoint
-    , DeparturePoint
-    , ArrivalPoint
-    , Seconds
-    , Metres
-    , FixDistance
-    , PointsAllocation
-    , distancePoints
-    , speedPoints
-    , departurePoints
-    , arrivalPoints
-    , allocatePoints
+    ( NominalLaunch
+    , LaunchValidity
+    , launchValidity
     ) where
 
+import Data.Ratio (numerator, denominator)
+
+type NominalLaunch = Rational
 type MinimumDist = Int
 type NominalDist = Int
 type NominalTime = Int
@@ -56,8 +47,15 @@ data PointsAllocation =
                      , arrival :: Rational
                      }
 
-launchValidity :: Rational -> LaunchValidity
-launchValidity = undefined
+-- | SEE: http://stackoverflow.com/questions/33325370/why-cant-i-pattern-match-against-a-ratio-in-haskell
+pattern num :% denom <- ((\x -> (numerator x, denominator x)) -> (num, denom))
+
+launchValidity :: NominalLaunch -> Rational -> LaunchValidity
+launchValidity n (flying :% present) =
+    toRational $ 0.027 * lvr + 2.917 * lvr * lvr + 1.944 * lvr * lvr * lvr
+    where
+        lvr :: Double
+        lvr = min 1.0 $ fromIntegral flying / (fromIntegral present * fromRational n)
 
 timeValidity :: NominalTime -> Int -> TimeValidity
 timeValidity = undefined
