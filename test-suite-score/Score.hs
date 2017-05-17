@@ -21,16 +21,13 @@ properties = testGroup "Properties" [scProps, qcProps]
 
 scProps :: TestTree
 scProps = testGroup "(checked by SmallCheck)"
-    [ SC.testProperty "Launch validity is in the range of [0, 1]" $
-        \x y -> let lv = launchValidity (SC.getPositive x) (SC.getPositive y)
-                in lv >= 0 % 1 && lv <= 1 % 1
+    [ SC.testProperty "Launch validity is in the range of [0, 1]" scLaunchValidity
     ]
+
 
 qcProps :: TestTree
 qcProps = testGroup "(checked by QuickCheck)"
-    [ QC.testProperty "Launch validity is in the range of [0, 1]" $
-        \x y -> let lv = launchValidity (QC.getPositive x) (QC.getPositive y)
-                in lv >= 0 % 1 && lv <= 1 % 1
+    [ QC.testProperty "Launch validity is in the range of [0, 1]" qcLaunchValidity
     ]
 
 unitTests :: TestTree
@@ -53,3 +50,37 @@ unitTests = testGroup "Unit tests"
         let one = 1 % 1
         in launchValidity one one @?= one
     ]
+
+scLaunchValidity
+    :: Monad m => SC.NonNegative Integer
+    -> SC.Positive Integer
+    -> SC.NonNegative Integer
+    -> SC.Positive Integer
+    -> SC.Property m
+scLaunchValidity
+    (SC.NonNegative nx)
+    (SC.Positive dx)
+    (SC.NonNegative ny)
+    (SC.Positive dy) =
+    nx <= dx && ny <= dy SC.==>
+    let nominalLaunch = nx % dx
+        fractionLaunching = ny % dy
+        lv = launchValidity nominalLaunch fractionLaunching
+    in lv >= (0 % 1) && lv <= (1 % 1)
+
+qcLaunchValidity
+    :: QC.NonNegative Integer
+    -> QC.Positive Integer
+    -> QC.NonNegative Integer
+    -> QC.Positive Integer
+    -> QC.Property
+qcLaunchValidity
+    (QC.NonNegative nx)
+    (QC.Positive dx)
+    (QC.NonNegative ny)
+    (QC.Positive dy) =
+    nx <= dx && ny <= dy QC.==>
+    let nominalLaunch = nx % dx
+        fractionLaunching = ny % dy
+        lv = launchValidity nominalLaunch fractionLaunching
+    in lv >= (0 % 1) && lv <= (1 % 1)
