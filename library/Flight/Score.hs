@@ -48,7 +48,7 @@ data PointsAllocation =
                      }
 
 -- | SEE: http://stackoverflow.com/questions/33325370/why-cant-i-pattern-match-against-a-ratio-in-haskell
-pattern num :% denom <- ((\x -> (numerator x, denominator x)) -> (num, denom))
+pattern num :% denom <- (\x -> (numerator x, denominator x) -> (num, denom))
 
 launchValidity :: NominalLaunch -> Rational -> LaunchValidity
 launchValidity n (flying :% present) =

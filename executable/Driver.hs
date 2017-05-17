@@ -23,7 +23,7 @@ drive DriveOptions{..} = do
         else
             putStrLn "Couldn't find any IGC input files."
     where
-        go path = do
+        go path =
             putStrLn $ takeFileName path
 
 driverMain :: IO ()
