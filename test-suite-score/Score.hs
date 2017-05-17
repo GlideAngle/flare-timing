@@ -46,28 +46,22 @@ unitTests = testGroup "Unit tests"
     --  expected: 0 % 1
     --   but got: (-269653970229347386159395778618353710042696546841345985910145121736599013708251444699062715983611304031680170819807090036488184653221624933739271145959211186566651 840137298227914453329401869141179179624428127508653257226023513694322210869665811240855745025766026879447359920868907719574457253034494436336205824) % 1
     [ HU.testCase "Launch validity 0 0 == 0, (nominal actual)" $
-        let zero = 0 % 1
-        in launchValidity zero zero @?= zero
+        launchValidity (0 % 1) (0 % 1) @?= (0 % 1)
 
     , HU.testCase "Launch validity 1 0 == 0, (nominal actual)" $
-        let zero = 0 % 1
-            one = 1 % 1
-        in launchValidity one zero @?= zero
+        launchValidity (1 % 1) (0 % 1) @?= (0 % 1)
 
     -- WARNING: Failing test.
     --  expected: 0 % 1
     --   but got: 2751699372323373 % 562949953421312
     , HU.testCase "Launch validity 0 1 == 0, (nominal actual)" $
-        let zero = 0 % 1
-            one = 1 % 1
-        in launchValidity zero one @?= zero
+        launchValidity (0 % 1) (1 % 1) @?= (0 % 1)
 
     -- WARNING: Failing test.
     --  expected: 1 % 1
     --   but got: 2751699372323373 % 562949953421312
     , HU.testCase "Launch validity 1 1 == 1, (nominal actual)" $
-        let one = 1 % 1
-        in launchValidity one one @?= one
+        launchValidity (1 % 1) (1 % 1) @?= (1 % 1)
     ]
 
 scLaunchValidity
