@@ -16,7 +16,8 @@ module Flight.Validity
     , taskValidity
     ) where
 
-import Data.Ratio ((%), numerator, denominator)
+import Data.Ratio ((%))
+import Flight.Ratio (pattern (:%))
 
 type NominalLaunch = Rational
 type MinimumDistance = Metres
@@ -35,9 +36,6 @@ type TaskValidity = Rational
 
 type Seconds = Integer
 type Metres = Integer
-
--- | SEE: http://stackoverflow.com/questions/33325370/why-cant-i-pattern-match-against-a-ratio-in-haskell
-pattern num :% denom <- (\x -> (numerator x, denominator x) -> (num, denom))
 
 launchValidity :: NominalLaunch -> Rational -> LaunchValidity
 launchValidity (_ :% _) (0 :% _) = 0 % 1
