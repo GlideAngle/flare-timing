@@ -16,11 +16,13 @@ module Flight.Score
     ( NominalLaunch
     , NominalTime
     , NominalDistance
+    , NominalGoal
     , LaunchValidity
     , TimeValidity
     , Seconds
     , Metres
     , launchValidity
+    , distanceValidity
     , timeValidity
     ) where
 
@@ -30,7 +32,7 @@ type NominalLaunch = Rational
 type MinimumDistance = Integer
 type NominalDistance = Integer
 type NominalTime = Integer
-type NominalGoal = Integer
+type NominalGoal = Rational
 
 type LaunchValidity = Rational
 type TimeValidity = Rational
@@ -86,8 +88,21 @@ timeValidity _ 0 Nothing 0 = tvrValidity (0 % 1)
 timeValidity _ 0 Nothing _ = tvrValidity (1 % 1)
 timeValidity _ nd Nothing d = tvrValidity $ min (d % nd) (1 % 1)
 
-distanceValidity :: NominalDistance -> [Metres] -> DistanceValidity
-distanceValidity = undefined
+distanceValidity :: NominalGoal
+                 -> NominalDistance
+                 -> Integer
+                 -> Metres
+                 -> Metres
+                 -> Metres
+                 -> DistanceValidity
+distanceValidity ng nd nFly dMin dMax dSum =
+    min 1 dvr
+    where
+        dvr = (dSum % 1) * (areaDenominator % (nFly * areaNumerator))
+        (areaNumerator :% areaDenominator) =
+            (ng + (1 % 1) * ((nd - dMin) % 1))
+            +
+            (max 0 $ ng * ((dMax - nd) % 1))
 
 dayQuality :: LaunchValidity -> TimeValidity -> DistanceValidity -> DayQuality
 dayQuality = undefined

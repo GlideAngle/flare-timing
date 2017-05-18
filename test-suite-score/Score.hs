@@ -24,7 +24,10 @@ units :: TestTree
 units = testGroup "Units" [validityUnits]
 
 validityUnits :: TestTree
-validityUnits = testGroup "Validities" [launchValidityUnits, timeValidityUnits]
+validityUnits = testGroup "Validities" [ launchValidityUnits
+                                       , distanceValidityUnits
+                                       , timeValidityUnits
+                                       ]
 
 scProps :: TestTree
 scProps = testGroup "(checked by SmallCheck)"
@@ -37,13 +40,6 @@ qcProps :: TestTree
 qcProps = testGroup "(checked by QuickCheck)"
     [ QC.testProperty "Launch validity is in the range of [0, 1]" qcLaunchValidity
 
-    -- WARNING: Failing test.
-    --  *** Failed! Falsifiable (after 11 tests and 2 shrinks):
-    --  NonNegative {getNonNegative = 0}
-    --  NonNegative {getNonNegative = 10}
-    --  Just (NonNegative {getNonNegative = 1})
-    --  NonNegative {getNonNegative = 0}
-    --  Use --quickcheck-replay '10 TFGenR 0000007A861965730000000000989680000000000000E22300000188E6D68B00 0 4094 12 0' to reproduce.
     , QC.testProperty "Time validity is in the range of [0, 1]" qcTimeValidity
     ]
 
@@ -60,6 +56,12 @@ launchValidityUnits = testGroup "Launch validity unit tests"
 
     , HU.testCase "Launch validity 1 1 == 1, (nominal actual)" $
         FS.launchValidity (1 % 1) (1 % 1) @?= (1 % 1)
+    ]
+
+distanceValidityUnits :: TestTree
+distanceValidityUnits = testGroup "distance validity unit tests"
+    [ HU.testCase "distance validity 0 0 0 0 0 0 == 0" $
+        FS.distanceValidity (0 % 1) 0 0 0 0 0 @?= (0 % 1)
     ]
 
 timeValidityUnits :: TestTree
