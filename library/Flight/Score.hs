@@ -54,8 +54,11 @@ launchValidity :: NominalLaunch -> Rational -> LaunchValidity
 launchValidity n (flying :% present) =
     toRational $ 0.027 * lvr + 2.917 * lvr * lvr + 1.944 * lvr * lvr * lvr
     where
+        lvr' :: Double
+        lvr' = fromIntegral flying / (fromIntegral present * fromRational n)
+
         lvr :: Double
-        lvr = min 1.0 $ fromIntegral flying / (fromIntegral present * fromRational n)
+        lvr = min lvr' 1
 
 timeValidity :: NominalTime -> Int -> TimeValidity
 timeValidity = undefined
