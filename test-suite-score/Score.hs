@@ -1,6 +1,6 @@
 module Main (main) where
 
-import Flight.Score (launchValidity)
+import qualified Flight.Score as FS
 
 import Test.Tasty (TestTree, testGroup, defaultMain)
 import Test.Tasty.SmallCheck as SC
@@ -32,17 +32,24 @@ qcProps = testGroup "(checked by QuickCheck)"
 unitTests :: TestTree
 unitTests = testGroup "Unit tests"
     [ HU.testCase "Launch validity 0 0 == 0, (nominal actual)" $
-        launchValidity (0 % 1) (0 % 1) @?= (0 % 1)
+        FS.launchValidity (0 % 1) (0 % 1) @?= (0 % 1)
 
     , HU.testCase "Launch validity 1 0 == 0, (nominal actual)" $
-        launchValidity (1 % 1) (0 % 1) @?= (0 % 1)
+        FS.launchValidity (1 % 1) (0 % 1) @?= (0 % 1)
 
     , HU.testCase "Launch validity 0 1 == 1, (nominal actual)" $
-        launchValidity (0 % 1) (1 % 1) @?= (1 % 1)
+        FS.launchValidity (0 % 1) (1 % 1) @?= (1 % 1)
 
     , HU.testCase "Launch validity 1 1 == 1, (nominal actual)" $
-        launchValidity (1 % 1) (1 % 1) @?= (1 % 1)
+        FS.launchValidity (1 % 1) (1 % 1) @?= (1 % 1)
     ]
+
+launchValidity :: Integer -> Integer -> Integer -> Integer -> Bool
+launchValidity nx dx ny dy =
+    let nominalLaunch = nx % dx
+        fractionLaunching = ny % dy
+        lv = FS.launchValidity nominalLaunch fractionLaunching
+    in lv >= (0 % 1) && lv <= (1 % 1)
 
 scLaunchValidity
     :: Monad m => SC.NonNegative Integer
@@ -55,11 +62,7 @@ scLaunchValidity
     (SC.Positive dx)
     (SC.NonNegative ny)
     (SC.Positive dy) =
-    nx <= dx && ny <= dy SC.==>
-    let nominalLaunch = nx % dx
-        fractionLaunching = ny % dy
-        lv = launchValidity nominalLaunch fractionLaunching
-    in lv >= (0 % 1) && lv <= (1 % 1)
+    nx <= dx && ny <= dy SC.==> launchValidity nx dx ny dy
 
 qcLaunchValidity
     :: QC.NonNegative Integer
@@ -72,8 +75,4 @@ qcLaunchValidity
     (QC.Positive dx)
     (QC.NonNegative ny)
     (QC.Positive dy) =
-    nx <= dx && ny <= dy QC.==>
-    let nominalLaunch = nx % dx
-        fractionLaunching = ny % dy
-        lv = launchValidity nominalLaunch fractionLaunching
-    in lv >= (0 % 1) && lv <= (1 % 1)
+    nx <= dx && ny <= dy QC.==> launchValidity nx dx ny dy
