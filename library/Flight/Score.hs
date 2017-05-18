@@ -51,16 +51,13 @@ data PointsAllocation =
 pattern num :% denom <- (\x -> (numerator x, denominator x) -> (num, denom))
 
 launchValidity :: NominalLaunch -> Rational -> LaunchValidity
-launchValidity (0 :% _) _ =
-    1 % 1
-launchValidity n (flying :% present) =
-    toRational $ 0.027 * lvr + 2.917 * lvr * lvr + 1.944 * lvr * lvr * lvr
+launchValidity (_ :% _) (0 :% _) = 0 % 1
+launchValidity (0 :% _) (_ :% _) = 1 % 1
+launchValidity (n :% d) (flying :% present) =
+    (27 % 1000) * lvr + (2917 % 1000) * lvr * lvr - (1944 % 1000) * lvr * lvr * lvr
     where
-        lvr' :: Double
-        lvr' = fromIntegral flying / (fromIntegral present * fromRational n)
-
-        lvr :: Double
-        lvr = min lvr' 1
+        lvr' = (flying * d) % (present * n)
+        lvr = min lvr' (1 % 1)
 
 timeValidity :: NominalTime -> Int -> TimeValidity
 timeValidity = undefined

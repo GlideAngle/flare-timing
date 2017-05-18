@@ -21,45 +21,25 @@ properties = testGroup "Properties" [scProps, qcProps]
 
 scProps :: TestTree
 scProps = testGroup "(checked by SmallCheck)"
-    -- WARNING: Failing test.
-    --    there exist 1 1 1 1 such that
-    --      condition is false
     [ SC.testProperty "Launch validity is in the range of [0, 1]" scLaunchValidity
     ]
 
-
 qcProps :: TestTree
 qcProps = testGroup "(checked by QuickCheck)"
-    -- WARNING: Failing test.
-    --    *** Failed! Falsifiable (after 1 test):
-    --    NonNegative {getNonNegative = 1}
-    --    Positive {getPositive = 1}
-    --    NonNegative {getNonNegative = 1}
-    --    Positive {getPositive = 1}
-    --    Use --quickcheck-replay '0 TFGenR 0000001A6452F5810000000000989680000000000000E2230000016828EF54C0 0 1 1 0' to reproduce
     [ QC.testProperty "Launch validity is in the range of [0, 1]" qcLaunchValidity
     ]
 
 unitTests :: TestTree
 unitTests = testGroup "Unit tests"
-    -- WARNING: Failing test.
-    --  expected: 0 % 1
-    --   but got: 1 % 1
     [ HU.testCase "Launch validity 0 0 == 0, (nominal actual)" $
         launchValidity (0 % 1) (0 % 1) @?= (0 % 1)
 
     , HU.testCase "Launch validity 1 0 == 0, (nominal actual)" $
         launchValidity (1 % 1) (0 % 1) @?= (0 % 1)
 
-    -- WARNING: Failing test.
-    --  expected: 0 % 1
-    --   but got: 1 % 1
-    , HU.testCase "Launch validity 0 1 == 0, (nominal actual)" $
-        launchValidity (0 % 1) (1 % 1) @?= (0 % 1)
+    , HU.testCase "Launch validity 0 1 == 1, (nominal actual)" $
+        launchValidity (0 % 1) (1 % 1) @?= (1 % 1)
 
-    -- WARNING: Failing test.
-    --  expected: 1 % 1
-    --   but got: 2751699372323373 % 562949953421312
     , HU.testCase "Launch validity 1 1 == 1, (nominal actual)" $
         launchValidity (1 % 1) (1 % 1) @?= (1 % 1)
     ]
