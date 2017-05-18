@@ -88,6 +88,10 @@ timeValidity _ 0 Nothing 0 = tvrValidity (0 % 1)
 timeValidity _ 0 Nothing _ = tvrValidity (1 % 1)
 timeValidity _ nd Nothing d = tvrValidity $ min (d % nd) (1 % 1)
 
+dvr :: Rational -> Integer -> Metres -> Rational
+dvr (0 :% _) _ _ = 1 % 1
+dvr (n :% d) nFly dSum = (dSum % 1) * (d % (nFly * n))
+
 distanceValidity :: NominalGoal
                  -> NominalDistance
                  -> Integer
@@ -97,11 +101,15 @@ distanceValidity :: NominalGoal
                  -> DistanceValidity
 distanceValidity _ _ 0 _ _ _ = 0
 distanceValidity _ _ _ _ 0 _ = 0
-distanceValidity ng nd nFly dMin dMax dSum =
-    min 1 dvr
+distanceValidity (0 :% _) nd nFly dMin dMax dSum =
+    min 1 $ dvr area nFly dSum
     where
-        dvr = (dSum % 1) * (areaDenominator % (nFly * areaNumerator))
-        (areaNumerator :% areaDenominator) = num % (2 * den)
+        area = num % (2 * den)
+        (num :% den) = (min 0 $ nd - dMin) % 1
+distanceValidity ng nd nFly dMin dMax dSum =
+    min 1 $ dvr area nFly dSum
+    where
+        area = num % (2 * den)
         (num :% den) =
             (ng + (1 % 1) * ((nd - dMin) % 1)) + max 0 (ng * ((dMax - nd) % 1))
 
