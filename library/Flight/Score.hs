@@ -18,7 +18,7 @@ module Flight.Score
     , launchValidity
     ) where
 
-import Data.Ratio (numerator, denominator)
+import Data.Ratio ((%), numerator, denominator)
 
 type NominalLaunch = Rational
 type MinimumDist = Int
@@ -51,6 +51,8 @@ data PointsAllocation =
 pattern num :% denom <- (\x -> (numerator x, denominator x) -> (num, denom))
 
 launchValidity :: NominalLaunch -> Rational -> LaunchValidity
+launchValidity (0 :% _) _ =
+    1 % 1
 launchValidity n (flying :% present) =
     toRational $ 0.027 * lvr + 2.917 * lvr * lvr + 1.944 * lvr * lvr * lvr
     where
