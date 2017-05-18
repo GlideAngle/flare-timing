@@ -21,10 +21,10 @@ module Flight.Score
 import Data.Ratio ((%), numerator, denominator)
 
 type NominalLaunch = Rational
-type MinimumDist = Int
-type NominalDist = Int
-type NominalTime = Int
-type NominalGoal = Int
+type MinimumDistance = Integer
+type NominalDistance = Integer
+type NominalTime = Integer
+type NominalGoal = Integer
 
 type LaunchValidity = Rational
 type TimeValidity = Rational
@@ -36,8 +36,8 @@ type SpeedPoint = Rational
 type DeparturePoint = Rational
 type ArrivalPoint = Rational
 
-type Seconds = Int
-type Metres = Int
+type Seconds = Integer
+type Metres = Integer
 
 data FixDistance = FixDistance Seconds Metres
 data PointsAllocation =
@@ -54,15 +54,24 @@ launchValidity :: NominalLaunch -> Rational -> LaunchValidity
 launchValidity (_ :% _) (0 :% _) = 0 % 1
 launchValidity (0 :% _) (_ :% _) = 1 % 1
 launchValidity (n :% d) (flying :% present) =
-    (27 % 1000) * lvr + (2917 % 1000) * lvr * lvr - (1944 % 1000) * lvr * lvr * lvr
+    (27 % 1000) * lvr
+    + (2917 % 1000) * lvr * lvr
+    - (1944 % 1000) * lvr * lvr * lvr
     where
         lvr' = (flying * d) % (present * n)
         lvr = min lvr' (1 % 1)
 
-timeValidity :: NominalTime -> Int -> TimeValidity
-timeValidity = undefined
+tvrValidity :: Rational -> TimeValidity
+tvrValidity tvr =
+    (- 271 % 1000)
+    + (2912 % 1000) * tvr
+    - (2098 % 1000) * tvr * tvr
+    + (457 % 1000) * tvr * tvr * tvr
+timeValidity :: NominalTime -> NominalDistance -> Maybe Seconds -> Metres -> TimeValidity
+timeValidity nt _ (Just t) _ = tvrValidity $ min (t % nt) (1 % 1)
+timeValidity _ nd Nothing d = tvrValidity $ min (d % nd) (1 % 1)
 
-distanceValidity :: NominalDist -> [Metres] -> DistanceValidity
+distanceValidity :: NominalDistance -> [Metres] -> DistanceValidity
 distanceValidity = undefined
 
 dayQuality :: LaunchValidity -> TimeValidity -> DistanceValidity -> DayQuality
