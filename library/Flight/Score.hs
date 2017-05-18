@@ -37,7 +37,9 @@ type NominalGoal = Rational
 type LaunchValidity = Rational
 type TimeValidity = Rational
 type DistanceValidity = Rational
-type DayQuality = Rational
+
+-- | Also called Day Quality.
+type TaskValidity = Rational
 
 type DistancePoint = Rational
 type SpeedPoint = Rational
@@ -119,8 +121,8 @@ distanceValidity ng nd nFly dMin dMax dSum
         (num :% den) =
             (ng + (1 % 1) * ((nd - dMin) % 1)) + max 0 (ng * ((dMax - nd) % 1))
 
-dayQuality :: LaunchValidity -> TimeValidity -> DistanceValidity -> DayQuality
-dayQuality = undefined
+taskValidity :: LaunchValidity -> TimeValidity -> DistanceValidity -> TaskValidity
+taskValidity l t d = l * t * d
 
 distancePoints :: [Metres] -> [DistancePoint]
 distancePoints = undefined
