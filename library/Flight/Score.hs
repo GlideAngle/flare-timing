@@ -101,7 +101,8 @@ distanceValidity ng nd nFly dMin dMax dSum =
     min 1 dvr
     where
         dvr = (dSum % 1) * (areaDenominator % (nFly * areaNumerator))
-        (areaNumerator :% areaDenominator) =
+        (areaNumerator :% areaDenominator) = num % (2 * den)
+        (num :% den) =
             (ng + (1 % 1) * ((nd - dMin) % 1))
             +
             (max 0 $ ng * ((dMax - nd) % 1))

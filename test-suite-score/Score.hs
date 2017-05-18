@@ -45,16 +45,16 @@ qcProps = testGroup "(checked by QuickCheck)"
 
 launchValidityUnits :: TestTree
 launchValidityUnits = testGroup "Launch validity unit tests"
-    [ HU.testCase "Launch validity 0 0 == 0, (nominal actual)" $
+    [ HU.testCase "Launch validity 0 0 == 0" $
         FS.launchValidity (0 % 1) (0 % 1) @?= (0 % 1)
 
-    , HU.testCase "Launch validity 1 0 == 0, (nominal actual)" $
+    , HU.testCase "Launch validity 1 0 == 0" $
         FS.launchValidity (1 % 1) (0 % 1) @?= (0 % 1)
 
-    , HU.testCase "Launch validity 0 1 == 1, (nominal actual)" $
+    , HU.testCase "Launch validity 0 1 == 1" $
         FS.launchValidity (0 % 1) (1 % 1) @?= (1 % 1)
 
-    , HU.testCase "Launch validity 1 1 == 1, (nominal actual)" $
+    , HU.testCase "Launch validity 1 1 == 1" $
         FS.launchValidity (1 % 1) (1 % 1) @?= (1 % 1)
     ]
 
@@ -72,11 +72,8 @@ distanceValidityUnits = testGroup "distance validity unit tests"
     , HU.testCase "distance validity 1 1 0 1 1 1 == 0" $
         FS.distanceValidity (1 % 1) 1 0 1 1 1 @?= (0 % 1)
 
-    -- WARNING: Failing test.
-    --  expected: 0 % 1
-    --   but got: 1 % 2
-    , HU.testCase "distance validity 1 1 1 0 1 1 == 0" $
-        FS.distanceValidity (1 % 1) 1 1 0 1 1 @?= (0 % 1)
+    , HU.testCase "distance validity 1 1 1 0 1 1 == 1" $
+        FS.distanceValidity (1 % 1) 1 1 0 1 1 @?= (1 % 1)
 
     , HU.testCase "distance validity 1 1 1 1 0 1 == 0" $
         FS.distanceValidity (1 % 1) 1 1 1 0 1 @?= (0 % 1)
