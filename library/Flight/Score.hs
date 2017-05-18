@@ -111,7 +111,7 @@ distanceValidity (0 :% _) nd nFly dMin _ dSum
     min 1 $ dvr area nFly dSum
     where
         area = num % (2 * den)
-        (num :% den) = (min 0 $ nd - dMin) % 1
+        (num :% den) = min 0 (nd - dMin) % 1
 distanceValidity ng nd nFly dMin dMax dSum
     | nd < dMin = 1 % 1
     | otherwise =
