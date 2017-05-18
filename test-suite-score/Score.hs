@@ -1,6 +1,7 @@
 module Main (main) where
 
 import qualified Flight.Score as FS
+import Flight.Score (NominalTime, NominalDistance, Seconds, Metres)
 
 import Test.Tasty (TestTree, testGroup, defaultMain)
 import Test.Tasty.SmallCheck as SC
@@ -14,23 +15,42 @@ main :: IO ()
 main = defaultMain tests
 
 tests :: TestTree
-tests = testGroup "Tests" [properties, unitTests]
+tests = testGroup "Tests" [properties, units]
 
 properties :: TestTree
 properties = testGroup "Properties" [scProps, qcProps]
 
+units :: TestTree
+units = testGroup "Units" [validityUnits]
+
+validityUnits :: TestTree
+validityUnits = testGroup "Validities" [launchValidityUnits, timeValidityUnits]
+
 scProps :: TestTree
 scProps = testGroup "(checked by SmallCheck)"
     [ SC.testProperty "Launch validity is in the range of [0, 1]" scLaunchValidity
+
+    -- WARNING: Failing test.
+    -- Ratio has zero denominator
+    , SC.testProperty "Time validity is in the range of [0, 1]" timeValidity
     ]
 
 qcProps :: TestTree
 qcProps = testGroup "(checked by QuickCheck)"
     [ QC.testProperty "Launch validity is in the range of [0, 1]" qcLaunchValidity
+
+    -- WARNING: Failing test.
+    --    *** Failed! Exception: 'Ratio has zero denominator' (after 1 test):
+    --    0
+    --    0
+    --    Nothing
+    --    0
+    --    Use --quickcheck-replay '0 TFGenR 0000001D9941ED4100000000002625A0000000000000E223000001977420DC00 0 2 2 0' to reproduce.
+    , QC.testProperty "Time validity is in the range of [0, 1]" timeValidity
     ]
 
-unitTests :: TestTree
-unitTests = testGroup "Unit tests"
+launchValidityUnits :: TestTree
+launchValidityUnits = testGroup "Launch validity unit tests"
     [ HU.testCase "Launch validity 0 0 == 0, (nominal actual)" $
         FS.launchValidity (0 % 1) (0 % 1) @?= (0 % 1)
 
@@ -42,6 +62,32 @@ unitTests = testGroup "Unit tests"
 
     , HU.testCase "Launch validity 1 1 == 1, (nominal actual)" $
         FS.launchValidity (1 % 1) (1 % 1) @?= (1 % 1)
+    ]
+
+timeValidityUnits :: TestTree
+timeValidityUnits = testGroup "Time validity unit tests"
+
+    -- WARNING: Failing test.
+    -- Exception: Ratio has zero denominator
+    [ HU.testCase "time validity 0 0 (Just 0) 0 == 0" $
+        FS.timeValidity 0 0 (Just 0) 0 @?= (0 % 1)
+
+    , HU.testCase "time validity 1 0 (Just 1) 0 == 1" $
+        FS.timeValidity 1 0 (Just 1) 0 @?= (1 % 1)
+
+    , HU.testCase "time validity 1 1 (Just 1) 1 == 1" $
+        FS.timeValidity 1 1 (Just 1) 1 @?= (1 % 1)
+
+    -- WARNING: Failing test.
+    -- Exception: Ratio has zero denominator
+    , HU.testCase "time validity 0 0 Nothing 0 == 0" $
+        FS.timeValidity 0 0 Nothing 0 @?= (0 % 1)
+
+    , HU.testCase "time validity 0 1 Nothing 1 == 1" $
+        FS.timeValidity 0 1 Nothing 1 @?= (1 % 1)
+
+    , HU.testCase "time validity 1 1 Nothing 1 == 1" $
+        FS.timeValidity 1 1 Nothing 1 @?= (1 % 1)
     ]
 
 launchValidity :: Integer -> Integer -> Integer -> Integer -> Bool
@@ -76,3 +122,8 @@ qcLaunchValidity
     (QC.NonNegative ny)
     (QC.Positive dy) =
     nx <= dx && ny <= dy QC.==> launchValidity nx dx ny dy
+
+timeValidity :: NominalTime -> NominalDistance -> Maybe Seconds -> Metres -> Bool
+timeValidity nt nd t d =
+    let tv = FS.timeValidity nt nd t d
+    in tv >= (0 % 1) && tv <= (1 % 1)

@@ -14,8 +14,14 @@ Provides GAP scoring for hang gliding and paragliding competitons.
 -}
 module Flight.Score
     ( NominalLaunch
+    , NominalTime
+    , NominalDistance
     , LaunchValidity
+    , TimeValidity
+    , Seconds
+    , Metres
     , launchValidity
+    , timeValidity
     ) where
 
 import Data.Ratio ((%), numerator, denominator)
