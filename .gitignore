@@ -2,4 +2,3 @@
 .stack-work
 __shake-build
 *.cabal
-*.swn
