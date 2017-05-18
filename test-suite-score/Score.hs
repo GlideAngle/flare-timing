@@ -35,7 +35,7 @@ scProps = testGroup "(checked by SmallCheck)"
 
     -- WARNING: Failing test.
     --  Ratio has zero denominator
-    , SC.testProperty "Distance validity is in the range of [0, 1]" distanceValidity
+    , SC.testProperty "Distance validity is in the range of [0, 1]" scDistanceValidity
 
     , SC.testProperty "Time validity is in the range of [0, 1]" scTimeValidity
     ]
@@ -45,16 +45,15 @@ qcProps = testGroup "(checked by QuickCheck)"
     [ QC.testProperty "Launch validity is in the range of [0, 1]" qcLaunchValidity
 
     -- WARNING: Failing test.
-    --  *** Failed! Exception: 'Ratio has zero denominator' (after 4 tests and 8 shrinks):
-    --  0 % 1
-    --  0
-    --  -1
-    --  0
-    --  1
-    --  0
-    --  Use --quickcheck-replay '3 TFGenR 0000000DCFFF4D4D00000000000F4240000000000000E223000004C2B90FFFC0 0 30 5 0' to reproduce.
-
-    , QC.testProperty "Distance validity is in the range of [0, 1]" distanceValidity
+    --  *** Failed! Falsifiable (after 7 tests and 9 shrinks):
+    --  NonNegative {getNonNegative = 170405842718 % 491691196053}
+    --  NonNegative {getNonNegative = 0}
+    --  NonNegative {getNonNegative = 1}
+    --  NonNegative {getNonNegative = 2}
+    --  NonNegative {getNonNegative = 1}
+    --  NonNegative {getNonNegative = 1}
+    --  Use --quickcheck-replay '6 TFGenR 000000920EAC78190000000000989680000000000000E223000001977420DC00 0 254 8 0' to reproduce.
+    , QC.testProperty "Distance validity is in the range of [0, 1]" qcDistanceValidity
 
     , QC.testProperty "Time validity is in the range of [0, 1]" qcTimeValidity
     ]
@@ -155,6 +154,38 @@ distanceValidity :: FS.NominalGoal
                     -> NominalDistance -> Integer -> Metres -> Metres -> Metres -> Bool
 distanceValidity ng nd nFly dMin dMax dSum =
     let dv = FS.distanceValidity ng nd nFly dMin dMax dSum in dv >= (0 % 1) && dv <= (1 % 1)
+
+scDistanceValidity :: SC.NonNegative FS.NominalGoal
+                      -> SC.NonNegative NominalDistance
+                      -> SC.NonNegative Integer
+                      -> SC.NonNegative Metres
+                      -> SC.NonNegative Metres
+                      -> SC.NonNegative Metres
+                      -> Bool
+scDistanceValidity
+    (SC.NonNegative ng)
+    (SC.NonNegative nd)
+    (SC.NonNegative nFly)
+    (SC.NonNegative dMin)
+    (SC.NonNegative dMax)
+    (SC.NonNegative dSum) =
+    distanceValidity ng nd nFly dMin dMax dSum
+
+qcDistanceValidity :: QC.NonNegative FS.NominalGoal
+                      -> QC.NonNegative NominalDistance
+                      -> QC.NonNegative Integer
+                      -> QC.NonNegative Metres
+                      -> QC.NonNegative Metres
+                      -> QC.NonNegative Metres
+                      -> Bool
+qcDistanceValidity
+    (QC.NonNegative ng)
+    (QC.NonNegative nd)
+    (QC.NonNegative nFly)
+    (QC.NonNegative dMin)
+    (QC.NonNegative dMax)
+    (QC.NonNegative dSum) =
+    distanceValidity ng nd nFly dMin dMax dSum
 
 timeValidity :: NominalTime -> NominalDistance -> Maybe Seconds -> Metres -> Bool
 timeValidity nt nd t d =
