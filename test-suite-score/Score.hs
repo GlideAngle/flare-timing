@@ -30,10 +30,7 @@ scProps :: TestTree
 scProps = testGroup "(checked by SmallCheck)"
     [ SC.testProperty "Launch validity is in the range of [0, 1]" scLaunchValidity
 
-    -- WARNING: Failing test.
-    -- there exist 0 1 Nothing -1 such that
-    --  condition is false
-    , SC.testProperty "Time validity is in the range of [0, 1]" timeValidity
+    , SC.testProperty "Time validity is in the range of [0, 1]" scTimeValidity
     ]
 
 qcProps :: TestTree
@@ -41,13 +38,13 @@ qcProps = testGroup "(checked by QuickCheck)"
     [ QC.testProperty "Launch validity is in the range of [0, 1]" qcLaunchValidity
 
     -- WARNING: Failing test.
-    -- *** Failed! Falsifiable (after 5 tests and 4 shrinks):
-    -- 0
-    -- 1
-    -- Nothing
-    -- -1
-    -- Use --quickcheck-replay '4 TFGenR 0000000C08AF40A300000000000F4240000000000000E223000001FD51291300 0 62 6 0' to reproduce.
-    , QC.testProperty "Time validity is in the range of [0, 1]" timeValidity
+    --  *** Failed! Falsifiable (after 11 tests and 2 shrinks):
+    --  NonNegative {getNonNegative = 0}
+    --  NonNegative {getNonNegative = 10}
+    --  Just (NonNegative {getNonNegative = 1})
+    --  NonNegative {getNonNegative = 0}
+    --  Use --quickcheck-replay '10 TFGenR 0000007A861965730000000000989680000000000000E22300000188E6D68B00 0 4094 12 0' to reproduce.
+    , QC.testProperty "Time validity is in the range of [0, 1]" qcTimeValidity
     ]
 
 launchValidityUnits :: TestTree
@@ -93,12 +90,12 @@ launchValidity nx dx ny dy =
         lv = FS.launchValidity nominalLaunch fractionLaunching
     in lv >= (0 % 1) && lv <= (1 % 1)
 
-scLaunchValidity
-    :: Monad m => SC.NonNegative Integer
-    -> SC.Positive Integer
-    -> SC.NonNegative Integer
-    -> SC.Positive Integer
-    -> SC.Property m
+scLaunchValidity :: Monad m =>
+                    SC.NonNegative Integer
+                    -> SC.Positive Integer
+                    -> SC.NonNegative Integer
+                    -> SC.Positive Integer
+                    -> SC.Property m
 scLaunchValidity
     (SC.NonNegative nx)
     (SC.Positive dx)
@@ -106,12 +103,11 @@ scLaunchValidity
     (SC.Positive dy) =
     nx <= dx && ny <= dy SC.==> launchValidity nx dx ny dy
 
-qcLaunchValidity
-    :: QC.NonNegative Integer
-    -> QC.Positive Integer
-    -> QC.NonNegative Integer
-    -> QC.Positive Integer
-    -> QC.Property
+qcLaunchValidity :: QC.NonNegative Integer
+                    -> QC.Positive Integer
+                    -> QC.NonNegative Integer
+                    -> QC.Positive Integer
+                    -> QC.Property
 qcLaunchValidity
     (QC.NonNegative nx)
     (QC.Positive dx)
@@ -121,5 +117,24 @@ qcLaunchValidity
 
 timeValidity :: NominalTime -> NominalDistance -> Maybe Seconds -> Metres -> Bool
 timeValidity nt nd t d =
-    let tv = FS.timeValidity nt nd t d
-    in tv >= (0 % 1) && tv <= (1 % 1)
+    let tv = FS.timeValidity nt nd t d in tv >= (0 % 1) && tv <= (1 % 1)
+
+scTimeValidity :: SC.NonNegative NominalTime
+                  -> SC.NonNegative NominalDistance
+                  -> Maybe (SC.NonNegative Seconds)
+                  -> SC.NonNegative Metres
+                  -> Bool
+scTimeValidity (SC.NonNegative nt) (SC.NonNegative nd) Nothing (SC.NonNegative d) =
+    timeValidity nt nd Nothing d
+scTimeValidity (SC.NonNegative nd) (SC.NonNegative nt) (Just (SC.NonNegative t)) (SC.NonNegative d) =
+    timeValidity nt nd (Just t) d
+
+qcTimeValidity :: QC.NonNegative NominalTime
+                  -> QC.NonNegative NominalDistance
+                  -> Maybe (QC.NonNegative Seconds)
+                  -> QC.NonNegative Metres
+                  -> Bool
+qcTimeValidity (QC.NonNegative nt) (QC.NonNegative nd) Nothing (QC.NonNegative d) =
+    timeValidity nt nd Nothing d
+qcTimeValidity (QC.NonNegative nd) (QC.NonNegative nt) (Just (QC.NonNegative t)) (QC.NonNegative d) =
+    timeValidity nt nd (Just t) d
