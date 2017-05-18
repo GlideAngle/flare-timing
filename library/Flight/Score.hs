@@ -96,6 +96,7 @@ distanceValidity :: NominalGoal
                  -> Metres
                  -> DistanceValidity
 distanceValidity _ _ 0 _ _ _ = 0
+distanceValidity _ _ _ _ 0 _ = 0
 distanceValidity ng nd nFly dMin dMax dSum =
     min 1 dvr
     where

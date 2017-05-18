@@ -78,9 +78,6 @@ distanceValidityUnits = testGroup "distance validity unit tests"
     , HU.testCase "distance validity 1 1 1 0 1 1 == 0" $
         FS.distanceValidity (1 % 1) 1 1 0 1 1 @?= (0 % 1)
 
-    -- WARNING: Failing test.
-    --  expected: 0 % 1
-    --   but got: 1 % 1
     , HU.testCase "distance validity 1 1 1 1 0 1 == 0" $
         FS.distanceValidity (1 % 1) 1 1 1 0 1 @?= (0 % 1)
 
