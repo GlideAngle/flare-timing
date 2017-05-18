@@ -68,13 +68,19 @@ launchValidity (n :% d) (flying :% present) =
         lvr = min lvr' (1 % 1)
 
 tvrValidity :: Rational -> TimeValidity
+tvrValidity (0 :% _) = 0
 tvrValidity tvr =
     (- 271 % 1000)
     + (2912 % 1000) * tvr
     - (2098 % 1000) * tvr * tvr
     + (457 % 1000) * tvr * tvr * tvr
+
 timeValidity :: NominalTime -> NominalDistance -> Maybe Seconds -> Metres -> TimeValidity
+timeValidity 0 _ (Just 0) _ = tvrValidity (0 % 1)
+timeValidity 0 _ (Just _) _ = tvrValidity (1 % 1)
 timeValidity nt _ (Just t) _ = tvrValidity $ min (t % nt) (1 % 1)
+timeValidity _ 0 Nothing 0 = tvrValidity (0 % 1)
+timeValidity _ 0 Nothing _ = tvrValidity (1 % 1)
 timeValidity _ nd Nothing d = tvrValidity $ min (d % nd) (1 % 1)
 
 distanceValidity :: NominalDistance -> [Metres] -> DistanceValidity

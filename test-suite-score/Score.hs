@@ -31,7 +31,8 @@ scProps = testGroup "(checked by SmallCheck)"
     [ SC.testProperty "Launch validity is in the range of [0, 1]" scLaunchValidity
 
     -- WARNING: Failing test.
-    -- Ratio has zero denominator
+    -- there exist 0 1 Nothing -1 such that
+    --  condition is false
     , SC.testProperty "Time validity is in the range of [0, 1]" timeValidity
     ]
 
@@ -40,12 +41,12 @@ qcProps = testGroup "(checked by QuickCheck)"
     [ QC.testProperty "Launch validity is in the range of [0, 1]" qcLaunchValidity
 
     -- WARNING: Failing test.
-    --    *** Failed! Exception: 'Ratio has zero denominator' (after 1 test):
-    --    0
-    --    0
-    --    Nothing
-    --    0
-    --    Use --quickcheck-replay '0 TFGenR 0000001D9941ED4100000000002625A0000000000000E223000001977420DC00 0 2 2 0' to reproduce.
+    -- *** Failed! Falsifiable (after 5 tests and 4 shrinks):
+    -- 0
+    -- 1
+    -- Nothing
+    -- -1
+    -- Use --quickcheck-replay '4 TFGenR 0000000C08AF40A300000000000F4240000000000000E223000001FD51291300 0 62 6 0' to reproduce.
     , QC.testProperty "Time validity is in the range of [0, 1]" timeValidity
     ]
 
@@ -66,9 +67,6 @@ launchValidityUnits = testGroup "Launch validity unit tests"
 
 timeValidityUnits :: TestTree
 timeValidityUnits = testGroup "Time validity unit tests"
-
-    -- WARNING: Failing test.
-    -- Exception: Ratio has zero denominator
     [ HU.testCase "time validity 0 0 (Just 0) 0 == 0" $
         FS.timeValidity 0 0 (Just 0) 0 @?= (0 % 1)
 
@@ -78,8 +76,6 @@ timeValidityUnits = testGroup "Time validity unit tests"
     , HU.testCase "time validity 1 1 (Just 1) 1 == 1" $
         FS.timeValidity 1 1 (Just 1) 1 @?= (1 % 1)
 
-    -- WARNING: Failing test.
-    -- Exception: Ratio has zero denominator
     , HU.testCase "time validity 0 0 Nothing 0 == 0" $
         FS.timeValidity 0 0 Nothing 0 @?= (0 % 1)
 
