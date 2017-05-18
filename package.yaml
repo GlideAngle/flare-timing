@@ -29,7 +29,6 @@ ghc-options: -Wall
 library:
   dependencies:
   - base >=4.5 && <5
-  - parsec
   source-dirs: library
   exposed-modules:
   - Flight.Score
@@ -47,7 +46,6 @@ tests:
     dependencies:
     - base
     - hlint
-    - flight-gap 
     ghc-options:
     - -rtsopts
     - -threaded
