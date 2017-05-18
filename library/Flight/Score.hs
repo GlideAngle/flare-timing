@@ -101,7 +101,9 @@ distanceValidity :: NominalGoal
                  -> DistanceValidity
 distanceValidity _ _ 0 _ _ _ = 0
 distanceValidity _ _ _ _ 0 _ = 0
-distanceValidity (0 :% _) nd nFly dMin dMax dSum =
+distanceValidity (0 :% _) 0 nFly _ _ dSum =
+    min 1 $ dvr (0 % 1) nFly dSum
+distanceValidity (0 :% _) nd nFly dMin _ dSum =
     min 1 $ dvr area nFly dSum
     where
         area = num % (2 * den)
