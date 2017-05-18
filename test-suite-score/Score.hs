@@ -33,12 +33,28 @@ scProps :: TestTree
 scProps = testGroup "(checked by SmallCheck)"
     [ SC.testProperty "Launch validity is in the range of [0, 1]" scLaunchValidity
 
+    -- WARNING: Failing test.
+    --  Ratio has zero denominator
+    , SC.testProperty "Distance validity is in the range of [0, 1]" distanceValidity
+
     , SC.testProperty "Time validity is in the range of [0, 1]" scTimeValidity
     ]
 
 qcProps :: TestTree
 qcProps = testGroup "(checked by QuickCheck)"
     [ QC.testProperty "Launch validity is in the range of [0, 1]" qcLaunchValidity
+
+    -- WARNING: Failing test.
+    --  *** Failed! Exception: 'Ratio has zero denominator' (after 4 tests and 8 shrinks):
+    --  0 % 1
+    --  0
+    --  -1
+    --  0
+    --  1
+    --  0
+    --  Use --quickcheck-replay '3 TFGenR 0000000DCFFF4D4D00000000000F4240000000000000E223000004C2B90FFFC0 0 30 5 0' to reproduce.
+
+    , QC.testProperty "Distance validity is in the range of [0, 1]" distanceValidity
 
     , QC.testProperty "Time validity is in the range of [0, 1]" qcTimeValidity
     ]
@@ -134,6 +150,11 @@ qcLaunchValidity
     (QC.NonNegative ny)
     (QC.Positive dy) =
     nx <= dx && ny <= dy QC.==> launchValidity nx dx ny dy
+
+distanceValidity :: FS.NominalGoal
+                    -> NominalDistance -> Integer -> Metres -> Metres -> Metres -> Bool
+distanceValidity ng nd nFly dMin dMax dSum =
+    let dv = FS.distanceValidity ng nd nFly dMin dMax dSum in dv >= (0 % 1) && dv <= (1 % 1)
 
 timeValidity :: NominalTime -> NominalDistance -> Maybe Seconds -> Metres -> Bool
 timeValidity nt nd t d =
