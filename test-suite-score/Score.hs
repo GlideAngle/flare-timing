@@ -33,9 +33,6 @@ scProps :: TestTree
 scProps = testGroup "(checked by SmallCheck)"
     [ SC.testProperty "Launch validity is in the range of [0, 1]" scLaunchValidity
 
-    -- WARNING: Failing test.
-    --  there exist 1 % 1 0 1 3 1 1 such that
-    --    condition is false
     , SC.testProperty "Distance validity is in the range of [0, 1]" scDistanceValidity
 
     , SC.testProperty "Time validity is in the range of [0, 1]" scTimeValidity
@@ -45,15 +42,6 @@ qcProps :: TestTree
 qcProps = testGroup "(checked by QuickCheck)"
     [ QC.testProperty "Launch validity is in the range of [0, 1]" qcLaunchValidity
 
-    -- WARNING: Failing test.
-    --  *** Failed! Falsifiable (after 34 tests and 16 shrinks):
-    --  NonNegative {getNonNegative = 1 % 1}
-    --  NonNegative {getNonNegative = 0}
-    --  NonNegative {getNonNegative = 1}
-    --  NonNegative {getNonNegative = 3}
-    --  NonNegative {getNonNegative = 1}
-    --  NonNegative {getNonNegative = 1}
-    --  Use --quickcheck-replay '33 TFGenR 0000009CC978BAF90000000000989680000000000000E22300000524F2C5A280 0 34359738366 35 0' to reproduce.
     , QC.testProperty "Distance validity is in the range of [0, 1]" qcDistanceValidity
 
     , QC.testProperty "Time validity is in the range of [0, 1]" qcTimeValidity
