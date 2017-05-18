@@ -60,8 +60,38 @@ launchValidityUnits = testGroup "Launch validity unit tests"
 
 distanceValidityUnits :: TestTree
 distanceValidityUnits = testGroup "distance validity unit tests"
+    -- WARNING: Failing test.
+    --  Exception: Ratio has zero denominator
     [ HU.testCase "distance validity 0 0 0 0 0 0 == 0" $
         FS.distanceValidity (0 % 1) 0 0 0 0 0 @?= (0 % 1)
+
+    , HU.testCase "distance validity 1 1 1 1 1 1 == 1" $
+        FS.distanceValidity (1 % 1) 1 1 1 1 1 @?= (1 % 1)
+
+    -- WARNING: Failing test.
+    --  expected: 0 % 1
+    --   but got: 1 % 1
+    , HU.testCase "distance validity 1 0 1 1 1 1 == 0" $
+        FS.distanceValidity (1 % 1) 0 1 1 1 1 @?= (0 % 1)
+
+    --  Exception: Ratio has zero denominator
+    , HU.testCase "distance validity 1 1 0 1 1 1 == 0" $
+        FS.distanceValidity (1 % 1) 1 0 1 1 1 @?= (0 % 1)
+
+    -- WARNING: Failing test.
+    --  expected: 0 % 1
+    --   but got: 1 % 2
+    , HU.testCase "distance validity 1 1 1 0 1 1 == 0" $
+        FS.distanceValidity (1 % 1) 1 1 0 1 1 @?= (0 % 1)
+
+    -- WARNING: Failing test.
+    --  expected: 0 % 1
+    --   but got: 1 % 1
+    , HU.testCase "distance validity 1 1 1 1 0 1 == 0" $
+        FS.distanceValidity (1 % 1) 1 1 1 0 1 @?= (0 % 1)
+
+    , HU.testCase "distance validity 1 1 1 1 1 0 == 0" $
+        FS.distanceValidity (1 % 1) 1 1 1 1 0 @?= (0 % 1)
     ]
 
 timeValidityUnits :: TestTree
