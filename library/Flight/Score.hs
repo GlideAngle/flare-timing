@@ -70,10 +70,13 @@ launchValidity (n :% d) (flying :% present) =
 tvrValidity :: Rational -> TimeValidity
 tvrValidity (0 :% _) = 0
 tvrValidity tvr =
-    (- 271 % 1000)
-    + (2912 % 1000) * tvr
-    - (2098 % 1000) * tvr * tvr
-    + (457 % 1000) * tvr * tvr * tvr
+    max 0 $ min 1 x
+    where
+        x =
+            (- 271 % 1000)
+            + (2912 % 1000) * tvr
+            - (2098 % 1000) * tvr * tvr
+            + (457 % 1000) * tvr * tvr * tvr
 
 timeValidity :: NominalTime -> NominalDistance -> Maybe Seconds -> Metres -> TimeValidity
 timeValidity 0 _ (Just 0) _ = tvrValidity (0 % 1)
