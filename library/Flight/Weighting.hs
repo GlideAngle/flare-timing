@@ -1,6 +1,7 @@
 {-# lANGUAGE PatternSynonyms #-}
 {-# lANGUAGE GADTs #-}
 {-# lANGUAGE RankNTypes #-}
+{-# LANGUAGE StandaloneDeriving #-}
 module Flight.Weighting where
 
 import Data.Ratio ((%))
@@ -24,9 +25,13 @@ data Lw a where
     LwPgZ :: DistanceRatio -> Lw Rational
     LwPg  :: DistanceWeight -> Lw Rational
 
+-- SEE: http://stackoverflow.com/questions/21505975/write-gadt-record-with-constrained-type
+deriving instance Show (Lw a)
+
 data Aw a where
     AwHg :: DistanceWeight -> Aw Rational
     AwPg :: Aw ()
+deriving instance Show (Aw a)
 
 distanceWeight :: GoalRatio -> DistanceWeight
 distanceWeight gr =
