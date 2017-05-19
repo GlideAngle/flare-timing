@@ -1,5 +1,4 @@
 {-# lANGUAGE PatternSynonyms #-}
-{-# lANGUAGE ViewPatterns #-}
 {-# lANGUAGE GADTs #-}
 {-# lANGUAGE RankNTypes #-}
 module Flight.Weighting where
@@ -23,7 +22,7 @@ data HgPg = Hg | Pg deriving (Eq, Show)
 data Lw a where
     LwHg  :: DistanceWeight -> Lw Rational
     LwPgZ :: DistanceRatio -> Lw Rational
-    LwPgS :: DistanceWeight -> Lw Rational
+    LwPg  :: DistanceWeight -> Lw Rational
 
 data Aw a where
     AwHg :: DistanceWeight -> Aw Rational
@@ -41,7 +40,7 @@ leadingWeight (LwHg (n :% d)) =
     ((d - n) % (8 * d)) * (14 % 10)
 leadingWeight (LwPgZ dr) =
     dr * (1 % 10)
-leadingWeight (LwPgS (n :% d)) =
+leadingWeight (LwPg (n :% d)) =
     ((d - n) % (8 * d)) * (14 % 10) * (2 % 1)
 
 arrivalWeight :: forall a. Aw a -> ArrivalWeight

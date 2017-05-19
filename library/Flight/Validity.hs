@@ -1,5 +1,4 @@
 {-# lANGUAGE PatternSynonyms #-}
-{-# lANGUAGE ViewPatterns #-}
 {-# lANGUAGE ScopedTypeVariables #-}
 module Flight.Validity
     ( NominalLaunch

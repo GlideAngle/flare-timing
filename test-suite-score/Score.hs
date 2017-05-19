@@ -7,12 +7,18 @@ import Test.Tasty.QuickCheck as QC
 import LaunchValidity
 import DistanceValidity
 import TimeValidity
+import Weighting
 
 main :: IO ()
 main = defaultMain tests
 
 tests :: TestTree
-tests = testGroup "Tests" [properties, units]
+tests =
+    testGroup
+        "Tests"
+        [ properties
+        , units
+        ]
 
 properties :: TestTree
 properties = testGroup "Properties" [scProps, qcProps]
@@ -21,10 +27,14 @@ units :: TestTree
 units = testGroup "Units" [validityUnits]
 
 validityUnits :: TestTree
-validityUnits = testGroup "Validities" [ launchValidityUnits
-                                       , distanceValidityUnits
-                                       , timeValidityUnits
-                                       ]
+validityUnits =
+    testGroup
+        "Validities"
+        [ launchValidityUnits
+        , distanceValidityUnits
+        , timeValidityUnits
+        , weightingUnits
+        ]
 
 scProps :: TestTree
 scProps = testGroup "(checked by SmallCheck)"

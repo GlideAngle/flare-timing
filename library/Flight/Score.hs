@@ -18,10 +18,18 @@ module Flight.Score
     , TimeValidity
     , Seconds
     , Metres
+    -- * Validity
     , launchValidity
     , distanceValidity
     , timeValidity
     , taskValidity
+    -- * Weighting
+    , Lw(..)
+    , Aw(..)
+    , distanceWeight
+    , leadingWeight
+    , arrivalWeight
+    , timeWeight
     ) where
 
 import Flight.Validity
@@ -37,6 +45,16 @@ import Flight.Validity
     , distanceValidity
     , timeValidity
     , taskValidity
+    )
+import Flight.Weighting
+    ( DistanceRatio
+    , DistanceWeight
+    , Lw(..)
+    , Aw(..)
+    , distanceWeight
+    , leadingWeight
+    , arrivalWeight
+    , timeWeight
     )
 
 type DistancePoint = Rational
