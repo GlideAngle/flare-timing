@@ -1,11 +1,11 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 module Weighting
     ( weightingUnits
-    , qcDistanceWeight
+    , distanceWeight
     , qcArrivalWeightPgZ
     , qcArrivalWeight
     , qcLeadingWeight
-    , qcTimeWeight
+    , timeWeight
     ) where
 
 import qualified Flight.Score as FS
@@ -64,8 +64,8 @@ newtype LwTest = LwTest (Lw Rational) deriving (Show)
 newtype AwTestPgZ = AwTestPgZ (Aw ()) deriving (Show)
 newtype AwTest = AwTest (Aw Rational) deriving (Show)
 
-qcDistanceWeight :: GoalRatio -> Bool
-qcDistanceWeight gr =
+distanceWeight :: GoalRatio -> Bool
+distanceWeight gr =
     let w = FS.distanceWeight gr
     in w >= (0 % 1) && w <= (1 % 1)
 
@@ -84,11 +84,11 @@ qcLeadingWeight (LwTest x) =
     let w = FS.leadingWeight x
     in w >= (0 % 1) && w <= (1 % 1)
 
-qcTimeWeight :: DistanceWeight
+timeWeight :: DistanceWeight
                 -> LeadingWeight
                 -> ArrivalWeight
                 -> Bool
-qcTimeWeight d l a =
+timeWeight d l a =
     let w = FS.timeWeight d l a
     in w >= (0 % 1) && w <= (1 % 1)
 
