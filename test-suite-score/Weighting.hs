@@ -97,14 +97,9 @@ timeWeight d l a =
     let w = FS.timeWeight d l a
     in w >= (0 % 1) && w <= (1 % 1)
 
-instance Monad m => SC.Serial m LwTest where
-  series = cons1 (\x -> LwTest (LwHg x)) \/ cons1 (\x -> LwTest (LwPg x))
-
-instance Monad m => SC.Serial m AwTestPgZ where
-  series = cons0 $ AwTestPgZ AwPg
-
-instance Monad m => SC.Serial m AwTest where
-  series = cons1 (\x -> AwTest (AwHg x))
+instance Monad m => SC.Serial m LwTest where series = LwTest <$> (cons1 LwHg \/ cons1 LwPg)
+instance Monad m => SC.Serial m AwTestPgZ where series = cons0 $ AwTestPgZ AwPg
+instance Monad m => SC.Serial m AwTest where series = AwTest <$> cons1 AwHg
 
 instance QC.Arbitrary LwTest where arbitrary = LwTest <$> lwArb
 instance QC.Arbitrary AwTestPgZ where arbitrary = AwTestPgZ <$> awArbPgZ
