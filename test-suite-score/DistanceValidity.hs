@@ -5,7 +5,7 @@ module DistanceValidity
     ) where
 
 import qualified Flight.Score as FS
-import Flight.Score (NominalDistance, Metres)
+import Flight.Score (NominalDistance, Metres, isNormal)
 
 import Test.Tasty (TestTree, testGroup)
 import Test.SmallCheck.Series as SC
@@ -40,7 +40,7 @@ distanceValidityUnits = testGroup "distance validity unit tests"
 distanceValidity :: FS.NominalGoal
                     -> NominalDistance -> Integer -> Metres -> Metres -> Metres -> Bool
 distanceValidity ng nd nFly dMin dMax dSum =
-    let dv = FS.distanceValidity ng nd nFly dMin dMax dSum in dv >= (0 % 1) && dv <= (1 % 1)
+    isNormal $ FS.distanceValidity ng nd nFly dMin dMax dSum
 
 scDistanceValidity :: SC.NonNegative FS.NominalGoal
                       -> SC.NonNegative NominalDistance

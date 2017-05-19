@@ -32,8 +32,7 @@ launchValidity :: Integer -> Integer -> Integer -> Integer -> Bool
 launchValidity nx dx ny dy =
     let nominalLaunch = nx % dx
         fractionLaunching = ny % dy
-        lv = FS.launchValidity nominalLaunch fractionLaunching
-    in lv >= (0 % 1) && lv <= (1 % 1)
+    in FS.isNormal $ FS.launchValidity nominalLaunch fractionLaunching
 
 scLaunchValidity :: Monad m =>
                     SC.NonNegative Integer

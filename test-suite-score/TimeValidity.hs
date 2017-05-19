@@ -5,7 +5,7 @@ module TimeValidity
     ) where
 
 import qualified Flight.Score as FS
-import Flight.Score (NominalTime, NominalDistance, Seconds, Metres)
+import Flight.Score (NominalTime, NominalDistance, Seconds, Metres, isNormal)
 
 import Test.Tasty (TestTree, testGroup)
 import Test.SmallCheck.Series as SC
@@ -35,8 +35,7 @@ timeValidityUnits = testGroup "Time validity unit tests"
     ]
 
 timeValidity :: NominalTime -> NominalDistance -> Maybe Seconds -> Metres -> Bool
-timeValidity nt nd t d =
-    let tv = FS.timeValidity nt nd t d in tv >= (0 % 1) && tv <= (1 % 1)
+timeValidity nt nd t d = isNormal $ FS.timeValidity nt nd t d
 
 scTimeValidity :: SC.NonNegative NominalTime
                   -> SC.NonNegative NominalDistance

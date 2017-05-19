@@ -20,6 +20,7 @@ import Flight.Score
     , DistanceWeight
     , LeadingWeight
     , ArrivalWeight
+    , isNormal
     )
 
 import Test.Tasty (TestTree, testGroup)
@@ -70,32 +71,22 @@ newtype AwTestPgZ = AwTestPgZ (Aw ()) deriving (Show)
 newtype AwTest = AwTest (Aw Rational) deriving (Show)
 
 distanceWeight :: GoalRatio -> Bool
-distanceWeight gr =
-    let w = FS.distanceWeight gr
-    in w >= (0 % 1) && w <= (1 % 1)
+distanceWeight gr = isNormal $ FS.distanceWeight gr
 
 arrivalWeightPgZ :: AwTestPgZ -> Bool
-arrivalWeightPgZ (AwTestPgZ x) =
-    let w = FS.arrivalWeight x
-    in w >= (0 % 1) && w <= (1 % 1)
+arrivalWeightPgZ (AwTestPgZ x) = isNormal $ FS.arrivalWeight x
 
 arrivalWeight :: AwTest -> Bool
-arrivalWeight (AwTest x) =
-    let w = FS.arrivalWeight x
-    in w >= (0 % 1) && w <= (1 % 1)
+arrivalWeight (AwTest x) = isNormal $ FS.arrivalWeight x
 
 leadingWeight :: LwTest -> Bool
-leadingWeight (LwTest x) =
-    let w = FS.leadingWeight x
-    in w >= (0 % 1) && w <= (1 % 1)
+leadingWeight (LwTest x) = isNormal $ FS.leadingWeight x
 
 timeWeight :: DistanceWeight
                 -> LeadingWeight
                 -> ArrivalWeight
                 -> Bool
-timeWeight d l a =
-    let w = FS.timeWeight d l a
-    in w >= (0 % 1) && w <= (1 % 1)
+timeWeight d l a = isNormal $ FS.timeWeight d l a
 
 instance Monad m => SC.Serial m LwTest where series = LwTest <$> (cons1 LwHg \/ cons1 LwPg)
 instance Monad m => SC.Serial m AwTestPgZ where series = cons0 $ AwTestPgZ AwPg

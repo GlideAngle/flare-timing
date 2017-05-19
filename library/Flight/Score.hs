@@ -18,6 +18,8 @@ module Flight.Score
     , TimeValidity
     , Seconds
     , Metres
+    -- * Ratio
+    , isNormal
     -- * Validity
     , launchValidity
     , distanceValidity
@@ -36,6 +38,7 @@ module Flight.Score
     , timeWeight
     ) where
 
+import Flight.Ratio (isNormal)
 import Flight.Validity
     ( NominalLaunch
     , NominalTime
@@ -55,7 +58,6 @@ import Flight.Weighting
     , DistanceWeight
     , LeadingWeight
     , ArrivalWeight
-    , DistanceRatio
     , DistanceWeight
     , Lw(..)
     , Aw(..)
