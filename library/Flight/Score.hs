@@ -24,6 +24,10 @@ module Flight.Score
     , timeValidity
     , taskValidity
     -- * Weighting
+    , GoalRatio
+    , DistanceWeight
+    , LeadingWeight
+    , ArrivalWeight
     , Lw(..)
     , Aw(..)
     , distanceWeight
@@ -47,7 +51,11 @@ import Flight.Validity
     , taskValidity
     )
 import Flight.Weighting
-    ( DistanceRatio
+    ( GoalRatio
+    , DistanceWeight
+    , LeadingWeight
+    , ArrivalWeight
+    , DistanceRatio
     , DistanceWeight
     , Lw(..)
     , Aw(..)

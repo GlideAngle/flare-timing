@@ -1,11 +1,25 @@
+{-# LANGUAGE ScopedTypeVariables #-}
 module Weighting
     ( weightingUnits
+    , qcDistanceWeight
+    , qcArrivalWeightPgZ
+    , qcArrivalWeight
+    , qcLeadingWeight
+    , qcTimeWeight
     ) where
 
 import qualified Flight.Score as FS
-import Flight.Score (Lw(..), Aw(..))
+import Flight.Score
+    ( Lw(..)
+    , Aw(..)
+    , GoalRatio
+    , DistanceWeight
+    , LeadingWeight
+    , ArrivalWeight
+    )
 
 import Test.Tasty (TestTree, testGroup)
+import Test.Tasty.QuickCheck as QC
 import Test.Tasty.HUnit as HU ((@?=), testCase)
 import Data.Ratio ((%))
 
@@ -44,3 +58,69 @@ weightingUnits = testGroup "Weighting unit tests"
     , HU.testCase "Time weight 0 0 0 == 1" $
         FS.timeWeight (0 % 1) (0 % 1) (0 % 1) @?= (1 % 1)
     ]
+
+-- NOTE: Avoid orphan instance warnings with these newtypes.
+newtype LwTest = LwTest (Lw Rational) deriving (Show)
+newtype AwTestPgZ = AwTestPgZ (Aw ()) deriving (Show)
+newtype AwTest = AwTest (Aw Rational) deriving (Show)
+
+qcDistanceWeight :: GoalRatio -> Bool
+qcDistanceWeight gr =
+    let w = FS.distanceWeight gr
+    in w >= (0 % 1) && w <= (1 % 1)
+
+qcArrivalWeightPgZ :: AwTestPgZ -> Bool
+qcArrivalWeightPgZ (AwTestPgZ x) =
+    let w = FS.arrivalWeight x
+    in w >= (0 % 1) && w <= (1 % 1)
+
+qcArrivalWeight :: AwTest -> Bool
+qcArrivalWeight (AwTest x) =
+    let w = FS.arrivalWeight x
+    in w >= (0 % 1) && w <= (1 % 1)
+
+qcLeadingWeight :: LwTest -> Bool
+qcLeadingWeight (LwTest x) =
+    let w = FS.leadingWeight x
+    in w >= (0 % 1) && w <= (1 % 1)
+
+qcTimeWeight :: DistanceWeight
+                -> LeadingWeight
+                -> ArrivalWeight
+                -> Bool
+qcTimeWeight d l a =
+    let w = FS.timeWeight d l a
+    in w >= (0 % 1) && w <= (1 % 1)
+
+instance QC.Arbitrary LwTest where arbitrary = LwTest <$> lwArb
+instance QC.Arbitrary AwTestPgZ where arbitrary = AwTestPgZ <$> awArbPgZ
+instance QC.Arbitrary AwTest where arbitrary = AwTest <$> awArb
+
+lwArb :: Gen (Lw Rational)
+lwArb =
+    QC.oneof
+        [ do
+            (QC.NonNegative n) <- arbitrary
+            (QC.Positive d) <- arbitrary
+            return $ LwHg (n % d)
+        , do
+            (QC.NonNegative n) <- arbitrary
+            (QC.Positive d) <- arbitrary
+            return $ LwPgZ (n % d)
+        , do
+            (QC.NonNegative n) <- arbitrary
+            (QC.Positive d) <- arbitrary
+            return $ LwPg (n % d)
+        ]
+
+awArbPgZ :: Gen (Aw ())
+awArbPgZ = return AwPg
+
+awArb :: Gen (Aw Rational)
+awArb =
+    QC.oneof
+        [ do
+            (QC.NonNegative n) <- arbitrary
+            (QC.Positive d) <- arbitrary
+            return $ AwHg (n % d)
+        ]
