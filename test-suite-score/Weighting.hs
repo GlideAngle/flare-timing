@@ -1,10 +1,14 @@
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 module Weighting
     ( weightingUnits
     , distanceWeight
-    , qcArrivalWeightPgZ
-    , qcArrivalWeight
-    , qcLeadingWeight
+    , arrivalWeightPgZ
+    , arrivalWeight
+    , leadingWeight
     , timeWeight
     ) where
 
@@ -19,6 +23,7 @@ import Flight.Score
     )
 
 import Test.Tasty (TestTree, testGroup)
+import Test.SmallCheck.Series as SC
 import Test.Tasty.QuickCheck as QC
 import Test.Tasty.HUnit as HU ((@?=), testCase)
 import Data.Ratio ((%))
@@ -69,18 +74,18 @@ distanceWeight gr =
     let w = FS.distanceWeight gr
     in w >= (0 % 1) && w <= (1 % 1)
 
-qcArrivalWeightPgZ :: AwTestPgZ -> Bool
-qcArrivalWeightPgZ (AwTestPgZ x) =
+arrivalWeightPgZ :: AwTestPgZ -> Bool
+arrivalWeightPgZ (AwTestPgZ x) =
     let w = FS.arrivalWeight x
     in w >= (0 % 1) && w <= (1 % 1)
 
-qcArrivalWeight :: AwTest -> Bool
-qcArrivalWeight (AwTest x) =
+arrivalWeight :: AwTest -> Bool
+arrivalWeight (AwTest x) =
     let w = FS.arrivalWeight x
     in w >= (0 % 1) && w <= (1 % 1)
 
-qcLeadingWeight :: LwTest -> Bool
-qcLeadingWeight (LwTest x) =
+leadingWeight :: LwTest -> Bool
+leadingWeight (LwTest x) =
     let w = FS.leadingWeight x
     in w >= (0 % 1) && w <= (1 % 1)
 
@@ -91,6 +96,15 @@ timeWeight :: DistanceWeight
 timeWeight d l a =
     let w = FS.timeWeight d l a
     in w >= (0 % 1) && w <= (1 % 1)
+
+instance Monad m => SC.Serial m LwTest where
+  series = cons1 (\x -> LwTest (LwHg x)) \/ cons1 (\x -> LwTest (LwPg x))
+
+instance Monad m => SC.Serial m AwTestPgZ where
+  series = cons0 $ AwTestPgZ AwPg
+
+instance Monad m => SC.Serial m AwTest where
+  series = cons1 (\x -> AwTest (AwHg x))
 
 instance QC.Arbitrary LwTest where arbitrary = LwTest <$> lwArb
 instance QC.Arbitrary AwTestPgZ where arbitrary = AwTestPgZ <$> awArbPgZ

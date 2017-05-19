@@ -47,6 +47,18 @@ scProps = testGroup "(checked by SmallCheck)"
     --    condition is false
     , SC.testProperty "Distance weight is in the range of [0, 1]" distanceWeight
 
+    , SC.testProperty "Arrival weight is in the range of [0, 1], PG" arrivalWeightPgZ
+
+    -- WARNING: Failing test.
+    --  there exists AwTest (AwHg (2 % 1)) such that
+    --    condition is false
+    , SC.testProperty "Arrival weight is in the range of [0, 1]" arrivalWeight
+
+    -- WARNING: Failing test.
+    --  there exists LwTest (LwHg (2 % 1)) such that
+    --    condition is false
+    , SC.testProperty "Leading weight is in the range of [0, 1]" leadingWeight
+
     -- WARNING: Failing test.
     --  there exist 0 % 1 0 % 1 (-1) % 1 such that
     --    condition is false
@@ -65,19 +77,19 @@ qcProps = testGroup "(checked by QuickCheck)"
     --  Use --quickcheck-replay '1 TFGenR 0000001BDE14F45100000000001E8480000000000000E22400001069DD92DCC0 0 24 5 0' to reproduce.
     , QC.testProperty "Distance weight is in the range of [0, 1]" distanceWeight
 
-    , QC.testProperty "Arrival weight is in the range of [0, 1], PG" qcArrivalWeightPgZ
+    , QC.testProperty "Arrival weight is in the range of [0, 1], PG" arrivalWeightPgZ
 
     -- WARNING: Failing test.
     --  *** Failed! Falsifiable (after 3 tests):
     --  AwTest (AwHg (2 % 1))
     --  Use --quickcheck-replay '2 TFGenR 000000045CB5FCCD000000000004C4B4000000000000E224000013F3B8E50F00 0 224 8 0' to reproduce.
-    , QC.testProperty "Arrival weight is in the range of [0, 1]" qcArrivalWeight
+    , QC.testProperty "Arrival weight is in the range of [0, 1]" arrivalWeight
 
     -- WARNING: Failing test.
     --  *** Failed! Falsifiable (after 8 tests):
     --  LwTest (LwPg (5 % 2))
     --  Use --quickcheck-replay '7 TFGenR 000000045CB5FCCD000000000004C4B4000000000000E224000013F3B8E50F00 0 16320 14 0' to reproduce.
-    , QC.testProperty "Leading weight is in the range of [0, 1]" qcLeadingWeight
+    , QC.testProperty "Leading weight is in the range of [0, 1]" leadingWeight
 
     -- WARNING: Failing test.
     --  *** Failed! Falsifiable (after 2 tests and 2 shrinks):
