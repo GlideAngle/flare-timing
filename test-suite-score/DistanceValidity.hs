@@ -14,26 +14,26 @@ import Test.Tasty.HUnit as HU ((@?=), testCase)
 import Data.Ratio ((%))
 
 distanceValidityUnits :: TestTree
-distanceValidityUnits = testGroup "distance validity unit tests"
-    [ HU.testCase "distance validity 0 0 0 0 0 0 == 0" $
+distanceValidityUnits = testGroup "Distance validity unit tests"
+    [ HU.testCase "Distance validity 0 0 0 0 0 0 == 0" $
         FS.distanceValidity (0 % 1) 0 0 0 0 0 @?= (0 % 1)
 
-    , HU.testCase "distance validity 1 1 1 1 1 1 == 1" $
+    , HU.testCase "Distance validity 1 1 1 1 1 1 == 1" $
         FS.distanceValidity (1 % 1) 1 1 1 1 1 @?= (1 % 1)
 
-    , HU.testCase "distance validity 1 0 1 1 1 1 == 1" $
+    , HU.testCase "Distance validity 1 0 1 1 1 1 == 1" $
         FS.distanceValidity (1 % 1) 0 1 1 1 1 @?= (1 % 1)
 
-    , HU.testCase "distance validity 1 1 0 1 1 1 == 0" $
+    , HU.testCase "Distance validity 1 1 0 1 1 1 == 0" $
         FS.distanceValidity (1 % 1) 1 0 1 1 1 @?= (0 % 1)
 
-    , HU.testCase "distance validity 1 1 1 0 1 1 == 1" $
+    , HU.testCase "Distance validity 1 1 1 0 1 1 == 1" $
         FS.distanceValidity (1 % 1) 1 1 0 1 1 @?= (1 % 1)
 
-    , HU.testCase "distance validity 1 1 1 1 0 1 == 0" $
+    , HU.testCase "Distance validity 1 1 1 1 0 1 == 0" $
         FS.distanceValidity (1 % 1) 1 1 1 0 1 @?= (0 % 1)
 
-    , HU.testCase "distance validity 1 1 1 1 1 0 == 0" $
+    , HU.testCase "Distance validity 1 1 1 1 1 0 == 0" $
         FS.distanceValidity (1 % 1) 1 1 1 1 0 @?= (0 % 1)
     ]
 

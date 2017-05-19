@@ -15,22 +15,22 @@ import Data.Ratio ((%))
 
 timeValidityUnits :: TestTree
 timeValidityUnits = testGroup "Time validity unit tests"
-    [ HU.testCase "time validity 0 0 (Just 0) 0 == 0" $
+    [ HU.testCase "Time validity 0 0 (Just 0) 0 == 0" $
         FS.timeValidity 0 0 (Just 0) 0 @?= (0 % 1)
 
-    , HU.testCase "time validity 1 0 (Just 1) 0 == 1" $
+    , HU.testCase "Time validity 1 0 (Just 1) 0 == 1" $
         FS.timeValidity 1 0 (Just 1) 0 @?= (1 % 1)
 
-    , HU.testCase "time validity 1 1 (Just 1) 1 == 1" $
+    , HU.testCase "Time validity 1 1 (Just 1) 1 == 1" $
         FS.timeValidity 1 1 (Just 1) 1 @?= (1 % 1)
 
-    , HU.testCase "time validity 0 0 Nothing 0 == 0" $
+    , HU.testCase "Time validity 0 0 Nothing 0 == 0" $
         FS.timeValidity 0 0 Nothing 0 @?= (0 % 1)
 
-    , HU.testCase "time validity 0 1 Nothing 1 == 1" $
+    , HU.testCase "Time validity 0 1 Nothing 1 == 1" $
         FS.timeValidity 0 1 Nothing 1 @?= (1 % 1)
 
-    , HU.testCase "time validity 1 1 Nothing 1 == 1" $
+    , HU.testCase "Time validity 1 1 Nothing 1 == 1" $
         FS.timeValidity 1 1 Nothing 1 @?= (1 % 1)
     ]
 
