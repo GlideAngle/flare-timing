@@ -106,30 +106,17 @@ instance QC.Arbitrary AwTestPgZ where arbitrary = AwTestPgZ <$> awArbPgZ
 instance QC.Arbitrary AwTest where arbitrary = AwTest <$> awArb
 
 lwArb :: Gen (Lw Rational)
-lwArb =
-    QC.oneof
-        [ do
-            (QC.NonNegative n) <- arbitrary
-            (QC.Positive d) <- arbitrary
-            return $ LwHg (n % d)
-        , do
-            (QC.NonNegative n) <- arbitrary
-            (QC.Positive d) <- arbitrary
-            return $ LwPgZ (n % d)
-        , do
-            (QC.NonNegative n) <- arbitrary
-            (QC.Positive d) <- arbitrary
-            return $ LwPg (n % d)
-        ]
+lwArb = do
+    (QC.NonNegative n) <- arbitrary
+    (QC.Positive d) <- arbitrary
+    let r = n % d
+    QC.oneof $ return <$> [ LwHg r, LwPgZ r, LwPg r ]
 
 awArbPgZ :: Gen (Aw ())
 awArbPgZ = return AwPg
 
 awArb :: Gen (Aw Rational)
-awArb =
-    QC.oneof
-        [ do
-            (QC.NonNegative n) <- arbitrary
-            (QC.Positive d) <- arbitrary
-            return $ AwHg (n % d)
-        ]
+awArb = do
+    (QC.NonNegative n) <- arbitrary
+    (QC.Positive d) <- arbitrary
+    return $ AwHg (n % d)
