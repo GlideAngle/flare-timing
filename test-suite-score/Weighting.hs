@@ -70,6 +70,7 @@ newtype LwTest = LwTest (Lw Rational) deriving (Show)
 newtype AwTestPgZ = AwTestPgZ (Aw ()) deriving (Show)
 newtype AwTest = AwTest (Aw Rational) deriving (Show)
 newtype GrTest = GrTest GoalRatio deriving (Show)
+newtype Normal = Normal Rational deriving (Show)
 
 distanceWeight :: GrTest -> Bool
 distanceWeight (GrTest gr) = isNormal $ FS.distanceWeight gr
@@ -96,29 +97,26 @@ instance Monad m => SC.Serial m LwTest where series = LwTest <$> (cons1 LwHg \/ 
 instance Monad m => SC.Serial m AwTestPgZ where series = cons0 $ AwTestPgZ AwPg
 instance Monad m => SC.Serial m AwTest where series = AwTest <$> cons1 AwHg
 
-instance QC.Arbitrary GrTest where arbitrary = GrTest <$> grArb
-instance QC.Arbitrary LwTest where arbitrary = LwTest <$> lwArb
-instance QC.Arbitrary AwTestPgZ where arbitrary = AwTestPgZ <$> awArbPgZ
-instance QC.Arbitrary AwTest where arbitrary = AwTest <$> awArb
+instance QC.Arbitrary Normal where
+    arbitrary = Normal <$> QC.suchThat arb isNormal
+        where
+        arb = do
+            (QC.NonNegative n) <- arbitrary
+            (QC.Positive d) <- arbitrary 
+            return $ n % d
 
-grArb :: Gen GoalRatio
-grArb = do
-    (QC.NonNegative n) <- arbitrary
-    (QC.Positive d) <- arbitrary
-    return $ n % d
+instance QC.Arbitrary GrTest where
+    arbitrary = arbitrary >>= \(Normal x) -> return $ GrTest x
 
-lwArb :: Gen (Lw Rational)
-lwArb = do
-    (QC.NonNegative n) <- arbitrary
-    (QC.Positive d) <- arbitrary
-    let r = n % d
-    QC.oneof $ return <$> [ LwHg r, LwPgZ r, LwPg r ]
+instance QC.Arbitrary LwTest where
+    arbitrary = LwTest <$> arb
+        where
+        arb = do
+            (Normal r) <- arbitrary
+            QC.oneof $ return <$> [ LwHg r, LwPgZ r, LwPg r ]
 
-awArbPgZ :: Gen (Aw ())
-awArbPgZ = return AwPg
+instance QC.Arbitrary AwTestPgZ where
+    arbitrary = arbitrary >>= \() -> return $ AwTestPgZ AwPg
 
-awArb :: Gen (Aw Rational)
-awArb = do
-    (QC.NonNegative n) <- arbitrary
-    (QC.Positive d) <- arbitrary
-    return $ AwHg (n % d)
+instance QC.Arbitrary AwTest where
+    arbitrary = arbitrary >>= \(Normal x) -> return $ AwTest (AwHg x)
