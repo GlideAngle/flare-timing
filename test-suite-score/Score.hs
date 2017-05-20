@@ -43,7 +43,7 @@ scProps = testGroup "(checked by SmallCheck)"
     , SC.testProperty "Time validity is in the range of [0, 1]" scTimeValidity
 
     -- WARNING: Failing test.
-    --  there exists (-1) % 1 such that
+    --  there exists GrTest (2 % 1) such that
     --    condition is false
     , SC.testProperty "Distance weight is in the range of [0, 1]" distanceWeight
 
@@ -72,9 +72,9 @@ qcProps = testGroup "(checked by QuickCheck)"
     , QC.testProperty "Time validity is in the range of [0, 1]" qcTimeValidity
 
     -- WARNING: Failing test.
-    --  *** Failed! Falsifiable (after 2 tests):
-    --  (-930403447992) % 4158160448795
-    --  Use --quickcheck-replay '1 TFGenR 0000001BDE14F45100000000001E8480000000000000E22400001069DD92DCC0 0 24 5 0' to reproduce.
+    --  *** Failed! Falsifiable (after 6 tests):
+    --  GrTest (5 % 2)
+    --  Use --quickcheck-replay '5 TFGenR 000000320C612AAD00000000002625A0000000000000E224000013E52B9ABE00 0 504 9 0' to reproduce.
     , QC.testProperty "Distance weight is in the range of [0, 1]" distanceWeight
 
     , QC.testProperty "Arrival weight is in the range of [0, 1], PG" arrivalWeightPgZ
@@ -86,16 +86,16 @@ qcProps = testGroup "(checked by QuickCheck)"
     , QC.testProperty "Arrival weight is in the range of [0, 1]" arrivalWeight
 
     -- WARNING: Failing test.
-    --  *** Failed! Falsifiable (after 8 tests):
-    --  LwTest (LwPg (5 % 2))
-    --  Use --quickcheck-replay '7 TFGenR 000000045CB5FCCD000000000004C4B4000000000000E224000013F3B8E50F00 0 16320 14 0' to reproduce.
+    --  *** Failed! Falsifiable (after 4 tests):
+    --  LwTest (LwHg (3 % 2))
+    --  Use --quickcheck-replay '3 TFGenR 000000320C612AAD00000000002625A0000000000000E224000013E52B9ABE00 0 960 10 0' to reproduce.
     , QC.testProperty "Leading weight is in the range of [0, 1]" leadingWeight
 
     -- WARNING: Failing test.
-    --  *** Failed! Falsifiable (after 2 tests and 2 shrinks):
-    --  4687285062235 % 8827846269843
-    --  6659634358439 % 6666915772746
+    --  *** Failed! Falsifiable (after 2 tests and 4 shrinks):
     --  0 % 1
-    --  Use --quickcheck-replay '1 TFGenR 000000045CB5FCCD000000000004C4B4000000000000E224000013F3B8E50F00 0 384 9 0' to reproduce.
+    --  0 % 1
+    --  5933387054035 % 3335967451731
+    --  Use --quickcheck-replay '1 TFGenR 000000320C612AAD00000000002625A0000000000000E224000013E52B9ABE00 0 384 9 0' to reproduce.
     , QC.testProperty "Time weight is in the range of [0, 1]" timeWeight
     ]
