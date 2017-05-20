@@ -12,6 +12,13 @@ module Weighting
     , timeWeight
     ) where
 
+import Control.Applicative (pure, empty)
+import Test.Tasty (TestTree, testGroup)
+import Test.SmallCheck.Series as SC
+import Test.Tasty.QuickCheck as QC
+import Test.Tasty.HUnit as HU ((@?=), testCase)
+import Data.Ratio ((%))
+
 import qualified Flight.Score as FS
 import Flight.Score
     ( Lw(..)
@@ -22,12 +29,6 @@ import Flight.Score
     , ArrivalWeight
     , isNormal
     )
-
-import Test.Tasty (TestTree, testGroup)
-import Test.SmallCheck.Series as SC
-import Test.Tasty.QuickCheck as QC
-import Test.Tasty.HUnit as HU ((@?=), testCase)
-import Data.Ratio ((%))
 
 weightingUnits :: TestTree
 weightingUnits = testGroup "Weighting unit tests"
@@ -90,12 +91,29 @@ timeWeight :: DistanceWeight
                 -> Bool
 timeWeight d l a = isNormal $ FS.timeWeight d l a
 
-instance Monad m => SC.Serial m GrTest where
-    series = cons2 (\(SC.NonNegative n) (SC.Positive d) -> GrTest (n % d))
+instance Monad m => SC.Serial m Normal where
+    series = xs `isSuchThat` \(Normal x) -> isNormal x
+        where
+        xs = cons2 $ \(SC.NonNegative n) (SC.Positive d) -> Normal (n % d)
 
-instance Monad m => SC.Serial m LwTest where series = LwTest <$> (cons1 LwHg \/ cons1 LwPg)
-instance Monad m => SC.Serial m AwTestPgZ where series = cons0 $ AwTestPgZ AwPg
-instance Monad m => SC.Serial m AwTest where series = AwTest <$> cons1 AwHg
+        -- SEE: https://github.com/feuerbach/smallcheck/blob/master/src/Test/SmallCheck/Series.hs
+        isSuchThat :: Monad m => Series m a -> (a -> Bool) -> Series m a
+        isSuchThat s p = s >>= \x -> if p x then pure x else empty
+
+instance Monad m => SC.Serial m GrTest where
+    series = cons1 $ \(Normal x) -> GrTest x
+
+instance Monad m => SC.Serial m LwTest where
+    series = LwTest <$> (xs \/ ys)
+        where
+            xs = cons1 $ \(Normal x) -> LwHg x
+            ys = cons1 $ \(Normal x) -> LwPg x
+
+instance Monad m => SC.Serial m AwTestPgZ where
+    series = cons0 $ AwTestPgZ AwPg
+
+instance Monad m => SC.Serial m AwTest where
+    series = series >>= \(Normal x) -> return $ AwTest (AwHg x)
 
 instance QC.Arbitrary Normal where
     arbitrary = Normal <$> QC.suchThat arb isNormal
