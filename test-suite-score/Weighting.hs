@@ -71,6 +71,30 @@ weightingUnits = testGroup "Weighting unit tests"
             (ArrivalWeight (0 % 1))
             @?=
             TimeWeight (1 % 1)
+
+    , HU.testCase "1 distance weight, 0 leading weight, 0 arrival weight == 0 time weight" $
+        FS.timeWeight
+            (DistanceWeight (1 % 1))
+            (LeadingWeight (0 % 1))
+            (ArrivalWeight (0 % 1))
+            @?=
+            TimeWeight (0 % 1)
+
+    , HU.testCase "0 distance weight, 1 leading weight, 0 arrival weight == 0 time weight" $
+        FS.timeWeight
+            (DistanceWeight (0 % 1))
+            (LeadingWeight (1 % 1))
+            (ArrivalWeight (0 % 1))
+            @?=
+            TimeWeight (0 % 1)
+
+    , HU.testCase "0 distance weight, 0 leading weight, 1 arrival weight == 0 time weight" $
+        FS.timeWeight
+            (DistanceWeight (0 % 1))
+            (LeadingWeight (0 % 1))
+            (ArrivalWeight (1 % 1))
+            @?=
+            TimeWeight (0 % 1)
     ]
 
 -- NOTE: Avoid orphan instance warnings with these newtypes.
