@@ -113,7 +113,7 @@ instance Monad m => SC.Serial m AwTestPgZ where
     series = cons0 $ AwTestPgZ AwPg
 
 instance Monad m => SC.Serial m AwTest where
-    series = series >>= \(Normal x) -> return $ AwTest (AwHg x)
+    series = cons1 $ \(Normal x) -> AwTest (AwHg x)
 
 instance QC.Arbitrary Normal where
     arbitrary = Normal <$> QC.suchThat arb isNormal
