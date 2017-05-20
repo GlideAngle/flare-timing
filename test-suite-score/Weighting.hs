@@ -34,37 +34,37 @@ import Flight.Score
 
 weightingUnits :: TestTree
 weightingUnits = testGroup "Weighting unit tests"
-    [ HU.testCase "Distance weight 0 == 0.9" $
+    [ HU.testCase "0 goal ratio == 0.9 distance weight" $
         FS.distanceWeight (GoalRatio (0 % 1)) @?= DistanceWeight (9 % 10)
 
-    , HU.testCase "Arrival weight (Pg 0) == 0" $
+    , HU.testCase "Pg == 0 arrival weight" $
         FS.arrivalWeight AwPg @?= ArrivalWeight (0 % 1)
 
-    , HU.testCase "Arrival weight (Hg 0) == 0.8" $
+    , HU.testCase "0 distance weight, Hg == 0.8 arrival weight" $
         FS.arrivalWeight (AwHg (DistanceWeight (0 % 1))) @?= ArrivalWeight (1 % 8)
 
-    , HU.testCase "Arrival weight (Hg 1) == 0" $
+    , HU.testCase "1 distance weight, Hg == 0 arrival weight" $
         FS.arrivalWeight (AwHg (DistanceWeight (1 % 1))) @?= ArrivalWeight (0 % 1)
 
-    , HU.testCase "Leading weight (PgZ 0) == 0" $
+    , HU.testCase "0 goal ratio, 0 distance ratio, Pg == 0 leading weight" $
         FS.leadingWeight (LwPgZ (DistanceRatio (0 % 1))) @?= LeadingWeight (0 % 1)
 
-    , HU.testCase "Leading weight (PgZ 1) == 0.1" $
+    , HU.testCase "0 goal ratio, 1 distance ratio, Pg == 0.1 leading weight" $
         FS.leadingWeight (LwPgZ (DistanceRatio (1 % 1))) @?= LeadingWeight (1 % 10)
 
-    , HU.testCase "Leading weight (Pg 0) == 0.35" $
+    , HU.testCase "0 distance weight, Pg == 0.35 leading weight" $
         FS.leadingWeight (LwPg (DistanceWeight (0 % 1))) @?= LeadingWeight (7 % 20)
 
-    , HU.testCase "Leading weight (Pg 1) == 0" $
+    , HU.testCase "1 distance weight, Pg == 0 leading weight" $
         FS.leadingWeight (LwPg (DistanceWeight (1 % 1))) @?= LeadingWeight (0 % 1)
 
-    , HU.testCase "Leading weight (Hg 0) == 0.175" $
+    , HU.testCase "0 distance weight, Hg == 0.175 leading weight" $
         FS.leadingWeight (LwHg (DistanceWeight (0 % 1))) @?= LeadingWeight (7 % 40)
 
-    , HU.testCase "Leading weight (Hg 1) == 0" $
+    , HU.testCase "1 distance weight, Hg == 0 leading weight" $
         FS.leadingWeight (LwHg (DistanceWeight (1 % 1))) @?= LeadingWeight (0 % 1)
 
-    , HU.testCase "Time weight 0 0 0 == 1" $
+    , HU.testCase "0 distance weight, 0 leading weight, 0 arrival weight == 1 time weight" $
         FS.timeWeight
             (DistanceWeight (0 % 1))
             (LeadingWeight (0 % 1))
