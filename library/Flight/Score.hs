@@ -10,10 +10,12 @@ Stability   : experimental
 Provides GAP scoring for hang gliding and paragliding competitons.
 -}
 module Flight.Score
-    ( NominalLaunch(..)
-    , NominalTime
+    ( -- * Nominals
+      NominalLaunch(..)
+    , NominalTime(..)
     , NominalDistance
     , NominalGoal(..)
+    -- * Units
     , Seconds
     , Metres
     -- * Ratio
@@ -44,7 +46,7 @@ module Flight.Score
 import Flight.Ratio (isNormal)
 import Flight.Validity
     ( NominalLaunch(..)
-    , NominalTime
+    , NominalTime(..)
     , NominalDistance
     , NominalGoal(..)
     , LaunchValidity(..)

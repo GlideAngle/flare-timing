@@ -2,7 +2,7 @@
 {-# lANGUAGE ScopedTypeVariables #-}
 module Flight.Validity
     ( NominalLaunch(..)
-    , NominalTime
+    , NominalTime(..)
     , NominalDistance
     , NominalGoal(..)
     , LaunchValidity(..)
@@ -24,7 +24,7 @@ type MinimumDistance = Metres
 type MaximumDistance = Metres
 type SumOfDistance = Metres
 type NominalDistance = Integer
-type NominalTime = Integer
+newtype NominalTime = NominalTime Integer deriving (Eq, Show)
 newtype NominalGoal = NominalGoal Rational deriving (Eq, Show)
 
 newtype LaunchValidity = LaunchValidity Rational deriving (Eq, Show)
@@ -64,9 +64,9 @@ tvrValidity tvr =
             + (457 % 1000) * tvr * tvr * tvr
 
 timeValidity :: NominalTime -> NominalDistance -> Maybe Seconds -> Metres -> TimeValidity
-timeValidity 0 _ (Just 0) _ = tvrValidity (0 % 1)
-timeValidity 0 _ (Just _) _ = tvrValidity (1 % 1)
-timeValidity nt _ (Just t) _ = tvrValidity $ min (t % nt) (1 % 1)
+timeValidity (NominalTime 0) _ (Just 0) _ = tvrValidity (0 % 1)
+timeValidity (NominalTime 0) _ (Just _) _ = tvrValidity (1 % 1)
+timeValidity (NominalTime nt) _ (Just t) _ = tvrValidity $ min (t % nt) (1 % 1)
 timeValidity _ 0 Nothing 0 = tvrValidity (0 % 1)
 timeValidity _ 0 Nothing _ = tvrValidity (1 % 1)
 timeValidity _ nd Nothing d = tvrValidity $ min (d % nd) (1 % 1)
