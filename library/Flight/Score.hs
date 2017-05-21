@@ -13,7 +13,7 @@ module Flight.Score
     ( NominalLaunch(..)
     , NominalTime
     , NominalDistance
-    , NominalGoal
+    , NominalGoal(..)
     , LaunchValidity
     , TimeValidity
     , Seconds
@@ -45,7 +45,7 @@ import Flight.Validity
     ( NominalLaunch(..)
     , NominalTime
     , NominalDistance
-    , NominalGoal
+    , NominalGoal(..)
     , LaunchValidity
     , TimeValidity
     , Seconds

@@ -19,6 +19,7 @@ import Test.Tasty.QuickCheck as QC
 import Test.Tasty.HUnit as HU ((@?=), testCase)
 import Data.Ratio ((%))
 
+import Normal (Normal(..))
 import qualified Flight.Score as FS
 import Flight.Score
     ( Lw(..)
@@ -102,7 +103,6 @@ newtype LwTest = LwTest (Lw Rational) deriving Show
 newtype AwTestPgZ = AwTestPgZ (Aw ()) deriving Show
 newtype AwTest = AwTest (Aw Rational) deriving Show
 newtype GrTest = GrTest GoalRatio deriving Show
-newtype Normal = Normal Rational deriving Show
 newtype TwTest = TwTest (DistanceWeight, LeadingWeight, ArrivalWeight) deriving Show
 
 distanceWeight :: GrTest -> Bool
@@ -125,15 +125,6 @@ timeWeight :: TwTest -> Bool
 timeWeight (TwTest (d, l, a)) =
     (\(TimeWeight w) -> isNormal w) $ FS.timeWeight d l a
 
-instance Monad m => SC.Serial m Normal where
-    series = xs `isSuchThat` \(Normal x) -> isNormal x
-        where
-        xs = cons2 $ \(SC.NonNegative n) (SC.Positive d) -> Normal (n % d)
-
-        -- SEE: https://github.com/feuerbach/smallcheck/blob/master/src/Test/SmallCheck/Series.hs
-        isSuchThat :: Monad m => Series m a -> (a -> Bool) -> Series m a
-        isSuchThat s p = s >>= \x -> if p x then pure x else empty
-
 instance Monad m => SC.Serial m GrTest where
     series = cons1 $ \(Normal x) -> GrTest (GoalRatio x)
 
@@ -153,14 +144,6 @@ instance Monad m => SC.Serial m TwTest where
     series =
         cons3 $ \(Normal x) (Normal y) (Normal z) ->
              TwTest (DistanceWeight x, LeadingWeight y, ArrivalWeight z)
-
-instance QC.Arbitrary Normal where
-    arbitrary = Normal <$> QC.suchThat arb isNormal
-        where
-        arb = do
-            (QC.NonNegative n) <- arbitrary
-            (QC.Positive d) <- arbitrary 
-            return $ n % d
 
 instance QC.Arbitrary GrTest where
     arbitrary = arbitrary >>= \(Normal x) -> return $ GrTest (GoalRatio x)

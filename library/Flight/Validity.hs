@@ -4,7 +4,7 @@ module Flight.Validity
     ( NominalLaunch(..)
     , NominalTime
     , NominalDistance
-    , NominalGoal
+    , NominalGoal(..)
     , LaunchValidity
     , TimeValidity
     , Seconds
@@ -24,7 +24,7 @@ type MaximumDistance = Metres
 type SumOfDistance = Metres
 type NominalDistance = Integer
 type NominalTime = Integer
-type NominalGoal = Rational
+newtype NominalGoal = NominalGoal Rational deriving (Eq, Show)
 
 type LaunchValidity = Rational
 type TimeValidity = Rational
@@ -79,16 +79,16 @@ distanceValidity :: NominalGoal
                  -> DistanceValidity
 distanceValidity _ _ 0 _ _ _ = 0
 distanceValidity _ _ _ _ 0 _ = 0
-distanceValidity (0 :% _) 0 nFly _ _ dSum =
+distanceValidity (NominalGoal (0 :% _)) 0 nFly _ _ dSum =
     min 1 $ dvr (0 % 1) nFly dSum
-distanceValidity (0 :% _) nd nFly dMin _ dSum
+distanceValidity (NominalGoal (0 :% _)) nd nFly dMin _ dSum
     | nd < dMin = 1 % 1
     | otherwise =
     min 1 $ dvr area nFly dSum
     where
         area = num % (2 * den)
         (num :% den) = min 0 (nd - dMin) % 1
-distanceValidity ng nd nFly dMin dMax dSum
+distanceValidity (NominalGoal ng) nd nFly dMin dMax dSum
     | nd < dMin = 1 % 1
     | otherwise =
     min 1 $ dvr area nFly dSum
