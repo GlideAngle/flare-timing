@@ -13,7 +13,7 @@ module Flight.Score
     ( -- * Nominals
       NominalLaunch(..)
     , NominalTime(..)
-    , NominalDistance
+    , NominalDistance(..)
     , NominalGoal(..)
     -- * Units
     , Seconds
@@ -47,7 +47,7 @@ import Flight.Ratio (isNormal)
 import Flight.Validity
     ( NominalLaunch(..)
     , NominalTime(..)
-    , NominalDistance
+    , NominalDistance(..)
     , NominalGoal(..)
     , LaunchValidity(..)
     , TimeValidity(..)
