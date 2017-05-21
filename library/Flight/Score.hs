@@ -20,6 +20,7 @@ module Flight.Score
     , Metres
     -- * Ratio
     , isNormal
+    , isFoldNormal
     -- * Validity
     , LaunchValidity(..)
     , TimeValidity(..)
@@ -44,7 +45,7 @@ module Flight.Score
     , timeWeight
     ) where
 
-import Flight.Ratio (isNormal)
+import Flight.Ratio (isNormal, isFoldNormal)
 import Flight.Validity
     ( NominalLaunch(..)
     , NominalTime(..)
