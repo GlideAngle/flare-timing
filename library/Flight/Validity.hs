@@ -6,7 +6,7 @@ module Flight.Validity
     , NominalDistance
     , NominalGoal(..)
     , LaunchValidity
-    , TimeValidity
+    , TimeValidity(..)
     , DistanceValidity(..)
     , Seconds
     , Metres
@@ -28,7 +28,7 @@ type NominalTime = Integer
 newtype NominalGoal = NominalGoal Rational deriving (Eq, Show)
 
 type LaunchValidity = Rational
-type TimeValidity = Rational
+newtype TimeValidity = TimeValidity Rational deriving (Eq, Show)
 newtype DistanceValidity = DistanceValidity Rational deriving (Eq, Show)
 
 -- | Also called Day Quality.
@@ -49,9 +49,10 @@ launchValidity (NominalLaunch (n :% d)) (flying :% present) =
         lvr = min lvr' (1 % 1)
 
 tvrValidity :: Rational -> TimeValidity
-tvrValidity (0 :% _) = 0
+tvrValidity (0 :% _) =
+    TimeValidity 0
 tvrValidity tvr =
-    max 0 $ min 1 x
+    TimeValidity $ max 0 $ min 1 x
     where
         x =
             (- 271 % 1000)
@@ -103,4 +104,4 @@ distanceValidity (NominalGoal ng) nd nFly dMin dMax dSum
             (ng + (1 % 1) * ((nd - dMin) % 1)) + max 0 (ng * ((dMax - nd) % 1))
 
 taskValidity :: LaunchValidity -> TimeValidity -> DistanceValidity -> TaskValidity
-taskValidity l t (DistanceValidity d) = l * t * d
+taskValidity l (TimeValidity t) (DistanceValidity d) = l * t * d
