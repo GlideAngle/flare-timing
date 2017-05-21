@@ -21,6 +21,7 @@ module Flight.Score
     -- * Ratio
     , isNormal
     -- * Validity
+    , DistanceValidity(..)
     , launchValidity
     , distanceValidity
     , timeValidity
@@ -48,6 +49,7 @@ import Flight.Validity
     , NominalGoal(..)
     , LaunchValidity
     , TimeValidity
+    , DistanceValidity(..)
     , Seconds
     , Metres
     , launchValidity

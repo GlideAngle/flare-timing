@@ -12,7 +12,6 @@ module Weighting
     , timeWeight
     ) where
 
-import Control.Applicative (pure, empty)
 import Test.Tasty (TestTree, testGroup)
 import Test.SmallCheck.Series as SC
 import Test.Tasty.QuickCheck as QC
