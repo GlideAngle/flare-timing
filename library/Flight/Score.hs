@@ -24,6 +24,7 @@ module Flight.Score
     , LaunchValidity(..)
     , TimeValidity(..)
     , DistanceValidity(..)
+    , TaskValidity(..)
     , launchValidity
     , distanceValidity
     , timeValidity
@@ -52,6 +53,7 @@ import Flight.Validity
     , LaunchValidity(..)
     , TimeValidity(..)
     , DistanceValidity(..)
+    , TaskValidity(..)
     , Seconds
     , Metres
     , launchValidity

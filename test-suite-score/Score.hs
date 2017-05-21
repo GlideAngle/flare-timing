@@ -7,6 +7,7 @@ import Test.Tasty.QuickCheck as QC
 import LaunchValidity
 import DistanceValidity
 import TimeValidity
+import TaskValidity
 import Weighting
 
 main :: IO ()
@@ -33,6 +34,7 @@ validityUnits =
         [ launchValidityUnits
         , distanceValidityUnits
         , timeValidityUnits
+        , taskValidityUnits
         , weightingUnits
         ]
 
@@ -41,6 +43,7 @@ scProps = testGroup "(checked by SmallCheck)"
     [ SC.testProperty "Launch validity is in the range of [0, 1]" scLaunchValidity
     , SC.testProperty "Distance validity is in the range of [0, 1]" scDistanceValidity
     , SC.testProperty "Time validity is in the range of [0, 1]" scTimeValidity
+    , SC.testProperty "Task validity is in the range of [0, 1]" taskValidity
     , SC.testProperty "Distance weight is in the range of [0, 1]" distanceWeight
     , SC.testProperty "Arrival weight is in the range of [0, 1], PG" arrivalWeightPgZ
     , SC.testProperty "Arrival weight is in the range of [0, 1]" arrivalWeight
@@ -57,6 +60,7 @@ qcProps = testGroup "(checked by QuickCheck)"
     [ QC.testProperty "Launch validity is in the range of [0, 1]" qcLaunchValidity
     , QC.testProperty "Distance validity is in the range of [0, 1]" qcDistanceValidity
     , QC.testProperty "Time validity is in the range of [0, 1]" qcTimeValidity
+    , QC.testProperty "Task validity is in the range of [0, 1]" taskValidity
     , QC.testProperty "Distance weight is in the range of [0, 1]" distanceWeight
     , QC.testProperty "Arrival weight is in the range of [0, 1], PG" arrivalWeightPgZ
     , QC.testProperty "Arrival weight is in the range of [0, 1]" arrivalWeight

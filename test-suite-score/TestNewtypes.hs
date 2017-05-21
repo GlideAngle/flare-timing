@@ -7,7 +7,7 @@ module TestNewtypes where
 import Test.SmallCheck.Series as SC
 import Test.Tasty.QuickCheck as QC
 
-import Normal (Normal(..))
+import Normal (Normal(..), NormalTriple(..))
 import Flight.Score
     ( Lw(..)
     , Aw(..)
@@ -18,6 +18,9 @@ import Flight.Score
     , DistanceWeight(..)
     , LeadingWeight(..)
     , ArrivalWeight(..)
+    , LaunchValidity(..)
+    , TimeValidity(..)
+    , DistanceValidity(..)
     )
 
 -- | Nominal goal.
@@ -91,13 +94,23 @@ newtype TwTest = TwTest (DistanceWeight, LeadingWeight, ArrivalWeight) deriving 
 
 instance Monad m => SC.Serial m TwTest where
     series =
-        cons3 $ \(Normal x) (Normal y) (Normal z) ->
+        cons1 $ \(NormalTriple (x, y, z)) ->
              TwTest (DistanceWeight x, LeadingWeight y, ArrivalWeight z)
 
 instance QC.Arbitrary TwTest where
     arbitrary = do
-        (Normal x) <- arbitrary
-        (Normal y) <- arbitrary
-        (Normal z) <- arbitrary
+        (NormalTriple (x, y, z)) <- arbitrary
         return $ TwTest (DistanceWeight x, LeadingWeight y, ArrivalWeight z)
 
+-- | Task validity
+newtype TvTest = TvTest (LaunchValidity, TimeValidity, DistanceValidity) deriving Show
+
+instance Monad m => SC.Serial m TvTest where
+    series =
+        cons1 $ \(NormalTriple (x, y, z)) ->
+             TvTest (LaunchValidity x, TimeValidity y, DistanceValidity z)
+
+instance QC.Arbitrary TvTest where
+    arbitrary = do
+        (NormalTriple (x, y, z)) <- arbitrary
+        return $ TvTest (LaunchValidity x, TimeValidity y, DistanceValidity z)
