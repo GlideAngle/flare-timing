@@ -6,6 +6,12 @@ module DistanceValidity
     , qcDistanceValidity
     ) where
 
+import Test.Tasty (TestTree, testGroup)
+import Test.SmallCheck.Series as SC
+import Test.Tasty.QuickCheck as QC
+import Test.Tasty.HUnit as HU ((@?=), testCase)
+import Data.Ratio ((%))
+
 import qualified Flight.Score as FS
 import Flight.Score
     ( NominalGoal(..)
@@ -15,13 +21,7 @@ import Flight.Score
     , isNormal
     )
 
-import Test.Tasty (TestTree, testGroup)
-import Test.SmallCheck.Series as SC
-import Test.Tasty.QuickCheck as QC
-import Test.Tasty.HUnit as HU ((@?=), testCase)
-import Data.Ratio ((%))
-
-import Normal (Normal(..))
+import TestNewtypes
 
 distanceValidityUnits :: TestTree
 distanceValidityUnits = testGroup "Distance validity unit tests"
@@ -53,9 +53,6 @@ distanceValidityUnits = testGroup "Distance validity unit tests"
         FS.distanceValidity (NominalGoal (1 % 1)) (NominalDistance 1) 1 1 1 0
         @?= DistanceValidity (0 % 1)
     ]
-
-newtype NgTest = NgTest NominalGoal deriving Show
-newtype NdTest = NdTest NominalDistance deriving Show
 
 distanceValidity :: NgTest
                     -> NdTest -> Integer -> Metres -> Metres -> Metres -> Bool
@@ -94,14 +91,3 @@ qcDistanceValidity
     (QC.NonNegative dSum) =
     distanceValidity ng nd nFly dMin dMax dSum
 
-instance Monad m => SC.Serial m NgTest where
-    series = cons1 $ \(Normal x) -> NgTest (NominalGoal x)
-
-instance QC.Arbitrary NgTest where
-    arbitrary = arbitrary >>= \(Normal x) -> return $ NgTest (NominalGoal x)
-
-instance Monad m => SC.Serial m NdTest where
-    series = cons1 $ \(SC.NonNegative x) -> NdTest (NominalDistance x)
-
-instance QC.Arbitrary NdTest where
-    arbitrary = arbitrary >>= \(QC.NonNegative x) -> return $ NdTest (NominalDistance x)

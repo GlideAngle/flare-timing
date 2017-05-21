@@ -1,8 +1,3 @@
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE ScopedTypeVariables #-}
 module Weighting
     ( weightingUnits
     , distanceWeight
@@ -13,12 +8,9 @@ module Weighting
     ) where
 
 import Test.Tasty (TestTree, testGroup)
-import Test.SmallCheck.Series as SC
-import Test.Tasty.QuickCheck as QC
 import Test.Tasty.HUnit as HU ((@?=), testCase)
 import Data.Ratio ((%))
 
-import Normal (Normal(..))
 import qualified Flight.Score as FS
 import Flight.Score
     ( Lw(..)
@@ -31,6 +23,7 @@ import Flight.Score
     , TimeWeight(..)
     , isNormal
     )
+import TestNewtypes
 
 weightingUnits :: TestTree
 weightingUnits = testGroup "Weighting unit tests"
@@ -97,13 +90,6 @@ weightingUnits = testGroup "Weighting unit tests"
             TimeWeight (0 % 1)
     ]
 
--- NOTE: Avoid orphan instance warnings with these newtypes.
-newtype LwTest = LwTest (Lw Rational) deriving Show
-newtype AwTestPgZ = AwTestPgZ (Aw ()) deriving Show
-newtype AwTest = AwTest (Aw Rational) deriving Show
-newtype GrTest = GrTest GoalRatio deriving Show
-newtype TwTest = TwTest (DistanceWeight, LeadingWeight, ArrivalWeight) deriving Show
-
 distanceWeight :: GrTest -> Bool
 distanceWeight (GrTest gr) =
     (\(DistanceWeight w) -> isNormal w) $ FS.distanceWeight gr
@@ -123,51 +109,3 @@ leadingWeight (LwTest x) =
 timeWeight :: TwTest -> Bool
 timeWeight (TwTest (d, l, a)) =
     (\(TimeWeight w) -> isNormal w) $ FS.timeWeight d l a
-
-instance Monad m => SC.Serial m GrTest where
-    series = cons1 $ \(Normal x) -> GrTest (GoalRatio x)
-
-instance Monad m => SC.Serial m LwTest where
-    series = LwTest <$> (xs \/ ys)
-        where
-            xs = cons1 $ \(Normal x) -> LwHg (DistanceWeight x)
-            ys = cons1 $ \(Normal x) -> LwPg (DistanceWeight x)
-
-instance Monad m => SC.Serial m AwTestPgZ where
-    series = cons0 $ AwTestPgZ AwPg
-
-instance Monad m => SC.Serial m AwTest where
-    series = cons1 $ \(Normal x) -> AwTest (AwHg (DistanceWeight x))
-
-instance Monad m => SC.Serial m TwTest where
-    series =
-        cons3 $ \(Normal x) (Normal y) (Normal z) ->
-             TwTest (DistanceWeight x, LeadingWeight y, ArrivalWeight z)
-
-instance QC.Arbitrary GrTest where
-    arbitrary = arbitrary >>= \(Normal x) -> return $ GrTest (GoalRatio x)
-
-instance QC.Arbitrary LwTest where
-    arbitrary = LwTest <$> arb
-        where
-        arb = do
-            (Normal r) <- arbitrary
-            QC.oneof $ return <$> [ LwHg (DistanceWeight r)
-                                  , LwPgZ (DistanceRatio r)
-                                  , LwPg (DistanceWeight r)
-                                  ]
-
-instance QC.Arbitrary AwTestPgZ where
-    arbitrary = arbitrary >>= \() -> return $ AwTestPgZ AwPg
-
-instance QC.Arbitrary AwTest where
-    arbitrary = do
-        (Normal x) <- arbitrary
-        return $ AwTest (AwHg (DistanceWeight x))
-
-instance QC.Arbitrary TwTest where
-    arbitrary = do
-        (Normal x) <- arbitrary
-        (Normal y) <- arbitrary
-        (Normal z) <- arbitrary
-        return $ TwTest (DistanceWeight x, LeadingWeight y, ArrivalWeight z)
