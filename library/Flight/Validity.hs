@@ -1,7 +1,7 @@
 {-# lANGUAGE PatternSynonyms #-}
 {-# lANGUAGE ScopedTypeVariables #-}
 module Flight.Validity
-    ( NominalLaunch
+    ( NominalLaunch(..)
     , NominalTime
     , NominalDistance
     , NominalGoal
@@ -18,7 +18,7 @@ module Flight.Validity
 import Data.Ratio ((%))
 import Flight.Ratio (pattern (:%))
 
-type NominalLaunch = Rational
+newtype NominalLaunch = NominalLaunch Rational deriving (Eq, Show)
 type MinimumDistance = Metres
 type MaximumDistance = Metres
 type SumOfDistance = Metres
@@ -37,9 +37,9 @@ type Seconds = Integer
 type Metres = Integer
 
 launchValidity :: NominalLaunch -> Rational -> LaunchValidity
-launchValidity (_ :% _) (0 :% _) = 0 % 1
-launchValidity (0 :% _) (_ :% _) = 1 % 1
-launchValidity (n :% d) (flying :% present) =
+launchValidity (NominalLaunch (_ :% _)) (0 :% _) = 0 % 1
+launchValidity (NominalLaunch (0 :% _)) (_ :% _) = 1 % 1
+launchValidity (NominalLaunch (n :% d)) (flying :% present) =
     (27 % 1000) * lvr
     + (2917 % 1000) * lvr * lvr
     - (1944 % 1000) * lvr * lvr * lvr
