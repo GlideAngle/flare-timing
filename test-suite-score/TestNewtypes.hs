@@ -27,6 +27,8 @@ import Flight.Score
     , PositionAtEss(..)
     , BestTime(..)
     , PilotTime(..)
+    , BestDistance(..)
+    , PilotDistance(..)
     )
 import Normal (Normal(..), NormalSum(..))
 
@@ -122,7 +124,7 @@ instance QC.Arbitrary TvTest where
         (NormalSum (x, y, z)) <- arbitrary
         return $ TvTest (LaunchValidity x, TimeValidity y, DistanceValidity z)
 
--- | ArrivalFraction
+-- | Arrival fraction
 newtype AfTest = AfTest (PilotsAtEss, PositionAtEss) deriving Show
 
 instance Monad m => SC.Serial m AfTest where
@@ -135,7 +137,7 @@ instance QC.Arbitrary AfTest where
         (Normal (rank :% n)) <- arbitrary
         return $ AfTest (PilotsAtEss n, PositionAtEss $ max 1 rank)
 
--- | Speed 
+-- | Speed fraction
 newtype SfTest = SfTest (BestTime, PilotTime) deriving Show
 
 instance Monad m => SC.Serial m SfTest where
@@ -147,3 +149,16 @@ instance QC.Arbitrary SfTest where
     arbitrary = do
         (Normal (n :% d)) <- arbitrary
         return $ SfTest (BestTime (d % 1), PilotTime $ (d + n) % 1)
+
+-- | Linear fraction 
+newtype LfTest = LfTest (BestDistance, PilotDistance) deriving Show
+
+instance Monad m => SC.Serial m LfTest where
+    series =
+        cons1 $ \(Normal (n :% d)) ->
+             LfTest (BestDistance $ (d + n) % 1, PilotDistance (d % 1))
+
+instance QC.Arbitrary LfTest where
+    arbitrary = do
+        (Normal (n :% d)) <- arbitrary
+        return $ LfTest (BestDistance $ (d + n) % 1, PilotDistance (d % 1))

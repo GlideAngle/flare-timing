@@ -1,3 +1,4 @@
+{-# lANGUAGE PatternSynonyms #-}
 module Flight.Allot
     ( PilotsAtEss(..)
     , PositionAtEss(..)
@@ -7,9 +8,14 @@ module Flight.Allot
     , PilotTime(..)
     , SpeedFraction(..)
     , speedFraction
+    , BestDistance(..)
+    , PilotDistance(..)
+    , LinearFraction(..)
+    , linearFraction
     ) where
 
 import Data.Ratio ((%))
+import Flight.Ratio (pattern (:%))
 
 newtype PilotsAtEss = PilotsAtEss Integer deriving (Eq, Show)
 newtype PositionAtEss = PositionAtEss Integer deriving (Eq, Show)
@@ -18,6 +24,10 @@ newtype ArrivalFraction = ArrivalFraction Rational deriving (Eq, Ord, Show)
 newtype BestTime = BestTime Rational deriving (Eq, Ord, Show)
 newtype PilotTime = PilotTime Rational deriving (Eq, Ord, Show)
 newtype SpeedFraction = SpeedFraction Rational deriving (Eq, Ord, Show)
+
+newtype BestDistance = BestDistance Rational deriving (Eq, Ord, Show)
+newtype PilotDistance= PilotDistance Rational deriving (Eq, Ord, Show)
+newtype LinearFraction = LinearFraction Rational deriving (Eq, Ord, Show)
 
 arrivalFraction :: PilotsAtEss -> PositionAtEss -> ArrivalFraction
 arrivalFraction (PilotsAtEss n) (PositionAtEss rank)
@@ -44,3 +54,7 @@ speedFraction (BestTime best) (PilotTime t) =
         denominator = (fromRational best) ** (1 / 2)
         frac = (numerator / denominator) ** (2 / 3)
         sf = (1 % 1) - (toRational frac)
+
+linearFraction :: BestDistance -> PilotDistance -> LinearFraction
+linearFraction (BestDistance (nb :% db)) (PilotDistance (np :% dp)) =
+    LinearFraction $ (np * db) % (dp * nb)

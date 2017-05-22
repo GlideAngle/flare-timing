@@ -11,6 +11,7 @@ import TaskValidity
 import Weighting
 import ArrivalFraction
 import SpeedFraction
+import LinearFraction
 
 main :: IO ()
 main = defaultMain tests
@@ -40,6 +41,7 @@ validityUnits =
         , weightingUnits
         , arrivalFractionUnits
         , speedFractionUnits
+        , linearFractionUnits
         ]
 
 scProps :: TestTree
@@ -56,6 +58,7 @@ scProps = testGroup "(checked by SmallCheck)"
     , SC.testProperty "Arrival fraction is in the range of [0.2, 1]" arrivalFraction
     , SC.testProperty "Speed fraction pilot time is not less than best time" speedFractionInputs
     , SC.testProperty "Speed fraction is in the range of [0, 1]" speedFraction
+    , SC.testProperty "Linear distance fraction is in the range of [0, 1]" linearFraction
     ]
 
 qcProps :: TestTree
@@ -72,4 +75,5 @@ qcProps = testGroup "(checked by QuickCheck)"
     , QC.testProperty "Arrival fraction is in the range of [0.2, 1]" arrivalFraction
     , QC.testProperty "Speed fraction pilot time is not less than best time" speedFractionInputs
     , QC.testProperty "Speed fraction is in the range of [0, 1]" speedFraction
+    , QC.testProperty "Linear distance fraction is in the range of [0, 1]" linearFraction
     ]

@@ -53,6 +53,11 @@ module Flight.Score
     , PilotTime(..)
     , SpeedFraction(..)
     , speedFraction
+    -- * Fractional allotment of distance points
+    , BestDistance(..)
+    , PilotDistance(..)
+    , LinearFraction(..)
+    , linearFraction
     ) where
 
 import Flight.Ratio
