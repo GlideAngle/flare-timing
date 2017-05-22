@@ -31,6 +31,13 @@ isNormalProduct (Normal a, Normal b, Normal c) = isFoldNormal (*) (1 % 1) [a, b,
 isNormalSum :: (Normal Rational, Normal Rational, Normal Rational) -> Bool
 isNormalSum (Normal a, Normal b, Normal c) = isFoldNormal (+) (0 % 1) [a, b, c]
 
+arbTriple :: Gen (Normal Rational, Normal Rational, Normal Rational)
+arbTriple = do
+    (Normal a) <- arbitrary
+    (Normal b) <- arbitrary
+    (Normal c) <- arbitrary
+    return (Normal a, Normal b, Normal c)
+
 instance Monad m => SC.Serial m (Normal Rational) where
     series = xs `isSuchThat` \(Normal x) -> isNormal x
         where
@@ -52,12 +59,7 @@ instance Monad m => SC.Serial m (NormalProduct (Rational, Rational, Rational)) w
 instance QC.Arbitrary (NormalProduct (Rational, Rational, Rational)) where
     arbitrary = joinProduct <$> xs
         where
-        xs = QC.suchThat arb isNormalProduct
-        arb = do
-            (Normal a) <- arbitrary
-            (Normal b) <- arbitrary
-            (Normal c) <- arbitrary
-            return $ (Normal a, Normal b, Normal c)
+        xs = QC.suchThat arbTriple isNormalProduct
 
 instance Monad m => SC.Serial m (NormalSum (Rational, Rational, Rational)) where
     series = joinSum <$> xs `isSuchThat` isNormalSum
@@ -67,9 +69,4 @@ instance Monad m => SC.Serial m (NormalSum (Rational, Rational, Rational)) where
 instance QC.Arbitrary (NormalSum (Rational, Rational, Rational)) where
     arbitrary = joinSum <$> xs
         where
-        xs = QC.suchThat arb isNormalSum
-        arb = do
-            (Normal a) <- arbitrary
-            (Normal b) <- arbitrary
-            (Normal c) <- arbitrary
-            return $ (Normal a, Normal b, Normal c)
+        xs = QC.suchThat arbTriple isNormalSum
