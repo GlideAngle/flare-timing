@@ -55,47 +55,10 @@ module Flight.Score
     , speedFraction
     ) where
 
-import Flight.Ratio (isNormal, isFoldNormal)
+import Flight.Ratio
 import Flight.Allot
-    ( PilotsAtEss(..)
-    , PositionAtEss(..)
-    , ArrivalFraction(..)
-    , arrivalFraction
-    , BestTime(..)
-    , PilotTime(..)
-    , SpeedFraction(..)
-    , speedFraction
-    )
 import Flight.Validity
-    ( NominalLaunch(..)
-    , NominalTime(..)
-    , NominalDistance(..)
-    , NominalGoal(..)
-    , LaunchValidity(..)
-    , TimeValidity(..)
-    , DistanceValidity(..)
-    , TaskValidity(..)
-    , Seconds
-    , Metres
-    , launchValidity
-    , distanceValidity
-    , timeValidity
-    , taskValidity
-    )
 import Flight.Weighting
-    ( GoalRatio(..)
-    , DistanceRatio(..)
-    , DistanceWeight(..)
-    , LeadingWeight(..)
-    , ArrivalWeight(..)
-    , TimeWeight(..)
-    , Lw(..)
-    , Aw(..)
-    , distanceWeight
-    , leadingWeight
-    , arrivalWeight
-    , timeWeight
-    )
 
 type DistancePoint = Rational
 type SpeedPoint = Rational
