@@ -40,8 +40,7 @@ speedFraction :: BestTime -> PilotTime -> SpeedFraction
 speedFraction (BestTime best) (PilotTime t) =
     SpeedFraction $ max (0 % 1) sf
     where
-        diff = t - best
-        numerator = fromRational $ diff * diff :: Double
+        numerator = fromRational $ t - best :: Double
         denominator = (fromRational best) ** (1 / 2)
-        frac = (numerator / denominator) ** (1 / 3)
+        frac = (numerator / denominator) ** (2 / 3)
         sf = (1 % 1) - (toRational frac)

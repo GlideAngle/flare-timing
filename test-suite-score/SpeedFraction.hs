@@ -26,59 +26,85 @@ halfS = SpeedFraction (1 % 2)
 point8S :: SpeedFraction
 point8S = SpeedFraction (4 % 5)
 
-hm :: Integer -> Integer -> Rational
-hm h m =
-    (h * 60 + m) % 60
+hms :: Integer -> Integer -> Integer -> Rational
+hms h m s =
+    ((h * 60 + m) * 60 + s) % 3600
 
 speedFractionUnits :: TestTree
 speedFractionUnits = testGroup "Speed fraction unit tests"
-    [ HU.testCase "1:00 best time, 1:00 pilot time == 1 speed fraction" $
+    [ HU.testCase "1:00 best time, 1:00 pilot time = 1 speed fraction" $
         FS.speedFraction (BestTime (1 % 1)) (PilotTime (1 % 1)) @?= maxS
      
-    , HU.testCase "1:00 best time, 2:00 pilot time == 0 speed fraction" $
+    , HU.testCase "1:00 best time, 2:00 pilot time = 0 speed fraction" $
         FS.speedFraction (BestTime (1 % 1)) (PilotTime (2 % 1)) @?= minS
      
-    , HU.testCase "2:00 best time, 3:24 pilot time == 0 speed fraction" $
-        FS.speedFraction (BestTime (2 % 1)) (PilotTime $ hm 3 24) @?= minS
+    , HU.testCase "2:00 best time, 3:24:51 pilot time > 0 speed fraction" $
+        FS.speedFraction (BestTime (2 % 1)) (PilotTime $ hms 3 24 51) `compare` minS
+        @?= GT
      
-    , HU.testCase "3:00 best time, 4:42 pilot time == 0 speed fraction" $
-        FS.speedFraction (BestTime (3 % 1)) (PilotTime $ hm 4 42) @?= minS
+    , HU.testCase "2:00 best time, 3:24:52 pilot time = 0 speed fraction" $
+        FS.speedFraction (BestTime (2 % 1)) (PilotTime $ hms 3 24 52) `compare` minS
+        @?= EQ
      
-    -- WARNING: Failing test.
-    --  expected: SpeedFraction (1 % 2)
-    --   but got: SpeedFraction (4533826038964677 % 9007199254740992)
-    , HU.testCase "1:00 best time, 1:21 pilot time == 0.5 speed fraction" $
-        FS.speedFraction (BestTime (1 % 1)) (PilotTime $ hm 1 21) @?= halfS
+    , HU.testCase "3:00 best time, 4:43:55 pilot time > 0 speed fraction" $
+        FS.speedFraction (BestTime (3 % 1)) (PilotTime $ hms 4 43 55) `compare` minS
+        @?= GT
 
-    -- WARNING: Failing test.
-    --  expected: SpeedFraction (1 % 2)
-    --   but got: SpeedFraction (61751243628709 % 140737488355328)
-    , HU.testCase "2:00 best time, 2:30 pilot time == 0.5 speed fraction" $
-        FS.speedFraction (BestTime (2 % 1)) (PilotTime $ hm 2 30) @?= halfS
+    , HU.testCase "3:00 best time, 4:43:56 pilot time = 0 speed fraction" $
+        FS.speedFraction (BestTime (3 % 1)) (PilotTime $ hms 4 43 56) `compare` minS
+        @?= EQ
+
+    , HU.testCase "1:00 best time, 1:21:12 pilot time > 0.5 speed fraction" $
+        FS.speedFraction (BestTime (1 % 1)) (PilotTime $ hms 1 21 12) `compare` halfS
+        @?= GT 
+
+    , HU.testCase "1:00 best time, 1:21:13 pilot time < 0.5 speed fraction" $
+        FS.speedFraction (BestTime (1 % 1)) (PilotTime $ hms 1 21 13) `compare` halfS
+        @?= LT 
+
+    , HU.testCase "2:00 best time, 2:29:59 pilot time > 0.5 speed fraction" $
+        FS.speedFraction (BestTime (2 % 1)) (PilotTime $ hms 2 29 59) `compare` halfS
+        @?= GT
      
-    -- WARNING: Failing test.
-    --  expected: SpeedFraction (1 % 2)
-    --   but got: SpeedFraction (1786702375306195 % 4503599627370496)
-    , HU.testCase "3:00 best time, 3:37 pilot time == 0.5 speed fraction" $
-        FS.speedFraction (BestTime (3 % 1)) (PilotTime $ hm 3 37) @?= halfS
+    , HU.testCase "2:00 best time, 2:30:00 pilot time = 0.5 speed fraction" $
+        FS.speedFraction (BestTime (2 % 1)) (PilotTime $ hms 2 30 0) `compare` halfS
+        @?= EQ 
      
-    -- WARNING: Failing test.
-    --  expected: SpeedFraction (4 % 5)
-    --   but got: SpeedFraction (7288754376004697 % 9007199254740992)
-    , HU.testCase "1:00 best time, 1:05 pilot time == 0.8 speed fraction" $
-        FS.speedFraction (BestTime (1 % 1)) (PilotTime $ hm 1 5) @?= point8S
+    , HU.testCase "2:00 best time, 2:30:01 pilot time < 0.5 speed fraction" $
+        FS.speedFraction (BestTime (2 % 1)) (PilotTime $ hms 2 30 1) `compare` halfS
+        @?= LT
      
-    -- WARNING: Failing test.
-    --  expected: SpeedFraction (4 % 5)
-    --   but got: SpeedFraction (13825749939663921 % 18014398509481984)
-    , HU.testCase "2:00 best time, 2:08 pilot time == 0.8 speed fraction" $
-        FS.speedFraction (BestTime (2 % 1)) (PilotTime $ hm 2 8) @?= point8S
+    , HU.testCase "3:00 best time, 3:36:44 pilot time > 0.5 speed fraction" $
+        FS.speedFraction (BestTime (3 % 1)) (PilotTime $ hms 3 36 44) `compare` halfS
+        @?= GT
      
-    -- WARNING: Failing test.
-    --  expected: SpeedFraction (4 % 5)
-    --   but got: SpeedFraction (27559310941624217 % 36028797018963968)
-    , HU.testCase "3:00 best time, 3:09 pilot time == 0.8 speed fraction" $
-        FS.speedFraction (BestTime (3 % 1)) (PilotTime $ hm 3 9) @?= point8S
+    , HU.testCase "3:00 best time, 3:36:45 pilot time < 0.5 speed fraction" $
+        FS.speedFraction (BestTime (3 % 1)) (PilotTime $ hms 3 36 45) `compare` halfS
+        @?= LT
+     
+    , HU.testCase "1:00 best time, 1:05:21 pilot time > 0.8 speed fraction" $
+        FS.speedFraction (BestTime (1 % 1)) (PilotTime $ hms 1 5 21) `compare` point8S
+        @?= GT 
+     
+    , HU.testCase "1:00 best time, 1:05:22 pilot time < 0.8 speed fraction" $
+        FS.speedFraction (BestTime (1 % 1)) (PilotTime $ hms 1 5 22) `compare` point8S
+        @?= LT
+     
+    , HU.testCase "2:00 best time, 2:07:35 pilot time > 0.8 speed fraction" $
+        FS.speedFraction (BestTime (2 % 1)) (PilotTime $ hms 2 7 35) `compare` point8S
+        @?= GT
+     
+    , HU.testCase "2:00 best time, 2:07:36 pilot time < 0.8 speed fraction" $
+        FS.speedFraction (BestTime (2 % 1)) (PilotTime $ hms 2 7 36) `compare` point8S
+        @?= LT
+     
+    , HU.testCase "3:00 best time, 3:09:17 pilot time > 0.8 speed fraction" $
+        FS.speedFraction (BestTime (3 % 1)) (PilotTime $ hms 3 9 17) `compare` point8S
+        @?= GT
+
+    , HU.testCase "3:00 best time, 3:09:18 pilot time < 0.8 speed fraction" $
+        FS.speedFraction (BestTime (3 % 1)) (PilotTime $ hms 3 9 18) `compare` point8S
+        @?= LT
     ]
 
 speedFractionInputs :: SfTest -> Bool
