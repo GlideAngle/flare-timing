@@ -51,6 +51,7 @@ scProps = testGroup "(checked by SmallCheck)"
     , SC.testProperty "Arrival weight is in the range of [0, 1]" arrivalWeight
     , SC.testProperty "Leading weight is in the range of [0, 1]" leadingWeight
     , SC.testProperty "Time weight is in the range of [0, 1]" timeWeight
+    , SC.testProperty "Arrival fraction is in the range of [0.2, 1]" arrivalFraction
     ]
 
 qcProps :: TestTree
@@ -64,4 +65,5 @@ qcProps = testGroup "(checked by QuickCheck)"
     , QC.testProperty "Arrival weight is in the range of [0, 1]" arrivalWeight
     , QC.testProperty "Leading weight is in the range of [0, 1]" leadingWeight
     , QC.testProperty "Time weight is in the range of [0, 1]" timeWeight
+    , QC.testProperty "Arrival fraction is in the range of [0.2, 1]" arrivalFraction
     ]

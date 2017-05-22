@@ -1,9 +1,11 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# lANGUAGE PatternSynonyms #-}
 module TestNewtypes where
 
 -- NOTE: Avoid orphan instance warnings with these newtypes.
 
+import Flight.Ratio (pattern (:%))
 import Test.SmallCheck.Series as SC
 import Test.Tasty.QuickCheck as QC
 
@@ -21,6 +23,8 @@ import Flight.Score
     , LaunchValidity(..)
     , TimeValidity(..)
     , DistanceValidity(..)
+    , PilotsAtEss(..)
+    , PositionAtEss(..)
     )
 
 -- | Nominal goal.
@@ -114,3 +118,16 @@ instance QC.Arbitrary TvTest where
     arbitrary = do
         (NormalSum (x, y, z)) <- arbitrary
         return $ TvTest (LaunchValidity x, TimeValidity y, DistanceValidity z)
+
+-- | ArrivalFraction
+newtype AfTest = AfTest (PilotsAtEss, PositionAtEss) deriving Show
+
+instance Monad m => SC.Serial m AfTest where
+    series =
+        cons1 $ \(Normal (rank :% n)) ->
+             AfTest (PilotsAtEss n, PositionAtEss $ max 1 rank)
+
+instance QC.Arbitrary AfTest where
+    arbitrary = do
+        (Normal (rank :% n)) <- arbitrary
+        return $ AfTest (PilotsAtEss n, PositionAtEss $ max 1 rank)
