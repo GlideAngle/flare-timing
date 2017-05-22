@@ -5,11 +5,11 @@ module TestNewtypes where
 
 -- NOTE: Avoid orphan instance warnings with these newtypes.
 
-import Flight.Ratio (pattern (:%))
+import Data.Ratio ((%))
 import Test.SmallCheck.Series as SC
 import Test.Tasty.QuickCheck as QC
 
-import Normal (Normal(..), NormalSum(..))
+import Flight.Ratio (pattern (:%))
 import Flight.Score
     ( Lw(..)
     , Aw(..)
@@ -25,7 +25,10 @@ import Flight.Score
     , DistanceValidity(..)
     , PilotsAtEss(..)
     , PositionAtEss(..)
+    , BestTime(..)
+    , PilotTime(..)
     )
+import Normal (Normal(..), NormalSum(..))
 
 -- | Nominal goal.
 newtype NgTest = NgTest NominalGoal deriving Show
@@ -131,3 +134,16 @@ instance QC.Arbitrary AfTest where
     arbitrary = do
         (Normal (rank :% n)) <- arbitrary
         return $ AfTest (PilotsAtEss n, PositionAtEss $ max 1 rank)
+
+-- | Speed 
+newtype SfTest = SfTest (BestTime, PilotTime) deriving Show
+
+instance Monad m => SC.Serial m SfTest where
+    series =
+        cons1 $ \(Normal (n :% d)) ->
+             SfTest (BestTime (d % 1), PilotTime $ (d + n) % 1)
+
+instance QC.Arbitrary SfTest where
+    arbitrary = do
+        (Normal (n :% d)) <- arbitrary
+        return $ SfTest (BestTime (d % 1), PilotTime $ (d + n) % 1)

@@ -43,11 +43,16 @@ module Flight.Score
     , leadingWeight
     , arrivalWeight
     , timeWeight
-    -- * Fractional allotment of points
+    -- * Fractional allotment of arrival points
     , PilotsAtEss(..)
     , PositionAtEss(..)
     , ArrivalFraction(..)
     , arrivalFraction
+    -- * Fractional allotment of time points
+    , BestTime(..)
+    , PilotTime(..)
+    , SpeedFraction(..)
+    , speedFraction
     ) where
 
 import Flight.Ratio (isNormal, isFoldNormal)
@@ -56,6 +61,10 @@ import Flight.Allot
     , PositionAtEss(..)
     , ArrivalFraction(..)
     , arrivalFraction
+    , BestTime(..)
+    , PilotTime(..)
+    , SpeedFraction(..)
+    , speedFraction
     )
 import Flight.Validity
     ( NominalLaunch(..)
