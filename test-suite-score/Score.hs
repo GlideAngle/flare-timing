@@ -48,10 +48,6 @@ scProps = testGroup "(checked by SmallCheck)"
     , SC.testProperty "Arrival weight is in the range of [0, 1], PG" arrivalWeightPgZ
     , SC.testProperty "Arrival weight is in the range of [0, 1]" arrivalWeight
     , SC.testProperty "Leading weight is in the range of [0, 1]" leadingWeight
-
-    -- WARNING: Failing test.
-    --  there exists TwTest (DistanceWeight (1 % 1),LeadingWeight (0 % 1),ArrivalWeight (1 % 1)) such that
-    --    condition is false
     , SC.testProperty "Time weight is in the range of [0, 1]" timeWeight
     ]
 
@@ -65,10 +61,5 @@ qcProps = testGroup "(checked by QuickCheck)"
     , QC.testProperty "Arrival weight is in the range of [0, 1], PG" arrivalWeightPgZ
     , QC.testProperty "Arrival weight is in the range of [0, 1]" arrivalWeight
     , QC.testProperty "Leading weight is in the range of [0, 1]" leadingWeight
-
-    -- WARNING: Failing test.
-    --  *** Failed! Falsifiable (after 1 test):
-    --  TwTest (DistanceWeight (1 % 1),LeadingWeight (1 % 1),ArrivalWeight (1 % 1))
-    --  Use --quickcheck-replay '0 TFGenR 00000069EA3E9D9B0000000000989680000000000000E22500000914AB200BC0 0 128 8 0' to reproduce.
     , QC.testProperty "Time weight is in the range of [0, 1]" timeWeight
     ]
