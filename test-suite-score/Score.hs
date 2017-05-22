@@ -9,6 +9,7 @@ import DistanceValidity
 import TimeValidity
 import TaskValidity
 import Weighting
+import ArrivalFraction
 
 main :: IO ()
 main = defaultMain tests
@@ -36,6 +37,7 @@ validityUnits =
         , timeValidityUnits
         , taskValidityUnits
         , weightingUnits
+        , arrivalFractionUnits
         ]
 
 scProps :: TestTree
