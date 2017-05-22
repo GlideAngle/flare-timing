@@ -20,16 +20,16 @@ import Data.Ratio ((%))
 
 launchValidityUnits :: TestTree
 launchValidityUnits = testGroup "Launch validity unit tests"
-    [ HU.testCase "Launch validity 0 0 == 0" $
+    [ HU.testCase "Launch validity 0 0 = 0" $
         FS.launchValidity (NominalLaunch (0 % 1)) (0 % 1) @?= LaunchValidity (0 % 1)
 
-    , HU.testCase "Launch validity 1 0 == 0" $
+    , HU.testCase "Launch validity 1 0 = 0" $
         FS.launchValidity (NominalLaunch (1 % 1)) (0 % 1) @?= LaunchValidity (0 % 1)
 
-    , HU.testCase "Launch validity 0 1 == 1" $
+    , HU.testCase "Launch validity 0 1 = 1" $
         FS.launchValidity (NominalLaunch (0 % 1)) (1 % 1) @?= LaunchValidity (1 % 1)
 
-    , HU.testCase "Launch validity 1 1 == 1" $
+    , HU.testCase "Launch validity 1 1 = 1" $
         FS.launchValidity (NominalLaunch (1 % 1)) (1 % 1) @?= LaunchValidity (1 % 1)
     ]
 

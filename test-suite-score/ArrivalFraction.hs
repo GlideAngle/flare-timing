@@ -22,10 +22,10 @@ minArrivalFraction = ArrivalFraction (1 % 5)
 
 arrivalFractionUnits :: TestTree
 arrivalFractionUnits = testGroup "Arrival fraction unit tests"
-    [ HU.testCase "1 pilot at ESS, first at ESS == 1 arrival fraction" $
+    [ HU.testCase "1 pilot at ESS, first at ESS = 1 arrival fraction" $
         FS.arrivalFraction (PilotsAtEss 1) (PositionAtEss 1) @?= maxArrivalFraction
 
-    , HU.testCase "2 pilots at ESS, first at ESS == 1 arrival fraction" $
+    , HU.testCase "2 pilots at ESS, first at ESS = 1 arrival fraction" $
         FS.arrivalFraction (PilotsAtEss 2) (PositionAtEss 1) @?= maxArrivalFraction
 
     , HU.testCase "2 pilots at ESS, last at ESS > 0.2 arrival fraction" $

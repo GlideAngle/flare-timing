@@ -25,31 +25,31 @@ import TestNewtypes
 
 distanceValidityUnits :: TestTree
 distanceValidityUnits = testGroup "Distance validity unit tests"
-    [ HU.testCase "Distance validity 0 0 0 0 0 0 == 0" $
+    [ HU.testCase "Distance validity 0 0 0 0 0 0 = 0" $
         FS.distanceValidity (NominalGoal (0 % 1)) (NominalDistance 0) 0 0 0 0
         @?= DistanceValidity (0 % 1)
 
-    , HU.testCase "Distance validity 1 1 1 1 1 1 == 1" $
+    , HU.testCase "Distance validity 1 1 1 1 1 1 = 1" $
         FS.distanceValidity (NominalGoal (1 % 1)) (NominalDistance 1) 1 1 1 1
         @?= DistanceValidity (1 % 1)
 
-    , HU.testCase "Distance validity 1 0 1 1 1 1 == 1" $
+    , HU.testCase "Distance validity 1 0 1 1 1 1 = 1" $
         FS.distanceValidity (NominalGoal (1 % 1)) (NominalDistance 0) 1 1 1 1
         @?= DistanceValidity (1 % 1)
 
-    , HU.testCase "Distance validity 1 1 0 1 1 1 == 0" $
+    , HU.testCase "Distance validity 1 1 0 1 1 1 = 0" $
         FS.distanceValidity (NominalGoal (1 % 1)) (NominalDistance 1) 0 1 1 1
         @?= DistanceValidity (0 % 1)
 
-    , HU.testCase "Distance validity 1 1 1 0 1 1 == 1" $
+    , HU.testCase "Distance validity 1 1 1 0 1 1 = 1" $
         FS.distanceValidity (NominalGoal (1 % 1)) (NominalDistance 1) 1 0 1 1
         @?= DistanceValidity (1 % 1)
 
-    , HU.testCase "Distance validity 1 1 1 1 0 1 == 0" $
+    , HU.testCase "Distance validity 1 1 1 1 0 1 = 0" $
         FS.distanceValidity (NominalGoal (1 % 1)) (NominalDistance 1) 1 1 0 1
         @?= DistanceValidity (0 % 1)
 
-    , HU.testCase "Distance validity 1 1 1 1 1 0 == 0" $
+    , HU.testCase "Distance validity 1 1 1 1 1 0 = 0" $
         FS.distanceValidity (NominalGoal (1 % 1)) (NominalDistance 1) 1 1 1 0
         @?= DistanceValidity (0 % 1)
     ]
