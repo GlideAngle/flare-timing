@@ -29,6 +29,7 @@ ghc-options: -Wall
 library:
   dependencies:
   - base >=4.5 && <5
+  - containers
   source-dirs: library
   exposed-modules:
   - Flight.Score
@@ -57,6 +58,7 @@ tests:
   score:
     dependencies:
     - base
+    - containers
     - tasty
     - tasty-hunit
     - tasty-quickcheck
