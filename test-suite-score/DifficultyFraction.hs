@@ -1,5 +1,6 @@
 module DifficultyFraction
     ( difficultyFractionUnits
+    , lookaheadChunks
     ) where
 
 import Test.Tasty (TestTree, testGroup)
@@ -8,11 +9,13 @@ import Data.Ratio ((%))
 
 import qualified Flight.Score as FS
 import Flight.Score
-    ( BestDistance(..)
-    , PilotDistance(..)
+    ( PilotDistance(..)
     , LookaheadChunks(..)
+    , ChunkedDistance(..)
     , DifficultyFraction(..)
     )
+
+import TestNewtypes
 
 dists10 :: [PilotDistance]
 dists10 = [ PilotDistance $ 10 * x | x <- [ 1 .. 10 ]]
@@ -46,13 +49,11 @@ expected3kms100 =
 
 difficultyFractionUnits :: TestTree
 difficultyFractionUnits = testGroup "Difficulty fraction unit tests"
-    [ HU.testCase "10 pilots land out in 100 kms = 300 look ahead chunks or 30 kms" $
-        FS.lookaheadChunks (BestDistance 100) dists10
-        @?= LookaheadChunks 300
+    [ HU.testCase "10 pilots land out in 100 kms = 3000 look ahead chunks or 300 kms" $
+        FS.lookaheadChunks dists10 @?= LookaheadChunks 3000
 
-    , HU.testCase "100 pilots land out in 100 kms = 30 look ahead chunks or 3 kms" $
-        FS.lookaheadChunks (BestDistance 100) dists100
-        @?= LookaheadChunks 30
+    , HU.testCase "100 pilots land out in 100 kms = 300 look ahead chunks or 30 kms" $
+        FS.lookaheadChunks dists100 @?= LookaheadChunks 300
 
     , HU.testCase "0 kms look ahead, 10 pilots evenly land out = 1/20 difficulty fraction" $
         FS.difficultyFraction (LookaheadChunks 0) dists10
@@ -78,3 +79,10 @@ difficultyFractionUnits = testGroup "Difficulty fraction unit tests"
         FS.difficultyFraction (LookaheadChunks 30) dists100
         @?= expected3kms100
     ]
+
+lookaheadChunks :: LaTest -> Bool
+lookaheadChunks (LaTest xs) =
+    (\(LookaheadChunks n) -> n >= 30 && n <= max 30 (30 * bestInChunks)) $ FS.lookaheadChunks xs
+    where
+        (ChunkedDistance bestInChunks) =
+            if null xs then (ChunkedDistance 30) else FS.toChunk $ maximum xs

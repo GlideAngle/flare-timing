@@ -60,7 +60,9 @@ module Flight.Score
     , linearFraction
     -- * Fractional allotment of difficulty distance points
     , LookaheadChunks(..)
+    , ChunkedDistance(..)
     , lookaheadChunks
+    , toChunk
     , DifficultyFraction(..)
     , difficultyFraction
     ) where

@@ -61,6 +61,7 @@ scProps = testGroup "(checked by SmallCheck)"
     , SC.testProperty "Speed fraction pilot time is not less than best time" speedFractionInputs
     , SC.testProperty "Speed fraction is in the range of [0, 1]" speedFraction
     , SC.testProperty "Linear distance fraction is in the range of [0, 1]" linearFraction
+    , SC.testProperty "Difficulty lookahead is in the range of [30, 30 * best flown] chunks" lookaheadChunks
     ]
 
 qcProps :: TestTree
@@ -78,4 +79,5 @@ qcProps = testGroup "(checked by QuickCheck)"
     , QC.testProperty "Speed fraction pilot time is not less than best time" speedFractionInputs
     , QC.testProperty "Speed fraction is in the range of [0, 1]" speedFraction
     , QC.testProperty "Linear distance fraction is in the range of [0, 1]" linearFraction
+    , QC.testProperty "Difficulty lookahead is in the range of [30, 30 * best flown] chunks" lookaheadChunks
     ]

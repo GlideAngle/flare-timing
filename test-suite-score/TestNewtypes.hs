@@ -6,6 +6,7 @@ module TestNewtypes where
 -- NOTE: Avoid orphan instance warnings with these newtypes.
 
 import Data.Ratio ((%))
+import Data.List (sort, reverse)
 import Test.SmallCheck.Series as SC
 import Test.Tasty.QuickCheck as QC
 
@@ -162,3 +163,20 @@ instance QC.Arbitrary LfTest where
     arbitrary = do
         (Normal (n :% d)) <- arbitrary
         return $ LfTest (BestDistance $ (d + n) % 1, PilotDistance (d % 1))
+
+-- | Difficulty fraction, lookahead chunks.
+newtype LaTest = LaTest [PilotDistance] deriving Show
+
+mkLaTest :: [Int] -> LaTest
+mkLaTest xs =
+    case toRational <$> (reverse $ sort $ abs <$> xs) of
+         [] -> LaTest []
+         ys -> LaTest (PilotDistance <$> reverse ys)
+
+instance Monad m => SC.Serial m LaTest where
+    series = cons1 mkLaTest
+
+instance QC.Arbitrary LaTest where
+    arbitrary = do
+        xs <- listOf $ choose (1, 1000000)
+        return $ mkLaTest xs

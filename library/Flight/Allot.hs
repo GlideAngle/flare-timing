@@ -14,13 +14,15 @@ module Flight.Allot
     , LinearFraction(..)
     , linearFraction
     , LookaheadChunks(..)
+    , ChunkedDistance(..)
     , lookaheadChunks
+    , toChunk
     , DifficultyFraction(..)
     , difficultyFraction
     ) where
 
 import Data.Ratio ((%))
-import Data.List (sort, group, scanl)
+import Data.List (sort, group)
 import Data.Maybe (fromMaybe)
 import qualified Data.Map.Strict as Map
 import qualified Data.Set as Set
@@ -72,15 +74,20 @@ linearFraction :: BestDistance -> PilotDistance -> LinearFraction
 linearFraction (BestDistance (nb :% db)) (PilotDistance (np :% dp)) =
     LinearFraction $ (np * db) % (dp * nb)
 
-lookaheadChunks :: BestDistance -> [PilotDistance] -> LookaheadChunks
-lookaheadChunks (BestDistance (n :% d)) xs =
+lookaheadChunks :: [PilotDistance] -> LookaheadChunks
+lookaheadChunks [] =
+    LookaheadChunks 30
+lookaheadChunks xs =
     LookaheadChunks $ max 30 rounded
     where
         pilotsLandedOut :: Integer
         pilotsLandedOut = toInteger $ length xs
 
+        bestDistance = maximum xs
+        (ChunkedDistance bestInChunks) = toChunk bestDistance
+
         rounded :: Integer
-        rounded = round $ (30 * n) % (pilotsLandedOut * d)
+        rounded = round $ ((30 * bestInChunks) % pilotsLandedOut)
 
 toChunk :: PilotDistance -> ChunkedDistance
 toChunk (PilotDistance d) =
