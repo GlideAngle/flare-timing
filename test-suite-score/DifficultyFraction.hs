@@ -1,6 +1,7 @@
 module DifficultyFraction
     ( difficultyFractionUnits
     , lookaheadChunks
+    , difficultyFraction
     ) where
 
 import Test.Tasty (TestTree, testGroup)
@@ -13,6 +14,7 @@ import Flight.Score
     , LookaheadChunks(..)
     , ChunkedDistance(..)
     , DifficultyFraction(..)
+    , isNormal
     )
 
 import TestNewtypes
@@ -92,9 +94,13 @@ difficultyFractionUnits = testGroup "Difficulty fraction unit tests"
         @?= expected100
     ]
 
-lookaheadChunks :: LaTest -> Bool
-lookaheadChunks (LaTest xs) =
+lookaheadChunks :: DfTest -> Bool
+lookaheadChunks (DfTest xs) =
     (\(LookaheadChunks n) -> n >= 30 && n <= max 30 (30 * bestInChunks)) $ FS.lookaheadChunks xs
     where
         (ChunkedDistance bestInChunks) =
             if null xs then (ChunkedDistance 30) else FS.toChunk $ maximum xs
+
+difficultyFraction :: DfTest -> Bool
+difficultyFraction (DfTest xs) =
+    all (\(DifficultyFraction x) -> isNormal x) $ FS.difficultyFraction xs

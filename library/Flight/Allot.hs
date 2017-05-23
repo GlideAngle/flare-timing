@@ -25,7 +25,6 @@ import Data.Ratio ((%))
 import Data.List (sort, group)
 import Data.Maybe (fromMaybe)
 import qualified Data.Map.Strict as Map
-import qualified Data.Set as Set
 import Flight.Ratio (pattern (:%))
 
 newtype PilotsAtEss = PilotsAtEss Integer deriving (Eq, Show)
@@ -155,7 +154,10 @@ difficulty (LookaheadChunks lookahead) nMap =
         f (ChunkedDistance cd) _ =
             toInteger $ sum $ Map.elems filtered
             where
-                keySet :: Set.Set ChunkedDistance
-                keySet = Set.fromList $ ChunkedDistance <$> [cd .. (cd + lookahead)]
+                kMin = cd
+                kMax = cd + lookahead
 
-                filtered = Map.filterWithKey (\k _ -> Set.member k keySet) iMap
+                filtered =
+                    Map.filterWithKey
+                        (\(ChunkedDistance k) _ -> kMin <= k && k <= kMax)
+                        iMap

@@ -164,19 +164,19 @@ instance QC.Arbitrary LfTest where
         (Normal (n :% d)) <- arbitrary
         return $ LfTest (BestDistance $ (d + n) % 1, PilotDistance (d % 1))
 
--- | Difficulty fraction, lookahead chunks.
-newtype LaTest = LaTest [PilotDistance] deriving Show
+-- | Difficulty fraction
+newtype DfTest = DfTest [PilotDistance] deriving Show
 
-mkLaTest :: [Int] -> LaTest
-mkLaTest xs =
+mkDfTest :: [Int] -> DfTest
+mkDfTest xs =
     case toRational <$> (reverse $ sort $ abs <$> xs) of
-         [] -> LaTest []
-         ys -> LaTest (PilotDistance <$> reverse ys)
+         [] -> DfTest []
+         ys -> DfTest (PilotDistance <$> reverse ys)
 
-instance Monad m => SC.Serial m LaTest where
-    series = cons1 mkLaTest
+instance Monad m => SC.Serial m DfTest where
+    series = cons1 mkDfTest
 
-instance QC.Arbitrary LaTest where
+instance QC.Arbitrary DfTest where
     arbitrary = do
         xs <- listOf $ choose (1, 1000000)
-        return $ mkLaTest xs
+        return $ mkDfTest xs
