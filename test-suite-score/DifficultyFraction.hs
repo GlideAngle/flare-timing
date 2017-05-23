@@ -23,29 +23,57 @@ dists10 = [ PilotDistance $ 10 * x | x <- [ 1 .. 10 ]]
 dists100 :: [PilotDistance]
 dists100 = [ PilotDistance x | x <- [ 1 .. 100 ]]
 
-expected0kms10 :: [DifficultyFraction]
-expected0kms10 =
-    DifficultyFraction <$> replicate 10 (1 % 20)
+expected10 :: [DifficultyFraction]
+expected10 =
+    DifficultyFraction <$>
+    [ (1 % 11)
+    , (9 % 110)
+    , (4 % 55)
+    , (7 % 110)
+    , (3 % 55)
+    , (1 % 22)
+    , (2 % 55)
+    , (3 % 110)
+    , (1 % 55)
+    , (1 % 110)
+    ]
 
-expected0kms100 :: [DifficultyFraction]
-expected0kms100 =
-    DifficultyFraction <$> replicate 100 (1 % 200)
-
-expected10kms10 :: [DifficultyFraction]
-expected10kms10 =
-    DifficultyFraction <$> replicate 10 (1 % 20)
-
-expected1kms100 :: [DifficultyFraction]
-expected1kms100 =
-    DifficultyFraction <$> replicate 99 (1 % 199) ++ [ 1 % 398 ]
-
-expected30kms10 :: [DifficultyFraction]
-expected30kms10 =
-    DifficultyFraction <$> replicate 7 (1 % 17) ++ [ 3 % 68, 1 % 34, 1 % 68 ]
-
-expected3kms100 :: [DifficultyFraction]
-expected3kms100 = 
-    DifficultyFraction <$> replicate 97 (1 % 197) ++ [ 3 % 788, 1 % 394, 1 % 788 ]
+expected100 :: [DifficultyFraction]
+expected100 =
+    DifficultyFraction <$>
+    replicate 70 (1 % 170)
+    ++
+    [ (3 % 527)
+    , (29 % 5270)
+    , (14 % 2635)
+    , (27 % 5270)
+    , (13 % 2635)
+    , (5 % 1054)
+    , (12 % 2635)
+    , (23 % 5270)
+    , (11 % 2635)
+    , (21 % 5270)
+    , (2 % 527)
+    , (19 % 5270)
+    , (9 % 2635)
+    , (1 % 310)
+    , (8 % 2635)
+    , (3 % 1054)
+    , (7 % 2635)
+    , (13 % 5270)
+    , (6 % 2635)
+    , (11 % 5270)
+    , (1 % 527)
+    , (9 % 5270)
+    , (4 % 2635)
+    , (7 % 5270)
+    , (3 % 2635)
+    , (1 % 1054)
+    , (2 % 2635)
+    , (3 % 5270)
+    , (1 % 2635)
+    , (1 % 5270)
+    ]
 
 difficultyFractionUnits :: TestTree
 difficultyFractionUnits = testGroup "Difficulty fraction unit tests"
@@ -55,29 +83,13 @@ difficultyFractionUnits = testGroup "Difficulty fraction unit tests"
     , HU.testCase "100 pilots land out in 100 kms = 300 look ahead chunks or 30 kms" $
         FS.lookaheadChunks dists100 @?= LookaheadChunks 300
 
-    , HU.testCase "0 kms look ahead, 10 pilots evenly land out = 1/20 difficulty fraction" $
-        FS.difficultyFraction (LookaheadChunks 0) dists10
-        @?= expected0kms10
+    , HU.testCase "10 pilots evenly land out over 100 kms" $
+        FS.difficultyFraction dists10
+        @?= expected10
 
-    , HU.testCase "0 kms look ahead, 100 pilots evenly land out = 1/200 difficulty fraction" $
-        FS.difficultyFraction (LookaheadChunks 0) dists100
-        @?= expected0kms100
-
-    , HU.testCase "10 kms look ahead, 10 pilots evenly land out = 1/20 difficulty fraction" $
-        FS.difficultyFraction (LookaheadChunks 10) dists10
-        @?= expected10kms10
-
-    , HU.testCase "1 kms look ahead, 100 pilots evenly land out = 99 * 1/199, 1/398" $
-        FS.difficultyFraction (LookaheadChunks 10) dists100
-        @?= expected1kms100
-
-    , HU.testCase "30 kms look ahead, 10 pilots evenly land out = 7 * 1/17, 3/68, 1/34, 1/68" $
-        FS.difficultyFraction (LookaheadChunks 300) dists10
-        @?= expected30kms10
-
-    , HU.testCase "3 kms look ahead, 100 pilots evenly land out = 97 * 1/197, 3/788, 1/394, 1/788" $
-        FS.difficultyFraction (LookaheadChunks 30) dists100
-        @?= expected3kms100
+    , HU.testCase "100 pilots evenly land out over 100 kms" $
+        FS.difficultyFraction dists100
+        @?= expected100
     ]
 
 lookaheadChunks :: LaTest -> Bool

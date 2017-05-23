@@ -93,10 +93,12 @@ toChunk :: PilotDistance -> ChunkedDistance
 toChunk (PilotDistance d) =
     ChunkedDistance $ round (d * (10 % 1))
 
-difficultyFraction :: LookaheadChunks -> [PilotDistance] -> [DifficultyFraction]
-difficultyFraction lookahead xs =
+difficultyFraction :: [PilotDistance] -> [DifficultyFraction]
+difficultyFraction xs =
     zipWith (diffByChunk diffScoreMap) xs' ys
     where
+        lookahead = lookaheadChunks xs
+
         xs' :: [PilotDistance]
         xs' = sort xs
 
