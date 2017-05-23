@@ -12,6 +12,7 @@ import Weighting
 import ArrivalFraction
 import SpeedFraction
 import LinearFraction
+import DifficultyFraction
 
 main :: IO ()
 main = defaultMain tests
@@ -42,6 +43,7 @@ validityUnits =
         , arrivalFractionUnits
         , speedFractionUnits
         , linearFractionUnits
+        , difficultyFractionUnits
         ]
 
 scProps :: TestTree

@@ -53,11 +53,16 @@ module Flight.Score
     , PilotTime(..)
     , SpeedFraction(..)
     , speedFraction
-    -- * Fractional allotment of distance points
+    -- * Fractional allotment of linear distance points
     , BestDistance(..)
     , PilotDistance(..)
     , LinearFraction(..)
     , linearFraction
+    -- * Fractional allotment of difficulty distance points
+    , LookaheadChunks(..)
+    , lookaheadChunks
+    , DifficultyFraction(..)
+    , difficultyFraction
     ) where
 
 import Flight.Ratio

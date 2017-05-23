@@ -13,6 +13,10 @@ module Flight.Allot
     , PilotDistance(..)
     , LinearFraction(..)
     , linearFraction
+    , LookaheadChunks(..)
+    , lookaheadChunks
+    , DifficultyFraction(..)
+    , difficultyFraction
     ) where
 
 import Data.Ratio ((%))
@@ -68,8 +72,8 @@ linearFraction :: BestDistance -> PilotDistance -> LinearFraction
 linearFraction (BestDistance (nb :% db)) (PilotDistance (np :% dp)) =
     LinearFraction $ (np * db) % (dp * nb)
 
-lookaheadChunks :: [PilotDistance] -> BestDistance -> LookaheadChunks
-lookaheadChunks xs (BestDistance (n :% d)) =
+lookaheadChunks :: BestDistance -> [PilotDistance] -> LookaheadChunks
+lookaheadChunks (BestDistance (n :% d)) xs =
     LookaheadChunks $ max 30 rounded
     where
         pilotsLandedOut :: Integer
