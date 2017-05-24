@@ -65,10 +65,16 @@ module Flight.Score
     , toChunk
     , DifficultyFraction(..)
     , difficultyFraction
+    -- * Leading coefficient
+    , TaskTime(..)
+    , DistanceToEss(..)
+    , LcTrack(..)
+    , madeGoal
     ) where
 
 import Flight.Ratio
 import Flight.Allot
+import Flight.Leading
 import Flight.Validity
 import Flight.Weighting
 

@@ -1,6 +1,11 @@
 {-# lANGUAGE PatternSynonyms #-}
 {-# lANGUAGE ScopedTypeVariables #-}
-module Flight.Leading where
+module Flight.Leading
+    ( TaskTime(..)
+    , DistanceToEss(..)
+    , LcTrack(..)
+    , madeGoal
+    )where
 
 import Data.Ratio ((%))
 import Flight.Ratio (pattern (:%))
