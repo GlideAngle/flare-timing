@@ -13,6 +13,7 @@ import Flight.Score
 leadingCoefficientUnits :: TestTree
 leadingCoefficientUnits = testGroup "Leading coefficient unit tests"
     [ madeGoalUnits
+    , cleanTrackUnits
     ]
 
 madeGoalUnits :: TestTree
@@ -37,4 +38,60 @@ madeGoalUnits = testGroup "Made goal unit tests"
         FS.madeGoal (LcTrack [ (TaskTime 0, DistanceToEss 0)
                              , (TaskTime 1, DistanceToEss 1)
                              ]) @?= True
+    ]
+
+cleanTrackUnits :: TestTree
+cleanTrackUnits = testGroup "Clean track unit tests"
+    [ HU.testCase "Single point = no points removed" $
+        FS.cleanTrack (LcTrack [ (TaskTime 0, DistanceToEss 0) ])
+        @?= LcTrack [ (TaskTime 0, DistanceToEss 0) ]
+
+    , HU.testCase "Two points, each one closer to goal = no points removed" $
+        FS.cleanTrack (LcTrack [ (TaskTime 0, DistanceToEss 2)
+                               , (TaskTime 1, DistanceToEss 1)
+                               ])
+        @?= LcTrack [ (TaskTime 0, DistanceToEss 2) 
+                    , (TaskTime 1, DistanceToEss 1)
+                    ]
+
+    , HU.testCase "Two points, each one further from goal = all but one point removed" $
+        FS.cleanTrack (LcTrack [ (TaskTime 0, DistanceToEss 1)
+                               , (TaskTime 1, DistanceToEss 2)
+                               ])
+        @?= LcTrack [ (TaskTime 0, DistanceToEss 1) ]
+
+    , HU.testCase "Three points, each one closer to goal = no points removed" $
+        FS.cleanTrack (LcTrack [ (TaskTime 0, DistanceToEss 3)
+                               , (TaskTime 1, DistanceToEss 2)
+                               , (TaskTime 2, DistanceToEss 1)
+                               ])
+        @?= LcTrack [ (TaskTime 0, DistanceToEss 3) 
+                    , (TaskTime 1, DistanceToEss 2)
+                    , (TaskTime 2, DistanceToEss 1)
+                    ]
+
+    , HU.testCase "Three points, each one further from goal = all but one point removed" $
+        FS.cleanTrack (LcTrack [ (TaskTime 0, DistanceToEss 1)
+                               , (TaskTime 1, DistanceToEss 2)
+                               , (TaskTime 1, DistanceToEss 3)
+                               ])
+        @?= LcTrack [ (TaskTime 0, DistanceToEss 1) ]
+
+    , HU.testCase "Three points, only 2nd moves further from goal = that point removed" $
+        FS.cleanTrack (LcTrack [ (TaskTime 0, DistanceToEss 2)
+                               , (TaskTime 1, DistanceToEss 3)
+                               , (TaskTime 2, DistanceToEss 1)
+                               ])
+        @?= LcTrack [ (TaskTime 0, DistanceToEss 2)
+                    , (TaskTime 2, DistanceToEss 1)
+                    ]
+
+    , HU.testCase "Three points, only 3rd moves further from goal = that point removed" $
+        FS.cleanTrack (LcTrack [ (TaskTime 0, DistanceToEss 2)
+                               , (TaskTime 1, DistanceToEss 1)
+                               , (TaskTime 2, DistanceToEss 2)
+                               ])
+        @?= LcTrack [ (TaskTime 0, DistanceToEss 2)
+                    , (TaskTime 1, DistanceToEss 1)
+                    ]
     ]

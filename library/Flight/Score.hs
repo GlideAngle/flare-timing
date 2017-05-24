@@ -70,6 +70,7 @@ module Flight.Score
     , DistanceToEss(..)
     , LcTrack(..)
     , madeGoal
+    , cleanTrack
     ) where
 
 import Flight.Ratio

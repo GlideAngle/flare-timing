@@ -5,6 +5,7 @@ module Flight.Leading
     , DistanceToEss(..)
     , LcTrack(..)
     , madeGoal
+    , cleanTrack
     )where
 
 import Data.Ratio ((%))
@@ -40,12 +41,16 @@ madeGoal (LcTrack xs) =
     any (\(DistanceToEss d) -> d <= 0) $ snd <$> xs
 
 -- | Removes points where the distance to Ess increases.
-cleanTrack :: LengthOfSs -> LcTrack -> LcTrack
-cleanTrack (LengthOfSs len) (LcTrack xs) =
-    LcTrack $ catMaybes $ zipWith f (zero : xs) xs
-    where
-        zero = (TaskTime 0, DistanceToEss len)
-        f (_, dM) x@(_, dN) = if dM < dN then Nothing else Just x
+cleanTrack :: LcTrack -> LcTrack
+cleanTrack (LcTrack xs)
+    | null xs =
+        LcTrack xs
+    | otherwise =
+        LcTrack $ catMaybes $ zipWith f (zero : xs) xs
+        where
+            (_, dist) = head xs
+            zero = (TaskTime 0, dist)
+            f (_, dM) x@(_, dN) = if dM < dN then Nothing else Just x
 
 -- | Calculate the leading coefficient for a single track.
 leadingCoefficient :: TaskDeadline
@@ -88,7 +93,7 @@ leadingCoefficients deadline len tracks =
     snd <$> csSorted
     where
         cleanXs :: [LcTrack]
-        cleanXs = cleanTrack len <$> tracks
+        cleanXs = cleanTrack <$> tracks
 
         iXs :: [(Int, LcTrack)]
         iXs = zip [1 .. ] cleanXs
