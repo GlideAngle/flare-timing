@@ -4,8 +4,12 @@ module Flight.Leading
     ( TaskTime(..)
     , DistanceToEss(..)
     , LcTrack(..)
+    , TaskDeadline(..)
+    , LengthOfSs(..)
+    , LeadingCoefficient(..)
     , madeGoal
     , cleanTrack
+    , leadingCoefficient
     )where
 
 import Data.Ratio ((%))
@@ -19,7 +23,7 @@ newtype TaskTime = TaskTime Rational deriving (Eq, Ord, Show)
 
 -- | Task time when the last pilot made the end of the speed section.
 newtype EssTime = EssTime Rational deriving (Eq, Ord, Show)
---
+
 -- | Time in seconds for the close of the task. 
 -- section.
 newtype TaskDeadline = TaskDeadline Rational deriving (Eq, Ord, Show)

@@ -6,12 +6,16 @@ module LeadingCoefficient
 import Data.List (sort, reverse)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit as HU ((@?=), testCase)
+import Data.Ratio ((%))
 
 import qualified Flight.Score as FS
 import Flight.Score
     ( TaskTime(..)
     , DistanceToEss(..)
     , LcTrack(..)
+    , TaskDeadline(..)
+    , LengthOfSs(..)
+    , LeadingCoefficient(..)
     )
 
 import TestNewtypes
@@ -20,6 +24,7 @@ leadingCoefficientUnits :: TestTree
 leadingCoefficientUnits = testGroup "Leading coefficient unit tests"
     [ madeGoalUnits
     , cleanTrackUnits
+    , leadingUnits
     ]
 
 madeGoalUnits :: TestTree
@@ -101,6 +106,59 @@ cleanTrackUnits = testGroup "Clean track unit tests"
                     , (TaskTime 1, DistanceToEss 1)
                     ]
     ]
+
+leadingUnits :: TestTree
+leadingUnits = testGroup "Leading coefficient (LC) unit tests"
+    [ HU.testCase "1 track point = 0 LC" $
+        FS.leadingCoefficient
+            (TaskDeadline $ 1 % 1)
+            (LengthOfSs $ 1)
+            (LcTrack [ (TaskTime 0, DistanceToEss 0) ])
+        @?= LeadingCoefficient 0
+
+    , HU.testCase "2 track points = 0 LC" $
+        FS.leadingCoefficient
+            (TaskDeadline $ 1 % 1)
+            (LengthOfSs $ 1)
+            (LcTrack [ (TaskTime 0, DistanceToEss 1)
+                     , (TaskTime 1, DistanceToEss 0)
+                     ])
+        @?= LeadingCoefficient 0
+
+    , HU.testCase "3 track points = 1 / 7200 LC" $
+        FS.leadingCoefficient
+            (TaskDeadline $ 2 % 1)
+            (LengthOfSs $ 2)
+            (LcTrack [ (TaskTime 0, DistanceToEss 2)
+                     , (TaskTime 1, DistanceToEss 1)
+                     , (TaskTime 2, DistanceToEss 0)
+                     ])
+        @?= (LeadingCoefficient $ 1 % 7200)
+
+    , HU.testCase "4 track points = 1 / 2700 LC" $
+        FS.leadingCoefficient
+            (TaskDeadline $ 3 % 1)
+            (LengthOfSs $ 3)
+            (LcTrack [ (TaskTime 0, DistanceToEss 3)
+                     , (TaskTime 1, DistanceToEss 2)
+                     , (TaskTime 2, DistanceToEss 1)
+                     , (TaskTime 3, DistanceToEss 0)
+                     ])
+        @?= (LeadingCoefficient $ 1 % 2700)
+
+    , HU.testCase "5 track points = 1 / 1440 LC" $
+        FS.leadingCoefficient
+            (TaskDeadline $ 4 % 1)
+            (LengthOfSs $ 4)
+            (LcTrack [ (TaskTime 0, DistanceToEss 4)
+                     , (TaskTime 1, DistanceToEss 3)
+                     , (TaskTime 2, DistanceToEss 2)
+                     , (TaskTime 3, DistanceToEss 1)
+                     , (TaskTime 4, DistanceToEss 0)
+                     ])
+        @?= (LeadingCoefficient $ 1 % 1440)
+    ]
+
 
 distances :: LcTrack -> [Rational]
 distances (LcTrack track) = (\(_, DistanceToEss d) -> d) <$> track

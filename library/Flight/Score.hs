@@ -69,6 +69,10 @@ module Flight.Score
     , TaskTime(..)
     , DistanceToEss(..)
     , LcTrack(..)
+    , TaskDeadline(..)
+    , LengthOfSs(..)
+    , LeadingCoefficient(..)
+    , leadingCoefficient
     , madeGoal
     , cleanTrack
     ) where
