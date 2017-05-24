@@ -16,6 +16,7 @@ import Flight.Score
     , TaskDeadline(..)
     , LengthOfSs(..)
     , LeadingCoefficient(..)
+    , LeadingFraction(..)
     )
 
 import TestNewtypes
@@ -24,7 +25,8 @@ leadingCoefficientUnits :: TestTree
 leadingCoefficientUnits = testGroup "Leading coefficient unit tests"
     [ madeGoalUnits
     , cleanTrackUnits
-    , leadingUnits
+    , coefficientUnits
+    , leadingFractionsUnits
     ]
 
 madeGoalUnits :: TestTree
@@ -107,8 +109,8 @@ cleanTrackUnits = testGroup "Clean track unit tests"
                     ]
     ]
 
-leadingUnits :: TestTree
-leadingUnits = testGroup "Leading coefficient (LC) unit tests"
+coefficientUnits :: TestTree
+coefficientUnits = testGroup "Leading coefficient (LC) unit tests"
     [ HU.testCase "1 track point = 0 LC" $
         FS.leadingCoefficient
             (TaskDeadline $ 1 % 1)
@@ -183,6 +185,92 @@ leadingUnits = testGroup "Leading coefficient (LC) unit tests"
         @?= (LeadingCoefficient $ 1 % 360)
     ]
 
+leadingFractionsUnits :: TestTree
+leadingFractionsUnits = testGroup "Leading fractions unit tests"
+    [ HU.testCase "2 pilots, identical tracks = 1 leading factor each" $
+        FS.leadingFractions
+            (TaskDeadline $ 4 % 1)
+            (LengthOfSs $ 4)
+            [ LcTrack [ (TaskTime 0, DistanceToEss 4)
+                      , (TaskTime 1, DistanceToEss 3)
+                      , (TaskTime 2, DistanceToEss 2)
+                      , (TaskTime 3, DistanceToEss 1)
+                      , (TaskTime 4, DistanceToEss 0)
+                      ]
+            , LcTrack [ (TaskTime 0, DistanceToEss 4)
+                      , (TaskTime 1, DistanceToEss 3)
+                      , (TaskTime 2, DistanceToEss 2)
+                      , (TaskTime 3, DistanceToEss 1)
+                      , (TaskTime 4, DistanceToEss 0)
+                      ]
+            ]
+        @?= [ LeadingFraction $ 1 % 1
+            , LeadingFraction $ 1 % 1
+            ]
+     
+    , HU.testCase "2 pilots, one always leading = 0 & 1 leading factors" $
+        FS.leadingFractions
+            (TaskDeadline $ 4 % 1)
+            (LengthOfSs $ 4)
+            [ LcTrack [ (TaskTime 0, DistanceToEss 5)
+                      , (TaskTime 1, DistanceToEss 4)
+                      , (TaskTime 2, DistanceToEss 3)
+                      , (TaskTime 3, DistanceToEss 2)
+                      , (TaskTime 4, DistanceToEss 1)
+                      ]
+            , LcTrack [ (TaskTime 0, DistanceToEss 4)
+                      , (TaskTime 1, DistanceToEss 3)
+                      , (TaskTime 2, DistanceToEss 2)
+                      , (TaskTime 3, DistanceToEss 1)
+                      , (TaskTime 4, DistanceToEss 0)
+                      ]
+            ]
+        @?= [ LeadingFraction $ 0 % 1
+            , LeadingFraction $ 1 % 1
+            ]
+     
+    , HU.testCase "2 pilots, one mostly leading = 0 & 1 leading factors" $
+        FS.leadingFractions
+            (TaskDeadline $ 4 % 1)
+            (LengthOfSs $ 4)
+            [ LcTrack [ (TaskTime 0, DistanceToEss 5)
+                      , (TaskTime 1, DistanceToEss 2)
+                      , (TaskTime 2, DistanceToEss 3)
+                      , (TaskTime 3, DistanceToEss 2)
+                      , (TaskTime 4, DistanceToEss 1)
+                      ]
+            , LcTrack [ (TaskTime 0, DistanceToEss 4)
+                      , (TaskTime 1, DistanceToEss 3)
+                      , (TaskTime 2, DistanceToEss 2)
+                      , (TaskTime 3, DistanceToEss 1)
+                      , (TaskTime 4, DistanceToEss 0)
+                      ]
+            ]
+        @?= [ LeadingFraction $ 0 % 1
+            , LeadingFraction $ 1 % 1
+            ]
+     
+    , HU.testCase "2 pilots, alternating lead = 0 & 1 leading factors" $
+        FS.leadingFractions
+            (TaskDeadline $ 4 % 1)
+            (LengthOfSs $ 8)
+            [ LcTrack [ (TaskTime 0, DistanceToEss 8)
+                      , (TaskTime 1, DistanceToEss 6)
+                      , (TaskTime 2, DistanceToEss 5)
+                      , (TaskTime 3, DistanceToEss 2)
+                      , (TaskTime 4, DistanceToEss 1)
+                      ]
+            , LcTrack [ (TaskTime 0, DistanceToEss 8)
+                      , (TaskTime 1, DistanceToEss 7)
+                      , (TaskTime 2, DistanceToEss 4)
+                      , (TaskTime 3, DistanceToEss 3)
+                      , (TaskTime 4, DistanceToEss 0)
+                      ]
+            ]
+        @?= [ LeadingFraction $ 0 % 1
+            , LeadingFraction $ 1 % 1
+            ]
+    ]
 
 distances :: LcTrack -> [Rational]
 distances (LcTrack track) = (\(_, DistanceToEss d) -> d) <$> track

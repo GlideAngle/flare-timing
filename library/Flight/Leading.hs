@@ -7,9 +7,11 @@ module Flight.Leading
     , TaskDeadline(..)
     , LengthOfSs(..)
     , LeadingCoefficient(..)
+    , LeadingFraction(..)
     , madeGoal
     , cleanTrack
     , leadingCoefficient
+    , leadingFractions
     )where
 
 import Data.Ratio ((%))
@@ -39,6 +41,8 @@ newtype LeadingCoefficient = LeadingCoefficient Rational deriving (Eq, Ord, Show
 -- | A pilot's track where points are task time paired with distance to the end
 -- of the speed section.
 newtype LcTrack = LcTrack [(TaskTime, DistanceToEss)] deriving (Eq, Ord, Show)
+
+newtype LeadingFraction = LeadingFraction Rational deriving (Eq, Ord, Show)
 
 madeGoal :: LcTrack -> Bool
 madeGoal (LcTrack xs) =
@@ -149,3 +153,21 @@ leadingCoefficients deadline len tracks =
 
         csSorted :: [(Int, LeadingCoefficient)]
         csSorted = sortBy (\x y -> fst x `compare` fst y) csMerged
+
+leadingFraction :: LeadingCoefficient -> LeadingCoefficient -> LeadingFraction
+leadingFraction (LeadingCoefficient cMin) (LeadingCoefficient c) =
+    LeadingFraction $ max (0 % 1) lf
+    where
+        numerator = fromRational $ c - cMin :: Double
+        denominator = fromRational cMin ** (1 / 2)
+        frac = (numerator / denominator) ** (2 / 3)
+        lf = (1 % 1) - toRational frac
+
+
+-- | Calculate the leading factor for all tracks.
+leadingFractions :: TaskDeadline -> LengthOfSs -> [LcTrack] -> [LeadingFraction]
+leadingFractions deadlines lens tracks =
+    (leadingFraction cMin) <$> cs
+    where
+        cs = leadingCoefficients deadlines lens tracks
+        cMin = LeadingCoefficient $ minimum $ (\(LeadingCoefficient x) -> x) <$> cs

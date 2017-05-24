@@ -65,13 +65,15 @@ module Flight.Score
     , toChunk
     , DifficultyFraction(..)
     , difficultyFraction
-    -- * Leading coefficient
+    -- * Fractional allotment of leading points 
     , TaskTime(..)
     , DistanceToEss(..)
     , LcTrack(..)
     , TaskDeadline(..)
     , LengthOfSs(..)
     , LeadingCoefficient(..)
+    , LeadingFraction(..)
+    , leadingFractions
     , leadingCoefficient
     , madeGoal
     , cleanTrack
