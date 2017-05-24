@@ -1,4 +1,7 @@
-module LeadingCoefficient (leadingCoefficientUnits) where
+module LeadingCoefficient
+    ( leadingCoefficientUnits
+    , cleanTrack
+    ) where
 
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit as HU ((@?=), testCase)
@@ -9,6 +12,8 @@ import Flight.Score
     , DistanceToEss(..)
     , LcTrack(..)
     )
+
+import TestNewtypes
 
 leadingCoefficientUnits :: TestTree
 leadingCoefficientUnits = testGroup "Leading coefficient unit tests"
@@ -95,3 +100,10 @@ cleanTrackUnits = testGroup "Clean track unit tests"
                     , (TaskTime 1, DistanceToEss 1)
                     ]
     ]
+
+distances :: LcTrack -> [Rational]
+distances (LcTrack track) = (\(_, DistanceToEss d) -> d) <$> track
+
+cleanTrack :: LcCleanTest -> Bool
+cleanTrack (LcCleanTest track) =
+    (\xs -> length xs <= (length $ distances track)) $ distances $ FS.cleanTrack track

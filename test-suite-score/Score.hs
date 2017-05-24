@@ -22,8 +22,8 @@ tests :: TestTree
 tests =
     testGroup
         "Tests"
-        [ properties
-        , units
+        [ units
+        , properties
         ]
 
 properties :: TestTree
@@ -65,6 +65,7 @@ scProps = testGroup "(checked by SmallCheck)"
     , SC.testProperty "Linear distance fraction is in the range of [0, 1]" linearFraction
     , SC.testProperty "Difficulty lookahead is in the range of [30, 30 * best flown] chunks" lookaheadChunks
     , SC.testProperty "Difficulty fraction is in the range of [0, 1]" difficultyFraction
+    , SC.testProperty "Leading coefficient, a clean track is not bigger" cleanTrack 
     ]
 
 qcProps :: TestTree
@@ -84,4 +85,5 @@ qcProps = testGroup "(checked by QuickCheck)"
     , QC.testProperty "Linear distance fraction is in the range of [0, 1]" linearFraction
     , QC.testProperty "Difficulty lookahead is in the range of [30, 30 * best flown] chunks" lookaheadChunks
     , QC.testProperty "Difficulty fraction is in the range of [0, 1]" difficultyFraction
+    , QC.testProperty "Leading coefficient, a clean track is not bigger" cleanTrack 
     ]

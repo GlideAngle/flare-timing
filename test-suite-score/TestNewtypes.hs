@@ -30,6 +30,9 @@ import Flight.Score
     , PilotTime(..)
     , BestDistance(..)
     , PilotDistance(..)
+    , TaskTime(..)
+    , DistanceToEss(..)
+    , LcTrack(..)
     )
 import Normal (Normal(..), NormalSum(..))
 
@@ -180,3 +183,20 @@ instance QC.Arbitrary DfTest where
     arbitrary = do
         xs <- listOf $ choose (1, 1000000)
         return $ mkDfTest xs
+
+-- | Leading coefficient, clean task.
+newtype LcCleanTest = LcCleanTest LcTrack deriving Show
+
+mkLcCleanTest :: [Int] -> LcCleanTest
+mkLcCleanTest xs =
+    case toRational <$> xs of
+         [] -> LcCleanTest $ LcTrack []
+         ys -> LcCleanTest $ LcTrack $ zip (TaskTime <$> [0 .. ]) (DistanceToEss <$> ys)
+
+instance Monad m => SC.Serial m LcCleanTest where
+    series = cons1 mkLcCleanTest
+
+instance QC.Arbitrary LcCleanTest where
+    arbitrary = do
+        xs <- listOf $ choose (1, 1000000)
+        return $ mkLcCleanTest xs
