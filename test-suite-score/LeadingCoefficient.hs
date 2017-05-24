@@ -3,6 +3,7 @@ module LeadingCoefficient
     , cleanTrack
     ) where
 
+import Data.List (sort, reverse)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit as HU ((@?=), testCase)
 
@@ -104,6 +105,20 @@ cleanTrackUnits = testGroup "Clean track unit tests"
 distances :: LcTrack -> [Rational]
 distances (LcTrack track) = (\(_, DistanceToEss d) -> d) <$> track
 
+isRevSorted :: Ord a => [a] -> Bool
+isRevSorted xs =
+    xs ==  (reverse . sort $ xs)
+
+isClean :: LcTrack -> LcTrack-> Bool
+isClean rawTrack cleanedTrack =
+    if isRevSorted xs then
+        length ys == length xs
+    else
+        length ys < length xs
+    where
+        xs = distances rawTrack
+        ys = distances cleanedTrack
+
 cleanTrack :: LcCleanTest -> Bool
 cleanTrack (LcCleanTest track) =
-    (\xs -> length xs <= (length $ distances track)) $ distances $ FS.cleanTrack track
+    isClean track $ FS.cleanTrack track
