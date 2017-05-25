@@ -28,16 +28,16 @@ dists100 = [ PilotDistance x | x <- [ 1 .. 100 ]]
 expected10 :: [DifficultyFraction]
 expected10 =
     DifficultyFraction <$>
-    [ (1 % 11)
-    , (9 % 110)
-    , (4 % 55)
-    , (7 % 110)
-    , (3 % 55)
-    , (1 % 22)
-    , (2 % 55)
-    , (3 % 110)
-    , (1 % 55)
-    , (1 % 110)
+    [ 1 % 11
+    , 9 % 110
+    , 4 % 55
+    , 7 % 110
+    , 3 % 55
+    , 1 % 22
+    , 2 % 55
+    , 3 % 110
+    , 1 % 55
+    , 1 % 110
     ]
 
 expected100 :: [DifficultyFraction]
@@ -45,36 +45,36 @@ expected100 =
     DifficultyFraction <$>
     replicate 70 (1 % 170)
     ++
-    [ (3 % 527)
-    , (29 % 5270)
-    , (14 % 2635)
-    , (27 % 5270)
-    , (13 % 2635)
-    , (5 % 1054)
-    , (12 % 2635)
-    , (23 % 5270)
-    , (11 % 2635)
-    , (21 % 5270)
-    , (2 % 527)
-    , (19 % 5270)
-    , (9 % 2635)
-    , (1 % 310)
-    , (8 % 2635)
-    , (3 % 1054)
-    , (7 % 2635)
-    , (13 % 5270)
-    , (6 % 2635)
-    , (11 % 5270)
-    , (1 % 527)
-    , (9 % 5270)
-    , (4 % 2635)
-    , (7 % 5270)
-    , (3 % 2635)
-    , (1 % 1054)
-    , (2 % 2635)
-    , (3 % 5270)
-    , (1 % 2635)
-    , (1 % 5270)
+    [ 3 % 527
+    , 29 % 5270
+    , 14 % 2635
+    , 27 % 5270
+    , 13 % 2635
+    , 5 % 1054
+    , 12 % 2635
+    , 23 % 5270
+    , 11 % 2635
+    , 21 % 5270
+    , 2 % 527
+    , 19 % 5270
+    , 9 % 2635
+    , 1 % 310
+    , 8 % 2635
+    , 3 % 1054
+    , 7 % 2635
+    , 13 % 5270
+    , 6 % 2635
+    , 11 % 5270
+    , 1 % 527
+    , 9 % 5270
+    , 4 % 2635
+    , 7 % 5270
+    , 3 % 2635
+    , 1 % 1054
+    , 2 % 2635
+    , 3 % 5270
+    , 1 % 2635
+    , 1 % 5270
     ]
 
 difficultyFractionUnits :: TestTree
@@ -99,7 +99,7 @@ lookaheadChunks (DfTest xs) =
     (\(LookaheadChunks n) -> n >= 30 && n <= max 30 (30 * bestInChunks)) $ FS.lookaheadChunks xs
     where
         (ChunkedDistance bestInChunks) =
-            if null xs then (ChunkedDistance 30) else FS.toChunk $ maximum xs
+            if null xs then ChunkedDistance 30 else FS.toChunk $ maximum xs
 
 difficultyFraction :: DfTest -> Bool
 difficultyFraction (DfTest xs) =

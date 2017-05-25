@@ -4,7 +4,7 @@ module LeadingCoefficient
     , leadingFractions
     ) where
 
-import Data.List (sort, reverse)
+import Data.List (sortBy)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit as HU ((@?=), testCase)
 import Data.Ratio ((%))
@@ -122,14 +122,14 @@ coefficientUnits = testGroup "Leading coefficient (LC) unit tests"
     [ HU.testCase "1 track point = 0 LC" $
         FS.leadingCoefficient
             (TaskDeadline $ 1 % 1)
-            (LengthOfSs $ 1)
+            (LengthOfSs 1)
             (pts [ (1, 0) ])
         @?= (LeadingCoefficient $ 0 % 1)
 
     , HU.testCase "2 track points at SSS and ESS = 1 / 900 LC" $
         FS.leadingCoefficient
             (TaskDeadline $ 2 % 1)
-            (LengthOfSs $ 1)
+            (LengthOfSs 1)
             (pts [ (1, 1)
                  , (2, 0)
                  ])
@@ -138,7 +138,7 @@ coefficientUnits = testGroup "Leading coefficient (LC) unit tests"
     , HU.testCase "3 track points evenly spread from SSS to ESS = 1 / 720 LC" $
         FS.leadingCoefficient
             (TaskDeadline $ 3 % 1)
-            (LengthOfSs $ 2)
+            (LengthOfSs 2)
             (pts [ (1, 2)
                  , (2, 1)
                  , (3, 0)
@@ -148,7 +148,7 @@ coefficientUnits = testGroup "Leading coefficient (LC) unit tests"
     , HU.testCase "4 track points evenly spread from SSS to ESS = 29 / 16200 LC" $
         FS.leadingCoefficient
             (TaskDeadline $ 4 % 1)
-            (LengthOfSs $ 3)
+            (LengthOfSs 3)
             (pts [ (1, 3)
                  , (2, 2)
                  , (3, 1)
@@ -159,7 +159,7 @@ coefficientUnits = testGroup "Leading coefficient (LC) unit tests"
     , HU.testCase "5 track points evenly spread from SSS to ESS = 11 / 4800 LC" $
         FS.leadingCoefficient
             (TaskDeadline $ 5 % 1)
-            (LengthOfSs $ 4)
+            (LengthOfSs 4)
             (pts [ (1, 4)
                  , (2, 3)
                  , (3, 2)
@@ -171,7 +171,7 @@ coefficientUnits = testGroup "Leading coefficient (LC) unit tests"
     , HU.testCase "5 track points cut short to 3 by a task deadline = 1 / 480 LC" $
         FS.leadingCoefficient
             (TaskDeadline $ 3 % 1)
-            (LengthOfSs $ 4)
+            (LengthOfSs 4)
             (pts [ (1, 4)
                  , (2, 3)
                  , (3, 2)
@@ -183,7 +183,7 @@ coefficientUnits = testGroup "Leading coefficient (LC) unit tests"
     , HU.testCase "5 track points with an equal distance flown before the speed section = 3 / 400 LC" $
         FS.leadingCoefficient
             (TaskDeadline $ 5 % 1)
-            (LengthOfSs $ 2)
+            (LengthOfSs 2)
             (pts [ (1, 4)
                  , (2, 3)
                  , (3, 2)
@@ -198,7 +198,7 @@ leadingFractionsUnits = testGroup "Leading fractions unit tests"
     [ HU.testCase "2 pilots, identical tracks = 1 leading factor each" $
         FS.leadingFractions
             (TaskDeadline $ 5 % 1)
-            (LengthOfSs $ 4)
+            (LengthOfSs 4)
             [ pts [ (1, 4)
                   , (2, 3)
                   , (3, 2)
@@ -219,7 +219,7 @@ leadingFractionsUnits = testGroup "Leading fractions unit tests"
     , HU.testCase "2 pilots, one always leading = 0 & 1 leading factors" $
         FS.leadingFractions
             (TaskDeadline $ 5 % 1)
-            (LengthOfSs $ 4)
+            (LengthOfSs 4)
             [ pts [ (1, 5)
                   , (2, 4)
                   , (3, 3)
@@ -240,7 +240,7 @@ leadingFractionsUnits = testGroup "Leading fractions unit tests"
     , HU.testCase "2 pilots, one mostly leading = 0 & 1 leading factors" $
         FS.leadingFractions
             (TaskDeadline $ 5 % 1)
-            (LengthOfSs $ 4)
+            (LengthOfSs 4)
             [ pts [ (1, 5)
                   , (2, 2)
                   , (3, 3)
@@ -261,7 +261,7 @@ leadingFractionsUnits = testGroup "Leading fractions unit tests"
     , HU.testCase "2 pilots, alternating lead = 0 & 1 leading factors" $
         FS.leadingFractions
             (TaskDeadline $ 5 % 1)
-            (LengthOfSs $ 8)
+            (LengthOfSs 8)
             [ pts [ (1, 8)
                   , (2, 6)
                   , (3, 5)
@@ -284,15 +284,12 @@ isClean :: LengthOfSs -> LcTrack -> LcTrack-> Bool
 isClean _ (LcTrack []) _ =
     True
 isClean (LengthOfSs len) rawTrack@(LcTrack ((_, DistanceToEss x) : _)) cleanedTrack =
-    if any (< 1) ts
+    if any (< 1) ts || x > len || x < 0
         then length ys < length xs
         else
-            if x > len || x < 0
-                then length ys < length xs
-                else
-                    if xs == (reverse . sort $ xs)
-                       then length ys == length xs
-                       else length ys < length xs
+            if xs == sortBy (flip compare) xs
+               then length ys == length xs
+               else length ys < length xs
     where
         ts = times rawTrack 
         xs = distances rawTrack

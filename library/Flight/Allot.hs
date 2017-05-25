@@ -86,7 +86,7 @@ lookaheadChunks xs =
         (ChunkedDistance bestInChunks) = toChunk bestDistance
 
         rounded :: Integer
-        rounded = round $ ((30 * bestInChunks) % pilotsLandedOut)
+        rounded = round ((30 * bestInChunks) % pilotsLandedOut)
 
 toChunk :: PilotDistance -> ChunkedDistance
 toChunk (PilotDistance d) =
@@ -141,7 +141,7 @@ diffByChunk diffMap (PilotDistance (n :% d)) pc@(ChunkedDistance pdChunk) =
         pDiff = fromMaybe (0 % 1) $ Map.lookup pc diffMap
 
         (_, pDiffNext :: Rational) =
-            fromMaybe (ChunkedDistance 0, (0 % 1)) $ Map.lookupGT pc diffMap
+            fromMaybe (ChunkedDistance 0, 0 % 1) $ Map.lookupGT pc diffMap
 
 difficulty :: LookaheadChunks -> Map.Map ChunkedDistance Int -> Map.Map ChunkedDistance Integer
 difficulty (LookaheadChunks lookahead) nMap =

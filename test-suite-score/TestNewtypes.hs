@@ -6,7 +6,7 @@ module TestNewtypes where
 -- NOTE: Avoid orphan instance warnings with these newtypes.
 
 import Data.Ratio ((%))
-import Data.List (sort, reverse)
+import Data.List (sortBy)
 import Test.SmallCheck.Series as SC
 import Test.Tasty.QuickCheck as QC
 
@@ -174,7 +174,7 @@ newtype DfTest = DfTest [PilotDistance] deriving Show
 
 mkDfTest :: [Int] -> DfTest
 mkDfTest xs =
-    case toRational <$> (reverse $ sort $ abs <$> xs) of
+    case toRational <$> sortBy (flip compare) (abs <$> xs) of
          [] -> DfTest []
          ys -> DfTest (PilotDistance <$> reverse ys)
 

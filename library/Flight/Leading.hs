@@ -73,7 +73,7 @@ initialOffside (LengthOfSs len) (LcTrack xs) =
     LcTrack $ dropWhile (\(_, DistanceToEss d) -> d > len || d < 0) xs
 
 cleanTrack :: LengthOfSs -> LcTrack -> LcTrack
-cleanTrack len = towardsGoal . positiveTime . (initialOffside len) 
+cleanTrack len = towardsGoal . positiveTime . initialOffside len 
 
 -- | Calculate the leading coefficient for a single track.
 leadingCoefficient :: TaskDeadline
@@ -103,7 +103,7 @@ leadingCoefficient (TaskDeadline deadline) (LengthOfSs len) track
             clampToEss (LcTrack xsTrack) =
                 LcTrack (clamp <$> xsTrack)
                 where
-                    clamp (t, (DistanceToEss dist)) = (t, DistanceToEss $ max 0 dist)
+                    clamp (t, DistanceToEss dist) = (t, DistanceToEss $ max 0 dist)
 
             withinDeadline :: LcTrack
             withinDeadline = clampToEss . clampToDeadline $ track
@@ -116,7 +116,7 @@ leadingCoefficient (TaskDeadline deadline) (LengthOfSs len) track
                 tN * dM * dM - dN * dN
 
             sectionSum :: Rational
-            sectionSum = sum (zipWith f (zero : ys) $ ys)
+            sectionSum = sum $ zipWith f (zero : ys) ys
 
             (n :% d) = len * len
 
@@ -129,7 +129,7 @@ leadingCoefficients deadline@(TaskDeadline maxTaskTime) len tracks =
     snd <$> csSorted
     where
         cleanXs :: [LcTrack]
-        cleanXs = (cleanTrack len) <$> tracks
+        cleanXs = cleanTrack len <$> tracks
 
         iXs :: [(Int, LcTrack)]
         iXs = zip [1 .. ] cleanXs
@@ -147,7 +147,7 @@ leadingCoefficients deadline@(TaskDeadline maxTaskTime) len tracks =
                     if null xs then Nothing else Just (fst $ last xs)
 
         (TaskTime essTime) =
-            if null essTimes then (TaskTime maxTaskTime) else maximum essTimes
+            if null essTimes then TaskTime maxTaskTime else maximum essTimes
 
         (xsEarly :: [(Int, LcTrack)], xsLate :: [(Int, LcTrack)]) =
             partition
@@ -206,7 +206,7 @@ leadingFraction (LeadingCoefficient cMin) (LeadingCoefficient c) =
         lf = (1 % 1) - toRational frac
 
 allZero :: [LcTrack] -> [LeadingFraction]
-allZero tracks = (const (LeadingFraction $ 0 % 1)) <$> tracks
+allZero tracks = const (LeadingFraction $ 0 % 1) <$> tracks
 
 -- | Calculate the leading factor for all tracks.
 leadingFractions :: TaskDeadline -> LengthOfSs -> [LcTrack] -> [LeadingFraction]
@@ -217,10 +217,10 @@ leadingFractions _ (LengthOfSs 0) tracks =
 leadingFractions deadlines lens tracks =
     if cMin == 0 || leadingDenominator cMin == 0
        then allZero tracks
-       else (leadingFraction (LeadingCoefficient cMin)) <$> cs
+       else leadingFraction (LeadingCoefficient cMin) <$> cs
     where
         cs = leadingCoefficients deadlines lens tracks
         csNonZero = filter (\(LeadingCoefficient x) -> x > 0) cs
         cMin =
-            if null csNonZero then (0 % 1)
+            if null csNonZero then 0 % 1
                               else minimum $ (\(LeadingCoefficient x) -> x) <$> csNonZero
