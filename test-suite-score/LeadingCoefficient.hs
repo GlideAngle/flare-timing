@@ -119,12 +119,12 @@ cleanTrackUnits = testGroup "Clean track unit tests"
 
 coefficientUnits :: TestTree
 coefficientUnits = testGroup "Leading coefficient (LC) unit tests"
-    [ HU.testCase "1 track point = 1 / 1800 LC" $
+    [ HU.testCase "1 track point = 0 LC" $
         FS.leadingCoefficient
             (TaskDeadline $ 1 % 1)
             (LengthOfSs $ 1)
             (pts [ (1, 0) ])
-        @?= (LeadingCoefficient $ 1 % 1800)
+        @?= (LeadingCoefficient $ 0 % 1)
 
     , HU.testCase "2 track points at SSS and ESS = 1 / 900 LC" $
         FS.leadingCoefficient

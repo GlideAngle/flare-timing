@@ -73,36 +73,39 @@ leadingCoefficient :: TaskDeadline
                       -> LengthOfSs
                       -> LcTrack
                       -> LeadingCoefficient
-leadingCoefficient _ _ (LcTrack []) =
-    LeadingCoefficient $ 0 % 1
 leadingCoefficient _ (LengthOfSs (0 :% _)) _ =
     LeadingCoefficient $ 0 % 1
-leadingCoefficient (TaskDeadline deadline) (LengthOfSs len) track =
-    LeadingCoefficient $ sectionSum * (1 % 1800) * (d % n)
-    where
-        zero :: (TaskTime, DistanceToEss)
-        zero = (TaskTime 0, DistanceToEss len)
+leadingCoefficient _ _ (LcTrack []) =
+    LeadingCoefficient $ 0 % 1
+leadingCoefficient (TaskDeadline deadline) (LengthOfSs len) track
+    | deadline <= 1 =
+        LeadingCoefficient $ 0 % 1
+    | otherwise =
+        LeadingCoefficient $ sectionSum * (1 % 1800) * (d % n)
+        where
+            zero :: (TaskTime, DistanceToEss)
+            zero = (TaskTime 0, DistanceToEss len)
 
-        clampToDeadline :: LcTrack -> LcTrack
-        clampToDeadline (LcTrack xsTrack) =
-            LcTrack (clamp <$> xsTrack)
-            where
-                clamp (TaskTime t, dist) = (TaskTime $ min deadline t, dist)
+            clampToDeadline :: LcTrack -> LcTrack
+            clampToDeadline (LcTrack xsTrack) =
+                LcTrack (clamp <$> xsTrack)
+                where
+                    clamp (TaskTime t, dist) = (TaskTime $ min deadline t, dist)
 
-        withinDeadline :: LcTrack
-        withinDeadline = clampToDeadline track
+            withinDeadline :: LcTrack
+            withinDeadline = clampToDeadline track
 
-        ys :: [(TaskTime, DistanceToEss)]
-        ys = (\(LcTrack xs) -> xs) withinDeadline
+            ys :: [(TaskTime, DistanceToEss)]
+            ys = (\(LcTrack xs) -> xs) withinDeadline
 
-        f :: (TaskTime, DistanceToEss) -> (TaskTime, DistanceToEss) -> Rational
-        f (TaskTime _, DistanceToEss dM) (TaskTime tN, DistanceToEss dN) =
-            tN * dM * dM - dN * dN
+            f :: (TaskTime, DistanceToEss) -> (TaskTime, DistanceToEss) -> Rational
+            f (TaskTime _, DistanceToEss dM) (TaskTime tN, DistanceToEss dN) =
+                tN * dM * dM - dN * dN
 
-        sectionSum :: Rational
-        sectionSum = sum (zipWith f (zero : ys) $ ys)
+            sectionSum :: Rational
+            sectionSum = sum (zipWith f (zero : ys) $ ys)
 
-        (n :% d) = len * len
+            (n :% d) = len * len
 
 -- | Calculate the leading coefficient for all tracks.
 leadingCoefficients :: TaskDeadline
