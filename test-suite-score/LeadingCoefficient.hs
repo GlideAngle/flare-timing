@@ -64,54 +64,54 @@ madeGoalUnits = testGroup "Made goal unit tests"
 cleanTrackUnits :: TestTree
 cleanTrackUnits = testGroup "Clean track unit tests"
     [ HU.testCase "Single point = no points removed" $
-        FS.cleanTrack (pts [ (1, 0) ])
+        FS.cleanTrack (LengthOfSs $ 1 % 1) (pts [ (1, 0) ])
         @?= pts [ (1, 0) ]
 
     , HU.testCase "Two points, each one closer to goal = no points removed" $
-        FS.cleanTrack (pts [ (1, 2)
-                           , (2, 1)
-                           ])
+        FS.cleanTrack(LengthOfSs $ 2 % 1) (pts [ (1, 2)
+                                               , (2, 1)
+                                               ])
         @?= pts [ (1, 2) 
                 , (2, 1)
                 ]
 
     , HU.testCase "Two points, each one further from goal = all but one point removed" $
-        FS.cleanTrack (pts [ (1, 1)
-                           , (2, 2)
-                           ])
+        FS.cleanTrack (LengthOfSs $ 2 % 1) (pts [ (1, 1)
+                                                , (2, 2)
+                                                ])
         @?= pts [ (1, 1) ]
 
     , HU.testCase "Three points, each one closer to goal = no points removed" $
-        FS.cleanTrack (pts [ (1, 3)
-                           , (2, 2)
-                           , (3, 1)
-                           ])
+        FS.cleanTrack (LengthOfSs $ 3 % 1) (pts [ (1, 3)
+                                                , (2, 2)
+                                                , (3, 1)
+                                                ])
         @?= pts [ (1, 3) 
                 , (2, 2)
                 , (3, 1)
                 ]
 
     , HU.testCase "Three points, each one further from goal = all but one point removed" $
-        FS.cleanTrack (pts [ (1, 1)
-                           , (2, 2)
-                           , (3, 3)
-                           ])
+        FS.cleanTrack (LengthOfSs $ 2 % 1) (pts [ (1, 1)
+                                                , (2, 2)
+                                                , (3, 3)
+                                                ])
         @?= pts [ (1, 1) ]
 
     , HU.testCase "Three points, only 2nd moves further from goal = that point removed" $
-        FS.cleanTrack (pts [ (1, 2)
-                           , (2, 3)
-                           , (3, 1)
-                           ])
+        FS.cleanTrack (LengthOfSs $ 2 % 1) (pts [ (1, 2)
+                                                , (2, 3)
+                                                , (3, 1)
+                                                ])
         @?= pts [ (1, 2)
                 , (3, 1)
                 ]
 
     , HU.testCase "Three points, only 3rd moves further from goal = that point removed" $
-        FS.cleanTrack (pts [ (1, 2)
-                           , (2, 1)
-                           , (3, 2)
-                           ])
+        FS.cleanTrack (LengthOfSs $ 2 % 1) (pts [ (1, 2)
+                                                , (2, 1)
+                                                , (3, 2)
+                                                ])
         @?= pts [ (1, 2)
                 , (2, 1)
                 ]
@@ -280,14 +280,19 @@ leadingFractionsUnits = testGroup "Leading fractions unit tests"
             ]
     ]
 
-isClean :: LcTrack -> LcTrack-> Bool
-isClean rawTrack cleanedTrack =
+isClean :: LengthOfSs -> LcTrack -> LcTrack-> Bool
+isClean _ (LcTrack []) _ =
+    True
+isClean (LengthOfSs len) rawTrack@(LcTrack ((_, DistanceToEss x) : _)) cleanedTrack =
     if any (< 1) ts
         then length ys < length xs
         else
-            if xs == (reverse . sort $ xs)
-               then length ys == length xs
-               else length ys < length xs
+            if x > len
+                then length ys < length xs
+                else
+                    if xs == (reverse . sort $ xs)
+                       then length ys == length xs
+                       else length ys < length xs
     where
         ts = times rawTrack 
         xs = distances rawTrack
@@ -300,8 +305,8 @@ isClean rawTrack cleanedTrack =
         distances (LcTrack track) = (\(_, DistanceToEss d) -> d) <$> track
 
 cleanTrack :: LcCleanTest -> Bool
-cleanTrack (LcCleanTest track) =
-    isClean track $ FS.cleanTrack track
+cleanTrack (LcCleanTest (len, track)) =
+    isClean len track $ FS.cleanTrack len track
 
 leadingFractions :: LcTest -> Bool
 leadingFractions (LcTest (deadline, lens, tracks)) =

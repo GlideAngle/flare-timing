@@ -187,7 +187,7 @@ instance QC.Arbitrary DfTest where
         return $ mkDfTest xs
 
 -- | Leading coefficient, clean task.
-newtype LcCleanTest = LcCleanTest LcTrack deriving Show
+newtype LcCleanTest = LcCleanTest (LengthOfSs, LcTrack) deriving Show
 
 mkLcTrack :: [Int] -> LcTrack
 mkLcTrack xs =
@@ -195,16 +195,18 @@ mkLcTrack xs =
          [] -> LcTrack []
          ys -> LcTrack $ zip (TaskTime <$> [1 .. ]) (DistanceToEss <$> ys)
 
-mkLcCleanTest :: [Int] -> LcCleanTest
-mkLcCleanTest = LcCleanTest . mkLcTrack
+mkLcCleanTest :: Rational -> [Int] -> LcCleanTest
+mkLcCleanTest len xs =
+    LcCleanTest (LengthOfSs len, mkLcTrack xs)
 
 instance Monad m => SC.Serial m LcCleanTest where
-    series = cons1 mkLcCleanTest
+    series = cons2 (\(SC.Positive len) xs -> mkLcCleanTest len xs)
 
 instance QC.Arbitrary LcCleanTest where
     arbitrary = do
+        (QC.Positive len) <- arbitrary
         xs <- listOf $ choose (1, 1000000)
-        return $ mkLcCleanTest xs
+        return $ mkLcCleanTest len xs
 
 -- | Leading coefficient, leading fractions.
 newtype LcTest = LcTest (TaskDeadline, LengthOfSs, [LcTrack]) deriving Show

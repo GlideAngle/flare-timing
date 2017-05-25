@@ -49,13 +49,13 @@ madeGoal (LcTrack xs) =
     any (\(DistanceToEss d) -> d <= 0) $ snd <$> xs
 
 -- | Removes points where the task time < 1.
-positiveTimeTrack :: LcTrack -> LcTrack
-positiveTimeTrack (LcTrack xs) =
+positiveTime :: LcTrack -> LcTrack
+positiveTime (LcTrack xs) =
     LcTrack $ filter (\(TaskTime t, _) -> t > 0) xs
 
--- | Removes points where the distance to Ess increases.
-towardsGoalTrack :: LcTrack -> LcTrack
-towardsGoalTrack (LcTrack xs)
+-- | Removes points where the distance to ESS increases.
+towardsGoal :: LcTrack -> LcTrack
+towardsGoal (LcTrack xs)
     | null xs =
         LcTrack xs
     | otherwise =
@@ -65,8 +65,13 @@ towardsGoalTrack (LcTrack xs)
             zero = (TaskTime $ tN - (1 % 1), dist)
             f (_, dM) x@(_, dN) = if dM < dN then Nothing else Just x
 
-cleanTrack :: LcTrack -> LcTrack
-cleanTrack = towardsGoalTrack . positiveTimeTrack 
+-- | Removes initial points further from ESS than the course length.
+initialOffside :: LengthOfSs -> LcTrack -> LcTrack
+initialOffside (LengthOfSs len) (LcTrack xs) =
+    LcTrack $ dropWhile (\(_, DistanceToEss d) -> d > len) xs
+
+cleanTrack :: LengthOfSs -> LcTrack -> LcTrack
+cleanTrack len = towardsGoal . positiveTime . (initialOffside len) 
 
 -- | Calculate the leading coefficient for a single track.
 leadingCoefficient :: TaskDeadline
@@ -116,7 +121,7 @@ leadingCoefficients deadline@(TaskDeadline maxTaskTime) len tracks =
     snd <$> csSorted
     where
         cleanXs :: [LcTrack]
-        cleanXs = cleanTrack <$> tracks
+        cleanXs = (cleanTrack len) <$> tracks
 
         iXs :: [(Int, LcTrack)]
         iXs = zip [1 .. ] cleanXs
