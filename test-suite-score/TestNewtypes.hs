@@ -193,7 +193,7 @@ mkLcTrack :: [Int] -> LcTrack
 mkLcTrack xs =
     case toRational <$> xs of
          [] -> LcTrack []
-         ys -> LcTrack $ zip (TaskTime <$> [0 .. ]) (DistanceToEss <$> ys)
+         ys -> LcTrack $ zip (TaskTime <$> [1 .. ]) (DistanceToEss <$> ys)
 
 mkLcCleanTest :: [Int] -> LcCleanTest
 mkLcCleanTest = LcCleanTest . mkLcTrack

@@ -68,9 +68,8 @@ scProps = testGroup "(checked by SmallCheck)"
     , SC.testProperty "A cleaned track is smaller if there is some flying away from goal" cleanTrack 
 
     -- WARNING: Test failure.
-    --        there exists LcTest (TaskDeadline (1 % 1),LengthOfSs (1 % 1),[LcTrack [(TaskTime (0 % 1),DistanceToEss (0 % 1)),(TaskTime (1 % 1),DistanceToEss ((-1) % 1))],LcTrack [(TaskT
-    -- ime (0 % 1),DistanceToEss (1 % 1))]]) such that
-    --          condition is false
+--        there exists LcTest (TaskDeadline (1 % 1),LengthOfSs (1 % 1),[LcTrack [(TaskTime (1 % 1),DistanceToEss ((-2) % 1))],LcTrack [(TaskTime (1 % 1),DistanceToEss (0 % 1))]]) such that
+--          condition is false
     , SC.testProperty "Leading fraction is in the range of [0, 1]" leadingFractions
     ]
 
