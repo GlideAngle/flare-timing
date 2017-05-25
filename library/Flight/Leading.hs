@@ -168,8 +168,11 @@ leadingCoefficients deadline@(TaskDeadline maxTaskTime) len tracks =
 leadingDenominator :: Rational -> Double
 leadingDenominator cMin = fromRational cMin ** (1 / 2)
 
-
 leadingFraction :: LeadingCoefficient -> LeadingCoefficient -> LeadingFraction
+leadingFraction (LeadingCoefficient 0) _ =
+    LeadingFraction $ 0 % 1
+leadingFraction _ (LeadingCoefficient 0) =
+    LeadingFraction $ 0 % 1
 leadingFraction (LeadingCoefficient cMin) (LeadingCoefficient c) =
     LeadingFraction $ max (0 % 1) lf
     where
@@ -178,12 +181,18 @@ leadingFraction (LeadingCoefficient cMin) (LeadingCoefficient c) =
         frac = (numerator / denominator) ** (2 / 3)
         lf = (1 % 1) - toRational frac
 
+allZero :: [LcTrack] -> [LeadingFraction]
+allZero tracks = (const (LeadingFraction $ 0 % 1)) <$> tracks
 
 -- | Calculate the leading factor for all tracks.
 leadingFractions :: TaskDeadline -> LengthOfSs -> [LcTrack] -> [LeadingFraction]
+leadingFractions (TaskDeadline 0) _ tracks =
+    allZero tracks
+leadingFractions _ (LengthOfSs 0) tracks =
+    allZero tracks
 leadingFractions deadlines lens tracks =
     if cMin == 0 || leadingDenominator cMin == 0
-       then (const (LeadingFraction $ 0 % 1)) <$> tracks
+       then allZero tracks
        else (leadingFraction (LeadingCoefficient cMin)) <$> cs
     where
         cs = leadingCoefficients deadlines lens tracks

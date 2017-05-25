@@ -67,9 +67,10 @@ scProps = testGroup "(checked by SmallCheck)"
     , SC.testProperty "Difficulty fraction is in the range of [0, 1]" difficultyFraction
     , SC.testProperty "A cleaned track is smaller if there is some flying away from goal" cleanTrack 
 
-    -- WARNING: Failing test.
-    --  there exists LcTest (TaskDeadline (1 % 1),LengthOfSs (0 % 1),[LcTrack [],LcTrack [(TaskTime (0 % 1),DistanceToEss (1 % 1))]]) such that
-    --    condition is false
+    -- WARNING: Test failure.
+    --        there exists LcTest (TaskDeadline (1 % 1),LengthOfSs (1 % 1),[LcTrack [(TaskTime (0 % 1),DistanceToEss (0 % 1)),(TaskTime (1 % 1),DistanceToEss ((-1) % 1))],LcTrack [(TaskT
+    -- ime (0 % 1),DistanceToEss (1 % 1))]]) such that
+    --          condition is false
     , SC.testProperty "Leading fraction is in the range of [0, 1]" leadingFractions
     ]
 
@@ -91,14 +92,5 @@ qcProps = testGroup "(checked by QuickCheck)"
     , QC.testProperty "Difficulty lookahead is in the range of [30, 30 * best flown] chunks" lookaheadChunks
     , QC.testProperty "Difficulty fraction is in the range of [0, 1]" difficultyFraction
     , QC.testProperty "A cleaned track is smaller if there is some flying away from goal" cleanTrack 
-
-    -- WARNING: Failing test.
-    --  *** Failed! Falsifiable (after 8 tests):
-    --        LcTest (TaskDeadline (3370689447488 % 955132669027),LengthOfSs (25799619123730 % 198730433871),[LcTrack [(TaskTime (0 % 1),DistanceToEss (374319 % 1)),(TaskTime (1 % 1),Dis
-    --        tanceToEss (887492 % 1)),(TaskTime (2 % 1),DistanceToEss (795887 % 1))],LcTrack [(TaskTime (0 % 1),DistanceToEss (692989 % 1)),(TaskTime (1 % 1),DistanceToEss (422477 % 1)),(TaskTi
-    --        me (2 % 1),DistanceToEss (716606 % 1)),(TaskTime (3 % 1),DistanceToEss (656505 % 1)),(TaskTime (4 % 1),DistanceToEss (802787 % 1))],LcTrack [(TaskTime (0 % 1),DistanceToEss (833799
-    --        % 1)),(TaskTime (1 % 1),DistanceToEss (516926 % 1)),(TaskTime (2 % 1),DistanceToEss (735502 % 1)),(TaskTime (3 % 1),DistanceToEss (852786 % 1))],LcTrack [(TaskTime (0 % 1),Distanc
-    --        eToEss (597293 % 1)),(TaskTime (1 % 1),DistanceToEss (262112 % 1)),(TaskTime (2 % 1),DistanceToEss (413199 % 1)),(TaskTime (3 % 1),DistanceToEss (692897 % 1))],LcTrack []])
-    --        Use --quickcheck-replay '7 TFGenR 0000005FC42B49F10000000000989680000000000000E22A00008792515CA100 0 16711680 24 0' to reproduce.
     , QC.testProperty "Leading fraction is in the range of [0, 1]" leadingFractions
     ]
