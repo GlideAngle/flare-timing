@@ -214,7 +214,10 @@ mkLcTest deadline len xs =
     LcTest (TaskDeadline deadline, LengthOfSs len, mkLcTrack <$> xs)
 
 instance Monad m => SC.Serial m LcTest where
-    series = cons3 mkLcTest
+    series =
+        cons3
+            (\(SC.Positive deadline) (SC.Positive len) xs ->
+                mkLcTest deadline len xs)
 
 instance QC.Arbitrary LcTest where
     arbitrary = do
