@@ -48,17 +48,25 @@ madeGoal :: LcTrack -> Bool
 madeGoal (LcTrack xs) =
     any (\(DistanceToEss d) -> d <= 0) $ snd <$> xs
 
+-- | Removes points where the task time < 1.
+positiveTimeTrack :: LcTrack -> LcTrack
+positiveTimeTrack (LcTrack xs) =
+    LcTrack $ filter (\(TaskTime t, _) -> t > 0) xs
+
 -- | Removes points where the distance to Ess increases.
-cleanTrack :: LcTrack -> LcTrack
-cleanTrack (LcTrack xs)
+towardsGoalTrack :: LcTrack -> LcTrack
+towardsGoalTrack (LcTrack xs)
     | null xs =
         LcTrack xs
     | otherwise =
         LcTrack $ catMaybes $ zipWith f (zero : xs) xs
         where
-            (_, dist) = head xs
-            zero = (TaskTime 0, dist)
+            (TaskTime tN, dist) = head xs
+            zero = (TaskTime $ tN - (1 % 1), dist)
             f (_, dM) x@(_, dN) = if dM < dN then Nothing else Just x
+
+cleanTrack :: LcTrack -> LcTrack
+cleanTrack = towardsGoalTrack . positiveTimeTrack 
 
 -- | Calculate the leading coefficient for a single track.
 leadingCoefficient :: TaskDeadline
