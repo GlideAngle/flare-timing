@@ -41,9 +41,9 @@ speedFractionUnits = testGroup "Speed fraction unit tests"
 
 timeUnits :: TestTree
 timeUnits = testGroup "Time tests"
-    [ HU.testCase "1 hr = 1:00:00" $ 1 `compare` (hms 1 0 0) @?= EQ 
-    , HU.testCase "2 hr = 2:00:00" $ 2 `compare` (hms 2 0 0) @?= EQ 
-    , HU.testCase "3 hr = 3:00:00" $ 3 `compare` (hms 3 0 0) @?= EQ 
+    [ HU.testCase "1 hr = 1:00:00" $ 1 `compare` hms 1 0 0 @?= EQ 
+    , HU.testCase "2 hr = 2:00:00" $ 2 `compare` hms 2 0 0 @?= EQ 
+    , HU.testCase "3 hr = 3:00:00" $ 3 `compare` hms 3 0 0 @?= EQ 
     ]
 
 maxUnits :: TestTree
