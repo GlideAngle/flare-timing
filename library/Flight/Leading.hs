@@ -99,8 +99,14 @@ leadingCoefficient (TaskDeadline deadline) (LengthOfSs len) track
                 where
                     clamp (TaskTime t, dist) = (TaskTime $ min deadline t, dist)
 
+            clampToEss :: LcTrack -> LcTrack
+            clampToEss (LcTrack xsTrack) =
+                LcTrack (clamp <$> xsTrack)
+                where
+                    clamp (t, (DistanceToEss dist)) = (t, DistanceToEss $ max 0 dist)
+
             withinDeadline :: LcTrack
-            withinDeadline = clampToDeadline track
+            withinDeadline = clampToEss . clampToDeadline $ track
 
             ys :: [(TaskTime, DistanceToEss)]
             ys = (\(LcTrack xs) -> xs) withinDeadline
