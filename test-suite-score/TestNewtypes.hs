@@ -33,6 +33,8 @@ import Flight.Score
     , TaskTime(..)
     , DistanceToEss(..)
     , LcTrack(..)
+    , TaskDeadline(..)
+    , LengthOfSs(..)
     )
 import Normal (Normal(..), NormalSum(..))
 
@@ -187,11 +189,14 @@ instance QC.Arbitrary DfTest where
 -- | Leading coefficient, clean task.
 newtype LcCleanTest = LcCleanTest LcTrack deriving Show
 
-mkLcCleanTest :: [Int] -> LcCleanTest
-mkLcCleanTest xs =
+mkLcTrack :: [Int] -> LcTrack
+mkLcTrack xs =
     case toRational <$> xs of
-         [] -> LcCleanTest $ LcTrack []
-         ys -> LcCleanTest $ LcTrack $ zip (TaskTime <$> [0 .. ]) (DistanceToEss <$> ys)
+         [] -> LcTrack []
+         ys -> LcTrack $ zip (TaskTime <$> [0 .. ]) (DistanceToEss <$> ys)
+
+mkLcCleanTest :: [Int] -> LcCleanTest
+mkLcCleanTest = LcCleanTest . mkLcTrack
 
 instance Monad m => SC.Serial m LcCleanTest where
     series = cons1 mkLcCleanTest
@@ -200,3 +205,20 @@ instance QC.Arbitrary LcCleanTest where
     arbitrary = do
         xs <- listOf $ choose (1, 1000000)
         return $ mkLcCleanTest xs
+
+-- | Leading coefficient, leading fractions.
+newtype LcTest = LcTest (TaskDeadline, LengthOfSs, [LcTrack]) deriving Show
+
+mkLcTest :: Rational -> Rational -> [[Int]] -> LcTest
+mkLcTest deadline len xs =
+    LcTest (TaskDeadline deadline, LengthOfSs len, mkLcTrack <$> xs)
+
+instance Monad m => SC.Serial m LcTest where
+    series = cons3 mkLcTest
+
+instance QC.Arbitrary LcTest where
+    arbitrary = do
+        (QC.Positive deadline) <- arbitrary
+        (QC.Positive len) <- arbitrary
+        xs <- listOf $ listOf $ choose (1, 1000000)
+        return $ mkLcTest deadline len xs

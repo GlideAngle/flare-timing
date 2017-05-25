@@ -65,6 +65,10 @@ leadingCoefficient :: TaskDeadline
                       -> LengthOfSs
                       -> LcTrack
                       -> LeadingCoefficient
+leadingCoefficient _ _ (LcTrack []) =
+    LeadingCoefficient $ 0 % 1
+leadingCoefficient _ (LengthOfSs (0 :% _)) _ =
+    LeadingCoefficient $ 0 % 1
 leadingCoefficient (TaskDeadline deadline) (LengthOfSs len) track =
     LeadingCoefficient $ sectionSum * (1 % 1800) * (d % n)
     where
@@ -97,7 +101,7 @@ leadingCoefficients :: TaskDeadline
                       -> LengthOfSs
                       -> [LcTrack]
                       -> [LeadingCoefficient]
-leadingCoefficients deadline len tracks =
+leadingCoefficients deadline@(TaskDeadline maxTaskTime) len tracks =
     snd <$> csSorted
     where
         cleanXs :: [LcTrack]
@@ -112,9 +116,14 @@ leadingCoefficients deadline len tracks =
                 iXs
 
         essTimes :: [TaskTime]
-        essTimes = (\(_, LcTrack xs) -> fst $ last xs) <$> xsMadeGoal
+        essTimes =
+            catMaybes $ safeLast <$> xsMadeGoal
+            where
+                safeLast (_, LcTrack xs) =
+                    if null xs then Nothing else Just (fst $ last xs)
 
-        (TaskTime essTime) = maximum essTimes
+        (TaskTime essTime) =
+            if null essTimes then (TaskTime maxTaskTime) else maximum essTimes
 
         (xsEarly :: [(Int, LcTrack)], xsLate :: [(Int, LcTrack)]) =
             partition
@@ -130,16 +139,18 @@ leadingCoefficients deadline len tracks =
 
         lcE :: LcTrack -> LeadingCoefficient
         lcE track@(LcTrack xs) =
+            if null xs then LeadingCoefficient $ 0 % 1 else
             LeadingCoefficient $ a + b
             where
                 (LeadingCoefficient a) = lc track
-                b =  (\(_, DistanceToEss d) -> essTime * d * d) $ last xs
+                b = (\(_, DistanceToEss d) -> essTime * d * d) $ last xs
 
         csEarly :: [(Int, LeadingCoefficient)]
         csEarly = (\(i, xs) -> (i, lcE xs)) <$> xsEarly
 
         lcL :: LcTrack -> LeadingCoefficient
         lcL track@(LcTrack xs) =
+            if null xs then LeadingCoefficient $ 0 % 1 else
             LeadingCoefficient $ a + b
             where
                 (LeadingCoefficient a) = lc track
@@ -154,12 +165,16 @@ leadingCoefficients deadline len tracks =
         csSorted :: [(Int, LeadingCoefficient)]
         csSorted = sortBy (\x y -> fst x `compare` fst y) csMerged
 
+leadingDenominator :: Rational -> Double
+leadingDenominator cMin = fromRational cMin ** (1 / 2)
+
+
 leadingFraction :: LeadingCoefficient -> LeadingCoefficient -> LeadingFraction
 leadingFraction (LeadingCoefficient cMin) (LeadingCoefficient c) =
     LeadingFraction $ max (0 % 1) lf
     where
         numerator = fromRational $ c - cMin :: Double
-        denominator = fromRational cMin ** (1 / 2)
+        denominator = leadingDenominator cMin
         frac = (numerator / denominator) ** (2 / 3)
         lf = (1 % 1) - toRational frac
 
@@ -167,7 +182,12 @@ leadingFraction (LeadingCoefficient cMin) (LeadingCoefficient c) =
 -- | Calculate the leading factor for all tracks.
 leadingFractions :: TaskDeadline -> LengthOfSs -> [LcTrack] -> [LeadingFraction]
 leadingFractions deadlines lens tracks =
-    (leadingFraction cMin) <$> cs
+    if cMin == 0 || leadingDenominator cMin == 0
+       then (const (LeadingFraction $ 0 % 1)) <$> tracks
+       else (leadingFraction (LeadingCoefficient cMin)) <$> cs
     where
         cs = leadingCoefficients deadlines lens tracks
-        cMin = LeadingCoefficient $ minimum $ (\(LeadingCoefficient x) -> x) <$> cs
+        csNonZero = filter (\(LeadingCoefficient x) -> x > 0) cs
+        cMin =
+            if null csNonZero then (0 % 1)
+                              else minimum $ (\(LeadingCoefficient x) -> x) <$> csNonZero

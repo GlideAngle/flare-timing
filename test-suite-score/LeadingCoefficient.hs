@@ -1,6 +1,7 @@
 module LeadingCoefficient
     ( leadingCoefficientUnits
     , cleanTrack
+    , leadingFractions
     ) where
 
 import Data.List (sort, reverse)
@@ -17,6 +18,7 @@ import Flight.Score
     , LengthOfSs(..)
     , LeadingCoefficient(..)
     , LeadingFraction(..)
+    , isNormal
     )
 
 import TestNewtypes
@@ -292,3 +294,7 @@ isClean rawTrack cleanedTrack =
 cleanTrack :: LcCleanTest -> Bool
 cleanTrack (LcCleanTest track) =
     isClean track $ FS.cleanTrack track
+
+leadingFractions :: LcTest -> Bool
+leadingFractions (LcTest (deadline, lens, tracks)) =
+    all (\(LeadingFraction x) -> isNormal x) $ FS.leadingFractions deadline lens tracks
