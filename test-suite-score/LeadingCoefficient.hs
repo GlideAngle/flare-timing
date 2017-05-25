@@ -64,54 +64,54 @@ madeGoalUnits = testGroup "Made goal unit tests"
 cleanTrackUnits :: TestTree
 cleanTrackUnits = testGroup "Clean track unit tests"
     [ HU.testCase "Single point = no points removed" $
-        FS.cleanTrack (LengthOfSs $ 1 % 1) (pts [ (1, 0) ])
+        FS.cleanTrack (LengthOfSs 1) (pts [ (1, 0) ])
         @?= pts [ (1, 0) ]
 
     , HU.testCase "Two points, each one closer to goal = no points removed" $
-        FS.cleanTrack(LengthOfSs $ 2 % 1) (pts [ (1, 2)
-                                               , (2, 1)
-                                               ])
+        FS.cleanTrack(LengthOfSs 2) (pts [ (1, 2)
+                                         , (2, 1)
+                                         ])
         @?= pts [ (1, 2) 
                 , (2, 1)
                 ]
 
     , HU.testCase "Two points, each one further from goal = all but one point removed" $
-        FS.cleanTrack (LengthOfSs $ 2 % 1) (pts [ (1, 1)
-                                                , (2, 2)
-                                                ])
+        FS.cleanTrack (LengthOfSs 2) (pts [ (1, 1)
+                                          , (2, 2)
+                                          ])
         @?= pts [ (1, 1) ]
 
     , HU.testCase "Three points, each one closer to goal = no points removed" $
-        FS.cleanTrack (LengthOfSs $ 3 % 1) (pts [ (1, 3)
-                                                , (2, 2)
-                                                , (3, 1)
-                                                ])
+        FS.cleanTrack (LengthOfSs 3) (pts [ (1, 3)
+                                          , (2, 2)
+                                          , (3, 1)
+                                          ])
         @?= pts [ (1, 3) 
                 , (2, 2)
                 , (3, 1)
                 ]
 
     , HU.testCase "Three points, each one further from goal = all but one point removed" $
-        FS.cleanTrack (LengthOfSs $ 2 % 1) (pts [ (1, 1)
-                                                , (2, 2)
-                                                , (3, 3)
-                                                ])
+        FS.cleanTrack (LengthOfSs 2) (pts [ (1, 1)
+                                          , (2, 2)
+                                          , (3, 3)
+                                          ])
         @?= pts [ (1, 1) ]
 
     , HU.testCase "Three points, only 2nd moves further from goal = that point removed" $
-        FS.cleanTrack (LengthOfSs $ 2 % 1) (pts [ (1, 2)
-                                                , (2, 3)
-                                                , (3, 1)
-                                                ])
+        FS.cleanTrack (LengthOfSs 2) (pts [ (1, 2)
+                                          , (2, 3)
+                                          , (3, 1)
+                                          ])
         @?= pts [ (1, 2)
                 , (3, 1)
                 ]
 
     , HU.testCase "Three points, only 3rd moves further from goal = that point removed" $
-        FS.cleanTrack (LengthOfSs $ 2 % 1) (pts [ (1, 2)
-                                                , (2, 1)
-                                                , (3, 2)
-                                                ])
+        FS.cleanTrack (LengthOfSs 2) (pts [ (1, 2)
+                                          , (2, 1)
+                                          , (3, 2)
+                                          ])
         @?= pts [ (1, 2)
                 , (2, 1)
                 ]
@@ -121,14 +121,14 @@ coefficientUnits :: TestTree
 coefficientUnits = testGroup "Leading coefficient (LC) unit tests"
     [ HU.testCase "1 track point = 0 LC" $
         FS.leadingCoefficient
-            (TaskDeadline $ 1 % 1)
+            (TaskDeadline 1)
             (LengthOfSs 1)
             (pts [ (1, 0) ])
         @?= (LeadingCoefficient $ 0 % 1)
 
     , HU.testCase "2 track points at SSS and ESS = 1 / 900 LC" $
         FS.leadingCoefficient
-            (TaskDeadline $ 2 % 1)
+            (TaskDeadline 2)
             (LengthOfSs 1)
             (pts [ (1, 1)
                  , (2, 0)
@@ -137,7 +137,7 @@ coefficientUnits = testGroup "Leading coefficient (LC) unit tests"
 
     , HU.testCase "3 track points evenly spread from SSS to ESS = 1 / 720 LC" $
         FS.leadingCoefficient
-            (TaskDeadline $ 3 % 1)
+            (TaskDeadline 3)
             (LengthOfSs 2)
             (pts [ (1, 2)
                  , (2, 1)
@@ -147,7 +147,7 @@ coefficientUnits = testGroup "Leading coefficient (LC) unit tests"
 
     , HU.testCase "4 track points evenly spread from SSS to ESS = 29 / 16200 LC" $
         FS.leadingCoefficient
-            (TaskDeadline $ 4 % 1)
+            (TaskDeadline 4)
             (LengthOfSs 3)
             (pts [ (1, 3)
                  , (2, 2)
@@ -158,7 +158,7 @@ coefficientUnits = testGroup "Leading coefficient (LC) unit tests"
 
     , HU.testCase "5 track points evenly spread from SSS to ESS = 11 / 4800 LC" $
         FS.leadingCoefficient
-            (TaskDeadline $ 5 % 1)
+            (TaskDeadline 5)
             (LengthOfSs 4)
             (pts [ (1, 4)
                  , (2, 3)
@@ -170,7 +170,7 @@ coefficientUnits = testGroup "Leading coefficient (LC) unit tests"
 
     , HU.testCase "5 track points cut short to 3 by a task deadline = 1 / 480 LC" $
         FS.leadingCoefficient
-            (TaskDeadline $ 3 % 1)
+            (TaskDeadline 3)
             (LengthOfSs 4)
             (pts [ (1, 4)
                  , (2, 3)
@@ -182,7 +182,7 @@ coefficientUnits = testGroup "Leading coefficient (LC) unit tests"
 
     , HU.testCase "5 track points with an equal distance flown before the speed section = 3 / 400 LC" $
         FS.leadingCoefficient
-            (TaskDeadline $ 5 % 1)
+            (TaskDeadline 5)
             (LengthOfSs 2)
             (pts [ (1, 4)
                  , (2, 3)
@@ -197,7 +197,7 @@ leadingFractionsUnits :: TestTree
 leadingFractionsUnits = testGroup "Leading fractions unit tests"
     [ HU.testCase "2 pilots, identical tracks = 1 leading factor each" $
         FS.leadingFractions
-            (TaskDeadline $ 5 % 1)
+            (TaskDeadline 5)
             (LengthOfSs 4)
             [ pts [ (1, 4)
                   , (2, 3)
@@ -218,7 +218,7 @@ leadingFractionsUnits = testGroup "Leading fractions unit tests"
      
     , HU.testCase "2 pilots, one always leading = 0 & 1 leading factors" $
         FS.leadingFractions
-            (TaskDeadline $ 5 % 1)
+            (TaskDeadline 5)
             (LengthOfSs 4)
             [ pts [ (1, 5)
                   , (2, 4)
@@ -239,7 +239,7 @@ leadingFractionsUnits = testGroup "Leading fractions unit tests"
      
     , HU.testCase "2 pilots, one mostly leading = 0 & 1 leading factors" $
         FS.leadingFractions
-            (TaskDeadline $ 5 % 1)
+            (TaskDeadline 5)
             (LengthOfSs 4)
             [ pts [ (1, 5)
                   , (2, 2)
@@ -260,7 +260,7 @@ leadingFractionsUnits = testGroup "Leading fractions unit tests"
      
     , HU.testCase "2 pilots, alternating lead = 0 & 1 leading factors" $
         FS.leadingFractions
-            (TaskDeadline $ 5 % 1)
+            (TaskDeadline 5)
             (LengthOfSs 8)
             [ pts [ (1, 8)
                   , (2, 6)
