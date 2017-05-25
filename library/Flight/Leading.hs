@@ -14,6 +14,7 @@ module Flight.Leading
     , leadingFractions
     )where
 
+import Control.Arrow (second)
 import Data.Ratio ((%))
 import Flight.Ratio (pattern (:%))
 import Data.List (partition, sortBy)
@@ -159,7 +160,7 @@ leadingCoefficients deadline@(TaskDeadline maxTaskTime) len tracks =
         lc = leadingCoefficient deadline len
 
         csMadeGoal :: [(Int, LeadingCoefficient)]
-        csMadeGoal = (\(i, x) -> (i, lc x)) <$> xsMadeGoal
+        csMadeGoal = second lc <$> xsMadeGoal
 
         lcE :: LcTrack -> LeadingCoefficient
         lcE track@(LcTrack xs) =
@@ -170,7 +171,7 @@ leadingCoefficients deadline@(TaskDeadline maxTaskTime) len tracks =
                 b = (\(_, DistanceToEss d) -> essTime * d * d) $ last xs
 
         csEarly :: [(Int, LeadingCoefficient)]
-        csEarly = (\(i, xs) -> (i, lcE xs)) <$> xsEarly
+        csEarly = second lcE <$> xsEarly
 
         lcL :: LcTrack -> LeadingCoefficient
         lcL track@(LcTrack xs) =
@@ -181,7 +182,7 @@ leadingCoefficients deadline@(TaskDeadline maxTaskTime) len tracks =
                 b = (\(TaskTime t, DistanceToEss d) -> t * d * d) $ last xs
 
         csLate :: [(Int, LeadingCoefficient)]
-        csLate = (\(i, xs) -> (i, lcL xs)) <$> xsLate
+        csLate = second lcL <$> xsLate
 
         csMerged :: [(Int, LeadingCoefficient)]
         csMerged = mconcat [ csMadeGoal, csEarly, csLate ]
