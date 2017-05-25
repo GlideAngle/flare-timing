@@ -65,10 +65,12 @@ towardsGoal (LcTrack xs)
             zero = (TaskTime $ tN - (1 % 1), dist)
             f (_, dM) x@(_, dN) = if dM < dN then Nothing else Just x
 
--- | Removes initial points further from ESS than the course length.
+-- | Removes initial points, those that are;
+-- * further from ESS than the course length
+-- * already past the end of the speed section.
 initialOffside :: LengthOfSs -> LcTrack -> LcTrack
 initialOffside (LengthOfSs len) (LcTrack xs) =
-    LcTrack $ dropWhile (\(_, DistanceToEss d) -> d > len) xs
+    LcTrack $ dropWhile (\(_, DistanceToEss d) -> d > len || d < 0) xs
 
 cleanTrack :: LengthOfSs -> LcTrack -> LcTrack
 cleanTrack len = towardsGoal . positiveTime . (initialOffside len) 

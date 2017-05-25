@@ -287,7 +287,7 @@ isClean (LengthOfSs len) rawTrack@(LcTrack ((_, DistanceToEss x) : _)) cleanedTr
     if any (< 1) ts
         then length ys < length xs
         else
-            if x > len
+            if x > len || x < 0
                 then length ys < length xs
                 else
                     if xs == (reverse . sort $ xs)
