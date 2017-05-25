@@ -31,84 +31,90 @@ leadingCoefficientUnits = testGroup "Leading coefficient unit tests"
     , leadingFractionsUnits
     ]
 
+pt :: (Rational, Rational) -> (TaskTime, DistanceToEss)
+pt (t, d) = (TaskTime t, DistanceToEss d)
+
+pts :: [(Rational, Rational)] -> LcTrack
+pts xs = LcTrack $ pt <$> xs
+
 madeGoalUnits :: TestTree
 madeGoalUnits = testGroup "Made goal unit tests"
     [ HU.testCase "Single point, at goal = made goal" $
-        FS.madeGoal (LcTrack [ (TaskTime 0, DistanceToEss 0) ]) @?= True
+        FS.madeGoal (pts [ (0, 0) ]) @?= True
 
     , HU.testCase "Single point, not at goal = didn't make goal" $
-        FS.madeGoal (LcTrack [ (TaskTime 0, DistanceToEss 1) ]) @?= False
+        FS.madeGoal (pts [ (0, 1) ]) @?= False
 
     , HU.testCase "Two points, not at goal = didn't make goal" $
-        FS.madeGoal (LcTrack [ (TaskTime 0, DistanceToEss 2)
-                             , (TaskTime 1, DistanceToEss 1)
-                             ]) @?= False
+        FS.madeGoal (pts [ (0, 2)
+                         , (1, 1)
+                         ]) @?= False
 
     , HU.testCase "Two points, only last point at goal = made goal" $
-        FS.madeGoal (LcTrack [ (TaskTime 0, DistanceToEss 1)
-                             , (TaskTime 1, DistanceToEss 0)
-                             ]) @?= True
+        FS.madeGoal (pts [ (0, 1)
+                         , (1, 0)
+                         ]) @?= True
 
     , HU.testCase "Two points, only first point at goal = made goal" $
-        FS.madeGoal (LcTrack [ (TaskTime 0, DistanceToEss 0)
-                             , (TaskTime 1, DistanceToEss 1)
-                             ]) @?= True
+        FS.madeGoal (pts [ (0, 0)
+                         , (1, 1)
+                         ]) @?= True
     ]
 
 cleanTrackUnits :: TestTree
 cleanTrackUnits = testGroup "Clean track unit tests"
     [ HU.testCase "Single point = no points removed" $
-        FS.cleanTrack (LcTrack [ (TaskTime 0, DistanceToEss 0) ])
-        @?= LcTrack [ (TaskTime 0, DistanceToEss 0) ]
+        FS.cleanTrack (pts [ (0, 0) ])
+        @?= pts [ (0, 0) ]
 
     , HU.testCase "Two points, each one closer to goal = no points removed" $
-        FS.cleanTrack (LcTrack [ (TaskTime 0, DistanceToEss 2)
-                               , (TaskTime 1, DistanceToEss 1)
-                               ])
-        @?= LcTrack [ (TaskTime 0, DistanceToEss 2) 
-                    , (TaskTime 1, DistanceToEss 1)
-                    ]
+        FS.cleanTrack (pts [ (0, 2)
+                           , (1, 1)
+                           ])
+        @?= pts [ (0, 2) 
+                , (1, 1)
+                ]
 
     , HU.testCase "Two points, each one further from goal = all but one point removed" $
-        FS.cleanTrack (LcTrack [ (TaskTime 0, DistanceToEss 1)
-                               , (TaskTime 1, DistanceToEss 2)
-                               ])
-        @?= LcTrack [ (TaskTime 0, DistanceToEss 1) ]
+        FS.cleanTrack (pts [ (0, 1)
+                           , (1, 2)
+                           ])
+        @?= pts [ (0, 1) ]
 
     , HU.testCase "Three points, each one closer to goal = no points removed" $
-        FS.cleanTrack (LcTrack [ (TaskTime 0, DistanceToEss 3)
-                               , (TaskTime 1, DistanceToEss 2)
-                               , (TaskTime 2, DistanceToEss 1)
-                               ])
-        @?= LcTrack [ (TaskTime 0, DistanceToEss 3) 
-                    , (TaskTime 1, DistanceToEss 2)
-                    , (TaskTime 2, DistanceToEss 1)
-                    ]
+        FS.cleanTrack (pts [ (0, 3)
+                           , (1, 2)
+                           , (2, 1)
+                           ])
+        @?= pts [ (0, 3) 
+                , (1, 2)
+                , (2, 1)
+                ]
 
     , HU.testCase "Three points, each one further from goal = all but one point removed" $
-        FS.cleanTrack (LcTrack [ (TaskTime 0, DistanceToEss 1)
-                               , (TaskTime 1, DistanceToEss 2)
-                               , (TaskTime 1, DistanceToEss 3)
-                               ])
-        @?= LcTrack [ (TaskTime 0, DistanceToEss 1) ]
+        FS.cleanTrack (pts [ (0, 1)
+                           , (1, 2)
+                           , (1, 3)
+                           ])
+        @?= pts [ (0, 1) ]
 
     , HU.testCase "Three points, only 2nd moves further from goal = that point removed" $
-        FS.cleanTrack (LcTrack [ (TaskTime 0, DistanceToEss 2)
-                               , (TaskTime 1, DistanceToEss 3)
-                               , (TaskTime 2, DistanceToEss 1)
-                               ])
-        @?= LcTrack [ (TaskTime 0, DistanceToEss 2)
-                    , (TaskTime 2, DistanceToEss 1)
-                    ]
+        FS.cleanTrack (pts [ (0, 2)
+                           , (1, 3)
+                           , (2, 1)
+                           ])
+        @?= pts [ (0, 2)
+                , (2, 1)
+                ]
 
     , HU.testCase "Three points, only 3rd moves further from goal = that point removed" $
-        FS.cleanTrack (LcTrack [ (TaskTime 0, DistanceToEss 2)
-                               , (TaskTime 1, DistanceToEss 1)
-                               , (TaskTime 2, DistanceToEss 2)
-                               ])
-        @?= LcTrack [ (TaskTime 0, DistanceToEss 2)
-                    , (TaskTime 1, DistanceToEss 1)
-                    ]
+        FS.cleanTrack (pts [ (0, 2)
+                           , (1, 1)
+                           , (2, 2)
+                           ])
+        @?= pts [ (0, 2)
+                , (1, 1)
+                ]
     ]
 
 coefficientUnits :: TestTree
@@ -117,73 +123,73 @@ coefficientUnits = testGroup "Leading coefficient (LC) unit tests"
         FS.leadingCoefficient
             (TaskDeadline $ 1 % 1)
             (LengthOfSs $ 1)
-            (LcTrack [ (TaskTime 0, DistanceToEss 0) ])
+            (pts [ (0, 0) ])
         @?= LeadingCoefficient 0
 
     , HU.testCase "2 track points at SSS and ESS = 0 LC" $
         FS.leadingCoefficient
             (TaskDeadline $ 1 % 1)
             (LengthOfSs $ 1)
-            (LcTrack [ (TaskTime 0, DistanceToEss 1)
-                     , (TaskTime 1, DistanceToEss 0)
-                     ])
+            (pts [ (0, 1)
+                 , (1, 0)
+                 ])
         @?= LeadingCoefficient 0
 
     , HU.testCase "3 track points evenly spread from SSS to ESS = 1 / 7200 LC" $
         FS.leadingCoefficient
             (TaskDeadline $ 2 % 1)
             (LengthOfSs $ 2)
-            (LcTrack [ (TaskTime 0, DistanceToEss 2)
-                     , (TaskTime 1, DistanceToEss 1)
-                     , (TaskTime 2, DistanceToEss 0)
-                     ])
+            (pts [ (0, 2)
+                 , (1, 1)
+                 , (2, 0)
+                 ])
         @?= (LeadingCoefficient $ 1 % 7200)
 
     , HU.testCase "4 track points evenly spread from SSS to ESS = 1 / 2700 LC" $
         FS.leadingCoefficient
             (TaskDeadline $ 3 % 1)
             (LengthOfSs $ 3)
-            (LcTrack [ (TaskTime 0, DistanceToEss 3)
-                     , (TaskTime 1, DistanceToEss 2)
-                     , (TaskTime 2, DistanceToEss 1)
-                     , (TaskTime 3, DistanceToEss 0)
-                     ])
+            (pts [ (0, 3)
+                 , (1, 2)
+                 , (2, 1)
+                 , (3, 0)
+                 ])
         @?= (LeadingCoefficient $ 1 % 2700)
 
     , HU.testCase "5 track points evenly spread from SSS to ESS = 1 / 1440 LC" $
         FS.leadingCoefficient
             (TaskDeadline $ 4 % 1)
             (LengthOfSs $ 4)
-            (LcTrack [ (TaskTime 0, DistanceToEss 4)
-                     , (TaskTime 1, DistanceToEss 3)
-                     , (TaskTime 2, DistanceToEss 2)
-                     , (TaskTime 3, DistanceToEss 1)
-                     , (TaskTime 4, DistanceToEss 0)
-                     ])
+            (pts [ (0, 4)
+                 , (1, 3)
+                 , (2, 2)
+                 , (3, 1)
+                 , (4, 0)
+                 ])
         @?= (LeadingCoefficient $ 1 % 1440)
 
     , HU.testCase "5 track points cut short to 3 by a task deadline = 7 / 14400 LC" $
         FS.leadingCoefficient
             (TaskDeadline $ 2 % 1)
             (LengthOfSs $ 4)
-            (LcTrack [ (TaskTime 0, DistanceToEss 4)
-                     , (TaskTime 1, DistanceToEss 3)
-                     , (TaskTime 2, DistanceToEss 2)
-                     , (TaskTime 3, DistanceToEss 1)
-                     , (TaskTime 4, DistanceToEss 0)
-                     ])
+            (pts [ (0, 4)
+                 , (1, 3)
+                 , (2, 2)
+                 , (3, 1)
+                 , (4, 0)
+                 ])
         @?= (LeadingCoefficient $ 7 % 14400)
 
     , HU.testCase "5 track points with an equal distance flown before the speed section = 1 / 360 LC" $
         FS.leadingCoefficient
             (TaskDeadline $ 4 % 1)
             (LengthOfSs $ 2)
-            (LcTrack [ (TaskTime 0, DistanceToEss 4)
-                     , (TaskTime 1, DistanceToEss 3)
-                     , (TaskTime 2, DistanceToEss 2)
-                     , (TaskTime 3, DistanceToEss 1)
-                     , (TaskTime 4, DistanceToEss 0)
-                     ])
+            (pts [ (0, 4)
+                 , (1, 3)
+                 , (2, 2)
+                 , (3, 1)
+                 , (4, 0)
+                 ])
         @?= (LeadingCoefficient $ 1 % 360)
     ]
 
@@ -193,18 +199,18 @@ leadingFractionsUnits = testGroup "Leading fractions unit tests"
         FS.leadingFractions
             (TaskDeadline $ 4 % 1)
             (LengthOfSs $ 4)
-            [ LcTrack [ (TaskTime 0, DistanceToEss 4)
-                      , (TaskTime 1, DistanceToEss 3)
-                      , (TaskTime 2, DistanceToEss 2)
-                      , (TaskTime 3, DistanceToEss 1)
-                      , (TaskTime 4, DistanceToEss 0)
-                      ]
-            , LcTrack [ (TaskTime 0, DistanceToEss 4)
-                      , (TaskTime 1, DistanceToEss 3)
-                      , (TaskTime 2, DistanceToEss 2)
-                      , (TaskTime 3, DistanceToEss 1)
-                      , (TaskTime 4, DistanceToEss 0)
-                      ]
+            [ pts [ (0, 4)
+                  , (1, 3)
+                  , (2, 2)
+                  , (3, 1)
+                  , (4, 0)
+                  ]
+            , pts [ (0, 4)
+                  , (1, 3)
+                  , (2, 2)
+                  , (3, 1)
+                  , (4, 0)
+                  ]
             ]
         @?= [ LeadingFraction $ 1 % 1
             , LeadingFraction $ 1 % 1
@@ -214,18 +220,18 @@ leadingFractionsUnits = testGroup "Leading fractions unit tests"
         FS.leadingFractions
             (TaskDeadline $ 4 % 1)
             (LengthOfSs $ 4)
-            [ LcTrack [ (TaskTime 0, DistanceToEss 5)
-                      , (TaskTime 1, DistanceToEss 4)
-                      , (TaskTime 2, DistanceToEss 3)
-                      , (TaskTime 3, DistanceToEss 2)
-                      , (TaskTime 4, DistanceToEss 1)
-                      ]
-            , LcTrack [ (TaskTime 0, DistanceToEss 4)
-                      , (TaskTime 1, DistanceToEss 3)
-                      , (TaskTime 2, DistanceToEss 2)
-                      , (TaskTime 3, DistanceToEss 1)
-                      , (TaskTime 4, DistanceToEss 0)
-                      ]
+            [ pts [ (0, 5)
+                  , (1, 4)
+                  , (2, 3)
+                  , (3, 2)
+                  , (4, 1)
+                  ]
+            , pts [ (0, 4)
+                  , (1, 3)
+                  , (2, 2)
+                  , (3, 1)
+                  , (4, 0)
+                  ]
             ]
         @?= [ LeadingFraction $ 0 % 1
             , LeadingFraction $ 1 % 1
@@ -235,18 +241,18 @@ leadingFractionsUnits = testGroup "Leading fractions unit tests"
         FS.leadingFractions
             (TaskDeadline $ 4 % 1)
             (LengthOfSs $ 4)
-            [ LcTrack [ (TaskTime 0, DistanceToEss 5)
-                      , (TaskTime 1, DistanceToEss 2)
-                      , (TaskTime 2, DistanceToEss 3)
-                      , (TaskTime 3, DistanceToEss 2)
-                      , (TaskTime 4, DistanceToEss 1)
-                      ]
-            , LcTrack [ (TaskTime 0, DistanceToEss 4)
-                      , (TaskTime 1, DistanceToEss 3)
-                      , (TaskTime 2, DistanceToEss 2)
-                      , (TaskTime 3, DistanceToEss 1)
-                      , (TaskTime 4, DistanceToEss 0)
-                      ]
+            [ pts [ (0, 5)
+                  , (1, 2)
+                  , (2, 3)
+                  , (3, 2)
+                  , (4, 1)
+                  ]
+            , pts [ (0, 4)
+                  , (1, 3)
+                  , (2, 2)
+                  , (3, 1)
+                  , (4, 0)
+                  ]
             ]
         @?= [ LeadingFraction $ 0 % 1
             , LeadingFraction $ 1 % 1
@@ -256,18 +262,18 @@ leadingFractionsUnits = testGroup "Leading fractions unit tests"
         FS.leadingFractions
             (TaskDeadline $ 4 % 1)
             (LengthOfSs $ 8)
-            [ LcTrack [ (TaskTime 0, DistanceToEss 8)
-                      , (TaskTime 1, DistanceToEss 6)
-                      , (TaskTime 2, DistanceToEss 5)
-                      , (TaskTime 3, DistanceToEss 2)
-                      , (TaskTime 4, DistanceToEss 1)
-                      ]
-            , LcTrack [ (TaskTime 0, DistanceToEss 8)
-                      , (TaskTime 1, DistanceToEss 7)
-                      , (TaskTime 2, DistanceToEss 4)
-                      , (TaskTime 3, DistanceToEss 3)
-                      , (TaskTime 4, DistanceToEss 0)
-                      ]
+            [ pts [ (0, 8)
+                  , (1, 6)
+                  , (2, 5)
+                  , (3, 2)
+                  , (4, 1)
+                  ]
+            , pts [ (0, 8)
+                  , (1, 7)
+                  , (2, 4)
+                  , (3, 3)
+                  , (4, 0)
+                  ]
             ]
         @?= [ LeadingFraction $ 0 % 1
             , LeadingFraction $ 1 % 1
