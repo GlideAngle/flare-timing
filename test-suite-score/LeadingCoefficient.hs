@@ -283,15 +283,12 @@ leadingFractionsUnits = testGroup "Leading fractions unit tests"
 isClean :: LengthOfSs -> LcTrack -> LcTrack-> Bool
 isClean _ (LcTrack []) _ =
     True
-isClean (LengthOfSs len) rawTrack@(LcTrack ((_, DistanceToEss x) : _)) cleanedTrack =
-    if any (< 1) ts || x > len || x < 0
-        then length ys < length xs
-        else
-            if xs == sortBy (flip compare) xs
-               then length ys == length xs
-               else length ys < length xs
+isClean (LengthOfSs len) rawTrack@(LcTrack ((_, DistanceToEss x) : _)) cleanedTrack
+    | any (< 1) ts || x > len || x < 0 = length ys < length xs
+    | xs == sortBy (flip compare) xs = length ys == length xs
+    | otherwise = length ys < length xs
     where
-        ts = times rawTrack 
+        ts = times rawTrack
         xs = distances rawTrack
         ys = distances cleanedTrack
 
