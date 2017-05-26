@@ -69,13 +69,17 @@ correct
     (Just (Jumped (SecondsPerPoint spp) (JumpedTheGun jtg)))
     (TaskPointParts{..})
     (TaskPoints pts) =
-    pts == (max 0 $ (distance + leading + time + arrival) * jtg / spp)
+    pts == max 0 x
+    where
+        x = (distance + leading + time + arrival) - jtg / spp
 
 correct
     (Just (JumpedNoGoal (SecondsPerPoint spp) (JumpedTheGun jtg)))
     (TaskPointParts{..})
     (TaskPoints pts) =
-    pts == (max 0 $ (distance + leading + (8 % 10) * (time + arrival)) * jtg / spp)
+    pts == max 0 x
+    where
+        x = (distance + leading + (8 % 10) * (time + arrival)) - jtg / spp
 
 correct (Just NoGoalHg) TaskPointParts{..} (TaskPoints pts) =
     pts == distance + leading + (8 % 10) * (time + arrival)

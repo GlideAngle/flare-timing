@@ -89,7 +89,7 @@ tallyPoints (Just NoGoalPg) =
 
 jumpTheGun :: SecondsPerPoint -> JumpedTheGun -> TaskPoints -> TaskPoints
 jumpTheGun (SecondsPerPoint secs) (JumpedTheGun jump) (TaskPoints pts) =
-    TaskPoints $ max 0 $ pts - jump / secs
+    TaskPoints $ max 0 (pts - jump / secs)
 
 taskPoints :: forall a. Maybe (Penalty a) -> TaskPointParts -> TaskPoints
 taskPoints penalties parts =
