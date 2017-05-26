@@ -35,7 +35,11 @@ import Flight.Score
     , LcTrack(..)
     , TaskDeadline(..)
     , LengthOfSs(..)
+    , TaskPenalties(..)
+    , TaskPointParts(..)
+    , zeroPenalties
     )
+
 import Normal (Normal(..), NormalSum(..))
 
 -- | Nominal goal.
@@ -227,3 +231,27 @@ instance QC.Arbitrary LcTest where
         (QC.Positive len) <- arbitrary
         xs <- listOf $ listOf $ choose (1, 1000000)
         return $ mkLcTest deadline len xs
+
+-- | Task points, tally and penalties.
+newtype PtTest = PtTest (TaskPenalties, TaskPointParts) deriving Show
+
+instance Monad m => SC.Serial m PtTest where
+    series = cons4 mkPtTest
+        where
+            mkPtTest
+                (SC.Positive d)
+                (SC.Positive l)
+                (SC.Positive t)
+                (SC.Positive a) =
+                PtTest (zeroPenalties, parts)
+                where
+                    parts = TaskPointParts { distance = d, leading = l, time = t, arrival = a }
+
+instance QC.Arbitrary PtTest where
+    arbitrary = do
+        (QC.Positive d) <- arbitrary
+        (QC.Positive l) <- arbitrary
+        (QC.Positive t) <- arbitrary
+        (QC.Positive a) <- arbitrary
+        let parts = TaskPointParts { distance = d, leading = l, time = t, arrival = a }
+        return $ PtTest (zeroPenalties, parts)

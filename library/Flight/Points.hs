@@ -9,7 +9,7 @@ module Flight.Points
     , TaskPenalties(..)
     , TaskPointParts(..)
     , TaskPoints(..)
-    , zeroPenalty
+    , zeroPenalties
     , zeroPoints
     , taskPoints
     ) where
@@ -34,19 +34,19 @@ data EarlyStartPenalty
     = EarlyStartHgMax MinimumDistancePoints
     | EarlyStartHg SecondsPerPoint JumpedTheGun
     | EarlyStartPg LaunchToSssPoints
-    deriving Show
+    deriving (Eq, Show)
 
 -- | When a pilot completes the speed section but misses goal.
 data NoGoalPenalty
     = NoGoalPg
     | NoGoalHg
-    deriving Show
+    deriving (Eq, Show)
 
 data TaskPenalties =
     TaskPenalties
         { earlyStart :: Maybe EarlyStartPenalty
         , noGoal :: Maybe NoGoalPenalty
-        } deriving Show
+        } deriving (Eq, Show)
 
 data TaskPointParts =
     TaskPointParts
@@ -54,12 +54,12 @@ data TaskPointParts =
         , leading :: Rational
         , time :: Rational
         , arrival :: Rational
-        } deriving Show
+        } deriving (Eq, Show)
 
 type TaskPointTally = TaskPointParts -> TaskPoints
 
-zeroPenalty :: TaskPenalties
-zeroPenalty = TaskPenalties { earlyStart = Nothing, noGoal = Nothing }
+zeroPenalties :: TaskPenalties
+zeroPenalties = TaskPenalties { earlyStart = Nothing, noGoal = Nothing }
 
 zeroPoints :: TaskPointParts
 zeroPoints = TaskPointParts { distance = 0, leading = 0, time = 0, arrival = 0 }

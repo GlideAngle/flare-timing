@@ -87,7 +87,7 @@ module Flight.Score
     , TaskPenalties(..)
     , TaskPointParts(..)
     , TaskPoints(..)
-    , zeroPenalty
+    , zeroPenalties
     , zeroPoints
     , taskPoints
     ) where
