@@ -1,13 +1,23 @@
-module Flight.Points where
+{-# LANGUAGE RecordWildCards #-}
+module Flight.Points
+    ( LaunchToSssPoints(..)
+    , MinimumDistancePoints(..)
+    , SecondsPerPoint(..)
+    , JumpedTheGun(..)
+    , EarlyStartPenalty(..)
+    , NoGoalPenalty(..)
+    , TaskPenalties(..)
+    , TaskPointParts(..)
+    , TaskPoints(..)
+    , zeroPenalty
+    , zeroPoints
+    , taskPoints
+    ) where
 
 import Data.Ratio ((%))
 
 newtype LaunchToSssPoints = LaunchToSssPoints Rational deriving (Eq, Show)
 newtype MinimumDistancePoints = MinimumDistancePoints Rational deriving (Eq, Show)
-newtype DistancePoints = DistancePoints Rational deriving (Eq, Show)
-newtype LeadingPoints = LeadingPoints Rational deriving (Eq, Show)
-newtype TimePoints = TimePoints Rational deriving (Eq, Show)
-newtype ArrivalPoints = ArrivalPoints Rational deriving (Eq, Show)
 newtype TaskPoints = TaskPoints Rational deriving (Eq, Show)
 
 -- | Jumped the gun by this many seconds.
@@ -24,73 +34,61 @@ data EarlyStartPenalty
     = EarlyStartHgMax MinimumDistancePoints
     | EarlyStartHg SecondsPerPoint JumpedTheGun
     | EarlyStartPg LaunchToSssPoints
-    | EarlyStartNot
     deriving Show
 
-data EssButNotGoalPenalty
-    = EssButNotGoalPg
-    | EssButNotGoalHg
-    | EssButNotGoalNot
+-- | When a pilot completes the speed section but misses goal.
+data NoGoalPenalty
+    = NoGoalPg
+    | NoGoalHg
     deriving Show
+
+data TaskPenalties =
+    TaskPenalties
+        { earlyStart :: Maybe EarlyStartPenalty
+        , noGoal :: Maybe NoGoalPenalty
+        } deriving Show
+
+data TaskPointParts =
+    TaskPointParts
+        { distance :: Rational
+        , leading :: Rational
+        , time :: Rational
+        , arrival :: Rational
+        } deriving Show
+
+type TaskPointTally = TaskPointParts -> TaskPoints
+
+zeroPenalty :: TaskPenalties
+zeroPenalty = TaskPenalties { earlyStart = Nothing, noGoal = Nothing }
+
+zeroPoints :: TaskPointParts
+zeroPoints = TaskPointParts { distance = 0, leading = 0, time = 0, arrival = 0 }
+
+tallyPoints :: Maybe EarlyStartPenalty -> Maybe NoGoalPenalty -> TaskPointTally
+tallyPoints (Just (EarlyStartHgMax (MinimumDistancePoints p))) _ =
+    const $ TaskPoints p
+tallyPoints (Just (EarlyStartHg secs jump)) (Just NoGoalHg) =
+    \ TaskPointParts {..} ->
+        jumpTheGun secs jump $ TaskPoints $ distance + leading + (8 % 10) * (time + arrival)
+tallyPoints (Just (EarlyStartHg secs jump)) _ =
+    \ TaskPointParts {..} ->
+        jumpTheGun secs jump $ TaskPoints $ distance + leading + time + arrival
+tallyPoints _ (Just NoGoalHg) =
+    \ TaskPointParts {..} ->
+        TaskPoints $ distance + leading + (8 % 10) * (time + arrival)
+tallyPoints (Just (EarlyStartPg (LaunchToSssPoints d))) _ =
+    const $ TaskPoints d
+tallyPoints _ (Just NoGoalPg) =
+    \ TaskPointParts {..} ->
+        TaskPoints $ distance + leading
+tallyPoints _ _ =
+    \ TaskPointParts {..} ->
+        TaskPoints $ distance + leading + time + arrival
 
 jumpTheGun :: SecondsPerPoint -> JumpedTheGun -> TaskPoints -> TaskPoints
 jumpTheGun (SecondsPerPoint secs) (JumpedTheGun jump) (TaskPoints pts) =
     TaskPoints $ pts - jump / secs
 
-taskPoints :: EssButNotGoalPenalty
-              -> EarlyStartPenalty
-              -> DistancePoints
-              -> LeadingPoints
-              -> TimePoints
-              -> ArrivalPoints
-              -> TaskPoints
-taskPoints _ (EarlyStartHgMax (MinimumDistancePoints p)) _ _ _ _ =
-    TaskPoints p
-taskPoints
-    EssButNotGoalHg
-    (EarlyStartHg secs jump)
-    (DistancePoints d)
-    (LeadingPoints l)
-    (TimePoints t)
-    (ArrivalPoints a) =
-    jumpTheGun secs jump $ TaskPoints $ d + l + (8 % 10) * (t + a)
-taskPoints
-    _
-    (EarlyStartHg secs jump)
-    (DistancePoints d)
-    (LeadingPoints l)
-    (TimePoints t)
-    (ArrivalPoints a) =
-    jumpTheGun secs jump $ TaskPoints $ d + l + t + a
-taskPoints
-    EssButNotGoalHg
-    _
-    (DistancePoints d)
-    (LeadingPoints l)
-    (TimePoints t)
-    (ArrivalPoints a) =
-    TaskPoints $ d + l + (8 % 10) * (t + a)
-taskPoints
-    _
-    (EarlyStartPg (LaunchToSssPoints d))
-    _
-    _
-    _
-    _ =
-    TaskPoints d
-taskPoints
-    EssButNotGoalPg
-    _
-    (DistancePoints d)
-    (LeadingPoints l)
-    _
-    _ =
-    TaskPoints $ d + l
-taskPoints
-    _
-    _
-    (DistancePoints d)
-    (LeadingPoints l)
-    (TimePoints t)
-    (ArrivalPoints a) =
-    TaskPoints $ d + l + t + a
+taskPoints :: TaskPenalties -> TaskPointParts -> TaskPoints
+taskPoints TaskPenalties{..} parts =
+    tallyPoints earlyStart noGoal parts

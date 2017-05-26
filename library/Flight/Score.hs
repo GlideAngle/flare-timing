@@ -77,6 +77,19 @@ module Flight.Score
     , leadingCoefficient
     , madeGoal
     , cleanTrack
+    -- * Tallying points 
+    , LaunchToSssPoints(..)
+    , MinimumDistancePoints(..)
+    , SecondsPerPoint(..)
+    , JumpedTheGun(..)
+    , EarlyStartPenalty(..)
+    , NoGoalPenalty(..)
+    , TaskPenalties(..)
+    , TaskPointParts(..)
+    , TaskPoints(..)
+    , zeroPenalty
+    , zeroPoints
+    , taskPoints
     ) where
 
 import Flight.Ratio
@@ -84,6 +97,7 @@ import Flight.Allot
 import Flight.Leading
 import Flight.Validity
 import Flight.Weighting
+import Flight.Points
 
 type DistancePoint = Rational
 type SpeedPoint = Rational

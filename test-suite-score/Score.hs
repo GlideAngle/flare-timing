@@ -14,6 +14,7 @@ import SpeedFraction
 import LinearFraction
 import DifficultyFraction
 import LeadingCoefficient
+import Points
 
 main :: IO ()
 main = defaultMain tests
@@ -30,7 +31,12 @@ properties :: TestTree
 properties = testGroup "Properties" [scProps, qcProps]
 
 units :: TestTree
-units = testGroup "Units" [validityUnits]
+units = testGroup
+            "Units"
+            [ validityUnits
+            , fractionUnits
+            , pointUnits
+            ]
 
 validityUnits :: TestTree
 validityUnits =
@@ -40,12 +46,25 @@ validityUnits =
         , distanceValidityUnits
         , timeValidityUnits
         , taskValidityUnits
-        , weightingUnits
+        ]
+
+fractionUnits :: TestTree
+fractionUnits =
+    testGroup
+        "Fractions"
+        [ weightingUnits
         , arrivalFractionUnits
         , speedFractionUnits
         , linearFractionUnits
         , difficultyFractionUnits
         , leadingCoefficientUnits
+        ]
+
+pointUnits :: TestTree
+pointUnits =
+    testGroup
+        "Points"
+        [ tallyUnits
         ]
 
 scProps :: TestTree
