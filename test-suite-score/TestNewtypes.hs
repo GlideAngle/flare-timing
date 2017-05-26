@@ -241,28 +241,46 @@ instance QC.Arbitrary LcTest where
 newtype PtTest a = PtTest (Maybe (Penalty a), TaskPointParts) deriving Show
 
 instance Monad m => SC.Serial m (PtTest Hg) where
-    series = cons4 mkPtTest
+    series = decDepth $ mkPtTest <$> penalty <~> (cons4 mkParts)
         where
-            mkPtTest
+            mkPtTest :: Maybe (Penalty Hg) -> TaskPointParts -> PtTest Hg
+            mkPtTest a b = PtTest (a, b)
+
+            mkParts
                 (SC.Positive d)
                 (SC.Positive l)
                 (SC.Positive t)
                 (SC.Positive a) =
-                PtTest (Nothing, parts)
-                where
-                    parts = TaskPointParts { distance = d, leading = l, time = t, arrival = a }
+
+                TaskPointParts { distance = d, leading = l, time = t, arrival = a }
+
+            penalty =
+                (cons0 $ Nothing)
+                \/ (cons1 $ \(SC.Positive mdp) ->
+                        Just $ JumpedTooEarly (MinimumDistancePoints mdp))
+                \/ (cons2 $ \(SC.Positive spp) (SC.Positive jtg) ->
+                        Just $ Jumped (SecondsPerPoint spp) (JumpedTheGun jtg))
+                \/ (cons2 $ \(SC.Positive spp) (SC.Positive jtg) ->
+                        Just $ JumpedNoGoal (SecondsPerPoint spp) (JumpedTheGun jtg))
+                \/ (cons0 $ Just NoGoalHg)
 
 instance Monad m => SC.Serial m (PtTest Pg) where
-    series = cons4 mkPtTest
+    series = decDepth $ mkPtTest <$> penalty <~> (cons4 mkParts)
         where
-            mkPtTest
+            mkPtTest :: Maybe (Penalty Pg) -> TaskPointParts -> PtTest Pg
+            mkPtTest a b = PtTest (a, b)
+
+            mkParts
                 (SC.Positive d)
                 (SC.Positive l)
                 (SC.Positive t)
                 (SC.Positive a) =
-                PtTest (Nothing, parts)
-                where
-                    parts = TaskPointParts { distance = d, leading = l, time = t, arrival = a }
+
+                TaskPointParts { distance = d, leading = l, time = t, arrival = a }
+
+            penalty =
+                (cons0 $ Nothing)
+                \/ (cons1 $ \(SC.Positive lts) -> Just $ Early (LaunchToSssPoints lts))
 
 instance QC.Arbitrary (PtTest Hg) where
     arbitrary = do
