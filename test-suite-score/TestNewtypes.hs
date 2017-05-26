@@ -35,6 +35,12 @@ import Flight.Score
     , LcTrack(..)
     , TaskDeadline(..)
     , LengthOfSs(..)
+    , LaunchToSssPoints(..)
+    , MinimumDistancePoints(..)
+    , SecondsPerPoint(..)
+    , JumpedTheGun(..)
+    , EarlyStartPenalty(..)
+    , NoGoalPenalty(..)
     , TaskPenalties(..)
     , TaskPointParts(..)
     , zeroPenalties
@@ -253,5 +259,36 @@ instance QC.Arbitrary PtTest where
         (QC.Positive l) <- arbitrary
         (QC.Positive t) <- arbitrary
         (QC.Positive a) <- arbitrary
+
+        e <-
+            QC.oneof
+                [ return Nothing
+                , do
+                    x <-
+                        QC.oneof
+                            [ do
+                                (QC.Positive mdp) <- arbitrary
+                                return $ EarlyStartHgMax (MinimumDistancePoints mdp)
+                            , do
+                                (QC.Positive spp) <- arbitrary
+                                (QC.Positive jtg) <- arbitrary
+                                return $ EarlyStartHg (SecondsPerPoint spp) (JumpedTheGun jtg)
+                            , do
+                                (QC.Positive lts) <- arbitrary
+                                return $ EarlyStartPg (LaunchToSssPoints lts)
+                            ]
+
+                    return $ Just x
+                ] 
+
+        g <-
+            QC.oneof
+                [ return Nothing
+                , do
+                    x <- QC.oneof [ return NoGoalPg, return NoGoalHg ]
+                    return $ Just x
+                ]
+
+        let penalties = TaskPenalties { earlyStart = e, noGoal = g }
         let parts = TaskPointParts { distance = d, leading = l, time = t, arrival = a }
-        return $ PtTest (zeroPenalties, parts)
+        return $ PtTest (penalties, parts)

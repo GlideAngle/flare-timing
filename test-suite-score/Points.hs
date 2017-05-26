@@ -3,6 +3,7 @@ module Points (tallyUnits, taskPoints) where
 
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit as HU ((@?=), testCase)
+import Data.Ratio ((%))
 
 import qualified Flight.Score as FS
 import Flight.Score
@@ -10,6 +11,8 @@ import Flight.Score
     , MinimumDistancePoints(..)
     , SecondsPerPoint(..)
     , JumpedTheGun(..)
+    , EarlyStartPenalty(..)
+    , NoGoalPenalty(..)
     , EarlyStartPenalty(..)
     , TaskPenalties(..)
     , TaskPointParts(..)
@@ -51,11 +54,42 @@ tallyUnits = testGroup "Tally task points, with and without penalties"
     ]
 
 correct :: TaskPenalties -> TaskPointParts -> TaskPoints -> Bool
-correct penalties TaskPointParts{..} (TaskPoints pts)
+correct penalties@TaskPenalties{..} TaskPointParts{..} (TaskPoints pts)
     | penalties == zeroPenalties =
         pts == distance + leading + time + arrival
+
+    | noGoal == Nothing =
+        case earlyStart of
+             Nothing ->
+                pts == distance + leading + time + arrival
+
+             Just (EarlyStartHgMax (MinimumDistancePoints md)) ->
+                pts == md
+
+             Just (EarlyStartHg (SecondsPerPoint spp) (JumpedTheGun jtg)) ->
+                pts == (distance + leading + time + arrival) * jtg / spp
+
+             Just (EarlyStartPg (LaunchToSssPoints lts)) ->
+                pts == lts
+
+    | earlyStart == Nothing =
+        case noGoal of
+             Nothing ->
+                pts == distance + leading + time + arrival
+
+             Just NoGoalPg ->
+                pts == distance + leading
+
+             Just NoGoalHg ->
+                pts == distance + leading + (8 % 10) * (time + arrival)
+
     | otherwise =
-        True
+        case (noGoal, earlyStart) of
+             (Just NoGoalHg, Just (EarlyStartHg (SecondsPerPoint spp) (JumpedTheGun jtg))) ->
+                pts == (distance + leading + (8 % 10) * (time + arrival)) * jtg / spp
+
+             _ ->
+                pts == distance + leading + time + arrival
 
 taskPoints :: PtTest -> Bool
 taskPoints (PtTest (penalties, parts)) =

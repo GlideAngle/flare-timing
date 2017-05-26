@@ -108,5 +108,10 @@ qcProps = testGroup "(checked by QuickCheck)"
     , QC.testProperty "Difficulty fraction is in the range of [0, 1]" difficultyFraction
     , QC.testProperty "A cleaned track is smaller if there is some flying away from goal" cleanTrack 
     , QC.testProperty "Leading fraction is in the range of [0, 1]" leadingFractions
+
+    -- WARNING: Failing test.
+    --        *** Failed! Falsifiable (after 2 tests):
+    --        PtTest (TaskPenalties {earlyStart = Just (EarlyStartHg (SecondsPerPoint (1087298782847 % 459545533308)) (JumpedTheGun (7473202757887 % 727009849175))), noGoal = Nothing},TaskPointParts {distance = 4921461470319 % 3451021783192, leading = 7533350198503 % 636686678356, time = 1613148298820 % 6452842806801, arrival = 4830760331746 % 5669024148481})
+    --        Use --quickcheck-replay '1 TFGenR 0000007EAD8980DF0000000000989680000000000000E22B000059D3A9FE8040 0 196608 18 0' to reproduce.
     , QC.testProperty "Task points add up" taskPoints
     ]
