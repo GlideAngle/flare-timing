@@ -39,11 +39,10 @@ import Flight.Score
     , MinimumDistancePoints(..)
     , SecondsPerPoint(..)
     , JumpedTheGun(..)
-    , EarlyStartPenalty(..)
-    , NoGoalPenalty(..)
-    , TaskPenalties(..)
+    , Hg
+    , Pg
+    , Penalty(..)
     , TaskPointParts(..)
-    , zeroPenalties
     )
 
 import Normal (Normal(..), NormalSum(..))
@@ -239,9 +238,9 @@ instance QC.Arbitrary LcTest where
         return $ mkLcTest deadline len xs
 
 -- | Task points, tally and penalties.
-newtype PtTest = PtTest (TaskPenalties, TaskPointParts) deriving Show
+newtype PtTest a = PtTest (Maybe (Penalty a), TaskPointParts) deriving Show
 
-instance Monad m => SC.Serial m PtTest where
+instance Monad m => SC.Serial m (PtTest Hg) where
     series = cons4 mkPtTest
         where
             mkPtTest
@@ -249,18 +248,25 @@ instance Monad m => SC.Serial m PtTest where
                 (SC.Positive l)
                 (SC.Positive t)
                 (SC.Positive a) =
-                PtTest (zeroPenalties, parts)
+                PtTest (Nothing, parts)
                 where
                     parts = TaskPointParts { distance = d, leading = l, time = t, arrival = a }
 
-instance QC.Arbitrary PtTest where
-    arbitrary = do
-        (QC.Positive d) <- arbitrary
-        (QC.Positive l) <- arbitrary
-        (QC.Positive t) <- arbitrary
-        (QC.Positive a) <- arbitrary
+instance Monad m => SC.Serial m (PtTest Pg) where
+    series = cons4 mkPtTest
+        where
+            mkPtTest
+                (SC.Positive d)
+                (SC.Positive l)
+                (SC.Positive t)
+                (SC.Positive a) =
+                PtTest (Nothing, parts)
+                where
+                    parts = TaskPointParts { distance = d, leading = l, time = t, arrival = a }
 
-        e <-
+instance QC.Arbitrary (PtTest Hg) where
+    arbitrary = do
+        penalty <-
             QC.oneof
                 [ return Nothing
                 , do
@@ -268,27 +274,50 @@ instance QC.Arbitrary PtTest where
                         QC.oneof
                             [ do
                                 (QC.Positive mdp) <- arbitrary
-                                return $ EarlyStartHgMax (MinimumDistancePoints mdp)
+                                return $ JumpedTooEarly (MinimumDistancePoints mdp)
                             , do
                                 (QC.Positive spp) <- arbitrary
                                 (QC.Positive jtg) <- arbitrary
-                                return $ EarlyStartHg (SecondsPerPoint spp) (JumpedTheGun jtg)
+                                return $ Jumped (SecondsPerPoint spp) (JumpedTheGun jtg)
                             , do
-                                (QC.Positive lts) <- arbitrary
-                                return $ EarlyStartPg (LaunchToSssPoints lts)
+                                (QC.Positive spp) <- arbitrary
+                                (QC.Positive jtg) <- arbitrary
+                                return $ JumpedNoGoal (SecondsPerPoint spp) (JumpedTheGun jtg)
+                            , return NoGoalHg
                             ]
 
                     return $ Just x
                 ] 
 
-        g <-
+        (QC.Positive d) <- arbitrary
+        (QC.Positive l) <- arbitrary
+        (QC.Positive t) <- arbitrary
+        (QC.Positive a) <- arbitrary
+        let parts = TaskPointParts { distance = d, leading = l, time = t, arrival = a }
+
+        return $ PtTest (penalty, parts)
+
+instance QC.Arbitrary (PtTest Pg) where
+    arbitrary = do
+        penalty <-
             QC.oneof
                 [ return Nothing
                 , do
-                    x <- QC.oneof [ return NoGoalPg, return NoGoalHg ]
-                    return $ Just x
-                ]
+                    x <- do
+                        QC.oneof
+                            [ do
+                                (QC.Positive lts) <- arbitrary
+                                return $ Early (LaunchToSssPoints lts)
+                            , return NoGoalPg
+                            ]
 
-        let penalties = TaskPenalties { earlyStart = e, noGoal = g }
+                    return $ Just x
+                ] 
+
+        (QC.Positive d) <- arbitrary
+        (QC.Positive l) <- arbitrary
+        (QC.Positive t) <- arbitrary
+        (QC.Positive a) <- arbitrary
         let parts = TaskPointParts { distance = d, leading = l, time = t, arrival = a }
-        return $ PtTest (penalties, parts)
+
+        return $ PtTest (penalty, parts)

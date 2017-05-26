@@ -1,5 +1,8 @@
+{-# LANGUAGE GADTs #-}
 {-# LANGUAGE RecordWildCards #-}
-module Points (tallyUnits, taskPoints) where
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+module Points (tallyUnits, taskPointsHg, taskPointsPg) where
 
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit as HU ((@?=), testCase)
@@ -11,13 +14,11 @@ import Flight.Score
     , MinimumDistancePoints(..)
     , SecondsPerPoint(..)
     , JumpedTheGun(..)
-    , EarlyStartPenalty(..)
-    , NoGoalPenalty(..)
-    , EarlyStartPenalty(..)
-    , TaskPenalties(..)
+    , Hg
+    , Pg
+    , Penalty(..)
     , TaskPointParts(..)
     , TaskPoints(..)
-    , zeroPenalties
     , zeroPoints
     )
 
@@ -26,71 +27,69 @@ import TestNewtypes
 tallyUnits :: TestTree
 tallyUnits = testGroup "Tally task points, with and without penalties"
     [ HU.testCase "No penalties, no points = zero task points" $
-        FS.taskPoints zeroPenalties zeroPoints @?= TaskPoints 0
+        FS.taskPoints (Nothing :: Maybe (Penalty Hg)) zeroPoints @?= TaskPoints 0
 
     , HU.testCase "No penalties = sum of distance, leading, time & arrival points" $
         FS.taskPoints
-            zeroPenalties
+            Nothing
             TaskPointParts { distance = 1, leading = 1, time = 1, arrival = 1 }
             @?= TaskPoints 4
 
     , HU.testCase "Early start PG = distance to start points only" $
         FS.taskPoints
-            zeroPenalties { earlyStart = Just (EarlyStartPg $ LaunchToSssPoints 1) }
+            (Just (Early $ LaunchToSssPoints 1))
             TaskPointParts { distance = 10, leading = 10, time = 10, arrival = 10 }
             @?= TaskPoints 1
 
     , HU.testCase "Way too early start HG = minimum distance points only" $
         FS.taskPoints
-            zeroPenalties { earlyStart = Just (EarlyStartHgMax $ MinimumDistancePoints 1) }
+            (Just (JumpedTooEarly $ MinimumDistancePoints 1))
             TaskPointParts { distance = 10, leading = 10, time = 10, arrival = 10 }
             @?= TaskPoints 1
 
     , HU.testCase "Somewhat early start HG = full points minus jump the gun penalty" $
         FS.taskPoints
-            zeroPenalties { earlyStart = Just (EarlyStartHg (SecondsPerPoint 1) (JumpedTheGun 1)) }
+            (Just (Jumped (SecondsPerPoint 1) (JumpedTheGun 1)))
             TaskPointParts { distance = 10, leading = 10, time = 10, arrival = 10 }
             @?= TaskPoints 39
     ]
 
-correct :: TaskPenalties -> TaskPointParts -> TaskPoints -> Bool
-correct penalties@TaskPenalties{..} TaskPointParts{..} (TaskPoints pts)
-    | penalties == zeroPenalties =
-        pts == distance + leading + time + arrival
+correct :: forall a. Maybe (Penalty a) -> TaskPointParts -> TaskPoints -> Bool
 
-    | noGoal == Nothing =
-        case earlyStart of
-             Nothing ->
-                pts == distance + leading + time + arrival
+correct Nothing (TaskPointParts{..}) (TaskPoints pts) =
+    pts == distance + leading + time + arrival
 
-             Just (EarlyStartHgMax (MinimumDistancePoints md)) ->
-                pts == md
+correct
+    (Just (JumpedTooEarly (MinimumDistancePoints md)))
+    (TaskPointParts{..})
+    (TaskPoints pts) =
+    pts == md
 
-             Just (EarlyStartHg (SecondsPerPoint spp) (JumpedTheGun jtg)) ->
-                pts == (max 0 $ (distance + leading + time + arrival) * jtg / spp)
+correct
+    (Just (Jumped (SecondsPerPoint spp) (JumpedTheGun jtg)))
+    (TaskPointParts{..})
+    (TaskPoints pts) =
+    pts == (max 0 $ (distance + leading + time + arrival) * jtg / spp)
 
-             Just (EarlyStartPg (LaunchToSssPoints lts)) ->
-                pts == lts
+correct
+    (Just (JumpedNoGoal (SecondsPerPoint spp) (JumpedTheGun jtg)))
+    (TaskPointParts{..})
+    (TaskPoints pts) =
+    pts == (max 0 $ (distance + leading + (8 % 10) * (time + arrival)) * jtg / spp)
 
-    | earlyStart == Nothing =
-        case noGoal of
-             Nothing ->
-                pts == distance + leading + time + arrival
+correct (Just NoGoalHg) TaskPointParts{..} (TaskPoints pts) =
+    pts == distance + leading + (8 % 10) * (time + arrival)
 
-             Just NoGoalPg ->
-                pts == distance + leading
+correct (Just (Early (LaunchToSssPoints lts))) TaskPointParts{..} (TaskPoints pts) =
+    pts == lts
 
-             Just NoGoalHg ->
-                pts == distance + leading + (8 % 10) * (time + arrival)
+correct (Just NoGoalPg) TaskPointParts{..} (TaskPoints pts) =
+    pts == distance + leading
 
-    | otherwise =
-        case (noGoal, earlyStart) of
-             (Just NoGoalHg, Just (EarlyStartHg (SecondsPerPoint spp) (JumpedTheGun jtg))) ->
-                pts == (max 0 $ (distance + leading + (8 % 10) * (time + arrival)) * jtg / spp)
+taskPointsHg :: PtTest Hg -> Bool
+taskPointsHg (PtTest (penalty, parts)) =
+    correct penalty parts $ FS.taskPoints penalty parts
 
-             _ ->
-                pts == distance + leading + time + arrival
-
-taskPoints :: PtTest -> Bool
-taskPoints (PtTest (penalties, parts)) =
-    correct penalties parts $ FS.taskPoints penalties parts
+taskPointsPg :: PtTest Pg -> Bool
+taskPointsPg (PtTest (penalty, parts)) =
+    correct penalty parts $ FS.taskPoints penalty parts

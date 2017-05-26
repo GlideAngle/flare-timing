@@ -82,12 +82,11 @@ module Flight.Score
     , MinimumDistancePoints(..)
     , SecondsPerPoint(..)
     , JumpedTheGun(..)
-    , EarlyStartPenalty(..)
-    , NoGoalPenalty(..)
-    , TaskPenalties(..)
+    , Hg
+    , Pg
+    , Penalty(..)
     , TaskPointParts(..)
     , TaskPoints(..)
-    , zeroPenalties
     , zeroPoints
     , taskPoints
     ) where
