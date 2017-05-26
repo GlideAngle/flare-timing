@@ -87,7 +87,7 @@ tallyPoints _ _ =
 
 jumpTheGun :: SecondsPerPoint -> JumpedTheGun -> TaskPoints -> TaskPoints
 jumpTheGun (SecondsPerPoint secs) (JumpedTheGun jump) (TaskPoints pts) =
-    TaskPoints $ pts - jump / secs
+    TaskPoints $ max 0 $ pts - jump / secs
 
 taskPoints :: TaskPenalties -> TaskPointParts -> TaskPoints
 taskPoints TaskPenalties{..} parts =

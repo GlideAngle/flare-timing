@@ -111,7 +111,7 @@ qcProps = testGroup "(checked by QuickCheck)"
 
     -- WARNING: Failing test.
     --        *** Failed! Falsifiable (after 2 tests):
-    --        PtTest (TaskPenalties {earlyStart = Just (EarlyStartHg (SecondsPerPoint (1087298782847 % 459545533308)) (JumpedTheGun (7473202757887 % 727009849175))), noGoal = Nothing},TaskPointParts {distance = 4921461470319 % 3451021783192, leading = 7533350198503 % 636686678356, time = 1613148298820 % 6452842806801, arrival = 4830760331746 % 5669024148481})
-    --        Use --quickcheck-replay '1 TFGenR 0000007EAD8980DF0000000000989680000000000000E22B000059D3A9FE8040 0 196608 18 0' to reproduce.
+    --        PtTest (TaskPenalties {earlyStart = Just (EarlyStartPg (LaunchToSssPoints (9098551556919 % 219231563575))), noGoal = Just NoGoalHg},TaskPointParts {distance = 818621382539 % 568492668514, leading = 7851487824439 % 7639617044771, time = 1377098268643 % 1256374703148, arrival = 6816961050973 % 1206749894820})
+    --        Use --quickcheck-replay '1 TFGenR 00000080366A0C890000000000989680000000000000E22B000087B30F43D740 0 196608 18 0' to reproduce.
     , QC.testProperty "Task points add up" taskPoints
     ]

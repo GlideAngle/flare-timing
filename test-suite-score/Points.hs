@@ -67,7 +67,7 @@ correct penalties@TaskPenalties{..} TaskPointParts{..} (TaskPoints pts)
                 pts == md
 
              Just (EarlyStartHg (SecondsPerPoint spp) (JumpedTheGun jtg)) ->
-                pts == (distance + leading + time + arrival) * jtg / spp
+                pts == (max 0 $ (distance + leading + time + arrival) * jtg / spp)
 
              Just (EarlyStartPg (LaunchToSssPoints lts)) ->
                 pts == lts
@@ -86,7 +86,7 @@ correct penalties@TaskPenalties{..} TaskPointParts{..} (TaskPoints pts)
     | otherwise =
         case (noGoal, earlyStart) of
              (Just NoGoalHg, Just (EarlyStartHg (SecondsPerPoint spp) (JumpedTheGun jtg))) ->
-                pts == (distance + leading + (8 % 10) * (time + arrival)) * jtg / spp
+                pts == (max 0 $ (distance + leading + (8 % 10) * (time + arrival)) * jtg / spp)
 
              _ ->
                 pts == distance + leading + time + arrival
