@@ -2,11 +2,22 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE StandaloneDeriving #-}
-module Flight.Stopped where
+module Flight.Stopped
+    ( TaskStopTime(..)
+    , AnnouncedTime(..)
+    , ScoreBackTime(..)
+    , StartGateInterval(..)
+    , StopTime(..)
+    , NumberInGoalAtStop(..)
+    , CanScoreStopped(..)
+    , stopTaskTime
+    , canScoreStopped
+    ) where
 
 import Data.Ratio ((%))
 
 import Flight.Points (Hg, Pg)
+import Flight.Leading (TaskTime(..))
 
 newtype TaskStopTime = TaskStopTime Rational deriving (Eq, Ord, Show)
 newtype AnnouncedTime = AnnouncedTime Rational deriving (Eq, Ord, Show)
@@ -25,3 +36,25 @@ stopTaskTime (InterGateStop (StartGateInterval sgi) (AnnouncedTime at)) =
     TaskStopTime $ at - sgi
 stopTaskTime (SingleGateStop (AnnouncedTime at)) = 
     TaskStopTime $ at - ((15 * 60) % 1)
+
+newtype NumberInGoalAtStop = NumberInGoalAtStop Int deriving (Eq, Ord, Show)
+    
+data CanScoreStopped a where
+    Womens :: NumberInGoalAtStop -> TaskStopTime -> CanScoreStopped Hg
+    GoalOrDuration :: NumberInGoalAtStop -> TaskStopTime -> CanScoreStopped Hg
+    FromGetGo :: TaskStopTime -> CanScoreStopped Pg
+    FromLastStart :: [TaskTime] -> TaskStopTime -> CanScoreStopped Pg
+
+canScoreStopped :: forall a. CanScoreStopped a -> Bool
+canScoreStopped (Womens (NumberInGoalAtStop n) (TaskStopTime t)) =
+    n > 0 || t > 60 * 60
+canScoreStopped (GoalOrDuration (NumberInGoalAtStop n) (TaskStopTime t)) =
+    n > 0 || t > 90 * 60
+canScoreStopped (FromGetGo (TaskStopTime t)) =
+    t > 60 * 60
+canScoreStopped (FromLastStart [] _) =
+    False
+canScoreStopped (FromLastStart xs (TaskStopTime t)) =
+    (t - lastStart) > 60 * 60
+    where
+        lastStart = minimum $ (\(TaskTime x) -> x) <$> xs
