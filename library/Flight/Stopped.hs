@@ -1,6 +1,7 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 module Flight.Stopped
     ( TaskStopTime(..)
     , AnnouncedTime(..)
@@ -21,11 +22,19 @@ module Flight.Stopped
     , StartGates(..)
     , ScoreTimeWindow(..)
     , scoreTimeWindow
+    , AltitudeAboveGoal
+    , DistanceToGoal
+    , GlideRatio
+    , StoppedTrack
+    , applyGlide
     ) where
 
 import Data.Ratio ((%))
 import Statistics.Sample (mean, stdDev)
+import Control.Arrow (second)
+import Data.List (partition, sortBy)
 import qualified Data.Vector as V
+import qualified Data.Map as Map
 
 import Flight.Points (Hg, Pg)
 import Flight.Leading (TaskTime(..))
@@ -142,3 +151,48 @@ scoreTimeWindow _ _ (TaskStopTime stopTime) ts =
     ScoreTimeWindow $ stopTime - lastStart
     where
         lastStart = maximum $ (\(TaskTime t) -> t) <$> ts
+
+-- | GPS altitude. TODO: State the units for altitude. Is it feet or metres?
+newtype AltitudeAboveGoal = AltitudeAboveGoal Rational deriving (Eq, Ord, Show)
+--
+-- | The distance in km to goal.
+newtype DistanceToGoal = DistanceToGoal Rational deriving (Eq, Ord, Show)
+
+newtype GlideRatio = GlideRatio Rational deriving (Eq, Ord, Show)
+
+newtype StoppedTrack = StoppedTrack [(TaskTime, DistanceToGoal)] deriving (Eq, Ord, Show)
+
+madeGoal :: StoppedTrack -> Bool
+madeGoal (StoppedTrack xs) =
+    any (\(DistanceToGoal d) -> d <= 0) $ snd <$> xs
+
+applyGlide :: GlideRatio -> [AltitudeAboveGoal] -> [StoppedTrack] -> [StoppedTrack]
+applyGlide (GlideRatio gr) alts xs =
+    snd <$> ysSorted
+    where
+        iXs :: [(Int, StoppedTrack)]
+        iXs = zip [1 .. ] xs
+
+        altMap = Map.fromList $ zip [1 .. ] alts
+
+        (xsMadeGoal :: [(Int, StoppedTrack)], xsLandedOut :: [(Int, StoppedTrack)]) =
+            partition
+                (\(_, track) -> madeGoal track)
+                iXs
+
+        glide :: AltitudeAboveGoal -> DistanceToGoal -> DistanceToGoal
+        glide (AltitudeAboveGoal alt) (DistanceToGoal dtg) =
+            DistanceToGoal $ min 0 (dtg - alt * gr)
+
+        glides d@(i, StoppedTrack track) =
+            case Map.lookup i altMap of
+                 Nothing -> d
+                 Just alt -> (i, StoppedTrack $ second (glide alt) <$> track)
+
+        ysLandedOut = glides <$> xsLandedOut
+        
+        ysMerged :: [(Int, StoppedTrack)]
+        ysMerged = mconcat [ xsMadeGoal, ysLandedOut ]
+
+        ysSorted :: [(Int, StoppedTrack)]
+        ysSorted = sortBy (\x y -> fst x `compare` fst y) ysMerged
