@@ -45,6 +45,11 @@ data Penalty a where
     Early :: LaunchToSssPoints -> Penalty Pg
     NoGoalPg :: Penalty Pg
 
+data PointPenalty
+    = PenaltyPoints Integer
+    | PenaltyFraction Rational
+    deriving (Show)
+
 deriving instance Eq (Penalty a)
 deriving instance Show (Penalty a)
 
@@ -93,3 +98,9 @@ jumpTheGun (SecondsPerPoint secs) (JumpedTheGun jump) (TaskPoints pts) =
 
 taskPoints :: forall a. Maybe (Penalty a) -> TaskPointParts -> TaskPoints
 taskPoints = tallyPoints
+
+applyPointPenalty :: PointPenalty-> TaskPoints -> TaskPoints
+applyPointPenalty (PenaltyPoints n) (TaskPoints p) =
+    TaskPoints $ p - (n % 1)
+applyPointPenalty (PenaltyFraction n) (TaskPoints p) =
+    TaskPoints $ p - p * n
