@@ -290,7 +290,7 @@ instance QC.Arbitrary PointParts where
         (QC.Positive l) <- arbitrary
         (QC.Positive t) <- arbitrary
         (QC.Positive a) <- arbitrary
-        return $ PointParts $ TaskPointParts { distance = d, leading = l, time = t, arrival = a }
+        return $ PointParts TaskPointParts { distance = d, leading = l, time = t, arrival = a }
 
 instance QC.Arbitrary (PtTest Hg) where
     arbitrary = do
