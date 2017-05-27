@@ -30,6 +30,8 @@ library:
   dependencies:
   - base >=4.5 && <5
   - containers
+  - vector
+  - statistics
   source-dirs: library
   exposed-modules:
   - Flight.Score
@@ -47,6 +49,9 @@ tests:
     dependencies:
     - base
     - hlint
+    - containers
+    - vector
+    - statistics
     ghc-options:
     - -rtsopts
     - -threaded
@@ -59,6 +64,8 @@ tests:
     dependencies:
     - base
     - containers
+    - vector
+    - statistics
     - tasty
     - tasty-hunit
     - tasty-quickcheck
