@@ -282,13 +282,15 @@ instance Monad m => SC.Serial m (PtTest Pg) where
                 cons0 Nothing
                 \/ cons1 (\(SC.Positive lts) -> Just $ Early (LaunchToSssPoints lts))
 
-instance QC.Arbitrary TaskPointParts where
+newtype PointParts = PointParts TaskPointParts deriving Show
+
+instance QC.Arbitrary PointParts where
     arbitrary = do
         (QC.Positive d) <- arbitrary
         (QC.Positive l) <- arbitrary
         (QC.Positive t) <- arbitrary
         (QC.Positive a) <- arbitrary
-        return TaskPointParts { distance = d, leading = l, time = t, arrival = a }
+        return $ PointParts $ TaskPointParts { distance = d, leading = l, time = t, arrival = a }
 
 instance QC.Arbitrary (PtTest Hg) where
     arbitrary = do
@@ -315,7 +317,7 @@ instance QC.Arbitrary (PtTest Hg) where
                     return $ Just x
                 ] 
 
-        parts <- arbitrary
+        (PointParts parts) <- arbitrary
 
         return $ PtTest (penalty, parts)
 
@@ -335,6 +337,6 @@ instance QC.Arbitrary (PtTest Pg) where
                     return $ Just x
                 ] 
 
-        parts <- arbitrary
+        (PointParts parts) <- arbitrary
 
         return $ PtTest (penalty, parts)
