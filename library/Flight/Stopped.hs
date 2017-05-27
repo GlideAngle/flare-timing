@@ -96,7 +96,7 @@ stoppedValidity
         numerator = maxFlown - zsMean
 
         denominator :: Double 
-        denominator = (fromRational dist) - maxFlown + 1
+        denominator = fromRational dist - maxFlown + 1
 
         a :: Double 
         a = numerator / denominator

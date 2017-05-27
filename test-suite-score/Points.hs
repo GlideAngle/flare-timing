@@ -56,18 +56,18 @@ tallyUnits = testGroup "Tally task points, with and without penalties"
 
 correct :: forall a. Maybe (Penalty a) -> TaskPointParts -> TaskPoints -> Bool
 
-correct Nothing (TaskPointParts{..}) (TaskPoints pts) =
+correct Nothing TaskPointParts{..} (TaskPoints pts) =
     pts == distance + leading + time + arrival
 
 correct
     (Just (JumpedTooEarly (MinimumDistancePoints md)))
-    (TaskPointParts{..})
+    TaskPointParts{..}
     (TaskPoints pts) =
     pts == md
 
 correct
     (Just (Jumped (SecondsPerPoint spp) (JumpedTheGun jtg)))
-    (TaskPointParts{..})
+    TaskPointParts{..}
     (TaskPoints pts) =
     pts == max 0 x
     where
@@ -75,7 +75,7 @@ correct
 
 correct
     (Just (JumpedNoGoal (SecondsPerPoint spp) (JumpedTheGun jtg)))
-    (TaskPointParts{..})
+    TaskPointParts{..}
     (TaskPoints pts) =
     pts == max 0 x
     where
