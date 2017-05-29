@@ -12,6 +12,7 @@ module Stopped
     , stopTaskTimePg
     , canScoreStoppedHg
     , canScoreStoppedPg
+    , stoppedValidity
     ) where
 
 import Test.Tasty (TestTree, testGroup)
@@ -42,6 +43,7 @@ import Flight.Score
     , StoppedTrack(..)
     , Hg
     , Pg
+    , isNormal
     )
 
 import TestNewtypes
@@ -354,3 +356,6 @@ canScoreStoppedPg (StopCanScoreTest x@(FromGetGo _)) =
     correctCan x $ FS.canScoreStopped x
 canScoreStoppedPg (StopCanScoreTest x@(FromLastStart _ _)) =
     correctCan x $ FS.canScoreStopped x
+
+stoppedValidity (StopValidityTest (launched, landed, distance, xs)) =
+    (\(StoppedValidity x) -> isNormal x) $ FS.stoppedValidity launched landed distance xs

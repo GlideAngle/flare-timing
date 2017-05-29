@@ -50,6 +50,10 @@ import Flight.Score
     , NumberInGoalAtStop(..)
     , CanScoreStopped(..)
     , TaskStopTime(..)
+    , PilotsLaunched(..)
+    , PilotsLandedBeforeStop(..)
+    , DistanceLaunchToEss(..)
+    , DistanceFlown(..)
     )
 
 import Normal (Normal(..), NormalSum(..))
@@ -428,3 +432,35 @@ instance QC.Arbitrary (StopCanScoreTest Pg) where
             ]
 
         return stop
+
+-- | Stopped task validity.
+newtype StopValidityTest = StopValidityTest ( PilotsLaunched
+                                            , PilotsLandedBeforeStop
+                                            , DistanceLaunchToEss
+                                            , [DistanceFlown]
+                                            ) deriving Show
+
+instance Monad m => SC.Serial m StopValidityTest where
+    series = StopValidityTest <$>
+                cons4 (\(SC.NonNegative notLanded)
+                        (SC.NonNegative landed)
+                        (SC.Positive d)
+                        
+                        xs->
+                            ( PilotsLaunched (notLanded + landed)
+                            , PilotsLandedBeforeStop landed
+                            , DistanceLaunchToEss d
+                            , (\x -> DistanceFlown $ x % 1) <$> xs
+                            ))
+
+instance QC.Arbitrary StopValidityTest where
+    arbitrary = StopValidityTest <$> do
+        (QC.NonNegative notLanded) <- arbitrary
+        (QC.NonNegative landed) <- arbitrary
+        (QC.Positive d) <- arbitrary
+        xs <- listOf $ choose (1, 10000)
+        return $ ( PilotsLaunched (notLanded + landed)
+                 , PilotsLandedBeforeStop landed
+                 , DistanceLaunchToEss d
+                 , (\x -> DistanceFlown $ x % 1) <$> xs
+                 )

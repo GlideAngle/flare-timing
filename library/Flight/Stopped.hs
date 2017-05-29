@@ -101,43 +101,50 @@ stoppedValidity
     (PilotsLaunched launched)
     (PilotsLandedBeforeStop landed)
     (DistanceLaunchToEss dist)
-    xs =
-    StoppedValidity $ min 1 validity
-    where
-        validity :: Rational
-        validity = toRational $ (a * b) ** (1 / 2) + c ** 3
+    xs
+    | launched <= 0 =
+        StoppedValidity 0
+    | landed > launched =
+        StoppedValidity 0
+    | maxFlown >= fromRational dist =
+        StoppedValidity 1
+    | otherwise =
+        StoppedValidity $ min 1 validity
+        where
+            validity :: Rational
+            validity = toRational $ (a * b) ** (1 / 2) + c ** 3
 
-        numerator :: Double
-        numerator = maxFlown - zsMean
+            numerator :: Double
+            numerator = maxFlown - zsMean
 
-        denominator :: Double 
-        denominator = fromRational dist - maxFlown + 1
+            denominator :: Double 
+            denominator = fromRational dist - maxFlown + 1
 
-        a :: Double 
-        a = numerator / denominator
+            a :: Double 
+            a = numerator / denominator
 
-        b :: Double 
-        b = (zsStdDev / 5) ** (1 / 2)
+            b :: Double 
+            b = (zsStdDev / 5) ** (1 / 2)
 
-        c :: Double 
-        c = (fromIntegral landed / fromIntegral launched) ** (1 / 3)
+            c :: Double 
+            c = (fromIntegral landed / fromIntegral launched) ** (1 / 3)
 
-        ys :: [Rational]
-        ys = (\(DistanceFlown x) -> x) <$> xs
+            ys :: [Rational]
+            ys = (\(DistanceFlown x) -> x) <$> xs
 
-        zs :: [Double]
-        zs = fromRational <$> ys
+            zs :: [Double]
+            zs = fromRational <$> ys
 
-        vs = V.fromList zs
+            vs = V.fromList zs
 
-        zsMean :: Double
-        zsMean = mean vs
+            zsMean :: Double
+            zsMean = mean vs
 
-        zsStdDev :: Double
-        zsStdDev = stdDev vs
+            zsStdDev :: Double
+            zsStdDev = stdDev vs
 
-        maxFlown :: Double
-        maxFlown = fromRational $ maximum ys
+            maxFlown :: Double
+            maxFlown = fromRational $ maximum ys
 
 newtype StartGates = StartGates Int deriving (Eq, Ord, Show)
 data TaskType = RaceToGoal | ElapsedTime deriving (Eq, Ord, Show)
