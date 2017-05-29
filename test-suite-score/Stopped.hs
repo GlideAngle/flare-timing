@@ -260,13 +260,6 @@ applyGlideUnits = testGroup "Distance points with altitude bonus"
             []
             @?= []
 
-    , HU.testCase "Out at 1:1 from goal, 1:1 glide ratio = at goal" $
-        FS.applyGlide
-            (GlideRatio 1)
-            [AltitudeAboveGoal 1]
-            [StoppedTrack [(TaskTime 1, DistanceToGoal 1)]]
-            @?= [StoppedTrack [(TaskTime 1, DistanceToGoal 0)]]
-
     , HU.testCase "Non-positive glide ratio = no changed tracks" $
         FS.applyGlide
             (GlideRatio $ negate 1)
@@ -279,6 +272,27 @@ applyGlideUnits = testGroup "Distance points with altitude bonus"
             (GlideRatio 1)
             [AltitudeAboveGoal $ negate 1]
             [StoppedTrack [(TaskTime 1, DistanceToGoal 1)]]
+            @?= [StoppedTrack [(TaskTime 1, DistanceToGoal 1)]]
+
+    , HU.testCase "Out at 1:1 from goal, 1:1 glide ratio = at goal" $
+        FS.applyGlide
+            (GlideRatio 1)
+            [AltitudeAboveGoal 1]
+            [StoppedTrack [(TaskTime 1, DistanceToGoal 1)]]
+            @?= [StoppedTrack [(TaskTime 1, DistanceToGoal 0)]]
+
+    , HU.testCase "Out at 1:1 from goal, 2:1 glide ratio = at goal with no overshoot" $
+        FS.applyGlide
+            (GlideRatio 2)
+            [AltitudeAboveGoal 1]
+            [StoppedTrack [(TaskTime 1, DistanceToGoal 1)]]
+            @?= [StoppedTrack [(TaskTime 1, DistanceToGoal 0)]]
+
+    , HU.testCase "Out at 1:2 from goal, 1:1 glide ratio = halve distance from goal" $
+        FS.applyGlide
+            (GlideRatio 1)
+            [AltitudeAboveGoal 1]
+            [StoppedTrack [(TaskTime 1, DistanceToGoal 2)]]
             @?= [StoppedTrack [(TaskTime 1, DistanceToGoal 1)]]
     ]
 

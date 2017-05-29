@@ -189,7 +189,9 @@ applyGlide (GlideRatio gr) alts xs
 
             glide :: AltitudeAboveGoal -> DistanceToGoal -> DistanceToGoal
             glide (AltitudeAboveGoal alt) (DistanceToGoal dtg) =
-                DistanceToGoal $ min 0 (dtg - alt * gr)
+                DistanceToGoal $ if dtg > bonus then dtg - bonus else 0
+                where
+                    bonus = alt * gr
 
             glides d@(i, StoppedTrack track) =
                 case Map.lookup i altMap of
