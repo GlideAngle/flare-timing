@@ -73,11 +73,11 @@ canScoreStopped (Womens (NumberInGoalAtStop n) (TaskStopTime t)) =
 canScoreStopped (GoalOrDuration (NumberInGoalAtStop n) (TaskStopTime t)) =
     n > 0 || t >= 90 * 60
 canScoreStopped (FromGetGo (TaskStopTime t)) =
-    t > 60 * 60
+    t >= 60 * 60
 canScoreStopped (FromLastStart [] _) =
     False
 canScoreStopped (FromLastStart xs (TaskStopTime t)) =
-    (t - lastStart) > 60 * 60
+    (t - lastStart) >= 60 * 60
     where
         lastStart = minimum $ (\(TaskTime x) -> x) <$> xs
 

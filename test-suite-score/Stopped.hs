@@ -13,6 +13,7 @@ import Flight.Score
     , ScoreBackTime(..)
     , AnnouncedTime(..)
     , StartGateInterval(..)
+    , TaskTime(..)
     , TaskStopTime(..)
     , CanScoreStopped(..)
     , NumberInGoalAtStop(..)
@@ -32,12 +33,32 @@ stoppedTimeUnits = testGroup "Effective task stop time"
 
 stoppedScoreUnits :: TestTree
 stoppedScoreUnits = testGroup "Can score a stopped task?"
-    [ HU.testCase "Not when noone made goal and the task ran less than an hour, womens" $
+    [ HU.testCase "Not when noone made goal and the task ran less than an hour, Hg womens" $
         FS.canScoreStopped(Womens (NumberInGoalAtStop 0) (TaskStopTime $ 59 * 60)) @?= False
 
-    , HU.testCase "When someone made goal, womens" $
+    , HU.testCase "When someone made goal, Hg womens" $
         FS.canScoreStopped(Womens (NumberInGoalAtStop 1) (TaskStopTime 0)) @?= True
 
-    , HU.testCase "When the task ran for 1 hr, womans" $
+    , HU.testCase "When the task ran for 1 hr, Hg womans" $
         FS.canScoreStopped(Womens (NumberInGoalAtStop 0) (TaskStopTime $ 60 * 60)) @?= True
+
+    , HU.testCase "Not when noone made goal and the task ran less than 90 mins, Hg" $
+        FS.canScoreStopped(GoalOrDuration (NumberInGoalAtStop 0) (TaskStopTime $ 89 * 60)) @?= False
+    , HU.testCase "When someone made goal, Hg" $
+        FS.canScoreStopped(GoalOrDuration (NumberInGoalAtStop 1) (TaskStopTime 0)) @?= True
+
+    , HU.testCase "When the task ran for 90 mins, Hg" $
+        FS.canScoreStopped(GoalOrDuration (NumberInGoalAtStop 0) (TaskStopTime $ 90 * 60)) @?= True
+
+    , HU.testCase "When the task ran for 1 hr, Pg" $
+        FS.canScoreStopped(FromGetGo (TaskStopTime $ 60 * 60)) @?= True
+
+    , HU.testCase "Not when there are no starters, Pg" $
+        FS.canScoreStopped(FromLastStart [] (TaskStopTime $ 120 * 60)) @?= False
+
+    , HU.testCase "Not when the last start was less than an hour before stop, Pg" $
+        FS.canScoreStopped(FromLastStart [TaskTime 0] (TaskStopTime $ 59 * 60)) @?= False
+
+    , HU.testCase "When the last start was an hour before stop, Pg" $
+        FS.canScoreStopped(FromLastStart [TaskTime 0] (TaskStopTime $ 60 * 60)) @?= True
     ]
