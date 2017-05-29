@@ -15,6 +15,7 @@ import LinearFraction
 import DifficultyFraction
 import LeadingCoefficient
 import Points
+import Stopped
 
 main :: IO ()
 main = defaultMain tests
@@ -36,6 +37,7 @@ units = testGroup
             [ validityUnits
             , fractionUnits
             , pointUnits
+            , stoppedUnits
             ]
 
 validityUnits :: TestTree
@@ -65,6 +67,13 @@ pointUnits =
     testGroup
         "Points"
         [ tallyUnits
+        ]
+
+stoppedUnits :: TestTree
+stoppedUnits =
+    testGroup
+        "Stopped Task"
+        [ stoppedTimeUnits
         ]
 
 scProps :: TestTree

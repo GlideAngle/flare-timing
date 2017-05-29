@@ -89,6 +89,15 @@ module Flight.Score
     , TaskPoints(..)
     , zeroPoints
     , taskPoints
+    -- * Stopped task 
+    , TaskStopTime(..)
+    , AnnouncedTime(..)
+    , ScoreBackTime(..)
+    , StartGateInterval(..)
+    , StopTime(..)
+    , NumberInGoalAtStop(..)
+    , CanScoreStopped(..)
+    , stopTaskTime
     ) where
 
 import Flight.Ratio
@@ -97,6 +106,7 @@ import Flight.Leading
 import Flight.Validity
 import Flight.Weighting
 import Flight.Points
+import Flight.Stopped
 
 type DistancePoint = Rational
 type SpeedPoint = Rational
