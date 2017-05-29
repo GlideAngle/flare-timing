@@ -103,6 +103,8 @@ scProps = testGroup "(checked by SmallCheck)"
     , SC.testProperty "Task points add up with Pg penalties" taskPointsPg
     , SC.testProperty "Stop task time from announced time, Hg" stopTaskTimeHg
     , SC.testProperty "Stop task time from announced time, Pg" stopTaskTimePg
+    , SC.testProperty "Can score a stopped task, Hg" canScoreStoppedHg
+    , SC.testProperty "Can score a stopped task, Pg" canScoreStoppedPg
     ]
 
 qcProps :: TestTree
@@ -128,4 +130,6 @@ qcProps = testGroup "(checked by QuickCheck)"
     , QC.testProperty "Task points add up with Pg penalties" taskPointsPg
     , QC.testProperty "Stop task time from announced time, Hg" stopTaskTimeHg
     , QC.testProperty "Stop task time from announced time, Pg" stopTaskTimePg
+    , QC.testProperty "Can score a stopped task, Hg" canScoreStoppedHg
+    , QC.testProperty "Can score a stopped task, Pg" canScoreStoppedPg
     ]

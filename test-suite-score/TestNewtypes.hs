@@ -47,6 +47,9 @@ import Flight.Score
     , ScoreBackTime(..)
     , AnnouncedTime(..)
     , StartGateInterval(..)
+    , NumberInGoalAtStop(..)
+    , CanScoreStopped(..)
+    , TaskStopTime(..)
     )
 
 import Normal (Normal(..), NormalSum(..))
@@ -375,7 +378,53 @@ instance QC.Arbitrary (StopTimeTest Hg) where
         return stop
 
 instance QC.Arbitrary (StopTimeTest Pg) where
-    arbitrary = do
+    arbitrary = StopTimeTest <$> do
         (QC.Positive sb) <- arbitrary
         (QC.Positive t) <- arbitrary
-        return $ StopTimeTest $ ScoreBackStop (ScoreBackTime sb) (AnnouncedTime t)
+        return $ ScoreBackStop (ScoreBackTime sb) (AnnouncedTime t)
+
+-- | Can score a stopped task.
+newtype StopCanScoreTest a = StopCanScoreTest (CanScoreStopped a) deriving Show
+
+instance Monad m => SC.Serial m (StopCanScoreTest Hg) where
+    series = StopCanScoreTest <$>
+                cons2 (\(SC.Positive n) (SC.Positive t) ->
+                    Womens (NumberInGoalAtStop n) (TaskStopTime t))
+                \/ cons2 (\(SC.Positive n) (SC.Positive t) ->
+                    GoalOrDuration (NumberInGoalAtStop n) (TaskStopTime t))
+
+instance Monad m => SC.Serial m (StopCanScoreTest Pg) where
+    series = StopCanScoreTest <$>
+                cons1 (\(SC.Positive t) ->
+                    FromGetGo (TaskStopTime t))
+                \/ cons2 (\xs (SC.Positive t) ->
+                    FromLastStart ((\(SC.Positive x) -> TaskTime (x % 1)) <$> xs) (TaskStopTime t))
+
+instance QC.Arbitrary (StopCanScoreTest Hg) where
+    arbitrary = StopCanScoreTest <$> do
+        stop <- QC.oneof
+            [ do
+                (QC.Positive n) <- arbitrary
+                (QC.Positive t) <- arbitrary
+                return $ Womens (NumberInGoalAtStop n) (TaskStopTime t)
+            , do
+                (QC.Positive n) <- arbitrary
+                (QC.Positive t) <- arbitrary
+                return $ GoalOrDuration (NumberInGoalAtStop n) (TaskStopTime t)
+            ]
+
+        return stop
+
+instance QC.Arbitrary (StopCanScoreTest Pg) where
+    arbitrary = StopCanScoreTest <$> do
+        stop <- QC.oneof
+            [ do
+                (QC.Positive t) <- arbitrary
+                return $ FromGetGo (TaskStopTime t)
+            , do
+                (QC.Positive t) <- arbitrary
+                xs <- listOf $ choose (1, 10000)
+                return $ FromLastStart ((\x -> TaskTime (x % 1)) <$> xs) (TaskStopTime t)
+            ]
+
+        return stop

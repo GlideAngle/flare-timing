@@ -10,6 +10,8 @@ module Stopped
     , applyGlideUnits
     , stopTaskTimeHg
     , stopTaskTimePg
+    , canScoreStoppedHg
+    , canScoreStoppedPg
     ) where
 
 import Test.Tasty (TestTree, testGroup)
@@ -302,24 +304,53 @@ applyGlideUnits = testGroup "Distance points with altitude bonus"
             @?= [StoppedTrack [(TaskTime 1, DistanceToGoal 1)]]
     ]
 
-correct :: forall a. StopTime a -> TaskStopTime -> Bool
+correctTime :: forall a. StopTime a -> TaskStopTime -> Bool
 
-correct (ScoreBackStop (ScoreBackTime sb) (AnnouncedTime at)) (TaskStopTime st) =
+correctTime (ScoreBackStop (ScoreBackTime sb) (AnnouncedTime at)) (TaskStopTime st) =
     st + sb == at
 
-correct (InterGateStop (StartGateInterval i) (AnnouncedTime at)) (TaskStopTime st) =
+correctTime (InterGateStop (StartGateInterval i) (AnnouncedTime at)) (TaskStopTime st) =
     st + i == at
 
-correct (SingleGateStop (AnnouncedTime at)) (TaskStopTime st) =
+correctTime (SingleGateStop (AnnouncedTime at)) (TaskStopTime st) =
     st + (15 * 60) == at
 
 stopTaskTimePg :: StopTimeTest Pg -> Bool
-stopTaskTimePg (StopTimeTest x@(ScoreBackStop scoreback t)) =
-    correct x $ FS.stopTaskTime (ScoreBackStop scoreback t)
+stopTaskTimePg (StopTimeTest x@(ScoreBackStop _ _)) =
+    correctTime x $ FS.stopTaskTime x
 
 stopTaskTimeHg :: StopTimeTest Hg -> Bool
-stopTaskTimeHg (StopTimeTest x@(InterGateStop interval t)) =
-    correct x $ FS.stopTaskTime (InterGateStop interval t)
+stopTaskTimeHg (StopTimeTest x@(InterGateStop _ _)) =
+    correctTime x $ FS.stopTaskTime x
 
-stopTaskTimeHg (StopTimeTest x@(SingleGateStop t)) =
-    correct x $ FS.stopTaskTime (SingleGateStop t)
+stopTaskTimeHg (StopTimeTest x@(SingleGateStop _)) =
+    correctTime x $ FS.stopTaskTime x
+
+correctCan :: forall a. CanScoreStopped a -> Bool -> Bool
+correctCan (Womens (NumberInGoalAtStop n) (TaskStopTime t)) canScore
+    | n >= 1 = canScore == True
+    | t >= 60 * 60 = canScore == True
+    | otherwise = canScore == False
+correctCan (GoalOrDuration (NumberInGoalAtStop n) (TaskStopTime t)) canScore
+    | n >= 1 = canScore == True
+    | t >= 90 * 60 = canScore == True
+    | otherwise = canScore == False
+correctCan (FromGetGo (TaskStopTime t)) canScore
+    | t >= 60 * 60 = canScore == True
+    | otherwise = canScore == False
+correctCan (FromLastStart [] _) canScore =
+    canScore == False
+correctCan (FromLastStart xs (TaskStopTime st)) canScore =
+    all (\(TaskTime t) -> st >= t + 60 * 60) xs == canScore
+
+canScoreStoppedHg :: StopCanScoreTest Hg -> Bool
+canScoreStoppedHg (StopCanScoreTest x@(Womens _ _)) =
+    correctCan x $ FS.canScoreStopped x
+canScoreStoppedHg (StopCanScoreTest x@(GoalOrDuration _ _)) =
+    correctCan x $ FS.canScoreStopped x
+
+canScoreStoppedPg :: StopCanScoreTest Pg -> Bool
+canScoreStoppedPg (StopCanScoreTest x@(FromGetGo _)) =
+    correctCan x $ FS.canScoreStopped x
+canScoreStoppedPg (StopCanScoreTest x@(FromLastStart _ _)) =
+    correctCan x $ FS.canScoreStopped x
