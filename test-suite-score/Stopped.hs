@@ -146,27 +146,102 @@ stoppedValidityUnits = testGroup "Is a stopped task valid?"
 
 scoreTimeWindowUnits :: TestTree
 scoreTimeWindowUnits = testGroup "Score time window"
-    [ HU.testCase "Race to goal, 1 start gate, noone launches = start to stop" $
-        FS.scoreTimeWindow
-            RaceToGoal
-            (StartGates 1)
-            (TaskStopTime 1)
-            []
-            @?= ScoreTimeWindow 1
+    [ testGroup "Race to goal"
+        [ HU.testCase "1 start gate, noone launches = start to stop" $
+            FS.scoreTimeWindow
+                RaceToGoal
+                (StartGates 1)
+                (TaskStopTime 1)
+                []
+                @?= ScoreTimeWindow 1
 
-    , HU.testCase "Race to goal, 1 start gate, 1 launches at start = start to stop" $
-        FS.scoreTimeWindow
-            RaceToGoal
-            (StartGates 1)
-            (TaskStopTime 1)
-            [TaskTime 0]
-            @?= ScoreTimeWindow 1
+        , HU.testCase "1 start gate, 1 launches at start = start to stop" $
+            FS.scoreTimeWindow
+                RaceToGoal
+                (StartGates 1)
+                (TaskStopTime 1)
+                [TaskTime 0]
+                @?= ScoreTimeWindow 1
 
-    , HU.testCase "Race to goal, 1 start gate, 1 launches at stop = start to stop" $
-        FS.scoreTimeWindow
-            RaceToGoal
-            (StartGates 1)
-            (TaskStopTime 1)
-            [TaskTime 1]
-            @?= ScoreTimeWindow 1
+        , HU.testCase "1 start gate, 1 launches at stop = start to stop" $
+            FS.scoreTimeWindow
+                RaceToGoal
+                (StartGates 1)
+                (TaskStopTime 1)
+                [TaskTime 1]
+                @?= ScoreTimeWindow 1
+
+        , HU.testCase "2 start gates, noone launches = 0" $
+            FS.scoreTimeWindow
+                RaceToGoal
+                (StartGates 2)
+                (TaskStopTime 1)
+                []
+                @?= ScoreTimeWindow 0
+
+        , HU.testCase "2 start gates, 1 launches at start = start to stop" $
+            FS.scoreTimeWindow
+                RaceToGoal
+                (StartGates 2)
+                (TaskStopTime 1)
+                [TaskTime 0]
+                @?= ScoreTimeWindow 1
+
+        , HU.testCase "2 start gates, 1 launches at stop = 0" $
+            FS.scoreTimeWindow
+                RaceToGoal
+                (StartGates 2)
+                (TaskStopTime 1)
+                [TaskTime 1]
+                @?= ScoreTimeWindow 0
+        ]
+    , testGroup "Elapsed time"
+        [ HU.testCase "1 start gate, noone launches = 0" $
+            FS.scoreTimeWindow
+                ElapsedTime
+                (StartGates 1)
+                (TaskStopTime 1)
+                []
+                @?= ScoreTimeWindow 0
+
+        , HU.testCase "1 start gate, 1 launches at start = start to stop" $
+            FS.scoreTimeWindow
+                ElapsedTime
+                (StartGates 1)
+                (TaskStopTime 1)
+                [TaskTime 0]
+                @?= ScoreTimeWindow 1
+
+        , HU.testCase "1 start gate, 1 launches at stop = 0" $
+            FS.scoreTimeWindow
+                ElapsedTime
+                (StartGates 1)
+                (TaskStopTime 1)
+                [TaskTime 1]
+                @?= ScoreTimeWindow 0
+
+        , HU.testCase "2 start gates, noone launches = 0" $
+            FS.scoreTimeWindow
+                ElapsedTime
+                (StartGates 2)
+                (TaskStopTime 1)
+                []
+                @?= ScoreTimeWindow 0
+
+        , HU.testCase "2 start gates, 1 launches at start = start to stop" $
+            FS.scoreTimeWindow
+                ElapsedTime
+                (StartGates 2)
+                (TaskStopTime 1)
+                [TaskTime 0]
+                @?= ScoreTimeWindow 1
+
+        , HU.testCase "2 start gates, 1 launches at stop = 0" $
+            FS.scoreTimeWindow
+                ElapsedTime
+                (StartGates 2)
+                (TaskStopTime 1)
+                [TaskTime 1]
+                @?= ScoreTimeWindow 0
+        ]
     ]
