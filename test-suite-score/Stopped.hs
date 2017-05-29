@@ -2,10 +2,15 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE StandaloneDeriving #-}
-module Stopped (stoppedTimeUnits, stoppedScoreUnits) where
+module Stopped
+    ( stoppedTimeUnits
+    , stoppedScoreUnits
+    , stoppedValidityUnits
+    ) where
 
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit as HU ((@?=), testCase)
+import Data.Ratio((%))
 
 import qualified Flight.Score as FS
 import Flight.Score
@@ -17,6 +22,11 @@ import Flight.Score
     , TaskStopTime(..)
     , CanScoreStopped(..)
     , NumberInGoalAtStop(..)
+    , PilotsLaunched(..)
+    , PilotsLandedBeforeStop(..)
+    , DistanceLaunchToEss(..)
+    , DistanceFlown(..)
+    , StoppedValidity(..)
     )
 
 stoppedTimeUnits :: TestTree
@@ -61,4 +71,71 @@ stoppedScoreUnits = testGroup "Can score a stopped task?"
 
     , HU.testCase "When the last start was an hour before stop, Pg" $
         FS.canScoreStopped(FromLastStart [TaskTime 0] (TaskStopTime $ 60 * 60)) @?= True
+    ]
+
+stoppedValidityUnits :: TestTree
+stoppedValidityUnits = testGroup "Is a stopped task valid?"
+    [ HU.testCase "Not when noone launches" $
+        FS.stoppedValidity
+            (PilotsLaunched 0)
+            (PilotsLandedBeforeStop 0)
+            (DistanceLaunchToEss 100)
+            []
+            @?= StoppedValidity 0
+
+    , HU.testCase "When everyone makes ESS, one pilot launched and is still flying = 0 validity" $
+        FS.stoppedValidity
+            (PilotsLaunched 1)
+            (PilotsLandedBeforeStop 0)
+            (DistanceLaunchToEss 1)
+            [DistanceFlown 1]
+            @?= StoppedValidity 0
+
+    , HU.testCase "When everyone makes ESS, one pilot launched and has landed = 1 validity" $
+        FS.stoppedValidity
+            (PilotsLaunched 1)
+            (PilotsLandedBeforeStop 1)
+            (DistanceLaunchToEss 1)
+            [DistanceFlown 1]
+            @?= StoppedValidity 1
+
+    , HU.testCase "When everyone makes ESS, two pilots launched, both still flying = 0 validity" $
+        FS.stoppedValidity
+            (PilotsLaunched 2)
+            (PilotsLandedBeforeStop 0)
+            (DistanceLaunchToEss 1)
+            [(DistanceFlown 1), (DistanceFlown 1)]
+            @?= StoppedValidity 0
+
+    , HU.testCase "When everyone makes ESS, two pilots launched, noone still flying = 1 validity" $
+        FS.stoppedValidity
+            (PilotsLaunched 2)
+            (PilotsLandedBeforeStop 2)
+            (DistanceLaunchToEss 1)
+            [(DistanceFlown 1), (DistanceFlown 1)]
+            @?= StoppedValidity 1
+
+    , HU.testCase "When everyone makes ESS, two pilots launched, one still flying = 0.5 validity" $
+        FS.stoppedValidity
+            (PilotsLaunched 2)
+            (PilotsLandedBeforeStop 1)
+            (DistanceLaunchToEss 1)
+            [(DistanceFlown 1), (DistanceFlown 1)]
+            @?= StoppedValidity (4503599627370497 % 9007199254740992)
+
+    , HU.testCase "When one makes ESS, one still flying at launch point = 0.93 validity" $
+        FS.stoppedValidity
+            (PilotsLaunched 2)
+            (PilotsLandedBeforeStop 1)
+            (DistanceLaunchToEss 1)
+            [(DistanceFlown 1), (DistanceFlown 0)]
+            @?= StoppedValidity (2102335339236503 % 2251799813685248)
+
+    , HU.testCase "When one makes ESS, one still flying on course halfway to ESS = 0.93 validity" $
+        FS.stoppedValidity
+            (PilotsLaunched 2)
+            (PilotsLandedBeforeStop 1)
+            (DistanceLaunchToEss 2)
+            [(DistanceFlown 2), (DistanceFlown 1)]
+            @?= StoppedValidity (2102335339236503 % 2251799813685248)
     ]

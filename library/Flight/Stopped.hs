@@ -12,11 +12,11 @@ module Flight.Stopped
     , CanScoreStopped(..)
     , stopTaskTime
     , canScoreStopped
-    , PilotsLaunched
-    , PilotsLandedBeforeStop
-    , DistanceLaunchToEss
-    , DistanceFlown
-    , StoppedValidity
+    , PilotsLaunched(..)
+    , PilotsLandedBeforeStop(..)
+    , DistanceLaunchToEss(..)
+    , DistanceFlown(..)
+    , StoppedValidity(..)
     , stoppedValidity
     , TaskType(..)
     , StartGates(..)

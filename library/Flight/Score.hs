@@ -99,6 +99,12 @@ module Flight.Score
     , CanScoreStopped(..)
     , stopTaskTime
     , canScoreStopped
+    , PilotsLaunched(..)
+    , PilotsLandedBeforeStop(..)
+    , DistanceLaunchToEss(..)
+    , DistanceFlown(..)
+    , StoppedValidity(..)
+    , stoppedValidity
     ) where
 
 import Flight.Ratio
