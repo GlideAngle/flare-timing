@@ -8,6 +8,8 @@ module Stopped
     , stoppedValidityUnits
     , scoreTimeWindowUnits
     , applyGlideUnits
+    , stopTaskTimeHg
+    , stopTaskTimePg
     ) where
 
 import Test.Tasty (TestTree, testGroup)
@@ -36,7 +38,11 @@ import Flight.Score
     , DistanceToGoal(..)
     , GlideRatio(..)
     , StoppedTrack(..)
+    , Hg
+    , Pg
     )
+
+import TestNewtypes
 
 stoppedTimeUnits :: TestTree
 stoppedTimeUnits = testGroup "Effective task stop time"
@@ -296,3 +302,24 @@ applyGlideUnits = testGroup "Distance points with altitude bonus"
             @?= [StoppedTrack [(TaskTime 1, DistanceToGoal 1)]]
     ]
 
+correct :: forall a. StopTime a -> TaskStopTime -> Bool
+
+correct (ScoreBackStop (ScoreBackTime sb) (AnnouncedTime at)) (TaskStopTime st) =
+    st + sb == at
+
+correct (InterGateStop (StartGateInterval i) (AnnouncedTime at)) (TaskStopTime st) =
+    st + i == at
+
+correct (SingleGateStop (AnnouncedTime at)) (TaskStopTime st) =
+    st + (15 * 60) == at
+
+stopTaskTimePg :: StopTimeTest Pg -> Bool
+stopTaskTimePg (StopTimeTest x@(ScoreBackStop scoreback t)) =
+    correct x $ FS.stopTaskTime (ScoreBackStop scoreback t)
+
+stopTaskTimeHg :: StopTimeTest Hg -> Bool
+stopTaskTimeHg (StopTimeTest x@(InterGateStop interval t)) =
+    correct x $ FS.stopTaskTime (InterGateStop interval t)
+
+stopTaskTimeHg (StopTimeTest x@(SingleGateStop t)) =
+    correct x $ FS.stopTaskTime (SingleGateStop t)

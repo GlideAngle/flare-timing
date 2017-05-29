@@ -99,8 +99,10 @@ scProps = testGroup "(checked by SmallCheck)"
     , SC.testProperty "Difficulty fraction is in the range of [0, 1]" difficultyFraction
     , SC.testProperty "A cleaned track is smaller if there is some flying away from goal" cleanTrack 
     , SC.testProperty "Leading fraction is in the range of [0, 1]" leadingFractions
-    , SC.testProperty "Task points add up with HG penalties" taskPointsHg
-    , SC.testProperty "Task points add up with PG penalties" taskPointsPg
+    , SC.testProperty "Task points add up with Hg penalties" taskPointsHg
+    , SC.testProperty "Task points add up with Pg penalties" taskPointsPg
+    , SC.testProperty "Stop task time from announced time, Hg" stopTaskTimeHg
+    , SC.testProperty "Stop task time from announced time, Pg" stopTaskTimePg
     ]
 
 qcProps :: TestTree
@@ -122,6 +124,8 @@ qcProps = testGroup "(checked by QuickCheck)"
     , QC.testProperty "Difficulty fraction is in the range of [0, 1]" difficultyFraction
     , QC.testProperty "A cleaned track is smaller if there is some flying away from goal" cleanTrack 
     , QC.testProperty "Leading fraction is in the range of [0, 1]" leadingFractions
-    , QC.testProperty "Task points add up with HG penalties" taskPointsHg
-    , QC.testProperty "Task points add up with PG penalties" taskPointsPg
+    , QC.testProperty "Task points add up with Hg penalties" taskPointsHg
+    , QC.testProperty "Task points add up with Pg penalties" taskPointsPg
+    , QC.testProperty "Stop task time from announced time, Hg" stopTaskTimeHg
+    , QC.testProperty "Stop task time from announced time, Pg" stopTaskTimePg
     ]

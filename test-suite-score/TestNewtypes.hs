@@ -43,6 +43,10 @@ import Flight.Score
     , Pg
     , Penalty(..)
     , TaskPointParts(..)
+    , StopTime(..)
+    , ScoreBackTime(..)
+    , AnnouncedTime(..)
+    , StartGateInterval(..)
     )
 
 import Normal (Normal(..), NormalSum(..))
@@ -340,3 +344,38 @@ instance QC.Arbitrary (PtTest Pg) where
         (PointParts parts) <- arbitrary
 
         return $ PtTest (penalty, parts)
+
+-- | Stopped time from announced time.
+newtype StopTimeTest a = StopTimeTest (StopTime a) deriving Show
+
+instance Monad m => SC.Serial m (StopTimeTest Hg) where
+    series = StopTimeTest <$>
+                cons2 (\(SC.Positive i) (SC.Positive t) ->
+                    InterGateStop (StartGateInterval i) (AnnouncedTime t))
+                \/ cons1 (\(SC.Positive t) ->
+                    (SingleGateStop (AnnouncedTime t)))
+
+instance Monad m => SC.Serial m (StopTimeTest Pg) where
+    series = StopTimeTest <$>
+        cons2 (\(SC.Positive sb) (SC.Positive t) ->
+            (ScoreBackStop (ScoreBackTime sb) (AnnouncedTime t)))
+
+instance QC.Arbitrary (StopTimeTest Hg) where
+    arbitrary = StopTimeTest <$> do
+        stop <- QC.oneof
+            [ do
+                (QC.Positive i) <- arbitrary
+                (QC.Positive t) <- arbitrary
+                return $ InterGateStop (StartGateInterval i) (AnnouncedTime t)
+            , do
+                (QC.Positive t) <- arbitrary
+                return $ SingleGateStop (AnnouncedTime t)
+            ]
+
+        return stop
+
+instance QC.Arbitrary (StopTimeTest Pg) where
+    arbitrary = do
+        (QC.Positive sb) <- arbitrary
+        (QC.Positive t) <- arbitrary
+        return $ StopTimeTest $ ScoreBackStop (ScoreBackTime sb) (AnnouncedTime t)

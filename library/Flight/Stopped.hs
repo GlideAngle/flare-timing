@@ -49,6 +49,8 @@ data StopTime a where
     InterGateStop :: StartGateInterval -> AnnouncedTime -> StopTime Hg
     SingleGateStop :: AnnouncedTime -> StopTime Hg
 
+deriving instance Show (StopTime a)
+
 stopTaskTime :: forall a. StopTime a -> TaskStopTime
 stopTaskTime (ScoreBackStop (ScoreBackTime sb) (AnnouncedTime at)) =
     TaskStopTime $ at - sb
