@@ -175,7 +175,10 @@ applyGlide (GlideRatio gr) alts xs =
         iXs :: [(Int, StoppedTrack)]
         iXs = zip [1 .. ] xs
 
-        altMap = Map.fromList $ zip [1 .. ] alts
+        altMap =
+            Map.fromList
+            $ filter (\(_, AltitudeAboveGoal alt) -> alt > 0)
+            $ zip [1 .. ] alts
 
         (xsMadeGoal :: [(Int, StoppedTrack)], xsLandedOut :: [(Int, StoppedTrack)]) =
             partition
