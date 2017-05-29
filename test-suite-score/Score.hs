@@ -77,6 +77,7 @@ stoppedUnits =
         , stoppedScoreUnits
         , stoppedValidityUnits
         , scoreTimeWindowUnits
+        , applyGlideUnits 
         ]
 
 scProps :: TestTree

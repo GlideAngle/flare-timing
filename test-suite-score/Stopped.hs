@@ -7,6 +7,7 @@ module Stopped
     , stoppedScoreUnits
     , stoppedValidityUnits
     , scoreTimeWindowUnits
+    , applyGlideUnits
     ) where
 
 import Test.Tasty (TestTree, testGroup)
@@ -31,6 +32,10 @@ import Flight.Score
     , TaskType(..)
     , StartGates(..)
     , ScoreTimeWindow(..)
+    , AltitudeAboveGoal(..)
+    , DistanceToGoal(..)
+    , GlideRatio(..)
+    , StoppedTrack(..)
     )
 
 stoppedTimeUnits :: TestTree
@@ -245,3 +250,35 @@ scoreTimeWindowUnits = testGroup "Score time window"
                 @?= ScoreTimeWindow 0
         ]
     ]
+
+applyGlideUnits :: TestTree
+applyGlideUnits = testGroup "Distance points with altitude bonus"
+    [ HU.testCase "Noone flies = no changed tracks" $
+        FS.applyGlide
+            (GlideRatio 1)
+            []
+            []
+            @?= []
+
+    , HU.testCase "Out from and above goal, 1:1 glide ratio = at goal" $
+        FS.applyGlide
+            (GlideRatio 1)
+            [AltitudeAboveGoal 1]
+            [StoppedTrack [(TaskTime 1, DistanceToGoal 1)]]
+            @?= [StoppedTrack [(TaskTime 1, DistanceToGoal 0)]]
+
+    , HU.testCase "Out from and above goal, -1:1 glide ratio = at goal" $
+        FS.applyGlide
+            (GlideRatio $ negate 1)
+            [AltitudeAboveGoal 1]
+            [StoppedTrack [(TaskTime 1, DistanceToGoal 1)]]
+            @?= [StoppedTrack [(TaskTime 1, DistanceToGoal 0)]]
+
+    , HU.testCase "Out and below goal, 1:1 glide ratio = at goal" $
+        FS.applyGlide
+            (GlideRatio 1)
+            [AltitudeAboveGoal $ negate 1]
+            [StoppedTrack [(TaskTime 1, DistanceToGoal 1)]]
+            @?= [StoppedTrack [(TaskTime 1, DistanceToGoal 0)]]
+    ]
+

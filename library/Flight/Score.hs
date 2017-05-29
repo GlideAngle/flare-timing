@@ -109,6 +109,11 @@ module Flight.Score
     , StartGates(..)
     , ScoreTimeWindow(..)
     , scoreTimeWindow
+    , AltitudeAboveGoal(..)
+    , DistanceToGoal(..)
+    , GlideRatio(..)
+    , StoppedTrack(..)
+    , applyGlide
     ) where
 
 import Flight.Ratio

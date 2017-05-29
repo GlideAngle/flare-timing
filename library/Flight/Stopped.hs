@@ -22,10 +22,10 @@ module Flight.Stopped
     , StartGates(..)
     , ScoreTimeWindow(..)
     , scoreTimeWindow
-    , AltitudeAboveGoal
-    , DistanceToGoal
-    , GlideRatio
-    , StoppedTrack
+    , AltitudeAboveGoal(..)
+    , DistanceToGoal(..)
+    , GlideRatio(..)
+    , StoppedTrack(..)
     , applyGlide
     ) where
 
