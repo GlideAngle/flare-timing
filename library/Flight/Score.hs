@@ -98,6 +98,7 @@ module Flight.Score
     , NumberInGoalAtStop(..)
     , CanScoreStopped(..)
     , stopTaskTime
+    , canScoreStopped
     ) where
 
 import Flight.Ratio

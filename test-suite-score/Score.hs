@@ -74,6 +74,7 @@ stoppedUnits =
     testGroup
         "Stopped Task"
         [ stoppedTimeUnits
+        , stoppedScoreUnits
         ]
 
 scProps :: TestTree

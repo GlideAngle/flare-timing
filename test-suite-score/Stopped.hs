@@ -2,7 +2,7 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE StandaloneDeriving #-}
-module Stopped where
+module Stopped (stoppedTimeUnits, stoppedScoreUnits) where
 
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit as HU ((@?=), testCase)
@@ -14,6 +14,8 @@ import Flight.Score
     , AnnouncedTime(..)
     , StartGateInterval(..)
     , TaskStopTime(..)
+    , CanScoreStopped(..)
+    , NumberInGoalAtStop(..)
     )
 
 stoppedTimeUnits :: TestTree
@@ -26,4 +28,16 @@ stoppedTimeUnits = testGroup "Effective task stop time"
 
     , HU.testCase "Announced stop time with a single start gate, Hg = task stop time is 15 min earlier" $
         FS.stopTaskTime (SingleGateStop (AnnouncedTime (17 * 60))) @?= TaskStopTime (2 * 60)
+    ]
+
+stoppedScoreUnits :: TestTree
+stoppedScoreUnits = testGroup "Can score a stopped task?"
+    [ HU.testCase "Not when noone made goal and the task ran less than an hour, womens" $
+        FS.canScoreStopped(Womens (NumberInGoalAtStop 0) (TaskStopTime $ 59 * 60)) @?= False
+
+    , HU.testCase "When someone made goal, womens" $
+        FS.canScoreStopped(Womens (NumberInGoalAtStop 1) (TaskStopTime 0)) @?= True
+
+    , HU.testCase "When the task ran for 1 hr, womans" $
+        FS.canScoreStopped(Womens (NumberInGoalAtStop 0) (TaskStopTime $ 60 * 60)) @?= True
     ]

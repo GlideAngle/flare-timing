@@ -69,9 +69,9 @@ deriving instance Show (CanScoreStopped a)
 
 canScoreStopped :: forall a. CanScoreStopped a -> Bool
 canScoreStopped (Womens (NumberInGoalAtStop n) (TaskStopTime t)) =
-    n > 0 || t > 60 * 60
+    n > 0 || t >= 60 * 60
 canScoreStopped (GoalOrDuration (NumberInGoalAtStop n) (TaskStopTime t)) =
-    n > 0 || t > 90 * 60
+    n > 0 || t >= 90 * 60
 canScoreStopped (FromGetGo (TaskStopTime t)) =
     t > 60 * 60
 canScoreStopped (FromLastStart [] _) =
