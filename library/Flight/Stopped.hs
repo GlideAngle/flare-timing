@@ -142,9 +142,9 @@ data TaskType = RaceToGoal | ElapsedTime deriving (Eq, Ord, Show)
 newtype ScoreTimeWindow = ScoreTimeWindow Rational deriving (Eq, Ord, Show)
 
 scoreTimeWindow :: TaskType
-                     -> StartGates
-                     -> TaskStopTime
-                     -> [TaskTime] -> ScoreTimeWindow
+                   -> StartGates
+                   -> TaskStopTime
+                   -> [TaskTime] -> ScoreTimeWindow
 scoreTimeWindow RaceToGoal (StartGates 1) (TaskStopTime stopTime) _ = 
     ScoreTimeWindow stopTime
 scoreTimeWindow _ _ (TaskStopTime stopTime) ts = 

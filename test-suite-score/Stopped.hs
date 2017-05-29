@@ -6,6 +6,7 @@ module Stopped
     ( stoppedTimeUnits
     , stoppedScoreUnits
     , stoppedValidityUnits
+    , scoreTimeWindowUnits
     ) where
 
 import Test.Tasty (TestTree, testGroup)
@@ -27,6 +28,9 @@ import Flight.Score
     , DistanceLaunchToEss(..)
     , DistanceFlown(..)
     , StoppedValidity(..)
+    , TaskType(..)
+    , StartGates(..)
+    , ScoreTimeWindow(..)
     )
 
 stoppedTimeUnits :: TestTree
@@ -138,4 +142,31 @@ stoppedValidityUnits = testGroup "Is a stopped task valid?"
             (DistanceLaunchToEss 2)
             [(DistanceFlown 2), (DistanceFlown 1)]
             @?= StoppedValidity (2102335339236503 % 2251799813685248)
+    ]
+
+scoreTimeWindowUnits :: TestTree
+scoreTimeWindowUnits = testGroup "Score time window"
+    [ HU.testCase "Race to goal, 1 start gate, noone launches = start to stop" $
+        FS.scoreTimeWindow
+            RaceToGoal
+            (StartGates 1)
+            (TaskStopTime 1)
+            []
+            @?= ScoreTimeWindow 1
+
+    , HU.testCase "Race to goal, 1 start gate, 1 launches at start = start to stop" $
+        FS.scoreTimeWindow
+            RaceToGoal
+            (StartGates 1)
+            (TaskStopTime 1)
+            [TaskTime 0]
+            @?= ScoreTimeWindow 1
+
+    , HU.testCase "Race to goal, 1 start gate, 1 launches at stop = start to stop" $
+        FS.scoreTimeWindow
+            RaceToGoal
+            (StartGates 1)
+            (TaskStopTime 1)
+            [TaskTime 1]
+            @?= ScoreTimeWindow 1
     ]

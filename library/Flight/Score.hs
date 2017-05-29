@@ -105,6 +105,10 @@ module Flight.Score
     , DistanceFlown(..)
     , StoppedValidity(..)
     , stoppedValidity
+    , TaskType(..)
+    , StartGates(..)
+    , ScoreTimeWindow(..)
+    , scoreTimeWindow
     ) where
 
 import Flight.Ratio

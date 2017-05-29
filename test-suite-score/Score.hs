@@ -76,6 +76,7 @@ stoppedUnits =
         [ stoppedTimeUnits
         , stoppedScoreUnits
         , stoppedValidityUnits
+        , scoreTimeWindowUnits
         ]
 
 scProps :: TestTree
