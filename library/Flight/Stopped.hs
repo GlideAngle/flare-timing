@@ -169,35 +169,37 @@ madeGoal (StoppedTrack xs) =
     any (\(DistanceToGoal d) -> d <= 0) $ snd <$> xs
 
 applyGlide :: GlideRatio -> [AltitudeAboveGoal] -> [StoppedTrack] -> [StoppedTrack]
-applyGlide (GlideRatio gr) alts xs =
-    snd <$> ysSorted
-    where
-        iXs :: [(Int, StoppedTrack)]
-        iXs = zip [1 .. ] xs
+applyGlide (GlideRatio gr) alts xs
+    | gr <= 0 = xs
+    | otherwise =
+        snd <$> ysSorted
+        where
+            iXs :: [(Int, StoppedTrack)]
+            iXs = zip [1 .. ] xs
 
-        altMap =
-            Map.fromList
-            $ filter (\(_, AltitudeAboveGoal alt) -> alt > 0)
-            $ zip [1 .. ] alts
+            altMap =
+                Map.fromList
+                $ filter (\(_, AltitudeAboveGoal alt) -> alt > 0)
+                $ zip [1 .. ] alts
 
-        (xsMadeGoal :: [(Int, StoppedTrack)], xsLandedOut :: [(Int, StoppedTrack)]) =
-            partition
-                (\(_, track) -> madeGoal track)
-                iXs
+            (xsMadeGoal :: [(Int, StoppedTrack)], xsLandedOut :: [(Int, StoppedTrack)]) =
+                partition
+                    (\(_, track) -> madeGoal track)
+                    iXs
 
-        glide :: AltitudeAboveGoal -> DistanceToGoal -> DistanceToGoal
-        glide (AltitudeAboveGoal alt) (DistanceToGoal dtg) =
-            DistanceToGoal $ min 0 (dtg - alt * gr)
+            glide :: AltitudeAboveGoal -> DistanceToGoal -> DistanceToGoal
+            glide (AltitudeAboveGoal alt) (DistanceToGoal dtg) =
+                DistanceToGoal $ min 0 (dtg - alt * gr)
 
-        glides d@(i, StoppedTrack track) =
-            case Map.lookup i altMap of
-                 Nothing -> d
-                 Just alt -> (i, StoppedTrack $ second (glide alt) <$> track)
+            glides d@(i, StoppedTrack track) =
+                case Map.lookup i altMap of
+                     Nothing -> d
+                     Just alt -> (i, StoppedTrack $ second (glide alt) <$> track)
 
-        ysLandedOut = glides <$> xsLandedOut
-        
-        ysMerged :: [(Int, StoppedTrack)]
-        ysMerged = mconcat [ xsMadeGoal, ysLandedOut ]
+            ysLandedOut = glides <$> xsLandedOut
+            
+            ysMerged :: [(Int, StoppedTrack)]
+            ysMerged = mconcat [ xsMadeGoal, ysLandedOut ]
 
-        ysSorted :: [(Int, StoppedTrack)]
-        ysSorted = sortBy (\x y -> fst x `compare` fst y) ysMerged
+            ysSorted :: [(Int, StoppedTrack)]
+            ysSorted = sortBy (\x y -> fst x `compare` fst y) ysMerged
