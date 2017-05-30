@@ -13,6 +13,7 @@ module Stopped
     , canScoreStoppedHg
     , canScoreStoppedPg
     , stoppedValidity
+    , scoreTimeWindow
     ) where
 
 import Test.Tasty (TestTree, testGroup)
@@ -359,3 +360,7 @@ canScoreStoppedPg (StopCanScoreTest x@(FromLastStart _ _)) =
 
 stoppedValidity (StopValidityTest (launched, landed, distance, xs)) =
     (\(StoppedValidity x) -> isNormal x) $ FS.stoppedValidity launched landed distance xs
+
+scoreTimeWindow :: StopWindowTest -> Bool
+scoreTimeWindow (StopWindowTest (taskType, gates, stop@(TaskStopTime st), xs)) =
+    (\(ScoreTimeWindow t) -> 0 <= t && t <= st) $ FS.scoreTimeWindow taskType gates stop xs

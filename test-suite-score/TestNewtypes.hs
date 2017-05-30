@@ -54,6 +54,9 @@ import Flight.Score
     , PilotsLandedBeforeStop(..)
     , DistanceLaunchToEss(..)
     , DistanceFlown(..)
+    , TaskType(..)
+    , StartGates(..)
+    , ScoreTimeWindow(..)
     )
 
 import Normal (Normal(..), NormalSum(..))
@@ -463,4 +466,33 @@ instance QC.Arbitrary StopValidityTest where
                  , PilotsLandedBeforeStop landed
                  , DistanceLaunchToEss d
                  , (\x -> DistanceFlown $ x % 1) <$> xs
+                 )
+
+-- | Stopped task, score time window.
+newtype StopWindowTest = StopWindowTest ( TaskType
+                                        , StartGates
+                                        , TaskStopTime
+                                        , [TaskTime]
+                                        ) deriving Show
+
+instance Monad m => SC.Serial m StopWindowTest where
+    series = (\(a, (b, (c, d))) -> StopWindowTest (a, b, c, d)) <$>
+        (cons0 RaceToGoal \/ cons0 ElapsedTime)
+        SC.><
+        cons1 (\(SC.NonNegative x) -> StartGates x)
+        SC.><
+        cons1 (\(SC.NonNegative x) -> TaskStopTime x)
+        SC.><
+        cons1 (\xs -> (\(SC.NonNegative x) -> TaskTime x) <$> xs)
+
+instance QC.Arbitrary StopWindowTest where
+    arbitrary = StopWindowTest <$> do
+        taskType <- oneof [ return RaceToGoal, return ElapsedTime ]
+        (QC.NonNegative gates) <- arbitrary
+        (QC.NonNegative stop) <- arbitrary
+        xs <- listOf $ choose (1, 10000)
+        return $ ( taskType
+                 , StartGates gates
+                 , TaskStopTime stop
+                 , (\x -> TaskTime $ x % 1) <$> xs
                  )

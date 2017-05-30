@@ -106,6 +106,7 @@ scProps = testGroup "(checked by SmallCheck)"
     , SC.testProperty "Can score a stopped task, Hg" canScoreStoppedHg
     , SC.testProperty "Can score a stopped task, Pg" canScoreStoppedPg
     , SC.testProperty "Stopped validity is in the range of [0, 1]" stoppedValidity
+    , SC.testProperty "Score time window is in the range [0, stop time]" scoreTimeWindow
     ]
 
 qcProps :: TestTree
@@ -134,4 +135,5 @@ qcProps = testGroup "(checked by QuickCheck)"
     , QC.testProperty "Can score a stopped task, Hg" canScoreStoppedHg
     , QC.testProperty "Can score a stopped task, Pg" canScoreStoppedPg
     , QC.testProperty "Stopped validity is in the range of [0, 1]" stoppedValidity
+    , QC.testProperty "Score time window is in the range [0, stop time]" scoreTimeWindow
     ]

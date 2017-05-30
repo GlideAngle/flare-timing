@@ -158,10 +158,13 @@ scoreTimeWindow RaceToGoal (StartGates 1) (TaskStopTime stopTime) _ =
     ScoreTimeWindow stopTime
 scoreTimeWindow _ _ _ [] = 
     ScoreTimeWindow 0
-scoreTimeWindow _ _ (TaskStopTime stopTime) ts = 
-    ScoreTimeWindow $ stopTime - lastStart
+scoreTimeWindow _ _ (TaskStopTime stopTime) xs
+    | any (> stopTime) ys =
+        ScoreTimeWindow 0
+    | otherwise =
+        ScoreTimeWindow $ stopTime - maximum ys
     where
-        lastStart = maximum $ (\(TaskTime t) -> t) <$> ts
+        ys = (\(TaskTime t) -> t) <$> xs
 
 -- | GPS altitude. TODO: State the units for altitude. Is it feet or metres?
 newtype AltitudeAboveGoal = AltitudeAboveGoal Rational deriving (Eq, Ord, Show)
