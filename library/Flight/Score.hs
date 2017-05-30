@@ -114,6 +114,7 @@ module Flight.Score
     , GlideRatio(..)
     , StoppedTrack(..)
     , applyGlide
+    , applyGlides
     ) where
 
 import Flight.Ratio

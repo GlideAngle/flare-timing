@@ -57,6 +57,10 @@ import Flight.Score
     , TaskType(..)
     , StartGates(..)
     , ScoreTimeWindow(..)
+    , GlideRatio(..)
+    , AltitudeAboveGoal(..)
+    , DistanceToGoal(..)
+    , StoppedTrack(..)
     )
 
 import Normal (Normal(..), NormalSum(..))
@@ -489,4 +493,36 @@ instance QC.Arbitrary StopWindowTest where
                , StartGates gates
                , TaskStopTime stop
                , (\x -> TaskTime $ x % 1) <$> xs
+               )
+
+-- | Stopped task, apply glide.
+newtype StopGlideTest = StopGlideTest ( GlideRatio
+                                      , AltitudeAboveGoal
+                                      , StoppedTrack
+                                      ) deriving Show
+
+instance Monad m => SC.Serial m StopGlideTest where
+    series = (\(a, (b, c)) -> StopGlideTest (a, b, c)) <$>
+        cons1 (\(SC.NonNegative x) -> GlideRatio x)
+        SC.><
+        cons1 (\(SC.NonNegative x) -> AltitudeAboveGoal x)
+        SC.><
+        cons1 (\xs -> StoppedTrack $
+                zipWith
+                    (\t (SC.NonNegative d) -> (TaskTime t, DistanceToGoal d))
+                    [1 .. ]
+                    xs)
+
+instance QC.Arbitrary StopGlideTest where
+    arbitrary = StopGlideTest <$> do
+        (QC.NonNegative glide) <- arbitrary
+        (QC.NonNegative altitude) <- arbitrary
+        xs <- listOf $ choose (1, 10000)
+        return ( GlideRatio glide
+               , AltitudeAboveGoal altitude
+               , StoppedTrack $
+                   zipWith
+                       (\t d -> (TaskTime t, DistanceToGoal $ d % 1))
+                       [1 .. ]
+                       xs
                )

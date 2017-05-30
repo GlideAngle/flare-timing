@@ -27,6 +27,7 @@ module Flight.Stopped
     , GlideRatio(..)
     , StoppedTrack(..)
     , applyGlide
+    , applyGlides
     ) where
 
 import Data.Ratio ((%))
@@ -180,9 +181,21 @@ madeGoal :: StoppedTrack -> Bool
 madeGoal (StoppedTrack xs) =
     any (\(DistanceToGoal d) -> d <= 0) $ snd <$> xs
 
-applyGlide :: GlideRatio -> [AltitudeAboveGoal] -> [StoppedTrack] -> [StoppedTrack]
-applyGlide (GlideRatio gr) alts xs
-    | gr <= 0 = xs
+applyGlide :: GlideRatio -> AltitudeAboveGoal -> StoppedTrack -> StoppedTrack
+applyGlide (GlideRatio gr) altitude x@(StoppedTrack track)
+    | gr <= 0 = x
+    | otherwise =
+        StoppedTrack $ second (glide altitude) <$> track
+            where
+                glide :: AltitudeAboveGoal -> DistanceToGoal -> DistanceToGoal
+                glide (AltitudeAboveGoal alt) (DistanceToGoal dtg) =
+                    DistanceToGoal $ if dtg > bonus then dtg - bonus else 0
+                    where
+                        bonus = alt * gr
+
+applyGlides :: GlideRatio -> [AltitudeAboveGoal] -> [StoppedTrack] -> [StoppedTrack]
+applyGlides gr@(GlideRatio glideRatio) alts xs
+    | glideRatio <= 0 = xs
     | otherwise =
         snd <$> ysSorted
         where
@@ -199,16 +212,10 @@ applyGlide (GlideRatio gr) alts xs
                     (\(_, track) -> madeGoal track)
                     iXs
 
-            glide :: AltitudeAboveGoal -> DistanceToGoal -> DistanceToGoal
-            glide (AltitudeAboveGoal alt) (DistanceToGoal dtg) =
-                DistanceToGoal $ if dtg > bonus then dtg - bonus else 0
-                where
-                    bonus = alt * gr
-
-            glides d@(i, StoppedTrack track) =
+            glides d@(i, track) =
                 case Map.lookup i altMap of
                      Nothing -> d
-                     Just alt -> (i, StoppedTrack $ second (glide alt) <$> track)
+                     Just alt -> (i, applyGlide gr alt track)
 
             ysLandedOut = glides <$> xsLandedOut
             

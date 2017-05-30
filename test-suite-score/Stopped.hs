@@ -12,11 +12,11 @@ module Stopped
     , canScoreStoppedPg
     , stoppedValidity
     , scoreTimeWindow
+    , applyGlide
     ) where
 
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit as HU ((@?=), testCase)
-import Data.Ratio((%))
 
 import qualified Flight.Score as FS
 import Flight.Score
@@ -263,42 +263,42 @@ scoreTimeWindowUnits = testGroup "Score time window"
 applyGlideUnits :: TestTree
 applyGlideUnits = testGroup "Distance points with altitude bonus"
     [ HU.testCase "Noone flies = no changed tracks" $
-        FS.applyGlide
+        FS.applyGlides
             (GlideRatio 1)
             []
             []
             @?= []
 
     , HU.testCase "Non-positive glide ratio = no changed tracks" $
-        FS.applyGlide
+        FS.applyGlides
             (GlideRatio $ negate 1)
             [AltitudeAboveGoal 1]
             [StoppedTrack [(TaskTime 1, DistanceToGoal 1)]]
             @?= [StoppedTrack [(TaskTime 1, DistanceToGoal 1)]]
 
     , HU.testCase "Out at 1:1 below goal, 1:1 glide ratio = no changed tracks" $
-        FS.applyGlide
+        FS.applyGlides
             (GlideRatio 1)
             [AltitudeAboveGoal $ negate 1]
             [StoppedTrack [(TaskTime 1, DistanceToGoal 1)]]
             @?= [StoppedTrack [(TaskTime 1, DistanceToGoal 1)]]
 
     , HU.testCase "Out at 1:1 from goal, 1:1 glide ratio = at goal" $
-        FS.applyGlide
+        FS.applyGlides
             (GlideRatio 1)
             [AltitudeAboveGoal 1]
             [StoppedTrack [(TaskTime 1, DistanceToGoal 1)]]
             @?= [StoppedTrack [(TaskTime 1, DistanceToGoal 0)]]
 
     , HU.testCase "Out at 1:1 from goal, 2:1 glide ratio = at goal with no overshoot" $
-        FS.applyGlide
+        FS.applyGlides
             (GlideRatio 2)
             [AltitudeAboveGoal 1]
             [StoppedTrack [(TaskTime 1, DistanceToGoal 1)]]
             @?= [StoppedTrack [(TaskTime 1, DistanceToGoal 0)]]
 
     , HU.testCase "Out at 1:2 from goal, 1:1 glide ratio = halve distance from goal" $
-        FS.applyGlide
+        FS.applyGlides
             (GlideRatio 1)
             [AltitudeAboveGoal 1]
             [StoppedTrack [(TaskTime 1, DistanceToGoal 2)]]
@@ -356,9 +356,28 @@ canScoreStoppedPg (StopCanScoreTest x@(FromGetGo _)) =
 canScoreStoppedPg (StopCanScoreTest x@(FromLastStart _ _)) =
     correctCan x $ FS.canScoreStopped x
 
+stoppedValidity :: StopValidityTest -> Bool
 stoppedValidity (StopValidityTest (launched, landed, distance, xs)) =
     (\(StoppedValidity x) -> isNormal x) $ FS.stoppedValidity launched landed distance xs
 
 scoreTimeWindow :: StopWindowTest -> Bool
 scoreTimeWindow (StopWindowTest (taskType, gates, stop@(TaskStopTime st), xs)) =
     (\(ScoreTimeWindow t) -> 0 <= t && t <= st) $ FS.scoreTimeWindow taskType gates stop xs
+
+correctGlide :: StoppedTrack -> StoppedTrack -> Bool
+correctGlide (StoppedTrack xs) (StoppedTrack ys) =
+    and $ zipWith (\(_, x) (_, y) -> x >= y) xs ys
+
+applyGlide :: StopGlideTest -> Bool
+applyGlide (StopGlideTest ( gr@(GlideRatio glide)
+                          , alt@(AltitudeAboveGoal altitude)
+                          , track
+                          ))
+    | glide <= 0 =
+        (== track) ys
+    | altitude <= 0 =
+        (== track) ys
+    | otherwise =
+        correctGlide track ys
+
+    where ys = FS.applyGlide gr alt track
