@@ -1,7 +1,5 @@
 {-# LANGUAGE GADTs #-}
-{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE StandaloneDeriving #-}
 module Stopped
     ( stoppedTimeUnits
     , stoppedScoreUnits
@@ -124,7 +122,7 @@ stoppedValidityUnits = testGroup "Is a stopped task valid?"
             (PilotsLaunched 2)
             (PilotsLandedBeforeStop 0)
             (DistanceLaunchToEss 1)
-            [(DistanceFlown 1), (DistanceFlown 1)]
+            [DistanceFlown 1, DistanceFlown 1]
             @?= StoppedValidity 0
 
     , HU.testCase "When everyone makes ESS, two pilots launched, noone still flying = 1 validity" $
@@ -132,7 +130,7 @@ stoppedValidityUnits = testGroup "Is a stopped task valid?"
             (PilotsLaunched 2)
             (PilotsLandedBeforeStop 2)
             (DistanceLaunchToEss 1)
-            [(DistanceFlown 1), (DistanceFlown 1)]
+            [DistanceFlown 1, DistanceFlown 1]
             @?= StoppedValidity 1
 
     , HU.testCase "When everyone makes ESS, two pilots launched, one still flying = 0.5 validity" $
@@ -140,7 +138,7 @@ stoppedValidityUnits = testGroup "Is a stopped task valid?"
             (PilotsLaunched 2)
             (PilotsLandedBeforeStop 1)
             (DistanceLaunchToEss 1)
-            [(DistanceFlown 1), (DistanceFlown 1)]
+            [DistanceFlown 1, DistanceFlown 1]
             @?= StoppedValidity (4503599627370497 % 9007199254740992)
 
     , HU.testCase "When one makes ESS, one still flying at launch point = 0.93 validity" $
@@ -148,7 +146,7 @@ stoppedValidityUnits = testGroup "Is a stopped task valid?"
             (PilotsLaunched 2)
             (PilotsLandedBeforeStop 1)
             (DistanceLaunchToEss 1)
-            [(DistanceFlown 1), (DistanceFlown 0)]
+            [DistanceFlown 1, DistanceFlown 0]
             @?= StoppedValidity (2102335339236503 % 2251799813685248)
 
     , HU.testCase "When one makes ESS, one still flying on course halfway to ESS = 0.93 validity" $
@@ -156,7 +154,7 @@ stoppedValidityUnits = testGroup "Is a stopped task valid?"
             (PilotsLaunched 2)
             (PilotsLandedBeforeStop 1)
             (DistanceLaunchToEss 2)
-            [(DistanceFlown 2), (DistanceFlown 1)]
+            [DistanceFlown 2, DistanceFlown 1]
             @?= StoppedValidity (2102335339236503 % 2251799813685248)
     ]
 
@@ -331,18 +329,18 @@ stopTaskTimeHg (StopTimeTest x@(SingleGateStop _)) =
 
 correctCan :: forall a. CanScoreStopped a -> Bool -> Bool
 correctCan (Womens (NumberInGoalAtStop n) (TaskStopTime t)) canScore
-    | n >= 1 = canScore == True
-    | t >= 60 * 60 = canScore == True
-    | otherwise = canScore == False
+    | n >= 1 = canScore
+    | t >= 60 * 60 = canScore
+    | otherwise = not canScore
 correctCan (GoalOrDuration (NumberInGoalAtStop n) (TaskStopTime t)) canScore
-    | n >= 1 = canScore == True
-    | t >= 90 * 60 = canScore == True
-    | otherwise = canScore == False
+    | n >= 1 = canScore
+    | t >= 90 * 60 = canScore
+    | otherwise = not canScore
 correctCan (FromGetGo (TaskStopTime t)) canScore
-    | t >= 60 * 60 = canScore == True
-    | otherwise = canScore == False
+    | t >= 60 * 60 = canScore
+    | otherwise = not canScore
 correctCan (FromLastStart [] _) canScore =
-    canScore == False
+    not canScore
 correctCan (FromLastStart xs (TaskStopTime st)) canScore =
     all (\(TaskTime t) -> st >= t + 60 * 60) xs == canScore
 

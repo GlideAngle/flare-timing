@@ -371,8 +371,8 @@ instance Monad m => SC.Serial m (StopTimeTest Pg) where
             (ScoreBackStop (ScoreBackTime sb) (AnnouncedTime t)))
 
 instance QC.Arbitrary (StopTimeTest Hg) where
-    arbitrary = StopTimeTest <$> do
-        stop <- QC.oneof
+    arbitrary = StopTimeTest <$>
+        QC.oneof
             [ do
                 (QC.Positive i) <- arbitrary
                 (QC.Positive t) <- arbitrary
@@ -381,8 +381,6 @@ instance QC.Arbitrary (StopTimeTest Hg) where
                 (QC.Positive t) <- arbitrary
                 return $ SingleGateStop (AnnouncedTime t)
             ]
-
-        return stop
 
 instance QC.Arbitrary (StopTimeTest Pg) where
     arbitrary = StopTimeTest <$> do
@@ -408,8 +406,8 @@ instance Monad m => SC.Serial m (StopCanScoreTest Pg) where
                     FromLastStart ((\(SC.Positive x) -> TaskTime (x % 1)) <$> xs) (TaskStopTime t))
 
 instance QC.Arbitrary (StopCanScoreTest Hg) where
-    arbitrary = StopCanScoreTest <$> do
-        stop <- QC.oneof
+    arbitrary = StopCanScoreTest <$>
+        QC.oneof
             [ do
                 (QC.Positive n) <- arbitrary
                 (QC.Positive t) <- arbitrary
@@ -420,11 +418,9 @@ instance QC.Arbitrary (StopCanScoreTest Hg) where
                 return $ GoalOrDuration (NumberInGoalAtStop n) (TaskStopTime t)
             ]
 
-        return stop
-
 instance QC.Arbitrary (StopCanScoreTest Pg) where
-    arbitrary = StopCanScoreTest <$> do
-        stop <- QC.oneof
+    arbitrary = StopCanScoreTest <$>
+        QC.oneof
             [ do
                 (QC.Positive t) <- arbitrary
                 return $ FromGetGo (TaskStopTime t)
@@ -433,8 +429,6 @@ instance QC.Arbitrary (StopCanScoreTest Pg) where
                 xs <- listOf $ choose (1, 10000)
                 return $ FromLastStart ((\x -> TaskTime (x % 1)) <$> xs) (TaskStopTime t)
             ]
-
-        return stop
 
 -- | Stopped task validity.
 newtype StopValidityTest = StopValidityTest ( PilotsLaunched
@@ -462,11 +456,11 @@ instance QC.Arbitrary StopValidityTest where
         (QC.NonNegative landed) <- arbitrary
         (QC.Positive d) <- arbitrary
         xs <- listOf $ choose (1, 10000)
-        return $ ( PilotsLaunched (notLanded + landed)
-                 , PilotsLandedBeforeStop landed
-                 , DistanceLaunchToEss d
-                 , (\x -> DistanceFlown $ x % 1) <$> xs
-                 )
+        return ( PilotsLaunched (notLanded + landed)
+               , PilotsLandedBeforeStop landed
+               , DistanceLaunchToEss d
+               , (\x -> DistanceFlown $ x % 1) <$> xs
+               )
 
 -- | Stopped task, score time window.
 newtype StopWindowTest = StopWindowTest ( TaskType
@@ -491,8 +485,8 @@ instance QC.Arbitrary StopWindowTest where
         (QC.NonNegative gates) <- arbitrary
         (QC.NonNegative stop) <- arbitrary
         xs <- listOf $ choose (1, 10000)
-        return $ ( taskType
-                 , StartGates gates
-                 , TaskStopTime stop
-                 , (\x -> TaskTime $ x % 1) <$> xs
-                 )
+        return ( taskType
+               , StartGates gates
+               , TaskStopTime stop
+               , (\x -> TaskTime $ x % 1) <$> xs
+               )

@@ -168,7 +168,7 @@ scoreTimeWindow _ _ (TaskStopTime stopTime) xs
 
 -- | GPS altitude. TODO: State the units for altitude. Is it feet or metres?
 newtype AltitudeAboveGoal = AltitudeAboveGoal Rational deriving (Eq, Ord, Show)
---
+
 -- | The distance in km to goal.
 newtype DistanceToGoal = DistanceToGoal Rational deriving (Eq, Ord, Show)
 
