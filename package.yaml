@@ -46,7 +46,6 @@ tests:
     dependencies:
     - base
     - hlint
-    - vector
     ghc-options:
     - -rtsopts
     - -threaded

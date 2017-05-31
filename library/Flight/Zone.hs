@@ -13,6 +13,8 @@ module Flight.Zone
     , distance
     ) where
 
+import Data.Ratio((%))
+
 newtype LatLng = LatLng (Rational, Rational) deriving (Eq, Ord, Show)
 newtype Radius = Radius Rational deriving (Eq, Ord, Show)
 newtype Incline = Incline Rational deriving (Eq, Ord, Show)
@@ -47,6 +49,33 @@ data Task
         } deriving Show
 
 newtype TaskDistance = TaskDistance Rational deriving (Eq, Ord, Show)
+
+distanceHaversine :: LatLng -> LatLng -> TaskDistance
+distanceHaversine (LatLng (xLat, xLng)) (LatLng (yLat, yLng)) =
+    TaskDistance $ 6371000 * toRational radDist 
+    where
+        distLat :: Rational
+        distLat = yLat - xLat
+         
+        distLng :: Rational
+        distLng = yLng - xLng
+
+        haversine :: Rational -> Double
+        haversine x =
+            y * y
+            where
+                y :: Double
+                y = sin $ fromRational (x * (1 % 2))
+
+        a :: Double
+        a =
+            haversine distLat
+            + cos (fromRational xLat)
+            * cos (fromRational yLat)
+            * haversine distLng
+
+        radDist :: Double
+        radDist = 2 * atan2 (sqrt a) (sqrt $ 1 - a)
 
 distance :: [Zone] -> TaskDistance
 distance _ = TaskDistance 0
