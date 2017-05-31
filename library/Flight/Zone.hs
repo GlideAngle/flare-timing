@@ -14,6 +14,7 @@ module Flight.Zone
     ) where
 
 import Data.Ratio((%))
+import qualified Data.Number.FixedFunctions as F
 
 newtype LatLng = LatLng (Rational, Rational) deriving (Eq, Ord, Show)
 newtype Radius = Radius Rational deriving (Eq, Ord, Show)
@@ -49,9 +50,10 @@ data Task
         } deriving Show
 
 newtype TaskDistance = TaskDistance Rational deriving (Eq, Ord, Show)
+newtype Epsilon = Epsilon Rational deriving (Eq, Ord, Show)
 
-distanceHaversine :: LatLng -> LatLng -> TaskDistance
-distanceHaversine (LatLng (xLat, xLng)) (LatLng (yLat, yLng)) =
+distanceHaversineF :: LatLng -> LatLng -> TaskDistance
+distanceHaversineF (LatLng (xLat, xLng)) (LatLng (yLat, yLng)) =
     TaskDistance $ 6371000 * toRational radDist 
     where
         distLat :: Rational
@@ -76,6 +78,36 @@ distanceHaversine (LatLng (xLat, xLng)) (LatLng (yLat, yLng)) =
 
         radDist :: Double
         radDist = 2 * atan2 (sqrt a) (sqrt $ 1 - a)
+
+distanceF :: [Zone] -> TaskDistance
+distanceF _ = TaskDistance 0
+
+distanceHaversine :: Epsilon -> LatLng -> LatLng -> TaskDistance
+distanceHaversine (Epsilon eps) (LatLng (xLat, xLng)) (LatLng (yLat, yLng)) =
+    TaskDistance $ 6371000 * radDist 
+    where
+        distLat :: Rational
+        distLat = yLat - xLat
+         
+        distLng :: Rational
+        distLng = yLng - xLng
+
+        haversine :: Rational -> Rational
+        haversine x =
+            y * y
+            where
+                y :: Rational
+                y = F.sin eps (x * (1 % 2))
+
+        a :: Rational
+        a =
+            haversine distLat
+            + F.cos eps xLat
+            * F.cos eps yLat
+            * haversine distLng
+
+        radDist :: Rational
+        radDist = 2 * F.atan eps ((F.sqrt eps a) / (F.sqrt eps $ 1 - a))
 
 distance :: [Zone] -> TaskDistance
 distance _ = TaskDistance 0
