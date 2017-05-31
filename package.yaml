@@ -1,0 +1,74 @@
+# This YAML file describes your package. Stack will automatically generate a
+# Cabal file when you run `stack build`. See the hpack website for help with
+# this file: <https://github.com/sol/hpack>.
+executables:
+  flight-task:
+    dependencies:
+    - base
+    - directory
+    - filepath
+    - system-filepath
+    - filemanip
+    - raw-strings-qq
+    - cmdargs
+    - mtl
+    - transformers
+    - flight-task 
+    ghc-options:
+    - -rtsopts
+    - -threaded
+    - -with-rtsopts=-N
+    main: Main.hs
+    source-dirs: executable
+extra-source-files:
+- package.yaml
+- changelog.md
+- README.md
+- stack.yaml
+ghc-options: -Wall
+library:
+  dependencies:
+  - base >=4.5 && <5
+  source-dirs: library
+  exposed-modules:
+  - Flight.Task
+author: Phil de Joux
+maintainer: phil.dejoux@blockscope.com
+name: flight-task
+synopsis: Tasks to fly.
+description: Tasks for hang gliding and paragliding competitons.
+category: Flight
+license: BSD3
+license-file: LICENSE.md
+github: BlockScope/haskell-flight-task
+tests:
+  hlint:
+    dependencies:
+    - base
+    - hlint
+    - vector
+    ghc-options:
+    - -rtsopts
+    - -threaded
+    - -with-rtsopts=-N
+    main: HLint.hs
+    source-dirs:
+    - library
+    - test-suite-hlint
+  task:
+    dependencies:
+    - base
+    - tasty
+    - tasty-hunit
+    - tasty-quickcheck
+    - tasty-smallcheck
+    - smallcheck
+    ghc-options:
+    - -rtsopts
+    - -threaded
+    - -with-rtsopts=-N
+    main: Task.hs
+    source-dirs:
+    - library
+    - test-suite-task
+version: '0.1.0'
