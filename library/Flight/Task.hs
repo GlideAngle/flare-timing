@@ -23,7 +23,10 @@ module Flight.Task
     , StartGates(..)
     , Task(..)
     , TaskDistance(..)
-    , distance
+    , distanceEdgeToEdge
+    , distancePointToPoint
+    , distanceHaversine
+    , distanceHaversineF
     ) where
 
 import Flight.Zone

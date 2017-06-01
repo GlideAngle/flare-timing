@@ -10,7 +10,10 @@ module Flight.Zone
     , StartGates(..)
     , Task(..)
     , TaskDistance(..)
-    , distance
+    , distanceEdgeToEdge
+    , distancePointToPoint
+    , distanceHaversine
+    , distanceHaversineF
     ) where
 
 import Data.Ratio((%))
@@ -52,6 +55,14 @@ data Task
 newtype TaskDistance = TaskDistance Rational deriving (Eq, Ord, Show)
 newtype Epsilon = Epsilon Rational deriving (Eq, Ord, Show)
 
+center :: Zone -> LatLng
+center (Point x) = x
+center (Vector x _) = x
+center (Cylinder x _) = x
+center (Conical x _ _) = x
+center (Line x _) = x
+center (SemiCircle x _) = x
+
 distanceHaversineF :: LatLng -> LatLng -> TaskDistance
 distanceHaversineF (LatLng (xLat, xLng)) (LatLng (yLat, yLng)) =
     TaskDistance $ 6371000 * toRational radDist 
@@ -78,9 +89,6 @@ distanceHaversineF (LatLng (xLat, xLng)) (LatLng (yLat, yLng)) =
 
         radDist :: Double
         radDist = 2 * atan2 (sqrt a) (sqrt $ 1 - a)
-
-distanceF :: [Zone] -> TaskDistance
-distanceF _ = TaskDistance 0
 
 distanceHaversine :: Epsilon -> LatLng -> LatLng -> TaskDistance
 distanceHaversine (Epsilon eps) (LatLng (xLat, xLng)) (LatLng (yLat, yLng)) =
@@ -109,5 +117,13 @@ distanceHaversine (Epsilon eps) (LatLng (xLat, xLng)) (LatLng (yLat, yLng)) =
         radDist :: Rational
         radDist = 2 * F.atan eps ((F.sqrt eps a) / (F.sqrt eps $ 1 - a))
 
-distance :: [Zone] -> TaskDistance
-distance _ = TaskDistance 0
+distancePointToPoint :: [Zone] -> TaskDistance
+distancePointToPoint xs =
+    TaskDistance $ sum $ zipWith f ys (tail ys)
+    where
+        ys = center <$> xs
+        unwrap (TaskDistance x) = x
+        f = (unwrap .) . distanceHaversineF
+
+distanceEdgeToEdge :: [Zone] -> TaskDistance
+distanceEdgeToEdge _ = TaskDistance 0
