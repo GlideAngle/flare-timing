@@ -1,5 +1,8 @@
+{-# LANGUAGE FlexibleInstances #-}
+
 module Flight.Zone
-    ( LatLng(..)
+    ( ShowAngle(..)
+    , LatLng(..)
     , Radius(..)
     , Incline(..)
     , Bearing(..)
@@ -10,12 +13,14 @@ module Flight.Zone
     , StartGates(..)
     , Task(..)
     , TaskDistance(..)
+    , earthRadius
     , distanceEdgeToEdge
     , distancePointToPoint
     , distanceHaversine
     , distanceHaversineF
     ) where
 
+import Data.List (intercalate)
 import Data.Ratio((%))
 import qualified Data.Number.FixedFunctions as F
 
@@ -32,6 +37,30 @@ data Zone
     | Line LatLng Radius
     | SemiCircle LatLng Radius
     deriving (Eq, Show)
+
+class ShowAngle a where
+    showRadian :: a -> String
+
+instance {-# OVERLAPPING #-} ShowAngle [ Zone ] where
+    showRadian = showRadianZones
+
+showRadianZones :: [Zone] -> String
+showRadianZones xs = intercalate ", " $ showRadian <$> xs
+
+instance ShowAngle Rational where
+    showRadian x = show (fromRational x :: Double) ++ " rad"
+
+instance ShowAngle LatLng where
+    showRadian (LatLng (lat, lng)) =
+        "(" ++ showRadian lat ++ ", " ++ showRadian lng ++ ")"
+
+instance ShowAngle Zone where
+    showRadian (Point x) = "Point " ++ showRadian x
+    showRadian (Vector x _) = "Vector " ++ showRadian x
+    showRadian (Cylinder x _) = "Cylinder " ++ showRadian x
+    showRadian (Conical x _ _) = "Conical " ++ showRadian x
+    showRadian (Line x _) = "Line " ++ showRadian x
+    showRadian (SemiCircle x _) = "Semicircle " ++ showRadian x
 
 newtype Deadline = Deadline Integer deriving (Eq, Ord, Show)
 newtype TimeOfDay = TimeOfDay Rational deriving (Eq, Ord, Show)
@@ -63,9 +92,12 @@ center (Conical x _ _) = x
 center (Line x _) = x
 center (SemiCircle x _) = x
 
+earthRadius :: Rational
+earthRadius = 6371000
+
 distanceHaversineF :: LatLng -> LatLng -> TaskDistance
 distanceHaversineF (LatLng (xLat, xLng)) (LatLng (yLat, yLng)) =
-    TaskDistance $ 6371000 * toRational radDist 
+    TaskDistance $ earthRadius * toRational radDist 
     where
         distLat :: Rational
         distLat = yLat - xLat

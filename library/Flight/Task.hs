@@ -12,7 +12,8 @@ from launch to goal through course line way points.
 -}
 module Flight.Task
     ( -- * Control zones and distance between them. 
-      LatLng(..)
+      ShowAngle(..)
+    , LatLng(..)
     , Radius(..)
     , Incline(..)
     , Bearing(..)
@@ -23,6 +24,7 @@ module Flight.Task
     , StartGates(..)
     , Task(..)
     , TaskDistance(..)
+    , earthRadius
     , distanceEdgeToEdge
     , distancePointToPoint
     , distanceHaversine
