@@ -40,19 +40,35 @@ data Zone
 
 class ShowAngle a where
     showRadian :: a -> String
+    showDegree :: a -> String
 
 instance {-# OVERLAPPING #-} ShowAngle [ Zone ] where
-    showRadian = showRadianZones
+    showRadian = showZones showRadian
+    showDegree = showZones showDegree
 
-showRadianZones :: [Zone] -> String
-showRadianZones xs = intercalate ", " $ showRadian <$> xs
+showZones :: (Zone -> String) -> [Zone] -> String
+showZones f xs = intercalate ", " $ f <$> xs
 
 instance ShowAngle Rational where
     showRadian x = show (fromRational x :: Double) ++ " rad"
+    showDegree x = show (fromRational x :: Double) ++ "°"
+
+showLatLng :: (Rational -> String) -> LatLng -> String
+showLatLng f (LatLng (lat, lng))= "(" ++ f lat ++ ", " ++ f lng ++ ")"
+
+radToDeg :: Epsilon -> Rational -> Rational
+radToDeg (Epsilon eps) x = x * (180 % 1) / F.pi eps
+
+radToDegLL :: Epsilon -> LatLng -> LatLng
+radToDegLL e (LatLng (lat, lng)) =
+    LatLng (radToDeg e lat, radToDeg e lng)
+
+defEps :: Epsilon
+defEps = Epsilon $ 1 % 10000
 
 instance ShowAngle LatLng where
-    showRadian (LatLng (lat, lng)) =
-        "(" ++ showRadian lat ++ ", " ++ showRadian lng ++ ")"
+    showRadian = showLatLng showRadian
+    showDegree = showLatLng showDegree
 
 instance ShowAngle Zone where
     showRadian (Point x) = "Point " ++ showRadian x
@@ -61,6 +77,13 @@ instance ShowAngle Zone where
     showRadian (Conical x _ _) = "Conical " ++ showRadian x
     showRadian (Line x _) = "Line " ++ showRadian x
     showRadian (SemiCircle x _) = "Semicircle " ++ showRadian x
+
+    showDegree (Point x) = "Point " ++ showDegree (radToDegLL defEps x)
+    showDegree (Vector x _) = "Vector " ++ showDegree (radToDegLL defEps x)
+    showDegree (Cylinder x _) = "Cylinder " ++ showDegree (radToDegLL defEps x)
+    showDegree (Conical x _ _) = "Conical " ++ showDegree (radToDegLL defEps x)
+    showDegree (Line x _) = "Line " ++ showDegree (radToDegLL defEps x)
+    showDegree (SemiCircle x _) = "Semicircle " ++ showDegree (radToDegLL defEps x)
 
 newtype Deadline = Deadline Integer deriving (Eq, Ord, Show)
 newtype TimeOfDay = TimeOfDay Rational deriving (Eq, Ord, Show)

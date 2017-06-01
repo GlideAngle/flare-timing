@@ -67,7 +67,7 @@ toPointUnits title xs =
     testGroup title (f <$> xs)
     where
         f x =
-            HU.testCase (mconcat [ "distance ", showRadian x, " = earth radius" ]) $
+            HU.testCase (mconcat [ "distance ", showDegree x, " = earth radius" ]) $
                 FS.distancePointToPoint x
                     @?= TaskDistance earthRadius
 
