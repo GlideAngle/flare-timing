@@ -23,11 +23,11 @@ newtype ZonesTest = ZonesTest [Zone] deriving Show
 instance Monad m => SC.Serial m ZoneTest where
     series = ZoneTest <$>
         cons2 (\lat lng -> Point (LatLng (lat, lng)))
-        \/ cons3 (\lat lng b -> Vector (LatLng (lat, lng)) (Bearing b))
-        \/ cons3 (\lat lng r -> Cylinder (LatLng (lat, lng)) (Radius r))
-        \/ cons4 (\lat lng r i -> Conical (LatLng (lat, lng)) (Radius r) (Incline i))
-        \/ cons3 (\lat lng r -> Line (LatLng (lat, lng)) (Radius r))
-        \/ cons3 (\lat lng r -> SemiCircle (LatLng (lat, lng)) (Radius r))
+        \/ cons3 (\lat lng b -> Vector (Bearing b) (LatLng (lat, lng)))
+        \/ cons3 (\lat lng r -> Cylinder (Radius r) (LatLng (lat, lng)))
+        \/ cons4 (\lat lng r i -> Conical (Incline i) (Radius r) (LatLng (lat, lng)))
+        \/ cons3 (\lat lng r -> Line (Radius r) (LatLng (lat, lng)))
+        \/ cons3 (\lat lng r -> SemiCircle (Radius r) (LatLng (lat, lng)))
 
 instance Monad m => SC.Serial m ZonesTest where
     series = cons1 (\xs -> ZonesTest $ (\(ZoneTest x) -> x) <$> xs)
@@ -43,28 +43,28 @@ instance QC.Arbitrary ZoneTest where
                 lat <- arbitrary
                 lng <- arbitrary
                 b <- arbitrary
-                return $ Vector (LatLng (lat, lng)) (Bearing b)
+                return $ Vector (Bearing b) (LatLng (lat, lng))
             , do
                 lat <- arbitrary
                 lng <- arbitrary
                 r <- arbitrary
-                return $ Cylinder (LatLng (lat, lng)) (Radius r)
+                return $ Cylinder (Radius r) (LatLng (lat, lng))
             , do
                 lat <- arbitrary
                 lng <- arbitrary
                 r <- arbitrary
                 i <- arbitrary
-                return $ Conical (LatLng (lat, lng)) (Radius r) (Incline i)
+                return $ Conical (Incline i) (Radius r) (LatLng (lat, lng))
             , do
                 lat <- arbitrary
                 lng <- arbitrary
                 r <- arbitrary
-                return $ Line (LatLng (lat, lng)) (Radius r)
+                return $ Line (Radius r) (LatLng (lat, lng))
             , do
                 lat <- arbitrary
                 lng <- arbitrary
                 r <- arbitrary
-                return $ SemiCircle (LatLng (lat, lng)) (Radius r)
+                return $ SemiCircle (Radius r) (LatLng (lat, lng))
             ]
 
 instance QC.Arbitrary ZonesTest where

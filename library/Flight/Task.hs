@@ -29,6 +29,7 @@ module Flight.Task
     , distancePointToPoint
     , distanceHaversine
     , distanceHaversineF
+    , separatedZones
     ) where
 
 import Flight.Zone

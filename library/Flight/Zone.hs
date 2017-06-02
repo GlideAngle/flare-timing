@@ -18,6 +18,7 @@ module Flight.Zone
     , distancePointToPoint
     , distanceHaversine
     , distanceHaversineF
+    , separatedZones
     ) where
 
 import Data.List (intercalate)
@@ -31,11 +32,11 @@ newtype Bearing = Bearing Rational deriving (Eq, Ord, Show)
 
 data Zone
     = Point LatLng
-    | Vector LatLng Bearing
-    | Cylinder LatLng Radius
-    | Conical LatLng Radius Incline
-    | Line LatLng Radius
-    | SemiCircle LatLng Radius
+    | Vector Bearing LatLng
+    | Cylinder Radius LatLng
+    | Conical Incline Radius LatLng
+    | Line Radius LatLng
+    | SemiCircle Radius LatLng
     deriving (Eq, Show)
 
 class ShowAngle a where
@@ -50,7 +51,7 @@ showZones :: (Zone -> String) -> [Zone] -> String
 showZones f xs = intercalate ", " $ f <$> xs
 
 instance ShowAngle Rational where
-    showRadian x = show (fromRational x :: Double) ++ " rad"
+    showRadian x = show (fromRational x :: Double)
     showDegree x = show (fromRational x :: Double) ++ "°"
 
 showLatLng :: (Rational -> String) -> LatLng -> String
@@ -64,26 +65,38 @@ radToDegLL e (LatLng (lat, lng)) =
     LatLng (radToDeg e lat, radToDeg e lng)
 
 defEps :: Epsilon
-defEps = Epsilon $ 1 % 10000
+defEps = Epsilon $ 1 % 1000000000
 
 instance ShowAngle LatLng where
     showRadian = showLatLng showRadian
     showDegree = showLatLng showDegree
 
 instance ShowAngle Zone where
-    showRadian (Point x) = "Point " ++ showRadian x
-    showRadian (Vector x _) = "Vector " ++ showRadian x
-    showRadian (Cylinder x _) = "Cylinder " ++ showRadian x
-    showRadian (Conical x _ _) = "Conical " ++ showRadian x
-    showRadian (Line x _) = "Line " ++ showRadian x
-    showRadian (SemiCircle x _) = "Semicircle " ++ showRadian x
+    showRadian (Point x) =
+        "Point " ++ showRadian x
+    showRadian (Vector _ x) =
+        "Vector " ++ showRadian x
+    showRadian (Cylinder (Radius r) x) =
+        "Cylinder r=" ++ showRadian r ++ " " ++ showRadian x
+    showRadian (Conical _ (Radius r) x) =
+        "Conical r=" ++ showRadian r ++ " " ++ showRadian x
+    showRadian (Line (Radius r) x) =
+        "Line r=" ++ showRadian r ++ " " ++ showRadian x
+    showRadian (SemiCircle (Radius r) x) =
+        "Semicircle r=" ++ showRadian r ++ " " ++ showRadian x
 
-    showDegree (Point x) = "Point " ++ showDegree (radToDegLL defEps x)
-    showDegree (Vector x _) = "Vector " ++ showDegree (radToDegLL defEps x)
-    showDegree (Cylinder x _) = "Cylinder " ++ showDegree (radToDegLL defEps x)
-    showDegree (Conical x _ _) = "Conical " ++ showDegree (radToDegLL defEps x)
-    showDegree (Line x _) = "Line " ++ showDegree (radToDegLL defEps x)
-    showDegree (SemiCircle x _) = "Semicircle " ++ showDegree (radToDegLL defEps x)
+    showDegree (Point x) =
+        "Point " ++ showDegree (radToDegLL defEps x)
+    showDegree (Vector _ x) =
+        "Vector " ++ showDegree (radToDegLL defEps x)
+    showDegree (Cylinder (Radius r) x) =
+        "Cylinder r=" ++ showDegree r ++ " " ++ showDegree (radToDegLL defEps x)
+    showDegree (Conical _ (Radius r) x) =
+        "Conical r=" ++ showDegree r ++ " " ++ showDegree (radToDegLL defEps x)
+    showDegree (Line (Radius r) x) =
+        "Line r=" ++ showDegree r ++ " " ++ showDegree (radToDegLL defEps x)
+    showDegree (SemiCircle (Radius r) x) =
+        "Semicircle r=" ++ showDegree r ++ " " ++ showDegree (radToDegLL defEps x)
 
 newtype Deadline = Deadline Integer deriving (Eq, Ord, Show)
 newtype TimeOfDay = TimeOfDay Rational deriving (Eq, Ord, Show)
@@ -109,11 +122,11 @@ newtype Epsilon = Epsilon Rational deriving (Eq, Ord, Show)
 
 center :: Zone -> LatLng
 center (Point x) = x
-center (Vector x _) = x
-center (Cylinder x _) = x
-center (Conical x _ _) = x
-center (Line x _) = x
-center (SemiCircle x _) = x
+center (Vector _ x) = x
+center (Cylinder _ x) = x
+center (Conical _ _ x) = x
+center (Line _ x) = x
+center (SemiCircle _ x) = x
 
 earthRadius :: Rational
 earthRadius = 6371000
@@ -178,7 +191,28 @@ distancePointToPoint xs =
     where
         ys = center <$> xs
         unwrap (TaskDistance x) = x
-        f = (unwrap .) . distanceHaversineF
+        f = (unwrap .) . distanceHaversine defEps
 
 distanceEdgeToEdge :: [Zone] -> TaskDistance
 distanceEdgeToEdge _ = TaskDistance 0
+
+radius :: Zone -> Radius
+radius (Point _) = Radius 0
+radius (Vector _ _) = Radius 0
+radius (Cylinder x _) = x
+radius (Conical _ x _) = x
+radius (Line x _) = x
+radius (SemiCircle x _) = x
+
+separated :: Zone -> Zone -> Bool
+separated x y =
+    d > rxy
+    where
+        (Radius rx) = radius x
+        (Radius ry) = radius y
+        rxy = rx + ry
+        (TaskDistance d) = distancePointToPoint [x, y]
+
+separatedZones :: [Zone] -> Bool
+separatedZones xs =
+    and $ zipWith separated xs (tail xs)
