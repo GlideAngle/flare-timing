@@ -13,6 +13,7 @@ module Flight.Zone
     , StartGates(..)
     , Task(..)
     , TaskDistance(..)
+    , Epsilon(..)
     , earthRadius
     , distanceEdgeToEdge
     , distancePointToPoint
@@ -51,8 +52,8 @@ showZones :: (Zone -> String) -> [Zone] -> String
 showZones f xs = intercalate ", " $ f <$> xs
 
 instance ShowAngle Rational where
-    showRadian x = show (fromRational x :: Double)
-    showDegree x = show (fromRational x :: Double) ++ "°"
+    showRadian x = show x 
+    showDegree x = show x ++ "°"
 
 showLatLng :: (Rational -> String) -> LatLng -> String
 showLatLng f (LatLng (lat, lng))= "(" ++ f lat ++ ", " ++ f lng ++ ")"
@@ -160,7 +161,7 @@ distanceHaversineF (LatLng (xLat, xLng)) (LatLng (yLat, yLng)) =
 
 distanceHaversine :: Epsilon -> LatLng -> LatLng -> TaskDistance
 distanceHaversine (Epsilon eps) (LatLng (xLat, xLng)) (LatLng (yLat, yLng)) =
-    TaskDistance $ 6371000 * radDist 
+    TaskDistance $ earthRadius * radDist 
     where
         distLat :: Rational
         distLat = yLat - xLat
