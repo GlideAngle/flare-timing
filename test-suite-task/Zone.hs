@@ -246,7 +246,9 @@ semicircleDisjoint :: TestTree
 semicircleDisjoint = disjoint "Semicircle zones" ((fmap . fmap) semicircle radiiDisjoint)
 
 correct :: [Zone] -> TaskDistance -> Bool
-correct _ _ = False
+correct [] (TaskDistance d) = d == 0
+correct [_] (TaskDistance d) = d == 0
+correct _ (TaskDistance d) = d > 0
 
 distancePointToPoint :: ZonesTest -> Bool
 distancePointToPoint (ZonesTest xs) =

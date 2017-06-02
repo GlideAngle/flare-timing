@@ -28,12 +28,12 @@ units = testGroup
 
 scProps :: TestTree
 scProps = testGroup "(checked by SmallCheck)"
-    [ SC.testProperty "Zone distances are positive" distancePointToPoint
-    , SC.testProperty "Zone distances are positive" distanceEdgeToEdge
+    [ SC.testProperty "Zone distances, point-to-point, are not negative" distancePointToPoint
+    , SC.testProperty "Zone distances, edge-to-edge, are not negative" distanceEdgeToEdge
     ]
 
 qcProps :: TestTree
 qcProps = testGroup "(checked by QuickCheck)"
-    [ QC.testProperty "Zone distances are positive" distancePointToPoint
-    , SC.testProperty "Zone distances are positive" distanceEdgeToEdge
+    [ QC.testProperty "Zone distances, point-to-point, are not negative" distancePointToPoint
+    , SC.testProperty "Zone distances, edge-to-edge, are not negative" distanceEdgeToEdge
     ]
