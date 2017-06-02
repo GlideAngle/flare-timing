@@ -10,21 +10,21 @@ main :: IO ()
 main = defaultMain tests
 
 tests :: TestTree
-tests =
-    testGroup
-        "Tests"
+tests = testGroup "Tests"
         [ units
         , properties
         ]
 
 properties :: TestTree
-properties = testGroup "Properties" [scProps, qcProps]
+properties = testGroup "Properties"
+        [ scProps
+        , qcProps
+        ]
 
 units :: TestTree
-units = testGroup
-            "Units"
-            [ zoneUnits
-            ]
+units = testGroup "Units"
+        [ zoneUnits
+        ]
 
 scProps :: TestTree
 scProps = testGroup "(checked by SmallCheck)"
@@ -35,5 +35,5 @@ scProps = testGroup "(checked by SmallCheck)"
 qcProps :: TestTree
 qcProps = testGroup "(checked by QuickCheck)"
     [ QC.testProperty "Zone distances, point-to-point, are not negative" distancePointToPoint
-    , SC.testProperty "Zone distances, edge-to-edge, are not negative" distanceEdgeToEdge
+    , QC.testProperty "Zone distances, edge-to-edge, are not negative" distanceEdgeToEdge
     ]

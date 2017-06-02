@@ -195,7 +195,9 @@ distancePointToPoint xs =
         f = (unwrap .) . distanceHaversine defEps
 
 distanceEdgeToEdge :: [Zone] -> TaskDistance
-distanceEdgeToEdge _ = TaskDistance 0
+distanceEdgeToEdge [] = TaskDistance 0
+distanceEdgeToEdge [_] = TaskDistance 0
+distanceEdgeToEdge xs = distancePointToPoint xs
 
 radius :: Zone -> Radius
 radius (Point _) = Radius 0
