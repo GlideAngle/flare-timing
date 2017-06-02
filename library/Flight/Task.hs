@@ -33,3 +33,7 @@ module Flight.Task
     ) where
 
 import Flight.Zone
+import Flight.Geo
+import Flight.PointToPoint
+import Flight.EdgeToEdge
+import Flight.Separated

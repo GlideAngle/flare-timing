@@ -12,21 +12,14 @@ module Flight.Zone
     , Interval(..)
     , StartGates(..)
     , Task(..)
-    , TaskDistance(..)
-    , Epsilon(..)
-    , earthRadius
-    , distanceEdgeToEdge
-    , distancePointToPoint
-    , distanceHaversine
-    , distanceHaversineF
-    , separatedZones
     ) where
 
 import Data.List (intercalate)
 import Data.Ratio((%))
 import qualified Data.Number.FixedFunctions as F
 
-newtype LatLng = LatLng (Rational, Rational) deriving (Eq, Ord, Show)
+import Flight.Geo (LatLng(..), radToDeg, radToDegLL, defEps)
+
 newtype Radius = Radius Rational deriving (Eq, Ord, Show)
 newtype Incline = Incline Rational deriving (Eq, Ord, Show)
 newtype Bearing = Bearing Rational deriving (Eq, Ord, Show)
@@ -57,16 +50,6 @@ instance ShowAngle Rational where
 
 showLatLng :: (Rational -> String) -> LatLng -> String
 showLatLng f (LatLng (lat, lng))= "(" ++ f lat ++ ", " ++ f lng ++ ")"
-
-radToDeg :: Epsilon -> Rational -> Rational
-radToDeg (Epsilon eps) x = x * (180 % 1) / F.pi eps
-
-radToDegLL :: Epsilon -> LatLng -> LatLng
-radToDegLL e (LatLng (lat, lng)) =
-    LatLng (radToDeg e lat, radToDeg e lng)
-
-defEps :: Epsilon
-defEps = Epsilon $ 1 % 1000000000
 
 instance ShowAngle LatLng where
     showRadian = showLatLng showRadian
@@ -117,105 +100,3 @@ data Task
         , startGates :: StartGates
         , deadline :: Maybe Deadline
         } deriving Show
-
-newtype TaskDistance = TaskDistance Rational deriving (Eq, Ord, Show)
-newtype Epsilon = Epsilon Rational deriving (Eq, Ord, Show)
-
-center :: Zone -> LatLng
-center (Point x) = x
-center (Vector _ x) = x
-center (Cylinder _ x) = x
-center (Conical _ _ x) = x
-center (Line _ x) = x
-center (SemiCircle _ x) = x
-
-earthRadius :: Rational
-earthRadius = 6371000
-
-distanceHaversineF :: LatLng -> LatLng -> TaskDistance
-distanceHaversineF (LatLng (xLat, xLng)) (LatLng (yLat, yLng)) =
-    TaskDistance $ earthRadius * toRational radDist 
-    where
-        distLat :: Rational
-        distLat = yLat - xLat
-         
-        distLng :: Rational
-        distLng = yLng - xLng
-
-        haversine :: Rational -> Double
-        haversine x =
-            y * y
-            where
-                y :: Double
-                y = sin $ fromRational (x * (1 % 2))
-
-        a :: Double
-        a =
-            haversine distLat
-            + cos (fromRational xLat)
-            * cos (fromRational yLat)
-            * haversine distLng
-
-        radDist :: Double
-        radDist = 2 * atan2 (sqrt a) (sqrt $ 1 - a)
-
-distanceHaversine :: Epsilon -> LatLng -> LatLng -> TaskDistance
-distanceHaversine (Epsilon eps) (LatLng (xLat, xLng)) (LatLng (yLat, yLng)) =
-    TaskDistance $ earthRadius * radDist 
-    where
-        distLat :: Rational
-        distLat = yLat - xLat
-         
-        distLng :: Rational
-        distLng = yLng - xLng
-
-        haversine :: Rational -> Rational
-        haversine x =
-            y * y
-            where
-                y :: Rational
-                y = F.sin eps (x * (1 % 2))
-
-        a :: Rational
-        a =
-            haversine distLat
-            + F.cos eps xLat
-            * F.cos eps yLat
-            * haversine distLng
-
-        radDist :: Rational
-        radDist = 2 * F.atan eps ((F.sqrt eps a) / (F.sqrt eps $ 1 - a))
-
-distancePointToPoint :: [Zone] -> TaskDistance
-distancePointToPoint xs =
-    TaskDistance $ sum $ zipWith f ys (tail ys)
-    where
-        ys = center <$> xs
-        unwrap (TaskDistance x) = x
-        f = (unwrap .) . distanceHaversine defEps
-
-distanceEdgeToEdge :: [Zone] -> TaskDistance
-distanceEdgeToEdge [] = TaskDistance 0
-distanceEdgeToEdge [_] = TaskDistance 0
-distanceEdgeToEdge xs = distancePointToPoint xs
-
-radius :: Zone -> Radius
-radius (Point _) = Radius 0
-radius (Vector _ _) = Radius 0
-radius (Cylinder x _) = x
-radius (Conical _ x _) = x
-radius (Line x _) = x
-radius (SemiCircle x _) = x
-
-separated :: Zone -> Zone -> Bool
-separated x y =
-    d > rxy
-    where
-        (Radius rx) = radius x
-        (Radius ry) = radius y
-        rxy = rx + ry
-        (TaskDistance d) = distancePointToPoint [x, y]
-
-separatedZones :: [Zone] -> Bool
-separatedZones xs =
-    and $ zipWith separated xs (tail xs)
