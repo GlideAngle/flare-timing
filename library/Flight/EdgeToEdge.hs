@@ -7,6 +7,7 @@
 
 module Flight.EdgeToEdge
     ( Samples(..)
+    , Tolerance(..)
     , circumSample
     , distanceEdgeToEdge
     ) where
@@ -25,6 +26,8 @@ import Data.Graph.Inductive.PatriciaTree (Gr)
 import Flight.Geo (LatLng(..), Epsilon(..), earthRadius, defEps)
 import Flight.Zone (Zone(..), Radius(..))
 import Flight.PointToPoint (TaskDistance(..), distancePointToPoint)
+
+newtype TrueCourse = TrueCourse Rational deriving (Eq, Ord, Show)
 
 distanceEdgeToEdge :: [Zone] -> (TaskDistance, [LatLng])
 distanceEdgeToEdge [] = (TaskDistance 0, [])
@@ -62,7 +65,7 @@ buildGraph zones =
     mkGraph flatNodes flatEdges
     where
         nodes' :: [[LatLng]]
-        nodes' = sample (Samples 10) <$> zones
+        nodes' = sample (Samples 10) (Tolerance 1) <$> zones
 
         len :: Int
         len = sum $ map length nodes'
@@ -89,21 +92,22 @@ buildGraph zones =
         g xs ys = [ f x y | x <- xs, y <- ys]
 
 newtype Samples = Samples Integer deriving (Eq, Ord, Show)
+newtype Tolerance = Tolerance Rational deriving (Eq, Ord, Show)
 
-sample :: Samples -> Zone -> [LatLng]
-sample _ (Point x) = [x]
-sample _ (Vector _ x) = [x]
-sample n (Cylinder r x) = fst $ circumSample n r x
-sample n (Conical _ r x) = fst $ circumSample n r x
-sample n (Line r x) = fst $ circumSample n r x
-sample n (SemiCircle r x) = fst $ circumSample n r x
+sample :: Samples -> Tolerance -> Zone -> [LatLng]
+sample _ _ (Point x) = [x]
+sample _ _ (Vector _ x) = [x]
+sample n t (Cylinder r x) = fst $ circumSample n t r x
+sample n t (Conical _ r x) = fst $ circumSample n t r x
+sample n t (Line r x) = fst $ circumSample n t r x
+sample n t (SemiCircle r x) = fst $ circumSample n t r x
  
 -- | SEE: http://stackoverflow.com/questions/33325370/why-cant-i-pattern-match-against-a-ratio-in-haskell
 pattern (:%) :: forall t. t -> t -> Ratio t
 pattern num :% denom <- (\x -> (numerator x, denominator x) -> (num, denom))
 
-circum :: Epsilon -> Radius -> LatLng -> Rational -> LatLng
-circum _ (Radius rRadius) (LatLng (rlat, rlng)) rtc =
+circum :: LatLng -> Epsilon -> Radius -> TrueCourse -> LatLng
+circum (LatLng (rlat, rlng)) _ (Radius rRadius) (TrueCourse rtc) =
     LatLng (toRational lat', toRational lng')
     where
         lat :: Double
@@ -131,17 +135,37 @@ circum _ (Radius rRadius) (LatLng (rlat, rlng)) rtc =
         d = radius / bigR
 
 -- | SEE: http://www.edwilliams.org/avform.htm#LL
-circumSample :: Samples -> Radius -> LatLng -> ([LatLng], [Double])
-circumSample (Samples samples) radius center =
-    unzip zs
+circumSample :: Samples -> Tolerance -> Radius -> LatLng -> ([LatLng], [Double])
+circumSample (Samples samples) (Tolerance tolerance) r@(Radius limitRadius) center =
+    unzip ys
     where
         (Epsilon eps) = defEps
 
-        xs :: [Rational]
-        xs = [ ((2 * n) % samples) * F.pi eps | n <- [0 .. samples] ]
+        xs :: [TrueCourse]
+        xs = [ TrueCourse $ ((2 * n) % samples) * F.pi eps | n <- [0 .. samples] ]
 
-        ys = circum defEps radius center <$> xs
-        zs = (\x -> (x, f $ distancePointToPoint [Point center, Point x])) <$> ys
+        circumR = circum center defEps
 
-        f :: TaskDistance -> Double
-        f (TaskDistance d) = fromRational d
+        ys = getClose 10 (Radius 0) (circumR r) <$> xs
+
+        getClose :: Int -> Radius -> (TrueCourse -> LatLng) -> TrueCourse -> (LatLng, Double)
+        getClose trys (Radius offset) f x
+            | trys <= 0 = (y, dist)
+            | tolerance <= 0 = (y, dist)
+            | limitRadius <= tolerance = (y, dist)
+            | otherwise =
+                case d `compare` limitRadius of
+                     EQ -> (y, dist)
+                     GT ->
+                        let offset' = offset - (d - limitRadius)
+                            f' = circumR (Radius $ limitRadius + offset')
+                        in getClose (trys - 1) (Radius offset') f' x
+                     LT ->
+                        if d > limitRadius - tolerance then (y, dist) else
+                            let offset' = offset + (limitRadius - d)
+                                f' = circumR (Radius $ limitRadius + offset')
+                            in getClose (trys - 1) (Radius offset') f' x
+            where
+                y = f x
+                (TaskDistance d) = distancePointToPoint [Point center, Point y]
+                dist = fromRational d

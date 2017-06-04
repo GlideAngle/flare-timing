@@ -32,6 +32,7 @@ module Flight.Task
     , separatedZones
     -- * Zone edge-to-edge shortest path.
     , Samples(..)
+    , Tolerance(..)
     , circumSample
     , distanceEdgeToEdge
     ) where
