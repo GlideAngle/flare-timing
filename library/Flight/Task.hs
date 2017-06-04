@@ -30,6 +30,10 @@ module Flight.Task
     , distanceHaversine
     , distanceHaversineF
     , separatedZones
+    -- * Zone edge-to-edge shortest path.
+    , Samples(..)
+    , circumSample
+    , distanceEdgeToEdge
     ) where
 
 import Flight.Zone

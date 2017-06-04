@@ -5,7 +5,11 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE RankNTypes #-}
 
-module Flight.EdgeToEdge where
+module Flight.EdgeToEdge
+    ( Samples(..)
+    , circumSample
+    , distanceEdgeToEdge
+    ) where
 
 import Data.Ratio (Ratio, (%), numerator, denominator)
 import qualified Data.Number.FixedFunctions as F

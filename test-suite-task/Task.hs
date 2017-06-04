@@ -5,6 +5,7 @@ import Test.Tasty.SmallCheck as SC
 import Test.Tasty.QuickCheck as QC
 
 import Zone
+import EdgeToEdge
 
 main :: IO ()
 main = defaultMain tests
@@ -24,6 +25,7 @@ properties = testGroup "Properties"
 units :: TestTree
 units = testGroup "Units"
         [ zoneUnits
+        , edgeToEdgeUnits
         ]
 
 scProps :: TestTree
