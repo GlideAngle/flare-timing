@@ -23,15 +23,15 @@ center (Conical _ _ x) = x
 center (Line _ x) = x
 center (SemiCircle _ x) = x
 
+diffLL :: LatLng -> LatLng -> (Rational, Rational)
+diffLL (LatLng (xLat, xLng)) (LatLng (yLat, yLng)) =
+    (yLat - xLat, yLng - xLng)
+
 distanceHaversineF :: LatLng -> LatLng -> TaskDistance
-distanceHaversineF (LatLng (xLat, xLng)) (LatLng (yLat, yLng)) =
+distanceHaversineF xLL@(LatLng (xLat, _)) yLL@(LatLng (yLat, _)) =
     TaskDistance $ earthRadius * toRational radDist 
     where
-        distLat :: Rational
-        distLat = yLat - xLat
-         
-        distLng :: Rational
-        distLng = yLng - xLng
+        (dLat, dLng) = diffLL xLL yLL
 
         haversine :: Rational -> Double
         haversine x =
@@ -42,23 +42,19 @@ distanceHaversineF (LatLng (xLat, xLng)) (LatLng (yLat, yLng)) =
 
         a :: Double
         a =
-            haversine distLat
+            haversine dLat
             + cos (fromRational xLat)
             * cos (fromRational yLat)
-            * haversine distLng
+            * haversine dLng
 
         radDist :: Double
         radDist = 2 * atan2 (sqrt a) (sqrt $ 1 - a)
 
 distanceHaversine :: Epsilon -> LatLng -> LatLng -> TaskDistance
-distanceHaversine (Epsilon eps) (LatLng (xLat, xLng)) (LatLng (yLat, yLng)) =
+distanceHaversine (Epsilon eps) xLL@(LatLng (xLat, _)) yLL@(LatLng (yLat, _)) =
     TaskDistance $ earthRadius * radDist 
     where
-        distLat :: Rational
-        distLat = yLat - xLat
-         
-        distLng :: Rational
-        distLng = yLng - xLng
+        (dLat, dLng) = diffLL xLL yLL
 
         haversine :: Rational -> Rational
         haversine x =
@@ -69,13 +65,13 @@ distanceHaversine (Epsilon eps) (LatLng (xLat, xLng)) (LatLng (yLat, yLng)) =
 
         a :: Rational
         a =
-            haversine distLat
+            haversine dLat
             + F.cos eps xLat
             * F.cos eps yLat
-            * haversine distLng
+            * haversine dLng
 
         radDist :: Rational
-        radDist = 2 * F.atan eps ((F.sqrt eps a) / (F.sqrt eps $ 1 - a))
+        radDist = 2 * F.atan eps (F.sqrt eps a / F.sqrt eps (1 - a))
 
 distancePointToPoint :: [Zone] -> TaskDistance
 distancePointToPoint xs =

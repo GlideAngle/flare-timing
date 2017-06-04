@@ -15,10 +15,8 @@ module Flight.Zone
     ) where
 
 import Data.List (intercalate)
-import Data.Ratio((%))
-import qualified Data.Number.FixedFunctions as F
 
-import Flight.Geo (LatLng(..), radToDeg, radToDegLL, defEps)
+import Flight.Geo (LatLng(..), radToDegLL, defEps)
 
 newtype Radius = Radius Rational deriving (Eq, Ord, Show)
 newtype Incline = Incline Rational deriving (Eq, Ord, Show)
@@ -45,7 +43,7 @@ showZones :: (Zone -> String) -> [Zone] -> String
 showZones f xs = intercalate ", " $ f <$> xs
 
 instance ShowAngle Rational where
-    showRadian x = show x 
+    showRadian = show
     showDegree x = show x ++ "°"
 
 showLatLng :: (Rational -> String) -> LatLng -> String

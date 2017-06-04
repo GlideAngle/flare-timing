@@ -40,42 +40,31 @@ instance Monad m => SC.Serial m ZonesTest where
 
 instance QC.Arbitrary ZoneTest where
     arbitrary = ZoneTest <$> do
-        x <- QC.frequency $
-                zip
-                    [1, 1, 4, 1, 1, 1]
-                    [ do
-                        lat <- arbitrary
-                        lng <- arbitrary
-                        return $ Point (LatLng (lat, lng))
-                    , do
-                        lat <- arbitrary
-                        lng <- arbitrary
-                        b <- arbitrary
-                        return $ Vector (Bearing b) (LatLng (lat, lng))
-                    , do
-                        lat <- arbitrary
-                        lng <- arbitrary
-                        (QC.Positive r) <- arbitrary
-                        return $ Cylinder (Radius r) (LatLng (lat, lng))
-                    , do
-                        lat <- arbitrary
-                        lng <- arbitrary
-                        (QC.Positive r) <- arbitrary
-                        i <- arbitrary
-                        return $ Conical (Incline i) (Radius r) (LatLng (lat, lng))
-                    , do
-                        lat <- arbitrary
-                        lng <- arbitrary
-                        (QC.Positive r) <- arbitrary
-                        return $ Line (Radius r) (LatLng (lat, lng))
-                    , do
-                        lat <- arbitrary
-                        lng <- arbitrary
-                        (QC.Positive r) <- arbitrary
-                        return $ SemiCircle (Radius r) (LatLng (lat, lng))
-                    ]
+        lat <- arbitrary
+        lng <- arbitrary
+        let ll = LatLng (lat, lng)
 
-        return x
+        QC.frequency $
+            zip
+                [1, 1, 4, 1, 1, 1]
+                [ return $ Point ll
+                , do
+                    b <- arbitrary
+                    return $ Vector (Bearing b) ll
+                , do
+                    (QC.Positive r) <- arbitrary
+                    return $ Cylinder (Radius r) ll
+                , do
+                    (QC.Positive r) <- arbitrary
+                    i <- arbitrary
+                    return $ Conical (Incline i) (Radius r) ll
+                , do
+                    (QC.Positive r) <- arbitrary
+                    return $ Line (Radius r) ll
+                , do
+                    (QC.Positive r) <- arbitrary
+                    return $ SemiCircle (Radius r) ll
+                ]
 
 instance QC.Arbitrary ZonesTest where
     arbitrary = do

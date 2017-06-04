@@ -64,7 +64,7 @@ buildGraph zones =
         len = sum $ map length nodes'
 
         iiNodes :: [[(Node, LatLng)]]
-        iiNodes = (zip [1 .. ]) <$> nodes'
+        iiNodes = zip [1 .. ] <$> nodes'
 
         iNodes :: [[(Node, LatLng)]]
         iNodes = zipWith (\i xs -> first (\x -> x + i * len) <$> xs) [1 .. ] iiNodes
@@ -79,7 +79,7 @@ buildGraph zones =
         flatNodes = concat iNodes
 
         f :: (Node, LatLng) -> (Node, LatLng) -> LEdge TaskDistance
-        f (i, x) (j, y) = (i, j, distancePointToPoint [(Point x), (Point y)])
+        f (i, x) (j, y) = (i, j, distancePointToPoint [Point x, Point y])
 
         g :: [(Node, LatLng)] -> [(Node, LatLng)] -> [LEdge TaskDistance]
         g xs ys = [ f x y | x <- xs, y <- ys]
@@ -122,7 +122,7 @@ circum _ (Radius rRadius) (LatLng (rlat, rlng)) rtc =
 
         a = lng - dlng + pi 
         b = 2 * pi 
-        lng' = (mod' a b) - pi
+        lng' = mod' a b - pi
 
         d = radius / bigR
 
@@ -134,7 +134,7 @@ circumSample (Samples samples) radius center =
         (Epsilon eps) = defEps
 
         xs :: [Rational]
-        xs = [ ((2 * n) % samples) * (F.pi eps) | n <- [0 .. samples] ]
+        xs = [ ((2 * n) % samples) * F.pi eps | n <- [0 .. samples] ]
 
         ys = circum defEps radius center <$> xs
         zs = (\x -> (x, f $ distancePointToPoint [Point center, Point x])) <$> ys

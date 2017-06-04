@@ -181,8 +181,8 @@ epsM = 2 % 1 - 1 % 100000000
 
 radiiTouching :: [[Pt]]
 radiiTouching =
-    [ [ (0, 0 + epsM), (0, 0) ]
-    , [ (0, 0 - epsM), (0, 0) ]
+    [ [ (0, epsM), (0, 0) ]
+    , [ (0, negate epsM), (0, 0) ]
     ]
 
 cylinderTouching :: TestTree
@@ -214,8 +214,8 @@ eps = 2 % 1 + 1 % 100000000
 
 ptsDisjoint :: [[Pt]]
 ptsDisjoint =
-    [ [ (0, 0 + eps), (0, 0) ]
-    , [ (0, 0 - eps), (1, 0) ]
+    [ [ (0, eps), (0, 0) ]
+    , [ (0, negate eps), (1, 0) ]
     ]
 
 epsR :: Rational
@@ -223,8 +223,8 @@ epsR = 2 % 1 + 1 % 100000000
 
 radiiDisjoint :: [[Pt]]
 radiiDisjoint =
-    [ [ (0, 0 + epsR), (0, 0) ]
-    , [ (0, 0 - epsR), (0, 0) ]
+    [ [ (0, epsR), (0, 0) ]
+    , [ (0, negate epsR), (0, 0) ]
     ]
 
 pointDisjoint :: TestTree
