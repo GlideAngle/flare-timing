@@ -6,10 +6,10 @@ import Flight.PointToPoint (TaskDistance(..), distancePointToPoint)
 radius :: Zone -> Radius
 radius (Point _) = Radius 0
 radius (Vector _ _) = Radius 0
-radius (Cylinder x _) = x
-radius (Conical _ x _) = x
-radius (Line x _) = x
-radius (SemiCircle x _) = x
+radius (Cylinder r _) = r
+radius (Conical _ r _) = r
+radius (Line r _) = r
+radius (SemiCircle r _) = r
 
 separated :: Zone -> Zone -> Bool
 separated x y =

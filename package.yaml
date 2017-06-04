@@ -30,6 +30,7 @@ library:
   dependencies:
   - base >=4.5 && <5
   - numbers
+  - fgl
   source-dirs: library
   exposed-modules:
   - Flight.Task
@@ -48,6 +49,7 @@ tests:
     - base
     - hlint
     - numbers
+    - fgl
     ghc-options:
     - -rtsopts
     - -threaded
@@ -60,6 +62,7 @@ tests:
     dependencies:
     - base
     - numbers
+    - fgl
     - tasty
     - tasty-hunit
     - tasty-quickcheck

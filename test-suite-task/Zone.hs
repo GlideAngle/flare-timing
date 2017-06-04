@@ -256,4 +256,4 @@ distancePointToPoint (ZonesTest xs) =
 
 distanceEdgeToEdge :: ZonesTest -> Bool
 distanceEdgeToEdge (ZonesTest xs) =
-    correct xs $ FS.distanceEdgeToEdge xs
+    (\(d, _) -> correct xs d) $ FS.distanceEdgeToEdge xs
