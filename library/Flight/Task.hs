@@ -30,6 +30,8 @@ module Flight.Task
     , distanceHaversine
     , distanceHaversineF
     , separatedZones
+    , center
+    , radius
     -- * Zone edge-to-edge shortest path.
     , Samples(..)
     , Tolerance(..)

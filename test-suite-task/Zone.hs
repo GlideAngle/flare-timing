@@ -21,6 +21,7 @@ import Flight.Task
     , Samples(..)
     , Tolerance(..)
     , earthRadius
+    , center
     )
 
 import TestNewtypes
@@ -252,14 +253,27 @@ lineDisjoint = disjoint "Line zones" ((fmap . fmap) line radiiDisjoint)
 semicircleDisjoint :: TestTree
 semicircleDisjoint = disjoint "Semicircle zones" ((fmap . fmap) semicircle radiiDisjoint)
 
-correct :: [Zone] -> TaskDistance -> Bool
-correct [] (TaskDistance d) = d == 0
-correct [_] (TaskDistance d) = d == 0
-correct _ (TaskDistance d) = d > 0
+correctPointToPoint :: [Zone] -> TaskDistance -> Bool
+correctPointToPoint [] (TaskDistance d) = d == 0
+correctPointToPoint [_] (TaskDistance d) = d == 0
+correctPointToPoint xs (TaskDistance d)
+    | and $ map (== head ys) (tail ys) = d == 0
+    | otherwise = d > 0
+    where
+        ys = center <$> xs
+
+correctEdgeToEdge :: [Zone] -> TaskDistance -> Bool
+correctEdgeToEdge [] (TaskDistance d) = d == 0
+correctEdgeToEdge [_] (TaskDistance d) = d == 0
+correctEdgeToEdge xs (TaskDistance d)
+    | and $ map (== head ys) (tail ys) = d == 0
+    | otherwise = d > 0
+    where
+        ys = center <$> xs
 
 distancePointToPoint :: ZonesTest -> Bool
 distancePointToPoint (ZonesTest xs) =
-    correct xs $ FS.distancePointToPoint xs
+    correctPointToPoint xs $ FS.distancePointToPoint xs
 
 samples :: Samples
 samples = Samples 10
@@ -269,7 +283,7 @@ m1 = Tolerance 1
 
 distanceEdgeToEdge :: ZonesTest -> Bool
 distanceEdgeToEdge (ZonesTest xs) =
-    (\(d, _) -> correct xs d) $ FS.distanceEdgeToEdge samples m1 xs
+    (\(d, _) -> correctEdgeToEdge xs d) $ FS.distanceEdgeToEdge samples m1 xs
 
 distanceLess :: ZonesTest -> Bool
 distanceLess (ZonesTest xs) =

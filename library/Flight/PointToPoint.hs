@@ -11,17 +11,9 @@ import Data.Ratio((%))
 import qualified Data.Number.FixedFunctions as F
 
 import Flight.Geo (LatLng(..), Epsilon(..), earthRadius, defEps)
-import Flight.Zone (Zone(..))
+import Flight.Zone (Zone(..), center)
 
 newtype TaskDistance = TaskDistance Rational deriving (Eq, Ord, Num, Real, Show)
-
-center :: Zone -> LatLng
-center (Point x) = x
-center (Vector _ x) = x
-center (Cylinder _ x) = x
-center (Conical _ _ x) = x
-center (Line _ x) = x
-center (SemiCircle _ x) = x
 
 diffLL :: LatLng -> LatLng -> (Rational, Rational)
 diffLL (LatLng (xLat, xLng)) (LatLng (yLat, yLng)) =

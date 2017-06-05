@@ -37,16 +37,17 @@ scProps = testGroup "(checked by SmallCheck)"
 
 qcProps :: TestTree
 qcProps = testGroup "(checked by QuickCheck)"
-    -- WARNING: Failing test.
-    --        *** Failed! Falsifiable (after 1 test):
-    --        ZonesTest [Cylinder (Radius (947018672917 % 356822369800)) (LatLng (0 % 1,0 % 1)),Cylinder (Radius (1511173171283 % 3812845238761)) (LatLng (0 % 1,0 % 1)),Conical (Incline (0 % 1)) (Radius (2586691890764 % 3837004734663)) (LatLng (0 % 1,0 % 1)),Cylinder (Radius (184730680699 % 4424891088552)) (LatLng (0 % 1,0 % 1)),SemiCircle (Radius (4314968157782 % 922757368359)) (LatLng (0 % 1,0 % 1)),Cylinder (Radius (9791138992243 % 9884230385346)) (LatLng (0 % 1,0 % 1)),Cylinder (Radius (928961456620 % 2511702855613)) (LatLng (0 % 1,0 % 1))]
-    --        Use --quickcheck-replay '0 TFGenR 0000003D5B9F183100000000004C4B40000000000000E2350003C94B422B5C00 0 1 1 0' to reproduce.
     [ QC.testProperty "Zone distances, point-to-point, are not negative" distancePointToPoint
+
+    -- WARNING: Failing test.
+--        *** Failed! Falsifiable (after 1 test):
+--        ZonesTest [Cylinder (Radius (1495751350164 % 1810180075861)) (LatLng (0 % 1,0 % 1)),Cylinder (Radius (2530834715266 % 1473529153461)) (LatLng (0 % 1,0 % 1)),Cylinder (Radius (3149546472136 % 385110902919)) (LatLng (0 % 1,0 % 1))]
+--        Use --quickcheck-replay '0 TFGenR 00000085AEFF7CA50000000000989680000000000000E2350004D90169CBC800 0 2 2 0' to reproduce.
     , QC.testProperty "Zone distances, edge-to-edge, are not negative" distanceEdgeToEdge
 
     -- WARNING: Failing test.
-    --        *** Failed! Falsifiable (after 1 test):
-    --        ZonesTest [SemiCircle (Radius (3873597955179 % 1776524623787)) (LatLng (0 % 1,0 % 1)),Vector (Bearing (1468010718739 % 1436033836632)) (LatLng (0 % 1,0 % 1)),Vector (Bearing (4244134843206 % 8855629438511)) (LatLng (0 % 1,0 % 1)),Cylinder (Radius (2786132183137 % 1369755534631)) (LatLng (0 % 1,0 % 1)),SemiCircle (Radius (8218669047391 % 8624143127058)) (LatLng (0 % 1,0 % 1)),Cylinder (Radius (4977706473871 % 690668771128)) (LatLng (0 % 1,0 % 1)),Cylinder (Radius (9515108365273 % 3927980572893)) (LatLng (0 % 1,0 % 1))]
-    --        Use --quickcheck-replay '0 TFGenR 0000003D5B9F183100000000004C4B40000000000000E2350003C94B422B5C00 0 4 3 0' to reproduce.
+--        *** Failed! Falsifiable (after 1 test):
+--        ZonesTest [Cylinder (Radius (3431954750077 % 4838809452999)) (LatLng (0 % 1,0 % 1)),SemiCircle (Radius (8673959593932 % 6093521227033)) (LatLng (0 % 1,0 % 1)),Cylinder (Radius (6204125052028 % 8452800444999)) (LatLng (0 % 1,0 % 1)),Cylinder (Radius (2463177115345 % 7909999292238)) (LatLng (0 % 1,0 % 1)),Point (LatLng (0 % 1,0 % 1)),Cylinder (Radius ( 3607924760267 % 2236736149380)) (LatLng (0 % 1,0 % 1))]
+--        Use --quickcheck-replay '0 TFGenR 00000085AEFF7CA50000000000989680000000000000E2350004D90169CBC800 0 4 3 0' to reproduce.
     , QC.testProperty "Zone distances, edge-to-edge are less or equal to point-to-point" distanceLess
     ]

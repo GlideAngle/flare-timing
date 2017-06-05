@@ -12,6 +12,8 @@ module Flight.Zone
     , Interval(..)
     , StartGates(..)
     , Task(..)
+    , center
+    , radius
     ) where
 
 import Data.List (intercalate)
@@ -30,6 +32,22 @@ data Zone
     | Line Radius LatLng
     | SemiCircle Radius LatLng
     deriving (Eq, Show)
+
+center :: Zone -> LatLng
+center (Point x) = x
+center (Vector _ x) = x
+center (Cylinder _ x) = x
+center (Conical _ _ x) = x
+center (Line _ x) = x
+center (SemiCircle _ x) = x
+
+radius :: Zone -> Radius
+radius (Point _) = Radius 0
+radius (Vector _ _) = Radius 0
+radius (Cylinder r _) = r
+radius (Conical _ r _) = r
+radius (Line r _) = r
+radius (SemiCircle r _) = r
 
 class ShowAngle a where
     showRadian :: a -> String
