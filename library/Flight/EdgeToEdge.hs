@@ -84,10 +84,7 @@ buildGraph zones =
         -- edges within a cylinder as well as edges to the next cylinder.
         g :: [(Node, LatLng)] -> [(Node, LatLng)] -> [LEdge TaskDistance]
         g xs ys =
-            concat
-                [ [ f x1 x2 | x1 <- xs, x2 <- xs ]
-                , [ f x y | x <- xs, y <- ys]
-                ]
+            [ f x1 x2 | x1 <- xs, x2 <- xs ] ++ [ f x y | x <- xs, y <- ys]
 
 newtype Samples = Samples Integer deriving (Eq, Ord, Show)
 newtype Tolerance = Tolerance Rational deriving (Eq, Ord, Show)
