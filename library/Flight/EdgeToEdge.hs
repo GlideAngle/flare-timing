@@ -19,38 +19,41 @@ import Data.Graph.Inductive.PatriciaTree (Gr)
 import Flight.Geo (LatLng(..), Epsilon(..), earthRadius, defEps)
 import Flight.Zone (Zone(..), Radius(..))
 import Flight.PointToPoint (TaskDistance(..), distancePointToPoint)
+import Flight.Separated (separatedZones)
 
 newtype TrueCourse = TrueCourse Rational deriving (Eq, Ord, Show)
 
 distanceEdgeToEdge :: Samples -> Tolerance -> [Zone] -> (TaskDistance, [LatLng])
 distanceEdgeToEdge _ _ [] = (TaskDistance 0, [])
 distanceEdgeToEdge _ _ [_] = (TaskDistance 0, [])
-distanceEdgeToEdge samples tolerance xs =
-    (fromMaybe (TaskDistance 0) dist, ys)
-    where
-        gr :: Gr LatLng TaskDistance
-        gr = buildGraph samples tolerance xs
+distanceEdgeToEdge samples tolerance xs
+    | not $ separatedZones xs = (TaskDistance 0, [])
+    | otherwise =
+        (fromMaybe (TaskDistance 0) dist, ys)
+        where
+            gr :: Gr LatLng TaskDistance
+            gr = buildGraph samples tolerance xs
 
-        (startNode, endNode) = nodeRange gr
+            (startNode, endNode) = nodeRange gr
 
-        spt :: LRTree TaskDistance
-        spt = spTree startNode gr
+            spt :: LRTree TaskDistance
+            spt = spTree startNode gr
 
-        dist :: Maybe TaskDistance
-        dist = getDistance endNode spt
+            dist :: Maybe TaskDistance
+            dist = getDistance endNode spt
 
-        ps :: Path
-        ps = getLPathNodes endNode spt
+            ps :: Path
+            ps = getLPathNodes endNode spt
 
-        ys :: [LatLng]
-        ys =
-            catMaybes $
-            (\p ->
-                case match p gr of
-                     (Nothing, _) -> Nothing
-                     (Just (_, _, latlng, _), _) -> Just latlng
-            )
-            <$> ps
+            ys :: [LatLng]
+            ys =
+                catMaybes $
+                (\p ->
+                    case match p gr of
+                         (Nothing, _) -> Nothing
+                         (Just (_, _, latlng, _), _) -> Just latlng
+                )
+                <$> ps
 
 buildGraph :: Samples -> Tolerance -> [Zone] -> Gr LatLng TaskDistance
 buildGraph samples tolerance zones =

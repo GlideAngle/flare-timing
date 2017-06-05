@@ -1,7 +1,7 @@
 module Zone
     ( zoneUnits
-    , distancePointToPoint
-    , distanceEdgeToEdge
+    , distancePoint
+    , distanceEdge
     , distanceLess
     ) where
 
@@ -22,6 +22,7 @@ import Flight.Task
     , Tolerance(..)
     , earthRadius
     , center
+    , separatedZones
     )
 
 import TestNewtypes
@@ -253,27 +254,28 @@ lineDisjoint = disjoint "Line zones" ((fmap . fmap) line radiiDisjoint)
 semicircleDisjoint :: TestTree
 semicircleDisjoint = disjoint "Semicircle zones" ((fmap . fmap) semicircle radiiDisjoint)
 
-correctPointToPoint :: [Zone] -> TaskDistance -> Bool
-correctPointToPoint [] (TaskDistance d) = d == 0
-correctPointToPoint [_] (TaskDistance d) = d == 0
-correctPointToPoint xs (TaskDistance d)
+correctPoint :: [Zone] -> TaskDistance -> Bool
+correctPoint [] (TaskDistance d) = d == 0
+correctPoint [_] (TaskDistance d) = d == 0
+correctPoint xs (TaskDistance d)
     | and $ map (== head ys) (tail ys) = d == 0
     | otherwise = d > 0
     where
         ys = center <$> xs
 
-correctEdgeToEdge :: [Zone] -> TaskDistance -> Bool
-correctEdgeToEdge [] (TaskDistance d) = d == 0
-correctEdgeToEdge [_] (TaskDistance d) = d == 0
-correctEdgeToEdge xs (TaskDistance d)
+correctEdge :: [Zone] -> TaskDistance -> Bool
+correctEdge [] (TaskDistance d) = d == 0
+correctEdge [_] (TaskDistance d) = d == 0
+correctEdge xs (TaskDistance d)
     | and $ map (== head ys) (tail ys) = d == 0
+    | not $ separatedZones xs = d == 0
     | otherwise = d > 0
     where
         ys = center <$> xs
 
-distancePointToPoint :: ZonesTest -> Bool
-distancePointToPoint (ZonesTest xs) =
-    correctPointToPoint xs $ FS.distancePointToPoint xs
+distancePoint :: ZonesTest -> Bool
+distancePoint (ZonesTest xs) =
+    correctPoint xs $ FS.distancePointToPoint xs
 
 samples :: Samples
 samples = Samples 10
@@ -281,9 +283,9 @@ samples = Samples 10
 m1 :: Tolerance
 m1 = Tolerance 1
 
-distanceEdgeToEdge :: ZonesTest -> Bool
-distanceEdgeToEdge (ZonesTest xs) =
-    (\(d, _) -> correctEdgeToEdge xs d) $ FS.distanceEdgeToEdge samples m1 xs
+distanceEdge :: ZonesTest -> Bool
+distanceEdge (ZonesTest xs) =
+    (\(d, _) -> correctEdge xs d) $ FS.distanceEdgeToEdge samples m1 xs
 
 distanceLess :: ZonesTest -> Bool
 distanceLess (ZonesTest xs) =

@@ -37,6 +37,8 @@ module Flight.Task
     , Tolerance(..)
     , circumSample
     , distanceEdgeToEdge
+    -- * Zone separation.
+    , separatedZones
     ) where
 
 import Flight.Zone
