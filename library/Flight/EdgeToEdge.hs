@@ -65,7 +65,7 @@ buildGraph zones =
     mkGraph flatNodes flatEdges
     where
         nodes' :: [[LatLng]]
-        nodes' = sample (Samples 10) (Tolerance 1) <$> zones
+        nodes' = sample (Samples 100) (Tolerance $ 100 % 1000) <$> zones
 
         len :: Int
         len = sum $ map length nodes'
@@ -88,8 +88,10 @@ buildGraph zones =
         f :: (Node, LatLng) -> (Node, LatLng) -> LEdge TaskDistance
         f (i, x) (j, y) = (i, j, distancePointToPoint [Point x, Point y])
 
+        -- | NOTE: The shortest path may traverse a cylinder so I include
+        -- edges within a cylinder as well as edges to the next cylinder.
         g :: [(Node, LatLng)] -> [(Node, LatLng)] -> [LEdge TaskDistance]
-        g xs ys = [ f x y | x <- xs, y <- ys]
+        g xs ys = concat [ [f x1 x2 , f x2 y] | x1 <- xs, x2 <- xs, y <- ys]
 
 newtype Samples = Samples Integer deriving (Eq, Ord, Show)
 newtype Tolerance = Tolerance Rational deriving (Eq, Ord, Show)
