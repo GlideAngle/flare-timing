@@ -280,16 +280,18 @@ distancePoint (ZonesTest xs) =
 samples :: Samples
 samples = Samples 10
 
-m1 :: Tolerance
-m1 = Tolerance 1
+mm10 :: Tolerance
+mm10 = Tolerance $ 10 % 1000
 
 distanceEdge :: ZonesTest -> Bool
 distanceEdge (ZonesTest xs) =
-    (\(d, _) -> correctEdge xs d) $ FS.distanceEdgeToEdge samples m1 xs
+    (\(d, _) -> correctEdge xs d) $ FS.distanceEdgeToEdge samples mm10 xs
 
 distanceLess :: ZonesTest -> Bool
-distanceLess (ZonesTest xs) =
-    dEdge <= dPoint
-    where
-        (dEdge, _) = FS.distanceEdgeToEdge samples m1 xs
-        dPoint = FS.distancePointToPoint xs
+distanceLess (ZonesTest xs)
+    | length xs < 3 = True
+    | otherwise =
+        dEdge <= dPoint
+        where
+            (TaskDistance dEdge, _) = FS.distanceEdgeToEdge samples mm10 xs
+            TaskDistance dPoint = FS.distancePointToPoint xs

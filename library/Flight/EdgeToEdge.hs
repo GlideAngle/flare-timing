@@ -9,7 +9,7 @@ module Flight.EdgeToEdge
 import Data.Ratio ((%))
 import qualified Data.Number.FixedFunctions as F
 import Data.Fixed (mod')
-import Data.Maybe (catMaybes, fromMaybe)
+import Data.Maybe (catMaybes)
 import Control.Arrow (first)
 import Data.Graph.Inductive.Query.SP (LRTree, spTree) 
 import Data.Graph.Inductive.Internal.RootPath (getDistance, getLPathNodes)
@@ -17,7 +17,7 @@ import Data.Graph.Inductive.Graph (Graph(..), Node, Path, LEdge, mkGraph, match)
 import Data.Graph.Inductive.PatriciaTree (Gr)
 
 import Flight.Geo (LatLng(..), Epsilon(..), earthRadius, defEps)
-import Flight.Zone (Zone(..), Radius(..))
+import Flight.Zone (Zone(..), Radius(..), center)
 import Flight.PointToPoint (TaskDistance(..), distancePointToPoint)
 import Flight.Separated (separatedZones)
 
@@ -28,9 +28,18 @@ distanceEdgeToEdge _ _ [] = (TaskDistance 0, [])
 distanceEdgeToEdge _ _ [_] = (TaskDistance 0, [])
 distanceEdgeToEdge samples tolerance xs
     | not $ separatedZones xs = (TaskDistance 0, [])
+    | length xs < 3 = (pointwise, centers)
     | otherwise =
-        (fromMaybe (TaskDistance 0) dist, ys)
+        case dist of
+             Nothing -> (pointwise, centers)
+             Just y ->
+                if y >= pointwise
+                   then (pointwise, centers)
+                   else (y, ys)
         where
+            pointwise = distancePointToPoint xs
+            centers = center <$> xs
+
             gr :: Gr LatLng TaskDistance
             gr = buildGraph samples tolerance xs
 
@@ -130,7 +139,7 @@ circum (LatLng (rlat, rlng)) _ (Radius rRadius) (TrueCourse rtc) =
 
 -- | SEE: http://www.edwilliams.org/avform.htm#LL
 circumSample :: Samples -> Tolerance -> Radius -> LatLng -> ([LatLng], [Double])
-circumSample (Samples samples) (Tolerance tolerance) r@(Radius limitRadius) center =
+circumSample (Samples samples) (Tolerance tolerance) r@(Radius limitRadius) ptCenter =
     unzip ys
     where
         (Epsilon eps) = defEps
@@ -138,7 +147,7 @@ circumSample (Samples samples) (Tolerance tolerance) r@(Radius limitRadius) cent
         xs :: [TrueCourse]
         xs = [ TrueCourse $ ((2 * n) % samples) * F.pi eps | n <- [0 .. samples] ]
 
-        circumR = circum center defEps
+        circumR = circum ptCenter defEps
 
         ys = getClose 10 (Radius 0) (circumR r) <$> xs
 
@@ -161,5 +170,5 @@ circumSample (Samples samples) (Tolerance tolerance) r@(Radius limitRadius) cent
                             in getClose (trys - 1) (Radius offset') f' x
             where
                 y = f x
-                (TaskDistance d) = distancePointToPoint [Point center, Point y]
+                (TaskDistance d) = distancePointToPoint [Point ptCenter, Point y]
                 dist = fromRational d
