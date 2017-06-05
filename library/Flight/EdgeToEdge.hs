@@ -22,14 +22,14 @@ import Flight.PointToPoint (TaskDistance(..), distancePointToPoint)
 
 newtype TrueCourse = TrueCourse Rational deriving (Eq, Ord, Show)
 
-distanceEdgeToEdge :: [Zone] -> (TaskDistance, [LatLng])
-distanceEdgeToEdge [] = (TaskDistance 0, [])
-distanceEdgeToEdge [_] = (TaskDistance 0, [])
-distanceEdgeToEdge xs =
+distanceEdgeToEdge :: Samples -> Tolerance -> [Zone] -> (TaskDistance, [LatLng])
+distanceEdgeToEdge _ _ [] = (TaskDistance 0, [])
+distanceEdgeToEdge _ _ [_] = (TaskDistance 0, [])
+distanceEdgeToEdge samples tolerance xs =
     (fromMaybe (TaskDistance 0) dist, ys)
     where
         gr :: Gr LatLng TaskDistance
-        gr = buildGraph xs
+        gr = buildGraph samples tolerance xs
 
         (startNode, endNode) = nodeRange gr
 
@@ -52,12 +52,12 @@ distanceEdgeToEdge xs =
             )
             <$> ps
 
-buildGraph :: [Zone] -> Gr LatLng TaskDistance
-buildGraph zones =
+buildGraph :: Samples -> Tolerance -> [Zone] -> Gr LatLng TaskDistance
+buildGraph samples tolerance zones =
     mkGraph flatNodes flatEdges
     where
         nodes' :: [[LatLng]]
-        nodes' = sample (Samples 100) (Tolerance $ 100 % 1000) <$> zones
+        nodes' = sample samples tolerance <$> zones
 
         len :: Int
         len = sum $ map length nodes'

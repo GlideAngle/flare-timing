@@ -10,17 +10,9 @@ module Flight.Geo
 import Data.Ratio((%))
 import qualified Data.Number.FixedFunctions as F
 
-newtype LatLng = LatLng (Rational, Rational) deriving (Eq, Ord)
+newtype LatLng = LatLng (Rational, Rational) deriving (Eq, Ord, Show)
 
 newtype Epsilon = Epsilon Rational deriving (Eq, Ord, Show)
-
-instance Show LatLng where
-    show (LatLng (lat, lng)) =
-        "LatLng ("
-        ++ show (fromRational lat :: Double)
-        ++ ", "
-        ++ show (fromRational lng :: Double)
-        ++ ")"
 
 radToDeg :: Epsilon -> Rational -> Rational
 radToDeg (Epsilon eps) x = x * (180 % 1) / F.pi eps

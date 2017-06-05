@@ -68,5 +68,6 @@ instance QC.Arbitrary ZoneTest where
 
 instance QC.Arbitrary ZonesTest where
     arbitrary = do
-        xs <- arbitrary
+        len <- choose (2, 10)
+        xs <- vector len
         return $ ZonesTest ((\(ZoneTest x) -> x) <$> xs)

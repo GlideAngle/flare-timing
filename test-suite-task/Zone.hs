@@ -1,4 +1,9 @@
-module Zone (zoneUnits, distancePointToPoint, distanceEdgeToEdge) where
+module Zone
+    ( zoneUnits
+    , distancePointToPoint
+    , distanceEdgeToEdge
+    , distanceLess
+    ) where
 
 import Data.Ratio ((%))
 import Test.Tasty (TestTree, testGroup)
@@ -13,6 +18,8 @@ import Flight.Task
     , Incline (..)
     , Bearing(..)
     , TaskDistance(..)
+    , Samples(..)
+    , Tolerance(..)
     , earthRadius
     )
 
@@ -254,6 +261,19 @@ distancePointToPoint :: ZonesTest -> Bool
 distancePointToPoint (ZonesTest xs) =
     correct xs $ FS.distancePointToPoint xs
 
+samples :: Samples
+samples = Samples 10
+
+m1 :: Tolerance
+m1 = Tolerance 1
+
 distanceEdgeToEdge :: ZonesTest -> Bool
 distanceEdgeToEdge (ZonesTest xs) =
-    (\(d, _) -> correct xs d) $ FS.distanceEdgeToEdge xs
+    (\(d, _) -> correct xs d) $ FS.distanceEdgeToEdge samples m1 xs
+
+distanceLess :: ZonesTest -> Bool
+distanceLess (ZonesTest xs) =
+    dEdge <= dPoint
+    where
+        (dEdge, _) = FS.distanceEdgeToEdge samples m1 xs
+        dPoint = FS.distancePointToPoint xs
