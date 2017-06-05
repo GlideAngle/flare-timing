@@ -24,6 +24,11 @@ module Flight.Task
     , StartGates(..)
     , Task(..)
     , TaskDistance(..)
+    , Epsilon(..)
+    , degToRad
+    , degToRadLL
+    , radToDeg
+    , radToDegLL
     , earthRadius
     , distanceEdgeToEdge
     , distancePointToPoint
