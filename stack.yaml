@@ -1,6 +1,10 @@
 flags: {}
 packages:
 - '.'
+- location:
+    git: https://github.com/haskell/fgl.git
+    commit: e29503775e474b7a7cd8951b6bebcf1529b888b5
+  extra-dep: true
 extra-deps: []
 resolver: lts-8.15
 local-bin-path: __shake-build

@@ -13,7 +13,11 @@ import qualified Data.Number.FixedFunctions as F
 import Flight.Geo (LatLng(..), Epsilon(..), earthRadius, defEps)
 import Flight.Zone (Zone(..))
 
-newtype TaskDistance = TaskDistance Rational deriving (Eq, Ord, Num, Real, Show)
+newtype TaskDistance = TaskDistance Rational deriving (Eq, Ord, Num, Real)
+
+instance Show TaskDistance where
+    show (TaskDistance d) =
+        "TaskDistance " ++ show (fromRational d :: Double)
 
 center :: Zone -> LatLng
 center (Point x) = x

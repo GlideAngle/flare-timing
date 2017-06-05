@@ -1,26 +1,19 @@
-{-# lANGUAGE PatternSynonyms #-}
-{-# lANGUAGE ViewPatterns #-}
-{-# lANGUAGE TypeSynonymInstances #-}
-{-# lANGUAGE FlexibleInstances #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE RankNTypes #-}
-
 module Flight.EdgeToEdge
     ( Samples(..)
     , Tolerance(..)
     , circumSample
     , distanceEdgeToEdge
+    , buildGraph
     ) where
 
-import Data.Ratio (Ratio, (%), numerator, denominator)
+import Data.Ratio ((%))
 import qualified Data.Number.FixedFunctions as F
 import Data.Fixed (mod')
-import Data.Maybe (catMaybes)
+import Data.Maybe (catMaybes, fromMaybe)
 import Control.Arrow (first)
 import Data.Graph.Inductive.Query.SP (LRTree, spTree) 
 import Data.Graph.Inductive.Internal.RootPath (getDistance, getLPathNodes)
--- import Data.Graph.Inductive.Graph (Graph(..), Node, Path, mkGraph, match)
-import Data.Graph.Inductive.Graph
+import Data.Graph.Inductive.Graph (Graph(..), Node, Path, LEdge, mkGraph, match)
 import Data.Graph.Inductive.PatriciaTree (Gr)
 
 import Flight.Geo (LatLng(..), Epsilon(..), earthRadius, defEps)
@@ -33,18 +26,17 @@ distanceEdgeToEdge :: [Zone] -> (TaskDistance, [LatLng])
 distanceEdgeToEdge [] = (TaskDistance 0, [])
 distanceEdgeToEdge [_] = (TaskDistance 0, [])
 distanceEdgeToEdge xs =
-    (dist, ys)
+    (fromMaybe (TaskDistance 0) dist, ys)
     where
         gr :: Gr LatLng TaskDistance
         gr = buildGraph xs
 
-        startNode = 0
-        endNode = 1
+        (startNode, endNode) = nodeRange gr
 
         spt :: LRTree TaskDistance
         spt = spTree startNode gr
 
-        dist :: TaskDistance
+        dist :: Maybe TaskDistance
         dist = getDistance endNode spt
 
         ps :: Path
@@ -91,7 +83,11 @@ buildGraph zones =
         -- | NOTE: The shortest path may traverse a cylinder so I include
         -- edges within a cylinder as well as edges to the next cylinder.
         g :: [(Node, LatLng)] -> [(Node, LatLng)] -> [LEdge TaskDistance]
-        g xs ys = concat [ [f x1 x2 , f x2 y] | x1 <- xs, x2 <- xs, y <- ys]
+        g xs ys =
+            concat
+                [ [ f x1 x2 | x1 <- xs, x2 <- xs ]
+                , [ f x y | x <- xs, y <- ys]
+                ]
 
 newtype Samples = Samples Integer deriving (Eq, Ord, Show)
 newtype Tolerance = Tolerance Rational deriving (Eq, Ord, Show)
@@ -104,10 +100,6 @@ sample n t (Conical _ r x) = fst $ circumSample n t r x
 sample n t (Line r x) = fst $ circumSample n t r x
 sample n t (SemiCircle r x) = fst $ circumSample n t r x
  
--- | SEE: http://stackoverflow.com/questions/33325370/why-cant-i-pattern-match-against-a-ratio-in-haskell
-pattern (:%) :: forall t. t -> t -> Ratio t
-pattern num :% denom <- (\x -> (numerator x, denominator x) -> (num, denom))
-
 circum :: LatLng -> Epsilon -> Radius -> TrueCourse -> LatLng
 circum (LatLng (rlat, rlng)) _ (Radius rRadius) (TrueCourse rtc) =
     LatLng (toRational lat', toRational lng')

@@ -49,7 +49,7 @@ instance QC.Arbitrary ZoneTest where
                 [1, 1, 4, 1, 1, 1]
                 [ return $ Point ll
                 , do
-                    b <- arbitrary
+                    (QC.Positive b) <- arbitrary
                     return $ Vector (Bearing b) ll
                 , do
                     (QC.Positive r) <- arbitrary
