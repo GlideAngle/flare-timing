@@ -157,12 +157,12 @@ circumSample (Samples samples) (Tolerance tolerance) r@(Radius limitRadius) cent
                 case d `compare` limitRadius of
                      EQ -> (y, dist)
                      GT ->
-                        let offset' = offset - (d - limitRadius)
+                        let offset' = offset - (d - limitRadius) * 105 / 100
                             f' = circumR (Radius $ limitRadius + offset')
                         in getClose (trys - 1) (Radius offset') f' x
                      LT ->
                         if d > limitRadius - tolerance then (y, dist) else
-                            let offset' = offset + (limitRadius - d)
+                            let offset' = offset + (limitRadius - d) * 94 / 100
                                 f' = circumR (Radius $ limitRadius + offset')
                             in getClose (trys - 1) (Radius offset') f' x
             where
