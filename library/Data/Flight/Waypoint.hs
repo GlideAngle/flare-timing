@@ -102,14 +102,8 @@ parse contents = do
     xs <- runX $ doc >>> getTask
     return $ Right xs
 
-pLat :: GenParser Char st Rational
-pLat = pCoord "No latitude"
-
-pLng :: GenParser Char st Rational
-pLng = pCoord "No longitude"
-
-pCoord:: String -> GenParser Char st Rational
-pCoord errMsg = do
+pRat :: String -> GenParser Char st Rational
+pRat errMsg = do
     sign <- option id $ const negate <$> char '-'
     x <- pFloat <?> errMsg
     return $ sign x
@@ -136,8 +130,8 @@ parseTurnpoint (name, lat, lng, radius) =
         _ -> []
     where
         latlng =
-            sequence [ P.parse pLat "" lat
-                     , P.parse pLng "" lng
+            sequence [ P.parse (pRat "No latitude") "" lat
+                     , P.parse (pRat "No longitude") "" lng
                      ]
 
         rad =
