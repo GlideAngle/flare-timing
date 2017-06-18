@@ -24,6 +24,7 @@ import Text.XML.HXT.Core
     , (&&&)
     , (>>>)
     , (/>)
+    , (>>.)
     , runX
     , withValidate
     , withWarnings
@@ -36,12 +37,34 @@ import Text.XML.HXT.Core
     , arr
     , deep
     )
+import Data.List (concatMap)
+import Text.Parsec.Token as P
+import Text.ParserCombinators.Parsec
+    ( GenParser
+    , (<?>)
+    , char
+    , option
+    )
+import qualified Text.ParserCombinators.Parsec as P (parse)
+import Text.Parsec.Language (emptyDef)
+import Data.Functor.Identity (Identity)
+import Text.Parsec.Prim (ParsecT, parsecMap)
+
 import Data.Flight.Types
     ( Latitude
     , Longitude
     , Turnpoint(..)
     , Task(..)
     )
+
+lexer :: GenTokenParser String u Identity
+lexer = P.makeTokenParser emptyDef
+
+pFloat:: ParsecT String u Identity Rational
+pFloat = parsecMap toRational $ P.float lexer 
+
+pNat :: ParsecT String u Identity Integer
+pNat = P.natural lexer 
 
 getTask :: ArrowXml a => a XmlTree Task
 getTask =
@@ -59,10 +82,40 @@ getTask =
             &&& getAttrValue "lat"
             &&& getAttrValue "lon"
             &&& getAttrValue "radius"
-            >>> arr (\(name, (lat, (lng, rad))) -> (Turnpoint name lat lng rad))
+            >>> arr (\(name, (lat, (lng, rad))) -> (name, lat, lng, rad))
+            >>. concatMap parseTurnpoint
 
 parse :: String -> IO (Either String [ Task ])
 parse contents = do
     let doc = readString [ withValidate no, withWarnings no ] contents
     xs <- runX $ doc >>> getTask
     return $ Right xs
+
+pLat :: GenParser Char st Rational
+pLat = pCoord "No latitude"
+
+pLng :: GenParser Char st Rational
+pLng = pCoord "No longitude"
+
+pCoord:: String -> GenParser Char st Rational
+pCoord errMsg = do
+    sign <- option id $ const negate <$> char '-'
+    x <- pFloat <?> errMsg
+    return $ sign x
+
+pRadius :: GenParser Char st Integer
+pRadius = pNat <?> "No radius"
+
+parseTurnpoint :: (String, String, String, String) -> [ Turnpoint ]
+parseTurnpoint (name, lat, lng, radius) =
+    case (latlng, rad) of
+        (Right [ lat', lng' ], Right rad') ->  [ Turnpoint name lat' lng' rad' ]
+        _ -> []
+    where
+        latlng =
+            sequence [ P.parse pLat "(stdin)" lat
+                     , P.parse pLng "(stdin)" lng
+                     ]
+
+        rad =
+            P.parse pRadius "(stdin)" radius
