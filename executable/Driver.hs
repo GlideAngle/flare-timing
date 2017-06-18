@@ -7,7 +7,7 @@ import Control.Monad (mapM_)
 import Args (withCmdArgs)
 import System.Directory (doesFileExist, doesDirectoryExist)
 import System.FilePath (takeFileName)
-import System.FilePath.Find (FileType(..), find, always, fileType, (==?))
+import System.FilePath.Find (FileType(..), (==?), (&&?), find, always, fileType, extension)
 import Options (DriveOptions(..))
 import Data.Flight.Waypoint (parse)
 
@@ -19,7 +19,7 @@ drive DriveOptions{..} = do
     else do
         dde <- doesDirectoryExist dir
         if dde then do
-            files <- find always (fileType ==? RegularFile) dir
+            files <- find always (fileType ==? RegularFile &&? extension ==? ".fsdb") dir
             mapM_ go files
         else
             putStrLn "Couldn't find any flight score competition database input files."
