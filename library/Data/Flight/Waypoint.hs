@@ -23,8 +23,8 @@ import Text.XML.HXT.Core
     ( ArrowXml
     , (&&&)
     , (>>>)
-    , (/>)
     , (>>.)
+    , (>.)
     , runX
     , withValidate
     , withWarnings
@@ -55,6 +55,7 @@ import Data.Flight.Types
     , Longitude
     , Turnpoint(..)
     , Task(..)
+    , SpeedSection
     )
 
 lexer :: GenTokenParser String u Identity
@@ -71,13 +72,23 @@ getTask =
     getChildren
     >>> deep (hasName "FsTask")
     >>> getAttrValue "name"
-    &&& listA getDefn
-    >>> arr (uncurry Task)
+    &&& getDefn
+    >>> arr (\(name, (speedSection, tps)) -> Task name speedSection tps)
     where
         getDefn =
             getChildren
             >>> hasName "FsTaskDefinition"
-            /> hasName "FsTurnpoint"
+            >>> getSpeedSection
+            >>. take 1
+            &&& listA getTps
+
+        getSpeedSection =
+            (getAttrValue "ss" &&& getAttrValue "es")
+            >. parseSpeedSection
+
+        getTps =
+            getChildren
+            >>> hasName "FsTurnpoint"
             >>> getAttrValue "id"
             &&& getAttrValue "lat"
             &&& getAttrValue "lon"
@@ -105,6 +116,18 @@ pCoord errMsg = do
 
 pRadius :: GenParser Char st Integer
 pRadius = pNat <?> "No radius"
+
+parseSpeedSection :: [(String, String)] -> SpeedSection
+parseSpeedSection [] = Nothing
+parseSpeedSection ((ss, es) : _) =
+    case speedSection of
+         Right [ ss', es' ] -> Just (ss', es')
+         _ -> Nothing
+    where
+        speedSection =
+            sequence [ P.parse pNat "(stdin)" ss
+                     , P.parse pNat "(stdin)" es
+                     ]
 
 parseTurnpoint :: (String, String, String, String) -> [ Turnpoint ]
 parseTurnpoint (name, lat, lng, radius) =

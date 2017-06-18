@@ -5,12 +5,14 @@ module Data.Flight.Types
     , Name
     , Turnpoint(..)
     , Task(..)
+    , SpeedSection
     ) where
 
 type Name = String
 type Latitude = Rational
 type Longitude = Rational
 type Radius = Integer
+type SpeedSection = Maybe (Integer, Integer)
 
-data Task = Task Name [Turnpoint] deriving (Eq, Show)
+data Task = Task Name SpeedSection [Turnpoint] deriving (Eq, Show)
 data Turnpoint = Turnpoint Name Latitude Longitude Radius deriving (Eq, Show)
