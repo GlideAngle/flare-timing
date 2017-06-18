@@ -125,8 +125,8 @@ parseSpeedSection ((ss, es) : _) =
          _ -> Nothing
     where
         speedSection =
-            sequence [ P.parse pNat "(stdin)" ss
-                     , P.parse pNat "(stdin)" es
+            sequence [ P.parse pNat "" ss
+                     , P.parse pNat "" es
                      ]
 
 parseTurnpoint :: (String, String, String, String) -> [ Turnpoint ]
@@ -136,9 +136,9 @@ parseTurnpoint (name, lat, lng, radius) =
         _ -> []
     where
         latlng =
-            sequence [ P.parse pLat "(stdin)" lat
-                     , P.parse pLng "(stdin)" lng
+            sequence [ P.parse pLat "" lat
+                     , P.parse pLng "" lng
                      ]
 
         rad =
-            P.parse pRadius "(stdin)" radius
+            P.parse pRadius "" radius
