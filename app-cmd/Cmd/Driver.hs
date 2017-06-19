@@ -4,15 +4,19 @@
 module Cmd.Driver (driverMain) where
 
 import Control.Monad (mapM_)
-import Args (withCmdArgs)
 import System.Directory (doesFileExist, doesDirectoryExist)
 import System.FilePath (takeFileName)
 import System.FilePath.Find (FileType(..), (==?), (&&?), find, always, fileType, extension)
-import Options (DriveOptions(..))
+
+import Cmd.Args (withCmdArgs)
+import Cmd.Options (CmdOptions(..))
 import Data.Flight.Waypoint (parse)
 
-drive :: DriveOptions -> IO ()
-drive DriveOptions{..} = do
+driverMain :: IO ()
+driverMain = withCmdArgs drive
+
+drive :: CmdOptions -> IO ()
+drive CmdOptions{..} = do
     dfe <- doesFileExist file
     if dfe then
         go file
@@ -33,5 +37,3 @@ drive DriveOptions{..} = do
                  Left msg -> print msg
                  Right p' -> print p'
 
-driverMain :: IO ()
-driverMain = withCmdArgs drive

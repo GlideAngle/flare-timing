@@ -3,7 +3,7 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module Args
+module Serve.Args
     ( Drive(..)
     , dryRunCmdArgs
     , withCmdArgs
@@ -23,49 +23,43 @@ import System.Console.CmdArgs.Implicit
     )
 import Control.Monad.Except (liftIO, throwError, when, unless)
 import Control.Monad.Trans.Except (runExceptT)
-import System.Directory (doesFileExist, doesDirectoryExist)
+import System.Directory (doesFileExist)
 import Text.RawString.QQ (r)
-import Options (DriveOptions(..))
+import Serve.Options (ServeOptions(..))
 
 description :: String
 description = intro
     where
         intro = [r|
 
-Parsing flight fsdb files.
+Serving tasks from flight fsdb files.
 |]
 
-data Drive
-    = Drive { dir :: String
-            , file :: String
-            }
-    deriving (Show, Data, Typeable)
+data Drive = Drive { file :: String } deriving (Show, Data, Typeable)
 
 drive :: Drive
 drive
-    = Drive { dir = def &= help "Over all the files in this directory"
-            , file = def &= help "With this one file"
+    = Drive { file = def &= help "With this one file"
             }
-            &= summary ("Flight Scoring Database Parser " ++ showVersion version ++ description)
-            &= program "flight-fsdb-cmd.exe"
+            &= summary ("Serving Tasks from Flight Scoring Database Files" ++ showVersion version ++ description)
+            &= program "flight-fsdb-serve.exe"
 
 run :: IO Drive
 run = cmdArgs drive
 
-cmdArgsToDriveArgs :: Drive -> Maybe DriveOptions
-cmdArgsToDriveArgs Drive{ dir = d, file = f } =
-    return DriveOptions { dir = d, file = f }
+cmdArgsToDriveArgs :: Drive -> Maybe ServeOptions
+cmdArgsToDriveArgs Drive{ file = f } =
+    return ServeOptions { file = f }
 
 -- SEE: http://stackoverflow.com/questions/2138819/in-haskell-is-there-a-way-to-do-io-in-a-function-guard
-checkedOptions :: DriveOptions -> IO (Either String DriveOptions)
-checkedOptions o@DriveOptions{..} = do
+checkedOptions :: ServeOptions -> IO (Either String ServeOptions)
+checkedOptions o@ServeOptions{..} = do
     x <- runExceptT $ do
-        when (dir == "" && file == "") (throwError "No --dir or --file argument")
+        when (file == "") (throwError "No --file argument")
 
         dfe <- liftIO $ doesFileExist file
-        dde <- liftIO $ doesDirectoryExist dir
-        unless (dfe || dde) (throwError
-               "The --dir argument is not a directory or the --file argument is not a file")
+        unless dfe (throwError
+               "The --file argument is not a file")
     case x of
          Left s -> return $ Left s
          Right _ -> return $ Right o
@@ -73,7 +67,7 @@ checkedOptions o@DriveOptions{..} = do
 dryRunCmdArgs :: IO ()
 dryRunCmdArgs = print =<< run
 
-withCmdArgs :: (DriveOptions -> IO ()) -> IO ()
+withCmdArgs :: (ServeOptions -> IO ()) -> IO ()
 withCmdArgs f = do
     ca <- run
     print ca

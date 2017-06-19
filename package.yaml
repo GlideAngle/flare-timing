@@ -11,6 +11,14 @@ executables:
     - aeson
     - wai
     - warp
+    - directory
+    - filepath
+    - system-filepath
+    - filemanip
+    - raw-strings-qq
+    - cmdargs
+    - mtl
+    - transformers
     - flight-fsdb 
     ghc-options:
     - -rtsopts
