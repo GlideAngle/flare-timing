@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module Driver (driverMain) where
+module Cmd.Driver (driverMain) where
 
 import Control.Monad (mapM_)
 import Args (withCmdArgs)
