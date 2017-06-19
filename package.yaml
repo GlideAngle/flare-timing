@@ -19,7 +19,7 @@ executables:
     - -threaded
     - -with-rtsopts=-N
     main: Main.hs
-    source-dirs: executable
+    source-dirs: app-cmd
 extra-source-files:
 - package.yaml
 - changelog.md
