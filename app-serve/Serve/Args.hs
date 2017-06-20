@@ -35,7 +35,7 @@ description = intro
 Serving tasks from flight fsdb files.
 |]
 
-data Drive = Drive { file :: String } deriving (Show, Data, Typeable)
+newtype Drive = Drive { file :: String } deriving (Show, Data, Typeable)
 
 drive :: Drive
 drive

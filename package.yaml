@@ -58,8 +58,10 @@ library:
   - hxt
   - path
   - hxt-xpath
+  - aeson
   source-dirs: library
   exposed-modules:
+  - Data.Flight.Types
   - Data.Flight.Waypoint
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
@@ -79,6 +81,7 @@ tests:
     - path
     - hxt-xpath
     - hlint
+    - aeson
     ghc-options:
     - -rtsopts
     - -threaded
