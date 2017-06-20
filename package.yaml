@@ -59,6 +59,7 @@ library:
   - path
   - hxt-xpath
   - aeson
+  - scientific
   source-dirs: library
   exposed-modules:
   - Data.Flight.Types

@@ -51,8 +51,8 @@ import Data.Functor.Identity (Identity)
 import Text.Parsec.Prim (ParsecT, parsecMap)
 
 import Data.Flight.Types
-    ( Latitude
-    , Longitude
+    ( Latitude(..)
+    , Longitude(..)
     , Turnpoint(..)
     , Task(..)
     , SpeedSection
@@ -126,8 +126,11 @@ parseSpeedSection ((ss, es) : _) =
 parseTurnpoint :: (String, String, String, String) -> [ Turnpoint ]
 parseTurnpoint (name, lat, lng, radius) =
     case (latlng, rad) of
-        (Right [ lat', lng' ], Right rad') ->  [ Turnpoint name lat' lng' rad' ]
-        _ -> []
+        (Right [ lat', lng' ], Right rad') ->
+            [ Turnpoint name (Latitude lat') (Longitude lng') rad' ]
+
+        _ ->
+            []
     where
         latlng =
             sequence [ P.parse (pRat "No latitude") "" lat
