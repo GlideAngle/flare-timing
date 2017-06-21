@@ -59,4 +59,17 @@ category: Data, Parsing
 license: BSD3
 license-file: LICENSE.md
 github: BlockScope/flare-timing
+tests:
+  hlint:
+    dependencies:
+    - base
+    - hlint
+    ghc-options:
+    - -rtsopts
+    - -threaded
+    - -with-rtsopts=-N
+    main: HLint.hs
+    source-dirs:
+    - library
+    - test-suite-hlint
 version: '0.1.0'
