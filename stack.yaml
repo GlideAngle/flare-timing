@@ -2,5 +2,5 @@ flags: {}
 packages:
 - '.'
 extra-deps: []
-resolver: lts-8.13
+resolver: lts-8.15
 local-bin-path: __shake-build
