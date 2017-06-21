@@ -4,7 +4,7 @@ packages:
 - location: .
 - location:
     git: https://github.com/BlockScope/haskell-flight-fsdb.git
-    commit: 58e0a3e752fe8ff86244272820fb0801ff59e04c
+    commit: ef9133e782128e5576f93ebb51a0d2ef89fe0599 
   extra-dep: true
 extra-deps:
 - hxt-xpath-9.1.2.2
