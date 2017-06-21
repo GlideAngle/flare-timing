@@ -6,8 +6,6 @@ import System.Exit (exitFailure, exitSuccess)
 arguments :: [String]
 arguments =
     [ "library"
-    , "app-serve"
-    , "app-cmd"
     , "test-suite-hlint"
     , "test-suite-parse"
     ]
