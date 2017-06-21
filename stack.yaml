@@ -1,0 +1,11 @@
+flags: {}
+local-bin-path: __shake-build
+packages:
+- location: .
+- location:
+    git: https://github.com/BlockScope/haskell-flight-fsdb.git
+    commit: 58e0a3e752fe8ff86244272820fb0801ff59e04c
+  extra-dep: true
+extra-deps:
+- hxt-xpath-9.1.2.2
+resolver: lts-8.13
