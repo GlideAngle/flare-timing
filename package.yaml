@@ -44,6 +44,24 @@ executables:
     - -with-rtsopts=-N
     main: Main.hs
     source-dirs: fsdb/app-cmd
+  flight-igc:
+    dependencies:
+    - base
+    - directory
+    - filepath
+    - system-filepath
+    - filemanip
+    - raw-strings-qq
+    - cmdargs
+    - mtl
+    - transformers
+    - flight-igc 
+    ghc-options:
+    - -rtsopts
+    - -threaded
+    - -with-rtsopts=-N
+    main: Main.hs
+    source-dirs: igc/app-cmd
 extra-source-files:
 - package.yaml
 - changelog.md

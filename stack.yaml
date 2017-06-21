@@ -6,6 +6,10 @@ packages:
     git: https://github.com/BlockScope/haskell-flight-fsdb.git
     commit: ef9133e782128e5576f93ebb51a0d2ef89fe0599 
   extra-dep: true
+- location:
+    git: https://github.com/BlockScope/haskell-flight-igc.git
+    commit: 5a47f19b6afe57b9e12b97bc0538449d26fb161d 
+  extra-dep: true
 extra-deps:
 - hxt-xpath-9.1.2.2
 resolver: lts-8.13
