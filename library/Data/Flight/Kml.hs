@@ -3,7 +3,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 
 {-|
-Module      : Data.Waypoint
+Module      : Data.Flight.Kml
 Copyright   : (c) Block Scope Limited 2017
 License     : BSD3
 Maintainer  : phil.dejoux@blockscope.com
@@ -11,7 +11,7 @@ Stability   : experimental
 
 Provides parsing the KML format for waypoint fixes.
 -}
-module Data.Flight.Waypoint
+module Data.Flight.Kml
     ( Fix
     , LLA
     , T.LatLngAlt(..)

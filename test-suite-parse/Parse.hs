@@ -3,8 +3,8 @@
 
 module Main (main) where
 
-import qualified Data.Flight.Waypoint as W (LatLngAlt(lat, lng, altGps))
-import Data.Flight.Waypoint
+import qualified Data.Flight.Kml as K (LatLngAlt(lat, lng, altGps))
+import Data.Flight.Kml
     ( LLA
     , Seconds
     , Latitude
@@ -109,7 +109,7 @@ parseInts parser xs =
 parseTriples :: (String -> [ LLA ]) -> [ LLA ] -> Bool
 parseTriples parser xs =
     let extractCoords :: LLA -> (Latitude, Longitude, Altitude)
-        extractCoords x = (W.lat x, W.lng x, W.altGps x)
+        extractCoords x = (K.lat x, K.lng x, K.altGps x)
 
         ys :: [ (Double, Double, Integer) ]
         ys = (roundTripCoords . extractCoords) <$> xs
