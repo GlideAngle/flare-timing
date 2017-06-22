@@ -13,7 +13,7 @@ library:
   - parsec
   source-dirs: library
   exposed-modules:
-  - Data.Waypoint
+  - Data.Flight.Igc
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
 name: flight-igc 

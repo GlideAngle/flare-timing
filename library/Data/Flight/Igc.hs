@@ -1,7 +1,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 
 {-|
-Module      : Data.Waypoint
+Module      : Data.Flight.Igc
 Copyright   : (c) Block Scope Limited 2017
 License     : BSD3
 Maintainer  : phil.dejoux@blockscope.com
@@ -11,7 +11,7 @@ Provides parsing the IGC format for waypoint fixes. The date header is also pars
 as it is needed for the fixes that have only a time and pickup the date in the file
 header.
 -}
-module Data.Waypoint
+module Data.Flight.Igc
     (
     -- * Data
       IgcRecord(..)
