@@ -8,6 +8,7 @@ arguments =
     [ "fsdb/app-serve"
     , "fsdb/app-cmd"
     , "igc/app-cmd"
+    , "kml/app-cmd"
     , "test-suite-hlint"
     ]
 

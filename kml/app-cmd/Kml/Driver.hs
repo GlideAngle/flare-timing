@@ -1,18 +1,18 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module Igc.Driver (driverMain) where
+module Kml.Driver (driverMain) where
 
 import Control.Monad (mapM_)
 import System.Directory (doesFileExist, doesDirectoryExist)
 import System.FilePath (takeFileName)
 import System.FilePath.Find (FileType(..), find, always, fileType, (==?))
-import Igc.Args (withCmdArgs)
-import Igc.Options (IgcOptions(..))
-import Data.Flight.Igc (parseFromFile)
+import Kml.Args (withCmdArgs)
+import Kml.Options (KmlOptions(..))
+import Data.Flight.Kml (parse)
 
-drive :: IgcOptions -> IO ()
-drive IgcOptions{..} = do
+drive :: KmlOptions -> IO ()
+drive KmlOptions{..} = do
     dfe <- doesFileExist file
     if dfe then
         go file
@@ -22,11 +22,12 @@ drive IgcOptions{..} = do
             files <- find always (fileType ==? RegularFile) dir
             mapM_ go files
         else
-            putStrLn "Couldn't find any IGC input files."
+            putStrLn "Couldn't find any KML input files."
     where
         go path = do
             putStrLn $ takeFileName path
-            p <- parseFromFile path
+            contents <- readFile path
+            p <- parse contents 
             case p of
                  Left msg -> print msg
                  Right p' -> print p'

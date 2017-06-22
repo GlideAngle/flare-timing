@@ -8,7 +8,11 @@ packages:
   extra-dep: true
 - location:
     git: https://github.com/BlockScope/haskell-flight-igc.git
-    commit: 5a47f19b6afe57b9e12b97bc0538449d26fb161d 
+    commit: 56840dd4b665afc4e18bff66d0191f57000256d3 
+  extra-dep: true
+- location:
+    git: https://github.com/BlockScope/haskell-flight-kml.git
+    commit: 9a785d4dfe80d56c116f484a4cff73e72e40a7b9 
   extra-dep: true
 extra-deps:
 - hxt-xpath-9.1.2.2
