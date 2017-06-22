@@ -5,8 +5,7 @@ import System.Exit (exitFailure, exitSuccess)
 
 arguments :: [String]
 arguments =
-    [ "executable"
-    , "library"
+    [ "library"
     , "test-suite-hlint"
     , "test-suite-task"
     ]
