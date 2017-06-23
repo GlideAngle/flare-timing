@@ -5,6 +5,7 @@
 module Serve.Driver (driverRun) where
 
 import Network.Wai
+import Network.Wai.Middleware.Cors
 import Network.Wai.Handler.Warp
 import Servant
 import System.IO
@@ -49,8 +50,9 @@ drive ServeOptions{..} = do
                  Left msg -> print msg
                  Right tasks -> runSettings settings =<< mkApp tasks
 
+-- SEE: https://stackoverflow.com/questions/42143155/acess-a-servant-server-with-a-reflex-dom-client
 mkApp :: [Task] -> IO Application
-mkApp xs = return $ serve taskApi $ server xs
+mkApp xs = return $ simpleCors $ serve taskApi $ server xs
 
 server :: [Task] -> Server TaskApi
 server = getTasks
