@@ -75,8 +75,26 @@ turnpoint x = do
     let dyName :: Dynamic t T.Text =
             fmap (\(Turnpoint name _ _ _) -> T.pack name) x
 
+    let dyLat :: Dynamic t T.Text =
+            fmap (\(Turnpoint _ (Latitude lat) _ _) ->
+                T.pack $ take 8 $ show $ toSci lat) x
+
+    let dyLng :: Dynamic t T.Text =
+            fmap (\(Turnpoint _ _ (Longitude lng) _) ->
+                T.pack $ take 8 $ show $ toSci lng) x
+
+    let dyRadius :: Dynamic t T.Text =
+            fmap (\(Turnpoint _ _ _ radius) ->
+                T.pack $ show radius) x
+
     el "li" $ do
         dynText dyName
+        text ", Lat="
+        dynText dyLat
+        text ", Lng="
+        dynText dyLng
+        text ", Radius="
+        dynText dyRadius
 
 task :: forall t (m :: * -> *).
         MonadWidget t m =>
@@ -103,9 +121,11 @@ getTasks () = do
     pb :: Event t () <- getPostBuild
     let defReq = "http://localhost:3000/tasks"
     let req md = XhrRequest "GET" (maybe defReq id md) def
-    rec rsp <- performRequestAsync $ fmap req $ leftmost [ Nothing <$ pb ]
+    rsp <- performRequestAsync $ fmap req $ leftmost [ Nothing <$ pb ]
         
     let evTasks :: Event t [Task] = fmapMaybe decodeXhrResponse rsp
     dyTasks :: Dynamic t [Task] <- holdDyn [] evTasks
+
     simpleList dyTasks task 
+
     return ()
