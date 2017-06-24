@@ -2,7 +2,9 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE KindSignatures #-}
 
+import Control.Monad
 import Control.Applicative
 import Data.Aeson
 import GHC.Generics
@@ -55,14 +57,46 @@ main :: IO ()
 main = mainWidget tasks
 
 loading :: MonadWidget t m => m ()
-loading = text "Tasks will be shown here"
+loading = do
+    el "li" $ do
+        text "Tasks will be shown here"
 
 tasks :: MonadWidget t m => m ()
 tasks = el "div" $ do
-    getTasksEv <- button "Get Tasks"
-    el "pre" $ do
-        widgetHold loading $ fmap getTasks getTasksEv
+    evGet <- button "Get Tasks"
+    el "ul" $ do
+        widgetHold loading $ fmap getTasks evGet
     return ()
+
+turnpoint :: forall t (m :: * -> *).
+             MonadWidget t m =>
+             Dynamic t Turnpoint -> m ()
+turnpoint x = do
+    let dyName :: Dynamic t T.Text =
+            fmap (\(Turnpoint name _ _ _) -> T.pack name) x
+
+    el "li" $ do
+        dynText dyName
+
+task :: forall t (m :: * -> *).
+        MonadWidget t m =>
+        Dynamic t Task -> m ()
+task x = do
+    let dyName :: Dynamic t T.Text =
+            fmap (\(Task name _ _) -> T.pack name) x
+
+    let dySpeedSection :: Dynamic t SpeedSection =
+            fmap (\(Task _ ss _) -> ss) x
+
+    let dyTurnpoints :: Dynamic t [Turnpoint] =
+            fmap (\(Task _ _ tps) -> tps) x
+
+    el "li" $ do
+        dynText dyName
+        el "ul" $ do
+            el "li" $ do display dySpeedSection
+            simpleList dyTurnpoints turnpoint
+            return ()
 
 getTasks :: MonadWidget t m => () -> m ()
 getTasks () = do
@@ -71,8 +105,7 @@ getTasks () = do
     let req md = XhrRequest "GET" (maybe defReq id md) def
     rec rsp <- performRequestAsync $ fmap req $ leftmost [ Nothing <$ pb ]
         
-    let rspTasks :: Event t [Task] = fmapMaybe decodeXhrResponse rsp
-    let evTasks = ffor rspTasks (\x -> T.pack . show <$> x)
-    let evPre = ffor evTasks (T.intercalate " ")
-    widgetHold loading $ fmap text evPre
+    let evTasks :: Event t [Task] = fmapMaybe decodeXhrResponse rsp
+    dyTasks :: Dynamic t [Task] <- holdDyn [] evTasks
+    simpleList dyTasks task 
     return ()
