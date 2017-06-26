@@ -40,11 +40,14 @@ buildRules = do
     phony "view-reflex" $ do
         need [ "view" </> "task.jsexe" </> "all" <.> "js" ]
 
+    "view" </> "node_modules" </> "webpack" </> "package" <.> "json" %> \ _ -> do
+        cmd (Cwd "view") Shell "yarn install"
+
     "view" </> "task.jsexe" </> "all" <.> "js" %> \ _ -> do
-        -- TODO: Install ghcjs on windows.
-        cmd (Cwd "view") "echo ghcjs -DGHCJS_BROWSER task.hs"
+        cmd (Cwd "view") "ghcjs -DGHCJS_BROWSER task.hs"
 
     "__www" </> "task-view" </> "task" <.> "html" %> \ _ -> do
+        need [ "view" </> "node_modules" </> "webpack" </> "package" <.> "json" ]
         cmd (Cwd "view") Shell "yarn run pack"
 
     mconcat $ (\ s ->
