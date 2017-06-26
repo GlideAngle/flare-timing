@@ -81,6 +81,18 @@ executables:
     - -with-rtsopts=-N
     main: Main.hs
     source-dirs: kml/app-cmd
+  flare-timing-build-cmd:
+    dependencies:
+    - base
+    - ansi-terminal
+    - shake
+    - time
+    ghc-options:
+    - -rtsopts
+    - -threaded
+    - -with-rtsopts=-N
+    main: Main.hs
+    source-dirs: build/app-cmd
 extra-source-files:
 - package.yaml
 - changelog.md

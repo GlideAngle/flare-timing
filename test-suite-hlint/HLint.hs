@@ -9,6 +9,7 @@ arguments =
     , "fsdb/app-cmd"
     , "igc/app-cmd"
     , "kml/app-cmd"
+    , "build/app-cmd"
     , "test-suite-hlint"
     ]
 
