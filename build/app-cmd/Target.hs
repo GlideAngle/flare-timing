@@ -20,5 +20,3 @@ cleanRules = do
 buildRules :: Rules ()
 buildRules = do
     Web.buildRules
-
-    phony "view" $ need [ "view-reflex" ]
