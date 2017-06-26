@@ -7,7 +7,7 @@ module.exports = {
     entry: {
         task: path.join(__dirname, '.', 'task.js')
     },
-    externals: /(rts|lib|out|runmain).js$/,
+    externals: /(all|rts|lib|out|runmain).js$/,
     resolve: {
         extensions: ['.webpack.js', '.js', '.css', '.less'],
         modules: ['node_modules']
@@ -15,16 +15,10 @@ module.exports = {
     devtool: 'source-map',
     output: {
         path: path.resolve(__dirname, '../__www/task-view'),
-        filename: '[name].js',
-        publicPath: '/'
+        filename: '[name].js'
     },
     module: {
-        noParse: [
-            /rts.js$/,
-            /lib.js$/,
-            /out.js$/,
-            /runmain.js$/
-        ],
+        noParse: /(all|rts|lib|out|runmain).js$/,
         rules: [ {
             test: /\.html$/,
             exclude: /node_modules/,
@@ -39,7 +33,7 @@ module.exports = {
             test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
             loader: 'url-loader?limit=10000&minetype=application/font-woff'
         }, {
-            test: /(rts|lib|out|runmain).js$/,
+            test: /(all|rts|lib|out|runmain).js$/,
             loader: 'file-loader' 
         }, {
             test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
