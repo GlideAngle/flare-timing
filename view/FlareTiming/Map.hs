@@ -62,44 +62,45 @@ map = do
 
             L.tileLayerAddToMap layer lmap
 
-            startMark <- L.marker (negate 33.36137, 147.9320)
+            startMark <- L.marker pt1
             L.markerAddToMap startMark lmap
             L.markerPopup startMark "FORBES"
 
-            launch <- L.circle (negate 33.36137, 147.93207) 100
+            launch <- L.circle pt1 100
             L.circleAddToMap launch lmap
 
-            start <- L.circle (negate 33.36137, 147.93207) 10000
+            start <- L.circle pt1 10000
             L.circleAddToMap start lmap
 
-            tp1Mark <- L.marker (negate 33.85373, 147.94195)
+            tp1Mark <- L.marker pt2
             L.markerAddToMap tp1Mark lmap
             L.markerPopup tp1Mark "PINEY"
 
-            tp1 <- L.circle (negate 33.85373, 147.94195) 400
+            tp1 <- L.circle pt2 400
             L.circleAddToMap tp1 lmap
 
-            tp2Mark <- L.marker (negate 33.4397, 148.34533)
+            tp2Mark <- L.marker pt3
             L.markerAddToMap tp2Mark lmap
             L.markerPopup tp2Mark "EUGOWR"
 
-            tp2 <- L.circle (negate 33.4397, 148.34533) 400
+            tp2 <- L.circle pt3 400
             L.circleAddToMap tp2 lmap
 
-            goalMark <- L.marker (negate 33.61965, 148.4099)
+            goalMark <- L.marker pt4
             L.markerAddToMap goalMark lmap
             L.markerPopup goalMark "GOALD1"
 
-            goal <- L.circle (negate 33.61965, 148.4099) 400
+            goal <- L.circle pt4 400
             L.circleAddToMap goal lmap
 
-            courseLine <- L.polyline [ (negate 33.36137, 147.93207)
-                                     , (negate 33.85373, 147.94195)
-                                     , (negate 33.4397, 148.34533)
-                                     , (negate 33.61965, 148.4099)
-                                     ]
+            courseLine <- L.polyline [ pt1, pt2, pt3, pt4 ]
             L.polylineAddToMap courseLine lmap
 
             return lmap
 
     return ()
+    where
+        pt1 = (negate 33.36137, 147.93207)
+        pt2 = (negate 33.85373, 147.94195)
+        pt3 = (negate 33.4397, 148.34533)
+        pt4 = (negate 33.61965, 148.4099)
