@@ -127,6 +127,17 @@ leafletMapInvalidateSize :: LeafletMap -> IO ()
 leafletMapInvalidateSize lmap =
     leafletMapInvalidateSize_ (unLeafletMap lmap)
 
+attribution :: String
+attribution =
+    unlines [ "Map data: &copy; <a href='http://www.openstreetmap.org/copyright'>OpenStreetMap</a>, "
+            , "<a href='http://viewfinderpanoramas.org'>SRTM</a>"
+            , " | Map style: &copy; "
+            , "<a href='https://opentopomap.org'>OpenTopoMap</a>"
+            , " ("
+            , "<a href='https://creativecommons.org/licenses/by-sa/3.0/'>CC-BY-SA</a>"
+            , ")"
+            ]
+
 map :: MonadWidget t m => m ()
 map = do
     postBuild <- delay 0 =<< getPostBuild
@@ -140,7 +151,7 @@ map = do
                 leafletTileLayer
                     "http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
                     17
-                    "Map data: &copy; <a href='http://www.openstreetmap.org/copyright'>OpenStreetMap</a>, <a href='http://viewfinderpanoramas.org'>SRTM</a> | Map style: &copy; <a href='https://opentopomap.org'>OpenTopoMap</a> (<a href='https://creativecommons.org/licenses/by-sa/3.0/'>CC-BY-SA</a>)"
+                    attribution
 
             leafletTileLayerAddToMap layer lmap
 
