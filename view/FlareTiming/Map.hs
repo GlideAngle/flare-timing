@@ -35,22 +35,22 @@ import Control.Monad.IO.Class
 
 -- SEE: https://gist.github.com/ali-abrar/fa2adbbb7ee64a0295cb
 newtype LeafletMap =
-    LeafletMap { unLeafletMap :: JSRef LeafletMap }
+    LeafletMap { unLeafletMap :: JSVal }
 
 newtype LeafletTileLayer =
-    LeafletTileLayer { unLeafletTileLayer :: JSRef LeafletTileLayer }
+    LeafletTileLayer { unLeafletTileLayer :: JSVal }
 
 newtype LeafletMarker =
-    LeafletMarker { unLeafletMarker :: JSRef LeafletMarker }
+    LeafletMarker { unLeafletMarker :: JSVal }
 
 foreign import javascript unsafe
     "L['map']($1)"
-    leafletMap_ :: JSRef Element
-                -> IO (JSRef LeafletMap)
+    leafletMap_ :: JSVal
+                -> IO JSVal
 
 foreign import javascript unsafe
     "$1['setView']([$2, $3], $4)"
-    leafletMapSetView_ :: JSRef LeafletMap
+    leafletMapSetView_ :: JSVal
                        -> Double
                        -> Double
                        -> Int
@@ -60,35 +60,35 @@ foreign import javascript unsafe
     "L['marker']([$1, $2])"
     leafletMarker_ :: Double
                    -> Double
-                   -> IO (JSRef LeafletMarker)
+                   -> IO JSVal
 
 foreign import javascript unsafe
     "L['tileLayer']($1, { maxZoom: $2, attribution: $3})"
     leafletTileLayer_ :: JSString
                       -> Int
                       -> JSString
-                      -> IO (JSRef LeafletTileLayer)
+                      -> IO JSVal
 
 foreign import javascript unsafe
     "$1['addTo']($2)"
-    leafletTileLayerAddToMap_ :: JSRef LeafletTileLayer
-                              -> JSRef LeafletMap
+    leafletTileLayerAddToMap_ :: JSVal
+                              -> JSVal
                               -> IO ()
 
 foreign import javascript unsafe
     "$1['addTo']($2)"
-    leafletMarkerAddToMap_ :: JSRef LeafletMarker
-                           -> JSRef LeafletMap
+    leafletMarkerAddToMap_ :: JSVal
+                           -> JSVal
                            -> IO ()
 
 foreign import javascript unsafe
     "$1.invalidateSize()"
-    leafletMapInvalidateSize_ :: JSRef LeafletMap
+    leafletMapInvalidateSize_ :: JSVal
                               -> IO ()
 
 foreign import javascript unsafe
     "$1.bindPopup($2).openPopup()"
-    leafletMarkerPopup_ :: JSRef LeafletMarker
+    leafletMarkerPopup_ :: JSVal
                         -> JSString
                         -> IO ()
 
