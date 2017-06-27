@@ -4,6 +4,9 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE KindSignatures #-}
 
+module FlareTiming.Task (tasks) where
+
+import Prelude hiding (map)
 import Control.Monad
 import Control.Applicative
 import Data.Aeson
@@ -14,6 +17,8 @@ import qualified Data.Map as Map
 import Data.Map (Map)
 import Data.Monoid((<>))
 import Data.Scientific (Scientific, toRealFloat, fromRationalRepetend)
+
+import FlareTiming.Map (map)
 
 type Name = String
 newtype Latitude = Latitude Rational deriving (Eq, Show)
@@ -53,9 +58,6 @@ instance FromJSON Longitude where
     parseJSON x@(Number _) = Longitude . fromSci <$> parseJSON x
     parseJSON _ = empty
 
-main :: IO ()
-main = mainWidget tasks
-
 loading :: MonadWidget t m => m ()
 loading = do
     el "li" $ do
@@ -64,8 +66,12 @@ loading = do
 tasks :: MonadWidget t m => m ()
 tasks = el "div" $ do
     evGet <- button "Get Tasks"
+    
     el "ul" $ do
         widgetHold loading $ fmap getTasks evGet
+
+    map
+
     return ()
 
 turnpoint :: forall t (m :: * -> *).

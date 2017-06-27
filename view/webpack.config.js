@@ -5,7 +5,7 @@ var extractLess = new ExtractTextPlugin({ filename: 'styles.css' });
 
 module.exports = {
     entry: {
-        task: path.join(__dirname, '.', 'task.js')
+        app: path.join(__dirname, '.', 'app.js')
     },
     externals: /(all|rts|lib|out|runmain).js$/,
     resolve: {

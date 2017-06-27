@@ -1,4 +1,4 @@
 'use strict';
 
-require('./task.html');
+require('./app.html');
 require('./less/site.less');
