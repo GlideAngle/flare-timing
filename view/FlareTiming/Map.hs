@@ -63,8 +63,9 @@ foreign import javascript unsafe
                    -> IO (JSRef LeafletMarker)
 
 foreign import javascript unsafe
-    "L['tileLayer']($1, { attribution: $2})"
+    "L['tileLayer']($1, { maxZoom: $2, attribution: $3})"
     leafletTileLayer_ :: JSString
+                      -> Int
                       -> JSString
                       -> IO (JSRef LeafletTileLayer)
 
@@ -81,12 +82,12 @@ foreign import javascript unsafe
                            -> IO ()
 
 foreign import javascript unsafe
-    "$1['invalidateSize']()"
+    "$1.invalidateSize()"
     leafletMapInvalidateSize_ :: JSRef LeafletMap
                               -> IO ()
 
 foreign import javascript unsafe
-    "$1['bindPopup']($2).openPopup()"
+    "$1.bindPopup($2).openPopup()"
     leafletMarkerPopup_ :: JSRef LeafletMarker
                         -> JSString
                         -> IO ()
@@ -105,9 +106,9 @@ leafletMarker (lat, lng) = do
     marker <- leafletMarker_ lat lng
     return $ LeafletMarker marker
 
-leafletTileLayer :: String -> String -> IO LeafletTileLayer
-leafletTileLayer src attribution = do
-    layer <- leafletTileLayer_ (toJSString src) (toJSString attribution)
+leafletTileLayer :: String -> Int -> String -> IO LeafletTileLayer
+leafletTileLayer src maxZoom attribution = do
+    layer <- leafletTileLayer_ (toJSString src) maxZoom (toJSString attribution)
     return $ LeafletTileLayer layer
 
 leafletMarkerAddToMap :: LeafletMarker -> LeafletMap -> IO ()
@@ -129,20 +130,25 @@ leafletMapInvalidateSize lmap =
 map :: MonadWidget t m => m ()
 map = do
     postBuild <- delay 0 =<< getPostBuild
-    (e, _) <- elAttr' "div" ("style" =: "height: 300px;") $ return ()
+    (e, _) <- elAttr' "div" ("style" =: "height: 600px;") $ return ()
     rec performEvent_ $ fmap (\_ -> liftIO $ leafletMapInvalidateSize lmap) postBuild
         lmap <- liftIO $ do
             lmap <- leafletMap (_element_raw e)
-            leafletMapSetView lmap (51.505, -0.09) 13
-            
-            layer <- leafletTileLayer
-                        "http://{s}.tile.osm.org/{z}/{x}/{y}.png"
-                        "&copy; <a href='http://osm.org/copyright'>OpenStreetMap</a> contributors"
+            leafletMapSetView lmap (-33.36137, 147.93207) 12
+            layer <-
+                leafletTileLayer
+                    "http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
+                    17
+                    "Map data: &copy; <a href='http://www.openstreetmap.org/copyright'>OpenStreetMap</a>, <a href='http://viewfinderpanoramas.org'>SRTM</a> | Map style: &copy; <a href='https://opentopomap.org'>OpenTopoMap</a> (<a href='https://creativecommons.org/licenses/by-sa/3.0/'>CC-BY-SA</a>)"
 
             leafletTileLayerAddToMap layer lmap
-            mark <- leafletMarker (51.5, -0.09)
+
+            mark <- leafletMarker (-33.36137, 147.9320)
+
             leafletMarkerAddToMap mark lmap
-            leafletMarkerPopup mark "A pretty CSS3 popup.<br> Easily customizable."
+
+            leafletMarkerPopup mark "FORBES"
+
             return lmap
 
     return ()
