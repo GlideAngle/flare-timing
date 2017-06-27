@@ -5,4 +5,7 @@ __shake-build
 node_modules
 __www
 *.jsexe
+*.fsdb
+*.js_hi
+*.js_o
 
