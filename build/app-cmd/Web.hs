@@ -8,9 +8,10 @@ import Development.Shake
     , phony
     , cmd
     , need
-    , copyFile'
+    , copyFileChanged
+    , liftIO
     )
-import Development.Shake.FilePath ((</>), (<.>))
+import Development.Shake.FilePath ((</>))
 
 ghcjsOutputs :: [ String ]
 ghcjsOutputs =
@@ -33,26 +34,35 @@ cleanRules = do
 buildRules :: Rules ()
 buildRules = do
     phony "view-www" $ do
-        need [ "__www" </> "task-view" </> "all" <.> "js"
-             , "__www" </> "task-view" </> "task" <.> "html"
-             ]
+        liftIO $ putStrLn $ "#phony view-www" 
+        need $ (\ s -> "__www" </> "task-view" </> s)
+             <$> [ "all.js", "task.html" ]
 
     phony "view-reflex" $ do
-        need [ "view" </> "task.jsexe" </> "all" <.> "js" ]
+        liftIO $ putStrLn $ "#phony view-reflex" 
+        need [ "view" </> "task.jsexe" </> "all.js" ]
 
-    "view" </> "node_modules" </> "webpack" </> "package" <.> "json" %> \ _ -> do
+    "view" </> "node_modules" </> "webpack" </> "package.json" %> \ _ -> do
+        liftIO $ putStrLn $ "#install node_modules" 
         cmd (Cwd "view") Shell "yarn install"
 
-    "view" </> "task.jsexe" </> "all" <.> "js" %> \ _ -> do
-        cmd (Cwd "view") "ghcjs -DGHCJS_BROWSER task.hs"
-
-    "__www" </> "task-view" </> "task" <.> "html" %> \ _ -> do
-        need [ "view" </> "node_modules" </> "webpack" </> "package" <.> "json" ]
+    "__www" </> "task-view" </> "task.html" %> \ _ -> do
+        liftIO $ putStrLn $ "#pack task.html" 
+        need [ "view" </> "node_modules" </> "webpack" </> "package.json" ]
         cmd (Cwd "view") Shell "yarn run pack"
 
-    mconcat $ (\ s ->
+    mconcat $ (\ s -> do
+        "view" </> "task.jsexe" </> s %> \ _ -> do
+            need [ "view" </> "task.hs" ]
+            liftIO $ putStrLn $ "#compile " ++ s
+            cmd (Cwd "view") "ghcjs -DGHCJS_BROWSER task.hs")
+        <$> ghcjsOutputs
+
+    mconcat $ (\ s -> do
         "__www" </> "task-view" </> s %> \ _ -> do
-            copyFile'
+            need [ "view" </> "task.jsexe" </> s ]
+            liftIO $ putStrLn $ "#copy " ++ s
+            copyFileChanged
                 ("view" </> "task.jsexe" </> s)
                 ("__www" </> "task-view" </> s))
         <$> ghcjsOutputs
