@@ -15,18 +15,21 @@ module FlareTiming.Map.Leaflet
     , markerPopup
     , circle
     , circleAddToMap
+    , polyline 
+    , polylineAddToMap
     ) where
 
 import Prelude hiding (map, log)
 import GHCJS.Types (JSVal, JSString)
 import GHCJS.DOM.Element (IsElement(..))
-import GHCJS.DOM.Types (Element(..), toElement, toJSString)
+import GHCJS.DOM.Types (Element(..), toElement, toJSString, toJSVal)
 
 -- SEE: https://gist.github.com/ali-abrar/fa2adbbb7ee64a0295cb
 newtype Map = Map { unMap :: JSVal }
 newtype TileLayer = TileLayer { unTileLayer :: JSVal }
 newtype Marker = Marker { unMarker :: JSVal }
 newtype Circle = Circle { unCircle :: JSVal }
+newtype Polyline = Polyline { unPolyline :: JSVal }
 
 foreign import javascript unsafe
     "L['map']($1)"
@@ -68,6 +71,14 @@ foreign import javascript unsafe
     "$1['addTo']($2)"
     circleAddToMap_ :: JSVal -> JSVal -> IO ()
 
+foreign import javascript unsafe
+    "L['polyline']($1, {color: 'red'})"
+    polyline_ :: JSVal -> IO JSVal
+
+foreign import javascript unsafe
+    "$1['addTo']($2)"
+    polylineAddToMap_ :: JSVal -> JSVal -> IO ()
+
 map :: IsElement e => e -> IO Map
 map e = do
     lmap <- map_ $ unElement $ toElement e
@@ -85,7 +96,7 @@ tileLayer src maxZoom attribution = do
     return $ TileLayer layer
 
 tileLayerAddToMap :: TileLayer -> Map -> IO ()
-tileLayerAddToMap layer lmap = tileLayerAddToMap_ (unTileLayer layer) (unMap lmap)
+tileLayerAddToMap x lmap = tileLayerAddToMap_ (unTileLayer x) (unMap lmap)
 
 marker :: (Double, Double) -> IO Marker
 marker (lat, lng) = do
@@ -93,7 +104,10 @@ marker (lat, lng) = do
     return $ Marker marker
 
 markerAddToMap :: Marker -> Map -> IO ()
-markerAddToMap marker lmap = markerAddToMap_ (unMarker marker) (unMap lmap)
+markerAddToMap x lmap = markerAddToMap_ (unMarker x) (unMap lmap)
+
+markerPopup :: Marker -> String -> IO ()
+markerPopup x msg = markerPopup_ (unMarker x) (toJSString msg)
 
 circle :: (Double, Double) -> Double -> IO Circle
 circle (lat, lng) radius = do
@@ -101,7 +115,13 @@ circle (lat, lng) radius = do
     return $ Circle circle
 
 circleAddToMap :: Circle -> Map -> IO ()
-circleAddToMap marker lmap = circleAddToMap_ (unCircle marker) (unMap lmap)
+circleAddToMap x lmap = circleAddToMap_ (unCircle x) (unMap lmap)
 
-markerPopup :: Marker -> String -> IO ()
-markerPopup marker msg = markerPopup_ (unMarker marker) (toJSString msg)
+polyline :: [(Double, Double)] -> IO Polyline
+polyline xs = do
+    ys <- toJSVal $ (\ (lat, lng) -> [ lat, lng ]) <$> xs
+    polyline <- polyline_ ys
+    return $ Polyline polyline
+
+polylineAddToMap :: Polyline -> Map -> IO ()
+polylineAddToMap x lmap = polylineAddToMap_ (unPolyline x) (unMap lmap)

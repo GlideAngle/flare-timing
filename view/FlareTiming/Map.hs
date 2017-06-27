@@ -29,6 +29,8 @@ import qualified FlareTiming.Map.Leaflet as L
     , mapInvalidateSize
     , circle
     , circleAddToMap
+    , polyline 
+    , polylineAddToMap
     )
 
 attribution :: String
@@ -90,6 +92,13 @@ map = do
 
             goal <- L.circle (negate 33.61965, 148.4099) 400
             L.circleAddToMap goal lmap
+
+            courseLine <- L.polyline [ (negate 33.36137, 147.93207)
+                                     , (negate 33.85373, 147.94195)
+                                     , (negate 33.4397, 148.34533)
+                                     , (negate 33.61965, 148.4099)
+                                     ]
+            L.polylineAddToMap courseLine lmap
 
             return lmap
 
