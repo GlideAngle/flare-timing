@@ -136,6 +136,7 @@ map = do
             lmap <- leafletMap (_element_raw e)
             leafletMapSetView lmap (-33.36137, 147.93207) 12
             layer <-
+                -- SEE: http://leaflet-extras.github.io/leaflet-providers/preview/
                 leafletTileLayer
                     "http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
                     17
