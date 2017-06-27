@@ -27,6 +27,8 @@ import qualified FlareTiming.Map.Leaflet as L
     , markerAddToMap
     , markerPopup
     , mapInvalidateSize
+    , circle
+    , circleAddToMap
     )
 
 attribution :: String
@@ -47,7 +49,8 @@ map = do
     rec performEvent_ $ fmap (\_ -> liftIO $ L.mapInvalidateSize lmap) postBuild
         lmap <- liftIO $ do
             lmap <- L.map (_element_raw e)
-            L.mapSetView lmap (-33.36137, 147.93207) 12
+            L.mapSetView lmap (negate 33.36137, 147.93207) 11
+
             layer <-
                 -- SEE: http://leaflet-extras.github.io/leaflet-providers/preview/
                 L.tileLayer
@@ -56,10 +59,38 @@ map = do
                     attribution
 
             L.tileLayerAddToMap layer lmap
-            mark <- L.marker (-33.36137, 147.9320)
-            L.markerAddToMap mark lmap
-            L.markerPopup mark "FORBES"
+
+            startMark <- L.marker (negate 33.36137, 147.9320)
+            L.markerAddToMap startMark lmap
+            L.markerPopup startMark "FORBES"
+
+            launch <- L.circle (negate 33.36137, 147.93207) 100
+            L.circleAddToMap launch lmap
+
+            start <- L.circle (negate 33.36137, 147.93207) 10000
+            L.circleAddToMap start lmap
+
+            tp1Mark <- L.marker (negate 33.85373, 147.94195)
+            L.markerAddToMap tp1Mark lmap
+            L.markerPopup tp1Mark "PINEY"
+
+            tp1 <- L.circle (negate 33.85373, 147.94195) 400
+            L.circleAddToMap tp1 lmap
+
+            tp2Mark <- L.marker (negate 33.4397, 148.34533)
+            L.markerAddToMap tp2Mark lmap
+            L.markerPopup tp2Mark "EUGOWR"
+
+            tp2 <- L.circle (negate 33.4397, 148.34533) 400
+            L.circleAddToMap tp2 lmap
+
+            goalMark <- L.marker (negate 33.61965, 148.4099)
+            L.markerAddToMap goalMark lmap
+            L.markerPopup goalMark "GOALD1"
+
+            goal <- L.circle (negate 33.61965, 148.4099) 400
+            L.circleAddToMap goal lmap
+
             return lmap
 
     return ()
-
