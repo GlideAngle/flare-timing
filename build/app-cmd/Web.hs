@@ -26,10 +26,25 @@ ghcjsOutputs =
     , "runmain.js"
     ]
 
+ghcjsIntermediates :: [ String ]
+ghcjsIntermediates =
+    [ "//*.js_hi"
+    , "//*.js_o"
+    , "//*.js_dyn_hi"
+    , "//*.js_dyn_o"
+    ]
+
 cleanRules :: Rules ()
 cleanRules = do
+    phony "clean" $ do
+        need [ "clean-www", "clean-view-reflex" ]
+
+    phony "clean-www" $ do
+        removeFilesAfter "__www" [ "//*" ] 
+
     phony "clean-view-reflex" $ do
         removeFilesAfter ("view" </> "app.jsexe") ghcjsOutputs
+        removeFilesAfter "view" ghcjsIntermediates
 
 buildRules :: Rules ()
 buildRules = do

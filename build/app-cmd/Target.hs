@@ -15,8 +15,6 @@ cleanRules :: Rules ()
 cleanRules = do
     Web.cleanRules
 
-    phony "clean" $ need [ "clean-view-reflex" ]
-
 buildRules :: Rules ()
 buildRules = do
     Web.buildRules
