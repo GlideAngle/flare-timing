@@ -17,6 +17,10 @@ module FlareTiming.Map.Leaflet
     , circleAddToMap
     , polyline 
     , polylineAddToMap
+    , circleBounds
+    , polylineBounds
+    , extendBounds
+    , fitBounds
     ) where
 
 import Prelude hiding (map, log)
@@ -30,6 +34,7 @@ newtype TileLayer = TileLayer { unTileLayer :: JSVal }
 newtype Marker = Marker { unMarker :: JSVal }
 newtype Circle = Circle { unCircle :: JSVal }
 newtype Polyline = Polyline { unPolyline :: JSVal }
+newtype LatLngBounds = LatLngBounds { unLatLngBounds :: JSVal }
 
 foreign import javascript unsafe
     "L['map']($1)"
@@ -79,6 +84,18 @@ foreign import javascript unsafe
     "$1['addTo']($2)"
     polylineAddToMap_ :: JSVal -> JSVal -> IO ()
 
+foreign import javascript unsafe
+    "$1['getBounds']()"
+    getBounds_ :: JSVal -> IO JSVal
+
+foreign import javascript unsafe
+    "$1['extend']($2)"
+    extendBounds_ :: JSVal -> JSVal -> IO JSVal
+
+foreign import javascript unsafe
+    "$1['fitBounds']($2)"
+    fitBounds_ :: JSVal -> JSVal -> IO ()
+
 map :: IsElement e => e -> IO Map
 map e = do
     lmap <- map_ $ unElement $ toElement e
@@ -125,3 +142,21 @@ polyline xs = do
 
 polylineAddToMap :: Polyline -> Map -> IO ()
 polylineAddToMap x lmap = polylineAddToMap_ (unPolyline x) (unMap lmap)
+
+circleBounds :: Circle -> IO LatLngBounds
+circleBounds x = do
+    bounds <- getBounds_ (unCircle x)
+    return $ LatLngBounds bounds
+
+polylineBounds :: Polyline -> IO LatLngBounds
+polylineBounds x = do
+    bounds <- getBounds_ (unPolyline x)
+    return $ LatLngBounds bounds
+
+extendBounds :: LatLngBounds -> LatLngBounds -> IO LatLngBounds
+extendBounds x y = do
+    bounds <- extendBounds_ (unLatLngBounds x) (unLatLngBounds y)
+    return $ LatLngBounds bounds
+
+fitBounds :: Map -> LatLngBounds -> IO ()
+fitBounds lm bounds = fitBounds_ (unMap lm) (unLatLngBounds bounds)

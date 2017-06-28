@@ -31,6 +31,10 @@ import qualified FlareTiming.Map.Leaflet as L
     , circleAddToMap
     , polyline 
     , polylineAddToMap
+    , circleBounds
+    , polylineBounds
+    , extendBounds
+    , fitBounds
     )
 
 attribution :: String
@@ -48,8 +52,14 @@ map :: MonadWidget t m => m ()
 map = do
     postBuild <- delay 0 =<< getPostBuild
     (e, _) <- elAttr' "div" ("style" =: "height: 600px;") $ return ()
-    rec performEvent_ $ fmap (\_ -> liftIO $ L.mapInvalidateSize lmap) postBuild
-        lmap <- liftIO $ do
+    rec performEvent_ $ fmap
+                            (\_ -> liftIO $ do
+                                L.mapInvalidateSize lmap'
+                                L.fitBounds lmap' bounds'
+                                return ()
+                            )
+                            postBuild
+        (lmap', bounds') <- liftIO $ do
             lmap <- L.map (_element_raw e)
             L.mapSetView lmap (negate 33.36137, 147.93207) 11
 
@@ -96,7 +106,11 @@ map = do
             courseLine <- L.polyline [ pt1, pt2, pt3, pt4 ]
             L.polylineAddToMap courseLine lmap
 
-            return lmap
+            startBounds <- L.circleBounds start
+            courseBounds <- L.polylineBounds courseLine
+            bounds <- L.extendBounds courseBounds startBounds
+
+            return (lmap, bounds)
 
     return ()
     where
