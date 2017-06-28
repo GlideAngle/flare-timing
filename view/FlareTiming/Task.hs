@@ -14,7 +14,7 @@ import GHC.Generics
 import Reflex.Dom
 import qualified Data.Text as T
 import qualified Data.Map as Map
-import Data.Map (Map)
+import Data.Map (Map, fromList)
 import Data.Monoid((<>))
 import Data.Scientific (Scientific, toRealFloat, fromRationalRepetend)
 
@@ -63,15 +63,18 @@ loading = do
     el "li" $ do
         text "Tasks will be shown here"
 
+buttonDynAttr :: MonadWidget t m => Dynamic t (Map T.Text T.Text) -> T.Text -> m (Event t ())
+buttonDynAttr attrs label = do
+  (e, _) <- elDynAttr' "button" attrs (text label)
+  return $ domEvent Click e
+
 tasks :: MonadWidget t m => m ()
 tasks = el "div" $ do
-    evGet <- button "Get Tasks"
-    
-    el "ul" $ do
-        widgetHold loading $ fmap getTasks evGet
-
+    evGet <- buttonDynAttr
+        (constDyn $ fromList [("class", "btn btn-primary")])
+        "Get Tasks"
+    el "ul" $ do widgetHold loading $ fmap getTasks evGet
     map
-
     return ()
 
 turnpoint :: forall t (m :: * -> *).

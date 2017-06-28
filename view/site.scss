@@ -1,0 +1,12 @@
+// https://stackoverflow.com/questions/33649761/how-do-i-load-font-awesome-using-scss-sass-in-webpack-using-relative-paths
+$fa-font-path: "~font-awesome/fonts";
+@import "node_modules/bootstrap/scss/bootstrap.scss";
+@import "node_modules/font-awesome/scss/font-awesome.scss";
+
+html {
+    font-size: 16pt;
+}
+
+body, input, button, select, textarea {
+    font-family: 'Open Sans', monospace;
+}

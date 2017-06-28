@@ -48,6 +48,9 @@ cleanRules = do
 
 buildRules :: Rules ()
 buildRules = do
+    phony "view-start" $ do
+        cmd (Cwd "view") Shell "yarn run start"
+
     phony "view-www" $ do
         liftIO $ putStrLn $ "#phony view-www" 
         need $ (\ s -> "__www" </> "task-view" </> s)

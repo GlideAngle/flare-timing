@@ -1,7 +1,7 @@
 var webpack = require("webpack");
 var path = require('path');
 var ExtractTextPlugin = require('extract-text-webpack-plugin'); 
-var extractLess = new ExtractTextPlugin({ filename: 'styles.css' });
+var extractScss = new ExtractTextPlugin({ filename: 'styles.css' });
 
 module.exports = {
     entry: {
@@ -9,13 +9,18 @@ module.exports = {
     },
     externals: /(all|rts|lib|out|runmain).js$/,
     resolve: {
-        extensions: ['.webpack.js', '.js', '.css', '.less'],
+        extensions: ['.webpack.js', '.js', '.css', '.less', '.scss' ],
         modules: ['node_modules']
     },
     devtool: 'source-map',
     output: {
         path: path.resolve(__dirname, '../__www/task-view'),
         filename: '[name].js'
+    },
+    devServer: {
+        contentBase: path.resolve(__dirname, "../__www/task-view"),
+        compress: true,
+        port: 9000
     },
     module: {
         noParse: /(all|rts|lib|out|runmain).js$/,
@@ -27,8 +32,8 @@ module.exports = {
             test: /\.css$/,
             loader: ExtractTextPlugin.extract([ 'style-loader', 'css-loader' ])
         }, {
-            test: /\.less$/,
-            loader: extractLess.extract([ 'css-loader', 'less-loader' ])
+            test: /\.scss$/,
+            loader: extractScss.extract([ 'css-loader', 'sass-loader' ])
         }, {
             test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
             loader: 'url-loader?limit=10000&minetype=application/font-woff'
@@ -41,6 +46,6 @@ module.exports = {
         }]
     },
     plugins: [
-        extractLess
+        extractScss
     ]
 };
