@@ -10,4 +10,4 @@ __www
 *.js_o
 *.js_dyn_hi
 *.js_dyn_o
-
+*.swo
