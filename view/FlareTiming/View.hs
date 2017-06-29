@@ -28,6 +28,7 @@ import FlareTiming.Task
     , SpeedSection
     , fromSci
     , toSci
+    , showRadius
     )
 import FlareTiming.Map (map)
 
@@ -100,7 +101,7 @@ turnpoint x = do
 
     let dyRadius :: Dynamic t T.Text =
             fmap (\(Turnpoint _ _ _ radius) ->
-                T.pack $ show radius) x
+                T.pack $ showRadius radius) x
 
     el "li" $ do
         dynText dyName

@@ -14,9 +14,11 @@ module FlareTiming.Task
     , SpeedSection
     , fromSci
     , toSci
+    , showRadius
     ) where
 
 import Prelude hiding (map)
+import Data.Ratio ((%))
 import Control.Monad
 import Control.Applicative
 import Data.Aeson
@@ -65,3 +67,8 @@ instance ToJSON Longitude where
 instance FromJSON Longitude where
     parseJSON x@(Number _) = Longitude . fromSci <$> parseJSON x
     parseJSON _ = empty
+
+showRadius :: Radius -> String
+showRadius r
+    | r < 1000 = show r ++ " m"
+    | otherwise = show (truncate (r % 1000)) ++ " km"
