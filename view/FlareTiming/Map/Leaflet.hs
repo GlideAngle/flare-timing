@@ -49,8 +49,8 @@ foreign import javascript unsafe
     mapInvalidateSize_ :: JSVal -> IO () 
 
 foreign import javascript unsafe
-    "L['tileLayer']($1, { maxZoom: $2, attribution: $3})"
-    tileLayer_ :: JSString -> Int -> JSString -> IO JSVal 
+    "L['tileLayer']($1, { maxZoom: $2})"
+    tileLayer_ :: JSString -> Int -> IO JSVal 
 
 foreign import javascript unsafe
     "$1['addTo']($2)"
@@ -107,9 +107,9 @@ mapSetView lm (lat, lng) zoom = mapSetView_ (unMap lm) lat lng zoom
 mapInvalidateSize :: Map -> IO ()
 mapInvalidateSize lmap = mapInvalidateSize_ (unMap lmap)
 
-tileLayer :: String -> Int -> String -> IO TileLayer
-tileLayer src maxZoom attribution = do
-    layer <- tileLayer_ (toJSString src) maxZoom (toJSString attribution)
+tileLayer :: String -> Int -> IO TileLayer
+tileLayer src maxZoom = do
+    layer <- tileLayer_ (toJSString src) maxZoom
     return $ TileLayer layer
 
 tileLayerAddToMap :: TileLayer -> Map -> IO ()

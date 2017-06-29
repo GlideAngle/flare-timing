@@ -72,10 +72,43 @@ buttonDynAttr attrs label = do
 
     return $ domEvent Click e
 
+attribution :: MonadWidget t m => m () 
+attribution = do
+    el "p" $ do
+        el "small" $ do
+            text "Map data: (c) "
+            elAttr "a" (union ("href" =: "http://www.openstreetmap.org/copyright")
+                              ("target" =: "_blank")) $ do
+                text "OpenStreetMap"
+
+            text ", "
+            elAttr "a" (union ("href" =: "http://viewfinderpanoramas.org")
+                              ("target" =: "_blank")) $ do
+                text "SRTM"
+
+            text " | Map style: (c) "
+            elAttr "a" (union ("href" =: "https://opentopomap.org")
+                              ("target" =: "_blank")) $ do
+                text "OpenTopoMap"
+
+            text " ("
+            elAttr "a" (union ("href" =: "https://creativecommons.org/licenses/by-sa/3.0/")
+                              ("target" =: "_blank")) $ do
+                text "CC-BY-SA"
+
+            text ")"
+
+
 navbar :: MonadWidget t m => m ()
 navbar = elAttr "nav" (union ("class" =: "navbar navbar-light")
                              ("style" =: "background-color: #e3f2fd;")) $ do
     elClass "a" "navbar-brand" $ text "Flare Timing"
+
+footer :: MonadWidget t m => m ()
+footer = elClass "div" "container" $ do
+    el "hr" $ return ()
+    elClass "div" "text-center text-muted" $ do
+        attribution
 
 tasks :: MonadWidget t m => m ()
 tasks = el "div" $ do
@@ -83,6 +116,7 @@ tasks = el "div" $ do
     map
     evGet <- buttonDynAttr (constDyn ("class" =: "btn btn-primary")) "Get Tasks"
     el "ul" $ do widgetHold loading $ fmap getTasks evGet
+    footer
     return ()
 
 turnpoint :: forall t (m :: * -> *).
