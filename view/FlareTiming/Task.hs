@@ -14,7 +14,7 @@ import GHC.Generics
 import Reflex.Dom
 import qualified Data.Text as T
 import qualified Data.Map as Map
-import Data.Map (Map, fromList)
+import Data.Map (Map, fromList, union)
 import Data.Monoid((<>))
 import Data.Scientific (Scientific, toRealFloat, fromRationalRepetend)
 
@@ -72,11 +72,17 @@ buttonDynAttr attrs label = do
 
     return $ domEvent Click e
 
+navbar :: MonadWidget t m => m ()
+navbar = elAttr "nav" (union ("class" =: "navbar navbar-light")
+                             ("style" =: "background-color: #e3f2fd;")) $ do
+    elClass "a" "navbar-brand" $ text "Flare Timing"
+
 tasks :: MonadWidget t m => m ()
 tasks = el "div" $ do
-    evGet <- buttonDynAttr (constDyn $ fromList [("class", "btn btn-primary")]) "Get Tasks"
-    el "ul" $ do widgetHold loading $ fmap getTasks evGet
+    navbar
     map
+    evGet <- buttonDynAttr (constDyn ("class" =: "btn btn-primary")) "Get Tasks"
+    el "ul" $ do widgetHold loading $ fmap getTasks evGet
     return ()
 
 turnpoint :: forall t (m :: * -> *).

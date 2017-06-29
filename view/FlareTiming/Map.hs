@@ -51,7 +51,7 @@ attribution =
 map :: MonadWidget t m => m ()
 map = do
     postBuild <- delay 0 =<< getPostBuild
-    (e, _) <- elAttr' "div" ("style" =: "height: 600px;") $ return ()
+    (e, _) <- elAttr' "div" ("style" =: "height: 400px;") $ return ()
     rec performEvent_ $ fmap
                             (\_ -> liftIO $ do
                                 L.mapInvalidateSize lmap'
