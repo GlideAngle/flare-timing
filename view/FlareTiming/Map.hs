@@ -1,5 +1,6 @@
 {-# LANGUAGE RecursiveDo #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module FlareTiming.Map (map) where
 
@@ -11,14 +12,19 @@ import Reflex.Dom
     , getPostBuild
     , performEvent_
     , _element_raw
+    , el
+    , text
     )
 import Reflex.Dom.Time (delay)
+import Data.Monoid (mconcat)
+import Control.Monad (join, sequence)
 import Control.Monad.IO.Class (liftIO)
 
 import qualified FlareTiming.Map.Leaflet as L
     ( Map(..)
     , TileLayer(..)
     , Marker(..)
+    , Circle(..)
     , map
     , mapSetView
     , tileLayer
@@ -36,9 +42,38 @@ import qualified FlareTiming.Map.Leaflet as L
     , extendBounds
     , fitBounds
     )
+import FlareTiming.Task
+    ( Task(..)
+    , Turnpoint(..)
+    , Latitude(..)
+    , Longitude(..)
+    , Name
+    , Radius
+    , SpeedSection
+    , fromSci
+    , toSci
+    , forbes
+    )
 
-map :: MonadWidget t m => m ()
-map = do
+turnpoint :: Turnpoint -> IO (L.Marker, L.Circle)
+turnpoint (Turnpoint name (Latitude lat) (Longitude lng) radius) = do
+    xMark <- L.marker latLng
+    xCyl <- L.circle latLng $ fromInteger radius
+    return (xMark, xCyl)
+    where
+        latLng = (fromRational lat, fromRational lng)
+
+toLatLng :: Turnpoint -> (Double, Double)
+toLatLng (Turnpoint _ (Latitude lat) (Longitude lng) _) =
+    (fromRational lat, fromRational lng)
+
+map :: MonadWidget t m => Task -> m ()
+
+map (Task _ _ []) = do
+    el "p" $ text "The task has no turnpoints."
+    return ()
+
+map (Task name _ xs)= do
     postBuild <- delay 0 =<< getPostBuild
     (e, _) <- elAttr' "div" ("style" =: "height: 240px;width: 320px") $ return ()
     rec performEvent_ $ fmap
@@ -50,7 +85,7 @@ map = do
                             postBuild
         (lmap', bounds') <- liftIO $ do
             lmap <- L.map (_element_raw e)
-            L.mapSetView lmap (negate 33.36137, 147.93207) 11
+            L.mapSetView lmap sLatLng 11
 
             layer <-
                 -- SEE: http://leaflet-extras.github.io/leaflet-providers/preview/
@@ -60,49 +95,43 @@ map = do
 
             L.tileLayerAddToMap layer lmap
 
-            startMark <- L.marker pt1
+            startMark <- L.marker sLatLng
             L.markerAddToMap startMark lmap
-            L.markerPopup startMark "FORBES"
+            L.markerPopup startMark sName
 
-            launch <- L.circle pt1 100
-            L.circleAddToMap launch lmap
-
-            start <- L.circle pt1 10000
+            start <- L.circle sLatLng $ fromInteger sRadius
             L.circleAddToMap start lmap
 
-            tp1Mark <- L.marker pt2
-            L.markerAddToMap tp1Mark lmap
-            L.markerPopup tp1Mark "PINEY"
-
-            tp1 <- L.circle pt2 400
-            L.circleAddToMap tp1 lmap
-
-            tp2Mark <- L.marker pt3
-            L.markerAddToMap tp2Mark lmap
-            L.markerPopup tp2Mark "EUGOWR"
-
-            tp2 <- L.circle pt3 400
-            L.circleAddToMap tp2 lmap
-
-            goalMark <- L.marker pt4
+            goalMark <- L.marker gLatLng
             L.markerAddToMap goalMark lmap
-            L.markerPopup goalMark "GOALD1"
+            L.markerPopup goalMark gName
 
-            goal <- L.circle pt4 400
+            goal <- L.circle gLatLng $ fromInteger gRadius
             L.circleAddToMap goal lmap
 
-            courseLine <- L.polyline [ pt1, pt2, pt3, pt4 ]
+            zs :: [(L.Marker, L.Circle)] <- sequence $ fmap turnpoint ys
+
+            sequence $ fmap
+                (\ (xMark, xCyl) -> do
+                    L.markerAddToMap xMark lmap
+                    L.markerPopup xMark name
+                    L.circleAddToMap xCyl lmap
+                    return ())
+                zs
+
+            let pts :: [(Double, Double)] = fmap toLatLng xs
+
+            courseLine <- L.polyline pts
             L.polylineAddToMap courseLine lmap
 
-            startBounds <- L.circleBounds start
-            courseBounds <- L.polylineBounds courseLine
-            bounds <- L.extendBounds courseBounds startBounds
+            bounds <- L.polylineBounds courseLine
 
             return (lmap, bounds)
 
     return ()
     where
-        pt1 = (negate 33.36137, 147.93207)
-        pt2 = (negate 33.85373, 147.94195)
-        pt3 = (negate 33.4397, 148.34533)
-        pt4 = (negate 33.61965, 148.4099)
+        s@(Turnpoint sName (Latitude sLat) (Longitude sLng) sRadius) = head xs
+        g@(Turnpoint gName (Latitude gLat) (Longitude gLng) gRadius) = head $ reverse xs
+        sLatLng = toLatLng s
+        gLatLng = toLatLng g
+        ys = reverse $ tail $ reverse $ tail xs

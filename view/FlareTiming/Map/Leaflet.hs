@@ -5,6 +5,7 @@ module FlareTiming.Map.Leaflet
     ( Map(..)
     , TileLayer(..)
     , Marker(..)
+    , Circle(..)
     , map
     , mapSetView
     , mapInvalidateSize

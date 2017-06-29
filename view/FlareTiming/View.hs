@@ -28,6 +28,7 @@ import FlareTiming.Task
     , SpeedSection
     , fromSci
     , toSci
+    , forbes
     )
 import FlareTiming.Map (map)
 
@@ -86,7 +87,7 @@ footer = elClass "div" "container" $ do
 tasks :: MonadWidget t m => m ()
 tasks = el "div" $ do
     navbar
-    map
+    map forbes
     evGet <- buttonDynAttr (constDyn ("class" =: "btn btn-primary")) "Get Tasks"
     el "ul" $ do widgetHold loading $ fmap getTasks evGet
     footer
