@@ -7,6 +7,7 @@
 module FlareTiming.View (tasks) where
 
 import Prelude hiding (map)
+import Data.Maybe (isJust)
 import Control.Monad
 import Control.Applicative
 import Data.Aeson
@@ -116,17 +117,26 @@ task x = do
             fmap (\(Task name _ _) -> T.pack name) x
 
     let dyTurnpoints :: Dynamic t [Turnpoint] =
-            fmap (\(Task _ _ tps) -> tps) x
+            fmap (\(Task _ ss tps) -> speedSectionOnly ss tps) x
 
-    sx :: Task <- sample $ current x
+    y :: Task <- sample $ current x
 
     el "li" $ do
         dynText dyName
-        map sx
+        map y
 
         el "ul" $ do
             simpleList dyTurnpoints turnpoint
             return ()
+    where
+        speedSectionOnly :: SpeedSection -> [Turnpoint] -> [Turnpoint]
+        speedSectionOnly Nothing xs =
+            xs
+        speedSectionOnly (Just (start, end)) xs =
+            take (end' - start' + 1) $ drop (start' - 1) xs
+            where
+                start' = fromInteger start
+                end' = fromInteger end
 
 getTasks :: MonadWidget t m => () -> m ()
 getTasks () = do
@@ -135,9 +145,10 @@ getTasks () = do
     let req md = XhrRequest "GET" (maybe defReq id md) def
     rsp <- performRequestAsync $ fmap req $ leftmost [ Nothing <$ pb ]
         
-    let evTasks :: Event t [Task] = fmapMaybe decodeXhrResponse rsp
-    dyTasks :: Dynamic t [Task] <- holdDyn [] evTasks
+    let es :: Event t [Task] = fmapMaybe decodeXhrResponse rsp
+    xs :: Dynamic t [Task] <- holdDyn [] es
 
-    simpleList dyTasks task 
+    simpleList xs task
 
     return ()
+
