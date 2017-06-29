@@ -73,6 +73,7 @@ map (Task _ _ []) = do
     return ()
 
 map (Task name _ xs)= do
+    let tpNames = fmap (\ (Turnpoint name _ _ _) -> name) xs
     postBuild <- delay 0 =<< getPostBuild
     (e, _) <- elAttr' "div" ("style" =: "height: 240px;width: 320px") $ return ()
     rec performEvent_ $ fmap
@@ -97,12 +98,12 @@ map (Task name _ xs)= do
             zs :: [(L.Marker, L.Circle)] <- sequence $ fmap turnpoint xs
 
             sequence $ fmap
-                (\ (xMark, xCyl) -> do
+                (\ (tpName, (xMark, xCyl)) -> do
                     L.markerAddToMap xMark lmap
-                    L.markerPopup xMark name
+                    L.markerPopup xMark tpName
                     L.circleAddToMap xCyl lmap
                     return ())
-                zs
+                (zip tpNames zs)
 
             let pts :: [(Double, Double)] = fmap toLatLng xs
 
