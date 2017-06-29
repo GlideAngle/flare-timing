@@ -85,7 +85,7 @@ map (Task name _ xs)= do
                             postBuild
         (lmap', bounds') <- liftIO $ do
             lmap <- L.map (_element_raw e)
-            L.mapSetView lmap sLatLng 11
+            L.mapSetView lmap (toLatLng $ head xs) 11
 
             layer <-
                 -- SEE: http://leaflet-extras.github.io/leaflet-providers/preview/
@@ -95,14 +95,7 @@ map (Task name _ xs)= do
 
             L.tileLayerAddToMap layer lmap
 
-            startMark <- L.marker sLatLng
-            L.markerAddToMap startMark lmap
-            L.markerPopup startMark sName
-
-            start <- L.circle sLatLng $ fromInteger sRadius
-            L.circleAddToMap start lmap
-
-            zs :: [(L.Marker, L.Circle)] <- sequence $ fmap turnpoint ys
+            zs :: [(L.Marker, L.Circle)] <- sequence $ fmap turnpoint xs
 
             sequence $ fmap
                 (\ (xMark, xCyl) -> do
@@ -122,7 +115,3 @@ map (Task name _ xs)= do
             return (lmap, bounds)
 
     return ()
-    where
-        s@(Turnpoint sName (Latitude sLat) (Longitude sLng) sRadius) = head xs
-        sLatLng = toLatLng s
-        ys = tail xs
