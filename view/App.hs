@@ -1,6 +1,6 @@
 import Reflex.Dom (mainWidget)
 
-import FlareTiming.Task (tasks)
+import FlareTiming.View (tasks)
 
 main :: IO ()
 main = mainWidget tasks
