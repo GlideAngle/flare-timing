@@ -65,14 +65,16 @@ loading = do
 
 buttonDynAttr :: MonadWidget t m => Dynamic t (Map T.Text T.Text) -> T.Text -> m (Event t ())
 buttonDynAttr attrs label = do
-  (e, _) <- elDynAttr' "button" attrs (text label)
-  return $ domEvent Click e
+    (e, _) <-
+        elDynAttr' "button" attrs $ do
+            elClass "i" "fa fa-cloud-download" $ return ()
+            (text $ (T.pack " ") <> label)
+
+    return $ domEvent Click e
 
 tasks :: MonadWidget t m => m ()
 tasks = el "div" $ do
-    evGet <- buttonDynAttr
-        (constDyn $ fromList [("class", "btn btn-primary")])
-        "Get Tasks"
+    evGet <- buttonDynAttr (constDyn $ fromList [("class", "btn btn-primary")]) "Get Tasks"
     el "ul" $ do widgetHold loading $ fmap getTasks evGet
     map
     return ()
