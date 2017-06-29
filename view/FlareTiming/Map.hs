@@ -102,13 +102,6 @@ map (Task name _ xs)= do
             start <- L.circle sLatLng $ fromInteger sRadius
             L.circleAddToMap start lmap
 
-            goalMark <- L.marker gLatLng
-            L.markerAddToMap goalMark lmap
-            L.markerPopup goalMark gName
-
-            goal <- L.circle gLatLng $ fromInteger gRadius
-            L.circleAddToMap goal lmap
-
             zs :: [(L.Marker, L.Circle)] <- sequence $ fmap turnpoint ys
 
             sequence $ fmap
@@ -131,7 +124,5 @@ map (Task name _ xs)= do
     return ()
     where
         s@(Turnpoint sName (Latitude sLat) (Longitude sLng) sRadius) = head xs
-        g@(Turnpoint gName (Latitude gLat) (Longitude gLng) gRadius) = head $ reverse xs
         sLatLng = toLatLng s
-        gLatLng = toLatLng g
-        ys = reverse $ tail $ reverse $ tail xs
+        ys = tail xs
