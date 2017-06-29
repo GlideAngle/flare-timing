@@ -28,7 +28,6 @@ import FlareTiming.Task
     , SpeedSection
     , fromSci
     , toSci
-    , forbes
     )
 import FlareTiming.Map (map)
 

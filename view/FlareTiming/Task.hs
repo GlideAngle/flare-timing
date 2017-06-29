@@ -14,7 +14,6 @@ module FlareTiming.Task
     , SpeedSection
     , fromSci
     , toSci
-    , forbes
     ) where
 
 import Prelude hiding (map)
@@ -66,13 +65,3 @@ instance ToJSON Longitude where
 instance FromJSON Longitude where
     parseJSON x@(Number _) = Longitude . fromSci <$> parseJSON x
     parseJSON _ = empty
-
-forbes :: Task
-forbes =
-    Task "Day1" (Just (2, 5)) [ launch, start, tp1, tp2, goal ]
-    where
-        launch = Turnpoint "FORBES" (Latitude $ negate 33.36137) (Longitude 147.93207) 100
-        start = Turnpoint "FORBES" (Latitude $ negate 33.36137) (Longitude 147.93207) 10000
-        tp1 = Turnpoint "PINEY" (Latitude $ negate 33.85373) (Longitude 147.94195) 400
-        tp2 = Turnpoint "EUGOWR" (Latitude $ negate 33.4397) (Longitude 148.34533) 400
-        goal = Turnpoint "GOALD1" (Latitude $ negate 33.61965) (Longitude 148.4099) 400

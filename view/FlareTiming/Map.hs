@@ -52,7 +52,6 @@ import FlareTiming.Task
     , SpeedSection
     , fromSci
     , toSci
-    , forbes
     )
 
 turnpoint :: Turnpoint -> IO (L.Marker, L.Circle)
