@@ -50,7 +50,7 @@ foreign import javascript unsafe
     mapInvalidateSize_ :: JSVal -> IO () 
 
 foreign import javascript unsafe
-    "L['tileLayer']($1, { maxZoom: $2})"
+    "L['tileLayer']($1, { maxZoom: $2, opacity: 0.6})"
     tileLayer_ :: JSString -> Int -> IO JSVal 
 
 foreign import javascript unsafe

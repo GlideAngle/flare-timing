@@ -102,7 +102,7 @@ turnpoint x = do
             fmap (\(Turnpoint name _ _ radius) ->
                 T.pack $ name ++ " " ++ showRadius radius) x
 
-    elClass "li" "list-group-item" $ do
+    el "li" $ do
         dynText dyTp
 
 task :: forall t (m :: * -> *).
@@ -118,13 +118,15 @@ task x = do
     y :: Task <- sample $ current x
 
     elClass "div" "card" $ do
-        elClass "div" "card-block" $ do
-            el "h4" $ dynText dyName
+        elClass "div" "card-img" $ do
             map y
+        elClass "div" "card-img-overlay" $ do
+            elClass "h6" "card-title" $ dynText dyName
 
-            elClass "ul" "list-group list-group-flush" $ do
-                simpleList dyTurnpoints turnpoint
-                return ()
+            elClass "p" "card-text" $ do
+                el "ul" $ do
+                    simpleList dyTurnpoints turnpoint
+                    return ()
     where
         speedSectionOnly :: SpeedSection -> [Turnpoint] -> [Turnpoint]
         speedSectionOnly Nothing xs =
