@@ -120,7 +120,8 @@ task x = do
     elClass "div" "card" $ do
         elClass "div" "card-img" $ do
             map y
-        elClass "div" "card-img-overlay" $ do
+        elAttr "div" (union ("class" =: "card-img-overlay")
+                            ("style" =: "left: 1rem")) $ do
             elClass "h6" "card-title" $ dynText dyName
 
             elClass "p" "card-text" $ do
