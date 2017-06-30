@@ -41,9 +41,11 @@ loading = do
 buttonDynAttr :: MonadWidget t m => Dynamic t (Map T.Text T.Text) -> T.Text -> m (Event t ())
 buttonDynAttr attrs label = do
     (e, _) <-
-        elDynAttr' "button" attrs $ do
-            elClass "i" "fa fa-cloud-download" $ return ()
-            (text $ (T.pack " ") <> label)
+        elDynAttr' "a" attrs $ do
+            elClass "span" "icon is-small" $ do
+                elClass "i" "fa fa-cloud-download" $ return ()
+            el "span" $ do
+                (text $ (T.pack " ") <> label)
 
     return $ domEvent Click e
 
@@ -75,24 +77,36 @@ attribution = do
 
 
 navbar :: MonadWidget t m => m ()
-navbar = elAttr "nav" (union ("class" =: "navbar navbar-light")
-                             ("style" =: "background-color: #e3f2fd;")) $ do
-    elClass "a" "navbar-brand" $ text "Flare Timing"
+navbar =
+    elClass "nav" "nav has-shadow" $ do
+        elClass "div" "container" $ do
+            elClass "div" "nav-left" $ do
+                elClass "a" "nav-item disable" $ do
+                    elAttr "img" (union ("src" =: "http://bulma.io/images/bulma-logo.png")
+                                        ("alt" =: "Flare Timing")) $ return ()
+                elClass "a" "nav-item is-tab is-hidden-mobile is-active" $ do
+                    text "Tasks"
+                elClass "a" "nav-item is-tab is-hidden-mobile" $ do
+                    text "Scores"
+                elClass "a" "nav-item is-tab is-hidden-mobile" $ do
+                    text "Breakdown"
 
 footer :: MonadWidget t m => m ()
-footer = elClass "div" "container" $ do
-    el "hr" $ return ()
-    elClass "div" "text-center text-muted" $ do
-        attribution
+footer =
+    elClass "footer" "footer" $ do
+        elClass "div" "container" $ do
+            elClass "div" "content has-text-centered" $ do
+                attribution
 
 tasks :: MonadWidget t m => m ()
 tasks = el "div" $ do
-    navbar
-    rec el "ul" $ do widgetHold loading $ fmap getTasks evGet
-        evGet <- buttonDynAttr (constDyn ("class" =: "btn btn-primary")) "Get Tasks"
-        footer
+    elClass "div" "container is-fluid" $ do
+        navbar
+        rec el "ul" $ do widgetHold loading $ fmap getTasks evGet
+            evGet <- buttonDynAttr (constDyn ("class" =: "button is-primary")) "Get Tasks"
+            footer
 
-    return ()
+        return ()
 
 turnpoint :: forall t (m :: * -> *).
              MonadWidget t m =>
@@ -117,19 +131,14 @@ task x = do
 
     y :: Task <- sample $ current x
 
-    elAttr "div" (union ("class" =: "card")
-                        ("style" =: "border: none;")) $ do
-        elClass "figure" "figure" $ do
-            elClass "div" "card-img" $ do
-                map y
-            elClass "figcaption" "figure-caption" $ do
+    elClass "div" "tile is-parent" $ do
+        elClass "div" "tile is-child box" $ do
+            map y
+            el "h4" $ do
                 dynText dyName
-            elAttr "div" (union ("class" =: "card-img-overlay")
-                                ("style" =: "left: 1rem")) $ do
-                elClass "p" "card-text" $ do
-                    el "ul" $ do
-                        simpleList dyTurnpoints turnpoint
-                        return ()
+            el "ul" $ do
+                simpleList dyTurnpoints turnpoint
+                return ()
     where
         speedSectionOnly :: SpeedSection -> [Turnpoint] -> [Turnpoint]
         speedSectionOnly Nothing xs =
@@ -150,7 +159,8 @@ getTasks () = do
     let es :: Event t [Task] = fmapMaybe decodeXhrResponse rsp
     xs :: Dynamic t [Task] <- holdDyn [] es
 
-    elClass "div" "" $ do
+    elAttr "div" (union ("class" =: "tile is-ancestor")
+                        ("style" =: "flex-wrap: wrap;")) $ do
         simpleList xs task
 
     return ()
