@@ -117,17 +117,19 @@ task x = do
 
     y :: Task <- sample $ current x
 
-    elClass "div" "card" $ do
-        elClass "div" "card-img" $ do
-            map y
-        elAttr "div" (union ("class" =: "card-img-overlay")
-                            ("style" =: "left: 1rem")) $ do
-            elClass "h6" "card-title" $ dynText dyName
-
-            elClass "p" "card-text" $ do
-                el "ul" $ do
-                    simpleList dyTurnpoints turnpoint
-                    return ()
+    elAttr "div" (union ("class" =: "card")
+                        ("style" =: "border: none;")) $ do
+        elClass "figure" "figure" $ do
+            elClass "div" "card-img" $ do
+                map y
+            elClass "figcaption" "figure-caption" $ do
+                dynText dyName
+            elAttr "div" (union ("class" =: "card-img-overlay")
+                                ("style" =: "left: 1rem")) $ do
+                elClass "p" "card-text" $ do
+                    el "ul" $ do
+                        simpleList dyTurnpoints turnpoint
+                        return ()
     where
         speedSectionOnly :: SpeedSection -> [Turnpoint] -> [Turnpoint]
         speedSectionOnly Nothing xs =
@@ -148,7 +150,7 @@ getTasks () = do
     let es :: Event t [Task] = fmapMaybe decodeXhrResponse rsp
     xs :: Dynamic t [Task] <- holdDyn [] es
 
-    elClass "div" "card-group" $ do
+    elClass "div" "" $ do
         simpleList xs task
 
     return ()
