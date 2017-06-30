@@ -88,26 +88,22 @@ footer = elClass "div" "container" $ do
 tasks :: MonadWidget t m => m ()
 tasks = el "div" $ do
     navbar
-    evGet <- buttonDynAttr (constDyn ("class" =: "btn btn-primary")) "Get Tasks"
-    el "ul" $ do widgetHold loading $ fmap getTasks evGet
-    footer
+    rec el "ul" $ do widgetHold loading $ fmap getTasks evGet
+        evGet <- buttonDynAttr (constDyn ("class" =: "btn btn-primary")) "Get Tasks"
+        footer
+
     return ()
 
 turnpoint :: forall t (m :: * -> *).
              MonadWidget t m =>
              Dynamic t Turnpoint -> m ()
 turnpoint x = do
-    let dyName :: Dynamic t T.Text =
-            fmap (\(Turnpoint name _ _ _) -> T.pack name) x
+    let dyTp :: Dynamic t T.Text =
+            fmap (\(Turnpoint name _ _ radius) ->
+                T.pack $ name ++ " " ++ showRadius radius) x
 
-    let dyRadius :: Dynamic t T.Text =
-            fmap (\(Turnpoint _ _ _ radius) ->
-                T.pack $ showRadius radius) x
-
-    el "li" $ do
-        dynText dyName
-        text " "
-        dynText dyRadius
+    elClass "li" "list-group-item" $ do
+        dynText dyTp
 
 task :: forall t (m :: * -> *).
         MonadWidget t m =>
@@ -121,13 +117,14 @@ task x = do
 
     y :: Task <- sample $ current x
 
-    el "li" $ do
-        dynText dyName
-        map y
+    elClass "div" "card" $ do
+        elClass "div" "card-block" $ do
+            el "h4" $ dynText dyName
+            map y
 
-        el "ul" $ do
-            simpleList dyTurnpoints turnpoint
-            return ()
+            elClass "ul" "list-group list-group-flush" $ do
+                simpleList dyTurnpoints turnpoint
+                return ()
     where
         speedSectionOnly :: SpeedSection -> [Turnpoint] -> [Turnpoint]
         speedSectionOnly Nothing xs =
@@ -148,7 +145,8 @@ getTasks () = do
     let es :: Event t [Task] = fmapMaybe decodeXhrResponse rsp
     xs :: Dynamic t [Task] <- holdDyn [] es
 
-    simpleList xs task
+    elClass "div" "card-group" $ do
+        simpleList xs task
 
     return ()
 
