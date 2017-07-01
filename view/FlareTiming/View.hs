@@ -1,23 +1,34 @@
-{-# LANGUAGE RecursiveDo #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE RankNTypes #-}
 
 module FlareTiming.View (tasks) where
 
 import Prelude hiding (map)
 import Data.Maybe (isJust)
-import Control.Monad
-import Control.Applicative
-import Data.Aeson
-import GHC.Generics
 import Reflex.Dom
-import qualified Data.Text as T
-import qualified Data.Map as Map
-import Data.Map (Map, fromList, union)
-import Data.Monoid((<>))
-import Data.Scientific (Scientific, toRealFloat, fromRationalRepetend)
+    ( MonadWidget, Event, Dynamic, XhrRequest(..)
+    , (=:)
+    , def
+    , holdDyn
+    , sample
+    , current
+    , widgetHold
+    , elAttr
+    , elClass
+    , el
+    , text
+    , dynText
+    , simpleList
+    , getPostBuild
+    , fmapMaybe
+    , performRequestAsync
+    , decodeXhrResponse
+    , leftmost
+    )
+import qualified Data.Text as T (Text, pack)
+import Data.Map (union)
 
 import FlareTiming.Task
     ( Task(..)
