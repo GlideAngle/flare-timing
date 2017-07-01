@@ -42,7 +42,7 @@ import qualified FlareTiming.Map.Leaflet as L
     , extendBounds
     , fitBounds
     )
-import FlareTiming.Task
+import FlareTiming.WireTypes
     ( Task(..)
     , Turnpoint(..)
     , Latitude(..)

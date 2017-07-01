@@ -1,10 +1,35 @@
-{-# LANGUAGE RecursiveDo #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE KindSignatures #-}
 
-module FlareTiming.Task
+module FlareTiming.Task (tasks) where
+
+import Prelude hiding (map)
+import Data.Maybe (isJust)
+import Reflex.Dom
+    ( MonadWidget, Event, Dynamic, XhrRequest(..)
+    , (=:)
+    , def
+    , holdDyn
+    , sample
+    , current
+    , widgetHold
+    , elAttr
+    , elClass
+    , el
+    , text
+    , dynText
+    , simpleList
+    , getPostBuild
+    , fmapMaybe
+    , performRequestAsync
+    , decodeXhrResponse
+    , leftmost
+    )
+import qualified Data.Text as T (Text, pack)
+import Data.Map (union)
+
+import FlareTiming.WireTypes
     ( Task(..)
     , Turnpoint(..)
     , Latitude(..)
@@ -15,60 +40,73 @@ module FlareTiming.Task
     , fromSci
     , toSci
     , showRadius
-    ) where
+    )
+import FlareTiming.Map (map)
+import FlareTiming.NavBar (navbar)
+import FlareTiming.Footer (footer)
+import FlareTiming.Turnpoint (liTurnpointRadius)
 
-import Prelude hiding (map)
-import Data.Ratio ((%))
-import Control.Monad
-import Control.Applicative
-import Data.Aeson
-import GHC.Generics
-import Reflex.Dom
-import qualified Data.Text as T
-import qualified Data.Map as Map
-import Data.Map (Map, fromList, union)
-import Data.Monoid((<>))
-import Data.Scientific (Scientific, toRealFloat, fromRationalRepetend)
+loading :: MonadWidget t m => m ()
+loading = do
+    el "li" $ do
+        text "Tasks will be shown here"
 
-type Name = String
-newtype Latitude = Latitude Rational deriving (Eq, Show)
-newtype Longitude = Longitude Rational deriving (Eq, Show)
-type Radius = Integer
-type SpeedSection = Maybe (Integer, Integer)
+task :: forall t (m :: * -> *).
+        MonadWidget t m =>
+        Dynamic t Task -> m ()
+task x = do
+    let dyName :: Dynamic t T.Text =
+            fmap (\(Task name _ _) -> T.pack name) x
 
-data Task = Task Name SpeedSection [Turnpoint] deriving (Eq, Show, Generic)
-data Turnpoint = Turnpoint Name Latitude Longitude Radius deriving (Eq, Show, Generic)
+    let dyTurnpoints :: Dynamic t [Turnpoint] =
+            fmap (\(Task _ ss tps) -> speedSectionOnly ss tps) x
 
-instance ToJSON Turnpoint
-instance FromJSON Turnpoint
+    y :: Task <- sample $ current x
 
-instance ToJSON Task
-instance FromJSON Task
+    elClass "div" "tile" $ do
+        elClass "div" "tile is-parent" $ do
+            elClass "div" "tile is-child box" $ do
+                elClass "p" "title" $ do
+                    dynText dyName
+                    map y
+                el "ul" $ do
+                    simpleList dyTurnpoints liTurnpointRadius
+                    return ()
+    where
+        speedSectionOnly :: SpeedSection -> [Turnpoint] -> [Turnpoint]
+        speedSectionOnly Nothing xs =
+            xs
+        speedSectionOnly (Just (start, end)) xs =
+            take (end' - start' + 1) $ drop (start' - 1) xs
+            where
+                start' = fromInteger start
+                end' = fromInteger end
+                
+tasks :: MonadWidget t m => m ()
+tasks = do
+    pb :: Event t () <- getPostBuild
+    navbar
+    elClass "div" "spacer" $ return ()
+    elClass "div" "container" $ do
+        el "ul" $ do widgetHold loading $ fmap getTasks pb
+        elClass "div" "spacer" $ return ()
+        footer
 
-fromSci :: Scientific -> Rational
-fromSci x = toRational (toRealFloat x :: Double)
+    return ()
 
-toSci  :: Rational -> Scientific
-toSci x =
-    case fromRationalRepetend Nothing x of
-        Left (s, _) -> s
-        Right (s, _) -> s
+getTasks :: MonadWidget t m => () -> m ()
+getTasks () = do
+    pb :: Event t () <- getPostBuild
+    let defReq = "http://localhost:3000/tasks"
+    let req md = XhrRequest "GET" (maybe defReq id md) def
+    rsp <- performRequestAsync $ fmap req $ leftmost [ Nothing <$ pb ]
+        
+    let es :: Event t [Task] = fmapMaybe decodeXhrResponse rsp
+    xs :: Dynamic t [Task] <- holdDyn [] es
 
-instance ToJSON Latitude where
-    toJSON (Latitude x) = Number $ toSci x
+    elAttr "div" (union ("class" =: "tile is-ancestor")
+                        ("style" =: "flex-wrap: wrap;")) $ do
+        simpleList xs task
 
-instance FromJSON Latitude where
-    parseJSON x@(Number _) = Latitude . fromSci <$> parseJSON x
-    parseJSON _ = empty
+    return ()
 
-instance ToJSON Longitude where
-    toJSON (Longitude x) = Number $ toSci x
-
-instance FromJSON Longitude where
-    parseJSON x@(Number _) = Longitude . fromSci <$> parseJSON x
-    parseJSON _ = empty
-
-showRadius :: Radius -> String
-showRadius r
-    | r < 1000 = show r ++ " m"
-    | otherwise = show (truncate (r % 1000)) ++ " km"
