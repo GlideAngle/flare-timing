@@ -82,8 +82,10 @@ navbar =
         elClass "div" "container" $ do
             elClass "div" "nav-left" $ do
                 elClass "a" "nav-item disable" $ do
-                    elAttr "img" (union ("src" =: "http://bulma.io/images/bulma-logo.png")
-                                        ("alt" =: "Flare Timing")) $ return ()
+                    elClass "span" "icon" $ do
+                        elClass "i" "fa fa-paper-plane-o" $ return ()
+                    el "span" $ do
+                        text "Flare Timing"
                 elClass "a" "nav-item is-tab is-hidden-mobile is-active" $ do
                     text "Tasks"
                 elClass "a" "nav-item is-tab is-hidden-mobile" $ do
@@ -102,16 +104,19 @@ tasks :: MonadWidget t m => m ()
 tasks = el "div" $ do
     elClass "div" "container is-fluid" $ do
         navbar
+        elClass "div" "spacer" $ return ()
         rec el "ul" $ do widgetHold loading $ fmap getTasks evGet
+            elClass "div" "spacer" $ return ()
             evGet <- buttonDynAttr (constDyn ("class" =: "button is-primary")) "Get Tasks"
+            elClass "div" "spacer" $ return ()
             footer
 
         return ()
 
-turnpoint :: forall t (m :: * -> *).
+liTurnpointRadius :: forall t (m :: * -> *).
              MonadWidget t m =>
              Dynamic t Turnpoint -> m ()
-turnpoint x = do
+liTurnpointRadius x = do
     let dyTp :: Dynamic t T.Text =
             fmap (\(Turnpoint name _ _ radius) ->
                 T.pack $ name ++ " " ++ showRadius radius) x
@@ -131,14 +136,15 @@ task x = do
 
     y :: Task <- sample $ current x
 
-    elClass "div" "tile is-parent" $ do
-        elClass "div" "tile is-child box" $ do
-            map y
-            el "h4" $ do
-                dynText dyName
-            el "ul" $ do
-                simpleList dyTurnpoints turnpoint
-                return ()
+    elClass "div" "tile" $ do
+        elClass "div" "tile is-parent" $ do
+            elClass "div" "tile is-child box" $ do
+                elClass "p" "title" $ do
+                    dynText dyName
+                    map y
+                el "ul" $ do
+                    simpleList dyTurnpoints liTurnpointRadius
+                    return ()
     where
         speedSectionOnly :: SpeedSection -> [Turnpoint] -> [Turnpoint]
         speedSectionOnly Nothing xs =
