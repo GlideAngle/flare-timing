@@ -43,7 +43,8 @@ cleanRules = do
         removeFilesAfter "__www" [ "//*" ] 
 
     phony "clean-view-reflex" $ do
-        removeFilesAfter ("view" </> "app.jsexe") ghcjsOutputs
+        removeFilesAfter ("view" </> "app.jsout") [ "//*" ]
+        removeFilesAfter ("view" </> "app.jsexe") [ "//*" ]
         removeFilesAfter "view" ghcjsIntermediates
 
 buildRules :: Rules ()
@@ -77,7 +78,7 @@ buildRules = do
                  ]
 
             liftIO $ putStrLn $ "#compile " ++ s
-            cmd (Cwd "view") "ghcjs -DGHCJS_BROWSER App.hs")
+            cmd (Cwd "view") "ghcjs -DGHCJS_BROWSER -outputdir app.jsout App.hs")
         <$> ghcjsOutputs
 
     mconcat $ (\ s -> do
