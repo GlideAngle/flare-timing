@@ -32,70 +32,21 @@ import FlareTiming.Task
     , showRadius
     )
 import FlareTiming.Map (map)
+import FlareTiming.NavBar (navbar)
+import FlareTiming.Footer (footer)
 
 loading :: MonadWidget t m => m ()
 loading = do
     el "li" $ do
         text "Tasks will be shown here"
 
-attribution :: MonadWidget t m => m () 
-attribution = do
-    el "p" $ do
-        el "small" $ do
-            text "Map data: (c) "
-            elAttr "a" (union ("href" =: "http://www.openstreetmap.org/copyright")
-                              ("target" =: "_blank")) $ do
-                text "OpenStreetMap"
-
-            text ", "
-            elAttr "a" (union ("href" =: "http://viewfinderpanoramas.org")
-                              ("target" =: "_blank")) $ do
-                text "SRTM"
-
-            text " | Map style: (c) "
-            elAttr "a" (union ("href" =: "https://opentopomap.org")
-                              ("target" =: "_blank")) $ do
-                text "OpenTopoMap"
-
-            text " ("
-            elAttr "a" (union ("href" =: "https://creativecommons.org/licenses/by-sa/3.0/")
-                              ("target" =: "_blank")) $ do
-                text "CC-BY-SA"
-
-            text ")"
-
-
-navbar :: MonadWidget t m => m ()
-navbar =
-    elClass "nav" "nav has-shadow" $ do
-        elClass "div" "container" $ do
-            elClass "div" "nav-left" $ do
-                elClass "a" "nav-item disable" $ do
-                    elClass "span" "icon" $ do
-                        elClass "i" "fa fa-paper-plane-o" $ return ()
-                    el "span" $ do
-                        text "Flare Timing"
-            elClass "div" "nav-right nav-menu" $ do
-                elClass "a" "nav-item is-tab is-active" $ do
-                    text "Tasks"
-                elClass "a" "nav-item is-tab" $ do
-                    text "Scores"
-                elClass "a" "nav-item is-tab" $ do
-                    text "Breakdown"
-
-footer :: MonadWidget t m => m ()
-footer =
-    elClass "footer" "footer" $ do
-        elClass "div" "container" $ do
-            elClass "div" "content has-text-centered" $ do
-                attribution
-
 tasks :: MonadWidget t m => m ()
 tasks = do
     pb :: Event t () <- getPostBuild
     navbar
     elClass "div" "spacer" $ return ()
-    rec el "ul" $ do widgetHold loading $ fmap getTasks pb
+    elClass "div" "container" $ do
+        el "ul" $ do widgetHold loading $ fmap getTasks pb
         elClass "div" "spacer" $ return ()
         footer
 
