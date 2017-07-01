@@ -44,7 +44,7 @@ import FlareTiming.WireTypes
 import FlareTiming.Map (map)
 import FlareTiming.NavBar (navbar)
 import FlareTiming.Footer (footer)
-import FlareTiming.Turnpoint (liTurnpointRadius)
+import FlareTiming.Turnpoint (turnpointRadius)
 
 loading :: MonadWidget t m => m ()
 loading = do
@@ -68,9 +68,9 @@ task x = do
             elClass "div" "tile is-child box" $ do
                 elClass "p" "title" $ do
                     dynText dyName
-                    map y
+                map y
                 el "ul" $ do
-                    simpleList dyTurnpoints liTurnpointRadius
+                    simpleList dyTurnpoints $ (\x -> el "li" $ do x) . turnpointRadius
                     return ()
     where
         speedSectionOnly :: SpeedSection -> [Turnpoint] -> [Turnpoint]
