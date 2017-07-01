@@ -38,17 +38,6 @@ loading = do
     el "li" $ do
         text "Tasks will be shown here"
 
-buttonDynAttr :: MonadWidget t m => Dynamic t (Map T.Text T.Text) -> T.Text -> m (Event t ())
-buttonDynAttr attrs label = do
-    (e, _) <-
-        elDynAttr' "a" attrs $ do
-            elClass "span" "icon is-small" $ do
-                elClass "i" "fa fa-cloud-download" $ return ()
-            el "span" $ do
-                (text $ (T.pack " ") <> label)
-
-    return $ domEvent Click e
-
 attribution :: MonadWidget t m => m () 
 attribution = do
     el "p" $ do
@@ -103,11 +92,10 @@ footer =
 
 tasks :: MonadWidget t m => m ()
 tasks = do
+    pb :: Event t () <- getPostBuild
     navbar
     elClass "div" "spacer" $ return ()
-    rec el "ul" $ do widgetHold loading $ fmap getTasks evGet
-        elClass "div" "spacer" $ return ()
-        evGet <- buttonDynAttr (constDyn ("class" =: "button is-primary")) "Get Tasks"
+    rec el "ul" $ do widgetHold loading $ fmap getTasks pb
         elClass "div" "spacer" $ return ()
         footer
 
