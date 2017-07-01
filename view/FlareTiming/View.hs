@@ -86,11 +86,12 @@ navbar =
                         elClass "i" "fa fa-paper-plane-o" $ return ()
                     el "span" $ do
                         text "Flare Timing"
-                elClass "a" "nav-item is-tab is-hidden-mobile is-active" $ do
+            elClass "div" "nav-right nav-menu" $ do
+                elClass "a" "nav-item is-tab is-active" $ do
                     text "Tasks"
-                elClass "a" "nav-item is-tab is-hidden-mobile" $ do
+                elClass "a" "nav-item is-tab" $ do
                     text "Scores"
-                elClass "a" "nav-item is-tab is-hidden-mobile" $ do
+                elClass "a" "nav-item is-tab" $ do
                     text "Breakdown"
 
 footer :: MonadWidget t m => m ()
@@ -101,17 +102,16 @@ footer =
                 attribution
 
 tasks :: MonadWidget t m => m ()
-tasks = el "div" $ do
-    elClass "div" "container is-fluid" $ do
-        navbar
+tasks = do
+    navbar
+    elClass "div" "spacer" $ return ()
+    rec el "ul" $ do widgetHold loading $ fmap getTasks evGet
         elClass "div" "spacer" $ return ()
-        rec el "ul" $ do widgetHold loading $ fmap getTasks evGet
-            elClass "div" "spacer" $ return ()
-            evGet <- buttonDynAttr (constDyn ("class" =: "button is-primary")) "Get Tasks"
-            elClass "div" "spacer" $ return ()
-            footer
+        evGet <- buttonDynAttr (constDyn ("class" =: "button is-primary")) "Get Tasks"
+        elClass "div" "spacer" $ return ()
+        footer
 
-        return ()
+    return ()
 
 liTurnpointRadius :: forall t (m :: * -> *).
              MonadWidget t m =>
