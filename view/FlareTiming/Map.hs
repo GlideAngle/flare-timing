@@ -74,7 +74,7 @@ map (Task _ _ []) = do
 
 map (Task name _ xs)= do
     let tpNames = fmap (\ (Turnpoint name _ _ _) -> name) xs
-    postBuild <- delay 0 =<< getPostBuild
+    postBuild <- delay 1 =<< getPostBuild
     (e, _) <- elAttr' "div" ("style" =: "height: 240px;width: 320px") $ return ()
     rec performEvent_ $ fmap
                             (\_ -> liftIO $ do
