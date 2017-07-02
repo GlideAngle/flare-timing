@@ -1,4 +1,3 @@
-{-# LANGUAGE RecursiveDo #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE KindSignatures #-}
@@ -71,31 +70,27 @@ getSpeedSection (Task _ ss tps) =
 
 hyphenate :: [Turnpoint] -> String
 hyphenate xs =
-    intercalate "-" $ fmap TP.getName xs
+    intercalate " - " $ fmap TP.getName xs
 
 task :: forall t (m :: * -> *).
         MonadWidget t m =>
-        Dynamic t Task -> m ()
-task x = do
-    let dyName :: Dynamic t T.Text =
-            fmap (T.pack . getName) x
-
-    let dyTurnpoints :: Dynamic t [Turnpoint] =
-            fmap getSpeedSection x
-
-    let dySubtitle :: Dynamic t T.Text =
-            fmap (T.pack . hyphenate) dyTurnpoints
+        Dynamic t (Int, Task) -> m ()
+task ix = do
+    i :: String <- sample $ current $ fmap (show . fst) ix 
+    let x :: Dynamic t Task = fmap snd ix
+    let title = fmap (T.pack . getName) x
+    let xs = fmap getSpeedSection x
+    let subtitle = fmap (T.pack . (\s -> "#" ++ i ++ " - " ++ s) . hyphenate) xs
 
     y :: Task <- sample $ current x
 
     elClass "div" "tile" $ do
         elClass "div" "tile is-parent" $ do
             elClass "div" "tile is-child box" $ do
-                elClass "h1" "title is-4" $ do
-                    dynText dyName
-                elClass "h2" "subtitle is-6" $ do
-                    dynText dySubtitle
                 map y
+                elClass "p" "" $ do
+                    el "a" $ do
+                        dynText subtitle
                 
 tasks :: MonadWidget t m => m ()
 tasks = do
@@ -118,10 +113,11 @@ getTasks () = do
         
     let es :: Event t [Task] = fmapMaybe decodeXhrResponse rsp
     xs :: Dynamic t [Task] <- holdDyn [] es
+    let ys :: Dynamic t [(Int, Task)] = fmap (zip [1 .. ]) xs
 
     elAttr "div" (union ("class" =: "tile is-ancestor")
                         ("style" =: "flex-wrap: wrap;")) $ do
-        simpleList xs task
+        simpleList ys task
 
     return ()
 
