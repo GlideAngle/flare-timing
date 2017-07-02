@@ -1,0 +1,36 @@
+// https://stackoverflow.com/questions/33649761/how-do-i-load-font-awesome-using-scss-sass-in-webpack-using-relative-paths
+$fa-font-path: "~font-awesome/fonts";
+@import "node_modules/font-awesome/scss/font-awesome.scss";
+
+// 1. Import the initial variables
+@import "node_modules/bulma/sass/utilities/initial-variables.sass"
+
+// 2. Set your own initial variables
+// Update blue
+$blue: #72d0eb
+// Add pink and its invert
+$pink: #ffb3b3
+$pink-invert: #fff
+// Add a serif family
+$family-serif: "Merriweather", "Georgia", serif
+
+// 3. Set the derived variables
+// Use the new pink as the primary color
+$primary: $pink
+$primary-invert: $pink-invert
+// Use the existing orange as the danger color
+$danger: $orange
+// Use the new serif family
+$family-primary: $family-serif
+
+// 4. Import the rest of Bulma
+@import "node_modules/bulma/bulma.sass";
+
+html
+    font-size: 16pt;
+
+body, input, button, select, textarea
+    font-family: 'Open Sans', monospace;
+
+.spacer
+    height: 20px;

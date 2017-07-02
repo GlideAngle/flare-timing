@@ -32,7 +32,7 @@ module.exports = {
             test: /\.css$/,
             loader: ExtractTextPlugin.extract([ 'style-loader', 'css-loader' ])
         }, {
-            test: /\.scss$/,
+            test: /\.sass$/,
             loader: extractScss.extract([ 'css-loader', 'sass-loader' ])
         }, {
             test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
