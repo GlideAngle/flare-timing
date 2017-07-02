@@ -3,23 +3,28 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE KindSignatures #-}
 
-module FlareTiming.Turnpoint (turnpointRadius, turnpoint) where
+module FlareTiming.Turnpoint
+    ( turnpoint
+    , turnpointRadius
+    , getName
+    , getNameRadius
+    ) where
 
 import Reflex.Dom (MonadWidget , Dynamic , el , dynText)
 import qualified Data.Text as T (Text, pack)
 
 import FlareTiming.WireTypes (Turnpoint(..), showRadius)
 
-getNameRadius :: Turnpoint -> T.Text
-getNameRadius (Turnpoint name _ _ radius) = T.pack $ name ++ " " ++ showRadius radius
+getNameRadius :: Turnpoint -> String
+getNameRadius (Turnpoint name _ _ radius) = name ++ " " ++ showRadius radius
 
-getName :: Turnpoint -> T.Text
-getName (Turnpoint name _ _ _) = T.pack name
+getName :: Turnpoint -> String
+getName (Turnpoint name _ _ _) = name
 
 turnpointRadius :: forall t (m :: * -> *). MonadWidget t m => Dynamic t Turnpoint -> m ()
 turnpointRadius x = do
-    dynText $ fmap getNameRadius x
+    dynText $ fmap (T.pack . getNameRadius) x
 
 turnpoint :: forall t (m :: * -> *). MonadWidget t m => Dynamic t Turnpoint -> m ()
 turnpoint x = do
-    dynText $ fmap getName x
+    dynText $ fmap (T.pack . getName) x

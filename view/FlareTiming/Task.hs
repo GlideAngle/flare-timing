@@ -1,3 +1,4 @@
+{-# LANGUAGE RecursiveDo #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE KindSignatures #-}
@@ -28,6 +29,7 @@ import Reflex.Dom
     )
 import qualified Data.Text as T (Text, pack)
 import Data.Map (union)
+import Data.List (intercalate)
 
 import FlareTiming.WireTypes
     ( Task(..)
@@ -44,34 +46,19 @@ import FlareTiming.WireTypes
 import FlareTiming.Map (map)
 import FlareTiming.NavBar (navbar)
 import FlareTiming.Footer (footer)
-import FlareTiming.Turnpoint (turnpointRadius)
+import qualified FlareTiming.Turnpoint as TP (turnpoint, turnpointRadius, getName)
 
 loading :: MonadWidget t m => m ()
 loading = do
     el "li" $ do
         text "Tasks will be shown here"
 
-task :: forall t (m :: * -> *).
-        MonadWidget t m =>
-        Dynamic t Task -> m ()
-task x = do
-    let dyName :: Dynamic t T.Text =
-            fmap (\(Task name _ _) -> T.pack name) x
+getName :: Task -> String
+getName (Task name _ _) = name
 
-    let dyTurnpoints :: Dynamic t [Turnpoint] =
-            fmap (\(Task _ ss tps) -> speedSectionOnly ss tps) x
-
-    y :: Task <- sample $ current x
-
-    elClass "div" "tile" $ do
-        elClass "div" "tile is-parent" $ do
-            elClass "div" "tile is-child box" $ do
-                elClass "p" "title" $ do
-                    dynText dyName
-                map y
-                el "ul" $ do
-                    simpleList dyTurnpoints $ (\x -> el "li" $ do x) . turnpointRadius
-                    return ()
+getSpeedSection :: Task -> [Turnpoint]
+getSpeedSection (Task _ ss tps) =
+    speedSectionOnly ss tps
     where
         speedSectionOnly :: SpeedSection -> [Turnpoint] -> [Turnpoint]
         speedSectionOnly Nothing xs =
@@ -81,6 +68,34 @@ task x = do
             where
                 start' = fromInteger start
                 end' = fromInteger end
+
+hyphenate :: [Turnpoint] -> String
+hyphenate xs =
+    intercalate "-" $ fmap TP.getName xs
+
+task :: forall t (m :: * -> *).
+        MonadWidget t m =>
+        Dynamic t Task -> m ()
+task x = do
+    let dyName :: Dynamic t T.Text =
+            fmap (T.pack . getName) x
+
+    let dyTurnpoints :: Dynamic t [Turnpoint] =
+            fmap getSpeedSection x
+
+    let dySubtitle :: Dynamic t T.Text =
+            fmap (T.pack . hyphenate) dyTurnpoints
+
+    y :: Task <- sample $ current x
+
+    elClass "div" "tile" $ do
+        elClass "div" "tile is-parent" $ do
+            elClass "div" "tile is-child box" $ do
+                elClass "h1" "title is-4" $ do
+                    dynText dyName
+                elClass "h2" "subtitle is-6" $ do
+                    dynText dySubtitle
+                map y
                 
 tasks :: MonadWidget t m => m ()
 tasks = do
