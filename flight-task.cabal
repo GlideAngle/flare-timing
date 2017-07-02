@@ -1,0 +1,95 @@
+-- This file has been generated from package.yaml by hpack version 0.17.0.
+--
+-- see: https://github.com/sol/hpack
+
+name:           flight-task
+version:        0.1.0
+synopsis:       Tasks to fly.
+description:    Tasks for hang gliding and paragliding competitons.
+category:       Flight
+homepage:       https://github.com/BlockScope/haskell-flight-task#readme
+bug-reports:    https://github.com/BlockScope/haskell-flight-task/issues
+author:         Phil de Joux
+maintainer:     phil.dejoux@blockscope.com
+license:        BSD3
+license-file:   LICENSE.md
+build-type:     Simple
+cabal-version:  >= 1.10
+
+extra-source-files:
+    changelog.md
+    package.yaml
+    README.md
+    stack.yaml
+
+source-repository head
+  type: git
+  location: https://github.com/BlockScope/haskell-flight-task
+
+library
+  hs-source-dirs:
+      library
+  ghc-options: -Wall
+  build-depends:
+      base >=4.5 && <5
+    , numbers
+    , fgl
+  exposed-modules:
+      Flight.Task
+  other-modules:
+      Flight.EdgeToEdge
+      Flight.Geo
+      Flight.PointToPoint
+      Flight.Separated
+      Flight.Zone
+      Paths_flight_task
+  default-language: Haskell2010
+
+test-suite hlint
+  type: exitcode-stdio-1.0
+  main-is: HLint.hs
+  hs-source-dirs:
+      library
+      test-suite-hlint
+  ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      base
+    , hlint
+    , numbers
+    , fgl
+  other-modules:
+      Flight.EdgeToEdge
+      Flight.Geo
+      Flight.PointToPoint
+      Flight.Separated
+      Flight.Task
+      Flight.Zone
+  default-language: Haskell2010
+
+test-suite task
+  type: exitcode-stdio-1.0
+  main-is: Task.hs
+  hs-source-dirs:
+      library
+      test-suite-task
+  ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      base
+    , numbers
+    , fgl
+    , tasty
+    , tasty-hunit
+    , tasty-quickcheck
+    , tasty-smallcheck
+    , smallcheck
+  other-modules:
+      Flight.EdgeToEdge
+      Flight.Geo
+      Flight.PointToPoint
+      Flight.Separated
+      Flight.Task
+      Flight.Zone
+      EdgeToEdge
+      TestNewtypes
+      Zone
+  default-language: Haskell2010
