@@ -11,3 +11,4 @@ __www
 *.js_dyn_hi
 *.js_dyn_o
 *.swo
+/result
