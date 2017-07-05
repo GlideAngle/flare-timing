@@ -1,3 +1,4 @@
 .shake
 .stack-work
 __shake-build
+/result
