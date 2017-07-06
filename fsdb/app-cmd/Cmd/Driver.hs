@@ -11,6 +11,7 @@ import System.FilePath.Find (FileType(..), (==?), (&&?), find, always, fileType,
 import Cmd.Args (withCmdArgs)
 import Cmd.Options (CmdOptions(..), Detail(..))
 import qualified Data.Flight.Nominal as N (parse)
+import qualified Data.Flight.Pilot as P (parse)
 import qualified Data.Flight.Waypoint as W (parse)
 
 driverMain :: IO ()
@@ -41,6 +42,15 @@ drive CmdOptions{..} = do
                          Left msg -> print msg
                          Right nominal' -> print nominal'
                 else
+                   return ()
+
+            if null detail || Pilots `elem` detail
+               then do
+                    pilots <- P.parse contents'
+                    case pilots of
+                         Left msg -> print msg
+                         Right pilots' -> print pilots'
+               else
                    return ()
 
             if null detail || Tasks `elem` detail

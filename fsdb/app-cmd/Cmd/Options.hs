@@ -12,6 +12,7 @@ data CmdOptions
     deriving Show
 
 data Detail
-    = Tasks
-    | Nominals
+    = Nominals
+    | Pilots
+    | Tasks
     deriving (Data, Eq, Show)
