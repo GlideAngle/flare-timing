@@ -14,9 +14,9 @@ module Data.Flight.Types
     ) where
 
 import Data.Ratio((%))
-import Control.Applicative
-import GHC.Generics
-import Data.Aeson
+import Control.Applicative (empty)
+import GHC.Generics (Generic)
+import Data.Aeson (ToJSON(..), FromJSON(..), Value(Number))
 import Data.Scientific (Scientific, toRealFloat, fromRationalRepetend)
 
 type Name = String
