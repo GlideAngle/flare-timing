@@ -18,6 +18,8 @@ import System.Console.CmdArgs.Implicit
     , summary
     , program
     , help
+    , typ
+    , groupname
     , cmdArgs
     , (&=)
     )
@@ -25,7 +27,7 @@ import Control.Monad.Except (liftIO, throwError, when, unless)
 import Control.Monad.Trans.Except (runExceptT)
 import System.Directory (doesFileExist, doesDirectoryExist)
 import Text.RawString.QQ (r)
-import Cmd.Options (CmdOptions(..))
+import Cmd.Options (CmdOptions(..), Detail(..))
 
 description :: String
 description = intro
@@ -38,13 +40,24 @@ Parsing flight fsdb files.
 data Drive
     = Drive { dir :: String
             , file :: String
+            , detail :: [Detail]
             }
     deriving (Show, Data, Typeable)
 
 drive :: Drive
 drive
-    = Drive { dir = def &= help "Over all the files in this directory"
-            , file = def &= help "With this one file"
+    = Drive { dir = def
+            &= help "Over all the files in this directory"
+            &= groupname "Source"
+
+            , file = def
+            &= help "With this one file"
+            &= groupname "Source"
+
+            , detail = def
+            &= help "Focus on these details"
+            &= typ "tasks | nominals"
+            &= groupname "Filter"
             }
             &= summary ("Flight Scoring Database Parser " ++ showVersion version ++ description)
             &= program "flight-fsdb-cmd.exe"
@@ -53,8 +66,8 @@ run :: IO Drive
 run = cmdArgs drive
 
 cmdArgsToDriveArgs :: Drive -> Maybe CmdOptions
-cmdArgsToDriveArgs Drive{ dir = d, file = f } =
-    return CmdOptions { dir = d, file = f }
+cmdArgsToDriveArgs Drive{..} =
+    return $ CmdOptions { dir = dir, file = file, detail = detail }
 
 -- SEE: http://stackoverflow.com/questions/2138819/in-haskell-is-there-a-way-to-do-io-in-a-function-guard
 checkedOptions :: CmdOptions -> IO (Either String CmdOptions)

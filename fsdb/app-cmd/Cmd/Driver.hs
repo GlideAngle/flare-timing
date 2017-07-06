@@ -9,8 +9,9 @@ import System.FilePath (takeFileName)
 import System.FilePath.Find (FileType(..), (==?), (&&?), find, always, fileType, extension)
 
 import Cmd.Args (withCmdArgs)
-import Cmd.Options (CmdOptions(..))
-import Data.Flight.Waypoint (parse)
+import Cmd.Options (CmdOptions(..), Detail(..))
+import qualified Data.Flight.Nominal as N (parse)
+import qualified Data.Flight.Waypoint as W (parse)
 
 driverMain :: IO ()
 driverMain = withCmdArgs drive
@@ -31,9 +32,22 @@ drive CmdOptions{..} = do
         go path = do
             putStrLn $ takeFileName path
             contents <- readFile path
+            let contents' = dropWhile (/= '<') contents
 
-            p <- parse $ dropWhile (/= '<') contents
-            case p of
-                 Left msg -> print msg
-                 Right p' -> print p'
+            if null detail || Nominals `elem` detail
+                then do
+                    nominal <- N.parse contents'
+                    case nominal of
+                         Left msg -> print msg
+                         Right nominal' -> print nominal'
+                else
+                   return ()
 
+            if null detail || Tasks `elem` detail
+               then do
+                    tasks <- W.parse contents'
+                    case tasks of
+                         Left msg -> print msg
+                         Right tasks' -> print tasks'
+               else
+                   return ()
