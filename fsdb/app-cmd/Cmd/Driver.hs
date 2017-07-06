@@ -12,11 +12,21 @@ import Cmd.Args (withCmdArgs)
 import Cmd.Options (CmdOptions(..), Detail(..))
 import Data.Flight.Types (showTask)
 import qualified Data.Flight.Nominal as N (parse)
-import qualified Data.Flight.Pilot as P (parse)
+import qualified Data.Flight.Pilot as P (Pilot(..), parse)
 import qualified Data.Flight.Waypoint as W (parse)
 
 driverMain :: IO ()
 driverMain = withCmdArgs drive
+
+showTaskPilots :: [ (Int, [ P.Pilot ]) ] -> [ String ]
+showTaskPilots [] = [ "No tasks." ]
+showTaskPilots xs =
+    (\(i, pilots) -> "Task #" ++ show i ++ " pilots: " ++ show pilots) <$> xs
+
+showPilots :: [[ P.Pilot ]] -> String
+showPilots [] = "No pilots."
+showPilots (comp : tasks) =
+    unlines $ ("Comp pilots: " ++ show comp) : showTaskPilots (zip [ 1 .. ] tasks) 
 
 drive :: CmdOptions -> IO ()
 drive CmdOptions{..} = do
@@ -50,7 +60,7 @@ drive CmdOptions{..} = do
                     pilots <- P.parse contents'
                     case pilots of
                          Left msg -> print msg
-                         Right pilots' -> print pilots'
+                         Right pilots' -> putStr $ showPilots pilots'
                else
                    return ()
 
