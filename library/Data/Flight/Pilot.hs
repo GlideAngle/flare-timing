@@ -2,6 +2,7 @@
 
 module Data.Flight.Pilot (Pilot(..), parse) where
 
+import Data.List (sort)
 import Data.Map.Strict (Map, fromList, findWithDefault)
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
 import Text.XML.HXT.Core
@@ -66,7 +67,7 @@ parse contents = do
     ys :: [ TaskKey ] <- runX $ doc >>> getTaskPilot
 
     let xs' :: [ String ] =
-            (\(KeyPilot (_, name)) -> name) <$> xs
+            sort $ (\(KeyPilot (_, name)) -> name) <$> xs
 
     let compPilots :: [ Pilot ] = Pilot <$> xs'
 
@@ -74,8 +75,9 @@ parse contents = do
             fromList $ (\(KeyPilot x) -> x) <$> xs
 
     let zs :: [[ String ]] =
-            (\(TaskKey (_, ks)) -> (\(Key y) ->
-                findWithDefault y y xsMap) <$> ks)
+            (\(TaskKey (_, ks)) ->
+                sort
+                $ (\(Key y) -> findWithDefault y y xsMap) <$> ks)
             <$> ys
 
     let taskPilots :: [[ Pilot ]] = (fmap . fmap) Pilot zs
