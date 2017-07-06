@@ -96,7 +96,7 @@ executables:
 extra-source-files:
 - package.yaml
 - changelog.md
-- readme.md
+- README.md
 - stack.yaml
 ghc-options: -Wall
 author: Phil de Joux
