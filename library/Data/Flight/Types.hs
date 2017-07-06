@@ -8,8 +8,12 @@ module Data.Flight.Types
     , Turnpoint(..)
     , Task(..)
     , SpeedSection
+    , fromSci
+    , toSci
+    , showRadius
     ) where
 
+import Data.Ratio((%))
 import Control.Applicative
 import GHC.Generics
 import Data.Aeson
@@ -52,3 +56,8 @@ instance ToJSON Longitude where
 instance FromJSON Longitude where
     parseJSON x@(Number _) = Longitude . fromSci <$> parseJSON x
     parseJSON _ = empty
+
+showRadius :: Radius -> String
+showRadius r
+    | r < 1000 = show r ++ " m"
+    | otherwise = show ((truncate (r % 1000)) :: Integer) ++ " km"
