@@ -11,13 +11,24 @@ module Data.Flight.Types
     , fromSci
     , toSci
     , showRadius
+    , showLat
+    , showLng
+    , showTask
+    , showTurnpoint
     ) where
 
 import Data.Ratio((%))
+import Data.List (intercalate)
 import Control.Applicative (empty)
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..), Value(Number))
-import Data.Scientific (Scientific, toRealFloat, fromRationalRepetend)
+import Data.Scientific
+    ( Scientific
+    , FPFormat(..)
+    , toRealFloat
+    , fromRationalRepetend
+    , formatScientific
+    )
 
 type Name = String
 newtype Latitude = Latitude Rational deriving (Eq, Show)
@@ -37,11 +48,15 @@ instance FromJSON Task
 fromSci :: Scientific -> Rational
 fromSci x = toRational (toRealFloat x :: Double)
 
-toSci  :: Rational -> Scientific
+toSci :: Rational -> Scientific
 toSci x =
     case fromRationalRepetend Nothing x of
         Left (s, _) -> s
         Right (s, _) -> s
+
+showSci :: Scientific -> String
+showSci x =
+    formatScientific Fixed (Just 3) x
 
 instance ToJSON Latitude where
     toJSON (Latitude x) = Number $ toSci x
@@ -61,3 +76,35 @@ showRadius :: Radius -> String
 showRadius r
     | r < 1000 = show r ++ " m"
     | otherwise = let y = truncate (r % 1000) :: Integer in show y ++ " km"
+
+showLat :: Latitude -> String
+showLat (Latitude lat) =
+    if x < 0
+       then showSci (negate x) ++ " S"
+       else showSci x ++ " N"
+    where
+        x = toSci lat
+
+showLng :: Longitude -> String
+showLng (Longitude lng) =
+    if x < 0
+       then showSci (negate x) ++ " W"
+       else showSci x ++ " E"
+    where
+        x = toSci lng
+
+showTurnpoint :: Turnpoint -> String
+showTurnpoint (Turnpoint name lat lng rad) =
+    intercalate " " $ [ name
+                      , showLat lat
+                      , showLng lng
+                      , showRadius rad
+                      ]
+
+showTask :: Task -> String
+showTask (Task name ss xs) =
+    intercalate " " $ [ "Task"
+                      , name
+                      , show ss
+                      , intercalate ", " $ showTurnpoint <$> xs
+                      ]
