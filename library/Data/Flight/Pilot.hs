@@ -1,9 +1,13 @@
+{-# LANGUAGE ScopedTypeVariables #-}
+
 module Data.Flight.Pilot (Pilot(..), parse) where
 
+import Data.Map.Strict (Map, fromList, findWithDefault)
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
 import Text.XML.HXT.Core
     ( ArrowXml
     , (>>>)
+    , (&&&)
     , (/>)
     , runX
     , withValidate
@@ -17,19 +21,39 @@ import Text.XML.HXT.Core
     , arr
     )
 
-newtype Pilot = Pilot String deriving Show
+newtype Pilot = Pilot String
+newtype KeyPilot = KeyPilot (String, String) deriving Show
+newtype Key = Key String deriving Show
 
-getPilot :: ArrowXml a => a XmlTree Pilot
-getPilot =
+instance Show Pilot where
+    show (Pilot name) = name
+
+getCompPilot :: ArrowXml a => a XmlTree KeyPilot
+getCompPilot =
     getChildren
     >>> deep (hasName "FsCompetition")
     /> hasName "FsParticipants"
     /> hasName "FsParticipant"
-    >>> getAttrValue "name"
-    >>> arr Pilot
+    >>> getAttrValue "id"
+    &&& getAttrValue "name"
+    >>> arr KeyPilot
 
-parse :: String -> IO (Either String [ Pilot ])
+getTaskPilot :: ArrowXml a => a XmlTree Key
+getTaskPilot =
+    getChildren
+    >>> deep (hasName "FsTask")
+    /> hasName "FsParticipants"
+    /> hasName "FsParticipant"
+    >>> getAttrValue "id"
+    >>> arr Key
+
+parse :: String -> IO (Either String [[ Pilot ]])
 parse contents = do
     let doc = readString [ withValidate no, withWarnings no ] contents
-    xs <- runX $ doc >>> getPilot
-    return $ Right xs
+    xs <- runX $ doc >>> getCompPilot
+    ys <- runX $ doc >>> getTaskPilot
+
+    let compPilots :: [ String ] = (\(KeyPilot (_, name)) -> name) <$> xs
+    let xsMap :: Map String String = fromList $ (\(KeyPilot x) -> x) <$> xs
+    let taskPilots :: [ String ] = (\(Key y) -> findWithDefault y y xsMap) <$> ys
+    return $ Right $ [ Pilot <$> compPilots, Pilot <$> taskPilots ]

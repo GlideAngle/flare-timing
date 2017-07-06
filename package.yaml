@@ -17,6 +17,7 @@ library:
   - hxt-xpath
   - aeson
   - scientific
+  - containers
   source-dirs: library
   exposed-modules:
   - Data.Flight.Nominal
