@@ -60,4 +60,4 @@ instance FromJSON Longitude where
 showRadius :: Radius -> String
 showRadius r
     | r < 1000 = show r ++ " m"
-    | otherwise = show ((truncate (r % 1000)) :: Integer) ++ " km"
+    | otherwise = let y = truncate (r % 1000) :: Integer in show y ++ " km"
