@@ -19,11 +19,13 @@ import Text.XML.HXT.Core
     , getAttrValue
     , deep
     , arr
+    , listA
     )
 
 newtype Pilot = Pilot String
 newtype KeyPilot = KeyPilot (String, String) deriving Show
 newtype Key = Key String deriving Show
+newtype TaskKey = TaskKey (String, [ Key ]) deriving Show
 
 instance Show Pilot where
     show (Pilot name) = name
@@ -38,22 +40,44 @@ getCompPilot =
     &&& getAttrValue "name"
     >>> arr KeyPilot
 
-getTaskPilot :: ArrowXml a => a XmlTree Key
+getTaskPilot :: ArrowXml a => a XmlTree TaskKey
 getTaskPilot =
     getChildren
     >>> deep (hasName "FsTask")
-    /> hasName "FsParticipants"
-    /> hasName "FsParticipant"
     >>> getAttrValue "id"
-    >>> arr Key
+    &&& getPilots
+    >>> arr TaskKey
+    where
+        getPilots =
+            getChildren
+            >>> hasName "FsParticipants"
+            >>> listA getPilot
+
+        getPilot =
+            getChildren
+            >>> hasName "FsParticipant"
+            >>> getAttrValue "id"
+            >>> arr Key
 
 parse :: String -> IO (Either String [[ Pilot ]])
 parse contents = do
     let doc = readString [ withValidate no, withWarnings no ] contents
-    xs <- runX $ doc >>> getCompPilot
-    ys <- runX $ doc >>> getTaskPilot
+    xs :: [ KeyPilot ] <- runX $ doc >>> getCompPilot
+    ys :: [ TaskKey ] <- runX $ doc >>> getTaskPilot
 
-    let compPilots :: [ String ] = (\(KeyPilot (_, name)) -> name) <$> xs
-    let xsMap :: Map String String = fromList $ (\(KeyPilot x) -> x) <$> xs
-    let taskPilots :: [ String ] = (\(Key y) -> findWithDefault y y xsMap) <$> ys
-    return $ Right $ [ Pilot <$> compPilots, Pilot <$> taskPilots ]
+    let xs' :: [ String ] =
+            (\(KeyPilot (_, name)) -> name) <$> xs
+
+    let compPilots :: [ Pilot ] = Pilot <$> xs'
+
+    let xsMap :: Map String String =
+            fromList $ (\(KeyPilot x) -> x) <$> xs
+
+    let zs :: [[ String ]] =
+            (\(TaskKey (_, ks)) -> (\(Key y) ->
+                findWithDefault y y xsMap) <$> ks)
+            <$> ys
+
+    let taskPilots :: [[ Pilot ]] = (fmap . fmap) Pilot zs
+
+    return $ Right $ compPilots : taskPilots
