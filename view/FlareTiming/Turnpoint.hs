@@ -13,7 +13,7 @@ module FlareTiming.Turnpoint
 import Reflex.Dom (MonadWidget , Dynamic , el , dynText)
 import qualified Data.Text as T (Text, pack)
 
-import FlareTiming.WireTypes (Turnpoint(..), showRadius)
+import Data.Flight.Types (Turnpoint(..), showRadius)
 
 getNameRadius :: Turnpoint -> String
 getNameRadius (Turnpoint name _ _ radius) = name ++ " " ++ showRadius radius

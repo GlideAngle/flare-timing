@@ -30,7 +30,7 @@ import qualified Data.Text as T (Text, pack)
 import Data.Map (union)
 import Data.List (intercalate)
 
-import FlareTiming.WireTypes
+import Data.Flight.Types
     ( Task(..)
     , Turnpoint(..)
     , Latitude(..)

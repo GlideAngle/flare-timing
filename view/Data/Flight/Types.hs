@@ -1,10 +1,6 @@
-{-# LANGUAGE RecursiveDo #-}
-{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE KindSignatures #-}
 
-module FlareTiming.WireTypes
+module Data.Flight.Types
     ( Task(..)
     , Turnpoint(..)
     , Latitude(..)
@@ -17,17 +13,10 @@ module FlareTiming.WireTypes
     , showRadius
     ) where
 
-import Prelude hiding (map)
-import Data.Ratio ((%))
-import Control.Monad
+import Data.Ratio((%))
 import Control.Applicative
-import Data.Aeson
 import GHC.Generics
-import Reflex.Dom
-import qualified Data.Text as T
-import qualified Data.Map as Map
-import Data.Map (Map, fromList, union)
-import Data.Monoid((<>))
+import Data.Aeson
 import Data.Scientific (Scientific, toRealFloat, fromRationalRepetend)
 
 type Name = String
