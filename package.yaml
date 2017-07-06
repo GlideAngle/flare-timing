@@ -19,8 +19,9 @@ library:
   - scientific
   source-dirs: library
   exposed-modules:
-  - Data.Flight.Types
   - Data.Flight.Nominal
+  - Data.Flight.Pilot
+  - Data.Flight.Types
   - Data.Flight.Waypoint
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com

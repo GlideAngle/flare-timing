@@ -5,8 +5,6 @@ import Text.XML.HXT.Core
     ( ArrowXml
     , (&&&)
     , (>>>)
-    , (>>.)
-    , (>.)
     , runX
     , withValidate
     , withWarnings
@@ -15,21 +13,9 @@ import Text.XML.HXT.Core
     , hasName
     , getChildren
     , getAttrValue
-    , unlistA
     , deep
     , arr
     )
-import Text.Parsec.Token as P
-import Text.ParserCombinators.Parsec
-    ( GenParser
-    , (<?>)
-    , char
-    , option
-    )
-import qualified Text.ParserCombinators.Parsec as P (parse)
-import Text.Parsec.Language (emptyDef)
-import Data.Functor.Identity (Identity)
-import Text.Parsec.Prim (ParsecT, parsecMap)
 
 data Nominal = Nominal { distance :: String
                        , time :: String 
