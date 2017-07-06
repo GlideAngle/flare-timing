@@ -10,6 +10,7 @@ import System.FilePath.Find (FileType(..), (==?), (&&?), find, always, fileType,
 
 import Cmd.Args (withCmdArgs)
 import Cmd.Options (CmdOptions(..), Detail(..))
+import Data.Flight.Types (showTask)
 import qualified Data.Flight.Nominal as N (parse)
 import qualified Data.Flight.Pilot as P (parse)
 import qualified Data.Flight.Waypoint as W (parse)
@@ -58,6 +59,6 @@ drive CmdOptions{..} = do
                     tasks <- W.parse contents'
                     case tasks of
                          Left msg -> print msg
-                         Right tasks' -> print tasks'
+                         Right tasks' -> print $ showTask <$> tasks'
                else
                    return ()
