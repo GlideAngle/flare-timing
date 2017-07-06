@@ -67,6 +67,12 @@ pFloat = parsecMap toRational $ P.float lexer
 pNat :: ParsecT String u Identity Integer
 pNat = P.natural lexer 
 
+pRat :: String -> GenParser Char st Rational
+pRat errMsg = do
+    sign <- option id $ const negate <$> char '-'
+    x <- pFloat <?> errMsg
+    return $ sign x
+
 getTask :: ArrowXml a => a XmlTree Task
 getTask =
     getChildren
@@ -101,12 +107,6 @@ parse contents = do
     let doc = readString [ withValidate no, withWarnings no ] contents
     xs <- runX $ doc >>> getTask
     return $ Right xs
-
-pRat :: String -> GenParser Char st Rational
-pRat errMsg = do
-    sign <- option id $ const negate <$> char '-'
-    x <- pFloat <?> errMsg
-    return $ sign x
 
 pRadius :: GenParser Char st Integer
 pRadius = pNat <?> "No radius"
