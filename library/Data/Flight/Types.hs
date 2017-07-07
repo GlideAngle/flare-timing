@@ -55,8 +55,8 @@ toSci x =
         Right (s, _) -> s
 
 showSci :: Scientific -> String
-showSci x =
-    formatScientific Fixed (Just 3) x
+showSci =
+    formatScientific Fixed (Just 3)
 
 instance ToJSON Latitude where
     toJSON (Latitude x) = Number $ toSci x
@@ -95,16 +95,16 @@ showLng (Longitude lng) =
 
 showTurnpoint :: Turnpoint -> String
 showTurnpoint (Turnpoint name lat lng rad) =
-    intercalate " " $ [ name
-                      , showLat lat
-                      , showLng lng
-                      , showRadius rad
-                      ]
+    unwords [ name
+            , showLat lat
+            , showLng lng
+            , showRadius rad
+            ]
 
 showTask :: Task -> String
 showTask (Task name ss xs) =
-    intercalate " " $ [ "Task"
-                      , name
-                      , show ss
-                      , intercalate ", " $ showTurnpoint <$> xs
-                      ]
+    unwords [ "Task"
+            , name
+            , show ss
+            , intercalate ", " $ showTurnpoint <$> xs
+            ]
