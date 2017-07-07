@@ -81,6 +81,24 @@ executables:
     - -with-rtsopts=-N
     main: Main.hs
     source-dirs: kml/app-cmd
+  flight-track-cmd:
+    dependencies:
+    - base
+    - directory
+    - filepath
+    - system-filepath
+    - filemanip
+    - raw-strings-qq
+    - cmdargs
+    - mtl
+    - transformers
+    - flight-fsdb 
+    ghc-options:
+    - -rtsopts
+    - -threaded
+    - -with-rtsopts=-N
+    main: Main.hs
+    source-dirs: track/app-cmd
   flare-timing-build-cmd:
     dependencies:
     - base
@@ -96,7 +114,7 @@ executables:
 extra-source-files:
 - package.yaml
 - changelog.md
-- README.md
+- readme.md
 - stack.yaml
 ghc-options: -Wall
 author: Phil de Joux
