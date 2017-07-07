@@ -2,7 +2,7 @@
 
 module Cmd.Options (CmdOptions(..), Detail(..)) where
 
-import System.Console.CmdArgs.Implicit (Default(..), Data)
+import System.Console.CmdArgs.Implicit (Data)
 
 data CmdOptions
     = CmdOptions { dir :: FilePath
@@ -15,4 +15,5 @@ data Detail
     = Nominals
     | Pilots
     | Tasks
+    | PilotTracks
     deriving (Data, Eq, Show)

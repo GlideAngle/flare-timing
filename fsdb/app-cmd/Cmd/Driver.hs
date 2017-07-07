@@ -12,8 +12,9 @@ import Cmd.Args (withCmdArgs)
 import Cmd.Options (CmdOptions(..), Detail(..))
 import Data.Flight.Types (showTask)
 import qualified Data.Flight.Nominal as N (parse)
-import qualified Data.Flight.Pilot as P (Pilot(..), parse)
 import qualified Data.Flight.Waypoint as W (parse)
+import qualified Data.Flight.Pilot as P
+    ( Pilot(..), PilotTrackLogFile(..), parseNames, parseTracks)
 
 driverMain :: IO ()
 driverMain = withCmdArgs drive
@@ -27,6 +28,16 @@ showPilots :: [[ P.Pilot ]] -> String
 showPilots [] = "No pilots."
 showPilots (comp : tasks) =
     unlines $ ("Comp pilots: " ++ show comp) : showTaskPilots (zip [ 1 .. ] tasks) 
+
+showTaskPilotTracks :: [ (Int, [ P.PilotTrackLogFile ]) ] -> [ String ]
+showTaskPilotTracks [] = [ "No tasks." ]
+showTaskPilotTracks xs =
+    (\(i, pilotTracks) -> "Task #" ++ show i ++ " pilot tracks: " ++ show pilotTracks) <$> xs
+
+showPilotTracks :: [[ P.PilotTrackLogFile ]] -> String
+showPilotTracks [] = "No pilots."
+showPilotTracks tasks =
+    unlines $ showTaskPilotTracks (zip [ 1 .. ] tasks) 
 
 drive :: CmdOptions -> IO ()
 drive CmdOptions{..} = do
@@ -57,7 +68,7 @@ drive CmdOptions{..} = do
 
             if null detail || Pilots `elem` detail
                then do
-                    pilots <- P.parse contents'
+                    pilots <- P.parseNames contents'
                     case pilots of
                          Left msg -> print msg
                          Right pilots' -> putStr $ showPilots pilots'
@@ -72,3 +83,13 @@ drive CmdOptions{..} = do
                          Right tasks' -> print $ showTask <$> tasks'
                else
                    return ()
+
+            if null detail || PilotTracks `elem` detail
+               then do
+                    pilotTracks <- P.parseTracks contents'
+                    case pilotTracks of
+                         Left msg -> print msg
+                         Right pilotTracks' -> putStr $ showPilotTracks pilotTracks'
+               else
+                   return ()
+
