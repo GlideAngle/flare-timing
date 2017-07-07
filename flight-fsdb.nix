@@ -1,13 +1,13 @@
-{ mkDerivation, aeson, base, hlint, hxt, hxt-xpath, parsec, path
-, raw-strings-qq, scientific, smallcheck, split, stdenv, tasty
-, tasty-hunit, tasty-quickcheck, tasty-smallcheck
+{ mkDerivation, aeson, base, containers, hlint, hxt, hxt-xpath
+, parsec, path, raw-strings-qq, scientific, smallcheck, split
+, stdenv, tasty, tasty-hunit, tasty-quickcheck, tasty-smallcheck
 }:
 mkDerivation {
   pname = "flight-fsdb";
   version = "0.1.0";
   src = ./.;
   libraryHaskellDepends = [
-    aeson base hxt hxt-xpath parsec path scientific split
+    aeson base containers hxt hxt-xpath parsec path scientific split
   ];
   testHaskellDepends = [
     aeson base hlint hxt hxt-xpath parsec path raw-strings-qq
