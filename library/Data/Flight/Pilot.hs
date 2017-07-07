@@ -1,6 +1,11 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module Data.Flight.Pilot (Pilot(..), parse) where
+module Data.Flight.Pilot
+    ( Pilot(..)
+    , PilotTrackLogFile(..)
+    , parseNames
+    , parseTracks
+    ) where
 
 import Data.List (sort)
 import Data.Map.Strict (Map, fromList, findWithDefault)
@@ -23,13 +28,29 @@ import Text.XML.HXT.Core
     , listA
     )
 
-newtype Pilot = Pilot String
+newtype Pilot = Pilot String deriving (Eq, Ord)
+newtype TrackLogFile = TrackLogFile String deriving (Eq, Ord)
+
 newtype KeyPilot = KeyPilot (String, String) deriving Show
+newtype KeyTrackLogFile = KeyTrackLogFile (String, String) deriving Show
 newtype Key = Key String deriving Show
 newtype TaskKey = TaskKey (String, [ Key ]) deriving Show
 
+data PilotTrackLogFile =
+    PilotTrackLogFile Pilot (Maybe TrackLogFile) deriving (Eq, Ord)
+
+newtype TaskKeyTrackLogFile =
+    TaskKeyTrackLogFile (String, [ KeyTrackLogFile ]) deriving Show
+
 instance Show Pilot where
     show (Pilot name) = name
+
+instance Show TrackLogFile where
+    show (TrackLogFile name) = name
+
+instance Show PilotTrackLogFile where
+    show (PilotTrackLogFile pilot Nothing) = show pilot ++ " -"
+    show (PilotTrackLogFile pilot (Just tlf)) = show pilot ++ " <<" ++ show tlf ++ ">>"
 
 getCompPilot :: ArrowXml a => a XmlTree KeyPilot
 getCompPilot =
@@ -60,8 +81,33 @@ getTaskPilot =
             >>> getAttrValue "id"
             >>> arr Key
 
-parse :: String -> IO (Either String [[ Pilot ]])
-parse contents = do
+getTaskPilotTrackLogFile :: ArrowXml a => a XmlTree TaskKeyTrackLogFile
+getTaskPilotTrackLogFile =
+    getChildren
+    >>> deep (hasName "FsTask")
+    >>> getAttrValue "id"
+    &&& getPilots
+    >>> arr TaskKeyTrackLogFile
+    where
+        getPilots =
+            getChildren
+            >>> hasName "FsParticipants"
+            >>> listA getPilot
+
+        getPilot =
+            getChildren
+            >>> hasName "FsParticipant"
+            >>> getAttrValue "id"
+            &&& getTrackLog
+            >>> arr KeyTrackLogFile
+
+        getTrackLog =
+            getChildren
+            >>> hasName "FsFlightData"
+            >>> getAttrValue "tracklog_filename"
+
+parseNames :: String -> IO (Either String [[ Pilot ]])
+parseNames contents = do
     let doc = readString [ withValidate no, withWarnings no ] contents
     xs :: [ KeyPilot ] <- runX $ doc >>> getCompPilot
     ys :: [ TaskKey ] <- runX $ doc >>> getTaskPilot
@@ -83,3 +129,29 @@ parse contents = do
     let taskPilots :: [[ Pilot ]] = (fmap . fmap) Pilot zs
 
     return $ Right $ compPilots : taskPilots
+
+parseTracks :: String -> IO (Either String [[ PilotTrackLogFile ]])
+parseTracks contents = do
+    let doc = readString [ withValidate no, withWarnings no ] contents
+    xs :: [ KeyPilot ] <- runX $ doc >>> getCompPilot
+    ys :: [ TaskKeyTrackLogFile ] <- runX $ doc >>> getTaskPilotTrackLogFile
+
+    let xsMap :: Map String String =
+            fromList $ (\(KeyPilot x) -> x) <$> xs
+
+    let taskPilotLogs :: [[ PilotTrackLogFile ]] =
+            (\(TaskKeyTrackLogFile (_, ks)) ->
+                sort
+                $ (\(KeyTrackLogFile (k, filename)) ->
+                    let pilot =
+                            findWithDefault k k xsMap
+
+                        tlf =
+                            if null filename
+                                then Nothing
+                                else Just (TrackLogFile filename)
+
+                    in PilotTrackLogFile (Pilot pilot) tlf) <$> ks)
+            <$> ys
+
+    return $ Right taskPilotLogs
