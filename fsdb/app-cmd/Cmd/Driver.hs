@@ -58,38 +58,41 @@ drive CmdOptions{..} = do
             let contents' = dropWhile (/= '<') contents
 
             if null detail || Nominals `elem` detail
-                then do
-                    nominal <- N.parse contents'
-                    case nominal of
-                         Left msg -> print msg
-                         Right nominal' -> print nominal'
-                else
-                   return ()
+                then printNominal contents' else return ()
 
             if null detail || Pilots `elem` detail
-               then do
-                    pilots <- P.parseNames contents'
-                    case pilots of
-                         Left msg -> print msg
-                         Right pilots' -> putStr $ showPilots pilots'
-               else
-                   return ()
+                then printPilotNames contents' else return ()
 
             if null detail || Tasks `elem` detail
-               then do
-                    tasks <- W.parse contents'
-                    case tasks of
-                         Left msg -> print msg
-                         Right tasks' -> print $ showTask <$> tasks'
-               else
-                   return ()
+                then printTasks contents' else return ()
 
             if null detail || PilotTracks `elem` detail
-               then do
-                    pilotTracks <- P.parseTracks contents'
-                    case pilotTracks of
-                         Left msg -> print msg
-                         Right pilotTracks' -> putStr $ showPilotTracks pilotTracks'
-               else
-                   return ()
+                then printPilotTracks contents' else return ()
 
+printNominal :: String -> IO ()
+printNominal contents = do
+    nominal <- N.parse contents
+    case nominal of
+         Left msg -> print msg
+         Right nominal' -> print nominal'
+
+printPilotNames :: String -> IO ()
+printPilotNames contents = do
+    pilots <- P.parseNames contents
+    case pilots of
+         Left msg -> print msg
+         Right pilots' -> putStr $ showPilots pilots'
+
+printPilotTracks :: String -> IO ()
+printPilotTracks contents = do
+    pilotTracks <- P.parseTracks contents
+    case pilotTracks of
+         Left msg -> print msg
+         Right pilotTracks' -> putStr $ showPilotTracks pilotTracks'
+
+printTasks :: String -> IO ()
+printTasks contents = do
+    tasks <- W.parse contents
+    case tasks of
+         Left msg -> print msg
+         Right tasks' -> print $ showTask <$> tasks'
