@@ -1,19 +1,25 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 
-module Cmd.Options (CmdOptions(..), Detail(..)) where
+module Cmd.Options (CmdOptions(..), Reckon(..)) where
 
-import System.Console.CmdArgs.Implicit (Data)
+import System.Console.CmdArgs.Implicit (Default(..), Data, Typeable)
 
 data CmdOptions
     = CmdOptions { dir :: FilePath
                  , file :: FilePath
-                 , detail :: [Detail]
+                 , task :: [Int]
+                 , pilot :: [String]
+                 , reckon :: Reckon
                  }
-    deriving Show
+                 deriving (Data, Typeable, Show)
 
-data Detail
-    = Nominals
-    | Pilots
-    | Tasks
-    | PilotTracks
-    deriving (Data, Eq, Show)
+data Reckon
+    = Goal
+    | Zone
+    | Distance
+    | Time 
+    | Lead
+    deriving (Data, Typeable, Eq, Show)
+
+instance Default Reckon where
+    def = Goal

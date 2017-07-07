@@ -19,6 +19,7 @@ import System.Console.CmdArgs.Implicit
     , program
     , help
     , typ
+    , opt
     , groupname
     , cmdArgs
     , (&=)
@@ -27,47 +28,66 @@ import Control.Monad.Except (liftIO, throwError, when, unless)
 import Control.Monad.Trans.Except (runExceptT)
 import System.Directory (doesFileExist, doesDirectoryExist)
 import Text.RawString.QQ (r)
-import Cmd.Options (CmdOptions(..), Detail(..))
+import Cmd.Options (CmdOptions(..), Reckon(..))
 
 description :: String
 description = intro
     where
         intro = [r|
 
-Parsing flight fsdb files.
+For a competition track, work out if the pilots made goal.
 |]
 
 data Drive
     = Drive { dir :: String
             , file :: String
-            , detail :: [Detail]
+            , task :: [Int]
+            , pilot :: [String]
+            , reckon :: Reckon
             }
     deriving (Show, Data, Typeable)
 
 drive :: Drive
 drive
     = Drive { dir = def
-            &= help "Over all the files in this directory"
+            &= help "Over all the competition *.fsdb files in this directory"
             &= groupname "Source"
 
             , file = def
-            &= help "With this one file"
+            &= help "With this one competition *.fsdb file"
             &= groupname "Source"
 
-            , detail = def
-            &= help "Focus on these details"
-            &= typ "tasks | nominals"
+            , task = def
+            &= help "Which tasks?"
+            &= typ "TASK NUMBER"
+            &= opt "name"
+            &= groupname "Filter"
+
+            , pilot = def
+            &= help "Which pilots?"
+            &= typ "PILOT NAME"
+            &= opt "name"
+            &= groupname "Filter"
+
+            , reckon = def
+            &= help "Work out these things"
+            &= typ "goal|zone|time|distance|lead"
             &= groupname "Filter"
             }
             &= summary ("Flight Scoring Database Parser " ++ showVersion version ++ description)
-            &= program "flight-fsdb-cmd.exe"
+            &= program "flight-task-cmd.exe"
 
 run :: IO Drive
 run = cmdArgs drive
 
 cmdArgsToDriveArgs :: Drive -> Maybe CmdOptions
 cmdArgsToDriveArgs Drive{..} =
-    return $ CmdOptions { dir = dir, file = file, detail = detail }
+    return $ CmdOptions { dir = dir
+                        , file = file
+                        , task = task
+                        , pilot = pilot
+                        , reckon = reckon
+                        }
 
 -- SEE: http://stackoverflow.com/questions/2138819/in-haskell-is-there-a-way-to-do-io-in-a-function-guard
 checkedOptions :: CmdOptions -> IO (Either String CmdOptions)
