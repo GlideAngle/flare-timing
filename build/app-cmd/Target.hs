@@ -1,6 +1,6 @@
 module Target where
 
-import Development.Shake (Rules, phony, need)
+import Development.Shake (Rules)
 import Web (buildRules, cleanRules)
 
 allWants :: [ String ]
@@ -12,9 +12,9 @@ allRules = do
     Target.buildRules
 
 cleanRules :: Rules ()
-cleanRules = do
+cleanRules =
     Web.cleanRules
 
 buildRules :: Rules ()
-buildRules = do
+buildRules =
     Web.buildRules

@@ -3,7 +3,7 @@
 
 module Cmd.Driver (driverMain) where
 
-import Control.Monad (mapM_)
+import Control.Monad (mapM_, when)
 import System.Directory (doesFileExist, doesDirectoryExist)
 import System.FilePath (takeFileName)
 import System.FilePath.Find (FileType(..), (==?), (&&?), find, always, fileType, extension)
@@ -62,20 +62,11 @@ drive CmdOptions{..} = do
             contents <- readFile path
             let contents' = dropWhile (/= '<') contents
 
-            if null detail || Nominals `elem` detail
-                then printNominal contents' else return ()
-
-            if null detail || Pilots `elem` detail
-                then printPilotNames contents' else return ()
-
-            if null detail || Tasks `elem` detail
-                then printTasks contents' else return ()
-
-            if null detail || TaskFolders `elem` detail
-                then printTaskFolders contents' else return ()
-
-            if null detail || PilotTracks `elem` detail
-                then printPilotTracks contents' else return ()
+            when (null detail || Nominals `elem` detail) $ printNominal contents'
+            when (null detail || Pilots `elem` detail) $ printPilotNames contents'
+            when (null detail || Tasks `elem` detail) $ printTasks contents'
+            when (null detail || TaskFolders `elem` detail) $ printTaskFolders contents'
+            when (null detail || PilotTracks `elem` detail) $ printPilotTracks contents'
 
 printNominal :: String -> IO ()
 printNominal contents = do

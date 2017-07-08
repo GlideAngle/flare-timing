@@ -67,7 +67,7 @@ run = cmdArgs drive
 
 cmdArgsToDriveArgs :: Drive -> Maybe CmdOptions
 cmdArgsToDriveArgs Drive{..} =
-    return $ CmdOptions { dir = dir, file = file, detail = detail }
+    return CmdOptions { dir = dir, file = file, detail = detail }
 
 -- SEE: http://stackoverflow.com/questions/2138819/in-haskell-is-there-a-way-to-do-io-in-a-function-guard
 checkedOptions :: CmdOptions -> IO (Either String CmdOptions)

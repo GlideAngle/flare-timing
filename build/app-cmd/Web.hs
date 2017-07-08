@@ -36,10 +36,10 @@ ghcjsIntermediates =
 
 cleanRules :: Rules ()
 cleanRules = do
-    phony "clean" $ do
+    phony "clean" $
         need [ "clean-www", "clean-view-reflex" ]
 
-    phony "clean-www" $ do
+    phony "clean-www" $
         removeFilesAfter "__www" [ "//*" ] 
 
     phony "clean-view-reflex" $ do
@@ -49,28 +49,28 @@ cleanRules = do
 
 buildRules :: Rules ()
 buildRules = do
-    phony "view-start" $ do
+    phony "view-start" $
         cmd (Cwd "view") Shell "yarn run start"
 
     phony "view-www" $ do
-        liftIO $ putStrLn $ "#phony view-www" 
+        liftIO $ putStrLn "#phony view-www" 
         need $ (\ s -> "__www" </> "task-view" </> s)
              <$> [ "all.js", "app.html" ]
 
     phony "view-reflex" $ do
-        liftIO $ putStrLn $ "#phony view-reflex" 
+        liftIO $ putStrLn "#phony view-reflex" 
         need [ "view" </> "task.jsexe" </> "all.js" ]
 
     "view" </> "node_modules" </> "webpack" </> "package.json" %> \ _ -> do
-        liftIO $ putStrLn $ "#install node_modules" 
+        liftIO $ putStrLn "#install node_modules" 
         cmd (Cwd "view") Shell "yarn install"
 
     "__www" </> "task-view" </> "app.html" %> \ _ -> do
-        liftIO $ putStrLn $ "#pack app.html" 
+        liftIO $ putStrLn "#pack app.html" 
         need [ "view" </> "node_modules" </> "webpack" </> "package.json" ]
         cmd (Cwd "view") Shell "yarn run pack"
 
-    mconcat $ (\ s -> do
+    mconcat $ (\ s ->
         "view" </> "app.jsexe" </> s %> \ _ -> do
             need [ "view" </> "App.hs"
                  , "view" </> "FlareTiming" </> "Task.hs"
@@ -81,7 +81,7 @@ buildRules = do
             cmd (Cwd "view") "ghcjs -DGHCJS_BROWSER -outputdir app.jsout App.hs")
         <$> ghcjsOutputs
 
-    mconcat $ (\ s -> do
+    mconcat $ (\ s ->
         "__www" </> "task-view" </> s %> \ _ -> do
             need [ "view" </> "app.jsexe" </> s ]
             liftIO $ putStrLn $ "#copy " ++ s

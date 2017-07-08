@@ -83,19 +83,14 @@ goalPilotTrack (PilotTrackLogFile p Nothing) = return (p, TrackLogFileNotSet)
 goalPilotTrack (PilotTrackLogFile p (Just (TrackLogFile file))) = do
     let folder = takeDirectory file
     dde <- doesDirectoryExist folder
-    if not dde
-       then return (p, TaskFolderExistsNot folder)
-       else do
-            dfe <- doesFileExist file
-            if not dfe
-               then return (p, TrackLogFileExistsNot file)
-               else do
-                   contents <- readFile file
-                   kml <- K.parse contents
-                   case kml of
-                       Left msg -> return (p, TrackLogFileNotRead msg)
-                       Right fixes -> do
-                           return (p, TrackLogFileRead $ length fixes)
+    if not dde then return (p, TaskFolderExistsNot folder) else do
+        dfe <- doesFileExist file
+        if not dfe then return (p, TrackLogFileExistsNot file) else do
+            contents <- readFile file
+            kml <- K.parse contents
+            case kml of
+                Left msg -> return (p, TrackLogFileNotRead msg)
+                Right fixes -> return (p, TrackLogFileRead $ length fixes)
 
 goalTaskPilotTracks :: [ (Int, [ PilotTrackLogFile ]) ] -> IO [ String ]
 goalTaskPilotTracks [] = return [ "No tasks." ]
