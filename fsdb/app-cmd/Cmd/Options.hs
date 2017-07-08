@@ -15,5 +15,6 @@ data Detail
     = Nominals
     | Pilots
     | Tasks
+    | TaskFolders
     | PilotTracks
     deriving (Data, Eq, Show)

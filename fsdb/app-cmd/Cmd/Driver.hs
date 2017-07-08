@@ -13,28 +13,33 @@ import Cmd.Options (CmdOptions(..), Detail(..))
 import Data.Flight.Types (showTask)
 import qualified Data.Flight.Nominal as N (parse)
 import qualified Data.Flight.Waypoint as W (parse)
-import qualified Data.Flight.Pilot as P
-    ( Pilot(..), PilotTrackLogFile(..), parseNames, parseTracks)
+import Data.Flight.Pilot
+    ( Pilot(..)
+    , PilotTrackLogFile(..)
+    , parseNames
+    , parseTracks
+    , parseTaskFolders
+    )
 
 driverMain :: IO ()
 driverMain = withCmdArgs drive
 
-showTaskPilots :: [ (Int, [ P.Pilot ]) ] -> [ String ]
+showTaskPilots :: [ (Int, [ Pilot ]) ] -> [ String ]
 showTaskPilots [] = [ "No tasks." ]
 showTaskPilots xs =
     (\(i, pilots) -> "Task #" ++ show i ++ " pilots: " ++ show pilots) <$> xs
 
-showPilots :: [[ P.Pilot ]] -> String
+showPilots :: [[ Pilot ]] -> String
 showPilots [] = "No pilots."
 showPilots (comp : tasks) =
     unlines $ ("Comp pilots: " ++ show comp) : showTaskPilots (zip [ 1 .. ] tasks) 
 
-showTaskPilotTracks :: [ (Int, [ P.PilotTrackLogFile ]) ] -> [ String ]
+showTaskPilotTracks :: [ (Int, [ PilotTrackLogFile ]) ] -> [ String ]
 showTaskPilotTracks [] = [ "No tasks." ]
 showTaskPilotTracks xs =
     (\(i, pilotTracks) -> "Task #" ++ show i ++ " pilot tracks: " ++ show pilotTracks) <$> xs
 
-showPilotTracks :: [[ P.PilotTrackLogFile ]] -> String
+showPilotTracks :: [[ PilotTrackLogFile ]] -> String
 showPilotTracks [] = "No pilots."
 showPilotTracks tasks =
     unlines $ showTaskPilotTracks (zip [ 1 .. ] tasks) 
@@ -66,6 +71,9 @@ drive CmdOptions{..} = do
             if null detail || Tasks `elem` detail
                 then printTasks contents' else return ()
 
+            if null detail || TaskFolders `elem` detail
+                then printTaskFolders contents' else return ()
+
             if null detail || PilotTracks `elem` detail
                 then printPilotTracks contents' else return ()
 
@@ -78,17 +86,24 @@ printNominal contents = do
 
 printPilotNames :: String -> IO ()
 printPilotNames contents = do
-    pilots <- P.parseNames contents
+    pilots <- parseNames contents
     case pilots of
          Left msg -> print msg
          Right pilots' -> putStr $ showPilots pilots'
 
 printPilotTracks :: String -> IO ()
 printPilotTracks contents = do
-    pilotTracks <- P.parseTracks contents
+    pilotTracks <- parseTracks contents
     case pilotTracks of
          Left msg -> print msg
          Right pilotTracks' -> putStr $ showPilotTracks pilotTracks'
+
+printTaskFolders :: String -> IO ()
+printTaskFolders contents = do
+    taskFolders <- parseTaskFolders contents
+    case taskFolders of
+         Left msg -> print msg
+         Right taskFolders' -> print taskFolders'
 
 printTasks :: String -> IO ()
 printTasks contents = do
@@ -96,3 +111,4 @@ printTasks contents = do
     case tasks of
          Left msg -> print msg
          Right tasks' -> print $ showTask <$> tasks'
+
