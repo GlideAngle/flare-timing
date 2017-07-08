@@ -3,8 +3,11 @@
 module Data.Flight.Pilot
     ( Pilot(..)
     , PilotTrackLogFile(..)
+    , TrackLogFile(..)
+    , TaskFolder(..)
     , parseNames
     , parseTracks
+    , parseTaskFolders
     ) where
 
 import Data.List (sort)
@@ -30,6 +33,7 @@ import Text.XML.HXT.Core
 
 newtype Pilot = Pilot String deriving (Eq, Ord)
 newtype TrackLogFile = TrackLogFile String deriving (Eq, Ord)
+newtype TaskFolder = TaskFolder String
 
 newtype KeyPilot = KeyPilot (String, String) deriving Show
 newtype KeyTrackLogFile = KeyTrackLogFile (String, String) deriving Show
@@ -48,6 +52,9 @@ instance Show Pilot where
 instance Show TrackLogFile where
     show (TrackLogFile name) = name
 
+instance Show TaskFolder where
+    show (TaskFolder name) = name
+
 instance Show PilotTrackLogFile where
     show (PilotTrackLogFile pilot Nothing) = show pilot ++ " -"
     show (PilotTrackLogFile pilot (Just tlf)) = show pilot ++ " <<" ++ show tlf ++ ">>"
@@ -61,6 +68,13 @@ getCompPilot =
     >>> getAttrValue "id"
     &&& getAttrValue "name"
     >>> arr KeyPilot
+
+getTaskFolder :: ArrowXml a => a XmlTree TaskFolder
+getTaskFolder =
+    getChildren
+    >>> deep (hasName "FsTask")
+    >>> getAttrValue "tracklog_folder"
+    >>> arr TaskFolder
 
 getTaskPilot :: ArrowXml a => a XmlTree TaskKey
 getTaskPilot =
@@ -155,3 +169,9 @@ parseTracks contents = do
             <$> ys
 
     return $ Right taskPilotLogs
+
+parseTaskFolders :: String -> IO (Either String [ TaskFolder ])
+parseTaskFolders contents = do
+    let doc = readString [ withValidate no, withWarnings no ] contents
+    xs <- runX $ doc >>> getTaskFolder
+    return $ Right xs
