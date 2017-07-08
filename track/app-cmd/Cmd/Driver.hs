@@ -3,7 +3,6 @@
 
 module Cmd.Driver (driverMain) where
 
-import Debug.Trace
 import Data.Maybe (catMaybes)
 import Control.Monad (mapM_)
 import System.Directory (doesFileExist, doesDirectoryExist)
@@ -20,6 +19,7 @@ import System.FilePath
 
 import Cmd.Args (withCmdArgs)
 import Cmd.Options (CmdOptions(..), Reckon(..))
+import qualified Data.Flight.Kml as K (parse)
 import Data.Flight.Pilot
     ( Pilot(..)
     , PilotTrackLogFile(..)
@@ -64,26 +64,38 @@ drive CmdOptions{..} = do
                     putStrLn $ "TODO: Handle other reckon of " ++ show x
 
 data PilotTrackStatus
-    = TaskFolderExistsNot
-    | TrackLogFileExistsNot
-    | TrackLogFileFound
+    = TaskFolderExistsNot String
+    | TrackLogFileExistsNot String
     | TrackLogFileNotSet
+    | TrackLogFileRead
+    | TrackLogFileNotRead String
 
 instance Show PilotTrackStatus where
-    show TaskFolderExistsNot = "Folder not found"
-    show TrackLogFileExistsNot = "File not found"
-    show TrackLogFileFound = "File found"
+    show (TaskFolderExistsNot x) = "Folder '" ++ x ++ "' not found"
+    show (TrackLogFileExistsNot x) = "File '" ++ x ++ "' not found"
     show TrackLogFileNotSet = "File not set"
+    show (TrackLogFileNotRead "") = "File not read"
+    show (TrackLogFileNotRead x) = "File not read " ++ x
+    show TrackLogFileRead = "File read"
 
 goalPilotTrack :: PilotTrackLogFile -> IO (Pilot, PilotTrackStatus)
 goalPilotTrack (PilotTrackLogFile p Nothing) = return (p, TrackLogFileNotSet)
 goalPilotTrack (PilotTrackLogFile p (Just (TrackLogFile file))) = do
-    dde <- doesDirectoryExist $ takeDirectory file
+    let folder = takeDirectory file
+    dde <- doesDirectoryExist folder
     if not dde
-       then return (p, TaskFolderExistsNot)
+       then return (p, TaskFolderExistsNot folder)
        else do
             dfe <- doesFileExist file
-            return $ if dfe then (p, TrackLogFileFound) else (p, TrackLogFileExistsNot)
+            if not dfe
+               then return (p, TrackLogFileExistsNot file)
+               else do
+                   contents <- readFile file
+                   kml <- K.parse contents
+                   case kml of
+                       Left msg -> return (p, TrackLogFileNotRead msg)
+                       Right _ -> do
+                           return (p, TrackLogFileRead)
 
 goalTaskPilotTracks :: [ (Int, [ PilotTrackLogFile ]) ] -> IO [ String ]
 goalTaskPilotTracks [] = return [ "No tasks." ]
@@ -130,7 +142,7 @@ filterTasks tasks xs =
 makeAbsolute :: FilePath -> TaskFolder -> PilotTrackLogFile -> PilotTrackLogFile
 makeAbsolute _ _ x@(PilotTrackLogFile _ Nothing) = x
 makeAbsolute dir (TaskFolder pathParts) (PilotTrackLogFile p (Just (TrackLogFile file))) =
-    PilotTrackLogFile p (Just (TrackLogFile $ trace path path))
+    PilotTrackLogFile p (Just (TrackLogFile path))
     where
         parts :: [ FilePath ]
         parts = splitDirectories dir ++ pathParts
@@ -146,7 +158,6 @@ printMadeGoal dir tasks pilots contents = do
          (Left msg, _) -> print msg
          (_, Left msg) -> print msg
          (Right xs', Right folders') -> do
-             print folders'
              let ys = filterPilots pilots $ filterTasks tasks xs'
              let fs = (makeAbsolute dir) <$> folders'
              let zs = zipWith (\f y -> f <$> y) fs ys

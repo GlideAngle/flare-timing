@@ -93,6 +93,7 @@ executables:
     - mtl
     - transformers
     - flight-fsdb 
+    - flight-kml
     ghc-options:
     - -rtsopts
     - -threaded
