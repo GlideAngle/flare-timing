@@ -16,7 +16,7 @@ type Altitude = Integer
 type Seconds = Integer
 
 data LLA = LLA Latitude Longitude Altitude deriving (Eq, Show)
-data Fix = Fix Seconds LLA Altitude deriving (Eq, Show)
+data Fix = Fix Seconds LLA (Maybe Altitude) deriving (Eq, Show)
 
 mkPosition :: (Latitude, Longitude, Altitude) -> LLA
 mkPosition (lat', lng', alt') = LLA lat' lng' alt'
@@ -38,7 +38,7 @@ instance LatLngAlt Fix where
 
 class LatLngAlt a => FixMark a where
     mark :: a -> Seconds
-    altBaro :: a -> Altitude
+    altBaro :: a -> Maybe Altitude
 
 instance FixMark Fix where
     mark (Fix x _ _) = x

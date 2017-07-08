@@ -50,6 +50,8 @@ import Text.XML.HXT.Core
     , listA
     , unlistA
     , arr
+    , orElse
+    , constA
     )
 import Data.List (concatMap)
 import Data.List.Split (splitOn)
@@ -88,14 +90,24 @@ pFloat = parsecMap toRational $ P.float lexer
 pNat :: ParsecT String u Identity Integer
 pNat = P.natural lexer 
 
-zipFixes :: [ Seconds ] -> [LLA] -> [ Altitude ] -> [ Fix ]
+zipFixes :: [ Seconds ] -> [LLA] -> [ Maybe Altitude ] -> [ Fix ]
 zipFixes = zipWith3 Fix
 
+-- | Get the fixes. Some KML files don't have PressureAltitude.
 getFix :: ArrowXml a => a XmlTree Fix
 getFix =
     getTrack
-    >>> (listA getCoord &&& (getFsInfo >>> (listA getTime &&& listA getBaro)))
-    >>> arr (\(c, (a, b)) -> zipFixes a c b)
+    >>> (listA getCoord
+            &&& (getFsInfo
+                 >>> (listA getTime
+                      &&& listA getBaro `orElse` constA []
+                     )
+                )
+        )
+    >>> arr (\(c, (a, b)) ->
+            case b of
+              [] -> zipFixes a c (iterate id Nothing)
+              _ -> zipFixes a c (Just <$> b))
     >>> unlistA
     where
         isMetadata =
