@@ -67,7 +67,7 @@ data PilotTrackStatus
     = TaskFolderExistsNot String
     | TrackLogFileExistsNot String
     | TrackLogFileNotSet
-    | TrackLogFileRead
+    | TrackLogFileRead Int
     | TrackLogFileNotRead String
 
 instance Show PilotTrackStatus where
@@ -76,7 +76,7 @@ instance Show PilotTrackStatus where
     show TrackLogFileNotSet = "File not set"
     show (TrackLogFileNotRead "") = "File not read"
     show (TrackLogFileNotRead x) = "File not read " ++ x
-    show TrackLogFileRead = "File read"
+    show (TrackLogFileRead count) = "File read " ++ show count ++ " fixes"
 
 goalPilotTrack :: PilotTrackLogFile -> IO (Pilot, PilotTrackStatus)
 goalPilotTrack (PilotTrackLogFile p Nothing) = return (p, TrackLogFileNotSet)
@@ -94,8 +94,8 @@ goalPilotTrack (PilotTrackLogFile p (Just (TrackLogFile file))) = do
                    kml <- K.parse contents
                    case kml of
                        Left msg -> return (p, TrackLogFileNotRead msg)
-                       Right _ -> do
-                           return (p, TrackLogFileRead)
+                       Right fixes -> do
+                           return (p, TrackLogFileRead $ length fixes)
 
 goalTaskPilotTracks :: [ (Int, [ PilotTrackLogFile ]) ] -> IO [ String ]
 goalTaskPilotTracks [] = return [ "No tasks." ]
