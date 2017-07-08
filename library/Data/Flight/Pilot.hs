@@ -11,6 +11,7 @@ module Data.Flight.Pilot
     ) where
 
 import Data.List (sort)
+import Data.List.Split (splitOneOf)
 import Data.Map.Strict (Map, fromList, findWithDefault)
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
 import Text.XML.HXT.Core
@@ -33,7 +34,10 @@ import Text.XML.HXT.Core
 
 newtype Pilot = Pilot String deriving (Eq, Ord)
 newtype TrackLogFile = TrackLogFile String deriving (Eq, Ord)
-newtype TaskFolder = TaskFolder String
+
+-- | A task folder is relative. To be cross-platform I store the path
+-- parts, stripping the path separators.
+newtype TaskFolder = TaskFolder [ String ]
 
 newtype KeyPilot = KeyPilot (String, String) deriving Show
 newtype KeyTrackLogFile = KeyTrackLogFile (String, String) deriving Show
@@ -53,7 +57,7 @@ instance Show TrackLogFile where
     show (TrackLogFile name) = name
 
 instance Show TaskFolder where
-    show (TaskFolder name) = name
+    show (TaskFolder pathParts) = show pathParts
 
 instance Show PilotTrackLogFile where
     show (PilotTrackLogFile pilot Nothing) = show pilot ++ " -"
@@ -74,6 +78,7 @@ getTaskFolder =
     getChildren
     >>> deep (hasName "FsTask")
     >>> getAttrValue "tracklog_folder"
+    >>> arr (splitOneOf "\\/")
     >>> arr TaskFolder
 
 getTaskPilot :: ArrowXml a => a XmlTree TaskKey
