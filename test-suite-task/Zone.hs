@@ -258,7 +258,7 @@ correctPoint :: [Zone] -> TaskDistance -> Bool
 correctPoint [] (TaskDistance d) = d == 0
 correctPoint [_] (TaskDistance d) = d == 0
 correctPoint xs (TaskDistance d)
-    | and $ map (== head ys) (tail ys) = d == 0
+    | all (== head ys) (tail ys) = d == 0
     | otherwise = d > 0
     where
         ys = center <$> xs
@@ -267,7 +267,7 @@ correctEdge :: [Zone] -> TaskDistance -> Bool
 correctEdge [] (TaskDistance d) = d == 0
 correctEdge [_] (TaskDistance d) = d == 0
 correctEdge xs (TaskDistance d)
-    | and $ map (== head ys) (tail ys) = d == 0
+    | all (== head ys) (tail ys) = d == 0
     | not $ separatedZones xs = d == 0
     | otherwise = d > 0
     where

@@ -122,72 +122,72 @@ day1Units :: TestTree
 day1Units = testGroup "Task 1"
     [ HU.testCase "zones are separated" $ FS.separatedZones pDay1 @?= True
     , HU.testCase ("point-to-point distance >= " ++ show dDay1 ++ " m") $
-        FS.distancePointToPoint pDay1 @?= (toDist dDay1)
+        FS.distancePointToPoint pDay1 @?= toDist dDay1
     , HU.testCase ("edge-to-edge distance <= " ++ show dDay1 ++ " m") $
-        (fst $ FS.distanceEdgeToEdge samples mm30 pDay1) @?= (toDist dDay1)
+        fst (FS.distanceEdgeToEdge samples mm30 pDay1) @?= toDist dDay1
     ]
 
 day2Units :: TestTree
 day2Units = testGroup "Task 2"
     [ HU.testCase "zones are separated" $ FS.separatedZones pDay2 @?= True
     , HU.testCase ("point-to-point distance >= " ++ show dDay2 ++ " m") $
-        FS.distancePointToPoint pDay2 @?= (toDist dDay2)
+        FS.distancePointToPoint pDay2 @?= toDist dDay2
     , HU.testCase ("edge-to-edge distance <= " ++ show dDay2 ++ " m") $
-        (fst $ FS.distanceEdgeToEdge samples mm30 pDay2) @?= (toDist dDay2)
+        fst (FS.distanceEdgeToEdge samples mm30 pDay2) @?= toDist dDay2
     ]
 
 day3Units :: TestTree
 day3Units = testGroup "Task 3"
     [ HU.testCase "zones are separated" $ FS.separatedZones pDay3 @?= True
     , HU.testCase ("point-to-point distance >= " ++ show dDay3 ++ " m") $
-        FS.distancePointToPoint pDay3 @?= (toDist dDay3)
+        FS.distancePointToPoint pDay3 @?= toDist dDay3
     , HU.testCase ("edge-to-edge distance <= " ++ show dDay3 ++ " m") $
-        (fst $ FS.distanceEdgeToEdge samples mm30 pDay3) @?= (toDist dDay3)
+        fst (FS.distanceEdgeToEdge samples mm30 pDay3) @?= toDist dDay3
     ]
 
 day4Units :: TestTree
 day4Units = testGroup "Task 4"
     [ HU.testCase "zones are separated" $ FS.separatedZones pDay4 @?= True
     , HU.testCase ("point-to-point distance >= " ++ show dDay4 ++ " m") $
-        FS.distancePointToPoint pDay4 @?= (toDist dDay4)
+        FS.distancePointToPoint pDay4 @?= toDist dDay4
     , HU.testCase ("edge-to-edge distance <= " ++ show dDay4 ++ " m") $
-        (fst $ FS.distanceEdgeToEdge samples mm30 pDay4) @?= (toDist dDay4)
+        fst (FS.distanceEdgeToEdge samples mm30 pDay4) @?= toDist dDay4
     ]
 
 day5Units :: TestTree
 day5Units = testGroup "Task 5"
     [ HU.testCase "zones are separated" $ FS.separatedZones pDay5 @?= True
     , HU.testCase ("point-to-point distance >= " ++ show dDay5 ++ " m") $
-        FS.distancePointToPoint pDay5 @?= (toDist dDay5)
+        FS.distancePointToPoint pDay5 @?= toDist dDay5
     , HU.testCase ("edge-to-edge distance <= " ++ show dDay5 ++ " m") $
-        (fst $ FS.distanceEdgeToEdge samples mm30 pDay5) @?= (toDist dDay5)
+        fst (FS.distanceEdgeToEdge samples mm30 pDay5) @?= toDist dDay5
     ]
 
 day6Units :: TestTree
 day6Units = testGroup "Task 6"
     [ HU.testCase "zones are separated" $ FS.separatedZones pDay6 @?= True
     , HU.testCase ("point-to-point distance >= " ++ show dDay6 ++ " m") $
-        FS.distancePointToPoint pDay6 @?= (toDist dDay6)
+        FS.distancePointToPoint pDay6 @?= toDist dDay6
     , HU.testCase ("edge-to-edge distance <= " ++ show dDay6 ++ " m") $
-        (fst $ FS.distanceEdgeToEdge samples mm30 pDay6) @?= (toDist dDay6)
+        fst (FS.distanceEdgeToEdge samples mm30 pDay6) @?= toDist dDay6
     ]
 
 day7Units :: TestTree
 day7Units = testGroup "Task 7"
     [ HU.testCase "zones are separated" $ FS.separatedZones pDay7 @?= True
     , HU.testCase ("point-to-point distance >= " ++ show dDay7 ++ " m") $
-        FS.distancePointToPoint pDay7 @?= (toDist dDay7)
+        FS.distancePointToPoint pDay7 @?= toDist dDay7
     , HU.testCase ("edge-to-edge distance <= " ++ show dDay7 ++ " m") $
-        (fst $ FS.distanceEdgeToEdge samples mm30 pDay7) @?= (toDist dDay7)
+        fst (FS.distanceEdgeToEdge samples mm30 pDay7) @?= toDist dDay7
     ]
 
 day8Units :: TestTree
 day8Units = testGroup "Task 8"
     [ HU.testCase "zones are separated" $ FS.separatedZones pDay8 @?= True
     , HU.testCase ("point-to-point distance >= " ++ show dDay8 ++ " m") $
-        FS.distancePointToPoint pDay8 @?= (toDist dDay8)
+        FS.distancePointToPoint pDay8 @?= toDist dDay8
     , HU.testCase ("edge-to-edge distance <= " ++ show dDay8 ++ " m") $
-        (fst $ FS.distanceEdgeToEdge samples mm30 pDay8) @?= (toDist dDay8)
+        fst (FS.distanceEdgeToEdge samples mm30 pDay8) @?= toDist dDay8
     ]
 
 pDay1 :: [Zone]
