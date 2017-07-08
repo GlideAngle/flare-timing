@@ -127,6 +127,13 @@ forbesUnits = testGroup "Forbes 2011/2012 distances"
 mkDayUnits :: TestName -> [Zone] -> Double -> TestTree
 mkDayUnits title pDay dDay = testGroup title
     [ HU.testCase "zones are separated" $ FS.separatedZones pDay @?= True
+    , HU.testCase
+            ( "point-to-point distance >= edge-to-edge distance, "
+            ++ show ppDay ++ " m"
+            ++ " >= "
+            ++ show eeDay ++ " m"
+            ) $
+        (ppDay >= eeDay) @? ppDay .>=. eeDay
     , HU.testCase ("point-to-point distance >= " ++ show dDay ++ " m") $
         (ppDay >= distDay) @? ppDay .>=. distDay
     , HU.testCase ("edge-to-edge distance <= " ++ show dDay ++ " m") $
