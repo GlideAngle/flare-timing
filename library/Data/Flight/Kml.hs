@@ -106,7 +106,7 @@ getFix =
         )
     >>> arr (\(c, (a, b)) ->
             case b of
-              [] -> zipFixes a c (iterate id Nothing)
+              [] -> zipFixes a c (repeat Nothing)
               _ -> zipFixes a c (Just <$> b))
     >>> unlistA
     where
