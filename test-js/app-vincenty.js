@@ -4,7 +4,7 @@ require('./vincenty.html');
 require('./email.js');
 var $ = require('jquery');
 var Dms = require('./dms.js');
-var LatLon = require('./latlon-spherical.js');
+var LatLon = require('./latlon-vincenty.js');
 
 var outputLine = "";
 

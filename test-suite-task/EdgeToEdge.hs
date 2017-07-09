@@ -217,7 +217,7 @@ SEE: http://www.movable-type.co.uk/scripts/latlong-vincenty.html
 -33.85373, 147.94195, -33.4397, 148.34533
 -33.4397, 148.34533, -33.61965, 148.4099
 
-NOTE: Point to point distances using Vincenty method.
+NOTE: Point to point distances using Haversine method.
 => 
 54.76
 59.28
@@ -228,6 +228,18 @@ NOTE: Point to point distances using Vincenty method.
 
 134.93 - 10 - 0.4
 => 124.53
+
+NOTE: Point to point distances using Vincenty method.
+=> 
+54.62
+59.24
+20.84
+
+54.62 + 59.24 + 20.84
+=> 134.7
+
+134.7 - 10 - 0.4
+=> 124.30
 -}
 pDay1 :: [Zone]
 pDay1 =
@@ -251,7 +263,7 @@ dsDay1 = (* 1000) <$> [ 0.000, 9.882, 54.254, 112.779, 133.357 ]
 -32.90223, 147.98492, -32.9536, 147.55457
 -32.9536, 147.55457, -33.12592, 147.91043
 
-NOTE: Point to point distances using Vincenty method.
+NOTE: Point to point distances using Haversine method.
 =>
 51.29
 40.57
@@ -262,6 +274,18 @@ NOTE: Point to point distances using Vincenty method.
 
 130.17 - 5 - 0.4
 => 124.77
+
+NOTE: Point to point distances using Vincenty method.
+=>
+51.16
+40.65
+38.34
+
+51.16 + 40.65 + 38.34
+=> 130.15
+
+130.15 - 5 - 0.4
+=> 124.75
 -}
 pDay2 :: [Zone]
 pDay2 =
@@ -285,7 +309,7 @@ dsDay2 = (* 1000) <$> [ 0.000, 4.891, 50.789, 90.732, 128.284 ]
 -34.02107, 148.2233, -34.11795, 148.5013
 -34.11795, 148.5013, -34.82197, 148.66543
 
-NOTE: Point to point distances using Vincenty method.
+NOTE: Point to point distances using Haversine method.
 =>
 78.15
 27.78
@@ -296,6 +320,18 @@ NOTE: Point to point distances using Vincenty method.
 
 185.65 - 25 - 0.4
 => 160.25
+
+NOTE: Point to point distances using Vincenty method.
+=>
+77.99
+27.82
+79.54
+
+77.99 + 27.82 + 79.54
+=> 185.35
+
+185.35 - 25 - 0.4
+=> 159.95
 -}
 pDay3 :: [Zone]
 pDay3 =
@@ -318,7 +354,7 @@ dsDay3 = (* 1000) <$> [ 0.000, 24.854, 77.646, 105.113, 183.856 ]
 -33.36137, 147.93207, -32.90223, 147.98492
 -32.90223, 147.98492, -32.46363, 148.989
 
-NOTE: Point to point distances using Vincenty method.
+NOTE: Point to point distances using Haversine method.
 =>
 51.29
 105.9
@@ -328,6 +364,17 @@ NOTE: Point to point distances using Vincenty method.
 
 157.19 - 15 - 0.4
 => 141.79
+
+NOTE: Point to point distances using Vincenty method.
+=>
+51.16
+106
+
+51.16 + 106
+=> 157.16
+
+157.16 - 15 - 0.4
+=> 141.76
 -}
 pDay4 :: [Zone]
 pDay4 =
@@ -349,7 +396,7 @@ dsDay4 = (* 1000) <$> [ 0.000, 14.873, 26.119, 144.030 ]
 -33.36137, 147.93207, -32.56608, 148.22657
 -32.56608, 148.22657, -32.0164, 149.43363
 
-NOTE: Point to point distances using Vincenty method.
+NOTE: Point to point distances using Haversine method.
 =>
 92.6
 128.9
@@ -359,6 +406,17 @@ NOTE: Point to point distances using Vincenty method.
 
 221.5 - 15 - 0.4
 => 206.1
+
+NOTE: Point to point distances using Vincenty method.
+=>
+92.4
+129
+
+92.4 + 129
+=> 221.4
+
+221.4 - 15 - 0.4
+=> 206.0
 -}
 pDay5 :: [Zone]
 pDay5 =
@@ -380,7 +438,7 @@ dsDay5 = (* 1000) <$> [ 0.000, 14.873, 87.489, 217.389 ]
 -33.36137, 147.93207, -32.19498, 147.76218
 -32.19498, 147.76218, -31.69323, 148.29623
 
-NOTE: Point to point distances using Vincenty method.
+NOTE: Point to point distances using Haversine method.
 =>
 130.7
 75.18
@@ -390,6 +448,17 @@ NOTE: Point to point distances using Vincenty method.
 
 205.88 - 15 - 0.4
 => 190.48
+
+NOTE: Point to point distances using Vincenty method.
+=>
+130.3
+75.13
+
+130.3 + 75.13
+=> 205.43
+
+205.43 - 15 - 0.4
+=> 190.03
 -}
 pDay6 :: [Zone]
 pDay6 =
@@ -412,7 +481,7 @@ dsDay6 = (* 1000) <$> [ 0.000, 14.873, 125.550, 201.822 ]
 -32.9536, 147.55457, -32.76052, 148.64958
 -32.76052, 148.64958, -32.93585, 148.74947
 
-NOTE: Point to point distances using Vincenty method.
+NOTE: Point to point distances using Haversine method.
 =>
 57.37
 104.5
@@ -424,6 +493,17 @@ NOTE: Point to point distances using Vincenty method.
 183.48 - 10 - 0.4
 => 173.08
 
+NOTE: Point to point distances using Vincenty method.
+=>
+57.32
+104.7
+21.58
+
+57.32 + 104.7 + 21.58
+=> 183.60
+
+183.60 - 10 - 0.4
+=> 173.2
 -}
 pDay7 :: [Zone]
 pDay7 =
@@ -447,7 +527,7 @@ dsDay7 = (* 1000) <$> [ 0.000,  9.882, 52.259, 153.014, 174.525 ]
 -33.75343, 147.52865, -33.12908, 147.57323
 -33.12908, 147.57323, -33.361, 147.9315
 
-NOTE: Point to point distances using Vincenty method.
+NOTE: Point to point distances using Haversine method.
 =>
 57.43
 69.55
@@ -458,6 +538,18 @@ NOTE: Point to point distances using Vincenty method.
 
 169.11 - 10 - 0.4
 => 158.71
+
+NOTE: Point to point distances using Vincenty method.
+=>
+57.4
+69.37
+42.15
+
+57.4 + 69.37 + 42.15
+=> 168.92
+
+169.92 - 10 - 0.4
+=> 159.52
 -}
 pDay8 :: [Zone]
 pDay8 =
