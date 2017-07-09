@@ -141,9 +141,9 @@ mkDayUnits title pDay dDay dsDay = testGroup title
 
     , HU.testCase
         ( "point-to-point distance >= edge-to-edge distance, "
-        ++ (showKm $ fromRational ppDay')
+        ++ showKm (fromRational ppDay')
         ++ " >= "
-        ++ (showKm $ fromRational eeDay')
+        ++ showKm (fromRational eeDay')
         )
         $ (ppDay >= eeDay) @? ppDay .>=. eeDay
 
