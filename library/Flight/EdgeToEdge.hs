@@ -60,8 +60,8 @@ distanceEdgeToEdge samples tolerance xs =
         [_, _] ->
             EdgeDistance { centers = d
                          , edges = d
-                         , centerLine = []
-                         , edgeLine = []
+                         , centerLine = centerLine
+                         , edgeLine = centerLine
                          }
 
         (y : ys) ->
