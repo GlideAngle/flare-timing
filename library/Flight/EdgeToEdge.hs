@@ -1,6 +1,7 @@
 module Flight.EdgeToEdge
     ( Samples(..)
     , Tolerance(..)
+    , EdgeDistance(..)
     , circumSample
     , distanceEdgeToEdge
     , buildGraph
@@ -23,10 +24,64 @@ import Flight.Separated (separatedZones)
 
 newtype TrueCourse = TrueCourse Rational deriving (Eq, Ord, Show)
 
-distanceEdgeToEdge :: Samples -> Tolerance -> [Zone] -> (TaskDistance, [LatLng])
-distanceEdgeToEdge _ _ [] = (TaskDistance 0, [])
-distanceEdgeToEdge _ _ [_] = (TaskDistance 0, [])
-distanceEdgeToEdge samples tolerance xs
+data EdgeDistance =
+    EdgeDistance
+        { centers :: TaskDistance
+        -- ^ The distance from the center of the first zone to the center of
+        -- the last zone.
+        , edges :: TaskDistance
+        -- ^ The distance from the edge of the first zone to the edge of
+        -- the last zone.
+        , centerLine :: [LatLng]
+        -- ^ The points of the 'centers' distance.
+        , edgeLine :: [LatLng]
+        -- ^ The points of the 'edges' distance.
+        }
+
+zero :: EdgeDistance
+zero =
+    EdgeDistance { centers = TaskDistance 0
+                 , edges = TaskDistance 0
+                 , centerLine = []
+                 , edgeLine = []
+                 }
+
+distanceEdgeToEdge :: Samples -> Tolerance -> [Zone] -> EdgeDistance
+distanceEdgeToEdge _ _ [] = zero
+distanceEdgeToEdge _ _ [_] = zero
+distanceEdgeToEdge samples tolerance xs =
+    case xs of
+        [] ->
+            zero
+
+        [_] ->
+            zero
+
+        [_, _] ->
+            EdgeDistance { centers = d
+                         , edges = d
+                         , centerLine = []
+                         , edgeLine = []
+                         }
+
+        (y : ys) ->
+            EdgeDistance { centers = d
+                         , edges = d'
+                         , centerLine = centerLine
+                         , edgeLine = edgeLine
+                         }
+
+            where
+                edgeLine = reverse $ drop 1 $ reverse centerLine
+                d' = distancePointToPoint (Point <$> edgeLine)
+
+    where
+        (d, centerLine) = distance samples tolerance xs
+
+distance :: Samples -> Tolerance -> [Zone] -> (TaskDistance, [LatLng])
+distance _ _ [] = (TaskDistance 0, [])
+distance _ _ [_] = (TaskDistance 0, [])
+distance samples tolerance xs
     | not $ separatedZones xs = (TaskDistance 0, [])
     | length xs < 3 = (pointwise, centers)
     | otherwise =

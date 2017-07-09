@@ -11,7 +11,7 @@ import Data.Ratio((%))
 import qualified Data.Number.FixedFunctions as F
 
 import Flight.Geo (LatLng(..), Epsilon(..), earthRadius, defEps)
-import Flight.Zone (Zone(..), center)
+import Flight.Zone (Zone(..), Radius(..), center, radius)
 
 newtype TaskDistance = TaskDistance Rational deriving (Eq, Ord, Num, Real)
 
@@ -68,8 +68,24 @@ distanceHaversine (Epsilon eps) xLL@(LatLng (xLat, _)) yLL@(LatLng (yLat, _)) =
         radDist :: Rational
         radDist = 2 * F.atan eps (F.sqrt eps a / F.sqrt eps (1 - a))
 
+-- | The distance from point to point less the sum of the radii of the
+-- first and last points.
 distancePointToPoint :: [Zone] -> TaskDistance
-distancePointToPoint xs =
+distancePointToPoint [] = TaskDistance 0
+distancePointToPoint [_] = TaskDistance 0
+distancePointToPoint xs@[x, y]
+    | x == y = TaskDistance 0
+    | otherwise = distance xs
+distancePointToPoint (x : xs) =
+    TaskDistance $ d - rx - ry
+    where
+        (Radius rx) = radius x
+        (Radius ry) = radius y
+        (y : _) = reverse xs
+        (TaskDistance d) = distance xs
+
+distance :: [Zone] -> TaskDistance
+distance xs =
     TaskDistance $ sum $ zipWith f ys (tail ys)
     where
         ys = center <$> xs

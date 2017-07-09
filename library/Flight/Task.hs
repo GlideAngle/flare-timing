@@ -40,6 +40,7 @@ module Flight.Task
     -- * Zone edge-to-edge shortest path.
     , Samples(..)
     , Tolerance(..)
+    , EdgeDistance(..)
     , circumSample
     , distanceEdgeToEdge
     -- * Zone separation.

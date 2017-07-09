@@ -18,6 +18,7 @@ import Flight.Task
     , Incline (..)
     , Bearing(..)
     , TaskDistance(..)
+    , EdgeDistance(..)
     , Samples(..)
     , Tolerance(..)
     , earthRadius
@@ -285,7 +286,7 @@ mm10 = Tolerance $ 10 % 1000
 
 distanceEdge :: ZonesTest -> Bool
 distanceEdge (ZonesTest xs) =
-    (\(d, _) -> correctEdge xs d) $ FS.distanceEdgeToEdge samples mm10 xs
+    correctEdge xs $ edges $ FS.distanceEdgeToEdge samples mm10 xs
 
 distanceLess :: ZonesTest -> Bool
 distanceLess (ZonesTest xs)
@@ -293,5 +294,5 @@ distanceLess (ZonesTest xs)
     | otherwise =
         dEdge <= dPoint
         where
-            (TaskDistance dEdge, _) = FS.distanceEdgeToEdge samples mm10 xs
+            TaskDistance dEdge = edges $ FS.distanceEdgeToEdge samples mm10 xs
             TaskDistance dPoint = FS.distancePointToPoint xs
