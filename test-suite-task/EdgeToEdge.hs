@@ -253,6 +253,23 @@ pDay1 =
 dDay1 :: Double
 dDay1 = 1000 * 133.357
 
+{-
+NOTE: The task distances show below are taken from the competition *.fsdb file at the
+path /Fs/FsCompetition/FsTasks/FsTask/FsTaskScoreParams/FsTaskDistToTp. The first
+distance is not 9.9 kms, 10 kms - 100m.
+
+Some flight instruments use WGS84 and others use the FAI spheriod. To accomodate this,
+there is a tolerance of either 0.01% or 0.5% used, depending on the competition. For
+category 1 events since 2015-01-01 it is 0.01%. Category 2 events can elect to use the
+wider margin. This tolerance is used for working out if tracks reach control zones.
+
+TODO: Find out why the first distance is 9.882 and not 9.9 km.
+<FsTaskDistToTp tp_no="1" distance="0.000" />
+<FsTaskDistToTp tp_no="2" distance="9.882" />
+<FsTaskDistToTp tp_no="3" distance="54.254" />
+<FsTaskDistToTp tp_no="4" distance="112.779" />
+<FsTaskDistToTp tp_no="5" distance="133.357" />
+-}
 dsDay1 :: [Double]
 dsDay1 = (* 1000) <$> [ 0.000, 9.882, 54.254, 112.779, 133.357 ]
 
