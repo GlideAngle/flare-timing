@@ -208,14 +208,36 @@ day8Units = mkDayUnits "Task 8" pDay8 dDay8 dsDay8
 
 
 {-
-NOTE: Point to point distances using Vincenty method.
+Point to point distances using Vincenty method.
 SEE: http://www.stevemorse.org/nearest/distancebatch.html
 SEE: http://www.movable-type.co.uk/scripts/latlong-vincenty.html
 
 -33.36137, 147.93207, -33.85373, 147.94195, -33.4397, 148.34533, -33.61965, 148.4099
 
+Vincenty
+========
 -33.36137, 147.93207, -33.85373, 147.94195
 => 54.617964
+
+-33.85373, 147.94195, -33.4397, 148.34533
+=> 59.237679
+
+-33.4397, 148.34533, -33.61965, 148.4099
+=> 20.840718000000003
+
+54.617964 + 59.237679 + 20.840718000000003
+=> 134.696361
+
+134.696361 - 10 - 0.4
+=> 124.29636099999999
+
+Point to point distances using Haversine method.
+SEE: http://www.movable-type.co.uk/scripts/latlong.html
+
+Haversine
+========
+-33.36137, 147.93207, -33.85373, 147.94195
+=> 54.76
 
 -33.85373, 147.94195, -33.4397, 148.34533
 => 59.237679
