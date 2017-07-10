@@ -10,7 +10,7 @@ module Flight.PointToPoint
 import Data.Ratio((%))
 import qualified Data.Number.FixedFunctions as F
 
-import Flight.Geo (LatLng(..), Epsilon(..), earthRadius, defEps)
+import Flight.Geo (LatLng(..), Epsilon(..), earthRadius, defEps, degToRadLL)
 import Flight.Zone (Zone(..), Radius(..), center, radius)
 
 newtype TaskDistance = TaskDistance Rational deriving (Eq, Ord, Num, Real)
@@ -26,7 +26,7 @@ distanceHaversineF :: LatLng -> LatLng -> TaskDistance
 distanceHaversineF xLL@(LatLng (xLat, _)) yLL@(LatLng (yLat, _)) =
     TaskDistance $ earthRadius * toRational radDist 
     where
-        (dLat, dLng) = diffLL xLL yLL
+        (dLat, dLng) = diffLL (degToRadLL defEps xLL) (degToRadLL defEps yLL)
 
         haversine :: Rational -> Double
         haversine x =
@@ -49,7 +49,7 @@ distanceHaversine :: Epsilon -> LatLng -> LatLng -> TaskDistance
 distanceHaversine (Epsilon eps) xLL@(LatLng (xLat, _)) yLL@(LatLng (yLat, _)) =
     TaskDistance $ earthRadius * radDist 
     where
-        (dLat, dLng) = diffLL xLL yLL
+        (dLat, dLng) = diffLL (degToRadLL defEps xLL) (degToRadLL defEps yLL)
 
         haversine :: Rational -> Rational
         haversine x =
