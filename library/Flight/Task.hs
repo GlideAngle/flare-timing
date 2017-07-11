@@ -34,6 +34,7 @@ module Flight.Task
     , distancePointToPoint
     , distanceHaversine
     , distanceHaversineF
+    , distance
     , separatedZones
     , center
     , radius
