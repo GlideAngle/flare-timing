@@ -17,7 +17,7 @@ import Data.Graph.Inductive.Internal.RootPath (getDistance, getLPathNodes)
 import Data.Graph.Inductive.Graph (Graph(..), Node, Path, LEdge, mkGraph, match)
 import Data.Graph.Inductive.PatriciaTree (Gr)
 
-import Flight.Geo (LatLng(..), Epsilon(..), earthRadius, defEps)
+import Flight.Geo (LatLng(..), Epsilon(..), earthRadius, defEps, degToRad, radToDeg)
 import Flight.Zone (Zone(..), Radius(..), center)
 import Flight.PointToPoint (TaskDistance(..), distancePointToPoint)
 import Flight.Separated (separatedZones)
@@ -72,7 +72,12 @@ distanceEdgeToEdge samples tolerance xs =
                          }
 
             where
-                ptsEdgeLine = reverse $ drop 1 $ reverse ptsCenterLine
+                ptsEdgeLine =
+                    drop 1
+                    $ reverse
+                    $ drop 1
+                    $ reverse ptsCenterLine
+
                 d' = distancePointToPoint (Point <$> ptsEdgeLine)
 
     where
@@ -165,14 +170,14 @@ sample n t (Line r x) = fst $ circumSample n t r x
 sample n t (SemiCircle r x) = fst $ circumSample n t r x
  
 circum :: LatLng -> Epsilon -> Radius -> TrueCourse -> LatLng
-circum (LatLng (rlat, rlng)) _ (Radius rRadius) (TrueCourse rtc) =
-    LatLng (toRational lat', toRational lng')
+circum (LatLng (latDegree, lngDegree)) _ (Radius rRadius) (TrueCourse rtc) =
+    LatLng (radToDeg defEps $ toRational lat', radToDeg defEps $ toRational lng')
     where
         lat :: Double
-        lat = fromRational rlat
+        lat = fromRational $ degToRad defEps latDegree
 
         lng :: Double
-        lng = fromRational rlng
+        lng = fromRational $ degToRad defEps lngDegree
 
         tc :: Double
         tc = fromRational rtc
