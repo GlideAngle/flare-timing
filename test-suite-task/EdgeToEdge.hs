@@ -1,4 +1,4 @@
-module EdgeToEdge (edgeToEdgeUnits) where
+module EdgeToEdge (edgeToEdgeUnits, dpRound, sdRound) where
 
 import Data.Ratio((%))
 import Numeric (showFFloat)
@@ -49,7 +49,7 @@ mm100 :: Tolerance
 mm100 = Tolerance $ 100 % 1000
 
 mm50 :: Tolerance
-mm50 = Tolerance $ 30 % 1000
+mm50 = Tolerance $ 50 % 1000
 
 mm30 :: Tolerance
 mm30 = Tolerance $ 30 % 1000
@@ -165,10 +165,29 @@ forbesUnits = testGroup "Forbes 2011/2012 distances"
     , day8Units
     ]
 
+-- | Rounds to the given number of decimal places.
 -- SEE: https://stackoverflow.com/questions/12450501/round-number-to-specified-number-of-digits
 dpRound :: Integer -> Rational -> Double
-dpRound n f =
-    fromInteger (round $ f * (10^n)) / (10.0^^n)
+dpRound n f
+    | n < 0 = fromRational f
+    | otherwise = fromInteger (round $ f * (10^n)) / (10.0^^n)
+
+-- | Keeps the given number of significant digits with rounding.
+sdRound :: Integer -> Rational -> Double
+sdRound sd f
+    | sd <= 0 = fromRational f
+    | otherwise =
+        if m <= 1 then dpRound sd f else
+            case compare n 0 of
+                EQ -> fromInteger $ truncate f'
+                GT -> dpRound n f
+                LT -> 10^^p * (fromInteger $ round g)
+    where
+        f' = fromRational f :: Double
+        m = truncate $ logBase 10 $ f'
+        n = sd - (m + 1)
+        p = abs n
+        g = f' / 10^^p
 
 kilo :: Fractional a => a -> a
 kilo x = x / 1000
