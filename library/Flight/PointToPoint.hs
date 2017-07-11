@@ -1,10 +1,12 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module Flight.PointToPoint
     ( TaskDistance(..)
     , distancePointToPoint
     , distanceHaversineF
     , distanceHaversine
+    , distance
     ) where
 
 import Data.Ratio((%))
@@ -23,10 +25,12 @@ diffLL (LatLng (xLat, xLng)) (LatLng (yLat, yLng)) =
     (yLat - xLat, yLng - xLng)
 
 distanceHaversineF :: LatLng -> LatLng -> TaskDistance
-distanceHaversineF xLL@(LatLng (xLat, _)) yLL@(LatLng (yLat, _)) =
+distanceHaversineF xDegreeLL yDegreeLL =
     TaskDistance $ earthRadius * toRational radDist 
     where
-        (dLat, dLng) = diffLL (degToRadLL defEps xLL) (degToRadLL defEps yLL)
+        xLL@(LatLng (xLat, _)) = degToRadLL defEps xDegreeLL
+        yLL@(LatLng (yLat, _)) = degToRadLL defEps yDegreeLL
+        (dLat, dLng) = diffLL xLL yLL
 
         haversine :: Rational -> Double
         haversine x =
@@ -43,13 +47,15 @@ distanceHaversineF xLL@(LatLng (xLat, _)) yLL@(LatLng (yLat, _)) =
             * haversine dLng
 
         radDist :: Double
-        radDist = 2 * atan2 (sqrt a) (sqrt $ 1 - a)
+        radDist = 2 * asin (sqrt a)
 
 distanceHaversine :: Epsilon -> LatLng -> LatLng -> TaskDistance
-distanceHaversine (Epsilon eps) xLL@(LatLng (xLat, _)) yLL@(LatLng (yLat, _)) =
+distanceHaversine (Epsilon eps) xDegreeLL yDegreeLL =
     TaskDistance $ earthRadius * radDist 
     where
-        (dLat, dLng) = diffLL (degToRadLL defEps xLL) (degToRadLL defEps yLL)
+        xLL@(LatLng (xLat, _)) = degToRadLL defEps xDegreeLL
+        yLL@(LatLng (yLat, _)) = degToRadLL defEps yDegreeLL
+        (dLat, dLng) = diffLL xLL yLL
 
         haversine :: Rational -> Rational
         haversine x =
@@ -66,16 +72,23 @@ distanceHaversine (Epsilon eps) xLL@(LatLng (xLat, _)) yLL@(LatLng (yLat, _)) =
             * haversine dLng
 
         radDist :: Rational
-        radDist = 2 * F.atan eps (F.sqrt eps a / F.sqrt eps (1 - a))
+        radDist = 2 * F.asin eps (F.sqrt eps a)
 
 -- | The distance from point to point less the sum of the radii of the
 -- first and last points.
 distancePointToPoint :: [Zone] -> TaskDistance
 distancePointToPoint [] = TaskDistance 0
 distancePointToPoint [_] = TaskDistance 0
-distancePointToPoint xs@[x, y]
-    | x == y = TaskDistance 0
-    | otherwise = distance xs
+distancePointToPoint xs@[a, b]
+    | a == b = TaskDistance 0
+    | otherwise =
+        TaskDistance $ d - rx - ry
+        where
+            (x : _) = xs
+            (Radius rx) = radius x
+            (Radius ry) = radius y
+            (y : _) = reverse xs
+            (TaskDistance d) = distance xs
 distancePointToPoint (x : xs) =
     TaskDistance $ d - rx - ry
     where
