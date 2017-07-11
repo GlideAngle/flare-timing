@@ -60,40 +60,40 @@ distanceEdgeToEdge samples tolerance xs =
         [_, _] ->
             EdgeDistance { centers = d
                          , edges = d
-                         , centerLine = centerLine
-                         , edgeLine = centerLine
+                         , centerLine = ptsCenterLine
+                         , edgeLine = ptsCenterLine
                          }
 
-        (y : ys) ->
+        (_ : _) ->
             EdgeDistance { centers = d
                          , edges = d'
-                         , centerLine = centerLine
-                         , edgeLine = edgeLine
+                         , centerLine = ptsCenterLine
+                         , edgeLine = ptsEdgeLine
                          }
 
             where
-                edgeLine = reverse $ drop 1 $ reverse centerLine
-                d' = distancePointToPoint (Point <$> edgeLine)
+                ptsEdgeLine = reverse $ drop 1 $ reverse ptsCenterLine
+                d' = distancePointToPoint (Point <$> ptsEdgeLine)
 
     where
-        (d, centerLine) = distance samples tolerance xs
+        (d, ptsCenterLine) = distance samples tolerance xs
 
 distance :: Samples -> Tolerance -> [Zone] -> (TaskDistance, [LatLng])
 distance _ _ [] = (TaskDistance 0, [])
 distance _ _ [_] = (TaskDistance 0, [])
 distance samples tolerance xs
     | not $ separatedZones xs = (TaskDistance 0, [])
-    | length xs < 3 = (pointwise, centers)
+    | length xs < 3 = (pointwise, centers')
     | otherwise =
         case dist of
-             Nothing -> (pointwise, centers)
+             Nothing -> (pointwise, centers')
              Just y ->
                 if y >= pointwise
-                   then (pointwise, centers)
+                   then (pointwise, centers')
                    else (y, ys)
         where
             pointwise = distancePointToPoint xs
-            centers = center <$> xs
+            centers' = center <$> xs
 
             gr :: Gr LatLng TaskDistance
             gr = buildGraph samples tolerance xs
