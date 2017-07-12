@@ -1,3 +1,3 @@
-[![Build Status](https://travis-ci.org/BlockScope/haskell-flight-task.svg)](https://travis-ci.org/BlockScope/haskell-flight-task)
+[![Build Status](https://travis-ci.org/BlockScope/haskell-siggy-chardust.svg)](https://travis-ci.org/BlockScope/haskell-siggy-chardust)
 
-WIP: Tasks for hang gliding and paragliding competitions.
+Provides functions to round to a certain number of decimal places or significant digits.
