@@ -172,7 +172,7 @@ sdRound sd f
                 (dpRound sd gZ) / 10^^pZ
             else
                 case compare n 0 of
-                    EQ -> fromInteger $ truncate f'
+                    EQ -> dpRound n f
                     GT -> dpRound n f
                     LT -> 10^^p * (fromInteger $ round g)
     where
@@ -212,8 +212,8 @@ roundUnits = testGroup "Rounding ..."
     , testGroup "Rounding 4 significant digits"
         [ HU.testCase "123456789.0 => 123500000.0" $
             sdRound 4 (toRational (123456789.0 :: Double)) @?= 123500000.0
-        , HU.testCase "1234.56789 => 1234.0" $
-            sdRound 4 (toRational (1234.56789 :: Double)) @?= 1234.0
+        , HU.testCase "1234.56789 => 1235.0" $
+            sdRound 4 (toRational (1234.56789 :: Double)) @?= 1235.0
         , HU.testCase "123.456789 => 123.5" $
             sdRound 4 (toRational (123.456789 :: Double)) @?= 123.5
         , HU.testCase "12.3456789 => 12.35" $
