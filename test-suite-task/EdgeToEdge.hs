@@ -15,8 +15,6 @@ import Flight.Task
     , Zone(..)
     , TaskDistance(..)
     , EdgeDistance(..)
-    , Epsilon(..)
-    , degToRadLL
     )
 
 showKm :: Double -> String
@@ -30,9 +28,6 @@ showKms xs =
 (.>=.) :: (Show a, Show b) => a -> b -> String
 (.>=.) x y = show x ++ " >= " ++ show y
 
-(.<=.) :: (Show a, Show b) => a -> b -> String
-(.<=.) x y = show x ++ " <= " ++ show y
-
 (.~=.) :: (Show a, Show b) => a -> b -> String
 (.~=.) x y = show x ++ " ~= " ++ show y
 
@@ -40,6 +35,7 @@ edgeToEdgeUnits :: TestTree
 edgeToEdgeUnits = testGroup "Zone edge shortest path unit tests"
     [ circumSampleUnits
     , forbesUnits
+    , roundUnits
     ]
 
 m100 :: Tolerance
@@ -47,9 +43,6 @@ m100 = Tolerance $ 100 % 1
 
 mm100 :: Tolerance
 mm100 = Tolerance $ 100 % 1000
-
-mm50 :: Tolerance
-mm50 = Tolerance $ 50 % 1000
 
 mm30 :: Tolerance
 mm30 = Tolerance $ 30 % 1000
@@ -129,9 +122,6 @@ circumSampleUnits = testGroup "Points just within the zone"
         ]
     ]
 
-eps :: Epsilon
-eps = Epsilon $ 2 % 1 + 1 % 100000000
-
 toLL :: (Double, Double) -> LatLng
 toLL (lat, lng) = LatLng (toRational lat, toRational lng)
 
@@ -189,6 +179,62 @@ sdRound sd f
         p = abs n
         g = f' / 10^^p
 
+roundUnits :: TestTree
+roundUnits = testGroup "Rounding ..."
+    [ testGroup "Rounding to 2 decimal places"
+        [ HU.testCase "123456789.0 => no change" $
+            dpRound 2 (toRational (123456789.0 :: Double)) @?= 123456789.0
+        , HU.testCase "1234.56789 => 1234.57" $
+            dpRound 2 (toRational (1234.56789 :: Double)) @?= 1234.57
+        , HU.testCase "123.456789 => 123.46" $
+            dpRound 2 (toRational (123.456789 :: Double)) @?= 123.46
+        , HU.testCase "12.3456789 => 12.35" $
+            dpRound 2 (toRational (12.3456789 :: Double)) @?= 12.35
+        , HU.testCase "1.23456789 => 1.23" $
+            dpRound 2 (toRational (1.23456789 :: Double)) @?= 1.23
+        , HU.testCase "0.123456789 => 0.12" $
+            dpRound 2 (toRational (0.123456789 :: Double)) @?= 0.12
+        , HU.testCase "0.0123456789 => 0.01" $
+            dpRound 2 (toRational (0.0123456789 :: Double)) @?= 0.01
+        , HU.testCase "0.0000123456789 => 0.0" $
+            dpRound 2 (toRational (0.0000123456789 :: Double)) @?= 0.0
+        ]
+    , testGroup "Rounding 4 significant digits"
+        [ HU.testCase "123456789.0 => 123500000.0" $
+            sdRound 4 (toRational (123456789.0 :: Double)) @?= 123500000.0
+        , HU.testCase "1234.56789 => 1234.0" $
+            sdRound 4 (toRational (1234.56789 :: Double)) @?= 1234.0
+        , HU.testCase "123.456789 => 123.5" $
+            sdRound 4 (toRational (123.456789 :: Double)) @?= 123.5
+        , HU.testCase "12.3456789 => 12.35" $
+            sdRound 4 (toRational (12.3456789 :: Double)) @?= 12.35
+        , HU.testCase "1.23456789 => 1.235" $
+            sdRound 4 (toRational (1.23456789 :: Double)) @?= 1.235
+        , HU.testCase "0.123456789 => 0.1235" $
+            sdRound 4 (toRational (0.123456789 :: Double)) @?= 0.1235
+        , HU.testCase "0.0123456789 => 0.01235" $
+            sdRound 4 (toRational (0.0123456789 :: Double)) @?= 0.01235
+        , HU.testCase "0.0000123456789 => 0.00001235" $
+            sdRound 4 (toRational (0.0000123456789 :: Double)) @?= 0.00001235
+{-
+WARNING: Failing unit tests with significant digits.
+          12.3456789 => 12.35:                                                                                                                 FAIL
+            expected: 12.35
+             but got: 12.3457
+          1.23456789 => 1.235:                                                                                                                 FAIL
+            expected: 1.235
+             but got: 1.2346
+          0.123456789 => 0.1235:                                                                                                               OK
+          0.0123456789 => 0.01235:                                                                                                             FAIL
+            expected: 1.235e-2
+             but got: 1.23e-2
+          0.0000123456789 => 0.00001235:                                                                                                       FAIL
+            expected: 1.235e-5
+             but got: 0.0
+-}
+        ]
+    ]
+
 kilo :: Fractional a => a -> a
 kilo x = x / 1000
 
@@ -206,7 +252,7 @@ mkPartDayUnits title zs d = testGroup title
     ]
     where
         (TaskDistance d') = FS.distance zs
-        dKm' = dpRound 2 $ kilo d'
+        dKm' = sdRound 4 $ kilo d'
         dKm = kilo d
 
 day1PartUnits :: TestTree
@@ -420,8 +466,8 @@ mkDayUnits title pDay dDay dsDay = testGroup title
         distDay = toDist dDay
         pp = FS.distancePointToPoint
         ee = FS.distanceEdgeToEdge samples mm30
-        ppDay@(TaskDistance ppDay') = pp pDay
-        eeDay@(TaskDistance eeDay') = centers $ ee pDay
+        ppDay = pp pDay
+        eeDay = centers $ ee pDay
         pDayInits = drop 1 $ inits pDay
         unDist (TaskDistance x) = fromRational x :: Double
         ppDayInits = unDist . pp <$> pDayInits
