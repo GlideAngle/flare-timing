@@ -30,6 +30,7 @@ module Flight.Task
     , radToDeg
     , radToDegLL
     , earthRadius
+    , defEps
     , distanceEdgeToEdge
     , distancePointToPoint
     , distanceHaversine
