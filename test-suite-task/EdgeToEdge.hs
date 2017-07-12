@@ -167,17 +167,27 @@ sdRound :: Integer -> Rational -> Double
 sdRound sd f
     | sd <= 0 = fromRational f
     | otherwise =
-        if m < 0 then dpRound sd f else
-            case compare n 0 of
-                EQ -> fromInteger $ truncate f'
-                GT -> dpRound n f
-                LT -> 10^^p * (fromInteger $ round g)
+        if m < 0
+            then
+                (dpRound sd gZ) / 10^^pZ
+            else
+                case compare n 0 of
+                    EQ -> fromInteger $ truncate f'
+                    GT -> dpRound n f
+                    LT -> 10^^p * (fromInteger $ round g)
     where
         f' = fromRational f :: Double
+
         m = logBase 10 $ f'
-        n = sd - (truncate m + 1)
-        p = abs n
+        mZ = truncate m
+
+        n = sd - (mZ + 1)
+
+        p = negate n
+        pZ = negate mZ
+
         g = f' / 10^^p
+        gZ = f * 10^pZ
 
 roundUnits :: TestTree
 roundUnits = testGroup "Rounding ..."
@@ -216,15 +226,6 @@ roundUnits = testGroup "Rounding ..."
             sdRound 4 (toRational (0.0123456789 :: Double)) @?= 0.01235
         , HU.testCase "0.0000123456789 => 0.00001235" $
             sdRound 4 (toRational (0.0000123456789 :: Double)) @?= 0.00001235
-{-
-WARNING: Failing unit tests with significant digits.
-          0.0123456789 => 0.01235:                                                                                                             FAIL
-            expected: 1.235e-2
-             but got: 1.23e-2
-          0.0000123456789 => 0.00001235:                                                                                                       FAIL
-            expected: 1.235e-5
-             but got: 0.0
--}
         ]
     ]
 
