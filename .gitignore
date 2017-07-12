@@ -1,0 +1,7 @@
+.shake
+.stack-work
+__shake-build
+node_modules
+__www
+/result
+*.swo
