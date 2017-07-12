@@ -1,4 +1,4 @@
-module Data.Number.RoundingFunctions (dpRound , sdRound) where
+module Data.Number.RoundingFunctions (dpRound, sdRound) where
 
 -- | Rounds to the given number of decimal places.
 -- SEE: https://stackoverflow.com/questions/12450501/round-number-to-specified-number-of-digits

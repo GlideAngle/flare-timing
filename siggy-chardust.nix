@@ -1,17 +1,11 @@
-{ mkDerivation, base, fgl, hlint, numbers, smallcheck, stdenv
-, tasty, tasty-hunit, tasty-quickcheck, tasty-smallcheck
-}:
-
+{ mkDerivation, base, hlint, stdenv, tasty, tasty-hunit }:
 mkDerivation {
-  pname = "flight-task";
+  pname = "siggy-chardust";
   version = "0.1.0";
   src = ./.;
-  libraryHaskellDepends = [ base fgl numbers ];
-  testHaskellDepends = [
-    base fgl hlint numbers smallcheck tasty tasty-hunit
-    tasty-quickcheck tasty-smallcheck
-  ];
-  homepage = "https://github.com/BlockScope/haskell-flight-task#readme";
-  description = "Tasks to fly";
+  libraryHaskellDepends = [ base ];
+  testHaskellDepends = [ base hlint tasty tasty-hunit ];
+  homepage = "https://github.com/BlockScope/haskell-siggy-chardust#readme";
+  description = "Rounding keeping decimal places and significant digits";
   license = stdenv.lib.licenses.bsd3;
 }
