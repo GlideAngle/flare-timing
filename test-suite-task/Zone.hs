@@ -24,6 +24,8 @@ import Flight.Task
     , earthRadius
     , center
     , separatedZones
+    , radToDegLL
+    , defEps
     )
 
 import TestNewtypes
@@ -31,22 +33,22 @@ import TestNewtypes
 type Pt = (Rational, Rational)
 
 point :: (Rational, Rational) -> Zone
-point x = Point (LatLng x)
+point x = Point $ radToDegLL defEps (LatLng x)
 
 vector :: (Rational, Rational) -> Zone
-vector x = Vector (Bearing 0) (LatLng x)
+vector x = Vector (Bearing 0) $ radToDegLL defEps (LatLng x)
 
 cylinder :: (Rational, Rational) -> Zone
-cylinder x = Cylinder (Radius earthRadius) (LatLng x)
+cylinder x = Cylinder (Radius earthRadius) $ radToDegLL defEps (LatLng x)
 
 conical :: (Rational, Rational) -> Zone
-conical x = Conical (Incline 1) (Radius earthRadius) (LatLng x)
+conical x = Conical (Incline 1) (Radius earthRadius) $ radToDegLL defEps (LatLng x)
 
 line :: (Rational, Rational) -> Zone
-line x = Line (Radius earthRadius) (LatLng x)
+line x = Line (Radius earthRadius) $ radToDegLL defEps (LatLng x)
 
 semicircle :: (Rational, Rational) -> Zone
-semicircle x = SemiCircle (Radius earthRadius) (LatLng x)
+semicircle x = SemiCircle (Radius earthRadius) $ radToDegLL defEps (LatLng x)
 
 zoneUnits :: TestTree
 zoneUnits = testGroup "Zone unit tests"
