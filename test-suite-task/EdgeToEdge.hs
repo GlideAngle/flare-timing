@@ -167,15 +167,15 @@ sdRound :: Integer -> Rational -> Double
 sdRound sd f
     | sd <= 0 = fromRational f
     | otherwise =
-        if m <= 1 then dpRound sd f else
+        if m < 0 then dpRound sd f else
             case compare n 0 of
                 EQ -> fromInteger $ truncate f'
                 GT -> dpRound n f
                 LT -> 10^^p * (fromInteger $ round g)
     where
         f' = fromRational f :: Double
-        m = truncate $ logBase 10 $ f'
-        n = sd - (m + 1)
+        m = logBase 10 $ f'
+        n = sd - (truncate m + 1)
         p = abs n
         g = f' / 10^^p
 
@@ -218,13 +218,6 @@ roundUnits = testGroup "Rounding ..."
             sdRound 4 (toRational (0.0000123456789 :: Double)) @?= 0.00001235
 {-
 WARNING: Failing unit tests with significant digits.
-          12.3456789 => 12.35:                                                                                                                 FAIL
-            expected: 12.35
-             but got: 12.3457
-          1.23456789 => 1.235:                                                                                                                 FAIL
-            expected: 1.235
-             but got: 1.2346
-          0.123456789 => 0.1235:                                                                                                               OK
           0.0123456789 => 0.01235:                                                                                                             FAIL
             expected: 1.235e-2
              but got: 1.23e-2
