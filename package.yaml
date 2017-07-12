@@ -49,6 +49,7 @@ tests:
     - tasty-quickcheck
     - tasty-smallcheck
     - smallcheck
+    - siggy-chardust
     ghc-options:
     - -rtsopts
     - -threaded

@@ -82,6 +82,7 @@ test-suite task
     , tasty-quickcheck
     , tasty-smallcheck
     , smallcheck
+    , siggy-chardust
   other-modules:
       Flight.EdgeToEdge
       Flight.Geo
