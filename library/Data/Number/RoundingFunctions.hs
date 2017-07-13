@@ -2,13 +2,13 @@ module Data.Number.RoundingFunctions (dpRound, sdRound) where
 
 -- | Rounds to the given number of decimal places.
 -- SEE: https://stackoverflow.com/questions/12450501/round-number-to-specified-number-of-digits
-dpRound :: Integer -> Rational -> Double
+dpRound :: Integer -> Rational -> Rational
 dpRound n f
-    | n < 0 = fromRational f
+    | n < 0 = f
     | otherwise = fromInteger (round $ f * (10^n)) / (10.0^^n)
 
 -- | Keeps the given number of significant digits with rounding.
-sdRound :: Integer -> Rational -> Double
+sdRound :: Integer -> Rational -> Rational
 sdRound sd f
     | sd <= 0 = fromRational f
     | otherwise =
@@ -31,5 +31,5 @@ sdRound sd f
         p = negate n
         pZ = negate mZ
 
-        g = f' / 10^^p
+        g = f / 10^p
         gZ = f * 10^pZ
