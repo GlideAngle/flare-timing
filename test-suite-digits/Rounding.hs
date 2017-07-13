@@ -2,7 +2,6 @@ module Main (main) where
 
 import Test.Tasty (TestTree, testGroup, defaultMain)
 import Test.Tasty.HUnit as HU ((@?=), testCase)
-import Test.Tasty.SmallCheck as SC
 import Test.Tasty.QuickCheck as QC
 
 import Data.Number.RoundingFunctions (dpRound, sdRound)
@@ -18,8 +17,7 @@ tests = testGroup "Tests"
 
 properties :: TestTree
 properties = testGroup "Properties"
-        [ scProps
-        , qcProps
+        [ qcProps
         ]
 
 units :: TestTree
@@ -67,35 +65,10 @@ roundUnits = testGroup "Rounding ..."
         ]
     ]
 
-scProps :: TestTree
-scProps = testGroup "(checked by SmallCheck)"
-    [ SC.testProperty "Rounding to zero or fewer decimal places" scDpZero
-    , SC.testProperty "Rounding is idempotent" dpIdempotent
-    , SC.testProperty "Zero or fewer significant digits" scSdZero
-    ]
-
 qcProps :: TestTree
 qcProps = testGroup "(checked by QuickCheck)"
-    [ QC.testProperty "Rounding to zero or fewer decimal places" qcDpZero
-    , QC.testProperty "Rounding is idempotent" dpIdempotent
-    , QC.testProperty "Zero or fewer significant digits" qcSdZero
+    [ QC.testProperty "Rounding is idempotent" dpIdempotent
     ]
-
-scDpZero :: Monad m => Integer -> Rational -> SC.Property m
-scDpZero dp x =
-    dp < 0 SC.==> dpRound dp x == x
-
-scSdZero :: Monad m => Integer -> Rational -> SC.Property m
-scSdZero dp x =
-    dp < 0 SC.==> sdRound dp x == x
-
-qcDpZero :: Integer -> Rational -> QC.Property
-qcDpZero dp x =
-    dp < 0 QC.==> dpRound dp x == x
-
-qcSdZero :: Integer -> Rational -> QC.Property
-qcSdZero dp x =
-    dp < 0 QC.==> sdRound dp x == x
 
 dpIdempotent :: Integer -> Rational -> Bool
 dpIdempotent dp x =

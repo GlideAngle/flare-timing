@@ -1,26 +1,28 @@
 module Data.Number.RoundingFunctions (dpRound, sdRound) where
 
+import Data.Word (Word8)
+
 -- | Rounds to the given number of decimal places.
 -- SEE: https://stackoverflow.com/questions/12450501/round-number-to-specified-number-of-digits
 dpRound :: Integer -> Rational -> Rational
 dpRound n f
     | n < 0 = f
-    | otherwise = fromInteger (round $ f * (10^n)) / (10.0^^n)
+    | otherwise =
+        fromInteger (round $ f * (10^n)) / (10.0^^n)
 
 -- | Keeps the given number of significant digits with rounding.
-sdRound :: Integer -> Rational -> Rational
-sdRound sd f
-    | sd <= 0 = fromRational f
-    | otherwise =
-        if m < 0
-            then
-                dpRound sd gZ / 10^^pZ
-            else
-                case compare n 0 of
-                    EQ -> dpRound n f
-                    GT -> dpRound n f
-                    LT -> 10^^p * fromInteger (round g)
+sdRound :: Word8 -> Rational -> Rational
+sdRound sd' f =
+    if m < 0
+        then
+            dpRound sd gZ / 10^^pZ
+        else
+            case compare n 0 of
+                EQ -> dpRound n f
+                GT -> dpRound n f
+                LT -> 10^^p * fromInteger (round g)
     where
+        sd = toInteger sd'
         f' = fromRational f :: Double
 
         m = logBase 10 f'
