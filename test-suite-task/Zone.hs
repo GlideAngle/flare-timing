@@ -266,10 +266,10 @@ correctPoint xs (TaskDistance d)
     where
         ys = center <$> xs
 
-correctEdge :: [Zone] -> TaskDistance -> Bool
-correctEdge [] (TaskDistance d) = d == 0
-correctEdge [_] (TaskDistance d) = d == 0
-correctEdge xs (TaskDistance d)
+correctCenter :: [Zone] -> TaskDistance -> Bool
+correctCenter [] (TaskDistance d) = d == 0
+correctCenter [_] (TaskDistance d) = d == 0
+correctCenter xs (TaskDistance d)
     | all (== head ys) (tail ys) = d == 0
     | not $ separatedZones xs = d == 0
     | otherwise = d > 0
@@ -288,13 +288,13 @@ mm10 = Tolerance $ 10 % 1000
 
 distanceEdge :: ZonesTest -> Bool
 distanceEdge (ZonesTest xs) =
-    correctEdge xs $ edges $ FS.distanceEdgeToEdge samples mm10 xs
+    correctCenter xs $ centers $ FS.distanceEdgeToEdge samples mm10 xs
 
 distanceLess :: ZonesTest -> Bool
 distanceLess (ZonesTest xs)
     | length xs < 3 = True
     | otherwise =
-        dEdge <= dPoint
+        dCenter <= dPoint
         where
-            TaskDistance dEdge = edges $ FS.distanceEdgeToEdge samples mm10 xs
+            TaskDistance dCenter = centers $ FS.distanceEdgeToEdge samples mm10 xs
             TaskDistance dPoint = FS.distancePointToPoint xs

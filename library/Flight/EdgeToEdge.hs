@@ -36,7 +36,7 @@ data EdgeDistance =
         -- ^ The points of the 'centers' distance.
         , edgeLine :: [LatLng]
         -- ^ The points of the 'edges' distance.
-        }
+        } deriving Show
 
 zero :: EdgeDistance
 zero =
