@@ -83,20 +83,20 @@ qcProps = testGroup "(checked by QuickCheck)"
 
 scDpZero :: Monad m => Integer -> Rational -> SC.Property m
 scDpZero dp x =
-    dp < 0 SC.==> dpRound dp x == fromRational x
+    dp < 0 SC.==> dpRound dp x == x
 
 scSdZero :: Monad m => Integer -> Rational -> SC.Property m
 scSdZero dp x =
-    dp < 0 SC.==> sdRound dp x == fromRational x
+    dp < 0 SC.==> sdRound dp x == x
 
 qcDpZero :: Integer -> Rational -> QC.Property
 qcDpZero dp x =
-    dp < 0 QC.==> dpRound dp x == fromRational x
+    dp < 0 QC.==> dpRound dp x == x
 
 qcSdZero :: Integer -> Rational -> QC.Property
 qcSdZero dp x =
-    dp < 0 QC.==> sdRound dp x == fromRational x
+    dp < 0 QC.==> sdRound dp x == x
 
 dpIdempotent :: Integer -> Rational -> Bool
 dpIdempotent dp x =
-    dpRound dp x == dpRound dp (toRational $ dpRound dp x)
+    let y = dpRound dp x in dpRound dp y == y
