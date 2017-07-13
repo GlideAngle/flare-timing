@@ -69,28 +69,39 @@ roundUnits = testGroup "Rounding ..."
 
 scProps :: TestTree
 scProps = testGroup "(checked by SmallCheck)"
-    [ SC.testProperty "Rounding to zero or fewer decimal places" scDpCheck
-    , SC.testProperty "Zero or fewer significant digits" scSdCheck
+    [ SC.testProperty "Rounding to zero or fewer decimal places" scDpZero
+    , SC.testProperty "Rounding is idempotent" dpIdempotent
+    , SC.testProperty "Zero or fewer significant digits" scSdZero
     ]
 
 qcProps :: TestTree
 qcProps = testGroup "(checked by QuickCheck)"
-    [ QC.testProperty "Rounding to zero or fewer decimal places" qcDpCheck
-    , QC.testProperty "Zero or fewer significant digits" qcSdCheck
+    [ QC.testProperty "Rounding to zero or fewer decimal places" qcDpZero
+    , QC.testProperty "Rounding is idempotent" dpIdempotent
+-- WARNING: Failed Test
+--        *** Failed! Falsifiable (after 29 tests):
+--        18
+--        58742143817916 % 1083644987707
+--        Use --quickcheck-replay '28 TFGenR 0000000A79C517E300000000000F4240000000000000E25B0000000542B51480 0 1073741822 30 0' to reproduce.
+    , QC.testProperty "Zero or fewer significant digits" qcSdZero
     ]
 
-scDpCheck :: Monad m => Integer -> Rational -> SC.Property m
-scDpCheck dp x =
+scDpZero :: Monad m => Integer -> Rational -> SC.Property m
+scDpZero dp x =
     dp < 0 SC.==> dpRound dp x == fromRational x
 
-scSdCheck :: Monad m => Integer -> Rational -> SC.Property m
-scSdCheck dp x =
+scSdZero :: Monad m => Integer -> Rational -> SC.Property m
+scSdZero dp x =
     dp < 0 SC.==> sdRound dp x == fromRational x
 
-qcDpCheck :: Integer -> Rational -> QC.Property
-qcDpCheck dp x =
+qcDpZero :: Integer -> Rational -> QC.Property
+qcDpZero dp x =
     dp < 0 QC.==> dpRound dp x == fromRational x
 
-qcSdCheck :: Integer -> Rational -> QC.Property
-qcSdCheck dp x =
+qcSdZero :: Integer -> Rational -> QC.Property
+qcSdZero dp x =
     dp < 0 QC.==> sdRound dp x == fromRational x
+
+dpIdempotent :: Integer -> Rational -> Bool
+dpIdempotent dp x =
+    dpRound dp x == dpRound dp (toRational $ dpRound dp x)
