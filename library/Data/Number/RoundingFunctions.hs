@@ -14,16 +14,16 @@ sdRound sd f
     | otherwise =
         if m < 0
             then
-                (dpRound sd gZ) / 10^^pZ
+                dpRound sd gZ / 10^^pZ
             else
                 case compare n 0 of
                     EQ -> dpRound n f
                     GT -> dpRound n f
-                    LT -> 10^^p * (fromInteger $ round g)
+                    LT -> 10^^p * fromInteger (round g)
     where
         f' = fromRational f :: Double
 
-        m = logBase 10 $ f'
+        m = logBase 10 f'
         mZ = truncate m
 
         n = sd - (mZ + 1)
