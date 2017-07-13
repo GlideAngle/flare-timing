@@ -31,12 +31,10 @@ module Flight.Task
     , radToDegLL
     , earthRadius
     , defEps
-    , distanceEdgeToEdge
     , distancePointToPoint
     , distanceHaversine
     , distanceHaversineF
     , distance
-    , separatedZones
     , center
     , radius
     -- * Zone edge-to-edge shortest path.
