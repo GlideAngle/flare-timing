@@ -49,6 +49,9 @@ test-suite digits
       base
     , tasty
     , tasty-hunit
+    , tasty-quickcheck
+    , tasty-smallcheck
+    , smallcheck
   other-modules:
       Data.Number.RoundingFunctions
   default-language: Haskell2010

@@ -40,6 +40,9 @@ tests:
     - base
     - tasty
     - tasty-hunit
+    - tasty-quickcheck
+    - tasty-smallcheck
+    - smallcheck
     ghc-options:
     - -rtsopts
     - -threaded
