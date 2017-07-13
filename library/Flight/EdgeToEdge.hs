@@ -2,6 +2,7 @@ module Flight.EdgeToEdge
     ( Samples(..)
     , Tolerance(..)
     , EdgeDistance(..)
+    , DistancePath(..)
     , circumSample
     , distanceEdgeToEdge
     , buildGraph
@@ -23,6 +24,11 @@ import Flight.PointToPoint (TaskDistance(..), distancePointToPoint)
 import Flight.Separated (separatedZones)
 
 newtype TrueCourse = TrueCourse Rational deriving (Eq, Ord, Show)
+
+data DistancePath
+    = PathPointToPoint
+    | PathPointToZone
+    deriving (Eq, Show)
 
 data EdgeDistance =
     EdgeDistance
@@ -46,10 +52,10 @@ zero =
                  , edgeLine = []
                  }
 
-distanceEdgeToEdge :: Samples -> Tolerance -> [Zone] -> EdgeDistance
-distanceEdgeToEdge _ _ [] = zero
-distanceEdgeToEdge _ _ [_] = zero
-distanceEdgeToEdge samples tolerance xs =
+distanceEdgeToEdge :: Samples -> Tolerance -> DistancePath -> [Zone] -> EdgeDistance
+distanceEdgeToEdge _ _ _ [] = zero
+distanceEdgeToEdge _ _ _ [_] = zero
+distanceEdgeToEdge samples tolerance dPath xs =
     case xs of
         [] ->
             zero
@@ -81,21 +87,21 @@ distanceEdgeToEdge samples tolerance xs =
                 d' = distancePointToPoint (Point <$> ptsEdgeLine)
 
     where
-        (d, ptsCenterLine) = distance samples tolerance xs
+        (d, ptsCenterLine) = distance samples tolerance dPath xs
 
-distance :: Samples -> Tolerance -> [Zone] -> (TaskDistance, [LatLng])
-distance _ _ [] = (TaskDistance 0, [])
-distance _ _ [_] = (TaskDistance 0, [])
-distance samples tolerance xs
+distance :: Samples -> Tolerance -> DistancePath -> [Zone] -> (TaskDistance, [LatLng])
+distance _ _ _ [] = (TaskDistance 0, [])
+distance _ _ _ [_] = (TaskDistance 0, [])
+distance samples tolerance dPath xs
     | not $ separatedZones xs = (TaskDistance 0, [])
-    | length xs < 3 = (pointwise, centers')
+    | dPath == PathPointToPoint && length xs < 3 = (pointwise, centers')
     | otherwise =
         case dist of
-             Nothing -> (pointwise, centers')
-             Just y ->
-                if y >= pointwise
-                   then (pointwise, centers')
-                   else (y, ys)
+            Nothing -> (pointwise, centers')
+            Just y ->
+                if dPath == PathPointToZone || y < pointwise
+                    then (y, ys)
+                    else (pointwise, centers')
         where
             pointwise = distancePointToPoint xs
             centers' = center <$> xs

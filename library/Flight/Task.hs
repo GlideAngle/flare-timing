@@ -41,6 +41,7 @@ module Flight.Task
     , Samples(..)
     , Tolerance(..)
     , EdgeDistance(..)
+    , DistancePath(..)
     , circumSample
     , distanceEdgeToEdge
     -- * Zone separation.

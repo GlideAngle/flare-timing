@@ -15,6 +15,7 @@ import Flight.Task
     , Zone(..)
     , TaskDistance(..)
     , EdgeDistance(..)
+    , DistancePath(..)
     )
 
 import Data.Number.RoundingFunctions (dpRound, sdRound)
@@ -386,7 +387,7 @@ mkDayUnits title pDay dDay dsDay = testGroup title
     where
         distDay = toDist dDay
         pp = FS.distancePointToPoint
-        ee = FS.distanceEdgeToEdge samples mm30
+        ee = FS.distanceEdgeToEdge samples mm30 PathPointToZone
         ppDay = pp pDay
         eeDay = centers $ ee pDay
         pDayInits = drop 1 $ inits pDay
@@ -456,8 +457,8 @@ NOTE: Point to point distances using Vincenty method.
 -}
 pDay1 :: [Zone]
 pDay1 =
-    --[ Cylinder (Radius 100) $ toLL (negate 33.36137, 147.93207)
-    [ Cylinder (Radius 10000) $ toLL (negate 33.36137, 147.93207)
+    [ Cylinder (Radius 100) $ toLL (negate 33.36137, 147.93207)
+    , Cylinder (Radius 10000) $ toLL (negate 33.36137, 147.93207)
     , Cylinder (Radius 400) $ toLL (negate 33.85373, 147.94195)
     , Cylinder (Radius 400) $ toLL (negate 33.4397, 148.34533)
     , Cylinder (Radius 400) $ toLL (negate 33.61965, 148.4099)
@@ -491,8 +492,7 @@ dsDay1 :: [Double]
 dsDay1 =
     unkilo <$>
         [ 0.000
-        -- TODO: Test the concentric cylinders distance too.
-        -- , 9.882
+        , 9.882
         , 54.254
         , 112.779
         , 133.357
@@ -531,8 +531,8 @@ NOTE: Point to point distances using Vincenty method.
 -}
 pDay2 :: [Zone]
 pDay2 =
-    --[ Cylinder (Radius 100) (toLL (negate 33.36137, 147.93207))
-    [ Cylinder (Radius 5000) (toLL (negate 33.36137, 147.93207))
+    [ Cylinder (Radius 100) (toLL (negate 33.36137, 147.93207))
+    , Cylinder (Radius 5000) (toLL (negate 33.36137, 147.93207))
     , Cylinder (Radius 400) (toLL (negate 32.90223, 147.98492))
     , Cylinder (Radius 400) (toLL (negate 32.9536, 147.55457))
     , Cylinder (Radius 400) (toLL (negate 33.12592, 147.91043))
@@ -545,8 +545,7 @@ dsDay2 :: [Double]
 dsDay2 =
     unkilo <$>
         [ 0.000
-        -- TODO: Test the concentric cylinders distance too.
-        -- , 4.891
+        , 4.891
         , 50.789
         , 90.732
         , 128.284
@@ -585,8 +584,8 @@ NOTE: Point to point distances using Vincenty method.
 -}
 pDay3 :: [Zone]
 pDay3 =
-    --[ Cylinder (Radius 100) (toLL (negate 33.36137, 147.93207))
-    [ Cylinder (Radius 25000) (toLL (negate 33.36137, 147.93207))
+    [ Cylinder (Radius 100) (toLL (negate 33.36137, 147.93207))
+    , Cylinder (Radius 25000) (toLL (negate 33.36137, 147.93207))
     , Cylinder (Radius 400) (toLL (negate 34.02107, 148.2233))
     , Cylinder (Radius 400) (toLL (negate 34.11795, 148.5013))
     , Cylinder (Radius 400) (toLL (negate 34.82197, 148.66543))
@@ -599,8 +598,7 @@ dsDay3 :: [Double]
 dsDay3 =
     unkilo <$>
         [ 0.000
-        -- TODO: Test the concentric cylinders distance too.
-        -- , 24.854
+        , 24.854
         , 77.646
         , 105.113
         , 183.856
@@ -636,8 +634,8 @@ NOTE: Point to point distances using Vincenty method.
 -}
 pDay4 :: [Zone]
 pDay4 =
-    --[ Cylinder (Radius 100) (toLL (negate 33.36137, 147.93207))
-    [ Cylinder (Radius 15000) (toLL (negate 33.36137, 147.93207))
+    [ Cylinder (Radius 100) (toLL (negate 33.36137, 147.93207))
+    , Cylinder (Radius 15000) (toLL (negate 33.36137, 147.93207))
     , Cylinder (Radius 25000) (toLL (negate 32.90223, 147.98492))
     , Cylinder (Radius 400) (toLL (negate 32.46363, 148.989))
     ]
@@ -649,8 +647,7 @@ dsDay4 :: [Double]
 dsDay4 =
     unkilo <$>
         [ 0.000
-        -- TODO: Test the concentric cylinders distance too.
-        -- , 14.873
+        , 14.873
         , 26.119
         , 144.030
         ]
@@ -685,8 +682,8 @@ NOTE: Point to point distances using Vincenty method.
 -}
 pDay5 :: [Zone]
 pDay5 =
-    --[ Cylinder (Radius 100) (toLL (negate 33.36137, 147.93207))
-    [ Cylinder (Radius 15000) (toLL (negate 33.36137, 147.93207))
+    [ Cylinder (Radius 100) (toLL (negate 33.36137, 147.93207))
+    , Cylinder (Radius 15000) (toLL (negate 33.36137, 147.93207))
     , Cylinder (Radius 5000) (toLL (negate 32.56608, 148.22657))
     , Cylinder (Radius 400) (toLL (negate 32.0164, 149.43363))
     ]
@@ -698,8 +695,7 @@ dsDay5 :: [Double]
 dsDay5 =
     unkilo <$>
         [ 0.000
-        -- TODO: Test the concentric cylinders distance too.
-        -- , 14.873
+        , 14.873
         , 87.489
         , 217.389
         ]
@@ -734,8 +730,8 @@ NOTE: Point to point distances using Vincenty method.
 -}
 pDay6 :: [Zone]
 pDay6 =
-    --[ Cylinder (Radius 100) (toLL (negate 33.36137, 147.93207))
-    [ Cylinder (Radius 15000) (toLL (negate 33.36137, 147.93207))
+    [ Cylinder (Radius 100) (toLL (negate 33.36137, 147.93207))
+    , Cylinder (Radius 15000) (toLL (negate 33.36137, 147.93207))
     , Cylinder (Radius 5000) (toLL (negate 32.19498, 147.76218))
     , Cylinder (Radius 400) (toLL (negate 31.69323, 148.29623))
     ]
@@ -747,8 +743,7 @@ dsDay6 :: [Double]
 dsDay6 =
     unkilo <$>
         [ 0.000
-        -- TODO: Test the concentric cylinders distance too.
-        -- , 14.873
+        , 14.873
         , 125.550
         , 201.822
         ]
@@ -786,8 +781,8 @@ NOTE: Point to point distances using Vincenty method.
 -}
 pDay7 :: [Zone]
 pDay7 =
-    --[ Cylinder (Radius 100) (toLL (negate 33.36137, 147.93207))
-    [ Cylinder (Radius 10000) (toLL (negate 33.36137, 147.93207))
+    [ Cylinder (Radius 100) (toLL (negate 33.36137, 147.93207))
+    , Cylinder (Radius 10000) (toLL (negate 33.36137, 147.93207))
     , Cylinder (Radius 5000) (toLL (negate 32.9536, 147.55457))
     , Cylinder (Radius 400) (toLL (negate 32.76052, 148.64958))
     , Cylinder (Radius 400) (toLL (negate 32.93585, 148.74947))
@@ -800,8 +795,7 @@ dsDay7 :: [Double]
 dsDay7 =
     unkilo <$>
         [ 0.000
-        -- TODO: Test the concentric cylinders distance too.
-        -- , 9.882
+        , 9.882
         , 52.259
         , 153.014
         , 174.525
@@ -840,8 +834,8 @@ NOTE: Point to point distances using Vincenty method.
 -}
 pDay8 :: [Zone]
 pDay8 =
-    --[ Cylinder (Radius 100) (toLL (negate 33.36137, 147.93207))
-    [ Cylinder (Radius 10000) (toLL (negate 33.36137, 147.93207))
+    [ Cylinder (Radius 100) (toLL (negate 33.36137, 147.93207))
+    , Cylinder (Radius 10000) (toLL (negate 33.36137, 147.93207))
     , Cylinder (Radius 5000) (toLL (negate 33.75343, 147.52865))
     , Cylinder (Radius 400) (toLL (negate 33.12908, 147.57323))
     , Cylinder (Radius 400) (toLL (negate 33.361, 147.9315))
@@ -854,8 +848,7 @@ dsDay8 :: [Double]
 dsDay8 =
     unkilo <$>
         [ 0.000
-        -- TODO: Test the concentric cylinders distance too.
-        -- , 9.882
+        , 9.882
         , 52.323
         , 117.028
         , 158.848
