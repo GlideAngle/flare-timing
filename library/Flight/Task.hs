@@ -7,17 +7,20 @@ License     : BSD3
 Maintainer  : phil.dejoux@blockscope.com
 Stability   : experimental
 
-Provides tasks for hang gliding and paragliding competitons. These are routes to fly
-from launch to goal through course line way points.
+Provides tasks for hang gliding and paragliding competitons. These are routes to fly,
+from launch to goal passing through each control zone of the course in order along the way.
 -}
 module Flight.Task
-    ( -- * Control zones and distance between them. 
-      ShowAngle(..)
-    , LatLng(..)
+    ( -- * Control Zones
+      LatLng(..)
     , Radius(..)
+    , center
+    , radius
+    , separatedZones
     , Incline(..)
     , Bearing(..)
     , Zone(..)
+    , ShowAngle(..)
     , Deadline(..)
     , TimeOfDay(..)
     , Interval(..)
@@ -25,27 +28,24 @@ module Flight.Task
     , Task(..)
     , TaskDistance(..)
     , Epsilon(..)
-    , degToRad
-    , degToRadLL
-    , radToDeg
-    , radToDegLL
     , earthRadius
     , defEps
+    -- * Spherical Distance Between Points
     , distancePointToPoint
     , distanceHaversine
     , distanceHaversineF
-    , distance
-    , center
-    , radius
-    -- * Zone edge-to-edge shortest path.
+    -- * Optimized Shortest Path 
     , Samples(..)
     , Tolerance(..)
     , EdgeDistance(..)
     , DistancePath(..)
     , circumSample
     , distanceEdgeToEdge
-    -- * Zone separation.
-    , separatedZones
+    -- * Angle unit conversion
+    , degToRad
+    , degToRadLL
+    , radToDeg
+    , radToDegLL
     ) where
 
 import Flight.Zone

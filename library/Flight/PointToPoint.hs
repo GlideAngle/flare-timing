@@ -6,7 +6,6 @@ module Flight.PointToPoint
     , distancePointToPoint
     , distanceHaversineF
     , distanceHaversine
-    , distance
     ) where
 
 import Data.Ratio((%))
@@ -20,6 +19,7 @@ newtype TaskDistance = TaskDistance Rational deriving (Eq, Ord, Num, Real)
 instance Show TaskDistance where
     show (TaskDistance d) = "d = " ++ show (fromRational d :: Double)
 
+-- | Sperical distance using haversines and floating point numbers.
 distanceHaversineF :: LatLng -> LatLng -> TaskDistance
 distanceHaversineF xDegreeLL yDegreeLL =
     TaskDistance $ earthRadius * toRational radDist 
@@ -46,6 +46,7 @@ distanceHaversineF xDegreeLL yDegreeLL =
         radDist :: Double
         radDist = 2 * asin (sqrt a)
 
+-- | Sperical distance using haversines and rational numbers.
 distanceHaversine :: Epsilon -> LatLng -> LatLng -> TaskDistance
 distanceHaversine (Epsilon eps) xDegreeLL yDegreeLL =
     TaskDistance $ earthRadius * radDist 
@@ -71,10 +72,13 @@ distanceHaversine (Epsilon eps) xDegreeLL yDegreeLL =
         radDist :: Rational
         radDist = 2 * F.asin eps (F.sqrt eps a)
 
--- | This distance is from point to point. That is how task distance is
--- measured. The speed section distance is measured differently as it doesn't
--- go from point to point. It usually goes from start exit cylinder to goal cylinder
--- or to goal line.
+-- | One way of measuring task distance is going point-to-point through each control
+-- zone's center along the course from start to goal. This is not used by CIVL
+-- but sometimes task distance will be reported this way.
+--
+-- The speed section  usually goes from start exit cylinder to goal cylinder
+-- or to goal line. The optimal way to fly this in a zig-zagging course will
+-- avoid zone centers for a shorter flown distance.
 distancePointToPoint :: [Zone] -> TaskDistance
 
 distancePointToPoint [] = TaskDistance 0
@@ -92,6 +96,7 @@ distancePointToPoint xs@[a, b]
     | otherwise = distance xs
 
 distancePointToPoint xs = distance xs
+
 
 distance :: [Zone] -> TaskDistance
 distance xs =

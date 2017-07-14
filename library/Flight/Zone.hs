@@ -20,19 +20,39 @@ import Data.List (intercalate)
 
 import Flight.Geo (LatLng(..), radToDegLL, defEps)
 
+-- | The radius component of zones that are cylinder-like, and most are in some
+-- way.
 newtype Radius = Radius Rational deriving (Eq, Ord, Show)
+
+-- | The incline component of a conical zone.
 newtype Incline = Incline Rational deriving (Eq, Ord, Show)
+
+-- | The bearing component of a vector zone.
 newtype Bearing = Bearing Rational deriving (Eq, Ord, Show)
 
+-- | A control zone of the task. Taken together these make up the course to fly
+-- with start enter and exit cylinders, turnpoint cylinders, goal lines and
+-- cylinders.
 data Zone
     = Point LatLng
+    -- ^ Used to mark the exact turnpoints in the optimized task distance.
     | Vector Bearing LatLng
+    -- ^ Used only in open distance tasks these mark the start and direction of
+    -- the open distance.
     | Cylinder Radius LatLng
+    -- ^ The turnpoint cylinder.
     | Conical Incline Radius LatLng
+    -- ^ Only used in paragliding, this is the conical end of speed section
+    -- used to discourage too low an end to final glides.
     | Line Radius LatLng
+    -- ^ A goal line perpendicular to the course line.
     | SemiCircle Radius LatLng
+    -- ^ This control zone is only ever used as a goal for paragliding. It is
+    -- a goal line perpendicular to the course line followed by half
+    -- a cylinder.
     deriving (Eq, Show)
 
+-- | The effective center point of a zone.
 center :: Zone -> LatLng
 center (Point x) = x
 center (Vector _ x) = x
@@ -41,6 +61,7 @@ center (Conical _ _ x) = x
 center (Line _ x) = x
 center (SemiCircle _ x) = x
 
+-- | The effective radius of a zone.
 radius :: Zone -> Radius
 radius (Point _) = Radius 0
 radius (Vector _ _) = Radius 0

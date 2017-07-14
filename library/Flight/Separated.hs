@@ -34,6 +34,12 @@ separated xc@(Cylinder (Radius xR) x) yc@(Cylinder (Radius yR) y)
 separated x y =
     clearlySeparated x y
 
+-- | Are the control zones separated? This a prerequisite to being able to work
+-- out the distance between zones. The one exception is coincident cylinders
+-- with different radii. Here the difference in radii is considered to be the
+-- distance between them. This will be seen where the smaller concentric cylinder
+-- marks the launch and the larger one, as an exit cylinder, marks the start of the
+-- speed section.
 separatedZones :: [Zone] -> Bool
 separatedZones xs =
     and $ zipWith separated xs (tail xs)
