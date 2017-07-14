@@ -53,3 +53,4 @@ import Flight.Geo
 import Flight.PointToPoint
 import Flight.EdgeToEdge
 import Flight.Separated
+import Flight.CylinderEdge

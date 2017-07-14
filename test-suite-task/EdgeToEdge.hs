@@ -173,7 +173,7 @@ mkPartDayUnits title zs d = testGroup title
         $ (dKm' == dKm) @? dKm' .~=. dKm
     ]
     where
-        (TaskDistance d') = FS.distance zs
+        (TaskDistance d') = FS.distancePointToPoint zs
         dKm' = sdRound 4 $ kilo d'
         dKm = kilo d
 
