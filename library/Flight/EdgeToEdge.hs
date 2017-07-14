@@ -16,7 +16,7 @@ import Flight.Geo (LatLng(..))
 import Flight.Zone (Zone(..), center)
 import Flight.PointToPoint (TaskDistance(..), distancePointToPoint)
 import Flight.Separated (separatedZones)
-import Flight.CylinderEdge (SampleParams(..), sample)
+import Flight.CylinderEdge (Tolerance, Samples(..), SampleParams(..), sample)
 
 data DistancePath
     = PathPointToPoint
@@ -45,10 +45,10 @@ zero =
                  , edgeLine = []
                  }
 
-distanceEdgeToEdge :: SampleParams -> DistancePath -> [Zone] -> EdgeDistance
+distanceEdgeToEdge :: Tolerance -> DistancePath -> [Zone] -> EdgeDistance
 distanceEdgeToEdge _ _ [] = zero
 distanceEdgeToEdge _ _ [_] = zero
-distanceEdgeToEdge sp dPath xs =
+distanceEdgeToEdge tolerance dPath xs =
     case xs of
         [] ->
             zero
@@ -80,6 +80,7 @@ distanceEdgeToEdge sp dPath xs =
                 d' = distancePointToPoint (Point <$> ptsEdgeLine)
 
     where
+        sp = SampleParams { samples = Samples 100, tolerance = tolerance }
         (d, ptsCenterLine) = distance sp dPath xs
 
 distance :: SampleParams -> DistancePath -> [Zone] -> (TaskDistance, [LatLng])

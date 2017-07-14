@@ -388,7 +388,7 @@ mkDayUnits title pDay dDay dsDay = testGroup title
     where
         distDay = toDist dDay
         pp = FS.distancePointToPoint
-        ee = FS.distanceEdgeToEdge sampleParams PathPointToZone
+        ee = FS.distanceEdgeToEdge mm30 PathPointToZone
         ppDay = pp pDay
         eeDay = centers $ ee pDay
         pDayInits = drop 1 $ inits pDay

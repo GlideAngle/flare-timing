@@ -19,8 +19,6 @@ import Flight.Task
     , Bearing(..)
     , TaskDistance(..)
     , EdgeDistance(..)
-    , Samples(..)
-    , SampleParams(..)
     , Tolerance(..)
     , DistancePath(..)
     , earthRadius
@@ -285,14 +283,11 @@ distancePoint (ZonesTest xs) =
 mm10 :: Tolerance
 mm10 = Tolerance $ 10 % 1000
 
-sampleParams :: SampleParams
-sampleParams = SampleParams { samples = Samples 10, tolerance = mm10 }
-
 distanceEdge :: ZonesTest -> Bool
 distanceEdge (ZonesTest xs) =
     correctCenter xs
     $ centers
-    $ FS.distanceEdgeToEdge sampleParams PathPointToPoint xs
+    $ FS.distanceEdgeToEdge mm10 PathPointToPoint xs
 
 distanceLess :: ZonesTest -> Bool
 distanceLess (ZonesTest xs)
@@ -302,6 +297,6 @@ distanceLess (ZonesTest xs)
         where
             TaskDistance dCenter =
                 centers
-                $ FS.distanceEdgeToEdge sampleParams PathPointToPoint xs
+                $ FS.distanceEdgeToEdge mm10 PathPointToPoint xs
 
             TaskDistance dPoint = FS.distancePointToPoint xs
