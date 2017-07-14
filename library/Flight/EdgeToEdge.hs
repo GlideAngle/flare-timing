@@ -19,7 +19,7 @@ import Flight.Geo (LatLng(..), Epsilon(..), earthRadius, defEps, degToRad, radTo
 import Flight.Zone (Zone(..), Radius(..), center)
 import Flight.PointToPoint (TaskDistance(..), distancePointToPoint)
 import Flight.Separated (separatedZones)
-import Flight.CylinderEdge (Samples(..), Tolerance(..), sample)
+import Flight.CylinderEdge (Samples(..), Tolerance(..), SampleParams(..), sample)
 
 data DistancePath
     = PathPointToPoint
@@ -48,10 +48,10 @@ zero =
                  , edgeLine = []
                  }
 
-distanceEdgeToEdge :: Samples -> Tolerance -> DistancePath -> [Zone] -> EdgeDistance
-distanceEdgeToEdge _ _ _ [] = zero
-distanceEdgeToEdge _ _ _ [_] = zero
-distanceEdgeToEdge samples tolerance dPath xs =
+distanceEdgeToEdge :: SampleParams -> DistancePath -> [Zone] -> EdgeDistance
+distanceEdgeToEdge _ _ [] = zero
+distanceEdgeToEdge _ _ [_] = zero
+distanceEdgeToEdge sp dPath xs =
     case xs of
         [] ->
             zero
@@ -83,12 +83,12 @@ distanceEdgeToEdge samples tolerance dPath xs =
                 d' = distancePointToPoint (Point <$> ptsEdgeLine)
 
     where
-        (d, ptsCenterLine) = distance samples tolerance dPath xs
+        (d, ptsCenterLine) = distance sp dPath xs
 
-distance :: Samples -> Tolerance -> DistancePath -> [Zone] -> (TaskDistance, [LatLng])
-distance _ _ _ [] = (TaskDistance 0, [])
-distance _ _ _ [_] = (TaskDistance 0, [])
-distance samples tolerance dPath xs
+distance :: SampleParams -> DistancePath -> [Zone] -> (TaskDistance, [LatLng])
+distance _ _ [] = (TaskDistance 0, [])
+distance _ _ [_] = (TaskDistance 0, [])
+distance sp dPath xs
     | not $ separatedZones xs = (TaskDistance 0, [])
     | dPath == PathPointToPoint && length xs < 3 = (pointwise, centers')
     | otherwise =
@@ -103,7 +103,7 @@ distance samples tolerance dPath xs
             centers' = center <$> xs
 
             gr :: Gr LatLng TaskDistance
-            gr = buildGraph samples tolerance xs
+            gr = buildGraph sp xs
 
             (startNode, endNode) = nodeRange gr
 
@@ -126,12 +126,12 @@ distance samples tolerance dPath xs
                 )
                 <$> ps
 
-buildGraph :: Samples -> Tolerance -> [Zone] -> Gr LatLng TaskDistance
-buildGraph samples tolerance zones =
+buildGraph :: SampleParams -> [Zone] -> Gr LatLng TaskDistance
+buildGraph sp zones =
     mkGraph flatNodes flatEdges
     where
         nodes' :: [[LatLng]]
-        nodes' = sample samples tolerance <$> zones
+        nodes' = sample sp <$> zones
 
         len :: Int
         len = sum $ map length nodes'

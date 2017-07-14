@@ -37,6 +37,7 @@ library
   exposed-modules:
       Flight.Task
   other-modules:
+      Flight.CylinderEdge
       Flight.EdgeToEdge
       Flight.Geo
       Flight.PointToPoint
@@ -58,6 +59,7 @@ test-suite hlint
     , numbers
     , fgl
   other-modules:
+      Flight.CylinderEdge
       Flight.EdgeToEdge
       Flight.Geo
       Flight.PointToPoint
@@ -84,6 +86,7 @@ test-suite task
     , smallcheck
     , siggy-chardust
   other-modules:
+      Flight.CylinderEdge
       Flight.EdgeToEdge
       Flight.Geo
       Flight.PointToPoint

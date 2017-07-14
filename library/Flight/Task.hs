@@ -37,6 +37,7 @@ module Flight.Task
     -- * Optimized Shortest Path 
     , Samples(..)
     , Tolerance(..)
+    , SampleParams(..)
     , EdgeDistance(..)
     , DistancePath(..)
     , circumSample
