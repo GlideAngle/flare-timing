@@ -11,13 +11,10 @@ module Flight.CylinderEdge
 import Data.Ratio ((%))
 import qualified Data.Number.FixedFunctions as F
 import Data.Fixed (mod')
-import Data.Maybe (catMaybes)
-import Control.Arrow (first)
 
 import Flight.Geo (LatLng(..), Epsilon(..), earthRadius, defEps, degToRad, radToDeg)
-import Flight.Zone (Zone(..), Radius(..), center)
+import Flight.Zone (Zone(..), Radius(..))
 import Flight.PointToPoint (TaskDistance(..), distancePointToPoint)
-import Flight.Separated (separatedZones)
 
 newtype TrueCourse = TrueCourse Rational deriving (Eq, Ord, Show)
 newtype Samples = Samples { unSamples :: Integer } deriving (Eq, Ord, Show)
@@ -29,6 +26,8 @@ data SampleParams
         , tolerance :: Tolerance
         }
 
+-- | Generate sample points for a zone. These get added to the graph to work out
+-- the shortest path.
 sample :: SampleParams -> Zone -> [LatLng]
 sample _ (Point x) = [x]
 sample _ (Vector _ x) = [x]
@@ -37,6 +36,10 @@ sample sp (Conical _ r x) = fst $ circumSample sp r x
 sample sp (Line r x) = fst $ circumSample sp r x
 sample sp (SemiCircle r x) = fst $ circumSample sp r x
  
+-- | Using a method from the
+-- <http://www.edwilliams.org/avform.htm#LL Aviation Formulary>
+-- a point on a cylinder wall is found by going out to the distance of the
+-- radius on the given radial true course 'rtc'.
 circum :: LatLng -> Epsilon -> Radius -> TrueCourse -> LatLng
 circum (LatLng (latDegree, lngDegree)) _ (Radius rRadius) (TrueCourse rtc) =
     LatLng (radToDeg defEps $ toRational lat', radToDeg defEps $ toRational lng')
@@ -70,11 +73,7 @@ circum (LatLng (latDegree, lngDegree)) _ (Radius rRadius) (TrueCourse rtc) =
 -- points that should lie close to the circle. The difference between
 -- the distance to the origin and the radius should be less han the 'tolerance'.
 --
--- Using a method from the
--- <http://www.edwilliams.org/avform.htm#LL Aviation Formulary>
--- points on the cylinder wall are found by going out to the distance of the
--- radius on a radial. The points of the compass are divided by the number of
--- samples requested.
+-- The points of the compass are divided by the number of samples requested.
 circumSample :: SampleParams -> Radius -> LatLng -> ([LatLng], [Double])
 circumSample SampleParams{..} r@(Radius limitRadius) ptCenter =
     unzip ys

@@ -5,9 +5,6 @@ module Flight.EdgeToEdge
     , buildGraph
     ) where
 
-import Data.Ratio ((%))
-import qualified Data.Number.FixedFunctions as F
-import Data.Fixed (mod')
 import Data.Maybe (catMaybes)
 import Control.Arrow (first)
 import Data.Graph.Inductive.Query.SP (LRTree, spTree) 
@@ -15,11 +12,11 @@ import Data.Graph.Inductive.Internal.RootPath (getDistance, getLPathNodes)
 import Data.Graph.Inductive.Graph (Graph(..), Node, Path, LEdge, mkGraph, match)
 import Data.Graph.Inductive.PatriciaTree (Gr)
 
-import Flight.Geo (LatLng(..), Epsilon(..), earthRadius, defEps, degToRad, radToDeg)
-import Flight.Zone (Zone(..), Radius(..), center)
+import Flight.Geo (LatLng(..))
+import Flight.Zone (Zone(..), center)
 import Flight.PointToPoint (TaskDistance(..), distancePointToPoint)
 import Flight.Separated (separatedZones)
-import Flight.CylinderEdge (Samples(..), Tolerance(..), SampleParams(..), sample)
+import Flight.CylinderEdge (SampleParams(..), sample)
 
 data DistancePath
     = PathPointToPoint
