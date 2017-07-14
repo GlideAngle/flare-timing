@@ -13,7 +13,7 @@ import Data.Ratio((%))
 import qualified Data.Number.FixedFunctions as F
 
 import Flight.Geo (LatLng(..), Epsilon(..), earthRadius, defEps, degToRadLL)
-import Flight.Zone (Zone(..), center)
+import Flight.Zone (Zone(..), Radius(..), center)
 
 newtype TaskDistance = TaskDistance Rational deriving (Eq, Ord, Num, Real)
 
@@ -76,11 +76,21 @@ distanceHaversine (Epsilon eps) xDegreeLL yDegreeLL =
 -- go from point to point. It usually goes from start exit cylinder to goal cylinder
 -- or to goal line.
 distancePointToPoint :: [Zone] -> TaskDistance
+
 distancePointToPoint [] = TaskDistance 0
+
 distancePointToPoint [_] = TaskDistance 0
+
+distancePointToPoint [Cylinder (Radius xR) x, Cylinder (Radius yR) y]
+    | x == y && xR /= yR = TaskDistance dR
+    | otherwise = distancePointToPoint [Point x, Point y]
+    where
+        dR = abs $ xR - yR
+
 distancePointToPoint xs@[a, b]
     | a == b = TaskDistance 0
     | otherwise = distance xs
+
 distancePointToPoint xs = distance xs
 
 distance :: [Zone] -> TaskDistance
