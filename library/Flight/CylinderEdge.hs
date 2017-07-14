@@ -65,7 +65,16 @@ circum (LatLng (latDegree, lngDegree)) _ (Radius rRadius) (TrueCourse rtc) =
 
         d = radius / bigR
 
--- | SEE: http://www.edwilliams.org/avform.htm#LL
+-- | Generates a pair of lists, the lat/lng of each generated point
+-- and its distance from the center. It will generate 'samples' number of such
+-- points that should lie close to the circle. The difference between
+-- the distance to the origin and the radius should be less han the 'tolerance'.
+--
+-- Using a method from the
+-- <http://www.edwilliams.org/avform.htm#LL Aviation Formulary>
+-- points on the cylinder wall are found by going out to the distance of the
+-- radius on a radial. The points of the compass are divided by the number of
+-- samples requested.
 circumSample :: SampleParams -> Radius -> LatLng -> ([LatLng], [Double])
 circumSample SampleParams{..} r@(Radius limitRadius) ptCenter =
     unzip ys
