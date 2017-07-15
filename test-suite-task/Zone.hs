@@ -287,7 +287,7 @@ distanceEdge :: ZonesTest -> Bool
 distanceEdge (ZonesTest xs) =
     correctCenter xs
     $ centers
-    $ FS.distanceEdgeToEdge mm10 PathPointToPoint xs
+    $ FS.distanceEdgeToEdge PathPointToPoint mm10 xs
 
 distanceLess :: ZonesTest -> Bool
 distanceLess (ZonesTest xs)
@@ -297,6 +297,6 @@ distanceLess (ZonesTest xs)
         where
             TaskDistance dCenter =
                 centers
-                $ FS.distanceEdgeToEdge mm10 PathPointToPoint xs
+                $ FS.distanceEdgeToEdge PathPointToPoint mm10 xs
 
             TaskDistance dPoint = FS.distancePointToPoint xs
