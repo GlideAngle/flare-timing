@@ -5,6 +5,7 @@ module Flight.EdgeToEdge
     , buildGraph
     ) where
 
+import Data.Ratio ((%))
 import qualified Data.Number.FixedFunctions as F
 import Data.Maybe (catMaybes)
 import Control.Arrow (first)
@@ -21,7 +22,7 @@ import Flight.CylinderEdge
     ( Tolerance
     , Samples(..)
     , SampleParams(..)
-    , ZonePoint(point)
+    , ZonePoint(..)
     , sample
     )
 
@@ -108,9 +109,9 @@ distance dPath tolerance xs
         where
             pointwise = distancePointToPoint xs
             centers' = center <$> xs
-            sp = SampleParams { spSamples = Samples 8, spTolerance = tolerance }
+            sp = SampleParams { spSamples = Samples 5, spTolerance = tolerance }
             (Epsilon eps) = defEps
-            (dist, zs) = loop sp 4 (Bearing $ F.pi eps) Nothing Nothing xs
+            (dist, zs) = loop sp 6 (Bearing $ F.pi eps) Nothing Nothing xs
 
 loop :: SampleParams
      -> Int
@@ -125,7 +126,7 @@ loop sp 0 _ d zs _ =
       Just zs' -> (d, zs')
 
 loop sp n br@(Bearing b) d zs xs =
-    loop sp (n - 1) (Bearing $ b / 2) dist (Just zs') xs
+    loop sp (n - 1) (Bearing $ b * (3 % 4)) dist (Just zs') xs
     where
         gr :: Gr ZonePoint TaskDistance
         gr = buildGraph sp br zs xs
@@ -169,10 +170,7 @@ buildGraph sp b zs xs =
                   sample sp b Nothing <$> xs
 
               Just zs' ->
-                  zipWith
-                      (\z x -> sample sp b (Just z) x)
-                      zs'
-                      xs
+                  (\z -> sample sp b (Just z) (sourceZone z)) <$> zs'
 
         len :: Int
         len = sum $ map length nodes'

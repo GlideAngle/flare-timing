@@ -108,6 +108,11 @@ circumSample SampleParams{..} (Bearing bearing) zp zone =
         pi = F.pi eps
         halfRange = pi / bearing
 
+        zone' =
+            case zp of
+              Nothing -> zone
+              Just ZonePoint{..} -> sourceZone
+
         xs :: [TrueCourse]
         xs =
             TrueCourse <$>
@@ -124,8 +129,8 @@ circumSample SampleParams{..} (Bearing bearing) zp zone =
                     where
                         (Bearing b) = radial
 
-        r@(Radius limitRadius) = radius zone
-        ptCenter = center zone
+        r@(Radius limitRadius) = radius zone'
+        ptCenter = center zone'
         circumR = circum ptCenter defEps
 
         ys = getClose 10 (Radius 0) (circumR r) <$> xs
@@ -152,7 +157,7 @@ circumSample SampleParams{..} (Bearing bearing) zp zone =
                              in getClose (trys - 1) (Radius offset') f' x
             where
                 y = f x
-                zp' = ZonePoint { sourceZone = zone
+                zp' = ZonePoint { sourceZone = zone'
                                 , point = y
                                 , radial = Bearing tc
                                 , orbit = yr
