@@ -50,10 +50,10 @@ sample :: SampleParams
        -> [ZonePoint]
 sample _ _ _ px@(Point x) = [ZonePoint px x (Bearing 0) (Radius 0)]
 sample _ _ _ px@(Vector _ x) = [ZonePoint px x (Bearing 0) (Radius 0)]
-sample sp b zs z@(Cylinder _ _) = fst $ circumSample sp b zs z
-sample sp b zs z@(Conical _ _ _) = fst $ circumSample sp b zs z
-sample sp b zs z@(Line _ _) = fst $ circumSample sp b zs z
-sample sp b zs z@(SemiCircle _ _) = fst $ circumSample sp b zs z
+sample sp b zs z@Cylinder{} = fst $ circumSample sp b zs z
+sample sp b zs z@Conical{} = fst $ circumSample sp b zs z
+sample sp b zs z@Line{} = fst $ circumSample sp b zs z
+sample sp b zs z@SemiCircle{} = fst $ circumSample sp b zs z
  
 -- | Using a method from the
 -- <http://www.edwilliams.org/avform.htm#LL Aviation Formulary>
@@ -72,8 +72,8 @@ circum (LatLng (latDegree, lngDegree)) _ (Radius rRadius) (TrueCourse rtc) =
         tc :: Double
         tc = fromRational rtc
 
-        radius :: Double
-        radius = fromRational rRadius
+        radius' :: Double
+        radius' = fromRational rRadius
 
         bigR = fromRational earthRadius
 
@@ -85,7 +85,7 @@ circum (LatLng (latDegree, lngDegree)) _ (Radius rRadius) (TrueCourse rtc) =
         b = 2 * pi 
         lng' = mod' a b - pi
 
-        d = radius / bigR
+        d = radius' / bigR
 
 -- | Generates a pair of lists, the lat/lng of each generated point
 -- and its distance from the center. It will generate 'samples' number of such
@@ -105,8 +105,8 @@ circumSample SampleParams{..} (Bearing bearing) zp zone =
 
         nNum = unSamples spSamples
         half = nNum `div` 2
-        pi = F.pi eps
-        halfRange = pi / bearing
+        pi' = F.pi eps
+        halfRange = pi' / bearing
 
         zone' =
             case zp of
@@ -118,7 +118,7 @@ circumSample SampleParams{..} (Bearing bearing) zp zone =
             TrueCourse <$>
             case zp of
                 Nothing ->
-                    [ (2 * n % nNum) * pi | n <- [0 .. nNum]]
+                    [ (2 * n % nNum) * pi' | n <- [0 .. nNum]]
 
                 Just ZonePoint{..} ->
                     [b]
@@ -138,8 +138,8 @@ circumSample SampleParams{..} (Bearing bearing) zp zone =
         getClose :: Int -> Radius -> (TrueCourse -> LatLng) -> TrueCourse -> (ZonePoint, Double)
         getClose trys yr@(Radius offset) f x@(TrueCourse tc)
             | trys <= 0 = (zp', dist)
-            | (unTolerance spTolerance) <= 0 = (zp', dist)
-            | limitRadius <= (unTolerance spTolerance) = (zp', dist)
+            | unTolerance spTolerance <= 0 = (zp', dist)
+            | limitRadius <= unTolerance spTolerance = (zp', dist)
             | otherwise =
                 case d `compare` limitRadius of
                      EQ ->
@@ -151,7 +151,7 @@ circumSample SampleParams{..} (Bearing bearing) zp zone =
                          in getClose (trys - 1) (Radius offset') f' x
                          
                      LT ->
-                         if d > limitRadius - (unTolerance spTolerance) then (zp', dist) else
+                         if d > limitRadius - unTolerance spTolerance then (zp', dist) else
                              let offset' = offset + (limitRadius - d) * 94 / 100
                                  f' = circumR (Radius $ limitRadius + offset')
                              in getClose (trys - 1) (Radius offset') f' x

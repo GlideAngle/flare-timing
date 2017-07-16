@@ -120,12 +120,12 @@ loop :: SampleParams
      -> Maybe [ZonePoint]
      -> [Zone]
      -> (Maybe TaskDistance, [ZonePoint])
-loop sp 0 _ d zs _ =
+loop _ 0 _ d zs _ =
     case zs of
       Nothing -> (Nothing, [])
       Just zs' -> (d, zs')
 
-loop sp n br@(Bearing b) d zs xs =
+loop sp n br@(Bearing b) _ zs xs =
     loop sp (n - 1) (Bearing $ b * (3 % 4)) dist (Just zs') xs
     where
         gr :: Gr ZonePoint TaskDistance
@@ -179,10 +179,14 @@ buildGraph sp b zs xs =
         iiNodes = zip [1 .. ] <$> nodes'
 
         iNodes :: [[(Node, ZonePoint)]]
-        iNodes = zipWith (\i xs -> first (\x -> x + i * len) <$> xs) [1 .. ] iiNodes
+        iNodes =
+            zipWith
+            (\i ys -> first (\y -> y + i * len) <$> ys)
+            [1 .. ]
+            iiNodes
 
         edges' :: [[LEdge TaskDistance]]
-        edges' = zipWith g iNodes (tail iNodes)
+        edges' = zipWith connectNodes iNodes (tail iNodes)
 
         flatEdges :: [LEdge TaskDistance]
         flatEdges = concat edges'
@@ -190,12 +194,14 @@ buildGraph sp b zs xs =
         flatNodes :: [(Node, ZonePoint)]
         flatNodes = concat iNodes
 
+-- | NOTE: The shortest path may traverse a cylinder so I include
+-- edges within a cylinder as well as edges to the next cylinder.
+connectNodes :: [(Node, ZonePoint)] -> [(Node, ZonePoint)] -> [LEdge TaskDistance]
+connectNodes xs ys =
+    [ f x1 x2 | x1 <- xs, x2 <- xs ]
+    ++
+    [ f x y | x <- xs, y <- ys ]
+    where
         f :: (Node, ZonePoint) -> (Node, ZonePoint) -> LEdge TaskDistance
         f (i, x) (j, y) =
             (i, j, distancePointToPoint [Point $ point x, Point $ point y])
-
-        -- | NOTE: The shortest path may traverse a cylinder so I include
-        -- edges within a cylinder as well as edges to the next cylinder.
-        g :: [(Node, ZonePoint)] -> [(Node, ZonePoint)] -> [LEdge TaskDistance]
-        g xs ys =
-            [ f x1 x2 | x1 <- xs, x2 <- xs ] ++ [ f x y | x <- xs, y <- ys]
