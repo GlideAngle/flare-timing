@@ -35,6 +35,9 @@ showKms xs =
 (.>=.) :: (Show a, Show b) => a -> b -> String
 (.>=.) x y = show x ++ " >= " ++ show y
 
+(.<=.) :: (Show a, Show b) => a -> b -> String
+(.<=.) x y = show x ++ " <= " ++ show y
+
 (.~=.) :: (Show a, Show b) => a -> b -> String
 (.~=.) x y = show x ++ " ~= " ++ show y
 
@@ -377,8 +380,8 @@ mkDayUnits title pDay dDay dsDay = testGroup title
         $ (ppDay >= distDay) @? ppDay .>=. distDay
 
     , HU.testCase
-        ("edge-to-edge distance >= " ++ showKm dDay)
-        $ (eeDay >= distDay) @? eeDay .>=. distDay
+        ("edge-to-edge distance <= " ++ showKm dDay)
+        $ (eeDay <= distDay) @? eeDay .<=. distDay
 
     , HU.testCase
         ("point-to-point distances "
@@ -391,10 +394,10 @@ mkDayUnits title pDay dDay dsDay = testGroup title
     , HU.testCase
         ("edge-to-edge distances "
         ++ showKms eeDayInits
-        ++ " >= "
+        ++ " <= "
         ++ showKms dsDay
         ) $
-        (eeDayInits >= dsDay) @? eeDayInits .>=. dsDay
+            distLess eeDayInits dsDay @? eeDayInits .<=. dsDay
     ]
     where
         distDay = toDist dDay
@@ -406,6 +409,7 @@ mkDayUnits title pDay dDay dsDay = testGroup title
         unDist (TaskDistance x) = fromRational x :: Double
         ppDayInits = unDist . pp <$> pDayInits
         eeDayInits = unDist . centers . ee <$> pDayInits
+        distLess xs ys = take 1 (reverse xs) < take 1 (reverse ys)
 
 day1Units :: TestTree
 day1Units = mkDayUnits "Task 1" pDay1 dDay1 dsDay1
