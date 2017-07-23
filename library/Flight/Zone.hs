@@ -1,4 +1,15 @@
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE UndecidableInstances #-}
+
+{-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
 module Flight.Zone
     ( ShowAngle(..)
@@ -17,12 +28,16 @@ module Flight.Zone
     ) where
 
 import Data.List (intercalate)
+import Data.UnitsOfMeasure
+import Data.UnitsOfMeasure.Internal (Quantity(..))
+import Data.UnitsOfMeasure.Defs ()
 
+import Flight.Units (Length)
 import Flight.Geo (LatLng(..), radToDegLL, defEps)
 
 -- | The radius component of zones that are cylinder-like, and most are in some
 -- way.
-newtype Radius = Radius Rational deriving (Eq, Ord, Show)
+newtype Radius = Radius (Length [u| m |]) deriving (Eq, Ord, Show)
 
 -- | The incline component of a conical zone.
 newtype Incline = Incline Rational deriving (Eq, Ord, Show)
@@ -63,8 +78,8 @@ center (SemiCircle _ x) = x
 
 -- | The effective radius of a zone.
 radius :: Zone -> Radius
-radius (Point _) = Radius 0
-radius (Vector _ _) = Radius 0
+radius (Point _) = Radius zero
+radius (Vector _ _) = Radius zero
 radius (Cylinder r _) = r
 radius (Conical _ r _) = r
 radius (Line r _) = r
@@ -74,7 +89,7 @@ class ShowAngle a where
     showRadian :: a -> String
     showDegree :: a -> String
 
-instance {-# OVERLAPPING #-} ShowAngle [ Zone ] where
+instance {-# OVERLAPPING #-} ShowAngle [Zone] where
     showRadian = showZones showRadian
     showDegree = showZones showDegree
 
@@ -98,26 +113,26 @@ instance ShowAngle Zone where
     showRadian (Vector _ x) =
         "Vector " ++ showRadian x
     showRadian (Cylinder (Radius r) x) =
-        "Cylinder r=" ++ showRadian r ++ " " ++ showRadian x
+        "Cylinder r=" ++ show r ++ " " ++ showRadian x
     showRadian (Conical _ (Radius r) x) =
-        "Conical r=" ++ showRadian r ++ " " ++ showRadian x
+        "Conical r=" ++ show r ++ " " ++ showRadian x
     showRadian (Line (Radius r) x) =
-        "Line r=" ++ showRadian r ++ " " ++ showRadian x
+        "Line r=" ++ show r ++ " " ++ showRadian x
     showRadian (SemiCircle (Radius r) x) =
-        "Semicircle r=" ++ showRadian r ++ " " ++ showRadian x
+        "Semicircle r=" ++ show r ++ " " ++ showRadian x
 
     showDegree (Point x) =
         "Point " ++ showDegree (radToDegLL defEps x)
     showDegree (Vector _ x) =
         "Vector " ++ showDegree (radToDegLL defEps x)
     showDegree (Cylinder (Radius r) x) =
-        "Cylinder r=" ++ showDegree r ++ " " ++ showDegree (radToDegLL defEps x)
+        "Cylinder r=" ++ show r ++ " " ++ showDegree (radToDegLL defEps x)
     showDegree (Conical _ (Radius r) x) =
-        "Conical r=" ++ showDegree r ++ " " ++ showDegree (radToDegLL defEps x)
+        "Conical r=" ++ show r ++ " " ++ showDegree (radToDegLL defEps x)
     showDegree (Line (Radius r) x) =
-        "Line r=" ++ showDegree r ++ " " ++ showDegree (radToDegLL defEps x)
+        "Line r=" ++ show r ++ " " ++ showDegree (radToDegLL defEps x)
     showDegree (SemiCircle (Radius r) x) =
-        "Semicircle r=" ++ showDegree r ++ " " ++ showDegree (radToDegLL defEps x)
+        "Semicircle r=" ++ show r ++ " " ++ showDegree (radToDegLL defEps x)
 
 newtype Deadline = Deadline Integer deriving (Eq, Ord, Show)
 newtype TimeOfDay = TimeOfDay Rational deriving (Eq, Ord, Show)
@@ -129,7 +144,7 @@ data StartGates
         , intervals :: [Interval]
         } deriving Show
 
-data Task
+data Task u
     = Task
         { zones :: [Zone]
         , startZone :: Int

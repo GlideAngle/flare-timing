@@ -34,6 +34,7 @@ library
       base >=4.5 && <5
     , numbers
     , fgl
+    , uom-plugin
   exposed-modules:
       Flight.Task
   other-modules:
@@ -42,6 +43,7 @@ library
       Flight.Geo
       Flight.PointToPoint
       Flight.Separated
+      Flight.Units
       Flight.Zone
       Paths_flight_task
   default-language: Haskell2010
@@ -65,6 +67,7 @@ test-suite hlint
       Flight.PointToPoint
       Flight.Separated
       Flight.Task
+      Flight.Units
       Flight.Zone
   default-language: Haskell2010
 
@@ -79,6 +82,7 @@ test-suite task
       base
     , numbers
     , fgl
+    , uom-plugin
     , tasty
     , tasty-hunit
     , tasty-quickcheck
@@ -92,8 +96,11 @@ test-suite task
       Flight.PointToPoint
       Flight.Separated
       Flight.Task
+      Flight.Units
       Flight.Zone
       EdgeToEdge
       TestNewtypes
+      UOM
+      UOMTests
       Zone
   default-language: Haskell2010

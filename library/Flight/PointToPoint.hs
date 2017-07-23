@@ -1,5 +1,16 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE UndecidableInstances #-}
+
+{-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
 module Flight.PointToPoint
     ( TaskDistance(..)
@@ -8,21 +19,30 @@ module Flight.PointToPoint
     , distanceHaversine
     ) where
 
+import Prelude hiding (sum)
 import Data.Ratio((%))
 import qualified Data.Number.FixedFunctions as F
+import Data.UnitsOfMeasure ((+:), (-:), (*:), u, abs', zero)
+import Data.UnitsOfMeasure.Internal (Quantity(..), mk, fromRational')
+import Data.UnitsOfMeasure.Defs ()
 
-import Flight.Geo (LatLng(..), Epsilon(..), earthRadius, defEps, degToRadLL)
+import Flight.Geo
+    (LatLng(..), Epsilon(..), earthRadius, defEps, degToRadLL)
 import Flight.Zone (Zone(..), Radius(..), center)
 
-newtype TaskDistance = TaskDistance Rational deriving (Eq, Ord, Num, Real)
+newtype TaskDistance =
+    TaskDistance (Quantity Rational [u| m |])
+    deriving (Eq, Ord)
 
 instance Show TaskDistance where
-    show (TaskDistance d) = "d = " ++ show (fromRational d :: Double)
+    show (TaskDistance d) = "d = " ++ show d'
+        where
+            d' = fromRational' d :: Quantity Double [u| m |]
 
 -- | Sperical distance using haversines and floating point numbers.
 distanceHaversineF :: LatLng -> LatLng -> TaskDistance
 distanceHaversineF xDegreeLL yDegreeLL =
-    TaskDistance $ earthRadius * toRational radDist 
+    TaskDistance (mk radDist *: earthRadius)
     where
         -- NOTE: Use xLatF etc to avoid an hlint duplication warning.
         LatLng (xLatF, xLngF) = degToRadLL defEps xDegreeLL
@@ -43,13 +63,13 @@ distanceHaversineF xDegreeLL yDegreeLL =
             * cos (fromRational yLatF)
             * haversine dLngF
 
-        radDist :: Double
-        radDist = 2 * asin (sqrt a)
+        radDist :: Rational
+        radDist = toRational $ 2 * asin (sqrt a)
 
 -- | Sperical distance using haversines and rational numbers.
 distanceHaversine :: Epsilon -> LatLng -> LatLng -> TaskDistance
 distanceHaversine (Epsilon eps) xDegreeLL yDegreeLL =
-    TaskDistance $ earthRadius * radDist 
+    TaskDistance (mk radDist *: earthRadius)
     where
         LatLng (xLat, xLng) = degToRadLL defEps xDegreeLL
         LatLng (yLat, yLng) = degToRadLL defEps yDegreeLL
@@ -81,22 +101,25 @@ distanceHaversine (Epsilon eps) xDegreeLL yDegreeLL =
 -- avoid zone centers for a shorter flown distance.
 distancePointToPoint :: [Zone] -> TaskDistance
 
-distancePointToPoint [] = TaskDistance 0
+distancePointToPoint [] = TaskDistance zero
 
-distancePointToPoint [_] = TaskDistance 0
+distancePointToPoint [_] = TaskDistance zero
 
 distancePointToPoint [Cylinder (Radius xR) x, Cylinder (Radius yR) y]
     | x == y && xR /= yR = TaskDistance dR
     | otherwise = distancePointToPoint [Point x, Point y]
     where
-        dR = abs $ xR - yR
+        dR :: Quantity Rational [u| m |]
+        dR = abs' $ xR -: yR
 
 distancePointToPoint xs@[a, b]
-    | a == b = TaskDistance 0
+    | a == b = TaskDistance zero
     | otherwise = distance xs
 
 distancePointToPoint xs = distance xs
 
+sum :: [Quantity Rational [u| m |]] -> Quantity Rational [u| m |]
+sum = foldr (+:) zero
 
 distance :: [Zone] -> TaskDistance
 distance xs =
@@ -104,4 +127,7 @@ distance xs =
     where
         ys = center <$> xs
         unwrap (TaskDistance x) = x
+
+        f :: LatLng -> LatLng -> Quantity Rational [u| m |]
         f = (unwrap .) . distanceHaversine defEps
+

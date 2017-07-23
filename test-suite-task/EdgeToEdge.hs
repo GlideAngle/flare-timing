@@ -1,3 +1,17 @@
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE UndecidableInstances #-}
+
+{-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
+
 module EdgeToEdge (edgeToEdgeUnits) where
 
 import Data.Ratio((%))
@@ -6,6 +20,8 @@ import Numeric (showFFloat)
 import Data.List (inits)
 import Test.Tasty (TestTree, TestName, testGroup)
 import Test.Tasty.HUnit as HU ((@?=), (@?), testCase)
+import Data.UnitsOfMeasure.Internal (Quantity(..))
+import Data.UnitsOfMeasure.Defs ()
 
 import qualified Flight.Task as FS
 import Flight.Task
@@ -79,62 +95,62 @@ circumSampleUnits = testGroup "Points just within the zone"
         [ HU.testCase
             "No points > 0mm outside a 40m cylinder when searching within 1mm" $
             filter (> 40 + unmilli 0)
-            (snd $ FS.circumSample (sampleParams { spTolerance = mm1 }) br Nothing (Cylinder (Radius 40) ll))
+            (snd $ FS.circumSample (sampleParams { spTolerance = mm1 }) br Nothing (Cylinder (Radius $ MkQuantity 40) ll))
             @?= [] 
 
         , HU.testCase
             "No points > 0mm outside a 400m cylinder when searching within 1mm" $
             filter (> 400 + unmilli 0)
-            (snd $ FS.circumSample (sampleParams { spTolerance = mm1 }) br Nothing (Cylinder (Radius 400) ll))
+            (snd $ FS.circumSample (sampleParams { spTolerance = mm1 }) br Nothing (Cylinder (Radius $ MkQuantity 400) ll))
             @?= [] 
 
         , HU.testCase
             "No points > 27mm outside a 1km cylinder when searching within 10mm" $
             filter (> unkilo 1 + unmilli 27) 
-            (snd $ FS.circumSample (sampleParams { spTolerance = mm10 }) br Nothing (Cylinder (Radius $ unkilo 1) ll))
+            (snd $ FS.circumSample (sampleParams { spTolerance = mm10 }) br Nothing (Cylinder (Radius $ MkQuantity $ unkilo 1) ll))
             @?= [] 
 
         , HU.testCase
             "No points > 80mm outside a 10km cylinder when searching within 100mm" $
             filter (> unkilo 10 + unmilli 80)
-            (snd $ FS.circumSample (sampleParams { spTolerance = mm100 }) br Nothing (Cylinder (Radius $ unkilo 10) ll))
+            (snd $ FS.circumSample (sampleParams { spTolerance = mm100 }) br Nothing (Cylinder (Radius $ MkQuantity $ unkilo 10) ll))
             @?= [] 
 
         , HU.testCase 
             "No points > 80m outside a 100km cylinder when searching within 100m" $
             filter (> unkilo 100 + 80)
-            (snd $ FS.circumSample (sampleParams { spTolerance = m100 }) br Nothing (Cylinder (Radius $ unkilo 100) ll))
+            (snd $ FS.circumSample (sampleParams { spTolerance = m100 }) br Nothing (Cylinder (Radius $ MkQuantity $ unkilo 100) ll))
             @?= [] 
         ]
     , testGroup "Inside the zone."
         [ HU.testCase
             "No points > 1mm inside a 40m cylinder when searching within 1mm" $
             filter (< 40.0 - unmilli 1)
-            (snd $ FS.circumSample (sampleParams { spTolerance = mm1 }) br Nothing (Cylinder (Radius 40) ll))
+            (snd $ FS.circumSample (sampleParams { spTolerance = mm1 }) br Nothing (Cylinder (Radius $ MkQuantity 40) ll))
             @?= [] 
 
         , HU.testCase
             "No points > 1mm inside a 400m cylinder when searching within 1mm" $
             filter (< 400.0 - unmilli 1)
-            (snd $ FS.circumSample (sampleParams { spTolerance = mm1 }) br Nothing (Cylinder (Radius 400) ll))
+            (snd $ FS.circumSample (sampleParams { spTolerance = mm1 }) br Nothing (Cylinder (Radius $ MkQuantity 400) ll))
             @?= [] 
 
         , HU.testCase
             "No points > 50mm inside a 1km cylinder when searching within 10mm" $
             filter (< unkilo 1 - unmilli 50)
-            (snd $ FS.circumSample (sampleParams { spTolerance = mm10 }) br Nothing (Cylinder (Radius $ unkilo 1) ll))
+            (snd $ FS.circumSample (sampleParams { spTolerance = mm10 }) br Nothing (Cylinder (Radius $ MkQuantity $ unkilo 1) ll))
             @?= [] 
 
         , HU.testCase
             "No points > 80mm inside a 10km cylinder when searching within 100mm" $
             filter (< unkilo 10 - unmilli 100)
-            (snd $ FS.circumSample (sampleParams { spTolerance = mm100 }) br Nothing (Cylinder (Radius $ unkilo 10) ll))
+            (snd $ FS.circumSample (sampleParams { spTolerance = mm100 }) br Nothing (Cylinder (Radius $ MkQuantity $ unkilo 10) ll))
             @?= [] 
 
         , HU.testCase
             "No points > 80m inside a 100km cylinder when searching within 100m" $
             filter (< unkilo 100 - 80)
-            (snd $ FS.circumSample (sampleParams { spTolerance = m100 }) br Nothing (Cylinder (Radius $ unkilo 100) ll))
+            (snd $ FS.circumSample (sampleParams { spTolerance = m100 }) br Nothing (Cylinder (Radius $ MkQuantity $ unkilo 100) ll))
             @?= [] 
         ]
     ]
@@ -143,7 +159,7 @@ toLL :: (Double, Double) -> LatLng
 toLL (lat, lng) = LatLng (toRational lat, toRational lng)
 
 toDist :: Double -> TaskDistance
-toDist x = TaskDistance $ toRational x
+toDist x = TaskDistance $ MkQuantity $ toRational x
 
 forbesUnits :: TestTree
 forbesUnits = testGroup "Forbes 2011/2012 distances"
@@ -188,8 +204,8 @@ mkPartDayUnits title zs d = testGroup title
         $ (dKm' == dKm) @? dKm' .~=. dKm
     ]
     where
-        (TaskDistance d') = FS.distancePointToPoint zs
-        dKm' = sdRound 4 $ kilo d'
+        (TaskDistance (MkQuantity d')) = FS.distancePointToPoint zs
+        dKm' = fromRational $ sdRound 4 $ kilo d'
         dKm = kilo d
 
 day1PartUnits :: TestTree
@@ -406,7 +422,7 @@ mkDayUnits title pDay dDay dsDay = testGroup title
         ppDay = pp pDay
         eeDay = centers $ ee pDay
         pDayInits = drop 1 $ inits pDay
-        unDist (TaskDistance x) = fromRational x :: Double
+        unDist (TaskDistance (MkQuantity x)) = fromRational x :: Double
         ppDayInits = unDist . pp <$> pDayInits
         eeDayInits = unDist . centers . ee <$> pDayInits
         distLess xs ys = take 1 (reverse xs) < take 1 (reverse ys)
@@ -473,11 +489,11 @@ NOTE: Point to point distances using Vincenty method.
 -}
 pDay1 :: [Zone]
 pDay1 =
-    [ Cylinder (Radius 100) $ toLL (negate 33.36137, 147.93207)
-    , Cylinder (Radius 10000) $ toLL (negate 33.36137, 147.93207)
-    , Cylinder (Radius 400) $ toLL (negate 33.85373, 147.94195)
-    , Cylinder (Radius 400) $ toLL (negate 33.4397, 148.34533)
-    , Cylinder (Radius 400) $ toLL (negate 33.61965, 148.4099)
+    [ Cylinder (Radius $ MkQuantity 100) $ toLL (negate 33.36137, 147.93207)
+    , Cylinder (Radius $ MkQuantity 10000) $ toLL (negate 33.36137, 147.93207)
+    , Cylinder (Radius $ MkQuantity 400) $ toLL (negate 33.85373, 147.94195)
+    , Cylinder (Radius $ MkQuantity 400) $ toLL (negate 33.4397, 148.34533)
+    , Cylinder (Radius $ MkQuantity 400) $ toLL (negate 33.61965, 148.4099)
     ]
 
 dDay1 :: Double
@@ -547,11 +563,11 @@ NOTE: Point to point distances using Vincenty method.
 -}
 pDay2 :: [Zone]
 pDay2 =
-    [ Cylinder (Radius 100) (toLL (negate 33.36137, 147.93207))
-    , Cylinder (Radius 5000) (toLL (negate 33.36137, 147.93207))
-    , Cylinder (Radius 400) (toLL (negate 32.90223, 147.98492))
-    , Cylinder (Radius 400) (toLL (negate 32.9536, 147.55457))
-    , Cylinder (Radius 400) (toLL (negate 33.12592, 147.91043))
+    [ Cylinder (Radius $ MkQuantity 100) (toLL (negate 33.36137, 147.93207))
+    , Cylinder (Radius $ MkQuantity 5000) (toLL (negate 33.36137, 147.93207))
+    , Cylinder (Radius $ MkQuantity 400) (toLL (negate 32.90223, 147.98492))
+    , Cylinder (Radius $ MkQuantity 400) (toLL (negate 32.9536, 147.55457))
+    , Cylinder (Radius $ MkQuantity 400) (toLL (negate 33.12592, 147.91043))
     ]
 
 dDay2 :: Double
@@ -600,11 +616,11 @@ NOTE: Point to point distances using Vincenty method.
 -}
 pDay3 :: [Zone]
 pDay3 =
-    [ Cylinder (Radius 100) (toLL (negate 33.36137, 147.93207))
-    , Cylinder (Radius 25000) (toLL (negate 33.36137, 147.93207))
-    , Cylinder (Radius 400) (toLL (negate 34.02107, 148.2233))
-    , Cylinder (Radius 400) (toLL (negate 34.11795, 148.5013))
-    , Cylinder (Radius 400) (toLL (negate 34.82197, 148.66543))
+    [ Cylinder (Radius $ MkQuantity 100) (toLL (negate 33.36137, 147.93207))
+    , Cylinder (Radius $ MkQuantity 25000) (toLL (negate 33.36137, 147.93207))
+    , Cylinder (Radius $ MkQuantity 400) (toLL (negate 34.02107, 148.2233))
+    , Cylinder (Radius $ MkQuantity 400) (toLL (negate 34.11795, 148.5013))
+    , Cylinder (Radius $ MkQuantity 400) (toLL (negate 34.82197, 148.66543))
     ]
 
 dDay3 :: Double
@@ -650,10 +666,10 @@ NOTE: Point to point distances using Vincenty method.
 -}
 pDay4 :: [Zone]
 pDay4 =
-    [ Cylinder (Radius 100) (toLL (negate 33.36137, 147.93207))
-    , Cylinder (Radius 15000) (toLL (negate 33.36137, 147.93207))
-    , Cylinder (Radius 25000) (toLL (negate 32.90223, 147.98492))
-    , Cylinder (Radius 400) (toLL (negate 32.46363, 148.989))
+    [ Cylinder (Radius $ MkQuantity 100) (toLL (negate 33.36137, 147.93207))
+    , Cylinder (Radius $ MkQuantity 15000) (toLL (negate 33.36137, 147.93207))
+    , Cylinder (Radius $ MkQuantity 25000) (toLL (negate 32.90223, 147.98492))
+    , Cylinder (Radius $ MkQuantity 400) (toLL (negate 32.46363, 148.989))
     ]
 
 dDay4 :: Double
@@ -698,10 +714,10 @@ NOTE: Point to point distances using Vincenty method.
 -}
 pDay5 :: [Zone]
 pDay5 =
-    [ Cylinder (Radius 100) (toLL (negate 33.36137, 147.93207))
-    , Cylinder (Radius 15000) (toLL (negate 33.36137, 147.93207))
-    , Cylinder (Radius 5000) (toLL (negate 32.56608, 148.22657))
-    , Cylinder (Radius 400) (toLL (negate 32.0164, 149.43363))
+    [ Cylinder (Radius $ MkQuantity 100) (toLL (negate 33.36137, 147.93207))
+    , Cylinder (Radius $ MkQuantity 15000) (toLL (negate 33.36137, 147.93207))
+    , Cylinder (Radius $ MkQuantity 5000) (toLL (negate 32.56608, 148.22657))
+    , Cylinder (Radius $ MkQuantity 400) (toLL (negate 32.0164, 149.43363))
     ]
 
 dDay5 :: Double
@@ -746,10 +762,10 @@ NOTE: Point to point distances using Vincenty method.
 -}
 pDay6 :: [Zone]
 pDay6 =
-    [ Cylinder (Radius 100) (toLL (negate 33.36137, 147.93207))
-    , Cylinder (Radius 15000) (toLL (negate 33.36137, 147.93207))
-    , Cylinder (Radius 5000) (toLL (negate 32.19498, 147.76218))
-    , Cylinder (Radius 400) (toLL (negate 31.69323, 148.29623))
+    [ Cylinder (Radius $ MkQuantity 100) (toLL (negate 33.36137, 147.93207))
+    , Cylinder (Radius $ MkQuantity 15000) (toLL (negate 33.36137, 147.93207))
+    , Cylinder (Radius $ MkQuantity 5000) (toLL (negate 32.19498, 147.76218))
+    , Cylinder (Radius $ MkQuantity 400) (toLL (negate 31.69323, 148.29623))
     ]
 
 dDay6 :: Double
@@ -797,11 +813,11 @@ NOTE: Point to point distances using Vincenty method.
 -}
 pDay7 :: [Zone]
 pDay7 =
-    [ Cylinder (Radius 100) (toLL (negate 33.36137, 147.93207))
-    , Cylinder (Radius 10000) (toLL (negate 33.36137, 147.93207))
-    , Cylinder (Radius 5000) (toLL (negate 32.9536, 147.55457))
-    , Cylinder (Radius 400) (toLL (negate 32.76052, 148.64958))
-    , Cylinder (Radius 400) (toLL (negate 32.93585, 148.74947))
+    [ Cylinder (Radius $ MkQuantity 100) (toLL (negate 33.36137, 147.93207))
+    , Cylinder (Radius $ MkQuantity 10000) (toLL (negate 33.36137, 147.93207))
+    , Cylinder (Radius $ MkQuantity 5000) (toLL (negate 32.9536, 147.55457))
+    , Cylinder (Radius $ MkQuantity 400) (toLL (negate 32.76052, 148.64958))
+    , Cylinder (Radius $ MkQuantity 400) (toLL (negate 32.93585, 148.74947))
     ]
 
 dDay7 :: Double
@@ -850,11 +866,11 @@ NOTE: Point to point distances using Vincenty method.
 -}
 pDay8 :: [Zone]
 pDay8 =
-    [ Cylinder (Radius 100) (toLL (negate 33.36137, 147.93207))
-    , Cylinder (Radius 10000) (toLL (negate 33.36137, 147.93207))
-    , Cylinder (Radius 5000) (toLL (negate 33.75343, 147.52865))
-    , Cylinder (Radius 400) (toLL (negate 33.12908, 147.57323))
-    , Cylinder (Radius 400) (toLL (negate 33.361, 147.9315))
+    [ Cylinder (Radius $ MkQuantity 100) (toLL (negate 33.36137, 147.93207))
+    , Cylinder (Radius $ MkQuantity 10000) (toLL (negate 33.36137, 147.93207))
+    , Cylinder (Radius $ MkQuantity 5000) (toLL (negate 33.75343, 147.52865))
+    , Cylinder (Radius $ MkQuantity 400) (toLL (negate 33.12908, 147.57323))
+    , Cylinder (Radius $ MkQuantity 400) (toLL (negate 33.361, 147.9315))
     ]
 
 dDay8 :: Double

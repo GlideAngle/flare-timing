@@ -1,3 +1,17 @@
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE UndecidableInstances #-}
+
+{-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
+
 module Flight.EdgeToEdge
     ( EdgeDistance(..)
     , DistancePath(..)
@@ -7,6 +21,8 @@ module Flight.EdgeToEdge
 
 import Data.Ratio ((%))
 import qualified Data.Number.FixedFunctions as F
+import Data.UnitsOfMeasure.Internal (Quantity(..))
+import Data.UnitsOfMeasure.Defs ()
 import Data.Maybe (catMaybes)
 import Control.Arrow (first)
 import Data.Graph.Inductive.Query.SP (LRTree, spTree) 
@@ -25,6 +41,8 @@ import Flight.CylinderEdge
     , ZonePoint(..)
     , sample
     )
+
+newtype PathCost = PathCost Rational deriving (Eq, Ord, Num, Real)
 
 data DistancePath
     = PathPointToPoint
@@ -45,24 +63,24 @@ data EdgeDistance =
         -- ^ The points of the 'edges' distance.
         } deriving Show
 
-zero :: EdgeDistance
-zero =
-    EdgeDistance { centers = TaskDistance 0
-                 , edges = TaskDistance 0
+zeroDistance :: EdgeDistance
+zeroDistance =
+    EdgeDistance { centers = TaskDistance $ MkQuantity 0
+                 , edges = TaskDistance $ MkQuantity 0
                  , centerLine = []
                  , edgeLine = []
                  }
 
 distanceEdgeToEdge :: DistancePath -> Tolerance -> [Zone] -> EdgeDistance
-distanceEdgeToEdge _ _ [] = zero
-distanceEdgeToEdge _ _ [_] = zero
+distanceEdgeToEdge _ _ [] = zeroDistance
+distanceEdgeToEdge _ _ [_] = zeroDistance
 distanceEdgeToEdge dPath tolerance xs =
     case xs of
         [] ->
-            zero
+            zeroDistance
 
         [_] ->
-            zero
+            zeroDistance
 
         [_, _] ->
             EdgeDistance { centers = d
@@ -88,26 +106,27 @@ distanceEdgeToEdge dPath tolerance xs =
                 d' = distancePointToPoint (Point <$> ptsEdgeLine)
 
     where
-        (d, ptsCenterLine) = distance dPath tolerance xs
+        (PathCost pcd, ptsCenterLine) = distance dPath tolerance xs
+        d = TaskDistance $ MkQuantity pcd 
 
 distance :: DistancePath
          -> Tolerance
          -> [Zone]
-         -> (TaskDistance, [LatLng])
-distance _ _ [] = (TaskDistance 0, [])
-distance _ _ [_] = (TaskDistance 0, [])
+         -> (PathCost, [LatLng])
+distance _ _ [] = (PathCost 0, [])
+distance _ _ [_] = (PathCost 0, [])
 distance dPath tolerance xs
-    | not $ separatedZones xs = (TaskDistance 0, [])
-    | dPath == PathPointToPoint && length xs < 3 = (pointwise, centers')
+    | not $ separatedZones xs = (PathCost 0, [])
+    | dPath == PathPointToPoint && length xs < 3 = (PathCost pointwise, centers')
     | otherwise =
         case dist of
-            Nothing -> (pointwise, centers')
-            Just d ->
-                if dPath == PathPointToZone || d < pointwise
+            Nothing -> (PathCost pointwise, centers')
+            Just d@(PathCost pcd) ->
+                if dPath == PathPointToZone || pcd < pointwise
                     then (d, point <$> zs)
-                    else (pointwise, centers')
+                    else (PathCost pointwise, centers')
         where
-            pointwise = distancePointToPoint xs
+            (TaskDistance (MkQuantity pointwise)) = distancePointToPoint xs
             centers' = center <$> xs
             sp = SampleParams { spSamples = Samples 5, spTolerance = tolerance }
             (Epsilon eps) = defEps
@@ -116,10 +135,10 @@ distance dPath tolerance xs
 loop :: SampleParams
      -> Int
      -> Bearing
-     -> Maybe TaskDistance
+     -> Maybe PathCost
      -> Maybe [ZonePoint]
      -> [Zone]
-     -> (Maybe TaskDistance, [ZonePoint])
+     -> (Maybe PathCost, [ZonePoint])
 loop _ 0 _ d zs _ =
     case zs of
       Nothing -> (Nothing, [])
@@ -128,15 +147,15 @@ loop _ 0 _ d zs _ =
 loop sp n br@(Bearing b) _ zs xs =
     loop sp (n - 1) (Bearing $ b * (3 % 4)) dist (Just zs') xs
     where
-        gr :: Gr ZonePoint TaskDistance
+        gr :: Gr ZonePoint PathCost
         gr = buildGraph sp br zs xs
 
         (startNode, endNode) = nodeRange gr
 
-        spt :: LRTree TaskDistance
+        spt :: LRTree PathCost
         spt = spTree startNode gr
 
-        dist :: Maybe TaskDistance
+        dist :: Maybe PathCost
         dist = getDistance endNode spt
 
         ps :: Path
@@ -159,7 +178,7 @@ buildGraph :: SampleParams
            -> Bearing
            -> Maybe [ZonePoint]
            -> [Zone]
-           -> Gr ZonePoint TaskDistance
+           -> Gr ZonePoint PathCost
 buildGraph sp b zs xs =
     mkGraph flatNodes flatEdges
     where
@@ -185,10 +204,10 @@ buildGraph sp b zs xs =
             [1 .. ]
             iiNodes
 
-        edges' :: [[LEdge TaskDistance]]
+        edges' :: [[LEdge PathCost]]
         edges' = zipWith connectNodes iNodes (tail iNodes)
 
-        flatEdges :: [LEdge TaskDistance]
+        flatEdges :: [LEdge PathCost]
         flatEdges = concat edges'
 
         flatNodes :: [(Node, ZonePoint)]
@@ -196,12 +215,16 @@ buildGraph sp b zs xs =
 
 -- | NOTE: The shortest path may traverse a cylinder so I include
 -- edges within a cylinder as well as edges to the next cylinder.
-connectNodes :: [(Node, ZonePoint)] -> [(Node, ZonePoint)] -> [LEdge TaskDistance]
+connectNodes :: [(Node, ZonePoint)]
+             -> [(Node, ZonePoint)]
+             -> [LEdge PathCost]
 connectNodes xs ys =
     [ f x1 x2 | x1 <- xs, x2 <- xs ]
     ++
     [ f x y | x <- xs, y <- ys ]
     where
-        f :: (Node, ZonePoint) -> (Node, ZonePoint) -> LEdge TaskDistance
-        f (i, x) (j, y) =
-            (i, j, distancePointToPoint [Point $ point x, Point $ point y])
+        f :: (Node, ZonePoint) -> (Node, ZonePoint) -> LEdge PathCost
+        f (i, x) (j, y) = (i, j, PathCost d)
+            where
+                (TaskDistance (MkQuantity d)) =
+                    distancePointToPoint [Point $ point x, Point $ point y]

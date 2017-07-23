@@ -1,12 +1,28 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# lANGUAGE PatternSynonyms #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE UndecidableInstances #-}
+
+{-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
+
 module TestNewtypes where
 
 -- NOTE: Avoid orphan instance warnings with these newtypes.
 
 import Test.SmallCheck.Series as SC
 import Test.Tasty.QuickCheck as QC
+import Data.UnitsOfMeasure.Internal (Quantity(..))
+import Data.UnitsOfMeasure.Defs ()
 
 import Flight.Zone
     ( LatLng(..)
@@ -27,13 +43,13 @@ instance Monad m => SC.Serial m ZoneTest where
         \/ cons3 (\lat lng b ->
             Vector (Bearing b) (LatLng (lat, lng)))
         \/ cons3 (\lat lng (SC.Positive r) ->
-            Cylinder (Radius r) (LatLng (lat, lng)))
+            Cylinder (Radius (MkQuantity r)) (LatLng (lat, lng)))
         \/ cons4 (\lat lng (SC.Positive r) i ->
-            Conical (Incline i) (Radius r) (LatLng (lat, lng)))
+            Conical (Incline i) (Radius (MkQuantity r)) (LatLng (lat, lng)))
         \/ cons3 (\lat lng (SC.Positive r) ->
-            Line (Radius r) (LatLng (lat, lng)))
+            Line (Radius (MkQuantity r)) (LatLng (lat, lng)))
         \/ cons3 (\lat lng (SC.Positive r) ->
-            SemiCircle (Radius r) (LatLng (lat, lng)))
+            SemiCircle (Radius (MkQuantity r)) (LatLng (lat, lng)))
 
 instance Monad m => SC.Serial m ZonesTest where
     series = cons1 (\xs -> ZonesTest $ (\(ZoneTest x) -> x) <$> xs)
@@ -53,17 +69,17 @@ instance QC.Arbitrary ZoneTest where
                     return $ Vector (Bearing b) ll
                 , do
                     (QC.Positive r) <- arbitrary
-                    return $ Cylinder (Radius r) ll
+                    return $ Cylinder (Radius (MkQuantity r)) ll
                 , do
                     (QC.Positive r) <- arbitrary
                     i <- arbitrary
-                    return $ Conical (Incline i) (Radius r) ll
+                    return $ Conical (Incline i) (Radius (MkQuantity r)) ll
                 , do
                     (QC.Positive r) <- arbitrary
-                    return $ Line (Radius r) ll
+                    return $ Line (Radius (MkQuantity r)) ll
                 , do
                     (QC.Positive r) <- arbitrary
-                    return $ SemiCircle (Radius r) ll
+                    return $ SemiCircle (Radius (MkQuantity r)) ll
                 ]
 
 instance QC.Arbitrary ZonesTest where

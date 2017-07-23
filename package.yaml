@@ -12,6 +12,7 @@ library:
   - base >=4.5 && <5
   - numbers
   - fgl
+  - uom-plugin
   source-dirs: library
   exposed-modules:
   - Flight.Task
@@ -44,6 +45,7 @@ tests:
     - base
     - numbers
     - fgl
+    - uom-plugin
     - tasty
     - tasty-hunit
     - tasty-quickcheck

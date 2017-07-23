@@ -1,3 +1,16 @@
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE UndecidableInstances #-}
+
+{-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
+
 module Flight.Geo
     ( LatLng(..)
     , Epsilon(..)
@@ -7,14 +20,22 @@ module Flight.Geo
     , radToDeg
     , radToDegLL
     , earthRadius
+    , toRational'
     ) where
 
 import Data.Ratio((%))
 import qualified Data.Number.FixedFunctions as F
+import Data.UnitsOfMeasure
+import Data.UnitsOfMeasure.Internal (Quantity(..))
+import Data.UnitsOfMeasure.Defs ()
 
 newtype LatLng = LatLng (Rational, Rational) deriving (Eq, Ord, Show)
 
 newtype Epsilon = Epsilon Rational deriving (Eq, Ord, Show)
+
+-- | Convert any 'Real' quantity into a 'Rational' type ('toRational').
+toRational' :: Real a => Quantity a u -> Quantity Rational u
+toRational' (MkQuantity x) = MkQuantity (toRational x)
 
 -- | Conversion of degrees to radians.
 degToRad :: Epsilon -> Rational -> Rational
@@ -37,6 +58,6 @@ radToDegLL e (LatLng (lat, lng)) =
 defEps :: Epsilon
 defEps = Epsilon $ 1 % 1000000000
 
--- | The radius of the earth in the FAI sphere is 6,371,000 km.
-earthRadius :: Rational
-earthRadius = 6371000
+-- | The radius of the earth in the FAI sphere is 6,371 km.
+earthRadius :: Quantity Rational [u| m |]
+earthRadius = [u| 6371000 % 1 m |]

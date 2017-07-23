@@ -1,3 +1,17 @@
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE UndecidableInstances #-}
+
+{-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
+
 module Zone
     ( zoneUnits
     , distancePoint
@@ -8,6 +22,8 @@ module Zone
 import Data.Ratio ((%))
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit as HU ((@?=), testCase)
+import Data.UnitsOfMeasure.Internal (Quantity(..))
+import Data.UnitsOfMeasure.Defs ()
 
 import qualified Flight.Task as FS
 import Flight.Task
@@ -100,7 +116,7 @@ disjointUnits = testGroup "Disjoint zone separation"
 emptyDistance :: TestTree
 emptyDistance = testGroup "Point-to-point distance"
     [ HU.testCase "No zones = zero point-to-point distance" $
-        FS.distancePointToPoint [] @?= TaskDistance 0
+        FS.distancePointToPoint [] @?= (TaskDistance $ MkQuantity 0)
     ]
 
 toDistance :: String -> [[Zone]] -> TestTree
@@ -258,18 +274,18 @@ semicircleDisjoint :: TestTree
 semicircleDisjoint = disjoint "Semicircle zones" ((fmap . fmap) semicircle radiiDisjoint)
 
 correctPoint :: [Zone] -> TaskDistance -> Bool
-correctPoint [] (TaskDistance d) = d == 0
-correctPoint [_] (TaskDistance d) = d == 0
-correctPoint xs (TaskDistance d)
+correctPoint [] (TaskDistance (MkQuantity d)) = d == 0
+correctPoint [_] (TaskDistance (MkQuantity d)) = d == 0
+correctPoint xs (TaskDistance (MkQuantity d))
     | all (== head ys) (tail ys) = d == 0
     | otherwise = d > 0
     where
         ys = center <$> xs
 
 correctCenter :: [Zone] -> TaskDistance -> Bool
-correctCenter [] (TaskDistance d) = d == 0
-correctCenter [_] (TaskDistance d) = d == 0
-correctCenter xs (TaskDistance d)
+correctCenter [] (TaskDistance (MkQuantity d)) = d == 0
+correctCenter [_] (TaskDistance (MkQuantity d)) = d == 0
+correctCenter xs (TaskDistance (MkQuantity d))
     | all (== head ys) (tail ys) = d == 0
     | not $ separatedZones xs = d == 0
     | otherwise = d > 0

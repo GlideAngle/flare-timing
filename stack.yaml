@@ -7,6 +7,12 @@ packages:
     git: https://github.com/haskell/fgl.git
     commit: e29503775e474b7a7cd8951b6bebcf1529b888b5
   extra-dep: true
+- location:
+    git: https://github.com/adamgundry/uom-plugin.git
+    commit: 0ea56180b0adecb83ee5dbcb9e46a640b72d0acc
+  subdirs:
+  - uom-plugin
+  extra-dep: true
 extra-deps: []
 resolver: lts-8.15
 local-bin-path: __shake-build

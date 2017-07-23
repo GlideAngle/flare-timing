@@ -1,4 +1,17 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE UndecidableInstances #-}
+
+{-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
 module Flight.CylinderEdge
     ( Samples(..)
@@ -12,6 +25,9 @@ module Flight.CylinderEdge
 import Data.Ratio ((%))
 import qualified Data.Number.FixedFunctions as F
 import Data.Fixed (mod')
+import Data.UnitsOfMeasure
+import Data.UnitsOfMeasure.Internal (Quantity(..))
+import Data.UnitsOfMeasure.Defs ()
 
 import Flight.Geo (LatLng(..), Epsilon(..), earthRadius, defEps, degToRad, radToDeg)
 import Flight.Zone (Zone(..), Radius(..), Bearing(..), center, radius)
@@ -48,8 +64,8 @@ sample :: SampleParams
        -> Maybe ZonePoint
        -> Zone
        -> [ZonePoint]
-sample _ _ _ px@(Point x) = [ZonePoint px x (Bearing 0) (Radius 0)]
-sample _ _ _ px@(Vector _ x) = [ZonePoint px x (Bearing 0) (Radius 0)]
+sample _ _ _ px@(Point x) = [ZonePoint px x (Bearing 0) (Radius (MkQuantity 0))]
+sample _ _ _ px@(Vector _ x) = [ZonePoint px x (Bearing 0) (Radius (MkQuantity 0))]
 sample sp b zs z@Cylinder{} = fst $ circumSample sp b zs z
 sample sp b zs z@Conical{} = fst $ circumSample sp b zs z
 sample sp b zs z@Line{} = fst $ circumSample sp b zs z
@@ -60,7 +76,11 @@ sample sp b zs z@SemiCircle{} = fst $ circumSample sp b zs z
 -- a point on a cylinder wall is found by going out to the distance of the
 -- radius on the given radial true course 'rtc'.
 circum :: LatLng -> Epsilon -> Radius -> TrueCourse -> LatLng
-circum (LatLng (latDegree, lngDegree)) _ (Radius rRadius) (TrueCourse rtc) =
+circum
+    (LatLng (latDegree, lngDegree))
+    _
+    (Radius (MkQuantity rRadius))
+    (TrueCourse rtc) =
     LatLng (radToDeg defEps $ toRational lat', radToDeg defEps $ toRational lng')
     where
         lat :: Double
@@ -75,7 +95,7 @@ circum (LatLng (latDegree, lngDegree)) _ (Radius rRadius) (TrueCourse rtc) =
         radius' :: Double
         radius' = fromRational rRadius
 
-        bigR = fromRational earthRadius
+        bigR = fromRational $ unQuantity earthRadius
 
         lat' = asin (sin lat * cos d + cos lat * sin d * cos tc)
 
@@ -129,14 +149,18 @@ circumSample SampleParams{..} (Bearing bearing) zp zone =
                     where
                         (Bearing b) = radial
 
-        r@(Radius limitRadius) = radius zone'
+        r@(Radius (MkQuantity limitRadius)) = radius zone'
         ptCenter = center zone'
         circumR = circum ptCenter defEps
 
-        ys = getClose 10 (Radius 0) (circumR r) <$> xs
+        ys = getClose 10 (Radius (MkQuantity 0)) (circumR r) <$> xs
 
-        getClose :: Int -> Radius -> (TrueCourse -> LatLng) -> TrueCourse -> (ZonePoint, Double)
-        getClose trys yr@(Radius offset) f x@(TrueCourse tc)
+        getClose :: Int
+                 -> Radius
+                 -> (TrueCourse -> LatLng)
+                 -> TrueCourse
+                 -> (ZonePoint, Double)
+        getClose trys yr@(Radius (MkQuantity offset)) f x@(TrueCourse tc)
             | trys <= 0 = (zp', dist)
             | unTolerance spTolerance <= 0 = (zp', dist)
             | limitRadius <= unTolerance spTolerance = (zp', dist)
@@ -147,14 +171,14 @@ circumSample SampleParams{..} (Bearing bearing) zp zone =
 
                      GT ->
                          let offset' = offset - (d - limitRadius) * 105 / 100
-                             f' = circumR (Radius $ limitRadius + offset')
-                         in getClose (trys - 1) (Radius offset') f' x
+                             f' = circumR (Radius (MkQuantity $ limitRadius + offset'))
+                         in getClose (trys - 1) (Radius (MkQuantity offset')) f' x
                          
                      LT ->
                          if d > limitRadius - unTolerance spTolerance then (zp', dist) else
                              let offset' = offset + (limitRadius - d) * 94 / 100
-                                 f' = circumR (Radius $ limitRadius + offset')
-                             in getClose (trys - 1) (Radius offset') f' x
+                                 f' = circumR (Radius (MkQuantity $ limitRadius + offset'))
+                             in getClose (trys - 1) (Radius (MkQuantity offset')) f' x
             where
                 y = f x
                 zp' = ZonePoint { sourceZone = zone'
@@ -163,5 +187,5 @@ circumSample SampleParams{..} (Bearing bearing) zp zone =
                                 , orbit = yr
                                 }
                                
-                (TaskDistance d) = distancePointToPoint [Point ptCenter, Point y]
+                (TaskDistance (MkQuantity d)) = distancePointToPoint [Point ptCenter, Point y]
                 dist = fromRational d

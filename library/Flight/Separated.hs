@@ -1,4 +1,22 @@
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE UndecidableInstances #-}
+
+{-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
+
 module Flight.Separated (separatedZones) where
+    
+import Data.UnitsOfMeasure ((+:))
+import Data.UnitsOfMeasure.Internal (Quantity(..))
+import Data.UnitsOfMeasure.Defs ()
 
 import Flight.Zone (Zone(..), Radius(..), radius)
 import Flight.PointToPoint (TaskDistance(..), distancePointToPoint)
@@ -27,9 +45,11 @@ separated xc@(Cylinder (Radius xR) x) yc@(Cylinder (Radius yR) y)
     | dxy + minR < maxR = True
     | otherwise = clearlySeparated xc yc
     where
-        (TaskDistance dxy) = distancePointToPoint [Point x, Point y]
-        minR = max xR yR
-        maxR = min xR yR
+        (TaskDistance (MkQuantity dxy)) =
+            distancePointToPoint [Point x, Point y]
+
+        (MkQuantity minR) = max xR yR
+        (MkQuantity maxR) = min xR yR
 
 separated x y =
     clearlySeparated x y
@@ -50,5 +70,5 @@ clearlySeparated x y =
     where
         (Radius rx) = radius x
         (Radius ry) = radius y
-        rxy = rx + ry
+        rxy = rx +: ry
         (TaskDistance d) = distancePointToPoint [x, y]
