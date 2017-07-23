@@ -6,7 +6,6 @@ import Test.Tasty.QuickCheck as QC
 
 import Zone
 import EdgeToEdge
-import qualified UOM
 
 main :: IO ()
 main = defaultMain tests
@@ -15,7 +14,6 @@ tests :: TestTree
 tests = testGroup "Tests"
         [ units
         , properties
-        , UOM.tests
         ]
 
 properties :: TestTree

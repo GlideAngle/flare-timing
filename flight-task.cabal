@@ -101,7 +101,5 @@ test-suite task
       Flight.Zone
       EdgeToEdge
       TestNewtypes
-      UOM
-      UOMTests
       Zone
   default-language: Haskell2010
