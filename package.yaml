@@ -32,6 +32,7 @@ tests:
     - hlint
     - numbers
     - fgl
+    - uom-plugin
     ghc-options:
     - -rtsopts
     - -threaded

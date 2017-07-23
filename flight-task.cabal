@@ -60,6 +60,7 @@ test-suite hlint
     , hlint
     , numbers
     , fgl
+    , uom-plugin
   other-modules:
       Flight.CylinderEdge
       Flight.EdgeToEdge
