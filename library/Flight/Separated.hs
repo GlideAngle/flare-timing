@@ -6,19 +6,19 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE QuasiQuotes #-}
 
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
 module Flight.Separated (separatedZones) where
     
-import Data.UnitsOfMeasure ((+:))
+import Data.UnitsOfMeasure ((+:), u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
-import Data.UnitsOfMeasure.Defs ()
 
 import Flight.Zone (Zone(..), Radius(..), radius)
 import Flight.PointToPoint (TaskDistance(..), distancePointToPoint)
 
-separated :: Zone -> Zone -> Bool
+separated :: Zone [u| deg |] -> Zone [u| deg |] -> Bool
 
 separated x@(Point _) y@(Point _) =
     x /= y
@@ -57,11 +57,11 @@ separated x y =
 -- distance between them. This will be seen where the smaller concentric cylinder
 -- marks the launch and the larger one, as an exit cylinder, marks the start of the
 -- speed section.
-separatedZones :: [Zone] -> Bool
+separatedZones :: [Zone [u| deg |] ] -> Bool
 separatedZones xs =
     and $ zipWith separated xs (tail xs)
 
-clearlySeparated :: Zone -> Zone -> Bool
+clearlySeparated :: Zone  [u| deg |] -> Zone  [u| deg |] -> Bool
 clearlySeparated x y =
     d > rxy
     where

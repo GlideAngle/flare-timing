@@ -6,6 +6,7 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE QuasiQuotes #-}
 
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
@@ -17,8 +18,8 @@ import Numeric (showFFloat)
 import Data.List (inits)
 import Test.Tasty (TestTree, TestName, testGroup)
 import Test.Tasty.HUnit as HU ((@?=), (@?), testCase)
+import Data.UnitsOfMeasure (u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
-import Data.UnitsOfMeasure.Defs ()
 
 import qualified Flight.Task as FS
 import Flight.Task
@@ -33,7 +34,8 @@ import Flight.Task
     , EdgeDistance(..)
     , DistancePath(..)
     )
-import Flight.Geo (Epsilon(..), defEps)
+import Flight.Geo (Epsilon(..), Lat(..), Lng(..), defEps)
+import Flight.Units ()
 
 import Data.Number.RoundingFunctions (dpRound, sdRound)
 
@@ -80,8 +82,13 @@ sampleParams = SampleParams { spSamples = Samples 100
                             , spTolerance = mm30
                             }
 
-ll :: LatLng
-ll = LatLng (1, 1)
+ll :: LatLng [u| deg |]
+ll =
+    LatLng (lat, lng)
+    where
+        oneRadDeg = convert [u| 1 rad |] :: Quantity Rational [u| deg |]
+        lat = Lat oneRadDeg
+        lng = Lng oneRadDeg
 
 br :: Bearing
 br = let (Epsilon e) = defEps in (Bearing $ F.pi e)
@@ -152,8 +159,12 @@ circumSampleUnits = testGroup "Points just within the zone"
         ]
     ]
 
-toLL :: (Double, Double) -> LatLng
-toLL (lat, lng) = LatLng (toRational lat, toRational lng)
+toLL :: (Double, Double) -> LatLng [u| deg |]
+toLL (lat, lng) =
+    LatLng (lat', lng')
+        where
+            lat' = Lat $ MkQuantity $ toRational lat
+            lng' = Lng $ MkQuantity $ toRational lng
 
 toDist :: Double -> TaskDistance
 toDist x = TaskDistance $ MkQuantity $ toRational x
@@ -194,7 +205,7 @@ unmilli x = x / 1000
 unkilo :: Num a => a -> a
 unkilo x = x * 1000
 
-mkPartDayUnits :: TestName -> [Zone] -> Double -> TestTree
+mkPartDayUnits :: TestName -> [Zone [u| deg |] ] -> Double -> TestTree
 mkPartDayUnits title zs d = testGroup title
     [ HU.testCase
         ("point-to-point distance ~= " ++ showKm d)
@@ -384,7 +395,7 @@ day8PartUnits = testGroup "Task 8 [...]"
             p3 = take 2 $ drop 2 xs
             d3 = unkilo 42.13
 
-mkDayUnits :: TestName -> [Zone] -> Double -> [Double] -> TestTree
+mkDayUnits :: TestName -> [Zone [u| deg |] ] -> Double -> [Double] -> TestTree
 mkDayUnits title pDay dDay dsDay = testGroup title
     [ HU.testCase "zones are separated" $ FS.separatedZones pDay @?= True
 
@@ -484,7 +495,7 @@ NOTE: Point to point distances using Vincenty method.
 134.7 - 10 - 0.4
 => 124.30
 -}
-pDay1 :: [Zone]
+pDay1 :: [Zone [u| deg |] ]
 pDay1 =
     [ Cylinder (Radius $ MkQuantity 100) $ toLL (negate 33.36137, 147.93207)
     , Cylinder (Radius $ MkQuantity 10000) $ toLL (negate 33.36137, 147.93207)
@@ -558,7 +569,7 @@ NOTE: Point to point distances using Vincenty method.
 130.15 - 5 - 0.4
 => 124.75
 -}
-pDay2 :: [Zone]
+pDay2 :: [Zone [u| deg |] ]
 pDay2 =
     [ Cylinder (Radius $ MkQuantity 100) (toLL (negate 33.36137, 147.93207))
     , Cylinder (Radius $ MkQuantity 5000) (toLL (negate 33.36137, 147.93207))
@@ -611,7 +622,7 @@ NOTE: Point to point distances using Vincenty method.
 185.35 - 25 - 0.4
 => 159.95
 -}
-pDay3 :: [Zone]
+pDay3 :: [Zone [u| deg |] ]
 pDay3 =
     [ Cylinder (Radius $ MkQuantity 100) (toLL (negate 33.36137, 147.93207))
     , Cylinder (Radius $ MkQuantity 25000) (toLL (negate 33.36137, 147.93207))
@@ -661,7 +672,7 @@ NOTE: Point to point distances using Vincenty method.
 157.16 - 15 - 0.4
 => 141.76
 -}
-pDay4 :: [Zone]
+pDay4 :: [Zone [u| deg |] ]
 pDay4 =
     [ Cylinder (Radius $ MkQuantity 100) (toLL (negate 33.36137, 147.93207))
     , Cylinder (Radius $ MkQuantity 15000) (toLL (negate 33.36137, 147.93207))
@@ -709,7 +720,7 @@ NOTE: Point to point distances using Vincenty method.
 221.4 - 15 - 0.4
 => 206.0
 -}
-pDay5 :: [Zone]
+pDay5 :: [Zone [u| deg |] ]
 pDay5 =
     [ Cylinder (Radius $ MkQuantity 100) (toLL (negate 33.36137, 147.93207))
     , Cylinder (Radius $ MkQuantity 15000) (toLL (negate 33.36137, 147.93207))
@@ -757,7 +768,7 @@ NOTE: Point to point distances using Vincenty method.
 205.43 - 15 - 0.4
 => 190.03
 -}
-pDay6 :: [Zone]
+pDay6 :: [Zone [u| deg |] ]
 pDay6 =
     [ Cylinder (Radius $ MkQuantity 100) (toLL (negate 33.36137, 147.93207))
     , Cylinder (Radius $ MkQuantity 15000) (toLL (negate 33.36137, 147.93207))
@@ -808,7 +819,7 @@ NOTE: Point to point distances using Vincenty method.
 183.60 - 10 - 0.4
 => 173.2
 -}
-pDay7 :: [Zone]
+pDay7 :: [Zone [u| deg |] ]
 pDay7 =
     [ Cylinder (Radius $ MkQuantity 100) (toLL (negate 33.36137, 147.93207))
     , Cylinder (Radius $ MkQuantity 10000) (toLL (negate 33.36137, 147.93207))
@@ -861,7 +872,7 @@ NOTE: Point to point distances using Vincenty method.
 169.92 - 10 - 0.4
 => 159.52
 -}
-pDay8 :: [Zone]
+pDay8 :: [Zone [u| deg |] ]
 pDay8 =
     [ Cylinder (Radius $ MkQuantity 100) (toLL (negate 33.36137, 147.93207))
     , Cylinder (Radius $ MkQuantity 10000) (toLL (negate 33.36137, 147.93207))

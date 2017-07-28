@@ -12,7 +12,9 @@ from launch to goal passing through each control zone of the course in order alo
 -}
 module Flight.Task
     ( -- * Control Zones
-      LatLng(..)
+      Lat(..)
+    , Lng(..)
+    , LatLng(..)
     , Radius(..)
     , center
     , radius
@@ -20,7 +22,6 @@ module Flight.Task
     , Incline(..)
     , Bearing(..)
     , Zone(..)
-    , ShowAngle(..)
     , Deadline(..)
     , TimeOfDay(..)
     , Interval(..)

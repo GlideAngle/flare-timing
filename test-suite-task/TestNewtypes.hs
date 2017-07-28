@@ -7,6 +7,7 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE QuasiQuotes #-}
 
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
@@ -16,35 +17,52 @@ module TestNewtypes where
 
 import Test.SmallCheck.Series as SC
 import Test.Tasty.QuickCheck as QC
+import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
-import Data.UnitsOfMeasure.Defs ()
 
 import Flight.Zone
-    ( LatLng(..)
+    ( Lat(..)
+    , Lng(..)
+    , LatLng(..)
     , Radius(..)
     , Incline(..)
     , Bearing(..)
     , Zone(..)
-    , Zone(..)
     )
 
-newtype ZoneTest = ZoneTest Zone deriving Show
-newtype ZonesTest = ZonesTest [Zone] deriving Show
+newtype ZoneTest = ZoneTest (Zone [u| deg |]) deriving Show
+newtype ZonesTest = ZonesTest [Zone [u| deg |]] deriving Show
 
 instance Monad m => SC.Serial m ZoneTest where
     series = ZoneTest <$>
         cons2 (\lat lng ->
-            Point (LatLng (lat, lng)))
+            Point (LatLng (Lat $ MkQuantity lat, Lng $ MkQuantity lng)))
+
         \/ cons3 (\lat lng b ->
-            Vector (Bearing b) (LatLng (lat, lng)))
+            Vector
+                (Bearing b)
+                (LatLng (Lat $ MkQuantity lat, Lng $ MkQuantity lng)))
+
         \/ cons3 (\lat lng (SC.Positive r) ->
-            Cylinder (Radius (MkQuantity r)) (LatLng (lat, lng)))
+            Cylinder
+                (Radius (MkQuantity r))
+                (LatLng (Lat $ MkQuantity lat, Lng $ MkQuantity lng)))
+
         \/ cons4 (\lat lng (SC.Positive r) i ->
-            Conical (Incline i) (Radius (MkQuantity r)) (LatLng (lat, lng)))
+            Conical
+                (Incline i)
+                (Radius (MkQuantity r))
+                (LatLng (Lat $ MkQuantity lat, Lng $ MkQuantity lng)))
+
         \/ cons3 (\lat lng (SC.Positive r) ->
-            Line (Radius (MkQuantity r)) (LatLng (lat, lng)))
+            Line
+                (Radius (MkQuantity r))
+                (LatLng (Lat $ MkQuantity lat, Lng $ MkQuantity lng)))
+
         \/ cons3 (\lat lng (SC.Positive r) ->
-            SemiCircle (Radius (MkQuantity r)) (LatLng (lat, lng)))
+            SemiCircle
+                (Radius (MkQuantity r))
+                (LatLng (Lat $ MkQuantity lat, Lng $ MkQuantity lng)))
 
 instance Monad m => SC.Serial m ZonesTest where
     series = cons1 (\xs -> ZonesTest $ (\(ZoneTest x) -> x) <$> xs)
@@ -53,7 +71,7 @@ instance QC.Arbitrary ZoneTest where
     arbitrary = ZoneTest <$> do
         lat <- arbitrary
         lng <- arbitrary
-        let ll = LatLng (lat, lng)
+        let ll = LatLng (Lat $ MkQuantity lat, Lng $ MkQuantity lng)
 
         QC.frequency $
             zip

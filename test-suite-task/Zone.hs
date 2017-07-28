@@ -6,6 +6,7 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE QuasiQuotes #-}
 
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
@@ -19,13 +20,14 @@ module Zone
 import Data.Ratio ((%))
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit as HU ((@?=), testCase)
+import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
-import Data.UnitsOfMeasure.Defs ()
 
 import qualified Flight.Task as FS
 import Flight.Task
-    ( ShowAngle(..)
-    , Zone(..)
+    ( Zone(..)
+    , Lat(..)
+    , Lng(..)
     , LatLng(..)
     , Radius(..)
     , Incline (..)
@@ -45,23 +47,36 @@ import TestNewtypes
 
 type Pt = (Rational, Rational)
 
-point :: (Rational, Rational) -> Zone
-point x = Point $ radToDegLL defEps (LatLng x)
+toLL :: (Rational, Rational) -> LatLng [u| deg |]
+toLL (lat, lng) =
+    radToDegLL defEps (LatLng (Lat lat', Lng lng'))
+    where
+        lat' = MkQuantity lat
+        lng' = MkQuantity lng
 
-vector :: (Rational, Rational) -> Zone
-vector x = Vector (Bearing 0) $ radToDegLL defEps (LatLng x)
+point :: (Rational, Rational) -> Zone [u| deg |]
+point x =
+    Point $ toLL x
 
-cylinder :: (Rational, Rational) -> Zone
-cylinder x = Cylinder (Radius earthRadius) $ radToDegLL defEps (LatLng x)
+vector :: (Rational, Rational) -> Zone [u| deg |]
+vector x =
+    Vector (Bearing 0) (toLL x) 
 
-conical :: (Rational, Rational) -> Zone
-conical x = Conical (Incline 1) (Radius earthRadius) $ radToDegLL defEps (LatLng x)
+cylinder :: (Rational, Rational) -> Zone [u| deg |]
+cylinder x =
+    Cylinder (Radius earthRadius) (toLL x)
 
-line :: (Rational, Rational) -> Zone
-line x = Line (Radius earthRadius) $ radToDegLL defEps (LatLng x)
+conical :: (Rational, Rational) -> Zone [u| deg |]
+conical x =
+    Conical (Incline 1) (Radius earthRadius) (toLL x)
 
-semicircle :: (Rational, Rational) -> Zone
-semicircle x = SemiCircle (Radius earthRadius) $ radToDegLL defEps (LatLng x)
+line :: (Rational, Rational) -> Zone [u| deg |]
+line x =
+    Line (Radius earthRadius) (toLL x) 
+
+semicircle :: (Rational, Rational) -> Zone [u| deg |]
+semicircle x =
+    SemiCircle (Radius earthRadius) (toLL x)
 
 zoneUnits :: TestTree
 zoneUnits = testGroup "Zone unit tests"
@@ -116,12 +131,12 @@ emptyDistance = testGroup "Point-to-point distance"
         FS.distancePointToPoint [] @?= (TaskDistance $ MkQuantity 0)
     ]
 
-toDistance :: String -> [[Zone]] -> TestTree
+toDistance :: String -> [[ Zone [u| deg |] ]] -> TestTree
 toDistance title xs =
     testGroup title (f <$> xs)
     where
         f x =
-            HU.testCase (mconcat [ "distance ", showRadian x, " = earth radius" ]) $
+            HU.testCase (mconcat [ "distance ", show x, " = earth radius" ]) $
                 FS.distancePointToPoint x
                     @?= TaskDistance earthRadius
 
@@ -151,13 +166,13 @@ lineDistance = toDistance "Distance over line zones" ((fmap . fmap) line ptsDist
 semicircleDistance :: TestTree
 semicircleDistance = toDistance "Distance over semicircle zones" ((fmap . fmap) semicircle ptsDistance)
 
-coincident :: String -> [[Zone]] -> TestTree
+coincident :: String -> [[ Zone [u| deg |] ]] -> TestTree
 coincident title xs =
     testGroup title (f <$> xs)
     where
         f x =
             HU.testCase (mconcat [ "concident pair of "
-                                 , showRadian $ head x
+                                 , show $ head x
                                  , " = not separate"
                                  ]) $
                 FS.separatedZones x
@@ -189,13 +204,13 @@ lineCoincident = coincident "Line zones" ((fmap . fmap) line ptsCoincident)
 semicircleCoincident :: TestTree
 semicircleCoincident = coincident "Semicircle zones" ((fmap . fmap) semicircle ptsCoincident)
 
-touching :: String -> [[Zone]] -> TestTree
+touching :: String -> [[ Zone [u| deg |] ]] -> TestTree
 touching title xs =
     testGroup title (f <$> xs)
     where
         f x =
             HU.testCase (mconcat [ "touching pair of "
-                                 , showRadian x
+                                 , show x
                                  , " = not separate"
                                  ]) $
                 FS.separatedZones x
@@ -222,13 +237,13 @@ lineTouching = touching "Line zones" ((fmap . fmap) line radiiTouching)
 semicircleTouching :: TestTree
 semicircleTouching = touching "Semicircle zones" ((fmap . fmap) semicircle radiiTouching)
 
-disjoint :: String -> [[Zone]] -> TestTree
+disjoint :: String -> [[ Zone [u| deg |] ]] -> TestTree
 disjoint title xs =
     testGroup title (f <$> xs)
     where
         f x =
             HU.testCase (mconcat [ "disjoint pair of "
-                                 , showRadian x 
+                                 , show x 
                                  , " = separate"
                                  ]) $
                 FS.separatedZones x
@@ -270,7 +285,7 @@ lineDisjoint = disjoint "Line zones" ((fmap . fmap) line radiiDisjoint)
 semicircleDisjoint :: TestTree
 semicircleDisjoint = disjoint "Semicircle zones" ((fmap . fmap) semicircle radiiDisjoint)
 
-correctPoint :: [Zone] -> TaskDistance -> Bool
+correctPoint :: [ Zone [u| deg |] ] -> TaskDistance -> Bool
 correctPoint [] (TaskDistance (MkQuantity d)) = d == 0
 correctPoint [_] (TaskDistance (MkQuantity d)) = d == 0
 correctPoint xs (TaskDistance (MkQuantity d))
@@ -279,7 +294,7 @@ correctPoint xs (TaskDistance (MkQuantity d))
     where
         ys = center <$> xs
 
-correctCenter :: [Zone] -> TaskDistance -> Bool
+correctCenter :: [ Zone [u| deg |] ] -> TaskDistance -> Bool
 correctCenter [] (TaskDistance (MkQuantity d)) = d == 0
 correctCenter [_] (TaskDistance (MkQuantity d)) = d == 0
 correctCenter xs (TaskDistance (MkQuantity d))

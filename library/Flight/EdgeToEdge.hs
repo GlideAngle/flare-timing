@@ -7,6 +7,7 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE QuasiQuotes #-}
 
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
@@ -19,8 +20,8 @@ module Flight.EdgeToEdge
 
 import Data.Ratio ((%))
 import qualified Data.Number.FixedFunctions as F
+import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
-import Data.UnitsOfMeasure.Defs ()
 import Data.Maybe (catMaybes)
 import Control.Arrow (first)
 import Data.Graph.Inductive.Query.SP (LRTree, spTree) 
@@ -39,6 +40,7 @@ import Flight.CylinderEdge
     , ZonePoint(..)
     , sample
     )
+import Flight.Units ()
 
 newtype PathCost = PathCost Rational deriving (Eq, Ord, Num, Real)
 
@@ -55,11 +57,11 @@ data EdgeDistance =
         , edges :: TaskDistance
         -- ^ The distance from the edge of the first zone to the edge of
         -- the last zone.
-        , centerLine :: [LatLng]
+        , centerLine :: [ LatLng [u| deg |] ]
         -- ^ The points of the 'centers' distance.
-        , edgeLine :: [LatLng]
+        , edgeLine :: [ LatLng [u| deg |] ]
         -- ^ The points of the 'edges' distance.
-        } deriving Show
+        }
 
 zeroDistance :: EdgeDistance
 zeroDistance =
@@ -69,7 +71,10 @@ zeroDistance =
                  , edgeLine = []
                  }
 
-distanceEdgeToEdge :: DistancePath -> Tolerance -> [Zone] -> EdgeDistance
+distanceEdgeToEdge :: DistancePath
+                   -> Tolerance
+                   -> [ Zone [u| deg |] ]
+                   -> EdgeDistance
 distanceEdgeToEdge _ _ [] = zeroDistance
 distanceEdgeToEdge _ _ [_] = zeroDistance
 distanceEdgeToEdge dPath tolerance xs =
@@ -109,8 +114,8 @@ distanceEdgeToEdge dPath tolerance xs =
 
 distance :: DistancePath
          -> Tolerance
-         -> [Zone]
-         -> (PathCost, [LatLng])
+         -> [Zone [u| deg |] ]
+         -> (PathCost, [ LatLng [u| deg |] ])
 distance _ _ [] = (PathCost 0, [])
 distance _ _ [_] = (PathCost 0, [])
 distance dPath tolerance xs
@@ -135,7 +140,7 @@ loop :: SampleParams
      -> Bearing
      -> Maybe PathCost
      -> Maybe [ZonePoint]
-     -> [Zone]
+     -> [ Zone [u| deg |] ]
      -> (Maybe PathCost, [ZonePoint])
 loop _ 0 _ d zs _ =
     case zs of
@@ -175,7 +180,7 @@ loop sp n br@(Bearing b) _ zs xs =
 buildGraph :: SampleParams
            -> Bearing
            -> Maybe [ZonePoint]
-           -> [Zone]
+           -> [ Zone [u| deg |] ]
            -> Gr ZonePoint PathCost
 buildGraph sp b zs xs =
     mkGraph flatNodes flatEdges

@@ -7,11 +7,13 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE StandaloneDeriving #-}
 
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
 module Flight.Zone
-    ( ShowAngle(..)
+    ( Lat(..)
+    , Lng(..)
     , LatLng(..)
     , Radius(..)
     , Incline(..)
@@ -26,13 +28,11 @@ module Flight.Zone
     , radius
     ) where
 
-import Data.List (intercalate)
 import Data.UnitsOfMeasure
 import Data.UnitsOfMeasure.Internal (Quantity(..))
-import Data.UnitsOfMeasure.Defs ()
 
 import Flight.Units (Length)
-import Flight.Geo (LatLng(..), radToDegLL, defEps)
+import Flight.Geo (Lat(..), Lng(..), LatLng(..))
 
 -- | The radius component of zones that are cylinder-like, and most are in some
 -- way.
@@ -47,27 +47,29 @@ newtype Bearing = Bearing Rational deriving (Eq, Ord, Show)
 -- | A control zone of the task. Taken together these make up the course to fly
 -- with start enter and exit cylinders, turnpoint cylinders, goal lines and
 -- cylinders.
-data Zone
-    = Point LatLng
+data Zone u
+    = Point (LatLng u)
     -- ^ Used to mark the exact turnpoints in the optimized task distance.
-    | Vector Bearing LatLng
+    | Vector Bearing (LatLng u)
     -- ^ Used only in open distance tasks these mark the start and direction of
     -- the open distance.
-    | Cylinder Radius LatLng
+    | Cylinder Radius (LatLng u)
     -- ^ The turnpoint cylinder.
-    | Conical Incline Radius LatLng
+    | Conical Incline Radius (LatLng u)
     -- ^ Only used in paragliding, this is the conical end of speed section
     -- used to discourage too low an end to final glides.
-    | Line Radius LatLng
+    | Line Radius (LatLng u)
     -- ^ A goal line perpendicular to the course line.
-    | SemiCircle Radius LatLng
+    | SemiCircle Radius (LatLng u)
     -- ^ This control zone is only ever used as a goal for paragliding. It is
     -- a goal line perpendicular to the course line followed by half
     -- a cylinder.
-    deriving (Eq, Show)
+    deriving (Eq)
+
+deriving instance (KnownUnit (Unpack u)) => Show (Zone u)
 
 -- | The effective center point of a zone.
-center :: Zone -> LatLng
+center :: Zone u -> LatLng u
 center (Point x) = x
 center (Vector _ x) = x
 center (Cylinder _ x) = x
@@ -76,62 +78,13 @@ center (Line _ x) = x
 center (SemiCircle _ x) = x
 
 -- | The effective radius of a zone.
-radius :: Zone -> Radius
+radius :: Zone u -> Radius
 radius (Point _) = Radius zero
 radius (Vector _ _) = Radius zero
 radius (Cylinder r _) = r
 radius (Conical _ r _) = r
 radius (Line r _) = r
 radius (SemiCircle r _) = r
-
-class ShowAngle a where
-    showRadian :: a -> String
-    showDegree :: a -> String
-
-instance {-# OVERLAPPING #-} ShowAngle [Zone] where
-    showRadian = showZones showRadian
-    showDegree = showZones showDegree
-
-showZones :: (Zone -> String) -> [Zone] -> String
-showZones f xs = intercalate ", " $ f <$> xs
-
-instance ShowAngle Rational where
-    showRadian = show
-    showDegree x = show x ++ "°"
-
-showLatLng :: (Rational -> String) -> LatLng -> String
-showLatLng f (LatLng (lat, lng))= "(" ++ f lat ++ ", " ++ f lng ++ ")"
-
-instance ShowAngle LatLng where
-    showRadian = showLatLng showRadian
-    showDegree = showLatLng showDegree
-
-instance ShowAngle Zone where
-    showRadian (Point x) =
-        "Point " ++ showRadian x
-    showRadian (Vector _ x) =
-        "Vector " ++ showRadian x
-    showRadian (Cylinder (Radius r) x) =
-        "Cylinder r=" ++ show r ++ " " ++ showRadian x
-    showRadian (Conical _ (Radius r) x) =
-        "Conical r=" ++ show r ++ " " ++ showRadian x
-    showRadian (Line (Radius r) x) =
-        "Line r=" ++ show r ++ " " ++ showRadian x
-    showRadian (SemiCircle (Radius r) x) =
-        "Semicircle r=" ++ show r ++ " " ++ showRadian x
-
-    showDegree (Point x) =
-        "Point " ++ showDegree (radToDegLL defEps x)
-    showDegree (Vector _ x) =
-        "Vector " ++ showDegree (radToDegLL defEps x)
-    showDegree (Cylinder (Radius r) x) =
-        "Cylinder r=" ++ show r ++ " " ++ showDegree (radToDegLL defEps x)
-    showDegree (Conical _ (Radius r) x) =
-        "Conical r=" ++ show r ++ " " ++ showDegree (radToDegLL defEps x)
-    showDegree (Line (Radius r) x) =
-        "Line r=" ++ show r ++ " " ++ showDegree (radToDegLL defEps x)
-    showDegree (SemiCircle (Radius r) x) =
-        "Semicircle r=" ++ show r ++ " " ++ showDegree (radToDegLL defEps x)
 
 newtype Deadline = Deadline Integer deriving (Eq, Ord, Show)
 newtype TimeOfDay = TimeOfDay Rational deriving (Eq, Ord, Show)
@@ -145,9 +98,11 @@ data StartGates
 
 data Task u
     = Task
-        { zones :: [Zone]
+        { zones :: [Zone u]
         , startZone :: Int
         , endZone :: Int
         , startGates :: StartGates
         , deadline :: Maybe Deadline
-        } deriving Show
+        }
+
+deriving instance (KnownUnit (Unpack u)) => Show (Task u)
