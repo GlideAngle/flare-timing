@@ -17,8 +17,7 @@ module Flight.Units
     , abs
     ) where
 
-import Data.Ratio ((%))
-import Data.UnitsOfMeasure (u, declareConvertibleUnit)
+import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 type Length u = Quantity Rational u

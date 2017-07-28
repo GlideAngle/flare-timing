@@ -13,6 +13,7 @@ library:
   - numbers
   - fgl
   - uom-plugin
+  - siggy-chardust
   source-dirs: library
   exposed-modules:
   - Flight.Task
@@ -33,6 +34,7 @@ tests:
     - numbers
     - fgl
     - uom-plugin
+    - siggy-chardust
     ghc-options:
     - -rtsopts
     - -threaded

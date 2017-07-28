@@ -7,7 +7,6 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE UnicodeSyntax #-}
-{-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE QuasiQuotes #-}
 
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
@@ -26,20 +25,34 @@ module Flight.Geo
     , toRational'
     ) where
 
-import Data.Ratio((%))
+import Data.Ratio ((%))
 import qualified Data.Number.FixedFunctions as F
-import Data.UnitsOfMeasure
+import Data.UnitsOfMeasure (KnownUnit, Unpack, u)
+import Data.UnitsOfMeasure.Show (showUnit, showQuantity)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Flight.Units ()
+import Data.Number.RoundingFunctions (dpRound)
 
 newtype Lat u = Lat (Quantity Rational u) deriving (Eq, Ord)
 newtype Lng u = Lng (Quantity Rational u) deriving (Eq, Ord)
 newtype LatLng u = LatLng (Lat u, Lng u) deriving (Eq, Ord)
 
-deriving instance (KnownUnit (Unpack u)) => Show (Lat u)
-deriving instance (KnownUnit (Unpack u)) => Show (Lng u)
+showAngle :: KnownUnit (Unpack u) => Quantity Rational u -> String
+showAngle q@(MkQuantity x) =
+    case showUnit q of
+        "deg" -> show (fromRational (dpRound 3 x) :: Double) ++ "°"
+        "rad" -> show (fromRational (dpRound 3 x) :: Double) ++ " rad"
+        _ -> showQuantity q
 
-deriving instance (KnownUnit (Unpack u)) => Show (LatLng u)
+instance (KnownUnit (Unpack u)) => Show (Lat u) where
+    show (Lat lat) = showAngle lat
+
+instance (KnownUnit (Unpack u)) => Show (Lng u) where
+    show (Lng lng) = showAngle lng
+
+instance (KnownUnit (Unpack u)) => Show (LatLng u) where
+    show (LatLng (lat, lng)) =
+        "(" ++ show lat ++ ", " ++ show lng ++ ")"
 
 newtype Epsilon = Epsilon Rational deriving (Eq, Ord, Show)
 
