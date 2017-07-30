@@ -31,6 +31,7 @@ module Flight.Task
     , Epsilon(..)
     , earthRadius
     , defEps
+    , fromKms
     -- * Spherical Distance Between Points
     , distancePointToPoint
     , distanceHaversine

@@ -16,6 +16,7 @@ module Flight.PointToPoint
     , distancePointToPoint
     , distanceHaversineF
     , distanceHaversine
+    , fromKms
     ) where
 
 import Prelude hiding (sum)
@@ -37,6 +38,10 @@ import Flight.Geo
     )
 import Flight.Zone (Zone(..), Radius(..), center)
 
+fromKms :: Quantity Rational [u| km |]
+        -> TaskDistance
+fromKms q = TaskDistance (convert q)
+
 newtype TaskDistance =
     TaskDistance (Quantity Rational [u| m |])
     deriving (Eq, Ord)
@@ -45,8 +50,21 @@ instance Show TaskDistance where
     show (TaskDistance d) = "d = " ++ show dbl
         where
             km = convert d :: Quantity Rational [u| km |]
-            Flip rounded = dpRound 2 <$> Flip km
+            Flip rounded = dpRound 3 <$> Flip km
             dbl = fromRational' rounded :: Quantity Double [u| km |]
+
+instance {-# OVERLAPPING #-} Show [TaskDistance] where
+    show = showDistances
+
+showDistances :: [TaskDistance] -> String
+showDistances xs =
+    (show $ f <$> xs) ++ " km"
+    where
+        f (TaskDistance d) = show dbl
+            where
+                km = convert d :: Quantity Rational [u| km |]
+                Flip rounded = dpRound 3 <$> Flip km
+                (MkQuantity dbl) = fromRational' rounded :: Quantity Double [u| km |]
 
 -- | Sperical distance using haversines and floating point numbers.
 distanceHaversineF :: LatLng [u| deg |]
@@ -127,9 +145,9 @@ distanceHaversine (Epsilon eps) xDegreeLL yDegreeLL =
 -- avoid zone centers for a shorter flown distance.
 distancePointToPoint :: [ Zone [u| deg |] ] -> TaskDistance
 
-distancePointToPoint [] = TaskDistance zero
+distancePointToPoint [] = TaskDistance [u| 0 m |]
 
-distancePointToPoint [_] = TaskDistance zero
+distancePointToPoint [_] = TaskDistance [u| 0 m |]
 
 distancePointToPoint [Cylinder (Radius xR) x, Cylinder (Radius yR) y]
     | x == y && xR /= yR = TaskDistance dR

@@ -14,7 +14,6 @@ module EdgeToEdge (edgeToEdgeUnits) where
 
 import Data.Ratio((%))
 import qualified Data.Number.FixedFunctions as F
-import Numeric (showFFloat)
 import Data.List (inits)
 import Test.Tasty (TestTree, TestName, testGroup)
 import Test.Tasty.HUnit as HU ((@?=), (@?), testCase)
@@ -33,25 +32,16 @@ import Flight.Task
     , TaskDistance(..)
     , EdgeDistance(..)
     , DistancePath(..)
+    , fromKms
     )
 import Flight.Geo (Epsilon(..), Lat(..), Lng(..), defEps)
 import Flight.Units ()
 
-import Data.Number.RoundingFunctions (dpRound, sdRound)
+qShowKm :: TaskDistance -> String
+qShowKm = show
 
-qShowKm :: Quantity Rational [u| km |] -> String
-qShowKm (MkQuantity x) =
-    show y
-    where
-        y = fromRational (dpRound 3 x) :: Double
-
-showKm :: Double -> String
-showKm x =
-    showFFloat (Just 2) (x / 1000) ""
-
-showKms :: [Double] -> String
-showKms xs =
-    show $ showKm <$> xs
+qShowKms :: [TaskDistance] -> String
+qShowKms = show
 
 (.>=.) :: (Show a, Show b) => a -> b -> String
 (.>=.) x y = show x ++ " >= " ++ show y
@@ -172,9 +162,6 @@ toLL (lat, lng) =
             lat' = Lat $ MkQuantity $ toRational lat
             lng' = Lng $ MkQuantity $ toRational lng
 
-toDist :: Double -> TaskDistance
-toDist x = TaskDistance $ MkQuantity $ toRational x
-
 forbesUnits :: TestTree
 forbesUnits = testGroup "Forbes 2011/2012 distances"
     [ day1PartUnits
@@ -210,17 +197,15 @@ unkilo x = x * 1000
 
 mkPartDayUnits :: TestName
                -> [Zone [u| deg |] ]
-               -> Quantity Rational [u| km |]
+               -> TaskDistance
                -> TestTree
-mkPartDayUnits title zs dKm = testGroup title
+mkPartDayUnits title zs d = testGroup title
     [ HU.testCase
-        ("point-to-point distance ~= " ++ qShowKm dKm)
-        $ (dKm'' == dKm) @? dKm'' .~=. dKm
+        ("point-to-point distance ~= " ++ qShowKm d)
+        $ (d' == d) @? d' .~=. d
     ]
     where
-        (TaskDistance d') = FS.distancePointToPoint zs
-        (MkQuantity dKm') = convert d' :: Quantity Rational [u| km |]
-        dKm'' = (MkQuantity $ sdRound 4 dKm') :: Quantity Rational [u| km |]
+        d' = FS.distancePointToPoint zs
 
 day1PartUnits :: TestTree
 day1PartUnits = testGroup "Task 1 [...]"
@@ -238,13 +223,13 @@ day1PartUnits = testGroup "Task 1 [...]"
                 ]
 
             p1 = take 2 xs
-            d1 = [u| 54.76 km |]
+            d1 = fromKms [u| 54.76 km |]
 
             p2 = take 2 $ drop 1 xs
-            d2 = [u| 59.28 km |]
+            d2 = fromKms [u| 59.28 km |]
 
             p3 = take 2 $ drop 2 xs
-            d3 = [u| 20.89 km |]
+            d3 = fromKms [u| 20.89 km |]
 
 day2PartUnits :: TestTree
 day2PartUnits = testGroup "Task 2 [...]"
@@ -262,13 +247,13 @@ day2PartUnits = testGroup "Task 2 [...]"
                 ]
 
             p1 = take 2 xs
-            d1 = [u| 51.29 km |]
+            d1 = fromKms [u| 51.29 km |]
 
             p2 = take 2 $ drop 1 xs
-            d2 = [u| 40.57 km |]
+            d2 = fromKms [u| 40.57 km |]
 
             p3 = take 2 $ drop 2 xs
-            d3 = [u| 38.31 km |]
+            d3 = fromKms [u| 38.31 km |]
 
 day3PartUnits :: TestTree
 day3PartUnits = testGroup "Task 3 [...]"
@@ -286,13 +271,13 @@ day3PartUnits = testGroup "Task 3 [...]"
                 ]
 
             p1 = take 2 xs
-            d1 = [u| 78.15 km |]
+            d1 = fromKms [u| 78.15 km |]
 
             p2 = take 2 $ drop 1 xs
-            d2 = [u| 27.78 km |]
+            d2 = fromKms [u| 27.78 km |]
 
             p3 = take 2 $ drop 2 xs
-            d3 = [u| 79.72 km |]
+            d3 = fromKms [u| 79.72 km |]
 
 day4PartUnits :: TestTree
 day4PartUnits = testGroup "Task 4 [...]"
@@ -309,10 +294,10 @@ day4PartUnits = testGroup "Task 4 [...]"
 
             -- NOTE: Use p1' to avoid an hlint duplication warning.
             p1' = take 2 xs
-            d1 = [u| 51.29 km |]
+            d1 = fromKms [u| 51.29 km |]
 
             p2 = take 2 $ drop 1 xs
-            d2 = [u| 105.9 km |]
+            d2 = fromKms [u| 105.9 km |]
 
 day5PartUnits :: TestTree
 day5PartUnits = testGroup "Task 5 [...]"
@@ -328,10 +313,10 @@ day5PartUnits = testGroup "Task 5 [...]"
                 ]
 
             p1 = take 2 xs
-            d1 = [u| 92.6 km |]
+            d1 = fromKms [u| 92.6 km |]
 
             p2 = take 2 $ drop 1 xs
-            d2 = [u| 128.9 km |]
+            d2 = fromKms [u| 128.9 km |]
 
 day6PartUnits :: TestTree
 day6PartUnits = testGroup "Task 6 [...]"
@@ -347,10 +332,10 @@ day6PartUnits = testGroup "Task 6 [...]"
                 ]
 
             p1 = take 2 xs
-            d1 = [u| 130.7 km |]
+            d1 = fromKms [u| 130.7 km |]
 
             p2 = take 2 $ drop 1 xs
-            d2 = [u| 75.18 km |]
+            d2 = fromKms [u| 75.18 km |]
 
 day7PartUnits :: TestTree
 day7PartUnits = testGroup "Task 7 [...]"
@@ -368,13 +353,13 @@ day7PartUnits = testGroup "Task 7 [...]"
                 ]
 
             p1 = take 2 xs
-            d1 = [u| 57.37 km |]
+            d1 = fromKms [u| 57.37 km |]
 
             p2 = take 2 $ drop 1 xs
-            d2 = [u| 104.5 km |]
+            d2 = fromKms [u| 104.5 km |]
 
             p3 = take 2 $ drop 2 xs
-            d3 = [u| 21.61 km |]
+            d3 = fromKms [u| 21.61 km |]
 
 
 day8PartUnits :: TestTree
@@ -393,52 +378,54 @@ day8PartUnits = testGroup "Task 8 [...]"
                 ]
 
             p1 = take 2 xs
-            d1 = [u| 57.43 km |]
+            d1 = fromKms [u| 57.43 km |]
 
             p2 = take 2 $ drop 1 xs
-            d2 = [u| 69.55 km |]
+            d2 = fromKms [u| 69.55 km |]
 
             p3 = take 2 $ drop 2 xs
-            d3 = [u| 42.13 km |]
+            d3 = fromKms [u| 42.13 km |]
 
-mkDayUnits :: TestName -> [Zone [u| deg |] ] -> Double -> [Double] -> TestTree
+mkDayUnits :: TestName
+           -> [Zone [u| deg |] ]
+           -> TaskDistance
+           -> [TaskDistance]
+           -> TestTree
 mkDayUnits title pDay dDay dsDay = testGroup title
     [ HU.testCase "zones are separated" $ FS.separatedZones pDay @?= True
 
     , HU.testCase
-        ("point-to-point distance >= " ++ showKm dDay)
-        $ (ppDay >= distDay) @? ppDay .>=. distDay
+        ("point-to-point distance >= " ++ qShowKm dDay)
+        $ (ppDay >= dDay) @? ppDay .>=. dDay
 
     , HU.testCase
-        ("edge-to-edge distance <= " ++ showKm dDay)
-        $ (eeDay <= distDay) @? eeDay .<=. distDay
+        ("edge-to-edge distance <= " ++ qShowKm dDay)
+        $ (eeDay <= dDay) @? eeDay .<=. dDay
 
     , HU.testCase
         ("point-to-point distances "
-        ++ showKms ppDayInits
+        ++ qShowKms ppDayInits
         ++ " >= "
-        ++ showKms dsDay
+        ++ qShowKms dsDay
         ) $
         (ppDayInits >= dsDay) @? ppDayInits .>=. dsDay
 
     , HU.testCase
         ("edge-to-edge distances "
-        ++ showKms eeDayInits
+        ++ qShowKms eeDayInits
         ++ " <= "
-        ++ showKms dsDay
+        ++ qShowKms dsDay
         ) $
             distLess eeDayInits dsDay @? eeDayInits .<=. dsDay
     ]
     where
-        distDay = toDist dDay
         pp = FS.distancePointToPoint
         ee = FS.distanceEdgeToEdge PathPointToZone mm30 
         ppDay = pp pDay
         eeDay = centers $ ee pDay
         pDayInits = drop 1 $ inits pDay
-        unDist (TaskDistance (MkQuantity x)) = fromRational x :: Double
-        ppDayInits = unDist . pp <$> pDayInits
-        eeDayInits = unDist . centers . ee <$> pDayInits
+        ppDayInits = pp <$> pDayInits
+        eeDayInits = centers . ee <$> pDayInits
         distLess xs ys = take 1 (reverse xs) < take 1 (reverse ys)
 
 day1Units :: TestTree
@@ -510,8 +497,8 @@ pDay1 =
     , Cylinder (Radius $ MkQuantity 400) $ toLL (negate 33.61965, 148.4099)
     ]
 
-dDay1 :: Double
-dDay1 = 1000 * 133.357
+dDay1 :: TaskDistance
+dDay1 = fromKms [u| 133.357 km |]
 
 {-
 NOTE: The task distances show below are taken from the competition *.fsdb file at the
@@ -534,9 +521,9 @@ TODO: Find out why the first distance is 9.882 and not 9.9 km.
 <FsTaskDistToTp tp_no="4" distance="112.779" />
 <FsTaskDistToTp tp_no="5" distance="133.357" />
 -}
-dsDay1 :: [Double]
+dsDay1 :: [TaskDistance]
 dsDay1 =
-    unkilo <$>
+    fromKms . MkQuantity <$>
         [ 0.000
         , 9.882
         , 54.254
@@ -584,12 +571,12 @@ pDay2 =
     , Cylinder (Radius $ MkQuantity 400) (toLL (negate 33.12592, 147.91043))
     ]
 
-dDay2 :: Double
-dDay2 = 1000 * 128.284
+dDay2 :: TaskDistance
+dDay2 = fromKms [u| 128.284 km |]
 
-dsDay2 :: [Double]
+dsDay2 :: [TaskDistance]
 dsDay2 =
-    unkilo <$>
+    fromKms . MkQuantity <$>
         [ 0.000
         , 4.891
         , 50.789
@@ -637,12 +624,12 @@ pDay3 =
     , Cylinder (Radius $ MkQuantity 400) (toLL (negate 34.82197, 148.66543))
     ]
 
-dDay3 :: Double
-dDay3 = 1000 * 183.856
+dDay3 :: TaskDistance
+dDay3 = fromKms [u| 183.856 km |]
 
-dsDay3 :: [Double]
+dsDay3 :: [TaskDistance]
 dsDay3 =
-    unkilo <$>
+    fromKms . MkQuantity <$>
         [ 0.000
         , 24.854
         , 77.646
@@ -686,12 +673,12 @@ pDay4 =
     , Cylinder (Radius $ MkQuantity 400) (toLL (negate 32.46363, 148.989))
     ]
 
-dDay4 :: Double
-dDay4 = 1000 * 144.030
+dDay4 :: TaskDistance
+dDay4 = fromKms [u| 144.030 km |]
 
-dsDay4 :: [Double]
+dsDay4 :: [TaskDistance]
 dsDay4 =
-    unkilo <$>
+    fromKms . MkQuantity <$>
         [ 0.000
         , 14.873
         , 26.119
@@ -734,12 +721,12 @@ pDay5 =
     , Cylinder (Radius $ MkQuantity 400) (toLL (negate 32.0164, 149.43363))
     ]
 
-dDay5 :: Double
-dDay5 = 1000 * 217.389
+dDay5 :: TaskDistance
+dDay5 = fromKms [u| 217.389 km |]
 
-dsDay5 :: [Double]
+dsDay5 :: [TaskDistance]
 dsDay5 =
-    unkilo <$>
+    fromKms . MkQuantity <$>
         [ 0.000
         , 14.873
         , 87.489
@@ -782,12 +769,12 @@ pDay6 =
     , Cylinder (Radius $ MkQuantity 400) (toLL (negate 31.69323, 148.29623))
     ]
 
-dDay6 :: Double
-dDay6 = 1000 * 201.822
+dDay6 :: TaskDistance
+dDay6 = fromKms [u| 201.822 km |]
 
-dsDay6 :: [Double]
+dsDay6 :: [TaskDistance]
 dsDay6 =
-    unkilo <$>
+    fromKms . MkQuantity <$>
         [ 0.000
         , 14.873
         , 125.550
@@ -834,12 +821,12 @@ pDay7 =
     , Cylinder (Radius $ MkQuantity 400) (toLL (negate 32.93585, 148.74947))
     ]
 
-dDay7 :: Double
-dDay7 = 1000 * 174.525
+dDay7 :: TaskDistance
+dDay7 = fromKms [u| 174.525 km |]
 
-dsDay7 :: [Double]
+dsDay7 :: [TaskDistance]
 dsDay7 =
-    unkilo <$>
+    fromKms . MkQuantity <$>
         [ 0.000
         , 9.882
         , 52.259
@@ -887,12 +874,12 @@ pDay8 =
     , Cylinder (Radius $ MkQuantity 400) (toLL (negate 33.361, 147.9315))
     ]
 
-dDay8 :: Double
-dDay8 = 1000 * 158.848
+dDay8 :: TaskDistance
+dDay8 = fromKms [u| 158.848 km |]
 
-dsDay8 :: [Double]
+dsDay8 :: [TaskDistance]
 dsDay8 =
-    unkilo <$>
+    fromKms . MkQuantity <$>
         [ 0.000
         , 9.882
         , 52.323
