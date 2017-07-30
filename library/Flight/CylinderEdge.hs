@@ -24,7 +24,7 @@ module Flight.CylinderEdge
 import Data.Ratio ((%), numerator, denominator)
 import qualified Data.Number.FixedFunctions as F
 import Data.Fixed (mod')
-import Data.UnitsOfMeasure
+import Data.UnitsOfMeasure (u, zero, unQuantity, fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Geo

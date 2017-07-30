@@ -27,7 +27,7 @@ module Flight.Zone
     , radius
     ) where
 
-import Data.UnitsOfMeasure
+import Data.UnitsOfMeasure (u, convert, zero, fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Data.Number.RoundingFunctions (dpRound)
 import Data.Bifunctor.Flip (Flip(..))
