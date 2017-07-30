@@ -16,11 +16,11 @@ module Flight.Units
     ( Length
     , abs
     , toRational'
-    , map'
     ) where
 
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
+import Data.Bifunctor.Flip (Flip(..))
 
 type Length u = Quantity Rational u
 
@@ -37,5 +37,8 @@ type Length u = Quantity Rational u
 toRational' :: Real a => Quantity a u -> Quantity Rational u
 toRational' (MkQuantity x) = MkQuantity (toRational x)
 
-map' :: (a -> b) -> Quantity a u -> Quantity b u
-map' f (MkQuantity q) = MkQuantity $ f q
+instance Functor (Flip Quantity u) where
+    fmap = map'
+
+map' :: (a -> b) -> Flip Quantity u a -> Flip Quantity u b
+map' f (Flip (MkQuantity x)) = Flip $ MkQuantity $ f x

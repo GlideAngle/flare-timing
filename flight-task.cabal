@@ -36,6 +36,7 @@ library
     , fgl
     , uom-plugin
     , siggy-chardust
+    , bifunctors
   exposed-modules:
       Flight.Task
   other-modules:
@@ -63,6 +64,7 @@ test-suite hlint
     , fgl
     , uom-plugin
     , siggy-chardust
+    , bifunctors
   other-modules:
       Flight.CylinderEdge
       Flight.EdgeToEdge
@@ -92,6 +94,7 @@ test-suite task
     , tasty-smallcheck
     , smallcheck
     , siggy-chardust
+    , bifunctors
   other-modules:
       Flight.CylinderEdge
       Flight.EdgeToEdge

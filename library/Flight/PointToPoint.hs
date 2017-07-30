@@ -24,6 +24,7 @@ import qualified Data.Number.FixedFunctions as F
 import Data.UnitsOfMeasure (One, (+:), (-:), (*:), u, convert, abs', zero)
 import Data.UnitsOfMeasure.Internal (Quantity(..), mk, fromRational')
 import Data.Number.RoundingFunctions (dpRound)
+import Data.Bifunctor.Flip (Flip(..))
 
 import Flight.Geo
     ( Lat(..)
@@ -35,18 +36,17 @@ import Flight.Geo
     , degToRadLL
     )
 import Flight.Zone (Zone(..), Radius(..), center)
-import Flight.Units (map')
 
 newtype TaskDistance =
     TaskDistance (Quantity Rational [u| m |])
     deriving (Eq, Ord)
 
 instance Show TaskDistance where
-    show (TaskDistance d) = "d = " ++ show d'''
+    show (TaskDistance d) = "d = " ++ show dbl
         where
-            d' = convert d :: Quantity Rational [u| km |]
-            d'' = map' (dpRound 2) d'
-            d''' = fromRational' d'' :: Quantity Double [u| km |]
+            km = convert d :: Quantity Rational [u| km |]
+            Flip rounded = dpRound 2 <$> Flip km
+            dbl = fromRational' rounded :: Quantity Double [u| km |]
 
 -- | Sperical distance using haversines and floating point numbers.
 distanceHaversineF :: LatLng [u| deg |]
