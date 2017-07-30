@@ -58,7 +58,7 @@ instance {-# OVERLAPPING #-} Show [TaskDistance] where
 
 showDistances :: [TaskDistance] -> String
 showDistances xs =
-    (show $ f <$> xs) ++ " km"
+    show (f <$> xs) ++ " km"
     where
         f (TaskDistance d) = show dbl
             where

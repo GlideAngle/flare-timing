@@ -37,12 +37,6 @@ import Flight.Task
 import Flight.Geo (Epsilon(..), Lat(..), Lng(..), defEps)
 import Flight.Units ()
 
-qShowKm :: TaskDistance -> String
-qShowKm = show
-
-qShowKms :: [TaskDistance] -> String
-qShowKms = show
-
 (.>=.) :: (Show a, Show b) => a -> b -> String
 (.>=.) x y = show x ++ " >= " ++ show y
 
@@ -201,7 +195,7 @@ mkPartDayUnits :: TestName
                -> TestTree
 mkPartDayUnits title zs d = testGroup title
     [ HU.testCase
-        ("point-to-point distance ~= " ++ qShowKm d)
+        ("point-to-point distance ~= " ++ show d)
         $ (d' == d) @? d' .~=. d
     ]
     where
@@ -395,26 +389,26 @@ mkDayUnits title pDay dDay dsDay = testGroup title
     [ HU.testCase "zones are separated" $ FS.separatedZones pDay @?= True
 
     , HU.testCase
-        ("point-to-point distance >= " ++ qShowKm dDay)
+        ("point-to-point distance >= " ++ show dDay)
         $ (ppDay >= dDay) @? ppDay .>=. dDay
 
     , HU.testCase
-        ("edge-to-edge distance <= " ++ qShowKm dDay)
+        ("edge-to-edge distance <= " ++ show dDay)
         $ (eeDay <= dDay) @? eeDay .<=. dDay
 
     , HU.testCase
         ("point-to-point distances "
-        ++ qShowKms ppDayInits
+        ++ show ppDayInits
         ++ " >= "
-        ++ qShowKms dsDay
+        ++ show dsDay
         ) $
         (ppDayInits >= dsDay) @? ppDayInits .>=. dsDay
 
     , HU.testCase
         ("edge-to-edge distances "
-        ++ qShowKms eeDayInits
+        ++ show eeDayInits
         ++ " <= "
-        ++ qShowKms dsDay
+        ++ show dsDay
         ) $
             distLess eeDayInits dsDay @? eeDayInits .<=. dsDay
     ]
