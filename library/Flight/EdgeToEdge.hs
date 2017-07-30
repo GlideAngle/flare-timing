@@ -73,7 +73,7 @@ zeroDistance =
 
 distanceEdgeToEdge :: DistancePath
                    -> Tolerance
-                   -> [ Zone [u| deg |] ]
+                   -> [Zone]
                    -> EdgeDistance
 distanceEdgeToEdge _ _ [] = zeroDistance
 distanceEdgeToEdge _ _ [_] = zeroDistance
@@ -114,7 +114,7 @@ distanceEdgeToEdge dPath tolerance xs =
 
 distance :: DistancePath
          -> Tolerance
-         -> [Zone [u| deg |] ]
+         -> [Zone]
          -> (PathCost, [ LatLng [u| deg |] ])
 distance _ _ [] = (PathCost 0, [])
 distance _ _ [_] = (PathCost 0, [])
@@ -140,7 +140,7 @@ loop :: SampleParams
      -> Bearing
      -> Maybe PathCost
      -> Maybe [ZonePoint]
-     -> [ Zone [u| deg |] ]
+     -> [Zone]
      -> (Maybe PathCost, [ZonePoint])
 loop _ 0 _ d zs _ =
     case zs of
@@ -180,7 +180,7 @@ loop sp n br@(Bearing (MkQuantity b)) _ zs xs =
 buildGraph :: SampleParams
            -> Bearing
            -> Maybe [ZonePoint]
-           -> [ Zone [u| deg |] ]
+           -> [Zone]
            -> Gr ZonePoint PathCost
 buildGraph sp b zs xs =
     mkGraph flatNodes flatEdges

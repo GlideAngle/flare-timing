@@ -190,7 +190,7 @@ unkilo :: Num a => a -> a
 unkilo x = x * 1000
 
 mkPartDayUnits :: TestName
-               -> [Zone [u| deg |] ]
+               -> [Zone]
                -> TaskDistance
                -> TestTree
 mkPartDayUnits title zs d = testGroup title
@@ -381,7 +381,7 @@ day8PartUnits = testGroup "Task 8 [...]"
             d3 = fromKms [u| 42.13 km |]
 
 mkDayUnits :: TestName
-           -> [Zone [u| deg |] ]
+           -> [Zone]
            -> TaskDistance
            -> [TaskDistance]
            -> TestTree
@@ -482,7 +482,7 @@ NOTE: Point to point distances using Vincenty method.
 134.7 - 10 - 0.4
 => 124.30
 -}
-pDay1 :: [Zone [u| deg |] ]
+pDay1 :: [Zone]
 pDay1 =
     [ Cylinder (Radius $ MkQuantity 100) $ toLL (negate 33.36137, 147.93207)
     , Cylinder (Radius $ MkQuantity 10000) $ toLL (negate 33.36137, 147.93207)
@@ -556,7 +556,7 @@ NOTE: Point to point distances using Vincenty method.
 130.15 - 5 - 0.4
 => 124.75
 -}
-pDay2 :: [Zone [u| deg |] ]
+pDay2 :: [Zone]
 pDay2 =
     [ Cylinder (Radius $ MkQuantity 100) (toLL (negate 33.36137, 147.93207))
     , Cylinder (Radius $ MkQuantity 5000) (toLL (negate 33.36137, 147.93207))
@@ -609,7 +609,7 @@ NOTE: Point to point distances using Vincenty method.
 185.35 - 25 - 0.4
 => 159.95
 -}
-pDay3 :: [Zone [u| deg |] ]
+pDay3 :: [Zone]
 pDay3 =
     [ Cylinder (Radius $ MkQuantity 100) (toLL (negate 33.36137, 147.93207))
     , Cylinder (Radius $ MkQuantity 25000) (toLL (negate 33.36137, 147.93207))
@@ -659,7 +659,7 @@ NOTE: Point to point distances using Vincenty method.
 157.16 - 15 - 0.4
 => 141.76
 -}
-pDay4 :: [Zone [u| deg |] ]
+pDay4 :: [Zone]
 pDay4 =
     [ Cylinder (Radius $ MkQuantity 100) (toLL (negate 33.36137, 147.93207))
     , Cylinder (Radius $ MkQuantity 15000) (toLL (negate 33.36137, 147.93207))
@@ -707,7 +707,7 @@ NOTE: Point to point distances using Vincenty method.
 221.4 - 15 - 0.4
 => 206.0
 -}
-pDay5 :: [Zone [u| deg |] ]
+pDay5 :: [Zone]
 pDay5 =
     [ Cylinder (Radius $ MkQuantity 100) (toLL (negate 33.36137, 147.93207))
     , Cylinder (Radius $ MkQuantity 15000) (toLL (negate 33.36137, 147.93207))
@@ -755,7 +755,7 @@ NOTE: Point to point distances using Vincenty method.
 205.43 - 15 - 0.4
 => 190.03
 -}
-pDay6 :: [Zone [u| deg |] ]
+pDay6 :: [Zone]
 pDay6 =
     [ Cylinder (Radius $ MkQuantity 100) (toLL (negate 33.36137, 147.93207))
     , Cylinder (Radius $ MkQuantity 15000) (toLL (negate 33.36137, 147.93207))
@@ -806,7 +806,7 @@ NOTE: Point to point distances using Vincenty method.
 183.60 - 10 - 0.4
 => 173.2
 -}
-pDay7 :: [Zone [u| deg |] ]
+pDay7 :: [Zone]
 pDay7 =
     [ Cylinder (Radius $ MkQuantity 100) (toLL (negate 33.36137, 147.93207))
     , Cylinder (Radius $ MkQuantity 10000) (toLL (negate 33.36137, 147.93207))
@@ -859,7 +859,7 @@ NOTE: Point to point distances using Vincenty method.
 169.92 - 10 - 0.4
 => 159.52
 -}
-pDay8 :: [Zone [u| deg |] ]
+pDay8 :: [Zone]
 pDay8 =
     [ Cylinder (Radius $ MkQuantity 100) (toLL (negate 33.36137, 147.93207))
     , Cylinder (Radius $ MkQuantity 10000) (toLL (negate 33.36137, 147.93207))

@@ -7,7 +7,6 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE StandaloneDeriving #-}
 
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
@@ -68,29 +67,27 @@ instance Show Bearing where
 -- | A control zone of the task. Taken together these make up the course to fly
 -- with start enter and exit cylinders, turnpoint cylinders, goal lines and
 -- cylinders.
-data Zone u
-    = Point (LatLng u)
+data Zone
+    = Point (LatLng [u| deg |])
     -- ^ Used to mark the exact turnpoints in the optimized task distance.
-    | Vector Bearing (LatLng u)
+    | Vector Bearing (LatLng [u| deg |])
     -- ^ Used only in open distance tasks these mark the start and direction of
     -- the open distance.
-    | Cylinder Radius (LatLng u)
+    | Cylinder Radius (LatLng [u| deg |])
     -- ^ The turnpoint cylinder.
-    | Conical Incline Radius (LatLng u)
+    | Conical Incline Radius (LatLng [u| deg |])
     -- ^ Only used in paragliding, this is the conical end of speed section
     -- used to discourage too low an end to final glides.
-    | Line Radius (LatLng u)
+    | Line Radius (LatLng [u| deg |])
     -- ^ A goal line perpendicular to the course line.
-    | SemiCircle Radius (LatLng u)
+    | SemiCircle Radius (LatLng [u| deg |])
     -- ^ This control zone is only ever used as a goal for paragliding. It is
     -- a goal line perpendicular to the course line followed by half
     -- a cylinder.
-    deriving (Eq)
-
-deriving instance (KnownUnit (Unpack u)) => Show (Zone u)
+    deriving (Eq, Show)
 
 -- | The effective center point of a zone.
-center :: Zone u -> LatLng u
+center :: Zone -> LatLng [u| deg |]
 center (Point x) = x
 center (Vector _ x) = x
 center (Cylinder _ x) = x
@@ -99,7 +96,7 @@ center (Line _ x) = x
 center (SemiCircle _ x) = x
 
 -- | The effective radius of a zone.
-radius :: Zone u -> Radius
+radius :: Zone -> Radius
 radius (Point _) = Radius zero
 radius (Vector _ _) = Radius zero
 radius (Cylinder r _) = r
@@ -117,13 +114,11 @@ data StartGates
         , intervals :: [Interval]
         } deriving Show
 
-data Task u
+data Task
     = Task
-        { zones :: [Zone u]
+        { zones :: [Zone]
         , startZone :: Int
         , endZone :: Int
         , startGates :: StartGates
         , deadline :: Maybe Deadline
         }
-
-deriving instance (KnownUnit (Unpack u)) => Show (Task u)

@@ -142,7 +142,7 @@ distanceHaversine (Epsilon eps) xDegreeLL yDegreeLL =
 -- The speed section  usually goes from start exit cylinder to goal cylinder
 -- or to goal line. The optimal way to fly this in a zig-zagging course will
 -- avoid zone centers for a shorter flown distance.
-distancePointToPoint :: [ Zone [u| deg |] ] -> TaskDistance
+distancePointToPoint :: [Zone] -> TaskDistance
 
 distancePointToPoint [] = TaskDistance [u| 0 m |]
 
@@ -164,7 +164,7 @@ distancePointToPoint xs = distance xs
 sum :: [Quantity Rational [u| m |]] -> Quantity Rational [u| m |]
 sum = foldr (+:) zero
 
-distance :: [Zone [u| deg |] ] -> TaskDistance
+distance :: [Zone] -> TaskDistance
 distance xs =
     TaskDistance $ sum $ zipWith f ys (tail ys)
     where

@@ -9,7 +9,6 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE QuasiQuotes #-}
-{-# LANGUAGE StandaloneDeriving #-}
 
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
@@ -75,7 +74,7 @@ newtype Tolerance = Tolerance { unTolerance :: Rational } deriving (Eq, Ord, Sho
 
 data ZonePoint
     = ZonePoint
-        { sourceZone :: Zone [u| deg |]
+        { sourceZone :: Zone
         -- ^ This is the zone that generated the point.
         , point :: LatLng [u| deg |]
         -- ^ A point on the edge of this zone.
@@ -98,7 +97,7 @@ data SampleParams
 sample :: SampleParams
        -> Bearing
        -> Maybe ZonePoint
-       -> Zone [u| deg |]
+       -> Zone
        -> [ZonePoint]
 sample _ _ _ px@(Point x) = [ZonePoint px x (Bearing zero) (Radius (MkQuantity 0))]
 sample _ _ _ px@(Vector _ x) = [ZonePoint px x (Bearing zero) (Radius (MkQuantity 0))]
@@ -167,7 +166,7 @@ circum
 circumSample :: SampleParams
              -> Bearing
              -> Maybe ZonePoint
-             -> Zone [u| deg |]
+             -> Zone
              -> ([ZonePoint], [TrueCourse])
 circumSample SampleParams{..} (Bearing (MkQuantity bearing)) zp zone =
     unzip ys

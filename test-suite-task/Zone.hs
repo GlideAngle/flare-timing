@@ -54,27 +54,27 @@ toLL (lat, lng) =
         lat' = MkQuantity lat
         lng' = MkQuantity lng
 
-point :: (Rational, Rational) -> Zone [u| deg |]
+point :: (Rational, Rational) -> Zone
 point x =
     Point $ toLL x
 
-vector :: (Rational, Rational) -> Zone [u| deg |]
+vector :: (Rational, Rational) -> Zone
 vector x =
     Vector (Bearing zero) (toLL x) 
 
-cylinder :: (Rational, Rational) -> Zone [u| deg |]
+cylinder :: (Rational, Rational) -> Zone
 cylinder x =
     Cylinder (Radius earthRadius) (toLL x)
 
-conical :: (Rational, Rational) -> Zone [u| deg |]
+conical :: (Rational, Rational) -> Zone
 conical x =
     Conical (Incline $ MkQuantity 1) (Radius earthRadius) (toLL x)
 
-line :: (Rational, Rational) -> Zone [u| deg |]
+line :: (Rational, Rational) -> Zone
 line x =
     Line (Radius earthRadius) (toLL x) 
 
-semicircle :: (Rational, Rational) -> Zone [u| deg |]
+semicircle :: (Rational, Rational) -> Zone
 semicircle x =
     SemiCircle (Radius earthRadius) (toLL x)
 
@@ -131,7 +131,7 @@ emptyDistance = testGroup "Point-to-point distance"
         FS.distancePointToPoint [] @?= (TaskDistance $ MkQuantity 0)
     ]
 
-toDistance :: String -> [[ Zone [u| deg |] ]] -> TestTree
+toDistance :: String -> [[Zone]] -> TestTree
 toDistance title xs =
     testGroup title (f <$> xs)
     where
@@ -166,7 +166,7 @@ lineDistance = toDistance "Distance over line zones" ((fmap . fmap) line ptsDist
 semicircleDistance :: TestTree
 semicircleDistance = toDistance "Distance over semicircle zones" ((fmap . fmap) semicircle ptsDistance)
 
-coincident :: String -> [[ Zone [u| deg |] ]] -> TestTree
+coincident :: String -> [[Zone]] -> TestTree
 coincident title xs =
     testGroup title (f <$> xs)
     where
@@ -204,7 +204,7 @@ lineCoincident = coincident "Line zones" ((fmap . fmap) line ptsCoincident)
 semicircleCoincident :: TestTree
 semicircleCoincident = coincident "Semicircle zones" ((fmap . fmap) semicircle ptsCoincident)
 
-touching :: String -> [[ Zone [u| deg |] ]] -> TestTree
+touching :: String -> [[Zone]] -> TestTree
 touching title xs =
     testGroup title (f <$> xs)
     where
@@ -237,7 +237,7 @@ lineTouching = touching "Line zones" ((fmap . fmap) line radiiTouching)
 semicircleTouching :: TestTree
 semicircleTouching = touching "Semicircle zones" ((fmap . fmap) semicircle radiiTouching)
 
-disjoint :: String -> [[ Zone [u| deg |] ]] -> TestTree
+disjoint :: String -> [[Zone]] -> TestTree
 disjoint title xs =
     testGroup title (f <$> xs)
     where
@@ -285,7 +285,7 @@ lineDisjoint = disjoint "Line zones" ((fmap . fmap) line radiiDisjoint)
 semicircleDisjoint :: TestTree
 semicircleDisjoint = disjoint "Semicircle zones" ((fmap . fmap) semicircle radiiDisjoint)
 
-correctPoint :: [ Zone [u| deg |] ] -> TaskDistance -> Bool
+correctPoint :: [Zone] -> TaskDistance -> Bool
 correctPoint [] (TaskDistance (MkQuantity d)) = d == 0
 correctPoint [_] (TaskDistance (MkQuantity d)) = d == 0
 correctPoint xs (TaskDistance (MkQuantity d))
@@ -294,7 +294,7 @@ correctPoint xs (TaskDistance (MkQuantity d))
     where
         ys = center <$> xs
 
-correctCenter :: [ Zone [u| deg |] ] -> TaskDistance -> Bool
+correctCenter :: [Zone] -> TaskDistance -> Bool
 correctCenter [] (TaskDistance (MkQuantity d)) = d == 0
 correctCenter [_] (TaskDistance (MkQuantity d)) = d == 0
 correctCenter xs (TaskDistance (MkQuantity d))
