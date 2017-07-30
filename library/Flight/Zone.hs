@@ -47,17 +47,23 @@ instance Show Radius where
             MkQuantity dbl = fromRational' rounded :: Quantity Double [u| m |]
 
 -- | The incline component of a conical zone.
-newtype Incline = Incline Rational deriving (Eq, Ord, Show)
+newtype Incline = Incline (Quantity Rational [u| rad |]) deriving (Eq, Ord)
 
 -- | The bearing component of a vector zone.
 newtype Bearing = Bearing (Quantity Rational [u| rad |]) deriving (Eq, Ord)
 
+showRadian :: Quantity Rational [u| rad |] -> String
+showRadian b = show dbl
+    where
+        deg = convert b :: Quantity Rational [u| deg |]
+        Flip rounded = dpRound 3 <$> Flip deg
+        MkQuantity dbl = fromRational' rounded :: Quantity Double [u| deg |]
+
+instance Show Incline where
+    show (Incline angle) = "i = " ++ showRadian angle
+
 instance Show Bearing where
-    show (Bearing b) = "r = " ++ show dbl
-        where
-            deg = convert b :: Quantity Rational [u| deg |]
-            Flip rounded = dpRound 3 <$> Flip deg
-            MkQuantity dbl = fromRational' rounded :: Quantity Double [u| deg |]
+    show (Bearing b) = "r = " ++ showRadian b 
 
 -- | A control zone of the task. Taken together these make up the course to fly
 -- with start enter and exit cylinders, turnpoint cylinders, goal lines and

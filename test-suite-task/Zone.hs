@@ -68,7 +68,7 @@ cylinder x =
 
 conical :: (Rational, Rational) -> Zone [u| deg |]
 conical x =
-    Conical (Incline 1) (Radius earthRadius) (toLL x)
+    Conical (Incline $ MkQuantity 1) (Radius earthRadius) (toLL x)
 
 line :: (Rational, Rational) -> Zone [u| deg |]
 line x =

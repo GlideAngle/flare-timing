@@ -45,23 +45,23 @@ instance Monad m => SC.Serial m ZoneTest where
 
         \/ cons3 (\lat lng (SC.Positive r) ->
             Cylinder
-                (Radius (MkQuantity r))
+                (Radius $ MkQuantity r)
                 (LatLng (Lat $ MkQuantity lat, Lng $ MkQuantity lng)))
 
         \/ cons4 (\lat lng (SC.Positive r) i ->
             Conical
-                (Incline i)
-                (Radius (MkQuantity r))
+                (Incline $ MkQuantity i)
+                (Radius $ MkQuantity r)
                 (LatLng (Lat $ MkQuantity lat, Lng $ MkQuantity lng)))
 
         \/ cons3 (\lat lng (SC.Positive r) ->
             Line
-                (Radius (MkQuantity r))
+                (Radius $ MkQuantity r)
                 (LatLng (Lat $ MkQuantity lat, Lng $ MkQuantity lng)))
 
         \/ cons3 (\lat lng (SC.Positive r) ->
             SemiCircle
-                (Radius (MkQuantity r))
+                (Radius $ MkQuantity r)
                 (LatLng (Lat $ MkQuantity lat, Lng $ MkQuantity lng)))
 
 instance Monad m => SC.Serial m ZonesTest where
@@ -82,17 +82,17 @@ instance QC.Arbitrary ZoneTest where
                     return $ Vector (Bearing $ MkQuantity b) ll
                 , do
                     (QC.Positive r) <- arbitrary
-                    return $ Cylinder (Radius (MkQuantity r)) ll
+                    return $ Cylinder (Radius $ MkQuantity r) ll
                 , do
                     (QC.Positive r) <- arbitrary
-                    i <- arbitrary
-                    return $ Conical (Incline i) (Radius (MkQuantity r)) ll
+                    (QC.Positive i) <- arbitrary
+                    return $ Conical (Incline $ MkQuantity i) (Radius $ MkQuantity r) ll
                 , do
                     (QC.Positive r) <- arbitrary
-                    return $ Line (Radius (MkQuantity r)) ll
+                    return $ Line (Radius $ MkQuantity r) ll
                 , do
                     (QC.Positive r) <- arbitrary
-                    return $ SemiCircle (Radius (MkQuantity r)) ll
+                    return $ SemiCircle (Radius $ MkQuantity r) ll
                 ]
 
 instance QC.Arbitrary ZonesTest where
