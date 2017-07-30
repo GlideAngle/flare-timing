@@ -40,7 +40,7 @@ instance Monad m => SC.Serial m ZoneTest where
 
         \/ cons3 (\lat lng b ->
             Vector
-                (Bearing b)
+                (Bearing $ MkQuantity b)
                 (LatLng (Lat $ MkQuantity lat, Lng $ MkQuantity lng)))
 
         \/ cons3 (\lat lng (SC.Positive r) ->
@@ -79,7 +79,7 @@ instance QC.Arbitrary ZoneTest where
                 [ return $ Point ll
                 , do
                     (QC.Positive b) <- arbitrary
-                    return $ Vector (Bearing b) ll
+                    return $ Vector (Bearing $ MkQuantity b) ll
                 , do
                     (QC.Positive r) <- arbitrary
                     return $ Cylinder (Radius (MkQuantity r)) ll

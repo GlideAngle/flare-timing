@@ -38,8 +38,7 @@ import Flight.Geo
     )
 import Flight.Zone (Zone(..), Radius(..), center)
 
-fromKms :: Quantity Rational [u| km |]
-        -> TaskDistance
+fromKms :: Quantity Rational [u| km |] -> TaskDistance
 fromKms q = TaskDistance (convert q)
 
 newtype TaskDistance =

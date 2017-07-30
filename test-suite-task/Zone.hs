@@ -20,7 +20,7 @@ module Zone
 import Data.Ratio ((%))
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit as HU ((@?=), testCase)
-import Data.UnitsOfMeasure (u)
+import Data.UnitsOfMeasure (u, zero)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import qualified Flight.Task as FS
@@ -60,7 +60,7 @@ point x =
 
 vector :: (Rational, Rational) -> Zone [u| deg |]
 vector x =
-    Vector (Bearing 0) (toLL x) 
+    Vector (Bearing zero) (toLL x) 
 
 cylinder :: (Rational, Rational) -> Zone [u| deg |]
 cylinder x =

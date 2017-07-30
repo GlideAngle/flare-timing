@@ -133,7 +133,7 @@ distance dPath tolerance xs
             centers' = center <$> xs
             sp = SampleParams { spSamples = Samples 5, spTolerance = tolerance }
             (Epsilon eps) = defEps
-            (dist, zs) = loop sp 6 (Bearing $ F.pi eps) Nothing Nothing xs
+            (dist, zs) = loop sp 6 (Bearing . MkQuantity $ F.pi eps) Nothing Nothing xs
 
 loop :: SampleParams
      -> Int
@@ -147,8 +147,8 @@ loop _ 0 _ d zs _ =
       Nothing -> (Nothing, [])
       Just zs' -> (d, zs')
 
-loop sp n br@(Bearing b) _ zs xs =
-    loop sp (n - 1) (Bearing $ b * (3 % 4)) dist (Just zs') xs
+loop sp n br@(Bearing (MkQuantity b)) _ zs xs =
+    loop sp (n - 1) (Bearing . MkQuantity $ b * (3 % 4)) dist (Just zs') xs
     where
         gr :: Gr ZonePoint PathCost
         gr = buildGraph sp br zs xs

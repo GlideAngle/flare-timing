@@ -9,6 +9,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE StandaloneDeriving #-}
 
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
@@ -21,7 +22,7 @@ module Flight.CylinderEdge
     , sample
     ) where
 
-import Data.Ratio ((%))
+import Data.Ratio ((%), numerator, denominator)
 import qualified Data.Number.FixedFunctions as F
 import Data.Fixed (mod')
 import Data.UnitsOfMeasure
@@ -40,7 +41,35 @@ import Flight.Geo
 import Flight.Zone (Zone(..), Radius(..), Bearing(..), center, radius)
 import Flight.PointToPoint (TaskDistance(..), distancePointToPoint)
 
-newtype TrueCourse = TrueCourse Rational deriving (Eq, Ord, Show)
+newtype TrueCourse =
+    TrueCourse (Quantity Rational [u| rad |])
+    deriving (Eq, Ord, Show)
+
+instance Num TrueCourse where
+    (+) (TrueCourse (MkQuantity a)) (TrueCourse (MkQuantity b)) =
+        TrueCourse (MkQuantity $ a + b)
+
+    (*) (TrueCourse (MkQuantity a)) (TrueCourse (MkQuantity b)) =
+        TrueCourse (MkQuantity $ a * b)
+
+    negate (TrueCourse (MkQuantity tc)) =
+        TrueCourse (MkQuantity $ negate tc)
+
+    abs (TrueCourse (MkQuantity tc)) =
+        TrueCourse (MkQuantity $ abs tc)
+
+    signum (TrueCourse (MkQuantity tc)) =
+        TrueCourse (MkQuantity $ signum tc)
+
+    fromInteger x =
+        TrueCourse (MkQuantity $ fromInteger x)
+
+instance Fractional TrueCourse where
+    fromRational tc = TrueCourse (MkQuantity tc)
+
+    recip (TrueCourse (MkQuantity x)) =
+        TrueCourse (MkQuantity (denominator x % numerator x))
+
 newtype Samples = Samples { unSamples :: Integer } deriving (Eq, Ord, Show)
 newtype Tolerance = Tolerance { unTolerance :: Rational } deriving (Eq, Ord, Show)
 
@@ -71,8 +100,8 @@ sample :: SampleParams
        -> Maybe ZonePoint
        -> Zone [u| deg |]
        -> [ZonePoint]
-sample _ _ _ px@(Point x) = [ZonePoint px x (Bearing 0) (Radius (MkQuantity 0))]
-sample _ _ _ px@(Vector _ x) = [ZonePoint px x (Bearing 0) (Radius (MkQuantity 0))]
+sample _ _ _ px@(Point x) = [ZonePoint px x (Bearing zero) (Radius (MkQuantity 0))]
+sample _ _ _ px@(Vector _ x) = [ZonePoint px x (Bearing zero) (Radius (MkQuantity 0))]
 sample sp b zs z@Cylinder{} = fst $ circumSample sp b zs z
 sample sp b zs z@Conical{} = fst $ circumSample sp b zs z
 sample sp b zs z@Line{} = fst $ circumSample sp b zs z
@@ -103,8 +132,7 @@ circum
         lng :: Double
         lng = fromRational lngRadian'
 
-        tc :: Double
-        tc = fromRational rtc
+        MkQuantity tc = fromRational' rtc :: Quantity Double [u| rad |]
 
         radius' :: Double
         radius' = fromRational rRadius
@@ -140,8 +168,8 @@ circumSample :: SampleParams
              -> Bearing
              -> Maybe ZonePoint
              -> Zone [u| deg |]
-             -> ([ZonePoint], [Double])
-circumSample SampleParams{..} (Bearing bearing) zp zone =
+             -> ([ZonePoint], [TrueCourse])
+circumSample SampleParams{..} (Bearing (MkQuantity bearing)) zp zone =
     unzip ys
     where
         (Epsilon eps) = defEps
@@ -158,7 +186,7 @@ circumSample SampleParams{..} (Bearing bearing) zp zone =
 
         xs :: [TrueCourse]
         xs =
-            TrueCourse <$>
+            TrueCourse . MkQuantity <$>
             case zp of
                 Nothing ->
                     [ (2 * n % nNum) * pi' | n <- [0 .. nNum]]
@@ -170,7 +198,7 @@ circumSample SampleParams{..} (Bearing bearing) zp zone =
                     ++
                     [ b + (n % half) * halfRange | n <- [1 .. half]]
                     where
-                        (Bearing b) = radial
+                        (Bearing (MkQuantity b)) = radial
 
         r@(Radius (MkQuantity limitRadius)) = radius zone'
         ptCenter = center zone'
@@ -182,7 +210,7 @@ circumSample SampleParams{..} (Bearing bearing) zp zone =
                  -> Radius
                  -> (TrueCourse -> LatLng [u| deg |])
                  -> TrueCourse
-                 -> (ZonePoint, Double)
+                 -> (ZonePoint, TrueCourse)
         getClose trys yr@(Radius (MkQuantity offset)) f x@(TrueCourse tc)
             | trys <= 0 = (zp', dist)
             | unTolerance spTolerance <= 0 = (zp', dist)

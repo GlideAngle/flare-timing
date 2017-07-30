@@ -50,7 +50,14 @@ instance Show Radius where
 newtype Incline = Incline Rational deriving (Eq, Ord, Show)
 
 -- | The bearing component of a vector zone.
-newtype Bearing = Bearing Rational deriving (Eq, Ord, Show)
+newtype Bearing = Bearing (Quantity Rational [u| rad |]) deriving (Eq, Ord)
+
+instance Show Bearing where
+    show (Bearing b) = "r = " ++ show dbl
+        where
+            deg = convert b :: Quantity Rational [u| deg |]
+            Flip rounded = dpRound 3 <$> Flip deg
+            MkQuantity dbl = fromRational' rounded :: Quantity Double [u| deg |]
 
 -- | A control zone of the task. Taken together these make up the course to fly
 -- with start enter and exit cylinders, turnpoint cylinders, goal lines and

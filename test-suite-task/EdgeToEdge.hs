@@ -81,7 +81,7 @@ ll =
         lng = Lng oneRadDeg
 
 br :: Bearing
-br = let (Epsilon e) = defEps in (Bearing $ F.pi e)
+br = let (Epsilon e) = defEps in (Bearing . MkQuantity $ F.pi e)
 
 circumSampleUnits :: TestTree
 circumSampleUnits = testGroup "Points just within the zone"
