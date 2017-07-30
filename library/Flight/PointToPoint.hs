@@ -66,15 +66,15 @@ showDistances xs =
                 (MkQuantity dbl) = fromRational' rounded :: Quantity Double [u| km |]
 
 -- | Sperical distance using haversines and floating point numbers.
-distanceHaversineF :: LatLng [u| deg |]
-                   -> LatLng [u| deg |]
+distanceHaversineF :: LatLng [u| rad |]
+                   -> LatLng [u| rad |]
                    -> TaskDistance
 distanceHaversineF xDegreeLL yDegreeLL =
     TaskDistance $ radDist *: earthRadius
     where
         -- NOTE: Use xLatF etc to avoid an hlint duplication warning.
-        LatLng (Lat xLatF, Lng xLngF) = degToRadLL defEps xDegreeLL
-        LatLng (Lat yLatF, Lng yLngF) = degToRadLL defEps yDegreeLL
+        LatLng (Lat xLatF, Lng xLngF) = xDegreeLL
+        LatLng (Lat yLatF, Lng yLngF) = yDegreeLL
         (dLatF, dLngF) = (yLatF -: xLatF, yLngF -: xLngF)
 
         haversine :: Quantity Rational [u| rad |]
@@ -102,14 +102,14 @@ distanceHaversineF xDegreeLL yDegreeLL =
 
 -- | Sperical distance using haversines and rational numbers.
 distanceHaversine :: Epsilon
-                  -> LatLng [u| deg |]
-                  -> LatLng [u| deg |]
+                  -> LatLng [u| rad |]
+                  -> LatLng [u| rad |]
                   -> TaskDistance
 distanceHaversine (Epsilon eps) xDegreeLL yDegreeLL =
     TaskDistance $ radDist *: earthRadius
     where
-        LatLng (Lat xLat, Lng xLng) = degToRadLL defEps xDegreeLL
-        LatLng (Lat yLat, Lng yLng) = degToRadLL defEps yDegreeLL
+        LatLng (Lat xLat, Lng xLng) = xDegreeLL
+        LatLng (Lat yLat, Lng yLng) = yDegreeLL
         (dLat, dLng) = (yLat -: xLat, yLng -: xLng)
 
         haversine :: Quantity Rational [u| rad |]
@@ -171,8 +171,8 @@ distance xs =
         ys = center <$> xs
         unwrap (TaskDistance x) = x
 
-        f :: LatLng [u| deg |]
-          -> LatLng [u| deg |]
+        f :: LatLng [u| rad |]
+          -> LatLng [u| rad |]
           -> Quantity Rational [u| m |]
         f = (unwrap .) . distanceHaversine defEps
 

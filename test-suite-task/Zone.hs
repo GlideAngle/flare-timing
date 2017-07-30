@@ -47,9 +47,9 @@ import TestNewtypes
 
 type Pt = (Rational, Rational)
 
-toLL :: (Rational, Rational) -> LatLng [u| deg |]
+toLL :: (Rational, Rational) -> LatLng [u| rad |]
 toLL (lat, lng) =
-    radToDegLL defEps (LatLng (Lat lat', Lng lng'))
+    LatLng (Lat lat', Lng lng')
     where
         lat' = MkQuantity lat
         lng' = MkQuantity lng

@@ -34,8 +34,6 @@ import Flight.Geo
     , Epsilon(..)
     , earthRadius
     , defEps
-    , degToRad
-    , radToDeg
     )
 import Flight.Zone (Zone(..), Radius(..), Bearing(..), center, radius)
 import Flight.PointToPoint (TaskDistance(..), distancePointToPoint)
@@ -76,7 +74,7 @@ data ZonePoint
     = ZonePoint
         { sourceZone :: Zone
         -- ^ This is the zone that generated the point.
-        , point :: LatLng [u| deg |]
+        , point :: LatLng [u| rad |]
         -- ^ A point on the edge of this zone.
         , radial :: Bearing
         -- ^ A point on the edge of this zone with this bearing from
@@ -110,21 +108,18 @@ sample sp b zs z@SemiCircle{} = fst $ circumSample sp b zs z
 -- <http://www.edwilliams.org/avform.htm#LL Aviation Formulary>
 -- a point on a cylinder wall is found by going out to the distance of the
 -- radius on the given radial true course 'rtc'.
-circum :: LatLng [u| deg |]
+circum :: LatLng [u| rad |]
        -> Epsilon
        -> Radius
        -> TrueCourse
-       -> LatLng [u| deg |]
+       -> LatLng [u| rad |]
 circum
-    (LatLng (Lat latDegree, Lng lngDegree))
+    (LatLng (Lat (MkQuantity latRadian'), Lng (MkQuantity lngRadian')))
     _
     (Radius (MkQuantity rRadius))
     (TrueCourse rtc) =
     LatLng (Lat lat'', Lng lng'')
     where
-        (MkQuantity latRadian') = degToRad defEps latDegree
-        (MkQuantity lngRadian') = degToRad defEps lngDegree
-
         lat :: Double
         lat = fromRational latRadian'
 
@@ -151,11 +146,11 @@ circum
 
         d = radius' / bigR
 
-        lat'' :: Quantity Rational [u| deg |]
-        lat'' = radToDeg defEps $ MkQuantity $ toRational lat'
+        lat'' :: Quantity Rational [u| rad |]
+        lat'' = MkQuantity $ toRational lat'
 
-        lng'' :: Quantity Rational [u| deg |]
-        lng'' = radToDeg defEps $ MkQuantity $ toRational lng'
+        lng'' :: Quantity Rational [u| rad |]
+        lng'' = MkQuantity $ toRational lng'
 
 -- | Generates a pair of lists, the lat/lng of each generated point
 -- and its distance from the center. It will generate 'samples' number of such
@@ -207,7 +202,7 @@ circumSample SampleParams{..} (Bearing (MkQuantity bearing)) zp zone =
 
         getClose :: Int
                  -> Radius
-                 -> (TrueCourse -> LatLng [u| deg |])
+                 -> (TrueCourse -> LatLng [u| rad |])
                  -> TrueCourse
                  -> (ZonePoint, TrueCourse)
         getClose trys yr@(Radius (MkQuantity offset)) f x@(TrueCourse tc)

@@ -72,13 +72,13 @@ sampleParams = SampleParams { spSamples = Samples 100
                             , spTolerance = mm30
                             }
 
-ll :: LatLng [u| deg |]
+ll :: LatLng [u| rad |]
 ll =
     LatLng (lat, lng)
     where
-        oneRadDeg = convert [u| 1 rad |] :: Quantity Rational [u| deg |]
-        lat = Lat oneRadDeg
-        lng = Lng oneRadDeg
+        oneRadian = [u| 1 rad |]
+        lat = Lat oneRadian
+        lng = Lng oneRadian
 
 br :: Bearing
 br = let (Epsilon e) = defEps in (Bearing . MkQuantity $ F.pi e)
@@ -149,12 +149,15 @@ circumSampleUnits = testGroup "Points just within the zone"
         ]
     ]
 
-toLL :: (Double, Double) -> LatLng [u| deg |]
+-- | The input pair is in degrees while the output is in radians.
+toLL :: (Double, Double) -> LatLng [u| rad |]
 toLL (lat, lng) =
-    LatLng (lat', lng')
+    LatLng (Lat lat'', Lng lng'')
         where
-            lat' = Lat $ MkQuantity $ toRational lat
-            lng' = Lng $ MkQuantity $ toRational lng
+            lat' = (MkQuantity $ toRational lat) :: Quantity Rational [u| deg |]
+            lng' = (MkQuantity $ toRational lng) :: Quantity Rational [u| deg |]
+            lat'' = convert lat' :: Quantity Rational [u| rad |]
+            lng'' = convert lng' :: Quantity Rational [u| rad |]
 
 forbesUnits :: TestTree
 forbesUnits = testGroup "Forbes 2011/2012 distances"

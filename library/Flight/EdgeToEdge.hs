@@ -57,9 +57,9 @@ data EdgeDistance =
         , edges :: TaskDistance
         -- ^ The distance from the edge of the first zone to the edge of
         -- the last zone.
-        , centerLine :: [ LatLng [u| deg |] ]
+        , centerLine :: [ LatLng [u| rad |] ]
         -- ^ The points of the 'centers' distance.
-        , edgeLine :: [ LatLng [u| deg |] ]
+        , edgeLine :: [ LatLng [u| rad |] ]
         -- ^ The points of the 'edges' distance.
         }
 
@@ -115,7 +115,7 @@ distanceEdgeToEdge dPath tolerance xs =
 distance :: DistancePath
          -> Tolerance
          -> [Zone]
-         -> (PathCost, [ LatLng [u| deg |] ])
+         -> (PathCost, [ LatLng [u| rad |] ])
 distance _ _ [] = (PathCost 0, [])
 distance _ _ [_] = (PathCost 0, [])
 distance dPath tolerance xs

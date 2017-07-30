@@ -68,26 +68,26 @@ instance Show Bearing where
 -- with start enter and exit cylinders, turnpoint cylinders, goal lines and
 -- cylinders.
 data Zone
-    = Point (LatLng [u| deg |])
+    = Point (LatLng [u| rad |])
     -- ^ Used to mark the exact turnpoints in the optimized task distance.
-    | Vector Bearing (LatLng [u| deg |])
+    | Vector Bearing (LatLng [u| rad |])
     -- ^ Used only in open distance tasks these mark the start and direction of
     -- the open distance.
-    | Cylinder Radius (LatLng [u| deg |])
+    | Cylinder Radius (LatLng [u| rad |])
     -- ^ The turnpoint cylinder.
-    | Conical Incline Radius (LatLng [u| deg |])
+    | Conical Incline Radius (LatLng [u| rad |])
     -- ^ Only used in paragliding, this is the conical end of speed section
     -- used to discourage too low an end to final glides.
-    | Line Radius (LatLng [u| deg |])
+    | Line Radius (LatLng [u| rad |])
     -- ^ A goal line perpendicular to the course line.
-    | SemiCircle Radius (LatLng [u| deg |])
+    | SemiCircle Radius (LatLng [u| rad |])
     -- ^ This control zone is only ever used as a goal for paragliding. It is
     -- a goal line perpendicular to the course line followed by half
     -- a cylinder.
     deriving (Eq, Show)
 
 -- | The effective center point of a zone.
-center :: Zone -> LatLng [u| deg |]
+center :: Zone -> LatLng [u| rad |]
 center (Point x) = x
 center (Vector _ x) = x
 center (Cylinder _ x) = x
