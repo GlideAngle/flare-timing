@@ -22,7 +22,6 @@ module Flight.Geo
     , radToDeg
     , radToDegLL
     , earthRadius
-    , toRational'
     ) where
 
 import Data.Ratio ((%))
@@ -55,10 +54,6 @@ instance (KnownUnit (Unpack u)) => Show (LatLng u) where
         "(" ++ show lat ++ ", " ++ show lng ++ ")"
 
 newtype Epsilon = Epsilon Rational deriving (Eq, Ord, Show)
-
--- | Convert any 'Real' quantity into a 'Rational' type ('toRational').
-toRational' :: Real a => Quantity a u -> Quantity Rational u
-toRational' (MkQuantity x) = MkQuantity (toRational x)
 
 -- | Conversion of degrees to radians.
 degToRad :: Epsilon

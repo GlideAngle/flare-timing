@@ -15,6 +15,8 @@
 module Flight.Units
     ( Length
     , abs
+    , toRational'
+    , map'
     ) where
 
 import Data.UnitsOfMeasure (u)
@@ -30,3 +32,10 @@ type Length u = Quantity Rational u
 
 [u| rad |]
 [u| deg = (5030569068109113 % 288230376151711744) rad |]
+
+-- | Convert any 'Real' quantity into a 'Rational' type ('toRational').
+toRational' :: Real a => Quantity a u -> Quantity Rational u
+toRational' (MkQuantity x) = MkQuantity (toRational x)
+
+map' :: (a -> b) -> Quantity a u -> Quantity b u
+map' f (MkQuantity q) = MkQuantity $ f q
