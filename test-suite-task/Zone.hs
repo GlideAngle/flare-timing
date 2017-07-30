@@ -39,8 +39,6 @@ import Flight.Task
     , earthRadius
     , center
     , separatedZones
-    , radToDegLL
-    , defEps
     )
 
 import TestNewtypes

@@ -27,12 +27,12 @@ module Flight.Zone
     , radius
     ) where
 
-import Data.UnitsOfMeasure (u, convert, zero, fromRational')
+import Data.UnitsOfMeasure (u, zero, fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Data.Number.RoundingFunctions (dpRound)
 import Data.Bifunctor.Flip (Flip(..))
 
-import Flight.Units (Length)
+import Flight.Units (Length, showRadian)
 import Flight.Geo (Lat(..), Lng(..), LatLng(..))
 
 -- | The radius component of zones that are cylinder-like, and most are in some
@@ -50,13 +50,6 @@ newtype Incline = Incline (Quantity Rational [u| rad |]) deriving (Eq, Ord)
 
 -- | The bearing component of a vector zone.
 newtype Bearing = Bearing (Quantity Rational [u| rad |]) deriving (Eq, Ord)
-
-showRadian :: Quantity Rational [u| rad |] -> String
-showRadian b = show dbl
-    where
-        deg = convert b :: Quantity Rational [u| deg |]
-        Flip rounded = dpRound 3 <$> Flip deg
-        MkQuantity dbl = fromRational' rounded :: Quantity Double [u| deg |]
 
 instance Show Incline where
     show (Incline angle) = "i = " ++ showRadian angle

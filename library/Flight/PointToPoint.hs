@@ -34,7 +34,6 @@ import Flight.Geo
     , Epsilon(..)
     , earthRadius
     , defEps
-    , degToRadLL
     )
 import Flight.Zone (Zone(..), Radius(..), center)
 

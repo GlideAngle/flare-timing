@@ -37,10 +37,14 @@ import Flight.Geo
     )
 import Flight.Zone (Zone(..), Radius(..), Bearing(..), center, radius)
 import Flight.PointToPoint (TaskDistance(..), distancePointToPoint)
+import Flight.Units (showRadian)
 
 newtype TrueCourse =
     TrueCourse (Quantity Rational [u| rad |])
-    deriving (Eq, Ord, Show)
+    deriving (Eq, Ord)
+
+instance Show TrueCourse where
+    show (TrueCourse tc) = "tc = " ++ showRadian tc
 
 instance Num TrueCourse where
     (+) (TrueCourse (MkQuantity a)) (TrueCourse (MkQuantity b)) =

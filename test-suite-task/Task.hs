@@ -38,6 +38,10 @@ scProps = testGroup "(checked by SmallCheck)"
 qcProps :: TestTree
 qcProps = testGroup "(checked by QuickCheck)"
     [ QC.testProperty "Zone distances, point-to-point, are not negative" distancePoint
+    -- WARNING: Failed test.
+    -- *** Failed! Falsifiable (after 1 test):
+    -- ZonesTest [Cylinder r = 1.581 (0.0 rad, 0.0 rad),Cylinder r = 0.84 (0.0 rad, 0.0 rad)]
+    -- Use --quickcheck-replay '0 TFGenR 00000010D1A1217D00000000000F4240000000000000E26C000009FED00F3240 0 1 1 0' to reproduce.
     , QC.testProperty "Zone distances, edge-to-edge, are not negative" distanceEdge
     , QC.testProperty "Zone distances, edge-to-edge are less or equal to point-to-point" distanceLess
     ]
