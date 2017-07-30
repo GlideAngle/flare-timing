@@ -30,13 +30,21 @@ module Flight.Zone
 
 import Data.UnitsOfMeasure
 import Data.UnitsOfMeasure.Internal (Quantity(..))
+import Data.Number.RoundingFunctions (dpRound)
+import Data.Bifunctor.Flip (Flip(..))
 
 import Flight.Units (Length)
 import Flight.Geo (Lat(..), Lng(..), LatLng(..))
 
 -- | The radius component of zones that are cylinder-like, and most are in some
 -- way.
-newtype Radius = Radius (Length [u| m |]) deriving (Eq, Ord, Show)
+newtype Radius = Radius (Length [u| m |]) deriving (Eq, Ord)
+
+instance Show Radius where
+    show (Radius d) = "r = " ++ show dbl
+        where
+            Flip rounded = dpRound 3 <$> Flip d
+            MkQuantity dbl = fromRational' rounded :: Quantity Double [u| m |]
 
 -- | The incline component of a conical zone.
 newtype Incline = Incline Rational deriving (Eq, Ord, Show)
