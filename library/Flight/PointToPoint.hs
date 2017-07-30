@@ -104,11 +104,11 @@ distanceHaversine :: Epsilon
                   -> LatLng [u| rad |]
                   -> LatLng [u| rad |]
                   -> TaskDistance
-distanceHaversine (Epsilon eps) xDegreeLL yDegreeLL =
+distanceHaversine (Epsilon eps) xLL yLL =
     TaskDistance $ radDist *: earthRadius
     where
-        LatLng (Lat xLat, Lng xLng) = xDegreeLL
-        LatLng (Lat yLat, Lng yLng) = yDegreeLL
+        LatLng (Lat xLat, Lng xLng) = xLL
+        LatLng (Lat yLat, Lng yLng) = yLL
         (dLat, dLng) = (yLat -: xLat, yLng -: xLng)
 
         haversine :: Quantity Rational [u| rad |]

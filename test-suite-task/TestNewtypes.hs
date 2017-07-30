@@ -7,6 +7,7 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE QuasiQuotes #-}
 
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
@@ -16,6 +17,7 @@ module TestNewtypes where
 
 import Test.SmallCheck.Series as SC
 import Test.Tasty.QuickCheck as QC
+import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Zone
@@ -28,11 +30,19 @@ import Flight.Zone
     , Zone(..)
     )
 
+newtype HaversineTest = HaversineTest (LatLng [u| rad |], LatLng [u| rad |]) deriving Show
 newtype ZoneTest = ZoneTest Zone deriving Show
 newtype ZonesTest = ZonesTest [Zone] deriving Show
 
+instance Monad m => SC.Serial m HaversineTest where
+    series = decDepth $ HaversineTest <$>
+        cons4 (\xlat xlng ylat ylng ->
+            ( LatLng (Lat $ MkQuantity xlat, Lng $ MkQuantity xlng)
+            , LatLng (Lat $ MkQuantity ylat, Lng $ MkQuantity ylng)
+            ))
+
 instance Monad m => SC.Serial m ZoneTest where
-    series = ZoneTest <$>
+    series = decDepth $ ZoneTest <$>
         cons2 (\lat lng ->
             Point (LatLng (Lat $ MkQuantity lat, Lng $ MkQuantity lng)))
 
@@ -63,7 +73,17 @@ instance Monad m => SC.Serial m ZoneTest where
                 (LatLng (Lat $ MkQuantity lat, Lng $ MkQuantity lng)))
 
 instance Monad m => SC.Serial m ZonesTest where
-    series = cons1 (\xs -> ZonesTest $ (\(ZoneTest x) -> x) <$> xs)
+    series = decDepth $ cons1 (\xs -> ZonesTest $ (\(ZoneTest x) -> x) <$> xs)
+
+instance QC.Arbitrary HaversineTest where
+    arbitrary = HaversineTest <$> do
+        xlat <- arbitrary
+        xlng <- arbitrary
+        ylat <- arbitrary
+        ylng <- arbitrary
+        return ( LatLng (Lat $ MkQuantity xlat, Lng $ MkQuantity xlng)
+               , LatLng (Lat $ MkQuantity ylat, Lng $ MkQuantity ylng)
+               )
 
 instance QC.Arbitrary ZoneTest where
     arbitrary = ZoneTest <$> do

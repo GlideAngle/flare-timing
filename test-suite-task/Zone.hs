@@ -15,6 +15,8 @@ module Zone
     , distancePoint
     , distanceEdge
     , distanceLess
+    , distanceHaversine
+    , distanceHaversineF
     ) where
 
 import Data.Ratio ((%))
@@ -36,6 +38,7 @@ import Flight.Task
     , EdgeDistance(..)
     , Tolerance(..)
     , DistancePath(..)
+    , defEps
     , earthRadius
     , center
     , separatedZones
@@ -286,6 +289,9 @@ semicircleDisjoint = disjoint "Semicircle zones" ((fmap . fmap) semicircle radii
 correctPoint :: [Zone] -> TaskDistance -> Bool
 correctPoint [] (TaskDistance (MkQuantity d)) = d == 0
 correctPoint [_] (TaskDistance (MkQuantity d)) = d == 0
+correctPoint [Cylinder xR x, Cylinder yR y] (TaskDistance (MkQuantity d))
+    | x == y = (xR == yR && d == 0) || d > 0
+    | otherwise = d > 0
 correctPoint xs (TaskDistance (MkQuantity d))
     | all (== head ys) (tail ys) = d == 0
     | otherwise = d > 0
@@ -301,6 +307,18 @@ correctCenter xs (TaskDistance (MkQuantity d))
     | otherwise = d > 0
     where
         ys = center <$> xs
+
+distanceHaversineF :: HaversineTest -> Bool
+distanceHaversineF (HaversineTest (x, y)) =
+    [u| 0 m |] <= d
+    where
+        TaskDistance d = FS.distanceHaversineF x y
+
+distanceHaversine :: HaversineTest -> Bool
+distanceHaversine (HaversineTest (x, y)) =
+    [u| 0 m |] <= d
+    where
+        TaskDistance d = FS.distanceHaversine defEps x y
 
 distancePoint :: ZonesTest -> Bool
 distancePoint (ZonesTest xs) =
