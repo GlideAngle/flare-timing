@@ -39,6 +39,12 @@ import Flight.Units ()
 
 import Data.Number.RoundingFunctions (dpRound, sdRound)
 
+qShowKm :: Quantity Rational [u| km |] -> String
+qShowKm (MkQuantity x) =
+    show y
+    where
+        y = fromRational (dpRound 3 x) :: Double
+
 showKm :: Double -> String
 showKm x =
     showFFloat (Just 2) (x / 1000) ""
@@ -196,25 +202,25 @@ forbesUnits = testGroup "Forbes 2011/2012 distances"
     , day8Units
     ]
 
-kilo :: Fractional a => a -> a
-kilo x = x / 1000
-
 unmilli :: Fractional a => a -> a
 unmilli x = x / 1000
 
 unkilo :: Num a => a -> a
 unkilo x = x * 1000
 
-mkPartDayUnits :: TestName -> [Zone [u| deg |] ] -> Double -> TestTree
-mkPartDayUnits title zs d = testGroup title
+mkPartDayUnits :: TestName
+               -> [Zone [u| deg |] ]
+               -> Quantity Rational [u| km |]
+               -> TestTree
+mkPartDayUnits title zs dKm = testGroup title
     [ HU.testCase
-        ("point-to-point distance ~= " ++ showKm d)
-        $ (dKm' == dKm) @? dKm' .~=. dKm
+        ("point-to-point distance ~= " ++ qShowKm dKm)
+        $ (dKm'' == dKm) @? dKm'' .~=. dKm
     ]
     where
-        (TaskDistance (MkQuantity d')) = FS.distancePointToPoint zs
-        dKm' = fromRational $ sdRound 4 $ kilo d'
-        dKm = kilo d
+        (TaskDistance d') = FS.distancePointToPoint zs
+        (MkQuantity dKm') = convert d' :: Quantity Rational [u| km |]
+        dKm'' = (MkQuantity $ sdRound 4 dKm') :: Quantity Rational [u| km |]
 
 day1PartUnits :: TestTree
 day1PartUnits = testGroup "Task 1 [...]"
@@ -232,13 +238,13 @@ day1PartUnits = testGroup "Task 1 [...]"
                 ]
 
             p1 = take 2 xs
-            d1 = unkilo 54.76
+            d1 = [u| 54.76 km |]
 
             p2 = take 2 $ drop 1 xs
-            d2 = unkilo 59.28
+            d2 = [u| 59.28 km |]
 
             p3 = take 2 $ drop 2 xs
-            d3 = unkilo 20.89
+            d3 = [u| 20.89 km |]
 
 day2PartUnits :: TestTree
 day2PartUnits = testGroup "Task 2 [...]"
@@ -256,13 +262,13 @@ day2PartUnits = testGroup "Task 2 [...]"
                 ]
 
             p1 = take 2 xs
-            d1 = unkilo 51.29
+            d1 = [u| 51.29 km |]
 
             p2 = take 2 $ drop 1 xs
-            d2 = unkilo 40.57
+            d2 = [u| 40.57 km |]
 
             p3 = take 2 $ drop 2 xs
-            d3 = unkilo 38.31
+            d3 = [u| 38.31 km |]
 
 day3PartUnits :: TestTree
 day3PartUnits = testGroup "Task 3 [...]"
@@ -280,13 +286,13 @@ day3PartUnits = testGroup "Task 3 [...]"
                 ]
 
             p1 = take 2 xs
-            d1 = unkilo 78.15
+            d1 = [u| 78.15 km |]
 
             p2 = take 2 $ drop 1 xs
-            d2 = unkilo 27.78
+            d2 = [u| 27.78 km |]
 
             p3 = take 2 $ drop 2 xs
-            d3 = unkilo 79.72
+            d3 = [u| 79.72 km |]
 
 day4PartUnits :: TestTree
 day4PartUnits = testGroup "Task 4 [...]"
@@ -303,10 +309,10 @@ day4PartUnits = testGroup "Task 4 [...]"
 
             -- NOTE: Use p1' to avoid an hlint duplication warning.
             p1' = take 2 xs
-            d1 = unkilo 51.29
+            d1 = [u| 51.29 km |]
 
             p2 = take 2 $ drop 1 xs
-            d2 = unkilo 105.9
+            d2 = [u| 105.9 km |]
 
 day5PartUnits :: TestTree
 day5PartUnits = testGroup "Task 5 [...]"
@@ -322,10 +328,10 @@ day5PartUnits = testGroup "Task 5 [...]"
                 ]
 
             p1 = take 2 xs
-            d1 = unkilo 92.6
+            d1 = [u| 92.6 km |]
 
             p2 = take 2 $ drop 1 xs
-            d2 = unkilo 128.9
+            d2 = [u| 128.9 km |]
 
 day6PartUnits :: TestTree
 day6PartUnits = testGroup "Task 6 [...]"
@@ -341,10 +347,10 @@ day6PartUnits = testGroup "Task 6 [...]"
                 ]
 
             p1 = take 2 xs
-            d1 = unkilo 130.7
+            d1 = [u| 130.7 km |]
 
             p2 = take 2 $ drop 1 xs
-            d2 = unkilo 75.18
+            d2 = [u| 75.18 km |]
 
 day7PartUnits :: TestTree
 day7PartUnits = testGroup "Task 7 [...]"
@@ -362,13 +368,13 @@ day7PartUnits = testGroup "Task 7 [...]"
                 ]
 
             p1 = take 2 xs
-            d1 = unkilo 57.37
+            d1 = [u| 57.37 km |]
 
             p2 = take 2 $ drop 1 xs
-            d2 = unkilo 104.5
+            d2 = [u| 104.5 km |]
 
             p3 = take 2 $ drop 2 xs
-            d3 = unkilo 21.61
+            d3 = [u| 21.61 km |]
 
 
 day8PartUnits :: TestTree
@@ -387,13 +393,13 @@ day8PartUnits = testGroup "Task 8 [...]"
                 ]
 
             p1 = take 2 xs
-            d1 = unkilo 57.43
+            d1 = [u| 57.43 km |]
 
             p2 = take 2 $ drop 1 xs
-            d2 = unkilo 69.55
+            d2 = [u| 69.55 km |]
 
             p3 = take 2 $ drop 2 xs
-            d3 = unkilo 42.13
+            d3 = [u| 42.13 km |]
 
 mkDayUnits :: TestName -> [Zone [u| deg |] ] -> Double -> [Double] -> TestTree
 mkDayUnits title pDay dDay dsDay = testGroup title

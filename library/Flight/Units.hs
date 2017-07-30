@@ -24,7 +24,7 @@ type Length u = Quantity Rational u
 
 [u| s, m |]
 
-[u| min = 60 s, h = 3600 s, d = 86400 s |]
+[u| km = 1000 m, min = 60 s, h = 3600 s, d = 86400 s |]
 
 [u| ft = 100 % 328 m, mi = 1609.344 m, mph = mi/h |]
 
