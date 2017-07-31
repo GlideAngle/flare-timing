@@ -19,6 +19,8 @@ import Test.Tasty (TestTree, TestName, testGroup)
 import Test.Tasty.HUnit as HU ((@?=), (@?), testCase)
 import Data.UnitsOfMeasure (u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
+import Data.Number.RoundingFunctions (dpRound)
+import Data.Bifunctor.Flip (Flip(..))
 
 import qualified Flight.Task as FS
 import Flight.Task
@@ -196,13 +198,20 @@ mkPartDayUnits :: TestName
                -> [Zone]
                -> TaskDistance
                -> TestTree
-mkPartDayUnits title zs d = testGroup title
+mkPartDayUnits title zs (TaskDistance d) = testGroup title
     [ HU.testCase
-        ("point-to-point distance ~= " ++ show d)
-        $ (d' == d) @? d' .~=. d
+        ("point-to-point distance " ++ show td' ++ " ~= " ++ show tdR)
+        $ (tdR' == tdR) @? tdR' .~=. tdR
     ]
     where
-        d' = FS.distancePointToPoint zs
+        dKm = convert d :: Quantity Rational [u| km |]
+        Flip r = dpRound 2 <$> Flip dKm
+        tdR = TaskDistance (convert r :: Quantity Rational [u| m |])
+
+        td'@(TaskDistance d') = FS.distancePointToPoint zs
+        dKm' = convert d' :: Quantity Rational [u| km |]
+        Flip r' = dpRound 2 <$> Flip dKm'
+        tdR' = TaskDistance (convert r' :: Quantity Rational [u| m |])
 
 day1PartUnits :: TestTree
 day1PartUnits = testGroup "Task 1 [...]"
@@ -220,13 +229,13 @@ day1PartUnits = testGroup "Task 1 [...]"
                 ]
 
             p1 = take 2 xs
-            d1 = fromKms [u| 54.76 km |]
+            d1 = fromKms [u| 54.756 km |]
 
             p2 = take 2 $ drop 1 xs
-            d2 = fromKms [u| 59.28 km |]
+            d2 = fromKms [u| 59.277 km |]
 
             p3 = take 2 $ drop 2 xs
-            d3 = fromKms [u| 20.89 km |]
+            d3 = fromKms [u| 20.885 km |]
 
 day2PartUnits :: TestTree
 day2PartUnits = testGroup "Task 2 [...]"

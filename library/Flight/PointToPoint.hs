@@ -9,8 +9,6 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
 
-{-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
-
 module Flight.PointToPoint
     ( TaskDistance(..)
     , distancePointToPoint
@@ -48,7 +46,7 @@ instance Show TaskDistance where
     show (TaskDistance d) = "d = " ++ show dbl
         where
             km = convert d :: Quantity Rational [u| km |]
-            Flip rounded = dpRound 3 <$> Flip km
+            Flip rounded = dpRound 6 <$> Flip km
             dbl = fromRational' rounded :: Quantity Double [u| km |]
 
 instance {-# OVERLAPPING #-} Show [TaskDistance] where
@@ -61,7 +59,7 @@ showDistances xs =
         f (TaskDistance d) = show dbl
             where
                 km = convert d :: Quantity Rational [u| km |]
-                Flip rounded = dpRound 3 <$> Flip km
+                Flip rounded = dpRound 6 <$> Flip km
                 (MkQuantity dbl) = fromRational' rounded :: Quantity Double [u| km |]
 
 -- | Sperical distance using haversines and floating point numbers.

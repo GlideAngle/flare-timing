@@ -9,8 +9,6 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE QuasiQuotes #-}
 
-{-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
-
 module Flight.EdgeToEdge
     ( EdgeDistance(..)
     , DistancePath(..)

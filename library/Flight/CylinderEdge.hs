@@ -10,8 +10,6 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE QuasiQuotes #-}
 
-{-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
-
 module Flight.CylinderEdge
     ( Samples(..)
     , Tolerance(..)

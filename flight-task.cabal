@@ -29,7 +29,7 @@ source-repository head
 library
   hs-source-dirs:
       library
-  ghc-options: -Wall
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       base >=4.5 && <5
     , numbers
@@ -56,7 +56,7 @@ test-suite hlint
   hs-source-dirs:
       library
       test-suite-hlint
-  ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       base
     , hlint
@@ -82,7 +82,7 @@ test-suite task
   hs-source-dirs:
       library
       test-suite-task
-  ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       base
     , numbers
