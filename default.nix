@@ -6,6 +6,6 @@ let hlib = nixpkgs.pkgs.haskell.lib;
 in
 hlib.dontCheck(callPackage ./flare-timing.nix {
   flight-fsdb = flight-fsdb;
-  flight-kml = flight-kml ;
-  flight-igc = flight-igc ;
+  flight-kml = flight-kml;
+  flight-igc = flight-igc;
 })

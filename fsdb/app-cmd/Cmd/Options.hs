@@ -12,7 +12,8 @@ data CmdOptions
     deriving Show
 
 data Detail
-    = Nominals
+    = Comp
+    | Nominals
     | Pilots
     | Tasks
     | TaskFolders

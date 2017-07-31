@@ -11,6 +11,7 @@ import System.FilePath.Find (FileType(..), (==?), (&&?), find, always, fileType,
 import Cmd.Args (withCmdArgs)
 import Cmd.Options (CmdOptions(..), Detail(..))
 import Data.Flight.Types (showTask)
+import qualified Data.Flight.Comp as C (parse)
 import qualified Data.Flight.Nominal as N (parse)
 import qualified Data.Flight.Waypoint as W (parse)
 import Data.Flight.Pilot
@@ -62,6 +63,7 @@ drive CmdOptions{..} = do
             contents <- readFile path
             let contents' = dropWhile (/= '<') contents
 
+            when (null detail || Comp `elem` detail) $ printComp contents'
             when (null detail || Nominals `elem` detail) $ printNominal contents'
             when (null detail || Pilots `elem` detail) $ printPilotNames contents'
             when (null detail || Tasks `elem` detail) $ printTasks contents'
@@ -102,4 +104,11 @@ printTasks contents = do
     case tasks of
          Left msg -> print msg
          Right tasks' -> print $ showTask <$> tasks'
+
+printComp :: String -> IO ()
+printComp contents = do
+    comp <- C.parse contents
+    case comp of
+         Left msg -> print msg
+         Right comp' -> print comp'
 
