@@ -20,7 +20,8 @@ Build and host the client locally ...
 
 ```
 $ ../reflex-platform/try-reflex
-If you have any trouble with this script, please submit an issue at https://github.com/reflex-frp/reflex-platform/issues
+If you have any trouble with this script, please submit an issue at
+https://github.com/reflex-frp/reflex-platform/issues
 Entering the reflex sandbox...
 
 You are now in a shell with access to the Reflex functional reactive programming engine.
@@ -39,8 +40,8 @@ $ ./build.sh view-www
 [7 of 9] Compiling FlareTiming.Task ( FlareTiming/Task.hs, app.jsout/FlareTiming/Task.js_o )
 [8 of 9] Compiling FlareTiming.View ( FlareTiming/View.hs, app.jsout/FlareTiming/View.js_o )
 [9 of 9] Compiling Main             ( App.hs, app.jsout/Main.js_o )
-Linking App.jsexe (Data.Flight.Types,FlareTiming.Footer,FlareTiming.Map,FlareTiming.Map.Leaflet,FlareTiming.NavBar,
-FlareTiming.Task,FlareTiming.Turnpoint,FlareTiming.View,Main)
+Linking App.jsexe (Data.Flight.Types,FlareTiming.Footer,FlareTiming.Map,FlareTiming.Map.Leaflet,
+FlareTiming.NavBar,FlareTiming.Task,FlareTiming.Turnpoint,FlareTiming.View,Main)
 #copy all.js
 Build completed in 0:11m
 
