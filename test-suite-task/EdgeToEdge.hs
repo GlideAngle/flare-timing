@@ -229,13 +229,13 @@ day1PartUnits = testGroup "Task 1 [...]"
                 ]
 
             p1 = take 2 xs
-            d1 = fromKms [u| 54.756 km |]
+            d1 = fromKms [u| 54.76 km |]
 
             p2 = take 2 $ drop 1 xs
-            d2 = fromKms [u| 59.277 km |]
+            d2 = fromKms [u| 59.28 km |]
 
             p3 = take 2 $ drop 2 xs
-            d3 = fromKms [u| 20.885 km |]
+            d3 = fromKms [u| 20.89 km |]
 
 day2PartUnits :: TestTree
 day2PartUnits = testGroup "Task 2 [...]"
