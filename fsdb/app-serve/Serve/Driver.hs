@@ -8,6 +8,7 @@ import Network.Wai
 import Network.Wai.Middleware.Cors
 import Network.Wai.Handler.Warp
 import Servant
+import Servant (Get, JSON, Server, Handler, Proxy(..), (:>), serve)
 import System.IO
 
 import System.Directory (doesFileExist)
@@ -16,9 +17,13 @@ import System.FilePath (takeFileName)
 import Serve.Args (withCmdArgs)
 import Serve.Options (ServeOptions(..))
 import Data.Flight.Types (Task)
-import Data.Flight.Waypoint (parse)
+import Data.Flight.Comp (Comp)
+import qualified Data.Flight.Comp as C (parse)
+import qualified Data.Flight.Waypoint as W (parse)
 
-type TaskApi = "tasks" :> Get '[JSON] [Task]
+type TaskApi =
+    "tasks" :> Get '[JSON] [Task]
+    :<|> "comps" :> Get '[JSON] [Comp]
 
 taskApi :: Proxy TaskApi
 taskApi = Proxy
@@ -44,18 +49,27 @@ drive ServeOptions{..} = do
         go path = do
             putStrLn $ takeFileName path
             contents <- readFile path
+            let xml = dropWhile (/= '<') contents
 
-            p <- parse $ dropWhile (/= '<') contents
-            case p of
-                 Left msg -> print msg
-                 Right tasks -> runSettings settings =<< mkApp tasks
+            comp <- C.parse xml
+            tasks <- W.parse xml
+            case (comp, tasks) of
+                (Left msg, _) -> print msg
+                (_, Left msg) -> print msg
+                (Right comp', Right tasks') ->
+                    runSettings settings =<< mkApp comp' tasks'
 
 -- SEE: https://stackoverflow.com/questions/42143155/acess-a-servant-server-with-a-reflex-dom-client
-mkApp :: [Task] -> IO Application
-mkApp xs = return $ simpleCors $ serve taskApi $ server xs
+mkApp :: [Comp] -> [Task] -> IO Application
+mkApp comp xs = return $ simpleCors $ serve taskApi $ server comp xs
 
-server :: [Task] -> Server TaskApi
-server = getTasks
+server :: [Comp] -> [Task] -> Server TaskApi
+server comp xs =
+    getTasks xs
+    :<|> getComps comp
 
 getTasks :: [Task] -> Handler [Task]
 getTasks = return
+
+getComps :: [Comp] -> Handler [Comp]
+getComps = return
