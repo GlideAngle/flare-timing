@@ -1,7 +1,8 @@
 {-# LANGUAGE DeriveGeneric #-}
 
 module Data.Flight.Types
-    ( Task(..)
+    ( Comp(..)
+    , Task(..)
     , Turnpoint(..)
     , Latitude(..)
     , Longitude(..)
@@ -24,6 +25,17 @@ newtype Latitude = Latitude Rational deriving (Eq, Show)
 newtype Longitude = Longitude Rational deriving (Eq, Show)
 type Radius = Integer
 type SpeedSection = Maybe (Integer, Integer)
+
+data Comp = Comp { civilId :: String
+                 , name :: String 
+                 , location :: String 
+                 , from :: String 
+                 , to :: String 
+                 , utcOffset :: String 
+                 } deriving (Show, Generic)
+
+instance ToJSON Comp
+instance FromJSON Comp
 
 data Task = Task Name SpeedSection [Turnpoint] deriving (Eq, Show, Generic)
 data Turnpoint = Turnpoint Name Latitude Longitude Radius deriving (Eq, Show, Generic)
