@@ -10,6 +10,8 @@ import Network.Wai.Handler.Warp
 import Servant
 import Servant (Get, JSON, Server, Handler, Proxy(..), (:>), serve)
 import System.IO
+import Control.Monad (void)
+import Control.Monad.IO.Class (liftIO)
 
 import System.Directory (doesFileExist)
 import System.FilePath (takeFileName)
@@ -74,10 +76,16 @@ server cs ts ps =
     :<|> getPilots ps
 
 getComps :: [Comp] -> Handler [Comp]
-getComps = return
+getComps cs = do
+    void . liftIO . print $ "COMPS: " ++ show cs
+    return cs
 
 getTasks :: [Task] -> Handler [Task]
-getTasks = return
+getTasks ts = do
+    void . liftIO . print $ "TASKS: " ++ show ts
+    return ts
 
 getPilots :: [[Pilot]] -> Handler [[Pilot]]
-getPilots = return
+getPilots ps = do
+    void . liftIO . print $ "PILOTS: " ++ show ps
+    return ps
