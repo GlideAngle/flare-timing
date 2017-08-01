@@ -78,11 +78,14 @@ serverTask env =
     enter (runReaderTNat env) queryTasks
     :<|> enter (runReaderTNat env) queryPilots
 
-readComps :: FilePath -> IO (Either String [Comp])
-readComps path = do
+readWith :: (String -> IO (Either String a)) -> FilePath -> IO (Either String a)
+readWith f path = do
     contents <- readFile path
     let xml = dropWhile (/= '<') contents
-    C.parse xml
+    f xml
+
+readComps :: FilePath -> IO (Either String [Comp])
+readComps = readWith C.parse
 
 queryComps :: FsdbHandler [Comp]
 queryComps = do
@@ -93,10 +96,7 @@ queryComps = do
       Right cs' -> return cs'
 
 readTasks :: FilePath -> IO (Either String [Task])
-readTasks path = do
-    contents <- readFile path
-    let xml = dropWhile (/= '<') contents
-    W.parse xml
+readTasks = readWith W.parse
 
 queryTasks :: FsdbHandler [Task]
 queryTasks = do
@@ -107,10 +107,7 @@ queryTasks = do
       Right ts' -> return ts'
 
 readPilots :: FilePath -> IO (Either String [[Pilot]])
-readPilots path = do
-    contents <- readFile path
-    let xml = dropWhile (/= '<') contents
-    parseNames xml
+readPilots = readWith parseNames
 
 queryPilots :: FsdbHandler [[Pilot]]
 queryPilots = do
