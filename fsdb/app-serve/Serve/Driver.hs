@@ -20,10 +20,12 @@ import Data.Flight.Types (Task)
 import Data.Flight.Comp (Comp)
 import qualified Data.Flight.Comp as C (parse)
 import qualified Data.Flight.Waypoint as W (parse)
+import Data.Flight.Pilot (Pilot(..), parseNames)
 
 type TaskApi =
-    "tasks" :> Get '[JSON] [Task]
-    :<|> "comps" :> Get '[JSON] [Comp]
+    "comps" :> Get '[JSON] [Comp]
+    :<|> "tasks" :> Get '[JSON] [Task]
+    :<|> "pilots" :> Get '[JSON] [[Pilot]]
 
 taskApi :: Proxy TaskApi
 taskApi = Proxy
@@ -51,25 +53,31 @@ drive ServeOptions{..} = do
             contents <- readFile path
             let xml = dropWhile (/= '<') contents
 
-            comp <- C.parse xml
-            tasks <- W.parse xml
-            case (comp, tasks) of
-                (Left msg, _) -> print msg
-                (_, Left msg) -> print msg
-                (Right comp', Right tasks') ->
-                    runSettings settings =<< mkApp comp' tasks'
+            cs <- C.parse xml
+            ts <- W.parse xml
+            ps <- parseNames xml
+            case (cs, ts, ps) of
+                (Left msg, _, _) -> print msg
+                (_, Left msg, _) -> print msg
+                (_, _, Left msg) -> print msg
+                (Right cs', Right ts', Right ps') ->
+                    runSettings settings =<< mkApp cs' ts' ps'
 
 -- SEE: https://stackoverflow.com/questions/42143155/acess-a-servant-server-with-a-reflex-dom-client
-mkApp :: [Comp] -> [Task] -> IO Application
-mkApp comp xs = return $ simpleCors $ serve taskApi $ server comp xs
+mkApp :: [Comp] -> [Task] -> [[Pilot]] -> IO Application
+mkApp cs ts ps = return $ simpleCors $ serve taskApi $ server cs ts ps
 
-server :: [Comp] -> [Task] -> Server TaskApi
-server comp xs =
-    getTasks xs
-    :<|> getComps comp
+server :: [Comp] -> [Task] -> [[Pilot]] -> Server TaskApi
+server cs ts ps =
+    getComps cs
+    :<|> getTasks ts
+    :<|> getPilots ps
+
+getComps :: [Comp] -> Handler [Comp]
+getComps = return
 
 getTasks :: [Task] -> Handler [Task]
 getTasks = return
 
-getComps :: [Comp] -> Handler [Comp]
-getComps = return
+getPilots :: [[Pilot]] -> Handler [[Pilot]]
+getPilots = return
