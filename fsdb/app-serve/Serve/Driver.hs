@@ -15,7 +15,7 @@ import Control.Monad.Reader (ReaderT, ask, liftIO)
 import qualified Data.ByteString.Lazy.Char8 as LBS
 
 import System.Directory (doesFileExist)
-import System.FilePath (FilePath, takeFileName)
+import System.FilePath (FilePath)
 
 import Serve.Args (withCmdArgs)
 import Serve.Options (ServeOptions(..))
@@ -34,7 +34,7 @@ type TaskApi =
     :<|> "pilots" :> Get '[JSON] [[Pilot]]
 
 data AppEnv = AppEnv { path :: FilePath }
-type CompHandler = ReaderT AppEnv Handler
+type FsdbHandler = ReaderT AppEnv Handler
 
 flareTimingApi :: Proxy FlareTimingApi
 flareTimingApi = Proxy
@@ -57,40 +57,26 @@ drive ServeOptions{..} = do
                 (hPutStrLn stderr ("listening on port " ++ show port))
                 defaultSettings
 
-        go path = do
-            putStrLn $ takeFileName path
-            contents <- readFile path
-            let xml = dropWhile (/= '<') contents
-
-            ts <- W.parse xml
-            ps <- parseNames xml
-            case (ts, ps) of
-                (Left msg, _) -> print msg
-                (_, Left msg) -> print msg
-                (Right ts', Right ps') ->
-                    runSettings settings =<< mkTaskApp (AppEnv path) ts' ps'
+        go path =
+            runSettings settings =<< mkTaskApp (AppEnv path)
 
 -- SEE: https://stackoverflow.com/questions/42143155/acess-a-servant-server-with-a-reflex-dom-client
-mkTaskApp :: AppEnv -> [Task] -> [[Pilot]] -> IO Application
-mkTaskApp env ts ps = do
+mkTaskApp :: AppEnv -> IO Application
+mkTaskApp env = do
     let sc = serverComp env
-    let st = serverTask ts ps
+    let st = serverTask env
     return $ simpleCors $ serve flareTimingApi $ sc :<|> st
 
-serverTask :: [Task] -> [[Pilot]] -> Server TaskApi
-serverTask ts ps = getTasks ts :<|> getPilots ps
-
-getTasks :: [Task] -> Handler [Task]
-getTasks = return
-
-getPilots :: [[Pilot]] -> Handler [[Pilot]]
-getPilots = return
-
--- NOTE: Transforming CompHandler :~> Handler with runReaderTNat.
+-- NOTE: Transforming FsdbHandler :~> Handler with runReaderTNat.
 -- SEE: https://kseo.github.io/posts/2017-01-18-natural-transformations-in-servant.html
 serverComp :: AppEnv -> Server CompApi
 serverComp env =
     enter (runReaderTNat env) queryComps
+
+serverTask :: AppEnv -> Server TaskApi
+serverTask env =
+    enter (runReaderTNat env) queryTasks
+    :<|> enter (runReaderTNat env) queryPilots
 
 readComps :: FilePath -> IO (Either String [Comp])
 readComps path = do
@@ -98,10 +84,38 @@ readComps path = do
     let xml = dropWhile (/= '<') contents
     C.parse xml
 
-queryComps :: CompHandler [Comp]
+queryComps :: FsdbHandler [Comp]
 queryComps = do
     path' <- path <$> ask
     cs <- liftIO $ readComps path'
     case cs of
       Left msg -> throwError $ err400 { errBody = LBS.pack msg }
       Right cs' -> return cs'
+
+readTasks :: FilePath -> IO (Either String [Task])
+readTasks path = do
+    contents <- readFile path
+    let xml = dropWhile (/= '<') contents
+    W.parse xml
+
+queryTasks :: FsdbHandler [Task]
+queryTasks = do
+    path' <- path <$> ask
+    ts <- liftIO $ readTasks path'
+    case ts of
+      Left msg -> throwError $ err400 { errBody = LBS.pack msg }
+      Right ts' -> return ts'
+
+readPilots :: FilePath -> IO (Either String [[Pilot]])
+readPilots path = do
+    contents <- readFile path
+    let xml = dropWhile (/= '<') contents
+    parseNames xml
+
+queryPilots :: FsdbHandler [[Pilot]]
+queryPilots = do
+    path' <- path <$> ask
+    ts <- liftIO $ readPilots path'
+    case ts of
+      Left msg -> throwError $ err400 { errBody = LBS.pack msg }
+      Right ts' -> return ts'
