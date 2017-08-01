@@ -84,35 +84,28 @@ readWith f path = do
     let xml = dropWhile (/= '<') contents
     f xml
 
+queryWith :: (FilePath -> IO (Either String a)) -> FsdbHandler a
+queryWith f = do
+    path' <- path <$> ask
+    xs <- liftIO $ f path'
+    case xs of
+      Left msg -> throwError $ err400 { errBody = LBS.pack msg }
+      Right xs' -> return xs'
+
 readComps :: FilePath -> IO (Either String [Comp])
 readComps = readWith C.parse
 
 queryComps :: FsdbHandler [Comp]
-queryComps = do
-    path' <- path <$> ask
-    cs <- liftIO $ readComps path'
-    case cs of
-      Left msg -> throwError $ err400 { errBody = LBS.pack msg }
-      Right cs' -> return cs'
+queryComps = queryWith readComps
 
 readTasks :: FilePath -> IO (Either String [Task])
 readTasks = readWith W.parse
 
 queryTasks :: FsdbHandler [Task]
-queryTasks = do
-    path' <- path <$> ask
-    ts <- liftIO $ readTasks path'
-    case ts of
-      Left msg -> throwError $ err400 { errBody = LBS.pack msg }
-      Right ts' -> return ts'
+queryTasks = queryWith readTasks
 
 readPilots :: FilePath -> IO (Either String [[Pilot]])
 readPilots = readWith parseNames
 
 queryPilots :: FsdbHandler [[Pilot]]
-queryPilots = do
-    path' <- path <$> ask
-    ts <- liftIO $ readPilots path'
-    case ts of
-      Left msg -> throwError $ err400 { errBody = LBS.pack msg }
-      Right ts' -> return ts'
+queryPilots = queryWith readPilots
