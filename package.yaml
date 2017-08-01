@@ -21,6 +21,7 @@ executables:
     - mtl
     - transformers
     - flight-fsdb 
+    - bytestring
     ghc-options:
     - -rtsopts
     - -threaded

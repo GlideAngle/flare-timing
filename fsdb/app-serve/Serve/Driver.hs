@@ -1,6 +1,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Serve.Driver (driverRun) where
 
@@ -8,13 +9,13 @@ import Network.Wai
 import Network.Wai.Middleware.Cors
 import Network.Wai.Handler.Warp
 import Servant
-import Servant (Get, JSON, Server, Handler, Proxy(..), (:>), serve)
+import Servant (Get, JSON, Server, Handler, Proxy(..), (:>), serve, throwError)
 import System.IO
-import Control.Monad (void)
-import Control.Monad.IO.Class (liftIO)
+import Control.Monad.Reader (ReaderT, ask, liftIO)
+import qualified Data.ByteString.Lazy.Char8 as LBS
 
 import System.Directory (doesFileExist)
-import System.FilePath (takeFileName)
+import System.FilePath (FilePath, takeFileName)
 
 import Serve.Args (withCmdArgs)
 import Serve.Options (ServeOptions(..))
@@ -24,13 +25,19 @@ import qualified Data.Flight.Comp as C (parse)
 import qualified Data.Flight.Waypoint as W (parse)
 import Data.Flight.Pilot (Pilot(..), parseNames)
 
+type FlareTimingApi = CompApi :<|> TaskApi
+
+type CompApi = "comps" :> Get '[JSON] [Comp]
+
 type TaskApi =
-    "comps" :> Get '[JSON] [Comp]
-    :<|> "tasks" :> Get '[JSON] [Task]
+    "tasks" :> Get '[JSON] [Task]
     :<|> "pilots" :> Get '[JSON] [[Pilot]]
 
-taskApi :: Proxy TaskApi
-taskApi = Proxy
+data AppEnv = AppEnv { path :: FilePath }
+type CompHandler = ReaderT AppEnv Handler
+
+flareTimingApi :: Proxy FlareTimingApi
+flareTimingApi = Proxy
 
 driverRun :: IO ()
 driverRun = withCmdArgs drive
@@ -55,37 +62,46 @@ drive ServeOptions{..} = do
             contents <- readFile path
             let xml = dropWhile (/= '<') contents
 
-            cs <- C.parse xml
             ts <- W.parse xml
             ps <- parseNames xml
-            case (cs, ts, ps) of
-                (Left msg, _, _) -> print msg
-                (_, Left msg, _) -> print msg
-                (_, _, Left msg) -> print msg
-                (Right cs', Right ts', Right ps') ->
-                    runSettings settings =<< mkApp cs' ts' ps'
+            case (ts, ps) of
+                (Left msg, _) -> print msg
+                (_, Left msg) -> print msg
+                (Right ts', Right ps') ->
+                    runSettings settings =<< mkTaskApp (AppEnv path) ts' ps'
 
 -- SEE: https://stackoverflow.com/questions/42143155/acess-a-servant-server-with-a-reflex-dom-client
-mkApp :: [Comp] -> [Task] -> [[Pilot]] -> IO Application
-mkApp cs ts ps = return $ simpleCors $ serve taskApi $ server cs ts ps
+mkTaskApp :: AppEnv -> [Task] -> [[Pilot]] -> IO Application
+mkTaskApp env ts ps = do
+    let sc = serverComp env
+    let st = serverTask ts ps
+    return $ simpleCors $ serve flareTimingApi $ sc :<|> st
 
-server :: [Comp] -> [Task] -> [[Pilot]] -> Server TaskApi
-server cs ts ps =
-    getComps cs
-    :<|> getTasks ts
-    :<|> getPilots ps
-
-getComps :: [Comp] -> Handler [Comp]
-getComps cs = do
-    void . liftIO . print $ "COMPS: " ++ show cs
-    return cs
+serverTask :: [Task] -> [[Pilot]] -> Server TaskApi
+serverTask ts ps = getTasks ts :<|> getPilots ps
 
 getTasks :: [Task] -> Handler [Task]
-getTasks ts = do
-    void . liftIO . print $ "TASKS: " ++ show ts
-    return ts
+getTasks = return
 
 getPilots :: [[Pilot]] -> Handler [[Pilot]]
-getPilots ps = do
-    void . liftIO . print $ "PILOTS: " ++ show ps
-    return ps
+getPilots = return
+
+-- NOTE: Transforming CompHandler :~> Handler with runReaderTNat.
+-- SEE: https://kseo.github.io/posts/2017-01-18-natural-transformations-in-servant.html
+serverComp :: AppEnv -> Server CompApi
+serverComp env =
+    enter (runReaderTNat env) queryComps
+
+readComps :: FilePath -> IO (Either String [Comp])
+readComps path = do
+    contents <- readFile path
+    let xml = dropWhile (/= '<') contents
+    C.parse xml
+
+queryComps :: CompHandler [Comp]
+queryComps = do
+    path' <- path <$> ask
+    cs <- liftIO $ readComps path'
+    case cs of
+      Left msg -> throwError $ err400 { errBody = LBS.pack msg }
+      Right cs' -> return cs'
