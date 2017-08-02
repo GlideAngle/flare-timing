@@ -21,13 +21,17 @@ import Serve.Args (withCmdArgs)
 import Serve.Options (ServeOptions(..))
 import Data.Flight.Types (Task)
 import Data.Flight.Comp (Comp)
+import Data.Flight.Nominal (Nominal)
 import qualified Data.Flight.Comp as C (parse)
+import qualified Data.Flight.Nominal as N (parse)
 import qualified Data.Flight.Waypoint as W (parse)
 import Data.Flight.Pilot (Pilot(..), parseNames)
 
 type FlareTimingApi = CompApi :<|> TaskApi
 
-type CompApi = "comps" :> Get '[JSON] [Comp]
+type CompApi =
+    "comps" :> Get '[JSON] [Comp]
+    :<|> "nominals" :> Get '[JSON] [Nominal]
 
 type TaskApi =
     "tasks" :> Get '[JSON] [Task]
@@ -72,6 +76,7 @@ mkTaskApp env = do
 serverComp :: AppEnv -> Server CompApi
 serverComp env =
     enter (runReaderTNat env) queryComps
+    :<|> enter (runReaderTNat env) queryNominals
 
 serverTask :: AppEnv -> Server TaskApi
 serverTask env =
@@ -109,3 +114,9 @@ readPilots = readWith parseNames
 
 queryPilots :: FsdbHandler [[Pilot]]
 queryPilots = queryWith readPilots
+
+readNominals :: FilePath -> IO (Either String [Nominal])
+readNominals = readWith N.parse
+
+queryNominals :: FsdbHandler [Nominal]
+queryNominals = queryWith readNominals
