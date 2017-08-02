@@ -1,4 +1,5 @@
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE DeriveGeneric #-}
 
 module Data.Flight.Pilot
     ( Pilot(..)
@@ -31,8 +32,10 @@ import Text.XML.HXT.Core
     , arr
     , listA
     )
+import GHC.Generics (Generic)
+import Data.Aeson (ToJSON(..), FromJSON(..), Value(Number))
 
-newtype Pilot = Pilot String deriving (Eq, Ord)
+newtype Pilot = Pilot String deriving (Eq, Ord, Generic)
 newtype TrackLogFile = TrackLogFile String deriving (Eq, Ord)
 
 -- | A task folder is relative. To be cross-platform I store the path
@@ -49,6 +52,9 @@ data PilotTrackLogFile =
 
 newtype TaskKeyTrackLogFile =
     TaskKeyTrackLogFile (String, [ KeyTrackLogFile ]) deriving Show
+
+instance ToJSON Pilot
+instance FromJSON Pilot
 
 instance Show Pilot where
     show (Pilot name) = name

@@ -21,6 +21,7 @@ library:
   - split
   source-dirs: library
   exposed-modules:
+  - Data.Flight.Comp
   - Data.Flight.Nominal
   - Data.Flight.Pilot
   - Data.Flight.Types

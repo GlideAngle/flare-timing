@@ -1,3 +1,5 @@
+{-# LANGUAGE DeriveGeneric #-}
+
 module Data.Flight.Nominal (Nominal(..), parse) where
 
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
@@ -16,11 +18,16 @@ import Text.XML.HXT.Core
     , deep
     , arr
     )
+import GHC.Generics (Generic)
+import Data.Aeson (ToJSON(..), FromJSON(..))
 
 data Nominal = Nominal { distance :: String
                        , time :: String 
                        , goal :: String 
-                       } deriving Show
+                       } deriving (Show, Generic)
+
+instance ToJSON Nominal
+instance FromJSON Nominal
 
 getNominal :: ArrowXml a => a XmlTree Nominal
 getNominal =
