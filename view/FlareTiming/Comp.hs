@@ -2,6 +2,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE FlexibleContexts #-}
 
 module FlareTiming.Comp (comps) where
 
@@ -75,13 +76,12 @@ comps = do
     navbar
     elClass "div" "spacer" $ return ()
     elClass "div" "container" $ do
-        el "ul" $ do widgetHold loading $ fmap getComps pb
+        el "ul" $ do widgetHold loading $ fmap viewComps pb
         elClass "div" "spacer" $ return ()
         footer
 
     return ()
 
-getComps :: MonadWidget t m => () -> m ()
 getComps () = do
     pb :: Event t () <- getPostBuild
     let defReq = "http://localhost:3000/comps"
@@ -91,6 +91,11 @@ getComps () = do
     let es :: Event t [Comp] = fmapMaybe decodeXhrResponse rsp
     xs :: Dynamic t [Comp] <- holdDyn [] es
     let ys :: Dynamic t [(Int, Comp)] = fmap (zip [1 .. ]) xs
+    return ys
+
+viewComps :: MonadWidget t m => () -> m ()
+viewComps () = do
+    ys <- getComps ()
 
     elAttr "div" (union ("class" =: "tile is-ancestor")
                         ("style" =: "flex-wrap: wrap;")) $ do
