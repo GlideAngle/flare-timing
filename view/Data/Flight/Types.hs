@@ -2,6 +2,7 @@
 
 module Data.Flight.Types
     ( Comp(..)
+    , Nominal(..)
     , Task(..)
     , Turnpoint(..)
     , Latitude(..)
@@ -36,6 +37,14 @@ data Comp = Comp { civilId :: String
 
 instance ToJSON Comp
 instance FromJSON Comp
+
+data Nominal = Nominal { distance :: String
+                       , time :: String 
+                       , goal :: String 
+                       } deriving (Show, Generic)
+
+instance ToJSON Nominal
+instance FromJSON Nominal
 
 data Task = Task Name SpeedSection [Turnpoint] deriving (Eq, Show, Generic)
 data Turnpoint = Turnpoint Name Latitude Longitude Radius deriving (Eq, Show, Generic)
