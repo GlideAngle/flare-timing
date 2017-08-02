@@ -28,6 +28,8 @@ import Reflex.Dom
     , performRequestAsync
     , decodeXhrResponse
     , leftmost
+    , ffor
+    , dyn
     )
 import qualified Data.Text as T (Text, pack)
 import Data.Map (union)
@@ -71,29 +73,26 @@ comp ns cs = do
                     dynText title
                     elClass "p" "title is-5" $ do
                         dynText subtitle
-                        nominal n
+                elClass "div" "content" $ do
+                    nominal n
                 
 nominal :: forall t (m :: * -> *).
         MonadWidget t m =>
         Dynamic t (Maybe (Int, Nominal)) -> m ()
 nominal n = do
-    n' :: Maybe (Int, Nominal) <- sample $ current n
-    el "p" $ do
-        case n' of
-            Nothing -> return ()
-            (Just (_, Nominal{..})) -> do
-                let nominal =
-                        T.pack $
-                        mconcat [ "distance = " 
-                                , distance
-                                , ", time = "
-                                , time
-                                , ", goal = "
-                                , goal
-                                ]
-
-                el "p" $ do
-                    text nominal
+    let n' :: Dynamic t (m ()) = ffor n (\x ->
+                case x of
+                    Nothing -> text "Loading nominals ..."
+                    (Just (_, Nominal{..})) -> do
+                        el "dl" $ do
+                            el "dt" $ do text "distance"
+                            el "dd" $ do text $ T.pack distance
+                            el "dt" $ do text "time"
+                            el "dd" $ do text $ T.pack time
+                            el "dt" $ do text "goal"
+                            el "dd" $ do text $ T.pack goal)
+    dyn n'
+    return ()
                 
 comps :: MonadWidget t m => m ()
 comps = do
