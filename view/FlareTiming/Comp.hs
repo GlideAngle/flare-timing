@@ -59,11 +59,11 @@ comp ns cs = do
     let title = fmap (T.pack . (\Comp{..} -> name)) c
     let subtitle =
             fmap (T.pack . (\Comp{..} ->
-                mconcat [ location
-                        , ", from "
-                        , from
+                mconcat [ from
                         , " to "
                         , to
+                        , ", "
+                        , location
                         ])) c
 
     elClass "div" "tile" $ do
@@ -73,25 +73,35 @@ comp ns cs = do
                     dynText title
                     elClass "p" "title is-5" $ do
                         dynText subtitle
-                elClass "div" "content" $ do
+                elClass "div" "example" $ do
                     nominal n
                 
 nominal :: forall t (m :: * -> *).
         MonadWidget t m =>
         Dynamic t (Maybe (Int, Nominal)) -> m ()
 nominal n = do
-    let n' :: Dynamic t (m ()) = ffor n (\x ->
-                case x of
-                    Nothing -> text "Loading nominals ..."
-                    (Just (_, Nominal{..})) -> do
-                        el "dl" $ do
-                            el "dt" $ do text "distance"
-                            el "dd" $ do text $ T.pack distance
-                            el "dt" $ do text "time"
-                            el "dd" $ do text $ T.pack time
-                            el "dt" $ do text "goal"
-                            el "dd" $ do text $ T.pack goal)
-    dyn n'
+    dyn $ ffor n (\x ->
+        case x of
+            Nothing -> text "Loading nominals ..."
+            (Just (_, Nominal{..})) -> do
+                elClass "div" "field is-grouped is-grouped-multiline" $ do
+                    elClass "div" "control" $ do
+                        elClass "div" "tags has-addons" $ do
+                            elClass "span" "tag" $ do text "nominal distance"
+                            elClass "span" "tag is-info" $ do
+                                text $ T.pack distance
+                                text " kms"
+                    elClass "div" "control" $ do
+                        elClass "div" "tags has-addons" $ do
+                            elClass "span" "tag" $ do text "nominal time"
+                            elClass "span" "tag is-success" $ do
+                                text $ T.pack time
+                                text " hrs"
+                    elClass "div" "control" $ do
+                        elClass "div" "tags has-addons" $ do
+                            elClass "span" "tag" $ do text "nominal goal"
+                            elClass "span" "tag is-primary" $ text $ T.pack goal)
+
     return ()
                 
 comps :: MonadWidget t m => m ()
