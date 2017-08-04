@@ -15,6 +15,7 @@ data CmdOptions
 
 data Reckon
     = Goal
+    -- ^ Has this pilot made goal?
     | Zone
     | Distance
     | Time 

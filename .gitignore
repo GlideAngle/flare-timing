@@ -4,6 +4,7 @@ __shake-build
 *.cabal
 node_modules
 __www
+__docs
 *.fsdb
 *.jsexe
 *.js_hi

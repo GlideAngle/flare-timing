@@ -1,10 +1,11 @@
 module Target where
 
 import Development.Shake (Rules)
+import Doc (buildRules, cleanRules)
 import Web (buildRules, cleanRules)
 
 allWants :: [ String ]
-allWants = [ "view" ]
+allWants = [ "docs", "view-www" ]
     
 allRules :: Rules ()
 allRules = do
@@ -12,9 +13,11 @@ allRules = do
     Target.buildRules
 
 cleanRules :: Rules ()
-cleanRules =
+cleanRules = do
+    Doc.cleanRules
     Web.cleanRules
 
 buildRules :: Rules ()
-buildRules =
+buildRules = do
+    Doc.buildRules
     Web.buildRules
