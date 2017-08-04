@@ -28,6 +28,25 @@ executables:
     - -with-rtsopts=-N
     main: Main.hs
     source-dirs: fsdb/app-serve
+  flight-yaml-cmd:
+    dependencies:
+    - base
+    - directory
+    - filepath
+    - system-filepath
+    - filemanip
+    - raw-strings-qq
+    - cmdargs
+    - mtl
+    - transformers
+    - yaml
+    - flight-fsdb 
+    ghc-options:
+    - -rtsopts
+    - -threaded
+    - -with-rtsopts=-N
+    main: Main.hs
+    source-dirs: yaml/app-cmd
   flight-fsdb-cmd:
     dependencies:
     - base
