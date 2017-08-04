@@ -26,6 +26,8 @@ buildRules = do
     phony "docs" $
         need [ "track-docs"
              , "fsdb-docs"
+             , "igc-docs"
+             , "kml-docs"
              ]
 
     phony "track-docs" $
@@ -39,3 +41,15 @@ buildRules = do
             Shell
             (docFor "fsdb-cmd")
             [ "fsdb/app-cmd/Cmd/Options.hs" ]
+
+    phony "igc-docs" $
+        cmd
+            Shell
+            (docFor "igc-cmd")
+            [ "igc/app-cmd/Igc/Options.hs" ]
+
+    phony "kml-docs" $
+        cmd
+            Shell
+            (docFor "kml-cmd")
+            [ "kml/app-cmd/Kml/Options.hs" ]
