@@ -8,7 +8,10 @@ import Development.Shake
     , cmd
     , need
     )
-import Development.Shake.FilePath ((</>))
+
+docFor :: String -> String
+docFor x =
+    "stack exec -- haddock --html --hyperlinked-source --odir=__docs/" ++ x
 
 cleanRules :: Rules ()
 cleanRules = do
@@ -22,10 +25,17 @@ buildRules :: Rules ()
 buildRules = do
     phony "docs" $
         need [ "track-docs"
+             , "fsdb-docs"
              ]
 
     phony "track-docs" $
         cmd
             Shell
-            [ "stack exec -- haddock --html --hyperlinked-source --odir=__docs/track" ]
-            [ "Track/app-cmd/Cmd/Options.hs" ]
+            (docFor "track-cmd")
+            [ "track/app-cmd/Cmd/Options.hs" ]
+
+    phony "fsdb-docs" $
+        cmd
+            Shell
+            (docFor "fsdb-cmd")
+            [ "fsdb/app-cmd/Cmd/Options.hs" ]
