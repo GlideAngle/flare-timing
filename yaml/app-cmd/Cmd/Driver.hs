@@ -1,16 +1,21 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE DeriveGeneric #-}
 
 module Cmd.Driver (driverMain) where
 
 import Control.Monad (mapM_, when)
 import System.Directory (doesFileExist, doesDirectoryExist)
 import System.FilePath (takeFileName)
-import System.FilePath.Find (FileType(..), (==?), (&&?), find, always, fileType, extension)
+import System.FilePath.Find
+    (FileType(..), (==?), (&&?), find, always, fileType, extension)
+import System.FilePath (replaceExtension)
 
 import Cmd.Args (withCmdArgs)
-import Cmd.Options (CmdOptions(..), Detail(..))
+import Cmd.Options (CmdOptions(..))
 import Data.Flight.Types (showTask)
+import Data.Flight.Nominal (Nominal(..))
+import Data.Flight.Comp (Comp(..))
 import qualified Data.Flight.Comp as C (parse)
 import qualified Data.Flight.Nominal as N (parse)
 import qualified Data.Flight.Waypoint as W (parse)
@@ -21,29 +26,20 @@ import Data.Flight.Pilot
     , parseTracks
     , parseTaskFolders
     )
+import Data.Yaml
+import GHC.Generics (Generic)
+import Data.Aeson (ToJSON(..), FromJSON(..))
+
+data CompSettings =
+    CompSettings { comp :: Comp
+                 , nominal :: Nominal
+                 } deriving (Show, Generic)
+
+instance ToJSON CompSettings
+instance FromJSON CompSettings
 
 driverMain :: IO ()
 driverMain = withCmdArgs drive
-
-showTaskPilots :: [ (Int, [ Pilot ]) ] -> [ String ]
-showTaskPilots [] = [ "No tasks." ]
-showTaskPilots xs =
-    (\(i, pilots) -> "Task #" ++ show i ++ " pilots: " ++ show pilots) <$> xs
-
-showPilots :: [[ Pilot ]] -> String
-showPilots [] = "No pilots."
-showPilots (comp : tasks) =
-    unlines $ ("Comp pilots: " ++ show comp) : showTaskPilots (zip [ 1 .. ] tasks) 
-
-showTaskPilotTracks :: [ (Int, [ PilotTrackLogFile ]) ] -> [ String ]
-showTaskPilotTracks [] = [ "No tasks." ]
-showTaskPilotTracks xs =
-    (\(i, pilotTracks) -> "Task #" ++ show i ++ " pilot tracks: " ++ show pilotTracks) <$> xs
-
-showPilotTracks :: [[ PilotTrackLogFile ]] -> String
-showPilotTracks [] = "No pilots."
-showPilotTracks tasks =
-    unlines $ showTaskPilotTracks (zip [ 1 .. ] tasks) 
 
 drive :: CmdOptions -> IO ()
 drive CmdOptions{..} = do
@@ -62,53 +58,27 @@ drive CmdOptions{..} = do
             putStrLn $ takeFileName path
             contents <- readFile path
             let contents' = dropWhile (/= '<') contents
+            let path' = replaceExtension path ".yaml"
 
-            when (null detail || Comp `elem` detail) $ printComp contents'
-            when (null detail || Nominals `elem` detail) $ printNominal contents'
-            when (null detail || Pilots `elem` detail) $ printPilotNames contents'
-            when (null detail || Tasks `elem` detail) $ printTasks contents'
-            when (null detail || TaskFolders `elem` detail) $ printTaskFolders contents'
-            when (null detail || PilotTracks `elem` detail) $ printPilotTracks contents'
+            printNominal path' contents'
 
-printNominal :: String -> IO ()
-printNominal contents = do
-    nominal <- N.parse contents
-    case nominal of
-         Left msg -> print msg
-         Right nominal' -> print nominal'
+printNominal :: FilePath -> String -> IO ()
+printNominal path contents = do
+    cs <- C.parse contents
+    ns <- N.parse contents
+    case (cs, ns) of
+        (Left msg, _) -> print msg
+        (_, Left msg) -> print msg
 
-printPilotNames :: String -> IO ()
-printPilotNames contents = do
-    pilots <- parseNames contents
-    case pilots of
-         Left msg -> print msg
-         Right pilots' -> putStr $ showPilots pilots'
+        (Right [c], Right [n]) -> do
+            print c
+            print n
 
-printPilotTracks :: String -> IO ()
-printPilotTracks contents = do
-    pilotTracks <- parseTracks contents
-    case pilotTracks of
-         Left msg -> print msg
-         Right pilotTracks' -> putStr $ showPilotTracks pilotTracks'
+            let cfg =
+                    CompSettings { comp = c
+                                 , nominal = n
+                                 }
 
-printTaskFolders :: String -> IO ()
-printTaskFolders contents = do
-    taskFolders <- parseTaskFolders contents
-    case taskFolders of
-         Left msg -> print msg
-         Right taskFolders' -> print taskFolders'
+            encodeFile path cfg
 
-printTasks :: String -> IO ()
-printTasks contents = do
-    tasks <- W.parse contents
-    case tasks of
-         Left msg -> print msg
-         Right tasks' -> print $ showTask <$> tasks'
-
-printComp :: String -> IO ()
-printComp contents = do
-    comp <- C.parse contents
-    case comp of
-         Left msg -> print msg
-         Right comp' -> print comp'
-
+        _ -> print "Expected only one set of inputs"

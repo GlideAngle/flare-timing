@@ -27,7 +27,7 @@ import Control.Monad.Except (liftIO, throwError, when, unless)
 import Control.Monad.Trans.Except (runExceptT)
 import System.Directory (doesFileExist, doesDirectoryExist)
 import Text.RawString.QQ (r)
-import Cmd.Options (CmdOptions(..), Detail(..))
+import Cmd.Options (CmdOptions(..))
 
 description :: String
 description = intro
@@ -40,7 +40,6 @@ Convert fsdb (XML) to yaml with only the inputs needed for scoring.
 data Drive
     = Drive { dir :: String
             , file :: String
-            , detail :: [Detail]
             }
     deriving (Show, Data, Typeable)
 
@@ -53,11 +52,6 @@ drive
             , file = def
             &= help "With this one file"
             &= groupname "Source"
-
-            , detail = def
-            &= help "Focus on these details"
-            &= typ "tasks | nominals"
-            &= groupname "Filter"
             }
             &= summary ("Flight Scoring Database Parser " ++ showVersion version ++ description)
             &= program "flight-yaml-cmd.exe"
@@ -67,7 +61,7 @@ run = cmdArgs drive
 
 cmdArgsToDriveArgs :: Drive -> Maybe CmdOptions
 cmdArgsToDriveArgs Drive{..} =
-    return CmdOptions { dir = dir, file = file, detail = detail }
+    return CmdOptions { dir = dir, file = file }
 
 -- SEE: http://stackoverflow.com/questions/2138819/in-haskell-is-there-a-way-to-do-io-in-a-function-guard
 checkedOptions :: CmdOptions -> IO (Either String CmdOptions)
