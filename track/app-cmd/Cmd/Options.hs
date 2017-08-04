@@ -4,22 +4,33 @@ module Cmd.Options (CmdOptions(..), Reckon(..)) where
 
 import System.Console.CmdArgs.Implicit (Default(..), Data, Typeable)
 
+-- | Options passed in on the command line.
 data CmdOptions
     = CmdOptions { dir :: FilePath
+                 -- ^ Picking all competition in this directory.
                  , file :: FilePath
+                 -- ^ Picking the competition in this file.
                  , task :: [Int]
+                 -- ^ Include only these tasks.
                  , pilot :: [String]
+                 -- ^ Look only at these pilots
                  , reckon :: Reckon
+                 -- ^ Do the specified reckonings only.
                  }
                  deriving (Data, Typeable, Show)
 
+-- | The reckonings of task track logs.
 data Reckon
     = Goal
-    -- ^ Has this pilot made goal?
+    -- ^ Was goal made?
     | Zone
+    -- ^ What zones were made?
     | Distance
+    -- ^ What distance was flown?
     | Time 
+    -- ^ What was the time to fly the speed section?
     | Lead
+    -- ^ What is the leading coefficient?
     deriving (Data, Typeable, Eq, Show)
 
 instance Default Reckon where

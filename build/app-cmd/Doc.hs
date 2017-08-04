@@ -24,13 +24,8 @@ buildRules = do
         need [ "track-docs"
              ]
 
-    phony "track-docs" $ do
-        let files =
-                ("Track/app-cmd/Cmd" </>) <$>
-                [ "Options.hs"
-                ]
+    phony "track-docs" $
         cmd
             Shell
-            [ "stack exec -- haddock --html --hyperlinked-source --odir=__docs/track"
-            ]
-            files
+            [ "stack exec -- haddock --html --hyperlinked-source --odir=__docs/track" ]
+            [ "Track/app-cmd/Cmd/Options.hs" ]
