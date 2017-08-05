@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DuplicateRecordFields #-}
 
 module Data.Flight.Types
     ( Latitude(..)
@@ -36,8 +37,18 @@ newtype Longitude = Longitude Rational deriving (Eq, Show)
 type Radius = Integer
 type SpeedSection = Maybe (Integer, Integer)
 
-data Task = Task Name SpeedSection [Turnpoint] deriving (Eq, Show, Generic)
-data Turnpoint = Turnpoint Name Latitude Longitude Radius deriving (Eq, Show, Generic)
+data Task =
+    Task { taskName :: Name
+         , speedSection :: SpeedSection
+         , zones :: [Turnpoint]
+         } deriving (Eq, Show, Generic)
+
+data Turnpoint =
+    Turnpoint { zoneName :: Name
+              , lat :: Latitude
+              , lng :: Longitude
+              , radius :: Radius
+              } deriving (Eq, Show, Generic)
 
 instance ToJSON Turnpoint
 instance FromJSON Turnpoint

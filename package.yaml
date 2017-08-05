@@ -45,6 +45,9 @@ tests:
     - hxt-xpath
     - hlint
     - aeson
+    - scientific
+    - containers
+    - split
     ghc-options:
     - -rtsopts
     - -threaded
@@ -67,6 +70,9 @@ tests:
     - tasty-quickcheck
     - tasty-smallcheck
     - smallcheck
+    - aeson
+    - scientific
+    - containers
     ghc-options:
     - -rtsopts
     - -threaded

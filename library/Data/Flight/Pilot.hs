@@ -33,7 +33,7 @@ import Text.XML.HXT.Core
     , listA
     )
 import GHC.Generics (Generic)
-import Data.Aeson (ToJSON(..), FromJSON(..), Value(Number))
+import Data.Aeson (ToJSON(..), FromJSON(..))
 
 newtype Pilot = Pilot String deriving (Eq, Ord, Generic)
 newtype TrackLogFile = TrackLogFile String deriving (Eq, Ord)
