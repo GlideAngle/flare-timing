@@ -8,8 +8,12 @@ module Serve.Driver (driverRun) where
 import Network.Wai
 import Network.Wai.Middleware.Cors
 import Network.Wai.Handler.Warp
+-- TODO: Find out how to explicitly import :<|>.
 import Servant
-import Servant (Get, JSON, Server, Handler, Proxy(..), (:>), serve, throwError)
+import Servant
+    ( Get, JSON, Server, Handler, Proxy(..)
+    , (:>)
+    , err400, errBody, enter, serve, throwError, runReaderTNat)
 import System.IO
 import Control.Monad.Reader (ReaderT, ask, liftIO)
 import qualified Data.ByteString.Lazy.Char8 as LBS
@@ -37,7 +41,7 @@ type TaskApi =
     "tasks" :> Get '[JSON] [Task]
     :<|> "pilots" :> Get '[JSON] [[Pilot]]
 
-data AppEnv = AppEnv { path :: FilePath }
+newtype AppEnv = AppEnv { path :: FilePath }
 type FsdbHandler = ReaderT AppEnv Handler
 
 flareTimingApi :: Proxy FlareTimingApi

@@ -1,5 +1,3 @@
-{-# LANGUAGE DeriveDataTypeable #-}
-
 module Cmd.Options (CmdOptions(..)) where
 
 -- | Options passed in on the command line.

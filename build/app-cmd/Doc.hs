@@ -14,7 +14,7 @@ docFor x =
     "stack exec -- haddock --html --hyperlinked-source --odir=__docs/" ++ x
 
 cleanRules :: Rules ()
-cleanRules = do
+cleanRules =
     phony "clean-docs" $
         removeFilesAfter "__docs" [ "//*" ] 
 

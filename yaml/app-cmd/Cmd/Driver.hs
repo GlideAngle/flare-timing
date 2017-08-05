@@ -6,10 +6,9 @@ module Cmd.Driver (driverMain) where
 
 import Control.Monad (mapM_)
 import System.Directory (doesFileExist, doesDirectoryExist)
-import System.FilePath (takeFileName)
+import System.FilePath (takeFileName, replaceExtension)
 import System.FilePath.Find
     (FileType(..), (==?), (&&?), find, always, fileType, extension)
-import System.FilePath (replaceExtension)
 
 import Cmd.Args (withCmdArgs)
 import Cmd.Options (CmdOptions(..))
@@ -95,7 +94,7 @@ printNominal path contents = do
 
             BS.writeFile path yaml
 
-        _ -> print $ ("Expected only one set of inputs" :: String)
+        _ -> print ("Expected only one set of inputs" :: String)
 
     where
         cmp a b =
