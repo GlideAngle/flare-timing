@@ -79,7 +79,7 @@ getTask =
     >>> deep (hasName "FsTask")
     >>> getAttrValue "name"
     &&& getDefn
-    >>> arr (\(name, (speedSection, tps)) -> Task name speedSection tps)
+    >>> arr (\(name, (section, tps)) -> Task name section tps)
     where
         getDefn =
             getChildren
@@ -99,7 +99,7 @@ getTask =
             &&& getAttrValue "lat"
             &&& getAttrValue "lon"
             &&& getAttrValue "radius"
-            >>> arr (\(name, (lat, (lng, rad))) -> (name, lat, lng, rad))
+            >>> arr (\(name, (lat', (lng', rad))) -> (name, lat', lng', rad))
             >>. concatMap parseTurnpoint
 
 parse :: String -> IO (Either String [ Task ])
@@ -114,17 +114,17 @@ pRadius = pNat <?> "No radius"
 parseSpeedSection :: [(String, String)] -> SpeedSection
 parseSpeedSection [] = Nothing
 parseSpeedSection ((ss, es) : _) =
-    case speedSection of
+    case section of
          Right [ ss', es' ] -> Just (ss', es')
          _ -> Nothing
     where
-        speedSection =
+        section =
             sequence [ P.parse pNat "" ss
                      , P.parse pNat "" es
                      ]
 
 parseTurnpoint :: (String, String, String, String) -> [ Turnpoint ]
-parseTurnpoint (name, lat, lng, radius) =
+parseTurnpoint (name, tpLat, tpLng, tpRadius) =
     case (latlng, rad) of
         (Right [ lat', lng' ], Right rad') ->
             [ Turnpoint name (Latitude lat') (Longitude lng') rad' ]
@@ -133,9 +133,9 @@ parseTurnpoint (name, lat, lng, radius) =
             []
     where
         latlng =
-            sequence [ P.parse (pRat "No latitude") "" lat
-                     , P.parse (pRat "No longitude") "" lng
+            sequence [ P.parse (pRat "No latitude") "" tpLat
+                     , P.parse (pRat "No longitude") "" tpLng
                      ]
 
         rad =
-            P.parse pRadius "" radius
+            P.parse pRadius "" tpRadius

@@ -89,26 +89,26 @@ showRadius r
     | otherwise = let y = truncate (r % 1000) :: Integer in show y ++ " km"
 
 showLat :: Latitude -> String
-showLat (Latitude lat) =
+showLat (Latitude lat') =
     if x < 0
        then showSci (negate x) ++ " S"
        else showSci x ++ " N"
     where
-        x = toSci lat
+        x = toSci lat'
 
 showLng :: Longitude -> String
-showLng (Longitude lng) =
+showLng (Longitude lng') =
     if x < 0
        then showSci (negate x) ++ " W"
        else showSci x ++ " E"
     where
-        x = toSci lng
+        x = toSci lng'
 
 showTurnpoint :: Turnpoint -> String
-showTurnpoint (Turnpoint name lat lng rad) =
+showTurnpoint (Turnpoint name lat' lng' rad) =
     unwords [ name
-            , showLat lat
-            , showLng lng
+            , showLat lat'
+            , showLng lng'
             , showRadius rad
             ]
 
