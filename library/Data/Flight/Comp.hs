@@ -22,7 +22,7 @@ import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 
 data Comp = Comp { civilId :: String
-                 , name :: String 
+                 , compName :: String 
                  , location :: String 
                  , from :: String 
                  , to :: String 
