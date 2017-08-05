@@ -4,8 +4,7 @@
 
 module Cmd.Driver (driverMain) where
 
-import Debug.Trace
-import Control.Monad (mapM_, when)
+import Control.Monad (mapM_)
 import System.Directory (doesFileExist, doesDirectoryExist)
 import System.FilePath (takeFileName)
 import System.FilePath.Find
@@ -14,7 +13,7 @@ import System.FilePath (replaceExtension)
 
 import Cmd.Args (withCmdArgs)
 import Cmd.Options (CmdOptions(..))
-import Data.Flight.Types (Task(..), showTask)
+import Data.Flight.Types (Task(..))
 import Data.Flight.Nominal (Nominal(..))
 import Data.Flight.Comp (Comp(..))
 import qualified Data.Flight.Comp as C (parse)
@@ -27,7 +26,6 @@ import Data.Flight.Pilot
     , parseTracks
     , parseTaskFolders
     )
-import Data.Yaml
 import qualified Data.Yaml.Pretty as Y
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
@@ -90,7 +88,7 @@ printNominal path contents = do
 
             BS.writeFile path yaml
 
-        _ -> print "Expected only one set of inputs"
+        _ -> print $ ("Expected only one set of inputs" :: String)
 
     where
         cmp a b =
@@ -120,4 +118,4 @@ printNominal path contents = do
                 ("lng", "lat") -> GT
                 ("lng", _) -> LT
                 ("radius", _) -> GT
-                (a, b) -> compare a b
+                _ -> compare a b
