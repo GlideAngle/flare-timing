@@ -61,7 +61,7 @@ fromSci x = toRational (toRealFloat x :: Double)
 
 toSci :: Rational -> Scientific
 toSci x =
-    case fromRationalRepetend Nothing x of
+    case fromRationalRepetend (Just 7) x of
         Left (s, _) -> s
         Right (s, _) -> s
 
