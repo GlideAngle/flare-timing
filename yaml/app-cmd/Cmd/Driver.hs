@@ -20,9 +20,8 @@ import qualified Data.Flight.Comp as C (parse)
 import qualified Data.Flight.Nominal as N (parse)
 import qualified Data.Flight.Waypoint as W (parse)
 import Data.Flight.Pilot
-    ( Pilot(..)
+    ( TaskFolder(..)
     , PilotTrackLogFile(..)
-    , parseNames
     , parseTracks
     , parseTaskFolders
     )
@@ -35,6 +34,8 @@ data CompSettings =
     CompSettings { comp :: Comp
                  , nominal :: Nominal
                  , tasks :: [Task]
+                 , taskFolders :: [TaskFolder]
+                 , pilots :: [[PilotTrackLogFile]]
                  } deriving (Show, Generic)
 
 instance ToJSON CompSettings
@@ -69,16 +70,22 @@ printNominal path contents = do
     cs <- C.parse contents
     ns <- N.parse contents
     ws <- W.parse contents
-    case (cs, ns, ws) of
-        (Left msg, _, _) -> print msg
-        (_, Left msg, _) -> print msg
-        (_, _, Left msg) -> print msg
+    fs <- parseTaskFolders contents
+    ps <- parseTracks contents
+    case (cs, ns, ws, fs, ps) of
+        (Left msg, _, _, _ , _) -> print msg
+        (_, Left msg, _, _ , _) -> print msg
+        (_, _, Left msg, _, _) -> print msg
+        (_, _, _, Left msg, _) -> print msg
+        (_, _, _, _, Left msg) -> print msg
 
-        (Right [c], Right [n], Right w) -> do
+        (Right [c], Right [n], Right w, Right f, Right p) -> do
             let cfg =
                     CompSettings { comp = c
                                  , nominal = n
                                  , tasks = w
+                                 , taskFolders = f
+                                 , pilots = p
                                  }
 
             let yaml =
@@ -97,6 +104,12 @@ printNominal path contents = do
                 ("comp", _) -> LT
                 ("nominal", "comp") -> GT
                 ("nominal", _) -> LT
+                ("tasks", "taskFolders") -> LT
+                ("tasks", "pilots") -> LT
+                ("tasks", _) -> GT
+                ("taskFolders", "pilots") -> LT
+                ("taskFolders", _) -> GT
+                ("pilots", _) -> GT
                 -- Comp fields
                 ("compName", _) -> LT
                 ("location", "compName") -> GT

@@ -18,7 +18,6 @@ import System.Console.CmdArgs.Implicit
     , summary
     , program
     , help
-    , typ
     , groupname
     , cmdArgs
     , (&=)

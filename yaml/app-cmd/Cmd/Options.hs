@@ -2,8 +2,6 @@
 
 module Cmd.Options (CmdOptions(..)) where
 
-import System.Console.CmdArgs.Implicit (Data)
-
 -- | Options passed in on the command line.
 data CmdOptions
     = CmdOptions { dir :: FilePath
