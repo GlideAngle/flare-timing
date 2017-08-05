@@ -13,7 +13,7 @@ import System.FilePath (replaceExtension)
 
 import Cmd.Args (withCmdArgs)
 import Cmd.Options (CmdOptions(..))
-import Data.Flight.Types (showTask)
+import Data.Flight.Types (Task(..), showTask)
 import Data.Flight.Nominal (Nominal(..))
 import Data.Flight.Comp (Comp(..))
 import qualified Data.Flight.Comp as C (parse)
@@ -33,6 +33,7 @@ import Data.Aeson (ToJSON(..), FromJSON(..))
 data CompSettings =
     CompSettings { comp :: Comp
                  , nominal :: Nominal
+                 , tasks :: [Task]
                  } deriving (Show, Generic)
 
 instance ToJSON CompSettings
@@ -66,17 +67,21 @@ printNominal :: FilePath -> String -> IO ()
 printNominal path contents = do
     cs <- C.parse contents
     ns <- N.parse contents
-    case (cs, ns) of
-        (Left msg, _) -> print msg
-        (_, Left msg) -> print msg
+    ws <- W.parse contents
+    case (cs, ns, ws) of
+        (Left msg, _, _) -> print msg
+        (_, Left msg, _) -> print msg
+        (_, _, Left msg) -> print msg
 
-        (Right [c], Right [n]) -> do
+        (Right [c], Right [n], Right w) -> do
             print c
             print n
+            print w
 
             let cfg =
                     CompSettings { comp = c
                                  , nominal = n
+                                 , tasks = w
                                  }
 
             encodeFile path cfg
