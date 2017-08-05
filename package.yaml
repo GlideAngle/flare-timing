@@ -41,6 +41,7 @@ executables:
     - transformers
     - yaml
     - aeson
+    - bytestring
     - flight-fsdb 
     ghc-options:
     - -rtsopts

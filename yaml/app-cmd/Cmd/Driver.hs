@@ -4,6 +4,7 @@
 
 module Cmd.Driver (driverMain) where
 
+import Debug.Trace
 import Control.Monad (mapM_, when)
 import System.Directory (doesFileExist, doesDirectoryExist)
 import System.FilePath (takeFileName)
@@ -27,8 +28,10 @@ import Data.Flight.Pilot
     , parseTaskFolders
     )
 import Data.Yaml
+import qualified Data.Yaml.Pretty as Y
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
+import qualified Data.ByteString as BS
 
 data CompSettings =
     CompSettings { comp :: Comp
@@ -74,16 +77,39 @@ printNominal path contents = do
         (_, _, Left msg) -> print msg
 
         (Right [c], Right [n], Right w) -> do
-            print c
-            print n
-            print w
-
             let cfg =
                     CompSettings { comp = c
                                  , nominal = n
                                  , tasks = w
                                  }
 
-            encodeFile path cfg
+            let yaml =
+                    Y.encodePretty
+                        (Y.setConfCompare cmp Y.defConfig)
+                        cfg
+
+            BS.writeFile path yaml
 
         _ -> print "Expected only one set of inputs"
+
+    where
+        cmp a b =
+            case (a, b) of
+                -- CompSettings fields
+                ("comp", _) -> LT
+                ("nominal", "comp") -> GT
+                ("nominal", _) -> LT
+                -- Task fields
+                ("taskName", _) -> LT
+                ("zones", "taskName") -> GT
+                ("zones", _) -> LT
+                ("speedSection", _) -> GT
+                -- Turnpoint fields
+                ("zoneName", _) -> LT
+                ("lat", "zoneName") -> GT
+                ("lat", _) -> LT
+                ("lng", "zoneName") -> GT
+                ("lng", "lat") -> GT
+                ("lng", _) -> LT
+                ("radius", _) -> GT
+                (a, b) -> compare a b
