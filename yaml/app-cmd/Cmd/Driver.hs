@@ -99,6 +99,14 @@ printNominal path contents = do
                 ("comp", _) -> LT
                 ("nominal", "comp") -> GT
                 ("nominal", _) -> LT
+                -- Comp fields
+                ("compName", _) -> LT
+                ("location", "compName") -> GT
+                ("location", _) -> LT
+                ("from", "to") -> LT
+                ("civilId", "utcOffset") -> LT
+                ("civilId", _) -> GT
+                ("utcOffset", _) -> GT
                 -- Task fields
                 ("taskName", _) -> LT
                 ("zones", "taskName") -> GT
