@@ -1,10 +1,13 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module Cmd.Driver (driverMain) where
 
 import Control.Monad (mapM_)
+import Control.Monad.Trans.Except (throwE)
+import Control.Monad.Except (ExceptT(..), runExceptT, lift)
 import System.Directory (doesFileExist, doesDirectoryExist)
 import System.FilePath (takeFileName, replaceExtension)
 import System.FilePath.Find
@@ -28,6 +31,9 @@ import qualified Data.Yaml.Pretty as Y
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import qualified Data.ByteString as BS
+
+liftEither :: Monad m => Either e a -> ExceptT e m a
+liftEither x = ExceptT (return x)
 
 data CompSettings =
     CompSettings { comp :: Comp
@@ -56,47 +62,23 @@ drive CmdOptions{..} = do
         else
             putStrLn "Couldn't find any flight score competition database input files."
     where
-        go path = do
-            putStrLn $ takeFileName path
-            contents <- readFile path
+        go fsdbPath = do
+            putStrLn $ takeFileName fsdbPath
+            contents <- readFile fsdbPath
             let contents' = dropWhile (/= '<') contents
-            let path' = replaceExtension path ".yaml"
+            let yamlPath = replaceExtension fsdbPath ".yaml"
 
-            printNominal path' contents'
+            settings <- runExceptT $ fsdbSettings contents'
+            case settings of
+                Left msg -> print msg
+                Right cfg -> do
+                    let yaml =
+                            Y.encodePretty
+                                (Y.setConfCompare cmp Y.defConfig)
+                                cfg
 
-printNominal :: FilePath -> String -> IO ()
-printNominal path contents = do
-    cs <- C.parse contents
-    ns <- N.parse contents
-    ws <- W.parse contents
-    fs <- parseTaskFolders contents
-    ps <- parseTracks contents
-    case (cs, ns, ws, fs, ps) of
-        (Left msg, _, _, _ , _) -> print msg
-        (_, Left msg, _, _ , _) -> print msg
-        (_, _, Left msg, _, _) -> print msg
-        (_, _, _, Left msg, _) -> print msg
-        (_, _, _, _, Left msg) -> print msg
+                    BS.writeFile yamlPath yaml
 
-        (Right [c], Right [n], Right w, Right f, Right p) -> do
-            let cfg =
-                    CompSettings { comp = c
-                                 , nominal = n
-                                 , tasks = w
-                                 , taskFolders = f
-                                 , pilots = p
-                                 }
-
-            let yaml =
-                    Y.encodePretty
-                        (Y.setConfCompare cmp Y.defConfig)
-                        cfg
-
-            BS.writeFile path yaml
-
-        _ -> print ("Expected only one set of inputs" :: String)
-
-    where
         cmp a b =
             case (a, b) of
                 -- CompSettings fields
@@ -131,3 +113,52 @@ printNominal path contents = do
                 ("lng", _) -> LT
                 ("radius", _) -> GT
                 _ -> compare a b
+
+fsdbComp :: String -> ExceptT String IO Comp
+fsdbComp contents = do
+    cs <- lift $ C.parse contents
+    case cs of
+        Right [c] -> liftEither $ Right c
+        _ -> do
+            let msg = "Expected only one comp"
+            lift $ print msg
+            throwE msg
+
+fsdbNominal :: String -> ExceptT String IO Nominal
+fsdbNominal contents = do
+    ns <- lift $ N.parse contents
+    case ns of
+        Right [n] -> liftEither $ Right n
+        _ -> do
+            let msg = "Expected only one set of nominals for the comp"
+            lift $ print msg
+            throwE msg
+
+fsdbTasks :: String -> ExceptT String IO [Task]
+fsdbTasks contents = do
+    ws <- lift $ W.parse contents
+    liftEither ws
+
+fsdbTaskFolders :: String -> ExceptT String IO [TaskFolder]
+fsdbTaskFolders contents = do
+    ws <- lift $ parseTaskFolders contents
+    liftEither ws
+
+fsdbTracks :: String -> ExceptT String IO [[PilotTrackLogFile]]
+fsdbTracks contents = do
+    ws <- lift $ parseTracks contents
+    liftEither ws
+
+fsdbSettings :: String -> ExceptT String IO CompSettings
+fsdbSettings contents = do
+    c <- fsdbComp contents
+    n <- fsdbNominal contents
+    ws <- fsdbTasks contents
+    fs <- fsdbTaskFolders contents
+    ps <- fsdbTracks contents
+    return CompSettings { comp = c
+                        , nominal = n
+                        , tasks = ws
+                        , taskFolders = fs
+                        , pilots = ps
+                        }
