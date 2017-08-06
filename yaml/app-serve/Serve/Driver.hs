@@ -2,6 +2,7 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE DeriveGeneric #-}
 
 module Serve.Driver (driverRun) where
 
@@ -16,20 +17,39 @@ import Servant
     , err400, errBody, enter, serve, throwError, runReaderTNat)
 import System.IO
 import Control.Monad.Reader (ReaderT, ask, liftIO)
+import Control.Monad.Trans.Except (throwE)
+import Control.Monad.Except (ExceptT(..), runExceptT, lift)
 import qualified Data.ByteString.Lazy.Char8 as LBS
 
 import System.Directory (doesFileExist)
 import System.FilePath (FilePath)
+import Data.Yaml (decodeEither)
+import GHC.Generics (Generic)
+import Data.Aeson (ToJSON(..), FromJSON(..))
+import qualified Data.ByteString as BS
 
 import Serve.Args (withCmdArgs)
 import Serve.Options (ServeOptions(..))
 import Data.Flight.Types (Task)
 import Data.Flight.Comp (Comp)
 import Data.Flight.Nominal (Nominal)
-import qualified Data.Flight.Comp as C (parse)
-import qualified Data.Flight.Nominal as N (parse)
-import qualified Data.Flight.Waypoint as W (parse)
-import Data.Flight.Pilot (Pilot(..), parseNames)
+import Data.Flight.Pilot (TaskFolder(..), PilotTrackLogFile(..), Pilot(..))
+
+-- SEE: https://github.com/kqr/gists/blob/master/articles/gentle-introduction-monad-transformers.md
+liftEither :: Monad m => Either e a -> ExceptT e m a
+liftEither x = ExceptT (return x)
+
+data CompSettings =
+    CompSettings { comp :: Comp
+                 , nominal :: Nominal
+                 , tasks :: [Task]
+                 , taskFolders :: [TaskFolder]
+                 , pilots :: [[PilotTrackLogFile]]
+                 } deriving (Show, Generic)
+
+instance ToJSON CompSettings
+instance FromJSON CompSettings
+
 
 type FlareTimingApi = CompApi :<|> TaskApi
 
@@ -55,7 +75,7 @@ drive ServeOptions{..} = do
     dfe <- doesFileExist file
     if dfe
         then go file
-        else putStrLn "Couldn't find the flight score competition database input file."
+        else putStrLn "Couldn't find the flight score competition yaml input file."
     where
         port = 3000
 
@@ -87,12 +107,6 @@ serverTask env =
     enter (runReaderTNat env) queryTasks
     :<|> enter (runReaderTNat env) queryPilots
 
-readWith :: (String -> IO (Either String a)) -> FilePath -> IO (Either String a)
-readWith f path = do
-    contents <- readFile path
-    let xml = dropWhile (/= '<') contents
-    f xml
-
 queryWith :: (FilePath -> IO (Either String a)) -> FsdbHandler a
 queryWith f = do
     path' <- path <$> ask
@@ -101,26 +115,44 @@ queryWith f = do
       Left msg -> throwError $ err400 { errBody = LBS.pack msg }
       Right xs' -> return xs'
 
-readComps :: FilePath -> IO (Either String [Comp])
-readComps = readWith C.parse
+yamlComps :: FilePath -> ExceptT String IO [Comp]
+yamlComps yamlPath = do
+    contents <- lift $ BS.readFile yamlPath
+    case decodeEither contents of
+        Left msg -> throwE msg
+        Right CompSettings{..} -> liftEither $ Right [comp]
+
+yamlNominals :: FilePath -> ExceptT String IO [Nominal]
+yamlNominals yamlPath = do
+    contents <- lift $ BS.readFile yamlPath
+    case decodeEither contents of
+        Left msg -> throwE msg
+        Right CompSettings{..} -> liftEither $ Right [nominal]
+
+yamlTasks :: FilePath -> ExceptT String IO [Task]
+yamlTasks yamlPath = do
+    contents <- lift $ BS.readFile yamlPath
+    case decodeEither contents of
+        Left msg -> throwE msg
+        Right CompSettings{..} -> liftEither $ Right tasks
+
+yamlPilots :: FilePath -> ExceptT String IO [[Pilot]]
+yamlPilots yamlPath = do
+    contents <- lift $ BS.readFile yamlPath
+    case decodeEither contents of
+        Left msg -> throwE msg
+        Right CompSettings{..} -> liftEither $ Right $ (fmap . fmap) pilot pilots
+    where
+        pilot (PilotTrackLogFile p _) = p
 
 queryComps :: FsdbHandler [Comp]
-queryComps = queryWith readComps
-
-readTasks :: FilePath -> IO (Either String [Task])
-readTasks = readWith W.parse
-
-queryTasks :: FsdbHandler [Task]
-queryTasks = queryWith readTasks
-
-readPilots :: FilePath -> IO (Either String [[Pilot]])
-readPilots = readWith parseNames
-
-queryPilots :: FsdbHandler [[Pilot]]
-queryPilots = queryWith readPilots
-
-readNominals :: FilePath -> IO (Either String [Nominal])
-readNominals = readWith N.parse
+queryComps = queryWith (runExceptT . yamlComps)
 
 queryNominals :: FsdbHandler [Nominal]
-queryNominals = queryWith readNominals
+queryNominals = queryWith (runExceptT . yamlNominals)
+
+queryTasks :: FsdbHandler [Task]
+queryTasks = queryWith (runExceptT . yamlTasks)
+
+queryPilots :: FsdbHandler [[Pilot]]
+queryPilots = queryWith (runExceptT . yamlPilots)
