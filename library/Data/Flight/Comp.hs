@@ -10,13 +10,26 @@ Stability   : experimental
 Data for competitions, competitors and tasks.
 -}
 module Data.Flight.Comp
-    ( Comp(..)
+    ( -- * Competition
+      Comp(..)
     , Nominal(..)
+    -- * Zone
+    , Zone(..)
+    , Radius
+    , showRadius
+    , showZone
+    -- * Task
     , Task(..)
-    , module Data.Flight.LatLng
-    , module Data.Flight.Zone
     , SpeedSection
     , showTask
+    -- * Pilot
+    , Pilot(..)
+    , PilotTrackLogFile(..)
+    , TrackLogFile(..)
+    , TaskFolder(..)
+    -- * Coordinates
+    , Latitude(..)
+    , Longitude(..)
     ) where
 
 import GHC.Generics (Generic)
@@ -25,6 +38,7 @@ import Data.List (intercalate)
 
 import Data.Flight.LatLng
 import Data.Flight.Zone
+import Data.Flight.Pilot
 
 type SpeedSection = Maybe (Integer, Integer)
 

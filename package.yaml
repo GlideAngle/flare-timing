@@ -15,7 +15,6 @@ library:
   - aeson
   - scientific
   - containers
-  - split
   source-dirs: library
   exposed-modules:
   - Data.Flight.Comp

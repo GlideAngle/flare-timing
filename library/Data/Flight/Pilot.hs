@@ -1,4 +1,3 @@
-{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE DeriveGeneric #-}
 
 module Data.Flight.Pilot
@@ -18,16 +17,9 @@ newtype TrackLogFile = TrackLogFile String deriving (Eq, Ord, Generic)
 -- parts, stripping the path separators.
 newtype TaskFolder = TaskFolder [ String ] deriving (Generic)
 
-newtype KeyPilot = KeyPilot (String, String) deriving Show
-newtype KeyTrackLogFile = KeyTrackLogFile (String, String) deriving Show
-newtype Key = Key String deriving Show
-newtype TaskKey = TaskKey (String, [ Key ]) deriving Show
 
 data PilotTrackLogFile =
     PilotTrackLogFile Pilot (Maybe TrackLogFile) deriving (Eq, Ord, Generic)
-
-newtype TaskKeyTrackLogFile =
-    TaskKeyTrackLogFile (String, [ KeyTrackLogFile ]) deriving Show
 
 instance ToJSON TaskFolder
 instance FromJSON TaskFolder
