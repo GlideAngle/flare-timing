@@ -19,13 +19,10 @@ library:
   - scientific
   - containers
   - split
+  - flight-comp
   source-dirs: library
   exposed-modules:
-  - Data.Flight.Comp
-  - Data.Flight.Nominal
-  - Data.Flight.Pilot
-  - Data.Flight.Types
-  - Data.Flight.Waypoint
+  - Data.Flight.Fsdb
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
 name: flight-fsdb 
@@ -48,6 +45,7 @@ tests:
     - scientific
     - containers
     - split
+    - flight-comp
     ghc-options:
     - -rtsopts
     - -threaded
@@ -73,6 +71,7 @@ tests:
     - aeson
     - scientific
     - containers
+    - flight-comp
     ghc-options:
     - -rtsopts
     - -threaded

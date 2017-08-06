@@ -2,21 +2,7 @@
 {-# LANGUAGE PartialTypeSignatures #-}
 {-# LANGUAGE FlexibleInstances #-}
 
-{-|
-Module      : Data.Waypoint
-Copyright   : (c) Block Scope Limited 2017
-License     : BSD3
-Maintainer  : phil.dejoux@blockscope.com
-Stability   : experimental
-
-Provides parsing the fsdb format for competitors, tasks and results.
--}
-module Data.Flight.Waypoint
-    ( Task
-    , Latitude
-    , Longitude
-    , parse
-    ) where
+module Data.Flight.Fsdb.Task (parseTasks) where
 
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
 import Text.XML.HXT.Core
@@ -50,10 +36,10 @@ import Text.Parsec.Language (emptyDef)
 import Data.Functor.Identity (Identity)
 import Text.Parsec.Prim (ParsecT, parsecMap)
 
-import Data.Flight.Types
+import Data.Flight.Comp
     ( Latitude(..)
     , Longitude(..)
-    , Turnpoint(..)
+    , Zone(..)
     , Task(..)
     , SpeedSection
     )
@@ -94,16 +80,16 @@ getTask =
 
         getTps =
             getChildren
-            >>> hasName "FsTurnpoint"
+            >>> hasName "FsZone"
             >>> getAttrValue "id"
             &&& getAttrValue "lat"
             &&& getAttrValue "lon"
             &&& getAttrValue "radius"
             >>> arr (\(name, (lat', (lng', rad))) -> (name, lat', lng', rad))
-            >>. concatMap parseTurnpoint
+            >>. concatMap parseZone
 
-parse :: String -> IO (Either String [ Task ])
-parse contents = do
+parseTasks :: String -> IO (Either String [Task])
+parseTasks contents = do
     let doc = readString [ withValidate no, withWarnings no ] contents
     xs <- runX $ doc >>> getTask
     return $ Right xs
@@ -123,11 +109,11 @@ parseSpeedSection ((ss, es) : _) =
                      , P.parse pNat "" es
                      ]
 
-parseTurnpoint :: (String, String, String, String) -> [ Turnpoint ]
-parseTurnpoint (name, tpLat, tpLng, tpRadius) =
+parseZone :: (String, String, String, String) -> [Zone]
+parseZone (name, tpLat, tpLng, tpRadius) =
     case (latlng, rad) of
         (Right [ lat', lng' ], Right rad') ->
-            [ Turnpoint name (Latitude lat') (Longitude lng') rad' ]
+            [ Zone name (Latitude lat') (Longitude lng') rad' ]
 
         _ ->
             []

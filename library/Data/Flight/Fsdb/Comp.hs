@@ -1,6 +1,4 @@
-{-# LANGUAGE DeriveGeneric #-}
-
-module Data.Flight.Comp (Comp(..), parse) where
+module Data.Flight.Fsdb.Comp (parseComp) where
 
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
 import Text.XML.HXT.Core
@@ -18,19 +16,8 @@ import Text.XML.HXT.Core
     , deep
     , arr
     )
-import GHC.Generics (Generic)
-import Data.Aeson (ToJSON(..), FromJSON(..))
 
-data Comp = Comp { civilId :: String
-                 , compName :: String 
-                 , location :: String 
-                 , from :: String 
-                 , to :: String 
-                 , utcOffset :: String 
-                 } deriving (Show, Generic)
-
-instance ToJSON Comp
-instance FromJSON Comp
+import Data.Flight.Comp (Comp(..))
 
 getComp :: ArrowXml a => a XmlTree Comp
 getComp =
@@ -44,8 +31,8 @@ getComp =
     &&& getAttrValue "utc_offset"
     >>> arr (\(i, (n, (l, (f, (t, u))))) -> Comp i n l f t u)
 
-parse :: String -> IO (Either String [ Comp ])
-parse contents = do
+parseComp :: String -> IO (Either String [ Comp ])
+parseComp contents = do
     let doc = readString [ withValidate no, withWarnings no ] contents
     xs <- runX $ doc >>> getComp
     return $ Right xs

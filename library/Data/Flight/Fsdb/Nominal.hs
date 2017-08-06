@@ -1,6 +1,4 @@
-{-# LANGUAGE DeriveGeneric #-}
-
-module Data.Flight.Nominal (Nominal(..), parse) where
+module Data.Flight.Fsdb.Nominal (parseNominal) where
 
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
 import Text.XML.HXT.Core
@@ -18,16 +16,8 @@ import Text.XML.HXT.Core
     , deep
     , arr
     )
-import GHC.Generics (Generic)
-import Data.Aeson (ToJSON(..), FromJSON(..))
 
-data Nominal = Nominal { distance :: String
-                       , time :: String 
-                       , goal :: String 
-                       } deriving (Show, Generic)
-
-instance ToJSON Nominal
-instance FromJSON Nominal
+import Data.Flight.Comp (Nominal(..))
 
 getNominal :: ArrowXml a => a XmlTree Nominal
 getNominal =
@@ -43,8 +33,8 @@ getNominal =
             &&& getAttrValue "nom_goal"
             >>> arr (\(d, (t, g)) -> Nominal d t g)
 
-parse :: String -> IO (Either String [ Nominal ])
-parse contents = do
+parseNominal :: String -> IO (Either String [Nominal])
+parseNominal contents = do
     let doc = readString [ withValidate no, withWarnings no ] contents
     xs <- runX $ doc >>> getNominal
     return $ Right xs
