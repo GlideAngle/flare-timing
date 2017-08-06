@@ -32,6 +32,7 @@ import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import qualified Data.ByteString as BS
 
+-- SEE: https://github.com/kqr/gists/blob/master/articles/gentle-introduction-monad-transformers.md
 liftEither :: Monad m => Either e a -> ExceptT e m a
 liftEither x = ExceptT (return x)
 
