@@ -44,9 +44,6 @@ loading = do
     el "li" $ do
         text "Comps will be shown here"
 
-getName :: Comp -> String
-getName Comp{..} = name
-
 comp :: forall t (m :: * -> *). MonadWidget t m
      => Dynamic t [(Int, Nominal)]
      -> Dynamic t (Int, Comp)
@@ -56,7 +53,7 @@ comp ns cs = do
     ii :: Int <- sample $ current i
     let c :: Dynamic t Comp = fmap snd cs 
     let n :: Dynamic t (Maybe (Int, Nominal)) = fmap (find (\(iN, _) -> iN == ii)) ns
-    let title = fmap (T.pack . (\Comp{..} -> name)) c
+    let title = fmap (T.pack . (\Comp{..} -> compName)) c
     let subtitle =
             fmap (T.pack . (\Comp{..} ->
                 mconcat [ from
