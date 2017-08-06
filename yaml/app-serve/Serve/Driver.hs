@@ -15,6 +15,7 @@ import Servant
     ( Get, JSON, Server, Handler, Proxy(..)
     , (:>)
     , err400, errBody, enter, serve, throwError, runReaderTNat)
+
 import System.IO
 import Control.Monad.Reader (ReaderT, ask, liftIO)
 import Control.Monad.Trans.Except (throwE)
@@ -30,10 +31,8 @@ import qualified Data.ByteString as BS
 
 import Serve.Args (withCmdArgs)
 import Serve.Options (ServeOptions(..))
-import Data.Flight.Types (Task)
-import Data.Flight.Comp (Comp)
-import Data.Flight.Nominal (Nominal)
-import Data.Flight.Pilot (TaskFolder(..), PilotTrackLogFile(..), Pilot(..))
+import Data.Flight.Comp
+    (Comp, Task, Nominal, TaskFolder(..), PilotTrackLogFile(..), Pilot(..))
 
 -- SEE: https://github.com/kqr/gists/blob/master/articles/gentle-introduction-monad-transformers.md
 liftEither :: Monad m => Either e a -> ExceptT e m a

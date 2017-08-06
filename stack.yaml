@@ -2,6 +2,8 @@ flags: {}
 local-bin-path: __shake-build
 packages:
 - location: .
+- location: ../haskell-flight-comp
+  extra-dep: true
 - location: ../haskell-flight-fsdb
   extra-dep: true
 - location: ../haskell-flight-igc

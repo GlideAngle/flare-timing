@@ -1,7 +1,8 @@
-{ mkDerivation, aeson, ansi-terminal, base, cmdargs, directory
-, filemanip, filepath, flight-fsdb, flight-igc, flight-kml, hlint
-, mtl, raw-strings-qq, servant, servant-server, shake, stdenv
-, system-filepath, time, transformers, wai, wai-cors, warp
+{ mkDerivation, aeson, ansi-terminal, base, bytestring, cmdargs
+, directory, filemanip, filepath, flight-comp, flight-fsdb
+, flight-igc, flight-kml, hlint, mtl, raw-strings-qq, servant
+, servant-server, shake, stdenv, system-filepath, time
+, transformers, wai, wai-cors, warp, yaml
 }:
 mkDerivation {
   pname = "flare-timing";
@@ -10,10 +11,10 @@ mkDerivation {
   isLibrary = false;
   isExecutable = true;
   executableHaskellDepends = [
-    aeson ansi-terminal base cmdargs directory filemanip filepath
-    flight-fsdb flight-igc flight-kml mtl raw-strings-qq servant
-    servant-server shake system-filepath time transformers wai wai-cors
-    warp
+    aeson ansi-terminal base bytestring cmdargs directory filemanip
+    filepath flight-comp flight-fsdb flight-igc flight-kml mtl
+    raw-strings-qq servant servant-server shake system-filepath time
+    transformers wai wai-cors warp yaml
   ];
   testHaskellDepends = [ base hlint ];
   homepage = "https://github.com/BlockScope/flare-timing#readme";

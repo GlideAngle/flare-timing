@@ -20,9 +20,9 @@ executables:
     - cmdargs
     - mtl
     - transformers
-    - flight-fsdb 
     - yaml
     - bytestring
+    - flight-comp
     ghc-options:
     - -rtsopts
     - -threaded
@@ -43,7 +43,8 @@ executables:
     - yaml
     - aeson
     - bytestring
-    - flight-fsdb 
+    - flight-comp
+    - flight-fsdb
     ghc-options:
     - -rtsopts
     - -threaded
@@ -61,7 +62,8 @@ executables:
     - cmdargs
     - mtl
     - transformers
-    - flight-fsdb 
+    - flight-comp
+    - flight-fsdb
     ghc-options:
     - -rtsopts
     - -threaded
@@ -79,7 +81,7 @@ executables:
     - cmdargs
     - mtl
     - transformers
-    - flight-igc 
+    - flight-igc
     ghc-options:
     - -rtsopts
     - -threaded
@@ -97,7 +99,7 @@ executables:
     - cmdargs
     - mtl
     - transformers
-    - flight-kml 
+    - flight-kml
     ghc-options:
     - -rtsopts
     - -threaded
@@ -115,7 +117,8 @@ executables:
     - cmdargs
     - mtl
     - transformers
-    - flight-fsdb 
+    - flight-comp
+    - flight-fsdb
     - flight-kml
     ghc-options:
     - -rtsopts

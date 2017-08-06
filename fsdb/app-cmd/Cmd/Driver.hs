@@ -10,16 +10,18 @@ import System.FilePath.Find (FileType(..), (==?), (&&?), find, always, fileType,
 
 import Cmd.Args (withCmdArgs)
 import Cmd.Options (CmdOptions(..), Detail(..))
-import Data.Flight.Types (showTask)
-import qualified Data.Flight.Comp as C (parse)
-import qualified Data.Flight.Nominal as N (parse)
-import qualified Data.Flight.Waypoint as W (parse)
-import Data.Flight.Pilot
-    ( Pilot(..)
-    , PilotTrackLogFile(..)
-    , parseNames
+import Data.Flight.Fsdb
+    ( parseComp
+    , parseNominal
+    , parseTasks
+    , parsePilots
     , parseTracks
     , parseTaskFolders
+    )
+import Data.Flight.Comp
+    ( Pilot(..)
+    , PilotTrackLogFile(..)
+    , showTask
     )
 
 driverMain :: IO ()
@@ -72,14 +74,14 @@ drive CmdOptions{..} = do
 
 printNominal :: String -> IO ()
 printNominal contents = do
-    nominal <- N.parse contents
+    nominal <- parseNominal contents
     case nominal of
          Left msg -> print msg
          Right nominal' -> print nominal'
 
 printPilotNames :: String -> IO ()
 printPilotNames contents = do
-    pilots <- parseNames contents
+    pilots <- parsePilots contents
     case pilots of
          Left msg -> print msg
          Right pilots' -> putStr $ showPilots pilots'
@@ -100,15 +102,14 @@ printTaskFolders contents = do
 
 printTasks :: String -> IO ()
 printTasks contents = do
-    tasks <- W.parse contents
+    tasks <- parseTasks contents
     case tasks of
          Left msg -> print msg
          Right tasks' -> print $ showTask <$> tasks'
 
 printComp :: String -> IO ()
 printComp contents = do
-    comp <- C.parse contents
+    comp <- parseComp contents
     case comp of
          Left msg -> print msg
          Right comp' -> print comp'
-

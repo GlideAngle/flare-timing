@@ -15,18 +15,10 @@ import System.FilePath.Find
 
 import Cmd.Args (withCmdArgs)
 import Cmd.Options (CmdOptions(..))
-import Data.Flight.Types (Task(..))
-import Data.Flight.Nominal (Nominal(..))
-import Data.Flight.Comp (Comp(..))
-import qualified Data.Flight.Comp as C (parse)
-import qualified Data.Flight.Nominal as N (parse)
-import qualified Data.Flight.Waypoint as W (parse)
-import Data.Flight.Pilot
-    ( TaskFolder(..)
-    , PilotTrackLogFile(..)
-    , parseTracks
-    , parseTaskFolders
-    )
+import Data.Flight.Fsdb
+    (parseComp, parseNominal, parseTasks, parseTaskFolders, parseTracks)
+import Data.Flight.Comp
+    (Comp(..), Nominal(..), Task(..), TaskFolder(..), PilotTrackLogFile(..))
 import qualified Data.Yaml.Pretty as Y
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
@@ -117,7 +109,7 @@ drive CmdOptions{..} = do
 
 fsdbComp :: String -> ExceptT String IO Comp
 fsdbComp contents = do
-    cs <- lift $ C.parse contents
+    cs <- lift $ parseComp contents
     case cs of
         Right [c] -> liftEither $ Right c
         _ -> do
@@ -127,7 +119,7 @@ fsdbComp contents = do
 
 fsdbNominal :: String -> ExceptT String IO Nominal
 fsdbNominal contents = do
-    ns <- lift $ N.parse contents
+    ns <- lift $ parseNominal contents
     case ns of
         Right [n] -> liftEither $ Right n
         _ -> do
@@ -137,7 +129,7 @@ fsdbNominal contents = do
 
 fsdbTasks :: String -> ExceptT String IO [Task]
 fsdbTasks contents = do
-    ws <- lift $ W.parse contents
+    ws <- lift $ parseTasks contents
     liftEither ws
 
 fsdbTaskFolders :: String -> ExceptT String IO [TaskFolder]

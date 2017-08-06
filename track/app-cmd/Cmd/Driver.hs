@@ -20,14 +20,9 @@ import System.FilePath
 import Cmd.Args (withCmdArgs)
 import Cmd.Options (CmdOptions(..), Reckon(..))
 import qualified Data.Flight.Kml as K (parse)
-import Data.Flight.Pilot
-    ( Pilot(..)
-    , PilotTrackLogFile(..)
-    , TrackLogFile(..)
-    , TaskFolder(..)
-    , parseTracks
-    , parseTaskFolders
-    )
+import Data.Flight.Fsdb (parseTracks, parseTaskFolders)
+import Data.Flight.Comp
+    (Pilot(..), PilotTrackLogFile(..), TrackLogFile(..), TaskFolder(..))
 
 type Task = Int
 

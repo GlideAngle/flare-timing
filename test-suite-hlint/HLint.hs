@@ -5,11 +5,11 @@ import System.Exit (exitFailure, exitSuccess)
 
 arguments :: [String]
 arguments =
-    [ "fsdb/app-serve"
-    , "fsdb/app-cmd"
+    [ "fsdb/app-cmd"
     , "igc/app-cmd"
     , "kml/app-cmd"
     , "yaml/app-cmd"
+    , "yaml/app-serve"
     , "build/app-cmd"
     , "test-suite-hlint"
     ]
