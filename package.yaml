@@ -2,7 +2,7 @@
 # Cabal file when you run `stack build`. See the hpack website for help with
 # this file: <https://github.com/sol/hpack>.
 executables:
-  flight-fsdb-serve:
+  flight-yaml-serve:
     dependencies:
     - base
     - servant
@@ -21,13 +21,14 @@ executables:
     - mtl
     - transformers
     - flight-fsdb 
+    - yaml
     - bytestring
     ghc-options:
     - -rtsopts
     - -threaded
     - -with-rtsopts=-N
     main: Main.hs
-    source-dirs: fsdb/app-serve
+    source-dirs: yaml/app-serve
   flight-yaml-cmd:
     dependencies:
     - base
