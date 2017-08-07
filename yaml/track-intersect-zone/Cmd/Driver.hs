@@ -24,7 +24,9 @@ import Data.Number.RoundingFunctions (dpRound)
 import qualified Data.Yaml.Pretty as Y
 import qualified Data.ByteString as BS
 import qualified Data.Flight.Comp as C
-import Data.Flight.TrackZone (TrackZoneIntersect(..), TaskTrack(..))
+import qualified Data.Flight.TrackZone as Z
+import Data.Flight.TrackZone
+    (TrackZoneIntersect(..), TaskTrack(..), TrackLine(..))
 import qualified Flight.Task as FT
 import Flight.Task
     ( LatLng(..)
@@ -36,6 +38,7 @@ import Flight.Task
     , DistancePath(..)
     , Tolerance(..)
     , EdgeDistance(..)
+    , center
     )
 
 driverMain :: IO ()
@@ -73,6 +76,12 @@ drive CmdOptions{..} = do
 
         cmp a b =
             case (a, b) of
+                ("pointToPoint", _) -> LT
+                ("edgeToEdge", _) -> GT
+                ("lat", _) -> LT
+                ("lng", _) -> GT
+                ("distance", _) -> LT
+                ("wayPoints", _) -> GT
                 _ -> compare a b
 
 readSettings :: FilePath -> ExceptT String IO C.CompSettings
@@ -97,18 +106,41 @@ analyze compYamlPath = do
 
 taskTrack :: C.Task -> TaskTrack
 taskTrack C.Task{..} =
-    TaskTrack { distancePointToPoint = toKm ptd
-              , distanceEdgeToEdge = toKm etd
+    TaskTrack { pointToPoint =
+                  TrackLine
+                      { distance = toKm ptd
+                      , waypoints = wpPoint
+                      }
+              , edgeToEdge =
+                  TrackLine
+                      { distance = toKm etd
+                      , waypoints = wpEdge
+                      }
               }
     where
         zs :: [Zone]
-        zs = f <$> zones
+        zs = toCylinder <$> zones
 
         ptd :: TaskDistance
         ptd = FT.distancePointToPoint zs
 
+        wpPoint :: [Z.LatLng]
+        wpPoint =
+            convertLatLng <$> ps
+            where
+                ps = center <$> zs
+
+        ed :: EdgeDistance
+        ed = FT.distanceEdgeToEdge PathPointToZone mm30 zs
+
         etd :: TaskDistance
-        etd = edges $ FT.distanceEdgeToEdge PathPointToZone mm30 zs
+        etd = edges ed
+
+        wpEdge :: [Z.LatLng]
+        wpEdge =
+            convertLatLng <$> xs
+            where
+                xs = edgeLine ed
 
         toKm :: TaskDistance -> Double
         toKm (TaskDistance d) =
@@ -116,16 +148,29 @@ taskTrack C.Task{..} =
             where 
                 MkQuantity dKm = convert d :: Quantity Rational [u| km |]
 
-        f C.Zone{..} =
-            Cylinder
-                (Radius (MkQuantity $ radius % 1))
-                (LatLng (Lat latRad, Lng lngRad))
-            where
-                C.Latitude lat' = lat
-                C.Longitude lng' = lng
+convertLatLng :: LatLng [u| rad |] -> Z.LatLng
+convertLatLng (LatLng (Lat eLat, Lng eLng)) =
+    Z.LatLng { lat = C.Latitude eLat'
+             , lng = C.Longitude eLng'
+             }
+    where
+        MkQuantity eLat' =
+            convert eLat :: Quantity Rational [u| deg |]
 
-                latDeg = MkQuantity lat' :: Quantity Rational [u| deg |]
-                lngDeg = MkQuantity lng' :: Quantity Rational [u| deg |]
+        MkQuantity eLng' =
+            convert eLng :: Quantity Rational [u| deg |]
 
-                latRad = convert latDeg :: Quantity Rational [u| rad |]
-                lngRad = convert lngDeg :: Quantity Rational [u| rad |]
+toCylinder :: C.Zone -> Zone
+toCylinder C.Zone{..} =
+    Cylinder
+        (Radius (MkQuantity $ radius % 1))
+        (LatLng (Lat latRad, Lng lngRad))
+    where
+        C.Latitude lat' = lat
+        C.Longitude lng' = lng
+
+        latDeg = MkQuantity lat' :: Quantity Rational [u| deg |]
+        lngDeg = MkQuantity lng' :: Quantity Rational [u| deg |]
+
+        latRad = convert latDeg :: Quantity Rational [u| rad |]
+        lngRad = convert lngDeg :: Quantity Rational [u| rad |]
