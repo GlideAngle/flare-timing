@@ -11,7 +11,8 @@ Data for competitions, competitors and tasks.
 -}
 module Data.Flight.Comp
     ( -- * Competition
-      Comp(..)
+      CompSettings(..)
+    , Comp(..)
     , Nominal(..)
     -- * Zone
     , Zone(..)
@@ -41,6 +42,17 @@ import Data.Flight.Zone
 import Data.Flight.Pilot
 
 type SpeedSection = Maybe (Integer, Integer)
+
+data CompSettings =
+    CompSettings { comp :: Comp
+                 , nominal :: Nominal
+                 , tasks :: [Task]
+                 , taskFolders :: [TaskFolder]
+                 , pilots :: [[PilotTrackLogFile]]
+                 } deriving (Show, Generic)
+
+instance ToJSON CompSettings
+instance FromJSON CompSettings
 
 data Comp = Comp { civilId :: String
                  , compName :: String 
