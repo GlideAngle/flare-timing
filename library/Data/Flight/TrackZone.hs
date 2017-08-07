@@ -13,10 +13,13 @@ module Data.Flight.TrackZone
     ( -- * Track Zone Intersection
       TrackZoneIntersect(..)
     , TaskTrack(..)
+    , TrackLine(..)
+    , LatLng(..)
     ) where
 
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
+import Data.Flight.LatLng (Latitude(..), Longitude(..))
 
 data TrackZoneIntersect =
     TrackZoneIntersect { taskTracks :: [TaskTrack]
@@ -26,9 +29,25 @@ instance ToJSON TrackZoneIntersect
 instance FromJSON TrackZoneIntersect
 
 data TaskTrack =
-    TaskTrack { distancePointToPoint :: Double
-              , distanceEdgeToEdge :: Double
+    TaskTrack { pointToPoint :: TrackLine
+              , edgeToEdge :: TrackLine
               } deriving (Show, Generic)
 
 instance ToJSON TaskTrack
 instance FromJSON TaskTrack
+
+data TrackLine =
+    TrackLine { distance :: Double
+              , waypoints :: [LatLng]
+              } deriving (Show, Generic)
+
+instance ToJSON TrackLine
+instance FromJSON TrackLine
+
+data LatLng =
+    LatLng { lat :: Latitude
+           , lng :: Longitude
+           } deriving (Eq, Show, Generic)
+
+instance ToJSON LatLng
+instance FromJSON LatLng
