@@ -67,10 +67,15 @@ executables:
     - bytestring
     - flight-comp
     - flight-fsdb
+    - flight-task
+    - siggy-chardust
+    - uom-plugin
     ghc-options:
     - -rtsopts
     - -threaded
     - -with-rtsopts=-N
+    - -Wall
+    - -fplugin Data.UnitsOfMeasure.Plugin
     main: Main.hs
     source-dirs: yaml/track-intersect-zone
   flight-fsdb-cmd:

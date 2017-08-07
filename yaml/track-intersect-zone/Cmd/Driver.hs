@@ -1,22 +1,39 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE TemplateHaskell #-}
 
 module Cmd.Driver (driverMain) where
 
 import Control.Monad (mapM_)
 import Control.Monad.Except (ExceptT(..), runExceptT, lift)
 import System.Directory (doesFileExist, doesDirectoryExist)
-import System.FilePath (takeFileName, replaceExtension)
+import System.FilePath (takeFileName, replaceExtension, dropExtension)
 import System.FilePath.Find
     (FileType(..), (==?), (&&?), find, always, fileType, extension)
 
+import Data.Ratio ((%))
+import Data.UnitsOfMeasure (u, convert)
+import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Cmd.Args (withCmdArgs)
 import Cmd.Options (CmdOptions(..))
 import Data.Yaml (decodeEither)
+import Data.Number.RoundingFunctions (dpRound)
 import qualified Data.Yaml.Pretty as Y
 import qualified Data.ByteString as BS
-import Data.Flight.Comp (CompSettings(..))
+import qualified Data.Flight.Comp as C
+import Data.Flight.TrackZone (TrackZoneIntersect(..), TaskTrack(..))
+import Flight.Task
+    ( LatLng(..)
+    , Lat(..)
+    , Lng(..)
+    , Radius(..)
+    , Zone(..)
+    , TaskDistance(..)
+    , distancePointToPoint
+    )
 
 driverMain :: IO ()
 driverMain = withCmdArgs drive
@@ -36,16 +53,18 @@ drive CmdOptions{..} = do
     where
         go yamlCompPath = do
             putStrLn $ takeFileName yamlCompPath
-            let yamlTrackPath = replaceExtension yamlCompPath ".track.yaml"
+            let yamlTrackPath =
+                    flip replaceExtension ".track.yaml"
+                    $ dropExtension yamlCompPath
 
-            settings <- runExceptT $ yamlCompSettings yamlCompPath
-            case settings of
+            intersects <- runExceptT $ analyze yamlCompPath
+            case intersects of
                 Left msg -> print msg
-                Right cfg -> do
+                Right xs -> do
                     let yaml =
                             Y.encodePretty
                                 (Y.setConfCompare cmp Y.defConfig)
-                                cfg
+                                xs
 
                     BS.writeFile yamlTrackPath yaml
 
@@ -53,7 +72,49 @@ drive CmdOptions{..} = do
             case (a, b) of
                 _ -> compare a b
 
-yamlCompSettings :: FilePath -> ExceptT String IO CompSettings
-yamlCompSettings compYamlPath = do
+readSettings :: FilePath -> ExceptT String IO C.CompSettings
+readSettings compYamlPath = do
     contents <- lift $ BS.readFile compYamlPath
     ExceptT . return $ decodeEither contents
+
+followTracks :: C.CompSettings -> ExceptT String IO TrackZoneIntersect
+followTracks C.CompSettings{..} = do
+    ExceptT . return . Right $
+        TrackZoneIntersect
+            { taskTracks = taskTrack <$> tasks
+            }
+
+analyze :: FilePath -> ExceptT String IO TrackZoneIntersect
+analyze compYamlPath = do
+    settings <- readSettings compYamlPath
+    followTracks settings
+
+taskTrack :: C.Task -> TaskTrack
+taskTrack C.Task{..} =
+    TaskTrack $ toKm td
+    where
+        zs :: [Zone]
+        zs = f <$> zones
+
+        td :: TaskDistance
+        td = distancePointToPoint zs
+
+        toKm :: TaskDistance -> Double
+        toKm (TaskDistance d) =
+            fromRational $ dpRound 3 dKm
+            where 
+                MkQuantity dKm = convert d :: Quantity Rational [u| km |]
+
+        f C.Zone{..} =
+            Cylinder
+                (Radius (MkQuantity $ radius % 1))
+                (LatLng (Lat latRad, Lng lngRad))
+            where
+                C.Latitude lat' = lat
+                C.Longitude lng' = lng
+
+                latDeg = MkQuantity lat' :: Quantity Rational [u| deg |]
+                lngDeg = MkQuantity lng' :: Quantity Rational [u| deg |]
+
+                latRad = convert latDeg :: Quantity Rational [u| rad |]
+                lngRad = convert lngDeg :: Quantity Rational [u| rad |]

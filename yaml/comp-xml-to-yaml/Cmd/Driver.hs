@@ -117,29 +117,30 @@ fsdbNominal contents = do
 
 fsdbTasks :: String -> ExceptT String IO [Task]
 fsdbTasks contents = do
-    ws <- lift $ parseTasks contents
-    ExceptT $ return ws
+    ts <- lift $ parseTasks contents
+    lift $ print ts
+    ExceptT $ return ts
 
 fsdbTaskFolders :: String -> ExceptT String IO [TaskFolder]
 fsdbTaskFolders contents = do
-    ws <- lift $ parseTaskFolders contents
-    ExceptT $ return ws
+    fs <- lift $ parseTaskFolders contents
+    ExceptT $ return fs
 
 fsdbTracks :: String -> ExceptT String IO [[PilotTrackLogFile]]
 fsdbTracks contents = do
-    ws <- lift $ parseTracks contents
-    ExceptT $ return ws
+    fs <- lift $ parseTracks contents
+    ExceptT $ return fs
 
 fsdbSettings :: String -> ExceptT String IO CompSettings
 fsdbSettings contents = do
     c <- fsdbComp contents
     n <- fsdbNominal contents
-    ws <- fsdbTasks contents
+    ts <- fsdbTasks contents
     fs <- fsdbTaskFolders contents
     ps <- fsdbTracks contents
     return CompSettings { comp = c
                         , nominal = n
-                        , tasks = ws
+                        , tasks = ts
                         , taskFolders = fs
                         , pilots = ps
                         }
