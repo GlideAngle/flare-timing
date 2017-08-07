@@ -26,7 +26,8 @@ instance ToJSON TrackZoneIntersect
 instance FromJSON TrackZoneIntersect
 
 data TaskTrack =
-    TaskTrack { distance :: Double
+    TaskTrack { distancePointToPoint :: Double
+              , distanceEdgeToEdge :: Double
               } deriving (Show, Generic)
 
 instance ToJSON TaskTrack
