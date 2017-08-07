@@ -51,6 +51,28 @@ executables:
     - -with-rtsopts=-N
     main: Main.hs
     source-dirs: yaml/comp-xml-to-yaml
+  flight-track-intersect-zone:
+    dependencies:
+    - base
+    - directory
+    - filepath
+    - system-filepath
+    - filemanip
+    - raw-strings-qq
+    - cmdargs
+    - mtl
+    - transformers
+    - yaml
+    - aeson
+    - bytestring
+    - flight-comp
+    - flight-fsdb
+    ghc-options:
+    - -rtsopts
+    - -threaded
+    - -with-rtsopts=-N
+    main: Main.hs
+    source-dirs: yaml/track-intersect-zone
   flight-fsdb-cmd:
     dependencies:
     - base
