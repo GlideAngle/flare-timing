@@ -27,10 +27,6 @@ import Data.Flight.Comp
     , PilotTrackLogFile(..)
     )
 
--- SEE: https://github.com/kqr/gists/blob/master/articles/gentle-introduction-monad-transformers.md
-liftEither :: Monad m => Either e a -> ExceptT e m a
-liftEither x = ExceptT (return x)
-
 driverMain :: IO ()
 driverMain = withCmdArgs drive
 
@@ -51,7 +47,7 @@ drive CmdOptions{..} = do
             putStrLn $ takeFileName fsdbPath
             contents <- readFile fsdbPath
             let contents' = dropWhile (/= '<') contents
-            let yamlPath = replaceExtension fsdbPath ".yaml"
+            let yamlPath = replaceExtension fsdbPath ".comp.yaml"
 
             settings <- runExceptT $ fsdbSettings contents'
             case settings of
@@ -103,7 +99,7 @@ fsdbComp :: String -> ExceptT String IO Comp
 fsdbComp contents = do
     cs <- lift $ parseComp contents
     case cs of
-        Right [c] -> liftEither $ Right c
+        Right [c] -> ExceptT . return $ Right c
         _ -> do
             let msg = "Expected only one comp"
             lift $ print msg
@@ -113,7 +109,7 @@ fsdbNominal :: String -> ExceptT String IO Nominal
 fsdbNominal contents = do
     ns <- lift $ parseNominal contents
     case ns of
-        Right [n] -> liftEither $ Right n
+        Right [n] -> ExceptT . return $ Right n
         _ -> do
             let msg = "Expected only one set of nominals for the comp"
             lift $ print msg
@@ -122,17 +118,17 @@ fsdbNominal contents = do
 fsdbTasks :: String -> ExceptT String IO [Task]
 fsdbTasks contents = do
     ws <- lift $ parseTasks contents
-    liftEither ws
+    ExceptT $ return ws
 
 fsdbTaskFolders :: String -> ExceptT String IO [TaskFolder]
 fsdbTaskFolders contents = do
     ws <- lift $ parseTaskFolders contents
-    liftEither ws
+    ExceptT $ return ws
 
 fsdbTracks :: String -> ExceptT String IO [[PilotTrackLogFile]]
 fsdbTracks contents = do
     ws <- lift $ parseTracks contents
-    liftEither ws
+    ExceptT $ return ws
 
 fsdbSettings :: String -> ExceptT String IO CompSettings
 fsdbSettings contents = do

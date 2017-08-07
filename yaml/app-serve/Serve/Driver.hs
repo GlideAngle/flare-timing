@@ -33,14 +33,9 @@ import Data.Flight.Comp
     , Comp
     , Task
     , Nominal
-    , TaskFolder(..)
     , PilotTrackLogFile(..)
     , Pilot(..)
     )
-
--- SEE: https://github.com/kqr/gists/blob/master/articles/gentle-introduction-monad-transformers.md
-liftEither :: Monad m => Either e a -> ExceptT e m a
-liftEither x = ExceptT (return x)
 
 type FlareTimingApi = CompApi :<|> TaskApi
 
@@ -111,28 +106,28 @@ yamlComps yamlPath = do
     contents <- lift $ BS.readFile yamlPath
     case decodeEither contents of
         Left msg -> throwE msg
-        Right CompSettings{..} -> liftEither $ Right [comp]
+        Right CompSettings{..} -> ExceptT . return $ Right [comp]
 
 yamlNominals :: FilePath -> ExceptT String IO [Nominal]
 yamlNominals yamlPath = do
     contents <- lift $ BS.readFile yamlPath
     case decodeEither contents of
         Left msg -> throwE msg
-        Right CompSettings{..} -> liftEither $ Right [nominal]
+        Right CompSettings{..} -> ExceptT . return $ Right [nominal]
 
 yamlTasks :: FilePath -> ExceptT String IO [Task]
 yamlTasks yamlPath = do
     contents <- lift $ BS.readFile yamlPath
     case decodeEither contents of
         Left msg -> throwE msg
-        Right CompSettings{..} -> liftEither $ Right tasks
+        Right CompSettings{..} -> ExceptT . return $ Right tasks
 
 yamlPilots :: FilePath -> ExceptT String IO [[Pilot]]
 yamlPilots yamlPath = do
     contents <- lift $ BS.readFile yamlPath
     case decodeEither contents of
         Left msg -> throwE msg
-        Right CompSettings{..} -> liftEither $ Right $ (fmap . fmap) pilot pilots
+        Right CompSettings{..} -> ExceptT . return $ Right $ (fmap . fmap) pilot pilots
     where
         pilot (PilotTrackLogFile p _) = p
 
