@@ -6,7 +6,8 @@ node_modules
 __www
 __docs
 *.fsdb
-forbes.yaml
+*.comp.yaml
+*.track.yaml
 *.jsexe
 *.js_hi
 *.js_o
