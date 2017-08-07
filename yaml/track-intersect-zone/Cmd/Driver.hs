@@ -25,6 +25,7 @@ import qualified Data.Yaml.Pretty as Y
 import qualified Data.ByteString as BS
 import qualified Data.Flight.Comp as C
 import Data.Flight.TrackZone (TrackZoneIntersect(..), TaskTrack(..))
+import qualified Flight.Task as FT
 import Flight.Task
     ( LatLng(..)
     , Lat(..)
@@ -32,7 +33,9 @@ import Flight.Task
     , Radius(..)
     , Zone(..)
     , TaskDistance(..)
-    , distancePointToPoint
+    , DistancePath(..)
+    , Tolerance(..)
+    , EdgeDistance(..)
     )
 
 driverMain :: IO ()
@@ -84,6 +87,9 @@ followTracks C.CompSettings{..} = do
             { taskTracks = taskTrack <$> tasks
             }
 
+mm30 :: Tolerance
+mm30 = Tolerance $ 30 % 1000
+
 analyze :: FilePath -> ExceptT String IO TrackZoneIntersect
 analyze compYamlPath = do
     settings <- readSettings compYamlPath
@@ -91,13 +97,18 @@ analyze compYamlPath = do
 
 taskTrack :: C.Task -> TaskTrack
 taskTrack C.Task{..} =
-    TaskTrack $ toKm td
+    TaskTrack { distancePointToPoint = toKm ptd
+              , distanceEdgeToEdge = toKm etd
+              }
     where
         zs :: [Zone]
         zs = f <$> zones
 
-        td :: TaskDistance
-        td = distancePointToPoint zs
+        ptd :: TaskDistance
+        ptd = FT.distancePointToPoint zs
+
+        etd :: TaskDistance
+        etd = edges $ FT.distanceEdgeToEdge PathPointToZone mm30 zs
 
         toKm :: TaskDistance -> Double
         toKm (TaskDistance d) =
