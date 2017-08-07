@@ -18,6 +18,7 @@ library:
   source-dirs: library
   exposed-modules:
   - Data.Flight.Comp
+  - Data.Flight.TrackZone
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
 name: flight-comp 
