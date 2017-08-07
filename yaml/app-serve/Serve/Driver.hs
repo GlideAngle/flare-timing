@@ -2,7 +2,6 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 module Serve.Driver (driverRun) where
 
@@ -25,30 +24,23 @@ import qualified Data.ByteString.Lazy.Char8 as LBS
 import System.Directory (doesFileExist)
 import System.FilePath (FilePath)
 import Data.Yaml (decodeEither)
-import GHC.Generics (Generic)
-import Data.Aeson (ToJSON(..), FromJSON(..))
 import qualified Data.ByteString as BS
 
 import Serve.Args (withCmdArgs)
 import Serve.Options (ServeOptions(..))
 import Data.Flight.Comp
-    (Comp, Task, Nominal, TaskFolder(..), PilotTrackLogFile(..), Pilot(..))
+    ( CompSettings(..)
+    , Comp
+    , Task
+    , Nominal
+    , TaskFolder(..)
+    , PilotTrackLogFile(..)
+    , Pilot(..)
+    )
 
 -- SEE: https://github.com/kqr/gists/blob/master/articles/gentle-introduction-monad-transformers.md
 liftEither :: Monad m => Either e a -> ExceptT e m a
 liftEither x = ExceptT (return x)
-
-data CompSettings =
-    CompSettings { comp :: Comp
-                 , nominal :: Nominal
-                 , tasks :: [Task]
-                 , taskFolders :: [TaskFolder]
-                 , pilots :: [[PilotTrackLogFile]]
-                 } deriving (Show, Generic)
-
-instance ToJSON CompSettings
-instance FromJSON CompSettings
-
 
 type FlareTimingApi = CompApi :<|> TaskApi
 

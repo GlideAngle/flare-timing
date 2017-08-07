@@ -1,6 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module Cmd.Driver (driverMain) where
@@ -17,27 +16,20 @@ import Cmd.Args (withCmdArgs)
 import Cmd.Options (CmdOptions(..))
 import Data.Flight.Fsdb
     (parseComp, parseNominal, parseTasks, parseTaskFolders, parseTracks)
-import Data.Flight.Comp
-    (Comp(..), Nominal(..), Task(..), TaskFolder(..), PilotTrackLogFile(..))
 import qualified Data.Yaml.Pretty as Y
-import GHC.Generics (Generic)
-import Data.Aeson (ToJSON(..), FromJSON(..))
 import qualified Data.ByteString as BS
+import Data.Flight.Comp
+    ( CompSettings(..)
+    , Comp(..)
+    , Nominal(..)
+    , Task(..)
+    , TaskFolder(..)
+    , PilotTrackLogFile(..)
+    )
 
 -- SEE: https://github.com/kqr/gists/blob/master/articles/gentle-introduction-monad-transformers.md
 liftEither :: Monad m => Either e a -> ExceptT e m a
 liftEither x = ExceptT (return x)
-
-data CompSettings =
-    CompSettings { comp :: Comp
-                 , nominal :: Nominal
-                 , tasks :: [Task]
-                 , taskFolders :: [TaskFolder]
-                 , pilots :: [[PilotTrackLogFile]]
-                 } deriving (Show, Generic)
-
-instance ToJSON CompSettings
-instance FromJSON CompSettings
 
 driverMain :: IO ()
 driverMain = withCmdArgs drive
