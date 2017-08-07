@@ -8,7 +8,7 @@ arguments =
     [ "fsdb/app-cmd"
     , "igc/app-cmd"
     , "kml/app-cmd"
-    , "yaml/app-cmd"
+    , "yaml/comp-xml-to-yaml"
     , "yaml/app-serve"
     , "build/app-cmd"
     , "test-suite-hlint"

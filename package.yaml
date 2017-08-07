@@ -29,7 +29,7 @@ executables:
     - -with-rtsopts=-N
     main: Main.hs
     source-dirs: yaml/app-serve
-  flight-yaml-cmd:
+  flight-comp-xml-to-yaml:
     dependencies:
     - base
     - directory
@@ -50,7 +50,7 @@ executables:
     - -threaded
     - -with-rtsopts=-N
     main: Main.hs
-    source-dirs: yaml/app-cmd
+    source-dirs: yaml/comp-xml-to-yaml
   flight-fsdb-cmd:
     dependencies:
     - base
