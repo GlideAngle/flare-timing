@@ -80,7 +80,7 @@ getTask =
 
         getTps =
             getChildren
-            >>> hasName "FsZone"
+            >>> hasName "FsTurnpoint"
             >>> getAttrValue "id"
             &&& getAttrValue "lat"
             &&& getAttrValue "lon"
