@@ -67,46 +67,75 @@ drive CmdOptions{..} = do
                 x ->
                     putStrLn $ "TODO: Handle other reckon of " ++ show x
 
-data PilotTrackStatus
+newtype PilotTrackFixes = PilotTrackFixes Int deriving Show
+
+data TrackFileFail
     = TaskFolderExistsNot String
     | TrackLogFileExistsNot String
     | TrackLogFileNotSet
-    | TrackLogFileRead Int
     | TrackLogFileNotRead String
 
-instance Show PilotTrackStatus where
+instance Show TrackFileFail where
     show (TaskFolderExistsNot x) = "Folder '" ++ x ++ "' not found"
     show (TrackLogFileExistsNot x) = "File '" ++ x ++ "' not found"
     show TrackLogFileNotSet = "File not set"
     show (TrackLogFileNotRead "") = "File not read"
     show (TrackLogFileNotRead x) = "File not read " ++ x
-    show (TrackLogFileRead count) = show count ++ " fixes"
 
-goalPilotTrack :: PilotTrackLogFile -> IO (Pilot, PilotTrackStatus)
-goalPilotTrack (PilotTrackLogFile p Nothing) = return (p, TrackLogFileNotSet)
+goalPilotTrack :: PilotTrackLogFile
+               -> ExceptT
+                   (Pilot, TrackFileFail)
+                   IO
+                   (Pilot, PilotTrackFixes)
+goalPilotTrack (PilotTrackLogFile p Nothing) =
+    ExceptT . return $ Left (p, TrackLogFileNotSet)
 goalPilotTrack (PilotTrackLogFile p (Just (TrackLogFile file))) = do
     let folder = takeDirectory file
-    dde <- doesDirectoryExist folder
-    if not dde then return (p, TaskFolderExistsNot folder) else do
-        dfe <- doesFileExist file
-        if not dfe then return (p, TrackLogFileExistsNot file) else do
-            contents <- readFile file
-            kml <- K.parse contents
-            case kml of
-                Left msg -> return (p, TrackLogFileNotRead msg)
-                Right fixes -> return (p, TrackLogFileRead $ length fixes)
+    dde <- lift $ doesDirectoryExist folder
+    if not dde
+       then
+           ExceptT . return $
+               Left (p, TaskFolderExistsNot folder)
+       else do
+    dfe <- lift $ doesFileExist file
+    if not dfe
+        then
+            ExceptT . return $
+                Left (p, TrackLogFileExistsNot file)
+        else do
+    contents <- lift $ readFile file
+    kml <- lift $ K.parse contents
+    case kml of
+        Left msg ->
+            ExceptT . return $
+                Left (p, TrackLogFileNotRead msg)
+
+        Right fixes ->
+            ExceptT . return $
+                Right (p, PilotTrackFixes $ length fixes)
 
 goalTaskPilotTracks :: [ (Int, [ PilotTrackLogFile ]) ]
-                    -> IO [[(Pilot, PilotTrackStatus)]]
-goalTaskPilotTracks [] = return []
+                    -> IO
+                        [[ Either
+                            (Pilot, TrackFileFail)
+                            (Pilot, PilotTrackFixes)
+                        ]]
+goalTaskPilotTracks [] =
+    return []
 goalTaskPilotTracks xs = do
     zs <- sequence $ (\(_, pilotTracks) -> do
-                ys <- sequence $ goalPilotTrack <$> pilotTracks
-                return ys)
-                <$> xs
-    return $ zs
+        ys <- sequence $ (runExceptT . goalPilotTrack) <$> pilotTracks
+        return ys)
+        <$> xs
 
-goalPilotTracks :: [[ PilotTrackLogFile ]] -> IO [[(Pilot, PilotTrackStatus)]]
+    return zs
+
+goalPilotTracks :: [[ PilotTrackLogFile ]]
+                -> IO
+                    [[ Either
+                        (Pilot, TrackFileFail)
+                        (Pilot, PilotTrackFixes)
+                    ]]
 goalPilotTracks [] = return []
 goalPilotTracks tasks = do
     xs <- goalTaskPilotTracks (zip [ 1 .. ] tasks) 
@@ -136,9 +165,15 @@ filterTasks tasks xs =
     zipWith (\i ys ->
         if i `elem` tasks then ys else []) [ 1 .. ] xs
 
-makeAbsolute :: FilePath -> TaskFolder -> PilotTrackLogFile -> PilotTrackLogFile
+makeAbsolute :: FilePath
+             -> TaskFolder
+             -> PilotTrackLogFile
+             -> PilotTrackLogFile
 makeAbsolute _ _ x@(PilotTrackLogFile _ Nothing) = x
-makeAbsolute dir (TaskFolder pathParts) (PilotTrackLogFile p (Just (TrackLogFile file))) =
+makeAbsolute
+    dir
+    (TaskFolder pathParts)
+    (PilotTrackLogFile p (Just (TrackLogFile file))) =
     PilotTrackLogFile p (Just (TrackLogFile path))
     where
         parts :: [ FilePath ]
@@ -155,11 +190,19 @@ readSettings compYamlPath = do
 printMadeGoal :: FilePath
               -> [Task]
               -> [Pilot]
-              -> ExceptT String IO [[(Pilot, PilotTrackStatus)]]
+              -> ExceptT
+                  String
+                  IO
+                  [[ Either
+                      (Pilot, TrackFileFail)
+                      (Pilot, PilotTrackFixes)
+                  ]]
 printMadeGoal compYamlPath tasks selectPilots = do
     (CompSettings {pilots, taskFolders}) <- readSettings compYamlPath
+
     let dir = takeDirectory compYamlPath
     let ys = filterPilots selectPilots $ filterTasks tasks pilots
     let fs = (makeAbsolute dir) <$> taskFolders
     let zs = zipWith (\f y -> f <$> y) fs ys
+
     lift $ goalPilotTracks zs
