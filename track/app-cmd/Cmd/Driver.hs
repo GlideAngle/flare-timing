@@ -80,7 +80,7 @@ instance Show PilotTrackStatus where
     show TrackLogFileNotSet = "File not set"
     show (TrackLogFileNotRead "") = "File not read"
     show (TrackLogFileNotRead x) = "File not read " ++ x
-    show (TrackLogFileRead count) = "File read " ++ show count ++ " fixes"
+    show (TrackLogFileRead count) = show count ++ " fixes"
 
 goalPilotTrack :: PilotTrackLogFile -> IO (Pilot, PilotTrackStatus)
 goalPilotTrack (PilotTrackLogFile p Nothing) = return (p, TrackLogFileNotSet)
@@ -96,19 +96,17 @@ goalPilotTrack (PilotTrackLogFile p (Just (TrackLogFile file))) = do
                 Left msg -> return (p, TrackLogFileNotRead msg)
                 Right fixes -> return (p, TrackLogFileRead $ length fixes)
 
-goalTaskPilotTracks :: [ (Int, [ PilotTrackLogFile ]) ] -> IO [ String ]
-goalTaskPilotTracks [] = return [ "No tasks." ]
+goalTaskPilotTracks :: [ (Int, [ PilotTrackLogFile ]) ]
+                    -> IO [[(Pilot, PilotTrackStatus)]]
+goalTaskPilotTracks [] = return []
 goalTaskPilotTracks xs = do
-    zs <- sequence $ (\(i, pilotTracks) -> do
+    zs <- sequence $ (\(_, pilotTracks) -> do
                 ys <- sequence $ goalPilotTrack <$> pilotTracks
-                return $ "Task #"
-                         ++ show i
-                         ++ " pilot tracks: "
-                         ++ (unlines $ show <$> ys))
+                return ys)
                 <$> xs
     return $ zs
 
-goalPilotTracks :: [[ PilotTrackLogFile ]] -> IO [String]
+goalPilotTracks :: [[ PilotTrackLogFile ]] -> IO [[(Pilot, PilotTrackStatus)]]
 goalPilotTracks [] = return []
 goalPilotTracks tasks = do
     xs <- goalTaskPilotTracks (zip [ 1 .. ] tasks) 
@@ -154,7 +152,10 @@ readSettings compYamlPath = do
     contents <- lift $ BS.readFile compYamlPath
     ExceptT . return $ decodeEither contents
 
-printMadeGoal :: FilePath -> [Task] -> [Pilot] -> ExceptT String IO [String]
+printMadeGoal :: FilePath
+              -> [Task]
+              -> [Pilot]
+              -> ExceptT String IO [[(Pilot, PilotTrackStatus)]]
 printMadeGoal compYamlPath tasks selectPilots = do
     (CompSettings {pilots, taskFolders}) <- readSettings compYamlPath
     let dir = takeDirectory compYamlPath
