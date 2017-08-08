@@ -17,7 +17,6 @@ newtype TrackLogFile = TrackLogFile String deriving (Eq, Ord, Generic)
 -- parts, stripping the path separators.
 newtype TaskFolder = TaskFolder [ String ] deriving (Generic)
 
-
 data PilotTrackLogFile =
     PilotTrackLogFile Pilot (Maybe TrackLogFile) deriving (Eq, Ord, Generic)
 

@@ -15,14 +15,18 @@ module Data.Flight.TrackZone
     , TaskTrack(..)
     , TrackLine(..)
     , LatLng(..)
+    , FlownTrack(..)
+    , PilotFlownTrack(..)
     ) where
 
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.Flight.LatLng (Latitude(..), Longitude(..))
+import Data.Flight.Pilot (Pilot(..))
 
 data TrackZoneIntersect =
     TrackZoneIntersect { taskTracks :: [TaskTrack]
+                       , pilotTracks :: [[PilotFlownTrack]]
                        } deriving (Show, Generic)
 
 instance ToJSON TrackZoneIntersect
@@ -51,3 +55,17 @@ data LatLng =
 
 instance ToJSON LatLng
 instance FromJSON LatLng
+
+data FlownTrack =
+    FlownTrack { launched :: Bool
+               } deriving (Show, Generic)
+
+instance ToJSON FlownTrack
+instance FromJSON FlownTrack
+
+data PilotFlownTrack =
+    PilotFlownTrack Pilot (Maybe FlownTrack)
+    deriving (Show, Generic)
+
+instance ToJSON PilotFlownTrack
+instance FromJSON PilotFlownTrack
