@@ -144,8 +144,9 @@ executables:
     - cmdargs
     - mtl
     - transformers
+    - bytestring
+    - yaml
     - flight-comp
-    - flight-fsdb
     - flight-kml
     ghc-options:
     - -rtsopts

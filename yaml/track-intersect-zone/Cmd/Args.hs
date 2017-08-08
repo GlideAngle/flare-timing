@@ -45,15 +45,15 @@ data Drive
 drive :: Drive
 drive
     = Drive { dir = def
-            &= help "Over all the files in this directory"
+            &= help "Over all the competition *.comp.yaml files in this directory"
             &= groupname "Source"
 
             , file = def
-            &= help "With this one file"
+            &= help "With this one competition *.comp.yaml file"
             &= groupname "Source"
             }
-            &= summary ("Flight Scoring Database Parser " ++ showVersion version ++ description)
-            &= program "flight-yaml-cmd.exe"
+            &= summary ("Flight Scoring Track Zone Intersect Checker " ++ showVersion version ++ description)
+            &= program "flight-track-intersect-zone.exe"
 
 run :: IO Drive
 run = cmdArgs drive

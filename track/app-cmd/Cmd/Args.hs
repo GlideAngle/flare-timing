@@ -50,11 +50,11 @@ data Drive
 drive :: Drive
 drive
     = Drive { dir = def
-            &= help "Over all the competition *.fsdb files in this directory"
+            &= help "Over all the competition *.comp.yaml files in this directory"
             &= groupname "Source"
 
             , file = def
-            &= help "With this one competition *.fsdb file"
+            &= help "With this one competition *.comp.yaml file"
             &= groupname "Source"
 
             , task = def
@@ -74,7 +74,7 @@ drive
             &= typ "goal|zone|time|distance|lead"
             &= groupname "Filter"
             }
-            &= summary ("Flight Scoring Database Parser " ++ showVersion version ++ description)
+            &= summary ("Flight Scoring Task Track Reader " ++ showVersion version ++ description)
             &= program "flight-task-cmd.exe"
 
 run :: IO Drive

@@ -1,10 +1,12 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE NamedFieldPuns #-}
 
 module Cmd.Driver (driverMain) where
 
 import Data.Maybe (catMaybes)
 import Control.Monad (mapM_)
+import Control.Monad.Except (ExceptT(..), runExceptT, lift)
 import System.Directory (doesFileExist, doesDirectoryExist)
 import System.FilePath.Find (FileType(..), (==?), (&&?), find, always, fileType, extension)
 import System.FilePath
@@ -19,10 +21,17 @@ import System.FilePath
 
 import Cmd.Args (withCmdArgs)
 import Cmd.Options (CmdOptions(..), Reckon(..))
+import qualified Data.ByteString as BS
+import Data.Yaml (decodeEither)
+
 import qualified Data.Flight.Kml as K (parse)
-import Data.Flight.Fsdb (parseTracks, parseTaskFolders)
 import Data.Flight.Comp
-    (Pilot(..), PilotTrackLogFile(..), TrackLogFile(..), TaskFolder(..))
+    ( CompSettings(..)
+    , Pilot(..)
+    , PilotTrackLogFile(..)
+    , TrackLogFile(..)
+    , TaskFolder(..)
+    )
 
 type Task = Int
 
@@ -37,23 +46,23 @@ drive CmdOptions{..} = do
     else do
         dde <- doesDirectoryExist dir
         if dde then do
-            files <- find always (fileType ==? RegularFile &&? extension ==? ".fsdb") dir
+            files <- find always (fileType ==? RegularFile &&? extension ==? ".comp.yaml") dir
             mapM_ go files
         else
-            putStrLn "Couldn't find any flight score competition database input files."
+            putStrLn "Couldn't find any flight score competition yaml input files."
     where
-        go path = do
-            putStrLn $ takeFileName path
-            contents <- readFile path
-            let contents' = dropWhile (/= '<') contents
+        go yamlCompPath = do
+            putStrLn $ takeFileName yamlCompPath
 
             case reckon of
-                Goal ->
-                    printMadeGoal
-                        (takeDirectory path)
-                        task
-                        (Pilot <$> pilot)
-                        contents'
+                Goal -> do
+                    made <- runExceptT $ printMadeGoal
+                                            yamlCompPath
+                                            task
+                                            (Pilot <$> pilot)
+                    case made of
+                        Left msg -> print msg
+                        Right tracks -> print tracks
 
                 x ->
                     putStrLn $ "TODO: Handle other reckon of " ++ show x
@@ -99,11 +108,11 @@ goalTaskPilotTracks xs = do
                 <$> xs
     return $ zs
 
-goalPilotTracks :: [[ PilotTrackLogFile ]] -> IO String
-goalPilotTracks [] = return "No pilots."
+goalPilotTracks :: [[ PilotTrackLogFile ]] -> IO [String]
+goalPilotTracks [] = return []
 goalPilotTracks tasks = do
     xs <- goalTaskPilotTracks (zip [ 1 .. ] tasks) 
-    return $ unlines xs
+    return xs
 
 filterPilots :: [ Pilot ]
              -> [[ PilotTrackLogFile ]]
@@ -140,16 +149,16 @@ makeAbsolute dir (TaskFolder pathParts) (PilotTrackLogFile p (Just (TrackLogFile
         path :: FilePath
         path = normalise $ (joinPath parts) </> file
 
-printMadeGoal :: FilePath -> [ Task ] -> [ Pilot ] -> String -> IO ()
-printMadeGoal dir tasks pilots contents = do
-    xs <- parseTracks contents
-    folders <- parseTaskFolders contents
-    case (xs, folders) of
-         (Left msg, _) -> print msg
-         (_, Left msg) -> print msg
-         (Right xs', Right folders') -> do
-             let ys = filterPilots pilots $ filterTasks tasks xs'
-             let fs = (makeAbsolute dir) <$> folders'
-             let zs = zipWith (\f y -> f <$> y) fs ys
-             s <- goalPilotTracks zs
-             putStr s
+readSettings :: FilePath -> ExceptT String IO CompSettings
+readSettings compYamlPath = do
+    contents <- lift $ BS.readFile compYamlPath
+    ExceptT . return $ decodeEither contents
+
+printMadeGoal :: FilePath -> [Task] -> [Pilot] -> ExceptT String IO [String]
+printMadeGoal compYamlPath tasks selectPilots = do
+    (CompSettings {pilots, taskFolders}) <- readSettings compYamlPath
+    let dir = takeDirectory compYamlPath
+    let ys = filterPilots selectPilots $ filterTasks tasks pilots
+    let fs = (makeAbsolute dir) <$> taskFolders
+    let zs = zipWith (\f y -> f <$> y) fs ys
+    lift $ goalPilotTracks zs

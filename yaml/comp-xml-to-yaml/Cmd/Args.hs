@@ -45,15 +45,15 @@ data Drive
 drive :: Drive
 drive
     = Drive { dir = def
-            &= help "Over all the files in this directory"
+            &= help "Over all the competition *.fsdb files in this directory"
             &= groupname "Source"
 
             , file = def
-            &= help "With this one file"
+            &= help "With this one competition *.fsdb file"
             &= groupname "Source"
             }
-            &= summary ("Flight Scoring Database Parser " ++ showVersion version ++ description)
-            &= program "flight-yaml-cmd.exe"
+            &= summary ("Flight Scoring Database Converter" ++ showVersion version ++ description)
+            &= program "flight-comp-xml-to-yaml.exe"
 
 run :: IO Drive
 run = cmdArgs drive
