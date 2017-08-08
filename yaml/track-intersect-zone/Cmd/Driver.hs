@@ -26,7 +26,12 @@ import qualified Data.ByteString as BS
 import qualified Data.Flight.Comp as C
 import qualified Data.Flight.TrackZone as Z
 import Data.Flight.TrackZone
-    (TrackZoneIntersect(..), TaskTrack(..), TrackLine(..))
+    ( TrackZoneIntersect(..)
+    , TaskTrack(..)
+    , TrackLine(..)
+    , FlownTrack(..)
+    , PilotFlownTrack(..)
+    )
 import qualified Flight.Task as FT
 import Flight.Task
     ( LatLng(..)
@@ -82,6 +87,8 @@ drive CmdOptions{..} = do
                 ("lng", _) -> GT
                 ("distance", _) -> LT
                 ("wayPoints", _) -> GT
+                ("taskTracks", _) -> LT
+                ("pilotTracks", _) -> GT
                 _ -> compare a b
 
 readSettings :: FilePath -> ExceptT String IO C.CompSettings
@@ -94,6 +101,7 @@ followTracks C.CompSettings{..} = do
     ExceptT . return . Right $
         TrackZoneIntersect
             { taskTracks = taskTrack <$> tasks
+            , pilotTracks = (fmap . fmap) pilotTrack pilots
             }
 
 mm30 :: Tolerance
@@ -103,6 +111,12 @@ analyze :: FilePath -> ExceptT String IO TrackZoneIntersect
 analyze compYamlPath = do
     settings <- readSettings compYamlPath
     followTracks settings
+
+pilotTrack :: C.PilotTrackLogFile -> PilotFlownTrack
+pilotTrack (C.PilotTrackLogFile pilot _) =
+    PilotFlownTrack pilot (Just track)
+    where
+        track = FlownTrack { launched = True }
 
 taskTrack :: C.Task -> TaskTrack
 taskTrack C.Task{..} =
