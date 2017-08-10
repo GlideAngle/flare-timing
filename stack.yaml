@@ -10,6 +10,8 @@ packages:
   extra-dep: true
 - location: ../haskell-flight-kml
   extra-dep: true
+- location: ../haskell-flight-track
+  extra-dep: true
 - location: ../haskell-flight-task
   extra-dep: true
 - location: ../haskell-siggy-chardust

@@ -148,7 +148,9 @@ executables:
     - yaml
     - flight-comp
     - flight-kml
+    - flight-track
     ghc-options:
+    - -Wall
     - -rtsopts
     - -threaded
     - -with-rtsopts=-N

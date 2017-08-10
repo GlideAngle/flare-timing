@@ -112,12 +112,6 @@ analyze compYamlPath = do
     settings <- readSettings compYamlPath
     followTracks settings
 
-pilotTrack :: C.PilotTrackLogFile -> PilotFlownTrack
-pilotTrack (C.PilotTrackLogFile pilot _) =
-    PilotFlownTrack pilot (Just track)
-    where
-        track = FlownTrack { launched = True }
-
 taskTrack :: C.Task -> TaskTrack
 taskTrack C.Task{..} =
     TaskTrack { pointToPoint =
@@ -188,3 +182,9 @@ toCylinder C.Zone{..} =
 
         latRad = convert latDeg :: Quantity Rational [u| rad |]
         lngRad = convert lngDeg :: Quantity Rational [u| rad |]
+
+pilotTrack :: C.PilotTrackLogFile -> PilotFlownTrack
+pilotTrack (C.PilotTrackLogFile pilot _) =
+    PilotFlownTrack pilot (Just track)
+    where
+        track = FlownTrack { launched = True }
