@@ -56,7 +56,7 @@ data LatLng =
 instance ToJSON LatLng
 instance FromJSON LatLng
 
-data FlownTrack =
+newtype FlownTrack =
     FlownTrack { launched :: Bool
                } deriving (Show, Generic)
 
