@@ -20,14 +20,15 @@ import Data.Flight.Comp
     , Pilot(..)
     )
 import Data.Flight.TrackLog
-    ( PilotTrackFixes(..)
-    , TrackFileFail(..)
+    ( TrackFileFail(..)
     , Task
     , goalPilotTracks
     , filterPilots
     , filterTasks
     , makeAbsolute
     )
+
+newtype PilotTrackFixes = PilotTrackFixes Int deriving Show
 
 driverMain :: IO ()
 driverMain = withCmdArgs drive
@@ -84,4 +85,4 @@ readMadeGoal compYamlPath tasks selectPilots = do
     let fs = (makeAbsolute dir) <$> taskFolders
     let zs = zipWith (\f y -> f <$> y) fs ys
 
-    lift $ goalPilotTracks zs
+    lift $ goalPilotTracks (\xs -> PilotTrackFixes $ length xs) zs
