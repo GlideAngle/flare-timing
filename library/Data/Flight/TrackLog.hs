@@ -96,13 +96,10 @@ goalTaskPilotTracks :: [ (Int, [ PilotTrackLogFile ]) ]
                         ]]
 goalTaskPilotTracks [] =
     return []
-goalTaskPilotTracks xs = do
-    zs <- sequence $ (\(_, pilotTracks) -> do
-        ys <- sequence $ (runExceptT . goalPilotTrack) <$> pilotTracks
-        return ys)
+goalTaskPilotTracks xs =
+    sequence $ (\(_, pilotTracks) ->
+        sequence $ (runExceptT . goalPilotTrack) <$> pilotTracks)
         <$> xs
-
-    return zs
 
 goalPilotTracks :: [[ PilotTrackLogFile ]]
                 -> IO
@@ -111,9 +108,8 @@ goalPilotTracks :: [[ PilotTrackLogFile ]]
                         (Pilot, PilotTrackFixes)
                     ]]
 goalPilotTracks [] = return []
-goalPilotTracks tasks = do
-    xs <- goalTaskPilotTracks (zip [ 1 .. ] tasks) 
-    return xs
+goalPilotTracks tasks =
+    goalTaskPilotTracks (zip [ 1 .. ] tasks) 
 
 filterPilots :: [ Pilot ]
              -> [[ PilotTrackLogFile ]]
@@ -154,4 +150,4 @@ makeAbsolute
         parts = splitDirectories dir ++ pathParts
 
         path :: FilePath
-        path = normalise $ (joinPath parts) </> file
+        path = normalise $ joinPath parts </> file
