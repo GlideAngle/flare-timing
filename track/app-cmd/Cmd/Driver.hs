@@ -18,7 +18,7 @@ import Data.Yaml (decodeEither)
 
 import qualified Data.Flight.Kml as K (Fix)
 import qualified Data.Flight.Comp as C
-    (CompSettings(..), Pilot(..), Task(..))
+    (CompSettings(..), Pilot(..), Task(..), PilotTrackLogFile(..))
 import Data.Flight.TrackLog as T
     ( TrackFileFail(..)
     , Task
@@ -76,6 +76,22 @@ readSettings compYamlPath = do
     contents <- lift $ BS.readFile compYamlPath
     ExceptT . return $ decodeEither contents
 
+settingsLogs :: FilePath
+             -> [T.Task]
+             -> [C.Pilot]
+             -> ExceptT String IO (C.CompSettings, [[C.PilotTrackLogFile]])
+settingsLogs compYamlPath tasks selectPilots = do
+    settings <- readSettings compYamlPath
+    ExceptT . return $ go settings
+    where
+        go s@(C.CompSettings {pilots, taskFolders}) =
+            Right (s, zs)
+            where
+                dir = takeDirectory compYamlPath
+                ys = T.filterPilots selectPilots $ T.filterTasks tasks pilots
+                fs = (T.makeAbsolute dir) <$> taskFolders
+                zs = zipWith (\f y -> f <$> y) fs ys
+
 checkFixes :: FilePath
            -> [T.Task]
            -> [C.Pilot]
@@ -87,14 +103,7 @@ checkFixes :: FilePath
                    (C.Pilot, PilotTrackFixes)
                ]]
 checkFixes compYamlPath tasks selectPilots = do
-    (C.CompSettings {pilots, taskFolders})
-        <- readSettings compYamlPath
-
-    let dir = takeDirectory compYamlPath
-    let ys = T.filterPilots selectPilots $ T.filterTasks tasks pilots
-    let fs = (T.makeAbsolute dir) <$> taskFolders
-    let zs = zipWith (\f y -> f <$> y) fs ys
-
+    (_, zs) <- settingsLogs compYamlPath tasks selectPilots
     lift $ T.goalPilotTracks (\_ xs -> countFixes xs) zs
 
 checkLaunched :: FilePath
@@ -108,14 +117,7 @@ checkLaunched :: FilePath
                       (C.Pilot, Bool)
                   ]]
 checkLaunched compYamlPath ts selectPilots = do
-    (C.CompSettings {pilots, tasks, taskFolders})
-        <- readSettings compYamlPath
-
-    let dir = takeDirectory compYamlPath
-    let ys = T.filterPilots selectPilots $ T.filterTasks ts pilots
-    let fs = (T.makeAbsolute dir) <$> taskFolders
-    let zs = zipWith (\f y -> f <$> y) fs ys
-
+    (C.CompSettings {tasks}, zs) <- settingsLogs compYamlPath ts selectPilots
     lift $ T.goalPilotTracks (launched tasks) zs
 
 countFixes :: [K.Fix] -> PilotTrackFixes
