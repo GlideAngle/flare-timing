@@ -146,6 +146,7 @@ executables:
     - transformers
     - bytestring
     - yaml
+    - lens
     - flight-comp
     - flight-kml
     - flight-track

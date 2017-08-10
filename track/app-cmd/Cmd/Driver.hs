@@ -4,6 +4,7 @@
 
 module Cmd.Driver (driverMain) where
 
+import Control.Lens ((^?), element)
 import Control.Monad (mapM_)
 import Control.Monad.Except (ExceptT(..), runExceptT, lift)
 import System.Directory (doesFileExist, doesDirectoryExist)
@@ -15,11 +16,10 @@ import Cmd.Options (CmdOptions(..), Reckon(..))
 import qualified Data.ByteString as BS
 import Data.Yaml (decodeEither)
 
-import Data.Flight.Comp
-    ( CompSettings(..)
-    , Pilot(..)
-    )
-import Data.Flight.TrackLog
+import qualified Data.Flight.Kml as K (Fix)
+import qualified Data.Flight.Comp as C
+    (CompSettings(..), Pilot(..), Task(..))
+import Data.Flight.TrackLog as T
     ( TrackFileFail(..)
     , Task
     , goalPilotTracks
@@ -50,11 +50,20 @@ drive CmdOptions{..} = do
             putStrLn $ takeFileName yamlCompPath
 
             case reckon of
-                Goal -> do
-                    made <- runExceptT $ readMadeGoal
+                Fixes -> do
+                    made <- runExceptT $ checkFixes
                                             yamlCompPath
                                             task
-                                            (Pilot <$> pilot)
+                                            (C.Pilot <$> pilot)
+                    case made of
+                        Left msg -> print msg
+                        Right tracks -> print tracks
+
+                Launch -> do
+                    made <- runExceptT $ checkLaunched
+                                            yamlCompPath
+                                            task
+                                            (C.Pilot <$> pilot)
                     case made of
                         Left msg -> print msg
                         Right tracks -> print tracks
@@ -62,27 +71,58 @@ drive CmdOptions{..} = do
                 x ->
                     putStrLn $ "TODO: Handle other reckon of " ++ show x
 
-readSettings :: FilePath -> ExceptT String IO CompSettings
+readSettings :: FilePath -> ExceptT String IO C.CompSettings
 readSettings compYamlPath = do
     contents <- lift $ BS.readFile compYamlPath
     ExceptT . return $ decodeEither contents
 
-readMadeGoal :: FilePath
-             -> [Task]
-             -> [Pilot]
-             -> ExceptT
-                 String
-                 IO
-                 [[ Either
-                     (Pilot, TrackFileFail)
-                     (Pilot, PilotTrackFixes)
-                 ]]
-readMadeGoal compYamlPath tasks selectPilots = do
-    (CompSettings {pilots, taskFolders}) <- readSettings compYamlPath
+checkFixes :: FilePath
+           -> [T.Task]
+           -> [C.Pilot]
+           -> ExceptT
+               String
+               IO
+               [[ Either
+                   (C.Pilot, TrackFileFail)
+                   (C.Pilot, PilotTrackFixes)
+               ]]
+checkFixes compYamlPath tasks selectPilots = do
+    (C.CompSettings {pilots, taskFolders})
+        <- readSettings compYamlPath
 
     let dir = takeDirectory compYamlPath
-    let ys = filterPilots selectPilots $ filterTasks tasks pilots
-    let fs = (makeAbsolute dir) <$> taskFolders
+    let ys = T.filterPilots selectPilots $ T.filterTasks tasks pilots
+    let fs = (T.makeAbsolute dir) <$> taskFolders
     let zs = zipWith (\f y -> f <$> y) fs ys
 
-    lift $ goalPilotTracks (\xs -> PilotTrackFixes $ length xs) zs
+    lift $ T.goalPilotTracks (\_ xs -> countFixes xs) zs
+
+checkLaunched :: FilePath
+              -> [T.Task]
+              -> [C.Pilot]
+              -> ExceptT
+                  String
+                  IO
+                  [[ Either
+                      (C.Pilot, TrackFileFail)
+                      (C.Pilot, Bool)
+                  ]]
+checkLaunched compYamlPath ts selectPilots = do
+    (C.CompSettings {pilots, tasks, taskFolders})
+        <- readSettings compYamlPath
+
+    let dir = takeDirectory compYamlPath
+    let ys = T.filterPilots selectPilots $ T.filterTasks ts pilots
+    let fs = (T.makeAbsolute dir) <$> taskFolders
+    let zs = zipWith (\f y -> f <$> y) fs ys
+
+    lift $ T.goalPilotTracks (launched tasks) zs
+
+countFixes :: [K.Fix] -> PilotTrackFixes
+countFixes xs = PilotTrackFixes $ length xs
+
+launched :: [C.Task] -> Int -> [K.Fix] -> Bool
+launched tasks i _ =
+    case tasks ^? element i of
+        Nothing -> False
+        Just _ -> True

@@ -21,9 +21,13 @@ data CmdOptions
 
 -- | The reckonings of task track logs.
 data Reckon
-    = Goal
+    = Fixes
+    -- ^ How many fixes?
+    | Launch
+    -- ^ Did the pilot launch?
+    | Goal
     -- ^ Was goal made?
-    | Zone
+    | Zones
     -- ^ What zones were made?
     | Distance
     -- ^ What distance was flown?
