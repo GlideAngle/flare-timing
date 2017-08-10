@@ -86,7 +86,7 @@ goalPilotTrack f (PilotTrackLogFile p (Just (TrackLogFile file))) = do
                         ExceptT . return $
                             Right (p, f fixes)
 
-goalTaskPilotTracks :: ([K.Fix] -> a)
+goalTaskPilotTracks :: (Task -> [K.Fix] -> a)
                     -> [ (Int, [ PilotTrackLogFile ]) ]
                     -> IO
                         [[ Either
@@ -96,11 +96,11 @@ goalTaskPilotTracks :: ([K.Fix] -> a)
 goalTaskPilotTracks _ [] =
     return []
 goalTaskPilotTracks f xs =
-    sequence $ (\(_, pilotTracks) ->
-        sequence $ (runExceptT . goalPilotTrack f) <$> pilotTracks)
+    sequence $ (\(i, pilotTracks) ->
+        sequence $ (runExceptT . goalPilotTrack (f i)) <$> pilotTracks)
         <$> xs
 
-goalPilotTracks :: ([K.Fix] -> a)
+goalPilotTracks :: (Task -> [K.Fix] -> a)
                 -> [[ PilotTrackLogFile ]]
                 -> IO
                     [[ Either
