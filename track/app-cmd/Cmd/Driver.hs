@@ -132,6 +132,21 @@ settingsLogs compYamlPath tasks selectPilots = do
                 fs = (Log.makeAbsolute dir) <$> taskFolders
                 zs = zipWith (\f y -> f <$> y) fs ys
 
+checkTracks :: forall a. (Cmp.CompSettings -> (IxTask -> [Kml.Fix] -> a))
+            -> FilePath
+            -> [IxTask]
+            -> [Cmp.Pilot]
+            -> ExceptT
+                String
+                IO
+                [[ Either
+                   (Cmp.Pilot, TrackFileFail)
+                   (Cmp.Pilot, a)
+                ]]
+checkTracks f compYamlPath tasks selectPilots = do
+    (settings, xs) <- settingsLogs compYamlPath tasks selectPilots
+    lift $ Log.pilotTracks (f settings) xs
+
 checkFixes :: FilePath
            -> [IxTask]
            -> [Cmp.Pilot]
@@ -142,9 +157,8 @@ checkFixes :: FilePath
                    (Cmp.Pilot, TrackFileFail)
                    (Cmp.Pilot, PilotTrackFixes)
                ]]
-checkFixes compYamlPath tasks selectPilots = do
-    (_, zs) <- settingsLogs compYamlPath tasks selectPilots
-    lift $ Log.pilotTracks (\_ xs -> countFixes xs) zs
+checkFixes =
+    checkTracks $ const (\_ xs -> countFixes xs)
 
 checkLaunched :: FilePath
               -> [IxTask]
@@ -156,9 +170,8 @@ checkLaunched :: FilePath
                       (Cmp.Pilot, TrackFileFail)
                       (Cmp.Pilot, Bool)
                   ]]
-checkLaunched compYamlPath ts selectPilots = do
-    (Cmp.CompSettings {tasks}, zs) <- settingsLogs compYamlPath ts selectPilots
-    lift $ Log.pilotTracks (launched tasks) zs
+checkLaunched =
+    checkTracks $ \(Cmp.CompSettings {tasks}) -> launched tasks
 
 checkMadeGoal :: FilePath
               -> [IxTask]
@@ -170,9 +183,8 @@ checkMadeGoal :: FilePath
                       (Cmp.Pilot, TrackFileFail)
                       (Cmp.Pilot, Bool)
                   ]]
-checkMadeGoal compYamlPath ts selectPilots = do
-    (Cmp.CompSettings {tasks}, zs) <- settingsLogs compYamlPath ts selectPilots
-    lift $ Log.pilotTracks (madeGoal tasks) zs
+checkMadeGoal =
+    checkTracks $ \(Cmp.CompSettings {tasks}) -> madeGoal tasks
 
 countFixes :: [Kml.Fix] -> PilotTrackFixes
 countFixes xs = PilotTrackFixes $ length xs
