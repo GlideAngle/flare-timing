@@ -90,6 +90,15 @@ drive CmdOptions{..} = do
                         Left msg -> print msg
                         Right tracks -> print tracks
 
+                Zones -> do
+                    made <- runExceptT $ checkZones
+                                            yamlCompPath
+                                            (IxTask <$> task)
+                                            (Cmp.Pilot <$> pilot)
+                    case made of
+                        Left msg -> print msg
+                        Right tracks -> print tracks
+
                 Launch -> do
                     made <- runExceptT $ checkLaunched
                                             yamlCompPath
@@ -160,6 +169,19 @@ checkFixes :: FilePath
 checkFixes =
     checkTracks $ const (\_ xs -> countFixes xs)
 
+checkZones :: FilePath
+           -> [IxTask]
+           -> [Cmp.Pilot]
+           -> ExceptT
+               String
+               IO
+               [[ Either
+               (Cmp.Pilot, TrackFileFail)
+               (Cmp.Pilot, [Bool])
+               ]]
+checkZones =
+    checkTracks $ \(Cmp.CompSettings {tasks}) -> madeZones tasks
+
 checkLaunched :: FilePath
               -> [IxTask]
               -> [Cmp.Pilot]
@@ -214,6 +236,10 @@ fixToPoint fix =
         lat = Kml.lat fix
         lng = Kml.lng fix
 
+crossedZone :: Tsk.Zone -> [Kml.Fix] -> Bool
+crossedZone z xs =
+    entersZone z xs || exitsZone z xs
+
 entersZone :: Tsk.Zone -> [Kml.Fix] -> Bool
 entersZone z xs =
     exitsZone z $ reverse xs
@@ -235,9 +261,7 @@ exitsZone z xs =
         outsideZone =
             findIndex (\y -> Tsk.separatedZones [y, z]) ys
 
-launched :: [Cmp.Task]
-         -> IxTask
-         -> [Kml.Fix] -> Bool
+launched :: [Cmp.Task] -> IxTask -> [Kml.Fix] -> Bool
 launched tasks (IxTask i) xs =
     case tasks ^? element (i - 1) of
         Nothing -> False
@@ -246,9 +270,7 @@ launched tasks (IxTask i) xs =
                 [] -> False
                 z : _ -> exitsZone (zoneToCylinder z) xs
 
-madeGoal :: [Cmp.Task]
-         -> IxTask
-         -> [Kml.Fix] -> Bool
+madeGoal :: [Cmp.Task] -> IxTask -> [Kml.Fix] -> Bool
 madeGoal tasks (IxTask i) xs =
     case tasks ^? element (i - 1) of
         Nothing -> False
@@ -256,3 +278,10 @@ madeGoal tasks (IxTask i) xs =
             case reverse $ zones of
                 [] -> False
                 z : _ -> entersZone (zoneToCylinder z) xs
+
+madeZones :: [Cmp.Task] -> IxTask -> [Kml.Fix] -> [Bool]
+madeZones tasks (IxTask i) xs =
+    case tasks ^? element (i - 1) of
+        Nothing -> []
+        Just (Cmp.Task {zones}) ->
+            (flip crossedZone xs . zoneToCylinder) <$> zones
