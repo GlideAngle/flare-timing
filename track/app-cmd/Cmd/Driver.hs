@@ -182,7 +182,7 @@ fixToPoint fix =
 exitsZone :: TK.Zone -> [K.Fix] -> Bool
 exitsZone startCyl xs =
     case (insideZone, outsideZone) of
-        (Just i, Just j) -> True
+        (Just _, Just _) -> True
         _ -> False
     where
         ys :: [TK.Zone]
@@ -196,9 +196,11 @@ exitsZone startCyl xs =
         outsideZone =
             findIndex (\y -> TK.separatedZones [y, startCyl]) ys
 
-launched :: [C.Task] -> Int -> [K.Fix] -> Bool
+launched :: [C.Task]
+         -> Int -- ^ tasks indices are 1-based.
+         -> [K.Fix] -> Bool
 launched tasks i xs =
-    case tasks ^? element i of
+    case tasks ^? element (i - 1) of
         Nothing -> False
         Just (C.Task {zones})->
             case zones of
