@@ -175,11 +175,14 @@ parseBaroMarks s =
 
 pFix :: GenParser Char st (Rational, Rational, Integer)
 pFix = do
-    latSign <- option id $ const negate <$> char '-'
-    lat <- pFloat <?> "No latitude"
-    _ <- char ','
+    -- NOTE: KML coordinates have a space between tuples.
+    -- lon,lat[,alt]
+    -- SEE: https://developers.google.com/kml/documentation/kmlreference#linestring
     lngSign <- option id $ const negate <$> char '-'
     lng <- pFloat <?> "No longitude"
+    _ <- char ','
+    latSign <- option id $ const negate <$> char '-'
+    lat <- pFloat <?> "No latitude"
     _ <- char ','
     altSign <- option id $ const negate <$> char '-'
     alt <- pNat <?> "No altitude"
