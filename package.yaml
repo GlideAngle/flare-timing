@@ -64,12 +64,12 @@ executables:
     - transformers
     - yaml
     - aeson
+    - siggy-chardust
+    - uom-plugin
     - bytestring
     - flight-comp
     - flight-fsdb
     - flight-task
-    - siggy-chardust
-    - uom-plugin
     ghc-options:
     - -rtsopts
     - -threaded
@@ -147,9 +147,12 @@ executables:
     - bytestring
     - yaml
     - lens
+    - siggy-chardust
+    - uom-plugin
     - flight-comp
     - flight-kml
     - flight-track
+    - flight-task
     ghc-options:
     - -Wall
     - -rtsopts

@@ -1,9 +1,24 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE QuasiQuotes #-}
+
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE NamedFieldPuns #-}
 
+{-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
+
 module Cmd.Driver (driverMain) where
 
+import Data.List (findIndex)
+import Data.Ratio ((%))
+import Data.UnitsOfMeasure (u, convert)
+import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Control.Lens ((^?), element)
 import Control.Monad (mapM_)
 import Control.Monad.Except (ExceptT(..), runExceptT, lift)
@@ -16,9 +31,16 @@ import Cmd.Options (CmdOptions(..), Reckon(..))
 import qualified Data.ByteString as BS
 import Data.Yaml (decodeEither)
 
-import qualified Data.Flight.Kml as K (Fix)
+import qualified Data.Flight.Kml as K (Fix, LatLngAlt(..))
 import qualified Data.Flight.Comp as C
-    (CompSettings(..), Pilot(..), Task(..), PilotTrackLogFile(..))
+    ( CompSettings(..)
+    , Pilot(..)
+    , Task(..)
+    , Zone(..)
+    , PilotTrackLogFile(..)
+    , Latitude(..)
+    , Longitude(..)
+    )
 import Data.Flight.TrackLog as T
     ( TrackFileFail(..)
     , Task
@@ -27,6 +49,15 @@ import Data.Flight.TrackLog as T
     , filterTasks
     , makeAbsolute
     )
+import Flight.Task as TK
+    ( Lat(..)
+    , Lng(..)
+    , LatLng(..)
+    , Radius(..)
+    , Zone(..)
+    , separatedZones
+    )
+import Flight.Units ()
 
 newtype PilotTrackFixes = PilotTrackFixes Int deriving Show
 
@@ -123,8 +154,53 @@ checkLaunched compYamlPath ts selectPilots = do
 countFixes :: [K.Fix] -> PilotTrackFixes
 countFixes xs = PilotTrackFixes $ length xs
 
+-- | The input pair is in degrees while the output is in radians.
+toLL :: (Rational, Rational) -> TK.LatLng [u| rad |]
+toLL (lat, lng) =
+    TK.LatLng (TK.Lat lat'', TK.Lng lng'')
+        where
+            lat' = (MkQuantity lat) :: Quantity Rational [u| deg |]
+            lng' = (MkQuantity lng) :: Quantity Rational [u| deg |]
+            lat'' = convert lat' :: Quantity Rational [u| rad |]
+            lng'' = convert lng' :: Quantity Rational [u| rad |]
+
+zoneToCylinder :: C.Zone -> TK.Zone
+zoneToCylinder z =
+    TK.Cylinder radius (toLL(lat, lng))
+    where
+        radius = Radius (MkQuantity $ C.radius z % 1)
+        C.Latitude lat = C.lat z
+        C.Longitude lng = C.lng z
+
+fixToPoint :: K.Fix -> TK.Zone
+fixToPoint fix =
+    TK.Point (toLL (lat, lng))
+    where
+        lat = K.lat fix
+        lng = K.lng fix
+
+exitsZone :: TK.Zone -> [K.Fix] -> Bool
+exitsZone startCyl xs =
+    case (insideZone, outsideZone) of
+        (Just i, Just j) -> True
+        _ -> False
+    where
+        ys :: [TK.Zone]
+        ys = fixToPoint <$> xs
+
+        insideZone :: Maybe Int
+        insideZone =
+            findIndex (\y -> not $ TK.separatedZones [y, startCyl]) ys
+
+        outsideZone :: Maybe Int
+        outsideZone =
+            findIndex (\y -> TK.separatedZones [y, startCyl]) ys
+
 launched :: [C.Task] -> Int -> [K.Fix] -> Bool
-launched tasks i _ =
+launched tasks i xs =
     case tasks ^? element i of
         Nothing -> False
-        Just _ -> True
+        Just (C.Task {zones})->
+            case zones of
+                [] -> False
+                z : _ -> exitsZone (zoneToCylinder z) xs
