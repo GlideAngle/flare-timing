@@ -88,7 +88,7 @@ drive CmdOptions{..} = do
                                             (Cmp.Pilot <$> pilot)
                     case made of
                         Left msg -> print msg
-                        Right tracks -> print tracks
+                        Right fixCounts -> print fixCounts
 
                 Zones -> do
                     made <- runExceptT $ checkZones
@@ -97,7 +97,7 @@ drive CmdOptions{..} = do
                                             (Cmp.Pilot <$> pilot)
                     case made of
                         Left msg -> print msg
-                        Right tracks -> print tracks
+                        Right zoneHits -> print zoneHits
 
                 Launch -> do
                     made <- runExceptT $ checkLaunched
@@ -106,7 +106,7 @@ drive CmdOptions{..} = do
                                             (Cmp.Pilot <$> pilot)
                     case made of
                         Left msg -> print msg
-                        Right tracks -> print tracks
+                        Right departures -> print departures
 
                 Goal -> do
                     made <- runExceptT $ checkMadeGoal
@@ -115,7 +115,7 @@ drive CmdOptions{..} = do
                                             (Cmp.Pilot <$> pilot)
                     case made of
                         Left msg -> print msg
-                        Right tracks -> print tracks
+                        Right arrivals -> print arrivals
 
                 x ->
                     putStrLn $ "TODO: Handle other reckon of " ++ show x
