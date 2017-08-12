@@ -99,6 +99,15 @@ drive CmdOptions{..} = do
                         Left msg -> print msg
                         Right tracks -> print tracks
 
+                Goal -> do
+                    made <- runExceptT $ checkMadeGoal
+                                            yamlCompPath
+                                            (IxTask <$> task)
+                                            (Cmp.Pilot <$> pilot)
+                    case made of
+                        Left msg -> print msg
+                        Right tracks -> print tracks
+
                 x ->
                     putStrLn $ "TODO: Handle other reckon of " ++ show x
 
@@ -151,6 +160,20 @@ checkLaunched compYamlPath ts selectPilots = do
     (Cmp.CompSettings {tasks}, zs) <- settingsLogs compYamlPath ts selectPilots
     lift $ Log.pilotTracks (launched tasks) zs
 
+checkMadeGoal :: FilePath
+              -> [IxTask]
+              -> [Cmp.Pilot]
+              -> ExceptT
+                  String
+                  IO
+                  [[ Either
+                      (Cmp.Pilot, TrackFileFail)
+                      (Cmp.Pilot, Bool)
+                  ]]
+checkMadeGoal compYamlPath ts selectPilots = do
+    (Cmp.CompSettings {tasks}, zs) <- settingsLogs compYamlPath ts selectPilots
+    lift $ Log.pilotTracks (madeGoal tasks) zs
+
 countFixes :: [Kml.Fix] -> PilotTrackFixes
 countFixes xs = PilotTrackFixes $ length xs
 
@@ -179,8 +202,12 @@ fixToPoint fix =
         lat = Kml.lat fix
         lng = Kml.lng fix
 
+entersZone :: Tsk.Zone -> [Kml.Fix] -> Bool
+entersZone z xs =
+    exitsZone z $ reverse xs
+
 exitsZone :: Tsk.Zone -> [Kml.Fix] -> Bool
-exitsZone startCyl xs =
+exitsZone z xs =
     case (insideZone, outsideZone) of
         (Just _, Just _) -> True
         _ -> False
@@ -190,11 +217,11 @@ exitsZone startCyl xs =
 
         insideZone :: Maybe Int
         insideZone =
-            findIndex (\y -> not $ Tsk.separatedZones [y, startCyl]) ys
+            findIndex (\y -> not $ Tsk.separatedZones [y, z]) ys
 
         outsideZone :: Maybe Int
         outsideZone =
-            findIndex (\y -> Tsk.separatedZones [y, startCyl]) ys
+            findIndex (\y -> Tsk.separatedZones [y, z]) ys
 
 launched :: [Cmp.Task]
          -> IxTask
@@ -206,3 +233,14 @@ launched tasks (IxTask i) xs =
             case zones of
                 [] -> False
                 z : _ -> exitsZone (zoneToCylinder z) xs
+
+madeGoal :: [Cmp.Task]
+         -> IxTask
+         -> [Kml.Fix] -> Bool
+madeGoal tasks (IxTask i) xs =
+    case tasks ^? element (i - 1) of
+        Nothing -> False
+        Just (Cmp.Task {zones})->
+            case reverse $ zones of
+                [] -> False
+                z : _ -> entersZone (zoneToCylinder z) xs
