@@ -20,6 +20,7 @@ library:
   source-dirs: library
   exposed-modules:
   - Flight.Task
+  - Flight.Units
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
 name: flight-task

@@ -44,7 +44,9 @@ newtype PathCost = PathCost Rational deriving (Eq, Ord, Num, Real)
 
 data DistancePath
     = PathPointToPoint
+    -- ^ A path from the center of the first zone to the center of the last zone.
     | PathPointToZone
+    -- ^ A path from the edge of the first zone to the edge of the last zone.
     deriving (Eq, Show)
 
 data EdgeDistance =

@@ -39,13 +39,13 @@ library
     , bifunctors
   exposed-modules:
       Flight.Task
+      Flight.Units
   other-modules:
       Flight.CylinderEdge
       Flight.EdgeToEdge
       Flight.Geo
       Flight.PointToPoint
       Flight.Separated
-      Flight.Units
       Flight.Zone
       Paths_flight_task
   default-language: Haskell2010
