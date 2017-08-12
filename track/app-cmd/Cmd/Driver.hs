@@ -31,8 +31,8 @@ import Cmd.Options (CmdOptions(..), Reckon(..))
 import qualified Data.ByteString as BS
 import Data.Yaml (decodeEither)
 
-import qualified Data.Flight.Kml as K (Fix, LatLngAlt(..))
-import qualified Data.Flight.Comp as C
+import qualified Data.Flight.Kml as Kml (Fix, LatLngAlt(..))
+import qualified Data.Flight.Comp as Cmp
     ( CompSettings(..)
     , Pilot(..)
     , Task(..)
@@ -41,15 +41,15 @@ import qualified Data.Flight.Comp as C
     , Latitude(..)
     , Longitude(..)
     )
-import Data.Flight.TrackLog as T
+import Data.Flight.TrackLog as Log
     ( TrackFileFail(..)
     , IxTask(..)
-    , goalPilotTracks
+    , pilotTracks
     , filterPilots
     , filterTasks
     , makeAbsolute
     )
-import Flight.Task as TK
+import Flight.Task as Tsk
     ( Lat(..)
     , Lng(..)
     , LatLng(..)
@@ -85,7 +85,7 @@ drive CmdOptions{..} = do
                     made <- runExceptT $ checkFixes
                                             yamlCompPath
                                             (IxTask <$> task)
-                                            (C.Pilot <$> pilot)
+                                            (Cmp.Pilot <$> pilot)
                     case made of
                         Left msg -> print msg
                         Right tracks -> print tracks
@@ -94,7 +94,7 @@ drive CmdOptions{..} = do
                     made <- runExceptT $ checkLaunched
                                             yamlCompPath
                                             (IxTask <$> task)
-                                            (C.Pilot <$> pilot)
+                                            (Cmp.Pilot <$> pilot)
                     case made of
                         Left msg -> print msg
                         Right tracks -> print tracks
@@ -102,107 +102,107 @@ drive CmdOptions{..} = do
                 x ->
                     putStrLn $ "TODO: Handle other reckon of " ++ show x
 
-readSettings :: FilePath -> ExceptT String IO C.CompSettings
+readSettings :: FilePath -> ExceptT String IO Cmp.CompSettings
 readSettings compYamlPath = do
     contents <- lift $ BS.readFile compYamlPath
     ExceptT . return $ decodeEither contents
 
 settingsLogs :: FilePath
-             -> [T.IxTask]
-             -> [C.Pilot]
-             -> ExceptT String IO (C.CompSettings, [[C.PilotTrackLogFile]])
+             -> [IxTask]
+             -> [Cmp.Pilot]
+             -> ExceptT String IO (Cmp.CompSettings, [[Cmp.PilotTrackLogFile]])
 settingsLogs compYamlPath tasks selectPilots = do
     settings <- readSettings compYamlPath
     ExceptT . return $ go settings
     where
-        go s@(C.CompSettings {pilots, taskFolders}) =
+        go s@(Cmp.CompSettings {pilots, taskFolders}) =
             Right (s, zs)
             where
                 dir = takeDirectory compYamlPath
-                ys = T.filterPilots selectPilots $ T.filterTasks tasks pilots
-                fs = (T.makeAbsolute dir) <$> taskFolders
+                ys = Log.filterPilots selectPilots $ Log.filterTasks tasks pilots
+                fs = (Log.makeAbsolute dir) <$> taskFolders
                 zs = zipWith (\f y -> f <$> y) fs ys
 
 checkFixes :: FilePath
-           -> [T.IxTask]
-           -> [C.Pilot]
+           -> [IxTask]
+           -> [Cmp.Pilot]
            -> ExceptT
                String
                IO
                [[ Either
-                   (C.Pilot, TrackFileFail)
-                   (C.Pilot, PilotTrackFixes)
+                   (Cmp.Pilot, TrackFileFail)
+                   (Cmp.Pilot, PilotTrackFixes)
                ]]
 checkFixes compYamlPath tasks selectPilots = do
     (_, zs) <- settingsLogs compYamlPath tasks selectPilots
-    lift $ T.goalPilotTracks (\_ xs -> countFixes xs) zs
+    lift $ Log.pilotTracks (\_ xs -> countFixes xs) zs
 
 checkLaunched :: FilePath
-              -> [T.IxTask]
-              -> [C.Pilot]
+              -> [IxTask]
+              -> [Cmp.Pilot]
               -> ExceptT
                   String
                   IO
                   [[ Either
-                      (C.Pilot, TrackFileFail)
-                      (C.Pilot, Bool)
+                      (Cmp.Pilot, TrackFileFail)
+                      (Cmp.Pilot, Bool)
                   ]]
 checkLaunched compYamlPath ts selectPilots = do
-    (C.CompSettings {tasks}, zs) <- settingsLogs compYamlPath ts selectPilots
-    lift $ T.goalPilotTracks (launched tasks) zs
+    (Cmp.CompSettings {tasks}, zs) <- settingsLogs compYamlPath ts selectPilots
+    lift $ Log.pilotTracks (launched tasks) zs
 
-countFixes :: [K.Fix] -> PilotTrackFixes
+countFixes :: [Kml.Fix] -> PilotTrackFixes
 countFixes xs = PilotTrackFixes $ length xs
 
 -- | The input pair is in degrees while the output is in radians.
-toLL :: (Rational, Rational) -> TK.LatLng [u| rad |]
+toLL :: (Rational, Rational) -> Tsk.LatLng [u| rad |]
 toLL (lat, lng) =
-    TK.LatLng (TK.Lat lat'', TK.Lng lng'')
+    Tsk.LatLng (Tsk.Lat lat'', Tsk.Lng lng'')
         where
             lat' = (MkQuantity lat) :: Quantity Rational [u| deg |]
             lng' = (MkQuantity lng) :: Quantity Rational [u| deg |]
             lat'' = convert lat' :: Quantity Rational [u| rad |]
             lng'' = convert lng' :: Quantity Rational [u| rad |]
 
-zoneToCylinder :: C.Zone -> TK.Zone
+zoneToCylinder :: Cmp.Zone -> Tsk.Zone
 zoneToCylinder z =
-    TK.Cylinder radius (toLL(lat, lng))
+    Tsk.Cylinder radius (toLL(lat, lng))
     where
-        radius = Radius (MkQuantity $ C.radius z % 1)
-        C.Latitude lat = C.lat z
-        C.Longitude lng = C.lng z
+        radius = Radius (MkQuantity $ Cmp.radius z % 1)
+        Cmp.Latitude lat = Cmp.lat z
+        Cmp.Longitude lng = Cmp.lng z
 
-fixToPoint :: K.Fix -> TK.Zone
+fixToPoint :: Kml.Fix -> Tsk.Zone
 fixToPoint fix =
-    TK.Point (toLL (lat, lng))
+    Tsk.Point (toLL (lat, lng))
     where
-        lat = K.lat fix
-        lng = K.lng fix
+        lat = Kml.lat fix
+        lng = Kml.lng fix
 
-exitsZone :: TK.Zone -> [K.Fix] -> Bool
+exitsZone :: Tsk.Zone -> [Kml.Fix] -> Bool
 exitsZone startCyl xs =
     case (insideZone, outsideZone) of
         (Just _, Just _) -> True
         _ -> False
     where
-        ys :: [TK.Zone]
+        ys :: [Tsk.Zone]
         ys = fixToPoint <$> xs
 
         insideZone :: Maybe Int
         insideZone =
-            findIndex (\y -> not $ TK.separatedZones [y, startCyl]) ys
+            findIndex (\y -> not $ Tsk.separatedZones [y, startCyl]) ys
 
         outsideZone :: Maybe Int
         outsideZone =
-            findIndex (\y -> TK.separatedZones [y, startCyl]) ys
+            findIndex (\y -> Tsk.separatedZones [y, startCyl]) ys
 
-launched :: [C.Task]
+launched :: [Cmp.Task]
          -> IxTask
-         -> [K.Fix] -> Bool
+         -> [Kml.Fix] -> Bool
 launched tasks (IxTask i) xs =
     case tasks ^? element (i - 1) of
         Nothing -> False
-        Just (C.Task {zones})->
+        Just (Cmp.Task {zones})->
             case zones of
                 [] -> False
                 z : _ -> exitsZone (zoneToCylinder z) xs
