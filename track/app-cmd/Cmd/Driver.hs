@@ -43,7 +43,7 @@ import qualified Data.Flight.Comp as C
     )
 import Data.Flight.TrackLog as T
     ( TrackFileFail(..)
-    , Task
+    , IxTask(..)
     , goalPilotTracks
     , filterPilots
     , filterTasks
@@ -84,7 +84,7 @@ drive CmdOptions{..} = do
                 Fixes -> do
                     made <- runExceptT $ checkFixes
                                             yamlCompPath
-                                            task
+                                            (IxTask <$> task)
                                             (C.Pilot <$> pilot)
                     case made of
                         Left msg -> print msg
@@ -93,7 +93,7 @@ drive CmdOptions{..} = do
                 Launch -> do
                     made <- runExceptT $ checkLaunched
                                             yamlCompPath
-                                            task
+                                            (IxTask <$> task)
                                             (C.Pilot <$> pilot)
                     case made of
                         Left msg -> print msg
@@ -108,7 +108,7 @@ readSettings compYamlPath = do
     ExceptT . return $ decodeEither contents
 
 settingsLogs :: FilePath
-             -> [T.Task]
+             -> [T.IxTask]
              -> [C.Pilot]
              -> ExceptT String IO (C.CompSettings, [[C.PilotTrackLogFile]])
 settingsLogs compYamlPath tasks selectPilots = do
@@ -124,7 +124,7 @@ settingsLogs compYamlPath tasks selectPilots = do
                 zs = zipWith (\f y -> f <$> y) fs ys
 
 checkFixes :: FilePath
-           -> [T.Task]
+           -> [T.IxTask]
            -> [C.Pilot]
            -> ExceptT
                String
@@ -138,7 +138,7 @@ checkFixes compYamlPath tasks selectPilots = do
     lift $ T.goalPilotTracks (\_ xs -> countFixes xs) zs
 
 checkLaunched :: FilePath
-              -> [T.Task]
+              -> [T.IxTask]
               -> [C.Pilot]
               -> ExceptT
                   String
@@ -197,9 +197,9 @@ exitsZone startCyl xs =
             findIndex (\y -> TK.separatedZones [y, startCyl]) ys
 
 launched :: [C.Task]
-         -> Int -- ^ tasks indices are 1-based.
+         -> IxTask
          -> [K.Fix] -> Bool
-launched tasks i xs =
+launched tasks (IxTask i) xs =
     case tasks ^? element (i - 1) of
         Nothing -> False
         Just (C.Task {zones})->
