@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TupleSections #-}
 
 {-|
 Module      : Data.Flight.TrackLog
@@ -69,24 +70,23 @@ goalPilotTrack _ (PilotTrackLogFile p Nothing) =
 goalPilotTrack f (PilotTrackLogFile p (Just (TrackLogFile file))) = do
     let folder = takeDirectory file
     dde <- lift $ doesDirectoryExist folder
-    if not dde
-        then
-            ExceptT . return $
-                Left (p, TaskFolderExistsNot folder)
-        else do
-            dfe <- lift $ doesFileExist file
-            if not dfe
+    x <- lift $ do
+            if not dde
                 then
-                    ExceptT . return $
-                        Left (p, TrackLogFileExistsNot file)
-            else do
-                contents <- lift $ readFile file
-                kml <- lift $ K.parse contents
-                ExceptT . return $
-                    bimap
-                        (\msg -> (p, TrackLogFileNotRead msg))
-                        (\fixes -> (p, f fixes))
-                        kml
+                    return . Left $ TaskFolderExistsNot folder
+                else do
+                    dfe <- doesFileExist file
+                    if not dfe
+                        then return . Left $ TrackLogFileExistsNot file
+                        else do
+                            contents <- readFile file
+                            kml <- K.parse contents
+                            return $ bimap
+                                (\msg -> TrackLogFileNotRead msg)
+                                (\fixes -> f fixes)
+                                kml
+
+    ExceptT . return . bimap (p,) (p,) $ x
 
 goalTaskPilotTracks :: (IxTask -> [K.Fix] -> a)
                     -> [ (IxTask, [ PilotTrackLogFile ]) ]
