@@ -11,7 +11,7 @@ Competition pilot tracks logs.
 -}
 module Data.Flight.TrackLog
     ( TrackFileFail(..)
-    , Task
+    , IxTask(..)
     , goalPilotTracks
     , filterPilots
     , filterTasks
@@ -38,7 +38,11 @@ import Data.Flight.Comp
     , TaskFolder(..)
     )
 
-type Task = Int
+-- | 1-based indices of a task in a competition.
+newtype IxTask = IxTask Int deriving (Eq, Show)
+
+ixTasks :: [IxTask]
+ixTasks = IxTask <$> [ 1 .. ]
 
 data TrackFileFail
     = TaskFolderExistsNot String
@@ -86,8 +90,8 @@ goalPilotTrack f (PilotTrackLogFile p (Just (TrackLogFile file))) = do
                         ExceptT . return $
                             Right (p, f fixes)
 
-goalTaskPilotTracks :: (Task -> [K.Fix] -> a)
-                    -> [ (Int, [ PilotTrackLogFile ]) ]
+goalTaskPilotTracks :: (IxTask -> [K.Fix] -> a)
+                    -> [ (IxTask, [ PilotTrackLogFile ]) ]
                     -> IO
                         [[ Either
                             (Pilot, TrackFileFail)
@@ -100,7 +104,7 @@ goalTaskPilotTracks f xs =
         sequence $ (runExceptT . goalPilotTrack (f i)) <$> pilotTracks)
         <$> xs
 
-goalPilotTracks :: (Task -> [K.Fix] -> a)
+goalPilotTracks :: (IxTask -> [K.Fix] -> a)
                 -> [[ PilotTrackLogFile ]]
                 -> IO
                     [[ Either
@@ -109,7 +113,7 @@ goalPilotTracks :: (Task -> [K.Fix] -> a)
                     ]]
 goalPilotTracks _ [] = return []
 goalPilotTracks f tasks =
-    goalTaskPilotTracks f (zip [ 1 .. ] tasks) 
+    goalTaskPilotTracks f (zip ixTasks tasks) 
 
 filterPilots :: [ Pilot ]
              -> [[ PilotTrackLogFile ]]
@@ -126,14 +130,14 @@ filterPilots pilots xs =
                 if pilot `elem` pilots then Just x else Nothing)
             <$> ys
 
-filterTasks :: [ Task ]
+filterTasks :: [ IxTask ]
             -> [[ PilotTrackLogFile ]]
             -> [[ PilotTrackLogFile ]]
 
 filterTasks [] xs = xs
 filterTasks tasks xs =
     zipWith (\i ys ->
-        if i `elem` tasks then ys else []) [ 1 .. ] xs
+        if i `elem` tasks then ys else []) ixTasks xs
 
 makeAbsolute :: FilePath
              -> TaskFolder
