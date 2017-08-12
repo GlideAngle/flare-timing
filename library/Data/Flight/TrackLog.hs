@@ -18,6 +18,7 @@ module Data.Flight.TrackLog
     , makeAbsolute
     ) where
 
+import Data.Bifunctor (bimap)
 import Data.Maybe (catMaybes)
 import Control.Monad.Except (ExceptT(..), runExceptT, lift)
 import System.Directory (doesFileExist, doesDirectoryExist)
@@ -81,14 +82,11 @@ goalPilotTrack f (PilotTrackLogFile p (Just (TrackLogFile file))) = do
             else do
                 contents <- lift $ readFile file
                 kml <- lift $ K.parse contents
-                case kml of
-                    Left msg ->
-                        ExceptT . return $
-                            Left (p, TrackLogFileNotRead msg)
-
-                    Right fixes ->
-                        ExceptT . return $
-                            Right (p, f fixes)
+                ExceptT . return $
+                    bimap
+                        (\msg -> (p, TrackLogFileNotRead msg))
+                        (\fixes -> (p, f fixes))
+                        kml
 
 goalTaskPilotTracks :: (IxTask -> [K.Fix] -> a)
                     -> [ (IxTask, [ PilotTrackLogFile ]) ]
