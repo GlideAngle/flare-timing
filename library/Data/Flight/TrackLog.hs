@@ -13,7 +13,7 @@ Competition pilot tracks logs.
 module Data.Flight.TrackLog
     ( TrackFileFail(..)
     , IxTask(..)
-    , goalPilotTracks
+    , pilotTracks
     , filterPilots
     , filterTasks
     , makeAbsolute
@@ -59,18 +59,18 @@ instance Show TrackFileFail where
     show (TrackLogFileNotRead "") = "File not read"
     show (TrackLogFileNotRead x) = "File not read " ++ x
 
-goalPilotTrack :: ([K.Fix] -> a)
-               -> PilotTrackLogFile
-               -> ExceptT
-                   (Pilot, TrackFileFail)
-                   IO
-                   (Pilot, a)
-goalPilotTrack _ (PilotTrackLogFile p Nothing) =
+pilotTrack :: ([K.Fix] -> a)
+           -> PilotTrackLogFile
+           -> ExceptT
+               (Pilot, TrackFileFail)
+               IO
+               (Pilot, a)
+pilotTrack _ (PilotTrackLogFile p Nothing) =
     ExceptT . return $ Left (p, TrackLogFileNotSet)
-goalPilotTrack f (PilotTrackLogFile p (Just (TrackLogFile file))) = do
+pilotTrack f (PilotTrackLogFile p (Just (TrackLogFile file))) = do
     let folder = takeDirectory file
     dde <- lift $ doesDirectoryExist folder
-    x <- lift $ do
+    x <- lift $
             if not dde
                 then
                     return . Left $ TaskFolderExistsNot folder
@@ -81,37 +81,34 @@ goalPilotTrack f (PilotTrackLogFile p (Just (TrackLogFile file))) = do
                         else do
                             contents <- readFile file
                             kml <- K.parse contents
-                            return $ bimap
-                                (\msg -> TrackLogFileNotRead msg)
-                                (\fixes -> f fixes)
-                                kml
+                            return $ bimap TrackLogFileNotRead f kml
 
     ExceptT . return . bimap (p,) (p,) $ x
 
-goalTaskPilotTracks :: (IxTask -> [K.Fix] -> a)
-                    -> [ (IxTask, [ PilotTrackLogFile ]) ]
-                    -> IO
-                        [[ Either
-                            (Pilot, TrackFileFail)
-                            (Pilot, a)
-                        ]]
-goalTaskPilotTracks _ [] =
-    return []
-goalTaskPilotTracks f xs =
-    sequence $ (\(i, pilotTracks) ->
-        sequence $ (runExceptT . goalPilotTrack (f i)) <$> pilotTracks)
-        <$> xs
-
-goalPilotTracks :: (IxTask -> [K.Fix] -> a)
-                -> [[ PilotTrackLogFile ]]
+taskPilotTracks :: (IxTask -> [K.Fix] -> a)
+                -> [ (IxTask, [ PilotTrackLogFile ]) ]
                 -> IO
                     [[ Either
                         (Pilot, TrackFileFail)
                         (Pilot, a)
                     ]]
-goalPilotTracks _ [] = return []
-goalPilotTracks f tasks =
-    goalTaskPilotTracks f (zip ixTasks tasks) 
+taskPilotTracks _ [] =
+    return []
+taskPilotTracks f xs =
+    sequence $ (\(i, ts) ->
+        sequence $ (runExceptT . pilotTrack (f i)) <$> ts)
+        <$> xs
+
+pilotTracks :: (IxTask -> [K.Fix] -> a)
+            -> [[ PilotTrackLogFile ]]
+            -> IO
+                [[ Either
+                    (Pilot, TrackFileFail)
+                    (Pilot, a)
+                ]]
+pilotTracks _ [] = return []
+pilotTracks f tasks =
+    taskPilotTracks f (zip ixTasks tasks) 
 
 filterPilots :: [ Pilot ]
              -> [[ PilotTrackLogFile ]]
