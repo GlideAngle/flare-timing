@@ -257,31 +257,38 @@ madeGoal tasks (IxTask i) xs =
                 [] -> False
                 z : _ -> entersZone (zoneToCylinder z) xs
 
+tickedZones :: [Tsk.Zone] -> [Kml.Fix] -> [Bool]
+tickedZones zones xs =
+    flip crossedZone xs <$> zones
+
 madeZones :: [Cmp.Task] -> IxTask -> [Kml.Fix] -> [Bool]
 madeZones tasks (IxTask i) xs =
     case tasks ^? element (i - 1) of
         Nothing -> []
         Just (Cmp.Task {zones}) ->
-            (flip crossedZone xs . zoneToCylinder) <$> zones
+            tickedZones (zoneToCylinder <$> zones) xs
 
 madeSpeedZones :: [Cmp.Task] -> IxTask -> [Kml.Fix] -> [Bool]
 madeSpeedZones tasks (IxTask i) xs =
     case tasks ^? element (i - 1) of
         Nothing -> []
         Just (Cmp.Task {speedSection, zones}) ->
-            (flip crossedZone xs . zoneToCylinder) <$>
-                slice speedSection zones
+            tickedZones (zoneToCylinder <$> slice speedSection zones) xs
 
 mm30 :: Tolerance
 mm30 = Tolerance $ 30 % 1000
 
-distanceToZone :: Tsk.Zone -> [Kml.Fix] -> Maybe TaskDistance
-distanceToZone z xs =
+distanceViaZones :: [Tsk.Zone] -> [Kml.Fix] -> Maybe TaskDistance
+distanceViaZones zs xs =
     case reverse xs of
         [] -> Nothing
         -- TODO: Check all fixes from last turnpoint made.
         x : _ ->
-            Just . edges $ distanceEdgeToEdge PathPointToZone mm30 [fixToPoint x, z]
+            Just . edges $
+                distanceEdgeToEdge
+                    PathPointToZone
+                    mm30
+                    ((fixToPoint x) : zs)
 
 slice :: Cmp.SpeedSection -> [a] -> [a]
 slice = \case
@@ -296,6 +303,4 @@ distanceToGoal tasks (IxTask i) xs =
         Nothing -> Nothing
         Just (Cmp.Task {zones}) ->
             if null zones then Nothing else
-            case reverse zones of
-                [] -> Nothing
-                z : _ -> distanceToZone (zoneToCylinder z) xs
+            distanceViaZones (zoneToCylinder <$> zones) xs
