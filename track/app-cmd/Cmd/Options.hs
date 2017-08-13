@@ -31,6 +31,8 @@ data Reckon
     -- ^ Was goal made?
     | Zones
     -- ^ What zones were made?
+    | SpeedZones
+    -- ^ What zones were made?
     | GoalDistance
     -- ^ What is the distance to goal?
     | Time 

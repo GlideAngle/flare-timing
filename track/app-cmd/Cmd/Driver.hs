@@ -106,6 +106,15 @@ drive CmdOptions{..} = do
                         Left msg -> print msg
                         Right zoneHits -> print zoneHits
 
+                SpeedZones -> do
+                    checks <- runExceptT $ checkSpeedZones
+                                            yamlCompPath
+                                            (IxTask <$> task)
+                                            (Cmp.Pilot <$> pilot)
+                    case checks of
+                        Left msg -> print msg
+                        Right zoneHits -> print zoneHits
+
                 Launch -> do
                     checks <- runExceptT $ checkLaunched
                                             yamlCompPath
@@ -206,6 +215,19 @@ checkZones :: FilePath
                ]]
 checkZones =
     checkTracks $ \(Cmp.CompSettings {tasks}) -> madeZones tasks
+
+checkSpeedZones :: FilePath
+                -> [IxTask]
+                -> [Cmp.Pilot]
+                -> ExceptT
+                    String
+                    IO
+                    [[ Either
+                        (Cmp.Pilot, TrackFileFail)
+                        (Cmp.Pilot, [Bool])
+                    ]]
+checkSpeedZones =
+    checkTracks $ \(Cmp.CompSettings {tasks}) -> madeSpeedZones tasks
 
 checkLaunched :: FilePath
               -> [IxTask]
@@ -345,6 +367,14 @@ madeZones tasks (IxTask i) xs =
         Nothing -> []
         Just (Cmp.Task {zones}) ->
             (flip crossedZone xs . zoneToCylinder) <$> zones
+
+madeSpeedZones :: [Cmp.Task] -> IxTask -> [Kml.Fix] -> [Bool]
+madeSpeedZones tasks (IxTask i) xs =
+    case tasks ^? element (i - 1) of
+        Nothing -> []
+        Just (Cmp.Task {speedSection, zones}) ->
+            (flip crossedZone xs . zoneToCylinder) <$>
+                slice speedSection zones
 
 mm30 :: Tolerance
 mm30 = Tolerance $ 30 % 1000
