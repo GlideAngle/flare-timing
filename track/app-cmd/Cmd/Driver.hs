@@ -122,8 +122,8 @@ drive CmdOptions{..} = do
                         Left msg -> print msg
                         Right arrivals -> print arrivals
 
-                Distance -> do
-                    checks <- runExceptT $ checkDistance
+                GoalDistance -> do
+                    checks <- runExceptT $ checkDistanceToGoal
                                             yamlCompPath
                                             (IxTask <$> task)
                                             (Cmp.Pilot <$> pilot)
@@ -222,17 +222,17 @@ checkMadeGoal :: FilePath
 checkMadeGoal =
     checkTracks $ \(Cmp.CompSettings {tasks}) -> madeGoal tasks
 
-checkDistance :: FilePath
-              -> [IxTask]
-              -> [Cmp.Pilot]
-              -> ExceptT
-                  String
-                  IO
-                  [[ Either
-                      (Cmp.Pilot, TrackFileFail)
-                      (Cmp.Pilot, TaskDistance)
-                  ]]
-checkDistance =
+checkDistanceToGoal :: FilePath
+                    -> [IxTask]
+                    -> [Cmp.Pilot]
+                    -> ExceptT
+                        String
+                        IO
+                        [[ Either
+                            (Cmp.Pilot, TrackFileFail)
+                            (Cmp.Pilot, Maybe TaskDistance)
+                        ]]
+checkDistanceToGoal =
     checkTracks $ \(Cmp.CompSettings {tasks}) -> distanceToGoal tasks
 
 countFixes :: [Kml.Fix] -> PilotTrackFixes
@@ -316,19 +316,19 @@ madeZones tasks (IxTask i) xs =
 mm30 :: Tolerance
 mm30 = Tolerance $ 30 % 1000
 
-distanceToZone :: Tsk.Zone -> [Kml.Fix] -> TaskDistance
+distanceToZone :: Tsk.Zone -> [Kml.Fix] -> Maybe TaskDistance
 distanceToZone z xs =
     case reverse xs of
-        [] -> TaskDistance (MkQuantity 0)
+        [] -> Nothing
         -- TODO: Check all fixes from last turnpoint made.
         x : _ ->
-            edges $ distanceEdgeToEdge PathPointToZone mm30 [fixToPoint x, z]
+            Just . edges $ distanceEdgeToEdge PathPointToZone mm30 [fixToPoint x, z]
 
-distanceToGoal :: [Cmp.Task] -> IxTask -> [Kml.Fix] -> TaskDistance
+distanceToGoal :: [Cmp.Task] -> IxTask -> [Kml.Fix] -> Maybe TaskDistance
 distanceToGoal tasks (IxTask i) xs =
     case tasks ^? element (i - 1) of
-        Nothing -> TaskDistance (MkQuantity 0)
+        Nothing -> Nothing
         Just (Cmp.Task {zones}) ->
             case reverse zones of
-              [] -> TaskDistance (MkQuantity 0)
+              [] -> Nothing
               z : _ -> distanceToZone (zoneToCylinder z) xs

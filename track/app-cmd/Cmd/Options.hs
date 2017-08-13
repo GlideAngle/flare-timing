@@ -29,8 +29,8 @@ data Reckon
     -- ^ Was goal made?
     | Zones
     -- ^ What zones were made?
-    | Distance
-    -- ^ What distance was flown?
+    | GoalDistance
+    -- ^ What is the distance to goal?
     | Time 
     -- ^ What was the time to fly the speed section?
     | Lead
