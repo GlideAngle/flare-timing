@@ -278,8 +278,11 @@ madeSpeedZones tasks (IxTask i) xs =
 mm30 :: Tolerance
 mm30 = Tolerance $ 30 % 1000
 
-distanceViaZones :: [Tsk.Zone] -> [Kml.Fix] -> Maybe TaskDistance
-distanceViaZones zs xs =
+distanceViaZones :: Cmp.SpeedSection
+                 -> [Tsk.Zone]
+                 -> [Kml.Fix]
+                 -> Maybe TaskDistance
+distanceViaZones speedSection zs xs =
     case reverse xs of
         [] -> Nothing
         -- TODO: Check all fixes from last turnpoint made.
@@ -288,7 +291,12 @@ distanceViaZones zs xs =
                 distanceEdgeToEdge
                     PathPointToZone
                     mm30
-                    ((fixToPoint x) : zs)
+                    ((fixToPoint x) : notTicked)
+    where
+        -- TODO: Don't assume end of speed section is goal.
+        zsSpeed = slice speedSection zs
+        ys = tickedZones zsSpeed xs
+        notTicked = drop (length $ takeWhile (== True) ys) zsSpeed
 
 slice :: Cmp.SpeedSection -> [a] -> [a]
 slice = \case
@@ -301,6 +309,6 @@ distanceToGoal :: [Cmp.Task] -> IxTask -> [Kml.Fix] -> Maybe TaskDistance
 distanceToGoal tasks (IxTask i) xs =
     case tasks ^? element (i - 1) of
         Nothing -> Nothing
-        Just (Cmp.Task {zones}) ->
+        Just (Cmp.Task {speedSection, zones}) ->
             if null zones then Nothing else
-            distanceViaZones (zoneToCylinder <$> zones) xs
+            distanceViaZones speedSection (zoneToCylinder <$> zones) xs
