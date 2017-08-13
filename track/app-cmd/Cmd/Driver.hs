@@ -75,91 +75,70 @@ drive :: CmdOptions -> IO ()
 drive CmdOptions{..} = do
     dfe <- doesFileExist file
     if dfe then
-        go file
+        withFile file
     else do
         dde <- doesDirectoryExist dir
         if dde then do
             files <- find always (fileType ==? RegularFile &&? extension ==? ".comp.yaml") dir
-            mapM_ go files
+            mapM_ withFile files
         else
             putStrLn "Couldn't find any flight score competition yaml input files."
     where
-        go yamlCompPath = do
+        withFile yamlCompPath = do
             putStrLn $ takeFileName yamlCompPath
 
             case reckon of
-                Fixes -> do
-                    checks <- runExceptT $ checkFixes
-                                            yamlCompPath
-                                            (IxTask <$> task)
-                                            (Cmp.Pilot <$> pilot)
+                Fixes -> go checkFixes
+                Zones -> go checkZones
+                SpeedZones -> go checkSpeedZones
+                Launch -> go checkLaunched
+                Started -> go checkStarted
+                Goal -> go checkMadeGoal
+                GoalDistance -> go checkDistanceToGoal
+                x -> putStrLn $ "TODO: Handle other reckon of " ++ show x
+
+            where
+                go :: Show a => (FilePath
+                   -> [IxTask]
+                   -> [Cmp.Pilot]
+                   -> ExceptT
+                       String
+                       IO
+                       [[Either
+                           (Cmp.Pilot, TrackFileFail)
+                           (Cmp.Pilot, a)
+                       ]])
+                   -> IO ()
+                go f = do
+                    checks <-
+                        runExceptT $
+                            f
+                                yamlCompPath
+                                (IxTask <$> task)
+                                (Cmp.Pilot <$> pilot)
+
                     print checks
 
-                Zones -> do
-                    checks <- runExceptT $ checkZones
-                                            yamlCompPath
-                                            (IxTask <$> task)
-                                            (Cmp.Pilot <$> pilot)
-                    print checks
+                checkFixes =
+                    checkTracks $ const (\_ xs -> countFixes xs)
 
-                SpeedZones -> do
-                    checks <- runExceptT $ checkSpeedZones
-                                            yamlCompPath
-                                            (IxTask <$> task)
-                                            (Cmp.Pilot <$> pilot)
-                    print checks
+                checkZones =
+                    checkTracks $ \(Cmp.CompSettings {tasks}) -> madeZones tasks
 
-                Launch -> do
-                    checks <- runExceptT $ checkLaunched
-                                            yamlCompPath
-                                            (IxTask <$> task)
-                                            (Cmp.Pilot <$> pilot)
-                    print checks
+                checkSpeedZones =
+                    checkTracks $ \(Cmp.CompSettings {tasks}) -> madeSpeedZones tasks
 
-                Started -> do
-                    checks <- runExceptT $ checkStarted
-                                            yamlCompPath
-                                            (IxTask <$> task)
-                                            (Cmp.Pilot <$> pilot)
-                    print checks
+                checkLaunched =
+                    checkTracks $ \(Cmp.CompSettings {tasks}) -> launched tasks
 
-                Goal -> do
-                    checks <- runExceptT $ checkMadeGoal
-                                            yamlCompPath
-                                            (IxTask <$> task)
-                                            (Cmp.Pilot <$> pilot)
-                    print checks
+                checkStarted =
+                    checkTracks $ \(Cmp.CompSettings {tasks}) -> started tasks
 
-                GoalDistance -> do
-                    checks <- runExceptT $ checkDistanceToGoal
-                                            yamlCompPath
-                                            (IxTask <$> task)
-                                            (Cmp.Pilot <$> pilot)
-                    print checks
+                checkMadeGoal =
+                    checkTracks $ \(Cmp.CompSettings {tasks}) -> madeGoal tasks
 
-                x ->
-                    putStrLn $ "TODO: Handle other reckon of " ++ show x
-
-        checkFixes =
-            checkTracks $ const (\_ xs -> countFixes xs)
-
-        checkZones =
-            checkTracks $ \(Cmp.CompSettings {tasks}) -> madeZones tasks
-
-        checkSpeedZones =
-            checkTracks $ \(Cmp.CompSettings {tasks}) -> madeSpeedZones tasks
-
-        checkLaunched =
-            checkTracks $ \(Cmp.CompSettings {tasks}) -> launched tasks
-
-        checkStarted =
-            checkTracks $ \(Cmp.CompSettings {tasks}) -> started tasks
-
-        checkMadeGoal =
-            checkTracks $ \(Cmp.CompSettings {tasks}) -> madeGoal tasks
-
-        checkDistanceToGoal =
-            checkTracks $ \(Cmp.CompSettings {tasks}) -> distanceToGoal tasks
+                checkDistanceToGoal =
+                    checkTracks $ \(Cmp.CompSettings {tasks}) -> distanceToGoal tasks
 
 readSettings :: FilePath -> ExceptT String IO Cmp.CompSettings
 readSettings compYamlPath = do
