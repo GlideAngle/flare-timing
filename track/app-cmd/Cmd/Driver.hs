@@ -55,7 +55,12 @@ import Flight.Task as Tsk
     , LatLng(..)
     , Radius(..)
     , Zone(..)
+    , TaskDistance(..)
+    , EdgeDistance(..)
+    , Tolerance(..)
+    , DistancePath(..)
     , separatedZones
+    , distanceEdgeToEdge
     )
 import Flight.Units ()
 
@@ -82,40 +87,49 @@ drive CmdOptions{..} = do
 
             case reckon of
                 Fixes -> do
-                    made <- runExceptT $ checkFixes
+                    checks <- runExceptT $ checkFixes
                                             yamlCompPath
                                             (IxTask <$> task)
                                             (Cmp.Pilot <$> pilot)
-                    case made of
+                    case checks of
                         Left msg -> print msg
                         Right fixCounts -> print fixCounts
 
                 Zones -> do
-                    made <- runExceptT $ checkZones
+                    checks <- runExceptT $ checkZones
                                             yamlCompPath
                                             (IxTask <$> task)
                                             (Cmp.Pilot <$> pilot)
-                    case made of
+                    case checks of
                         Left msg -> print msg
                         Right zoneHits -> print zoneHits
 
                 Launch -> do
-                    made <- runExceptT $ checkLaunched
+                    checks <- runExceptT $ checkLaunched
                                             yamlCompPath
                                             (IxTask <$> task)
                                             (Cmp.Pilot <$> pilot)
-                    case made of
+                    case checks of
                         Left msg -> print msg
                         Right departures -> print departures
 
                 Goal -> do
-                    made <- runExceptT $ checkMadeGoal
+                    checks <- runExceptT $ checkMadeGoal
                                             yamlCompPath
                                             (IxTask <$> task)
                                             (Cmp.Pilot <$> pilot)
-                    case made of
+                    case checks of
                         Left msg -> print msg
                         Right arrivals -> print arrivals
+
+                Distance -> do
+                    checks <- runExceptT $ checkDistance
+                                            yamlCompPath
+                                            (IxTask <$> task)
+                                            (Cmp.Pilot <$> pilot)
+                    case checks of
+                        Left msg -> print msg
+                        Right distances -> print distances
 
                 x ->
                     putStrLn $ "TODO: Handle other reckon of " ++ show x
@@ -208,6 +222,19 @@ checkMadeGoal :: FilePath
 checkMadeGoal =
     checkTracks $ \(Cmp.CompSettings {tasks}) -> madeGoal tasks
 
+checkDistance :: FilePath
+              -> [IxTask]
+              -> [Cmp.Pilot]
+              -> ExceptT
+                  String
+                  IO
+                  [[ Either
+                      (Cmp.Pilot, TrackFileFail)
+                      (Cmp.Pilot, TaskDistance)
+                  ]]
+checkDistance =
+    checkTracks $ \(Cmp.CompSettings {tasks}) -> distanceToGoal tasks
+
 countFixes :: [Kml.Fix] -> PilotTrackFixes
 countFixes xs = PilotTrackFixes $ length xs
 
@@ -285,3 +312,23 @@ madeZones tasks (IxTask i) xs =
         Nothing -> []
         Just (Cmp.Task {zones}) ->
             (flip crossedZone xs . zoneToCylinder) <$> zones
+
+mm30 :: Tolerance
+mm30 = Tolerance $ 30 % 1000
+
+distanceToZone :: Tsk.Zone -> [Kml.Fix] -> TaskDistance
+distanceToZone z xs =
+    case reverse xs of
+        [] -> TaskDistance (MkQuantity 0)
+        -- TODO: Check all fixes from last turnpoint made.
+        x : _ ->
+            edges $ distanceEdgeToEdge PathPointToZone mm30 [fixToPoint x, z]
+
+distanceToGoal :: [Cmp.Task] -> IxTask -> [Kml.Fix] -> TaskDistance
+distanceToGoal tasks (IxTask i) xs =
+    case tasks ^? element (i - 1) of
+        Nothing -> TaskDistance (MkQuantity 0)
+        Just (Cmp.Task {zones}) ->
+            case reverse zones of
+              [] -> TaskDistance (MkQuantity 0)
+              z : _ -> distanceToZone (zoneToCylinder z) xs
