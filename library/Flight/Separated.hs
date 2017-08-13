@@ -6,30 +6,92 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE QuasiQuotes #-}
 
 module Flight.Separated (separatedZones) where
     
-import Data.UnitsOfMeasure ((+:))
+import Data.UnitsOfMeasure ((+:), (-:), (*:), (/:), u, unQuantity)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
+import Flight.Units ()
 import Flight.Zone (Zone(..), Radius(..), radius)
 import Flight.PointToPoint (TaskDistance(..), distancePointToPoint)
+import Flight.Geo
+
+boundingBoxSeparated :: Quantity Rational [u| m |]
+                     -> LatLng [u| rad |]
+                     -> LatLng [u| rad |]
+                     -> Bool
+boundingBoxSeparated
+    r'
+    (LatLng (xLLx, xLLy))
+    (LatLng (Lat yLat, Lng yLng)) =
+        xLo || xHi || yLo || yHi
+    where
+        r :: Quantity Rational [u| rad |]
+        r = (r' /: earthRadius) *: [u| 1 rad |]
+
+        xLo :: Bool
+        xLo = xLat' < MkQuantity 0
+
+        xHi :: Bool
+        xHi = xLat' > MkQuantity 1
+
+        yLo :: Bool
+        yLo = xLng' < MkQuantity 0
+
+        yHi :: Bool
+        yHi = xLng' > MkQuantity 1
+
+        xZero :: Quantity Rational [u| rad |]
+        xZero = yLat -: r
+
+        yZero :: Quantity Rational [u| rad |]
+        yZero = yLng -: r
+
+        xScale :: Quantity Rational [u| rad |]
+        xScale = (yLat +: r) -: (yLat -: r)
+
+        yScale :: Quantity Rational [u| rad |]
+        yScale = (yLng +: r) -: (yLng -: r)
+
+        xTranslate :: Lat [u| rad |] -> Lat [u| rad |]
+        xTranslate (Lat lat) =
+            Lat ((lat -: xZero) *: scale)
+            where
+                scale :: Quantity Rational [u| 1 1 |]
+                scale = MkQuantity (unQuantity xScale)
+
+        yTranslate :: Lng [u| rad |] -> Lng [u| rad |]
+        yTranslate (Lng lng) =
+            Lng ((lng -: yZero) *: scale)
+            where
+                scale :: Quantity Rational [u| 1 1 |]
+                scale = MkQuantity (unQuantity yScale)
+
+        (Lat xLat') = xTranslate xLLx
+        (Lng xLng') = yTranslate xLLy
 
 separated :: Zone -> Zone -> Bool
 
 separated x@(Point _) y@(Point _) =
     x /= y
 
+separated x y@(Point _) =
+    separated y x
+
+separated
+    x@(Point xLL)
+    y@(Cylinder r yLL) =
+    boundingBoxSeparated ry xLL yLL || d > ry
+    where
+        (Radius ry) = r
+        (TaskDistance d) = distancePointToPoint [x, y]
+
 separated x@(Point _) y =
     d > ry
     where
         (Radius ry) = radius y
-        (TaskDistance d) = distancePointToPoint [x, y]
-
-separated x y@(Point _) =
-    d > rx
-    where
-        (Radius rx) = radius x
         (TaskDistance d) = distancePointToPoint [x, y]
 
 -- | Consider cylinders separated if one fits inside the other or if they don't
