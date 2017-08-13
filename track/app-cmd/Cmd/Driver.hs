@@ -93,66 +93,73 @@ drive CmdOptions{..} = do
                                             yamlCompPath
                                             (IxTask <$> task)
                                             (Cmp.Pilot <$> pilot)
-                    case checks of
-                        Left msg -> print msg
-                        Right fixCounts -> print fixCounts
+                    print checks
 
                 Zones -> do
                     checks <- runExceptT $ checkZones
                                             yamlCompPath
                                             (IxTask <$> task)
                                             (Cmp.Pilot <$> pilot)
-                    case checks of
-                        Left msg -> print msg
-                        Right zoneHits -> print zoneHits
+                    print checks
 
                 SpeedZones -> do
                     checks <- runExceptT $ checkSpeedZones
                                             yamlCompPath
                                             (IxTask <$> task)
                                             (Cmp.Pilot <$> pilot)
-                    case checks of
-                        Left msg -> print msg
-                        Right zoneHits -> print zoneHits
+                    print checks
 
                 Launch -> do
                     checks <- runExceptT $ checkLaunched
                                             yamlCompPath
                                             (IxTask <$> task)
                                             (Cmp.Pilot <$> pilot)
-                    case checks of
-                        Left msg -> print msg
-                        Right departures -> print departures
+                    print checks
 
                 Started -> do
                     checks <- runExceptT $ checkStarted
                                             yamlCompPath
                                             (IxTask <$> task)
                                             (Cmp.Pilot <$> pilot)
-                    case checks of
-                        Left msg -> print msg
-                        Right departures -> print departures
+                    print checks
 
                 Goal -> do
                     checks <- runExceptT $ checkMadeGoal
                                             yamlCompPath
                                             (IxTask <$> task)
                                             (Cmp.Pilot <$> pilot)
-                    case checks of
-                        Left msg -> print msg
-                        Right arrivals -> print arrivals
+                    print checks
 
                 GoalDistance -> do
                     checks <- runExceptT $ checkDistanceToGoal
                                             yamlCompPath
                                             (IxTask <$> task)
                                             (Cmp.Pilot <$> pilot)
-                    case checks of
-                        Left msg -> print msg
-                        Right distances -> print distances
+                    print checks
 
                 x ->
                     putStrLn $ "TODO: Handle other reckon of " ++ show x
+
+        checkFixes =
+            checkTracks $ const (\_ xs -> countFixes xs)
+
+        checkZones =
+            checkTracks $ \(Cmp.CompSettings {tasks}) -> madeZones tasks
+
+        checkSpeedZones =
+            checkTracks $ \(Cmp.CompSettings {tasks}) -> madeSpeedZones tasks
+
+        checkLaunched =
+            checkTracks $ \(Cmp.CompSettings {tasks}) -> launched tasks
+
+        checkStarted =
+            checkTracks $ \(Cmp.CompSettings {tasks}) -> started tasks
+
+        checkMadeGoal =
+            checkTracks $ \(Cmp.CompSettings {tasks}) -> madeGoal tasks
+
+        checkDistanceToGoal =
+            checkTracks $ \(Cmp.CompSettings {tasks}) -> distanceToGoal tasks
 
 readSettings :: FilePath -> ExceptT String IO Cmp.CompSettings
 readSettings compYamlPath = do
@@ -190,96 +197,6 @@ checkTracks f compYamlPath tasks selectPilots = do
     (settings, xs) <- settingsLogs compYamlPath tasks selectPilots
     lift $ Log.pilotTracks (f settings) xs
 
-checkFixes :: FilePath
-           -> [IxTask]
-           -> [Cmp.Pilot]
-           -> ExceptT
-               String
-               IO
-               [[ Either
-                   (Cmp.Pilot, TrackFileFail)
-                   (Cmp.Pilot, PilotTrackFixes)
-               ]]
-checkFixes =
-    checkTracks $ const (\_ xs -> countFixes xs)
-
-checkZones :: FilePath
-           -> [IxTask]
-           -> [Cmp.Pilot]
-           -> ExceptT
-               String
-               IO
-               [[ Either
-               (Cmp.Pilot, TrackFileFail)
-               (Cmp.Pilot, [Bool])
-               ]]
-checkZones =
-    checkTracks $ \(Cmp.CompSettings {tasks}) -> madeZones tasks
-
-checkSpeedZones :: FilePath
-                -> [IxTask]
-                -> [Cmp.Pilot]
-                -> ExceptT
-                    String
-                    IO
-                    [[ Either
-                        (Cmp.Pilot, TrackFileFail)
-                        (Cmp.Pilot, [Bool])
-                    ]]
-checkSpeedZones =
-    checkTracks $ \(Cmp.CompSettings {tasks}) -> madeSpeedZones tasks
-
-checkLaunched :: FilePath
-              -> [IxTask]
-              -> [Cmp.Pilot]
-              -> ExceptT
-                  String
-                  IO
-                  [[ Either
-                      (Cmp.Pilot, TrackFileFail)
-                      (Cmp.Pilot, Bool)
-                  ]]
-checkLaunched =
-    checkTracks $ \(Cmp.CompSettings {tasks}) -> launched tasks
-
-checkStarted :: FilePath
-             -> [IxTask]
-             -> [Cmp.Pilot]
-             -> ExceptT
-                 String
-                 IO
-                 [[ Either
-                     (Cmp.Pilot, TrackFileFail)
-                     (Cmp.Pilot, Bool)
-                 ]]
-checkStarted =
-    checkTracks $ \(Cmp.CompSettings {tasks}) -> started tasks
-
-checkMadeGoal :: FilePath
-              -> [IxTask]
-              -> [Cmp.Pilot]
-              -> ExceptT
-                  String
-                  IO
-                  [[ Either
-                      (Cmp.Pilot, TrackFileFail)
-                      (Cmp.Pilot, Bool)
-                  ]]
-checkMadeGoal =
-    checkTracks $ \(Cmp.CompSettings {tasks}) -> madeGoal tasks
-
-checkDistanceToGoal :: FilePath
-                    -> [IxTask]
-                    -> [Cmp.Pilot]
-                    -> ExceptT
-                        String
-                        IO
-                        [[ Either
-                            (Cmp.Pilot, TrackFileFail)
-                            (Cmp.Pilot, Maybe TaskDistance)
-                        ]]
-checkDistanceToGoal =
-    checkTracks $ \(Cmp.CompSettings {tasks}) -> distanceToGoal tasks
 
 countFixes :: [Kml.Fix] -> PilotTrackFixes
 countFixes xs = PilotTrackFixes $ length xs
