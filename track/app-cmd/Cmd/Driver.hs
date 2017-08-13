@@ -10,6 +10,7 @@
 
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE LambdaCase #-}
 
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
@@ -40,6 +41,7 @@ import qualified Data.Flight.Comp as Cmp
     , PilotTrackLogFile(..)
     , Latitude(..)
     , Longitude(..)
+    , SpeedSection
     )
 import Data.Flight.TrackLog as Log
     ( TrackFileFail(..)
@@ -324,11 +326,19 @@ distanceToZone z xs =
         x : _ ->
             Just . edges $ distanceEdgeToEdge PathPointToZone mm30 [fixToPoint x, z]
 
+slice :: Cmp.SpeedSection -> [a] -> [a]
+slice = \case
+    Nothing -> id
+    Just (s', e') ->
+        let (s, e) = (fromInteger s' - 1, fromInteger e' - 1)
+        in take (e - s + 1) . drop s
+
 distanceToGoal :: [Cmp.Task] -> IxTask -> [Kml.Fix] -> Maybe TaskDistance
 distanceToGoal tasks (IxTask i) xs =
     case tasks ^? element (i - 1) of
         Nothing -> Nothing
-        Just (Cmp.Task {zones}) ->
+        Just (Cmp.Task {speedSection, zones}) ->
+            if null zones then Nothing else
             case reverse zones of
-              [] -> Nothing
-              z : _ -> distanceToZone (zoneToCylinder z) xs
+                [] -> Nothing
+                z : _ -> distanceToZone (zoneToCylinder z) xs
