@@ -25,6 +25,8 @@ data Reckon
     -- ^ How many fixes?
     | Launch
     -- ^ Did the pilot launch?
+    | Started 
+    -- ^ Did the pilot start the speed section?
     | Goal
     -- ^ Was goal made?
     | Zones

@@ -115,6 +115,15 @@ drive CmdOptions{..} = do
                         Left msg -> print msg
                         Right departures -> print departures
 
+                Started -> do
+                    checks <- runExceptT $ checkStarted
+                                            yamlCompPath
+                                            (IxTask <$> task)
+                                            (Cmp.Pilot <$> pilot)
+                    case checks of
+                        Left msg -> print msg
+                        Right departures -> print departures
+
                 Goal -> do
                     checks <- runExceptT $ checkMadeGoal
                                             yamlCompPath
@@ -211,6 +220,19 @@ checkLaunched :: FilePath
 checkLaunched =
     checkTracks $ \(Cmp.CompSettings {tasks}) -> launched tasks
 
+checkStarted :: FilePath
+             -> [IxTask]
+             -> [Cmp.Pilot]
+             -> ExceptT
+                 String
+                 IO
+                 [[ Either
+                     (Cmp.Pilot, TrackFileFail)
+                     (Cmp.Pilot, Bool)
+                 ]]
+checkStarted =
+    checkTracks $ \(Cmp.CompSettings {tasks}) -> started tasks
+
 checkMadeGoal :: FilePath
               -> [IxTask]
               -> [Cmp.Pilot]
@@ -299,11 +321,20 @@ launched tasks (IxTask i) xs =
                 [] -> False
                 z : _ -> exitsZone (zoneToCylinder z) xs
 
+started :: [Cmp.Task] -> IxTask -> [Kml.Fix] -> Bool
+started tasks (IxTask i) xs =
+    case tasks ^? element (i - 1) of
+        Nothing -> False
+        Just (Cmp.Task {speedSection, zones}) ->
+            case slice speedSection zones of
+                [] -> False
+                z : _ -> exitsZone (zoneToCylinder z) xs
+
 madeGoal :: [Cmp.Task] -> IxTask -> [Kml.Fix] -> Bool
 madeGoal tasks (IxTask i) xs =
     case tasks ^? element (i - 1) of
         Nothing -> False
-        Just (Cmp.Task {zones})->
+        Just (Cmp.Task {zones}) ->
             case reverse $ zones of
                 [] -> False
                 z : _ -> entersZone (zoneToCylinder z) xs
@@ -337,7 +368,7 @@ distanceToGoal :: [Cmp.Task] -> IxTask -> [Kml.Fix] -> Maybe TaskDistance
 distanceToGoal tasks (IxTask i) xs =
     case tasks ^? element (i - 1) of
         Nothing -> Nothing
-        Just (Cmp.Task {speedSection, zones}) ->
+        Just (Cmp.Task {zones}) ->
             if null zones then Nothing else
             case reverse zones of
                 [] -> Nothing
