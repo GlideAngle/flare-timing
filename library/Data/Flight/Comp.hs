@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE NamedFieldPuns #-}
 
 {-|
 Module      : Data.Flight.Comp
@@ -22,6 +23,8 @@ module Data.Flight.Comp
     -- * Task
     , Task(..)
     , SpeedSection
+    , StartGate(..)
+    , OpenClose(..)
     , showTask
     -- * Pilot
     , Pilot(..)
@@ -42,6 +45,19 @@ import Data.Flight.Zone
 import Data.Flight.Pilot
 
 type SpeedSection = Maybe (Integer, Integer)
+
+newtype StartGate = StartGate String deriving (Show, Eq, Generic)
+
+instance ToJSON StartGate
+instance FromJSON StartGate
+
+data OpenClose =
+    OpenClose { open :: String
+              , close :: String
+              } deriving (Show, Eq, Generic)
+
+instance ToJSON OpenClose
+instance FromJSON OpenClose
 
 data CompSettings =
     CompSettings { comp :: Comp
@@ -75,17 +91,24 @@ instance FromJSON Nominal
 
 data Task =
     Task { taskName :: String
-         , speedSection :: SpeedSection
          , zones :: [Zone]
+         , speedSection :: SpeedSection
+         , zoneTimes :: [OpenClose]
+         , startGates :: [StartGate]
          } deriving (Eq, Show, Generic)
 
 instance ToJSON Task
 instance FromJSON Task
 
 showTask :: Task -> String
-showTask (Task name ss xs) =
-    unwords [ "Task"
-            , name
-            , show ss
-            , intercalate ", " $ showZone <$> xs
+showTask (Task {taskName, zones, speedSection, zoneTimes, startGates}) =
+    unwords [ "Task '" ++ taskName ++ "'"
+            , ", zones "
+            , intercalate ", " $ showZone <$> zones
+            , ", speed section "
+            , show speedSection
+            , ", zone times"
+            , show zoneTimes 
+            , ", start gates "
+            , intercalate ", " $ show <$> startGates 
             ]
