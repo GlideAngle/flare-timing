@@ -23,7 +23,7 @@ import Text.XML.HXT.Core
     , arr
     , deep
     )
-import Data.List (concatMap)
+import Data.List (concatMap, nub)
 import Text.Parsec.Token as P
 import Text.ParserCombinators.Parsec
     ( GenParser
@@ -106,7 +106,11 @@ getTask =
             >>> arr parseStartGate
 
         mkTask (name, (section, (zs, (ts, gates)))) =
-            Task name zs section ts gates
+            Task name zs section ts'' gates
+            where
+                -- NOTE: If all time zones are the same then collapse.
+                ts' = nub ts
+                ts'' = if length ts' == 1 then ts' else ts
 
 parseTasks :: String -> IO (Either String [Task])
 parseTasks contents = do
