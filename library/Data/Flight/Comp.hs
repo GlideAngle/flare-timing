@@ -36,6 +36,7 @@ module Data.Flight.Comp
     , Longitude(..)
     ) where
 
+import Data.Time.Clock (UTCTime)
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.List (intercalate)
@@ -46,14 +47,14 @@ import Data.Flight.Pilot
 
 type SpeedSection = Maybe (Integer, Integer)
 
-newtype StartGate = StartGate String deriving (Show, Eq, Generic)
+newtype StartGate = StartGate UTCTime deriving (Show, Eq, Generic)
 
 instance ToJSON StartGate
 instance FromJSON StartGate
 
 data OpenClose =
-    OpenClose { open :: String
-              , close :: String
+    OpenClose { open :: UTCTime 
+              , close :: UTCTime
               } deriving (Show, Eq, Generic)
 
 instance ToJSON OpenClose

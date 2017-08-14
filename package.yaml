@@ -15,6 +15,7 @@ library:
   - aeson
   - scientific
   - containers
+  - time
   source-dirs: library
   exposed-modules:
   - Data.Flight.Comp
@@ -37,6 +38,7 @@ tests:
     - scientific
     - containers
     - split
+    - time
     ghc-options:
     - -rtsopts
     - -threaded
