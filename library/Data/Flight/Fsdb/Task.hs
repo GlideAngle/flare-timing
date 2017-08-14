@@ -23,6 +23,8 @@ import Text.XML.HXT.Core
     , arr
     , deep
     )
+import Data.Time.Clock (UTCTime)
+import Data.Time.Format (parseTimeOrError, defaultTimeLocale)
 import Data.List (concatMap, nub)
 import Text.Parsec.Token as P
 import Text.ParserCombinators.Parsec
@@ -121,15 +123,18 @@ parseTasks contents = do
 pRadius :: GenParser Char st Integer
 pRadius = pNat <?> "No radius"
 
+parseUtcTime :: String -> UTCTime
+parseUtcTime =
+    -- NOTE: %F is %Y-%m-%d, %T is %H:%M:%S and %z is -HHMM or -HH:MM
+    parseTimeOrError False defaultTimeLocale "%FT%T%z"
+
 parseStartGate :: String -> StartGate
 parseStartGate =
-    -- TODO: Parse the UTC datetime string with zone offset.
-    StartGate
+    StartGate . parseUtcTime
 
 parseOpenClose :: (String, String) -> OpenClose
 parseOpenClose (o, c) =
-    -- TODO: Parse the UTC datetime string with zone offset.
-    OpenClose o c
+    OpenClose (parseUtcTime o) (parseUtcTime c)
 
 parseSpeedSection :: [(String, String)] -> SpeedSection
 parseSpeedSection [] = Nothing

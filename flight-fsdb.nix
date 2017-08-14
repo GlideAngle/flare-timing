@@ -1,7 +1,7 @@
 { mkDerivation, aeson, base, containers, flight-comp, hlint, hxt
 , hxt-xpath, parsec, path, raw-strings-qq, scientific, smallcheck
 , split, stdenv, tasty, tasty-hunit, tasty-quickcheck
-, tasty-smallcheck
+, tasty-smallcheck, time
 }:
 mkDerivation {
   pname = "flight-fsdb";
@@ -9,12 +9,12 @@ mkDerivation {
   src = ./.;
   libraryHaskellDepends = [
     aeson base containers flight-comp hxt hxt-xpath parsec path
-    scientific split
+    scientific split time
   ];
   testHaskellDepends = [
     aeson base containers flight-comp hlint hxt hxt-xpath parsec path
     raw-strings-qq scientific smallcheck split tasty tasty-hunit
-    tasty-quickcheck tasty-smallcheck
+    tasty-quickcheck tasty-smallcheck time
   ];
   homepage = "https://github.com/BlockScope/haskell-flight-fsdb#readme";
   description = "A parser for fsdb, the database XML format of FS";

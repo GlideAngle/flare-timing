@@ -19,6 +19,7 @@ library:
   - scientific
   - containers
   - split
+  - time
   - flight-comp
   source-dirs: library
   exposed-modules:
@@ -45,6 +46,7 @@ tests:
     - scientific
     - containers
     - split
+    - time
     - flight-comp
     ghc-options:
     - -rtsopts
@@ -63,6 +65,7 @@ tests:
     - hxt-xpath
     - raw-strings-qq
     - split
+    - time
     - tasty
     - tasty-hunit
     - tasty-quickcheck
