@@ -84,7 +84,12 @@ drive CmdOptions{..} = do
                 ("taskName", _) -> LT
                 ("zones", "taskName") -> GT
                 ("zones", _) -> LT
+                ("speedSection", "zoneTimes") -> LT
+                ("speedSection", "startGates") -> LT
                 ("speedSection", _) -> GT
+                ("zoneTimes", "startGates") -> LT
+                ("zoneTimes", _) -> GT
+                ("startGates", _) -> GT
                 -- Turnpoint fields
                 ("zoneName", _) -> LT
                 ("lat", "zoneName") -> GT
