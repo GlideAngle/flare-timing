@@ -18,7 +18,7 @@ module Cmd.Driver (driverMain) where
 
 import Data.List (findIndex)
 import Data.Ratio ((%))
-import Data.UnitsOfMeasure (u, convert)
+import Data.UnitsOfMeasure ((-:), u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Control.Lens ((^?), element)
 import Control.Monad (mapM_)
@@ -95,6 +95,7 @@ drive CmdOptions{..} = do
                 Started -> go checkStarted
                 Goal -> go checkMadeGoal
                 GoalDistance -> go checkDistanceToGoal
+                FlownDistance -> go checkDistanceFlown
                 x -> putStrLn $ "TODO: Handle other reckon of " ++ show x
 
             where
@@ -139,6 +140,9 @@ drive CmdOptions{..} = do
 
                 checkDistanceToGoal =
                     checkTracks $ \(Cmp.CompSettings {tasks}) -> distanceToGoal tasks
+
+                checkDistanceFlown =
+                    checkTracks $ \(Cmp.CompSettings {tasks}) -> distanceFlown tasks
 
 readSettings :: FilePath -> ExceptT String IO Cmp.CompSettings
 readSettings compYamlPath = do
@@ -205,30 +209,27 @@ fixToPoint fix =
         lat = Kml.lat fix
         lng = Kml.lng fix
 
-crossedZone :: Tsk.Zone -> [Kml.Fix] -> Bool
+crossedZone :: Tsk.Zone -> [Tsk.Zone] -> Bool
 crossedZone z xs =
     entersZone z xs || exitsZone z xs
 
-entersZone :: Tsk.Zone -> [Kml.Fix] -> Bool
+entersZone :: Tsk.Zone -> [Tsk.Zone] -> Bool
 entersZone z xs =
     exitsZone z $ reverse xs
 
-exitsZone :: Tsk.Zone -> [Kml.Fix] -> Bool
+exitsZone :: Tsk.Zone -> [Tsk.Zone] -> Bool
 exitsZone z xs =
     case (insideZone, outsideZone) of
         (Just _, Just _) -> True
         _ -> False
     where
-        ys :: [Tsk.Zone]
-        ys = fixToPoint <$> xs
-
         insideZone :: Maybe Int
         insideZone =
-            findIndex (\y -> not $ Tsk.separatedZones [y, z]) ys
+            findIndex (\y -> not $ Tsk.separatedZones [y, z]) xs
 
         outsideZone :: Maybe Int
         outsideZone =
-            findIndex (\y -> Tsk.separatedZones [y, z]) ys
+            findIndex (\y -> Tsk.separatedZones [y, z]) xs
 
 launched :: [Cmp.Task] -> IxTask -> [Kml.Fix] -> Bool
 launched tasks (IxTask i) xs =
@@ -237,7 +238,7 @@ launched tasks (IxTask i) xs =
         Just (Cmp.Task {zones})->
             case zones of
                 [] -> False
-                z : _ -> exitsZone (zoneToCylinder z) xs
+                z : _ -> exitsZone (zoneToCylinder z) (fixToPoint <$> xs)
 
 started :: [Cmp.Task] -> IxTask -> [Kml.Fix] -> Bool
 started tasks (IxTask i) xs =
@@ -246,7 +247,7 @@ started tasks (IxTask i) xs =
         Just (Cmp.Task {speedSection, zones}) ->
             case slice speedSection zones of
                 [] -> False
-                z : _ -> exitsZone (zoneToCylinder z) xs
+                z : _ -> exitsZone (zoneToCylinder z) (fixToPoint <$> xs)
 
 madeGoal :: [Cmp.Task] -> IxTask -> [Kml.Fix] -> Bool
 madeGoal tasks (IxTask i) xs =
@@ -255,9 +256,9 @@ madeGoal tasks (IxTask i) xs =
         Just (Cmp.Task {zones}) ->
             case reverse $ zones of
                 [] -> False
-                z : _ -> entersZone (zoneToCylinder z) xs
+                z : _ -> entersZone (zoneToCylinder z) (fixToPoint <$> xs)
 
-tickedZones :: [Tsk.Zone] -> [Kml.Fix] -> [Bool]
+tickedZones :: [Tsk.Zone] -> [Tsk.Zone] -> [Bool]
 tickedZones zones xs =
     flip crossedZone xs <$> zones
 
@@ -266,23 +267,26 @@ madeZones tasks (IxTask i) xs =
     case tasks ^? element (i - 1) of
         Nothing -> []
         Just (Cmp.Task {zones}) ->
-            tickedZones (zoneToCylinder <$> zones) xs
+            tickedZones (zoneToCylinder <$> zones) (fixToPoint <$> xs)
 
 madeSpeedZones :: [Cmp.Task] -> IxTask -> [Kml.Fix] -> [Bool]
 madeSpeedZones tasks (IxTask i) xs =
     case tasks ^? element (i - 1) of
         Nothing -> []
         Just (Cmp.Task {speedSection, zones}) ->
-            tickedZones (zoneToCylinder <$> slice speedSection zones) xs
+            tickedZones
+                (zoneToCylinder <$> slice speedSection zones)
+                (fixToPoint <$> xs)
 
 mm30 :: Tolerance
 mm30 = Tolerance $ 30 % 1000
 
-distanceViaZones :: Cmp.SpeedSection
+distanceViaZones :: (a -> Zone)
+                 -> Cmp.SpeedSection
                  -> [Tsk.Zone]
-                 -> [Kml.Fix]
+                 -> [a]
                  -> Maybe TaskDistance
-distanceViaZones speedSection zs xs =
+distanceViaZones mkZone speedSection zs xs =
     case reverse xs of
         [] -> Nothing
         -- TODO: Check all fixes from last turnpoint made.
@@ -291,11 +295,11 @@ distanceViaZones speedSection zs xs =
                 distanceEdgeToEdge
                     PathPointToZone
                     mm30
-                    ((fixToPoint x) : notTicked)
+                    ((mkZone x) : notTicked)
     where
         -- TODO: Don't assume end of speed section is goal.
         zsSpeed = slice speedSection zs
-        ys = tickedZones zsSpeed xs
+        ys = tickedZones zsSpeed (mkZone <$> xs)
         notTicked = drop (length $ takeWhile (== True) ys) zsSpeed
 
 slice :: Cmp.SpeedSection -> [a] -> [a]
@@ -311,4 +315,31 @@ distanceToGoal tasks (IxTask i) xs =
         Nothing -> Nothing
         Just (Cmp.Task {speedSection, zones}) ->
             if null zones then Nothing else
-            distanceViaZones speedSection (zoneToCylinder <$> zones) xs
+            distanceViaZones
+                fixToPoint
+                speedSection
+                (zoneToCylinder <$> zones)
+                xs
+
+distanceFlown :: [Cmp.Task] -> IxTask -> [Kml.Fix] -> Maybe TaskDistance
+distanceFlown tasks (IxTask i) xs =
+    case tasks ^? element (i - 1) of
+        Nothing -> Nothing
+        Just (Cmp.Task {speedSection, zones}) ->
+            if null zones then Nothing else
+            let cs = zoneToCylinder <$> zones
+                d = distanceViaZones fixToPoint speedSection cs xs
+            in flown speedSection cs d
+
+flown :: Cmp.SpeedSection
+      -> [Tsk.Zone]
+      -> Maybe TaskDistance
+      -> Maybe TaskDistance
+flown _ [] d = d
+flown _ _ Nothing = Nothing
+flown speedSection zs@(z : _) (Just (TaskDistance d)) =
+    case total of
+        Nothing -> Nothing
+        Just (TaskDistance dMax) -> Just . TaskDistance $ dMax -: d
+    where
+        total = distanceViaZones id speedSection zs [z]

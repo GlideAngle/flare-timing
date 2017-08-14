@@ -35,6 +35,8 @@ data Reckon
     -- ^ What zones were made?
     | GoalDistance
     -- ^ What is the distance to goal?
+    | FlownDistance
+    -- ^ What is the distance flown as task distance minus distance to goal?
     | Time 
     -- ^ What was the time to fly the speed section?
     | Lead
