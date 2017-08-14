@@ -42,6 +42,7 @@ import Data.Flight.Comp
     , Zone(..)
     , Task(..)
     , SpeedSection
+    , StartGate(..)
     )
 
 lexer :: GenTokenParser String u Identity
@@ -65,7 +66,7 @@ getTask =
     >>> deep (hasName "FsTask")
     >>> getAttrValue "name"
     &&& getDefn
-    >>> arr (\(name, (section, tps)) -> Task name section tps)
+    >>> arr (\(name, (section, (tps, gates))) -> Task name section tps gates)
     where
         getDefn =
             getChildren
@@ -73,6 +74,7 @@ getTask =
             >>> getSpeedSection
             >>. take 1
             &&& listA getTps
+            &&& listA getGates
 
         getSpeedSection =
             (getAttrValue "ss" &&& getAttrValue "es")
@@ -88,6 +90,12 @@ getTask =
             >>> arr (\(name, (lat', (lng', rad))) -> (name, lat', lng', rad))
             >>. concatMap parseZone
 
+        getGates =
+            getChildren
+            >>> hasName "FsStartGate"
+            >>> getAttrValue "open"
+            >>> arr parseStartGate
+
 parseTasks :: String -> IO (Either String [Task])
 parseTasks contents = do
     let doc = readString [ withValidate no, withWarnings no ] contents
@@ -96,6 +104,11 @@ parseTasks contents = do
 
 pRadius :: GenParser Char st Integer
 pRadius = pNat <?> "No radius"
+
+parseStartGate :: String -> StartGate
+parseStartGate =
+    -- TODO: Parse the UTC datetime string with zone offset.
+    StartGate
 
 parseSpeedSection :: [(String, String)] -> SpeedSection
 parseSpeedSection [] = Nothing
