@@ -90,6 +90,8 @@ drive CmdOptions{..} = do
                 ("zoneTimes", "startGates") -> LT
                 ("zoneTimes", _) -> GT
                 ("startGates", _) -> GT
+                ("open", _) -> LT
+                ("close", _) -> GT
                 -- Turnpoint fields
                 ("zoneName", _) -> LT
                 ("lat", "zoneName") -> GT
