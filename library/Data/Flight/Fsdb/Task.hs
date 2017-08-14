@@ -43,6 +43,7 @@ import Data.Flight.Comp
     , Task(..)
     , SpeedSection
     , StartGate(..)
+    , OpenClose(..)
     )
 
 lexer :: GenTokenParser String u Identity
@@ -66,7 +67,7 @@ getTask =
     >>> deep (hasName "FsTask")
     >>> getAttrValue "name"
     &&& getDefn
-    >>> arr (\(name, (section, (tps, gates))) -> Task name section tps gates)
+    >>> arr mkTask
     where
         getDefn =
             getChildren
@@ -74,11 +75,19 @@ getTask =
             >>> getSpeedSection
             >>. take 1
             &&& listA getTps
+            &&& listA getOpenClose
             &&& listA getGates
 
         getSpeedSection =
             (getAttrValue "ss" &&& getAttrValue "es")
             >. parseSpeedSection
+
+        getOpenClose =
+            getChildren
+            >>> hasName "FsTurnpoint"
+            >>> getAttrValue "open"
+            &&& getAttrValue "close"
+            >>> arr parseOpenClose
 
         getTps =
             getChildren
@@ -96,6 +105,9 @@ getTask =
             >>> getAttrValue "open"
             >>> arr parseStartGate
 
+        mkTask (name, (section, (zs, (ts, gates)))) =
+            Task name zs section ts gates
+
 parseTasks :: String -> IO (Either String [Task])
 parseTasks contents = do
     let doc = readString [ withValidate no, withWarnings no ] contents
@@ -109,6 +121,11 @@ parseStartGate :: String -> StartGate
 parseStartGate =
     -- TODO: Parse the UTC datetime string with zone offset.
     StartGate
+
+parseOpenClose :: (String, String) -> OpenClose
+parseOpenClose (o, c) =
+    -- TODO: Parse the UTC datetime string with zone offset.
+    OpenClose o c
 
 parseSpeedSection :: [(String, String)] -> SpeedSection
 parseSpeedSection [] = Nothing
