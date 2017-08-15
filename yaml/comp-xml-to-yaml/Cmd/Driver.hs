@@ -106,8 +106,9 @@ fsdbComp :: String -> ExceptT String IO Comp
 fsdbComp contents = do
     cs <- lift $ parseComp contents
     case cs of
+        Left msg -> ExceptT . return $ Left msg
         Right [c] -> ExceptT . return $ Right c
-        _ -> do
+        Right _ -> do
             let msg = "Expected only one comp"
             lift $ print msg
             throwE msg
@@ -116,6 +117,7 @@ fsdbNominal :: String -> ExceptT String IO Nominal
 fsdbNominal contents = do
     ns <- lift $ parseNominal contents
     case ns of
+        Left msg -> ExceptT . return $ Left msg
         Right [n] -> ExceptT . return $ Right n
         _ -> do
             let msg = "Expected only one set of nominals for the comp"
