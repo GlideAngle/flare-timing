@@ -15,6 +15,7 @@ module Data.Flight.Comp
       CompSettings(..)
     , Comp(..)
     , Nominal(..)
+    , UtcOffset(..)
     -- * Zone
     , Zone(..)
     , Radius
@@ -52,6 +53,12 @@ newtype StartGate = StartGate UTCTime deriving (Show, Eq, Generic)
 instance ToJSON StartGate
 instance FromJSON StartGate
 
+newtype UtcOffset =
+    UtcOffset { timeZoneMinutes :: Int } deriving (Show, Eq, Generic)
+
+instance ToJSON UtcOffset
+instance FromJSON UtcOffset
+
 data OpenClose =
     OpenClose { open :: UTCTime 
               , close :: UTCTime
@@ -76,7 +83,7 @@ data Comp = Comp { civilId :: String
                  , location :: String 
                  , from :: String 
                  , to :: String 
-                 , utcOffset :: String 
+                 , utcOffset :: UtcOffset
                  } deriving (Show, Generic)
 
 instance ToJSON Comp
@@ -102,7 +109,7 @@ instance ToJSON Task
 instance FromJSON Task
 
 showTask :: Task -> String
-showTask (Task {taskName, zones, speedSection, zoneTimes, startGates}) =
+showTask Task {taskName, zones, speedSection, zoneTimes, startGates} =
     unwords [ "Task '" ++ taskName ++ "'"
             , ", zones "
             , intercalate ", " $ showZone <$> zones
