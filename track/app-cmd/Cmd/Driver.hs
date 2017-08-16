@@ -16,10 +16,10 @@
 
 module Cmd.Driver (driverMain) where
 
-import Data.List (findIndex)
+import qualified Data.List as List (find, findIndex)
 import Data.Ratio ((%))
 import Data.UnitsOfMeasure ((-:), u, convert)
-import Data.UnitsOfMeasure.Internal (Quantity(..))
+import Data.UnitsOfMeasure.Internal (Quantity(..), unQuantity)
 import Control.Lens ((^?), element)
 import Control.Monad (mapM_)
 import Control.Monad.Except (ExceptT(..), runExceptT, lift)
@@ -32,7 +32,7 @@ import Cmd.Options (CmdOptions(..), Reckon(..))
 import qualified Data.ByteString as BS
 import Data.Yaml (decodeEither)
 
-import qualified Data.Flight.Kml as Kml (Fix, LatLngAlt(..))
+import qualified Data.Flight.Kml as Kml (Fix, LatLngAlt(..), FixMark(mark))
 import qualified Data.Flight.Comp as Cmp
     ( CompSettings(..)
     , Pilot(..)
@@ -63,6 +63,11 @@ import Flight.Task as Tsk
     , DistancePath(..)
     , separatedZones
     , distanceEdgeToEdge
+    )
+import Flight.Score as Gap
+    ( PilotDistance(..)
+    , PilotTime(..)
+    , Seconds
     )
 import Flight.Units ()
 
@@ -96,6 +101,7 @@ drive CmdOptions{..} = do
                 Goal -> go checkMadeGoal
                 GoalDistance -> go checkDistanceToGoal
                 FlownDistance -> go checkDistanceFlown
+                Time -> go checkTimeToGoal
                 x -> putStrLn $ "TODO: Handle other reckon of " ++ show x
 
             where
@@ -143,6 +149,9 @@ drive CmdOptions{..} = do
 
                 checkDistanceFlown =
                     checkTracks $ \(Cmp.CompSettings {tasks}) -> distanceFlown tasks
+
+                checkTimeToGoal =
+                    checkTracks $ \(Cmp.CompSettings {tasks}) -> timeFlown tasks
 
 readSettings :: FilePath -> ExceptT String IO Cmp.CompSettings
 readSettings compYamlPath = do
@@ -225,11 +234,11 @@ exitsZone z xs =
     where
         insideZone :: Maybe Int
         insideZone =
-            findIndex (\y -> not $ Tsk.separatedZones [y, z]) xs
+            List.findIndex (\y -> not $ Tsk.separatedZones [y, z]) xs
 
         outsideZone :: Maybe Int
         outsideZone =
-            findIndex (\y -> Tsk.separatedZones [y, z]) xs
+            List.findIndex (\y -> Tsk.separatedZones [y, z]) xs
 
 launched :: [Cmp.Task] -> IxTask -> [Kml.Fix] -> Bool
 launched tasks (IxTask i) xs =
@@ -321,7 +330,7 @@ distanceToGoal tasks (IxTask i) xs =
                 (zoneToCylinder <$> zones)
                 xs
 
-distanceFlown :: [Cmp.Task] -> IxTask -> [Kml.Fix] -> Maybe TaskDistance
+distanceFlown :: [Cmp.Task] -> IxTask -> [Kml.Fix] -> Maybe PilotDistance
 distanceFlown tasks (IxTask i) xs =
     case tasks ^? element (i - 1) of
         Nothing -> Nothing
@@ -329,17 +338,87 @@ distanceFlown tasks (IxTask i) xs =
             if null zones then Nothing else
             let cs = zoneToCylinder <$> zones
                 d = distanceViaZones fixToPoint speedSection cs xs
-            in flown speedSection cs d
+            in flownDistance speedSection cs d
 
-flown :: Cmp.SpeedSection
-      -> [Tsk.Zone]
-      -> Maybe TaskDistance
-      -> Maybe TaskDistance
-flown _ [] d = d
-flown _ _ Nothing = Nothing
-flown speedSection zs@(z : _) (Just (TaskDistance d)) =
+flownDistance :: Cmp.SpeedSection
+              -> [Tsk.Zone]
+              -> Maybe TaskDistance
+              -> Maybe PilotDistance
+flownDistance _ [] (Just (TaskDistance (MkQuantity d))) =
+    Just $ PilotDistance d
+flownDistance _ _ Nothing = Nothing
+flownDistance speedSection zs@(z : _) (Just (TaskDistance d)) =
     case total of
-        Nothing -> Nothing
-        Just (TaskDistance dMax) -> Just . TaskDistance $ dMax -: d
+        Nothing ->
+            Nothing
+
+        Just (TaskDistance dMax) ->
+            Just . PilotDistance . unQuantity $ dMax -: d
     where
         total = distanceViaZones id speedSection zs [z]
+
+timeFlown :: [Cmp.Task] -> IxTask -> [Kml.Fix] -> Maybe PilotTime
+timeFlown tasks iTask@(IxTask i) xs =
+    case tasks ^? element (i - 1) of
+        Nothing -> Nothing
+        Just (Cmp.Task {speedSection, zones}) ->
+            if null zones then Nothing else
+            if not atGoal then Nothing else
+            let cs = zoneToCylinder <$> zones
+            in flownDuration speedSection cs xs
+    where
+        atGoal = madeGoal tasks iTask xs
+
+flownDuration :: Cmp.SpeedSection
+              -> [Tsk.Zone]
+              -> [Kml.Fix]
+              -> Maybe PilotTime
+flownDuration _ [] _ = Nothing
+flownDuration _ _ [] = Nothing
+flownDuration speedSection zs xs =
+    durationViaZones fixToPoint Kml.mark speedSection zs xs
+
+durationViaZones :: (Kml.Fix -> Tsk.Zone)
+                 -> (Kml.Fix -> Seconds)
+                 -> Cmp.SpeedSection
+                 -> [Tsk.Zone]
+                 -> [Kml.Fix]
+                 -> Maybe PilotTime
+durationViaZones mkZone atTime speedSection zs xs =
+    case (zsSpeed, reverse zsSpeed) of
+        ([], _) -> Nothing
+        (_, []) -> Nothing
+        (z0 : _, zN : _) -> duration (z0, zN) xys
+    where
+        -- TODO: Don't assume end of speed section is goal.
+        zsSpeed = slice speedSection zs
+
+        xys :: [(Kml.Fix, (Tsk.Zone, Tsk.Zone))]
+        xys = (\(x, y) -> (y, (mkZone x, mkZone y))) <$> zip (drop 1 xs) xs
+
+        slots :: (Tsk.Zone, Tsk.Zone)
+              -> [(Kml.Fix, (Tsk.Zone, Tsk.Zone))]
+              -> (Maybe Seconds, Maybe Seconds)
+        slots (z0, zN) xzs =
+            (f <$> xz0, f <$> xzN)
+            where
+                exits' :: (Kml.Fix, (Tsk.Zone, Tsk.Zone)) -> Bool
+                exits' (_, (zx, zy)) = exitsZone z0 [zx, zy]
+
+                enters' :: (Kml.Fix, (Tsk.Zone, Tsk.Zone)) -> Bool
+                enters' (_, (zx, zy)) = entersZone zN [zx, zy]
+
+                xz0 :: Maybe (Kml.Fix, (Tsk.Zone, Tsk.Zone))
+                xz0 = List.find exits' xzs
+
+                xzN :: Maybe (Kml.Fix, (Tsk.Zone, Tsk.Zone))
+                xzN = List.find enters' xzs
+
+                f = atTime . fst
+
+        duration z xzs =
+            case slots z xzs of
+                (Nothing, _) -> Nothing
+                (_, Nothing) -> Nothing
+                (Just t0, Just tN) ->
+                    Just . PilotTime . toRational $ tN - t0

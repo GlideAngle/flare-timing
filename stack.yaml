@@ -14,6 +14,8 @@ packages:
   extra-dep: true
 - location: ../haskell-flight-task
   extra-dep: true
+- location: ../haskell-flight-gap
+  extra-dep: true
 - location: ../haskell-siggy-chardust
   extra-dep: true
 - location:

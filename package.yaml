@@ -153,6 +153,7 @@ executables:
     - flight-kml
     - flight-track
     - flight-task
+    - flight-gap
     ghc-options:
     - -Wall
     - -rtsopts
