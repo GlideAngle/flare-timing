@@ -1,22 +1,58 @@
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+
 module Data.Flight.Types
     ( Fix(..)
     , LLA(..)
     , LatLngAlt(..)
     , FixMark(..)
-    , Seconds
-    , Latitude
-    , Longitude
-    , Altitude
+    , Seconds(..)
+    , Latitude(..)
+    , Longitude(..)
+    , Altitude(..)
+    , MarkedFixes(..)
     , mkPosition
     ) where
 
-type Latitude = Rational
-type Longitude = Rational
-type Altitude = Integer
-type Seconds = Integer
+import Data.Time.Clock (UTCTime)
+import GHC.Generics (Generic)
+import Data.Aeson (ToJSON(..), FromJSON(..))
 
-data LLA = LLA Latitude Longitude Altitude deriving (Eq, Show)
-data Fix = Fix Seconds LLA (Maybe Altitude) deriving (Eq, Show)
+newtype Latitude = Latitude Rational deriving (Show, Eq, Generic)
+newtype Longitude = Longitude Rational deriving (Show, Eq, Generic)
+newtype Altitude = Altitude Integer deriving (Show, Eq, Ord, Num, Generic)
+newtype Seconds = Seconds Integer deriving (Show, Eq, Ord, Num, Generic)
+
+instance ToJSON Latitude
+instance FromJSON Latitude
+
+instance ToJSON Longitude
+instance FromJSON Longitude
+
+instance ToJSON Altitude
+instance FromJSON Altitude
+
+instance ToJSON Seconds
+instance FromJSON Seconds
+
+data LLA =
+    LLA { llaLat :: Latitude
+        , llaLng :: Longitude
+        , llaAltGps :: Altitude
+        } deriving (Eq, Show, Generic)
+
+instance ToJSON LLA
+instance FromJSON LLA
+
+data Fix =
+    Fix { fixMark :: Seconds
+        , fix :: LLA
+        , fixAltBaro :: Maybe Altitude
+        } deriving (Eq, Show, Generic)
+
+instance ToJSON Fix
+instance FromJSON Fix
 
 mkPosition :: (Latitude, Longitude, Altitude) -> LLA
 mkPosition (lat', lng', alt') = LLA lat' lng' alt'
@@ -27,19 +63,27 @@ class LatLngAlt a where
     altGps :: a -> Altitude
 
 instance LatLngAlt LLA where
-    lat (LLA x _ _) = x
-    lng (LLA _ x _) = x
-    altGps (LLA _ _ x) = x
+    lat LLA{llaLat} = llaLat
+    lng LLA{llaLng} = llaLng
+    altGps LLA{llaAltGps} = llaAltGps
 
 instance LatLngAlt Fix where
-    lat (Fix _ x _) = lat x
-    lng (Fix _ x _) = lng x
-    altGps (Fix _ x _) = altGps x
+    lat Fix{fix} = lat fix
+    lng Fix{fix} = lng fix
+    altGps Fix{fix} = altGps fix
 
 class LatLngAlt a => FixMark a where
     mark :: a -> Seconds
     altBaro :: a -> Maybe Altitude
 
 instance FixMark Fix where
-    mark (Fix x _ _) = x
-    altBaro (Fix _ _ x) = x
+    mark Fix{fixMark} = fixMark
+    altBaro Fix{fixAltBaro} = fixAltBaro
+
+data MarkedFixes =
+    MarkedFixes { mark0 :: UTCTime
+                , fixes :: [Fix]
+                } deriving (Show, Eq, Generic)
+
+instance ToJSON MarkedFixes
+instance FromJSON MarkedFixes

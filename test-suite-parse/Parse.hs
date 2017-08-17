@@ -6,16 +6,17 @@ module Main (main) where
 import qualified Data.Flight.Kml as K (LatLngAlt(lat, lng, altGps))
 import Data.Flight.Kml
     ( LLA
-    , Seconds
-    , Latitude
-    , Longitude
-    , Altitude
+    , Seconds(..)
+    , Latitude(..)
+    , Longitude(..)
+    , Altitude(..)
     , mkPosition
     , parseTimeOffsets
     , parseBaroMarks
-    , parseCoords
-    , showCoords
-    , roundTripCoords
+    , parseLngLatAlt
+    , showLngLatAlt
+    , showLatLngAlt
+    , roundTripLatLngAlt
     )
 
 import Test.Tasty (TestTree, testGroup, defaultMain)
@@ -26,6 +27,7 @@ import Test.Tasty.HUnit as HU ((@?=), testCase)
 
 import Data.List.Split (split, dropBlanks, dropDelims, oneOf, chunksOf)
 import Text.RawString.QQ (r)
+import TestNewtypes ()
 
 main :: IO ()
 main = defaultMain tests
@@ -39,34 +41,40 @@ properties = testGroup "Properties" [scProps, qcProps]
 scProps :: TestTree
 scProps = testGroup "(checked by SmallCheck)"
     [ SC.testProperty "Parse positive time offset from [ Int ]" $
-        \xs -> parseInts parseTimeOffsets $ SC.getPositive <$> xs
+        \xs -> parseSeconds parseTimeOffsets $ SC.getPositive <$> xs
 
     , SC.testProperty "Parse barometric pressure from [ Int ]" $
-        \xs -> parseInts parseBaroMarks $ SC.getPositive <$> xs
+        \xs -> parseAltitudes parseBaroMarks $ SC.getPositive <$> xs
 
-    , SC.testProperty "Parse lat,lng,alt triples from [ (Float, Float, Int) ]" $
+    , SC.testProperty "Parse lng,lat,alt triples from [ (Float, Float, Int) ]" $
         SC.changeDepth (const 4) $
-        \xs -> parseTriples parseCoords $
-                (\(lat :: Double, lng :: Double, alt) ->
-                    mkPosition (toRational lat, toRational lng, SC.getPositive alt)) <$> xs
+        \xs -> parseTriples parseLngLatAlt $
+                (\(lng :: Double, lat :: Double, alt) ->
+                    let lat' = Latitude $ toRational lat
+                        lng' = Longitude $ toRational lng
+                        alt' = Altitude $ SC.getPositive alt
+                    in mkPosition (lat', lng', alt')) <$> xs
     ]
 
 qcProps :: TestTree
 qcProps = testGroup "(checked by QuickCheck)"
     [ QC.testProperty "Parse positive time offset from [ Int ]" $
-        \xs -> parseInts parseTimeOffsets $ QC.getPositive <$> xs
+        \xs -> parseSeconds parseTimeOffsets $ QC.getPositive <$> xs
 
     , QC.testProperty "Parse barometric pressure from [ Int ]" $
-        \xs -> parseInts parseBaroMarks $ QC.getPositive <$> xs
+        \xs -> parseAltitudes parseBaroMarks $ QC.getPositive <$> xs
 
     -- WARNING: Failing test.
     --   *** Failed! Falsifiable (after 2 tests):
     --   [(0.3909011791596698,0.3011360590812839,Positive {getPositive = 1})]
     --   Use --quickcheck-replay '1 TFGenR 00000002137B7589000000000001E848000000000000E21F000002878F6B1480 0 12 4 0' to reproduce.
-    , QC.testProperty "Parse lat,lng,alt triples from [ (Float, Float, Int) ]" $
-        \xs -> parseTriples parseCoords $
-                (\(lat :: Double, lng :: Double, alt) ->
-                    mkPosition (toRational lat, toRational lng, QC.getPositive alt)) <$> xs
+    , QC.testProperty "Parse lng,lat,alt triples from [ (Float, Float, Int) ]" $
+        \xs -> parseTriples parseLngLatAlt $
+                (\(lng :: Double, lat :: Double, alt) ->
+                    let lat' = Latitude $ toRational lat
+                        lng' = Longitude $ toRational lng
+                        alt' = Altitude $ QC.getPositive alt
+                    in mkPosition (lat', lng', alt')) <$> xs
     ]
 
 unitTests :: TestTree
@@ -89,47 +97,69 @@ unitTests = testGroup "Unit tests"
     , HU.testCase "Parse coord (as expected)" $
         parsedCoords @?= expectedCoords
 
-    , HU.testCase "Show coords (0.0, 0.0, 1) (as expected)" $
-        showCoords (0.0, 0.0, 1) @?= "0.000000,0.000000,1"
+    , HU.testCase "Show lat,lng,alt (0.0, 0.0, 1) (as expected)" $
+        showLngLatAlt (Latitude 0.0, Longitude 0.0, Altitude 1)
+        @?= "0.000000,0.000000,1"
 
-    , HU.testCase "Show coords (0.3909011791596698, 0.3011360590812839,1) (as expected)" $
-        showCoords (0.3909011791596698, 0.3011360590812839, 1) @?= "0.390901,0.301136,1"
+    , HU.testCase "Show lat,lng,alt (0.3909011791596698, 0.3011360590812839, 1) => (0.390901,0.301136,1 as expected)" $
+        showLatLngAlt (Latitude 0.3909011791596698, Longitude 0.3011360590812839, Altitude 1)
+        @?= "0.390901,0.301136,1"
+
+    , HU.testCase "Show lng,lat,alt (0.3909011791596698, 0.3011360590812839, 1) => (0.301136,0.390901,1 as expected)" $
+        showLngLatAlt (Latitude 0.3909011791596698, Longitude 0.3011360590812839, Altitude 1)
+        @?= "0.301136,0.390901,1"
     ]
 
-parseInts :: (String -> [ Integer ]) -> [ Integer ] -> Bool
-parseInts parser xs =
-    let strings ::  [ String ]
-        strings = show <$> xs
+parseAltitudes :: (String -> [Altitude]) -> [Altitude] -> Bool
+parseAltitudes parser xs =
+    let strings ::  [String]
+        strings = show . (\(Altitude alt) -> alt) <$> xs
 
-        parsed :: [ Integer ]
+        parsed :: [Altitude]
         parsed = parser $ unwords strings
 
     in parsed == xs
 
-parseTriples :: (String -> [ LLA ]) -> [ LLA ] -> Bool
+parseSeconds :: (String -> [Seconds]) -> [Seconds] -> Bool
+parseSeconds parser xs =
+    let strings ::  [String]
+        strings = show . (\(Seconds s) -> s) <$> xs
+
+        parsed :: [Seconds]
+        parsed = parser $ unwords strings
+
+    in parsed == xs
+
+parseTriples :: (String -> [LLA]) -> [LLA] -> Bool
 parseTriples parser xs =
-    let extractCoords :: LLA -> (Latitude, Longitude, Altitude)
-        extractCoords x = (K.lat x, K.lng x, K.altGps x)
+    let extractLatLngAlt :: LLA -> (Latitude, Longitude, Altitude)
+        extractLatLngAlt x = (K.lat x, K.lng x, K.altGps x)
 
-        ys :: [ (Double, Double, Integer) ]
-        ys = (roundTripCoords . extractCoords) <$> xs
+        ys :: [(Double, Double, Altitude)]
+        ys = (roundTripLatLngAlt . extractLatLngAlt) <$> xs
 
-        zs :: [ LLA ]
-        zs = (\(lat, lng, alt) -> mkPosition (toRational lat, toRational lng, alt)) <$> ys
+        zs :: [LLA]
+        zs =
+            (\(lat, lng, alt) ->
+                let lat' = Latitude $ toRational lat
+                    lng' = Longitude $ toRational lng
+                in mkPosition (lat', lng', alt)) <$> ys
 
-        strings ::  [ String ]
-        strings = showCoords . extractCoords <$> xs
+        strings ::  [String]
+        strings = showLngLatAlt . extractLatLngAlt <$> xs
 
-        parsed :: [ LLA ]
+        parsed :: [LLA]
         parsed = parser $ unwords strings
 
     in parsed == zs
 
-parsedTimeOffsets :: [ Seconds ]
+parsedTimeOffsets :: [Seconds]
 parsedTimeOffsets = parseTimeOffsets timeOffsetsToParse
         
-expectedTimeOffsets :: [ Seconds ]
-expectedTimeOffsets = (\x -> read x :: Seconds) <$> split (dropBlanks $ dropDelims $ oneOf " \n") timeOffsetsToParse
+expectedTimeOffsets :: [Seconds]
+expectedTimeOffsets =
+    (\x -> Seconds (read x :: Integer)) <$>
+        split (dropBlanks $ dropDelims $ oneOf " \n") timeOffsetsToParse
 
 timeOffsetsToParse :: String
 timeOffsetsToParse = [r|
@@ -139,11 +169,13 @@ timeOffsetsToParse = [r|
 12644 12649 12654 12659 12664 12669 12674 12679 12684 12689
               |]
 
-parsedBaroMarks :: [ Altitude ]
+parsedBaroMarks :: [Altitude]
 parsedBaroMarks = parseBaroMarks baroMarksToParse
 
-expectedBaroMarks :: [ Altitude ]
-expectedBaroMarks = (\x -> read x :: Altitude) <$> split (dropBlanks $ dropDelims $ oneOf " \n") baroMarksToParse
+expectedBaroMarks :: [Altitude]
+expectedBaroMarks =
+    (\x -> Altitude (read x :: Integer)) <$>
+        split (dropBlanks $ dropDelims $ oneOf " \n") baroMarksToParse
 
 baroMarksToParse :: String
 baroMarksToParse = [r|
@@ -153,20 +185,20 @@ baroMarksToParse = [r|
 312 312 312 312 312 312 312 312 312 312
               |]
 
-parsedCoords :: [ LLA ]
-parsedCoords = parseCoords coordsToParse
+parsedCoords :: [LLA]
+parsedCoords = parseLngLatAlt coordsToParse
 
-triple :: [ String ] -> [ LLA ]
+triple :: [String] -> [LLA]
 triple xs =
     case xs of
-        [lat, lng, alt] ->
+        [lng, lat, alt] ->
             let lat' = toRational (read lat :: Double)
                 lng' = toRational (read lng :: Double)
                 alt' = read alt :: Integer
-            in [ mkPosition (lat', lng', alt') ]
+             in [ mkPosition (Latitude lat', Longitude lng', Altitude alt') ]
         _ -> []
 
-expectedCoords :: [ LLA ]
+expectedCoords :: [LLA]
 expectedCoords = 
     concatMap triple $ chunksOf 3 (split (dropBlanks $ dropDelims $ oneOf " ,\n") coordsToParse)
 

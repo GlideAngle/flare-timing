@@ -16,17 +16,18 @@ module Data.Flight.Kml
     , LLA
     , T.LatLngAlt(..)
     , T.FixMark(..)
-    , Seconds
-    , Latitude
-    , Longitude
-    , Altitude
+    , Seconds(..)
+    , Latitude(..)
+    , Longitude(..)
+    , Altitude(..)
     , mkPosition
     , parse
     , parseTimeOffsets
     , parseBaroMarks
-    , parseCoords
-    , showCoords
-    , roundTripCoords
+    , parseLngLatAlt
+    , showLatLngAlt
+    , showLngLatAlt
+    , roundTripLatLngAlt
     , formatFloat
     ) where
 
@@ -74,10 +75,10 @@ import qualified Data.Flight.Types as T (LatLngAlt(..), FixMark(..))
 import Data.Flight.Types
     ( LLA(..)
     , Fix(..)
-    , Seconds
-    , Latitude
-    , Longitude
-    , Altitude
+    , Seconds(..)
+    , Latitude(..)
+    , Longitude(..)
+    , Altitude(..)
     , mkPosition
     )
 
@@ -146,32 +147,32 @@ getFix =
             >>> hasName "LineString"
             /> hasName "coordinates"
             /> getText
-            >>. concatMap parseCoords
+            >>. concatMap parseLngLatAlt
 
-parse :: String -> IO (Either String [ Fix ])
+parse :: String -> IO (Either String [Fix])
 parse contents = do
     let doc = readString [ withValidate no, withWarnings no ] contents
     xs <- runX $ doc >>> getFix
     return $ Right xs
 
-pNats :: GenParser Char st [ Integer ]
+pNats :: GenParser Char st [Integer]
 pNats = do
     _ <- spaces
     xs <- pNat `sepBy` spaces
     _ <- eof
     return xs
 
-parseTimeOffsets :: String -> [ Integer ]
+parseTimeOffsets :: String -> [Seconds]
 parseTimeOffsets s =
     case P.parse pNats "(stdin)" s of
          Left _ -> []
-         Right xs -> xs
+         Right xs -> Seconds <$> xs
 
-parseBaroMarks :: String -> [ Integer ]
+parseBaroMarks :: String -> [Altitude]
 parseBaroMarks s =
     case P.parse pNats "(stdin)" s of
          Left _ -> []
-         Right xs -> xs
+         Right xs -> Altitude <$> xs
 
 pFix :: GenParser Char st (Rational, Rational, Integer)
 pFix = do
@@ -206,14 +207,17 @@ formatFloat s =
          [ a, "" ] -> showFFloat (Just 6) (read a :: Double) ""
          _ -> showFFloat (Just 6) (read s :: Double) ""
 
-roundTripCoords :: (Rational, Rational, Integer) -> (Double, Double, Integer)
-roundTripCoords (lat, lng, alt) =
+-- | Round trip from rational to double and back to rational.
+roundTripLatLngAlt :: (Latitude, Longitude, Altitude)
+                   -> (Double, Double, Altitude)
+roundTripLatLngAlt (Latitude lat, Longitude lng, alt) =
     let lat' = read $ formatFloat $ show (fromRational lat :: Double)
         lng' = read $ formatFloat $ show (fromRational lng :: Double)
     in (lat', lng', alt)
 
-showCoords :: (Rational, Rational, Integer) -> String
-showCoords (lat, lng, alt) =
+-- | Comma-separated fields in the order lat,lng,alt.
+showLatLngAlt :: (Latitude, Longitude, Altitude) -> String
+showLatLngAlt (Latitude lat, Longitude lng, Altitude alt) =
     mconcat [ formatFloat $ show (fromRational lat :: Double)
             , ","
             , formatFloat $ show (fromRational lng :: Double)
@@ -221,8 +225,25 @@ showCoords (lat, lng, alt) =
             , show alt
             ]
 
-parseCoords :: String -> [ LLA ]
-parseCoords s =
+-- | Comma-separated fields in the order lng,lat,alt.
+showLngLatAlt :: (Latitude, Longitude, Altitude) -> String
+showLngLatAlt (Latitude lat, Longitude lng, Altitude alt) =
+    mconcat [ formatFloat $ show (fromRational lng :: Double)
+            , ","
+            , formatFloat $ show (fromRational lat :: Double)
+            , ","
+            , show alt
+            ]
+
+-- | Parse comma-separated triples of lng,lat,alt, each triple separated by
+-- spaces.
+parseLngLatAlt :: String -> [ LLA ]
+parseLngLatAlt s =
     case P.parse pFixes "(stdin)" s of
          Left _ -> []
-         Right xs -> (\(lat, lng, alt) -> LLA lat lng alt) <$> xs
+         Right xs ->
+             (\(lat, lng, alt) ->
+                 LLA
+                     (Latitude lat)
+                     (Longitude lng)
+                     (Altitude alt)) <$> xs
