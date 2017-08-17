@@ -32,7 +32,14 @@ import Cmd.Options (CmdOptions(..), Reckon(..))
 import qualified Data.ByteString as BS
 import Data.Yaml (decodeEither)
 
-import qualified Data.Flight.Kml as Kml (Fix, LatLngAlt(..), FixMark(mark))
+import qualified Data.Flight.Kml as Kml
+    ( Fix
+    , Seconds(..)
+    , Latitude(..)
+    , Longitude(..)
+    , LatLngAlt(..)
+    , FixMark(mark)
+    )
 import qualified Data.Flight.Comp as Cmp
     ( CompSettings(..)
     , Pilot(..)
@@ -64,11 +71,7 @@ import Flight.Task as Tsk
     , separatedZones
     , distanceEdgeToEdge
     )
-import Flight.Score as Gap
-    ( PilotDistance(..)
-    , PilotTime(..)
-    , Seconds
-    )
+import Flight.Score as Gap (PilotDistance(..), PilotTime(..))
 import Flight.Units ()
 
 newtype PilotTrackFixes = PilotTrackFixes Int deriving Show
@@ -215,8 +218,8 @@ fixToPoint :: Kml.Fix -> Tsk.Zone
 fixToPoint fix =
     Tsk.Point (toLL (lat, lng))
     where
-        lat = Kml.lat fix
-        lng = Kml.lng fix
+        Kml.Latitude lat = Kml.lat fix
+        Kml.Longitude lng = Kml.lng fix
 
 crossedZone :: Tsk.Zone -> [Tsk.Zone] -> Bool
 crossedZone z xs =
@@ -379,7 +382,7 @@ flownDuration speedSection zs xs =
     durationViaZones fixToPoint Kml.mark speedSection zs xs
 
 durationViaZones :: (Kml.Fix -> Tsk.Zone)
-                 -> (Kml.Fix -> Seconds)
+                 -> (Kml.Fix -> Kml.Seconds)
                  -> Cmp.SpeedSection
                  -> [Tsk.Zone]
                  -> [Kml.Fix]
@@ -398,7 +401,7 @@ durationViaZones mkZone atTime speedSection zs xs =
 
         slots :: (Tsk.Zone, Tsk.Zone)
               -> [(Kml.Fix, (Tsk.Zone, Tsk.Zone))]
-              -> (Maybe Seconds, Maybe Seconds)
+              -> (Maybe Kml.Seconds, Maybe Kml.Seconds)
         slots (z0, zN) xzs =
             (f <$> xz0, f <$> xzN)
             where
@@ -421,4 +424,5 @@ durationViaZones mkZone atTime speedSection zs xs =
                 (Nothing, _) -> Nothing
                 (_, Nothing) -> Nothing
                 (Just t0, Just tN) ->
-                    Just . PilotTime . toRational $ tN - t0
+                    let (Kml.Seconds t) = tN - t0
+                     in Just . PilotTime $ t % 1
