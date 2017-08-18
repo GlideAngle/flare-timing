@@ -32,7 +32,7 @@ import System.FilePath
     , joinPath
     )
 
-import qualified Data.Flight.Kml as K (Fix, parse)
+import qualified Data.Flight.Kml as K (MarkedFixes, parse)
 import Data.Flight.Comp
     ( Pilot(..)
     , PilotTrackLogFile(..)
@@ -59,7 +59,7 @@ instance Show TrackFileFail where
     show (TrackLogFileNotRead "") = "File not read"
     show (TrackLogFileNotRead x) = "File not read " ++ x
 
-pilotTrack :: ([K.Fix] -> a)
+pilotTrack :: (K.MarkedFixes -> a)
            -> PilotTrackLogFile
            -> ExceptT
                (Pilot, TrackFileFail)
@@ -85,7 +85,7 @@ pilotTrack f (PilotTrackLogFile p (Just (TrackLogFile file))) = do
 
     ExceptT . return . bimap (p,) (p,) $ x
 
-taskPilotTracks :: (IxTask -> [K.Fix] -> a)
+taskPilotTracks :: (IxTask -> K.MarkedFixes -> a)
                 -> [ (IxTask, [ PilotTrackLogFile ]) ]
                 -> IO
                     [[ Either
@@ -99,7 +99,7 @@ taskPilotTracks f xs =
         sequence $ (runExceptT . pilotTrack (f i)) <$> ts)
         <$> xs
 
-pilotTracks :: (IxTask -> [K.Fix] -> a)
+pilotTracks :: (IxTask -> K.MarkedFixes -> a)
             -> [[ PilotTrackLogFile ]]
             -> IO
                 [[ Either
