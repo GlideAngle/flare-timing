@@ -23,8 +23,8 @@ import Data.Yaml (decodeEither)
 import Data.Number.RoundingFunctions (dpRound)
 import qualified Data.Yaml.Pretty as Y
 import qualified Data.ByteString as BS
-import qualified Data.Flight.Comp as C
-import qualified Data.Flight.TrackZone as Z
+import qualified Data.Flight.Comp as Cmp
+import qualified Data.Flight.TrackZone as Z 
 import Data.Flight.TrackZone
     ( TrackZoneIntersect(..)
     , TaskTrack(..)
@@ -32,7 +32,7 @@ import Data.Flight.TrackZone
     , FlownTrack(..)
     , PilotFlownTrack(..)
     )
-import qualified Flight.Task as FT
+import qualified Flight.Task as Tsk
 import Flight.Task
     ( LatLng(..)
     , Lat(..)
@@ -89,15 +89,37 @@ drive CmdOptions{..} = do
                 ("wayPoints", _) -> GT
                 ("taskTracks", _) -> LT
                 ("pilotTracks", _) -> GT
+                ("launched", _) -> LT
+                ("madeGoal", "launched") -> GT
+                ("madeGoal", _) -> LT
+                ("zonesMade", "launched") -> GT
+                ("zonesMade", "madeGoal") -> GT
+                ("zonesMade", _) -> LT
+                ("zonesNotMade", "launched") -> GT
+                ("zonesNotMade", "madeGoal") -> GT
+                ("zonesNotMade", "zonesMade") -> GT
+                ("zonesNotMade", _) -> LT
+                ("timeToGoal", "launched") -> GT
+                ("timeToGoal", "madeGoal") -> GT
+                ("timeToGoal", "zonesMade") -> GT
+                ("timeToGoal", "zonesNotMade") -> GT
+                ("timeToGoal", _) -> LT
+                ("distanceToGoal", "launched") -> GT
+                ("distanceToGoal", "madeGoal") -> GT
+                ("distanceToGoal", "zonesMade") -> GT
+                ("distanceToGoal", "zonesNotMade") -> GT
+                ("distanceToGoal", "timeToGoal") -> GT
+                ("distanceToGoal", _) -> LT
+                ("bestDistance", _) -> GT
                 _ -> compare a b
 
-readSettings :: FilePath -> ExceptT String IO C.CompSettings
+readSettings :: FilePath -> ExceptT String IO Cmp.CompSettings
 readSettings compYamlPath = do
     contents <- lift $ BS.readFile compYamlPath
     ExceptT . return $ decodeEither contents
 
-followTracks :: C.CompSettings -> ExceptT String IO TrackZoneIntersect
-followTracks C.CompSettings{..} = do
+followTracks :: Cmp.CompSettings -> ExceptT String IO TrackZoneIntersect
+followTracks Cmp.CompSettings{..} = do
     ExceptT . return . Right $
         TrackZoneIntersect
             { taskTracks = taskTrack <$> tasks
@@ -112,8 +134,8 @@ analyze compYamlPath = do
     settings <- readSettings compYamlPath
     followTracks settings
 
-taskTrack :: C.Task -> TaskTrack
-taskTrack C.Task{..} =
+taskTrack :: Cmp.Task -> TaskTrack
+taskTrack Cmp.Task{..} =
     TaskTrack { pointToPoint =
                   TrackLine
                       { distance = toKm ptd
@@ -130,7 +152,7 @@ taskTrack C.Task{..} =
         zs = toCylinder <$> zones
 
         ptd :: TaskDistance
-        ptd = FT.distancePointToPoint zs
+        ptd = Tsk.distancePointToPoint zs
 
         wpPoint :: [Z.LatLng]
         wpPoint =
@@ -139,7 +161,7 @@ taskTrack C.Task{..} =
                 ps = center <$> zs
 
         ed :: EdgeDistance
-        ed = FT.distanceEdgeToEdge PathPointToZone mm30 zs
+        ed = Tsk.distanceEdgeToEdge PathPointToZone mm30 zs
 
         etd :: TaskDistance
         etd = edges ed
@@ -158,8 +180,8 @@ taskTrack C.Task{..} =
 
 convertLatLng :: LatLng [u| rad |] -> Z.LatLng
 convertLatLng (LatLng (Lat eLat, Lng eLng)) =
-    Z.LatLng { lat = C.Latitude eLat'
-             , lng = C.Longitude eLng'
+    Z.LatLng { lat = Cmp.Latitude eLat'
+             , lng = Cmp.Longitude eLng'
              }
     where
         MkQuantity eLat' =
@@ -168,14 +190,14 @@ convertLatLng (LatLng (Lat eLat, Lng eLng)) =
         MkQuantity eLng' =
             convert eLng :: Quantity Rational [u| deg |]
 
-toCylinder :: C.Zone -> Zone
-toCylinder C.Zone{..} =
+toCylinder :: Cmp.Zone -> Zone
+toCylinder Cmp.Zone{..} =
     Cylinder
         (Radius (MkQuantity $ radius % 1))
         (LatLng (Lat latRad, Lng lngRad))
     where
-        C.Latitude lat' = lat
-        C.Longitude lng' = lng
+        Cmp.Latitude lat' = lat
+        Cmp.Longitude lng' = lng
 
         latDeg = MkQuantity lat' :: Quantity Rational [u| deg |]
         lngDeg = MkQuantity lng' :: Quantity Rational [u| deg |]
@@ -183,8 +205,15 @@ toCylinder C.Zone{..} =
         latRad = convert latDeg :: Quantity Rational [u| rad |]
         lngRad = convert lngDeg :: Quantity Rational [u| rad |]
 
-pilotTrack :: C.PilotTrackLogFile -> PilotFlownTrack
-pilotTrack (C.PilotTrackLogFile pilot _) =
+pilotTrack :: Cmp.PilotTrackLogFile -> PilotFlownTrack
+pilotTrack (Cmp.PilotTrackLogFile pilot _) =
     PilotFlownTrack pilot (Just track)
     where
-        track = FlownTrack { launched = True }
+        track = FlownTrack { launched = True
+                           , madeGoal = True
+                           , zonesMade = [1,2]
+                           , zonesNotMade = [3,4,5]
+                           , timeToGoal = Nothing
+                           , distanceToGoal = 0
+                           , bestDistance = 0
+                           }
