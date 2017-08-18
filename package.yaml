@@ -148,6 +148,7 @@ executables:
     - yaml
     - lens
     - siggy-chardust
+    - time
     - uom-plugin
     - flight-comp
     - flight-kml

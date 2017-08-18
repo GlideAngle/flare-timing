@@ -16,6 +16,7 @@
 
 module Cmd.Driver (driverMain) where
 
+import Data.Time.Clock (UTCTime, diffUTCTime)
 import qualified Data.List as List (find, findIndex)
 import Data.Ratio ((%))
 import Data.UnitsOfMeasure ((-:), u, convert)
@@ -51,6 +52,8 @@ import qualified Data.Flight.Comp as Cmp
     , Latitude(..)
     , Longitude(..)
     , SpeedSection
+    , OpenClose(..)
+    , StartGate(..)
     )
 import Data.Flight.TrackLog as Log
     ( TrackFileFail(..)
@@ -372,38 +375,51 @@ timeFlown :: [Cmp.Task] -> IxTask -> Kml.MarkedFixes -> Maybe PilotTime
 timeFlown tasks iTask@(IxTask i) xs =
     case tasks ^? element (i - 1) of
         Nothing -> Nothing
-        Just (Cmp.Task {speedSection, zones}) ->
+        Just (Cmp.Task {speedSection, zones, zoneTimes, startGates}) ->
             if null zones then Nothing else
             if not atGoal then Nothing else
             let cs = zoneToCylinder <$> zones
-            in flownDuration speedSection cs xs
+            in flownDuration speedSection cs zoneTimes startGates xs
     where
         atGoal = madeGoal tasks iTask xs
 
 flownDuration :: Cmp.SpeedSection
               -> [Tsk.Zone]
+              -> [Cmp.OpenClose]
+              -> [Cmp.StartGate]
               -> Kml.MarkedFixes
               -> Maybe PilotTime
-flownDuration speedSection zs Kml.MarkedFixes{fixes}
+flownDuration speedSection zs os gs Kml.MarkedFixes{mark0, fixes}
     | null zs = Nothing
     | null fixes = Nothing
-    | otherwise = durationViaZones fixToPoint Kml.mark speedSection zs fixes
+    | otherwise =
+        durationViaZones fixToPoint Kml.mark speedSection zs os gs mark0 fixes
 
 durationViaZones :: (Kml.Fix -> Tsk.Zone)
                  -> (Kml.Fix -> Kml.Seconds)
                  -> Cmp.SpeedSection
                  -> [Tsk.Zone]
+                 -> [Cmp.OpenClose]
+                 -> [Cmp.StartGate]
+                 -> UTCTime
                  -> [Kml.Fix]
                  -> Maybe PilotTime
-durationViaZones mkZone atTime speedSection zs xs =
+durationViaZones mkZone atTime speedSection zs os gs t0 xs =
     if null xs then Nothing else
-    case (zsSpeed, reverse zsSpeed) of
-        ([], _) -> Nothing
-        (_, []) -> Nothing
-        (z0 : _, zN : _) -> duration (z0, zN) xys
+    case (osSpeed, zsSpeed, reverse zsSpeed) of
+        ([], _, _) -> Nothing
+        (_, [], _) -> Nothing
+        (_, _, []) -> Nothing
+        (o0 : _, z0 : _, zN : _) -> duration o0 (z0, zN) xys
     where
         -- TODO: Don't assume end of speed section is goal.
         zsSpeed = slice speedSection zs
+        osSpeed =
+            -- NOTE: When there is only one open/close all zones
+            -- have the same open/close.
+            case os of
+                [_] -> os
+                _ -> slice speedSection os
 
         xys :: [(Kml.Fix, (Tsk.Zone, Tsk.Zone))]
         xys = (\(x, y) -> (y, (mkZone x, mkZone y))) <$> zip (drop 1 xs) xs
@@ -428,10 +444,23 @@ durationViaZones mkZone atTime speedSection zs xs =
 
                 f = atTime . fst
 
-        duration z xzs =
+        duration o z xzs =
             case slots z xzs of
                 (Nothing, _) -> Nothing
                 (_, Nothing) -> Nothing
-                (Just t0, Just tN) ->
-                    let (Kml.Seconds t) = tN - t0
-                    in Just . PilotTime $ t % 1
+                (Just s0, Just sN) ->
+                    Just . PilotTime $ (deltaFlying + deltaStart) % 1
+                    where
+                        gs' = reverse gs
+                        laterStart (Cmp.StartGate g) = g > t0
+
+                        startTime =
+                            case dropWhile laterStart gs' of
+                                [] -> Cmp.open o
+                                (Cmp.StartGate t : _) -> t
+
+                        deltaStart :: Integer
+                        deltaStart =
+                            round $ diffUTCTime t0 startTime
+
+                        (Kml.Seconds deltaFlying) = sN - s0
