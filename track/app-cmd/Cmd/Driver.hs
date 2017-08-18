@@ -39,6 +39,8 @@ import qualified Data.Flight.Kml as Kml
     , Longitude(..)
     , LatLngAlt(..)
     , FixMark(mark)
+    , Fix
+    , MarkedFixes(..)
     )
 import qualified Data.Flight.Comp as Cmp
     ( CompSettings(..)
@@ -177,7 +179,7 @@ settingsLogs compYamlPath tasks selectPilots = do
                 fs = (Log.makeAbsolute dir) <$> taskFolders
                 zs = zipWith (\f y -> f <$> y) fs ys
 
-checkTracks :: forall a. (Cmp.CompSettings -> (IxTask -> [Kml.Fix] -> a))
+checkTracks :: forall a. (Cmp.CompSettings -> (IxTask -> Kml.MarkedFixes -> a))
             -> FilePath
             -> [IxTask]
             -> [Cmp.Pilot]
@@ -192,9 +194,9 @@ checkTracks f compYamlPath tasks selectPilots = do
     (settings, xs) <- settingsLogs compYamlPath tasks selectPilots
     lift $ Log.pilotTracks (f settings) xs
 
-
-countFixes :: [Kml.Fix] -> PilotTrackFixes
-countFixes xs = PilotTrackFixes $ length xs
+countFixes :: Kml.MarkedFixes -> PilotTrackFixes
+countFixes Kml.MarkedFixes{fixes} =
+    PilotTrackFixes $ length fixes
 
 -- | The input pair is in degrees while the output is in radians.
 toLL :: (Rational, Rational) -> Tsk.LatLng [u| rad |]
@@ -243,52 +245,52 @@ exitsZone z xs =
         outsideZone =
             List.findIndex (\y -> Tsk.separatedZones [y, z]) xs
 
-launched :: [Cmp.Task] -> IxTask -> [Kml.Fix] -> Bool
-launched tasks (IxTask i) xs =
+launched :: [Cmp.Task] -> IxTask -> Kml.MarkedFixes -> Bool
+launched tasks (IxTask i) Kml.MarkedFixes{fixes} =
     case tasks ^? element (i - 1) of
         Nothing -> False
         Just (Cmp.Task {zones})->
             case zones of
                 [] -> False
-                z : _ -> exitsZone (zoneToCylinder z) (fixToPoint <$> xs)
+                z : _ -> exitsZone (zoneToCylinder z) (fixToPoint <$> fixes)
 
-started :: [Cmp.Task] -> IxTask -> [Kml.Fix] -> Bool
-started tasks (IxTask i) xs =
+started :: [Cmp.Task] -> IxTask -> Kml.MarkedFixes -> Bool
+started tasks (IxTask i) Kml.MarkedFixes{fixes} =
     case tasks ^? element (i - 1) of
         Nothing -> False
         Just (Cmp.Task {speedSection, zones}) ->
             case slice speedSection zones of
                 [] -> False
-                z : _ -> exitsZone (zoneToCylinder z) (fixToPoint <$> xs)
+                z : _ -> exitsZone (zoneToCylinder z) (fixToPoint <$> fixes)
 
-madeGoal :: [Cmp.Task] -> IxTask -> [Kml.Fix] -> Bool
-madeGoal tasks (IxTask i) xs =
+madeGoal :: [Cmp.Task] -> IxTask -> Kml.MarkedFixes -> Bool
+madeGoal tasks (IxTask i) Kml.MarkedFixes{fixes} =
     case tasks ^? element (i - 1) of
         Nothing -> False
         Just (Cmp.Task {zones}) ->
             case reverse $ zones of
                 [] -> False
-                z : _ -> entersZone (zoneToCylinder z) (fixToPoint <$> xs)
+                z : _ -> entersZone (zoneToCylinder z) (fixToPoint <$> fixes)
 
 tickedZones :: [Tsk.Zone] -> [Tsk.Zone] -> [Bool]
 tickedZones zones xs =
     flip crossedZone xs <$> zones
 
-madeZones :: [Cmp.Task] -> IxTask -> [Kml.Fix] -> [Bool]
-madeZones tasks (IxTask i) xs =
+madeZones :: [Cmp.Task] -> IxTask -> Kml.MarkedFixes -> [Bool]
+madeZones tasks (IxTask i) Kml.MarkedFixes{fixes} =
     case tasks ^? element (i - 1) of
         Nothing -> []
         Just (Cmp.Task {zones}) ->
-            tickedZones (zoneToCylinder <$> zones) (fixToPoint <$> xs)
+            tickedZones (zoneToCylinder <$> zones) (fixToPoint <$> fixes)
 
-madeSpeedZones :: [Cmp.Task] -> IxTask -> [Kml.Fix] -> [Bool]
-madeSpeedZones tasks (IxTask i) xs =
+madeSpeedZones :: [Cmp.Task] -> IxTask -> Kml.MarkedFixes -> [Bool]
+madeSpeedZones tasks (IxTask i) Kml.MarkedFixes{fixes} =
     case tasks ^? element (i - 1) of
         Nothing -> []
         Just (Cmp.Task {speedSection, zones}) ->
             tickedZones
                 (zoneToCylinder <$> slice speedSection zones)
-                (fixToPoint <$> xs)
+                (fixToPoint <$> fixes)
 
 mm30 :: Tolerance
 mm30 = Tolerance $ 30 % 1000
@@ -321,8 +323,11 @@ slice = \case
         let (s, e) = (fromInteger s' - 1, fromInteger e' - 1)
         in take (e - s + 1) . drop s
 
-distanceToGoal :: [Cmp.Task] -> IxTask -> [Kml.Fix] -> Maybe TaskDistance
-distanceToGoal tasks (IxTask i) xs =
+distanceToGoal :: [Cmp.Task]
+               -> IxTask
+               -> Kml.MarkedFixes
+               -> Maybe TaskDistance
+distanceToGoal tasks (IxTask i) Kml.MarkedFixes{fixes} =
     case tasks ^? element (i - 1) of
         Nothing -> Nothing
         Just (Cmp.Task {speedSection, zones}) ->
@@ -331,16 +336,19 @@ distanceToGoal tasks (IxTask i) xs =
                 fixToPoint
                 speedSection
                 (zoneToCylinder <$> zones)
-                xs
+                fixes 
 
-distanceFlown :: [Cmp.Task] -> IxTask -> [Kml.Fix] -> Maybe PilotDistance
-distanceFlown tasks (IxTask i) xs =
+distanceFlown :: [Cmp.Task]
+              -> IxTask
+              -> Kml.MarkedFixes
+              -> Maybe PilotDistance
+distanceFlown tasks (IxTask i) Kml.MarkedFixes{fixes} =
     case tasks ^? element (i - 1) of
         Nothing -> Nothing
         Just (Cmp.Task {speedSection, zones}) ->
             if null zones then Nothing else
             let cs = zoneToCylinder <$> zones
-                d = distanceViaZones fixToPoint speedSection cs xs
+                d = distanceViaZones fixToPoint speedSection cs fixes
             in flownDistance speedSection cs d
 
 flownDistance :: Cmp.SpeedSection
@@ -360,7 +368,7 @@ flownDistance speedSection zs@(z : _) (Just (TaskDistance d)) =
     where
         total = distanceViaZones id speedSection zs [z]
 
-timeFlown :: [Cmp.Task] -> IxTask -> [Kml.Fix] -> Maybe PilotTime
+timeFlown :: [Cmp.Task] -> IxTask -> Kml.MarkedFixes -> Maybe PilotTime
 timeFlown tasks iTask@(IxTask i) xs =
     case tasks ^? element (i - 1) of
         Nothing -> Nothing
@@ -374,12 +382,12 @@ timeFlown tasks iTask@(IxTask i) xs =
 
 flownDuration :: Cmp.SpeedSection
               -> [Tsk.Zone]
-              -> [Kml.Fix]
+              -> Kml.MarkedFixes
               -> Maybe PilotTime
-flownDuration _ [] _ = Nothing
-flownDuration _ _ [] = Nothing
-flownDuration speedSection zs xs =
-    durationViaZones fixToPoint Kml.mark speedSection zs xs
+flownDuration speedSection zs Kml.MarkedFixes{fixes}
+    | null zs = Nothing
+    | null fixes = Nothing
+    | otherwise = durationViaZones fixToPoint Kml.mark speedSection zs fixes
 
 durationViaZones :: (Kml.Fix -> Tsk.Zone)
                  -> (Kml.Fix -> Kml.Seconds)
@@ -388,6 +396,7 @@ durationViaZones :: (Kml.Fix -> Tsk.Zone)
                  -> [Kml.Fix]
                  -> Maybe PilotTime
 durationViaZones mkZone atTime speedSection zs xs =
+    if null xs then Nothing else
     case (zsSpeed, reverse zsSpeed) of
         ([], _) -> Nothing
         (_, []) -> Nothing
@@ -425,4 +434,4 @@ durationViaZones mkZone atTime speedSection zs xs =
                 (_, Nothing) -> Nothing
                 (Just t0, Just tN) ->
                     let (Kml.Seconds t) = tN - t0
-                     in Just . PilotTime $ t % 1
+                    in Just . PilotTime $ t % 1
