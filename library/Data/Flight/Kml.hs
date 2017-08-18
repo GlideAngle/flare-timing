@@ -174,8 +174,8 @@ pNats = do
 
 parseUtcTime :: String -> UTCTime
 parseUtcTime =
-    -- NOTE: %F is %Y-%m-%d, %T is %H:%M:%S and %z is -HHMM or -HH:MM
-    parseTimeOrError False defaultTimeLocale "%FT%T%z"
+    -- NOTE: %F is %Y-%m-%d, %T is %H:%M:%S. 
+    parseTimeOrError False defaultTimeLocale "%FT%TZ"
 
 parseTimeOffsets :: String -> [Seconds]
 parseTimeOffsets s =
