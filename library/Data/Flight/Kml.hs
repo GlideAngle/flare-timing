@@ -13,6 +13,7 @@ Provides parsing the KML format for waypoint fixes.
 -}
 module Data.Flight.Kml
     ( Fix
+    , MarkedFixes(..)
     , LLA
     , T.LatLngAlt(..)
     , T.FixMark(..)
@@ -40,6 +41,7 @@ import Text.XML.HXT.Core
     , (>>.)
     , runX
     , getText
+    , getAttrValue
     , withValidate
     , withWarnings
     , readString
@@ -49,11 +51,12 @@ import Text.XML.HXT.Core
     , hasAttrValue
     , filterA
     , listA
-    , unlistA
     , arr
     , orElse
     , constA
     )
+import Data.Time.Clock (UTCTime)
+import Data.Time.Format (parseTimeOrError, defaultTimeLocale)
 import Data.List (concatMap)
 import Data.List.Split (splitOn)
 import Text.Parsec.Token as P
@@ -75,6 +78,7 @@ import qualified Data.Flight.Types as T (LatLngAlt(..), FixMark(..))
 import Data.Flight.Types
     ( LLA(..)
     , Fix(..)
+    , MarkedFixes(..)
     , Seconds(..)
     , Latitude(..)
     , Longitude(..)
@@ -91,25 +95,21 @@ pFloat = parsecMap toRational $ P.float lexer
 pNat :: ParsecT String u Identity Integer
 pNat = P.natural lexer 
 
-zipFixes :: [ Seconds ] -> [LLA] -> [ Maybe Altitude ] -> [ Fix ]
+zipFixes :: [Seconds] -> [LLA] -> [Maybe Altitude] -> [Fix]
 zipFixes = zipWith3 Fix
 
 -- | Get the fixes. Some KML files don't have PressureAltitude.
-getFix :: ArrowXml a => a XmlTree Fix
+getFix :: ArrowXml a => a XmlTree MarkedFixes
 getFix =
     getTrack
-    >>> (listA getCoord
-            &&& (getFsInfo
-                 >>> (listA getTime
-                      &&& listA getBaro `orElse` constA []
-                     )
-                )
-        )
-    >>> arr (\(c, (a, b)) ->
-            case b of
-              [] -> zipFixes a c (repeat Nothing)
-              _ -> zipFixes a c (Just <$> b))
-    >>> unlistA
+    >>> (getFsInfo >>> getFirstTime)
+    &&& listA getCoord
+    &&& (getFsInfo >>> listA getTime)
+    &&& (getFsInfo >>> (listA getBaro `orElse` constA []))
+    >>> arr (\(t0, (cs, (ts, bs))) ->
+        let bs' = if null bs then repeat Nothing else Just <$> bs
+            fs = zipFixes ts cs bs'
+        in MarkedFixes t0 fs)
     where
         isMetadata =
             getChildren
@@ -123,6 +123,10 @@ getFix =
             /> hasName "Placemark"
             >>> filterA isMetadata
             >>. take 1
+
+        getFirstTime =
+            getAttrValue "time_of_first_point"
+            >>> arr parseUtcTime
 
         getFsInfo =
             getChildren
@@ -149,11 +153,17 @@ getFix =
             /> getText
             >>. concatMap parseLngLatAlt
 
-parse :: String -> IO (Either String [Fix])
+parse :: String -> IO (Either String MarkedFixes)
 parse contents = do
     let doc = readString [ withValidate no, withWarnings no ] contents
     xs <- runX $ doc >>> getFix
-    return $ Right xs
+    return $
+        case xs of
+        [x] -> Right x
+        _ -> Left $
+            "Expected 1 set of marked fixes but got "
+            ++ (show $ length xs)
+            ++ "."
 
 pNats :: GenParser Char st [Integer]
 pNats = do
@@ -161,6 +171,11 @@ pNats = do
     xs <- pNat `sepBy` spaces
     _ <- eof
     return xs
+
+parseUtcTime :: String -> UTCTime
+parseUtcTime =
+    -- NOTE: %F is %Y-%m-%d, %T is %H:%M:%S and %z is -HHMM or -HH:MM
+    parseTimeOrError False defaultTimeLocale "%FT%T%z"
 
 parseTimeOffsets :: String -> [Seconds]
 parseTimeOffsets s =
@@ -237,7 +252,7 @@ showLngLatAlt (Latitude lat, Longitude lng, Altitude alt) =
 
 -- | Parse comma-separated triples of lng,lat,alt, each triple separated by
 -- spaces.
-parseLngLatAlt :: String -> [ LLA ]
+parseLngLatAlt :: String -> [LLA]
 parseLngLatAlt s =
     case P.parse pFixes "(stdin)" s of
          Left _ -> []
