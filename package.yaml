@@ -33,7 +33,8 @@ library:
   - siggy-chardust
   source-dirs: library
   exposed-modules:
-  - Data.Flight.Mask
+  - Flight.Mask.Pilot
+  - Flight.Mask.Task
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
 name: flight-mask

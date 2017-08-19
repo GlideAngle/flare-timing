@@ -8,7 +8,7 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE QuasiQuotes #-}
 
-{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE DisambiguateRecordFields #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE LambdaCase #-}
 
@@ -23,7 +23,7 @@ Mask tracks with zones, working out; did the pilot launch, did they make goaland
 long did that take? If they didn't make goal then what zones did they make and what
 was the distance to goal?
 -}
-module Data.Flight.Mask
+module Flight.Mask.Pilot
     ( countFixes
     , checkTracks
     , madeZones
