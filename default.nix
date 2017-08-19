@@ -1,8 +1,14 @@
-{ nixpkgs ? import <nixpkgs> {}, compiler ? "ghc802", flight-comp, flight-kml }:
+{ nixpkgs ? import <nixpkgs> {}, compiler ? "ghc802", siggy-chardust, flight-comp, flight-kml, flight-gap, flight-task, flight-track }:
 
 with nixpkgs.pkgs.haskell.packages.${compiler};
 
-callPackage ./flight-track.nix {
+let hlib = nixpkgs.pkgs.haskell.lib;
+in
+hlib.dontCheck(callPackage ./flight-mask.nix {
+  siggy-chardust = siggy-chardust;
   flight-comp = flight-comp;
   flight-kml = flight-kml;
-}
+  flight-gap = flight-gap;
+  flight-task= flight-task;
+  flight-track = flight-track;
+})

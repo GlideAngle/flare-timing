@@ -1,17 +1,21 @@
-{ mkDerivation, base, containers, directory, filepath, flight-comp
-, flight-kml, hlint, mtl, path, split, stdenv
+{ mkDerivation, base, bytestring, containers, directory, fgl
+, filepath, flight-comp, flight-gap, flight-kml, flight-task
+, flight-track, hlint, lens, mtl, path, siggy-chardust, split
+, stdenv, time, uom-plugin, yaml
 }:
 mkDerivation {
   pname = "flight-mask";
   version = "0.0.0";
   src = ./.;
   libraryHaskellDepends = [
-    base containers directory filepath flight-comp flight-kml mtl path
-    split
+    base bytestring containers directory fgl filepath flight-comp
+    flight-gap flight-kml flight-task flight-track lens mtl path
+    siggy-chardust split time uom-plugin yaml
   ];
   testHaskellDepends = [
-    base containers directory filepath flight-comp flight-kml hlint mtl
-    split
+    base bytestring containers directory fgl filepath flight-comp
+    flight-gap flight-kml flight-task flight-track hlint lens mtl
+    siggy-chardust split time uom-plugin yaml
   ];
   homepage = "https://github.com/BlockScope/haskell-flight-mask#readme";
   description = "Track logs masked by competition task zones";
