@@ -35,7 +35,7 @@ description = intro
     where
         intro = [r|
 
-Convert fsdb (XML) to yaml with only the inputs needed for scoring.
+Given a competition *.yaml file, from masking the track logs with the zones work out if the pilot launched, if they made goal and if so how long that took. If they landed out then how far did they get along the course and how far to goal.
 |]
 
 data Drive
@@ -70,12 +70,12 @@ drive
             &= groupname "Filter"
 
             , reckon = def
-            &= help "Work out these things"
-            &= typ "goal|zone|time|distance|lead"
+            &= help "Work out one of these things, launch|goal|zones|goaldistance|flowndistance|time|lead"
+            &= typ "RECKON NAME"
             &= groupname "Filter"
             }
-            &= summary ("Flight Scoring Track Zone Intersect Checker " ++ showVersion version ++ description)
-            &= program "flight-track-intersect-zone.exe"
+            &= summary ("Flight mask of zone over track " ++ showVersion version ++ description)
+            &= program "flight-mask-yaml.exe"
 
 run :: IO Drive
 run = cmdArgs drive
