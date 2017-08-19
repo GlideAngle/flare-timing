@@ -1,6 +1,8 @@
 flags: {}
 packages:
 - location: .
+- location: ../haskell-flight-units
+  extra-dep: true
 - location: ../haskell-flight-comp
   extra-dep: true
 - location: ../haskell-flight-kml
