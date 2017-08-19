@@ -15,4 +15,5 @@ __docs
 *.js_dyn_o
 *.swo
 *.swn
+*.swm
 /result
