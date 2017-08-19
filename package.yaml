@@ -155,6 +155,7 @@ executables:
     - flight-track
     - flight-task
     - flight-gap
+    - flight-mask
     ghc-options:
     - -Wall
     - -rtsopts
