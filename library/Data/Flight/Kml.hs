@@ -162,7 +162,7 @@ parse contents = do
         [x] -> Right x
         _ -> Left $
             "Expected 1 set of marked fixes but got "
-            ++ (show $ length xs)
+            ++ show (length xs)
             ++ "."
 
 pNats :: GenParser Char st [Integer]
