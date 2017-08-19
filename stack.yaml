@@ -1,0 +1,14 @@
+flags: {}
+packages:
+- '.'
+- location: ../haskell-siggy-chardust
+  extra-dep: true
+- location:
+    git: https://github.com/adamgundry/uom-plugin.git
+    commit: 0ea56180b0adecb83ee5dbcb9e46a640b72d0acc
+  subdirs:
+  - uom-plugin
+  extra-dep: true
+extra-deps: []
+resolver: lts-8.15
+local-bin-path: __shake-build

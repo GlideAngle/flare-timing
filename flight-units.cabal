@@ -1,0 +1,61 @@
+-- This file has been generated from package.yaml by hpack version 0.17.0.
+--
+-- see: https://github.com/sol/hpack
+
+name:           flight-units
+version:        0.1.0
+synopsis:       Units used in hang gliding and paragliding competitions.
+description:    Unit definitions such as m, km, rad and deg.
+category:       Flight
+homepage:       https://github.com/BlockScope/haskell-flight-task#readme
+bug-reports:    https://github.com/BlockScope/haskell-flight-task/issues
+author:         Phil de Joux
+maintainer:     phil.dejoux@blockscope.com
+license:        BSD3
+license-file:   LICENSE.md
+build-type:     Simple
+cabal-version:  >= 1.10
+
+extra-source-files:
+    changelog.md
+    package.yaml
+    README.md
+    stack.yaml
+
+source-repository head
+  type: git
+  location: https://github.com/BlockScope/haskell-flight-task
+
+library
+  hs-source-dirs:
+      library
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin
+  build-depends:
+      base >=4.5 && <5
+    , numbers
+    , bifunctors
+    , uom-plugin
+    , siggy-chardust
+  exposed-modules:
+      Flight.Units
+  other-modules:
+      Paths_flight_units
+  default-language: Haskell2010
+
+test-suite hlint
+  type: exitcode-stdio-1.0
+  main-is: HLint.hs
+  hs-source-dirs:
+      library
+      test-suite-hlint
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      base
+    , hlint
+    , numbers
+    , bifunctors
+    , uom-plugin
+    , siggy-chardust
+  other-modules:
+      Flight.Units
+  default-language: Haskell2010
