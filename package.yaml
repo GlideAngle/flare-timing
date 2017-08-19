@@ -6,7 +6,9 @@ extra-source-files:
 - changelog.md
 - README.md
 - stack.yaml
-ghc-options: -Wall
+ghc-options:
+- -Wall
+- -fplugin Data.UnitsOfMeasure.Plugin
 library:
   dependencies:
   - base >=4.5 && <5
@@ -16,8 +18,18 @@ library:
   - mtl
   - directory
   - filepath
+  - time
+  - lens
+  - bytestring
+  - yaml
+  - uom-plugin
+  - fgl
   - flight-comp
   - flight-kml
+  - flight-track
+  - flight-task
+  - flight-gap
+  - siggy-chardust
   source-dirs: library
   exposed-modules:
   - Data.Flight.Mask
@@ -40,8 +52,18 @@ tests:
     - mtl
     - directory
     - filepath
+    - time
+    - lens
+    - bytestring
+    - yaml
+    - fgl
+    - uom-plugin
     - flight-comp
     - flight-kml
+    - flight-track
+    - flight-task
+    - flight-gap
+    - siggy-chardust
     ghc-options:
     - -rtsopts
     - -threaded
