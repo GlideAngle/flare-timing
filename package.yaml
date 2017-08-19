@@ -51,7 +51,7 @@ executables:
     - -with-rtsopts=-N
     main: Main.hs
     source-dirs: yaml/comp-xml-to-yaml
-  flight-track-intersect-zone:
+  flight-mask-yaml:
     dependencies:
     - base
     - directory
@@ -77,7 +77,7 @@ executables:
     - -Wall
     - -fplugin Data.UnitsOfMeasure.Plugin
     main: Main.hs
-    source-dirs: yaml/track-intersect-zone
+    source-dirs: yaml/mask
   flight-fsdb-cmd:
     dependencies:
     - base
@@ -133,7 +133,7 @@ executables:
     - -with-rtsopts=-N
     main: Main.hs
     source-dirs: kml/app-cmd
-  flight-track-cmd:
+  flight-mask-cmd:
     dependencies:
     - base
     - directory
@@ -163,7 +163,7 @@ executables:
     - -threaded
     - -with-rtsopts=-N
     main: Main.hs
-    source-dirs: track/app-cmd
+    source-dirs: mask/app-cmd
   flare-timing-build-cmd:
     dependencies:
     - base
