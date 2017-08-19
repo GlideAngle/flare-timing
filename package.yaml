@@ -150,6 +150,7 @@ executables:
     - siggy-chardust
     - time
     - uom-plugin
+    - flight-units
     - flight-comp
     - flight-kml
     - flight-track

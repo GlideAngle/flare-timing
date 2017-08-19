@@ -16,6 +16,7 @@ buildRules :: Rules ()
 buildRules = do
     phony "nix" $
         need [ "nix-siggy-chardust"
+             , "nix-flight-units"
              , "nix-flight-comp"
              , "nix-flight-fsdb"
              , "nix-flight-gap"
@@ -23,10 +24,12 @@ buildRules = do
              , "nix-flight-kml"
              , "nix-flight-track"
              , "nix-flight-task"
+             , "nix-flight-mask"
              , "nix-flare-timing"
              ]
 
     phony "nix-siggy-chardust" $ cmd Shell (nixFor "siggy-chardust")
+    phony "nix-flight-units" $ cmd Shell (nixFor "flight-units")
     phony "nix-flight-comp" $ cmd Shell (nixFor "flight-comp")
     phony "nix-flight-fsdb" $ cmd Shell (nixFor "flight-fsdb")
     phony "nix-flight-gap" $ cmd Shell (nixFor "flight-gap")
@@ -34,4 +37,5 @@ buildRules = do
     phony "nix-flight-kml" $ cmd Shell (nixFor "flight-kml")
     phony "nix-flight-track" $ cmd Shell (nixFor "flight-track")
     phony "nix-flight-task" $ cmd Shell (nixFor "flight-task")
+    phony "nix-flight-mask" $ cmd Shell (nixFor "flight-mask")
     phony "nix-flare-timing" $ cmd Shell (nixFor "flare-timing")
