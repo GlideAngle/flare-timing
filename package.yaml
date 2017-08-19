@@ -17,10 +17,10 @@ library:
   - uom-plugin
   - siggy-chardust
   - bifunctors
+  - flight-units
   source-dirs: library
   exposed-modules:
   - Flight.Task
-  - Flight.Units
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
 name: flight-task
@@ -37,9 +37,10 @@ tests:
     - hlint
     - numbers
     - fgl
+    - bifunctors
     - uom-plugin
     - siggy-chardust
-    - bifunctors
+    - flight-units
     ghc-options:
     - -rtsopts
     - -threaded
@@ -53,14 +54,15 @@ tests:
     - base
     - numbers
     - fgl
+    - bifunctors
     - uom-plugin
+    - siggy-chardust
+    - flight-units
     - tasty
     - tasty-hunit
     - tasty-quickcheck
     - tasty-smallcheck
     - smallcheck
-    - siggy-chardust
-    - bifunctors
     ghc-options:
     - -rtsopts
     - -threaded

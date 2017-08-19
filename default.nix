@@ -1,4 +1,4 @@
-{ nixpkgs ? import <nixpkgs> {}, compiler ? "ghc802", fgl, siggy-chardust }:
+{ nixpkgs ? import <nixpkgs> {}, compiler ? "ghc802", fgl, siggy-chardust, flight-units }:
 
 with nixpkgs.pkgs.haskell.packages.${compiler};
 
@@ -8,4 +8,5 @@ in
 hlib.dontCheck(hlib.dontHaddock(callPackage ./flight-task.nix {
   fgl = fgl;
   siggy-chardust = siggy-chardust;
+  flight-units = flight-units;
 }))

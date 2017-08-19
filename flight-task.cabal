@@ -37,9 +37,9 @@ library
     , uom-plugin
     , siggy-chardust
     , bifunctors
+    , flight-units
   exposed-modules:
       Flight.Task
-      Flight.Units
   other-modules:
       Flight.CylinderEdge
       Flight.EdgeToEdge
@@ -62,9 +62,10 @@ test-suite hlint
     , hlint
     , numbers
     , fgl
+    , bifunctors
     , uom-plugin
     , siggy-chardust
-    , bifunctors
+    , flight-units
   other-modules:
       Flight.CylinderEdge
       Flight.EdgeToEdge
@@ -72,7 +73,6 @@ test-suite hlint
       Flight.PointToPoint
       Flight.Separated
       Flight.Task
-      Flight.Units
       Flight.Zone
   default-language: Haskell2010
 
@@ -87,14 +87,15 @@ test-suite task
       base
     , numbers
     , fgl
+    , bifunctors
     , uom-plugin
+    , siggy-chardust
+    , flight-units
     , tasty
     , tasty-hunit
     , tasty-quickcheck
     , tasty-smallcheck
     , smallcheck
-    , siggy-chardust
-    , bifunctors
   other-modules:
       Flight.CylinderEdge
       Flight.EdgeToEdge
@@ -102,7 +103,6 @@ test-suite task
       Flight.PointToPoint
       Flight.Separated
       Flight.Task
-      Flight.Units
       Flight.Zone
       EdgeToEdge
       TestNewtypes
