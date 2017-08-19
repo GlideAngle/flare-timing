@@ -27,7 +27,7 @@ import Cmd.Options (CmdOptions(..), Reckon(..))
 import qualified Data.Flight.Comp as Cmp (CompSettings(..), Pilot(..))
 import Data.Flight.TrackLog as Log (TrackFileFail(..), IxTask(..))
 import Flight.Units ()
-import Data.Flight.Mask
+import Flight.Mask.Pilot
     ( countFixes
     , checkTracks
     , madeZones
