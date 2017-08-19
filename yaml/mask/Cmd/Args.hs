@@ -18,6 +18,8 @@ import System.Console.CmdArgs.Implicit
     , summary
     , program
     , help
+    , typ
+    , opt
     , groupname
     , cmdArgs
     , (&=)
@@ -26,7 +28,7 @@ import Control.Monad.Except (liftIO, throwError, when, unless)
 import Control.Monad.Trans.Except (runExceptT)
 import System.Directory (doesFileExist, doesDirectoryExist)
 import Text.RawString.QQ (r)
-import Cmd.Options (CmdOptions(..))
+import Cmd.Options (CmdOptions(..), Reckon(..))
 
 description :: String
 description = intro
@@ -39,6 +41,9 @@ Convert fsdb (XML) to yaml with only the inputs needed for scoring.
 data Drive
     = Drive { dir :: String
             , file :: String
+            , task :: [Int]
+            , pilot :: [String]
+            , reckon :: Reckon
             }
     deriving (Show, Data, Typeable)
 
@@ -51,6 +56,23 @@ drive
             , file = def
             &= help "With this one competition *.comp.yaml file"
             &= groupname "Source"
+
+            , task = def
+            &= help "Which tasks?"
+            &= typ "TASK NUMBER"
+            &= opt "name"
+            &= groupname "Filter"
+
+            , pilot = def
+            &= help "Which pilots?"
+            &= typ "PILOT NAME"
+            &= opt "name"
+            &= groupname "Filter"
+
+            , reckon = def
+            &= help "Work out these things"
+            &= typ "goal|zone|time|distance|lead"
+            &= groupname "Filter"
             }
             &= summary ("Flight Scoring Track Zone Intersect Checker " ++ showVersion version ++ description)
             &= program "flight-track-intersect-zone.exe"
@@ -60,7 +82,12 @@ run = cmdArgs drive
 
 cmdArgsToDriveArgs :: Drive -> Maybe CmdOptions
 cmdArgsToDriveArgs Drive{..} =
-    return CmdOptions { dir = dir, file = file }
+    return $ CmdOptions { dir = dir
+                        , file = file
+                        , task = task
+                        , pilot = pilot
+                        , reckon = reckon
+                        }
 
 -- SEE: http://stackoverflow.com/questions/2138819/in-haskell-is-there-a-way-to-do-io-in-a-function-guard
 checkedOptions :: CmdOptions -> IO (Either String CmdOptions)

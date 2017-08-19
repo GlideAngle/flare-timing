@@ -1,219 +1,254 @@
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE QuasiQuotes #-}
-{-# LANGUAGE TemplateHaskell #-}
+
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE LambdaCase #-}
+
+{-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
 module Cmd.Driver (driverMain) where
 
+import Data.String (IsString)
 import Control.Monad (mapM_)
-import Control.Monad.Except (ExceptT(..), runExceptT, lift)
-import System.Directory (doesFileExist, doesDirectoryExist)
-import System.FilePath (takeFileName, replaceExtension, dropExtension)
-import System.FilePath.Find
-    (FileType(..), (==?), (&&?), find, always, fileType, extension)
-
-import Data.Ratio ((%))
-import Data.UnitsOfMeasure (u, convert)
+import Control.Monad.Except (ExceptT(..), runExceptT)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
+import System.Directory (doesFileExist, doesDirectoryExist)
+import System.FilePath.Find (FileType(..), (==?), (&&?), find, always, fileType, extension)
+import System.FilePath (FilePath, takeFileName, replaceExtension, dropExtension)
 import Cmd.Args (withCmdArgs)
-import Cmd.Options (CmdOptions(..))
-import Data.Yaml (decodeEither)
-import Data.Number.RoundingFunctions (dpRound)
+import Cmd.Options (CmdOptions(..), Reckon(..))
 import qualified Data.Yaml.Pretty as Y
 import qualified Data.ByteString as BS
-import qualified Data.Flight.Comp as Cmp
-import qualified Data.Flight.TrackZone as Z 
-import Data.Flight.TrackZone
-    ( TrackZoneIntersect(..)
-    , TaskTrack(..)
-    , TrackLine(..)
-    , FlownTrack(..)
-    , PilotFlownTrack(..)
+
+import qualified Data.Flight.Comp as Cmp (CompSettings(..), Pilot(..))
+import qualified Flight.Task as Tsk (TaskDistance(..))
+import qualified Flight.Score as Gap (PilotDistance(..), PilotTime(..))
+import Data.Flight.TrackLog (TrackFileFail(..), IxTask(..))
+import Flight.Units ()
+import Flight.Mask.Pilot
+    ( checkTracks
+    , madeZones
+    , launched
+    , madeGoal
+    , distanceToGoal
+    , distanceFlown
+    , timeFlown
     )
-import qualified Flight.Task as Tsk
-import Flight.Task
-    ( LatLng(..)
-    , Lat(..)
-    , Lng(..)
-    , Radius(..)
-    , Zone(..)
-    , TaskDistance(..)
-    , DistancePath(..)
-    , Tolerance(..)
-    , EdgeDistance(..)
-    , center
-    )
+import Flight.Mask.Task (taskTracks)
+import qualified Data.Flight.TrackZone as TZ
+    (TaskTrack(..), FlownTrack(..), PilotFlownTrack(..), TrackZoneIntersect(..))
 
 driverMain :: IO ()
 driverMain = withCmdArgs drive
+
+cmp :: (Ord a, IsString a) => a -> a -> Ordering
+cmp a b =
+    case (a, b) of
+        ("pointToPoint", _) -> LT
+        ("edgeToEdge", _) -> GT
+        ("lat", _) -> LT
+        ("lng", _) -> GT
+        ("distance", _) -> LT
+        ("wayPoints", _) -> GT
+        ("taskTracks", _) -> LT
+        ("pilotTracks", _) -> GT
+        ("launched", _) -> LT
+        ("madeGoal", "launched") -> GT
+        ("madeGoal", _) -> LT
+        ("zonesMade", "launched") -> GT
+        ("zonesMade", "madeGoal") -> GT
+        ("zonesMade", _) -> LT
+        ("zonesNotMade", "launched") -> GT
+        ("zonesNotMade", "madeGoal") -> GT
+        ("zonesNotMade", "zonesMade") -> GT
+        ("zonesNotMade", _) -> LT
+        ("timeToGoal", "launched") -> GT
+        ("timeToGoal", "madeGoal") -> GT
+        ("timeToGoal", "zonesMade") -> GT
+        ("timeToGoal", "zonesNotMade") -> GT
+        ("timeToGoal", _) -> LT
+        ("distanceToGoal", "launched") -> GT
+        ("distanceToGoal", "madeGoal") -> GT
+        ("distanceToGoal", "zonesMade") -> GT
+        ("distanceToGoal", "zonesNotMade") -> GT
+        ("distanceToGoal", "timeToGoal") -> GT
+        ("distanceToGoal", _) -> LT
+        ("bestDistance", _) -> GT
+        _ -> compare a b
 
 drive :: CmdOptions -> IO ()
 drive CmdOptions{..} = do
     dfe <- doesFileExist file
     if dfe then
-        go file
+        withFile file
     else do
         dde <- doesDirectoryExist dir
         if dde then do
             files <- find always (fileType ==? RegularFile &&? extension ==? ".comp.yaml") dir
-            mapM_ go files
+            mapM_ withFile files
         else
             putStrLn "Couldn't find any flight score competition yaml input files."
     where
-        go yamlCompPath = do
+        withFile yamlCompPath = do
             putStrLn $ takeFileName yamlCompPath
-            let yamlTrackPath =
-                    flip replaceExtension ".track.yaml"
+            let yamlMaskPath =
+                    flip replaceExtension ".mask.yaml"
                     $ dropExtension yamlCompPath
-
-            intersects <- runExceptT $ analyze yamlCompPath
-            case intersects of
+            ts <- runExceptT $ taskTracks yamlCompPath
+            case ts of
                 Left msg -> print msg
-                Right xs -> do
-                    let yaml =
-                            Y.encodePretty
-                                (Y.setConfCompare cmp Y.defConfig)
-                                xs
+                Right ts' -> do
 
-                    BS.writeFile yamlTrackPath yaml
+                    case reckon of
+                        Zones ->
+                            let go = writeMask ts' yamlMaskPath
+                            in go checkZones (\zs ->
+                                TZ.FlownTrack
+                                    { launched = True
+                                    , madeGoal = True
+                                    , zonesMade = zs
+                                    , timeToGoal = Nothing
+                                    , distanceToGoal = Nothing
+                                    , bestDistance = Nothing
+                                    })
 
-        cmp a b =
-            case (a, b) of
-                ("pointToPoint", _) -> LT
-                ("edgeToEdge", _) -> GT
-                ("lat", _) -> LT
-                ("lng", _) -> GT
-                ("distance", _) -> LT
-                ("wayPoints", _) -> GT
-                ("taskTracks", _) -> LT
-                ("pilotTracks", _) -> GT
-                ("launched", _) -> LT
-                ("madeGoal", "launched") -> GT
-                ("madeGoal", _) -> LT
-                ("zonesMade", "launched") -> GT
-                ("zonesMade", "madeGoal") -> GT
-                ("zonesMade", _) -> LT
-                ("zonesNotMade", "launched") -> GT
-                ("zonesNotMade", "madeGoal") -> GT
-                ("zonesNotMade", "zonesMade") -> GT
-                ("zonesNotMade", _) -> LT
-                ("timeToGoal", "launched") -> GT
-                ("timeToGoal", "madeGoal") -> GT
-                ("timeToGoal", "zonesMade") -> GT
-                ("timeToGoal", "zonesNotMade") -> GT
-                ("timeToGoal", _) -> LT
-                ("distanceToGoal", "launched") -> GT
-                ("distanceToGoal", "madeGoal") -> GT
-                ("distanceToGoal", "zonesMade") -> GT
-                ("distanceToGoal", "zonesNotMade") -> GT
-                ("distanceToGoal", "timeToGoal") -> GT
-                ("distanceToGoal", _) -> LT
-                ("bestDistance", _) -> GT
-                _ -> compare a b
+                        Launch ->
+                            let go = writeMask ts' yamlMaskPath
+                            in go checkLaunched (\x ->
+                                TZ.FlownTrack
+                                    { launched = x
+                                    , madeGoal = True
+                                    , zonesMade = []
+                                    , timeToGoal = Nothing
+                                    , distanceToGoal = Nothing
+                                    , bestDistance = Nothing
+                                    })
 
-readSettings :: FilePath -> ExceptT String IO Cmp.CompSettings
-readSettings compYamlPath = do
-    contents <- lift $ BS.readFile compYamlPath
-    ExceptT . return $ decodeEither contents
+                        Goal ->
+                            let go = writeMask ts' yamlMaskPath
+                            in go checkMadeGoal (\x ->
+                                TZ.FlownTrack
+                                    { launched = True
+                                    , madeGoal = x
+                                    , zonesMade = [] 
+                                    , timeToGoal = Nothing
+                                    , distanceToGoal = Nothing
+                                    , bestDistance = Nothing
+                                    })
 
-followTracks :: Cmp.CompSettings -> ExceptT String IO TrackZoneIntersect
-followTracks Cmp.CompSettings{..} = do
-    ExceptT . return . Right $
-        TrackZoneIntersect
-            { taskTracks = taskTrack <$> tasks
-            , pilotTracks = (fmap . fmap) pilotTrack pilots
-            }
+                        GoalDistance ->
+                            let go = writeMask ts' yamlMaskPath
+                            in go checkDistanceToGoal (\td ->
+                                TZ.FlownTrack
+                                    { launched = True
+                                    , madeGoal = True
+                                    , zonesMade = []
+                                    , timeToGoal = Nothing
+                                    , distanceToGoal =
+                                        (\(Tsk.TaskDistance (MkQuantity d)) -> fromRational d) <$> td
+                                    , bestDistance = Nothing 
+                                    })
 
-mm30 :: Tolerance
-mm30 = Tolerance $ 30 % 1000
+                        FlownDistance ->
+                            let go = writeMask ts' yamlMaskPath
+                            in go checkDistanceFlown (\fd ->
+                                TZ.FlownTrack
+                                    { launched = True
+                                    , madeGoal = True
+                                    , zonesMade = []
+                                    , timeToGoal = Nothing
+                                    , distanceToGoal = Nothing
+                                    , bestDistance =
+                                        (\(Gap.PilotDistance d) -> fromRational d) <$> fd
+                                    })
 
-analyze :: FilePath -> ExceptT String IO TrackZoneIntersect
-analyze compYamlPath = do
-    settings <- readSettings compYamlPath
-    followTracks settings
+                        Time ->
+                            let go = writeMask ts' yamlMaskPath
+                            in go checkTimeToGoal (\ttg ->
+                                TZ.FlownTrack
+                                    { launched = True
+                                    , madeGoal = True
+                                    , zonesMade = []
+                                    , timeToGoal =
+                                        (\(Gap.PilotTime t) -> fromRational t) <$> ttg
+                                    , distanceToGoal = Nothing
+                                    , bestDistance = Nothing
+                                    })
 
-taskTrack :: Cmp.Task -> TaskTrack
-taskTrack Cmp.Task{..} =
-    TaskTrack { pointToPoint =
-                  TrackLine
-                      { distance = toKm ptd
-                      , waypoints = wpPoint
-                      }
-              , edgeToEdge =
-                  TrackLine
-                      { distance = toKm etd
-                      , waypoints = wpEdge
-                      }
-              }
-    where
-        zs :: [Zone]
-        zs = toCylinder <$> zones
+                        x -> putStrLn $ "TODO: Handle other reckon of " ++ show x
 
-        ptd :: TaskDistance
-        ptd = Tsk.distancePointToPoint zs
-
-        wpPoint :: [Z.LatLng]
-        wpPoint =
-            convertLatLng <$> ps
             where
-                ps = center <$> zs
+                writeMask :: forall a. [TZ.TaskTrack]
+                          -> FilePath
+                          -> (FilePath
+                              -> [IxTask]
+                              -> [Cmp.Pilot]
+                              -> ExceptT
+                                  String
+                                  IO
+                                  [[Either
+                                      (Cmp.Pilot, TrackFileFail)
+                                      (Cmp.Pilot, a)
+                                  ]])
+                          -> (a -> TZ.FlownTrack)
+                          -> IO ()
+                writeMask os yamlPath f g = do
+                    checks <-
+                        runExceptT $
+                            f
+                                yamlCompPath
+                                (IxTask <$> task)
+                                (Cmp.Pilot <$> pilot)
 
-        ed :: EdgeDistance
-        ed = Tsk.distanceEdgeToEdge PathPointToZone mm30 zs
+                    case checks of
+                        Left msg -> print msg
+                        Right xs -> do
+                            let ps :: [[TZ.PilotFlownTrack]] =
+                                    (fmap . fmap)
+                                        (\case
+                                            Left (p, _) ->
+                                                TZ.PilotFlownTrack p Nothing
 
-        etd :: TaskDistance
-        etd = edges ed
+                                            Right (p, x) ->
+                                                TZ.PilotFlownTrack p (Just $ g x))
+                                        xs
 
-        wpEdge :: [Z.LatLng]
-        wpEdge =
-            convertLatLng <$> xs
-            where
-                xs = edgeLine ed
+                            let tzi =
+                                    TZ.TrackZoneIntersect
+                                        { taskTracks = os
+                                        , pilotTracks = ps 
+                                        }
 
-        toKm :: TaskDistance -> Double
-        toKm (TaskDistance d) =
-            fromRational $ dpRound 3 dKm
-            where 
-                MkQuantity dKm = convert d :: Quantity Rational [u| km |]
+                            let yaml =
+                                    Y.encodePretty
+                                        (Y.setConfCompare cmp Y.defConfig)
+                                        tzi 
 
-convertLatLng :: LatLng [u| rad |] -> Z.LatLng
-convertLatLng (LatLng (Lat eLat, Lng eLng)) =
-    Z.LatLng { lat = Cmp.Latitude eLat'
-             , lng = Cmp.Longitude eLng'
-             }
-    where
-        MkQuantity eLat' =
-            convert eLat :: Quantity Rational [u| deg |]
+                            BS.writeFile yamlPath yaml
 
-        MkQuantity eLng' =
-            convert eLng :: Quantity Rational [u| deg |]
+                checkZones =
+                    checkTracks $ \Cmp.CompSettings{tasks} -> madeZones tasks
 
-toCylinder :: Cmp.Zone -> Zone
-toCylinder Cmp.Zone{..} =
-    Cylinder
-        (Radius (MkQuantity $ radius % 1))
-        (LatLng (Lat latRad, Lng lngRad))
-    where
-        Cmp.Latitude lat' = lat
-        Cmp.Longitude lng' = lng
+                checkLaunched =
+                    checkTracks $ \Cmp.CompSettings{tasks} -> launched tasks
 
-        latDeg = MkQuantity lat' :: Quantity Rational [u| deg |]
-        lngDeg = MkQuantity lng' :: Quantity Rational [u| deg |]
+                checkMadeGoal =
+                    checkTracks $ \Cmp.CompSettings{tasks} -> madeGoal tasks
 
-        latRad = convert latDeg :: Quantity Rational [u| rad |]
-        lngRad = convert lngDeg :: Quantity Rational [u| rad |]
+                checkDistanceToGoal =
+                    checkTracks $ \Cmp.CompSettings{tasks} -> distanceToGoal tasks
 
-pilotTrack :: Cmp.PilotTrackLogFile -> PilotFlownTrack
-pilotTrack (Cmp.PilotTrackLogFile pilot _) =
-    PilotFlownTrack pilot (Just track)
-    where
-        track = FlownTrack { launched = True
-                           , madeGoal = True
-                           , zonesMade = [1,2]
-                           , zonesNotMade = [3,4,5]
-                           , timeToGoal = Nothing
-                           , distanceToGoal = 0
-                           , bestDistance = 0
-                           }
+                checkDistanceFlown =
+                    checkTracks $ \Cmp.CompSettings{tasks} -> distanceFlown tasks
+
+                checkTimeToGoal =
+                    checkTracks $ \Cmp.CompSettings{tasks} -> timeFlown tasks
