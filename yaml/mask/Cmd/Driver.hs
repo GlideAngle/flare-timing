@@ -48,6 +48,27 @@ import Flight.Mask.Task (taskTracks)
 import qualified Data.Flight.TrackZone as TZ
     (TaskTrack(..), FlownTrack(..), PilotFlownTrack(..), TrackZoneIntersect(..))
 
+type MkPart a =
+    FilePath
+    -> [IxTask]
+    -> [Cmp.Pilot]
+    -> ExceptT
+        String
+        IO
+        [[Either
+            (Cmp.Pilot, TrackFileFail)
+            (Cmp.Pilot, a)
+        ]]
+
+type AddPart a = a -> TZ.FlownTrack
+
+type MkFlownTrackIO a =
+    [TZ.TaskTrack]
+    -> FilePath
+    -> MkPart a
+    -> AddPart a
+    -> IO ()
+
 driverMain :: IO ()
 driverMain = withCmdArgs drive
 
@@ -117,7 +138,6 @@ drive CmdOptions{..} = do
             case ts of
                 Left msg -> print msg
                 Right ts' -> do
-
                     case reckon of
                         All ->
                             let go = writeMask ts' yamlMaskPath
@@ -198,20 +218,7 @@ drive CmdOptions{..} = do
                         Lead -> putStrLn $ "TODO: Handle reckoning of 'lead'."
 
             where
-                writeMask :: forall a. [TZ.TaskTrack]
-                          -> FilePath
-                          -> (FilePath
-                              -> [IxTask]
-                              -> [Cmp.Pilot]
-                              -> ExceptT
-                                  String
-                                  IO
-                                  [[Either
-                                      (Cmp.Pilot, TrackFileFail)
-                                      (Cmp.Pilot, a)
-                                  ]])
-                          -> (a -> TZ.FlownTrack)
-                          -> IO ()
+                writeMask :: forall a. MkFlownTrackIO a
                 writeMask os yamlPath f g = do
                     checks <-
                         runExceptT $
