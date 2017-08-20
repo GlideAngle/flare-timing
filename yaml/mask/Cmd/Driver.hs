@@ -29,7 +29,8 @@ import Cmd.Options (CmdOptions(..), Reckon(..))
 import qualified Data.Yaml.Pretty as Y
 import qualified Data.ByteString as BS
 
-import qualified Data.Flight.Comp as Cmp (CompSettings(..), Pilot(..))
+import qualified Data.Flight.Comp as Cmp (CompSettings(..), Pilot(..), Task)
+import qualified Data.Flight.Kml as Kml (MarkedFixes)
 import qualified Flight.Task as Tsk (TaskDistance(..))
 import qualified Flight.Score as Gap (PilotDistance(..), PilotTime(..))
 import Data.Flight.TrackLog (TrackFileFail(..), IxTask(..))
@@ -85,6 +86,15 @@ cmp a b =
         ("bestDistance", _) -> GT
         _ -> compare a b
 
+unTaskDistance :: Fractional a => Tsk.TaskDistance -> a
+unTaskDistance (Tsk.TaskDistance (MkQuantity d)) = fromRational d
+
+unPilotDistance :: Fractional a => Gap.PilotDistance -> a
+unPilotDistance (Gap.PilotDistance d) = fromRational d
+
+unPilotTime :: Fractional a => Gap.PilotTime -> a
+unPilotTime (Gap.PilotTime t) = fromRational t
+
 drive :: CmdOptions -> IO ()
 drive CmdOptions{..} = do
     dfe <- doesFileExist file
@@ -109,6 +119,10 @@ drive CmdOptions{..} = do
                 Right ts' -> do
 
                     case reckon of
+                        All ->
+                            let go = writeMask ts' yamlMaskPath
+                            in go checkAll id
+
                         Zones ->
                             let go = writeMask ts' yamlMaskPath
                             in go checkZones (\zs ->
@@ -153,8 +167,7 @@ drive CmdOptions{..} = do
                                     , madeGoal = True
                                     , zonesMade = []
                                     , timeToGoal = Nothing
-                                    , distanceToGoal =
-                                        (\(Tsk.TaskDistance (MkQuantity d)) -> fromRational d) <$> td
+                                    , distanceToGoal = unTaskDistance <$> td
                                     , bestDistance = Nothing 
                                     })
 
@@ -167,8 +180,7 @@ drive CmdOptions{..} = do
                                     , zonesMade = []
                                     , timeToGoal = Nothing
                                     , distanceToGoal = Nothing
-                                    , bestDistance =
-                                        (\(Gap.PilotDistance d) -> fromRational d) <$> fd
+                                    , bestDistance = unPilotDistance <$> fd
                                     })
 
                         Time ->
@@ -178,13 +190,12 @@ drive CmdOptions{..} = do
                                     { launched = True
                                     , madeGoal = True
                                     , zonesMade = []
-                                    , timeToGoal =
-                                        (\(Gap.PilotTime t) -> fromRational t) <$> ttg
+                                    , timeToGoal = unPilotTime <$> ttg
                                     , distanceToGoal = Nothing
                                     , bestDistance = Nothing
                                     })
 
-                        x -> putStrLn $ "TODO: Handle other reckon of " ++ show x
+                        Lead -> putStrLn $ "TODO: Handle reckoning of 'lead'."
 
             where
                 writeMask :: forall a. [TZ.TaskTrack]
@@ -235,14 +246,14 @@ drive CmdOptions{..} = do
 
                             BS.writeFile yamlPath yaml
 
-                checkZones =
-                    checkTracks $ \Cmp.CompSettings{tasks} -> madeZones tasks
-
                 checkLaunched =
                     checkTracks $ \Cmp.CompSettings{tasks} -> launched tasks
 
                 checkMadeGoal =
                     checkTracks $ \Cmp.CompSettings{tasks} -> madeGoal tasks
+
+                checkZones =
+                    checkTracks $ \Cmp.CompSettings{tasks} -> madeZones tasks
 
                 checkDistanceToGoal =
                     checkTracks $ \Cmp.CompSettings{tasks} -> distanceToGoal tasks
@@ -252,3 +263,23 @@ drive CmdOptions{..} = do
 
                 checkTimeToGoal =
                     checkTracks $ \Cmp.CompSettings{tasks} -> timeFlown tasks
+
+                checkAll =
+                    checkTracks $ \Cmp.CompSettings{tasks} -> flown tasks
+
+                flown :: [Cmp.Task] -> IxTask -> Kml.MarkedFixes -> TZ.FlownTrack
+                flown tasks iTask xs =
+                    let ld = launched tasks iTask xs
+                        mg = madeGoal tasks iTask xs
+                        zs = madeZones tasks iTask xs
+                        dg = distanceToGoal tasks iTask xs
+                        df = distanceFlown tasks iTask xs
+                        tf = timeFlown tasks iTask xs
+                    in TZ.FlownTrack
+                        { launched = ld
+                        , madeGoal = mg
+                        , zonesMade = zs
+                        , distanceToGoal = unTaskDistance <$> dg
+                        , bestDistance = unPilotDistance <$> df
+                        , timeToGoal = unPilotTime <$> tf
+                        }

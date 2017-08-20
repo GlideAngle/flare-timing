@@ -21,7 +21,9 @@ data CmdOptions
 
 -- | The reckonings of task track logs.
 data Reckon
-    = Launch
+    = All
+    -- ^ All the other reckonings combined.
+    | Launch
     -- ^ Did the pilot launch?
     | Goal
     -- ^ Was goal made?
