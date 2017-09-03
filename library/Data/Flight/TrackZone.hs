@@ -59,11 +59,10 @@ instance FromJSON LatLng
 data FlownTrack =
     FlownTrack { launched :: Bool
                , madeGoal :: Bool
-               , zonesMade :: [Int]
-               , zonesNotMade :: [Int]
+               , zonesMade :: [Bool]
                , timeToGoal :: Maybe Double
-               , distanceToGoal :: Double
-               , bestDistance :: Double
+               , distanceToGoal :: Maybe Double
+               , bestDistance :: Maybe Double
                } deriving (Show, Generic)
 
 instance ToJSON FlownTrack
