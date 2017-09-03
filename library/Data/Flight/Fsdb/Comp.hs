@@ -54,7 +54,7 @@ parseUtcOffset s =
         hrs = P.parse pNat "" s
         toMins h = fromIntegral (h * 60)
 
-parseComp :: String -> IO (Either String [ Comp ])
+parseComp :: String -> IO (Either String [Comp])
 parseComp contents = do
     let doc = readString [ withValidate no, withWarnings no ] contents
     xs <- runX $ doc >>> getComp
