@@ -1,0 +1,47 @@
+<!-- saved from url=(0052)http://www.stevemorse.org/nearest/distancebatch.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+    <title>Batch Distance Computations based on Latitude/Longitude</title>
+  </head>
+
+  <body>
+    <form name="form">
+      <center>
+        <font size="5">
+          Spherical Latitude/Longitude in One Step
+        </font>
+        <br>
+        <font size="4">
+          <script>emailhref()</script><a href="mailto:steve@stevemorse.org">Stephen P. Morse</a>, San Francisco
+        </font>
+        <br><br>
+        <input type="button" value="Interactive Mode" onclick="window.location=&#39;http://stevemorse.org/nearest/distance.php&#39;">
+<!--
+        <input type="button" value="Frequently Asked Questions" onclick="window.location='faq.htm'">
+-->
+        <input type="button" value="My Other Webpages" onclick="window.location=&#39;../index.html&#39;">
+        <br><br>
+        <b>Type in or Copy-and-Paste Latitude/Longitude pairs into the left box below and then click </b>
+        <input id="process-btn" type="button" value="Process">
+        <br>
+        Format is latitude1, longitude1, latitude2, longitude2 -- all in decimal notation
+        <br>
+        Results are in
+        <input type="radio" name="units" value="statute"> statute miles
+        <input type="radio" name="units" value="nautical"> nautical miles
+        <input type="radio" name="units" value="kilometers" checked> kilometers
+        <br>
+        <textarea name="rawdatabase" rows="20" cols="35" wrap="off">        </textarea>
+        <textarea name="database" rows="20" cols="35" wrap="off">        </textarea>
+      </center>
+      <br><br>
+      <font size="2">
+        Distance calculations are based on an ellipsoidal earth using the formula developed by
+          <a href="http://www.movable-type.co.uk/scripts/latlong-vincenty.html" target="_blank">Thaddeus Vincenty</a>
+        <br><br>
+        © Stephen P. Morse, 2011
+      </font>
+      <br><a href="http://stevemorse.org/" target="_top"><img src="favicon.jpg"></a>
+    </form>
+
+    <script defer src="app-spherical.js"></script>
+</body></html>
