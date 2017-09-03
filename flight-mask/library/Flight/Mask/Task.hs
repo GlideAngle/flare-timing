@@ -20,14 +20,16 @@ Stability   : experimental
 
 What is the optimized track and its turnpoints?
 -}
-module Flight.Mask.Task (taskTrack) where
+module Flight.Mask.Task (taskTracks) where
 
 import Data.Ratio ((%))
 import Data.UnitsOfMeasure (u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
+import Control.Monad.Except (ExceptT(..))
 
 import qualified Data.Flight.Comp as Cmp
-    ( Task(..)
+    ( CompSettings(..)
+    , Task(..)
     , Zone(..)
     , Latitude(..)
     , Longitude(..)
@@ -52,10 +54,20 @@ import qualified Data.Flight.TrackZone as TZ
     , LatLng(..)
     )
 import Flight.Units ()
+import Flight.Mask.Settings (readCompSettings)
 import Data.Number.RoundingFunctions (dpRound)
 
 mm30 :: Tolerance
 mm30 = Tolerance $ 30 % 1000
+
+followTracks :: Cmp.CompSettings -> ExceptT String IO [TZ.TaskTrack]
+followTracks Cmp.CompSettings{tasks} =
+    ExceptT . return . Right $ taskTrack <$> tasks
+
+taskTracks :: FilePath -> ExceptT String IO [TZ.TaskTrack]
+taskTracks compYamlPath = do
+    settings <- readCompSettings compYamlPath
+    followTracks settings
 
 taskTrack :: Cmp.Task -> TZ.TaskTrack
 taskTrack Cmp.Task{..} =

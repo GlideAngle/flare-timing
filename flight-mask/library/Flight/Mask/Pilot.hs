@@ -44,8 +44,6 @@ import Data.UnitsOfMeasure.Internal (Quantity(..), unQuantity)
 import Control.Lens ((^?), element)
 import Control.Monad.Except (ExceptT(..), lift)
 import System.FilePath (FilePath, takeDirectory)
-import qualified Data.ByteString as BS
-import Data.Yaml (decodeEither)
 
 import qualified Data.Flight.Kml as Kml
     ( Fix
@@ -92,20 +90,16 @@ import Flight.Task as Tsk
     )
 import Flight.Score as Gap (PilotDistance(..), PilotTime(..))
 import Flight.Units ()
+import Flight.Mask.Settings (readCompSettings)
 
 newtype PilotTrackFixes = PilotTrackFixes Int deriving Show
-
-readSettings :: FilePath -> ExceptT String IO Cmp.CompSettings
-readSettings compYamlPath = do
-    contents <- lift $ BS.readFile compYamlPath
-    ExceptT . return $ decodeEither contents
 
 settingsLogs :: FilePath
              -> [IxTask]
              -> [Cmp.Pilot]
              -> ExceptT String IO (Cmp.CompSettings, [[Cmp.PilotTrackLogFile]])
 settingsLogs compYamlPath tasks selectPilots = do
-    settings <- readSettings compYamlPath
+    settings <- readCompSettings compYamlPath
     ExceptT . return $ go settings
     where
         go s@Cmp.CompSettings{pilots, taskFolders} =
