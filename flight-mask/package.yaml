@@ -1,0 +1,77 @@
+# This YAML file describes your package. Stack will automatically generate a
+# Cabal file when you run `stack build`. See the hpack website for help with
+# this file: <https://github.com/sol/hpack>.
+extra-source-files:
+- package.yaml
+- changelog.md
+- README.md
+- stack.yaml
+ghc-options:
+- -Wall
+- -fplugin Data.UnitsOfMeasure.Plugin
+library:
+  dependencies:
+  - base >=4.5 && <5
+  - split
+  - path
+  - containers
+  - mtl
+  - directory
+  - filepath
+  - time
+  - lens
+  - bytestring
+  - yaml
+  - uom-plugin
+  - fgl
+  - flight-units
+  - flight-comp
+  - flight-kml
+  - flight-track
+  - flight-task
+  - flight-gap
+  - siggy-chardust
+  source-dirs: library
+  exposed-modules:
+  - Flight.Mask.Pilot
+  - Flight.Mask.Task
+author: Phil de Joux
+maintainer: phil.dejoux@blockscope.com
+name: flight-mask
+synopsis: Track logs masked by competition task zones.
+description: Masking tracks with zones, work out; did the pilot launch, did they make goal and how long did that take? What was distance to goal?
+category: Data
+license: BSD3
+license-file: LICENSE.md
+github: BlockScope/haskell-flight-mask
+tests:
+  hlint:
+    dependencies:
+    - base
+    - hlint
+    - containers
+    - split
+    - mtl
+    - directory
+    - filepath
+    - time
+    - lens
+    - bytestring
+    - yaml
+    - fgl
+    - uom-plugin
+    - flight-units
+    - flight-comp
+    - flight-kml
+    - flight-track
+    - flight-task
+    - flight-gap
+    - siggy-chardust
+    ghc-options:
+    - -rtsopts
+    - -threaded
+    - -with-rtsopts=-N
+    main: HLint.hs
+    source-dirs:
+    - library
+    - test-suite-hlint
