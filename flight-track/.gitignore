@@ -1,0 +1,5 @@
+.shake
+.stack-work
+__shake-build
+*.cabal
+/result
