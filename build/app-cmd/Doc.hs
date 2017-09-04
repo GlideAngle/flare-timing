@@ -2,12 +2,13 @@ module Doc (buildRules, cleanRules) where
 
 import Development.Shake
     ( Rules
-    , CmdOption(Shell)
+    , CmdOption(Shell, Cwd)
     , removeFilesAfter
     , phony
     , cmd
     , need
     )
+import Development.Shake.FilePath (FilePath, (</>))
 
 docFor :: String -> String
 docFor x =
@@ -16,7 +17,10 @@ docFor x =
 cleanRules :: Rules ()
 cleanRules =
     phony "clean-docs" $
-        removeFilesAfter "__docs" [ "//*" ] 
+        removeFilesAfter (root </> "__docs") [ "//*" ] 
+
+root :: FilePath
+root = ".." </> "flare-timing"
 
 -- NOTE: Stack doesn't build docs for exucutables.
 -- SEE: https://github.com/commercialhaskell/stack/issues/729
@@ -24,32 +28,52 @@ cleanRules =
 buildRules :: Rules ()
 buildRules = do
     phony "docs" $
-        need [ "track-docs"
+        need [ "mask-docs"
+             , "app-serve-docs"
+             , "comp-xml-to-yaml-docs"
              , "fsdb-docs"
              , "igc-docs"
              , "kml-docs"
              ]
 
-    phony "track-docs" $
+    phony "mask-docs" $
         cmd
+            (Cwd root)
             Shell
-            (docFor "track-cmd")
-            [ "track/app-cmd/Cmd/Options.hs" ]
+            (docFor "mask")
+            [ "mask/app-cmd/Cmd/Options.hs" ]
+
+    phony "app-serve-docs" $
+        cmd
+            (Cwd root)
+            Shell
+            (docFor "app-serve")
+            [ "yaml/app-serve/Serve/Options.hs" ]
+
+    phony "comp-xml-to-yaml-docs" $
+        cmd
+            (Cwd root)
+            Shell
+            (docFor "comp-xml-to-yaml")
+            [ "yaml/comp-xml-to-yaml/Cmd/Options.hs" ]
 
     phony "fsdb-docs" $
         cmd
+            (Cwd root)
             Shell
             (docFor "fsdb-cmd")
             [ "fsdb/app-cmd/Cmd/Options.hs" ]
 
     phony "igc-docs" $
         cmd
+            (Cwd root)
             Shell
             (docFor "igc-cmd")
             [ "igc/app-cmd/Igc/Options.hs" ]
 
     phony "kml-docs" $
         cmd
+            (Cwd root)
             Shell
             (docFor "kml-cmd")
             [ "kml/app-cmd/Kml/Options.hs" ]

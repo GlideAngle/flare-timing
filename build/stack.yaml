@@ -1,0 +1,5 @@
+flags: {}
+local-bin-path: __shake-build
+packages:
+- location: .
+resolver: lts-9.3

@@ -1,3 +1,8 @@
 module Serve.Options (ServeOptions(..)) where
 
-newtype ServeOptions = ServeOptions { file :: FilePath } deriving Show
+-- | Options passed in on the command line.
+newtype ServeOptions
+  = ServeOptions { file :: FilePath
+                 -- ^ Serve the competition in this file.
+                 }
+    deriving Show

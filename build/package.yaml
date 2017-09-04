@@ -1,0 +1,44 @@
+# This YAML file describes your package. Stack will automatically generate a
+# Cabal file when you run `stack build`. See the hpack website for help with
+# this file: <https://github.com/sol/hpack>.
+executables:
+  flare-timing-build-cmd:
+    dependencies:
+    - base
+    - ansi-terminal
+    - shake
+    - time
+    ghc-options:
+    - -rtsopts
+    - -threaded
+    - -with-rtsopts=-N
+    main: Main.hs
+    source-dirs: app-cmd
+extra-source-files:
+- package.yaml
+- changelog.md
+- readme.md
+- stack.yaml
+ghc-options: -Wall
+author: Phil de Joux
+maintainer: phil.dejoux@blockscope.com
+name: flare-timing-build
+synopsis: A shake build of flare-timing.
+description: Builds the packages making up flare-timing.
+category: Data, Parsing
+license: BSD3
+license-file: LICENSE.md
+github: BlockScope/flare-timing
+tests:
+  hlint:
+    dependencies:
+    - base
+    - hlint
+    ghc-options:
+    - -rtsopts
+    - -threaded
+    - -with-rtsopts=-N
+    main: HLint.hs
+    source-dirs:
+    - test-suite-hlint
+version: '0.1.0'
