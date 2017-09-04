@@ -1,9 +1,9 @@
 flags: {}
 packages:
 - '.'
-- location: ../haskell-siggy-chardust
+- location: ../siggy-chardust
   extra-dep: true
-- location: ../haskell-flight-units
+- location: ../units
   extra-dep: true
 - location:
     git: https://github.com/haskell/fgl.git
