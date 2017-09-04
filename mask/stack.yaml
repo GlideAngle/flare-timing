@@ -28,4 +28,4 @@ packages:
 extra-deps:
 - hxt-xpath-9.1.2.2
 resolver: lts-9.3
-local-bin-path: __shake-build
+local-bin-path: ../__shake-build

@@ -12,15 +12,15 @@ import Development.Shake.FilePath (FilePath, (</>))
 
 docFor :: String -> String
 docFor x =
-    "stack exec -- haddock --html --hyperlinked-source --odir=__docs/" ++ x
+    "stack exec -- haddock --html --hyperlinked-source --odir=../__docs/" ++ x
 
 cleanRules :: Rules ()
 cleanRules =
     phony "clean-docs" $
-        removeFilesAfter (root </> "__docs") [ "//*" ] 
+        removeFilesAfter "__docs" [ "//*" ] 
 
 root :: FilePath
-root = ".." </> "flare-timing"
+root = "flare-timing"
 
 -- NOTE: Stack doesn't build docs for exucutables.
 -- SEE: https://github.com/commercialhaskell/stack/issues/729

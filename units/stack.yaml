@@ -11,4 +11,4 @@ packages:
   extra-dep: true
 extra-deps: []
 resolver: lts-9.3
-local-bin-path: __shake-build
+local-bin-path: ../__shake-build

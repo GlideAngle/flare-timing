@@ -48,7 +48,7 @@ cleanRules = do
         removeFilesAfter (root </> "view") ghcjsIntermediates
 
 root :: FilePath
-root = ".." </> "flare-timing"
+root = "flare-timing"
 
 view :: FilePath
 view = root </> "view"
