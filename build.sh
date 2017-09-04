@@ -2,7 +2,7 @@
 
 #set +v
 
-cd build
+pushd build
 stack build --copy-bins
-cd ..
+popd
 __shake-build/flare-timing-build-cmd $@
