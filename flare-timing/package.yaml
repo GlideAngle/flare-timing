@@ -82,7 +82,7 @@ executables:
     - -fplugin Data.UnitsOfMeasure.Plugin
     main: Main.hs
     source-dirs: yaml/mask
-  flight-fsdb-cmd:
+  fsdb-parser:
     dependencies:
     - base
     - directory
@@ -101,7 +101,7 @@ executables:
     - -with-rtsopts=-N
     main: Main.hs
     source-dirs: fsdb/app-cmd
-  flight-igc-cmd:
+  igc-parser:
     dependencies:
     - base
     - directory
@@ -119,7 +119,7 @@ executables:
     - -with-rtsopts=-N
     main: Main.hs
     source-dirs: igc/app-cmd
-  flight-kml-cmd:
+  kml-parser:
     dependencies:
     - base
     - directory

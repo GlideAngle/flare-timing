@@ -10,6 +10,7 @@ module Igc.Args
     ) where
 
 import Paths_flare_timing (version)
+import System.Environment (getProgName)
 import Data.Version (showVersion)
 import System.Console.CmdArgs.Implicit
     ( Data
@@ -41,16 +42,18 @@ data Drive
             }
     deriving (Show, Data, Typeable)
 
-drive :: Drive
-drive
-    = Drive { dir = def &= help "Over all the files in this directory"
-            , file = def &= help "With this one file"
-            }
-            &= summary ("Flight IGC Parser " ++ showVersion version ++ description)
-            &= program "flight-igc.exe"
+drive :: String -> Drive
+drive programName =
+    Drive { dir = def &= help "Over all the files in this directory"
+          , file = def &= help "With this one file"
+          }
+          &= summary ("Flight IGC Parser " ++ showVersion version ++ description)
+          &= program programName
 
 run :: IO Drive
-run = cmdArgs drive
+run = do
+    s <- getProgName
+    cmdArgs $ drive s
 
 cmdArgsToDriveArgs :: Drive -> Maybe IgcOptions
 cmdArgsToDriveArgs Drive{ dir = d, file = f } =

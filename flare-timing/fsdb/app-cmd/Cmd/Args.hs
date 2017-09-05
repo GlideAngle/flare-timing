@@ -10,6 +10,7 @@ module Cmd.Args
     ) where
 
 import Paths_flare_timing (version)
+import System.Environment (getProgName)
 import Data.Version (showVersion)
 import System.Console.CmdArgs.Implicit
     ( Data
@@ -44,26 +45,28 @@ data Drive
             }
     deriving (Show, Data, Typeable)
 
-drive :: Drive
-drive
-    = Drive { dir = def
-            &= help "Over all the files in this directory"
-            &= groupname "Source"
+drive :: String -> Drive
+drive programName =
+    Drive { dir = def
+          &= help "Over all the files in this directory"
+          &= groupname "Source"
 
-            , file = def
-            &= help "With this one file"
-            &= groupname "Source"
+          , file = def
+          &= help "With this one file"
+          &= groupname "Source"
 
-            , detail = def
-            &= help "Focus on these details"
-            &= typ "tasks | nominals"
-            &= groupname "Filter"
-            }
-            &= summary ("Flight Scoring Database Parser " ++ showVersion version ++ description)
-            &= program "flight-fsdb-cmd.exe"
+          , detail = def
+          &= help "Focus on these details"
+          &= typ "tasks | nominals"
+          &= groupname "Filter"
+          }
+          &= summary ("Flight Scoring Database Parser " ++ showVersion version ++ description)
+          &= program programName
 
 run :: IO Drive
-run = cmdArgs drive
+run = do
+    s <- getProgName
+    cmdArgs $ drive s
 
 cmdArgsToDriveArgs :: Drive -> Maybe CmdOptions
 cmdArgsToDriveArgs Drive{..} =

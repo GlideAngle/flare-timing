@@ -55,16 +55,16 @@ buildRules = do
         cmd
             (Cwd root)
             Shell
-            (cmdFor "flare-timing:flight-fsdb-cmd")
+            (cmdFor "flare-timing:fsdb-parser")
 
     phony "igc-cmd" $
         cmd
             (Cwd root)
             Shell
-            (cmdFor "flare-timing:flight-igc-cmd")
+            (cmdFor "flare-timing:igc-parser")
 
     phony "kml-cmd" $
         cmd
             (Cwd root)
             Shell
-            (cmdFor "flare-timing:flight-kml-cmd")
+            (cmdFor "flare-timing:kml-parser")
