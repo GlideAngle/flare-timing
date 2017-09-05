@@ -37,12 +37,12 @@ Use these for testing that the inputs can be parsed;
 
 #### KML Parser
 
-    $ __shake-build/flight-kml-cmd --help
+    $ __shake-build/kml-parser --help
     Flight KML Parser 0.1.0
 
     Parsing flight KML files.
     
-    flight-kml.exe [OPTIONS]
+    kml-parser.exe [OPTIONS]
 
     Common flags:
       -d --dir=ITEM         Over all the files in this directory
@@ -50,12 +50,12 @@ Use these for testing that the inputs can be parsed;
     
 ### IGC Parser
 
-    $ __shake-build/flight-igc-cmd --help
+    $ __shake-build/igc-parser --help
     Flight IGC Parser 0.1.0
 
     Parsing flight IGC files.
 
-    flight-igc.exe [OPTIONS]
+    igc-parser.exe [OPTIONS]
 
     Common flags:
       -d --dir=ITEM         Over all the files in this directory
@@ -63,12 +63,12 @@ Use these for testing that the inputs can be parsed;
       
 ### FSDB Parser
 
-    $ __shake-build/flight-fsdb-cmd --help
+    $ __shake-build/fsdb-parser --help
     Flight Scoring Database Parser 0.1.0
 
     Parsing flight fsdb files.
 
-    flight-fsdb-cmd.exe [OPTIONS]
+    fsdb-parser.exe [OPTIONS]
 
     Source:
          --dir=ITEM                 Over all the files in this directory
