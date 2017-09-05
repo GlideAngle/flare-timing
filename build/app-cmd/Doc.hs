@@ -22,7 +22,7 @@ cleanRules =
 root :: FilePath
 root = "flare-timing"
 
--- NOTE: Stack doesn't build docs for exucutables.
+-- NOTE: Stack doesn't build docs for executables.
 -- SEE: https://github.com/commercialhaskell/stack/issues/729
 -- SEE: https://www.reddit.com/r/haskell/comments/5ugm9s/how_to_generate_haddock_docs_for_nonlibrary_code/
 buildRules :: Rules ()
