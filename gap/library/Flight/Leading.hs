@@ -1,5 +1,5 @@
-{-# lANGUAGE PatternSynonyms #-}
-{-# lANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 module Flight.Leading
     ( TaskTime(..)
     , DistanceToEss(..)
@@ -12,7 +12,7 @@ module Flight.Leading
     , cleanTrack
     , leadingCoefficient
     , leadingFractions
-    )where
+    ) where
 
 import Control.Arrow (second)
 import Data.Ratio ((%))

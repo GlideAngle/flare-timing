@@ -1,5 +1,5 @@
-{-# lANGUAGE PatternSynonyms #-}
-{-# lANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 module Flight.Allot
     ( PilotsAtEss(..)
     , PositionAtEss(..)

@@ -1,6 +1,6 @@
-{-# lANGUAGE PatternSynonyms #-}
-{-# lANGUAGE GADTs #-}
-{-# lANGUAGE RankNTypes #-}
+{-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE StandaloneDeriving #-}
 module Flight.Weighting where
 

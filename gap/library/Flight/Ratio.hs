@@ -1,7 +1,7 @@
-{-# lANGUAGE PatternSynonyms #-}
-{-# lANGUAGE ViewPatterns #-}
-{-# lANGUAGE TypeSynonymInstances #-}
-{-# lANGUAGE FlexibleInstances #-}
+{-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE RankNTypes #-}
 module Flight.Ratio (pattern (:%), isNormal, isFoldNormal) where
