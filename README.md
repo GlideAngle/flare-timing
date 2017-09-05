@@ -31,6 +31,51 @@ The shake targets and rules are in `./build`. To build all packages in nix;
     
 ## Running
 
+### Test Command Line Apps
+
+Use these for testing that the inputs can be parsed;
+
+#### KML Parser
+
+    $ __shake-build/flight-kml-cmd --help
+    Flight KML Parser 0.1.0
+
+    Parsing flight KML files.
+    
+    flight-kml.exe [OPTIONS]
+
+    Common flags:
+      -d --dir=ITEM         Over all the files in this directory
+      -f --file=ITEM        With this one file
+    
+### IGC Parser
+
+    $ __shake-build/flight-igc-cmd --help
+    Flight IGC Parser 0.1.0
+
+    Parsing flight IGC files.
+
+    flight-igc.exe [OPTIONS]
+
+    Common flags:
+      -d --dir=ITEM         Over all the files in this directory
+      -f --file=ITEM        With this one file
+      
+### FSDB Parser
+
+    $ __shake-build/flight-fsdb-cmd --help
+    Flight Scoring Database Parser 0.1.0
+
+    Parsing flight fsdb files.
+
+    flight-fsdb-cmd.exe [OPTIONS]
+
+    Source:
+         --dir=ITEM                 Over all the files in this directory
+      -f --file=ITEM                With this one file
+    Filter:
+         --detail=tasks | nominals  Focus on these details
+
 ### Web App
 
 Start the webpack devserver and navigate to `http://localhost:9000/app.html`;
