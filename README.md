@@ -28,3 +28,14 @@ Kept together in `./flare-timing` are the command line programs for scoring and 
 The shake targets and rules are in `./build`. To build all packages in nix;
 
     ./build.sh nix
+    
+## Running
+
+### Web App
+
+Start the webpack devserver and navigate to `http://localhost:9000/app.html`;
+
+    ./build.sh view-start
+    
+    $ webpack-dev-server
+    Project is running at http://localhost:9000/
