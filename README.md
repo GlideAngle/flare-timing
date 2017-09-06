@@ -60,6 +60,7 @@ Use these for testing that the inputs can be parsed;
       
 ### FSDB Parser
 
+    $ __shake-build/fsdb-parser --help
     Commission Internationale de Vol Libre (CIVL - Hang Gliding and Paragliding
     Commission) is an Air Sport Commission (ASC) of the Fédération Internationale
     Aéronautique (FAI). CIVL produce FS, the official software for scoring hang
