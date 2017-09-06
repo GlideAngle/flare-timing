@@ -1,6 +1,5 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE MagicHash #-}
-{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Serve.Args
@@ -9,8 +8,7 @@ module Serve.Args
     , withCmdArgs
     ) where
 
-import Paths_flare_timing (version)
-import Data.Version (showVersion)
+import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit
     ( Data
     , Typeable
@@ -18,34 +16,33 @@ import System.Console.CmdArgs.Implicit
     , summary
     , program
     , help
+    , groupname
     , cmdArgs
     , (&=)
     )
 import Control.Monad.Except (liftIO, throwError, when, unless)
 import Control.Monad.Trans.Except (runExceptT)
 import System.Directory (doesFileExist)
-import Text.RawString.QQ (r)
 import Serve.Options (ServeOptions(..))
 
 description :: String
-description = intro
-    where
-        intro = [r|
-
-Serving tasks from flight fsdb files.
-|]
+description = "Serve nominals, tasks and pilots from a competition YAML file."
 
 newtype Drive = Drive { file :: String } deriving (Show, Data, Typeable)
 
-drive :: Drive
-drive
-    = Drive { file = def &= help "With this one file"
-            }
-            &= summary ("Serving Tasks from Flight Scoring Database Files" ++ showVersion version ++ description)
-            &= program "flight-fsdb-serve.exe"
+drive :: String -> Drive
+drive programName =
+    Drive { file = def
+          &= help "With one competition *.comp.yaml file supplied"
+          &= groupname "Source"
+          }
+          &= summary description
+          &= program programName
 
 run :: IO Drive
-run = cmdArgs drive
+run = do
+    s <- getProgName
+    cmdArgs $ drive s
 
 cmdArgsToDriveArgs :: Drive -> Maybe ServeOptions
 cmdArgsToDriveArgs Drive{ file = f } =
