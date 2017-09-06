@@ -51,7 +51,7 @@ executables:
     - -with-rtsopts=-N
     main: Main.hs
     source-dirs: yaml/comp-xml-to-yaml
-  flight-mask-yaml:
+  mask-tracks:
     dependencies:
     - base
     - directory

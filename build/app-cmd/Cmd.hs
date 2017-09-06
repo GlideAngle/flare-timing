@@ -27,7 +27,7 @@ buildRules = do
     phony "cmd-apps" $
         need [ "mask-cmd"
              , "app-serve-cmd"
-             , "comp-xml-to-yaml-cmd"
+             , "comp-cmd"
              , "fsdb-cmd"
              , "igc-cmd"
              , "kml-cmd"
@@ -37,7 +37,7 @@ buildRules = do
         cmd
             (Cwd root)
             Shell
-            (cmdFor "flare-timing:flight-mask-yaml")
+            (cmdFor "flare-timing:mask-tracks")
 
     phony "app-serve-cmd" $
         cmd
@@ -45,7 +45,7 @@ buildRules = do
             Shell
             (cmdFor "flare-timing:flight-yaml-serve")
 
-    phony "comp-xml-to-yaml-cmd" $
+    phony "comp-cmd" $
         cmd
             (Cwd root)
             Shell

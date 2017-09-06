@@ -9,8 +9,7 @@ module Cmd.Args
     , withCmdArgs
     ) where
 
-import Paths_flare_timing (version)
-import Data.Version (showVersion)
+import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit
     ( Data
     , Typeable
@@ -33,9 +32,13 @@ import Cmd.Options (CmdOptions(..), Reckon(..))
 description :: String
 description = intro
     where
-        intro = [r|
-
-Given a competition *.yaml file, from masking the track logs with the zones work out if the pilot launched, if they made goal and if so how long that took. If they landed out then how far did they get along the course and how far to goal.
+        intro = [r|Given a competition YAML file and relative track log KML files, by masking the track logs with the zones, work out;
+* if the pilot launched
+* if they made goal then
+    * how long the pilot took to reach goal
+* if they landed out then
+    * how far they got along the course
+    * how far yet to reach goal
 |]
 
 data Drive
@@ -47,38 +50,40 @@ data Drive
             }
     deriving (Show, Data, Typeable)
 
-drive :: Drive
-drive
-    = Drive { dir = def
-            &= help "Over all the competition *.comp.yaml files in this directory"
-            &= groupname "Source"
+drive :: String -> Drive
+drive programName =
+    Drive { dir = def
+          &= help "Over all the competition *.comp.yaml files in this directory"
+          &= groupname "Source"
 
-            , file = def
-            &= help "With this one competition *.comp.yaml file"
-            &= groupname "Source"
+          , file = def
+          &= help "With this one competition *.comp.yaml file"
+          &= groupname "Source"
 
-            , task = def
-            &= help "Which tasks?"
-            &= typ "TASK NUMBER"
-            &= opt "name"
-            &= groupname "Filter"
+          , task = def
+          &= help "Which tasks?"
+          &= typ "TASK NUMBER"
+          &= opt "name"
+          &= groupname "Filter"
 
-            , pilot = def
-            &= help "Which pilots?"
-            &= typ "PILOT NAME"
-            &= opt "name"
-            &= groupname "Filter"
+          , pilot = def
+          &= help "Which pilots?"
+          &= typ "PILOT NAME"
+          &= opt "name"
+          &= groupname "Filter"
 
-            , reckon = def
-            &= help "Work out one of these things, launch|goal|zones|goaldistance|flowndistance|time|lead"
-            &= typ "RECKON NAME"
-            &= groupname "Filter"
-            }
-            &= summary ("Flight mask of zone over track " ++ showVersion version ++ description)
-            &= program "flight-mask-yaml.exe"
+          , reckon = def
+          &= help "Work out one of these things, launch|goal|zones|goaldistance|flowndistance|time|lead"
+          &= typ "RECKON NAME"
+          &= groupname "Filter"
+          }
+          &= summary description
+          &= program programName
 
 run :: IO Drive
-run = cmdArgs drive
+run = do
+    s <- getProgName
+    cmdArgs $ drive s
 
 cmdArgsToDriveArgs :: Drive -> Maybe CmdOptions
 cmdArgsToDriveArgs Drive{..} =
