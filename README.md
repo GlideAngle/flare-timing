@@ -43,8 +43,8 @@ Use these for testing that the inputs can be parsed;
     kml-parser.exe [OPTIONS]
 
     Common flags:
-      -d --dir=ITEM         Over all the files in this directory
-      -f --file=ITEM        With this one file
+      -d --dir=ITEM         Over all the KML files in this directory
+      -f --file=ITEM        With this one KML file
     
 ### IGC Parser
 
@@ -55,8 +55,8 @@ Use these for testing that the inputs can be parsed;
     igc-parser.exe [OPTIONS]
 
     Common flags:
-      -d --dir=ITEM         Over all the files in this directory
-      -f --file=ITEM        With this one file
+      -d --dir=ITEM         Over all the IGC files in this directory
+      -f --file=ITEM        With this one IGC file
       
 ### FSDB Parser
 
