@@ -137,37 +137,6 @@ executables:
     - -with-rtsopts=-N
     main: Main.hs
     source-dirs: kml/app-cmd
-  flight-mask-cmd:
-    dependencies:
-    - base
-    - directory
-    - filepath
-    - system-filepath
-    - filemanip
-    - raw-strings-qq
-    - cmdargs
-    - mtl
-    - transformers
-    - bytestring
-    - yaml
-    - lens
-    - siggy-chardust
-    - time
-    - uom-plugin
-    - flight-units
-    - flight-comp
-    - flight-kml
-    - flight-track
-    - flight-task
-    - flight-gap
-    - flight-mask
-    ghc-options:
-    - -Wall
-    - -rtsopts
-    - -threaded
-    - -with-rtsopts=-N
-    main: Main.hs
-    source-dirs: mask/app-cmd
 extra-source-files:
 - package.yaml
 - changelog.md
