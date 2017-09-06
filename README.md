@@ -38,9 +38,7 @@ Use these for testing that the inputs can be parsed;
 #### KML Parser
 
     $ __shake-build/kml-parser --help
-    Flight KML Parser 0.1.0
-
-    Parsing flight KML files.
+    A parser of KML, the Keyhole Markup Language, an XML format.
     
     kml-parser.exe [OPTIONS]
 
@@ -51,9 +49,8 @@ Use these for testing that the inputs can be parsed;
 ### IGC Parser
 
     $ __shake-build/igc-parser --help
-    Flight IGC Parser 0.1.0
-
-    Parsing flight IGC files.
+    A parser for IGC, a plain-text file format from the International Gliding
+    Commission for recording flights.
 
     igc-parser.exe [OPTIONS]
 
@@ -63,16 +60,20 @@ Use these for testing that the inputs can be parsed;
       
 ### FSDB Parser
 
-    $ __shake-build/fsdb-parser --help
-    Flight Scoring Database Parser 0.1.0
+    Commission Internationale de Vol Libre (CIVL - Hang Gliding and Paragliding
+    Commission) is an Air Sport Commission (ASC) of the Fédération Internationale
+    Aéronautique (FAI). CIVL produce FS, the official software for scoring hang
+    gliding and paragliding competitions. FSDB is the database of FS, an XML format
+    for inputs, working and outputs of scoring.
 
-    Parsing flight fsdb files.
+    fsdb-parser is a parser for a subset of the FSDB, just enough to cover the
+    inputs of scoring.
 
-    fsdb-parser.exe [OPTIONS]
+    fsdb-parser [OPTIONS]
 
     Source:
-         --dir=ITEM                 Over all the files in this directory
-      -f --file=ITEM                With this one file
+         --dir=ITEM                 Over all the FSDB files in this directory
+      -f --file=ITEM                With this one FSDB file
     Filter:
          --detail=tasks | nominals  Focus on these details
 
