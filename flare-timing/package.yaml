@@ -29,7 +29,7 @@ executables:
     - -with-rtsopts=-N
     main: Main.hs
     source-dirs: yaml/app-serve
-  flight-comp-xml-to-yaml:
+  comp-xml-to-yaml:
     dependencies:
     - base
     - directory

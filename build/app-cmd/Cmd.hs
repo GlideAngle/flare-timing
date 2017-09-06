@@ -49,7 +49,7 @@ buildRules = do
         cmd
             (Cwd root)
             Shell
-            (cmdFor "flare-timing:flight-comp-xml-to-yaml")
+            (cmdFor "flare-timing:comp-xml-to-yaml")
 
     phony "fsdb-cmd" $
         cmd

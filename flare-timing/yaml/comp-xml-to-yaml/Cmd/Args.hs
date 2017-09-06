@@ -1,6 +1,5 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE MagicHash #-}
-{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Cmd.Args
@@ -9,8 +8,7 @@ module Cmd.Args
     , withCmdArgs
     ) where
 
-import Paths_flare_timing (version)
-import Data.Version (showVersion)
+import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit
     ( Data
     , Typeable
@@ -25,16 +23,10 @@ import System.Console.CmdArgs.Implicit
 import Control.Monad.Except (liftIO, throwError, when, unless)
 import Control.Monad.Trans.Except (runExceptT)
 import System.Directory (doesFileExist, doesDirectoryExist)
-import Text.RawString.QQ (r)
 import Cmd.Options (CmdOptions(..))
 
 description :: String
-description = intro
-    where
-        intro = [r|
-
-Convert fsdb (XML) to yaml with only the inputs needed for scoring.
-|]
+description = "Convert FSDB (XML) to YAML with only the inputs needed for scoring."
 
 data Drive
     = Drive { dir :: String
@@ -42,21 +34,23 @@ data Drive
             }
     deriving (Show, Data, Typeable)
 
-drive :: Drive
-drive
-    = Drive { dir = def
-            &= help "Over all the competition *.fsdb files in this directory"
-            &= groupname "Source"
+drive :: String -> Drive
+drive programName =
+    Drive { dir = def
+          &= help "Over all the competition FSDB files in this directory"
+          &= groupname "Source"
 
-            , file = def
-            &= help "With this one competition *.fsdb file"
-            &= groupname "Source"
-            }
-            &= summary ("Flight Scoring Database Converter" ++ showVersion version ++ description)
-            &= program "flight-comp-xml-to-yaml.exe"
+          , file = def
+          &= help "With this one competition FSDB file"
+          &= groupname "Source"
+          }
+          &= summary description
+          &= program programName
 
 run :: IO Drive
-run = cmdArgs drive
+run = do
+    s <- getProgName
+    cmdArgs $ drive s
 
 cmdArgsToDriveArgs :: Drive -> Maybe CmdOptions
 cmdArgsToDriveArgs Drive{..} =
