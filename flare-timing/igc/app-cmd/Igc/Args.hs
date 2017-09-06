@@ -9,9 +9,7 @@ module Igc.Args
     , withCmdArgs
     ) where
 
-import Paths_flare_timing (version)
 import System.Environment (getProgName)
-import Data.Version (showVersion)
 import System.Console.CmdArgs.Implicit
     ( Data
     , Typeable
@@ -29,11 +27,7 @@ import Text.RawString.QQ (r)
 import Igc.Options (IgcOptions(..))
 
 description :: String
-description = intro
-    where
-        intro = [r|
-
-Parsing flight IGC files.
+description = [r|A parser for IGC, a plain-text file format from the International Gliding Commission for recording flights.
 |]
 
 data Drive
@@ -44,10 +38,10 @@ data Drive
 
 drive :: String -> Drive
 drive programName =
-    Drive { dir = def &= help "Over all the files in this directory"
-          , file = def &= help "With this one file"
+    Drive { dir = def &= help "Over all the IGC files in this directory"
+          , file = def &= help "With this one IGC file"
           }
-          &= summary ("Flight IGC Parser " ++ showVersion version ++ description)
+          &= summary description
           &= program programName
 
 run :: IO Drive

@@ -1,6 +1,5 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE MagicHash #-}
-{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Kml.Args
@@ -9,9 +8,7 @@ module Kml.Args
     , withCmdArgs
     ) where
 
-import Paths_flare_timing (version)
 import System.Environment (getProgName)
-import Data.Version (showVersion)
 import System.Console.CmdArgs.Implicit
     ( Data
     , Typeable
@@ -25,16 +22,10 @@ import System.Console.CmdArgs.Implicit
 import Control.Monad.Except (liftIO, throwError, when, unless)
 import Control.Monad.Trans.Except (runExceptT)
 import System.Directory (doesFileExist, doesDirectoryExist)
-import Text.RawString.QQ (r)
 import Kml.Options (KmlOptions(..))
 
 description :: String
-description = intro
-    where
-        intro = [r|
-
-Parsing flight KML files.
-|]
+description = "A parser of KML, the Keyhole Markup Language, an XML format."
 
 data Drive
     = Drive { dir :: String
@@ -44,10 +35,10 @@ data Drive
 
 drive :: String -> Drive
 drive programName =
-    Drive { dir = def &= help "Over all the files in this directory"
-          , file = def &= help "With this one file"
+    Drive { dir = def &= help "Over all the KML files in this directory"
+          , file = def &= help "With this one KML file"
           }
-          &= summary ("Flight KML Parser " ++ showVersion version ++ description)
+          &= summary description
           &= program programName
 
 run :: IO Drive

@@ -9,9 +9,7 @@ module Cmd.Args
     , withCmdArgs
     ) where
 
-import Paths_flare_timing (version)
 import System.Environment (getProgName)
-import Data.Version (showVersion)
 import System.Console.CmdArgs.Implicit
     ( Data
     , Typeable
@@ -30,12 +28,17 @@ import System.Directory (doesFileExist, doesDirectoryExist)
 import Text.RawString.QQ (r)
 import Cmd.Options (CmdOptions(..), Detail(..))
 
-description :: String
-description = intro
+description :: String -> String
+description programName =
+    intro ++ programName ++ about
     where
-        intro = [r|
+        intro =
+            [r|Commission Internationale de Vol Libre (CIVL - Hang Gliding and Paragliding Commission) is an Air Sport Commission (ASC) of the Fédération Internationale Aéronautique (FAI). CIVL produce FS, the official software for scoring hang gliding and paragliding competitions. FSDB is the database of FS, an XML format for inputs, working and outputs of scoring.
 
-Parsing flight fsdb files.
+|]
+
+        about =
+            [r| is a parser for a subset of the FSDB, just enough to cover the inputs of scoring.
 |]
 
 data Drive
@@ -48,11 +51,11 @@ data Drive
 drive :: String -> Drive
 drive programName =
     Drive { dir = def
-          &= help "Over all the files in this directory"
+          &= help "Over all the FSDB files in this directory"
           &= groupname "Source"
 
           , file = def
-          &= help "With this one file"
+          &= help "With this one FSDB file"
           &= groupname "Source"
 
           , detail = def
@@ -60,7 +63,7 @@ drive programName =
           &= typ "tasks | nominals"
           &= groupname "Filter"
           }
-          &= summary ("Flight Scoring Database Parser " ++ showVersion version ++ description)
+          &= summary (description programName)
           &= program programName
 
 run :: IO Drive
