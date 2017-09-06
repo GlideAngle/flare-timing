@@ -77,6 +77,23 @@ Use these for testing that the inputs can be parsed;
       -f --file=ITEM                With this one FSDB file
     Filter:
          --detail=tasks | nominals  Focus on these details
+         
+## Scoring Command Line Apps
+
+Scoring is done with a pipeline of command line apps.
+
+1. Extract the scoring inputs from FSDB, `FSDB -> YAML`.
+
+### Inputs Extraction
+
+    $ __shake-build/comp-xml-to-yaml --help
+    Convert FSDB (XML) to YAML with only the inputs needed for scoring.
+
+    comp-xml-to-yaml [OPTIONS]
+
+    Source:
+      -d --dir=ITEM   Over all the competition FSDB files in this directory
+      -f --file=ITEM  With this one competition FSDB file
 
 ### Web App
 
