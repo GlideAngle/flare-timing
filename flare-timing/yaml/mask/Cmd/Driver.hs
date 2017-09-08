@@ -143,7 +143,7 @@ drive CmdOptions{..} = do
             let yamlMaskPath =
                     flip replaceExtension ".mask.yaml"
                     $ dropExtension yamlCompPath
-            ts <- runExceptT $ taskTracks yamlCompPath
+            ts <- runExceptT $ taskTracks measure yamlCompPath
             case ts of
                 Left msg -> print msg
                 Right ts' -> do

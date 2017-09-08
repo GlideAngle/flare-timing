@@ -3,6 +3,7 @@
 module Cmd.Options (CmdOptions(..), Reckon(..)) where
 
 import System.Console.CmdArgs.Implicit (Default(..), Data, Typeable)
+import Flight.Mask.Task (TaskDistanceMeasure(..))
 
 -- | Options passed in on the command line.
 data CmdOptions
@@ -16,6 +17,8 @@ data CmdOptions
                  -- ^ Look only at these pilots
                  , reckon :: Reckon
                  -- ^ Do the specified reckonings only.
+                 , measure :: TaskDistanceMeasure
+                 -- ^ Use the given measure(s).
                  }
                  deriving (Data, Typeable, Show)
 
@@ -40,4 +43,4 @@ data Reckon
     deriving (Data, Typeable, Eq, Show)
 
 instance Default Reckon where
-    def = Goal
+    def = All

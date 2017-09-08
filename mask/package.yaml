@@ -24,6 +24,7 @@ library:
   - yaml
   - uom-plugin
   - fgl
+  - cmdargs
   - flight-units
   - flight-comp
   - flight-kml
@@ -60,6 +61,7 @@ tests:
     - yaml
     - fgl
     - uom-plugin
+    - cmdargs
     - flight-units
     - flight-comp
     - flight-kml

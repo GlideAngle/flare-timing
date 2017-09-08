@@ -10,6 +10,7 @@
 
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE DeriveDataTypeable #-}
 
 {-|
 Module      : Data.Flight.Mask.Task
@@ -20,9 +21,10 @@ Stability   : experimental
 
 What is the optimized track and its turnpoints?
 -}
-module Flight.Mask.Task (taskTracks) where
+module Flight.Mask.Task (taskTracks, TaskDistanceMeasure(..)) where
 
 import Data.Ratio ((%))
+import System.Console.CmdArgs.Implicit (Default(..), def, Data, Typeable)
 import Data.UnitsOfMeasure (u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Control.Monad.Except (ExceptT(..))
@@ -56,33 +58,65 @@ import qualified Data.Flight.TrackZone as TZ
 import Flight.Units ()
 import Flight.Mask.Settings (readCompSettings)
 import Data.Number.RoundingFunctions (dpRound)
+--
+-- | The way to measure the task distance.
+data TaskDistanceMeasure
+    = TaskDistanceByAllMethods
+    | TaskDistanceByPoints
+    | TaskDistanceByEdges
+    deriving (Eq, Data, Typeable, Show)
+
+instance Default TaskDistanceMeasure where
+    def = TaskDistanceByEdges
 
 mm30 :: Tolerance
 mm30 = Tolerance $ 30 % 1000
 
-followTracks :: Cmp.CompSettings -> ExceptT String IO [TZ.TaskTrack]
-followTracks Cmp.CompSettings{tasks} =
-    ExceptT . return . Right $ taskTrack <$> tasks
+followTracks :: TaskDistanceMeasure
+             -> Cmp.CompSettings
+             -> ExceptT String IO [TZ.TaskTrack]
+followTracks tdm Cmp.CompSettings{tasks} =
+    ExceptT . return . Right $ (taskTrack tdm) <$> tasks
 
-taskTracks :: FilePath -> ExceptT String IO [TZ.TaskTrack]
-taskTracks compYamlPath = do
+taskTracks :: TaskDistanceMeasure
+           -> FilePath
+           -> ExceptT String IO [TZ.TaskTrack]
+taskTracks tdm compYamlPath = do
     settings <- readCompSettings compYamlPath
-    followTracks settings
+    followTracks tdm settings
 
-taskTrack :: Cmp.Task -> TZ.TaskTrack
-taskTrack Cmp.Task{..} =
-    TZ.TaskTrack
-        { pointToPoint =
-            TZ.TrackLine
-                { distance = toKm ptd
-                , waypoints = wpPoint
+taskTrack :: TaskDistanceMeasure -> Cmp.Task -> TZ.TaskTrack
+taskTrack tdm Cmp.Task{..} =
+    case tdm of
+        TaskDistanceByAllMethods ->
+            TZ.TaskTrack
+                { pointToPoint =
+                    TZ.TrackLine
+                        { distance = toKm ptd
+                        , waypoints = wpPoint
+                        }
+                , edgeToEdge =
+                    TZ.TrackLine
+                        { distance = toKm etd
+                        , waypoints = wpEdge
+                        }
                 }
-        , edgeToEdge =
-            TZ.TrackLine
-                { distance = toKm etd
-                , waypoints = wpEdge
+        TaskDistanceByPoints ->
+            TZ.TaskTrackPoint
+                { pointToPoint =
+                    TZ.TrackLine
+                        { distance = toKm ptd
+                        , waypoints = wpPoint
+                        }
                 }
-        }
+        TaskDistanceByEdges ->
+            TZ.TaskTrackEdge
+                { edgeToEdge =
+                    TZ.TrackLine
+                        { distance = toKm etd
+                        , waypoints = wpEdge
+                        }
+                }
     where
         zs :: [Zone]
         zs = toCylinder <$> zones

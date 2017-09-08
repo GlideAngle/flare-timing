@@ -28,6 +28,7 @@ import Control.Monad.Trans.Except (runExceptT)
 import System.Directory (doesFileExist, doesDirectoryExist)
 import Text.RawString.QQ (r)
 import Cmd.Options (CmdOptions(..), Reckon(..))
+import Flight.Mask.Task (TaskDistanceMeasure(..))
 
 description :: String
 description = intro
@@ -47,6 +48,7 @@ data Drive
             , task :: [Int]
             , pilot :: [String]
             , reckon :: Reckon
+            , measure :: TaskDistanceMeasure
             }
     deriving (Show, Data, Typeable)
 
@@ -76,6 +78,11 @@ drive programName =
           &= help "Work out one of these things, launch|goal|zones|goaldistance|flowndistance|time|lead"
           &= typ "RECKON NAME"
           &= groupname "Filter"
+
+          , measure = def
+          &= help "Which way to measure task distances, taskdistancebyallmethods|taskdistancebypoints|taskdistancebyedges"
+          &= typ "METHOD"
+          &= groupname "Filter"
           }
           &= summary description
           &= program programName
@@ -92,6 +99,7 @@ cmdArgsToDriveArgs Drive{..} =
                         , task = task
                         , pilot = pilot
                         , reckon = reckon
+                        , measure = measure
                         }
 
 -- SEE: http://stackoverflow.com/questions/2138819/in-haskell-is-there-a-way-to-do-io-in-a-function-guard
