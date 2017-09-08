@@ -20,6 +20,7 @@ module Cmd.Driver (driverMain) where
 import Data.String (IsString)
 import Control.Monad (mapM_)
 import Control.Monad.Except (ExceptT(..), runExceptT)
+import Data.UnitsOfMeasure (u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import System.Directory (doesFileExist, doesDirectoryExist)
 import System.FilePath.Find (FileType(..), (==?), (&&?), find, always, fileType, extension)
@@ -47,6 +48,7 @@ import Flight.Mask.Pilot
 import Flight.Mask.Task (taskTracks)
 import qualified Data.Flight.TrackZone as TZ
     (TaskTrack(..), FlownTrack(..), PilotFlownTrack(..), TrackZoneIntersect(..))
+import Data.Number.RoundingFunctions (dpRound)
 
 type MkPart a =
     FilePath
@@ -108,10 +110,17 @@ cmp a b =
         _ -> compare a b
 
 unTaskDistance :: Fractional a => Tsk.TaskDistance -> a
-unTaskDistance (Tsk.TaskDistance (MkQuantity d)) = fromRational d
+unTaskDistance (Tsk.TaskDistance d) =
+    fromRational $ dpRound 3 dKm
+    where 
+        MkQuantity dKm = convert d :: Quantity Rational [u| km |]
 
 unPilotDistance :: Fractional a => Gap.PilotDistance -> a
-unPilotDistance (Gap.PilotDistance d) = fromRational d
+unPilotDistance (Gap.PilotDistance d) =
+    fromRational $ dpRound 3 dKm
+    where 
+        d' :: Quantity Rational [u| m |] = MkQuantity d
+        MkQuantity dKm = convert d' :: Quantity Rational [u| km |]
 
 unPilotTime :: Fractional a => Gap.PilotTime -> a
 unPilotTime (Gap.PilotTime t) = fromRational t

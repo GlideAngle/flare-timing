@@ -6,4 +6,4 @@ import FlareTiming.Comp (comps)
 import Reflex.Dom (MonadWidget)
 
 view :: MonadWidget t m => m ()
-view = comps
+view = tasks
