@@ -295,7 +295,13 @@ drive CmdOptions{..} = do
                         { launched = ld
                         , madeGoal = mg
                         , zonesMade = zs
-                        , distanceToGoal = unTaskDistance <$> dg
-                        , bestDistance = unPilotDistance <$> df
-                        , timeToGoal = unPilotTime <$> tf
+
+                        , distanceToGoal =
+                            if mg then Nothing else unTaskDistance <$> dg
+
+                        , bestDistance =
+                            if mg then Nothing else unPilotDistance <$> df
+
+                        , timeToGoal =
+                            if not mg then Nothing else unPilotTime <$> tf
                         }
