@@ -72,33 +72,35 @@ instance Default TaskDistanceMeasure where
 mm30 :: Tolerance
 mm30 = Tolerance $ 30 % 1000
 
-followTracks :: TaskDistanceMeasure
+followTracks :: Bool
+             -> TaskDistanceMeasure
              -> Cmp.CompSettings
              -> ExceptT String IO [TZ.TaskTrack]
-followTracks tdm Cmp.CompSettings{tasks} =
-    ExceptT . return . Right $ (taskTrack tdm) <$> tasks
+followTracks excludeWaypoints tdm Cmp.CompSettings{tasks} =
+    ExceptT . return . Right $ (taskTrack excludeWaypoints tdm) <$> tasks
 
-taskTracks :: TaskDistanceMeasure
+taskTracks :: Bool
+           -> TaskDistanceMeasure
            -> FilePath
            -> ExceptT String IO [TZ.TaskTrack]
-taskTracks tdm compYamlPath = do
+taskTracks excludeWaypoints tdm compYamlPath = do
     settings <- readCompSettings compYamlPath
-    followTracks tdm settings
+    followTracks excludeWaypoints tdm settings
 
-taskTrack :: TaskDistanceMeasure -> Cmp.Task -> TZ.TaskTrack
-taskTrack tdm Cmp.Task{..} =
+taskTrack :: Bool -> TaskDistanceMeasure -> Cmp.Task -> TZ.TaskTrack
+taskTrack excludeWaypoints tdm Cmp.Task{..} =
     case tdm of
         TaskDistanceByAllMethods ->
             TZ.TaskTrack
                 { pointToPoint =
                     Just $ TZ.TrackLine
                         { distance = toKm ptd
-                        , waypoints = wpPoint
+                        , waypoints = if excludeWaypoints then [] else wpPoint
                         }
                 , edgeToEdge =
                     Just $ TZ.TrackLine
                         { distance = toKm etd
-                        , waypoints = wpEdge
+                        , waypoints = if excludeWaypoints then [] else wpEdge
                         }
                 }
         TaskDistanceByPoints ->
@@ -106,7 +108,7 @@ taskTrack tdm Cmp.Task{..} =
                 { pointToPoint =
                     Just $ TZ.TrackLine
                         { distance = toKm ptd
-                        , waypoints = wpPoint
+                        , waypoints = if excludeWaypoints then [] else wpPoint
                         }
                 , edgeToEdge = Nothing
                 }
@@ -116,7 +118,7 @@ taskTrack tdm Cmp.Task{..} =
                 , edgeToEdge =
                     Just $ TZ.TrackLine
                         { distance = toKm etd
-                        , waypoints = wpEdge
+                        , waypoints = if excludeWaypoints then [] else wpEdge
                         }
                 }
     where

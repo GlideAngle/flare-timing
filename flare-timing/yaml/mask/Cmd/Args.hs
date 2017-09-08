@@ -49,6 +49,7 @@ data Drive
             , pilot :: [String]
             , reckon :: Reckon
             , measure :: TaskDistanceMeasure
+            , no_task_waypoints :: Bool
             }
     deriving (Show, Data, Typeable)
 
@@ -83,6 +84,10 @@ drive programName =
           &= help "Which way to measure task distances, taskdistancebyallmethods|taskdistancebypoints|taskdistancebyedges"
           &= typ "METHOD"
           &= groupname "Filter"
+
+          , no_task_waypoints = def
+          &= help "Exclude the task waypoints?"
+          &= groupname "Filter"
           }
           &= summary description
           &= program programName
@@ -100,6 +105,7 @@ cmdArgsToDriveArgs Drive{..} =
                         , pilot = pilot
                         , reckon = reckon
                         , measure = measure
+                        , noTaskWaypoints = no_task_waypoints
                         }
 
 -- SEE: http://stackoverflow.com/questions/2138819/in-haskell-is-there-a-way-to-do-io-in-a-function-guard

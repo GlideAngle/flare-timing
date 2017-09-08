@@ -19,6 +19,8 @@ data CmdOptions
                  -- ^ Do the specified reckonings only.
                  , measure :: TaskDistanceMeasure
                  -- ^ Use the given measure(s).
+                 , noTaskWaypoints :: Bool
+                 -- ^ Exclude task waypoints
                  }
                  deriving (Data, Typeable, Show)
 
