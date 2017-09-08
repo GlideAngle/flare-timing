@@ -33,11 +33,9 @@ instance ToJSON TrackZoneIntersect
 instance FromJSON TrackZoneIntersect
 
 data TaskTrack
-    = TaskTrack { pointToPoint :: TrackLine
-                , edgeToEdge :: TrackLine
+    = TaskTrack { pointToPoint :: Maybe TrackLine
+                , edgeToEdge :: Maybe TrackLine
                 }
-    | TaskTrackPoint { pointToPoint :: TrackLine }
-    | TaskTrackEdge { edgeToEdge :: TrackLine }
     deriving (Show, Generic)
 
 instance ToJSON TaskTrack

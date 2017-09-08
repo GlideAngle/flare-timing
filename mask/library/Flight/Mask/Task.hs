@@ -91,28 +91,30 @@ taskTrack tdm Cmp.Task{..} =
         TaskDistanceByAllMethods ->
             TZ.TaskTrack
                 { pointToPoint =
-                    TZ.TrackLine
+                    Just $ TZ.TrackLine
                         { distance = toKm ptd
                         , waypoints = wpPoint
                         }
                 , edgeToEdge =
-                    TZ.TrackLine
+                    Just $ TZ.TrackLine
                         { distance = toKm etd
                         , waypoints = wpEdge
                         }
                 }
         TaskDistanceByPoints ->
-            TZ.TaskTrackPoint
+            TZ.TaskTrack
                 { pointToPoint =
-                    TZ.TrackLine
+                    Just $ TZ.TrackLine
                         { distance = toKm ptd
                         , waypoints = wpPoint
                         }
+                , edgeToEdge = Nothing
                 }
         TaskDistanceByEdges ->
-            TZ.TaskTrackEdge
-                { edgeToEdge =
-                    TZ.TrackLine
+            TZ.TaskTrack
+                { pointToPoint = Nothing
+                , edgeToEdge =
+                    Just $ TZ.TrackLine
                         { distance = toKm etd
                         , waypoints = wpEdge
                         }
