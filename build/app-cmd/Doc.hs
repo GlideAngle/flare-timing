@@ -8,7 +8,7 @@ import Development.Shake
     , cmd
     , need
     )
-import Development.Shake.FilePath (FilePath, (</>))
+import Development.Shake.FilePath (FilePath)
 
 docFor :: String -> String
 docFor x =
@@ -41,7 +41,7 @@ buildRules = do
             (Cwd root)
             Shell
             (docFor "mask")
-            [ "mask/app-cmd/Cmd/Options.hs" ]
+            [ "yaml/mask/Cmd/Options.hs" ]
 
     phony "app-serve-docs" $
         cmd
