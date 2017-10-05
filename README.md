@@ -35,10 +35,10 @@ Use these for testing that the inputs can be parsed;
 
 #### KML Parser
 
-    $ __shake-build/kml-parser --help
+    $ __shake-build/test-kml-parser --help
     A parser of KML, the Keyhole Markup Language, an XML format.
     
-    kml-parser.exe [OPTIONS]
+    test-kml-parser.exe [OPTIONS]
 
     Common flags:
       -d --dir=ITEM         Over all the KML files in this directory
@@ -46,11 +46,11 @@ Use these for testing that the inputs can be parsed;
     
 ### IGC Parser
 
-    $ __shake-build/igc-parser --help
+    $ __shake-build/test-igc-parser --help
     A parser for IGC, a plain-text file format from the International Gliding
     Commission for recording flights.
 
-    igc-parser.exe [OPTIONS]
+    test-igc-parser.exe [OPTIONS]
 
     Common flags:
       -d --dir=ITEM         Over all the IGC files in this directory
@@ -58,7 +58,7 @@ Use these for testing that the inputs can be parsed;
       
 ### FSDB Parser
 
-    $ __shake-build/fsdb-parser --help
+    $ __shake-build/test-fsdb-parser --help
     Commission Internationale de Vol Libre (CIVL - Hang Gliding and Paragliding
     Commission) is an Air Sport Commission (ASC) of the Fédération Internationale
     Aéronautique (FAI). CIVL produce FS, the official software for scoring hang
@@ -68,7 +68,7 @@ Use these for testing that the inputs can be parsed;
     fsdb-parser is a parser for a subset of the FSDB, just enough to cover the
     inputs of scoring.
 
-    fsdb-parser [OPTIONS]
+    test-fsdb-parser [OPTIONS]
 
     Source:
          --dir=ITEM                 Over all the FSDB files in this directory

@@ -82,7 +82,7 @@ executables:
     - -fplugin Data.UnitsOfMeasure.Plugin
     main: Main.hs
     source-dirs: yaml/mask
-  fsdb-parser:
+  test-fsdb-parser:
     dependencies:
     - base
     - directory
@@ -101,7 +101,7 @@ executables:
     - -with-rtsopts=-N
     main: Main.hs
     source-dirs: test-apps/fsdb-parser
-  igc-parser:
+  test-igc-parser:
     dependencies:
     - base
     - directory
@@ -119,7 +119,7 @@ executables:
     - -with-rtsopts=-N
     main: Main.hs
     source-dirs: test-apps/igc-parser
-  kml-parser:
+  test-kml-parser:
     dependencies:
     - base
     - directory
