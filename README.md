@@ -10,20 +10,22 @@ Each library package can be built standalone. For example, the `flight-units` pa
 The same package can be built with [stack](https://docs.haskellstack.org);
 
     cd units
-    stack build    
+    stack build
+    
+The following package dependencies are included in this repository;
 
-* `./comp`, package `flight-comp`, a subset of `fsdb` inputs and mask outputs.
-* `./fsdb`, package `flight-fsdb` for parsing the FS database, an XML format.
-* `./gap`, package `flight-gap` for GAP scoring.
-* `./igc`, package `flight-igc` parsing IGC files.
-* `./kml`, package `flight-kml` parsing KML files.
-* `./mask`, package `flight-mask` masks a flight task with a pilot's flown track.
-* `./task`, package `flight-task` shortest distance path to fly a task.
-* `./track`, package `flight-track` reading flight track logs.
-* `./units`, package `flight-units` defines units of measure used in scoring.
-* `./siggy-chardust`, package `siggy-chardust` for rounding to decimal places and significant digits.
+[`flight-comp`](comp)
+[`flight-fsdb`](fsdb)
+[`flight-gap`](gap)
+[`flight-igc`](igc)
+[`flight-kml`](kml)
+[`flight-mask`](mask)
+[`flight-task`](task)
+[`flight-track`](track)
+[`flight-units`](units)
+[`siggy-chardust`](siggy-chardust)
 
-Kept together in `./flare-timing` are the command line programs for scoring and a web view of the results.
+In `./flare-timing` are command line programs for scoring and a web view of the results.
 
 The shake targets and rules are in `./build`. To build all packages in nix;
 
