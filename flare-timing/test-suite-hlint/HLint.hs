@@ -5,9 +5,9 @@ import System.Exit (exitFailure, exitSuccess)
 
 arguments :: [String]
 arguments =
-    [ "fsdb/app-cmd"
-    , "igc/app-cmd"
-    , "kml/app-cmd"
+    [ "test/fsdb-parser"
+    , "test/igc-parser"
+    , "test/kml-parser"
     , "yaml/app-serve"
     , "yaml/comp-xml-to-yaml"
     , "yaml/track-intersect-zone"

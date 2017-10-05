@@ -100,7 +100,7 @@ executables:
     - -threaded
     - -with-rtsopts=-N
     main: Main.hs
-    source-dirs: fsdb/app-cmd
+    source-dirs: test-apps/fsdb-parser
   igc-parser:
     dependencies:
     - base
@@ -118,7 +118,7 @@ executables:
     - -threaded
     - -with-rtsopts=-N
     main: Main.hs
-    source-dirs: igc/app-cmd
+    source-dirs: test-apps/igc-parser
   kml-parser:
     dependencies:
     - base
@@ -136,7 +136,7 @@ executables:
     - -threaded
     - -with-rtsopts=-N
     main: Main.hs
-    source-dirs: kml/app-cmd
+    source-dirs: test-apps/kml-parser
 extra-source-files:
 - package.yaml
 - changelog.md
