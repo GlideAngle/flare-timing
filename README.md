@@ -12,9 +12,7 @@ The same package can be built with [stack](https://docs.haskellstack.org);
     cd units
     stack build
     
-The following package dependencies are included in this repository;
-
-[`flight-comp`](comp)
+The following package dependencies are included in this repository; [`flight-comp`](comp)
 [`flight-fsdb`](fsdb)
 [`flight-gap`](gap)
 [`flight-igc`](igc)
@@ -23,9 +21,7 @@ The following package dependencies are included in this repository;
 [`flight-task`](task)
 [`flight-track`](track)
 [`flight-units`](units)
-[`siggy-chardust`](siggy-chardust)
-
-In `./flare-timing` are command line programs for scoring and a web view of the results.
+ and [`siggy-chardust`](siggy-chardust). In `./flare-timing` are command line programs for scoring and a web view of the results.
 
 The shake targets and rules are in `./build`. To build all packages in nix;
 
