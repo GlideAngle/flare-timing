@@ -70,17 +70,15 @@ checkedOptions o@CmdOptions{..} = do
          Left s -> return $ Left s
          Right _ -> return $ Right o
 
-dryRunCmdArgs :: IO ()
-dryRunCmdArgs = print =<< run
+dryRunCmdArgs :: IO Drive
+dryRunCmdArgs = run
 
 withCmdArgs :: (CmdOptions -> IO ()) -> IO ()
 withCmdArgs f = do
     ca <- run
-    print ca
     case cmdArgsToDriveArgs ca of
         Nothing -> putStrLn "Couldn't parse args."
         Just o -> do
-            print o
             checked <- checkedOptions o
             case checked of
                 Left s -> putStrLn s

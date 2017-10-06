@@ -8,7 +8,7 @@ import Control.Monad (mapM_)
 import Control.Monad.Trans.Except (throwE)
 import Control.Monad.Except (ExceptT(..), runExceptT, lift)
 import System.Directory (doesFileExist, doesDirectoryExist)
-import System.FilePath (takeFileName, replaceExtension)
+import System.FilePath (replaceExtension)
 import System.FilePath.Find
     (FileType(..), (==?), (&&?), find, always, fileType, extension)
 
@@ -44,7 +44,6 @@ drive CmdOptions{..} = do
             putStrLn "Couldn't find any flight score competition database input files."
     where
         go fsdbPath = do
-            putStrLn $ takeFileName fsdbPath
             contents <- readFile fsdbPath
             let contents' = dropWhile (/= '<') contents
             let yamlPath = replaceExtension fsdbPath ".comp.yaml"
@@ -127,7 +126,6 @@ fsdbNominal contents = do
 fsdbTasks :: String -> ExceptT String IO [Task]
 fsdbTasks contents = do
     ts <- lift $ parseTasks contents
-    lift $ print ts
     ExceptT $ return ts
 
 fsdbTaskFolders :: String -> ExceptT String IO [TaskFolder]
@@ -147,6 +145,8 @@ fsdbSettings contents = do
     ts <- fsdbTasks contents
     fs <- fsdbTaskFolders contents
     ps <- fsdbTracks contents
+    let msg = "Extracted " ++ show (length ts) ++ " tasks from \"" ++ compName c ++ "\""
+    lift . putStrLn $ msg
     return CompSettings { comp = c
                         , nominal = n
                         , tasks = ts

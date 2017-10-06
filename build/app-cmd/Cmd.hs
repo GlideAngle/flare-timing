@@ -25,7 +25,7 @@ testApps =
 -- | The names of the production app executables
 prodApps :: [String]
 prodApps =
-    [ "comp-xml-to-yaml"
+    [ "extract-tasks"
     , "mask-tracks"
     , "comp-serve"
     ] 
@@ -47,11 +47,11 @@ buildRules = do
 
     phony "cmd-apps" $ need prodApps
 
-    phony "comp-xml-to-yaml" $
+    phony "extract-tasks" $
         cmd
             (Cwd root)
             Shell
-            (cmdFor "flare-timing:comp-xml-to-yaml")
+            (cmdFor "flare-timing:extract-tasks")
 
     phony "mask-tracks" $
         cmd

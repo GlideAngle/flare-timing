@@ -29,7 +29,7 @@ executables:
     - -with-rtsopts=-N
     main: Main.hs
     source-dirs: yaml/app-serve
-  comp-xml-to-yaml:
+  extract-tasks:
     dependencies:
     - base
     - directory
