@@ -1,5 +1,18 @@
 # Flare Timing
 
+Flare Timing will show a pilot's competition score in detail but is currently a work in progress.
+
+The official scoring program for hang gliding and paragliding competitions is [FS](http://fs.fai.org/). Its principal output for a competition task is an html table of pilot scores. As well as the day's score, the time on course and distance is shown as is the top level components of the score, typically lead points, time points, arrival points and position points.
+
+Commission Internationale de Vol Libre (CIVL - Hang Gliding and Paragliding Commission) is an Air Sport Commission (ASC) of the Fédération Internationale Aéronautique (FAI). CIVL produce FS. It is the work of paid and volunteer developers.
+
+FSDB is the database of FS, an XML format for inputs, working and outputs of scoring. In the C# implementation of FS, code that works at the highest level is mixed in with code that reads and writes directly to the FSDB file.
+
+The scoring method is [well documented](http://fs.fai.org/trac/wiki/ScoringFormulas). Principal documents are;
+
+* [http://www.fai.org/downloads/civl/SC7A_GAP](http://www.fai.org/downloads/civl/SC7A_GAP) - The definitive guide produced and maintained by CIVL.
+* [GAP 2002](http://fs.fai.org/trac/raw-attachment/wiki/ScoringFormulas/GAP02_en.pdf) - A much shorter and less formal guide that is a good first read to gain an understanding of why GAP is needed and how it works.
+
 ## Building
 
 Each library package can be built standalone. For example, the `flight-units` package can be built with [nix-build](https://nixos.org/nix/manual/#sec-building-simple) after having setup the [overlay](https://github.com/BlockScope/nix-config).
