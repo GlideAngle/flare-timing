@@ -37,6 +37,7 @@ module Flight.Mask.Pilot
     ) where
 
 import Data.Time.Clock (UTCTime, diffUTCTime)
+import Data.List (nub)
 import qualified Data.List as List (find, findIndex)
 import Data.Ratio ((%))
 import Data.UnitsOfMeasure ((-:), u, convert)
@@ -91,6 +92,7 @@ import Flight.Task as Tsk
 import Flight.Score as Gap (PilotDistance(..), PilotTime(..))
 import Flight.Units ()
 import Flight.Mask.Settings (readCompSettings)
+import Flight.Mask (Predicate)
 
 newtype PilotTrackFixes = PilotTrackFixes Int deriving Show
 
@@ -176,16 +178,12 @@ exitsZone z xs =
         outsideZone =
             List.findIndex (\y -> Tsk.separatedZones [y, z]) xs
 
-launched :: [Cmp.Task] -> IxTask -> Kml.MarkedFixes -> Bool
-launched tasks (IxTask i) Kml.MarkedFixes{fixes} =
-    case tasks ^? element (i - 1) of
-        Nothing -> False
-        Just Cmp.Task{zones}->
-            case zones of
-                [] -> False
-                z : _ -> exitsZone (zoneToCylinder z) (fixToPoint <$> fixes)
+-- | A pilot has launched if their tracklog has distinct fixes.
+launched :: Predicate
+launched _ _ Kml.MarkedFixes{fixes} =
+    not . null . nub $ fixes
 
-started :: [Cmp.Task] -> IxTask -> Kml.MarkedFixes -> Bool
+started :: Predicate
 started tasks (IxTask i) Kml.MarkedFixes{fixes} =
     case tasks ^? element (i - 1) of
         Nothing -> False
@@ -194,7 +192,7 @@ started tasks (IxTask i) Kml.MarkedFixes{fixes} =
                 [] -> False
                 z : _ -> exitsZone (zoneToCylinder z) (fixToPoint <$> fixes)
 
-madeGoal :: [Cmp.Task] -> IxTask -> Kml.MarkedFixes -> Bool
+madeGoal :: Predicate
 madeGoal tasks (IxTask i) Kml.MarkedFixes{fixes} =
     case tasks ^? element (i - 1) of
         Nothing -> False

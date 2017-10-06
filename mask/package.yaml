@@ -34,6 +34,7 @@ library:
   - siggy-chardust
   source-dirs: library
   exposed-modules:
+  - Flight.Mask
   - Flight.Mask.Pilot
   - Flight.Mask.Task
 author: Phil de Joux
