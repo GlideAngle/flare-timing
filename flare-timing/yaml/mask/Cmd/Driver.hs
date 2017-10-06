@@ -30,12 +30,12 @@ import Cmd.Options (CmdOptions(..), Reckon(..))
 import qualified Data.Yaml.Pretty as Y
 import qualified Data.ByteString as BS
 
-import qualified Data.Flight.Comp as Cmp (CompSettings(..), Pilot(..), Task)
-import qualified Data.Flight.Kml as Kml (MarkedFixes)
+import qualified Data.Flight.Comp as Cmp (CompSettings(..), Pilot(..))
 import qualified Flight.Task as Tsk (TaskDistance(..))
 import qualified Flight.Score as Gap (PilotDistance(..), PilotTime(..))
 import Data.Flight.TrackLog (TrackFileFail(..), IxTask(..))
 import Flight.Units ()
+import Flight.Mask (Masking)
 import Flight.Mask.Pilot
     ( checkTracks
     , madeZones
@@ -283,7 +283,7 @@ drive CmdOptions{..} = do
                 checkAll =
                     checkTracks $ \Cmp.CompSettings{tasks} -> flown tasks
 
-                flown :: [Cmp.Task] -> IxTask -> Kml.MarkedFixes -> TZ.FlownTrack
+                flown :: Masking TZ.FlownTrack
                 flown tasks iTask xs =
                     let ld = launched tasks iTask xs
                         mg = madeGoal tasks iTask xs

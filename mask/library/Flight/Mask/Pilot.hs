@@ -92,7 +92,7 @@ import Flight.Task as Tsk
 import Flight.Score as Gap (PilotDistance(..), PilotTime(..))
 import Flight.Units ()
 import Flight.Mask.Settings (readCompSettings)
-import Flight.Mask (Predicate)
+import Flight.Mask (Masking)
 
 newtype PilotTrackFixes = PilotTrackFixes Int deriving Show
 
@@ -179,11 +179,11 @@ exitsZone z xs =
             List.findIndex (\y -> Tsk.separatedZones [y, z]) xs
 
 -- | A pilot has launched if their tracklog has distinct fixes.
-launched :: Predicate
+launched :: Masking Bool
 launched _ _ Kml.MarkedFixes{fixes} =
     not . null . nub $ fixes
 
-started :: Predicate
+started :: Masking Bool
 started tasks (IxTask i) Kml.MarkedFixes{fixes} =
     case tasks ^? element (i - 1) of
         Nothing -> False
@@ -192,7 +192,7 @@ started tasks (IxTask i) Kml.MarkedFixes{fixes} =
                 [] -> False
                 z : _ -> exitsZone (zoneToCylinder z) (fixToPoint <$> fixes)
 
-madeGoal :: Predicate
+madeGoal :: Masking Bool
 madeGoal tasks (IxTask i) Kml.MarkedFixes{fixes} =
     case tasks ^? element (i - 1) of
         Nothing -> False
