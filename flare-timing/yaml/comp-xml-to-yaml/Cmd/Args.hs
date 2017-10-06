@@ -4,7 +4,6 @@
 
 module Cmd.Args
     ( Drive(..)
-    , dryRunCmdArgs
     , withCmdArgs
     ) where
 
@@ -69,9 +68,6 @@ checkedOptions o@CmdOptions{..} = do
     case x of
          Left s -> return $ Left s
          Right _ -> return $ Right o
-
-dryRunCmdArgs :: IO Drive
-dryRunCmdArgs = run
 
 withCmdArgs :: (CmdOptions -> IO ()) -> IO ()
 withCmdArgs f = do

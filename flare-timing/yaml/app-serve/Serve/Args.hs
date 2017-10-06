@@ -4,7 +4,6 @@
 
 module Serve.Args
     ( Drive(..)
-    , dryRunCmdArgs
     , withCmdArgs
     ) where
 
@@ -60,9 +59,6 @@ checkedOptions o@ServeOptions{..} = do
     case x of
          Left s -> return $ Left s
          Right _ -> return $ Right o
-
-dryRunCmdArgs :: IO ()
-dryRunCmdArgs = print =<< run
 
 withCmdArgs :: (ServeOptions -> IO ()) -> IO ()
 withCmdArgs f = do

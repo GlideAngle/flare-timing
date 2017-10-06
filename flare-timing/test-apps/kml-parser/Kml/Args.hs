@@ -4,7 +4,6 @@
 
 module Kml.Args
     ( Drive(..)
-    , dryRunCmdArgs
     , withCmdArgs
     ) where
 
@@ -63,9 +62,6 @@ checkedOptions o@KmlOptions{..} = do
     case x of
          Left s -> return $ Left s
          Right _ -> return $ Right o
-
-dryRunCmdArgs :: IO ()
-dryRunCmdArgs = print =<< run
 
 withCmdArgs :: (KmlOptions -> IO ()) -> IO ()
 withCmdArgs f = do

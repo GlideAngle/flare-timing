@@ -5,7 +5,6 @@
 
 module Igc.Args
     ( Drive(..)
-    , dryRunCmdArgs
     , withCmdArgs
     ) where
 
@@ -66,9 +65,6 @@ checkedOptions o@IgcOptions{..} = do
     case x of
          Left s -> return $ Left s
          Right _ -> return $ Right o
-
-dryRunCmdArgs :: IO ()
-dryRunCmdArgs = print =<< run
 
 withCmdArgs :: (IgcOptions -> IO ()) -> IO ()
 withCmdArgs f = do
