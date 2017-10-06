@@ -2,7 +2,7 @@
 
 Flare Timing will show a pilot's competition score in detail but is currently a work in progress.
 
-The official scoring program for hang gliding and paragliding competitions is [FS](http://fs.fai.org/). Its principal output for a competition task is an html table of pilot scores. As well as the day's score, the time on course and distance is shown as is the top level components of the score, typically lead points, time points, arrival points and position points.
+The official scoring program for hang gliding and paragliding competitions is [FS](http://fs.fai.org/). Its principal output for a competition task is an html table of pilot scores. As well as the day's score, the time on course and distance is shown as is the top level components of the score, typically distance points, lead points, time points and arrival points.
 
 Commission Internationale de Vol Libre (CIVL - Hang Gliding and Paragliding Commission) is an Air Sport Commission (ASC) of the Fédération Internationale Aéronautique (FAI). CIVL produce FS. It is the work of paid and volunteer developers.
 
