@@ -17,6 +17,8 @@ The scoring method is [well documented](http://fs.fai.org/trac/wiki/ScoringFormu
 
 ## Usage
 
+See the separate discussion of [building](BUILDING.md) and [testing](TESTING.md).
+
 FSDB is the database of FS and is an XML format for inputs, working and outputs of scoring. To host a **Flare Timing** web site, start with an FSDB file and relative tracklog files on disk and run a pipeline of command line programs to produce the data to display.
 
 1. Extract the inputs with `comp-xml-to-yaml`.
@@ -25,43 +27,7 @@ FSDB is the database of FS and is an XML format for inputs, working and outputs 
 
 Once the data is prepared the server web service and single page client web app, the comp server and comp client, can be started.
 
-## Building
-
-Each library package can be built standalone. For example, the `flight-units` package can be built with [nix-build](https://nixos.org/nix/manual/#sec-building-simple) after having setup the [overlay](https://github.com/BlockScope/nix-config).
-
-    ln -s overlay.nix ~/.config/nixpkgs/overlay
-    nix-build "<nixpkgs>" -A haskellPackages.flight-units
-    
-The same package can be built with [stack](https://docs.haskellstack.org);
-
-    cd units
-    stack build
-    
-The following package dependencies are included in this repository; [`flight-comp`](comp)
-[`flight-fsdb`](fsdb)
-[`flight-gap`](gap)
-[`flight-igc`](igc)
-[`flight-kml`](kml)
-[`flight-mask`](mask)
-[`flight-task`](task)
-[`flight-track`](track)
-[`flight-units`](units)
- and [`siggy-chardust`](siggy-chardust). In `./flare-timing` are command line programs for scoring and a web view of the results.
-
-The shake targets and rules are in `./build`. To build all packages in nix;
-
-    ./build.sh nix
-    
-## Running
-
-## Scoring Command Line Apps
-
-Scoring is done with a pipeline of command line apps.
-
-1. Extract the scoring inputs from FSDB, `FSDB -> YAML`.
-2. Mask the flown tracks with the task zones.
-
-### Inputs Extraction
+### Extracting Inputs
 
     $ __shake-build/comp-xml-to-yaml --help
     Convert FSDB (XML) to YAML with only the inputs needed for scoring.
@@ -72,7 +38,7 @@ Scoring is done with a pipeline of command line apps.
       -d --dir=ITEM   Over all the competition FSDB files in this directory
       -f --file=ITEM  With this one competition FSDB file
       
-### Mask Tracks
+### Masking Tracks
 
     $ __shake-build/mask-tracks --help
     Given a competition YAML file and relative track log KML files, by masking the
@@ -95,6 +61,10 @@ Scoring is done with a pipeline of command line apps.
       -p --pilot[=PILOT NAME]  Which pilots?
       -r --reckon=RECKON NAME  Work out one of these things,
                                launch|goal|zones|goaldistance|flowndistance|time|lead
+
+### GAP Scoring
+
+TODO
 
 ## Web Apps
 
