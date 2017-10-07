@@ -21,18 +21,19 @@ See the separate discussion of [building](BUILDING.md) and [testing](TESTING.md)
 
 FSDB is the database of FS and is an XML format for inputs, working and outputs of scoring. To host a **Flare Timing** web site, start with an FSDB file and relative tracklog files on disk and run a pipeline of command line programs to produce the data to display.
 
-1. Extract the inputs with `comp-xml-to-yaml`.
+1. Extract the inputs with `extract-tasks`.
 2. Mask the competition task over the tracklogs with `mask-tracks`.
-3. Score the competition with `gap-score`.
+3. Time align the distance to goal for each fix with `leading-area`.
+4. Score the competition with `gap-points`.
 
 Once the data is prepared the server web service and single page client web app, the comp server and comp client, can be started.
 
 ### Extracting Inputs
 
-    $ __shake-build/comp-xml-to-yaml --help
+    $ __shake-build/extract-tasks --help
     Convert FSDB (XML) to YAML with only the inputs needed for scoring.
 
-    comp-xml-to-yaml [OPTIONS]
+    extract-tasks [OPTIONS]
 
     Source:
       -d --dir=ITEM   Over all the competition FSDB files in this directory
@@ -62,7 +63,11 @@ Once the data is prepared the server web service and single page client web app,
       -r --reckon=RECKON NAME  Work out one of these things,
                                launch|goal|zones|goaldistance|flowndistance|time|lead
 
-### GAP Scoring
+### Leading Area
+
+TODO
+
+### GAP Points
 
 TODO
 
