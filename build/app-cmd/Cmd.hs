@@ -26,6 +26,7 @@ testApps =
 prodApps :: [String]
 prodApps =
     [ "extract-tasks"
+    , "task-length"
     , "mask-tracks"
     , "comp-serve"
     ] 
@@ -52,6 +53,12 @@ buildRules = do
             (Cwd root)
             Shell
             (cmdFor "flare-timing:extract-tasks")
+
+    phony "task-length" $
+        cmd
+            (Cwd root)
+            Shell
+            (cmdFor "flare-timing:task-length")
 
     phony "mask-tracks" $
         cmd

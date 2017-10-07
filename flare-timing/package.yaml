@@ -51,6 +51,37 @@ executables:
     - -with-rtsopts=-N
     main: Main.hs
     source-dirs: yaml/comp-xml-to-yaml
+  task-length:
+    dependencies:
+    - base
+    - directory
+    - filepath
+    - system-filepath
+    - filemanip
+    - raw-strings-qq
+    - cmdargs
+    - mtl
+    - transformers
+    - yaml
+    - aeson
+    - uom-plugin
+    - bytestring
+    - siggy-chardust
+    - flight-units
+    - flight-comp
+    - flight-kml
+    - flight-track
+    - flight-task
+    - flight-gap
+    - flight-mask
+    ghc-options:
+    - -rtsopts
+    - -threaded
+    - -with-rtsopts=-N
+    - -Wall
+    - -fplugin Data.UnitsOfMeasure.Plugin
+    main: Main.hs
+    source-dirs: yaml/task
   mask-tracks:
     dependencies:
     - base
