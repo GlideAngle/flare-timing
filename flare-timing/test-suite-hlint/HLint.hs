@@ -9,9 +9,9 @@ arguments =
     , "test-apps/igc-parser"
     , "test-apps/kml-parser"
     , "prod-apps/app-serve"
-    , "yaml-apps/extract-task"
-    , "yaml-apps/task-length"
-    , "yaml-apps/mask-track"
+    , "prod-apps/extract-task"
+    , "prod-apps/task-length"
+    , "prod-apps/mask-track"
     , "test-suite-hlint"
     ]
 
