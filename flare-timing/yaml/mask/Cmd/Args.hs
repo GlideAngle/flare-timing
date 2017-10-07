@@ -34,7 +34,7 @@ import Flight.Mask.Task (TaskDistanceMeasure(..))
 description :: String
 description = intro
     where
-        intro = [r|Given a competition YAML file and relative track log KML files, by masking the track logs with the zones, work out;
+        intro = [r|Given a competition input YAML file, *.comp-input.yaml, and relative track log KML files, by masking the track logs with the zones, work out;
 * if the pilot launched
 * if they made goal then
     * how long the pilot took to reach goal

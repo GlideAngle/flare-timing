@@ -34,8 +34,7 @@ import Flight.Mask.Task (TaskDistanceMeasure(..))
 description :: String
 description = intro
     where
-        intro = [r|Given a competition inputs YAML file, *.comp-inputs.yaml
-work out the task lengths by flowing an optimal route.
+        intro = [r|Given a competition input YAML file, *.comp-input.yaml, work out the task length by flowing an optimal route.
 |]
 
 data Drive
