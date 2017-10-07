@@ -35,7 +35,8 @@ Once the data is prepared the server web service and single page client web app,
 ### Extracting Inputs
 
     $ __shake-build/extract-task --help
-    Convert FSDB (XML) to YAML with only the inputs needed for scoring.
+    Convert a competition FSDB (XML) file to YAML with only the inputs needed for
+    scoring.
 
     extract-task [OPTIONS]
 
@@ -86,7 +87,6 @@ Once the data is prepared the server web service and single page client web app,
                                launch|goal|zones|goaldistance|flowndistance|time|lead
       -m --measure=METHOD      Which way to measure task distances,
                                taskdistancebyallmethods|taskdistancebypoints|taskdistancebyedges
-         --no-task-waypoints   Exclude the task waypoints?
 
 ### Leading Area
 
