@@ -11,7 +11,8 @@ Intersection of pilot tracks with competition zones.
 -}
 module Data.Flight.TrackZone
     ( -- * Track Zone Intersection
-      TrackZoneIntersect(..)
+      TaskTracks(..)
+    , PilotTracks(..)
     , TaskTrack(..)
     , TrackLine(..)
     , LatLng(..)
@@ -24,13 +25,17 @@ import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.Flight.LatLng (Latitude(..), Longitude(..))
 import Data.Flight.Pilot (Pilot(..))
 
-data TrackZoneIntersect =
-    TrackZoneIntersect { taskTracks :: [TaskTrack]
-                       , pilotTracks :: [[PilotFlownTrack]]
-                       } deriving (Show, Generic)
+data TaskTracks =
+    TaskTracks { taskTracks :: [TaskTrack] } deriving (Show, Generic)
 
-instance ToJSON TrackZoneIntersect
-instance FromJSON TrackZoneIntersect
+instance ToJSON TaskTracks
+instance FromJSON TaskTracks
+
+data PilotTracks =
+    PilotTracks { pilotTracks :: [[PilotFlownTrack]] } deriving (Show, Generic)
+
+instance ToJSON PilotTracks
+instance FromJSON PilotTracks
 
 data TaskTrack
     = TaskTrack { pointToPoint :: Maybe TrackLine

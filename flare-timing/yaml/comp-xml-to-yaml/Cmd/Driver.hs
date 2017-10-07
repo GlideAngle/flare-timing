@@ -46,7 +46,7 @@ drive CmdOptions{..} = do
         go fsdbPath = do
             contents <- readFile fsdbPath
             let contents' = dropWhile (/= '<') contents
-            let yamlPath = replaceExtension fsdbPath ".comp-inputs.yaml"
+            let yamlPath = replaceExtension fsdbPath ".comp-input.yaml"
 
             settings <- runExceptT $ fsdbSettings contents'
             case settings of

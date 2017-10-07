@@ -45,9 +45,8 @@ import Flight.Mask.Pilot
     , distanceFlown
     , timeFlown
     )
-import Flight.Mask.Task (taskTracks)
 import qualified Data.Flight.TrackZone as TZ
-    (TaskTrack(..), FlownTrack(..), PilotFlownTrack(..), TrackZoneIntersect(..))
+    (FlownTrack(..), PilotFlownTrack(..), PilotTracks(..))
 import Data.Number.RoundingFunctions (dpRound)
 
 type MkPart a =
@@ -65,8 +64,7 @@ type MkPart a =
 type AddPart a = a -> TZ.FlownTrack
 
 type MkFlownTrackIO a =
-    [TZ.TaskTrack]
-    -> FilePath
+    FilePath
     -> MkPart a
     -> AddPart a
     -> IO ()
@@ -77,14 +75,6 @@ driverMain = withCmdArgs drive
 cmp :: (Ord a, IsString a) => a -> a -> Ordering
 cmp a b =
     case (a, b) of
-        ("pointToPoint", _) -> LT
-        ("edgeToEdge", _) -> GT
-        ("lat", _) -> LT
-        ("lng", _) -> GT
-        ("distance", _) -> LT
-        ("wayPoints", _) -> GT
-        ("taskTracks", _) -> LT
-        ("pilotTracks", _) -> GT
         ("launched", _) -> LT
         ("madeGoal", "launched") -> GT
         ("madeGoal", _) -> LT
@@ -141,94 +131,90 @@ drive CmdOptions{..} = do
         withFile yamlCompPath = do
             putStrLn $ takeFileName yamlCompPath
             let yamlMaskPath =
-                    flip replaceExtension ".mask-tracks.yaml"
+                    flip replaceExtension ".mask-track.yaml"
                     $ dropExtension yamlCompPath
-            ts <- runExceptT $ taskTracks noTaskWaypoints measure yamlCompPath
-            case ts of
-                Left msg -> print msg
-                Right ts' -> do
-                    case reckon of
-                        All ->
-                            let go = writeMask ts' yamlMaskPath
-                            in go checkAll id
+            case reckon of
+                All ->
+                    let go = writeMask yamlMaskPath
+                    in go checkAll id
 
-                        Zones ->
-                            let go = writeMask ts' yamlMaskPath
-                            in go checkZones (\zs ->
-                                TZ.FlownTrack
-                                    { launched = True
-                                    , madeGoal = True
-                                    , zonesMade = zs
-                                    , timeToGoal = Nothing
-                                    , distanceToGoal = Nothing
-                                    , bestDistance = Nothing
-                                    })
+                Zones ->
+                    let go = writeMask yamlMaskPath
+                    in go checkZones (\zs ->
+                        TZ.FlownTrack
+                            { launched = True
+                            , madeGoal = True
+                            , zonesMade = zs
+                            , timeToGoal = Nothing
+                            , distanceToGoal = Nothing
+                            , bestDistance = Nothing
+                            })
 
-                        Launch ->
-                            let go = writeMask ts' yamlMaskPath
-                            in go checkLaunched (\x ->
-                                TZ.FlownTrack
-                                    { launched = x
-                                    , madeGoal = True
-                                    , zonesMade = []
-                                    , timeToGoal = Nothing
-                                    , distanceToGoal = Nothing
-                                    , bestDistance = Nothing
-                                    })
+                Launch ->
+                    let go = writeMask yamlMaskPath
+                    in go checkLaunched (\x ->
+                        TZ.FlownTrack
+                            { launched = x
+                            , madeGoal = True
+                            , zonesMade = []
+                            , timeToGoal = Nothing
+                            , distanceToGoal = Nothing
+                            , bestDistance = Nothing
+                            })
 
-                        Goal ->
-                            let go = writeMask ts' yamlMaskPath
-                            in go checkMadeGoal (\x ->
-                                TZ.FlownTrack
-                                    { launched = True
-                                    , madeGoal = x
-                                    , zonesMade = [] 
-                                    , timeToGoal = Nothing
-                                    , distanceToGoal = Nothing
-                                    , bestDistance = Nothing
-                                    })
+                Goal ->
+                    let go = writeMask yamlMaskPath
+                    in go checkMadeGoal (\x ->
+                        TZ.FlownTrack
+                            { launched = True
+                            , madeGoal = x
+                            , zonesMade = [] 
+                            , timeToGoal = Nothing
+                            , distanceToGoal = Nothing
+                            , bestDistance = Nothing
+                            })
 
-                        GoalDistance ->
-                            let go = writeMask ts' yamlMaskPath
-                            in go checkDistanceToGoal (\td ->
-                                TZ.FlownTrack
-                                    { launched = True
-                                    , madeGoal = True
-                                    , zonesMade = []
-                                    , timeToGoal = Nothing
-                                    , distanceToGoal = unTaskDistance <$> td
-                                    , bestDistance = Nothing 
-                                    })
+                GoalDistance ->
+                    let go = writeMask yamlMaskPath
+                    in go checkDistanceToGoal (\td ->
+                        TZ.FlownTrack
+                            { launched = True
+                            , madeGoal = True
+                            , zonesMade = []
+                            , timeToGoal = Nothing
+                            , distanceToGoal = unTaskDistance <$> td
+                            , bestDistance = Nothing 
+                            })
 
-                        FlownDistance ->
-                            let go = writeMask ts' yamlMaskPath
-                            in go checkDistanceFlown (\fd ->
-                                TZ.FlownTrack
-                                    { launched = True
-                                    , madeGoal = True
-                                    , zonesMade = []
-                                    , timeToGoal = Nothing
-                                    , distanceToGoal = Nothing
-                                    , bestDistance = unPilotDistance <$> fd
-                                    })
+                FlownDistance ->
+                    let go = writeMask yamlMaskPath
+                    in go checkDistanceFlown (\fd ->
+                        TZ.FlownTrack
+                            { launched = True
+                            , madeGoal = True
+                            , zonesMade = []
+                            , timeToGoal = Nothing
+                            , distanceToGoal = Nothing
+                            , bestDistance = unPilotDistance <$> fd
+                            })
 
-                        Time ->
-                            let go = writeMask ts' yamlMaskPath
-                            in go checkTimeToGoal (\ttg ->
-                                TZ.FlownTrack
-                                    { launched = True
-                                    , madeGoal = True
-                                    , zonesMade = []
-                                    , timeToGoal = unPilotTime <$> ttg
-                                    , distanceToGoal = Nothing
-                                    , bestDistance = Nothing
-                                    })
+                Time ->
+                    let go = writeMask yamlMaskPath
+                    in go checkTimeToGoal (\ttg ->
+                        TZ.FlownTrack
+                            { launched = True
+                            , madeGoal = True
+                            , zonesMade = []
+                            , timeToGoal = unPilotTime <$> ttg
+                            , distanceToGoal = Nothing
+                            , bestDistance = Nothing
+                            })
 
-                        Lead -> putStrLn $ "TODO: Handle reckoning of 'lead'."
+                Lead -> putStrLn $ "TODO: Handle reckoning of 'lead'."
 
             where
                 writeMask :: forall a. MkFlownTrackIO a
-                writeMask os yamlPath f g = do
+                writeMask yamlPath f g = do
                     checks <-
                         runExceptT $
                             f
@@ -250,10 +236,7 @@ drive CmdOptions{..} = do
                                         xs
 
                             let tzi =
-                                    TZ.TrackZoneIntersect
-                                        { taskTracks = os
-                                        , pilotTracks = ps 
-                                        }
+                                    TZ.PilotTracks { pilotTracks = ps }
 
                             let yaml =
                                     Y.encodePretty

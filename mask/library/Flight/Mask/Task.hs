@@ -67,7 +67,7 @@ data TaskDistanceMeasure
     deriving (Eq, Data, Typeable, Show)
 
 instance Default TaskDistanceMeasure where
-    def = TaskDistanceByEdges
+    def = TaskDistanceByAllMethods
 
 mm30 :: Tolerance
 mm30 = Tolerance $ 30 % 1000

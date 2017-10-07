@@ -28,27 +28,20 @@ import Control.Monad.Except (liftIO, throwError, when, unless)
 import Control.Monad.Trans.Except (runExceptT)
 import System.Directory (doesFileExist, doesDirectoryExist)
 import Text.RawString.QQ (r)
-import Cmd.Options (CmdOptions(..), Reckon(..))
+import Cmd.Options (CmdOptions(..))
 import Flight.Mask.Task (TaskDistanceMeasure(..))
 
 description :: String
 description = intro
     where
-        intro = [r|Given a competition YAML file and relative track log KML files, by masking the track logs with the zones, work out;
-* if the pilot launched
-* if they made goal then
-    * how long the pilot took to reach goal
-* if they landed out then
-    * how far they got along the course
-    * how far yet to reach goal
+        intro = [r|Given a competition inputs YAML file, *.comp-inputs.yaml
+work out the task lengths by flowing an optimal route.
 |]
 
 data Drive
     = Drive { dir :: String
             , file :: String
             , task :: [Int]
-            , pilot :: [String]
-            , reckon :: Reckon
             , measure :: TaskDistanceMeasure
             , noTaskWaypoints :: Bool
             }
@@ -68,17 +61,6 @@ drive programName =
           &= help "Which tasks?"
           &= typ "TASK NUMBER"
           &= opt "name"
-          &= groupname "Filter"
-
-          , pilot = def
-          &= help "Which pilots?"
-          &= typ "PILOT NAME"
-          &= opt "name"
-          &= groupname "Filter"
-
-          , reckon = def
-          &= help "Work out one of these things, launch|goal|zones|goaldistance|flowndistance|time|lead"
-          &= typ "RECKON NAME"
           &= groupname "Filter"
 
           , measure = def
@@ -105,8 +87,6 @@ cmdArgsToDriveArgs Drive{..} =
     return $ CmdOptions { dir = dir
                         , file = file
                         , task = task
-                        , pilot = pilot
-                        , reckon = reckon
                         , measure = measure
                         , noTaskWaypoints = noTaskWaypoints
                         }
