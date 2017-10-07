@@ -83,12 +83,12 @@ run = do
 
 cmdArgsToDriveArgs :: Drive -> Maybe CmdOptions
 cmdArgsToDriveArgs Drive{..} =
-    return $ CmdOptions { dir = dir
-                        , file = file
-                        , task = task
-                        , measure = measure
-                        , noTaskWaypoints = noTaskWaypoints
-                        }
+    return CmdOptions { dir = dir
+                      , file = file
+                      , task = task
+                      , measure = measure
+                      , noTaskWaypoints = noTaskWaypoints
+                      }
 
 -- SEE: http://stackoverflow.com/questions/2138819/in-haskell-is-there-a-way-to-do-io-in-a-function-guard
 checkedOptions :: CmdOptions -> IO (Either String CmdOptions)

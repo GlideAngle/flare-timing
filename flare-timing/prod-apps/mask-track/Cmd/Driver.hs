@@ -210,7 +210,7 @@ drive CmdOptions{..} = do
                             , bestDistance = Nothing
                             })
 
-                Lead -> putStrLn $ "TODO: Handle reckoning of 'lead'."
+                Lead -> putStrLn "TODO: Handle reckoning of 'lead'."
 
             where
                 writeMask :: forall a. MkFlownTrackIO a
