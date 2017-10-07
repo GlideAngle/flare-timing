@@ -5,12 +5,13 @@ import System.Exit (exitFailure, exitSuccess)
 
 arguments :: [String]
 arguments =
-    [ "test/fsdb-parser"
-    , "test/igc-parser"
-    , "test/kml-parser"
-    , "yaml/app-serve"
-    , "yaml/comp-xml-to-yaml"
-    , "yaml/track-intersect-zone"
+    [ "test-apps/fsdb-parser"
+    , "test-apps/igc-parser"
+    , "test-apps/kml-parser"
+    , "prod-apps/app-serve"
+    , "yaml-apps/extract-task"
+    , "yaml-apps/task-length"
+    , "yaml-apps/mask-track"
     , "test-suite-hlint"
     ]
 
