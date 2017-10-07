@@ -1,2 +1,2 @@
 @stack build --copy-bins
-@__shake-build\flare-timing-build-cmd %*
+@__shake-build\build-flare-timing %*

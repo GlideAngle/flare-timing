@@ -5,4 +5,4 @@
 pushd build
 stack build --copy-bins
 popd
-__shake-build/flare-timing-build-cmd $@
+__shake-build/build-flare-timing $@
