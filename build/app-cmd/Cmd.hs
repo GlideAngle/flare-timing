@@ -25,9 +25,9 @@ testApps =
 -- | The names of the production app executables
 prodApps :: [String]
 prodApps =
-    [ "extract-tasks"
+    [ "extract-task"
     , "task-length"
-    , "mask-tracks"
+    , "mask-track"
     , "comp-serve"
     ] 
 
@@ -48,11 +48,11 @@ buildRules = do
 
     phony "cmd-apps" $ need prodApps
 
-    phony "extract-tasks" $
+    phony "extract-task" $
         cmd
             (Cwd root)
             Shell
-            (cmdFor "flare-timing:extract-tasks")
+            (cmdFor "flare-timing:extract-task")
 
     phony "task-length" $
         cmd
@@ -60,11 +60,11 @@ buildRules = do
             Shell
             (cmdFor "flare-timing:task-length")
 
-    phony "mask-tracks" $
+    phony "mask-track" $
         cmd
             (Cwd root)
             Shell
-            (cmdFor "flare-timing:mask-tracks")
+            (cmdFor "flare-timing:mask-track")
 
     phony "comp-serve" $
         cmd

@@ -21,20 +21,23 @@ See the separate discussion of [building](BUILDING.md) and [testing](TESTING.md)
 
 FSDB is the database of FS and is an XML format for inputs, working and outputs of scoring. To host a **Flare Timing** web site, start with an FSDB file and relative tracklog files on disk and run a pipeline of command line programs to produce the data to display.
 
-1. Extract the inputs with `extract-tasks`.
-2. Workout the optimal distance to fly a task with `task-length`.
-3. Mask the competition task over the tracklogs with `mask-tracks`.
-4. Time align the distance to goal for each fix with `leading-area`.
-5. Score the competition with `gap-points`.
+1. Extract the inputs with `extract-task` producing a `*.comp-input.yaml` file.
+2. Workout the optimal distance to fly a task with `task-length` producing
+   a `*.task-length.yaml` file.
+3. Mask the competition task over the tracklogs with `mask-track` producing
+   a `*.mask-track.yaml` file.
+4. Time align the distance to goal for each fix with `leading-area` producing
+   a `*.leading-area.yaml` file.
+5. Score the competition with `gap-point` producing a `*.gap-point.yaml` file.
 
 Once the data is prepared the server web service and single page client web app, the comp server and comp client, can be started.
 
 ### Extracting Inputs
 
-    $ __shake-build/extract-tasks --help
+    $ __shake-build/extract-task --help
     Convert FSDB (XML) to YAML with only the inputs needed for scoring.
 
-    extract-tasks [OPTIONS]
+    extract-task [OPTIONS]
 
     Source:
       -d --dir=ITEM   Over all the competition FSDB files in this directory
@@ -46,7 +49,7 @@ TODO
       
 ### Masking Tracks
 
-    $ __shake-build/mask-tracks --help
+    $ __shake-build/mask-track --help
     Given a competition YAML file and relative track log KML files, by masking the
     track logs with the zones, work out;
     * if the pilot launched
@@ -56,7 +59,7 @@ TODO
         * how far they got along the course
         * how far yet to reach goal
 
-    mask-tracks [OPTIONS]
+    mask-track [OPTIONS]
 
     Source:
       -d --dir=ITEM            Over all the competition *.comp.yaml files in this

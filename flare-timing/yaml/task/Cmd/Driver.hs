@@ -133,7 +133,7 @@ drive CmdOptions{..} = do
     else do
         dde <- doesDirectoryExist dir
         if dde then do
-            files <- find always (fileType ==? RegularFile &&? extension ==? ".comp.yaml") dir
+            files <- find always (fileType ==? RegularFile &&? extension ==? ".comp-inputs.yaml") dir
             mapM_ withFile files
         else
             putStrLn "Couldn't find any flight score competition yaml input files."
@@ -141,7 +141,7 @@ drive CmdOptions{..} = do
         withFile yamlCompPath = do
             putStrLn $ takeFileName yamlCompPath
             let yamlMaskPath =
-                    flip replaceExtension ".task.yaml"
+                    flip replaceExtension ".task-length.yaml"
                     $ dropExtension yamlCompPath
             ts <- runExceptT $ taskTracks noTaskWaypoints measure yamlCompPath
             case ts of

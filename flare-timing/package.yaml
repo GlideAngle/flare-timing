@@ -29,7 +29,7 @@ executables:
     - -with-rtsopts=-N
     main: Main.hs
     source-dirs: yaml/app-serve
-  extract-tasks:
+  extract-task:
     dependencies:
     - base
     - directory
@@ -82,7 +82,7 @@ executables:
     - -fplugin Data.UnitsOfMeasure.Plugin
     main: Main.hs
     source-dirs: yaml/task
-  mask-tracks:
+  mask-track:
     dependencies:
     - base
     - directory
