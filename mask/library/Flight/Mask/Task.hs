@@ -77,7 +77,7 @@ followTracks :: Bool
              -> Cmp.CompSettings
              -> ExceptT String IO [TZ.TaskTrack]
 followTracks excludeWaypoints tdm Cmp.CompSettings{tasks} =
-    ExceptT . return . Right $ (taskTrack excludeWaypoints tdm) <$> tasks
+    ExceptT . return . Right $ taskTrack excludeWaypoints tdm <$> tasks
 
 taskTracks :: Bool
            -> TaskDistanceMeasure
@@ -92,40 +92,34 @@ taskTrack excludeWaypoints tdm Cmp.Task{..} =
     case tdm of
         TaskDistanceByAllMethods ->
             TZ.TaskTrack
-                { pointToPoint =
-                    Just $ TZ.TrackLine
-                        { distance = toKm ptd
-                        , waypoints = if excludeWaypoints then [] else wpPoint
-                        , legs = toKm <$> legsPoint
-                        }
-                , edgeToEdge =
-                    Just $ TZ.TrackLine
-                        { distance = toKm etd
-                        , waypoints = if excludeWaypoints then [] else wpEdge
-                        , legs = toKm <$> legsEdge
-                        }
+                { pointToPoint = Just pointTrackline
+                , edgeToEdge = Just edgeTrackline
                 }
         TaskDistanceByPoints ->
             TZ.TaskTrack
-                { pointToPoint =
-                    Just $ TZ.TrackLine
-                        { distance = toKm ptd
-                        , waypoints = if excludeWaypoints then [] else wpPoint
-                        , legs = toKm <$> legsPoint
-                        }
+                { pointToPoint = Just pointTrackline
                 , edgeToEdge = Nothing
                 }
         TaskDistanceByEdges ->
             TZ.TaskTrack
                 { pointToPoint = Nothing
-                , edgeToEdge =
-                    Just $ TZ.TrackLine
-                        { distance = toKm etd
-                        , waypoints = if excludeWaypoints then [] else wpEdge
-                        , legs = toKm <$> legsEdge
-                        }
+                , edgeToEdge = Just edgeTrackline
                 }
     where
+        pointTrackline =
+            TZ.TrackLine
+                { distance = toKm ptd
+                , waypoints = if excludeWaypoints then [] else wpPoint
+                , legs = toKm <$> legsPoint
+                }
+
+        edgeTrackline =
+            TZ.TrackLine
+                { distance = toKm etd
+                , waypoints = if excludeWaypoints then [] else wpEdge
+                , legs = toKm <$> legsEdge
+                }
+
         zs :: [Zone]
         zs = toCylinder <$> zones
 
@@ -138,14 +132,15 @@ taskTrack excludeWaypoints tdm Cmp.Task{..} =
         wpPoint :: [TZ.LatLng]
         wpPoint = convertLatLng <$> centers
 
-        legsPoint :: [TaskDistance]
-        legsPoint =
+        legDistances :: [Zone] -> [TaskDistance]
+        legDistances xs =
             zipWith
                 (\x y -> Tsk.distancePointToPoint [x, y])
                 xs
                 (tail xs)
-            where
-                xs = Point <$> centers
+
+        legsPoint :: [TaskDistance]
+        legsPoint = legDistances $ Point <$> centers
 
         ed :: EdgeDistance
         ed = Tsk.distanceEdgeToEdge PathPointToZone mm30 zs
@@ -160,13 +155,7 @@ taskTrack excludeWaypoints tdm Cmp.Task{..} =
         wpEdge = convertLatLng <$> edgeVertices
 
         legsEdge :: [TaskDistance]
-        legsEdge =
-            zipWith
-                (\x y -> Tsk.distancePointToPoint [x, y])
-                xs
-                (tail xs)
-            where
-                xs = Point <$> edgeVertices
+        legsEdge = legDistances $ Point <$> edgeVertices
 
         toKm :: TaskDistance -> Double
         toKm (TaskDistance d) =
