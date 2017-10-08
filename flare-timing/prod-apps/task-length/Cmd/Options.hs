@@ -2,7 +2,7 @@
 
 module Cmd.Options (CmdOptions(..)) where
 
-import System.Console.CmdArgs.Implicit (Default(..), Data, Typeable)
+import System.Console.CmdArgs.Implicit (Data, Typeable)
 import Flight.Mask.Task (TaskDistanceMeasure(..))
 
 -- | Options passed in on the command line.

@@ -49,6 +49,7 @@ instance FromJSON TaskTrack
 data TrackLine =
     TrackLine { distance :: Double
               , waypoints :: [LatLng]
+              , legs :: [Double]
               } deriving (Show, Generic)
 
 instance ToJSON TrackLine

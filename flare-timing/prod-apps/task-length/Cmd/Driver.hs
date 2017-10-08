@@ -42,8 +42,9 @@ cmp a b =
         ("lat", _) -> LT
         ("lng", _) -> GT
         ("distance", _) -> LT
+        ("legs", "distance") -> GT
+        ("legs", _) -> LT
         ("wayPoints", _) -> GT
-        ("taskTracks", _) -> LT
         _ -> compare a b
 
 drive :: CmdOptions -> IO ()

@@ -96,11 +96,13 @@ taskTrack excludeWaypoints tdm Cmp.Task{..} =
                     Just $ TZ.TrackLine
                         { distance = toKm ptd
                         , waypoints = if excludeWaypoints then [] else wpPoint
+                        , legs = toKm <$> legsPoint
                         }
                 , edgeToEdge =
                     Just $ TZ.TrackLine
                         { distance = toKm etd
                         , waypoints = if excludeWaypoints then [] else wpEdge
+                        , legs = toKm <$> legsEdge
                         }
                 }
         TaskDistanceByPoints ->
@@ -109,6 +111,7 @@ taskTrack excludeWaypoints tdm Cmp.Task{..} =
                     Just $ TZ.TrackLine
                         { distance = toKm ptd
                         , waypoints = if excludeWaypoints then [] else wpPoint
+                        , legs = toKm <$> legsPoint
                         }
                 , edgeToEdge = Nothing
                 }
@@ -119,6 +122,7 @@ taskTrack excludeWaypoints tdm Cmp.Task{..} =
                     Just $ TZ.TrackLine
                         { distance = toKm etd
                         , waypoints = if excludeWaypoints then [] else wpEdge
+                        , legs = toKm <$> legsEdge
                         }
                 }
     where
@@ -128,11 +132,20 @@ taskTrack excludeWaypoints tdm Cmp.Task{..} =
         ptd :: TaskDistance
         ptd = Tsk.distancePointToPoint zs
 
+        centers :: [LatLng [u| rad |]]
+        centers = center <$> zs
+
         wpPoint :: [TZ.LatLng]
-        wpPoint =
-            convertLatLng <$> ps
+        wpPoint = convertLatLng <$> centers
+
+        legsPoint :: [TaskDistance]
+        legsPoint =
+            zipWith
+                (\x y -> Tsk.distancePointToPoint [x, y])
+                xs
+                (tail xs)
             where
-                ps = center <$> zs
+                xs = Point <$> centers
 
         ed :: EdgeDistance
         ed = Tsk.distanceEdgeToEdge PathPointToZone mm30 zs
@@ -140,11 +153,20 @@ taskTrack excludeWaypoints tdm Cmp.Task{..} =
         etd :: TaskDistance
         etd = edges ed
 
+        edgeVertices :: [LatLng [u| rad |]]
+        edgeVertices = edgeLine ed
+
         wpEdge :: [TZ.LatLng]
-        wpEdge =
-            convertLatLng <$> xs
+        wpEdge = convertLatLng <$> edgeVertices
+
+        legsEdge :: [TaskDistance]
+        legsEdge =
+            zipWith
+                (\x y -> Tsk.distancePointToPoint [x, y])
+                xs
+                (tail xs)
             where
-                xs = edgeLine ed
+                xs = Point <$> edgeVertices
 
         toKm :: TaskDistance -> Double
         toKm (TaskDistance d) =
@@ -155,8 +177,8 @@ taskTrack excludeWaypoints tdm Cmp.Task{..} =
 convertLatLng :: LatLng [u| rad |] -> TZ.LatLng
 convertLatLng (LatLng (Lat eLat, Lng eLng)) =
     TZ.LatLng { lat = Cmp.Latitude eLat'
-             , lng = Cmp.Longitude eLng'
-             }
+              , lng = Cmp.Longitude eLng'
+              }
     where
         MkQuantity eLat' =
             convert eLat :: Quantity Rational [u| deg |]
