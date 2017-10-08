@@ -24,6 +24,7 @@ What is the optimized track and its turnpoints?
 module Flight.Mask.Task (taskTracks, TaskDistanceMeasure(..)) where
 
 import Data.Ratio ((%))
+import Data.List (nub)
 import System.Console.CmdArgs.Implicit (Default(..), def, Data, Typeable)
 import Data.UnitsOfMeasure (u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
@@ -108,16 +109,16 @@ taskTrack excludeWaypoints tdm Cmp.Task{..} =
     where
         pointTrackline =
             TZ.TrackLine
-                { distance = toKm ptd
+                { distance = toKm (dpRound 3) ptd
                 , waypoints = if excludeWaypoints then [] else wpPoint
-                , legs = toKm <$> legsPoint
+                , legs = toKm (dpRound 3) <$> legsPoint
                 }
 
         edgeTrackline =
             TZ.TrackLine
-                { distance = toKm etd
+                { distance = toKm (dpRound 3) etd
                 , waypoints = if excludeWaypoints then [] else wpEdge
-                , legs = toKm <$> legsEdge
+                , legs = toKm (dpRound 3) <$> legsEdge
                 }
 
         zs :: [Zone]
@@ -126,8 +127,10 @@ taskTrack excludeWaypoints tdm Cmp.Task{..} =
         ptd :: TaskDistance
         ptd = Tsk.distancePointToPoint zs
 
+        -- NOTE: Concentric zones of different radii can be defined that
+        -- share the same center. Remove duplicate centers.
         centers :: [LatLng [u| rad |]]
-        centers = center <$> zs
+        centers = nub $ center <$> zs
 
         wpPoint :: [TZ.LatLng]
         wpPoint = convertLatLng <$> centers
@@ -148,8 +151,15 @@ taskTrack excludeWaypoints tdm Cmp.Task{..} =
         etd :: TaskDistance
         etd = edges ed
 
+        -- NOTE: The graph of points created for determining the shortest
+        -- path can have duplicate points, so the shortest path too can have
+        -- duplicate points. Remove these duplicates.
+        --
+        -- I found that by decreasing defEps, the default epsilon, used for
+        -- rational math from 1/10^9 to 1/10^12 these duplicates stopped
+        -- occuring.
         edgeVertices :: [LatLng [u| rad |]]
-        edgeVertices = edgeLine ed
+        edgeVertices = nub $ edgeLine ed
 
         wpEdge :: [TZ.LatLng]
         wpEdge = convertLatLng <$> edgeVertices
@@ -157,9 +167,9 @@ taskTrack excludeWaypoints tdm Cmp.Task{..} =
         legsEdge :: [TaskDistance]
         legsEdge = legDistances $ Point <$> edgeVertices
 
-        toKm :: TaskDistance -> Double
-        toKm (TaskDistance d) =
-            fromRational $ dpRound 3 dKm
+        toKm :: (Rational -> Rational) -> TaskDistance -> Double
+        toKm f (TaskDistance d) =
+            fromRational $ f dKm
             where 
                 MkQuantity dKm = convert d :: Quantity Rational [u| km |]
 

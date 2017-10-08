@@ -84,7 +84,7 @@ radToDegLL e (LatLng (Lat lat, Lng lng)) =
         lng' = radToDeg e lng
 
 defEps :: Epsilon
-defEps = Epsilon $ 1 % 1000000000
+defEps = Epsilon $ 1 % 1000000000000
 
 -- | The radius of the earth in the FAI sphere is 6,371 km.
 earthRadius :: Quantity Rational [u| m |]
