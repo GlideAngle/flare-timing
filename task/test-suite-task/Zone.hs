@@ -26,21 +26,25 @@ import Data.UnitsOfMeasure (u, zero)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import qualified Flight.Task as FS
-import Flight.Task
-    ( Zone(..)
-    , Lat(..)
+import Flight.LatLng
+    ( Lat(..)
     , Lng(..)
     , LatLng(..)
+    , defEps
+    , earthRadius
+    )
+import Flight.Zone
+    ( Zone(..)
     , Radius(..)
     , Incline (..)
     , Bearing(..)
-    , TaskDistance(..)
+    , center
+    )
+import Flight.Task
+    ( TaskDistance(..)
     , EdgeDistance(..)
     , Tolerance(..)
     , DistancePath(..)
-    , defEps
-    , earthRadius
-    , center
     , separatedZones
     )
 

@@ -31,7 +31,7 @@ import Data.Number.RoundingFunctions (dpRound)
 import Data.Bifunctor.Flip (Flip(..))
 
 import Flight.Units (Length, showRadian)
-import Flight.Geo (Lat(..), Lng(..), LatLng(..))
+import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 
 -- | The radius component of zones that are cylinder-like, and most are in some
 -- way.

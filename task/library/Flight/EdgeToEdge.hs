@@ -27,7 +27,7 @@ import Data.Graph.Inductive.Internal.RootPath (getDistance, getLPathNodes)
 import Data.Graph.Inductive.Graph (Graph(..), Node, Path, LEdge, mkGraph, match)
 import Data.Graph.Inductive.PatriciaTree (Gr)
 
-import Flight.Geo (LatLng(..), Epsilon(..), defEps)
+import Flight.LatLng (LatLng(..), Epsilon(..), defEps)
 import Flight.Zone (Zone(..), Bearing(..), center)
 import Flight.PointToPoint (TaskDistance(..), distancePointToPoint)
 import Flight.Separated (separatedZones)

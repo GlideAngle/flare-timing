@@ -16,11 +16,6 @@ module Data.Flight.Comp
     , Comp(..)
     , Nominal(..)
     , UtcOffset(..)
-    -- * Zone
-    , Zone(..)
-    , Radius
-    , showRadius
-    , showZone
     -- * Task
     , Task(..)
     , SpeedSection
@@ -32,9 +27,6 @@ module Data.Flight.Comp
     , PilotTrackLogFile(..)
     , TrackLogFile(..)
     , TaskFolder(..)
-    -- * Coordinates
-    , Latitude(..)
-    , Longitude(..)
     ) where
 
 import Data.Time.Clock (UTCTime)
@@ -42,8 +34,7 @@ import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.List (intercalate)
 
-import Data.Flight.LatLng
-import Data.Flight.Zone
+import Flight.Zone.Raw (RawZone, showZone)
 import Data.Flight.Pilot
 
 type SpeedSection = Maybe (Integer, Integer)
@@ -99,7 +90,7 @@ instance FromJSON Nominal
 
 data Task =
     Task { taskName :: String
-         , zones :: [Zone]
+         , zones :: [RawZone]
          , speedSection :: SpeedSection
          , zoneTimes :: [OpenClose]
          , startGates :: [StartGate]

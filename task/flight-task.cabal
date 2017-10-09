@@ -1,4 +1,4 @@
--- This file has been generated from package.yaml by hpack version 0.17.0.
+-- This file has been generated from package.yaml by hpack version 0.17.1.
 --
 -- see: https://github.com/sol/hpack
 
@@ -35,18 +35,21 @@ library
     , numbers
     , fgl
     , uom-plugin
-    , siggy-chardust
     , bifunctors
+    , aeson
+    , scientific
+    , siggy-chardust
     , flight-units
+    , flight-latlng
+    , flight-zone
   exposed-modules:
       Flight.Task
+      Flight.TaskTrack
   other-modules:
       Flight.CylinderEdge
       Flight.EdgeToEdge
-      Flight.Geo
       Flight.PointToPoint
       Flight.Separated
-      Flight.Zone
       Paths_flight_task
   default-language: Haskell2010
 
@@ -62,18 +65,21 @@ test-suite hlint
     , hlint
     , numbers
     , fgl
-    , bifunctors
     , uom-plugin
+    , bifunctors
+    , aeson
+    , scientific
     , siggy-chardust
     , flight-units
+    , flight-latlng
+    , flight-zone
   other-modules:
       Flight.CylinderEdge
       Flight.EdgeToEdge
-      Flight.Geo
       Flight.PointToPoint
       Flight.Separated
       Flight.Task
-      Flight.Zone
+      Flight.TaskTrack
   default-language: Haskell2010
 
 test-suite task
@@ -89,8 +95,12 @@ test-suite task
     , fgl
     , bifunctors
     , uom-plugin
+    , aeson
+    , scientific
     , siggy-chardust
     , flight-units
+    , flight-latlng
+    , flight-zone
     , tasty
     , tasty-hunit
     , tasty-quickcheck
@@ -99,11 +109,10 @@ test-suite task
   other-modules:
       Flight.CylinderEdge
       Flight.EdgeToEdge
-      Flight.Geo
       Flight.PointToPoint
       Flight.Separated
       Flight.Task
-      Flight.Zone
+      Flight.TaskTrack
       EdgeToEdge
       TestNewtypes
       Zone

@@ -29,7 +29,7 @@ import Control.Monad.Trans.Except (runExceptT)
 import System.Directory (doesFileExist, doesDirectoryExist)
 import Text.RawString.QQ (r)
 import Cmd.Options (CmdOptions(..))
-import Flight.Mask.Task (TaskDistanceMeasure(..))
+import Flight.TaskTrack (TaskDistanceMeasure(..))
 
 description :: String
 description = intro

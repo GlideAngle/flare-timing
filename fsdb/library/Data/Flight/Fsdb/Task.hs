@@ -38,15 +38,10 @@ import Text.Parsec.Language (emptyDef)
 import Data.Functor.Identity (Identity)
 import Text.Parsec.Prim (ParsecT, parsecMap)
 
+import Flight.LatLng.Raw (RawLat(..), RawLng(..))
+import Flight.Zone.Raw (RawZone(..))
 import Data.Flight.Comp
-    ( Latitude(..)
-    , Longitude(..)
-    , Zone(..)
-    , Task(..)
-    , SpeedSection
-    , StartGate(..)
-    , OpenClose(..)
-    )
+    (Task(..), SpeedSection, StartGate(..), OpenClose(..))
 
 lexer :: GenTokenParser String u Identity
 lexer = P.makeTokenParser emptyDef
@@ -148,11 +143,11 @@ parseSpeedSection ((ss, es) : _) =
                      , P.parse pNat "" es
                      ]
 
-parseZone :: (String, String, String, String) -> [Zone]
+parseZone :: (String, String, String, String) -> [RawZone]
 parseZone (name, tpLat, tpLng, tpRadius) =
     case (latlng, rad) of
         (Right [ lat', lng' ], Right rad') ->
-            [ Zone name (Latitude lat') (Longitude lng') rad' ]
+            [ RawZone name (RawLat lat') (RawLng lng') rad' ]
 
         _ ->
             []

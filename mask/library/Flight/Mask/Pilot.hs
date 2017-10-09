@@ -56,14 +56,15 @@ import qualified Data.Flight.Kml as Kml
     , Fix
     , MarkedFixes(..)
     )
+import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
+import qualified Flight.LatLng.Raw as Raw (RawLat(..), RawLng(..))
+import Flight.Zone (Radius(..), Zone(..))
+import qualified Flight.Zone.Raw as Raw (RawZone(..))
 import qualified Data.Flight.Comp as Cmp
     ( CompSettings(..)
     , Pilot(..)
     , Task(..)
-    , Zone(..)
     , PilotTrackLogFile(..)
-    , Latitude(..)
-    , Longitude(..)
     , SpeedSection
     , OpenClose(..)
     , StartGate(..)
@@ -77,12 +78,7 @@ import Data.Flight.TrackLog as Log
     , makeAbsolute
     )
 import Flight.Task as Tsk
-    ( Lat(..)
-    , Lng(..)
-    , LatLng(..)
-    , Radius(..)
-    , Zone(..)
-    , TaskDistance(..)
+    ( TaskDistance(..)
     , EdgeDistance(..)
     , Tolerance(..)
     , DistancePath(..)
@@ -132,39 +128,39 @@ countFixes Kml.MarkedFixes{fixes} =
     PilotTrackFixes $ length fixes
 
 -- | The input pair is in degrees while the output is in radians.
-toLL :: (Rational, Rational) -> Tsk.LatLng [u| rad |]
+toLL :: (Rational, Rational) -> LatLng [u| rad |]
 toLL (lat, lng) =
-    Tsk.LatLng (Tsk.Lat lat'', Tsk.Lng lng'')
+    LatLng (Lat lat'', Lng lng'')
         where
             lat' = MkQuantity lat :: Quantity Rational [u| deg |]
             lng' = MkQuantity lng :: Quantity Rational [u| deg |]
             lat'' = convert lat' :: Quantity Rational [u| rad |]
             lng'' = convert lng' :: Quantity Rational [u| rad |]
 
-zoneToCylinder :: Cmp.Zone -> Tsk.Zone
+zoneToCylinder :: Raw.RawZone -> Zone
 zoneToCylinder z =
-    Tsk.Cylinder radius (toLL(lat, lng))
+    Cylinder radius (toLL(lat, lng))
     where
-        radius = Radius (MkQuantity $ Cmp.radius z % 1)
-        Cmp.Latitude lat = Cmp.lat z
-        Cmp.Longitude lng = Cmp.lng z
+        radius = Radius (MkQuantity $ Raw.radius z % 1)
+        Raw.RawLat lat = Raw.lat z
+        Raw.RawLng lng = Raw.lng z
 
-fixToPoint :: Kml.Fix -> Tsk.Zone
+fixToPoint :: Kml.Fix -> Zone
 fixToPoint fix =
-    Tsk.Point (toLL (lat, lng))
+    Point (toLL (lat, lng))
     where
         Kml.Latitude lat = Kml.lat fix
         Kml.Longitude lng = Kml.lng fix
 
-crossedZone :: Tsk.Zone -> [Tsk.Zone] -> Bool
+crossedZone :: Zone -> [Zone] -> Bool
 crossedZone z xs =
     entersZone z xs || exitsZone z xs
 
-entersZone :: Tsk.Zone -> [Tsk.Zone] -> Bool
+entersZone :: Zone -> [Zone] -> Bool
 entersZone z xs =
     exitsZone z $ reverse xs
 
-exitsZone :: Tsk.Zone -> [Tsk.Zone] -> Bool
+exitsZone :: Zone -> [Zone] -> Bool
 exitsZone z xs =
     case (insideZone, outsideZone) of
         (Just _, Just _) -> True
@@ -201,7 +197,7 @@ madeGoal tasks (IxTask i) Kml.MarkedFixes{fixes} =
                 [] -> False
                 z : _ -> entersZone (zoneToCylinder z) (fixToPoint <$> fixes)
 
-tickedZones :: [Tsk.Zone] -> [Tsk.Zone] -> [Bool]
+tickedZones :: [Zone] -> [Zone] -> [Bool]
 tickedZones zones xs =
     flip crossedZone xs <$> zones
 
@@ -226,7 +222,7 @@ mm30 = Tolerance $ 30 % 1000
 
 distanceViaZones :: (a -> Zone)
                  -> Cmp.SpeedSection
-                 -> [Tsk.Zone]
+                 -> [Zone]
                  -> [a]
                  -> Maybe TaskDistance
 distanceViaZones mkZone speedSection zs xs =
@@ -281,7 +277,7 @@ distanceFlown tasks (IxTask i) Kml.MarkedFixes{fixes} =
             in flownDistance speedSection cs d
 
 flownDistance :: Cmp.SpeedSection
-              -> [Tsk.Zone]
+              -> [Zone]
               -> Maybe TaskDistance
               -> Maybe PilotDistance
 flownDistance _ [] (Just (TaskDistance (MkQuantity d))) =
@@ -309,7 +305,7 @@ timeFlown tasks iTask@(IxTask i) xs =
         atGoal = madeGoal tasks iTask xs
 
 flownDuration :: Cmp.SpeedSection
-              -> [Tsk.Zone]
+              -> [Zone]
               -> [Cmp.OpenClose]
               -> [Cmp.StartGate]
               -> Kml.MarkedFixes
@@ -320,10 +316,10 @@ flownDuration speedSection zs os gs Kml.MarkedFixes{mark0, fixes}
     | otherwise =
         durationViaZones fixToPoint Kml.mark speedSection zs os gs mark0 fixes
 
-durationViaZones :: (Kml.Fix -> Tsk.Zone)
+durationViaZones :: (Kml.Fix -> Zone)
                  -> (Kml.Fix -> Kml.Seconds)
                  -> Cmp.SpeedSection
-                 -> [Tsk.Zone]
+                 -> [Zone]
                  -> [Cmp.OpenClose]
                  -> [Cmp.StartGate]
                  -> UTCTime
@@ -346,25 +342,25 @@ durationViaZones mkZone atTime speedSection zs os gs t0 xs =
                 [_] -> os
                 _ -> slice speedSection os
 
-        xys :: [(Kml.Fix, (Tsk.Zone, Tsk.Zone))]
+        xys :: [(Kml.Fix, (Zone, Zone))]
         xys = (\(x, y) -> (y, (mkZone x, mkZone y))) <$> zip (drop 1 xs) xs
 
-        slots :: (Tsk.Zone, Tsk.Zone)
-              -> [(Kml.Fix, (Tsk.Zone, Tsk.Zone))]
+        slots :: (Zone, Zone)
+              -> [(Kml.Fix, (Zone, Zone))]
               -> (Maybe Kml.Seconds, Maybe Kml.Seconds)
         slots (z0, zN) xzs =
             (f <$> xz0, f <$> xzN)
             where
-                exits' :: (Kml.Fix, (Tsk.Zone, Tsk.Zone)) -> Bool
+                exits' :: (Kml.Fix, (Zone, Zone)) -> Bool
                 exits' (_, (zx, zy)) = exitsZone z0 [zx, zy]
 
-                enters' :: (Kml.Fix, (Tsk.Zone, Tsk.Zone)) -> Bool
+                enters' :: (Kml.Fix, (Zone, Zone)) -> Bool
                 enters' (_, (zx, zy)) = entersZone zN [zx, zy]
 
-                xz0 :: Maybe (Kml.Fix, (Tsk.Zone, Tsk.Zone))
+                xz0 :: Maybe (Kml.Fix, (Zone, Zone))
                 xz0 = List.find exits' xzs
 
-                xzN :: Maybe (Kml.Fix, (Tsk.Zone, Tsk.Zone))
+                xzN :: Maybe (Kml.Fix, (Zone, Zone))
                 xzN = List.find enters' xzs
 
                 f = atTime . fst

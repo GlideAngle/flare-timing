@@ -1,4 +1,3 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,7 +24,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..), mk, fromRational')
 import Data.Number.RoundingFunctions (dpRound)
 import Data.Bifunctor.Flip (Flip(..))
 
-import Flight.Geo
+import Flight.LatLng
     ( Lat(..)
     , Lng(..)
     , LatLng(..)

@@ -16,7 +16,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Flight.Units ()
 import Flight.Zone (Zone(..), Radius(..), radius)
 import Flight.PointToPoint (TaskDistance(..), distancePointToPoint)
-import Flight.Geo
+import Flight.LatLng (Lat(..), Lng(..), LatLng(..), earthRadius)
 
 boundingBoxSeparated :: Quantity Rational [u| m |]
                      -> LatLng [u| rad |]

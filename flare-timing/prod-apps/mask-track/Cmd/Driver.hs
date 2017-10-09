@@ -45,7 +45,7 @@ import Flight.Mask.Pilot
     , distanceFlown
     , timeFlown
     )
-import qualified Data.Flight.TrackZone as TZ
+import qualified Data.Flight.PilotTrack as TZ
     (FlownTrack(..), PilotFlownTrack(..), PilotTracks(..))
 import Data.Number.RoundingFunctions (dpRound)
 

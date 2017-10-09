@@ -1,5 +1,4 @@
 {-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,7 +24,7 @@ import Data.Fixed (mod')
 import Data.UnitsOfMeasure (u, zero, unQuantity, fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import Flight.Geo
+import Flight.LatLng
     ( Lat(..)
     , Lng(..)
     , LatLng(..)

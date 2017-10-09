@@ -9,7 +9,7 @@
 {-# LANGUAGE UnicodeSyntax #-}
 {-# LANGUAGE QuasiQuotes #-}
 
-module Flight.Geo
+module Flight.LatLng
     ( Lat(..)
     , Lng(..)
     , LatLng(..)

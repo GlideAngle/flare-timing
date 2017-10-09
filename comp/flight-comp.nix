@@ -1,17 +1,17 @@
-{ mkDerivation, aeson, base, containers, hlint, path, scientific
-, split, stdenv, time
+{ mkDerivation, aeson, base, containers, flight-zone, hlint, path
+, scientific, split, stdenv, time
 }:
 mkDerivation {
   pname = "flight-comp";
   version = "0.0.0";
   src = ./.;
   libraryHaskellDepends = [
-    aeson base containers path scientific split time
+    aeson base containers flight-zone path scientific split time
   ];
   testHaskellDepends = [
-    aeson base containers hlint scientific split time
+    aeson base containers flight-zone hlint scientific split time
   ];
-  homepage = "https://github.com/BlockScope/haskell-flight-comp#readme";
+  homepage = "https://github.com/BlockScope/flare-timing#readme";
   description = "Hang gliding and paragliding competition scoring inputs";
   license = stdenv.lib.licenses.bsd3;
 }

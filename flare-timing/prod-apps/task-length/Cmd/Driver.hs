@@ -23,13 +23,15 @@ import System.FilePath.Find (FileType(..), (==?), (&&?), find, always, fileType,
 import System.FilePath (FilePath, takeFileName, replaceExtension, dropExtension)
 import Cmd.Args (withCmdArgs)
 import Cmd.Options (CmdOptions(..))
+import Cmd.Settings (readCompSettings)
 import qualified Data.Yaml.Pretty as Y
 import qualified Data.ByteString as BS
 
 import Flight.Units ()
-import Flight.Mask.Task (taskTracks)
-import qualified Data.Flight.TrackZone as TZ
-    (TaskTrack(..), TaskTracks(..))
+import Data.Flight.Comp (CompSettings(tasks), Task(zones))
+import Flight.TaskTrack (taskTracks)
+import qualified Flight.TaskTrack as TZ
+    (TaskTrack(..), TaskRoutes(..))
 
 driverMain :: IO ()
 driverMain = withCmdArgs drive
@@ -65,16 +67,19 @@ drive CmdOptions{..} = do
             let yamlMaskPath =
                     flip replaceExtension ".task-length.yaml"
                     $ dropExtension yamlCompPath
-            ts <- runExceptT $ taskTracks noTaskWaypoints measure yamlCompPath
-            case ts of
+            settings <- runExceptT $ readCompSettings yamlCompPath
+            case settings of
                 Left msg -> print msg
-                Right ts' -> writeTaskLength ts' yamlMaskPath
+                Right settings' -> do
+                    let zs = zones <$> (tasks settings')
+                    let ts = taskTracks noTaskWaypoints measure zs
+                    writeTaskLength ts yamlMaskPath
 
             where
                 writeTaskLength :: [TZ.TaskTrack] -> FilePath -> IO ()
                 writeTaskLength os yamlPath = do
                     let tzi =
-                            TZ.TaskTracks { taskTracks = os }
+                            TZ.TaskRoutes { taskRoutes = os }
 
                     let yaml =
                             Y.encodePretty

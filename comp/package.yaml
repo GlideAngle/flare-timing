@@ -16,10 +16,11 @@ library:
   - scientific
   - containers
   - time
+  - flight-zone
   source-dirs: library
   exposed-modules:
   - Data.Flight.Comp
-  - Data.Flight.TrackZone
+  - Data.Flight.PilotTrack
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
 name: flight-comp 
@@ -28,7 +29,7 @@ description: Hang gliding and paragliding competitors and tasks.
 category: Data
 license: BSD3
 license-file: LICENSE.md
-github: BlockScope/haskell-flight-comp
+github: BlockScope/flare-timing
 tests:
   hlint:
     dependencies:
@@ -39,6 +40,7 @@ tests:
     - containers
     - split
     - time
+    - flight-zone
     ghc-options:
     - -rtsopts
     - -threaded

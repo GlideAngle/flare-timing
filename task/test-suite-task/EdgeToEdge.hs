@@ -22,22 +22,23 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Data.Number.RoundingFunctions (dpRound)
 import Data.Bifunctor.Flip (Flip(..))
 
+import Flight.LatLng (Epsilon(..), Lat(..), Lng(..), LatLng(..), defEps)
+import Flight.Units ()
 import qualified Flight.Task as FS
-import Flight.Task
-    ( LatLng(..)
-    , Bearing(..)
+import Flight.Zone
+    ( Bearing(..)
     , Radius(..)
-    , Samples(..)
+    , Zone(..)
+    )
+import Flight.Task
+    ( Samples(..)
     , SampleParams(..)
     , Tolerance(..)
-    , Zone(..)
     , TaskDistance(..)
     , EdgeDistance(..)
     , DistancePath(..)
     , fromKms
     )
-import Flight.Geo (Epsilon(..), Lat(..), Lng(..), defEps)
-import Flight.Units ()
 
 (.>=.) :: (Show a, Show b) => a -> b -> String
 (.>=.) x y = show x ++ " >= " ++ show y

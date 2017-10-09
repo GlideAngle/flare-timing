@@ -20,6 +20,8 @@ library:
   - containers
   - split
   - time
+  - flight-latlng
+  - flight-zone
   - flight-comp
   source-dirs: library
   exposed-modules:
@@ -47,6 +49,8 @@ tests:
     - containers
     - split
     - time
+    - flight-latlng
+    - flight-zone
     - flight-comp
     ghc-options:
     - -rtsopts

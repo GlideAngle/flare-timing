@@ -5,6 +5,10 @@ packages:
   extra-dep: true
 - location: ../units
   extra-dep: true
+- location: ../latlng
+  extra-dep: true
+- location: ../zone
+  extra-dep: true
 - location:
     git: https://github.com/haskell/fgl.git
     commit: e29503775e474b7a7cd8951b6bebcf1529b888b5

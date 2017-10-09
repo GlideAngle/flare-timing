@@ -3,6 +3,10 @@ packages:
 - location: .
 - location: ../units
   extra-dep: true
+- location: ../latlng
+  extra-dep: true
+- location: ../zone
+  extra-dep: true
 - location: ../comp
   extra-dep: true
 - location: ../kml

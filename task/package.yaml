@@ -15,12 +15,17 @@ library:
   - numbers
   - fgl
   - uom-plugin
-  - siggy-chardust
   - bifunctors
+  - aeson
+  - scientific
+  - siggy-chardust
   - flight-units
+  - flight-latlng
+  - flight-zone
   source-dirs: library
   exposed-modules:
   - Flight.Task
+  - Flight.TaskTrack
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
 name: flight-task
@@ -37,10 +42,14 @@ tests:
     - hlint
     - numbers
     - fgl
-    - bifunctors
     - uom-plugin
+    - bifunctors
+    - aeson
+    - scientific
     - siggy-chardust
     - flight-units
+    - flight-latlng
+    - flight-zone
     ghc-options:
     - -rtsopts
     - -threaded
@@ -56,8 +65,12 @@ tests:
     - fgl
     - bifunctors
     - uom-plugin
+    - aeson
+    - scientific
     - siggy-chardust
     - flight-units
+    - flight-latlng
+    - flight-zone
     - tasty
     - tasty-hunit
     - tasty-quickcheck

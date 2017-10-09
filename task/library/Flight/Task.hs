@@ -11,31 +11,12 @@ Provides tasks for hang gliding and paragliding competitons. These are routes to
 from launch to goal passing through each control zone of the course in order along the way.
 -}
 module Flight.Task
-    ( -- * Control Zones
-      Lat(..)
-    , Lng(..)
-    , LatLng(..)
-    , Radius(..)
-    , center
-    , radius
-    , separatedZones
-    , Incline(..)
-    , Bearing(..)
-    , Zone(..)
-    , Deadline(..)
-    , TimeOfDay(..)
-    , Interval(..)
-    , StartGates(..)
-    , Task(..)
-    , TaskDistance(..)
-    , Epsilon(..)
-    , earthRadius
-    , defEps
-    , fromKms
-    -- * Spherical Distance Between Points
+    ( -- * Spherical Distance Between Points
+      TaskDistance(..)
     , distancePointToPoint
     , distanceHaversine
     , distanceHaversineF
+    , fromKms
     -- * Optimized Shortest Path 
     , Samples(..)
     , Tolerance(..)
@@ -44,15 +25,10 @@ module Flight.Task
     , DistancePath(..)
     , circumSample
     , distanceEdgeToEdge
-    -- * Angle unit conversion
-    , degToRad
-    , degToRadLL
-    , radToDeg
-    , radToDegLL
+    -- * Zones
+    , separatedZones
     ) where
 
-import Flight.Zone
-import Flight.Geo
 import Flight.PointToPoint
 import Flight.EdgeToEdge
 import Flight.Separated
