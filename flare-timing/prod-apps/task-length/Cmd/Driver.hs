@@ -40,6 +40,8 @@ cmp :: (Ord a, IsString a) => a -> a -> Ordering
 cmp a b =
     case (a, b) of
         ("pointToPoint", _) -> LT
+        ("projection", "pointToPoint") -> GT
+        ("projection", _) -> LT
         ("edgeToEdge", _) -> GT
         ("lat", _) -> LT
         ("lng", _) -> GT

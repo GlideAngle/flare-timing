@@ -46,6 +46,7 @@ data TaskDistanceMeasure
     = TaskDistanceByAllMethods
     | TaskDistanceByPoints
     | TaskDistanceByEdges
+    | TaskDistanceByProjection
     deriving (Eq, Show)
 
 mm30 :: Tolerance
@@ -60,6 +61,7 @@ instance FromJSON TaskRoutes
 data TaskTrack
     = TaskTrack { pointToPoint :: Maybe TrackLine
                 , edgeToEdge :: Maybe TrackLine
+                , projection :: Maybe TrackLine
                 }
     deriving (Show, Generic)
 
@@ -92,30 +94,46 @@ taskTrack excludeWaypoints tdm zsRaw =
             TaskTrack
                 { pointToPoint = Just pointTrackline
                 , edgeToEdge = Just edgeTrackline
+                , projection = Just projTrackline
                 }
         TaskDistanceByPoints ->
             TaskTrack
                 { pointToPoint = Just pointTrackline
                 , edgeToEdge = Nothing
+                , projection = Nothing
                 }
         TaskDistanceByEdges ->
             TaskTrack
                 { pointToPoint = Nothing
                 , edgeToEdge = Just edgeTrackline
+                , projection = Nothing
+                }
+        TaskDistanceByProjection ->
+            TaskTrack
+                { pointToPoint = Nothing
+                , edgeToEdge = Nothing
+                , projection = Just projTrackline
                 }
     where
         pointTrackline =
             TrackLine
-                { distance = toKm (dpRound 3) ptd
+                { distance = toKm ptd
                 , waypoints = if excludeWaypoints then [] else wpPoint
-                , legs = toKm (dpRound 3) <$> legsPoint
+                , legs = toKm <$> legsPoint
                 }
 
         edgeTrackline =
             TrackLine
-                { distance = toKm (dpRound 3) etd
+                { distance = toKm etd
                 , waypoints = if excludeWaypoints then [] else wpEdge
-                , legs = toKm (dpRound 3) <$> legsEdge
+                , legs = toKm <$> legsEdge
+                }
+
+        projTrackline =
+            TrackLine
+                { distance = toKm etd
+                , waypoints = if excludeWaypoints then [] else wpEdge
+                , legs = toKm <$> legsEdge
                 }
 
         zs :: [Zone]
@@ -164,8 +182,11 @@ taskTrack excludeWaypoints tdm zsRaw =
         legsEdge :: [TaskDistance]
         legsEdge = legDistances $ Point <$> edgeVertices
 
-        toKm :: (Rational -> Rational) -> TaskDistance -> Double
-        toKm f (TaskDistance d) =
+        toKm :: TaskDistance -> Double
+        toKm = toKm' (dpRound 3)
+
+        toKm' :: (Rational -> Rational) -> TaskDistance -> Double
+        toKm' f (TaskDistance d) =
             fromRational $ f dKm
             where 
                 MkQuantity dKm = convert d :: Quantity Rational [u| km |]
