@@ -38,6 +38,7 @@ library
     , bifunctors
     , aeson
     , scientific
+    , hcoord
     , siggy-chardust
     , flight-units
     , flight-latlng
@@ -50,6 +51,7 @@ library
       Flight.EdgeToEdge
       Flight.PointToPoint
       Flight.Separated
+      Flight.ShortestPath
       Paths_flight_task
   default-language: Haskell2010
 
@@ -69,6 +71,7 @@ test-suite hlint
     , bifunctors
     , aeson
     , scientific
+    , hcoord
     , siggy-chardust
     , flight-units
     , flight-latlng
@@ -78,6 +81,7 @@ test-suite hlint
       Flight.EdgeToEdge
       Flight.PointToPoint
       Flight.Separated
+      Flight.ShortestPath
       Flight.Task
       Flight.TaskTrack
   default-language: Haskell2010
@@ -111,6 +115,7 @@ test-suite task
       Flight.EdgeToEdge
       Flight.PointToPoint
       Flight.Separated
+      Flight.ShortestPath
       Flight.Task
       Flight.TaskTrack
       EdgeToEdge

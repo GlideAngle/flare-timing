@@ -30,6 +30,7 @@ module Flight.Task
     ) where
 
 import Flight.PointToPoint
+import Flight.ShortestPath
 import Flight.EdgeToEdge
 import Flight.Separated
 import Flight.CylinderEdge

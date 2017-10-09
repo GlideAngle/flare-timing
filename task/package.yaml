@@ -18,6 +18,7 @@ library:
   - bifunctors
   - aeson
   - scientific
+  - hcoord
   - siggy-chardust
   - flight-units
   - flight-latlng
@@ -46,6 +47,7 @@ tests:
     - bifunctors
     - aeson
     - scientific
+    - hcoord
     - siggy-chardust
     - flight-units
     - flight-latlng

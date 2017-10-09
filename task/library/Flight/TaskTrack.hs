@@ -35,11 +35,8 @@ import Flight.Zone (Zone(..), Radius(..), center)
 import Flight.Zone.Raw (RawZone(..))
 import Flight.CylinderEdge (Tolerance(..))
 import Flight.PointToPoint (TaskDistance(..), distancePointToPoint)
-import Flight.EdgeToEdge
-    ( EdgeDistance(..)
-    , DistancePath(..)
-    , distanceEdgeToEdge
-    )
+import Flight.ShortestPath (EdgeDistance(..), DistancePath(..))
+import Flight.EdgeToEdge (distanceEdgeToEdge)
 
 -- | The way to measure the task distance.
 data TaskDistanceMeasure
