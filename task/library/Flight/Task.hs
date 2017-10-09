@@ -25,6 +25,7 @@ module Flight.Task
     , DistancePath(..)
     , circumSample
     , distanceEdgeToEdge
+    , distanceProjected
     -- * Zones
     , separatedZones
     ) where
@@ -32,5 +33,6 @@ module Flight.Task
 import Flight.PointToPoint
 import Flight.ShortestPath
 import Flight.EdgeToEdge
+import Flight.Projected
 import Flight.Separated
 import Flight.CylinderEdge

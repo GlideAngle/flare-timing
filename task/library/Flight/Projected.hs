@@ -1,4 +1,4 @@
-module Flight.EdgeToEdge (distanceEdgeToEdge) where
+module Flight.Projected (distanceProjected) where
 
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Control.Arrow (first)
@@ -17,11 +17,11 @@ import Flight.Units ()
 import Flight.ShortestPath
     (DistancePath(..), EdgeDistance(..), PathCost(..), shortestPath)
 
-distanceEdgeToEdge :: DistancePath
-                   -> Tolerance
-                   -> [Zone]
-                   -> EdgeDistance
-distanceEdgeToEdge = shortestPath buildGraph
+distanceProjected :: DistancePath
+                  -> Tolerance
+                  -> [Zone]
+                  -> EdgeDistance
+distanceProjected = shortestPath buildGraph
 
 buildGraph :: SampleParams
            -> Bearing

@@ -50,6 +50,7 @@ library
       Flight.CylinderEdge
       Flight.EdgeToEdge
       Flight.PointToPoint
+      Flight.Projected
       Flight.Separated
       Flight.ShortestPath
       Paths_flight_task
@@ -80,6 +81,7 @@ test-suite hlint
       Flight.CylinderEdge
       Flight.EdgeToEdge
       Flight.PointToPoint
+      Flight.Projected
       Flight.Separated
       Flight.ShortestPath
       Flight.Task
@@ -114,6 +116,7 @@ test-suite task
       Flight.CylinderEdge
       Flight.EdgeToEdge
       Flight.PointToPoint
+      Flight.Projected
       Flight.Separated
       Flight.ShortestPath
       Flight.Task

@@ -37,6 +37,7 @@ import Flight.CylinderEdge (Tolerance(..))
 import Flight.PointToPoint (TaskDistance(..), distancePointToPoint)
 import Flight.ShortestPath (EdgeDistance(..), DistancePath(..))
 import Flight.EdgeToEdge (distanceEdgeToEdge)
+import Flight.Projected (distanceProjected)
 
 -- | The way to measure the task distance.
 data TaskDistanceMeasure
@@ -112,56 +113,69 @@ taskTrack excludeWaypoints tdm zsRaw =
                 , projection = Just projTrackline
                 }
     where
-        pointTrackline =
-            TrackLine
-                { distance = toKm ptd
-                , waypoints = if excludeWaypoints then [] else wpPoint
-                , legs = toKm <$> legsPoint
-                }
-
-        edgeTrackline =
-            TrackLine
-                { distance = toKm etd
-                , waypoints = if excludeWaypoints then [] else wpEdge
-                , legs = toKm <$> legsEdge
-                }
-
-        projTrackline =
-            TrackLine
-                { distance = toKm etd
-                , waypoints = if excludeWaypoints then [] else wpEdge
-                , legs = toKm <$> legsEdge
-                }
-
         zs :: [Zone]
         zs = toCylinder <$> zsRaw
 
-        ptd :: TaskDistance
-        ptd = distancePointToPoint zs
+        pointTrackline = goByPoint excludeWaypoints zs
+
+        edgeTrackline =
+            goByEdge
+                excludeWaypoints
+                (distanceEdgeToEdge PathPointToZone mm30 zs)
+
+        projTrackline =
+            goByEdge
+                excludeWaypoints
+                (distanceProjected PathPointToZone mm30 zs)
+
+toKm :: TaskDistance -> Double
+toKm = toKm' (dpRound 3)
+
+toKm' :: (Rational -> Rational) -> TaskDistance -> Double
+toKm' f (TaskDistance d) =
+    fromRational $ f dKm
+    where 
+        MkQuantity dKm = convert d :: Quantity Rational [u| km |]
+
+legDistances :: [Zone] -> [TaskDistance]
+legDistances xs =
+    zipWith
+        (\x y -> distancePointToPoint [x, y])
+        xs
+        (tail xs)
+
+goByPoint :: Bool -> [Zone] -> TrackLine
+goByPoint excludeWaypoints zs =
+    TrackLine
+        { distance = toKm d
+        , waypoints = if excludeWaypoints then [] else xs
+        , legs = toKm <$> ds
+        }
+    where
+        d :: TaskDistance
+        d = distancePointToPoint zs
 
         -- NOTE: Concentric zones of different radii can be defined that
         -- share the same center. Remove duplicate centers.
         centers :: [LatLng [u| rad |]]
         centers = nub $ center <$> zs
 
-        wpPoint :: [RawLatLng]
-        wpPoint = convertLatLng <$> centers
+        xs :: [RawLatLng]
+        xs = convertLatLng <$> centers
 
-        legDistances :: [Zone] -> [TaskDistance]
-        legDistances xs =
-            zipWith
-                (\x y -> distancePointToPoint [x, y])
-                xs
-                (tail xs)
+        ds :: [TaskDistance]
+        ds = legDistances $ Point <$> centers
 
-        legsPoint :: [TaskDistance]
-        legsPoint = legDistances $ Point <$> centers
-
-        ed :: EdgeDistance
-        ed = distanceEdgeToEdge PathPointToZone mm30 zs
-
-        etd :: TaskDistance
-        etd = edges ed
+goByEdge :: Bool -> EdgeDistance -> TrackLine
+goByEdge excludeWaypoints ed =
+    TrackLine
+        { distance = toKm d
+        , waypoints = if excludeWaypoints then [] else xs
+        , legs = toKm <$> ds
+        }
+    where
+        d :: TaskDistance
+        d = edges ed
 
         -- NOTE: The graph of points created for determining the shortest
         -- path can have duplicate points, so the shortest path too can have
@@ -173,20 +187,11 @@ taskTrack excludeWaypoints tdm zsRaw =
         edgeVertices :: [LatLng [u| rad |]]
         edgeVertices = nub $ edgeLine ed
 
-        wpEdge :: [RawLatLng]
-        wpEdge = convertLatLng <$> edgeVertices
+        xs :: [RawLatLng]
+        xs = convertLatLng <$> edgeVertices
 
-        legsEdge :: [TaskDistance]
-        legsEdge = legDistances $ Point <$> edgeVertices
-
-        toKm :: TaskDistance -> Double
-        toKm = toKm' (dpRound 3)
-
-        toKm' :: (Rational -> Rational) -> TaskDistance -> Double
-        toKm' f (TaskDistance d) =
-            fromRational $ f dKm
-            where 
-                MkQuantity dKm = convert d :: Quantity Rational [u| km |]
+        ds :: [TaskDistance]
+        ds = legDistances $ Point <$> edgeVertices
 
 convertLatLng :: LatLng [u| rad |] -> RawLatLng
 convertLatLng (LatLng (Lat eLat, Lng eLng)) =
