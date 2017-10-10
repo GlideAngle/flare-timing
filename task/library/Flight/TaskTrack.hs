@@ -121,12 +121,12 @@ taskTrack excludeWaypoints tdm zsRaw =
         edgeTrackline =
             goByEdge
                 excludeWaypoints
-                (distanceEdgeToEdge PathPointToZone mm30 zs)
+                (distanceEdgeToEdge PathPointToPoint mm30 zs)
 
         projTrackline =
             goByEdge
                 excludeWaypoints
-                (distanceProjected PathPointToZone mm30 zs)
+                (distanceProjected PathPointToPoint mm30 zs)
 
 toKm :: TaskDistance -> Double
 toKm = toKm' (dpRound 3)
@@ -175,7 +175,7 @@ goByEdge excludeWaypoints ed =
         }
     where
         d :: TaskDistance
-        d = edges ed
+        d = centers ed
 
         -- NOTE: The graph of points created for determining the shortest
         -- path can have duplicate points, so the shortest path too can have
@@ -184,14 +184,14 @@ goByEdge excludeWaypoints ed =
         -- I found that by decreasing defEps, the default epsilon, used for
         -- rational math from 1/10^9 to 1/10^12 these duplicates stopped
         -- occuring.
-        edgeVertices :: [LatLng [u| rad |]]
-        edgeVertices = nub $ edgeLine ed
+        vertices :: [LatLng [u| rad |]]
+        vertices = nub $ centerLine ed
 
         xs :: [RawLatLng]
-        xs = convertLatLng <$> edgeVertices
+        xs = convertLatLng <$> vertices
 
         ds :: [TaskDistance]
-        ds = legDistances $ Point <$> edgeVertices
+        ds = legDistances $ Point <$> vertices
 
 convertLatLng :: LatLng [u| rad |] -> RawLatLng
 convertLatLng (LatLng (Lat eLat, Lng eLng)) =
