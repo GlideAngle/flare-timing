@@ -38,6 +38,7 @@ library
     , bifunctors
     , aeson
     , scientific
+    , mtl
     , hcoord
     , siggy-chardust
     , flight-units
@@ -72,6 +73,7 @@ test-suite hlint
     , bifunctors
     , aeson
     , scientific
+    , mtl
     , hcoord
     , siggy-chardust
     , flight-units
@@ -103,6 +105,7 @@ test-suite task
     , uom-plugin
     , aeson
     , scientific
+    , mtl
     , siggy-chardust
     , flight-units
     , flight-latlng
