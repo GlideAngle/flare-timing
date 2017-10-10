@@ -33,6 +33,10 @@ import Flight.ShortestPath
     , buildGraph
     )
 
+-- | The task distance returned is for the projected UTM plane with
+-- eastings and northings. If you need to calculate the distance in sperical
+-- coordinates, the latitude and longitude of each vertex of the path can be
+-- used to work that out.
 distanceProjected :: DistancePath
                   -> Tolerance
                   -> [Zone]
