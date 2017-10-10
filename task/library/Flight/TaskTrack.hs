@@ -22,7 +22,7 @@ module Flight.TaskTrack
 
 import Data.Ratio ((%))
 import Data.List (nub)
-import Data.UnitsOfMeasure (u, convert)
+import Data.UnitsOfMeasure ((+:), u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
@@ -70,6 +70,7 @@ data TrackLine =
     TrackLine { distance :: Double
               , waypoints :: [RawLatLng]
               , legs :: [Double]
+              , legsSum :: [Double]
               } deriving (Show, Generic)
 
 instance ToJSON TrackLine
@@ -150,6 +151,7 @@ goByPoint excludeWaypoints zs =
         { distance = toKm d
         , waypoints = if excludeWaypoints then [] else xs
         , legs = toKm <$> ds
+        , legsSum = toKm <$> dsSum
         }
     where
         d :: TaskDistance
@@ -166,12 +168,16 @@ goByPoint excludeWaypoints zs =
         ds :: [TaskDistance]
         ds = legDistances $ Point <$> centers
 
+        dsSum :: [TaskDistance]
+        dsSum = scanl1 addTaskDistance ds
+
 goByEdge :: Bool -> EdgeDistance -> TrackLine
 goByEdge excludeWaypoints ed =
     TrackLine
         { distance = toKm d
         , waypoints = if excludeWaypoints then [] else xs
-        , legs = toKm <$> ds
+        , legs = toKm <$> ds 
+        , legsSum = toKm <$> dsSum
         }
     where
         d :: TaskDistance
@@ -192,6 +198,11 @@ goByEdge excludeWaypoints ed =
 
         ds :: [TaskDistance]
         ds = legDistances $ Point <$> vertices
+
+        dsSum :: [TaskDistance]
+        dsSum = scanl1 addTaskDistance ds
+
+addTaskDistance (TaskDistance a) (TaskDistance b) = TaskDistance $ a +: b
 
 convertLatLng :: LatLng [u| rad |] -> RawLatLng
 convertLatLng (LatLng (Lat eLat, Lng eLng)) =
