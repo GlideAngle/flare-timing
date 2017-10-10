@@ -72,6 +72,7 @@ tests:
     - aeson
     - scientific
     - mtl
+    - hcoord
     - siggy-chardust
     - flight-units
     - flight-latlng

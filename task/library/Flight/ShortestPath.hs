@@ -14,6 +14,8 @@ module Flight.ShortestPath
     , DistancePath(..)
     , PathCost(..)
     , GraphBuilder
+    , NodeConnector
+    , buildGraph
     , shortestPath 
     ) where
 
@@ -22,9 +24,10 @@ import qualified Data.Number.FixedFunctions as F
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Data.Maybe (catMaybes)
+import Control.Arrow (first)
 import Data.Graph.Inductive.Query.SP (LRTree, spTree) 
 import Data.Graph.Inductive.Internal.RootPath (getDistance, getLPathNodes)
-import Data.Graph.Inductive.Graph (Graph(..), Path, match)
+import Data.Graph.Inductive.Graph (Graph(..), Node, Path, LEdge, match)
 import Data.Graph.Inductive.PatriciaTree (Gr)
 
 import Flight.LatLng (LatLng(..), Epsilon(..), defEps)
@@ -36,8 +39,12 @@ import Flight.CylinderEdge
     , Samples(..)
     , SampleParams(..)
     , ZonePoint(..)
+    , sample
     )
 import Flight.Units ()
+
+type NodeConnector =
+    [(Node, ZonePoint)] -> [(Node, ZonePoint)] -> [LEdge PathCost]
 
 type GraphBuilder =
     SampleParams
@@ -186,3 +193,43 @@ loop builder sp n br@(Bearing (MkQuantity b)) _ zs xs =
                          Just zonePoint
             )
             <$> ps
+
+buildGraph :: NodeConnector
+           -> SampleParams
+           -> Bearing
+           -> Maybe [ZonePoint]
+           -> [Zone]
+           -> Gr ZonePoint PathCost
+buildGraph f sp b zs xs =
+    mkGraph flatNodes flatEdges
+    where
+        nodes' :: [[ZonePoint]]
+        nodes' =
+            case zs of
+              Nothing ->
+                  sample sp b Nothing <$> xs
+
+              Just zs' ->
+                  (\z -> sample sp b (Just z) (sourceZone z)) <$> zs'
+
+        len :: Int
+        len = sum $ map length nodes'
+
+        iiNodes :: [[(Node, ZonePoint)]]
+        iiNodes = zip [1 .. ] <$> nodes'
+
+        iNodes :: [[(Node, ZonePoint)]]
+        iNodes =
+            zipWith
+            (\i ys -> first (\y -> y + i * len) <$> ys)
+            [1 .. ]
+            iiNodes
+
+        edges' :: [[LEdge PathCost]]
+        edges' = zipWith f iNodes (tail iNodes)
+
+        flatEdges :: [LEdge PathCost]
+        flatEdges = concat edges'
+
+        flatNodes :: [(Node, ZonePoint)]
+        flatNodes = concat iNodes
