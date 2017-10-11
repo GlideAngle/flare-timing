@@ -29,6 +29,7 @@ FSDB is the database of FS and is an XML format for inputs, working and outputs 
 4. Time align the distance to goal for each fix with `leading-area` producing
    a `*.leading-area.yaml` file.
 5. Score the competition with `gap-point` producing a `*.gap-point.yaml` file.
+6. Start the [`server`](flare-timing/prod-apps/app-serve) hosting the web services.
 
 Once the data is prepared the server web service and single page client web app, the comp server and comp client, can be started.
 
@@ -41,30 +42,6 @@ TODO
 TODO
 
 ## Web Apps
-
-### Comp Server
-
-    $ __shake-build/comp-serve --help
-    Serve nominals, tasks and pilots from a competition YAML file.
-
-    comp-serve [OPTIONS]
-      With one competition *.comp.yaml file supplied
-
-    Common flags:
-      -f --file=ITEM
-      
-Run the server;
-
-    $ __shake-build/comp-serve --file=Forbes2012.comp.yaml
-    Drive {file = "Forbes2012.comp.yaml"}
-    ServeOptions {file = "Forbes2012.comp.yaml"}
-    listening on port 3000
-
-The following are the web service endpoints;
-
-    http://localhost:3000/nominals
-    http://localhost:3000/tasks
-    http://localhost:3000/pilots
 
 ### Comp Client
 
