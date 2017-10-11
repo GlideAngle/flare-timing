@@ -22,7 +22,7 @@ See the separate discussion of [building](BUILDING.md) and [testing](TESTING.md)
 FSDB is the database of FS and is an XML format for inputs, working and outputs of scoring. To host a **Flare Timing** web site, start with an FSDB file and relative tracklog files on disk and run a pipeline of command line programs to produce the data to display.
 
 1. Extract the inputs with [`extract-task`](flare-timing/prod-apps/extract-task) producing a `*.comp-input.yaml` file.
-2. Workout the optimal distance to fly a task with `task-length` producing
+2. Workout the optimal distance to fly a task with [`task-length`](flare-timing/prod-apps/task-length) producing
    a `*.task-length.yaml` file.
 3. Mask the competition task over the tracklogs with `mask-track` producing
    a `*.mask-track.yaml` file.
@@ -31,24 +31,6 @@ FSDB is the database of FS and is an XML format for inputs, working and outputs 
 5. Score the competition with `gap-point` producing a `*.gap-point.yaml` file.
 
 Once the data is prepared the server web service and single page client web app, the comp server and comp client, can be started.
-      
-### Task Length
-
-    $ __shake-build/task-length --help
-    Given a competition input YAML file, *.comp-input.yaml, work out the task
-    length by flowing an optimal route.
-
-    task-length [OPTIONS]
-
-    Source:
-      -d --dir=ITEM            Over all the competition *.comp.yaml files in this
-                               directory
-      -f --file=ITEM           With this one competition *.comp.yaml file
-    Filter:
-      -t --task[=TASK NUMBER]  Which tasks?
-      -m --measure=METHOD      Which way to measure task distances,
-                               taskdistancebyallmethods|taskdistancebypoints|taskdistancebyedges
-         --no-task-waypoints   Exclude the task waypoints?
       
 ### Masking Tracks
 
