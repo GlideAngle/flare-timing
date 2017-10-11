@@ -213,8 +213,9 @@ taskTrack excludeWaypoints tdm zsRaw =
                         , legsSum = toKm <$> scanl1 addTaskDistance legs'
                         } :: PlanarTrackLine
 
+-- | Convert to kilometres with mm accuracy.
 toKm :: TaskDistance -> Double
-toKm = toKm' (dpRound 3)
+toKm = toKm' (dpRound 6)
 
 toKm' :: (Rational -> Rational) -> TaskDistance -> Double
 toKm' f (TaskDistance d) =
