@@ -205,7 +205,10 @@ taskTrack excludeWaypoints tdm zsRaw =
                             let us = fromUTMRefZone <$> es
                                 us' = nub us
                             in if length us' == 1 then us' else us
-                        , mappedPoints = fromUTMRefEastNorth <$> es
+                        , mappedPoints =
+                            -- NOTE: Round to millimetres when easting and
+                            -- northing are in units of metres.
+                            roundEastNorth 3 . fromUTMRefEastNorth <$> es
                         , legs = toKm <$> legs'
                         , legsSum = toKm <$> scanl1 addTaskDistance legs'
                         } :: PlanarTrackLine
@@ -218,6 +221,15 @@ toKm' f (TaskDistance d) =
     fromRational $ f dKm
     where 
         MkQuantity dKm = convert d :: Quantity Rational [u| km |]
+
+roundEastNorth :: Integer -> EastingNorthing -> EastingNorthing
+roundEastNorth dp EastingNorthing{..} =
+    EastingNorthing
+        { easting = f easting
+        , northing = f northing
+        }
+    where
+        f x = fromRational $ (dpRound dp) $ toRational x
 
 fromUTMRefEastNorth :: HC.UTMRef -> EastingNorthing
 fromUTMRefEastNorth HC.UTMRef{..} =
