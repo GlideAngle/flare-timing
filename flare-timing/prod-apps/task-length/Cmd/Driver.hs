@@ -39,6 +39,12 @@ driverMain = withCmdArgs drive
 cmp :: (Ord a, IsString a) => a -> a -> Ordering
 cmp a b =
     case (a, b) of
+        ("easting", _) -> LT
+        ("northing", "easting") -> GT
+        ("northing", _) -> LT
+        ("latZone", "lngZone") -> LT
+        ("latZone", _) -> GT
+        ("lngZone", _) -> GT
         ("pointToPoint", _) -> LT
         ("projection", "pointToPoint") -> GT
         ("projection", _) -> LT

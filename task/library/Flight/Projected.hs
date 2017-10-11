@@ -8,7 +8,7 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE QuasiQuotes #-}
 
-module Flight.Projected (distanceProjected) where
+module Flight.Projected (distanceProjected, zoneToProjectedEastNorth) where
 
 import Data.Functor.Identity (runIdentity)
 import Control.Monad.Except (runExceptT)
@@ -58,9 +58,9 @@ connectNodes xs ys =
                 (TaskDistance (MkQuantity d)) =
                     projectedPythagorean (Point $ point x) (Point $ point y)
 
-zoneToProjectedLatLng :: Zone -> Either String HC.UTMRef
+zoneToProjectedEastNorth :: Zone -> Either String HC.UTMRef
 
-zoneToProjectedLatLng (Point x) = do
+zoneToProjectedEastNorth (Point x) = do
     xLL <- runIdentity . runExceptT $ HC.mkLatLng xLat' xLng' 0 HC.wgs84Datum
     runIdentity . runExceptT $ HC.toUTMRef xLL
     where
@@ -81,7 +81,7 @@ tooFar = TaskDistance [u| 20000000 m |]
 projectedPythagorean :: Zone -> Zone -> TaskDistance
 
 projectedPythagorean x@(Point _) y@(Point _) =
-    case (zoneToProjectedLatLng x, zoneToProjectedLatLng y) of
+    case (zoneToProjectedEastNorth x, zoneToProjectedEastNorth y) of
         (Right xLL, Right yLL) ->
             TaskDistance dm
             where

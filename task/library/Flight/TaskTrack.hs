@@ -22,11 +22,13 @@ module Flight.TaskTrack
     ) where
 
 import Data.Ratio ((%))
+import Data.Either (partitionEithers)
 import Data.List (nub)
 import Data.UnitsOfMeasure ((+:), u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
+import qualified UTMRef as HC (UTMRef(..))
 
 import Flight.Units ()
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
@@ -38,7 +40,7 @@ import Flight.CylinderEdge (Tolerance(..))
 import Flight.PointToPoint (TaskDistance(..), distancePointToPoint)
 import Flight.ShortestPath (EdgeDistance(..), DistancePath(..))
 import Flight.EdgeToEdge (distanceEdgeToEdge)
-import Flight.Projected (distanceProjected)
+import Flight.Projected (distanceProjected, zoneToProjectedEastNorth)
 
 -- | The way to measure the task distance.
 data TaskDistanceMeasure
@@ -90,6 +92,7 @@ instance FromJSON TrackLine
 
 data PlanarTrackLine =
     PlanarTrackLine { distance :: Double
+                    , mappedPoints :: [UniversalTransverseMercator]
                     , legs :: [Double]
                     , legsSum :: [Double]
                     }
@@ -97,6 +100,17 @@ data PlanarTrackLine =
 
 instance ToJSON PlanarTrackLine
 instance FromJSON PlanarTrackLine
+
+data UniversalTransverseMercator =
+    UniversalTransverseMercator { easting :: Double
+                                , northing :: Double
+                                , latZone :: Char
+                                , lngZone :: Int
+                                }
+    deriving (Show, Generic)
+
+instance ToJSON UniversalTransverseMercator
+instance FromJSON UniversalTransverseMercator
 
 taskTracks :: Bool
            -> TaskDistanceMeasure
@@ -160,6 +174,7 @@ taskTrack excludeWaypoints tdm zsRaw =
                         (distanceProjected PathPointToPoint mm30 zs)
 
                 ps = toPoint <$> (waypoints projected)
+                (_, es) = partitionEithers $ zoneToProjectedEastNorth <$> ps 
 
                 -- NOTE: Workout the distance for each leg projected.
                 legs' =
@@ -178,6 +193,7 @@ taskTrack excludeWaypoints tdm zsRaw =
                 planar =
                     PlanarTrackLine
                         { distance = distance (projected :: TrackLine)
+                        , mappedPoints = fromUTMRef <$> es
                         , legs = toKm <$> legs'
                         , legsSum = toKm <$> scanl1 addTaskDistance legs'
                         } :: PlanarTrackLine
@@ -190,6 +206,15 @@ toKm' f (TaskDistance d) =
     fromRational $ f dKm
     where 
         MkQuantity dKm = convert d :: Quantity Rational [u| km |]
+
+fromUTMRef :: HC.UTMRef -> UniversalTransverseMercator
+fromUTMRef HC.UTMRef{..} =
+    UniversalTransverseMercator
+        { easting = easting
+        , northing = northing
+        , latZone = latZone
+        , lngZone = lngZone
+        }
 
 legDistances :: [Zone] -> [TaskDistance]
 legDistances xs =
