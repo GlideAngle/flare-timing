@@ -24,39 +24,13 @@ FSDB is the database of FS and is an XML format for inputs, working and outputs 
 1. Extract the inputs with [`extract-task`](flare-timing/prod-apps/extract-task) producing a `*.comp-input.yaml` file.
 2. Workout the optimal distance to fly a task with [`task-length`](flare-timing/prod-apps/task-length) producing
    a `*.task-length.yaml` file.
-3. Mask the competition task over the tracklogs with `mask-track` producing
+3. Mask the competition task over the tracklogs with [`mask-track`](flare-timing/prod-apps/mask-track) producing
    a `*.mask-track.yaml` file.
 4. Time align the distance to goal for each fix with `leading-area` producing
    a `*.leading-area.yaml` file.
 5. Score the competition with `gap-point` producing a `*.gap-point.yaml` file.
 
 Once the data is prepared the server web service and single page client web app, the comp server and comp client, can be started.
-      
-### Masking Tracks
-
-    $ __shake-build/mask-track --help
-    Given a competition input YAML file, *.comp-input.yaml, and relative track log
-    KML files, by masking the track logs with the zones, work out;
-    * if the pilot launched
-    * if they made goal then
-        * how long the pilot took to reach goal
-    * if they landed out then
-        * how far they got along the course
-        * how far yet to reach goal
-
-    mask-track [OPTIONS]
-
-    Source:
-      -d --dir=ITEM            Over all the competition *.comp.yaml files in this
-                               directory
-      -f --file=ITEM           With this one competition *.comp.yaml file
-    Filter:
-      -t --task[=TASK NUMBER]  Which tasks?
-      -p --pilot[=PILOT NAME]  Which pilots?
-      -r --reckon=RECKON NAME  Work out one of these things,
-                               launch|goal|zones|goaldistance|flowndistance|time|lead
-      -m --measure=METHOD      Which way to measure task distances,
-                               taskdistancebyallmethods|taskdistancebypoints|taskdistancebyedges
 
 ### Leading Area
 
