@@ -30,24 +30,4 @@ FSDB is the database of FS and is an XML format for inputs, working and outputs 
    a `*.leading-area.yaml` file.
 5. Score the competition with `gap-point` producing a `*.gap-point.yaml` file.
 6. Start the [`server`](flare-timing/prod-apps/app-serve) hosting the web services.
-
-Once the data is prepared the server web service and single page client web app, the comp server and comp client, can be started.
-
-### Leading Area
-
-TODO
-
-### GAP Points
-
-TODO
-
-## Web Apps
-
-### Comp Client
-
-Start the webpack devserver and navigate to `http://localhost:9000/app.html` for the client;
-
-    ./build.sh view-start
-    
-    $ webpack-dev-server
-    Project is running at http://localhost:9000/
+7. Start the [`dev server`](flare-timing/view) or otherwise host the web app.
