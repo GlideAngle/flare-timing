@@ -21,7 +21,7 @@ See the separate discussion of [building](BUILDING.md) and [testing](TESTING.md)
 
 FSDB is the database of FS and is an XML format for inputs, working and outputs of scoring. To host a **Flare Timing** web site, start with an FSDB file and relative tracklog files on disk and run a pipeline of command line programs to produce the data to display.
 
-1. Extract the inputs with `extract-task` producing a `*.comp-input.yaml` file.
+1. Extract the inputs with [`extract-task`](flare-timing/prod-apps/extract-task) producing a `*.comp-input.yaml` file.
 2. Workout the optimal distance to fly a task with `task-length` producing
    a `*.task-length.yaml` file.
 3. Mask the competition task over the tracklogs with `mask-track` producing
@@ -31,18 +31,6 @@ FSDB is the database of FS and is an XML format for inputs, working and outputs 
 5. Score the competition with `gap-point` producing a `*.gap-point.yaml` file.
 
 Once the data is prepared the server web service and single page client web app, the comp server and comp client, can be started.
-
-### Extracting Inputs
-
-    $ __shake-build/extract-task --help
-    Convert a competition FSDB (XML) file to YAML with only the inputs needed for
-    scoring.
-
-    extract-task [OPTIONS]
-
-    Source:
-      -d --dir=ITEM   Over all the competition FSDB files in this directory
-      -f --file=ITEM  With this one competition FSDB file
       
 ### Task Length
 
