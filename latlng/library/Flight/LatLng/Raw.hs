@@ -32,18 +32,28 @@ instance FromJSON RawLatLng
 newtype RawLat = RawLat Rational deriving (Eq, Show)
 newtype RawLng = RawLng Rational deriving (Eq, Show)
 
+-- | Decimal degrees at 8 decimal places is just a bit more than a mm.
+--
+--     * 1.1132 mm at the equator
+--     * 1.0247 mm at 23 N/S
+--     * 787.1 µm at 45 N/S
+--     * 434.96 µm at 67 N/S
+-- SOURCE: <https://en.wikipedia.org/wiki/Decimal_degrees>
+dpDegree :: Int
+dpDegree = 8
+
 fromSci :: Scientific -> Rational
 fromSci x = toRational (toRealFloat x :: Double)
 
 toSci :: Rational -> Scientific
 toSci x =
-    case fromRationalRepetend (Just 7) x of
+    case fromRationalRepetend (Just $ dpDegree + 1) x of
         Left (s, _) -> s
         Right (s, _) -> s
 
 showSci :: Scientific -> String
 showSci =
-    formatScientific Fixed (Just 3)
+    formatScientific Fixed (Just dpDegree)
 
 instance ToJSON RawLat where
     toJSON (RawLat x) = Number $ toSci x
