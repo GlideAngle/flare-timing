@@ -40,10 +40,8 @@ cmp :: (Ord a, IsString a) => a -> a -> Ordering
 cmp a b =
     case (a, b) of
         ("easting", _) -> LT
-        ("northing", "easting") -> GT
-        ("northing", _) -> LT
-        ("latZone", "lngZone") -> LT
-        ("latZone", _) -> GT
+        ("northing", _) -> GT
+        ("latZone", _) -> LT
         ("lngZone", _) -> GT
         ("pointToPoint", _) -> LT
         ("projection", "pointToPoint") -> GT
@@ -54,7 +52,15 @@ cmp a b =
         ("distance", _) -> LT
         ("legs", "distance") -> GT
         ("legs", _) -> LT
+        ("legsSum", "distance") -> GT
+        ("legsSum", "legs") -> GT
+        ("legsSum", _) -> LT
         ("wayPoints", _) -> GT
+        ("mappedPoints", "distance") -> GT
+        ("mappedPoints", "legs") -> GT
+        ("mappedPoints", "legsSum") -> GT
+        ("mappedPoints", _) -> LT
+        ("mappedZones", _) -> GT
         _ -> compare a b
 
 drive :: CmdOptions -> IO ()

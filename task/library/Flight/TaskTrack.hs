@@ -92,7 +92,8 @@ instance FromJSON TrackLine
 
 data PlanarTrackLine =
     PlanarTrackLine { distance :: Double
-                    , mappedPoints :: [UniversalTransverseMercator]
+                    , mappedZones :: [UtmZone]
+                    , mappedPoints :: [EastingNorthing]
                     , legs :: [Double]
                     , legsSum :: [Double]
                     }
@@ -101,16 +102,23 @@ data PlanarTrackLine =
 instance ToJSON PlanarTrackLine
 instance FromJSON PlanarTrackLine
 
-data UniversalTransverseMercator =
-    UniversalTransverseMercator { easting :: Double
-                                , northing :: Double
-                                , latZone :: Char
-                                , lngZone :: Int
-                                }
+data EastingNorthing =
+    EastingNorthing { easting :: Double
+                    , northing :: Double
+                    }
     deriving (Show, Generic)
 
-instance ToJSON UniversalTransverseMercator
-instance FromJSON UniversalTransverseMercator
+instance ToJSON EastingNorthing
+instance FromJSON EastingNorthing
+
+data UtmZone =
+    UtmZone { latZone :: Char
+            , lngZone :: Int
+            }
+    deriving (Show, Eq, Generic)
+
+instance ToJSON UtmZone
+instance FromJSON UtmZone
 
 taskTracks :: Bool
            -> TaskDistanceMeasure
@@ -193,7 +201,11 @@ taskTrack excludeWaypoints tdm zsRaw =
                 planar =
                     PlanarTrackLine
                         { distance = distance (projected :: TrackLine)
-                        , mappedPoints = fromUTMRef <$> es
+                        , mappedZones =
+                            let us = fromUTMRefZone <$> es
+                                us' = nub us
+                            in if length us' == 1 then us' else us
+                        , mappedPoints = fromUTMRefEastNorth <$> es
                         , legs = toKm <$> legs'
                         , legsSum = toKm <$> scanl1 addTaskDistance legs'
                         } :: PlanarTrackLine
@@ -207,12 +219,17 @@ toKm' f (TaskDistance d) =
     where 
         MkQuantity dKm = convert d :: Quantity Rational [u| km |]
 
-fromUTMRef :: HC.UTMRef -> UniversalTransverseMercator
-fromUTMRef HC.UTMRef{..} =
-    UniversalTransverseMercator
+fromUTMRefEastNorth :: HC.UTMRef -> EastingNorthing
+fromUTMRefEastNorth HC.UTMRef{..} =
+    EastingNorthing
         { easting = easting
         , northing = northing
-        , latZone = latZone
+        }
+
+fromUTMRefZone :: HC.UTMRef -> UtmZone
+fromUTMRefZone HC.UTMRef{..} =
+    UtmZone
+        { latZone = latZone
         , lngZone = lngZone
         }
 
