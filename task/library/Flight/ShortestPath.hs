@@ -135,7 +135,6 @@ distance _ _ _ [] = (PathCost 0, [])
 distance _ _ _ [_] = (PathCost 0, [])
 distance builder dPath tolerance xs
     | not $ separatedZones xs = (PathCost 0, [])
-    | dPath == PathPointToPoint && length xs < 3 = (PathCost pointwise, centers')
     | otherwise =
         case dist of
             Nothing -> (PathCost pointwise, centers')
