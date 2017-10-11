@@ -11,6 +11,7 @@
 
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE DuplicateRecordFields #-}
 
 module Flight.TaskTrack
     ( TaskDistanceMeasure(..)
@@ -51,30 +52,51 @@ mm30 :: Tolerance
 mm30 = Tolerance $ 30 % 1000
 
 newtype TaskRoutes =
-    TaskRoutes { taskRoutes :: [TaskTrack] } deriving (Show, Generic)
+    TaskRoutes { taskRoutes :: [TaskTrack] }
+    deriving (Show, Generic)
 
 instance ToJSON TaskRoutes
 instance FromJSON TaskRoutes
 
-data TaskTrack
-    = TaskTrack { pointToPoint :: Maybe TrackLine
-                , edgeToEdge :: Maybe TrackLine
-                , projection :: Maybe TrackLine
-                }
+data TaskTrack =
+    TaskTrack { pointToPoint :: Maybe TrackLine
+              , edgeToEdge :: Maybe TrackLine
+              , projection :: Maybe ProjectedTrackLine
+              }
     deriving (Show, Generic)
 
 instance ToJSON TaskTrack
 instance FromJSON TaskTrack
+
+data ProjectedTrackLine =
+    ProjectedTrackLine { planar :: PlanarTrackLine
+                       , spherical :: TrackLine
+                       }
+    deriving (Show, Generic)
+
+instance ToJSON ProjectedTrackLine
+instance FromJSON ProjectedTrackLine
 
 data TrackLine =
     TrackLine { distance :: Double
               , waypoints :: [RawLatLng]
               , legs :: [Double]
               , legsSum :: [Double]
-              } deriving (Show, Generic)
+              }
+    deriving (Show, Generic)
 
 instance ToJSON TrackLine
 instance FromJSON TrackLine
+
+data PlanarTrackLine =
+    PlanarTrackLine { distance :: Double
+                    , legs :: [Double]
+                    , legsSum :: [Double]
+                    }
+    deriving (Show, Generic)
+
+instance ToJSON PlanarTrackLine
+instance FromJSON PlanarTrackLine
 
 taskTracks :: Bool
            -> TaskDistanceMeasure
@@ -125,9 +147,40 @@ taskTrack excludeWaypoints tdm zsRaw =
                 (distanceEdgeToEdge PathPointToPoint mm30 zs)
 
         projTrackline =
-            goByEdge
-                excludeWaypoints
-                (distanceProjected PathPointToPoint mm30 zs)
+            ProjectedTrackLine { planar = planar
+                               , spherical = spherical
+                               }
+            where
+                -- NOTE: The projected distance is worked out from easting and
+                -- northing, in the projected plane but he distance for each leg
+                -- is measured on the sphere.
+                projected =
+                    goByEdge
+                        excludeWaypoints
+                        (distanceProjected PathPointToPoint mm30 zs)
+
+                ps = toPoint <$> (waypoints projected)
+
+                -- NOTE: Workout the distance for each leg projected.
+                legs' =
+                    zipWith
+                        (\ a b ->
+                            centers
+                            $ distanceProjected PathPointToPoint mm30 [a, b])
+                        ps
+                        (tail ps)
+
+                spherical =
+                    projected
+                        { distance = toKm $ distancePointToPoint ps
+                        } :: TrackLine
+
+                planar =
+                    PlanarTrackLine
+                        { distance = distance (projected :: TrackLine)
+                        , legs = toKm <$> legs'
+                        , legsSum = toKm <$> scanl1 addTaskDistance legs'
+                        } :: PlanarTrackLine
 
 toKm :: TaskDistance -> Double
 toKm = toKm' (dpRound 3)
@@ -202,6 +255,7 @@ goByEdge excludeWaypoints ed =
         dsSum :: [TaskDistance]
         dsSum = scanl1 addTaskDistance ds
 
+addTaskDistance :: TaskDistance -> TaskDistance -> TaskDistance
 addTaskDistance (TaskDistance a) (TaskDistance b) = TaskDistance $ a +: b
 
 convertLatLng :: LatLng [u| rad |] -> RawLatLng
@@ -215,6 +269,19 @@ convertLatLng (LatLng (Lat eLat, Lng eLng)) =
 
         MkQuantity eLng' =
             convert eLng :: Quantity Rational [u| deg |]
+
+toPoint :: RawLatLng -> Zone
+toPoint RawLatLng{..} =
+    Point (LatLng (Lat latRad, Lng lngRad))
+    where
+        RawLat lat' = lat
+        RawLng lng' = lng
+
+        latDeg = MkQuantity lat' :: Quantity Rational [u| deg |]
+        lngDeg = MkQuantity lng' :: Quantity Rational [u| deg |]
+
+        latRad = convert latDeg :: Quantity Rational [u| rad |]
+        lngRad = convert lngDeg :: Quantity Rational [u| rad |]
 
 toCylinder :: RawZone -> Zone
 toCylinder RawZone{..} =
