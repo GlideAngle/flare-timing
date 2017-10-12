@@ -78,25 +78,19 @@ cmp a b =
         ("launched", _) -> LT
         ("madeGoal", "launched") -> GT
         ("madeGoal", _) -> LT
-        ("zonesMade", "launched") -> GT
-        ("zonesMade", "madeGoal") -> GT
-        ("zonesMade", _) -> LT
-        ("zonesProof", "launched") -> GT
-        ("zonesProof", "madeGoal") -> GT
-        ("zonesProof", "zonesMade") -> GT
-        ("zonesProof", _) -> LT
         ("timeToGoal", "launched") -> GT
         ("timeToGoal", "madeGoal") -> GT
-        ("timeToGoal", "zonesMade") -> GT
-        ("timeToGoal", "zonesProof") -> GT
         ("timeToGoal", _) -> LT
         ("distanceToGoal", "launched") -> GT
         ("distanceToGoal", "madeGoal") -> GT
-        ("distanceToGoal", "zonesMade") -> GT
-        ("distanceToGoal", "zonesProof") -> GT
         ("distanceToGoal", "timeToGoal") -> GT
         ("distanceToGoal", _) -> LT
+        ("bestDistance", "zonesMade") -> LT
+        ("bestDistance", "zonesProof") -> LT
         ("bestDistance", _) -> GT
+        ("zonesMade", "zonesProof") -> LT
+        ("zonesMade", _) -> GT
+        ("zonesProof", _) -> GT
         ("time", _) -> LT
         ("lat", "time") -> GT
         ("lat", _) -> LT
