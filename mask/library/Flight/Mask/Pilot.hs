@@ -36,7 +36,7 @@ module Flight.Mask.Pilot
     , timeFlown
     ) where
 
-import Data.Time.Clock (UTCTime, diffUTCTime)
+import Data.Time.Clock (UTCTime, diffUTCTime, addUTCTime)
 import Data.List (nub)
 import qualified Data.List as List (find, findIndex)
 import Data.Ratio ((%))
@@ -52,14 +52,15 @@ import qualified Data.Flight.Kml as Kml
     , Latitude(..)
     , Longitude(..)
     , LatLngAlt(..)
-    , FixMark(mark)
-    , Fix
+    , FixMark(..)
     , MarkedFixes(..)
     )
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
-import qualified Flight.LatLng.Raw as Raw (RawLat(..), RawLng(..))
+import Flight.LatLng.Raw (RawLat(..), RawLng(..))
 import Flight.Zone (Radius(..), Zone(..))
 import qualified Flight.Zone.Raw as Raw (RawZone(..))
+import Data.Flight.PilotTrack (ZoneProof(..))
+import qualified Data.Flight.PilotTrack as Cmp (Fix(..))
 import qualified Data.Flight.Comp as Cmp
     ( CompSettings(..)
     , Pilot(..)
@@ -91,6 +92,14 @@ import Flight.Mask.Settings (readCompSettings)
 import Flight.Mask (Masking)
 
 newtype PilotTrackFixes = PilotTrackFixes Int deriving Show
+
+type ZoneIdx = Int
+
+data ZoneHit
+    = ZoneMiss
+    | ZoneEnter ZoneIdx ZoneIdx
+    | ZoneExit ZoneIdx ZoneIdx
+    deriving Eq
 
 settingsLogs :: FilePath
              -> [IxTask]
@@ -142,8 +151,8 @@ zoneToCylinder z =
     Cylinder radius (toLL(lat, lng))
     where
         radius = Radius (MkQuantity $ Raw.radius z % 1)
-        Raw.RawLat lat = Raw.lat z
-        Raw.RawLng lng = Raw.lng z
+        RawLat lat = Raw.lat z
+        RawLng lng = Raw.lng z
 
 fixToPoint :: Kml.Fix -> Zone
 fixToPoint fix =
@@ -152,19 +161,23 @@ fixToPoint fix =
         Kml.Latitude lat = Kml.lat fix
         Kml.Longitude lng = Kml.lng fix
 
-crossedZone :: Zone -> [Zone] -> Bool
+crossedZone :: Zone -> [Zone] -> ZoneHit
 crossedZone z xs =
-    entersZone z xs || exitsZone z xs
+    case entersZone z xs of
+        e@(ZoneEnter _ _) -> e
+        _ -> exitsZone z xs
 
-entersZone :: Zone -> [Zone] -> Bool
+entersZone :: Zone -> [Zone] -> ZoneHit
 entersZone z xs =
-    exitsZone z $ reverse xs
+    case exitsZone z $ reverse xs of
+        ZoneExit x y -> ZoneEnter y x
+        _ -> ZoneMiss
 
-exitsZone :: Zone -> [Zone] -> Bool
+exitsZone :: Zone -> [Zone] -> ZoneHit
 exitsZone z xs =
     case (insideZone, outsideZone) of
-        (Just _, Just _) -> True
-        _ -> False
+        (Just x, Just y) -> ZoneExit x y
+        _ -> ZoneMiss
     where
         insideZone :: Maybe Int
         insideZone =
@@ -185,8 +198,14 @@ started tasks (IxTask i) Kml.MarkedFixes{fixes} =
         Nothing -> False
         Just Cmp.Task{speedSection, zones} ->
             case slice speedSection zones of
-                [] -> False
-                z : _ -> exitsZone (zoneToCylinder z) (fixToPoint <$> fixes)
+                [] ->
+                    False
+
+                z : _ ->
+                    let ez = exitsZone (zoneToCylinder z) (fixToPoint <$> fixes)
+                    in case ez of
+                         ZoneExit _ _ -> True
+                         _ -> False
 
 madeGoal :: Masking Bool
 madeGoal tasks (IxTask i) Kml.MarkedFixes{fixes} =
@@ -194,28 +213,83 @@ madeGoal tasks (IxTask i) Kml.MarkedFixes{fixes} =
         Nothing -> False
         Just Cmp.Task{zones} ->
             case reverse zones of
-                [] -> False
-                z : _ -> entersZone (zoneToCylinder z) (fixToPoint <$> fixes)
+                [] ->
+                    False
 
-tickedZones :: [Zone] -> [Zone] -> [Bool]
+                z : _ ->
+                    let ez = entersZone (zoneToCylinder z) (fixToPoint <$> fixes)
+                    in case ez of
+                         ZoneEnter _ _ -> True
+                         _ -> False
+
+tickedZones :: [Zone] -> [Zone] -> [ZoneHit]
 tickedZones zones xs =
     flip crossedZone xs <$> zones
 
-madeZones :: [Cmp.Task] -> IxTask -> Kml.MarkedFixes -> [Bool]
-madeZones tasks (IxTask i) Kml.MarkedFixes{fixes} =
-    case tasks ^? element (i - 1) of
-        Nothing -> []
-        Just Cmp.Task{zones} ->
-            tickedZones (zoneToCylinder <$> zones) (fixToPoint <$> fixes)
+fixFromFix :: UTCTime -> Kml.Fix -> Cmp.Fix
+fixFromFix mark0 x =
+    -- SEE: https://ocharles.org.uk/blog/posts/2013-12-15-24-days-of-hackage-time.html
+    Cmp.Fix { time = (fromInteger secs) `addUTCTime` mark0
+            , lat = RawLat lat
+            , lng = RawLng lng
+            }
+    where
+        Kml.Seconds secs = Kml.mark x
+        Kml.Latitude lat = Kml.lat x
+        Kml.Longitude lng = Kml.lng x
 
-madeSpeedZones :: [Cmp.Task] -> IxTask -> Kml.MarkedFixes -> [Bool]
-madeSpeedZones tasks (IxTask i) Kml.MarkedFixes{fixes} =
+proof :: [Kml.Fix] -> UTCTime -> Int -> Int -> [Bool] -> Maybe ZoneProof
+proof fixes mark0 i j bs = do
+    fixM <- fixes ^? element i
+    fixN <- fixes ^? element j
+    let fs = fixFromFix mark0 <$> [fixM, fixN]
+    return $ ZoneProof { fixes = fs
+                       , inZone = bs
+                       }
+
+madeZones :: [Cmp.Task]
+          -> IxTask
+          -> Kml.MarkedFixes
+          -> ([Bool], [Maybe ZoneProof])
+madeZones tasks (IxTask i) Kml.MarkedFixes{mark0, fixes} =
     case tasks ^? element (i - 1) of
-        Nothing -> []
+        Nothing ->
+            ([], [])
+
+        Just Cmp.Task{zones} ->
+            ((/= ZoneMiss) <$> xs, f <$> xs)
+            where
+                xs =
+                    tickedZones
+                        (zoneToCylinder <$> zones)
+                        (fixToPoint <$> fixes)
+
+                f :: ZoneHit -> Maybe ZoneProof
+                f ZoneMiss = Nothing
+                f (ZoneExit m n) = proof fixes mark0 m n [True, False]
+                f (ZoneEnter m n) = proof fixes mark0 m n [False, True]
+
+madeSpeedZones :: [Cmp.Task]
+               -> IxTask
+               -> Kml.MarkedFixes
+               -> ([Bool], [Maybe ZoneProof])
+madeSpeedZones tasks (IxTask i) Kml.MarkedFixes{mark0, fixes} =
+    case tasks ^? element (i - 1) of
+        Nothing ->
+            ([], [])
+
         Just Cmp.Task{speedSection, zones} ->
-            tickedZones
-                (zoneToCylinder <$> slice speedSection zones)
-                (fixToPoint <$> fixes)
+            ((/= ZoneMiss) <$> xs, f <$> xs)
+            where
+                xs =
+                    tickedZones
+                        (zoneToCylinder <$> slice speedSection zones)
+                        (fixToPoint <$> fixes)
+
+                f :: ZoneHit -> Maybe ZoneProof
+                f ZoneMiss = Nothing
+                f (ZoneExit m n) = proof fixes mark0 m n [True, False]
+                f (ZoneEnter m n) = proof fixes mark0 m n [False, True]
 
 mm30 :: Tolerance
 mm30 = Tolerance $ 30 % 1000
@@ -238,7 +312,7 @@ distanceViaZones mkZone speedSection zs xs =
     where
         -- TODO: Don't assume end of speed section is goal.
         zsSpeed = slice speedSection zs
-        ys = tickedZones zsSpeed (mkZone <$> xs)
+        ys = (/= ZoneMiss) <$> tickedZones zsSpeed (mkZone <$> xs)
         notTicked = drop (length $ takeWhile (== True) ys) zsSpeed
 
 slice :: Cmp.SpeedSection -> [a] -> [a]
@@ -352,10 +426,16 @@ durationViaZones mkZone atTime speedSection zs os gs t0 xs =
             (f <$> xz0, f <$> xzN)
             where
                 exits' :: (Kml.Fix, (Zone, Zone)) -> Bool
-                exits' (_, (zx, zy)) = exitsZone z0 [zx, zy]
+                exits' (_, (zx, zy)) =
+                    case exitsZone z0 [zx, zy] of
+                        ZoneExit _ _ -> True
+                        _ -> False
 
                 enters' :: (Kml.Fix, (Zone, Zone)) -> Bool
-                enters' (_, (zx, zy)) = entersZone zN [zx, zy]
+                enters' (_, (zx, zy)) =
+                    case entersZone zN [zx, zy] of
+                        ZoneEnter _ _ -> True
+                        _ -> False
 
                 xz0 :: Maybe (Kml.Fix, (Zone, Zone))
                 xz0 = List.find exits' xzs

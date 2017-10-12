@@ -81,22 +81,26 @@ cmp a b =
         ("zonesMade", "launched") -> GT
         ("zonesMade", "madeGoal") -> GT
         ("zonesMade", _) -> LT
-        ("zonesNotMade", "launched") -> GT
-        ("zonesNotMade", "madeGoal") -> GT
-        ("zonesNotMade", "zonesMade") -> GT
-        ("zonesNotMade", _) -> LT
+        ("zonesProof", "launched") -> GT
+        ("zonesProof", "madeGoal") -> GT
+        ("zonesProof", "zonesMade") -> GT
+        ("zonesProof", _) -> LT
         ("timeToGoal", "launched") -> GT
         ("timeToGoal", "madeGoal") -> GT
         ("timeToGoal", "zonesMade") -> GT
-        ("timeToGoal", "zonesNotMade") -> GT
+        ("timeToGoal", "zonesProof") -> GT
         ("timeToGoal", _) -> LT
         ("distanceToGoal", "launched") -> GT
         ("distanceToGoal", "madeGoal") -> GT
         ("distanceToGoal", "zonesMade") -> GT
-        ("distanceToGoal", "zonesNotMade") -> GT
+        ("distanceToGoal", "zonesProof") -> GT
         ("distanceToGoal", "timeToGoal") -> GT
         ("distanceToGoal", _) -> LT
         ("bestDistance", _) -> GT
+        ("time", _) -> LT
+        ("lat", "time") -> GT
+        ("lat", _) -> LT
+        ("lng", _) -> GT
         _ -> compare a b
 
 unTaskDistance :: Fractional a => Tsk.TaskDistance -> a
@@ -140,11 +144,12 @@ drive CmdOptions{..} = do
 
                 Zones ->
                     let go = writeMask yamlMaskPath
-                    in go checkZones (\zs ->
+                    in go checkZones (\ (zs, zp) ->
                         TZ.FlownTrack
                             { launched = True
                             , madeGoal = True
                             , zonesMade = zs
+                            , zonesProof = zp
                             , timeToGoal = Nothing
                             , distanceToGoal = Nothing
                             , bestDistance = Nothing
@@ -157,6 +162,7 @@ drive CmdOptions{..} = do
                             { launched = x
                             , madeGoal = True
                             , zonesMade = []
+                            , zonesProof = []
                             , timeToGoal = Nothing
                             , distanceToGoal = Nothing
                             , bestDistance = Nothing
@@ -169,6 +175,7 @@ drive CmdOptions{..} = do
                             { launched = True
                             , madeGoal = x
                             , zonesMade = [] 
+                            , zonesProof = []
                             , timeToGoal = Nothing
                             , distanceToGoal = Nothing
                             , bestDistance = Nothing
@@ -181,6 +188,7 @@ drive CmdOptions{..} = do
                             { launched = True
                             , madeGoal = True
                             , zonesMade = []
+                            , zonesProof = []
                             , timeToGoal = Nothing
                             , distanceToGoal = unTaskDistance <$> td
                             , bestDistance = Nothing 
@@ -193,6 +201,7 @@ drive CmdOptions{..} = do
                             { launched = True
                             , madeGoal = True
                             , zonesMade = []
+                            , zonesProof = []
                             , timeToGoal = Nothing
                             , distanceToGoal = Nothing
                             , bestDistance = unPilotDistance <$> fd
@@ -205,6 +214,7 @@ drive CmdOptions{..} = do
                             { launched = True
                             , madeGoal = True
                             , zonesMade = []
+                            , zonesProof = []
                             , timeToGoal = unPilotTime <$> ttg
                             , distanceToGoal = Nothing
                             , bestDistance = Nothing
@@ -270,7 +280,7 @@ drive CmdOptions{..} = do
                 flown tasks iTask xs =
                     let ld = launched tasks iTask xs
                         mg = madeGoal tasks iTask xs
-                        zs = madeZones tasks iTask xs
+                        (zs, zp) = madeZones tasks iTask xs
                         dg = distanceToGoal tasks iTask xs
                         df = distanceFlown tasks iTask xs
                         tf = timeFlown tasks iTask xs
@@ -278,6 +288,7 @@ drive CmdOptions{..} = do
                         { launched = ld
                         , madeGoal = mg
                         , zonesMade = zs
+                        , zonesProof = zp
 
                         , distanceToGoal =
                             if mg then Nothing else unTaskDistance <$> dg
