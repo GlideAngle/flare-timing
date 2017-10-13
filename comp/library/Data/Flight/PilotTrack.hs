@@ -33,12 +33,20 @@ instance FromJSON PilotTracks
 
 data FlownTrack =
     FlownTrack { launched :: Bool
+               -- ^ Did the pilot launch, inferred from a track with 2+
+               -- distinct fixes.
                , madeGoal :: Bool
+               -- ^ Was goal made.
                , zonesMade :: [Bool]
+               -- ^ Of the zones, which were made.
                , zonesProof :: [Maybe ZoneProof]
+               -- ^ For each made zone, when and where was the crossing made.
                , timeToGoal :: Maybe Double
+               -- ^ How long did this pilot take to complete the course.
                , distanceToGoal :: Maybe Double
-               , bestDistance :: Maybe Double
+               -- ^ The shortest distance to goal of any fix in the track.
+               , distanceMade :: Maybe Double
+               -- ^ The task distance minus the distance to goal.
                }
    deriving (Show, Generic)
 
@@ -56,8 +64,10 @@ instance ToJSON Fix
 instance FromJSON Fix
 
 data ZoneProof =
-    ZoneProof { fixes :: [Fix]
+    ZoneProof { crossing :: [Fix]
+              -- ^ The fixes that cross the zone.
               , inZone :: [Bool]
+              -- ^ Marking each fix as inside or outside the zone.
               }
    deriving (Show, Generic)
 

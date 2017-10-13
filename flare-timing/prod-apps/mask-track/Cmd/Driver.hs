@@ -85,9 +85,9 @@ cmp a b =
         ("distanceToGoal", "madeGoal") -> GT
         ("distanceToGoal", "timeToGoal") -> GT
         ("distanceToGoal", _) -> LT
-        ("bestDistance", "zonesMade") -> LT
-        ("bestDistance", "zonesProof") -> LT
-        ("bestDistance", _) -> GT
+        ("distanceMade", "zonesMade") -> LT
+        ("distanceMade", "zonesProof") -> LT
+        ("distanceMade", _) -> GT
         ("zonesMade", "zonesProof") -> LT
         ("zonesMade", _) -> GT
         ("zonesProof", _) -> GT
@@ -146,7 +146,7 @@ drive CmdOptions{..} = do
                             , zonesProof = zp
                             , timeToGoal = Nothing
                             , distanceToGoal = Nothing
-                            , bestDistance = Nothing
+                            , distanceMade = Nothing
                             })
 
                 Launch ->
@@ -159,7 +159,7 @@ drive CmdOptions{..} = do
                             , zonesProof = []
                             , timeToGoal = Nothing
                             , distanceToGoal = Nothing
-                            , bestDistance = Nothing
+                            , distanceMade = Nothing
                             })
 
                 Goal ->
@@ -172,7 +172,7 @@ drive CmdOptions{..} = do
                             , zonesProof = []
                             , timeToGoal = Nothing
                             , distanceToGoal = Nothing
-                            , bestDistance = Nothing
+                            , distanceMade = Nothing
                             })
 
                 GoalDistance ->
@@ -185,7 +185,7 @@ drive CmdOptions{..} = do
                             , zonesProof = []
                             , timeToGoal = Nothing
                             , distanceToGoal = unTaskDistance <$> td
-                            , bestDistance = Nothing 
+                            , distanceMade = Nothing 
                             })
 
                 FlownDistance ->
@@ -198,7 +198,7 @@ drive CmdOptions{..} = do
                             , zonesProof = []
                             , timeToGoal = Nothing
                             , distanceToGoal = Nothing
-                            , bestDistance = unPilotDistance <$> fd
+                            , distanceMade = unPilotDistance <$> fd
                             })
 
                 Time ->
@@ -211,7 +211,7 @@ drive CmdOptions{..} = do
                             , zonesProof = []
                             , timeToGoal = unPilotTime <$> ttg
                             , distanceToGoal = Nothing
-                            , bestDistance = Nothing
+                            , distanceMade = Nothing
                             })
 
                 Lead -> putStrLn "TODO: Handle reckoning of 'lead'."
@@ -287,7 +287,7 @@ drive CmdOptions{..} = do
                         , distanceToGoal =
                             if mg then Nothing else unTaskDistance <$> dg
 
-                        , bestDistance =
+                        , distanceMade =
                             if mg then Nothing else unPilotDistance <$> df
 
                         , timeToGoal =

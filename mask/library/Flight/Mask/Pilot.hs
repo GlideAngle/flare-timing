@@ -264,7 +264,7 @@ proof fixes mark0 i j bs = do
     fixM <- fixes ^? element i
     fixN <- fixes ^? element j
     let fs = fixFromFix mark0 <$> [fixM, fixN]
-    return $ ZoneProof { fixes = fs
+    return $ ZoneProof { crossing = fs
                        , inZone = bs
                        }
 
