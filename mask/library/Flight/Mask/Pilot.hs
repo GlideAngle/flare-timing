@@ -268,6 +268,23 @@ proof fixes mark0 i j bs = do
                        , inZone = bs
                        }
 
+-- | Given two points on either side of a zone, what is the crossing time.
+crossingTime :: [Kml.Fix] -> UTCTime -> Int -> Int -> [Bool] -> Maybe UTCTime
+
+crossingTime fixes mark0 i _ [True, False] = do
+    -- TODO: Interpolate between crossing points. For now I just take the time
+    -- of the point on the inside.
+    fixM <- fixes ^? element i
+    let Kml.Seconds secs = Kml.mark fixM
+    return $ fromInteger secs `addUTCTime` mark0
+
+crossingTime fixes mark0 _ j [False, True] = do
+    fixN <- fixes ^? element j
+    let Kml.Seconds secs = Kml.mark fixN
+    return $ fromInteger secs `addUTCTime` mark0
+
+crossingTime _ _ _ _ _ = Nothing
+
 pickCrossingPredicate
     :: Bool -- ^ Is the start an exit cylinder?
     -> Cmp.Task
@@ -289,14 +306,14 @@ pickCrossingPredicate True task@Cmp.Task{speedSection, zones} =
 madeZones :: [Cmp.Task]
           -> IxTask
           -> Kml.MarkedFixes
-          -> ([Bool], [Maybe ZoneProof])
+          -> ([Bool], [Maybe UTCTime], [Maybe ZoneProof])
 madeZones tasks (IxTask i) Kml.MarkedFixes{mark0, fixes} =
     case tasks ^? element (i - 1) of
         Nothing ->
-            ([], [])
+            ([], [], [])
 
         Just task@Cmp.Task{zones} ->
-            ((/= ZoneMiss) <$> xs, f <$> xs)
+            ((/= ZoneMiss) <$> xs, f <$> xs, g <$> xs)
             where
                 fs = (\x -> pickCrossingPredicate (isStartExit x) x) task
 
@@ -306,22 +323,27 @@ madeZones tasks (IxTask i) Kml.MarkedFixes{mark0, fixes} =
                         (zoneToCylinder <$> zones)
                         (fixToPoint <$> fixes)
 
-                f :: ZoneHit -> Maybe ZoneProof
+                f :: ZoneHit -> Maybe UTCTime
                 f ZoneMiss = Nothing
-                f (ZoneExit m n) = proof fixes mark0 m n [True, False]
-                f (ZoneEnter m n) = proof fixes mark0 m n [False, True]
+                f (ZoneExit m n) = crossingTime fixes mark0 m n [True, False]
+                f (ZoneEnter m n) = crossingTime fixes mark0 m n [False, True]
+
+                g :: ZoneHit -> Maybe ZoneProof
+                g ZoneMiss = Nothing
+                g (ZoneExit m n) = proof fixes mark0 m n [True, False]
+                g (ZoneEnter m n) = proof fixes mark0 m n [False, True]
 
 madeSpeedZones :: [Cmp.Task]
                -> IxTask
                -> Kml.MarkedFixes
-               -> ([Bool], [Maybe ZoneProof])
+               -> ([Bool], [Maybe UTCTime], [Maybe ZoneProof])
 madeSpeedZones tasks (IxTask i) Kml.MarkedFixes{mark0, fixes} =
     case tasks ^? element (i - 1) of
         Nothing ->
-            ([], [])
+            ([], [], [])
 
         Just task@Cmp.Task{speedSection, zones} ->
-            ((/= ZoneMiss) <$> xs, f <$> xs)
+            ((/= ZoneMiss) <$> xs, f <$> xs, g <$> xs)
             where
                 fs = (\x -> pickCrossingPredicate (isStartExit x) x) task
 
@@ -331,10 +353,15 @@ madeSpeedZones tasks (IxTask i) Kml.MarkedFixes{mark0, fixes} =
                         (zoneToCylinder <$> slice speedSection zones)
                         (fixToPoint <$> fixes)
 
-                f :: ZoneHit -> Maybe ZoneProof
+                f :: ZoneHit -> Maybe UTCTime
                 f ZoneMiss = Nothing
-                f (ZoneExit m n) = proof fixes mark0 m n [True, False]
-                f (ZoneEnter m n) = proof fixes mark0 m n [False, True]
+                f (ZoneExit m n) = crossingTime fixes mark0 m n [True, False]
+                f (ZoneEnter m n) = crossingTime fixes mark0 m n [False, True]
+
+                g :: ZoneHit -> Maybe ZoneProof
+                g ZoneMiss = Nothing
+                g (ZoneExit m n) = proof fixes mark0 m n [True, False]
+                g (ZoneEnter m n) = proof fixes mark0 m n [False, True]
 
 mm30 :: Tolerance
 mm30 = Tolerance $ 30 % 1000

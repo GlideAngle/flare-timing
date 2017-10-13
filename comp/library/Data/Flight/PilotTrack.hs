@@ -39,8 +39,11 @@ data FlownTrack =
                -- ^ Was goal made.
                , zonesMade :: [Bool]
                -- ^ Of the zones, which were made.
+               , zonesTime :: [Maybe UTCTime]
+               -- ^ For each made zone, when was the crossing made.
                , zonesProof :: [Maybe ZoneProof]
-               -- ^ For each made zone, when and where was the crossing made.
+               -- ^ For each made zone, the pair of fixes on either side of the
+               -- crossing.
                , timeToGoal :: Maybe Double
                -- ^ How long did this pilot take to complete the course.
                , distanceToGoal :: Maybe Double
