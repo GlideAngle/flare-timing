@@ -101,6 +101,13 @@ data ZoneHit
     | ZoneExit ZoneIdx ZoneIdx
     deriving Eq
 
+-- | A function that tests whether a flight track, represented as a series of point
+-- zones crosses a zone.
+type CrossingPredicate
+    = Zone -- ^ The task control zone.
+    -> [Zone] -- ^ The flight track represented as a series of point zones.
+    -> ZoneHit
+
 settingsLogs :: FilePath
              -> [IxTask]
              -> [Cmp.Pilot]
@@ -161,19 +168,13 @@ fixToPoint fix =
         Kml.Latitude lat = Kml.lat fix
         Kml.Longitude lng = Kml.lng fix
 
-crossedZone :: Zone -> [Zone] -> ZoneHit
-crossedZone z xs =
-    case entersZone z xs of
-        e@(ZoneEnter _ _) -> e
-        _ -> exitsZone z xs
-
-entersZone :: Zone -> [Zone] -> ZoneHit
+entersZone :: CrossingPredicate
 entersZone z xs =
     case exitsZone z $ reverse xs of
         ZoneExit x y -> ZoneEnter y x
         _ -> ZoneMiss
 
-exitsZone :: Zone -> [Zone] -> ZoneHit
+exitsZone :: CrossingPredicate
 exitsZone z xs =
     case (insideZone, outsideZone) of
         (Just x, Just y) -> ZoneExit x y
@@ -222,9 +223,29 @@ madeGoal tasks (IxTask i) Kml.MarkedFixes{fixes} =
                          ZoneEnter _ _ -> True
                          _ -> False
 
-tickedZones :: [Zone] -> [Zone] -> [ZoneHit]
-tickedZones zones xs =
-    flip crossedZone xs <$> zones
+-- | A start zone is either entry or exit when all other zones are entry.
+-- If I must fly into the start cylinder to reach the next turnpoint then
+-- the start zone is entry otherwise it is exit. In one case the start cylinder
+-- contains the next turnpoint and in the other the start cylinder is
+-- completely separate from the next turnpoint.
+isStartExit :: Cmp.Task -> Bool
+isStartExit Cmp.Task{speedSection, zones} =
+    case speedSection of
+        Nothing ->
+            False
+
+        Just (ii, _) ->
+            let i = fromInteger ii
+            in case (zones ^? element (i - 1), zones ^? element i) of
+                (Just start, Just tp1) ->
+                    separatedZones $ zoneToCylinder <$> [start, tp1]
+
+                _ ->
+                    False
+
+tickedZones :: [CrossingPredicate] -> [Zone] -> [Zone] -> [ZoneHit]
+tickedZones fs zones xs =
+    zipWith (\f z -> f z xs) fs zones
 
 fixFromFix :: UTCTime -> Kml.Fix -> Cmp.Fix
 fixFromFix mark0 x =
@@ -247,6 +268,24 @@ proof fixes mark0 i j bs = do
                        , inZone = bs
                        }
 
+pickCrossingPredicate
+    :: Bool -- ^ Is the start an exit cylinder?
+    -> Cmp.Task
+    -> [CrossingPredicate]
+pickCrossingPredicate False Cmp.Task{zones} =
+    (const entersZone) <$> zones
+
+pickCrossingPredicate True task@Cmp.Task{speedSection, zones} =
+    case speedSection of
+        Nothing ->
+            pickCrossingPredicate False task
+
+        Just (start, _) ->
+            zipWith
+                (\ i _ -> if i == start then exitsZone else entersZone)
+                [1 .. ]
+                zones
+
 madeZones :: [Cmp.Task]
           -> IxTask
           -> Kml.MarkedFixes
@@ -256,11 +295,14 @@ madeZones tasks (IxTask i) Kml.MarkedFixes{mark0, fixes} =
         Nothing ->
             ([], [])
 
-        Just Cmp.Task{zones} ->
+        Just task@Cmp.Task{zones} ->
             ((/= ZoneMiss) <$> xs, f <$> xs)
             where
+                fs = (\x -> pickCrossingPredicate (isStartExit x) x) task
+
                 xs =
                     tickedZones
+                        fs
                         (zoneToCylinder <$> zones)
                         (fixToPoint <$> fixes)
 
@@ -278,11 +320,14 @@ madeSpeedZones tasks (IxTask i) Kml.MarkedFixes{mark0, fixes} =
         Nothing ->
             ([], [])
 
-        Just Cmp.Task{speedSection, zones} ->
+        Just task@Cmp.Task{speedSection, zones} ->
             ((/= ZoneMiss) <$> xs, f <$> xs)
             where
+                fs = (\x -> pickCrossingPredicate (isStartExit x) x) task
+
                 xs =
                     tickedZones
+                        (slice speedSection fs)
                         (zoneToCylinder <$> slice speedSection zones)
                         (fixToPoint <$> fixes)
 
@@ -296,12 +341,15 @@ mm30 = Tolerance $ 30 % 1000
 
 distanceViaZones :: (a -> Zone)
                  -> Cmp.SpeedSection
+                 -> [CrossingPredicate]
                  -> [Zone]
                  -> [a]
                  -> Maybe TaskDistance
-distanceViaZones mkZone speedSection zs xs =
+distanceViaZones mkZone speedSection fs zs xs =
     case reverse xs of
-        [] -> Nothing
+        [] ->
+            Nothing
+
         -- TODO: Check all fixes from last turnpoint made.
         x : _ ->
             Just . edges $
@@ -312,7 +360,8 @@ distanceViaZones mkZone speedSection zs xs =
     where
         -- TODO: Don't assume end of speed section is goal.
         zsSpeed = slice speedSection zs
-        ys = (/= ZoneMiss) <$> tickedZones zsSpeed (mkZone <$> xs)
+        fsSpeed = slice speedSection fs
+        ys = (/= ZoneMiss) <$> tickedZones fsSpeed zsSpeed (mkZone <$> xs)
         notTicked = drop (length $ takeWhile (== True) ys) zsSpeed
 
 slice :: Cmp.SpeedSection -> [a] -> [a]
@@ -329,13 +378,16 @@ distanceToGoal :: [Cmp.Task]
 distanceToGoal tasks (IxTask i) Kml.MarkedFixes{fixes} =
     case tasks ^? element (i - 1) of
         Nothing -> Nothing
-        Just Cmp.Task{speedSection, zones} ->
+        Just task@Cmp.Task{speedSection, zones} ->
             if null zones then Nothing else
             distanceViaZones
                 fixToPoint
                 speedSection
+                fs
                 (zoneToCylinder <$> zones)
                 fixes 
+            where
+                fs = (\x -> pickCrossingPredicate (isStartExit x) x) task
 
 distanceFlown :: [Cmp.Task]
               -> IxTask
@@ -343,21 +395,25 @@ distanceFlown :: [Cmp.Task]
               -> Maybe PilotDistance
 distanceFlown tasks (IxTask i) Kml.MarkedFixes{fixes} =
     case tasks ^? element (i - 1) of
-        Nothing -> Nothing
-        Just Cmp.Task{speedSection, zones} ->
-            if null zones then Nothing else
-            let cs = zoneToCylinder <$> zones
-                d = distanceViaZones fixToPoint speedSection cs fixes
-            in flownDistance speedSection cs d
+        Nothing ->
+            Nothing
+
+        Just task@Cmp.Task{speedSection, zones} ->
+            if null zones then Nothing else flownDistance speedSection fs cs d
+            where
+                fs = (\x -> pickCrossingPredicate (isStartExit x) x) task
+                cs = zoneToCylinder <$> zones
+                d = distanceViaZones fixToPoint speedSection fs cs fixes
 
 flownDistance :: Cmp.SpeedSection
+              -> [CrossingPredicate]
               -> [Zone]
               -> Maybe TaskDistance
               -> Maybe PilotDistance
-flownDistance _ [] (Just (TaskDistance (MkQuantity d))) =
+flownDistance _ _ [] (Just (TaskDistance (MkQuantity d))) =
     Just $ PilotDistance d
-flownDistance _ _ Nothing = Nothing
-flownDistance speedSection zs@(z : _) (Just (TaskDistance d)) =
+flownDistance _ _ _ Nothing = Nothing
+flownDistance speedSection fs zs@(z : _) (Just (TaskDistance d)) =
     case total of
         Nothing ->
             Nothing
@@ -365,41 +421,48 @@ flownDistance speedSection zs@(z : _) (Just (TaskDistance d)) =
         Just (TaskDistance dMax) ->
             Just . PilotDistance . unQuantity $ dMax -: d
     where
-        total = distanceViaZones id speedSection zs [z]
+        total = distanceViaZones id speedSection fs zs [z]
 
 timeFlown :: [Cmp.Task] -> IxTask -> Kml.MarkedFixes -> Maybe PilotTime
 timeFlown tasks iTask@(IxTask i) xs =
     case tasks ^? element (i - 1) of
-        Nothing -> Nothing
-        Just Cmp.Task{speedSection, zones, zoneTimes, startGates} ->
+        Nothing ->
+            Nothing
+
+        Just task@Cmp.Task{speedSection, zones, zoneTimes, startGates} ->
             if null zones || not atGoal then Nothing else
-            let cs = zoneToCylinder <$> zones
-            in flownDuration speedSection cs zoneTimes startGates xs
+            flownDuration speedSection fs cs zoneTimes startGates xs
+            where
+                fs = (\x -> pickCrossingPredicate (isStartExit x) x) task
+                cs = zoneToCylinder <$> zones
+
     where
         atGoal = madeGoal tasks iTask xs
 
 flownDuration :: Cmp.SpeedSection
+              -> [CrossingPredicate]
               -> [Zone]
               -> [Cmp.OpenClose]
               -> [Cmp.StartGate]
               -> Kml.MarkedFixes
               -> Maybe PilotTime
-flownDuration speedSection zs os gs Kml.MarkedFixes{mark0, fixes}
+flownDuration speedSection fs zs os gs Kml.MarkedFixes{mark0, fixes}
     | null zs = Nothing
     | null fixes = Nothing
     | otherwise =
-        durationViaZones fixToPoint Kml.mark speedSection zs os gs mark0 fixes
+        durationViaZones fixToPoint Kml.mark speedSection fs zs os gs mark0 fixes
 
 durationViaZones :: (Kml.Fix -> Zone)
                  -> (Kml.Fix -> Kml.Seconds)
                  -> Cmp.SpeedSection
+                 -> [CrossingPredicate]
                  -> [Zone]
                  -> [Cmp.OpenClose]
                  -> [Cmp.StartGate]
                  -> UTCTime
                  -> [Kml.Fix]
                  -> Maybe PilotTime
-durationViaZones mkZone atTime speedSection zs os gs t0 xs =
+durationViaZones mkZone atTime speedSection _ zs os gs t0 xs =
     if null xs then Nothing else
     case (osSpeed, zsSpeed, reverse zsSpeed) of
         ([], _, _) -> Nothing
@@ -419,6 +482,7 @@ durationViaZones mkZone atTime speedSection zs os gs t0 xs =
         xys :: [(Kml.Fix, (Zone, Zone))]
         xys = (\(x, y) -> (y, (mkZone x, mkZone y))) <$> zip (drop 1 xs) xs
 
+        -- TODO: Account for entry start zone.
         slots :: (Zone, Zone)
               -> [(Kml.Fix, (Zone, Zone))]
               -> (Maybe Kml.Seconds, Maybe Kml.Seconds)

@@ -37,6 +37,7 @@ import Data.List (intercalate)
 import Flight.Zone.Raw (RawZone, showZone)
 import Data.Flight.Pilot
 
+-- | A 1-based index into the list of control zones marking the speed section.
 type SpeedSection = Maybe (Integer, Integer)
 
 newtype StartGate = StartGate UTCTime deriving (Show, Eq, Generic)
