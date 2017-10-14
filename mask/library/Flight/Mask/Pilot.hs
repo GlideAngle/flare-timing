@@ -104,9 +104,15 @@ data ZoneHit
 -- | A function that tests whether a flight track, represented as a series of point
 -- zones crosses a zone.
 type CrossingPredicate
-    = Zone -- ^ The task control zone.
-    -> [Zone] -- ^ The flight track represented as a series of point zones.
+    = TaskZone -- ^ The task control zone.
+    -> [TrackZone] -- ^ The flight track represented as a series of point zones.
     -> ZoneHit
+
+-- | A task control zone.
+newtype TaskZone = TaskZone { unTaskZone :: Zone }
+
+-- | A fix in a flight track converted to a point zone.
+newtype TrackZone = TrackZone { unTrackZone :: Zone }
 
 settingsLogs :: FilePath
              -> [IxTask]
@@ -153,17 +159,17 @@ toLL (lat, lng) =
             lat'' = convert lat' :: Quantity Rational [u| rad |]
             lng'' = convert lng' :: Quantity Rational [u| rad |]
 
-zoneToCylinder :: Raw.RawZone -> Zone
+zoneToCylinder :: Raw.RawZone -> TaskZone
 zoneToCylinder z =
-    Cylinder radius (toLL(lat, lng))
+    TaskZone $ Cylinder radius (toLL(lat, lng))
     where
         radius = Radius (MkQuantity $ Raw.radius z % 1)
         RawLat lat = Raw.lat z
         RawLng lng = Raw.lng z
 
-fixToPoint :: Kml.Fix -> Zone
+fixToPoint :: Kml.Fix -> TrackZone
 fixToPoint fix =
-    Point (toLL (lat, lng))
+    TrackZone $ Point (toLL (lat, lng))
     where
         Kml.Latitude lat = Kml.lat fix
         Kml.Longitude lng = Kml.lng fix
@@ -175,18 +181,20 @@ entersZone z xs =
         _ -> ZoneMiss
 
 exitsZone :: CrossingPredicate
-exitsZone z xs =
+exitsZone (TaskZone z) xs =
     case (insideZone, outsideZone) of
         (Just x, Just y) -> ZoneExit x y
         _ -> ZoneMiss
     where
         insideZone :: Maybe Int
         insideZone =
-            List.findIndex (\y -> not $ Tsk.separatedZones [y, z]) xs
+            List.findIndex
+                (\(TrackZone y) -> not $ Tsk.separatedZones [y, z]) xs
 
         outsideZone :: Maybe Int
         outsideZone =
-            List.findIndex (\y -> Tsk.separatedZones [y, z]) xs
+            List.findIndex
+                (\(TrackZone y) -> Tsk.separatedZones [y, z]) xs
 
 -- | A pilot has launched if their tracklog has distinct fixes.
 launched :: Masking Bool
@@ -238,12 +246,17 @@ isStartExit Cmp.Task{speedSection, zones} =
             let i = fromInteger ii
             in case (zones ^? element (i - 1), zones ^? element i) of
                 (Just start, Just tp1) ->
-                    separatedZones $ zoneToCylinder <$> [start, tp1]
+                    separatedZones
+                    $ unTaskZone . zoneToCylinder
+                    <$> [start, tp1]
 
                 _ ->
                     False
 
-tickedZones :: [CrossingPredicate] -> [Zone] -> [Zone] -> [ZoneHit]
+tickedZones :: [CrossingPredicate]
+            -> [TaskZone] -- ^ The control zones of the task.
+            -> [TrackZone] -- ^ The flown track.
+            -> [ZoneHit]
 tickedZones fs zones xs =
     zipWith (\f z -> f z xs) fs zones
 
@@ -366,10 +379,15 @@ madeSpeedZones tasks (IxTask i) Kml.MarkedFixes{mark0, fixes} =
 mm30 :: Tolerance
 mm30 = Tolerance $ 30 % 1000
 
-distanceViaZones :: (a -> Zone)
+-- | A task is to be flown via its control zones. This function finds the last
+-- leg made. The next leg is partial. Along this, the track fixes are checked
+-- to find the one closest to the next zone at the end of the leg. From this the
+-- distance returned is the task distance up to the next zone not made minus the
+-- distance yet to fly to this zone.
+distanceViaZones :: (a -> TrackZone)
                  -> Cmp.SpeedSection
                  -> [CrossingPredicate]
-                 -> [Zone]
+                 -> [TaskZone]
                  -> [a]
                  -> Maybe TaskDistance
 distanceViaZones mkZone speedSection fs zs xs =
@@ -383,13 +401,13 @@ distanceViaZones mkZone speedSection fs zs xs =
                 distanceEdgeToEdge
                     PathPointToZone
                     mm30
-                    (mkZone x : notTicked)
+                    (unTrackZone (mkZone x) : notTicked)
     where
         -- TODO: Don't assume end of speed section is goal.
         zsSpeed = slice speedSection zs
         fsSpeed = slice speedSection fs
         ys = (/= ZoneMiss) <$> tickedZones fsSpeed zsSpeed (mkZone <$> xs)
-        notTicked = drop (length $ takeWhile (== True) ys) zsSpeed
+        notTicked = unTaskZone <$> drop (length $ takeWhile (== True) ys) zsSpeed
 
 slice :: Cmp.SpeedSection -> [a] -> [a]
 slice = \case
@@ -426,29 +444,35 @@ distanceFlown tasks (IxTask i) Kml.MarkedFixes{fixes} =
             Nothing
 
         Just task@Cmp.Task{speedSection, zones} ->
-            if null zones then Nothing else flownDistance speedSection fs cs d
+            if null zones then Nothing else go speedSection fs cs d
             where
                 fs = (\x -> pickCrossingPredicate (isStartExit x) x) task
                 cs = zoneToCylinder <$> zones
                 d = distanceViaZones fixToPoint speedSection fs cs fixes
 
-flownDistance :: Cmp.SpeedSection
-              -> [CrossingPredicate]
-              -> [Zone]
-              -> Maybe TaskDistance
-              -> Maybe PilotDistance
-flownDistance _ _ [] (Just (TaskDistance (MkQuantity d))) =
-    Just $ PilotDistance d
-flownDistance _ _ _ Nothing = Nothing
-flownDistance speedSection fs zs@(z : _) (Just (TaskDistance d)) =
-    case total of
-        Nothing ->
+    where
+        go :: Cmp.SpeedSection
+           -> [CrossingPredicate]
+           -> [TaskZone]
+           -> Maybe TaskDistance
+           -> Maybe PilotDistance
+
+        go _ _ [] (Just (TaskDistance (MkQuantity d))) =
+            Just $ PilotDistance d
+
+        go _ _ _ Nothing =
             Nothing
 
-        Just (TaskDistance dMax) ->
-            Just . PilotDistance . unQuantity $ dMax -: d
-    where
-        total = distanceViaZones id speedSection fs zs [z]
+        go speedSection fs zs@(z : _) (Just (TaskDistance d)) =
+            case total of
+                Nothing ->
+                    Nothing
+
+                Just (TaskDistance dMax) ->
+                    Just . PilotDistance . unQuantity $ dMax -: d
+            where
+                zoneToZone (TaskZone x) = TrackZone x
+                total = distanceViaZones zoneToZone speedSection fs zs [z]
 
 timeFlown :: [Cmp.Task] -> IxTask -> Kml.MarkedFixes -> Maybe PilotTime
 timeFlown tasks iTask@(IxTask i) xs =
@@ -468,7 +492,7 @@ timeFlown tasks iTask@(IxTask i) xs =
 
 flownDuration :: Cmp.SpeedSection
               -> [CrossingPredicate]
-              -> [Zone]
+              -> [TaskZone]
               -> [Cmp.OpenClose]
               -> [Cmp.StartGate]
               -> Kml.MarkedFixes
@@ -479,11 +503,11 @@ flownDuration speedSection fs zs os gs Kml.MarkedFixes{mark0, fixes}
     | otherwise =
         durationViaZones fixToPoint Kml.mark speedSection fs zs os gs mark0 fixes
 
-durationViaZones :: (Kml.Fix -> Zone)
+durationViaZones :: (Kml.Fix -> TrackZone)
                  -> (Kml.Fix -> Kml.Seconds)
                  -> Cmp.SpeedSection
                  -> [CrossingPredicate]
-                 -> [Zone]
+                 -> [TaskZone]
                  -> [Cmp.OpenClose]
                  -> [Cmp.StartGate]
                  -> UTCTime
@@ -506,32 +530,32 @@ durationViaZones mkZone atTime speedSection _ zs os gs t0 xs =
                 [_] -> os
                 _ -> slice speedSection os
 
-        xys :: [(Kml.Fix, (Zone, Zone))]
+        xys :: [(Kml.Fix, (TrackZone, TrackZone))]
         xys = (\(x, y) -> (y, (mkZone x, mkZone y))) <$> zip (drop 1 xs) xs
 
         -- TODO: Account for entry start zone.
-        slots :: (Zone, Zone)
-              -> [(Kml.Fix, (Zone, Zone))]
+        slots :: (TaskZone, TaskZone)
+              -> [(Kml.Fix, (TrackZone, TrackZone))]
               -> (Maybe Kml.Seconds, Maybe Kml.Seconds)
         slots (z0, zN) xzs =
             (f <$> xz0, f <$> xzN)
             where
-                exits' :: (Kml.Fix, (Zone, Zone)) -> Bool
+                exits' :: (Kml.Fix, (TrackZone, TrackZone)) -> Bool
                 exits' (_, (zx, zy)) =
                     case exitsZone z0 [zx, zy] of
                         ZoneExit _ _ -> True
                         _ -> False
 
-                enters' :: (Kml.Fix, (Zone, Zone)) -> Bool
+                enters' :: (Kml.Fix, (TrackZone, TrackZone)) -> Bool
                 enters' (_, (zx, zy)) =
                     case entersZone zN [zx, zy] of
                         ZoneEnter _ _ -> True
                         _ -> False
 
-                xz0 :: Maybe (Kml.Fix, (Zone, Zone))
+                xz0 :: Maybe (Kml.Fix, (TrackZone, TrackZone))
                 xz0 = List.find exits' xzs
 
-                xzN :: Maybe (Kml.Fix, (Zone, Zone))
+                xzN :: Maybe (Kml.Fix, (TrackZone, TrackZone))
                 xzN = List.find enters' xzs
 
                 f = atTime . fst
