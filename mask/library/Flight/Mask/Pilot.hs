@@ -174,27 +174,35 @@ fixToPoint fix =
         Kml.Latitude lat = Kml.lat fix
         Kml.Longitude lng = Kml.lng fix
 
+insideZone :: TaskZone -> [TrackZone] -> Maybe Int
+insideZone (TaskZone z) xs =
+    List.findIndex
+        (\(TrackZone x) -> not $ Tsk.separatedZones [x, z]) xs
+
+outsideZone :: TaskZone -> [TrackZone] -> Maybe Int
+outsideZone (TaskZone z) xs =
+    List.findIndex
+        (\(TrackZone x) -> Tsk.separatedZones [x, z]) xs
+
+-- | Finds the first pair of points, one outside the zone and the next inside.
 entersZone :: CrossingPredicate
 entersZone z xs =
-    case exitsZone z $ reverse xs of
-        ZoneExit x y -> ZoneEnter y x
-        _ -> ZoneMiss
+    case insideZone z xs of
+        Nothing -> ZoneMiss
+        Just j ->
+            case outsideZone z . reverse $ take j xs of
+                Just 0 -> ZoneExit (j - 1) j
+                _ -> ZoneMiss
 
+-- | Finds the first pair of points, one inside the zone and the next outside.
 exitsZone :: CrossingPredicate
-exitsZone (TaskZone z) xs =
-    case (insideZone, outsideZone) of
-        (Just x, Just y) -> ZoneExit x y
-        _ -> ZoneMiss
-    where
-        insideZone :: Maybe Int
-        insideZone =
-            List.findIndex
-                (\(TrackZone y) -> not $ Tsk.separatedZones [y, z]) xs
-
-        outsideZone :: Maybe Int
-        outsideZone =
-            List.findIndex
-                (\(TrackZone y) -> Tsk.separatedZones [y, z]) xs
+exitsZone z xs =
+    case outsideZone z xs of
+        Nothing -> ZoneMiss
+        Just j ->
+            case insideZone z . reverse $ take j xs of
+                Just 0 -> ZoneExit (j - 1) j
+                _ -> ZoneMiss
 
 -- | A pilot has launched if their tracklog has distinct fixes.
 launched :: Masking Bool
