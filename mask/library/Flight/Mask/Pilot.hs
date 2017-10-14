@@ -191,7 +191,7 @@ entersZone z xs =
         Nothing -> ZoneMiss
         Just j ->
             case outsideZone z . reverse $ take j xs of
-                Just 0 -> ZoneExit (j - 1) j
+                Just 0 -> ZoneEnter (j - 1) j
                 _ -> ZoneMiss
 
 -- | Finds the first pair of points, one inside the zone and the next outside.
