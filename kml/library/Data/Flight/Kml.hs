@@ -1,6 +1,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE PartialTypeSignatures #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE LambdaCase #-}
 
 {-|
 Module      : Data.Flight.Kml
@@ -56,18 +57,21 @@ import Text.XML.HXT.Core
     , constA
     )
 import Data.Time.Clock (UTCTime)
-import Data.Time.Format (parseTimeOrError, defaultTimeLocale)
+import Data.Time.Format (parseTimeM, defaultTimeLocale)
 import Data.List (concatMap)
 import Data.List.Split (splitOn)
+import Text.Parsec (string, parserZero)
 import Text.Parsec.Token as P
-import Text.Parsec.Char (spaces)
+import Text.Parsec.Char (spaces, digit, char)
 import Text.ParserCombinators.Parsec
     ( GenParser
     , (<?>)
-    , char
     , eof
     , option
     , sepBy
+    , count
+    , noneOf
+    , many
     )
 import qualified Text.ParserCombinators.Parsec as P (parse)
 import Text.Parsec.Language (emptyDef)
@@ -99,17 +103,18 @@ zipFixes :: [Seconds] -> [LLA] -> [Maybe Altitude] -> [Fix]
 zipFixes = zipWith3 Fix
 
 -- | Get the fixes. Some KML files don't have PressureAltitude.
-getFix :: ArrowXml a => a XmlTree MarkedFixes
+getFix :: ArrowXml a => a XmlTree (Maybe MarkedFixes)
 getFix =
     getTrack
     >>> (getFsInfo >>> getFirstTime)
     &&& listA getCoord
     &&& (getFsInfo >>> listA getTime)
     &&& (getFsInfo >>> (listA getBaro `orElse` constA []))
-    >>> arr (\(t0, (cs, (ts, bs))) ->
+    >>> arr (\(t0, (cs, (ts, bs))) -> do
+        t0' <- t0
         let bs' = if null bs then repeat Nothing else Just <$> bs
-            fs = zipFixes ts cs bs'
-        in MarkedFixes t0 fs)
+        let fs = zipFixes ts cs bs'
+        return $ MarkedFixes t0' fs)
     where
         isMetadata =
             getChildren
@@ -157,13 +162,14 @@ parse :: String -> IO (Either String MarkedFixes)
 parse contents = do
     let doc = readString [ withValidate no, withWarnings no ] contents
     xs <- runX $ doc >>> getFix
-    return $
-        case xs of
-        [x] -> Right x
-        _ -> Left $
-            "Expected 1 set of marked fixes but got "
-            ++ show (length xs)
-            ++ "."
+    return
+        $ case xs of
+            [Nothing] -> Left "Couldn't parse the marked fixes"
+            [Just x] -> Right x
+            _ -> Left $
+                    "Expected 1 set of marked fixes but got "
+                    ++ show (length xs)
+                    ++ "."
 
 pNats :: GenParser Char st [Integer]
 pNats = do
@@ -172,16 +178,35 @@ pNats = do
     _ <- eof
     return xs
 
-parseUtcTime :: String -> UTCTime
-parseUtcTime =
-    -- NOTE: %F is %Y-%m-%d, %T is %H:%M:%S. 
-    parseTimeOrError False defaultTimeLocale "%FT%TZ"
+parseUtcTime :: String -> Maybe UTCTime
+parseUtcTime s = do
+    case P.parse pUtcTimeZ "(stdin)" s of
+        Left e -> Nothing
+        Right t -> Just t
+
+pUtcTimeZ :: GenParser Char st UTCTime
+pUtcTimeZ = do
+    ymd <- many $ noneOf "T"
+    _ <- char 'T'
+    hrs <- count 2 digit
+    _ <- char ':'
+    mins <- count 2 digit
+    _ <- char ':'
+    secs <- count 2 digit
+    zulu <- option "Z" (string "Z")
+
+    let s = mconcat [ymd, "T", hrs, ":", mins, ":", secs, zulu]
+    let t = parseTimeM False defaultTimeLocale "%FT%TZ" s
+
+    case t of
+        Nothing -> parserZero
+        Just t' -> return t'
 
 parseTimeOffsets :: String -> [Seconds]
 parseTimeOffsets s =
     case P.parse pNats "(stdin)" s of
-         Left _ -> []
-         Right xs -> Seconds <$> xs
+        Left _ -> []
+        Right xs -> Seconds <$> xs
 
 parseBaroMarks :: String -> [Altitude]
 parseBaroMarks s =
