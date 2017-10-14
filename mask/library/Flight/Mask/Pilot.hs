@@ -97,7 +97,7 @@ type ZoneIdx = Int
 
 data ZoneHit
     = ZoneMiss
-    | ZoneEnter ZoneIdx ZoneIdx
+    | ZoneEntry ZoneIdx ZoneIdx
     | ZoneExit ZoneIdx ZoneIdx
     deriving Eq
 
@@ -191,7 +191,7 @@ entersZone z xs =
         Nothing -> ZoneMiss
         Just j ->
             case outsideZone z . reverse $ take j xs of
-                Just 0 -> ZoneEnter (j - 1) j
+                Just 0 -> ZoneEntry (j - 1) j
                 _ -> ZoneMiss
 
 -- | Finds the first pair of points, one inside the zone and the next outside.
@@ -236,7 +236,7 @@ madeGoal tasks (IxTask i) Kml.MarkedFixes{fixes} =
                 z : _ ->
                     let ez = entersZone (zoneToCylinder z) (fixToPoint <$> fixes)
                     in case ez of
-                         ZoneEnter _ _ -> True
+                         ZoneEntry _ _ -> True
                          _ -> False
 
 -- | A start zone is either entry or exit when all other zones are entry.
@@ -347,12 +347,12 @@ madeZones tasks (IxTask i) Kml.MarkedFixes{mark0, fixes} =
                 f :: ZoneHit -> Maybe UTCTime
                 f ZoneMiss = Nothing
                 f (ZoneExit m n) = crossingTime fixes mark0 m n [True, False]
-                f (ZoneEnter m n) = crossingTime fixes mark0 m n [False, True]
+                f (ZoneEntry m n) = crossingTime fixes mark0 m n [False, True]
 
                 g :: ZoneHit -> Maybe ZoneProof
                 g ZoneMiss = Nothing
                 g (ZoneExit m n) = proof fixes mark0 m n [True, False]
-                g (ZoneEnter m n) = proof fixes mark0 m n [False, True]
+                g (ZoneEntry m n) = proof fixes mark0 m n [False, True]
 
 madeSpeedZones :: [Cmp.Task]
                -> IxTask
@@ -377,12 +377,12 @@ madeSpeedZones tasks (IxTask i) Kml.MarkedFixes{mark0, fixes} =
                 f :: ZoneHit -> Maybe UTCTime
                 f ZoneMiss = Nothing
                 f (ZoneExit m n) = crossingTime fixes mark0 m n [True, False]
-                f (ZoneEnter m n) = crossingTime fixes mark0 m n [False, True]
+                f (ZoneEntry m n) = crossingTime fixes mark0 m n [False, True]
 
                 g :: ZoneHit -> Maybe ZoneProof
                 g ZoneMiss = Nothing
                 g (ZoneExit m n) = proof fixes mark0 m n [True, False]
-                g (ZoneEnter m n) = proof fixes mark0 m n [False, True]
+                g (ZoneEntry m n) = proof fixes mark0 m n [False, True]
 
 mm30 :: Tolerance
 mm30 = Tolerance $ 30 % 1000
@@ -557,7 +557,7 @@ durationViaZones mkZone atTime speedSection _ zs os gs t0 xs =
                 enters' :: (Kml.Fix, (TrackZone, TrackZone)) -> Bool
                 enters' (_, (zx, zy)) =
                     case entersZone zN [zx, zy] of
-                        ZoneEnter _ _ -> True
+                        ZoneEntry _ _ -> True
                         _ -> False
 
                 xz0 :: Maybe (Kml.Fix, (TrackZone, TrackZone))
