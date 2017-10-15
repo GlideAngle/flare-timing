@@ -10,8 +10,10 @@ Stability   : experimental
 Intersection of pilot tracks with competition zones.
 -}
 module Data.Flight.PilotTrack
-    ( -- * Pilot Track, Task Control Zone Intersection
-      PilotTracks(..)
+    ( -- * Pilot Track and Task Control Zone Intersection
+      MaskedTracks(..)
+    , TimedTracks(..)
+    , TaskTiming(..)
     , PilotCrossings(..)
     , PilotTags(..)
     , FlownTrack(..)
@@ -30,12 +32,30 @@ import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.Flight.Pilot (Pilot(..))
 import Flight.LatLng.Raw (RawLat, RawLng)
 
-newtype PilotTracks =
-    PilotTracks { pilotTracks :: [[PilotFlownTrack]] }
+newtype MaskedTracks =
+    MaskedTracks { masking :: [TimedTracks] }
     deriving (Show, Generic)
 
-instance ToJSON PilotTracks
-instance FromJSON PilotTracks
+instance ToJSON MaskedTracks
+instance FromJSON MaskedTracks
+
+data TimedTracks =
+    TimedTracks { timing :: TaskTiming
+                , maskedTracks :: [PilotFlownTrack]
+                }
+    deriving (Show, Generic)
+
+instance ToJSON TimedTracks
+instance FromJSON TimedTracks
+
+data TaskTiming =
+    TaskTiming { firstStart :: Maybe UTCTime
+               , lastGoal :: Maybe UTCTime
+               }
+    deriving (Show, Generic)
+
+instance ToJSON TaskTiming
+instance FromJSON TaskTiming
 
 newtype PilotCrossings =
     PilotCrossings

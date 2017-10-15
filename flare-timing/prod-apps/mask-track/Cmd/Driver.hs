@@ -52,7 +52,9 @@ import qualified Data.Flight.PilotTrack as TZ
     , FlownTrackTag(..)
     , PilotFlownTrack(..)
     , PilotFlownTrackTag(..)
-    , PilotTracks(..)
+    , MaskedTracks(..)
+    , TimedTracks(..)
+    , TaskTiming(..)
     , PilotTags(..)
     , Fix(..)
     )
@@ -65,6 +67,10 @@ driverMain = withCmdArgs drive
 cmp :: (Ord a, IsString a) => a -> a -> Ordering
 cmp a b =
     case (a, b) of
+        ("timing", _) -> LT
+        ("maskedTracks", _) -> GT
+        ("firstStart", _) -> LT
+        ("lastGoal", _) -> GT
         ("launched", _) -> LT
         ("madeGoal", "launched") -> GT
         ("madeGoal", _) -> LT
@@ -160,8 +166,22 @@ drive CmdOptions{..} = do
                                         pss
                                         pilotTags
 
+                            let mss :: [TZ.TimedTracks] =
+                                    (\zs ->
+                                        TZ.TimedTracks
+                                            { TZ.timing =
+                                                TZ.TaskTiming
+                                                    { firstStart = Nothing
+                                                    , lastGoal = Nothing
+                                                    }
+                                            , TZ.maskedTracks = zs
+                                            })
+                                    <$> zss
+
                             let tzi =
-                                    TZ.PilotTracks { pilotTracks = zss }
+                                    TZ.MaskedTracks
+                                        { masking = mss
+                                        }
 
                             let yaml =
                                     Y.encodePretty
