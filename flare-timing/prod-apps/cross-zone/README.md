@@ -1,16 +1,15 @@
-### Masking Tracks
+### Crossing Zones
 
-    $ __shake-build/mask-track --help
-    Given a competition input YAML file, *.comp-input.yaml, and relative track log
-    KML files, by masking the track logs with the zones, work out;
-    * if the pilot launched
-    * if they made goal then
-        * how long the pilot took to reach goal
-    * if they landed out then
-        * how far they got along the course
-        * how far yet to reach goal
+    $ __shake-build/cross-zone --help
+    From competition inputs '.comp-input.yaml' and relative track logs '.kml', find
+    pairs of fixes crossing over a zone.
 
-    mask-track [OPTIONS]
+    If a list of tasks are supplied then those tasks alone are processed, otherwise
+    all tasks are processed.
+
+    The same thing goes if a list of pilots is supplied or not.
+
+    <interactive> [OPTIONS]
 
     Source:
       -d --dir=ITEM            Over all the competition *.comp.yaml files in this
@@ -19,7 +18,5 @@
     Filter:
       -t --task[=TASK NUMBER]  Which tasks?
       -p --pilot[=PILOT NAME]  Which pilots?
-      -r --reckon=RECKON NAME  Work out one of these things,
-                               launch|goal|zones|goaldistance|flowndistance|time|lead
       -m --measure=METHOD      Which way to measure task distances,
                                taskdistancebyallmethods|taskdistancebypoints|taskdistancebyedges
