@@ -92,14 +92,15 @@ drive CmdOptions{..} = do
     fprint ("Tracks crossing zones completed in " % timeSpecs % "\n") start end
     where
         withFile yamlCompPath = do
-            putStrLn $ takeFileName yamlCompPath
-            let yamlMaskPath =
+            let yamlCrossPath =
                     flip replaceExtension ".cross-zone.yaml"
                     $ dropExtension yamlCompPath
-            let go = writeMask yamlMaskPath in go checkAll id
+
+            putStrLn $ "Reading competition from '" ++ takeFileName yamlCompPath ++ "'"
+            let go = writeMask yamlCrossPath in go checkAll id
             where
                 writeMask :: forall a. MkCrossingTrackIO a
-                writeMask yamlPath f g = do
+                writeMask yamlCrossPath f g = do
                     checks <-
                         runExceptT $
                             f
@@ -128,7 +129,7 @@ drive CmdOptions{..} = do
                                         (Y.setConfCompare cmp Y.defConfig)
                                         tzi 
 
-                            BS.writeFile yamlPath yaml
+                            BS.writeFile yamlCrossPath yaml
 
                 checkAll =
                     checkTracks $ \Cmp.CompSettings{tasks} -> flown tasks

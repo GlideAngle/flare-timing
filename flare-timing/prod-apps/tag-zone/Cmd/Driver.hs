@@ -73,10 +73,11 @@ drive CmdOptions{..} = do
     fprint ("Tagging zones completed in " % timeSpecs % "\n") start end
     where
         withFile yamlCrossZonePath = do
-            putStrLn $ takeFileName yamlCrossZonePath
             let yamlTagZonePath =
                     flip replaceExtension ".tag-zone.yaml"
                     $ dropExtension yamlCrossZonePath
+
+            putStrLn $ "Reading zone crossings from '" ++ takeFileName yamlCrossZonePath ++ "'"
             writeTags yamlTagZonePath yamlCrossZonePath
 
 writeTags :: FilePath -> FilePath -> IO ()
