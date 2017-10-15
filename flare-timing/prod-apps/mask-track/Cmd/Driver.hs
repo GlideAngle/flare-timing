@@ -117,8 +117,6 @@ drive CmdOptions{..} = do
     fprint ("Masking tracks completed in " % timeSpecs % "\n") start end
     where
         withFile yamlCompPath = do
-            putStrLn $ takeFileName yamlCompPath
-
             let yamlMaskPath =
                     flip replaceExtension ".mask-track.yaml"
                     $ dropExtension yamlCompPath
@@ -127,6 +125,8 @@ drive CmdOptions{..} = do
                     flip replaceExtension ".tag-zone.yaml"
                     $ dropExtension yamlCompPath
 
+            putStrLn $ "Reading competition from '" ++ takeFileName yamlCompPath ++ "'"
+            putStrLn $ "Reading tagged zones from '" ++ takeFileName yamlTagsPath ++ "'"
             writeMask yamlTagsPath yamlMaskPath check
 
             where
