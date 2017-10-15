@@ -4,6 +4,9 @@
 
 module Cmd.Driver (driverMain) where
 
+import Formatting ((%), fprint)
+import Formatting.Clock (timeSpecs)
+import System.Clock (getTime, Clock(Monotonic))
 import Control.Monad (mapM_)
 import Control.Monad.Trans.Except (throwE)
 import Control.Monad.Except (ExceptT(..), runExceptT, lift)
@@ -32,6 +35,8 @@ driverMain = withCmdArgs drive
 
 drive :: CmdOptions -> IO ()
 drive CmdOptions{..} = do
+    -- SEE: http://chrisdone.com/posts/measuring-duration-in-haskell
+    start <- getTime Monotonic
     dfe <- doesFileExist file
     if dfe then
         go file
@@ -42,6 +47,8 @@ drive CmdOptions{..} = do
             mapM_ go files
         else
             putStrLn "Couldn't find any flight score competition database input files."
+    end <- getTime Monotonic
+    fprint ("Extracting tasks completed in " % timeSpecs % "\n") start end
     where
         go fsdbPath = do
             contents <- readFile fsdbPath

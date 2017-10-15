@@ -15,6 +15,9 @@
 
 module Cmd.Driver (driverMain) where
 
+import Formatting ((%), fprint)
+import Formatting.Clock (timeSpecs)
+import System.Clock (getTime, Clock(Monotonic))
 import Data.String (IsString)
 import Control.Monad (mapM_)
 import Control.Monad.Except (runExceptT)
@@ -65,6 +68,8 @@ cmp a b =
 
 drive :: CmdOptions -> IO ()
 drive CmdOptions{..} = do
+    -- SEE: http://chrisdone.com/posts/measuring-duration-in-haskell
+    start <- getTime Monotonic
     dfe <- doesFileExist file
     if dfe then
         withFile file
@@ -75,6 +80,8 @@ drive CmdOptions{..} = do
             mapM_ withFile files
         else
             putStrLn "Couldn't find any flight score competition yaml input files."
+    end <- getTime Monotonic
+    fprint ("Measuring task lengths completed in " % timeSpecs % "\n") start end
     where
         withFile yamlCompPath = do
             putStrLn $ takeFileName yamlCompPath
