@@ -11,6 +11,7 @@ arguments =
     , "prod-apps/app-serve"
     , "prod-apps/extract-task"
     , "prod-apps/task-length"
+    , "prod-apps/cross-zone"
     , "prod-apps/mask-track"
     , "test-suite-hlint"
     ]

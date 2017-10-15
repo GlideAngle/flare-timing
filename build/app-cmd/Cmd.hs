@@ -27,6 +27,7 @@ prodApps :: [String]
 prodApps =
     [ "extract-task"
     , "task-length"
+    , "cross-zone"
     , "mask-track"
     , "comp-serve"
     ] 
@@ -59,6 +60,12 @@ buildRules = do
             (Cwd root)
             Shell
             (cmdFor "flare-timing:task-length")
+
+    phony "cross-zone" $
+        cmd
+            (Cwd root)
+            Shell
+            (cmdFor "flare-timing:cross-zone")
 
     phony "mask-track" $
         cmd

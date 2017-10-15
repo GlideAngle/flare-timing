@@ -88,11 +88,8 @@ cmp a b =
         ("distanceToGoal", "madeGoal") -> GT
         ("distanceToGoal", "timeToGoal") -> GT
         ("distanceToGoal", _) -> LT
-        ("distanceMade", "zonesProof") -> LT
         ("distanceMade", _) -> GT
-        ("zonesTime", "zonesProof") -> LT
         ("zonesTime", _) -> GT
-        ("zonesProof", _) -> GT
         ("time", _) -> LT
         ("lat", "time") -> GT
         ("lat", _) -> LT
@@ -144,12 +141,11 @@ drive CmdOptions{..} = do
 
                 Zones ->
                     let go = writeMask yamlMaskPath
-                    in go checkZones (\ (zt, zp) ->
+                    in go checkZones (\ (zt, _) ->
                         TZ.FlownTrack
                             { launched = True
                             , madeGoal = True
                             , zonesTime = zt
-                            , zonesProof = zp
                             , timeToGoal = Nothing
                             , distanceToGoal = Nothing
                             , distanceMade = Nothing
@@ -162,7 +158,6 @@ drive CmdOptions{..} = do
                             { launched = x
                             , madeGoal = True
                             , zonesTime = []
-                            , zonesProof = []
                             , timeToGoal = Nothing
                             , distanceToGoal = Nothing
                             , distanceMade = Nothing
@@ -175,7 +170,6 @@ drive CmdOptions{..} = do
                             { launched = True
                             , madeGoal = x
                             , zonesTime = []
-                            , zonesProof = []
                             , timeToGoal = Nothing
                             , distanceToGoal = Nothing
                             , distanceMade = Nothing
@@ -188,7 +182,6 @@ drive CmdOptions{..} = do
                             { launched = True
                             , madeGoal = True
                             , zonesTime = []
-                            , zonesProof = []
                             , timeToGoal = Nothing
                             , distanceToGoal = unTaskDistance <$> td
                             , distanceMade = Nothing 
@@ -201,7 +194,6 @@ drive CmdOptions{..} = do
                             { launched = True
                             , madeGoal = True
                             , zonesTime = []
-                            , zonesProof = []
                             , timeToGoal = Nothing
                             , distanceToGoal = Nothing
                             , distanceMade = unPilotDistance <$> fd
@@ -214,7 +206,6 @@ drive CmdOptions{..} = do
                             { launched = True
                             , madeGoal = True
                             , zonesTime = []
-                            , zonesProof = []
                             , timeToGoal = unPilotTime <$> ttg
                             , distanceToGoal = Nothing
                             , distanceMade = Nothing
@@ -280,7 +271,7 @@ drive CmdOptions{..} = do
                 flown tasks iTask xs =
                     let ld = launched tasks iTask xs
                         mg = madeGoal tasks iTask xs
-                        (zt, zp) = madeZones tasks iTask xs
+                        (zt, _) = madeZones tasks iTask xs
                         dg = distanceToGoal tasks iTask xs
                         df = distanceFlown tasks iTask xs
                         tf = timeFlown tasks iTask xs
@@ -288,7 +279,6 @@ drive CmdOptions{..} = do
                         { launched = ld
                         , madeGoal = mg
                         , zonesTime = zt
-                        , zonesProof = zp
 
                         , distanceToGoal =
                             if mg then Nothing else unTaskDistance <$> dg

@@ -59,7 +59,7 @@ import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.LatLng.Raw (RawLat(..), RawLng(..))
 import Flight.Zone (Radius(..), Zone(..))
 import qualified Flight.Zone.Raw as Raw (RawZone(..))
-import Data.Flight.PilotTrack (ZoneProof(..))
+import Data.Flight.PilotTrack (ZoneCrossing(..))
 import qualified Data.Flight.PilotTrack as Cmp (Fix(..))
 import qualified Data.Flight.Comp as Cmp
     ( CompSettings(..)
@@ -280,12 +280,12 @@ fixFromFix mark0 x =
         Kml.Latitude lat = Kml.lat x
         Kml.Longitude lng = Kml.lng x
 
-proof :: [Kml.Fix] -> UTCTime -> Int -> Int -> [Bool] -> Maybe ZoneProof
+proof :: [Kml.Fix] -> UTCTime -> Int -> Int -> [Bool] -> Maybe ZoneCrossing
 proof fixes mark0 i j bs = do
     fixM <- fixes ^? element i
     fixN <- fixes ^? element j
     let fs = fixFromFix mark0 <$> [fixM, fixN]
-    return $ ZoneProof { crossing = fs
+    return $ ZoneCrossing { crossing = fs
                        , inZone = bs
                        }
 
@@ -327,7 +327,7 @@ pickCrossingPredicate True task@Cmp.Task{speedSection, zones} =
 madeZones :: [Cmp.Task]
           -> IxTask
           -> Kml.MarkedFixes
-          -> ([Maybe UTCTime], [Maybe ZoneProof])
+          -> ([Maybe UTCTime], [Maybe ZoneCrossing])
 madeZones tasks (IxTask i) Kml.MarkedFixes{mark0, fixes} =
     case tasks ^? element (i - 1) of
         Nothing ->
@@ -349,7 +349,7 @@ madeZones tasks (IxTask i) Kml.MarkedFixes{mark0, fixes} =
                 f (ZoneExit m n) = crossingTime fixes mark0 m n [True, False]
                 f (ZoneEntry m n) = crossingTime fixes mark0 m n [False, True]
 
-                g :: ZoneHit -> Maybe ZoneProof
+                g :: ZoneHit -> Maybe ZoneCrossing
                 g ZoneMiss = Nothing
                 g (ZoneExit m n) = proof fixes mark0 m n [True, False]
                 g (ZoneEntry m n) = proof fixes mark0 m n [False, True]
@@ -357,7 +357,7 @@ madeZones tasks (IxTask i) Kml.MarkedFixes{mark0, fixes} =
 madeSpeedZones :: [Cmp.Task]
                -> IxTask
                -> Kml.MarkedFixes
-               -> ([Maybe UTCTime], [Maybe ZoneProof])
+               -> ([Maybe UTCTime], [Maybe ZoneCrossing])
 madeSpeedZones tasks (IxTask i) Kml.MarkedFixes{mark0, fixes} =
     case tasks ^? element (i - 1) of
         Nothing ->
@@ -379,7 +379,7 @@ madeSpeedZones tasks (IxTask i) Kml.MarkedFixes{mark0, fixes} =
                 f (ZoneExit m n) = crossingTime fixes mark0 m n [True, False]
                 f (ZoneEntry m n) = crossingTime fixes mark0 m n [False, True]
 
-                g :: ZoneHit -> Maybe ZoneProof
+                g :: ZoneHit -> Maybe ZoneCrossing
                 g ZoneMiss = Nothing
                 g (ZoneExit m n) = proof fixes mark0 m n [True, False]
                 g (ZoneEntry m n) = proof fixes mark0 m n [False, True]
