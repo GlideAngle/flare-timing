@@ -135,7 +135,6 @@ drive CmdOptions{..} = do
 
                 flown :: Masking TZ.FlownTrackCrossing
                 flown tasks iTask xs =
-                    let (_, zp) = madeZones tasks iTask xs
-                    in TZ.FlownTrackCrossing
-                        { zonesCrossing = zp
+                    TZ.FlownTrackCrossing
+                        { zonesCrossing = madeZones tasks iTask xs
                         }

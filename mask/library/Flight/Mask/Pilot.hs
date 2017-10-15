@@ -27,7 +27,7 @@ module Flight.Mask.Pilot
     ( countFixes
     , checkTracks
     , madeZones
-    , madeSpeedZones
+    , tagZones
     , launched
     , madeGoal
     , started
@@ -289,22 +289,19 @@ proof fixes mark0 i j bs = do
                        , inZone = bs
                        }
 
--- | Given two points on either side of a zone, what is the crossing time.
-crossingTime :: [Kml.Fix] -> UTCTime -> Int -> Int -> [Bool] -> Maybe UTCTime
+-- | Given two points on either side of a zone, what is the crossing tag.
+crossingTag :: (Cmp.Fix, Cmp.Fix) -> (Bool, Bool) -> Maybe Cmp.Fix
 
-crossingTime fixes mark0 i _ [True, False] = do
-    -- TODO: Interpolate between crossing points. For now I just take the time
-    -- of the point on the inside.
-    fixM <- fixes ^? element i
-    let Kml.Seconds secs = Kml.mark fixM
-    return $ fromInteger secs `addUTCTime` mark0
+crossingTag (fixM, _) (True, False) =
+    -- TODO: Interpolate between crossing points. For now I just take the point on
+    -- the inside.
+    Just fixM
 
-crossingTime fixes mark0 _ j [False, True] = do
-    fixN <- fixes ^? element j
-    let Kml.Seconds secs = Kml.mark fixN
-    return $ fromInteger secs `addUTCTime` mark0
+crossingTag (_, fixN) (False, True) =
+    Just fixN
 
-crossingTime _ _ _ _ _ = Nothing
+crossingTag _ _ =
+    Nothing
 
 pickCrossingPredicate
     :: Bool -- ^ Is the start an exit cylinder?
@@ -324,17 +321,27 @@ pickCrossingPredicate True task@Cmp.Task{speedSection, zones} =
                 [1 .. ]
                 zones
 
+tagZones :: [Maybe ZoneCrossing] -> [Maybe Cmp.Fix]
+tagZones =
+    fmap (>>= f)
+    where
+        f :: ZoneCrossing -> Maybe Cmp.Fix
+        f ZoneCrossing{crossing, inZone} =
+            case (crossing, inZone) of
+                ([x, y], [a, b]) -> crossingTag (x, y) (a, b)
+                _ -> Nothing
+
 madeZones :: [Cmp.Task]
           -> IxTask
           -> Kml.MarkedFixes
-          -> ([Maybe UTCTime], [Maybe ZoneCrossing])
+          -> [Maybe ZoneCrossing]
 madeZones tasks (IxTask i) Kml.MarkedFixes{mark0, fixes} =
     case tasks ^? element (i - 1) of
         Nothing ->
-            ([], [])
+            []
 
         Just task@Cmp.Task{zones} ->
-            (f <$> xs, g <$> xs)
+            f <$> xs
             where
                 fs = (\x -> pickCrossingPredicate (isStartExit x) x) task
 
@@ -344,45 +351,10 @@ madeZones tasks (IxTask i) Kml.MarkedFixes{mark0, fixes} =
                         (zoneToCylinder <$> zones)
                         (fixToPoint <$> fixes)
 
-                f :: ZoneHit -> Maybe UTCTime
+                f :: ZoneHit -> Maybe ZoneCrossing
                 f ZoneMiss = Nothing
-                f (ZoneExit m n) = crossingTime fixes mark0 m n [True, False]
-                f (ZoneEntry m n) = crossingTime fixes mark0 m n [False, True]
-
-                g :: ZoneHit -> Maybe ZoneCrossing
-                g ZoneMiss = Nothing
-                g (ZoneExit m n) = proof fixes mark0 m n [True, False]
-                g (ZoneEntry m n) = proof fixes mark0 m n [False, True]
-
-madeSpeedZones :: [Cmp.Task]
-               -> IxTask
-               -> Kml.MarkedFixes
-               -> ([Maybe UTCTime], [Maybe ZoneCrossing])
-madeSpeedZones tasks (IxTask i) Kml.MarkedFixes{mark0, fixes} =
-    case tasks ^? element (i - 1) of
-        Nothing ->
-            ([], [])
-
-        Just task@Cmp.Task{speedSection, zones} ->
-            (f <$> xs, g <$> xs)
-            where
-                fs = (\x -> pickCrossingPredicate (isStartExit x) x) task
-
-                xs =
-                    tickedZones
-                        (slice speedSection fs)
-                        (zoneToCylinder <$> slice speedSection zones)
-                        (fixToPoint <$> fixes)
-
-                f :: ZoneHit -> Maybe UTCTime
-                f ZoneMiss = Nothing
-                f (ZoneExit m n) = crossingTime fixes mark0 m n [True, False]
-                f (ZoneEntry m n) = crossingTime fixes mark0 m n [False, True]
-
-                g :: ZoneHit -> Maybe ZoneCrossing
-                g ZoneMiss = Nothing
-                g (ZoneExit m n) = proof fixes mark0 m n [True, False]
-                g (ZoneEntry m n) = proof fixes mark0 m n [False, True]
+                f (ZoneExit m n) = proof fixes mark0 m n [True, False]
+                f (ZoneEntry m n) = proof fixes mark0 m n [False, True]
 
 mm30 :: Tolerance
 mm30 = Tolerance $ 30 % 1000

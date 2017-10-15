@@ -141,11 +141,11 @@ drive CmdOptions{..} = do
 
                 Zones ->
                     let go = writeMask yamlMaskPath
-                    in go checkZones (\ (zt, _) ->
+                    in go checkZones (\ _ ->
                         TZ.FlownTrack
                             { launched = True
                             , madeGoal = True
-                            , zonesTime = zt
+                            , zonesTime = []
                             , timeToGoal = Nothing
                             , distanceToGoal = Nothing
                             , distanceMade = Nothing
@@ -271,14 +271,13 @@ drive CmdOptions{..} = do
                 flown tasks iTask xs =
                     let ld = launched tasks iTask xs
                         mg = madeGoal tasks iTask xs
-                        (zt, _) = madeZones tasks iTask xs
                         dg = distanceToGoal tasks iTask xs
                         df = distanceFlown tasks iTask xs
                         tf = timeFlown tasks iTask xs
                     in TZ.FlownTrack
                         { launched = ld
                         , madeGoal = mg
-                        , zonesTime = zt
+                        , zonesTime = []
 
                         , distanceToGoal =
                             if mg then Nothing else unTaskDistance <$> dg

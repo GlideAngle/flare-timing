@@ -13,10 +13,13 @@ module Data.Flight.PilotTrack
     ( -- * Pilot Track, Task Control Zone Intersection
       PilotTracks(..)
     , PilotCrossings(..)
+    , PilotTags(..)
     , FlownTrack(..)
     , FlownTrackCrossing(..)
+    , FlownTrackTag(..)
     , PilotFlownTrack(..)
     , PilotFlownTrackCrossing(..)
+    , PilotFlownTrackTag(..)
     , Fix(..)
     , ZoneCrossing(..)
     ) where
@@ -37,13 +40,22 @@ instance FromJSON PilotTracks
 newtype PilotCrossings =
     PilotCrossings
         { pilotCrossings :: [[PilotFlownTrackCrossing]]
-          -- ^ For each made zone, the pair of fixes on either side of the
-          -- crossing.
+          -- ^ For each made zone, the pair of fixes crossing it.
         }
     deriving (Show, Generic)
 
 instance ToJSON PilotCrossings
 instance FromJSON PilotCrossings
+
+newtype PilotTags =
+    PilotTags
+        { pilotTags :: [[PilotFlownTrackTag]]
+          -- ^ For each made zone, the tag.
+        }
+    deriving (Show, Generic)
+
+instance ToJSON PilotTags
+instance FromJSON PilotTags
 
 data FlownTrack =
     FlownTrack
@@ -74,6 +86,16 @@ data FlownTrackCrossing =
 
 instance ToJSON FlownTrackCrossing
 instance FromJSON FlownTrackCrossing
+
+data FlownTrackTag =
+    FlownTrackTag
+        { zonesTag :: [Maybe Fix]
+        -- ^ The interpolated fix tagging each made zone.
+        }
+   deriving (Show, Generic)
+
+instance ToJSON FlownTrackTag
+instance FromJSON FlownTrackTag
 
 data Fix =
     Fix { time :: UTCTime
@@ -110,3 +132,10 @@ data PilotFlownTrackCrossing =
 
 instance ToJSON PilotFlownTrackCrossing
 instance FromJSON PilotFlownTrackCrossing
+
+data PilotFlownTrackTag =
+    PilotFlownTrackTag Pilot (Maybe FlownTrackTag)
+    deriving (Show, Generic)
+
+instance ToJSON PilotFlownTrackTag
+instance FromJSON PilotFlownTrackTag
