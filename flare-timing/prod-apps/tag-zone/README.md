@@ -1,7 +1,6 @@
 ### Tagging Zones
 
     $ __shake-build/tag-zones --help
-
     Interpolate between crossing fixes '.cross-zone.yaml' for the time and place
     where a track tags a zone.
 
