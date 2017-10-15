@@ -21,17 +21,21 @@ See the separate discussion of [building](BUILDING.md) and [testing](TESTING.md)
 
 FSDB is the database of FS and is an XML format for inputs, working and outputs of scoring. To host a **Flare Timing** web site, start with an FSDB file and relative tracklog files on disk and run a pipeline of command line programs to produce the data to display then host the web services and web app.
 
-1. Extract the inputs with [`extract-task`](flare-timing/prod-apps/extract-task) producing a `*.comp-input.yaml` file.
-2. Trace the shortest path to fly a task with [`task-length`](flare-timing/prod-apps/task-length) producing
-   a `*.task-length.yaml` file.
-3. Find where tracks cross over task zones with [`cross-zone`](flare-timing/prod-apps/cross-zone) producing
-   a `*.cross-zone.yaml` file.
-4. Find the nearest a track came to missing the next zone on course with [`near-miss`](flare-timing/prod-apps/near-miss) producing
-   a `*.near-miss.yaml` file.
-5. Mask the competition task over the tracklogs with [`mask-track`](flare-timing/prod-apps/mask-track) producing
-   a `*.mask-track.yaml` file.
-6. Time align the distance to goal for each fix with `leading-area` producing
-   a `*.leading-area.yaml` file.
-7. Score the competition with `gap-point` producing a `*.gap-point.yaml` file.
-8. Start the [`server`](flare-timing/prod-apps/app-serve) hosting the web services.
-9. Start the [`dev server`](flare-timing/view) or otherwise host the web app.
+1. Extract the inputs with [`extract-task`](flare-timing/prod-apps/extract-task).  
+Produces a `*.comp-input.yaml` file.
+2. Trace the shortest path to fly a task with [`task-length`](flare-timing/prod-apps/task-length).  
+Produces a `*.task-length.yaml` file.
+3. Find pairs of fixes crossing over zones with [`cross-zone`](flare-timing/prod-apps/cross-zone).  
+Produces a `*.cross-zone.yaml` file.
+4. Interpolate between crossing fixes for the time and place where a track tags a zone with [`tag-zone`](flare-timing/prod-apps/tag-zone).  
+Produces a `*.tag-zone.yaml` file.
+5. Find the nearest a track came to missing the next zone on course with [`near-miss`](flare-timing/prod-apps/near-miss).  
+Produces a `*.near-miss.yaml` file.
+6. Mask the competition task over the tracklogs with [`mask-track`](flare-timing/prod-apps/mask-track).  
+Produces a `*.mask-track.yaml` file.
+7. Time align the distance to goal for each fix with `leading-area`.  
+Produces a `*.leading-area.yaml` file.
+8. Score the competition with `gap-point`.  
+Produces a `*.gap-point.yaml` file.
+9. Start the [`server`](flare-timing/prod-apps/app-serve) hosting the web services.
+10. Start the [`dev server`](flare-timing/view) or otherwise host the web app.
