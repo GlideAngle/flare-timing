@@ -32,13 +32,11 @@ import Flight.TaskTrack (TaskDistanceMeasure(..))
 description :: String
 description = intro
     where
-        intro = [r|Given a competition input YAML file, *.comp-input.yaml, and relative track log KML files, by masking the track logs with the zones, work out;
-* if the pilot launched
-* if they made goal then
-    * how long the pilot took to reach goal
-* if they landed out then
-    * how far they got along the course
-    * how far yet to reach goal
+        intro = [r|Interpolate between crossing fixes '.cross-zone.yaml' for the time and place where a track tags a zone.
+
+If a list of tasks are supplied then those tasks alone are processed, otherwise all tasks are processed.
+
+The same thing goes if a list of pilots is supplied or not.
 |]
 
 data Drive
