@@ -22,12 +22,12 @@ import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Data.String (IsString)
 import Control.Monad (mapM_)
-import Control.Monad.Except (ExceptT(..), runExceptT)
+import Control.Monad.Except (runExceptT)
 import Data.UnitsOfMeasure (u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import System.Directory (doesFileExist, doesDirectoryExist)
 import System.FilePath.Find (FileType(..), (==?), (&&?), find, always, fileType, extension)
-import System.FilePath (FilePath, takeFileName, replaceExtension, dropExtension)
+import System.FilePath (takeFileName, replaceExtension, dropExtension)
 import Cmd.Args (withCmdArgs)
 import Cmd.Options (CmdOptions(..))
 import qualified Data.Yaml.Pretty as Y
@@ -36,7 +36,7 @@ import qualified Data.ByteString as BS
 import qualified Data.Flight.Comp as Cmp (CompSettings(..), Pilot(..))
 import qualified Flight.Task as Tsk (TaskDistance(..))
 import qualified Flight.Score as Gap (PilotDistance(..), PilotTime(..))
-import Data.Flight.TrackLog (TrackFileFail(..), IxTask(..))
+import Data.Flight.TrackLog (IxTask(..))
 import Flight.Units ()
 import Flight.Mask (Masking)
 import Flight.Mask.Pilot
@@ -48,28 +48,16 @@ import Flight.Mask.Pilot
     , timeFlown
     )
 import qualified Data.Flight.PilotTrack as TZ
-    (FlownTrack(..), PilotFlownTrack(..), PilotTracks(..))
+    ( FlownTrack(..)
+    , FlownTrackTag(..)
+    , PilotFlownTrack(..)
+    , PilotFlownTrackTag(..)
+    , PilotTracks(..)
+    , PilotTags(..)
+    , Fix(..)
+    )
 import Data.Number.RoundingFunctions (dpRound)
-
-type MkPart a =
-    FilePath
-    -> [IxTask]
-    -> [Cmp.Pilot]
-    -> ExceptT
-        String
-        IO
-        [[Either
-            (Cmp.Pilot, TrackFileFail)
-            (Cmp.Pilot, a)
-        ]]
-
-type AddPart a = a -> TZ.FlownTrack
-
-type MkFlownTrackIO a =
-    FilePath
-    -> MkPart a
-    -> AddPart a
-    -> IO ()
+import Cmd.Inputs (readTags)
 
 driverMain :: IO ()
 driverMain = withCmdArgs drive
@@ -130,64 +118,94 @@ drive CmdOptions{..} = do
     where
         withFile yamlCompPath = do
             putStrLn $ takeFileName yamlCompPath
+
             let yamlMaskPath =
                     flip replaceExtension ".mask-track.yaml"
                     $ dropExtension yamlCompPath
-            writeMask yamlMaskPath checkAll id
+
+            let yamlTagsPath =
+                    flip replaceExtension ".tag-zone.yaml"
+                    $ dropExtension yamlCompPath
+
+            writeMask yamlTagsPath yamlMaskPath check
+
             where
-                writeMask :: forall a. MkFlownTrackIO a
-                writeMask yamlPath f g = do
-                    checks <-
+                writeMask yamlTagsPath yamlMaskPath f = do
+                    comp <-
                         runExceptT $
                             f
                                 yamlCompPath
                                 (IxTask <$> task)
                                 (Cmp.Pilot <$> pilot)
 
-                    case checks of
-                        Left msg -> print msg
-                        Right xs -> do
-                            let ps :: [[TZ.PilotFlownTrack]] =
+                    tags <- runExceptT $ readTags yamlTagsPath
+
+                    case (comp, tags) of
+                        (Left msg, _) -> print msg
+                        (_, Left msg) -> print msg
+                        (Right comp', Right TZ.PilotTags{pilotTags}) -> do
+                            let pss :: [[TZ.PilotFlownTrack]] =
                                     (fmap . fmap)
                                         (\case
                                             Left (p, _) ->
                                                 TZ.PilotFlownTrack p Nothing
 
                                             Right (p, x) ->
-                                                TZ.PilotFlownTrack p (Just $ g x))
-                                        xs
+                                                TZ.PilotFlownTrack p (Just x))
+                                        comp'
+
+                            let zss :: [[TZ.PilotFlownTrack]] =
+                                    zipWith
+                                        (zipWith merge)
+                                        pss
+                                        pilotTags
 
                             let tzi =
-                                    TZ.PilotTracks { pilotTracks = ps }
+                                    TZ.PilotTracks { pilotTracks = zss }
 
                             let yaml =
                                     Y.encodePretty
                                         (Y.setConfCompare cmp Y.defConfig)
                                         tzi 
 
-                            BS.writeFile yamlPath yaml
+                            BS.writeFile yamlMaskPath yaml
 
-                checkAll =
+                check =
                     checkTracks $ \Cmp.CompSettings{tasks} -> flown tasks
 
-                flown :: Masking TZ.FlownTrack
-                flown tasks iTask xs =
-                    let ld = launched tasks iTask xs
-                        mg = madeGoal tasks iTask xs
-                        dg = distanceToGoal tasks iTask xs
-                        df = distanceFlown tasks iTask xs
-                        tf = timeFlown tasks iTask xs
-                    in TZ.FlownTrack
-                        { launched = ld
-                        , madeGoal = mg
-                        , zonesTime = []
+merge :: TZ.PilotFlownTrack -> TZ.PilotFlownTrackTag -> TZ.PilotFlownTrack
 
-                        , distanceToGoal =
-                            if mg then Nothing else unTaskDistance <$> dg
+merge track@(TZ.PilotFlownTrack _ Nothing) _ =
+    track
 
-                        , distanceMade =
-                            if mg then Nothing else unPilotDistance <$> df
+merge track (TZ.PilotFlownTrackTag _ Nothing) =
+    track
 
-                        , timeToGoal =
-                            if not mg then Nothing else unPilotTime <$> tf
-                        }
+merge
+    (TZ.PilotFlownTrack p (Just track))
+    (TZ.PilotFlownTrackTag p' (Just TZ.FlownTrackTag{zonesTag})) =
+    if p /= p' then error "Merging mismatched pilots" else
+    let track' = track { TZ.zonesTime = (fmap . fmap) TZ.time zonesTag }
+    in (TZ.PilotFlownTrack p (Just track'))
+
+flown :: Masking TZ.FlownTrack
+flown tasks iTask xs =
+    let ld = launched tasks iTask xs
+        mg = madeGoal tasks iTask xs
+        dg = distanceToGoal tasks iTask xs
+        df = distanceFlown tasks iTask xs
+        tf = timeFlown tasks iTask xs
+    in TZ.FlownTrack
+        { launched = ld
+        , madeGoal = mg
+        , zonesTime = []
+
+        , distanceToGoal =
+            if mg then Nothing else unTaskDistance <$> dg
+
+        , distanceMade =
+            if mg then Nothing else unPilotDistance <$> df
+
+        , timeToGoal =
+            if not mg then Nothing else unPilotTime <$> tf
+        }
