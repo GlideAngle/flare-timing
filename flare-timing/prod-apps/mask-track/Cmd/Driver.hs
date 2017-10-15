@@ -29,7 +29,7 @@ import System.Directory (doesFileExist, doesDirectoryExist)
 import System.FilePath.Find (FileType(..), (==?), (&&?), find, always, fileType, extension)
 import System.FilePath (FilePath, takeFileName, replaceExtension, dropExtension)
 import Cmd.Args (withCmdArgs)
-import Cmd.Options (CmdOptions(..), Reckon(..))
+import Cmd.Options (CmdOptions(..))
 import qualified Data.Yaml.Pretty as Y
 import qualified Data.ByteString as BS
 
@@ -41,7 +41,6 @@ import Flight.Units ()
 import Flight.Mask (Masking)
 import Flight.Mask.Pilot
     ( checkTracks
-    , madeZones
     , launched
     , madeGoal
     , distanceToGoal
@@ -134,85 +133,7 @@ drive CmdOptions{..} = do
             let yamlMaskPath =
                     flip replaceExtension ".mask-track.yaml"
                     $ dropExtension yamlCompPath
-            case reckon of
-                All ->
-                    let go = writeMask yamlMaskPath
-                    in go checkAll id
-
-                Zones ->
-                    let go = writeMask yamlMaskPath
-                    in go checkZones (\ _ ->
-                        TZ.FlownTrack
-                            { launched = True
-                            , madeGoal = True
-                            , zonesTime = []
-                            , timeToGoal = Nothing
-                            , distanceToGoal = Nothing
-                            , distanceMade = Nothing
-                            })
-
-                Launch ->
-                    let go = writeMask yamlMaskPath
-                    in go checkLaunched (\x ->
-                        TZ.FlownTrack
-                            { launched = x
-                            , madeGoal = True
-                            , zonesTime = []
-                            , timeToGoal = Nothing
-                            , distanceToGoal = Nothing
-                            , distanceMade = Nothing
-                            })
-
-                Goal ->
-                    let go = writeMask yamlMaskPath
-                    in go checkMadeGoal (\x ->
-                        TZ.FlownTrack
-                            { launched = True
-                            , madeGoal = x
-                            , zonesTime = []
-                            , timeToGoal = Nothing
-                            , distanceToGoal = Nothing
-                            , distanceMade = Nothing
-                            })
-
-                GoalDistance ->
-                    let go = writeMask yamlMaskPath
-                    in go checkDistanceToGoal (\td ->
-                        TZ.FlownTrack
-                            { launched = True
-                            , madeGoal = True
-                            , zonesTime = []
-                            , timeToGoal = Nothing
-                            , distanceToGoal = unTaskDistance <$> td
-                            , distanceMade = Nothing 
-                            })
-
-                FlownDistance ->
-                    let go = writeMask yamlMaskPath
-                    in go checkDistanceFlown (\fd ->
-                        TZ.FlownTrack
-                            { launched = True
-                            , madeGoal = True
-                            , zonesTime = []
-                            , timeToGoal = Nothing
-                            , distanceToGoal = Nothing
-                            , distanceMade = unPilotDistance <$> fd
-                            })
-
-                Time ->
-                    let go = writeMask yamlMaskPath
-                    in go checkTimeToGoal (\ttg ->
-                        TZ.FlownTrack
-                            { launched = True
-                            , madeGoal = True
-                            , zonesTime = []
-                            , timeToGoal = unPilotTime <$> ttg
-                            , distanceToGoal = Nothing
-                            , distanceMade = Nothing
-                            })
-
-                Lead -> putStrLn "TODO: Handle reckoning of 'lead'."
-
+            writeMask yamlMaskPath checkAll id
             where
                 writeMask :: forall a. MkFlownTrackIO a
                 writeMask yamlPath f g = do
@@ -245,24 +166,6 @@ drive CmdOptions{..} = do
                                         tzi 
 
                             BS.writeFile yamlPath yaml
-
-                checkLaunched =
-                    checkTracks $ \Cmp.CompSettings{tasks} -> launched tasks
-
-                checkMadeGoal =
-                    checkTracks $ \Cmp.CompSettings{tasks} -> madeGoal tasks
-
-                checkZones =
-                    checkTracks $ \Cmp.CompSettings{tasks} -> madeZones tasks
-
-                checkDistanceToGoal =
-                    checkTracks $ \Cmp.CompSettings{tasks} -> distanceToGoal tasks
-
-                checkDistanceFlown =
-                    checkTracks $ \Cmp.CompSettings{tasks} -> distanceFlown tasks
-
-                checkTimeToGoal =
-                    checkTracks $ \Cmp.CompSettings{tasks} -> timeFlown tasks
 
                 checkAll =
                     checkTracks $ \Cmp.CompSettings{tasks} -> flown tasks

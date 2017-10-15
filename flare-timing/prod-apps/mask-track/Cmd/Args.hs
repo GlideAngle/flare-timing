@@ -26,7 +26,7 @@ import Control.Monad.Except (liftIO, throwError, when, unless)
 import Control.Monad.Trans.Except (runExceptT)
 import System.Directory (doesFileExist, doesDirectoryExist)
 import Text.RawString.QQ (r)
-import Cmd.Options (CmdOptions(..), Reckon(..))
+import Cmd.Options (CmdOptions(..))
 import Flight.TaskTrack (TaskDistanceMeasure(..))
 
 description :: String
@@ -46,7 +46,6 @@ data Drive
             , file :: String
             , task :: [Int]
             , pilot :: [String]
-            , reckon :: Reckon
             , measure :: TaskDistanceMeasure
             }
     deriving (Show, Data, Typeable)
@@ -73,11 +72,6 @@ drive programName =
           &= opt "name"
           &= groupname "Filter"
 
-          , reckon = def
-          &= help "Work out one of these things, launch|goal|zones|goaldistance|flowndistance|time|lead"
-          &= typ "RECKON NAME"
-          &= groupname "Filter"
-
           , measure = def
           &= help "Which way to measure task distances, taskdistancebyallmethods|taskdistancebypoints|taskdistancebyedges"
           &= typ "METHOD"
@@ -97,7 +91,6 @@ cmdArgsToDriveArgs Drive{..} =
                       , file = file
                       , task = task
                       , pilot = pilot
-                      , reckon = reckon
                       , measure = measure
                       }
 
