@@ -37,8 +37,6 @@ data FlownTrack =
                -- distinct fixes.
                , madeGoal :: Bool
                -- ^ Was goal made.
-               , zonesMade :: [Bool]
-               -- ^ Of the zones, which were made.
                , zonesTime :: [Maybe UTCTime]
                -- ^ For each made zone, when was the crossing made.
                , zonesProof :: [Maybe ZoneProof]

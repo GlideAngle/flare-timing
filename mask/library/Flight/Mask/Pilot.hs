@@ -327,14 +327,14 @@ pickCrossingPredicate True task@Cmp.Task{speedSection, zones} =
 madeZones :: [Cmp.Task]
           -> IxTask
           -> Kml.MarkedFixes
-          -> ([Bool], [Maybe UTCTime], [Maybe ZoneProof])
+          -> ([Maybe UTCTime], [Maybe ZoneProof])
 madeZones tasks (IxTask i) Kml.MarkedFixes{mark0, fixes} =
     case tasks ^? element (i - 1) of
         Nothing ->
-            ([], [], [])
+            ([], [])
 
         Just task@Cmp.Task{zones} ->
-            ((/= ZoneMiss) <$> xs, f <$> xs, g <$> xs)
+            (f <$> xs, g <$> xs)
             where
                 fs = (\x -> pickCrossingPredicate (isStartExit x) x) task
 
@@ -357,14 +357,14 @@ madeZones tasks (IxTask i) Kml.MarkedFixes{mark0, fixes} =
 madeSpeedZones :: [Cmp.Task]
                -> IxTask
                -> Kml.MarkedFixes
-               -> ([Bool], [Maybe UTCTime], [Maybe ZoneProof])
+               -> ([Maybe UTCTime], [Maybe ZoneProof])
 madeSpeedZones tasks (IxTask i) Kml.MarkedFixes{mark0, fixes} =
     case tasks ^? element (i - 1) of
         Nothing ->
-            ([], [], [])
+            ([], [])
 
         Just task@Cmp.Task{speedSection, zones} ->
-            ((/= ZoneMiss) <$> xs, f <$> xs, g <$> xs)
+            (f <$> xs, g <$> xs)
             where
                 fs = (\x -> pickCrossingPredicate (isStartExit x) x) task
 
