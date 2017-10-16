@@ -49,8 +49,8 @@ instance ToJSON TimedTracks
 instance FromJSON TimedTracks
 
 data TaskTiming =
-    TaskTiming { firstStart :: Maybe UTCTime
-               , lastGoal :: Maybe UTCTime
+    TaskTiming { zonesFirst :: [Maybe UTCTime]
+               , zonesLast :: [Maybe UTCTime]
                }
     deriving (Show, Generic)
 

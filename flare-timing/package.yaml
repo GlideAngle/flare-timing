@@ -163,6 +163,7 @@ executables:
     - uom-plugin
     - bytestring
     - clock
+    - time
     - formatting
     - siggy-chardust
     - flight-units

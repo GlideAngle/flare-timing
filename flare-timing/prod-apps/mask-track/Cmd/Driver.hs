@@ -20,7 +20,10 @@ module Cmd.Driver (driverMain) where
 import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
+import Data.Time.Clock (UTCTime)
 import Data.String (IsString)
+import Data.List (transpose)
+import Data.Maybe (catMaybes, fromMaybe)
 import Control.Monad (mapM_)
 import Control.Monad.Except (runExceptT)
 import Data.UnitsOfMeasure (u, convert)
@@ -166,22 +169,9 @@ drive CmdOptions{..} = do
                                         pss
                                         pilotTags
 
-                            let mss :: [TZ.TimedTracks] =
-                                    (\zs ->
-                                        TZ.TimedTracks
-                                            { TZ.timing =
-                                                TZ.TaskTiming
-                                                    { firstStart = Nothing
-                                                    , lastGoal = Nothing
-                                                    }
-                                            , TZ.maskedTracks = zs
-                                            })
-                                    <$> zss
+                            let mss :: [TZ.TimedTracks] = timed <$> zss
 
-                            let tzi =
-                                    TZ.MaskedTracks
-                                        { masking = mss
-                                        }
+                            let tzi = TZ.MaskedTracks {masking = mss}
 
                             let yaml =
                                     Y.encodePretty
@@ -192,6 +182,39 @@ drive CmdOptions{..} = do
 
                 check =
                     checkTracks $ \Cmp.CompSettings{tasks} -> flown tasks
+
+timed :: [TZ.PilotFlownTrack] -> TZ.TimedTracks
+timed xs =
+    TZ.TimedTracks
+        { TZ.timing =
+            TZ.TaskTiming
+                { zonesFirst = firstTag <$> zs
+                , zonesLast = lastTag <$> zs
+                }
+        , TZ.maskedTracks = xs
+        }
+    where
+        ys :: [[Maybe UTCTime]]
+        ys = fromMaybe [] <$> tagTimes <$> xs
+
+        zs = transpose ys
+
+firstTag :: [Maybe UTCTime] -> Maybe UTCTime
+firstTag xs =
+    if null ys then Nothing else Just $ minimum ys
+    where
+        ys = catMaybes xs
+
+lastTag :: [Maybe UTCTime] -> Maybe UTCTime
+lastTag xs =
+    if null ys then Nothing else Just $ maximum ys
+    where
+        ys = catMaybes xs
+
+-- | Gets the pilots zone tag times.
+tagTimes :: TZ.PilotFlownTrack -> Maybe [Maybe UTCTime]
+tagTimes (TZ.PilotFlownTrack _ Nothing) = Nothing
+tagTimes (TZ.PilotFlownTrack _ xs) = TZ.zonesTime <$> xs
 
 merge :: TZ.PilotFlownTrack -> TZ.PilotFlownTrackTag -> TZ.PilotFlownTrack
 
