@@ -257,7 +257,7 @@ flown tasks iTask xs =
     in TZ.FlownTrack
         { launched = ld
         , madeGoal = mg
-        , zonesTime = []
+        , zonesTime = const Nothing <$> tasks
 
         , distanceToGoal =
             if mg then Nothing else unTaskDistance <$> dg
