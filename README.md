@@ -29,12 +29,12 @@ Reads `.comp-input.yaml`. Writes `.task-length.yaml`.
 Reads `.comp-input.yaml` and `.kml`. Writes `.cross-zone.yaml`.
 4. Interpolate between crossing fixes for the time and place where a track tags a zone with [`tag-zone`](flare-timing/prod-apps/tag-zone).  
 Reads `.cross-zone.yaml`. Writes `.tag-zone.yaml`.
-5. Find the nearest a track came to missing the next zone on course with [`near-miss`](flare-timing/prod-apps/near-miss).  
+5. Time align the distance to goal for each fix with `leading-area`.  
+Reads `.comp-input.yaml` and `.tag-zone.yaml`. Writes `.leading-area.yaml`.
+6. Find the nearest a track came to missing the next zone on course with [`near-miss`](flare-timing/prod-apps/near-miss).  
 Reads `.comp-input.yaml`, `.kml` and `.cross-zone.yaml`. Writes `.near-miss.yaml`.
-6. Mask the competition task over the tracklogs with [`mask-track`](flare-timing/prod-apps/mask-track).  
+7. Mask the competition task over the tracklogs with [`mask-track`](flare-timing/prod-apps/mask-track).  
 Reads `.comp-input.yaml`, `.tag-zone` and `.near-miss`. Writes `.mask-track.yaml`.
-7. Time align the distance to goal for each fix with `leading-area`.  
-Reads `.comp-input.yaml`. Writes `.leading-area.yaml`.
 8. Score the competition with `gap-point`.  
 Reads `.comp-input.yaml`. Writes `.gap-point.yaml`.
 9. Start the [`server`](flare-timing/prod-apps/app-serve) hosting the web services.
