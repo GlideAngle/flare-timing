@@ -12,10 +12,9 @@ Intersection of pilot tracks with competition zones.
 module Data.Flight.PilotTrack
     ( -- * Pilot Track and Task Control Zone Intersection
       MaskedTracks(..)
-    , TimedTracks(..)
+    , TaggedTracks(..)
     , TaskTiming(..)
     , PilotCrossings(..)
-    , PilotTags(..)
     , FlownTrack(..)
     , FlownTrackCrossing(..)
     , FlownTrackTag(..)
@@ -33,20 +32,23 @@ import Data.Flight.Pilot (Pilot(..))
 import Flight.LatLng.Raw (RawLat, RawLng)
 
 newtype MaskedTracks =
-    MaskedTracks { masking :: [TimedTracks] }
+    MaskedTracks { maskedTracks :: [[PilotFlownTrack]] }
     deriving (Show, Generic)
 
 instance ToJSON MaskedTracks
 instance FromJSON MaskedTracks
 
-data TimedTracks =
-    TimedTracks { timing :: TaskTiming
-                , maskedTracks :: [PilotFlownTrack]
-                }
+data TaggedTracks =
+    TaggedTracks
+        { timing :: [TaskTiming]
+          -- ^ For each made zone, the first and last tag.
+        , pilotTags :: [[PilotFlownTrackTag]]
+          -- ^ For each made zone, the tag.
+        }
     deriving (Show, Generic)
 
-instance ToJSON TimedTracks
-instance FromJSON TimedTracks
+instance ToJSON TaggedTracks
+instance FromJSON TaggedTracks
 
 data TaskTiming =
     TaskTiming { zonesFirst :: [Maybe UTCTime]
@@ -67,24 +69,10 @@ newtype PilotCrossings =
 instance ToJSON PilotCrossings
 instance FromJSON PilotCrossings
 
-newtype PilotTags =
-    PilotTags
-        { pilotTags :: [[PilotFlownTrackTag]]
-          -- ^ For each made zone, the tag.
-        }
-    deriving (Show, Generic)
-
-instance ToJSON PilotTags
-instance FromJSON PilotTags
-
 data FlownTrack =
     FlownTrack
-        { launched :: Bool
-        -- ^ Did the pilot launch, inferred from a track with 2+ distinct fixes.
-        , madeGoal :: Bool
+        { madeGoal :: Bool
         -- ^ Was goal made.
-        , zonesTime :: [Maybe UTCTime]
-        -- ^ For each made zone, when was the crossing made.
         , timeToGoal :: Maybe Double
         -- ^ How long did this pilot take to complete the course.
         , distanceToGoal :: Maybe Double
@@ -97,7 +85,7 @@ data FlownTrack =
 instance ToJSON FlownTrack
 instance FromJSON FlownTrack
 
-data FlownTrackCrossing =
+newtype FlownTrackCrossing =
     FlownTrackCrossing
         { zonesCrossing :: [Maybe ZoneCrossing]
         -- ^ The crossing for each made zone.
@@ -107,7 +95,7 @@ data FlownTrackCrossing =
 instance ToJSON FlownTrackCrossing
 instance FromJSON FlownTrackCrossing
 
-data FlownTrackTag =
+newtype FlownTrackTag =
     FlownTrackTag
         { zonesTag :: [Maybe Fix]
         -- ^ The interpolated fix tagging each made zone.

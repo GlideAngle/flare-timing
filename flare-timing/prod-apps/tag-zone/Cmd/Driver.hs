@@ -19,8 +19,11 @@ module Cmd.Driver (driverMain) where
 
 import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
+import Data.Time.Clock (UTCTime)
 import System.Clock (getTime, Clock(Monotonic))
 import Data.String (IsString)
+import Data.Maybe (catMaybes, fromMaybe)
+import Data.List (transpose)
 import Control.Monad (mapM_)
 import Control.Monad.Except (runExceptT)
 import System.Directory (doesFileExist, doesDirectoryExist)
@@ -34,12 +37,14 @@ import qualified Data.ByteString as BS
 import Flight.Units ()
 import Flight.Mask.Pilot (tagZones)
 import Data.Flight.PilotTrack
-    ( FlownTrackCrossing(..)
+    ( TaggedTracks(..)
+    , FlownTrackCrossing(..)
     , FlownTrackTag(..)
     , PilotFlownTrackCrossing(..)
     , PilotFlownTrackTag(..)
     , PilotCrossings(..)
-    , PilotTags(..)
+    , TaskTiming(..)
+    , Fix(..)
     )
 import Cmd.Inputs (readCrossings)
 
@@ -49,6 +54,8 @@ driverMain = withCmdArgs drive
 cmp :: (Ord a, IsString a) => a -> a -> Ordering
 cmp a b =
     case (a, b) of
+        ("timing", _) -> LT
+        ("pilotTags", _) -> GT
         ("time", _) -> LT
         ("lat", "time") -> GT
         ("lat", _) -> LT
@@ -87,7 +94,7 @@ writeTags tagPath crossPath = do
     case cs of
         Left s -> putStrLn s
         Right PilotCrossings{pilotCrossings} -> do
-            let ps :: [[PilotFlownTrackTag]] =
+            let pss :: [[PilotFlownTrackTag]] =
                     (fmap . fmap)
                         (\case
                             PilotFlownTrackCrossing p Nothing ->
@@ -98,7 +105,9 @@ writeTags tagPath crossPath = do
                         pilotCrossings
 
             let tzi =
-                    PilotTags { pilotTags = ps }
+                    TaggedTracks { timing = timed <$> pss
+                                 , pilotTags = pss
+                                 }
 
             let yaml =
                     Y.encodePretty
@@ -106,6 +115,36 @@ writeTags tagPath crossPath = do
                         tzi 
 
             BS.writeFile tagPath yaml
+
+timed :: [PilotFlownTrackTag] -> TaskTiming
+timed xs =
+    TaskTiming
+        { zonesFirst = firstTag <$> zs
+        , zonesLast = lastTag <$> zs
+        }
+    where
+        ys :: [[Maybe UTCTime]]
+        ys = fromMaybe [] <$> tagTimes <$> xs
+
+        zs = transpose ys
+
+firstTag :: [Maybe UTCTime] -> Maybe UTCTime
+firstTag xs =
+    if null ys then Nothing else Just $ minimum ys
+    where
+        ys = catMaybes xs
+
+lastTag :: [Maybe UTCTime] -> Maybe UTCTime
+lastTag xs =
+    if null ys then Nothing else Just $ maximum ys
+    where
+        ys = catMaybes xs
+
+-- | Gets the pilots zone tag times.
+tagTimes :: PilotFlownTrackTag -> Maybe [Maybe UTCTime]
+tagTimes (PilotFlownTrackTag _ Nothing) = Nothing
+tagTimes (PilotFlownTrackTag _ (Just xs)) =
+    Just $ (fmap . fmap) time $ zonesTag xs
 
 flown :: FlownTrackCrossing -> FlownTrackTag
 flown FlownTrackCrossing{zonesCrossing} =

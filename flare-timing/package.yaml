@@ -130,6 +130,7 @@ executables:
     - uom-plugin
     - bytestring
     - clock
+    - time
     - formatting
     - siggy-chardust
     - flight-units
@@ -163,9 +164,7 @@ executables:
     - uom-plugin
     - bytestring
     - clock
-    - time
     - formatting
-    - containers
     - siggy-chardust
     - flight-units
     - flight-comp

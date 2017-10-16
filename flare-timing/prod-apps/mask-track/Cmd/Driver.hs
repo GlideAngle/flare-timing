@@ -20,11 +20,7 @@ module Cmd.Driver (driverMain) where
 import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
-import Data.Time.Clock (UTCTime)
 import Data.String (IsString)
-import Data.List (transpose)
-import Data.Maybe (catMaybes, fromMaybe, isJust)
-import qualified Data.Map.Strict as Map (Map, fromList, lookup, filter)
 import Control.Monad (mapM_)
 import Control.Monad.Except (runExceptT)
 import Data.UnitsOfMeasure (u, convert)
@@ -45,25 +41,17 @@ import Flight.Units ()
 import Flight.Mask (Masking)
 import Flight.Mask.Pilot
     ( checkTracks
-    , launched
     , madeGoal
     , distanceToGoal
     , distanceFlown
     , timeFlown
     )
 import qualified Data.Flight.PilotTrack as TZ
-    ( FlownTrack(..)
-    , FlownTrackTag(..)
+    ( MaskedTracks(..)
+    , FlownTrack(..)
     , PilotFlownTrack(..)
-    , PilotFlownTrackTag(..)
-    , MaskedTracks(..)
-    , TimedTracks(..)
-    , TaskTiming(..)
-    , PilotTags(..)
-    , Fix(..)
     )
 import Data.Number.RoundingFunctions (dpRound)
-import Cmd.Inputs (readTags)
 
 driverMain :: IO ()
 driverMain = withCmdArgs drive
@@ -131,16 +119,11 @@ drive CmdOptions{..} = do
                     flip replaceExtension ".mask-track.yaml"
                     $ dropExtension yamlCompPath
 
-            let yamlTagsPath =
-                    flip replaceExtension ".tag-zone.yaml"
-                    $ dropExtension yamlCompPath
-
             putStrLn $ "Reading competition from '" ++ takeFileName yamlCompPath ++ "'"
-            putStrLn $ "Reading tagged zones from '" ++ takeFileName yamlTagsPath ++ "'"
-            writeMask yamlTagsPath yamlMaskPath check
+            writeMask yamlMaskPath check
 
             where
-                writeMask yamlTagsPath yamlMaskPath f = do
+                writeMask yamlMaskPath f = do
                     comp <-
                         runExceptT $
                             f
@@ -148,12 +131,9 @@ drive CmdOptions{..} = do
                                 (IxTask <$> task)
                                 (Cmp.Pilot <$> pilot)
 
-                    tags <- runExceptT $ readTags yamlTagsPath
-
-                    case (comp, tags) of
-                        (Left msg, _) -> print msg
-                        (_, Left msg) -> print msg
-                        (Right comp', Right TZ.PilotTags{pilotTags}) -> do
+                    case comp of
+                        Left msg -> print msg
+                        Right comp' -> do
                             let pss :: [[TZ.PilotFlownTrack]] =
                                     (fmap . fmap)
                                         (\case
@@ -164,15 +144,7 @@ drive CmdOptions{..} = do
                                                 TZ.PilotFlownTrack p (Just x))
                                         comp'
 
-                            let zss :: [[TZ.PilotFlownTrack]] =
-                                    zipWith
-                                        (\ps ts' -> (merge $ mkTagMap ts') <$> ps)
-                                        pss
-                                        pilotTags
-
-                            let mss :: [TZ.TimedTracks] = timed <$> zss
-
-                            let tzi = TZ.MaskedTracks {masking = mss}
+                            let tzi = TZ.MaskedTracks { maskedTracks = pss }
 
                             let yaml =
                                     Y.encodePretty
@@ -184,80 +156,14 @@ drive CmdOptions{..} = do
                 check =
                     checkTracks $ \Cmp.CompSettings{tasks} -> flown tasks
 
-mkTagMap :: [TZ.PilotFlownTrackTag] -> Map.Map Cmp.Pilot (Maybe TZ.FlownTrackTag)
-mkTagMap xs =
-    Map.filter isJust
-    $ Map.fromList (f <$> xs)
-    where
-        f (TZ.PilotFlownTrackTag p t) = (p, t)
-
-timed :: [TZ.PilotFlownTrack] -> TZ.TimedTracks
-timed xs =
-    TZ.TimedTracks
-        { TZ.timing =
-            TZ.TaskTiming
-                { zonesFirst = firstTag <$> zs
-                , zonesLast = lastTag <$> zs
-                }
-        , TZ.maskedTracks = xs
-        }
-    where
-        ys :: [[Maybe UTCTime]]
-        ys = fromMaybe [] <$> tagTimes <$> xs
-
-        zs = transpose ys
-
-firstTag :: [Maybe UTCTime] -> Maybe UTCTime
-firstTag xs =
-    if null ys then Nothing else Just $ minimum ys
-    where
-        ys = catMaybes xs
-
-lastTag :: [Maybe UTCTime] -> Maybe UTCTime
-lastTag xs =
-    if null ys then Nothing else Just $ maximum ys
-    where
-        ys = catMaybes xs
-
--- | Gets the pilots zone tag times.
-tagTimes :: TZ.PilotFlownTrack -> Maybe [Maybe UTCTime]
-tagTimes (TZ.PilotFlownTrack _ Nothing) = Nothing
-tagTimes (TZ.PilotFlownTrack _ xs) = TZ.zonesTime <$> xs
-
-merge :: Map.Map Cmp.Pilot (Maybe TZ.FlownTrackTag)
-      -> TZ.PilotFlownTrack
-      -> TZ.PilotFlownTrack
-
-merge _ track@(TZ.PilotFlownTrack _ Nothing) =
-    track
-
-merge mapTags (TZ.PilotFlownTrack p (Just track)) =
-    (TZ.PilotFlownTrack p (Just track'))
-    where
-        tags :: Maybe TZ.FlownTrackTag
-        tags =
-            case Map.lookup p mapTags of
-                Nothing -> Nothing
-                Just Nothing -> Nothing
-                Just x@(Just _) -> x
-
-        track' =
-            case tags of
-                Nothing -> track
-                Just TZ.FlownTrackTag{zonesTag} ->
-                    track { TZ.zonesTime = (fmap . fmap) TZ.time zonesTag }
-
 flown :: Masking TZ.FlownTrack
 flown tasks iTask xs =
-    let ld = launched tasks iTask xs
-        mg = madeGoal tasks iTask xs
+    let mg = madeGoal tasks iTask xs
         dg = distanceToGoal tasks iTask xs
         df = distanceFlown tasks iTask xs
         tf = timeFlown tasks iTask xs
     in TZ.FlownTrack
-        { launched = ld
-        , madeGoal = mg
-        , zonesTime = const Nothing <$> tasks
+        { madeGoal = mg
 
         , distanceToGoal =
             if mg then Nothing else unTaskDistance <$> dg
