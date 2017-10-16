@@ -23,7 +23,8 @@ import System.Clock (getTime, Clock(Monotonic))
 import Data.Time.Clock (UTCTime)
 import Data.String (IsString)
 import Data.List (transpose)
-import Data.Maybe (catMaybes, fromMaybe)
+import Data.Maybe (catMaybes, fromMaybe, isJust)
+import qualified Data.Map.Strict as Map (Map, fromList, lookup, filter)
 import Control.Monad (mapM_)
 import Control.Monad.Except (runExceptT)
 import Data.UnitsOfMeasure (u, convert)
@@ -165,7 +166,7 @@ drive CmdOptions{..} = do
 
                             let zss :: [[TZ.PilotFlownTrack]] =
                                     zipWith
-                                        (zipWith merge)
+                                        (\ps ts' -> (merge $ mkTagMap ts') <$> ps)
                                         pss
                                         pilotTags
 
@@ -182,6 +183,13 @@ drive CmdOptions{..} = do
 
                 check =
                     checkTracks $ \Cmp.CompSettings{tasks} -> flown tasks
+
+mkTagMap :: [TZ.PilotFlownTrackTag] -> Map.Map Cmp.Pilot (Maybe TZ.FlownTrackTag)
+mkTagMap xs =
+    Map.filter isJust
+    $ Map.fromList (f <$> xs)
+    where
+        f (TZ.PilotFlownTrackTag p t) = (p, t)
 
 timed :: [TZ.PilotFlownTrack] -> TZ.TimedTracks
 timed xs =
@@ -216,20 +224,28 @@ tagTimes :: TZ.PilotFlownTrack -> Maybe [Maybe UTCTime]
 tagTimes (TZ.PilotFlownTrack _ Nothing) = Nothing
 tagTimes (TZ.PilotFlownTrack _ xs) = TZ.zonesTime <$> xs
 
-merge :: TZ.PilotFlownTrack -> TZ.PilotFlownTrackTag -> TZ.PilotFlownTrack
+merge :: Map.Map Cmp.Pilot (Maybe TZ.FlownTrackTag)
+      -> TZ.PilotFlownTrack
+      -> TZ.PilotFlownTrack
 
-merge track@(TZ.PilotFlownTrack _ Nothing) _ =
+merge _ track@(TZ.PilotFlownTrack _ Nothing) =
     track
 
-merge track (TZ.PilotFlownTrackTag _ Nothing) =
-    track
+merge mapTags (TZ.PilotFlownTrack p (Just track)) =
+    (TZ.PilotFlownTrack p (Just track'))
+    where
+        tags :: Maybe TZ.FlownTrackTag
+        tags =
+            case Map.lookup p mapTags of
+                Nothing -> Nothing
+                Just Nothing -> Nothing
+                Just x@(Just _) -> x
 
-merge
-    (TZ.PilotFlownTrack p (Just track))
-    (TZ.PilotFlownTrackTag p' (Just TZ.FlownTrackTag{zonesTag})) =
-    if p /= p' then error "Merging mismatched pilots" else
-    let track' = track { TZ.zonesTime = (fmap . fmap) TZ.time zonesTag }
-    in (TZ.PilotFlownTrack p (Just track'))
+        track' =
+            case tags of
+                Nothing -> track
+                Just TZ.FlownTrackTag{zonesTag} ->
+                    track { TZ.zonesTime = (fmap . fmap) TZ.time zonesTag }
 
 flown :: Masking TZ.FlownTrack
 flown tasks iTask xs =
