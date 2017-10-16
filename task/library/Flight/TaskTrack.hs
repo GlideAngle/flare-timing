@@ -54,7 +54,7 @@ mm30 :: Tolerance
 mm30 = Tolerance $ 30 % 1000
 
 newtype TaskRoutes =
-    TaskRoutes { taskRoutes :: [TaskTrack] }
+    TaskRoutes { taskRoutes :: [Maybe TaskTrack] }
     deriving (Show, Generic)
 
 instance ToJSON TaskRoutes
@@ -121,11 +121,15 @@ instance ToJSON UtmZone
 instance FromJSON UtmZone
 
 taskTracks :: Bool
+           -> (Int -> Bool)
            -> TaskDistanceMeasure
            -> [[RawZone]] -- ^ Zones of each task.
-           -> [TaskTrack]
-taskTracks excludeWaypoints tdm tasks =
-    taskTrack excludeWaypoints tdm <$> tasks
+           -> [Maybe TaskTrack]
+taskTracks excludeWaypoints b tdm tasks =
+    zipWith
+        (\ i t -> if b i then Just $ taskTrack excludeWaypoints tdm t else Nothing)
+        [1 .. ]
+        tasks
 
 taskTrack :: Bool
           -> TaskDistanceMeasure

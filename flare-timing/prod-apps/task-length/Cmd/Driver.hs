@@ -93,11 +93,14 @@ drive CmdOptions{..} = do
                 Left msg -> print msg
                 Right settings' -> do
                     let zs = zones <$> (tasks settings')
-                    let ts = taskTracks noTaskWaypoints measure zs
+                    let includeTask =
+                            if null task then const True else (flip elem $ task)
+
+                    let ts = taskTracks noTaskWaypoints includeTask measure zs
                     writeTaskLength ts yamlMaskPath
 
             where
-                writeTaskLength :: [TZ.TaskTrack] -> FilePath -> IO ()
+                writeTaskLength :: [Maybe TZ.TaskTrack] -> FilePath -> IO ()
                 writeTaskLength os yamlPath = do
                     let tzi =
                             TZ.TaskRoutes { taskRoutes = os }
