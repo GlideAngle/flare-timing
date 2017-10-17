@@ -133,22 +133,34 @@ data ZoneCrossing =
 instance ToJSON ZoneCrossing
 instance FromJSON ZoneCrossing
 
+-- | Associates a pilot with a flight summary for a single task.
 data PilotFlownTrack =
-    PilotFlownTrack Pilot (Maybe FlownTrack)
+    PilotFlownTrack
+        Pilot
+        (Maybe FlownTrack)
+        -- ^ The flown track should be Just if the pilot launched.
     deriving (Show, Generic)
 
 instance ToJSON PilotFlownTrack
 instance FromJSON PilotFlownTrack
 
+-- | Associates a pilot with the zones they cross for a single task.
 data PilotFlownTrackCrossing =
-    PilotFlownTrackCrossing Pilot (Maybe FlownTrackCrossing)
+    PilotFlownTrackCrossing
+        Pilot
+        (Maybe FlownTrackCrossing)
+        -- ^ The crossings should be Just if the pilot launched.
     deriving (Show, Generic)
 
 instance ToJSON PilotFlownTrackCrossing
 instance FromJSON PilotFlownTrackCrossing
 
+-- | Associates a pilot with the zones they tag for a single task.
 data PilotFlownTrackTag =
-    PilotFlownTrackTag Pilot (Maybe FlownTrackTag)
+    PilotFlownTrackTag
+        Pilot
+        (Maybe FlownTrackTag)
+        -- ^ The tags should be Just if the pilot launched.
     deriving (Show, Generic)
 
 instance ToJSON PilotFlownTrackTag
