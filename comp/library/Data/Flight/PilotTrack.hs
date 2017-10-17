@@ -52,9 +52,13 @@ instance FromJSON TaggedTracks
 
 data TaskTiming =
     TaskTiming { zonesFirst :: [Maybe UTCTime]
+               -- ^ For each zone, the time of the first tag.
                , zonesLast :: [Maybe UTCTime]
+               -- ^ For each zone, the time of the last tag.
                , zonesRankTime :: [[UTCTime]]
+               -- ^ For each zone, the ordered times of each tag.
                , zonesRankPilot :: [[Pilot]]
+               -- ^ For each zone, the ordered pilots of each tag.
                }
     deriving (Show, Generic)
 
