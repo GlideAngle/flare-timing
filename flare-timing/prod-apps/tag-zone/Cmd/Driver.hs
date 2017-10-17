@@ -142,7 +142,7 @@ timed xs =
 rankByTag :: [PilotFlownTrackTag]
           -- ^ The list of pilots flying the task and the zones they tagged.
           -> [[Maybe (Pilot, UTCTime)]]
-          -- ^ For each zones in the task the sorted list of tag order pairs of
+          -- ^ For each zone in the task, the sorted list of tag ordered pairs of
           -- pilots and their tag times.
 rankByTag xs =
     (fmap . fmap) g zss
