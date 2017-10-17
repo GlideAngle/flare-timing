@@ -38,13 +38,13 @@ import Flight.Units ()
 import Flight.Mask.Pilot (tagZones)
 import Data.Flight.Comp (Pilot(..))
 import Data.Flight.PilotTrack
-    ( TaggedTracks(..)
-    , FlownTrackCrossing(..)
-    , FlownTrackTag(..)
-    , PilotFlownTrackCrossing(..)
-    , PilotFlownTrackTag(..)
-    , PilotCrossings(..)
-    , TaskTiming(..)
+    ( Crossing(..)
+    , Tagging(..)
+    , TrackTime(..)
+    , TrackCross(..)
+    , TrackTag(..)
+    , PilotTrackCross(..)
+    , PilotTrackTag(..)
     , Fix(..)
     )
 import Cmd.Inputs (readCrossings)
@@ -56,7 +56,7 @@ cmp :: (Ord a, IsString a) => a -> a -> Ordering
 cmp a b =
     case (a, b) of
         ("timing", _) -> LT
-        ("pilotTags", _) -> GT
+        ("tagging", _) -> GT
         ("time", _) -> LT
         ("lat", "time") -> GT
         ("lat", _) -> LT
@@ -94,21 +94,21 @@ writeTags tagPath crossPath = do
 
     case cs of
         Left s -> putStrLn s
-        Right PilotCrossings{pilotCrossings} -> do
-            let pss :: [[PilotFlownTrackTag]] =
+        Right Crossing{crossing} -> do
+            let pss :: [[PilotTrackTag]] =
                     (fmap . fmap)
                         (\case
-                            PilotFlownTrackCrossing p Nothing ->
-                                PilotFlownTrackTag p Nothing
+                            PilotTrackCross p Nothing ->
+                                PilotTrackTag p Nothing
 
-                            PilotFlownTrackCrossing p (Just xs) ->
-                                PilotFlownTrackTag p (Just $ flown xs))
-                        pilotCrossings
+                            PilotTrackCross p (Just xs) ->
+                                PilotTrackTag p (Just $ flown xs))
+                        crossing
 
             let tzi =
-                    TaggedTracks { timing = timed <$> pss
-                                 , pilotTags = pss
-                                 }
+                    Tagging { timing = timed <$> pss
+                            , tagging = pss
+                            }
 
             let yaml =
                     Y.encodePretty
@@ -117,9 +117,9 @@ writeTags tagPath crossPath = do
 
             BS.writeFile tagPath yaml
 
-timed :: [PilotFlownTrackTag] -> TaskTiming
+timed :: [PilotTrackTag] -> TrackTime
 timed xs =
-    TaskTiming
+    TrackTime
         { zonesFirst = firstTag <$> zs'
         , zonesLast = lastTag <$> zs'
         , zonesRankTime = (fmap . fmap) snd rs'
@@ -139,7 +139,7 @@ timed xs =
         rs' = sortOnTag <$> rs
 
 -- | Rank the pilots tagging each zone in a single task.
-rankByTag :: [PilotFlownTrackTag]
+rankByTag :: [PilotTrackTag]
           -- ^ The list of pilots flying the task and the zones they tagged.
           -> [[Maybe (Pilot, UTCTime)]]
           -- ^ For each zone in the task, the sorted list of tag ordered pairs of
@@ -149,7 +149,7 @@ rankByTag xs =
     where
         -- A list of pilots and maybe their tagged zones.
         ys :: [(Pilot, Maybe [Maybe UTCTime])]
-        ys = (\t@(PilotFlownTrackTag p _) -> (p, tagTimes t)) <$> xs
+        ys = (\t@(PilotTrackTag p _) -> (p, tagTimes t)) <$> xs
 
         f :: (Pilot, Maybe [Maybe UTCTime]) -> Maybe [(Pilot, Maybe UTCTime)]
         f (p, ts) = do
@@ -183,13 +183,13 @@ lastTag xs =
         ys = catMaybes xs
 
 -- | Gets the pilots zone tag times.
-tagTimes :: PilotFlownTrackTag -> Maybe [Maybe UTCTime]
-tagTimes (PilotFlownTrackTag _ Nothing) = Nothing
-tagTimes (PilotFlownTrackTag _ (Just xs)) =
+tagTimes :: PilotTrackTag -> Maybe [Maybe UTCTime]
+tagTimes (PilotTrackTag _ Nothing) = Nothing
+tagTimes (PilotTrackTag _ (Just xs)) =
     Just $ (fmap . fmap) time $ zonesTag xs
 
-flown :: FlownTrackCrossing -> FlownTrackTag
-flown FlownTrackCrossing{zonesCrossing} =
-    FlownTrackTag
-        { zonesTag = tagZones zonesCrossing
+flown :: TrackCross -> TrackTag
+flown TrackCross{zonesCross} =
+    TrackTag
+        { zonesTag = tagZones zonesCross
         }

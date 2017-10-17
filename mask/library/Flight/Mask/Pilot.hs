@@ -59,7 +59,7 @@ import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.LatLng.Raw (RawLat(..), RawLng(..))
 import Flight.Zone (Radius(..), Zone(..))
 import qualified Flight.Zone.Raw as Raw (RawZone(..))
-import Data.Flight.PilotTrack (ZoneCrossing(..))
+import Data.Flight.PilotTrack (ZoneCross(..))
 import qualified Data.Flight.PilotTrack as Cmp (Fix(..))
 import qualified Data.Flight.Comp as Cmp
     ( CompSettings(..)
@@ -89,7 +89,7 @@ import Flight.Task as Tsk
 import Flight.Score as Gap (PilotDistance(..), PilotTime(..))
 import Flight.Units ()
 import Flight.Mask.Settings (readCompSettings)
-import Flight.Mask (Masking)
+import Flight.Mask (SigMasking)
 
 newtype PilotTrackFixes = PilotTrackFixes Int deriving Show
 
@@ -205,11 +205,11 @@ exitsZone z xs =
                 _ -> ZoneMiss
 
 -- | A pilot has launched if their tracklog has distinct fixes.
-launched :: Masking Bool
+launched :: SigMasking Bool
 launched _ _ Kml.MarkedFixes{fixes} =
     not . null . nub $ fixes
 
-started :: Masking Bool
+started :: SigMasking Bool
 started tasks (IxTask i) Kml.MarkedFixes{fixes} =
     case tasks ^? element (i - 1) of
         Nothing -> False
@@ -224,7 +224,7 @@ started tasks (IxTask i) Kml.MarkedFixes{fixes} =
                          ZoneExit _ _ -> True
                          _ -> False
 
-madeGoal :: Masking Bool
+madeGoal :: SigMasking Bool
 madeGoal tasks (IxTask i) Kml.MarkedFixes{fixes} =
     case tasks ^? element (i - 1) of
         Nothing -> False
@@ -280,12 +280,12 @@ fixFromFix mark0 x =
         Kml.Latitude lat = Kml.lat x
         Kml.Longitude lng = Kml.lng x
 
-proof :: [Kml.Fix] -> UTCTime -> Int -> Int -> [Bool] -> Maybe ZoneCrossing
+proof :: [Kml.Fix] -> UTCTime -> Int -> Int -> [Bool] -> Maybe ZoneCross
 proof fixes mark0 i j bs = do
     fixM <- fixes ^? element i
     fixN <- fixes ^? element j
     let fs = fixFromFix mark0 <$> [fixM, fixN]
-    return $ ZoneCrossing { crossing = fs
+    return $ ZoneCross { crossingPair = fs
                        , inZone = bs
                        }
 
@@ -321,20 +321,20 @@ pickCrossingPredicate True task@Cmp.Task{speedSection, zones} =
                 [1 .. ]
                 zones
 
-tagZones :: [Maybe ZoneCrossing] -> [Maybe Cmp.Fix]
+tagZones :: [Maybe ZoneCross] -> [Maybe Cmp.Fix]
 tagZones =
     fmap (>>= f)
     where
-        f :: ZoneCrossing -> Maybe Cmp.Fix
-        f ZoneCrossing{crossing, inZone} =
-            case (crossing, inZone) of
+        f :: ZoneCross -> Maybe Cmp.Fix
+        f ZoneCross{crossingPair, inZone} =
+            case (crossingPair, inZone) of
                 ([x, y], [a, b]) -> crossingTag (x, y) (a, b)
                 _ -> Nothing
 
 madeZones :: [Cmp.Task]
           -> IxTask
           -> Kml.MarkedFixes
-          -> [Maybe ZoneCrossing]
+          -> [Maybe ZoneCross]
 madeZones tasks (IxTask i) Kml.MarkedFixes{mark0, fixes} =
     case tasks ^? element (i - 1) of
         Nothing ->
@@ -351,7 +351,7 @@ madeZones tasks (IxTask i) Kml.MarkedFixes{mark0, fixes} =
                         (zoneToCylinder <$> zones)
                         (fixToPoint <$> fixes)
 
-                f :: ZoneHit -> Maybe ZoneCrossing
+                f :: ZoneHit -> Maybe ZoneCross
                 f ZoneMiss = Nothing
                 f (ZoneExit m n) = proof fixes mark0 m n [True, False]
                 f (ZoneEntry m n) = proof fixes mark0 m n [False, True]

@@ -38,7 +38,7 @@ import qualified Flight.Task as Tsk (TaskDistance(..))
 import qualified Flight.Score as Gap (PilotDistance(..), PilotTime(..))
 import Data.Flight.TrackLog (IxTask(..))
 import Flight.Units ()
-import Flight.Mask (Masking)
+import Flight.Mask (SigMasking)
 import Flight.Mask.Pilot
     ( checkTracks
     , madeGoal
@@ -47,9 +47,9 @@ import Flight.Mask.Pilot
     , timeFlown
     )
 import qualified Data.Flight.PilotTrack as TZ
-    ( MaskedTracks(..)
-    , FlownTrack(..)
-    , PilotFlownTrack(..)
+    ( Masking(..)
+    , TrackMask(..)
+    , PilotTrackMask(..)
     )
 import Data.Number.RoundingFunctions (dpRound)
 
@@ -60,7 +60,7 @@ cmp :: (Ord a, IsString a) => a -> a -> Ordering
 cmp a b =
     case (a, b) of
         ("timing", _) -> LT
-        ("maskedTracks", _) -> GT
+        ("masking", _) -> GT
         ("firstStart", _) -> LT
         ("lastGoal", _) -> GT
         ("launched", _) -> LT
@@ -134,17 +134,17 @@ drive CmdOptions{..} = do
                     case comp of
                         Left msg -> print msg
                         Right comp' -> do
-                            let pss :: [[TZ.PilotFlownTrack]] =
+                            let pss :: [[TZ.PilotTrackMask]] =
                                     (fmap . fmap)
                                         (\case
                                             Left (p, _) ->
-                                                TZ.PilotFlownTrack p Nothing
+                                                TZ.PilotTrackMask p Nothing
 
                                             Right (p, x) ->
-                                                TZ.PilotFlownTrack p (Just x))
+                                                TZ.PilotTrackMask p (Just x))
                                         comp'
 
-                            let tzi = TZ.MaskedTracks { maskedTracks = pss }
+                            let tzi = TZ.Masking { masking = pss }
 
                             let yaml =
                                     Y.encodePretty
@@ -156,13 +156,13 @@ drive CmdOptions{..} = do
                 check =
                     checkTracks $ \Cmp.CompSettings{tasks} -> flown tasks
 
-flown :: Masking TZ.FlownTrack
+flown :: SigMasking TZ.TrackMask
 flown tasks iTask xs =
     let mg = madeGoal tasks iTask xs
         dg = distanceToGoal tasks iTask xs
         df = distanceFlown tasks iTask xs
         tf = timeFlown tasks iTask xs
-    in TZ.FlownTrack
+    in TZ.TrackMask
         { madeGoal = mg
 
         , distanceToGoal =

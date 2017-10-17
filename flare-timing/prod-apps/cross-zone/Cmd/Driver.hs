@@ -34,12 +34,12 @@ import qualified Data.ByteString as BS
 import qualified Data.Flight.Comp as Cmp (CompSettings(..), Pilot(..))
 import Data.Flight.TrackLog (TrackFileFail(..), IxTask(..))
 import Flight.Units ()
-import Flight.Mask (Masking)
+import Flight.Mask (SigMasking)
 import Flight.Mask.Pilot (checkTracks, madeZones)
 import qualified Data.Flight.PilotTrack as TZ
-    ( FlownTrackCrossing(..)
-    , PilotFlownTrackCrossing(..)
-    , PilotCrossings(..)
+    ( TrackCross(..)
+    , PilotTrackCross(..)
+    , Crossing(..)
     )
 
 type MkPart a =
@@ -54,7 +54,7 @@ type MkPart a =
             (Cmp.Pilot, a)
         ]]
 
-type AddPart a = a -> TZ.FlownTrackCrossing
+type AddPart a = a -> TZ.TrackCross
 
 type MkCrossingTrackIO a =
     FilePath
@@ -111,18 +111,18 @@ drive CmdOptions{..} = do
                     case checks of
                         Left msg -> print msg
                         Right xs -> do
-                            let ps :: [[TZ.PilotFlownTrackCrossing]] =
+                            let ps :: [[TZ.PilotTrackCross]] =
                                     (fmap . fmap)
                                         (\case
                                             Left (p, _) ->
-                                                TZ.PilotFlownTrackCrossing p Nothing
+                                                TZ.PilotTrackCross p Nothing
 
                                             Right (p, x) ->
-                                                TZ.PilotFlownTrackCrossing p (Just $ g x))
+                                                TZ.PilotTrackCross p (Just $ g x))
                                         xs
 
                             let tzi =
-                                    TZ.PilotCrossings { pilotCrossings = ps }
+                                    TZ.Crossing { crossing = ps }
 
                             let yaml =
                                     Y.encodePretty
@@ -134,8 +134,8 @@ drive CmdOptions{..} = do
                 checkAll =
                     checkTracks $ \Cmp.CompSettings{tasks} -> flown tasks
 
-                flown :: Masking TZ.FlownTrackCrossing
+                flown :: SigMasking TZ.TrackCross
                 flown tasks iTask xs =
-                    TZ.FlownTrackCrossing
-                        { zonesCrossing = madeZones tasks iTask xs
+                    TZ.TrackCross
+                        { zonesCross = madeZones tasks iTask xs
                         }

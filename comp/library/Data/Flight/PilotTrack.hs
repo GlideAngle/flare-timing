@@ -7,22 +7,25 @@ License     : BSD3
 Maintainer  : phil.dejoux@blockscope.com
 Stability   : experimental
 
-Intersection of pilot tracks with competition zones.
+Intersection of pilot tracks with task control zones.
 -}
 module Data.Flight.PilotTrack
-    ( -- * Pilot Track and Task Control Zone Intersection
-      MaskedTracks(..)
-    , TaggedTracks(..)
-    , TaskTiming(..)
-    , PilotCrossings(..)
-    , FlownTrack(..)
-    , FlownTrackCrossing(..)
-    , FlownTrackTag(..)
-    , PilotFlownTrack(..)
-    , PilotFlownTrackCrossing(..)
-    , PilotFlownTrackTag(..)
+    ( -- * For each task.
+      Crossing(..)
+    , Tagging(..)
+    , Masking(..)
+      -- * For each track.
+    , TrackTime(..)
+    , TrackCross(..)
+    , TrackTag(..)
+    , TrackMask(..)
+      -- * Associated with a pilot.
+    , PilotTrackCross(..)
+    , PilotTrackTag(..)
+    , PilotTrackMask(..)
+      -- * A single fix and a crossing as a pair of fixes.
+    , ZoneCross(..)
     , Fix(..)
-    , ZoneCrossing(..)
     ) where
 
 import Data.Time.Clock (UTCTime)
@@ -31,52 +34,57 @@ import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.Flight.Pilot (Pilot(..))
 import Flight.LatLng.Raw (RawLat, RawLng)
 
-newtype MaskedTracks =
-    MaskedTracks { maskedTracks :: [[PilotFlownTrack]] }
+-- | For each task, the crossing for that task.
+newtype Crossing =
+    Crossing
+        { crossing :: [[PilotTrackCross]]
+          -- ^ For each made zone, the pair of fixes cross it.
+        }
     deriving (Show, Generic)
 
-instance ToJSON MaskedTracks
-instance FromJSON MaskedTracks
+instance ToJSON Crossing
+instance FromJSON Crossing
 
-data TaggedTracks =
-    TaggedTracks
-        { timing :: [TaskTiming]
+-- | For each task, the timing and tagging for that task.
+data Tagging =
+    Tagging
+        { timing :: [TrackTime]
           -- ^ For each made zone, the first and last tag.
-        , pilotTags :: [[PilotFlownTrackTag]]
+        , tagging :: [[PilotTrackTag]]
           -- ^ For each made zone, the tag.
         }
     deriving (Show, Generic)
 
-instance ToJSON TaggedTracks
-instance FromJSON TaggedTracks
+instance ToJSON Tagging
+instance FromJSON Tagging
 
-data TaskTiming =
-    TaskTiming { zonesFirst :: [Maybe UTCTime]
-               -- ^ For each zone, the time of the first tag.
-               , zonesLast :: [Maybe UTCTime]
-               -- ^ For each zone, the time of the last tag.
-               , zonesRankTime :: [[UTCTime]]
-               -- ^ For each zone, the ordered times of each tag.
-               , zonesRankPilot :: [[Pilot]]
-               -- ^ For each zone, the ordered pilots of each tag.
-               }
+-- | For each task, the masking for that task.
+newtype Masking =
+    Masking { masking :: [[PilotTrackMask]] }
     deriving (Show, Generic)
 
-instance ToJSON TaskTiming
-instance FromJSON TaskTiming
+instance ToJSON Masking
+instance FromJSON Masking
 
-newtype PilotCrossings =
-    PilotCrossings
-        { pilotCrossings :: [[PilotFlownTrackCrossing]]
-          -- ^ For each made zone, the pair of fixes crossing it.
+-- | The timing and tagging for a single task.
+data TrackTime =
+    TrackTime
+        { zonesFirst :: [Maybe UTCTime]
+        -- ^ For each zone, the time of the first tag.
+        , zonesLast :: [Maybe UTCTime]
+        -- ^ For each zone, the time of the last tag.
+        , zonesRankTime :: [[UTCTime]]
+        -- ^ For each zone, the ordered times of each tag.
+        , zonesRankPilot :: [[Pilot]]
+        -- ^ For each zone, the ordered pilots of each tag.
         }
     deriving (Show, Generic)
 
-instance ToJSON PilotCrossings
-instance FromJSON PilotCrossings
+instance ToJSON TrackTime
+instance FromJSON TrackTime
 
-data FlownTrack =
-    FlownTrack
+data TrackMask =
+    TrackMask
         { madeGoal :: Bool
         -- ^ Was goal made.
         , timeToGoal :: Maybe Double
@@ -88,29 +96,32 @@ data FlownTrack =
         }
    deriving (Show, Generic)
 
-instance ToJSON FlownTrack
-instance FromJSON FlownTrack
+instance ToJSON TrackMask
+instance FromJSON TrackMask
 
-newtype FlownTrackCrossing =
-    FlownTrackCrossing
-        { zonesCrossing :: [Maybe ZoneCrossing]
-        -- ^ The crossing for each made zone.
+-- | For a single track, the zones crossed.
+newtype TrackCross =
+    TrackCross
+        { zonesCross :: [Maybe ZoneCross]
+        -- ^ The cross for each made zone.
         }
    deriving (Show, Generic)
 
-instance ToJSON FlownTrackCrossing
-instance FromJSON FlownTrackCrossing
+instance ToJSON TrackCross
+instance FromJSON TrackCross
 
-newtype FlownTrackTag =
-    FlownTrackTag
+-- | For a single track, the interpolated fix for each zone tagged.
+newtype TrackTag =
+    TrackTag
         { zonesTag :: [Maybe Fix]
         -- ^ The interpolated fix tagging each made zone.
         }
    deriving (Show, Generic)
 
-instance ToJSON FlownTrackTag
-instance FromJSON FlownTrackTag
+instance ToJSON TrackTag
+instance FromJSON TrackTag
 
+-- | A timestamped latitude and longitude.
 data Fix =
     Fix { time :: UTCTime
         , lat :: RawLat
@@ -121,47 +132,48 @@ data Fix =
 instance ToJSON Fix
 instance FromJSON Fix
 
-data ZoneCrossing =
-    ZoneCrossing
-        { crossing :: [Fix]
-        -- ^ The fixes that cross the zone.
+-- | A pair of fixes that cross a zone.
+data ZoneCross =
+    ZoneCross
+        { crossingPair :: [Fix]
+        -- ^ The pair of fixes that cross the zone.
         , inZone :: [Bool]
-        -- ^ Marking each fix as inside or outside the zone.
+        -- ^ Mark each fix as inside or outside the zone.
         }
    deriving (Show, Generic)
 
-instance ToJSON ZoneCrossing
-instance FromJSON ZoneCrossing
+instance ToJSON ZoneCross
+instance FromJSON ZoneCross
 
--- | Associates a pilot with a flight summary for a single task.
-data PilotFlownTrack =
-    PilotFlownTrack
+-- | Associates a pilot with a flight summary (mask) for a single task.
+data PilotTrackMask =
+    PilotTrackMask
         Pilot
-        (Maybe FlownTrack)
-        -- ^ The flown track should be Just if the pilot launched.
+        (Maybe TrackMask)
+        -- ^ The task summary (mask) should be Just if the pilot launched.
     deriving (Show, Generic)
 
-instance ToJSON PilotFlownTrack
-instance FromJSON PilotFlownTrack
+instance ToJSON PilotTrackMask
+instance FromJSON PilotTrackMask
 
 -- | Associates a pilot with the zones they cross for a single task.
-data PilotFlownTrackCrossing =
-    PilotFlownTrackCrossing
+data PilotTrackCross =
+    PilotTrackCross
         Pilot
-        (Maybe FlownTrackCrossing)
-        -- ^ The crossings should be Just if the pilot launched.
+        (Maybe TrackCross)
+        -- ^ The cross should be Just if the pilot launched.
     deriving (Show, Generic)
 
-instance ToJSON PilotFlownTrackCrossing
-instance FromJSON PilotFlownTrackCrossing
+instance ToJSON PilotTrackCross
+instance FromJSON PilotTrackCross
 
 -- | Associates a pilot with the zones they tag for a single task.
-data PilotFlownTrackTag =
-    PilotFlownTrackTag
+data PilotTrackTag =
+    PilotTrackTag
         Pilot
-        (Maybe FlownTrackTag)
+        (Maybe TrackTag)
         -- ^ The tags should be Just if the pilot launched.
     deriving (Show, Generic)
 
-instance ToJSON PilotFlownTrackTag
-instance FromJSON PilotFlownTrackTag
+instance ToJSON PilotTrackTag
+instance FromJSON PilotTrackTag
