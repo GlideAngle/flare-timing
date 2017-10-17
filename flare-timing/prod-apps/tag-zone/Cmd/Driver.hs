@@ -23,7 +23,7 @@ import Data.Time.Clock (UTCTime)
 import System.Clock (getTime, Clock(Monotonic))
 import Data.String (IsString)
 import Data.Maybe (catMaybes, fromMaybe)
-import Data.List (transpose)
+import Data.List (transpose, sortOn)
 import Control.Monad (mapM_)
 import Control.Monad.Except (runExceptT)
 import System.Directory (doesFileExist, doesDirectoryExist)
@@ -36,6 +36,7 @@ import qualified Data.ByteString as BS
 
 import Flight.Units ()
 import Flight.Mask.Pilot (tagZones)
+import Data.Flight.Comp (Pilot(..))
 import Data.Flight.PilotTrack
     ( TaggedTracks(..)
     , FlownTrackCrossing(..)
@@ -119,14 +120,55 @@ writeTags tagPath crossPath = do
 timed :: [PilotFlownTrackTag] -> TaskTiming
 timed xs =
     TaskTiming
-        { zonesFirst = firstTag <$> zs
-        , zonesLast = lastTag <$> zs
+        { zonesFirst = firstTag <$> zs'
+        , zonesLast = lastTag <$> zs'
+        , zonesRankTime = (fmap . fmap) snd rs'
+        , zonesRankPilot = (fmap . fmap) fst rs'
         }
     where
-        ys :: [[Maybe UTCTime]]
-        ys = fromMaybe [] <$> tagTimes <$> xs
+        zs :: [[Maybe UTCTime]]
+        zs = fromMaybe [] <$> tagTimes <$> xs
 
-        zs = transpose ys
+        zs' :: [[Maybe UTCTime]]
+        zs' = transpose zs
+
+        rs :: [[Maybe (Pilot, UTCTime)]]
+        rs = transpose $ rankByTag xs
+
+        rs' :: [[(Pilot, UTCTime)]]
+        rs' = sortOnTag <$> rs
+
+-- | Rank the pilots tagging each zone in a single task.
+rankByTag :: [PilotFlownTrackTag]
+          -- ^ The list of pilots flying the task and the zones they tagged.
+          -> [[Maybe (Pilot, UTCTime)]]
+          -- ^ For each zones in the task the sorted list of tag order pairs of
+          -- pilots and their tag times.
+rankByTag xs =
+    (fmap . fmap) g zss
+    where
+        -- A list of pilots and maybe their tagged zones.
+        ys :: [(Pilot, Maybe [Maybe UTCTime])]
+        ys = (\t@(PilotFlownTrackTag p _) -> (p, tagTimes t)) <$> xs
+
+        f :: (Pilot, Maybe [Maybe UTCTime]) -> Maybe [(Pilot, Maybe UTCTime)]
+        f (p, ts) = do
+            ts' <- ts
+            return $ ((,) p) <$> ts'
+
+        -- For each zone, an unsorted list of pilots.
+        zss :: [[(Pilot, Maybe UTCTime)]]
+        zss = catMaybes $ f <$> ys
+
+        -- Associate the pilot with each zone.
+        g :: (Pilot, Maybe UTCTime) -> Maybe (Pilot, UTCTime)
+        g (p, t) = do
+            t' <- t
+            return $ (p, t')
+
+sortOnTag :: forall a. [Maybe (a, UTCTime)] -> [(a, UTCTime)]
+sortOnTag xs =
+    (sortOn snd) $ catMaybes xs
 
 firstTag :: [Maybe UTCTime] -> Maybe UTCTime
 firstTag xs =
