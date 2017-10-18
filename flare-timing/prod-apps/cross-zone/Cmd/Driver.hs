@@ -36,11 +36,7 @@ import Flight.TrackLog (TrackFileFail(..), IxTask(..))
 import Flight.Units ()
 import Flight.Mask (SigMasking)
 import Flight.Mask.Pilot (checkTracks, madeZones)
-import qualified Flight.PilotTrack as TZ
-    ( TrackCross(..)
-    , PilotTrackCross(..)
-    , Crossing(..)
-    )
+import Flight.Track.Cross (TrackCross(..), PilotTrackCross(..), Crossing(..))
 
 type MkPart a =
     FilePath
@@ -54,7 +50,7 @@ type MkPart a =
             (Cmp.Pilot, a)
         ]]
 
-type AddPart a = a -> TZ.TrackCross
+type AddPart a = a -> TrackCross
 
 type MkCrossingTrackIO a =
     FilePath
@@ -111,18 +107,18 @@ drive CmdOptions{..} = do
                     case checks of
                         Left msg -> print msg
                         Right xs -> do
-                            let ps :: [[TZ.PilotTrackCross]] =
+                            let ps :: [[PilotTrackCross]] =
                                     (fmap . fmap)
                                         (\case
                                             Left (p, _) ->
-                                                TZ.PilotTrackCross p Nothing
+                                                PilotTrackCross p Nothing
 
                                             Right (p, x) ->
-                                                TZ.PilotTrackCross p (Just $ g x))
+                                                PilotTrackCross p (Just $ g x))
                                         xs
 
                             let tzi =
-                                    TZ.Crossing { crossing = ps }
+                                    Crossing { crossing = ps }
 
                             let yaml =
                                     Y.encodePretty
@@ -134,8 +130,8 @@ drive CmdOptions{..} = do
                 checkAll =
                     checkTracks $ \Cmp.CompSettings{tasks} -> flown tasks
 
-                flown :: SigMasking TZ.TrackCross
+                flown :: SigMasking TrackCross
                 flown tasks iTask xs =
-                    TZ.TrackCross
+                    TrackCross
                         { zonesCross = madeZones tasks iTask xs
                         }

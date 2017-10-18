@@ -21,7 +21,9 @@ library:
   source-dirs: library
   exposed-modules:
   - Flight.Comp
-  - Flight.PilotTrack
+  - Flight.Track.Cross
+  - Flight.Track.Tag
+  - Flight.Track.Mask
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
 name: flight-comp 

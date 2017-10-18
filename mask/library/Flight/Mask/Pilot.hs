@@ -59,8 +59,7 @@ import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.LatLng.Raw (RawLat(..), RawLng(..))
 import Flight.Zone (Radius(..), Zone(..))
 import qualified Flight.Zone.Raw as Raw (RawZone(..))
-import Flight.PilotTrack (ZoneCross(..))
-import qualified Flight.PilotTrack as Cmp (Fix(..))
+import Flight.Track.Cross (Fix(..), ZoneCross(..))
 import qualified Flight.Comp as Cmp
     ( CompSettings(..)
     , Pilot(..)
@@ -268,10 +267,10 @@ tickedZones :: [CrossingPredicate]
 tickedZones fs zones xs =
     zipWith (\f z -> f z xs) fs zones
 
-fixFromFix :: UTCTime -> Kml.Fix -> Cmp.Fix
+fixFromFix :: UTCTime -> Kml.Fix -> Fix
 fixFromFix mark0 x =
     -- SEE: https://ocharles.org.uk/blog/posts/2013-12-15-24-days-of-hackage-time.html
-    Cmp.Fix { time = (fromInteger secs) `addUTCTime` mark0
+    Fix { time = (fromInteger secs) `addUTCTime` mark0
             , lat = RawLat lat
             , lng = RawLng lng
             }
@@ -290,7 +289,7 @@ proof fixes mark0 i j bs = do
                        }
 
 -- | Given two points on either side of a zone, what is the crossing tag.
-crossingTag :: (Cmp.Fix, Cmp.Fix) -> (Bool, Bool) -> Maybe Cmp.Fix
+crossingTag :: (Fix, Fix) -> (Bool, Bool) -> Maybe Fix
 
 crossingTag (fixM, _) (True, False) =
     -- TODO: Interpolate between crossing points. For now I just take the point on
@@ -321,11 +320,11 @@ pickCrossingPredicate True task@Cmp.Task{speedSection, zones} =
                 [1 .. ]
                 zones
 
-tagZones :: [Maybe ZoneCross] -> [Maybe Cmp.Fix]
+tagZones :: [Maybe ZoneCross] -> [Maybe Fix]
 tagZones =
     fmap (>>= f)
     where
-        f :: ZoneCross -> Maybe Cmp.Fix
+        f :: ZoneCross -> Maybe Fix
         f ZoneCross{crossingPair, inZone} =
             case (crossingPair, inZone) of
                 ([x, y], [a, b]) -> crossingTag (x, y) (a, b)

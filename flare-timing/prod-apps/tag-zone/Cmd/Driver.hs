@@ -37,16 +37,10 @@ import qualified Data.ByteString as BS
 import Flight.Units ()
 import Flight.Mask.Pilot (tagZones)
 import Flight.Comp (Pilot(..))
-import Flight.PilotTrack
-    ( Crossing(..)
-    , Tagging(..)
-    , TrackTime(..)
-    , TrackCross(..)
-    , TrackTag(..)
-    , PilotTrackCross(..)
-    , PilotTrackTag(..)
-    , Fix(..)
-    )
+import Flight.Track.Cross
+    (Crossing(..), TrackCross(..), PilotTrackCross(..), Fix(..))
+import Flight.Track.Tag
+    (Tagging(..), TrackTime(..), TrackTag(..), PilotTrackTag(..))
 import Cmd.Inputs (readCrossings)
 
 driverMain :: IO ()

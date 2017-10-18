@@ -46,11 +46,8 @@ import Flight.Mask.Pilot
     , distanceFlown
     , timeFlown
     )
-import qualified Flight.PilotTrack as TZ
-    ( Masking(..)
-    , TrackMask(..)
-    , PilotTrackMask(..)
-    )
+import Flight.Track.Mask (Masking(..), PilotTrackMask(..))
+import qualified Flight.Track.Mask as TM (TrackMask(..))
 import Data.Number.RoundingFunctions (dpRound)
 
 driverMain :: IO ()
@@ -134,17 +131,17 @@ drive CmdOptions{..} = do
                     case comp of
                         Left msg -> print msg
                         Right comp' -> do
-                            let pss :: [[TZ.PilotTrackMask]] =
+                            let pss :: [[PilotTrackMask]] =
                                     (fmap . fmap)
                                         (\case
                                             Left (p, _) ->
-                                                TZ.PilotTrackMask p Nothing
+                                                PilotTrackMask p Nothing
 
                                             Right (p, x) ->
-                                                TZ.PilotTrackMask p (Just x))
+                                                PilotTrackMask p (Just x))
                                         comp'
 
-                            let tzi = TZ.Masking { masking = pss }
+                            let tzi = Masking { masking = pss }
 
                             let yaml =
                                     Y.encodePretty
@@ -156,13 +153,13 @@ drive CmdOptions{..} = do
                 check =
                     checkTracks $ \Cmp.CompSettings{tasks} -> flown tasks
 
-flown :: SigMasking TZ.TrackMask
+flown :: SigMasking TM.TrackMask
 flown tasks iTask xs =
     let mg = madeGoal tasks iTask xs
         dg = distanceToGoal tasks iTask xs
         df = distanceFlown tasks iTask xs
         tf = timeFlown tasks iTask xs
-    in TZ.TrackMask
+    in TM.TrackMask
         { madeGoal = mg
 
         , distanceToGoal =
