@@ -29,13 +29,19 @@ Reads `.comp-input.yaml`. Writes `.task-length.yaml`.
 Reads `.comp-input.yaml` and `.kml`. Writes `.cross-zone.yaml`.
 4. Interpolate between crossing fixes for the time and place where a track tags a zone with [`tag-zone`](flare-timing/prod-apps/tag-zone).  
 Reads `.cross-zone.yaml`. Writes `.tag-zone.yaml`.
-5. Time align the distance to goal for each fix with `leading-area`.  
-Reads `.comp-input.yaml` and `.tag-zone.yaml`. Writes `.leading-area.yaml`.
-6. Find the nearest a track came to missing the next zone on course with [`near-miss`](flare-timing/prod-apps/near-miss).  
-Reads `.comp-input.yaml`, `.kml` and `.cross-zone.yaml`. Writes `.near-miss.yaml`.
-7. Mask the competition task over the tracklogs with [`mask-track`](flare-timing/prod-apps/mask-track).  
+5. Time align the distance to goal for each fix in the speed section with `align-time`.  
+Reads `.comp-input.yaml` and `.tag-zone.yaml`. Writes `n.align-time.csv`, where `n` is the task number.
+6. Filter fixes that get further from goal with `filter-time`.  
+Reads `n.align-time.csv`. Writes `n.filter-time.yaml`.
+7. Find the nearest a track came to missing the next zone on course with [`near-miss`](flare-timing/prod-apps/near-miss).  
+Reads `n.filter-time.csv`. Writes `.near-miss.yaml`.
+8. Transpose the table `sort-distance`.  
+Reads `n.filter-time.csv`. Writes `n.sort-distance.yaml`.
+9. Filter fixes that get further from goal leading area with `leading-area`.  
+Reads `n.sort-distance.csv`. Writes `.leading-area.yaml`.
+10. Mask the competition task over the tracklogs with [`mask-track`](flare-timing/prod-apps/mask-track).  
 Reads `.comp-input.yaml`, `.tag-zone` and `.near-miss`. Writes `.mask-track.yaml`.
-8. Score the competition with `gap-point`.  
+11. Score the competition with `gap-point`.  
 Reads `.comp-input.yaml`. Writes `.gap-point.yaml`.
-9. Start the [`server`](flare-timing/prod-apps/app-serve) hosting the web services.
-10. Start the [`dev server`](flare-timing/view) or otherwise host the web app.
+12. Start the [`server`](flare-timing/prod-apps/app-serve) hosting the web services.
+13. Start the [`dev server`](flare-timing/view) or otherwise host the web app.
