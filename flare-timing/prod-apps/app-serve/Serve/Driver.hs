@@ -28,7 +28,7 @@ import qualified Data.ByteString as BS
 
 import Serve.Args (withCmdArgs)
 import Serve.Options (ServeOptions(..))
-import Data.Flight.Comp
+import Flight.Comp
     ( CompSettings(..)
     , Comp
     , Task

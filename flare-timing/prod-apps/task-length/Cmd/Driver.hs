@@ -31,7 +31,7 @@ import qualified Data.Yaml.Pretty as Y
 import qualified Data.ByteString as BS
 
 import Flight.Units ()
-import Data.Flight.Comp (CompSettings(tasks), Task(zones))
+import Flight.Comp (CompSettings(tasks), Task(zones))
 import Flight.TaskTrack (taskTracks)
 import qualified Flight.TaskTrack as TZ
     (TaskTrack(..), TaskRoutes(..))

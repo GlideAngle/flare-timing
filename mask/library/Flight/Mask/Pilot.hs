@@ -59,9 +59,9 @@ import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.LatLng.Raw (RawLat(..), RawLng(..))
 import Flight.Zone (Radius(..), Zone(..))
 import qualified Flight.Zone.Raw as Raw (RawZone(..))
-import Data.Flight.PilotTrack (ZoneCross(..))
-import qualified Data.Flight.PilotTrack as Cmp (Fix(..))
-import qualified Data.Flight.Comp as Cmp
+import Flight.PilotTrack (ZoneCross(..))
+import qualified Flight.PilotTrack as Cmp (Fix(..))
+import qualified Flight.Comp as Cmp
     ( CompSettings(..)
     , Pilot(..)
     , Task(..)

@@ -9,7 +9,7 @@ Stability   : experimental
 
 Intersection of pilot tracks with task control zones.
 -}
-module Data.Flight.PilotTrack
+module Flight.PilotTrack
     ( -- * For each task.
       Crossing(..)
     , Tagging(..)
@@ -31,7 +31,7 @@ module Data.Flight.PilotTrack
 import Data.Time.Clock (UTCTime)
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
-import Data.Flight.Pilot (Pilot(..))
+import Flight.Pilot (Pilot(..))
 import Flight.LatLng.Raw (RawLat, RawLng)
 
 -- | For each task, the crossing for that task.

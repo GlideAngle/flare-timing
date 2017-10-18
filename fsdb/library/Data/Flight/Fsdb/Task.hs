@@ -40,7 +40,7 @@ import Text.Parsec.Prim (ParsecT, parsecMap)
 
 import Flight.LatLng.Raw (RawLat(..), RawLng(..))
 import Flight.Zone.Raw (RawZone(..))
-import Data.Flight.Comp
+import Flight.Comp
     (Task(..), SpeedSection, StartGate(..), OpenClose(..))
 
 lexer :: GenTokenParser String u Identity

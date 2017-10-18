@@ -28,7 +28,7 @@ import Text.XML.HXT.Core
     , listA
     )
 
-import Data.Flight.Comp
+import Flight.Comp
     (TaskFolder(..), Pilot(..), TrackLogFile(..), PilotTrackLogFile(..))
 
 newtype KeyPilot = KeyPilot (String, String) deriving Show

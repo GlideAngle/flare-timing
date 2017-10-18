@@ -21,7 +21,7 @@ import Data.Flight.Fsdb
     (parseComp, parseNominal, parseTasks, parseTaskFolders, parseTracks)
 import qualified Data.Yaml.Pretty as Y
 import qualified Data.ByteString as BS
-import Data.Flight.Comp
+import Flight.Comp
     ( CompSettings(..)
     , Comp(..)
     , Nominal(..)

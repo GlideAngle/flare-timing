@@ -33,7 +33,7 @@ import System.FilePath
     )
 
 import qualified Data.Flight.Kml as K (MarkedFixes, parse)
-import Data.Flight.Comp
+import Flight.Comp
     ( Pilot(..)
     , PilotTrackLogFile(..)
     , TrackLogFile(..)

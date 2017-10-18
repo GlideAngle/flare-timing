@@ -31,12 +31,12 @@ import Cmd.Options (CmdOptions(..))
 import qualified Data.Yaml.Pretty as Y
 import qualified Data.ByteString as BS
 
-import qualified Data.Flight.Comp as Cmp (CompSettings(..), Pilot(..))
+import qualified Flight.Comp as Cmp (CompSettings(..), Pilot(..))
 import Data.Flight.TrackLog (TrackFileFail(..), IxTask(..))
 import Flight.Units ()
 import Flight.Mask (SigMasking)
 import Flight.Mask.Pilot (checkTracks, madeZones)
-import qualified Data.Flight.PilotTrack as TZ
+import qualified Flight.PilotTrack as TZ
     ( TrackCross(..)
     , PilotTrackCross(..)
     , Crossing(..)

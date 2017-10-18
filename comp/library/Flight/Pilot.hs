@@ -1,6 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 
-module Data.Flight.Pilot
+module Flight.Pilot
     ( Pilot(..)
     , PilotTrackLogFile(..)
     , TrackLogFile(..)

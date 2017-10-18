@@ -36,8 +36,8 @@ import qualified Data.ByteString as BS
 
 import Flight.Units ()
 import Flight.Mask.Pilot (tagZones)
-import Data.Flight.Comp (Pilot(..))
-import Data.Flight.PilotTrack
+import Flight.Comp (Pilot(..))
+import Flight.PilotTrack
     ( Crossing(..)
     , Tagging(..)
     , TrackTime(..)

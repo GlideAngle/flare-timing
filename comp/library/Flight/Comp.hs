@@ -10,7 +10,7 @@ Stability   : experimental
 
 Data for competitions, competitors and tasks.
 -}
-module Data.Flight.Comp
+module Flight.Comp
     ( -- * Competition
       CompSettings(..)
     , Comp(..)
@@ -35,7 +35,7 @@ import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.List (intercalate)
 
 import Flight.Zone.Raw (RawZone, showZone)
-import Data.Flight.Pilot
+import Flight.Pilot
 
 -- | A 1-based index into the list of control zones marking the speed section.
 type SpeedSection = Maybe (Integer, Integer)

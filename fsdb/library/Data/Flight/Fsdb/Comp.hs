@@ -18,7 +18,7 @@ import Text.XML.HXT.Core
     )
 
 import Data.Bifunctor (bimap)
-import Data.Flight.Comp (Comp(..), UtcOffset(..))
+import Flight.Comp (Comp(..), UtcOffset(..))
 import Text.Parsec.Token as P
 import qualified Text.ParserCombinators.Parsec as P (parse)
 import Text.Parsec.Language (emptyDef)

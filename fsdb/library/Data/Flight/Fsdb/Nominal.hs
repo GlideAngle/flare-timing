@@ -17,7 +17,7 @@ import Text.XML.HXT.Core
     , arr
     )
 
-import Data.Flight.Comp (Nominal(..))
+import Flight.Comp (Nominal(..))
 
 getNominal :: ArrowXml a => a XmlTree Nominal
 getNominal =

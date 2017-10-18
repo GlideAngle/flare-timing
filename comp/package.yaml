@@ -20,8 +20,8 @@ library:
   - flight-zone
   source-dirs: library
   exposed-modules:
-  - Data.Flight.Comp
-  - Data.Flight.PilotTrack
+  - Flight.Comp
+  - Flight.PilotTrack
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
 name: flight-comp 

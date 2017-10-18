@@ -18,11 +18,7 @@ import Data.Flight.Fsdb
     , parseTracks
     , parseTaskFolders
     )
-import Data.Flight.Comp
-    ( Pilot(..)
-    , PilotTrackLogFile(..)
-    , showTask
-    )
+import Flight.Comp (Pilot(..), PilotTrackLogFile(..), showTask)
 
 driverMain :: IO ()
 driverMain = withCmdArgs drive

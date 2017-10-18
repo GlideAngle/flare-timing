@@ -33,7 +33,7 @@ import Cmd.Options (CmdOptions(..))
 import qualified Data.Yaml.Pretty as Y
 import qualified Data.ByteString as BS
 
-import qualified Data.Flight.Comp as Cmp (CompSettings(..), Pilot(..))
+import qualified Flight.Comp as Cmp (CompSettings(..), Pilot(..))
 import qualified Flight.Task as Tsk (TaskDistance(..))
 import qualified Flight.Score as Gap (PilotDistance(..), PilotTime(..))
 import Data.Flight.TrackLog (IxTask(..))
@@ -46,7 +46,7 @@ import Flight.Mask.Pilot
     , distanceFlown
     , timeFlown
     )
-import qualified Data.Flight.PilotTrack as TZ
+import qualified Flight.PilotTrack as TZ
     ( Masking(..)
     , TrackMask(..)
     , PilotTrackMask(..)
