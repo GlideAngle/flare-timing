@@ -69,7 +69,9 @@ instance FromJSON Masking
 -- | The timing and tagging for a single task.
 data TrackTime =
     TrackTime
-        { zonesFirst :: [Maybe UTCTime]
+        { zonesSum :: [Int]
+        -- ^ For each zone, the number of pilots tagging the zone.
+        , zonesFirst :: [Maybe UTCTime]
         -- ^ For each zone, the time of the first tag.
         , zonesLast :: [Maybe UTCTime]
         -- ^ For each zone, the time of the last tag.

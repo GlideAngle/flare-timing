@@ -61,6 +61,17 @@ cmp a b =
         ("lat", "time") -> GT
         ("lat", _) -> LT
         ("lng", _) -> GT
+        ("zonesSum", _) -> LT
+        ("zonesFirst", "zonesSum") -> GT
+        ("zonesFirst", _) -> LT
+        ("zonesLast", "zonesSum") -> GT
+        ("zonesLast", "zonesFirst") -> GT
+        ("zonesLast", _) -> LT
+        ("zonesRankTime", "zonesSum") -> GT
+        ("zonesRankTime", "zonesFirst") -> GT
+        ("zonesRankTime", "zonesLast") -> GT
+        ("zonesRankTime", _) -> LT
+        ("zonesRankPilot", _) -> GT
         _ -> compare a b
 
 drive :: CmdOptions -> IO ()
@@ -120,9 +131,10 @@ writeTags tagPath crossPath = do
 timed :: [PilotTrackTag] -> TrackTime
 timed xs =
     TrackTime
-        { zonesFirst = firstTag <$> zs'
+        { zonesSum = length <$> rankTime
+        , zonesFirst = firstTag <$> zs'
         , zonesLast = lastTag <$> zs'
-        , zonesRankTime = (fmap . fmap) snd rs'
+        , zonesRankTime = rankTime
         , zonesRankPilot = (fmap . fmap) fst rs'
         }
     where
@@ -137,6 +149,8 @@ timed xs =
 
         rs' :: [[(Pilot, UTCTime)]]
         rs' = sortOnTag <$> rs
+
+        rankTime = (fmap . fmap) snd rs'
 
 -- | Rank the pilots tagging each zone in a single task.
 rankByTag :: [PilotTrackTag]
