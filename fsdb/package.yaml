@@ -25,7 +25,7 @@ library:
   - flight-comp
   source-dirs: library
   exposed-modules:
-  - Data.Flight.Fsdb
+  - Flight.Fsdb
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
 name: flight-fsdb 

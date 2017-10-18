@@ -13,7 +13,7 @@
 {-# LANGUAGE LambdaCase #-}
 
 {-|
-Module      : Data.Flight.Mask
+Module      : Flight.Mask
 Copyright   : (c) Block Scope Limited 2017
 License     : BSD3
 Maintainer  : phil.dejoux@blockscope.com
@@ -46,7 +46,7 @@ import Control.Lens ((^?), element)
 import Control.Monad.Except (ExceptT(..), lift)
 import System.FilePath (FilePath, takeDirectory)
 
-import qualified Data.Flight.Kml as Kml
+import qualified Flight.Kml as Kml
     ( Fix
     , Seconds(..)
     , Latitude(..)
@@ -70,7 +70,7 @@ import qualified Flight.Comp as Cmp
     , OpenClose(..)
     , StartGate(..)
     )
-import Data.Flight.TrackLog as Log
+import Flight.TrackLog as Log
     ( TrackFileFail(..)
     , IxTask(..)
     , pilotTracks

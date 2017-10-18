@@ -9,7 +9,7 @@ import System.FilePath (takeFileName)
 import System.FilePath.Find (FileType(..), (==?), (&&?), find, always, fileType, extension)
 import Kml.Args (withCmdArgs)
 import Kml.Options (KmlOptions(..))
-import Data.Flight.Kml (parse)
+import Flight.Kml (parse)
 
 drive :: KmlOptions -> IO ()
 drive KmlOptions{..} = do

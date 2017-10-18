@@ -2,7 +2,7 @@
 {-# LANGUAGE TupleSections #-}
 
 {-|
-Module      : Data.Flight.TrackLog
+Module      : Flight.TrackLog
 Copyright   : (c) Block Scope Limited 2017
 License     : BSD3
 Maintainer  : phil.dejoux@blockscope.com
@@ -10,7 +10,7 @@ Stability   : experimental
 
 Competition pilot tracks logs.
 -}
-module Data.Flight.TrackLog
+module Flight.TrackLog
     ( TrackFileFail(..)
     , IxTask(..)
     , pilotTracks
@@ -32,7 +32,7 @@ import System.FilePath
     , joinPath
     )
 
-import qualified Data.Flight.Kml as K (MarkedFixes, parse)
+import qualified Flight.Kml as K (MarkedFixes, parse)
 import Flight.Comp
     ( Pilot(..)
     , PilotTrackLogFile(..)

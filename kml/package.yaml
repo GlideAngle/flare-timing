@@ -19,7 +19,7 @@ library:
   - time
   source-dirs: library
   exposed-modules:
-  - Data.Flight.Kml
+  - Flight.Kml
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
 name: flight-kml 

@@ -4,7 +4,7 @@
 {-# LANGUAGE LambdaCase #-}
 
 {-|
-Module      : Data.Flight.Kml
+Module      : Flight.Kml
 Copyright   : (c) Block Scope Limited 2017
 License     : BSD3
 Maintainer  : phil.dejoux@blockscope.com
@@ -12,7 +12,7 @@ Stability   : experimental
 
 Provides parsing the KML format for waypoint fixes.
 -}
-module Data.Flight.Kml
+module Flight.Kml
     ( Fix
     , MarkedFixes(..)
     , LLA
@@ -78,8 +78,8 @@ import Text.Parsec.Language (emptyDef)
 import Data.Functor.Identity (Identity)
 import Text.Parsec.Prim (ParsecT, parsecMap)
 import Numeric (showFFloat)
-import qualified Data.Flight.Types as T (LatLngAlt(..), FixMark(..))
-import Data.Flight.Types
+import qualified Flight.Types as T (LatLngAlt(..), FixMark(..))
+import Flight.Types
     ( LLA(..)
     , Fix(..)
     , MarkedFixes(..)

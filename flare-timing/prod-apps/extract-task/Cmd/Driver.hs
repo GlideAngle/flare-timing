@@ -17,7 +17,7 @@ import System.FilePath.Find
 
 import Cmd.Args (withCmdArgs)
 import Cmd.Options (CmdOptions(..))
-import Data.Flight.Fsdb
+import Flight.Fsdb
     (parseComp, parseNominal, parseTasks, parseTaskFolders, parseTracks)
 import qualified Data.Yaml.Pretty as Y
 import qualified Data.ByteString as BS

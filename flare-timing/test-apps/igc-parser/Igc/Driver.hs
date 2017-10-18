@@ -9,7 +9,7 @@ import System.FilePath (takeFileName)
 import System.FilePath.Find (FileType(..), find, always, fileType, (==?))
 import Igc.Args (withCmdArgs)
 import Igc.Options (IgcOptions(..))
-import Data.Flight.Igc (parseFromFile)
+import Flight.Igc (parseFromFile)
 
 drive :: IgcOptions -> IO ()
 drive IgcOptions{..} = do

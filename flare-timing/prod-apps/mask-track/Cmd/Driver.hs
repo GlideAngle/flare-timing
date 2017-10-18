@@ -36,7 +36,7 @@ import qualified Data.ByteString as BS
 import qualified Flight.Comp as Cmp (CompSettings(..), Pilot(..))
 import qualified Flight.Task as Tsk (TaskDistance(..))
 import qualified Flight.Score as Gap (PilotDistance(..), PilotTime(..))
-import Data.Flight.TrackLog (IxTask(..))
+import Flight.TrackLog (IxTask(..))
 import Flight.Units ()
 import Flight.Mask (SigMasking)
 import Flight.Mask.Pilot

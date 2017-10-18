@@ -1,4 +1,4 @@
-module Data.Flight.Fsdb.Nominal (parseNominal) where
+module Flight.Fsdb.Nominal (parseNominal) where
 
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
 import Text.XML.HXT.Core

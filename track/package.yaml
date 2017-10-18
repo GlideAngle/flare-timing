@@ -20,7 +20,7 @@ library:
   - flight-kml
   source-dirs: library
   exposed-modules:
-  - Data.Flight.TrackLog
+  - Flight.TrackLog
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
 name: flight-track

@@ -1,4 +1,4 @@
-module Data.Flight.Fsdb.Comp (parseComp) where
+module Flight.Fsdb.Comp (parseComp) where
 
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
 import Text.XML.HXT.Core

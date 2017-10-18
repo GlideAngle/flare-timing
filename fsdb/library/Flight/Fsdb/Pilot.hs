@@ -1,6 +1,6 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module Data.Flight.Fsdb.Pilot
+module Flight.Fsdb.Pilot
     ( parsePilots
     , parseTracks
     , parseTaskFolders

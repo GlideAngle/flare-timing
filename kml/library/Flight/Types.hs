@@ -2,7 +2,7 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
-module Data.Flight.Types
+module Flight.Types
     ( Fix(..)
     , LLA(..)
     , LatLngAlt(..)

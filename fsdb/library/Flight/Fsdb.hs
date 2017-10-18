@@ -1,5 +1,5 @@
 {-|
-Module      : Data.Flight.Fsdb
+Module      : Flight.Fsdb
 Copyright   : (c) Block Scope Limited 2017
 License     : BSD3
 Maintainer  : phil.dejoux@blockscope.com
@@ -7,7 +7,7 @@ Stability   : experimental
 
 Provides parsing the fsdb format for competitors, tasks and results.
 -}
-module Data.Flight.Fsdb
+module Flight.Fsdb
     ( parseComp
     , parseNominal
     , parseTasks
@@ -16,7 +16,7 @@ module Data.Flight.Fsdb
     , parseTaskFolders
     ) where
 
-import Data.Flight.Fsdb.Comp
-import Data.Flight.Fsdb.Nominal
-import Data.Flight.Fsdb.Task
-import Data.Flight.Fsdb.Pilot
+import Flight.Fsdb.Comp
+import Flight.Fsdb.Nominal
+import Flight.Fsdb.Task
+import Flight.Fsdb.Pilot

@@ -3,8 +3,8 @@
 
 module Main (main) where
 
-import qualified Data.Flight.Kml as K (LatLngAlt(lat, lng, altGps))
-import Data.Flight.Kml
+import qualified Flight.Kml as K (LatLngAlt(lat, lng, altGps))
+import Flight.Kml
     ( LLA
     , Seconds(..)
     , Latitude(..)

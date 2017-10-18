@@ -10,7 +10,7 @@ import System.FilePath.Find (FileType(..), (==?), (&&?), find, always, fileType,
 
 import Cmd.Args (withCmdArgs)
 import Cmd.Options (CmdOptions(..), Detail(..))
-import Data.Flight.Fsdb
+import Flight.Fsdb
     ( parseComp
     , parseNominal
     , parseTasks
