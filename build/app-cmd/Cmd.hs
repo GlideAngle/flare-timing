@@ -28,6 +28,7 @@ prodApps =
     [ "extract-task"
     , "task-length"
     , "cross-zone"
+    , "align-time"
     , "tag-zone"
     , "mask-track"
     , "comp-serve"
@@ -73,6 +74,12 @@ buildRules = do
             (Cwd root)
             Shell
             (cmdFor "flare-timing:tag-zone")
+
+    phony "align-time" $
+        cmd
+            (Cwd root)
+            Shell
+            (cmdFor "flare-timing:cross-zone")
 
     phony "mask-track" $
         cmd
