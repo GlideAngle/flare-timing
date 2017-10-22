@@ -15,7 +15,11 @@ library:
   - aeson
   - scientific
   - containers
+  - unordered-containers
   - time
+  - cassava
+  - split
+  - bytestring
   - flight-latlng
   - flight-zone
   source-dirs: library
