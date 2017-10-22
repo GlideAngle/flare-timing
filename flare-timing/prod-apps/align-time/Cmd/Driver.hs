@@ -140,7 +140,7 @@ drive CmdOptions{..} = do
 
                 fcsv :: Int -> FilePath
                 fcsv n =
-                    flip replaceExtension ("." ++ show n ++ ".align-time.yaml")
+                    flip replaceExtension ("." ++ show n ++ ".align-time.csv")
                     $ dropExtension yamlCompPath
 
 mkTimeRows :: Maybe [(Maybe Fix, Maybe TaskDistance)]
