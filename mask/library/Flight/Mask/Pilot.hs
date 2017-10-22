@@ -38,7 +38,7 @@ module Flight.Mask.Pilot
     ) where
 
 import Data.Time.Clock (UTCTime, diffUTCTime, addUTCTime)
-import Data.List (nub, tails)
+import Data.List (nub, inits)
 import qualified Data.List as List (find, findIndex)
 import Data.Ratio ((%))
 import Data.UnitsOfMeasure ((-:), u, convert)
@@ -401,25 +401,22 @@ distancesToGoal :: [Cmp.Task]
                 -> Kml.MarkedFixes
                 -> Maybe [(Maybe Fix, Maybe TaskDistance)]
                 -- ^ Nothing indicates no such task or a task with no zones.
-distancesToGoal tasks (IxTask i) Kml.MarkedFixes{mark0, fixes} =
+distancesToGoal tasks iTask@(IxTask i) mf@Kml.MarkedFixes{mark0, fixes} =
     case tasks ^? element (i - 1) of
         Nothing -> Nothing
-        Just task@Cmp.Task{speedSection, zones} ->
-            if null zones then Nothing else Just $ f <$> tails fixes
+        Just Cmp.Task{zones} ->
+            if null zones then Nothing else Just $ f <$> fixes'
             where
-                fs = (\x -> pickCrossingPredicate (isStartExit x) x) task
+                fixes' = inits fixes
 
                 f ys =
-                    case ys of
+                    case reverse ys of
                         [] -> (Nothing, Nothing)
-                        (y : _) -> (Just $ fixFromFix mark0 y, d)
-                    where
-                        d = distanceViaZones
-                                fixToPoint
-                                speedSection
-                                fs
-                                (zoneToCylinder <$> zones)
-                                ys
+                        (y : _) ->
+                            (Just $ fixFromFix mark0 y, d)
+                            where
+                                xs = mf { Kml.fixes = ys }
+                                d = distanceToGoal tasks iTask xs
 
 distanceToGoal :: [Cmp.Task]
                -> IxTask
