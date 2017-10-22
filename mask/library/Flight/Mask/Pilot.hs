@@ -397,10 +397,10 @@ slice = \case
         in take (e - s + 1) . drop s
 
 distancesToGoal :: [Cmp.Task]
-               -> IxTask
-               -> Kml.MarkedFixes
-               -> Maybe [(Maybe Fix, Maybe TaskDistance)]
-               -- ^ Nothing indicates no such task or a task with no zones.
+                -> IxTask
+                -> Kml.MarkedFixes
+                -> Maybe [(Maybe Fix, Maybe TaskDistance)]
+                -- ^ Nothing indicates no such task or a task with no zones.
 distancesToGoal tasks (IxTask i) Kml.MarkedFixes{mark0, fixes} =
     case tasks ^? element (i - 1) of
         Nothing -> Nothing
@@ -411,11 +411,8 @@ distancesToGoal tasks (IxTask i) Kml.MarkedFixes{mark0, fixes} =
 
                 f ys =
                     case ys of
-                        [] ->
-                            (Nothing, Nothing)
-
-                        (y : _) ->
-                            (Just $ fixFromFix mark0 y, d)
+                        [] -> (Nothing, Nothing)
+                        (y : _) -> (Just $ fixFromFix mark0 y, d)
                     where
                         d = distanceViaZones
                                 fixToPoint
