@@ -19,7 +19,6 @@ import qualified Data.Vector as V (fromList)
 import Data.HashMap.Strict (unions)
 import Flight.Comp (Pilot(..))
 import Flight.Track.Time (TimeRow(..))
-import Data.Number.RoundingFunctions (dpRound)
 import Data.Aeson (encode)
 
 newtype Row = Row TimeRow
@@ -36,13 +35,14 @@ instance ToNamedRecord Row where
         where
             local =
                 namedRecord
-                    [ namedField "time" time'
+                    [ namedField "time" t
                     , namedField "pilot" p
-                    , namedField "distance" $ show $ dpRound 8 (toRational distance)
+                    , namedField "distance" d
                     ]
 
 
-            time' = unquote . L.unpack . encode $ time
+            t = unquote . L.unpack . encode $ time
+            d = unquote . L.unpack . encode $ distance
             Pilot p = pilot
 
 writeTimeRowsToCsv :: FilePath -> [String] -> [TimeRow] -> IO ()
