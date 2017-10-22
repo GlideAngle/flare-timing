@@ -119,7 +119,10 @@ drive CmdOptions{..} = do
 
                             _ <- sequence $ zipWith
                                 (\ iTask rows ->
-                                    writeTimeRowsToCsv (fcsv iTask) headers rows)
+                                    if includeTask iTask then
+                                        writeTimeRowsToCsv (fcsv iTask) headers rows
+                                    else 
+                                        return ())
                                 [1 .. ]
                                 ts'
 
@@ -131,6 +134,9 @@ drive CmdOptions{..} = do
                 flown :: SigMasking (Maybe [(Maybe Fix, Maybe TaskDistance)])
                 flown tasks iTask xs =
                     distancesToGoal tasks iTask xs
+
+                includeTask :: Int -> Bool
+                includeTask = if null task then const True else (flip elem $ task)
 
                 fcsv :: Int -> FilePath
                 fcsv n =
