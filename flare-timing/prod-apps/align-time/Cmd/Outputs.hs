@@ -4,7 +4,7 @@
 
 module Cmd.Outputs (writeTimeRowsToCsv) where
 
-import qualified Data.Csv as Csv
+import Data.Csv
     ( EncodeOptions(..)
     , ToNamedRecord(..)
     , namedRecord
@@ -15,31 +15,30 @@ import qualified Data.Csv as Csv
 import qualified Data.ByteString.Char8 as S (pack)
 import qualified Data.ByteString.Lazy.Char8 as L (writeFile)
 import qualified Data.Vector as V (fromList)
+import Data.HashMap.Strict (unions)
 import Flight.Comp (Pilot(..))
 import Flight.Track.Time (TimeRow(..))
-import Flight.LatLng.Raw
 import Data.Number.RoundingFunctions (dpRound)
 
 newtype Row = Row TimeRow
 
-instance Csv.ToNamedRecord Row where
+instance ToNamedRecord Row where
     toNamedRecord (Row TimeRow{..}) =
-        Csv.namedRecord
-            [ Csv.namedField "time" $ show time
-            , Csv.namedField "pilot" p
-            , Csv.namedField "lat" $ show $ dpRound 8 lat'
-            , Csv.namedField "lng" $ show $ dpRound 8 lng'
-            , Csv.namedField "distance" $ show $ dpRound 8 (toRational distance)
-            ]
+        unions [local, toNamedRecord lat, toNamedRecord lng]
         where
-            RawLat lat' = lat
-            RawLng lng' = lng
+            local =
+                namedRecord
+                    [ namedField "time" $ show time
+                    , namedField "pilot" p
+                    , namedField "distance" $ show $ dpRound 8 (toRational distance)
+                    ]
+
             Pilot p = pilot
 
 writeTimeRowsToCsv :: FilePath -> [String] -> [TimeRow] -> IO ()
 writeTimeRowsToCsv filename headers xs =
     L.writeFile filename rows
     where
-        opts = Csv.defaultEncodeOptions {Csv.encUseCrLf = False}
+        opts = defaultEncodeOptions {encUseCrLf = False}
         hs = V.fromList $ S.pack <$> headers
-        rows = Csv.encodeByNameWith opts hs $ Row <$> xs
+        rows = encodeByNameWith opts hs $ Row <$> xs

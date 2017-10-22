@@ -15,6 +15,7 @@ library:
   - numbers
   - scientific
   - aeson
+  - cassava
   - uom-plugin
   - siggy-chardust
   - flight-units

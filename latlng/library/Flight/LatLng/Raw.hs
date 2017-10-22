@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveGeneric #-}
 
 module Flight.LatLng.Raw
@@ -13,6 +14,7 @@ module Flight.LatLng.Raw
 import GHC.Generics (Generic)
 import Control.Applicative (empty)
 import Data.Aeson (ToJSON(..), FromJSON(..), Value(Number))
+import Data.Csv (ToNamedRecord(..), namedRecord, namedField)
 import Data.Scientific
     ( Scientific
     , FPFormat(..)
@@ -54,6 +56,15 @@ toSci x =
 showSci :: Scientific -> String
 showSci =
     formatScientific Fixed (Just dpDegree)
+
+csvSci :: Rational -> String
+csvSci = showSci . toSci
+
+instance ToNamedRecord RawLat where
+    toNamedRecord (RawLat x) = namedRecord [ namedField "lat" $ csvSci x ]
+
+instance ToNamedRecord RawLng where
+    toNamedRecord (RawLng x) = namedRecord [ namedField "lng" $ csvSci x ]
 
 instance ToJSON RawLat where
     toJSON (RawLat x) = Number $ toSci x
