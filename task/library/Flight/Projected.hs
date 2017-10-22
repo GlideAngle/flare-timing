@@ -25,8 +25,7 @@ import Flight.CylinderEdge (Tolerance, ZonePoint(..))
 import Flight.Units ()
 import Flight.LatLng (LatLng(..), Lat(..), Lng(..), radToDegLL, defEps)
 import Flight.ShortestPath
-    ( DistancePath(..)
-    , EdgeDistance(..)
+    ( EdgeDistance(..)
     , PathCost(..)
     , NodeConnector
     , shortestPath
@@ -37,12 +36,10 @@ import Flight.ShortestPath
 -- eastings and northings. If you need to calculate the distance in sperical
 -- coordinates, the latitude and longitude of each vertex of the path can be
 -- used to work that out.
-distanceProjected :: DistancePath
-                  -> Tolerance
+distanceProjected :: Tolerance
                   -> [Zone]
                   -> EdgeDistance
 distanceProjected = shortestPath $ buildGraph connectNodes
-
 
 -- | NOTE: The shortest path may traverse a cylinder so I include
 -- edges within a cylinder as well as edges to the next cylinder.
@@ -72,8 +69,6 @@ zoneToProjectedEastNorth (Point x) = do
 
         xLng' :: Double
         xLng' = fromRational xLng :: Double
-
-zoneToProjectedLatLng _ = Left ""
 
 tooFar :: TaskDistance
 tooFar = TaskDistance [u| 20000000 m |]

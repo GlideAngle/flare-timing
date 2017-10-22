@@ -38,7 +38,7 @@ import Flight.Zone (Zone(..), Radius(..), center)
 import Flight.Zone.Raw (RawZone(..))
 import Flight.CylinderEdge (Tolerance(..))
 import Flight.PointToPoint (TaskDistance(..), distancePointToPoint)
-import Flight.ShortestPath (EdgeDistance(..), DistancePath(..))
+import Flight.ShortestPath (EdgeDistance(..))
 import Flight.EdgeToEdge (distanceEdgeToEdge)
 import Flight.Projected (distanceProjected, zoneToProjectedEastNorth)
 
@@ -170,7 +170,7 @@ taskTrack excludeWaypoints tdm zsRaw =
         edgeTrackline =
             goByEdge
                 excludeWaypoints
-                (distanceEdgeToEdge PathPointToPoint mm30 zs)
+                (distanceEdgeToEdge mm30 zs)
 
         projTrackline =
             ProjectedTrackLine { planar = planar
@@ -183,7 +183,7 @@ taskTrack excludeWaypoints tdm zsRaw =
                 projected =
                     goByEdge
                         excludeWaypoints
-                        (distanceProjected PathPointToPoint mm30 zs)
+                        (distanceProjected mm30 zs)
 
                 ps = toPoint <$> (waypoints projected)
                 (_, es) = partitionEithers $ zoneToProjectedEastNorth <$> ps 
@@ -193,7 +193,7 @@ taskTrack excludeWaypoints tdm zsRaw =
                     zipWith
                         (\ a b ->
                             centers
-                            $ distanceProjected PathPointToPoint mm30 [a, b])
+                            $ distanceProjected mm30 [a, b])
                         ps
                         (tail ps)
 

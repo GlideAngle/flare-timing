@@ -36,7 +36,6 @@ import Flight.Task
     , Tolerance(..)
     , TaskDistance(..)
     , EdgeDistance(..)
-    , DistancePath(..)
     , fromKms
     )
 
@@ -427,7 +426,7 @@ mkDayUnits title pDay dDay dsDay = testGroup title
     ]
     where
         pp = FS.distancePointToPoint
-        ee = FS.distanceEdgeToEdge PathPointToZone mm30 
+        ee = FS.distanceEdgeToEdge mm30 
         ppDay = pp pDay
         eeDay = centers $ ee pDay
         pDayInits = drop 1 $ inits pDay

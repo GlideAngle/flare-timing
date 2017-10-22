@@ -11,7 +11,6 @@
 
 module Flight.ShortestPath
     ( EdgeDistance(..)
-    , DistancePath(..)
     , PathCost(..)
     , GraphBuilder
     , NodeConnector
@@ -55,43 +54,28 @@ type GraphBuilder =
 
 newtype PathCost = PathCost Rational deriving (Eq, Ord, Num, Real)
 
-data DistancePath
-    = PathPointToPoint
-    -- ^ A path from the center of the first zone to the center of the last zone.
-    | PathPointToZone
-    -- ^ A path from the edge of the first zone to the edge of the last zone.
-    deriving (Eq, Show)
-
 data EdgeDistance =
     EdgeDistance
         { centers :: TaskDistance
         -- ^ The distance from the center of the first zone to the center of
         -- the last zone.
-        , edges :: TaskDistance
-        -- ^ The distance from the edge of the first zone to the edge of
-        -- the last zone.
         , centerLine :: [ LatLng [u| rad |] ]
         -- ^ The points of the 'centers' distance.
-        , edgeLine :: [ LatLng [u| rad |] ]
-        -- ^ The points of the 'edges' distance.
         }
 
 zeroDistance :: EdgeDistance
 zeroDistance =
     EdgeDistance { centers = TaskDistance $ MkQuantity 0
-                 , edges = TaskDistance $ MkQuantity 0
                  , centerLine = []
-                 , edgeLine = []
                  }
 
 shortestPath :: GraphBuilder
-             -> DistancePath
              -> Tolerance
              -> [Zone]
              -> EdgeDistance
-shortestPath _ _ _ [] = zeroDistance
-shortestPath _ _ _ [_] = zeroDistance
-shortestPath builder dPath tolerance xs =
+shortestPath _ _ [] = zeroDistance
+shortestPath _ _ [_] = zeroDistance
+shortestPath builder tolerance xs =
     case xs of
         [] ->
             zeroDistance
@@ -99,47 +83,27 @@ shortestPath builder dPath tolerance xs =
         [_] ->
             zeroDistance
 
-        [_, _] ->
-            EdgeDistance { centers = d
-                         , edges = d
-                         , centerLine = ptsCenterLine
-                         , edgeLine = ptsCenterLine
-                         }
-
         (_ : _) ->
             EdgeDistance { centers = d
-                         , edges = d'
                          , centerLine = ptsCenterLine
-                         , edgeLine = ptsEdgeLine
                          }
-
-            where
-                ptsEdgeLine =
-                    drop 1
-                    $ reverse
-                    $ drop 1
-                    $ reverse ptsCenterLine
-
-                d' = distancePointToPoint (Point <$> ptsEdgeLine)
-
     where
-        (PathCost pcd, ptsCenterLine) = distance builder dPath tolerance xs
+        (PathCost pcd, ptsCenterLine) = distance builder tolerance xs
         d = TaskDistance $ MkQuantity pcd 
 
 distance :: GraphBuilder
-         -> DistancePath
          -> Tolerance
          -> [Zone]
          -> (PathCost, [ LatLng [u| rad |] ])
-distance _ _ _ [] = (PathCost 0, [])
-distance _ _ _ [_] = (PathCost 0, [])
-distance builder dPath tolerance xs
+distance _ _ [] = (PathCost 0, [])
+distance _ _ [_] = (PathCost 0, [])
+distance builder tolerance xs
     | not $ separatedZones xs = (PathCost 0, [])
     | otherwise =
         case dist of
             Nothing -> (PathCost pointwise, centers')
             Just d@(PathCost pcd) ->
-                if dPath == PathPointToZone || pcd < pointwise
+                if pcd < pointwise
                     then (d, point <$> zs)
                     else (PathCost pointwise, centers')
         where

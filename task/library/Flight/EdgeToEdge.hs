@@ -8,18 +8,14 @@ import Flight.PointToPoint (TaskDistance(..), distancePointToPoint)
 import Flight.CylinderEdge (Tolerance, ZonePoint(..))
 import Flight.Units ()
 import Flight.ShortestPath
-    ( DistancePath(..)
-    , EdgeDistance(..)
+    ( EdgeDistance(..)
     , PathCost(..)
     , NodeConnector
     , shortestPath
     , buildGraph
     )
 
-distanceEdgeToEdge :: DistancePath
-                   -> Tolerance
-                   -> [Zone]
-                   -> EdgeDistance
+distanceEdgeToEdge :: Tolerance -> [Zone] -> EdgeDistance
 distanceEdgeToEdge = shortestPath $ buildGraph connectNodes
 
 -- | NOTE: The shortest path may traverse a cylinder so I include

@@ -44,7 +44,6 @@ import Flight.Task
     ( TaskDistance(..)
     , EdgeDistance(..)
     , Tolerance(..)
-    , DistancePath(..)
     , separatedZones
     )
 
@@ -335,7 +334,7 @@ distanceEdge :: ZonesTest -> Bool
 distanceEdge (ZonesTest xs) =
     correctCenter xs
     $ centers
-    $ FS.distanceEdgeToEdge PathPointToPoint mm10 xs
+    $ FS.distanceEdgeToEdge mm10 xs
 
 distanceLess :: ZonesTest -> Bool
 distanceLess (ZonesTest xs)
@@ -345,6 +344,6 @@ distanceLess (ZonesTest xs)
         where
             TaskDistance dCenter =
                 centers
-                $ FS.distanceEdgeToEdge PathPointToPoint mm10 xs
+                $ FS.distanceEdgeToEdge mm10 xs
 
             TaskDistance dPoint = FS.distancePointToPoint xs

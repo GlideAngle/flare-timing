@@ -22,7 +22,6 @@ module Flight.Task
     , Tolerance(..)
     , SampleParams(..)
     , EdgeDistance(..)
-    , DistancePath(..)
     , circumSample
     , distanceEdgeToEdge
     , distanceProjected

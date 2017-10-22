@@ -82,7 +82,6 @@ import Flight.Task as Tsk
     ( TaskDistance(..)
     , EdgeDistance(..)
     , Tolerance(..)
-    , DistancePath(..)
     , separatedZones
     , distanceEdgeToEdge
     )
@@ -377,9 +376,8 @@ distanceViaZones mkZone speedSection fs zs xs =
 
         -- TODO: Check all fixes from last turnpoint made.
         x : _ ->
-            Just . edges $
+            Just . centers $
                 distanceEdgeToEdge
-                    PathPointToZone
                     mm30
                     (unTrackZone (mkZone x) : notTicked)
     where
