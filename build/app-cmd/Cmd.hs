@@ -79,7 +79,7 @@ buildRules = do
         cmd
             (Cwd root)
             Shell
-            (cmdFor "flare-timing:cross-zone")
+            (cmdFor "flare-timing:align-time")
 
     phony "mask-track" $
         cmd

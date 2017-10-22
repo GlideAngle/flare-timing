@@ -24,6 +24,7 @@ library:
   - Flight.Track.Cross
   - Flight.Track.Tag
   - Flight.Track.Mask
+  - Flight.Track.Time
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
 name: flight-comp 

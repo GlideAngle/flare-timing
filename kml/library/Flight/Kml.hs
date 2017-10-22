@@ -181,7 +181,7 @@ pNats = do
 parseUtcTime :: String -> Maybe UTCTime
 parseUtcTime s = do
     case P.parse pUtcTimeZ "(stdin)" s of
-        Left e -> Nothing
+        Left _ -> Nothing
         Right t -> Just t
 
 pUtcTimeZ :: GenParser Char st UTCTime

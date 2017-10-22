@@ -32,12 +32,13 @@ module Flight.Mask.Pilot
     , madeGoal
     , started
     , distanceToGoal
+    , distancesToGoal
     , distanceFlown
     , timeFlown
     ) where
 
 import Data.Time.Clock (UTCTime, diffUTCTime, addUTCTime)
-import Data.List (nub)
+import Data.List (nub, tails)
 import qualified Data.List as List (find, findIndex)
 import Data.Ratio ((%))
 import Data.UnitsOfMeasure ((-:), u, convert)
@@ -271,9 +272,9 @@ fixFromFix :: UTCTime -> Kml.Fix -> Fix
 fixFromFix mark0 x =
     -- SEE: https://ocharles.org.uk/blog/posts/2013-12-15-24-days-of-hackage-time.html
     Fix { time = (fromInteger secs) `addUTCTime` mark0
-            , lat = RawLat lat
-            , lng = RawLng lng
-            }
+        , lat = RawLat lat
+        , lng = RawLng lng
+        }
     where
         Kml.Seconds secs = Kml.mark x
         Kml.Latitude lat = Kml.lat x
@@ -395,10 +396,39 @@ slice = \case
         let (s, e) = (fromInteger s' - 1, fromInteger e' - 1)
         in take (e - s + 1) . drop s
 
+distancesToGoal :: [Cmp.Task]
+               -> IxTask
+               -> Kml.MarkedFixes
+               -> Maybe [(Maybe Fix, Maybe TaskDistance)]
+               -- ^ Nothing indicates no such task or a task with no zones.
+distancesToGoal tasks (IxTask i) Kml.MarkedFixes{mark0, fixes} =
+    case tasks ^? element (i - 1) of
+        Nothing -> Nothing
+        Just task@Cmp.Task{speedSection, zones} ->
+            if null zones then Nothing else Just $ f <$> tails fixes
+            where
+                fs = (\x -> pickCrossingPredicate (isStartExit x) x) task
+
+                f ys =
+                    case ys of
+                        [] ->
+                            (Nothing, Nothing)
+
+                        (y : _) ->
+                            (Just $ fixFromFix mark0 y, d)
+                    where
+                        d = distanceViaZones
+                                fixToPoint
+                                speedSection
+                                fs
+                                (zoneToCylinder <$> zones)
+                                ys
+
 distanceToGoal :: [Cmp.Task]
                -> IxTask
                -> Kml.MarkedFixes
                -> Maybe TaskDistance
+               -- ^ Nothing indicates no such task or a task with no zones.
 distanceToGoal tasks (IxTask i) Kml.MarkedFixes{fixes} =
     case tasks ^? element (i - 1) of
         Nothing -> Nothing

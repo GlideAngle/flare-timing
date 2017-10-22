@@ -20,55 +20,59 @@ module Cmd.Driver (driverMain) where
 import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
-import Data.String (IsString)
+import Data.Maybe (catMaybes)
 import Control.Monad (mapM_)
 import Control.Monad.Except (ExceptT(..), runExceptT)
+import Data.UnitsOfMeasure (u, convert)
+import Data.UnitsOfMeasure.Internal (Quantity(..))
 import System.Directory (doesFileExist, doesDirectoryExist)
 import System.FilePath.Find (FileType(..), (==?), (&&?), find, always, fileType, extension)
 import System.FilePath (FilePath, takeFileName, replaceExtension, dropExtension)
 import Cmd.Args (withCmdArgs)
 import Cmd.Options (CmdOptions(..))
-import qualified Data.Yaml.Pretty as Y
-import qualified Data.ByteString as BS
+import Cmd.Outputs (writeTimeRowsToCsv)
 
-import qualified Flight.Comp as Cmp (CompSettings(..), Pilot(..))
+import Flight.Comp (CompSettings(..), Pilot(..))
 import Flight.TrackLog (TrackFileFail(..), IxTask(..))
 import Flight.Units ()
 import Flight.Mask (SigMasking)
-import Flight.Mask.Pilot (checkTracks, madeZones)
-import Flight.Track.Cross (TrackCross(..), PilotTrackCross(..), Crossing(..))
+import Flight.Mask.Pilot (checkTracks, distancesToGoal)
+import Flight.Track.Cross (Fix(..))
+import Flight.Track.Time (TimeRow(..))
+import Flight.Task (TaskDistance(..))
+import Data.Number.RoundingFunctions (dpRound)
 
 type MkPart a =
     FilePath
     -> [IxTask]
-    -> [Cmp.Pilot]
+    -> [Pilot]
     -> ExceptT
         String
         IO
         [[Either
-            (Cmp.Pilot, TrackFileFail)
-            (Cmp.Pilot, a)
+            (Pilot, TrackFileFail)
+            (Pilot, a)
         ]]
 
-type AddPart a = a -> TrackCross
+type AddPart a = a -> (Pilot -> [TimeRow])
 
-type MkCrossingTrackIO a =
+type MkDistanceTrackIO a =
     FilePath
     -> MkPart a
     -> AddPart a
     -> IO ()
 
+unTaskDistance :: Fractional a => TaskDistance -> a
+unTaskDistance (TaskDistance d) =
+    fromRational $ dpRound 3 dKm
+    where 
+        MkQuantity dKm = convert d :: Quantity Rational [u| km |]
+
+headers :: [String]
+headers = ["time", "pilot", "lat", "lng", "distance"]
+
 driverMain :: IO ()
 driverMain = withCmdArgs drive
-
-cmp :: (Ord a, IsString a) => a -> a -> Ordering
-cmp a b =
-    case (a, b) of
-        ("time", _) -> LT
-        ("lat", "time") -> GT
-        ("lat", _) -> LT
-        ("lng", _) -> GT
-        _ -> compare a b
 
 drive :: CmdOptions -> IO ()
 drive CmdOptions{..} = do
@@ -88,50 +92,67 @@ drive CmdOptions{..} = do
     fprint ("Tracks crossing zones completed in " % timeSpecs % "\n") start end
     where
         withFile yamlCompPath = do
-            let yamlCrossPath =
-                    flip replaceExtension ".cross-zone.yaml"
-                    $ dropExtension yamlCompPath
-
             putStrLn $ "Reading competition from '" ++ takeFileName yamlCompPath ++ "'"
-            let go = writeMask yamlCrossPath in go checkAll id
+
+            let go = writeTime yamlCompPath in go checkAll mkTimeRows
             where
-                writeMask :: forall a. MkCrossingTrackIO a
-                writeMask yamlCrossPath f g = do
+                writeTime :: forall a. MkDistanceTrackIO a
+                writeTime yamlCompPath' f g = do
                     checks <-
                         runExceptT $
                             f
-                                yamlCompPath
+                                yamlCompPath'
                                 (IxTask <$> task)
-                                (Cmp.Pilot <$> pilot)
+                                (Pilot <$> pilot)
 
                     case checks of
                         Left msg -> print msg
                         Right xs -> do
-                            let ps :: [[PilotTrackCross]] =
+                            let ts :: [[[TimeRow]]] =
                                     (fmap . fmap)
                                         (\case
-                                            Left (p, _) ->
-                                                PilotTrackCross p Nothing
-
-                                            Right (p, x) ->
-                                                PilotTrackCross p (Just $ g x))
+                                            Left _ -> []
+                                            Right (p, d) -> g d $ p)
                                         xs
 
-                            let tzi =
-                                    Crossing { crossing = ps }
+                            let ts' :: [[TimeRow]] = concat <$> ts
 
-                            let yaml =
-                                    Y.encodePretty
-                                        (Y.setConfCompare cmp Y.defConfig)
-                                        tzi 
+                            _ <- sequence $ zipWith
+                                (\ iTask rows ->
+                                    writeTimeRowsToCsv (fcsv iTask) headers rows)
+                                [1 .. ]
+                                ts'
 
-                            BS.writeFile yamlCrossPath yaml
+                            return ()
 
                 checkAll =
-                    checkTracks $ \Cmp.CompSettings{tasks} -> flown tasks
+                    checkTracks $ \CompSettings{tasks} -> flown tasks
 
-                flown :: SigMasking TrackCross
+                flown :: SigMasking (Maybe [(Maybe Fix, Maybe TaskDistance)])
                 flown tasks iTask xs =
-                    TrackCross
-                        { zonesCross = madeZones tasks iTask xs
-                        }
+                    distancesToGoal tasks iTask xs
+
+                fcsv :: Int -> FilePath
+                fcsv n =
+                    flip replaceExtension ("." ++ show n ++ ".align-time.yaml")
+                    $ dropExtension yamlCompPath
+
+mkTimeRows :: Maybe [(Maybe Fix, Maybe TaskDistance)]
+           -> Pilot
+           -> [TimeRow]
+mkTimeRows Nothing _ = []
+mkTimeRows (Just xs) p = catMaybes $ mkTimeRow p <$> xs
+
+mkTimeRow :: Pilot
+          -> (Maybe Fix, Maybe TaskDistance)
+          -> Maybe TimeRow
+mkTimeRow _ (Nothing, _) = Nothing
+mkTimeRow _ (_, Nothing) = Nothing
+mkTimeRow p (Just Fix{time, lat, lng}, Just d) =
+    Just $ TimeRow
+        { time = time
+        , pilot = p
+        , lat = lat
+        , lng = lng
+        , distance = unTaskDistance d
+        }

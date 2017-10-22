@@ -164,9 +164,13 @@ executables:
     - uom-plugin
     - bytestring
     - clock
+    - time
     - formatting
+    - cassava
+    - vector
     - siggy-chardust
     - flight-units
+    - flight-latlng
     - flight-comp
     - flight-kml
     - flight-track
