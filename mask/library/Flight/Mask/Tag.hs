@@ -13,7 +13,6 @@
 module Flight.Mask.Tag
     ( SigMasking
     , countFixes
-    , checkTracks
     , madeZones
     , tagZones
     , launched
@@ -24,27 +23,12 @@ module Flight.Mask.Tag
 import Data.Time.Clock (UTCTime)
 import Data.List (nub)
 import Control.Lens ((^?), element)
-import Control.Monad.Except (ExceptT(..), lift)
-import System.FilePath (FilePath, takeDirectory)
 
 import qualified Flight.Kml as Kml (Fix, MarkedFixes(..))
 import Flight.Track.Cross (Fix(..), ZoneCross(..))
-import qualified Flight.Comp as Cmp
-    ( CompSettings(..)
-    , Pilot(..)
-    , Task(..)
-    , PilotTrackLogFile(..)
-    )
-import Flight.TrackLog as Log
-    ( TrackFileFail(..)
-    , IxTask(..)
-    , pilotTracks
-    , filterPilots
-    , filterTasks
-    , makeAbsolute
-    )
+import qualified Flight.Comp as Cmp (Task(..))
+import Flight.TrackLog as Log (IxTask(..))
 import Flight.Units ()
-import Flight.Mask.Settings (readCompSettings)
 import Flight.Mask.Internal
     ( ZoneHit(..)
     , slice
@@ -62,37 +46,6 @@ import Flight.Mask.Internal
 type SigMasking a = [Cmp.Task] -> Log.IxTask -> Kml.MarkedFixes -> a
 
 newtype PilotTrackFixes = PilotTrackFixes Int deriving Show
-
-settingsLogs :: FilePath
-             -> [IxTask]
-             -> [Cmp.Pilot]
-             -> ExceptT String IO (Cmp.CompSettings, [[Cmp.PilotTrackLogFile]])
-settingsLogs compYamlPath tasks selectPilots = do
-    settings <- readCompSettings compYamlPath
-    ExceptT . return $ go settings
-    where
-        go s@Cmp.CompSettings{pilots, taskFolders} =
-            Right (s, zs)
-            where
-                dir = takeDirectory compYamlPath
-                ys = Log.filterPilots selectPilots $ Log.filterTasks tasks pilots
-                fs = Log.makeAbsolute dir <$> taskFolders
-                zs = zipWith (<$>) fs ys
-
-checkTracks :: forall a. (Cmp.CompSettings -> (IxTask -> Kml.MarkedFixes -> a))
-            -> FilePath
-            -> [IxTask]
-            -> [Cmp.Pilot]
-            -> ExceptT
-                String
-                IO
-                [[ Either
-                   (Cmp.Pilot, TrackFileFail)
-                   (Cmp.Pilot, a)
-                ]]
-checkTracks f compYamlPath tasks selectPilots = do
-    (settings, xs) <- settingsLogs compYamlPath tasks selectPilots
-    lift $ Log.pilotTracks (f settings) xs
 
 countFixes :: Kml.MarkedFixes -> PilotTrackFixes
 countFixes Kml.MarkedFixes{fixes} =
