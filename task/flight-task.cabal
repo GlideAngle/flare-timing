@@ -49,6 +49,7 @@ library
       Flight.TaskTrack
   other-modules:
       Flight.CylinderEdge
+      Flight.Distance
       Flight.EdgeToEdge
       Flight.PointToPoint
       Flight.Projected
@@ -81,6 +82,7 @@ test-suite hlint
     , flight-zone
   other-modules:
       Flight.CylinderEdge
+      Flight.Distance
       Flight.EdgeToEdge
       Flight.PointToPoint
       Flight.Projected
@@ -118,6 +120,7 @@ test-suite task
     , smallcheck
   other-modules:
       Flight.CylinderEdge
+      Flight.Distance
       Flight.EdgeToEdge
       Flight.PointToPoint
       Flight.Projected

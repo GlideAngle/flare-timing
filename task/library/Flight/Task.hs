@@ -21,7 +21,7 @@ module Flight.Task
     , Samples(..)
     , Tolerance(..)
     , SampleParams(..)
-    , EdgeDistance(..)
+    , PathDistance(..)
     , circumSample
     , distanceEdgeToEdge
     , distanceProjected
@@ -29,8 +29,8 @@ module Flight.Task
     , separatedZones
     ) where
 
+import Flight.Distance
 import Flight.PointToPoint
-import Flight.ShortestPath
 import Flight.EdgeToEdge
 import Flight.Projected
 import Flight.Separated

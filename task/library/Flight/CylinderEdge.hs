@@ -33,7 +33,8 @@ import Flight.LatLng
     , defEps
     )
 import Flight.Zone (Zone(..), Radius(..), Bearing(..), center, radius)
-import Flight.PointToPoint (TaskDistance(..), distancePointToPoint)
+import Flight.PointToPoint (distancePointToPoint)
+import Flight.Distance (TaskDistance(..), PathDistance(..))
 import Flight.Units (showRadian)
 
 newtype TrueCourse =
@@ -233,5 +234,7 @@ circumSample SampleParams{..} (Bearing (MkQuantity bearing)) zp zone =
                                 , orbit = yr
                                 }
                                
-                (TaskDistance (MkQuantity d)) = distancePointToPoint [Point ptCenter, Point y]
+                (TaskDistance (MkQuantity d)) =
+                    edgesSum $ distancePointToPoint [Point ptCenter, Point y]
+
                 dist = fromRational d

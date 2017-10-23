@@ -80,7 +80,7 @@ import Flight.TrackLog as Log
     )
 import Flight.Task as Tsk
     ( TaskDistance(..)
-    , EdgeDistance(..)
+    , PathDistance(..)
     , Tolerance(..)
     , separatedZones
     , distanceEdgeToEdge

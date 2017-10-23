@@ -37,8 +37,8 @@ import Data.Number.RoundingFunctions (dpRound)
 import Flight.Zone (Zone(..), Radius(..), center)
 import Flight.Zone.Raw (RawZone(..))
 import Flight.CylinderEdge (Tolerance(..))
-import Flight.PointToPoint (TaskDistance(..), distancePointToPoint)
-import Flight.ShortestPath (EdgeDistance(..))
+import Flight.PointToPoint (distancePointToPoint)
+import Flight.Distance (TaskDistance(..), PathDistance(..))
 import Flight.EdgeToEdge (distanceEdgeToEdge)
 import Flight.Projected (distanceProjected, zoneToProjectedEastNorth)
 
@@ -199,7 +199,7 @@ taskTrack excludeWaypoints tdm zsRaw =
 
                 spherical =
                     projected
-                        { distance = toKm $ distancePointToPoint ps
+                        { distance = toKm . edgesSum . distancePointToPoint $ ps
                         } :: TrackLine
 
                 planar =
@@ -253,7 +253,7 @@ fromUTMRefZone HC.UTMRef{..} =
 legDistances :: [Zone] -> [TaskDistance]
 legDistances xs =
     zipWith
-        (\x y -> distancePointToPoint [x, y])
+        (\x y -> edgesSum $ distancePointToPoint [x, y])
         xs
         (tail xs)
 
@@ -267,23 +267,23 @@ goByPoint excludeWaypoints zs =
         }
     where
         d :: TaskDistance
-        d = distancePointToPoint zs
+        d = edgesSum $ distancePointToPoint zs
 
         -- NOTE: Concentric zones of different radii can be defined that
         -- share the same center. Remove duplicate edgesSum.
-        edgesSum :: [LatLng [u| rad |]]
-        edgesSum = nub $ center <$> zs
+        edgesSum' :: [LatLng [u| rad |]]
+        edgesSum' = nub $ center <$> zs
 
         xs :: [RawLatLng]
-        xs = convertLatLng <$> edgesSum
+        xs = convertLatLng <$> edgesSum'
 
         ds :: [TaskDistance]
-        ds = legDistances $ Point <$> edgesSum
+        ds = legDistances $ Point <$> edgesSum'
 
         dsSum :: [TaskDistance]
         dsSum = scanl1 addTaskDistance ds
 
-goByEdge :: Bool -> EdgeDistance -> TrackLine
+goByEdge :: Bool -> PathDistance -> TrackLine
 goByEdge excludeWaypoints ed =
     TrackLine
         { distance = toKm d

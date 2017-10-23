@@ -4,18 +4,18 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Data.Graph.Inductive.Graph (Node, LEdge)
 
 import Flight.Zone (Zone(..))
-import Flight.PointToPoint (TaskDistance(..), distancePointToPoint)
+import Flight.PointToPoint (distancePointToPoint)
 import Flight.CylinderEdge (Tolerance, ZonePoint(..))
 import Flight.Units ()
 import Flight.ShortestPath
-    ( EdgeDistance(..)
-    , PathCost(..)
+    ( PathCost(..)
     , NodeConnector
     , shortestPath
     , buildGraph
     )
+import Flight.Distance (TaskDistance(..), PathDistance(..))
 
-distanceEdgeToEdge :: Tolerance -> [Zone] -> EdgeDistance
+distanceEdgeToEdge :: Tolerance -> [Zone] -> PathDistance
 distanceEdgeToEdge = shortestPath $ buildGraph connectNodes
 
 -- | NOTE: The shortest path may traverse a cylinder so I include
@@ -30,4 +30,5 @@ connectNodes xs ys =
         f (i, x) (j, y) = (i, j, PathCost d)
             where
                 (TaskDistance (MkQuantity d)) =
-                    distancePointToPoint [Point $ point x, Point $ point y]
+                    edgesSum
+                    $distancePointToPoint [Point $ point x, Point $ point y]

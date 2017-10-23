@@ -20,13 +20,12 @@ import qualified LatLng as HC (mkLatLng)
 import qualified Datum as HC (wgs84Datum)
 
 import Flight.Zone (Zone(..))
-import Flight.PointToPoint (TaskDistance(..))
+import Flight.Distance (TaskDistance(..), PathDistance(..))
 import Flight.CylinderEdge (Tolerance, ZonePoint(..))
 import Flight.Units ()
 import Flight.LatLng (LatLng(..), Lat(..), Lng(..), radToDegLL, defEps)
 import Flight.ShortestPath
-    ( EdgeDistance(..)
-    , PathCost(..)
+    ( PathCost(..)
     , NodeConnector
     , shortestPath
     , buildGraph
@@ -38,7 +37,7 @@ import Flight.ShortestPath
 -- used to work that out.
 distanceProjected :: Tolerance
                   -> [Zone]
-                  -> EdgeDistance
+                  -> PathDistance
 distanceProjected = shortestPath $ buildGraph connectNodes
 
 -- | NOTE: The shortest path may traverse a cylinder so I include

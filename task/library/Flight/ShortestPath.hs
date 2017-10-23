@@ -10,8 +10,7 @@
 {-# LANGUAGE QuasiQuotes #-}
 
 module Flight.ShortestPath
-    ( EdgeDistance(..)
-    , PathCost(..)
+    ( PathCost(..)
     , GraphBuilder
     , NodeConnector
     , buildGraph
@@ -31,7 +30,8 @@ import Data.Graph.Inductive.PatriciaTree (Gr)
 
 import Flight.LatLng (LatLng(..), Epsilon(..), defEps)
 import Flight.Zone (Zone(..), Bearing(..), center)
-import Flight.PointToPoint (TaskDistance(..), distancePointToPoint)
+import Flight.PointToPoint (distancePointToPoint)
+import Flight.Distance (TaskDistance(..), PathDistance(..))
 import Flight.Separated (separatedZones)
 import Flight.CylinderEdge
     ( Tolerance
@@ -54,26 +54,16 @@ type GraphBuilder =
 
 newtype PathCost = PathCost Rational deriving (Eq, Ord, Num, Real)
 
-data EdgeDistance =
-    EdgeDistance
-        { edgesSum :: TaskDistance
-        -- ^ The distance from the center of the first zone to the center of
-        -- the last zone. An edge joins two vertices. These are summed to get
-        -- the distance along the path that visits the vertices, each in turn.
-        , vertices :: [ LatLng [u| rad |] ]
-        -- ^ The vertices that each edge spans.
-        }
-
-zeroDistance :: EdgeDistance
+zeroDistance :: PathDistance
 zeroDistance =
-    EdgeDistance { edgesSum = TaskDistance $ MkQuantity 0
+    PathDistance { edgesSum = TaskDistance $ MkQuantity 0
                  , vertices = []
                  }
 
 shortestPath :: GraphBuilder
              -> Tolerance
              -> [Zone]
-             -> EdgeDistance
+             -> PathDistance
 shortestPath _ _ [] = zeroDistance
 shortestPath _ _ [_] = zeroDistance
 shortestPath builder tolerance xs =
@@ -85,7 +75,7 @@ shortestPath builder tolerance xs =
             zeroDistance
 
         (_ : _) ->
-            EdgeDistance { edgesSum = d
+            PathDistance { edgesSum = d
                          , vertices = ptsCenterLine
                          }
     where
@@ -108,7 +98,9 @@ distance builder tolerance xs
                     then (d, point <$> zs)
                     else (PathCost pointwise, edgesSum')
         where
-            (TaskDistance (MkQuantity pointwise)) = distancePointToPoint xs
+            (TaskDistance (MkQuantity pointwise)) =
+                edgesSum $ distancePointToPoint xs
+
             edgesSum' = center <$> xs
             sp = SampleParams { spSamples = Samples 5, spTolerance = tolerance }
             (Epsilon eps) = defEps

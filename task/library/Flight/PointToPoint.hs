@@ -9,20 +9,16 @@
 {-# LANGUAGE UndecidableInstances #-}
 
 module Flight.PointToPoint
-    ( TaskDistance(..)
-    , distancePointToPoint
+    ( distancePointToPoint
     , distanceHaversineF
     , distanceHaversine
-    , fromKms
     ) where
 
 import Prelude hiding (sum)
 import Data.Ratio((%))
 import qualified Data.Number.FixedFunctions as F
-import Data.UnitsOfMeasure (One, (+:), (-:), (*:), u, convert, abs', zero)
-import Data.UnitsOfMeasure.Internal (Quantity(..), mk, fromRational')
-import Data.Number.RoundingFunctions (dpRound)
-import Data.Bifunctor.Flip (Flip(..))
+import Data.UnitsOfMeasure (One, (+:), (-:), (*:), u, abs', zero)
+import Data.UnitsOfMeasure.Internal (Quantity(..), mk)
 
 import Flight.LatLng
     ( Lat(..)
@@ -33,33 +29,7 @@ import Flight.LatLng
     , defEps
     )
 import Flight.Zone (Zone(..), Radius(..), center)
-
-fromKms :: Quantity Rational [u| km |] -> TaskDistance
-fromKms q = TaskDistance (convert q)
-
-newtype TaskDistance =
-    TaskDistance (Quantity Rational [u| m |])
-    deriving (Eq, Ord)
-
-instance Show TaskDistance where
-    show (TaskDistance d) = "d = " ++ show dbl
-        where
-            km = convert d :: Quantity Rational [u| km |]
-            Flip rounded = dpRound 3 <$> Flip km
-            dbl = fromRational' rounded :: Quantity Double [u| km |]
-
-instance {-# OVERLAPPING #-} Show [TaskDistance] where
-    show = showDistances
-
-showDistances :: [TaskDistance] -> String
-showDistances xs =
-    show (f <$> xs) ++ " km"
-    where
-        f (TaskDistance d) = show dbl
-            where
-                km = convert d :: Quantity Rational [u| km |]
-                Flip rounded = dpRound 3 <$> Flip km
-                (MkQuantity dbl) = fromRational' rounded :: Quantity Double [u| km |]
+import Flight.Distance (TaskDistance(..), PathDistance(..))
 
 -- | Sperical distance using haversines and floating point numbers.
 distanceHaversineF :: LatLng [u| rad |]
@@ -138,24 +108,31 @@ distanceHaversine (Epsilon eps) xLL yLL =
 -- The speed section  usually goes from start exit cylinder to goal cylinder
 -- or to goal line. The optimal way to fly this in a zig-zagging course will
 -- avoid zone centers for a shorter flown distance.
-distancePointToPoint :: [Zone] -> TaskDistance
+distancePointToPoint :: [Zone] -> PathDistance
+distancePointToPoint xs =
+    PathDistance
+        { edgesSum = distanceViaCenters xs
+        , vertices = center <$> xs
+        }
 
-distancePointToPoint [] = TaskDistance [u| 0 m |]
+distanceViaCenters :: [Zone] -> TaskDistance
 
-distancePointToPoint [_] = TaskDistance [u| 0 m |]
+distanceViaCenters [] = TaskDistance [u| 0 m |]
 
-distancePointToPoint [Cylinder (Radius xR) x, Cylinder (Radius yR) y]
+distanceViaCenters [_] = TaskDistance [u| 0 m |]
+
+distanceViaCenters [Cylinder (Radius xR) x, Cylinder (Radius yR) y]
     | x == y && xR /= yR = TaskDistance dR
-    | otherwise = distancePointToPoint [Point x, Point y]
+    | otherwise = distanceViaCenters [Point x, Point y]
     where
         dR :: Quantity Rational [u| m |]
         dR = abs' $ xR -: yR
 
-distancePointToPoint xs@[a, b]
+distanceViaCenters xs@[a, b]
     | a == b = TaskDistance zero
     | otherwise = distance xs
 
-distancePointToPoint xs = distance xs
+distanceViaCenters xs = distance xs
 
 sum :: [Quantity Rational [u| m |]] -> Quantity Rational [u| m |]
 sum = foldr (+:) zero
