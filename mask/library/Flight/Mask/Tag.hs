@@ -6,11 +6,9 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE QuasiQuotes #-}
 
 {-# LANGUAGE DisambiguateRecordFields #-}
 {-# LANGUAGE NamedFieldPuns #-}
-{-# LANGUAGE LambdaCase #-}
 
 module Flight.Mask.Tag
     ( SigMasking
@@ -140,9 +138,9 @@ proof fixes mark0 i j bs = do
     fixM <- fixes ^? element i
     fixN <- fixes ^? element j
     let fs = fixFromFix mark0 <$> [fixM, fixN]
-    return $ ZoneCross { crossingPair = fs
-                       , inZone = bs
-                       }
+    return ZoneCross { crossingPair = fs
+                     , inZone = bs
+                     }
 
 -- | Given two points on either side of a zone, what is the crossing tag.
 crossingTag :: (Fix, Fix) -> (Bool, Bool) -> Maybe Fix

@@ -108,14 +108,12 @@ fixToPoint fix =
         Kml.Longitude lng = Kml.lng fix
 
 insideZone :: TaskZone -> [TrackZone] -> Maybe Int
-insideZone (TaskZone z) xs =
-    List.findIndex
-        (\(TrackZone x) -> not $ Tsk.separatedZones [x, z]) xs
+insideZone (TaskZone z) =
+    List.findIndex (\(TrackZone x) -> not $ Tsk.separatedZones [x, z])
 
 outsideZone :: TaskZone -> [TrackZone] -> Maybe Int
-outsideZone (TaskZone z) xs =
-    List.findIndex
-        (\(TrackZone x) -> Tsk.separatedZones [x, z]) xs
+outsideZone (TaskZone z) =
+    List.findIndex (\(TrackZone x) -> Tsk.separatedZones [x, z])
 
 -- | Finds the first pair of points, one outside the zone and the next inside.
 entersZone :: CrossingPredicate
@@ -164,7 +162,7 @@ pickCrossingPredicate
     -> Cmp.Task
     -> [CrossingPredicate]
 pickCrossingPredicate False Cmp.Task{zones} =
-    (const entersZone) <$> zones
+    const entersZone <$> zones
 
 pickCrossingPredicate True task@Cmp.Task{speedSection, zones} =
     case speedSection of
@@ -180,7 +178,7 @@ pickCrossingPredicate True task@Cmp.Task{speedSection, zones} =
 fixFromFix :: UTCTime -> Kml.Fix -> Fix
 fixFromFix mark0 x =
     -- SEE: https://ocharles.org.uk/blog/posts/2013-12-15-24-days-of-hackage-time.html
-    Fix { time = (fromInteger secs) `addUTCTime` mark0
+    Fix { time = fromInteger secs `addUTCTime` mark0
         , lat = RawLat lat
         , lng = RawLng lng
         }
