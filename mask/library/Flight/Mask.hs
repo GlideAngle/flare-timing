@@ -1,8 +1,27 @@
-module Flight.Mask (SigMasking) where
+{-|
+Module      : Flight.Mask
+Copyright   : (c) Block Scope Limited 2017
+License     : BSD3
+Maintainer  : phil.dejoux@blockscope.com
+Stability   : experimental
 
-import Flight.Kml (MarkedFixes)
-import Flight.Comp (Task)
-import Flight.TrackLog (IxTask)
+Mask tracks with zones, working out; did the pilot launch, did they make goaland how
+long did that take? If they didn't make goal then what zones did they make and what
+was the distance to goal?
+-}
+module Flight.Mask
+    ( SigMasking
+    , countFixes
+    , checkTracks
+    , madeZones
+    , tagZones
+    , launched
+    , madeGoal
+    , started
+    , distanceToGoal
+    , distancesToGoal
+    , distanceFlown
+    , timeFlown
+    ) where
 
--- | A masking produces a value from a task and tracklog fixes.
-type SigMasking a = [Task] -> IxTask -> MarkedFixes -> a
+import Flight.Mask.Pilot

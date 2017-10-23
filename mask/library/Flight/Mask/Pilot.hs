@@ -12,19 +12,9 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE LambdaCase #-}
 
-{-|
-Module      : Flight.Mask
-Copyright   : (c) Block Scope Limited 2017
-License     : BSD3
-Maintainer  : phil.dejoux@blockscope.com
-Stability   : experimental
-
-Mask tracks with zones, working out; did the pilot launch, did they make goaland how
-long did that take? If they didn't make goal then what zones did they make and what
-was the distance to goal?
--}
 module Flight.Mask.Pilot
-    ( countFixes
+    ( SigMasking
+    , countFixes
     , checkTracks
     , madeZones
     , tagZones
@@ -88,7 +78,9 @@ import Flight.Task as Tsk
 import Flight.Score as Gap (PilotDistance(..), PilotTime(..))
 import Flight.Units ()
 import Flight.Mask.Settings (readCompSettings)
-import Flight.Mask (SigMasking)
+
+-- | A masking produces a value from a task and tracklog fixes.
+type SigMasking a = [Cmp.Task] -> Log.IxTask -> Kml.MarkedFixes -> a
 
 newtype PilotTrackFixes = PilotTrackFixes Int deriving Show
 

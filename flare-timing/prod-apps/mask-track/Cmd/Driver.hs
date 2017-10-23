@@ -38,9 +38,9 @@ import qualified Flight.Task as Tsk (TaskDistance(..))
 import qualified Flight.Score as Gap (PilotDistance(..), PilotTime(..))
 import Flight.TrackLog (IxTask(..))
 import Flight.Units ()
-import Flight.Mask (SigMasking)
-import Flight.Mask.Pilot
-    ( checkTracks
+import Flight.Mask
+    ( SigMasking
+    , checkTracks
     , madeGoal
     , distanceToGoal
     , distanceFlown

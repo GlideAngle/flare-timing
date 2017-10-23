@@ -34,8 +34,7 @@ import qualified Data.ByteString as BS
 import qualified Flight.Comp as Cmp (CompSettings(..), Pilot(..))
 import Flight.TrackLog (TrackFileFail(..), IxTask(..))
 import Flight.Units ()
-import Flight.Mask (SigMasking)
-import Flight.Mask.Pilot (checkTracks, madeZones)
+import Flight.Mask (SigMasking, checkTracks, madeZones)
 import Flight.Track.Cross (TrackCross(..), PilotTrackCross(..), Crossing(..))
 
 type MkPart a =

@@ -35,7 +35,7 @@ import qualified Data.Yaml.Pretty as Y
 import qualified Data.ByteString as BS
 
 import Flight.Units ()
-import Flight.Mask.Pilot (tagZones)
+import Flight.Mask (tagZones)
 import Flight.Comp (Pilot(..))
 import Flight.Track.Cross
     (Crossing(..), TrackCross(..), PilotTrackCross(..), Fix(..))
