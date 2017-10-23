@@ -18,13 +18,16 @@ module Flight.Mask.Tag
     , launched
     , madeGoal
     , started
+    , groupByLeg
     ) where
 
-import Data.Time.Clock (UTCTime)
-import Data.List (nub)
+import GHC.Exts (groupWith)
+import Data.Time.Clock (UTCTime, addUTCTime)
+import Data.List (nub, elemIndex)
 import Control.Lens ((^?), element)
 
-import qualified Flight.Kml as Kml (Fix, MarkedFixes(..))
+import qualified Flight.Kml as Kml
+    (Fix, MarkedFixes(..), FixMark(..), Seconds(..))
 import Flight.Track.Cross (Fix(..), ZoneCross(..))
 import qualified Flight.Comp as Cmp (Task(..))
 import Flight.TrackLog as Log (IxTask(..))
@@ -143,3 +146,28 @@ madeZones tasks (IxTask i) Kml.MarkedFixes{mark0, fixes} =
                 f ZoneMiss = Nothing
                 f (ZoneExit m n) = proof fixes mark0 m n [True, False]
                 f (ZoneEntry m n) = proof fixes mark0 m n [False, True]
+
+fixToUtc :: UTCTime -> Kml.Fix -> UTCTime
+fixToUtc mark0 x =
+    let (Kml.Seconds secs) = Kml.mark x
+    in fromInteger secs `addUTCTime` mark0
+
+-- | Groups fixes by legs of the task.
+groupByLeg :: [Cmp.Task]
+           -> IxTask
+           -> Kml.MarkedFixes
+           -> [Kml.MarkedFixes]
+groupByLeg tasks iTask mf@Kml.MarkedFixes{mark0, fixes} =
+    (\zs -> mf{Kml.fixes = zs}) <$> ys
+    where
+        xs :: [Maybe Fix]
+        xs = tagZones $ madeZones tasks iTask mf
+
+        ts :: [Maybe UTCTime]
+        ts = (fmap . fmap) time xs
+
+        ys :: [[Kml.Fix]]
+        ys =
+            groupWith
+                (\x -> elemIndex (Just $ fixToUtc mark0 x) ts)
+                fixes
