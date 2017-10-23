@@ -428,10 +428,10 @@ mkDayUnits title pDay dDay dsDay = testGroup title
         pp = FS.distancePointToPoint
         ee = FS.distanceEdgeToEdge mm30 
         ppDay = pp pDay
-        eeDay = centers $ ee pDay
+        eeDay = edgesSum $ ee pDay
         pDayInits = drop 1 $ inits pDay
         ppDayInits = pp <$> pDayInits
-        eeDayInits = centers . ee <$> pDayInits
+        eeDayInits = edgesSum . ee <$> pDayInits
         distLess xs ys = take 1 (reverse xs) < take 1 (reverse ys)
 
 day1Units :: TestTree

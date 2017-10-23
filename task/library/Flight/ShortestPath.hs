@@ -56,17 +56,18 @@ newtype PathCost = PathCost Rational deriving (Eq, Ord, Num, Real)
 
 data EdgeDistance =
     EdgeDistance
-        { centers :: TaskDistance
+        { edgesSum :: TaskDistance
         -- ^ The distance from the center of the first zone to the center of
-        -- the last zone.
-        , centerLine :: [ LatLng [u| rad |] ]
-        -- ^ The points of the 'centers' distance.
+        -- the last zone. An edge joins two vertices. These are summed to get
+        -- the distance along the path that visits the vertices, each in turn.
+        , vertices :: [ LatLng [u| rad |] ]
+        -- ^ The vertices that each edge spans.
         }
 
 zeroDistance :: EdgeDistance
 zeroDistance =
-    EdgeDistance { centers = TaskDistance $ MkQuantity 0
-                 , centerLine = []
+    EdgeDistance { edgesSum = TaskDistance $ MkQuantity 0
+                 , vertices = []
                  }
 
 shortestPath :: GraphBuilder
@@ -84,8 +85,8 @@ shortestPath builder tolerance xs =
             zeroDistance
 
         (_ : _) ->
-            EdgeDistance { centers = d
-                         , centerLine = ptsCenterLine
+            EdgeDistance { edgesSum = d
+                         , vertices = ptsCenterLine
                          }
     where
         (PathCost pcd, ptsCenterLine) = distance builder tolerance xs
@@ -101,14 +102,14 @@ distance builder tolerance xs
     | not $ separatedZones xs = (PathCost 0, [])
     | otherwise =
         case dist of
-            Nothing -> (PathCost pointwise, centers')
+            Nothing -> (PathCost pointwise, edgesSum')
             Just d@(PathCost pcd) ->
                 if pcd < pointwise
                     then (d, point <$> zs)
-                    else (PathCost pointwise, centers')
+                    else (PathCost pointwise, edgesSum')
         where
             (TaskDistance (MkQuantity pointwise)) = distancePointToPoint xs
-            centers' = center <$> xs
+            edgesSum' = center <$> xs
             sp = SampleParams { spSamples = Samples 5, spTolerance = tolerance }
             (Epsilon eps) = defEps
             (dist, zs) =

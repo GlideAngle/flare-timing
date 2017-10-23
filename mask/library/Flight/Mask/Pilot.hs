@@ -376,7 +376,7 @@ distanceViaZones mkZone speedSection fs zs xs =
 
         -- TODO: Check all fixes from last turnpoint made.
         x : _ ->
-            Just . centers $
+            Just . edgesSum $
                 distanceEdgeToEdge
                     mm30
                     (unTrackZone (mkZone x) : notTicked)

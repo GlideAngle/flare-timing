@@ -333,7 +333,7 @@ mm10 = Tolerance $ 10 % 1000
 distanceEdge :: ZonesTest -> Bool
 distanceEdge (ZonesTest xs) =
     correctCenter xs
-    $ centers
+    $ edgesSum
     $ FS.distanceEdgeToEdge mm10 xs
 
 distanceLess :: ZonesTest -> Bool
@@ -343,7 +343,7 @@ distanceLess (ZonesTest xs)
         dCenter <= dPoint
         where
             TaskDistance dCenter =
-                centers
+                edgesSum
                 $ FS.distanceEdgeToEdge mm10 xs
 
             TaskDistance dPoint = FS.distancePointToPoint xs

@@ -192,7 +192,7 @@ taskTrack excludeWaypoints tdm zsRaw =
                 legs' =
                     zipWith
                         (\ a b ->
-                            centers
+                            edgesSum
                             $ distanceProjected mm30 [a, b])
                         ps
                         (tail ps)
@@ -270,15 +270,15 @@ goByPoint excludeWaypoints zs =
         d = distancePointToPoint zs
 
         -- NOTE: Concentric zones of different radii can be defined that
-        -- share the same center. Remove duplicate centers.
-        centers :: [LatLng [u| rad |]]
-        centers = nub $ center <$> zs
+        -- share the same center. Remove duplicate edgesSum.
+        edgesSum :: [LatLng [u| rad |]]
+        edgesSum = nub $ center <$> zs
 
         xs :: [RawLatLng]
-        xs = convertLatLng <$> centers
+        xs = convertLatLng <$> edgesSum
 
         ds :: [TaskDistance]
-        ds = legDistances $ Point <$> centers
+        ds = legDistances $ Point <$> edgesSum
 
         dsSum :: [TaskDistance]
         dsSum = scanl1 addTaskDistance ds
@@ -293,7 +293,7 @@ goByEdge excludeWaypoints ed =
         }
     where
         d :: TaskDistance
-        d = centers ed
+        d = edgesSum ed
 
         -- NOTE: The graph of points created for determining the shortest
         -- path can have duplicate points, so the shortest path too can have
@@ -302,14 +302,14 @@ goByEdge excludeWaypoints ed =
         -- I found that by decreasing defEps, the default epsilon, used for
         -- rational math from 1/10^9 to 1/10^12 these duplicates stopped
         -- occuring.
-        vertices :: [LatLng [u| rad |]]
-        vertices = nub $ centerLine ed
+        vertices' :: [LatLng [u| rad |]]
+        vertices' = nub $ vertices ed
 
         xs :: [RawLatLng]
-        xs = convertLatLng <$> vertices
+        xs = convertLatLng <$> vertices'
 
         ds :: [TaskDistance]
-        ds = legDistances $ Point <$> vertices
+        ds = legDistances $ Point <$> vertices'
 
         dsSum :: [TaskDistance]
         dsSum = scanl1 addTaskDistance ds
