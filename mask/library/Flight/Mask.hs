@@ -24,4 +24,6 @@ module Flight.Mask
     , timeFlown
     ) where
 
-import Flight.Mask.Pilot
+import Flight.Mask.Tag
+import Flight.Mask.Distance
+import Flight.Mask.Time
