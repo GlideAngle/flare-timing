@@ -7,6 +7,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
 
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE DisambiguateRecordFields #-}
 {-# LANGUAGE NamedFieldPuns #-}
 
@@ -51,17 +52,20 @@ import Flight.Mask.Internal
 mm30 :: Tolerance
 mm30 = Tolerance $ 30 % 1000
 
+type DistanceViaZones =
+    forall a. (a -> TrackZone)
+    -> Cmp.SpeedSection
+    -> [CrossingPredicate]
+    -> [TaskZone]
+    -> [a]
+    -> Maybe TaskDistance
+
 -- | A task is to be flown via its control zones. This function finds the last
 -- leg made. The next leg is partial. Along this, the track fixes are checked
 -- to find the one closest to the next zone at the end of the leg. From this the
 -- distance returned is the task distance up to the next zone not made minus the
 -- distance yet to fly to this zone.
-distanceViaZones :: (a -> TrackZone)
-                 -> Cmp.SpeedSection
-                 -> [CrossingPredicate]
-                 -> [TaskZone]
-                 -> [a]
-                 -> Maybe TaskDistance
+distanceViaZones :: DistanceViaZones
 distanceViaZones mkZone speedSection fs zs xs =
     case reverse xs of
         [] ->
@@ -100,19 +104,27 @@ distancesToGoal tasks iTask@(IxTask i) mf@Kml.MarkedFixes{mark0, fixes} =
                             (Just $ fixFromFix mark0 y, d)
                             where
                                 xs = mf { Kml.fixes = ys }
-                                d = distanceToGoal tasks iTask xs
+                                d = distanceToGoal' distanceViaZones tasks iTask xs
 
 distanceToGoal :: [Cmp.Task]
                -> IxTask
                -> Kml.MarkedFixes
                -> Maybe TaskDistance
-               -- ^ Nothing indicates no such task or a task with no zones.
-distanceToGoal tasks (IxTask i) Kml.MarkedFixes{fixes} =
+distanceToGoal = distanceToGoal' distanceViaZones
+
+distanceToGoal' :: DistanceViaZones
+                -> [Cmp.Task]
+                -> IxTask
+                -> Kml.MarkedFixes
+                -> Maybe TaskDistance
+
+-- ^ Nothing indicates no such task or a task with no zones.
+distanceToGoal' dvz tasks (IxTask i) Kml.MarkedFixes{fixes} =
     case tasks ^? element (i - 1) of
         Nothing -> Nothing
         Just task@Cmp.Task{speedSection, zones} ->
             if null zones then Nothing else
-            distanceViaZones
+            dvz
                 fixToPoint
                 speedSection
                 fs
