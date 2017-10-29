@@ -26,7 +26,8 @@ import Flight.LatLng.Raw (RawLat, RawLng)
 -- | For each task, the crossing for that task.
 data TimeRow =
     TimeRow
-        { time :: UTCTime
+        { leg :: Int
+        , time :: UTCTime
         , pilot :: Pilot
         , lat :: RawLat
         , lng :: RawLng
@@ -49,7 +50,8 @@ instance ToNamedRecord TimeRow where
         where
             local =
                 namedRecord
-                    [ namedField "time" t
+                    [ namedField "leg" leg
+                    , namedField "time" t
                     , namedField "pilot" p
                     , namedField "distance" d
                     ]

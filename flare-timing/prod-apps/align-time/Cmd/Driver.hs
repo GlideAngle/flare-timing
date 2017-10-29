@@ -22,7 +22,7 @@ import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Data.Maybe (catMaybes)
 import Control.Monad (mapM_)
-import Control.Monad.Except (ExceptT(..), runExceptT)
+import Control.Monad.Except (runExceptT)
 import Data.UnitsOfMeasure (u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import System.Directory (doesFileExist, doesDirectoryExist)
@@ -33,33 +33,16 @@ import Cmd.Options (CmdOptions(..))
 import Cmd.Outputs (writeTimeRowsToCsv)
 
 import Flight.Comp (CompSettings(..), Pilot(..))
-import Flight.TrackLog (TrackFileFail(..), IxTask(..))
+import Flight.TrackLog (IxTask(..))
 import Flight.Units ()
-import Flight.Mask (SigMasking, checkTracks, distancesToGoal)
+import Flight.Mask (SigMasking, checkTracks, groupByLeg, distancesToGoal)
 import Flight.Track.Cross (Fix(..))
 import Flight.Track.Time (TimeRow(..))
 import Flight.Task (TaskDistance(..))
+import Flight.Kml (MarkedFixes(..))
 import Data.Number.RoundingFunctions (dpRound)
 
-type MkPart a =
-    FilePath
-    -> [IxTask]
-    -> [Pilot]
-    -> ExceptT
-        String
-        IO
-        [[Either
-            (Pilot, TrackFileFail)
-            (Pilot, a)
-        ]]
-
-type AddPart a = a -> (Pilot -> [TimeRow])
-
-type MkDistanceTrackIO a =
-    FilePath
-    -> MkPart a
-    -> AddPart a
-    -> IO ()
+type Leg = Int
 
 unTaskDistance :: Fractional a => TaskDistance -> a
 unTaskDistance (TaskDistance d) =
@@ -68,7 +51,7 @@ unTaskDistance (TaskDistance d) =
         MkQuantity dKm = convert d :: Quantity Rational [u| km |]
 
 headers :: [String]
-headers = ["time", "pilot", "lat", "lng", "distance"]
+headers = ["leg", "time", "pilot", "lat", "lng", "distance"]
 
 driverMain :: IO ()
 driverMain = withCmdArgs drive
@@ -93,10 +76,9 @@ drive CmdOptions{..} = do
         withFile yamlCompPath = do
             putStrLn $ "Reading competition from '" ++ takeFileName yamlCompPath ++ "'"
 
-            let go = writeTime yamlCompPath in go checkAll mkTimeRows
+            let go = writeTime yamlCompPath in go checkAll
             where
-                writeTime :: forall a. MkDistanceTrackIO a
-                writeTime yamlCompPath' f g = do
+                writeTime yamlCompPath' f = do
                     checks <-
                         runExceptT $
                             f
@@ -107,14 +89,12 @@ drive CmdOptions{..} = do
                     case checks of
                         Left msg -> print msg
                         Right xs -> do
-                            let ts :: [[[TimeRow]]] =
+                            let ys :: [[[TimeRow]]] =
                                     (fmap . fmap)
                                         (\case
                                             Left _ -> []
-                                            Right (p, d) -> g d $ p)
+                                            Right (p, g) -> g p)
                                         xs
-
-                            let ts' :: [[TimeRow]] = concat <$> ts
 
                             _ <- sequence $ zipWith
                                 (\ iTask rows ->
@@ -123,16 +103,12 @@ drive CmdOptions{..} = do
                                     else 
                                         return ())
                                 [1 .. ]
-                                ts'
+                                (concat <$> ys)
 
                             return ()
 
                 checkAll =
-                    checkTracks $ \CompSettings{tasks} -> flown tasks
-
-                flown :: SigMasking (Maybe [(Maybe Fix, Maybe TaskDistance)])
-                flown tasks iTask xs =
-                    distancesToGoal tasks iTask xs
+                    checkTracks $ \CompSettings{tasks} -> group tasks
 
                 includeTask :: Int -> Bool
                 includeTask = if null task then const True else (flip elem $ task)
@@ -142,22 +118,36 @@ drive CmdOptions{..} = do
                     flip replaceExtension ("." ++ show n ++ ".align-time.csv")
                     $ dropExtension yamlCompPath
 
-mkTimeRows :: Maybe [(Maybe Fix, Maybe TaskDistance)]
+mkTimeRows :: Leg
+           -> Maybe [(Maybe Fix, Maybe TaskDistance)]
            -> Pilot
            -> [TimeRow]
-mkTimeRows Nothing _ = []
-mkTimeRows (Just xs) p = catMaybes $ mkTimeRow p <$> xs
+mkTimeRows _ Nothing _ = []
+mkTimeRows leg (Just xs) p = catMaybes $ mkTimeRow leg p <$> xs
 
-mkTimeRow :: Pilot
+mkTimeRow :: Int
+          -> Pilot
           -> (Maybe Fix, Maybe TaskDistance)
           -> Maybe TimeRow
-mkTimeRow _ (Nothing, _) = Nothing
-mkTimeRow _ (_, Nothing) = Nothing
-mkTimeRow p (Just Fix{time, lat, lng}, Just d) =
+mkTimeRow _ _ (Nothing, _) = Nothing
+mkTimeRow _ _ (_, Nothing) = Nothing
+mkTimeRow leg p (Just Fix{time, lat, lng}, Just d) =
     Just $ TimeRow
-        { time = time
+        { leg = leg
+        , time = time
         , pilot = p
         , lat = lat
         , lng = lng
         , distance = unTaskDistance d
         }
+
+group :: SigMasking (Pilot -> [TimeRow])
+group tasks iTask fs =
+    \pilot ->
+        concat $ zipWith
+            (\leg xs -> mkTimeRows leg (distancesToGoal tasks iTask xs) pilot)
+            [1 .. ]
+            ys
+    where
+        ys :: [MarkedFixes]
+        ys = groupByLeg tasks iTask fs

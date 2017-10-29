@@ -168,6 +168,7 @@ executables:
     - formatting
     - cassava
     - vector
+    - split
     - siggy-chardust
     - flight-units
     - flight-latlng
