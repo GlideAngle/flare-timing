@@ -18,6 +18,7 @@ module Flight.Mask
     , launched
     , madeGoal
     , started
+    , groupByLeg
     , distanceToGoal
     , distancesToGoal
     , distanceFlown

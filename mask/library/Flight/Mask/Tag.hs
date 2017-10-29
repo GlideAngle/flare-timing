@@ -24,6 +24,7 @@ module Flight.Mask.Tag
 import GHC.Exts (groupWith)
 import Data.Time.Clock (UTCTime, addUTCTime)
 import Data.List (nub, elemIndex)
+import Data.List.Split (split, whenElt, keepDelimsL)
 import Control.Lens ((^?), element)
 
 import qualified Flight.Kml as Kml
@@ -166,8 +167,25 @@ groupByLeg tasks iTask mf@Kml.MarkedFixes{mark0, fixes} =
         ts :: [Maybe UTCTime]
         ts = (fmap . fmap) time xs
 
+        {- NOTE: A small ghci session showing splitting.
+        let a = ['a' .. 'z']
+        "abcdefghijklmnopqrstuvwxyz"
+
+        let b = [Nothing, Just 'c', Just 't', Nothing]
+        [Nothing,Just 'c',Just 't',Nothing]
+
+        split (whenElt (\x -> elem (Just x) b)) a
+        ["ab","c","defghijklmnopqrs","t","uvwxyz"]
+
+        split (keepDelimsR $ whenElt (\x -> elem (Just x) b)) a
+        ["abc","defghijklmnopqrst","uvwxyz"]
+
+        split (keepDelimsL $ whenElt (\x -> elem (Just x) b)) a
+        ["ab","cdefghijklmnopqrs","tuvwxyz"]
+        -}
         ys :: [[Kml.Fix]]
         ys =
-            groupWith
-                (\x -> elemIndex (Just $ fixToUtc mark0 x) ts)
+            split
+                (keepDelimsL
+                $ whenElt (\x -> elem (Just $ fixToUtc mark0 x) ts))
                 fixes
