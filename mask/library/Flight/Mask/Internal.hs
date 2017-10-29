@@ -8,6 +8,7 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE QuasiQuotes #-}
 
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE DisambiguateRecordFields #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE LambdaCase #-}
@@ -27,6 +28,9 @@ module Flight.Mask.Internal
     , pickCrossingPredicate
     , fixFromFix
     , tickedZones
+    , DistanceViaZones
+    , distanceViaZones
+    , distanceToGoal
     ) where
 
 import Data.Time.Clock (UTCTime, addUTCTime)
@@ -50,8 +54,19 @@ import Flight.Zone (Radius(..), Zone(..))
 import qualified Flight.Zone.Raw as Raw (RawZone(..))
 import Flight.Track.Cross (Fix(..))
 import qualified Flight.Comp as Cmp (Task(..), SpeedSection)
-import Flight.Task as Tsk (separatedZones)
 import Flight.Units ()
+import Flight.TrackLog (IxTask(..))
+import qualified Flight.Kml as Kml (MarkedFixes(..))
+import Flight.Task
+    ( TaskDistance(..)
+    , PathDistance(..)
+    , Tolerance(..)
+    , distanceEdgeToEdge
+    , separatedZones
+    )
+
+mm30 :: Tolerance
+mm30 = Tolerance $ 30 % 1000
 
 type ZoneIdx = Int
 
@@ -67,7 +82,6 @@ type CrossingPredicate
     = TaskZone -- ^ The task control zone.
     -> [TrackZone] -- ^ The flight track represented as a series of point zones.
     -> ZoneHit
-
 
 -- | A task control zone.
 newtype TaskZone = TaskZone { unTaskZone :: Zone }
@@ -109,11 +123,12 @@ fixToPoint fix =
 
 insideZone :: TaskZone -> [TrackZone] -> Maybe Int
 insideZone (TaskZone z) =
-    List.findIndex (\(TrackZone x) -> not $ Tsk.separatedZones [x, z])
+    List.findIndex
+        (\(TrackZone x) -> not $ separatedZones [x, z])
 
 outsideZone :: TaskZone -> [TrackZone] -> Maybe Int
 outsideZone (TaskZone z) =
-    List.findIndex (\(TrackZone x) -> Tsk.separatedZones [x, z])
+    List.findIndex (\(TrackZone x) -> separatedZones [x, z])
 
 -- | Finds the first pair of points, one outside the zone and the next inside.
 entersZone :: CrossingPredicate
@@ -193,4 +208,57 @@ tickedZones :: [CrossingPredicate]
             -> [ZoneHit]
 tickedZones fs zones xs =
     zipWith (\f z -> f z xs) fs zones
+
+type DistanceViaZones =
+    forall a. (a -> TrackZone)
+    -> Cmp.SpeedSection
+    -> [CrossingPredicate]
+    -> [TaskZone]
+    -> [a]
+    -> Maybe TaskDistance
+
+-- | A task is to be flown via its control zones. This function finds the last
+-- leg made. The next leg is partial. Along this, the track fixes are checked
+-- to find the one closest to the next zone at the end of the leg. From this the
+-- distance returned is the task distance up to the next zone not made minus the
+-- distance yet to fly to this zone.
+distanceViaZones :: DistanceViaZones
+distanceViaZones mkZone speedSection fs zs xs =
+    case reverse xs of
+        [] ->
+            Nothing
+
+        -- TODO: Check all fixes from last turnpoint made.
+        x : _ ->
+            Just . edgesSum $
+                distanceEdgeToEdge
+                    mm30
+                    (unTrackZone (mkZone x) : notTicked)
+    where
+        -- TODO: Don't assume end of speed section is goal.
+        zsSpeed = slice speedSection zs
+        fsSpeed = slice speedSection fs
+        ys = (/= ZoneMiss) <$> tickedZones fsSpeed zsSpeed (mkZone <$> xs)
+        notTicked = unTaskZone <$> drop (length $ takeWhile (== True) ys) zsSpeed
+
+distanceToGoal :: DistanceViaZones
+                -> [Cmp.Task]
+                -> IxTask
+                -> Kml.MarkedFixes
+                -> Maybe TaskDistance
+
+-- ^ Nothing indicates no such task or a task with no zones.
+distanceToGoal dvz tasks (IxTask i) Kml.MarkedFixes{fixes} =
+    case tasks ^? element (i - 1) of
+        Nothing -> Nothing
+        Just task@Cmp.Task{speedSection, zones} ->
+            if null zones then Nothing else
+            dvz
+                fixToPoint
+                speedSection
+                fs
+                (zoneToCylinder <$> zones)
+                fixes 
+            where
+                fs = (\x -> pickCrossingPredicate (isStartExit x) x) task
 

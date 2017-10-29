@@ -21,9 +21,8 @@ module Flight.Mask.Tag
     , groupByLeg
     ) where
 
-import GHC.Exts (groupWith)
 import Data.Time.Clock (UTCTime, addUTCTime)
-import Data.List (nub, elemIndex)
+import Data.List (nub)
 import Data.List.Split (split, whenElt, keepDelimsL)
 import Control.Lens ((^?), element)
 
@@ -31,7 +30,7 @@ import qualified Flight.Kml as Kml
     (Fix, MarkedFixes(..), FixMark(..), Seconds(..))
 import Flight.Track.Cross (Fix(..), ZoneCross(..))
 import qualified Flight.Comp as Cmp (Task(..))
-import Flight.TrackLog as Log (IxTask(..))
+import Flight.TrackLog (IxTask(..))
 import Flight.Units ()
 import Flight.Mask.Internal
     ( ZoneHit(..)
@@ -47,7 +46,7 @@ import Flight.Mask.Internal
     )
 
 -- | A masking produces a value from a task and tracklog fixes.
-type SigMasking a = [Cmp.Task] -> Log.IxTask -> Kml.MarkedFixes -> a
+type SigMasking a = [Cmp.Task] -> IxTask -> Kml.MarkedFixes -> a
 
 newtype PilotTrackFixes = PilotTrackFixes Int deriving Show
 

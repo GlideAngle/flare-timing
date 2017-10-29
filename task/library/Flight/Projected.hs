@@ -8,7 +8,11 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE QuasiQuotes #-}
 
-module Flight.Projected (distanceProjected, zoneToProjectedEastNorth) where
+module Flight.Projected
+    ( distanceProjected
+    , zoneToProjectedEastNorth
+    , projectedPythagorean
+    ) where
 
 import Data.Functor.Identity (runIdentity)
 import Control.Monad.Except (runExceptT)

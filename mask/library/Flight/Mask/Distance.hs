@@ -7,7 +7,6 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
 
-{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE DisambiguateRecordFields #-}
 {-# LANGUAGE NamedFieldPuns #-}
 
@@ -18,7 +17,6 @@ module Flight.Mask.Distance
     ) where
 
 import Data.List (inits)
-import Data.Ratio ((%))
 import Data.UnitsOfMeasure ((-:))
 import Data.UnitsOfMeasure.Internal (Quantity(..), unQuantity)
 import Control.Lens ((^?), element)
@@ -26,63 +24,22 @@ import Control.Lens ((^?), element)
 import qualified Flight.Kml as Kml (MarkedFixes(..))
 import Flight.Track.Cross (Fix(..))
 import qualified Flight.Comp as Cmp (Task(..), SpeedSection)
-import Flight.TrackLog as Log (IxTask(..))
-import Flight.Task as Tsk
-    ( TaskDistance(..)
-    , PathDistance(..)
-    , Tolerance(..)
-    , distanceEdgeToEdge
-    )
-import Flight.Score as Gap (PilotDistance(..))
+import Flight.TrackLog (IxTask(..))
+import Flight.Task (TaskDistance(..))
+import Flight.Score (PilotDistance(..))
 import Flight.Units ()
 import Flight.Mask.Internal
     ( TaskZone(..)
     , TrackZone(..)
     , CrossingPredicate
-    , ZoneHit(..)
-    , slice
     , fixToPoint
     , zoneToCylinder
     , isStartExit
     , pickCrossingPredicate
     , fixFromFix
-    , tickedZones
+    , distanceViaZones
     )
-
-mm30 :: Tolerance
-mm30 = Tolerance $ 30 % 1000
-
-type DistanceViaZones =
-    forall a. (a -> TrackZone)
-    -> Cmp.SpeedSection
-    -> [CrossingPredicate]
-    -> [TaskZone]
-    -> [a]
-    -> Maybe TaskDistance
-
--- | A task is to be flown via its control zones. This function finds the last
--- leg made. The next leg is partial. Along this, the track fixes are checked
--- to find the one closest to the next zone at the end of the leg. From this the
--- distance returned is the task distance up to the next zone not made minus the
--- distance yet to fly to this zone.
-distanceViaZones :: DistanceViaZones
-distanceViaZones mkZone speedSection fs zs xs =
-    case reverse xs of
-        [] ->
-            Nothing
-
-        -- TODO: Check all fixes from last turnpoint made.
-        x : _ ->
-            Just . edgesSum $
-                distanceEdgeToEdge
-                    mm30
-                    (unTrackZone (mkZone x) : notTicked)
-    where
-        -- TODO: Don't assume end of speed section is goal.
-        zsSpeed = slice speedSection zs
-        fsSpeed = slice speedSection fs
-        ys = (/= ZoneMiss) <$> tickedZones fsSpeed zsSpeed (mkZone <$> xs)
-        notTicked = unTaskZone <$> drop (length $ takeWhile (== True) ys) zsSpeed
+import qualified Flight.Mask.Internal as I (distanceToGoal)
 
 distancesToGoal :: [Cmp.Task]
                 -> IxTask
@@ -104,34 +61,13 @@ distancesToGoal tasks iTask@(IxTask i) mf@Kml.MarkedFixes{mark0, fixes} =
                             (Just $ fixFromFix mark0 y, d)
                             where
                                 xs = mf { Kml.fixes = ys }
-                                d = distanceToGoal' distanceViaZones tasks iTask xs
+                                d = I.distanceToGoal distanceViaZones tasks iTask xs
 
 distanceToGoal :: [Cmp.Task]
                -> IxTask
                -> Kml.MarkedFixes
                -> Maybe TaskDistance
-distanceToGoal = distanceToGoal' distanceViaZones
-
-distanceToGoal' :: DistanceViaZones
-                -> [Cmp.Task]
-                -> IxTask
-                -> Kml.MarkedFixes
-                -> Maybe TaskDistance
-
--- ^ Nothing indicates no such task or a task with no zones.
-distanceToGoal' dvz tasks (IxTask i) Kml.MarkedFixes{fixes} =
-    case tasks ^? element (i - 1) of
-        Nothing -> Nothing
-        Just task@Cmp.Task{speedSection, zones} ->
-            if null zones then Nothing else
-            dvz
-                fixToPoint
-                speedSection
-                fs
-                (zoneToCylinder <$> zones)
-                fixes 
-            where
-                fs = (\x -> pickCrossingPredicate (isStartExit x) x) task
+distanceToGoal = I.distanceToGoal distanceViaZones
 
 distanceFlown :: [Cmp.Task]
               -> IxTask
