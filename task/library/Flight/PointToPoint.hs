@@ -12,9 +12,11 @@ module Flight.PointToPoint
     ( distancePointToPoint
     , distanceHaversineF
     , distanceHaversine
+    , costSegment
+    , SpanLatLng
     ) where
 
-import Prelude hiding (sum)
+import Prelude hiding (sum, span)
 import Data.Ratio((%))
 import qualified Data.Number.FixedFunctions as F
 import Data.UnitsOfMeasure (One, (+:), (-:), (*:), u, abs', zero)
@@ -31,10 +33,15 @@ import Flight.LatLng
 import Flight.Zone (Zone(..), Radius(..), center)
 import Flight.Distance (TaskDistance(..), PathDistance(..))
 
+-- | A function for measuring the distance between two points given as
+-- latitude longitude pairs in radians.
+type SpanLatLng = LatLng [u| rad |] -> LatLng [u| rad |] -> TaskDistance
+
+costSegment :: SpanLatLng -> Zone -> Zone -> PathDistance
+costSegment span x y = distancePointToPoint span [x, y]
+
 -- | Sperical distance using haversines and floating point numbers.
-distanceHaversineF :: LatLng [u| rad |]
-                   -> LatLng [u| rad |]
-                   -> TaskDistance
+distanceHaversineF :: SpanLatLng
 distanceHaversineF xDegreeLL yDegreeLL =
     TaskDistance $ radDist *: earthRadius
     where
@@ -67,10 +74,7 @@ distanceHaversineF xDegreeLL yDegreeLL =
         radDist = mk $ toRational $ 2 * asin (sqrt a)
 
 -- | Sperical distance using haversines and rational numbers.
-distanceHaversine :: Epsilon
-                  -> LatLng [u| rad |]
-                  -> LatLng [u| rad |]
-                  -> TaskDistance
+distanceHaversine :: Epsilon -> SpanLatLng
 distanceHaversine (Epsilon eps) xLL yLL =
     TaskDistance $ radDist *: earthRadius
     where
@@ -108,37 +112,37 @@ distanceHaversine (Epsilon eps) xLL yLL =
 -- The speed section  usually goes from start exit cylinder to goal cylinder
 -- or to goal line. The optimal way to fly this in a zig-zagging course will
 -- avoid zone centers for a shorter flown distance.
-distancePointToPoint :: [Zone] -> PathDistance
-distancePointToPoint xs =
+distancePointToPoint :: SpanLatLng -> [Zone] -> PathDistance
+distancePointToPoint span xs =
     PathDistance
-        { edgesSum = distanceViaCenters xs
+        { edgesSum = distanceViaCenters span xs
         , vertices = center <$> xs
         }
 
-distanceViaCenters :: [Zone] -> TaskDistance
+distanceViaCenters :: SpanLatLng -> [Zone] -> TaskDistance
 
-distanceViaCenters [] = TaskDistance [u| 0 m |]
+distanceViaCenters _ [] = TaskDistance [u| 0 m |]
 
-distanceViaCenters [_] = TaskDistance [u| 0 m |]
+distanceViaCenters _ [_] = TaskDistance [u| 0 m |]
 
-distanceViaCenters [Cylinder (Radius xR) x, Cylinder (Radius yR) y]
+distanceViaCenters span [Cylinder (Radius xR) x, Cylinder (Radius yR) y]
     | x == y && xR /= yR = TaskDistance dR
-    | otherwise = distanceViaCenters [Point x, Point y]
+    | otherwise = distanceViaCenters span [Point x, Point y]
     where
         dR :: Quantity Rational [u| m |]
         dR = abs' $ xR -: yR
 
-distanceViaCenters xs@[a, b]
+distanceViaCenters span xs@[a, b]
     | a == b = TaskDistance zero
-    | otherwise = distance xs
+    | otherwise = distance span xs
 
-distanceViaCenters xs = distance xs
+distanceViaCenters span xs = distance span xs
 
 sum :: [Quantity Rational [u| m |]] -> Quantity Rational [u| m |]
 sum = foldr (+:) zero
 
-distance :: [Zone] -> TaskDistance
-distance xs =
+distance :: SpanLatLng -> [Zone] -> TaskDistance
+distance span xs =
     TaskDistance $ sum $ zipWith f ys (tail ys)
     where
         ys = center <$> xs
@@ -147,5 +151,4 @@ distance xs =
         f :: LatLng [u| rad |]
           -> LatLng [u| rad |]
           -> Quantity Rational [u| m |]
-        f = (unwrap .) . distanceHaversine defEps
-
+        f = (unwrap .) . span

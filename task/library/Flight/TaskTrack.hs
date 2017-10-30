@@ -21,6 +21,7 @@ module Flight.TaskTrack
     , taskTracks
     ) where
 
+import Prelude hiding (span)
 import Data.Ratio ((%))
 import Data.Either (partitionEithers)
 import Data.List (nub)
@@ -31,16 +32,17 @@ import Data.Aeson (ToJSON(..), FromJSON(..))
 import qualified UTMRef as HC (UTMRef(..))
 
 import Flight.Units ()
-import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
+import Flight.LatLng (Lat(..), Lng(..), LatLng(..), defEps)
 import Flight.LatLng.Raw (RawLat(..), RawLng(..), RawLatLng(..))
 import Data.Number.RoundingFunctions (dpRound)
 import Flight.Zone (Zone(..), Radius(..), center)
 import Flight.Zone.Raw (RawZone(..))
 import Flight.CylinderEdge (Tolerance(..))
-import Flight.PointToPoint (distancePointToPoint)
 import Flight.Distance (TaskDistance(..), PathDistance(..))
 import Flight.EdgeToEdge (distanceEdgeToEdge)
-import Flight.Projected (distanceProjected, zoneToProjectedEastNorth)
+import Flight.Projected (costEastNorth, zoneToProjectedEastNorth)
+import Flight.PointToPoint
+    (SpanLatLng, distancePointToPoint, costSegment, distanceHaversine)
 
 -- | The way to measure the task distance.
 data TaskDistanceMeasure
@@ -170,7 +172,7 @@ taskTrack excludeWaypoints tdm zsRaw =
         edgeTrackline =
             goByEdge
                 excludeWaypoints
-                (distanceEdgeToEdge mm30 zs)
+                (distanceEdgeToEdge span (costSegment span) mm30 zs)
 
         projTrackline =
             ProjectedTrackLine { planar = planar
@@ -183,7 +185,7 @@ taskTrack excludeWaypoints tdm zsRaw =
                 projected =
                     goByEdge
                         excludeWaypoints
-                        (distanceProjected mm30 zs)
+                        (distanceEdgeToEdge span costEastNorth mm30 zs)
 
                 ps = toPoint <$> (waypoints projected)
                 (_, es) = partitionEithers $ zoneToProjectedEastNorth <$> ps 
@@ -193,13 +195,13 @@ taskTrack excludeWaypoints tdm zsRaw =
                     zipWith
                         (\ a b ->
                             edgesSum
-                            $ distanceProjected mm30 [a, b])
+                            $ distanceEdgeToEdge span costEastNorth mm30 [a, b])
                         ps
                         (tail ps)
 
                 spherical =
                     projected
-                        { distance = toKm . edgesSum . distancePointToPoint $ ps
+                        { distance = toKm . edgesSum . distancePointToPoint span $ ps
                         } :: TrackLine
 
                 planar =
@@ -253,7 +255,7 @@ fromUTMRefZone HC.UTMRef{..} =
 legDistances :: [Zone] -> [TaskDistance]
 legDistances xs =
     zipWith
-        (\x y -> edgesSum $ distancePointToPoint [x, y])
+        (\x y -> edgesSum $ distancePointToPoint span [x, y])
         xs
         (tail xs)
 
@@ -267,7 +269,7 @@ goByPoint excludeWaypoints zs =
         }
     where
         d :: TaskDistance
-        d = edgesSum $ distancePointToPoint zs
+        d = edgesSum $ distancePointToPoint span zs
 
         -- NOTE: Concentric zones of different radii can be defined that
         -- share the same center. Remove duplicate edgesSum.
@@ -356,3 +358,6 @@ toCylinder RawZone{..} =
 
         latRad = convert latDeg :: Quantity Rational [u| rad |]
         lngRad = convert lngDeg :: Quantity Rational [u| rad |]
+
+span :: SpanLatLng
+span = distanceHaversine defEps

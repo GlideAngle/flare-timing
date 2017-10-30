@@ -31,7 +31,6 @@ module Flight.Mask.Internal
     , DistanceViaZones
     , distanceViaZones
     , distanceToGoal
-    , planarDistanceViaZones 
     ) where
 
 import Data.Time.Clock (UTCTime, addUTCTime)
@@ -63,8 +62,9 @@ import Flight.Task
     , PathDistance(..)
     , Tolerance(..)
     , distanceEdgeToEdge
-    , distanceProjected
+    , costSegment
     , separatedZones
+    , distanceHaversineF
     )
 
 mm30 :: Tolerance
@@ -254,25 +254,8 @@ distanceViaZones mkZone speedSection fs zs xs =
         x : _ ->
             Just . edgesSum $
                 distanceEdgeToEdge
-                    mm30
-                    (unTrackZone (mkZone x) : notTicked)
-    where
-        -- TODO: Don't assume end of speed section is goal.
-        zsSpeed = slice speedSection zs
-        fsSpeed = slice speedSection fs
-        ys = (/= ZoneMiss) <$> tickedZones fsSpeed zsSpeed (mkZone <$> xs)
-        notTicked = unTaskZone <$> drop (length $ takeWhile (== True) ys) zsSpeed
-
-planarDistanceViaZones :: DistanceViaZones
-planarDistanceViaZones mkZone speedSection fs zs xs =
-    case reverse xs of
-        [] ->
-            Nothing
-
-        -- TODO: Check all fixes from last turnpoint made.
-        x : _ ->
-            Just . edgesSum $
-                distanceProjected
+                    distanceHaversineF
+                    (costSegment distanceHaversineF)
                     mm30
                     (unTrackZone (mkZone x) : notTicked)
     where

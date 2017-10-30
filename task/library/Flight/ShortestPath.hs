@@ -13,10 +13,12 @@ module Flight.ShortestPath
     ( PathCost(..)
     , GraphBuilder
     , NodeConnector
+    , CostSegment
     , buildGraph
     , shortestPath 
     ) where
 
+import Prelude hiding (span)
 import Data.Ratio ((%))
 import qualified Data.Number.FixedFunctions as F
 import Data.UnitsOfMeasure (u)
@@ -30,7 +32,7 @@ import Data.Graph.Inductive.PatriciaTree (Gr)
 
 import Flight.LatLng (LatLng(..), Epsilon(..), defEps)
 import Flight.Zone (Zone(..), Bearing(..), center)
-import Flight.PointToPoint (distancePointToPoint)
+import Flight.PointToPoint (SpanLatLng, distancePointToPoint)
 import Flight.Distance (TaskDistance(..), PathDistance(..))
 import Flight.Separated (separatedZones)
 import Flight.CylinderEdge
@@ -41,6 +43,8 @@ import Flight.CylinderEdge
     , sample
     )
 import Flight.Units ()
+
+type CostSegment = Zone -> Zone -> PathDistance
 
 type NodeConnector =
     [(Node, ZonePoint)] -> [(Node, ZonePoint)] -> [LEdge PathCost]
@@ -60,13 +64,14 @@ zeroDistance =
                  , vertices = []
                  }
 
-shortestPath :: GraphBuilder
+shortestPath :: SpanLatLng
+             -> GraphBuilder
              -> Tolerance
              -> [Zone]
              -> PathDistance
-shortestPath _ _ [] = zeroDistance
-shortestPath _ _ [_] = zeroDistance
-shortestPath builder tolerance xs =
+shortestPath _ _ _ [] = zeroDistance
+shortestPath _ _ _ [_] = zeroDistance
+shortestPath span builder tolerance xs =
     case xs of
         [] ->
             zeroDistance
@@ -79,16 +84,17 @@ shortestPath builder tolerance xs =
                          , vertices = ptsCenterLine
                          }
     where
-        (PathCost pcd, ptsCenterLine) = distance builder tolerance xs
+        (PathCost pcd, ptsCenterLine) = distance span builder tolerance xs
         d = TaskDistance $ MkQuantity pcd 
 
-distance :: GraphBuilder
+distance :: SpanLatLng
+         -> GraphBuilder
          -> Tolerance
          -> [Zone]
          -> (PathCost, [ LatLng [u| rad |] ])
-distance _ _ [] = (PathCost 0, [])
-distance _ _ [_] = (PathCost 0, [])
-distance builder tolerance xs
+distance _ _ _ [] = (PathCost 0, [])
+distance _ _ _ [_] = (PathCost 0, [])
+distance span builder tolerance xs
     | not $ separatedZones xs = (PathCost 0, [])
     | otherwise =
         case dist of
@@ -99,7 +105,7 @@ distance builder tolerance xs
                     else (PathCost pointwise, edgesSum')
         where
             (TaskDistance (MkQuantity pointwise)) =
-                edgesSum $ distancePointToPoint xs
+                edgesSum $ distancePointToPoint span xs
 
             edgesSum' = center <$> xs
             sp = SampleParams { spSamples = Samples 5, spTolerance = tolerance }

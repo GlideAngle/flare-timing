@@ -10,14 +10,15 @@
 
 module Flight.Separated (separatedZones) where
     
+import Prelude hiding (span)
 import Data.UnitsOfMeasure ((+:), (-:), (*:), (/:), u, unQuantity)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
 import Flight.Zone (Zone(..), Radius(..), radius)
-import Flight.PointToPoint (distancePointToPoint)
+import Flight.PointToPoint (SpanLatLng, distancePointToPoint, distanceHaversine)
 import Flight.Distance (TaskDistance(..), PathDistance(..))
-import Flight.LatLng (Lat(..), Lng(..), LatLng(..), earthRadius)
+import Flight.LatLng (Lat(..), Lng(..), LatLng(..), earthRadius, defEps)
 
 boundingBoxSeparated :: Quantity Rational [u| m |]
                      -> LatLng [u| rad |]
@@ -87,13 +88,13 @@ separated
     boundingBoxSeparated ry xLL yLL || d > ry
     where
         (Radius ry) = r
-        (TaskDistance d) = edgesSum $ distancePointToPoint [x, y]
+        (TaskDistance d) = edgesSum $ distancePointToPoint span [x, y]
 
 separated x@(Point _) y =
     d > ry
     where
         (Radius ry) = radius y
-        (TaskDistance d) = edgesSum $ distancePointToPoint [x, y]
+        (TaskDistance d) = edgesSum $ distancePointToPoint span [x, y]
 
 -- | Consider cylinders separated if one fits inside the other or if they don't
 -- touch.
@@ -103,7 +104,7 @@ separated xc@(Cylinder (Radius xR) x) yc@(Cylinder (Radius yR) y)
     | otherwise = clearlySeparated xc yc
     where
         (TaskDistance (MkQuantity dxy)) =
-            edgesSum $ distancePointToPoint [Point x, Point y]
+            edgesSum $ distancePointToPoint span [Point x, Point y]
 
         (MkQuantity minR) = max xR yR
         (MkQuantity maxR) = min xR yR
@@ -128,4 +129,7 @@ clearlySeparated x y =
         (Radius rx) = radius x
         (Radius ry) = radius y
         rxy = rx +: ry
-        (TaskDistance d) = edgesSum $ distancePointToPoint [x, y]
+        (TaskDistance d) = edgesSum $ distancePointToPoint span [x, y]
+
+span :: SpanLatLng
+span = distanceHaversine defEps

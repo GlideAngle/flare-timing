@@ -9,7 +9,7 @@
 {-# LANGUAGE QuasiQuotes #-}
 
 module Flight.Projected
-    ( distanceProjected
+    ( costEastNorth
     , zoneToProjectedEastNorth
     ) where
 
@@ -17,45 +17,14 @@ import Data.Functor.Identity (runIdentity)
 import Control.Monad.Except (runExceptT)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
-import Data.Graph.Inductive.Graph (Node, LEdge)
 import qualified UTMRef as HC (UTMRef(..), toUTMRef)
 import qualified LatLng as HC (mkLatLng)
 import qualified Datum as HC (wgs84Datum)
 
-import Flight.Zone (Zone(..))
+import Flight.Zone (Zone(..), center)
 import Flight.Distance (TaskDistance(..), PathDistance(..))
-import Flight.CylinderEdge (Tolerance, ZonePoint(..))
 import Flight.Units ()
 import Flight.LatLng (LatLng(..), Lat(..), Lng(..), radToDegLL, defEps)
-import Flight.ShortestPath
-    ( PathCost(..)
-    , NodeConnector
-    , shortestPath
-    , buildGraph
-    )
-
--- | The task distance returned is for the projected UTM plane with
--- eastings and northings. If you need to calculate the distance in sperical
--- coordinates, the latitude and longitude of each vertex of the path can be
--- used to work that out.
-distanceProjected :: Tolerance
-                  -> [Zone]
-                  -> PathDistance
-distanceProjected = shortestPath $ buildGraph connectNodes
-
--- | NOTE: The shortest path may traverse a cylinder so I include
--- edges within a cylinder as well as edges to the next cylinder.
-connectNodes :: NodeConnector
-connectNodes xs ys =
-    [ f x1 x2 | x1 <- xs, x2 <- xs ]
-    ++
-    [ f x y | x <- xs, y <- ys ]
-    where
-        f :: (Node, ZonePoint) -> (Node, ZonePoint) -> LEdge PathCost
-        f (i, x) (j, y) = (i, j, PathCost d)
-            where
-                (TaskDistance (MkQuantity d)) =
-                    projectedPythagorean (Point $ point x) (Point $ point y)
 
 zoneToProjectedEastNorth :: Zone -> Either String HC.UTMRef
 
@@ -75,22 +44,30 @@ zoneToProjectedEastNorth (Point x) = do
 tooFar :: TaskDistance
 tooFar = TaskDistance [u| 20000000 m |]
 
-projectedPythagorean :: Zone -> Zone -> TaskDistance
+-- | The task distance returned is for the projected UTM plane with
+-- eastings and northings. If you need to calculate the distance in sperical
+-- coordinates, the latitude and longitude of each vertex of the path can be
+-- used to work that out.
+costEastNorth :: Zone -> Zone -> PathDistance
 
-projectedPythagorean x@(Point _) y@(Point _) =
-    case (zoneToProjectedEastNorth x, zoneToProjectedEastNorth y) of
-        (Right xLL, Right yLL) ->
-            TaskDistance dm
-            where
-                d :: Double
-                d = pythagorean xLL yLL
+costEastNorth x@(Point _) y@(Point _) =
+    PathDistance { edgesSum = d', vertices = center <$> [x, y] }
+    where
+        d' =
+            case (zoneToProjectedEastNorth x, zoneToProjectedEastNorth y) of
+                (Right xLL, Right yLL) ->
+                    TaskDistance dm
+                    where
+                        d :: Double
+                        d = pythagorean xLL yLL
 
-                dm :: Quantity Rational [u| m |]
-                dm = MkQuantity $ toRational d
+                        dm :: Quantity Rational [u| m |]
+                        dm = MkQuantity $ toRational d
 
-        _ -> tooFar
+                _ -> tooFar
 
-projectedPythagorean _ _ = tooFar
+costEastNorth x y =
+    PathDistance { edgesSum = tooFar, vertices = center <$> [x, y] }
 
 pythagorean :: HC.UTMRef -> HC.UTMRef -> Double
 pythagorean x y =

@@ -16,6 +16,7 @@ module Flight.Task
     , distancePointToPoint
     , distanceHaversine
     , distanceHaversineF
+    , costSegment
     , fromKms
     -- * Optimized Shortest Path 
     , Samples(..)
@@ -24,7 +25,7 @@ module Flight.Task
     , PathDistance(..)
     , circumSample
     , distanceEdgeToEdge
-    , distanceProjected
+    , costEastNorth
     -- * Zones
     , separatedZones
     ) where

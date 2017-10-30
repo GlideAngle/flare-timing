@@ -18,6 +18,7 @@ module Flight.CylinderEdge
     , sample
     ) where
 
+import Prelude hiding (span)
 import Data.Ratio ((%), numerator, denominator)
 import qualified Data.Number.FixedFunctions as F
 import Data.Fixed (mod')
@@ -33,7 +34,7 @@ import Flight.LatLng
     , defEps
     )
 import Flight.Zone (Zone(..), Radius(..), Bearing(..), center, radius)
-import Flight.PointToPoint (distancePointToPoint)
+import Flight.PointToPoint (distancePointToPoint, distanceHaversine)
 import Flight.Distance (TaskDistance(..), PathDistance(..))
 import Flight.Units (showRadian)
 
@@ -235,6 +236,9 @@ circumSample SampleParams{..} (Bearing (MkQuantity bearing)) zp zone =
                                 }
                                
                 (TaskDistance (MkQuantity d)) =
-                    edgesSum $ distancePointToPoint [Point ptCenter, Point y]
+                    edgesSum
+                    $ distancePointToPoint
+                        (distanceHaversine defEps)
+                        [Point ptCenter, Point y]
 
                 dist = fromRational d
