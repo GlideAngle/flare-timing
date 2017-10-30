@@ -16,12 +16,13 @@ module Flight.Mask.Distance
     , distanceFlown
     ) where
 
+import Data.Time.Clock (UTCTime)
 import Data.List (inits)
 import Data.UnitsOfMeasure ((-:))
 import Data.UnitsOfMeasure.Internal (Quantity(..), unQuantity)
 import Control.Lens ((^?), element)
 
-import qualified Flight.Kml as Kml (MarkedFixes(..))
+import qualified Flight.Kml as Kml (MarkedFixes(..), Fix)
 import Flight.Track.Cross (Fix(..))
 import qualified Flight.Comp as Cmp (Task(..), SpeedSection)
 import Flight.TrackLog (IxTask(..))
@@ -47,22 +48,28 @@ distancesToGoal :: [Cmp.Task]
                 -> Kml.MarkedFixes
                 -> Maybe [(Maybe Fix, Maybe TaskDistance)]
                 -- ^ Nothing indicates no such task or a task with no zones.
-distancesToGoal tasks iTask@(IxTask i) mf@Kml.MarkedFixes{mark0, fixes} =
+distancesToGoal tasks iTask@(IxTask i) Kml.MarkedFixes{mark0, fixes} =
     case tasks ^? element (i - 1) of
         Nothing -> Nothing
         Just Cmp.Task{zones} ->
-            if null zones then Nothing else Just $ f <$> fixes'
-            where
-                fixes' = inits fixes
+            if null zones then Nothing else Just
+            $ lastFixToGoal tasks iTask mark0
+            <$> inits fixes
 
-                f ys =
-                    case reverse ys of
-                        [] -> (Nothing, Nothing)
-                        (y : _) ->
-                            (Just $ fixFromFix mark0 y, d)
-                            where
-                                xs = mf { Kml.fixes = ys }
-                                d = I.distanceToGoal planarDistanceViaZones tasks iTask xs
+-- | The distance from the last fix to goal passing through the remaining
+-- control zones.
+lastFixToGoal :: [Cmp.Task]
+              -> IxTask
+              -> UTCTime
+              -> [Kml.Fix]
+              -> (Maybe Fix, Maybe TaskDistance)
+lastFixToGoal tasks iTask mark0 ys =
+    case reverse ys of
+        [] -> (Nothing, Nothing)
+        (y : _) -> (Just $ fixFromFix mark0 y, d)
+    where
+        xs = Kml.MarkedFixes { Kml.mark0 = mark0, Kml.fixes = ys }
+        d = I.distanceToGoal planarDistanceViaZones tasks iTask xs
 
 distanceToGoal :: [Cmp.Task]
                -> IxTask
