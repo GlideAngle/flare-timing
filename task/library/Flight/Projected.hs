@@ -11,7 +11,6 @@
 module Flight.Projected
     ( distanceProjected
     , zoneToProjectedEastNorth
-    , projectedPythagorean
     ) where
 
 import Data.Functor.Identity (runIdentity)

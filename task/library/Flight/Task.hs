@@ -25,7 +25,6 @@ module Flight.Task
     , circumSample
     , distanceEdgeToEdge
     , distanceProjected
-    , projectedPythagorean
     -- * Zones
     , separatedZones
     ) where

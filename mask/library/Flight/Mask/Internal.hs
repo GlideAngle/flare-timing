@@ -31,6 +31,7 @@ module Flight.Mask.Internal
     , DistanceViaZones
     , distanceViaZones
     , distanceToGoal
+    , planarDistanceViaZones 
     ) where
 
 import Data.Time.Clock (UTCTime, addUTCTime)
@@ -62,6 +63,7 @@ import Flight.Task
     , PathDistance(..)
     , Tolerance(..)
     , distanceEdgeToEdge
+    , distanceProjected
     , separatedZones
     )
 
@@ -123,8 +125,7 @@ fixToPoint fix =
 
 insideZone :: TaskZone -> [TrackZone] -> Maybe Int
 insideZone (TaskZone z) =
-    List.findIndex
-        (\(TrackZone x) -> not $ separatedZones [x, z])
+    List.findIndex (\(TrackZone x) -> not $ separatedZones [x, z])
 
 outsideZone :: TaskZone -> [TrackZone] -> Maybe Int
 outsideZone (TaskZone z) =
@@ -217,6 +218,27 @@ type DistanceViaZones =
     -> [a]
     -> Maybe TaskDistance
 
+distanceToGoal :: DistanceViaZones
+                -> [Cmp.Task]
+                -> IxTask
+                -> Kml.MarkedFixes
+                -> Maybe TaskDistance
+
+-- ^ Nothing indicates no such task or a task with no zones.
+distanceToGoal dvz tasks (IxTask i) Kml.MarkedFixes{fixes} =
+    case tasks ^? element (i - 1) of
+        Nothing -> Nothing
+        Just task@Cmp.Task{speedSection, zones} ->
+            if null zones then Nothing else
+            dvz
+                fixToPoint
+                speedSection
+                fs
+                (zoneToCylinder <$> zones)
+                fixes 
+            where
+                fs = (\x -> pickCrossingPredicate (isStartExit x) x) task
+
 -- | A task is to be flown via its control zones. This function finds the last
 -- leg made. The next leg is partial. Along this, the track fixes are checked
 -- to find the one closest to the next zone at the end of the leg. From this the
@@ -241,24 +263,21 @@ distanceViaZones mkZone speedSection fs zs xs =
         ys = (/= ZoneMiss) <$> tickedZones fsSpeed zsSpeed (mkZone <$> xs)
         notTicked = unTaskZone <$> drop (length $ takeWhile (== True) ys) zsSpeed
 
-distanceToGoal :: DistanceViaZones
-                -> [Cmp.Task]
-                -> IxTask
-                -> Kml.MarkedFixes
-                -> Maybe TaskDistance
+planarDistanceViaZones :: DistanceViaZones
+planarDistanceViaZones mkZone speedSection fs zs xs =
+    case reverse xs of
+        [] ->
+            Nothing
 
--- ^ Nothing indicates no such task or a task with no zones.
-distanceToGoal dvz tasks (IxTask i) Kml.MarkedFixes{fixes} =
-    case tasks ^? element (i - 1) of
-        Nothing -> Nothing
-        Just task@Cmp.Task{speedSection, zones} ->
-            if null zones then Nothing else
-            dvz
-                fixToPoint
-                speedSection
-                fs
-                (zoneToCylinder <$> zones)
-                fixes 
-            where
-                fs = (\x -> pickCrossingPredicate (isStartExit x) x) task
-
+        -- TODO: Check all fixes from last turnpoint made.
+        x : _ ->
+            Just . edgesSum $
+                distanceProjected
+                    mm30
+                    (unTrackZone (mkZone x) : notTicked)
+    where
+        -- TODO: Don't assume end of speed section is goal.
+        zsSpeed = slice speedSection zs
+        fsSpeed = slice speedSection fs
+        ys = (/= ZoneMiss) <$> tickedZones fsSpeed zsSpeed (mkZone <$> xs)
+        notTicked = unTaskZone <$> drop (length $ takeWhile (== True) ys) zsSpeed

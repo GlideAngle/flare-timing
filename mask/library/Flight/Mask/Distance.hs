@@ -38,6 +38,7 @@ import Flight.Mask.Internal
     , pickCrossingPredicate
     , fixFromFix
     , distanceViaZones
+    , planarDistanceViaZones 
     )
 import qualified Flight.Mask.Internal as I (distanceToGoal)
 
@@ -61,7 +62,7 @@ distancesToGoal tasks iTask@(IxTask i) mf@Kml.MarkedFixes{mark0, fixes} =
                             (Just $ fixFromFix mark0 y, d)
                             where
                                 xs = mf { Kml.fixes = ys }
-                                d = I.distanceToGoal distanceViaZones tasks iTask xs
+                                d = I.distanceToGoal planarDistanceViaZones tasks iTask xs
 
 distanceToGoal :: [Cmp.Task]
                -> IxTask
