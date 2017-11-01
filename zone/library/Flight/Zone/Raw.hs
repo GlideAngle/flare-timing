@@ -21,6 +21,7 @@ data RawZone =
             , lat :: RawLat
             , lng :: RawLng
             , radius :: RawRadius
+            -- ^ Radius in metres.
             } deriving (Eq, Show, Generic)
 
 instance ToJSON RawZone

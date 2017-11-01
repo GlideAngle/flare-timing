@@ -9,6 +9,9 @@
 
 {-# LANGUAGE DisambiguateRecordFields #-}
 {-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE PartialTypeSignatures #-}
+
+{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
 module Flight.Mask.Time (timeFlown) where
 
@@ -42,13 +45,18 @@ import Flight.Mask.Internal
     , exitsZone
     , entersZone
     , fixToPoint
-    , zoneToCylinder
     , isStartExit
     , pickCrossingPredicate
     )
+import qualified Flight.Zone.Raw as Raw (RawZone(..))
 
-timeFlown :: [Cmp.Task] -> IxTask -> Kml.MarkedFixes -> Maybe PilotTime
-timeFlown tasks iTask@(IxTask i) xs =
+timeFlown :: Real a
+          => (Raw.RawZone -> TaskZone a)
+          -> [Cmp.Task]
+          -> IxTask
+          -> Kml.MarkedFixes
+          -> Maybe PilotTime
+timeFlown zoneToCyl tasks iTask@(IxTask i) xs =
     case tasks ^? element (i - 1) of
         Nothing ->
             Nothing
@@ -57,15 +65,16 @@ timeFlown tasks iTask@(IxTask i) xs =
             if null zones || not atGoal then Nothing else
             flownDuration speedSection fs cs zoneTimes startGates xs
             where
-                fs = (\x -> pickCrossingPredicate (isStartExit x) x) task
-                cs = zoneToCylinder <$> zones
+                fs = (\x -> pickCrossingPredicate (isStartExit zoneToCyl x) x) task
+                cs = zoneToCyl <$> zones
 
     where
-        atGoal = madeGoal tasks iTask xs
+        atGoal = madeGoal zoneToCyl tasks iTask xs
 
-flownDuration :: Cmp.SpeedSection
-              -> [CrossingPredicate]
-              -> [TaskZone]
+flownDuration :: Real a
+              => Cmp.SpeedSection
+              -> [CrossingPredicate a]
+              -> [TaskZone a]
               -> [Cmp.OpenClose]
               -> [Cmp.StartGate]
               -> Kml.MarkedFixes
@@ -76,11 +85,12 @@ flownDuration speedSection fs zs os gs Kml.MarkedFixes{mark0, fixes}
     | otherwise =
         durationViaZones fixToPoint Kml.mark speedSection fs zs os gs mark0 fixes
 
-durationViaZones :: (Kml.Fix -> TrackZone)
+durationViaZones :: Real a
+                 => (Kml.Fix -> TrackZone a)
                  -> (Kml.Fix -> Kml.Seconds)
                  -> Cmp.SpeedSection
-                 -> [CrossingPredicate]
-                 -> [TaskZone]
+                 -> [CrossingPredicate a]
+                 -> [TaskZone a]
                  -> [Cmp.OpenClose]
                  -> [Cmp.StartGate]
                  -> UTCTime
@@ -103,32 +113,32 @@ durationViaZones mkZone atTime speedSection _ zs os gs t0 xs =
                 [_] -> os
                 _ -> slice speedSection os
 
-        xys :: [(Kml.Fix, (TrackZone, TrackZone))]
+        xys :: [(Kml.Fix, (TrackZone _, TrackZone _))]
         xys = (\(x, y) -> (y, (mkZone x, mkZone y))) <$> zip (drop 1 xs) xs
 
         -- TODO: Account for entry start zone.
-        slots :: (TaskZone, TaskZone)
-              -> [(Kml.Fix, (TrackZone, TrackZone))]
+        slots :: (TaskZone _, TaskZone _)
+              -> [(Kml.Fix, (TrackZone _, TrackZone _))]
               -> (Maybe Kml.Seconds, Maybe Kml.Seconds)
         slots (z0, zN) xzs =
             (f <$> xz0, f <$> xzN)
             where
-                exits' :: (Kml.Fix, (TrackZone, TrackZone)) -> Bool
+                exits' :: (Kml.Fix, (TrackZone _, TrackZone _)) -> Bool
                 exits' (_, (zx, zy)) =
                     case exitsZone z0 [zx, zy] of
                         ZoneExit _ _ -> True
                         _ -> False
 
-                enters' :: (Kml.Fix, (TrackZone, TrackZone)) -> Bool
+                enters' :: (Kml.Fix, (TrackZone _, TrackZone _)) -> Bool
                 enters' (_, (zx, zy)) =
                     case entersZone zN [zx, zy] of
                         ZoneEntry _ _ -> True
                         _ -> False
 
-                xz0 :: Maybe (Kml.Fix, (TrackZone, TrackZone))
+                xz0 :: Maybe (Kml.Fix, (TrackZone _, TrackZone _))
                 xz0 = List.find exits' xzs
 
-                xzN :: Maybe (Kml.Fix, (TrackZone, TrackZone))
+                xzN :: Maybe (Kml.Fix, (TrackZone _, TrackZone _))
                 xzN = List.find enters' xzs
 
                 f = atTime . fst

@@ -1,5 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE PartialTypeSignatures #-}
+
 module Flight.Allot
     ( PilotsAtEss(..)
     , PositionAtEss(..)
@@ -36,7 +38,7 @@ newtype PilotTime = PilotTime Rational deriving (Eq, Ord, Show)
 newtype SpeedFraction = SpeedFraction Rational deriving (Eq, Ord, Show)
 
 newtype BestDistance = BestDistance Rational deriving (Eq, Ord, Show)
-newtype PilotDistance= PilotDistance Rational deriving (Eq, Ord, Show)
+newtype PilotDistance a = PilotDistance a deriving (Eq, Ord, Show)
 newtype LinearFraction = LinearFraction Rational deriving (Eq, Ord, Show)
 
 newtype ChunkedDistance = ChunkedDistance Integer deriving (Eq, Ord, Show)
@@ -69,11 +71,11 @@ speedFraction (BestTime best) (PilotTime t) =
         frac = (numerator / denominator) ** (2 / 3)
         sf = (1 % 1) - toRational frac
 
-linearFraction :: BestDistance -> PilotDistance -> LinearFraction
-linearFraction (BestDistance (nb :% db)) (PilotDistance (np :% dp)) =
-    LinearFraction $ (np * db) % (dp * nb)
+linearFraction :: Real a => BestDistance -> PilotDistance a -> LinearFraction
+linearFraction (BestDistance (nb :% db)) (PilotDistance pd) =
+    let (np :% dp) = toRational pd in LinearFraction $ (np * db) % (dp * nb)
 
-lookaheadChunks :: [PilotDistance] -> LookaheadChunks
+lookaheadChunks :: Real a => [PilotDistance a] -> LookaheadChunks
 lookaheadChunks [] =
     LookaheadChunks 30
 lookaheadChunks xs =
@@ -88,17 +90,16 @@ lookaheadChunks xs =
         rounded :: Integer
         rounded = round ((30 * bestInChunks) % pilotsLandedOut)
 
-toChunk :: PilotDistance -> ChunkedDistance
+toChunk :: Real a => PilotDistance a -> ChunkedDistance
 toChunk (PilotDistance d) =
-    ChunkedDistance $ round (d * (10 % 1))
+    ChunkedDistance $ round (toRational d * (10 % 1))
 
-difficultyFraction :: [PilotDistance] -> [DifficultyFraction]
+difficultyFraction :: Real a => [PilotDistance a] -> [DifficultyFraction]
 difficultyFraction xs =
     zipWith (diffByChunk diffScoreMap) xs' ys
     where
         lookahead = lookaheadChunks xs
 
-        xs' :: [PilotDistance]
         xs' = sort xs
 
         ys :: [ChunkedDistance]
@@ -127,16 +128,18 @@ difficultyFraction xs =
         diffScoreMap =
             snd $ Map.mapAccum (\acc x -> (acc + x, x)) 0 relativeDiffMap
 
-diffByChunk:: Map.Map ChunkedDistance Rational
-              -> PilotDistance
-              -> ChunkedDistance
-              -> DifficultyFraction
-diffByChunk diffMap (PilotDistance (n :% d)) pc@(ChunkedDistance pdChunk) =
+diffByChunk :: Real a
+            => Map.Map ChunkedDistance Rational
+            -> PilotDistance a
+            -> ChunkedDistance
+            -> DifficultyFraction
+diffByChunk diffMap (PilotDistance pd) pc@(ChunkedDistance pdChunk) =
     DifficultyFraction $
     pDiff
     + (pDiffNext - pDiff)
     * (((10 * n) % d) - (pdChunk % 1))
     where
+        (n :% d) = toRational pd
         pDiff :: Rational
         pDiff = fromMaybe (0 % 1) $ Map.lookup pc diffMap
 

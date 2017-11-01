@@ -34,16 +34,17 @@ import Flight.TrackLog (IxTask(..))
 import Flight.Units ()
 import Flight.Mask.Internal
     ( ZoneHit(..)
+    , TaskZone(..)
     , slice
     , exitsZone
     , entersZone
     , fixToPoint
-    , zoneToCylinder
     , isStartExit
     , pickCrossingPredicate
     , fixFromFix
     , tickedZones
     )
+import qualified Flight.Zone.Raw as Raw (RawZone(..))
 
 -- | A masking produces a value from a task and tracklog fixes.
 type SigMasking a = [Cmp.Task] -> IxTask -> Kml.MarkedFixes -> a
@@ -59,8 +60,8 @@ launched :: SigMasking Bool
 launched _ _ Kml.MarkedFixes{fixes} =
     not . null . nub $ fixes
 
-started :: SigMasking Bool
-started tasks (IxTask i) Kml.MarkedFixes{fixes} =
+started :: Real a => (Raw.RawZone -> TaskZone a) -> SigMasking Bool
+started zoneToCyl tasks (IxTask i) Kml.MarkedFixes{fixes} =
     case tasks ^? element (i - 1) of
         Nothing -> False
         Just Cmp.Task{speedSection, zones} ->
@@ -69,13 +70,13 @@ started tasks (IxTask i) Kml.MarkedFixes{fixes} =
                     False
 
                 z : _ ->
-                    let ez = exitsZone (zoneToCylinder z) (fixToPoint <$> fixes)
+                    let ez = exitsZone (zoneToCyl z) (fixToPoint <$> fixes)
                     in case ez of
                          ZoneExit _ _ -> True
                          _ -> False
 
-madeGoal :: SigMasking Bool
-madeGoal tasks (IxTask i) Kml.MarkedFixes{fixes} =
+madeGoal :: Real a => (Raw.RawZone -> TaskZone a) -> SigMasking Bool
+madeGoal zoneToCyl tasks (IxTask i) Kml.MarkedFixes{fixes} =
     case tasks ^? element (i - 1) of
         Nothing -> False
         Just Cmp.Task{zones} ->
@@ -84,7 +85,7 @@ madeGoal tasks (IxTask i) Kml.MarkedFixes{fixes} =
                     False
 
                 z : _ ->
-                    let ez = entersZone (zoneToCylinder z) (fixToPoint <$> fixes)
+                    let ez = entersZone (zoneToCyl z) (fixToPoint <$> fixes)
                     in case ez of
                          ZoneEntry _ _ -> True
                          _ -> False
@@ -122,11 +123,13 @@ tagZones =
                 ([x, y], [a, b]) -> crossingTag (x, y) (a, b)
                 _ -> Nothing
 
-madeZones :: [Cmp.Task]
+madeZones :: Real a
+          => (Raw.RawZone -> TaskZone a)
+          -> [Cmp.Task]
           -> IxTask
           -> Kml.MarkedFixes
           -> [Maybe ZoneCross]
-madeZones tasks (IxTask i) Kml.MarkedFixes{mark0, fixes} =
+madeZones zoneToCyl tasks (IxTask i) Kml.MarkedFixes{mark0, fixes} =
     case tasks ^? element (i - 1) of
         Nothing ->
             []
@@ -134,12 +137,12 @@ madeZones tasks (IxTask i) Kml.MarkedFixes{mark0, fixes} =
         Just task@Cmp.Task{zones} ->
             f <$> xs
             where
-                fs = (\x -> pickCrossingPredicate (isStartExit x) x) task
+                fs = (\x -> pickCrossingPredicate (isStartExit zoneToCyl x) x) task
 
                 xs =
                     tickedZones
                         fs
-                        (zoneToCylinder <$> zones)
+                        (zoneToCyl <$> zones)
                         (fixToPoint <$> fixes)
 
                 f :: ZoneHit -> Maybe ZoneCross
@@ -153,15 +156,17 @@ fixToUtc mark0 x =
     in fromInteger secs `addUTCTime` mark0
 
 -- | Groups fixes by legs of the task.
-groupByLeg :: [Cmp.Task]
+groupByLeg :: Real a
+           => (Raw.RawZone -> TaskZone a)
+           -> [Cmp.Task]
            -> IxTask
            -> Kml.MarkedFixes
            -> [Kml.MarkedFixes]
-groupByLeg tasks iTask mf@Kml.MarkedFixes{mark0, fixes} =
+groupByLeg zoneToCyl tasks iTask mf@Kml.MarkedFixes{mark0, fixes} =
     (\zs -> mf{Kml.fixes = zs}) <$> ys
     where
         xs :: [Maybe Fix]
-        xs = tagZones $ madeZones tasks iTask mf
+        xs = tagZones $ madeZones zoneToCyl tasks iTask mf
 
         ts :: [Maybe UTCTime]
         ts = (fmap . fmap) time xs

@@ -12,8 +12,7 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Flight.Units
-    ( Length
-    , abs
+    ( abs
     , toRational'
     , showRadian
     ) where
@@ -22,8 +21,6 @@ import Data.UnitsOfMeasure (u, convert, fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Data.Bifunctor.Flip (Flip(..))
 import Data.Number.RoundingFunctions (dpRound)
-
-type Length u = Quantity Rational u
 
 [u| s, m |]
 

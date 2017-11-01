@@ -12,6 +12,7 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE PartialTypeSignatures #-}
 
 module Flight.TaskTrack
     ( TaskDistanceMeasure(..)
@@ -35,7 +36,7 @@ import Flight.Units ()
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..), defEps)
 import Flight.LatLng.Raw (RawLat(..), RawLng(..), RawLatLng(..))
 import Data.Number.RoundingFunctions (dpRound)
-import Flight.Zone (Zone(..), Radius(..), center)
+import Flight.Zone (Zone(..), Radius(..), center, fromRationalRadius)
 import Flight.Zone.Raw (RawZone(..))
 import Flight.CylinderEdge (Tolerance(..))
 import Flight.Distance (TaskDistance(..), PathDistance(..))
@@ -52,7 +53,7 @@ data TaskDistanceMeasure
     | TaskDistanceByProjection
     deriving (Eq, Show)
 
-mm30 :: Tolerance
+mm30 :: Tolerance Rational
 mm30 = Tolerance $ 30 % 1000
 
 newtype TaskRoutes =
@@ -164,7 +165,7 @@ taskTrack excludeWaypoints tdm zsRaw =
                 , projection = Just projTrackline
                 }
     where
-        zs :: [Zone]
+        zs :: [Zone Rational]
         zs = toCylinder <$> zsRaw
 
         pointTrackline = goByPoint excludeWaypoints zs
@@ -187,7 +188,9 @@ taskTrack excludeWaypoints tdm zsRaw =
                         excludeWaypoints
                         (distanceEdgeToEdge span costEastNorth mm30 zs)
 
+                ps :: [Zone Rational]
                 ps = toPoint <$> (waypoints projected)
+
                 (_, es) = partitionEithers $ zoneToProjectedEastNorth <$> ps 
 
                 -- NOTE: Workout the distance for each leg projected.
@@ -252,14 +255,14 @@ fromUTMRefZone HC.UTMRef{..} =
         , lngZone = lngZone
         }
 
-legDistances :: [Zone] -> [TaskDistance]
+legDistances :: Real a => [Zone a] -> [TaskDistance]
 legDistances xs =
     zipWith
         (\x y -> edgesSum $ distancePointToPoint span [x, y])
         xs
         (tail xs)
 
-goByPoint :: Bool -> [Zone] -> TrackLine
+goByPoint :: Real a => Bool -> [Zone a] -> TrackLine
 goByPoint excludeWaypoints zs =
     TrackLine
         { distance = toKm d
@@ -280,7 +283,7 @@ goByPoint excludeWaypoints zs =
         xs = convertLatLng <$> edgesSum'
 
         ds :: [TaskDistance]
-        ds = legDistances $ Point <$> edgesSum'
+        ds = legDistances $ (Point <$> edgesSum' :: [Zone Rational])
 
         dsSum :: [TaskDistance]
         dsSum = scanl1 addTaskDistance ds
@@ -311,7 +314,7 @@ goByEdge excludeWaypoints ed =
         xs = convertLatLng <$> vertices'
 
         ds :: [TaskDistance]
-        ds = legDistances $ Point <$> vertices'
+        ds = legDistances $ (Point <$> vertices' :: [Zone Rational])
 
         dsSum :: [TaskDistance]
         dsSum = scanl1 addTaskDistance ds
@@ -331,7 +334,7 @@ convertLatLng (LatLng (Lat eLat, Lng eLng)) =
         MkQuantity eLng' =
             convert eLng :: Quantity Rational [u| deg |]
 
-toPoint :: RawLatLng -> Zone
+toPoint :: RawLatLng -> Zone Rational
 toPoint RawLatLng{..} =
     Point (LatLng (Lat latRad, Lng lngRad))
     where
@@ -344,10 +347,10 @@ toPoint RawLatLng{..} =
         latRad = convert latDeg :: Quantity Rational [u| rad |]
         lngRad = convert lngDeg :: Quantity Rational [u| rad |]
 
-toCylinder :: RawZone -> Zone
+toCylinder :: Fractional a => RawZone -> Zone a
 toCylinder RawZone{..} =
     Cylinder
-        (Radius (MkQuantity $ radius % 1))
+        (fromRationalRadius $ Radius (MkQuantity $ radius % 1))
         (LatLng (Lat latRad, Lng lngRad))
     where
         RawLat lat' = lat

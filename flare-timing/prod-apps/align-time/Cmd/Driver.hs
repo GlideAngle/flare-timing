@@ -35,8 +35,10 @@ import Cmd.Outputs (writeTimeRowsToCsv)
 import Flight.Comp (CompSettings(..), Pilot(..))
 import Flight.TrackLog (IxTask(..))
 import Flight.Units ()
-import Flight.Mask (SigMasking, checkTracks, groupByLeg, distancesToGoal)
+import Flight.Mask
+    (TaskZone, SigMasking, checkTracks, groupByLeg, distancesToGoal, zoneToCylinder)
 import Flight.Track.Cross (Fix(..))
+import Flight.Zone.Raw (RawZone)
 import Flight.Track.Time (TimeRow(..))
 import Flight.Task (TaskDistance(..))
 import Flight.Kml (MarkedFixes(..))
@@ -145,9 +147,13 @@ group :: SigMasking (Pilot -> [TimeRow])
 group tasks iTask fs =
     \pilot ->
         concat $ zipWith
-            (\leg xs -> mkTimeRows leg (distancesToGoal tasks iTask xs) pilot)
+            (\leg xs ->
+                mkTimeRows leg (distancesToGoal zoneToCyl tasks iTask xs) pilot)
             [1 .. ]
             ys
     where
         ys :: [MarkedFixes]
-        ys = groupByLeg tasks iTask fs
+        ys = groupByLeg zoneToCyl tasks iTask fs
+
+zoneToCyl :: RawZone -> TaskZone Rational
+zoneToCyl x = zoneToCylinder x

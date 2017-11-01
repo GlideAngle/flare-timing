@@ -19,6 +19,7 @@ module Zone
     , distanceHaversineF
     ) where
 
+import Prelude hiding (span)
 import Data.Ratio ((%))
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit as HU ((@?=), testCase)
@@ -26,6 +27,11 @@ import Data.UnitsOfMeasure (u, zero)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import qualified Flight.Task as FS
+    ( distanceHaversine
+    , distanceHaversineF
+    , distancePointToPoint
+    , distanceEdgeToEdge
+    )
 import Flight.LatLng
     ( Lat(..)
     , Lng(..)
@@ -42,9 +48,11 @@ import Flight.Zone
     )
 import Flight.Task
     ( TaskDistance(..)
-    , EdgeDistance(..)
+    , PathDistance(..)
     , Tolerance(..)
+    , SpanLatLng
     , separatedZones
+    , costSegment
     )
 
 import TestNewtypes
@@ -58,27 +66,27 @@ toLL (lat, lng) =
         lat' = MkQuantity lat
         lng' = MkQuantity lng
 
-point :: (Rational, Rational) -> Zone
+point :: (Rational, Rational) -> Zone Rational
 point x =
     Point $ toLL x
 
-vector :: (Rational, Rational) -> Zone
+vector :: (Rational, Rational) -> Zone Rational
 vector x =
     Vector (Bearing zero) (toLL x) 
 
-cylinder :: (Rational, Rational) -> Zone
+cylinder :: (Rational, Rational) -> Zone Rational
 cylinder x =
     Cylinder (Radius earthRadius) (toLL x)
 
-conical :: (Rational, Rational) -> Zone
+conical :: (Rational, Rational) -> Zone Rational
 conical x =
     Conical (Incline $ MkQuantity 1) (Radius earthRadius) (toLL x)
 
-line :: (Rational, Rational) -> Zone
+line :: (Rational, Rational) -> Zone Rational
 line x =
     Line (Radius earthRadius) (toLL x) 
 
-semicircle :: (Rational, Rational) -> Zone
+semicircle :: (Rational, Rational) -> Zone Rational
 semicircle x =
     SemiCircle (Radius earthRadius) (toLL x)
 
@@ -132,16 +140,16 @@ disjointUnits = testGroup "Disjoint zone separation"
 emptyDistance :: TestTree
 emptyDistance = testGroup "Point-to-point distance"
     [ HU.testCase "No zones = zero point-to-point distance" $
-        FS.distancePointToPoint [] @?= (TaskDistance $ MkQuantity 0)
+        edgesSum (FS.distancePointToPoint span []) @?= (TaskDistance $ MkQuantity 0)
     ]
 
-toDistance :: String -> [[Zone]] -> TestTree
+toDistance :: String -> [[Zone Rational]] -> TestTree
 toDistance title xs =
     testGroup title (f <$> xs)
     where
         f x =
             HU.testCase (mconcat [ "distance ", show x, " = earth radius" ]) $
-                FS.distancePointToPoint x
+                edgesSum (FS.distancePointToPoint span x)
                     @?= TaskDistance earthRadius
 
 ptsDistance :: [[Pt]]
@@ -170,7 +178,7 @@ lineDistance = toDistance "Distance over line zones" ((fmap . fmap) line ptsDist
 semicircleDistance :: TestTree
 semicircleDistance = toDistance "Distance over semicircle zones" ((fmap . fmap) semicircle ptsDistance)
 
-coincident :: String -> [[Zone]] -> TestTree
+coincident :: String -> [[Zone Rational]] -> TestTree
 coincident title xs =
     testGroup title (f <$> xs)
     where
@@ -179,7 +187,7 @@ coincident title xs =
                                  , show $ head x
                                  , " = not separate"
                                  ]) $
-                FS.separatedZones x
+                separatedZones x
                     @?= False
 
 ptsCoincident :: [[Pt]]
@@ -208,7 +216,7 @@ lineCoincident = coincident "Line zones" ((fmap . fmap) line ptsCoincident)
 semicircleCoincident :: TestTree
 semicircleCoincident = coincident "Semicircle zones" ((fmap . fmap) semicircle ptsCoincident)
 
-touching :: String -> [[Zone]] -> TestTree
+touching :: String -> [[Zone Rational]] -> TestTree
 touching title xs =
     testGroup title (f <$> xs)
     where
@@ -217,7 +225,7 @@ touching title xs =
                                  , show x
                                  , " = not separate"
                                  ]) $
-                FS.separatedZones x
+                separatedZones x
                     @?= False
 
 epsM :: Rational
@@ -241,7 +249,7 @@ lineTouching = touching "Line zones" ((fmap . fmap) line radiiTouching)
 semicircleTouching :: TestTree
 semicircleTouching = touching "Semicircle zones" ((fmap . fmap) semicircle radiiTouching)
 
-disjoint :: String -> [[Zone]] -> TestTree
+disjoint :: String -> [[Zone Rational]] -> TestTree
 disjoint title xs =
     testGroup title (f <$> xs)
     where
@@ -250,7 +258,7 @@ disjoint title xs =
                                  , show x 
                                  , " = separate"
                                  ]) $
-                FS.separatedZones x
+                separatedZones x
                     @?= True
 
 eps :: Rational
@@ -289,7 +297,7 @@ lineDisjoint = disjoint "Line zones" ((fmap . fmap) line radiiDisjoint)
 semicircleDisjoint :: TestTree
 semicircleDisjoint = disjoint "Semicircle zones" ((fmap . fmap) semicircle radiiDisjoint)
 
-correctPoint :: [Zone] -> TaskDistance -> Bool
+correctPoint :: [Zone Rational] -> TaskDistance -> Bool
 correctPoint [] (TaskDistance (MkQuantity d)) = d == 0
 correctPoint [_] (TaskDistance (MkQuantity d)) = d == 0
 correctPoint [Cylinder xR x, Cylinder yR y] (TaskDistance (MkQuantity d))
@@ -301,7 +309,7 @@ correctPoint xs (TaskDistance (MkQuantity d))
     where
         ys = center <$> xs
 
-correctCenter :: [Zone] -> TaskDistance -> Bool
+correctCenter :: [Zone Rational] -> TaskDistance -> Bool
 correctCenter [] (TaskDistance (MkQuantity d)) = d == 0
 correctCenter [_] (TaskDistance (MkQuantity d)) = d == 0
 correctCenter xs (TaskDistance (MkQuantity d))
@@ -325,16 +333,17 @@ distanceHaversine (HaversineTest (x, y)) =
 
 distancePoint :: ZonesTest -> Bool
 distancePoint (ZonesTest xs) =
-    correctPoint xs $ FS.distancePointToPoint xs
+    (\(PathDistance d _) -> correctPoint xs d)
+    $ FS.distancePointToPoint span xs
 
-mm10 :: Tolerance
+mm10 :: Tolerance Rational
 mm10 = Tolerance $ 10 % 1000
 
 distanceEdge :: ZonesTest -> Bool
 distanceEdge (ZonesTest xs) =
     correctCenter xs
     $ edgesSum
-    $ FS.distanceEdgeToEdge mm10 xs
+    $ FS.distanceEdgeToEdge span (costSegment span) mm10 xs
 
 distanceLess :: ZonesTest -> Bool
 distanceLess (ZonesTest xs)
@@ -342,8 +351,11 @@ distanceLess (ZonesTest xs)
     | otherwise =
         dCenter <= dPoint
         where
-            TaskDistance dCenter =
-                edgesSum
-                $ FS.distanceEdgeToEdge mm10 xs
+            PathDistance dCenter _ =
+                FS.distanceEdgeToEdge span (costSegment span) mm10 xs
 
-            TaskDistance dPoint = FS.distancePointToPoint xs
+            PathDistance dPoint _ =
+                FS.distancePointToPoint span xs
+
+span :: SpanLatLng
+span = FS.distanceHaversine defEps

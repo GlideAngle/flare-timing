@@ -33,7 +33,16 @@ import Flight.LatLng
     , earthRadius
     , defEps
     )
-import Flight.Zone (Zone(..), Radius(..), Bearing(..), center, radius)
+import Flight.Zone
+    ( Zone(..)
+    , Radius(..)
+    , Bearing(..)
+    , center
+    , radius
+    , fromRationalRadius
+    , fromRationalZone
+    , toRationalZone
+    )
 import Flight.PointToPoint (distancePointToPoint, distanceHaversine)
 import Flight.Distance (TaskDistance(..), PathDistance(..))
 import Flight.Units (showRadian)
@@ -71,35 +80,45 @@ instance Fractional TrueCourse where
         TrueCourse (MkQuantity (denominator x % numerator x))
 
 newtype Samples = Samples { unSamples :: Integer } deriving (Eq, Ord, Show)
-newtype Tolerance = Tolerance { unTolerance :: Rational } deriving (Eq, Ord, Show)
+newtype Tolerance a = Tolerance { unTolerance :: a } deriving (Eq, Ord, Show)
 
-data ZonePoint
+data ZonePoint a
     = ZonePoint
-        { sourceZone :: Zone
+        { sourceZone :: Zone a
         -- ^ This is the zone that generated the point.
         , point :: LatLng [u| rad |]
         -- ^ A point on the edge of this zone.
         , radial :: Bearing
         -- ^ A point on the edge of this zone with this bearing from
         -- the origin.
-        , orbit :: Radius
+        , orbit :: Radius a
         -- ^ A point on the edge of this zone at this distance from the
         -- origin.
         }
 
-data SampleParams
+fromRationalZonePoint :: Fractional a => ZonePoint Rational -> ZonePoint a
+fromRationalZonePoint ZonePoint{..} =
+    ZonePoint
+        { sourceZone = fromRationalZone sourceZone
+        , point = point
+        , radial = radial
+        , orbit = fromRationalRadius orbit
+        }
+
+data SampleParams a
     = SampleParams
         { spSamples :: Samples
-        , spTolerance :: Tolerance
+        , spTolerance :: Tolerance a
         }
 
 -- | Generate sample points for a zone. These get added to the graph to work out
 -- the shortest path.
-sample :: SampleParams
+sample :: (Real a, Fractional a)
+       => SampleParams a
        -> Bearing
-       -> Maybe ZonePoint
-       -> Zone
-       -> [ZonePoint]
+       -> Maybe (ZonePoint a)
+       -> Zone a
+       -> [ZonePoint a]
 sample _ _ _ px@(Point x) = [ZonePoint px x (Bearing zero) (Radius (MkQuantity 0))]
 sample _ _ _ px@(Vector _ x) = [ZonePoint px x (Bearing zero) (Radius (MkQuantity 0))]
 sample sp b zs z@Cylinder{} = fst $ circumSample sp b zs z
@@ -111,9 +130,10 @@ sample sp b zs z@SemiCircle{} = fst $ circumSample sp b zs z
 -- <http://www.edwilliams.org/avform.htm#LL Aviation Formulary>
 -- a point on a cylinder wall is found by going out to the distance of the
 -- radius on the given radial true course 'rtc'.
-circum :: LatLng [u| rad |]
+circum :: Real a
+       => LatLng [u| rad |]
        -> Epsilon
-       -> Radius
+       -> Radius a
        -> TrueCourse
        -> LatLng [u| rad |]
 circum
@@ -132,7 +152,7 @@ circum
         MkQuantity tc = fromRational' rtc :: Quantity Double [u| rad |]
 
         radius' :: Double
-        radius' = fromRational rRadius
+        radius' = fromRational . toRational $ rRadius
 
         bigR = fromRational $ unQuantity earthRadius
 
@@ -161,13 +181,14 @@ circum
 -- the distance to the origin and the radius should be less han the 'tolerance'.
 --
 -- The points of the compass are divided by the number of samples requested.
-circumSample :: SampleParams
+circumSample :: (Real a, Fractional a)
+             => SampleParams a
              -> Bearing
-             -> Maybe ZonePoint
-             -> Zone
-             -> ([ZonePoint], [TrueCourse])
+             -> Maybe (ZonePoint a)
+             -> Zone a
+             -> ([ZonePoint a], [TrueCourse])
 circumSample SampleParams{..} (Bearing (MkQuantity bearing)) zp zone =
-    unzip ys
+    (fromRationalZonePoint <$> fst ys, snd ys)
     where
         (Epsilon eps) = defEps
 
@@ -197,48 +218,61 @@ circumSample SampleParams{..} (Bearing (MkQuantity bearing)) zp zone =
                     where
                         (Bearing (MkQuantity b)) = radial
 
-        r@(Radius (MkQuantity limitRadius)) = radius zone'
+        (Radius (MkQuantity limitRadius)) = radius zone'
+        limitRadius' = toRational limitRadius
+        r = Radius (MkQuantity limitRadius')
+
         ptCenter = center zone'
         circumR = circum ptCenter defEps
 
-        ys = getClose 10 (Radius (MkQuantity 0)) (circumR r) <$> xs
+        ys :: ([ZonePoint Rational], [TrueCourse])
+        ys = unzip $ getClose 10 (Radius (MkQuantity 0)) (circumR r) <$> xs
 
         getClose :: Int
-                 -> Radius
+                 -> Radius Rational
                  -> (TrueCourse -> LatLng [u| rad |])
                  -> TrueCourse
-                 -> (ZonePoint, TrueCourse)
+                 -> (ZonePoint Rational, TrueCourse)
         getClose trys yr@(Radius (MkQuantity offset)) f x@(TrueCourse tc)
             | trys <= 0 = (zp', dist)
             | unTolerance spTolerance <= 0 = (zp', dist)
             | limitRadius <= unTolerance spTolerance = (zp', dist)
             | otherwise =
-                case d `compare` limitRadius of
+                case d `compare` toRational limitRadius of
                      EQ ->
                          (zp', dist)
 
                      GT ->
-                         let offset' = offset - (d - limitRadius) * 105 / 100
-                             f' = circumR (Radius (MkQuantity $ limitRadius + offset'))
+                         let offset' =
+                                 offset - (d - limitRadius') * 105 / 100
+
+                             f' =
+                                 circumR (Radius (MkQuantity $ limitRadius' + offset'))
+
                          in getClose (trys - 1) (Radius (MkQuantity offset')) f' x
                          
                      LT ->
-                         if d > limitRadius - unTolerance spTolerance then (zp', dist) else
-                             let offset' = offset + (limitRadius - d) * 94 / 100
-                                 f' = circumR (Radius (MkQuantity $ limitRadius + offset'))
+                         if d > toRational (limitRadius - unTolerance spTolerance)
+                         then (zp', dist)
+                         else
+                             let offset' =
+                                     offset + (limitRadius' - d) * 94 / 100
+
+                                 f' =
+                                     circumR (Radius (MkQuantity $ limitRadius' + offset'))
                              in getClose (trys - 1) (Radius (MkQuantity offset')) f' x
             where
                 y = f x
-                zp' = ZonePoint { sourceZone = zone'
+                zp' = ZonePoint { sourceZone = toRationalZone zone'
                                 , point = y
                                 , radial = Bearing tc
                                 , orbit = yr
-                                }
+                                } :: ZonePoint Rational
                                
                 (TaskDistance (MkQuantity d)) =
                     edgesSum
                     $ distancePointToPoint
                         (distanceHaversine defEps)
-                        [Point ptCenter, Point y]
+                        ([Point ptCenter, Point y] :: [Zone Rational])
 
                 dist = fromRational d

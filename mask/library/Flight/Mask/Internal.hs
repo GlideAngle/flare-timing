@@ -50,7 +50,7 @@ import qualified Flight.Kml as Kml
     )
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.LatLng.Raw (RawLat(..), RawLng(..))
-import Flight.Zone (Radius(..), Zone(..))
+import Flight.Zone (Radius(..), Zone(..), toRationalZone)
 import qualified Flight.Zone.Raw as Raw (RawZone(..))
 import Flight.Track.Cross (Fix(..))
 import qualified Flight.Comp as Cmp (Task(..), SpeedSection)
@@ -67,7 +67,7 @@ import Flight.Task
     , distanceHaversineF
     )
 
-mm30 :: Tolerance
+mm30 :: Tolerance Rational
 mm30 = Tolerance $ 30 % 1000
 
 type ZoneIdx = Int
@@ -80,16 +80,18 @@ data ZoneHit
 
 -- | A function that tests whether a flight track, represented as a series of point
 -- zones crosses a zone.
-type CrossingPredicate
-    = TaskZone -- ^ The task control zone.
-    -> [TrackZone] -- ^ The flight track represented as a series of point zones.
+type CrossingPredicate a
+    = TaskZone a
+    -- ^ The task control zone.
+    -> [TrackZone a]
+    -- ^ The flight track represented as a series of point zones.
     -> ZoneHit
 
 -- | A task control zone.
-newtype TaskZone = TaskZone { unTaskZone :: Zone }
+newtype TaskZone a = TaskZone { unTaskZone :: Zone a }
 
 -- | A fix in a flight track converted to a point zone.
-newtype TrackZone = TrackZone { unTrackZone :: Zone }
+newtype TrackZone a = TrackZone { unTrackZone :: Zone a }
 
 slice :: Cmp.SpeedSection -> [a] -> [a]
 slice = \case
@@ -108,31 +110,34 @@ toLL (lat, lng) =
             lat'' = convert lat' :: Quantity Rational [u| rad |]
             lng'' = convert lng' :: Quantity Rational [u| rad |]
 
-zoneToCylinder :: Raw.RawZone -> TaskZone
+zoneToCylinder :: Fractional a => Raw.RawZone -> TaskZone a
 zoneToCylinder z =
     TaskZone $ Cylinder radius (toLL(lat, lng))
     where
-        radius = Radius (MkQuantity $ Raw.radius z % 1)
+        r = Raw.radius z
+        r' = fromRational $ r % 1
+
+        radius = Radius (MkQuantity r')
         RawLat lat = Raw.lat z
         RawLng lng = Raw.lng z
 
-fixToPoint :: Kml.Fix -> TrackZone
+fixToPoint :: Kml.Fix -> TrackZone a
 fixToPoint fix =
     TrackZone $ Point (toLL (lat, lng))
     where
         Kml.Latitude lat = Kml.lat fix
         Kml.Longitude lng = Kml.lng fix
 
-insideZone :: TaskZone -> [TrackZone] -> Maybe Int
+insideZone :: Real a => TaskZone a -> [TrackZone a] -> Maybe Int
 insideZone (TaskZone z) =
     List.findIndex (\(TrackZone x) -> not $ separatedZones [x, z])
 
-outsideZone :: TaskZone -> [TrackZone] -> Maybe Int
+outsideZone :: Real a => TaskZone a -> [TrackZone a] -> Maybe Int
 outsideZone (TaskZone z) =
     List.findIndex (\(TrackZone x) -> separatedZones [x, z])
 
 -- | Finds the first pair of points, one outside the zone and the next inside.
-entersZone :: CrossingPredicate
+entersZone :: Real a => CrossingPredicate a
 entersZone z xs =
     case insideZone z xs of
         Nothing -> ZoneMiss
@@ -142,7 +147,7 @@ entersZone z xs =
                 _ -> ZoneMiss
 
 -- | Finds the first pair of points, one inside the zone and the next outside.
-exitsZone :: CrossingPredicate
+exitsZone :: Real a => CrossingPredicate a
 exitsZone z xs =
     case outsideZone z xs of
         Nothing -> ZoneMiss
@@ -156,8 +161,8 @@ exitsZone z xs =
 -- the start zone is entry otherwise it is exit. In one case the start cylinder
 -- contains the next turnpoint and in the other the start cylinder is
 -- completely separate from the next turnpoint.
-isStartExit :: Cmp.Task -> Bool
-isStartExit Cmp.Task{speedSection, zones} =
+isStartExit :: Real a => (Raw.RawZone -> TaskZone a) -> Cmp.Task -> Bool
+isStartExit zoneToCyl Cmp.Task{speedSection, zones} =
     case speedSection of
         Nothing ->
             False
@@ -167,16 +172,17 @@ isStartExit Cmp.Task{speedSection, zones} =
             in case (zones ^? element (i - 1), zones ^? element i) of
                 (Just start, Just tp1) ->
                     separatedZones
-                    $ unTaskZone . zoneToCylinder
+                    $ unTaskZone . zoneToCyl
                     <$> [start, tp1]
 
                 _ ->
                     False
 
 pickCrossingPredicate
-    :: Bool -- ^ Is the start an exit cylinder?
+    :: Real a
+    => Bool -- ^ Is the start an exit cylinder?
     -> Cmp.Task
-    -> [CrossingPredicate]
+    -> [CrossingPredicate a]
 pickCrossingPredicate False Cmp.Task{zones} =
     const entersZone <$> zones
 
@@ -203,29 +209,32 @@ fixFromFix mark0 x =
         Kml.Latitude lat = Kml.lat x
         Kml.Longitude lng = Kml.lng x
 
-tickedZones :: [CrossingPredicate]
-            -> [TaskZone] -- ^ The control zones of the task.
-            -> [TrackZone] -- ^ The flown track.
+tickedZones :: [CrossingPredicate a]
+            -> [TaskZone a] -- ^ The control zones of the task.
+            -> [TrackZone a] -- ^ The flown track.
             -> [ZoneHit]
 tickedZones fs zones xs =
     zipWith (\f z -> f z xs) fs zones
 
 type DistanceViaZones =
-    forall a. (a -> TrackZone)
+    forall a b. (Real b)
+    => (a -> TrackZone b)
     -> Cmp.SpeedSection
-    -> [CrossingPredicate]
-    -> [TaskZone]
+    -> [CrossingPredicate b]
+    -> [TaskZone b]
     -> [a]
     -> Maybe TaskDistance
 
-distanceToGoal :: DistanceViaZones
-                -> [Cmp.Task]
-                -> IxTask
-                -> Kml.MarkedFixes
-                -> Maybe TaskDistance
+distanceToGoal :: Real a
+               => (Raw.RawZone -> TaskZone a)
+               -> DistanceViaZones
+               -> [Cmp.Task]
+               -> IxTask
+               -> Kml.MarkedFixes
+               -> Maybe TaskDistance
 
 -- ^ Nothing indicates no such task or a task with no zones.
-distanceToGoal dvz tasks (IxTask i) Kml.MarkedFixes{fixes} =
+distanceToGoal zoneToCyl dvz tasks (IxTask i) Kml.MarkedFixes{fixes} =
     case tasks ^? element (i - 1) of
         Nothing -> Nothing
         Just task@Cmp.Task{speedSection, zones} ->
@@ -234,10 +243,10 @@ distanceToGoal dvz tasks (IxTask i) Kml.MarkedFixes{fixes} =
                 fixToPoint
                 speedSection
                 fs
-                (zoneToCylinder <$> zones)
+                (zoneToCyl <$> zones)
                 fixes 
             where
-                fs = (\x -> pickCrossingPredicate (isStartExit x) x) task
+                fs = (\x -> pickCrossingPredicate (isStartExit zoneToCyl x) x) task
 
 -- | A task is to be flown via its control zones. This function finds the last
 -- leg made. The next leg is partial. Along this, the track fixes are checked
@@ -257,7 +266,7 @@ distanceViaZones mkZone speedSection fs zs xs =
                     distanceHaversineF
                     (costSegment distanceHaversineF)
                     mm30
-                    (unTrackZone (mkZone x) : notTicked)
+                    $ toRationalZone <$> (unTrackZone (mkZone x) : notTicked)
     where
         -- TODO: Don't assume end of speed section is goal.
         zsSpeed = slice speedSection zs

@@ -13,6 +13,7 @@ from launch to goal passing through each control zone of the course in order alo
 module Flight.Task
     ( -- * Spherical Distance Between Points
       TaskDistance(..)
+    , SpanLatLng
     , distancePointToPoint
     , distanceHaversine
     , distanceHaversineF

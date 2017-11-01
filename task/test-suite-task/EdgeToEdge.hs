@@ -12,6 +12,7 @@
 
 module EdgeToEdge (edgeToEdgeUnits) where
 
+import Prelude hiding (span)
 import Data.Ratio((%))
 import qualified Data.Number.FixedFunctions as F
 import Data.List (inits)
@@ -35,8 +36,10 @@ import Flight.Task
     , SampleParams(..)
     , Tolerance(..)
     , TaskDistance(..)
-    , EdgeDistance(..)
+    , PathDistance(..)
+    , SpanLatLng
     , fromKms
+    , costSegment
     )
 
 (.>=.) :: (Show a, Show b) => a -> b -> String
@@ -54,22 +57,22 @@ edgeToEdgeUnits = testGroup "Zone edge shortest path unit tests"
     , forbesUnits
     ]
 
-m100 :: Tolerance
+m100 :: Tolerance Rational
 m100 = Tolerance $ 100 % 1
 
-mm100 :: Tolerance
+mm100 :: Tolerance Rational
 mm100 = Tolerance $ 100 % 1000
 
-mm30 :: Tolerance
+mm30 :: Tolerance Rational
 mm30 = Tolerance $ 30 % 1000
 
-mm10 :: Tolerance
+mm10 :: Tolerance Rational
 mm10 = Tolerance $ 10 % 1000
 
-mm1 :: Tolerance
+mm1 :: Tolerance Rational
 mm1 = Tolerance $ 1 % 1000
 
-sampleParams :: SampleParams
+sampleParams :: SampleParams Rational
 sampleParams = SampleParams { spSamples = Samples 100
                             , spTolerance = mm30
                             }
@@ -195,7 +198,7 @@ unkilo :: Num a => a -> a
 unkilo x = x * 1000
 
 mkPartDayUnits :: TestName
-               -> [Zone]
+               -> [Zone Rational]
                -> TaskDistance
                -> TestTree
 mkPartDayUnits title zs (TaskDistance d) = testGroup title
@@ -208,7 +211,7 @@ mkPartDayUnits title zs (TaskDistance d) = testGroup title
         Flip r = dpRound 2 <$> Flip dKm
         tdR = TaskDistance (convert r :: Quantity Rational [u| m |])
 
-        td'@(TaskDistance d') = FS.distancePointToPoint zs
+        td'@(TaskDistance d') = edgesSum $ FS.distancePointToPoint span zs
         dKm' = convert d' :: Quantity Rational [u| km |]
         Flip r' = dpRound 2 <$> Flip dKm'
         tdR' = TaskDistance (convert r' :: Quantity Rational [u| m |])
@@ -393,7 +396,7 @@ day8PartUnits = testGroup "Task 8 [...]"
             d3 = fromKms [u| 42.13 km |]
 
 mkDayUnits :: TestName
-           -> [Zone]
+           -> [Zone Rational]
            -> TaskDistance
            -> [TaskDistance]
            -> TestTree
@@ -425,12 +428,12 @@ mkDayUnits title pDay dDay dsDay = testGroup title
             distLess eeDayInits dsDay @? eeDayInits .<=. dsDay
     ]
     where
-        pp = FS.distancePointToPoint
-        ee = FS.distanceEdgeToEdge mm30 
-        ppDay = pp pDay
+        pp = FS.distancePointToPoint span
+        ee = FS.distanceEdgeToEdge span (costSegment span) mm30 
+        ppDay = edgesSum $ pp pDay
         eeDay = edgesSum $ ee pDay
         pDayInits = drop 1 $ inits pDay
-        ppDayInits = pp <$> pDayInits
+        ppDayInits = edgesSum . pp <$> pDayInits
         eeDayInits = edgesSum . ee <$> pDayInits
         distLess xs ys = take 1 (reverse xs) < take 1 (reverse ys)
 
@@ -494,7 +497,7 @@ NOTE: Point to point distances using Vincenty method.
 134.7 - 10 - 0.4
 => 124.30
 -}
-pDay1 :: [Zone]
+pDay1 :: [Zone Rational]
 pDay1 =
     [ Cylinder (Radius $ MkQuantity 100) $ toLL (negate 33.36137, 147.93207)
     , Cylinder (Radius $ MkQuantity 10000) $ toLL (negate 33.36137, 147.93207)
@@ -568,7 +571,7 @@ NOTE: Point to point distances using Vincenty method.
 130.15 - 5 - 0.4
 => 124.75
 -}
-pDay2 :: [Zone]
+pDay2 :: [Zone Rational]
 pDay2 =
     [ Cylinder (Radius $ MkQuantity 100) (toLL (negate 33.36137, 147.93207))
     , Cylinder (Radius $ MkQuantity 5000) (toLL (negate 33.36137, 147.93207))
@@ -621,7 +624,7 @@ NOTE: Point to point distances using Vincenty method.
 185.35 - 25 - 0.4
 => 159.95
 -}
-pDay3 :: [Zone]
+pDay3 :: [Zone Rational]
 pDay3 =
     [ Cylinder (Radius $ MkQuantity 100) (toLL (negate 33.36137, 147.93207))
     , Cylinder (Radius $ MkQuantity 25000) (toLL (negate 33.36137, 147.93207))
@@ -671,7 +674,7 @@ NOTE: Point to point distances using Vincenty method.
 157.16 - 15 - 0.4
 => 141.76
 -}
-pDay4 :: [Zone]
+pDay4 :: [Zone Rational]
 pDay4 =
     [ Cylinder (Radius $ MkQuantity 100) (toLL (negate 33.36137, 147.93207))
     , Cylinder (Radius $ MkQuantity 15000) (toLL (negate 33.36137, 147.93207))
@@ -719,7 +722,7 @@ NOTE: Point to point distances using Vincenty method.
 221.4 - 15 - 0.4
 => 206.0
 -}
-pDay5 :: [Zone]
+pDay5 :: [Zone Rational]
 pDay5 =
     [ Cylinder (Radius $ MkQuantity 100) (toLL (negate 33.36137, 147.93207))
     , Cylinder (Radius $ MkQuantity 15000) (toLL (negate 33.36137, 147.93207))
@@ -767,7 +770,7 @@ NOTE: Point to point distances using Vincenty method.
 205.43 - 15 - 0.4
 => 190.03
 -}
-pDay6 :: [Zone]
+pDay6 :: [Zone Rational]
 pDay6 =
     [ Cylinder (Radius $ MkQuantity 100) (toLL (negate 33.36137, 147.93207))
     , Cylinder (Radius $ MkQuantity 15000) (toLL (negate 33.36137, 147.93207))
@@ -818,7 +821,7 @@ NOTE: Point to point distances using Vincenty method.
 183.60 - 10 - 0.4
 => 173.2
 -}
-pDay7 :: [Zone]
+pDay7 :: [Zone Rational]
 pDay7 =
     [ Cylinder (Radius $ MkQuantity 100) (toLL (negate 33.36137, 147.93207))
     , Cylinder (Radius $ MkQuantity 10000) (toLL (negate 33.36137, 147.93207))
@@ -871,7 +874,7 @@ NOTE: Point to point distances using Vincenty method.
 169.92 - 10 - 0.4
 => 159.52
 -}
-pDay8 :: [Zone]
+pDay8 :: [Zone Rational]
 pDay8 =
     [ Cylinder (Radius $ MkQuantity 100) (toLL (negate 33.36137, 147.93207))
     , Cylinder (Radius $ MkQuantity 10000) (toLL (negate 33.36137, 147.93207))
@@ -892,3 +895,6 @@ dsDay8 =
         , 117.028
         , 158.848
         ]
+
+span :: SpanLatLng
+span = FS.distanceHaversine defEps

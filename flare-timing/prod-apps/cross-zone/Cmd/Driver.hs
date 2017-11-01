@@ -34,8 +34,9 @@ import qualified Data.ByteString as BS
 import qualified Flight.Comp as Cmp (CompSettings(..), Pilot(..))
 import Flight.TrackLog (TrackFileFail(..), IxTask(..))
 import Flight.Units ()
-import Flight.Mask (SigMasking, checkTracks, madeZones)
+import Flight.Mask (TaskZone, SigMasking, checkTracks, madeZones, zoneToCylinder)
 import Flight.Track.Cross (TrackCross(..), PilotTrackCross(..), Crossing(..))
+import Flight.Zone.Raw (RawZone)
 
 type MkPart a =
     FilePath
@@ -132,5 +133,8 @@ drive CmdOptions{..} = do
                 flown :: SigMasking TrackCross
                 flown tasks iTask xs =
                     TrackCross
-                        { zonesCross = madeZones tasks iTask xs
+                        { zonesCross = madeZones zoneToCyl tasks iTask xs
                         }
+
+zoneToCyl :: RawZone -> TaskZone Rational
+zoneToCyl x = zoneToCylinder x

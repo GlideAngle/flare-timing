@@ -40,14 +40,17 @@ import Flight.TrackLog (IxTask(..))
 import Flight.Units ()
 import Flight.Mask
     ( SigMasking
+    , TaskZone
     , checkTracks
     , madeGoal
     , distanceToGoal
     , distanceFlown
     , timeFlown
+    , zoneToCylinder
     )
 import Flight.Track.Mask (Masking(..), PilotTrackMask(..))
 import qualified Flight.Track.Mask as TM (TrackMask(..))
+import Flight.Zone.Raw (RawZone)
 import Data.Number.RoundingFunctions (dpRound)
 
 driverMain :: IO ()
@@ -84,11 +87,11 @@ unTaskDistance (Tsk.TaskDistance d) =
     where 
         MkQuantity dKm = convert d :: Quantity Rational [u| km |]
 
-unPilotDistance :: Fractional a => Gap.PilotDistance -> a
+unPilotDistance :: (Real a, Fractional b) => Gap.PilotDistance a -> b
 unPilotDistance (Gap.PilotDistance d) =
     fromRational $ dpRound 3 dKm
     where 
-        d' :: Quantity Rational [u| m |] = MkQuantity d
+        d' :: Quantity Rational [u| m |] = MkQuantity $ toRational d
         MkQuantity dKm = convert d' :: Quantity Rational [u| km |]
 
 unPilotTime :: Fractional a => Gap.PilotTime -> a
@@ -155,10 +158,10 @@ drive CmdOptions{..} = do
 
 flown :: SigMasking TM.TrackMask
 flown tasks iTask xs =
-    let mg = madeGoal tasks iTask xs
-        dg = distanceToGoal tasks iTask xs
-        df = distanceFlown tasks iTask xs
-        tf = timeFlown tasks iTask xs
+    let mg = madeGoal zoneToCyl tasks iTask xs
+        dg = distanceToGoal zoneToCyl tasks iTask xs
+        df = distanceFlown zoneToCyl tasks iTask xs
+        tf = timeFlown zoneToCyl tasks iTask xs
     in TM.TrackMask
         { madeGoal = mg
 
@@ -166,8 +169,11 @@ flown tasks iTask xs =
             if mg then Nothing else unTaskDistance <$> dg
 
         , distanceMade =
-            if mg then Nothing else unPilotDistance <$> df
+            fromRational <$> if mg then Nothing else unPilotDistance <$> df
 
         , timeToGoal =
             if not mg then Nothing else unPilotTime <$> tf
         }
+
+zoneToCyl :: RawZone -> TaskZone Rational
+zoneToCyl x = zoneToCylinder x

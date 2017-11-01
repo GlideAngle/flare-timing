@@ -9,6 +9,7 @@
 
 {-# LANGUAGE DisambiguateRecordFields #-}
 {-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE PartialTypeSignatures #-}
 
 module Flight.Mask.Distance
     ( distanceToGoal
@@ -41,46 +42,55 @@ import Flight.Mask.Internal
     , distanceViaZones
     )
 import qualified Flight.Mask.Internal as I (distanceToGoal)
+import qualified Flight.Zone.Raw as Raw (RawZone(..))
 
-distancesToGoal :: [Cmp.Task]
+distancesToGoal :: Real a
+                => (Raw.RawZone -> TaskZone a)
+                -> [Cmp.Task]
                 -> IxTask
                 -> Kml.MarkedFixes
                 -> Maybe [(Maybe Fix, Maybe TaskDistance)]
                 -- ^ Nothing indicates no such task or a task with no zones.
-distancesToGoal tasks iTask@(IxTask i) Kml.MarkedFixes{mark0, fixes} =
+distancesToGoal zoneToCyl tasks iTask@(IxTask i) Kml.MarkedFixes{mark0, fixes} =
     case tasks ^? element (i - 1) of
         Nothing -> Nothing
         Just Cmp.Task{zones} ->
             if null zones then Nothing else Just
-            $ lastFixToGoal tasks iTask mark0
+            $ lastFixToGoal zoneToCyl tasks iTask mark0
             <$> inits fixes
 
 -- | The distance from the last fix to goal passing through the remaining
 -- control zones.
-lastFixToGoal :: [Cmp.Task]
+lastFixToGoal :: Real a
+              => (Raw.RawZone -> TaskZone a)
+              -> [Cmp.Task]
               -> IxTask
               -> UTCTime
               -> [Kml.Fix]
               -> (Maybe Fix, Maybe TaskDistance)
-lastFixToGoal tasks iTask mark0 ys =
+lastFixToGoal zoneToCyl tasks iTask mark0 ys =
     case reverse ys of
         [] -> (Nothing, Nothing)
         (y : _) -> (Just $ fixFromFix mark0 y, d)
     where
         xs = Kml.MarkedFixes { Kml.mark0 = mark0, Kml.fixes = ys }
-        d = I.distanceToGoal distanceViaZones tasks iTask xs
+        d = I.distanceToGoal zoneToCyl distanceViaZones tasks iTask xs
 
-distanceToGoal :: [Cmp.Task]
+distanceToGoal :: Real a
+               => (Raw.RawZone -> TaskZone a)
+               -> [Cmp.Task]
                -> IxTask
                -> Kml.MarkedFixes
                -> Maybe TaskDistance
-distanceToGoal = I.distanceToGoal distanceViaZones
+distanceToGoal zoneToCyl = I.distanceToGoal zoneToCyl distanceViaZones
 
-distanceFlown :: [Cmp.Task]
+distanceFlown :: (Real a, Fractional a)
+              => (Raw.RawZone -> TaskZone a)
+              -> [Cmp.Task]
               -> IxTask
               -> Kml.MarkedFixes
-              -> Maybe PilotDistance
-distanceFlown tasks (IxTask i) Kml.MarkedFixes{fixes} =
+              -> Maybe (PilotDistance a)
+distanceFlown zoneToCyl tasks (IxTask i) Kml.MarkedFixes{fixes} =
     case tasks ^? element (i - 1) of
         Nothing ->
             Nothing
@@ -88,19 +98,20 @@ distanceFlown tasks (IxTask i) Kml.MarkedFixes{fixes} =
         Just task@Cmp.Task{speedSection, zones} ->
             if null zones then Nothing else go speedSection fs cs d
             where
-                fs = (\x -> pickCrossingPredicate (isStartExit x) x) task
+                fs = (\x -> pickCrossingPredicate (isStartExit zoneToCyl x) x) task
                 cs = zoneToCylinder <$> zones
                 d = distanceViaZones fixToPoint speedSection fs cs fixes
 
     where
-        go :: Cmp.SpeedSection
-           -> [CrossingPredicate]
-           -> [TaskZone]
+        go :: (Real a, Fractional a)
+           => Cmp.SpeedSection
+           -> [CrossingPredicate a]
+           -> [TaskZone a]
            -> Maybe TaskDistance
-           -> Maybe PilotDistance
+           -> Maybe (PilotDistance a)
 
         go _ _ [] (Just (TaskDistance (MkQuantity d))) =
-            Just $ PilotDistance d
+            Just . PilotDistance $ fromRational d
 
         go _ _ _ Nothing =
             Nothing
@@ -111,7 +122,7 @@ distanceFlown tasks (IxTask i) Kml.MarkedFixes{fixes} =
                     Nothing
 
                 Just (TaskDistance dMax) ->
-                    Just . PilotDistance . unQuantity $ dMax -: d
+                    Just . PilotDistance . fromRational . unQuantity $ dMax -: d
             where
                 zoneToZone (TaskZone x) = TrackZone x
                 total = distanceViaZones zoneToZone speedSection fs zs [z]

@@ -11,7 +11,7 @@
 module Flight.Separated (separatedZones) where
     
 import Prelude hiding (span)
-import Data.UnitsOfMeasure ((+:), (-:), (*:), (/:), u, unQuantity)
+import Data.UnitsOfMeasure ((+:), (-:), (*:), (/:), u, unQuantity, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
@@ -74,7 +74,7 @@ boundingBoxSeparated
         (Lat xLat') = xTranslate xLLx
         (Lng xLng') = yTranslate xLLy
 
-separated :: Zone -> Zone -> Bool
+separated :: Real a => Zone a -> Zone a -> Bool
 
 separated x@(Point _) y@(Point _) =
     x /= y
@@ -85,13 +85,14 @@ separated x y@(Point _) =
 separated
     x@(Point xLL)
     y@(Cylinder r yLL) =
-    boundingBoxSeparated ry xLL yLL || d > ry
+    boundingBoxSeparated ry' xLL yLL || d > ry'
     where
         (Radius ry) = r
+        ry' = toRational' ry
         (TaskDistance d) = edgesSum $ distancePointToPoint span [x, y]
 
 separated x@(Point _) y =
-    d > ry
+    d > toRational' ry
     where
         (Radius ry) = radius y
         (TaskDistance d) = edgesSum $ distancePointToPoint span [x, y]
@@ -99,15 +100,20 @@ separated x@(Point _) y =
 -- | Consider cylinders separated if one fits inside the other or if they don't
 -- touch.
 separated xc@(Cylinder (Radius xR) x) yc@(Cylinder (Radius yR) y)
-    | x == y = xR /= yR
+    | x == y = xR' /= yR'
     | dxy + minR < maxR = True
     | otherwise = clearlySeparated xc yc
     where
         (TaskDistance (MkQuantity dxy)) =
-            edgesSum $ distancePointToPoint span [Point x, Point y]
+            edgesSum
+            $ distancePointToPoint
+                span
+                ([Point x, Point y] :: [Zone Rational])
 
-        (MkQuantity minR) = max xR yR
-        (MkQuantity maxR) = min xR yR
+        xR' = toRational' xR
+        yR' = toRational' yR
+        (MkQuantity minR) = max xR' yR'
+        (MkQuantity maxR) = min xR' yR'
 
 separated x y =
     clearlySeparated x y
@@ -118,17 +124,17 @@ separated x y =
 -- distance between them. This will be seen where the smaller concentric cylinder
 -- marks the launch and the larger one, as an exit cylinder, marks the start of the
 -- speed section.
-separatedZones :: [Zone] -> Bool
+separatedZones :: Real a => [Zone a] -> Bool
 separatedZones xs =
     and $ zipWith separated xs (tail xs)
 
-clearlySeparated :: Zone -> Zone -> Bool
+clearlySeparated :: Real a => Zone a -> Zone a -> Bool
 clearlySeparated x y =
     d > rxy
     where
         (Radius rx) = radius x
         (Radius ry) = radius y
-        rxy = rx +: ry
+        rxy = toRational' rx +: toRational' ry
         (TaskDistance d) = edgesSum $ distancePointToPoint span [x, y]
 
 span :: SpanLatLng

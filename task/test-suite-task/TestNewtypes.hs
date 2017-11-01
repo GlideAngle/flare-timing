@@ -31,8 +31,8 @@ import Flight.Zone
     )
 
 newtype HaversineTest = HaversineTest (LatLng [u| rad |], LatLng [u| rad |]) deriving Show
-newtype ZoneTest = ZoneTest Zone deriving Show
-newtype ZonesTest = ZonesTest [Zone] deriving Show
+newtype ZoneTest = ZoneTest (Zone Rational) deriving Show
+newtype ZonesTest = ZonesTest [Zone Rational] deriving Show
 
 instance Monad m => SC.Serial m HaversineTest where
     series = decDepth $ HaversineTest <$>

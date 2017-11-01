@@ -26,7 +26,7 @@ import Flight.Distance (TaskDistance(..), PathDistance(..))
 import Flight.Units ()
 import Flight.LatLng (LatLng(..), Lat(..), Lng(..), radToDegLL, defEps)
 
-zoneToProjectedEastNorth :: Zone -> Either String HC.UTMRef
+zoneToProjectedEastNorth :: Zone a -> Either String HC.UTMRef
 
 zoneToProjectedEastNorth (Point x) = do
     xLL <- runIdentity . runExceptT $ HC.mkLatLng xLat' xLng' 0 HC.wgs84Datum
@@ -48,7 +48,7 @@ tooFar = TaskDistance [u| 20000000 m |]
 -- eastings and northings. If you need to calculate the distance in sperical
 -- coordinates, the latitude and longitude of each vertex of the path can be
 -- used to work that out.
-costEastNorth :: Zone -> Zone -> PathDistance
+costEastNorth :: Zone a -> Zone a -> PathDistance
 
 costEastNorth x@(Point _) y@(Point _) =
     PathDistance { edgesSum = d', vertices = center <$> [x, y] }

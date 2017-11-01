@@ -1,3 +1,5 @@
+{-# LANGUAGE PartialTypeSignatures #-}
+
 module Flight.EdgeToEdge (distanceEdgeToEdge) where
 
 import Prelude hiding (span)
@@ -17,22 +19,23 @@ import Flight.ShortestPath
 import Flight.Distance (TaskDistance(..), PathDistance(..))
 import Flight.PointToPoint (SpanLatLng)
 
-distanceEdgeToEdge :: SpanLatLng
-                   -> CostSegment
-                   -> Tolerance
-                   -> [Zone]
+distanceEdgeToEdge :: (Real a, Fractional a)
+                   => SpanLatLng
+                   -> CostSegment a
+                   -> Tolerance a
+                   -> [Zone a]
                    -> PathDistance
 distanceEdgeToEdge span = (shortestPath span) . buildGraph . connectNodes
 
 -- | NOTE: The shortest path may traverse a cylinder so I include
 -- edges within a cylinder as well as edges to the next cylinder.
-connectNodes :: CostSegment -> NodeConnector
+connectNodes :: CostSegment a -> NodeConnector a
 connectNodes cost xs ys =
     [ f x1 x2 | x1 <- xs, x2 <- xs ]
     ++
     [ f x y | x <- xs, y <- ys ]
     where
-        f :: (Node, ZonePoint) -> (Node, ZonePoint) -> LEdge PathCost
+        f :: (Node, ZonePoint b) -> (Node, ZonePoint b) -> LEdge PathCost
         f (i, x) (j, y) = (i, j, PathCost d)
             where
                 (TaskDistance (MkQuantity d)) =
