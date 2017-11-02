@@ -35,7 +35,7 @@ ghcjsIntermediates =
     ]
 
 cleanRules :: Rules ()
-cleanRules = do
+cleanRules =
     phony "clean-www" $ do
         removeFilesAfter out [ "//*" ] 
         removeFilesAfter tmp [ "//*" ]
