@@ -33,13 +33,16 @@ lintPkgs =
     , "comp"
     ] 
 
--- | The names of the tests other than hlint tests.
-testPkgs :: [String]
+type Pkg = String
+type Test = String
+
+-- | The pairs are names of the pkg and test.
+testPkgs :: [(Pkg, Test)]
 testPkgs =
-    [ "test-task"
-    , "test-kml"
-    , "test-fsdb"
-    , "test-gap"
+    [ ("task", "task")
+    , ("kml", "parse")
+    , ("fsdb", "parse")
+    , ("gap", "score")
     ] 
 
 -- | The names of the test app executables
@@ -102,33 +105,18 @@ lintRules = do
             Shell
             (cmdTestFor "flare-timing:hlint")
 
+testRule :: (Pkg, Test) -> Rules ()
+testRule (pkg, test) =
+    phony ("test-" ++ pkg) $
+        cmd
+            (Cwd pkg)
+            Shell
+            (cmdTestFor "flight-" ++ pkg ++":" ++ test)
+
 testRules :: Rules ()
 testRules = do
-    phony "test-pkgs" $ need testPkgs
-
-    phony "test-task" $
-        cmd
-            (Cwd "task")
-            Shell
-            (cmdTestFor "flight-task:task")
-
-    phony "test-kml" $
-        cmd
-            (Cwd "kml")
-            Shell
-            (cmdTestFor "flight-kml:parse")
-
-    phony "test-fsdb" $
-        cmd
-            (Cwd "fsdb")
-            Shell
-            (cmdTestFor "flight-fsdb:parse")
-
-    phony "test-gap" $
-        cmd
-            (Cwd "gap")
-            Shell
-            (cmdTestFor "flight-gap:score")
+    _ <- sequence $ testRule <$> testPkgs
+    phony "test" $ need $ (\(x, _) -> "test-" ++ x) <$> testPkgs
 
 buildRules :: Rules ()
 buildRules = do
