@@ -128,11 +128,10 @@ taskTracks :: Bool
            -> TaskDistanceMeasure
            -> [[RawZone]] -- ^ Zones of each task.
            -> [Maybe TaskTrack]
-taskTracks excludeWaypoints b tdm tasks =
+taskTracks excludeWaypoints b tdm =
     zipWith
         (\ i t -> if b i then Just $ taskTrack excludeWaypoints tdm t else Nothing)
         [1 .. ]
-        tasks
 
 taskTrack :: Bool
           -> TaskDistanceMeasure
@@ -189,7 +188,7 @@ taskTrack excludeWaypoints tdm zsRaw =
                         (distanceEdgeToEdge span costEastNorth mm30 zs)
 
                 ps :: [Zone Rational]
-                ps = toPoint <$> (waypoints projected)
+                ps = toPoint <$> waypoints projected
 
                 (_, es) = partitionEithers $ zoneToProjectedEastNorth <$> ps 
 
@@ -239,7 +238,7 @@ roundEastNorth dp EastingNorthing{..} =
         , northing = f northing
         }
     where
-        f x = fromRational $ (dpRound dp) $ toRational x
+        f x = fromRational $ dpRound dp $ toRational x
 
 fromUTMRefEastNorth :: HC.UTMRef -> EastingNorthing
 fromUTMRefEastNorth HC.UTMRef{..} =
@@ -283,7 +282,7 @@ goByPoint excludeWaypoints zs =
         xs = convertLatLng <$> edgesSum'
 
         ds :: [TaskDistance]
-        ds = legDistances $ (Point <$> edgesSum' :: [Zone Rational])
+        ds = legDistances (Point <$> edgesSum' :: [Zone Rational])
 
         dsSum :: [TaskDistance]
         dsSum = scanl1 addTaskDistance ds
@@ -314,7 +313,7 @@ goByEdge excludeWaypoints ed =
         xs = convertLatLng <$> vertices'
 
         ds :: [TaskDistance]
-        ds = legDistances $ (Point <$> vertices' :: [Zone Rational])
+        ds = legDistances (Point <$> vertices' :: [Zone Rational])
 
         dsSum :: [TaskDistance]
         dsSum = scanl1 addTaskDistance ds
@@ -334,33 +333,25 @@ convertLatLng (LatLng (Lat eLat, Lng eLng)) =
         MkQuantity eLng' =
             convert eLng :: Quantity Rational [u| deg |]
 
-toPoint :: RawLatLng -> Zone Rational
-toPoint RawLatLng{..} =
-    Point (LatLng (Lat latRad, Lng lngRad))
+rawToLatLng :: RawLat -> RawLng -> LatLng [u| rad |]
+rawToLatLng (RawLat lat') (RawLng lng') =
+    LatLng (Lat latRad, Lng lngRad)
     where
-        RawLat lat' = lat
-        RawLng lng' = lng
-
         latDeg = MkQuantity lat' :: Quantity Rational [u| deg |]
         lngDeg = MkQuantity lng' :: Quantity Rational [u| deg |]
 
         latRad = convert latDeg :: Quantity Rational [u| rad |]
         lngRad = convert lngDeg :: Quantity Rational [u| rad |]
+
+toPoint :: RawLatLng -> Zone Rational
+toPoint RawLatLng{..} =
+    Point $ rawToLatLng lat lng
 
 toCylinder :: Fractional a => RawZone -> Zone a
 toCylinder RawZone{..} =
     Cylinder
         (fromRationalRadius $ Radius (MkQuantity $ radius % 1))
-        (LatLng (Lat latRad, Lng lngRad))
-    where
-        RawLat lat' = lat
-        RawLng lng' = lng
-
-        latDeg = MkQuantity lat' :: Quantity Rational [u| deg |]
-        lngDeg = MkQuantity lng' :: Quantity Rational [u| deg |]
-
-        latRad = convert latDeg :: Quantity Rational [u| rad |]
-        lngRad = convert lngDeg :: Quantity Rational [u| rad |]
+        (rawToLatLng lat lng)
 
 span :: SpanLatLng
 span = distanceHaversine defEps

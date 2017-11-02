@@ -25,7 +25,7 @@ distanceEdgeToEdge :: (Real a, Fractional a)
                    -> Tolerance a
                    -> [Zone a]
                    -> PathDistance
-distanceEdgeToEdge span = (shortestPath span) . buildGraph . connectNodes
+distanceEdgeToEdge span = shortestPath span . buildGraph . connectNodes
 
 -- | NOTE: The shortest path may traverse a cylinder so I include
 -- edges within a cylinder as well as edges to the next cylinder.
