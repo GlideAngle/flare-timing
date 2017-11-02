@@ -1,7 +1,6 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE PartialTypeSignatures #-}
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE LambdaCase #-}
 
 {-|
 Module      : Flight.Kml
@@ -179,7 +178,7 @@ pNats = do
     return xs
 
 parseUtcTime :: String -> Maybe UTCTime
-parseUtcTime s = do
+parseUtcTime s =
     case P.parse pUtcTimeZ "(stdin)" s of
         Left _ -> Nothing
         Right t -> Just t

@@ -60,7 +60,6 @@ tests:
     - aeson
     - time
     - raw-strings-qq
-    - split
     - tasty
     - tasty-hunit
     - tasty-quickcheck

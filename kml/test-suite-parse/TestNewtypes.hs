@@ -10,7 +10,7 @@ module TestNewtypes where
 import Test.SmallCheck.Series as SC
 import Test.Tasty.QuickCheck as QC
 
-import Data.Flight.Types
+import Flight.Types
     ( Seconds(..)
     , Latitude(..)
     , Longitude(..)
