@@ -191,5 +191,5 @@ groupByLeg zoneToCyl tasks iTask mf@Kml.MarkedFixes{mark0, fixes} =
         ys =
             split
                 (keepDelimsL
-                $ whenElt (\x -> elem (Just $ fixToUtc mark0 x) ts))
+                $ whenElt (\x -> (Just $ fixToUtc mark0 x) `elem` ts))
                 fixes
