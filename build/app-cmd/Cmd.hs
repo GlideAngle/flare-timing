@@ -8,7 +8,6 @@ import Development.Shake
     , cmd
     , need
     )
-import Development.Shake.FilePath (FilePath)
 
 cmdTestFor :: String -> String
 cmdTestFor x =
@@ -73,8 +72,8 @@ cleanRules = do
     phony "clean-test-apps" $
         removeFilesAfter "__shake-build" testApps
 
-root :: FilePath
-root = "flare-timing"
+prefix :: String -> String -> String
+prefix prefix' s = prefix' ++ s
 
 lintRule :: String -> Rules ()
 lintRule s =
@@ -91,7 +90,7 @@ lintRules = do
     phony "lint" $ need
         $ "lint-build"
         : "lint-flare-timing"
-        : ((\x -> "lint-" ++ x) <$> lintPkgs)
+        : (prefix "lint-" <$> lintPkgs)
 
     phony "lint-build" $
         cmd
@@ -111,75 +110,23 @@ testRule (pkg, test) =
         cmd
             (Cwd pkg)
             Shell
-            (cmdTestFor "flight-" ++ pkg ++":" ++ test)
+            (cmdTestFor $ "flight-" ++ pkg ++":" ++ test)
 
 testRules :: Rules ()
 testRules = do
     _ <- sequence $ testRule <$> testPkgs
-    phony "test" $ need $ (\(x, _) -> "test-" ++ x) <$> testPkgs
+    phony "test" $ need $ prefix "test-" . fst <$> testPkgs
+
+buildRule :: String -> Rules ()
+buildRule s =
+    phony s $
+        cmd
+            (Cwd "flare-timing")
+            Shell
+            (cmdBuildFor $ "flare-timing:" ++ s)
 
 buildRules :: Rules ()
 buildRules = do
+    _ <- sequence $ buildRule <$> (testApps ++ prodApps)
     phony "test-apps" $ need testApps
-
     phony "prod-apps" $ need prodApps
-
-    phony "extract-task" $
-        cmd
-            (Cwd root)
-            Shell
-            (cmdBuildFor "flare-timing:extract-task")
-
-    phony "task-length" $
-        cmd
-            (Cwd root)
-            Shell
-            (cmdBuildFor "flare-timing:task-length")
-
-    phony "cross-zone" $
-        cmd
-            (Cwd root)
-            Shell
-            (cmdBuildFor "flare-timing:cross-zone")
-
-    phony "tag-zone" $
-        cmd
-            (Cwd root)
-            Shell
-            (cmdBuildFor "flare-timing:tag-zone")
-
-    phony "align-time" $
-        cmd
-            (Cwd root)
-            Shell
-            (cmdBuildFor "flare-timing:align-time")
-
-    phony "mask-track" $
-        cmd
-            (Cwd root)
-            Shell
-            (cmdBuildFor "flare-timing:mask-track")
-
-    phony "comp-serve" $
-        cmd
-            (Cwd root)
-            Shell
-            (cmdBuildFor "flare-timing:comp-serve")
-
-    phony "test-fsdb-parser" $
-        cmd
-            (Cwd root)
-            Shell
-            (cmdBuildFor "flare-timing:test-fsdb-parser")
-
-    phony "test-igc-parser" $
-        cmd
-            (Cwd root)
-            Shell
-            (cmdBuildFor "flare-timing:test-igc-parser")
-
-    phony "test-kml-parser" $
-        cmd
-            (Cwd root)
-            Shell
-            (cmdBuildFor "flare-timing:test-kml-parser")
