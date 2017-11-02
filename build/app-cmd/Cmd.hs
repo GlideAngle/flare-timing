@@ -31,7 +31,6 @@ lintPkgs =
     , "igc"
     , "kml"
     , "comp"
-    , "flare-timing"
     ] 
 
 -- | The names of the tests other than hlint tests.
@@ -74,76 +73,28 @@ cleanRules = do
 root :: FilePath
 root = "flare-timing"
 
+lintRule :: String -> Rules ()
+lintRule s =
+    phony ("lint-" ++ s) $
+        cmd
+            (Cwd s) 
+            Shell
+            (cmdTestFor "flight-" ++ s ++ ":hlint")
+
 lintRules :: Rules ()
 lintRules = do
-    phony "lint" $ need $
-        "lint-build" : ((\x -> "lint-" ++ x) <$> lintPkgs)
+    _ <- sequence $ lintRule <$> lintPkgs
+
+    phony "lint" $ need
+        $ "lint-build"
+        : "lint-flare-timing"
+        : ((\x -> "lint-" ++ x) <$> lintPkgs)
 
     phony "lint-build" $
         cmd
             (Cwd "build")
             Shell
             (cmdTestFor "build-flare-timing:hlint")
-
-    phony "lint-units" $
-        cmd
-            (Cwd "units")
-            Shell
-            (cmdTestFor "flight-units:hlint")
-
-    phony "lint-zone" $
-        cmd
-            (Cwd "zone")
-            Shell
-            (cmdTestFor "flight-zone:hlint")
-
-    phony "lint-track" $
-        cmd
-            (Cwd "track")
-            Shell
-            (cmdTestFor "flight-track:hlint")
-
-    phony "lint-latlng" $
-        cmd
-            (Cwd "latlng")
-            Shell
-            (cmdTestFor "flight-latlng:hlint")
-
-    phony "lint-igc" $
-        cmd
-            (Cwd "igc")
-            Shell
-            (cmdTestFor "flight-igc:hlint")
-
-    phony "lint-kml" $
-        cmd
-            (Cwd "kml")
-            Shell
-            (cmdTestFor "flight-kml:hlint")
-
-    phony "lint-fsdb" $
-        cmd
-            (Cwd "fsdb")
-            Shell
-            (cmdTestFor "flight-fsdb:hlint")
-
-    phony "lint-task" $
-        cmd
-            (Cwd "task")
-            Shell
-            (cmdTestFor "flight-task:hlint")
-
-    phony "lint-mask" $
-        cmd
-            (Cwd "mask")
-            Shell
-            (cmdTestFor "flight-mask:hlint")
-
-    phony "lint-comp" $
-        cmd
-            (Cwd "comp")
-            Shell
-            (cmdTestFor "flight-comp:hlint")
 
     phony "lint-flare-timing" $
         cmd
