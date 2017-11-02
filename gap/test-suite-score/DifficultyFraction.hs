@@ -19,10 +19,10 @@ import Flight.Score
 
 import TestNewtypes
 
-dists10 :: [PilotDistance]
+dists10 :: [PilotDistance Rational]
 dists10 = [ PilotDistance $ 10 * x | x <- [ 1 .. 10 ]]
 
-dists100 :: [PilotDistance]
+dists100 :: [PilotDistance Rational]
 dists100 = [ PilotDistance x | x <- [ 1 .. 100 ]]
 
 expected10 :: [DifficultyFraction]

@@ -14,6 +14,7 @@ module Flight.Points
     , TaskPoints(..)
     , zeroPoints
     , taskPoints
+    , applyPointPenalty
     ) where
 
 import Data.Ratio ((%))

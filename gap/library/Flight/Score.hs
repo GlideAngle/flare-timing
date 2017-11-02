@@ -89,6 +89,7 @@ module Flight.Score
     , TaskPoints(..)
     , zeroPoints
     , taskPoints
+    , applyPointPenalty
     -- * Stopped task 
     , TaskStopTime(..)
     , AnnouncedTime(..)

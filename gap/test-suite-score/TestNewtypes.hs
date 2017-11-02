@@ -56,7 +56,6 @@ import Flight.Score
     , DistanceFlown(..)
     , TaskType(..)
     , StartGates(..)
-    , ScoreTimeWindow(..)
     , GlideRatio(..)
     , AltitudeAboveGoal(..)
     , DistanceToGoal(..)
@@ -184,7 +183,9 @@ instance QC.Arbitrary SfTest where
         return $ SfTest (BestTime (d % 1), PilotTime $ (d + n) % 1)
 
 -- | Linear fraction 
-newtype LfTest = LfTest (BestDistance, PilotDistance) deriving Show
+newtype LfTest =
+    LfTest (BestDistance, PilotDistance Rational)
+    deriving Show
 
 instance Monad m => SC.Serial m LfTest where
     series =
@@ -197,7 +198,7 @@ instance QC.Arbitrary LfTest where
         return $ LfTest (BestDistance $ (d + n) % 1, PilotDistance (d % 1))
 
 -- | Difficulty fraction
-newtype DfTest = DfTest [PilotDistance] deriving Show
+newtype DfTest = DfTest [PilotDistance Rational] deriving Show
 
 mkDfTest :: [Int] -> DfTest
 mkDfTest xs =
