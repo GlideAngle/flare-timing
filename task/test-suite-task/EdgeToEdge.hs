@@ -104,20 +104,20 @@ circumSampleUnits = testGroup "Points just within the zone"
             @?= [] 
 
         , HU.testCase
-            "No points > 27mm outside a 1km cylinder when searching within 10mm" $
-            filter (> unkilo 1 + unmilli 27) 
+            "No points > 0mm outside a 1km cylinder when searching within 10mm" $
+            filter (> unkilo 1 + unmilli 0) 
             (snd $ FS.circumSample (sampleParams { spTolerance = mm10 }) br Nothing (Cylinder (Radius $ MkQuantity $ unkilo 1) ll))
             @?= [] 
 
         , HU.testCase
-            "No points > 80mm outside a 10km cylinder when searching within 100mm" $
-            filter (> unkilo 10 + unmilli 80)
+            "No points > 0mm outside a 10km cylinder when searching within 100mm" $
+            filter (> unkilo 10 + unmilli 0)
             (snd $ FS.circumSample (sampleParams { spTolerance = mm100 }) br Nothing (Cylinder (Radius $ MkQuantity $ unkilo 10) ll))
             @?= [] 
 
         , HU.testCase 
-            "No points > 80m outside a 100km cylinder when searching within 100m" $
-            filter (> unkilo 100 + 80)
+            "No points > 0m outside a 100km cylinder when searching within 100m" $
+            filter (> unkilo 100 + 0)
             (snd $ FS.circumSample (sampleParams { spTolerance = m100 }) br Nothing (Cylinder (Radius $ MkQuantity $ unkilo 100) ll))
             @?= [] 
         ]
@@ -135,20 +135,20 @@ circumSampleUnits = testGroup "Points just within the zone"
             @?= [] 
 
         , HU.testCase
-            "No points > 50mm inside a 1km cylinder when searching within 10mm" $
-            filter (< unkilo 1 - unmilli 50)
+            "No points > 9mm inside a 1km cylinder when searching within 10mm" $
+            filter (< unkilo 1 - unmilli 9)
             (snd $ FS.circumSample (sampleParams { spTolerance = mm10 }) br Nothing (Cylinder (Radius $ MkQuantity $ unkilo 1) ll))
             @?= [] 
 
         , HU.testCase
-            "No points > 80mm inside a 10km cylinder when searching within 100mm" $
-            filter (< unkilo 10 - unmilli 100)
+            "No points > 97mm inside a 10km cylinder when searching within 100mm" $
+            filter (< unkilo 10 - unmilli 97)
             (snd $ FS.circumSample (sampleParams { spTolerance = mm100 }) br Nothing (Cylinder (Radius $ MkQuantity $ unkilo 10) ll))
             @?= [] 
 
         , HU.testCase
-            "No points > 80m inside a 100km cylinder when searching within 100m" $
-            filter (< unkilo 100 - 80)
+            "No points > 85m inside a 100km cylinder when searching within 100m" $
+            filter (< unkilo 100 - 85)
             (snd $ FS.circumSample (sampleParams { spTolerance = m100 }) br Nothing (Cylinder (Radius $ MkQuantity $ unkilo 100) ll))
             @?= [] 
         ]
