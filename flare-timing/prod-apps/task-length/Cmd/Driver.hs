@@ -92,9 +92,8 @@ drive CmdOptions{..} = do
             case settings of
                 Left msg -> print msg
                 Right settings' -> do
-                    let zs = zones <$> (tasks settings')
-                    let includeTask =
-                            if null task then const True else (flip elem $ task)
+                    let zs = zones <$> tasks settings'
+                    let includeTask = if null task then const True else flip elem task
 
                     let ts = taskTracks noTaskWaypoints includeTask measure zs
                     writeTaskLength ts yamlMaskPath

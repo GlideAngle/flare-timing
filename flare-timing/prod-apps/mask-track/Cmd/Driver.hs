@@ -176,4 +176,4 @@ flown tasks iTask xs =
         }
 
 zoneToCyl :: RawZone -> TaskZone Rational
-zoneToCyl x = zoneToCylinder x
+zoneToCyl = zoneToCylinder

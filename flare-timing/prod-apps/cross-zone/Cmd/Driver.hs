@@ -6,7 +6,6 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE QuasiQuotes #-}
 
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
@@ -137,4 +136,4 @@ drive CmdOptions{..} = do
                         }
 
 zoneToCyl :: RawZone -> TaskZone Rational
-zoneToCyl x = zoneToCylinder x
+zoneToCyl = zoneToCylinder
