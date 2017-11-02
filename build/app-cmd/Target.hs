@@ -2,7 +2,7 @@ module Target where
 
 import Development.Shake (Rules)
 import Doc (buildRules, cleanRules)
-import Cmd (buildRules, cleanRules)
+import Cmd (buildRules, cleanRules, testRules)
 import Web (buildRules, cleanRules)
 import Nix (buildRules)
 
@@ -13,6 +13,7 @@ allRules :: Rules ()
 allRules = do
     Target.cleanRules
     Target.buildRules
+    Target.testRules
 
 cleanRules :: Rules ()
 cleanRules = do
@@ -26,3 +27,7 @@ buildRules = do
     Cmd.buildRules
     Web.buildRules
     Nix.buildRules
+
+testRules :: Rules ()
+testRules = do
+    Cmd.testRules
