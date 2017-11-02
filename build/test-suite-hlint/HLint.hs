@@ -5,7 +5,7 @@ import System.Exit (exitFailure, exitSuccess)
 
 arguments :: [String]
 arguments =
-    [ "build/app-cmd"
+    [ "app-cmd"
     , "test-suite-hlint"
     ]
 

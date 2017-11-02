@@ -21,17 +21,17 @@ cmdBuildFor x =
 -- | The names of the hlint tests
 lintPkgs :: [String]
 lintPkgs =
-    [ "lint-units"
-    , "lint-zone"
-    , "lint-track"
-    , "lint-task"
-    , "lint-mask"
-    , "lint-latlng"
-    , "lint-fsdb"
-    , "lint-igc"
-    , "lint-kml"
-    , "lint-comp"
-    , "lint-flare-timing"
+    [ "units"
+    , "zone"
+    , "track"
+    , "task"
+    , "mask"
+    , "latlng"
+    , "fsdb"
+    , "igc"
+    , "kml"
+    , "comp"
+    , "flare-timing"
     ] 
 
 -- | The names of the tests other than hlint tests.
@@ -76,7 +76,14 @@ root = "flare-timing"
 
 lintRules :: Rules ()
 lintRules = do
-    phony "lint" $ need lintPkgs
+    phony "lint" $ need $
+        "lint-build" : ((\x -> "lint-" ++ x) <$> lintPkgs)
+
+    phony "lint-build" $
+        cmd
+            (Cwd "build")
+            Shell
+            (cmdTestFor "build-flare-timing:hlint")
 
     phony "lint-units" $
         cmd
