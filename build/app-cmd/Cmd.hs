@@ -1,4 +1,4 @@
-module Cmd (buildRules, cleanRules, testRules) where
+module Cmd (buildRules, cleanRules, testRules, lintRules) where
 
 import Development.Shake
     ( Rules
@@ -10,20 +10,37 @@ import Development.Shake
     )
 import Development.Shake.FilePath (FilePath)
 
+cmdTestFor :: String -> String
+cmdTestFor x =
+    "stack test " ++ x
+
 cmdBuildFor :: String -> String
 cmdBuildFor x =
     "stack build " ++ x ++ " --copy-bins"
 
--- | The names of the pkgs with tests
+-- | The names of the hlint tests
+lintPkgs :: [String]
+lintPkgs =
+    [ "lint-units"
+    , "lint-zone"
+    , "lint-track"
+    , "lint-task"
+    , "lint-mask"
+    , "lint-latlng"
+    , "lint-fsdb"
+    , "lint-igc"
+    , "lint-kml"
+    , "lint-comp"
+    , "lint-flare-timing"
+    ] 
+
+-- | The names of the tests other than hlint tests.
 testPkgs :: [String]
 testPkgs =
-    [ "test-units"
-    , "test-zone"
-    , "test-track"
-    , "test-task"
-    , "test-mask"
-    , "test-comp"
-    , "test-flare-timing"
+    [ "test-task"
+    , "test-kml"
+    , "test-fsdb"
+    , "test-gap"
     ] 
 
 -- | The names of the test app executables
@@ -48,32 +65,118 @@ prodApps =
 
 cleanRules :: Rules ()
 cleanRules = do
-    phony "clean-cmd-apps" $
+    phony "clean-prod-apps" $
         removeFilesAfter "__shake-build" prodApps
 
-    phony "clean-cmd-test-apps" $
+    phony "clean-test-apps" $
         removeFilesAfter "__shake-build" testApps
 
 root :: FilePath
 root = "flare-timing"
 
+lintRules :: Rules ()
+lintRules = do
+    phony "lint" $ need lintPkgs
+
+    phony "lint-units" $
+        cmd
+            (Cwd "units")
+            Shell
+            (cmdTestFor "flight-units:hlint")
+
+    phony "lint-zone" $
+        cmd
+            (Cwd "zone")
+            Shell
+            (cmdTestFor "flight-zone:hlint")
+
+    phony "lint-track" $
+        cmd
+            (Cwd "track")
+            Shell
+            (cmdTestFor "flight-track:hlint")
+
+    phony "lint-latlng" $
+        cmd
+            (Cwd "latlng")
+            Shell
+            (cmdTestFor "flight-latlng:hlint")
+
+    phony "lint-igc" $
+        cmd
+            (Cwd "igc")
+            Shell
+            (cmdTestFor "flight-igc:hlint")
+
+    phony "lint-kml" $
+        cmd
+            (Cwd "kml")
+            Shell
+            (cmdTestFor "flight-kml:hlint")
+
+    phony "lint-fsdb" $
+        cmd
+            (Cwd "fsdb")
+            Shell
+            (cmdTestFor "flight-fsdb:hlint")
+
+    phony "lint-task" $
+        cmd
+            (Cwd "task")
+            Shell
+            (cmdTestFor "flight-task:hlint")
+
+    phony "lint-mask" $
+        cmd
+            (Cwd "mask")
+            Shell
+            (cmdTestFor "flight-mask:hlint")
+
+    phony "lint-comp" $
+        cmd
+            (Cwd "comp")
+            Shell
+            (cmdTestFor "flight-comp:hlint")
+
+    phony "lint-flare-timing" $
+        cmd
+            (Cwd "flare-timing")
+            Shell
+            (cmdTestFor "flare-timing:hlint")
+
 testRules :: Rules ()
 testRules = do
     phony "test-pkgs" $ need testPkgs
 
-    phony "test-units" $ cmd (Cwd "units") Shell "stack test"
-    phony "test-zone" $ cmd (Cwd "zone") Shell "stack test"
-    phony "test-track" $ cmd (Cwd "track") Shell "stack test"
-    phony "test-task" $ cmd (Cwd "task") Shell "stack test"
-    phony "test-mask" $ cmd (Cwd "mask") Shell "stack test"
-    phony "test-comp" $ cmd (Cwd "comp") Shell "stack test"
-    phony "test-flare-timing" $ cmd (Cwd "flare-timing") Shell "stack test"
+    phony "test-task" $
+        cmd
+            (Cwd "task")
+            Shell
+            (cmdTestFor "flight-task:task")
+
+    phony "test-kml" $
+        cmd
+            (Cwd "kml")
+            Shell
+            (cmdTestFor "flight-kml:parse")
+
+    phony "test-fsdb" $
+        cmd
+            (Cwd "fsdb")
+            Shell
+            (cmdTestFor "flight-fsdb:parse")
+
+    phony "test-gap" $
+        cmd
+            (Cwd "gap")
+            Shell
+            (cmdTestFor "flight-gap:score")
 
 buildRules :: Rules ()
 buildRules = do
-    phony "cmd-test-apps" $ need testApps
+    phony "test-apps" $ need testApps
 
-    phony "cmd-apps" $ need prodApps
+    phony "prod-apps" $ need prodApps
 
     phony "extract-task" $
         cmd

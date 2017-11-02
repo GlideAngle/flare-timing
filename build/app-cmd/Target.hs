@@ -2,13 +2,13 @@ module Target where
 
 import Development.Shake (Rules)
 import Doc (buildRules, cleanRules)
-import Cmd (buildRules, cleanRules, testRules)
+import Cmd (buildRules, cleanRules, testRules, lintRules)
 import Web (buildRules, cleanRules)
 import Nix (buildRules)
 
 allWants :: [ String ]
 allWants = [ "docs", "view-www", "nix", "cmd-apps" ]
-    
+
 allRules :: Rules ()
 allRules = do
     Target.cleanRules
@@ -31,3 +31,4 @@ buildRules = do
 testRules :: Rules ()
 testRules = do
     Cmd.testRules
+    Cmd.lintRules
