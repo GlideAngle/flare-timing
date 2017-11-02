@@ -8,13 +8,12 @@ module Serve.Driver (driverRun) where
 import Network.Wai
 import Network.Wai.Middleware.Cors
 import Network.Wai.Handler.Warp
--- TODO: Find out how to explicitly import :<|>.
 import Servant
-import Servant
-    ( Get, JSON, Server, Handler, Proxy(..)
+    ( (:<|>)(..)
+    , Get, JSON, Server, Handler, Proxy(..)
     , (:>)
-    , err400, errBody, enter, serve, throwError, runReaderTNat)
-
+    , err400, errBody, enter, serve, throwError, runReaderTNat
+    )
 import System.IO
 import Control.Monad.Reader (ReaderT, ask, liftIO)
 import Control.Monad.Trans.Except (throwE)
