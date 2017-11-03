@@ -13,8 +13,8 @@
 
 module Flight.Units
     ( abs
-    , toRational'
     , showRadian
+    , realToFrac'
     ) where
 
 import Data.UnitsOfMeasure (u, convert, fromRational')
@@ -31,9 +31,9 @@ import Data.Number.RoundingFunctions (dpRound)
 [u| rad |]
 [u| deg = (5030569068109113 % 288230376151711744) rad |]
 
--- | Convert any 'Real' quantity into a 'Rational' type ('toRational').
-toRational' :: Real a => Quantity a u -> Quantity Rational u
-toRational' (MkQuantity x) = MkQuantity (toRational x)
+-- | Convert any 'Real' quantity into a 'Fractional' type ('realToFrac').
+realToFrac' :: (Real a, Fractional b) => Quantity a u -> Quantity b u
+realToFrac' (MkQuantity x) = MkQuantity (realToFrac x)
 
 instance Functor (Flip Quantity u) where
     fmap = map'

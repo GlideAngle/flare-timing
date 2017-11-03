@@ -27,6 +27,8 @@ module Flight.Zone
     , fromRationalZone
     , toRationalRadius
     , toRationalZone
+    , realToFracRadius
+    , realToFracZone
     ) where
 
 import Data.UnitsOfMeasure (u, zero, toRational', fromRational')
@@ -34,7 +36,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Data.Number.RoundingFunctions (dpRound)
 import Data.Bifunctor.Flip (Flip(..))
 
-import Flight.Units (showRadian)
+import Flight.Units (showRadian, realToFrac')
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 
 -- | The radius component of zones that are cylinder-like, and most are in some
@@ -88,6 +90,9 @@ fromRationalRadius (Radius r) = Radius $ fromRational' r
 toRationalRadius :: Real a => Radius a -> Radius Rational
 toRationalRadius (Radius r) = Radius $ toRational' r
 
+realToFracRadius :: (Real a, Fractional b) => Radius a -> Radius b
+realToFracRadius (Radius r) = Radius $ realToFrac' r
+
 fromRationalZone :: Fractional a => Zone Rational -> Zone a
 fromRationalZone (Point x) = Point x
 fromRationalZone (Vector b x) = Vector b x
@@ -103,6 +108,14 @@ toRationalZone (Cylinder r x) = Cylinder (toRationalRadius r) x
 toRationalZone (Conical i r x) = Conical i (toRationalRadius r) x
 toRationalZone (Line r x) = Line (toRationalRadius r) x
 toRationalZone (SemiCircle r x) = SemiCircle (toRationalRadius r) x
+
+realToFracZone :: (Real a, Fractional b) => Zone a -> Zone b
+realToFracZone (Point x) = Point x
+realToFracZone (Vector b x) = Vector b x
+realToFracZone (Cylinder r x) = Cylinder (realToFracRadius r) x
+realToFracZone (Conical i r x) = Conical i (realToFracRadius r) x
+realToFracZone (Line r x) = Line (realToFracRadius r) x
+realToFracZone (SemiCircle r x) = SemiCircle (realToFracRadius r) x
 
 -- | The effective center point of a zone.
 center :: Zone a -> LatLng [u| rad |]
