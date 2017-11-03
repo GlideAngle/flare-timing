@@ -9,20 +9,13 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE QuasiQuotes #-}
 
-module Flight.CylinderEdge
-    ( Samples(..)
-    , Tolerance(..)
-    , SampleParams(..)
-    , ZonePoint(..)
-    , circumSample
-    , sample
-    ) where
+module Flight.Cylinder.Rational (circumSample) where
 
 import Prelude hiding (span)
-import Data.Ratio ((%), numerator, denominator)
+import Data.Ratio ((%))
 import qualified Data.Number.FixedFunctions as F
 import Data.Fixed (mod')
-import Data.UnitsOfMeasure (u, zero, unQuantity, fromRational')
+import Data.UnitsOfMeasure (u, unQuantity, fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.LatLng
@@ -39,93 +32,23 @@ import Flight.Zone
     , Bearing(..)
     , center
     , radius
-    , fromRationalRadius
-    , fromRationalZone
     , toRationalZone
     )
 import Flight.PointToPoint (distancePointToPoint, distanceHaversine)
 import Flight.Distance (TaskDistance(..), PathDistance(..))
-import Flight.Units (showRadian)
+import Flight.Cylinder.Sample
+    ( TrueCourse(..)
+    , ZonePoint(..)
+    , Tolerance(..)
+    , Samples(..)
+    , SampleParams(..)
+    , orbit
+    , radial
+    , point
+    , sourceZone
+    , fromRationalZonePoint
+    )
 
-newtype TrueCourse =
-    TrueCourse (Quantity Rational [u| rad |])
-    deriving (Eq, Ord)
-
-instance Show TrueCourse where
-    show (TrueCourse tc) = "tc = " ++ showRadian tc
-
-instance Num TrueCourse where
-    (+) (TrueCourse (MkQuantity a)) (TrueCourse (MkQuantity b)) =
-        TrueCourse (MkQuantity $ a + b)
-
-    (*) (TrueCourse (MkQuantity a)) (TrueCourse (MkQuantity b)) =
-        TrueCourse (MkQuantity $ a * b)
-
-    negate (TrueCourse (MkQuantity tc)) =
-        TrueCourse (MkQuantity $ negate tc)
-
-    abs (TrueCourse (MkQuantity tc)) =
-        TrueCourse (MkQuantity $ abs tc)
-
-    signum (TrueCourse (MkQuantity tc)) =
-        TrueCourse (MkQuantity $ signum tc)
-
-    fromInteger x =
-        TrueCourse (MkQuantity $ fromInteger x)
-
-instance Fractional TrueCourse where
-    fromRational tc = TrueCourse (MkQuantity tc)
-
-    recip (TrueCourse (MkQuantity x)) =
-        TrueCourse (MkQuantity (denominator x % numerator x))
-
-newtype Samples = Samples { unSamples :: Integer } deriving (Eq, Ord, Show)
-newtype Tolerance a = Tolerance { unTolerance :: a } deriving (Eq, Ord, Show)
-
-data ZonePoint a
-    = ZonePoint
-        { sourceZone :: Zone a
-        -- ^ This is the zone that generated the point.
-        , point :: LatLng [u| rad |]
-        -- ^ A point on the edge of this zone.
-        , radial :: Bearing
-        -- ^ A point on the edge of this zone with this bearing from
-        -- the origin.
-        , orbit :: Radius a
-        -- ^ A point on the edge of this zone at this distance from the
-        -- origin.
-        }
-
-fromRationalZonePoint :: Fractional a => ZonePoint Rational -> ZonePoint a
-fromRationalZonePoint ZonePoint{..} =
-    ZonePoint
-        { sourceZone = fromRationalZone sourceZone
-        , point = point
-        , radial = radial
-        , orbit = fromRationalRadius orbit
-        }
-
-data SampleParams a
-    = SampleParams
-        { spSamples :: Samples
-        , spTolerance :: Tolerance a
-        }
-
--- | Generate sample points for a zone. These get added to the graph to work out
--- the shortest path.
-sample :: (Real a, Fractional a)
-       => SampleParams a
-       -> Bearing
-       -> Maybe (ZonePoint a)
-       -> Zone a
-       -> [ZonePoint a]
-sample _ _ _ px@(Point x) = [ZonePoint px x (Bearing zero) (Radius (MkQuantity 0))]
-sample _ _ _ px@(Vector _ x) = [ZonePoint px x (Bearing zero) (Radius (MkQuantity 0))]
-sample sp b zs z@Cylinder{} = fst $ circumSample sp b zs z
-sample sp b zs z@Conical{} = fst $ circumSample sp b zs z
-sample sp b zs z@Line{} = fst $ circumSample sp b zs z
-sample sp b zs z@SemiCircle{} = fst $ circumSample sp b zs z
- 
 -- | Using a method from the
 -- <http://www.edwilliams.org/avform.htm#LL Aviation Formulary>
 -- a point on a cylinder wall is found by going out to the distance of the

@@ -48,7 +48,9 @@ library
       Flight.Task
       Flight.TaskTrack
   other-modules:
-      Flight.CylinderEdge
+      Flight.Cylinder.Edge
+      Flight.Cylinder.Rational
+      Flight.Cylinder.Sample
       Flight.Distance
       Flight.EdgeToEdge
       Flight.PointToPoint
@@ -81,7 +83,9 @@ test-suite hlint
     , flight-latlng
     , flight-zone
   other-modules:
-      Flight.CylinderEdge
+      Flight.Cylinder.Edge
+      Flight.Cylinder.Rational
+      Flight.Cylinder.Sample
       Flight.Distance
       Flight.EdgeToEdge
       Flight.PointToPoint
@@ -119,7 +123,9 @@ test-suite task
     , tasty-smallcheck
     , smallcheck
   other-modules:
-      Flight.CylinderEdge
+      Flight.Cylinder.Edge
+      Flight.Cylinder.Rational
+      Flight.Cylinder.Sample
       Flight.Distance
       Flight.EdgeToEdge
       Flight.PointToPoint

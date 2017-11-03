@@ -36,4 +36,5 @@ import Flight.PointToPoint
 import Flight.EdgeToEdge
 import Flight.Projected
 import Flight.Separated
-import Flight.CylinderEdge
+import Flight.Cylinder.Sample
+import Flight.Cylinder.Rational (circumSample)

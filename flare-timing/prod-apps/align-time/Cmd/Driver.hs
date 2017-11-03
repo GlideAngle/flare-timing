@@ -155,5 +155,5 @@ group tasks iTask fs =
         ys :: [MarkedFixes]
         ys = groupByLeg zoneToCyl tasks iTask fs
 
-zoneToCyl :: RawZone -> TaskZone Rational
+zoneToCyl :: RawZone -> TaskZone Double
 zoneToCyl x = zoneToCylinder x
