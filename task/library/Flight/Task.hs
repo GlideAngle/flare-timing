@@ -24,7 +24,6 @@ module Flight.Task
     , Tolerance(..)
     , SampleParams(..)
     , PathDistance(..)
-    , circumSample
     , distanceEdgeToEdge
     , costEastNorth
     -- * Zones
@@ -37,4 +36,3 @@ import Flight.EdgeToEdge
 import Flight.Projected
 import Flight.Separated
 import Flight.Cylinder.Sample
-import Flight.Cylinder.Rational (circumSample)

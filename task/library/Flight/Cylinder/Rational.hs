@@ -42,6 +42,7 @@ import Flight.Cylinder.Sample
     , Tolerance(..)
     , Samples(..)
     , SampleParams(..)
+    , CircumSample
     , orbit
     , radial
     , point
@@ -104,12 +105,7 @@ circum
 -- the distance to the origin and the radius should be less han the 'tolerance'.
 --
 -- The points of the compass are divided by the number of samples requested.
-circumSample :: (Real a, Fractional a)
-             => SampleParams a
-             -> Bearing
-             -> Maybe (ZonePoint a)
-             -> Zone a
-             -> ([ZonePoint a], [TrueCourse])
+circumSample :: CircumSample a
 circumSample SampleParams{..} (Bearing (MkQuantity bearing)) zp zone =
     (fromRationalZonePoint <$> fst ys, snd ys)
     where

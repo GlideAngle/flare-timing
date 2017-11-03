@@ -8,6 +8,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE RankNTypes #-}
 
 module Flight.Cylinder.Sample
     ( TrueCourse(..)
@@ -15,6 +16,7 @@ module Flight.Cylinder.Sample
     , Tolerance(..)
     , ZonePoint(..)
     , SampleParams(..)
+    , CircumSample
     , fromRationalZonePoint
     ) where
 
@@ -32,6 +34,14 @@ import Flight.Zone
     , fromRationalZone
     )
 import Flight.Units (showRadian)
+
+type CircumSample a =
+    (Real a, Fractional a)
+    => SampleParams a
+    -> Bearing
+    -> Maybe (ZonePoint a)
+    -> Zone a
+    -> ([ZonePoint a], [TrueCourse])
 
 newtype TrueCourse =
     TrueCourse (Quantity Rational [u| rad |])

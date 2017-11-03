@@ -27,6 +27,7 @@ library:
   source-dirs: library
   exposed-modules:
   - Flight.Task
+  - Flight.Cylinder.Rational
   - Flight.TaskTrack
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com

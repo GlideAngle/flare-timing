@@ -46,10 +46,10 @@ library
     , flight-zone
   exposed-modules:
       Flight.Task
+      Flight.Cylinder.Rational
       Flight.TaskTrack
   other-modules:
       Flight.Cylinder.Edge
-      Flight.Cylinder.Rational
       Flight.Cylinder.Sample
       Flight.Distance
       Flight.EdgeToEdge
