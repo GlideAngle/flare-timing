@@ -24,7 +24,7 @@ import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Data.Maybe (catMaybes)
-import Control.Monad (mapM_)
+import Control.Monad (mapM_, when, zipWithM)
 import Control.Monad.Except (runExceptT)
 import Data.UnitsOfMeasure ((/:), u, convert, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
@@ -44,10 +44,9 @@ import Flight.Track.Cross (Fix(..))
 import Flight.Zone (Bearing(..))
 import Flight.Zone.Raw (RawZone)
 import Flight.Track.Time (TimeRow(..))
-import Flight.Task (TaskDistance(..))
 import Flight.Kml (MarkedFixes(..))
 import Data.Number.RoundingFunctions (dpRound)
-import Flight.Task (SpanLatLng, CircumSample, AngleCut(..))
+import Flight.Task (TaskDistance(..), SpanLatLng, CircumSample, AngleCut(..))
 import Flight.PointToPoint.Double
     (distanceHaversine, distancePointToPoint, costSegment)
 import Flight.Cylinder.Double (circumSample)
@@ -106,12 +105,10 @@ drive CmdOptions{..} = do
                                             Right (p, g) -> g p)
                                         xs
 
-                            _ <- sequence $ zipWith
+                            _ <- zipWithM
                                 (\ iTask rows ->
-                                    if includeTask iTask then
-                                        writeTimeRowsToCsv (fcsv iTask) headers rows
-                                    else 
-                                        return ())
+                                    when (includeTask iTask) $
+                                        writeTimeRowsToCsv (fcsv iTask) headers rows)
                                 [1 .. ]
                                 (concat <$> ys)
 
@@ -121,7 +118,7 @@ drive CmdOptions{..} = do
                     checkTracks $ \CompSettings{tasks} -> group tasks
 
                 includeTask :: Int -> Bool
-                includeTask = if null task then const True else (flip elem $ task)
+                includeTask = if null task then const True else (`elem` task)
 
                 fcsv :: Int -> FilePath
                 fcsv n =
@@ -142,14 +139,15 @@ mkTimeRow :: Int
 mkTimeRow _ _ (Nothing, _) = Nothing
 mkTimeRow _ _ (_, Nothing) = Nothing
 mkTimeRow leg p (Just Fix{time, lat, lng}, Just d) =
-    Just $ TimeRow
-        { leg = leg
-        , time = time
-        , pilot = p
-        , lat = lat
-        , lng = lng
-        , distance = unTaskDistance d
-        }
+    Just
+        TimeRow
+            { leg = leg
+            , time = time
+            , pilot = p
+            , lat = lat
+            , lng = lng
+            , distance = unTaskDistance d
+            }
 
 group :: SigMasking (Pilot -> [TimeRow])
 group tasks iTask fs =
@@ -171,7 +169,7 @@ group tasks iTask fs =
         cseg = costSegment span
 
 zoneToCyl :: RawZone -> TaskZone Double
-zoneToCyl x = zoneToCylinder x
+zoneToCyl = zoneToCylinder
 
 span :: SpanLatLng Double
 span = distanceHaversine
@@ -188,4 +186,4 @@ cut =
 
 nextCut :: AngleCut Double -> AngleCut Double
 nextCut x@AngleCut{sweep} =
-    let (Bearing b) = sweep in x{sweep = (Bearing $ b /: 2)}
+    let (Bearing b) = sweep in x{sweep = Bearing $ b /: 2}

@@ -1,7 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE RankNTypes #-}
-
 module Cmd.Outputs (writeTimeRowsToCsv) where
 
 import Data.Csv (EncodeOptions(..), encodeByNameWith, defaultEncodeOptions)

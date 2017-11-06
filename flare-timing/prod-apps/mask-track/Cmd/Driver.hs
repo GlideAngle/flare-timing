@@ -225,4 +225,4 @@ cut =
 
 nextCut :: AngleCut Rational -> AngleCut Rational
 nextCut x@AngleCut{sweep} =
-    let (Bearing b) = sweep in x{sweep = (Bearing $ b /: 2)}
+    let (Bearing b) = sweep in x{sweep = Bearing $ b /: 2}

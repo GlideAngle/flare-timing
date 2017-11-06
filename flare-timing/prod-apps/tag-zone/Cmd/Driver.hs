@@ -6,7 +6,6 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE QuasiQuotes #-}
 
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
@@ -133,7 +132,7 @@ timed xs =
         }
     where
         zs :: [[Maybe UTCTime]]
-        zs = fromMaybe [] <$> tagTimes <$> xs
+        zs = fromMaybe [] . tagTimes <$> xs
 
         zs' :: [[Maybe UTCTime]]
         zs' = transpose zs
@@ -162,7 +161,7 @@ rankByTag xs =
         f :: (Pilot, Maybe [Maybe UTCTime]) -> Maybe [(Pilot, Maybe UTCTime)]
         f (p, ts) = do
             ts' <- ts
-            return $ ((,) p) <$> ts'
+            return $ (,) p <$> ts'
 
         -- For each zone, an unsorted list of pilots.
         zss :: [[(Pilot, Maybe UTCTime)]]
@@ -172,11 +171,11 @@ rankByTag xs =
         g :: (Pilot, Maybe UTCTime) -> Maybe (Pilot, UTCTime)
         g (p, t) = do
             t' <- t
-            return $ (p, t')
+            return (p, t')
 
 sortOnTag :: forall a. [Maybe (a, UTCTime)] -> [(a, UTCTime)]
 sortOnTag xs =
-    (sortOn snd) $ catMaybes xs
+    sortOn snd $ catMaybes xs
 
 firstTag :: [Maybe UTCTime] -> Maybe UTCTime
 firstTag xs =
@@ -194,7 +193,7 @@ lastTag xs =
 tagTimes :: PilotTrackTag -> Maybe [Maybe UTCTime]
 tagTimes (PilotTrackTag _ Nothing) = Nothing
 tagTimes (PilotTrackTag _ (Just xs)) =
-    Just $ (fmap . fmap) time $ zonesTag xs
+    Just $ fmap time <$> zonesTag xs
 
 flown :: TrackCross -> TrackTag
 flown TrackCross{zonesCross} =
