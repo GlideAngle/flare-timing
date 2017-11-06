@@ -65,7 +65,7 @@ instance Show Incline where
     show (Incline angle) = "i = " ++ showRadian angle
 
 instance Real a => Show (Bearing a) where
-    show (Bearing b) = "r = " ++ (showRadian $ toRational' b)
+    show (Bearing b) = "r = " ++ showRadian (toRational' b)
 
 -- | A control zone of the task. Taken together these make up the course to fly
 -- with start enter and exit cylinders, turnpoint cylinders, goal lines and
