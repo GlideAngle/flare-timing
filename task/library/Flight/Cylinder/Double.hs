@@ -97,7 +97,7 @@ circum
 -- The points of the compass are divided by the number of samples requested.
 circumSample :: CircumSample Double
 circumSample SampleParams{..} (Bearing (MkQuantity bearing)) zp zone =
-    (fst ys, snd ys)
+    ys
     where
         nNum = unSamples spSamples
         half = nNum `div` 2
@@ -114,18 +114,18 @@ circumSample SampleParams{..} (Bearing (MkQuantity bearing)) zp zone =
             TrueCourse . MkQuantity <$>
             case zp of
                 Nothing ->
-                    [ 2.0 * (fromInteger n) / (fromInteger nNum) * pi
+                    [ 2.0 * fromInteger n / fromInteger nNum * pi
                     | n <- [0 .. nNum]
                     ]
 
                 Just ZonePoint{..} ->
                     [b]
                     ++ 
-                    [ b - (fromInteger n) / (fromInteger half) * halfRange
+                    [ b - fromInteger n / fromInteger half * halfRange
                     | n <- [1 .. half]
                     ]
                     ++
-                    [ b + (fromInteger n) / (fromInteger half) * halfRange
+                    [ b + fromInteger n / fromInteger half * halfRange
                     | n <- [1 .. half]
                     ]
                     where

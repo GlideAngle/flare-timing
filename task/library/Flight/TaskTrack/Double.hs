@@ -1,4 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,7 +8,6 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE QuasiQuotes #-}
 
-{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE PartialTypeSignatures #-}
@@ -160,7 +158,7 @@ taskTrack excludeWaypoints tdm zsRaw =
 
 -- | Convert to kilometres with mm accuracy.
 toKm :: (Real a, Fractional a) => TaskDistance a -> Double
-toKm = toKm' ((dpRound 6) . toRational)
+toKm = toKm' (dpRound 6 . toRational)
 
 toKm' :: Fractional a => (a -> Rational) -> TaskDistance a -> Double
 toKm' f (TaskDistance d) =
@@ -236,8 +234,8 @@ goByEdge excludeWaypoints ed =
 distanceEdgeToEdge' :: CostSegment Double
                     -> [Zone Double]
                     -> PathDistance Double
-distanceEdgeToEdge' segCost zs = 
-    distanceEdgeToEdge span distancePointToPoint segCost cs cut mm30 zs
+distanceEdgeToEdge' segCost = 
+    distanceEdgeToEdge span distancePointToPoint segCost cs cut mm30
 
 cs :: CircumSample Double
 cs = circumSample
@@ -254,4 +252,4 @@ cut =
 
 nextCut :: AngleCut Double -> AngleCut Double
 nextCut x@AngleCut{sweep} =
-    let (Bearing b) = sweep in x{sweep = (Bearing $ b /: 2)}
+    let (Bearing b) = sweep in x{sweep = Bearing $ b /: 2}

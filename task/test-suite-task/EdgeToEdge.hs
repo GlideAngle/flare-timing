@@ -27,16 +27,15 @@ import qualified Flight.PointToPoint.Rational as Rat
     (distanceHaversine, distancePointToPoint, costSegment)
 import qualified Flight.Cylinder.Rational as Rat (circumSample)
 import Flight.Cylinder.Sample (CircumSample)
-import qualified Flight.Task as FS (distanceEdgeToEdge)
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.LatLng.Rational (Epsilon(..), defEps)
 import Flight.Units ()
-import qualified Flight.Task as FS
 import Flight.Zone
     ( Bearing(..)
     , Radius(..)
     , Zone(..)
     )
+import qualified Flight.Task as FS (distanceEdgeToEdge)
 import Flight.Task
     ( Samples(..)
     , SampleParams(..)
@@ -904,8 +903,8 @@ dsDay8 =
         ]
 
 distanceEdgeToEdge' :: [Zone Rational] -> PathDistance Rational
-distanceEdgeToEdge' zs = 
-    FS.distanceEdgeToEdge span Rat.distancePointToPoint segCost cs cut mm30 zs
+distanceEdgeToEdge' = 
+    FS.distanceEdgeToEdge span Rat.distancePointToPoint segCost cs cut mm30
 
 segCost :: CostSegment Rational
 segCost = Rat.costSegment span
@@ -927,4 +926,4 @@ cut =
 
 nextCut :: AngleCut Rational -> AngleCut Rational
 nextCut x@AngleCut{sweep} =
-    let (Bearing b) = sweep in x{sweep = (Bearing $ b /: 2)}
+    let (Bearing b) = sweep in x{sweep = Bearing $ b /: 2}

@@ -39,7 +39,7 @@ newtype TrueCourse a =
     deriving (Eq, Ord)
 
 instance Real a => Show (TrueCourse a) where
-    show (TrueCourse tc) = "tc = " ++ (showRadian $ toRational' tc)
+    show (TrueCourse tc) = "tc = " ++ showRadian (toRational' tc)
 
 instance Num a => Num (TrueCourse a) where
     (+) (TrueCourse (MkQuantity a)) (TrueCourse (MkQuantity b)) =
