@@ -10,7 +10,7 @@ Commission Internationale de Vol Libre (CIVL - Hang Gliding and Paragliding Comm
 
 The scoring method is [well documented](http://fs.fai.org/trac/wiki/ScoringFormulas). Principal documents are;
 
-* [Sporting Code Section 7A - Annex GAP](http://www.fai.org/downloads/civl/SC7A_GAP) - The definitive guide produced and maintained by CIVL.
+* [Sporting Code Section 7A - Annex GAP](https://www.fai.org/sites/default/files/documents/sporting_code_s7a-xc-civl_gap_annex_1.pdf) - The definitive guide produced and maintained by CIVL.
 * [GAP 2002](http://fs.fai.org/trac/raw-attachment/wiki/ScoringFormulas/GAP02_en.pdf) - A much shorter and less formal guide that is a good first read to gain an understanding of why GAP is needed and how it works.
 
 **Flare Timing** provides a reference implementation of GAP and shows the working of how a pilot's score is calculated.
