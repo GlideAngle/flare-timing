@@ -6,7 +6,6 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE QuasiQuotes #-}
 
 {-# LANGUAGE DisambiguateRecordFields #-}
 {-# LANGUAGE NamedFieldPuns #-}
@@ -30,7 +29,6 @@ import qualified Flight.Kml as Kml (MarkedFixes(..), Fix)
 import Flight.Track.Cross (Fix(..))
 import qualified Flight.Comp as Cmp (Task(..), SpeedSection)
 import Flight.TrackLog (IxTask(..))
-import Flight.Task (TaskDistance(..))
 import Flight.Score (PilotDistance(..))
 import Flight.Units ()
 import Flight.Mask.Internal
@@ -47,7 +45,8 @@ import Flight.Mask.Internal
 import qualified Flight.Mask.Internal as I (distanceToGoal)
 import qualified Flight.Zone.Raw as Raw (RawZone(..))
 import Flight.Task
-    ( SpanLatLng
+    ( TaskDistance(..)
+    , SpanLatLng
     , CostSegment
     , DistancePointToPoint
     , AngleCut(..)

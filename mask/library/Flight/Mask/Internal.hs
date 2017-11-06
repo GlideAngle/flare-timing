@@ -277,7 +277,7 @@ distanceToGoal span zoneToCyl dvz tasks (IxTask i) Kml.MarkedFixes{fixes} =
                             span
                             (isStartExit span zoneToCyl x)
                             x)
-                    $ task
+                    task
 
 -- | A task is to be flown via its control zones. This function finds the last
 -- leg made. The next leg is partial. Along this, the track fixes are checked
@@ -315,4 +315,4 @@ distanceViaZones span dpp cseg cs cut mkZone speedSection fs zs xs =
 
         notTicked = unTaskZone <$> drop (length $ takeWhile (== True) ys) zsSpeed
 
-        cons x = (unTrackZone (mkZone x) : notTicked)
+        cons x = unTrackZone (mkZone x) : notTicked
