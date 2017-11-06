@@ -50,10 +50,10 @@ instance (F a ~ flag, ShowLng flag a u, KnownUnit (Unpack u)) => Show (Lng a u) 
   show = showLng (Proxy :: Proxy flag)
 
 class (KnownUnit (Unpack u)) => ShowLat (flag :: Bool) a u where
-    showLat :: Proxy flag -> (Lat a u) -> String
+    showLat :: Proxy flag -> Lat a u -> String
 
 class (KnownUnit (Unpack u)) => ShowLng (flag :: Bool) a u where
-    showLng :: Proxy flag -> (Lng a u) -> String
+    showLng :: Proxy flag -> Lng a u -> String
 
 instance (KnownUnit (Unpack u), Show a) => ShowLat 'False a u where
     showLat _ (Lat lat) = show lat

@@ -44,6 +44,7 @@ tests:
     - numbers
     - scientific
     - aeson
+    - cassava
     - uom-plugin
     - formatting
     - text
