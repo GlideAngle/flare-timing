@@ -12,6 +12,8 @@
 {-# LANGUAGE DisambiguateRecordFields #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE PartialTypeSignatures #-}
+{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
 module Flight.Mask.Internal
     ( ZoneIdx
@@ -28,11 +30,12 @@ module Flight.Mask.Internal
     , pickCrossingPredicate
     , fixFromFix
     , tickedZones
-    , DistanceViaZones
+    -- , DistanceViaZones
     , distanceViaZones
     , distanceToGoal
     ) where
 
+import Prelude hiding (span)
 import Data.Time.Clock (UTCTime, addUTCTime)
 import qualified Data.List as List (findIndex)
 import Data.Ratio ((%))
@@ -51,7 +54,7 @@ import qualified Flight.Kml as Kml
     )
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.LatLng.Raw (RawLat(..), RawLng(..))
-import Flight.Zone (Radius(..), Zone(..), toRationalZone)
+import Flight.Zone (Radius(..), Zone(..))
 import qualified Flight.Zone.Raw as Raw (RawZone(..))
 import Flight.Track.Cross (Fix(..))
 import qualified Flight.Comp as Cmp (Task(..), SpeedSection)
@@ -61,14 +64,17 @@ import Flight.Task
     ( TaskDistance(..)
     , PathDistance(..)
     , Tolerance(..)
+    , SpanLatLng
+    , CostSegment
+    , DistancePointToPoint
+    , AngleCut(..)
+    , CircumSample
     , distanceEdgeToEdge
-    , costSegment
     , separatedZones
-    , distanceHaversineF
     )
 
-mm30 :: Tolerance Rational
-mm30 = Tolerance $ 30 % 1000
+mm30 :: Fractional a => Tolerance a
+mm30 = Tolerance . fromRational $ 30 % 1000
 
 type ZoneIdx = Int
 
@@ -101,16 +107,20 @@ slice = \case
         in take (e - s + 1) . drop s
 
 -- | The input pair is in degrees while the output is in radians.
-toLL :: (Rational, Rational) -> LatLng [u| rad |]
+toLL :: Fractional a => (Rational, Rational) -> LatLng a [u| rad |]
 toLL (lat, lng) =
-    LatLng (Lat lat'', Lng lng'')
-        where
-            lat' = MkQuantity lat :: Quantity Rational [u| deg |]
-            lng' = MkQuantity lng :: Quantity Rational [u| deg |]
-            lat'' = convert lat' :: Quantity Rational [u| rad |]
-            lng'' = convert lng' :: Quantity Rational [u| rad |]
+    LatLng (x', y')
+    where
+        lat' = MkQuantity lat :: Quantity Rational [u| deg |]
+        lng' = MkQuantity lng :: Quantity Rational [u| deg |]
 
-zoneToCylinder :: Fractional a => Raw.RawZone -> TaskZone a
+        (MkQuantity x) = convert lat' :: Quantity Rational [u| rad |]
+        (MkQuantity y) = convert lng' :: Quantity Rational [u| rad |]
+
+        x' = Lat . MkQuantity $ realToFrac x
+        y' = Lng . MkQuantity $ realToFrac y
+
+zoneToCylinder :: (Eq a, Fractional a) => Raw.RawZone -> TaskZone a
 zoneToCylinder z =
     TaskZone $ Cylinder radius (toLL(lat, lng))
     where
@@ -121,38 +131,46 @@ zoneToCylinder z =
         RawLat lat = Raw.lat z
         RawLng lng = Raw.lng z
 
-fixToPoint :: Kml.Fix -> TrackZone a
+fixToPoint :: (Eq a, Fractional a) => Kml.Fix -> TrackZone a
 fixToPoint fix =
     TrackZone $ Point (toLL (lat, lng))
     where
         Kml.Latitude lat = Kml.lat fix
         Kml.Longitude lng = Kml.lng fix
 
-insideZone :: Real a => TaskZone a -> [TrackZone a] -> Maybe Int
-insideZone (TaskZone z) =
-    List.findIndex (\(TrackZone x) -> not $ separatedZones [x, z])
+insideZone :: (Real a, Fractional a)
+           => SpanLatLng a
+           -> TaskZone a
+           -> [TrackZone a]
+           -> Maybe Int
+insideZone span (TaskZone z) =
+    List.findIndex (\(TrackZone x) -> not $ separatedZones span [x, z])
 
-outsideZone :: Real a => TaskZone a -> [TrackZone a] -> Maybe Int
-outsideZone (TaskZone z) =
-    List.findIndex (\(TrackZone x) -> separatedZones [x, z])
+outsideZone :: (Real a, Fractional a)
+            => SpanLatLng a
+            -> TaskZone a
+            -> [TrackZone a]
+            -> Maybe Int
+outsideZone span (TaskZone z) =
+    List.findIndex (\(TrackZone x) -> separatedZones span [x, z])
 
 -- | Finds the first pair of points, one outside the zone and the next inside.
-entersZone :: Real a => CrossingPredicate a
-entersZone z xs =
-    case insideZone z xs of
+entersZone :: (Real a, Fractional a) => SpanLatLng a -> CrossingPredicate a
+entersZone span z xs =
+    case insideZone span z xs of
         Nothing -> ZoneMiss
         Just j ->
-            case outsideZone z . reverse $ take j xs of
+            case outsideZone span z . reverse $ take j xs of
                 Just 0 -> ZoneEntry (j - 1) j
                 _ -> ZoneMiss
 
 -- | Finds the first pair of points, one inside the zone and the next outside.
-exitsZone :: Real a => CrossingPredicate a
-exitsZone z xs =
-    case outsideZone z xs of
+exitsZone :: (Real a, Fractional a) => SpanLatLng a -> CrossingPredicate a
+exitsZone span z xs =
+    case outsideZone span z xs of
         Nothing -> ZoneMiss
         Just j ->
-            case insideZone z . reverse $ take j xs of
+            case insideZone span z . reverse $ take j xs of
                 Just 0 -> ZoneExit (j - 1) j
                 _ -> ZoneMiss
 
@@ -161,8 +179,13 @@ exitsZone z xs =
 -- the start zone is entry otherwise it is exit. In one case the start cylinder
 -- contains the next turnpoint and in the other the start cylinder is
 -- completely separate from the next turnpoint.
-isStartExit :: Real a => (Raw.RawZone -> TaskZone a) -> Cmp.Task -> Bool
-isStartExit zoneToCyl Cmp.Task{speedSection, zones} =
+isStartExit :: (Real a, Fractional a)
+            => SpanLatLng a
+            -> (Raw.RawZone
+            -> TaskZone a)
+            -> Cmp.Task
+            -> Bool
+isStartExit span zoneToCyl Cmp.Task{speedSection, zones} =
     case speedSection of
         Nothing ->
             False
@@ -171,7 +194,7 @@ isStartExit zoneToCyl Cmp.Task{speedSection, zones} =
             let i = fromInteger ii
             in case (zones ^? element (i - 1), zones ^? element i) of
                 (Just start, Just tp1) ->
-                    separatedZones
+                    separatedZones span
                     $ unTaskZone . zoneToCyl
                     <$> [start, tp1]
 
@@ -179,21 +202,23 @@ isStartExit zoneToCyl Cmp.Task{speedSection, zones} =
                     False
 
 pickCrossingPredicate
-    :: Real a
-    => Bool -- ^ Is the start an exit cylinder?
+    :: (Real a, Fractional a)
+    => SpanLatLng a
+    -> Bool -- ^ Is the start an exit cylinder?
     -> Cmp.Task
     -> [CrossingPredicate a]
-pickCrossingPredicate False Cmp.Task{zones} =
-    const entersZone <$> zones
+pickCrossingPredicate span False Cmp.Task{zones} =
+    const (entersZone span) <$> zones
 
-pickCrossingPredicate True task@Cmp.Task{speedSection, zones} =
+pickCrossingPredicate span True task@Cmp.Task{speedSection, zones} =
     case speedSection of
         Nothing ->
-            pickCrossingPredicate False task
+            pickCrossingPredicate span False task
 
         Just (start, _) ->
             zipWith
-                (\ i _ -> if i == start then exitsZone else entersZone)
+                (\ i _ ->
+                    if i == start then exitsZone span else entersZone span)
                 [1 .. ]
                 zones
 
@@ -216,25 +241,25 @@ tickedZones :: [CrossingPredicate a]
 tickedZones fs zones xs =
     zipWith (\f z -> f z xs) fs zones
 
-type DistanceViaZones =
-    forall a b. (Real b)
-    => (a -> TrackZone b)
+type DistanceViaZones a b
+    = (a -> TrackZone b)
     -> Cmp.SpeedSection
     -> [CrossingPredicate b]
     -> [TaskZone b]
     -> [a]
-    -> Maybe TaskDistance
+    -> Maybe (TaskDistance b)
 
-distanceToGoal :: Real a
-               => (Raw.RawZone -> TaskZone a)
-               -> DistanceViaZones
+distanceToGoal :: (Real b, Fractional b)
+               => SpanLatLng b
+               -> (Raw.RawZone -> TaskZone b)
+               -> DistanceViaZones _ _
                -> [Cmp.Task]
                -> IxTask
                -> Kml.MarkedFixes
-               -> Maybe TaskDistance
+               -> Maybe (TaskDistance b)
 
 -- ^ Nothing indicates no such task or a task with no zones.
-distanceToGoal zoneToCyl dvz tasks (IxTask i) Kml.MarkedFixes{fixes} =
+distanceToGoal span zoneToCyl dvz tasks (IxTask i) Kml.MarkedFixes{fixes} =
     case tasks ^? element (i - 1) of
         Nothing -> Nothing
         Just task@Cmp.Task{speedSection, zones} ->
@@ -246,15 +271,32 @@ distanceToGoal zoneToCyl dvz tasks (IxTask i) Kml.MarkedFixes{fixes} =
                 (zoneToCyl <$> zones)
                 fixes 
             where
-                fs = (\x -> pickCrossingPredicate (isStartExit zoneToCyl x) x) task
+                fs =
+                    (\x ->
+                        pickCrossingPredicate
+                            span
+                            (isStartExit span zoneToCyl x)
+                            x)
+                    $ task
 
 -- | A task is to be flown via its control zones. This function finds the last
 -- leg made. The next leg is partial. Along this, the track fixes are checked
 -- to find the one closest to the next zone at the end of the leg. From this the
 -- distance returned is the task distance up to the next zone not made minus the
 -- distance yet to fly to this zone.
-distanceViaZones :: DistanceViaZones
-distanceViaZones mkZone speedSection fs zs xs =
+distanceViaZones :: forall a b. (Real b, Fractional b)
+                 => SpanLatLng b
+                 -> DistancePointToPoint b
+                 -> CostSegment b
+                 -> CircumSample b
+                 -> AngleCut b
+                 -> (a -> TrackZone b)
+                 -> Cmp.SpeedSection
+                 -> [CrossingPredicate b]
+                 -> [TaskZone b]
+                 -> [a]
+                 -> Maybe (TaskDistance b)
+distanceViaZones span dpp cseg cs cut mkZone speedSection fs zs xs =
     case reverse xs of
         [] ->
             Nothing
@@ -262,14 +304,15 @@ distanceViaZones mkZone speedSection fs zs xs =
         -- TODO: Check all fixes from last turnpoint made.
         x : _ ->
             Just . edgesSum $
-                distanceEdgeToEdge
-                    distanceHaversineF
-                    (costSegment distanceHaversineF)
-                    mm30
-                    $ toRationalZone <$> (unTrackZone (mkZone x) : notTicked)
+                distanceEdgeToEdge span dpp cseg cs cut mm30 (cons x)
     where
         -- TODO: Don't assume end of speed section is goal.
         zsSpeed = slice speedSection zs
         fsSpeed = slice speedSection fs
+
+        ys :: [Bool]
         ys = (/= ZoneMiss) <$> tickedZones fsSpeed zsSpeed (mkZone <$> xs)
+
         notTicked = unTaskZone <$> drop (length $ takeWhile (== True) ys) zsSpeed
+
+        cons x = (unTrackZone (mkZone x) : notTicked)

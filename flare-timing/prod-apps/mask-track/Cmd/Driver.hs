@@ -12,18 +12,21 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE PartialTypeSignatures #-}
 
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
+{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
 module Cmd.Driver (driverMain) where
 
+import Prelude hiding (span)
 import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Data.String (IsString)
 import Control.Monad (mapM_)
 import Control.Monad.Except (runExceptT)
-import Data.UnitsOfMeasure (u, convert)
+import Data.UnitsOfMeasure ((/:), u, convert, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import System.Directory (doesFileExist, doesDirectoryExist)
 import System.FilePath.Find (FileType(..), (==?), (&&?), find, always, fileType, extension)
@@ -32,6 +35,7 @@ import Cmd.Args (withCmdArgs)
 import Cmd.Options (CmdOptions(..))
 import qualified Data.Yaml.Pretty as Y
 import qualified Data.ByteString as BS
+import qualified Data.Number.FixedFunctions as F
 
 import qualified Flight.Comp as Cmp (CompSettings(..), Pilot(..))
 import qualified Flight.Task as Tsk (TaskDistance(..))
@@ -50,8 +54,14 @@ import Flight.Mask
     )
 import Flight.Track.Mask (Masking(..), PilotTrackMask(..))
 import qualified Flight.Track.Mask as TM (TrackMask(..))
+import Flight.Zone (Bearing(..))
 import Flight.Zone.Raw (RawZone)
+import Flight.LatLng.Rational (Epsilon(..), defEps)
 import Data.Number.RoundingFunctions (dpRound)
+import Flight.Task (SpanLatLng, CircumSample, AngleCut(..))
+import Flight.PointToPoint.Rational
+    (distanceHaversine, distancePointToPoint, costSegment)
+import Flight.Cylinder.Rational (circumSample)
 
 driverMain :: IO ()
 driverMain = withCmdArgs drive
@@ -81,11 +91,11 @@ cmp a b =
         ("lng", _) -> GT
         _ -> compare a b
 
-unTaskDistance :: Fractional a => Tsk.TaskDistance -> a
+unTaskDistance :: (Real a, Fractional a) => Tsk.TaskDistance a -> a
 unTaskDistance (Tsk.TaskDistance d) =
     fromRational $ dpRound 3 dKm
     where 
-        MkQuantity dKm = convert d :: Quantity Rational [u| km |]
+        MkQuantity dKm = toRational' $ convert d :: Quantity _ [u| km |]
 
 unPilotDistance :: (Real a, Fractional b) => Gap.PilotDistance a -> b
 unPilotDistance (Gap.PilotDistance d) =
@@ -158,15 +168,37 @@ drive CmdOptions{..} = do
 
 flown :: SigMasking TM.TrackMask
 flown tasks iTask xs =
-    let mg = madeGoal zoneToCyl tasks iTask xs
-        dg = distanceToGoal zoneToCyl tasks iTask xs
-        df = distanceFlown zoneToCyl tasks iTask xs
-        tf = timeFlown zoneToCyl tasks iTask xs
+    let mg =
+            madeGoal
+                span
+                zoneToCyl tasks iTask xs
+
+        dg =
+            distanceToGoal
+                span dpp cseg cs cut
+                zoneToCyl tasks iTask xs
+
+        df =
+            distanceFlown
+                span dpp cseg cs cut
+                zoneToCyl tasks iTask xs
+
+        tf =
+            timeFlown
+                span
+                zoneToCyl tasks iTask xs
+
+        dpp =
+            distancePointToPoint
+
+        cseg =
+            costSegment span
+
     in TM.TrackMask
         { madeGoal = mg
 
         , distanceToGoal =
-            if mg then Nothing else unTaskDistance <$> dg
+            if mg then Nothing else fromRational . unTaskDistance <$> dg
 
         , distanceMade =
             fromRational <$> if mg then Nothing else unPilotDistance <$> df
@@ -177,3 +209,20 @@ flown tasks iTask xs =
 
 zoneToCyl :: RawZone -> TaskZone Rational
 zoneToCyl = zoneToCylinder
+
+span :: SpanLatLng Rational
+span = distanceHaversine defEps
+
+cs :: CircumSample Rational
+cs = circumSample
+
+cut :: AngleCut Rational
+cut =
+    AngleCut
+        { sweep = let (Epsilon e) = defEps in Bearing . MkQuantity $ F.pi e
+        , nextSweep = nextCut
+        }
+
+nextCut :: AngleCut Rational -> AngleCut Rational
+nextCut x@AngleCut{sweep} =
+    let (Bearing b) = sweep in x{sweep = (Bearing $ b /: 2)}

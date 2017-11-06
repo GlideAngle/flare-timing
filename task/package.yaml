@@ -26,9 +26,16 @@ library:
   - flight-zone
   source-dirs: library
   exposed-modules:
-  - Flight.Task
-  - Flight.Cylinder.Rational
   - Flight.TaskTrack
+  - Flight.TaskTrack.Double
+  - Flight.TaskTrack.Rational
+  - Flight.Task
+  - Flight.Cylinder.Double
+  - Flight.Cylinder.Rational
+  - Flight.PointToPoint.Double
+  - Flight.PointToPoint.Rational
+  - Flight.Projected.Double
+  - Flight.Projected.Rational
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
 name: flight-task

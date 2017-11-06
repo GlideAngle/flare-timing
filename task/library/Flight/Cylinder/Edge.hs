@@ -1,4 +1,6 @@
-module Flight.Cylinder.Edge (sample) where
+{-# LANGUAGE RankNTypes #-}
+
+module Flight.Cylinder.Edge (CircumSample, sample) where
 
 import Prelude hiding (span)
 import Data.UnitsOfMeasure (zero)
@@ -9,20 +11,28 @@ import Flight.Zone
     , Radius(..)
     , Bearing(..)
     )
-import Flight.Cylinder.Rational (circumSample)
-import Flight.Cylinder.Sample (SampleParams, ZonePoint(..))
+import Flight.Cylinder.Sample (SampleParams, ZonePoint(..), TrueCourse)
+
+-- | The type of function that samples points on the circumference of a circle.
+type CircumSample a
+    = SampleParams a
+    -> Bearing a
+    -> Maybe (ZonePoint a)
+    -> Zone a
+    -> ([ZonePoint a], [TrueCourse a])
 
 -- | Generate sample points for a zone. These get added to the graph to work out
 -- the shortest path.
 sample :: (Real a, Fractional a)
-       => SampleParams a
-       -> Bearing
+       => CircumSample a
+       -> SampleParams a
+       -> Bearing a
        -> Maybe (ZonePoint a)
        -> Zone a
        -> [ZonePoint a]
-sample _ _ _ px@(Point x) = [ZonePoint px x (Bearing zero) (Radius (MkQuantity 0))]
-sample _ _ _ px@(Vector _ x) = [ZonePoint px x (Bearing zero) (Radius (MkQuantity 0))]
-sample sp b zs z@Cylinder{} = fst $ circumSample sp b zs z
-sample sp b zs z@Conical{} = fst $ circumSample sp b zs z
-sample sp b zs z@Line{} = fst $ circumSample sp b zs z
-sample sp b zs z@SemiCircle{} = fst $ circumSample sp b zs z
+sample _ _ _ _ px@(Point x) = [ZonePoint px x (Bearing zero) (Radius (MkQuantity 0))]
+sample _ _ _ _ px@(Vector _ x) = [ZonePoint px x (Bearing zero) (Radius (MkQuantity 0))]
+sample circumSample sp b zs z@Cylinder{} = fst $ circumSample sp b zs z
+sample circumSample sp b zs z@Conical{} = fst $ circumSample sp b zs z
+sample circumSample sp b zs z@Line{} = fst $ circumSample sp b zs z
+sample circumSample sp b zs z@SemiCircle{} = fst $ circumSample sp b zs z

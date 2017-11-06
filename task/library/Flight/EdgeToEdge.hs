@@ -1,4 +1,8 @@
 {-# LANGUAGE PartialTypeSignatures #-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE NamedFieldPuns #-}
+
+{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
 module Flight.EdgeToEdge (distanceEdgeToEdge) where
 
@@ -13,29 +17,43 @@ import Flight.ShortestPath
     ( PathCost(..)
     , NodeConnector
     , CostSegment
+    , DistancePointToPoint
+    , AngleCut
+    , GraphBuilder
     , shortestPath
     , buildGraph
     )
+import Flight.Cylinder.Edge (CircumSample)
 import Flight.Distance (TaskDistance(..), PathDistance(..))
-import Flight.PointToPoint (SpanLatLng)
+import Flight.PointToPoint.Segment (SpanLatLng)
 
 distanceEdgeToEdge :: (Real a, Fractional a)
-                   => SpanLatLng
+                   => SpanLatLng a
+                   -> DistancePointToPoint a
                    -> CostSegment a
+                   -> CircumSample a
+                   -> AngleCut a
                    -> Tolerance a
                    -> [Zone a]
-                   -> PathDistance
-distanceEdgeToEdge span = shortestPath span . buildGraph . connectNodes
+                   -> PathDistance a
+distanceEdgeToEdge span distancePointToPoint cseg cs =
+    shortestPath span distancePointToPoint cs builder
+    where
+        connector :: NodeConnector _
+        connector = connectNodes cseg
+
+        builder :: GraphBuilder _
+        builder = buildGraph connector
 
 -- | NOTE: The shortest path may traverse a cylinder so I include
 -- edges within a cylinder as well as edges to the next cylinder.
-connectNodes :: CostSegment a -> NodeConnector a
+connectNodes :: Eq a => CostSegment a -> NodeConnector a
 connectNodes cost xs ys =
     [ f x1 x2 | x1 <- xs, x2 <- xs ]
     ++
     [ f x y | x <- xs, y <- ys ]
     where
-        f :: (Node, ZonePoint b) -> (Node, ZonePoint b) -> LEdge PathCost
+        f :: (Node, ZonePoint _) -> (Node, ZonePoint _) -> LEdge (PathCost _)
         f (i, x) (j, y) = (i, j, PathCost d)
             where
                 (TaskDistance (MkQuantity d)) =

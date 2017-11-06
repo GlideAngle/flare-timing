@@ -16,13 +16,11 @@ module Flight.Cylinder.Sample
     , Tolerance(..)
     , ZonePoint(..)
     , SampleParams(..)
-    , CircumSample
     , fromRationalZonePoint
     ) where
 
 import Prelude hiding (span)
-import Data.Ratio ((%), numerator, denominator)
-import Data.UnitsOfMeasure (u)
+import Data.UnitsOfMeasure (u, fromRational', toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.LatLng (LatLng(..))
@@ -32,25 +30,18 @@ import Flight.Zone
     , Bearing(..)
     , fromRationalRadius
     , fromRationalZone
+    , fromRationalLatLng
     )
 import Flight.Units (showRadian)
 
-type CircumSample a =
-    (Real a, Fractional a)
-    => SampleParams a
-    -> Bearing
-    -> Maybe (ZonePoint a)
-    -> Zone a
-    -> ([ZonePoint a], [TrueCourse])
-
-newtype TrueCourse =
-    TrueCourse (Quantity Rational [u| rad |])
+newtype TrueCourse a =
+    TrueCourse (Quantity a [u| rad |])
     deriving (Eq, Ord)
 
-instance Show TrueCourse where
-    show (TrueCourse tc) = "tc = " ++ showRadian tc
+instance Real a => Show (TrueCourse a) where
+    show (TrueCourse tc) = "tc = " ++ (showRadian $ toRational' tc)
 
-instance Num TrueCourse where
+instance Num a => Num (TrueCourse a) where
     (+) (TrueCourse (MkQuantity a)) (TrueCourse (MkQuantity b)) =
         TrueCourse (MkQuantity $ a + b)
 
@@ -69,11 +60,11 @@ instance Num TrueCourse where
     fromInteger x =
         TrueCourse (MkQuantity $ fromInteger x)
 
-instance Fractional TrueCourse where
-    fromRational tc = TrueCourse (MkQuantity tc)
+instance Fractional a => Fractional (TrueCourse a) where
+    fromRational tc = TrueCourse (MkQuantity $ fromRational tc)
 
     recip (TrueCourse (MkQuantity x)) =
-        TrueCourse (MkQuantity (denominator x % numerator x))
+        TrueCourse (MkQuantity $ recip x)
 
 newtype Samples = Samples { unSamples :: Integer } deriving (Eq, Ord, Show)
 newtype Tolerance a = Tolerance { unTolerance :: a } deriving (Eq, Ord, Show)
@@ -82,9 +73,9 @@ data ZonePoint a
     = ZonePoint
         { sourceZone :: Zone a
         -- ^ This is the zone that generated the point.
-        , point :: LatLng [u| rad |]
+        , point :: LatLng a [u| rad |]
         -- ^ A point on the edge of this zone.
-        , radial :: Bearing
+        , radial :: Bearing a
         -- ^ A point on the edge of this zone with this bearing from
         -- the origin.
         , orbit :: Radius a
@@ -92,12 +83,14 @@ data ZonePoint a
         -- origin.
         }
 
-fromRationalZonePoint :: Fractional a => ZonePoint Rational -> ZonePoint a
+fromRationalZonePoint :: (Eq a, Fractional a)
+                      => ZonePoint Rational
+                      -> ZonePoint a
 fromRationalZonePoint ZonePoint{..} =
     ZonePoint
         { sourceZone = fromRationalZone sourceZone
-        , point = point
-        , radial = radial
+        , point = fromRationalLatLng point
+        , radial = let Bearing b = radial in Bearing $ fromRational' b
         , orbit = fromRationalRadius orbit
         }
 

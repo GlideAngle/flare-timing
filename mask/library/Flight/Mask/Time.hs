@@ -10,11 +10,11 @@
 {-# LANGUAGE DisambiguateRecordFields #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE PartialTypeSignatures #-}
-
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
 module Flight.Mask.Time (timeFlown) where
 
+import Prelude hiding (span)
 import Data.Time.Clock (UTCTime, diffUTCTime)
 import qualified Data.List as List (find)
 import Data.Ratio ((%))
@@ -49,44 +49,52 @@ import Flight.Mask.Internal
     , pickCrossingPredicate
     )
 import qualified Flight.Zone.Raw as Raw (RawZone(..))
+import Flight.Task (SpanLatLng)
 
-timeFlown :: Real a
-          => (Raw.RawZone -> TaskZone a)
+timeFlown :: (Real a, Fractional a)
+          => SpanLatLng a
+          -> (Raw.RawZone -> TaskZone a)
           -> [Cmp.Task]
           -> IxTask
           -> Kml.MarkedFixes
           -> Maybe PilotTime
-timeFlown zoneToCyl tasks iTask@(IxTask i) xs =
+timeFlown span zoneToCyl tasks iTask@(IxTask i) xs =
     case tasks ^? element (i - 1) of
         Nothing ->
             Nothing
 
         Just task@Cmp.Task{speedSection, zones, zoneTimes, startGates} ->
             if null zones || not atGoal then Nothing else
-            flownDuration speedSection fs cs zoneTimes startGates xs
+            flownDuration span speedSection fs cs zoneTimes startGates xs
             where
-                fs = (\x -> pickCrossingPredicate (isStartExit zoneToCyl x) x) task
+                fs =
+                    (\x ->
+                        let b = isStartExit span zoneToCyl x
+                        in pickCrossingPredicate span b x) task
+
                 cs = zoneToCyl <$> zones
 
     where
-        atGoal = madeGoal zoneToCyl tasks iTask xs
+        atGoal = madeGoal span zoneToCyl tasks iTask xs
 
-flownDuration :: Real a
-              => Cmp.SpeedSection
+flownDuration :: (Real a, Fractional a)
+              => SpanLatLng a
+              -> Cmp.SpeedSection
               -> [CrossingPredicate a]
               -> [TaskZone a]
               -> [Cmp.OpenClose]
               -> [Cmp.StartGate]
               -> Kml.MarkedFixes
               -> Maybe PilotTime
-flownDuration speedSection fs zs os gs Kml.MarkedFixes{mark0, fixes}
+flownDuration span speedSection fs zs os gs Kml.MarkedFixes{mark0, fixes}
     | null zs = Nothing
     | null fixes = Nothing
     | otherwise =
-        durationViaZones fixToPoint Kml.mark speedSection fs zs os gs mark0 fixes
+        durationViaZones span fixToPoint Kml.mark speedSection fs zs os gs mark0 fixes
 
-durationViaZones :: Real a
-                 => (Kml.Fix -> TrackZone a)
+durationViaZones :: (Real a, Fractional a)
+                 => SpanLatLng a
+                 -> (Kml.Fix -> TrackZone a)
                  -> (Kml.Fix -> Kml.Seconds)
                  -> Cmp.SpeedSection
                  -> [CrossingPredicate a]
@@ -96,7 +104,7 @@ durationViaZones :: Real a
                  -> UTCTime
                  -> [Kml.Fix]
                  -> Maybe PilotTime
-durationViaZones mkZone atTime speedSection _ zs os gs t0 xs =
+durationViaZones span mkZone atTime speedSection _ zs os gs t0 xs =
     if null xs then Nothing else
     case (osSpeed, zsSpeed, reverse zsSpeed) of
         ([], _, _) -> Nothing
@@ -125,13 +133,13 @@ durationViaZones mkZone atTime speedSection _ zs os gs t0 xs =
             where
                 exits' :: (Kml.Fix, (TrackZone _, TrackZone _)) -> Bool
                 exits' (_, (zx, zy)) =
-                    case exitsZone z0 [zx, zy] of
+                    case exitsZone span z0 [zx, zy] of
                         ZoneExit _ _ -> True
                         _ -> False
 
                 enters' :: (Kml.Fix, (TrackZone _, TrackZone _)) -> Bool
                 enters' (_, (zx, zy)) =
-                    case entersZone zN [zx, zy] of
+                    case entersZone span zN [zx, zy] of
                         ZoneEntry _ _ -> True
                         _ -> False
 

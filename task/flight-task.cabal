@@ -45,18 +45,26 @@ library
     , flight-latlng
     , flight-zone
   exposed-modules:
-      Flight.Task
-      Flight.Cylinder.Rational
       Flight.TaskTrack
+      Flight.TaskTrack.Double
+      Flight.TaskTrack.Rational
+      Flight.Task
+      Flight.Cylinder.Double
+      Flight.Cylinder.Rational
+      Flight.PointToPoint.Double
+      Flight.PointToPoint.Rational
+      Flight.Projected.Double
+      Flight.Projected.Rational
   other-modules:
       Flight.Cylinder.Edge
       Flight.Cylinder.Sample
       Flight.Distance
       Flight.EdgeToEdge
-      Flight.PointToPoint
-      Flight.Projected
+      Flight.PointToPoint.Segment
+      Flight.Projected.Internal
       Flight.Separated
       Flight.ShortestPath
+      Flight.TaskTrack.Internal
       Paths_flight_task
   default-language: Haskell2010
 
@@ -83,17 +91,25 @@ test-suite hlint
     , flight-latlng
     , flight-zone
   other-modules:
+      Flight.Cylinder.Double
       Flight.Cylinder.Edge
       Flight.Cylinder.Rational
       Flight.Cylinder.Sample
       Flight.Distance
       Flight.EdgeToEdge
-      Flight.PointToPoint
-      Flight.Projected
+      Flight.PointToPoint.Double
+      Flight.PointToPoint.Rational
+      Flight.PointToPoint.Segment
+      Flight.Projected.Double
+      Flight.Projected.Internal
+      Flight.Projected.Rational
       Flight.Separated
       Flight.ShortestPath
       Flight.Task
       Flight.TaskTrack
+      Flight.TaskTrack.Double
+      Flight.TaskTrack.Internal
+      Flight.TaskTrack.Rational
   default-language: Haskell2010
 
 test-suite task
@@ -123,17 +139,25 @@ test-suite task
     , tasty-smallcheck
     , smallcheck
   other-modules:
+      Flight.Cylinder.Double
       Flight.Cylinder.Edge
       Flight.Cylinder.Rational
       Flight.Cylinder.Sample
       Flight.Distance
       Flight.EdgeToEdge
-      Flight.PointToPoint
-      Flight.Projected
+      Flight.PointToPoint.Double
+      Flight.PointToPoint.Rational
+      Flight.PointToPoint.Segment
+      Flight.Projected.Double
+      Flight.Projected.Internal
+      Flight.Projected.Rational
       Flight.Separated
       Flight.ShortestPath
       Flight.Task
       Flight.TaskTrack
+      Flight.TaskTrack.Double
+      Flight.TaskTrack.Internal
+      Flight.TaskTrack.Rational
       EdgeToEdge
       TestNewtypes
       Zone

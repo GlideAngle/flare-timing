@@ -16,6 +16,7 @@
 
 module Cmd.Driver (driverMain) where
 
+import Prelude hiding (span)
 import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
@@ -36,6 +37,9 @@ import Flight.Units ()
 import Flight.Mask (TaskZone, SigMasking, checkTracks, madeZones, zoneToCylinder)
 import Flight.Track.Cross (TrackCross(..), PilotTrackCross(..), Crossing(..))
 import Flight.Zone.Raw (RawZone)
+import Flight.Task (SpanLatLng)
+import Flight.PointToPoint.Rational (distanceHaversine)
+import Flight.LatLng.Rational (defEps)
 
 type MkPart a =
     FilePath
@@ -132,8 +136,11 @@ drive CmdOptions{..} = do
                 flown :: SigMasking TrackCross
                 flown tasks iTask xs =
                     TrackCross
-                        { zonesCross = madeZones zoneToCyl tasks iTask xs
+                        { zonesCross = madeZones span zoneToCyl tasks iTask xs
                         }
 
 zoneToCyl :: RawZone -> TaskZone Rational
 zoneToCyl = zoneToCylinder
+
+span :: SpanLatLng Rational
+span = distanceHaversine defEps

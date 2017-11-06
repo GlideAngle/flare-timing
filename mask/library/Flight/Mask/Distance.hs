@@ -6,10 +6,12 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE QuasiQuotes #-}
 
 {-# LANGUAGE DisambiguateRecordFields #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE PartialTypeSignatures #-}
+{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
 module Flight.Mask.Distance
     ( distanceToGoal
@@ -17,6 +19,7 @@ module Flight.Mask.Distance
     , distanceFlown
     ) where
 
+import Prelude hiding (span)
 import Data.Time.Clock (UTCTime)
 import Data.List (inits)
 import Data.UnitsOfMeasure ((-:))
@@ -43,75 +46,123 @@ import Flight.Mask.Internal
     )
 import qualified Flight.Mask.Internal as I (distanceToGoal)
 import qualified Flight.Zone.Raw as Raw (RawZone(..))
+import Flight.Task
+    ( SpanLatLng
+    , CostSegment
+    , DistancePointToPoint
+    , AngleCut(..)
+    , CircumSample
+    )
 
-distancesToGoal :: Real a
-                => (Raw.RawZone -> TaskZone a)
+distancesToGoal :: (Real a, Fractional a)
+                => SpanLatLng a
+                -> DistancePointToPoint a
+                -> CostSegment a
+                -> CircumSample a
+                -> AngleCut a
+                -> (Raw.RawZone -> TaskZone a)
                 -> [Cmp.Task]
                 -> IxTask
                 -> Kml.MarkedFixes
-                -> Maybe [(Maybe Fix, Maybe TaskDistance)]
+                -> Maybe [(Maybe Fix, Maybe (TaskDistance a))]
                 -- ^ Nothing indicates no such task or a task with no zones.
-distancesToGoal zoneToCyl tasks iTask@(IxTask i) Kml.MarkedFixes{mark0, fixes} =
+distancesToGoal
+    span dpp cseg cs cut
+    zoneToCyl tasks iTask@(IxTask i) Kml.MarkedFixes{mark0, fixes} =
     case tasks ^? element (i - 1) of
         Nothing -> Nothing
         Just Cmp.Task{zones} ->
             if null zones then Nothing else Just
-            $ lastFixToGoal zoneToCyl tasks iTask mark0
+            $ lfg zoneToCyl tasks iTask mark0
             <$> inits fixes
+    where
+        lfg = lastFixToGoal span dpp cseg cs cut
 
 -- | The distance from the last fix to goal passing through the remaining
 -- control zones.
-lastFixToGoal :: Real a
-              => (Raw.RawZone -> TaskZone a)
+lastFixToGoal :: (Real a, Fractional a)
+              => SpanLatLng a
+              -> DistancePointToPoint a
+              -> CostSegment a
+              -> CircumSample a
+              -> AngleCut a
+              -> (Raw.RawZone -> TaskZone a)
               -> [Cmp.Task]
               -> IxTask
               -> UTCTime
               -> [Kml.Fix]
-              -> (Maybe Fix, Maybe TaskDistance)
-lastFixToGoal zoneToCyl tasks iTask mark0 ys =
+              -> (Maybe Fix, Maybe (TaskDistance a))
+lastFixToGoal
+    span dpp cseg cs cut
+    zoneToCyl tasks iTask mark0 ys =
     case reverse ys of
         [] -> (Nothing, Nothing)
         (y : _) -> (Just $ fixFromFix mark0 y, d)
     where
         xs = Kml.MarkedFixes { Kml.mark0 = mark0, Kml.fixes = ys }
-        d = I.distanceToGoal zoneToCyl distanceViaZones tasks iTask xs
+        dvz = distanceViaZones span dpp cseg cs cut
+        d = I.distanceToGoal span zoneToCyl dvz tasks iTask xs
 
-distanceToGoal :: Real a
-               => (Raw.RawZone -> TaskZone a)
+distanceToGoal :: (Real a, Fractional a)
+               => SpanLatLng a
+               -> DistancePointToPoint a
+               -> CostSegment a
+               -> CircumSample a
+               -> AngleCut a
+               -> (Raw.RawZone -> TaskZone a)
                -> [Cmp.Task]
                -> IxTask
                -> Kml.MarkedFixes
-               -> Maybe TaskDistance
-distanceToGoal zoneToCyl = I.distanceToGoal zoneToCyl distanceViaZones
+               -> Maybe (TaskDistance a)
+distanceToGoal
+    span dpp cseg cs cut
+    zoneToCyl =
+    I.distanceToGoal span zoneToCyl (distanceViaZones span dpp cseg cs cut)
 
 distanceFlown :: (Real a, Fractional a)
-              => (Raw.RawZone -> TaskZone a)
+              => SpanLatLng a
+              -> DistancePointToPoint a
+              -> CostSegment a
+              -> CircumSample a
+              -> AngleCut a
+              -> (Raw.RawZone -> TaskZone a)
               -> [Cmp.Task]
               -> IxTask
               -> Kml.MarkedFixes
               -> Maybe (PilotDistance a)
-distanceFlown zoneToCyl tasks (IxTask i) Kml.MarkedFixes{fixes} =
+distanceFlown
+    span dpp cseg cs cut
+    zoneToCyl tasks (IxTask i) Kml.MarkedFixes{fixes} =
     case tasks ^? element (i - 1) of
         Nothing ->
             Nothing
 
         Just task@Cmp.Task{speedSection, zones} ->
-            if null zones then Nothing else go speedSection fs cs d
+            if null zones then Nothing else go speedSection fs cyls d
             where
-                fs = (\x -> pickCrossingPredicate (isStartExit zoneToCyl x) x) task
-                cs = zoneToCylinder <$> zones
-                d = distanceViaZones fixToPoint speedSection fs cs fixes
+                fs :: [CrossingPredicate _]
+                fs =
+                    (\x ->
+                        let b = isStartExit span zoneToCyl x
+                        in pickCrossingPredicate span b x) task
+
+                cyls = zoneToCylinder <$> zones
+
+                d :: Maybe (TaskDistance _)
+                d =
+                    distanceViaZones
+                        span dpp cseg cs cut
+                        fixToPoint speedSection fs cyls fixes
 
     where
-        go :: (Real a, Fractional a)
-           => Cmp.SpeedSection
-           -> [CrossingPredicate a]
-           -> [TaskZone a]
-           -> Maybe TaskDistance
-           -> Maybe (PilotDistance a)
+        go :: Cmp.SpeedSection
+           -> [CrossingPredicate _]
+           -> [TaskZone _]
+           -> Maybe (TaskDistance _)
+           -> Maybe (PilotDistance _)
 
         go _ _ [] (Just (TaskDistance (MkQuantity d))) =
-            Just . PilotDistance $ fromRational d
+            Just . PilotDistance $ d
 
         go _ _ _ Nothing =
             Nothing
@@ -122,7 +173,10 @@ distanceFlown zoneToCyl tasks (IxTask i) Kml.MarkedFixes{fixes} =
                     Nothing
 
                 Just (TaskDistance dMax) ->
-                    Just . PilotDistance . fromRational . unQuantity $ dMax -: d
+                    Just . PilotDistance . unQuantity $ dMax -: d
             where
                 zoneToZone (TaskZone x) = TrackZone x
-                total = distanceViaZones zoneToZone speedSection fs zs [z]
+                total =
+                    distanceViaZones
+                        span dpp cseg cs cut
+                        zoneToZone speedSection fs zs [z]

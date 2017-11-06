@@ -32,7 +32,7 @@ import qualified Data.ByteString as BS
 
 import Flight.Units ()
 import Flight.Comp (CompSettings(tasks), Task(zones))
-import Flight.TaskTrack (taskTracks)
+import Flight.TaskTrack.Rational (taskTracks)
 import qualified Flight.TaskTrack as TZ
     (TaskTrack(..), TaskRoutes(..))
 

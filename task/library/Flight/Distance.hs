@@ -14,48 +14,34 @@ module Flight.Distance
     , fromKms
     ) where
 
-import Data.UnitsOfMeasure (u, convert)
-import Data.UnitsOfMeasure.Internal (Quantity(..), fromRational')
+import Data.UnitsOfMeasure (u, convert, fromRational')
+import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Data.Bifunctor.Flip (Flip(..))
 
 import Flight.LatLng (LatLng(..))
 import Data.Number.RoundingFunctions (dpRound)
 
-fromKms :: Quantity Rational [u| km |] -> TaskDistance
+fromKms :: Fractional a => Quantity a [u| km |] -> TaskDistance a
 fromKms q = TaskDistance (convert q)
 
-newtype TaskDistance =
-    TaskDistance (Quantity Rational [u| m |])
+newtype TaskDistance a =
+    TaskDistance (Quantity a [u| m |])
     deriving (Eq, Ord)
 
-instance Show TaskDistance where
+instance Show (TaskDistance Rational) where
     show (TaskDistance d) = "d = " ++ show dbl
         where
             km = convert d :: Quantity Rational [u| km |]
             Flip rounded = dpRound 3 <$> Flip km
             dbl = fromRational' rounded :: Quantity Double [u| km |]
 
-instance {-# OVERLAPPING #-} Show [TaskDistance] where
-    show = showDistances
-
-showDistances :: [TaskDistance] -> String
-showDistances xs =
-    show (f <$> xs) ++ " km"
-    where
-        f (TaskDistance d) = show dbl
-            where
-                km = convert d :: Quantity Rational [u| km |]
-                Flip rounded = dpRound 3 <$> Flip km
-                (MkQuantity dbl) = fromRational' rounded :: Quantity Double [u| km |]
-
-
 -- | The distance along a path of edges spanning vertices.
-data PathDistance =
+data PathDistance a =
     PathDistance
-        { edgesSum :: TaskDistance
+        { edgesSum :: TaskDistance a
         -- ^ The distance from the center of the first zone to the center of
         -- the last zone. An edge joins two vertices. These are summed to get
         -- the distance along the path that visits the vertices, each in turn.
-        , vertices :: [ LatLng [u| rad |] ]
+        , vertices :: [ LatLng a [u| rad |] ]
         -- ^ The vertices that each edge spans.
         }

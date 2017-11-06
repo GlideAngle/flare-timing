@@ -8,21 +8,26 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE QuasiQuotes #-}
 
+{-# LANGUAGE PartialTypeSignatures #-}
+{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
+
 module Flight.Separated (separatedZones) where
-    
+
 import Prelude hiding (span)
-import Data.UnitsOfMeasure ((+:), (-:), (*:), (/:), u, unQuantity, toRational')
+import Data.UnitsOfMeasure ((+:), (-:), (*:), u, unQuantity, recip')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
 import Flight.Zone (Zone(..), Radius(..), radius)
-import Flight.PointToPoint (SpanLatLng, distancePointToPoint, distanceHaversine)
+import Flight.PointToPoint.Segment (SpanLatLng)
+import Flight.PointToPoint.Double (distancePointToPoint)
 import Flight.Distance (TaskDistance(..), PathDistance(..))
-import Flight.LatLng (Lat(..), Lng(..), LatLng(..), earthRadius, defEps)
+import Flight.LatLng (Lat(..), Lng(..), LatLng(..), earthRadius)
 
-boundingBoxSeparated :: Quantity Rational [u| m |]
-                     -> LatLng [u| rad |]
-                     -> LatLng [u| rad |]
+boundingBoxSeparated :: (Num a, Ord a, Fractional a)
+                     => Quantity a [u| m |]
+                     -> LatLng a [u| rad |]
+                     -> LatLng a [u| rad |]
                      -> Bool
 boundingBoxSeparated
     r'
@@ -30,8 +35,10 @@ boundingBoxSeparated
     (LatLng (Lat yLat, Lng yLng)) =
         xLo || xHi || yLo || yHi
     where
-        r :: Quantity Rational [u| rad |]
-        r = (r' /: earthRadius) *: [u| 1 rad |]
+        -- NOTE: Use *: recip' instead of /: to avoid needing a
+        -- Floating constraint that is not available for Rational.
+        r :: Quantity _ [u| rad |]
+        r = (r' *: recip' earthRadius) *: [u| 1 rad |]
 
         xLo :: Bool
         xLo = xLat' < MkQuantity 0
@@ -45,78 +52,80 @@ boundingBoxSeparated
         yHi :: Bool
         yHi = xLng' > MkQuantity 1
 
-        xZero :: Quantity Rational [u| rad |]
+        xZero :: Quantity _ [u| rad |]
         xZero = yLat -: r
 
-        yZero :: Quantity Rational [u| rad |]
+        yZero :: Quantity _ [u| rad |]
         yZero = yLng -: r
 
-        xScale :: Quantity Rational [u| rad |]
+        xScale :: Quantity _ [u| rad |]
         xScale = (yLat +: r) -: (yLat -: r)
 
-        yScale :: Quantity Rational [u| rad |]
+        yScale :: Quantity _ [u| rad |]
         yScale = (yLng +: r) -: (yLng -: r)
 
-        xTranslate :: Lat [u| rad |] -> Lat [u| rad |]
+        xTranslate :: Lat _ [u| rad |] -> Lat _ [u| rad |]
         xTranslate (Lat lat) =
             Lat ((lat -: xZero) *: scale)
             where
-                scale :: Quantity Rational [u| 1 1 |]
+                scale :: Quantity _ [u| 1 1 |]
                 scale = MkQuantity (unQuantity xScale)
 
-        yTranslate :: Lng [u| rad |] -> Lng [u| rad |]
+        yTranslate :: Lng _ [u| rad |] -> Lng _ [u| rad |]
         yTranslate (Lng lng) =
             Lng ((lng -: yZero) *: scale)
             where
-                scale :: Quantity Rational [u| 1 1 |]
+                scale :: Quantity _ [u| 1 1 |]
                 scale = MkQuantity (unQuantity yScale)
 
         (Lat xLat') = xTranslate xLLx
         (Lng xLng') = yTranslate xLLy
 
-separated :: Real a => Zone a -> Zone a -> Bool
+separated :: (Real a, Fractional a)
+          => SpanLatLng a
+          -> Zone a
+          -> Zone a
+          -> Bool
 
-separated x@(Point _) y@(Point _) =
+separated _ x@(Point _) y@(Point _) =
     x /= y
 
-separated x y@(Point _) =
-    separated y x
+separated span x y@(Point _) =
+    separated span y x
 
 separated
+    span
     x@(Point xLL)
     y@(Cylinder r yLL) =
-    boundingBoxSeparated ry' xLL yLL || d > ry'
+    boundingBoxSeparated ry xLL yLL || d > ry
     where
         (Radius ry) = r
-        ry' = toRational' ry
         (TaskDistance d) = edgesSum $ distancePointToPoint span [x, y]
 
-separated x@(Point _) y =
-    d > toRational' ry
+separated span x@(Point _) y =
+    d > ry
     where
         (Radius ry) = radius y
         (TaskDistance d) = edgesSum $ distancePointToPoint span [x, y]
 
 -- | Consider cylinders separated if one fits inside the other or if they don't
 -- touch.
-separated xc@(Cylinder (Radius xR) x) yc@(Cylinder (Radius yR) y)
-    | x == y = xR' /= yR'
+separated span xc@(Cylinder (Radius xR) x) yc@(Cylinder (Radius yR) y)
+    | x == y = xR /= yR
     | dxy + minR < maxR = True
-    | otherwise = clearlySeparated xc yc
+    | otherwise = clearlySeparated span xc yc
     where
         (TaskDistance (MkQuantity dxy)) =
             edgesSum
             $ distancePointToPoint
                 span
-                ([Point x, Point y] :: [Zone Rational])
+                ([Point x, Point y] :: [Zone _])
 
-        xR' = toRational' xR
-        yR' = toRational' yR
-        (MkQuantity minR) = max xR' yR'
-        (MkQuantity maxR) = min xR' yR'
+        (MkQuantity minR) = max xR yR
+        (MkQuantity maxR) = min xR yR
 
-separated x y =
-    clearlySeparated x y
+separated span x y =
+    clearlySeparated span x y
 
 -- | Are the control zones separated? This a prerequisite to being able to work
 -- out the distance between zones. The one exception is coincident cylinders
@@ -124,18 +133,15 @@ separated x y =
 -- distance between them. This will be seen where the smaller concentric cylinder
 -- marks the launch and the larger one, as an exit cylinder, marks the start of the
 -- speed section.
-separatedZones :: Real a => [Zone a] -> Bool
-separatedZones xs =
-    and $ zipWith separated xs (tail xs)
+separatedZones :: (Real a, Fractional a) => SpanLatLng a -> [Zone a] -> Bool
+separatedZones span xs =
+    and $ zipWith (separated span) xs (tail xs)
 
-clearlySeparated :: Real a => Zone a -> Zone a -> Bool
-clearlySeparated x y =
+clearlySeparated :: Real a => SpanLatLng a -> Zone a -> Zone a -> Bool
+clearlySeparated span x y =
     d > rxy
     where
         (Radius rx) = radius x
         (Radius ry) = radius y
-        rxy = toRational' rx +: toRational' ry
+        rxy = rx +: ry
         (TaskDistance d) = edgesSum $ distancePointToPoint span [x, y]
-
-span :: SpanLatLng
-span = distanceHaversine defEps

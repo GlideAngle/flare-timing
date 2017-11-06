@@ -17,12 +17,17 @@ library:
   - aeson
   - cassava
   - uom-plugin
+  - formatting
+  - text
   - siggy-chardust
   - flight-units
   source-dirs: library
   exposed-modules:
   - Flight.LatLng
   - Flight.LatLng.Raw
+  - Flight.LatLng.Double
+  - Flight.LatLng.Float
+  - Flight.LatLng.Rational
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
 name: flight-latlng
@@ -40,6 +45,8 @@ tests:
     - scientific
     - aeson
     - uom-plugin
+    - formatting
+    - text
     - siggy-chardust
     - flight-units
     - hlint

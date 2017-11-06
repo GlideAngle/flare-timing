@@ -21,6 +21,7 @@ module Flight.Mask.Tag
     , groupByLeg
     ) where
 
+import Prelude hiding (span)
 import Data.Time.Clock (UTCTime, addUTCTime)
 import Data.List (nub)
 import Data.List.Split (split, whenElt, keepDelimsL)
@@ -45,6 +46,7 @@ import Flight.Mask.Internal
     , tickedZones
     )
 import qualified Flight.Zone.Raw as Raw (RawZone(..))
+import Flight.Task (SpanLatLng)
 
 -- | A masking produces a value from a task and tracklog fixes.
 type SigMasking a = [Cmp.Task] -> IxTask -> Kml.MarkedFixes -> a
@@ -60,8 +62,11 @@ launched :: SigMasking Bool
 launched _ _ Kml.MarkedFixes{fixes} =
     not . null . nub $ fixes
 
-started :: Real a => (Raw.RawZone -> TaskZone a) -> SigMasking Bool
-started zoneToCyl tasks (IxTask i) Kml.MarkedFixes{fixes} =
+started :: (Real a, Fractional a)
+        => SpanLatLng a
+        -> (Raw.RawZone -> TaskZone a)
+        -> SigMasking Bool
+started span zoneToCyl tasks (IxTask i) Kml.MarkedFixes{fixes} =
     case tasks ^? element (i - 1) of
         Nothing -> False
         Just Cmp.Task{speedSection, zones} ->
@@ -70,13 +75,16 @@ started zoneToCyl tasks (IxTask i) Kml.MarkedFixes{fixes} =
                     False
 
                 z : _ ->
-                    let ez = exitsZone (zoneToCyl z) (fixToPoint <$> fixes)
+                    let ez = exitsZone span (zoneToCyl z) (fixToPoint <$> fixes)
                     in case ez of
                          ZoneExit _ _ -> True
                          _ -> False
 
-madeGoal :: Real a => (Raw.RawZone -> TaskZone a) -> SigMasking Bool
-madeGoal zoneToCyl tasks (IxTask i) Kml.MarkedFixes{fixes} =
+madeGoal :: (Real a, Fractional a)
+         => SpanLatLng a
+         -> (Raw.RawZone -> TaskZone a)
+         -> SigMasking Bool
+madeGoal span zoneToCyl tasks (IxTask i) Kml.MarkedFixes{fixes} =
     case tasks ^? element (i - 1) of
         Nothing -> False
         Just Cmp.Task{zones} ->
@@ -85,7 +93,7 @@ madeGoal zoneToCyl tasks (IxTask i) Kml.MarkedFixes{fixes} =
                     False
 
                 z : _ ->
-                    let ez = entersZone (zoneToCyl z) (fixToPoint <$> fixes)
+                    let ez = entersZone span (zoneToCyl z) (fixToPoint <$> fixes)
                     in case ez of
                          ZoneEntry _ _ -> True
                          _ -> False
@@ -123,13 +131,14 @@ tagZones =
                 ([x, y], [a, b]) -> crossingTag (x, y) (a, b)
                 _ -> Nothing
 
-madeZones :: Real a
-          => (Raw.RawZone -> TaskZone a)
+madeZones :: (Real a, Fractional a)
+          => SpanLatLng a
+          -> (Raw.RawZone -> TaskZone a)
           -> [Cmp.Task]
           -> IxTask
           -> Kml.MarkedFixes
           -> [Maybe ZoneCross]
-madeZones zoneToCyl tasks (IxTask i) Kml.MarkedFixes{mark0, fixes} =
+madeZones span zoneToCyl tasks (IxTask i) Kml.MarkedFixes{mark0, fixes} =
     case tasks ^? element (i - 1) of
         Nothing ->
             []
@@ -137,7 +146,10 @@ madeZones zoneToCyl tasks (IxTask i) Kml.MarkedFixes{mark0, fixes} =
         Just task@Cmp.Task{zones} ->
             f <$> xs
             where
-                fs = (\x -> pickCrossingPredicate (isStartExit zoneToCyl x) x) task
+                fs =
+                    (\x ->
+                        let b = isStartExit span zoneToCyl x
+                        in pickCrossingPredicate span b x) task
 
                 xs =
                     tickedZones
@@ -156,17 +168,18 @@ fixToUtc mark0 x =
     in fromInteger secs `addUTCTime` mark0
 
 -- | Groups fixes by legs of the task.
-groupByLeg :: Real a
-           => (Raw.RawZone -> TaskZone a)
+groupByLeg :: (Real a, Fractional a)
+           => SpanLatLng a
+           -> (Raw.RawZone -> TaskZone a)
            -> [Cmp.Task]
            -> IxTask
            -> Kml.MarkedFixes
            -> [Kml.MarkedFixes]
-groupByLeg zoneToCyl tasks iTask mf@Kml.MarkedFixes{mark0, fixes} =
+groupByLeg span zoneToCyl tasks iTask mf@Kml.MarkedFixes{mark0, fixes} =
     (\zs -> mf{Kml.fixes = zs}) <$> ys
     where
         xs :: [Maybe Fix]
-        xs = tagZones $ madeZones zoneToCyl tasks iTask mf
+        xs = tagZones $ madeZones span zoneToCyl tasks iTask mf
 
         ts :: [Maybe UTCTime]
         ts = (fmap . fmap) time xs

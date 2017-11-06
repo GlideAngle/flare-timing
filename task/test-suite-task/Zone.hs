@@ -8,6 +8,7 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE QuasiQuotes #-}
 
+{-# LANGUAGE NamedFieldPuns #-}
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
 module Zone
@@ -23,22 +24,18 @@ import Prelude hiding (span)
 import Data.Ratio ((%))
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit as HU ((@?=), testCase)
-import Data.UnitsOfMeasure (u, zero)
+import Data.UnitsOfMeasure ((/:), u, zero)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
+import qualified Data.Number.FixedFunctions as F
 
-import qualified Flight.Task as FS
-    ( distanceHaversine
-    , distanceHaversineF
-    , distancePointToPoint
-    , distanceEdgeToEdge
-    )
-import Flight.LatLng
-    ( Lat(..)
-    , Lng(..)
-    , LatLng(..)
-    , defEps
-    , earthRadius
-    )
+import qualified Flight.PointToPoint.Double as Dbl (distanceHaversine)
+import qualified Flight.PointToPoint.Rational as Rat
+    (distanceHaversine, distancePointToPoint, costSegment)
+import qualified Flight.Cylinder.Rational as Rat (circumSample)
+import Flight.Cylinder.Sample (CircumSample)
+import qualified Flight.Task as FS (distanceEdgeToEdge)
+import Flight.LatLng (Lat(..), Lng(..), LatLng(..), earthRadius)
+import Flight.LatLng.Rational (Epsilon(..), defEps)
 import Flight.Zone
     ( Zone(..)
     , Radius(..)
@@ -52,14 +49,14 @@ import Flight.Task
     , Tolerance(..)
     , SpanLatLng
     , separatedZones
-    , costSegment
     )
+import Flight.ShortestPath (AngleCut(..))
 
 import TestNewtypes
 
 type Pt = (Rational, Rational)
 
-toLL :: (Rational, Rational) -> LatLng [u| rad |]
+toLL :: (Rational, Rational) -> LatLng Rational [u| rad |]
 toLL (lat, lng) =
     LatLng (Lat lat', Lng lng')
     where
@@ -140,7 +137,7 @@ disjointUnits = testGroup "Disjoint zone separation"
 emptyDistance :: TestTree
 emptyDistance = testGroup "Point-to-point distance"
     [ HU.testCase "No zones = zero point-to-point distance" $
-        edgesSum (FS.distancePointToPoint span []) @?= (TaskDistance $ MkQuantity 0)
+        edgesSum (Rat.distancePointToPoint span []) @?= (TaskDistance $ MkQuantity 0)
     ]
 
 toDistance :: String -> [[Zone Rational]] -> TestTree
@@ -149,7 +146,7 @@ toDistance title xs =
     where
         f x =
             HU.testCase (mconcat [ "distance ", show x, " = earth radius" ]) $
-                edgesSum (FS.distancePointToPoint span x)
+                edgesSum (Rat.distancePointToPoint span x)
                     @?= TaskDistance earthRadius
 
 ptsDistance :: [[Pt]]
@@ -187,7 +184,7 @@ coincident title xs =
                                  , show $ head x
                                  , " = not separate"
                                  ]) $
-                separatedZones x
+                separatedZones span x
                     @?= False
 
 ptsCoincident :: [[Pt]]
@@ -225,7 +222,7 @@ touching title xs =
                                  , show x
                                  , " = not separate"
                                  ]) $
-                separatedZones x
+                separatedZones span x
                     @?= False
 
 epsM :: Rational
@@ -258,7 +255,7 @@ disjoint title xs =
                                  , show x 
                                  , " = separate"
                                  ]) $
-                separatedZones x
+                separatedZones span x
                     @?= True
 
 eps :: Rational
@@ -297,7 +294,7 @@ lineDisjoint = disjoint "Line zones" ((fmap . fmap) line radiiDisjoint)
 semicircleDisjoint :: TestTree
 semicircleDisjoint = disjoint "Semicircle zones" ((fmap . fmap) semicircle radiiDisjoint)
 
-correctPoint :: [Zone Rational] -> TaskDistance -> Bool
+correctPoint :: [Zone Rational] -> TaskDistance Rational -> Bool
 correctPoint [] (TaskDistance (MkQuantity d)) = d == 0
 correctPoint [_] (TaskDistance (MkQuantity d)) = d == 0
 correctPoint [Cylinder xR x, Cylinder yR y] (TaskDistance (MkQuantity d))
@@ -309,41 +306,45 @@ correctPoint xs (TaskDistance (MkQuantity d))
     where
         ys = center <$> xs
 
-correctCenter :: [Zone Rational] -> TaskDistance -> Bool
+correctCenter :: [Zone Rational] -> TaskDistance Rational -> Bool
 correctCenter [] (TaskDistance (MkQuantity d)) = d == 0
 correctCenter [_] (TaskDistance (MkQuantity d)) = d == 0
 correctCenter xs (TaskDistance (MkQuantity d))
     | all (== head ys) (tail ys) = d == 0
-    | not $ separatedZones xs = d == 0
+    | not $ separatedZones span xs = d == 0
     | otherwise = d > 0
     where
         ys = center <$> xs
 
-distanceHaversineF :: HaversineTest -> Bool
+distanceHaversineF :: HaversineTest Double -> Bool
 distanceHaversineF (HaversineTest (x, y)) =
     [u| 0 m |] <= d
     where
-        TaskDistance d = FS.distanceHaversineF x y
+        TaskDistance d = Dbl.distanceHaversine x y
 
-distanceHaversine :: HaversineTest -> Bool
+distanceHaversine :: HaversineTest Rational -> Bool
 distanceHaversine (HaversineTest (x, y)) =
     [u| 0 m |] <= d
     where
-        TaskDistance d = FS.distanceHaversine defEps x y
+        TaskDistance d = Rat.distanceHaversine defEps x y
 
 distancePoint :: ZonesTest -> Bool
 distancePoint (ZonesTest xs) =
     (\(PathDistance d _) -> correctPoint xs d)
-    $ FS.distancePointToPoint span xs
-
-mm10 :: Tolerance Rational
-mm10 = Tolerance $ 10 % 1000
+    $ Rat.distancePointToPoint span xs
 
 distanceEdge :: ZonesTest -> Bool
 distanceEdge (ZonesTest xs) =
     correctCenter xs
     $ edgesSum
-    $ FS.distanceEdgeToEdge span (costSegment span) mm10 xs
+    $ FS.distanceEdgeToEdge
+        span
+        Rat.distancePointToPoint
+        (Rat.costSegment span)
+        cs
+        cut
+        mm10
+        xs
 
 distanceLess :: ZonesTest -> Bool
 distanceLess (ZonesTest xs)
@@ -352,10 +353,36 @@ distanceLess (ZonesTest xs)
         dCenter <= dPoint
         where
             PathDistance dCenter _ =
-                FS.distanceEdgeToEdge span (costSegment span) mm10 xs
+                FS.distanceEdgeToEdge
+                    span
+                    Rat.distancePointToPoint
+                    (Rat.costSegment span)
+                    cs
+                    cut
+                    mm10
+                    xs
 
             PathDistance dPoint _ =
-                FS.distancePointToPoint span xs
+                Rat.distancePointToPoint span xs
 
-span :: SpanLatLng
-span = FS.distanceHaversine defEps
+mm10 :: Tolerance Rational
+mm10 = Tolerance $ 10 % 1000
+
+span :: SpanLatLng Rational
+span = Rat.distanceHaversine defEps
+
+cs :: CircumSample Rational
+cs = Rat.circumSample
+
+cut :: AngleCut Rational
+cut =
+    AngleCut
+        { sweep =
+            let (Epsilon e) = defEps
+            in Bearing . MkQuantity $ F.pi e
+        , nextSweep = nextCut
+        }
+
+nextCut :: AngleCut Rational -> AngleCut Rational
+nextCut x@AngleCut{sweep} =
+    let (Bearing b) = sweep in x{sweep = (Bearing $ b /: 2)}

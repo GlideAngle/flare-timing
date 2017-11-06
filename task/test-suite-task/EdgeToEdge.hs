@@ -8,6 +8,7 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE QuasiQuotes #-}
 
+{-# LANGUAGE NamedFieldPuns #-}
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
 module EdgeToEdge (edgeToEdgeUnits) where
@@ -18,12 +19,17 @@ import qualified Data.Number.FixedFunctions as F
 import Data.List (inits)
 import Test.Tasty (TestTree, TestName, testGroup)
 import Test.Tasty.HUnit as HU ((@?=), (@?), testCase)
-import Data.UnitsOfMeasure (u, convert)
+import Data.UnitsOfMeasure ((/:), u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
-import Data.Number.RoundingFunctions (dpRound)
 import Data.Bifunctor.Flip (Flip(..))
 
-import Flight.LatLng (Epsilon(..), Lat(..), Lng(..), LatLng(..), defEps)
+import qualified Flight.PointToPoint.Rational as Rat
+    (distanceHaversine, distancePointToPoint, costSegment)
+import qualified Flight.Cylinder.Rational as Rat (circumSample)
+import Flight.Cylinder.Sample (CircumSample)
+import qualified Flight.Task as FS (distanceEdgeToEdge)
+import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
+import Flight.LatLng.Rational (Epsilon(..), defEps)
 import Flight.Units ()
 import qualified Flight.Task as FS
 import Flight.Zone
@@ -39,8 +45,9 @@ import Flight.Task
     , PathDistance(..)
     , SpanLatLng
     , fromKms
-    , costSegment
     )
+import Flight.ShortestPath (AngleCut(..), CostSegment)
+import Data.Number.RoundingFunctions (dpRound)
 
 (.>=.) :: (Show a, Show b) => a -> b -> String
 (.>=.) x y = show x ++ " >= " ++ show y
@@ -77,7 +84,7 @@ sampleParams = SampleParams { spSamples = Samples 100
                             , spTolerance = mm30
                             }
 
-ll :: LatLng [u| rad |]
+ll :: LatLng Rational [u| rad |]
 ll =
     LatLng (lat, lng)
     where
@@ -85,7 +92,7 @@ ll =
         lat = Lat oneRadian
         lng = Lng oneRadian
 
-br :: Bearing
+br :: Bearing Rational
 br = let (Epsilon e) = defEps in (Bearing . MkQuantity $ F.pi e)
 
 circumSampleUnits :: TestTree
@@ -94,68 +101,68 @@ circumSampleUnits = testGroup "Points just within the zone"
         [ HU.testCase
             "No points > 0mm outside a 40m cylinder when searching within 1mm" $
             filter (> 40 + unmilli 0)
-            (snd $ FS.circumSample (sampleParams { spTolerance = mm1 }) br Nothing (Cylinder (Radius $ MkQuantity 40) ll))
+            (snd $ cs (sampleParams { spTolerance = mm1 }) br Nothing (Cylinder (Radius $ MkQuantity 40) ll))
             @?= [] 
 
         , HU.testCase
             "No points > 0mm outside a 400m cylinder when searching within 1mm" $
             filter (> 400 + unmilli 0)
-            (snd $ FS.circumSample (sampleParams { spTolerance = mm1 }) br Nothing (Cylinder (Radius $ MkQuantity 400) ll))
+            (snd $ cs (sampleParams { spTolerance = mm1 }) br Nothing (Cylinder (Radius $ MkQuantity 400) ll))
             @?= [] 
 
         , HU.testCase
             "No points > 0mm outside a 1km cylinder when searching within 10mm" $
             filter (> unkilo 1 + unmilli 0) 
-            (snd $ FS.circumSample (sampleParams { spTolerance = mm10 }) br Nothing (Cylinder (Radius $ MkQuantity $ unkilo 1) ll))
+            (snd $ cs (sampleParams { spTolerance = mm10 }) br Nothing (Cylinder (Radius $ MkQuantity $ unkilo 1) ll))
             @?= [] 
 
         , HU.testCase
             "No points > 0mm outside a 10km cylinder when searching within 100mm" $
             filter (> unkilo 10 + unmilli 0)
-            (snd $ FS.circumSample (sampleParams { spTolerance = mm100 }) br Nothing (Cylinder (Radius $ MkQuantity $ unkilo 10) ll))
+            (snd $ cs (sampleParams { spTolerance = mm100 }) br Nothing (Cylinder (Radius $ MkQuantity $ unkilo 10) ll))
             @?= [] 
 
         , HU.testCase 
             "No points > 0m outside a 100km cylinder when searching within 100m" $
             filter (> unkilo 100 + 0)
-            (snd $ FS.circumSample (sampleParams { spTolerance = m100 }) br Nothing (Cylinder (Radius $ MkQuantity $ unkilo 100) ll))
+            (snd $ cs (sampleParams { spTolerance = m100 }) br Nothing (Cylinder (Radius $ MkQuantity $ unkilo 100) ll))
             @?= [] 
         ]
     , testGroup "Inside the zone."
         [ HU.testCase
             "No points > 1mm inside a 40m cylinder when searching within 1mm" $
             filter (< 40.0 - unmilli 1)
-            (snd $ FS.circumSample (sampleParams { spTolerance = mm1 }) br Nothing (Cylinder (Radius $ MkQuantity 40) ll))
+            (snd $ cs (sampleParams { spTolerance = mm1 }) br Nothing (Cylinder (Radius $ MkQuantity 40) ll))
             @?= [] 
 
         , HU.testCase
             "No points > 1mm inside a 400m cylinder when searching within 1mm" $
             filter (< 400.0 - unmilli 1)
-            (snd $ FS.circumSample (sampleParams { spTolerance = mm1 }) br Nothing (Cylinder (Radius $ MkQuantity 400) ll))
+            (snd $ cs (sampleParams { spTolerance = mm1 }) br Nothing (Cylinder (Radius $ MkQuantity 400) ll))
             @?= [] 
 
         , HU.testCase
             "No points > 9mm inside a 1km cylinder when searching within 10mm" $
             filter (< unkilo 1 - unmilli 9)
-            (snd $ FS.circumSample (sampleParams { spTolerance = mm10 }) br Nothing (Cylinder (Radius $ MkQuantity $ unkilo 1) ll))
+            (snd $ cs (sampleParams { spTolerance = mm10 }) br Nothing (Cylinder (Radius $ MkQuantity $ unkilo 1) ll))
             @?= [] 
 
         , HU.testCase
             "No points > 97mm inside a 10km cylinder when searching within 100mm" $
             filter (< unkilo 10 - unmilli 97)
-            (snd $ FS.circumSample (sampleParams { spTolerance = mm100 }) br Nothing (Cylinder (Radius $ MkQuantity $ unkilo 10) ll))
+            (snd $ cs (sampleParams { spTolerance = mm100 }) br Nothing (Cylinder (Radius $ MkQuantity $ unkilo 10) ll))
             @?= [] 
 
         , HU.testCase
             "No points > 85m inside a 100km cylinder when searching within 100m" $
             filter (< unkilo 100 - 85)
-            (snd $ FS.circumSample (sampleParams { spTolerance = m100 }) br Nothing (Cylinder (Radius $ MkQuantity $ unkilo 100) ll))
+            (snd $ cs (sampleParams { spTolerance = m100 }) br Nothing (Cylinder (Radius $ MkQuantity $ unkilo 100) ll))
             @?= [] 
         ]
     ]
 
 -- | The input pair is in degrees while the output is in radians.
-toLL :: (Double, Double) -> LatLng [u| rad |]
+toLL :: (Double, Double) -> LatLng Rational [u| rad |]
 toLL (lat, lng) =
     LatLng (Lat lat'', Lng lng'')
         where
@@ -199,7 +206,7 @@ unkilo x = x * 1000
 
 mkPartDayUnits :: TestName
                -> [Zone Rational]
-               -> TaskDistance
+               -> TaskDistance Rational
                -> TestTree
 mkPartDayUnits title zs (TaskDistance d) = testGroup title
     [ HU.testCase
@@ -211,7 +218,7 @@ mkPartDayUnits title zs (TaskDistance d) = testGroup title
         Flip r = dpRound 2 <$> Flip dKm
         tdR = TaskDistance (convert r :: Quantity Rational [u| m |])
 
-        td'@(TaskDistance d') = edgesSum $ FS.distancePointToPoint span zs
+        td'@(TaskDistance d') = edgesSum $ Rat.distancePointToPoint span zs
         dKm' = convert d' :: Quantity Rational [u| km |]
         Flip r' = dpRound 2 <$> Flip dKm'
         tdR' = TaskDistance (convert r' :: Quantity Rational [u| m |])
@@ -397,11 +404,11 @@ day8PartUnits = testGroup "Task 8 [...]"
 
 mkDayUnits :: TestName
            -> [Zone Rational]
-           -> TaskDistance
-           -> [TaskDistance]
+           -> TaskDistance Rational
+           -> [TaskDistance Rational]
            -> TestTree
 mkDayUnits title pDay dDay dsDay = testGroup title
-    [ HU.testCase "zones are separated" $ FS.separatedZones pDay @?= True
+    [ HU.testCase "zones are separated" $ FS.separatedZones span pDay @?= True
 
     , HU.testCase
         ("point-to-point distance >= " ++ show dDay)
@@ -428,8 +435,8 @@ mkDayUnits title pDay dDay dsDay = testGroup title
             distLess eeDayInits dsDay @? eeDayInits .<=. dsDay
     ]
     where
-        pp = FS.distancePointToPoint span
-        ee = FS.distanceEdgeToEdge span (costSegment span) mm30 
+        pp = Rat.distancePointToPoint span
+        ee = distanceEdgeToEdge'
         ppDay = edgesSum $ pp pDay
         eeDay = edgesSum $ ee pDay
         pDayInits = drop 1 $ inits pDay
@@ -506,7 +513,7 @@ pDay1 =
     , Cylinder (Radius $ MkQuantity 400) $ toLL (negate 33.61965, 148.4099)
     ]
 
-dDay1 :: TaskDistance
+dDay1 :: TaskDistance Rational
 dDay1 = fromKms [u| 133.357 km |]
 
 {-
@@ -530,7 +537,7 @@ TODO: Find out why the first distance is 9.882 and not 9.9 km.
 <FsTaskDistToTp tp_no="4" distance="112.779" />
 <FsTaskDistToTp tp_no="5" distance="133.357" />
 -}
-dsDay1 :: [TaskDistance]
+dsDay1 :: [TaskDistance Rational]
 dsDay1 =
     fromKms . MkQuantity <$>
         [ 0.000
@@ -580,10 +587,10 @@ pDay2 =
     , Cylinder (Radius $ MkQuantity 400) (toLL (negate 33.12592, 147.91043))
     ]
 
-dDay2 :: TaskDistance
+dDay2 :: TaskDistance Rational
 dDay2 = fromKms [u| 128.284 km |]
 
-dsDay2 :: [TaskDistance]
+dsDay2 :: [TaskDistance Rational]
 dsDay2 =
     fromKms . MkQuantity <$>
         [ 0.000
@@ -633,10 +640,10 @@ pDay3 =
     , Cylinder (Radius $ MkQuantity 400) (toLL (negate 34.82197, 148.66543))
     ]
 
-dDay3 :: TaskDistance
+dDay3 :: TaskDistance Rational
 dDay3 = fromKms [u| 183.856 km |]
 
-dsDay3 :: [TaskDistance]
+dsDay3 :: [TaskDistance Rational]
 dsDay3 =
     fromKms . MkQuantity <$>
         [ 0.000
@@ -682,10 +689,10 @@ pDay4 =
     , Cylinder (Radius $ MkQuantity 400) (toLL (negate 32.46363, 148.989))
     ]
 
-dDay4 :: TaskDistance
+dDay4 :: TaskDistance Rational
 dDay4 = fromKms [u| 144.030 km |]
 
-dsDay4 :: [TaskDistance]
+dsDay4 :: [TaskDistance Rational]
 dsDay4 =
     fromKms . MkQuantity <$>
         [ 0.000
@@ -730,10 +737,10 @@ pDay5 =
     , Cylinder (Radius $ MkQuantity 400) (toLL (negate 32.0164, 149.43363))
     ]
 
-dDay5 :: TaskDistance
+dDay5 :: TaskDistance Rational
 dDay5 = fromKms [u| 217.389 km |]
 
-dsDay5 :: [TaskDistance]
+dsDay5 :: [TaskDistance Rational]
 dsDay5 =
     fromKms . MkQuantity <$>
         [ 0.000
@@ -778,10 +785,10 @@ pDay6 =
     , Cylinder (Radius $ MkQuantity 400) (toLL (negate 31.69323, 148.29623))
     ]
 
-dDay6 :: TaskDistance
+dDay6 :: TaskDistance Rational
 dDay6 = fromKms [u| 201.822 km |]
 
-dsDay6 :: [TaskDistance]
+dsDay6 :: [TaskDistance Rational]
 dsDay6 =
     fromKms . MkQuantity <$>
         [ 0.000
@@ -830,10 +837,10 @@ pDay7 =
     , Cylinder (Radius $ MkQuantity 400) (toLL (negate 32.93585, 148.74947))
     ]
 
-dDay7 :: TaskDistance
+dDay7 :: TaskDistance Rational
 dDay7 = fromKms [u| 174.525 km |]
 
-dsDay7 :: [TaskDistance]
+dsDay7 :: [TaskDistance Rational]
 dsDay7 =
     fromKms . MkQuantity <$>
         [ 0.000
@@ -883,10 +890,10 @@ pDay8 =
     , Cylinder (Radius $ MkQuantity 400) (toLL (negate 33.361, 147.9315))
     ]
 
-dDay8 :: TaskDistance
+dDay8 :: TaskDistance Rational
 dDay8 = fromKms [u| 158.848 km |]
 
-dsDay8 :: [TaskDistance]
+dsDay8 :: [TaskDistance Rational]
 dsDay8 =
     fromKms . MkQuantity <$>
         [ 0.000
@@ -896,5 +903,28 @@ dsDay8 =
         , 158.848
         ]
 
-span :: SpanLatLng
-span = FS.distanceHaversine defEps
+distanceEdgeToEdge' :: [Zone Rational] -> PathDistance Rational
+distanceEdgeToEdge' zs = 
+    FS.distanceEdgeToEdge span Rat.distancePointToPoint segCost cs cut mm30 zs
+
+segCost :: CostSegment Rational
+segCost = Rat.costSegment span
+
+span :: SpanLatLng Rational
+span = Rat.distanceHaversine defEps
+
+cs :: CircumSample Rational
+cs = Rat.circumSample
+
+cut :: AngleCut Rational
+cut =
+    AngleCut
+        { sweep =
+            let (Epsilon e) = defEps
+            in Bearing . MkQuantity $ F.pi e
+        , nextSweep = nextCut
+        }
+
+nextCut :: AngleCut Rational -> AngleCut Rational
+nextCut x@AngleCut{sweep} =
+    let (Bearing b) = sweep in x{sweep = (Bearing $ b /: 2)}

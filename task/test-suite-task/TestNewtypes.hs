@@ -9,6 +9,7 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE QuasiQuotes #-}
 
+{-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
 module TestNewtypes where
@@ -30,11 +31,17 @@ import Flight.Zone
     , Zone(..)
     )
 
-newtype HaversineTest = HaversineTest (LatLng [u| rad |], LatLng [u| rad |]) deriving Show
-newtype ZoneTest = ZoneTest (Zone Rational) deriving Show
+newtype HaversineTest a =
+    HaversineTest (LatLng a [u| rad |], LatLng a [u| rad |])
+
+deriving instance Show (LatLng a [u| rad |]) => Show (HaversineTest a)
+
+newtype ZoneTest = ZoneTest (Zone Rational)
+deriving instance Show (Zone Rational)
+
 newtype ZonesTest = ZonesTest [Zone Rational] deriving Show
 
-instance Monad m => SC.Serial m HaversineTest where
+instance (Monad m, SC.Serial m a) => SC.Serial m (HaversineTest a) where
     series = decDepth $ HaversineTest <$>
         cons4 (\xlat xlng ylat ylng ->
             ( LatLng (Lat $ MkQuantity xlat, Lng $ MkQuantity xlng)
@@ -75,7 +82,7 @@ instance Monad m => SC.Serial m ZoneTest where
 instance Monad m => SC.Serial m ZonesTest where
     series = decDepth $ cons1 (\xs -> ZonesTest $ (\(ZoneTest x) -> x) <$> xs)
 
-instance QC.Arbitrary HaversineTest where
+instance Arbitrary a => QC.Arbitrary (HaversineTest a) where
     arbitrary = HaversineTest <$> do
         xlat <- arbitrary
         xlng <- arbitrary

@@ -12,18 +12,21 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE PartialTypeSignatures #-}
 
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
+{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
 module Cmd.Driver (driverMain) where
 
+import Prelude hiding (span)
 import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Data.Maybe (catMaybes)
 import Control.Monad (mapM_)
 import Control.Monad.Except (runExceptT)
-import Data.UnitsOfMeasure (u, convert)
+import Data.UnitsOfMeasure ((/:), u, convert, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import System.Directory (doesFileExist, doesDirectoryExist)
 import System.FilePath.Find (FileType(..), (==?), (&&?), find, always, fileType, extension)
@@ -38,19 +41,24 @@ import Flight.Units ()
 import Flight.Mask
     (TaskZone, SigMasking, checkTracks, groupByLeg, distancesToGoal, zoneToCylinder)
 import Flight.Track.Cross (Fix(..))
+import Flight.Zone (Bearing(..))
 import Flight.Zone.Raw (RawZone)
 import Flight.Track.Time (TimeRow(..))
 import Flight.Task (TaskDistance(..))
 import Flight.Kml (MarkedFixes(..))
 import Data.Number.RoundingFunctions (dpRound)
+import Flight.Task (SpanLatLng, CircumSample, AngleCut(..))
+import Flight.PointToPoint.Double
+    (distanceHaversine, distancePointToPoint, costSegment)
+import Flight.Cylinder.Double (circumSample)
 
 type Leg = Int
 
-unTaskDistance :: Fractional a => TaskDistance -> a
+unTaskDistance :: (Real a, Fractional a) => TaskDistance a -> a
 unTaskDistance (TaskDistance d) =
     fromRational $ dpRound 3 dKm
     where 
-        MkQuantity dKm = convert d :: Quantity Rational [u| km |]
+        MkQuantity dKm = toRational' $ convert d :: Quantity _ [u| km |]
 
 headers :: [String]
 headers = ["leg", "time", "pilot", "lat", "lng", "distance"]
@@ -121,7 +129,7 @@ drive CmdOptions{..} = do
                     $ dropExtension yamlCompPath
 
 mkTimeRows :: Leg
-           -> Maybe [(Maybe Fix, Maybe TaskDistance)]
+           -> Maybe [(Maybe Fix, Maybe (TaskDistance Double))]
            -> Pilot
            -> [TimeRow]
 mkTimeRows _ Nothing _ = []
@@ -129,7 +137,7 @@ mkTimeRows leg (Just xs) p = catMaybes $ mkTimeRow leg p <$> xs
 
 mkTimeRow :: Int
           -> Pilot
-          -> (Maybe Fix, Maybe TaskDistance)
+          -> (Maybe Fix, Maybe (TaskDistance Double))
           -> Maybe TimeRow
 mkTimeRow _ _ (Nothing, _) = Nothing
 mkTimeRow _ _ (_, Nothing) = Nothing
@@ -148,12 +156,36 @@ group tasks iTask fs =
     \pilot ->
         concat $ zipWith
             (\leg xs ->
-                mkTimeRows leg (distancesToGoal zoneToCyl tasks iTask xs) pilot)
+                let xs' =
+                        distancesToGoal
+                            span dpp cseg cs cut
+                            zoneToCyl tasks iTask xs
+                in mkTimeRows leg xs' pilot)
             [1 .. ]
             ys
     where
         ys :: [MarkedFixes]
-        ys = groupByLeg zoneToCyl tasks iTask fs
+        ys = groupByLeg span zoneToCyl tasks iTask fs
+
+        dpp = distancePointToPoint
+        cseg = costSegment span
 
 zoneToCyl :: RawZone -> TaskZone Double
 zoneToCyl x = zoneToCylinder x
+
+span :: SpanLatLng Double
+span = distanceHaversine
+
+cs :: CircumSample Double
+cs = circumSample
+
+cut :: AngleCut Double
+cut =
+    AngleCut
+        { sweep = Bearing . MkQuantity $ pi
+        , nextSweep = nextCut
+        }
+
+nextCut :: AngleCut Double -> AngleCut Double
+nextCut x@AngleCut{sweep} =
+    let (Bearing b) = sweep in x{sweep = (Bearing $ b /: 2)}

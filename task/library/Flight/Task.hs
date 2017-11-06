@@ -14,25 +14,25 @@ module Flight.Task
     ( -- * Spherical Distance Between Points
       TaskDistance(..)
     , SpanLatLng
-    , distancePointToPoint
-    , distanceHaversine
-    , distanceHaversineF
-    , costSegment
     , fromKms
     -- * Optimized Shortest Path 
     , Samples(..)
     , Tolerance(..)
     , SampleParams(..)
     , PathDistance(..)
+    , CircumSample
+    , CostSegment
+    , DistancePointToPoint
+    , AngleCut(..)
     , distanceEdgeToEdge
-    , costEastNorth
     -- * Zones
     , separatedZones
     ) where
 
 import Flight.Distance
-import Flight.PointToPoint
+import Flight.PointToPoint.Segment
 import Flight.EdgeToEdge
-import Flight.Projected
 import Flight.Separated
 import Flight.Cylinder.Sample
+import Flight.Cylinder.Edge
+import Flight.ShortestPath

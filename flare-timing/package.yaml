@@ -101,6 +101,7 @@ executables:
     - siggy-chardust
     - flight-units
     - flight-comp
+    - flight-latlng
     - flight-kml
     - flight-track
     - flight-zone
@@ -205,8 +206,10 @@ executables:
     - bytestring
     - clock
     - formatting
+    - numbers
     - siggy-chardust
     - flight-units
+    - flight-latlng
     - flight-comp
     - flight-kml
     - flight-track

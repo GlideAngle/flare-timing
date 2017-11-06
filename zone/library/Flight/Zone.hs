@@ -8,6 +8,9 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
 
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE StandaloneDeriving #-}
+
 module Flight.Zone
     ( Lat(..)
     , Lng(..)
@@ -29,6 +32,8 @@ module Flight.Zone
     , toRationalZone
     , realToFracRadius
     , realToFracZone
+    , fromRationalLatLng
+    , toRationalLatLng
     ) where
 
 import Data.UnitsOfMeasure (u, zero, toRational', fromRational')
@@ -54,71 +59,165 @@ instance Real a => Show (Radius a) where
 newtype Incline = Incline (Quantity Rational [u| rad |]) deriving (Eq, Ord)
 
 -- | The bearing component of a vector zone.
-newtype Bearing = Bearing (Quantity Rational [u| rad |]) deriving (Eq, Ord)
+newtype Bearing a = Bearing (Quantity a [u| rad |]) deriving (Eq, Ord)
 
 instance Show Incline where
     show (Incline angle) = "i = " ++ showRadian angle
 
-instance Show Bearing where
-    show (Bearing b) = "r = " ++ showRadian b 
+instance Real a => Show (Bearing a) where
+    show (Bearing b) = "r = " ++ (showRadian $ toRational' b)
 
 -- | A control zone of the task. Taken together these make up the course to fly
 -- with start enter and exit cylinders, turnpoint cylinders, goal lines and
 -- cylinders.
-data Zone a
-    = Point (LatLng [u| rad |])
-    -- ^ Used to mark the exact turnpoints in the optimized task distance.
-    | Vector Bearing (LatLng [u| rad |])
-    -- ^ Used only in open distance tasks these mark the start and direction of
+data Zone a where
+    -- | Used to mark the exact turnpoints in the optimized task distance.
+    Point :: Eq a => LatLng a [u| rad |] -> Zone a
+
+    -- | Used only in open distance tasks these mark the start and direction of
     -- the open distance.
-    | Cylinder (Radius a) (LatLng [u| rad |])
-    -- ^ The turnpoint cylinder.
-    | Conical Incline (Radius a) (LatLng [u| rad |])
-    -- ^ Only used in paragliding, this is the conical end of speed section
+    Vector :: Eq a
+           => Bearing a
+           -> LatLng a [u| rad |]
+           -> Zone a
+
+    -- | The turnpoint cylinder.
+    Cylinder :: Eq a
+             => Radius a
+             -> LatLng a [u| rad |]
+             -> Zone a
+
+    -- | Only used in paragliding, this is the conical end of speed section
     -- used to discourage too low an end to final glides.
-    | Line (Radius a) (LatLng [u| rad |])
-    -- ^ A goal line perpendicular to the course line.
-    | SemiCircle (Radius a) (LatLng [u| rad |])
-    -- ^ This control zone is only ever used as a goal for paragliding. It is
+    Conical :: Eq a
+            => Incline
+            -> Radius a
+            -> LatLng a [u| rad |]
+            -> Zone a
+
+    -- | A goal line perpendicular to the course line.
+    Line :: Eq a
+         => Radius a
+         -> LatLng a [u| rad |]
+         -> Zone a
+
+    -- | This control zone is only ever used as a goal for paragliding. It is
     -- a goal line perpendicular to the course line followed by half
     -- a cylinder.
-    deriving (Eq, Show)
+    SemiCircle :: Eq a
+               => Radius a
+               -> LatLng a [u| rad |]
+               -> Zone a
+
+deriving instance Eq (Zone a)
 
 fromRationalRadius :: Fractional a => Radius Rational -> Radius a
-fromRationalRadius (Radius r) = Radius $ fromRational' r
+fromRationalRadius (Radius r) =
+    Radius $ fromRational' r
 
 toRationalRadius :: Real a => Radius a -> Radius Rational
-toRationalRadius (Radius r) = Radius $ toRational' r
+toRationalRadius (Radius r) =
+    Radius $ toRational' r
 
 realToFracRadius :: (Real a, Fractional b) => Radius a -> Radius b
-realToFracRadius (Radius r) = Radius $ realToFrac' r
+realToFracRadius (Radius r) =
+    Radius $ realToFrac' r
 
-fromRationalZone :: Fractional a => Zone Rational -> Zone a
-fromRationalZone (Point x) = Point x
-fromRationalZone (Vector b x) = Vector b x
-fromRationalZone (Cylinder r x) = Cylinder (fromRationalRadius r) x
-fromRationalZone (Conical i r x) = Conical i (fromRationalRadius r) x
-fromRationalZone (Line r x) = Line (fromRationalRadius r) x
-fromRationalZone (SemiCircle r x) = SemiCircle (fromRationalRadius r) x
+fromRationalLat :: Fractional a => Lat Rational u -> Lat a u
+fromRationalLat (Lat x) =
+    Lat $ fromRational' x
+
+fromRationalLng :: Fractional a => Lng Rational u -> Lng a u
+fromRationalLng (Lng x) =
+    Lng $ fromRational' x
+
+fromRationalLatLng :: Fractional a => LatLng Rational u -> LatLng a u
+fromRationalLatLng (LatLng (lat, lng)) =
+    LatLng (fromRationalLat lat, fromRationalLng lng)
+
+toRationalLat :: Real a => Lat a u -> Lat Rational u
+toRationalLat (Lat x) =
+    Lat $ toRational' x
+
+toRationalLng :: Real a => Lng a u -> Lng Rational u
+toRationalLng (Lng x) =
+    Lng $ toRational' x
+
+toRationalLatLng :: Real a => LatLng a u -> LatLng Rational u
+toRationalLatLng (LatLng (lat, lng)) =
+    LatLng (toRationalLat lat, toRationalLng lng)
+
+realToFracLat :: (Real a, Fractional b) => Lat a u -> Lat b u
+realToFracLat (Lat x) =
+    Lat $ realToFrac' x
+
+realToFracLng :: (Real a, Fractional b) => Lng a u -> Lng b u
+realToFracLng (Lng x) =
+    Lng $ realToFrac' x
+
+realToFracLatLng :: (Real a, Fractional b) => LatLng a u -> LatLng b u
+realToFracLatLng (LatLng (lat, lng)) =
+    LatLng (realToFracLat lat, realToFracLng lng)
+
+fromRationalZone :: (Eq a, Fractional a) => Zone Rational -> Zone a
+fromRationalZone (Point x) =
+    Point $ fromRationalLatLng x
+
+fromRationalZone (Vector (Bearing b) x) =
+    Vector (Bearing $ fromRational' b) (fromRationalLatLng x)
+
+fromRationalZone (Cylinder r x) =
+    Cylinder (fromRationalRadius r) (fromRationalLatLng x)
+
+fromRationalZone (Conical i r x) =
+    Conical i (fromRationalRadius r) (fromRationalLatLng x)
+
+fromRationalZone (Line r x) =
+    Line (fromRationalRadius r) (fromRationalLatLng x)
+
+fromRationalZone (SemiCircle r x) =
+    SemiCircle (fromRationalRadius r) (fromRationalLatLng x)
 
 toRationalZone :: Real a => Zone a -> Zone Rational
-toRationalZone (Point x) = Point x
-toRationalZone (Vector b x) = Vector b x
-toRationalZone (Cylinder r x) = Cylinder (toRationalRadius r) x
-toRationalZone (Conical i r x) = Conical i (toRationalRadius r) x
-toRationalZone (Line r x) = Line (toRationalRadius r) x
-toRationalZone (SemiCircle r x) = SemiCircle (toRationalRadius r) x
+toRationalZone (Point x) =
+    Point $ toRationalLatLng x
 
-realToFracZone :: (Real a, Fractional b) => Zone a -> Zone b
-realToFracZone (Point x) = Point x
-realToFracZone (Vector b x) = Vector b x
-realToFracZone (Cylinder r x) = Cylinder (realToFracRadius r) x
-realToFracZone (Conical i r x) = Conical i (realToFracRadius r) x
-realToFracZone (Line r x) = Line (realToFracRadius r) x
-realToFracZone (SemiCircle r x) = SemiCircle (realToFracRadius r) x
+toRationalZone (Vector (Bearing b) x) =
+    Vector (Bearing $ toRational' b) (toRationalLatLng x)
+
+toRationalZone (Cylinder r x) =
+    Cylinder (toRationalRadius r) (toRationalLatLng x)
+
+toRationalZone (Conical i r x) =
+    Conical i (toRationalRadius r) (toRationalLatLng x)
+
+toRationalZone (Line r x) =
+    Line (toRationalRadius r) (toRationalLatLng x)
+
+toRationalZone (SemiCircle r x) =
+    SemiCircle (toRationalRadius r) (toRationalLatLng x)
+
+realToFracZone :: (Real a, Eq b, Fractional b) => Zone a -> Zone b
+realToFracZone (Point x) =
+    Point $ realToFracLatLng x
+
+realToFracZone (Vector (Bearing (MkQuantity b)) x) =
+    Vector (Bearing (MkQuantity $ realToFrac b)) (realToFracLatLng x)
+
+realToFracZone (Cylinder r x) =
+    Cylinder (realToFracRadius r) (realToFracLatLng x)
+
+realToFracZone (Conical i r x) =
+    Conical i (realToFracRadius r) (realToFracLatLng x)
+
+realToFracZone (Line r x) =
+    Line (realToFracRadius r) (realToFracLatLng x)
+
+realToFracZone (SemiCircle r x) =
+    SemiCircle (realToFracRadius r) (realToFracLatLng x)
 
 -- | The effective center point of a zone.
-center :: Zone a -> LatLng [u| rad |]
+center :: Zone a -> LatLng a [u| rad |]
 center (Point x) = x
 center (Vector _ x) = x
 center (Cylinder _ x) = x
