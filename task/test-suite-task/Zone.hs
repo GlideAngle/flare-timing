@@ -32,7 +32,6 @@ import qualified Flight.PointToPoint.Double as Dbl (distanceHaversine)
 import qualified Flight.PointToPoint.Rational as Rat
     (distanceHaversine, distancePointToPoint, costSegment)
 import qualified Flight.Cylinder.Rational as Rat (circumSample)
-import Flight.Cylinder.Sample (CircumSample)
 import qualified Flight.Task as FS (distanceEdgeToEdge)
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..), earthRadius)
 import Flight.LatLng.Rational (Epsilon(..), defEps)
@@ -48,6 +47,7 @@ import Flight.Task
     , PathDistance(..)
     , Tolerance(..)
     , SpanLatLng
+    , CircumSample
     , separatedZones
     )
 import Flight.ShortestPath (AngleCut(..))

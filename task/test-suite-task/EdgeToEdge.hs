@@ -26,7 +26,6 @@ import Data.Bifunctor.Flip (Flip(..))
 import qualified Flight.PointToPoint.Rational as Rat
     (distanceHaversine, distancePointToPoint, costSegment)
 import qualified Flight.Cylinder.Rational as Rat (circumSample)
-import Flight.Cylinder.Sample (CircumSample)
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.LatLng.Rational (Epsilon(..), defEps)
 import Flight.Units ()
@@ -43,7 +42,9 @@ import Flight.Task
     , TaskDistance(..)
     , PathDistance(..)
     , SpanLatLng
+    , CircumSample
     , fromKms
+    , separatedZones
     )
 import Flight.ShortestPath (AngleCut(..), CostSegment)
 import Data.Number.RoundingFunctions (dpRound)
@@ -407,7 +408,7 @@ mkDayUnits :: TestName
            -> [TaskDistance Rational]
            -> TestTree
 mkDayUnits title pDay dDay dsDay = testGroup title
-    [ HU.testCase "zones are separated" $ FS.separatedZones span pDay @?= True
+    [ HU.testCase "zones are separated" $ separatedZones span pDay @?= True
 
     , HU.testCase
         ("point-to-point distance >= " ++ show dDay)
