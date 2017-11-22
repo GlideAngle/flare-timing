@@ -108,8 +108,8 @@ drive CmdOptions{..} = do
 
                             _ <- zipWithM
                                 (\ iTask zs ->
-                                    when (includeTask iTask) $
-                                        mapM_ (writePilotTimes (takeDirectory yamlCompPath) headers iTask) zs)
+                                    when (includeTask task iTask) $
+                                        mapM_ (writePilotTimes (takeDirectory yamlCompPath) iTask) zs)
                                 [1 .. ]
                                 ys
 
@@ -118,23 +118,23 @@ drive CmdOptions{..} = do
                 checkAll =
                     checkTracks $ \CompSettings{tasks} -> group tasks
 
-                includeTask :: Int -> Bool
-                includeTask = if null task then const True else (`elem` task)
+includeTask :: [Int] -> Int -> Bool
+includeTask tasks = if null tasks then const True else (`elem` tasks)
 
-                fcsv :: FilePath -> Int -> Pilot -> (FilePath, FilePath)
-                fcsv dir' task' pilot'' =
-                    (d, f)
-                    where
-                        d = dir' </> ".flare-timing" </> "align-time" </> "task-" ++ show task'
-                        f = show pilot'' <.> "csv"
+fcsv :: FilePath -> Int -> Pilot -> (FilePath, FilePath)
+fcsv dir task pilot =
+    (d, f)
+    where
+        d = dir </> ".flare-timing" </> "align-time" </> "task-" ++ show task
+        f = show pilot <.> "csv"
 
-                writePilotTimes :: FilePath -> [String] -> Int -> (Pilot, [TimeRow]) -> IO ()
-                writePilotTimes dir' headers' iTask (pilot', rows) = do
-                    _ <- createDirectoryIfMissing True d
-                    _ <- writeTimeRowsToCsv (d </> f) headers' rows
-                    return ()
-                    where
-                        (d, f) = fcsv dir' iTask pilot'
+writePilotTimes :: FilePath -> Int -> (Pilot, [TimeRow]) -> IO ()
+writePilotTimes dir iTask (pilot, rows) = do
+    _ <- createDirectoryIfMissing True d
+    _ <- writeTimeRowsToCsv (d </> f) headers rows
+    return ()
+    where
+        (d, f) = fcsv dir iTask pilot
 
 mkTimeRows :: Leg
            -> Maybe [(Maybe Fix, Maybe (TaskDistance Double))]
