@@ -42,10 +42,10 @@ Writes `.flare-timing/filter-time/task-n/p.csv`.
 7. Find the nearest a track came to missing the next zone on course with [`near-miss`](flare-timing/prod-apps/near-miss).  
 Reads `.flare-timing/task-n/p.csv`.  
 Writes `.near-miss.yaml`.
-8. Transpose the table `sort-distance`.  
+8. Transpose the table with [`sort-distance`](flare-timing/prod-apps/sort-distance).  
 Reads `.flare-timing/filter-time/task-n/p.csv`.  
 Writes `.flare-timing/sort-distance/task-n/p.csv`.
-9. Filter fixes that get further from goal leading area with `leading-area`.  
+9. Filter fixes that get further from goal leading area with [`leading-area`](flare-timing/prod-apps/leading-area).  
 Reads `.flare-timing/sort-distance/task-n/p.csv`.  
 Writes `.leading-area.yaml`.
 10. Mask the competition task over the tracklogs with [`mask-track`](flare-timing/prod-apps/mask-track).  
