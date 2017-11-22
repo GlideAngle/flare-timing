@@ -28,9 +28,10 @@ import Control.Monad (mapM_, when, zipWithM)
 import Control.Monad.Except (runExceptT)
 import Data.UnitsOfMeasure ((/:), u, convert, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
-import System.Directory (doesFileExist, doesDirectoryExist)
-import System.FilePath.Find (FileType(..), (==?), (&&?), find, always, fileType, extension)
-import System.FilePath (FilePath, takeFileName, replaceExtension, dropExtension)
+import System.Directory (doesFileExist, doesDirectoryExist, createDirectoryIfMissing)
+import System.FilePath.Find
+    (FileType(..), (==?), (&&?), find, always, fileType, extension)
+import System.FilePath (FilePath, (</>), (<.>), takeFileName, takeDirectory)
 import Cmd.Args (withCmdArgs)
 import Cmd.Options (CmdOptions(..))
 import Cmd.Outputs (writeTimeRowsToCsv)
@@ -98,19 +99,19 @@ drive CmdOptions{..} = do
                     case checks of
                         Left msg -> print msg
                         Right xs -> do
-                            let ys :: [[[TimeRow]]] =
+                            let ys :: [[(Pilot, [TimeRow])]] =
                                     (fmap . fmap)
                                         (\case
-                                            Left _ -> []
-                                            Right (p, g) -> g p)
+                                            Left (p, _) -> (p, [])
+                                            Right (p, g) -> (p, g p))
                                         xs
 
                             _ <- zipWithM
-                                (\ iTask rows ->
+                                (\ iTask zs ->
                                     when (includeTask iTask) $
-                                        writeTimeRowsToCsv (fcsv iTask) headers rows)
+                                        mapM_ (writePilotTimes (takeDirectory yamlCompPath) headers iTask) zs)
                                 [1 .. ]
-                                (concat <$> ys)
+                                ys
 
                             return ()
 
@@ -120,10 +121,20 @@ drive CmdOptions{..} = do
                 includeTask :: Int -> Bool
                 includeTask = if null task then const True else (`elem` task)
 
-                fcsv :: Int -> FilePath
-                fcsv n =
-                    flip replaceExtension ("." ++ show n ++ ".align-time.csv")
-                    $ dropExtension yamlCompPath
+                fcsv :: FilePath -> Int -> Pilot -> (FilePath, FilePath)
+                fcsv dir' task' pilot'' =
+                    (d, f)
+                    where
+                        d = dir' </> ".flare-timing" </> "task-" ++ show task'
+                        f = show pilot'' ++ ".align-time" <.> "csv"
+
+                writePilotTimes :: FilePath -> [String] -> Int -> (Pilot, [TimeRow]) -> IO ()
+                writePilotTimes dir' headers' iTask (pilot', rows) = do
+                    _ <- createDirectoryIfMissing True d
+                    _ <- writeTimeRowsToCsv (d </> f) headers' rows
+                    return ()
+                    where
+                        (d, f) = fcsv dir' iTask pilot'
 
 mkTimeRows :: Leg
            -> Maybe [(Maybe Fix, Maybe (TaskDistance Double))]
