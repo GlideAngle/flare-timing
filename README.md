@@ -51,7 +51,7 @@ Writes `.leading-area.yaml`.
 10. Mask the competition task over the tracklogs with [`mask-track`](flare-timing/prod-apps/mask-track).  
 Reads `.comp-input.yaml`, `.tag-zone` and `.near-miss`.  
 Writes `.mask-track.yaml`.
-11. Score the competition with `gap-point`.  
+11. Score the competition with [`gap-point`](flare-timing/prod-apps/gap-point).  
 Reads `.comp-input.yaml`. Writes `.gap-point.yaml`.
 12. Start the [`server`](flare-timing/prod-apps/app-serve) hosting the web services.
 13. Start the [`dev server`](flare-timing/view) or otherwise host the web app.
