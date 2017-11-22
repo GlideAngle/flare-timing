@@ -1,4 +1,4 @@
-### Crossing Zones
+### Align Times
 
     $ __shake-build/align-time --help
     From competition inputs '.comp-input.yaml' and relative track logs '.kml',
