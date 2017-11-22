@@ -25,7 +25,7 @@ import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Data.Maybe (catMaybes)
 import Control.Monad (mapM_, when, zipWithM)
-import Control.Monad.Except (runExceptT)
+import Control.Monad.Except (ExceptT, runExceptT)
 import Data.UnitsOfMeasure ((/:), u, convert, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import System.Directory (doesFileExist, doesDirectoryExist, createDirectoryIfMissing)
@@ -37,7 +37,7 @@ import Cmd.Options (CmdOptions(..))
 import Cmd.Outputs (writeTimeRowsToCsv)
 
 import Flight.Comp (CompSettings(..), Pilot(..))
-import Flight.TrackLog (IxTask(..))
+import Flight.TrackLog (IxTask(..), TrackFileFail)
 import Flight.Units ()
 import Flight.Mask
     (TaskZone, SigMasking, checkTracks, groupByLeg, distancesToGoal, zoneToCylinder)
@@ -67,7 +67,7 @@ driverMain :: IO ()
 driverMain = withCmdArgs drive
 
 drive :: CmdOptions -> IO ()
-drive CmdOptions{..} = do
+drive co@CmdOptions{..} = do
     -- SEE: http://chrisdone.com/posts/measuring-duration-in-haskell
     start <- getTime Monotonic
     dfe <- doesFileExist file
@@ -85,38 +85,57 @@ drive CmdOptions{..} = do
     where
         withFile yamlCompPath = do
             putStrLn $ "Reading competition from '" ++ takeFileName yamlCompPath ++ "'"
+            writeTime co yamlCompPath checkAll
 
-            let go = writeTime yamlCompPath in go checkAll
-            where
-                writeTime yamlCompPath' f = do
-                    checks <-
-                        runExceptT $
-                            f
-                                yamlCompPath'
-                                (IxTask <$> task)
-                                (Pilot <$> pilot)
+writeTime :: Show a
+          => CmdOptions
+          -> FilePath
+          -> (FilePath
+              -> [IxTask]
+              -> [Pilot]
+              -> ExceptT
+                  a IO [[Either (Pilot, t) (Pilot, Pilot -> [TimeRow])]])
+          -> IO ()
+writeTime CmdOptions{..} yamlCompPath f = do
+    checks <-
+        runExceptT $
+            f
+                yamlCompPath
+                (IxTask <$> task)
+                (Pilot <$> pilot)
 
-                    case checks of
-                        Left msg -> print msg
-                        Right xs -> do
-                            let ys :: [[(Pilot, [TimeRow])]] =
-                                    (fmap . fmap)
-                                        (\case
-                                            Left (p, _) -> (p, [])
-                                            Right (p, g) -> (p, g p))
-                                        xs
+    case checks of
+        Left msg -> print msg
+        Right xs -> do
+            let ys :: [[(Pilot, [TimeRow])]] =
+                    (fmap . fmap)
+                        (\case
+                            Left (p, _) -> (p, [])
+                            Right (p, g) -> (p, g p))
+                        xs
 
-                            _ <- zipWithM
-                                (\ iTask zs ->
-                                    when (includeTask task iTask) $
-                                        mapM_ (writePilotTimes (takeDirectory yamlCompPath) iTask) zs)
-                                [1 .. ]
-                                ys
+            _ <- zipWithM
+                (\ iTask zs ->
+                    when (includeTask task iTask) $
+                        mapM_ (writePilotTimes (takeDirectory yamlCompPath) iTask) zs)
+                [1 .. ]
+                ys
 
-                            return ()
+            return ()
 
-                checkAll =
-                    checkTracks $ \CompSettings{tasks} -> group tasks
+checkAll :: FilePath
+         -> [IxTask]
+         -> [Pilot]
+         -> ExceptT
+             String
+             IO
+             [
+                 [Either
+                     (Pilot, Flight.TrackLog.TrackFileFail)
+                     (Pilot, Pilot -> [TimeRow])
+                 ]
+             ]
+checkAll = checkTracks $ \CompSettings{tasks} -> group tasks
 
 includeTask :: [Int] -> Int -> Bool
 includeTask tasks = if null tasks then const True else (`elem` tasks)
