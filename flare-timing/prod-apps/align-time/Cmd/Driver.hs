@@ -125,8 +125,8 @@ drive CmdOptions{..} = do
                 fcsv dir' task' pilot'' =
                     (d, f)
                     where
-                        d = dir' </> ".flare-timing" </> "task-" ++ show task'
-                        f = show pilot'' ++ ".align-time" <.> "csv"
+                        d = dir' </> ".flare-timing" </> "align-time" </> "task-" ++ show task'
+                        f = show pilot'' <.> "csv"
 
                 writePilotTimes :: FilePath -> [String] -> Int -> (Pilot, [TimeRow]) -> IO ()
                 writePilotTimes dir' headers' iTask (pilot', rows) = do
