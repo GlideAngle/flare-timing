@@ -30,7 +30,7 @@ Reads `.comp-input.yaml` and `.kml`. Writes `.cross-zone.yaml`.
 4. Interpolate between crossing fixes for the time and place where a track tags a zone with [`tag-zone`](flare-timing/prod-apps/tag-zone).  
 Reads `.cross-zone.yaml`. Writes `.tag-zone.yaml`.
 5. Time align the distance to goal for each fix in the speed section with [`align-time`](flare-timing/prod-apps/align-time).  
-Reads `.comp-input.yaml` and `.tag-zone.yaml`. Writes `n.align-time.csv`, where `n` is the task number.
+Reads `.comp-input.yaml` and `.tag-zone.yaml`. Writes `.flare-timing/align-time/task-n/p.csv`, where `n` is the task number and p is the pilot name.
 6. Filter fixes that get further from goal with `filter-time`.  
 Reads `n.align-time.csv`. Writes `n.filter-time.yaml`.
 7. Find the nearest a track came to missing the next zone on course with [`near-miss`](flare-timing/prod-apps/near-miss).  
