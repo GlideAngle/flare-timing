@@ -52,7 +52,7 @@ drive CmdOptions{..} = do
         else
             putStrLn "Couldn't find any flight score competition yaml input files."
     end <- getTime Monotonic
-    fprint ("Aligning times completed in " % timeSpecs % "\n") start end
+    fprint ("Filtering times completed in " % timeSpecs % "\n") start end
     where
         withFile compPath = do
             putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"

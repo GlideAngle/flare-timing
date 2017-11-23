@@ -1,6 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE DuplicateRecordFields #-}
 
 {-|
 Module      : Flight.Track.Time
@@ -11,7 +12,7 @@ Stability   : experimental
 
 Tracks aligned in time based on when the first pilot starts the speed section.
 -}
-module Flight.Track.Time (TimeRow(..)) where
+module Flight.Track.Time (TimeRow(..), TickRow(..)) where
 
 import Data.Maybe (fromMaybe)
 import Data.Csv
@@ -25,7 +26,7 @@ import Data.Aeson (ToJSON(..), FromJSON(..), encode, decode)
 import Flight.Pilot (Pilot(..))
 import Flight.LatLng.Raw (RawLat, RawLng)
 
--- | For each task, the crossing for that task.
+-- | A fix but indexed off the first crossing time.
 data TimeRow =
     TimeRow
         { leg :: Int -- ^ Leg of the task
@@ -34,12 +35,23 @@ data TimeRow =
         , lng :: RawLng -- ^ Longitude of the fix
         , pilot :: Pilot -- ^ Pilot name
         , tick :: Double -- ^ Seconds from first speed zone crossing
-        , distance :: Double -- ^ Distance to goal
+        , distance :: Double -- ^ Distance to goal in km
         }
     deriving (Show, Generic)
 
 instance ToJSON TimeRow
 instance FromJSON TimeRow
+
+-- | A fix but indexed off the first crossing time.
+data TickRow =
+    TickRow
+        { tick :: Double -- ^ Seconds from first speed zone crossing
+        , distance :: Double -- ^ Distance to goal in km
+        }
+    deriving (Show, Generic)
+
+instance ToJSON TickRow
+instance FromJSON TickRow
 
 quote :: String -> String
 quote s = "\"" ++ s ++ "\""
@@ -49,6 +61,10 @@ unquote s =
     case wordsBy (== '"') s of
         [x] -> x
         _ -> s
+
+parseTime :: Maybe String -> UTCTime
+parseTime Nothing = read ""
+parseTime (Just s) = fromMaybe (read "") $ decode . pack . quote $ s
 
 instance ToNamedRecord TimeRow where
     toNamedRecord TimeRow{..} =
@@ -81,6 +97,17 @@ instance FromNamedRecord TimeRow where
         where
             t = parseTime <$> m .: "time"
 
-parseTime :: Maybe String -> UTCTime
-parseTime Nothing = read ""
-parseTime (Just s) = fromMaybe (read "") $ decode . pack . quote $ s
+instance ToNamedRecord TickRow where
+    toNamedRecord TickRow{..} =
+        namedRecord
+            [ namedField "tick" tick
+            , namedField "distance" d
+            ]
+        where
+            d = unquote . unpack . encode $ distance
+
+instance FromNamedRecord TickRow where
+    parseNamedRecord m =
+        TickRow <$>
+        m .: "tick" <*>
+        m .: "distance"
