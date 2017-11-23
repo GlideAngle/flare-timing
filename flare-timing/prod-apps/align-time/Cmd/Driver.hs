@@ -70,7 +70,7 @@ unTaskDistance (TaskDistance d) =
         MkQuantity dKm = toRational' $ convert d :: Quantity _ [u| km |]
 
 headers :: [String]
-headers = ["leg", "time", "lat", "lng", "pilot", "tick", "distance"]
+headers = ["leg", "time", "lat", "lng", "tick", "distance"]
 
 driverMain :: IO ()
 driverMain = withCmdArgs drive
@@ -179,27 +179,24 @@ writePilotTimes dir iTask (pilot, rows) = do
 mkTimeRows :: Maybe UTCTime
            -> Leg
            -> Maybe [(Maybe Fix, Maybe (TaskDistance Double))]
-           -> Pilot
            -> [TimeRow]
-mkTimeRows Nothing _ _ _ = []
-mkTimeRows _ _ Nothing _ = []
-mkTimeRows t0 leg (Just xs) p = catMaybes $ mkTimeRow t0 leg p <$> xs
+mkTimeRows Nothing _ _ = []
+mkTimeRows _ _ Nothing = []
+mkTimeRows t0 leg (Just xs) = catMaybes $ mkTimeRow t0 leg <$> xs
 
 mkTimeRow :: Maybe UTCTime
           -> Int
-          -> Pilot
           -> (Maybe Fix, Maybe (TaskDistance Double))
           -> Maybe TimeRow
-mkTimeRow Nothing _ _ _ = Nothing
-mkTimeRow _ _ _ (Nothing, _) = Nothing
-mkTimeRow _ _ _ (_, Nothing) = Nothing
-mkTimeRow (Just t0) leg p (Just Fix{time, lat, lng}, Just d) =
+mkTimeRow Nothing _ _ = Nothing
+mkTimeRow _ _ (Nothing, _) = Nothing
+mkTimeRow _ _ (_, Nothing) = Nothing
+mkTimeRow (Just t0) leg (Just Fix{time, lat, lng}, Just d) =
     Just
         TimeRow
             { leg = leg
             , time = time
             , tick = realToFrac $ diffUTCTime time t0
-            , pilot = p
             , lat = lat
             , lng = lng
             , distance = unTaskDistance d
@@ -207,8 +204,8 @@ mkTimeRow (Just t0) leg p (Just Fix{time, lat, lng}, Just d) =
 
 group :: [[Maybe UTCTime]] -> SigMasking (Pilot -> [TimeRow])
 group ts tasks iTask fs =
-    \pilot ->
-        concat $ zipWith3 (legDistances ts tasks iTask pilot)
+    \ _ ->
+        concat $ zipWith3 (legDistances ts tasks iTask)
             [1 .. ]
             speedLegs
             ys
@@ -221,12 +218,11 @@ group ts tasks iTask fs =
 legDistances :: [[Maybe UTCTime]]
              -> [Task]
              -> IxTask
-             -> Pilot
              -> Leg
              -> SpeedSection
              -> MarkedFixes
              -> [TimeRow]
-legDistances ts tasks iTask pilot leg speedSection xs =
+legDistances ts tasks iTask leg speedSection xs =
     case speedSection of
         Nothing ->
             []
@@ -234,7 +230,7 @@ legDistances ts tasks iTask pilot leg speedSection xs =
         Just (start, end) ->
             let leg' = fromIntegral leg in
                 if leg' < start || leg' > end then [] else
-                mkTimeRows t0 leg xs' pilot
+                mkTimeRows t0 leg xs'
     where
         t0 = firstCrossing iTask speedSection ts
         dpp = distancePointToPoint

@@ -10,7 +10,7 @@ License     : BSD3
 Maintainer  : phil.dejoux@blockscope.com
 Stability   : experimental
 
-Tracks aligned in time based on when the first pilot starts the speed section.
+Track fixes indexed on when the first pilot starts the speed section.
 -}
 module Flight.Track.Time (TimeRow(..), TickRow(..)) where
 
@@ -23,7 +23,6 @@ import Data.HashMap.Strict (unions)
 import Data.Time.Clock (UTCTime)
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..), encode, decode)
-import Flight.Pilot (Pilot(..))
 import Flight.LatLng.Raw (RawLat, RawLng)
 
 -- | A fix but indexed off the first crossing time.
@@ -33,7 +32,6 @@ data TimeRow =
         , time :: UTCTime -- ^ Time of the fix
         , lat :: RawLat -- ^ Latitude of the fix
         , lng :: RawLng -- ^ Longitude of the fix
-        , pilot :: Pilot -- ^ Pilot name
         , tick :: Double -- ^ Seconds from first speed zone crossing
         , distance :: Double -- ^ Distance to goal in km
         }
@@ -75,14 +73,12 @@ instance ToNamedRecord TimeRow where
                     [ namedField "leg" leg
                     , namedField "time" time'
                     , namedField "tick" tick
-                    , namedField "pilot" p
                     , namedField "distance" d
                     ]
 
 
             time' = unquote . unpack . encode $ time
             d = unquote . unpack . encode $ distance
-            Pilot p = pilot
 
 instance FromNamedRecord TimeRow where
     parseNamedRecord m =
@@ -91,7 +87,6 @@ instance FromNamedRecord TimeRow where
         t <*>
         m .: "lat" <*>
         m .: "lng" <*>
-        (Pilot <$> m .: "pilot") <*>
         m .: "tick" <*>
         m .: "distance"
         where
