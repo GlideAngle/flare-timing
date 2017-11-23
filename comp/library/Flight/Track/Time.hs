@@ -13,13 +13,15 @@ Tracks aligned in time based on when the first pilot starts the speed section.
 -}
 module Flight.Track.Time (TimeRow(..)) where
 
-import Data.Csv (ToNamedRecord(..), namedRecord, namedField)
+import Data.Maybe (fromMaybe)
+import Data.Csv
+    (ToNamedRecord(..), FromNamedRecord(..), (.:), namedRecord, namedField)
 import Data.List.Split (wordsBy)
-import Data.ByteString.Lazy.Char8 (unpack)
+import Data.ByteString.Lazy.Char8 (unpack, pack)
 import Data.HashMap.Strict (unions)
 import Data.Time.Clock (UTCTime)
 import GHC.Generics (Generic)
-import Data.Aeson (ToJSON(..), FromJSON(..), encode)
+import Data.Aeson (ToJSON(..), FromJSON(..), encode, decode)
 import Flight.Pilot (Pilot(..))
 import Flight.LatLng.Raw (RawLat, RawLng)
 
@@ -38,6 +40,9 @@ data TimeRow =
 
 instance ToJSON TimeRow
 instance FromJSON TimeRow
+
+quote :: String -> String
+quote s = "\"" ++ s ++ "\""
 
 unquote :: String -> String
 unquote s =
@@ -62,3 +67,20 @@ instance ToNamedRecord TimeRow where
             time' = unquote . unpack . encode $ time
             d = unquote . unpack . encode $ distance
             Pilot p = pilot
+
+instance FromNamedRecord TimeRow where
+    parseNamedRecord m =
+        TimeRow <$>
+        m .: "leg" <*>
+        t <*>
+        m .: "lat" <*>
+        m .: "lng" <*>
+        (Pilot <$> m .: "pilot") <*>
+        m .: "tick" <*>
+        m .: "distance"
+        where
+            t = parseTime <$> m .: "time"
+
+parseTime :: Maybe String -> UTCTime
+parseTime Nothing = read ""
+parseTime (Just s) = fromMaybe (read "") $ decode . pack . quote $ s

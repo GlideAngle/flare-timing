@@ -16,6 +16,7 @@ library:
   - scientific
   - aeson
   - cassava
+  - bytestring
   - uom-plugin
   - formatting
   - text

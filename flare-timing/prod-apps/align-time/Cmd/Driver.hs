@@ -39,6 +39,7 @@ import System.FilePath
     )
 import Cmd.Args (withCmdArgs)
 import Cmd.Options (CmdOptions(..))
+import Cmd.Inputs (readTags)
 import Cmd.Outputs (writeTimeRowsToCsv)
 
 import Flight.Comp (CompSettings(..), Pilot(..), Task(..), SpeedSection)
@@ -59,7 +60,6 @@ import Flight.Task (TaskDistance(..), SpanLatLng, CircumSample, AngleCut(..))
 import Flight.PointToPoint.Double
     (distanceHaversine, distancePointToPoint, costSegment)
 import Flight.Cylinder.Double (circumSample)
-import Cmd.Inputs (readTags)
 
 type Leg = Int
 

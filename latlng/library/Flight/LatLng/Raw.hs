@@ -14,7 +14,14 @@ module Flight.LatLng.Raw
 import GHC.Generics (Generic)
 import Control.Applicative (empty)
 import Data.Aeson (ToJSON(..), FromJSON(..), Value(Number))
-import Data.Csv (ToNamedRecord(..), namedRecord, namedField)
+import Data.Csv
+    ( ToNamedRecord(..)
+    , FromNamedRecord(..)
+    , FromField(..)
+    , (.:)
+    , namedRecord
+    , namedField
+    )
 import Data.Scientific
     ( Scientific
     , FPFormat(..)
@@ -61,10 +68,29 @@ csvSci :: Rational -> String
 csvSci = showSci . toSci
 
 instance ToNamedRecord RawLat where
-    toNamedRecord (RawLat x) = namedRecord [ namedField "lat" $ csvSci x ]
+    toNamedRecord (RawLat x) =
+        namedRecord [ namedField "lat" $ csvSci x ]
 
 instance ToNamedRecord RawLng where
-    toNamedRecord (RawLng x) = namedRecord [ namedField "lng" $ csvSci x ]
+    toNamedRecord (RawLng x) =
+        namedRecord [ namedField "lng" $ csvSci x ]
+
+-- TODO: Get rid of fromDouble when upgrading to cassava-0.5.1.0
+fromDouble :: Double -> Rational
+fromDouble = toRational
+
+-- TODO: Use fromSci when upgrading to cassava-0.5.1.0
+instance FromNamedRecord RawLat where
+    parseNamedRecord m = RawLat . fromDouble <$> m .: "lat"
+
+instance FromNamedRecord RawLng where
+    parseNamedRecord m = RawLng . fromDouble <$> m .: "lat"
+
+instance FromField RawLat where
+    parseField m = RawLat . fromDouble <$> parseField m
+
+instance FromField RawLng where
+    parseField m = RawLng . fromDouble <$> parseField m
 
 instance ToJSON RawLat where
     toJSON (RawLat x) = Number $ toSci x
