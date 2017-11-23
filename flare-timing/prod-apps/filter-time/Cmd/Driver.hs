@@ -1,9 +1,12 @@
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE PartialTypeSignatures #-}
 
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE LambdaCase #-}
+
+{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
 module Cmd.Driver (driverMain) where
 
@@ -28,7 +31,7 @@ import Cmd.Outputs (writeTimeRowsToCsv)
 import Flight.Comp (CompSettings(..), Pilot(..))
 import Flight.TrackLog (IxTask(..), TrackFileFail)
 import Flight.Units ()
-import Flight.Mask (SigMasking, checkTracks)
+import Flight.Mask (checkTracks)
 import Flight.Track.Time (TimeRow(..), TickRow(..))
 
 headers :: [String]
@@ -62,14 +65,13 @@ drive CmdOptions{..} = do
                 compPath
                 checkAll
 
-filterTime :: Show a
-           => [IxTask]
-           -> t2
+filterTime :: [IxTask]
+           -> [Pilot]
            -> [Char]
            -> ([Char]
            -> [IxTask]
-           -> t2
-           -> ExceptT a IO [[Either (Pilot, t1) (Pilot, t)]])
+           -> [Pilot]
+           -> ExceptT String IO [[Either (Pilot, _) (Pilot, _)]])
            -> IO ()
 filterTime selectTasks selectPilots compPath f = do
     checks <- runExceptT $ f compPath selectTasks selectPilots
@@ -103,24 +105,24 @@ checkAll :: FilePath
                  [Either (Pilot, TrackFileFail) (Pilot, ())
                  ]
              ]
-checkAll = checkTracks $ \CompSettings{tasks} -> filterCloser tasks
+checkAll = checkTracks $ \CompSettings{tasks} -> (\ _ _ _ -> ()) tasks
 
 includeTask :: [IxTask] -> IxTask -> Bool
 includeTask tasks = if null tasks then const True else (`elem` tasks)
 
-fcsv :: FilePath -> Int -> Pilot -> (FilePath, FilePath)
-fcsv dir task pilot =
+csvPathIn :: FilePath -> Int -> Pilot -> (FilePath, FilePath)
+csvPathIn dir task pilot =
     (d, f)
     where
-        d = dir </> ".flare-timing" </> "align-time" </> "task-" ++ show task
+        d = dotDir "align-time" dir task
         f = show pilot <.> "csv"
 
-gcsv :: FilePath -> Int -> Pilot -> (FilePath, FilePath)
-gcsv dir task pilot =
-    (d, f)
-    where
-        d = dir </> ".flare-timing" </> "filter-time" </> "task-" ++ show task
-        f = show pilot <.> "csv"
+csvDirOut :: FilePath -> Int -> FilePath
+csvDirOut = dotDir "filter-time"
+
+dotDir :: FilePath -> FilePath -> Int -> FilePath
+dotDir name dir task =
+    dir </> ".flare-timing" </> name </> "task-" ++ show task
 
 readFilterWrite :: FilePath -> Int -> Pilot -> IO ()
 readFilterWrite dir iTask pilot = do
@@ -133,11 +135,8 @@ readFilterWrite dir iTask pilot = do
             _ <- writeTimeRowsToCsv (dOut </> f) headers rowsTick
             return ()
     where
-        (dIn, f) = fcsv dir iTask pilot
-        (dOut, _) = gcsv dir iTask pilot
-
-filterCloser :: SigMasking ()
-filterCloser _ _ _ = ()
+        (dIn, f) = csvPathIn dir iTask pilot
+        dOut = csvDirOut dir iTask
 
 timeToTick :: TimeRow -> TickRow
 timeToTick TimeRow{tick, distance} = TickRow tick distance
