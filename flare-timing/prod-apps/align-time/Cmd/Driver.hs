@@ -23,6 +23,7 @@ import Prelude hiding (span)
 import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
+import Data.Time.Clock (UTCTime, diffUTCTime)
 import Data.Maybe (catMaybes)
 import Control.Monad (mapM_, when, zipWithM)
 import Control.Monad.Except (ExceptT, runExceptT)
@@ -31,26 +32,34 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import System.Directory (doesFileExist, doesDirectoryExist, createDirectoryIfMissing)
 import System.FilePath.Find
     (FileType(..), (==?), (&&?), find, always, fileType, extension)
-import System.FilePath (FilePath, (</>), (<.>), takeFileName, takeDirectory)
+import System.FilePath
+    ( FilePath
+    , (</>), (<.>)
+    , takeFileName, takeDirectory, replaceExtension, dropExtension
+    )
 import Cmd.Args (withCmdArgs)
 import Cmd.Options (CmdOptions(..))
 import Cmd.Outputs (writeTimeRowsToCsv)
 
-import Flight.Comp (CompSettings(..), Pilot(..))
+import Flight.Comp (CompSettings(..), Pilot(..), Task(..), SpeedSection)
 import Flight.TrackLog (IxTask(..), TrackFileFail)
 import Flight.Units ()
 import Flight.Mask
-    (TaskZone, SigMasking, checkTracks, groupByLeg, distancesToGoal, zoneToCylinder)
+    (TaskZone, SigMasking
+    , checkTracks, groupByLeg, distancesToGoal, zoneToCylinder
+    )
 import Flight.Track.Cross (Fix(..))
 import Flight.Zone (Bearing(..))
 import Flight.Zone.Raw (RawZone)
 import Flight.Track.Time (TimeRow(..))
+import Flight.Track.Tag (Tagging(..), TrackTime(..))
 import Flight.Kml (MarkedFixes(..))
 import Data.Number.RoundingFunctions (dpRound)
 import Flight.Task (TaskDistance(..), SpanLatLng, CircumSample, AngleCut(..))
 import Flight.PointToPoint.Double
     (distanceHaversine, distancePointToPoint, costSegment)
 import Flight.Cylinder.Double (circumSample)
+import Cmd.Inputs (readTags)
 
 type Leg = Int
 
@@ -61,13 +70,13 @@ unTaskDistance (TaskDistance d) =
         MkQuantity dKm = toRational' $ convert d :: Quantity _ [u| km |]
 
 headers :: [String]
-headers = ["leg", "time", "pilot", "lat", "lng", "distance"]
+headers = ["leg", "time", "lat", "lng", "pilot", "tick", "distance"]
 
 driverMain :: IO ()
 driverMain = withCmdArgs drive
 
 drive :: CmdOptions -> IO ()
-drive co@CmdOptions{..} = do
+drive CmdOptions{..} = do
     -- SEE: http://chrisdone.com/posts/measuring-duration-in-haskell
     start <- getTime Monotonic
     dfe <- doesFileExist file
@@ -83,12 +92,28 @@ drive co@CmdOptions{..} = do
     end <- getTime Monotonic
     fprint ("Aligning times completed in " % timeSpecs % "\n") start end
     where
-        withFile yamlCompPath = do
-            putStrLn $ "Reading competition from '" ++ takeFileName yamlCompPath ++ "'"
-            writeTime co yamlCompPath checkAll
+        withFile compPath = do
+            let tagPath =
+                    flip replaceExtension ".tag-zone.yaml"
+                    $ dropExtension compPath
+            putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
+            putStrLn $ "Reading zone tags from '" ++ takeFileName tagPath ++ "'"
+
+            tags <- runExceptT $ readTags tagPath
+            case tags of
+                Left msg ->
+                    print msg
+
+                Right tags' -> do
+                    writeTime
+                        (IxTask <$> task)
+                        (Pilot <$> pilot)
+                        compPath
+                        (checkAll $ zonesFirst <$> timing tags')
 
 writeTime :: Show a
-          => CmdOptions
+          => [IxTask]
+          -> [Pilot]
           -> FilePath
           -> (FilePath
               -> [IxTask]
@@ -96,13 +121,8 @@ writeTime :: Show a
               -> ExceptT
                   a IO [[Either (Pilot, t) (Pilot, Pilot -> [TimeRow])]])
           -> IO ()
-writeTime CmdOptions{..} yamlCompPath f = do
-    checks <-
-        runExceptT $
-            f
-                yamlCompPath
-                (IxTask <$> task)
-                (Pilot <$> pilot)
+writeTime selectTasks selectPilots compPath f = do
+    checks <- runExceptT $ f compPath selectTasks selectPilots
 
     case checks of
         Left msg -> print msg
@@ -115,15 +135,16 @@ writeTime CmdOptions{..} yamlCompPath f = do
                         xs
 
             _ <- zipWithM
-                (\ iTask zs ->
-                    when (includeTask task iTask) $
-                        mapM_ (writePilotTimes (takeDirectory yamlCompPath) iTask) zs)
+                (\ n zs ->
+                    when (includeTask selectTasks $ IxTask n) $
+                        mapM_ (writePilotTimes (takeDirectory compPath) n) zs)
                 [1 .. ]
                 ys
 
             return ()
 
-checkAll :: FilePath
+checkAll :: [[Maybe UTCTime]]
+         -> FilePath
          -> [IxTask]
          -> [Pilot]
          -> ExceptT
@@ -135,9 +156,9 @@ checkAll :: FilePath
                      (Pilot, Pilot -> [TimeRow])
                  ]
              ]
-checkAll = checkTracks $ \CompSettings{tasks} -> group tasks
+checkAll ts = checkTracks $ \CompSettings{tasks} -> group ts tasks
 
-includeTask :: [Int] -> Int -> Bool
+includeTask :: [IxTask] -> IxTask -> Bool
 includeTask tasks = if null tasks then const True else (`elem` tasks)
 
 fcsv :: FilePath -> Int -> Pilot -> (FilePath, FilePath)
@@ -155,48 +176,92 @@ writePilotTimes dir iTask (pilot, rows) = do
     where
         (d, f) = fcsv dir iTask pilot
 
-mkTimeRows :: Leg
+mkTimeRows :: Maybe UTCTime
+           -> Leg
            -> Maybe [(Maybe Fix, Maybe (TaskDistance Double))]
            -> Pilot
            -> [TimeRow]
-mkTimeRows _ Nothing _ = []
-mkTimeRows leg (Just xs) p = catMaybes $ mkTimeRow leg p <$> xs
+mkTimeRows Nothing _ _ _ = []
+mkTimeRows _ _ Nothing _ = []
+mkTimeRows t0 leg (Just xs) p = catMaybes $ mkTimeRow t0 leg p <$> xs
 
-mkTimeRow :: Int
+mkTimeRow :: Maybe UTCTime
+          -> Int
           -> Pilot
           -> (Maybe Fix, Maybe (TaskDistance Double))
           -> Maybe TimeRow
-mkTimeRow _ _ (Nothing, _) = Nothing
-mkTimeRow _ _ (_, Nothing) = Nothing
-mkTimeRow leg p (Just Fix{time, lat, lng}, Just d) =
+mkTimeRow Nothing _ _ _ = Nothing
+mkTimeRow _ _ _ (Nothing, _) = Nothing
+mkTimeRow _ _ _ (_, Nothing) = Nothing
+mkTimeRow (Just t0) leg p (Just Fix{time, lat, lng}, Just d) =
     Just
         TimeRow
             { leg = leg
             , time = time
+            , tick = realToFrac $ diffUTCTime time t0
             , pilot = p
             , lat = lat
             , lng = lng
             , distance = unTaskDistance d
             }
 
-group :: SigMasking (Pilot -> [TimeRow])
-group tasks iTask fs =
+group :: [[Maybe UTCTime]] -> SigMasking (Pilot -> [TimeRow])
+group ts tasks iTask fs =
     \pilot ->
-        concat $ zipWith
-            (\leg xs ->
-                let xs' =
-                        distancesToGoal
-                            span dpp cseg cs cut
-                            zoneToCyl tasks iTask xs
-                in mkTimeRows leg xs' pilot)
+        concat $ zipWith3 (legDistances ts tasks iTask pilot)
             [1 .. ]
+            speedLegs
             ys
     where
+        speedLegs = speedSection <$> tasks
+
         ys :: [MarkedFixes]
         ys = groupByLeg span zoneToCyl tasks iTask fs
 
+legDistances :: [[Maybe UTCTime]]
+             -> [Task]
+             -> IxTask
+             -> Pilot
+             -> Leg
+             -> SpeedSection
+             -> MarkedFixes
+             -> [TimeRow]
+legDistances ts tasks iTask pilot leg speedSection xs =
+    case speedSection of
+        Nothing ->
+            []
+
+        Just (start, end) ->
+            let leg' = fromIntegral leg in
+                if leg' < start || leg' > end then [] else
+                mkTimeRows t0 leg xs' pilot
+    where
+        t0 = firstCrossing iTask speedSection ts
         dpp = distancePointToPoint
         cseg = costSegment span
+        xs' = distancesToGoal span dpp cseg cs cut zoneToCyl tasks iTask xs
+
+firstCrossing :: IxTask -> SpeedSection -> [[Maybe UTCTime]] -> Maybe UTCTime
+
+firstCrossing (IxTask n) Nothing ts =
+    case drop (n - 1) ts of
+        [] ->
+            Nothing
+
+        (tsOfTask : _) ->
+            case tsOfTask of
+                [] -> Nothing
+                (t : _) -> t
+
+firstCrossing (IxTask n) (Just (leg, _)) ts =
+    case drop (n - 1) ts of
+        [] ->
+            Nothing
+
+        (tsOfTask : _) ->
+            case drop (fromInteger leg - 1) tsOfTask of
+                [] -> Nothing
+                (t : _) -> t
 
 zoneToCyl :: RawZone -> TaskZone Double
 zoneToCyl = zoneToCylinder

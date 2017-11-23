@@ -26,12 +26,13 @@ import Flight.LatLng.Raw (RawLat, RawLng)
 -- | For each task, the crossing for that task.
 data TimeRow =
     TimeRow
-        { leg :: Int
-        , time :: UTCTime
-        , pilot :: Pilot
-        , lat :: RawLat
-        , lng :: RawLng
-        , distance :: Double
+        { leg :: Int -- ^ Leg of the task
+        , time :: UTCTime -- ^ Time of the fix
+        , lat :: RawLat -- ^ Latitude of the fix
+        , lng :: RawLng -- ^ Longitude of the fix
+        , pilot :: Pilot -- ^ Pilot name
+        , tick :: Double -- ^ Seconds from first speed zone crossing
+        , distance :: Double -- ^ Distance to goal
         }
     deriving (Show, Generic)
 
@@ -51,12 +52,13 @@ instance ToNamedRecord TimeRow where
             local =
                 namedRecord
                     [ namedField "leg" leg
-                    , namedField "time" t
+                    , namedField "time" time'
+                    , namedField "tick" tick
                     , namedField "pilot" p
                     , namedField "distance" d
                     ]
 
 
-            t = unquote . unpack . encode $ time
+            time' = unquote . unpack . encode $ time
             d = unquote . unpack . encode $ distance
             Pilot p = pilot
