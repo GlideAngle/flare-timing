@@ -189,6 +189,45 @@ executables:
     - -fplugin Data.UnitsOfMeasure.Plugin
     main: Main.hs
     source-dirs: prod-apps/align-time
+  filter-time:
+    dependencies:
+    - base
+    - directory
+    - filepath
+    - system-filepath
+    - filemanip
+    - raw-strings-qq
+    - cmdargs
+    - mtl
+    - transformers
+    - yaml
+    - aeson
+    - uom-plugin
+    - bytestring
+    - clock
+    - time
+    - formatting
+    - cassava
+    - vector
+    - split
+    - siggy-chardust
+    - flight-units
+    - flight-latlng
+    - flight-comp
+    - flight-kml
+    - flight-track
+    - flight-zone
+    - flight-task
+    - flight-gap
+    - flight-mask
+    ghc-options:
+    - -rtsopts
+    - -threaded
+    - -with-rtsopts=-N
+    - -Wall
+    - -fplugin Data.UnitsOfMeasure.Plugin
+    main: Main.hs
+    source-dirs: prod-apps/filter-time
   mask-track:
     dependencies:
     - base

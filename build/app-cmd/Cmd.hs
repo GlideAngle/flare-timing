@@ -58,8 +58,9 @@ prodApps =
     [ "extract-task"
     , "task-length"
     , "cross-zone"
-    , "align-time"
     , "tag-zone"
+    , "align-time"
+    , "filter-time"
     , "mask-track"
     , "comp-serve"
     ] 
