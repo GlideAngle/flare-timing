@@ -5,9 +5,9 @@ import qualified Data.ByteString.Char8 as S (pack)
 import qualified Data.ByteString.Lazy.Char8 as L (writeFile)
 import qualified Data.Vector as V (fromList, toList)
 import Data.Vector (Vector)
-import Flight.Track.Time (TimeRow(..))
+import Flight.Track.Time (TickRow(..))
 
-writeTimeRowsToCsv :: FilePath -> [String] -> Vector TimeRow -> IO ()
+writeTimeRowsToCsv :: FilePath -> [String] -> Vector TickRow -> IO ()
 writeTimeRowsToCsv filename headers xs =
     L.writeFile filename rows
     where

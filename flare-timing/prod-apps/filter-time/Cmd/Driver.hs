@@ -1,21 +1,9 @@
 {-# LANGUAGE ScopedTypeVariables #-}
-{-{-# LANGUAGE DataKinds #-}-}
-{-{-# LANGUAGE FlexibleContexts #-}-}
-{-{-# LANGUAGE FlexibleInstances #-}-}
-{-{-# LANGUAGE MultiParamTypeClasses #-}-}
-{-{-# LANGUAGE TypeOperators #-}-}
-{-{-# LANGUAGE TypeFamilies #-}-}
-{-{-# LANGUAGE UndecidableInstances #-}-}
-{-{-# LANGUAGE QuasiQuotes #-}-}
 
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE LambdaCase #-}
-{-{-# LANGUAGE PartialTypeSignatures #-}-}
-
-{-{-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}-}
-{-{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}-}
 
 module Cmd.Driver (driverMain) where
 
@@ -41,9 +29,10 @@ import Flight.Comp (CompSettings(..), Pilot(..))
 import Flight.TrackLog (IxTask(..), TrackFileFail)
 import Flight.Units ()
 import Flight.Mask (SigMasking, checkTracks)
+import Flight.Track.Time (TimeRow(..), TickRow(..))
 
 headers :: [String]
-headers = ["leg", "time", "lat", "lng", "pilot", "tick", "distance"]
+headers = ["tick", "distance"]
 
 driverMain :: IO ()
 driverMain = withCmdArgs drive
@@ -139,8 +128,9 @@ readFilterWrite dir iTask pilot = do
     rows <- runExceptT $ readTimeRowsFromCsv (dIn </> f)
     case rows of
         Left msg -> print msg
-        Right (_, rows') -> do
-            _ <- writeTimeRowsToCsv (dOut </> f) headers rows'
+        Right (_, rowsTime) -> do
+            let rowsTick = timeToTick <$> rowsTime
+            _ <- writeTimeRowsToCsv (dOut </> f) headers rowsTick
             return ()
     where
         (dIn, f) = fcsv dir iTask pilot
@@ -148,3 +138,6 @@ readFilterWrite dir iTask pilot = do
 
 filterCloser :: SigMasking ()
 filterCloser _ _ _ = ()
+
+timeToTick :: TimeRow -> TickRow
+timeToTick TimeRow{tick, distance} = TickRow tick distance
