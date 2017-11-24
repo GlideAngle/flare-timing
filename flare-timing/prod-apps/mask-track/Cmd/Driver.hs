@@ -25,7 +25,7 @@ import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Data.String (IsString)
 import Control.Monad (mapM_)
-import Control.Monad.Except (runExceptT)
+import Control.Monad.Except (ExceptT, runExceptT)
 import Data.UnitsOfMeasure ((/:), u, convert, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import System.Directory (doesFileExist, doesDirectoryExist)
@@ -37,10 +37,11 @@ import qualified Data.Yaml.Pretty as Y
 import qualified Data.ByteString as BS
 import qualified Data.Number.FixedFunctions as F
 
-import qualified Flight.Comp as Cmp (CompSettings(..), Pilot(..))
+import Flight.Comp (Pilot(..))
+import qualified Flight.Comp as Cmp (CompSettings(..))
 import qualified Flight.Task as Tsk (TaskDistance(..))
 import qualified Flight.Score as Gap (PilotDistance(..), PilotTime(..))
-import Flight.TrackLog (IxTask(..))
+import Flight.TrackLog (IxTask(..), TrackFileFail(..))
 import Flight.Units ()
 import Flight.Mask
     ( SigMasking
@@ -124,47 +125,73 @@ drive CmdOptions{..} = do
     end <- getTime Monotonic
     fprint ("Masking tracks completed in " % timeSpecs % "\n") start end
     where
-        withFile yamlCompPath = do
-            let yamlMaskPath =
-                    flip replaceExtension ".mask-track.yaml"
-                    $ dropExtension yamlCompPath
+        withFile compPath = do
+            putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
+            writeMask
+                (IxTask <$> task)
+                (Pilot <$> pilot)
+                compPath
+                check
 
-            putStrLn $ "Reading competition from '" ++ takeFileName yamlCompPath ++ "'"
-            writeMask yamlMaskPath check
+writeMask :: t1
+          -> t2
+          -> FilePath
+          -> (FilePath
+              -> t1
+              -> t2
+              -> ExceptT
+                   String
+                   IO
+                   [
+                       [Either
+                           (Pilot, TrackFileFail)
+                           (Pilot, TM.TrackMask)
+                       ]
+                   ]
+             )
+          -> IO ()
+writeMask selectTasks selectPilots compPath f = do
+    checks <- runExceptT $ f compPath selectTasks selectPilots
 
-            where
-                writeMask yamlMaskPath f = do
-                    comp <-
-                        runExceptT $
-                            f
-                                yamlCompPath
-                                (IxTask <$> task)
-                                (Cmp.Pilot <$> pilot)
+    case checks of
+        Left msg -> print msg
+        Right comp -> do
+            let pss :: [[PilotTrackMask]] =
+                    (fmap . fmap)
+                        (\case
+                            Left (p, _) ->
+                                PilotTrackMask p Nothing
 
-                    case comp of
-                        Left msg -> print msg
-                        Right comp' -> do
-                            let pss :: [[PilotTrackMask]] =
-                                    (fmap . fmap)
-                                        (\case
-                                            Left (p, _) ->
-                                                PilotTrackMask p Nothing
+                            Right (p, x) ->
+                                PilotTrackMask p (Just x))
+                        comp
 
-                                            Right (p, x) ->
-                                                PilotTrackMask p (Just x))
-                                        comp'
+            let tzi = Masking { masking = pss }
 
-                            let tzi = Masking { masking = pss }
+            let yaml =
+                    Y.encodePretty
+                        (Y.setConfCompare cmp Y.defConfig)
+                        tzi 
 
-                            let yaml =
-                                    Y.encodePretty
-                                        (Y.setConfCompare cmp Y.defConfig)
-                                        tzi 
+            BS.writeFile maskPath yaml
+    where
+        maskPath =
+            flip replaceExtension ".mask-track.yaml"
+            $ dropExtension compPath
 
-                            BS.writeFile yamlMaskPath yaml
-
-                check =
-                    checkTracks $ \Cmp.CompSettings{tasks} -> flown tasks
+check :: FilePath
+      -> [IxTask]
+      -> [Pilot]
+      -> ExceptT
+          String
+          IO
+          [
+              [Either
+                  (Pilot, TrackFileFail)
+                  (Pilot, TM.TrackMask)
+              ]
+          ]
+check = checkTracks $ \Cmp.CompSettings{tasks} -> flown tasks
 
 flown :: SigMasking TM.TrackMask
 flown tasks iTask xs =
