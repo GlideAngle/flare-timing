@@ -1,16 +1,8 @@
 {-# LANGUAGE DeriveDataTypeable #-}
-{-# LANGUAGE StandaloneDeriving #-}
-{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Cmd.Options (CmdOptions(..)) where
 
-import System.Console.CmdArgs.Implicit (Default(..), Data, Typeable)
-import Flight.TaskTrack (TaskDistanceMeasure(..))
-
-deriving instance Data TaskDistanceMeasure
-
-instance Default TaskDistanceMeasure where
-    def = TaskDistanceByAllMethods
+import System.Console.CmdArgs.Implicit (Data, Typeable)
 
 -- | Options passed in on the command line.
 data CmdOptions

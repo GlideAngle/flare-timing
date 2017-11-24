@@ -10,7 +10,7 @@
     all tasks are processed. The same thing goes if a list of pilots is supplied or
     not.
 
-    <interactive> [OPTIONS]
+    align-time [OPTIONS]
 
     Source:
       -d --dir=ITEM            Over all the competition *.comp.yaml files in this
@@ -19,5 +19,3 @@
     Filter:
       -t --task[=TASK NUMBER]  Which tasks?
       -p --pilot[=PILOT NAME]  Which pilots?
-      -m --measure=METHOD      Which way to measure task distances,
-                               taskdistancebyallmethods|taskdistancebypoints|taskdistancebyedges
