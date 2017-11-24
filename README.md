@@ -44,14 +44,14 @@ Writes `./.flare-timing/discard-further/task-n/p.csv`
 7. Find the leading area with [`leading-area`](flare-timing/prod-apps/leading-area).  
 Reads `./.flare-timing/discard-further/task-n/p.csv`  
 Writes `./c.leading-area.yaml`
-8. Find the nearest a track came to missing the next zone on course with [`near-miss`](flare-timing/prod-apps/near-miss).  
-Reads `./.flare-timing/align-time/task-n/p.csv`  
-Writes `./c.near-miss.yaml`
-9. Mask the competition task over the tracklogs with [`mask-track`](flare-timing/prod-apps/mask-track).  
+8. Mask the competition task over the tracklogs with [`mask-track`](flare-timing/prod-apps/mask-track).  
 Reads `./c.comp-input.yaml`, `./c.tag-zone` and `./c.near-miss`  
 Writes `./c.mask-track.yaml`
-10. Score the competition with [`gap-point`](flare-timing/prod-apps/gap-point).  
+9. Score the competition with [`gap-point`](flare-timing/prod-apps/gap-point).  
 Reads `./c.comp-input.yaml`  
 Writes `./c.gap-point.yaml`
-11. Start the [`server`](flare-timing/prod-apps/app-serve) hosting the web services.
-12. Start the [`dev server`](flare-timing/view) or otherwise host the web app.
+
+With the data pre-processed to host `flare-timing`.
+1. Copy the data to a location where it can be read by the web services.
+2. Start the [`server`](flare-timing/prod-apps/app-serve) hosting the web services.
+3. Start the [`dev server`](flare-timing/view) or otherwise host the web app.
