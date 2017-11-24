@@ -62,8 +62,12 @@ prodApps =
     , "align-time"
     , "filter-time"
     , "mask-track"
-    -- TODO: Reenable comp-serve when on servant v0.12
-    -- "comp-serve"
+    ] 
+
+-- | The names of the production app executables
+wwwApps :: [String]
+wwwApps =
+    [ "comp-serve"
     ] 
 
 cleanRules :: Rules ()
@@ -87,11 +91,12 @@ lintRule s =
 
 lintRules :: Rules ()
 lintRules = do
-    _ <- sequence $ lintRule <$> lintPkgs
+    _ <- sequence_ $ lintRule <$> lintPkgs
 
     phony "lint" $ need
         $ "lint-build"
         : "lint-flare-timing"
+        : "lint-www"
         : (prefix "lint-" <$> lintPkgs)
 
     phony "lint-build" $
@@ -106,6 +111,12 @@ lintRules = do
             Shell
             (cmdTestFor "flare-timing:hlint")
 
+    phony "lint-www" $
+        cmd
+            (Cwd "www")
+            Shell
+            (cmdTestFor "www:hlint")
+
 testRule :: (Pkg, Test) -> Rules ()
 testRule (pkg, test) =
     phony ("test-" ++ pkg) $
@@ -116,19 +127,21 @@ testRule (pkg, test) =
 
 testRules :: Rules ()
 testRules = do
-    _ <- sequence $ testRule <$> testPkgs
+    _ <- sequence_ $ testRule <$> testPkgs
     phony "test" $ need $ prefix "test-" . fst <$> testPkgs
 
-buildRule :: String -> Rules ()
-buildRule s =
+buildRule :: String -> String -> Rules ()
+buildRule project s =
     phony s $
         cmd
-            (Cwd "flare-timing")
+            (Cwd project)
             Shell
-            (cmdBuildFor $ "flare-timing:" ++ s)
+            (cmdBuildFor $ project ++ ":" ++ s)
 
 buildRules :: Rules ()
 buildRules = do
-    _ <- sequence $ buildRule <$> (testApps ++ prodApps)
+    _ <- sequence_ $ buildRule "flare-timing" <$> (testApps ++ prodApps)
+    _ <- sequence_ $ buildRule "www" <$> wwwApps
     phony "test-apps" $ need testApps
     phony "prod-apps" $ need prodApps
+    phony "www-apps" $ need wwwApps
