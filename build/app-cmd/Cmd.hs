@@ -62,7 +62,8 @@ prodApps =
     , "align-time"
     , "filter-time"
     , "mask-track"
-    , "comp-serve"
+    -- TODO: Reenable comp-serve when on servant v0.12
+    -- "comp-serve"
     ] 
 
 cleanRules :: Rules ()

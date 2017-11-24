@@ -24,5 +24,5 @@ packages:
   - uom-plugin
   extra-dep: true
 extra-deps: []
-resolver: lts-9.3
+resolver: nightly-2017-11-23
 local-bin-path: ../__shake-build
