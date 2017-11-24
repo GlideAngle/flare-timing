@@ -13,7 +13,6 @@
 
 module Flight.Cylinder.Double (circumSample) where
 
-import Prelude hiding (span)
 import Data.Fixed (mod')
 import Data.UnitsOfMeasure (u, unQuantity)
 import Data.UnitsOfMeasure.Internal (Quantity(..))

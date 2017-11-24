@@ -19,7 +19,6 @@ module Flight.Cylinder.Sample
     , fromRationalZonePoint
     ) where
 
-import Prelude hiding (span)
 import Data.UnitsOfMeasure (u, fromRational', toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 

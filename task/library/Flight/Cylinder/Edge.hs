@@ -2,7 +2,6 @@
 
 module Flight.Cylinder.Edge (CircumSample, sample) where
 
-import Prelude hiding (span)
 import Data.UnitsOfMeasure (zero)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 

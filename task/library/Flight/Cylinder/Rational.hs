@@ -13,7 +13,6 @@
 
 module Flight.Cylinder.Rational (circumSample) where
 
-import Prelude hiding (span)
 import Data.Ratio ((%))
 import qualified Data.Number.FixedFunctions as F
 import Data.Fixed (mod')
