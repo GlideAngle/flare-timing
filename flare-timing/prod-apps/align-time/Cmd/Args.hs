@@ -32,7 +32,7 @@ description = intro
     where
         intro = [r|
 From competition inputs '.comp-input.yaml', relative track logs '.kml' and
-tagged zones '.tag-zone.yaml', writes each fix to single '.csv' per-pilot
+tagged zones '.tag-zone.yaml', writes each fix to a single '.csv' per-pilot
 per-task. These are grouped into a single folder per-task as
 ./flare-timing/task-n/_.csv.
 
