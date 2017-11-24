@@ -36,23 +36,20 @@ Writes `.tag-zone.yaml`.
 5. Time align the distance to goal for each fix in the speed section with [`align-time`](flare-timing/prod-apps/align-time).  
 Reads `.comp-input.yaml`, `.kml` and `.tag-zone.yaml`.  
 Writes `.flare-timing/align-time/task-n/p.csv`, where `n` is the task number and p is the pilot name.
-6. Filter fixes that get further from goal with [`filter-time`](flare-timing/prod-apps/filter-time).  
+6. Filter fixes that get further from goal with [`discard-further`](flare-timing/prod-apps/discard-further).  
 Reads `.flare-timing/align-time/task-n/p.csv`.  
-Writes `.flare-timing/filter-time/task-n/p.csv`.
-7. Find the nearest a track came to missing the next zone on course with [`near-miss`](flare-timing/prod-apps/near-miss).  
-Reads `.flare-timing/task-n/p.csv`.  
-Writes `.near-miss.yaml`.
-8. Transpose the table with [`sort-distance`](flare-timing/prod-apps/sort-distance).  
-Reads `.flare-timing/filter-time/task-n/p.csv`.  
-Writes `.flare-timing/sort-distance/task-n/p.csv`.
-9. Filter fixes that get further from goal leading area with [`leading-area`](flare-timing/prod-apps/leading-area).  
-Reads `.flare-timing/sort-distance/task-n/p.csv`.  
+Writes `.flare-timing/discard-further/task-n/p.csv`.
+7. Find the leading area with [`leading-area`](flare-timing/prod-apps/leading-area).  
+Reads `.flare-timing/discard-further/task-n/p.csv`.  
 Writes `.leading-area.yaml`.
-10. Mask the competition task over the tracklogs with [`mask-track`](flare-timing/prod-apps/mask-track).  
+8. Find the nearest a track came to missing the next zone on course with [`near-miss`](flare-timing/prod-apps/near-miss).  
+Reads `.flare-timing/align-time/task-n/p.csv`.  
+Writes `.near-miss.yaml`.
+9. Mask the competition task over the tracklogs with [`mask-track`](flare-timing/prod-apps/mask-track).  
 Reads `.comp-input.yaml`, `.tag-zone` and `.near-miss`.  
 Writes `.mask-track.yaml`.
-11. Score the competition with [`gap-point`](flare-timing/prod-apps/gap-point).  
+10. Score the competition with [`gap-point`](flare-timing/prod-apps/gap-point).  
 Reads `.comp-input.yaml`.  
 Writes `.gap-point.yaml`.
-12. Start the [`server`](flare-timing/prod-apps/app-serve) hosting the web services.
-13. Start the [`dev server`](flare-timing/view) or otherwise host the web app.
+11. Start the [`server`](flare-timing/prod-apps/app-serve) hosting the web services.
+12. Start the [`dev server`](flare-timing/view) or otherwise host the web app.
