@@ -21,7 +21,7 @@ See the separate discussion of [building](BUILDING.md) and [testing](TESTING.md)
 
 FSDB is the database of FS and is an XML format for inputs, working and outputs of scoring. To host a **Flare Timing** web site, start with an FSDB file and relative tracklog files on disk and run a pipeline of command line programs to produce the data to display then host the web services and web app.
 
-1. Extract the inputs with [`extract-task`](flare-timing/prod-apps/extract-task).  
+1. Extract the inputs with [`extract-input`](flare-timing/prod-apps/extract-input).  
 Reads `.fsdb`.  
 Writes `.comp-input.yaml`.
 2. Trace the shortest path to fly a task with [`task-length`](flare-timing/prod-apps/task-length).  

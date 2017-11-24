@@ -2,7 +2,7 @@
 # Cabal file when you run `stack build`. See the hpack website for help with
 # this file: <https://github.com/sol/hpack>.
 executables:
-  extract-task:
+  extract-input:
     dependencies:
     - base
     - directory
@@ -25,7 +25,7 @@ executables:
     - -threaded
     - -with-rtsopts=-N
     main: Main.hs
-    source-dirs: prod-apps/extract-task
+    source-dirs: prod-apps/extract-input
   task-length:
     dependencies:
     - base

@@ -55,7 +55,7 @@ testApps =
 -- | The names of the production app executables
 prodApps :: [String]
 prodApps =
-    [ "extract-task"
+    [ "extract-input"
     , "task-length"
     , "cross-zone"
     , "tag-zone"

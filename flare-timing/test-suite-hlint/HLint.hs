@@ -9,7 +9,7 @@ arguments =
     , "test-apps/igc-parser"
     , "test-apps/kml-parser"
 
-    , "prod-apps/extract-task"
+    , "prod-apps/extract-input"
     , "prod-apps/task-length"
     , "prod-apps/cross-zone"
     , "prod-apps/tag-zone"
