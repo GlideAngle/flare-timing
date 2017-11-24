@@ -14,7 +14,7 @@ module Cmd.Driver (driverMain) where
 import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
-import Control.Monad (mapM_, when, zipWithM)
+import Control.Monad (mapM_, when, zipWithM_)
 import Control.Monad.Except (ExceptT, runExceptT)
 import System.Directory (doesFileExist, doesDirectoryExist, createDirectoryIfMissing)
 import System.FilePath.Find
@@ -71,8 +71,8 @@ drive CmdOptions{..} = do
 
 filterTime :: [IxTask]
            -> [Pilot]
-           -> [Char]
-           -> ([Char]
+           -> String
+           -> (String
            -> [IxTask]
            -> [Pilot]
            -> ExceptT String IO [[Either (Pilot, _) (Pilot, _)]])
@@ -90,7 +90,7 @@ filterTime selectTasks selectPilots compPath f = do
                             Right (p, _) -> p)
                         xs
 
-            _ <- zipWithM
+            _ <- zipWithM_
                 (\ n zs ->
                     when (includeTask selectTasks $ IxTask n) $
                         mapM_ (readFilterWrite (takeDirectory compPath) n) zs)
