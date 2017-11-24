@@ -21,35 +21,37 @@ See the separate discussion of [building](BUILDING.md) and [testing](TESTING.md)
 
 FSDB is the database of FS and is an XML format for inputs, working and outputs of scoring. To host a **Flare Timing** web site, start with an FSDB file and relative tracklog files on disk and run a pipeline of command line programs to produce the data to display then host the web services and web app.
 
+Where 'c' is the comp name, k is a folder path specified in the inputs for track logs, 'p' is the pilot name, 'n' is the task number and '.' is the folder with competition inputs;
+
 1. Extract the inputs with [`extract-input`](flare-timing/prod-apps/extract-input).  
-Reads `.fsdb`.  
-Writes `.comp-input.yaml`.
+Reads `./c.fsdb`  
+Writes `./c.comp-input.yaml`
 2. Trace the shortest path to fly a task with [`task-length`](flare-timing/prod-apps/task-length).  
-Reads `.comp-input.yaml`.  
-Writes `.task-length.yaml`.
+Reads `./c.comp-input.yaml`  
+Writes `./c.task-length.yaml`
 3. Find pairs of fixes crossing over zones with [`cross-zone`](flare-timing/prod-apps/cross-zone).  
-Reads `.comp-input.yaml` and `.kml`.  
-Writes `.cross-zone.yaml`.
+Reads `./c.comp-input.yaml` and `p.kml`  
+Writes `./c.cross-zone.yaml`
 4. Interpolate between crossing fixes for the time and place where a track tags a zone with [`tag-zone`](flare-timing/prod-apps/tag-zone).  
-Reads `.cross-zone.yaml`.  
-Writes `.tag-zone.yaml`.
+Reads `./.cross-zone.yaml`  
+Writes `./.tag-zone.yaml`
 5. Time align the distance to goal for each fix in the speed section with [`align-time`](flare-timing/prod-apps/align-time).  
-Reads `.comp-input.yaml`, `.kml` and `.tag-zone.yaml`.  
-Writes `.flare-timing/align-time/task-n/p.csv`, where `n` is the task number and p is the pilot name.
+Reads `./.comp-input.yaml`, `./k/p.kml` and `./c.tag-zone.yaml`  
+Writes `./.flare-timing/align-time/task-n/p.csv`
 6. Filter fixes that get further from goal with [`discard-further`](flare-timing/prod-apps/discard-further).  
-Reads `.flare-timing/align-time/task-n/p.csv`.  
-Writes `.flare-timing/discard-further/task-n/p.csv`.
+Reads `./.flare-timing/align-time/task-n/p.csv`  
+Writes `./.flare-timing/discard-further/task-n/p.csv`
 7. Find the leading area with [`leading-area`](flare-timing/prod-apps/leading-area).  
-Reads `.flare-timing/discard-further/task-n/p.csv`.  
-Writes `.leading-area.yaml`.
+Reads `./.flare-timing/discard-further/task-n/p.csv`  
+Writes `./c.leading-area.yaml`
 8. Find the nearest a track came to missing the next zone on course with [`near-miss`](flare-timing/prod-apps/near-miss).  
-Reads `.flare-timing/align-time/task-n/p.csv`.  
-Writes `.near-miss.yaml`.
+Reads `./.flare-timing/align-time/task-n/p.csv`  
+Writes `./c.near-miss.yaml`
 9. Mask the competition task over the tracklogs with [`mask-track`](flare-timing/prod-apps/mask-track).  
-Reads `.comp-input.yaml`, `.tag-zone` and `.near-miss`.  
-Writes `.mask-track.yaml`.
+Reads `./c.comp-input.yaml`, `./c.tag-zone` and `./c.near-miss`  
+Writes `./c.mask-track.yaml`
 10. Score the competition with [`gap-point`](flare-timing/prod-apps/gap-point).  
-Reads `.comp-input.yaml`.  
-Writes `.gap-point.yaml`.
+Reads `./c.comp-input.yaml`  
+Writes `./c.gap-point.yaml`
 11. Start the [`server`](flare-timing/prod-apps/app-serve) hosting the web services.
 12. Start the [`dev server`](flare-timing/view) or otherwise host the web app.
