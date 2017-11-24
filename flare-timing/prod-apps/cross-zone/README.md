@@ -9,7 +9,7 @@
 
     The same thing goes if a list of pilots is supplied or not.
 
-    <interactive> [OPTIONS]
+    cross-zone [OPTIONS]
 
     Source:
       -d --dir=ITEM            Over all the competition *.comp.yaml files in this

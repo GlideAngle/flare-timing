@@ -1,6 +1,6 @@
 ### Tagging Zones
 
-    $ __shake-build/tag-zones --help
+    $ __shake-build/tag-zone --help
     Interpolate between crossing fixes '.cross-zone.yaml' for the time and place
     where a track tags a zone.
 
@@ -9,7 +9,7 @@
 
     The same thing goes if a list of pilots is supplied or not.
 
-    <interactive> [OPTIONS]
+    tag-zone [OPTIONS]
 
     Source:
       -d --dir=ITEM            Over all the competition *.comp.yaml files in this
