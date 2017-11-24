@@ -30,7 +30,7 @@ Where `c` is the comp name, `k` is a folder path specified in the inputs for tra
 5. Index fixes from the time of first crossing with [`align-time`](flare-timing/prod-apps/align-time).  
 6. Discard fixes that get further from goal with [`discard-further`](flare-timing/prod-apps/discard-further).  
 7. Find the leading area with [`leading-area`](flare-timing/prod-apps/leading-area).  
-8. Mask the competition task over the tracklogs with [`mask-track`](flare-timing/prod-apps/mask-track).  
+8. Mask a task over its tracklogs with [`mask-track`](flare-timing/prod-apps/mask-track).  
 9. Score the competition with [`gap-point`](flare-timing/prod-apps/gap-point).  
 
 With the data pre-processed to host `flare-timing`.
