@@ -1,6 +1,7 @@
 ### Discard Further 
 
     $ __shake-build/discard-further --help
+
     From competition inputs '.comp-input.yaml', finds the aligned time '.csv' files
     for each pilot. Keeping only tick and distance columns, initial zero distance
     rows are dropped and rows that get further from goal are also dropped.

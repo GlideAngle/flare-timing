@@ -1,6 +1,7 @@
 ### Crossing Zones
 
     $ __shake-build/cross-zone --help
+
     From competition inputs '.comp-input.yaml' and relative track logs '.kml', find
     pairs of fixes crossing over a zone.
 

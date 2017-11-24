@@ -24,7 +24,9 @@ import System.Directory (doesFileExist, doesDirectoryExist)
 import Cmd.Options (CmdOptions(..))
 
 description :: String
-description = "Convert a competition FSDB (XML) file to YAML with only the inputs needed for scoring."
+description = [r|
+"Convert a competition FSDB (XML) file to YAML with only the inputs needed for scoring."
+|]
 
 data Drive
     = Drive { dir :: String

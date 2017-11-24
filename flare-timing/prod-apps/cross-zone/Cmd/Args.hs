@@ -29,9 +29,8 @@ import Cmd.Options (CmdOptions(..))
 import Flight.TaskTrack (TaskDistanceMeasure(..))
 
 description :: String
-description = intro
-    where
-        intro = [r|From competition inputs '.comp-input.yaml' and relative track logs '.kml', find pairs of fixes crossing over a zone.
+description = [r|
+From competition inputs '.comp-input.yaml' and relative track logs '.kml', find pairs of fixes crossing over a zone.
 
 If a list of tasks are supplied then those tasks alone are processed, otherwise all tasks are processed.
 

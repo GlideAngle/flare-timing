@@ -28,9 +28,7 @@ import Text.RawString.QQ (r)
 import Cmd.Options (CmdOptions(..))
 
 description :: String
-description = intro
-    where
-        intro = [r|
+description = [r|
 From competition inputs '.comp-input.yaml', relative track logs '.kml' and
 tagged zones '.tag-zone.yaml', writes each fix to a single '.csv' per-pilot
 per-task. These are grouped into a single folder per-task as

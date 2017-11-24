@@ -29,9 +29,8 @@ import Cmd.Options (CmdOptions(..))
 import Flight.TaskTrack (TaskDistanceMeasure(..))
 
 description :: String
-description = intro
-    where
-        intro = [r|Interpolate between crossing fixes '.cross-zone.yaml' for the time and place where a track tags a zone.
+description = [r|
+Interpolate between crossing fixes '.cross-zone.yaml' for the time and place where a track tags a zone.
 
 If a list of tasks are supplied then those tasks alone are processed, otherwise all tasks are processed.
 

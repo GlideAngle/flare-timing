@@ -29,9 +29,8 @@ import Cmd.Options (CmdOptions(..))
 import Flight.TaskTrack (TaskDistanceMeasure(..))
 
 description :: String
-description = intro
-    where
-        intro = [r|Given a competition input YAML file, *.comp-input.yaml, and relative track log KML files, by masking the track logs with the zones, work out;
+description = [r|
+Given a competition input YAML file, *.comp-input.yaml, and relative track log KML files, by masking the track logs with the zones, work out;
 * if the pilot launched
 * if they made goal then
     * how long the pilot took to reach goal

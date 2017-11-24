@@ -28,9 +28,7 @@ import Text.RawString.QQ (r)
 import Cmd.Options (CmdOptions(..))
 
 description :: String
-description = intro
-    where
-        intro = [r|
+description = [r|
 From competition inputs '.comp-input.yaml', finds the aligned time '.csv' files
 for each pilot. Keeping only tick and distance columns, initial zero distance
 rows are dropped and rows that get further from goal are also dropped.

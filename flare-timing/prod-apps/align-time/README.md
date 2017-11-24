@@ -1,6 +1,7 @@
 ### Align Times
 
     $ __shake-build/align-time --help
+
     From competition inputs '.comp-input.yaml', relative track logs '.kml' and
     tagged zones '.tag-zone.yaml', writes each fix to a single '.csv' per-pilot
     per-task. These are grouped into a single folder per-task as
