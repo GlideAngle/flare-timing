@@ -19,21 +19,18 @@ The scoring method is [well documented](http://fs.fai.org/trac/wiki/ScoringFormu
 
 See the separate discussion of [building](BUILDING.md) and [testing](TESTING.md).
 
-FSDB is the database of FS and is an XML format for inputs, working and outputs of scoring. To host a **Flare Timing** web site, start with an FSDB file and relative tracklog files on disk and run a pipeline of command line programs to produce the data to display then host the web services and web app.
-
-Where `c` is the comp name, `k` is a folder path specified in the inputs for track logs, `p` is the pilot name, `n` is the task number and `.` is the folder with competition inputs;
-
+With an FS comp file and related track logs as inputs, **score** the comp;
 1. Extract the inputs with [`extract-input`](flare-timing/prod-apps/extract-input).  
 2. Trace the shortest path to fly a task with [`task-length`](flare-timing/prod-apps/task-length).  
 3. Find pairs of fixes crossing over zones with [`cross-zone`](flare-timing/prod-apps/cross-zone).  
 4. Interpolate between crossing fixes for the time and place where a track tags a zone with [`tag-zone`](flare-timing/prod-apps/tag-zone).  
-5. Time align the distance to goal for each fix in the speed section with [`align-time`](flare-timing/prod-apps/align-time).  
-6. Filter fixes that get further from goal with [`discard-further`](flare-timing/prod-apps/discard-further).  
+5. Index fixes from the time of first crossing with [`align-time`](flare-timing/prod-apps/align-time).  
+6. Discard fixes that get further from goal with [`discard-further`](flare-timing/prod-apps/discard-further).  
 7. Find the leading area with [`leading-area`](flare-timing/prod-apps/leading-area).  
-8. Mask the competition task over the tracklogs with [`mask-track`](flare-timing/prod-apps/mask-track).  
+8. Mask a task over its tracklogs with [`mask-track`](flare-timing/prod-apps/mask-track).  
 9. Score the competition with [`gap-point`](flare-timing/prod-apps/gap-point).  
 
-With the data pre-processed to host `flare-timing`.
+With the data pre-processed, **host** `flare-timing`;
 1. Copy the data to a location where it can be read by the web services.
 2. Start the [`server`](flare-timing/prod-apps/app-serve) hosting the web services.
 3. Start the [`dev server`](flare-timing/view) or otherwise host the web app.
