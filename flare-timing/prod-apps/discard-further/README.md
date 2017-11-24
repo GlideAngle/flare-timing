@@ -22,5 +22,3 @@
     Filter:
       -t --task[=TASK NUMBER]  Which tasks?
       -p --pilot[=PILOT NAME]  Which pilots?
-      -m --measure=METHOD      Which way to measure task distances,
-                               taskdistancebyallmethods|taskdistancebypoints|taskdistancebyedges

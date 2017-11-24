@@ -22,7 +22,5 @@ data CmdOptions
                  -- ^ Include only these tasks.
                  , pilot :: [String]
                  -- ^ Look only at these pilots
-                 , measure :: TaskDistanceMeasure
-                 -- ^ Use the given measure(s).
                  }
                  deriving (Data, Typeable, Show)
