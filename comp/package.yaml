@@ -18,7 +18,6 @@ library:
   - unordered-containers
   - time
   - cassava
-  - split
   - bytestring
   - flight-latlng
   - flight-zone
@@ -43,11 +42,15 @@ tests:
     dependencies:
     - base
     - hlint
+    - split
+    - path
     - aeson
     - scientific
     - containers
-    - split
+    - unordered-containers
     - time
+    - cassava
+    - bytestring
     - flight-latlng
     - flight-zone
     ghc-options:
