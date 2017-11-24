@@ -27,8 +27,8 @@ Where `c` is the comp name, `k` is a folder path specified in the inputs for tra
 2. Trace the shortest path to fly a task with [`task-length`](flare-timing/prod-apps/task-length).  
 3. Find pairs of fixes crossing over zones with [`cross-zone`](flare-timing/prod-apps/cross-zone).  
 4. Interpolate between crossing fixes for the time and place where a track tags a zone with [`tag-zone`](flare-timing/prod-apps/tag-zone).  
-5. Time align the distance to goal for each fix in the speed section with [`align-time`](flare-timing/prod-apps/align-time).  
-6. Filter fixes that get further from goal with [`discard-further`](flare-timing/prod-apps/discard-further).  
+5. Index fixes from the time of first crossing with [`align-time`](flare-timing/prod-apps/align-time).  
+6. Discard fixes that get further from goal with [`discard-further`](flare-timing/prod-apps/discard-further).  
 7. Find the leading area with [`leading-area`](flare-timing/prod-apps/leading-area).  
 8. Mask the competition task over the tracklogs with [`mask-track`](flare-timing/prod-apps/mask-track).  
 9. Score the competition with [`gap-point`](flare-timing/prod-apps/gap-point).  
