@@ -1,5 +1,6 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE QuasiQuotes #-}
 
 module Cmd.Args
     ( Drive(..)
@@ -21,11 +22,16 @@ import System.Console.CmdArgs.Implicit
 import Control.Monad.Except (liftIO, throwError, when, unless)
 import Control.Monad.Trans.Except (runExceptT)
 import System.Directory (doesFileExist, doesDirectoryExist)
+import Text.RawString.QQ (r)
 import Cmd.Options (CmdOptions(..))
 
 description :: String
 description = [r|
-"Convert a competition FSDB (XML) file to YAML with only the inputs needed for scoring."
+Extracts just the inputs needed for scoring a competition.
+
+Where 'c' is the comp name and '.' is the folder with competition inputs;
+    Reads  ./c.fsdb
+    Writes ./c.comp-inputs.yaml
 |]
 
 data Drive

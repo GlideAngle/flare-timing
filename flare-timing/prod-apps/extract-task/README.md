@@ -1,9 +1,12 @@
 ### Extracting Inputs
 
     $ __shake-build/extract-task --help
-    
-    Convert a competition FSDB (XML) file to YAML with only the inputs needed for
-    scoring.
+
+    Extracts just the inputs needed for scoring a competition.
+
+    Where 'c' is the comp name and '.' is the folder with competition inputs;
+        Reads  ./c.fsdb
+        Writes ./c.comp-inputs.yaml 
 
     extract-task [OPTIONS]
 
