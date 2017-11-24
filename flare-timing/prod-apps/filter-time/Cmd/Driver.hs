@@ -5,6 +5,7 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE DuplicateRecordFields #-}
 
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
@@ -23,6 +24,9 @@ import System.FilePath
     , (</>), (<.>)
     , takeFileName, takeDirectory
     )
+import Data.Vector (Vector)
+import qualified Data.Vector as V (fromList, toList)
+
 import Cmd.Args (withCmdArgs)
 import Cmd.Options (CmdOptions(..))
 import Cmd.Inputs (readTimeRowsFromCsv)
@@ -32,7 +36,7 @@ import Flight.Comp (CompSettings(..), Pilot(..))
 import Flight.TrackLog (IxTask(..), TrackFileFail)
 import Flight.Units ()
 import Flight.Mask (checkTracks)
-import Flight.Track.Time (TimeRow(..), TickRow(..))
+import Flight.Track.Time (TimeRow(..), TickRow(..), discardFurther)
 
 headers :: [String]
 headers = ["tick", "distance"]
@@ -129,14 +133,24 @@ readFilterWrite dir iTask pilot = do
     _ <- createDirectoryIfMissing True dOut
     rows <- runExceptT $ readTimeRowsFromCsv (dIn </> f)
     case rows of
-        Left msg -> print msg
-        Right (_, rowsTime) -> do
-            let rowsTick = timeToTick <$> rowsTime
-            _ <- writeTimeRowsToCsv (dOut </> f) headers rowsTick
-            return ()
+        Left msg ->
+            print msg
+
+        Right (_, xs) ->
+            writeTimeRowsToCsv (dOut </> f) headers $ discard xs
     where
         (dIn, f) = csvPathIn dir iTask pilot
         dOut = csvDirOut dir iTask
 
 timeToTick :: TimeRow -> TickRow
 timeToTick TimeRow{tick, distance} = TickRow tick distance
+
+discard :: Vector TimeRow -> Vector TickRow
+discard xs =
+    V.fromList . discardFurther . dropZeros . V.toList $ timeToTick <$> xs
+
+dropZeros :: [TickRow] -> [TickRow]
+dropZeros =
+    dropWhile ((== 0) . d)
+    where
+        d = distance :: (TickRow -> Double)

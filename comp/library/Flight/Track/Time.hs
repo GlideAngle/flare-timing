@@ -12,7 +12,7 @@ Stability   : experimental
 
 Track fixes indexed on when the first pilot starts the speed section.
 -}
-module Flight.Track.Time (TimeRow(..), TickRow(..)) where
+module Flight.Track.Time (TimeRow(..), TickRow(..), discardFurther) where
 
 import Data.Maybe (fromMaybe)
 import Data.Csv
@@ -50,6 +50,15 @@ data TickRow =
 
 instance ToJSON TickRow
 instance FromJSON TickRow
+
+-- | Discard fixes further from goal than any previous fix.
+discardFurther :: [TickRow] -> [TickRow]
+discardFurther (x : y : ys)
+    | d x < d y = discardFurther (x : ys)
+    | otherwise = x : discardFurther (y : ys)
+    where
+        d = distance :: (TickRow -> Double)
+discardFurther ys = ys
 
 quote :: String -> String
 quote s = "\"" ++ s ++ "\""
