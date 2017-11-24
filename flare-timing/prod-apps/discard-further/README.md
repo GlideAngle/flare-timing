@@ -1,6 +1,6 @@
-### Filter Times
+### Discard Further 
 
-    $ __shake-build/filter-time --help
+    $ __shake-build/discard-further --help
     From competition inputs '.comp-input.yaml' and relative track logs '.kml',
     writes the distance to goal for every track log fix. These are collected in
     a single '.csv' per-pilot per-task. These are grouped into a single folder

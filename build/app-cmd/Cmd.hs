@@ -60,7 +60,7 @@ prodApps =
     , "cross-zone"
     , "tag-zone"
     , "align-time"
-    , "filter-time"
+    , "discard-further"
     , "mask-track"
     ] 
 

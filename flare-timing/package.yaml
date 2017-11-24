@@ -162,7 +162,7 @@ executables:
     - -fplugin Data.UnitsOfMeasure.Plugin
     main: Main.hs
     source-dirs: prod-apps/align-time
-  filter-time:
+  discard-further:
     dependencies:
     - base
     - directory
@@ -200,7 +200,7 @@ executables:
     - -Wall
     - -fplugin Data.UnitsOfMeasure.Plugin
     main: Main.hs
-    source-dirs: prod-apps/filter-time
+    source-dirs: prod-apps/discard-further
   mask-track:
     dependencies:
     - base

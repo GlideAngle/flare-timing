@@ -8,12 +8,15 @@ arguments =
     [ "test-apps/fsdb-parser"
     , "test-apps/igc-parser"
     , "test-apps/kml-parser"
+
     , "prod-apps/extract-task"
     , "prod-apps/task-length"
     , "prod-apps/cross-zone"
     , "prod-apps/tag-zone"
     , "prod-apps/align-time"
+    , "prod-apps/discard-further"
     , "prod-apps/mask-track"
+
     , "test-suite-hlint"
     ]
 
