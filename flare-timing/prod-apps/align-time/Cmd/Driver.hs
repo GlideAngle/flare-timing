@@ -25,7 +25,7 @@ import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Data.Time.Clock (UTCTime, diffUTCTime)
 import Data.Maybe (catMaybes)
-import Control.Monad (mapM_, when, zipWithM)
+import Control.Monad (mapM_, when, zipWithM_)
 import Control.Monad.Except (ExceptT, runExceptT)
 import Data.UnitsOfMeasure ((/:), u, convert, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
@@ -104,7 +104,7 @@ drive CmdOptions{..} = do
                 Left msg ->
                     print msg
 
-                Right tags' -> do
+                Right tags' ->
                     writeTime
                         (IxTask <$> task)
                         (Pilot <$> pilot)
@@ -134,7 +134,7 @@ writeTime selectTasks selectPilots compPath f = do
                             Right (p, g) -> (p, g p))
                         xs
 
-            _ <- zipWithM
+            _ <- zipWithM_
                 (\ n zs ->
                     when (includeTask selectTasks $ IxTask n) $
                         mapM_ (writePilotTimes (takeDirectory compPath) n) zs)
