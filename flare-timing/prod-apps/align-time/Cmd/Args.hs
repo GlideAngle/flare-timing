@@ -47,7 +47,6 @@ tracklogs, one per task;
     Reads  ./k/p.kml
     Writes ./flare-timing/align-time/task-n/p.csv
 
-
 If a list of tasks are supplied then those tasks alone are processed, otherwise
 all tasks are processed. The same thing goes if a list of pilots is supplied or
 not.
