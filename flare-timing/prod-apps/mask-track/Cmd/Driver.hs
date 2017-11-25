@@ -212,7 +212,7 @@ flown (MadeGoal mg') tasks iTask@(IxTask i) xs = \p ->
     let speedSection' =
             case tasks ^? element (fromIntegral i - 1) of
                 Nothing -> Nothing
-                Just Cmp.Task{speedSection} -> speedSection
+                Just Cmp.Task{..} -> speedSection
 
         mg =
             let a = join $ (\f -> f p speedSection' iTask xs) <$> mg'
