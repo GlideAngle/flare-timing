@@ -122,7 +122,7 @@ csvPathIn dir task pilot =
         f = show pilot <.> "csv"
 
 csvDirOut :: FilePath -> Int -> FilePath
-csvDirOut = dotDir "filter-time"
+csvDirOut = dotDir "discard-further"
 
 dotDir :: FilePath -> FilePath -> Int -> FilePath
 dotDir name dir task =
