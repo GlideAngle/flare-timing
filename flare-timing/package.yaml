@@ -210,7 +210,9 @@ executables:
     - filemanip
     - raw-strings-qq
     - cmdargs
+    - lens
     - mtl
+    - monadplus
     - transformers
     - yaml
     - aeson

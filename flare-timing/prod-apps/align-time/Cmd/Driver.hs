@@ -96,6 +96,7 @@ drive CmdOptions{..} = do
             let tagPath =
                     flip replaceExtension ".tag-zone.yaml"
                     $ dropExtension compPath
+
             putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
             putStrLn $ "Reading zone tags from '" ++ takeFileName tagPath ++ "'"
 

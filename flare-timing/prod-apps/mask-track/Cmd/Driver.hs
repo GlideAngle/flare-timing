@@ -20,25 +20,26 @@
 module Cmd.Driver (driverMain) where
 
 import Prelude hiding (span)
+import Data.Maybe (fromMaybe)
 import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Data.String (IsString)
-import Control.Monad (mapM_)
+import Control.Lens ((^?), element)
+import Control.Monad (join, mapM_)
+import Control.Applicative.Alternative ((<|>))
 import Control.Monad.Except (ExceptT, runExceptT)
 import Data.UnitsOfMeasure ((/:), u, convert, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import System.Directory (doesFileExist, doesDirectoryExist)
 import System.FilePath.Find (FileType(..), (==?), (&&?), find, always, fileType, extension)
 import System.FilePath (takeFileName, replaceExtension, dropExtension)
-import Cmd.Args (withCmdArgs)
-import Cmd.Options (CmdOptions(..))
 import qualified Data.Yaml.Pretty as Y
 import qualified Data.ByteString as BS
 import qualified Data.Number.FixedFunctions as F
 
 import Flight.Comp (Pilot(..))
-import qualified Flight.Comp as Cmp (CompSettings(..))
+import qualified Flight.Comp as Cmp (CompSettings(..), Task(..))
 import qualified Flight.Task as Tsk (TaskDistance(..))
 import qualified Flight.Score as Gap (PilotDistance(..), PilotTime(..))
 import Flight.TrackLog (IxTask(..), TrackFileFail(..))
@@ -63,6 +64,9 @@ import Flight.Task (SpanLatLng, CircumSample, AngleCut(..))
 import Flight.PointToPoint.Rational
     (distanceHaversine, distancePointToPoint, costSegment)
 import Flight.Cylinder.Rational (circumSample)
+import Cmd.Args (withCmdArgs)
+import Cmd.Options (CmdOptions(..))
+import Cmd.Inputs (MadeGoal(..), readTags, taggedGoal)
 
 driverMain :: IO ()
 driverMain = withCmdArgs drive
@@ -126,26 +130,34 @@ drive CmdOptions{..} = do
     fprint ("Masking tracks completed in " % timeSpecs % "\n") start end
     where
         withFile compPath = do
+            let tagPath =
+                    flip replaceExtension ".tag-zone.yaml"
+                    $ dropExtension compPath
+
             putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
+            putStrLn $ "Reading zone tags from '" ++ takeFileName tagPath ++ "'"
+
+            tags <- runExceptT $ readTags tagPath
+
             writeMask
                 (IxTask <$> task)
                 (Pilot <$> pilot)
                 compPath
-                check
+                (check (taggedGoal tags))
 
-writeMask :: t1
-          -> t2
+writeMask :: [IxTask]
+          -> [Pilot]
           -> FilePath
           -> (FilePath
-              -> t1
-              -> t2
+              -> [IxTask]
+              -> [Pilot]
               -> ExceptT
                    String
                    IO
                    [
                        [Either
                            (Pilot, TrackFileFail)
-                           (Pilot, TM.TrackMask)
+                           (Pilot, Pilot -> TM.TrackMask)
                        ]
                    ]
              )
@@ -162,8 +174,8 @@ writeMask selectTasks selectPilots compPath f = do
                             Left (p, _) ->
                                 PilotTrackMask p Nothing
 
-                            Right (p, x) ->
-                                PilotTrackMask p (Just x))
+                            Right (p, g) ->
+                                PilotTrackMask p (Just (g p)))
                         comp
 
             let tzi = Masking { masking = pss }
@@ -179,7 +191,8 @@ writeMask selectTasks selectPilots compPath f = do
             flip replaceExtension ".mask-track.yaml"
             $ dropExtension compPath
 
-check :: FilePath
+check :: MadeGoal
+      -> FilePath
       -> [IxTask]
       -> [Pilot]
       -> ExceptT
@@ -188,17 +201,24 @@ check :: FilePath
           [
               [Either
                   (Pilot, TrackFileFail)
-                  (Pilot, TM.TrackMask)
+                  (Pilot, Pilot -> TM.TrackMask)
               ]
           ]
-check = checkTracks $ \Cmp.CompSettings{tasks} -> flown tasks
+check mg = checkTracks $ \Cmp.CompSettings{tasks} ->
+    (flown mg) tasks
 
-flown :: SigMasking TM.TrackMask
-flown tasks iTask xs =
-    let mg =
-            madeGoal
-                span
-                zoneToCyl tasks iTask xs
+flown :: MadeGoal -> SigMasking (Pilot -> TM.TrackMask)
+flown (MadeGoal mg') tasks iTask@(IxTask i) xs = \p ->
+    let speedSection' =
+            case tasks ^? element (fromIntegral i - 1) of
+                Nothing -> Nothing
+                Just Cmp.Task{speedSection} -> speedSection
+
+        mg =
+            let a = join $ (\f -> f p speedSection' iTask xs) <$> mg'
+                b = Just $ madeGoal span zoneToCyl tasks iTask xs
+
+            in fromMaybe False $ a <|> b
 
         dg =
             distanceToGoal

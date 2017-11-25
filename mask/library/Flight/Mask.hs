@@ -25,10 +25,11 @@ module Flight.Mask
     , distanceFlown
     , timeFlown
     , zoneToCylinder
+    , slice
     ) where
 
 import Flight.Mask.Tag
 import Flight.Mask.Distance
 import Flight.Mask.Time
 import Flight.Mask.Tracks
-import Flight.Mask.Internal (TaskZone, zoneToCylinder)
+import Flight.Mask.Internal (TaskZone, zoneToCylinder, slice)
