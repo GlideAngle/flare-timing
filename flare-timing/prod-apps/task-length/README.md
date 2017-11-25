@@ -2,7 +2,7 @@
 
     $ __shake-build/task-length --help
     
-    Works out the task length by flowing an optimal route.
+    Works out the task length by following an optimal route.
 
     Where 'c' is the comp name and '.' is the folder with competition inputs;
         Reads  ./c.comp-inputs.yaml
