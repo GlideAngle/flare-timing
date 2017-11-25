@@ -31,6 +31,8 @@ data TrackMask =
     TrackMask
         { madeGoal :: Bool
         -- ^ Was goal made.
+        , arrivalRank :: Maybe Int
+        -- ^ Rank arrival time.
         , timeToGoal :: Maybe Double
         -- ^ How long did this pilot take to complete the course.
         , distanceToGoal :: Maybe Double

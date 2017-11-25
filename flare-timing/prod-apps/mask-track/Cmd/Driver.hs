@@ -56,6 +56,7 @@ import Flight.Mask
     )
 import Flight.Track.Mask (Masking(..), PilotTrackMask(..))
 import qualified Flight.Track.Mask as TM (TrackMask(..))
+import Flight.Track.Tag (Tagging)
 import Flight.Zone (Bearing(..))
 import Flight.Zone.Raw (RawZone)
 import Flight.LatLng.Rational (Epsilon(..), defEps)
@@ -66,7 +67,11 @@ import Flight.PointToPoint.Rational
 import Flight.Cylinder.Rational (circumSample)
 import Cmd.Args (withCmdArgs)
 import Cmd.Options (CmdOptions(..))
-import Cmd.Inputs (MadeGoal(..), readTags, taggedGoal)
+import Cmd.Inputs
+    ( MadeGoal(..), ArrivalRank(..)
+    , tagMadeGoal, tagArrivalRank
+    , readTags
+    )
 
 driverMain :: IO ()
 driverMain = withCmdArgs drive
@@ -74,26 +79,18 @@ driverMain = withCmdArgs drive
 cmp :: (Ord a, IsString a) => a -> a -> Ordering
 cmp a b =
     case (a, b) of
-        ("timing", _) -> LT
-        ("masking", _) -> GT
-        ("firstStart", _) -> LT
-        ("lastGoal", _) -> GT
-        ("launched", _) -> LT
-        ("madeGoal", "launched") -> GT
+        -- TODO: first start time & last goal time & launched
         ("madeGoal", _) -> LT
-        ("timeToGoal", "launched") -> GT
+        ("arrivalRank", "madeGoal") -> GT
+        ("arrivalRank", _) -> LT
         ("timeToGoal", "madeGoal") -> GT
+        ("timeToGoal", "arrivalRank") -> GT
         ("timeToGoal", _) -> LT
-        ("distanceToGoal", "launched") -> GT
         ("distanceToGoal", "madeGoal") -> GT
+        ("distanceToGoal", "arrivalRank") -> GT
         ("distanceToGoal", "timeToGoal") -> GT
         ("distanceToGoal", _) -> LT
         ("distanceMade", _) -> GT
-        ("zonesTime", _) -> GT
-        ("time", _) -> LT
-        ("lat", "time") -> GT
-        ("lat", _) -> LT
-        ("lng", _) -> GT
         _ -> compare a b
 
 unTaskDistance :: (Real a, Fractional a) => Tsk.TaskDistance a -> a
@@ -143,7 +140,7 @@ drive CmdOptions{..} = do
                 (IxTask <$> task)
                 (Pilot <$> pilot)
                 compPath
-                (check (taggedGoal tags))
+                (check tags)
 
 writeMask :: [IxTask]
           -> [Pilot]
@@ -191,7 +188,7 @@ writeMask selectTasks selectPilots compPath f = do
             flip replaceExtension ".mask-track.yaml"
             $ dropExtension compPath
 
-check :: MadeGoal
+check :: Either String Tagging
       -> FilePath
       -> [IxTask]
       -> [Pilot]
@@ -204,13 +201,16 @@ check :: MadeGoal
                   (Pilot, Pilot -> TM.TrackMask)
               ]
           ]
-check mg = checkTracks $ \Cmp.CompSettings{tasks} ->
-    (flown mg) tasks
+check tags = checkTracks $ \Cmp.CompSettings{tasks} ->
+    (flown tags) tasks
 
-flown :: MadeGoal -> SigMasking (Pilot -> TM.TrackMask)
-flown (MadeGoal mg') tasks iTask@(IxTask i) xs p =
+flown :: Either String Tagging -> SigMasking (Pilot -> TM.TrackMask)
+flown tags tasks iTask@(IxTask i) xs p =
     TM.TrackMask
         { madeGoal = mg
+
+        , arrivalRank =
+            join $ (\f -> f p speedSection' iTask xs) <$> tArrivalRank
 
         , distanceToGoal =
             if mg then Nothing else fromRational . unTaskDistance <$> dg
@@ -245,8 +245,11 @@ flown (MadeGoal mg') tasks iTask@(IxTask i) xs p =
                 Nothing -> Nothing
                 Just Cmp.Task{..} -> speedSection
 
+        (MadeGoal tMadeGoal) = tagMadeGoal tags
+        (ArrivalRank tArrivalRank) = tagArrivalRank tags
+
         mg =
-            let a = join $ (\f -> f p speedSection' iTask xs) <$> mg'
+            let a = join $ (\f -> f p speedSection' iTask xs) <$> tMadeGoal
                 b = Just $ madeGoal span zoneToCyl tasks iTask xs
 
             in fromMaybe False $ a <|> b
