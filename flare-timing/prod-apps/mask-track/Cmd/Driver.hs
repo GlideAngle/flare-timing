@@ -208,17 +208,22 @@ check mg = checkTracks $ \Cmp.CompSettings{tasks} ->
     (flown mg) tasks
 
 flown :: MadeGoal -> SigMasking (Pilot -> TM.TrackMask)
-flown (MadeGoal mg') tasks iTask@(IxTask i) xs = \p ->
-    let speedSection' =
-            case tasks ^? element (fromIntegral i - 1) of
-                Nothing -> Nothing
-                Just Cmp.Task{..} -> speedSection
+flown (MadeGoal mg') tasks iTask@(IxTask i) xs p =
+    TM.TrackMask
+        { madeGoal = mg
 
-        mg =
-            let a = join $ (\f -> f p speedSection' iTask xs) <$> mg'
-                b = Just $ madeGoal span zoneToCyl tasks iTask xs
+        , distanceToGoal =
+            if mg then Nothing else fromRational . unTaskDistance <$> dg
 
-            in fromMaybe False $ a <|> b
+        , distanceMade =
+            fromRational <$> if mg then Nothing else unPilotDistance <$> df
+
+        , timeToGoal =
+            if not mg then Nothing else unPilotTime <$> tf
+        }
+    where
+        dpp = distancePointToPoint
+        cseg = costSegment span
 
         dg =
             distanceToGoal
@@ -235,24 +240,16 @@ flown (MadeGoal mg') tasks iTask@(IxTask i) xs = \p ->
                 span
                 zoneToCyl tasks iTask xs
 
-        dpp =
-            distancePointToPoint
+        speedSection' =
+            case tasks ^? element (fromIntegral i - 1) of
+                Nothing -> Nothing
+                Just Cmp.Task{..} -> speedSection
 
-        cseg =
-            costSegment span
+        mg =
+            let a = join $ (\f -> f p speedSection' iTask xs) <$> mg'
+                b = Just $ madeGoal span zoneToCyl tasks iTask xs
 
-    in TM.TrackMask
-        { madeGoal = mg
-
-        , distanceToGoal =
-            if mg then Nothing else fromRational . unTaskDistance <$> dg
-
-        , distanceMade =
-            fromRational <$> if mg then Nothing else unPilotDistance <$> df
-
-        , timeToGoal =
-            if not mg then Nothing else unPilotTime <$> tf
-        }
+            in fromMaybe False $ a <|> b
 
 zoneToCyl :: RawZone -> TaskZone Rational
 zoneToCyl = zoneToCylinder
