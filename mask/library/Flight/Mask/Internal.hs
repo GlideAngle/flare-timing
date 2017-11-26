@@ -315,8 +315,8 @@ distanceViaZones (Ticked n) span dpp cseg cs cut mkZone speedSection fs zs xs =
         -- so this distance is the distance from the very last fix when
         -- at times on this leg the pilot may have been closer to goal.
         x : _ ->
-            let d = distanceEdgeToEdge span dpp cseg cs cut mm30 (cons x)
-            in Just . edgesSum $ d -- $ trace ("DIST: " ++ show d) d
+            Just . edgesSum
+            $ distanceEdgeToEdge span dpp cseg cs cut mm30 (cons x)
     where
         -- NOTE: Free pass for zones already ticked.
         fsTicked = const (hitZone $ ZoneEntry 0 0) <$> [0 .. n]
