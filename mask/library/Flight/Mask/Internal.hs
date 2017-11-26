@@ -172,7 +172,7 @@ hitZone hit _ _ = hit
 entersZoneRev :: (Real a, Fractional a) => SpanLatLng a -> CrossingPredicate a
 entersZoneRev span z xs =
     case exitsZoneFwd span z $ reverse xs of
-        ZoneExit i j -> let len = length xs in ZoneEntry (len - j) (len - i)
+        ZoneExit i j -> let nth = (length xs) - 1 in ZoneEntry (nth - j) (nth - i)
         _ -> ZoneMiss
 
 -- | Finds the first pair of points, one outside the zone and the next inside.
