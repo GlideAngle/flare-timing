@@ -228,7 +228,12 @@ pickCrossingPredicate span True task@Cmp.Task{speedSection, zones} =
         Just (start, _) ->
             zipWith
                 (\ i _ ->
-                    if i == start then exitsZone span else entersZone span)
+                    -- NOTE: Any zone before the start is also treated as an
+                    -- exit cylinder if the start is an exit cylinder. This
+                    -- applies if the start cylinder wholly contains a prior
+                    -- zone or is separate to it.
+                    -- TODO: Consider overlapping zones before or at start.
+                    if i <= start then exitsZone span else entersZone span)
                 [1 .. ]
                 zones
 
