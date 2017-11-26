@@ -71,9 +71,21 @@ distancesToGoal
     case tasks ^? element (i - 1) of
         Nothing -> Nothing
         Just Cmp.Task{zones} ->
+            -- NOTE: A ghci session using inits & tails.
+            -- inits [1 .. 4]
+            -- [[],[1],[1,2],[1,2,3],[1,2,3,4]]
+            --
+            -- tails [1 .. 4]
+            -- [[1,2,3,4],[2,3,4],[3,4],[4],[]]
+            --
+            -- tails $ reverse [1 .. 4]
+            -- [[4,3,2,1],[3,2,1],[2,1],[1],[]]
+            --
+            -- drop 1 $ inits [1 .. 4]
+            -- [[1],[1,2],[1,2,3],[1,2,3,4]]
             if null zones then Nothing else Just
             $ lfg zoneToCyl tasks iTask mark0
-            <$> inits fixes
+            <$> (drop 1 $ inits fixes)
     where
         lfg = lastFixToGoal span dpp cseg cs cut
 

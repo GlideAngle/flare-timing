@@ -301,7 +301,9 @@ distanceViaZones span dpp cseg cs cut mkZone speedSection fs zs xs =
         [] ->
             Nothing
 
-        -- TODO: Check all fixes from last turnpoint made.
+        -- NOTE: I don't consider all fixes from last turnpoint made
+        -- so this distance is to distance from the very last fix when
+        -- at times on this leg the pilot may have been closer to goal.
         x : _ ->
             Just . edgesSum $
                 distanceEdgeToEdge span dpp cseg cs cut mm30 (cons x)
@@ -313,6 +315,8 @@ distanceViaZones span dpp cseg cs cut mkZone speedSection fs zs xs =
         ys :: [Bool]
         ys = (/= ZoneMiss) <$> tickedZones fsSpeed zsSpeed (mkZone <$> xs)
 
-        notTicked = unTaskZone <$> drop (length $ takeWhile (== True) ys) zsSpeed
+        numTicked = length $ takeWhile (== True) ys
+
+        notTicked = unTaskZone <$> drop numTicked zsSpeed
 
         cons x = unTrackZone (mkZone x) : notTicked
