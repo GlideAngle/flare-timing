@@ -37,8 +37,8 @@ import Flight.Mask.Internal
     ( ZoneHit(..)
     , TaskZone(..)
     , slice
-    , exitsZone
-    , entersZone
+    , exitsZoneFwd
+    , entersZoneRev
     , fixToPoint
     , isStartExit
     , pickCrossingPredicate
@@ -75,7 +75,7 @@ started span zoneToCyl tasks (IxTask i) Kml.MarkedFixes{fixes} =
                     False
 
                 z : _ ->
-                    let ez = exitsZone span (zoneToCyl z) (fixToPoint <$> fixes)
+                    let ez = exitsZoneFwd span (zoneToCyl z) (fixToPoint <$> fixes)
                     in case ez of
                          ZoneExit _ _ -> True
                          _ -> False
@@ -93,7 +93,7 @@ madeGoal span zoneToCyl tasks (IxTask i) Kml.MarkedFixes{fixes} =
                     False
 
                 z : _ ->
-                    let ez = entersZone span (zoneToCyl z) (fixToPoint <$> fixes)
+                    let ez = entersZoneRev span (zoneToCyl z) (fixToPoint <$> fixes)
                     in case ez of
                          ZoneEntry _ _ -> True
                          _ -> False

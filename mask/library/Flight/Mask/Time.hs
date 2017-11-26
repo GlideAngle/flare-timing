@@ -42,8 +42,8 @@ import Flight.Mask.Internal
     , TaskZone(..)
     , TrackZone(..)
     , slice
-    , exitsZone
-    , entersZone
+    , exitsZoneFwd
+    , entersZoneRev
     , fixToPoint
     , isStartExit
     , pickCrossingPredicate
@@ -133,13 +133,13 @@ durationViaZones span mkZone atTime speedSection _ zs os gs t0 xs =
             where
                 exits' :: (Kml.Fix, (TrackZone _, TrackZone _)) -> Bool
                 exits' (_, (zx, zy)) =
-                    case exitsZone span z0 [zx, zy] of
+                    case exitsZoneFwd span z0 [zx, zy] of
                         ZoneExit _ _ -> True
                         _ -> False
 
                 enters' :: (Kml.Fix, (TrackZone _, TrackZone _)) -> Bool
                 enters' (_, (zx, zy)) =
-                    case entersZone span zN [zx, zy] of
+                    case entersZoneRev span zN [zx, zy] of
                         ZoneEntry _ _ -> True
                         _ -> False
 

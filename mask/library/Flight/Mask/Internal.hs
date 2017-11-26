@@ -24,8 +24,9 @@ module Flight.Mask.Internal
     , TrackZone(..)
     , Ticked(..)
     , slice
-    , exitsZone
-    , entersZone
+    , exitsZoneFwd
+    , entersZoneFwd
+    , entersZoneRev
     , fixToPoint
     , zoneToCylinder
     , isStartExit
@@ -165,8 +166,17 @@ hitZone :: ZoneHit -> CrossingPredicate a
 hitZone hit _ _ = hit
 
 -- | Finds the first pair of points, one outside the zone and the next inside.
-entersZone :: (Real a, Fractional a) => SpanLatLng a -> CrossingPredicate a
-entersZone span z xs =
+-- Searches the fixes in reverse order. This avoids getting a false negative
+-- for the entry test as can occur in some tasks where the zone we're checking
+-- was used earlier in the task or is not separate to an earlier zone.
+entersZoneRev :: (Real a, Fractional a) => SpanLatLng a -> CrossingPredicate a
+entersZoneRev span z xs =
+    exitsZoneFwd span z $ reverse xs
+
+-- | Finds the first pair of points, one outside the zone and the next inside.
+-- Searches the fixes in order.
+entersZoneFwd :: (Real a, Fractional a) => SpanLatLng a -> CrossingPredicate a
+entersZoneFwd span z xs =
     case insideZone span z xs of
         Nothing -> ZoneMiss
         Just j ->
@@ -175,8 +185,9 @@ entersZone span z xs =
                 _ -> ZoneMiss
 
 -- | Finds the first pair of points, one inside the zone and the next outside.
-exitsZone :: (Real a, Fractional a) => SpanLatLng a -> CrossingPredicate a
-exitsZone span z xs =
+-- Searches the fixes in order.
+exitsZoneFwd :: (Real a, Fractional a) => SpanLatLng a -> CrossingPredicate a
+exitsZoneFwd span z xs =
     case outsideZone span z xs of
         Nothing -> ZoneMiss
         Just j ->
@@ -218,22 +229,23 @@ pickCrossingPredicate
     -> Cmp.Task
     -> [CrossingPredicate a]
 pickCrossingPredicate span False Cmp.Task{zones} =
-    const (entersZone span) <$> zones
+    const (entersZoneFwd span) <$> zones
 
 pickCrossingPredicate span True task@Cmp.Task{speedSection, zones} =
     case speedSection of
         Nothing ->
             pickCrossingPredicate span False task
 
-        Just (start, _) ->
+        Just (start, end) ->
             zipWith
                 (\ i _ ->
+                    if i == end then entersZoneRev span else
                     -- NOTE: Any zone before the start is also treated as an
                     -- exit cylinder if the start is an exit cylinder. This
                     -- applies if the start cylinder wholly contains a prior
                     -- zone or is separate to it.
                     -- TODO: Consider overlapping zones before or at start.
-                    if i <= start then exitsZone span else entersZone span)
+                    if i <= start then exitsZoneFwd span else entersZoneFwd span)
                 [1 .. ]
                 zones
 
