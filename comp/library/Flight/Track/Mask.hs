@@ -18,6 +18,7 @@ module Flight.Track.Mask
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import Flight.Pilot (Pilot(..))
+import Flight.Score (PositionAtEss(..))
 
 -- | For each task, the masking for that task.
 newtype Masking =
@@ -31,8 +32,8 @@ data TrackMask =
     TrackMask
         { madeGoal :: Bool
         -- ^ Was goal made.
-        , arrivalRank :: Maybe Int
-        -- ^ Rank arrival time.
+        , arrivalRank :: Maybe PositionAtEss
+        -- ^ Rank of arrival time.
         , timeToGoal :: Maybe Double
         -- ^ How long did this pilot take to complete the course.
         , distanceToGoal :: Maybe Double

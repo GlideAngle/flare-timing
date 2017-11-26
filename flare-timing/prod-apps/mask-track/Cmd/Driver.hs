@@ -73,6 +73,7 @@ import Cmd.Inputs
     , tagMadeGoal, tagArrivalRank
     , readTags
     )
+import Flight.Score (PositionAtEss(..))
 
 driverMain :: IO ()
 driverMain = withCmdArgs drive
@@ -211,7 +212,8 @@ flown tags tasks iTask@(IxTask i) xs p =
         { madeGoal = mg
 
         , arrivalRank =
-            join $ (\f -> f p speedSection' iTask xs) <$> tArrivalRank
+            PositionAtEss . toInteger
+            <$> (join $ (\f -> f p speedSection' iTask xs) <$> tArrivalRank)
 
         , distanceToGoal =
             if mg then Nothing else fromRational . unTaskDistance <$> dg

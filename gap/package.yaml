@@ -13,6 +13,7 @@ library:
   - containers
   - vector
   - statistics
+  - aeson
   source-dirs: library
   exposed-modules:
   - Flight.Score

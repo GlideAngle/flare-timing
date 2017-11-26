@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE PartialTypeSignatures #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
 module Flight.Allot
     ( PilotsAtEss(..)
@@ -27,10 +28,11 @@ import Data.Ratio ((%))
 import Data.List (sort, group)
 import Data.Maybe (fromMaybe)
 import qualified Data.Map.Strict as Map
+import Data.Aeson (ToJSON(..), FromJSON(..))
 import Flight.Ratio (pattern (:%))
 
 newtype PilotsAtEss = PilotsAtEss Integer deriving (Eq, Show)
-newtype PositionAtEss = PositionAtEss Integer deriving (Eq, Show)
+newtype PositionAtEss = PositionAtEss Integer deriving (Eq, Show, ToJSON, FromJSON)
 newtype ArrivalFraction = ArrivalFraction Rational deriving (Eq, Ord, Show)
 
 newtype BestTime = BestTime Rational deriving (Eq, Ord, Show)

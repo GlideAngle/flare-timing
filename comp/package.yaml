@@ -21,6 +21,7 @@ library:
   - bytestring
   - flight-latlng
   - flight-zone
+  - flight-gap
   source-dirs: library
   exposed-modules:
   - Flight.Comp
@@ -53,6 +54,7 @@ tests:
     - bytestring
     - flight-latlng
     - flight-zone
+    - flight-gap
     ghc-options:
     - -rtsopts
     - -threaded
