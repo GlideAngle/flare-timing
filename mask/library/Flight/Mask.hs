@@ -12,6 +12,7 @@ was the distance to goal?
 module Flight.Mask
     ( SigMasking
     , TaskZone
+    , Ticked(..)
     , countFixes
     , checkTracks
     , madeZones
@@ -32,4 +33,4 @@ import Flight.Mask.Tag
 import Flight.Mask.Distance
 import Flight.Mask.Time
 import Flight.Mask.Tracks
-import Flight.Mask.Internal (TaskZone, zoneToCylinder, slice)
+import Flight.Mask.Internal (TaskZone, Ticked(..), zoneToCylinder, slice)

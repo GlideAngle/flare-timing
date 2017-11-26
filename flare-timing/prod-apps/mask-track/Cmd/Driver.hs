@@ -47,6 +47,7 @@ import Flight.Units ()
 import Flight.Mask
     ( SigMasking
     , TaskZone
+    , Ticked(..)
     , checkTracks
     , madeGoal
     , distanceToGoal
@@ -227,11 +228,13 @@ flown tags tasks iTask@(IxTask i) xs p =
 
         dg =
             distanceToGoal
+                noneTicked
                 span dpp cseg cs cut
                 zoneToCyl tasks iTask xs
 
         df =
             distanceFlown
+                noneTicked
                 span dpp cseg cs cut
                 zoneToCyl tasks iTask xs
 
@@ -273,3 +276,6 @@ cut =
 nextCut :: AngleCut Rational -> AngleCut Rational
 nextCut x@AngleCut{sweep} =
     let (Bearing b) = sweep in x{sweep = Bearing $ b /: 2}
+
+noneTicked :: Ticked
+noneTicked = Ticked 0

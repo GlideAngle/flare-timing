@@ -13,6 +13,7 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE PartialTypeSignatures #-}
+
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
 module Flight.Mask.Internal
@@ -21,6 +22,7 @@ module Flight.Mask.Internal
     , CrossingPredicate
     , TaskZone(..)
     , TrackZone(..)
+    , Ticked(..)
     , slice
     , exitsZone
     , entersZone
@@ -75,6 +77,11 @@ import Flight.Task
 
 mm30 :: Fractional a => Tolerance a
 mm30 = Tolerance . fromRational $ 30 % 1000
+
+-- | When working out distances around a course, if I know which zones are
+-- tagged then I can break up the track into legs and assume previous legs are
+-- ticked when working out distance to goal.
+data Ticked = Ticked Int deriving (Eq, Show)
 
 type ZoneIdx = Int
 
@@ -153,6 +160,9 @@ outsideZone :: (Real a, Fractional a)
             -> Maybe Int
 outsideZone span (TaskZone z) =
     List.findIndex (\(TrackZone x) -> separatedZones span [x, z])
+
+hitZone :: ZoneHit -> CrossingPredicate a
+hitZone hit _ _ = hit
 
 -- | Finds the first pair of points, one outside the zone and the next inside.
 entersZone :: (Real a, Fractional a) => SpanLatLng a -> CrossingPredicate a
@@ -257,8 +267,7 @@ distanceToGoal :: (Real b, Fractional b)
                -> IxTask
                -> Kml.MarkedFixes
                -> Maybe (TaskDistance b)
-
--- ^ Nothing indicates no such task or a task with no zones.
+               -- ^ Nothing indicates no such task or a task with no zones.
 distanceToGoal span zoneToCyl dvz tasks (IxTask i) Kml.MarkedFixes{fixes} =
     case tasks ^? element (i - 1) of
         Nothing -> Nothing
@@ -285,7 +294,8 @@ distanceToGoal span zoneToCyl dvz tasks (IxTask i) Kml.MarkedFixes{fixes} =
 -- distance returned is the task distance up to the next zone not made minus the
 -- distance yet to fly to this zone.
 distanceViaZones :: forall a b. (Real b, Fractional b)
-                 => SpanLatLng b
+                 => Ticked
+                 -> SpanLatLng b
                  -> DistancePointToPoint b
                  -> CostSegment b
                  -> CircumSample b
@@ -296,27 +306,37 @@ distanceViaZones :: forall a b. (Real b, Fractional b)
                  -> [TaskZone b]
                  -> [a]
                  -> Maybe (TaskDistance b)
-distanceViaZones span dpp cseg cs cut mkZone speedSection fs zs xs =
+distanceViaZones (Ticked n) span dpp cseg cs cut mkZone speedSection fs zs xs =
     case reverse xs of
         [] ->
             Nothing
 
         -- NOTE: I don't consider all fixes from last turnpoint made
-        -- so this distance is to distance from the very last fix when
+        -- so this distance is the distance from the very last fix when
         -- at times on this leg the pilot may have been closer to goal.
         x : _ ->
-            Just . edgesSum $
-                distanceEdgeToEdge span dpp cseg cs cut mm30 (cons x)
+            let d = distanceEdgeToEdge span dpp cseg cs cut mm30 (cons x)
+            in Just . edgesSum $ d -- $ trace ("DIST: " ++ show d) d
     where
+        -- NOTE: Free pass for zones already ticked.
+        fsTicked = const (hitZone $ ZoneEntry 0 0) <$> [0 .. n]
+
         -- TODO: Don't assume end of speed section is goal.
         zsSpeed = slice speedSection zs
-        fsSpeed = slice speedSection fs
+        fsSpeed = fsTicked ++ (drop n $ slice speedSection fs)
 
         ys :: [Bool]
-        ys = (/= ZoneMiss) <$> tickedZones fsSpeed zsSpeed (mkZone <$> xs)
+        ys = (/= ZoneMiss) <$> tickedZones fsSpeed zsSpeed xs'
 
         numTicked = length $ takeWhile (== True) ys
 
-        notTicked = unTaskZone <$> drop numTicked zsSpeed
+        notTicked = drop numTicked zsSpeed
 
-        cons x = unTrackZone (mkZone x) : notTicked
+        zsNotTicked :: [Zone b]
+        zsNotTicked = unTaskZone <$> notTicked
+
+        xs' :: [TrackZone b]
+        xs' = mkZone <$> xs
+
+        cons :: a -> [Zone b]
+        cons x = unTrackZone (mkZone x) : zsNotTicked

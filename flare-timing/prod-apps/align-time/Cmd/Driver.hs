@@ -46,7 +46,7 @@ import Flight.Comp (CompSettings(..), Pilot(..), Task(..), SpeedSection)
 import Flight.TrackLog (IxTask(..), TrackFileFail)
 import Flight.Units ()
 import Flight.Mask
-    (TaskZone, SigMasking
+    (TaskZone, SigMasking, Ticked(..)
     , checkTracks, groupByLeg, distancesToGoal, zoneToCylinder
     )
 import Flight.Track.Cross (Fix(..))
@@ -229,14 +229,16 @@ legDistances ts tasks iTask leg speedSection xs =
             []
 
         Just (start, end) ->
-            let leg' = fromIntegral leg in
-                if leg' < start || leg' > end then [] else
-                mkTimeRows t0 leg xs'
+            if leg' < start || leg' > end then [] else
+            mkTimeRows t0 leg xs'
+            where
+                ticked = Ticked $ leg - (fromInteger start)
+                xs' = distancesToGoal ticked span dpp cseg cs cut zoneToCyl tasks iTask xs
     where
+        leg' = fromIntegral leg
         t0 = firstCrossing iTask speedSection ts
         dpp = distancePointToPoint
         cseg = costSegment span
-        xs' = distancesToGoal span dpp cseg cs cut zoneToCyl tasks iTask xs
 
 firstCrossing :: IxTask -> SpeedSection -> [[Maybe UTCTime]] -> Maybe UTCTime
 

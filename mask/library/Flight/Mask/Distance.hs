@@ -34,6 +34,7 @@ import Flight.Units ()
 import Flight.Mask.Internal
     ( TaskZone(..)
     , TrackZone(..)
+    , Ticked(..)
     , CrossingPredicate
     , fixToPoint
     , zoneToCylinder
@@ -54,7 +55,8 @@ import Flight.Task
     )
 
 distancesToGoal :: (Real a, Fractional a)
-                => SpanLatLng a
+                => Ticked
+                -> SpanLatLng a
                 -> DistancePointToPoint a
                 -> CostSegment a
                 -> CircumSample a
@@ -66,6 +68,7 @@ distancesToGoal :: (Real a, Fractional a)
                 -> Maybe [(Maybe Fix, Maybe (TaskDistance a))]
                 -- ^ Nothing indicates no such task or a task with no zones.
 distancesToGoal
+    ticked
     span dpp cseg cs cut
     zoneToCyl tasks iTask@(IxTask i) Kml.MarkedFixes{mark0, fixes} =
     case tasks ^? element (i - 1) of
@@ -87,12 +90,13 @@ distancesToGoal
             $ lfg zoneToCyl tasks iTask mark0
             <$> (drop 1 $ inits fixes)
     where
-        lfg = lastFixToGoal span dpp cseg cs cut
+        lfg = lastFixToGoal ticked span dpp cseg cs cut
 
 -- | The distance from the last fix to goal passing through the remaining
 -- control zones.
 lastFixToGoal :: (Real a, Fractional a)
-              => SpanLatLng a
+              => Ticked
+              -> SpanLatLng a
               -> DistancePointToPoint a
               -> CostSegment a
               -> CircumSample a
@@ -104,6 +108,7 @@ lastFixToGoal :: (Real a, Fractional a)
               -> [Kml.Fix]
               -> (Maybe Fix, Maybe (TaskDistance a))
 lastFixToGoal
+    ticked
     span dpp cseg cs cut
     zoneToCyl tasks iTask mark0 ys =
     case reverse ys of
@@ -111,11 +116,12 @@ lastFixToGoal
         (y : _) -> (Just $ fixFromFix mark0 y, d)
     where
         xs = Kml.MarkedFixes { Kml.mark0 = mark0, Kml.fixes = ys }
-        dvz = distanceViaZones span dpp cseg cs cut
+        dvz = distanceViaZones ticked span dpp cseg cs cut
         d = I.distanceToGoal span zoneToCyl dvz tasks iTask xs
 
 distanceToGoal :: (Real a, Fractional a)
-               => SpanLatLng a
+               => Ticked
+               -> SpanLatLng a
                -> DistancePointToPoint a
                -> CostSegment a
                -> CircumSample a
@@ -126,12 +132,16 @@ distanceToGoal :: (Real a, Fractional a)
                -> Kml.MarkedFixes
                -> Maybe (TaskDistance a)
 distanceToGoal
+    ticked
     span dpp cseg cs cut
     zoneToCyl =
-    I.distanceToGoal span zoneToCyl (distanceViaZones span dpp cseg cs cut)
+    I.distanceToGoal span zoneToCyl dvz
+    where
+        dvz = distanceViaZones ticked span dpp cseg cs cut
 
 distanceFlown :: (Real a, Fractional a)
-              => SpanLatLng a
+              => Ticked
+              -> SpanLatLng a
               -> DistancePointToPoint a
               -> CostSegment a
               -> CircumSample a
@@ -142,6 +152,7 @@ distanceFlown :: (Real a, Fractional a)
               -> Kml.MarkedFixes
               -> Maybe (PilotDistance a)
 distanceFlown
+    ticked
     span dpp cseg cs cut
     zoneToCyl tasks (IxTask i) Kml.MarkedFixes{fixes} =
     case tasks ^? element (i - 1) of
@@ -162,6 +173,7 @@ distanceFlown
                 d :: Maybe (TaskDistance _)
                 d =
                     distanceViaZones
+                        ticked
                         span dpp cseg cs cut
                         fixToPoint speedSection fs cyls fixes
 
@@ -189,5 +201,6 @@ distanceFlown
                 zoneToZone (TaskZone x) = TrackZone x
                 total =
                     distanceViaZones
+                        ticked
                         span dpp cseg cs cut
                         zoneToZone speedSection fs zs [z]
