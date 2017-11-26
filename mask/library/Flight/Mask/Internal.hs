@@ -171,7 +171,9 @@ hitZone hit _ _ = hit
 -- was used earlier in the task or is not separate to an earlier zone.
 entersZoneRev :: (Real a, Fractional a) => SpanLatLng a -> CrossingPredicate a
 entersZoneRev span z xs =
-    exitsZoneFwd span z $ reverse xs
+    case exitsZoneFwd span z $ reverse xs of
+        ZoneExit i j -> let len = length xs in ZoneEntry (len - j) (len - i)
+        _ -> ZoneMiss
 
 -- | Finds the first pair of points, one outside the zone and the next inside.
 -- Searches the fixes in order.
