@@ -34,12 +34,16 @@ import qualified Data.ByteString as BS
 import qualified Flight.Comp as Cmp (CompSettings(..), Pilot(..))
 import Flight.TrackLog (TrackFileFail(..), IxTask(..))
 import Flight.Units ()
-import Flight.Mask (TaskZone, SigMasking, checkTracks, madeZones, zoneToCylinder)
 import Flight.Track.Cross (TrackCross(..), PilotTrackCross(..), Crossing(..))
 import Flight.Zone.Raw (RawZone)
 import Flight.Task (SpanLatLng)
 import Flight.PointToPoint.Rational (distanceHaversine)
 import Flight.LatLng.Rational (defEps)
+import Flight.Mask
+    ( TaskZone, SigMasking
+    , unSelectedCrossings, unNomineeCrossings
+    , checkTracks, madeZones, zoneToCylinder
+    )
 
 type MkPart a =
     FilePath
@@ -67,6 +71,8 @@ driverMain = withCmdArgs drive
 cmp :: (Ord a, IsString a) => a -> a -> Ordering
 cmp a b =
     case (a, b) of
+        ("zonesCrossSelected", _) -> LT
+        ("zonesCrossNominees", _) -> GT
         ("time", _) -> LT
         ("lat", "time") -> GT
         ("lat", _) -> LT
@@ -136,8 +142,12 @@ drive CmdOptions{..} = do
                 flown :: SigMasking TrackCross
                 flown tasks iTask xs =
                     TrackCross
-                        { zonesCross = madeZones span zoneToCyl tasks iTask xs
+                        { zonesCrossSelected = unSelectedCrossings selected
+                        , zonesCrossNominees = unNomineeCrossings nominees
                         }
+                    where
+                        (selected, nominees) =
+                            madeZones span zoneToCyl tasks iTask xs
 
 zoneToCyl :: RawZone -> TaskZone Rational
 zoneToCyl = zoneToCylinder

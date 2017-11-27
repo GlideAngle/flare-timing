@@ -13,6 +13,8 @@ module Flight.Mask
     ( SigMasking
     , TaskZone
     , Ticked(..)
+    , SelectedCrossings(..)
+    , NomineeCrossings(..)
     , countFixes
     , checkTracks
     , madeZones

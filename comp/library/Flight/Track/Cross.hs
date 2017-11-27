@@ -35,10 +35,12 @@ instance ToJSON Crossing
 instance FromJSON Crossing
 
 -- | For a single track, the zones crossed.
-newtype TrackCross =
+data TrackCross =
     TrackCross
-        { zonesCross :: [Maybe ZoneCross]
-        -- ^ The cross for each made zone.
+        { zonesCrossSelected :: [Maybe ZoneCross]
+        -- ^ The crossing selected as making the zone, for each zone.
+        , zonesCrossNominees :: [[Maybe ZoneCross]]
+        -- ^ Every crossing of every zone.
         }
    deriving (Show, Generic)
 

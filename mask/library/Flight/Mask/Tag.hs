@@ -12,6 +12,8 @@
 
 module Flight.Mask.Tag
     ( SigMasking
+    , SelectedCrossings(..)
+    , NomineeCrossings(..)
     , countFixes
     , madeZones
     , tagZones
@@ -79,8 +81,11 @@ started span zoneToCyl tasks (IxTask i) Kml.MarkedFixes{fixes} =
                 z : _ ->
                     let ez = exitsZoneFwd span (zoneToCyl z) (fixToPoint <$> fixes)
                     in case ez of
-                         ((ZoneExit _ _) : _) -> True
-                         _ -> False
+                         ((Right (ZoneExit _ _)) : _) ->
+                             True
+
+                         _ ->
+                             False
 
 madeGoal :: (Real a, Fractional a)
          => SpanLatLng a
@@ -97,8 +102,11 @@ madeGoal span zoneToCyl tasks (IxTask i) Kml.MarkedFixes{fixes} =
                 z : _ ->
                     let ez = entersZoneRev span (zoneToCyl z) (fixToPoint <$> fixes)
                     in case ez of
-                         ((ZoneEntry _ _) : _) -> True
-                         _ -> False
+                         ((Left (ZoneEntry _ _)) : _) ->
+                             True
+
+                         _ ->
+                             False
 
 proof :: [Kml.Fix] -> UTCTime -> Int -> Int -> [Bool] -> Maybe ZoneCross
 proof fixes mark0 i j bs = do
@@ -133,20 +141,28 @@ tagZones =
                 ([x, y], [a, b]) -> crossingTag (x, y) (a, b)
                 _ -> Nothing
 
+newtype SelectedCrossings =
+    SelectedCrossings { unSelectedCrossings :: [Maybe ZoneCross] }
+    deriving Show
+
+newtype NomineeCrossings =
+    NomineeCrossings { unNomineeCrossings :: [[Maybe ZoneCross]] }
+    deriving Show
+
 madeZones :: (Real a, Fractional a)
           => SpanLatLng a
           -> (Raw.RawZone -> TaskZone a)
           -> [Cmp.Task]
           -> IxTask
           -> Kml.MarkedFixes
-          -> [Maybe ZoneCross]
+          -> (SelectedCrossings, NomineeCrossings)
 madeZones span zoneToCyl tasks (IxTask i) Kml.MarkedFixes{mark0, fixes} =
     case tasks ^? element (i - 1) of
         Nothing ->
-            []
+            (SelectedCrossings [], NomineeCrossings [])
 
         Just task@Cmp.Task{zones} ->
-            f <$> xs
+            (SelectedCrossings $ f <$> xs, NomineeCrossings $ g <$> xs)
             where
                 fs =
                     (\x ->
@@ -160,9 +176,27 @@ madeZones span zoneToCyl tasks (IxTask i) Kml.MarkedFixes{mark0, fixes} =
                         (fixToPoint <$> fixes)
 
                 f :: [Crossing] -> Maybe ZoneCross
-                f [] = Nothing
-                f ((Right (ZoneExit m n)) : _) = proof fixes mark0 m n [True, False]
-                f ((Left (ZoneEntry m n)) : _) = proof fixes mark0 m n [False, True]
+                f [] =
+                    Nothing
+
+                f ((Right (ZoneExit m n)) : _) =
+                    proof fixes mark0 m n [True, False]
+
+                f ((Left (ZoneEntry m n)) : _) =
+                    proof fixes mark0 m n [False, True]
+
+                g :: [Crossing] -> [Maybe ZoneCross]
+                g [] = []
+
+                g ((Right (ZoneExit m n)) : es) =
+                    p : g es
+                    where
+                        p = proof fixes mark0 m n [True, False]
+
+                g ((Left (ZoneEntry m n)) : es) =
+                    p : g es
+                    where
+                        p = proof fixes mark0 m n [False, True]
 
 fixToUtc :: UTCTime -> Kml.Fix -> UTCTime
 fixToUtc mark0 x =
@@ -181,7 +215,9 @@ groupByLeg span zoneToCyl tasks iTask mf@Kml.MarkedFixes{mark0, fixes} =
     (\zs -> mf{Kml.fixes = zs}) <$> ys
     where
         xs :: [Maybe Fix]
-        xs = tagZones $ madeZones span zoneToCyl tasks iTask mf
+        xs =
+            tagZones . unSelectedCrossings . fst
+            $ madeZones span zoneToCyl tasks iTask mf
 
         ts :: [Maybe UTCTime]
         ts = (fmap . fmap) time xs

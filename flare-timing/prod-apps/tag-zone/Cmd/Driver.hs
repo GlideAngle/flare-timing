@@ -196,7 +196,7 @@ tagTimes (PilotTrackTag _ (Just xs)) =
     Just $ fmap time <$> zonesTag xs
 
 flown :: TrackCross -> TrackTag
-flown TrackCross{zonesCross} =
+flown TrackCross{zonesCrossSelected} =
     TrackTag
-        { zonesTag = tagZones zonesCross
+        { zonesTag = tagZones zonesCrossSelected
         }

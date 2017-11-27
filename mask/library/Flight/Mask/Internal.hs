@@ -27,6 +27,7 @@ module Flight.Mask.Internal
     , Ticked(..)
     , slice
     , exitsZoneFwd
+    , exitsZoneRev
     , entersZoneFwd
     , entersZoneRev
     , fixToPoint
@@ -42,6 +43,7 @@ module Flight.Mask.Internal
 
 import Prelude hiding (span)
 import Data.Time.Clock (UTCTime, addUTCTime)
+import Data.Either (lefts, rights)
 import qualified Data.List as List (findIndex)
 import Data.Ratio ((%))
 import Data.UnitsOfMeasure (u, convert)
@@ -88,8 +90,8 @@ data Ticked = Ticked Int deriving (Eq, Show)
 
 type ZoneIdx = Int
 
-data ZoneEntry = ZoneEntry ZoneIdx ZoneIdx deriving Eq
-data ZoneExit = ZoneExit ZoneIdx ZoneIdx deriving Eq
+data ZoneEntry = ZoneEntry ZoneIdx ZoneIdx deriving (Eq, Show)
+data ZoneExit = ZoneExit ZoneIdx ZoneIdx deriving (Eq, Show)
 type Crossing = Either ZoneEntry ZoneExit
 
 -- | A function that tests whether a flight track, represented as a series of point
@@ -163,25 +165,11 @@ outsideZone span (TaskZone z) =
     List.findIndex (\(TrackZone x) -> separatedZones span [x, z])
 
 -- | Finds the first pair of points, one outside the zone and the next inside.
--- Searches the fixes in reverse order. This avoids getting a false negative
--- for the entry test as can occur in some tasks where the zone we're checking
--- was used earlier in the task or is not separate to an earlier zone.
-entersZoneRev :: (Real a, Fractional a)
-              => SpanLatLng a
-              -> CrossingPredicate a ZoneEntry
-entersZoneRev span z xs =
-    reflect <$> ys
-    where
-        ys = exitsZoneFwd span z $ reverse xs
-        nth = (length xs) - 1
-        reflect (ZoneExit i j) = ZoneEntry (nth - j) (nth - i)
-
--- | Finds the first pair of points, one outside the zone and the next inside.
 -- Searches the fixes in order.
-entersZoneFwd :: (Real a, Fractional a)
-              => SpanLatLng a
-              -> CrossingPredicate a ZoneEntry
-entersZoneFwd span z xs =
+entersZoneFwdSingle :: (Real a, Fractional a)
+                    => SpanLatLng a
+                    -> CrossingPredicate a ZoneEntry
+entersZoneFwdSingle span z xs =
     case insideZone span z xs of
         Nothing -> []
         Just j ->
@@ -189,18 +177,116 @@ entersZoneFwd span z xs =
                 Just 0 -> [ZoneEntry (j - 1) j]
                 _ -> []
 
+-- | Finds the first pair of points, one outside the zone and the next inside.
+-- Searches the fixes in reverse order. This avoids getting a false negative
+-- for the entry test as can occur in some tasks where the zone we're checking
+-- was used earlier in the task or is not separate to an earlier zone.
+entersZoneRevSingle :: (Real a, Fractional a)
+                    => SpanLatLng a
+                    -> CrossingPredicate a ZoneEntry
+entersZoneRevSingle span z xs =
+    reflect <$> ys
+    where
+        ys = exitsZoneFwdSingle span z $ reverse xs
+        nth = (length xs) - 1
+        reflect (ZoneExit i j) = ZoneEntry (nth - j) (nth - i)
+
 -- | Finds the first pair of points, one inside the zone and the next outside.
 -- Searches the fixes in order.
-exitsZoneFwd :: (Real a, Fractional a)
-             => SpanLatLng a
-             -> CrossingPredicate a ZoneExit
-exitsZoneFwd span z xs =
+exitsZoneFwdSingle :: (Real a, Fractional a)
+                   => SpanLatLng a
+                   -> CrossingPredicate a ZoneExit
+exitsZoneFwdSingle span z xs =
     case outsideZone span z xs of
         Nothing -> []
         Just j ->
             case insideZone span z . reverse $ take j xs of
                 Just 0 -> [ZoneExit (j - 1) j]
                 _ -> []
+
+exitsZoneRevSingle :: (Real a, Fractional a)
+                   => SpanLatLng a
+                   -> CrossingPredicate a ZoneExit
+exitsZoneRevSingle span z xs =
+    reflect <$> ys
+    where
+        ys = entersZoneFwdSingle span z $ reverse xs
+        nth = (length xs) - 1
+        reflect (ZoneEntry i j) = ZoneExit (nth - j) (nth - i)
+
+entersZoneFwd :: (Real a, Fractional a)
+              => SpanLatLng a
+              -> CrossingPredicate a Crossing
+entersZoneFwd span z xs = Left <$> (lefts $ entersZoneFwdSeq span z xs)
+
+entersZoneRev :: (Real a, Fractional a)
+              => SpanLatLng a
+              -> CrossingPredicate a Crossing
+entersZoneRev span z xs = Left <$> (lefts $ entersZoneRevSeq span z xs)
+
+exitsZoneFwd :: (Real a, Fractional a)
+             => SpanLatLng a
+             -> CrossingPredicate a Crossing
+exitsZoneFwd span z xs = Right <$> (rights $ exitsZoneFwdSeq span z xs)
+
+exitsZoneRev :: (Real a, Fractional a)
+             => SpanLatLng a
+             -> CrossingPredicate a Crossing
+exitsZoneRev span z xs = Right <$> (rights $ exitsZoneRevSeq span z xs)
+
+-- | Find the sequence of @take _ [exit, entry.., exit, entry]@ going forward.
+exitsZoneFwdSeq :: (Real a, Fractional a)
+                => SpanLatLng a
+                -> CrossingPredicate a Crossing
+exitsZoneFwdSeq span z xs =
+    case exitsZoneFwdSingle span z xs of
+        [] ->
+            []
+
+        (hit@(ZoneExit i _) : _) ->
+            Right hit
+            : (entersZoneFwdSeq span z (drop i xs))
+
+-- | Find the sequence of @take _ [entry, exit, .., entry, exit]@ but instead
+-- of going forward through the track it works backwards.
+entersZoneRevSeq :: (Real a, Fractional a)
+                 => SpanLatLng a
+                 -> CrossingPredicate a Crossing
+entersZoneRevSeq span z xs =
+    case entersZoneRevSingle span z xs of
+        [] ->
+            []
+
+        (hit@(ZoneEntry i _) : _) ->
+            (exitsZoneRevSeq span z (take i xs))
+            ++ [Left hit]
+
+-- | Find the sequence of @take _ [entry, exit, .., entry, exit]@ going forward.
+entersZoneFwdSeq :: (Real a, Fractional a)
+                 => SpanLatLng a
+                 -> CrossingPredicate a Crossing
+entersZoneFwdSeq span z xs =
+    case entersZoneFwdSingle span z xs of
+        [] ->
+            []
+
+        (hit@(ZoneEntry i _) : _) ->
+            Left hit
+            : (exitsZoneFwdSeq span z (drop i xs))
+
+-- | Find the sequence of @take _ [entry, exit, .., entry, exit]@ but instead
+-- of going forward through the track it works backwards.
+exitsZoneRevSeq :: (Real a, Fractional a)
+                 => SpanLatLng a
+                 -> CrossingPredicate a Crossing
+exitsZoneRevSeq span z xs =
+    case exitsZoneRevSingle span z xs of
+        [] ->
+            []
+
+        (hit@(ZoneExit i _) : _) ->
+            (entersZoneRevSeq span z (take i xs))
+            ++ [Right hit]
 
 -- | A start zone is either entry or exit when all other zones are entry.
 -- If I must fly into the start cylinder to reach the next turnpoint then
@@ -235,17 +321,17 @@ pickCrossingPredicate
     -> Bool -- ^ Is the start an exit cylinder?
     -> Cmp.Task
     -> [CrossingPredicate a Crossing]
-pickCrossingPredicate span startIsExit task@Cmp.Task{speedSection, zones} =
+pickCrossingPredicate span startIsExit Cmp.Task{speedSection, zones} =
     zipWith
         (\ i _ ->
-            if (Just i) == end then entersRev span else
+            if (Just i) == end then entersRevCrossing span else
             -- NOTE: Any zone before the start is also treated as an
             -- exit cylinder if the start is an exit cylinder. This
             -- applies if the start cylinder wholly contains a prior
             -- zone or is separate to it.
             -- TODO: Consider overlapping zones before or at start.
-            if i <= start && startIsExit then exitsFwd span
-                                         else entersFwd span)
+            if i <= start && startIsExit then exitsFwdCrossing span
+                                         else entersFwdCrossing span)
         [1 .. ]
         zones
     where
@@ -257,20 +343,23 @@ pickCrossingPredicate span startIsExit task@Cmp.Task{speedSection, zones} =
 hitZone :: _ -> CrossingPredicate a Crossing
 hitZone hit _ _ = [hit]
 
-entersRev :: (Real a, Fractional a)
-          => SpanLatLng a
-          -> CrossingPredicate a Crossing
-entersRev span = \z xs -> Left <$> (entersZoneRev span z xs)
+-- | Same as 'entersZoneRev' but returning a 'CrossingPredicate a Crossing'.
+entersRevCrossing :: (Real a, Fractional a)
+                  => SpanLatLng a
+                  -> CrossingPredicate a Crossing
+entersRevCrossing span = \z xs -> entersZoneRevSeq span z xs
 
-exitsFwd :: (Real a, Fractional a)
-         => SpanLatLng a
-         -> CrossingPredicate a Crossing
-exitsFwd span = \z xs -> Right <$> (exitsZoneFwd span z xs)
+-- | Same as 'exitsZoneFwd' but returning a 'CrossingPredicate a Crossing'.
+exitsFwdCrossing :: (Real a, Fractional a)
+                 => SpanLatLng a
+                 -> CrossingPredicate a Crossing
+exitsFwdCrossing span = \z xs -> exitsZoneFwdSeq span z xs
 
-entersFwd :: (Real a, Fractional a)
-          => SpanLatLng a
-          -> CrossingPredicate a Crossing
-entersFwd span = \z xs -> Left <$> (entersZoneFwd span z xs)
+-- | Same as 'entersZoneFwd' but returning a 'CrossingPredicate a Crossing'.
+entersFwdCrossing :: (Real a, Fractional a)
+                  => SpanLatLng a
+                  -> CrossingPredicate a Crossing
+entersFwdCrossing span = \z xs -> entersZoneFwdSeq span z xs
 
 fixFromFix :: UTCTime -> Kml.Fix -> Fix
 fixFromFix mark0 x =
