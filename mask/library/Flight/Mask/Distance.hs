@@ -162,7 +162,7 @@ distanceFlown
         Just task@Cmp.Task{speedSection, zones} ->
             if null zones then Nothing else go speedSection fs cyls d
             where
-                fs :: [CrossingPredicate _]
+                fs :: [CrossingPredicate _ _]
                 fs =
                     (\x ->
                         let b = isStartExit span zoneToCyl x
@@ -179,7 +179,7 @@ distanceFlown
 
     where
         go :: Cmp.SpeedSection
-           -> [CrossingPredicate _]
+           -> [CrossingPredicate _ _]
            -> [TaskZone _]
            -> Maybe (TaskDistance _)
            -> Maybe (PilotDistance _)

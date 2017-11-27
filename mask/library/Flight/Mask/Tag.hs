@@ -34,7 +34,9 @@ import qualified Flight.Comp as Cmp (Task(..))
 import Flight.TrackLog (IxTask(..))
 import Flight.Units ()
 import Flight.Mask.Internal
-    ( ZoneHit(..)
+    ( ZoneEntry(..)
+    , ZoneExit(..)
+    , Crossing
     , TaskZone(..)
     , slice
     , exitsZoneFwd
@@ -77,7 +79,7 @@ started span zoneToCyl tasks (IxTask i) Kml.MarkedFixes{fixes} =
                 z : _ ->
                     let ez = exitsZoneFwd span (zoneToCyl z) (fixToPoint <$> fixes)
                     in case ez of
-                         ZoneExit _ _ -> True
+                         ((ZoneExit _ _) : _) -> True
                          _ -> False
 
 madeGoal :: (Real a, Fractional a)
@@ -95,7 +97,7 @@ madeGoal span zoneToCyl tasks (IxTask i) Kml.MarkedFixes{fixes} =
                 z : _ ->
                     let ez = entersZoneRev span (zoneToCyl z) (fixToPoint <$> fixes)
                     in case ez of
-                         ZoneEntry _ _ -> True
+                         ((ZoneEntry _ _) : _) -> True
                          _ -> False
 
 proof :: [Kml.Fix] -> UTCTime -> Int -> Int -> [Bool] -> Maybe ZoneCross
@@ -157,10 +159,10 @@ madeZones span zoneToCyl tasks (IxTask i) Kml.MarkedFixes{mark0, fixes} =
                         (zoneToCyl <$> zones)
                         (fixToPoint <$> fixes)
 
-                f :: ZoneHit -> Maybe ZoneCross
-                f ZoneMiss = Nothing
-                f (ZoneExit m n) = proof fixes mark0 m n [True, False]
-                f (ZoneEntry m n) = proof fixes mark0 m n [False, True]
+                f :: [Crossing] -> Maybe ZoneCross
+                f [] = Nothing
+                f ((Right (ZoneExit m n)) : _) = proof fixes mark0 m n [True, False]
+                f ((Left (ZoneEntry m n)) : _) = proof fixes mark0 m n [False, True]
 
 fixToUtc :: UTCTime -> Kml.Fix -> UTCTime
 fixToUtc mark0 x =

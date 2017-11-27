@@ -18,7 +18,9 @@
 
 module Flight.Mask.Internal
     ( ZoneIdx
-    , ZoneHit(..)
+    , ZoneEntry(..)
+    , ZoneExit(..)
+    , Crossing
     , CrossingPredicate
     , TaskZone(..)
     , TrackZone(..)
@@ -86,20 +88,18 @@ data Ticked = Ticked Int deriving (Eq, Show)
 
 type ZoneIdx = Int
 
-data ZoneHit
-    = ZoneMiss
-    | ZoneEntry ZoneIdx ZoneIdx
-    | ZoneExit ZoneIdx ZoneIdx
-    deriving Eq
+data ZoneEntry = ZoneEntry ZoneIdx ZoneIdx deriving Eq
+data ZoneExit = ZoneExit ZoneIdx ZoneIdx deriving Eq
+type Crossing = Either ZoneEntry ZoneExit
 
 -- | A function that tests whether a flight track, represented as a series of point
 -- zones crosses a zone.
-type CrossingPredicate a
+type CrossingPredicate a b
     = TaskZone a
     -- ^ The task control zone.
     -> [TrackZone a]
     -- ^ The flight track represented as a series of point zones.
-    -> ZoneHit
+    -> [b]
 
 -- | A task control zone.
 newtype TaskZone a = TaskZone { unTaskZone :: Zone a }
@@ -162,40 +162,45 @@ outsideZone :: (Real a, Fractional a)
 outsideZone span (TaskZone z) =
     List.findIndex (\(TrackZone x) -> separatedZones span [x, z])
 
-hitZone :: ZoneHit -> CrossingPredicate a
-hitZone hit _ _ = hit
-
 -- | Finds the first pair of points, one outside the zone and the next inside.
 -- Searches the fixes in reverse order. This avoids getting a false negative
 -- for the entry test as can occur in some tasks where the zone we're checking
 -- was used earlier in the task or is not separate to an earlier zone.
-entersZoneRev :: (Real a, Fractional a) => SpanLatLng a -> CrossingPredicate a
+entersZoneRev :: (Real a, Fractional a)
+              => SpanLatLng a
+              -> CrossingPredicate a ZoneEntry
 entersZoneRev span z xs =
-    case exitsZoneFwd span z $ reverse xs of
-        ZoneExit i j -> let nth = (length xs) - 1 in ZoneEntry (nth - j) (nth - i)
-        _ -> ZoneMiss
+    reflect <$> ys
+    where
+        ys = exitsZoneFwd span z $ reverse xs
+        nth = (length xs) - 1
+        reflect (ZoneExit i j) = ZoneEntry (nth - j) (nth - i)
 
 -- | Finds the first pair of points, one outside the zone and the next inside.
 -- Searches the fixes in order.
-entersZoneFwd :: (Real a, Fractional a) => SpanLatLng a -> CrossingPredicate a
+entersZoneFwd :: (Real a, Fractional a)
+              => SpanLatLng a
+              -> CrossingPredicate a ZoneEntry
 entersZoneFwd span z xs =
     case insideZone span z xs of
-        Nothing -> ZoneMiss
+        Nothing -> []
         Just j ->
             case outsideZone span z . reverse $ take j xs of
-                Just 0 -> ZoneEntry (j - 1) j
-                _ -> ZoneMiss
+                Just 0 -> [ZoneEntry (j - 1) j]
+                _ -> []
 
 -- | Finds the first pair of points, one inside the zone and the next outside.
 -- Searches the fixes in order.
-exitsZoneFwd :: (Real a, Fractional a) => SpanLatLng a -> CrossingPredicate a
+exitsZoneFwd :: (Real a, Fractional a)
+             => SpanLatLng a
+             -> CrossingPredicate a ZoneExit
 exitsZoneFwd span z xs =
     case outsideZone span z xs of
-        Nothing -> ZoneMiss
+        Nothing -> []
         Just j ->
             case insideZone span z . reverse $ take j xs of
-                Just 0 -> ZoneExit (j - 1) j
-                _ -> ZoneMiss
+                Just 0 -> [ZoneExit (j - 1) j]
+                _ -> []
 
 -- | A start zone is either entry or exit when all other zones are entry.
 -- If I must fly into the start cylinder to reach the next turnpoint then
@@ -229,27 +234,43 @@ pickCrossingPredicate
     => SpanLatLng a
     -> Bool -- ^ Is the start an exit cylinder?
     -> Cmp.Task
-    -> [CrossingPredicate a]
-pickCrossingPredicate span False Cmp.Task{zones} =
-    const (entersZoneFwd span) <$> zones
+    -> [CrossingPredicate a Crossing]
+pickCrossingPredicate span startIsExit task@Cmp.Task{speedSection, zones} =
+    zipWith
+        (\ i _ ->
+            if (Just i) == end then entersRev span else
+            -- NOTE: Any zone before the start is also treated as an
+            -- exit cylinder if the start is an exit cylinder. This
+            -- applies if the start cylinder wholly contains a prior
+            -- zone or is separate to it.
+            -- TODO: Consider overlapping zones before or at start.
+            if i <= start && startIsExit then exitsFwd span
+                                         else entersFwd span)
+        [1 .. ]
+        zones
+    where
+        (start, end) =
+            case speedSection of
+              Nothing -> (0, Nothing)
+              Just (a, b) -> (a, Just b)
 
-pickCrossingPredicate span True task@Cmp.Task{speedSection, zones} =
-    case speedSection of
-        Nothing ->
-            pickCrossingPredicate span False task
+hitZone :: _ -> CrossingPredicate a Crossing
+hitZone hit _ _ = [hit]
 
-        Just (start, end) ->
-            zipWith
-                (\ i _ ->
-                    if i == end then entersZoneRev span else
-                    -- NOTE: Any zone before the start is also treated as an
-                    -- exit cylinder if the start is an exit cylinder. This
-                    -- applies if the start cylinder wholly contains a prior
-                    -- zone or is separate to it.
-                    -- TODO: Consider overlapping zones before or at start.
-                    if i <= start then exitsZoneFwd span else entersZoneFwd span)
-                [1 .. ]
-                zones
+entersRev :: (Real a, Fractional a)
+          => SpanLatLng a
+          -> CrossingPredicate a Crossing
+entersRev span = \z xs -> Left <$> (entersZoneRev span z xs)
+
+exitsFwd :: (Real a, Fractional a)
+         => SpanLatLng a
+         -> CrossingPredicate a Crossing
+exitsFwd span = \z xs -> Right <$> (exitsZoneFwd span z xs)
+
+entersFwd :: (Real a, Fractional a)
+          => SpanLatLng a
+          -> CrossingPredicate a Crossing
+entersFwd span = \z xs -> Left <$> (entersZoneFwd span z xs)
 
 fixFromFix :: UTCTime -> Kml.Fix -> Fix
 fixFromFix mark0 x =
@@ -263,17 +284,17 @@ fixFromFix mark0 x =
         Kml.Latitude lat = Kml.lat x
         Kml.Longitude lng = Kml.lng x
 
-tickedZones :: [CrossingPredicate a]
+tickedZones :: [CrossingPredicate a b]
             -> [TaskZone a] -- ^ The control zones of the task.
             -> [TrackZone a] -- ^ The flown track.
-            -> [ZoneHit]
+            -> [[b]]
 tickedZones fs zones xs =
     zipWith (\f z -> f z xs) fs zones
 
-type DistanceViaZones a b
+type DistanceViaZones a b c
     = (a -> TrackZone b)
     -> Cmp.SpeedSection
-    -> [CrossingPredicate b]
+    -> [CrossingPredicate b c]
     -> [TaskZone b]
     -> [a]
     -> Maybe (TaskDistance b)
@@ -281,7 +302,7 @@ type DistanceViaZones a b
 distanceToGoal :: (Real b, Fractional b)
                => SpanLatLng b
                -> (Raw.RawZone -> TaskZone b)
-               -> DistanceViaZones _ _
+               -> DistanceViaZones _ _ _
                -> [Cmp.Task]
                -> IxTask
                -> Kml.MarkedFixes
@@ -321,7 +342,7 @@ distanceViaZones :: forall a b. (Real b, Fractional b)
                  -> AngleCut b
                  -> (a -> TrackZone b)
                  -> Cmp.SpeedSection
-                 -> [CrossingPredicate b]
+                 -> [CrossingPredicate b Crossing]
                  -> [TaskZone b]
                  -> [a]
                  -> Maybe (TaskDistance b)
@@ -338,14 +359,14 @@ distanceViaZones (Ticked n) span dpp cseg cs cut mkZone speedSection fs zs xs =
             $ distanceEdgeToEdge span dpp cseg cs cut mm30 (cons x)
     where
         -- NOTE: Free pass for zones already ticked.
-        fsTicked = const (hitZone $ ZoneEntry 0 0) <$> ([0 .. ] :: [Int])
+        fsTicked = const (hitZone . Left $ ZoneEntry 0 0) <$> ([0 .. ] :: [Int])
 
         -- TODO: Don't assume end of speed section is goal.
         zsSpeed = slice speedSection zs
         fsSpeed = (take n fsTicked) ++ (drop n $ slice speedSection fs)
 
         ys :: [Bool]
-        ys = (/= ZoneMiss) <$> tickedZones fsSpeed zsSpeed xs'
+        ys = (not . null) <$> (tickedZones fsSpeed zsSpeed xs')
 
         numTicked = length $ takeWhile (== True) ys
 

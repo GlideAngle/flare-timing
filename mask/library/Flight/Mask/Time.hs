@@ -37,7 +37,9 @@ import Flight.Score as Gap (PilotTime(..))
 import Flight.Units ()
 import Flight.Mask.Tag (madeGoal)
 import Flight.Mask.Internal
-    ( ZoneHit(..)
+    ( ZoneEntry(..)
+    , ZoneExit(..)
+    , Crossing
     , CrossingPredicate
     , TaskZone(..)
     , TrackZone(..)
@@ -80,7 +82,7 @@ timeFlown span zoneToCyl tasks iTask@(IxTask i) xs =
 flownDuration :: (Real a, Fractional a)
               => SpanLatLng a
               -> Cmp.SpeedSection
-              -> [CrossingPredicate a]
+              -> [CrossingPredicate a Crossing]
               -> [TaskZone a]
               -> [Cmp.OpenClose]
               -> [Cmp.StartGate]
@@ -97,7 +99,7 @@ durationViaZones :: (Real a, Fractional a)
                  -> (Kml.Fix -> TrackZone a)
                  -> (Kml.Fix -> Kml.Seconds)
                  -> Cmp.SpeedSection
-                 -> [CrossingPredicate a]
+                 -> [CrossingPredicate a Crossing]
                  -> [TaskZone a]
                  -> [Cmp.OpenClose]
                  -> [Cmp.StartGate]
@@ -134,13 +136,13 @@ durationViaZones span mkZone atTime speedSection _ zs os gs t0 xs =
                 exits' :: (Kml.Fix, (TrackZone _, TrackZone _)) -> Bool
                 exits' (_, (zx, zy)) =
                     case exitsZoneFwd span z0 [zx, zy] of
-                        ZoneExit _ _ -> True
+                        ((ZoneExit _ _) : _) -> True
                         _ -> False
 
                 enters' :: (Kml.Fix, (TrackZone _, TrackZone _)) -> Bool
                 enters' (_, (zx, zy)) =
                     case entersZoneRev span zN [zx, zy] of
-                        ZoneEntry _ _ -> True
+                        ((ZoneEntry _ _) : _) -> True
                         _ -> False
 
                 xz0 :: Maybe (Kml.Fix, (TrackZone _, TrackZone _))
