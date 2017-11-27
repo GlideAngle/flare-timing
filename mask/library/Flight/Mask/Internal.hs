@@ -338,11 +338,11 @@ distanceViaZones (Ticked n) span dpp cseg cs cut mkZone speedSection fs zs xs =
             $ distanceEdgeToEdge span dpp cseg cs cut mm30 (cons x)
     where
         -- NOTE: Free pass for zones already ticked.
-        fsTicked = const (hitZone $ ZoneEntry 0 0) <$> [0 .. n]
+        fsTicked = const (hitZone $ ZoneEntry 0 0) <$> ([0 .. ] :: [Int])
 
         -- TODO: Don't assume end of speed section is goal.
         zsSpeed = slice speedSection zs
-        fsSpeed = fsTicked ++ (drop n $ slice speedSection fs)
+        fsSpeed = (take n fsTicked) ++ (drop n $ slice speedSection fs)
 
         ys :: [Bool]
         ys = (/= ZoneMiss) <$> tickedZones fsSpeed zsSpeed xs'
