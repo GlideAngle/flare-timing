@@ -29,7 +29,6 @@ import Data.Maybe (listToMaybe)
 import Data.List (nub)
 import Data.List.Split (split, whenElt, keepDelimsL)
 import Control.Lens ((^?), element)
-import Control.Monad (join)
 
 import qualified Flight.Kml as Kml
     (Fix, MarkedFixes(..), FixMark(..), Seconds(..))
@@ -165,9 +164,14 @@ madeZones span zoneToCyl tasks (IxTask i) Kml.MarkedFixes{mark0, fixes} =
             (SelectedCrossings [], NomineeCrossings [])
 
         Just task@Cmp.Task{zones} ->
-            (selectCrossings nominees, nominees)
+            (selected, nominees)
             where
                 nominees = NomineeCrossings $ f <$> xs
+
+                selected =
+                    SelectedCrossings
+                    $ selectZoneCross (proveCrossing fixes mark0) <$> xs
+
                 fs =
                     (\x ->
                         let b = isStartExit span zoneToCyl x
@@ -192,9 +196,22 @@ madeZones span zoneToCyl tasks (IxTask i) Kml.MarkedFixes{mark0, fixes} =
                     where
                         p = prove fixes mark0 m n [False, True]
 
-selectCrossings :: NomineeCrossings -> SelectedCrossings
-selectCrossings (NomineeCrossings xs) =
-    SelectedCrossings $ join . listToMaybe . (take 1) <$> xs
+selectZoneCross :: (Crossing -> Maybe ZoneCross) -> [Crossing] -> Maybe ZoneCross
+selectZoneCross prover xs = do
+    x <- selectCrossing xs
+    p <- prover x
+    return p
+
+selectCrossing :: [Crossing] -> Maybe Crossing
+selectCrossing xs =
+    listToMaybe . (take 1) $ xs
+
+proveCrossing :: [Kml.Fix] -> UTCTime -> Crossing -> Maybe ZoneCross
+proveCrossing fixes mark0 (Right (ZoneExit m n)) =
+    prove fixes mark0 m n [True, False]
+
+proveCrossing fixes mark0 (Left (ZoneEntry m n)) =
+    prove fixes mark0 m n [False, True]
 
 fixToUtc :: UTCTime -> Kml.Fix -> UTCTime
 fixToUtc mark0 x =
