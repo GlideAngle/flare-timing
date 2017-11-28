@@ -41,6 +41,7 @@ import Flight.Mask.Internal
     , ZoneExit(..)
     , Crossing
     , TaskZone(..)
+    , OrdCrossing(..)
     , slice
     , exitsZoneFwd
     , entersZoneRev
@@ -168,9 +169,15 @@ madeZones span zoneToCyl tasks (IxTask i) Kml.MarkedFixes{mark0, fixes} =
             where
                 nominees = NomineeCrossings $ f <$> xs
 
+                ys :: [[OrdCrossing]]
+                ys = partitionCrossings ((fmap . fmap) OrdCrossing xs)
+
+                ys' :: [[Crossing]]
+                ys' = (fmap . fmap) unOrdCrossing ys
+
                 selected =
                     SelectedCrossings
-                    $ selectZoneCross (proveCrossing fixes mark0) <$> xs
+                    $ selectZoneCross (proveCrossing fixes mark0) <$> ys'
 
                 fs =
                     (\x ->
@@ -196,15 +203,40 @@ madeZones span zoneToCyl tasks (IxTask i) Kml.MarkedFixes{mark0, fixes} =
                     where
                         p = prove fixes mark0 m n [False, True]
 
-selectZoneCross :: (Crossing -> Maybe ZoneCross) -> [Crossing] -> Maybe ZoneCross
+selectZoneCross :: (Crossing -> Maybe ZoneCross)
+                -> [Crossing]
+                -> Maybe ZoneCross
 selectZoneCross prover xs = do
     x <- selectCrossing xs
     p <- prover x
     return p
 
-selectCrossing :: [Crossing] -> Maybe Crossing
+selectCrossing :: [a] -> Maybe a
 selectCrossing xs =
     listToMaybe . (take 1) $ xs
+
+part :: Ord a => [a] -> [a] -> [a] -> [a]
+part [] ys [] = ys
+part [x] ys [z] = filter (> x) . filter (< z) $ ys
+part [x] ys _ = filter (> x) ys
+part _ ys [z] = filter (< z) ys
+part _ ys _ = ys
+
+-- NOTE: In the following example, goal is crossed multiple times at the start
+-- of the flight. I want to transform a list of lists of crossing fix indices
+-- as shown, removing indices that occur out of sequence.
+-- >>>
+-- > partitionCrossings
+--     [[25], [762], [1810], [3778], [145, 149, 151, 153, 4950, 4960, 4965]]
+--
+-- [[25], [762], [1810], [3778], [4950, 4960, 4965]]
+partitionCrossings :: Ord a => [[a]] -> [[a]]
+partitionCrossings ys =
+    if ys == ys' then ys else partitionCrossings ys'
+    where
+        xs = [] : ys
+        zs = (drop 1 ys) ++ [[]]
+        ys' = zipWith3 part xs ys zs
 
 proveCrossing :: [Kml.Fix] -> UTCTime -> Crossing -> Maybe ZoneCross
 proveCrossing fixes mark0 (Right (ZoneExit m n)) =

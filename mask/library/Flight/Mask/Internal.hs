@@ -25,6 +25,7 @@ module Flight.Mask.Internal
     , TaskZone(..)
     , TrackZone(..)
     , Ticked(..)
+    , OrdCrossing(..)
     , slice
     , exitsZoneFwd
     , exitsZoneRev
@@ -93,6 +94,21 @@ type ZoneIdx = Int
 data ZoneEntry = ZoneEntry ZoneIdx ZoneIdx deriving (Eq, Show)
 data ZoneExit = ZoneExit ZoneIdx ZoneIdx deriving (Eq, Show)
 type Crossing = Either ZoneEntry ZoneExit
+
+newtype OrdCrossing = OrdCrossing { unOrdCrossing :: Crossing }
+
+index :: OrdCrossing -> Int
+index (OrdCrossing (Left (ZoneEntry i _))) = i
+index (OrdCrossing (Right (ZoneExit i _))) = i
+
+instance Eq OrdCrossing where
+    x == y = (index x) == (index y)
+
+instance Ord OrdCrossing where
+    compare x y = compare (index x) (index y)
+
+instance Show OrdCrossing where
+    show (OrdCrossing x) = show x
 
 -- | A function that tests whether a flight track, represented as a series of point
 -- zones crosses a zone.
