@@ -136,7 +136,7 @@ durationViaZones span mkZone atTime speedSection _ zs os gs t0 xs =
                 exits' :: (Kml.Fix, (TrackZone _, TrackZone _)) -> Bool
                 exits' (_, (zx, zy)) =
                     case exitsSeq span z0 [zx, zy] of
-                        ((Right (ZoneExit _ _)) : _) ->
+                        Right (ZoneExit _ _) : _ ->
                             True
 
                         _ ->
@@ -145,7 +145,7 @@ durationViaZones span mkZone atTime speedSection _ zs os gs t0 xs =
                 enters' :: (Kml.Fix, (TrackZone _, TrackZone _)) -> Bool
                 enters' (_, (zx, zy)) =
                     case entersSeq span zN [zx, zy] of
-                        ((Left (ZoneEntry _ _)) : _) ->
+                        Left (ZoneEntry _ _) : _ ->
                             True
 
                         _ ->

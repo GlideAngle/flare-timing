@@ -88,7 +88,7 @@ distancesToGoal
             -- [[1],[1,2],[1,2,3],[1,2,3,4]]
             if null zones then Nothing else Just
             $ lfg zoneToCyl tasks iTask mark0
-            <$> (drop 1 $ inits fixes)
+            <$> drop 1 (inits fixes)
     where
         lfg = lastFixToGoal ticked span dpp cseg cs cut
 

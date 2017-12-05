@@ -41,7 +41,6 @@ module Flight.Mask.Internal
 
 import Prelude hiding (span)
 import Data.Time.Clock (UTCTime, addUTCTime)
-import Data.Maybe (fromMaybe)
 import Data.List (nub, sort)
 import qualified Data.List as List (findIndex)
 import Data.Ratio ((%))
@@ -85,7 +84,7 @@ mm30 = Tolerance . fromRational $ 30 % 1000
 -- | When working out distances around a course, if I know which zones are
 -- tagged then I can break up the track into legs and assume previous legs are
 -- ticked when working out distance to goal.
-data Ticked = Ticked Int deriving (Eq, Show)
+newtype Ticked = Ticked Int deriving (Eq, Show)
 
 type ZoneIdx = Int
 
@@ -100,7 +99,7 @@ index (OrdCrossing (Left (ZoneEntry i _))) = i
 index (OrdCrossing (Right (ZoneExit i _))) = i
 
 instance Eq OrdCrossing where
-    x == y = (index x) == (index y)
+    x == y = index x == index y
 
 instance Ord OrdCrossing where
     compare x y = compare (index x) (index y)
@@ -224,7 +223,7 @@ entersSeq :: (Fractional a, Real a)
           => SpanLatLng a
           -> CrossingPredicate a Crossing
 entersSeq span z xs =
-    unOrdCrossing <$> (nub $ sort ys)
+    unOrdCrossing <$> nub (sort ys)
     where
         ys = OrdCrossing <$> entersFwdSeq span z xs
 
@@ -232,7 +231,7 @@ exitsSeq :: (Fractional a, Real a)
          => SpanLatLng a
          -> CrossingPredicate a Crossing
 exitsSeq span z xs =
-    unOrdCrossing <$> (nub $ sort ys)
+    unOrdCrossing <$> nub (sort ys)
     where
         ys = OrdCrossing <$> exitsFwdSeq span z xs
 
@@ -255,7 +254,7 @@ entersFwdSeq span z xs =
             []
 
         (hit@(ZoneEntry _ j) : _) ->
-            Left hit : (reindex j <$> (exitsFwdSeq span z (drop j xs)))
+            Left hit : (reindex j <$> exitsFwdSeq span z (drop j xs))
 
 -- | Find the sequence of @take _ [exit, entry.., exit, entry]@ going forward.
 exitsFwdSeq :: (Real a, Fractional a)
@@ -267,7 +266,7 @@ exitsFwdSeq span z xs =
             []
 
         (hit@(ZoneExit _ j) : _) ->
-            Right hit : (reindex j <$> (entersFwdSeq span z (drop j xs)))
+            Right hit : (reindex j <$> entersFwdSeq span z (drop j xs))
 
 -- | A start zone is either entry or exit when all other zones are entry.
 -- If I must fly into the start cylinder to reach the next turnpoint then
@@ -311,8 +310,7 @@ pickCrossingPredicate span startIsExit Cmp.Task{speedSection, zones} =
         zones
     where
         start =
-            fromMaybe 0
-            $ fst <$> speedSection
+            maybe 0 fst speedSection
 
 hitZone :: _ -> CrossingPredicate a Crossing
 hitZone hit _ _ = [hit]
@@ -408,10 +406,10 @@ distanceViaZones (Ticked n) span dpp cseg cs cut mkZone speedSection fs zs xs =
 
         -- TODO: Don't assume end of speed section is goal.
         zsSpeed = slice speedSection zs
-        fsSpeed = (take n fsTicked) ++ (drop n $ slice speedSection fs)
+        fsSpeed = take n fsTicked ++ drop n (slice speedSection fs)
 
         ys :: [Bool]
-        ys = (not . null) <$> (tickedZones fsSpeed zsSpeed xs')
+        ys = (not . null) <$> tickedZones fsSpeed zsSpeed xs'
 
         numTicked = length $ takeWhile (== True) ys
 

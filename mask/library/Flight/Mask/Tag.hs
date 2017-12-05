@@ -83,7 +83,7 @@ started span zoneToCyl tasks (IxTask i) Kml.MarkedFixes{fixes} =
                 z : _ ->
                     let ez = exitsSeq span (zoneToCyl z) (fixToPoint <$> fixes)
                     in case ez of
-                         ((Right (ZoneExit _ _)) : _) ->
+                         Right (ZoneExit _ _) : _ ->
                              True
 
                          _ ->
@@ -104,7 +104,7 @@ madeGoal span zoneToCyl tasks (IxTask i) Kml.MarkedFixes{fixes} =
                 z : _ ->
                     let ez = entersSeq span (zoneToCyl z) (fixToPoint <$> fixes)
                     in case ez of
-                         ((Left (ZoneEntry _ _)) : _) ->
+                         Left (ZoneEntry _ _) : _ ->
                              True
 
                          _ ->
@@ -193,12 +193,12 @@ madeZones span zoneToCyl tasks (IxTask i) Kml.MarkedFixes{mark0, fixes} =
                 f :: [Crossing] -> [Maybe ZoneCross]
                 f [] = []
 
-                f ((Right (ZoneExit m n)) : es) =
+                f (Right (ZoneExit m n) : es) =
                     p : f es
                     where
                         p = prove fixes mark0 m n [True, False]
 
-                f ((Left (ZoneEntry m n)) : es) =
+                f (Left (ZoneEntry m n) : es) =
                     p : f es
                     where
                         p = prove fixes mark0 m n [False, True]
@@ -208,12 +208,11 @@ selectZoneCross :: (Crossing -> Maybe ZoneCross)
                 -> Maybe ZoneCross
 selectZoneCross prover xs = do
     x <- selectCrossing xs
-    p <- prover x
-    return p
+    prover x
 
 selectCrossing :: [a] -> Maybe a
-selectCrossing xs =
-    listToMaybe . (take 1) $ xs
+selectCrossing =
+    listToMaybe . take 1
 
 part :: Ord a => [a] -> [a] -> [a] -> [a]
 part [] ys [] = ys
@@ -235,7 +234,7 @@ partitionCrossings ys =
     if ys == ys' then ys else partitionCrossings ys'
     where
         xs = [] : ys
-        zs = (drop 1 ys) ++ [[]]
+        zs = drop 1 ys ++ [[]]
         ys' = zipWith3 part xs ys zs
 
 proveCrossing :: [Kml.Fix] -> UTCTime -> Crossing -> Maybe ZoneCross
