@@ -28,6 +28,7 @@ module Flight.Kml
     , parseLngLatAlt
     , showLatLngAlt
     , showLngLatAlt
+    , showTimeAlt
     , roundTripLatLngAlt
     , formatFloat
     ) where
@@ -87,6 +88,7 @@ import Flight.Types
     , Longitude(..)
     , Altitude(..)
     , mkPosition
+    , showTimeAlt
     )
 
 lexer :: GenTokenParser String u Identity
