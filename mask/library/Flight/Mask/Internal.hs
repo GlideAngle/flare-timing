@@ -256,6 +256,15 @@ exitsSeq span z xs =
     where
         ys = OrdCrossing <$> exitsFwdSeq span z xs
 
+crossFwdSeq :: (Real a, Fractional a)
+             => SpanLatLng a
+             -> CrossingPredicate a Crossing
+crossFwdSeq span z xs =
+    unOrdCrossing <$> (nub . sort $ enters ++ exits)
+    where
+        enters = OrdCrossing <$> entersFwdSeq span z xs
+        exits = OrdCrossing <$> exitsFwdSeq span z xs
+
 -- | Find the sequence of @take _ [entry, exit, .., entry, exit]@ going forward.
 entersFwdSeq :: (Real a, Fractional a)
              => SpanLatLng a
@@ -322,7 +331,7 @@ pickCrossingPredicate span startIsExit Cmp.Task{speedSection, zones} =
             -- zone or is separate to it.
             -- TODO: Consider overlapping zones before or at start.
             if i <= start && startIsExit then exitsFwdSeq span
-                                         else entersFwdSeq span)
+                                         else crossFwdSeq span)
         [1 .. ]
         zones
     where
