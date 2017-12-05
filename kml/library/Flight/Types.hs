@@ -13,6 +13,7 @@ module Flight.Types
     , Altitude(..)
     , MarkedFixes(..)
     , mkPosition
+    , showTimeAlt
     ) where
 
 import Data.Time.Clock (UTCTime)
@@ -53,6 +54,14 @@ data Fix =
 
 instance ToJSON Fix
 instance FromJSON Fix
+
+showTimeAlt :: Fix -> String
+showTimeAlt Fix{fixMark, fix} =
+    "(" ++ show s ++ "s," ++ show a ++ "m)"
+    where
+        Seconds s = fixMark
+        LLA{llaAltGps} = fix
+        Altitude a = llaAltGps
 
 mkPosition :: (Latitude, Longitude, Altitude) -> LLA
 mkPosition (lat', lng', alt') = LLA lat' lng' alt'
