@@ -35,15 +35,12 @@ module Flight.Mask.Internal
     , tickedZones
     , entersSeq
     , exitsSeq
-    , entersOnly
-    , exitsOnly
     , distanceViaZones
     , distanceToGoal
     ) where
 
 import Prelude hiding (span)
 import Data.Time.Clock (UTCTime, addUTCTime)
-import Data.Either (lefts, rights)
 import Data.Maybe (fromMaybe)
 import Data.List (nub, sort)
 import qualified Data.List as List (findIndex)
@@ -222,12 +219,6 @@ reindex n (Right (ZoneExit i j)) =
 
 reindex n (Left (ZoneEntry i j)) =
     Left $ ZoneEntry (i + n) (j + n)
-
-entersOnly :: [Crossing] -> [Crossing]
-entersOnly cs = Left <$> (lefts cs)
-
-exitsOnly :: [Crossing] -> [Crossing]
-exitsOnly cs = Right <$> (rights cs)
 
 entersSeq :: (Fractional a, Real a)
           => SpanLatLng a
