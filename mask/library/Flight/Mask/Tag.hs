@@ -43,13 +43,13 @@ import Flight.Mask.Internal
     , TaskZone(..)
     , OrdCrossing(..)
     , slice
-    , exitsZoneFwd
-    , entersZoneRev
     , fixToPoint
     , isStartExit
     , pickCrossingPredicate
     , fixFromFix
     , tickedZones
+    , entersSeq
+    , exitsSeq
     )
 import qualified Flight.Zone.Raw as Raw (RawZone(..))
 import Flight.Task (SpanLatLng)
@@ -81,7 +81,7 @@ started span zoneToCyl tasks (IxTask i) Kml.MarkedFixes{fixes} =
                     False
 
                 z : _ ->
-                    let ez = exitsZoneFwd span (zoneToCyl z) (fixToPoint <$> fixes)
+                    let ez = exitsSeq span (zoneToCyl z) (fixToPoint <$> fixes)
                     in case ez of
                          ((Right (ZoneExit _ _)) : _) ->
                              True
@@ -102,7 +102,7 @@ madeGoal span zoneToCyl tasks (IxTask i) Kml.MarkedFixes{fixes} =
                     False
 
                 z : _ ->
-                    let ez = entersZoneRev span (zoneToCyl z) (fixToPoint <$> fixes)
+                    let ez = entersSeq span (zoneToCyl z) (fixToPoint <$> fixes)
                     in case ez of
                          ((Left (ZoneEntry _ _)) : _) ->
                              True
