@@ -35,7 +35,6 @@ module Flight.Mask.Internal
     , tickedZones
     , entersSeq
     , exitsSeq
-    , reflect
     , entersOnly
     , exitsOnly
     , distanceViaZones
@@ -224,21 +223,11 @@ reindex n (Right (ZoneExit i j)) =
 reindex n (Left (ZoneEntry i j)) =
     Left $ ZoneEntry (i + n) (j + n)
 
-reflect :: Int -- ^ The length of the track, the number of fixes
-        -> Either ZoneEntry ZoneExit
-        -> Either ZoneEntry ZoneExit
-reflect len (Right (ZoneExit i j)) =
-    let nth = len - 1 in Left $ ZoneEntry (nth - j) (nth - i)
-
-reflect len (Left (ZoneEntry i j)) =
-    let nth = len - 1 in Right $ ZoneExit (nth - j) (nth - i)
-
 entersOnly :: [Crossing] -> [Crossing]
 entersOnly cs = Left <$> (lefts cs)
 
 exitsOnly :: [Crossing] -> [Crossing]
 exitsOnly cs = Right <$> (rights cs)
-
 
 entersSeq :: (Fractional a, Real a)
           => SpanLatLng a
