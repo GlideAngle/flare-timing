@@ -214,6 +214,10 @@ selectCrossing :: [a] -> Maybe a
 selectCrossing =
     listToMaybe . take 1
 
+-- | If I have three sorted lists xs, ys and zs, discard elements of zs that
+-- are less than the first element of xs, then filter ys so that each element
+-- is greater than the first element of xs and less than the first element of
+-- zs.
 part :: Ord a => [a] -> [a] -> [a] -> [a]
 
 part (x : _) ys zs =
