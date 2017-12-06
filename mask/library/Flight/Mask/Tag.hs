@@ -170,7 +170,7 @@ madeZones span zoneToCyl tasks (IxTask i) Kml.MarkedFixes{mark0, fixes} =
                 nominees = NomineeCrossings $ f <$> xs
 
                 ys :: [[OrdCrossing]]
-                ys = partitionCrossings ((fmap . fmap) OrdCrossing xs)
+                ys = trimToOrderCrossing ((fmap . fmap) OrdCrossing xs)
 
                 ys' :: [[Crossing]]
                 ys' = (fmap . fmap) unOrdCrossing ys
@@ -218,9 +218,9 @@ selectCrossing =
 -- are less than the first element of xs, then filter ys so that each element
 -- is greater than the first element of xs and less than the first element of
 -- zs.
-part :: Ord a => [a] -> [a] -> [a] -> [a]
+trimToOrder :: Ord a => [a] -> [a] -> [a] -> [a]
 
-part (x : _) ys zs =
+trimToOrder (x : _) ys zs =
     case zs' of
         [] -> ys'
         (z : _) -> filter (< z) ys'
@@ -228,8 +228,8 @@ part (x : _) ys zs =
         zs' = filter (> x) zs
         ys' = filter (> x) ys
 
-part _ ys (z : _) = filter (< z) ys
-part _ ys _ = ys
+trimToOrder _ ys (z : _) = filter (< z) ys
+trimToOrder _ ys _ = ys
 
 
 -- | Removes elements of the list of lists so that each list only has elements
@@ -276,7 +276,7 @@ part _ ys _ = ys
 --     ]
 --
 -- >>>
--- > partitionCrossings
+-- > trimToOrderCrossing
 --     [ [25,4953,4955]
 --     , [762,872,923,4812]
 --     , [1810,1816]
@@ -285,13 +285,13 @@ part _ ys _ = ys
 --     ]
 --
 -- [[25],[762,872,923],[1810,1816],[3778,3781],[4950,4960,4965]]
-partitionCrossings :: Ord a => [[a]] -> [[a]]
-partitionCrossings ys =
-    if ys == ys' then ys else partitionCrossings ys'
+trimToOrderCrossing :: Ord a => [[a]] -> [[a]]
+trimToOrderCrossing ys =
+    if ys == ys' then ys else trimToOrderCrossing ys'
     where
         xs = [] : ys
         zs = drop 1 ys ++ [[]]
-        ys' = zipWith3 part xs ys zs
+        ys' = zipWith3 trimToOrder xs ys zs
 
 proveCrossing :: [Kml.Fix] -> UTCTime -> Crossing -> Maybe ZoneCross
 proveCrossing fixes mark0 (Right (ZoneExit m n)) =
