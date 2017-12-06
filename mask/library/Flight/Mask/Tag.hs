@@ -215,10 +215,17 @@ selectCrossing =
     listToMaybe . take 1
 
 part :: Ord a => [a] -> [a] -> [a] -> [a]
-part [] ys [] = ys
-part [x] ys [z] = filter (> x) . filter (< z) $ ys
-part [x] ys _ = filter (> x) ys
-part _ ys [z] = filter (< z) ys
+
+part (x : _) ys zs =
+    case zs' of
+        [] -> ys'
+        (z : _) -> filter (< z) ys'
+    where
+        zs' = filter (> x) zs
+        ys' = filter (> x) ys
+
+part (x : _) ys _ = filter (> x) ys
+part _ ys (z : _) = filter (< z) ys
 part _ ys _ = ys
 
 -- NOTE: In the following example, goal is crossed multiple times at the start
