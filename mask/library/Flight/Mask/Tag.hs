@@ -228,18 +228,63 @@ part (x : _) ys zs =
         zs' = filter (> x) zs
         ys' = filter (> x) ys
 
-part (x : _) ys _ = filter (> x) ys
 part _ ys (z : _) = filter (< z) ys
 part _ ys _ = ys
 
--- NOTE: In the following example, goal is crossed multiple times at the start
--- of the flight. I want to transform a list of lists of crossing fix indices
--- as shown, removing indices that occur out of sequence.
+
+-- | Removes elements of the list of lists so that each list only has elements
+-- less than elements of subsequent lists and greater than previous lists.
+--
+-- In the following example, goal is crossed multiple times at the start of the
+-- flight.
+--
+-- [ [ Right (ZoneExit 25 26)
+--   , Left (ZoneEntry 4953 4954)
+--   , Right (ZoneExit 4955 4956)
+--   ]
+-- , [ Right (ZoneExit 762 763)
+--   , Left (ZoneEntry 872 873)
+--   , Right (ZoneExit 923 924)
+--   , Left (ZoneEntry 4812 4813)
+--   ]
+-- , [ Left (ZoneEntry 1810 1811)
+--   , Right (ZoneExit 1816 1817)
+--   ]
+-- , [ Left (ZoneEntry 3778 3779)
+--   , Right (ZoneExit 3781 3782)
+--   ]
+-- , [ Right (ZoneExit 30 31)
+--   , Left (ZoneEntry 66 67)
+--   , Right (ZoneExit 144 145)
+--   , Left (ZoneEntry 145 146)
+--   , Right (ZoneExit 149 150)
+--   , Left (ZoneEntry 151 152)
+--   , Right (ZoneExit 153 154)
+--   , Left (ZoneEntry 4950 4951)
+--   , Right (ZoneExit 4960 4961)
+--   , Left (ZoneEntry 4965 4966)
+--   ]
+-- ]
+--
+-- The above list can be more simply shown as ...
+--
+--     [ [25,4953,4955]
+--     , [762,872,923,4812]
+--     , [1810,1816]
+--     , [3778,3781]
+--     , [30,66,144,145,149,151,153,4950,4960,4965]
+--     ]
+--
 -- >>>
 -- > partitionCrossings
---     [[25], [762], [1810], [3778], [145, 149, 151, 153, 4950, 4960, 4965]]
+--     [ [25,4953,4955]
+--     , [762,872,923,4812]
+--     , [1810,1816]
+--     , [3778,3781]
+--     , [30,66,144,145,149,151,153,4950,4960,4965]
+--     ]
 --
--- [[25], [762], [1810], [3778], [4950, 4960, 4965]]
+-- [[25],[762,872,923],[1810,1816],[3778,3781],[4950,4960,4965]]
 partitionCrossings :: Ord a => [[a]] -> [[a]]
 partitionCrossings ys =
     if ys == ys' then ys else partitionCrossings ys'

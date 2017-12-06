@@ -105,7 +105,7 @@ instance Ord OrdCrossing where
     compare x y = compare (index x) (index y)
 
 instance Show OrdCrossing where
-    show (OrdCrossing x) = show x
+    show x = show $ index x
 
 -- | A function that tests whether a flight track, represented as a series of point
 -- zones crosses a zone.
