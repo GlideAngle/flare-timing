@@ -170,7 +170,7 @@ madeZones span zoneToCyl tasks (IxTask i) Kml.MarkedFixes{mark0, fixes} =
                 nominees = NomineeCrossings $ f <$> xs
 
                 ys :: [[OrdCrossing]]
-                ys = trimToOrderCrossing ((fmap . fmap) OrdCrossing xs)
+                ys = trimOrdLists ((fmap . fmap) OrdCrossing xs)
 
                 ys' :: [[Crossing]]
                 ys' = (fmap . fmap) unOrdCrossing ys
@@ -276,7 +276,7 @@ trimToOrder _ ys _ = ys
 --     ]
 --
 -- >>>
--- > trimToOrderCrossing
+-- > trimOrdLists
 --     [ [25,4953,4955]
 --     , [762,872,923,4812]
 --     , [1810,1816]
@@ -285,9 +285,9 @@ trimToOrder _ ys _ = ys
 --     ]
 --
 -- [[25],[762,872,923],[1810,1816],[3778,3781],[4950,4960,4965]]
-trimToOrderCrossing :: Ord a => [[a]] -> [[a]]
-trimToOrderCrossing ys =
-    if ys == ys' then ys else trimToOrderCrossing ys'
+trimOrdLists :: Ord a => [[a]] -> [[a]]
+trimOrdLists ys =
+    if ys == ys' then ys else trimOrdLists ys'
     where
         xs = [] : ys
         zs = drop 1 ys ++ [[]]
