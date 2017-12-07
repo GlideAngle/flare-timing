@@ -19,6 +19,8 @@
 
 module Cmd.Driver (driverMain) where
 
+import System.Environment (getProgName)
+import System.Console.CmdArgs.Implicit (cmdArgs)
 import Prelude hiding (span)
 import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
@@ -37,8 +39,8 @@ import System.FilePath
     , (</>), (<.>)
     , takeFileName, takeDirectory, replaceExtension, dropExtension
     )
-import Cmd.Args (withCmdArgs)
-import Cmd.Options (CmdOptions(..))
+import Cmd.Args (checkOptions)
+import Cmd.Options (CmdOptions(..), mkOptions)
 import Cmd.Inputs (readTags)
 import Cmd.Outputs (writeTimeRowsToCsv)
 
@@ -73,7 +75,13 @@ headers :: [String]
 headers = ["leg", "time", "lat", "lng", "tick", "distance"]
 
 driverMain :: IO ()
-driverMain = withCmdArgs drive
+driverMain = do
+    name <- getProgName
+    options <- cmdArgs $ mkOptions name
+    err <- checkOptions options
+    case err of
+        Just msg -> putStrLn msg
+        Nothing -> drive options
 
 drive :: CmdOptions -> IO ()
 drive CmdOptions{..} = do
