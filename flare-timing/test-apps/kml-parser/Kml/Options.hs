@@ -1,4 +1,16 @@
-module Kml.Options (KmlOptions(..)) where
+{-# LANGUAGE DeriveDataTypeable #-}
+
+module Kml.Options (KmlOptions(..), mkOptions) where
+
+import System.Console.CmdArgs.Implicit
+    ( Data
+    , Typeable
+    , Default(def)
+    , summary
+    , program
+    , help
+    , (&=)
+    )
 
 -- | Options passed in on the command line.
 data KmlOptions
@@ -7,4 +19,17 @@ data KmlOptions
                  , file :: FilePath
                  -- ^ Picking the competition in this file.
                  }
-    deriving Show
+                 deriving (Show, Data, Typeable)
+
+description :: String
+description = "A parser of KML, the Keyhole Markup Language, an XML format."
+
+mkOptions :: String -> KmlOptions
+mkOptions programName =
+    KmlOptions
+        { dir = def &= help "Over all the KML files in this directory"
+        , file = def &= help "With this one KML file"
+        }
+        &= summary description
+        &= program programName
+

@@ -1,56 +1,17 @@
-{-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module Kml.Args
-    ( Drive(..)
-    , withCmdArgs
-    ) where
+module Kml.Args (withCmdArgs) where
 
 import System.Environment (getProgName)
-import System.Console.CmdArgs.Implicit
-    ( Data
-    , Typeable
-    , Default(def)
-    , summary
-    , program
-    , help
-    , cmdArgs
-    , (&=)
-    )
+import System.Console.CmdArgs.Implicit (cmdArgs)
 import Control.Monad.Except (liftIO, throwError, when, unless)
 import Control.Monad.Trans.Except (runExceptT)
 import System.Directory (doesFileExist, doesDirectoryExist)
-import Kml.Options (KmlOptions(..))
-
-description :: String
-description = "A parser of KML, the Keyhole Markup Language, an XML format."
-
-data Drive
-    = Drive { dir :: String
-            , file :: String
-            }
-    deriving (Show, Data, Typeable)
-
-drive :: String -> Drive
-drive programName =
-    Drive { dir = def &= help "Over all the KML files in this directory"
-          , file = def &= help "With this one KML file"
-          }
-          &= summary description
-          &= program programName
-
-run :: IO Drive
-run = do
-    s <- getProgName
-    cmdArgs $ drive s
-
-cmdArgsToDriveArgs :: Drive -> Maybe KmlOptions
-cmdArgsToDriveArgs Drive{ dir = d, file = f } =
-    return KmlOptions { dir = d, file = f }
+import Kml.Options (KmlOptions(..), mkOptions)
 
 -- SEE: http://stackoverflow.com/questions/2138819/in-haskell-is-there-a-way-to-do-io-in-a-function-guard
-checkedOptions :: KmlOptions -> IO (Maybe String)
-checkedOptions KmlOptions{..} = do
+checkOptions :: KmlOptions -> IO (Maybe String)
+checkOptions KmlOptions{..} = do
     x <- runExceptT $ do
         when (dir == "" && file == "") (throwError "No --dir or --file argument")
 
@@ -63,11 +24,9 @@ checkedOptions KmlOptions{..} = do
 
 withCmdArgs :: (KmlOptions -> IO ()) -> IO ()
 withCmdArgs f = do
-    ca <- run
-    case cmdArgsToDriveArgs ca of
-        Nothing -> putStrLn "Couldn't parse args."
-        Just o -> do
-            checked <- checkedOptions o
-            case checked of
-                Just s -> putStrLn s
-                Nothing -> f o
+    name <- getProgName
+    options <- cmdArgs $ mkOptions name
+    checked <- checkOptions options
+    case checked of
+        Just s -> putStrLn s
+        Nothing -> f options
