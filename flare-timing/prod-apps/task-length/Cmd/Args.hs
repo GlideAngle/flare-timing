@@ -31,9 +31,7 @@ import Cmd.Options (CmdOptions(..))
 import Flight.TaskTrack (TaskDistanceMeasure(..))
 
 description :: String
-description = intro
-    where
-        intro = [r|
+description = [r|
 Works out the task length by following an optimal route.
 
 Where 'c' is the comp name and '.' is the folder with competition inputs;
