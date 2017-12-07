@@ -74,8 +74,23 @@ forbesUnits = testGroup "Forbes 2011/2012 distances"
 --       inZone:
 --       - false
 --       - true
+-- WARNING: These crossings are not correct.
+--    Task 8 Start Zone Crossings
+--      dy1: OK
+--      dz1: FAIL
+--        expected: 9130.415376819852 >= 10000.0
+--      dy2: OK
+--      dz2: FAIL
+--        expected: 8672.454824999486 >= 10000.0
+--      dy3: OK
+--      dz3: FAIL
+--        expected: 8755.758636224386 >= 10000.0
+--      dy3: FAIL
+--        expected: 10024.583036013202 <= 10000.0
+--      dz3: FAIL
+--        expected: 9967.425162678801 >= 10000.0
 day8CrossingUnits :: TestTree
-day8CrossingUnits = testGroup "Task 8 Zone Crossings"
+day8CrossingUnits = testGroup "Task 8 Start Zone Crossings"
     [ HU.testCase "dy1" $ unQuantity dy1 @?<= r
     , HU.testCase "dz1" $ unQuantity dz1 @?>= r
 
