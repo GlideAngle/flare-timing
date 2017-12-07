@@ -41,7 +41,6 @@ library
     , mtl
     , hcoord
     , siggy-chardust
-    , tasty-compare
     , flight-units
     , flight-latlng
     , flight-zone
