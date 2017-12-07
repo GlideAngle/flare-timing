@@ -19,6 +19,8 @@
 
 module Cmd.Driver (driverMain) where
 
+import System.Environment (getProgName)
+import System.Console.CmdArgs.Implicit (cmdArgs)
 import Prelude hiding (span)
 import Data.Maybe (fromMaybe)
 import Formatting ((%), fprint)
@@ -66,8 +68,8 @@ import Flight.Task (SpanLatLng, CircumSample, AngleCut(..))
 import Flight.PointToPoint.Rational
     (distanceHaversine, distancePointToPoint, costSegment)
 import Flight.Cylinder.Rational (circumSample)
-import Cmd.Args (withCmdArgs)
-import Cmd.Options (CmdOptions(..))
+import Cmd.Args (checkOptions)
+import Cmd.Options (CmdOptions(..), mkOptions)
 import Cmd.Inputs
     ( MadeGoal(..), ArrivalRank(..)
     , tagMadeGoal, tagArrivalRank
@@ -76,7 +78,13 @@ import Cmd.Inputs
 import Flight.Score (PositionAtEss(..))
 
 driverMain :: IO ()
-driverMain = withCmdArgs drive
+driverMain = do
+    name <- getProgName
+    options <- cmdArgs $ mkOptions name
+    err <- checkOptions options
+    case err of
+        Just msg -> putStrLn msg
+        Nothing -> drive options
 
 cmp :: (Ord a, IsString a) => a -> a -> Ordering
 cmp a b =
