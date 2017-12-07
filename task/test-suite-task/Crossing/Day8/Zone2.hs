@@ -87,8 +87,8 @@ units = testGroup "Task 8 Zone 2 Crossings"
     , HU.testCase "dy3" $ unQuantity dy3 @?<= r
     , HU.testCase "dz3" $ unQuantity dz3 @?>= r
 
-    , HU.testCase "dy3" $ unQuantity dy4 @?>= r
-    , HU.testCase "dz3" $ unQuantity dz4 @?<= r
+    , HU.testCase "dy4" $ unQuantity dy4 @?>= r
+    , HU.testCase "dz4" $ unQuantity dz4 @?<= r
     ]
     where
         -- FORBES

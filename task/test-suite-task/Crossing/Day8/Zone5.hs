@@ -131,29 +131,29 @@ units = testGroup "Task 8 Zone 5 Crossings"
     , HU.testCase "dy2" $ unQuantity dy2 @?>= r
     , HU.testCase "dz2" $ unQuantity dz2 @?<= r
 
-    , HU.testCase "dy1" $ unQuantity dy3 @?<= r
-    , HU.testCase "dz1" $ unQuantity dz3 @?>= r
+    , HU.testCase "dy3" $ unQuantity dy3 @?<= r
+    , HU.testCase "dz3" $ unQuantity dz3 @?>= r
 
-    , HU.testCase "dy2" $ unQuantity dy4 @?>= r
-    , HU.testCase "dz2" $ unQuantity dz4 @?<= r
+    , HU.testCase "dy4" $ unQuantity dy4 @?>= r
+    , HU.testCase "dz4" $ unQuantity dz4 @?<= r
 
-    , HU.testCase "dy1" $ unQuantity dy5 @?<= r
-    , HU.testCase "dz1" $ unQuantity dz5 @?>= r
+    , HU.testCase "dy5" $ unQuantity dy5 @?<= r
+    , HU.testCase "dz5" $ unQuantity dz5 @?>= r
 
-    , HU.testCase "dy2" $ unQuantity dy6 @?>= r
-    , HU.testCase "dz2" $ unQuantity dz6 @?<= r
+    , HU.testCase "dy6" $ unQuantity dy6 @?>= r
+    , HU.testCase "dz6" $ unQuantity dz6 @?<= r
 
-    , HU.testCase "dy1" $ unQuantity dy7 @?<= r
-    , HU.testCase "dz1" $ unQuantity dz7 @?>= r
+    , HU.testCase "dy7" $ unQuantity dy7 @?<= r
+    , HU.testCase "dz7" $ unQuantity dz7 @?>= r
 
-    , HU.testCase "dy2" $ unQuantity dy8 @?>= r
-    , HU.testCase "dz2" $ unQuantity dz8 @?<= r
+    , HU.testCase "dy8" $ unQuantity dy8 @?>= r
+    , HU.testCase "dz8" $ unQuantity dz8 @?<= r
 
-    , HU.testCase "dy1" $ unQuantity dy9 @?<= r
-    , HU.testCase "dz1" $ unQuantity dz9 @?>= r
+    , HU.testCase "dy9" $ unQuantity dy9 @?<= r
+    , HU.testCase "dz9" $ unQuantity dz9 @?>= r
 
-    , HU.testCase "dy2" $ unQuantity dy10 @?>= r
-    , HU.testCase "dz2" $ unQuantity dz10 @?<= r
+    , HU.testCase "dy10" $ unQuantity dy10 @?>= r
+    , HU.testCase "dz10" $ unQuantity dz10 @?<= r
     ]
     where
         -- DAY8GO
@@ -206,26 +206,26 @@ units = testGroup "Task 8 Zone 5 Crossings"
         (TaskDistance dy2) = Dbl.distanceHaversine x y2
         (TaskDistance dz2) = Dbl.distanceHaversine x z2
 
-        (TaskDistance dy3) = Dbl.distanceHaversine x y1
-        (TaskDistance dz3) = Dbl.distanceHaversine x z1
+        (TaskDistance dy3) = Dbl.distanceHaversine x y3
+        (TaskDistance dz3) = Dbl.distanceHaversine x z3
 
-        (TaskDistance dy4) = Dbl.distanceHaversine x y2
-        (TaskDistance dz4) = Dbl.distanceHaversine x z2
+        (TaskDistance dy4) = Dbl.distanceHaversine x y4
+        (TaskDistance dz4) = Dbl.distanceHaversine x z4
 
-        (TaskDistance dy5) = Dbl.distanceHaversine x y1
-        (TaskDistance dz5) = Dbl.distanceHaversine x z1
+        (TaskDistance dy5) = Dbl.distanceHaversine x y5
+        (TaskDistance dz5) = Dbl.distanceHaversine x z5
 
-        (TaskDistance dy6) = Dbl.distanceHaversine x y2
-        (TaskDistance dz6) = Dbl.distanceHaversine x z2
+        (TaskDistance dy6) = Dbl.distanceHaversine x y6
+        (TaskDistance dz6) = Dbl.distanceHaversine x z6
 
-        (TaskDistance dy7) = Dbl.distanceHaversine x y1
-        (TaskDistance dz7) = Dbl.distanceHaversine x z1
+        (TaskDistance dy7) = Dbl.distanceHaversine x y7
+        (TaskDistance dz7) = Dbl.distanceHaversine x z7
 
-        (TaskDistance dy8) = Dbl.distanceHaversine x y2
-        (TaskDistance dz8) = Dbl.distanceHaversine x z2
+        (TaskDistance dy8) = Dbl.distanceHaversine x y8
+        (TaskDistance dz8) = Dbl.distanceHaversine x z8
 
-        (TaskDistance dy9) = Dbl.distanceHaversine x y1
-        (TaskDistance dz9) = Dbl.distanceHaversine x z1
+        (TaskDistance dy9) = Dbl.distanceHaversine x y9
+        (TaskDistance dz9) = Dbl.distanceHaversine x z9
 
-        (TaskDistance dy10) = Dbl.distanceHaversine x y2
-        (TaskDistance dz10) = Dbl.distanceHaversine x z2
+        (TaskDistance dy10) = Dbl.distanceHaversine x y10
+        (TaskDistance dz10) = Dbl.distanceHaversine x z10
