@@ -3,6 +3,8 @@
 
 module Cmd.Driver (driverMain) where
 
+import System.Environment (getProgName)
+import System.Console.CmdArgs.Implicit (cmdArgs)
 import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
@@ -12,8 +14,8 @@ import Control.Monad.Except (runExceptT)
 import System.Directory (doesFileExist, doesDirectoryExist)
 import System.FilePath.Find (FileType(..), (==?), (&&?), find, always, fileType, extension)
 import System.FilePath (FilePath, takeFileName, replaceExtension, dropExtension)
-import Cmd.Args (withCmdArgs)
-import Cmd.Options (CmdOptions(..))
+import Cmd.Args (checkOptions)
+import Cmd.Options (CmdOptions(..), mkOptions)
 import Cmd.Settings (readCompSettings)
 import qualified Data.Yaml.Pretty as Y
 import qualified Data.ByteString as BS
@@ -25,7 +27,14 @@ import qualified Flight.TaskTrack as TZ
     (TaskTrack(..), TaskRoutes(..))
 
 driverMain :: IO ()
-driverMain = withCmdArgs drive
+driverMain = do
+    name <- getProgName
+    options <- cmdArgs $ mkOptions name
+    err <- checkOptions options
+    case err of
+        Just msg -> putStrLn msg
+        Nothing -> drive options
+
 
 cmp :: (Ord a, IsString a) => a -> a -> Ordering
 cmp a b =
