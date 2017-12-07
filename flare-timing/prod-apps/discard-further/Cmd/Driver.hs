@@ -11,6 +11,8 @@
 
 module Cmd.Driver (driverMain) where
 
+import System.Environment (getProgName)
+import System.Console.CmdArgs.Implicit (cmdArgs)
 import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
@@ -27,8 +29,8 @@ import System.FilePath
 import Data.Vector (Vector)
 import qualified Data.Vector as V (fromList, toList)
 
-import Cmd.Args (withCmdArgs)
-import Cmd.Options (CmdOptions(..))
+import Cmd.Args (checkOptions)
+import Cmd.Options (CmdOptions(..), mkOptions)
 import Cmd.Inputs (readTimeRowsFromCsv)
 import Cmd.Outputs (writeTimeRowsToCsv)
 
@@ -42,7 +44,13 @@ headers :: [String]
 headers = ["tick", "distance"]
 
 driverMain :: IO ()
-driverMain = withCmdArgs drive
+driverMain = do
+    name <- getProgName
+    options <- cmdArgs $ mkOptions name
+    err <- checkOptions options
+    case err of
+        Just msg -> putStrLn msg
+        Nothing -> drive options
 
 drive :: CmdOptions -> IO ()
 drive CmdOptions{..} = do
