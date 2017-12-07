@@ -52,8 +52,8 @@ cmdArgsToDriveArgs Drive{ dir = d, file = f } =
     return IgcOptions { dir = d, file = f }
 
 -- SEE: http://stackoverflow.com/questions/2138819/in-haskell-is-there-a-way-to-do-io-in-a-function-guard
-checkedOptions :: IgcOptions -> IO (Either String IgcOptions)
-checkedOptions o@IgcOptions{..} = do
+checkedOptions :: IgcOptions -> IO (Maybe String)
+checkedOptions IgcOptions{..} = do
     x <- runExceptT $ do
         when (dir == "" && file == "") (throwError "No --dir or --file argument")
 
@@ -61,19 +61,16 @@ checkedOptions o@IgcOptions{..} = do
         dde <- liftIO $ doesDirectoryExist dir
         unless (dfe || dde) (throwError
                "The --dir argument is not a directory or the --file argument is not a file")
-    case x of
-         Left s -> return $ Left s
-         Right _ -> return $ Right o
+
+    return $ either Just (const Nothing) x
 
 withCmdArgs :: (IgcOptions -> IO ()) -> IO ()
 withCmdArgs f = do
     ca <- run
-    print ca
     case cmdArgsToDriveArgs ca of
         Nothing -> putStrLn "Couldn't parse args."
         Just o -> do
-            print o
             checked <- checkedOptions o
             case checked of
-                Left s -> putStrLn s
-                Right co -> f co
+                Just s -> putStrLn s
+                Nothing -> f o
