@@ -4,6 +4,8 @@
 
 module Cmd.Driver (driverMain) where
 
+import System.Environment (getProgName)
+import System.Console.CmdArgs.Implicit (cmdArgs)
 import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
@@ -15,8 +17,8 @@ import System.FilePath (replaceExtension)
 import System.FilePath.Find
     (FileType(..), (==?), (&&?), find, always, fileType, extension)
 
-import Cmd.Args (withCmdArgs)
-import Cmd.Options (CmdOptions(..))
+import Cmd.Args (checkOptions)
+import Cmd.Options (CmdOptions(..), mkOptions)
 import Flight.Fsdb
     (parseComp, parseNominal, parseTasks, parseTaskFolders, parseTracks)
 import qualified Data.Yaml.Pretty as Y
@@ -31,7 +33,13 @@ import Flight.Comp
     )
 
 driverMain :: IO ()
-driverMain = withCmdArgs drive
+driverMain = do
+    name <- getProgName
+    options <- cmdArgs $ mkOptions name
+    err <- checkOptions options
+    case err of
+        Just msg -> putStrLn msg
+        Nothing -> drive options
 
 drive :: CmdOptions -> IO ()
 drive CmdOptions{..} = do
