@@ -3,13 +3,15 @@
 
 module Cmd.Driver (driverMain) where
 
+import System.Environment (getProgName)
+import System.Console.CmdArgs.Implicit (cmdArgs)
 import Control.Monad (mapM_, when)
 import System.Directory (doesFileExist, doesDirectoryExist)
 import System.FilePath (takeFileName)
 import System.FilePath.Find (FileType(..), (==?), (&&?), find, always, fileType, extension)
 
-import Cmd.Args (withCmdArgs)
-import Cmd.Options (CmdOptions(..), Detail(..))
+import Cmd.Args (checkOptions)
+import Cmd.Options (FsdbOptions(..), Detail(..), mkOptions)
 import Flight.Fsdb
     ( parseComp
     , parseNominal
@@ -21,7 +23,13 @@ import Flight.Fsdb
 import Flight.Comp (Pilot(..), PilotTrackLogFile(..), showTask)
 
 driverMain :: IO ()
-driverMain = withCmdArgs drive
+driverMain = do
+    name <- getProgName
+    options <- cmdArgs $ mkOptions name
+    err <- checkOptions options
+    case err of
+        Just msg -> putStrLn msg
+        Nothing -> drive options
 
 showTaskPilots :: [ (Int, [ Pilot ]) ] -> [ String ]
 showTaskPilots [] = [ "No tasks." ]
@@ -43,8 +51,8 @@ showPilotTracks [] = "No pilots."
 showPilotTracks tasks =
     unlines $ showTaskPilotTracks (zip [ 1 .. ] tasks) 
 
-drive :: CmdOptions -> IO ()
-drive CmdOptions{..} = do
+drive :: FsdbOptions -> IO ()
+drive FsdbOptions{..} = do
     dfe <- doesFileExist file
     if dfe then
         go file

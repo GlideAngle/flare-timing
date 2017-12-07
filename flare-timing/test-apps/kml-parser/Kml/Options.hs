@@ -32,4 +32,3 @@ mkOptions programName =
         }
         &= summary description
         &= program programName
-

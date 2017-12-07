@@ -1,20 +1,32 @@
 {-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE QuasiQuotes #-}
 
-module Cmd.Options (CmdOptions(..), Detail(..)) where
+module Cmd.Options (FsdbOptions(..), Detail(..), mkOptions) where
 
-import System.Console.CmdArgs.Implicit (Data)
+import Text.RawString.QQ (r)
+import System.Console.CmdArgs.Implicit
+    ( Data
+    , Typeable
+    , Default(def)
+    , summary
+    , program
+    , groupname
+    , typ
+    , help
+    , (&=)
+    )
 
 -- | Options passed in on the command line.
-data CmdOptions
-    = CmdOptions { dir :: FilePath
-                 -- ^ Picking all competition in this directory.
-                 , file :: FilePath
-                 -- ^ Picking the competition in this file.
-                 , detail :: [Detail]
-                 -- ^ What details to show. If none supplied then all are
-                 -- shown.
-                 }
-    deriving Show
+data FsdbOptions
+    = FsdbOptions { dir :: FilePath
+                  -- ^ Picking all competition in this directory.
+                  , file :: FilePath
+                  -- ^ Picking the competition in this file.
+                  , detail :: [Detail]
+                  -- ^ What details to show. If none supplied then all are
+                  -- shown.
+                  }
+                  deriving (Show, Data, Typeable)
 
 -- | Extract these details from the flight database XML file.
 data Detail
@@ -32,3 +44,39 @@ data Detail
     | PilotTracks
     -- ^ The location of flown track logs, for each pilot flying each task.
     deriving (Data, Eq, Show)
+
+description :: String -> String
+description programName =
+    intro ++ programName ++ about
+    where
+        intro =
+            [r|
+Commission Internationale de Vol Libre (CIVL - Hang Gliding and Paragliding
+Commission) is an Air Sport Commission (ASC) of the Fédération Internationale
+Aéronautique (FAI). CIVL produce FS, the official software for scoring hang
+gliding and paragliding competitions. FSDB is the database of FS, an XML format
+for inputs, working and outputs of scoring.
+|]
+
+        about =
+            [r| is a parser for a subset of the FSDB, just enough to cover the inputs of scoring.
+|]
+
+mkOptions :: String -> FsdbOptions
+mkOptions programName =
+    FsdbOptions
+        { dir = def
+        &= help "Over all the FSDB files in this directory"
+        &= groupname "Source"
+
+        , file = def
+        &= help "With this one FSDB file"
+        &= groupname "Source"
+
+        , detail = def
+        &= help "Focus on these details"
+        &= typ "tasks | nominals"
+        &= groupname "Filter"
+        }
+        &= summary (description programName)
+        &= program programName
