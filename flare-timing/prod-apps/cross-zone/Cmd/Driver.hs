@@ -16,6 +16,8 @@
 
 module Cmd.Driver (driverMain) where
 
+import System.Environment (getProgName)
+import System.Console.CmdArgs.Implicit (cmdArgs)
 import Prelude hiding (span)
 import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
@@ -26,8 +28,8 @@ import Control.Monad.Except (ExceptT(..), runExceptT)
 import System.Directory (doesFileExist, doesDirectoryExist)
 import System.FilePath.Find (FileType(..), (==?), (&&?), find, always, fileType, extension)
 import System.FilePath (FilePath, takeFileName, replaceExtension, dropExtension)
-import Cmd.Args (withCmdArgs)
-import Cmd.Options (CmdOptions(..))
+import Cmd.Args (checkOptions)
+import Cmd.Options (CmdOptions(..), mkOptions)
 import qualified Data.Yaml.Pretty as Y
 import qualified Data.ByteString as BS
 
@@ -66,7 +68,13 @@ type MkCrossingTrackIO a =
     -> IO ()
 
 driverMain :: IO ()
-driverMain = withCmdArgs drive
+driverMain = do
+    name <- getProgName
+    options <- cmdArgs $ mkOptions name
+    err <- checkOptions options
+    case err of
+        Just msg -> putStrLn msg
+        Nothing -> drive options
 
 cmp :: (Ord a, IsString a) => a -> a -> Ordering
 cmp a b =
