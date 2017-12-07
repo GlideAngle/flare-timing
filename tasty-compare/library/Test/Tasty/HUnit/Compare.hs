@@ -21,22 +21,13 @@ assertCompare
 assertCompare preface compare key actual =
     unless (actual `compare` key) (assertFailure msg)
     where
-        cmp =
-            if key `compare` key
-                then
-                    if (succ key) `compare` key
-                        then " >= "
-                        else
-                            if (pred key) `compare` key
-                                then " <= "
-                                else " == "
-                else
-                    if (succ key) `compare` key
-                        then " > "
-                        else
-                            if (pred key) `compare` key
-                            then " < "
-                            else " == "
+        cmp
+            | key `compare` key =
+              if succ key `compare` key then " >= " else
+                if pred key `compare` key then " <= " else " == "
+            | succ key `compare` key = " > "
+            | pred key `compare` key = " < "
+            | otherwise = " == "
 
         msg =
             (if null preface then "" else preface ++ "\n") ++
