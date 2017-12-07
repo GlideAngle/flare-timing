@@ -35,7 +35,6 @@ driverMain = do
         Just msg -> putStrLn msg
         Nothing -> drive options
 
-
 cmp :: (Ord a, IsString a) => a -> a -> Ordering
 cmp a b =
     case (a, b) of
