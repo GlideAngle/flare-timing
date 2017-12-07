@@ -3,12 +3,14 @@
 
 module Igc.Driver (driverMain) where
 
+import System.Environment (getProgName)
+import System.Console.CmdArgs.Implicit (cmdArgs)
 import Control.Monad (mapM_)
 import System.Directory (doesFileExist, doesDirectoryExist)
 import System.FilePath (takeFileName)
 import System.FilePath.Find (FileType(..), find, always, fileType, (==?))
-import Igc.Args (withCmdArgs)
-import Igc.Options (IgcOptions(..))
+import Igc.Args (checkOptions)
+import Igc.Options (IgcOptions(..), mkOptions)
 import Flight.Igc (parseFromFile)
 
 drive :: IgcOptions -> IO ()
@@ -32,4 +34,10 @@ drive IgcOptions{..} = do
                  Right p' -> print p'
 
 driverMain :: IO ()
-driverMain = withCmdArgs drive
+driverMain = do
+    name <- getProgName
+    options <- cmdArgs $ mkOptions name
+    err <- checkOptions options
+    case err of
+        Just msg -> putStrLn msg
+        Nothing -> drive options
