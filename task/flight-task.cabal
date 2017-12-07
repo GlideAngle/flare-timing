@@ -161,7 +161,12 @@ test-suite task
       Flight.TaskTrack.Double
       Flight.TaskTrack.Internal
       Flight.TaskTrack.Rational
-      Cylinder
+      Crossing
+      Crossing.Day8.Zone1
+      Crossing.Day8.Zone2
+      Crossing.Day8.Zone3
+      Crossing.Day8.Zone4
+      Crossing.Day8.Zone5
       EdgeToEdge
       TestNewtypes
       Zone

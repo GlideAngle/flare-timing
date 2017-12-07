@@ -11,7 +11,7 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
-module Cylinder (cylinderUnits) where
+module Crossing.Day8.Zone2 (units) where
 
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit as HU (testCase)
@@ -22,17 +22,6 @@ import qualified Flight.PointToPoint.Double as Dbl (distanceHaversine)
 import Flight.Units ()
 import Flight.Task (TaskDistance(..))
 import EdgeToEdge (toLatLngDbl)
-
-cylinderUnits :: TestTree
-cylinderUnits = testGroup "Zone edge shortest path unit tests"
-    [ forbesUnits
-    ]
-
-
-forbesUnits :: TestTree
-forbesUnits = testGroup "Forbes 2011/2012 distances"
-    [ day8CrossingUnits
-    ]
 
 --  - - crossingPair:
 --       - time: 2012-01-14T03:18:20Z
@@ -75,36 +64,34 @@ forbesUnits = testGroup "Forbes 2011/2012 distances"
 --       - false
 --       - true
 -- WARNING: These crossings are not correct.
---    Task 8 Start Zone Crossings
---      dy1: OK
---      dz1: FAIL
---        expected: 9130.415376819852 >= 10000.0
---      dy2: OK
---      dz2: FAIL
---        expected: 8672.454824999486 >= 10000.0
---      dy3: OK
---      dz3: FAIL
---        expected: 8755.758636224386 >= 10000.0
---      dy3: FAIL
---        expected: 10024.583036013202 <= 10000.0
---      dz3: FAIL
---        expected: 9967.425162678801 >= 10000.0
-day8CrossingUnits :: TestTree
-day8CrossingUnits = testGroup "Task 8 Start Zone Crossings"
+--        Task 8 Zone 2 Crossings
+--          dy1: OK
+--          dz1: FAIL
+--            expected: 9130.415376819852 >= 10000.0
+--          dy2: FAIL
+--            expected: 8733.743165923857 >= 10000.0
+--          dz2: OK
+--          dy3: OK
+--          dz3: FAIL
+--            expected: 8755.758636224386 >= 10000.0
+--          dy3: OK
+--          dz3: OK
+units :: TestTree
+units = testGroup "Task 8 Zone 2 Crossings"
     [ HU.testCase "dy1" $ unQuantity dy1 @?<= r
     , HU.testCase "dz1" $ unQuantity dz1 @?>= r
 
-    , HU.testCase "dy2" $ unQuantity dy2 @?<= r
-    , HU.testCase "dz2" $ unQuantity dz2 @?>= r
+    , HU.testCase "dy2" $ unQuantity dy2 @?>= r
+    , HU.testCase "dz2" $ unQuantity dz2 @?<= r
 
     , HU.testCase "dy3" $ unQuantity dy3 @?<= r
     , HU.testCase "dz3" $ unQuantity dz3 @?>= r
 
-    , HU.testCase "dy3" $ unQuantity dy4 @?<= r
-    , HU.testCase "dz3" $ unQuantity dz4 @?>= r
-
+    , HU.testCase "dy3" $ unQuantity dy4 @?>= r
+    , HU.testCase "dz3" $ unQuantity dz4 @?<= r
     ]
     where
+        -- FORBES
         r = unQuantity [u| 10000m |]
         x = toLatLngDbl (negate 33.36137, 147.93207)
 
