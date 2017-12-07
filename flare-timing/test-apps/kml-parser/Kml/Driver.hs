@@ -3,12 +3,14 @@
 
 module Kml.Driver (driverMain) where
 
+import System.Environment (getProgName)
+import System.Console.CmdArgs.Implicit (cmdArgs)
 import Control.Monad (mapM_)
 import System.Directory (doesFileExist, doesDirectoryExist)
 import System.FilePath (takeFileName)
 import System.FilePath.Find (FileType(..), (==?), (&&?), find, always, fileType, extension)
-import Kml.Args (withCmdArgs)
-import Kml.Options (KmlOptions(..))
+import Kml.Args (checkOptions)
+import Kml.Options (KmlOptions(..), mkOptions)
 import Flight.Kml (parse)
 
 drive :: KmlOptions -> IO ()
@@ -34,4 +36,10 @@ drive KmlOptions{..} = do
                  Right p' -> print p'
 
 driverMain :: IO ()
-driverMain = withCmdArgs drive
+driverMain = do
+    name <- getProgName
+    options <- cmdArgs $ mkOptions name
+    err <- checkOptions options
+    case err of
+        Just msg -> putStrLn msg
+        Nothing -> drive options
