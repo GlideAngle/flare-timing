@@ -231,7 +231,6 @@ trimToOrder (x : _) ys zs =
 trimToOrder _ ys (z : _) = filter (< z) ys
 trimToOrder _ ys _ = ys
 
-
 -- | Removes elements of the list of lists so that each list only has elements
 -- less than elements of subsequent lists and greater than previous lists.
 --

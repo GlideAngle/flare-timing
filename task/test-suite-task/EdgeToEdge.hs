@@ -11,7 +11,7 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
-module EdgeToEdge (edgeToEdgeUnits) where
+module EdgeToEdge (edgeToEdgeUnits, toLatLngDbl) where
 
 import Prelude hiding (span)
 import Data.Ratio((%))
@@ -160,6 +160,16 @@ circumSampleUnits = testGroup "Points just within the zone"
             @?= [] 
         ]
     ]
+
+-- | The input pair is in degrees while the output is in radians.
+toLatLngDbl :: (Double, Double) -> LatLng Double [u| rad |]
+toLatLngDbl (lat, lng) =
+    LatLng (Lat lat'', Lng lng'')
+        where
+            lat' = (MkQuantity lat) :: Quantity Double [u| deg |]
+            lng' = (MkQuantity lng) :: Quantity Double [u| deg |]
+            lat'' = convert lat' :: Quantity Double [u| rad |]
+            lng'' = convert lng' :: Quantity Double [u| rad |]
 
 -- | The input pair is in degrees while the output is in radians.
 toLL :: (Double, Double) -> LatLng Rational [u| rad |]

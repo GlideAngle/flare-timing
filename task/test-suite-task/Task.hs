@@ -6,6 +6,7 @@ import Test.Tasty.QuickCheck as QC
 
 import Zone
 import EdgeToEdge
+import Cylinder
 
 main :: IO ()
 main = defaultMain tests
@@ -26,6 +27,7 @@ units :: TestTree
 units = testGroup "Units"
         [ zoneUnits
         , edgeToEdgeUnits
+        , cylinderUnits
         ]
 
 scProps :: TestTree

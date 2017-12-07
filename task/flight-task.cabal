@@ -41,6 +41,7 @@ library
     , mtl
     , hcoord
     , siggy-chardust
+    , tasty-compare
     , flight-units
     , flight-latlng
     , flight-zone
@@ -87,6 +88,7 @@ test-suite hlint
     , mtl
     , hcoord
     , siggy-chardust
+    , tasty-compare
     , flight-units
     , flight-latlng
     , flight-zone
@@ -130,6 +132,7 @@ test-suite task
     , mtl
     , hcoord
     , siggy-chardust
+    , tasty-compare
     , flight-units
     , flight-latlng
     , flight-zone
@@ -158,6 +161,7 @@ test-suite task
       Flight.TaskTrack.Double
       Flight.TaskTrack.Internal
       Flight.TaskTrack.Rational
+      Cylinder
       EdgeToEdge
       TestNewtypes
       Zone
