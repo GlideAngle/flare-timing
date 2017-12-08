@@ -13,6 +13,8 @@ packages:
   extra-dep: true
 - location: ../kml
   extra-dep: true
+- location: ../gap
+  extra-dep: true
 - location:
     git: https://github.com/adamgundry/uom-plugin.git
     commit: 107fdd7bcdb22e2afef5d868e7b902f49690dd30
