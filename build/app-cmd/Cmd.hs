@@ -95,9 +95,23 @@ lintRules = do
 
     phony "lint" $ need
         $ "lint-build"
+        : "siggy-chardust"
+        : "tasty-compare"
         : "lint-flare-timing"
         : "lint-www"
         : (prefix "lint-" <$> lintPkgs)
+
+    phony "lint-siggy-chardust" $
+        cmd
+            (Cwd "siggy-chardust")
+            Shell
+            (cmdTestFor "siggy-chardust:hlint")
+
+    phony "lint-tasty-compare" $
+        cmd
+            (Cwd "tasty-compare")
+            Shell
+            (cmdTestFor "tasty-compare:hlint")
 
     phony "lint-build" $
         cmd
