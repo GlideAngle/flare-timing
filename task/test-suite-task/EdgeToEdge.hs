@@ -166,8 +166,8 @@ toLatLngDbl :: (Double, Double) -> LatLng Double [u| rad |]
 toLatLngDbl (lat, lng) =
     LatLng (Lat lat'', Lng lng'')
         where
-            lat' = (MkQuantity lat) :: Quantity Double [u| deg |]
-            lng' = (MkQuantity lng) :: Quantity Double [u| deg |]
+            lat' = MkQuantity lat :: Quantity Double [u| deg |]
+            lng' = MkQuantity lng :: Quantity Double [u| deg |]
             lat'' = convert lat' :: Quantity Double [u| rad |]
             lng'' = convert lng' :: Quantity Double [u| rad |]
 
