@@ -240,7 +240,7 @@ legDistances ts tasks iTask leg speedSection xs =
             if leg' < start || leg' > end then [] else
             mkTimeRows t0 leg xs'
             where
-                ticked = Ticked $ leg - (fromInteger start)
+                ticked = Ticked $ leg - fromInteger start
                 xs' = distancesToGoal ticked span dpp cseg cs cut zoneToCyl tasks iTask xs
     where
         leg' = fromIntegral leg

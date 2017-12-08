@@ -51,7 +51,7 @@ madeGoal :: Tagging
          -> Maybe Bool
 madeGoal _ _ Nothing _ _ = Nothing
 madeGoal x pilot speedSection (IxTask i) _ =
-    case (tagging x) ^? element (fromIntegral i - 1) of
+    case tagging x ^? element (fromIntegral i - 1) of
         Nothing -> Nothing
         Just xs ->
             join
@@ -75,7 +75,7 @@ arrivalRank :: Tagging
             -> Maybe Int
 arrivalRank _ _ Nothing _ _ = Nothing
 arrivalRank x pilot speedSection (IxTask i) _ =
-    case (timing x) ^? element (fromIntegral i - 1) of
+    case timing x ^? element (fromIntegral i - 1) of
         Nothing -> Nothing
         Just TrackTime{..} -> arrivalRankPilot pilot speedSection zonesRankPilot
 

@@ -212,7 +212,7 @@ check :: Either String Tagging
               ]
           ]
 check tags = checkTracks $ \Cmp.CompSettings{tasks} ->
-    (flown tags) tasks
+    flown tags tasks
 
 flown :: Either String Tagging -> SigMasking (Pilot -> TM.TrackMask)
 flown tags tasks iTask@(IxTask i) xs p =
@@ -221,7 +221,7 @@ flown tags tasks iTask@(IxTask i) xs p =
 
         , arrivalRank =
             PositionAtEss . toInteger
-            <$> (join $ (\f -> f p speedSection' iTask xs) <$> tArrivalRank)
+            <$> join ((\f -> f p speedSection' iTask xs) <$> tArrivalRank)
 
         , distanceToGoal =
             if mg then Nothing else fromRational . unTaskDistance <$> dg
