@@ -66,13 +66,13 @@ distanceHaversine x y =
         radDist :: Quantity _ One
         radDist = mk $ 2 * asin (sqrt $ aOfHaversine x y)
 
--- | One way of measuring task distance is going point-to-point through each control
--- zone's center along the course from start to goal. This is not used by CIVL
--- but sometimes task distance will be reported this way.
+-- | One way of measuring task distance is going point-to-point through each
+-- control zone's center along the course from start to goal. This is not used
+-- by CIVL but sometimes task distance will be reported this way.
 --
--- The speed section  usually goes from start exit cylinder to goal cylinder
--- or to goal line. The optimal way to fly this in a zig-zagging course will
--- avoid zone centers for a shorter flown distance.
+-- The speed section  usually goes from start exit cylinder to goal cylinder or
+-- to goal line. The optimal way to fly this in a zig-zagging course will avoid
+-- zone centers for a shorter flown distance.
 distancePointToPoint :: Real a
                      => SpanLatLng a
                      -> [Zone a]
