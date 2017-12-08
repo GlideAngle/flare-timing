@@ -25,14 +25,20 @@ import Flight.Distance (TaskDistance(..), PathDistance(..))
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..), earthRadius)
 
 boundingBoxSeparated :: (Num a, Ord a, Fractional a)
-                     => Quantity a [u| m |]
-                     -> LatLng a [u| rad |]
-                     -> LatLng a [u| rad |]
+                     => Zone a
+                     -> Zone a
                      -> Bool
-boundingBoxSeparated
-    r'
-    (LatLng (xLLx, xLLy))
-    (LatLng (Lat yLat, Lng yLng)) =
+boundingBoxSeparated (Point xLL) (Cylinder (Radius ry) yLL) =
+    boxSeparated (ry, yLL) xLL
+boundingBoxSeparated _ _ = False
+
+boxSeparated :: (Num a, Ord a, Fractional a)
+             => (Quantity a [u| m |], LatLng a [u| rad |])
+             -> LatLng a [u| rad |]
+             -> Bool
+boxSeparated
+    (r', (LatLng (Lat yLat, Lng yLng)))
+    (LatLng (xLLx, xLLy)) =
         xLo || xHi || yLo || yHi
     where
         -- NOTE: Use *: recip' instead of /: to avoid needing a
@@ -41,13 +47,13 @@ boundingBoxSeparated
         r = (r' *: recip' earthRadius) *: [u| 1 rad |]
 
         xLo :: Bool
-        xLo = xLat' < MkQuantity 0
+        xLo = xLat' < MkQuantity (negate 1) 
 
         xHi :: Bool
         xHi = xLat' > MkQuantity 1
 
         yLo :: Bool
-        yLo = xLng' < MkQuantity 0
+        yLo = xLng' < MkQuantity (negate 1) 
 
         yHi :: Bool
         yHi = xLng' > MkQuantity 1
@@ -95,9 +101,9 @@ separated span x y@(Point _) =
 
 separated
     span
-    x@(Point xLL)
-    y@(Cylinder r yLL) =
-    boundingBoxSeparated ry xLL yLL || d > ry
+    x@(Point _)
+    y@(Cylinder r _) =
+    boundingBoxSeparated x y || d > ry
     where
         (Radius ry) = r
         (TaskDistance d) = edgesSum $ distancePointToPoint span [x, y]
