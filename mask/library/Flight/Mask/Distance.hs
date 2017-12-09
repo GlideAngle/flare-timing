@@ -39,7 +39,7 @@ import Flight.Mask.Internal
     , fixToPoint
     , zoneToCylinder
     , isStartExit
-    , pickCrossingPredicate
+    , crossingPredicates
     , fixFromFix
     , distanceViaZones
     )
@@ -166,7 +166,7 @@ distanceFlown
                 fs =
                     (\x ->
                         let b = isStartExit span zoneToCyl x
-                        in pickCrossingPredicate span b x) task
+                        in crossingPredicates span b x) task
 
                 cyls = zoneToCylinder <$> zones
 

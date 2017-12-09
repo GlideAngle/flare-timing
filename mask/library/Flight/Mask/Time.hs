@@ -48,7 +48,7 @@ import Flight.Mask.Internal
     , exitsSeq
     , fixToPoint
     , isStartExit
-    , pickCrossingPredicate
+    , crossingPredicates
     )
 import qualified Flight.Zone.Raw as Raw (RawZone(..))
 import Flight.Task (SpanLatLng)
@@ -72,7 +72,7 @@ timeFlown span zoneToCyl tasks iTask@(IxTask i) xs =
                 fs =
                     (\x ->
                         let b = isStartExit span zoneToCyl x
-                        in pickCrossingPredicate span b x) task
+                        in crossingPredicates span b x) task
 
                 cs = zoneToCyl <$> zones
 

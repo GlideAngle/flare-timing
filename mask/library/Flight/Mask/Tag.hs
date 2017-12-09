@@ -25,7 +25,6 @@ module Flight.Mask.Tag
 
 import Prelude hiding (span)
 import Data.Time.Clock (UTCTime, addUTCTime)
-import Data.Maybe (listToMaybe)
 import Data.List (nub)
 import Data.List.Split (split, whenElt, keepDelimsL)
 import Control.Lens ((^?), element)
@@ -45,7 +44,8 @@ import Flight.Mask.Internal
     , slice
     , fixToPoint
     , isStartExit
-    , pickCrossingPredicate
+    , crossingPredicates
+    , crossingSelectors
     , fixFromFix
     , tickedZones
     , entersSeq
@@ -175,14 +175,22 @@ madeZones span zoneToCyl tasks (IxTask i) Kml.MarkedFixes{mark0, fixes} =
                 ys' :: [[Crossing]]
                 ys' = (fmap . fmap) unOrdCrossing ys
 
+                selectors :: [[Crossing] -> Maybe Crossing]
+                selectors =
+                    (\x ->
+                        let b = isStartExit span zoneToCyl x
+                        in crossingSelectors b x) task
+
+                prover = proveCrossing fixes mark0
+
                 selected =
                     SelectedCrossings
-                    $ selectZoneCross (proveCrossing fixes mark0) <$> ys'
+                    $ zipWith (\s y -> selectZoneCross prover s y) selectors ys'
 
                 fs =
                     (\x ->
                         let b = isStartExit span zoneToCyl x
-                        in pickCrossingPredicate span b x) task
+                        in crossingPredicates span b x) task
 
                 xs =
                     tickedZones
@@ -204,15 +212,12 @@ madeZones span zoneToCyl tasks (IxTask i) Kml.MarkedFixes{mark0, fixes} =
                         p = prove fixes mark0 m n [False, True]
 
 selectZoneCross :: (Crossing -> Maybe ZoneCross)
+                -> ([Crossing] -> Maybe Crossing)
                 -> [Crossing]
                 -> Maybe ZoneCross
-selectZoneCross prover xs = do
+selectZoneCross prover selectCrossing xs = do
     x <- selectCrossing xs
     prover x
-
-selectCrossing :: [a] -> Maybe a
-selectCrossing =
-    listToMaybe . take 1
 
 -- | If I have three sorted lists xs, ys and zs, discard elements of xs that
 -- are greater than the first element of zs, then filter ys so that each

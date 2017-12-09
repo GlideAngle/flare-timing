@@ -30,7 +30,8 @@ module Flight.Mask.Internal
     , fixToPoint
     , zoneToCylinder
     , isStartExit
-    , pickCrossingPredicate
+    , crossingPredicates
+    , crossingSelectors
     , fixFromFix
     , tickedZones
     , entersSeq
@@ -41,6 +42,7 @@ module Flight.Mask.Internal
 
 import Prelude hiding (span)
 import Data.Time.Clock (UTCTime, addUTCTime)
+import Data.Maybe (listToMaybe)
 import Data.List (nub, sort)
 import qualified Data.List as List (findIndex)
 import Data.Ratio ((%))
@@ -297,14 +299,34 @@ isStartExit span zoneToCyl Cmp.Task{speedSection, zones} =
 -- 148.505133,-32.764317,0 148.505133,-32.764317,0 148.505133,-32.764317,0 148.505133,-32.764317,0 148.505133,-32.764317,0 
 -- 148.505133,-32.764317,0 148.505133,-32.764317,0 148.505133,-32.764317,0 148.505133,-32.764317,0 148.505133,-32.764317,0 
 -- 148.505133,-32.764317,0 147.913967,-33.363200,448 147.913883,-33.363433,448 147.913817,-33.363633,448 147.913400,-33.364217,448 
-pickCrossingPredicate
+crossingPredicates
     :: (Real a, Fractional a)
     => SpanLatLng a
     -> Bool -- ^ Is the start an exit cylinder?
     -> Cmp.Task
     -> [CrossingPredicate a Crossing]
-pickCrossingPredicate span _ Cmp.Task{zones} =
+crossingPredicates span _ Cmp.Task{zones} =
     const (crossSeq span) <$> zones
+
+crossingSelectors :: Bool -- ^ Is the start an exit cylinder?
+                  -> Cmp.Task
+                  -> [[a] -> Maybe a]
+crossingSelectors startIsExit Cmp.Task{speedSection, zones} =
+    zipWith
+        (\ i _ ->
+            if i == start && startIsExit then selectLast
+                                         else selectFirst)
+        [1 .. ]
+        zones
+    where
+        start =
+            maybe 0 fst speedSection
+
+selectFirst :: [a] -> Maybe a
+selectFirst = listToMaybe . take 1
+
+selectLast :: [a] -> Maybe a
+selectLast xs = listToMaybe . take 1 $ reverse xs
 
 hitZone :: _ -> CrossingPredicate a Crossing
 hitZone hit _ _ = [hit]
@@ -359,7 +381,7 @@ distanceToGoal span zoneToCyl dvz tasks (IxTask i) Kml.MarkedFixes{fixes} =
             where
                 fs =
                     (\x ->
-                        pickCrossingPredicate
+                        crossingPredicates
                             span
                             (isStartExit span zoneToCyl x)
                             x)
