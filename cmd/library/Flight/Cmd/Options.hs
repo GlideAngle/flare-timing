@@ -6,6 +6,7 @@ module Flight.Cmd.Options
     , ProgramName(..)
     , Description(..)
     , Extension(..)
+    , Math(..)
     , mkOptions
     ) where
 
@@ -22,6 +23,12 @@ import System.Console.CmdArgs.Implicit
     , help
     , (&=)
     )
+
+data Math = Rational | Floating deriving (Eq, Data, Typeable, Show)
+
+instance Default Math where
+    def = Floating
+
 -- | Options passed in on the command line.
 data CmdOptions
     = CmdOptions { dir :: FilePath
@@ -32,6 +39,8 @@ data CmdOptions
                  -- ^ Include only these tasks.
                  , pilot :: [String]
                  -- ^ Look only at these pilots
+                 , math :: Math
+                 -- ^ The kind of numbers to do math with?
                  }
                  deriving (Data, Typeable, Show)
 
@@ -61,6 +70,13 @@ mkOptions (ProgramName programName) (Description description) ext =
         &= typ "PILOT NAME"
         &= opt "name"
         &= groupname "Filter"
+
+        , math = def
+        &= help "Do math with which kind of numbers?"
+        &= typ "rational|floating"
+        &= opt "name"
+        &= groupname "Precision"
+
         }
         &= summary description
         &= program programName

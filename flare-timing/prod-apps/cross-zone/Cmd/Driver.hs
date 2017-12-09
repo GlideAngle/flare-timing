@@ -29,21 +29,23 @@ import System.Directory (doesFileExist, doesDirectoryExist)
 import System.FilePath.Find (FileType(..), (==?), (&&?), find, always, fileType, extension)
 import System.FilePath (FilePath, takeFileName, replaceExtension, dropExtension)
 import Flight.Cmd.Paths (checkPaths)
-import Flight.Cmd.Options (CmdOptions(..), ProgramName(..), mkOptions)
+import Flight.Cmd.Options (Math(..), CmdOptions(..), ProgramName(..), mkOptions)
 import Cmd.Options (description)
 import qualified Data.Yaml.Pretty as Y
 import qualified Data.ByteString as BS
 
-import qualified Flight.Comp as Cmp (CompSettings(..), Pilot(..))
+import qualified Flight.Comp as Cmp (Task(..), CompSettings(..), Pilot(..))
+import Flight.Kml (MarkedFixes)
 import Flight.TrackLog (TrackFileFail(..), IxTask(..))
 import Flight.Units ()
 import Flight.Track.Cross (TrackCross(..), PilotTrackCross(..), Crossing(..))
 import Flight.Zone.Raw (RawZone)
 import Flight.Task (SpanLatLng)
-import Flight.PointToPoint.Rational (distanceHaversine)
+import qualified Flight.PointToPoint.Rational as Rat (distanceHaversine)
+import qualified Flight.PointToPoint.Double as Dbl (distanceHaversine)
 import Flight.LatLng.Rational (defEps)
 import Flight.Mask
-    ( TaskZone, SigMasking
+    ( TaskZone, SigMasking, SelectedCrossings, NomineeCrossings
     , unSelectedCrossings, unNomineeCrossings
     , checkTracks, madeZones, zoneToCylinder
     )
@@ -156,10 +158,31 @@ drive CmdOptions{..} = do
                         }
                     where
                         (selected, nominees) =
-                            madeZones span zoneToCyl tasks iTask xs
+                            (if math == Rational then madeZonesR else madeZonesF)
+                                tasks iTask xs
 
-zoneToCyl :: RawZone -> TaskZone Rational
-zoneToCyl = zoneToCylinder
+madeZonesF :: [Cmp.Task]
+           -> IxTask
+           -> MarkedFixes
+           -> (SelectedCrossings, NomineeCrossings)
+madeZonesF =
+    madeZones span zoneToCyl
+    where
+        zoneToCyl :: RawZone -> TaskZone Double
+        zoneToCyl = zoneToCylinder
 
-span :: SpanLatLng Rational
-span = distanceHaversine defEps
+        span :: SpanLatLng Double
+        span = Dbl.distanceHaversine
+
+madeZonesR :: [Cmp.Task]
+           -> IxTask
+           -> MarkedFixes
+           -> (SelectedCrossings, NomineeCrossings)
+madeZonesR =
+    madeZones span zoneToCyl
+    where
+        zoneToCyl :: RawZone -> TaskZone Rational
+        zoneToCyl = zoneToCylinder
+
+        span :: SpanLatLng Rational
+        span = Rat.distanceHaversine defEps
