@@ -31,7 +31,7 @@ import Control.Lens ((^?), element)
 import Control.Monad (join, mapM_)
 import Control.Applicative.Alternative ((<|>))
 import Control.Monad.Except (ExceptT, runExceptT)
-import Data.UnitsOfMeasure ((/:), u, convert, toRational')
+import Data.UnitsOfMeasure ((/:), u, convert, toRational', fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import System.Directory (doesFileExist, doesDirectoryExist)
 import System.FilePath.Find (FileType(..), (==?), (&&?), find, always, fileType, extension)
@@ -65,12 +65,15 @@ import Flight.Zone.Raw (RawZone)
 import Flight.LatLng.Rational (Epsilon(..), defEps)
 import Data.Number.RoundingFunctions (dpRound)
 import Flight.Task (SpanLatLng, CircumSample, AngleCut(..))
-import Flight.PointToPoint.Rational
+import qualified Flight.PointToPoint.Rational as Rat
     (distanceHaversine, distancePointToPoint, costSegment)
-import Flight.Cylinder.Rational (circumSample)
+import qualified Flight.PointToPoint.Double as Dbl
+    (distanceHaversine, distancePointToPoint, costSegment)
+import qualified Flight.Cylinder.Rational as Rat (circumSample)
+import qualified Flight.Cylinder.Double as Dbl (circumSample)
 
 import Flight.Cmd.Paths (checkPaths)
-import Flight.Cmd.Options (CmdOptions(..), ProgramName(..), mkOptions)
+import Flight.Cmd.Options (Math(..), CmdOptions(..), ProgramName(..), mkOptions)
 import Cmd.Options (description)
 import Cmd.Inputs
     ( MadeGoal(..), ArrivalRank(..)
@@ -152,7 +155,7 @@ drive CmdOptions{..} = do
                 (IxTask <$> task)
                 (Pilot <$> pilot)
                 compPath
-                (check tags)
+                (check math tags)
 
 writeMask :: [IxTask]
           -> [Pilot]
@@ -200,7 +203,8 @@ writeMask selectTasks selectPilots compPath f = do
             flip replaceExtension ".mask-track.yaml"
             $ dropExtension compPath
 
-check :: Either String Tagging
+check :: Math
+      -> Either String Tagging
       -> FilePath
       -> [IxTask]
       -> [Pilot]
@@ -213,11 +217,11 @@ check :: Either String Tagging
                   (Pilot, Pilot -> TM.TrackMask)
               ]
           ]
-check tags = checkTracks $ \Cmp.CompSettings{tasks} ->
-    flown tags tasks
+check math tags = checkTracks $ \Cmp.CompSettings{tasks} ->
+    flown math tags tasks
 
-flown :: Either String Tagging -> SigMasking (Pilot -> TM.TrackMask)
-flown tags tasks iTask@(IxTask i) xs p =
+flown :: Math -> Either String Tagging -> SigMasking (Pilot -> TM.TrackMask)
+flown math tags tasks iTask@(IxTask i) xs p =
     TM.TrackMask
         { madeGoal = mg
 
@@ -226,34 +230,65 @@ flown tags tasks iTask@(IxTask i) xs p =
             <$> join ((\f -> f p speedSection' iTask xs) <$> tArrivalRank)
 
         , distanceToGoal =
-            if mg then Nothing else fromRational . unTaskDistance <$> dg
+            if mg then Nothing else unTaskDistance <$> (dg math)
 
         , distanceMade =
-            fromRational <$> if mg then Nothing else unPilotDistance <$> df
+            fromRational <$> if mg then Nothing else unPilotDistance <$> (df math)
 
         , timeToGoal =
-            if not mg then Nothing else unPilotTime <$> tf
+            if not mg then Nothing else unPilotTime <$> (tf math)
         }
     where
-        dpp = distancePointToPoint
-        cseg = costSegment span
+        dppR = Rat.distancePointToPoint
+        dppF = Dbl.distancePointToPoint
 
+        csegR = Rat.costSegment spanR
+        csegF = Dbl.costSegment spanF
+
+        dg :: Math -> Maybe (Tsk.TaskDistance Double)
         dg =
-            distanceToGoal
-                noneTicked
-                span dpp cseg cs cut
-                zoneToCyl tasks iTask xs
+            \case
+            Floating ->
+                distanceToGoal
+                    noneTicked
+                    spanF dppF csegF csF cutF
+                    zoneToCylF tasks iTask xs
 
+            Rational ->
+                (\(Tsk.TaskDistance d) -> Tsk.TaskDistance $ fromRational' d) <$>
+                distanceToGoal
+                    noneTicked
+                    spanR dppR csegR csR cutR
+                    zoneToCylR tasks iTask xs
+
+        df :: Math -> Maybe (Gap.PilotDistance Double)
         df =
-            distanceFlown
-                noneTicked
-                span dpp cseg cs cut
-                zoneToCyl tasks iTask xs
+            \case
+            Floating ->
+                distanceFlown
+                    noneTicked
+                    spanF dppF csegF csF cutF
+                    zoneToCylF tasks iTask xs
 
+            Rational ->
+                (\(Gap.PilotDistance d) -> Gap.PilotDistance $ fromRational d) <$>
+                distanceFlown
+                    noneTicked
+                    spanR dppR csegR csR cutR
+                    zoneToCylR tasks iTask xs
+
+        tf :: Math -> Maybe Gap.PilotTime
         tf =
-            timeFlown
-                span
-                zoneToCyl tasks iTask xs
+            \case
+            Floating ->
+                timeFlown
+                    spanF
+                    zoneToCylF tasks iTask xs
+
+            Rational ->
+                timeFlown
+                    spanR
+                    zoneToCylR tasks iTask xs
 
         speedSection' =
             case tasks ^? element (fromIntegral i - 1) of
@@ -263,30 +298,54 @@ flown tags tasks iTask@(IxTask i) xs p =
         (MadeGoal tMadeGoal) = tagMadeGoal tags
         (ArrivalRank tArrivalRank) = tagArrivalRank tags
 
+        mg :: Bool
         mg =
             let a = join $ (\f -> f p speedSection' iTask xs) <$> tMadeGoal
-                b = Just $ madeGoal span zoneToCyl tasks iTask xs
+                b =
+                    \case
+                    Rational -> Just $ madeGoal spanR zoneToCylR tasks iTask xs
+                    Floating -> Just $ madeGoal spanF zoneToCylF tasks iTask xs
 
-            in fromMaybe False $ a <|> b
+            in fromMaybe False $ a <|> (b math)
 
-zoneToCyl :: RawZone -> TaskZone Rational
-zoneToCyl = zoneToCylinder
+zoneToCylR :: RawZone -> TaskZone Rational
+zoneToCylR = zoneToCylinder
 
-span :: SpanLatLng Rational
-span = distanceHaversine defEps
+zoneToCylF :: RawZone -> TaskZone Double
+zoneToCylF = zoneToCylinder
 
-cs :: CircumSample Rational
-cs = circumSample
+spanR :: SpanLatLng Rational
+spanR = Rat.distanceHaversine defEps
 
-cut :: AngleCut Rational
-cut =
+spanF :: SpanLatLng Double
+spanF = Dbl.distanceHaversine
+
+csR :: CircumSample Rational
+csR = Rat.circumSample
+
+csF :: CircumSample Double
+csF = Dbl.circumSample
+
+cutR :: AngleCut Rational
+cutR =
     AngleCut
         { sweep = let (Epsilon e) = defEps in Bearing . MkQuantity $ F.pi e
-        , nextSweep = nextCut
+        , nextSweep = nextCutR
         }
 
-nextCut :: AngleCut Rational -> AngleCut Rational
-nextCut x@AngleCut{sweep} =
+cutF :: AngleCut Double
+cutF =
+    AngleCut
+        { sweep = Bearing $ MkQuantity pi
+        , nextSweep = nextCutF
+        }
+
+nextCutR :: AngleCut Rational -> AngleCut Rational
+nextCutR x@AngleCut{sweep} =
+    let (Bearing b) = sweep in x{sweep = Bearing $ b /: 2}
+
+nextCutF :: AngleCut Double -> AngleCut Double
+nextCutF x@AngleCut{sweep} =
     let (Bearing b) = sweep in x{sweep = Bearing $ b /: 2}
 
 noneTicked :: Ticked
