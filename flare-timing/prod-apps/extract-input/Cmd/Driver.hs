@@ -17,7 +17,7 @@ import System.FilePath (replaceExtension)
 import System.FilePath.Find
     (FileType(..), (==?), (&&?), find, always, fileType, extension)
 
-import Cmd.Args (checkOptions)
+import Flight.Cmd.Paths (checkPaths)
 import Cmd.Options (CmdOptions(..), mkOptions)
 import Flight.Fsdb
     (parseComp, parseNominal, parseTasks, parseTaskFolders, parseTracks)
@@ -36,7 +36,7 @@ driverMain :: IO ()
 driverMain = do
     name <- getProgName
     options <- cmdArgs $ mkOptions name
-    err <- checkOptions options
+    err <- checkPaths options
     case err of
         Just msg -> putStrLn msg
         Nothing -> drive options

@@ -28,8 +28,9 @@ import Control.Monad.Except (ExceptT(..), runExceptT)
 import System.Directory (doesFileExist, doesDirectoryExist)
 import System.FilePath.Find (FileType(..), (==?), (&&?), find, always, fileType, extension)
 import System.FilePath (FilePath, takeFileName, replaceExtension, dropExtension)
-import Cmd.Args (checkOptions)
-import Cmd.Options (CmdOptions(..), mkOptions)
+import Flight.Cmd.Paths (checkPaths)
+import Flight.Cmd.Options (CmdOptions(..), ProgramName(..), mkOptions)
+import Cmd.Options (description)
 import qualified Data.Yaml.Pretty as Y
 import qualified Data.ByteString as BS
 
@@ -70,8 +71,8 @@ type MkCrossingTrackIO a =
 driverMain :: IO ()
 driverMain = do
     name <- getProgName
-    options <- cmdArgs $ mkOptions name
-    err <- checkOptions options
+    options <- cmdArgs $ mkOptions (ProgramName name) description Nothing
+    err <- checkPaths options
     case err of
         Just msg -> putStrLn msg
         Nothing -> drive options

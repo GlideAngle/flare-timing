@@ -14,7 +14,7 @@ import Control.Monad.Except (runExceptT)
 import System.Directory (doesFileExist, doesDirectoryExist)
 import System.FilePath.Find (FileType(..), (==?), (&&?), find, always, fileType, extension)
 import System.FilePath (FilePath, takeFileName, replaceExtension, dropExtension)
-import Cmd.Args (checkOptions)
+import Flight.Cmd.Paths (checkPaths)
 import Cmd.Options (CmdOptions(..), mkOptions)
 import Cmd.Settings (readCompSettings)
 import qualified Data.Yaml.Pretty as Y
@@ -30,7 +30,7 @@ driverMain :: IO ()
 driverMain = do
     name <- getProgName
     options <- cmdArgs $ mkOptions name
-    err <- checkOptions options
+    err <- checkPaths options
     case err of
         Just msg -> putStrLn msg
         Nothing -> drive options

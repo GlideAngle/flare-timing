@@ -20,7 +20,8 @@ cmdBuildFor x =
 -- | The names of the hlint tests
 lintPkgs :: [String]
 lintPkgs =
-    [ "units"
+    [ "cmd"
+    , "units"
     , "zone"
     , "track"
     , "task"

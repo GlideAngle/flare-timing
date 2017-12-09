@@ -29,8 +29,9 @@ import System.FilePath
 import Data.Vector (Vector)
 import qualified Data.Vector as V (fromList, toList)
 
-import Cmd.Args (checkOptions)
-import Cmd.Options (CmdOptions(..), mkOptions)
+import Flight.Cmd.Paths (checkPaths)
+import Flight.Cmd.Options (CmdOptions(..), ProgramName(..), mkOptions)
+import Cmd.Options (description)
 import Cmd.Inputs (readTimeRowsFromCsv)
 import Cmd.Outputs (writeTimeRowsToCsv)
 
@@ -46,8 +47,8 @@ headers = ["tick", "distance"]
 driverMain :: IO ()
 driverMain = do
     name <- getProgName
-    options <- cmdArgs $ mkOptions name
-    err <- checkOptions options
+    options <- cmdArgs $ mkOptions (ProgramName name) description Nothing
+    err <- checkPaths options
     case err of
         Just msg -> putStrLn msg
         Nothing -> drive options
