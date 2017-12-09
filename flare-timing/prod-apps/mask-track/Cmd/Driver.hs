@@ -21,7 +21,6 @@ module Cmd.Driver (driverMain) where
 
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
-import Prelude hiding (span)
 import Data.Maybe (fromMaybe)
 import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
@@ -230,13 +229,13 @@ flown math tags tasks iTask@(IxTask i) xs p =
             <$> join ((\f -> f p speedSection' iTask xs) <$> tArrivalRank)
 
         , distanceToGoal =
-            if mg then Nothing else unTaskDistance <$> (dg math)
+            if mg then Nothing else unTaskDistance <$> dg math
 
         , distanceMade =
-            fromRational <$> if mg then Nothing else unPilotDistance <$> (df math)
+            fromRational <$> if mg then Nothing else unPilotDistance <$> df math
 
         , timeToGoal =
-            if not mg then Nothing else unPilotTime <$> (tf math)
+            if not mg then Nothing else unPilotTime <$> tf math
         }
     where
         dppR = Rat.distancePointToPoint
@@ -306,7 +305,7 @@ flown math tags tasks iTask@(IxTask i) xs p =
                     Rational -> Just $ madeGoal spanR zoneToCylR tasks iTask xs
                     Floating -> Just $ madeGoal spanF zoneToCylF tasks iTask xs
 
-            in fromMaybe False $ a <|> (b math)
+            in fromMaybe False $ a <|> b math
 
 zoneToCylR :: RawZone -> TaskZone Rational
 zoneToCylR = zoneToCylinder
