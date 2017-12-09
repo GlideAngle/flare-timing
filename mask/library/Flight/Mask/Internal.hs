@@ -308,9 +308,11 @@ crossingPredicates
 crossingPredicates span _ Cmp.Task{zones} =
     const (crossSeq span) <$> zones
 
+-- | If the zone is an exit, then take the last crossing otherwise take the
+-- first crossing.
 crossingSelectors :: Bool -- ^ Is the start an exit cylinder?
                   -> Cmp.Task
-                  -> [[a] -> Maybe a]
+                  -> [[a] -> Maybe a] -- ^ A crossing selector for each zone.
 crossingSelectors startIsExit Cmp.Task{speedSection, zones} =
     zipWith
         (\ i _ ->
