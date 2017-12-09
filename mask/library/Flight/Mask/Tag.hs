@@ -185,7 +185,7 @@ madeZones span zoneToCyl tasks (IxTask i) Kml.MarkedFixes{mark0, fixes} =
 
                 selected =
                     SelectedCrossings
-                    $ zipWith (\s y -> selectZoneCross prover s y) selectors ys'
+                    $ zipWith (selectZoneCross prover) selectors ys'
 
                 fs =
                     (\x ->
@@ -281,7 +281,7 @@ trimOrdLists ys =
 -- subsequent lists are made null too.
 prependNull :: Int -> [[a]] -> [[a]]
 prependNull n xs =
-    take n (repeat []) ++ xs
+    replicate n [] ++ xs
 
 -- | Going left to right, as soon as an empty list is encountered, all
 -- subsequent lists are made null too.

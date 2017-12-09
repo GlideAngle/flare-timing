@@ -37,7 +37,7 @@ boxSeparated :: (Num a, Ord a, Fractional a)
              -> LatLng a [u| rad |]
              -> Bool
 boxSeparated
-    (r', (LatLng (Lat yLat, Lng yLng)))
+    (r', LatLng (Lat yLat, Lng yLng))
     (LatLng (xLLx, xLLy)) =
         xLo || xHi || yLo || yHi
     where
