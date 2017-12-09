@@ -96,8 +96,8 @@ lintRules = do
 
     phony "lint" $ need
         $ "lint-build"
-        : "siggy-chardust"
-        : "tasty-compare"
+        : "lint-siggy-chardust"
+        : "lint-tasty-compare"
         : "lint-flare-timing"
         : "lint-www"
         : (prefix "lint-" <$> lintPkgs)
