@@ -234,63 +234,54 @@ trimToOrder _ ys _ = ys
 -- | Removes elements of the list of lists so that each list only has elements
 -- less than elements of subsequent lists and greater than previous lists.
 --
--- In the following example, goal is crossed multiple times at the start of the
--- flight.
+-- >>>
+-- > trimOrdLists [[25,4953,4955],[783,809,811,817,820,822,952,4812],[1810,1816],[3778,3781],[30,66,144,145,149,151,153,4950,4960,4965]]
 --
--- [ [ Right (ZoneExit 25 26)
---   , Left (ZoneEntry 4953 4954)
---   , Right (ZoneExit 4955 4956)
---   ]
--- , [ Right (ZoneExit 762 763)
---   , Left (ZoneEntry 872 873)
---   , Right (ZoneExit 923 924)
---   , Left (ZoneEntry 4812 4813)
---   ]
--- , [ Left (ZoneEntry 1810 1811)
---   , Right (ZoneExit 1816 1817)
---   ]
--- , [ Left (ZoneEntry 3778 3779)
---   , Right (ZoneExit 3781 3782)
---   ]
--- , [ Right (ZoneExit 30 31)
---   , Left (ZoneEntry 66 67)
---   , Right (ZoneExit 144 145)
---   , Left (ZoneEntry 145 146)
---   , Right (ZoneExit 149 150)
---   , Left (ZoneEntry 151 152)
---   , Right (ZoneExit 153 154)
---   , Left (ZoneEntry 4950 4951)
---   , Right (ZoneExit 4960 4961)
---   , Left (ZoneEntry 4965 4966)
---   ]
--- ]
+-- [[25],[783,809,811,817,820,822,952],[1810,1816],[3778,3781],[4950,4960,4965]]
 --
--- The above list can be more simply shown as ...
+-- > trimOrdLists [[294,4714,4720,4724],[1367,4597],[2207,2209],[3914,3920],[300,568,570,572,573,4711]]
 --
---     [ [25,4953,4955]
---     , [762,872,923,4812]
---     , [1810,1816]
---     , [3778,3781]
---     , [30,66,144,145,149,151,153,4950,4960,4965]
---     ]
+-- [[294],[1367],[2207,2209],[3914,3920],[4711]]
+--
+-- In another example a pilot only makes it around some of the course but
+-- had flown through the goal cylinder before starting the speed section.
 --
 -- >>>
--- > trimOrdLists
---     [ [25,4953,4955]
---     , [762,872,923,4812]
---     , [1810,1816]
---     , [3778,3781]
---     , [30,66,144,145,149,151,153,4950,4960,4965]
---     ]
+-- > trimOrdLists [[29],[276],[],[],[32,67,68,69,78]]
 --
--- [[25],[762,872,923],[1810,1816],[3778,3781],[4950,4960,4965]]
+-- [[29],[276],[],[],[]]
+--
+-- > trimOrdLists [[4588,4592],[],[1714,1720],[3539,3546],[4584]]
+--
+-- [[4588,4592],[],[],[],[]]
 trimOrdLists :: Ord a => [[a]] -> [[a]]
 trimOrdLists ys =
-    if ys == ys' then ys else trimOrdLists ys'
+    if ys == ys' then nonNullBlock ys else trimOrdLists ys'
     where
         xs = [] : ys
         zs = drop 1 ys ++ [[]]
         ys' = zipWith3 trimToOrder xs ys zs
+
+-- | Going left to right, as soon as an empty list is encountered, all
+-- subsequent lists are made null too.
+prependNull :: Int -> [[a]] -> [[a]]
+prependNull n xs =
+    take n (repeat []) ++ xs
+
+-- | Going left to right, as soon as an empty list is encountered, all
+-- subsequent lists are made null too.
+lockNullRight :: [[a]] -> [[a]]
+lockNullRight xs =
+    take (length xs) $ takeWhile (not . null) xs ++ repeat []
+
+-- | Nulls are kept on the left, then a sequence of non-null lists. On the
+-- first occurence of a null list, all further lists are replaced by null lists
+-- on the right.
+nonNullBlock :: [[a]] -> [[a]]
+nonNullBlock xs =
+    prependNull (length xs - length ys) ys
+    where
+        ys = lockNullRight $ dropWhile null xs
 
 proveCrossing :: [Kml.Fix] -> UTCTime -> Crossing -> Maybe ZoneCross
 proveCrossing fixes mark0 (Right (ZoneExit m n)) =
