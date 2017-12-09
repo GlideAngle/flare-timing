@@ -1,6 +1,8 @@
--- This file has been generated from package.yaml by hpack version 0.17.1.
+-- This file has been generated from package.yaml by hpack version 0.20.0.
 --
 -- see: https://github.com/sol/hpack
+--
+-- hash: 19a9be38e37dfd453b04ee54a05d6809f3e4e6ded4717b16a260dadedc00372c
 
 name:           flight-units
 version:        0.1.0
@@ -32,10 +34,10 @@ library
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       base >=4.5 && <5
-    , numbers
     , bifunctors
-    , uom-plugin
+    , numbers
     , siggy-chardust
+    , uom-plugin
   exposed-modules:
       Flight.Units
   other-modules:
@@ -51,11 +53,12 @@ test-suite hlint
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       base
+    , bifunctors
     , hlint
     , numbers
-    , bifunctors
-    , uom-plugin
     , siggy-chardust
+    , uom-plugin
   other-modules:
       Flight.Units
+      Paths_flight_units
   default-language: Haskell2010

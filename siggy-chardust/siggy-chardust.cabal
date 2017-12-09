@@ -1,6 +1,8 @@
--- This file has been generated from package.yaml by hpack version 0.17.0.
+-- This file has been generated from package.yaml by hpack version 0.20.0.
 --
 -- see: https://github.com/sol/hpack
+--
+-- hash: 1cf875879ed24613a13cdf1b55f4af870be09e0117d254e2090085abaa1de242
 
 name:           siggy-chardust
 version:        0.1.0
@@ -47,13 +49,14 @@ test-suite digits
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       base
+    , smallcheck
     , tasty
     , tasty-hunit
     , tasty-quickcheck
     , tasty-smallcheck
-    , smallcheck
   other-modules:
       Data.Number.RoundingFunctions
+      Paths_siggy_chardust
   default-language: Haskell2010
 
 test-suite hlint
@@ -68,4 +71,5 @@ test-suite hlint
     , hlint
   other-modules:
       Data.Number.RoundingFunctions
+      Paths_siggy_chardust
   default-language: Haskell2010
