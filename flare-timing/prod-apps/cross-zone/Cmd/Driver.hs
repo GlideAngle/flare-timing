@@ -34,18 +34,16 @@ import Cmd.Options (description)
 import qualified Data.Yaml.Pretty as Y
 import qualified Data.ByteString as BS
 
-import qualified Flight.Comp as Cmp (Task(..), CompSettings(..), Pilot(..))
-import Flight.Kml (MarkedFixes)
+import qualified Flight.Comp as Cmp (CompSettings(..), Pilot(..))
 import Flight.TrackLog (TrackFileFail(..), IxTask(..))
 import Flight.Units ()
 import Flight.Track.Cross (TrackCross(..), PilotTrackCross(..), Crossing(..))
 import Flight.Zone.Raw (RawZone)
-import Flight.Task (SpanLatLng)
 import qualified Flight.PointToPoint.Rational as Rat (distanceHaversine)
 import qualified Flight.PointToPoint.Double as Dbl (distanceHaversine)
 import Flight.LatLng.Rational (defEps)
 import Flight.Mask
-    ( TaskZone, SigMasking, SelectedCrossings, NomineeCrossings
+    ( TaskZone, SigMasking
     , unSelectedCrossings, unNomineeCrossings
     , checkTracks, madeZones, zoneToCylinder
     )
@@ -148,41 +146,24 @@ drive CmdOptions{..} = do
                             BS.writeFile yamlCrossPath yaml
 
                 checkAll =
-                    checkTracks $ \Cmp.CompSettings{tasks} -> flown tasks
+                    checkTracks $ \Cmp.CompSettings{tasks} -> flown math tasks
 
-                flown :: SigMasking TrackCross
-                flown tasks iTask xs =
-                    TrackCross
-                        { zonesCrossSelected = unSelectedCrossings selected
-                        , zonesCrossNominees = unNomineeCrossings nominees
-                        }
-                    where
-                        (selected, nominees) =
-                            (if math == Rational then madeZonesR else madeZonesF)
-                                tasks iTask xs
-
-madeZonesF :: [Cmp.Task]
-           -> IxTask
-           -> MarkedFixes
-           -> (SelectedCrossings, NomineeCrossings)
-madeZonesF =
-    madeZones span zoneToCyl
+flown :: Math -> SigMasking TrackCross
+flown math tasks iTask xs =
+    TrackCross
+        { zonesCrossSelected = unSelectedCrossings selected
+        , zonesCrossNominees = unNomineeCrossings nominees
+        }
     where
-        zoneToCyl :: RawZone -> TaskZone Double
-        zoneToCyl = zoneToCylinder
+        (selected, nominees) =
+            f math tasks iTask xs
 
-        span :: SpanLatLng Double
-        span = Dbl.distanceHaversine
-
-madeZonesR :: [Cmp.Task]
-           -> IxTask
-           -> MarkedFixes
-           -> (SelectedCrossings, NomineeCrossings)
-madeZonesR =
-    madeZones span zoneToCyl
-    where
-        zoneToCyl :: RawZone -> TaskZone Rational
-        zoneToCyl = zoneToCylinder
-
-        span :: SpanLatLng Rational
-        span = Rat.distanceHaversine defEps
+        f = \case
+            Rational ->
+                madeZones
+                    (Rat.distanceHaversine defEps)
+                    (zoneToCylinder :: RawZone -> TaskZone Rational)
+            Floating ->
+                madeZones
+                    Dbl.distanceHaversine
+                    (zoneToCylinder :: RawZone -> TaskZone Double)
