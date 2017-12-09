@@ -279,22 +279,32 @@ isStartExit span zoneToCyl Cmp.Task{speedSection, zones} =
                 _ ->
                     False
 
+-- | Some pilots track logs will have initial values way off from the location
+-- of the device. I suspect that the GPS logger is remembering the position it
+-- had when last turned off, most likely at the end of yesterday's flight,
+-- somewhere near where the pilot landed that day. Until the GPS receiver gets
+-- a satellite fix and can compute the current position the stale, last known,
+-- position gets logged. This means that a pilot may turn on their instrument
+-- inside the start circle but their tracklog will start outside of it. For
+-- this reason the crossing predicate is @crossSeq@ for all zones.
+--
+-- An example of a track log with this problem ...
+--
+-- 148.505133,-32.764317,0 148.505133,-32.764317,0 148.505133,-32.764317,0 148.505133,-32.764317,0 148.505133,-32.764317,0 
+-- 148.505133,-32.764317,0 148.505133,-32.764317,0 148.505133,-32.764317,0 148.505133,-32.764317,0 148.505133,-32.764317,0 
+-- 148.505133,-32.764317,0 148.505133,-32.764317,0 148.505133,-32.764317,0 148.505133,-32.764317,0 148.505133,-32.764317,0 
+-- 148.505133,-32.764317,0 148.505133,-32.764317,0 148.505133,-32.764317,0 148.505133,-32.764317,0 148.505133,-32.764317,0 
+-- 148.505133,-32.764317,0 148.505133,-32.764317,0 148.505133,-32.764317,0 148.505133,-32.764317,0 148.505133,-32.764317,0 
+-- 148.505133,-32.764317,0 148.505133,-32.764317,0 148.505133,-32.764317,0 148.505133,-32.764317,0 148.505133,-32.764317,0 
+-- 148.505133,-32.764317,0 147.913967,-33.363200,448 147.913883,-33.363433,448 147.913817,-33.363633,448 147.913400,-33.364217,448 
 pickCrossingPredicate
     :: (Real a, Fractional a)
     => SpanLatLng a
     -> Bool -- ^ Is the start an exit cylinder?
     -> Cmp.Task
     -> [CrossingPredicate a Crossing]
-pickCrossingPredicate span startIsExit Cmp.Task{speedSection, zones} =
-    zipWith
-        (\ i _ ->
-            if i == start && startIsExit then exitsSeq span
-                                         else crossSeq span)
-        [1 .. ]
-        zones
-    where
-        start =
-            maybe 0 fst speedSection
+pickCrossingPredicate span _ Cmp.Task{zones} =
+    const (crossSeq span) <$> zones
 
 hitZone :: _ -> CrossingPredicate a Crossing
 hitZone hit _ _ = [hit]
