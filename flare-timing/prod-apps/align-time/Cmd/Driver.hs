@@ -46,7 +46,13 @@ import Cmd.Inputs (readTags)
 import Cmd.Outputs (writeTimeRowsToCsv)
 
 import Flight.Comp
-    (CompSettings(..), Pilot(..), Task(..), TrackFileFail, SpeedSection)
+    (CompFile(..)
+    , CompSettings(..)
+    , Pilot(..)
+    , Task(..)
+    , TrackFileFail
+    , SpeedSection
+    )
 import Flight.TrackLog (IxTask(..))
 import Flight.Units ()
 import Flight.Mask
@@ -119,21 +125,21 @@ drive CmdOptions{..} = do
                     writeTime
                         (IxTask <$> task)
                         (Pilot <$> pilot)
-                        compPath
+                        (CompFile compPath)
                         (checkAll $ zonesFirst <$> timing tags')
 
 writeTime :: Show a
           => [IxTask]
           -> [Pilot]
-          -> FilePath
-          -> (FilePath
+          -> CompFile
+          -> (CompFile
               -> [IxTask]
               -> [Pilot]
               -> ExceptT
                   a IO [[Either (Pilot, t) (Pilot, Pilot -> [TimeRow])]])
           -> IO ()
-writeTime selectTasks selectPilots compPath f = do
-    checks <- runExceptT $ f compPath selectTasks selectPilots
+writeTime selectTasks selectPilots compFile@(CompFile compPath) f = do
+    checks <- runExceptT $ f compFile selectTasks selectPilots
 
     case checks of
         Left msg -> print msg
@@ -155,7 +161,7 @@ writeTime selectTasks selectPilots compPath f = do
             return ()
 
 checkAll :: [[Maybe UTCTime]]
-         -> FilePath
+         -> CompFile
          -> [IxTask]
          -> [Pilot]
          -> ExceptT

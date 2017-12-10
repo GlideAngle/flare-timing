@@ -28,6 +28,9 @@ module Flight.Comp
     , TrackLogFile(..)
     , TrackFileFail(..)
     , TaskFolder(..)
+    -- * Comp paths
+    , CompFile(..)
+    , CrossFile(..)
     ) where
 
 import Data.Time.Clock (UTCTime)
@@ -37,6 +40,7 @@ import Data.List (intercalate)
 
 import Flight.Zone.Raw (RawZone, showZone)
 import Flight.Pilot
+import Flight.Path
 
 -- | A 1-based index into the list of control zones marking the speed section.
 type SpeedSection = Maybe (Integer, Integer)

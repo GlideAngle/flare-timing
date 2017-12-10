@@ -39,7 +39,8 @@ import qualified Data.Yaml.Pretty as Y
 import qualified Data.ByteString as BS
 import qualified Data.Number.FixedFunctions as F
 
-import Flight.Comp (Pilot(..), CompSettings(..), Task(..), TrackFileFail(..))
+import Flight.Comp
+    (Pilot(..), CompFile(..), CompSettings(..), Task(..), TrackFileFail(..))
 import qualified Flight.Task as Tsk (TaskDistance(..))
 import qualified Flight.Score as Gap (PilotDistance(..), PilotTime(..))
 import Flight.TrackLog (IxTask(..))
@@ -152,13 +153,13 @@ drive CmdOptions{..} = do
             writeMask
                 (IxTask <$> task)
                 (Pilot <$> pilot)
-                compPath
+                (CompFile compPath)
                 (check math tags)
 
 writeMask :: [IxTask]
           -> [Pilot]
-          -> FilePath
-          -> (FilePath
+          -> CompFile
+          -> (CompFile
               -> [IxTask]
               -> [Pilot]
               -> ExceptT
@@ -172,8 +173,8 @@ writeMask :: [IxTask]
                    ]
              )
           -> IO ()
-writeMask selectTasks selectPilots compPath f = do
-    checks <- runExceptT $ f compPath selectTasks selectPilots
+writeMask selectTasks selectPilots compFile@(CompFile compPath) f = do
+    checks <- runExceptT $ f compFile selectTasks selectPilots
 
     case checks of
         Left msg -> print msg
@@ -203,7 +204,7 @@ writeMask selectTasks selectPilots compPath f = do
 
 check :: Math
       -> Either String Tagging
-      -> FilePath
+      -> CompFile
       -> [IxTask]
       -> [Pilot]
       -> ExceptT

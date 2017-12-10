@@ -27,14 +27,15 @@ import Control.Monad (mapM_)
 import Control.Monad.Except (ExceptT(..), runExceptT)
 import System.Directory (doesFileExist, doesDirectoryExist)
 import System.FilePath.Find (FileType(..), (==?), (&&?), find, always, fileType, extension)
-import System.FilePath (FilePath, takeFileName, replaceExtension, dropExtension)
+import System.FilePath (takeFileName, replaceExtension, dropExtension)
 import Flight.Cmd.Paths (checkPaths)
 import Flight.Cmd.Options (Math(..), CmdOptions(..), ProgramName(..), mkOptions)
 import Cmd.Options (description)
 import qualified Data.Yaml.Pretty as Y
 import qualified Data.ByteString as BS
 
-import Flight.Comp (CompSettings(..), Pilot(..), TrackFileFail(..))
+import Flight.Comp
+    (CompFile(..), CrossFile(..), CompSettings(..), Pilot(..), TrackFileFail(..))
 import Flight.TrackLog (IxTask(..))
 import Flight.Units ()
 import Flight.Track.Cross (TrackCross(..), PilotTrackCross(..), Crossing(..))
@@ -47,9 +48,6 @@ import Flight.Mask
     , unSelectedCrossings, unNomineeCrossings
     , checkTracks, madeZones, zoneToCylinder
     )
-
-newtype CompFile = CompFile FilePath
-newtype CrossFile = CrossFile FilePath
 
 driverMain :: IO ()
 driverMain = do
@@ -108,7 +106,7 @@ writeMask :: CompFile
           -> CrossFile
           -> [IxTask]
           -> [Pilot]
-          -> (FilePath
+          -> (CompFile
               -> [IxTask]
               -> [Pilot]
               -> ExceptT
@@ -116,8 +114,8 @@ writeMask :: CompFile
                       IO [[Either (Pilot, TrackFileFail) (Pilot, track)]])
           -> (track -> TrackCross)
           -> IO ()
-writeMask (CompFile compPath) (CrossFile crossPath) task pilot f g = do
-    checks <- runExceptT $ f compPath task pilot
+writeMask compFile (CrossFile crossPath) task pilot f g = do
+    checks <- runExceptT $ f compFile task pilot
 
     case checks of
         Left msg -> print msg
@@ -146,7 +144,7 @@ writeMask (CompFile compPath) (CrossFile crossPath) task pilot f g = do
             BS.writeFile crossPath yaml
 
 checkAll :: Math
-         -> FilePath
+         -> CompFile
          -> [IxTask]
          -> [Pilot]
          -> ExceptT

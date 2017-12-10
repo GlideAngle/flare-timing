@@ -35,7 +35,7 @@ import Cmd.Options (description)
 import Cmd.Inputs (readTimeRowsFromCsv)
 import Cmd.Outputs (writeTimeRowsToCsv)
 
-import Flight.Comp (CompSettings(..), Pilot(..), TrackFileFail)
+import Flight.Comp (CompFile(..), CompSettings(..), Pilot(..), TrackFileFail)
 import Flight.TrackLog (IxTask(..))
 import Flight.Units ()
 import Flight.Mask (checkTracks)
@@ -75,19 +75,19 @@ drive CmdOptions{..} = do
             filterTime
                 (IxTask <$> task)
                 (Pilot <$> pilot)
-                compPath
+                (CompFile compPath)
                 checkAll
 
 filterTime :: [IxTask]
            -> [Pilot]
-           -> String
-           -> (String
-           -> [IxTask]
-           -> [Pilot]
-           -> ExceptT String IO [[Either (Pilot, _) (Pilot, _)]])
+           -> CompFile
+           -> (CompFile
+               -> [IxTask]
+               -> [Pilot]
+               -> ExceptT String IO [[Either (Pilot, _) (Pilot, _)]])
            -> IO ()
-filterTime selectTasks selectPilots compPath f = do
-    checks <- runExceptT $ f compPath selectTasks selectPilots
+filterTime selectTasks selectPilots compFile@(CompFile compPath) f = do
+    checks <- runExceptT $ f compFile selectTasks selectPilots
 
     case checks of
         Left msg -> print msg
@@ -108,7 +108,7 @@ filterTime selectTasks selectPilots compPath f = do
 
             return ()
 
-checkAll :: FilePath
+checkAll :: CompFile
          -> [IxTask]
          -> [Pilot]
          -> ExceptT
