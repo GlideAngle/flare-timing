@@ -26,10 +26,10 @@ import Flight.LatLng.Raw (RawLat, RawLng)
 -- | For each task, the crossing for that task.
 data Crossing =
     Crossing
-        { crossing :: [[PilotTrackCross]]
-          -- ^ For each task, for each made zone, the pair of fixes cross it.
-        , errors :: [[(Pilot, TrackFileFail)]]
+        { errors :: [[(Pilot, TrackFileFail)]]
           -- ^ For each task, the pilots with track log problems.
+        , crossing :: [[PilotTrackCross]]
+          -- ^ For each task, for each made zone, the pair of fixes cross it.
         }
     deriving (Show, Generic)
 

@@ -80,6 +80,8 @@ driverMain = do
 cmp :: (Ord a, IsString a) => a -> a -> Ordering
 cmp a b =
     case (a, b) of
+        ("errors", _) -> LT
+        ("crossings", _) -> GT
         ("zonesCrossSelected", _) -> LT
         ("zonesCrossNominees", _) -> GT
         ("time", _) -> LT
