@@ -39,11 +39,10 @@ import qualified Data.Yaml.Pretty as Y
 import qualified Data.ByteString as BS
 import qualified Data.Number.FixedFunctions as F
 
-import Flight.Comp (Pilot(..))
-import qualified Flight.Comp as Cmp (CompSettings(..), Task(..))
+import Flight.Comp (Pilot(..), CompSettings(..), Task(..), TrackFileFail(..))
 import qualified Flight.Task as Tsk (TaskDistance(..))
 import qualified Flight.Score as Gap (PilotDistance(..), PilotTime(..))
-import Flight.TrackLog (IxTask(..), TrackFileFail(..))
+import Flight.TrackLog (IxTask(..))
 import Flight.Units ()
 import Flight.Mask
     ( SigMasking
@@ -216,7 +215,7 @@ check :: Math
                   (Pilot, Pilot -> TM.TrackMask)
               ]
           ]
-check math tags = checkTracks $ \Cmp.CompSettings{tasks} ->
+check math tags = checkTracks $ \CompSettings{tasks} ->
     flown math tags tasks
 
 flown :: Math -> Either String Tagging -> SigMasking (Pilot -> TM.TrackMask)
@@ -292,7 +291,7 @@ flown math tags tasks iTask@(IxTask i) xs p =
         speedSection' =
             case tasks ^? element (fromIntegral i - 1) of
                 Nothing -> Nothing
-                Just Cmp.Task{..} -> speedSection
+                Just Task{..} -> speedSection
 
         (MadeGoal tMadeGoal) = tagMadeGoal tags
         (ArrivalRank tArrivalRank) = tagArrivalRank tags

@@ -16,14 +16,14 @@ import Control.Monad.Except (ExceptT(..), lift)
 import System.FilePath (FilePath, takeDirectory)
 
 import qualified Flight.Kml as Kml (MarkedFixes(..))
-import qualified Flight.Comp as Cmp
+import Flight.Comp 
     ( CompSettings(..)
     , Pilot(..)
     , PilotTrackLogFile(..)
+    , TrackFileFail(..)
     )
 import Flight.TrackLog as Log
-    ( TrackFileFail(..)
-    , IxTask(..)
+    ( IxTask(..)
     , pilotTracks
     , filterPilots
     , filterTasks
@@ -34,13 +34,13 @@ import Flight.Mask.Settings (readCompSettings)
 
 settingsLogs :: FilePath
              -> [IxTask]
-             -> [Cmp.Pilot]
-             -> ExceptT String IO (Cmp.CompSettings, [[Cmp.PilotTrackLogFile]])
+             -> [Pilot]
+             -> ExceptT String IO (CompSettings, [[PilotTrackLogFile]])
 settingsLogs compYamlPath tasks selectPilots = do
     settings <- readCompSettings compYamlPath
     ExceptT . return $ go settings
     where
-        go s@Cmp.CompSettings{pilots, taskFolders} =
+        go s@CompSettings{pilots, taskFolders} =
             Right (s, zs)
             where
                 dir = takeDirectory compYamlPath
@@ -48,16 +48,16 @@ settingsLogs compYamlPath tasks selectPilots = do
                 fs = Log.makeAbsolute dir <$> taskFolders
                 zs = zipWith (<$>) fs ys
 
-checkTracks :: forall a. (Cmp.CompSettings -> (IxTask -> Kml.MarkedFixes -> a))
+checkTracks :: forall a. (CompSettings -> (IxTask -> Kml.MarkedFixes -> a))
             -> FilePath
             -> [IxTask]
-            -> [Cmp.Pilot]
+            -> [Pilot]
             -> ExceptT
                 String
                 IO
                 [[ Either
-                   (Cmp.Pilot, TrackFileFail)
-                   (Cmp.Pilot, a)
+                   (Pilot, TrackFileFail)
+                   (Pilot, a)
                 ]]
 checkTracks f compYamlPath tasks selectPilots = do
     (settings, xs) <- settingsLogs compYamlPath tasks selectPilots

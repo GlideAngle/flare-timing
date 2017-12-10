@@ -22,6 +22,7 @@ import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Data.String (IsString)
+import Data.Maybe (catMaybes)
 import Control.Monad (mapM_)
 import Control.Monad.Except (ExceptT(..), runExceptT)
 import System.Directory (doesFileExist, doesDirectoryExist)
@@ -33,8 +34,8 @@ import Cmd.Options (description)
 import qualified Data.Yaml.Pretty as Y
 import qualified Data.ByteString as BS
 
-import qualified Flight.Comp as Cmp (CompSettings(..), Pilot(..))
-import Flight.TrackLog (TrackFileFail(..), IxTask(..))
+import Flight.Comp (CompSettings(..), Pilot(..), TrackFileFail(..))
+import Flight.TrackLog (IxTask(..))
 import Flight.Units ()
 import Flight.Track.Cross (TrackCross(..), PilotTrackCross(..), Crossing(..))
 import Flight.Zone.Raw (RawZone)
@@ -50,13 +51,13 @@ import Flight.Mask
 type MkPart a =
     FilePath
     -> [IxTask]
-    -> [Cmp.Pilot]
+    -> [Pilot]
     -> ExceptT
         String
         IO
         [[Either
-            (Cmp.Pilot, TrackFileFail)
-            (Cmp.Pilot, a)
+            (Pilot, TrackFileFail)
+            (Pilot, a)
         ]]
 
 type AddPart a = a -> TrackCross
@@ -119,23 +120,34 @@ drive CmdOptions{..} = do
                             f
                                 yamlCompPath
                                 (IxTask <$> task)
-                                (Cmp.Pilot <$> pilot)
+                                (Pilot <$> pilot)
 
                     case checks of
                         Left msg -> print msg
                         Right xs -> do
-                            let ps :: [[PilotTrackCross]] =
+                            let ps' :: [[(PilotTrackCross, Maybe (Pilot, TrackFileFail))]] =
                                     (fmap . fmap)
                                         (\case
-                                            Left (p, _) ->
-                                                PilotTrackCross p Nothing
+                                            Left err@(p, _) ->
+                                                (PilotTrackCross p Nothing, Just err)
 
                                             Right (p, x) ->
-                                                PilotTrackCross p (Just $ g x))
+                                                (PilotTrackCross p (Just $ g x), Nothing))
                                         xs
 
+                            let ps :: [[PilotTrackCross]]
+                                   = (fmap . fmap) fst ps'
+
+                            let es' :: [[Maybe (Pilot, TrackFileFail)]]
+                                   = (fmap . fmap) snd ps'
+
+                            let es :: [[(Pilot, TrackFileFail)]]
+                                   = fmap catMaybes es'
+
                             let tzi =
-                                    Crossing { crossing = ps }
+                                    Crossing { crossing = ps
+                                             , errors = es
+                                             }
 
                             let yaml =
                                     Y.encodePretty
@@ -145,7 +157,7 @@ drive CmdOptions{..} = do
                             BS.writeFile yamlCrossPath yaml
 
                 checkAll =
-                    checkTracks $ \Cmp.CompSettings{tasks} -> flown math tasks
+                    checkTracks $ \CompSettings{tasks} -> flown math tasks
 
 flown :: Math -> SigMasking TrackCross
 flown math tasks iTask xs =

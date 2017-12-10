@@ -22,10 +22,11 @@ module Flight.Comp
     , StartGate(..)
     , OpenClose(..)
     , showTask
-    -- * Pilot
+    -- * Pilot and their track logs.
     , Pilot(..)
     , PilotTrackLogFile(..)
     , TrackLogFile(..)
+    , TrackFileFail(..)
     , TaskFolder(..)
     ) where
 

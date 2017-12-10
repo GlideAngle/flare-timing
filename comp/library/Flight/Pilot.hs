@@ -5,6 +5,7 @@ module Flight.Pilot
     , PilotTrackLogFile(..)
     , TrackLogFile(..)
     , TaskFolder(..)
+    , TrackFileFail(..)
     ) where
 
 import GHC.Generics (Generic)
@@ -44,3 +45,20 @@ instance Show TaskFolder where
 instance Show PilotTrackLogFile where
     show (PilotTrackLogFile pilot Nothing) = show pilot ++ " -"
     show (PilotTrackLogFile pilot (Just tlf)) = show pilot ++ " <<" ++ show tlf ++ ">>"
+
+data TrackFileFail
+    = TaskFolderExistsNot String
+    | TrackLogFileExistsNot String
+    | TrackLogFileNotSet
+    | TrackLogFileNotRead String
+    deriving Generic
+
+instance Show TrackFileFail where
+    show (TaskFolderExistsNot x) = "Folder '" ++ x ++ "' not found"
+    show (TrackLogFileExistsNot x) = "File '" ++ x ++ "' not found"
+    show TrackLogFileNotSet = "File not set"
+    show (TrackLogFileNotRead "") = "File not read"
+    show (TrackLogFileNotRead x) = "File not read " ++ x
+
+instance ToJSON TrackFileFail
+instance FromJSON TrackFileFail

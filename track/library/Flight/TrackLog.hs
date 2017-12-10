@@ -1,4 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TupleSections #-}
 
 {-|
@@ -11,8 +10,7 @@ Stability   : experimental
 Competition pilot tracks logs.
 -}
 module Flight.TrackLog
-    ( TrackFileFail(..)
-    , IxTask(..)
+    ( IxTask(..)
     , pilotTracks
     , filterPilots
     , filterTasks
@@ -37,6 +35,7 @@ import Flight.Comp
     ( Pilot(..)
     , PilotTrackLogFile(..)
     , TrackLogFile(..)
+    , TrackFileFail(..)
     , TaskFolder(..)
     )
 
@@ -45,19 +44,6 @@ newtype IxTask = IxTask Int deriving (Eq, Show)
 
 ixTasks :: [IxTask]
 ixTasks = IxTask <$> [ 1 .. ]
-
-data TrackFileFail
-    = TaskFolderExistsNot String
-    | TrackLogFileExistsNot String
-    | TrackLogFileNotSet
-    | TrackLogFileNotRead String
-
-instance Show TrackFileFail where
-    show (TaskFolderExistsNot x) = "Folder '" ++ x ++ "' not found"
-    show (TrackLogFileExistsNot x) = "File '" ++ x ++ "' not found"
-    show TrackLogFileNotSet = "File not set"
-    show (TrackLogFileNotRead "") = "File not read"
-    show (TrackLogFileNotRead x) = "File not read " ++ x
 
 pilotTrack :: (K.MarkedFixes -> a)
            -> PilotTrackLogFile

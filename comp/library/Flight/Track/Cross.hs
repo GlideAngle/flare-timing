@@ -20,14 +20,16 @@ module Flight.Track.Cross
 import Data.Time.Clock (UTCTime)
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
-import Flight.Pilot (Pilot(..))
+import Flight.Pilot (Pilot(..), TrackFileFail)
 import Flight.LatLng.Raw (RawLat, RawLng)
 
 -- | For each task, the crossing for that task.
-newtype Crossing =
+data Crossing =
     Crossing
         { crossing :: [[PilotTrackCross]]
-          -- ^ For each made zone, the pair of fixes cross it.
+          -- ^ For each task, for each made zone, the pair of fixes cross it.
+        , errors :: [[(Pilot, TrackFileFail)]]
+          -- ^ For each task, the pilots with track log problems.
         }
     deriving (Show, Generic)
 

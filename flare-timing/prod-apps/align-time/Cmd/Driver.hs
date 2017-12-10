@@ -45,8 +45,9 @@ import Cmd.Options (description)
 import Cmd.Inputs (readTags)
 import Cmd.Outputs (writeTimeRowsToCsv)
 
-import Flight.Comp (CompSettings(..), Pilot(..), Task(..), SpeedSection)
-import Flight.TrackLog (IxTask(..), TrackFileFail)
+import Flight.Comp
+    (CompSettings(..), Pilot(..), Task(..), TrackFileFail, SpeedSection)
+import Flight.TrackLog (IxTask(..))
 import Flight.Units ()
 import Flight.Mask
     (TaskZone, SigMasking, Ticked(..)
@@ -162,7 +163,7 @@ checkAll :: [[Maybe UTCTime]]
              IO
              [
                  [Either
-                     (Pilot, Flight.TrackLog.TrackFileFail)
+                     (Pilot, TrackFileFail)
                      (Pilot, Pilot -> [TimeRow])
                  ]
              ]
