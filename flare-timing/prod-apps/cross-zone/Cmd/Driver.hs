@@ -127,7 +127,8 @@ drive CmdOptions{..} = do
                     case checks of
                         Left msg -> print msg
                         Right xs -> do
-                            let ps' :: [[(PilotTrackCross, Maybe (Pilot, TrackFileFail))]] =
+                            let ps :: [([PilotTrackCross], [Maybe (Pilot, TrackFileFail)])] =
+                                    unzip <$>
                                     (fmap . fmap)
                                         (\case
                                             Left err@(p, _) ->
@@ -137,18 +138,9 @@ drive CmdOptions{..} = do
                                                 (PilotTrackCross p (Just $ g x), Nothing))
                                         xs
 
-                            let ps :: [[PilotTrackCross]]
-                                   = (fmap . fmap) fst ps'
-
-                            let es' :: [[Maybe (Pilot, TrackFileFail)]]
-                                   = (fmap . fmap) snd ps'
-
-                            let es :: [[(Pilot, TrackFileFail)]]
-                                   = fmap catMaybes es'
-
                             let tzi =
-                                    Crossing { crossing = ps
-                                             , errors = es
+                                    Crossing { crossing = fst <$> ps
+                                             , errors = catMaybes . snd <$> ps
                                              }
 
                             let yaml =
