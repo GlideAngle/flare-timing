@@ -13,7 +13,6 @@ import Control.Monad (mapM_)
 import Control.Monad.Trans.Except (throwE)
 import Control.Monad.Except (ExceptT(..), runExceptT, lift)
 import System.Directory (doesFileExist, doesDirectoryExist)
-import System.FilePath (replaceExtension)
 import System.FilePath.Find
     (FileType(..), (==?), (&&?), find, always, fileType, extension)
 
@@ -24,12 +23,16 @@ import Flight.Fsdb
 import qualified Data.Yaml.Pretty as Y
 import qualified Data.ByteString as BS
 import Flight.Comp
-    ( CompSettings(..)
+    ( FsdbFile(..)
+    , FsdbXml(..)
+    , CompFile(..)
+    , CompSettings(..)
     , Comp(..)
     , Nominal(..)
     , Task(..)
     , TaskFolder(..)
     , PilotTrackLogFile(..)
+    , fsdbToComp
     )
 
 driverMain :: IO ()
@@ -47,23 +50,22 @@ drive CmdOptions{..} = do
     start <- getTime Monotonic
     dfe <- doesFileExist file
     if dfe then
-        go file
+        go $ FsdbFile file
     else do
         dde <- doesDirectoryExist dir
         if dde then do
             files <- find always (fileType ==? RegularFile &&? extension ==? ".fsdb") dir
-            mapM_ go files
+            mapM_ go (FsdbFile <$> files)
         else
             putStrLn "Couldn't find any flight score competition database input files."
     end <- getTime Monotonic
     fprint ("Extracting tasks completed in " % timeSpecs % "\n") start end
     where
-        go fsdbPath = do
+        go fsdbFile@(FsdbFile fsdbPath) = do
             contents <- readFile fsdbPath
             let contents' = dropWhile (/= '<') contents
-            let yamlPath = replaceExtension fsdbPath ".comp-input.yaml"
 
-            settings <- runExceptT $ fsdbSettings contents'
+            settings <- runExceptT $ fsdbSettings (FsdbXml contents')
             case settings of
                 Left msg -> print msg
                 Right cfg -> do
@@ -72,7 +74,9 @@ drive CmdOptions{..} = do
                                 (Y.setConfCompare cmp Y.defConfig)
                                 cfg
 
-                    BS.writeFile yamlPath yaml
+                    let (CompFile compPath) = fsdbToComp fsdbFile
+
+                    BS.writeFile compPath yaml
 
         cmp a b =
             case (a, b) of
@@ -116,8 +120,8 @@ drive CmdOptions{..} = do
                 ("radius", _) -> GT
                 _ -> compare a b
 
-fsdbComp :: String -> ExceptT String IO Comp
-fsdbComp contents = do
+fsdbComp :: FsdbXml -> ExceptT String IO Comp
+fsdbComp (FsdbXml contents) = do
     cs <- lift $ parseComp contents
     case cs of
         Left msg -> ExceptT . return $ Left msg
@@ -127,8 +131,8 @@ fsdbComp contents = do
             lift $ print msg
             throwE msg
 
-fsdbNominal :: String -> ExceptT String IO Nominal
-fsdbNominal contents = do
+fsdbNominal :: FsdbXml -> ExceptT String IO Nominal
+fsdbNominal (FsdbXml contents) = do
     ns <- lift $ parseNominal contents
     case ns of
         Left msg -> ExceptT . return $ Left msg
@@ -138,28 +142,28 @@ fsdbNominal contents = do
             lift $ print msg
             throwE msg
 
-fsdbTasks :: String -> ExceptT String IO [Task]
-fsdbTasks contents = do
+fsdbTasks :: FsdbXml -> ExceptT String IO [Task]
+fsdbTasks (FsdbXml contents) = do
     ts <- lift $ parseTasks contents
     ExceptT $ return ts
 
-fsdbTaskFolders :: String -> ExceptT String IO [TaskFolder]
-fsdbTaskFolders contents = do
+fsdbTaskFolders :: FsdbXml -> ExceptT String IO [TaskFolder]
+fsdbTaskFolders (FsdbXml contents) = do
     fs <- lift $ parseTaskFolders contents
     ExceptT $ return fs
 
-fsdbTracks :: String -> ExceptT String IO [[PilotTrackLogFile]]
-fsdbTracks contents = do
+fsdbTracks :: FsdbXml -> ExceptT String IO [[PilotTrackLogFile]]
+fsdbTracks (FsdbXml contents) = do
     fs <- lift $ parseTracks contents
     ExceptT $ return fs
 
-fsdbSettings :: String -> ExceptT String IO CompSettings
-fsdbSettings contents = do
-    c <- fsdbComp contents
-    n <- fsdbNominal contents
-    ts <- fsdbTasks contents
-    fs <- fsdbTaskFolders contents
-    ps <- fsdbTracks contents
+fsdbSettings :: FsdbXml -> ExceptT String IO CompSettings
+fsdbSettings fsdbXml = do
+    c <- fsdbComp fsdbXml
+    n <- fsdbNominal fsdbXml
+    ts <- fsdbTasks fsdbXml
+    fs <- fsdbTaskFolders fsdbXml
+    ps <- fsdbTracks fsdbXml
     let msg = "Extracted " ++ show (length ts) ++ " tasks from \"" ++ compName c ++ "\""
     lift . putStrLn $ msg
     return CompSettings { comp = c

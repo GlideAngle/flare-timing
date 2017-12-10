@@ -29,8 +29,7 @@ module Flight.Comp
     , TrackFileFail(..)
     , TaskFolder(..)
     -- * Comp paths
-    , CompFile(..)
-    , CrossFile(..)
+    , module Flight.Path
     ) where
 
 import Data.Time.Clock (UTCTime)

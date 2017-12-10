@@ -19,6 +19,7 @@ library:
   - time
   - cassava
   - bytestring
+  - filepath
   - flight-latlng
   - flight-zone
   - flight-gap
@@ -52,6 +53,7 @@ tests:
     - time
     - cassava
     - bytestring
+    - filepath
     - flight-latlng
     - flight-zone
     - flight-gap
