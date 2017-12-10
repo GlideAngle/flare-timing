@@ -17,12 +17,11 @@ import Data.List (find, elemIndex)
 import Control.Monad (join)
 import Control.Monad.Except (ExceptT(..), lift)
 import Control.Lens ((^?), element)
-import System.FilePath (FilePath)
 import qualified Data.ByteString as BS
 import Data.Yaml (decodeEither)
 import Flight.TrackLog (IxTask(..))
 import qualified Flight.Kml as Kml (MarkedFixes(..))
-import Flight.Comp (SpeedSection, Pilot(..))
+import Flight.Comp (TagFile(..), SpeedSection, Pilot(..))
 import Flight.Track.Tag (Tagging(..), TrackTime(..), TrackTag(..), PilotTrackTag(..))
 import Flight.Mask (slice)
 
@@ -30,9 +29,9 @@ type TaggingLookup a = Pilot -> SpeedSection -> IxTask -> Kml.MarkedFixes -> May
 newtype MadeGoal = MadeGoal (Maybe (TaggingLookup Bool))
 newtype ArrivalRank = ArrivalRank (Maybe (TaggingLookup Int))
 
-readTags :: FilePath -> ExceptT String IO Tagging
-readTags yamlPath = do
-    contents <- lift $ BS.readFile yamlPath
+readTags :: TagFile -> ExceptT String IO Tagging
+readTags (TagFile path) = do
+    contents <- lift $ BS.readFile path
     ExceptT . return $ decodeEither contents
 
 tagMadeGoal :: Either String Tagging -> MadeGoal

@@ -21,11 +21,7 @@ import Control.Monad.Except (ExceptT, runExceptT)
 import System.Directory (doesFileExist, doesDirectoryExist, createDirectoryIfMissing)
 import System.FilePath.Find
     (FileType(..), (==?), (&&?), find, always, fileType, extension)
-import System.FilePath
-    ( FilePath
-    , (</>), (<.>)
-    , takeFileName, takeDirectory
-    )
+import System.FilePath ((</>), takeFileName)
 import Data.Vector (Vector)
 import qualified Data.Vector as V (fromList, toList)
 
@@ -35,7 +31,19 @@ import Cmd.Options (description)
 import Cmd.Inputs (readTimeRowsFromCsv)
 import Cmd.Outputs (writeTimeRowsToCsv)
 
-import Flight.Comp (CompFile(..), CompSettings(..), Pilot(..), TrackFileFail)
+import Flight.Comp
+    ( DiscardDir(..)
+    , AlignDir(..)
+    , CompFile(..)
+    , AlignFile(..)
+    , DiscardFile(..)
+    , CompSettings(..)
+    , Pilot(..)
+    , TrackFileFail
+    , compFileToCompDir
+    , discardDir
+    , alignPath
+    )
 import Flight.TrackLog (IxTask(..))
 import Flight.Units ()
 import Flight.Mask (checkTracks)
@@ -59,34 +67,34 @@ drive CmdOptions{..} = do
     start <- getTime Monotonic
     dfe <- doesFileExist file
     if dfe then
-        withFile file
+        withFile (CompFile file)
     else do
         dde <- doesDirectoryExist dir
         if dde then do
             files <- find always (fileType ==? RegularFile &&? extension ==? ".comp-inputs.yaml") dir
-            mapM_ withFile files
+            mapM_ withFile (CompFile <$> files)
         else
             putStrLn "Couldn't find any flight score competition yaml input files."
     end <- getTime Monotonic
     fprint ("Filtering times completed in " % timeSpecs % "\n") start end
     where
-        withFile compPath = do
+        withFile compFile@(CompFile compPath) = do
             putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
             filterTime
+                compFile
                 (IxTask <$> task)
                 (Pilot <$> pilot)
-                (CompFile compPath)
                 checkAll
 
-filterTime :: [IxTask]
+filterTime :: CompFile
+           -> [IxTask]
            -> [Pilot]
-           -> CompFile
            -> (CompFile
                -> [IxTask]
                -> [Pilot]
                -> ExceptT String IO [[Either (Pilot, _) (Pilot, _)]])
            -> IO ()
-filterTime selectTasks selectPilots compFile@(CompFile compPath) f = do
+filterTime compFile selectTasks selectPilots f = do
     checks <- runExceptT $ f compFile selectTasks selectPilots
 
     case checks of
@@ -102,7 +110,7 @@ filterTime selectTasks selectPilots compFile@(CompFile compPath) f = do
             _ <- zipWithM_
                 (\ n zs ->
                     when (includeTask selectTasks $ IxTask n) $
-                        mapM_ (readFilterWrite (takeDirectory compPath) n) zs)
+                        mapM_ (readFilterWrite compFile n) zs)
                 [1 .. ]
                 ys
 
@@ -123,33 +131,20 @@ checkAll = checkTracks $ \CompSettings{tasks} -> (\ _ _ _ -> ()) tasks
 includeTask :: [IxTask] -> IxTask -> Bool
 includeTask tasks = if null tasks then const True else (`elem` tasks)
 
-csvPathIn :: FilePath -> Int -> Pilot -> (FilePath, FilePath)
-csvPathIn dir task pilot =
-    (d, f)
-    where
-        d = dotDir "align-time" dir task
-        f = show pilot <.> "csv"
-
-csvDirOut :: FilePath -> Int -> FilePath
-csvDirOut = dotDir "discard-further"
-
-dotDir :: FilePath -> FilePath -> Int -> FilePath
-dotDir name dir task =
-    dir </> ".flare-timing" </> name </> "task-" ++ show task
-
-readFilterWrite :: FilePath -> Int -> Pilot -> IO ()
-readFilterWrite dir iTask pilot = do
+readFilterWrite :: CompFile -> Int -> Pilot -> IO ()
+readFilterWrite compFile iTask pilot = do
     _ <- createDirectoryIfMissing True dOut
-    rows <- runExceptT $ readTimeRowsFromCsv (dIn </> f)
+    rows <- runExceptT $ readTimeRowsFromCsv (AlignFile (dIn </> f))
     case rows of
         Left msg ->
             print msg
 
         Right (_, xs) ->
-            writeTimeRowsToCsv (dOut </> f) headers $ discard xs
+            writeTimeRowsToCsv (DiscardFile $ dOut </> f) headers $ discard xs
     where
-        (dIn, f) = csvPathIn dir iTask pilot
-        dOut = csvDirOut dir iTask
+        dir = compFileToCompDir compFile
+        (AlignDir dIn, AlignFile f) = alignPath dir iTask pilot
+        (DiscardDir dOut) = discardDir dir iTask
 
 timeToTick :: TimeRow -> TickRow
 timeToTick TimeRow{tick, distance} = TickRow tick distance

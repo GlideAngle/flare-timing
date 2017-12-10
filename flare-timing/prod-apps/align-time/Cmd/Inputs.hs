@@ -1,12 +1,12 @@
 module Cmd.Inputs (readTags) where
 
 import Control.Monad.Except (ExceptT(..), lift)
-import System.FilePath (FilePath)
 import qualified Data.ByteString as BS
 import Data.Yaml (decodeEither)
 import Flight.Track.Tag (Tagging)
+import Flight.Comp (TagFile(..))
 
-readTags :: FilePath -> ExceptT String IO Tagging
-readTags yamlPath = do
-    contents <- lift $ BS.readFile yamlPath
+readTags :: TagFile -> ExceptT String IO Tagging
+readTags (TagFile path) = do
+    contents <- lift $ BS.readFile path
     ExceptT . return $ decodeEither contents

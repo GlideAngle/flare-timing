@@ -40,7 +40,15 @@ import qualified Data.ByteString as BS
 import qualified Data.Number.FixedFunctions as F
 
 import Flight.Comp
-    (Pilot(..), CompFile(..), CompSettings(..), Task(..), TrackFileFail(..))
+    ( Pilot(..)
+    , CompFile(..)
+    , TagFile(..)
+    , CompSettings(..)
+    , Task(..)
+    , TrackFileFail(..)
+    , compToCross
+    , crossToTag
+    )
 import qualified Flight.Task as Tsk (TaskDistance(..))
 import qualified Flight.Score as Gap (PilotDistance(..), PilotTime(..))
 import Flight.TrackLog (IxTask(..))
@@ -129,26 +137,23 @@ drive CmdOptions{..} = do
     start <- getTime Monotonic
     dfe <- doesFileExist file
     if dfe then
-        withFile file
+        withFile (CompFile file)
     else do
         dde <- doesDirectoryExist dir
         if dde then do
             files <- find always (fileType ==? RegularFile &&? extension ==? ".comp-inputs.yaml") dir
-            mapM_ withFile files
+            mapM_ withFile (CompFile <$> files)
         else
             putStrLn "Couldn't find any flight score competition yaml input files."
     end <- getTime Monotonic
     fprint ("Masking tracks completed in " % timeSpecs % "\n") start end
     where
-        withFile compPath = do
-            let tagPath =
-                    flip replaceExtension ".tag-zone.yaml"
-                    $ dropExtension compPath
-
+        withFile compFile@(CompFile compPath) = do
+            let tagFile@(TagFile tagPath) = crossToTag . compToCross $ compFile
             putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
             putStrLn $ "Reading zone tags from '" ++ takeFileName tagPath ++ "'"
 
-            tags <- runExceptT $ readTags tagPath
+            tags <- runExceptT $ readTags tagFile
 
             writeMask
                 (IxTask <$> task)

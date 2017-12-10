@@ -27,7 +27,7 @@ import Control.Monad (mapM_)
 import Control.Monad.Except (ExceptT(..), runExceptT)
 import System.Directory (doesFileExist, doesDirectoryExist)
 import System.FilePath.Find (FileType(..), (==?), (&&?), find, always, fileType, extension)
-import System.FilePath (takeFileName, replaceExtension, dropExtension)
+import System.FilePath (takeFileName)
 import Flight.Cmd.Paths (checkPaths)
 import Flight.Cmd.Options (Math(..), CmdOptions(..), ProgramName(..), mkOptions)
 import Cmd.Options (description)
@@ -35,7 +35,8 @@ import qualified Data.Yaml.Pretty as Y
 import qualified Data.ByteString as BS
 
 import Flight.Comp
-    (CompFile(..), CrossFile(..), CompSettings(..), Pilot(..), TrackFileFail(..))
+    ( CompFile(..), CrossFile(..), CompSettings(..), Pilot(..), TrackFileFail(..)
+    , compToCross)
 import Flight.TrackLog (IxTask(..))
 import Flight.Units ()
 import Flight.Track.Cross (TrackCross(..), PilotTrackCross(..), Crossing(..))
@@ -77,33 +78,27 @@ drive CmdOptions{..} = do
     start <- getTime Monotonic
     dfe <- doesFileExist file
     if dfe then
-        withFile file
+        withFile (CompFile file)
     else do
         dde <- doesDirectoryExist dir
         if dde then do
             files <- find always (fileType ==? RegularFile &&? extension ==? ".comp-inputs.yaml") dir
-            mapM_ withFile files
+            mapM_ withFile (CompFile <$> files)
         else
             putStrLn "Couldn't find any flight score competition yaml input files."
     end <- getTime Monotonic
     fprint ("Tracks crossing zones completed in " % timeSpecs % "\n") start end
     where
-        withFile compPath = do
-            let crossPath =
-                    flip replaceExtension ".cross-zone.yaml"
-                    $ dropExtension compPath
-
+        withFile compFile@(CompFile compPath) = do
             putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
             writeMask
-                (CompFile compPath)
-                (CrossFile crossPath)
+                compFile
                 (IxTask <$> task)
                 (Pilot <$> pilot)
                 (checkAll math)
                 id
 
 writeMask :: CompFile
-          -> CrossFile
           -> [IxTask]
           -> [Pilot]
           -> (CompFile
@@ -114,12 +109,13 @@ writeMask :: CompFile
                       IO [[Either (Pilot, TrackFileFail) (Pilot, track)]])
           -> (track -> TrackCross)
           -> IO ()
-writeMask compFile (CrossFile crossPath) task pilot f g = do
+writeMask compFile task pilot f g = do
     checks <- runExceptT $ f compFile task pilot
 
     case checks of
         Left msg -> print msg
         Right xs -> do
+
             let ps :: [([PilotTrackCross], [Maybe (Pilot, TrackFileFail)])] =
                     unzip <$>
                     (fmap . fmap)
@@ -140,6 +136,8 @@ writeMask compFile (CrossFile crossPath) task pilot f g = do
                     Y.encodePretty
                         (Y.setConfCompare cmp Y.defConfig)
                         tzi 
+
+            let (CrossFile crossPath) = compToCross compFile
 
             BS.writeFile crossPath yaml
 

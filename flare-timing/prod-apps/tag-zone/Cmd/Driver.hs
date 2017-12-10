@@ -28,8 +28,9 @@ import Data.List (transpose, sortOn)
 import Control.Monad (mapM_)
 import Control.Monad.Except (runExceptT)
 import System.Directory (doesFileExist, doesDirectoryExist)
-import System.FilePath.Find (FileType(..), (==?), (&&?), find, always, fileType, extension)
-import System.FilePath (FilePath, takeFileName, replaceExtension, dropExtension)
+import System.FilePath.Find
+    (FileType(..), (==?), (&&?), find, always, fileType, extension)
+import System.FilePath (takeFileName)
 import Flight.Cmd.Paths (checkPaths)
 import Flight.Cmd.Options
     (CmdOptions(..), ProgramName(..), Extension(..), mkOptions)
@@ -39,7 +40,7 @@ import qualified Data.ByteString as BS
 
 import Flight.Units ()
 import Flight.Mask (tagZones)
-import Flight.Comp (Pilot(..))
+import Flight.Comp (Pilot(..), CrossFile(..), TagFile(..), crossToTag)
 import Flight.Track.Cross
     (Crossing(..), TrackCross(..), PilotTrackCross(..), Fix(..))
 import Flight.Track.Tag
@@ -88,28 +89,24 @@ drive CmdOptions{..} = do
     start <- getTime Monotonic
     dfe <- doesFileExist file
     if dfe then
-        withFile file
+        withFile (CrossFile file)
     else do
         dde <- doesDirectoryExist dir
         if dde then do
             files <- find always (fileType ==? RegularFile &&? extension ==? ".cross-zone.yaml") dir
-            mapM_ withFile files
+            mapM_ withFile (CrossFile <$> files)
         else
             putStrLn "Couldn't find any '.cross-zone.yaml' input files."
     end <- getTime Monotonic
     fprint ("Tagging zones completed in " % timeSpecs % "\n") start end
     where
-        withFile yamlCrossZonePath = do
-            let yamlTagZonePath =
-                    flip replaceExtension ".tag-zone.yaml"
-                    $ dropExtension yamlCrossZonePath
+        withFile crossFile@(CrossFile crossPath) = do
+            putStrLn $ "Reading zone crossings from '" ++ takeFileName crossPath ++ "'"
+            writeTags crossFile 
 
-            putStrLn $ "Reading zone crossings from '" ++ takeFileName yamlCrossZonePath ++ "'"
-            writeTags yamlTagZonePath yamlCrossZonePath
-
-writeTags :: FilePath -> FilePath -> IO ()
-writeTags tagPath crossPath = do
-    cs <- runExceptT $ readCrossings crossPath
+writeTags :: CrossFile -> IO ()
+writeTags crossFile = do
+    cs <- runExceptT $ readCrossings crossFile
 
     case cs of
         Left s -> putStrLn s
@@ -133,6 +130,8 @@ writeTags tagPath crossPath = do
                     Y.encodePretty
                         (Y.setConfCompare cmp Y.defConfig)
                         tzi 
+
+            let (TagFile tagPath) = crossToTag crossFile
 
             BS.writeFile tagPath yaml
 

@@ -34,11 +34,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import System.Directory (doesFileExist, doesDirectoryExist, createDirectoryIfMissing)
 import System.FilePath.Find
     (FileType(..), (==?), (&&?), find, always, fileType, extension)
-import System.FilePath
-    ( FilePath
-    , (</>), (<.>)
-    , takeFileName, takeDirectory, replaceExtension, dropExtension
-    )
+import System.FilePath ((</>), takeFileName)
 import Flight.Cmd.Paths (checkPaths)
 import Flight.Cmd.Options (CmdOptions(..), ProgramName(..), mkOptions)
 import Cmd.Options (description)
@@ -46,12 +42,19 @@ import Cmd.Inputs (readTags)
 import Cmd.Outputs (writeTimeRowsToCsv)
 
 import Flight.Comp
-    (CompFile(..)
+    ( AlignDir(..)
+    , CompFile(..)
+    , TagFile(..)
+    , AlignFile(..)
     , CompSettings(..)
     , Pilot(..)
     , Task(..)
     , TrackFileFail
     , SpeedSection
+    , compToCross
+    , crossToTag
+    , compFileToCompDir
+    , alignPath
     )
 import Flight.TrackLog (IxTask(..))
 import Flight.Units ()
@@ -97,26 +100,23 @@ drive CmdOptions{..} = do
     start <- getTime Monotonic
     dfe <- doesFileExist file
     if dfe then
-        withFile file
+        withFile (CompFile file)
     else do
         dde <- doesDirectoryExist dir
         if dde then do
             files <- find always (fileType ==? RegularFile &&? extension ==? ".comp-inputs.yaml") dir
-            mapM_ withFile files
+            mapM_ withFile (CompFile <$> files)
         else
             putStrLn "Couldn't find any flight score competition yaml input files."
     end <- getTime Monotonic
     fprint ("Aligning times completed in " % timeSpecs % "\n") start end
     where
-        withFile compPath = do
-            let tagPath =
-                    flip replaceExtension ".tag-zone.yaml"
-                    $ dropExtension compPath
-
+        withFile compFile@(CompFile compPath) = do
+            let tagFile@(TagFile tagPath) = crossToTag . compToCross $ compFile
             putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
             putStrLn $ "Reading zone tags from '" ++ takeFileName tagPath ++ "'"
 
-            tags <- runExceptT $ readTags tagPath
+            tags <- runExceptT $ readTags tagFile
             case tags of
                 Left msg ->
                     print msg
@@ -128,17 +128,16 @@ drive CmdOptions{..} = do
                         (CompFile compPath)
                         (checkAll $ zonesFirst <$> timing tags')
 
-writeTime :: Show a
-          => [IxTask]
+writeTime :: [IxTask]
           -> [Pilot]
           -> CompFile
           -> (CompFile
               -> [IxTask]
               -> [Pilot]
               -> ExceptT
-                  a IO [[Either (Pilot, t) (Pilot, Pilot -> [TimeRow])]])
+                  String IO [[Either (Pilot, t) (Pilot, Pilot -> [TimeRow])]])
           -> IO ()
-writeTime selectTasks selectPilots compFile@(CompFile compPath) f = do
+writeTime selectTasks selectPilots compFile f = do
     checks <- runExceptT $ f compFile selectTasks selectPilots
 
     case checks of
@@ -154,7 +153,7 @@ writeTime selectTasks selectPilots compFile@(CompFile compPath) f = do
             _ <- zipWithM_
                 (\ n zs ->
                     when (includeTask selectTasks $ IxTask n) $
-                        mapM_ (writePilotTimes (takeDirectory compPath) n) zs)
+                        mapM_ (writePilotTimes compFile n) zs)
                 [1 .. ]
                 ys
 
@@ -178,20 +177,14 @@ checkAll ts = checkTracks $ \CompSettings{tasks} -> group ts tasks
 includeTask :: [IxTask] -> IxTask -> Bool
 includeTask tasks = if null tasks then const True else (`elem` tasks)
 
-fcsv :: FilePath -> Int -> Pilot -> (FilePath, FilePath)
-fcsv dir task pilot =
-    (d, f)
-    where
-        d = dir </> ".flare-timing" </> "align-time" </> "task-" ++ show task
-        f = show pilot <.> "csv"
-
-writePilotTimes :: FilePath -> Int -> (Pilot, [TimeRow]) -> IO ()
-writePilotTimes dir iTask (pilot, rows) = do
-    _ <- createDirectoryIfMissing True d
-    _ <- writeTimeRowsToCsv (d </> f) headers rows
+writePilotTimes :: CompFile -> Int -> (Pilot, [TimeRow]) -> IO ()
+writePilotTimes compFile iTask (pilot, rows) = do
+    _ <- createDirectoryIfMissing True dOut
+    _ <- writeTimeRowsToCsv (AlignFile $ dOut </> f) headers rows
     return ()
     where
-        (d, f) = fcsv dir iTask pilot
+        dir = compFileToCompDir compFile
+        (AlignDir dOut, AlignFile f) = alignPath dir iTask pilot
 
 mkTimeRows :: Maybe UTCTime
            -> Leg
