@@ -48,6 +48,9 @@ import Flight.Mask
     , checkTracks, madeZones, zoneToCylinder
     )
 
+newtype CompFile = CompFile FilePath
+newtype CrossFile = CrossFile FilePath
+
 driverMain :: IO ()
 driverMain = do
     name <- getProgName
@@ -93,12 +96,16 @@ drive CmdOptions{..} = do
                     $ dropExtension compPath
 
             putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
-            let go = writeMask compPath crossPath (IxTask <$> task) (Pilot <$> pilot)
+            writeMask
+                (CompFile compPath)
+                (CrossFile crossPath)
+                (IxTask <$> task)
+                (Pilot <$> pilot)
+                (checkAll math)
+                id
 
-            go (checkAll math) id
-
-writeMask :: FilePath
-          -> FilePath
+writeMask :: CompFile
+          -> CrossFile
           -> [IxTask]
           -> [Pilot]
           -> (FilePath
@@ -109,7 +116,7 @@ writeMask :: FilePath
                       IO [[Either (Pilot, TrackFileFail) (Pilot, track)]])
           -> (track -> TrackCross)
           -> IO ()
-writeMask compPath crossPath task pilot f g = do
+writeMask (CompFile compPath) (CrossFile crossPath) task pilot f g = do
     checks <- runExceptT $ f compPath task pilot
 
     case checks of
