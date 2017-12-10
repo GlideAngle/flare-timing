@@ -219,29 +219,32 @@ selectZoneCross prover selectCrossing xs = do
     x <- selectCrossing xs
     prover x
 
--- | If I have three sorted lists xs, ys and zs, discard elements of xs that
--- are greater than the first element of zs, then filter ys so that each
--- element is less than the first element of zs and greater than the first
--- element of xs. The reason for doing the comparison between xs and zs first
--- is that on triangle courses it is the first zone may only have crossings
--- only occurred at the end of the day's racing. These will have high indices
--- and I want to discard them early on in the trimming. It is alright too to
--- end up with a null first list of crossings. This will happen in an aerotow
--- comp when the pilot is towed up from outside the first zone.
+-- | If I have three sorted lists xs, ys and zs, discard elements of ys that
+-- are greater than the last element of zs, then again filter ys so that each
+-- element is greater than the first element of xs.
+--
+-- The reason for doing the comparison between ys and zs first is that on
+-- triangle courses,  the first zone is commonly not part of the speed section.
+-- This zone may only have crossings made after goal, at the end of the day's
+-- racing. These will have high indices and I want to discard them early on in
+-- the trimming.
+--
+-- It is alright too to end up with a null first list of crossings. This will
+-- happen in an aerotow comp when the pilot is towed up from outside the first
+-- zone.
 --
 -- >>>
--- > trimToOrder [[4588,4592],[30,578,583,721,4400],[1714,1720],[3539,3546],[4584]]
---
--- [[],[30,578,583,721],[1714,1720],[3539,3546],[4584]]
 trimToOrder :: Ord a => [a] -> [a] -> [a] -> [a]
 
-trimToOrder xs ys (z : _) =
+trimToOrder xs ys zs@(_ : _) =
     case xs' of
         [] -> ys'
         (x : _) -> filter (> x) ys'
     where
-        xs' = filter (< z) xs
-        ys' = filter (< z) ys
+        (xs', ys') =
+            case reverse zs of
+                [] -> ([], [])
+                (z : _) -> (filter (< z) xs, filter (< z) ys)
 
 trimToOrder (x : _) ys _ = filter (> x) ys
 trimToOrder _ ys _ = ys
@@ -269,6 +272,14 @@ trimToOrder _ ys _ = ys
 -- > trimOrdLists [[4588,4592],[],[1714,1720],[3539,3546],[4584]]
 --
 -- [[4588,4592],[],[],[],[]]
+--
+-- > trimOrdLists [[4588,4592],[30,578,583,721,4400],[1714,1720],[3539,3546],[4584]]
+--
+-- [[],[30,578,583,721],[1714,1720],[3539,3546],[4584]]
+--
+-- > trimOrdLists [[294,4714,4720,4724],[1367,4597],[2207,2209],[3914,3920],[300,568,570,572,573,4711]]
+--
+-- [[294],[1367],[2207,2209],[3914,3920],[4711]]
 trimOrdLists :: Ord a => [[a]] -> [[a]]
 trimOrdLists ys =
     if ys == ys' then nonNullBlock ys else trimOrdLists ys'
