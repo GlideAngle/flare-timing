@@ -48,26 +48,6 @@ import Flight.Mask
     , checkTracks, madeZones, zoneToCylinder
     )
 
-type MkPart a =
-    FilePath
-    -> [IxTask]
-    -> [Pilot]
-    -> ExceptT
-        String
-        IO
-        [[Either
-            (Pilot, TrackFileFail)
-            (Pilot, a)
-        ]]
-
-type AddPart a = a -> TrackCross
-
-type MkCrossingTrackIO a =
-    FilePath
-    -> MkPart a
-    -> AddPart a
-    -> IO ()
-
 driverMain :: IO ()
 driverMain = do
     name <- getProgName
@@ -107,51 +87,67 @@ drive CmdOptions{..} = do
     end <- getTime Monotonic
     fprint ("Tracks crossing zones completed in " % timeSpecs % "\n") start end
     where
-        withFile yamlCompPath = do
-            let yamlCrossPath =
+        withFile compPath = do
+            let crossPath =
                     flip replaceExtension ".cross-zone.yaml"
-                    $ dropExtension yamlCompPath
+                    $ dropExtension compPath
 
-            putStrLn $ "Reading competition from '" ++ takeFileName yamlCompPath ++ "'"
-            let go = writeMask yamlCrossPath in go checkAll id
-            where
-                writeMask :: forall a. MkCrossingTrackIO a
-                writeMask yamlCrossPath f g = do
-                    checks <-
-                        runExceptT $
-                            f
-                                yamlCompPath
-                                (IxTask <$> task)
-                                (Pilot <$> pilot)
+            putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
+            let go = writeMask compPath crossPath (IxTask <$> task) (Pilot <$> pilot)
 
-                    case checks of
-                        Left msg -> print msg
-                        Right xs -> do
-                            let ps :: [([PilotTrackCross], [Maybe (Pilot, TrackFileFail)])] =
-                                    unzip <$>
-                                    (fmap . fmap)
-                                        (\case
-                                            Left err@(p, _) ->
-                                                (PilotTrackCross p Nothing, Just err)
+            go (checkAll math) id
 
-                                            Right (p, x) ->
-                                                (PilotTrackCross p (Just $ g x), Nothing))
-                                        xs
+writeMask :: FilePath
+          -> FilePath
+          -> [IxTask]
+          -> [Pilot]
+          -> (FilePath
+              -> [IxTask]
+              -> [Pilot]
+              -> ExceptT
+                      String
+                      IO [[Either (Pilot, TrackFileFail) (Pilot, track)]])
+          -> (track -> TrackCross)
+          -> IO ()
+writeMask compPath crossPath task pilot f g = do
+    checks <- runExceptT $ f compPath task pilot
 
-                            let tzi =
-                                    Crossing { crossing = fst <$> ps
-                                             , errors = catMaybes . snd <$> ps
-                                             }
+    case checks of
+        Left msg -> print msg
+        Right xs -> do
+            let ps :: [([PilotTrackCross], [Maybe (Pilot, TrackFileFail)])] =
+                    unzip <$>
+                    (fmap . fmap)
+                        (\case
+                            Left err@(p, _) ->
+                                (PilotTrackCross p Nothing, Just err)
 
-                            let yaml =
-                                    Y.encodePretty
-                                        (Y.setConfCompare cmp Y.defConfig)
-                                        tzi 
+                            Right (p, x) ->
+                                (PilotTrackCross p (Just $ g x), Nothing))
+                        xs
 
-                            BS.writeFile yamlCrossPath yaml
+            let tzi =
+                    Crossing { crossing = fst <$> ps
+                             , errors = catMaybes . snd <$> ps
+                             }
 
-                checkAll =
-                    checkTracks $ \CompSettings{tasks} -> flown math tasks
+            let yaml =
+                    Y.encodePretty
+                        (Y.setConfCompare cmp Y.defConfig)
+                        tzi 
+
+            BS.writeFile crossPath yaml
+
+checkAll :: Math
+         -> FilePath
+         -> [IxTask]
+         -> [Pilot]
+         -> ExceptT
+             String
+             IO
+             [[Either (Pilot, TrackFileFail) (Pilot, TrackCross)]]
+checkAll math =
+    checkTracks $ \CompSettings{tasks} -> flown math tasks
 
 flown :: Math -> SigMasking TrackCross
 flown math tasks iTask xs =
