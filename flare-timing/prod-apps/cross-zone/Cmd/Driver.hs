@@ -159,9 +159,9 @@ crossings (p, x) =
 madeZonesToFlying :: MadeZones -> TrackFlyingSection
 madeZonesToFlying x =
     TrackFlyingSection
-        { times = []
-        , seconds = []
-        , fixes = flyingSection x
+        { times = flyingSectionTimes x
+        , seconds = flyingSectionSeconds x
+        , fixes = flyingSectionIndices x
         }
 
 checkAll :: Math

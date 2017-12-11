@@ -45,9 +45,9 @@ import Flight.Path
 -- | A 1-based index into the list of control zones marking the speed section.
 type SpeedSection = Maybe (Integer, Integer)
 
--- | A 0-based index into the list of fixes marking those deemed logged while
--- flying.
-type FlyingSection = Maybe (Int, Int)
+-- | A pair into the list of fixes marking those deemed logged while flying.
+-- These could be indices, seconds offsets or UTC times.
+type FlyingSection a = Maybe (a, a)
 
 newtype StartGate = StartGate UTCTime deriving (Show, Eq, Generic)
 

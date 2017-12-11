@@ -12,7 +12,7 @@ Tracks crossing task control zones.
 -}
 module Flight.Track.Cross
     ( Crossing(..)
-    , Seconds
+    , Seconds(..)
     , TrackFlyingSection(..)
     , TrackCross(..)
     , PilotTrackCross(..)
@@ -53,11 +53,11 @@ instance FromJSON Seconds
 -- | For a single track, the flying section.
 data TrackFlyingSection =
     TrackFlyingSection
-        { times :: [UTCTime]
+        { times :: FlyingSection UTCTime
         -- ^ The flying section as a time range.
-        , seconds :: [Seconds]
+        , seconds :: FlyingSection Seconds
         -- ^ The flying section as second offsets from the first fix.
-        , fixes :: FlyingSection
+        , fixes :: FlyingSection Int
         -- ^ The flying section as indices into the list of fixes.
         }
    deriving (Show, Generic)

@@ -27,7 +27,7 @@ module Flight.Mask.Tag
 import Prelude hiding (span)
 import Data.Time.Clock (UTCTime, addUTCTime)
 import qualified Data.List as List
-import Data.Maybe (fromMaybe)
+import Data.Maybe (fromMaybe, listToMaybe)
 import Data.List (nub, group, findIndex)
 import Data.List.Split (split, whenElt, keepDelimsL, chop)
 import Control.Lens ((^?), element)
@@ -35,7 +35,7 @@ import Control.Lens ((^?), element)
 import Flight.Kml (Latitude(..), Longitude(..))
 import qualified Flight.Kml as Kml
     (LatLngAlt(..), Fix, MarkedFixes(..), FixMark(..), Seconds(..))
-import Flight.Track.Cross (Fix(..), ZoneCross(..))
+import Flight.Track.Cross (Fix(..), ZoneCross(..), Seconds(..))
 import Flight.Comp (FlyingSection)
 import qualified Flight.Comp as Cmp (Task(..))
 import Flight.TrackLog (IxTask(..))
@@ -61,7 +61,9 @@ import Flight.Task (SpanLatLng)
 
 data MadeZones =
     MadeZones
-        { flyingSection :: FlyingSection
+        { flyingSectionIndices :: FlyingSection Int
+        , flyingSectionSeconds :: FlyingSection Seconds
+        , flyingSectionTimes :: FlyingSection UTCTime
         , selectedCrossings :: SelectedCrossings
         , nomineeCrossings :: NomineeCrossings
         }
@@ -323,24 +325,46 @@ stationary x y =
 -- The result is the range from the input list that selects these elements.
 -- 
 -- (5,7115)
-fly :: Kml.LatLngAlt a => [a] -> FlyingSection
+fly :: Kml.LatLngAlt a => [a] -> FlyingSection Int
 fly ys =
     if null zls then Nothing else
     case findIndex (== maximum zls) zls of
         Nothing -> Nothing
-        Just n -> Just (tally n, tally $ n + 1)
+        -- NOTE: A tally is a count and 1-based whereas an index is 0-based.
+        Just 0 -> Just (0, (tally 0) - 1)
+        Just i -> Just (tally (i - 1) - 1, (tally i) - 1)
     where
         yss = chop (\xs@(x : _) -> List.span (stationary x) xs) ys
         yls = length <$> yss
         zss = group yls
         zls = jumpGaps $ length <$> zss
-        tally n = sum $ take n zls
+        tally i = sum $ take (i + 1) zls
 
 jumpGap :: (Ord a, Num a) => [a] -> ([a], [a])
 jumpGap (x : 1 : y : xs)
     | x > 1 && y > 1 = ([x, 1, y], xs)
 jumpGap (x : xs) = ([x], xs)
 jumpGap [] = ([], [])
+ 
+secondsRange :: Kml.FixMark a
+             => [a]
+             -> FlyingSection Int
+             -> FlyingSection Seconds
+secondsRange xs section = do
+    (i, j) <- section
+    x <- listToMaybe $ take 1 $ drop i xs
+    y <- listToMaybe $ take 1 $ drop j xs
+    let (Kml.Seconds x') = Kml.mark x
+    let (Kml.Seconds y') = Kml.mark y
+    return (Seconds x', Seconds y')
+
+timeRange :: UTCTime -> FlyingSection Seconds -> FlyingSection UTCTime
+timeRange t =
+    fmap $
+        \(Seconds i, Seconds j) ->
+            ( secondsToUtc t $ Kml.Seconds i
+            , secondsToUtc t $ Kml.Seconds j
+            )
 
 -- >>>
 -- > jumpGaps [4,1,2,1,11,1,2,1,800,1,1087]
@@ -363,24 +387,30 @@ madeZones span zoneToCyl tasks (IxTask i) Kml.MarkedFixes{mark0, fixes} =
     case tasks ^? element (i - 1) of
         Nothing ->
             MadeZones
-                { flyingSection = Nothing
+                { flyingSectionIndices = Nothing
+                , flyingSectionSeconds = Nothing
+                , flyingSectionTimes = Nothing
                 , selectedCrossings = SelectedCrossings []
                 , nomineeCrossings = NomineeCrossings []
                 }
 
         Just task@Cmp.Task{zones} ->
             MadeZones
-                { flyingSection = flyingSection
+                { flyingSectionIndices = flyingIndices
+                , flyingSectionSeconds = flyingSeconds
+                , flyingSectionTimes = flyingTimes
                 , selectedCrossings = selected
                 , nomineeCrossings = nominees
                 }
             where
-                flyingSection = fly fixes
+                flyingIndices = fly fixes
+                flyingSeconds = secondsRange fixes flyingIndices
+                flyingTimes = timeRange mark0 flyingSeconds
 
                 fixesFlown =
                     fromMaybe fixes
                     $ (\(m, n) -> take (n - m) $ drop m fixes)
-                    <$> flyingSection
+                    <$> flyingIndices
 
                 nominees = NomineeCrossings $ f <$> xs
 
@@ -531,10 +561,13 @@ proveCrossing fixes mark0 (Right (ZoneExit m n)) =
 proveCrossing fixes mark0 (Left (ZoneEntry m n)) =
     prove fixes mark0 m n [False, True]
 
+secondsToUtc :: UTCTime -> Kml.Seconds -> UTCTime
+secondsToUtc mark0 (Kml.Seconds secs) =
+    fromInteger secs `addUTCTime` mark0
+
 fixToUtc :: UTCTime -> Kml.Fix -> UTCTime
 fixToUtc mark0 x =
-    let (Kml.Seconds secs) = Kml.mark x
-    in fromInteger secs `addUTCTime` mark0
+    secondsToUtc mark0 $ Kml.mark x
 
 -- | Groups fixes by legs of the task.
 groupByLeg :: (Real a, Fractional a)
