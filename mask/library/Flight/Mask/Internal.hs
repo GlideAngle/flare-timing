@@ -96,18 +96,18 @@ type Crossing = Either ZoneEntry ZoneExit
 
 newtype OrdCrossing = OrdCrossing { unOrdCrossing :: Crossing }
 
-index :: OrdCrossing -> Int
-index (OrdCrossing (Left (ZoneEntry i _))) = i
-index (OrdCrossing (Right (ZoneExit i _))) = i
+pos :: OrdCrossing -> Int
+pos (OrdCrossing (Left (ZoneEntry i _))) = i
+pos (OrdCrossing (Right (ZoneExit i _))) = i
 
 instance Eq OrdCrossing where
-    x == y = index x == index y
+    x == y = pos x == pos y
 
 instance Ord OrdCrossing where
-    compare x y = compare (index x) (index y)
+    compare x y = compare (pos x) (pos y)
 
 instance Show OrdCrossing where
-    show x = show $ index x
+    show x = show $ pos x
 
 -- | A function that tests whether a flight track, represented as a series of point
 -- zones crosses a zone.
@@ -333,10 +333,11 @@ selectLast xs = listToMaybe . take 1 $ reverse xs
 hitZone :: _ -> CrossingPredicate a Crossing
 hitZone hit _ _ = [hit]
 
-fixFromFix :: UTCTime -> Kml.Fix -> Fix
-fixFromFix mark0 x =
+fixFromFix :: UTCTime -> Int -> Kml.Fix -> Fix
+fixFromFix mark0 i x =
     -- SEE: https://ocharles.org.uk/blog/posts/2013-12-15-24-days-of-hackage-time.html
-    Fix { time = fromInteger secs `addUTCTime` mark0
+    Fix { index = i
+        , time = fromInteger secs `addUTCTime` mark0
         , lat = RawLat lat
         , lng = RawLng lng
         }

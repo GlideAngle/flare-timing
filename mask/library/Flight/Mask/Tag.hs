@@ -139,10 +139,12 @@ prove :: [Kml.Fix] -> UTCTime -> Int -> Int -> [Bool] -> Maybe ZoneCross
 prove fixes mark0 i j bs = do
     fixM <- fixes ^? element i
     fixN <- fixes ^? element j
-    let fs = fixFromFix mark0 <$> [fixM, fixN]
+    let fs = [f i fixM, f j fixN]
     return ZoneCross { crossingPair = fs
                      , inZone = bs
                      }
+    where
+        f = fixFromFix mark0
 
 -- | Given two points on either side of a zone, what is the crossing tag.
 crossingTag :: (Fix, Fix) -> (Bool, Bool) -> Maybe Fix

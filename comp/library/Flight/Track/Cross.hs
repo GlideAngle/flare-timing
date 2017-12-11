@@ -86,9 +86,14 @@ instance FromJSON TrackCross
 
 -- | A timestamped latitude and longitude.
 data Fix =
-    Fix { time :: UTCTime
+    Fix { index :: Int
+        -- ^ The 0-based index into the list of fixes from the track log.
+        , time :: UTCTime
+        -- ^ The time this fix was made.
         , lat :: RawLat
+        -- ^ The latitude in decimal degrees, +ve is N and -ve is S.
         , lng :: RawLng
+        -- ^ The longitude in decimal degrees, +ve is E and -ve is W.
         }
    deriving (Show, Generic)
 

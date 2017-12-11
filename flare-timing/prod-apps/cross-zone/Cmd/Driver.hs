@@ -71,7 +71,10 @@ cmp a b =
         ("zonesCrossSelected", _) -> LT
         ("zonesCrossNominees", _) -> GT
 
+        ("index", _) -> LT
+        ("time", "index") -> GT
         ("time", _) -> LT
+        ("lat", "index") -> GT
         ("lat", "time") -> GT
         ("lat", _) -> LT
         ("lng", _) -> GT

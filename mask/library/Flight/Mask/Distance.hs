@@ -113,7 +113,7 @@ lastFixToGoal
     zoneToCyl tasks iTask mark0 ys =
     case reverse ys of
         [] -> (Nothing, Nothing)
-        (y : _) -> (Just $ fixFromFix mark0 y, d)
+        (y : _) -> (Just $ fixFromFix mark0 ((length ys) - 1) y, d)
     where
         xs = Kml.MarkedFixes { Kml.mark0 = mark0, Kml.fixes = ys }
         dvz = distanceViaZones ticked span dpp cseg cs cut
