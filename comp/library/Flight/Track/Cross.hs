@@ -86,7 +86,7 @@ instance FromJSON TrackCross
 
 -- | A timestamped latitude and longitude.
 data Fix =
-    Fix { index :: Int
+    Fix { fix :: Int
         -- ^ The 0-based index into the list of fixes from the track log.
         , time :: UTCTime
         -- ^ The time this fix was made.
