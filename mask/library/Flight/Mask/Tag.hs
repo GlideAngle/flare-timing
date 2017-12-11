@@ -347,7 +347,10 @@ fly ys =
         yls = length <$> yss
         zss = group yls
         zls = jumpGaps $ length <$> zss
-        tally i = sum $ take (i + 1) zls
+        tally i =
+            sum $ take (iys + 1) yls
+            where
+                iys = sum $ take (i + 1) zls
 
 jumpGap :: (Ord a, Num a) => [a] -> ([a], [a])
 jumpGap (x : 1 : y : xs)
