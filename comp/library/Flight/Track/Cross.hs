@@ -53,12 +53,18 @@ instance FromJSON Seconds
 -- | For a single track, the flying section.
 data TrackFlyingSection =
     TrackFlyingSection
-        { times :: FlyingSection UTCTime
-        -- ^ The flying section as a time range.
-        , seconds :: FlyingSection Seconds
-        -- ^ The flying section as second offsets from the first fix.
-        , fixes :: FlyingSection Int
+        { loggedFixes :: Maybe Int
+        -- ^ The number of logged fixes.
+        , flyingFixes :: FlyingSection Int
         -- ^ The flying section as indices into the list of fixes.
+        , loggedSeconds :: Maybe Seconds
+        -- ^ The number of seconds logging fixes.
+        , flyingSeconds :: FlyingSection Seconds
+        -- ^ The flying section as second offsets from the first fix.
+        , loggedTimes :: FlyingSection UTCTime
+        -- ^ The time range of all fixes logged, not just those flown.
+        , flyingTimes :: FlyingSection UTCTime
+        -- ^ The flying section as a time range.
         }
    deriving (Show, Generic)
 

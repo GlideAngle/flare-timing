@@ -67,12 +67,31 @@ cmp a b =
         ("crossings", "errors") -> GT
         ("crossings", _) -> LT
         ("flying", _) -> GT
+
         ("zonesCrossSelected", _) -> LT
         ("zonesCrossNominees", _) -> GT
+
         ("time", _) -> LT
         ("lat", "time") -> GT
         ("lat", _) -> LT
         ("lng", _) -> GT
+
+        ("loggedFixes", _) -> LT
+        ("flyingFixes", "loggedFixes") -> GT
+        ("flyingFixes", _) -> LT
+        ("loggedSeconds", "loggedFixes") -> GT
+        ("loggedSeconds", "flyingFixes") -> GT
+        ("loggedSeconds", _) -> LT
+        ("flyingSeconds", "loggedFixes") -> GT
+        ("flyingSeconds", "flyingFixes") -> GT
+        ("flyingSeconds", "loggedSeconds") -> GT
+        ("flyingSeconds", _) -> LT
+        ("loggedTimes", "loggedFixes") -> GT
+        ("loggedTimes", "flyingFixes") -> GT
+        ("loggedTimes", "loggedSeconds") -> GT
+        ("loggedTimes", "flyingSeconds") -> GT
+        ("loggedTimes", _) -> LT
+        ("flyingTimes", _) -> GT
         _ -> compare a b
 
 drive :: CmdOptions -> IO ()
@@ -157,12 +176,7 @@ crossings (p, x) =
     PilotTrackCross p $ madeZonesToCross <$> x
 
 madeZonesToFlying :: MadeZones -> TrackFlyingSection
-madeZonesToFlying x =
-    TrackFlyingSection
-        { times = flyingSectionTimes x
-        , seconds = flyingSectionSeconds x
-        , fixes = flyingSectionIndices x
-        }
+madeZonesToFlying MadeZones{flying} = flying
 
 checkAll :: Math
          -> CompFile

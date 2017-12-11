@@ -35,7 +35,8 @@ import Control.Lens ((^?), element)
 import Flight.Kml (Latitude(..), Longitude(..))
 import qualified Flight.Kml as Kml
     (LatLngAlt(..), Fix, MarkedFixes(..), FixMark(..), Seconds(..))
-import Flight.Track.Cross (Fix(..), ZoneCross(..), Seconds(..))
+import Flight.Track.Cross
+    (Fix(..), ZoneCross(..), Seconds(..), TrackFlyingSection(..))
 import Flight.Comp (FlyingSection)
 import qualified Flight.Comp as Cmp (Task(..))
 import Flight.TrackLog (IxTask(..))
@@ -61,11 +62,20 @@ import Flight.Task (SpanLatLng)
 
 data MadeZones =
     MadeZones
-        { flyingSectionIndices :: FlyingSection Int
-        , flyingSectionSeconds :: FlyingSection Seconds
-        , flyingSectionTimes :: FlyingSection UTCTime
+        { flying :: TrackFlyingSection
         , selectedCrossings :: SelectedCrossings
         , nomineeCrossings :: NomineeCrossings
+        }
+
+nullFlying :: TrackFlyingSection
+nullFlying =
+    TrackFlyingSection
+        { loggedFixes = Nothing
+        , flyingFixes = Nothing
+        , loggedSeconds = Nothing
+        , flyingSeconds = Nothing
+        , loggedTimes = Nothing
+        , flyingTimes = Nothing
         }
 
 -- | A masking produces a value from a task and tracklog fixes.
@@ -168,7 +178,6 @@ newtype NomineeCrossings =
 
 stationary :: Kml.LatLngAlt a => a -> a -> Bool
 stationary x y =
-    -- TODO: Account for gaps in the log.
     -- TODO: Account for different logging rates.
     ay > ax - 1 && ay < ax + 1
     &&
@@ -387,24 +396,37 @@ madeZones span zoneToCyl tasks (IxTask i) Kml.MarkedFixes{mark0, fixes} =
     case tasks ^? element (i - 1) of
         Nothing ->
             MadeZones
-                { flyingSectionIndices = Nothing
-                , flyingSectionSeconds = Nothing
-                , flyingSectionTimes = Nothing
+                { flying = nullFlying
                 , selectedCrossings = SelectedCrossings []
                 , nomineeCrossings = NomineeCrossings []
                 }
 
         Just task@Cmp.Task{zones} ->
             MadeZones
-                { flyingSectionIndices = flyingIndices
-                , flyingSectionSeconds = flyingSeconds
-                , flyingSectionTimes = flyingTimes
+                { flying = flying'
                 , selectedCrossings = selected
                 , nomineeCrossings = nominees
                 }
             where
+                flying' =
+                    TrackFlyingSection
+                        { loggedFixes = Just len
+                        , flyingFixes = flyingIndices
+                        , loggedSeconds = snd <$> loggedSeconds
+                        , flyingSeconds = flyingSeconds
+                        , loggedTimes = loggedTimes
+                        , flyingTimes = flyingTimes
+                        }
+
+                len = length fixes
+
+                loggedIndices = Just (0, len - 1)
                 flyingIndices = fly fixes
+
+                loggedSeconds = secondsRange fixes loggedIndices
                 flyingSeconds = secondsRange fixes flyingIndices
+
+                loggedTimes = timeRange mark0 loggedSeconds
                 flyingTimes = timeRange mark0 flyingSeconds
 
                 fixesFlown =
