@@ -39,13 +39,14 @@ import Flight.Comp
     , compToCross)
 import Flight.TrackLog (IxTask(..))
 import Flight.Units ()
-import Flight.Track.Cross (TrackCross(..), PilotTrackCross(..), Crossing(..))
+import Flight.Track.Cross
+    (TrackFlyingSection(..), TrackCross(..), PilotTrackCross(..), Crossing(..))
 import Flight.Zone.Raw (RawZone)
 import qualified Flight.PointToPoint.Rational as Rat (distanceHaversine)
 import qualified Flight.PointToPoint.Double as Dbl (distanceHaversine)
 import Flight.LatLng.Rational (defEps)
 import Flight.Mask
-    ( TaskZone, SigMasking
+    ( TaskZone, SigMasking, MadeZones(..)
     , unSelectedCrossings, unNomineeCrossings
     , checkTracks, madeZones, zoneToCylinder
     )
@@ -63,7 +64,9 @@ cmp :: (Ord a, IsString a) => a -> a -> Ordering
 cmp a b =
     case (a, b) of
         ("errors", _) -> LT
-        ("crossings", _) -> GT
+        ("crossings", "errors") -> GT
+        ("crossings", _) -> LT
+        ("flying", _) -> GT
         ("zonesCrossSelected", _) -> LT
         ("zonesCrossNominees", _) -> GT
         ("time", _) -> LT
@@ -96,7 +99,6 @@ drive CmdOptions{..} = do
                 (IxTask <$> task)
                 (Pilot <$> pilot)
                 (checkAll math)
-                id
 
 writeMask :: CompFile
           -> [IxTask]
@@ -106,30 +108,32 @@ writeMask :: CompFile
               -> [Pilot]
               -> ExceptT
                       String
-                      IO [[Either (Pilot, TrackFileFail) (Pilot, track)]])
-          -> (track -> TrackCross)
+                      IO [[Either (Pilot, TrackFileFail) (Pilot, MadeZones)]])
           -> IO ()
-writeMask compFile task pilot f g = do
+writeMask compFile task pilot f = do
     checks <- runExceptT $ f compFile task pilot
 
     case checks of
         Left msg -> print msg
         Right xs -> do
 
-            let ps :: [([PilotTrackCross], [Maybe (Pilot, TrackFileFail)])] =
+            let ys :: [([(Pilot, Maybe MadeZones)], [Maybe (Pilot, TrackFileFail)])] =
                     unzip <$>
                     (fmap . fmap)
                         (\case
                             Left err@(p, _) ->
-                                (PilotTrackCross p Nothing, Just err)
+                                ((p, Nothing), Just err)
 
                             Right (p, x) ->
-                                (PilotTrackCross p (Just $ g x), Nothing))
+                                ((p, Just x), Nothing))
                         xs
 
+            let ps = fst <$> ys
+
             let tzi =
-                    Crossing { crossing = fst <$> ps
-                             , errors = catMaybes . snd <$> ps
+                    Crossing { crossing = (fmap . fmap) crossings ps
+                             , errors = catMaybes . snd <$> ys
+                             , flying = (fmap . fmap . fmap . fmap) madeZonesToFlying ps
                              }
 
             let yaml =
@@ -141,6 +145,25 @@ writeMask compFile task pilot f g = do
 
             BS.writeFile crossPath yaml
 
+madeZonesToCross :: MadeZones -> TrackCross
+madeZonesToCross x =
+    TrackCross
+        { zonesCrossSelected = unSelectedCrossings . selectedCrossings $ x
+        , zonesCrossNominees = unNomineeCrossings . nomineeCrossings $ x
+        }
+
+crossings :: (Pilot, Maybe MadeZones) -> PilotTrackCross
+crossings (p, x) =
+    PilotTrackCross p $ madeZonesToCross <$> x
+
+madeZonesToFlying :: MadeZones -> TrackFlyingSection
+madeZonesToFlying x =
+    TrackFlyingSection
+        { times = []
+        , seconds = []
+        , fixes = flyingSection x
+        }
+
 checkAll :: Math
          -> CompFile
          -> [IxTask]
@@ -148,26 +171,18 @@ checkAll :: Math
          -> ExceptT
              String
              IO
-             [[Either (Pilot, TrackFileFail) (Pilot, TrackCross)]]
+             [[Either (Pilot, TrackFileFail) (Pilot, MadeZones)]]
 checkAll math =
     checkTracks $ \CompSettings{tasks} -> flown math tasks
 
-flown :: Math -> SigMasking TrackCross
-flown math tasks iTask xs =
-    TrackCross
-        { zonesCrossSelected = unSelectedCrossings selected
-        , zonesCrossNominees = unNomineeCrossings nominees
-        }
-    where
-        (selected, nominees) =
-            f math tasks iTask xs
-
-        f = \case
-            Rational ->
-                madeZones
-                    (Rat.distanceHaversine defEps)
-                    (zoneToCylinder :: RawZone -> TaskZone Rational)
-            Floating ->
-                madeZones
-                    Dbl.distanceHaversine
-                    (zoneToCylinder :: RawZone -> TaskZone Double)
+flown :: Math -> SigMasking MadeZones
+flown =
+    \case
+        Rational ->
+            madeZones
+                (Rat.distanceHaversine defEps)
+                (zoneToCylinder :: RawZone -> TaskZone Rational)
+        Floating ->
+            madeZones
+                Dbl.distanceHaversine
+                (zoneToCylinder :: RawZone -> TaskZone Double)
