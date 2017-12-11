@@ -28,6 +28,7 @@ module Flight.Comp
     , TrackLogFile(..)
     , TrackFileFail(..)
     , TaskFolder(..)
+    , FlyingSection
     -- * Comp paths
     , module Flight.Path
     ) where
@@ -43,6 +44,10 @@ import Flight.Path
 
 -- | A 1-based index into the list of control zones marking the speed section.
 type SpeedSection = Maybe (Integer, Integer)
+
+-- | A 0-based index into the list of fixes marking those deemed logged while
+-- flying.
+type FlyingSection = Maybe (Int, Int)
 
 newtype StartGate = StartGate UTCTime deriving (Show, Eq, Generic)
 

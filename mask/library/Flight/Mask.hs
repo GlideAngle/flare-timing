@@ -15,6 +15,7 @@ module Flight.Mask
     , Ticked(..)
     , SelectedCrossings(..)
     , NomineeCrossings(..)
+    , MadeZones(..)
     , countFixes
     , checkTracks
     , madeZones

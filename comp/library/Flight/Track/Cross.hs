@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
 {-|
 Module      : Flight.Track.Cross
@@ -11,6 +12,8 @@ Tracks crossing task control zones.
 -}
 module Flight.Track.Cross
     ( Crossing(..)
+    , Seconds
+    , TrackFlyingSection(..)
     , TrackCross(..)
     , PilotTrackCross(..)
     , ZoneCross(..)
@@ -22,12 +25,15 @@ import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import Flight.Pilot (Pilot(..), TrackFileFail)
 import Flight.LatLng.Raw (RawLat, RawLng)
+import Flight.Comp (FlyingSection)
 
 -- | For each task, the crossing for that task.
 data Crossing =
     Crossing
         { errors :: [[(Pilot, TrackFileFail)]]
           -- ^ For each task, the pilots with track log problems.
+        , flying :: [[(Pilot, Maybe TrackFlyingSection)]]
+          -- ^ For each task, the pilots' flying sections.
         , crossing :: [[PilotTrackCross]]
           -- ^ For each task, for each made zone, the pair of fixes cross it.
         }
@@ -35,6 +41,29 @@ data Crossing =
 
 instance ToJSON Crossing
 instance FromJSON Crossing
+
+-- NOTE: There's a similar Seconds newtype in the flight-kml package.  I don't
+-- want a dependency between these packages so I'm duplicating the newtype
+-- here.
+newtype Seconds = Seconds Integer deriving (Show, Eq, Ord, Num, Generic)
+
+instance ToJSON Seconds
+instance FromJSON Seconds
+
+-- | For a single track, the flying section.
+data TrackFlyingSection =
+    TrackFlyingSection
+        { times :: [UTCTime]
+        -- ^ The flying section as a time range.
+        , seconds :: [Seconds]
+        -- ^ The flying section as second offsets from the first fix.
+        , fixes :: FlyingSection
+        -- ^ The flying section as indices into the list of fixes.
+        }
+   deriving (Show, Generic)
+
+instance ToJSON TrackFlyingSection
+instance FromJSON TrackFlyingSection
 
 -- | For a single track, the zones crossed.
 data TrackCross =
