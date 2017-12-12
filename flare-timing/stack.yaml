@@ -3,6 +3,8 @@ packages:
 - location: .
 - location: ../cmd
   extra-dep: true
+- location: ../aeson-rational
+  extra-dep: true
 - location: ../units
   extra-dep: true
 - location: ../latlng

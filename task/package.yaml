@@ -20,6 +20,7 @@ library:
   - scientific
   - mtl
   - hcoord
+  - aeson-rational
   - siggy-chardust
   - flight-units
   - flight-latlng
@@ -58,6 +59,7 @@ tests:
     - scientific
     - mtl
     - hcoord
+    - aeson-rational
     - siggy-chardust
     - tasty-compare
     - flight-units

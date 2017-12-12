@@ -1,6 +1,8 @@
 flags: {}
 packages:
 - location: .
+- location: ../aeson-rational
+  extra-dep: true
 - location: ../siggy-chardust
   extra-dep: true
 - location: ../units

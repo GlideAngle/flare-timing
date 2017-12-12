@@ -6,37 +6,34 @@ extra-source-files:
 - changelog.md
 - README.md
 - stack.yaml
-ghc-options: -Wall
+ghc-options:
+- -Wall
 library:
   dependencies:
   - base >=4.5 && <5
-  - containers
-  - vector
-  - statistics
-  - aeson
-  - aeson-rational
   - newtype
+  - scientific
+  - aeson
   source-dirs: library
   exposed-modules:
-  - Flight.Score
+  - Data.Aeson.ViaScientific
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
-name: flight-gap 
-synopsis: GAP Scoring.
-description: GAP scoring for hang gliding and paragliding competitons.
+name: aeson-rational
+synopsis: JSON encoding and decoding for rationals via scientific.
+description: Lossy JSON encoding for rationals.
 category: Flight
 license: BSD3
 license-file: LICENSE.md
-github: BlockScope/haskell-flight-gap
+github: BlockScope/flare-timing
 tests:
   hlint:
     dependencies:
     - base
     - hlint
-    - containers
-    - vector
-    - statistics
     - newtype
+    - scientific
+    - aeson
     ghc-options:
     - -rtsopts
     - -threaded
@@ -45,23 +42,4 @@ tests:
     source-dirs:
     - library
     - test-suite-hlint
-  score:
-    dependencies:
-    - base
-    - containers
-    - vector
-    - statistics
-    - tasty
-    - tasty-hunit
-    - tasty-quickcheck
-    - tasty-smallcheck
-    - smallcheck
-    ghc-options:
-    - -rtsopts
-    - -threaded
-    - -with-rtsopts=-N
-    main: Score.hs
-    source-dirs:
-    - library
-    - test-suite-score
 version: '0.1.0'

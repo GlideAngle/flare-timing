@@ -26,6 +26,7 @@ import Data.Aeson (ToJSON(..), FromJSON(..))
 import Flight.Pilot (Pilot(..), TrackFileFail)
 import Flight.LatLng.Raw (RawLat, RawLng)
 import Flight.Comp (FlyingSection)
+import Data.Aeson.ViaScientific (ViaScientific(..))
 
 -- | For each task, the crossing for that task.
 data Crossing =
@@ -90,9 +91,9 @@ data Fix =
         -- ^ The 0-based index into the list of fixes from the track log.
         , time :: UTCTime
         -- ^ The time this fix was made.
-        , lat :: RawLat
+        , lat :: ViaScientific RawLat
         -- ^ The latitude in decimal degrees, +ve is N and -ve is S.
-        , lng :: RawLng
+        , lng :: ViaScientific RawLng
         -- ^ The longitude in decimal degrees, +ve is E and -ve is W.
         }
    deriving (Show, Generic)

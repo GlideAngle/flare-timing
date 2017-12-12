@@ -1,8 +1,6 @@
 flags: {}
 packages:
 - '.'
-- location: ../aeson-rational
-  extra-dep: true
 extra-deps: []
 resolver: nightly-2017-12-09
 local-bin-path: ../__shake-build

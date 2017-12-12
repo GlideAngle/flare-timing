@@ -13,13 +13,14 @@ library:
   dependencies:
   - base >=4.5 && <5
   - numbers
-  - scientific
   - aeson
   - cassava
   - bytestring
   - uom-plugin
   - formatting
   - text
+  - newtype
+  - aeson-rational
   - siggy-chardust
   - flight-units
   source-dirs: library
@@ -43,12 +44,13 @@ tests:
     dependencies:
     - base
     - numbers
-    - scientific
     - aeson
     - cassava
     - uom-plugin
     - formatting
     - text
+    - newtype
+    - aeson-rational
     - siggy-chardust
     - flight-units
     - hlint

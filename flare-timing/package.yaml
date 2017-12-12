@@ -227,6 +227,7 @@ executables:
     - clock
     - formatting
     - numbers
+    - aeson-rational
     - siggy-chardust
     - flight-cmd
     - flight-units

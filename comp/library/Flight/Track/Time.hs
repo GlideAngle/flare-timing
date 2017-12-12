@@ -24,14 +24,15 @@ import Data.Time.Clock (UTCTime)
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..), encode, decode)
 import Flight.LatLng.Raw (RawLat, RawLng)
+import Data.Aeson.ViaScientific (ViaScientific(..))
 
 -- | A fix but indexed off the first crossing time.
 data TimeRow =
     TimeRow
         { leg :: Int -- ^ Leg of the task
         , time :: UTCTime -- ^ Time of the fix
-        , lat :: RawLat -- ^ Latitude of the fix
-        , lng :: RawLng -- ^ Longitude of the fix
+        , lat :: ViaScientific RawLat -- ^ Latitude of the fix
+        , lng :: ViaScientific RawLng -- ^ Longitude of the fix
         , tick :: Double -- ^ Seconds from first speed zone crossing
         , distance :: Double -- ^ Distance to goal in km
         }

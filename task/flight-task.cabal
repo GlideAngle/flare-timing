@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 2db37ecbd9f722c92c8ed9c455fd9c033e5d36b096e5d719d4ba2bdbdb83fe9e
+-- hash: cdd4fc159ff18d2ded94dc6338238a31e3b0fafb86ddaef75c426d0cb7bf5265
 
 name:           flight-task
 version:        0.1.0
@@ -34,6 +34,7 @@ library
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
+    , aeson-rational
     , base >=4.5 && <5
     , bifunctors
     , fgl
@@ -79,6 +80,7 @@ test-suite hlint
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
+    , aeson-rational
     , base
     , bifunctors
     , fgl

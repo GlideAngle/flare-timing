@@ -13,27 +13,41 @@ module Flight.Track.Mask
     ( Masking(..)
     , TrackMask(..)
     , PilotTrackMask(..)
+    , TrackArrival(..)
     ) where
 
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import Flight.Pilot (Pilot(..))
-import Flight.Score (PositionAtEss(..))
+import Flight.Score (PositionAtEss(..), ArrivalFraction(..))
+import Data.Aeson.ViaScientific (ViaScientific(..))
 
 -- | For each task, the masking for that task.
-newtype Masking =
-    Masking { masking :: [[PilotTrackMask]] }
+data Masking =
+    Masking
+        { masking :: [[PilotTrackMask]]
+        , arrival :: [[(Pilot, TrackArrival)]]
+        }
     deriving (Show, Generic)
 
 instance ToJSON Masking
 instance FromJSON Masking
 
+-- ^ If arrived at goal then arrival rank and fraction.
+data TrackArrival =
+    TrackArrival
+        { rank :: PositionAtEss
+        , frac :: ViaScientific ArrivalFraction
+        }
+   deriving (Show, Generic)
+
+instance ToJSON TrackArrival
+instance FromJSON TrackArrival
+
 data TrackMask =
     TrackMask
         { madeGoal :: Bool
         -- ^ Was goal made.
-        , arrivalRank :: Maybe PositionAtEss
-        -- ^ Rank of arrival time.
         , timeToGoal :: Maybe Double
         -- ^ How long did this pilot take to complete the course.
         , distanceToGoal :: Maybe Double

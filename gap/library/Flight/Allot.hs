@@ -2,6 +2,9 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE PartialTypeSignatures #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 
 module Flight.Allot
     ( PilotsAtEss(..)
@@ -24,16 +27,28 @@ module Flight.Allot
     , difficultyFraction
     ) where
 
+import Control.Newtype (Newtype(..))
 import Data.Ratio ((%))
 import Data.List (sort, group)
 import Data.Maybe (fromMaybe)
 import qualified Data.Map.Strict as Map
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import Flight.Ratio (pattern (:%))
+import Data.Aeson.ViaScientific
+    ( DefaultDecimalPlaces(..), DecimalPlaces(..)
+    , fromSci, toSci, showSci
+    )
 
 newtype PilotsAtEss = PilotsAtEss Integer deriving (Eq, Show)
 newtype PositionAtEss = PositionAtEss Integer deriving (Eq, Show, ToJSON, FromJSON)
 newtype ArrivalFraction = ArrivalFraction Rational deriving (Eq, Ord, Show)
+
+instance DefaultDecimalPlaces ArrivalFraction where
+    defdp _ = DecimalPlaces 8
+
+instance Newtype ArrivalFraction Rational where
+    pack = ArrivalFraction
+    unpack (ArrivalFraction a) = a
 
 newtype BestTime = BestTime Rational deriving (Eq, Ord, Show)
 newtype PilotTime = PilotTime Rational deriving (Eq, Ord, Show)

@@ -20,6 +20,7 @@ library:
   - cassava
   - bytestring
   - filepath
+  - aeson-rational
   - flight-latlng
   - flight-zone
   - flight-gap
@@ -54,6 +55,7 @@ tests:
     - cassava
     - bytestring
     - filepath
+    - aeson-rational
     - flight-latlng
     - flight-zone
     - flight-gap

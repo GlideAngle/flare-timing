@@ -13,13 +13,14 @@ import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 
 import Flight.LatLng.Raw (RawLat, RawLng, showLat, showLng)
+import Data.Aeson.ViaScientific (ViaScientific(..))
 
 type RawRadius = Integer
 
 data RawZone =
     RawZone { zoneName :: String
-            , lat :: RawLat
-            , lng :: RawLng
+            , lat :: ViaScientific RawLat
+            , lng :: ViaScientific RawLng
             , radius :: RawRadius
             -- ^ Radius in metres.
             } deriving (Eq, Show, Generic)
@@ -33,7 +34,7 @@ showRadius r
     | otherwise = let y = truncate (r % 1000) :: Integer in show y ++ " km"
 
 showZone :: RawZone -> String
-showZone (RawZone name lat' lng' rad) =
+showZone (RawZone name (ViaScientific lat') (ViaScientific lng') rad) =
     unwords [ name
             , showLat lat'
             , showLng lng'

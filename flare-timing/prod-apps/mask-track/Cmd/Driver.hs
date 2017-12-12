@@ -21,7 +21,7 @@ module Cmd.Driver (driverMain) where
 
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
-import Data.Maybe (fromMaybe)
+import Data.Maybe (fromMaybe, catMaybes)
 import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
@@ -38,6 +38,7 @@ import System.FilePath (takeFileName, replaceExtension, dropExtension)
 import qualified Data.Yaml.Pretty as Y
 import qualified Data.ByteString as BS
 import qualified Data.Number.FixedFunctions as F
+import Data.Aeson.ViaScientific (ViaScientific(..))
 
 import Flight.Comp
     ( Pilot(..)
@@ -64,7 +65,7 @@ import Flight.Mask
     , timeFlown
     , zoneToCylinder
     )
-import Flight.Track.Mask (Masking(..), PilotTrackMask(..))
+import Flight.Track.Mask (Masking(..), PilotTrackMask(..), TrackArrival(..))
 import qualified Flight.Track.Mask as TM (TrackMask(..))
 import Flight.Track.Tag (Tagging)
 import Flight.Zone (Bearing(..))
@@ -87,7 +88,7 @@ import Cmd.Inputs
     , tagMadeGoal, tagArrivalRank
     , readTags
     )
-import Flight.Score (PositionAtEss(..))
+import Flight.Score (PilotsAtEss(..), PositionAtEss(..), arrivalFraction)
 
 driverMain :: IO ()
 driverMain = do
@@ -102,6 +103,8 @@ cmp :: (Ord a, IsString a) => a -> a -> Ordering
 cmp a b =
     case (a, b) of
         -- TODO: first start time & last goal time & launched
+        ("rank", _) -> LT
+        ("frac", _) -> GT
         ("madeGoal", _) -> LT
         ("arrivalRank", "madeGoal") -> GT
         ("arrivalRank", _) -> LT
@@ -173,7 +176,7 @@ writeMask :: [IxTask]
                    [
                        [Either
                            (Pilot, TrackFileFail)
-                           (Pilot, Pilot -> TM.TrackMask)
+                           (Pilot, Pilot -> (Maybe PositionAtEss, TM.TrackMask))
                        ]
                    ]
              )
@@ -184,17 +187,21 @@ writeMask selectTasks selectPilots compFile@(CompFile compPath) f = do
     case checks of
         Left msg -> print msg
         Right comp -> do
-            let pss :: [[PilotTrackMask]] =
+            let ys :: [([(Pilot, Maybe PositionAtEss)], [PilotTrackMask])] =
+                    unzip <$>
                     (fmap . fmap)
                         (\case
                             Left (p, _) ->
-                                PilotTrackMask p Nothing
+                                ((p, Nothing), PilotTrackMask p Nothing)
 
                             Right (p, g) ->
-                                PilotTrackMask p (Just (g p)))
+                                let (ar, tm) = g p
+                                in ((p, ar), PilotTrackMask p (Just tm)))
                         comp
 
-            let tzi = Masking { masking = pss }
+            let tzi = Masking { masking = snd <$> ys
+                              , arrival = (arrivals . arriving) <$> (fst <$> ys)
+                              }
 
             let yaml =
                     Y.encodePretty
@@ -207,6 +214,24 @@ writeMask selectTasks selectPilots compFile@(CompFile compPath) f = do
             flip replaceExtension ".mask-track.yaml"
             $ dropExtension compPath
 
+arriving :: [(Pilot, Maybe PositionAtEss)] -> [(Pilot, PositionAtEss)]
+arriving xs =
+    catMaybes $ f <$> xs
+    where
+        f (_, Nothing) = Nothing
+        f (p, Just e) = Just (p, e)
+
+arrivals :: [(Pilot, PositionAtEss)] -> [(Pilot, TrackArrival)]
+arrivals xs =
+    (fmap . fmap) (f (PilotsAtEss . toInteger $ length xs)) xs
+    where
+        f pilots position =
+            TrackArrival
+                { rank = position
+                , frac = ViaScientific $ arrivalFraction pilots position
+                }
+
+
 check :: Math
       -> Either String Tagging
       -> CompFile
@@ -218,31 +243,36 @@ check :: Math
           [
               [Either
                   (Pilot, TrackFileFail)
-                  (Pilot, Pilot -> TM.TrackMask)
+                  (Pilot, Pilot -> (Maybe PositionAtEss, TM.TrackMask))
               ]
           ]
 check math tags = checkTracks $ \CompSettings{tasks} ->
     flown math tags tasks
 
-flown :: Math -> Either String Tagging -> SigMasking (Pilot -> TM.TrackMask)
+flown :: Math
+      -> Either String Tagging
+      -> SigMasking (Pilot -> (Maybe PositionAtEss, TM.TrackMask))
 flown math tags tasks iTask@(IxTask i) xs p =
-    TM.TrackMask
-        { madeGoal = mg
-
-        , arrivalRank =
+    (arrivalRank, trackMask)
+    where
+        arrivalRank =
             PositionAtEss . toInteger
             <$> join ((\f -> f p speedSection' iTask xs) <$> tArrivalRank)
 
-        , distanceToGoal =
-            if mg then Nothing else unTaskDistance <$> dg math
+        trackMask =
+            TM.TrackMask
+                { madeGoal = mg
 
-        , distanceMade =
-            fromRational <$> if mg then Nothing else unPilotDistance <$> df math
+                , distanceToGoal =
+                    if mg then Nothing else unTaskDistance <$> dg math
 
-        , timeToGoal =
-            if not mg then Nothing else unPilotTime <$> tf math
-        }
-    where
+                , distanceMade =
+                    fromRational <$> if mg then Nothing else unPilotDistance <$> df math
+
+                , timeToGoal =
+                    if not mg then Nothing else unPilotTime <$> tf math
+                }
+
         dppR = Rat.distancePointToPoint
         dppF = Dbl.distancePointToPoint
 

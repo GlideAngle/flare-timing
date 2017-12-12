@@ -20,6 +20,7 @@ library:
   - containers
   - split
   - time
+  - aeson-rational
   - flight-latlng
   - flight-zone
   - flight-comp
@@ -49,6 +50,7 @@ tests:
     - containers
     - split
     - time
+    - aeson-rational
     - flight-latlng
     - flight-zone
     - flight-comp

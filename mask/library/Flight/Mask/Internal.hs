@@ -80,6 +80,7 @@ import Flight.Task
     , distanceEdgeToEdge
     , separatedZones
     )
+import Data.Aeson.ViaScientific (ViaScientific(..))
 
 mm30 :: Fractional a => Tolerance a
 mm30 = Tolerance . fromRational $ 30 % 1000
@@ -154,8 +155,8 @@ zoneToCylinder z =
         r' = fromRational $ r % 1
 
         radius = Radius (MkQuantity r')
-        RawLat lat = Raw.lat z
-        RawLng lng = Raw.lng z
+        ViaScientific (RawLat lat) = Raw.lat z
+        ViaScientific (RawLng lng) = Raw.lng z
 
 fixToPoint :: (Eq a, Fractional a) => Kml.Fix -> TrackZone a
 fixToPoint fix =
@@ -339,8 +340,8 @@ fixFromFix mark0 i x =
     -- SEE: https://ocharles.org.uk/blog/posts/2013-12-15-24-days-of-hackage-time.html
     Fix { fix = i
         , time = fromInteger secs `addUTCTime` mark0
-        , lat = RawLat lat
-        , lng = RawLng lng
+        , lat = ViaScientific . RawLat $ lat
+        , lng = ViaScientific . RawLng $ lng
         }
     where
         Kml.Seconds secs = Kml.mark x
