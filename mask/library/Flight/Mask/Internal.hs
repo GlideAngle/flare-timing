@@ -38,6 +38,7 @@ module Flight.Mask.Internal
     , exitsSeq
     , distanceViaZones
     , distanceToGoal
+    , reindex
     ) where
 
 import Prelude hiding (span)

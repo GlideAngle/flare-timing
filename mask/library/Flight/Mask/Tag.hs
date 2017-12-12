@@ -56,6 +56,7 @@ import Flight.Mask.Internal
     , tickedZones
     , entersSeq
     , exitsSeq
+    , reindex
     )
 import qualified Flight.Zone.Raw as Raw (RawZone(..))
 import Flight.Task (SpanLatLng)
@@ -646,10 +647,15 @@ madeZones span zoneToCyl tasks (IxTask i) Kml.MarkedFixes{mark0, fixes} =
                     $ (\(m, n) -> take (n - m) $ drop m fixes)
                     <$> flyingIndices
 
-                nominees = NomineeCrossings $ f <$> xs
+                xs' =
+                    fromMaybe xs
+                    $ (\(ii, _) -> (fmap . fmap) (reindex ii) xs)
+                    <$> flyingIndices
+
+                nominees = NomineeCrossings $ f <$> xs'
 
                 ys :: [[OrdCrossing]]
-                ys = trimOrdLists ((fmap . fmap) OrdCrossing xs)
+                ys = trimOrdLists ((fmap . fmap) OrdCrossing xs')
 
                 ys' :: [[Crossing]]
                 ys' = (fmap . fmap) unOrdCrossing ys
