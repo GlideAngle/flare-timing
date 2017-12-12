@@ -1,6 +1,8 @@
 flags: {}
 packages:
 - location: .
+- location: ../aeson-rational
+  extra-dep: true
 - location: ../latlng
   extra-dep: true
 - location: ../zone

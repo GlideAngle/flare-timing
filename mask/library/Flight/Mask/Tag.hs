@@ -28,7 +28,7 @@ import Prelude hiding (span)
 import Data.Time.Clock (UTCTime, addUTCTime)
 import qualified Data.List as List
 import Data.Maybe (fromMaybe, listToMaybe)
-import Data.List (nub, group, findIndex)
+import Data.List (nub, group, elemIndex)
 import Data.List.Split (split, whenElt, keepDelimsL, chop)
 import Control.Lens ((^?), element)
 
@@ -543,11 +543,11 @@ stationary x y =
 fly :: Kml.LatLngAlt a => [a] -> FlyingSection Int
 fly ys =
     if null zls then Nothing else
-    case findIndex (== maximum zls) zls of
+    case elemIndex (maximum zls) zls of
         Nothing -> Nothing
         -- NOTE: A tally is a count and 1-based whereas an index is 0-based.
-        Just 0 -> Just (0, (tally 0) - 1)
-        Just i -> Just (tally (i - 1) - 1, (tally i) - 1)
+        Just 0 -> Just (0, tally 0 - 1)
+        Just i -> Just (tally (i - 1) - 1, tally i - 1)
     where
         yss = chop (\xs@(x : _) -> List.span (stationary x) xs) ys
         yls = length <$> yss
@@ -643,14 +643,16 @@ madeZones span zoneToCyl tasks (IxTask i) Kml.MarkedFixes{mark0, fixes} =
                 flyingTimes = timeRange mark0 flyingSeconds
 
                 fixesFlown =
-                    fromMaybe fixes
-                    $ (\(m, n) -> take (n - m) $ drop m fixes)
-                    <$> flyingIndices
+                    maybe
+                        fixes
+                        (\(m, n) -> take (n - m) $ drop m fixes)
+                        flyingIndices
 
                 xs' =
-                    fromMaybe xs
-                    $ (\(ii, _) -> (fmap . fmap) (reindex ii) xs)
-                    <$> flyingIndices
+                    maybe
+                        xs
+                        (\(ii, _) -> (fmap . fmap) (reindex ii) xs)
+                        flyingIndices
 
                 nominees = NomineeCrossings $ f <$> xs'
 
