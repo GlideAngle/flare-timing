@@ -39,7 +39,7 @@ data TrackArrival =
         { rank :: PositionAtEss
         , frac :: ViaScientific ArrivalFraction
         }
-   deriving (Show, Generic)
+    deriving (Eq, Ord, Show, Generic)
 
 instance ToJSON TrackArrival
 instance FromJSON TrackArrival

@@ -22,6 +22,7 @@ module Cmd.Driver (driverMain) where
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
 import Data.Maybe (fromMaybe, catMaybes)
+import Data.List (sortOn)
 import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
@@ -223,7 +224,8 @@ arriving xs =
 
 arrivals :: [(Pilot, PositionAtEss)] -> [(Pilot, TrackArrival)]
 arrivals xs =
-    (fmap . fmap) (f (PilotsAtEss . toInteger $ length xs)) xs
+    sortOn (rank . snd)
+    $ (fmap . fmap) (f (PilotsAtEss . toInteger $ length xs)) xs
     where
         f pilots position =
             TrackArrival

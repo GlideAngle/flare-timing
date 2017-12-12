@@ -48,6 +48,7 @@ data ViaScientific n where
                   -> ViaScientific n
 
 deriving instance (Eq n) => Eq (ViaScientific n)
+deriving instance (Ord n) => Ord (ViaScientific n)
 deriving instance (Show n) => Show (ViaScientific n)
 
 instance (DefaultDecimalPlaces n, Newtype n Rational)

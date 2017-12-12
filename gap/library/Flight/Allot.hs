@@ -40,7 +40,10 @@ import Data.Aeson.ViaScientific
     )
 
 newtype PilotsAtEss = PilotsAtEss Integer deriving (Eq, Show)
-newtype PositionAtEss = PositionAtEss Integer deriving (Eq, Show, ToJSON, FromJSON)
+
+newtype PositionAtEss = PositionAtEss Integer
+    deriving (Eq, Ord, Show, ToJSON, FromJSON)
+
 newtype ArrivalFraction = ArrivalFraction Rational deriving (Eq, Ord, Show)
 
 instance DefaultDecimalPlaces ArrivalFraction where
