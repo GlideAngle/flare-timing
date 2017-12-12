@@ -31,6 +31,7 @@ lintPkgs =
     , "igc"
     , "kml"
     , "comp"
+    , "gap"
     ] 
 
 type Pkg = String

@@ -37,6 +37,8 @@ tests:
     - vector
     - statistics
     - newtype
+    - aeson
+    - aeson-rational
     ghc-options:
     - -rtsopts
     - -threaded

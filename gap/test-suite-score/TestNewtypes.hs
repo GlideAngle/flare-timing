@@ -508,11 +508,10 @@ instance Monad m => SC.Serial m StopGlideTest where
         SC.><
         cons1 (\(SC.NonNegative x) -> AltitudeAboveGoal x)
         SC.><
-        cons1 (\xs -> StoppedTrack $
+        cons1 (StoppedTrack $
                 zipWith
                     (\t (SC.NonNegative d) -> (TaskTime t, DistanceToGoal d))
-                    [1 .. ]
-                    xs)
+                    [1 .. ])
 
 instance QC.Arbitrary StopGlideTest where
     arbitrary = StopGlideTest <$> do
