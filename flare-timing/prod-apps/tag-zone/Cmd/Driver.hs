@@ -66,16 +66,22 @@ cmp a b =
     case (a, b) of
         ("timing", _) -> LT
         ("tagging", _) -> GT
+
+        ("fix", _) -> LT
+        ("time", "fix") -> GT
         ("time", _) -> LT
+        ("lat", "fix") -> GT
         ("lat", "time") -> GT
         ("lat", _) -> LT
         ("lng", _) -> GT
+
         ("zonesSum", _) -> LT
         ("zonesFirst", "zonesSum") -> GT
         ("zonesFirst", _) -> LT
         ("zonesLast", "zonesSum") -> GT
         ("zonesLast", "zonesFirst") -> GT
         ("zonesLast", _) -> LT
+
         ("zonesRankTime", "zonesSum") -> GT
         ("zonesRankTime", "zonesFirst") -> GT
         ("zonesRankTime", "zonesLast") -> GT
