@@ -83,6 +83,6 @@ arrivalRankPilot _ Nothing _ = Nothing
 arrivalRankPilot p speedSection xss =
     case pss of
         [] -> Nothing
-        (ps : _) -> elemIndex p ps
+        (ps : _) -> (+ 1) <$> elemIndex p ps
     where
         pss :: [[Pilot]] = reverse $ slice speedSection xss
