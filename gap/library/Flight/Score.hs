@@ -52,6 +52,7 @@ module Flight.Score
     , BestTime(..)
     , PilotTime(..)
     , SpeedFraction(..)
+    , bestTime
     , speedFraction
     -- * Fractional allotment of linear distance points
     , BestDistance(..)

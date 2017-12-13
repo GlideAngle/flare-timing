@@ -13,6 +13,7 @@ module Flight.Allot
     , arrivalFraction
     , BestTime(..)
     , PilotTime(..)
+    , bestTime
     , SpeedFraction(..)
     , speedFraction
     , BestDistance(..)
@@ -29,7 +30,7 @@ module Flight.Allot
 
 import Control.Newtype (Newtype(..))
 import Data.Ratio ((%))
-import Data.List (sort, group)
+import Data.List (sort, group, minimum)
 import Data.Maybe (fromMaybe)
 import qualified Data.Map.Strict as Map
 import Data.Aeson (ToJSON(..), FromJSON(..))
@@ -39,7 +40,9 @@ import Data.Aeson.ViaScientific
     , fromSci, toSci, showSci
     )
 
-newtype PilotsAtEss = PilotsAtEss Integer deriving (Eq, Show)
+-- | The number of pilots completing the speed section of the task.
+newtype PilotsAtEss = PilotsAtEss Integer
+    deriving (Eq, Show, ToJSON, FromJSON)
 
 -- | A 1-based rank of the pilot arrival at goal, 1st in is 1, 2nd is 2 etc.
 newtype PositionAtEss = PositionAtEss Integer
@@ -54,9 +57,34 @@ instance Newtype ArrivalFraction Rational where
     pack = ArrivalFraction
     unpack (ArrivalFraction a) = a
 
-newtype BestTime = BestTime Rational deriving (Eq, Ord, Show)
-newtype PilotTime = PilotTime Rational deriving (Eq, Ord, Show)
 newtype SpeedFraction = SpeedFraction Rational deriving (Eq, Ord, Show)
+
+instance DefaultDecimalPlaces SpeedFraction where
+    defdp _ = DecimalPlaces 8
+
+instance Newtype SpeedFraction Rational where
+    pack = SpeedFraction
+    unpack (SpeedFraction a) = a
+
+-- | Best time for the task, units of hours.
+newtype BestTime = BestTime Rational deriving (Eq, Ord, Show)
+
+instance DefaultDecimalPlaces BestTime where
+    defdp _ = DecimalPlaces 8
+
+instance Newtype BestTime Rational where
+    pack = BestTime
+    unpack (BestTime a) = a
+
+-- | Pilot time for the task, units of hours.
+newtype PilotTime = PilotTime Rational deriving (Eq, Ord, Show)
+
+instance DefaultDecimalPlaces PilotTime where
+    defdp _ = DecimalPlaces 8
+
+instance Newtype PilotTime Rational where
+    pack = PilotTime
+    unpack (PilotTime a) = a
 
 newtype BestDistance = BestDistance Rational deriving (Eq, Ord, Show)
 newtype PilotDistance a = PilotDistance a deriving (Eq, Ord, Show)
@@ -82,6 +110,10 @@ arrivalFraction (PilotsAtEss n) (PositionAtEss rank)
         + (633 % 1000) * ac * ac * ac
         where
             ac = 1 - ((rank - 1) % n)
+
+bestTime :: [PilotTime] -> Maybe BestTime
+bestTime [] = Nothing
+bestTime xs = let PilotTime t = minimum xs in Just $ BestTime t
 
 speedFraction :: BestTime -> PilotTime -> SpeedFraction
 speedFraction (BestTime best) (PilotTime t) =

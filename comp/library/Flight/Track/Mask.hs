@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DuplicateRecordFields #-}
 
 {-|
 Module      : Flight.Track.Mask
@@ -14,24 +15,46 @@ module Flight.Track.Mask
     , TrackMask(..)
     , PilotTrackMask(..)
     , TrackArrival(..)
+    , TrackSpeed(..)
     ) where
 
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import Flight.Pilot (Pilot(..))
-import Flight.Score (PositionAtEss(..), ArrivalFraction(..))
+import Flight.Score
+    ( PilotsAtEss(..)
+    , PositionAtEss(..)
+    , ArrivalFraction(..)
+    , SpeedFraction(..)
+    , BestTime(..)
+    , PilotTime(..)
+    )
 import Data.Aeson.ViaScientific (ViaScientific(..))
 
 -- | For each task, the masking for that task.
 data Masking =
     Masking
-        { masking :: [[PilotTrackMask]]
+        { pilotsAtEss :: [PilotsAtEss]
+        , bestTime :: [Maybe (ViaScientific BestTime)]
         , arrival :: [[(Pilot, TrackArrival)]]
+        , speed :: [[(Pilot, TrackSpeed)]]
+        , masking :: [[PilotTrackMask]]
         }
     deriving (Show, Generic)
 
 instance ToJSON Masking
 instance FromJSON Masking
+
+-- ^ If arrived at goal then speed fraction.
+data TrackSpeed =
+    TrackSpeed
+        { time :: ViaScientific PilotTime
+        , frac :: ViaScientific SpeedFraction
+        }
+    deriving (Eq, Ord, Show, Generic)
+
+instance ToJSON TrackSpeed
+instance FromJSON TrackSpeed
 
 -- ^ If arrived at goal then arrival rank and fraction.
 data TrackArrival =
