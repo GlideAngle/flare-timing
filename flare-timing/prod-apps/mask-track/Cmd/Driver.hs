@@ -13,6 +13,7 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE PartialTypeSignatures #-}
+{-# LANGUAGE TupleSections #-}
 
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
@@ -56,13 +57,13 @@ import Flight.Comp
 import qualified Flight.Task as Tsk (TaskDistance(..))
 import Flight.TrackLog (IxTask(..))
 import Flight.Units ()
+import qualified Flight.Mask as Mask (distanceToGoal)
 import Flight.Mask
     ( SigMasking, TaskZone, Ticked(..)
-    , checkTracks, distanceToGoal, distanceFlown, zoneToCylinder
+    , checkTracks, distanceFlown, zoneToCylinder
     )
 import Flight.Track.Mask
-    (Masking(..), PilotTrackMask(..), TrackArrival(..), TrackSpeed(..))
-import qualified Flight.Track.Mask as TM (TrackMask(..))
+    (Masking(..), TrackArrival(..), TrackSpeed(..), TrackDistance(..))
 import Flight.Track.Tag (Tagging)
 import Flight.Zone (Bearing(..))
 import Flight.Zone.Raw (RawZone)
@@ -92,6 +93,8 @@ import Flight.Score
     , arrivalFraction
     , speedFraction
     )
+    
+type FlightStats = (Maybe (PilotTime, PositionAtEss), Maybe TrackDistance)
 
 driverMain :: IO ()
 driverMain = do
@@ -120,7 +123,7 @@ cmp a b =
         ("speed", "arrival") -> GT
         ("speed", _) -> LT
 
-        ("masking", _) -> GT
+        ("distance", _) -> GT
 
         ("time", _) -> LT
         ("rank", _) -> LT
@@ -132,11 +135,9 @@ cmp a b =
         ("timeToGoal", "madeGoal") -> GT
         ("timeToGoal", "arrivalRank") -> GT
         ("timeToGoal", _) -> LT
-        ("distanceToGoal", "madeGoal") -> GT
-        ("distanceToGoal", "arrivalRank") -> GT
-        ("distanceToGoal", "timeToGoal") -> GT
-        ("distanceToGoal", _) -> LT
-        ("distanceMade", _) -> GT
+
+        ("togo", _) -> LT
+        ("made", _) -> GT
         _ -> compare a b
 
 unTaskDistance :: (Real a, Fractional a) => Tsk.TaskDistance a -> a
@@ -194,8 +195,7 @@ writeMask :: [IxTask]
                    [
                        [Either
                            (Pilot, TrackFileFail)
-                           (Pilot, Pilot ->
-                               (Maybe (PilotTime, PositionAtEss), TM.TrackMask))
+                           (Pilot, Pilot -> FlightStats)
                        ]
                    ]
              )
@@ -206,33 +206,26 @@ writeMask selectTasks selectPilots compFile@(CompFile compPath) f = do
     case checks of
         Left msg -> print msg
         Right comp -> do
-            let ys :: [([(Pilot, Maybe (PilotTime, PositionAtEss))], [PilotTrackMask])] =
-                    unzip <$>
+            let ys :: [[(Pilot, FlightStats)]] =
                     (fmap . fmap)
                         (\case
-                            Left (p, _) ->
-                                ((p, Nothing), PilotTrackMask p Nothing)
-
-                            Right (p, g) ->
-                                let (ar, tm) = g p
-                                in ((p, ar), PilotTrackMask p (Just tm)))
+                            Left (p, _) -> (p, (Nothing, Nothing))
+                            Right (p, g) -> (p, g p))
                         comp
 
-            let as :: [[(Pilot, TrackArrival)]] =
-                    (arrivals . pilotMay) <$> (fst <$> ys)
-
-            let ts :: [Maybe (BestTime, [(Pilot, TrackSpeed)])] =
-                    (times . pilotMay) <$> (fst <$> ys)
+            let d :: [[(Pilot, TrackDistance)]] = distances <$> ys
+            let a :: [[(Pilot, TrackArrival)]] = arrivals <$> ys
+            let s :: [Maybe (BestTime, [(Pilot, TrackSpeed)])] = times <$> ys
 
             let tzi =
                     Masking
                         { pilotsAtEss =
-                            (PilotsAtEss . toInteger . length) <$> as 
+                            (PilotsAtEss . toInteger . length) <$> a 
 
-                        , bestTime = (fmap . fmap) (ViaScientific . fst) ts
-                        , arrival = as
-                        , speed = (fromMaybe []) <$> (fmap . fmap) snd ts
-                        , masking = snd <$> ys
+                        , bestTime = (fmap . fmap) (ViaScientific . fst) s
+                        , arrival = a
+                        , speed = (fromMaybe []) <$> (fmap . fmap) snd s
+                        , distance = d
                         }
 
             let yaml =
@@ -246,31 +239,38 @@ writeMask selectTasks selectPilots compFile@(CompFile compPath) f = do
             flip replaceExtension ".mask-track.yaml"
             $ dropExtension compPath
 
-pilotMay :: [(Pilot, Maybe a)] -> [(Pilot, a)]
-pilotMay xs =
-    catMaybes $ f <$> xs
-    where
-        f (_, Nothing) = Nothing
-        f (p, Just e) = Just (p, e)
+distances :: [(Pilot, FlightStats)] -> [(Pilot, TrackDistance)]
+distances xs =
+    sortOn (togo . snd) .  catMaybes
+    $ fmap (\(p, (_, d)) -> (p,) <$> d) xs
 
-arrivals :: [(Pilot, (PilotTime, PositionAtEss))]
-         -> [(Pilot, TrackArrival)]
+arrivals :: [(Pilot, FlightStats)] -> [(Pilot, TrackArrival)]
 arrivals xs =
-    sortOn (rank . snd)
-    $ (fmap . fmap) ((f (PilotsAtEss . toInteger $ length xs)) . snd) xs
+    sortOn (rank . snd) $ (fmap . fmap) f ys
     where
-        f pilots position =
+        ys :: [(Pilot, PositionAtEss)]
+        ys = catMaybes $ (\(p, (a, _)) -> ((p,) . snd) <$> a) <$> xs
+
+        pilots :: PilotsAtEss
+        pilots = PilotsAtEss . toInteger $ length ys
+
+        f position =
             TrackArrival
                 { rank = position
                 , frac = ViaScientific $ arrivalFraction pilots position
                 }
 
-times :: [(Pilot, (PilotTime, PositionAtEss))]
-      -> Maybe (BestTime, [(Pilot, TrackSpeed)])
+times :: [(Pilot, FlightStats)] -> Maybe (BestTime, [(Pilot, TrackSpeed)])
 times xs =
-    (\ bt -> (bt, sortOn (time . snd) $ (fmap . fmap) ((f bt) . fst) xs))
-    <$> Gap.bestTime (fst . snd <$> xs)
+    (\ bt -> (bt, sortOn (time . snd) $ (\(p, t) -> (p, f bt t)) <$> ys))
+    <$> Gap.bestTime ts
     where
+        ys :: [(Pilot, PilotTime)]
+        ys = catMaybes $ (\(p, (a, _)) -> ((p,) . fst) <$> a) <$> xs
+
+        ts :: [PilotTime]
+        ts = snd <$> ys
+
         f best t =
             TrackSpeed
                 { time = ViaScientific t
@@ -288,7 +288,7 @@ check :: Math
           [
               [Either
                   (Pilot, TrackFileFail)
-                  (Pilot, Pilot -> (Maybe (PilotTime, PositionAtEss), TM.TrackMask))
+                  (Pilot, Pilot -> FlightStats)
               ]
           ]
 check math tags = checkTracks $ \CompSettings{tasks} ->
@@ -296,12 +296,12 @@ check math tags = checkTracks $ \CompSettings{tasks} ->
 
 flown :: Math
       -> Either String Tagging
-      -> SigMasking (Pilot -> (Maybe (PilotTime, PositionAtEss), TM.TrackMask))
+      -> SigMasking (Pilot -> FlightStats)
 flown math tags tasks iTask@(IxTask i) xs p =
     case (pilotTime, arrivalRank) of
-        (Nothing, _) -> (Nothing, trackMask)
-        (_, Nothing) -> (Nothing, trackMask)
-        (Just a, Just b) -> (Just (a, b), trackMask)
+        (Nothing, _) -> (Nothing, Just distance)
+        (_, Nothing) -> (Nothing, Just distance)
+        (Just a, Just b) -> (Just (a, b), Nothing)
     where
         pilotTime =
             diffTimeHours
@@ -311,10 +311,10 @@ flown math tags tasks iTask@(IxTask i) xs p =
             PositionAtEss . toInteger
             <$> join ((\f -> f p speedSection' iTask xs) <$> lookupArrivalRank)
 
-        trackMask =
-            TM.TrackMask
-                { distanceToGoal = unTaskDistance <$> dg math
-                , distanceMade = fromRational <$> unPilotDistance <$> df math
+        distance =
+            TrackDistance
+                { togo = unTaskDistance <$> dg math
+                , made = fromRational <$> unPilotDistance <$> df math
                 }
 
         dppR = Rat.distancePointToPoint
@@ -327,14 +327,14 @@ flown math tags tasks iTask@(IxTask i) xs p =
         dg =
             \case
             Floating ->
-                distanceToGoal
+                Mask.distanceToGoal
                     noneTicked
                     spanF dppF csegF csF cutF
                     zoneToCylF tasks iTask xs
 
             Rational ->
                 (\(Tsk.TaskDistance d) -> Tsk.TaskDistance $ fromRational' d) <$>
-                distanceToGoal
+                Mask.distanceToGoal
                     noneTicked
                     spanR dppR csegR csR cutR
                     zoneToCylR tasks iTask xs

@@ -12,8 +12,7 @@ Tracks masked with task control zones.
 -}
 module Flight.Track.Mask
     ( Masking(..)
-    , TrackMask(..)
-    , PilotTrackMask(..)
+    , TrackDistance(..)
     , TrackArrival(..)
     , TrackSpeed(..)
     ) where
@@ -38,7 +37,7 @@ data Masking =
         , bestTime :: [Maybe (ViaScientific BestTime)]
         , arrival :: [[(Pilot, TrackArrival)]]
         , speed :: [[(Pilot, TrackSpeed)]]
-        , masking :: [[PilotTrackMask]]
+        , distance :: [[(Pilot, TrackDistance)]]
         }
     deriving (Show, Generic)
 
@@ -67,25 +66,14 @@ data TrackArrival =
 instance ToJSON TrackArrival
 instance FromJSON TrackArrival
 
-data TrackMask =
-    TrackMask
-        { distanceToGoal :: Maybe Double
+data TrackDistance =
+    TrackDistance
+        { togo :: Maybe Double
         -- ^ The shortest distance to goal of any fix in the track.
-        , distanceMade :: Maybe Double
+        , made :: Maybe Double
         -- ^ The task distance minus the distance to goal.
         }
    deriving (Show, Generic)
 
-instance ToJSON TrackMask
-instance FromJSON TrackMask
-
--- | Associates a pilot with a flight summary (mask) for a single task.
-data PilotTrackMask =
-    PilotTrackMask
-        Pilot
-        (Maybe TrackMask)
-        -- ^ The task summary (mask) should be Just if the pilot launched.
-    deriving (Show, Generic)
-
-instance ToJSON PilotTrackMask
-instance FromJSON PilotTrackMask
+instance ToJSON TrackDistance
+instance FromJSON TrackDistance
