@@ -69,11 +69,7 @@ instance FromJSON TrackArrival
 
 data TrackMask =
     TrackMask
-        { madeGoal :: Bool
-        -- ^ Was goal made.
-        , timeToGoal :: Maybe Double
-        -- ^ How long did this pilot take to complete the course.
-        , distanceToGoal :: Maybe Double
+        { distanceToGoal :: Maybe Double
         -- ^ The shortest distance to goal of any fix in the track.
         , distanceMade :: Maybe Double
         -- ^ The task distance minus the distance to goal.

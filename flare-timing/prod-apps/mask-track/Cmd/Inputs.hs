@@ -6,12 +6,10 @@
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
 module Cmd.Inputs
-    ( MadeGoalLookup(..)
-    , ArrivalRankLookup(..)
+    ( ArrivalRankLookup(..)
     , PilotTimeLookup(..)
     , StartEnd
     , readTags
-    , tagMadeGoal
     , tagArrivalRank
     , tagPilotTime
     ) where
@@ -33,7 +31,6 @@ import Flight.Track.Cross (Fix(time))
 
 type TaggingLookup a = Pilot -> SpeedSection -> IxTask -> Kml.MarkedFixes -> Maybe a
 
-newtype MadeGoalLookup = MadeGoalLookup (Maybe (TaggingLookup Bool))
 newtype ArrivalRankLookup = ArrivalRankLookup (Maybe (TaggingLookup Int))
 newtype PilotTimeLookup = PilotTimeLookup (Maybe (TaggingLookup StartEnd))
 
@@ -43,10 +40,6 @@ readTags :: TagFile -> ExceptT String IO Tagging
 readTags (TagFile path) = do
     contents <- lift $ BS.readFile path
     ExceptT . return $ decodeEither contents
-
-tagMadeGoal :: Either String Tagging -> MadeGoalLookup
-tagMadeGoal (Left _) = MadeGoalLookup Nothing
-tagMadeGoal (Right x) = MadeGoalLookup (Just $ madeGoal x)
 
 tagPilotTime :: Either String Tagging -> PilotTimeLookup
 tagPilotTime (Left _) = PilotTimeLookup Nothing
@@ -84,30 +77,6 @@ timeElapsedPilot _ (PilotTrackTag _ Nothing) = Nothing
 timeElapsedPilot Nothing _ = Nothing
 timeElapsedPilot speedSection (PilotTrackTag _ (Just TrackTag{zonesTag})) =
     startEnd $ slice speedSection zonesTag
-
-madeGoal :: Tagging
-         -> Pilot
-         -> SpeedSection
-         -> IxTask
-         -> Kml.MarkedFixes
-         -> Maybe Bool
-madeGoal _ _ Nothing _ _ = Nothing
-madeGoal x pilot speedSection (IxTask i) _ =
-    case tagging x ^? element (fromIntegral i - 1) of
-        Nothing -> Nothing
-        Just xs ->
-            join
-            $ madeGoalPilot speedSection
-            <$> find (\(PilotTrackTag p _) -> p == pilot) xs
-
-madeGoalPilot :: SpeedSection -> PilotTrackTag -> Maybe Bool
-madeGoalPilot _ (PilotTrackTag _ Nothing) = Nothing
-madeGoalPilot Nothing _ = Nothing
-madeGoalPilot speedSection (PilotTrackTag _ (Just TrackTag{zonesTag})) =
-    const True <$> bs
-    where
-        zs :: [Maybe _] = slice speedSection zonesTag
-        bs :: Maybe [_] = sequence zs
 
 arrivalRank :: Tagging
             -> Pilot

@@ -31,12 +31,12 @@ import System.Clock (getTime, Clock(Monotonic))
 import Data.String (IsString)
 import Control.Lens ((^?), element)
 import Control.Monad (join, mapM_)
-import Control.Applicative.Alternative ((<|>))
 import Control.Monad.Except (ExceptT, runExceptT)
 import Data.UnitsOfMeasure ((/:), u, convert, toRational', fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import System.Directory (doesFileExist, doesDirectoryExist)
-import System.FilePath.Find (FileType(..), (==?), (&&?), find, always, fileType, extension)
+import System.FilePath.Find
+    (FileType(..), (==?), (&&?), find, always, fileType, extension)
 import System.FilePath (takeFileName, replaceExtension, dropExtension)
 import qualified Data.Yaml.Pretty as Y
 import qualified Data.ByteString as BS
@@ -57,15 +57,8 @@ import qualified Flight.Task as Tsk (TaskDistance(..))
 import Flight.TrackLog (IxTask(..))
 import Flight.Units ()
 import Flight.Mask
-    ( SigMasking
-    , TaskZone
-    , Ticked(..)
-    , checkTracks
-    , madeGoal
-    , distanceToGoal
-    , distanceFlown
-    , timeFlown
-    , zoneToCylinder
+    ( SigMasking, TaskZone, Ticked(..)
+    , checkTracks, distanceToGoal, distanceFlown, zoneToCylinder
     )
 import Flight.Track.Mask
     (Masking(..), PilotTrackMask(..), TrackArrival(..), TrackSpeed(..))
@@ -87,12 +80,8 @@ import Flight.Cmd.Paths (checkPaths)
 import Flight.Cmd.Options (Math(..), CmdOptions(..), ProgramName(..), mkOptions)
 import Cmd.Options (description)
 import Cmd.Inputs
-    ( MadeGoalLookup(..)
-    , ArrivalRankLookup(..)
-    , PilotTimeLookup(..)
-    , StartEnd
-    , tagMadeGoal, tagArrivalRank, tagPilotTime
-    , readTags
+    ( ArrivalRankLookup(..), PilotTimeLookup(..), StartEnd
+    , tagArrivalRank, tagPilotTime , readTags
     )
 import qualified Flight.Score as Gap (PilotDistance(..), bestTime)
 import Flight.Score
@@ -162,9 +151,6 @@ unPilotDistance (Gap.PilotDistance d) =
     where 
         d' :: Quantity Rational [u| m |] = MkQuantity $ toRational d
         MkQuantity dKm = convert d' :: Quantity Rational [u| km |]
-
-unPilotTime :: Fractional a => PilotTime -> a
-unPilotTime (PilotTime t) = fromRational t
 
 drive :: CmdOptions -> IO ()
 drive CmdOptions{..} = do
@@ -327,16 +313,8 @@ flown math tags tasks iTask@(IxTask i) xs p =
 
         trackMask =
             TM.TrackMask
-                { madeGoal = mg
-
-                , distanceToGoal =
-                    if mg then Nothing else unTaskDistance <$> dg math
-
-                , distanceMade =
-                    fromRational <$> if mg then Nothing else unPilotDistance <$> df math
-
-                , timeToGoal =
-                    if not mg then Nothing else unPilotTime <$> tf math
+                { distanceToGoal = unTaskDistance <$> dg math
+                , distanceMade = fromRational <$> unPilotDistance <$> df math
                 }
 
         dppR = Rat.distancePointToPoint
@@ -377,37 +355,13 @@ flown math tags tasks iTask@(IxTask i) xs p =
                     spanR dppR csegR csR cutR
                     zoneToCylR tasks iTask xs
 
-        tf :: Math -> Maybe PilotTime
-        tf =
-            \case
-            Floating ->
-                timeFlown
-                    spanF
-                    zoneToCylF tasks iTask xs
-
-            Rational ->
-                timeFlown
-                    spanR
-                    zoneToCylR tasks iTask xs
-
         speedSection' =
             case tasks ^? element (fromIntegral i - 1) of
                 Nothing -> Nothing
                 Just Task{..} -> speedSection
 
-        (MadeGoalLookup lookupMadeGoal) = tagMadeGoal tags
         (ArrivalRankLookup lookupArrivalRank) = tagArrivalRank tags
         (PilotTimeLookup lookupPilotTime) = tagPilotTime tags
-
-        mg :: Bool
-        mg =
-            let a = join $ (\f -> f p speedSection' iTask xs) <$> lookupMadeGoal
-                b =
-                    \case
-                    Rational -> Just $ madeGoal spanR zoneToCylR tasks iTask xs
-                    Floating -> Just $ madeGoal spanF zoneToCylF tasks iTask xs
-
-            in fromMaybe False $ a <|> b math
 
 zoneToCylR :: RawZone -> TaskZone Rational
 zoneToCylR = zoneToCylinder
