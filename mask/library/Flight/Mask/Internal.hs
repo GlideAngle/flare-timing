@@ -398,7 +398,7 @@ distanceToGoal span zoneToCyl dvz tasks (IxTask i) Kml.MarkedFixes{fixes} =
 -- distance returned is the task distance up to the next zone not made minus the
 -- distance yet to fly to this zone.
 distanceViaZones :: forall a b. (Real b, Fractional b)
-                 => Ticked
+                 => Ticked -- ^ The number of zones ticked in the speed section
                  -> SpanLatLng b
                  -> DistancePointToPoint b
                  -> CostSegment b
