@@ -2,6 +2,7 @@ module Flight.Path
     ( FsdbFile(..)
     , FsdbXml(..)
     , CompFile(..)
+    , TaskLengthFile(..)
     , CrossFile(..)
     , TagFile(..)
     , AlignFile(..)
@@ -10,6 +11,7 @@ module Flight.Path
     , AlignDir(..)
     , DiscardDir(..)
     , fsdbToComp
+    , compToTaskLength
     , compToCross
     , crossToTag
     , compFileToCompDir
@@ -38,6 +40,9 @@ newtype CompDir = CompDir FilePath
 -- | The path to a competition file.
 newtype CompFile = CompFile FilePath
 
+-- | The path to a task length file.
+newtype TaskLengthFile = TaskLengthFile FilePath
+
 -- | The path to a cross zone file.
 newtype CrossFile = CrossFile FilePath
 
@@ -63,6 +68,10 @@ fsdbToComp (FsdbFile p) =
 compFileToCompDir :: CompFile -> CompDir
 compFileToCompDir (CompFile p) =
     CompDir $ takeDirectory p
+
+compToTaskLength :: CompFile -> TaskLengthFile
+compToTaskLength (CompFile p) =
+    TaskLengthFile $ flip replaceExtension ".task-length.yaml" $ dropExtension p
 
 compToCross :: CompFile -> CrossFile
 compToCross (CompFile p) =
