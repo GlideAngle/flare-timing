@@ -14,7 +14,7 @@
 {-# LANGUAGE RankNTypes #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module Flight.TaskTrack.Double (taskTracks) where
+module Flight.TaskTrack.Double (taskTracks, fromKm) where
 
 import Prelude hiding (span)
 import Data.Either (partitionEithers)
@@ -165,6 +165,16 @@ toKm' f (TaskDistance d) =
     fromRational $ f dKm
     where 
         MkQuantity dKm = convert d :: Quantity _ [u| km |]
+
+-- | Convert from double with kilometres implied to metres.
+fromKm :: Double -> TaskDistance Double
+fromKm dRawKm =
+    TaskDistance dm
+    where 
+        dKm :: Quantity Double [u| km |]
+        dKm = MkQuantity dRawKm
+
+        dm = convert dKm :: Quantity Double [u| m |]
 
 goByPoint :: Bool -> [Zone Double] -> TrackLine
 goByPoint excludeWaypoints zs =
