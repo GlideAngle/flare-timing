@@ -5,18 +5,20 @@
 
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module Cmd.Inputs
+module Cmd.Inputs.TagZone
     ( ArrivalRankLookup(..)
     , PilotTimeLookup(..)
+    , TickedLookup(..)
     , StartEnd
     , readTags
     , tagArrivalRank
     , tagPilotTime
+    , tagTicked
     ) where
 
 import Data.Time.Clock (UTCTime)
 import Data.List (find, elemIndex)
-import Data.Maybe (listToMaybe)
+import Data.Maybe (catMaybes, listToMaybe)
 import Control.Monad (join)
 import Control.Monad.Except (ExceptT(..), lift)
 import Control.Lens ((^?), element)
@@ -25,14 +27,16 @@ import Data.Yaml (decodeEither)
 import Flight.TrackLog (IxTask(..))
 import qualified Flight.Kml as Kml (MarkedFixes(..))
 import Flight.Comp (TagFile(..), SpeedSection, Pilot(..))
-import Flight.Track.Tag (Tagging(..), TrackTime(..), TrackTag(..), PilotTrackTag(..))
-import Flight.Mask (slice)
+import Flight.Track.Tag
+    (Tagging(..), TrackTime(..), TrackTag(..), PilotTrackTag(..))
+import Flight.Mask (Ticked(..), slice)
 import Flight.Track.Cross (Fix(time))
 
 type TaggingLookup a = Pilot -> SpeedSection -> IxTask -> Kml.MarkedFixes -> Maybe a
 
 newtype ArrivalRankLookup = ArrivalRankLookup (Maybe (TaggingLookup Int))
 newtype PilotTimeLookup = PilotTimeLookup (Maybe (TaggingLookup StartEnd))
+newtype TickedLookup = TickedLookup (Maybe (TaggingLookup Ticked))
 
 type StartEnd = (UTCTime, UTCTime)
 
@@ -41,6 +45,10 @@ readTags (TagFile path) = do
     contents <- lift $ BS.readFile path
     ExceptT . return $ decodeEither contents
 
+tagTicked :: Either String Tagging -> TickedLookup
+tagTicked (Left _) = TickedLookup Nothing
+tagTicked (Right x) = TickedLookup (Just $ ticked x)
+
 tagPilotTime :: Either String Tagging -> PilotTimeLookup
 tagPilotTime (Left _) = PilotTimeLookup Nothing
 tagPilotTime (Right x) = PilotTimeLookup (Just $ timeElapsed x)
@@ -48,6 +56,32 @@ tagPilotTime (Right x) = PilotTimeLookup (Just $ timeElapsed x)
 tagArrivalRank :: Either String Tagging -> ArrivalRankLookup
 tagArrivalRank (Left _) = ArrivalRankLookup Nothing
 tagArrivalRank (Right x) = ArrivalRankLookup (Just $ arrivalRank x)
+
+ticked :: Tagging
+       -> Pilot
+       -> SpeedSection
+       -> IxTask
+       -> Kml.MarkedFixes
+       -> Maybe Ticked
+ticked _ _ Nothing _ _ = Nothing
+ticked x pilot speedSection (IxTask i) _ =
+    case tagging x ^? element (fromIntegral i - 1) of
+        Nothing -> Nothing
+        Just xs ->
+            join
+            $ tickedPilot speedSection
+            <$> find (\(PilotTrackTag p _) -> p == pilot) xs
+
+-- | The time of the first and last fix in the list.
+tickedZones :: [Maybe Fix] -> Maybe Ticked
+tickedZones =
+    Just . Ticked . length . catMaybes
+
+tickedPilot :: SpeedSection -> PilotTrackTag -> Maybe Ticked
+tickedPilot _ (PilotTrackTag _ Nothing) = Nothing
+tickedPilot Nothing _ = Nothing
+tickedPilot speedSection (PilotTrackTag _ (Just TrackTag{zonesTag})) =
+    tickedZones $ slice speedSection zonesTag
 
 timeElapsed :: Tagging
             -> Pilot

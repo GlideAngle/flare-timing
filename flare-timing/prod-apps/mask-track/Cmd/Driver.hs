@@ -43,14 +43,17 @@ import qualified Data.Yaml.Pretty as Y
 import qualified Data.ByteString as BS
 import qualified Data.Number.FixedFunctions as F
 import Data.Aeson.ViaScientific (ViaScientific(..))
+import Flight.TaskTrack (TaskRoutes(..))
 
 import Flight.Comp
     ( Pilot(..)
     , CompFile(..)
+    , TaskLengthFile(..)
     , TagFile(..)
     , CompSettings(..)
     , Task(..)
     , TrackFileFail(..)
+    , compToTaskLength
     , compToCross
     , crossToTag
     )
@@ -80,10 +83,12 @@ import qualified Flight.Cylinder.Double as Dbl (circumSample)
 import Flight.Cmd.Paths (checkPaths)
 import Flight.Cmd.Options (Math(..), CmdOptions(..), ProgramName(..), mkOptions)
 import Cmd.Options (description)
-import Cmd.Inputs
-    ( ArrivalRankLookup(..), PilotTimeLookup(..), StartEnd
-    , tagArrivalRank, tagPilotTime , readTags
+import Cmd.Inputs.TagZone
+    ( ArrivalRankLookup(..), PilotTimeLookup(..), TickedLookup(..), StartEnd
+    , tagArrivalRank, tagPilotTime, tagTicked, readTags
     )
+import Cmd.Inputs.TaskLength
+    (TaskLengthLookup(..), readLengths, routeLength)
 import qualified Flight.Score as Gap (PilotDistance(..), bestTime)
 import Flight.Score
     ( PilotsAtEss(..)
@@ -172,16 +177,19 @@ drive CmdOptions{..} = do
     where
         withFile compFile@(CompFile compPath) = do
             let tagFile@(TagFile tagPath) = crossToTag . compToCross $ compFile
+            let lenFile@(TaskLengthFile lenPath) = compToTaskLength $ compFile
             putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
+            putStrLn $ "Reading task length from '" ++ takeFileName lenPath ++ "'"
             putStrLn $ "Reading zone tags from '" ++ takeFileName tagPath ++ "'"
 
             tags <- runExceptT $ readTags tagFile
+            lengths <- runExceptT $ readLengths lenFile
 
             writeMask
                 (IxTask <$> task)
                 (Pilot <$> pilot)
                 (CompFile compPath)
-                (check math tags)
+                (check lengths math tags)
 
 writeMask :: [IxTask]
           -> [Pilot]
@@ -241,7 +249,7 @@ writeMask selectTasks selectPilots compFile@(CompFile compPath) f = do
 
 distances :: [(Pilot, FlightStats)] -> [(Pilot, TrackDistance)]
 distances xs =
-    sortOn (togo . snd) .  catMaybes
+    sortOn (togo . snd) . catMaybes
     $ fmap (\(p, (_, d)) -> (p,) <$> d) xs
 
 arrivals :: [(Pilot, FlightStats)] -> [(Pilot, TrackArrival)]
@@ -277,7 +285,8 @@ times xs =
                 , frac = ViaScientific $ speedFraction best t
                 }
 
-check :: Math
+check :: Either String TaskRoutes
+      -> Math
       -> Either String Tagging
       -> CompFile
       -> [IxTask]
@@ -291,18 +300,36 @@ check :: Math
                   (Pilot, Pilot -> FlightStats)
               ]
           ]
-check math tags = checkTracks $ \CompSettings{tasks} ->
-    flown math tags tasks
+check lengths math tags = checkTracks $ \CompSettings{tasks} ->
+    flown lengths math tags tasks
 
-flown :: Math
+flown :: Either String TaskRoutes
+      -> Math
       -> Either String Tagging
       -> SigMasking (Pilot -> FlightStats)
-flown math tags tasks iTask@(IxTask i) xs p =
+flown routes math tags tasks iTask xs =
+    maybe
+        (const (Nothing, Nothing))
+        (\d -> flown' d math tags tasks iTask xs)
+        taskLength
+    where
+        taskLength = join ((\f -> f iTask) <$> lookupTaskLength)
+        (TaskLengthLookup lookupTaskLength) = routeLength routes
+
+flown' :: Tsk.TaskDistance Double
+       -> Math
+       -> Either String Tagging
+       -> SigMasking (Pilot -> FlightStats)
+flown' dTaskF@(Tsk.TaskDistance td) math tags tasks iTask@(IxTask i) xs p =
     case (pilotTime, arrivalRank) of
         (Nothing, _) -> (Nothing, Just distance)
         (_, Nothing) -> (Nothing, Just distance)
         (Just a, Just b) -> (Just (a, b), Nothing)
     where
+        ticked =
+            fromMaybe noneTicked
+            $ join ((\f -> f p speedSection' iTask xs) <$> lookupTicked)
+
         pilotTime =
             diffTimeHours
             <$> join ((\f -> f p speedSection' iTask xs) <$> lookupPilotTime)
@@ -328,14 +355,14 @@ flown math tags tasks iTask@(IxTask i) xs p =
             \case
             Floating ->
                 Mask.distanceToGoal
-                    noneTicked
+                    ticked
                     spanF dppF csegF csF cutF
                     zoneToCylF tasks iTask xs
 
             Rational ->
                 (\(Tsk.TaskDistance d) -> Tsk.TaskDistance $ fromRational' d) <$>
                 Mask.distanceToGoal
-                    noneTicked
+                    ticked
                     spanR dppR csegR csR cutR
                     zoneToCylR tasks iTask xs
 
@@ -344,14 +371,16 @@ flown math tags tasks iTask@(IxTask i) xs p =
             \case
             Floating ->
                 distanceFlown
-                    noneTicked
+                    dTaskF
+                    ticked
                     spanF dppF csegF csF cutF
                     zoneToCylF tasks iTask xs
 
             Rational ->
                 (\(Gap.PilotDistance d) -> Gap.PilotDistance $ fromRational d) <$>
                 distanceFlown
-                    noneTicked
+                    dTaskR
+                    ticked
                     spanR dppR csegR csR cutR
                     zoneToCylR tasks iTask xs
 
@@ -360,8 +389,10 @@ flown math tags tasks iTask@(IxTask i) xs p =
                 Nothing -> Nothing
                 Just Task{..} -> speedSection
 
+        (TickedLookup lookupTicked) = tagTicked tags
         (ArrivalRankLookup lookupArrivalRank) = tagArrivalRank tags
         (PilotTimeLookup lookupPilotTime) = tagPilotTime tags
+        dTaskR = Tsk.TaskDistance $ toRational' td
 
 zoneToCylR :: RawZone -> TaskZone Rational
 zoneToCylR = zoneToCylinder
