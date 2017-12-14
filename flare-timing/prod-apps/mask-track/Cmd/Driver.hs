@@ -38,7 +38,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import System.Directory (doesFileExist, doesDirectoryExist)
 import System.FilePath.Find
     (FileType(..), (==?), (&&?), find, always, fileType, extension)
-import System.FilePath (takeFileName, replaceExtension, dropExtension)
+import System.FilePath (takeFileName)
 import qualified Data.Yaml.Pretty as Y
 import qualified Data.ByteString as BS
 import qualified Data.Number.FixedFunctions as F
@@ -50,11 +50,13 @@ import Flight.Comp
     , CompInputFile(..)
     , TaskLengthFile(..)
     , TagZoneFile(..)
+    , MaskTrackFile(..)
     , CompSettings(..)
     , Task(..)
     , TrackFileFail(..)
     , compToTaskLength
     , compToCross
+    , compToMask
     , crossToTag
     )
 import qualified Flight.Task as Tsk (TaskDistance(..))
@@ -208,7 +210,7 @@ writeMask :: [IxTask]
                    ]
              )
           -> IO ()
-writeMask selectTasks selectPilots compFile@(CompInputFile compPath) f = do
+writeMask selectTasks selectPilots compFile f = do
     checks <- runExceptT $ f compFile selectTasks selectPilots
 
     case checks of
@@ -243,9 +245,7 @@ writeMask selectTasks selectPilots compFile@(CompInputFile compPath) f = do
 
             BS.writeFile maskPath yaml
     where
-        maskPath =
-            flip replaceExtension ".mask-track.yaml"
-            $ dropExtension compPath
+        MaskTrackFile maskPath = compToMask compFile
 
 distances :: [(Pilot, FlightStats)] -> [(Pilot, TrackDistance)]
 distances xs =

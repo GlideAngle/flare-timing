@@ -13,7 +13,7 @@ import Control.Monad (mapM_)
 import Control.Monad.Except (runExceptT)
 import System.Directory (doesFileExist, doesDirectoryExist)
 import System.FilePath.Find (FileType(..), (==?), (&&?), find, always, fileType, extension)
-import System.FilePath (FilePath, takeFileName, replaceExtension, dropExtension)
+import System.FilePath (FilePath, takeFileName)
 import Flight.Cmd.Paths (checkPaths)
 import Cmd.Options (CmdOptions(..), mkOptions)
 import Cmd.Settings (readCompSettings)
@@ -21,7 +21,10 @@ import qualified Data.Yaml.Pretty as Y
 import qualified Data.ByteString as BS
 
 import Flight.Units ()
-import Flight.Comp (CompSettings(tasks), Task(zones))
+import Flight.Comp
+    ( CompSettings(tasks), Task(zones), CompInputFile(..), TaskLengthFile(..)
+    , compToTaskLength
+    )
 import Flight.TaskTrack.Rational (taskTracks)
 import qualified Flight.TaskTrack as TZ
     (TaskTrack(..), TaskRoutes(..))
@@ -68,23 +71,21 @@ drive CmdOptions{..} = do
     start <- getTime Monotonic
     dfe <- doesFileExist file
     if dfe then
-        withFile file
+        withFile $ CompInputFile file
     else do
         dde <- doesDirectoryExist dir
         if dde then do
             files <- find always (fileType ==? RegularFile &&? extension ==? ".comp-input.yaml") dir
-            mapM_ withFile files
+            mapM_ withFile (CompInputFile <$> files)
         else
             putStrLn "Couldn't find any flight score competition yaml input files."
     end <- getTime Monotonic
     fprint ("Measuring task lengths completed in " % timeSpecs % "\n") start end
     where
-        withFile yamlCompPath = do
-            putStrLn $ takeFileName yamlCompPath
-            let yamlMaskPath =
-                    flip replaceExtension ".task-length.yaml"
-                    $ dropExtension yamlCompPath
-            settings <- runExceptT $ readCompSettings yamlCompPath
+        withFile compFile@(CompInputFile compPath) = do
+            putStrLn $ takeFileName compPath
+            let (TaskLengthFile lenPath) = compToTaskLength compFile
+            settings <- runExceptT $ readCompSettings compPath
             case settings of
                 Left msg -> print msg
                 Right settings' -> do
@@ -92,7 +93,7 @@ drive CmdOptions{..} = do
                     let includeTask = if null task then const True else flip elem task
 
                     let ts = taskTracks noTaskWaypoints includeTask measure zs
-                    writeTaskLength ts yamlMaskPath
+                    writeTaskLength ts lenPath
 
             where
                 writeTaskLength :: [Maybe TZ.TaskTrack] -> FilePath -> IO ()

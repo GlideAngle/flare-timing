@@ -7,12 +7,14 @@ module Flight.Path
     , TagZoneFile(..)
     , AlignTimeFile(..)
     , DiscardFurtherFile(..)
+    , MaskTrackFile(..)
     , CompDir(..)
     , AlignDir(..)
     , DiscardDir(..)
     , fsdbToComp
     , compToTaskLength
     , compToCross
+    , compToMask
     , crossToTag
     , compFileToCompDir
     , alignDir
@@ -61,6 +63,9 @@ newtype AlignTimeFile = AlignTimeFile FilePath
 -- | The path to a discard further file.
 newtype DiscardFurtherFile = DiscardFurtherFile FilePath
 
+-- | The path to as mask track file.
+newtype MaskTrackFile = MaskTrackFile FilePath
+
 fsdbToComp :: FsdbFile -> CompInputFile
 fsdbToComp (FsdbFile p) =
     CompInputFile $ replaceExtension p ".comp-input.yaml"
@@ -76,6 +81,10 @@ compToTaskLength (CompInputFile p) =
 compToCross :: CompInputFile -> CrossZoneFile
 compToCross (CompInputFile p) =
     CrossZoneFile $ flip replaceExtension ".cross-zone.yaml" $ dropExtension p
+
+compToMask :: CompInputFile -> MaskTrackFile
+compToMask (CompInputFile p) =
+    MaskTrackFile $ flip replaceExtension ".mask-track.yaml" $ dropExtension p
 
 crossToTag :: CrossZoneFile -> TagZoneFile
 crossToTag (CrossZoneFile p) =
