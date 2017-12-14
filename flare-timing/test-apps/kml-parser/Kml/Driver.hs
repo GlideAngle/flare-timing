@@ -32,16 +32,12 @@ drive KmlOptions{..} = do
             putStrLn $ takeFileName path
             contents <- readFile path
             let contents' = dropWhile (/= '<') contents
-            p <- parse contents' 
-            case p of
-                 Left msg -> print msg
-                 Right p' -> print p'
+            p <- parse contents'
+            either print print p
 
 driverMain :: IO ()
 driverMain = do
     name <- getProgName
     options <- cmdArgs $ mkOptions name
     err <- checkPaths options
-    case err of
-        Just msg -> putStrLn msg
-        Nothing -> drive options
+    maybe (drive options) putStrLn err

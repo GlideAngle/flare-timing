@@ -39,6 +39,4 @@ driverMain = do
     name <- getProgName
     options <- cmdArgs $ mkOptions name
     err <- checkPaths options
-    case err of
-        Just msg -> putStrLn msg
-        Nothing -> drive options
+    maybe (drive options) putStrLn err
