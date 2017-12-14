@@ -22,13 +22,14 @@ module Flight.Mask.Tag
     , madeGoal
     , started
     , groupByLeg
+    , trimOrdLists
     ) where
 
 import Prelude hiding (span)
 import Data.Time.Clock (UTCTime, addUTCTime)
 import qualified Data.List as List
-import Data.Maybe (fromMaybe, listToMaybe)
-import Data.List (nub, group, elemIndex)
+import Data.Maybe (listToMaybe)
+import Data.List (nub, group, elemIndex, findIndex)
 import Data.List.Split (split, whenElt, keepDelimsL, chop)
 import Control.Lens ((^?), element)
 
@@ -721,7 +722,18 @@ selectZoneCross prover selectCrossing xs = do
 -- zone.
 --
 -- >>>
+-- > trimOrdLists [[16],[757,964,1237,1251,1369,7058],[2622,2662],[5324,5329],[23,86,89,91,97,98,103,108,109]]
+--
+-- [[16],[757,964,1237,1251,1369],[2622,2662],[5324,5329],[]]
+--
+-- > trimOrdLists [[6514,6519],[753,6254],[3106,3953],[],[6502,6529,6602,6616,6757]]
+--
+-- [[],[753],[3106,3953],[],[]]
 trimToOrder :: Ord a => [a] -> [a] -> [a] -> [a]
+
+trimToOrder _ [] _ = []
+
+trimToOrder [] ys (zMin : _) = filter (< zMin) ys
 
 trimToOrder xs ys zs@(_ : _) =
     case xs' of
@@ -731,10 +743,15 @@ trimToOrder xs ys zs@(_ : _) =
         (xs', ys') =
             case reverse zs of
                 [] -> ([], [])
-                (z : _) -> (filter (< z) xs, filter (< z) ys)
+                (zMax : _) ->
+                    case (findIndex (< zMax) xs, findIndex (< zMax) ys) of
+                        (_, Nothing) -> (xs, ys)
+                        (Nothing, _) -> ([], filter (< zMax) ys)
+                        (Just _, Just _) -> (filter (< zMax) xs, filter (< zMax) ys)
 
-trimToOrder (x : _) ys _ = filter (> x) ys
-trimToOrder _ ys _ = ys
+trimToOrder (xMin : _) ys [] = filter (> xMin) ys
+
+trimToOrder [] ys [] = ys
 
 -- | Removes elements of the list of lists so that each list only has elements
 -- less than elements of subsequent lists and greater than previous lists.
