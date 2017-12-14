@@ -8,7 +8,8 @@ import System.Console.CmdArgs.Implicit (cmdArgs)
 import Control.Monad (mapM_)
 import System.Directory (doesFileExist, doesDirectoryExist)
 import System.FilePath (takeFileName)
-import Kml.Args (checkOptions)
+
+import Flight.Cmd.Paths (checkPaths)
 import Kml.Options (KmlOptions(..), mkOptions)
 import Flight.Kml (parse)
 
@@ -40,7 +41,7 @@ driverMain :: IO ()
 driverMain = do
     name <- getProgName
     options <- cmdArgs $ mkOptions name
-    err <- checkOptions options
+    err <- checkPaths options
     case err of
         Just msg -> putStrLn msg
         Nothing -> drive options

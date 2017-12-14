@@ -9,7 +9,7 @@ import Control.Monad (mapM_, when)
 import System.Directory (doesFileExist, doesDirectoryExist)
 import System.FilePath (takeFileName)
 
-import Cmd.Args (checkOptions)
+import Flight.Cmd.Paths (checkPaths)
 import Cmd.Options (FsdbOptions(..), Detail(..), mkOptions)
 import Flight.Fsdb
     ( parseComp
@@ -26,7 +26,7 @@ driverMain :: IO ()
 driverMain = do
     name <- getProgName
     options <- cmdArgs $ mkOptions name
-    err <- checkOptions options
+    err <- checkPaths options
     case err of
         Just msg -> putStrLn msg
         Nothing -> drive options
