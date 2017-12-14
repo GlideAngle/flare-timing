@@ -8,10 +8,11 @@ import System.Console.CmdArgs.Implicit (cmdArgs)
 import Control.Monad (mapM_)
 import System.Directory (doesFileExist, doesDirectoryExist)
 import System.FilePath (takeFileName)
-import System.FilePath.Find (FileType(..), (==?), (&&?), find, always, fileType, extension)
 import Kml.Args (checkOptions)
 import Kml.Options (KmlOptions(..), mkOptions)
 import Flight.Kml (parse)
+
+import Flight.Comp (FileType(Kml), findFiles)
 
 drive :: KmlOptions -> IO ()
 drive KmlOptions{..} = do
@@ -21,7 +22,7 @@ drive KmlOptions{..} = do
     else do
         dde <- doesDirectoryExist dir
         if dde then do
-            files <- find always (fileType ==? RegularFile &&? extension ==? ".kml") dir
+            files <- findFiles Kml dir
             mapM_ go files
         else
             putStrLn "Couldn't find any KML input files."

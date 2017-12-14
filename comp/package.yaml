@@ -20,6 +20,7 @@ library:
   - cassava
   - bytestring
   - filepath
+  - filemanip
   - aeson-rational
   - flight-latlng
   - flight-zone

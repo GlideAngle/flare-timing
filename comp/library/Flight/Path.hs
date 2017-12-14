@@ -11,6 +11,7 @@ module Flight.Path
     , CompDir(..)
     , AlignDir(..)
     , DiscardDir(..)
+    , FileType(..)
     , fsdbToComp
     , compToTaskLength
     , compToCross
@@ -21,13 +22,14 @@ module Flight.Path
     , discardDir
     , alignPath
     , discardPath
+    , findFiles
     ) where
 
 import System.FilePath
-    ( FilePath
-    , (</>), (<.>)
-    , replaceExtension, dropExtension, takeDirectory
-    )
+    (FilePath, (</>), (<.>), replaceExtension, dropExtension, takeDirectory)
+import System.FilePath.Find
+    ((==?), (&&?), find, always, fileType, extension)
+import qualified System.FilePath.Find as Find (FileType(..))
 import Flight.Pilot (Pilot(..))
 
 -- | The path to a competition *.fsdb file.
@@ -109,3 +111,31 @@ discardDir comp task =
 dotDir :: CompDir -> FilePath -> Int -> FilePath
 dotDir (CompDir dir) name task =
     dir </> ".flare-timing" </> name </> "task-" ++ show task
+
+data FileType
+    = Fsdb
+    | Kml
+    | Igc
+    | CompInput
+    | TaskLength
+    | CrossZone
+    | TagZone
+    | AlignTime
+    | DiscardFurther
+    | MaskTrack
+
+ext :: FileType -> FilePath
+ext Fsdb = ".fsdb"
+ext Kml = ".kml"
+ext Igc = ".igc"
+ext CompInput = ".comp-input.yaml"
+ext TaskLength = ".task-length.yaml"
+ext CrossZone = ".cross-zone.yaml"
+ext TagZone = ".tag-zone.yaml"
+ext AlignTime = ".align-time.yaml"
+ext DiscardFurther = ".discard-further.yaml"
+ext MaskTrack = ".mask-track.yaml"
+
+findFiles :: FileType -> FilePath -> IO [FilePath]
+findFiles typ dir =
+    find always (fileType ==? Find.RegularFile &&? extension ==? ext typ) dir

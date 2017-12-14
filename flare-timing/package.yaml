@@ -279,6 +279,7 @@ executables:
     - mtl
     - transformers
     - flight-igc
+    - flight-comp
     ghc-options:
     - -rtsopts
     - -threaded
@@ -297,6 +298,7 @@ executables:
     - mtl
     - transformers
     - flight-kml
+    - flight-comp
     ghc-options:
     - -rtsopts
     - -threaded

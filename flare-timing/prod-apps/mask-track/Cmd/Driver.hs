@@ -36,8 +36,6 @@ import Control.Monad.Except (ExceptT, runExceptT)
 import Data.UnitsOfMeasure ((/:), u, convert, toRational', fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import System.Directory (doesFileExist, doesDirectoryExist)
-import System.FilePath.Find
-    (FileType(..), (==?), (&&?), find, always, fileType, extension)
 import System.FilePath (takeFileName)
 import qualified Data.Yaml.Pretty as Y
 import qualified Data.ByteString as BS
@@ -54,10 +52,12 @@ import Flight.Comp
     , CompSettings(..)
     , Task(..)
     , TrackFileFail(..)
+    , FileType(CompInput)
     , compToTaskLength
     , compToCross
     , compToMask
     , crossToTag
+    , findFiles
     )
 import qualified Flight.Task as Tsk (TaskDistance(..))
 import Flight.TrackLog (IxTask(..))
@@ -170,7 +170,7 @@ drive CmdOptions{..} = do
     else do
         dde <- doesDirectoryExist dir
         if dde then do
-            files <- find always (fileType ==? RegularFile &&? extension ==? ".comp-inputs.yaml") dir
+            files <- findFiles CompInput dir
             mapM_ withFile (CompInputFile <$> files)
         else
             putStrLn "Couldn't find any flight score competition yaml input files."

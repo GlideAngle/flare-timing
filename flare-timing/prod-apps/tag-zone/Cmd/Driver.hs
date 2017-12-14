@@ -28,9 +28,8 @@ import Data.List (transpose, sortOn)
 import Control.Monad (mapM_)
 import Control.Monad.Except (runExceptT)
 import System.Directory (doesFileExist, doesDirectoryExist)
-import System.FilePath.Find
-    (FileType(..), (==?), (&&?), find, always, fileType, extension)
 import System.FilePath (takeFileName)
+
 import Flight.Cmd.Paths (checkPaths)
 import Flight.Cmd.Options
     (CmdOptions(..), ProgramName(..), Extension(..), mkOptions)
@@ -40,7 +39,14 @@ import qualified Data.ByteString as BS
 
 import Flight.Units ()
 import Flight.Mask (tagZones)
-import Flight.Comp (Pilot(..), CrossZoneFile(..), TagZoneFile(..), crossToTag)
+import Flight.Comp
+    ( Pilot(..)
+    , CrossZoneFile(..)
+    , TagZoneFile(..)
+    , FileType(CrossZone)
+    , crossToTag
+    , findFiles
+    )
 import Flight.Track.Cross
     (Crossing(..), TrackCross(..), PilotTrackCross(..), Fix(..))
 import Flight.Track.Tag
@@ -99,7 +105,7 @@ drive CmdOptions{..} = do
     else do
         dde <- doesDirectoryExist dir
         if dde then do
-            files <- find always (fileType ==? RegularFile &&? extension ==? ".cross-zone.yaml") dir
+            files <- findFiles CrossZone dir
             mapM_ withFile (CrossZoneFile <$> files)
         else
             putStrLn "Couldn't find any '.cross-zone.yaml' input files."

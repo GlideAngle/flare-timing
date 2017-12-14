@@ -13,8 +13,6 @@ import Control.Monad (mapM_)
 import Control.Monad.Trans.Except (throwE)
 import Control.Monad.Except (ExceptT(..), runExceptT, lift)
 import System.Directory (doesFileExist, doesDirectoryExist)
-import System.FilePath.Find
-    (FileType(..), (==?), (&&?), find, always, fileType, extension)
 
 import Flight.Cmd.Paths (checkPaths)
 import Cmd.Options (CmdOptions(..), mkOptions)
@@ -32,7 +30,9 @@ import Flight.Comp
     , Task(..)
     , TaskFolder(..)
     , PilotTrackLogFile(..)
+    , FileType(Fsdb)
     , fsdbToComp
+    , findFiles
     )
 
 driverMain :: IO ()
@@ -54,7 +54,7 @@ drive CmdOptions{..} = do
     else do
         dde <- doesDirectoryExist dir
         if dde then do
-            files <- find always (fileType ==? RegularFile &&? extension ==? ".fsdb") dir
+            files <- findFiles Fsdb dir
             mapM_ go (FsdbFile <$> files)
         else
             putStrLn "Couldn't find any flight score competition database input files."
