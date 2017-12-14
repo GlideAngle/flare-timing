@@ -7,6 +7,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
 
+{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE DisambiguateRecordFields #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE PartialTypeSignatures #-}
@@ -21,25 +22,19 @@ module Flight.Mask.Distance
 import Prelude hiding (span)
 import Data.Time.Clock (UTCTime)
 import Data.List (inits)
-import Data.UnitsOfMeasure ((-:))
-import Data.UnitsOfMeasure.Internal (Quantity(..), unQuantity)
+import Data.UnitsOfMeasure (u, (-:))
+import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Control.Lens ((^?), element)
 
 import qualified Flight.Kml as Kml (MarkedFixes(..), Fix)
 import Flight.Track.Cross (Fix(..))
-import qualified Flight.Comp as Cmp (Task(..), SpeedSection)
+import qualified Flight.Comp as Cmp (Task(..))
 import Flight.TrackLog (IxTask(..))
 import Flight.Score (PilotDistance(..))
 import Flight.Units ()
 import Flight.Mask.Internal
     ( TaskZone(..)
-    , TrackZone(..)
     , Ticked(..)
-    , CrossingPredicate
-    , fixToPoint
-    , zoneToCylinder
-    , isStartExit
-    , crossingPredicates
     , fixFromFix
     , distanceViaZones
     )
@@ -140,7 +135,8 @@ distanceToGoal
         dvz = distanceViaZones ticked span dpp cseg cs cut
 
 distanceFlown :: (Real a, Fractional a)
-              => Ticked
+              => TaskDistance a
+              -> Ticked
               -> SpanLatLng a
               -> DistancePointToPoint a
               -> CostSegment a
@@ -152,55 +148,22 @@ distanceFlown :: (Real a, Fractional a)
               -> Kml.MarkedFixes
               -> Maybe (PilotDistance a)
 distanceFlown
+    (TaskDistance dTask)
     ticked
     span dpp cseg cs cut
-    zoneToCyl tasks (IxTask i) Kml.MarkedFixes{fixes} =
+    zoneToCyl tasks iTask@(IxTask i) fixes =
     case tasks ^? element (i - 1) of
         Nothing ->
             Nothing
 
-        Just task@Cmp.Task{speedSection, zones} ->
-            if null zones then Nothing else go speedSection fs cyls d
-            where
-                fs :: [CrossingPredicate _ _]
-                fs =
-                    (\x ->
-                        let b = isStartExit span zoneToCyl x
-                        in crossingPredicates span b x) task
-
-                cyls = zoneToCylinder <$> zones
-
-                d :: Maybe (TaskDistance _)
-                d =
-                    distanceViaZones
+        Just Cmp.Task{zones} ->
+            if null zones then Nothing else do
+                TaskDistance dPilot <-
+                    distanceToGoal
                         ticked
                         span dpp cseg cs cut
-                        fixToPoint speedSection fs cyls fixes
+                        zoneToCyl tasks iTask fixes
 
-    where
-        go :: Cmp.SpeedSection
-           -> [CrossingPredicate _ _]
-           -> [TaskZone _]
-           -> Maybe (TaskDistance _)
-           -> Maybe (PilotDistance _)
+                let (MkQuantity diff) = dTask -: dPilot
 
-        go _ _ [] (Just (TaskDistance (MkQuantity d))) =
-            Just . PilotDistance $ d
-
-        go _ _ _ Nothing =
-            Nothing
-
-        go speedSection fs zs@(z : _) (Just (TaskDistance d)) =
-            case total of
-                Nothing ->
-                    Nothing
-
-                Just (TaskDistance dMax) ->
-                    Just . PilotDistance . unQuantity $ dMax -: d
-            where
-                zoneToZone (TaskZone x) = TrackZone x
-                total =
-                    distanceViaZones
-                        ticked
-                        span dpp cseg cs cut
-                        zoneToZone speedSection fs zs [z]
+                return $ PilotDistance diff
