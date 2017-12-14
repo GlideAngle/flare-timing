@@ -70,7 +70,7 @@ newtype MaskTrackFile = MaskTrackFile FilePath
 
 fsdbToComp :: FsdbFile -> CompInputFile
 fsdbToComp (FsdbFile p) =
-    CompInputFile $ replaceExtension p ".comp-input.yaml"
+    CompInputFile $ replaceExtension p (ext CompInput)
 
 compFileToCompDir :: CompInputFile -> CompDir
 compFileToCompDir (CompInputFile p) =
@@ -78,19 +78,19 @@ compFileToCompDir (CompInputFile p) =
 
 compToTaskLength :: CompInputFile -> TaskLengthFile
 compToTaskLength (CompInputFile p) =
-    TaskLengthFile $ flip replaceExtension ".task-length.yaml" $ dropExtension p
+    TaskLengthFile $ flip replaceExtension (ext TaskLength) $ dropExtension p
 
 compToCross :: CompInputFile -> CrossZoneFile
 compToCross (CompInputFile p) =
-    CrossZoneFile $ flip replaceExtension ".cross-zone.yaml" $ dropExtension p
+    CrossZoneFile $ flip replaceExtension (ext CrossZone) $ dropExtension p
 
 compToMask :: CompInputFile -> MaskTrackFile
 compToMask (CompInputFile p) =
-    MaskTrackFile $ flip replaceExtension ".mask-track.yaml" $ dropExtension p
+    MaskTrackFile $ flip replaceExtension (ext MaskTrack) $ dropExtension p
 
 crossToTag :: CrossZoneFile -> TagZoneFile
 crossToTag (CrossZoneFile p) =
-    TagZoneFile $ flip replaceExtension ".tag-zone.yaml" $ dropExtension p
+    TagZoneFile $ flip replaceExtension (ext TagZone) $ dropExtension p
 
 alignPath :: CompDir -> Int -> Pilot -> (AlignDir, AlignTimeFile)
 alignPath dir task pilot =
