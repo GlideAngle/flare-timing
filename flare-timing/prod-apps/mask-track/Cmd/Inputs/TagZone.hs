@@ -26,7 +26,7 @@ import qualified Data.ByteString as BS
 import Data.Yaml (decodeEither)
 import Flight.TrackLog (IxTask(..))
 import qualified Flight.Kml as Kml (MarkedFixes(..))
-import Flight.Comp (TagFile(..), SpeedSection, Pilot(..))
+import Flight.Comp (TagZoneFile(..), SpeedSection, Pilot(..))
 import Flight.Track.Tag
     (Tagging(..), TrackTime(..), TrackTag(..), PilotTrackTag(..))
 import Flight.Mask (Ticked(..), slice)
@@ -40,8 +40,8 @@ newtype TickedLookup = TickedLookup (Maybe (TaggingLookup Ticked))
 
 type StartEnd = (UTCTime, UTCTime)
 
-readTags :: TagFile -> ExceptT String IO Tagging
-readTags (TagFile path) = do
+readTags :: TagZoneFile -> ExceptT String IO Tagging
+readTags (TagZoneFile path) = do
     contents <- lift $ BS.readFile path
     ExceptT . return $ decodeEither contents
 

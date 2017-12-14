@@ -21,7 +21,7 @@ import Flight.Comp
     , Pilot(..)
     , PilotTrackLogFile(..)
     , TrackFileFail(..)
-    , CompFile(..)
+    , CompInputFile(..)
     )
 import Flight.TrackLog as Log
     ( IxTask(..)
@@ -33,11 +33,11 @@ import Flight.TrackLog as Log
 import Flight.Units ()
 import Flight.Mask.Settings (readCompSettings)
 
-settingsLogs :: CompFile
+settingsLogs :: CompInputFile
              -> [IxTask]
              -> [Pilot]
              -> ExceptT String IO (CompSettings, [[PilotTrackLogFile]])
-settingsLogs (CompFile path) tasks selectPilots = do
+settingsLogs (CompInputFile path) tasks selectPilots = do
     settings <- readCompSettings path
     ExceptT . return $ go settings
     where
@@ -50,7 +50,7 @@ settingsLogs (CompFile path) tasks selectPilots = do
                 zs = zipWith (<$>) fs ys
 
 checkTracks :: forall a. (CompSettings -> (IxTask -> Kml.MarkedFixes -> a))
-            -> CompFile
+            -> CompInputFile
             -> [IxTask]
             -> [Pilot]
             -> ExceptT

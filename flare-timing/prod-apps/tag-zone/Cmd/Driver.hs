@@ -40,7 +40,7 @@ import qualified Data.ByteString as BS
 
 import Flight.Units ()
 import Flight.Mask (tagZones)
-import Flight.Comp (Pilot(..), CrossFile(..), TagFile(..), crossToTag)
+import Flight.Comp (Pilot(..), CrossZoneFile(..), TagZoneFile(..), crossToTag)
 import Flight.Track.Cross
     (Crossing(..), TrackCross(..), PilotTrackCross(..), Fix(..))
 import Flight.Track.Tag
@@ -95,22 +95,22 @@ drive CmdOptions{..} = do
     start <- getTime Monotonic
     dfe <- doesFileExist file
     if dfe then
-        withFile (CrossFile file)
+        withFile (CrossZoneFile file)
     else do
         dde <- doesDirectoryExist dir
         if dde then do
             files <- find always (fileType ==? RegularFile &&? extension ==? ".cross-zone.yaml") dir
-            mapM_ withFile (CrossFile <$> files)
+            mapM_ withFile (CrossZoneFile <$> files)
         else
             putStrLn "Couldn't find any '.cross-zone.yaml' input files."
     end <- getTime Monotonic
     fprint ("Tagging zones completed in " % timeSpecs % "\n") start end
     where
-        withFile crossFile@(CrossFile crossPath) = do
+        withFile crossFile@(CrossZoneFile crossPath) = do
             putStrLn $ "Reading zone crossings from '" ++ takeFileName crossPath ++ "'"
             writeTags crossFile 
 
-writeTags :: CrossFile -> IO ()
+writeTags :: CrossZoneFile -> IO ()
 writeTags crossFile = do
     cs <- runExceptT $ readCrossings crossFile
 
@@ -137,7 +137,7 @@ writeTags crossFile = do
                         (Y.setConfCompare cmp Y.defConfig)
                         tzi 
 
-            let (TagFile tagPath) = crossToTag crossFile
+            let (TagZoneFile tagPath) = crossToTag crossFile
 
             BS.writeFile tagPath yaml
 

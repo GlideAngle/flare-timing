@@ -35,7 +35,7 @@ import qualified Data.Yaml.Pretty as Y
 import qualified Data.ByteString as BS
 
 import Flight.Comp
-    ( CompFile(..), CrossFile(..), CompSettings(..), Pilot(..), TrackFileFail(..)
+    ( CompInputFile(..), CrossZoneFile(..), CompSettings(..), Pilot(..), TrackFileFail(..)
     , compToCross)
 import Flight.TrackLog (IxTask(..))
 import Flight.Units ()
@@ -103,18 +103,18 @@ drive CmdOptions{..} = do
     start <- getTime Monotonic
     dfe <- doesFileExist file
     if dfe then
-        withFile (CompFile file)
+        withFile (CompInputFile file)
     else do
         dde <- doesDirectoryExist dir
         if dde then do
             files <- find always (fileType ==? RegularFile &&? extension ==? ".comp-inputs.yaml") dir
-            mapM_ withFile (CompFile <$> files)
+            mapM_ withFile (CompInputFile <$> files)
         else
             putStrLn "Couldn't find any flight score competition yaml input files."
     end <- getTime Monotonic
     fprint ("Tracks crossing zones completed in " % timeSpecs % "\n") start end
     where
-        withFile compFile@(CompFile compPath) = do
+        withFile compFile@(CompInputFile compPath) = do
             putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
             writeMask
                 compFile
@@ -122,10 +122,10 @@ drive CmdOptions{..} = do
                 (Pilot <$> pilot)
                 (checkAll math)
 
-writeMask :: CompFile
+writeMask :: CompInputFile
           -> [IxTask]
           -> [Pilot]
-          -> (CompFile
+          -> (CompInputFile
               -> [IxTask]
               -> [Pilot]
               -> ExceptT
@@ -163,7 +163,7 @@ writeMask compFile task pilot f = do
                         (Y.setConfCompare cmp Y.defConfig)
                         tzi 
 
-            let (CrossFile crossPath) = compToCross compFile
+            let (CrossZoneFile crossPath) = compToCross compFile
 
             BS.writeFile crossPath yaml
 
@@ -182,7 +182,7 @@ madeZonesToFlying :: MadeZones -> TrackFlyingSection
 madeZonesToFlying MadeZones{flying} = flying
 
 checkAll :: Math
-         -> CompFile
+         -> CompInputFile
          -> [IxTask]
          -> [Pilot]
          -> ExceptT

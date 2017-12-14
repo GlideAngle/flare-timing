@@ -34,9 +34,9 @@ import Cmd.Outputs (writeTimeRowsToCsv)
 import Flight.Comp
     ( DiscardDir(..)
     , AlignDir(..)
-    , CompFile(..)
-    , AlignFile(..)
-    , DiscardFile(..)
+    , CompInputFile(..)
+    , AlignTimeFile(..)
+    , DiscardFurtherFile(..)
     , CompSettings(..)
     , Pilot(..)
     , TrackFileFail
@@ -67,18 +67,18 @@ drive CmdOptions{..} = do
     start <- getTime Monotonic
     dfe <- doesFileExist file
     if dfe then
-        withFile (CompFile file)
+        withFile (CompInputFile file)
     else do
         dde <- doesDirectoryExist dir
         if dde then do
             files <- find always (fileType ==? RegularFile &&? extension ==? ".comp-inputs.yaml") dir
-            mapM_ withFile (CompFile <$> files)
+            mapM_ withFile (CompInputFile <$> files)
         else
             putStrLn "Couldn't find any flight score competition yaml input files."
     end <- getTime Monotonic
     fprint ("Filtering times completed in " % timeSpecs % "\n") start end
     where
-        withFile compFile@(CompFile compPath) = do
+        withFile compFile@(CompInputFile compPath) = do
             putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
             filterTime
                 compFile
@@ -86,10 +86,10 @@ drive CmdOptions{..} = do
                 (Pilot <$> pilot)
                 checkAll
 
-filterTime :: CompFile
+filterTime :: CompInputFile
            -> [IxTask]
            -> [Pilot]
-           -> (CompFile
+           -> (CompInputFile
                -> [IxTask]
                -> [Pilot]
                -> ExceptT String IO [[Either (Pilot, _) (Pilot, _)]])
@@ -116,7 +116,7 @@ filterTime compFile selectTasks selectPilots f = do
 
             return ()
 
-checkAll :: CompFile
+checkAll :: CompInputFile
          -> [IxTask]
          -> [Pilot]
          -> ExceptT
@@ -131,19 +131,20 @@ checkAll = checkTracks $ \CompSettings{tasks} -> (\ _ _ _ -> ()) tasks
 includeTask :: [IxTask] -> IxTask -> Bool
 includeTask tasks = if null tasks then const True else (`elem` tasks)
 
-readFilterWrite :: CompFile -> Int -> Pilot -> IO ()
+readFilterWrite :: CompInputFile -> Int -> Pilot -> IO ()
 readFilterWrite compFile iTask pilot = do
     _ <- createDirectoryIfMissing True dOut
-    rows <- runExceptT $ readTimeRowsFromCsv (AlignFile (dIn </> f))
+    rows <- runExceptT $ readTimeRowsFromCsv (AlignTimeFile (dIn </> f))
     case rows of
         Left msg ->
             print msg
 
         Right (_, xs) ->
-            writeTimeRowsToCsv (DiscardFile $ dOut </> f) headers $ discard xs
+            writeTimeRowsToCsv (DiscardFurtherFile $ dOut </> f) headers
+            $ discard xs
     where
         dir = compFileToCompDir compFile
-        (AlignDir dIn, AlignFile f) = alignPath dir iTask pilot
+        (AlignDir dIn, AlignTimeFile f) = alignPath dir iTask pilot
         (DiscardDir dOut) = discardDir dir iTask
 
 timeToTick :: TimeRow -> TickRow

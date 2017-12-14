@@ -1,12 +1,12 @@
 module Flight.Path
     ( FsdbFile(..)
     , FsdbXml(..)
-    , CompFile(..)
+    , CompInputFile(..)
     , TaskLengthFile(..)
-    , CrossFile(..)
-    , TagFile(..)
-    , AlignFile(..)
-    , DiscardFile(..)
+    , CrossZoneFile(..)
+    , TagZoneFile(..)
+    , AlignTimeFile(..)
+    , DiscardFurtherFile(..)
     , CompDir(..)
     , AlignDir(..)
     , DiscardDir(..)
@@ -38,16 +38,16 @@ newtype FsdbXml = FsdbXml String
 newtype CompDir = CompDir FilePath
 
 -- | The path to a competition file.
-newtype CompFile = CompFile FilePath
+newtype CompInputFile = CompInputFile FilePath
 
 -- | The path to a task length file.
 newtype TaskLengthFile = TaskLengthFile FilePath
 
 -- | The path to a cross zone file.
-newtype CrossFile = CrossFile FilePath
+newtype CrossZoneFile = CrossZoneFile FilePath
 
 -- | The path to a tag zone file.
-newtype TagFile = TagFile FilePath
+newtype TagZoneFile = TagZoneFile FilePath
 
 -- | The path to as align time directory for a single task.
 newtype AlignDir = AlignDir FilePath
@@ -56,38 +56,38 @@ newtype AlignDir = AlignDir FilePath
 newtype DiscardDir = DiscardDir FilePath
 
 -- | The path to as align time file.
-newtype AlignFile = AlignFile FilePath
+newtype AlignTimeFile = AlignTimeFile FilePath
 
 -- | The path to a discard further file.
-newtype DiscardFile = DiscardFile FilePath
+newtype DiscardFurtherFile = DiscardFurtherFile FilePath
 
-fsdbToComp :: FsdbFile -> CompFile
+fsdbToComp :: FsdbFile -> CompInputFile
 fsdbToComp (FsdbFile p) =
-    CompFile $ replaceExtension p ".comp-input.yaml"
+    CompInputFile $ replaceExtension p ".comp-input.yaml"
 
-compFileToCompDir :: CompFile -> CompDir
-compFileToCompDir (CompFile p) =
+compFileToCompDir :: CompInputFile -> CompDir
+compFileToCompDir (CompInputFile p) =
     CompDir $ takeDirectory p
 
-compToTaskLength :: CompFile -> TaskLengthFile
-compToTaskLength (CompFile p) =
+compToTaskLength :: CompInputFile -> TaskLengthFile
+compToTaskLength (CompInputFile p) =
     TaskLengthFile $ flip replaceExtension ".task-length.yaml" $ dropExtension p
 
-compToCross :: CompFile -> CrossFile
-compToCross (CompFile p) =
-    CrossFile $ flip replaceExtension ".cross-zone.yaml" $ dropExtension p
+compToCross :: CompInputFile -> CrossZoneFile
+compToCross (CompInputFile p) =
+    CrossZoneFile $ flip replaceExtension ".cross-zone.yaml" $ dropExtension p
 
-crossToTag :: CrossFile -> TagFile
-crossToTag (CrossFile p) =
-    TagFile $ flip replaceExtension ".tag-zone.yaml" $ dropExtension p
+crossToTag :: CrossZoneFile -> TagZoneFile
+crossToTag (CrossZoneFile p) =
+    TagZoneFile $ flip replaceExtension ".tag-zone.yaml" $ dropExtension p
 
-alignPath :: CompDir -> Int -> Pilot -> (AlignDir, AlignFile)
+alignPath :: CompDir -> Int -> Pilot -> (AlignDir, AlignTimeFile)
 alignPath dir task pilot =
-    (alignDir dir task, AlignFile $ show pilot <.> "csv")
+    (alignDir dir task, AlignTimeFile $ show pilot <.> "csv")
 
-discardPath :: CompDir -> Int -> Pilot -> (DiscardDir, DiscardFile)
+discardPath :: CompDir -> Int -> Pilot -> (DiscardDir, DiscardFurtherFile)
 discardPath dir task pilot =
-    (discardDir dir task, DiscardFile $ show pilot <.> "csv")
+    (discardDir dir task, DiscardFurtherFile $ show pilot <.> "csv")
 
 alignDir :: CompDir -> Int -> AlignDir
 alignDir comp task =

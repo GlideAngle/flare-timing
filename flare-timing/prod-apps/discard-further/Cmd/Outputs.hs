@@ -6,10 +6,10 @@ import qualified Data.ByteString.Lazy.Char8 as L (writeFile)
 import qualified Data.Vector as V (fromList, toList)
 import Data.Vector (Vector)
 import Flight.Track.Time (TickRow(..))
-import Flight.Comp (DiscardFile(..))
+import Flight.Comp (DiscardFurtherFile(..))
 
-writeTimeRowsToCsv :: DiscardFile -> [String] -> Vector TickRow -> IO ()
-writeTimeRowsToCsv (DiscardFile path) headers xs =
+writeTimeRowsToCsv :: DiscardFurtherFile -> [String] -> Vector TickRow -> IO ()
+writeTimeRowsToCsv (DiscardFurtherFile path) headers xs =
     L.writeFile path rows
     where
         opts = defaultEncodeOptions {encUseCrLf = False}

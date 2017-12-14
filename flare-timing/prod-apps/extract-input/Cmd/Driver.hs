@@ -25,7 +25,7 @@ import qualified Data.ByteString as BS
 import Flight.Comp
     ( FsdbFile(..)
     , FsdbXml(..)
-    , CompFile(..)
+    , CompInputFile(..)
     , CompSettings(..)
     , Comp(..)
     , Nominal(..)
@@ -74,7 +74,7 @@ drive CmdOptions{..} = do
                                 (Y.setConfCompare cmp Y.defConfig)
                                 cfg
 
-                    let (CompFile compPath) = fsdbToComp fsdbFile
+                    let (CompInputFile compPath) = fsdbToComp fsdbFile
 
                     BS.writeFile compPath yaml
 

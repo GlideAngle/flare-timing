@@ -7,10 +7,10 @@ import qualified Data.ByteString.Lazy as BL
 import Data.Csv (Header, decodeByName)
 import Data.Vector (Vector)
 import Flight.Track.Time (TimeRow(..))
-import Flight.Comp (AlignFile(..))
+import Flight.Comp (AlignTimeFile(..))
 
-readTimeRowsFromCsv :: AlignFile
+readTimeRowsFromCsv :: AlignTimeFile
                     -> ExceptT String IO (Header, Vector TimeRow)
-readTimeRowsFromCsv (AlignFile csvPath) = do
+readTimeRowsFromCsv (AlignTimeFile csvPath) = do
     contents <- lift $ BL.readFile csvPath
     ExceptT . return $ decodeByName contents

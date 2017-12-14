@@ -22,7 +22,7 @@ module Flight.Mask.Distance
 import Prelude hiding (span)
 import Data.Time.Clock (UTCTime)
 import Data.List (inits)
-import Data.UnitsOfMeasure (u, (-:))
+import Data.UnitsOfMeasure ((-:))
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Control.Lens ((^?), element)
 

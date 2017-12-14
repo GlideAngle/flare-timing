@@ -47,9 +47,9 @@ import Flight.TaskTrack (TaskRoutes(..))
 
 import Flight.Comp
     ( Pilot(..)
-    , CompFile(..)
+    , CompInputFile(..)
     , TaskLengthFile(..)
-    , TagFile(..)
+    , TagZoneFile(..)
     , CompSettings(..)
     , Task(..)
     , TrackFileFail(..)
@@ -164,19 +164,19 @@ drive CmdOptions{..} = do
     start <- getTime Monotonic
     dfe <- doesFileExist file
     if dfe then
-        withFile (CompFile file)
+        withFile (CompInputFile file)
     else do
         dde <- doesDirectoryExist dir
         if dde then do
             files <- find always (fileType ==? RegularFile &&? extension ==? ".comp-inputs.yaml") dir
-            mapM_ withFile (CompFile <$> files)
+            mapM_ withFile (CompInputFile <$> files)
         else
             putStrLn "Couldn't find any flight score competition yaml input files."
     end <- getTime Monotonic
     fprint ("Masking tracks completed in " % timeSpecs % "\n") start end
     where
-        withFile compFile@(CompFile compPath) = do
-            let tagFile@(TagFile tagPath) = crossToTag . compToCross $ compFile
+        withFile compFile@(CompInputFile compPath) = do
+            let tagFile@(TagZoneFile tagPath) = crossToTag . compToCross $ compFile
             let lenFile@(TaskLengthFile lenPath) = compToTaskLength $ compFile
             putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
             putStrLn $ "Reading task length from '" ++ takeFileName lenPath ++ "'"
@@ -188,13 +188,13 @@ drive CmdOptions{..} = do
             writeMask
                 (IxTask <$> task)
                 (Pilot <$> pilot)
-                (CompFile compPath)
+                (CompInputFile compPath)
                 (check lengths math tags)
 
 writeMask :: [IxTask]
           -> [Pilot]
-          -> CompFile
-          -> (CompFile
+          -> CompInputFile
+          -> (CompInputFile
               -> [IxTask]
               -> [Pilot]
               -> ExceptT
@@ -208,7 +208,7 @@ writeMask :: [IxTask]
                    ]
              )
           -> IO ()
-writeMask selectTasks selectPilots compFile@(CompFile compPath) f = do
+writeMask selectTasks selectPilots compFile@(CompInputFile compPath) f = do
     checks <- runExceptT $ f compFile selectTasks selectPilots
 
     case checks of
@@ -288,7 +288,7 @@ times xs =
 check :: Either String TaskRoutes
       -> Math
       -> Either String Tagging
-      -> CompFile
+      -> CompInputFile
       -> [IxTask]
       -> [Pilot]
       -> ExceptT
