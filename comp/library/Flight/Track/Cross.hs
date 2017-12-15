@@ -38,7 +38,7 @@ data Crossing =
         , crossing :: [[PilotTrackCross]]
           -- ^ For each task, for each made zone, the pair of fixes cross it.
         }
-    deriving (Show, Generic)
+        deriving (Eq, Ord, Show, Generic)
 
 instance ToJSON Crossing
 instance FromJSON Crossing
@@ -46,7 +46,7 @@ instance FromJSON Crossing
 -- NOTE: There's a similar Seconds newtype in the flight-kml package.  I don't
 -- want a dependency between these packages so I'm duplicating the newtype
 -- here.
-newtype Seconds = Seconds Integer deriving (Show, Eq, Ord, Num, Generic)
+newtype Seconds = Seconds Integer deriving (Eq, Ord, Num, Show, Generic)
 
 instance ToJSON Seconds
 instance FromJSON Seconds
@@ -67,7 +67,7 @@ data TrackFlyingSection =
         , flyingTimes :: FlyingSection UTCTime
         -- ^ The flying section as a time range.
         }
-   deriving (Show, Generic)
+        deriving (Eq, Ord, Show, Generic)
 
 instance ToJSON TrackFlyingSection
 instance FromJSON TrackFlyingSection
@@ -80,7 +80,7 @@ data TrackCross =
         , zonesCrossNominees :: [[Maybe ZoneCross]]
         -- ^ Every crossing of every zone.
         }
-   deriving (Show, Generic)
+        deriving (Eq, Ord, Show, Generic)
 
 instance ToJSON TrackCross
 instance FromJSON TrackCross
@@ -96,7 +96,7 @@ data Fix =
         , lng :: ViaScientific RawLng
         -- ^ The longitude in decimal degrees, +ve is E and -ve is W.
         }
-   deriving (Show, Generic)
+        deriving (Eq, Ord, Show, Generic)
 
 instance ToJSON Fix
 instance FromJSON Fix
@@ -109,7 +109,7 @@ data ZoneCross =
         , inZone :: [Bool]
         -- ^ Mark each fix as inside or outside the zone.
         }
-   deriving (Show, Generic)
+        deriving (Eq, Ord, Show, Generic)
 
 instance ToJSON ZoneCross
 instance FromJSON ZoneCross
@@ -120,7 +120,7 @@ data PilotTrackCross =
         Pilot
         (Maybe TrackCross)
         -- ^ The cross should be Just if the pilot launched.
-    deriving (Show, Generic)
+        deriving (Eq, Ord, Show, Generic)
 
 instance ToJSON PilotTrackCross
 instance FromJSON PilotTrackCross

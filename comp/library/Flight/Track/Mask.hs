@@ -39,7 +39,7 @@ data Masking =
         , speed :: [[(Pilot, TrackSpeed)]]
         , distance :: [[(Pilot, TrackDistance)]]
         }
-    deriving (Show, Generic)
+        deriving (Eq, Ord, Show, Generic)
 
 instance ToJSON Masking
 instance FromJSON Masking
@@ -50,7 +50,7 @@ data TrackSpeed =
         { time :: ViaScientific PilotTime
         , frac :: ViaScientific SpeedFraction
         }
-    deriving (Eq, Ord, Show, Generic)
+        deriving (Eq, Ord, Show, Generic)
 
 instance ToJSON TrackSpeed
 instance FromJSON TrackSpeed
@@ -61,7 +61,7 @@ data TrackArrival =
         { rank :: PositionAtEss
         , frac :: ViaScientific ArrivalFraction
         }
-    deriving (Eq, Ord, Show, Generic)
+        deriving (Eq, Ord, Show, Generic)
 
 instance ToJSON TrackArrival
 instance FromJSON TrackArrival
@@ -73,7 +73,7 @@ data TrackDistance =
         , made :: Maybe Double
         -- ^ The task distance minus the distance to goal.
         }
-   deriving (Show, Generic)
+        deriving (Eq, Ord, Show, Generic)
 
 instance ToJSON TrackDistance
 instance FromJSON TrackDistance

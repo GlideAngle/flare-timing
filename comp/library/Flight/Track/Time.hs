@@ -36,7 +36,7 @@ data TimeRow =
         , tick :: Double -- ^ Seconds from first speed zone crossing
         , distance :: Double -- ^ Distance to goal in km
         }
-    deriving (Show, Generic)
+        deriving (Eq, Ord, Show, Generic)
 
 instance ToJSON TimeRow
 instance FromJSON TimeRow
@@ -47,7 +47,7 @@ data TickRow =
         { tick :: Double -- ^ Seconds from first speed zone crossing
         , distance :: Double -- ^ Distance to goal in km
         }
-    deriving (Show, Generic)
+        deriving (Eq, Ord, Show, Generic)
 
 instance ToJSON TickRow
 instance FromJSON TickRow

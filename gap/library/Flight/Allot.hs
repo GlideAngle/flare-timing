@@ -42,13 +42,14 @@ import Data.Aeson.ViaScientific
 
 -- | The number of pilots completing the speed section of the task.
 newtype PilotsAtEss = PilotsAtEss Integer
-    deriving (Eq, Show, ToJSON, FromJSON)
+    deriving (Eq, Ord, Show, ToJSON, FromJSON)
 
 -- | A 1-based rank of the pilot arrival at goal, 1st in is 1, 2nd is 2 etc.
 newtype PositionAtEss = PositionAtEss Integer
     deriving (Eq, Ord, Show, ToJSON, FromJSON)
 
-newtype ArrivalFraction = ArrivalFraction Rational deriving (Eq, Ord, Show)
+newtype ArrivalFraction = ArrivalFraction Rational
+    deriving (Eq, Ord, Show)
 
 instance DefaultDecimalPlaces ArrivalFraction where
     defdp _ = DecimalPlaces 8

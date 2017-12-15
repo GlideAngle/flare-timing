@@ -30,7 +30,7 @@ import Data.Aeson.ViaScientific
 data RawLatLng =
     RawLatLng { lat :: ViaScientific RawLat
               , lng :: ViaScientific RawLng
-              } deriving (Eq, Show)
+              } deriving (Eq, Ord, Show)
 
 instance ToJSON RawLatLng where
     toJSON RawLatLng{..} =
@@ -41,8 +41,8 @@ instance FromJSON RawLatLng where
         <$> v .: "lat"
         <*> v .: "lng"
 
-newtype RawLat = RawLat Rational deriving (Eq, Show)
-newtype RawLng = RawLng Rational deriving (Eq, Show)
+newtype RawLat = RawLat Rational deriving (Eq, Ord, Show)
+newtype RawLng = RawLng Rational deriving (Eq, Ord, Show)
 
 instance DefaultDecimalPlaces RawLat where
     defdp _ = dpDegree

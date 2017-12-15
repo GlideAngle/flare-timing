@@ -51,7 +51,7 @@ data TrackFileFail
     | TrackLogFileExistsNot String
     | TrackLogFileNotSet
     | TrackLogFileNotRead String
-    deriving Generic
+    deriving (Eq, Ord, Generic)
 
 instance Show TrackFileFail where
     show (TaskFolderExistsNot x) = "Folder '" ++ x ++ "' not found"

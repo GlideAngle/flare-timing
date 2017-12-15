@@ -30,7 +30,7 @@ data Tagging =
         , tagging :: [[PilotTrackTag]]
           -- ^ For each made zone, the tag.
         }
-    deriving (Show, Generic)
+        deriving (Eq, Ord, Show, Generic)
 
 instance ToJSON Tagging
 instance FromJSON Tagging
@@ -49,7 +49,7 @@ data TrackTime =
         , zonesRankPilot :: [[Pilot]]
         -- ^ For each zone, the ordered pilots of each tag.
         }
-    deriving (Show, Generic)
+        deriving (Eq, Ord, Show, Generic)
 
 instance ToJSON TrackTime
 instance FromJSON TrackTime
@@ -60,7 +60,7 @@ newtype TrackTag =
         { zonesTag :: [Maybe Fix]
         -- ^ The interpolated fix tagging each made zone.
         }
-   deriving (Show, Generic)
+        deriving (Eq, Ord, Show, Generic)
 
 instance ToJSON TrackTag
 instance FromJSON TrackTag
@@ -71,7 +71,7 @@ data PilotTrackTag =
         Pilot
         (Maybe TrackTag)
         -- ^ The tags should be Just if the pilot launched.
-    deriving (Show, Generic)
+        deriving (Eq, Ord, Show, Generic)
 
 instance ToJSON PilotTrackTag
 instance FromJSON PilotTrackTag
