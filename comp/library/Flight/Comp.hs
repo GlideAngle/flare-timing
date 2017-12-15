@@ -1,5 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE ConstrainedClassMethods #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 {-|
 Module      : Data.Flight.Comp
@@ -31,12 +33,14 @@ module Flight.Comp
     , FlyingSection
     -- * Comp paths
     , module Flight.Path
+    , FieldOrdering(..)
     ) where
 
 import Data.Time.Clock (UTCTime)
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.List (intercalate)
+import Data.String (IsString())
 
 import Flight.Zone.Raw (RawZone, showZone)
 import Flight.Pilot
@@ -49,13 +53,15 @@ type SpeedSection = Maybe (Integer, Integer)
 -- These could be indices, seconds offsets or UTC times.
 type FlyingSection a = Maybe (a, a)
 
-newtype StartGate = StartGate UTCTime deriving (Show, Eq, Generic)
+newtype StartGate = StartGate UTCTime
+    deriving (Eq, Ord, Show, Generic)
 
 instance ToJSON StartGate
 instance FromJSON StartGate
 
 newtype UtcOffset =
-    UtcOffset { timeZoneMinutes :: Int } deriving (Show, Eq, Generic)
+    UtcOffset { timeZoneMinutes :: Int }
+    deriving (Eq, Ord, Show, Generic)
 
 instance ToJSON UtcOffset
 instance FromJSON UtcOffset
@@ -63,7 +69,8 @@ instance FromJSON UtcOffset
 data OpenClose =
     OpenClose { open :: UTCTime 
               , close :: UTCTime
-              } deriving (Show, Eq, Generic)
+              }
+              deriving (Eq, Ord, Show, Generic)
 
 instance ToJSON OpenClose
 instance FromJSON OpenClose
@@ -74,26 +81,31 @@ data CompSettings =
                  , tasks :: [Task]
                  , taskFolders :: [TaskFolder]
                  , pilots :: [[PilotTrackLogFile]]
-                 } deriving (Show, Generic)
+                 }
+                 deriving (Eq, Ord, Show, Generic)
 
 instance ToJSON CompSettings
 instance FromJSON CompSettings
 
-data Comp = Comp { civilId :: String
-                 , compName :: String 
-                 , location :: String 
-                 , from :: String 
-                 , to :: String 
-                 , utcOffset :: UtcOffset
-                 } deriving (Show, Generic)
+data Comp =
+    Comp { civilId :: String
+         , compName :: String 
+         , location :: String 
+         , from :: String 
+         , to :: String 
+         , utcOffset :: UtcOffset
+         }
+         deriving (Eq, Ord, Show, Generic)
 
 instance ToJSON Comp
 instance FromJSON Comp
 
-data Nominal = Nominal { distance :: String
-                       , time :: String 
-                       , goal :: String 
-                       } deriving (Show, Generic)
+data Nominal =
+    Nominal { distance :: String
+            , time :: String 
+            , goal :: String 
+            }
+            deriving (Eq, Ord, Show, Generic)
 
 instance ToJSON Nominal
 instance FromJSON Nominal
@@ -104,7 +116,7 @@ data Task =
          , speedSection :: SpeedSection
          , zoneTimes :: [OpenClose]
          , startGates :: [StartGate]
-         } deriving (Eq, Show, Generic)
+         } deriving (Eq, Ord, Show, Generic)
 
 instance ToJSON Task
 instance FromJSON Task
@@ -121,3 +133,53 @@ showTask Task {taskName, zones, speedSection, zoneTimes, startGates} =
             , ", start gates "
             , intercalate ", " $ show <$> startGates 
             ]
+
+class FieldOrdering b where
+    fieldOrder :: (Ord a, IsString a) => b -> (a -> a -> Ordering)
+
+instance FieldOrdering CompSettings where
+    fieldOrder _ = cmp
+
+cmp :: (Ord a, IsString a) => a -> a -> Ordering
+cmp a b =
+    case (a, b) of
+        -- CompSettings fields
+        ("comp", _) -> LT
+        ("nominal", "comp") -> GT
+        ("nominal", _) -> LT
+        ("tasks", "taskFolders") -> LT
+        ("tasks", "pilots") -> LT
+        ("tasks", _) -> GT
+        ("taskFolders", "pilots") -> LT
+        ("taskFolders", _) -> GT
+        ("pilots", _) -> GT
+        -- Comp fields
+        ("compName", _) -> LT
+        ("location", "compName") -> GT
+        ("location", _) -> LT
+        ("from", "to") -> LT
+        ("civilId", "utcOffset") -> LT
+        ("civilId", _) -> GT
+        ("utcOffset", _) -> GT
+        -- Task fields
+        ("taskName", _) -> LT
+        ("zones", "taskName") -> GT
+        ("zones", _) -> LT
+        ("speedSection", "zoneTimes") -> LT
+        ("speedSection", "startGates") -> LT
+        ("speedSection", _) -> GT
+        ("zoneTimes", "startGates") -> LT
+        ("zoneTimes", _) -> GT
+        ("startGates", _) -> GT
+        ("open", _) -> LT
+        ("close", _) -> GT
+        -- Turnpoint fields
+        ("zoneName", _) -> LT
+        ("lat", "zoneName") -> GT
+        ("lat", _) -> LT
+        ("lng", "zoneName") -> GT
+        ("lng", "lat") -> GT
+        ("lng", _) -> LT
+        ("radius", _) -> GT
+        _ -> compare a b
+

@@ -16,10 +16,11 @@ newtype TrackLogFile = TrackLogFile String deriving (Eq, Ord, Generic)
 
 -- | A task folder is relative. To be cross-platform I store the path
 -- parts, stripping the path separators.
-newtype TaskFolder = TaskFolder [ String ] deriving (Generic)
+newtype TaskFolder = TaskFolder [ String ]
+    deriving (Eq, Ord, Generic)
 
-data PilotTrackLogFile =
-    PilotTrackLogFile Pilot (Maybe TrackLogFile) deriving (Eq, Ord, Generic)
+data PilotTrackLogFile = PilotTrackLogFile Pilot (Maybe TrackLogFile)
+    deriving (Eq, Ord, Generic)
 
 instance ToJSON TaskFolder
 instance FromJSON TaskFolder

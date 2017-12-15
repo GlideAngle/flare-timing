@@ -8,10 +8,9 @@ import System.Console.CmdArgs.Implicit (cmdArgs)
 import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
-import Data.String (IsString)
 import Control.Monad (mapM_)
 import Control.Monad.Except (runExceptT)
-import System.FilePath (FilePath, takeFileName)
+import System.FilePath (takeFileName)
 
 import Flight.Cmd.Paths (checkPaths)
 import Cmd.Options (CmdOptions(..), mkOptions)
@@ -25,6 +24,7 @@ import Flight.Comp
     , Task(zones)
     , CompInputFile(..)
     , TaskLengthFile(..)
+    , FieldOrdering(..)
     , compToTaskLength
     , findCompInput
     )
@@ -39,33 +39,6 @@ driverMain = do
     err <- checkPaths options
     maybe (drive options) putStrLn err
 
-cmp :: (Ord a, IsString a) => a -> a -> Ordering
-cmp a b =
-    case (a, b) of
-        ("easting", _) -> LT
-        ("northing", _) -> GT
-        ("latZone", _) -> LT
-        ("lngZone", _) -> GT
-        ("pointToPoint", _) -> LT
-        ("projection", "pointToPoint") -> GT
-        ("projection", _) -> LT
-        ("edgeToEdge", _) -> GT
-        ("lat", _) -> LT
-        ("lng", _) -> GT
-        ("distance", _) -> LT
-        ("legs", "distance") -> GT
-        ("legs", _) -> LT
-        ("legsSum", "distance") -> GT
-        ("legsSum", "legs") -> GT
-        ("legsSum", _) -> LT
-        ("wayPoints", _) -> GT
-        ("mappedPoints", "distance") -> GT
-        ("mappedPoints", "legs") -> GT
-        ("mappedPoints", "legsSum") -> GT
-        ("mappedPoints", _) -> LT
-        ("mappedZones", _) -> GT
-        _ -> compare a b
-
 drive :: CmdOptions -> IO ()
 drive o = do
     -- SEE: http://chrisdone.com/posts/measuring-duration-in-haskell
@@ -79,26 +52,21 @@ drive o = do
 go :: CmdOptions -> CompInputFile -> IO ()
 go CmdOptions{..} compFile@(CompInputFile compPath) = do
     putStrLn $ takeFileName compPath
-    let (TaskLengthFile lenPath) = compToTaskLength compFile
     settings <- runExceptT $ readCompSettings compPath
-    case settings of
-        Left msg -> print msg
-        Right settings' -> do
-            let zs = zones <$> tasks settings'
+    either print f settings
+    where
+        f compInput = do
+            let zs = zones <$> tasks compInput
             let includeTask = if null task then const True else flip elem task
 
-            let ts = taskTracks noTaskWaypoints includeTask measure zs
-            writeTaskLength ts lenPath
+            writeTaskLength
+                (compToTaskLength compFile)
+                (taskTracks noTaskWaypoints includeTask measure zs)
 
+writeTaskLength :: TaskLengthFile -> [Maybe TZ.TaskTrack] -> IO ()
+writeTaskLength (TaskLengthFile lenPath) os = 
+    BS.writeFile lenPath yaml
     where
-        writeTaskLength :: [Maybe TZ.TaskTrack] -> FilePath -> IO ()
-        writeTaskLength os yamlPath = do
-            let tzi =
-                    TZ.TaskRoutes { taskRoutes = os }
-
-            let yaml =
-                    Y.encodePretty
-                        (Y.setConfCompare cmp Y.defConfig)
-                        tzi 
-
-            BS.writeFile yamlPath yaml
+        taskLength = TZ.TaskRoutes { taskRoutes = os }
+        cfg = Y.setConfCompare (fieldOrder taskLength) Y.defConfig
+        yaml = Y.encodePretty cfg taskLength

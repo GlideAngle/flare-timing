@@ -23,7 +23,8 @@ data RawZone =
             , lng :: ViaScientific RawLng
             , radius :: RawRadius
             -- ^ Radius in metres.
-            } deriving (Eq, Show, Generic)
+            }
+            deriving (Eq, Ord, Show, Generic)
 
 instance ToJSON RawZone
 instance FromJSON RawZone

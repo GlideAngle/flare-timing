@@ -21,7 +21,6 @@ import System.Console.CmdArgs.Implicit (cmdArgs)
 import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
-import Data.String (IsString)
 import Data.Maybe (catMaybes)
 import Control.Monad (mapM_)
 import Control.Monad.Except (ExceptT(..), runExceptT)
@@ -38,6 +37,7 @@ import Flight.Comp
     , CompSettings(..)
     , Pilot(..)
     , TrackFileFail(..)
+    , FieldOrdering(..)
     , compToCross
     , findCompInput
     )
@@ -61,43 +61,6 @@ driverMain = do
     options <- cmdArgs $ mkOptions (ProgramName name) description Nothing
     err <- checkPaths options
     maybe (drive options) putStrLn err
-
-cmp :: (Ord a, IsString a) => a -> a -> Ordering
-cmp a b =
-    case (a, b) of
-        ("errors", _) -> LT
-        ("crossings", "errors") -> GT
-        ("crossings", _) -> LT
-        ("flying", _) -> GT
-
-        ("zonesCrossSelected", _) -> LT
-        ("zonesCrossNominees", _) -> GT
-
-        ("fix", _) -> LT
-        ("time", "fix") -> GT
-        ("time", _) -> LT
-        ("lat", "fix") -> GT
-        ("lat", "time") -> GT
-        ("lat", _) -> LT
-        ("lng", _) -> GT
-
-        ("loggedFixes", _) -> LT
-        ("flyingFixes", "loggedFixes") -> GT
-        ("flyingFixes", _) -> LT
-        ("loggedSeconds", "loggedFixes") -> GT
-        ("loggedSeconds", "flyingFixes") -> GT
-        ("loggedSeconds", _) -> LT
-        ("flyingSeconds", "loggedFixes") -> GT
-        ("flyingSeconds", "flyingFixes") -> GT
-        ("flyingSeconds", "loggedSeconds") -> GT
-        ("flyingSeconds", _) -> LT
-        ("loggedTimes", "loggedFixes") -> GT
-        ("loggedTimes", "flyingFixes") -> GT
-        ("loggedTimes", "loggedSeconds") -> GT
-        ("loggedTimes", "flyingSeconds") -> GT
-        ("loggedTimes", _) -> LT
-        ("flyingTimes", _) -> GT
-        _ -> compare a b
 
 drive :: CmdOptions -> IO ()
 drive o = do
@@ -148,18 +111,15 @@ writeMask compFile task pilot f = do
 
             let ps = fst <$> ys
 
-            let tzi =
+            let crossZone =
                     Crossing { crossing = (fmap . fmap) crossings ps
                              , errors = catMaybes . snd <$> ys
                              , flying = (fmap . fmap . fmap . fmap) madeZonesToFlying ps
                              }
 
-            let yaml =
-                    Y.encodePretty
-                        (Y.setConfCompare cmp Y.defConfig)
-                        tzi 
-
-            let (CrossZoneFile crossPath) = compToCross compFile
+            let cfg = Y.setConfCompare (fieldOrder crossZone) Y.defConfig
+            let yaml = Y.encodePretty cfg crossZone
+            let CrossZoneFile crossPath = compToCross compFile
 
             BS.writeFile crossPath yaml
 

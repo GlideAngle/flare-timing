@@ -1,5 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 {-|
 Module      : Flight.Track.Mask
@@ -17,6 +18,7 @@ module Flight.Track.Mask
     , TrackSpeed(..)
     ) where
 
+import Data.String (IsString())
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import Flight.Pilot (Pilot(..))
@@ -29,6 +31,7 @@ import Flight.Score
     , PilotTime(..)
     )
 import Data.Aeson.ViaScientific (ViaScientific(..))
+import Flight.Comp (FieldOrdering(..))
 
 -- | For each task, the masking for that task.
 data Masking =
@@ -77,3 +80,42 @@ data TrackDistance =
 
 instance ToJSON TrackDistance
 instance FromJSON TrackDistance
+
+instance FieldOrdering Masking where
+    fieldOrder _ = cmp
+
+cmp :: (Ord a, IsString a) => a -> a -> Ordering
+cmp a b =
+    case (a, b) of
+        -- TODO: first start time & last goal time & launched
+        ("pilotsAtEss", _) -> LT
+
+        ("bestTime", "pilotsAtEss") -> GT
+        ("bestTime", _) -> LT
+
+        ("arrival", "pilotsAtEss") -> GT
+        ("arrival", "bestTime") -> GT
+        ("arrival", _) -> LT
+
+        ("speed", "pilotsAtEss") -> GT
+        ("speed", "bestTime") -> GT
+        ("speed", "arrival") -> GT
+        ("speed", _) -> LT
+
+        ("distance", _) -> GT
+
+        ("time", _) -> LT
+        ("rank", _) -> LT
+        ("frac", _) -> GT
+
+        ("madeGoal", _) -> LT
+        ("arrivalRank", "madeGoal") -> GT
+        ("arrivalRank", _) -> LT
+        ("timeToGoal", "madeGoal") -> GT
+        ("timeToGoal", "arrivalRank") -> GT
+        ("timeToGoal", _) -> LT
+
+        ("togo", _) -> LT
+        ("made", _) -> GT
+        _ -> compare a b
+

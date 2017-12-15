@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 {-|
 Module      : Flight.Track.Tag
@@ -16,11 +17,13 @@ module Flight.Track.Tag
     , PilotTrackTag(..)
     ) where
 
+import Data.String (IsString())
 import Data.Time.Clock (UTCTime)
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import Flight.Pilot (Pilot(..))
 import Flight.Track.Cross (Fix)
+import Flight.Comp (FieldOrdering(..))
 
 -- | For each task, the timing and tagging for that task.
 data Tagging =
@@ -75,3 +78,35 @@ data PilotTrackTag =
 
 instance ToJSON PilotTrackTag
 instance FromJSON PilotTrackTag
+
+instance FieldOrdering Tagging where
+    fieldOrder _ = cmp
+
+cmp :: (Ord a, IsString a) => a -> a -> Ordering
+cmp a b =
+    case (a, b) of
+        ("timing", _) -> LT
+        ("tagging", _) -> GT
+
+        ("fix", _) -> LT
+        ("time", "fix") -> GT
+        ("time", _) -> LT
+        ("lat", "fix") -> GT
+        ("lat", "time") -> GT
+        ("lat", _) -> LT
+        ("lng", _) -> GT
+
+        ("zonesSum", _) -> LT
+        ("zonesFirst", "zonesSum") -> GT
+        ("zonesFirst", _) -> LT
+        ("zonesLast", "zonesSum") -> GT
+        ("zonesLast", "zonesFirst") -> GT
+        ("zonesLast", _) -> LT
+
+        ("zonesRankTime", "zonesSum") -> GT
+        ("zonesRankTime", "zonesFirst") -> GT
+        ("zonesRankTime", "zonesLast") -> GT
+        ("zonesRankTime", _) -> LT
+        ("zonesRankPilot", _) -> GT
+        _ -> compare a b
+

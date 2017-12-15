@@ -22,7 +22,6 @@ import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import Data.Time.Clock (UTCTime)
 import System.Clock (getTime, Clock(Monotonic))
-import Data.String (IsString)
 import Data.Maybe (catMaybes, fromMaybe)
 import Data.List (transpose, sortOn)
 import Control.Monad (mapM_)
@@ -42,6 +41,7 @@ import Flight.Comp
     ( Pilot(..)
     , CrossZoneFile(..)
     , TagZoneFile(..)
+    , FieldOrdering(..)
     , crossToTag
     , findCrossZone
     )
@@ -61,34 +61,6 @@ driverMain = do
 
     err <- checkPaths options
     maybe (drive options) putStrLn err
-
-cmp :: (Ord a, IsString a) => a -> a -> Ordering
-cmp a b =
-    case (a, b) of
-        ("timing", _) -> LT
-        ("tagging", _) -> GT
-
-        ("fix", _) -> LT
-        ("time", "fix") -> GT
-        ("time", _) -> LT
-        ("lat", "fix") -> GT
-        ("lat", "time") -> GT
-        ("lat", _) -> LT
-        ("lng", _) -> GT
-
-        ("zonesSum", _) -> LT
-        ("zonesFirst", "zonesSum") -> GT
-        ("zonesFirst", _) -> LT
-        ("zonesLast", "zonesSum") -> GT
-        ("zonesLast", "zonesFirst") -> GT
-        ("zonesLast", _) -> LT
-
-        ("zonesRankTime", "zonesSum") -> GT
-        ("zonesRankTime", "zonesFirst") -> GT
-        ("zonesRankTime", "zonesLast") -> GT
-        ("zonesRankTime", _) -> LT
-        ("zonesRankPilot", _) -> GT
-        _ -> compare a b
 
 drive :: CmdOptions -> IO ()
 drive o = do
@@ -118,17 +90,14 @@ go crossFile@(CrossZoneFile crossPath) = do
                                 PilotTrackTag p (Just $ flown xs))
                         crossing
 
-            let tzi =
+            let tagZone =
                     Tagging { timing = timed <$> pss
                             , tagging = pss
                             }
 
-            let yaml =
-                    Y.encodePretty
-                        (Y.setConfCompare cmp Y.defConfig)
-                        tzi 
-
-            let (TagZoneFile tagPath) = crossToTag crossFile
+            let cfg = Y.setConfCompare (fieldOrder tagZone) Y.defConfig
+            let yaml = Y.encodePretty cfg tagZone
+            let TagZoneFile tagPath = crossToTag crossFile
 
             BS.writeFile tagPath yaml
 

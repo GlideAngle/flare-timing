@@ -33,6 +33,7 @@ library:
   - Flight.Track.Tag
   - Flight.Track.Mask
   - Flight.Track.Time
+  - Flight.TaskTrack
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
 name: flight-comp

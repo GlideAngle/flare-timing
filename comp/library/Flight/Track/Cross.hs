@@ -1,5 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 {-|
 Module      : Flight.Track.Cross
@@ -20,12 +21,13 @@ module Flight.Track.Cross
     , Fix(..)
     ) where
 
+import Data.String (IsString())
 import Data.Time.Clock (UTCTime)
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import Flight.Pilot (Pilot(..), TrackFileFail)
 import Flight.LatLng.Raw (RawLat, RawLng)
-import Flight.Comp (FlyingSection)
+import Flight.Comp (FieldOrdering(..), FlyingSection)
 import Data.Aeson.ViaScientific (ViaScientific(..))
 
 -- | For each task, the crossing for that task.
@@ -124,3 +126,44 @@ data PilotTrackCross =
 
 instance ToJSON PilotTrackCross
 instance FromJSON PilotTrackCross
+
+instance FieldOrdering Crossing where
+    fieldOrder _ = cmp
+
+cmp :: (Ord a, IsString a) => a -> a -> Ordering
+cmp a b =
+    case (a, b) of
+        ("errors", _) -> LT
+        ("crossings", "errors") -> GT
+        ("crossings", _) -> LT
+        ("flying", _) -> GT
+
+        ("zonesCrossSelected", _) -> LT
+        ("zonesCrossNominees", _) -> GT
+
+        ("fix", _) -> LT
+        ("time", "fix") -> GT
+        ("time", _) -> LT
+        ("lat", "fix") -> GT
+        ("lat", "time") -> GT
+        ("lat", _) -> LT
+        ("lng", _) -> GT
+
+        ("loggedFixes", _) -> LT
+        ("flyingFixes", "loggedFixes") -> GT
+        ("flyingFixes", _) -> LT
+        ("loggedSeconds", "loggedFixes") -> GT
+        ("loggedSeconds", "flyingFixes") -> GT
+        ("loggedSeconds", _) -> LT
+        ("flyingSeconds", "loggedFixes") -> GT
+        ("flyingSeconds", "flyingFixes") -> GT
+        ("flyingSeconds", "loggedSeconds") -> GT
+        ("flyingSeconds", _) -> LT
+        ("loggedTimes", "loggedFixes") -> GT
+        ("loggedTimes", "flyingFixes") -> GT
+        ("loggedTimes", "loggedSeconds") -> GT
+        ("loggedTimes", "flyingSeconds") -> GT
+        ("loggedTimes", _) -> LT
+        ("flyingTimes", _) -> GT
+        _ -> compare a b
+

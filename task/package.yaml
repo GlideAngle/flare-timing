@@ -22,12 +22,12 @@ library:
   - hcoord
   - aeson-rational
   - siggy-chardust
+  - flight-comp
   - flight-units
   - flight-latlng
   - flight-zone
   source-dirs: library
   exposed-modules:
-  - Flight.TaskTrack
   - Flight.TaskTrack.Double
   - Flight.TaskTrack.Rational
   - Flight.Task

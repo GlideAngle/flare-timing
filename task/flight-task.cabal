@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: cdd4fc159ff18d2ded94dc6338238a31e3b0fafb86ddaef75c426d0cb7bf5265
+-- hash: 5e1f7b3509dd8dcefd9d3d598743d04b45607f87e9b8c885553ef36ad641208b
 
 name:           flight-task
 version:        0.1.0
@@ -38,6 +38,7 @@ library
     , base >=4.5 && <5
     , bifunctors
     , fgl
+    , flight-comp
     , flight-latlng
     , flight-units
     , flight-zone
@@ -48,7 +49,6 @@ library
     , siggy-chardust
     , uom-plugin
   exposed-modules:
-      Flight.TaskTrack
       Flight.TaskTrack.Double
       Flight.TaskTrack.Rational
       Flight.Task
@@ -111,7 +111,6 @@ test-suite hlint
       Flight.Separated
       Flight.ShortestPath
       Flight.Task
-      Flight.TaskTrack
       Flight.TaskTrack.Double
       Flight.TaskTrack.Internal
       Flight.TaskTrack.Rational
@@ -161,7 +160,6 @@ test-suite task
       Flight.Separated
       Flight.ShortestPath
       Flight.Task
-      Flight.TaskTrack
       Flight.TaskTrack.Double
       Flight.TaskTrack.Internal
       Flight.TaskTrack.Rational

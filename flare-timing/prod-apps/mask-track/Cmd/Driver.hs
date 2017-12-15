@@ -29,7 +29,6 @@ import Formatting ((%), fprint)
 import Data.Time.Clock (diffUTCTime)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
-import Data.String (IsString)
 import Control.Lens ((^?), element)
 import Control.Monad (join, mapM_)
 import Control.Monad.Except (ExceptT, runExceptT)
@@ -51,6 +50,7 @@ import Flight.Comp
     , CompSettings(..)
     , Task(..)
     , TrackFileFail(..)
+    , FieldOrdering(..)
     , compToTaskLength
     , compToCross
     , compToMask
@@ -107,41 +107,6 @@ driverMain = do
     options <- cmdArgs $ mkOptions (ProgramName name) description Nothing
     err <- checkPaths options
     maybe (drive options) putStrLn err
-
-cmp :: (Ord a, IsString a) => a -> a -> Ordering
-cmp a b =
-    case (a, b) of
-        -- TODO: first start time & last goal time & launched
-        ("pilotsAtEss", _) -> LT
-
-        ("bestTime", "pilotsAtEss") -> GT
-        ("bestTime", _) -> LT
-
-        ("arrival", "pilotsAtEss") -> GT
-        ("arrival", "bestTime") -> GT
-        ("arrival", _) -> LT
-
-        ("speed", "pilotsAtEss") -> GT
-        ("speed", "bestTime") -> GT
-        ("speed", "arrival") -> GT
-        ("speed", _) -> LT
-
-        ("distance", _) -> GT
-
-        ("time", _) -> LT
-        ("rank", _) -> LT
-        ("frac", _) -> GT
-
-        ("madeGoal", _) -> LT
-        ("arrivalRank", "madeGoal") -> GT
-        ("arrivalRank", _) -> LT
-        ("timeToGoal", "madeGoal") -> GT
-        ("timeToGoal", "arrivalRank") -> GT
-        ("timeToGoal", _) -> LT
-
-        ("togo", _) -> LT
-        ("made", _) -> GT
-        _ -> compare a b
 
 unTaskDistance :: (Real a, Fractional a) => Tsk.TaskDistance a -> a
 unTaskDistance (Tsk.TaskDistance d) =
@@ -217,7 +182,7 @@ writeMask selectTasks selectPilots compFile f = do
             let a :: [[(Pilot, TrackArrival)]] = arrivals <$> ys
             let s :: [Maybe (BestTime, [(Pilot, TrackSpeed)])] = times <$> ys
 
-            let tzi =
+            let maskTrack =
                     Masking
                         { pilotsAtEss =
                             (PilotsAtEss . toInteger . length) <$> a 
@@ -228,14 +193,11 @@ writeMask selectTasks selectPilots compFile f = do
                         , distance = d
                         }
 
-            let yaml =
-                    Y.encodePretty
-                        (Y.setConfCompare cmp Y.defConfig)
-                        tzi 
+            let cfg = Y.setConfCompare (fieldOrder maskTrack) Y.defConfig
+            let yaml = Y.encodePretty cfg maskTrack
+            let MaskTrackFile maskPath = compToMask compFile
 
             BS.writeFile maskPath yaml
-    where
-        MaskTrackFile maskPath = compToMask compFile
 
 distances :: [(Pilot, FlightStats)] -> [(Pilot, TrackDistance)]
 distances xs =

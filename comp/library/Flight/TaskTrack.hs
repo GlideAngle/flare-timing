@@ -1,16 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE UndecidableInstances #-}
-
-{-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE DuplicateRecordFields #-}
-{-# LANGUAGE PartialTypeSignatures #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Flight.TaskTrack
     ( TaskDistanceMeasure(..)
@@ -23,10 +13,12 @@ module Flight.TaskTrack
     , UtmZone(..)
     ) where
 
+import Data.String (IsString())
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 
 import Flight.LatLng.Raw (RawLatLng(..))
+import Flight.Comp (FieldOrdering(..))
 
 -- | The way to measure the task distance.
 data TaskDistanceMeasure
@@ -34,11 +26,11 @@ data TaskDistanceMeasure
     | TaskDistanceByPoints
     | TaskDistanceByEdges
     | TaskDistanceByProjection
-    deriving (Eq, Show)
+    deriving (Eq, Ord, Show)
 
 newtype TaskRoutes =
     TaskRoutes { taskRoutes :: [Maybe TaskTrack] }
-    deriving (Show, Generic)
+    deriving (Eq, Ord, Show, Generic)
 
 instance ToJSON TaskRoutes
 instance FromJSON TaskRoutes
@@ -48,7 +40,7 @@ data TaskTrack =
               , edgeToEdge :: Maybe TrackLine
               , projection :: Maybe ProjectedTrackLine
               }
-    deriving (Show, Generic)
+              deriving (Eq, Ord, Show, Generic)
 
 instance ToJSON TaskTrack
 instance FromJSON TaskTrack
@@ -57,7 +49,7 @@ data ProjectedTrackLine =
     ProjectedTrackLine { planar :: PlanarTrackLine
                        , spherical :: TrackLine
                        }
-    deriving (Show, Generic)
+                       deriving (Eq, Ord, Show, Generic)
 
 instance ToJSON ProjectedTrackLine
 instance FromJSON ProjectedTrackLine
@@ -68,7 +60,7 @@ data TrackLine =
               , legs :: [Double]
               , legsSum :: [Double]
               }
-    deriving (Show, Generic)
+              deriving (Eq, Ord, Show, Generic)
 
 instance ToJSON TrackLine
 instance FromJSON TrackLine
@@ -80,7 +72,7 @@ data PlanarTrackLine =
                     , legs :: [Double]
                     , legsSum :: [Double]
                     }
-    deriving (Show, Generic)
+                    deriving (Eq, Ord, Show, Generic)
 
 instance ToJSON PlanarTrackLine
 instance FromJSON PlanarTrackLine
@@ -89,7 +81,7 @@ data EastingNorthing =
     EastingNorthing { easting :: Double
                     , northing :: Double
                     }
-    deriving (Show, Generic)
+                    deriving (Eq, Ord, Show, Generic)
 
 instance ToJSON EastingNorthing
 instance FromJSON EastingNorthing
@@ -98,7 +90,38 @@ data UtmZone =
     UtmZone { latZone :: Char
             , lngZone :: Int
             }
-    deriving (Show, Eq, Generic)
+            deriving (Eq, Ord, Show, Generic)
 
 instance ToJSON UtmZone
 instance FromJSON UtmZone
+
+instance FieldOrdering TaskRoutes where
+    fieldOrder _ = cmp
+
+cmp :: (Ord a, IsString a) => a -> a -> Ordering
+cmp a b =
+    case (a, b) of
+        ("easting", _) -> LT
+        ("northing", _) -> GT
+        ("latZone", _) -> LT
+        ("lngZone", _) -> GT
+        ("pointToPoint", _) -> LT
+        ("projection", "pointToPoint") -> GT
+        ("projection", _) -> LT
+        ("edgeToEdge", _) -> GT
+        ("lat", _) -> LT
+        ("lng", _) -> GT
+        ("distance", _) -> LT
+        ("legs", "distance") -> GT
+        ("legs", _) -> LT
+        ("legsSum", "distance") -> GT
+        ("legsSum", "legs") -> GT
+        ("legsSum", _) -> LT
+        ("wayPoints", _) -> GT
+        ("mappedPoints", "distance") -> GT
+        ("mappedPoints", "legs") -> GT
+        ("mappedPoints", "legsSum") -> GT
+        ("mappedPoints", _) -> LT
+        ("mappedZones", _) -> GT
+        _ -> compare a b
+

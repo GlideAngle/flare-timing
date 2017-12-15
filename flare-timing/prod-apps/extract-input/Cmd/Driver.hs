@@ -12,7 +12,6 @@ import System.Clock (getTime, Clock(Monotonic))
 import Control.Monad (mapM_)
 import Control.Monad.Trans.Except (throwE)
 import Control.Monad.Except (ExceptT(..), runExceptT, lift)
-import Data.String (IsString())
 
 import Flight.Cmd.Paths (checkPaths)
 import Cmd.Options (CmdOptions(..), mkOptions)
@@ -30,6 +29,7 @@ import Flight.Comp
     , Task(..)
     , TaskFolder(..)
     , PilotTrackLogFile(..)
+    , FieldOrdering(..)
     , fsdbToComp
     , findFsdb
     )
@@ -59,58 +59,12 @@ go fsdbFile@(FsdbFile fsdbPath) = do
     settings <- runExceptT $ fsdbSettings (FsdbXml contents')
     case settings of
         Left msg -> print msg
-        Right cfg -> do
-            let yaml =
-                    Y.encodePretty
-                        (Y.setConfCompare cmp Y.defConfig)
-                        cfg
-
+        Right compInput -> do
+            let cfg = Y.setConfCompare (fieldOrder compInput) Y.defConfig
+            let yaml = Y.encodePretty cfg compInput
             let (CompInputFile compPath) = fsdbToComp fsdbFile
 
             BS.writeFile compPath yaml
-
-cmp :: (Ord a, IsString a) => a -> a -> Ordering
-cmp a b =
-    case (a, b) of
-        -- CompSettings fields
-        ("comp", _) -> LT
-        ("nominal", "comp") -> GT
-        ("nominal", _) -> LT
-        ("tasks", "taskFolders") -> LT
-        ("tasks", "pilots") -> LT
-        ("tasks", _) -> GT
-        ("taskFolders", "pilots") -> LT
-        ("taskFolders", _) -> GT
-        ("pilots", _) -> GT
-        -- Comp fields
-        ("compName", _) -> LT
-        ("location", "compName") -> GT
-        ("location", _) -> LT
-        ("from", "to") -> LT
-        ("civilId", "utcOffset") -> LT
-        ("civilId", _) -> GT
-        ("utcOffset", _) -> GT
-        -- Task fields
-        ("taskName", _) -> LT
-        ("zones", "taskName") -> GT
-        ("zones", _) -> LT
-        ("speedSection", "zoneTimes") -> LT
-        ("speedSection", "startGates") -> LT
-        ("speedSection", _) -> GT
-        ("zoneTimes", "startGates") -> LT
-        ("zoneTimes", _) -> GT
-        ("startGates", _) -> GT
-        ("open", _) -> LT
-        ("close", _) -> GT
-        -- Turnpoint fields
-        ("zoneName", _) -> LT
-        ("lat", "zoneName") -> GT
-        ("lat", _) -> LT
-        ("lng", "zoneName") -> GT
-        ("lng", "lat") -> GT
-        ("lng", _) -> LT
-        ("radius", _) -> GT
-        _ -> compare a b
 
 fsdbComp :: FsdbXml -> ExceptT String IO Comp
 fsdbComp (FsdbXml contents) = do
