@@ -27,7 +27,6 @@ import Data.Maybe (catMaybes, fromMaybe)
 import Data.List (transpose, sortOn)
 import Control.Monad (mapM_)
 import Control.Monad.Except (runExceptT)
-import System.Directory (doesFileExist, doesDirectoryExist)
 import System.FilePath (takeFileName)
 
 import Flight.Cmd.Paths (checkPaths)
@@ -55,16 +54,13 @@ import Cmd.Inputs (readCrossings)
 driverMain :: IO ()
 driverMain = do
     name <- getProgName
-    
     options <- cmdArgs $ mkOptions
                             (ProgramName name)
                             description
                             (Just $ Extension "*.cross-zone.yaml")
 
     err <- checkPaths options
-    case err of
-        Just msg -> putStrLn msg
-        Nothing -> drive options
+    maybe (drive options) putStrLn err
 
 cmp :: (Ord a, IsString a) => a -> a -> Ordering
 cmp a b =
@@ -95,28 +91,18 @@ cmp a b =
         _ -> compare a b
 
 drive :: CmdOptions -> IO ()
-drive CmdOptions{..} = do
+drive o = do
     -- SEE: http://chrisdone.com/posts/measuring-duration-in-haskell
     start <- getTime Monotonic
-    dfe <- doesFileExist file
-    if dfe then
-        withFile (CrossZoneFile file)
-    else do
-        dde <- doesDirectoryExist dir
-        if dde then do
-            files <- findCrossZone dir
-            mapM_ withFile files
-        else
-            putStrLn "Couldn't find any '.cross-zone.yaml' input files."
+    files <- findCrossZone o
+    if null files then putStrLn "Couldn't find any input files."
+                  else mapM_ go files
     end <- getTime Monotonic
     fprint ("Tagging zones completed in " % timeSpecs % "\n") start end
-    where
-        withFile crossFile@(CrossZoneFile crossPath) = do
-            putStrLn $ "Reading zone crossings from '" ++ takeFileName crossPath ++ "'"
-            writeTags crossFile 
 
-writeTags :: CrossZoneFile -> IO ()
-writeTags crossFile = do
+go :: CrossZoneFile -> IO ()
+go crossFile@(CrossZoneFile crossPath) = do
+    putStrLn $ "Reading zone crossings from '" ++ takeFileName crossPath ++ "'"
     cs <- runExceptT $ readCrossings crossFile
 
     case cs of

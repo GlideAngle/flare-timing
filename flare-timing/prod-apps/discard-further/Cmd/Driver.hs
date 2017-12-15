@@ -18,7 +18,7 @@ import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Control.Monad (mapM_, when, zipWithM_)
 import Control.Monad.Except (ExceptT, runExceptT)
-import System.Directory (doesFileExist, doesDirectoryExist, createDirectoryIfMissing)
+import System.Directory (createDirectoryIfMissing)
 import System.FilePath ((</>), takeFileName)
 import Data.Vector (Vector)
 import qualified Data.Vector as V (fromList, toList)
@@ -56,34 +56,26 @@ driverMain = do
     name <- getProgName
     options <- cmdArgs $ mkOptions (ProgramName name) description Nothing
     err <- checkPaths options
-    case err of
-        Just msg -> putStrLn msg
-        Nothing -> drive options
+    maybe (drive options) putStrLn err
 
 drive :: CmdOptions -> IO ()
-drive CmdOptions{..} = do
+drive o = do
     -- SEE: http://chrisdone.com/posts/measuring-duration-in-haskell
     start <- getTime Monotonic
-    dfe <- doesFileExist file
-    if dfe then
-        withFile (CompInputFile file)
-    else do
-        dde <- doesDirectoryExist dir
-        if dde then do
-            files <- findCompInput dir
-            mapM_ withFile files
-        else
-            putStrLn "Couldn't find any flight score competition yaml input files."
+    files <- findCompInput o
+    if null files then putStrLn "Couldn't find any input files."
+                  else mapM_ (go o) files
     end <- getTime Monotonic
     fprint ("Filtering times completed in " % timeSpecs % "\n") start end
-    where
-        withFile compFile@(CompInputFile compPath) = do
-            putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
-            filterTime
-                compFile
-                (IxTask <$> task)
-                (Pilot <$> pilot)
-                checkAll
+
+go :: CmdOptions -> CompInputFile -> IO ()
+go CmdOptions{..} compFile@(CompInputFile compPath) = do
+    putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
+    filterTime
+        compFile
+        (IxTask <$> task)
+        (Pilot <$> pilot)
+        checkAll
 
 filterTime :: CompInputFile
            -> [IxTask]

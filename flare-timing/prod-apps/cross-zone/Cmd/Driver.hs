@@ -25,7 +25,6 @@ import Data.String (IsString)
 import Data.Maybe (catMaybes)
 import Control.Monad (mapM_)
 import Control.Monad.Except (ExceptT(..), runExceptT)
-import System.Directory (doesFileExist, doesDirectoryExist)
 import System.FilePath (takeFileName)
 import Flight.Cmd.Paths (checkPaths)
 import Flight.Cmd.Options (Math(..), CmdOptions(..), ProgramName(..), mkOptions)
@@ -61,9 +60,7 @@ driverMain = do
     name <- getProgName
     options <- cmdArgs $ mkOptions (ProgramName name) description Nothing
     err <- checkPaths options
-    case err of
-        Just msg -> putStrLn msg
-        Nothing -> drive options
+    maybe (drive options) putStrLn err
 
 cmp :: (Ord a, IsString a) => a -> a -> Ordering
 cmp a b =
@@ -103,29 +100,23 @@ cmp a b =
         _ -> compare a b
 
 drive :: CmdOptions -> IO ()
-drive CmdOptions{..} = do
+drive o = do
     -- SEE: http://chrisdone.com/posts/measuring-duration-in-haskell
     start <- getTime Monotonic
-    dfe <- doesFileExist file
-    if dfe then
-        withFile (CompInputFile file)
-    else do
-        dde <- doesDirectoryExist dir
-        if dde then do
-            files <- findCompInput dir
-            mapM_ withFile files
-        else
-            putStrLn "Couldn't find any flight score competition yaml input files."
+    files <- findCompInput o
+    if null files then putStrLn "Couldn't find any input files."
+                  else mapM_ (go o) files
     end <- getTime Monotonic
     fprint ("Tracks crossing zones completed in " % timeSpecs % "\n") start end
-    where
-        withFile compFile@(CompInputFile compPath) = do
-            putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
-            writeMask
-                compFile
-                (IxTask <$> task)
-                (Pilot <$> pilot)
-                (checkAll math)
+
+go :: CmdOptions -> CompInputFile -> IO ()
+go CmdOptions{..} compFile@(CompInputFile compPath) = do
+    putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
+    writeMask
+        compFile
+        (IxTask <$> task)
+        (Pilot <$> pilot)
+        (checkAll math)
 
 writeMask :: CompInputFile
           -> [IxTask]

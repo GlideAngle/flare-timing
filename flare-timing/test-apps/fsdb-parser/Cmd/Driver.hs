@@ -6,7 +6,6 @@ module Cmd.Driver (driverMain) where
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
 import Control.Monad (mapM_, when)
-import System.Directory (doesFileExist, doesDirectoryExist)
 import System.FilePath (takeFileName)
 
 import Flight.Cmd.Paths (checkPaths)
@@ -55,29 +54,23 @@ showPilotTracks tasks =
     unlines $ showTaskPilotTracks (zip [ 1 .. ] tasks) 
 
 drive :: FsdbOptions -> IO ()
-drive FsdbOptions{..} = do
-    dfe <- doesFileExist file
-    if dfe then
-        go (FsdbFile file)
-    else do
-        dde <- doesDirectoryExist dir
-        if dde then do
-            files <- findFsdb dir
-            mapM_ go files
-        else
-            putStrLn "Couldn't find any flight score competition database input files."
-    where
-        go (FsdbFile path) = do
-            putStrLn $ takeFileName path
-            contents <- readFile path
-            let contents' = dropWhile (/= '<') contents
+drive o = do
+    files <- findFsdb o
+    if null files then putStrLn "Couldn't find input files."
+                  else mapM_ (go o) files
 
-            when (null detail || Comp `elem` detail) $ printComp contents'
-            when (null detail || Nominals `elem` detail) $ printNominal contents'
-            when (null detail || Pilots `elem` detail) $ printPilotNames contents'
-            when (null detail || Tasks `elem` detail) $ printTasks contents'
-            when (null detail || TaskFolders `elem` detail) $ printTaskFolders contents'
-            when (null detail || PilotTracks `elem` detail) $ printPilotTracks contents'
+go :: FsdbOptions -> FsdbFile -> IO ()
+go FsdbOptions{..} (FsdbFile path) = do
+    putStrLn $ takeFileName path
+    contents <- readFile path
+    let contents' = dropWhile (/= '<') contents
+
+    when (null detail || Comp `elem` detail) $ printComp contents'
+    when (null detail || Nominals `elem` detail) $ printNominal contents'
+    when (null detail || Pilots `elem` detail) $ printPilotNames contents'
+    when (null detail || Tasks `elem` detail) $ printTasks contents'
+    when (null detail || TaskFolders `elem` detail) $ printTaskFolders contents'
+    when (null detail || PilotTracks `elem` detail) $ printPilotTracks contents'
 
 printNominal :: String -> IO ()
 printNominal contents = do

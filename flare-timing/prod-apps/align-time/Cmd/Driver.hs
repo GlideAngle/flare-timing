@@ -31,7 +31,7 @@ import Control.Monad (mapM_, when, zipWithM_)
 import Control.Monad.Except (ExceptT, runExceptT)
 import Data.UnitsOfMeasure ((/:), u, convert, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
-import System.Directory (doesFileExist, doesDirectoryExist, createDirectoryIfMissing)
+import System.Directory (createDirectoryIfMissing)
 import System.FilePath ((</>), takeFileName)
 import Flight.Cmd.Paths (checkPaths)
 import Flight.Cmd.Options (CmdOptions(..), ProgramName(..), mkOptions)
@@ -89,43 +89,35 @@ driverMain = do
     name <- getProgName
     options <- cmdArgs $ mkOptions (ProgramName name) description Nothing
     err <- checkPaths options
-    case err of
-        Just msg -> putStrLn msg
-        Nothing -> drive options
+    maybe (drive options) putStrLn err
 
 drive :: CmdOptions -> IO ()
-drive CmdOptions{..} = do
+drive o = do
     -- SEE: http://chrisdone.com/posts/measuring-duration-in-haskell
     start <- getTime Monotonic
-    dfe <- doesFileExist file
-    if dfe then
-        withFile (CompInputFile file)
-    else do
-        dde <- doesDirectoryExist dir
-        if dde then do
-            files <- findCompInput dir
-            mapM_ withFile files
-        else
-            putStrLn "Couldn't find any flight score competition yaml input files."
+    files <- findCompInput o
+    if null files then putStrLn "Couldn't find input files."
+                  else mapM_ (go o) files
     end <- getTime Monotonic
     fprint ("Aligning times completed in " % timeSpecs % "\n") start end
-    where
-        withFile compFile@(CompInputFile compPath) = do
-            let tagFile@(TagZoneFile tagPath) = crossToTag . compToCross $ compFile
-            putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
-            putStrLn $ "Reading zone tags from '" ++ takeFileName tagPath ++ "'"
 
-            tags <- runExceptT $ readTags tagFile
-            case tags of
-                Left msg ->
-                    print msg
+go :: CmdOptions -> CompInputFile -> IO ()
+go CmdOptions{..} compFile@(CompInputFile compPath) = do
+    let tagFile@(TagZoneFile tagPath) = crossToTag . compToCross $ compFile
+    putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
+    putStrLn $ "Reading zone tags from '" ++ takeFileName tagPath ++ "'"
 
-                Right tags' ->
-                    writeTime
-                        (IxTask <$> task)
-                        (Pilot <$> pilot)
-                        (CompInputFile compPath)
-                        (checkAll $ zonesFirst <$> timing tags')
+    tags <- runExceptT $ readTags tagFile
+    case tags of
+        Left msg ->
+            print msg
+
+        Right tags' ->
+            writeTime
+                (IxTask <$> task)
+                (Pilot <$> pilot)
+                (CompInputFile compPath)
+                (checkAll $ zonesFirst <$> timing tags')
 
 writeTime :: [IxTask]
           -> [Pilot]

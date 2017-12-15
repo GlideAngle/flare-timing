@@ -10,11 +10,10 @@ import Control.Monad.Trans.Except (runExceptT)
 import System.Directory (doesFileExist, doesDirectoryExist)
 
 -- SEE: http://stackoverflow.com/questions/2138819/in-haskell-is-there-a-way-to-do-io-in-a-function-guard
-checkPaths :: ( HasField "dir" o String , HasField "file" o String)
+checkPaths :: (HasField "dir" o String , HasField "file" o String)
            => o
            -> IO (Maybe String)
 checkPaths o = do
-
     x <- runExceptT $ do
         when (dir == "" && file == "") (throwError "No --dir or --file argument")
 

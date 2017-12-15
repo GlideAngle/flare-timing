@@ -35,7 +35,6 @@ import Control.Monad (join, mapM_)
 import Control.Monad.Except (ExceptT, runExceptT)
 import Data.UnitsOfMeasure ((/:), u, convert, toRational', fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
-import System.Directory (doesFileExist, doesDirectoryExist)
 import System.FilePath (takeFileName)
 import qualified Data.Yaml.Pretty as Y
 import qualified Data.ByteString as BS
@@ -107,9 +106,7 @@ driverMain = do
     name <- getProgName
     options <- cmdArgs $ mkOptions (ProgramName name) description Nothing
     err <- checkPaths options
-    case err of
-        Just msg -> putStrLn msg
-        Nothing -> drive options
+    maybe (drive options) putStrLn err
 
 cmp :: (Ord a, IsString a) => a -> a -> Ordering
 cmp a b =
@@ -160,37 +157,31 @@ unPilotDistance (Gap.PilotDistance d) =
         MkQuantity dKm = convert d' :: Quantity Rational [u| km |]
 
 drive :: CmdOptions -> IO ()
-drive CmdOptions{..} = do
+drive o = do
     -- SEE: http://chrisdone.com/posts/measuring-duration-in-haskell
     start <- getTime Monotonic
-    dfe <- doesFileExist file
-    if dfe then
-        withFile (CompInputFile file)
-    else do
-        dde <- doesDirectoryExist dir
-        if dde then do
-            files <- findCompInput dir
-            mapM_ withFile files
-        else
-            putStrLn "Couldn't find any flight score competition yaml input files."
+    files <- findCompInput o
+    if null files then putStrLn "Couldn't find any input files."
+                  else mapM_ (go o) files
     end <- getTime Monotonic
     fprint ("Masking tracks completed in " % timeSpecs % "\n") start end
-    where
-        withFile compFile@(CompInputFile compPath) = do
-            let tagFile@(TagZoneFile tagPath) = crossToTag . compToCross $ compFile
-            let lenFile@(TaskLengthFile lenPath) = compToTaskLength $ compFile
-            putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
-            putStrLn $ "Reading task length from '" ++ takeFileName lenPath ++ "'"
-            putStrLn $ "Reading zone tags from '" ++ takeFileName tagPath ++ "'"
 
-            tags <- runExceptT $ readTags tagFile
-            lengths <- runExceptT $ readLengths lenFile
+go :: CmdOptions -> CompInputFile -> IO ()
+go CmdOptions{..} compFile@(CompInputFile compPath) = do
+    let tagFile@(TagZoneFile tagPath) = crossToTag . compToCross $ compFile
+    let lenFile@(TaskLengthFile lenPath) = compToTaskLength $ compFile
+    putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
+    putStrLn $ "Reading task length from '" ++ takeFileName lenPath ++ "'"
+    putStrLn $ "Reading zone tags from '" ++ takeFileName tagPath ++ "'"
 
-            writeMask
-                (IxTask <$> task)
-                (Pilot <$> pilot)
-                (CompInputFile compPath)
-                (check lengths math tags)
+    tags <- runExceptT $ readTags tagFile
+    lengths <- runExceptT $ readLengths lenFile
+
+    writeMask
+        (IxTask <$> task)
+        (Pilot <$> pilot)
+        (CompInputFile compPath)
+        (check lengths math tags)
 
 writeMask :: [IxTask]
           -> [Pilot]

@@ -19,6 +19,7 @@ library:
   - time
   - cassava
   - bytestring
+  - directory
   - filepath
   - filemanip
   - aeson-rational
@@ -55,7 +56,9 @@ tests:
     - time
     - cassava
     - bytestring
+    - directory
     - filepath
+    - filemanip
     - aeson-rational
     - flight-latlng
     - flight-zone

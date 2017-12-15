@@ -12,7 +12,7 @@ import System.Clock (getTime, Clock(Monotonic))
 import Control.Monad (mapM_)
 import Control.Monad.Trans.Except (throwE)
 import Control.Monad.Except (ExceptT(..), runExceptT, lift)
-import System.Directory (doesFileExist, doesDirectoryExist)
+import Data.String (IsString())
 
 import Flight.Cmd.Paths (checkPaths)
 import Cmd.Options (CmdOptions(..), mkOptions)
@@ -39,85 +39,78 @@ driverMain = do
     name <- getProgName
     options <- cmdArgs $ mkOptions name
     err <- checkPaths options
-    case err of
-        Just msg -> putStrLn msg
-        Nothing -> drive options
+    maybe (drive options) putStrLn err
 
 drive :: CmdOptions -> IO ()
-drive CmdOptions{..} = do
+drive o = do
     -- SEE: http://chrisdone.com/posts/measuring-duration-in-haskell
     start <- getTime Monotonic
-    dfe <- doesFileExist file
-    if dfe then
-        go $ FsdbFile file
-    else do
-        dde <- doesDirectoryExist dir
-        if dde then do
-            files <- findFsdb dir
-            mapM_ go files
-        else
-            putStrLn "Couldn't find any flight score competition database input files."
+    files <- findFsdb o
+    if null files then putStrLn "Couldn't find any input files."
+                  else mapM_ go files
     end <- getTime Monotonic
     fprint ("Extracting tasks completed in " % timeSpecs % "\n") start end
-    where
-        go fsdbFile@(FsdbFile fsdbPath) = do
-            contents <- readFile fsdbPath
-            let contents' = dropWhile (/= '<') contents
 
-            settings <- runExceptT $ fsdbSettings (FsdbXml contents')
-            case settings of
-                Left msg -> print msg
-                Right cfg -> do
-                    let yaml =
-                            Y.encodePretty
-                                (Y.setConfCompare cmp Y.defConfig)
-                                cfg
+go :: FsdbFile -> IO ()
+go fsdbFile@(FsdbFile fsdbPath) = do
+    contents <- readFile fsdbPath
+    let contents' = dropWhile (/= '<') contents
 
-                    let (CompInputFile compPath) = fsdbToComp fsdbFile
+    settings <- runExceptT $ fsdbSettings (FsdbXml contents')
+    case settings of
+        Left msg -> print msg
+        Right cfg -> do
+            let yaml =
+                    Y.encodePretty
+                        (Y.setConfCompare cmp Y.defConfig)
+                        cfg
 
-                    BS.writeFile compPath yaml
+            let (CompInputFile compPath) = fsdbToComp fsdbFile
 
-        cmp a b =
-            case (a, b) of
-                -- CompSettings fields
-                ("comp", _) -> LT
-                ("nominal", "comp") -> GT
-                ("nominal", _) -> LT
-                ("tasks", "taskFolders") -> LT
-                ("tasks", "pilots") -> LT
-                ("tasks", _) -> GT
-                ("taskFolders", "pilots") -> LT
-                ("taskFolders", _) -> GT
-                ("pilots", _) -> GT
-                -- Comp fields
-                ("compName", _) -> LT
-                ("location", "compName") -> GT
-                ("location", _) -> LT
-                ("from", "to") -> LT
-                ("civilId", "utcOffset") -> LT
-                ("civilId", _) -> GT
-                ("utcOffset", _) -> GT
-                -- Task fields
-                ("taskName", _) -> LT
-                ("zones", "taskName") -> GT
-                ("zones", _) -> LT
-                ("speedSection", "zoneTimes") -> LT
-                ("speedSection", "startGates") -> LT
-                ("speedSection", _) -> GT
-                ("zoneTimes", "startGates") -> LT
-                ("zoneTimes", _) -> GT
-                ("startGates", _) -> GT
-                ("open", _) -> LT
-                ("close", _) -> GT
-                -- Turnpoint fields
-                ("zoneName", _) -> LT
-                ("lat", "zoneName") -> GT
-                ("lat", _) -> LT
-                ("lng", "zoneName") -> GT
-                ("lng", "lat") -> GT
-                ("lng", _) -> LT
-                ("radius", _) -> GT
-                _ -> compare a b
+            BS.writeFile compPath yaml
+
+cmp :: (Ord a, IsString a) => a -> a -> Ordering
+cmp a b =
+    case (a, b) of
+        -- CompSettings fields
+        ("comp", _) -> LT
+        ("nominal", "comp") -> GT
+        ("nominal", _) -> LT
+        ("tasks", "taskFolders") -> LT
+        ("tasks", "pilots") -> LT
+        ("tasks", _) -> GT
+        ("taskFolders", "pilots") -> LT
+        ("taskFolders", _) -> GT
+        ("pilots", _) -> GT
+        -- Comp fields
+        ("compName", _) -> LT
+        ("location", "compName") -> GT
+        ("location", _) -> LT
+        ("from", "to") -> LT
+        ("civilId", "utcOffset") -> LT
+        ("civilId", _) -> GT
+        ("utcOffset", _) -> GT
+        -- Task fields
+        ("taskName", _) -> LT
+        ("zones", "taskName") -> GT
+        ("zones", _) -> LT
+        ("speedSection", "zoneTimes") -> LT
+        ("speedSection", "startGates") -> LT
+        ("speedSection", _) -> GT
+        ("zoneTimes", "startGates") -> LT
+        ("zoneTimes", _) -> GT
+        ("startGates", _) -> GT
+        ("open", _) -> LT
+        ("close", _) -> GT
+        -- Turnpoint fields
+        ("zoneName", _) -> LT
+        ("lat", "zoneName") -> GT
+        ("lat", _) -> LT
+        ("lng", "zoneName") -> GT
+        ("lng", "lat") -> GT
+        ("lng", _) -> LT
+        ("radius", _) -> GT
+        _ -> compare a b
 
 fsdbComp :: FsdbXml -> ExceptT String IO Comp
 fsdbComp (FsdbXml contents) = do
