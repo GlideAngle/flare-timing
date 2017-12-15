@@ -154,80 +154,59 @@ ext DiscardFurther = ".discard-further.yaml"
 ext MaskTrack = ".mask-track.yaml"
 
 findFsdb' :: FilePath -> IO [FsdbFile]
-findFsdb' dir = findFiles' Fsdb dir >>= return . fmap FsdbFile
+findFsdb' dir = findFiles Fsdb dir >>= return . fmap FsdbFile
 
 findCompInput' :: FilePath -> IO [CompInputFile]
-findCompInput' dir = findFiles' CompInput dir >>= return . fmap CompInputFile
+findCompInput' dir = findFiles CompInput dir >>= return . fmap CompInputFile
 
 findCrossZone' :: FilePath -> IO [CrossZoneFile]
-findCrossZone' dir = findFiles' CrossZone dir >>= return . fmap CrossZoneFile
+findCrossZone' dir = findFiles CrossZone dir >>= return . fmap CrossZoneFile
 
 findIgc' :: FilePath -> IO [IgcFile]
-findIgc' dir = findFiles' Igc dir >>= return . fmap IgcFile
+findIgc' dir = findFiles Igc dir >>= return . fmap IgcFile
 
 findKml' :: FilePath -> IO [KmlFile]
-findKml' dir = findFiles' Kml dir >>= return . fmap KmlFile
+findKml' dir = findFiles Kml dir >>= return . fmap KmlFile
 
-findFiles' :: FileType -> FilePath -> IO [FilePath]
-findFiles' typ dir =
+findFiles :: FileType -> FilePath -> IO [FilePath]
+findFiles typ dir =
     find always (fileType ==? Find.RegularFile &&? extension ==? ext typ) dir
 
 findFsdb :: (HasField "dir" o String , HasField "file" o String)
          => o
          -> IO [FsdbFile]
-findFsdb o = do
-    dfe <- doesFileExist file
-    if dfe then return [FsdbFile file] else do
-        dde <- doesDirectoryExist dir
-        if dde then findFsdb' dir else return []
-    where
-        dir = getField @"dir" o
-        file = getField @"file" o
+findFsdb = findFileType findFsdb' FsdbFile
 
 findCompInput :: (HasField "dir" o String , HasField "file" o String)
               => o
               -> IO [CompInputFile]
-findCompInput o = do
-    dfe <- doesFileExist file
-    if dfe then return [CompInputFile file] else do
-        dde <- doesDirectoryExist dir
-        if dde then findCompInput' dir else return []
-    where
-        dir = getField @"dir" o
-        file = getField @"file" o
+findCompInput = findFileType findCompInput' CompInputFile
 
 findCrossZone :: (HasField "dir" o String , HasField "file" o String)
               => o
               -> IO [CrossZoneFile]
-findCrossZone o = do
-    dfe <- doesFileExist file
-    if dfe then return [CrossZoneFile file] else do
-        dde <- doesDirectoryExist dir
-        if dde then findCrossZone' dir else return []
-    where
-        dir = getField @"dir" o
-        file = getField @"file" o
+findCrossZone = findFileType findCrossZone' CrossZoneFile
 
 findIgc :: (HasField "dir" o String , HasField "file" o String)
         => o
         -> IO [IgcFile]
-findIgc o = do
-    dfe <- doesFileExist file
-    if dfe then return [IgcFile file] else do
-        dde <- doesDirectoryExist dir
-        if dde then findIgc' dir else return []
-    where
-        dir = getField @"dir" o
-        file = getField @"file" o
+findIgc = findFileType findIgc' IgcFile
 
 findKml :: (HasField "dir" o String , HasField "file" o String)
         => o
         -> IO [KmlFile]
-findKml o = do
+findKml = findFileType findKml' KmlFile
+
+findFileType :: (HasField "dir" o FilePath, HasField "file" o FilePath)
+             => (FilePath -> IO [a])
+             -> (FilePath -> a)
+             -> o
+             -> IO [a]
+findFileType finder ctor o = do
     dfe <- doesFileExist file
-    if dfe then return [KmlFile file] else do
+    if dfe then return [ctor file] else do
         dde <- doesDirectoryExist dir
-        if dde then findKml' dir else return []
+        if dde then finder dir else return []
     where
         dir = getField @"dir" o
         file = getField @"file" o
