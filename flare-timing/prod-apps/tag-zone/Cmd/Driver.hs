@@ -43,9 +43,8 @@ import Flight.Comp
     ( Pilot(..)
     , CrossZoneFile(..)
     , TagZoneFile(..)
-    , FileType(CrossZone)
     , crossToTag
-    , findFiles
+    , findCrossZone
     )
 import Flight.Track.Cross
     (Crossing(..), TrackCross(..), PilotTrackCross(..), Fix(..))
@@ -105,8 +104,8 @@ drive CmdOptions{..} = do
     else do
         dde <- doesDirectoryExist dir
         if dde then do
-            files <- findFiles CrossZone dir
-            mapM_ withFile (CrossZoneFile <$> files)
+            files <- findCrossZone dir
+            mapM_ withFile files
         else
             putStrLn "Couldn't find any '.cross-zone.yaml' input files."
     end <- getTime Monotonic

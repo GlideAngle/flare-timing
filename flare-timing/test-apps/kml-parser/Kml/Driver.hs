@@ -13,22 +13,22 @@ import Flight.Cmd.Paths (checkPaths)
 import Kml.Options (KmlOptions(..), mkOptions)
 import Flight.Kml (parse)
 
-import Flight.Comp (FileType(Kml), findFiles)
+import Flight.Comp (KmlFile(..), findKml)
 
 drive :: KmlOptions -> IO ()
 drive KmlOptions{..} = do
     dfe <- doesFileExist file
     if dfe then
-        go file
+        go (KmlFile file)
     else do
         dde <- doesDirectoryExist dir
         if dde then do
-            files <- findFiles Kml dir
+            files <- findKml dir
             mapM_ go files
         else
             putStrLn "Couldn't find any KML input files."
     where
-        go path = do
+        go (KmlFile path) = do
             putStrLn $ takeFileName path
             contents <- readFile path
             let contents' = dropWhile (/= '<') contents

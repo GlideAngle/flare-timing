@@ -26,9 +26,8 @@ import Flight.Comp
     , Task(zones)
     , CompInputFile(..)
     , TaskLengthFile(..)
-    , FileType(CompInput)
     , compToTaskLength
-    , findFiles
+    , findCompInput
     )
 import Flight.TaskTrack.Rational (taskTracks)
 import qualified Flight.TaskTrack as TZ
@@ -80,8 +79,8 @@ drive CmdOptions{..} = do
     else do
         dde <- doesDirectoryExist dir
         if dde then do
-            files <- findFiles CompInput dir
-            mapM_ withFile (CompInputFile <$> files)
+            files <- findCompInput dir
+            mapM_ withFile files
         else
             putStrLn "Couldn't find any flight score competition yaml input files."
     end <- getTime Monotonic

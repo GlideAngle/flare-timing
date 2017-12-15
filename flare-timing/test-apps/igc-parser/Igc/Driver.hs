@@ -12,22 +12,22 @@ import System.FilePath (takeFileName)
 import Flight.Cmd.Paths (checkPaths)
 import Igc.Options (IgcOptions(..), mkOptions)
 import Flight.Igc (parseFromFile)
-import Flight.Comp (FileType(Igc), findFiles)
+import Flight.Comp (IgcFile(..), findIgc)
 
 drive :: IgcOptions -> IO ()
 drive IgcOptions{..} = do
     dfe <- doesFileExist file
     if dfe then
-        go file
+        go (IgcFile file)
     else do
         dde <- doesDirectoryExist dir
         if dde then do
-            files <- findFiles Igc dir
+            files <- findIgc dir
             mapM_ go files
         else
             putStrLn "Couldn't find any IGC input files."
     where
-        go path = do
+        go (IgcFile path) = do
             putStrLn $ takeFileName path
             p <- parseFromFile path
             case p of

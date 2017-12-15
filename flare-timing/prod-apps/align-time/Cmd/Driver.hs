@@ -49,12 +49,11 @@ import Flight.Comp
     , Task(..)
     , TrackFileFail
     , SpeedSection
-    , FileType(CompInput)
     , compToCross
     , crossToTag
     , compFileToCompDir
     , alignPath
-    , findFiles
+    , findCompInput
     )
 import Flight.TrackLog (IxTask(..))
 import Flight.Units ()
@@ -104,8 +103,8 @@ drive CmdOptions{..} = do
     else do
         dde <- doesDirectoryExist dir
         if dde then do
-            files <- findFiles CompInput dir
-            mapM_ withFile (CompInputFile <$> files)
+            files <- findCompInput dir
+            mapM_ withFile files
         else
             putStrLn "Couldn't find any flight score competition yaml input files."
     end <- getTime Monotonic

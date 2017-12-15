@@ -30,9 +30,8 @@ import Flight.Comp
     , Task(..)
     , TaskFolder(..)
     , PilotTrackLogFile(..)
-    , FileType(Fsdb)
     , fsdbToComp
-    , findFiles
+    , findFsdb
     )
 
 driverMain :: IO ()
@@ -54,8 +53,8 @@ drive CmdOptions{..} = do
     else do
         dde <- doesDirectoryExist dir
         if dde then do
-            files <- findFiles Fsdb dir
-            mapM_ go (FsdbFile <$> files)
+            files <- findFsdb dir
+            mapM_ go files
         else
             putStrLn "Couldn't find any flight score competition database input files."
     end <- getTime Monotonic

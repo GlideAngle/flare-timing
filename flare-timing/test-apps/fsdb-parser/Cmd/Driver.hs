@@ -20,7 +20,12 @@ import Flight.Fsdb
     , parseTaskFolders
     )
 import Flight.Comp
-    (Pilot(..), PilotTrackLogFile(..), FileType(Fsdb), showTask, findFiles)
+    ( Pilot(..)
+    , PilotTrackLogFile(..)
+    , FsdbFile(..)
+    , showTask
+    , findFsdb
+    )
 
 driverMain :: IO ()
 driverMain = do
@@ -53,16 +58,16 @@ drive :: FsdbOptions -> IO ()
 drive FsdbOptions{..} = do
     dfe <- doesFileExist file
     if dfe then
-        go file
+        go (FsdbFile file)
     else do
         dde <- doesDirectoryExist dir
         if dde then do
-            files <- findFiles Fsdb dir
+            files <- findFsdb dir
             mapM_ go files
         else
             putStrLn "Couldn't find any flight score competition database input files."
     where
-        go path = do
+        go (FsdbFile path) = do
             putStrLn $ takeFileName path
             contents <- readFile path
             let contents' = dropWhile (/= '<') contents

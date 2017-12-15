@@ -1,5 +1,7 @@
 module Flight.Path
-    ( FsdbFile(..)
+    ( IgcFile(..)
+    , KmlFile(..)
+    , FsdbFile(..)
     , FsdbXml(..)
     , CompInputFile(..)
     , TaskLengthFile(..)
@@ -11,7 +13,6 @@ module Flight.Path
     , CompDir(..)
     , AlignDir(..)
     , DiscardDir(..)
-    , FileType(..)
     , fsdbToComp
     , compToTaskLength
     , compToCross
@@ -22,7 +23,11 @@ module Flight.Path
     , discardDir
     , alignPath
     , discardPath
-    , findFiles
+    , findFsdb
+    , findCompInput
+    , findCrossZone
+    , findIgc
+    , findKml
     ) where
 
 import System.FilePath
@@ -31,6 +36,12 @@ import System.FilePath.Find
     ((==?), (&&?), find, always, fileType, extension)
 import qualified System.FilePath.Find as Find (FileType(..))
 import Flight.Pilot (Pilot(..))
+
+-- | The path to a *.igc file.
+newtype IgcFile = IgcFile FilePath
+
+-- | The path to a *.kml file.
+newtype KmlFile = KmlFile FilePath
 
 -- | The path to a competition *.fsdb file.
 newtype FsdbFile = FsdbFile FilePath
@@ -136,6 +147,21 @@ ext AlignTime = ".align-time.yaml"
 ext DiscardFurther = ".discard-further.yaml"
 ext MaskTrack = ".mask-track.yaml"
 
-findFiles :: FileType -> FilePath -> IO [FilePath]
-findFiles typ dir =
+findFsdb :: FilePath -> IO [FsdbFile]
+findFsdb dir = findFiles' Fsdb dir >>= return . fmap FsdbFile
+
+findCompInput :: FilePath -> IO [CompInputFile]
+findCompInput dir = findFiles' CompInput dir >>= return . fmap CompInputFile
+
+findCrossZone :: FilePath -> IO [CrossZoneFile]
+findCrossZone dir = findFiles' CrossZone dir >>= return . fmap CrossZoneFile
+
+findIgc :: FilePath -> IO [IgcFile]
+findIgc dir = findFiles' Igc dir >>= return . fmap IgcFile
+
+findKml :: FilePath -> IO [KmlFile]
+findKml dir = findFiles' Kml dir >>= return . fmap KmlFile
+
+findFiles' :: FileType -> FilePath -> IO [FilePath]
+findFiles' typ dir =
     find always (fileType ==? Find.RegularFile &&? extension ==? ext typ) dir
