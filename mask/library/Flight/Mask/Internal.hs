@@ -397,34 +397,59 @@ distanceToGoal span zoneToCyl dvz tasks (IxTask i) Kml.MarkedFixes{fixes} =
 -- to find the one closest to the next zone at the end of the leg. From this the
 -- distance returned is the task distance up to the next zone not made minus the
 -- distance yet to fly to this zone.
-distanceViaZones :: forall a b. (Real b, Fractional b)
-                 => Ticked -- ^ The number of zones ticked in the speed section
-                 -> SpanLatLng b
-                 -> DistancePointToPoint b
-                 -> CostSegment b
-                 -> CircumSample b
-                 -> AngleCut b
-                 -> (a -> TrackZone b)
-                 -> Cmp.SpeedSection
-                 -> [CrossingPredicate b Crossing]
-                 -> [TaskZone b]
-                 -> [a]
-                 -> Maybe (TaskDistance b)
-distanceViaZones (Ticked n) span dpp cseg cs cut mkZone speedSection fs zs xs =
-    case reverse xs of
-        [] ->
-            Nothing
+distanceViaZones
+    :: forall a b. (Real b, Fractional b)
+    => Ticked -- ^ The number of zones ticked in the speed section
+    -> SpanLatLng b
+    -> DistancePointToPoint b
+    -> CostSegment b
+    -> CircumSample b
+    -> AngleCut b
+    -> (a -> TrackZone b)
+    -> Cmp.SpeedSection
+    -> [CrossingPredicate b Crossing]
+    -> [TaskZone b]
+    -> [a]
+    -> Maybe (TaskDistance b)
+distanceViaZones ticked span dpp cseg cs cut mkZone speedSection fs zs xs =
+    distanceViaZonesR
+        ticked span dpp cseg cs cut mkZone speedSection fs zs (reverse xs)
 
-        -- NOTE: I don't consider all fixes from last turnpoint made
-        -- so this distance is the distance from the very last fix when
-        -- at times on this leg the pilot may have been closer to goal.
-        x : _ ->
-            Just . edgesSum
-            $ distanceEdgeToEdge span dpp cseg cs cut mm30 (cons x)
+-- | Distance via zones with the fixes reversed.
+distanceViaZonesR
+    :: forall a b. (Real b, Fractional b)
+    => Ticked -- ^ The number of zones ticked in the speed section
+    -> SpanLatLng b
+    -> DistancePointToPoint b
+    -> CostSegment b
+    -> CircumSample b
+    -> AngleCut b
+    -> (a -> TrackZone b)
+    -> Cmp.SpeedSection
+    -> [CrossingPredicate b Crossing]
+    -> [TaskZone b]
+    -> [a]
+    -> Maybe (TaskDistance b)
+distanceViaZonesR _ _ _ _ _ _ _ _ _ _ [] =
+    Nothing
+
+distanceViaZonesR (Ticked 0) span dpp cseg cs cut mkZone speedSection _ zs (x : _) =
+    -- NOTE: Didn't make the start so skip the start.
+    Just . edgesSum
+    $ distanceEdgeToEdge span dpp cseg cs cut mm30 (cons mkZone x zsSkipStart)
     where
-        -- NOTE: Free pass for zones already ticked.
-        fsTicked = const (hitZone . Left $ ZoneEntry 0 0) <$> ([0 .. ] :: [Int])
+        -- TODO: Don't assume end of speed section is goal.
+        zsSpeed = slice speedSection zs
+        zsSkipStart = unTaskZone <$> (drop 1 zsSpeed)
 
+distanceViaZonesR (Ticked n) span dpp cseg cs cut mkZone speedSection fs zs xs@(x : _) =
+    -- NOTE: I don't consider all fixes from last turnpoint made
+    -- so this distance is the distance from the very last fix when
+    -- at times on this leg the pilot may have been closer to goal.
+    Just . edgesSum
+    $ distanceEdgeToEdge span dpp cseg cs cut mm30 (cons mkZone x zsNotTicked)
+
+    where
         -- TODO: Don't assume end of speed section is goal.
         zsSpeed = slice speedSection zs
         fsSpeed = take n fsTicked ++ drop n (slice speedSection fs)
@@ -442,5 +467,9 @@ distanceViaZones (Ticked n) span dpp cseg cs cut mkZone speedSection fs zs xs =
         xs' :: [TrackZone b]
         xs' = mkZone <$> xs
 
-        cons :: a -> [Zone b]
-        cons x = unTrackZone (mkZone x) : zsNotTicked
+cons :: (a -> TrackZone b) -> a -> [Zone b] -> [Zone b]
+cons mkZone x zs = unTrackZone (mkZone x) : zs
+
+-- NOTE: Free pass for zones already ticked.
+fsTicked :: [CrossingPredicate a Crossing]
+fsTicked = const (hitZone . Left $ ZoneEntry 0 0) <$> ([0 .. ] :: [Int])
