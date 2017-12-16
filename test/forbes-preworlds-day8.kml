@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <Placemark>
+      <name>FORBES - LAUNCH</name>
+      <Point>
+        <coordinates>147.93207,-33.36137,0</coordinates>
+      </Point>
+    </Placemark>
+    <Placemark>
+      <name>FORBES - START</name>
+      <Point>
+        <coordinates>147.93207,-33.36137,0</coordinates>
+      </Point>
+    </Placemark>
+    <Placemark>
+      <name>MARSDE</name>
+      <Point>
+        <coordinates>147.52864999,-33.75343,0</coordinates>
+      </Point>
+    </Placemark>
+    <Placemark>
+      <name>YARRAB</name>
+      <Point>
+        <coordinates>147.57322999,-33.12908,0</coordinates>
+      </Point>
+    </Placemark>
+    <Placemark>
+      <name>DAY8GO</name>
+      <Point>
+        <coordinates>147.93149999,-33.36099999,0</coordinates>
+      </Point>
+    </Placemark>
+  </Document>
+</kml>
