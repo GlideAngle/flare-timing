@@ -42,10 +42,10 @@
         <name>FORBES - LAUNCH</name>
         <visibility>1</visibility>
         <Style>
-          <geomColor>ff0000ff</geomColor>
+          <geomColor>ffff0000</geomColor>
           <geomScale>1</geomScale>
           <PolyStyle id="defaultPolyStyle">
-            <color>ff0000ff</color>
+            <color>ffff0000</color>
             <fill>0</fill>
             <outline>1</outline>
           </PolyStyle>
@@ -64,10 +64,10 @@
         <name>FORBES - START</name>
         <visibility>1</visibility>
         <Style>
-          <geomColor>ff0000ff</geomColor>
+          <geomColor>ff00ff00</geomColor>
           <geomScale>1</geomScale>
           <PolyStyle id="defaultPolyStyle">
-            <color>ff0000ff</color>
+            <color>ff00ff00</color>
             <fill>0</fill>
             <outline>1</outline>
           </PolyStyle>
