@@ -42,11 +42,11 @@
         <name>FORBES - LAUNCH</name>
         <visibility>1</visibility>
         <Style>
-          <geomColor>ffff0000</geomColor>
+          <geomColor>44ff0000</geomColor>
           <geomScale>1</geomScale>
           <PolyStyle id="defaultPolyStyle">
-            <color>ffff0000</color>
-            <fill>0</fill>
+            <color>44ff0000</color>
+            <fill>1</fill>
             <outline>1</outline>
           </PolyStyle>
         </Style>
@@ -64,11 +64,11 @@
         <name>FORBES - START</name>
         <visibility>1</visibility>
         <Style>
-          <geomColor>ff00ff00</geomColor>
+          <geomColor>4400ff00</geomColor>
           <geomScale>1</geomScale>
           <PolyStyle id="defaultPolyStyle">
-            <color>ff00ff00</color>
-            <fill>0</fill>
+            <color>4400ff00</color>
+            <fill>1</fill>
             <outline>1</outline>
           </PolyStyle>
         </Style>
@@ -86,11 +86,11 @@
         <name>MARSDE</name>
         <visibility>1</visibility>
         <Style>
-          <geomColor>ff0000ff</geomColor>
+          <geomColor>440000ff</geomColor>
           <geomScale>1</geomScale>
           <PolyStyle id="defaultPolyStyle">
-            <color>ff0000ff</color>
-            <fill>0</fill>
+            <color>440000ff</color>
+            <fill>1</fill>
             <outline>1</outline>
           </PolyStyle>
         </Style>
@@ -108,11 +108,11 @@
         <name>YARRAB</name>
         <visibility>1</visibility>
         <Style>
-          <geomColor>ff0000ff</geomColor>
+          <geomColor>440000ff</geomColor>
           <geomScale>1</geomScale>
           <PolyStyle id="defaultPolyStyle">
-            <color>ff0000ff</color>
-            <fill>0</fill>
+            <color>440000ff</color>
+            <fill>1</fill>
             <outline>1</outline>
           </PolyStyle>
         </Style>
@@ -130,11 +130,11 @@
         <name>DAY8GO</name>
         <visibility>1</visibility>
         <Style>
-          <geomColor>ff0000ff</geomColor>
+          <geomColor>440000ff</geomColor>
           <geomScale>1</geomScale>
           <PolyStyle id="defaultPolyStyle">
-            <color>ff0000ff</color>
-            <fill>0</fill>
+            <color>440000ff</color>
+            <fill>1</fill>
             <outline>1</outline>
           </PolyStyle>
         </Style>
