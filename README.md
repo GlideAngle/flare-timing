@@ -29,8 +29,3 @@ With an FS comp file and related track logs as inputs, **score** the comp;
 7. Find the leading area with [`leading-area`](flare-timing/prod-apps/leading-area).  
 8. Mask a task over its tracklogs with [`mask-track`](flare-timing/prod-apps/mask-track).  
 9. Score the competition with [`gap-point`](flare-timing/prod-apps/gap-point).  
-
-With the data pre-processed, **host** `flare-timing`;
-1. Copy the data to a location where it can be read by the web services.
-2. Start the [`server`](flare-timing/prod-apps/app-serve) hosting the web services.
-3. Start the [`dev server`](flare-timing/view) or otherwise host the web app.
