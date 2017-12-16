@@ -72,10 +72,6 @@ type DistancePointToPoint a = SpanLatLng a -> [Zone a] -> PathDistance a
 -- function.
 data AngleCut a =
     AngleCut { sweep :: Bearing a
-            {-(Epsilon eps) = defEps-}
-            {-(dist, zs) =-}
-                {-loop builder sp 6 (Bearing . MkQuantity $ F.pi eps) Nothing Nothing xs-}
-             --  (Bearing . MkQuantity $ b * (3 % 4))
              , nextSweep :: AngleCut a -> AngleCut a
              }
 
