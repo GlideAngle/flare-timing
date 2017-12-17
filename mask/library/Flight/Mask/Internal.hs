@@ -452,20 +452,7 @@ distanceViaZonesR (Ticked n) span dpp cseg cs cut mkZone speedSection fs zs xs@(
     where
         -- TODO: Don't assume end of speed section is goal.
         zsSpeed = slice speedSection zs
-        fsSpeed = take n fsTicked ++ drop n (slice speedSection fs)
-
-        ys :: [Bool]
-        ys = (not . null) <$> tickedZones fsSpeed zsSpeed xs'
-
-        numTicked = length $ takeWhile (== True) ys
-
-        notTicked = drop numTicked zsSpeed
-
-        zsNotTicked :: [Zone b]
-        zsNotTicked = unTaskZone <$> notTicked
-
-        xs' :: [TrackZone b]
-        xs' = mkZone <$> xs
+        zsNotTicked = unTaskZone <$> drop n zsSpeed
 
 cons :: (a -> TrackZone b) -> a -> [Zone b] -> [Zone b]
 cons mkZone x zs = unTrackZone (mkZone x) : zs
