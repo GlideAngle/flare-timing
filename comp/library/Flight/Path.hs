@@ -154,23 +154,23 @@ ext DiscardFurther = ".discard-further.yaml"
 ext MaskTrack = ".mask-track.yaml"
 
 findFsdb' :: FilePath -> IO [FsdbFile]
-findFsdb' dir = findFiles Fsdb dir >>= return . fmap FsdbFile
+findFsdb' dir = fmap FsdbFile <$> findFiles Fsdb dir
 
 findCompInput' :: FilePath -> IO [CompInputFile]
-findCompInput' dir = findFiles CompInput dir >>= return . fmap CompInputFile
+findCompInput' dir = fmap CompInputFile <$> findFiles CompInput dir
 
 findCrossZone' :: FilePath -> IO [CrossZoneFile]
-findCrossZone' dir = findFiles CrossZone dir >>= return . fmap CrossZoneFile
+findCrossZone' dir = fmap CrossZoneFile <$> findFiles CrossZone dir
 
 findIgc' :: FilePath -> IO [IgcFile]
-findIgc' dir = findFiles Igc dir >>= return . fmap IgcFile
+findIgc' dir = fmap IgcFile <$> findFiles Igc dir
 
 findKml' :: FilePath -> IO [KmlFile]
-findKml' dir = findFiles Kml dir >>= return . fmap KmlFile
+findKml' dir = fmap KmlFile <$> findFiles Kml dir
 
 findFiles :: FileType -> FilePath -> IO [FilePath]
-findFiles typ dir =
-    find always (fileType ==? Find.RegularFile &&? extension ==? ext typ) dir
+findFiles typ =
+    find always (fileType ==? Find.RegularFile &&? extension ==? ext typ)
 
 findFsdb :: (HasField "dir" o String , HasField "file" o String)
          => o

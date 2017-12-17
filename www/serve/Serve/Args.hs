@@ -1,5 +1,4 @@
 {-# LANGUAGE DeriveDataTypeable #-}
-{-# LANGUAGE MagicHash #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Serve.Args

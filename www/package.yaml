@@ -49,6 +49,7 @@ tests:
     dependencies:
     - base
     - hlint
+    - flight-comp
     ghc-options:
     - -rtsopts
     - -threaded

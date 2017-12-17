@@ -470,7 +470,7 @@ distanceViaZonesR
     where
         -- TODO: Don't assume end of speed section is goal.
         zsSpeed = slice speedSection zs
-        zsSkipStart = unTaskZone <$> (drop 1 zsSpeed)
+        zsSkipStart = unTaskZone <$> drop 1 zsSpeed
 
 distanceViaZonesR
     Triage{race} span dpp cseg cs cut mkZone speedSection _ zs (x : _) =

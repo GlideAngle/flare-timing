@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 5e1f7b3509dd8dcefd9d3d598743d04b45607f87e9b8c885553ef36ad641208b
+-- hash: 1dc1a2c651ed0fee6ca81c376a299617c03c118e05d884db9c91db41b89e9e93
 
 name:           flight-task
 version:        0.1.0
@@ -84,6 +84,7 @@ test-suite hlint
     , base
     , bifunctors
     , fgl
+    , flight-comp
     , flight-latlng
     , flight-units
     , flight-zone
