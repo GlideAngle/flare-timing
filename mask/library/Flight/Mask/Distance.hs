@@ -34,7 +34,7 @@ import Flight.Score (PilotDistance(..))
 import Flight.Units ()
 import Flight.Mask.Internal
     ( TaskZone(..)
-    , Ticked(..)
+    , Ticked
     , fixFromFix
     , distanceViaZones
     )

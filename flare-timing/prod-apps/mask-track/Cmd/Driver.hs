@@ -62,7 +62,7 @@ import Flight.TrackLog (IxTask(..))
 import Flight.Units ()
 import qualified Flight.Mask as Mask (distanceToGoal)
 import Flight.Mask
-    ( SigMasking, TaskZone, Ticked(..)
+    ( SigMasking, TaskZone, Ticked, Triage(..)
     , checkTracks, distanceFlown, zoneToCylinder
     )
 import Flight.Track.Mask
@@ -387,7 +387,7 @@ nextCutF x@AngleCut{sweep} =
     let (Bearing b) = sweep in x{sweep = Bearing $ b /: 2}
 
 noneTicked :: Ticked
-noneTicked = Ticked 0
+noneTicked = Triage [] [] []
 
 diffTimeHours :: StartEnd -> PilotTime
 diffTimeHours (start, end) =

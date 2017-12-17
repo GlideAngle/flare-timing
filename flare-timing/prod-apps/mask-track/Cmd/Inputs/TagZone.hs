@@ -18,7 +18,7 @@ module Cmd.Inputs.TagZone
 
 import Data.Time.Clock (UTCTime)
 import Data.List (find, elemIndex)
-import Data.Maybe (catMaybes, listToMaybe)
+import Data.Maybe (catMaybes, listToMaybe, isJust)
 import Control.Monad (join)
 import Control.Monad.Except (ExceptT(..), lift)
 import Control.Lens ((^?), element)
@@ -29,8 +29,8 @@ import qualified Flight.Kml as Kml (MarkedFixes(..))
 import Flight.Comp (TagZoneFile(..), SpeedSection, Pilot(..))
 import Flight.Track.Tag
     (Tagging(..), TrackTime(..), TrackTag(..), PilotTrackTag(..))
-import Flight.Mask (Ticked(..), slice)
-import Flight.Track.Cross (Fix(time))
+import Flight.Mask (Ticked, Triage(..), slice, triage)
+import Flight.Track.Cross (Fix(fix, time))
 
 type TaggingLookup a = Pilot -> SpeedSection -> IxTask -> Kml.MarkedFixes -> Maybe a
 
@@ -73,15 +73,21 @@ ticked x pilot speedSection (IxTask i) _ =
             <$> find (\(PilotTrackTag p _) -> p == pilot) xs
 
 -- | The time of the first and last fix in the list.
-tickedZones :: [Maybe Fix] -> Maybe Ticked
-tickedZones =
-    Just . Ticked . length . catMaybes
+tickedZones :: SpeedSection -> [Maybe Fix] -> Ticked
+tickedZones speedSection xs =
+    Triage
+        { prolog = f prolog
+        , race = f race
+        , epilog = f epilog
+        }
+    where
+        f = catMaybes . takeWhile isJust
+        Triage{..} = triage speedSection $ (fmap . fmap) fix xs
 
 tickedPilot :: SpeedSection -> PilotTrackTag -> Maybe Ticked
 tickedPilot _ (PilotTrackTag _ Nothing) = Nothing
-tickedPilot Nothing _ = Nothing
 tickedPilot speedSection (PilotTrackTag _ (Just TrackTag{zonesTag})) =
-    tickedZones $ slice speedSection zonesTag
+    Just $ tickedZones speedSection zonesTag
 
 timeElapsed :: Tagging
             -> Pilot

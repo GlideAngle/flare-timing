@@ -24,9 +24,11 @@ module Flight.Mask.Internal
     , CrossingPredicate
     , TaskZone(..)
     , TrackZone(..)
-    , Ticked(..)
+    , Ticked
+    , Triage(..)
     , OrdCrossing(..)
     , slice
+    , triage
     , fixToPoint
     , zoneToCylinder
     , isStartExit
@@ -88,7 +90,17 @@ mm30 = Tolerance . fromRational $ 30 % 1000
 -- | When working out distances around a course, if I know which zones are
 -- tagged then I can break up the track into legs and assume previous legs are
 -- ticked when working out distance to goal.
-newtype Ticked = Ticked Int deriving (Eq, Show)
+type Ticked = Triage ZoneIdx
+
+data Triage a =
+    Triage
+        { prolog :: [a]
+        -- ^ Zones crossed before the start of the speed section.
+        , race :: [a]
+        -- ^ Zones crossed during the speed section.
+        , epilog :: [a]
+        -- ^ Zones crossed after the end of the speed section.
+        }
 
 type ZoneIdx = Int
 
@@ -126,12 +138,32 @@ newtype TaskZone a = TaskZone { unTaskZone :: Zone a }
 -- | A fix in a flight track converted to a point zone.
 newtype TrackZone a = TrackZone { unTrackZone :: Zone a }
 
+-- | Slice the speed section from a list.
 slice :: Cmp.SpeedSection -> [a] -> [a]
 slice = \case
     Nothing -> id
     Just (s', e') ->
         let (s, e) = (fromInteger s' - 1, fromInteger e' - 1)
         in take (e - s + 1) . drop s
+
+-- | Slice a list into three parts, before, during and after the speed section.
+triage :: Cmp.SpeedSection -> [a] -> Triage a 
+
+triage Nothing xs =
+    Triage
+        { prolog = []
+        , race = xs
+        , epilog = []
+        }
+
+triage (Just (s', e')) xs =
+    Triage
+        { prolog = take s xs
+        , race = take (e - s + 1) . drop s $ xs
+        , epilog = drop (e + 1) xs
+        }
+    where
+        (s, e) = (fromInteger s' - 1, fromInteger e' - 1)
 
 -- | The input pair is in degrees while the output is in radians.
 toLL :: Fractional a => (Rational, Rational) -> LatLng a [u| rad |]
@@ -332,9 +364,6 @@ selectFirst = listToMaybe . take 1
 selectLast :: [a] -> Maybe a
 selectLast xs = listToMaybe . take 1 $ reverse xs
 
-hitZone :: _ -> CrossingPredicate a Crossing
-hitZone hit _ _ = [hit]
-
 fixFromFix :: UTCTime -> Int -> Kml.Fix -> Fix
 fixFromFix mark0 i x =
     -- SEE: https://ocharles.org.uk/blog/posts/2013-12-15-24-days-of-hackage-time.html
@@ -433,7 +462,8 @@ distanceViaZonesR
 distanceViaZonesR _ _ _ _ _ _ _ _ _ _ [] =
     Nothing
 
-distanceViaZonesR (Ticked 0) span dpp cseg cs cut mkZone speedSection _ zs (x : _) =
+distanceViaZonesR
+    Triage{race = []} span dpp cseg cs cut mkZone speedSection _ zs (x : _) =
     -- NOTE: Didn't make the start so skip the start.
     Just . edgesSum
     $ distanceEdgeToEdge span dpp cseg cs cut mm30 (cons mkZone x zsSkipStart)
@@ -442,7 +472,8 @@ distanceViaZonesR (Ticked 0) span dpp cseg cs cut mkZone speedSection _ zs (x : 
         zsSpeed = slice speedSection zs
         zsSkipStart = unTaskZone <$> (drop 1 zsSpeed)
 
-distanceViaZonesR (Ticked n) span dpp cseg cs cut mkZone speedSection fs zs xs@(x : _) =
+distanceViaZonesR
+    Triage{race} span dpp cseg cs cut mkZone speedSection _ zs (x : _) =
     -- NOTE: I don't consider all fixes from last turnpoint made
     -- so this distance is the distance from the very last fix when
     -- at times on this leg the pilot may have been closer to goal.
@@ -452,11 +483,7 @@ distanceViaZonesR (Ticked n) span dpp cseg cs cut mkZone speedSection fs zs xs@(
     where
         -- TODO: Don't assume end of speed section is goal.
         zsSpeed = slice speedSection zs
-        zsNotTicked = unTaskZone <$> drop n zsSpeed
+        zsNotTicked = unTaskZone <$> drop (length race) zsSpeed
 
 cons :: (a -> TrackZone b) -> a -> [Zone b] -> [Zone b]
 cons mkZone x zs = unTrackZone (mkZone x) : zs
-
--- NOTE: Free pass for zones already ticked.
-fsTicked :: [CrossingPredicate a Crossing]
-fsTicked = const (hitZone . Left $ ZoneEntry 0 0) <$> ([0 .. ] :: [Int])

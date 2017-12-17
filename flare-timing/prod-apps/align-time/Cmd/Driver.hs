@@ -58,7 +58,7 @@ import Flight.Comp
 import Flight.TrackLog (IxTask(..))
 import Flight.Units ()
 import Flight.Mask
-    (TaskZone, SigMasking, Ticked(..)
+    (TaskZone, SigMasking, Ticked, Triage(..)
     , checkTracks, groupByLeg, distancesToGoal, zoneToCylinder
     )
 import Flight.Track.Cross (Fix(..))
@@ -232,7 +232,14 @@ legDistances ts tasks iTask leg speedSection xs =
             if leg' < start || leg' > end then [] else
             mkTimeRows t0 leg xs'
             where
-                ticked = Ticked $ leg - fromInteger start
+                ticked :: Ticked
+                ticked =
+                    Triage
+                        []
+                        -- TODO: Read ticked for align-times.
+                        (replicate (leg - fromInteger start) 0)
+                        []
+
                 xs' = distancesToGoal ticked span dpp cseg cs cut zoneToCyl tasks iTask xs
     where
         leg' = fromIntegral leg
