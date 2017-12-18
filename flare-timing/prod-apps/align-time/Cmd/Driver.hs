@@ -108,16 +108,9 @@ go CmdOptions{..} compFile@(CompInputFile compPath) = do
     putStrLn $ "Reading zone tags from '" ++ takeFileName tagPath ++ "'"
 
     tags <- runExceptT $ readTagging tagFile
-    case tags of
-        Left msg ->
-            print msg
-
-        Right tags' ->
-            writeTime
-                (IxTask <$> task)
-                (Pilot <$> pilot)
-                (CompInputFile compPath)
-                (checkAll $ zonesFirst <$> timing tags')
+    either print (f . checkAll) tags
+    where
+        f = writeTime (IxTask <$> task) (Pilot <$> pilot) (CompInputFile compPath)
 
 writeTime :: [IxTask]
           -> [Pilot]
@@ -150,7 +143,7 @@ writeTime selectTasks selectPilots compFile f = do
 
             return ()
 
-checkAll :: [[Maybe UTCTime]]
+checkAll :: Tagging
          -> CompInputFile
          -> [IxTask]
          -> [Pilot]
@@ -163,7 +156,10 @@ checkAll :: [[Maybe UTCTime]]
                      (Pilot, Pilot -> [TimeRow])
                  ]
              ]
-checkAll ts = checkTracks $ \CompSettings{tasks} -> group ts tasks
+checkAll tags =
+    checkTracks $ (\CompSettings{tasks} ->
+        let ts = zonesFirst <$> timing tags
+        in group ts tasks)
 
 includeTask :: [IxTask] -> IxTask -> Bool
 includeTask tasks = if null tasks then const True else (`elem` tasks)
