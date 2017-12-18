@@ -58,7 +58,7 @@ import Flight.TrackLog (IxTask(..))
 import Flight.Units ()
 import qualified Flight.Mask as Mask (distanceToGoal)
 import Flight.Mask
-    ( SigMasking, TaskZone, Ticked, RaceSections(..)
+    ( SigMasking, TaskZone, RaceSections(..)
     , checkTracks, distanceFlown, zoneToCylinder
     )
 import Flight.Track.Mask
@@ -271,7 +271,7 @@ flown' dTaskF@(TaskDistance td) math tags tasks iTask@(IxTask i) xs p =
         (Just a, Just b) -> (Just (a, b), Nothing)
     where
         ticked =
-            fromMaybe noneTicked
+            fromMaybe (RaceSections [] [] [])
             $ join ((\f -> f p speedSection' iTask xs) <$> lookupTicked)
 
         pilotTime =
@@ -377,9 +377,6 @@ nextCutR x@AngleCut{sweep} =
 nextCutF :: AngleCut Double -> AngleCut Double
 nextCutF x@AngleCut{sweep} =
     let (Bearing b) = sweep in x{sweep = Bearing $ b /: 2}
-
-noneTicked :: Ticked
-noneTicked = RaceSections [] [] []
 
 diffTimeHours :: StartEnd -> PilotTime
 diffTimeHours (start, end) =

@@ -26,8 +26,8 @@ import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Data.Time.Clock (UTCTime, diffUTCTime)
-import Data.Maybe (catMaybes)
-import Control.Monad (mapM_, when, zipWithM_)
+import Data.Maybe (catMaybes, fromMaybe)
+import Control.Monad (join, mapM_, when, zipWithM_)
 import Control.Monad.Except (ExceptT, runExceptT)
 import Data.UnitsOfMeasure ((/:), u, convert, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
@@ -56,7 +56,7 @@ import Flight.Comp
 import Flight.TrackLog (IxTask(..))
 import Flight.Units ()
 import Flight.Mask
-    (TaskZone, SigMasking, Ticked, RaceSections(..)
+    (TaskZone, SigMasking, RaceSections(..)
     , checkTracks, groupByLeg, distancesToGoal, zoneToCylinder
     )
 import Flight.Track.Cross (Fix(..))
@@ -72,6 +72,7 @@ import Flight.PointToPoint.Double
     (distanceHaversine, distancePointToPoint, costSegment)
 import Flight.Cylinder.Double (circumSample)
 import Flight.Scribe (readTagging, writeAlignTime)
+import Flight.Lookup.Tag (TickedLookup(..), tagTicked)
 
 type Leg = Int
 
@@ -156,10 +157,7 @@ checkAll :: Tagging
                      (Pilot, Pilot -> [TimeRow])
                  ]
              ]
-checkAll tags =
-    checkTracks $ (\CompSettings{tasks} ->
-        let ts = zonesFirst <$> timing tags
-        in group ts tasks)
+checkAll tags = checkTracks $ (\CompSettings{tasks} -> group tags tasks)
 
 includeTask :: [IxTask] -> IxTask -> Bool
 includeTask tasks = if null tasks then const True else (`elem` tasks)
@@ -199,27 +197,27 @@ mkTimeRow (Just t0) leg (Just Fix{time, lat, lng}, Just d) =
             , distance = unTaskDistance d
             }
 
-group :: [[Maybe UTCTime]] -> SigMasking (Pilot -> [TimeRow])
-group ts tasks iTask fs =
-    \ _ ->
-        concat $ zipWith3 (legDistances ts tasks iTask)
-            [1 .. ]
-            speedLegs
-            ys
+group :: Tagging -> SigMasking (Pilot -> [TimeRow])
+group tags tasks iTask fs p =
+    concat $ zipWith3 (legDistances tags tasks iTask p)
+        [1 .. ]
+        speedLegs
+        ys
     where
         speedLegs = speedSection <$> tasks
 
         ys :: [MarkedFixes]
         ys = groupByLeg span zoneToCyl tasks iTask fs
 
-legDistances :: [[Maybe UTCTime]]
+legDistances :: Tagging
              -> [Task]
              -> IxTask
+             -> Pilot
              -> Leg
              -> SpeedSection
              -> MarkedFixes
              -> [TimeRow]
-legDistances ts tasks iTask leg speedSection xs =
+legDistances tags tasks iTask p leg speedSection xs =
     case speedSection of
         Nothing ->
             []
@@ -228,13 +226,9 @@ legDistances ts tasks iTask leg speedSection xs =
             if leg' < start || leg' > end then [] else
             mkTimeRows t0 leg xs'
             where
-                ticked :: Ticked
                 ticked =
-                    RaceSections
-                        []
-                        -- TODO: Read ticked for align-times.
-                        (replicate (leg - fromInteger start) 0)
-                        []
+                    fromMaybe (RaceSections [] [] [])
+                    $ join ((\f -> f p speedSection iTask xs) <$> lookupTicked)
 
                 xs' = distancesToGoal ticked span dpp cseg cs cut zoneToCyl tasks iTask xs
     where
@@ -242,6 +236,8 @@ legDistances ts tasks iTask leg speedSection xs =
         t0 = firstCrossing iTask speedSection ts
         dpp = distancePointToPoint
         cseg = costSegment span
+        ts = zonesFirst <$> timing tags
+        (TickedLookup lookupTicked) = tagTicked (Right tags)
 
 firstCrossing :: IxTask -> SpeedSection -> [[Maybe UTCTime]] -> Maybe UTCTime
 

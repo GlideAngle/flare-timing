@@ -166,6 +166,7 @@ executables:
     - flight-task
     - flight-gap
     - flight-mask
+    - flight-lookup
     - flight-scribe
     ghc-options:
     - -rtsopts
