@@ -124,17 +124,12 @@ includeTask tasks = if null tasks then const True else (`elem` tasks)
 readFilterWrite :: CompInputFile -> Int -> Pilot -> IO ()
 readFilterWrite compFile iTask pilot = do
     _ <- createDirectoryIfMissing True dOut
-    rows <- runExceptT $ readAlignTime (AlignTimeFile (dIn </> f))
-    case rows of
-        Left msg ->
-            print msg
-
-        Right (_, xs) ->
-            writeDiscardFurther (DiscardFurtherFile $ dOut </> f) headers
-            $ discard xs
+    rows <- runExceptT $ readAlignTime (AlignTimeFile (dIn </> file))
+    either print (f . discard . snd) rows
     where
+        f = writeDiscardFurther (DiscardFurtherFile $ dOut </> file) headers
         dir = compFileToCompDir compFile
-        (AlignDir dIn, AlignTimeFile f) = alignPath dir iTask pilot
+        (AlignDir dIn, AlignTimeFile file) = alignPath dir iTask pilot
         (DiscardDir dOut) = discardDir dir iTask
 
 timeToTick :: TimeRow -> TickRow
