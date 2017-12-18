@@ -29,7 +29,7 @@ import qualified Flight.Kml as Kml (MarkedFixes(..))
 import Flight.Comp (TagZoneFile(..), SpeedSection, Pilot(..))
 import Flight.Track.Tag
     (Tagging(..), TrackTime(..), TrackTag(..), PilotTrackTag(..))
-import Flight.Mask (Ticked, Triage(..), slice, triage)
+import Flight.Mask (Ticked, RaceSections(..), slice, section)
 import Flight.Track.Cross (Fix(fix, time))
 
 type TaggingLookup a = Pilot -> SpeedSection -> IxTask -> Kml.MarkedFixes -> Maybe a
@@ -75,14 +75,14 @@ ticked x pilot speedSection (IxTask i) _ =
 -- | The time of the first and last fix in the list.
 tickedZones :: SpeedSection -> [Maybe Fix] -> Ticked
 tickedZones speedSection xs =
-    Triage
+    RaceSections
         { prolog = f prolog
         , race = f race
         , epilog = f epilog
         }
     where
         f = catMaybes . takeWhile isJust
-        Triage{..} = triage speedSection $ (fmap . fmap) fix xs
+        RaceSections{..} = section speedSection $ (fmap . fmap) fix xs
 
 tickedPilot :: SpeedSection -> PilotTrackTag -> Maybe Ticked
 tickedPilot _ (PilotTrackTag _ Nothing) = Nothing

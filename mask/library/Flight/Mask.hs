@@ -13,7 +13,7 @@ module Flight.Mask
     ( SigMasking
     , TaskZone
     , Ticked
-    , Triage(..)
+    , RaceSections(..)
     , SelectedCrossings(..)
     , NomineeCrossings(..)
     , MadeZones(..)
@@ -31,7 +31,7 @@ module Flight.Mask
     , timeFlown
     , zoneToCylinder
     , slice
-    , triage
+    , section
     ) where
 
 import Flight.Mask.Tag
@@ -39,4 +39,4 @@ import Flight.Mask.Distance
 import Flight.Mask.Time
 import Flight.Mask.Tracks
 import Flight.Mask.Internal
-    (TaskZone, Ticked, Triage(..), zoneToCylinder, slice, triage)
+    (TaskZone, Ticked, RaceSections(..), zoneToCylinder, slice, section)

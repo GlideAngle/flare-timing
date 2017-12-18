@@ -25,10 +25,10 @@ module Flight.Mask.Internal
     , TaskZone(..)
     , TrackZone(..)
     , Ticked
-    , Triage(..)
+    , RaceSections(..)
     , OrdCrossing(..)
     , slice
-    , triage
+    , section
     , fixToPoint
     , zoneToCylinder
     , isStartExit
@@ -90,10 +90,10 @@ mm30 = Tolerance . fromRational $ 30 % 1000
 -- | When working out distances around a course, if I know which zones are
 -- tagged then I can break up the track into legs and assume previous legs are
 -- ticked when working out distance to goal.
-type Ticked = Triage ZoneIdx
+type Ticked = RaceSections ZoneIdx
 
-data Triage a =
-    Triage
+data RaceSections a =
+    RaceSections
         { prolog :: [a]
         -- ^ Zones crossed before the start of the speed section.
         , race :: [a]
@@ -147,17 +147,17 @@ slice = \case
         in take (e - s + 1) . drop s
 
 -- | Slice a list into three parts, before, during and after the speed section.
-triage :: Cmp.SpeedSection -> [a] -> Triage a 
+section :: Cmp.SpeedSection -> [a] -> RaceSections a 
 
-triage Nothing xs =
-    Triage
+section Nothing xs =
+    RaceSections 
         { prolog = []
         , race = xs
         , epilog = []
         }
 
-triage (Just (s', e')) xs =
-    Triage
+section (Just (s', e')) xs =
+    RaceSections 
         { prolog = take s xs
         , race = take (e - s + 1) . drop s $ xs
         , epilog = drop (e + 1) xs
@@ -463,7 +463,8 @@ distanceViaZonesR _ _ _ _ _ _ _ _ _ _ [] =
     Nothing
 
 distanceViaZonesR
-    Triage{race = []} span dpp cseg cs cut mkZone speedSection _ zs (x : _) =
+    RaceSections{race = []}
+    span dpp cseg cs cut mkZone speedSection _ zs (x : _) =
     -- NOTE: Didn't make the start so skip the start.
     Just . edgesSum
     $ distanceEdgeToEdge span dpp cseg cs cut mm30 (cons mkZone x zsSkipStart)
@@ -473,7 +474,8 @@ distanceViaZonesR
         zsSkipStart = unTaskZone <$> drop 1 zsSpeed
 
 distanceViaZonesR
-    Triage{race} span dpp cseg cs cut mkZone speedSection _ zs (x : _) =
+    RaceSections{race}
+    span dpp cseg cs cut mkZone speedSection _ zs (x : _) =
     -- NOTE: I don't consider all fixes from last turnpoint made
     -- so this distance is the distance from the very last fix when
     -- at times on this leg the pilot may have been closer to goal.
