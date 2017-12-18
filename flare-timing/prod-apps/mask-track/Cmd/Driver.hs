@@ -265,10 +265,13 @@ flown' :: TaskDistance Double
        -> Either String Tagging
        -> SigMasking (Pilot -> FlightStats)
 flown' dTaskF@(TaskDistance td) math tags tasks iTask@(IxTask i) xs p =
-    case (pilotTime, arrivalRank) of
-        (Nothing, _) -> (Nothing, Just distance)
-        (_, Nothing) -> (Nothing, Just distance)
-        (Just a, Just b) -> (Just (a, b), Nothing)
+    case tasks ^? element (i - 1) of
+        Nothing -> (Nothing, Nothing)
+        Just task' ->
+            case (pilotTime, arrivalRank) of
+                (Nothing, _) -> (Nothing, Just $ distance task')
+                (_, Nothing) -> (Nothing, Just $ distance task')
+                (Just a, Just b) -> (Just (a, b), Nothing)
     where
         ticked =
             fromMaybe (RaceSections [] [] [])
@@ -282,10 +285,10 @@ flown' dTaskF@(TaskDistance td) math tags tasks iTask@(IxTask i) xs p =
             PositionAtEss . toInteger
             <$> join ((\f -> f p speedSection' iTask xs) <$> lookupArrivalRank)
 
-        distance =
+        distance task =
             TrackDistance
-                { togo = unTaskDistance <$> dg math
-                , made = fromRational <$> unPilotDistance <$> df math
+                { togo = unTaskDistance <$> dg task math
+                , made = fromRational <$> unPilotDistance <$> df task math
                 }
 
         dppR = Rat.distancePointToPoint
@@ -294,31 +297,31 @@ flown' dTaskF@(TaskDistance td) math tags tasks iTask@(IxTask i) xs p =
         csegR = Rat.costSegment spanR
         csegF = Dbl.costSegment spanF
 
-        dg :: Math -> Maybe (TaskDistance Double)
-        dg =
+        dg :: Task -> Math -> Maybe (TaskDistance Double)
+        dg task =
             \case
             Floating ->
                 Mask.distanceToGoal
                     ticked
                     spanF dppF csegF csF cutF
-                    zoneToCylF tasks iTask xs
+                    zoneToCylF task xs
 
             Rational ->
                 (\(TaskDistance d) -> TaskDistance $ fromRational' d) <$>
                 Mask.distanceToGoal
                     ticked
                     spanR dppR csegR csR cutR
-                    zoneToCylR tasks iTask xs
+                    zoneToCylR task xs
 
-        df :: Math -> Maybe (Gap.PilotDistance Double)
-        df =
+        df :: Task -> Math -> Maybe (Gap.PilotDistance Double)
+        df task =
             \case
             Floating ->
                 distanceFlown
                     dTaskF
                     ticked
                     spanF dppF csegF csF cutF
-                    zoneToCylF tasks iTask xs
+                    zoneToCylF task xs
 
             Rational ->
                 (\(Gap.PilotDistance d) -> Gap.PilotDistance $ fromRational d) <$>
@@ -326,7 +329,7 @@ flown' dTaskF@(TaskDistance td) math tags tasks iTask@(IxTask i) xs p =
                     dTaskR
                     ticked
                     spanR dppR csegR csR cutR
-                    zoneToCylR tasks iTask xs
+                    zoneToCylR task xs
 
         speedSection' =
             case tasks ^? element (fromIntegral i - 1) of

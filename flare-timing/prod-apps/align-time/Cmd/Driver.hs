@@ -26,6 +26,7 @@ import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Data.Time.Clock (UTCTime, diffUTCTime)
+import Control.Lens ((^?), element)
 import Data.Maybe (catMaybes, fromMaybe)
 import Control.Monad (join, mapM_, when, zipWithM_)
 import Control.Monad.Except (ExceptT, runExceptT)
@@ -217,12 +218,12 @@ legDistances :: Tagging
              -> SpeedSection
              -> MarkedFixes
              -> [TimeRow]
-legDistances tags tasks iTask p leg speedSection xs =
-    case speedSection of
-        Nothing ->
-            []
+legDistances tags tasks iTask@(IxTask i) p leg speedSection xs =
+    case (speedSection, tasks ^? element (i - 1)) of
+        (Nothing, _) -> []
+        (_, Nothing) -> []
 
-        Just (start, end) ->
+        (Just (start, end), Just task) ->
             if leg' < start || leg' > end then [] else
             mkTimeRows t0 leg xs'
             where
@@ -230,13 +231,13 @@ legDistances tags tasks iTask p leg speedSection xs =
                     fromMaybe (RaceSections [] [] [])
                     $ join ((\f -> f p speedSection iTask xs) <$> lookupTicked)
 
-                xs' = distancesToGoal ticked span dpp cseg cs cut zoneToCyl tasks iTask xs
+                xs' = distancesToGoal ticked span dpp cseg cs cut zoneToCyl task xs
+                t0 = firstCrossing iTask speedSection ts
+                ts = zonesFirst <$> timing tags
     where
         leg' = fromIntegral leg
-        t0 = firstCrossing iTask speedSection ts
         dpp = distancePointToPoint
         cseg = costSegment span
-        ts = zonesFirst <$> timing tags
         (TickedLookup lookupTicked) = tagTicked (Right tags)
 
 firstCrossing :: IxTask -> SpeedSection -> [[Maybe UTCTime]] -> Maybe UTCTime

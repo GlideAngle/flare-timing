@@ -69,7 +69,6 @@ import qualified Flight.Zone.Raw as Raw (RawZone(..))
 import Flight.Track.Cross (Fix(..))
 import qualified Flight.Comp as Cmp (Task(..), SpeedSection)
 import Flight.Units ()
-import Flight.Comp (IxTask(..))
 import Flight.Distance (TaskDistance(..), PathDistance(..))
 import Flight.Task
     ( Tolerance(..)
@@ -395,30 +394,27 @@ distanceToGoal :: (Real b, Fractional b)
                => SpanLatLng b
                -> (Raw.RawZone -> TaskZone b)
                -> DistanceViaZones _ _ _
-               -> [Cmp.Task]
-               -> IxTask
+               -> Cmp.Task
                -> Kml.MarkedFixes
                -> Maybe (TaskDistance b)
                -- ^ Nothing indicates no such task or a task with no zones.
-distanceToGoal span zoneToCyl dvz tasks (IxTask i) Kml.MarkedFixes{fixes} =
-    case tasks ^? element (i - 1) of
-        Nothing -> Nothing
-        Just task@Cmp.Task{speedSection, zones} ->
-            if null zones then Nothing else
-            dvz
-                fixToPoint
-                speedSection
-                fs
-                (zoneToCyl <$> zones)
-                fixes 
-            where
-                fs =
-                    (\x ->
-                        crossingPredicates
-                            span
-                            (isStartExit span zoneToCyl x)
-                            x)
-                    task
+distanceToGoal
+    span zoneToCyl dvz task@Cmp.Task{speedSection, zones} Kml.MarkedFixes{fixes} =
+    if null zones then Nothing else
+    dvz
+        fixToPoint
+        speedSection
+        fs
+        (zoneToCyl <$> zones)
+        fixes 
+    where
+        fs =
+            (\x ->
+                crossingPredicates
+                    span
+                    (isStartExit span zoneToCyl x)
+                    x)
+            task
 
 -- | A task is to be flown via its control zones. This function finds the last
 -- leg made. The next leg is partial. Along this, the track fixes are checked

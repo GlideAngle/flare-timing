@@ -155,6 +155,7 @@ executables:
     - cassava
     - vector
     - split
+    - lens
     - siggy-chardust
     - flight-cmd
     - flight-units
