@@ -51,6 +51,8 @@ tests:
     - numbers
     - aeson
     - cassava
+    - bytestring
+    - bifunctors
     - uom-plugin
     - formatting
     - text

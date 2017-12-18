@@ -64,6 +64,9 @@ tests:
     - directory
     - filepath
     - filemanip
+    - lens
+    - mtl
+    - uom-plugin
     - aeson-rational
     - flight-latlng
     - flight-zone
