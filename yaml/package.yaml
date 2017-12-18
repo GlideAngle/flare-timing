@@ -24,6 +24,7 @@ library:
   - filemanip
   - mtl
   - yaml
+  - vector
   - aeson-rational
   - flight-latlng
   - flight-zone
@@ -60,6 +61,7 @@ tests:
     - filemanip
     - mtl
     - yaml
+    - vector
     - aeson-rational
     - flight-latlng
     - flight-zone

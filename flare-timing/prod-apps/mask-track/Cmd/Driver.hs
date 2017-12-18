@@ -35,19 +35,15 @@ import Control.Monad.Except (ExceptT, runExceptT)
 import Data.UnitsOfMeasure ((/:), u, convert, toRational', fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import System.FilePath (takeFileName)
-import qualified Data.Yaml.Pretty as Y
-import qualified Data.ByteString as BS
 import qualified Data.Number.FixedFunctions as F
 import Data.Aeson.ViaScientific (ViaScientific(..))
 
 import Flight.Route (TaskRoutes(..))
-import Flight.Field (FieldOrdering(..))
 import Flight.Comp
     ( Pilot(..)
     , CompInputFile(..)
     , TaskLengthFile(..)
     , TagZoneFile(..)
-    , MaskTrackFile(..)
     , CompSettings(..)
     , Task(..)
     , TrackFileFail(..)
@@ -87,7 +83,7 @@ import Flight.Lookup.Tag
     ( ArrivalRankLookup(..), PilotTimeLookup(..), TickedLookup(..), StartEnd
     , tagArrivalRank, tagPilotTime, tagTicked
     )
-import Flight.Yaml (readTags, readRoutes)
+import Flight.Yaml (readTagging, readRoute, writeMasking)
 import Flight.Lookup.TaskLength (TaskLengthLookup(..), routeLength)
 import qualified Flight.Score as Gap (PilotDistance(..), bestTime)
 import Flight.Score
@@ -139,8 +135,8 @@ go CmdOptions{..} compFile@(CompInputFile compPath) = do
     putStrLn $ "Reading task length from '" ++ takeFileName lenPath ++ "'"
     putStrLn $ "Reading zone tags from '" ++ takeFileName tagPath ++ "'"
 
-    tags <- runExceptT $ readTags tagFile
-    lengths <- runExceptT $ readRoutes lenFile
+    tags <- runExceptT $ readTagging tagFile
+    lengths <- runExceptT $ readRoute lenFile
 
     writeMask
         (IxTask <$> task)
@@ -193,11 +189,7 @@ writeMask selectTasks selectPilots compFile f = do
                         , distance = d
                         }
 
-            let cfg = Y.setConfCompare (fieldOrder maskTrack) Y.defConfig
-            let yaml = Y.encodePretty cfg maskTrack
-            let MaskTrackFile maskPath = compToMask compFile
-
-            BS.writeFile maskPath yaml
+            writeMasking (compToMask compFile) maskTrack
 
 distances :: [(Pilot, FlightStats)] -> [(Pilot, TrackDistance)]
 distances xs =

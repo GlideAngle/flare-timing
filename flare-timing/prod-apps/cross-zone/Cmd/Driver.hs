@@ -28,13 +28,9 @@ import System.FilePath (takeFileName)
 import Flight.Cmd.Paths (checkPaths)
 import Flight.Cmd.Options (Math(..), CmdOptions(..), ProgramName(..), mkOptions)
 import Cmd.Options (description)
-import qualified Data.Yaml.Pretty as Y
-import qualified Data.ByteString as BS
 
-import Flight.Field (FieldOrdering(..))
 import Flight.Comp
     ( CompInputFile(..)
-    , CrossZoneFile(..)
     , CompSettings(..)
     , Pilot(..)
     , TrackFileFail(..)
@@ -54,6 +50,7 @@ import Flight.Mask
     , unSelectedCrossings, unNomineeCrossings
     , checkTracks, madeZones, zoneToCylinder
     )
+import Flight.Yaml (writeCrossing)
 
 driverMain :: IO ()
 driverMain = do
@@ -117,11 +114,7 @@ writeMask compFile task pilot f = do
                              , flying = (fmap . fmap . fmap . fmap) madeZonesToFlying ps
                              }
 
-            let cfg = Y.setConfCompare (fieldOrder crossZone) Y.defConfig
-            let yaml = Y.encodePretty cfg crossZone
-            let CrossZoneFile crossPath = compToCross compFile
-
-            BS.writeFile crossPath yaml
+            writeCrossing (compToCross compFile) crossZone
 
 madeZonesToCross :: MadeZones -> TrackCross
 madeZonesToCross x =

@@ -32,16 +32,12 @@ import Flight.Cmd.Paths (checkPaths)
 import Flight.Cmd.Options
     (CmdOptions(..), ProgramName(..), Extension(..), mkOptions)
 import Cmd.Options (description)
-import qualified Data.Yaml.Pretty as Y
-import qualified Data.ByteString as BS
 
-import Flight.Field (FieldOrdering(..))
 import Flight.Units ()
 import Flight.Mask (tagZones)
 import Flight.Comp
     ( Pilot(..)
     , CrossZoneFile(..)
-    , TagZoneFile(..)
     , crossToTag
     , findCrossZone
     )
@@ -49,7 +45,7 @@ import Flight.Track.Cross
     (Crossing(..), TrackCross(..), PilotTrackCross(..), Fix(..))
 import Flight.Track.Tag
     (Tagging(..), TrackTime(..), TrackTag(..), PilotTrackTag(..))
-import Cmd.Inputs (readCrossings)
+import Flight.Yaml (readCrossing, writeTagging)
 
 driverMain :: IO ()
 driverMain = do
@@ -75,7 +71,7 @@ drive o = do
 go :: CrossZoneFile -> IO ()
 go crossFile@(CrossZoneFile crossPath) = do
     putStrLn $ "Reading zone crossings from '" ++ takeFileName crossPath ++ "'"
-    cs <- runExceptT $ readCrossings crossFile
+    cs <- runExceptT $ readCrossing crossFile
 
     case cs of
         Left s -> putStrLn s
@@ -95,11 +91,7 @@ go crossFile@(CrossZoneFile crossPath) = do
                             , tagging = pss
                             }
 
-            let cfg = Y.setConfCompare (fieldOrder tagZone) Y.defConfig
-            let yaml = Y.encodePretty cfg tagZone
-            let TagZoneFile tagPath = crossToTag crossFile
-
-            BS.writeFile tagPath yaml
+            writeTagging (crossToTag crossFile) tagZone
 
 timed :: [PilotTrackTag] -> TrackTime
 timed xs =

@@ -17,13 +17,9 @@ import Flight.Cmd.Paths (checkPaths)
 import Cmd.Options (CmdOptions(..), mkOptions)
 import Flight.Fsdb
     (parseComp, parseNominal, parseTasks, parseTaskFolders, parseTracks)
-import qualified Data.Yaml.Pretty as Y
-import qualified Data.ByteString as BS
-import Flight.Field (FieldOrdering(..))
 import Flight.Comp
     ( FsdbFile(..)
     , FsdbXml(..)
-    , CompInputFile(..)
     , CompSettings(..)
     , Comp(..)
     , Nominal(..)
@@ -33,6 +29,7 @@ import Flight.Comp
     , fsdbToComp
     , findFsdb
     )
+import Flight.Yaml (writeComp)
 
 driverMain :: IO ()
 driverMain = do
@@ -55,16 +52,8 @@ go :: FsdbFile -> IO ()
 go fsdbFile@(FsdbFile fsdbPath) = do
     contents <- readFile fsdbPath
     let contents' = dropWhile (/= '<') contents
-
     settings <- runExceptT $ fsdbSettings (FsdbXml contents')
-    case settings of
-        Left msg -> print msg
-        Right compInput -> do
-            let cfg = Y.setConfCompare (fieldOrder compInput) Y.defConfig
-            let yaml = Y.encodePretty cfg compInput
-            let (CompInputFile compPath) = fsdbToComp fsdbFile
-
-            BS.writeFile compPath yaml
+    either print (writeComp (fsdbToComp fsdbFile)) settings
 
 fsdbComp :: FsdbXml -> ExceptT String IO Comp
 fsdbComp (FsdbXml contents) = do

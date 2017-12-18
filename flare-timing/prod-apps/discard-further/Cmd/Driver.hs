@@ -26,8 +26,6 @@ import qualified Data.Vector as V (fromList, toList)
 import Flight.Cmd.Paths (checkPaths)
 import Flight.Cmd.Options (CmdOptions(..), ProgramName(..), mkOptions)
 import Cmd.Options (description)
-import Cmd.Inputs (readTimeRowsFromCsv)
-import Cmd.Outputs (writeTimeRowsToCsv)
 
 import Flight.Comp
     ( DiscardDir(..)
@@ -47,6 +45,7 @@ import Flight.TrackLog (IxTask(..))
 import Flight.Units ()
 import Flight.Mask (checkTracks)
 import Flight.Track.Time (TimeRow(..), TickRow(..), discardFurther)
+import Flight.Yaml (readAlignTime, writeDiscardFurther)
 
 headers :: [String]
 headers = ["tick", "distance"]
@@ -125,13 +124,13 @@ includeTask tasks = if null tasks then const True else (`elem` tasks)
 readFilterWrite :: CompInputFile -> Int -> Pilot -> IO ()
 readFilterWrite compFile iTask pilot = do
     _ <- createDirectoryIfMissing True dOut
-    rows <- runExceptT $ readTimeRowsFromCsv (AlignTimeFile (dIn </> f))
+    rows <- runExceptT $ readAlignTime (AlignTimeFile (dIn </> f))
     case rows of
         Left msg ->
             print msg
 
         Right (_, xs) ->
-            writeTimeRowsToCsv (DiscardFurtherFile $ dOut </> f) headers
+            writeDiscardFurther (DiscardFurtherFile $ dOut </> f) headers
             $ discard xs
     where
         dir = compFileToCompDir compFile

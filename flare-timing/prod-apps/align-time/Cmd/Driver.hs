@@ -36,8 +36,6 @@ import System.FilePath ((</>), takeFileName)
 import Flight.Cmd.Paths (checkPaths)
 import Flight.Cmd.Options (CmdOptions(..), ProgramName(..), mkOptions)
 import Cmd.Options (description)
-import Cmd.Inputs (readTags)
-import Cmd.Outputs (writeTimeRowsToCsv)
 
 import Flight.Comp
     ( AlignDir(..)
@@ -73,6 +71,7 @@ import Flight.Task (SpanLatLng, CircumSample, AngleCut(..))
 import Flight.PointToPoint.Double
     (distanceHaversine, distancePointToPoint, costSegment)
 import Flight.Cylinder.Double (circumSample)
+import Flight.Yaml (readTagging, writeAlignTime)
 
 type Leg = Int
 
@@ -108,7 +107,7 @@ go CmdOptions{..} compFile@(CompInputFile compPath) = do
     putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
     putStrLn $ "Reading zone tags from '" ++ takeFileName tagPath ++ "'"
 
-    tags <- runExceptT $ readTags tagFile
+    tags <- runExceptT $ readTagging tagFile
     case tags of
         Left msg ->
             print msg
@@ -172,7 +171,7 @@ includeTask tasks = if null tasks then const True else (`elem` tasks)
 writePilotTimes :: CompInputFile -> Int -> (Pilot, [TimeRow]) -> IO ()
 writePilotTimes compFile iTask (pilot, rows) = do
     _ <- createDirectoryIfMissing True dOut
-    _ <- writeTimeRowsToCsv (AlignTimeFile $ dOut </> f) headers rows
+    _ <- writeAlignTime (AlignTimeFile $ dOut </> f) headers rows
     return ()
     where
         dir = compFileToCompDir compFile
