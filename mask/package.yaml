@@ -25,7 +25,7 @@ library:
   - uom-plugin
   - fgl
   - cmdargs
-  - aeson-rational
+  - aeson-via
   - flight-units
   - flight-comp
   - flight-kml
@@ -64,7 +64,7 @@ tests:
     - fgl
     - uom-plugin
     - cmdargs
-    - aeson-rational
+    - aeson-via
     - flight-units
     - flight-comp
     - flight-kml

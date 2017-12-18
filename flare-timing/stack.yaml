@@ -3,7 +3,7 @@ packages:
 - location: .
 - location: ../cmd
   extra-dep: true
-- location: ../aeson-rational
+- location: ../aeson-via
   extra-dep: true
 - location: ../units
   extra-dep: true

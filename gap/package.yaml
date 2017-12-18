@@ -14,7 +14,7 @@ library:
   - vector
   - statistics
   - aeson
-  - aeson-rational
+  - aeson-via
   - newtype
   source-dirs: library
   exposed-modules:
@@ -38,7 +38,7 @@ tests:
     - statistics
     - newtype
     - aeson
-    - aeson-rational
+    - aeson-via
     ghc-options:
     - -rtsopts
     - -threaded

@@ -21,7 +21,7 @@ library:
   - formatting
   - text
   - newtype
-  - aeson-rational
+  - aeson-via
   - siggy-chardust
   - flight-units
   source-dirs: library
@@ -57,7 +57,7 @@ tests:
     - formatting
     - text
     - newtype
-    - aeson-rational
+    - aeson-via
     - siggy-chardust
     - flight-units
     - hlint

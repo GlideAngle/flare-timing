@@ -99,18 +99,18 @@ lintRules = do
 
     phony "lint" $ need
         $ "lint-build"
-        : "lint-aeson-rational"
+        : "lint-aeson-via"
         : "lint-siggy-chardust"
         : "lint-tasty-compare"
         : "lint-flare-timing"
         : "lint-www"
         : (prefix "lint-" <$> lintPkgs)
 
-    phony "lint-aeson-rational" $
+    phony "lint-aeson-via" $
         cmd
-            (Cwd "aeson-rational")
+            (Cwd "aeson-via")
             Shell
-            (cmdTestFor "aeson-rational:hlint")
+            (cmdTestFor "aeson-via:hlint")
 
     phony "lint-siggy-chardust" $
         cmd

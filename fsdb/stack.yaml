@@ -1,7 +1,7 @@
 flags: {}
 packages:
 - location: .
-- location: ../aeson-rational
+- location: ../aeson-via
   extra-dep: true
 - location: ../siggy-chardust
   extra-dep: true

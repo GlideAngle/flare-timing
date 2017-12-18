@@ -1,7 +1,7 @@
 flags: {}
 packages:
 - '.'
-- location: ../aeson-rational
+- location: ../aeson-via
   extra-dep: true
 extra-deps: []
 resolver: nightly-2017-12-09

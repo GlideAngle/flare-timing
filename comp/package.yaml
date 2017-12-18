@@ -27,7 +27,7 @@ library:
   - lens
   - mtl
   - uom-plugin
-  - aeson-rational
+  - aeson-via
   - flight-latlng
   - flight-zone
   - flight-gap
@@ -67,7 +67,7 @@ tests:
     - lens
     - mtl
     - uom-plugin
-    - aeson-rational
+    - aeson-via
     - flight-latlng
     - flight-zone
     - flight-gap

@@ -25,7 +25,7 @@ library:
   - mtl
   - yaml
   - vector
-  - aeson-rational
+  - aeson-via
   - flight-latlng
   - flight-zone
   - flight-gap
@@ -62,7 +62,7 @@ tests:
     - mtl
     - yaml
     - vector
-    - aeson-rational
+    - aeson-via
     - flight-latlng
     - flight-zone
     - flight-gap
