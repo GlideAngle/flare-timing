@@ -27,7 +27,8 @@ import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import Flight.Pilot (Pilot(..), TrackFileFail)
 import Flight.LatLng.Raw (RawLat, RawLng)
-import Flight.Comp (FieldOrdering(..), FlyingSection)
+import Flight.Field (FieldOrdering(..))
+import Flight.Comp (FlyingSection)
 import Data.Aeson.ViaScientific (ViaScientific(..))
 
 -- | For each task, the crossing for that task.

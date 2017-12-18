@@ -6,41 +6,38 @@ extra-source-files:
 - changelog.md
 - README.md
 - stack.yaml
-ghc-options:
-- -Wall
-- -fplugin Data.UnitsOfMeasure.Plugin
+ghc-options: -Wall
 library:
   dependencies:
   - base >=4.5 && <5
-  - numbers
+  - split
+  - path
   - aeson
+  - scientific
+  - containers
+  - unordered-containers
+  - time
   - cassava
   - bytestring
-  - bifunctors
-  - uom-plugin
-  - formatting
-  - text
-  - newtype
+  - directory
+  - filepath
+  - filemanip
+  - mtl
+  - yaml
   - aeson-rational
-  - siggy-chardust
-  - flight-units
+  - flight-latlng
+  - flight-zone
+  - flight-gap
+  - flight-comp
   source-dirs: library
   exposed-modules:
-  - Flight.Field
-  - Flight.EastNorth
-  - Flight.LatLng
-  - Flight.LatLng.Raw
-  - Flight.LatLng.Double
-  - Flight.LatLng.Float
-  - Flight.LatLng.Rational
-  - Flight.Route
-  - Flight.Distance
+  - Flight.Yaml
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
-name: flight-latlng
-synopsis: Latitude and longitude as used in hang gliding and paragliding competitions.
-description: Latitude and longitude.
-category: Flight
+name: flight-yaml
+synopsis: Hang gliding and paragliding competition scoring yaml files.
+description: Reading competition scoring yaml files.
+category: Data
 license: BSD3
 license-file: LICENSE.md
 github: BlockScope/flare-timing
@@ -48,17 +45,26 @@ tests:
   hlint:
     dependencies:
     - base
-    - numbers
-    - aeson
-    - cassava
-    - uom-plugin
-    - formatting
-    - text
-    - newtype
-    - aeson-rational
-    - siggy-chardust
-    - flight-units
     - hlint
+    - split
+    - path
+    - aeson
+    - scientific
+    - containers
+    - unordered-containers
+    - time
+    - cassava
+    - bytestring
+    - directory
+    - filepath
+    - filemanip
+    - mtl
+    - yaml
+    - aeson-rational
+    - flight-latlng
+    - flight-zone
+    - flight-gap
+    - flight-comp
     ghc-options:
     - -rtsopts
     - -threaded
@@ -67,4 +73,3 @@ tests:
     source-dirs:
     - library
     - test-suite-hlint
-version: '0.1.0'

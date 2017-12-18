@@ -20,6 +20,7 @@ module Flight.Comp
     , UtcOffset(..)
     -- * Task
     , Task(..)
+    , IxTask(..)
     , SpeedSection
     , StartGate(..)
     , OpenClose(..)
@@ -33,7 +34,6 @@ module Flight.Comp
     , FlyingSection
     -- * Comp paths
     , module Flight.Path
-    , FieldOrdering(..)
     ) where
 
 import Data.Time.Clock (UTCTime)
@@ -43,8 +43,12 @@ import Data.List (intercalate)
 import Data.String (IsString())
 
 import Flight.Zone.Raw (RawZone, showZone)
+import Flight.Field (FieldOrdering(..))
 import Flight.Pilot
 import Flight.Path
+
+-- | 1-based indices of a task in a competition.
+newtype IxTask = IxTask Int deriving (Eq, Show)
 
 -- | A 1-based index into the list of control zones marking the speed section.
 type SpeedSection = Maybe (Integer, Integer)
@@ -133,9 +137,6 @@ showTask Task {taskName, zones, speedSection, zoneTimes, startGates} =
             , ", start gates "
             , intercalate ", " $ show <$> startGates 
             ]
-
-class FieldOrdering b where
-    fieldOrder :: (Ord a, IsString a) => b -> (a -> a -> Ordering)
 
 instance FieldOrdering CompSettings where
     fieldOrder _ = cmp

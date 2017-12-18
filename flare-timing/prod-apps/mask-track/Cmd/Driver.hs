@@ -39,8 +39,9 @@ import qualified Data.Yaml.Pretty as Y
 import qualified Data.ByteString as BS
 import qualified Data.Number.FixedFunctions as F
 import Data.Aeson.ViaScientific (ViaScientific(..))
-import Flight.TaskTrack (TaskRoutes(..))
 
+import Flight.Route (TaskRoutes(..))
+import Flight.Field (FieldOrdering(..))
 import Flight.Comp
     ( Pilot(..)
     , CompInputFile(..)
@@ -50,14 +51,13 @@ import Flight.Comp
     , CompSettings(..)
     , Task(..)
     , TrackFileFail(..)
-    , FieldOrdering(..)
     , compToTaskLength
     , compToCross
     , compToMask
     , crossToTag
     , findCompInput
     )
-import qualified Flight.Task as Tsk (TaskDistance(..))
+import Flight.Distance (TaskDistance(..))
 import Flight.TrackLog (IxTask(..))
 import Flight.Units ()
 import qualified Flight.Mask as Mask (distanceToGoal)
@@ -83,12 +83,12 @@ import qualified Flight.Cylinder.Double as Dbl (circumSample)
 import Flight.Cmd.Paths (checkPaths)
 import Flight.Cmd.Options (Math(..), CmdOptions(..), ProgramName(..), mkOptions)
 import Cmd.Options (description)
-import Cmd.Inputs.TagZone
+import Flight.Lookup.Tag
     ( ArrivalRankLookup(..), PilotTimeLookup(..), TickedLookup(..), StartEnd
-    , tagArrivalRank, tagPilotTime, tagTicked, readTags
+    , tagArrivalRank, tagPilotTime, tagTicked
     )
-import Cmd.Inputs.TaskLength
-    (TaskLengthLookup(..), readLengths, routeLength)
+import Flight.Yaml (readTags, readRoutes)
+import Flight.Lookup.TaskLength (TaskLengthLookup(..), routeLength)
 import qualified Flight.Score as Gap (PilotDistance(..), bestTime)
 import Flight.Score
     ( PilotsAtEss(..)
@@ -108,8 +108,8 @@ driverMain = do
     err <- checkPaths options
     maybe (drive options) putStrLn err
 
-unTaskDistance :: (Real a, Fractional a) => Tsk.TaskDistance a -> a
-unTaskDistance (Tsk.TaskDistance d) =
+unTaskDistance :: (Real a, Fractional a) => TaskDistance a -> a
+unTaskDistance (TaskDistance d) =
     fromRational $ dpRound 3 dKm
     where 
         MkQuantity dKm = toRational' $ convert d :: Quantity _ [u| km |]
@@ -140,7 +140,7 @@ go CmdOptions{..} compFile@(CompInputFile compPath) = do
     putStrLn $ "Reading zone tags from '" ++ takeFileName tagPath ++ "'"
 
     tags <- runExceptT $ readTags tagFile
-    lengths <- runExceptT $ readLengths lenFile
+    lengths <- runExceptT $ readRoutes lenFile
 
     writeMask
         (IxTask <$> task)
@@ -268,11 +268,11 @@ flown routes math tags tasks iTask xs =
         taskLength = join ((\f -> f iTask) <$> lookupTaskLength)
         (TaskLengthLookup lookupTaskLength) = routeLength routes
 
-flown' :: Tsk.TaskDistance Double
+flown' :: TaskDistance Double
        -> Math
        -> Either String Tagging
        -> SigMasking (Pilot -> FlightStats)
-flown' dTaskF@(Tsk.TaskDistance td) math tags tasks iTask@(IxTask i) xs p =
+flown' dTaskF@(TaskDistance td) math tags tasks iTask@(IxTask i) xs p =
     case (pilotTime, arrivalRank) of
         (Nothing, _) -> (Nothing, Just distance)
         (_, Nothing) -> (Nothing, Just distance)
@@ -302,7 +302,7 @@ flown' dTaskF@(Tsk.TaskDistance td) math tags tasks iTask@(IxTask i) xs p =
         csegR = Rat.costSegment spanR
         csegF = Dbl.costSegment spanF
 
-        dg :: Math -> Maybe (Tsk.TaskDistance Double)
+        dg :: Math -> Maybe (TaskDistance Double)
         dg =
             \case
             Floating ->
@@ -312,7 +312,7 @@ flown' dTaskF@(Tsk.TaskDistance td) math tags tasks iTask@(IxTask i) xs p =
                     zoneToCylF tasks iTask xs
 
             Rational ->
-                (\(Tsk.TaskDistance d) -> Tsk.TaskDistance $ fromRational' d) <$>
+                (\(TaskDistance d) -> TaskDistance $ fromRational' d) <$>
                 Mask.distanceToGoal
                     ticked
                     spanR dppR csegR csR cutR
@@ -344,7 +344,7 @@ flown' dTaskF@(Tsk.TaskDistance td) math tags tasks iTask@(IxTask i) xs p =
         (TickedLookup lookupTicked) = tagTicked tags
         (ArrivalRankLookup lookupArrivalRank) = tagArrivalRank tags
         (PilotTimeLookup lookupPilotTime) = tagPilotTime tags
-        dTaskR = Tsk.TaskDistance $ toRational' td
+        dTaskR = TaskDistance $ toRational' td
 
 zoneToCylR :: RawZone -> TaskZone Rational
 zoneToCylR = zoneToCylinder

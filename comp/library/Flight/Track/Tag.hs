@@ -23,7 +23,7 @@ import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import Flight.Pilot (Pilot(..))
 import Flight.Track.Cross (Fix)
-import Flight.Comp (FieldOrdering(..))
+import Flight.Field (FieldOrdering(..))
 
 -- | For each task, the timing and tagging for that task.
 data Tagging =

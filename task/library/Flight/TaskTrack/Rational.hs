@@ -40,7 +40,7 @@ import Flight.Projected.Internal (zoneToProjectedEastNorth)
 import Flight.PointToPoint.Segment (SpanLatLng)
 import Flight.PointToPoint.Rational
     (distancePointToPoint, costSegment, distanceHaversine)
-import Flight.TaskTrack
+import Flight.Route
     ( TaskDistanceMeasure(..)
     , TaskTrack(..)
     , TrackLine(..)

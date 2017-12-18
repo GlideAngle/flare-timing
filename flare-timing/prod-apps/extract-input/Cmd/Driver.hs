@@ -19,6 +19,7 @@ import Flight.Fsdb
     (parseComp, parseNominal, parseTasks, parseTaskFolders, parseTracks)
 import qualified Data.Yaml.Pretty as Y
 import qualified Data.ByteString as BS
+import Flight.Field (FieldOrdering(..))
 import Flight.Comp
     ( FsdbFile(..)
     , FsdbXml(..)
@@ -29,7 +30,6 @@ import Flight.Comp
     , Task(..)
     , TaskFolder(..)
     , PilotTrackLogFile(..)
-    , FieldOrdering(..)
     , fsdbToComp
     , findFsdb
     )

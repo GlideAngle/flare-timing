@@ -18,19 +18,18 @@ import Cmd.Settings (readCompSettings)
 import qualified Data.Yaml.Pretty as Y
 import qualified Data.ByteString as BS
 
+import Flight.Field (FieldOrdering(..))
 import Flight.Units ()
 import Flight.Comp
     ( CompSettings(tasks)
     , Task(zones)
     , CompInputFile(..)
     , TaskLengthFile(..)
-    , FieldOrdering(..)
     , compToTaskLength
     , findCompInput
     )
 import Flight.TaskTrack.Rational (taskTracks)
-import qualified Flight.TaskTrack as TZ
-    (TaskTrack(..), TaskRoutes(..))
+import Flight.Route (TaskTrack(..), TaskRoutes(..))
 
 driverMain :: IO ()
 driverMain = do
@@ -63,10 +62,10 @@ go CmdOptions{..} compFile@(CompInputFile compPath) = do
                 (compToTaskLength compFile)
                 (taskTracks noTaskWaypoints includeTask measure zs)
 
-writeTaskLength :: TaskLengthFile -> [Maybe TZ.TaskTrack] -> IO ()
+writeTaskLength :: TaskLengthFile -> [Maybe TaskTrack] -> IO ()
 writeTaskLength (TaskLengthFile lenPath) os = 
     BS.writeFile lenPath yaml
     where
-        taskLength = TZ.TaskRoutes { taskRoutes = os }
+        taskLength = TaskRoutes { taskRoutes = os }
         cfg = Y.setConfCompare (fieldOrder taskLength) Y.defConfig
         yaml = Y.encodePretty cfg taskLength

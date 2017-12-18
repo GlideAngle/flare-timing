@@ -19,6 +19,7 @@ executables:
     - clock
     - formatting
     - flight-cmd
+    - flight-latlng
     - flight-comp
     - flight-fsdb
     ghc-options:
@@ -46,6 +47,7 @@ executables:
     - formatting
     - flight-cmd
     - flight-units
+    - flight-latlng
     - flight-comp
     - flight-task
     ghc-options:
@@ -76,8 +78,8 @@ executables:
     - siggy-chardust
     - flight-cmd
     - flight-units
-    - flight-comp
     - flight-latlng
+    - flight-comp
     - flight-kml
     - flight-track
     - flight-zone
@@ -113,6 +115,7 @@ executables:
     - siggy-chardust
     - flight-cmd
     - flight-units
+    - flight-latlng
     - flight-comp
     - flight-kml
     - flight-track
@@ -240,6 +243,8 @@ executables:
     - flight-task
     - flight-gap
     - flight-mask
+    - flight-lookup
+    - flight-yaml
     ghc-options:
     - -rtsopts
     - -threaded

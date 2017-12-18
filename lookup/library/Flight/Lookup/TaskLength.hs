@@ -1,33 +1,38 @@
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE QuasiQuotes #-}
+
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module Cmd.Inputs.TaskLength
+module Flight.Lookup.TaskLength
     ( TaskLengthLookup(..)
-    , readLengths
     , routeLength
     ) where
 
 import Prelude hiding (length)
 import Control.Monad (join)
-import Control.Monad.Except (ExceptT(..), lift)
-import qualified Data.ByteString as BS
-import Data.Yaml (decodeEither)
 import Control.Lens ((^?), element)
-import Flight.TaskTrack (TaskRoutes(..), TaskTrack(..), TrackLine(..))
-import Flight.TrackLog (IxTask(..))
-import Flight.TaskTrack.Double (fromKm)
-import Flight.Task (TaskDistance(..))
-import Flight.Comp (TaskLengthFile(..))
+import Data.UnitsOfMeasure (u, convert)
+import Data.UnitsOfMeasure.Internal (Quantity(..))
+
+import Flight.Route (TaskRoutes(..), TaskTrack(..), TrackLine(..))
+import Flight.Distance (TaskDistance(..))
+import Flight.Comp (IxTask(..))
 
 type RoutesLookup a = IxTask -> Maybe a
 
 newtype TaskLengthLookup =
     TaskLengthLookup (Maybe (RoutesLookup (TaskDistance Double)))
 
-readLengths :: TaskLengthFile -> ExceptT String IO TaskRoutes
-readLengths (TaskLengthFile path) = do
-    contents <- lift $ BS.readFile path
-    ExceptT . return $ decodeEither contents
+-- | Convert from double with kilometres implied to metres.
+fromKm :: Double -> TaskDistance Double
+fromKm dRawKm =
+    TaskDistance dm
+    where 
+        dKm :: Quantity Double [u| km |]
+        dKm = MkQuantity dRawKm
+
+        dm = convert dKm :: Quantity Double [u| m |]
 
 routeLength :: Either String TaskRoutes -> TaskLengthLookup
 routeLength (Left _) = TaskLengthLookup Nothing

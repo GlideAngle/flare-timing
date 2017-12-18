@@ -22,7 +22,6 @@ library:
   - hcoord
   - aeson-rational
   - siggy-chardust
-  - flight-comp
   - flight-units
   - flight-latlng
   - flight-zone
@@ -62,7 +61,6 @@ tests:
     - aeson-rational
     - siggy-chardust
     - tasty-compare
-    - flight-comp
     - flight-units
     - flight-latlng
     - flight-zone

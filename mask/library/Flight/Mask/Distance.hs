@@ -31,22 +31,12 @@ import qualified Flight.Comp as Cmp (Task(..))
 import Flight.TrackLog (IxTask(..))
 import Flight.Score (PilotDistance(..))
 import Flight.Units ()
-import Flight.Mask.Internal
-    ( TaskZone(..)
-    , Ticked
-    , fixFromFix
-    , distanceViaZones
-    )
+import Flight.Mask.Internal (TaskZone(..), Ticked, fixFromFix, distanceViaZones)
 import qualified Flight.Mask.Internal as I (distanceToGoal)
 import qualified Flight.Zone.Raw as Raw (RawZone(..))
+import Flight.Distance (TaskDistance(..))
 import Flight.Task
-    ( TaskDistance(..)
-    , SpanLatLng
-    , CostSegment
-    , DistancePointToPoint
-    , AngleCut(..)
-    , CircumSample
-    )
+    (SpanLatLng, CostSegment, DistancePointToPoint, AngleCut(..), CircumSample)
 
 distancesToGoal :: (Real a, Fractional a)
                 => Ticked

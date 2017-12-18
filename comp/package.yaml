@@ -6,7 +6,9 @@ extra-source-files:
 - changelog.md
 - README.md
 - stack.yaml
-ghc-options: -Wall
+ghc-options:
+- -Wall
+- -fplugin Data.UnitsOfMeasure.Plugin
 library:
   dependencies:
   - base >=4.5 && <5
@@ -22,6 +24,9 @@ library:
   - directory
   - filepath
   - filemanip
+  - lens
+  - mtl
+  - uom-plugin
   - aeson-rational
   - flight-latlng
   - flight-zone
@@ -33,7 +38,6 @@ library:
   - Flight.Track.Tag
   - Flight.Track.Mask
   - Flight.Track.Time
-  - Flight.TaskTrack
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
 name: flight-comp

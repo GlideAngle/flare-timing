@@ -20,7 +20,7 @@ import System.Console.CmdArgs.Implicit
     , help
     , (&=)
     )
-import Flight.TaskTrack (TaskDistanceMeasure(..))
+import Flight.Route (TaskDistanceMeasure(..))
 
 deriving instance Data TaskDistanceMeasure
 

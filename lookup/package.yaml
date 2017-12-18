@@ -12,35 +12,39 @@ ghc-options:
 library:
   dependencies:
   - base >=4.5 && <5
-  - numbers
+  - split
+  - path
   - aeson
+  - scientific
+  - containers
+  - unordered-containers
+  - time
   - cassava
   - bytestring
-  - bifunctors
+  - directory
+  - filepath
+  - filemanip
+  - lens
+  - mtl
+  - hcoord
   - uom-plugin
-  - formatting
-  - text
-  - newtype
   - aeson-rational
-  - siggy-chardust
-  - flight-units
+  - flight-latlng
+  - flight-zone
+  - flight-gap
+  - flight-comp
+  - flight-kml
+  - flight-mask
   source-dirs: library
   exposed-modules:
-  - Flight.Field
-  - Flight.EastNorth
-  - Flight.LatLng
-  - Flight.LatLng.Raw
-  - Flight.LatLng.Double
-  - Flight.LatLng.Float
-  - Flight.LatLng.Rational
-  - Flight.Route
-  - Flight.Distance
+  - Flight.Lookup.Tag
+  - Flight.Lookup.TaskLength
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
-name: flight-latlng
-synopsis: Latitude and longitude as used in hang gliding and paragliding competitions.
-description: Latitude and longitude.
-category: Flight
+name: flight-lookup
+synopsis: Hang gliding and paragliding competition data access.
+description: Lookup items for a task, for a pilot, etc.
+category: Data
 license: BSD3
 license-file: LICENSE.md
 github: BlockScope/flare-timing
@@ -48,17 +52,30 @@ tests:
   hlint:
     dependencies:
     - base
-    - numbers
-    - aeson
-    - cassava
-    - uom-plugin
-    - formatting
-    - text
-    - newtype
-    - aeson-rational
-    - siggy-chardust
-    - flight-units
     - hlint
+    - split
+    - path
+    - aeson
+    - scientific
+    - containers
+    - unordered-containers
+    - time
+    - cassava
+    - bytestring
+    - directory
+    - filepath
+    - filemanip
+    - lens
+    - mtl
+    - hcoord
+    - uom-plugin
+    - aeson-rational
+    - flight-latlng
+    - flight-zone
+    - flight-gap
+    - flight-comp
+    - flight-kml
+    - flight-mask
     ghc-options:
     - -rtsopts
     - -threaded
@@ -67,4 +84,3 @@ tests:
     source-dirs:
     - library
     - test-suite-hlint
-version: '0.1.0'

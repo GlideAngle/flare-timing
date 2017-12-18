@@ -31,7 +31,7 @@ import Flight.Score
     , PilotTime(..)
     )
 import Data.Aeson.ViaScientific (ViaScientific(..))
-import Flight.Comp (FieldOrdering(..))
+import Flight.Field (FieldOrdering(..))
 
 -- | For each task, the masking for that task.
 data Masking =

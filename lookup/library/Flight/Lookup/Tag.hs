@@ -5,12 +5,11 @@
 
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module Cmd.Inputs.TagZone
+module Flight.Lookup.Tag
     ( ArrivalRankLookup(..)
     , PilotTimeLookup(..)
     , TickedLookup(..)
     , StartEnd
-    , readTags
     , tagArrivalRank
     , tagPilotTime
     , tagTicked
@@ -20,13 +19,9 @@ import Data.Time.Clock (UTCTime)
 import Data.List (find, elemIndex)
 import Data.Maybe (catMaybes, listToMaybe, isJust)
 import Control.Monad (join)
-import Control.Monad.Except (ExceptT(..), lift)
 import Control.Lens ((^?), element)
-import qualified Data.ByteString as BS
-import Data.Yaml (decodeEither)
-import Flight.TrackLog (IxTask(..))
 import qualified Flight.Kml as Kml (MarkedFixes(..))
-import Flight.Comp (TagZoneFile(..), SpeedSection, Pilot(..))
+import Flight.Comp (IxTask(..), SpeedSection, Pilot(..))
 import Flight.Track.Tag
     (Tagging(..), TrackTime(..), TrackTag(..), PilotTrackTag(..))
 import Flight.Mask (Ticked, RaceSections(..), slice, section)
@@ -39,11 +34,6 @@ newtype PilotTimeLookup = PilotTimeLookup (Maybe (TaggingLookup StartEnd))
 newtype TickedLookup = TickedLookup (Maybe (TaggingLookup Ticked))
 
 type StartEnd = (UTCTime, UTCTime)
-
-readTags :: TagZoneFile -> ExceptT String IO Tagging
-readTags (TagZoneFile path) = do
-    contents <- lift $ BS.readFile path
-    ExceptT . return $ decodeEither contents
 
 tagTicked :: Either String Tagging -> TickedLookup
 tagTicked (Left _) = TickedLookup Nothing

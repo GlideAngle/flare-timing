@@ -1,9 +1,9 @@
 flags: {}
 packages:
-- location: .
-- location: ../cmd
-  extra-dep: true
+- '.'
 - location: ../aeson-rational
+  extra-dep: true
+- location: ../siggy-chardust
   extra-dep: true
 - location: ../units
   extra-dep: true
@@ -11,35 +11,21 @@ packages:
   extra-dep: true
 - location: ../zone
   extra-dep: true
+- location: ../gap
+  extra-dep: true
 - location: ../comp
-  extra-dep: true
-- location: ../fsdb
-  extra-dep: true
-- location: ../igc
   extra-dep: true
 - location: ../kml
   extra-dep: true
-- location: ../track
+- location: ../mask
   extra-dep: true
 - location: ../task
   extra-dep: true
-- location: ../gap
-  extra-dep: true
-- location: ../siggy-chardust
-  extra-dep: true
-- location: ../mask
-  extra-dep: true
-- location: ../lookup
-  extra-dep: true
-- location: ../yaml
+- location: ../track
   extra-dep: true
 - location:
     git: https://github.com/danfran/hcoord.git
     commit: e308934570874a6ce7f7ebdbf51a3c34e4acd745
-  extra-dep: true
-- location:
-    git: https://github.com/haskell/fgl.git
-    commit: e29503775e474b7a7cd8951b6bebcf1529b888b5
   extra-dep: true
 - location:
     git: https://github.com/adamgundry/uom-plugin.git

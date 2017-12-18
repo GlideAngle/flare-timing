@@ -2,15 +2,13 @@
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Flight.TaskTrack
+module Flight.Route
     ( TaskDistanceMeasure(..)
     , TaskRoutes(..)
     , TaskTrack(..)
     , TrackLine(..)
     , ProjectedTrackLine(..)
     , PlanarTrackLine(..)
-    , EastingNorthing(..)
-    , UtmZone(..)
     ) where
 
 import Data.String (IsString())
@@ -18,7 +16,8 @@ import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 
 import Flight.LatLng.Raw (RawLatLng(..))
-import Flight.Comp (FieldOrdering(..))
+import Flight.EastNorth (EastingNorthing(..), UtmZone(..))
+import Flight.Field (FieldOrdering(..))
 
 -- | The way to measure the task distance.
 data TaskDistanceMeasure
@@ -76,24 +75,6 @@ data PlanarTrackLine =
 
 instance ToJSON PlanarTrackLine
 instance FromJSON PlanarTrackLine
-
-data EastingNorthing =
-    EastingNorthing { easting :: Double
-                    , northing :: Double
-                    }
-                    deriving (Eq, Ord, Show, Generic)
-
-instance ToJSON EastingNorthing
-instance FromJSON EastingNorthing
-
-data UtmZone =
-    UtmZone { latZone :: Char
-            , lngZone :: Int
-            }
-            deriving (Eq, Ord, Show, Generic)
-
-instance ToJSON UtmZone
-instance FromJSON UtmZone
 
 instance FieldOrdering TaskRoutes where
     fieldOrder _ = cmp

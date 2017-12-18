@@ -42,7 +42,7 @@ import Flight.Cylinder.Sample (Tolerance(..))
 import Flight.Distance (TaskDistance(..), PathDistance(..))
 import Flight.PointToPoint.Segment (SpanLatLng)
 import Flight.ShortestPath (DistancePointToPoint)
-import Flight.TaskTrack (UtmZone(..), EastingNorthing(..))
+import Flight.EastNorth (UtmZone(..), EastingNorthing(..))
 import Data.Aeson.ViaScientific (ViaScientific(..))
 
 mm30 :: Num a => Tolerance a 

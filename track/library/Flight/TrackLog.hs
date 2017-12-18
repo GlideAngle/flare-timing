@@ -37,10 +37,8 @@ import Flight.Comp
     , TrackLogFile(..)
     , TrackFileFail(..)
     , TaskFolder(..)
+    , IxTask(..)
     )
-
--- | 1-based indices of a task in a competition.
-newtype IxTask = IxTask Int deriving (Eq, Show)
 
 ixTasks :: [IxTask]
 ixTasks = IxTask <$> [ 1 .. ]

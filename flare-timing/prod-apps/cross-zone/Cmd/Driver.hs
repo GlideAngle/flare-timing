@@ -31,13 +31,13 @@ import Cmd.Options (description)
 import qualified Data.Yaml.Pretty as Y
 import qualified Data.ByteString as BS
 
+import Flight.Field (FieldOrdering(..))
 import Flight.Comp
     ( CompInputFile(..)
     , CrossZoneFile(..)
     , CompSettings(..)
     , Pilot(..)
     , TrackFileFail(..)
-    , FieldOrdering(..)
     , compToCross
     , findCompInput
     )

@@ -69,11 +69,10 @@ import qualified Flight.Zone.Raw as Raw (RawZone(..))
 import Flight.Track.Cross (Fix(..))
 import qualified Flight.Comp as Cmp (Task(..), SpeedSection)
 import Flight.Units ()
-import Flight.TrackLog (IxTask(..))
+import Flight.Comp (IxTask(..))
+import Flight.Distance (TaskDistance(..), PathDistance(..))
 import Flight.Task
-    ( TaskDistance(..)
-    , PathDistance(..)
-    , Tolerance(..)
+    ( Tolerance(..)
     , SpanLatLng
     , CostSegment
     , DistancePointToPoint

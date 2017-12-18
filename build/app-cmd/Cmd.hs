@@ -32,6 +32,8 @@ lintPkgs =
     , "kml"
     , "comp"
     , "gap"
+    , "yaml"
+    , "lookup"
     ] 
 
 type Pkg = String
