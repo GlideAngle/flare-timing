@@ -50,7 +50,7 @@ import Flight.Mask
     , unSelectedCrossings, unNomineeCrossings
     , checkTracks, madeZones, zoneToCylinder
     )
-import Flight.Yaml (writeCrossing)
+import Flight.Scribe (writeCrossing)
 
 driverMain :: IO ()
 driverMain = do

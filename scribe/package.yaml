@@ -32,12 +32,12 @@ library:
   - flight-comp
   source-dirs: library
   exposed-modules:
-  - Flight.Yaml
+  - Flight.Scribe
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
-name: flight-yaml
-synopsis: Hang gliding and paragliding competition scoring yaml files.
-description: Reading competition scoring yaml files.
+name: flight-scribe
+synopsis: Hang gliding and paragliding competition scoring files.
+description: Reading and writing competition scoring files.
 category: Data
 license: BSD3
 license-file: LICENSE.md

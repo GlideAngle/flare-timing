@@ -31,7 +31,7 @@ packages:
   extra-dep: true
 - location: ../lookup
   extra-dep: true
-- location: ../yaml
+- location: ../scribe
   extra-dep: true
 - location:
     git: https://github.com/danfran/hcoord.git

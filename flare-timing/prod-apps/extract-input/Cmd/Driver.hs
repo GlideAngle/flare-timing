@@ -29,7 +29,7 @@ import Flight.Comp
     , fsdbToComp
     , findFsdb
     )
-import Flight.Yaml (writeComp)
+import Flight.Scribe (writeComp)
 
 driverMain :: IO ()
 driverMain = do

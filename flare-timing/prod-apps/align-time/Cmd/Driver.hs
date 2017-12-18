@@ -71,7 +71,7 @@ import Flight.Task (SpanLatLng, CircumSample, AngleCut(..))
 import Flight.PointToPoint.Double
     (distanceHaversine, distancePointToPoint, costSegment)
 import Flight.Cylinder.Double (circumSample)
-import Flight.Yaml (readTagging, writeAlignTime)
+import Flight.Scribe (readTagging, writeAlignTime)
 
 type Leg = Int
 

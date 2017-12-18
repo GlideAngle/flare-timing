@@ -24,7 +24,7 @@ import Flight.Comp
     , findCompInput
     )
 import Flight.TaskTrack.Rational (taskTracks)
-import Flight.Yaml (readComp, writeRoute)
+import Flight.Scribe (readComp, writeRoute)
 
 driverMain :: IO ()
 driverMain = do

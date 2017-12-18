@@ -45,7 +45,7 @@ import Flight.Track.Cross
     (Crossing(..), TrackCross(..), PilotTrackCross(..), Fix(..))
 import Flight.Track.Tag
     (Tagging(..), TrackTime(..), TrackTag(..), PilotTrackTag(..))
-import Flight.Yaml (readCrossing, writeTagging)
+import Flight.Scribe (readCrossing, writeTagging)
 
 driverMain :: IO ()
 driverMain = do

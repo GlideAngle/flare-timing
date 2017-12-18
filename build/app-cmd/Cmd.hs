@@ -32,7 +32,7 @@ lintPkgs =
     , "kml"
     , "comp"
     , "gap"
-    , "yaml"
+    , "scribe"
     , "lookup"
     ] 
 

@@ -1,4 +1,4 @@
-module Flight.Yaml
+module Flight.Scribe
     ( readComp, writeComp
     , readRoute, writeRoute
     , readCrossing , writeCrossing

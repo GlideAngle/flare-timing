@@ -22,7 +22,7 @@ executables:
     - flight-latlng
     - flight-comp
     - flight-fsdb
-    - flight-yaml
+    - flight-scribe
     ghc-options:
     - -rtsopts
     - -threaded
@@ -51,7 +51,7 @@ executables:
     - flight-latlng
     - flight-comp
     - flight-task
-    - flight-yaml
+    - flight-scribe
     ghc-options:
     - -rtsopts
     - -threaded
@@ -88,7 +88,7 @@ executables:
     - flight-task
     - flight-gap
     - flight-mask
-    - flight-yaml
+    - flight-scribe
     ghc-options:
     - -rtsopts
     - -threaded
@@ -125,7 +125,7 @@ executables:
     - flight-task
     - flight-gap
     - flight-mask
-    - flight-yaml
+    - flight-scribe
     ghc-options:
     - -rtsopts
     - -threaded
@@ -166,7 +166,7 @@ executables:
     - flight-task
     - flight-gap
     - flight-mask
-    - flight-yaml
+    - flight-scribe
     ghc-options:
     - -rtsopts
     - -threaded
@@ -207,7 +207,7 @@ executables:
     - flight-task
     - flight-gap
     - flight-mask
-    - flight-yaml
+    - flight-scribe
     ghc-options:
     - -rtsopts
     - -threaded
@@ -250,7 +250,7 @@ executables:
     - flight-gap
     - flight-mask
     - flight-lookup
-    - flight-yaml
+    - flight-scribe
     ghc-options:
     - -rtsopts
     - -threaded

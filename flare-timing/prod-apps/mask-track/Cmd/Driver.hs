@@ -83,7 +83,7 @@ import Flight.Lookup.Tag
     ( ArrivalRankLookup(..), PilotTimeLookup(..), TickedLookup(..), StartEnd
     , tagArrivalRank, tagPilotTime, tagTicked
     )
-import Flight.Yaml (readTagging, readRoute, writeMasking)
+import Flight.Scribe (readTagging, readRoute, writeMasking)
 import Flight.Lookup.TaskLength (TaskLengthLookup(..), routeLength)
 import qualified Flight.Score as Gap (PilotDistance(..), bestTime)
 import Flight.Score

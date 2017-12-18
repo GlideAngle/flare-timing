@@ -45,7 +45,7 @@ import Flight.TrackLog (IxTask(..))
 import Flight.Units ()
 import Flight.Mask (checkTracks)
 import Flight.Track.Time (TimeRow(..), TickRow(..), discardFurther)
-import Flight.Yaml (readAlignTime, writeDiscardFurther)
+import Flight.Scribe (readAlignTime, writeDiscardFurther)
 
 headers :: [String]
 headers = ["tick", "distance"]
