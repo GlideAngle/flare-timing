@@ -10,7 +10,8 @@ long did that take? If they didn't make goal then what zones did they make and w
 was the distance to goal?
 -}
 module Flight.Mask
-    ( SigMasking
+    ( FnTask
+    , FnIxTask
     , TaskZone
     , Ticked
     , RaceSections(..)
@@ -32,6 +33,7 @@ module Flight.Mask
     , zoneToCylinder
     , slice
     , section
+    , nullFlying
     ) where
 
 import Flight.Mask.Tag

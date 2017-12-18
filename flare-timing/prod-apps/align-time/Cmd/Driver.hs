@@ -57,7 +57,7 @@ import Flight.Comp
 import Flight.TrackLog (IxTask(..))
 import Flight.Units ()
 import Flight.Mask
-    (TaskZone, SigMasking, RaceSections(..)
+    (FnIxTask, TaskZone, RaceSections(..), Ticked
     , checkTracks, groupByLeg, distancesToGoal, zoneToCylinder
     )
 import Flight.Track.Cross (Fix(..))
@@ -158,7 +158,8 @@ checkAll :: Tagging
                      (Pilot, Pilot -> [TimeRow])
                  ]
              ]
-checkAll tags = checkTracks $ (\CompSettings{tasks} -> group tags tasks)
+checkAll tags =
+    checkTracks $ (\CompSettings{tasks} -> group tags tasks)
 
 includeTask :: [IxTask] -> IxTask -> Bool
 includeTask tasks = if null tasks then const True else (`elem` tasks)
@@ -198,69 +199,58 @@ mkTimeRow (Just t0) leg (Just Fix{time, lat, lng}, Just d) =
             , distance = unTaskDistance d
             }
 
-group :: Tagging -> SigMasking (Pilot -> [TimeRow])
-group tags tasks iTask fs p =
-    concat $ zipWith3 (legDistances tags tasks iTask p)
-        [1 .. ]
-        speedLegs
-        ys
+group :: Tagging -> FnIxTask (Pilot -> [TimeRow])
+group tags@Tagging{timing} tasks iTask@(IxTask i) fs p =
+    case (tasks ^? element (i - 1), timing ^? element (i - 1)) of
+        (_, Nothing) -> []
+        (Nothing, _) -> []
+        (Just task@Task{speedSection}, Just times) -> zs
+            where
+                xs :: [MarkedFixes]
+                xs = groupByLeg span zoneToCyl task fs
+
+                ticked =
+                    fromMaybe (RaceSections [] [] [])
+                    $ join ((\f -> f p speedSection iTask fs) <$> lookupTicked)
+
+                zs :: [TimeRow]
+                zs =
+                    concat $ zipWith
+                        (legDistances ticked times task)
+                        [1 .. ]
+                        xs
+
     where
-        speedLegs = speedSection <$> tasks
+        (TickedLookup lookupTicked) = tagTicked (Right tags)
 
-        ys :: [MarkedFixes]
-        ys = groupByLeg span zoneToCyl tasks iTask fs
-
-legDistances :: Tagging
-             -> [Task]
-             -> IxTask
-             -> Pilot
+legDistances :: Ticked
+             -> TrackTime
+             -> Task
              -> Leg
-             -> SpeedSection
              -> MarkedFixes
              -> [TimeRow]
-legDistances tags tasks iTask@(IxTask i) p leg speedSection xs =
-    case (speedSection, tasks ^? element (i - 1)) of
-        (Nothing, _) -> []
-        (_, Nothing) -> []
-
-        (Just (start, end), Just task) ->
+legDistances ticked times task@Task{speedSection} leg xs =
+    case speedSection of
+        Nothing -> []
+        (Just (start, end)) ->
             if leg' < start || leg' > end then [] else
             mkTimeRows t0 leg xs'
             where
-                ticked =
-                    fromMaybe (RaceSections [] [] [])
-                    $ join ((\f -> f p speedSection iTask xs) <$> lookupTicked)
-
                 xs' = distancesToGoal ticked span dpp cseg cs cut zoneToCyl task xs
-                t0 = firstCrossing iTask speedSection ts
-                ts = zonesFirst <$> timing tags
+                t0 = firstCrossing speedSection ts
+                ts = zonesFirst times
     where
         leg' = fromIntegral leg
         dpp = distancePointToPoint
         cseg = costSegment span
-        (TickedLookup lookupTicked) = tagTicked (Right tags)
 
-firstCrossing :: IxTask -> SpeedSection -> [[Maybe UTCTime]] -> Maybe UTCTime
-
-firstCrossing (IxTask n) Nothing ts =
-    case drop (n - 1) ts of
-        [] ->
-            Nothing
-
-        (tsOfTask : _) ->
-            case tsOfTask of
-                [] -> Nothing
-                (t : _) -> t
-
-firstCrossing (IxTask n) (Just (leg, _)) ts =
-    case drop (n - 1) ts of
-        [] ->
-            Nothing
-
-        (tsOfTask : _) ->
-            case drop (fromInteger leg - 1) tsOfTask of
-                [] -> Nothing
-                (t : _) -> t
+firstCrossing :: SpeedSection -> [Maybe UTCTime] -> Maybe UTCTime
+firstCrossing _ [] = Nothing
+firstCrossing Nothing (t : _) = t
+firstCrossing (Just (leg, _)) ts =
+    case drop (fromInteger leg - 1) ts of
+        [] -> Nothing
+        (t : _) -> t
 
 zoneToCyl :: RawZone -> TaskZone Double
 zoneToCyl = zoneToCylinder

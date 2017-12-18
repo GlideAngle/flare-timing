@@ -22,6 +22,7 @@ import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Data.Maybe (catMaybes)
+import Control.Lens ((^?), element)
 import Control.Monad (mapM_)
 import Control.Monad.Except (ExceptT(..), runExceptT)
 import System.FilePath (takeFileName)
@@ -46,9 +47,18 @@ import qualified Flight.PointToPoint.Rational as Rat (distanceHaversine)
 import qualified Flight.PointToPoint.Double as Dbl (distanceHaversine)
 import Flight.LatLng.Rational (defEps)
 import Flight.Mask
-    ( TaskZone, SigMasking, MadeZones(..)
-    , unSelectedCrossings, unNomineeCrossings
-    , checkTracks, madeZones, zoneToCylinder
+    ( TaskZone
+    , FnIxTask
+    , FnTask
+    , MadeZones(..)
+    , SelectedCrossings(..)
+    , NomineeCrossings(..)
+    , unSelectedCrossings
+    , unNomineeCrossings
+    , checkTracks
+    , madeZones
+    , zoneToCylinder
+    , nullFlying
     )
 import Flight.Scribe (writeCrossing)
 
@@ -141,8 +151,21 @@ checkAll :: Math
 checkAll math =
     checkTracks $ \CompSettings{tasks} -> flown math tasks
 
-flown :: Math -> SigMasking MadeZones
-flown =
+flown :: Math -> FnIxTask MadeZones
+flown math tasks (IxTask i) fs =
+    case tasks ^? element (i - 1) of
+        Nothing ->
+            MadeZones
+                { flying = nullFlying
+                , selectedCrossings = SelectedCrossings []
+                , nomineeCrossings = NomineeCrossings []
+                }
+
+        Just task ->
+            flownTask math task fs
+
+flownTask :: Math -> FnTask MadeZones
+flownTask =
     \case
         Rational ->
             madeZones

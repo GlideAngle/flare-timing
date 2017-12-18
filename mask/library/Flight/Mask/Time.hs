@@ -18,7 +18,6 @@ import Prelude hiding (span)
 import Data.Time.Clock (UTCTime, diffUTCTime)
 import qualified Data.List as List (find)
 import Data.Ratio ((%))
-import Control.Lens ((^?), element)
 
 import qualified Flight.Kml as Kml
     ( Fix
@@ -32,7 +31,6 @@ import qualified Flight.Comp as Cmp
     , OpenClose(..)
     , StartGate(..)
     )
-import Flight.TrackLog as Log (IxTask(..))
 import Flight.Score as Gap (PilotTime(..))
 import Flight.Units ()
 import Flight.Mask.Tag (madeGoal)
@@ -56,28 +54,20 @@ import Flight.Task (SpanLatLng)
 timeFlown :: (Real a, Fractional a)
           => SpanLatLng a
           -> (Raw.RawZone -> TaskZone a)
-          -> [Cmp.Task]
-          -> IxTask
+          -> Cmp.Task
           -> Kml.MarkedFixes
           -> Maybe PilotTime
-timeFlown span zoneToCyl tasks iTask@(IxTask i) xs =
-    case tasks ^? element (i - 1) of
-        Nothing ->
-            Nothing
-
-        Just task@Cmp.Task{speedSection, zones, zoneTimes, startGates} ->
-            if null zones || not atGoal then Nothing else
-            flownDuration span speedSection fs cs zoneTimes startGates xs
-            where
-                fs =
-                    (\x ->
-                        let b = isStartExit span zoneToCyl x
-                        in crossingPredicates span b x) task
-
-                cs = zoneToCyl <$> zones
-
+timeFlown span zoneToCyl task@Cmp.Task{speedSection, zones, zoneTimes, startGates} xs =
+    if null zones || not atGoal then Nothing else
+    flownDuration span speedSection fs cs zoneTimes startGates xs
     where
-        atGoal = madeGoal span zoneToCyl tasks iTask xs
+        fs =
+            (\x ->
+                let b = isStartExit span zoneToCyl x
+                in crossingPredicates span b x) task
+
+        cs = zoneToCyl <$> zones
+        atGoal = madeGoal span zoneToCyl task xs
 
 flownDuration :: (Real a, Fractional a)
               => SpanLatLng a

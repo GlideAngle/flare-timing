@@ -58,7 +58,7 @@ import Flight.TrackLog (IxTask(..))
 import Flight.Units ()
 import qualified Flight.Mask as Mask (distanceToGoal)
 import Flight.Mask
-    ( SigMasking, TaskZone, RaceSections(..)
+    ( FnIxTask, TaskZone, RaceSections(..)
     , checkTracks, distanceFlown, zoneToCylinder
     )
 import Flight.Track.Mask
@@ -250,7 +250,7 @@ check lengths math tags = checkTracks $ \CompSettings{tasks} ->
 flown :: Either String TaskRoutes
       -> Math
       -> Either String Tagging
-      -> SigMasking (Pilot -> FlightStats)
+      -> FnIxTask (Pilot -> FlightStats)
 flown routes math tags tasks iTask xs =
     maybe
         (const (Nothing, Nothing))
@@ -263,7 +263,7 @@ flown routes math tags tasks iTask xs =
 flown' :: TaskDistance Double
        -> Math
        -> Either String Tagging
-       -> SigMasking (Pilot -> FlightStats)
+       -> FnIxTask (Pilot -> FlightStats)
 flown' dTaskF@(TaskDistance td) math tags tasks iTask@(IxTask i) xs p =
     case tasks ^? element (i - 1) of
         Nothing -> (Nothing, Nothing)
