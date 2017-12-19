@@ -58,7 +58,7 @@ import Flight.TrackLog (IxTask(..))
 import Flight.Units ()
 import qualified Flight.Mask as Mask (distanceToGoal)
 import Flight.Mask
-    ( FnIxTask, TaskZone, RaceSections(..)
+    ( Sliver(..), FnIxTask, TaskZone, RaceSections(..)
     , checkTracks, distanceFlown, zoneToCylinder
     )
 import Flight.Track.Mask
@@ -303,14 +303,14 @@ flown' dTaskF@(TaskDistance td) math tags tasks iTask@(IxTask i) xs p =
             Floating ->
                 Mask.distanceToGoal
                     ticked
-                    spanF dppF csegF csF cutF
+                    (Sliver spanF dppF csegF csF cutF)
                     zoneToCylF task xs
 
             Rational ->
                 (\(TaskDistance d) -> TaskDistance $ fromRational' d) <$>
                 Mask.distanceToGoal
                     ticked
-                    spanR dppR csegR csR cutR
+                    (Sliver spanR dppR csegR csR cutR)
                     zoneToCylR task xs
 
         df :: Task -> Math -> Maybe (Gap.PilotDistance Double)
@@ -320,7 +320,7 @@ flown' dTaskF@(TaskDistance td) math tags tasks iTask@(IxTask i) xs p =
                 distanceFlown
                     dTaskF
                     ticked
-                    spanF dppF csegF csF cutF
+                    (Sliver spanF dppF csegF csF cutF)
                     zoneToCylF task xs
 
             Rational ->
@@ -328,7 +328,7 @@ flown' dTaskF@(TaskDistance td) math tags tasks iTask@(IxTask i) xs p =
                 distanceFlown
                     dTaskR
                     ticked
-                    spanR dppR csegR csR cutR
+                    (Sliver spanR dppR csegR csR cutR)
                     zoneToCylR task xs
 
         speedSection' =

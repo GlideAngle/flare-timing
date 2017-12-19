@@ -18,6 +18,7 @@ module Flight.Mask
     , SelectedCrossings(..)
     , NomineeCrossings(..)
     , MadeZones(..)
+    , Sliver(..)
     , countFixes
     , checkTracks
     , madeZones
@@ -41,4 +42,4 @@ import Flight.Mask.Distance
 import Flight.Mask.Time
 import Flight.Mask.Tracks
 import Flight.Mask.Internal
-    (TaskZone, Ticked, RaceSections(..), zoneToCylinder, slice, section)
+    (Sliver(..), TaskZone, Ticked, RaceSections(..), zoneToCylinder, slice, section)

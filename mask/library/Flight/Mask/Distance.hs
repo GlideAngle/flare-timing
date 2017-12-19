@@ -10,6 +10,7 @@
 {-# LANGUAGE DisambiguateRecordFields #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE PartialTypeSignatures #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
 module Flight.Mask.Distance
@@ -29,29 +30,22 @@ import Flight.Track.Cross (Fix(..))
 import qualified Flight.Comp as Cmp (Task(..))
 import Flight.Score (PilotDistance(..))
 import Flight.Units ()
-import Flight.Mask.Internal (TaskZone(..), Ticked, fixFromFix, distanceViaZones)
+import Flight.Mask.Internal
+    (Sliver(..), TaskZone(..), Ticked, fixFromFix, distanceViaZones)
 import qualified Flight.Mask.Internal as I (distanceToGoal)
 import qualified Flight.Zone.Raw as Raw (RawZone(..))
 import Flight.Distance (TaskDistance(..))
-import Flight.Task
-    (SpanLatLng, CostSegment, DistancePointToPoint, AngleCut(..), CircumSample)
 
 distancesToGoal :: (Real a, Fractional a)
                 => Ticked
-                -> SpanLatLng a
-                -> DistancePointToPoint a
-                -> CostSegment a
-                -> CircumSample a
-                -> AngleCut a
+                -> Sliver a
                 -> (Raw.RawZone -> TaskZone a)
                 -> Cmp.Task
                 -> Kml.MarkedFixes
                 -> Maybe [(Maybe Fix, Maybe (TaskDistance a))]
                 -- ^ Nothing indicates no such task or a task with no zones.
 distancesToGoal
-    ticked
-    span dpp cseg cs cut
-    zoneToCyl task@Cmp.Task{zones} Kml.MarkedFixes{mark0, fixes} =
+    ticked sliver zoneToCyl task@Cmp.Task{zones} Kml.MarkedFixes{mark0, fixes} =
     -- NOTE: A ghci session using inits & tails.
     -- inits [1 .. 4]
     -- [[],[1],[1,2],[1,2,3],[1,2,3,4]]
@@ -68,61 +62,43 @@ distancesToGoal
     $ lfg zoneToCyl task mark0
     <$> drop 1 (inits fixes)
     where
-        lfg = lastFixToGoal ticked span dpp cseg cs cut
+        lfg = lastFixToGoal ticked sliver
 
 -- | The distance from the last fix to goal passing through the remaining
 -- control zones.
 lastFixToGoal :: (Real a, Fractional a)
               => Ticked
-              -> SpanLatLng a
-              -> DistancePointToPoint a
-              -> CostSegment a
-              -> CircumSample a
-              -> AngleCut a
+              -> Sliver a
               -> (Raw.RawZone -> TaskZone a)
               -> Cmp.Task
               -> UTCTime
               -> [Kml.Fix]
               -> (Maybe Fix, Maybe (TaskDistance a))
-lastFixToGoal
-    ticked
-    span dpp cseg cs cut
-    zoneToCyl task mark0 ys =
+lastFixToGoal ticked sliver@Sliver{..} zoneToCyl task mark0 ys =
     case reverse ys of
         [] -> (Nothing, Nothing)
         (y : _) -> (Just $ fixFromFix mark0 (length ys - 1) y, d)
     where
         xs = Kml.MarkedFixes { Kml.mark0 = mark0, Kml.fixes = ys }
-        dvz = distanceViaZones ticked span dpp cseg cs cut
+        dvz = distanceViaZones ticked sliver
         d = I.distanceToGoal span zoneToCyl dvz task xs
 
 distanceToGoal :: (Real a, Fractional a)
                => Ticked
-               -> SpanLatLng a
-               -> DistancePointToPoint a
-               -> CostSegment a
-               -> CircumSample a
-               -> AngleCut a
+               -> Sliver a
                -> (Raw.RawZone -> TaskZone a)
                -> Cmp.Task
                -> Kml.MarkedFixes
                -> Maybe (TaskDistance a)
-distanceToGoal
-    ticked
-    span dpp cseg cs cut
-    zoneToCyl =
+distanceToGoal ticked sliver@Sliver{span} zoneToCyl =
     I.distanceToGoal span zoneToCyl dvz
     where
-        dvz = distanceViaZones ticked span dpp cseg cs cut
+        dvz = distanceViaZones ticked sliver
 
 distanceFlown :: (Real a, Fractional a)
               => TaskDistance a
               -> Ticked
-              -> SpanLatLng a
-              -> DistancePointToPoint a
-              -> CostSegment a
-              -> CircumSample a
-              -> AngleCut a
+              -> Sliver a
               -> (Raw.RawZone -> TaskZone a)
               -> Cmp.Task
               -> Kml.MarkedFixes
@@ -130,15 +106,10 @@ distanceFlown :: (Real a, Fractional a)
 distanceFlown
     (TaskDistance dTask)
     ticked
-    span dpp cseg cs cut
+    sliver
     zoneToCyl task@Cmp.Task{zones} fixes =
     if null zones then Nothing else do
-        TaskDistance dPilot <-
-            distanceToGoal
-                ticked
-                span dpp cseg cs cut
-                zoneToCyl task fixes
-
+        TaskDistance dPilot <- distanceToGoal ticked sliver zoneToCyl task fixes
         let (MkQuantity diff) = dTask -: dPilot
 
         return $ PilotDistance diff

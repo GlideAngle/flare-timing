@@ -56,8 +56,9 @@ import Flight.Comp
     )
 import Flight.TrackLog (IxTask(..))
 import Flight.Units ()
+import qualified Flight.Mask as Mask (Sliver(..))
 import Flight.Mask
-    (FnIxTask, TaskZone, RaceSections(..), Ticked
+    ( FnIxTask, TaskZone, RaceSections(..), Ticked
     , checkTracks, groupByLeg, distancesToGoal, zoneToCylinder
     )
 import Flight.Track.Cross (Fix(..))
@@ -236,7 +237,8 @@ legDistances ticked times task@Task{speedSection} leg xs =
             if leg' < start || leg' > end then [] else
             mkTimeRows t0 leg xs'
             where
-                xs' = distancesToGoal ticked span dpp cseg cs cut zoneToCyl task xs
+                sliver = Mask.Sliver span dpp cseg cs cut
+                xs' = distancesToGoal ticked sliver zoneToCyl task xs
                 t0 = firstCrossing speedSection ts
                 ts = zonesFirst times
     where

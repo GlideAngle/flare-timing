@@ -13,6 +13,7 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE PartialTypeSignatures #-}
+{-# LANGUAGE RecordWildCards #-}
 
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
@@ -27,6 +28,7 @@ module Flight.Mask.Internal
     , Ticked
     , RaceSections(..)
     , OrdCrossing(..)
+    , Sliver(..)
     , slice
     , section
     , fixToPoint
@@ -120,6 +122,23 @@ instance Ord OrdCrossing where
 
 instance Show OrdCrossing where
     show x = show $ pos x
+
+data Sliver a =
+    Sliver
+        { span :: SpanLatLng a
+        , dpp :: DistancePointToPoint a
+        , cseg :: CostSegment a
+        , cs :: CircumSample a
+        , cut :: AngleCut a
+        }
+
+type DistanceViaZones a b c
+    = (a -> TrackZone b)
+    -> Cmp.SpeedSection
+    -> [CrossingPredicate b c]
+    -> [TaskZone b]
+    -> [a]
+    -> Maybe (TaskDistance b)
 
 -- | A function that tests whether a flight track, represented as a series of point
 -- zones crosses a zone.
@@ -382,14 +401,6 @@ tickedZones :: [CrossingPredicate a b]
 tickedZones fs zones xs =
     zipWith (\f z -> f z xs) fs zones
 
-type DistanceViaZones a b c
-    = (a -> TrackZone b)
-    -> Cmp.SpeedSection
-    -> [CrossingPredicate b c]
-    -> [TaskZone b]
-    -> [a]
-    -> Maybe (TaskDistance b)
-
 distanceToGoal :: (Real b, Fractional b)
                => SpanLatLng b
                -> (Raw.RawZone -> TaskZone b)
@@ -424,42 +435,32 @@ distanceToGoal
 distanceViaZones
     :: forall a b. (Real b, Fractional b)
     => Ticked -- ^ The number of zones ticked in the speed section
-    -> SpanLatLng b
-    -> DistancePointToPoint b
-    -> CostSegment b
-    -> CircumSample b
-    -> AngleCut b
+    -> Sliver b
     -> (a -> TrackZone b)
     -> Cmp.SpeedSection
     -> [CrossingPredicate b Crossing]
     -> [TaskZone b]
     -> [a]
     -> Maybe (TaskDistance b)
-distanceViaZones ticked span dpp cseg cs cut mkZone speedSection fs zs xs =
-    distanceViaZonesR
-        ticked span dpp cseg cs cut mkZone speedSection fs zs (reverse xs)
+distanceViaZones ticked sliver mkZone speedSection fs zs xs =
+    distanceViaZonesR ticked sliver mkZone speedSection fs zs (reverse xs)
 
 -- | Distance via zones with the fixes reversed.
 distanceViaZonesR
     :: forall a b. (Real b, Fractional b)
     => Ticked -- ^ The number of zones ticked in the speed section
-    -> SpanLatLng b
-    -> DistancePointToPoint b
-    -> CostSegment b
-    -> CircumSample b
-    -> AngleCut b
+    -> Sliver b
     -> (a -> TrackZone b)
     -> Cmp.SpeedSection
     -> [CrossingPredicate b Crossing]
     -> [TaskZone b]
     -> [a]
     -> Maybe (TaskDistance b)
-distanceViaZonesR _ _ _ _ _ _ _ _ _ _ [] =
+distanceViaZonesR _ _ _ _ _ _ [] =
     Nothing
 
 distanceViaZonesR
-    RaceSections{race = []}
-    span dpp cseg cs cut mkZone speedSection _ zs (x : _) =
+    RaceSections{race = []} Sliver{..} mkZone speedSection _ zs (x : _) =
     -- NOTE: Didn't make the start so skip the start.
     Just . edgesSum
     $ distanceEdgeToEdge span dpp cseg cs cut mm30 (cons mkZone x zsSkipStart)
@@ -469,8 +470,7 @@ distanceViaZonesR
         zsSkipStart = unTaskZone <$> drop 1 zsSpeed
 
 distanceViaZonesR
-    RaceSections{race}
-    span dpp cseg cs cut mkZone speedSection _ zs (x : _) =
+    RaceSections{race} Sliver{..} mkZone speedSection _ zs (x : _) =
     -- NOTE: I don't consider all fixes from last turnpoint made
     -- so this distance is the distance from the very last fix when
     -- at times on this leg the pilot may have been closer to goal.
