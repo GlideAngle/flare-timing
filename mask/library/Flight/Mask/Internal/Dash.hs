@@ -31,7 +31,7 @@ import Flight.Mask.Internal.Race (Sliver(..), RaceSections(..), Ticked, cons, mm
 -- | The distance to goal given the zones have been ticked.
 dashToGoal
     :: forall a b. (Real b, Fractional b)
-    => Ticked -- ^ The number of zones ticked in the speed section
+    => Ticked
     -> Sliver b
     -> (a -> TrackZone b)
     -> Cmp.SpeedSection
@@ -44,7 +44,7 @@ dashToGoal ticked sliver mkZone speedSection zs xs =
 -- | Same as @dashToGoal@ but taking the fixes reversed.
 dashToGoalR
     :: forall a b. (Real b, Fractional b)
-    => Ticked -- ^ The number of zones ticked in the speed section
+    => Ticked
     -> Sliver b
     -> (a -> TrackZone b)
     -> Cmp.SpeedSection
