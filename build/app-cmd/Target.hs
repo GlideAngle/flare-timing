@@ -2,9 +2,9 @@ module Target where
 
 import Development.Shake (Rules)
 import Doc (buildRules, cleanRules)
-import Cmd (buildRules, cleanRules, testRules, lintRules, nixRules)
+import Cmd (buildRules, cleanRules, testRules, lintRules)
 import Web (buildRules, cleanRules)
-import Nix (buildRules)
+import Nix (buildRules, nixRules, shellRules)
 
 allWants :: [ String ]
 allWants = [ "docs", "view-www", "nix", "cmd-apps" ]
@@ -25,9 +25,10 @@ buildRules :: Rules ()
 buildRules = do
     Doc.buildRules
     Cmd.buildRules
-    Cmd.nixRules
     Web.buildRules
     Nix.buildRules
+    Nix.nixRules
+    Nix.shellRules
 
 testRules :: Rules ()
 testRules = do

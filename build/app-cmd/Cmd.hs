@@ -1,4 +1,4 @@
-module Cmd (buildRules, cleanRules, testRules, lintRules, nixRules) where
+module Cmd (buildRules, cleanRules, testRules, lintRules) where
 
 import Development.Shake
     ( Rules
@@ -8,12 +8,7 @@ import Development.Shake
     , cmd
     , need
     )
-
-import Development.Shake.FilePath ((<.>))
-
-cmdNixFor :: String -> String
-cmdNixFor x =
-    "cabal2nix . > " ++ (x <.> ".nix")
+import Nix (flyPkgs, prefix)
 
 cmdTestFor :: String -> String
 cmdTestFor x =
@@ -22,25 +17,6 @@ cmdTestFor x =
 cmdBuildFor :: String -> String
 cmdBuildFor x =
     "stack build " ++ x ++ " --copy-bins"
-
--- | The names of the hlint tests
-flyPkgs :: [String]
-flyPkgs =
-    [ "cmd"
-    , "comp"
-    , "fsdb"
-    , "gap"
-    , "igc"
-    , "kml"
-    , "latlng"
-    , "lookup"
-    , "mask"
-    , "scribe"
-    , "task"
-    , "track"
-    , "units"
-    , "zone"
-    ] 
 
 type Pkg = String
 type Test = String
@@ -87,45 +63,6 @@ cleanRules = do
 
     phony "clean-test-apps" $
         removeFilesAfter "__shake-build" testApps
-
-prefix :: String -> String -> String
-prefix prefix' s = prefix' ++ s
-
-nixRule :: String -> Rules ()
-nixRule s =
-    phony ("cabal2nix-" ++ s) $
-        cmd
-            (Cwd s) 
-            Shell
-            (cmdNixFor $ "flight-" ++ s)
-
-nixRules :: Rules ()
-nixRules = do
-    _ <- sequence_ $ nixRule <$> flyPkgs
-
-    phony "cabal2nix" $ need
-        $ "cabal2nix-aeson-via"
-        : "cabal2nix-siggy-chardust"
-        : "cabal2nix-tasty-compare"
-        : (prefix "cabal2nix-" <$> flyPkgs)
-
-    phony "cabal2nix-aeson-via" $
-        cmd
-            (Cwd "aeson-via")
-            Shell
-            (cmdNixFor "aeson-via")
-
-    phony "cabal2nix-siggy-chardust" $
-        cmd
-            (Cwd "siggy-chardust")
-            Shell
-            (cmdNixFor "siggy-chardust")
-
-    phony "cabal2nix-tasty-compare" $
-        cmd
-            (Cwd "tasty-compare")
-            Shell
-            (cmdNixFor "tasty-compare")
 
 lintRule :: String -> Rules ()
 lintRule s =
