@@ -1,17 +1,18 @@
-{ mkDerivation, aeson, base, flight-units, hlint, numbers
-, scientific, siggy-chardust, stdenv, uom-plugin
+{ mkDerivation, aeson, aeson-via, base, bifunctors, bytestring
+, cassava, flight-units, formatting, hlint, newtype, numbers
+, siggy-chardust, stdenv, text, uom-plugin
 }:
 mkDerivation {
   pname = "flight-latlng";
   version = "0.1.0";
   src = ./.;
   libraryHaskellDepends = [
-    aeson base flight-units numbers scientific siggy-chardust
-    uom-plugin
+    aeson aeson-via base bifunctors bytestring cassava flight-units
+    formatting newtype numbers siggy-chardust text uom-plugin
   ];
   testHaskellDepends = [
-    aeson base flight-units hlint numbers scientific siggy-chardust
-    uom-plugin
+    aeson aeson-via base bifunctors bytestring cassava flight-units
+    formatting hlint newtype numbers siggy-chardust text uom-plugin
   ];
   homepage = "https://github.com/BlockScope/flare-timing#readme";
   description = "Latitude and longitude as used in hang gliding and paragliding competitions";

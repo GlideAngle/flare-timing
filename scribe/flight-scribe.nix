@@ -1,17 +1,25 @@
-{ mkDerivation, aeson, base, containers, flight-zone, hlint, path
-, scientific, split, stdenv, time
+{ mkDerivation, aeson, aeson-via, base, bytestring, cassava
+, containers, directory, filemanip, filepath, flight-comp
+, flight-gap, flight-latlng, flight-zone, hlint, mtl, path
+, scientific, split, stdenv, time, unordered-containers, vector
+, yaml
 }:
 mkDerivation {
-  pname = "flight-comp";
+  pname = "flight-scribe";
   version = "0.0.0";
   src = ./.;
   libraryHaskellDepends = [
-    aeson base containers flight-zone path scientific split time
+    aeson aeson-via base bytestring cassava containers directory
+    filemanip filepath flight-comp flight-gap flight-latlng flight-zone
+    mtl path scientific split time unordered-containers vector yaml
   ];
   testHaskellDepends = [
-    aeson base containers flight-zone hlint scientific split time
+    aeson aeson-via base bytestring cassava containers directory
+    filemanip filepath flight-comp flight-gap flight-latlng flight-zone
+    hlint mtl path scientific split time unordered-containers vector
+    yaml
   ];
   homepage = "https://github.com/BlockScope/flare-timing#readme";
-  description = "Hang gliding and paragliding competition scoring inputs";
+  description = "Hang gliding and paragliding competition scoring files";
   license = stdenv.lib.licenses.bsd3;
 }

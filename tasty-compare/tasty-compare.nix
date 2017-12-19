@@ -1,14 +1,12 @@
-{ mkDerivation, base, hlint, smallcheck, stdenv, tasty, tasty-hunit
+{ mkDerivation, base, call-stack, hlint, stdenv, tasty, tasty-hunit
 }:
 mkDerivation {
   pname = "tasty-compare";
   version = "0.1.0";
   src = ./.;
-  libraryHaskellDepends = [ base ];
-  testHaskellDepends = [
-    base hlint smallcheck tasty tasty-hunit
-  ];
-  homepage = "https://github.com/BlockScope/haskell-tasty-compare#readme";
-  description = "Adds assertCompare and related operators";
+  libraryHaskellDepends = [ base call-stack tasty tasty-hunit ];
+  testHaskellDepends = [ base call-stack hlint tasty tasty-hunit ];
+  homepage = "https://github.com/BlockScope/tasty-compare#readme";
+  description = "Tasty HUnit extensions for comparisons";
   license = stdenv.lib.licenses.bsd3;
 }
