@@ -1,15 +1,3 @@
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE UndecidableInstances #-}
-
-{-# LANGUAGE DisambiguateRecordFields #-}
-{-# LANGUAGE NamedFieldPuns #-}
-
 module Flight.Mask.Tracks (checkTracks) where
 
 import Control.Monad.Except (ExceptT(..), lift)
