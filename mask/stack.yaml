@@ -19,6 +19,8 @@ packages:
   extra-dep: true
 - location: ../gap
   extra-dep: true
+- location: ../scribe
+  extra-dep: true
 - location: ../siggy-chardust
   extra-dep: true
 - location:

@@ -31,14 +31,14 @@ import Flight.TrackLog as Log
     , makeAbsolute
     )
 import Flight.Units ()
-import Flight.Mask.Settings (readCompSettings)
+import Flight.Scribe (readComp)
 
 settingsLogs :: CompInputFile
              -> [IxTask]
              -> [Pilot]
              -> ExceptT String IO (CompSettings, [[PilotTrackLogFile]])
-settingsLogs (CompInputFile path) tasks selectPilots = do
-    settings <- readCompSettings path
+settingsLogs compFile@(CompInputFile path) tasks selectPilots = do
+    settings <- readComp compFile
     ExceptT . return $ go settings
     where
         go s@CompSettings{pilots, taskFolders} =

@@ -34,6 +34,7 @@ library:
   - flight-track
   - flight-task
   - flight-gap
+  - flight-scribe
   - siggy-chardust
   source-dirs: library
   exposed-modules:
@@ -73,6 +74,7 @@ tests:
     - flight-track
     - flight-task
     - flight-gap
+    - flight-scribe
     - siggy-chardust
     ghc-options:
     - -rtsopts
