@@ -29,20 +29,20 @@ module Flight.Mask.Tag
 
 import Prelude hiding (span)
 import Data.Time.Clock (UTCTime, addUTCTime)
-import qualified Data.List as List
+import qualified Data.List as List (span)
 import Data.Maybe (listToMaybe)
 import Data.List (nub, group, elemIndex, findIndex)
 import Data.List.Split (split, whenElt, keepDelimsL, chop)
 import Control.Lens ((^?), element)
 
 import Flight.TrackLog (IxTask(..))
-import Flight.Kml (Latitude(..), Longitude(..))
+import Flight.Kml (Latitude(..), Longitude(..), MarkedFixes(..))
 import qualified Flight.Kml as Kml
-    (LatLngAlt(..), Fix, MarkedFixes(..), FixMark(..), Seconds(..))
+    (LatLngAlt(..), Fix, FixMark(..), Seconds(..))
 import Flight.Track.Cross
     (Fix(..), ZoneCross(..), Seconds(..), TrackFlyingSection(..))
 import Flight.Comp (FlyingSection)
-import qualified Flight.Comp as Cmp (Task(..))
+import Flight.Comp (Task(..))
 import Flight.Units ()
 import Flight.Mask.Internal.Zone
     ( ZoneEntry(..)
@@ -85,25 +85,25 @@ nullFlying =
         }
 
 -- | A masking produces a value from a task and tracklog fixes.
-type FnTask a = Cmp.Task -> Kml.MarkedFixes -> a
-type FnIxTask a = [Cmp.Task] -> IxTask -> Kml.MarkedFixes -> a
+type FnTask a = Task -> MarkedFixes -> a
+type FnIxTask a = [Task] -> IxTask -> MarkedFixes -> a
 
 newtype PilotTrackFixes = PilotTrackFixes Int deriving Show
 
-countFixes :: Kml.MarkedFixes -> PilotTrackFixes
-countFixes Kml.MarkedFixes{fixes} =
+countFixes :: MarkedFixes -> PilotTrackFixes
+countFixes MarkedFixes{fixes} =
     PilotTrackFixes $ length fixes
 
 -- | A pilot has launched if their tracklog has distinct fixes.
 launched :: FnTask Bool
-launched _ Kml.MarkedFixes{fixes} =
+launched _ MarkedFixes{fixes} =
     not . null . nub $ fixes
 
 started :: (Real a, Fractional a)
         => SpanLatLng a
         -> (Raw.RawZone -> TaskZone a)
         -> FnTask Bool
-started span zoneToCyl Cmp.Task{speedSection, zones} Kml.MarkedFixes{fixes} =
+started span zoneToCyl Task{speedSection, zones} MarkedFixes{fixes} =
     case slice speedSection zones of
         [] ->
             False
@@ -121,7 +121,7 @@ madeGoal :: (Real a, Fractional a)
          => SpanLatLng a
          -> (Raw.RawZone -> TaskZone a)
          -> FnTask Bool
-madeGoal span zoneToCyl Cmp.Task{zones} Kml.MarkedFixes{fixes} =
+madeGoal span zoneToCyl Task{zones} MarkedFixes{fixes} =
     case reverse zones of
         [] ->
             False
@@ -601,10 +601,10 @@ jumpGaps xs =
 madeZones :: (Real a, Fractional a)
           => SpanLatLng a
           -> (Raw.RawZone -> TaskZone a)
-          -> Cmp.Task
-          -> Kml.MarkedFixes
+          -> Task
+          -> MarkedFixes
           -> MadeZones
-madeZones span zoneToCyl task@Cmp.Task{zones} Kml.MarkedFixes{mark0, fixes} =
+madeZones span zoneToCyl task@Task{zones} MarkedFixes{mark0, fixes} =
     MadeZones
         { flying = flying'
         , selectedCrossings = selected
@@ -821,11 +821,11 @@ fixToUtc mark0 x =
 groupByLeg :: (Real a, Fractional a)
            => SpanLatLng a
            -> (Raw.RawZone -> TaskZone a)
-           -> Cmp.Task
-           -> Kml.MarkedFixes
-           -> [Kml.MarkedFixes]
-groupByLeg span zoneToCyl task mf@Kml.MarkedFixes{mark0, fixes} =
-    (\zs -> mf{Kml.fixes = zs}) <$> ys
+           -> Task
+           -> MarkedFixes
+           -> [MarkedFixes]
+groupByLeg span zoneToCyl task mf@MarkedFixes{mark0, fixes} =
+    (\zs -> mf{fixes = zs}) <$> ys
     where
         xs :: [Maybe Fix]
         xs =

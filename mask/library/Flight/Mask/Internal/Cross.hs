@@ -31,11 +31,11 @@ module Flight.Mask.Internal.Cross
 import Prelude hiding (span)
 import Data.Maybe (listToMaybe)
 import Data.List (nub, sort)
-import qualified Data.List as List (findIndex)
+import Data.List (findIndex)
 import Control.Lens ((^?), element)
 
 import qualified Flight.Zone.Raw as Raw (RawZone(..))
-import qualified Flight.Comp as Cmp (Task(..))
+import Flight.Comp (Task(..))
 import Flight.Units ()
 import Flight.Task (SpanLatLng, separatedZones)
 import Flight.Mask.Internal.Zone
@@ -62,7 +62,7 @@ insideZone :: (Real a, Fractional a)
            -> [TrackZone a]
            -> Maybe Int
 insideZone span (TaskZone z) =
-    List.findIndex (\(TrackZone x) -> not $ separatedZones span [x, z])
+    findIndex (\(TrackZone x) -> not $ separatedZones span [x, z])
 
 outsideZone :: (Real a, Fractional a)
             => SpanLatLng a
@@ -70,7 +70,7 @@ outsideZone :: (Real a, Fractional a)
             -> [TrackZone a]
             -> Maybe Int
 outsideZone span (TaskZone z) =
-    List.findIndex (\(TrackZone x) -> separatedZones span [x, z])
+    findIndex (\(TrackZone x) -> separatedZones span [x, z])
 
 zoneSingle :: (span -> zone -> [x] -> Maybe Int)
            -> (span -> zone -> [x] -> Maybe Int)
@@ -156,9 +156,9 @@ isStartExit :: (Real a, Fractional a)
             => SpanLatLng a
             -> (Raw.RawZone
             -> TaskZone a)
-            -> Cmp.Task
+            -> Task
             -> Bool
-isStartExit span zoneToCyl Cmp.Task{speedSection, zones} =
+isStartExit span zoneToCyl Task{speedSection, zones} =
     case speedSection of
         Nothing ->
             False
@@ -196,17 +196,17 @@ crossingPredicates
     :: (Real a, Fractional a)
     => SpanLatLng a
     -> Bool -- ^ Is the start an exit cylinder?
-    -> Cmp.Task
+    -> Task
     -> [CrossingPredicate a Crossing]
-crossingPredicates span _ Cmp.Task{zones} =
+crossingPredicates span _ Task{zones} =
     const (crossSeq span) <$> zones
 
 -- | If the zone is an exit, then take the last crossing otherwise take the
 -- first crossing.
 crossingSelectors :: Bool -- ^ Is the start an exit cylinder?
-                  -> Cmp.Task
+                  -> Task
                   -> [[a] -> Maybe a] -- ^ A crossing selector for each zone.
-crossingSelectors startIsExit Cmp.Task{speedSection, zones} =
+crossingSelectors startIsExit Task{speedSection, zones} =
     zipWith
         (\ i _ ->
             if i == start && startIsExit then selectLast

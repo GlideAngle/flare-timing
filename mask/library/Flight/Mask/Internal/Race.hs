@@ -31,7 +31,7 @@ import Prelude hiding (span)
 import Data.Ratio ((%))
 
 import Flight.Zone (Zone(..))
-import qualified Flight.Comp as Cmp (SpeedSection)
+import Flight.Comp (SpeedSection)
 import Flight.Units ()
 import Flight.Distance (TaskDistance(..))
 import Flight.Task
@@ -76,14 +76,14 @@ data Sliver a =
 -- predicate to work out a distance.
 type Reach a b c
     = (a -> TrackZone b)
-    -> Cmp.SpeedSection
+    -> SpeedSection
     -> [CrossingPredicate b c]
     -> [TaskZone b]
     -> [a]
     -> Maybe (TaskDistance b)
 
 -- | Slice a list into three parts, before, during and after the speed section.
-section :: Cmp.SpeedSection -> [a] -> RaceSections a 
+section :: SpeedSection -> [a] -> RaceSections a 
 
 section Nothing xs =
     RaceSections 

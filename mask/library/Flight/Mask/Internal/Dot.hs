@@ -21,9 +21,9 @@ module Flight.Mask.Internal.Dot (dotToGoal) where
 
 import Prelude hiding (span)
 
-import qualified Flight.Kml as Kml (MarkedFixes(..))
+import Flight.Kml (MarkedFixes(..))
 import qualified Flight.Zone.Raw as Raw (RawZone(..))
-import qualified Flight.Comp as Cmp (Task(..), SpeedSection)
+import Flight.Comp (Task(..), SpeedSection)
 import Flight.Units ()
 import Flight.Distance (TaskDistance(..))
 import Flight.Task (SpanLatLng)
@@ -37,12 +37,12 @@ dotToGoal
     => SpanLatLng b
     -> (Raw.RawZone -> TaskZone b)
     -> Reach _ _ _
-    -> Cmp.Task
-    -> Kml.MarkedFixes
+    -> Task
+    -> MarkedFixes
     -> Maybe (TaskDistance b)
     -- ^ Nothing indicates no such task or a task with no zones.
 dotToGoal
-    span zoneToCyl dvz task@Cmp.Task{speedSection, zones} Kml.MarkedFixes{fixes} =
+    span zoneToCyl dvz task@Task{speedSection, zones} MarkedFixes{fixes} =
     if null zones then Nothing else
     dvz
         fixToPoint
@@ -64,7 +64,7 @@ stepToGoal
     => [CrossingPredicate a b]
     -> Sliver b
     -> (a -> TrackZone b)
-    -> Cmp.SpeedSection
+    -> SpeedSection
     -> [TaskZone b]
     -> [a]
     -> Maybe (TaskDistance b)

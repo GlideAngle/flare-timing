@@ -50,7 +50,7 @@ import Flight.LatLng.Raw (RawLat(..), RawLng(..))
 import Flight.Zone (Radius(..), Zone(..))
 import qualified Flight.Zone.Raw as Raw (RawZone(..))
 import Flight.Track.Cross (Fix(..))
-import qualified Flight.Comp as Cmp (SpeedSection)
+import Flight.Comp (SpeedSection)
 import Flight.Units ()
 import Data.Aeson.ViaScientific (ViaScientific(..))
 
@@ -82,7 +82,7 @@ newtype TaskZone a = TaskZone { unTaskZone :: Zone a }
 newtype TrackZone a = TrackZone { unTrackZone :: Zone a }
 
 -- | Slice the speed section from a list.
-slice :: Cmp.SpeedSection -> [a] -> [a]
+slice :: SpeedSection -> [a] -> [a]
 slice = \case
     Nothing -> id
     Just (s', e') ->

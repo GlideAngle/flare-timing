@@ -25,9 +25,10 @@ import Data.List (inits)
 import Data.UnitsOfMeasure ((-:))
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import qualified Flight.Kml as Kml (MarkedFixes(..), Fix)
+import Flight.Kml (MarkedFixes(..))
+import qualified Flight.Kml as Kml (Fix)
 import Flight.Track.Cross (Fix(..))
-import qualified Flight.Comp as Cmp (Task(..))
+import Flight.Comp (Task(..))
 import Flight.Score (PilotDistance(..))
 import Flight.Units ()
 import Flight.Mask.Internal.Zone (TaskZone(..), fixFromFix, fixToPoint)
@@ -41,12 +42,12 @@ dashDistancesToGoal
     => Ticked
     -> Sliver a
     -> (Raw.RawZone -> TaskZone a)
-    -> Cmp.Task
-    -> Kml.MarkedFixes
+    -> Task
+    -> MarkedFixes
     -> Maybe [(Maybe Fix, Maybe (TaskDistance a))]
     -- ^ Nothing indicates no such task or a task with no zones.
 dashDistancesToGoal
-    ticked sliver zoneToCyl task@Cmp.Task{zones} Kml.MarkedFixes{mark0, fixes} =
+    ticked sliver zoneToCyl task@Task{zones} MarkedFixes{mark0, fixes} =
     -- NOTE: A ghci session using inits & tails.
     -- inits [1 .. 4]
     -- [[],[1],[1,2],[1,2,3],[1,2,3,4]]
@@ -70,14 +71,14 @@ dashDistanceToGoal
     => Ticked
     -> Sliver a
     -> (Raw.RawZone -> TaskZone a)
-    -> Cmp.Task
-    -> Kml.MarkedFixes
+    -> Task
+    -> MarkedFixes
     -> Maybe (TaskDistance a)
     -- ^ Nothing indicates no such task or a task with no zones.
 dashDistanceToGoal
     ticked sliver zoneToCyl
-    Cmp.Task{speedSection, zones}
-    Kml.MarkedFixes{fixes} =
+    Task{speedSection, zones}
+    MarkedFixes{fixes} =
     if null zones then Nothing else
     dashToGoal ticked sliver fixToPoint speedSection zs fixes
     where
@@ -89,7 +90,7 @@ lastFixToGoal :: (Real a, Fractional a)
               => Ticked
               -> Sliver a
               -> (Raw.RawZone -> TaskZone a)
-              -> Cmp.Task
+              -> Task
               -> UTCTime
               -> [Kml.Fix]
               -> (Maybe Fix, Maybe (TaskDistance a))
@@ -97,7 +98,7 @@ lastFixToGoal
     ticked
     sliver@Sliver{..}
     zoneToCyl
-    Cmp.Task{speedSection, zones}
+    Task{speedSection, zones}
     mark0
     ys =
     case reverse ys of
@@ -113,16 +114,16 @@ dashDistanceFlown
     -> Ticked
     -> Sliver a
     -> (Raw.RawZone -> TaskZone a)
-    -> Cmp.Task
-    -> Kml.MarkedFixes
+    -> Task
+    -> MarkedFixes
     -> Maybe (PilotDistance a)
 dashDistanceFlown
     (TaskDistance dTask)
     ticked
     sliver
     zoneToCyl
-    Cmp.Task{speedSection, zones}
-    Kml.MarkedFixes{fixes} =
+    Task{speedSection, zones}
+    MarkedFixes{fixes} =
     if null zones then Nothing else do
         TaskDistance dPilot
             <- dashToGoal ticked sliver fixToPoint speedSection zs fixes

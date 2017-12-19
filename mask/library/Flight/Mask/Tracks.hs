@@ -15,7 +15,7 @@ module Flight.Mask.Tracks (checkTracks) where
 import Control.Monad.Except (ExceptT(..), lift)
 import System.FilePath (takeDirectory)
 
-import qualified Flight.Kml as Kml (MarkedFixes(..))
+import Flight.Kml (MarkedFixes)
 import Flight.Comp 
     ( CompSettings(..)
     , Pilot(..)
@@ -24,12 +24,7 @@ import Flight.Comp
     , CompInputFile(..)
     )
 import Flight.TrackLog as Log
-    ( IxTask(..)
-    , pilotTracks
-    , filterPilots
-    , filterTasks
-    , makeAbsolute
-    )
+    (IxTask(..), pilotTracks, filterPilots, filterTasks, makeAbsolute)
 import Flight.Units ()
 import Flight.Scribe (readComp)
 
@@ -49,7 +44,7 @@ settingsLogs compFile@(CompInputFile path) tasks selectPilots = do
                 fs = Log.makeAbsolute dir <$> taskFolders
                 zs = zipWith (<$>) fs ys
 
-checkTracks :: forall a. (CompSettings -> (IxTask -> Kml.MarkedFixes -> a))
+checkTracks :: forall a. (CompSettings -> (IxTask -> MarkedFixes -> a))
             -> CompInputFile
             -> [IxTask]
             -> [Pilot]

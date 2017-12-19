@@ -21,7 +21,7 @@ module Flight.Mask.Internal.Dash (dashToGoal, dashToGoalR) where
 
 import Prelude hiding (span)
 
-import qualified Flight.Comp as Cmp (SpeedSection)
+import Flight.Comp (SpeedSection)
 import Flight.Units ()
 import Flight.Distance (TaskDistance(..), PathDistance(..))
 import Flight.Task (distanceEdgeToEdge)
@@ -34,7 +34,7 @@ dashToGoal
     => Ticked
     -> Sliver b
     -> (a -> TrackZone b)
-    -> Cmp.SpeedSection
+    -> SpeedSection
     -> [TaskZone b]
     -> [a]
     -> Maybe (TaskDistance b)
@@ -47,7 +47,7 @@ dashToGoalR
     => Ticked
     -> Sliver b
     -> (a -> TrackZone b)
-    -> Cmp.SpeedSection
+    -> SpeedSection
     -> [TaskZone b]
     -> [a]
     -> Maybe (TaskDistance b)
