@@ -41,5 +41,5 @@ import Flight.Mask.Tag
 import Flight.Mask.Distance
 import Flight.Mask.Time
 import Flight.Mask.Tracks
-import Flight.Mask.Internal
-    (Sliver(..), TaskZone, Ticked, RaceSections(..), zoneToCylinder, slice, section)
+import Flight.Mask.Internal.Zone (TaskZone, zoneToCylinder, slice)
+import Flight.Mask.Internal.Distance (Sliver(..), Ticked, RaceSections(..), section)

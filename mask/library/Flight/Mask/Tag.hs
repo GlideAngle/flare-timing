@@ -44,7 +44,7 @@ import Flight.Track.Cross
 import Flight.Comp (FlyingSection)
 import qualified Flight.Comp as Cmp (Task(..))
 import Flight.Units ()
-import Flight.Mask.Internal
+import Flight.Mask.Internal.Zone
     ( ZoneEntry(..)
     , ZoneExit(..)
     , Crossing
@@ -52,10 +52,12 @@ import Flight.Mask.Internal
     , OrdCrossing(..)
     , slice
     , fixToPoint
-    , isStartExit
+    , fixFromFix
+    )
+import Flight.Mask.Internal.Cross
+    ( isStartExit
     , crossingPredicates
     , crossingSelectors
-    , fixFromFix
     , tickedZones
     , entersSeq
     , exitsSeq

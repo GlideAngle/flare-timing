@@ -30,9 +30,9 @@ import Flight.Track.Cross (Fix(..))
 import qualified Flight.Comp as Cmp (Task(..))
 import Flight.Score (PilotDistance(..))
 import Flight.Units ()
-import Flight.Mask.Internal
-    (Sliver(..), TaskZone(..), Ticked, fixFromFix, distanceViaZones)
-import qualified Flight.Mask.Internal as I (distanceToGoal)
+import Flight.Mask.Internal.Zone (TaskZone(..), fixFromFix)
+import Flight.Mask.Internal.Distance (Sliver(..), Ticked, distanceViaZones)
+import qualified Flight.Mask.Internal.Distance as I (distanceToGoal)
 import qualified Flight.Zone.Raw as Raw (RawZone(..))
 import Flight.Distance (TaskDistance(..))
 

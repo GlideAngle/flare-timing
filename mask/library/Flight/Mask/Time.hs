@@ -34,17 +34,19 @@ import qualified Flight.Comp as Cmp
 import Flight.Score as Gap (PilotTime(..))
 import Flight.Units ()
 import Flight.Mask.Tag (madeGoal)
-import Flight.Mask.Internal
+import Flight.Mask.Internal.Zone
     ( ZoneEntry(..)
     , ZoneExit(..)
     , Crossing
-    , CrossingPredicate
     , TaskZone(..)
     , TrackZone(..)
     , slice
+    , fixToPoint
+    )
+import Flight.Mask.Internal.Cross
+    ( CrossingPredicate
     , entersSeq
     , exitsSeq
-    , fixToPoint
     , isStartExit
     , crossingPredicates
     )
