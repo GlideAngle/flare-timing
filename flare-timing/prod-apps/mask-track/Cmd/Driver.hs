@@ -56,10 +56,9 @@ import Flight.Comp
 import Flight.Distance (TaskDistance(..))
 import Flight.TrackLog (IxTask(..))
 import Flight.Units ()
-import qualified Flight.Mask as Mask (distanceToGoal)
 import Flight.Mask
     ( Sliver(..), FnIxTask, TaskZone, RaceSections(..)
-    , checkTracks, distanceFlown, zoneToCylinder
+    , checkTracks, dashDistanceToGoal, dashDistanceFlown, zoneToCylinder
     )
 import Flight.Track.Mask
     (Masking(..), TrackArrival(..), TrackSpeed(..), TrackDistance(..))
@@ -301,14 +300,14 @@ flown' dTaskF@(TaskDistance td) math tags tasks iTask@(IxTask i) xs p =
         dg task =
             \case
             Floating ->
-                Mask.distanceToGoal
+                dashDistanceToGoal
                     ticked
                     (Sliver spanF dppF csegF csF cutF)
                     zoneToCylF task xs
 
             Rational ->
                 (\(TaskDistance d) -> TaskDistance $ fromRational' d) <$>
-                Mask.distanceToGoal
+                dashDistanceToGoal
                     ticked
                     (Sliver spanR dppR csegR csR cutR)
                     zoneToCylR task xs
@@ -317,7 +316,7 @@ flown' dTaskF@(TaskDistance td) math tags tasks iTask@(IxTask i) xs p =
         df task =
             \case
             Floating ->
-                distanceFlown
+                dashDistanceFlown
                     dTaskF
                     ticked
                     (Sliver spanF dppF csegF csF cutF)
@@ -325,7 +324,7 @@ flown' dTaskF@(TaskDistance td) math tags tasks iTask@(IxTask i) xs p =
 
             Rational ->
                 (\(Gap.PilotDistance d) -> Gap.PilotDistance $ fromRational d) <$>
-                distanceFlown
+                dashDistanceFlown
                     dTaskR
                     ticked
                     (Sliver spanR dppR csegR csR cutR)

@@ -39,6 +39,13 @@ import qualified Flight.Comp as Cmp (Task(..))
 import Flight.Units ()
 import Flight.Task (SpanLatLng, separatedZones)
 import Flight.Mask.Internal.Zone
+    ( TaskZone(..)
+    , TrackZone(..)
+    , ZoneEntry(..)
+    , ZoneExit(..)
+    , Crossing
+    , OrdCrossing(..)
+    )
 
 -- | A function that tests whether a flight track, represented as a series of point
 -- zones crosses a zone.
