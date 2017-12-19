@@ -4,7 +4,6 @@ module Flight.Mask.Distance
     , dashDistanceFlown
     ) where
 
-import Prelude hiding (span)
 import Data.Time.Clock (UTCTime)
 import Data.List (inits)
 import Data.UnitsOfMeasure ((-:))
@@ -81,7 +80,7 @@ lastFixToGoal :: (Real a, Fractional a)
               -> (Maybe Fix, Maybe (TaskDistance a))
 lastFixToGoal
     ticked
-    sliver@Sliver{..}
+    sliver
     zoneToCyl
     Task{speedSection, zones}
     mark0

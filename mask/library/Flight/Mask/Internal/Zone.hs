@@ -1,4 +1,5 @@
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE QuasiQuotes #-}
 
 module Flight.Mask.Internal.Zone
     ( ZoneIdx
@@ -14,7 +15,6 @@ module Flight.Mask.Internal.Zone
     , zoneToCylinder
     ) where
 
-import Prelude hiding (span)
 import Data.Time.Clock (UTCTime, addUTCTime)
 import Data.Ratio ((%))
 import Data.UnitsOfMeasure (u, convert)

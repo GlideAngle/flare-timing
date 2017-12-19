@@ -11,8 +11,7 @@ module Flight.Mask.Internal.Cross
 
 import Prelude hiding (span)
 import Data.Maybe (listToMaybe)
-import Data.List (nub, sort)
-import Data.List (findIndex)
+import Data.List (nub, sort, findIndex)
 import Control.Lens ((^?), element)
 
 import qualified Flight.Zone.Raw as Raw (RawZone(..))

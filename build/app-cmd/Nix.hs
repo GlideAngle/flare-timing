@@ -32,6 +32,7 @@ buildRules = do
              , "nix-flight-task"
              , "nix-flight-track"
              , "nix-flight-units"
+             , "nix-flight-zone"
 
              , "nix-flare-timing"
              ]
@@ -53,5 +54,6 @@ buildRules = do
     phony "nix-flight-task" $ cmd Shell (nixFor "flight-task")
     phony "nix-flight-track" $ cmd Shell (nixFor "flight-track")
     phony "nix-flight-units" $ cmd Shell (nixFor "flight-units")
+    phony "nix-flight-zone" $ cmd Shell (nixFor "flight-zone")
 
     phony "nix-flare-timing" $ cmd Shell (nixFor "flare-timing")

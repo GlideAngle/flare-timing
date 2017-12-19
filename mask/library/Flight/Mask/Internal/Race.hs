@@ -10,7 +10,6 @@ module Flight.Mask.Internal.Race
     , mm30
     ) where
 
-import Prelude hiding (span)
 import Data.Ratio ((%))
 
 import Flight.Zone (Zone(..))

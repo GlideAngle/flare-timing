@@ -21,19 +21,19 @@ cmdBuildFor x =
 lintPkgs :: [String]
 lintPkgs =
     [ "cmd"
-    , "units"
-    , "zone"
-    , "track"
-    , "task"
-    , "mask"
-    , "latlng"
+    , "comp"
     , "fsdb"
+    , "gap"
     , "igc"
     , "kml"
-    , "comp"
-    , "gap"
-    , "scribe"
+    , "latlng"
     , "lookup"
+    , "mask"
+    , "scribe"
+    , "task"
+    , "track"
+    , "units"
+    , "zone"
     ] 
 
 type Pkg = String
@@ -43,9 +43,9 @@ type Test = String
 testPkgs :: [(Pkg, Test)]
 testPkgs =
     [ ("task", "task")
-    , ("kml", "parse")
     , ("fsdb", "parse")
     , ("gap", "score")
+    , ("kml", "parse")
     ] 
 
 -- | The names of the test app executables
@@ -103,7 +103,6 @@ lintRules = do
         : "lint-siggy-chardust"
         : "lint-tasty-compare"
         : "lint-flare-timing"
-        : "lint-www"
         : (prefix "lint-" <$> lintPkgs)
 
     phony "lint-aeson-via" $
@@ -135,12 +134,6 @@ lintRules = do
             (Cwd "flare-timing")
             Shell
             (cmdTestFor "flare-timing:hlint")
-
-    phony "lint-www" $
-        cmd
-            (Cwd "www")
-            Shell
-            (cmdTestFor "www:hlint")
 
 testRule :: (Pkg, Test) -> Rules ()
 testRule (pkg, test) =

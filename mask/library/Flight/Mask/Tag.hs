@@ -29,8 +29,7 @@ import qualified Flight.Kml as Kml
     (LatLngAlt(..), Fix, FixMark(..), Seconds(..))
 import Flight.Track.Cross
     (Fix(..), ZoneCross(..), Seconds(..), TrackFlyingSection(..))
-import Flight.Comp (FlyingSection)
-import Flight.Comp (Task(..))
+import Flight.Comp (FlyingSection, Task(..))
 import Flight.Units ()
 import Flight.Mask.Internal.Zone
     ( ZoneEntry(..)

@@ -95,6 +95,8 @@ tests:
     - -rtsopts
     - -threaded
     - -with-rtsopts=-N
+    default-extensions:
+    - QuasiQuotes
     main: HLint.hs
     source-dirs:
     - library
