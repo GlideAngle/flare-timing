@@ -8,10 +8,12 @@
 module Flight.Lookup.Tag
     ( ArrivalRankLookup(..)
     , PilotTimeLookup(..)
+    , PilotTagLookup(..)
     , TickedLookup(..)
     , StartEnd
     , tagArrivalRank
     , tagPilotTime
+    , tagPilotTag
     , tagTicked
     ) where
 
@@ -27,10 +29,12 @@ import Flight.Track.Tag
 import Flight.Mask (Ticked, RaceSections(..), slice, section)
 import Flight.Track.Cross (Fix(fix, time))
 
-type TaggingLookup a = Pilot -> SpeedSection -> IxTask -> Kml.MarkedFixes -> Maybe a
+type TaggingLookup a =
+    Pilot -> SpeedSection -> IxTask -> Kml.MarkedFixes -> Maybe a
 
 newtype ArrivalRankLookup = ArrivalRankLookup (Maybe (TaggingLookup Int))
 newtype PilotTimeLookup = PilotTimeLookup (Maybe (TaggingLookup StartEnd))
+newtype PilotTagLookup = PilotTagLookup (Maybe (TaggingLookup [Maybe Fix]))
 newtype TickedLookup = TickedLookup (Maybe (TaggingLookup Ticked))
 
 type StartEnd = (UTCTime, UTCTime)
@@ -42,6 +46,10 @@ tagTicked (Right x) = TickedLookup (Just $ ticked x)
 tagPilotTime :: Either String Tagging -> PilotTimeLookup
 tagPilotTime (Left _) = PilotTimeLookup Nothing
 tagPilotTime (Right x) = PilotTimeLookup (Just $ timeElapsed x)
+
+tagPilotTag :: Either String Tagging -> PilotTagLookup
+tagPilotTag (Left _) = PilotTagLookup Nothing
+tagPilotTag (Right x) = PilotTagLookup (Just $ tagged x)
 
 tagArrivalRank :: Either String Tagging -> ArrivalRankLookup
 tagArrivalRank (Left _) = ArrivalRankLookup Nothing
@@ -107,6 +115,26 @@ timeElapsedPilot _ (PilotTrackTag _ Nothing) = Nothing
 timeElapsedPilot Nothing _ = Nothing
 timeElapsedPilot speedSection (PilotTrackTag _ (Just TrackTag{zonesTag})) =
     startEnd $ slice speedSection zonesTag
+
+tagged :: Tagging
+       -> Pilot
+       -> SpeedSection
+       -> IxTask
+       -> Kml.MarkedFixes
+       -> Maybe [Maybe Fix]
+tagged _ _ Nothing _ _ = Nothing
+tagged x pilot speedSection (IxTask i) _ =
+    case tagging x ^? element (fromIntegral i - 1) of
+        Nothing -> Nothing
+        Just xs ->
+            taggedPilot speedSection
+            <$> find (\(PilotTrackTag p _) -> p == pilot) xs
+
+taggedPilot :: SpeedSection -> PilotTrackTag -> [Maybe Fix]
+taggedPilot _ (PilotTrackTag _ Nothing) = []
+taggedPilot Nothing _ = []
+taggedPilot speedSection (PilotTrackTag _ (Just TrackTag{zonesTag})) =
+    slice speedSection zonesTag
 
 arrivalRank :: Tagging
             -> Pilot

@@ -27,7 +27,7 @@ import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Data.Time.Clock (UTCTime, diffUTCTime)
 import Control.Lens ((^?), element)
-import Data.Maybe (catMaybes, fromMaybe)
+import Data.Maybe (catMaybes, fromMaybe, listToMaybe)
 import Control.Monad (join, mapM_, when, zipWithM_)
 import Control.Monad.Except (ExceptT, runExceptT)
 import Data.UnitsOfMeasure ((/:), u, convert, toRational')
@@ -74,7 +74,8 @@ import Flight.PointToPoint.Double
     (distanceHaversine, distancePointToPoint, costSegment)
 import Flight.Cylinder.Double (circumSample)
 import Flight.Scribe (readTagging, writeAlignTime)
-import Flight.Lookup.Tag (TickedLookup(..), tagTicked)
+import Flight.Lookup.Tag
+    (TickedLookup(..), PilotTagLookup(..), tagTicked, tagPilotTag)
 
 type Leg = Int
 
@@ -206,9 +207,22 @@ group tags@Tagging{timing} tasks iTask@(IxTask i) fs p =
         (_, Nothing) -> []
         (Nothing, _) -> []
         (Just Task{speedSection = Nothing}, _) -> []
-        (Just task@Task{speedSection = ss@(Just (start', _))}, Just times) -> zs
+        (Just task@Task{speedSection = ss@(Just (start', end'))}, Just times) ->
+            maybe
+                zs
+                ( (maybe zs (\z -> zs ++ [z]))
+                . (\f ->
+                    mkTimeRow
+                        t0
+                        (end + 1)
+                        (Just f, Just $ TaskDistance [u| 0m |]))
+                )
+                endZoneTag
             where
                 start = fromInteger start'
+                end = fromInteger end'
+                len = end' - start'
+                t0 = firstCrossing ss $ zonesFirst times
 
                 xs :: [MarkedFixes]
                 xs = slice ss $ groupByLeg span zoneToCyl task fs
@@ -216,6 +230,16 @@ group tags@Tagging{timing} tasks iTask@(IxTask i) fs p =
                 ticked =
                     fromMaybe (RaceSections [] [] [])
                     $ join ((\f -> f p ss iTask fs) <$> lookupTicked)
+
+                endZoneTag :: Maybe Fix
+                endZoneTag = do
+                    ts :: [Maybe Fix]
+                        <- join ((\f -> f p ss iTask fs) <$> lookupZoneTags)
+
+                    us :: [Fix]
+                        <- sequence $ slice (Just (len, len)) ts
+
+                    listToMaybe . reverse $ us
 
                 zs :: [TimeRow]
                 zs =
@@ -227,6 +251,7 @@ group tags@Tagging{timing} tasks iTask@(IxTask i) fs p =
                         xs
     where
         (TickedLookup lookupTicked) = tagTicked (Right tags)
+        (PilotTagLookup lookupZoneTags) = tagPilotTag (Right tags)
 
 -- | For a given leg, only so many race zones can be ticked.
 retick :: Ticked -> Int -> Int -> Ticked
