@@ -20,6 +20,7 @@
 
 module Cmd.Driver (driverMain) where
 
+import Prelude hiding (last)
 import qualified Data.Ratio as Ratio
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
@@ -61,7 +62,12 @@ import Flight.Mask
     , checkTracks, dashDistanceToGoal, dashDistanceFlown, zoneToCylinder
     )
 import Flight.Track.Mask
-    (Masking(..), TrackArrival(..), TrackSpeed(..), TrackDistance(..))
+    ( Masking(..)
+    , TrackArrival(..)
+    , TrackSpeed(..)
+    , TrackBestDistance(..)
+    , TrackDistance(..)
+    )
 import Flight.Track.Tag (Tagging)
 import Flight.Zone (Bearing(..))
 import Flight.Zone.Raw (RawZone)
@@ -173,9 +179,16 @@ writeMask selectTasks selectPilots compFile f = do
                             Right (p, g) -> (p, g p))
                         comp
 
-            let d :: [[(Pilot, TrackDistance)]] = distances <$> ys
+            let d' :: [[(Pilot, TrackDistance)]] = distances <$> ys
             let a :: [[(Pilot, TrackArrival)]] = arrivals <$> ys
             let s :: [Maybe (BestTime, [(Pilot, TrackSpeed)])] = times <$> ys
+
+            let dd = 
+                    (fmap . fmap)
+                    (\(p, d) ->
+                        (p,) $
+                        TrackBestDistance { best = d , last = d })
+                    d'
 
             let maskTrack =
                     Masking
@@ -185,7 +198,7 @@ writeMask selectTasks selectPilots compFile f = do
                         , bestTime = (fmap . fmap) (ViaScientific . fst) s
                         , arrival = a
                         , speed = (fromMaybe []) <$> (fmap . fmap) snd s
-                        , distance = d
+                        , distance = dd
                         }
 
             writeMasking (compToMask compFile) maskTrack
