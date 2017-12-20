@@ -221,7 +221,6 @@ group tags@Tagging{timing} tasks iTask@(IxTask i) fs p =
             where
                 start = fromInteger start'
                 end = fromInteger end'
-                len = end' - start'
                 t0 = firstCrossing ss $ zonesFirst times
 
                 xs :: [MarkedFixes]
@@ -237,9 +236,9 @@ group tags@Tagging{timing} tasks iTask@(IxTask i) fs p =
                         <- join ((\f -> f p ss iTask fs) <$> lookupZoneTags)
 
                     us :: [Fix]
-                        <- sequence $ slice (Just (len, len)) ts
+                        <- sequence ts
 
-                    listToMaybe . reverse $ us
+                    listToMaybe . take 1 . drop (end - start) $ us
 
                 zs :: [TimeRow]
                 zs =
