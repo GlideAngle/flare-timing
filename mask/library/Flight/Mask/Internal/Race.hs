@@ -44,6 +44,7 @@ data RaceSections a =
         , epilog :: [a]
         -- ^ Zones crossed after the end of the speed section.
         }
+        deriving Show
 
 data Sliver a =
     Sliver

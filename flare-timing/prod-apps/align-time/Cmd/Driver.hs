@@ -59,7 +59,7 @@ import Flight.Units ()
 import qualified Flight.Mask as Mask (Sliver(..))
 import Flight.Mask
     ( FnIxTask, TaskZone, RaceSections(..), Ticked
-    , checkTracks, groupByLeg, dashDistancesToGoal, zoneToCylinder
+    , checkTracks, groupByLeg, dashDistancesToGoal, zoneToCylinder, slice
     )
 import Flight.Track.Cross (Fix(..))
 import Flight.Zone (Bearing(..))
@@ -205,24 +205,33 @@ group tags@Tagging{timing} tasks iTask@(IxTask i) fs p =
     case (tasks ^? element (i - 1), timing ^? element (i - 1)) of
         (_, Nothing) -> []
         (Nothing, _) -> []
-        (Just task@Task{speedSection}, Just times) -> zs
+        (Just Task{speedSection = Nothing}, _) -> []
+        (Just task@Task{speedSection = ss@(Just (start', _))}, Just times) -> zs
             where
+                start = fromInteger start'
+
                 xs :: [MarkedFixes]
-                xs = groupByLeg span zoneToCyl task fs
+                xs = slice ss $ groupByLeg span zoneToCyl task fs
 
                 ticked =
                     fromMaybe (RaceSections [] [] [])
-                    $ join ((\f -> f p speedSection iTask fs) <$> lookupTicked)
+                    $ join ((\f -> f p ss iTask fs) <$> lookupTicked)
 
                 zs :: [TimeRow]
                 zs =
                     concat $ zipWith
-                        (legDistances ticked times task)
-                        [1 .. ]
+                        (\j x ->
+                            let ticked' = retick ticked start (j - 1)
+                            in legDistances ticked' times task j x)
+                        [start .. ]
                         xs
-
     where
         (TickedLookup lookupTicked) = tagTicked (Right tags)
+
+-- | For a given leg, only so many race zones can be ticked.
+retick :: Ticked -> Int -> Int -> Ticked
+retick rs@RaceSections{race} start leg =
+    rs { race = take (leg - start + 1) race }
 
 legDistances :: Ticked
              -> TrackTime

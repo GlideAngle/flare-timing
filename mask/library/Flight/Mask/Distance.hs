@@ -15,9 +15,9 @@ import Flight.Track.Cross (Fix(..))
 import Flight.Comp (Task(..))
 import Flight.Score (PilotDistance(..))
 import Flight.Units ()
-import Flight.Mask.Internal.Zone (TaskZone(..), fixFromFix, fixToPoint)
+import Flight.Mask.Internal.Zone (ZoneIdx, TaskZone(..), fixFromFix, fixToPoint)
 import Flight.Mask.Internal.Race (Sliver(..), Ticked)
-import Flight.Mask.Internal.Dash (dashToGoal)
+import Flight.Mask.Internal.Dash (dashToGoalR)
 import qualified Flight.Zone.Raw as Raw (RawZone(..))
 import Flight.Distance (TaskDistance(..))
 
@@ -46,9 +46,10 @@ dashDistancesToGoal
     -- [[1],[1,2],[1,2,3],[1,2,3,4]]
     if null zones then Nothing else Just
     $ lfg zoneToCyl task mark0
-    <$> drop 1 (inits fixes)
+    <$> drop 1 (inits ixs)
     where
         lfg = lastFixToGoal ticked sliver
+        ixs = index fixes
 
 dashDistanceToGoal
     :: (Real a, Fractional a)
@@ -60,13 +61,15 @@ dashDistanceToGoal
     -> Maybe (TaskDistance a)
     -- ^ Nothing indicates no such task or a task with no zones.
 dashDistanceToGoal
-    ticked sliver zoneToCyl
+    ticked
+    sliver zoneToCyl
     Task{speedSection, zones}
     MarkedFixes{fixes} =
     if null zones then Nothing else
-    dashToGoal ticked sliver fixToPoint speedSection zs fixes
+    dashToGoalR ticked sliver fixToPoint speedSection zs ixs
     where
         zs = zoneToCyl <$> zones
+        ixs = reverse . index $ fixes
 
 -- | The distance from the last fix to goal passing through the remaining
 -- control zones.
@@ -76,7 +79,7 @@ lastFixToGoal :: (Real a, Fractional a)
               -> (Raw.RawZone -> TaskZone a)
               -> Task
               -> UTCTime
-              -> [Kml.Fix]
+              -> [(ZoneIdx, Kml.Fix)]
               -> (Maybe Fix, Maybe (TaskDistance a))
 lastFixToGoal
     ticked
@@ -84,13 +87,14 @@ lastFixToGoal
     zoneToCyl
     Task{speedSection, zones}
     mark0
-    ys =
-    case reverse ys of
+    ixs =
+    case iys of
         [] -> (Nothing, Nothing)
-        (y : _) -> (Just $ fixFromFix mark0 (length ys - 1) y, d)
+        ((i, y) : _) -> (Just $ fixFromFix mark0 i y, d)
     where
-        d = dashToGoal ticked sliver fixToPoint speedSection zs ys
+        d = dashToGoalR ticked sliver fixToPoint speedSection zs iys
         zs = zoneToCyl <$> zones
+        iys = reverse ixs
 
 dashDistanceFlown
     :: (Real a, Fractional a)
@@ -110,10 +114,14 @@ dashDistanceFlown
     MarkedFixes{fixes} =
     if null zones then Nothing else do
         TaskDistance dPilot
-            <- dashToGoal ticked sliver fixToPoint speedSection zs fixes
+            <- dashToGoalR ticked sliver fixToPoint speedSection zs ixs
 
         let (MkQuantity diff) = dTask -: dPilot
 
         return $ PilotDistance diff
     where
         zs = zoneToCyl <$> zones
+        ixs = reverse . index $ fixes
+
+index :: [a] -> [(ZoneIdx, a)]
+index = zip [1 .. ]

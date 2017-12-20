@@ -45,7 +45,7 @@ type Crossing = Either ZoneEntry ZoneExit
 
 newtype OrdCrossing = OrdCrossing { unOrdCrossing :: Crossing }
 
-pos :: OrdCrossing -> Int
+pos :: OrdCrossing -> ZoneIdx
 pos (OrdCrossing (Left (ZoneEntry i _))) = i
 pos (OrdCrossing (Right (ZoneExit i _))) = i
 
