@@ -24,6 +24,7 @@ module Flight.Task
     , distanceEdgeToEdge
     -- * Zones
     , separatedZones
+    , fromZs
     ) where
 
 import Flight.PointToPoint.Segment (SpanLatLng)

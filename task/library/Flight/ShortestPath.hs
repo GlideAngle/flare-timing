@@ -9,13 +9,16 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE QuasiQuotes #-}
 
-{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE PartialTypeSignatures #-}
+{-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE DeriveFunctor #-}
+{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
 module Flight.ShortestPath
-    ( PathCost(..)
+    ( Zs(..)
+    , PathCost(..)
     , GraphBuilder
     , NodeConnector
     , CostSegment
@@ -23,6 +26,7 @@ module Flight.ShortestPath
     , AngleCut(..)
     , buildGraph
     , shortestPath 
+    , fromZs
     ) where
 
 import Prelude hiding (span)
@@ -64,6 +68,19 @@ type GraphBuilder a =
 
 newtype PathCost a = PathCost a deriving (Eq, Ord, Num, Real)
 
+data Zs a
+    = Zs a -- ^ All good, here's the wrapped value
+    | Z0 -- ^ No items when 2+ required
+    | Z1 -- ^ Only 1 item when 2+ required
+    | Zx String -- ^ Something else wrong
+    deriving (Eq, Ord, Functor)
+
+deriving instance Show a => Show (Zs a)
+
+fromZs :: Zs a -> Maybe a
+fromZs (Zs a) = Just a
+fromZs _ = Nothing
+
 -- | A point to point distance with path function.
 type DistancePointToPoint a = SpanLatLng a -> [Zone a] -> PathDistance a
 
@@ -75,12 +92,6 @@ data AngleCut a =
              , nextSweep :: AngleCut a -> AngleCut a
              }
 
-zeroDistance :: Num a => PathDistance a
-zeroDistance =
-    PathDistance { edgesSum = TaskDistance $ MkQuantity 0
-                 , vertices = []
-                 }
-
 shortestPath :: (Real a, Fractional a)
              => SpanLatLng a
              -> DistancePointToPoint a
@@ -89,26 +100,29 @@ shortestPath :: (Real a, Fractional a)
              -> AngleCut a
              -> Tolerance a
              -> [Zone a]
-             -> PathDistance a
-shortestPath _ _ _ _ _ _ [] = zeroDistance
-shortestPath _ _ _ _ _ _ [_] = zeroDistance
+             -> Zs (PathDistance a)
+shortestPath _ _ _ _ _ _ [] = Z0
+shortestPath _ _ _ _ _ _ [_] = Z1
 shortestPath span distancePointToPoint cs builder angleCut tolerance xs =
     case xs of
-        [] ->
-            zeroDistance
-
-        [_] ->
-            zeroDistance
-
+        [] -> Z0
+        [_] -> Z1
         (_ : _) ->
-            PathDistance { edgesSum = d
-                         , vertices = ptsCenterLine
-                         }
+            case zd of
+                (Z0, _) -> Z0
+                (Z1, _) -> Z1
+                (Zx msg, _) -> Zx msg
+                (Zs (PathCost pcd), ptsCenterLine) ->
+                    Zs $
+                    PathDistance
+                        { edgesSum = TaskDistance $ MkQuantity pcd
+                        , vertices = ptsCenterLine
+                        }
     where
-        (PathCost pcd, ptsCenterLine) =
-            distance span distancePointToPoint cs builder angleCut tolerance xs
+        zd =
+            distance
+                span distancePointToPoint cs builder angleCut tolerance xs
 
-        d = TaskDistance $ MkQuantity pcd 
 
 distance :: (Real a, Fractional a)
          => SpanLatLng a
@@ -118,12 +132,13 @@ distance :: (Real a, Fractional a)
          -> AngleCut a
          -> Tolerance a
          -> [Zone a]
-         -> (PathCost a, [ LatLng a [u| rad |] ])
-distance _ _ _ _ _ _ [] = (PathCost 0, [])
-distance _ _ _ _ _ _ [_] = (PathCost 0, [])
+         -> (Zs (PathCost a), [ LatLng a [u| rad |] ])
+distance _ _ _ _ _ _ [] = (Z0, [])
+distance _ _ _ _ _ _ [_] = (Z1, [])
 distance span distancePointToPoint cs builder cut tolerance xs
-    | not $ separatedZones span xs = (PathCost 0, [])
+    | not $ separatedZones span xs = (Zx "Zones not separated", [])
     | otherwise =
+        (\(a, b) -> (Zs a, b)) $
         case dist of
             Nothing -> (PathCost pointwise, edgesSum')
             Just d@(PathCost pcd) ->

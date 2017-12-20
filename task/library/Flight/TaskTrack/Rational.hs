@@ -58,7 +58,7 @@ import Flight.TaskTrack.Internal
     , toPoint
     , toCylinder
     )
-import Flight.ShortestPath (AngleCut(..), CostSegment)
+import Flight.ShortestPath (Zs(..), AngleCut(..), CostSegment, fromZs)
 
 taskTracks :: Bool
            -> (Int -> Bool)
@@ -79,8 +79,8 @@ taskTrack excludeWaypoints tdm zsRaw =
         TaskDistanceByAllMethods ->
             TaskTrack
                 { pointToPoint = Just pointTrackline
-                , edgeToEdge = Just edgeTrackline
-                , projection = Just projTrackline
+                , edgeToEdge = edgeTrackline
+                , projection = projTrackline
                 }
         TaskDistanceByPoints ->
             TaskTrack
@@ -91,14 +91,14 @@ taskTrack excludeWaypoints tdm zsRaw =
         TaskDistanceByEdges ->
             TaskTrack
                 { pointToPoint = Nothing
-                , edgeToEdge = Just edgeTrackline
+                , edgeToEdge = edgeTrackline
                 , projection = Nothing
                 }
         TaskDistanceByProjection ->
             TaskTrack
                 { pointToPoint = Nothing
                 , edgeToEdge = Nothing
-                , projection = Just projTrackline
+                , projection = projTrackline
                 }
     where
         zs :: [Zone Rational]
@@ -107,57 +107,11 @@ taskTrack excludeWaypoints tdm zsRaw =
         pointTrackline = goByPoint excludeWaypoints zs
 
         edgeTrackline =
-            goByEdge
-                excludeWaypoints
-                (distanceEdgeToEdge' (costSegment span) zs)
+            fromZs
+            $ (goByEdge excludeWaypoints)
+            <$> (distanceEdgeToEdge' (costSegment span) zs)
 
-        projTrackline =
-            ProjectedTrackLine { planar = planar
-                               , spherical = spherical
-                               }
-            where
-                -- NOTE: The projected distance is worked out from easting and
-                -- northing, in the projected plane but he distance for each leg
-                -- is measured on the sphere.
-                projected =
-                    goByEdge
-                        excludeWaypoints
-                        (distanceEdgeToEdge' costEastNorth zs)
-
-                ps :: [Zone Rational]
-                ps = toPoint <$> waypoints projected
-
-                (_, es) = partitionEithers $ zoneToProjectedEastNorth <$> ps 
-
-                -- NOTE: Workout the distance for each leg projected.
-                legs' =
-                    zipWith
-                        (\ a b ->
-                            edgesSum
-                            $ distanceEdgeToEdge' costEastNorth [a, b])
-                        ps
-                        (tail ps)
-
-                spherical =
-                    projected
-                        { distance = toKm . edgesSum . distancePointToPoint span $ ps
-                        } :: TrackLine
-
-                planar =
-                    PlanarTrackLine
-                        { distance = distance (projected :: TrackLine)
-                        , mappedZones =
-                            let us = fromUTMRefZone <$> es
-                                us' = nub us
-                            in if length us' == 1 then us' else us
-                        , mappedPoints =
-                            -- NOTE: Round to millimetres when easting and
-                            -- northing are in units of metres.
-                            roundEastNorth 3 . fromUTMRefEastNorth <$> es
-                        , legs = toKm <$> legs'
-                        , legsSum = toKm <$> scanl1 addTaskDistance legs'
-                        } :: PlanarTrackLine
-
+        projTrackline = goByProj excludeWaypoints zs
 -- | Convert to kilometres with mm accuracy.
 toKm :: (Real a, Fractional a) => TaskDistance a -> Double
 toKm = toKm' (dpRound 6 . toRational)
@@ -167,6 +121,54 @@ toKm' f (TaskDistance d) =
     fromRational $ f dKm
     where 
         MkQuantity dKm = convert d :: Quantity _ [u| km |]
+
+-- NOTE: The projected distance is worked out from easting and northing, in the
+-- projected plane but he distance for each leg is measured on the sphere.
+goByProj :: Bool -> [Zone Rational] -> Maybe ProjectedTrackLine
+goByProj excludeWaypoints zs = do
+    dEE <- fromZs $ distanceEdgeToEdge' costEastNorth zs
+
+    let projected = goByEdge excludeWaypoints dEE
+    let ps = toPoint <$> waypoints projected
+    let (_, es) = partitionEithers $ zoneToProjectedEastNorth <$> ps 
+
+    -- NOTE: Workout the distance for each leg projected.
+    let legs'' :: [Zs (TaskDistance Rational)] =
+            zipWith
+                (\ a b ->
+                    edgesSum
+                    <$> distanceEdgeToEdge' costEastNorth [a, b])
+                ps
+                (tail ps)
+
+    legs' :: [TaskDistance Rational] <- sequence $ fromZs <$> legs''
+
+    let spherical =
+            projected
+                { distance =
+                    toKm . edgesSum <$> distancePointToPoint span $ ps
+                } :: TrackLine
+
+    let planar =
+            PlanarTrackLine
+                { distance = distance (projected :: TrackLine)
+                , mappedZones =
+                    let us = fromUTMRefZone <$> es
+                        us' = nub us
+                    in if length us' == 1 then us' else us
+                , mappedPoints =
+                    -- NOTE: Round to millimetres when easting and
+                    -- northing are in units of metres.
+                    roundEastNorth 3 . fromUTMRefEastNorth <$> es
+                , legs = toKm <$> legs'
+                , legsSum = toKm <$> scanl1 addTaskDistance legs'
+                } :: PlanarTrackLine
+
+    return
+        ProjectedTrackLine
+            { planar = planar
+            , spherical = spherical
+            }
 
 goByPoint :: Bool -> [Zone Rational] -> TrackLine
 goByPoint excludeWaypoints zs =
@@ -235,7 +237,7 @@ goByEdge excludeWaypoints ed =
 
 distanceEdgeToEdge' :: CostSegment Rational
                     -> [Zone Rational]
-                    -> PathDistance Rational
+                    -> Zs (PathDistance Rational)
 distanceEdgeToEdge' segCost = 
     distanceEdgeToEdge span distancePointToPoint segCost cs cut mm30
 

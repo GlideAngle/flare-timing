@@ -14,7 +14,8 @@ import Flight.Zone (Zone(..))
 import Flight.Cylinder.Sample (Tolerance, ZonePoint(..))
 import Flight.Units ()
 import Flight.ShortestPath
-    ( PathCost(..)
+    ( Zs(..)
+    , PathCost(..)
     , NodeConnector
     , CostSegment
     , DistancePointToPoint
@@ -35,7 +36,7 @@ distanceEdgeToEdge :: (Real a, Fractional a)
                    -> AngleCut a
                    -> Tolerance a
                    -> [Zone a]
-                   -> PathDistance a
+                   -> Zs (PathDistance a)
 distanceEdgeToEdge span distancePointToPoint cseg cs =
     shortestPath span distancePointToPoint cs builder
     where
