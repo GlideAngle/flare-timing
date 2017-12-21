@@ -41,6 +41,7 @@ import Cmd.Options (description)
 import Flight.Comp
     ( AlignDir(..)
     , CompInputFile(..)
+    , CrossZoneFile(..)
     , TagZoneFile(..)
     , AlignTimeFile(..)
     , CompSettings(..)
@@ -48,6 +49,7 @@ import Flight.Comp
     , Task(..)
     , TrackFileFail
     , SpeedSection
+    , FlyingSection
     , compToCross
     , crossToTag
     , compFileToCompDir
@@ -73,7 +75,9 @@ import Flight.Task (SpanLatLng, CircumSample, AngleCut(..))
 import Flight.PointToPoint.Double
     (distanceHaversine, distancePointToPoint, costSegment)
 import Flight.Cylinder.Double (circumSample)
-import Flight.Scribe (readTagging, writeAlignTime)
+import Flight.Scribe (readCrossing, readTagging, writeAlignTime)
+import Flight.Lookup.Cross
+    (FlyingLookup(..), crossFlying)
 import Flight.Lookup.Tag
     (TickedLookup(..), PilotTagLookup(..), tagTicked, tagPilotTag)
 
@@ -107,12 +111,22 @@ drive o = do
 
 go :: CmdOptions -> CompInputFile -> IO ()
 go CmdOptions{..} compFile@(CompInputFile compPath) = do
+    let crossFile@(CrossZoneFile crossPath) = compToCross $ compFile
     let tagFile@(TagZoneFile tagPath) = crossToTag . compToCross $ compFile
     putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
+    putStrLn $ "Reading flying time range from '" ++ takeFileName crossPath ++ "'"
     putStrLn $ "Reading zone tags from '" ++ takeFileName tagPath ++ "'"
 
-    tags <- runExceptT $ readTagging tagFile
-    either print (f . checkAll) tags
+    crossing <- runExceptT $ readCrossing crossFile
+    tagging <- runExceptT $ readTagging tagFile
+
+    let flyingLookup = crossFlying crossing
+
+    case (crossing, tagging) of
+        (Left msg, _) -> putStrLn msg
+        (_, Left msg) -> putStrLn msg
+        (Right _, Right t) -> (f . checkAll flyingLookup) t
+
     where
         f = writeTime (IxTask <$> task) (Pilot <$> pilot) (CompInputFile compPath)
 
@@ -147,7 +161,8 @@ writeTime selectTasks selectPilots compFile f = do
 
             return ()
 
-checkAll :: Tagging
+checkAll :: FlyingLookup
+         -> Tagging
          -> CompInputFile
          -> [IxTask]
          -> [Pilot]
@@ -160,8 +175,8 @@ checkAll :: Tagging
                      (Pilot, Pilot -> [TimeRow])
                  ]
              ]
-checkAll tags =
-    checkTracks $ (\CompSettings{tasks} -> group tags tasks)
+checkAll flyingLookup tagging =
+    checkTracks $ (\CompSettings{tasks} -> group flyingLookup tagging tasks)
 
 includeTask :: [IxTask] -> IxTask -> Bool
 includeTask tasks = if null tasks then const True else (`elem` tasks)
@@ -201,8 +216,12 @@ mkTimeRow (Just t0) leg (Just Fix{time, lat, lng}, Just d) =
             , distance = unTaskDistance d
             }
 
-group :: Tagging -> FnIxTask (Pilot -> [TimeRow])
-group tags@Tagging{timing} tasks iTask@(IxTask i) fs p =
+group :: FlyingLookup -> Tagging -> FnIxTask (Pilot -> [TimeRow])
+group
+    (FlyingLookup lookupFlying)
+    tags@Tagging{timing}
+    tasks iTask@(IxTask i)
+    mf@MarkedFixes{fixes} p =
     case (tasks ^? element (i - 1), timing ^? element (i - 1)) of
         (_, Nothing) -> []
         (Nothing, _) -> []
@@ -219,6 +238,18 @@ group tags@Tagging{timing} tasks iTask@(IxTask i) fs p =
                 )
                 endZoneTag
             where
+                flyingRange :: FlyingSection Int =
+                    fromMaybe (Just (0, 0))
+                    $ join ((\f -> f iTask p) <$> lookupFlying)
+
+                -- NOTE: Ensure we're only considering flying time.
+                fs =
+                    case flyingRange of
+                        Nothing -> mf{fixes = []}
+                        Just (s, e) ->
+                            let range = Just (toInteger s, toInteger e)
+                            in mf{fixes = slice range fixes}
+
                 start = fromInteger start'
                 end = fromInteger end'
                 t0 = firstCrossing ss $ zonesFirst times

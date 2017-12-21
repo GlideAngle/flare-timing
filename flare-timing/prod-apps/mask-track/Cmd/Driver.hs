@@ -94,7 +94,7 @@ import Flight.Lookup.Tag
     )
 import Flight.Scribe
     (readTagging, readRoute, writeMasking, readDiscardFurther)
-import Flight.Lookup.TaskLength (TaskLengthLookup(..), routeLength)
+import Flight.Lookup.Route (RouteLookup(..), routeLength)
 import qualified Flight.Score as Gap (PilotDistance(..), bestTime)
 import Flight.Score
     ( PilotsAtEss(..)
@@ -168,7 +168,7 @@ go CmdOptions{..} compFile@(CompInputFile compPath) = do
         (CompInputFile compPath)
         (check math lookupTaskLength tags)
 
-writeMask :: TaskLengthLookup
+writeMask :: RouteLookup
           -> [IxTask]
           -> [Pilot]
           -> CompInputFile
@@ -187,7 +187,7 @@ writeMask :: TaskLengthLookup
              )
           -> IO ()
 writeMask
-    (TaskLengthLookup lookupTaskLength)
+    (RouteLookup lookupTaskLength)
     selectTasks selectPilots compFile f = do
 
     checks <- runExceptT $ f compFile selectTasks selectPilots
@@ -393,7 +393,7 @@ times xs =
                 }
 
 check :: Math
-      -> TaskLengthLookup
+      -> RouteLookup
       -> Either String Tagging
       -> CompInputFile
       -> [IxTask]
@@ -411,10 +411,10 @@ check math lengths tags = checkTracks $ \CompSettings{tasks} ->
     flown math lengths tags tasks
 
 flown :: Math
-      -> TaskLengthLookup
+      -> RouteLookup
       -> Either String Tagging
       -> FnIxTask (Pilot -> FlightStats)
-flown math (TaskLengthLookup lookupTaskLength) tags tasks iTask xs =
+flown math (RouteLookup lookupTaskLength) tags tasks iTask xs =
     maybe
         (const $ FlightStats Nothing Nothing)
         (\d -> flown' d math tags tasks iTask xs)

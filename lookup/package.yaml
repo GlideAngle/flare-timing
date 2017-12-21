@@ -37,8 +37,9 @@ library:
   - flight-mask
   source-dirs: library
   exposed-modules:
+  - Flight.Lookup.Route
+  - Flight.Lookup.Cross
   - Flight.Lookup.Tag
-  - Flight.Lookup.TaskLength
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
 name: flight-lookup
