@@ -51,7 +51,7 @@ import Flight.Path
 newtype IxTask = IxTask Int deriving (Eq, Show)
 
 -- | A 1-based index into the list of control zones marking the speed section.
-type SpeedSection = Maybe (Integer, Integer)
+type SpeedSection = Maybe (Int, Int)
 
 -- | A pair into the list of fixes marking those deemed logged while flying.
 -- These could be indices, seconds offsets or UTC times.

@@ -136,8 +136,8 @@ parseSpeedSection :: [(String, String)] -> SpeedSection
 parseSpeedSection [] = Nothing
 parseSpeedSection ((ss, es) : _) =
     case section of
-         Right [ ss', es' ] -> Just (ss', es')
-         _ -> Nothing
+        Right [ ss', es' ] -> Just (fromInteger ss', fromInteger es')
+        _ -> Nothing
     where
         section =
             sequence [ P.parse pNat "" ss

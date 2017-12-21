@@ -226,7 +226,7 @@ group
         (_, Nothing) -> []
         (Nothing, _) -> []
         (Just Task{speedSection = Nothing}, _) -> []
-        (Just task@Task{speedSection = ss@(Just (start', end'))}, Just times) ->
+        (Just task@Task{speedSection = ss@(Just (start, end))}, Just times) ->
             maybe
                 zs
                 ( (maybe zs (\z -> zs ++ [z]))
@@ -246,12 +246,8 @@ group
                 fs =
                     case flyingRange of
                         Nothing -> mf{fixes = []}
-                        Just (s, e) ->
-                            let range = Just (toInteger s, toInteger e)
-                            in mf{fixes = slice range fixes}
+                        range -> mf{fixes = slice range fixes}
 
-                start = fromInteger start'
-                end = fromInteger end'
                 t0 = firstCrossing ss $ zonesFirst times
 
                 xs :: [MarkedFixes]
@@ -314,7 +310,7 @@ firstCrossing :: SpeedSection -> [Maybe UTCTime] -> Maybe UTCTime
 firstCrossing _ [] = Nothing
 firstCrossing Nothing (t : _) = t
 firstCrossing (Just (leg, _)) ts =
-    case drop (fromInteger leg - 1) ts of
+    case drop (leg - 1) ts of
         [] -> Nothing
         (t : _) -> t
 

@@ -143,9 +143,8 @@ isStartExit span zoneToCyl Task{speedSection, zones} =
         Nothing ->
             False
 
-        Just (ii, _) ->
-            let i = fromInteger ii
-            in case (zones ^? element (i - 1), zones ^? element i) of
+        Just (i, _) ->
+            case (zones ^? element (i - 1), zones ^? element i) of
                 (Just start, Just tp1) ->
                     separatedZones span
                     $ unTaskZone . zoneToCyl
