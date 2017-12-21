@@ -35,7 +35,7 @@ import System.Clock (getTime, Clock(Monotonic))
 import Control.Lens ((^?), element)
 import Control.Monad (join, mapM, zipWithM)
 import Control.Monad.Except (ExceptT, runExceptT)
-import Data.UnitsOfMeasure ((/:), u, convert, toRational', fromRational')
+import Data.UnitsOfMeasure ((/:), (-:), u, convert, toRational', fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import System.FilePath ((</>), takeFileName)
 import qualified Data.Number.FixedFunctions as F
@@ -214,10 +214,11 @@ writeMask
             let bs' :: [[(Pilot, Time.TickRow)]] = catMaybes <$> bs''
             let bs :: [Map Pilot Time.TickRow] = Map.fromList <$> bs'
 
-            let ds = zipWith mergeTaskBestDistance bs ds'
-            let ls =
+            let ls :: [Maybe (TaskDistance Double)] =
                     (\i -> join ((\g -> g i) <$> lookupTaskLength))
                     <$> iTasks
+
+            let ds = zipWith3 mergeTaskBestDistance bs ls ds'
 
             let maskTrack =
                     Masking
@@ -236,30 +237,52 @@ writeMask
 
 mergeTaskBestDistance
     :: Map Pilot Time.TickRow
+    -> Maybe (TaskDistance Double)
     -> [(Pilot, TrackBestDistance)]
     -> [(Pilot, TrackBestDistance)]
-mergeTaskBestDistance m =
+mergeTaskBestDistance m td =
     sortOn (fmap togo . best . snd)
-    .  fmap (mergePilotBestDistance m)
+    . fmap (mergePilotBestDistance m td)
 
 mergePilotBestDistance
     :: Map Pilot Time.TickRow
+    -> Maybe (TaskDistance Double)
     -> (Pilot, TrackBestDistance)
     -> (Pilot, TrackBestDistance)
-mergePilotBestDistance m pd@(p, d) =
+mergePilotBestDistance m td pd@(p, d) =
     maybe
         pd
-        (\Time.TickRow{distance} ->
-            (p,)
-            $
-            d{ best =
-                Just
-                $ TrackDistance
-                    { togo = Just distance
-                    , made = Nothing
-                    }
-             })
-    (Map.lookup p m)
+        ((p,) . madeDistance td d)
+        (Map.lookup p m)
+
+madeDistance
+    :: Maybe (TaskDistance Double)
+    -> TrackBestDistance
+    -> Time.TickRow
+    -> TrackBestDistance
+
+madeDistance Nothing d Time.TickRow{distance} =
+    d{ best =
+        Just
+        $ TrackDistance
+            { togo = Just distance
+            , made = Nothing
+            }
+     }
+
+madeDistance (Just (TaskDistance td)) d Time.TickRow{distance} =
+    d{ best =
+        Just
+        $ TrackDistance
+            { togo = Just distance
+            , made = Just . unTaskDistance . TaskDistance $ td -: togo'
+            }
+     }
+    where
+        togo :: Quantity Double [u| km |]
+        togo = MkQuantity distance
+
+        togo' = convert togo :: Quantity Double [u| m |]
 
 readCompBestDistances
     :: CompInputFile
