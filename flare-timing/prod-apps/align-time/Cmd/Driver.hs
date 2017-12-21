@@ -255,12 +255,12 @@ group
 
                 ticked =
                     fromMaybe (RaceSections [] [] [])
-                    $ join ((\f -> f p ss iTask fs) <$> lookupTicked)
+                    $ join ((\f -> f iTask ss p fs) <$> lookupTicked)
 
                 endZoneTag :: Maybe Fix
                 endZoneTag = do
                     ts :: [Maybe Fix]
-                        <- join ((\f -> f p ss iTask fs) <$> lookupZoneTags)
+                        <- join ((\f -> f iTask ss p fs) <$> lookupZoneTags)
 
                     us :: [Fix]
                         <- sequence ts

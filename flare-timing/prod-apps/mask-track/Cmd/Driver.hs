@@ -437,15 +437,15 @@ flown' dTaskF@(TaskDistance td) math tags tasks iTask@(IxTask i) xs p =
     where
         ticked =
             fromMaybe (RaceSections [] [] [])
-            $ join ((\f -> f p speedSection' iTask xs) <$> lookupTicked)
+            $ join ((\f -> f iTask speedSection' p xs) <$> lookupTicked)
 
         pilotTime =
             diffTimeHours
-            <$> join ((\f -> f p speedSection' iTask xs) <$> lookupPilotTime)
+            <$> join ((\f -> f iTask speedSection' p xs) <$> lookupPilotTime)
 
         arrivalRank =
             PositionAtEss . toInteger
-            <$> join ((\f -> f p speedSection' iTask xs) <$> lookupArrivalRank)
+            <$> join ((\f -> f iTask speedSection' p xs) <$> lookupArrivalRank)
 
         distance task =
             TrackBestDistance
