@@ -24,7 +24,7 @@ import Prelude hiding (last)
 import qualified Data.Ratio as Ratio
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
-import Data.Maybe (fromMaybe, catMaybes)
+import Data.Maybe (fromMaybe, catMaybes, isJust)
 import Data.List (sortOn)
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map (fromList, lookup)
@@ -213,6 +213,7 @@ writeMask
 
             let bs' :: [[(Pilot, Time.TickRow)]] = catMaybes <$> bs''
             let bs :: [Map Pilot Time.TickRow] = Map.fromList <$> bs'
+            let bestTime = (fmap . fmap) (ViaScientific . fst) vs
 
             let ls :: [Maybe (TaskDistance Double)] =
                     (\i -> join ((\g -> g i) <$> lookupTaskLength))
@@ -220,14 +221,32 @@ writeMask
 
             let ds = zipWith3 mergeTaskBestDistance bs ls ds'
 
+            let us'' :: [[Maybe Double]] =
+                    (fmap . fmap) (join . fmap made . best . snd) ds
+
+            let us' :: [[Double]] = catMaybes <$> us''
+
+            let us :: [Maybe Double] =
+                    (\xs -> if null xs then Nothing else Just . maximum $ xs)
+                    <$> us'
+
+            let bestDistance :: [Maybe Double] =
+                    zipWith3
+                        (\td bt bd ->
+                            if isJust bt then unTaskDistance <$> td
+                                         else bd)
+                        ls
+                        bestTime
+                        us
+
             let maskTrack =
                     Masking
                         { pilotsAtEss =
                             (PilotsAtEss . toInteger . length) <$> as
 
-                        , bestTime = (fmap . fmap) (ViaScientific . fst) vs
+                        , bestTime = bestTime
                         , taskDistance = (fmap . fmap) unTaskDistance ls
-                        , bestDistance = []
+                        , bestDistance = bestDistance
                         , arrival = as
                         , speed = (fromMaybe []) <$> (fmap . fmap) snd vs
                         , distance = ds
