@@ -7,9 +7,9 @@
 
 module Flight.Lookup.Tag
     ( ArrivalRankLookup(..)
-    , PilotTimeLookup(..)
-    , PilotTagLookup(..)
-    , TickedLookup(..)
+    , TimeLookup(..)
+    , TagLookup(..)
+    , TickLookup(..)
     , StartEnd
     , tagArrivalRank
     , tagPilotTime
@@ -33,23 +33,23 @@ type TaggingLookup a =
     Pilot -> SpeedSection -> IxTask -> Kml.MarkedFixes -> Maybe a
 
 newtype ArrivalRankLookup = ArrivalRankLookup (Maybe (TaggingLookup Int))
-newtype PilotTimeLookup = PilotTimeLookup (Maybe (TaggingLookup StartEnd))
-newtype PilotTagLookup = PilotTagLookup (Maybe (TaggingLookup [Maybe Fix]))
-newtype TickedLookup = TickedLookup (Maybe (TaggingLookup Ticked))
+newtype TimeLookup = TimeLookup (Maybe (TaggingLookup StartEnd))
+newtype TagLookup = TagLookup (Maybe (TaggingLookup [Maybe Fix]))
+newtype TickLookup = TickLookup (Maybe (TaggingLookup Ticked))
 
 type StartEnd = (UTCTime, UTCTime)
 
-tagTicked :: Either String Tagging -> TickedLookup
-tagTicked (Left _) = TickedLookup Nothing
-tagTicked (Right x) = TickedLookup (Just $ ticked x)
+tagTicked :: Either String Tagging -> TickLookup
+tagTicked (Left _) = TickLookup Nothing
+tagTicked (Right x) = TickLookup (Just $ ticked x)
 
-tagPilotTime :: Either String Tagging -> PilotTimeLookup
-tagPilotTime (Left _) = PilotTimeLookup Nothing
-tagPilotTime (Right x) = PilotTimeLookup (Just $ timeElapsed x)
+tagPilotTime :: Either String Tagging -> TimeLookup
+tagPilotTime (Left _) = TimeLookup Nothing
+tagPilotTime (Right x) = TimeLookup (Just $ timeElapsed x)
 
-tagPilotTag :: Either String Tagging -> PilotTagLookup
-tagPilotTag (Left _) = PilotTagLookup Nothing
-tagPilotTag (Right x) = PilotTagLookup (Just $ tagged x)
+tagPilotTag :: Either String Tagging -> TagLookup
+tagPilotTag (Left _) = TagLookup Nothing
+tagPilotTag (Right x) = TagLookup (Just $ tagged x)
 
 tagArrivalRank :: Either String Tagging -> ArrivalRankLookup
 tagArrivalRank (Left _) = ArrivalRankLookup Nothing

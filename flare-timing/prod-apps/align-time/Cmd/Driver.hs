@@ -79,7 +79,7 @@ import Flight.Scribe (readCrossing, readTagging, writeAlignTime)
 import Flight.Lookup.Cross
     (FlyingLookup(..), crossFlying)
 import Flight.Lookup.Tag
-    (TickedLookup(..), PilotTagLookup(..), tagTicked, tagPilotTag)
+    (TickLookup(..), TagLookup(..), tagTicked, tagPilotTag)
 
 type Leg = Int
 
@@ -276,8 +276,8 @@ group
                         [start .. ]
                         xs
     where
-        (TickedLookup lookupTicked) = tagTicked (Right tags)
-        (PilotTagLookup lookupZoneTags) = tagPilotTag (Right tags)
+        (TickLookup lookupTicked) = tagTicked (Right tags)
+        (TagLookup lookupZoneTags) = tagPilotTag (Right tags)
 
 -- | For a given leg, only so many race zones can be ticked.
 retick :: Ticked -> Int -> Int -> Ticked

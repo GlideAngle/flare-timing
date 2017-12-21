@@ -89,7 +89,7 @@ import Flight.Cmd.Paths (checkPaths)
 import Flight.Cmd.Options (Math(..), CmdOptions(..), ProgramName(..), mkOptions)
 import Cmd.Options (description)
 import Flight.Lookup.Tag
-    ( ArrivalRankLookup(..), PilotTimeLookup(..), TickedLookup(..), StartEnd
+    ( ArrivalRankLookup(..), TimeLookup(..), TickLookup(..), StartEnd
     , tagArrivalRank, tagPilotTime, tagTicked
     )
 import Flight.Scribe
@@ -503,9 +503,9 @@ flown' dTaskF@(TaskDistance td) math tags tasks iTask@(IxTask i) xs p =
                 Nothing -> Nothing
                 Just Task{..} -> speedSection
 
-        (TickedLookup lookupTicked) = tagTicked tags
+        (TickLookup lookupTicked) = tagTicked tags
         (ArrivalRankLookup lookupArrivalRank) = tagArrivalRank tags
-        (PilotTimeLookup lookupPilotTime) = tagPilotTime tags
+        (TimeLookup lookupPilotTime) = tagPilotTime tags
         dTaskR = TaskDistance $ toRational' td
 
 zoneToCylR :: RawZone -> TaskZone Rational
