@@ -240,6 +240,8 @@ executables:
     - formatting
     - numbers
     - time
+    - vector
+    - containers
     - aeson-via
     - siggy-chardust
     - flight-cmd

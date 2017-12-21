@@ -72,9 +72,9 @@ instance FromJSON TrackArrival
 
 data TrackBestDistance =
     TrackBestDistance
-        { best :: TrackDistance
+        { best :: Maybe TrackDistance
         -- ^ The best distance achieved.
-        , last :: TrackDistance
+        , last :: Maybe TrackDistance
         -- ^ The distance at landing if landed out.
         }
         deriving (Eq, Ord, Show, Generic)

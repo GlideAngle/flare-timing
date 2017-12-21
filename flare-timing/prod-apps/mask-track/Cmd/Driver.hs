@@ -26,18 +26,22 @@ import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
 import Data.Maybe (fromMaybe, catMaybes)
 import Data.List (sortOn)
+import Data.Map.Strict (Map)
+import qualified Data.Map.Strict as Map (fromList, lookup)
 import Formatting ((%), fprint)
 import Data.Time.Clock (diffUTCTime)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Control.Lens ((^?), element)
-import Control.Monad (join, mapM_)
+import Control.Monad (join, mapM, zipWithM)
 import Control.Monad.Except (ExceptT, runExceptT)
 import Data.UnitsOfMeasure ((/:), u, convert, toRational', fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
-import System.FilePath (takeFileName)
+import System.FilePath ((</>), takeFileName)
 import qualified Data.Number.FixedFunctions as F
 import Data.Aeson.ViaScientific (ViaScientific(..))
+import Data.Vector (Vector)
+import qualified Data.Vector as V (last, null)
 
 import Flight.Route (TaskRoutes(..))
 import Flight.Comp
@@ -69,6 +73,7 @@ import Flight.Track.Mask
     , TrackDistance(..)
     )
 import Flight.Track.Tag (Tagging)
+import qualified Flight.Track.Time as Time (TickRow(..))
 import Flight.Zone (Bearing(..))
 import Flight.Zone.Raw (RawZone)
 import Flight.LatLng.Rational (Epsilon(..), defEps)
@@ -88,7 +93,8 @@ import Flight.Lookup.Tag
     ( ArrivalRankLookup(..), PilotTimeLookup(..), TickedLookup(..), StartEnd
     , tagArrivalRank, tagPilotTime, tagTicked
     )
-import Flight.Scribe (readTagging, readRoute, writeMasking)
+import Flight.Scribe
+    (readTagging, readRoute, writeMasking, readDiscardFurther)
 import Flight.Lookup.TaskLength (TaskLengthLookup(..), routeLength)
 import qualified Flight.Score as Gap (PilotDistance(..), bestTime)
 import Flight.Score
@@ -99,8 +105,16 @@ import Flight.Score
     , arrivalFraction
     , speedFraction
     )
+import Flight.Comp
+    ( DiscardDir(..)
+    , AlignTimeFile(..)
+    , DiscardFurtherFile(..)
+    , discardDir
+    , alignPath
+    , compFileToCompDir
+    )
     
-type FlightStats = (Maybe (PilotTime, PositionAtEss), Maybe TrackDistance)
+type FlightStats = (Maybe (PilotTime, PositionAtEss), Maybe TrackBestDistance)
 
 driverMain :: IO ()
 driverMain = do
@@ -179,33 +193,107 @@ writeMask selectTasks selectPilots compFile f = do
                             Right (p, g) -> (p, g p))
                         comp
 
-            let d' :: [[(Pilot, TrackDistance)]] = distances <$> ys
-            let a :: [[(Pilot, TrackArrival)]] = arrivals <$> ys
-            let s :: [Maybe (BestTime, [(Pilot, TrackSpeed)])] = times <$> ys
+            let ds' :: [[(Pilot, TrackBestDistance)]] = distances <$> ys
+            let as :: [[(Pilot, TrackArrival)]] = arrivals <$> ys
+            let vs :: [Maybe (BestTime, [(Pilot, TrackSpeed)])] = times <$> ys
 
-            let dd = 
-                    (fmap . fmap)
-                    (\(p, d) ->
-                        (p,) $
-                        TrackBestDistance { best = d , last = d })
-                    d'
+            bs'' :: [[Maybe (Pilot, Time.TickRow)]]
+                    <- readCompBestDistances
+                        compFile selectTasks ((fmap . fmap) fst ds')
+
+            let bs' :: [[(Pilot, Time.TickRow)]] = catMaybes <$> bs''
+            let bs :: [Map Pilot Time.TickRow] = Map.fromList <$> bs'
+
+            let ds = zipWith mergeTaskBestDistance bs ds'
 
             let maskTrack =
                     Masking
                         { pilotsAtEss =
-                            (PilotsAtEss . toInteger . length) <$> a 
+                            (PilotsAtEss . toInteger . length) <$> as
 
-                        , bestTime = (fmap . fmap) (ViaScientific . fst) s
-                        , arrival = a
-                        , speed = (fromMaybe []) <$> (fmap . fmap) snd s
-                        , distance = dd
+                        , bestTime = (fmap . fmap) (ViaScientific . fst) vs
+                        , arrival = as
+                        , speed = (fromMaybe []) <$> (fmap . fmap) snd vs
+                        , distance = ds
                         }
 
             writeMasking (compToMask compFile) maskTrack
 
-distances :: [(Pilot, FlightStats)] -> [(Pilot, TrackDistance)]
+mergeTaskBestDistance
+    :: Map Pilot Time.TickRow
+    -> [(Pilot, TrackBestDistance)]
+    -> [(Pilot, TrackBestDistance)]
+mergeTaskBestDistance m =
+    sortOn (fmap togo . best . snd)
+    .  fmap (mergePilotBestDistance m)
+
+mergePilotBestDistance
+    :: Map Pilot Time.TickRow
+    -> (Pilot, TrackBestDistance)
+    -> (Pilot, TrackBestDistance)
+mergePilotBestDistance m pd@(p, d) =
+    maybe
+        pd
+        (\Time.TickRow{distance} ->
+            (p,)
+            $
+            d{ best =
+                Just
+                $ TrackDistance
+                    { togo = Just distance
+                    , made = Nothing
+                    }
+             })
+    (Map.lookup p m)
+
+readCompBestDistances
+    :: CompInputFile
+    -> [IxTask]
+    -> [[Pilot]]
+    -> IO [[Maybe (Pilot, Time.TickRow)]]
+readCompBestDistances compFile selectTasks pss =
+    zipWithM
+        (\ i ps ->
+            if not (includeTask selectTasks i)
+               then return []
+               else readTaskBestDistances compFile i ps)
+        (IxTask <$> [1 .. ])
+        pss
+
+readTaskBestDistances
+    :: CompInputFile
+    -> IxTask
+    -> [Pilot]
+    -> IO [Maybe (Pilot, Time.TickRow)]
+readTaskBestDistances compFile i ps =
+    mapM (readPilotBestDistance compFile i) ps
+
+includeTask :: [IxTask] -> IxTask -> Bool
+includeTask tasks = if null tasks then const True else (`elem` tasks)
+
+readPilotBestDistance
+    :: CompInputFile
+    -> IxTask
+    -> Pilot
+    -> IO (Maybe (Pilot, Time.TickRow))
+readPilotBestDistance compFile (IxTask iTask) pilot = do
+    rows <-
+        runExceptT
+        $ readDiscardFurther (DiscardFurtherFile (dOut </> file))
+
+    return $ (pilot,) <$> either (const Nothing) (lastRow . snd) rows
+    where
+        dir = compFileToCompDir compFile
+        (_, AlignTimeFile file) = alignPath dir iTask pilot
+        (DiscardDir dOut) = discardDir dir iTask
+
+lastRow :: Vector Time.TickRow -> Maybe Time.TickRow
+lastRow xs =
+    if V.null xs then Nothing else Just $ V.last xs
+
+distances :: [(Pilot, FlightStats)] -> [(Pilot, TrackBestDistance)]
 distances xs =
-    sortOn (togo . snd) . catMaybes
+    catMaybes
     $ fmap (\(p, (_, d)) -> (p,) <$> d) xs
 
 arrivals :: [(Pilot, FlightStats)] -> [(Pilot, TrackArrival)]
@@ -298,9 +386,14 @@ flown' dTaskF@(TaskDistance td) math tags tasks iTask@(IxTask i) xs p =
             <$> join ((\f -> f p speedSection' iTask xs) <$> lookupArrivalRank)
 
         distance task =
-            TrackDistance
-                { togo = unTaskDistance <$> dg task math
-                , made = fromRational <$> unPilotDistance <$> df task math
+            TrackBestDistance
+                { best = Nothing
+                , last =
+                    Just
+                    $ TrackDistance
+                        { togo = unTaskDistance <$> dgLast task math
+                        , made = fromRational <$> unPilotDistance <$> dfLast task math
+                        }
                 }
 
         dppR = Rat.distancePointToPoint
@@ -309,8 +402,8 @@ flown' dTaskF@(TaskDistance td) math tags tasks iTask@(IxTask i) xs p =
         csegR = Rat.costSegment spanR
         csegF = Dbl.costSegment spanF
 
-        dg :: Task -> Math -> Maybe (TaskDistance Double)
-        dg task =
+        dgLast :: Task -> Math -> Maybe (TaskDistance Double)
+        dgLast task =
             \case
             Floating ->
                 dashDistanceToGoal
@@ -325,8 +418,8 @@ flown' dTaskF@(TaskDistance td) math tags tasks iTask@(IxTask i) xs p =
                     (Sliver spanR dppR csegR csR cutR)
                     zoneToCylR task xs
 
-        df :: Task -> Math -> Maybe (Gap.PilotDistance Double)
-        df task =
+        dfLast :: Task -> Math -> Maybe (Gap.PilotDistance Double)
+        dfLast task =
             \case
             Floating ->
                 dashDistanceFlown
