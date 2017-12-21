@@ -39,6 +39,8 @@ data Masking =
     Masking
         { pilotsAtEss :: [PilotsAtEss]
         , bestTime :: [Maybe (ViaScientific BestTime)]
+        , taskDistance :: [Maybe Double]
+        , bestDistance :: [Maybe Double]
         , arrival :: [[(Pilot, TrackArrival)]]
         , speed :: [[(Pilot, TrackSpeed)]]
         , distance :: [[(Pilot, TrackBestDistance)]]
@@ -109,11 +111,24 @@ cmp a b =
         ("bestTime", "pilotsAtEss") -> GT
         ("bestTime", _) -> LT
 
+        ("taskDistance", "pilotsAtEss") -> GT
+        ("taskDistance", "bestTime") -> GT
+        ("taskDistance", _) -> LT
+
+        ("bestDistance", "pilotsAtEss") -> GT
+        ("bestDistance", "bestTime") -> GT
+        ("bestDistance", "taskDistance") -> GT
+        ("bestDistance", _) -> LT
+
         ("arrival", "pilotsAtEss") -> GT
         ("arrival", "bestTime") -> GT
+        ("arrival", "taskDistance") -> GT
+        ("arrival", "bestDistance") -> GT
         ("arrival", _) -> LT
 
         ("speed", "pilotsAtEss") -> GT
+        ("speed", "taskDistance") -> GT
+        ("speed", "bestDistance") -> GT
         ("speed", "bestTime") -> GT
         ("speed", "arrival") -> GT
         ("speed", _) -> LT

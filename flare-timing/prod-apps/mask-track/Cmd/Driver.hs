@@ -43,7 +43,6 @@ import Data.Aeson.ViaScientific (ViaScientific(..))
 import Data.Vector (Vector)
 import qualified Data.Vector as V (last, null)
 
-import Flight.Route (TaskRoutes(..))
 import Flight.Comp
     ( Pilot(..)
     , CompInputFile(..)
@@ -114,7 +113,11 @@ import Flight.Comp
     , compFileToCompDir
     )
     
-type FlightStats = (Maybe (PilotTime, PositionAtEss), Maybe TrackBestDistance)
+data FlightStats =
+    FlightStats
+        { statTimeRank :: Maybe (PilotTime, PositionAtEss)
+        , statDistance :: Maybe TrackBestDistance
+        }
 
 driverMain :: IO ()
 driverMain = do
@@ -155,15 +158,18 @@ go CmdOptions{..} compFile@(CompInputFile compPath) = do
     putStrLn $ "Reading zone tags from '" ++ takeFileName tagPath ++ "'"
 
     tags <- runExceptT $ readTagging tagFile
-    lengths <- runExceptT $ readRoute lenFile
+    routes <- runExceptT $ readRoute lenFile
+    let lookupTaskLength = routeLength routes
 
     writeMask
+        lookupTaskLength
         (IxTask <$> task)
         (Pilot <$> pilot)
         (CompInputFile compPath)
-        (check lengths math tags)
+        (check math lookupTaskLength tags)
 
-writeMask :: [IxTask]
+writeMask :: TaskLengthLookup
+          -> [IxTask]
           -> [Pilot]
           -> CompInputFile
           -> (CompInputFile
@@ -180,7 +186,10 @@ writeMask :: [IxTask]
                    ]
              )
           -> IO ()
-writeMask selectTasks selectPilots compFile f = do
+writeMask
+    (TaskLengthLookup lookupTaskLength)
+    selectTasks selectPilots compFile f = do
+
     checks <- runExceptT $ f compFile selectTasks selectPilots
 
     case checks of
@@ -189,10 +198,11 @@ writeMask selectTasks selectPilots compFile f = do
             let ys :: [[(Pilot, FlightStats)]] =
                     (fmap . fmap)
                         (\case
-                            Left (p, _) -> (p, (Nothing, Nothing))
+                            Left (p, _) -> (p, FlightStats Nothing Nothing)
                             Right (p, g) -> (p, g p))
                         comp
 
+            let iTasks = IxTask <$> [1 .. length ys]
             let ds' :: [[(Pilot, TrackBestDistance)]] = distances <$> ys
             let as :: [[(Pilot, TrackArrival)]] = arrivals <$> ys
             let vs :: [Maybe (BestTime, [(Pilot, TrackSpeed)])] = times <$> ys
@@ -205,6 +215,9 @@ writeMask selectTasks selectPilots compFile f = do
             let bs :: [Map Pilot Time.TickRow] = Map.fromList <$> bs'
 
             let ds = zipWith mergeTaskBestDistance bs ds'
+            let ls =
+                    (\i -> join ((\g -> g i) <$> lookupTaskLength))
+                    <$> iTasks
 
             let maskTrack =
                     Masking
@@ -212,6 +225,8 @@ writeMask selectTasks selectPilots compFile f = do
                             (PilotsAtEss . toInteger . length) <$> as
 
                         , bestTime = (fmap . fmap) (ViaScientific . fst) vs
+                        , taskDistance = (fmap . fmap) unTaskDistance ls
+                        , bestDistance = []
                         , arrival = as
                         , speed = (fromMaybe []) <$> (fmap . fmap) snd vs
                         , distance = ds
@@ -294,14 +309,17 @@ lastRow xs =
 distances :: [(Pilot, FlightStats)] -> [(Pilot, TrackBestDistance)]
 distances xs =
     catMaybes
-    $ fmap (\(p, (_, d)) -> (p,) <$> d) xs
+    $ fmap (\(p, FlightStats{..}) -> (p,) <$> statDistance) xs
 
 arrivals :: [(Pilot, FlightStats)] -> [(Pilot, TrackArrival)]
 arrivals xs =
     sortOn (rank . snd) $ (fmap . fmap) f ys
     where
         ys :: [(Pilot, PositionAtEss)]
-        ys = catMaybes $ (\(p, (a, _)) -> ((p,) . snd) <$> a) <$> xs
+        ys =
+            catMaybes
+            $ (\(p, FlightStats{..}) -> ((p,) . snd) <$> statTimeRank)
+            <$> xs
 
         pilots :: PilotsAtEss
         pilots = PilotsAtEss . toInteger $ length ys
@@ -318,7 +336,10 @@ times xs =
     <$> Gap.bestTime ts
     where
         ys :: [(Pilot, PilotTime)]
-        ys = catMaybes $ (\(p, (a, _)) -> ((p,) . fst) <$> a) <$> xs
+        ys =
+            catMaybes
+            $ (\(p, FlightStats{..}) -> ((p,) . fst) <$> statTimeRank)
+            <$> xs
 
         ts :: [PilotTime]
         ts = snd <$> ys
@@ -329,8 +350,8 @@ times xs =
                 , frac = ViaScientific $ speedFraction best t
                 }
 
-check :: Either String TaskRoutes
-      -> Math
+check :: Math
+      -> TaskLengthLookup
       -> Either String Tagging
       -> CompInputFile
       -> [IxTask]
@@ -344,21 +365,20 @@ check :: Either String TaskRoutes
                   (Pilot, Pilot -> FlightStats)
               ]
           ]
-check lengths math tags = checkTracks $ \CompSettings{tasks} ->
-    flown lengths math tags tasks
+check math lengths tags = checkTracks $ \CompSettings{tasks} ->
+    flown math lengths tags tasks
 
-flown :: Either String TaskRoutes
-      -> Math
+flown :: Math
+      -> TaskLengthLookup
       -> Either String Tagging
       -> FnIxTask (Pilot -> FlightStats)
-flown routes math tags tasks iTask xs =
+flown math (TaskLengthLookup lookupTaskLength) tags tasks iTask xs =
     maybe
-        (const (Nothing, Nothing))
+        (const $ FlightStats Nothing Nothing)
         (\d -> flown' d math tags tasks iTask xs)
         taskLength
     where
         taskLength = join ((\f -> f iTask) <$> lookupTaskLength)
-        (TaskLengthLookup lookupTaskLength) = routeLength routes
 
 flown' :: TaskDistance Double
        -> Math
@@ -366,12 +386,12 @@ flown' :: TaskDistance Double
        -> FnIxTask (Pilot -> FlightStats)
 flown' dTaskF@(TaskDistance td) math tags tasks iTask@(IxTask i) xs p =
     case tasks ^? element (i - 1) of
-        Nothing -> (Nothing, Nothing)
+        Nothing -> FlightStats Nothing Nothing
         Just task' ->
             case (pilotTime, arrivalRank) of
-                (Nothing, _) -> (Nothing, Just $ distance task')
-                (_, Nothing) -> (Nothing, Just $ distance task')
-                (Just a, Just b) -> (Just (a, b), Nothing)
+                (Nothing, _) -> FlightStats Nothing (Just $ distance task')
+                (_, Nothing) -> FlightStats Nothing (Just $ distance task')
+                (Just a, Just b) -> FlightStats (Just (a, b)) Nothing
     where
         ticked =
             fromMaybe (RaceSections [] [] [])
