@@ -40,20 +40,16 @@ newtype TickLookup = TickLookup (Maybe (TaggingLookup Ticked))
 type StartEnd = (UTCTime, UTCTime)
 
 tagTicked :: Either String Tagging -> TickLookup
-tagTicked (Left _) = TickLookup Nothing
-tagTicked (Right x) = TickLookup (Just $ ticked x)
+tagTicked = TickLookup . either (const Nothing) (Just . ticked)
 
 tagPilotTime :: Either String Tagging -> TimeLookup
-tagPilotTime (Left _) = TimeLookup Nothing
-tagPilotTime (Right x) = TimeLookup (Just $ timeElapsed x)
+tagPilotTime = TimeLookup . either (const Nothing) (Just . timeElapsed)
 
 tagPilotTag :: Either String Tagging -> TagLookup
-tagPilotTag (Left _) = TagLookup Nothing
-tagPilotTag (Right x) = TagLookup (Just $ tagged x)
+tagPilotTag = TagLookup . either (const Nothing) (Just . tagged)
 
 tagArrivalRank :: Either String Tagging -> ArrivalRankLookup
-tagArrivalRank (Left _) = ArrivalRankLookup Nothing
-tagArrivalRank (Right x) = ArrivalRankLookup (Just $ arrivalRank x)
+tagArrivalRank = ArrivalRankLookup . either (const Nothing) (Just . arrivalRank)
 
 ticked :: Tagging
        -> Pilot
