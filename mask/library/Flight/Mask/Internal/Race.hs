@@ -75,12 +75,14 @@ section Nothing xs =
         , epilog = []
         }
 
-section (Just (s, e)) xs =
+section (Just (s', e')) xs =
     RaceSections 
         { prolog = take s xs
         , race = take (e - s + 1) . drop s $ xs
         , epilog = drop (e + 1) xs
         }
+    where
+        (s, e) = (s' - 1, e' - 1)
 
 cons :: (a -> TrackZone b) -> a -> [Zone b] -> [Zone b]
 cons mkZone x zs = unTrackZone (mkZone x) : zs

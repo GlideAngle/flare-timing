@@ -68,7 +68,7 @@ newtype TrackZone a = TrackZone { unTrackZone :: Zone a }
 slice :: SpeedSection -> [a] -> [a]
 slice = \case
     Nothing -> id
-    Just (s, e) -> take (e - s + 1) . drop s
+    Just (s', e') -> let (s, e) = (s' - 1, e' - 1) in take (e - s + 1) . drop s
 
 -- | The input pair is in degrees while the output is in radians.
 toLL :: Fractional a => (Rational, Rational) -> LatLng a [u| rad |]
