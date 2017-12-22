@@ -37,13 +37,23 @@ import Flight.Field (FieldOrdering(..))
 data Masking =
     Masking
         { pilotsAtEss :: [PilotsAtEss]
+        -- ^ For each task, the number of pilots at goal.
         , bestTime :: [Maybe (ViaScientific BestTime)]
+        -- ^ For each task, the best time.
         , taskDistance :: [Maybe Double]
+        -- ^ For each task, the task distance.
         , bestDistance :: [Maybe Double]
+        -- ^ For each task, the best distance made.
         , arrival :: [[(Pilot, TrackArrival)]]
+        -- ^ For each task, the rank order of arrival at goal and arrival fraction.
         , speed :: [[(Pilot, TrackSpeed)]]
+        -- ^ For each task, for each pilot making goal, their time for the
+        -- speed section and speed fraction.
         , nigh :: [[(Pilot, TrackDistance)]]
+        -- ^ For each task, the best distance of each pilot landing out.
         , land :: [[(Pilot, TrackDistance)]]
+        -- ^ For each task, the distance of the landing spot for each pilot
+        -- landing out.
         }
         deriving (Eq, Ord, Show, Generic)
 
