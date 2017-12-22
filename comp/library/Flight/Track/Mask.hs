@@ -13,7 +13,6 @@ Tracks masked with task control zones.
 -}
 module Flight.Track.Mask
     ( Masking(..)
-    , TrackBestDistance(..)
     , TrackDistance(..)
     , TrackArrival(..)
     , TrackSpeed(..)
@@ -43,7 +42,8 @@ data Masking =
         , bestDistance :: [Maybe Double]
         , arrival :: [[(Pilot, TrackArrival)]]
         , speed :: [[(Pilot, TrackSpeed)]]
-        , distance :: [[(Pilot, TrackBestDistance)]]
+        , nigh :: [[(Pilot, TrackDistance)]]
+        , land :: [[(Pilot, TrackDistance)]]
         }
         deriving (Eq, Ord, Show, Generic)
 
@@ -72,22 +72,10 @@ data TrackArrival =
 instance ToJSON TrackArrival
 instance FromJSON TrackArrival
 
-data TrackBestDistance =
-    TrackBestDistance
-        { best :: Maybe TrackDistance
-        -- ^ The best distance achieved.
-        , last :: Maybe TrackDistance
-        -- ^ The distance at landing if landed out.
-        }
-        deriving (Eq, Ord, Show, Generic)
-
-instance ToJSON TrackBestDistance
-instance FromJSON TrackBestDistance
-
 data TrackDistance =
     TrackDistance
         { togo :: Maybe Double
-        -- ^ The shortest distance to goal of any fix in the track.
+        -- ^ The distance to goal.
         , made :: Maybe Double
         -- ^ The task distance minus the distance to goal.
         }
@@ -133,7 +121,15 @@ cmp a b =
         ("speed", "arrival") -> GT
         ("speed", _) -> LT
 
-        ("distance", _) -> GT
+        ("nigh", "pilotsAtEss") -> GT
+        ("nigh", "taskDistance") -> GT
+        ("nigh", "bestDistance") -> GT
+        ("nigh", "bestTime") -> GT
+        ("nigh", "arrival") -> GT
+        ("nigh", "speed") -> GT
+        ("nigh", _) -> LT
+
+        ("land", _) -> GT
 
         ("time", _) -> LT
         ("rank", _) -> LT

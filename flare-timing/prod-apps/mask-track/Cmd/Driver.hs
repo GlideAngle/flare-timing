@@ -72,7 +72,6 @@ import Flight.Track.Mask
     ( Masking(..)
     , TrackArrival(..)
     , TrackSpeed(..)
-    , TrackBestDistance(..)
     , TrackDistance(..)
     )
 import Flight.Kml (MarkedFixes(..))
@@ -122,7 +121,16 @@ import Flight.Comp
 data FlightStats =
     FlightStats
         { statTimeRank :: Maybe (PilotTime, PositionAtEss)
-        , statDistance :: Maybe TrackBestDistance
+        , statNigh :: Maybe TrackDistance
+        , statLand :: Maybe TrackDistance
+        }
+
+nullStats :: FlightStats
+nullStats =
+    FlightStats
+        { statTimeRank = Nothing
+        , statNigh = Nothing
+        , statLand = Nothing
         }
 
 driverMain :: IO ()
@@ -214,18 +222,18 @@ writeMask
             let ys :: [[(Pilot, FlightStats)]] =
                     (fmap . fmap)
                         (\case
-                            Left (p, _) -> (p, FlightStats Nothing Nothing)
+                            Left (p, _) -> (p, nullStats)
                             Right (p, g) -> (p, g p))
                         comp
 
             let iTasks = IxTask <$> [1 .. length ys]
-            let ds' :: [[(Pilot, TrackBestDistance)]] = distances <$> ys
+            let lds :: [[(Pilot, TrackDistance)]] = landDistances <$> ys
             let as :: [[(Pilot, TrackArrival)]] = arrivals <$> ys
             let vs :: [Maybe (BestTime, [(Pilot, TrackSpeed)])] = times <$> ys
 
             bs'' :: [[Maybe (Pilot, Time.TickRow)]]
                     <- readCompBestDistances
-                        compFile selectTasks ((fmap . fmap) fst ds')
+                        compFile selectTasks ((fmap . fmap) fst lds)
 
             let bs' :: [[(Pilot, Time.TickRow)]] = catMaybes <$> bs''
             let bs :: [Map Pilot Time.TickRow] = Map.fromList <$> bs'
@@ -235,10 +243,15 @@ writeMask
                     (\i -> join ((\g -> g i) <$> lookupTaskLength))
                     <$> iTasks
 
-            let ds = zipWith3 mergeTaskBestDistance bs ls ds'
+            let nds =
+                    zipWith3
+                        lookupTaskBestDistance
+                        bs
+                        ls
+                        ((fmap . fmap) fst lds)
 
             let us'' :: [[Maybe Double]] =
-                    (fmap . fmap) (join . fmap made . best . snd) ds
+                    (fmap . fmap) (made . snd) nds
 
             let us' :: [[Double]] = catMaybes <$> us''
 
@@ -265,54 +278,46 @@ writeMask
                         , bestDistance = bestDistance
                         , arrival = as
                         , speed = (fromMaybe []) <$> (fmap . fmap) snd vs
-                        , distance = ds
+                        , nigh = nds
+                        , land = lds
                         }
 
             writeMasking (compToMask compFile) maskTrack
 
-mergeTaskBestDistance
+lookupTaskBestDistance
     :: Map Pilot Time.TickRow
     -> Maybe (TaskDistance Double)
-    -> [(Pilot, TrackBestDistance)]
-    -> [(Pilot, TrackBestDistance)]
-mergeTaskBestDistance m td =
-    sortOn (fmap togo . best . snd)
-    . fmap (mergePilotBestDistance m td)
+    -> [Pilot]
+    -> [(Pilot, TrackDistance)]
+lookupTaskBestDistance m td =
+    sortOn (togo . snd)
+    . catMaybes
+    . fmap (lookupPilotBestDistance m td)
 
-mergePilotBestDistance
+lookupPilotBestDistance
     :: Map Pilot Time.TickRow
     -> Maybe (TaskDistance Double)
-    -> (Pilot, TrackBestDistance)
-    -> (Pilot, TrackBestDistance)
-mergePilotBestDistance m td pd@(p, d) =
-    maybe
-        pd
-        ((p,) . madeDistance td d)
-        (Map.lookup p m)
+    -> Pilot
+    -> Maybe (Pilot, TrackDistance)
+lookupPilotBestDistance m td p =
+    ((p,) . madeDistance td) <$> (Map.lookup p m)
 
 madeDistance
     :: Maybe (TaskDistance Double)
-    -> TrackBestDistance
     -> Time.TickRow
-    -> TrackBestDistance
+    -> TrackDistance
 
-madeDistance Nothing d Time.TickRow{distance} =
-    d{ best =
-        Just
-        $ TrackDistance
-            { togo = Just distance
-            , made = Nothing
-            }
-     }
+madeDistance Nothing Time.TickRow{distance} =
+    TrackDistance
+        { togo = Just distance
+        , made = Nothing
+        }
 
-madeDistance (Just (TaskDistance td)) d Time.TickRow{distance} =
-    d{ best =
-        Just
-        $ TrackDistance
-            { togo = Just distance
-            , made = Just . unTaskDistance . TaskDistance $ td -: togo'
-            }
-     }
+madeDistance (Just (TaskDistance td)) Time.TickRow{distance} =
+    TrackDistance
+        { togo = Just distance
+        , made = Just . unTaskDistance . TaskDistance $ td -: togo'
+        }
     where
         togo :: Quantity Double [u| km |]
         togo = MkQuantity distance
@@ -364,10 +369,11 @@ lastRow :: Vector Time.TickRow -> Maybe Time.TickRow
 lastRow xs =
     if V.null xs then Nothing else Just $ V.last xs
 
-distances :: [(Pilot, FlightStats)] -> [(Pilot, TrackBestDistance)]
-distances xs =
-    catMaybes
-    $ fmap (\(p, FlightStats{..}) -> (p,) <$> statDistance) xs
+landDistances :: [(Pilot, FlightStats)] -> [(Pilot, TrackDistance)]
+landDistances xs =
+    sortOn (togo . snd)
+    . catMaybes
+    $ fmap (\(p, FlightStats{..}) -> (p,) <$> statLand) xs
 
 arrivals :: [(Pilot, FlightStats)] -> [(Pilot, TrackArrival)]
 arrivals xs =
@@ -438,7 +444,7 @@ flown
     flying
     tags tasks iTask fixes =
     maybe
-        (const $ FlightStats Nothing Nothing)
+        (const $ FlightStats Nothing Nothing Nothing)
         (\d -> flown' d flying math tags tasks iTask fixes)
         taskLength
     where
@@ -456,12 +462,18 @@ flown'
     mf@MarkedFixes{mark0}
     p =
     case tasks ^? element (i - 1) of
-        Nothing -> FlightStats Nothing Nothing
+        Nothing -> nullStats
+
         Just task' ->
             case (pilotTime, arrivalRank) of
-                (Nothing, _) -> FlightStats Nothing (Just $ distance task')
-                (_, Nothing) -> FlightStats Nothing (Just $ distance task')
-                (Just a, Just b) -> FlightStats (Just (a, b)) Nothing
+                (Nothing, _) ->
+                    nullStats {statLand = Just $ landDistance task' }
+
+                (_, Nothing) ->
+                    nullStats {statLand = Just $ landDistance task' }
+
+                (Just a, Just b) ->
+                    nullStats {statTimeRank = Just (a, b)}
     where
         flyingRange :: FlyingSection UTCTime =
             fromMaybe (Just (mark0, mark0))
@@ -485,16 +497,11 @@ flown'
             PositionAtEss . toInteger
             <$> join ((\f -> f iTask speedSection' p mf) <$> lookupArrivalRank)
 
-        distance task =
-            TrackBestDistance
-                { best = Nothing
-                , last =
-                    Just
-                    $ TrackDistance
-                        { togo = unTaskDistance <$> dgLast task math
-                        , made = fromRational <$> unPilotDistance <$> dfLast task math
-                        }
-                }
+        landDistance task =
+                TrackDistance
+                    { togo = unTaskDistance <$> dgLast task math
+                    , made = fromRational <$> unPilotDistance <$> dfLast task math
+                    }
 
         dppR = Rat.distancePointToPoint
         dppF = Dbl.distancePointToPoint
