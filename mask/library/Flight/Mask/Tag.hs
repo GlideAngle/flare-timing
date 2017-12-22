@@ -825,7 +825,9 @@ groupByLeg span zoneToCyl task flyCut =
         ts :: [Maybe UTCTime]
         ts = (fmap . fmap) time xs
 
-        {- NOTE: A small ghci session showing splitting.
+        {-
+
+        NOTE: A small ghci session showing splitting.
         let a = ['a' .. 'z']
         "abcdefghijklmnopqrstuvwxyz"
 
@@ -840,10 +842,25 @@ groupByLeg span zoneToCyl task flyCut =
 
         split (keepDelimsL $ whenElt (\x -> elem (Just x) b)) a
         ["ab","cdefghijklmnopqrs","tuvwxyz"]
+
+        WARNING: The list is expected to have no duplicates.
+        let c = ['a' .. 'o'] ++ ['o' .. 'z']
+        "abcdefghijklmnoopqrstuvwxyz"
+
+        let d = [Just 'o']
+        [Just 'o']
+
+        split (keepDelimsL $ whenElt (\x -> elem (Just x) d)) c
+        ["abcdefghijklmn","o","opqrstuvwxyz"]
+
         -}
+
+        -- TODO: Find out when and how pilots end up with duplicate fixes.
+        uniqueFixes = nub fixes
+
         ys :: [[Kml.Fix]]
         ys =
             split
                 (keepDelimsL
                 $ whenElt (\x -> (Just $ fixToUtc mark0 x) `elem` ts))
-                fixes
+                uniqueFixes

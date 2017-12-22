@@ -14,9 +14,15 @@ module Flight.Types
     , MarkedFixes(..)
     , mkPosition
     , showTimeAlt
+    , fixesLength
+    , fixesSecondsRange
+    , fixesUTCTimeRange
+    , showFixesLength
+    , showFixesSecondsRange
+    , showFixesUTCTimeRange
     ) where
 
-import Data.Time.Clock (UTCTime)
+import Data.Time.Clock (UTCTime, addUTCTime)
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 
@@ -92,7 +98,37 @@ instance FixMark Fix where
 data MarkedFixes =
     MarkedFixes { mark0 :: UTCTime
                 , fixes :: [Fix]
-                } deriving (Show, Eq, Generic)
+                } deriving (Eq, Show, Generic)
 
 instance ToJSON MarkedFixes
 instance FromJSON MarkedFixes
+
+fixesLength :: MarkedFixes -> Int
+fixesLength MarkedFixes{fixes} =
+    length fixes
+
+fixesSecondsRange :: MarkedFixes -> Maybe (Seconds, Seconds)
+fixesSecondsRange MarkedFixes{fixes} =
+    case (fixes, reverse fixes) of
+        ([], _) -> Nothing
+        (_, []) -> Nothing
+        (x : _, y : _) -> Just (mark x, mark y)
+
+fixesUTCTimeRange :: MarkedFixes -> Maybe (UTCTime, UTCTime)
+fixesUTCTimeRange mf@MarkedFixes{mark0} =
+    rangeUTCTime mark0 <$> fixesSecondsRange mf
+
+showFixesLength :: MarkedFixes -> String
+showFixesLength = show . fixesLength
+
+showFixesSecondsRange :: MarkedFixes -> String
+showFixesSecondsRange mf =
+    maybe "[]" show (fixesSecondsRange mf)
+
+showFixesUTCTimeRange :: MarkedFixes -> String
+showFixesUTCTimeRange mf@MarkedFixes{mark0} =
+    maybe "" (show . rangeUTCTime mark0) (fixesSecondsRange mf)
+
+rangeUTCTime :: UTCTime -> (Seconds, Seconds) -> (UTCTime, UTCTime)
+rangeUTCTime mark0 (Seconds s0, Seconds s1) =
+    let f secs = fromInteger secs `addUTCTime` mark0 in (f s0, f s1)

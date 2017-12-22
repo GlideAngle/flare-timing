@@ -252,8 +252,7 @@ group
                 t0 = firstCrossing ss $ zonesFirst times
 
                 xs :: [MarkedFixes]
-                --xs = slice ss $ groupByLeg span zoneToCyl task flyFixes
-                xs = groupByLeg span zoneToCyl task flyFixes
+                xs = slice ss $ groupByLeg span zoneToCyl task flyFixes
 
                 ys = FlyCut flyingRange <$> xs
 
@@ -277,7 +276,7 @@ group
                         (\j x ->
                             let ticked' = retick ticked start (j - 1)
                             in legDistances ticked' times task j x)
-                        [1 .. ]
+                        [start .. ]
                         ys
     where
         (TickLookup lookupTicked) = tagTicked (Right tags)

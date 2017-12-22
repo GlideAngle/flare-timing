@@ -31,6 +31,12 @@ module Flight.Kml
     , showTimeAlt
     , roundTripLatLngAlt
     , formatFloat
+    , fixesLength
+    , fixesSecondsRange
+    , fixesUTCTimeRange
+    , showFixesLength
+    , showFixesSecondsRange
+    , showFixesUTCTimeRange
     ) where
 
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
@@ -89,6 +95,12 @@ import Flight.Types
     , Altitude(..)
     , mkPosition
     , showTimeAlt
+    , fixesLength
+    , fixesSecondsRange
+    , fixesUTCTimeRange
+    , showFixesLength
+    , showFixesSecondsRange
+    , showFixesUTCTimeRange
     )
 
 lexer :: GenTokenParser String u Identity
