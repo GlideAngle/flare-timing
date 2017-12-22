@@ -42,7 +42,7 @@ dashToGoalR
     -- NOTE: Didn't make the start so skip the start.
     fromZs
     $ edgesSum
-    <$> distanceEdgeToEdge span dpp cseg cs cut mm30 (cons mkZone x zsSkipStart)
+    <$> distanceEdgeToEdge span dpp cseg cs angleCut mm30 (cons mkZone x zsSkipStart)
     where
         -- TODO: Don't assume end of speed section is goal.
         zsSpeed = slice speedSection zs
@@ -55,7 +55,7 @@ dashToGoalR
     -- at times on this leg the pilot may have been closer to goal.
     fromZs
     $ edgesSum
-    <$> distanceEdgeToEdge span dpp cseg cs cut mm30 (cons mkZone x zsNotTicked)
+    <$> distanceEdgeToEdge span dpp cseg cs angleCut mm30 (cons mkZone x zsNotTicked)
     where
         -- TODO: Don't assume end of speed section is goal.
         zsSpeed = slice speedSection zs

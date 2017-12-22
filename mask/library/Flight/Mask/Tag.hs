@@ -31,6 +31,7 @@ import Flight.Track.Cross
     (Fix(..), ZoneCross(..), Seconds(..), TrackFlyingSection(..))
 import Flight.Comp (FlyingSection, Task(..))
 import Flight.Units ()
+import Flight.Mask.Internal.Race (FlyClipping(..), FlyCut(..))
 import Flight.Mask.Internal.Zone
     ( ZoneEntry(..)
     , ZoneExit(..)
@@ -805,15 +806,17 @@ fixToUtc mark0 x =
     secondsToUtc mark0 $ Kml.mark x
 
 -- | Groups fixes by legs of the task.
-groupByLeg :: (Real a, Fractional a)
+groupByLeg :: (Real a, Fractional a, FlyClipping UTCTime MarkedFixes)
            => SpanLatLng a
            -> (Raw.RawZone -> TaskZone a)
            -> Task
-           -> MarkedFixes
+           -> FlyCut UTCTime MarkedFixes
            -> [MarkedFixes]
-groupByLeg span zoneToCyl task mf@MarkedFixes{mark0, fixes} =
+groupByLeg span zoneToCyl task flyCut =
     (\zs -> mf{fixes = zs}) <$> ys
     where
+        FlyCut{uncut = mf@MarkedFixes{mark0, fixes}} = clipToFlown flyCut
+
         xs :: [Maybe Fix]
         xs =
             tagZones . unSelectedCrossings . selectedCrossings

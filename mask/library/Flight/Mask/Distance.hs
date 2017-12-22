@@ -15,23 +15,26 @@ import Flight.Track.Cross (Fix(..))
 import Flight.Comp (Task(..))
 import Flight.Score (PilotDistance(..))
 import Flight.Units ()
-import Flight.Mask.Internal.Zone (ZoneIdx, TaskZone(..), fixFromFix, fixToPoint)
-import Flight.Mask.Internal.Race (Sliver(..), Ticked)
+import Flight.Mask.Internal.Zone
+    (ZoneIdx, TaskZone(..), fixFromFix, fixToPoint)
+import Flight.Mask.Internal.Race (FlyClipping(..), Sliver(..), FlyCut(..), Ticked)
 import Flight.Mask.Internal.Dash (dashToGoalR)
 import qualified Flight.Zone.Raw as Raw (RawZone(..))
 import Flight.Distance (TaskDistance(..))
 
 dashDistancesToGoal
-    :: (Real a, Fractional a)
+    :: (Real a, Fractional a, FlyClipping UTCTime MarkedFixes)
     => Ticked
     -> Sliver a
     -> (Raw.RawZone -> TaskZone a)
     -> Task
-    -> MarkedFixes
+    -> FlyCut UTCTime MarkedFixes
     -> Maybe [(Maybe Fix, Maybe (TaskDistance a))]
     -- ^ Nothing indicates no such task or a task with no zones.
 dashDistancesToGoal
-    ticked sliver zoneToCyl task@Task{zones} MarkedFixes{mark0, fixes} =
+    ticked sliver zoneToCyl
+    task@Task{zones}
+    flyCut =
     -- NOTE: A ghci session using inits & tails.
     -- inits [1 .. 4]
     -- [[],[1],[1,2],[1,2,3],[1,2,3,4]]
@@ -50,26 +53,26 @@ dashDistancesToGoal
     where
         lfg = lastFixToGoal ticked sliver
         ixs = index fixes
+        FlyCut{uncut = MarkedFixes{mark0, fixes}} = clipToFlown flyCut
 
 dashDistanceToGoal
-    :: (Real a, Fractional a)
+    :: (Real a, Fractional a, FlyClipping UTCTime MarkedFixes)
     => Ticked
     -> Sliver a
     -> (Raw.RawZone -> TaskZone a)
     -> Task
-    -> MarkedFixes
+    -> FlyCut UTCTime MarkedFixes
     -> Maybe (TaskDistance a)
     -- ^ Nothing indicates no such task or a task with no zones.
 dashDistanceToGoal
-    ticked
-    sliver zoneToCyl
-    Task{speedSection, zones}
-    MarkedFixes{fixes} =
+    ticked sliver zoneToCyl Task{speedSection, zones} flyCut =
+
     if null zones then Nothing else
     dashToGoalR ticked sliver fixToPoint speedSection zs ixs
     where
         zs = zoneToCyl <$> zones
         ixs = reverse . index $ fixes
+        FlyCut{uncut = MarkedFixes{fixes}} = clipToFlown flyCut
 
 -- | The distance from the last fix to goal passing through the remaining
 -- control zones.
@@ -97,13 +100,13 @@ lastFixToGoal
         iys = reverse ixs
 
 dashDistanceFlown
-    :: (Real a, Fractional a)
+    :: (Real a, Fractional a, FlyClipping UTCTime MarkedFixes)
     => TaskDistance a
     -> Ticked
     -> Sliver a
     -> (Raw.RawZone -> TaskZone a)
     -> Task
-    -> MarkedFixes
+    -> FlyCut UTCTime MarkedFixes
     -> Maybe (PilotDistance a)
 dashDistanceFlown
     (TaskDistance dTask)
@@ -111,7 +114,7 @@ dashDistanceFlown
     sliver
     zoneToCyl
     Task{speedSection, zones}
-    MarkedFixes{fixes} =
+    flyCut =
     if null zones then Nothing else do
         TaskDistance dPilot
             <- dashToGoalR ticked sliver fixToPoint speedSection zs ixs
@@ -122,6 +125,7 @@ dashDistanceFlown
     where
         zs = zoneToCyl <$> zones
         ixs = reverse . index $ fixes
+        FlyCut{uncut = MarkedFixes{fixes}} = clipToFlown flyCut
 
 index :: [a] -> [(ZoneIdx, a)]
 index = zip [1 .. ]

@@ -1,10 +1,13 @@
 {-# LANGUAGE RankNTypes #-}
 
 module Flight.Mask.Internal.Race
-    ( Sliver(..)
+    ( FlyClipping(..)
+    , FlyClipSection(..)
+    , Sliver(..)
     , Ticked
     , RaceSections(..)
     , Reach
+    , FlyCut(..)
     , section
     , cons
     , mm30
@@ -12,8 +15,12 @@ module Flight.Mask.Internal.Race
 
 import Data.Ratio ((%))
 
+import Data.Time.Clock (UTCTime, diffUTCTime)
+import Data.List (findIndices)
+
+import Flight.Kml (FixMark(mark), MarkedFixes(..), Seconds(..))
 import Flight.Zone (Zone(..))
-import Flight.Comp (SpeedSection)
+import Flight.Comp (SpeedSection, FlyingSection)
 import Flight.Units ()
 import Flight.Distance (TaskDistance(..))
 import Flight.Task
@@ -52,7 +59,7 @@ data Sliver a =
         , dpp :: DistancePointToPoint a
         , cseg :: CostSegment a
         , cs :: CircumSample a
-        , cut :: AngleCut a
+        , angleCut :: AngleCut a
         }
 
 -- | Without know which zones have been ticked, a function that uses a crossing
@@ -86,3 +93,49 @@ section (Just (s', e')) xs =
 
 cons :: (a -> TrackZone b) -> a -> [Zone b] -> [Zone b]
 cons mkZone x zs = unTrackZone (mkZone x) : zs
+
+-- | The subset of the fixes that can be considered flown.
+data FlyCut a b =
+    FlyCut
+        { cut :: FlyingSection a
+        , uncut :: b
+        }
+        deriving Show
+
+class FlyClipping a b where
+    clipToFlown :: FlyCut a b -> FlyCut a b
+    clipIndices :: FlyCut a b -> [Int]
+
+class (FlyClipping a b) => FlyClipSection a b c where
+    clipSection :: FlyCut a b -> FlyingSection c
+
+instance FlyClipping UTCTime MarkedFixes where
+    clipToFlown x@FlyCut{cut = Nothing, uncut} =
+        x{uncut = uncut{fixes = []}}
+
+    clipToFlown x@FlyCut{cut = Just (t0, t1), uncut = mf@MarkedFixes{mark0, fixes}} =
+        x{uncut = mf{fixes = filter (between s0 s1) fixes}}
+        where
+            s0 = Seconds . round $ t0 `diffUTCTime` mark0
+            s1 = Seconds . round $ t1 `diffUTCTime` mark0
+
+    clipIndices FlyCut{cut = Nothing} = []
+
+    clipIndices FlyCut{cut = Just (t0, t1), uncut = MarkedFixes{mark0, fixes}} =
+        findIndices (between s0 s1) fixes
+        where
+            s0 = Seconds . round $ t0 `diffUTCTime` mark0
+            s1 = Seconds . round $ t1 `diffUTCTime` mark0
+
+instance FlyClipSection UTCTime MarkedFixes Int where
+    clipSection x =
+        case (xs, reverse xs) of
+            ([], _) -> Nothing
+            (_, []) -> Nothing
+            (i : _, j : _) -> Just (i, j)
+        where
+            xs = clipIndices x
+
+between :: FixMark a => Seconds -> Seconds -> a -> Bool
+between s0 s1 x =
+    let s = mark x in s0 <= s && s <= s1

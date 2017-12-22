@@ -60,10 +60,10 @@ import Flight.TrackLog (IxTask(..))
 import Flight.Units ()
 import qualified Flight.Mask as Mask (Sliver(..))
 import Flight.Mask
-    ( FnIxTask, TaskZone, RaceSections(..), Ticked
+    ( FnIxTask, TaskZone, RaceSections(..), FlyCut(..), Ticked
     , checkTracks, groupByLeg, dashDistancesToGoal, zoneToCylinder, slice
     )
-import Flight.Track.Cross (Fix(..))
+import Flight.Track.Cross (Fix(..), TrackFlyingSection(..))
 import Flight.Zone (Bearing(..))
 import Flight.Zone.Raw (RawZone)
 import Flight.Track.Time (TimeRow(..))
@@ -210,7 +210,7 @@ mkTimeRow (Just t0) leg (Just Fix{time, lat, lng}, Just d) =
         TimeRow
             { leg = leg
             , time = time
-            , tick = realToFrac $ diffUTCTime time t0
+            , tick = realToFrac $ time `diffUTCTime` t0
             , lat = lat
             , lng = lng
             , distance = unTaskDistance d
@@ -221,7 +221,7 @@ group
     (FlyingLookup lookupFlying)
     tags@Tagging{timing}
     tasks iTask@(IxTask i)
-    mf@MarkedFixes{fixes} p =
+    mf@MarkedFixes{mark0} p =
     case (tasks ^? element (i - 1), timing ^? element (i - 1)) of
         (_, Nothing) -> []
         (Nothing, _) -> []
@@ -238,29 +238,33 @@ group
                 )
                 endZoneTag
             where
-                flyingRange :: FlyingSection Int =
-                    fromMaybe (Just (0, 0))
-                    $ join ((\f -> f iTask p) <$> lookupFlying)
+                flyingRange :: FlyingSection UTCTime =
+                    fromMaybe (Just (mark0, mark0))
+                    $ join (fmap flyingTimes . (\f -> f iTask p) <$> lookupFlying)
 
                 -- NOTE: Ensure we're only considering flying time.
-                fs =
-                    case flyingRange of
-                        Nothing -> mf{fixes = []}
-                        range -> mf{fixes = slice range fixes}
+                flyFixes =
+                    FlyCut
+                        { cut = flyingRange
+                        , uncut = mf
+                        }
 
                 t0 = firstCrossing ss $ zonesFirst times
 
                 xs :: [MarkedFixes]
-                xs = slice ss $ groupByLeg span zoneToCyl task fs
+                --xs = slice ss $ groupByLeg span zoneToCyl task flyFixes
+                xs = groupByLeg span zoneToCyl task flyFixes
+
+                ys = FlyCut flyingRange <$> xs
 
                 ticked =
                     fromMaybe (RaceSections [] [] [])
-                    $ join ((\f -> f iTask ss p fs) <$> lookupTicked)
+                    $ join ((\f -> f iTask ss p mf) <$> lookupTicked)
 
                 endZoneTag :: Maybe Fix
                 endZoneTag = do
                     ts :: [Maybe Fix]
-                        <- join ((\f -> f iTask ss p fs) <$> lookupZoneTags)
+                        <- join ((\f -> f iTask ss p mf) <$> lookupZoneTags)
 
                     us :: [Fix]
                         <- sequence ts
@@ -273,8 +277,8 @@ group
                         (\j x ->
                             let ticked' = retick ticked start (j - 1)
                             in legDistances ticked' times task j x)
-                        [start .. ]
-                        xs
+                        [1 .. ]
+                        ys
     where
         (TickLookup lookupTicked) = tagTicked (Right tags)
         (TagLookup lookupZoneTags) = tagPilotTag (Right tags)
@@ -284,12 +288,13 @@ retick :: Ticked -> Int -> Int -> Ticked
 retick rs@RaceSections{race} start leg =
     rs { race = take (leg - start + 1) race }
 
-legDistances :: Ticked
-             -> TrackTime
-             -> Task
-             -> Leg
-             -> MarkedFixes
-             -> [TimeRow]
+legDistances
+    :: Ticked
+    -> TrackTime
+    -> Task
+    -> Leg
+    -> FlyCut UTCTime MarkedFixes
+    -> [TimeRow]
 legDistances ticked times task@Task{speedSection} leg xs =
     case speedSection of
         Nothing -> []
@@ -297,7 +302,7 @@ legDistances ticked times task@Task{speedSection} leg xs =
             if leg' < start || leg' > end then [] else
             mkTimeRows t0 leg xs'
             where
-                sliver = Mask.Sliver span dpp cseg cs cut
+                sliver = Mask.Sliver span dpp cseg cs angleCut
                 xs' = dashDistancesToGoal ticked sliver zoneToCyl task xs
                 t0 = firstCrossing speedSection ts
                 ts = zonesFirst times
@@ -323,8 +328,8 @@ span = distanceHaversine
 cs :: CircumSample Double
 cs = circumSample
 
-cut :: AngleCut Double
-cut =
+angleCut :: AngleCut Double
+angleCut =
     AngleCut
         { sweep = Bearing . MkQuantity $ pi
         , nextSweep = nextCut

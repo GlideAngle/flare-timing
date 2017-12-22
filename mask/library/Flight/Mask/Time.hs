@@ -136,6 +136,6 @@ durationViaZones span mkZone atTime speedSection _ zs os gs t0 xs =
 
                         deltaStart :: Integer
                         deltaStart =
-                            round $ diffUTCTime t0 startTime
+                            round $ t0 `diffUTCTime` startTime
 
                         (Seconds deltaFlying) = sN - s0
