@@ -241,12 +241,9 @@ writeMask
             let tsBest = (fmap . fmap) (ViaScientific . fst) vs
 
             -- For each task, for each pilot, the row closest to goal.
-            rows'' :: [[Maybe (Pilot, Time.TickRow)]]
+            rows :: [[Maybe (Pilot, Time.TickRow)]]
                     <- readCompBestDistances
                         compFile selectTasks ((fmap . fmap) fst dsLand)
-
-            let rows' :: [[(Pilot, Time.TickRow)]] = catMaybes <$> rows''
-            let rows :: [Map Pilot Time.TickRow] = Map.fromList <$> rows'
 
             -- Task lengths (ls).
             let lsTask :: [Maybe (TaskDistance Double)] =
@@ -259,17 +256,15 @@ writeMask
             let dsNigh =
                     zipWith3
                         lookupTaskBestDistance
-                        rows
+                        (Map.fromList . catMaybes <$> rows)
                         lsTask
                         pilotsLandingOut
 
             -- For each task, for each pilot, the best distance made.
-            let dsMade'' :: [[Maybe Double]] = (fmap . fmap) (made . snd) dsNigh
-            let dsMade' :: [[Double]] = catMaybes <$> dsMade''
-
             let dsMade :: [Maybe Double] =
                     (\xs -> if null xs then Nothing else Just . maximum $ xs)
-                    <$> dsMade'
+                    . catMaybes
+                    <$> (fmap . fmap) (made . snd) dsNigh
 
             -- If a pilot makes goal then their best distance is the task
             -- distance.
