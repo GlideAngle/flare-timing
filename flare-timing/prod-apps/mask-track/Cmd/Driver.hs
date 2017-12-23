@@ -62,7 +62,7 @@ import Flight.Distance (TaskDistance(..))
 import Flight.Comp (IxTask(..))
 import Flight.Units ()
 import Flight.Mask
-    ( Sliver(..), FnIxTask, TaskZone, RaceSections(..), FlyCut(..)
+    ( Sliver(..), FnIxTask, TaskZone, RaceSections(..), FlyCut(..), Ticked
     , checkTracks, dashDistanceToGoal, dashDistanceFlown, zoneToCylinder
     )
 import Flight.Track.Cross (TrackFlyingSection(..))
@@ -121,6 +121,7 @@ data FlightStats =
         { statTimeRank :: Maybe (PilotTime, PositionAtEss)
         , statNigh :: Maybe (TrackDistance Nigh)
         , statLand :: Maybe (TrackDistance Land)
+        , statTicked :: Ticked
         }
 
 nullStats :: FlightStats
@@ -129,6 +130,7 @@ nullStats =
         { statTimeRank = Nothing
         , statNigh = Nothing
         , statLand = Nothing
+        , statTicked = RaceSections [] [] []
         }
 
 driverMain :: IO ()
@@ -463,7 +465,7 @@ flown
     flying
     tags tasks iTask fixes =
     maybe
-        (const $ FlightStats Nothing Nothing Nothing)
+        (const nullStats)
         (\d -> flown' d flying math tags tasks iTask fixes)
         taskLength
     where
@@ -486,13 +488,13 @@ flown'
         Just task' ->
             case (pilotTime, arrivalRank) of
                 (Nothing, _) ->
-                    nullStats {statLand = Just $ landDistance task' }
+                    tickedStats {statLand = Just $ landDistance task' }
 
                 (_, Nothing) ->
-                    nullStats {statLand = Just $ landDistance task' }
+                    tickedStats {statLand = Just $ landDistance task' }
 
                 (Just a, Just b) ->
-                    nullStats {statTimeRank = Just (a, b)}
+                    tickedStats {statTimeRank = Just (a, b)}
     where
         flyingRange :: FlyingSection UTCTime =
             fromMaybe (Just (mark0, mark0))
@@ -507,6 +509,8 @@ flown'
         ticked =
             fromMaybe (RaceSections [] [] [])
             $ join ((\f -> f iTask speedSection' p mf) <$> lookupTicked)
+
+        tickedStats = nullStats {statTicked = ticked}
 
         pilotTime =
             diffTimeHours
