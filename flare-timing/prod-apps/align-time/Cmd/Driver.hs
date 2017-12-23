@@ -38,6 +38,7 @@ import Flight.Cmd.Paths (checkPaths)
 import Flight.Cmd.Options (CmdOptions(..), ProgramName(..), mkOptions)
 import Cmd.Options (description)
 
+import Flight.Track.Time (RaceTick(..))
 import Flight.Comp
     ( AlignDir(..)
     , CompInputFile(..)
@@ -47,6 +48,7 @@ import Flight.Comp
     , CompSettings(..)
     , Pilot(..)
     , Task(..)
+    , IxTask(..)
     , TrackFileFail
     , SpeedSection
     , FlyingSection
@@ -56,7 +58,6 @@ import Flight.Comp
     , alignPath
     , findCompInput
     )
-import Flight.TrackLog (IxTask(..))
 import Flight.Units ()
 import qualified Flight.Mask as Mask (Sliver(..))
 import Flight.Mask
@@ -210,7 +211,7 @@ mkTimeRow (Just t0) leg (Just Fix{time, lat, lng}, Just d) =
         TimeRow
             { leg = leg
             , time = time
-            , tick = realToFrac $ time `diffUTCTime` t0
+            , tick = RaceTick $ realToFrac $ time `diffUTCTime` t0
             , lat = lat
             , lng = lng
             , distance = unTaskDistance d

@@ -2,6 +2,7 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
 {-|
 Module      : Flight.Track.Time
@@ -12,11 +13,20 @@ Stability   : experimental
 
 Track fixes indexed on when the first pilot starts the speed section.
 -}
-module Flight.Track.Time (TimeRow(..), TickRow(..), discardFurther) where
+module Flight.Track.Time
+    ( RaceTick(..)
+    , TimeRow(..)
+    , TickRow(..)
+    , discardFurther
+    ) where
 
 import Data.Maybe (fromMaybe)
 import Data.Csv
-    (ToNamedRecord(..), FromNamedRecord(..), (.:), namedRecord, namedField)
+    ( ToNamedRecord(..), FromNamedRecord(..)
+    , ToField(..), FromField(..)
+    , (.:)
+    , namedRecord, namedField
+    )
 import Data.List.Split (wordsBy)
 import Data.ByteString.Lazy.Char8 (unpack, pack)
 import Data.HashMap.Strict (unions)
@@ -26,6 +36,10 @@ import Data.Aeson (ToJSON(..), FromJSON(..), encode, decode)
 import Flight.LatLng.Raw (RawLat, RawLng)
 import Data.Aeson.ViaScientific (ViaScientific(..))
 
+-- | Seconds from first speed zone crossing
+newtype RaceTick = RaceTick Double
+    deriving (Eq, Ord, Num, Show, Generic, ToJSON, FromJSON, ToField, FromField)
+
 -- | A fix but indexed off the first crossing time.
 data TimeRow =
     TimeRow
@@ -33,7 +47,7 @@ data TimeRow =
         , time :: UTCTime -- ^ Time of the fix
         , lat :: ViaScientific RawLat -- ^ Latitude of the fix
         , lng :: ViaScientific RawLng -- ^ Longitude of the fix
-        , tick :: Double -- ^ Seconds from first speed zone crossing
+        , tick :: RaceTick -- ^ Seconds from first speed zone crossing
         , distance :: Double -- ^ Distance to goal in km
         }
         deriving (Eq, Ord, Show, Generic)
@@ -44,7 +58,7 @@ instance FromJSON TimeRow
 -- | A fix but indexed off the first crossing time.
 data TickRow =
     TickRow
-        { tick :: Double -- ^ Seconds from first speed zone crossing
+        { tick :: RaceTick -- ^ Seconds from first speed zone crossing
         , distance :: Double -- ^ Distance to goal in km
         }
         deriving (Eq, Ord, Show, Generic)

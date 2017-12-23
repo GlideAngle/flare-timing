@@ -10,8 +10,7 @@ Stability   : experimental
 Competition pilot tracks logs.
 -}
 module Flight.TrackLog
-    ( IxTask(..)
-    , pilotTracks
+    ( pilotTracks
     , filterPilots
     , filterTasks
     , makeAbsolute

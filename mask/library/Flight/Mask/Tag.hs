@@ -23,13 +23,12 @@ import Data.List (nub, group, elemIndex, findIndex)
 import Data.List.Split (split, whenElt, keepDelimsL, chop)
 import Control.Lens ((^?), element)
 
-import Flight.TrackLog (IxTask(..))
 import Flight.Kml (Latitude(..), Longitude(..), MarkedFixes(..))
 import qualified Flight.Kml as Kml
     (LatLngAlt(..), Fix, FixMark(..), Seconds(..))
 import Flight.Track.Cross
     (Fix(..), ZoneCross(..), Seconds(..), TrackFlyingSection(..))
-import Flight.Comp (FlyingSection, Task(..))
+import Flight.Comp (IxTask(..), FlyingSection, Task(..))
 import Flight.Units ()
 import Flight.Mask.Internal.Race (FlyClipping(..), FlyCut(..))
 import Flight.Mask.Internal.Zone

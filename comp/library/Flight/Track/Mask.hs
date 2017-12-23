@@ -16,12 +16,15 @@ module Flight.Track.Mask
     , TrackDistance(..)
     , TrackArrival(..)
     , TrackSpeed(..)
+    , Nigh
+    , Land
     ) where
 
 import Data.String (IsString())
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import Flight.Pilot (Pilot(..))
+import Flight.Route (TrackLine(..))
 import Flight.Score
     ( PilotsAtEss(..)
     , PositionAtEss(..)
@@ -32,6 +35,9 @@ import Flight.Score
     )
 import Data.Aeson.ViaScientific (ViaScientific(..))
 import Flight.Field (FieldOrdering(..))
+
+type Nigh = TrackLine
+type Land = Double
 
 -- | For each task, the masking for that task.
 data Masking =
@@ -49,9 +55,9 @@ data Masking =
         , speed :: [[(Pilot, TrackSpeed)]]
         -- ^ For each task, for each pilot making goal, their time for the
         -- speed section and speed fraction.
-        , nigh :: [[(Pilot, TrackDistance)]]
+        , nigh :: [[(Pilot, TrackDistance Nigh)]]
         -- ^ For each task, the best distance of each pilot landing out.
-        , land :: [[(Pilot, TrackDistance)]]
+        , land :: [[(Pilot, TrackDistance Land)]]
         -- ^ For each task, the distance of the landing spot for each pilot
         -- landing out.
         }
@@ -82,17 +88,17 @@ data TrackArrival =
 instance ToJSON TrackArrival
 instance FromJSON TrackArrival
 
-data TrackDistance =
+data TrackDistance a =
     TrackDistance
-        { togo :: Maybe Double
+        { togo :: Maybe a
         -- ^ The distance to goal.
         , made :: Maybe Double
         -- ^ The task distance minus the distance to goal.
         }
         deriving (Eq, Ord, Show, Generic)
 
-instance ToJSON TrackDistance
-instance FromJSON TrackDistance
+instance (ToJSON a) => ToJSON (TrackDistance a)
+instance (FromJSON a) => FromJSON (TrackDistance a)
 
 instance FieldOrdering Masking where
     fieldOrder _ = cmp

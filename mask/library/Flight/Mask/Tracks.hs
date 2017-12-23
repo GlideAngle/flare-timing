@@ -5,14 +5,15 @@ import System.FilePath (takeDirectory)
 
 import Flight.Kml (MarkedFixes)
 import Flight.Comp 
-    ( CompSettings(..)
+    ( IxTask(..)
+    , CompSettings(..)
     , Pilot(..)
     , PilotTrackLogFile(..)
     , TrackFileFail(..)
     , CompInputFile(..)
     )
 import Flight.TrackLog as Log
-    (IxTask(..), pilotTracks, filterPilots, filterTasks, makeAbsolute)
+    (pilotTracks, filterPilots, filterTasks, makeAbsolute)
 import Flight.Units ()
 import Flight.Scribe (readComp)
 

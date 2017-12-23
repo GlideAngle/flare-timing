@@ -35,10 +35,10 @@ import Flight.Comp
     , CompSettings(..)
     , Pilot(..)
     , TrackFileFail(..)
+    , IxTask(..)
     , compToCross
     , findCompInput
     )
-import Flight.TrackLog (IxTask(..))
 import Flight.Units ()
 import Flight.Track.Cross
     (TrackFlyingSection(..), TrackCross(..), PilotTrackCross(..), Crossing(..))

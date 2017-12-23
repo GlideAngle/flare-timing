@@ -14,6 +14,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE PartialTypeSignatures #-}
 {-# LANGUAGE TupleSections #-}
+{-# LANGUAGE ParallelListComp #-}
 
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
@@ -33,15 +34,13 @@ import Data.Time.Clock (UTCTime, diffUTCTime)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Control.Lens ((^?), element)
-import Control.Monad (join, mapM, zipWithM)
+import Control.Monad (join)
 import Control.Monad.Except (ExceptT, runExceptT)
 import Data.UnitsOfMeasure ((/:), (-:), u, convert, toRational', fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
-import System.FilePath ((</>), takeFileName)
+import System.FilePath (takeFileName)
 import qualified Data.Number.FixedFunctions as F
 import Data.Aeson.ViaScientific (ViaScientific(..))
-import Data.Vector (Vector)
-import qualified Data.Vector as V (last, null)
 
 import Flight.Comp
     ( Pilot(..)
@@ -60,7 +59,7 @@ import Flight.Comp
     , findCompInput
     )
 import Flight.Distance (TaskDistance(..))
-import Flight.TrackLog (IxTask(..))
+import Flight.Comp (IxTask(..))
 import Flight.Units ()
 import Flight.Mask
     ( Sliver(..), FnIxTask, TaskZone, RaceSections(..), FlyCut(..)
@@ -73,11 +72,15 @@ import Flight.Track.Mask
     , TrackArrival(..)
     , TrackSpeed(..)
     , TrackDistance(..)
+    , Nigh
+    , Land
     )
 import Flight.Kml (MarkedFixes(..))
-import qualified Flight.Track.Time as Time (TickRow(..))
+import Flight.Track.Time (RaceTick(..))
+import qualified Flight.Track.Time as Time (TimeRow(..), TickRow(..))
 import Flight.Zone (Bearing(..))
 import Flight.Zone.Raw (RawZone)
+import Flight.LatLng.Raw (RawLatLng(..))
 import Flight.LatLng.Rational (Epsilon(..), defEps)
 import Data.Number.RoundingFunctions (dpRound)
 import Flight.Task (SpanLatLng, CircumSample, AngleCut(..))
@@ -98,7 +101,9 @@ import Flight.Lookup.Tag
     , tagArrivalRank, tagPilotTime, tagTicked
     )
 import Flight.Scribe
-    (readRoute, readCrossing, readTagging, writeMasking, readDiscardFurther)
+    (readRoute, readCrossing, readTagging, writeMasking
+    , readCompBestDistances, readCompTimeRows
+    )
 import Flight.Lookup.Route (RouteLookup(..), routeLength)
 import qualified Flight.Score as Gap (PilotDistance(..), bestTime)
 import Flight.Score
@@ -109,20 +114,13 @@ import Flight.Score
     , arrivalFraction
     , speedFraction
     )
-import Flight.Comp
-    ( DiscardDir(..)
-    , AlignTimeFile(..)
-    , DiscardFurtherFile(..)
-    , discardDir
-    , alignPath
-    , compFileToCompDir
-    )
+import Flight.Route (TrackLine(..))
     
 data FlightStats =
     FlightStats
         { statTimeRank :: Maybe (PilotTime, PositionAtEss)
-        , statNigh :: Maybe TrackDistance
-        , statLand :: Maybe TrackDistance
+        , statNigh :: Maybe (TrackDistance Nigh)
+        , statLand :: Maybe (TrackDistance Land)
         }
 
 nullStats :: FlightStats
@@ -165,9 +163,9 @@ drive o = do
 
 go :: CmdOptions -> CompInputFile -> IO ()
 go CmdOptions{..} compFile@(CompInputFile compPath) = do
+    let lenFile@(TaskLengthFile lenPath) = compToTaskLength $ compFile
     let crossFile@(CrossZoneFile crossPath) = compToCross $ compFile
     let tagFile@(TagZoneFile tagPath) = crossToTag . compToCross $ compFile
-    let lenFile@(TaskLengthFile lenPath) = compToTaskLength $ compFile
     putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
     putStrLn $ "Reading task length from '" ++ takeFileName lenPath ++ "'"
     putStrLn $ "Reading flying time range from '" ++ takeFileName crossPath ++ "'"
@@ -229,7 +227,7 @@ writeMask
             let iTasks = IxTask <$> [1 .. length ys]
 
             -- Distances (ds) of the landout spot.
-            let dsLand :: [[(Pilot, TrackDistance)]] = landDistances <$> ys
+            let dsLand :: [[(Pilot, TrackDistance Land)]] = landDistances <$> ys
 
             -- Arrivals (as).
             let as :: [[(Pilot, TrackArrival)]] = arrivals <$> ys
@@ -243,7 +241,9 @@ writeMask
             -- For each task, for each pilot, the row closest to goal.
             rows :: [[Maybe (Pilot, Time.TickRow)]]
                     <- readCompBestDistances
-                        compFile selectTasks ((fmap . fmap) fst dsLand)
+                        compFile
+                        (includeTask selectTasks)
+                        ((fmap . fmap) fst dsLand)
 
             -- Task lengths (ls).
             let lsTask :: [Maybe (TaskDistance Double)] =
@@ -253,7 +253,7 @@ writeMask
             let pilotsLandingOut = ((fmap . fmap) fst dsLand)
 
             -- Distances (ds) of point in the flight closest to goal.
-            let dsNigh =
+            let dsNigh :: [[(Pilot, TrackDistance Land)]] =
                     zipWith3
                         lookupTaskBestDistance
                         (Map.fromList . catMaybes <$> rows)
@@ -275,6 +275,23 @@ writeMask
                         tsBest
                         dsMade
 
+            let rowTicks :: [[Maybe (Pilot, RaceTick)]] =
+                    (fmap . fmap . fmap)
+                        (fmap (\Time.TickRow{tick} -> tick))
+                        rows
+
+            dsNighRows :: [[Maybe (Pilot, Time.TimeRow)]]
+                    <- readCompTimeRows
+                        compFile
+                        (includeTask selectTasks)
+                        (catMaybes <$> rowTicks)
+
+            let dsNighRows' :: [[(Pilot, TrackDistance Nigh)]] =
+                    [ nighTrackLine td <$> xs
+                    | td <- lsTask
+                    | xs <- (catMaybes <$> dsNighRows)
+                    ]
+
             writeMasking
                 (compToMask compFile)
                 Masking
@@ -284,15 +301,58 @@ writeMask
                     , bestDistance = dsBest
                     , arrival = as
                     , speed = (fromMaybe []) <$> (fmap . fmap) snd vs
-                    , nigh = dsNigh
+                    , nigh = dsNighRows'
                     , land = dsLand
                     }
+
+includeTask :: [IxTask] -> IxTask -> Bool
+includeTask tasks = if null tasks then const True else (`elem` tasks)
+
+nighTrackLine
+    :: Maybe (TaskDistance Double)
+    -> (Pilot, Time.TimeRow)
+    -> (Pilot, TrackDistance Nigh)
+
+nighTrackLine Nothing (p, Time.TimeRow{lat, lng, distance}) =
+    (p,)
+    $ TrackDistance
+        { togo =
+            Just $ TrackLine
+                { distance = distance
+                , waypoints = [x]
+                , legs = []
+                , legsSum = []
+                }
+        , made = Nothing
+        }
+    where
+        x = RawLatLng lat lng
+
+nighTrackLine (Just (TaskDistance td)) (p, Time.TimeRow{lat, lng, distance}) =
+    (p,)
+    $ TrackDistance
+        { togo =
+            Just $ TrackLine
+                { distance = distance
+                , waypoints = [x]
+                , legs = []
+                , legsSum = []
+                }
+        , made = Just . unTaskDistance . TaskDistance $ td -: togo'
+        }
+    where
+        x = RawLatLng lat lng
+
+        togo :: Quantity Double [u| km |]
+        togo = MkQuantity distance
+
+        togo' = convert togo :: Quantity Double [u| m |]
 
 lookupTaskBestDistance
     :: Map Pilot Time.TickRow
     -> Maybe (TaskDistance Double)
     -> [Pilot]
-    -> [(Pilot, TrackDistance)]
+    -> [(Pilot, TrackDistance Land)]
 lookupTaskBestDistance m td =
     sortOn (togo . snd)
     . catMaybes
@@ -302,14 +362,14 @@ lookupPilotBestDistance
     :: Map Pilot Time.TickRow
     -> Maybe (TaskDistance Double)
     -> Pilot
-    -> Maybe (Pilot, TrackDistance)
+    -> Maybe (Pilot, TrackDistance Land)
 lookupPilotBestDistance m td p =
     ((p,) . madeDistance td) <$> (Map.lookup p m)
 
 madeDistance
     :: Maybe (TaskDistance Double)
     -> Time.TickRow
-    -> TrackDistance
+    -> TrackDistance Land
 
 madeDistance Nothing Time.TickRow{distance} =
     TrackDistance
@@ -328,52 +388,7 @@ madeDistance (Just (TaskDistance td)) Time.TickRow{distance} =
 
         togo' = convert togo :: Quantity Double [u| m |]
 
-readCompBestDistances
-    :: CompInputFile
-    -> [IxTask]
-    -> [[Pilot]]
-    -> IO [[Maybe (Pilot, Time.TickRow)]]
-readCompBestDistances compFile selectTasks pss =
-    zipWithM
-        (\ i ps ->
-            if not (includeTask selectTasks i)
-               then return []
-               else readTaskBestDistances compFile i ps)
-        (IxTask <$> [1 .. ])
-        pss
-
-readTaskBestDistances
-    :: CompInputFile
-    -> IxTask
-    -> [Pilot]
-    -> IO [Maybe (Pilot, Time.TickRow)]
-readTaskBestDistances compFile i ps =
-    mapM (readPilotBestDistance compFile i) ps
-
-includeTask :: [IxTask] -> IxTask -> Bool
-includeTask tasks = if null tasks then const True else (`elem` tasks)
-
-readPilotBestDistance
-    :: CompInputFile
-    -> IxTask
-    -> Pilot
-    -> IO (Maybe (Pilot, Time.TickRow))
-readPilotBestDistance compFile (IxTask iTask) pilot = do
-    rows <-
-        runExceptT
-        $ readDiscardFurther (DiscardFurtherFile (dOut </> file))
-
-    return $ (pilot,) <$> either (const Nothing) (lastRow . snd) rows
-    where
-        dir = compFileToCompDir compFile
-        (_, AlignTimeFile file) = alignPath dir iTask pilot
-        (DiscardDir dOut) = discardDir dir iTask
-
-lastRow :: Vector Time.TickRow -> Maybe Time.TickRow
-lastRow xs =
-    if V.null xs then Nothing else Just $ V.last xs
-
-landDistances :: [(Pilot, FlightStats)] -> [(Pilot, TrackDistance)]
+landDistances :: [(Pilot, FlightStats)] -> [(Pilot, TrackDistance Land)]
 landDistances xs =
     sortOn (togo . snd)
     . catMaybes

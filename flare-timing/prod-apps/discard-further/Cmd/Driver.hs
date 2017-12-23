@@ -36,12 +36,12 @@ import Flight.Comp
     , CompSettings(..)
     , Pilot(..)
     , TrackFileFail
+    , IxTask(..)
     , compFileToCompDir
     , discardDir
     , alignPath
     , findCompInput
     )
-import Flight.TrackLog (IxTask(..))
 import Flight.Units ()
 import Flight.Mask (checkTracks)
 import Flight.Track.Time (TimeRow(..), TickRow(..), discardFurther)
