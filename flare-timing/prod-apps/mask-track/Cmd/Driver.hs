@@ -227,62 +227,71 @@ writeMask
                         comp
 
             let iTasks = IxTask <$> [1 .. length ys]
-            let lds :: [[(Pilot, TrackDistance)]] = landDistances <$> ys
+
+            -- Distances (ds) of the landout spot.
+            let dsLand :: [[(Pilot, TrackDistance)]] = landDistances <$> ys
+
+            -- Arrivals (as).
             let as :: [[(Pilot, TrackArrival)]] = arrivals <$> ys
+
+            -- Velocities (vs).
             let vs :: [Maybe (BestTime, [(Pilot, TrackSpeed)])] = times <$> ys
 
-            bs'' :: [[Maybe (Pilot, Time.TickRow)]]
+            -- Times (ts).
+            let tsBest = (fmap . fmap) (ViaScientific . fst) vs
+
+            -- For each task, for each pilot, the row closest to goal.
+            rows'' :: [[Maybe (Pilot, Time.TickRow)]]
                     <- readCompBestDistances
-                        compFile selectTasks ((fmap . fmap) fst lds)
+                        compFile selectTasks ((fmap . fmap) fst dsLand)
 
-            let bs' :: [[(Pilot, Time.TickRow)]] = catMaybes <$> bs''
-            let bs :: [Map Pilot Time.TickRow] = Map.fromList <$> bs'
-            let bestTime = (fmap . fmap) (ViaScientific . fst) vs
+            let rows' :: [[(Pilot, Time.TickRow)]] = catMaybes <$> rows''
+            let rows :: [Map Pilot Time.TickRow] = Map.fromList <$> rows'
 
-            let ls :: [Maybe (TaskDistance Double)] =
+            -- Task lengths (ls).
+            let lsTask :: [Maybe (TaskDistance Double)] =
                     (\i -> join ((\g -> g i) <$> lookupTaskLength))
                     <$> iTasks
 
-            let nds =
+            let pilotsLandingOut = ((fmap . fmap) fst dsLand)
+
+            -- Distances (ds) of point in the flight closest to goal.
+            let dsNigh =
                     zipWith3
                         lookupTaskBestDistance
-                        bs
-                        ls
-                        ((fmap . fmap) fst lds)
+                        rows
+                        lsTask
+                        pilotsLandingOut
 
-            let us'' :: [[Maybe Double]] =
-                    (fmap . fmap) (made . snd) nds
+            -- For each task, for each pilot, the best distance made.
+            let dsMade'' :: [[Maybe Double]] = (fmap . fmap) (made . snd) dsNigh
+            let dsMade' :: [[Double]] = catMaybes <$> dsMade''
 
-            let us' :: [[Double]] = catMaybes <$> us''
-
-            let us :: [Maybe Double] =
+            let dsMade :: [Maybe Double] =
                     (\xs -> if null xs then Nothing else Just . maximum $ xs)
-                    <$> us'
+                    <$> dsMade'
 
-            let bestDistance :: [Maybe Double] =
+            -- If a pilot makes goal then their best distance is the task
+            -- distance.
+            let dsBest :: [Maybe Double] =
                     zipWith3
-                        (\td bt bd ->
-                            if isJust bt then unTaskDistance <$> td
-                                         else bd)
-                        ls
-                        bestTime
-                        us
+                        (\l t d -> if isJust t then unTaskDistance <$> l else d)
+                        lsTask
+                        tsBest
+                        dsMade
 
-            let maskTrack =
-                    Masking
-                        { pilotsAtEss =
-                            (PilotsAtEss . toInteger . length) <$> as
-
-                        , bestTime = bestTime
-                        , taskDistance = (fmap . fmap) unTaskDistance ls
-                        , bestDistance = bestDistance
-                        , arrival = as
-                        , speed = (fromMaybe []) <$> (fmap . fmap) snd vs
-                        , nigh = nds
-                        , land = lds
-                        }
-
-            writeMasking (compToMask compFile) maskTrack
+            writeMasking
+                (compToMask compFile)
+                Masking
+                    { pilotsAtEss = (PilotsAtEss . toInteger . length) <$> as
+                    , bestTime = tsBest
+                    , taskDistance = (fmap . fmap) unTaskDistance lsTask
+                    , bestDistance = dsBest
+                    , arrival = as
+                    , speed = (fromMaybe []) <$> (fmap . fmap) snd vs
+                    , nigh = dsNigh
+                    , land = dsLand
+                    }
 
 lookupTaskBestDistance
     :: Map Pilot Time.TickRow
