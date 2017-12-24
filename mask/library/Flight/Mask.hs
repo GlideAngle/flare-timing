@@ -32,6 +32,8 @@ module Flight.Mask
     , groupByLeg
     , dashDistancesToGoal
     , dashDistanceToGoal
+    , dashPathToGoalMarkedFixes
+    , dashPathToGoalTimeRows
     , dashDistanceFlown
     , timeFlown
     , zoneToCylinder

@@ -46,7 +46,8 @@ import Flight.Route
     , PlanarTrackLine(..)
     )
 import Flight.TaskTrack.Internal
-    ( mm30
+    ( ToTrackLine(..)
+    , mm30
     , roundEastNorth
     , fromUTMRefEastNorth
     , fromUTMRefZone
@@ -57,6 +58,9 @@ import Flight.TaskTrack.Internal
     , toCylinder
     )
 import Flight.ShortestPath (Zs(..), AngleCut(..), CostSegment, fromZs)
+
+instance ToTrackLine (PathDistance Double) where
+    toTrackLine = goByEdge
 
 taskTracks :: Bool
            -> (Int -> Bool)

@@ -21,6 +21,8 @@ module Flight.Task
     , CostSegment
     , DistancePointToPoint
     , AngleCut(..)
+    , ToTrackLine(..)
+    , Zs(..)
     , distanceEdgeToEdge
     -- * Zones
     , separatedZones
@@ -33,3 +35,4 @@ import Flight.Separated
 import Flight.Cylinder.Sample
 import Flight.Cylinder.Edge
 import Flight.ShortestPath
+import Flight.TaskTrack.Internal (ToTrackLine(..))

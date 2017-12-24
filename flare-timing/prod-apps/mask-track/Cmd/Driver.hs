@@ -58,12 +58,16 @@ import Flight.Comp
     , crossToTag
     , findCompInput
     )
-import Flight.Distance (TaskDistance(..))
+import Flight.Distance (PathDistance, TaskDistance(..))
 import Flight.Comp (IxTask(..))
 import Flight.Units ()
 import Flight.Mask
     ( Sliver(..), FnIxTask, TaskZone, RaceSections(..), FlyCut(..), Ticked
-    , checkTracks, dashDistanceToGoal, dashDistanceFlown, zoneToCylinder
+    , checkTracks
+    , dashPathToGoalTimeRows
+    , dashDistanceToGoal
+    , dashDistanceFlown
+    , zoneToCylinder
     )
 import Flight.Track.Cross (TrackFlyingSection(..))
 import Flight.Track.Tag (Tagging)
@@ -78,12 +82,12 @@ import Flight.Track.Mask
 import Flight.Kml (MarkedFixes(..))
 import Flight.Track.Time (RaceTick(..))
 import qualified Flight.Track.Time as Time (TimeRow(..), TickRow(..))
-import Flight.Zone (Bearing(..))
+import Flight.Zone (Zone, Bearing(..))
 import Flight.Zone.Raw (RawZone)
-import Flight.LatLng.Raw (RawLatLng(..))
 import Flight.LatLng.Rational (Epsilon(..), defEps)
 import Data.Number.RoundingFunctions (dpRound)
-import Flight.Task (SpanLatLng, CircumSample, AngleCut(..))
+import Flight.Task
+    (ToTrackLine(..), SpanLatLng, CircumSample, AngleCut(..), fromZs)
 import qualified Flight.PointToPoint.Rational as Rat
     (distanceHaversine, distancePointToPoint, costSegment)
 import qualified Flight.PointToPoint.Double as Dbl
@@ -101,7 +105,7 @@ import Flight.Lookup.Tag
     , tagArrivalRank, tagPilotTime, tagTicked
     )
 import Flight.Scribe
-    (readRoute, readCrossing, readTagging, writeMasking
+    ( readRoute, readCrossing, readTagging, writeMasking
     , readCompBestDistances, readCompTimeRows
     )
 import Flight.Lookup.Route (RouteLookup(..), routeLength)
@@ -115,22 +119,33 @@ import Flight.Score
     , speedFraction
     )
 import Flight.Route (TrackLine(..))
+import Flight.TaskTrack.Double ()
     
 data FlightStats =
     FlightStats
         { statTimeRank :: Maybe (PilotTime, PositionAtEss)
-        , statNigh :: Maybe (TrackDistance Nigh)
         , statLand :: Maybe (TrackDistance Land)
-        , statTicked :: Ticked
+        , statDash :: DashPathInputs
+        }
+
+data DashPathInputs =
+    DashPathInputs
+        { dashTask :: Maybe Task
+        , dashTicked :: Ticked
+        , dashFlyCut :: Maybe (FlyCut UTCTime MarkedFixes)
         }
 
 nullStats :: FlightStats
 nullStats =
     FlightStats
         { statTimeRank = Nothing
-        , statNigh = Nothing
         , statLand = Nothing
-        , statTicked = RaceSections [] [] []
+        , statDash =
+            DashPathInputs
+                { dashTask = Nothing
+                , dashTicked = RaceSections [] [] []
+                , dashFlyCut = Nothing
+                }
         }
 
 driverMain :: IO ()
@@ -228,6 +243,10 @@ writeMask
 
             let iTasks = IxTask <$> [1 .. length ys]
 
+            -- Zones (zs) of the task and zones ticked.
+            let zsTaskTicked :: [Map Pilot DashPathInputs] =
+                    Map.fromList . landTaskTicked <$> ys
+
             -- Distances (ds) of the landout spot.
             let dsLand :: [[(Pilot, TrackDistance Land)]] = landDistances <$> ys
 
@@ -289,8 +308,9 @@ writeMask
                         (catMaybes <$> rowTicks)
 
             let dsNighRows' :: [[(Pilot, TrackDistance Nigh)]] =
-                    [ nighTrackLine td <$> xs
+                    [ nighTrackLine td zs <$> xs
                     | td <- lsTask
+                    | zs <- zsTaskTicked
                     | xs <- (catMaybes <$> dsNighRows)
                     ]
 
@@ -312,43 +332,58 @@ includeTask tasks = if null tasks then const True else (`elem` tasks)
 
 nighTrackLine
     :: Maybe (TaskDistance Double)
+    -> Map Pilot DashPathInputs
     -> (Pilot, Time.TimeRow)
     -> (Pilot, TrackDistance Nigh)
 
-nighTrackLine Nothing (p, Time.TimeRow{lat, lng, distance}) =
+nighTrackLine Nothing _ (p, Time.TimeRow{distance}) =
     (p,)
     $ TrackDistance
-        { togo =
-            Just $ TrackLine
-                { distance = distance
-                , waypoints = [x]
-                , legs = []
-                , legsSum = []
-                }
+        { togo = Just $ distanceOnlyLine distance
         , made = Nothing
         }
-    where
-        x = RawLatLng lat lng
 
-nighTrackLine (Just (TaskDistance td)) (p, Time.TimeRow{lat, lng, distance}) =
+nighTrackLine (Just (TaskDistance td)) zsTaskTicked (p, row@Time.TimeRow{distance}) =
     (p,)
     $ TrackDistance
-        { togo =
-            Just $ TrackLine
-                { distance = distance
-                , waypoints = [x]
-                , legs = []
-                , legsSum = []
-                }
+        { togo = Just line
         , made = Just . unTaskDistance . TaskDistance $ td -: togo'
         }
     where
-        x = RawLatLng lat lng
-
         togo :: Quantity Double [u| km |]
         togo = MkQuantity distance
 
         togo' = convert togo :: Quantity Double [u| m |]
+
+        line =
+            case Map.lookup p zsTaskTicked of
+                Nothing -> distanceOnlyLine distance
+                Just dpi -> pathToGo dpi row distance
+
+distanceOnlyLine :: Double -> TrackLine
+distanceOnlyLine d =
+    TrackLine
+        { distance = d
+        , waypoints = []
+        , legs = []
+        , legsSum = []
+        }
+
+pathToGo :: DashPathInputs -> Time.TimeRow -> Double -> TrackLine
+pathToGo DashPathInputs{..} x@Time.TimeRow{time} d =
+    case dashTask of
+        Nothing -> distanceOnlyLine d
+        Just dashTask' ->
+            maybe
+                (distanceOnlyLine d)
+                (toTrackLine False)
+                (fromZs path)
+            where
+                path = dashPathToGoalTimeRows
+                        dashTicked
+                        (Sliver spanF dppF csegF csF cutF)
+                        zoneToCylF dashTask'
+                        FlyCut{cut = Just (time, time), uncut = [x]}
 
 lookupTaskBestDistance
     :: Map Pilot Time.TickRow
@@ -389,6 +424,10 @@ madeDistance (Just (TaskDistance td)) Time.TickRow{distance} =
         togo = MkQuantity distance
 
         togo' = convert togo :: Quantity Double [u| m |]
+
+landTaskTicked :: [(Pilot, FlightStats)] -> [(Pilot, DashPathInputs)]
+landTaskTicked xs =
+    (\(p, FlightStats{..}) -> (p,statDash)) <$> xs
 
 landDistances :: [(Pilot, FlightStats)] -> [(Pilot, TrackDistance Land)]
 landDistances xs =
@@ -482,7 +521,7 @@ flown'
     math tags tasks iTask@(IxTask i)
     mf@MarkedFixes{mark0}
     p =
-    case tasks ^? element (i - 1) of
+    case maybeTask of
         Nothing -> nullStats
 
         Just task' ->
@@ -496,6 +535,12 @@ flown'
                 (Just a, Just b) ->
                     tickedStats {statTimeRank = Just (a, b)}
     where
+        maybeTask = tasks ^? element (i - 1)
+
+        ticked =
+            fromMaybe (RaceSections [] [] [])
+            $ join ((\f -> f iTask speedSection' p mf) <$> lookupTicked)
+
         flyingRange :: FlyingSection UTCTime =
             fromMaybe (Just (mark0, mark0))
             $ join (fmap flyingTimes . (\f -> f iTask p) <$> lookupFlying)
@@ -506,11 +551,15 @@ flown'
                 , uncut = mf
                 }
 
-        ticked =
-            fromMaybe (RaceSections [] [] [])
-            $ join ((\f -> f iTask speedSection' p mf) <$> lookupTicked)
-
-        tickedStats = nullStats {statTicked = ticked}
+        tickedStats =
+            nullStats
+                { statDash =
+                    DashPathInputs
+                        { dashTask = maybeTask
+                        , dashTicked = ticked
+                        , dashFlyCut = Just xs
+                        }
+                }
 
         pilotTime =
             diffTimeHours
@@ -525,12 +574,6 @@ flown'
                     { togo = unTaskDistance <$> dgLast task math
                     , made = fromRational <$> unPilotDistance <$> dfLast task math
                     }
-
-        dppR = Rat.distancePointToPoint
-        dppF = Dbl.distancePointToPoint
-
-        csegR = Rat.costSegment spanR
-        csegF = Dbl.costSegment spanF
 
         dgLast :: Task -> Math -> Maybe (TaskDistance Double)
         dgLast task =
@@ -615,6 +658,18 @@ nextCutR x@AngleCut{sweep} =
 nextCutF :: AngleCut Double -> AngleCut Double
 nextCutF x@AngleCut{sweep} =
     let (Bearing b) = sweep in x{sweep = Bearing $ b /: 2}
+
+dppR :: SpanLatLng Rational -> [Zone Rational] -> PathDistance Rational
+dppR = Rat.distancePointToPoint
+
+dppF :: SpanLatLng Double -> [Zone Double] -> PathDistance Double
+dppF = Dbl.distancePointToPoint
+
+csegR :: Zone Rational -> Zone Rational -> PathDistance Rational
+csegR = Rat.costSegment spanR
+
+csegF :: Zone Double -> Zone Double -> PathDistance Double
+csegF = Dbl.costSegment spanF
 
 diffTimeHours :: StartEnd -> PilotTime
 diffTimeHours (start, end) =

@@ -11,6 +11,7 @@ module Flight.Mask.Internal.Zone
     , OrdCrossing(..)
     , slice
     , fixToPoint
+    , rowToPoint
     , fixFromFix
     , zoneToCylinder
     ) where
@@ -32,6 +33,7 @@ import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.LatLng.Raw (RawLat(..), RawLng(..))
 import Flight.Zone (Radius(..), Zone(..))
 import qualified Flight.Zone.Raw as Raw (RawZone(..))
+import Flight.Track.Time (TimeRow(..))
 import Flight.Track.Cross (Fix(..))
 import Flight.Comp (SpeedSection)
 import Flight.Units ()
@@ -103,6 +105,11 @@ fixToPoint fix =
     where
         Kml.Latitude lat = Kml.lat fix
         Kml.Longitude lng = Kml.lng fix
+
+rowToPoint :: (Eq a, Fractional a) => TimeRow -> TrackZone a
+rowToPoint
+    TimeRow{lat = ViaScientific (RawLat lat), lng = ViaScientific (RawLng lng)} =
+    TrackZone $ Point (toLL (lat, lng))
 
 zoneToCylinder :: (Eq a, Fractional a) => Raw.RawZone -> TaskZone a
 zoneToCylinder z =

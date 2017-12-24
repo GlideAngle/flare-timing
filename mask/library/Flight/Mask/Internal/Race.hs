@@ -20,6 +20,7 @@ import Data.List (findIndices)
 
 import Flight.Kml (FixMark(mark), MarkedFixes(..), Seconds(..))
 import Flight.Zone (Zone(..))
+import Flight.Track.Time (TimeRow(..))
 import Flight.Comp (SpeedSection, FlyingSection)
 import Flight.Units ()
 import Flight.Distance (TaskDistance(..))
@@ -109,12 +110,24 @@ class FlyClipping a b where
 class (FlyClipping a b) => FlyClipSection a b c where
     clipSection :: FlyCut a b -> FlyingSection c
 
+instance FlyClipping UTCTime [TimeRow] where
+    clipToFlown x@FlyCut{cut = Nothing} =
+        x{uncut = []}
+
+    clipToFlown x@FlyCut{cut = Just (t0, t1), uncut = xs} =
+        x{uncut = filter (betweenTimeRow t0 t1) xs}
+
+    clipIndices FlyCut{cut = Nothing} = []
+
+    clipIndices FlyCut{cut = Just (t0, t1), uncut = xs} =
+        findIndices (betweenTimeRow t0 t1) xs
+
 instance FlyClipping UTCTime MarkedFixes where
     clipToFlown x@FlyCut{cut = Nothing, uncut} =
         x{uncut = uncut{fixes = []}}
 
     clipToFlown x@FlyCut{cut = Just (t0, t1), uncut = mf@MarkedFixes{mark0, fixes}} =
-        x{uncut = mf{fixes = filter (between s0 s1) fixes}}
+        x{uncut = mf{fixes = filter (betweenFixMark s0 s1) fixes}}
         where
             s0 = Seconds . round $ t0 `diffUTCTime` mark0
             s1 = Seconds . round $ t1 `diffUTCTime` mark0
@@ -122,7 +135,7 @@ instance FlyClipping UTCTime MarkedFixes where
     clipIndices FlyCut{cut = Nothing} = []
 
     clipIndices FlyCut{cut = Just (t0, t1), uncut = MarkedFixes{mark0, fixes}} =
-        findIndices (between s0 s1) fixes
+        findIndices (betweenFixMark s0 s1) fixes
         where
             s0 = Seconds . round $ t0 `diffUTCTime` mark0
             s1 = Seconds . round $ t1 `diffUTCTime` mark0
@@ -136,6 +149,10 @@ instance FlyClipSection UTCTime MarkedFixes Int where
         where
             xs = clipIndices x
 
-between :: FixMark a => Seconds -> Seconds -> a -> Bool
-between s0 s1 x =
+betweenTimeRow :: UTCTime -> UTCTime -> TimeRow -> Bool
+betweenTimeRow t0 t1 TimeRow{time = t} =
+    t0 <= t && t <= t1 
+
+betweenFixMark :: FixMark a => Seconds -> Seconds -> a -> Bool
+betweenFixMark s0 s1 x =
     let s = mark x in s0 <= s && s <= s1

@@ -1,6 +1,8 @@
 module Flight.Mask.Distance
     ( dashDistancesToGoal
     , dashDistanceToGoal
+    , dashPathToGoalMarkedFixes
+    , dashPathToGoalTimeRows
     , dashDistanceFlown
     ) where
 
@@ -11,16 +13,18 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Kml (MarkedFixes(..))
 import qualified Flight.Kml as Kml (Fix)
+import Flight.Track.Time (TimeRow(..))
 import Flight.Track.Cross (Fix(..))
 import Flight.Comp (Task(..))
 import Flight.Score (PilotDistance(..))
 import Flight.Units ()
 import Flight.Mask.Internal.Zone
-    (ZoneIdx, TaskZone(..), fixFromFix, fixToPoint)
+    (ZoneIdx, TaskZone(..), fixFromFix, fixToPoint, rowToPoint)
 import Flight.Mask.Internal.Race (FlyClipping(..), Sliver(..), FlyCut(..), Ticked)
-import Flight.Mask.Internal.Dash (dashToGoalR)
+import Flight.Mask.Internal.Dash (dashPathToGoalR, dashToGoalR)
 import qualified Flight.Zone.Raw as Raw (RawZone(..))
-import Flight.Distance (TaskDistance(..))
+import Flight.Distance (PathDistance(..), TaskDistance(..))
+import Flight.Task (Zs(..), fromZs)
 
 dashDistancesToGoal
     :: (Real a, Fractional a, FlyClipping UTCTime MarkedFixes)
@@ -63,12 +67,45 @@ dashDistanceToGoal
     -> Task
     -> FlyCut UTCTime MarkedFixes
     -> Maybe (TaskDistance a)
-    -- ^ Nothing indicates no such task or a task with no zones.
 dashDistanceToGoal
+    ticked sliver zoneToCyl task flyCut =
+    fromZs
+    $ edgesSum
+    <$> dashPathToGoalMarkedFixes ticked sliver zoneToCyl task flyCut
+    
+dashPathToGoalTimeRows
+    :: (Real a, Fractional a, FlyClipping UTCTime [TimeRow])
+    => Ticked
+    -> Sliver a
+    -> (Raw.RawZone -> TaskZone a)
+    -> Task
+    -> FlyCut UTCTime [TimeRow]
+    -> Zs (PathDistance a)
+    -- ^ Nothing indicates no such task or a task with no zones.
+dashPathToGoalTimeRows
     ticked sliver zoneToCyl Task{speedSection, zones} flyCut =
 
-    if null zones then Nothing else
-    dashToGoalR ticked sliver fixToPoint speedSection zs ixs
+    if null zones then Z0 else
+    dashPathToGoalR ticked sliver rowToPoint speedSection zs ixs
+    where
+        zs = zoneToCyl <$> zones
+        ixs = reverse . index $ fixes
+        FlyCut{uncut = fixes} = clipToFlown flyCut
+
+dashPathToGoalMarkedFixes
+    :: (Real a, Fractional a, FlyClipping UTCTime MarkedFixes)
+    => Ticked
+    -> Sliver a
+    -> (Raw.RawZone -> TaskZone a)
+    -> Task
+    -> FlyCut UTCTime MarkedFixes
+    -> Zs (PathDistance a)
+    -- ^ Nothing indicates no such task or a task with no zones.
+dashPathToGoalMarkedFixes
+    ticked sliver zoneToCyl Task{speedSection, zones} flyCut =
+
+    if null zones then Z0 else
+    dashPathToGoalR ticked sliver fixToPoint speedSection zs ixs
     where
         zs = zoneToCyl <$> zones
         ixs = reverse . index $ fixes
