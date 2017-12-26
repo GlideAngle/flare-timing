@@ -79,6 +79,7 @@ module Flight.Score
     , clampToDeadline
     , areaScaling
     , areaSteps
+    , leadingFraction
     , leadingFractions
     , leadingCoefficient
     , madeGoal

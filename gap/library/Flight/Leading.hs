@@ -22,6 +22,7 @@ module Flight.Leading
     , leadingFractions
     , clampToEss
     , clampToDeadline
+    , leadingFraction
     ) where
 
 import Control.Newtype (Newtype(..))

@@ -206,6 +206,7 @@ leadingArea
     | otherwise =
         if length rows /= length xs then rows else xs
         where
+            -- TODO: Calculate the task deadline.
             steps =
                 areaSteps
                     (TaskDeadline 10000)

@@ -85,6 +85,7 @@ import Flight.Track.Mask
     ( Masking(..)
     , TrackArrival(..)
     , TrackSpeed(..)
+    , TrackLead(..)
     , TrackDistance(..)
     , Nigh
     , Land
@@ -127,7 +128,9 @@ import Flight.Score
     , BestTime(..)
     , PilotTime(..)
     , LeadingCoefficient(..)
+    , LeadingFraction(..)
     , arrivalFraction
+    , leadingFraction
     , speedFraction
     )
 import Flight.Route (TrackLine(..))
@@ -304,9 +307,24 @@ writeMask
                         rowsLeadingStep
 
             let minLead =
-                    (fmap . fmap) ViaScientific
-                    $ minLeading
+                    minLeading
                     <$> ((fmap . fmap) snd rowsLeadingSum)
+
+            let lead :: [[(Pilot, TrackLead)]] =
+                    [(fmap . fmap)
+                        (\lc ->
+                            TrackLead
+                                { coef = ViaScientific lc
+                                , frac =
+                                    ViaScientific
+                                    $ fromMaybe (LeadingFraction 0)
+                                    $ (flip leadingFraction $ lc)
+                                    <$> minL
+                                })
+                        xs
+                    | minL <- minLead
+                    | xs <- rowsLeadingSum
+                    ]
 
             -- Distances (ds) of point in the flight closest to goal.
             let dsNigh :: [[(Pilot, TrackDistance Land)]] =
@@ -356,8 +374,8 @@ writeMask
                     , bestTime = tsBest
                     , taskDistance = (fmap . fmap) unTaskDistance lsTask
                     , bestDistance = dsBest
-                    , minLead = minLead
-                    , lead = const [] <$> iTasks
+                    , minLead = (fmap . fmap) ViaScientific minLead
+                    , lead = lead
                     , arrival = as
                     , speed = (fromMaybe []) <$> (fmap . fmap) snd vs
                     , nigh = dsNighRows'
