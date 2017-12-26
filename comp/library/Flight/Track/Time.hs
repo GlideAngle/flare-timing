@@ -173,7 +173,7 @@ leadingArea
     dRace@(Just (LeadingDistance (MkQuantity d)))
     rows@(xRow@TickRow{tick = x} : yRow@TickRow{tick = y} : ys)
     | y <= 0 =
-        xRow : leadingArea dRace (yRow : ys)
+        xRow : yRow : leadingArea dRace ys
     | x <= 0 && y > 0 =
         xRow : leadingArea dRace (yRow : ys)
     | otherwise =
