@@ -32,6 +32,10 @@ module Flight.Track.Time
     , TickRow(..)
     , discardFurther
     , leadingArea
+    , leadingSum
+    , minLeading
+    , taskToLeading
+    , discard
     ) where
 
 import Data.Maybe (fromMaybe)
@@ -47,13 +51,25 @@ import Data.HashMap.Strict (unions)
 import Data.Time.Clock (UTCTime)
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..), encode, decode)
-import Data.UnitsOfMeasure (u)
+import Data.UnitsOfMeasure (u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
+import Data.Vector (Vector)
+import qualified Data.Vector as V (fromList, toList)
 
 import Flight.Units ()
 import Flight.LatLng.Raw (RawLat, RawLng)
 import Data.Aeson.ViaScientific (ViaScientific(..))
 import Flight.Score
+    ( LeadingAreaStep(..)
+    , LeadingCoefficient(..)
+    , TaskTime(..)
+    , DistanceToEss(..)
+    , LcTrack(..)
+    , LengthOfSs(..)
+    , TaskDeadline(..)
+    , areaSteps
+    )
+import Flight.Distance (TaskDistance(..))
 
 -- | Seconds from first speed zone crossing
 newtype RaceTick = RaceTick Double
@@ -165,6 +181,17 @@ discardFurther (x : y : ys)
         d = distance :: (TickRow -> Double)
 discardFurther ys = ys
 
+minLeading :: [LeadingCoefficient] -> Maybe LeadingCoefficient
+minLeading xs =
+    if null xs then Nothing else Just $ minimum xs
+
+leadingSum :: Maybe LeadingDistance -> [TickRow] -> LeadingCoefficient
+leadingSum Nothing _ = LeadingCoefficient 0
+leadingSum (Just _) xs =
+    LeadingCoefficient $ sum ys
+    where
+        ys = (\TickRow{areaStep = ViaScientific (LeadingAreaStep a)} -> a) <$> xs
+
 leadingArea :: Maybe LeadingDistance -> [TickRow] -> [TickRow]
 leadingArea _ [] = []
 leadingArea _ [x] = [x]
@@ -198,3 +225,28 @@ toLcPoint TickRow{tick = RaceTick t, distance} =
 toLcTrack :: [TickRow] -> LcTrack
 toLcTrack xs =
     LcTrack $ toLcPoint <$> xs
+
+taskToLeading :: TaskDistance Double -> LeadingDistance
+taskToLeading (TaskDistance d) =
+    LeadingDistance $ d'
+    where
+        d' = convert d :: Quantity Double [u| km |]
+
+timeToTick :: TimeRow -> TickRow
+timeToTick TimeRow{tick, distance} =
+    TickRow tick distance $ ViaScientific (LeadingAreaStep 0)
+
+discard :: Maybe LeadingDistance -> Vector TimeRow -> Vector TickRow
+discard d xs =
+    V.fromList
+    . leadingArea d
+    . discardFurther
+    . dropZeros
+    . V.toList
+    $ timeToTick <$> xs
+
+dropZeros :: [TickRow] -> [TickRow]
+dropZeros =
+    dropWhile ((== 0) . d)
+    where
+        d = distance :: (TickRow -> Double)

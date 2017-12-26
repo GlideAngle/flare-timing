@@ -63,13 +63,29 @@ instance Newtype LeadingAreaStep Rational where
     pack = LeadingAreaStep
     unpack (LeadingAreaStep a) = a
 
-newtype LeadingCoefficient = LeadingCoefficient Rational deriving (Eq, Ord, Show)
+newtype LeadingCoefficient = LeadingCoefficient Rational
+    deriving (Eq, Ord, Show, ToJSON, FromJSON)
+
+instance DefaultDecimalPlaces LeadingCoefficient where
+    defdp _ = DecimalPlaces 8
+
+instance Newtype LeadingCoefficient Rational where
+    pack = LeadingCoefficient
+    unpack (LeadingCoefficient a) = a
 
 -- | A pilot's track where points are task time paired with distance to the end
 -- of the speed section.
 newtype LcTrack = LcTrack [(TaskTime, DistanceToEss)] deriving (Eq, Ord, Show)
 
-newtype LeadingFraction = LeadingFraction Rational deriving (Eq, Ord, Show)
+newtype LeadingFraction = LeadingFraction Rational
+    deriving (Eq, Ord, Show, ToJSON, FromJSON)
+
+instance DefaultDecimalPlaces LeadingFraction where
+    defdp _ = DecimalPlaces 8
+
+instance Newtype LeadingFraction Rational where
+    pack = LeadingFraction
+    unpack (LeadingFraction a) = a
 
 madeGoal :: LcTrack -> Bool
 madeGoal (LcTrack xs) =

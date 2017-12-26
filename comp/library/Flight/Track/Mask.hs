@@ -16,6 +16,7 @@ module Flight.Track.Mask
     , TrackDistance(..)
     , TrackArrival(..)
     , TrackSpeed(..)
+    , TrackLead(..)
     , Nigh
     , Land
     ) where
@@ -32,6 +33,8 @@ import Flight.Score
     , SpeedFraction(..)
     , BestTime(..)
     , PilotTime(..)
+    , LeadingCoefficient(..)
+    , LeadingFraction(..)
     )
 import Data.Aeson.ViaScientific (ViaScientific(..))
 import Flight.Field (FieldOrdering(..))
@@ -50,6 +53,10 @@ data Masking =
         -- ^ For each task, the task distance.
         , bestDistance :: [Maybe Double]
         -- ^ For each task, the best distance made.
+        , minLead :: [Maybe (ViaScientific LeadingCoefficient)]
+        -- ^ For each task, the minimum of all pilot's leading coefficient.
+        , lead :: [[(Pilot, TrackLead)]]
+        -- ^ For each task, the rank order of leading and leading fraction.
         , arrival :: [[(Pilot, TrackArrival)]]
         -- ^ For each task, the rank order of arrival at goal and arrival fraction.
         , speed :: [[(Pilot, TrackSpeed)]]
@@ -88,6 +95,16 @@ data TrackArrival =
 instance ToJSON TrackArrival
 instance FromJSON TrackArrival
 
+data TrackLead =
+    TrackLead
+        { coef :: ViaScientific LeadingCoefficient
+        , frac :: ViaScientific LeadingFraction
+        }
+        deriving (Eq, Ord, Show, Generic)
+
+instance ToJSON TrackLead
+instance FromJSON TrackLead
+
 data TrackDistance a =
     TrackDistance
         { togo :: Maybe a
@@ -124,29 +141,49 @@ cmp a b =
         ("bestDistance", "taskDistance") -> GT
         ("bestDistance", _) -> LT
 
+        ("minLead", "pilotsAtEss") -> GT
+        ("minLead", "bestTime") -> GT
+        ("minLead", "taskDistance") -> GT
+        ("minLead", "bestDistance") -> GT
+        ("minLead", _) -> LT
+
+        ("lead", "pilotsAtEss") -> GT
+        ("lead", "bestTime") -> GT
+        ("lead", "taskDistance") -> GT
+        ("lead", "bestDistance") -> GT
+        ("lead", "minLead") -> GT
+        ("lead", _) -> LT
+
         ("arrival", "pilotsAtEss") -> GT
         ("arrival", "bestTime") -> GT
         ("arrival", "taskDistance") -> GT
         ("arrival", "bestDistance") -> GT
+        ("arrival", "minLead") -> GT
+        ("arrival", "lead") -> GT
         ("arrival", _) -> LT
 
         ("speed", "pilotsAtEss") -> GT
+        ("speed", "bestTime") -> GT
         ("speed", "taskDistance") -> GT
         ("speed", "bestDistance") -> GT
-        ("speed", "bestTime") -> GT
+        ("speed", "minLead") -> GT
+        ("speed", "lead") -> GT
         ("speed", "arrival") -> GT
         ("speed", _) -> LT
 
         ("nigh", "pilotsAtEss") -> GT
+        ("nigh", "bestTime") -> GT
         ("nigh", "taskDistance") -> GT
         ("nigh", "bestDistance") -> GT
-        ("nigh", "bestTime") -> GT
+        ("nigh", "minLead") -> GT
+        ("nigh", "lead") -> GT
         ("nigh", "arrival") -> GT
         ("nigh", "speed") -> GT
         ("nigh", _) -> LT
 
         ("land", _) -> GT
 
+        ("coef", _) -> LT
         ("time", _) -> LT
         ("rank", _) -> LT
         ("frac", _) -> GT

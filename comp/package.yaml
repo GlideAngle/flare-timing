@@ -27,6 +27,7 @@ library:
   - lens
   - mtl
   - uom-plugin
+  - vector
   - aeson-via
   - flight-units
   - flight-latlng
@@ -68,6 +69,7 @@ tests:
     - lens
     - mtl
     - uom-plugin
+    - vector
     - aeson-via
     - flight-latlng
     - flight-zone

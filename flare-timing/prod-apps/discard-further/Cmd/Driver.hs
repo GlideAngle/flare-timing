@@ -29,10 +29,6 @@ import Control.Monad (join, mapM_, when, zipWithM_)
 import Control.Monad.Except (ExceptT, runExceptT)
 import System.Directory (createDirectoryIfMissing)
 import System.FilePath ((</>), takeFileName)
-import Data.Vector (Vector)
-import qualified Data.Vector as V (fromList, toList)
-import Data.UnitsOfMeasure (u, convert)
-import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Cmd.Paths (checkPaths)
 import Flight.Cmd.Options (CmdOptions(..), ProgramName(..), mkOptions)
@@ -55,15 +51,11 @@ import Flight.Comp
     , alignPath
     , findCompInput
     )
+import Flight.Track.Time (taskToLeading, discard)
 import Flight.Units ()
 import Flight.Mask (checkTracks)
-import Flight.Track.Time
-    (TimeRow(..), TickRow(..), LeadingDistance(..), discardFurther, leadingArea)
 import Flight.Scribe (readRoute, readAlignTime, writeDiscardFurther)
-import Flight.Distance (TaskDistance(..))
 import Flight.Lookup.Route (RouteLookup(..), routeLength)
-import Flight.Score (LeadingAreaStep(..))
-import Data.Aeson.ViaScientific (ViaScientific(..))
 
 headers :: [String]
 headers = ["tick", "distance", "areaStep"]
@@ -161,27 +153,3 @@ readFilterWrite
         taskLength = join (($ iTask) <$> lookupTaskLength)
         leadingDistance = taskToLeading <$> taskLength
 
-taskToLeading :: TaskDistance Double -> LeadingDistance
-taskToLeading (TaskDistance d) =
-    LeadingDistance $ d'
-    where
-        d' = convert d :: Quantity Double [u| km |]
-
-timeToTick :: TimeRow -> TickRow
-timeToTick TimeRow{tick, distance} =
-    TickRow tick distance $ ViaScientific (LeadingAreaStep 0)
-
-discard :: Maybe LeadingDistance -> Vector TimeRow -> Vector TickRow
-discard d xs =
-    V.fromList
-    . leadingArea d
-    . discardFurther
-    . dropZeros
-    . V.toList
-    $ timeToTick <$> xs
-
-dropZeros :: [TickRow] -> [TickRow]
-dropZeros =
-    dropWhile ((== 0) . d)
-    where
-        d = distance :: (TickRow -> Double)

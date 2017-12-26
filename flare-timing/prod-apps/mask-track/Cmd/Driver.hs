@@ -27,39 +27,51 @@ import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
 import Data.Maybe (fromMaybe, catMaybes, isJust)
 import Data.List (sortOn)
+import Data.Either (either)
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map (fromList, lookup)
+import qualified Data.Vector as V (toList)
 import Formatting ((%), fprint)
 import Data.Time.Clock (UTCTime, diffUTCTime)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Control.Lens ((^?), element)
-import Control.Monad (join)
+import Control.Monad (join, mapM, zipWithM)
 import Control.Monad.Except (ExceptT, runExceptT)
 import Data.UnitsOfMeasure ((/:), (-:), u, convert, toRational', fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
-import System.FilePath (takeFileName)
+import System.Directory (createDirectoryIfMissing)
+import System.FilePath ((</>), takeFileName)
 import qualified Data.Number.FixedFunctions as F
 import Data.Aeson.ViaScientific (ViaScientific(..))
 
 import Flight.Comp
-    ( Pilot(..)
+    ( DiscardDir(..)
+    , AlignDir(..)
     , CompInputFile(..)
     , TaskLengthFile(..)
     , CrossZoneFile(..)
     , TagZoneFile(..)
+    , AlignTimeFile(..)
     , CompSettings(..)
+    , Pilot(..)
     , Task(..)
+    , IxTask(..)
     , TrackFileFail(..)
     , FlyingSection
     , compToTaskLength
+    , compFileToCompDir
     , compToCross
     , compToMask
     , crossToTag
+    , discardDir
+    , alignPath
     , findCompInput
     )
+import Flight.Track.Cross (TrackFlyingSection(..))
+import Flight.Track.Tag (Tagging)
+import Flight.Track.Time (taskToLeading, discard, leadingSum, minLeading)
 import Flight.Distance (PathDistance, TaskDistance(..))
-import Flight.Comp (IxTask(..))
 import Flight.Units ()
 import Flight.Mask
     ( Sliver(..), FnIxTask, TaskZone, RaceSections(..), FlyCut(..), Ticked
@@ -69,8 +81,6 @@ import Flight.Mask
     , dashDistanceFlown
     , zoneToCylinder
     )
-import Flight.Track.Cross (TrackFlyingSection(..))
-import Flight.Track.Tag (Tagging)
 import Flight.Track.Mask
     ( Masking(..)
     , TrackArrival(..)
@@ -107,6 +117,7 @@ import Flight.Lookup.Tag
 import Flight.Scribe
     ( readRoute, readCrossing, readTagging, writeMasking
     , readCompBestDistances, readCompTimeRows
+    , readAlignTime
     )
 import Flight.Lookup.Route (RouteLookup(..), routeLength)
 import qualified Flight.Score as Gap (PilotDistance(..), bestTime)
@@ -115,6 +126,7 @@ import Flight.Score
     , PositionAtEss(..)
     , BestTime(..)
     , PilotTime(..)
+    , LeadingCoefficient(..)
     , arrivalFraction
     , speedFraction
     )
@@ -226,7 +238,7 @@ writeMask :: RouteLookup
              )
           -> IO ()
 writeMask
-    (RouteLookup lookupTaskLength)
+    lengths@(RouteLookup lookupTaskLength)
     selectTasks selectPilots compFile f = do
 
     checks <- runExceptT $ f compFile selectTasks selectPilots
@@ -261,17 +273,40 @@ writeMask
 
             -- For each task, for each pilot, the row closest to goal.
             rows :: [[Maybe (Pilot, Time.TickRow)]]
-                    <- readCompBestDistances
-                        compFile
-                        (includeTask selectTasks)
-                        ((fmap . fmap) fst dsLand)
+                <- readCompBestDistances
+                    compFile
+                    (includeTask selectTasks)
+                    ((fmap . fmap) fst dsLand)
 
             -- Task lengths (ls).
             let lsTask :: [Maybe (TaskDistance Double)] =
                     (\i -> join ((\g -> g i) <$> lookupTaskLength))
                     <$> iTasks
 
-            let pilotsLandingOut = ((fmap . fmap) fst dsLand)
+            let pilotsArriving = (fmap . fmap) fst as 
+            let pilotsLandingOut = (fmap . fmap) fst dsLand
+            let pilots =
+                    [ pAs ++ pLs
+                    | pAs <- pilotsArriving
+                    | pLs <- pilotsLandingOut
+                    ]
+
+            rowsLeadingStep :: [[(Pilot, [Time.TickRow])]]
+                <- readCompLeading
+                        lengths compFile (includeTask selectTasks)
+                        (IxTask <$> [1 .. ])
+                        pilots
+
+            let rowsLeadingSum :: [[(Pilot, LeadingCoefficient)]] =
+                    zipWith
+                        (\l xs -> (fmap . fmap) (leadingSum l) xs)
+                        ((fmap . fmap) taskToLeading lsTask)
+                        rowsLeadingStep
+
+            let minLead =
+                    (fmap . fmap) ViaScientific
+                    $ minLeading
+                    <$> ((fmap . fmap) snd rowsLeadingSum)
 
             -- Distances (ds) of point in the flight closest to goal.
             let dsNigh :: [[(Pilot, TrackDistance Land)]] =
@@ -321,6 +356,8 @@ writeMask
                     , bestTime = tsBest
                     , taskDistance = (fmap . fmap) unTaskDistance lsTask
                     , bestDistance = dsBest
+                    , minLead = minLead
+                    , lead = const [] <$> iTasks
                     , arrival = as
                     , speed = (fromMaybe []) <$> (fmap . fmap) snd vs
                     , nigh = dsNighRows'
@@ -329,6 +366,54 @@ writeMask
 
 includeTask :: [IxTask] -> IxTask -> Bool
 includeTask tasks = if null tasks then const True else (`elem` tasks)
+
+
+readCompLeading
+    :: RouteLookup
+    -> CompInputFile
+    -> (IxTask -> Bool)
+    -> [IxTask]
+    -> [[Pilot]]
+    -> IO [[(Pilot, [Time.TickRow])]]
+readCompLeading lengths compFile select tasks pilots = do
+    xs <- zipWithM (readTaskLeading lengths compFile select) tasks pilots
+    return xs
+
+readTaskLeading
+    :: RouteLookup
+    -> CompInputFile
+    -> (IxTask -> Bool)
+    -> IxTask
+    -> [Pilot]
+    -> IO [(Pilot, [Time.TickRow])]
+readTaskLeading lengths compFile select iTask@(IxTask i) ps =
+    if not (select iTask) then return [] else do
+    _ <- createDirectoryIfMissing True dOut
+    xs <- mapM (readPilotLeading lengths compFile iTask) ps
+    return $ zip ps xs
+    where
+        dir = compFileToCompDir compFile
+        (DiscardDir dOut) = discardDir dir i
+
+readPilotLeading
+    :: RouteLookup
+    -> CompInputFile
+    -> IxTask
+    -> Pilot
+    -> IO [Time.TickRow]
+readPilotLeading
+    (RouteLookup lookupTaskLength)
+    compFile iTask@(IxTask i) pilot = do
+    rows <- runExceptT $ readAlignTime (AlignTimeFile (dIn </> file))
+    return $ either
+        (const [])
+        (V.toList . discard leadingDistance . snd)
+        rows
+    where
+        dir = compFileToCompDir compFile
+        (AlignDir dIn, AlignTimeFile file) = alignPath dir i pilot
+        taskLength = join (($ iTask) <$> lookupTaskLength)
+        leadingDistance = taskToLeading <$> taskLength
 
 nighTrackLine
     :: Maybe (TaskDistance Double)
@@ -427,7 +512,7 @@ madeDistance (Just (TaskDistance td)) Time.TickRow{distance} =
 
 landTaskTicked :: [(Pilot, FlightStats)] -> [(Pilot, DashPathInputs)]
 landTaskTicked xs =
-    (\(p, FlightStats{..}) -> (p,statDash)) <$> xs
+    (\(p, FlightStats{..}) -> (p, statDash)) <$> xs
 
 landDistances :: [(Pilot, FlightStats)] -> [(Pilot, TrackDistance Land)]
 landDistances xs =
