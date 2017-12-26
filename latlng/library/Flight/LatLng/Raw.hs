@@ -90,12 +90,6 @@ instance FromNamedRecord (ViaScientific RawLat) where
 instance FromNamedRecord (ViaScientific RawLng) where
     parseNamedRecord m = ViaScientific . RawLng . fromDouble <$> m Csv..: "lat"
 
-instance FromField (ViaScientific RawLat) where
-    parseField m = ViaScientific . RawLat . fromDouble <$> parseField m
-
-instance FromField (ViaScientific RawLng) where
-    parseField m = ViaScientific . RawLng . fromDouble <$> parseField m
-
 showLat :: RawLat -> String
 showLat (RawLat lat') =
     if x < 0

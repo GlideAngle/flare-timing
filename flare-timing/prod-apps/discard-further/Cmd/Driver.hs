@@ -1,6 +1,15 @@
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE PartialTypeSignatures #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE QuasiQuotes #-}
 
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE PartialTypeSignatures #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE NamedFieldPuns #-}
@@ -16,12 +25,14 @@ import System.Console.CmdArgs.Implicit (cmdArgs)
 import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
-import Control.Monad (mapM_, when, zipWithM_)
+import Control.Monad (join, mapM_, when, zipWithM_)
 import Control.Monad.Except (ExceptT, runExceptT)
 import System.Directory (createDirectoryIfMissing)
 import System.FilePath ((</>), takeFileName)
 import Data.Vector (Vector)
 import qualified Data.Vector as V (fromList, toList)
+import Data.UnitsOfMeasure (u, convert)
+import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Cmd.Paths (checkPaths)
 import Flight.Cmd.Options (CmdOptions(..), ProgramName(..), mkOptions)
@@ -31,12 +42,14 @@ import Flight.Comp
     ( DiscardDir(..)
     , AlignDir(..)
     , CompInputFile(..)
+    , TaskLengthFile(..)
     , AlignTimeFile(..)
     , DiscardFurtherFile(..)
     , CompSettings(..)
     , Pilot(..)
     , TrackFileFail
     , IxTask(..)
+    , compToTaskLength
     , compFileToCompDir
     , discardDir
     , alignPath
@@ -44,11 +57,16 @@ import Flight.Comp
     )
 import Flight.Units ()
 import Flight.Mask (checkTracks)
-import Flight.Track.Time (TimeRow(..), TickRow(..), discardFurther)
-import Flight.Scribe (readAlignTime, writeDiscardFurther)
+import Flight.Track.Time
+    (TimeRow(..), TickRow(..), LeadingDistance(..), discardFurther, leadingArea)
+import Flight.Scribe (readRoute, readAlignTime, writeDiscardFurther)
+import Flight.Distance (TaskDistance(..))
+import Flight.Lookup.Route (RouteLookup(..), routeLength)
+import Flight.Score (LeadingAreaStep(..))
+import Data.Aeson.ViaScientific (ViaScientific(..))
 
 headers :: [String]
-headers = ["tick", "distance"]
+headers = ["tick", "distance", "areaStep"]
 
 driverMain :: IO ()
 driverMain = do
@@ -69,14 +87,21 @@ drive o = do
 
 go :: CmdOptions -> CompInputFile -> IO ()
 go CmdOptions{..} compFile@(CompInputFile compPath) = do
+    let lenFile@(TaskLengthFile lenPath) = compToTaskLength $ compFile
     putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
+    putStrLn $ "Reading task length from '" ++ takeFileName lenPath ++ "'"
+
+    routes <- runExceptT $ readRoute lenFile
+
     filterTime
+        (routeLength routes)
         compFile
         (IxTask <$> task)
         (Pilot <$> pilot)
         checkAll
 
-filterTime :: CompInputFile
+filterTime :: RouteLookup
+           -> CompInputFile
            -> [IxTask]
            -> [Pilot]
            -> (CompInputFile
@@ -84,7 +109,7 @@ filterTime :: CompInputFile
                -> [Pilot]
                -> ExceptT String IO [[Either (Pilot, _) (Pilot, _)]])
            -> IO ()
-filterTime compFile selectTasks selectPilots f = do
+filterTime lengths compFile selectTasks selectPilots f = do
     checks <- runExceptT $ f compFile selectTasks selectPilots
 
     case checks of
@@ -99,9 +124,9 @@ filterTime compFile selectTasks selectPilots f = do
 
             _ <- zipWithM_
                 (\ n zs ->
-                    when (includeTask selectTasks $ IxTask n) $
-                        mapM_ (readFilterWrite compFile n) zs)
-                [1 .. ]
+                    when (includeTask selectTasks n) $
+                        mapM_ (readFilterWrite lengths compFile n) zs)
+                (IxTask <$> [1 .. ])
                 ys
 
             return ()
@@ -121,23 +146,39 @@ checkAll = checkTracks $ \CompSettings{tasks} -> (\ _ _ _ -> ()) tasks
 includeTask :: [IxTask] -> IxTask -> Bool
 includeTask tasks = if null tasks then const True else (`elem` tasks)
 
-readFilterWrite :: CompInputFile -> Int -> Pilot -> IO ()
-readFilterWrite compFile iTask pilot = do
+readFilterWrite :: RouteLookup -> CompInputFile -> IxTask -> Pilot -> IO ()
+readFilterWrite
+    (RouteLookup lookupTaskLength)
+    compFile iTask@(IxTask i) pilot = do
     _ <- createDirectoryIfMissing True dOut
     rows <- runExceptT $ readAlignTime (AlignTimeFile (dIn </> file))
-    either print (f . discard . snd) rows
+    either print (f . discard leadingDistance . snd) rows
     where
         f = writeDiscardFurther (DiscardFurtherFile $ dOut </> file) headers
         dir = compFileToCompDir compFile
-        (AlignDir dIn, AlignTimeFile file) = alignPath dir iTask pilot
-        (DiscardDir dOut) = discardDir dir iTask
+        (AlignDir dIn, AlignTimeFile file) = alignPath dir i pilot
+        (DiscardDir dOut) = discardDir dir i
+        taskLength = join (($ iTask) <$> lookupTaskLength)
+        leadingDistance = taskToLeading <$> taskLength
+
+taskToLeading :: TaskDistance Double -> LeadingDistance
+taskToLeading (TaskDistance d) =
+    LeadingDistance $ d'
+    where
+        d' = convert d :: Quantity Double [u| km |]
 
 timeToTick :: TimeRow -> TickRow
-timeToTick TimeRow{tick, distance} = TickRow tick distance
+timeToTick TimeRow{tick, distance} =
+    TickRow tick distance $ ViaScientific (LeadingAreaStep 0)
 
-discard :: Vector TimeRow -> Vector TickRow
-discard xs =
-    V.fromList . discardFurther . dropZeros . V.toList $ timeToTick <$> xs
+discard :: Maybe LeadingDistance -> Vector TimeRow -> Vector TickRow
+discard d xs =
+    V.fromList
+    . leadingArea d
+    . discardFurther
+    . dropZeros
+    . V.toList
+    $ timeToTick <$> xs
 
 dropZeros :: [TickRow] -> [TickRow]
 dropZeros =

@@ -14,6 +14,7 @@ library:
   - newtype
   - scientific
   - aeson
+  - cassava
   source-dirs: library
   exposed-modules:
   - Data.Aeson.ViaScientific
@@ -34,6 +35,7 @@ tests:
     - newtype
     - scientific
     - aeson
+    - cassava
     ghc-options:
     - -rtsopts
     - -threaded

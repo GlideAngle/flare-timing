@@ -72,8 +72,13 @@ module Flight.Score
     , LcTrack(..)
     , TaskDeadline(..)
     , LengthOfSs(..)
+    , LeadingAreaStep(..)
     , LeadingCoefficient(..)
     , LeadingFraction(..)
+    , clampToEss
+    , clampToDeadline
+    , areaScaling
+    , areaSteps
     , leadingFractions
     , leadingCoefficient
     , madeGoal

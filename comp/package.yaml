@@ -28,6 +28,7 @@ library:
   - mtl
   - uom-plugin
   - aeson-via
+  - flight-units
   - flight-latlng
   - flight-zone
   - flight-gap

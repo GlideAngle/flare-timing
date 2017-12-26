@@ -1,24 +1,40 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+
 module Flight.Leading
     ( TaskTime(..)
     , DistanceToEss(..)
     , LcTrack(..)
     , TaskDeadline(..)
     , LengthOfSs(..)
+    , LeadingAreaStep(..)
     , LeadingCoefficient(..)
     , LeadingFraction(..)
     , madeGoal
     , cleanTrack
+    , areaScaling
+    , areaSteps
     , leadingCoefficient
     , leadingFractions
+    , clampToEss
+    , clampToDeadline
     ) where
 
+import Control.Newtype (Newtype(..))
 import Control.Arrow (second)
 import Data.Ratio ((%))
 import Flight.Ratio (pattern (:%))
 import Data.List (partition, sortBy)
 import Data.Maybe (catMaybes)
+import Data.Aeson (ToJSON(..), FromJSON(..))
+import Data.Aeson.ViaScientific
+    ( DefaultDecimalPlaces(..), DecimalPlaces(..)
+    , fromSci, toSci, showSci
+    )
 
 -- | Time in seconds from the moment the first pilot crossed the start of the speed
 -- section.
@@ -37,6 +53,16 @@ newtype DistanceToEss = DistanceToEss Rational deriving (Eq, Ord, Show)
 -- | The length of the speed section in km.
 newtype LengthOfSs = LengthOfSs Rational deriving (Eq, Ord, Show)
 
+newtype LeadingAreaStep = LeadingAreaStep Rational
+    deriving (Eq, Ord, Show, ToJSON, FromJSON)
+
+instance DefaultDecimalPlaces LeadingAreaStep where
+    defdp _ = DecimalPlaces 8
+
+instance Newtype LeadingAreaStep Rational where
+    pack = LeadingAreaStep
+    unpack (LeadingAreaStep a) = a
+
 newtype LeadingCoefficient = LeadingCoefficient Rational deriving (Eq, Ord, Show)
 
 -- | A pilot's track where points are task time paired with distance to the end
@@ -49,7 +75,7 @@ madeGoal :: LcTrack -> Bool
 madeGoal (LcTrack xs) =
     any (\(DistanceToEss d) -> d <= 0) $ snd <$> xs
 
--- | Removes points where the task time < 1.
+-- | Removes points where the task time < 0.
 positiveTime :: LcTrack -> LcTrack
 positiveTime (LcTrack xs) =
     LcTrack $ filter (\(TaskTime t, _) -> t > 0) xs
@@ -77,37 +103,28 @@ cleanTrack :: LengthOfSs -> LcTrack -> LcTrack
 cleanTrack len = towardsGoal . positiveTime . initialOffside len 
 
 -- | Calculate the leading coefficient for a single track.
-leadingCoefficient :: TaskDeadline
-                      -> LengthOfSs
-                      -> LcTrack
-                      -> LeadingCoefficient
-leadingCoefficient _ (LengthOfSs (0 :% _)) _ =
-    LeadingCoefficient $ 0 % 1
-leadingCoefficient _ _ (LcTrack []) =
-    LeadingCoefficient $ 0 % 1
-leadingCoefficient (TaskDeadline deadline) (LengthOfSs len) track
-    | deadline <= 1 =
-        LeadingCoefficient $ 0 % 1
+areaSteps
+    :: TaskDeadline
+    -> LengthOfSs
+    -> LcTrack
+    -> [LeadingAreaStep]
+areaSteps _ (LengthOfSs (0 :% _)) (LcTrack xs) =
+    const (LeadingAreaStep $ 0 % 1) <$> xs
+
+areaSteps _ _ (LcTrack []) =
+    []
+
+areaSteps deadline@(TaskDeadline dl) len@(LengthOfSs len') track@(LcTrack xs')
+    | dl <= 1 =
+        const (LeadingAreaStep $ 0 % 1) <$> xs'
     | otherwise =
-        LeadingCoefficient $ sectionSum * (1 % 1800) * (d % n)
+        LeadingAreaStep . (* areaScaling len) <$> steps
         where
             zero :: (TaskTime, DistanceToEss)
-            zero = (TaskTime 0, DistanceToEss len)
-
-            clampToDeadline :: LcTrack -> LcTrack
-            clampToDeadline (LcTrack xsTrack) =
-                LcTrack (clamp <$> xsTrack)
-                where
-                    clamp (TaskTime t, dist) = (TaskTime $ min deadline t, dist)
-
-            clampToEss :: LcTrack -> LcTrack
-            clampToEss (LcTrack xsTrack) =
-                LcTrack (clamp <$> xsTrack)
-                where
-                    clamp (t, DistanceToEss dist) = (t, DistanceToEss $ max 0 dist)
+            zero = (TaskTime 0, DistanceToEss len')
 
             withinDeadline :: LcTrack
-            withinDeadline = clampToEss . clampToDeadline $ track
+            withinDeadline = clampToEss . clampToDeadline deadline $ track
 
             ys :: [(TaskTime, DistanceToEss)]
             ys = (\(LcTrack xs) -> xs) withinDeadline
@@ -116,16 +133,41 @@ leadingCoefficient (TaskDeadline deadline) (LengthOfSs len) track
             f (TaskTime _, DistanceToEss dM) (TaskTime tN, DistanceToEss dN) =
                 tN * dM * dM - dN * dN
 
-            sectionSum :: Rational
-            sectionSum = sum $ zipWith f (zero : ys) ys
+            steps :: [Rational]
+            steps = zipWith f (zero : ys) ys
 
-            (n :% d) = len * len
+clampToDeadline :: TaskDeadline -> LcTrack -> LcTrack
+clampToDeadline (TaskDeadline deadline) (LcTrack xsTrack) =
+    LcTrack (clamp <$> xsTrack)
+    where
+        clamp (TaskTime t, dist) = (TaskTime $ min deadline t, dist)
+
+clampToEss :: LcTrack -> LcTrack
+clampToEss (LcTrack xsTrack) =
+    LcTrack (clamp <$> xsTrack)
+    where
+        clamp (t, DistanceToEss dist) = (t, DistanceToEss $ max 0 dist)
+
+areaScaling :: LengthOfSs -> Rational
+areaScaling (LengthOfSs len) =
+    let (n :% d) = len * len in (1 % 1800) * (d % n)
+
+-- | Calculate the leading coefficient for a single track.
+leadingCoefficient
+    :: TaskDeadline
+    -> LengthOfSs
+    -> LcTrack
+    -> LeadingCoefficient
+leadingCoefficient deadline len track =
+    LeadingCoefficient . sum $ (\(LeadingAreaStep x) -> x)
+    <$> areaSteps deadline len track
 
 -- | Calculate the leading coefficient for all tracks.
-leadingCoefficients :: TaskDeadline
-                      -> LengthOfSs
-                      -> [LcTrack]
-                      -> [LeadingCoefficient]
+leadingCoefficients
+    :: TaskDeadline
+    -> LengthOfSs
+    -> [LcTrack]
+    -> [LeadingCoefficient]
 leadingCoefficients deadline@(TaskDeadline maxTaskTime) len tracks =
     snd <$> csSorted
     where

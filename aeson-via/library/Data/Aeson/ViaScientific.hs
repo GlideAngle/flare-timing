@@ -15,6 +15,7 @@ module Data.Aeson.ViaScientific
 import Control.Newtype (Newtype(..))
 import Control.Applicative (empty)
 import Data.Aeson (ToJSON(..), FromJSON(..), Value(Number))
+import Data.Csv (ToField(..), FromField(..))
 import Data.Scientific
     ( Scientific
     , FPFormat(..)
@@ -60,3 +61,11 @@ instance (DefaultDecimalPlaces n, Newtype n Rational)
     parseJSON x@(Number _) =
         ViaScientific <$> (pack . fromSci <$> parseJSON x)
     parseJSON _ = empty
+
+instance (DefaultDecimalPlaces n, Newtype n Rational)
+         => ToField (ViaScientific n) where
+    toField (ViaScientific x) = toField $ toSci (defdp x) (unpack x)
+
+instance (DefaultDecimalPlaces n, Newtype n Rational)
+         => FromField (ViaScientific n) where
+    parseField x = ViaScientific <$> (pack . fromSci <$> parseField x)
