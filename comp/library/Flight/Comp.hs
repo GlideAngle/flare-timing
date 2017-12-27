@@ -25,6 +25,7 @@ module Flight.Comp
     , StartGate(..)
     , OpenClose(..)
     , StartEnd
+    , RouteLookup(..)
     , showTask
     , openClose
     -- * Pilot and their track logs.
@@ -49,6 +50,7 @@ import Flight.Zone.Raw (RawZone, showZone)
 import Flight.Field (FieldOrdering(..))
 import Flight.Pilot
 import Flight.Path
+import Flight.Distance (TaskDistance(..))
 
 -- | A race task can be started and not finished if no one makes goal.
 type StartEnd = (UTCTime, Maybe UTCTime)
@@ -62,6 +64,10 @@ type SpeedSection = Maybe (Int, Int)
 -- | A pair into the list of fixes marking those deemed logged while flying.
 -- These could be indices, seconds offsets or UTC times.
 type FlyingSection a = Maybe (a, a)
+
+type RoutesLookup a = IxTask -> Maybe a
+
+newtype RouteLookup = RouteLookup (Maybe (RoutesLookup (TaskDistance Double)))
 
 newtype StartGate = StartGate UTCTime
     deriving (Eq, Ord, Show, Generic)

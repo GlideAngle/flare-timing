@@ -25,55 +25,45 @@ import Prelude hiding (last)
 import qualified Data.Ratio as Ratio
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
-import Data.Maybe (fromMaybe, catMaybes, isJust, listToMaybe)
+import Data.Maybe (fromMaybe, catMaybes, isJust)
 import Data.List (sortOn)
-import Data.Either (either)
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map (fromList, lookup)
-import qualified Data.Vector as V (toList)
 import Formatting ((%), fprint)
 import Data.Time.Clock (UTCTime, diffUTCTime)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Control.Lens ((^?), element)
-import Control.Monad (join, mapM)
+import Control.Monad (join)
 import Control.Monad.Except (ExceptT, runExceptT)
 import Data.UnitsOfMeasure ((/:), (-:), u, convert, toRational', fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
-import System.Directory (createDirectoryIfMissing)
-import System.FilePath ((</>), takeFileName)
+import System.FilePath (takeFileName)
 import qualified Data.Number.FixedFunctions as F
 import Data.Aeson.ViaScientific (ViaScientific(..))
 
 import Flight.Comp
-    ( DiscardDir(..)
-    , AlignDir(..)
-    , CompInputFile(..)
+    ( CompInputFile(..)
     , TaskLengthFile(..)
     , CrossZoneFile(..)
     , TagZoneFile(..)
-    , AlignTimeFile(..)
     , CompSettings(..)
-    , OpenClose(..)
     , Pilot(..)
     , Task(..)
     , IxTask(..)
     , TrackFileFail(..)
     , FlyingSection
-    , SpeedSection
+    , RouteLookup(..)
     , compToTaskLength
-    , compFileToCompDir
     , compToCross
     , compToMask
     , crossToTag
-    , discardDir
-    , alignPath
     , findCompInput
     , openClose
     )
 import Flight.Track.Cross (TrackFlyingSection(..))
 import Flight.Track.Tag (Tagging)
-import Flight.Track.Time (taskToLeading, discard, leadingSum, minLeading)
+import Flight.Track.Time (taskToLeading, leadingSum, minLeading)
 import Flight.Distance (PathDistance, TaskDistance(..))
 import Flight.Units ()
 import Flight.Mask
@@ -129,10 +119,9 @@ import Flight.Lookup.Tag
     )
 import Flight.Scribe
     ( readComp, readRoute, readCrossing, readTagging, writeMasking
-    , readCompBestDistances, readCompTimeRows
-    , readAlignTime
+    , readCompLeading, readCompBestDistances, readCompTimeRows
     )
-import Flight.Lookup.Route (RouteLookup(..), routeLength)
+import Flight.Lookup.Route (routeLength)
 import qualified Flight.Score as Gap (PilotDistance(..), bestTime)
 import Flight.Score
     ( PilotsAtEss(..)
@@ -141,8 +130,6 @@ import Flight.Score
     , PilotTime(..)
     , LeadingCoefficient(..)
     , LeadingFraction(..)
-    , EssTime(..)
-    , TaskDeadline(..)
     , arrivalFraction
     , leadingFraction
     , speedFraction
@@ -423,68 +410,6 @@ writeMask
 
 includeTask :: [IxTask] -> IxTask -> Bool
 includeTask tasks = if null tasks then const True else (`elem` tasks)
-
-readCompLeading
-    :: RouteLookup
-    -> CompInputFile
-    -> (IxTask -> Bool)
-    -> [IxTask]
-    -> [Maybe RaceTime]
-    -> [[Pilot]]
-    -> IO [[(Pilot, [Time.TickRow])]]
-readCompLeading lengths compFile select tasks raceTimes pilots = do
-    xs <-
-        sequence $ zipWith3
-            (readTaskLeading lengths compFile select)
-            tasks
-            raceTimes
-            pilots
-    return xs
-
-readTaskLeading
-    :: RouteLookup
-    -> CompInputFile
-    -> (IxTask -> Bool)
-    -> IxTask
-    -> Maybe RaceTime
-    -> [Pilot]
-    -> IO [(Pilot, [Time.TickRow])]
-readTaskLeading lengths compFile select iTask@(IxTask i) raceTime ps =
-    if not (select iTask) then return [] else do
-    _ <- createDirectoryIfMissing True dOut
-    xs <- mapM (readPilotLeading lengths compFile iTask raceTime) ps
-    return $ zip ps xs
-    where
-        dir = compFileToCompDir compFile
-        (DiscardDir dOut) = discardDir dir i
-
-readPilotLeading
-    :: RouteLookup
-    -> CompInputFile
-    -> IxTask
-    -> Maybe RaceTime
-    -> Pilot
-    -> IO [Time.TickRow]
-readPilotLeading
-    (RouteLookup lookupTaskLength)
-    compFile iTask@(IxTask i)
-    raceTime
-    pilot = do
-
-    rows <- runExceptT $ readAlignTime (AlignTimeFile (dIn </> file))
-    return $ either
-        (const [])
-        (V.toList . discard deadline dRace . snd)
-        rows
-    where
-        dir = compFileToCompDir compFile
-        (AlignDir dIn, AlignTimeFile file) = alignPath dir i pilot
-        taskLength = join (($ iTask) <$> lookupTaskLength)
-        dRace = taskToLeading <$> taskLength
-        deadline =
-            TaskDeadline
-            . (\RaceTime{tickRace = ViaScientific (EssTime tRace)} -> tRace)
-            <$> raceTime
 
 nighTrackLine
     :: Maybe (TaskDistance Double)

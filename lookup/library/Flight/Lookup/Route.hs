@@ -4,10 +4,7 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module Flight.Lookup.Route
-    ( RouteLookup(..)
-    , routeLength
-    ) where
+module Flight.Lookup.Route (routeLength) where
 
 import Prelude hiding (length)
 import Control.Monad (join)
@@ -17,11 +14,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Route (TaskRoutes(..), TaskTrack(..), TrackLine(..))
 import Flight.Distance (TaskDistance(..))
-import Flight.Comp (IxTask(..))
-
-type RoutesLookup a = IxTask -> Maybe a
-
-newtype RouteLookup = RouteLookup (Maybe (RoutesLookup (TaskDistance Double)))
+import Flight.Comp (IxTask(..), RouteLookup(..))
 
 -- | Convert from double with kilometres implied to metres.
 fromKm :: Double -> TaskDistance Double

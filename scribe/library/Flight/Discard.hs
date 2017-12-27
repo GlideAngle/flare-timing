@@ -4,11 +4,13 @@ module Flight.Discard
     ( readDiscardFurther
     , writeDiscardFurther
     , readCompBestDistances
+    , readCompLeading
     ) where
 
 import Control.Monad.Except (ExceptT(..), runExceptT, lift)
-import Control.Monad (zipWithM)
+import Control.Monad (join, zipWithM)
 import qualified Data.ByteString.Lazy as BL
+import System.Directory (createDirectoryIfMissing)
 import System.FilePath ((</>))
 import Data.Csv
     (Header, decodeByName, EncodeOptions(..), encodeByNameWith, defaultEncodeOptions)
@@ -17,11 +19,14 @@ import qualified Data.ByteString.Lazy.Char8 as L (writeFile)
 import Data.Vector (Vector)
 import qualified Data.Vector as V (fromList, toList, null, last)
 
-import Flight.Track.Time (TickRow(..))
+import Flight.Comp (RouteLookup(..))
+import Flight.Track.Time (TickRow(..), discard, taskToLeading)
+import Flight.Track.Mask (RaceTime(..))
 import Flight.Comp
     ( IxTask(..)
     , Pilot(..)
     , CompInputFile(..)
+    , AlignDir(..)
     , AlignTimeFile(..)
     , DiscardFurtherFile(..)
     , DiscardDir(..)
@@ -31,6 +36,9 @@ import Flight.Comp
     , alignPath
     , compFileToCompDir
     )
+import Flight.Score (EssTime(..), TaskDeadline(..))
+import Data.Aeson.ViaScientific (ViaScientific(..))
+import Flight.Align (readAlignTime)
 
 readDiscardFurther :: DiscardFurtherFile -> ExceptT String IO (Header, Vector TickRow)
 readDiscardFurther (DiscardFurtherFile csvPath) = do
@@ -86,3 +94,65 @@ readPilotBestDistance compFile (IxTask iTask) pilot = do
         dir = compFileToCompDir compFile
         (_, AlignTimeFile file) = alignPath dir iTask pilot
         (DiscardDir dOut) = discardDir dir iTask
+
+readCompLeading
+    :: RouteLookup
+    -> CompInputFile
+    -> (IxTask -> Bool)
+    -> [IxTask]
+    -> [Maybe RaceTime]
+    -> [[Pilot]]
+    -> IO [[(Pilot, [TickRow])]]
+readCompLeading lengths compFile select tasks raceTimes pilots = do
+    xs <-
+        sequence $ zipWith3
+            (readTaskLeading lengths compFile select)
+            tasks
+            raceTimes
+            pilots
+    return xs
+
+readTaskLeading
+    :: RouteLookup
+    -> CompInputFile
+    -> (IxTask -> Bool)
+    -> IxTask
+    -> Maybe RaceTime
+    -> [Pilot]
+    -> IO [(Pilot, [TickRow])]
+readTaskLeading lengths compFile select iTask@(IxTask i) raceTime ps =
+    if not (select iTask) then return [] else do
+    _ <- createDirectoryIfMissing True dOut
+    xs <- mapM (readPilotLeading lengths compFile iTask raceTime) ps
+    return $ zip ps xs
+    where
+        dir = compFileToCompDir compFile
+        (DiscardDir dOut) = discardDir dir i
+
+readPilotLeading
+    :: RouteLookup
+    -> CompInputFile
+    -> IxTask
+    -> Maybe RaceTime
+    -> Pilot
+    -> IO [TickRow]
+readPilotLeading
+    (RouteLookup lookupTaskLength)
+    compFile iTask@(IxTask i)
+    raceTime
+    pilot = do
+
+    rows <- runExceptT $ readAlignTime (AlignTimeFile (dIn </> file))
+    return $ either
+        (const [])
+        (V.toList . discard deadline dRace . snd)
+        rows
+    where
+        dir = compFileToCompDir compFile
+        (AlignDir dIn, AlignTimeFile file) = alignPath dir i pilot
+        taskLength = join (($ iTask) <$> lookupTaskLength)
+        dRace = taskToLeading <$> taskLength
+        deadline =
+            TaskDeadline
+            . (\RaceTime{tickRace = ViaScientific (EssTime tRace)} -> tRace)
+            <$> raceTime

@@ -21,12 +21,10 @@
 
 module Cmd.Driver (driverMain) where
 
-import Data.Maybe (listToMaybe)
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
 import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
-import Data.Time.Clock (diffUTCTime)
 import System.Clock (getTime, Clock(Monotonic))
 import Control.Monad (join, mapM_, when)
 import Control.Monad.Except (ExceptT, runExceptT)
@@ -47,12 +45,11 @@ import Flight.Comp
     , DiscardFurtherFile(..)
     , CompSettings(..)
     , Task(..)
-    , OpenClose(..)
     , Pilot(..)
     , TrackFileFail
     , IxTask(..)
     , StartEnd
-    , SpeedSection
+    , RouteLookup(..)
     , compFileToCompDir
     , compToTaskLength
     , compToCross
@@ -68,7 +65,7 @@ import Flight.Units ()
 import Flight.Mask (checkTracks)
 import Flight.Scribe
     (readComp, readRoute, readTagging, readAlignTime, writeDiscardFurther)
-import Flight.Lookup.Route (RouteLookup(..), routeLength)
+import Flight.Lookup.Route (routeLength)
 import Flight.Lookup.Tag (TaskTimeLookup(..), tagTaskTime)
 import Data.Aeson.ViaScientific (ViaScientific(..))
 import Flight.Score (EssTime(..), TaskDeadline(..))
