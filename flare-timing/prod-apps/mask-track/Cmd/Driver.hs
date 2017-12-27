@@ -25,7 +25,7 @@ import Prelude hiding (last)
 import qualified Data.Ratio as Ratio
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
-import Data.Maybe (fromMaybe, catMaybes, isJust)
+import Data.Maybe (fromMaybe, catMaybes, isJust, listToMaybe)
 import Data.List (sortOn)
 import Data.Either (either)
 import Data.Map.Strict (Map)
@@ -54,11 +54,13 @@ import Flight.Comp
     , TagZoneFile(..)
     , AlignTimeFile(..)
     , CompSettings(..)
+    , OpenClose(..)
     , Pilot(..)
     , Task(..)
     , IxTask(..)
     , TrackFileFail(..)
     , FlyingSection
+    , SpeedSection
     , compToTaskLength
     , compFileToCompDir
     , compToCross
@@ -392,7 +394,12 @@ writeMask
                     ]
 
             let raceTime :: [Maybe RaceTime] =
-                    join <$> (fmap . fmap) (racing) raceStartEnd
+                    join <$>
+                    [ racing (openClose ss zt) <$> se
+                    | ss <- speedSection <$> tasks
+                    | zt <- zoneTimes <$> tasks
+                    | se <- raceStartEnd
+                    ]
 
             writeMasking
                 (compToMask compFile)
@@ -410,16 +417,30 @@ writeMask
                     , land = dsLand
                     }
 
-racing :: StartEnd -> Maybe RaceTime
-racing (s, e) = do
+openClose :: SpeedSection -> [OpenClose] -> Maybe OpenClose
+openClose _ [] = Nothing
+openClose Nothing (x : _) = Just x
+openClose _ [x] = Just x
+openClose (Just (_, e)) xs = listToMaybe . take 1 . drop (e - 1) $ xs
+
+racing :: Maybe OpenClose -> StartEnd -> Maybe RaceTime
+racing oc (s, e) = do
+    OpenClose{open, close} <- oc
     return
         RaceTime
-            { firstStart = s
+            { openTask = open
+            , closeTask = close
+            , firstStart = s
             , lastArrival = e
             , tickArrival =
                 ViaScientific . EssTime
                 <$> (\e' -> toRational $ e' `diffUTCTime` s) <$> e
-            , tickTask = ViaScientific $ EssTime 0
+            , tickRace =
+                ViaScientific . EssTime . toRational
+                $ close `diffUTCTime` s
+            , tickTask =
+                ViaScientific . EssTime . toRational
+                $ close `diffUTCTime` open 
             }
 
 includeTask :: [IxTask] -> IxTask -> Bool

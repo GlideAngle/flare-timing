@@ -82,14 +82,20 @@ instance FromJSON Masking
 -- | The racing time for the speed section is required for leading points.
 data RaceTime =
     RaceTime
-        { firstStart :: UTCTime
+        { openTask :: UTCTime
+        -- ^ The time of allowed crossing of the start of the speed section.
+        , closeTask :: UTCTime
+        -- ^ The time of last allowed crossing of the end of the speed section.
+        , firstStart :: UTCTime
         -- ^ The time of first crossing of the start of the speed section.
         , lastArrival :: Maybe UTCTime
         -- ^ The time of last crossing of the end of the speed section.
         , tickArrival :: Maybe (ViaScientific EssTime)
         -- ^ When the last pilot arrives at goal, seconds from the time of first start.
-        , tickTask :: ViaScientific EssTime
+        , tickRace :: ViaScientific EssTime
         -- ^ When the task closes, seconds from the time of first start.
+        , tickTask :: ViaScientific EssTime
+        -- ^ Seconds from open to close
         }
         deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
@@ -144,6 +150,35 @@ cmp :: (Ord a, IsString a) => a -> a -> Ordering
 cmp a b =
     case (a, b) of
         -- TODO: first start time & last goal time & launched
+        ("openTask", _) -> LT
+
+        ("closeTask", "openTask") -> GT
+        ("closeTask", _) -> LT
+
+        ("firstStart", "openTask") -> GT
+        ("firstStart", "closeTask") -> GT
+        ("firstStart", _) -> LT
+
+        ("lastArrival", "openTask") -> GT
+        ("lastArrival", "closeTask") -> GT
+        ("lastArrival", "firstStart") -> GT
+        ("lastArrival", _) -> LT
+
+        ("tickArrival", "openTask") -> GT
+        ("tickArrival", "closeTask") -> GT
+        ("tickArrival", "firstStart") -> GT
+        ("tickArrival", "lastArrival") -> GT
+        ("tickArrival", _) -> LT
+
+        ("tickRace", "openTask") -> GT
+        ("tickRace", "closeTask") -> GT
+        ("tickRace", "firstStart") -> GT
+        ("tickRace", "lastArrival") -> GT
+        ("tickRace", "tickArrival") -> GT
+        ("tickRace", _) -> LT
+
+        ("tickTask", _) -> GT
+
         ("pilotsAtEss", _) -> LT
 
         ("raceTime", "pilotsAtEss") -> GT
