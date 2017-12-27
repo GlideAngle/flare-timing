@@ -26,6 +26,7 @@ module Flight.Comp
     , OpenClose(..)
     , StartEnd
     , showTask
+    , openClose
     -- * Pilot and their track logs.
     , Pilot(..)
     , PilotTrackLogFile(..)
@@ -40,6 +41,7 @@ module Flight.Comp
 import Data.Time.Clock (UTCTime)
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
+import Data.Maybe (listToMaybe)
 import Data.List (intercalate)
 import Data.String (IsString())
 
@@ -82,6 +84,16 @@ data OpenClose =
 
 instance ToJSON OpenClose
 instance FromJSON OpenClose
+
+-- | If all the zone open and close times are the same then we may only be
+-- given a singleton list. This function retrieves the open close time
+-- for the speed section whether we have a singleton list or a list with
+-- elements for each zone.
+openClose :: SpeedSection -> [OpenClose] -> Maybe OpenClose
+openClose _ [] = Nothing
+openClose Nothing (x : _) = Just x
+openClose _ [x] = Just x
+openClose (Just (_, e)) xs = listToMaybe . take 1 . drop (e - 1) $ xs
 
 data CompSettings =
     CompSettings { comp :: Comp

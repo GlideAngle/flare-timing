@@ -60,9 +60,10 @@ import Flight.Comp
     , discardDir
     , alignPath
     , findCompInput
+    , openClose
     )
 import Flight.Track.Time (taskToLeading, discard)
-import Flight.Track.Mask (RaceTime(..))
+import Flight.Track.Mask (RaceTime(..), racing)
 import Flight.Units ()
 import Flight.Mask (checkTracks)
 import Flight.Scribe
@@ -192,32 +193,6 @@ checkAll :: CompInputFile
                  ]
              ]
 checkAll = checkTracks $ \CompSettings{tasks} -> (\ _ _ _ -> ()) tasks
-
-openClose :: SpeedSection -> [OpenClose] -> Maybe OpenClose
-openClose _ [] = Nothing
-openClose Nothing (x : _) = Just x
-openClose _ [x] = Just x
-openClose (Just (_, e)) xs = listToMaybe . take 1 . drop (e - 1) $ xs
-
-racing :: Maybe OpenClose -> StartEnd -> Maybe RaceTime
-racing oc (s, e) = do
-    OpenClose{open, close} <- oc
-    return
-        RaceTime
-            { openTask = open
-            , closeTask = close
-            , firstStart = s
-            , lastArrival = e
-            , tickArrival =
-                ViaScientific . EssTime
-                <$> (\e' -> toRational $ e' `diffUTCTime` s) <$> e
-            , tickRace =
-                ViaScientific . EssTime . toRational
-                $ close `diffUTCTime` s
-            , tickTask =
-                ViaScientific . EssTime . toRational
-                $ close `diffUTCTime` open 
-            }
 
 includeTask :: [IxTask] -> IxTask -> Bool
 includeTask tasks = if null tasks then const True else (`elem` tasks)

@@ -2,6 +2,7 @@
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE NamedFieldPuns #-}
 
 {-|
 Module      : Flight.Track.Mask
@@ -21,12 +22,14 @@ module Flight.Track.Mask
     , RaceTime(..)
     , Nigh
     , Land
+    , racing
     ) where
 
-import Data.Time.Clock (UTCTime)
+import Data.Time.Clock (UTCTime, diffUTCTime)
 import Data.String (IsString())
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
+import Flight.Comp (OpenClose(..), StartEnd)
 import Flight.Pilot (Pilot(..))
 import Flight.Route (TrackLine(..))
 import Flight.Score
@@ -98,6 +101,26 @@ data RaceTime =
         -- ^ Seconds from open to close
         }
         deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+
+racing :: Maybe OpenClose -> StartEnd -> Maybe RaceTime
+racing oc (s, e) = do
+    OpenClose{open, close} <- oc
+    return
+        RaceTime
+            { openTask = open
+            , closeTask = close
+            , firstStart = s
+            , lastArrival = e
+            , tickArrival =
+                ViaScientific . EssTime
+                <$> (\e' -> toRational $ e' `diffUTCTime` s) <$> e
+            , tickRace =
+                ViaScientific . EssTime . toRational
+                $ close `diffUTCTime` s
+            , tickTask =
+                ViaScientific . EssTime . toRational
+                $ close `diffUTCTime` open 
+            }
 
 -- ^ If arrived at goal then speed fraction.
 data TrackSpeed =
