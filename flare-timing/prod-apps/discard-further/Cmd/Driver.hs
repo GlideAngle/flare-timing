@@ -59,7 +59,7 @@ import Flight.Comp
     , findCompInput
     , openClose
     )
-import Flight.Track.Time (taskToLeading, discard)
+import Flight.Track.Time (TickTask(..), TickRace(..), discard)
 import Flight.Track.Mask (RaceTime(..), racing)
 import Flight.Units ()
 import Flight.Mask (checkTracks)
@@ -68,7 +68,6 @@ import Flight.Scribe
 import Flight.Lookup.Route (routeLength)
 import Flight.Lookup.Tag (TaskTimeLookup(..), tagTaskTime)
 import Data.Aeson.ViaScientific (ViaScientific(..))
-import Flight.Score (EssTime(..), TaskDeadline(..))
 
 headers :: [String]
 headers = ["tick", "distance", "areaStep"]
@@ -202,24 +201,25 @@ readFilterWrite
     -> Maybe RaceTime
     -> Pilot
     -> IO ()
+readFilterWrite _ _ _ _ Nothing _ = return ()
 readFilterWrite
     (RouteLookup lookupTaskLength)
     compFile
     selectTask
-    iTask@(IxTask i) raceTime pilot =
+    iTask@(IxTask i) (Just raceTime) pilot =
     when (selectTask iTask) $ do
     _ <- createDirectoryIfMissing True dOut
     rows <- runExceptT $ readAlignTime (AlignTimeFile (dIn </> file))
-    either print (f . discard deadline dRace . snd) rows
+    either print (f . discard taskLength tickT tickR . snd) rows
     where
         f = writeDiscardFurther (DiscardFurtherFile $ dOut </> file) headers
         dir = compFileToCompDir compFile
         (AlignDir dIn, AlignTimeFile file) = alignPath dir i pilot
         (DiscardDir dOut) = discardDir dir i
         taskLength = join (($ iTask) <$> lookupTaskLength)
-        dRace = taskToLeading <$> taskLength
-        deadline =
-            TaskDeadline
-            . (\RaceTime{tickRace = ViaScientific (EssTime tRace)} -> tRace)
-            <$> raceTime
+        (tickT, tickR) =
+            (\RaceTime{ tickTask = ViaScientific tt 
+                      , tickRace = ViaScientific tr
+                      } -> (TickTask tt, TickRace tr))
+            $ raceTime
 

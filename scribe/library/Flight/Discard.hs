@@ -20,7 +20,8 @@ import Data.Vector (Vector)
 import qualified Data.Vector as V (fromList, toList, null, last)
 
 import Flight.Comp (RouteLookup(..))
-import Flight.Track.Time (TickRow(..), discard, taskToLeading)
+import Flight.Track.Time
+    (TickTask(..), TickRace(..), TickRow(..), discard)
 import Flight.Track.Mask (RaceTime(..))
 import Flight.Comp
     ( IxTask(..)
@@ -36,7 +37,6 @@ import Flight.Comp
     , alignPath
     , compFileToCompDir
     )
-import Flight.Score (EssTime(..), TaskDeadline(..))
 import Data.Aeson.ViaScientific (ViaScientific(..))
 import Flight.Align (readAlignTime)
 
@@ -136,23 +136,24 @@ readPilotLeading
     -> Maybe RaceTime
     -> Pilot
     -> IO [TickRow]
+readPilotLeading _ _ _ Nothing _ = return []
 readPilotLeading
     (RouteLookup lookupTaskLength)
     compFile iTask@(IxTask i)
-    raceTime
+    (Just raceTime)
     pilot = do
 
     rows <- runExceptT $ readAlignTime (AlignTimeFile (dIn </> file))
     return $ either
         (const [])
-        (V.toList . discard deadline dRace . snd)
+        (V.toList . discard taskLength tickT tickR . snd)
         rows
     where
         dir = compFileToCompDir compFile
         (AlignDir dIn, AlignTimeFile file) = alignPath dir i pilot
         taskLength = join (($ iTask) <$> lookupTaskLength)
-        dRace = taskToLeading <$> taskLength
-        deadline =
-            TaskDeadline
-            . (\RaceTime{tickRace = ViaScientific (EssTime tRace)} -> tRace)
-            <$> raceTime
+        (tickT, tickR) =
+            (\RaceTime{ tickTask = ViaScientific tt 
+                      , tickRace = ViaScientific tr
+                      } -> (TickTask tt, TickRace tr))
+            $ raceTime
