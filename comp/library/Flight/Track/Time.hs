@@ -192,24 +192,30 @@ leadingSum (Just _) xs =
     where
         ys = (\TickRow{areaStep = ViaScientific (LeadingAreaStep a)} -> a) <$> xs
 
-leadingArea :: Maybe LeadingDistance -> [TickRow] -> [TickRow]
-leadingArea _ [] = []
-leadingArea _ [x] = [x]
-leadingArea Nothing xs = xs
 leadingArea
+    :: Maybe TaskDeadline
+    -> Maybe LeadingDistance
+    -> [TickRow]
+    -> [TickRow]
+leadingArea _ _ [] = []
+leadingArea _ _ [x] = [x]
+leadingArea _ Nothing xs = xs
+leadingArea Nothing _ xs = xs
+leadingArea
+    deadline@(Just deadline')
     dRace@(Just (LeadingDistance (MkQuantity d)))
     rows@(xRow@TickRow{tick = x} : yRow@TickRow{tick = y} : ys)
     | y <= 0 =
-        xRow : yRow : leadingArea dRace ys
+        xRow : yRow : leadingArea deadline dRace ys
     | x <= 0 && y > 0 =
-        xRow : leadingArea dRace (yRow : ys)
+        xRow : leadingArea deadline dRace (yRow : ys)
     | otherwise =
         if length rows /= length xs then rows else xs
         where
             -- TODO: Calculate the task deadline.
             steps =
                 areaSteps
-                    (TaskDeadline 10000)
+                    deadline'
                     (LengthOfSs $ toRational d)
                     (toLcTrack rows)
 
@@ -237,10 +243,14 @@ timeToTick :: TimeRow -> TickRow
 timeToTick TimeRow{tick, distance} =
     TickRow tick distance $ ViaScientific (LeadingAreaStep 0)
 
-discard :: Maybe LeadingDistance -> Vector TimeRow -> Vector TickRow
-discard d xs =
+discard
+    :: Maybe TaskDeadline
+    -> Maybe LeadingDistance
+    -> Vector TimeRow
+    -> Vector TickRow
+discard deadline dRace xs =
     V.fromList
-    . leadingArea d
+    . leadingArea deadline dRace
     . discardFurther
     . dropZeros
     . V.toList

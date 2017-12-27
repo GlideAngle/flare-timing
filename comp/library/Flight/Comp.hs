@@ -24,6 +24,7 @@ module Flight.Comp
     , SpeedSection
     , StartGate(..)
     , OpenClose(..)
+    , StartEnd
     , showTask
     -- * Pilot and their track logs.
     , Pilot(..)
@@ -46,6 +47,9 @@ import Flight.Zone.Raw (RawZone, showZone)
 import Flight.Field (FieldOrdering(..))
 import Flight.Pilot
 import Flight.Path
+
+-- | A race task can be started and not finished if no one makes goal.
+type StartEnd = (UTCTime, Maybe UTCTime)
 
 -- | 1-based indices of a task in a competition.
 newtype IxTask = IxTask Int deriving (Eq, Show)

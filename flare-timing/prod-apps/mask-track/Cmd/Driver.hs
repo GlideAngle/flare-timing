@@ -36,7 +36,7 @@ import Data.Time.Clock (UTCTime, diffUTCTime)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Control.Lens ((^?), element)
-import Control.Monad (join, mapM, zipWithM)
+import Control.Monad (join, mapM)
 import Control.Monad.Except (ExceptT, runExceptT)
 import Data.UnitsOfMeasure ((/:), (-:), u, convert, toRational', fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
@@ -140,6 +140,7 @@ import Flight.Score
     , LeadingCoefficient(..)
     , LeadingFraction(..)
     , EssTime(..)
+    , TaskDeadline(..)
     , arrivalFraction
     , leadingFraction
     , speedFraction
@@ -313,10 +314,26 @@ writeMask
                     | pLs <- pilotsLandingOut
                     ]
 
+            let raceStartEnd :: [Maybe StartEnd] =
+                    join <$>
+                    [ ($ s) . ($ i) <$> lookupTaskTime
+                    | i <- iTasks
+                    | s <- speedSection <$> tasks
+                    ]
+
+            let raceTime :: [Maybe RaceTime] =
+                    join <$>
+                    [ racing (openClose ss zt) <$> se
+                    | ss <- speedSection <$> tasks
+                    | zt <- zoneTimes <$> tasks
+                    | se <- raceStartEnd
+                    ]
+
             rowsLeadingStep :: [[(Pilot, [Time.TickRow])]]
                 <- readCompLeading
                         lengths compFile (includeTask selectTasks)
                         (IxTask <$> [1 .. ])
+                        raceTime
                         pilots
 
             let rowsLeadingSum :: [[(Pilot, LeadingCoefficient)]] =
@@ -386,21 +403,6 @@ writeMask
                     | xs <- (catMaybes <$> dsNighRows)
                     ]
 
-            let raceStartEnd :: [Maybe StartEnd] =
-                    join <$>
-                    [ ($ s) . ($ i) <$> lookupTaskTime
-                    | i <- iTasks
-                    | s <- speedSection <$> tasks
-                    ]
-
-            let raceTime :: [Maybe RaceTime] =
-                    join <$>
-                    [ racing (openClose ss zt) <$> se
-                    | ss <- speedSection <$> tasks
-                    | zt <- zoneTimes <$> tasks
-                    | se <- raceStartEnd
-                    ]
-
             writeMasking
                 (compToMask compFile)
                 Masking
@@ -451,10 +453,16 @@ readCompLeading
     -> CompInputFile
     -> (IxTask -> Bool)
     -> [IxTask]
+    -> [Maybe RaceTime]
     -> [[Pilot]]
     -> IO [[(Pilot, [Time.TickRow])]]
-readCompLeading lengths compFile select tasks pilots = do
-    xs <- zipWithM (readTaskLeading lengths compFile select) tasks pilots
+readCompLeading lengths compFile select tasks raceTimes pilots = do
+    xs <-
+        sequence $ zipWith3
+            (readTaskLeading lengths compFile select)
+            tasks
+            raceTimes
+            pilots
     return xs
 
 readTaskLeading
@@ -462,12 +470,13 @@ readTaskLeading
     -> CompInputFile
     -> (IxTask -> Bool)
     -> IxTask
+    -> Maybe RaceTime
     -> [Pilot]
     -> IO [(Pilot, [Time.TickRow])]
-readTaskLeading lengths compFile select iTask@(IxTask i) ps =
+readTaskLeading lengths compFile select iTask@(IxTask i) raceTime ps =
     if not (select iTask) then return [] else do
     _ <- createDirectoryIfMissing True dOut
-    xs <- mapM (readPilotLeading lengths compFile iTask) ps
+    xs <- mapM (readPilotLeading lengths compFile iTask raceTime) ps
     return $ zip ps xs
     where
         dir = compFileToCompDir compFile
@@ -477,21 +486,29 @@ readPilotLeading
     :: RouteLookup
     -> CompInputFile
     -> IxTask
+    -> Maybe RaceTime
     -> Pilot
     -> IO [Time.TickRow]
 readPilotLeading
     (RouteLookup lookupTaskLength)
-    compFile iTask@(IxTask i) pilot = do
+    compFile iTask@(IxTask i)
+    raceTime
+    pilot = do
+
     rows <- runExceptT $ readAlignTime (AlignTimeFile (dIn </> file))
     return $ either
         (const [])
-        (V.toList . discard leadingDistance . snd)
+        (V.toList . discard deadline dRace . snd)
         rows
     where
         dir = compFileToCompDir compFile
         (AlignDir dIn, AlignTimeFile file) = alignPath dir i pilot
         taskLength = join (($ iTask) <$> lookupTaskLength)
-        leadingDistance = taskToLeading <$> taskLength
+        dRace = taskToLeading <$> taskLength
+        deadline =
+            TaskDeadline
+            . (\RaceTime{tickRace = ViaScientific (EssTime tRace)} -> tRace)
+            <$> raceTime
 
 nighTrackLine
     :: Maybe (TaskDistance Double)

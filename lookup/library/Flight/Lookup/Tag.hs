@@ -19,13 +19,12 @@ module Flight.Lookup.Tag
     , tagTicked
     ) where
 
-import Data.Time.Clock (UTCTime)
 import Data.List (find, elemIndex)
 import Data.Maybe (catMaybes, listToMaybe, isJust)
 import Control.Monad (join)
 import Control.Lens ((^?), element)
 import qualified Flight.Kml as Kml (MarkedFixes(..))
-import Flight.Comp (IxTask(..), SpeedSection, Pilot(..))
+import Flight.Comp (IxTask(..), Pilot(..), SpeedSection, StartEnd)
 import Flight.Track.Tag
     ( Tagging(..), TrackTime(..), TrackTag(..), PilotTrackTag(..)
     , firstStart, lastArrival
@@ -57,8 +56,6 @@ newtype ArrivalRankLookup = ArrivalRankLookup (Maybe (TaggingLookup Int))
 newtype TimeLookup = TimeLookup (Maybe (TaggingLookup StartEnd))
 newtype TagLookup = TagLookup (Maybe (TaggingLookup [Maybe Fix]))
 newtype TickLookup = TickLookup (Maybe (TaggingLookup Ticked))
-
-type StartEnd = (UTCTime, Maybe UTCTime)
 
 tagTicked :: Either String Tagging -> TickLookup
 tagTicked = TickLookup . either (const Nothing) (Just . ticked)

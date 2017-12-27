@@ -83,7 +83,7 @@ instance FromJSON Masking
 data RaceTime =
     RaceTime
         { openTask :: UTCTime
-        -- ^ The time of allowed crossing of the start of the speed section.
+        -- ^ The time of first allowed crossing of the start of the speed section.
         , closeTask :: UTCTime
         -- ^ The time of last allowed crossing of the end of the speed section.
         , firstStart :: UTCTime
