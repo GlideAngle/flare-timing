@@ -14,6 +14,7 @@ module Flight.Leading
     , LeadingAreaStep(..)
     , LeadingCoefficient(..)
     , LeadingFraction(..)
+    , EssTime(..)
     , madeGoal
     , cleanTrack
     , areaScaling
@@ -42,7 +43,15 @@ import Data.Aeson.ViaScientific
 newtype TaskTime = TaskTime Rational deriving (Eq, Ord, Show)
 
 -- | Task time when the last pilot made the end of the speed section.
-newtype EssTime = EssTime Rational deriving (Eq, Ord, Show)
+newtype EssTime = EssTime Rational
+    deriving (Eq, Ord, Show, ToJSON, FromJSON)
+
+instance DefaultDecimalPlaces EssTime where
+    defdp _ = DecimalPlaces 3
+
+instance Newtype EssTime Rational where
+    pack = EssTime 
+    unpack (EssTime a) = a
 
 -- | Time in seconds for the close of the task. 
 -- section.

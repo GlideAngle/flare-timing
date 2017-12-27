@@ -1,6 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE DeriveAnyClass #-}
 
 {-|
 Module      : Flight.Track.Mask
@@ -17,10 +18,12 @@ module Flight.Track.Mask
     , TrackArrival(..)
     , TrackSpeed(..)
     , TrackLead(..)
+    , RaceTime(..)
     , Nigh
     , Land
     ) where
 
+import Data.Time.Clock (UTCTime)
 import Data.String (IsString())
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
@@ -35,6 +38,7 @@ import Flight.Score
     , PilotTime(..)
     , LeadingCoefficient(..)
     , LeadingFraction(..)
+    , EssTime(..)
     )
 import Data.Aeson.ViaScientific (ViaScientific(..))
 import Flight.Field (FieldOrdering(..))
@@ -47,6 +51,8 @@ data Masking =
     Masking
         { pilotsAtEss :: [PilotsAtEss]
         -- ^ For each task, the number of pilots at goal.
+        , raceTime :: [Maybe RaceTime]
+        -- ^ For each task, the time of the last pilot crossing goal.
         , bestTime :: [Maybe (ViaScientific BestTime)]
         -- ^ For each task, the best time.
         , taskDistance :: [Maybe Double]
@@ -72,6 +78,20 @@ data Masking =
 
 instance ToJSON Masking
 instance FromJSON Masking
+
+-- | The racing time for the speed section is required for leading points.
+data RaceTime =
+    RaceTime
+        { firstStart :: UTCTime
+        -- ^ The time of first crossing of the start of the speed section.
+        , lastArrival :: Maybe UTCTime
+        -- ^ The time of last crossing of the end of the speed section.
+        , tickArrival :: Maybe (ViaScientific EssTime)
+        -- ^ When the last pilot arrives at goal, seconds from the time of first start.
+        , tickTask :: ViaScientific EssTime
+        -- ^ When the task closes, seconds from the time of first start.
+        }
+        deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 -- ^ If arrived at goal then speed fraction.
 data TrackSpeed =
@@ -126,6 +146,9 @@ cmp a b =
         -- TODO: first start time & last goal time & launched
         ("pilotsAtEss", _) -> LT
 
+        ("raceTime", "pilotsAtEss") -> GT
+        ("raceTime", _) -> LT
+
         ("best", _) -> LT
         ("last", _) -> GT
 
@@ -133,21 +156,25 @@ cmp a b =
         ("bestTime", _) -> LT
 
         ("taskDistance", "pilotsAtEss") -> GT
+        ("taskDistance", "raceTime") -> GT
         ("taskDistance", "bestTime") -> GT
         ("taskDistance", _) -> LT
 
         ("bestDistance", "pilotsAtEss") -> GT
+        ("bestDistance", "raceTime") -> GT
         ("bestDistance", "bestTime") -> GT
         ("bestDistance", "taskDistance") -> GT
         ("bestDistance", _) -> LT
 
         ("minLead", "pilotsAtEss") -> GT
+        ("minLead", "raceTime") -> GT
         ("minLead", "bestTime") -> GT
         ("minLead", "taskDistance") -> GT
         ("minLead", "bestDistance") -> GT
         ("minLead", _) -> LT
 
         ("lead", "pilotsAtEss") -> GT
+        ("lead", "raceTime") -> GT
         ("lead", "bestTime") -> GT
         ("lead", "taskDistance") -> GT
         ("lead", "bestDistance") -> GT
@@ -155,6 +182,7 @@ cmp a b =
         ("lead", _) -> LT
 
         ("arrival", "pilotsAtEss") -> GT
+        ("arrival", "raceTime") -> GT
         ("arrival", "bestTime") -> GT
         ("arrival", "taskDistance") -> GT
         ("arrival", "bestDistance") -> GT
@@ -163,6 +191,7 @@ cmp a b =
         ("arrival", _) -> LT
 
         ("speed", "pilotsAtEss") -> GT
+        ("speed", "raceTime") -> GT
         ("speed", "bestTime") -> GT
         ("speed", "taskDistance") -> GT
         ("speed", "bestDistance") -> GT
@@ -172,6 +201,7 @@ cmp a b =
         ("speed", _) -> LT
 
         ("nigh", "pilotsAtEss") -> GT
+        ("nigh", "raceTime") -> GT
         ("nigh", "bestTime") -> GT
         ("nigh", "taskDistance") -> GT
         ("nigh", "bestDistance") -> GT

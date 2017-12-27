@@ -87,6 +87,7 @@ import Flight.Track.Mask
     , TrackSpeed(..)
     , TrackLead(..)
     , TrackDistance(..)
+    , RaceTime(..)
     , Nigh
     , Land
     )
@@ -112,11 +113,18 @@ import Cmd.Options (description)
 import Flight.Lookup.Cross
     (FlyingLookup(..), crossFlying)
 import Flight.Lookup.Tag
-    ( ArrivalRankLookup(..), TimeLookup(..), TickLookup(..), StartEnd
-    , tagArrivalRank, tagPilotTime, tagTicked
+    ( TaskTimeLookup(..)
+    , ArrivalRankLookup(..)
+    , TimeLookup(..)
+    , TickLookup(..)
+    , StartEnd
+    , tagTaskTime
+    , tagArrivalRank
+    , tagPilotTime
+    , tagTicked
     )
 import Flight.Scribe
-    ( readRoute, readCrossing, readTagging, writeMasking
+    ( readComp, readRoute, readCrossing, readTagging, writeMasking
     , readCompBestDistances, readCompTimeRows
     , readAlignTime
     )
@@ -129,6 +137,7 @@ import Flight.Score
     , PilotTime(..)
     , LeadingCoefficient(..)
     , LeadingFraction(..)
+    , EssTime(..)
     , arrivalFraction
     , leadingFraction
     , speedFraction
@@ -203,6 +212,7 @@ go CmdOptions{..} compFile@(CompInputFile compPath) = do
     putStrLn $ "Reading flying time range from '" ++ takeFileName crossPath ++ "'"
     putStrLn $ "Reading zone tags from '" ++ takeFileName tagPath ++ "'"
 
+    compSettings <- runExceptT $ readComp compFile
     crossing <- runExceptT $ readCrossing crossFile
     tagging <- runExceptT $ readTagging tagFile
     routes <- runExceptT $ readRoute lenFile
@@ -210,19 +220,24 @@ go CmdOptions{..} compFile@(CompInputFile compPath) = do
     let flyingLookup = crossFlying crossing
     let lookupTaskLength = routeLength routes
 
-    case (crossing, tagging, routes) of
-        (Left msg, _, _) -> putStrLn msg
-        (_, Left msg, _) -> putStrLn msg
-        (_, _, Left msg) -> putStrLn msg
-        (Right _, Right _, Right _) ->
+    case (compSettings, crossing, tagging, routes) of
+        (Left msg, _, _, _) -> putStrLn msg
+        (_, Left msg, _, _) -> putStrLn msg
+        (_, _, Left msg, _) -> putStrLn msg
+        (_, _, _, Left msg) -> putStrLn msg
+        (Right cs, Right _, Right _, Right _) ->
             writeMask
+                cs
                 lookupTaskLength
+                (tagTaskTime tagging)
                 (IxTask <$> task)
                 (Pilot <$> pilot)
                 (CompInputFile compPath)
                 (check math lookupTaskLength flyingLookup tagging)
 
-writeMask :: RouteLookup
+writeMask :: CompSettings
+          -> RouteLookup
+          -> TaskTimeLookup
           -> [IxTask]
           -> [Pilot]
           -> CompInputFile
@@ -241,20 +256,22 @@ writeMask :: RouteLookup
              )
           -> IO ()
 writeMask
+    CompSettings{tasks}
     lengths@(RouteLookup lookupTaskLength)
+    (TaskTimeLookup lookupTaskTime)
     selectTasks selectPilots compFile f = do
 
     checks <- runExceptT $ f compFile selectTasks selectPilots
 
     case checks of
         Left msg -> print msg
-        Right comp -> do
+        Right flights -> do
             let ys :: [[(Pilot, FlightStats)]] =
                     (fmap . fmap)
                         (\case
                             Left (p, _) -> (p, nullStats)
                             Right (p, g) -> (p, g p))
-                        comp
+                        flights
 
             let iTasks = IxTask <$> [1 .. length ys]
 
@@ -367,10 +384,21 @@ writeMask
                     | xs <- (catMaybes <$> dsNighRows)
                     ]
 
+            let raceStartEnd :: [Maybe StartEnd] =
+                    join <$>
+                    [ ($ s) . ($ i) <$> lookupTaskTime
+                    | i <- iTasks
+                    | s <- speedSection <$> tasks
+                    ]
+
+            let raceTime :: [Maybe RaceTime] =
+                    join <$> (fmap . fmap) (racing) raceStartEnd
+
             writeMasking
                 (compToMask compFile)
                 Masking
                     { pilotsAtEss = (PilotsAtEss . toInteger . length) <$> as
+                    , raceTime = raceTime
                     , bestTime = tsBest
                     , taskDistance = (fmap . fmap) unTaskDistance lsTask
                     , bestDistance = dsBest
@@ -382,9 +410,20 @@ writeMask
                     , land = dsLand
                     }
 
+racing :: StartEnd -> Maybe RaceTime
+racing (s, e) = do
+    return
+        RaceTime
+            { firstStart = s
+            , lastArrival = e
+            , tickArrival =
+                ViaScientific . EssTime
+                <$> (\e' -> toRational $ e' `diffUTCTime` s) <$> e
+            , tickTask = ViaScientific $ EssTime 0
+            }
+
 includeTask :: [IxTask] -> IxTask -> Bool
 includeTask tasks = if null tasks then const True else (`elem` tasks)
-
 
 readCompLeading
     :: RouteLookup
@@ -665,7 +704,8 @@ flown'
                 }
 
         pilotTime =
-            diffTimeHours
+            join
+            $ diffTimeHours
             <$> join ((\f -> f iTask speedSection' p mf) <$> lookupPilotTime)
 
         arrivalRank =
@@ -774,9 +814,11 @@ csegR = Rat.costSegment spanR
 csegF :: Zone Double -> Zone Double -> PathDistance Double
 csegF = Dbl.costSegment spanF
 
-diffTimeHours :: StartEnd -> PilotTime
-diffTimeHours (start, end) =
-    PilotTime hours
+diffTimeHours :: StartEnd -> Maybe PilotTime
+diffTimeHours (_, Nothing) =
+    Nothing
+diffTimeHours (start, Just end) =
+    Just $ PilotTime hours
     where
         secs = toRational $ diffUTCTime end start
         hours = secs * (1 Ratio.% 3600)

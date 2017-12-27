@@ -75,6 +75,7 @@ module Flight.Score
     , LeadingAreaStep(..)
     , LeadingCoefficient(..)
     , LeadingFraction(..)
+    , EssTime(..)
     , clampToEss
     , clampToDeadline
     , areaScaling

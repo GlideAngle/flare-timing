@@ -15,12 +15,15 @@ module Flight.Track.Tag
     , TrackTime(..)
     , TrackTag(..)
     , PilotTrackTag(..)
+    , firstStart
+    , lastArrival
     ) where
 
 import Data.String (IsString())
 import Data.Time.Clock (UTCTime)
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
+import Flight.Comp (SpeedSection)
 import Flight.Pilot (Pilot(..))
 import Flight.Track.Cross (Fix)
 import Flight.Field (FieldOrdering(..))
@@ -56,6 +59,22 @@ data TrackTime =
 
 instance ToJSON TrackTime
 instance FromJSON TrackTime
+
+firstStart :: SpeedSection -> [Maybe UTCTime] -> Maybe UTCTime
+firstStart _ [] = Nothing
+firstStart Nothing (t : _) = t
+firstStart (Just (leg, _)) ts =
+    case drop (leg - 1) ts of
+        [] -> Nothing
+        (t : _) -> t
+
+lastArrival :: SpeedSection -> [Maybe UTCTime] -> Maybe UTCTime
+lastArrival _ [] = Nothing
+lastArrival Nothing (t : _) = t
+lastArrival (Just (leg, _)) ts =
+    case drop (leg - 1) ts of
+        [] -> Nothing
+        (t : _) -> t
 
 -- | For a single track, the interpolated fix for each zone tagged.
 newtype TrackTag =

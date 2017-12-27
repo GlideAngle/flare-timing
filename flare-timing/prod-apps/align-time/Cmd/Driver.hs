@@ -50,7 +50,6 @@ import Flight.Comp
     , Task(..)
     , IxTask(..)
     , TrackFileFail
-    , SpeedSection
     , FlyingSection
     , compToCross
     , crossToTag
@@ -68,7 +67,7 @@ import Flight.Track.Cross (Fix(..), TrackFlyingSection(..))
 import Flight.Zone (Bearing(..))
 import Flight.Zone.Raw (RawZone)
 import Flight.Track.Time (TimeRow(..))
-import Flight.Track.Tag (Tagging(..), TrackTime(..))
+import Flight.Track.Tag (Tagging(..), TrackTime(..), firstStart)
 import Flight.Kml (MarkedFixes(..))
 import Data.Number.RoundingFunctions (dpRound)
 import Flight.Distance (TaskDistance(..))
@@ -250,7 +249,7 @@ group
                         , uncut = mf
                         }
 
-                t0 = firstCrossing ss $ zonesFirst times
+                t0 = firstStart ss $ zonesFirst times
 
                 xs :: [MarkedFixes]
                 xs = slice ss $ groupByLeg span zoneToCyl task flyFixes
@@ -304,20 +303,12 @@ legDistances ticked times task@Task{speedSection} leg xs =
             where
                 sliver = Mask.Sliver span dpp cseg cs angleCut
                 xs' = dashDistancesToGoal ticked sliver zoneToCyl task xs
-                t0 = firstCrossing speedSection ts
+                t0 = firstStart speedSection ts
                 ts = zonesFirst times
     where
         leg' = fromIntegral leg
         dpp = distancePointToPoint
         cseg = costSegment span
-
-firstCrossing :: SpeedSection -> [Maybe UTCTime] -> Maybe UTCTime
-firstCrossing _ [] = Nothing
-firstCrossing Nothing (t : _) = t
-firstCrossing (Just (leg, _)) ts =
-    case drop (leg - 1) ts of
-        [] -> Nothing
-        (t : _) -> t
 
 zoneToCyl :: RawZone -> TaskZone Double
 zoneToCyl = zoneToCylinder

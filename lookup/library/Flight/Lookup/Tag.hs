@@ -6,11 +6,13 @@
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
 module Flight.Lookup.Tag
-    ( ArrivalRankLookup(..)
+    ( TaskTimeLookup(..)
+    , ArrivalRankLookup(..)
     , TimeLookup(..)
     , TagLookup(..)
     , TickLookup(..)
     , StartEnd
+    , tagTaskTime
     , tagArrivalRank
     , tagPilotTime
     , tagPilotTag
@@ -25,19 +27,38 @@ import Control.Lens ((^?), element)
 import qualified Flight.Kml as Kml (MarkedFixes(..))
 import Flight.Comp (IxTask(..), SpeedSection, Pilot(..))
 import Flight.Track.Tag
-    (Tagging(..), TrackTime(..), TrackTag(..), PilotTrackTag(..))
+    ( Tagging(..), TrackTime(..), TrackTag(..), PilotTrackTag(..)
+    , firstStart, lastArrival
+    )
 import Flight.Mask (Ticked, RaceSections(..), slice, section)
 import Flight.Track.Cross (Fix(fix, time))
 
-type TaggingLookup a =
-    IxTask -> SpeedSection -> Pilot -> Kml.MarkedFixes -> Maybe a
+type TaskTaggingLookup a = IxTask -> SpeedSection -> Maybe a
+
+newtype TaskTimeLookup = TaskTimeLookup (Maybe (TaskTaggingLookup StartEnd))
+
+type TaggingLookup a = IxTask -> SpeedSection -> Pilot -> Kml.MarkedFixes -> Maybe a
+
+tagTaskTime :: Either String Tagging -> TaskTimeLookup
+tagTaskTime = TaskTimeLookup . either (const Nothing) (Just . taskTimeElapsed)
+
+taskTimeElapsed
+    :: Tagging
+    -> IxTask
+    -> SpeedSection
+    -> Maybe StartEnd
+taskTimeElapsed _ _ Nothing = Nothing
+taskTimeElapsed x (IxTask i) ss = do
+    TrackTime{zonesFirst, zonesLast} <- (timing x ^? element (fromIntegral i - 1))
+    s <- firstStart ss zonesFirst
+    return (s, lastArrival ss zonesLast)
 
 newtype ArrivalRankLookup = ArrivalRankLookup (Maybe (TaggingLookup Int))
 newtype TimeLookup = TimeLookup (Maybe (TaggingLookup StartEnd))
 newtype TagLookup = TagLookup (Maybe (TaggingLookup [Maybe Fix]))
 newtype TickLookup = TickLookup (Maybe (TaggingLookup Ticked))
 
-type StartEnd = (UTCTime, UTCTime)
+type StartEnd = (UTCTime, Maybe UTCTime)
 
 tagTicked :: Either String Tagging -> TickLookup
 tagTicked = TickLookup . either (const Nothing) (Just . ticked)
@@ -104,7 +125,7 @@ startEnd xs = do
     ys <- sequence xs
     start <- listToMaybe $ take 1 ys
     end <- listToMaybe $ take 1 $ reverse ys
-    return (time start, time end)
+    return (time start, Just $ time end)
 
 timeElapsedPilot :: SpeedSection -> PilotTrackTag -> Maybe StartEnd
 timeElapsedPilot _ (PilotTrackTag _ Nothing) = Nothing
