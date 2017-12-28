@@ -239,8 +239,22 @@ newtype TickTask = TickTask EssTime
 newtype TickRace = TickRace EssTime
 
 toLcTrack :: TickTask -> TickRace -> [TickRow] -> LcTrack
-toLcTrack _ _ xs =
-    LcTrack $ toLcPoint <$> xs
+toLcTrack (TickTask et) (TickRace er@(EssTime tr')) xs =
+    case reverse xs of
+        [] -> LcTrack []
+        (TickRow{tick = RaceTick t, distance} : _) ->
+            LcTrack $ (toLcPoint <$> xs) ++ ys
+            where
+                ys =
+                    if distance <= 0 then [] else
+                    landOutRows
+                        (if t < tr then er else et)
+                        (DistanceToEss $ toRational distance)
+    where
+        tr = fromRational tr'
+
+landOutRows :: EssTime -> DistanceToEss -> [(TaskTime, DistanceToEss)]
+landOutRows (EssTime t) d = [(TaskTime t, d)]
 
 taskToLeading :: TaskDistance Double -> LeadingDistance
 taskToLeading (TaskDistance d) =

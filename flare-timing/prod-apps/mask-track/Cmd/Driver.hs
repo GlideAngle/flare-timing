@@ -336,6 +336,9 @@ writeMask
                     <$> ((fmap . fmap) snd rowsLeadingSum)
 
             let lead :: [[(Pilot, TrackLead)]] =
+                    sortOn ((\TrackLead{frac = ViaScientific (LeadingFraction c)} ->
+                        negate c) . snd)
+                    <$>
                     [(fmap . fmap)
                         (\lc ->
                             TrackLead
