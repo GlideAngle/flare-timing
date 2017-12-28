@@ -1,4 +1,5 @@
 {-# LANGUAGE TupleSections #-}
+{-# LANGUAGE NamedFieldPuns #-}
 
 module Flight.Discard
     ( readDiscardFurther
@@ -21,7 +22,7 @@ import qualified Data.Vector as V (fromList, toList, null, last)
 
 import Flight.Comp (RouteLookup(..))
 import Flight.Track.Time
-    (TickTask(..), TickRace(..), TickRow(..), discard)
+    (TickArrival(..), TickRace(..), TickRow(..), discard)
 import Flight.Track.Mask (RaceTime(..))
 import Flight.Comp
     ( IxTask(..)
@@ -146,14 +147,15 @@ readPilotLeading
     rows <- runExceptT $ readAlignTime (AlignTimeFile (dIn </> file))
     return $ either
         (const [])
-        (V.toList . discard taskLength tickT tickR . snd)
+        (V.toList . discard taskLength tickR tickA . snd)
         rows
     where
         dir = compFileToCompDir compFile
         (AlignDir dIn, AlignTimeFile file) = alignPath dir i pilot
         taskLength = join (($ iTask) <$> lookupTaskLength)
-        (tickT, tickR) =
-            (\RaceTime{ tickTask = ViaScientific tt 
-                      , tickRace = ViaScientific tr
-                      } -> (TickTask tt, TickRace tr))
+        (tickR, tickA) =
+            (\RaceTime{tickArrival, tickRace = ViaScientific race} ->
+                (fmap . fmap)
+                (\(ViaScientific arrive) -> TickArrival arrive)
+                (TickRace race, tickArrival))
             $ raceTime

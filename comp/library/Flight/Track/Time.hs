@@ -30,7 +30,7 @@ module Flight.Track.Time
     , RaceTick(..)
     , TimeRow(..)
     , TickRow(..)
-    , TickTask(..)
+    , TickArrival(..)
     , TickRace(..)
     , discardFurther
     , leadingArea
@@ -197,8 +197,8 @@ leadingSum (Just _) xs =
 
 leadingArea
     :: Maybe (TaskDistance Double)
-    -> TickTask
     -> TickRace
+    -> Maybe TickArrival
     -> [TickRow]
     -> [TickRow]
 leadingArea _ _ _ [] = []
@@ -206,12 +206,13 @@ leadingArea _ _ _ [x] = [x]
 leadingArea Nothing _ _ xs = xs
 leadingArea
     dRace@(Just (TaskDistance (MkQuantity d)))
-    tickT@(TickTask (EssTime tt)) tickR
+    tickR@(TickRace (EssTime tt))
+    tickA
     rows@(xRow@TickRow{tick = x} : yRow@TickRow{tick = y} : ys)
         | y <= 0 =
-            xRow : yRow : leadingArea dRace tickT tickR ys
+            xRow : yRow : leadingArea dRace tickR tickA ys
         | x <= 0 && y > 0 =
-            xRow : leadingArea dRace tickT tickR (yRow : ys)
+            xRow : leadingArea dRace tickR tickA (yRow : ys)
         | otherwise =
             if length rows /= length xs then rows else xs
             where
@@ -220,7 +221,7 @@ leadingArea
                     areaSteps
                         deadline
                         (LengthOfSs $ toRational d)
-                        (toLcTrack tickT tickR rows)
+                        (toLcTrack tickR tickA rows)
 
                 xs =
                     [ r{areaStep = ViaScientific step}
@@ -228,33 +229,58 @@ leadingArea
                     | step <- steps
                     ]
 
-                -- dRace = taskToLeading <$> taskLength
                 deadline = TaskDeadline tt
 
 toLcPoint :: TickRow -> (TaskTime, DistanceToEss)
 toLcPoint TickRow{tick = RaceTick t, distance} =
     (TaskTime $ toRational t, DistanceToEss $ toRational distance)
 
-newtype TickTask = TickTask EssTime
+newtype TickArrival = TickArrival EssTime
 newtype TickRace = TickRace EssTime
 
-toLcTrack :: TickTask -> TickRace -> [TickRow] -> LcTrack
-toLcTrack (TickTask et) (TickRace er@(EssTime tr')) xs =
-    case reverse xs of
-        [] -> LcTrack []
-        (TickRow{tick = RaceTick t, distance} : _) ->
-            LcTrack $ (toLcPoint <$> xs) ++ ys
-            where
-                ys =
-                    if distance <= 0 then [] else
-                    landOutRows
-                        (if t < tr then er else et)
-                        (DistanceToEss $ toRational distance)
-    where
-        tr = fromRational tr'
+toLcTrack
+    :: TickRace
+    -> Maybe TickArrival
+    -> [TickRow]
+    -> LcTrack
+toLcTrack tr ta xs =
+    LcTrack . reverse . toLcTrackRev tr ta $ reverse xs
 
-landOutRows :: EssTime -> DistanceToEss -> [(TaskTime, DistanceToEss)]
-landOutRows (EssTime t) d = [(TaskTime t, d)]
+toLcTrackRev
+    :: TickRace
+    -> Maybe TickArrival
+    -> [TickRow]
+    -> [(TaskTime, DistanceToEss)]
+
+toLcTrackRev _ _ [] = []
+
+toLcTrackRev
+    (TickRace (EssTime tr'))
+    Nothing
+    xs@(TickRow{tick = RaceTick t, distance} : _) =
+        -- NOTE: Everyone has landed out.
+        y : (toLcPoint <$> xs)
+    where
+        y = landOutRow
+                (EssTime $ min tr' (toRational t))
+                (DistanceToEss $ toRational distance)
+
+toLcTrackRev
+    (TickRace (EssTime tr'))
+    (Just (TickArrival arrive@(EssTime ta')))
+    xs@(TickRow{tick = RaceTick t, distance} : _) =
+        -- NOTE: If distance <= 0 then goal was made.
+        if distance <= 0 then toLcPoint <$> xs
+                         else y : (toLcPoint <$> xs)
+    where
+        ta = fromRational ta'
+
+        y = landOutRow
+                (if t < ta then arrive else EssTime $ min tr' (toRational t))
+                (DistanceToEss $ toRational distance)
+
+landOutRow :: EssTime -> DistanceToEss -> (TaskTime, DistanceToEss)
+landOutRow (EssTime t) d = (TaskTime t, d)
 
 taskToLeading :: TaskDistance Double -> LeadingDistance
 taskToLeading (TaskDistance d) =
@@ -268,13 +294,13 @@ timeToTick TimeRow{tick, distance} =
 
 discard
     :: Maybe (TaskDistance Double)
-    -> TickTask
     -> TickRace
+    -> Maybe TickArrival
     -> Vector TimeRow
     -> Vector TickRow
-discard deadline tickR dRace xs =
+discard dRace tickR tickA xs =
     V.fromList
-    . leadingArea deadline tickR dRace
+    . leadingArea dRace tickR tickA
     . discardFurther
     . dropZeros
     . V.toList

@@ -59,7 +59,7 @@ import Flight.Comp
     , findCompInput
     , openClose
     )
-import Flight.Track.Time (TickTask(..), TickRace(..), discard)
+import Flight.Track.Time (TickArrival(..), TickRace(..), discard)
 import Flight.Track.Mask (RaceTime(..), racing)
 import Flight.Units ()
 import Flight.Mask (checkTracks)
@@ -210,16 +210,16 @@ readFilterWrite
     when (selectTask iTask) $ do
     _ <- createDirectoryIfMissing True dOut
     rows <- runExceptT $ readAlignTime (AlignTimeFile (dIn </> file))
-    either print (f . discard taskLength tickT tickR . snd) rows
+    either print (f . discard taskLength tickR tickA . snd) rows
     where
         f = writeDiscardFurther (DiscardFurtherFile $ dOut </> file) headers
         dir = compFileToCompDir compFile
         (AlignDir dIn, AlignTimeFile file) = alignPath dir i pilot
         (DiscardDir dOut) = discardDir dir i
         taskLength = join (($ iTask) <$> lookupTaskLength)
-        (tickT, tickR) =
-            (\RaceTime{ tickTask = ViaScientific tt 
-                      , tickRace = ViaScientific tr
-                      } -> (TickTask tt, TickRace tr))
+        (tickR, tickA) =
+            (\RaceTime{tickArrival, tickRace = ViaScientific race} ->
+                (fmap . fmap)
+                (\(ViaScientific arrive) -> TickArrival arrive)
+                (TickRace race, tickArrival))
             $ raceTime
-
