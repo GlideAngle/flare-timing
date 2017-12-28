@@ -32,7 +32,6 @@ module Flight.Track.Time
     , TickRow(..)
     , TickArrival(..)
     , TickRace(..)
-    , discardFurther
     , leadingArea
     , leadingSum
     , minLeading
@@ -175,15 +174,6 @@ instance FromNamedRecord TickRow where
         m .: "distance" <*>
         m .: "areaStep"
 
--- | Discard fixes further from goal than any previous fix.
-discardFurther :: [TickRow] -> [TickRow]
-discardFurther (x : y : ys)
-    | d x < d y = discardFurther (x : ys)
-    | otherwise = x : discardFurther (y : ys)
-    where
-        d = distance :: (TickRow -> Double)
-discardFurther ys = ys
-
 minLeading :: [LeadingCoefficient] -> Maybe LeadingCoefficient
 minLeading xs =
     if null xs then Nothing else Just $ minimum xs
@@ -302,12 +292,28 @@ discard dRace tickR tickA xs =
     V.fromList
     . leadingArea dRace tickR tickA
     . discardFurther
+    . discardEarly
     . dropZeros
     . V.toList
     $ timeToTick <$> xs
 
+-- | Drop any rows where the distance is zero.
 dropZeros :: [TickRow] -> [TickRow]
 dropZeros =
     dropWhile ((== 0) . d)
     where
         d = distance :: (TickRow -> Double)
+
+-- | Discard fixes before the first crossing of the start.
+discardEarly :: [TickRow] -> [TickRow]
+discardEarly = filter (\TickRow{tick} -> tick >= 0)
+
+-- | Discard fixes further from goal than any previous fix.
+discardFurther :: [TickRow] -> [TickRow]
+discardFurther (x : y : ys)
+    | d x < d y = discardFurther (x : ys)
+    | otherwise = x : discardFurther (y : ys)
+    where
+        d = distance :: (TickRow -> Double)
+discardFurther ys = ys
+
