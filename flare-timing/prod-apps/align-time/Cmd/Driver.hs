@@ -233,7 +233,7 @@ group
                 . (\f ->
                     mkTimeRow
                         t0
-                        (end + 1)
+                        end
                         (Just f, Just $ TaskDistance [u| 0m |]))
                 )
                 endZoneTag
@@ -252,7 +252,7 @@ group
                 t0 = firstStart ss $ zonesFirst times
 
                 xs :: [MarkedFixes]
-                xs = slice ss $ groupByLeg span zoneToCyl task flyFixes
+                xs = groupByLeg span zoneToCyl task flyFixes
 
                 ys = FlyCut flyingRange <$> xs
 
@@ -274,9 +274,9 @@ group
                 zs =
                     concat $ zipWith
                         (\j x ->
-                            let ticked' = retick ticked start (j - 1)
+                            let ticked' = retick ticked start j
                             in legDistances ticked' times task j x)
-                        [start .. ]
+                        [0 .. ]
                         ys
     where
         (TickLookup lookupTicked) = tagTicked (Right tags)
