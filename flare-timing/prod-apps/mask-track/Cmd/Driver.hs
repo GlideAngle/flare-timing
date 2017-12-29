@@ -340,11 +340,16 @@ writeMask
                         raceTime
                         pilots
 
+            let rowsLeadingSum' :: [[(Pilot, Maybe LeadingCoefficient)]] =
+                        [ (fmap . fmap) (leadingSum l s) xs
+                        | l <- (fmap . fmap) taskToLeading lsTask
+                        | s <- speedSection <$> tasks
+                        | xs <- rowsLeadingStep
+                        ]
+
             let rowsLeadingSum :: [[(Pilot, LeadingCoefficient)]] =
-                    zipWith
-                        (\l xs -> (fmap . fmap) (leadingSum l) xs)
-                        ((fmap . fmap) taskToLeading lsTask)
-                        rowsLeadingStep
+                    catMaybes
+                    <$> (fmap . fmap) floatMaybe rowsLeadingSum'
 
             let minLead =
                     minLeading
@@ -425,6 +430,10 @@ writeMask
                     , nigh = dsNighRows'
                     , land = dsLand
                     }
+
+floatMaybe :: (a, Maybe b) -> Maybe (a, b)
+floatMaybe (_, Nothing) = Nothing
+floatMaybe (a, Just b) = Just (a, b)
 
 includeTask :: [IxTask] -> IxTask -> Bool
 includeTask tasks = if null tasks then const True else (`elem` tasks)

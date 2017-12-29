@@ -73,6 +73,7 @@ import Flight.Score
     )
 import Flight.Distance (TaskDistance(..))
 import Flight.Score (EssTime(..))
+import Flight.Comp (SpeedSection)
 
 -- | Seconds from first speed zone crossing irrespective of start time.
 newtype LeadTick = LeadTick Double
@@ -195,12 +196,27 @@ minLeading :: [LeadingCoefficient] -> Maybe LeadingCoefficient
 minLeading xs =
     if null xs then Nothing else Just $ minimum xs
 
-leadingSum :: Maybe LeadingDistance -> [TickRow] -> LeadingCoefficient
-leadingSum Nothing _ = LeadingCoefficient 0
-leadingSum (Just _) xs =
-    LeadingCoefficient $ sum ys
+-- TODO: The GAP guide says that the best distance for zeroth time is the
+-- leading distance. Describe how this interacts with the distance to goal of
+-- the first point on course.
+leadingSum
+    :: Maybe LeadingDistance
+    -> SpeedSection
+    -> [TickRow]
+    -> Maybe LeadingCoefficient
+leadingSum Nothing _ _ = Nothing
+leadingSum _ _ [] = Nothing
+leadingSum (Just _) Nothing xs =
+    Just . LeadingCoefficient $ sum ys
     where
         ys = (\TickRow{area = ViaScientific (LeadingAreaStep a)} -> a) <$> xs
+leadingSum (Just _) (Just (start, _)) xs =
+    if null ys then Nothing else
+    Just . LeadingCoefficient $ sum ys
+    where
+        ys =
+            (\TickRow{area = ViaScientific (LeadingAreaStep a)} -> a)
+            <$> filter (\TickRow{leg} -> leg >= start) xs
 
 leadingArea
     :: Maybe (TaskDistance Double)
