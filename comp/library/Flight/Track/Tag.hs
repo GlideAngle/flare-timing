@@ -15,6 +15,7 @@ module Flight.Track.Tag
     , TrackTime(..)
     , TrackTag(..)
     , PilotTrackTag(..)
+    , firstLead
     , firstStart
     , lastArrival
     ) where
@@ -23,7 +24,7 @@ import Data.String (IsString())
 import Data.Time.Clock (UTCTime)
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
-import Flight.Comp (SpeedSection)
+import Flight.Comp (SpeedSection, FirstLead(..), FirstStart(..), LastArrival(..))
 import Flight.Pilot (Pilot(..))
 import Flight.Track.Cross (Fix)
 import Flight.Field (FieldOrdering(..))
@@ -60,18 +61,40 @@ data TrackTime =
 instance ToJSON TrackTime
 instance FromJSON TrackTime
 
-firstStart :: SpeedSection -> [Maybe UTCTime] -> Maybe UTCTime
-firstStart _ [] = Nothing
-firstStart Nothing (t : _) = t
-firstStart (Just (leg, _)) ts =
+firstLead :: SpeedSection -> [Maybe UTCTime] -> Maybe FirstLead
+firstLead _ [] = Nothing
+firstLead Nothing (t : _) = FirstLead <$> t
+firstLead (Just (leg, _)) ts =
+    FirstLead <$>
     case drop (leg - 1) ts of
         [] -> Nothing
         (t : _) -> t
 
-lastArrival :: SpeedSection -> [Maybe UTCTime] -> Maybe UTCTime
+firstStart :: SpeedSection -> UTCTime -> [Maybe UTCTime] -> Maybe FirstStart
+firstStart _ _ [] = Nothing
+firstStart speedSection startTime times =
+    -- > or $ Just True
+    -- True
+    -- > or $ Just False
+    -- False
+    -- > or $ Nothing
+    -- False
+    f speedSection $ filter (or . fmap (>= startTime)) times
+    where
+        f :: SpeedSection -> [Maybe UTCTime] -> Maybe FirstStart
+        f _ [] = Nothing
+        f Nothing (t : _) = FirstStart <$> t
+        f (Just (leg, _)) ts =
+            FirstStart <$>
+            case drop (leg - 1) ts of
+                [] -> Nothing
+                (t : _) -> t
+
+lastArrival :: SpeedSection -> [Maybe UTCTime] -> Maybe LastArrival
 lastArrival _ [] = Nothing
-lastArrival Nothing (t : _) = t
+lastArrival Nothing (t : _) = LastArrival <$> t
 lastArrival (Just (leg, _)) ts =
+    LastArrival <$>
     case drop (leg - 1) ts of
         [] -> Nothing
         (t : _) -> t

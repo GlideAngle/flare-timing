@@ -2,6 +2,7 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE ConstrainedClassMethods #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE DeriveAnyClass #-}
 
 {-|
 Module      : Data.Flight.Comp
@@ -24,7 +25,11 @@ module Flight.Comp
     , SpeedSection
     , StartGate(..)
     , OpenClose(..)
-    , StartEnd
+    , FirstLead(..)
+    , FirstStart(..)
+    , LastArrival(..)
+    , StartEnd(..)
+    , StartEndMark
     , RouteLookup(..)
     , showTask
     , openClose
@@ -52,8 +57,29 @@ import Flight.Pilot
 import Flight.Path
 import Flight.Distance (TaskDistance(..))
 
+-- | The time of first lead into the speed section. This won't exist if no one
+-- is able to cross the start of the speed section without bombing out.
+newtype FirstLead = FirstLead UTCTime
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+
+-- | The time of first start of the speed section. This won't exist if everyone
+-- jumps the gun.
+newtype FirstStart = FirstStart UTCTime
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+
+-- | The time of last crossing of the end of the speed section. This won't
+-- exist if no one makes goal and everyone lands out.
+newtype LastArrival = LastArrival UTCTime
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+
 -- | A race task can be started and not finished if no one makes goal.
-type StartEnd = (UTCTime, Maybe UTCTime)
+data StartEnd a b =
+    StartEnd
+        { unStart :: a
+        , unEnd :: Maybe b
+        }
+
+type StartEndMark = StartEnd UTCTime UTCTime
 
 -- | 1-based indices of a task in a competition.
 newtype IxTask = IxTask Int deriving (Eq, Show)

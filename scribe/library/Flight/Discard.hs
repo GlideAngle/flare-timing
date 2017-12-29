@@ -22,7 +22,7 @@ import qualified Data.Vector as V (fromList, toList, null, last)
 
 import Flight.Comp (RouteLookup(..))
 import Flight.Track.Time
-    (TickArrival(..), TickRace(..), TickRow(..), discard)
+    (TickRow(..), LeadClose(..), LeadArrival(..), discard)
 import Flight.Track.Mask (RaceTime(..))
 import Flight.Comp
     ( IxTask(..)
@@ -147,15 +147,17 @@ readPilotLeading
     rows <- runExceptT $ readAlignTime (AlignTimeFile (dIn </> file))
     return $ either
         (const [])
-        (V.toList . discard taskLength tickR tickA . snd)
+        (V.toList . discard taskLength close arrival . snd)
         rows
     where
         dir = compFileToCompDir compFile
         (AlignDir dIn, AlignTimeFile file) = alignPath dir i pilot
         taskLength = join (($ iTask) <$> lookupTaskLength)
-        (tickR, tickA) =
-            (\RaceTime{tickArrival, tickRace = ViaScientific race} ->
-                (fmap . fmap)
-                (\(ViaScientific arrive) -> TickArrival arrive)
-                (TickRace race, tickArrival))
-            $ raceTime
+
+        close = do
+            ViaScientific c <- leadClose raceTime
+            return $ LeadClose c
+
+        arrival = do
+            ViaScientific a <- leadArrival raceTime
+            return $ LeadArrival a

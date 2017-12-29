@@ -27,11 +27,12 @@ Track fixes indexed on when the first pilot starts the speed section.
 -}
 module Flight.Track.Time
     ( LeadingDistance(..)
+    , LeadTick(..)
     , RaceTick(..)
     , TimeRow(..)
     , TickRow(..)
-    , TickArrival(..)
-    , TickRace(..)
+    , LeadArrival(..)
+    , LeadClose(..)
     , leadingArea
     , leadingSum
     , minLeading
@@ -39,7 +40,7 @@ module Flight.Track.Time
     , discard
     ) where
 
-import Data.Maybe (fromMaybe)
+import Data.Maybe (fromMaybe, catMaybes)
 import Data.Csv
     ( ToNamedRecord(..), FromNamedRecord(..)
     , ToField(..), FromField(..)
@@ -73,7 +74,11 @@ import Flight.Score
 import Flight.Distance (TaskDistance(..))
 import Flight.Score (EssTime(..))
 
--- | Seconds from first speed zone crossing
+-- | Seconds from first speed zone crossing irrespective of start time.
+newtype LeadTick = LeadTick Double
+    deriving (Eq, Ord, Num, Show, Generic, ToJSON, FromJSON, ToField, FromField)
+
+-- | Seconds from first speed zone crossing made at or after the start time.
 newtype RaceTick = RaceTick Double
     deriving (Eq, Ord, Num, Show, Generic, ToJSON, FromJSON, ToField, FromField)
 
@@ -83,15 +88,17 @@ newtype LeadingDistance = LeadingDistance (Quantity Double [u| km |])
 data TimeRow =
     TimeRow
         { leg :: Int
-        -- ^ Leg of the task
+        -- ^ Leg of the task.
+        , tickLead :: Maybe LeadTick
+        -- ^ Seconds from first lead.
+        , tickRace :: Maybe RaceTick
+        -- ^ Seconds from first start.
         , time :: UTCTime
         -- ^ Time of the fix
         , lat :: ViaScientific RawLat
         -- ^ Latitude of the fix
         , lng :: ViaScientific RawLng
         -- ^ Longitude of the fix
-        , tick :: RaceTick
-        -- ^ Seconds from first speed zone crossing
         , distance :: Double
         -- ^ Distance to goal in km
         }
@@ -103,11 +110,15 @@ instance FromJSON TimeRow
 -- | A fix but indexed off the first crossing time.
 data TickRow =
     TickRow
-        { tick :: RaceTick
-        -- ^ Seconds from first speed zone crossing.
+        { leg :: Int
+        -- ^ Leg of the task
+        , tickLead :: Maybe LeadTick
+        -- ^ Seconds from first lead.
+        , tickRace :: Maybe RaceTick
+        -- ^ Seconds from first start.
         , distance :: Double
         -- ^ Distance to goal in km.
-        , areaStep :: ViaScientific LeadingAreaStep
+        , area :: ViaScientific LeadingAreaStep
         -- ^ Leading coefficient area step.
         }
         deriving (Eq, Ord, Show, Generic)
@@ -135,8 +146,9 @@ instance ToNamedRecord TimeRow where
             local =
                 namedRecord
                     [ namedField "leg" leg
+                    , namedField "tickLead" tickLead
+                    , namedField "tickRace" tickRace
                     , namedField "time" time'
-                    , namedField "tick" tick
                     , namedField "distance" d
                     ]
 
@@ -148,10 +160,11 @@ instance FromNamedRecord TimeRow where
     parseNamedRecord m =
         TimeRow <$>
         m .: "leg" <*>
+        m .: "tickLead" <*>
+        m .: "tickRace" <*>
         t <*>
         m .: "lat" <*>
         m .: "lng" <*>
-        m .: "tick" <*>
         m .: "distance"
         where
             t = parseTime <$> m .: "time"
@@ -159,9 +172,11 @@ instance FromNamedRecord TimeRow where
 instance ToNamedRecord TickRow where
     toNamedRecord TickRow{..} =
         namedRecord
-            [ namedField "tick" tick
+            [ namedField "leg" leg
+            , namedField "tickLead" tickLead
+            , namedField "tickRace" tickRace
             , namedField "distance" (f distance)
-            , namedField "areaStep" (g areaStep)
+            , namedField "area" (g area)
             ]
         where
             f = unquote . unpack . encode
@@ -170,9 +185,11 @@ instance ToNamedRecord TickRow where
 instance FromNamedRecord TickRow where
     parseNamedRecord m =
         TickRow <$>
-        m .: "tick" <*>
+        m .: "leg" <*>
+        m .: "tickLead" <*>
+        m .: "tickRace" <*>
         m .: "distance" <*>
-        m .: "areaStep"
+        m .: "area"
 
 minLeading :: [LeadingCoefficient] -> Maybe LeadingCoefficient
 minLeading xs =
@@ -183,90 +200,101 @@ leadingSum Nothing _ = LeadingCoefficient 0
 leadingSum (Just _) xs =
     LeadingCoefficient $ sum ys
     where
-        ys = (\TickRow{areaStep = ViaScientific (LeadingAreaStep a)} -> a) <$> xs
+        ys = (\TickRow{area = ViaScientific (LeadingAreaStep a)} -> a) <$> xs
 
 leadingArea
     :: Maybe (TaskDistance Double)
-    -> TickRace
-    -> Maybe TickArrival
+    -> Maybe LeadClose
+    -> Maybe LeadArrival
     -> [TickRow]
     -> [TickRow]
+
 leadingArea _ _ _ [] = []
-leadingArea _ _ _ [x] = [x]
+
+-- NOTE: Everyone has bombed and no one has lead out from the start.
+leadingArea _ Nothing _ _ = []
+
 leadingArea Nothing _ _ xs = xs
+
 leadingArea
-    dRace@(Just (TaskDistance (MkQuantity d)))
-    tickR@(TickRace (EssTime tt))
-    tickA
-    rows@(xRow@TickRow{tick = x} : yRow@TickRow{tick = y} : ys)
-        | y <= 0 =
-            xRow : yRow : leadingArea dRace tickR tickA ys
-        | x <= 0 && y > 0 =
-            xRow : leadingArea dRace tickR tickA (yRow : ys)
-        | otherwise =
-            if length rows /= length xs then rows else xs
-            where
-                -- TODO: Calculate the task deadline.
-                steps =
-                    areaSteps
-                        deadline
-                        (LengthOfSs $ toRational d)
-                        (toLcTrack tickR tickA rows)
+    (Just (TaskDistance (MkQuantity d)))
+    close@(Just (LeadClose (EssTime tt))) arrival rows =
+    if length rows /= length xs then rows else xs
+    where
+        -- TODO: Calculate the task deadline.
+        steps =
+            areaSteps
+                deadline
+                (LengthOfSs $ toRational d)
+                (toLcTrack close arrival rows)
 
-                xs =
-                    [ r{areaStep = ViaScientific step}
-                    | r <- rows
-                    | step <- steps
-                    ]
+        xs =
+            [ r{area = ViaScientific step}
+            | r <- rows
+            | step <- steps
+            ]
 
-                deadline = TaskDeadline tt
+        deadline = TaskDeadline tt
 
-toLcPoint :: TickRow -> (TaskTime, DistanceToEss)
-toLcPoint TickRow{tick = RaceTick t, distance} =
-    (TaskTime $ toRational t, DistanceToEss $ toRational distance)
+toLcPoint :: TickRow -> Maybe (TaskTime, DistanceToEss)
+toLcPoint TickRow{tickLead = Nothing} = Nothing
+toLcPoint TickRow{tickLead = Just (LeadTick t), distance} =
+    Just (TaskTime $ toRational t, DistanceToEss $ toRational distance)
 
-newtype TickArrival = TickArrival EssTime
-newtype TickRace = TickRace EssTime
+-- | The time of last arrival at goal, in seconds from first lead.
+newtype LeadArrival = LeadArrival EssTime
+
+-- | The time the task closes, in seconds from first lead.
+newtype LeadClose = LeadClose EssTime
 
 toLcTrack
-    :: TickRace
-    -> Maybe TickArrival
+    :: Maybe LeadClose
+    -> Maybe LeadArrival
     -> [TickRow]
     -> LcTrack
 toLcTrack tr ta xs =
     LcTrack . reverse . toLcTrackRev tr ta $ reverse xs
 
 toLcTrackRev
-    :: TickRace
-    -> Maybe TickArrival
+    :: Maybe LeadClose
+    -> Maybe LeadArrival
     -> [TickRow]
     -> [(TaskTime, DistanceToEss)]
+
+-- NOTE: Everyone has bombed and no one has lead out from the start.
+toLcTrackRev Nothing _ _ = []
 
 toLcTrackRev _ _ [] = []
 
 toLcTrackRev
-    (TickRace (EssTime tr'))
+    (Just (LeadClose (EssTime tr')))
     Nothing
-    xs@(TickRow{tick = RaceTick t, distance} : _) =
+    xs@(TickRow{tickLead, distance} : _) =
         -- NOTE: Everyone has landed out.
-        y : (toLcPoint <$> xs)
+        catMaybes $
+        case tickLead of
+            Nothing -> toLcPoint <$> xs
+            (Just (LeadTick t)) -> (Just $ y t) : (toLcPoint <$> xs)
     where
-        y = landOutRow
-                (EssTime $ min tr' (toRational t))
+        y lead = landOutRow
+                (EssTime $ min tr' (toRational lead))
                 (DistanceToEss $ toRational distance)
 
 toLcTrackRev
-    (TickRace (EssTime tr'))
-    (Just (TickArrival arrive@(EssTime ta')))
-    xs@(TickRow{tick = RaceTick t, distance} : _) =
+    (Just (LeadClose (EssTime tr')))
+    (Just (LeadArrival arrive@(EssTime ta')))
+    xs@(TickRow{tickLead, distance} : _) =
         -- NOTE: If distance <= 0 then goal was made.
-        if distance <= 0 then toLcPoint <$> xs
-                         else y : (toLcPoint <$> xs)
+        catMaybes $
+        if distance <= 0 then toLcPoint <$> xs else
+        case tickLead of
+            Nothing -> toLcPoint <$> xs
+            (Just (LeadTick t)) -> (Just $ y t) : (toLcPoint <$> xs)
     where
         ta = fromRational ta'
 
-        y = landOutRow
-                (if t < ta then arrive else EssTime $ min tr' (toRational t))
+        y lead = landOutRow
+                (if lead < ta then arrive else EssTime $ min tr' (toRational lead))
                 (DistanceToEss $ toRational distance)
 
 landOutRow :: EssTime -> DistanceToEss -> (TaskTime, DistanceToEss)
@@ -279,20 +307,25 @@ taskToLeading (TaskDistance d) =
         d' = convert d :: Quantity Double [u| km |]
 
 timeToTick :: TimeRow -> TickRow
-timeToTick TimeRow{tick, distance} =
-    TickRow tick distance $ ViaScientific (LeadingAreaStep 0)
+timeToTick TimeRow{leg, tickLead, tickRace, distance} =
+    TickRow
+        { leg = leg
+        , tickLead = tickLead
+        , tickRace = tickRace
+        , distance = distance
+        , area = ViaScientific (LeadingAreaStep 0)
+        }
 
 discard
     :: Maybe (TaskDistance Double)
-    -> TickRace
-    -> Maybe TickArrival
+    -> Maybe LeadClose
+    -> Maybe LeadArrival
     -> Vector TimeRow
     -> Vector TickRow
-discard dRace tickR tickA xs =
+discard dRace close arrival xs =
     V.fromList
-    . leadingArea dRace tickR tickA
+    . leadingArea dRace close arrival
     . discardFurther
-    . discardEarly
     . dropZeros
     . V.toList
     $ timeToTick <$> xs
@@ -303,10 +336,6 @@ dropZeros =
     dropWhile ((== 0) . d)
     where
         d = distance :: (TickRow -> Double)
-
--- | Discard fixes before the first crossing of the start.
-discardEarly :: [TickRow] -> [TickRow]
-discardEarly = filter (\TickRow{tick} -> tick >= 0)
 
 -- | Discard fixes further from goal than any previous fix.
 discardFurther :: [TickRow] -> [TickRow]

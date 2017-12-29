@@ -11,7 +11,6 @@ module Flight.Lookup.Tag
     , TimeLookup(..)
     , TagLookup(..)
     , TickLookup(..)
-    , StartEnd
     , tagTaskTime
     , tagArrivalRank
     , tagPilotTime
@@ -24,17 +23,25 @@ import Data.Maybe (catMaybes, listToMaybe, isJust)
 import Control.Monad (join)
 import Control.Lens ((^?), element)
 import qualified Flight.Kml as Kml (MarkedFixes(..))
-import Flight.Comp (IxTask(..), Pilot(..), SpeedSection, StartEnd)
+import Flight.Comp
+    ( IxTask(..)
+    , Pilot(..)
+    , StartEnd(..)
+    , StartEndMark
+    , FirstLead(..)
+    , LastArrival(..)
+    , SpeedSection
+    )
 import Flight.Track.Tag
-    ( Tagging(..), TrackTime(..), TrackTag(..), PilotTrackTag(..)
-    , firstStart, lastArrival
+    (Tagging(..), TrackTime(..), TrackTag(..), PilotTrackTag(..)
+    , firstLead, lastArrival
     )
 import Flight.Mask (Ticked, RaceSections(..), slice, section)
 import Flight.Track.Cross (Fix(fix, time))
 
 type TaskTaggingLookup a = IxTask -> SpeedSection -> Maybe a
 
-newtype TaskTimeLookup = TaskTimeLookup (Maybe (TaskTaggingLookup StartEnd))
+newtype TaskTimeLookup = TaskTimeLookup (Maybe (TaskTaggingLookup StartEndMark))
 
 type TaggingLookup a = IxTask -> SpeedSection -> Pilot -> Kml.MarkedFixes -> Maybe a
 
@@ -45,15 +52,16 @@ taskTimeElapsed
     :: Tagging
     -> IxTask
     -> SpeedSection
-    -> Maybe StartEnd
+    -> Maybe StartEndMark
 taskTimeElapsed _ _ Nothing = Nothing
 taskTimeElapsed x (IxTask i) ss = do
     TrackTime{zonesFirst, zonesLast} <- (timing x ^? element (fromIntegral i - 1))
-    s <- firstStart ss zonesFirst
-    return (s, lastArrival ss zonesLast)
+    FirstLead start <- firstLead ss zonesFirst
+    let end = (\(LastArrival a) -> a) <$> lastArrival ss zonesLast
+    return $ StartEnd start end
 
 newtype ArrivalRankLookup = ArrivalRankLookup (Maybe (TaggingLookup Int))
-newtype TimeLookup = TimeLookup (Maybe (TaggingLookup StartEnd))
+newtype TimeLookup = TimeLookup (Maybe (TaggingLookup StartEndMark))
 newtype TagLookup = TagLookup (Maybe (TaggingLookup [Maybe Fix]))
 newtype TickLookup = TickLookup (Maybe (TaggingLookup Ticked))
 
@@ -106,7 +114,7 @@ timeElapsed :: Tagging
             -> SpeedSection
             -> Pilot
             -> Kml.MarkedFixes
-            -> Maybe StartEnd
+            -> Maybe StartEndMark
 timeElapsed _ _ Nothing _ _ = Nothing
 timeElapsed x (IxTask i) speedSection pilot _ =
     case tagging x ^? element (fromIntegral i - 1) of
@@ -117,14 +125,14 @@ timeElapsed x (IxTask i) speedSection pilot _ =
             <$> find (\(PilotTrackTag p _) -> p == pilot) xs
 
 -- | The time of the first and last fix in the list.
-startEnd :: [Maybe Fix] -> Maybe StartEnd
+startEnd :: [Maybe Fix] -> Maybe StartEndMark
 startEnd xs = do
     ys <- sequence xs
     start <- listToMaybe $ take 1 ys
     end <- listToMaybe $ take 1 $ reverse ys
-    return (time start, Just $ time end)
+    return $ StartEnd (time start) (Just $ time end)
 
-timeElapsedPilot :: SpeedSection -> PilotTrackTag -> Maybe StartEnd
+timeElapsedPilot :: SpeedSection -> PilotTrackTag -> Maybe StartEndMark
 timeElapsedPilot _ (PilotTrackTag _ Nothing) = Nothing
 timeElapsedPilot Nothing _ = Nothing
 timeElapsedPilot speedSection (PilotTrackTag _ (Just TrackTag{zonesTag})) =

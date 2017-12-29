@@ -38,7 +38,7 @@ import Flight.Cmd.Paths (checkPaths)
 import Flight.Cmd.Options (CmdOptions(..), ProgramName(..), mkOptions)
 import Cmd.Options (description)
 
-import Flight.Track.Time (RaceTick(..))
+import Flight.Track.Time (LeadTick(..), RaceTick(..))
 import Flight.Comp
     ( AlignDir(..)
     , CompInputFile(..)
@@ -51,11 +51,15 @@ import Flight.Comp
     , IxTask(..)
     , TrackFileFail
     , FlyingSection
+    , FirstLead(..)
+    , FirstStart(..)
+    , OpenClose(..)
     , compToCross
     , crossToTag
     , compFileToCompDir
     , alignPath
     , findCompInput
+    , openClose
     )
 import Flight.Units ()
 import qualified Flight.Mask as Mask (Sliver(..))
@@ -67,7 +71,7 @@ import Flight.Track.Cross (Fix(..), TrackFlyingSection(..))
 import Flight.Zone (Bearing(..))
 import Flight.Zone.Raw (RawZone)
 import Flight.Track.Time (TimeRow(..))
-import Flight.Track.Tag (Tagging(..), TrackTime(..), firstStart)
+import Flight.Track.Tag (Tagging(..), TrackTime(..), firstLead, firstStart)
 import Flight.Kml (MarkedFixes(..))
 import Data.Number.RoundingFunctions (dpRound)
 import Flight.Distance (TaskDistance(..))
@@ -90,7 +94,7 @@ unTaskDistance (TaskDistance d) =
         MkQuantity dKm = toRational' $ convert d :: Quantity _ [u| km |]
 
 headers :: [String]
-headers = ["leg", "time", "lat", "lng", "tick", "distance"]
+headers = ["leg", "time", "lat", "lng", "tickLead", "tickRace", "distance"]
 
 driverMain :: IO ()
 driverMain = do
@@ -192,27 +196,41 @@ writePilotTimes compFile iTask (pilot, rows) = do
         dir = compFileToCompDir compFile
         (AlignDir dOut, AlignTimeFile f) = alignPath dir iTask pilot
 
-mkTimeRows :: Maybe UTCTime
+mkTimeRows :: Maybe FirstLead
+           -> Maybe FirstStart
            -> Leg
            -> Maybe [(Maybe Fix, Maybe (TaskDistance Double))]
            -> [TimeRow]
-mkTimeRows Nothing _ _ = []
-mkTimeRows _ _ Nothing = []
-mkTimeRows t0 leg (Just xs) = catMaybes $ mkTimeRow t0 leg <$> xs
+mkTimeRows _ _ _ Nothing = []
+mkTimeRows lead start leg (Just xs) =
+    catMaybes $ mkTimeRow lead start leg <$> xs
 
-mkTimeRow :: Maybe UTCTime
+mkTimeRow :: Maybe FirstLead
+          -> Maybe FirstStart
           -> Int
           -> (Maybe Fix, Maybe (TaskDistance Double))
           -> Maybe TimeRow
-mkTimeRow Nothing _ _ = Nothing
-mkTimeRow _ _ (Nothing, _) = Nothing
-mkTimeRow _ _ (_, Nothing) = Nothing
-mkTimeRow (Just t0) leg (Just Fix{time, lat, lng}, Just d) =
+mkTimeRow Nothing _ _ _ = Nothing
+mkTimeRow _ _ _ (Nothing, _) = Nothing
+mkTimeRow _ _ _ (_, Nothing) = Nothing
+mkTimeRow lead start leg (Just Fix{time, lat, lng}, Just d) =
     Just
         TimeRow
             { leg = leg
+
+            , tickLead =
+                LeadTick
+                . realToFrac
+                . (\(FirstLead l) -> time `diffUTCTime` l)
+                <$> lead
+
+            , tickRace =
+                RaceTick
+                . realToFrac
+                . (\(FirstStart s) -> time `diffUTCTime` s)
+                <$> start
+
             , time = time
-            , tick = RaceTick $ realToFrac $ time `diffUTCTime` t0
             , lat = lat
             , lng = lng
             , distance = unTaskDistance d
@@ -239,7 +257,8 @@ group
                 ( (maybe zs (\z -> zs ++ [z]))
                 . (\f ->
                     mkTimeRow
-                        t0
+                        firstLead'
+                        firstStart'
                         end
                         (Just f, Just $ TaskDistance [u| 0m |]))
                 )
@@ -256,7 +275,14 @@ group
                         , uncut = mf
                         }
 
-                t0 = firstStart ss $ zonesFirst times
+                firstTimes = zonesFirst times
+
+                firstLead' = firstLead ss firstTimes
+
+                firstStart' =
+                    join
+                    $ (\OpenClose{open} -> firstStart ss open firstTimes)
+                    <$> (openClose ss (zoneTimes task))
 
                 xs :: [MarkedFixes]
                 xs = groupByLeg span zoneToCyl task flyFixes
@@ -301,15 +327,21 @@ allLegDistances
     -> Leg
     -> FlyCut UTCTime MarkedFixes
     -> [TimeRow]
-allLegDistances ticked times task@Task{speedSection} leg xs =
-    mkTimeRows t0 leg xs'
+allLegDistances ticked times task@Task{speedSection, zoneTimes} leg xs =
+    mkTimeRows lead start leg xs'
     where
         sliver = Mask.Sliver span dpp cseg cs angleCut
         xs' = dashDistancesToGoal ticked sliver zoneToCyl task xs
-        t0 = firstStart speedSection ts
         ts = zonesFirst times
         dpp = distancePointToPoint
         cseg = costSegment span
+
+        lead = firstLead speedSection ts
+
+        start =
+            join
+            $ (\OpenClose{open} -> firstStart speedSection open ts)
+            <$> (openClose speedSection zoneTimes)
 
 legDistances
     :: Bool -- ^ Exclude zones outside speed section

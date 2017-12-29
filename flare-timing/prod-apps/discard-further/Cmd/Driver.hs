@@ -35,6 +35,7 @@ import Flight.Cmd.Paths (checkPaths)
 import Flight.Cmd.Options (CmdOptions(..), ProgramName(..), mkOptions)
 import Cmd.Options (description)
 
+import qualified Flight.Comp as Cmp (openClose)
 import Flight.Comp
     ( DiscardDir(..)
     , AlignDir(..)
@@ -48,8 +49,12 @@ import Flight.Comp
     , Pilot(..)
     , TrackFileFail
     , IxTask(..)
-    , StartEnd
+    , StartEnd(..)
+    , StartEndMark
     , RouteLookup(..)
+    , FirstLead(..)
+    , FirstStart(..)
+    , LastArrival(..)
     , compFileToCompDir
     , compToTaskLength
     , compToCross
@@ -57,9 +62,8 @@ import Flight.Comp
     , discardDir
     , alignPath
     , findCompInput
-    , openClose
     )
-import Flight.Track.Time (TickArrival(..), TickRace(..), discard)
+import Flight.Track.Time (LeadClose(..), LeadArrival(..), discard)
 import Flight.Track.Mask (RaceTime(..), racing)
 import Flight.Units ()
 import Flight.Mask (checkTracks)
@@ -70,7 +74,7 @@ import Flight.Lookup.Tag (TaskTimeLookup(..), tagTaskTime)
 import Data.Aeson.ViaScientific (ViaScientific(..))
 
 headers :: [String]
-headers = ["tick", "distance", "areaStep"]
+headers = ["leg", "tickLead", "tickRace", "distance", "area"]
 
 driverMain :: IO ()
 driverMain = do
@@ -147,19 +151,30 @@ filterTime
 
             let iTasks = IxTask <$> [1 .. length taskPilots]
 
-            let raceStartEnd :: [Maybe StartEnd] =
+            let raceStartEnd :: [Maybe StartEndMark] =
                     join <$>
                     [ ($ s) . ($ i) <$> lookupTaskTime
                     | i <- iTasks
                     | s <- speedSection <$> tasks
                     ]
 
+            let raceFirstLead :: [Maybe FirstLead] =
+                    (fmap . fmap) (FirstLead . unStart) raceStartEnd
+
+            let raceFirstStart :: [Maybe FirstStart] =
+                    (fmap . fmap) (FirstStart . unStart) raceStartEnd
+
+            let raceLastArrival :: [Maybe LastArrival] =
+                    join
+                    <$> (fmap . fmap) (fmap LastArrival . unEnd) raceStartEnd
+
             let raceTime :: [Maybe RaceTime] =
-                    join <$>
-                    [ racing (openClose ss zt) <$> se
+                    [ racing (Cmp.openClose ss zt) fl fs la
                     | ss <- speedSection <$> tasks
                     | zt <- zoneTimes <$> tasks
-                    | se <- raceStartEnd
+                    | fl <- raceFirstLead
+                    | fs <- raceFirstStart
+                    | la <- raceLastArrival
                     ]
 
             _ <- sequence $ zipWith3
@@ -210,16 +225,18 @@ readFilterWrite
     when (selectTask iTask) $ do
     _ <- createDirectoryIfMissing True dOut
     rows <- runExceptT $ readAlignTime (AlignTimeFile (dIn </> file))
-    either print (f . discard taskLength tickR tickA . snd) rows
+    either print (f . discard taskLength close arrival . snd) rows
     where
         f = writeDiscardFurther (DiscardFurtherFile $ dOut </> file) headers
         dir = compFileToCompDir compFile
         (AlignDir dIn, AlignTimeFile file) = alignPath dir i pilot
         (DiscardDir dOut) = discardDir dir i
         taskLength = join (($ iTask) <$> lookupTaskLength)
-        (tickR, tickA) =
-            (\RaceTime{tickArrival, tickRace = ViaScientific race} ->
-                (fmap . fmap)
-                (\(ViaScientific arrive) -> TickArrival arrive)
-                (TickRace race, tickArrival))
-            $ raceTime
+
+        close = do
+            ViaScientific c <- leadClose raceTime
+            return $ LeadClose c
+
+        arrival = do
+            ViaScientific a <- leadArrival raceTime
+            return $ LeadArrival a

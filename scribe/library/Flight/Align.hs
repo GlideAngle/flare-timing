@@ -18,7 +18,7 @@ import Data.Vector (Vector)
 import qualified Data.Vector as V (fromList, find)
 import System.FilePath ((</>))
 
-import Flight.Track.Time (RaceTick(..), TimeRow(..))
+import Flight.Track.Time (LeadTick(..), TimeRow(..))
 import Flight.Comp
     ( CompInputFile(..)
     , AlignTimeFile(..)
@@ -46,7 +46,7 @@ writeAlignTime (AlignTimeFile path) headers xs =
 readCompTimeRows
     :: CompInputFile
     -> (IxTask -> Bool)
-    -> [[(Pilot, RaceTick)]]
+    -> [[(Pilot, Maybe LeadTick)]]
     -> IO [[Maybe (Pilot, TimeRow)]]
 readCompTimeRows compFile includeTask pss =
     zipWithM
@@ -60,7 +60,7 @@ readCompTimeRows compFile includeTask pss =
 readTaskTimeRows
     :: CompInputFile
     -> IxTask
-    -> [(Pilot, RaceTick)]
+    -> [(Pilot, Maybe LeadTick)]
     -> IO [Maybe (Pilot, TimeRow)]
 readTaskTimeRows compFile i ps =
     mapM (uncurry $ readPilotTimeRow compFile i) ps
@@ -69,7 +69,7 @@ readPilotTimeRow
     :: CompInputFile
     -> IxTask
     -> Pilot
-    -> RaceTick
+    -> Maybe LeadTick
     -> IO (Maybe (Pilot, TimeRow))
 readPilotTimeRow compFile (IxTask iTask) pilot mark = do
     rows <-
@@ -78,7 +78,9 @@ readPilotTimeRow compFile (IxTask iTask) pilot mark = do
 
     return $ either
         (const Nothing) 
-        ((fmap . fmap) (pilot,) (V.find (\TimeRow{tick} -> mark == tick) . snd))
+        ((fmap . fmap)
+            (pilot,)
+            (V.find (\TimeRow{tickLead} -> mark == tickLead) . snd))
         rows
     where
         dir = compFileToCompDir compFile

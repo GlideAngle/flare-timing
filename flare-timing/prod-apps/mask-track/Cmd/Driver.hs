@@ -42,6 +42,7 @@ import System.FilePath (takeFileName)
 import qualified Data.Number.FixedFunctions as F
 import Data.Aeson.ViaScientific (ViaScientific(..))
 
+import qualified Flight.Comp as Cmp (openClose)
 import Flight.Comp
     ( CompInputFile(..)
     , TaskLengthFile(..)
@@ -54,12 +55,16 @@ import Flight.Comp
     , TrackFileFail(..)
     , FlyingSection
     , RouteLookup(..)
+    , FirstLead(..)
+    , FirstStart(..)
+    , LastArrival(..)
+    , StartEnd(..)
+    , StartEndMark
     , compToTaskLength
     , compToCross
     , compToMask
     , crossToTag
     , findCompInput
-    , openClose
     )
 import Flight.Track.Cross (TrackFlyingSection(..))
 import Flight.Track.Tag (Tagging)
@@ -86,7 +91,7 @@ import Flight.Track.Mask
     , racing
     )
 import Flight.Kml (MarkedFixes(..))
-import Flight.Track.Time (RaceTick(..))
+import Flight.Track.Time (LeadTick(..))
 import qualified Flight.Track.Time as Time (TimeRow(..), TickRow(..))
 import Flight.Zone (Zone, Bearing(..))
 import Flight.Zone.Raw (RawZone)
@@ -111,7 +116,6 @@ import Flight.Lookup.Tag
     , ArrivalRankLookup(..)
     , TimeLookup(..)
     , TickLookup(..)
-    , StartEnd
     , tagTaskTime
     , tagArrivalRank
     , tagPilotTime
@@ -303,19 +307,30 @@ writeMask
                     | pLs <- pilotsLandingOut
                     ]
 
-            let raceStartEnd :: [Maybe StartEnd] =
+            let raceStartEnd :: [Maybe StartEndMark] =
                     join <$>
                     [ ($ s) . ($ i) <$> lookupTaskTime
                     | i <- iTasks
                     | s <- speedSection <$> tasks
                     ]
 
+            let raceFirstLead :: [Maybe FirstLead] =
+                    (fmap . fmap) (FirstLead . unStart) raceStartEnd
+
+            let raceFirstStart :: [Maybe FirstStart] =
+                    (fmap . fmap) (FirstStart . unStart) raceStartEnd
+
+            let raceLastArrival :: [Maybe LastArrival] =
+                    join
+                    <$> (fmap . fmap) (fmap LastArrival . unEnd) raceStartEnd
+
             let raceTime :: [Maybe RaceTime] =
-                    join <$>
-                    [ racing (openClose ss zt) <$> se
+                    [ racing (Cmp.openClose ss zt) fl fs la
                     | ss <- speedSection <$> tasks
                     | zt <- zoneTimes <$> tasks
-                    | se <- raceStartEnd
+                    | fl <- raceFirstLead
+                    | fs <- raceFirstStart
+                    | la <- raceLastArrival
                     ]
 
             rowsLeadingStep :: [[(Pilot, [Time.TickRow])]]
@@ -377,9 +392,9 @@ writeMask
                         tsBest
                         dsMade
 
-            let rowTicks :: [[Maybe (Pilot, RaceTick)]] =
+            let rowTicks :: [[Maybe (Pilot, Maybe LeadTick)]] =
                     (fmap . fmap . fmap)
-                        (fmap (\Time.TickRow{tick} -> tick))
+                        (fmap (\Time.TickRow{tickLead} -> tickLead))
                         rows
 
             dsNighRows :: [[Maybe (Pilot, Time.TimeRow)]]
@@ -756,11 +771,11 @@ csegR = Rat.costSegment spanR
 csegF :: Zone Double -> Zone Double -> PathDistance Double
 csegF = Dbl.costSegment spanF
 
-diffTimeHours :: StartEnd -> Maybe PilotTime
-diffTimeHours (_, Nothing) =
+diffTimeHours :: StartEndMark -> Maybe PilotTime
+diffTimeHours StartEnd{unEnd = Nothing} =
     Nothing
-diffTimeHours (start, Just end) =
+diffTimeHours StartEnd{unStart, unEnd = Just end} =
     Just $ PilotTime hours
     where
-        secs = toRational $ diffUTCTime end start
+        secs = toRational $ diffUTCTime end unStart
         hours = secs * (1 Ratio.% 3600)

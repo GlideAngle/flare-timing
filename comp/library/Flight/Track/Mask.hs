@@ -29,7 +29,7 @@ import Data.Time.Clock (UTCTime, diffUTCTime)
 import Data.String (IsString())
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
-import Flight.Comp (OpenClose(..), StartEnd)
+import Flight.Comp (OpenClose(..), FirstLead(..), FirstStart(..), LastArrival(..))
 import Flight.Pilot (Pilot(..))
 import Flight.Route (TrackLine(..))
 import Flight.Score
@@ -89,37 +89,51 @@ data RaceTime =
         -- ^ The time of first allowed crossing of the start of the speed section.
         , closeTask :: UTCTime
         -- ^ The time of last allowed crossing of the end of the speed section.
-        , firstStart :: UTCTime
-        -- ^ The time of first crossing of the start of the speed section.
-        , lastArrival :: Maybe UTCTime
-        -- ^ The time of last crossing of the end of the speed section.
-        , tickArrival :: Maybe (ViaScientific EssTime)
-        -- ^ When the last pilot arrives at goal, seconds from the time of first start.
-        , tickRace :: ViaScientific EssTime
-        -- ^ When the task closes, seconds from the time of first start.
-        , tickTask :: ViaScientific EssTime
+        , firstLead :: Maybe FirstLead
+        , firstStart :: Maybe FirstStart
+        , lastArrival :: Maybe LastArrival
+        , leadArrival :: Maybe (ViaScientific EssTime)
+        -- ^ When the last pilot arrives at goal, seconds from the time of first lead.
+        , leadClose :: Maybe (ViaScientific EssTime)
+        -- ^ When the task closes, seconds from the time of first lead.
+        , tickClose :: Maybe (ViaScientific EssTime)
+        -- ^ When the task closes, seconds from the time of first race start.
+        , openClose :: ViaScientific EssTime
         -- ^ Seconds from open to close
         }
         deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
-racing :: Maybe OpenClose -> StartEnd -> Maybe RaceTime
-racing oc (s, e) = do
+racing
+    :: Maybe OpenClose
+    -> Maybe FirstLead
+    -> Maybe FirstStart
+    -> Maybe LastArrival
+    -> Maybe RaceTime
+racing oc firstLead firstStart lastArrival = do
     OpenClose{open, close} <- oc
     return
         RaceTime
             { openTask = open
             , closeTask = close
-            , firstStart = s
-            , lastArrival = e
-            , tickArrival =
-                ViaScientific . EssTime
-                <$> (\e' -> toRational $ e' `diffUTCTime` s) <$> e
-            , tickRace =
-                ViaScientific . EssTime . toRational
-                $ close `diffUTCTime` s
-            , tickTask =
-                ViaScientific . EssTime . toRational
-                $ close `diffUTCTime` open 
+            , firstLead = firstLead
+            , firstStart = firstStart
+            , lastArrival = lastArrival
+
+            , leadArrival = ViaScientific . EssTime . toRational <$> do
+                FirstLead lead <- firstLead
+                LastArrival end <- lastArrival
+                return $ end `diffUTCTime` lead
+                
+            , leadClose = ViaScientific . EssTime . toRational <$> do
+                FirstLead lead <- firstLead
+                return $ close `diffUTCTime` lead
+
+            , tickClose = ViaScientific . EssTime . toRational <$> do
+                FirstStart start <- firstStart
+                return $ close `diffUTCTime` start
+
+            , openClose = ViaScientific . EssTime . toRational $
+                close `diffUTCTime` open 
             }
 
 -- ^ If arrived at goal then speed fraction.
