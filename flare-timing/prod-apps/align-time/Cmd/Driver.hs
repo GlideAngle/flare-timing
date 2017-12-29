@@ -61,7 +61,7 @@ import Flight.Units ()
 import qualified Flight.Mask as Mask (Sliver(..))
 import Flight.Mask
     ( FnIxTask, TaskZone, RaceSections(..), FlyCut(..), Ticked
-    , checkTracks, groupByLeg, dashDistancesToGoal, zoneToCylinder, slice
+    , checkTracks, groupByLeg, dashDistancesToGoal, zoneToCylinder
     )
 import Flight.Track.Cross (Fix(..), TrackFlyingSection(..))
 import Flight.Zone (Bearing(..))
@@ -125,7 +125,7 @@ go CmdOptions{..} compFile@(CompInputFile compPath) = do
     case (crossing, tagging) of
         (Left msg, _) -> putStrLn msg
         (_, Left msg) -> putStrLn msg
-        (Right _, Right t) -> (f . checkAll flyingLookup) t
+        (Right _, Right t) -> (f . checkAll speedSectionOnly flyingLookup) t
 
     where
         f = writeTime (IxTask <$> task) (Pilot <$> pilot) (CompInputFile compPath)
@@ -161,22 +161,24 @@ writeTime selectTasks selectPilots compFile f = do
 
             return ()
 
-checkAll :: FlyingLookup
-         -> Tagging
-         -> CompInputFile
-         -> [IxTask]
-         -> [Pilot]
-         -> ExceptT
-             String
-             IO
-             [
-                 [Either
-                     (Pilot, TrackFileFail)
-                     (Pilot, Pilot -> [TimeRow])
-                 ]
+checkAll
+    :: Bool -- ^ Exclude zones outside speed section
+    -> FlyingLookup
+    -> Tagging
+    -> CompInputFile
+    -> [IxTask]
+    -> [Pilot]
+    -> ExceptT
+         String
+         IO
+         [
+             [Either
+                 (Pilot, TrackFileFail)
+                 (Pilot, Pilot -> [TimeRow])
              ]
-checkAll flyingLookup tagging =
-    checkTracks $ (\CompSettings{tasks} -> group flyingLookup tagging tasks)
+         ]
+checkAll ssOnly flyingLookup tagging =
+    checkTracks $ (\CompSettings{tasks} -> group ssOnly flyingLookup tagging tasks)
 
 includeTask :: [IxTask] -> IxTask -> Bool
 includeTask tasks = if null tasks then const True else (`elem` tasks)
@@ -216,8 +218,13 @@ mkTimeRow (Just t0) leg (Just Fix{time, lat, lng}, Just d) =
             , distance = unTaskDistance d
             }
 
-group :: FlyingLookup -> Tagging -> FnIxTask (Pilot -> [TimeRow])
 group
+    :: Bool -- ^ Exclude zones outside speed section
+    -> FlyingLookup
+    -> Tagging
+    -> FnIxTask (Pilot -> [TimeRow])
+group
+    ssOnly
     (FlyingLookup lookupFlying)
     tags@Tagging{timing}
     tasks iTask@(IxTask i)
@@ -275,7 +282,7 @@ group
                     concat $ zipWith
                         (\j x ->
                             let ticked' = retick ticked start j
-                            in legDistances ticked' times task j x)
+                            in legDistances ssOnly ticked' times task j x)
                         [0 .. ]
                         ys
     where
@@ -287,28 +294,44 @@ retick :: Ticked -> Int -> Int -> Ticked
 retick rs@RaceSections{race} start leg =
     rs { race = take (leg - start + 1) race }
 
-legDistances
+allLegDistances
     :: Ticked
     -> TrackTime
     -> Task
     -> Leg
     -> FlyCut UTCTime MarkedFixes
     -> [TimeRow]
-legDistances ticked times task@Task{speedSection} leg xs =
-    case speedSection of
-        Nothing -> []
-        (Just (start, end)) ->
-            if leg' < start || leg' > end then [] else
-            mkTimeRows t0 leg xs'
-            where
-                sliver = Mask.Sliver span dpp cseg cs angleCut
-                xs' = dashDistancesToGoal ticked sliver zoneToCyl task xs
-                t0 = firstStart speedSection ts
-                ts = zonesFirst times
+allLegDistances ticked times task@Task{speedSection} leg xs =
+    mkTimeRows t0 leg xs'
     where
-        leg' = fromIntegral leg
+        sliver = Mask.Sliver span dpp cseg cs angleCut
+        xs' = dashDistancesToGoal ticked sliver zoneToCyl task xs
+        t0 = firstStart speedSection ts
+        ts = zonesFirst times
         dpp = distancePointToPoint
         cseg = costSegment span
+
+legDistances
+    :: Bool -- ^ Exclude zones outside speed section
+    -> Ticked
+    -> TrackTime
+    -> Task
+    -> Leg
+    -> FlyCut UTCTime MarkedFixes
+    -> [TimeRow]
+legDistances False ticked times task leg xs=
+    allLegDistances ticked times task leg xs
+
+legDistances True ticked times task@Task{speedSection} leg xs =
+    if excludeLeg then [] else allLegDistances ticked times task leg xs
+    where
+        leg' = fromIntegral leg
+
+        excludeLeg =
+            maybe
+                False
+                (\(start, end) -> leg' < start || leg' > end)
+                speedSection
 
 zoneToCyl :: RawZone -> TaskZone Double
 zoneToCyl = zoneToCylinder

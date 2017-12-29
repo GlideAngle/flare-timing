@@ -41,6 +41,8 @@ data CmdOptions
                  -- ^ Look only at these pilots
                  , math :: Math
                  -- ^ The kind of numbers to do math with?
+                 , speedSectionOnly :: Bool
+                 -- ^ Exclude legs outside of the speed section?
                  }
                  deriving (Data, Typeable, Show)
 
@@ -76,6 +78,10 @@ mkOptions (ProgramName programName) (Description description) ext =
         &= typ "rational|floating"
         &= opt "name"
         &= groupname "Precision"
+
+        , speedSectionOnly = def
+        &= help "Exclude legs outside of the speed section?"
+        &= groupname "Filter"
 
         }
         &= summary description
