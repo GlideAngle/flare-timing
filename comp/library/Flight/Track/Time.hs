@@ -235,22 +235,16 @@ leadingArea Nothing _ _ xs = xs
 leadingArea
     (Just (TaskDistance (MkQuantity d)))
     close@(Just (LeadClose (EssTime tt))) arrival rows =
-    if length rows /= length xs then rows else xs
+    [ r{area = ViaScientific step}
+    | r <- rows
+    | step <- steps
+    ]
     where
-        -- TODO: Calculate the task deadline.
         steps =
             areaSteps
-                deadline
+                (TaskDeadline tt)
                 (LengthOfSs $ toRational d)
                 (toLcTrack close arrival rows)
-
-        xs =
-            [ r{area = ViaScientific step}
-            | r <- rows
-            | step <- steps
-            ]
-
-        deadline = TaskDeadline tt
 
 toLcPoint :: TickRow -> Maybe (TaskTime, DistanceToEss)
 toLcPoint TickRow{tickLead = Nothing} = Nothing
@@ -258,10 +252,10 @@ toLcPoint TickRow{tickLead = Just (LeadTick t), distance} =
     Just (TaskTime $ toRational t, DistanceToEss $ toRational distance)
 
 -- | The time of last arrival at goal, in seconds from first lead.
-newtype LeadArrival = LeadArrival EssTime
+newtype LeadArrival = LeadArrival EssTime deriving Show
 
 -- | The time the task closes, in seconds from first lead.
-newtype LeadClose = LeadClose EssTime
+newtype LeadClose = LeadClose EssTime deriving Show
 
 toLcTrack
     :: Maybe LeadClose

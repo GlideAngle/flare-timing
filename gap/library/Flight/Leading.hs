@@ -146,21 +146,25 @@ areaSteps deadline@(TaskDeadline dl) len@(LengthOfSs len') track@(LcTrack xs')
     | otherwise =
         LeadingAreaStep . (* areaScaling len) <$> steps
         where
-            zero :: (TaskTime, DistanceToEss)
-            zero = (TaskTime 0, DistanceToEss len')
-
             withinDeadline :: LcTrack
             withinDeadline = clampToEss . clampToDeadline deadline $ track
 
             ys :: [(TaskTime, DistanceToEss)]
             ys = (\(LcTrack xs) -> xs) withinDeadline
 
+            ys' =
+                case ys of
+                    [] -> []
+                    (y : _) -> y : ys
+
             f :: (TaskTime, DistanceToEss) -> (TaskTime, DistanceToEss) -> Rational
-            f (TaskTime _, DistanceToEss dM) (TaskTime tN, DistanceToEss dN) =
-                tN * dM * dM - dN * dN
+            f (TaskTime tM, DistanceToEss dM) (TaskTime tN, DistanceToEss dN)
+                | tM == tN = 0
+                | tN < 0 = 0
+                | otherwise = tN * dM * dM - dN * dN
 
             steps :: [Rational]
-            steps = zipWith f (zero : ys) ys
+            steps = zipWith f ys' ys
 
 clampToDeadline :: TaskDeadline -> LcTrack -> LcTrack
 clampToDeadline (TaskDeadline deadline) (LcTrack xsTrack) =
