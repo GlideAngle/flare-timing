@@ -24,6 +24,7 @@ module Flight.Leading
     , clampToEss
     , clampToDeadline
     , leadingFraction
+    , showSecs
     ) where
 
 import Control.Newtype (Newtype(..))
@@ -40,11 +41,20 @@ import Data.Aeson.ViaScientific
 
 -- | Time in seconds from the moment the first pilot crossed the start of the speed
 -- section.
-newtype TaskTime = TaskTime Rational deriving (Eq, Ord, Show)
+newtype TaskTime = TaskTime Rational deriving (Eq, Ord)
+
+instance Show TaskTime where
+    show (TaskTime t) = showSecs t
 
 -- | Task time when the last pilot made the end of the speed section.
 newtype EssTime = EssTime Rational
-    deriving (Eq, Ord, Show, ToJSON, FromJSON)
+    deriving (Eq, Ord, ToJSON, FromJSON)
+
+instance Show EssTime where
+    show (EssTime t) = showSecs t
+
+showSecs :: Rational -> String
+showSecs t = show ((truncate . fromRational $ t) :: Int) ++ "s"
 
 instance DefaultDecimalPlaces EssTime where
     defdp _ = DecimalPlaces 3
@@ -58,7 +68,10 @@ instance Newtype EssTime Rational where
 newtype TaskDeadline = TaskDeadline Rational deriving (Eq, Ord, Show)
 
 -- | The distance in km to the end of the speed section.
-newtype DistanceToEss = DistanceToEss Rational deriving (Eq, Ord, Show)
+newtype DistanceToEss = DistanceToEss Rational deriving (Eq, Ord)
+
+instance Show DistanceToEss where
+    show (DistanceToEss d) = show (fromRational d :: Double) ++ "km"
 
 -- | The length of the speed section in km.
 newtype LengthOfSs = LengthOfSs Rational deriving (Eq, Ord, Show)

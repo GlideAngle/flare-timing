@@ -72,16 +72,22 @@ import Flight.Score
     , areaSteps
     )
 import Flight.Distance (TaskDistance(..))
-import Flight.Score (EssTime(..))
+import Flight.Score (EssTime(..), showSecs)
 import Flight.Comp (SpeedSection)
 
 -- | Seconds from first speed zone crossing irrespective of start time.
 newtype LeadTick = LeadTick Double
-    deriving (Eq, Ord, Num, Show, Generic, ToJSON, FromJSON, ToField, FromField)
+    deriving (Eq, Ord, Num, Generic, ToJSON, FromJSON, ToField, FromField)
+
+instance Show LeadTick where
+    show (LeadTick t) = showSecs . toRational $ t
 
 -- | Seconds from first speed zone crossing made at or after the start time.
 newtype RaceTick = RaceTick Double
-    deriving (Eq, Ord, Num, Show, Generic, ToJSON, FromJSON, ToField, FromField)
+    deriving (Eq, Ord, Num, Generic, ToJSON, FromJSON, ToField, FromField)
+
+instance Show RaceTick where
+    show (RaceTick t) = showSecs . toRational $ t
 
 newtype LeadingDistance = LeadingDistance (Quantity Double [u| km |])
 
@@ -252,10 +258,16 @@ toLcPoint TickRow{tickLead = Just (LeadTick t), distance} =
     Just (TaskTime $ toRational t, DistanceToEss $ toRational distance)
 
 -- | The time of last arrival at goal, in seconds from first lead.
-newtype LeadArrival = LeadArrival EssTime deriving Show
+newtype LeadArrival = LeadArrival EssTime
+
+instance Show LeadArrival where
+    show (LeadArrival (EssTime t)) = show (fromRational t :: Double)
 
 -- | The time the task closes, in seconds from first lead.
-newtype LeadClose = LeadClose EssTime deriving Show
+newtype LeadClose = LeadClose EssTime
+
+instance Show LeadClose where
+    show (LeadClose (EssTime t)) = show (fromRational t :: Double)
 
 toLcTrack
     :: Maybe LeadClose
@@ -277,34 +289,37 @@ toLcTrackRev Nothing _ _ = []
 toLcTrackRev _ _ [] = []
 
 toLcTrackRev
-    (Just (LeadClose (EssTime tr')))
+    (Just (LeadClose close))
     Nothing
     xs@(TickRow{tickLead, distance} : _) =
         -- NOTE: Everyone has landed out.
-        catMaybes $
-        case tickLead of
-            Nothing -> toLcPoint <$> xs
-            (Just (LeadTick t)) -> (Just $ y t) : (toLcPoint <$> xs)
+        catMaybes $ Just y : (toLcPoint <$> xs)
     where
-        y lead = landOutRow
-                (EssTime $ min tr' (toRational lead))
+        t' =
+            case tickLead of
+              Nothing -> close
+              (Just (LeadTick t)) -> EssTime $ toRational t
+
+        y = landOutRow
+                (min close t')
                 (DistanceToEss $ toRational distance)
 
 toLcTrackRev
-    (Just (LeadClose (EssTime tr')))
-    (Just (LeadArrival arrive@(EssTime ta')))
+    (Just (LeadClose close))
+    (Just (LeadArrival arrive))
     xs@(TickRow{tickLead, distance} : _) =
         -- NOTE: If distance <= 0 then goal was made.
         catMaybes $
-        if distance <= 0 then toLcPoint <$> xs else
-        case tickLead of
-            Nothing -> toLcPoint <$> xs
-            (Just (LeadTick t)) -> (Just $ y t) : (toLcPoint <$> xs)
+        if distance <= 0 then toLcPoint <$> xs
+                         else Just y : (toLcPoint <$> xs)
     where
-        ta = fromRational ta'
+        t' =
+            case tickLead of
+              Nothing -> arrive
+              (Just (LeadTick t)) -> EssTime $ toRational t
 
-        y lead = landOutRow
-                (if lead < ta then arrive else EssTime $ min tr' (toRational lead))
+        y = landOutRow
+                (min close . max arrive $ t')
                 (DistanceToEss $ toRational distance)
 
 landOutRow :: EssTime -> DistanceToEss -> (TaskTime, DistanceToEss)

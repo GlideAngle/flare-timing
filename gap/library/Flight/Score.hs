@@ -85,6 +85,7 @@ module Flight.Score
     , leadingCoefficient
     , madeGoal
     , cleanTrack
+    , showSecs
     -- * Tallying points 
     , LaunchToSssPoints(..)
     , MinimumDistancePoints(..)
