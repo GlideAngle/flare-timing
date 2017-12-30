@@ -40,7 +40,8 @@ module Flight.Track.Time
     , discard
     ) where
 
-import Data.Maybe (fromMaybe, catMaybes)
+import Prelude hiding (seq)
+import Data.Maybe (fromMaybe, catMaybes, maybeToList, listToMaybe)
 import Data.Csv
     ( ToNamedRecord(..), FromNamedRecord(..)
     , ToField(..), FromField(..)
@@ -66,7 +67,8 @@ import Flight.Score
     , LeadingCoefficient(..)
     , TaskTime(..)
     , DistanceToEss(..)
-    , LcTrack(..)
+    , LcSeq(..)
+    , LcTrack
     , LengthOfSs(..)
     , TaskDeadline(..)
     , areaSteps
@@ -243,14 +245,22 @@ leadingArea
     close@(Just (LeadClose (EssTime tt))) arrival rows =
     [ r{area = ViaScientific step}
     | r <- rows
-    | step <- steps
+    | step <- seq
     ]
+    ++ extraRow
     where
-        steps =
+        lastRow = listToMaybe . take 1 . reverse $ rows
+
+        LcSeq{seq, extra} =
             areaSteps
                 (TaskDeadline tt)
                 (LengthOfSs $ toRational d)
                 (toLcTrack close arrival rows)
+
+        extraRow = maybeToList $ do
+            lr <- lastRow
+            e <- extra
+            return $ lr{area = ViaScientific e}
 
 toLcPoint :: TickRow -> Maybe (TaskTime, DistanceToEss)
 toLcPoint TickRow{tickLead = Nothing} = Nothing
@@ -275,25 +285,30 @@ toLcTrack
     -> [TickRow]
     -> LcTrack
 toLcTrack tr ta xs =
-    LcTrack . reverse . toLcTrackRev tr ta $ reverse xs
+    x{seq = reverse seq}
+    where
+        x@LcSeq{seq} = toLcTrackRev tr ta $ reverse xs
 
 toLcTrackRev
     :: Maybe LeadClose
     -> Maybe LeadArrival
     -> [TickRow]
-    -> [(TaskTime, DistanceToEss)]
+    -> LcTrack
 
 -- NOTE: Everyone has bombed and no one has lead out from the start.
-toLcTrackRev Nothing _ _ = []
+toLcTrackRev Nothing _ _ = LcSeq{seq = [], extra = Nothing}
 
-toLcTrackRev _ _ [] = []
+toLcTrackRev _ _ [] = LcSeq{seq = [], extra = Nothing}
 
 toLcTrackRev
     (Just (LeadClose close))
     Nothing
     xs@(TickRow{tickLead, distance} : _) =
         -- NOTE: Everyone has landed out.
-        catMaybes $ Just y : (toLcPoint <$> xs)
+        LcSeq
+            { seq = catMaybes $ Just y : (toLcPoint <$> xs)
+            , extra = Nothing
+            }
     where
         t' =
             case tickLead of
@@ -309,10 +324,12 @@ toLcTrackRev
     (Just (LeadArrival arrive))
     xs@(TickRow{tickLead, distance} : _) =
         -- NOTE: If distance <= 0 then goal was made.
-        catMaybes $
-        if distance <= 0 then toLcPoint <$> xs
-                         else Just y : (toLcPoint <$> xs)
+        if distance <= 0
+            then LcSeq{seq = xs', extra = Nothing}
+            else LcSeq{seq = xs', extra = Just y}
     where
+        xs' = catMaybes $ toLcPoint <$> xs
+
         t' =
             case tickLead of
               Nothing -> arrive

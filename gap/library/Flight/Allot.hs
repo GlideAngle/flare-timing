@@ -35,10 +35,7 @@ import Data.Maybe (fromMaybe)
 import qualified Data.Map.Strict as Map
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import Flight.Ratio (pattern (:%))
-import Data.Aeson.ViaScientific
-    ( DefaultDecimalPlaces(..), DecimalPlaces(..)
-    , fromSci, toSci, showSci
-    )
+import Data.Aeson.ViaScientific (DefaultDecimalPlaces(..), DecimalPlaces(..))
 
 -- | The number of pilots completing the speed section of the task.
 newtype PilotsAtEss = PilotsAtEss Integer

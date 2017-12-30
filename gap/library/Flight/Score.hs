@@ -69,7 +69,9 @@ module Flight.Score
     -- * Fractional allotment of leading points 
     , TaskTime(..)
     , DistanceToEss(..)
-    , LcTrack(..)
+    , LcSeq(..)
+    , LcTrack
+    , LcArea
     , TaskDeadline(..)
     , LengthOfSs(..)
     , LeadingAreaStep(..)

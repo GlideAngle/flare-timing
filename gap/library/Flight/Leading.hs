@@ -4,11 +4,14 @@
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE NamedFieldPuns #-}
 
 module Flight.Leading
     ( TaskTime(..)
     , DistanceToEss(..)
-    , LcTrack(..)
+    , LcSeq(..)
+    , LcTrack
+    , LcArea
     , TaskDeadline(..)
     , LengthOfSs(..)
     , LeadingAreaStep(..)
@@ -27,6 +30,7 @@ module Flight.Leading
     , showSecs
     ) where
 
+import Prelude hiding (seq)
 import Control.Newtype (Newtype(..))
 import Control.Arrow (second)
 import Data.Ratio ((%))
@@ -34,10 +38,7 @@ import Flight.Ratio (pattern (:%))
 import Data.List (partition, sortBy)
 import Data.Maybe (catMaybes)
 import Data.Aeson (ToJSON(..), FromJSON(..))
-import Data.Aeson.ViaScientific
-    ( DefaultDecimalPlaces(..), DecimalPlaces(..)
-    , fromSci, toSci, showSci
-    )
+import Data.Aeson.ViaScientific (DefaultDecimalPlaces(..), DecimalPlaces(..))
 
 -- | Time in seconds from the moment the first pilot crossed the start of the speed
 -- section.
@@ -54,7 +55,14 @@ instance Show EssTime where
     show (EssTime t) = showSecs t
 
 showSecs :: Rational -> String
-showSecs t = show ((truncate . fromRational $ t) :: Int) ++ "s"
+showSecs t =
+    show i ++ "s"
+    where
+        d :: Double
+        d = fromRational t
+
+        i :: Int
+        i = truncate d
 
 instance DefaultDecimalPlaces EssTime where
     defdp _ = DecimalPlaces 3
@@ -96,9 +104,20 @@ instance Newtype LeadingCoefficient Rational where
     pack = LeadingCoefficient
     unpack (LeadingCoefficient a) = a
 
+type LcPoint = (TaskTime, DistanceToEss)
+
+data LcSeq a =
+    LcSeq
+        { seq :: [a]
+        , extra :: Maybe a
+        }
+        deriving (Eq, Ord, Show)
+
 -- | A pilot's track where points are task time paired with distance to the end
 -- of the speed section.
-newtype LcTrack = LcTrack [(TaskTime, DistanceToEss)] deriving (Eq, Ord, Show)
+type LcTrack = LcSeq LcPoint
+
+type LcArea = LcSeq LeadingAreaStep
 
 newtype LeadingFraction = LeadingFraction Rational
     deriving (Eq, Ord, Show, ToJSON, FromJSON)
@@ -111,32 +130,31 @@ instance Newtype LeadingFraction Rational where
     unpack (LeadingFraction a) = a
 
 madeGoal :: LcTrack -> Bool
-madeGoal (LcTrack xs) =
+madeGoal LcSeq{seq = xs} =
     any (\(DistanceToEss d) -> d <= 0) $ snd <$> xs
 
 -- | Removes points where the task time < 0.
 positiveTime :: LcTrack -> LcTrack
-positiveTime (LcTrack xs) =
-    LcTrack $ filter (\(TaskTime t, _) -> t > 0) xs
+positiveTime x@LcSeq{seq = xs} =
+    x{seq = filter (\(TaskTime t, _) -> t > 0) xs}
 
 -- | Removes points where the distance to ESS increases.
 towardsGoal :: LcTrack -> LcTrack
-towardsGoal (LcTrack xs)
-    | null xs =
-        LcTrack xs
+towardsGoal x@LcSeq{seq = xs}
+    | null xs = x
     | otherwise =
-        LcTrack $ catMaybes $ zipWith f (zero : xs) xs
+        x{seq = catMaybes $ zipWith f (zero : xs) xs}
         where
             (TaskTime tN, dist) = head xs
             zero = (TaskTime $ tN - (1 % 1), dist)
-            f (_, dM) x@(_, dN) = if dM < dN then Nothing else Just x
+            f (_, dM) n@(_, dN) = if dM < dN then Nothing else Just n
 
 -- | Removes initial points, those that are;
 -- * further from ESS than the course length
 -- * already past the end of the speed section.
 initialOffside :: LengthOfSs -> LcTrack -> LcTrack
-initialOffside (LengthOfSs len) (LcTrack xs) =
-    LcTrack $ dropWhile (\(_, DistanceToEss d) -> d > len || d < 0) xs
+initialOffside (LengthOfSs len) x@LcSeq{seq = xs} =
+    x{seq = dropWhile (\(_, DistanceToEss d) -> d > len || d < 0) xs}
 
 cleanTrack :: LengthOfSs -> LcTrack -> LcTrack
 cleanTrack len = towardsGoal . positiveTime . initialOffside len 
@@ -146,24 +164,39 @@ areaSteps
     :: TaskDeadline
     -> LengthOfSs
     -> LcTrack
-    -> [LeadingAreaStep]
-areaSteps _ (LengthOfSs (0 :% _)) (LcTrack xs) =
-    const (LeadingAreaStep $ 0 % 1) <$> xs
+    -> LcArea
+areaSteps _ (LengthOfSs (0 :% _)) LcSeq{seq = xs} =
+    LcSeq
+        { seq = const (LeadingAreaStep $ 0 % 1) <$> xs
+        , extra = Nothing
+        }
 
-areaSteps _ _ (LcTrack []) =
-    []
+areaSteps _ _ LcSeq{seq = []} =
+    LcSeq
+        { seq = []
+        , extra = Nothing
+        }
 
-areaSteps deadline@(TaskDeadline dl) len@(LengthOfSs len') track@(LcTrack xs')
+areaSteps
+    deadline@(TaskDeadline dl)
+    len
+    track@LcSeq{seq = xs', extra}
     | dl <= 1 =
-        const (LeadingAreaStep $ 0 % 1) <$> xs'
+        LcSeq
+            { seq = const (LeadingAreaStep $ 0 % 1) <$> xs'
+            , extra = Nothing
+            }
     | otherwise =
-        LeadingAreaStep . (* areaScaling len) <$> steps
+        LcSeq
+            { seq = LeadingAreaStep . (* areaScaling len) <$> steps
+            , extra = LeadingAreaStep . g <$> extra 
+            }
         where
             withinDeadline :: LcTrack
             withinDeadline = clampToEss . clampToDeadline deadline $ track
 
             ys :: [(TaskTime, DistanceToEss)]
-            ys = (\(LcTrack xs) -> xs) withinDeadline
+            ys = (\LcSeq{seq = xs} -> xs) withinDeadline
 
             ys' =
                 case ys of
@@ -174,20 +207,24 @@ areaSteps deadline@(TaskDeadline dl) len@(LengthOfSs len') track@(LcTrack xs')
             f (TaskTime tM, DistanceToEss dM) (TaskTime tN, DistanceToEss dN)
                 | tM == tN = 0
                 | tN < 0 = 0
-                | otherwise = tN * dM * dM - dN * dN
+                | otherwise = tN * (dM * dM - dN * dN)
+
+            g :: (TaskTime, DistanceToEss) -> Rational
+            g (TaskTime t, DistanceToEss d) =
+                t * d * d
 
             steps :: [Rational]
             steps = zipWith f ys' ys
 
 clampToDeadline :: TaskDeadline -> LcTrack -> LcTrack
-clampToDeadline (TaskDeadline deadline) (LcTrack xsTrack) =
-    LcTrack (clamp <$> xsTrack)
+clampToDeadline (TaskDeadline deadline) x@LcSeq{seq} =
+    x{seq = clamp <$> seq}
     where
         clamp (TaskTime t, dist) = (TaskTime $ min deadline t, dist)
 
 clampToEss :: LcTrack -> LcTrack
-clampToEss (LcTrack xsTrack) =
-    LcTrack (clamp <$> xsTrack)
+clampToEss x@LcSeq{seq} =
+    x{seq = clamp <$> seq}
     where
         clamp (t, DistanceToEss dist) = (t, DistanceToEss $ max 0 dist)
 
@@ -201,9 +238,10 @@ leadingCoefficient
     -> LengthOfSs
     -> LcTrack
     -> LeadingCoefficient
-leadingCoefficient deadline len track =
-    LeadingCoefficient . sum $ (\(LeadingAreaStep x) -> x)
-    <$> areaSteps deadline len track
+leadingCoefficient deadline len xs =
+    LeadingCoefficient . toRational . sum
+    $ (\(LeadingAreaStep x) -> x)
+    <$> seq (areaSteps deadline len xs)
 
 -- | Calculate the leading coefficient for all tracks.
 leadingCoefficients
@@ -229,7 +267,7 @@ leadingCoefficients deadline@(TaskDeadline maxTaskTime) len tracks =
         essTimes =
             catMaybes $ safeLast <$> xsMadeGoal
             where
-                safeLast (_, LcTrack xs) =
+                safeLast (_, LcSeq{seq = xs}) =
                     if null xs then Nothing else Just (fst $ last xs)
 
         (TaskTime essTime) =
@@ -237,7 +275,7 @@ leadingCoefficients deadline@(TaskDeadline maxTaskTime) len tracks =
 
         (xsEarly :: [(Int, LcTrack)], xsLate :: [(Int, LcTrack)]) =
             partition
-                (\(_, LcTrack xs) ->
+                (\(_, LcSeq{seq = xs}) ->
                     all (\(TaskTime t, _) -> t < essTime) xs)
                 xsLandedOut
 
@@ -248,7 +286,7 @@ leadingCoefficients deadline@(TaskDeadline maxTaskTime) len tracks =
         csMadeGoal = second lc <$> xsMadeGoal
 
         lcE :: LcTrack -> LeadingCoefficient
-        lcE track@(LcTrack xs) =
+        lcE track@LcSeq{seq = xs} =
             if null xs then LeadingCoefficient $ 0 % 1 else
             LeadingCoefficient $ a + b
             where
@@ -259,7 +297,7 @@ leadingCoefficients deadline@(TaskDeadline maxTaskTime) len tracks =
         csEarly = second lcE <$> xsEarly
 
         lcL :: LcTrack -> LeadingCoefficient
-        lcL track@(LcTrack xs) =
+        lcL track@LcSeq{seq = xs} =
             if null xs then LeadingCoefficient $ 0 % 1 else
             LeadingCoefficient $ a + b
             where
