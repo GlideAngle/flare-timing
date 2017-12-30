@@ -84,18 +84,18 @@ firstStart speedSection startTime times =
         f :: SpeedSection -> [Maybe UTCTime] -> Maybe FirstStart
         f _ [] = Nothing
         f Nothing (t : _) = FirstStart <$> t
-        f (Just (leg, _)) ts =
+        f (Just (firstRaceLeg, _)) ts =
             FirstStart <$>
-            case drop (leg - 1) ts of
+            case drop (firstRaceLeg - 1) ts of
                 [] -> Nothing
                 (t : _) -> t
 
 lastArrival :: SpeedSection -> [Maybe UTCTime] -> Maybe LastArrival
 lastArrival _ [] = Nothing
 lastArrival Nothing (t : _) = LastArrival <$> t
-lastArrival (Just (leg, _)) ts =
+lastArrival (Just (_, lastRaceLeg)) ts =
     LastArrival <$>
-    case drop (leg - 1) ts of
+    case reverse . drop (lastRaceLeg - 1) $ ts of
         [] -> Nothing
         (t : _) -> t
 
