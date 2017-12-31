@@ -25,7 +25,7 @@ With an FS comp file and related track logs as inputs, **score** the comp;
 3. Find pairs of fixes crossing over zones with [`cross-zone`](flare-timing/prod-apps/cross-zone).  
 4. Interpolate between crossing fixes for the time and place where a track tags a zone with [`tag-zone`](flare-timing/prod-apps/tag-zone).  
 5. Index fixes from the time of first crossing with [`align-time`](flare-timing/prod-apps/align-time).  
-6. Discard fixes that get further from goal with [`discard-further`](flare-timing/prod-apps/discard-further).  
-7. Find the leading area with [`leading-area`](flare-timing/prod-apps/leading-area).  
+6. Discard fixes that get further from goal and note leading area with [`discard-further`](flare-timing/prod-apps/discard-further).  
+7. Group and count land outs with [`land-out`](flare-timing/prod-apps/land-out).  
 8. Mask a task over its tracklogs with [`mask-track`](flare-timing/prod-apps/mask-track).  
 9. Score the competition with [`gap-point`](flare-timing/prod-apps/gap-point).  
