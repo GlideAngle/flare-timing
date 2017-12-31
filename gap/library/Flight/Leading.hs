@@ -9,6 +9,8 @@
 module Flight.Leading
     ( TaskTime(..)
     , DistanceToEss(..)
+    , Leg(..)
+    , LcPoint(..)
     , LcSeq(..)
     , LcTrack
     , LcArea
@@ -104,7 +106,21 @@ instance Newtype LeadingCoefficient Rational where
     pack = LeadingCoefficient
     unpack (LeadingCoefficient a) = a
 
-type LcPoint = (TaskTime, DistanceToEss)
+data Leg
+    = PrologLeg Int
+    | RaceLeg Int
+    | EpilogLeg Int
+    | CrossingLeg Int Int
+    | LandoutLeg Int
+    deriving (Eq, Ord, Show)
+
+data LcPoint =
+    LcPoint
+        { leg :: Leg
+        , mark :: TaskTime
+        , togo :: DistanceToEss
+        }
+        deriving (Eq, Ord, Show)
 
 data LcSeq a =
     LcSeq
@@ -131,12 +147,12 @@ instance Newtype LeadingFraction Rational where
 
 madeGoal :: LcTrack -> Bool
 madeGoal LcSeq{seq = xs} =
-    any (\(DistanceToEss d) -> d <= 0) $ snd <$> xs
+    any (\LcPoint{togo = DistanceToEss d} -> d <= 0) xs
 
 -- | Removes points where the task time < 0.
 positiveTime :: LcTrack -> LcTrack
 positiveTime x@LcSeq{seq = xs} =
-    x{seq = filter (\(TaskTime t, _) -> t > 0) xs}
+    x{seq = filter (\LcPoint{mark = TaskTime t} -> t > 0) xs}
 
 -- | Removes points where the distance to ESS increases.
 towardsGoal :: LcTrack -> LcTrack
@@ -145,16 +161,27 @@ towardsGoal x@LcSeq{seq = xs}
     | otherwise =
         x{seq = catMaybes $ zipWith f (zero : xs) xs}
         where
-            (TaskTime tN, dist) = head xs
-            zero = (TaskTime $ tN - (1 % 1), dist)
-            f (_, dM) n@(_, dN) = if dM < dN then Nothing else Just n
+            LcPoint{mark = TaskTime tN, togo = dist} = head xs
+            zero =
+                LcPoint
+                    { leg = PrologLeg 0
+                    , mark = TaskTime $ tN - (1 % 1)
+                    , togo = dist
+                    }
+
+            f LcPoint{togo = dM} n@LcPoint{togo = dN} =
+                if dM < dN then Nothing else Just n
 
 -- | Removes initial points, those that are;
 -- * further from ESS than the course length
 -- * already past the end of the speed section.
 initialOffside :: LengthOfSs -> LcTrack -> LcTrack
 initialOffside (LengthOfSs len) x@LcSeq{seq = xs} =
-    x{seq = dropWhile (\(_, DistanceToEss d) -> d > len || d < 0) xs}
+    x{seq = 
+        dropWhile
+            (\LcPoint{togo = DistanceToEss d} -> d > len || d < 0)
+            xs
+     }
 
 cleanTrack :: LengthOfSs -> LcTrack -> LcTrack
 cleanTrack len = towardsGoal . positiveTime . initialOffside len 
@@ -195,7 +222,7 @@ areaSteps
             withinDeadline :: LcTrack
             withinDeadline = clampToEss . clampToDeadline deadline $ track
 
-            ys :: [(TaskTime, DistanceToEss)]
+            ys :: [LcPoint]
             ys = (\LcSeq{seq = xs} -> xs) withinDeadline
 
             ys' =
@@ -203,30 +230,39 @@ areaSteps
                     [] -> []
                     (y : _) -> y : ys
 
-            f :: (TaskTime, DistanceToEss) -> (TaskTime, DistanceToEss) -> Rational
-            f (TaskTime tM, DistanceToEss dM) (TaskTime tN, DistanceToEss dN)
+            f :: LcPoint -> LcPoint -> Rational
+            f
+                LcPoint{mark = TaskTime tM, togo = DistanceToEss dM}
+                LcPoint{leg, mark = TaskTime tN, togo = DistanceToEss dN}
                 | tM == tN = 0
                 | tN < 0 = 0
+                | not (isRaceLeg leg) = 0
                 | otherwise = tN * (dM * dM - dN * dN)
 
-            g :: (TaskTime, DistanceToEss) -> Rational
-            g (TaskTime t, DistanceToEss d) =
+            g :: LcPoint -> Rational
+            g LcPoint{mark = TaskTime t, togo = DistanceToEss d} =
                 t * d * d
 
             steps :: [Rational]
             steps = zipWith f ys' ys
 
+isRaceLeg :: Leg -> Bool
+isRaceLeg (RaceLeg _) = True
+isRaceLeg _ = False
+
 clampToDeadline :: TaskDeadline -> LcTrack -> LcTrack
 clampToDeadline (TaskDeadline deadline) x@LcSeq{seq} =
     x{seq = clamp <$> seq}
     where
-        clamp (TaskTime t, dist) = (TaskTime $ min deadline t, dist)
+        clamp p@LcPoint{mark = TaskTime t} =
+            p{mark = TaskTime $ min deadline t}
 
 clampToEss :: LcTrack -> LcTrack
 clampToEss x@LcSeq{seq} =
     x{seq = clamp <$> seq}
     where
-        clamp (t, DistanceToEss dist) = (t, DistanceToEss $ max 0 dist)
+        clamp p@LcPoint{togo = DistanceToEss dist} =
+            p{togo = DistanceToEss $ max 0 dist}
 
 areaScaling :: LengthOfSs -> Rational
 areaScaling (LengthOfSs len) =
@@ -268,7 +304,7 @@ leadingCoefficients deadline@(TaskDeadline maxTaskTime) len tracks =
             catMaybes $ safeLast <$> xsMadeGoal
             where
                 safeLast (_, LcSeq{seq = xs}) =
-                    if null xs then Nothing else Just (fst $ last xs)
+                    if null xs then Nothing else Just (mark $ last xs)
 
         (TaskTime essTime) =
             if null essTimes then TaskTime maxTaskTime else maximum essTimes
@@ -276,7 +312,7 @@ leadingCoefficients deadline@(TaskDeadline maxTaskTime) len tracks =
         (xsEarly :: [(Int, LcTrack)], xsLate :: [(Int, LcTrack)]) =
             partition
                 (\(_, LcSeq{seq = xs}) ->
-                    all (\(TaskTime t, _) -> t < essTime) xs)
+                    all (\LcPoint{mark = TaskTime t} -> t < essTime) xs)
                 xsLandedOut
 
         lc :: LcTrack -> LeadingCoefficient
@@ -291,7 +327,9 @@ leadingCoefficients deadline@(TaskDeadline maxTaskTime) len tracks =
             LeadingCoefficient $ a + b
             where
                 (LeadingCoefficient a) = lc track
-                b = (\(_, DistanceToEss d) -> essTime * d * d) $ last xs
+                b =
+                    (\LcPoint{togo = DistanceToEss d} -> essTime * d * d)
+                    $ last xs
 
         csEarly :: [(Int, LeadingCoefficient)]
         csEarly = second lcE <$> xsEarly
@@ -302,7 +340,11 @@ leadingCoefficients deadline@(TaskDeadline maxTaskTime) len tracks =
             LeadingCoefficient $ a + b
             where
                 (LeadingCoefficient a) = lc track
-                b = (\(TaskTime t, DistanceToEss d) -> t * d * d) $ last xs
+                b =
+                    (\LcPoint{ mark = TaskTime t
+                             , togo = DistanceToEss d
+                             } -> t * d * d)
+                    $ last xs
 
         csLate :: [(Int, LeadingCoefficient)]
         csLate = second lcL <$> xsLate

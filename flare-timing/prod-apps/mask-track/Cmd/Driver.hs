@@ -65,6 +65,7 @@ import Flight.Comp
     , compToMask
     , crossToTag
     , findCompInput
+    , speedSectionToLeg
     )
 import Flight.Track.Cross (TrackFlyingSection(..))
 import Flight.Track.Tag (Tagging)
@@ -337,6 +338,7 @@ writeMask
                 <- readCompLeading
                         lengths compFile (includeTask selectTasks)
                         (IxTask <$> [1 .. ])
+                        (speedSectionToLeg . speedSection <$> tasks)
                         raceTime
                         pilots
 

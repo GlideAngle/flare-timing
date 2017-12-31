@@ -67,6 +67,8 @@ import Flight.Score
     , LeadingCoefficient(..)
     , TaskTime(..)
     , DistanceToEss(..)
+    , Leg(..)
+    , LcPoint(..)
     , LcSeq(..)
     , LcTrack
     , LengthOfSs(..)
@@ -227,20 +229,22 @@ leadingSum (Just _) (Just (start, _)) xs =
             <$> filter (\TickRow{leg} -> leg >= start) xs
 
 leadingArea
-    :: Maybe (TaskDistance Double)
+    :: (Int -> Leg)
+    -> Maybe (TaskDistance Double)
     -> Maybe LeadClose
     -> Maybe LeadArrival
     -> [TickRow]
     -> [TickRow]
 
-leadingArea _ _ _ [] = []
+leadingArea _ _ _ _ [] = []
 
 -- NOTE: Everyone has bombed and no one has lead out from the start.
-leadingArea _ Nothing _ _ = []
+leadingArea _ _ Nothing _ _ = []
 
-leadingArea Nothing _ _ xs = xs
+leadingArea _ Nothing _ _ xs = xs
 
 leadingArea
+    toLeg
     (Just (TaskDistance (MkQuantity d)))
     close@(Just (LeadClose (EssTime tt))) arrival rows =
     [ r{area = ViaScientific step}
@@ -255,17 +259,21 @@ leadingArea
             areaSteps
                 (TaskDeadline tt)
                 (LengthOfSs $ toRational d)
-                (toLcTrack close arrival rows)
+                (toLcTrack toLeg close arrival rows)
 
         extraRow = maybeToList $ do
             lr <- lastRow
             e <- extra
             return $ lr{area = ViaScientific e}
 
-toLcPoint :: TickRow -> Maybe (TaskTime, DistanceToEss)
-toLcPoint TickRow{tickLead = Nothing} = Nothing
-toLcPoint TickRow{tickLead = Just (LeadTick t), distance} =
-    Just (TaskTime $ toRational t, DistanceToEss $ toRational distance)
+toLcPoint :: (Int -> Leg) -> TickRow -> Maybe LcPoint
+toLcPoint _ TickRow{tickLead = Nothing} = Nothing
+toLcPoint toLeg TickRow{leg, tickLead = Just (LeadTick t), distance} =
+    Just $ LcPoint
+        { leg = toLeg leg
+        , mark = TaskTime $ toRational t
+        , togo = DistanceToEss $ toRational distance
+        }
 
 -- | The time of last arrival at goal, in seconds from first lead.
 newtype LeadArrival = LeadArrival EssTime
@@ -280,33 +288,36 @@ instance Show LeadClose where
     show (LeadClose (EssTime t)) = show (fromRational t :: Double)
 
 toLcTrack
-    :: Maybe LeadClose
+    :: (Int -> Leg)
+    -> Maybe LeadClose
     -> Maybe LeadArrival
     -> [TickRow]
     -> LcTrack
-toLcTrack tr ta xs =
+toLcTrack toLeg tr ta xs =
     x{seq = reverse seq}
     where
-        x@LcSeq{seq} = toLcTrackRev tr ta $ reverse xs
+        x@LcSeq{seq} = toLcTrackRev toLeg tr ta $ reverse xs
 
 toLcTrackRev
-    :: Maybe LeadClose
+    :: (Int -> Leg)
+    -> Maybe LeadClose
     -> Maybe LeadArrival
     -> [TickRow]
     -> LcTrack
 
 -- NOTE: Everyone has bombed and no one has lead out from the start.
-toLcTrackRev Nothing _ _ = LcSeq{seq = [], extra = Nothing}
+toLcTrackRev _ Nothing _ _ = LcSeq{seq = [], extra = Nothing}
 
-toLcTrackRev _ _ [] = LcSeq{seq = [], extra = Nothing}
+toLcTrackRev _ _ _ [] = LcSeq{seq = [], extra = Nothing}
 
 toLcTrackRev
+    toLeg
     (Just (LeadClose close))
     Nothing
     xs@(TickRow{tickLead, distance} : _) =
         -- NOTE: Everyone has landed out.
         LcSeq
-            { seq = catMaybes $ Just y : (toLcPoint <$> xs)
+            { seq = catMaybes $ Just y : (toLcPoint toLeg <$> xs)
             , extra = Nothing
             }
     where
@@ -320,6 +331,7 @@ toLcTrackRev
                 (DistanceToEss $ toRational distance)
 
 toLcTrackRev
+    toLeg
     (Just (LeadClose close))
     (Just (LeadArrival arrive))
     xs@(TickRow{tickLead, distance} : _) =
@@ -328,7 +340,7 @@ toLcTrackRev
             then LcSeq{seq = xs', extra = Nothing}
             else LcSeq{seq = xs', extra = Just y}
     where
-        xs' = catMaybes $ toLcPoint <$> xs
+        xs' = catMaybes $ toLcPoint toLeg <$> xs
 
         t' =
             case tickLead of
@@ -339,8 +351,9 @@ toLcTrackRev
                 (min close . max arrive $ t')
                 (DistanceToEss $ toRational distance)
 
-landOutRow :: EssTime -> DistanceToEss -> (TaskTime, DistanceToEss)
-landOutRow (EssTime t) d = (TaskTime t, d)
+landOutRow :: EssTime -> DistanceToEss -> LcPoint
+landOutRow (EssTime t) d =
+    LcPoint{leg = LandoutLeg 0, mark = TaskTime t, togo = d}
 
 taskToLeading :: TaskDistance Double -> LeadingDistance
 taskToLeading (TaskDistance d) =
@@ -359,14 +372,15 @@ timeToTick TimeRow{leg, tickLead, tickRace, distance} =
         }
 
 discard
-    :: Maybe (TaskDistance Double)
+    :: (Int -> Leg)
+    -> Maybe (TaskDistance Double)
     -> Maybe LeadClose
     -> Maybe LeadArrival
     -> Vector TimeRow
     -> Vector TickRow
-discard dRace close arrival xs =
+discard toLeg dRace close arrival xs =
     V.fromList
-    . leadingArea dRace close arrival
+    . leadingArea toLeg dRace close arrival
     . discardFurther
     . dropZeros
     . V.toList

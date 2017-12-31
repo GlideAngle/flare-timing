@@ -8,6 +8,7 @@ module Flight.Discard
     , readCompLeading
     ) where
 
+import Data.List (zipWith4)
 import Control.Monad.Except (ExceptT(..), runExceptT, lift)
 import Control.Monad (join, zipWithM)
 import qualified Data.ByteString.Lazy as BL
@@ -40,6 +41,7 @@ import Flight.Comp
     )
 import Data.Aeson.ViaScientific (ViaScientific(..))
 import Flight.Align (readAlignTime)
+import Flight.Score (Leg)
 
 readDiscardFurther :: DiscardFurtherFile -> ExceptT String IO (Header, Vector TickRow)
 readDiscardFurther (DiscardFurtherFile csvPath) = do
@@ -101,14 +103,16 @@ readCompLeading
     -> CompInputFile
     -> (IxTask -> Bool)
     -> [IxTask]
+    -> [(Int -> Leg)]
     -> [Maybe RaceTime]
     -> [[Pilot]]
     -> IO [[(Pilot, [TickRow])]]
-readCompLeading lengths compFile select tasks raceTimes pilots = do
+readCompLeading lengths compFile select tasks toLeg raceTimes pilots = do
     xs <-
-        sequence $ zipWith3
+        sequence $ zipWith4
             (readTaskLeading lengths compFile select)
             tasks
+            toLeg
             raceTimes
             pilots
     return xs
@@ -118,13 +122,14 @@ readTaskLeading
     -> CompInputFile
     -> (IxTask -> Bool)
     -> IxTask
+    -> (Int -> Leg)
     -> Maybe RaceTime
     -> [Pilot]
     -> IO [(Pilot, [TickRow])]
-readTaskLeading lengths compFile select iTask@(IxTask i) raceTime ps =
+readTaskLeading lengths compFile select iTask@(IxTask i) toLeg raceTime ps =
     if not (select iTask) then return [] else do
     _ <- createDirectoryIfMissing True dOut
-    xs <- mapM (readPilotLeading lengths compFile iTask raceTime) ps
+    xs <- mapM (readPilotLeading lengths compFile iTask toLeg raceTime) ps
     return $ zip ps xs
     where
         dir = compFileToCompDir compFile
@@ -134,20 +139,21 @@ readPilotLeading
     :: RouteLookup
     -> CompInputFile
     -> IxTask
+    -> (Int -> Leg)
     -> Maybe RaceTime
     -> Pilot
     -> IO [TickRow]
-readPilotLeading _ _ _ Nothing _ = return []
+readPilotLeading _ _ _ _ Nothing _ = return []
 readPilotLeading
     (RouteLookup lookupTaskLength)
-    compFile iTask@(IxTask i)
+    compFile iTask@(IxTask i) toLeg
     (Just raceTime)
     pilot = do
 
     rows <- runExceptT $ readAlignTime (AlignTimeFile (dIn </> file))
     return $ either
         (const [])
-        (V.toList . discard taskLength close arrival . snd)
+        (V.toList . discard toLeg taskLength close arrival . snd)
         rows
     where
         dir = compFileToCompDir compFile

@@ -3,6 +3,7 @@
 {-# LANGUAGE ConstrainedClassMethods #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE MultiWayIf #-}
 
 {-|
 Module      : Data.Flight.Comp
@@ -33,6 +34,7 @@ module Flight.Comp
     , RouteLookup(..)
     , showTask
     , openClose
+    , speedSectionToLeg
     -- * Pilot and their track logs.
     , Pilot(..)
     , PilotTrackLogFile(..)
@@ -56,6 +58,7 @@ import Flight.Field (FieldOrdering(..))
 import Flight.Pilot
 import Flight.Path
 import Flight.Distance (TaskDistance(..))
+import Flight.Score (Leg(..))
 
 -- | The time of first lead into the speed section. This won't exist if no one
 -- is able to cross the start of the speed section without bombing out.
@@ -86,6 +89,13 @@ newtype IxTask = IxTask Int deriving (Eq, Show)
 
 -- | A 1-based index into the list of control zones marking the speed section.
 type SpeedSection = Maybe (Int, Int)
+
+speedSectionToLeg :: SpeedSection -> Int -> Leg
+speedSectionToLeg Nothing i = RaceLeg i
+speedSectionToLeg (Just (s, e)) i =
+    if | i < s -> PrologLeg i
+       | i > e -> EpilogLeg i
+       | True -> RaceLeg i
 
 -- | A pair into the list of fixes marking those deemed logged while flying.
 -- These could be indices, seconds offsets or UTC times.

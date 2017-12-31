@@ -21,6 +21,7 @@
 
 module Cmd.Driver (driverMain) where
 
+import Data.List (zipWith4)
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
 import Formatting ((%), fprint)
@@ -62,6 +63,7 @@ import Flight.Comp
     , discardDir
     , alignPath
     , findCompInput
+    , speedSectionToLeg
     )
 import Flight.Track.Time (LeadClose(..), LeadArrival(..), discard)
 import Flight.Track.Mask (RaceTime(..), racing)
@@ -72,6 +74,7 @@ import Flight.Scribe
 import Flight.Lookup.Route (routeLength)
 import Flight.Lookup.Tag (TaskTimeLookup(..), tagTaskTime)
 import Data.Aeson.ViaScientific (ViaScientific(..))
+import Flight.Score (Leg(..))
 
 headers :: [String]
 headers = ["leg", "tickLead", "tickRace", "distance", "area"]
@@ -177,17 +180,19 @@ filterTime
                     | la <- raceLastArrival
                     ]
 
-            _ <- sequence $ zipWith3
-                (\ n rt pilots ->
+            _ <- sequence $ zipWith4
+                (\ n toLeg rt pilots ->
                         mapM_
                         (readFilterWrite
                             lengths
                             compFile
                             (includeTask selectTasks)
                             n
+                            toLeg
                             rt)
                         pilots)
                 (IxTask <$> [1 .. ])
+                (speedSectionToLeg . speedSection <$> tasks)
                 raceTime
                 taskPilots
 
@@ -213,19 +218,20 @@ readFilterWrite
     -> CompInputFile
     -> (IxTask -> Bool)
     -> IxTask
+    -> (Int -> Leg)
     -> Maybe RaceTime
     -> Pilot
     -> IO ()
-readFilterWrite _ _ _ _ Nothing _ = return ()
+readFilterWrite _ _ _ _ _ Nothing _ = return ()
 readFilterWrite
     (RouteLookup lookupTaskLength)
     compFile
     selectTask
-    iTask@(IxTask i) (Just raceTime) pilot =
+    iTask@(IxTask i) toLeg (Just raceTime) pilot =
     when (selectTask iTask) $ do
     _ <- createDirectoryIfMissing True dOut
     rows <- runExceptT $ readAlignTime (AlignTimeFile (dIn </> file))
-    either print (f . discard taskLength close arrival . snd) rows
+    either print (f . discard toLeg taskLength close arrival . snd) rows
     where
         f = writeDiscardFurther (DiscardFurtherFile $ dOut </> file) headers
         dir = compFileToCompDir compFile
