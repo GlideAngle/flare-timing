@@ -105,8 +105,8 @@ taskTrack excludeWaypoints tdm zsRaw =
 
         edgeTrackline =
             fromZs
-            $ (goByEdge excludeWaypoints)
-            <$> (distanceEdgeToEdge' (costSegment span) zs)
+            $ goByEdge excludeWaypoints
+            <$> distanceEdgeToEdge' (costSegment span) zs
 
         projTrackline = goByProj excludeWaypoints zs
 

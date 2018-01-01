@@ -4,7 +4,6 @@
 
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DuplicateRecordFields #-}
-{-# LANGUAGE OverloadedStrings #-}
 
 module Flight.Route.TrackLine
     ( ToTrackLine(..)
@@ -19,9 +18,8 @@ import Data.UnitsOfMeasure (u)
 
 import Flight.LatLng (LatLng(..))
 import Flight.LatLng.Raw (RawLatLng(..))
-import Flight.Distance (TaskDistance(..), PathDistance(..))
+import Flight.Distance (TaskDistance(..), PathDistance(..), toKm)
 import Flight.Zone (Zone(..))
-import Flight.Distance (toKm)
 import Flight.TaskTrack.Internal (convertLatLng, legDistances, addTaskDistance)
 import Flight.PointToPoint.Double (distancePointToPoint, distanceHaversine)
 import Flight.Task (SpanLatLng)
