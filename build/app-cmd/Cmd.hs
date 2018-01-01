@@ -48,6 +48,7 @@ prodApps =
     , "align-time"
     , "discard-further"
     , "mask-track"
+    , "land-out"
     ] 
 
 -- | The names of the production app executables
