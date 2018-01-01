@@ -88,6 +88,7 @@ buildRules = do
     phony "nix-flight-track" $ cmd Shell (buildFor "flight-track")
     phony "nix-flight-units" $ cmd Shell (buildFor "flight-units")
     phony "nix-flight-zone" $ cmd Shell (buildFor "flight-zone")
+    phony "nix-flight-route" $ cmd Shell (buildFor "flight-route")
 
     phony "nix-flare-timing" $ cmd Shell (buildFor "flare-timing")
 
