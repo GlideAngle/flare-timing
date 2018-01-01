@@ -46,6 +46,7 @@ library:
   - flight-kml
   - flight-latlng
   - flight-zone
+  - flight-route
   - flight-track
   - flight-task
   - flight-gap
@@ -86,6 +87,7 @@ tests:
     - flight-kml
     - flight-latlng
     - flight-zone
+    - flight-route
     - flight-track
     - flight-task
     - flight-gap

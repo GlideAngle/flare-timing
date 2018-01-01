@@ -8,10 +8,14 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE QuasiQuotes #-}
 
+{-# LANGUAGE PartialTypeSignatures #-}
+{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
+
 module Flight.Distance
     ( TaskDistance(..)
     , PathDistance(..)
     , fromKms
+    , toKm
     ) where
 
 import Data.UnitsOfMeasure (u, convert, fromRational', toRational')
@@ -23,6 +27,16 @@ import Data.Number.RoundingFunctions (dpRound)
 
 fromKms :: Fractional a => Quantity a [u| km |] -> TaskDistance a
 fromKms q = TaskDistance (convert q)
+
+-- | Convert to kilometres with mm accuracy.
+toKm :: (Real a, Fractional a) => TaskDistance a -> Double
+toKm = toKm' (dpRound 6 . toRational)
+
+toKm' :: Fractional a => (a -> Rational) -> TaskDistance a -> Double
+toKm' f (TaskDistance d) =
+    fromRational $ f dKm
+    where 
+        MkQuantity dKm = convert d :: Quantity _ [u| km |]
 
 showDistance :: Quantity Rational [u| m |] -> String
 showDistance d =

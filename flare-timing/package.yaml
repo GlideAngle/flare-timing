@@ -51,6 +51,7 @@ executables:
     - flight-latlng
     - flight-comp
     - flight-task
+    - flight-route
     - flight-scribe
     ghc-options:
     - -rtsopts
@@ -208,6 +209,7 @@ executables:
     - flight-kml
     - flight-track
     - flight-zone
+    - flight-route
     - flight-task
     - flight-gap
     - flight-mask
@@ -253,6 +255,7 @@ executables:
     - flight-kml
     - flight-track
     - flight-zone
+    - flight-route
     - flight-task
     - flight-gap
     - flight-mask

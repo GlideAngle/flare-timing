@@ -12,10 +12,7 @@
 {-# LANGUAGE StandaloneDeriving #-}
 
 module Flight.Zone
-    ( Lat(..)
-    , Lng(..)
-    , LatLng(..)
-    , Radius(..)
+    ( Radius(..)
     , Incline(..)
     , Bearing(..)
     , Zone(..)

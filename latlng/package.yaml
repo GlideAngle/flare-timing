@@ -33,7 +33,6 @@ library:
   - Flight.LatLng.Double
   - Flight.LatLng.Float
   - Flight.LatLng.Rational
-  - Flight.Route
   - Flight.Distance
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com

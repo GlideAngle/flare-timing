@@ -1,9 +1,9 @@
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Flight.Route
-    ( TaskDistanceMeasure(..)
+    ( ToTrackLine(..)
+    , TaskDistanceMeasure(..)
     , TaskRoutes(..)
     , TaskTrack(..)
     , TrackLine(..)
@@ -15,9 +15,9 @@ import Data.String (IsString())
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 
-import Flight.LatLng.Raw (RawLatLng(..))
 import Flight.EastNorth (EastingNorthing(..), UtmZone(..))
 import Flight.Field (FieldOrdering(..))
+import Flight.Route.TrackLine (ToTrackLine(..), TrackLine(..))
 
 -- | The way to measure the task distance.
 data TaskDistanceMeasure
@@ -52,17 +52,6 @@ data ProjectedTrackLine =
 
 instance ToJSON ProjectedTrackLine
 instance FromJSON ProjectedTrackLine
-
-data TrackLine =
-    TrackLine { distance :: Double
-              , waypoints :: [RawLatLng]
-              , legs :: [Double]
-              , legsSum :: [Double]
-              }
-              deriving (Eq, Ord, Show, Generic)
-
-instance ToJSON TrackLine
-instance FromJSON TrackLine
 
 data PlanarTrackLine =
     PlanarTrackLine { distance :: Double
@@ -105,4 +94,3 @@ cmp a b =
         ("mappedPoints", _) -> LT
         ("mappedZones", _) -> GT
         _ -> compare a b
-

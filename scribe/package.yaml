@@ -28,6 +28,7 @@ library:
   - aeson-via
   - flight-latlng
   - flight-zone
+  - flight-route
   - flight-gap
   - flight-comp
   source-dirs: library
@@ -65,6 +66,7 @@ tests:
     - aeson-via
     - flight-latlng
     - flight-zone
+    - flight-route
     - flight-gap
     - flight-comp
     ghc-options:

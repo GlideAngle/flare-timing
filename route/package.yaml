@@ -12,41 +12,29 @@ ghc-options:
 library:
   dependencies:
   - base >=4.5 && <5
-  - split
-  - path
+  - numbers
+  - uom-plugin
+  - bifunctors
   - aeson
   - scientific
-  - containers
-  - unordered-containers
-  - time
-  - cassava
-  - bytestring
-  - directory
-  - filepath
-  - filemanip
-  - lens
-  - mtl
   - hcoord
-  - uom-plugin
   - aeson-via
+  - siggy-chardust
+  - flight-units
   - flight-latlng
   - flight-zone
-  - flight-route
-  - flight-gap
-  - flight-comp
-  - flight-kml
-  - flight-mask
+  - flight-task
   source-dirs: library
   exposed-modules:
-  - Flight.Lookup.Route
-  - Flight.Lookup.Cross
-  - Flight.Lookup.Tag
+  - Flight.Route
+  - Flight.TaskTrack.Double
+  - Flight.TaskTrack.Rational
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
-name: flight-lookup
-synopsis: Hang gliding and paragliding competition data access.
-description: Lookup items for a task, for a pilot, etc.
-category: Data
+name: flight-route
+synopsis: Control zones to fly.
+description: Control zones for hang gliding and paragliding competitons.
+category: Flight
 license: BSD3
 license-file: LICENSE.md
 github: BlockScope/flare-timing
@@ -54,31 +42,19 @@ tests:
   hlint:
     dependencies:
     - base
+    - numbers
     - hlint
-    - split
-    - path
+    - uom-plugin
+    - bifunctors
     - aeson
     - scientific
-    - containers
-    - unordered-containers
-    - time
-    - cassava
-    - bytestring
-    - directory
-    - filepath
-    - filemanip
-    - lens
-    - mtl
     - hcoord
-    - uom-plugin
     - aeson-via
+    - siggy-chardust
+    - flight-units
     - flight-latlng
     - flight-zone
-    - flight-route
-    - flight-gap
-    - flight-comp
-    - flight-kml
-    - flight-mask
+    - flight-task
     ghc-options:
     - -rtsopts
     - -threaded
@@ -87,3 +63,4 @@ tests:
     source-dirs:
     - library
     - test-suite-hlint
+version: '0.1.0'

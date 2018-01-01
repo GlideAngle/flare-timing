@@ -20,24 +20,18 @@ import Prelude hiding (span)
 import qualified Data.Number.FixedFunctions as F
 import Data.Either (partitionEithers)
 import Data.List (nub)
-import Data.UnitsOfMeasure ((/:), u, convert)
+import Data.UnitsOfMeasure ((/:), u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
 import Flight.LatLng (LatLng(..))
 import Flight.LatLng.Raw (RawLatLng(..))
 import Flight.LatLng.Rational (Epsilon(..), defEps)
-import Data.Number.RoundingFunctions (dpRound)
-import Flight.Zone
-    (Zone(..), Bearing(..), center)
+import Flight.Zone (Zone(..), Bearing(..), center)
 import Flight.Zone.Raw (RawZone(..))
-import Flight.Cylinder.Edge (CircumSample)
 import Flight.Cylinder.Rational (circumSample)
-import Flight.Distance (TaskDistance(..), PathDistance(..))
-import Flight.EdgeToEdge (distanceEdgeToEdge)
+import Flight.Distance (TaskDistance(..), PathDistance(..), toKm)
 import Flight.Projected.Rational (costEastNorth)
-import Flight.Projected.Internal (zoneToProjectedEastNorth)
-import Flight.PointToPoint.Segment (SpanLatLng)
 import Flight.PointToPoint.Rational
     (distancePointToPoint, costSegment, distanceHaversine)
 import Flight.Route
@@ -58,7 +52,10 @@ import Flight.TaskTrack.Internal
     , toPoint
     , toCylinder
     )
-import Flight.ShortestPath (Zs(..), AngleCut(..), CostSegment, fromZs)
+import Flight.Task
+    ( Zs(..), SpanLatLng, CostSegment, CircumSample, AngleCut(..)
+    , fromZs, distanceEdgeToEdge, zoneToProjectedEastNorth
+    )
 
 taskTracks :: Bool
            -> (Int -> Bool)
@@ -112,15 +109,6 @@ taskTrack excludeWaypoints tdm zsRaw =
             <$> (distanceEdgeToEdge' (costSegment span) zs)
 
         projTrackline = goByProj excludeWaypoints zs
--- | Convert to kilometres with mm accuracy.
-toKm :: (Real a, Fractional a) => TaskDistance a -> Double
-toKm = toKm' (dpRound 6 . toRational)
-
-toKm' :: Fractional a => (a -> Rational) -> TaskDistance a -> Double
-toKm' f (TaskDistance d) =
-    fromRational $ f dKm
-    where 
-        MkQuantity dKm = convert d :: Quantity _ [u| km |]
 
 -- NOTE: The projected distance is worked out from easting and northing, in the
 -- projected plane but he distance for each leg is measured on the sphere.

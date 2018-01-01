@@ -19,23 +19,17 @@ module Flight.TaskTrack.Double (taskTracks) where
 import Prelude hiding (span)
 import Data.Either (partitionEithers)
 import Data.List (nub)
-import Data.UnitsOfMeasure ((/:), u, convert)
+import Data.UnitsOfMeasure ((/:), u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
 import Flight.LatLng (LatLng(..))
 import Flight.LatLng.Raw (RawLatLng(..))
-import Data.Number.RoundingFunctions (dpRound)
-import Flight.Zone
-    (Zone(..), Bearing(..), center)
+import Flight.Zone (Zone(..), Bearing(..), center)
 import Flight.Zone.Raw (RawZone(..))
-import Flight.Cylinder.Edge (CircumSample)
 import Flight.Cylinder.Double (circumSample)
-import Flight.Distance (TaskDistance(..), PathDistance(..))
-import Flight.EdgeToEdge (distanceEdgeToEdge)
+import Flight.Distance (TaskDistance(..), PathDistance(..), toKm)
 import Flight.Projected.Double (costEastNorth)
-import Flight.Projected.Internal (zoneToProjectedEastNorth)
-import Flight.PointToPoint.Segment (SpanLatLng)
 import Flight.PointToPoint.Double
     (distancePointToPoint, costSegment, distanceHaversine)
 import Flight.Route
@@ -46,8 +40,7 @@ import Flight.Route
     , PlanarTrackLine(..)
     )
 import Flight.TaskTrack.Internal
-    ( ToTrackLine(..)
-    , mm30
+    ( mm30
     , roundEastNorth
     , fromUTMRefEastNorth
     , fromUTMRefZone
@@ -57,10 +50,11 @@ import Flight.TaskTrack.Internal
     , toPoint
     , toCylinder
     )
-import Flight.ShortestPath (Zs(..), AngleCut(..), CostSegment, fromZs)
-
-instance ToTrackLine (PathDistance Double) where
-    toTrackLine = goByEdge
+import Flight.Task
+    ( Zs(..), SpanLatLng, CostSegment, CircumSample, AngleCut(..)
+    , fromZs, distanceEdgeToEdge, zoneToProjectedEastNorth
+    )
+import Flight.Route.TrackLine (ToTrackLine(..))
 
 taskTracks :: Bool
            -> (Int -> Bool)
@@ -110,20 +104,10 @@ taskTrack excludeWaypoints tdm zsRaw =
 
         edgeTrackline =
             fromZs
-            $ (goByEdge excludeWaypoints)
+            $ (toTrackLine excludeWaypoints)
             <$> (distanceEdgeToEdge' (costSegment span) zs)
 
         projTrackline = goByProj excludeWaypoints zs
-
--- | Convert to kilometres with mm accuracy.
-toKm :: (Real a, Fractional a) => TaskDistance a -> Double
-toKm = toKm' (dpRound 6 . toRational)
-
-toKm' :: Fractional a => (a -> Rational) -> TaskDistance a -> Double
-toKm' f (TaskDistance d) =
-    fromRational $ f dKm
-    where 
-        MkQuantity dKm = convert d :: Quantity _ [u| km |]
 
 -- NOTE: The projected distance is worked out from easting and northing, in the
 -- projected plane but he distance for each leg is measured on the sphere.
@@ -131,7 +115,7 @@ goByProj :: Bool -> [Zone Double] -> Maybe ProjectedTrackLine
 goByProj excludeWaypoints zs = do
     dEE <- fromZs $ distanceEdgeToEdge' costEastNorth zs
 
-    let projected = goByEdge excludeWaypoints dEE
+    let projected = toTrackLine excludeWaypoints dEE
     let ps = toPoint <$> waypoints projected
     let (_, es) = partitionEithers $ zoneToProjectedEastNorth <$> ps
 
@@ -199,41 +183,6 @@ goByPoint excludeWaypoints zs =
                 distancePointToPoint
                 span
                 (Point <$> edgesSum' :: [Zone Double])
-
-        dsSum :: [TaskDistance Double]
-        dsSum = scanl1 addTaskDistance ds
-
-goByEdge :: Bool -> PathDistance Double -> TrackLine
-goByEdge excludeWaypoints ed =
-    TrackLine
-        { distance = toKm d
-        , waypoints = if excludeWaypoints then [] else xs
-        , legs = toKm <$> ds 
-        , legsSum = toKm <$> dsSum
-        }
-    where
-        d :: TaskDistance Double
-        d = edgesSum ed
-
-        -- NOTE: The graph of points created for determining the shortest
-        -- path can have duplicate points, so the shortest path too can have
-        -- duplicate points. Remove these duplicates.
-        --
-        -- I found that by decreasing defEps, the default epsilon, used for
-        -- rational math from 1/10^9 to 1/10^12 these duplicates stopped
-        -- occuring.
-        vertices' :: [LatLng Double [u| rad |]]
-        vertices' = nub $ vertices ed
-
-        xs :: [RawLatLng]
-        xs = convertLatLng <$> vertices'
-
-        ds :: [TaskDistance Double]
-        ds =
-            legDistances
-                distancePointToPoint
-                span
-                (Point <$> vertices' :: [Zone Double])
 
         dsSum :: [TaskDistance Double]
         dsSum = scanl1 addTaskDistance ds

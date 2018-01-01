@@ -98,8 +98,7 @@ import Flight.Zone (Zone, Bearing(..))
 import Flight.Zone.Raw (RawZone)
 import Flight.LatLng.Rational (Epsilon(..), defEps)
 import Data.Number.RoundingFunctions (dpRound)
-import Flight.Task
-    (ToTrackLine(..), SpanLatLng, CircumSample, AngleCut(..), fromZs)
+import Flight.Task (SpanLatLng, CircumSample, AngleCut(..), fromZs)
 import qualified Flight.PointToPoint.Rational as Rat
     (distanceHaversine, distancePointToPoint, costSegment)
 import qualified Flight.PointToPoint.Double as Dbl
@@ -139,7 +138,7 @@ import Flight.Score
     , leadingFraction
     , speedFraction
     )
-import Flight.Route (TrackLine(..))
+import Flight.Route (ToTrackLine(..), TrackLine(..))
 import Flight.TaskTrack.Double ()
     
 data FlightStats =

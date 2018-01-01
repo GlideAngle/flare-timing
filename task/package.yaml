@@ -27,8 +27,6 @@ library:
   - flight-zone
   source-dirs: library
   exposed-modules:
-  - Flight.TaskTrack.Double
-  - Flight.TaskTrack.Rational
   - Flight.Task
   - Flight.Cylinder.Double
   - Flight.Cylinder.Rational

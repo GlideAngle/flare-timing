@@ -15,8 +15,7 @@
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
 module Flight.TaskTrack.Internal
-    ( ToTrackLine(..)
-    , mm30
+    ( mm30
     , roundEastNorth
     , fromUTMRefEastNorth
     , fromUTMRefZone
@@ -39,16 +38,13 @@ import Flight.LatLng.Raw (RawLat(..), RawLng(..), RawLatLng(..))
 import Data.Number.RoundingFunctions (dpRound)
 import Flight.Zone (Zone(..), Radius(..), fromRationalZone)
 import Flight.Zone.Raw (RawZone(..))
-import Flight.Cylinder.Sample (Tolerance(..))
+--import Flight.Cylinder.Sample (Tolerance(..))
 import Flight.Distance (TaskDistance(..), PathDistance(..))
-import Flight.PointToPoint.Segment (SpanLatLng)
-import Flight.ShortestPath (DistancePointToPoint)
+--import Flight.PointToPoint.Segment (SpanLatLng)
+--import Flight.ShortestPath (DistancePointToPoint)
 import Flight.EastNorth (UtmZone(..), EastingNorthing(..))
-import Flight.Route (TrackLine(..))
 import Data.Aeson.ViaScientific (ViaScientific(..))
-
-class ToTrackLine a where
-    toTrackLine :: Bool -> a -> TrackLine
+import Flight.Task (Tolerance(..), SpanLatLng, DistancePointToPoint)
 
 mm30 :: Num a => Tolerance a 
 mm30 = Tolerance 30

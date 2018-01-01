@@ -27,6 +27,7 @@ flyPkgs =
     , "track"
     , "units"
     , "zone"
+    , "route"
     ] 
 
 prefix :: String -> String -> String
