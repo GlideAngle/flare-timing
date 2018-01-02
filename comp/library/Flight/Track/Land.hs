@@ -27,9 +27,10 @@ import Flight.Score (LookaheadChunks(..))
 -- | For each task, the masking for that task.
 data Landing =
     Landing 
-        { minDistance :: [Double]
-        -- ^ For each task, the mimimum distance. All pilots landing before
-        -- this distance get this distance. The 100m segments start from here.
+        { minDistance :: Double
+        -- ^ The mimimum distance, set once for the comp. All pilots landing
+        -- before this distance get this distance. The 100m segments start from
+        -- here.
         , bestDistance :: [Maybe Double]
         -- ^ For each task, the best distance flown.
         , landout :: [Int]

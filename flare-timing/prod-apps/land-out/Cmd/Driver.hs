@@ -33,6 +33,7 @@ import Cmd.Options (description)
 import Flight.Comp
     ( CompInputFile(..)
     , CompSettings(..)
+    , Nominal(..)
     , MaskTrackFile(..)
     , compToMask
     , findCompInput
@@ -78,11 +79,10 @@ go CmdOptions{..} compFile = do
                 cs
                 mk
 
-
 difficulty :: CompSettings -> Masking -> Landing
-difficulty _ Masking{bestDistance, land} =
+difficulty CompSettings{nominal} Masking{bestDistance, land} =
     Landing 
-        { minDistance = []
+        { minDistance = free nominal
         , bestDistance = bestDistance
         , landout = length <$> land
         , lookahead = lookahead
