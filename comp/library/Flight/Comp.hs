@@ -163,7 +163,9 @@ instance ToJSON Comp
 instance FromJSON Comp
 
 data Nominal =
-    Nominal { distance :: String
+    Nominal { distance :: Double
+            , free :: Double
+            -- ^ A mimimum distance awarded to pilots that bomb out for 'free'.
             , time :: String 
             , goal :: String 
             }

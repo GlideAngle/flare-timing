@@ -46,16 +46,20 @@ getNominal =
             getChildren
             >>> hasName "FsScoreFormula"
             >>> getAttrValue "nom_dist"
+            &&& getAttrValue "min_dist"
             &&& getAttrValue "nom_time"
             &&& getAttrValue "nom_goal"
-            >>> arr (\(d, (t, g)) ->
-                either
-                    (const [])
-                    (\d' -> [Nominal d' t g])
-                    (P.parse pDistance "" d))
+            >>> arr (\(d, (m, (t, g))) -> either (const []) id $ do
+                d' <- P.parse pNominalDistance "" d
+                m' <- P.parse pMinimumDistance "" m
+                return [Nominal d' m' t g])
 
-pDistance :: GenParser Char st Double
-pDistance = pFloat <?> "No distance"
+
+pNominalDistance :: GenParser Char st Double
+pNominalDistance = pFloat <?> "No nominal distance"
+
+pMinimumDistance :: GenParser Char st Double
+pMinimumDistance = pFloat <?> "No minimum distance"
 
 parseNominal :: String -> IO (Either String [Nominal])
 parseNominal contents = do
