@@ -228,29 +228,30 @@ go CmdOptions{..} compFile@(CompInputFile compPath) = do
                 (tagTaskTime tagging)
                 (IxTask <$> task)
                 (Pilot <$> pilot)
-                (CompInputFile compPath)
+                compFile
                 (check math lookupTaskLength flyingLookup tagging)
 
-writeMask :: CompSettings
-          -> RouteLookup
-          -> TaskTimeLookup
-          -> [IxTask]
-          -> [Pilot]
-          -> CompInputFile
-          -> (CompInputFile
-              -> [IxTask]
-              -> [Pilot]
-              -> ExceptT
-                   String
-                   IO
-                   [
-                       [Either
-                           (Pilot, TrackFileFail)
-                           (Pilot, Pilot -> FlightStats)
-                       ]
-                   ]
-             )
-          -> IO ()
+writeMask
+    :: CompSettings
+    -> RouteLookup
+    -> TaskTimeLookup
+    -> [IxTask]
+    -> [Pilot]
+    -> CompInputFile
+    -> (CompInputFile
+        -> [IxTask]
+        -> [Pilot]
+        -> ExceptT
+            String
+            IO
+            [
+                [Either
+                    (Pilot, TrackFileFail)
+                    (Pilot, Pilot -> FlightStats)
+                ]
+            ]
+            )
+    -> IO ()
 writeMask
     CompSettings{tasks}
     lengths@(RouteLookup lookupTaskLength)
@@ -583,22 +584,18 @@ times xs =
                 , frac = ViaScientific $ speedFraction best t
                 }
 
-check :: Math
-      -> RouteLookup
-      -> FlyingLookup
-      -> Either String Tagging
-      -> CompInputFile
-      -> [IxTask]
-      -> [Pilot]
-      -> ExceptT
-          String
-          IO
-          [
-              [Either
-                  (Pilot, TrackFileFail)
-                  (Pilot, Pilot -> FlightStats)
-              ]
-          ]
+check
+    :: Math
+    -> RouteLookup
+    -> FlyingLookup
+    -> Either String Tagging
+    -> CompInputFile
+    -> [IxTask]
+    -> [Pilot]
+    -> ExceptT
+        String
+        IO
+        [[Either (Pilot, TrackFileFail) (Pilot, Pilot -> FlightStats)]]
 check math lengths flying tags = checkTracks $ \CompSettings{tasks} ->
     flown math lengths flying tags tasks
 

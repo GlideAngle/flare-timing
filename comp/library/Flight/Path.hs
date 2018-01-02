@@ -14,6 +14,7 @@ module Flight.Path
     , AlignTimeFile(..)
     , DiscardFurtherFile(..)
     , MaskTrackFile(..)
+    , LandOutFile(..)
     , CompDir(..)
     , AlignDir(..)
     , DiscardDir(..)
@@ -21,6 +22,7 @@ module Flight.Path
     , compToTaskLength
     , compToCross
     , compToMask
+    , compToLand
     , crossToTag
     , compFileToCompDir
     , alignDir
@@ -85,6 +87,9 @@ newtype DiscardFurtherFile = DiscardFurtherFile FilePath
 -- | The path to as mask track file.
 newtype MaskTrackFile = MaskTrackFile FilePath
 
+-- | The path to as land out file.
+newtype LandOutFile = LandOutFile FilePath
+
 fsdbToComp :: FsdbFile -> CompInputFile
 fsdbToComp (FsdbFile p) =
     CompInputFile $ replaceExtension p (ext CompInput)
@@ -104,6 +109,10 @@ compToCross (CompInputFile p) =
 compToMask :: CompInputFile -> MaskTrackFile
 compToMask (CompInputFile p) =
     MaskTrackFile $ flip replaceExtension (ext MaskTrack) $ dropExtension p
+
+compToLand :: CompInputFile -> LandOutFile
+compToLand (CompInputFile p) =
+    LandOutFile $ flip replaceExtension (ext LandOut) $ dropExtension p
 
 crossToTag :: CrossZoneFile -> TagZoneFile
 crossToTag (CrossZoneFile p) =
@@ -140,6 +149,7 @@ data FileType
     | AlignTime
     | DiscardFurther
     | MaskTrack
+    | LandOut
 
 ext :: FileType -> FilePath
 ext Fsdb = ".fsdb"
@@ -152,6 +162,7 @@ ext TagZone = ".tag-zone.yaml"
 ext AlignTime = ".align-time.yaml"
 ext DiscardFurther = ".discard-further.yaml"
 ext MaskTrack = ".mask-track.yaml"
+ext LandOut = ".land-out.yaml"
 
 findFsdb' :: FilePath -> IO [FsdbFile]
 findFsdb' dir = fmap FsdbFile <$> findFiles Fsdb dir

@@ -89,8 +89,10 @@ newtype PilotDistance a = PilotDistance a deriving (Eq, Ord, Show)
 newtype LinearFraction = LinearFraction Rational deriving (Eq, Ord, Show)
 
 newtype ChunkedDistance = ChunkedDistance Integer deriving (Eq, Ord, Show)
-newtype LookaheadChunks = LookaheadChunks Integer deriving (Eq, Ord, Show)
 newtype DifficultyFraction = DifficultyFraction Rational deriving (Eq, Ord, Show)
+
+newtype LookaheadChunks = LookaheadChunks Integer
+    deriving (Eq, Ord, Show, ToJSON, FromJSON)
 
 arrivalFraction :: PilotsAtEss -> PositionAtEss -> ArrivalFraction
 arrivalFraction (PilotsAtEss n) (PositionAtEss rank)
@@ -126,17 +128,16 @@ linearFraction :: Real a => BestDistance -> PilotDistance a -> LinearFraction
 linearFraction (BestDistance (nb :% db)) (PilotDistance pd) =
     let (np :% dp) = toRational pd in LinearFraction $ (np * db) % (dp * nb)
 
-lookaheadChunks :: Real a => [PilotDistance a] -> LookaheadChunks
-lookaheadChunks [] =
+lookaheadChunks :: Real a => BestDistance -> [PilotDistance a] -> LookaheadChunks
+lookaheadChunks _ [] =
     LookaheadChunks 30
-lookaheadChunks xs =
+lookaheadChunks (BestDistance best) xs =
     LookaheadChunks $ max 30 rounded
     where
         pilotsLandedOut :: Integer
         pilotsLandedOut = toInteger $ length xs
 
-        bestDistance = maximum xs
-        (ChunkedDistance bestInChunks) = toChunk bestDistance
+        (ChunkedDistance bestInChunks) = toChunk . PilotDistance $ best
 
         rounded :: Integer
         rounded = round ((30 * bestInChunks) % pilotsLandedOut)
@@ -145,11 +146,12 @@ toChunk :: Real a => PilotDistance a -> ChunkedDistance
 toChunk (PilotDistance d) =
     ChunkedDistance $ round (toRational d * (10 % 1))
 
-difficultyFraction :: Real a => [PilotDistance a] -> [DifficultyFraction]
-difficultyFraction xs =
+difficultyFraction
+    :: Real a => BestDistance -> [PilotDistance a] -> [DifficultyFraction]
+difficultyFraction best xs =
     zipWith (diffByChunk diffScoreMap) xs' ys
     where
-        lookahead = lookaheadChunks xs
+        lookahead = lookaheadChunks best xs
 
         xs' = sort xs
 

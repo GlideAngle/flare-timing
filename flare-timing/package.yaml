@@ -286,7 +286,6 @@ executables:
     - bytestring
     - clock
     - formatting
-    - lens
     - siggy-chardust
     - flight-cmd
     - flight-units

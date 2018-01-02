@@ -3,7 +3,7 @@ module Flight.Scribe
     , readRoute, writeRoute
     , readCrossing , writeCrossing
     , readTagging, writeTagging
-    , writeMasking
+    , readMasking, writeMasking
     , module Flight.Align
     , module Flight.Discard
     ) where
@@ -74,6 +74,11 @@ writeTagging (TagZoneFile path) tagZone = do
     let cfg = Y.setConfCompare (fieldOrder tagZone) Y.defConfig
     let yaml = Y.encodePretty cfg tagZone
     BS.writeFile path yaml
+
+readMasking :: MaskTrackFile -> ExceptT String IO Masking
+readMasking (MaskTrackFile path) = do
+    contents <- lift $ BS.readFile path
+    ExceptT . return $ decodeEither contents
 
 writeMasking :: MaskTrackFile -> Masking -> IO ()
 writeMasking (MaskTrackFile path) maskTrack = do

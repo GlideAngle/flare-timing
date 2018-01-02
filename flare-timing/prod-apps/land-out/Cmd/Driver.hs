@@ -11,56 +11,38 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE ParallelListComp #-}
 
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
 module Cmd.Driver (driverMain) where
 
+import Data.Maybe (fromMaybe)
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
 import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
-import Data.Maybe (catMaybes)
-import Control.Lens ((^?), element)
 import Control.Monad (mapM_)
-import Control.Monad.Except (ExceptT(..), runExceptT)
+import Control.Monad.Except (runExceptT)
 import System.FilePath (takeFileName)
 import Flight.Cmd.Paths (checkPaths)
-import Flight.Cmd.Options (Math(..), CmdOptions(..), ProgramName(..), mkOptions)
+import Flight.Cmd.Options (CmdOptions(..), ProgramName(..), mkOptions)
 import Cmd.Options (description)
 
 import Flight.Comp
     ( CompInputFile(..)
     , CompSettings(..)
-    , Pilot(..)
-    , TrackFileFail(..)
-    , IxTask(..)
-    , compToCross
+    , MaskTrackFile(..)
+    , compToMask
     , findCompInput
     )
 import Flight.Units ()
-import Flight.Track.Cross
-    (TrackFlyingSection(..), TrackCross(..), PilotTrackCross(..), Crossing(..))
-import Flight.Zone.Raw (RawZone)
-import qualified Flight.PointToPoint.Rational as Rat (distanceHaversine)
-import qualified Flight.PointToPoint.Double as Dbl (distanceHaversine)
-import Flight.LatLng.Rational (defEps)
-import Flight.Mask
-    ( TaskZone
-    , FnIxTask
-    , FnTask
-    , MadeZones(..)
-    , SelectedCrossings(..)
-    , NomineeCrossings(..)
-    , unSelectedCrossings
-    , unNomineeCrossings
-    , checkTracks
-    , madeZones
-    , zoneToCylinder
-    , nullFlying
-    )
-import Flight.Scribe (writeCrossing)
+import Flight.Track.Mask (Masking(..), TrackDistance(..))
+import Flight.Track.Land (Landing(..))
+import Flight.Scribe (readComp, readMasking)
+import Flight.Score (BestDistance(..), PilotDistance(..))
+import Flight.Score as Gap (lookaheadChunks)
 
 driverMain :: IO ()
 driverMain = do
@@ -80,98 +62,56 @@ drive o = do
     fprint ("Tracks crossing zones completed in " % timeSpecs % "\n") start end
 
 go :: CmdOptions -> CompInputFile -> IO ()
-go CmdOptions{..} compFile@(CompInputFile compPath) = do
-    putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
-    writeMask
-        compFile
-        (IxTask <$> task)
-        (Pilot <$> pilot)
-        (checkAll math)
+go CmdOptions{..} compFile = do
+    let maskFile@(MaskTrackFile maskPath) = compToMask compFile
+    putStrLn $ "Reading land outs from '" ++ takeFileName maskPath ++ "'"
 
-writeMask :: CompInputFile
-          -> [IxTask]
-          -> [Pilot]
-          -> (CompInputFile
-              -> [IxTask]
-              -> [Pilot]
-              -> ExceptT
-                      String
-                      IO [[Either (Pilot, TrackFileFail) (Pilot, MadeZones)]])
-          -> IO ()
-writeMask compFile task pilot f = do
-    checks <- runExceptT $ f compFile task pilot
+    compSettings <- runExceptT $ readComp compFile
+    masking <- runExceptT $ readMasking maskFile
 
-    case checks of
-        Left msg -> print msg
-        Right xs -> do
+    case (compSettings, masking) of
+        (Left msg, _) -> putStrLn msg
+        (_, Left msg) -> putStrLn msg
+        (Right cs, Right mk) ->
+            print $
+            difficulty
+                cs
+                mk
 
-            let ys :: [([(Pilot, Maybe MadeZones)], [Maybe (Pilot, TrackFileFail)])] =
-                    unzip <$>
-                    (fmap . fmap)
-                        (\case
-                            Left err@(p, _) ->
-                                ((p, Nothing), Just err)
 
-                            Right (p, x) ->
-                                ((p, Just x), Nothing))
-                        xs
-
-            let ps = fst <$> ys
-
-            let crossZone =
-                    Crossing { crossing = (fmap . fmap) crossings ps
-                             , errors = catMaybes . snd <$> ys
-                             , flying = (fmap . fmap . fmap . fmap) madeZonesToFlying ps
-                             }
-
-            writeCrossing (compToCross compFile) crossZone
-
-madeZonesToCross :: MadeZones -> TrackCross
-madeZonesToCross x =
-    TrackCross
-        { zonesCrossSelected = unSelectedCrossings . selectedCrossings $ x
-        , zonesCrossNominees = unNomineeCrossings . nomineeCrossings $ x
+difficulty :: CompSettings -> Masking -> Landing
+difficulty _ Masking{bestDistance, land} =
+    Landing 
+        { minDistance = []
+        , bestDistance = bestDistance
+        , landout = length <$> land
+        , lookahead = lookahead
+        , lookaheadChunks = chunks
         }
+    where
+        f :: Int -> Double -> Int
+        f n b = max 30 $ round ((30.0 * b) / fromIntegral n)
 
-crossings :: (Pilot, Maybe MadeZones) -> PilotTrackCross
-crossings (p, x) =
-    PilotTrackCross p $ madeZonesToCross <$> x
+        landout = length <$> land
 
-madeZonesToFlying :: MadeZones -> TrackFlyingSection
-madeZonesToFlying MadeZones{flying} = flying
+        lookahead =
+            [ f n <$> b
+            | b <- bestDistance
+            | n <- landout
+            ]
 
-checkAll :: Math
-         -> CompInputFile
-         -> [IxTask]
-         -> [Pilot]
-         -> ExceptT
-             String
-             IO
-             [[Either (Pilot, TrackFileFail) (Pilot, MadeZones)]]
-checkAll math =
-    checkTracks $ \CompSettings{tasks} -> flown math tasks
+        pss :: [[PilotDistance Double]]
+        pss =
+            (fmap . fmap)
+            (PilotDistance . (\TrackDistance{made} -> fromMaybe 0 made) . snd)
+            land
 
-flown :: Math -> FnIxTask MadeZones
-flown math tasks (IxTask i) fs =
-    case tasks ^? element (i - 1) of
-        Nothing ->
-            MadeZones
-                { flying = nullFlying
-                , selectedCrossings = SelectedCrossings []
-                , nomineeCrossings = NomineeCrossings []
-                }
+        bests :: [Maybe BestDistance]
+        bests =
+            (fmap . fmap) (BestDistance . toRational) bestDistance
 
-        Just task ->
-            flownTask math task fs
-
-flownTask :: Math -> FnTask MadeZones
-flownTask =
-    \case
-        Rational ->
-            madeZones
-                (Rat.distanceHaversine defEps)
-                (zoneToCylinder :: RawZone -> TaskZone Rational)
-        Floating ->
-            madeZones
-                Dbl.distanceHaversine
-                (zoneToCylinder :: RawZone -> TaskZone Double)
+        chunks =
+            [ flip Gap.lookaheadChunks ps <$> b
+            | b <- bests
+            | ps <- pss
+            ]
