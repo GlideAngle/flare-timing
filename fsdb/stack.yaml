@@ -11,9 +11,17 @@ packages:
   extra-dep: true
 - location: ../zone
   extra-dep: true
+- location: ../task
+  extra-dep: true
+- location: ../route
+  extra-dep: true
 - location: ../comp
   extra-dep: true
 - location: ../gap
+  extra-dep: true
+- location:
+    git: https://github.com/danfran/hcoord.git
+    commit: e308934570874a6ce7f7ebdbf51a3c34e4acd745
   extra-dep: true
 - location:
     git: https://github.com/adamgundry/uom-plugin.git
