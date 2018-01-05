@@ -4,6 +4,7 @@ module Flight.Validity
     ( NominalLaunch(..)
     , NominalTime(..)
     , NominalDistance(..)
+    , MinimumDistance(..)
     , NominalGoal(..)
     , LaunchValidity(..)
     , TimeValidity(..)
@@ -21,9 +22,9 @@ import Data.Ratio ((%))
 import Flight.Ratio (pattern (:%))
 
 newtype NominalLaunch = NominalLaunch Rational deriving (Eq, Show)
-type MinimumDistance = Metres
-type MaximumDistance = Metres
 type SumOfDistance = Metres
+newtype MinimumDistance a = MinimumDistance a deriving (Eq, Ord, Show)
+newtype MaximumDistance = MaximumDistance Integer deriving (Eq, Show)
 newtype NominalDistance = NominalDistance Integer deriving (Eq, Show)
 newtype NominalTime = NominalTime Integer deriving (Eq, Show)
 newtype NominalGoal = NominalGoal Rational deriving (Eq, Show)
@@ -79,17 +80,23 @@ dvr (n :% d) nFly dSum = (dSum % 1) * (d % (nFly * n))
 distanceValidity :: NominalGoal
                  -> NominalDistance
                  -> Integer
-                 -> MinimumDistance
+                 -> MinimumDistance Integer
                  -> MaximumDistance
                  -> SumOfDistance
                  -> DistanceValidity
 distanceValidity _ _ 0 _ _ _ =
     DistanceValidity 0
-distanceValidity _ _ _ _ 0 _ =
+distanceValidity _ _ _ _ (MaximumDistance 0) _ =
     DistanceValidity 0
 distanceValidity (NominalGoal (0 :% _)) (NominalDistance 0) nFly _ _ dSum =
     DistanceValidity $ min 1 $ dvr (0 % 1) nFly dSum
-distanceValidity (NominalGoal (0 :% _)) (NominalDistance nd) nFly dMin _ dSum
+distanceValidity
+    (NominalGoal (0 :% _))
+    (NominalDistance nd)
+    nFly
+    (MinimumDistance dMin)
+    _
+    dSum
     | nd < dMin =
         DistanceValidity (1 % 1)
     | otherwise =
@@ -97,7 +104,13 @@ distanceValidity (NominalGoal (0 :% _)) (NominalDistance nd) nFly dMin _ dSum
         where
             area = num % (2 * den)
             (num :% den) = min 0 (nd - dMin) % 1
-distanceValidity (NominalGoal ng) (NominalDistance nd) nFly dMin dMax dSum
+distanceValidity
+    (NominalGoal ng)
+    (NominalDistance nd)
+    nFly
+    (MinimumDistance dMin)
+    (MaximumDistance dMax)
+    dSum
     | nd < dMin =
         DistanceValidity (1 % 1)
     | otherwise =

@@ -14,6 +14,7 @@ module Flight.Score
       NominalLaunch(..)
     , NominalTime(..)
     , NominalDistance(..)
+    , MinimumDistance(..)
     , NominalGoal(..)
     -- * Units
     , Seconds
@@ -60,9 +61,9 @@ module Flight.Score
     , LinearFraction(..)
     , linearFraction
     -- * Fractional allotment of difficulty distance points
-    , LookaheadChunks(..)
+    , Lookahead(..)
     , ChunkedDistance(..)
-    , lookaheadChunks
+    , lookahead
     , toChunk
     , DifficultyFraction(..)
     , difficultyFraction

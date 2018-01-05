@@ -22,7 +22,7 @@ import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 
 import Flight.Field (FieldOrdering(..))
-import Flight.Score (LookaheadChunks(..))
+import Flight.Score (Lookahead(..))
 
 -- | For each task, the masking for that task.
 data Landing =
@@ -37,7 +37,7 @@ data Landing =
         -- ^ For each task, the number of pilots landing out.
         , lookahead :: [Maybe Int]
         -- ^ For each task, the look ahead distance
-        , lookaheadChunks :: [Maybe LookaheadChunks]
+        , lookaheadChunks :: [Maybe Lookahead]
         }
         deriving (Eq, Ord, Show, Generic)
 

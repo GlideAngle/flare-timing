@@ -6,6 +6,7 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE QuasiQuotes #-}
 
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
@@ -29,6 +30,8 @@ import System.FilePath (takeFileName)
 import Flight.Cmd.Paths (checkPaths)
 import Flight.Cmd.Options (CmdOptions(..), ProgramName(..), mkOptions)
 import Cmd.Options (description)
+import Data.UnitsOfMeasure (u)
+import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Comp
     ( CompInputFile(..)
@@ -43,7 +46,7 @@ import Flight.Track.Mask (Masking(..), TrackDistance(..))
 import Flight.Track.Land (Landing(..))
 import Flight.Scribe (readComp, readMasking)
 import Flight.Score (BestDistance(..), PilotDistance(..))
-import Flight.Score as Gap (lookaheadChunks)
+import Flight.Score as Gap (lookahead)
 
 driverMain :: IO ()
 driverMain = do
@@ -82,36 +85,40 @@ go CmdOptions{..} compFile = do
 difficulty :: CompSettings -> Masking -> Landing
 difficulty CompSettings{nominal} Masking{bestDistance, land} =
     Landing 
-        { minDistance = free nominal
+        { minDistance = md
         , bestDistance = bestDistance
         , landout = length <$> land
-        , lookahead = lookahead
+        , lookahead = ahead
         , lookaheadChunks = chunks
         }
     where
         f :: Int -> Double -> Int
         f n b = max 30 $ round ((30.0 * b) / fromIntegral n)
 
+        md = free nominal
         landout = length <$> land
 
-        lookahead =
+        ahead =
             [ f n <$> b
             | b <- bestDistance
             | n <- landout
             ]
 
-        pss :: [[PilotDistance Double]]
+        pss :: [[PilotDistance (Quantity Double [u| km |])]]
         pss =
             (fmap . fmap)
-            (PilotDistance . (\TrackDistance{made} -> fromMaybe 0 made) . snd)
+            (PilotDistance
+            . MkQuantity
+            . (\TrackDistance{made} -> fromMaybe 0 made)
+            . snd)
             land
 
         bests :: [Maybe BestDistance]
         bests =
-            (fmap . fmap) (BestDistance . toRational) bestDistance
+            (fmap . fmap) (BestDistance . MkQuantity) bestDistance
 
         chunks =
-            [ flip Gap.lookaheadChunks ps <$> b
+            [ (\b' -> Gap.lookahead b' ps) <$> b
             | b <- bests
             | ps <- pss
             ]
