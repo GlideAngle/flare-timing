@@ -46,8 +46,7 @@ import Data.Maybe (fromMaybe)
 import Data.Either (partitionEithers)
 import qualified Data.Map.Strict as Map
 import Data.Aeson (ToJSON(..), FromJSON(..))
-import Data.UnitsOfMeasure
-    (One, (+:), (-:), u, convert, toRational')
+import Data.UnitsOfMeasure ((+:), (-:), u, convert, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Data.UnitsOfMeasure.Show (showQuantity)
 import Data.UnitsOfMeasure.Read (QuantityWithUnit(..), Some(..), readQuantity)
@@ -134,15 +133,11 @@ instance ToJSON Chunks where
 instance FromJSON Chunks where
     parseJSON o = do
         xs :: [String] <- parseJSON o
-        let qs :: [Either _ _] = readQuantity <$> xs
-        let ([], qs') = partitionEithers qs
-        let qs'' =
-                (\(Some (QuantityWithUnit (MkQuantity q) u)) -> q)
-                <$> qs'
-        return . Chunks $ qs''
+        let ([], qs) = partitionEithers $ readQuantity <$> xs
+        return . Chunks $ qKm <$> qs
 
-deriving instance (ToJSON a, u ~ [u| km |]) => ToJSON (Quantity a u)
-deriving instance (FromJSON a, u ~ [u| km |]) => FromJSON (Quantity a u)
+qKm :: Some (QuantityWithUnit p) -> p
+qKm (Some (QuantityWithUnit (MkQuantity q) _)) = q
 
 arrivalFraction :: PilotsAtEss -> PositionAtEss -> ArrivalFraction
 arrivalFraction (PilotsAtEss n) (PositionAtEss rank)
