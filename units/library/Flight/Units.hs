@@ -24,7 +24,8 @@ import Data.Number.RoundingFunctions (dpRound)
 
 [u| s, m |]
 
-[u| km = 1000 m, min = 60 s, h = 3600 s, d = 86400 s |]
+-- NOTE: hm is the hectometre, 100m.
+[u| km = 1000 m, hm = 100 m, min = 60 s, h = 3600 s, d = 86400 s |]
 
 [u| ft = 100 % 328 m, mi = 1609.344 m, mph = mi/h |]
 
