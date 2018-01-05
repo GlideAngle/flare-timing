@@ -30,6 +30,7 @@ module Flight.Allot
     , LinearFraction(..)
     , linearFraction
     , Lookahead(..)
+    , Chunks(..)
     , ChunkedDistance(..)
     , lookahead
     , toChunk

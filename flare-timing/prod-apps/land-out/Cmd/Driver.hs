@@ -46,8 +46,9 @@ import Flight.Units ()
 import Flight.Track.Mask (Masking(..), TrackDistance(..))
 import Flight.Track.Land (Landing(..))
 import Flight.Scribe (readComp, readMasking, writeLanding)
-import Flight.Score (BestDistance(..), PilotDistance(..))
-import Flight.Score as Gap (lookahead)
+import Flight.Score
+    (MinimumDistance(..), BestDistance(..), PilotDistance(..), Chunks(..))
+import Flight.Score as Gap (lookahead, chunks)
 
 driverMain :: IO ()
 driverMain = do
@@ -84,12 +85,18 @@ go CmdOptions{..} compFile = do
 difficulty :: CompSettings -> Masking -> Landing
 difficulty CompSettings{nominal} Masking{bestDistance, land} =
     Landing 
-        { minDistance = free nominal
+        { minDistance = md
         , bestDistance = bestDistance
         , landout = length <$> land
-        , lookahead = chunks
+        , lookahead = ahead
+        , chunks = (fromMaybe zeroChunk . fmap (Gap.chunks md'')) <$> bests
         }
     where
+        md = free nominal
+        md' = MkQuantity $ md
+        md'' = MinimumDistance md'
+        zeroChunk = Chunks [md']
+
         pss :: [[PilotDistance (Quantity Double [u| km |])]]
         pss =
             (fmap . fmap)
@@ -103,8 +110,9 @@ difficulty CompSettings{nominal} Masking{bestDistance, land} =
         bests =
             (fmap . fmap) (BestDistance . MkQuantity) bestDistance
 
-        chunks =
+        ahead =
             [ flip Gap.lookahead ps <$> b
             | b <- bests
             | ps <- pss
             ]
+
