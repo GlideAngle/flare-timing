@@ -49,7 +49,7 @@ import Data.Maybe (fromMaybe)
 import qualified Data.Map.Strict as Map
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.UnitsOfMeasure
-    (Pack, Unpack, KnownUnit, (+:), (-:), u, convert, fromRational', toRational')
+    (Unpack, KnownUnit, (+:), (-:), u, convert, fromRational', toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Data.UnitsOfMeasure.Show (showQuantity)
 import Data.UnitsOfMeasure.Read (QuantityWithUnit(..), Some(..), readQuantity)
@@ -140,22 +140,14 @@ instance
     , Real a
     , u ~ [u| km |]
     , KnownUnit (Unpack u)
-    , u ~ Pack (Unpack u)
     )
     => ToJSON (ViaQ n a u) where
-    toJSON (ViaQ x@(Chunk _)) = toJSON s
+    toJSON (ViaQ x@(Chunk _)) = toJSON . showQuantity $ y
          where
-             q :: Quantity Rational [u| km |]
-             q@(MkQuantity a) = toRational' . unpack $ x
-
-             b :: Scientific
-             b = toSci (defdp x) a
+             MkQuantity a = toRational' . unpack $ x
 
              y :: Quantity Scientific [u| km |]
-             y = (MkQuantity b)
-
-             s :: String
-             s = showQuantity y
+             y = MkQuantity . toSci (defdp x) $ a
 
 instance
     ( DefaultDecimalPlaces n
@@ -164,18 +156,14 @@ instance
     , Real a
     , u ~ [u| km |]
     , KnownUnit (Unpack u)
-    , u ~ Pack (Unpack u)
     )
     => FromJSON (ViaQ n a u) where
     parseJSON o = do
         s :: String <- parseJSON o
-        case readQuantity s of
-            Left err -> fail err
-            Right qU -> do
-                let qRat :: Quantity Rational [u| km |] =
-                        MkQuantity . fromSci . unSome $ qU
-
-                return . ViaQ . pack . fromRational' $ qRat
+        either
+            fail
+            (return . ViaQ . pack . fromRational' . MkQuantity . fromSci . unSome)
+            (readQuantity s)
 
 newtype Chunk = Chunk (Quantity Double [u| km |])
     deriving (Eq, Ord, Show)
