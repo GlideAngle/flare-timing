@@ -49,10 +49,10 @@ import Data.Maybe (fromMaybe)
 import qualified Data.Map.Strict as Map
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.UnitsOfMeasure
-    (Pack, Unpack, KnownUnit, (+:), (-:), u, convert, toRational')
+    (Pack, Unpack, KnownUnit, (+:), (-:), u, convert, fromRational', toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Data.UnitsOfMeasure.Show (showQuantity)
-import Data.UnitsOfMeasure.Read (QuantityWithUnit(..), Some(..))
+import Data.UnitsOfMeasure.Read (QuantityWithUnit(..), Some(..), readQuantity)
 
 import Flight.Ratio (pattern (:%))
 import Data.Aeson.ViaScientific (DefaultDecimalPlaces(..), DecimalPlaces(..))
@@ -167,7 +167,15 @@ instance
     , u ~ Pack (Unpack u)
     )
     => FromJSON (ViaQ n a u) where
-    parseJSON _ = undefined
+    parseJSON o = do
+        s :: String <- parseJSON o
+        case readQuantity s of
+            Left err -> fail err
+            Right qU -> do
+                let qRat :: Quantity Rational [u| km |] =
+                        MkQuantity . fromSci . unSome $ qU
+
+                return . ViaQ . pack . fromRational' $ qRat
 
 newtype Chunk = Chunk (Quantity Double [u| km |])
     deriving (Eq, Ord, Show)

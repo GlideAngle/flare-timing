@@ -45,7 +45,7 @@ import Flight.Comp
 import Flight.Units ()
 import Flight.Track.Mask (Masking(..), TrackDistance(..))
 import Flight.Track.Land (Landing(..))
-import Flight.Scribe (readComp, readMasking, writeLanding)
+import Flight.Scribe (readComp, readMasking, writeLanding, readLanding)
 import Flight.Score
     ( MinimumDistance(..)
     , BestDistance(..)
@@ -84,8 +84,10 @@ go CmdOptions{..} compFile = do
     case (compSettings, masking) of
         (Left msg, _) -> putStrLn msg
         (_, Left msg) -> putStrLn msg
-        (Right cs, Right mk) ->
+        (Right cs, Right mk) -> do
             writeLanding landFile $ difficulty cs mk
+            x <- runExceptT $ readLanding landFile
+            print x
 
 difficulty :: CompSettings -> Masking -> Landing
 difficulty CompSettings{nominal} Masking{bestDistance, land} =
