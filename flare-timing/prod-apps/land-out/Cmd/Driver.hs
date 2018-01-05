@@ -47,7 +47,12 @@ import Flight.Track.Mask (Masking(..), TrackDistance(..))
 import Flight.Track.Land (Landing(..))
 import Flight.Scribe (readComp, readMasking, writeLanding)
 import Flight.Score
-    (MinimumDistance(..), BestDistance(..), PilotDistance(..), Chunks(..))
+    ( MinimumDistance(..)
+    , BestDistance(..)
+    , PilotDistance(..)
+    , Chunk(..)
+    , Chunks(..)
+    )
 import Flight.Score as Gap (lookahead, chunks)
 
 driverMain :: IO ()
@@ -65,7 +70,7 @@ drive o = do
     if null files then putStrLn "Couldn't find any input files."
                   else mapM_ (go o) files
     end <- getTime Monotonic
-    fprint ("Tracks crossing zones completed in " % timeSpecs % "\n") start end
+    fprint ("Land outs counted for distance difficulty completed in " % timeSpecs % "\n") start end
 
 go :: CmdOptions -> CompInputFile -> IO ()
 go CmdOptions{..} compFile = do
@@ -95,7 +100,7 @@ difficulty CompSettings{nominal} Masking{bestDistance, land} =
         md = free nominal
         md' = MkQuantity $ md
         md'' = MinimumDistance md'
-        zeroChunk = Chunks [md']
+        zeroChunk = Chunks [Chunk md']
 
         pss :: [[PilotDistance (Quantity Double [u| km |])]]
         pss =

@@ -18,7 +18,9 @@ library:
   - aeson
   - aeson-via
   - newtype
+  - scientific
   - uom-plugin
+  - aeson-via
   - siggy-chardust
   - flight-units
   source-dirs: library

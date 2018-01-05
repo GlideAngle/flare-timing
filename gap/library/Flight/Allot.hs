@@ -13,6 +13,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE GADTs #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
 module Flight.Allot
@@ -30,6 +31,7 @@ module Flight.Allot
     , LinearFraction(..)
     , linearFraction
     , Lookahead(..)
+    , Chunk(..)
     , Chunks(..)
     , ChunkedDistance(..)
     , lookahead
@@ -40,21 +42,23 @@ module Flight.Allot
     ) where
 
 import Control.Newtype (Newtype(..))
+import Data.Scientific (Scientific)
 import Data.Ratio ((%))
 import Data.List (sort, group, minimum)
 import Data.Maybe (fromMaybe)
-import Data.Either (partitionEithers)
 import qualified Data.Map.Strict as Map
 import Data.Aeson (ToJSON(..), FromJSON(..))
-import Data.UnitsOfMeasure ((+:), (-:), u, convert, toRational')
+import Data.UnitsOfMeasure
+    (Pack, Unpack, KnownUnit, (+:), (-:), u, convert, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Data.UnitsOfMeasure.Show (showQuantity)
-import Data.UnitsOfMeasure.Read (QuantityWithUnit(..), Some(..), readQuantity)
+import Data.UnitsOfMeasure.Read (QuantityWithUnit(..), Some(..))
 
 import Flight.Ratio (pattern (:%))
 import Data.Aeson.ViaScientific (DefaultDecimalPlaces(..), DecimalPlaces(..))
 import Flight.Validity (MinimumDistance(..))
 import Flight.Units ()
+import Data.Aeson.ViaScientific
 
 -- | The number of pilots completing the speed section of the task.
 newtype PilotsAtEss = PilotsAtEss Integer
@@ -123,21 +127,72 @@ newtype DifficultyFraction = DifficultyFraction Rational
 newtype Lookahead = Lookahead Int
     deriving (Eq, Ord, Show, ToJSON, FromJSON)
 
--- | A sequence of chunk ends, distances on course in km.
-newtype Chunks = Chunks [Quantity Double [u| km |]]
+data ViaQ n a u where
+    ViaQ
+        :: (DefaultDecimalPlaces n, Newtype n (Quantity a u))
+        => n
+        -> ViaQ n a u
+
+instance
+    ( DefaultDecimalPlaces n
+    , Newtype n (Quantity a u)
+    , n ~ Chunk
+    , Real a
+    , u ~ [u| km |]
+    , KnownUnit (Unpack u)
+    , u ~ Pack (Unpack u)
+    )
+    => ToJSON (ViaQ n a u) where
+    toJSON (ViaQ x@(Chunk _)) = toJSON s
+         where
+             q :: Quantity Rational [u| km |]
+             q@(MkQuantity a) = toRational' . unpack $ x
+
+             b :: Scientific
+             b = toSci (defdp x) a
+
+             y :: Quantity Scientific [u| km |]
+             y = (MkQuantity b)
+
+             s :: String
+             s = showQuantity y
+
+instance
+    ( DefaultDecimalPlaces n
+    , Newtype n (Quantity a u)
+    , n ~ Chunk
+    , Real a
+    , u ~ [u| km |]
+    , KnownUnit (Unpack u)
+    , u ~ Pack (Unpack u)
+    )
+    => FromJSON (ViaQ n a u) where
+    parseJSON _ = undefined
+
+newtype Chunk = Chunk (Quantity Double [u| km |])
     deriving (Eq, Ord, Show)
 
-instance ToJSON Chunks where
-    toJSON (Chunks xs) = toJSON $ showQuantity <$> xs
+instance DefaultDecimalPlaces Chunk where
+    defdp _ = DecimalPlaces 1
 
-instance FromJSON Chunks where
+instance (u ~ [u| km |]) => Newtype Chunk (Quantity Double u) where
+    pack = Chunk
+    unpack (Chunk a) = a
+
+instance ToJSON Chunk where
+    toJSON x = toJSON $ ViaQ x
+
+instance FromJSON Chunk where
     parseJSON o = do
-        xs :: [String] <- parseJSON o
-        let ([], qs) = partitionEithers $ readQuantity <$> xs
-        return . Chunks $ unSome <$> qs
+        ViaQ x <- parseJSON o
+        return x
 
 unSome :: Some (QuantityWithUnit p) -> p
 unSome (Some (QuantityWithUnit (MkQuantity q) _)) = q
+
+-- | A sequence of chunk ends, distances on course in km.
+newtype Chunks = Chunks [Chunk]
+    deriving (Eq, Ord, Show, ToJSON, FromJSON)
 
 arrivalFraction :: PilotsAtEss -> PositionAtEss -> ArrivalFraction
 arrivalFraction (PilotsAtEss n) (PositionAtEss rank)
@@ -198,7 +253,7 @@ lookahead (BestDistance (MkQuantity best)) xs =
 -- awarded that distance.
 chunks :: MinimumDistance (Quantity Double [u| km |]) -> BestDistance -> Chunks
 chunks (MinimumDistance md) (BestDistance best) =
-    Chunks $ MkQuantity <$> [x0, x1 .. xN]
+    Chunks $ Chunk . MkQuantity <$> [x0, x1 .. xN]
     where
         MkQuantity x0 = md
         MkQuantity x1 = md +: convert [u| 100m |]
