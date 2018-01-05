@@ -49,7 +49,15 @@ instance FieldOrdering Landing where
 cmp :: (Ord a, IsString a) => a -> a -> Ordering
 cmp a b =
     case (a, b) of
-        -- TODO: first start time & last goal time & launched
-        ("lookahead", _) -> LT
+        ("minDistance", _) -> LT
+
+        ("bestDistance", "minDistance") -> GT
+        ("bestDistance", _) -> LT
+
+        ("landout", "minDistance") -> GT
+        ("landout", "bestDistance") -> GT
+        ("landout", _) -> LT
+
+        ("lookahead", _) -> GT
 
         _ -> compare a b
