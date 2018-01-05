@@ -134,10 +134,10 @@ instance FromJSON Chunks where
     parseJSON o = do
         xs :: [String] <- parseJSON o
         let ([], qs) = partitionEithers $ readQuantity <$> xs
-        return . Chunks $ qKm <$> qs
+        return . Chunks $ unSome <$> qs
 
-qKm :: Some (QuantityWithUnit p) -> p
-qKm (Some (QuantityWithUnit (MkQuantity q) _)) = q
+unSome :: Some (QuantityWithUnit p) -> p
+unSome (Some (QuantityWithUnit (MkQuantity q) _)) = q
 
 arrivalFraction :: PilotsAtEss -> PositionAtEss -> ArrivalFraction
 arrivalFraction (PilotsAtEss n) (PositionAtEss rank)
