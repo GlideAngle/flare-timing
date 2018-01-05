@@ -43,11 +43,14 @@ import Control.Newtype (Newtype(..))
 import Data.Ratio ((%))
 import Data.List (sort, group, minimum)
 import Data.Maybe (fromMaybe)
+import Data.Either (partitionEithers)
 import qualified Data.Map.Strict as Map
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.UnitsOfMeasure
     (One, (+:), (-:), u, convert, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
+import Data.UnitsOfMeasure.Show (showQuantity)
+import Data.UnitsOfMeasure.Read (QuantityWithUnit(..), Some(..), readQuantity)
 
 import Flight.Ratio (pattern (:%))
 import Data.Aeson.ViaScientific (DefaultDecimalPlaces(..), DecimalPlaces(..))
@@ -123,7 +126,20 @@ newtype Lookahead = Lookahead Int
 
 -- | A sequence of chunk ends, distances on course in km.
 newtype Chunks = Chunks [Quantity Double [u| km |]]
-    deriving (Eq, Ord, Show, ToJSON, FromJSON)
+    deriving (Eq, Ord, Show)
+
+instance ToJSON Chunks where
+    toJSON (Chunks xs) = toJSON $ showQuantity <$> xs
+
+instance FromJSON Chunks where
+    parseJSON o = do
+        xs :: [String] <- parseJSON o
+        let qs :: [Either _ _] = readQuantity <$> xs
+        let ([], qs') = partitionEithers qs
+        let qs'' =
+                (\(Some (QuantityWithUnit (MkQuantity q) u)) -> q)
+                <$> qs'
+        return . Chunks $ qs''
 
 deriving instance (ToJSON a, u ~ [u| km |]) => ToJSON (Quantity a u)
 deriving instance (FromJSON a, u ~ [u| km |]) => FromJSON (Quantity a u)
