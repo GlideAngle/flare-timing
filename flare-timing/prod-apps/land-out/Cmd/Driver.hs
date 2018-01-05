@@ -39,12 +39,13 @@ import Flight.Comp
     , Nominal(..)
     , MaskTrackFile(..)
     , compToMask
+    , compToLand
     , findCompInput
     )
 import Flight.Units ()
 import Flight.Track.Mask (Masking(..), TrackDistance(..))
 import Flight.Track.Land (Landing(..))
-import Flight.Scribe (readComp, readMasking)
+import Flight.Scribe (readComp, readMasking, writeLanding)
 import Flight.Score (BestDistance(..), PilotDistance(..))
 import Flight.Score as Gap (lookahead)
 
@@ -68,6 +69,7 @@ drive o = do
 go :: CmdOptions -> CompInputFile -> IO ()
 go CmdOptions{..} compFile = do
     let maskFile@(MaskTrackFile maskPath) = compToMask compFile
+    let landFile = compToLand compFile
     putStrLn $ "Reading land outs from '" ++ takeFileName maskPath ++ "'"
 
     compSettings <- runExceptT $ readComp compFile
@@ -77,33 +79,17 @@ go CmdOptions{..} compFile = do
         (Left msg, _) -> putStrLn msg
         (_, Left msg) -> putStrLn msg
         (Right cs, Right mk) ->
-            print $
-            difficulty
-                cs
-                mk
+            writeLanding landFile $ difficulty cs mk
 
 difficulty :: CompSettings -> Masking -> Landing
 difficulty CompSettings{nominal} Masking{bestDistance, land} =
     Landing 
-        { minDistance = md
+        { minDistance = free nominal
         , bestDistance = bestDistance
         , landout = length <$> land
-        , lookahead = ahead
-        , lookaheadChunks = chunks
+        , lookahead = chunks
         }
     where
-        f :: Int -> Double -> Int
-        f n b = max 30 $ round ((30.0 * b) / fromIntegral n)
-
-        md = free nominal
-        landout = length <$> land
-
-        ahead =
-            [ f n <$> b
-            | b <- bestDistance
-            | n <- landout
-            ]
-
         pss :: [[PilotDistance (Quantity Double [u| km |])]]
         pss =
             (fmap . fmap)
@@ -118,7 +104,7 @@ difficulty CompSettings{nominal} Masking{bestDistance, land} =
             (fmap . fmap) (BestDistance . MkQuantity) bestDistance
 
         chunks =
-            [ (\b' -> Gap.lookahead b' ps) <$> b
+            [ flip Gap.lookahead ps <$> b
             | b <- bests
             | ps <- pss
             ]

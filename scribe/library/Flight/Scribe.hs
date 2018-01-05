@@ -4,6 +4,7 @@ module Flight.Scribe
     , readCrossing , writeCrossing
     , readTagging, writeTagging
     , readMasking, writeMasking
+    , readLanding, writeLanding
     , module Flight.Align
     , module Flight.Discard
     ) where
@@ -17,6 +18,7 @@ import Flight.Route (TaskRoutes(..), TaskTrack(..))
 import Flight.Track.Tag (Tagging(..))
 import Flight.Track.Cross (Crossing)
 import Flight.Track.Mask (Masking)
+import Flight.Track.Land (Landing)
 import Flight.Field (FieldOrdering(..))
 import Flight.Comp
     ( CompInputFile(..)
@@ -24,6 +26,7 @@ import Flight.Comp
     , CrossZoneFile(..)
     , TagZoneFile(..)
     , MaskTrackFile(..)
+    , LandOutFile(..)
     , CompSettings(..)
     )
 import Flight.Align
@@ -84,4 +87,15 @@ writeMasking :: MaskTrackFile -> Masking -> IO ()
 writeMasking (MaskTrackFile path) maskTrack = do
     let cfg = Y.setConfCompare (fieldOrder maskTrack) Y.defConfig
     let yaml = Y.encodePretty cfg maskTrack
+    BS.writeFile path yaml
+
+readLanding :: LandOutFile -> ExceptT String IO Landing
+readLanding (LandOutFile path) = do
+    contents <- lift $ BS.readFile path
+    ExceptT . return $ decodeEither contents
+
+writeLanding :: LandOutFile -> Landing -> IO ()
+writeLanding (LandOutFile path) landout = do
+    let cfg = Y.setConfCompare (fieldOrder landout) Y.defConfig
+    let yaml = Y.encodePretty cfg landout
     BS.writeFile path yaml

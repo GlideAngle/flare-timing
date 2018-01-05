@@ -35,9 +35,8 @@ data Landing =
         -- ^ For each task, the best distance flown.
         , landout :: [Int]
         -- ^ For each task, the number of pilots landing out.
-        , lookahead :: [Maybe Int]
-        -- ^ For each task, the look ahead distance
-        , lookaheadChunks :: [Maybe Lookahead]
+        , lookahead :: [Maybe Lookahead]
+        -- ^ For each task, the look ahead distance as a number of 100m chunks.
         }
         deriving (Eq, Ord, Show, Generic)
 
