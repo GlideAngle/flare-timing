@@ -64,11 +64,12 @@ module Flight.Score
     , Lookahead(..)
     , Chunk(..)
     , Chunks(..)
-    , ChunkedDistance(..)
+    , IxChunk(..)
     , lookahead
     , toChunk
     , chunks
     , landouts
+    , SumOfDifficulty(..)
     , DifficultyFraction(..)
     , difficultyFraction
     -- * Fractional allotment of leading points 

@@ -22,7 +22,7 @@ import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 
 import Flight.Field (FieldOrdering(..))
-import Flight.Score (Lookahead, Chunks, ChunkedDistance)
+import Flight.Score (Lookahead, Chunks, IxChunk, SumOfDifficulty)
 
 -- | For each task, the masking for that task.
 data Landing =
@@ -37,7 +37,10 @@ data Landing =
         -- ^ For each task, the number of pilots landing out.
         , lookahead :: [Maybe Lookahead]
         -- ^ For each task, how many 100m chunks to look ahead for land outs.
-        , chunkLandings :: [[(ChunkedDistance, Int)]]
+        , sumOfDifficulty :: [Maybe SumOfDifficulty]
+        -- ^ The difficulty of each chunk is relative to the sum of
+        -- difficulties.
+        , chunkLandings :: [[(IxChunk, Int)]]
         -- ^ For each task, the number of landouts in each chunk, chunks with
         -- no landouts ommitted.
         , chunks :: [Chunks]
@@ -68,10 +71,17 @@ cmp a b =
         ("lookahead", "landout") -> GT
         ("lookahead", _) -> LT
 
+        ("sumOfDifficulty", "minDistance") -> GT
+        ("sumOfDifficulty", "bestDistance") -> GT
+        ("sumOfDifficulty", "landout") -> GT
+        ("sumOfDifficulty", "lookahead") -> GT
+        ("sumOfDifficulty", _) -> LT
+
         ("chunkLandings", "minDistance") -> GT
         ("chunkLandings", "bestDistance") -> GT
         ("chunkLandings", "landout") -> GT
         ("chunkLandings", "lookahead") -> GT
+        ("chunkLandings", "sumOfDifficulty") -> GT
         ("chunkLandings", _) -> LT
 
         ("chunks", _) -> GT

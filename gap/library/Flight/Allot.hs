@@ -10,7 +10,6 @@
 
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE PartialTypeSignatures #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE GADTs #-}
@@ -36,11 +35,12 @@ module Flight.Allot
     , Lookahead(..)
     , Chunk(..)
     , Chunks(..)
-    , ChunkedDistance(..)
+    , IxChunk(..)
     , lookahead
     , toChunk
     , chunks
     , landouts
+    , SumOfDifficulty(..)
     , DifficultyFraction(..)
     , difficultyFraction
     ) where
@@ -137,11 +137,13 @@ newtype BestDistance = BestDistance (Quantity Double [u| km |])
 newtype PilotDistance a = PilotDistance a deriving (Eq, Ord, Show)
 newtype LinearFraction = LinearFraction Rational deriving (Eq, Ord, Show)
 
-data ChunkedDistance =
-    ChunkedDistance
-        { minimum :: MinimumDistance
-        , chunkOffset :: Int
-        }
+-- | The index of a 100m chunk. The zeroth chunk is any distance less than or
+-- equal to minimum distance.
+newtype IxChunk = IxChunk Int
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+
+-- | The sum of all chunk difficulties.
+newtype SumOfDifficulty = SumOfDifficulty Integer
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 newtype DifficultyFraction = DifficultyFraction Rational
@@ -282,10 +284,10 @@ chunks (MinimumDistance md) (BestDistance best) =
 toChunk
     :: MinimumDistance
     -> PilotDistance (Quantity Double [u| km |])
-    -> ChunkedDistance
-toChunk dMin@(MinimumDistance md) (PilotDistance d)
-    | d <= md = ChunkedDistance dMin 0
-    | otherwise = ChunkedDistance dMin $ round x
+    -> IxChunk
+toChunk (MinimumDistance md) (PilotDistance d)
+    | d <= md = IxChunk 0
+    | otherwise = IxChunk $ ceiling x
     where
         MkQuantity x = convert (d -: md) :: Quantity _ [u| hm |]
 
@@ -294,17 +296,17 @@ toChunk dMin@(MinimumDistance md) (PilotDistance d)
 landouts
     :: MinimumDistance
     -> [PilotDistance (Quantity Double [u| km |])]
-    -> [(ChunkedDistance, Int)]
+    -> [(IxChunk, Int)]
 landouts md xs =
     sumLandouts $ chunkLandouts md xs
 
-sumLandouts :: [ChunkedDistance] -> [(ChunkedDistance, Int)]
+sumLandouts :: [IxChunk] -> [(IxChunk, Int)]
 sumLandouts = fmap (\gXs@(gX : _) -> (gX, length gXs)) . group
 
 chunkLandouts
     :: MinimumDistance
     -> [PilotDistance (Quantity Double [u| km |])]
-    -> [ChunkedDistance]
+    -> [IxChunk]
 chunkLandouts md xs =
     toChunk md <$> sort xs
 
@@ -314,44 +316,41 @@ difficultyFraction
     :: MinimumDistance
     -> BestDistance
     -> [PilotDistance (Quantity Double [u| km |])]
-    -> [DifficultyFraction]
+    -> (SumOfDifficulty, [DifficultyFraction])
 difficultyFraction md best xs =
-    zipWith (diffByChunk diffScoreMap) xs ys
+    (SumOfDifficulty sumOfDiff, zipWith (diffByChunk diffScoreMap) xs ys)
     where
-        ys :: [ChunkedDistance]
+        ys :: [IxChunk]
         ys = chunkLandouts md xs
 
-        ns :: [(ChunkedDistance, Int)]
+        ns :: [(IxChunk, Int)]
         ns = sumLandouts ys
 
-        nMap :: Map.Map ChunkedDistance Int
+        nMap :: Map.Map IxChunk Int
         nMap = Map.fromList ns
 
         n = lookahead best xs
 
-        lookaheadMap :: Map.Map ChunkedDistance Integer
+        lookaheadMap :: Map.Map IxChunk Integer
         lookaheadMap = toInteger <$> difficulty md n nMap
 
         sumOfDiff :: Integer
         sumOfDiff = toInteger $ sum $ Map.elems lookaheadMap
 
-        relativeDiffMap :: Map.Map ChunkedDistance Rational
+        relativeDiffMap :: Map.Map IxChunk Rational
         relativeDiffMap = (\d -> d % (2 * sumOfDiff)) <$> lookaheadMap
 
         -- TODO: If distance > best flown * 10 then diff score is 0.5.
-        diffScoreMap :: Map.Map ChunkedDistance Rational
+        diffScoreMap :: Map.Map IxChunk Rational
         diffScoreMap =
             snd $ Map.mapAccum (\acc x -> (acc + x, x)) 0 relativeDiffMap
 
 diffByChunk
-    :: Map.Map ChunkedDistance Rational
+    :: Map.Map IxChunk Rational
     -> PilotDistance (Quantity Double [u| km |])
-    -> ChunkedDistance
+    -> IxChunk
     -> DifficultyFraction
-diffByChunk
-    diffMap
-    (PilotDistance (MkQuantity pd))
-    pc@(ChunkedDistance md pdChunk) =
+diffByChunk diffMap (PilotDistance (MkQuantity pd)) pc@(IxChunk pdChunk) =
     DifficultyFraction $
     pDiff
     + (pDiffNext - pDiff)
@@ -362,18 +361,18 @@ diffByChunk
         pDiff = fromMaybe (0 % 1) $ Map.lookup pc diffMap
 
         (_, pDiffNext :: Rational) =
-            fromMaybe (ChunkedDistance md 0, 0 % 1) $ Map.lookupGT pc diffMap
+            fromMaybe (IxChunk 0, 0 % 1) $ Map.lookupGT pc diffMap
 
 difficulty
     :: MinimumDistance
     -> Lookahead
-    -> Map.Map ChunkedDistance Int
-    -> Map.Map ChunkedDistance Int
+    -> Map.Map IxChunk Int
+    -> Map.Map IxChunk Int
 difficulty _ (Lookahead n) nMap =
     Map.mapWithKey f nMap
     where
-        f :: ChunkedDistance -> Int -> Int
-        f (ChunkedDistance _ cd) _ =
+        f :: IxChunk -> Int -> Int
+        f (IxChunk cd) _ =
             sum $ Map.elems filtered
             where
                 kMin = cd
@@ -381,5 +380,5 @@ difficulty _ (Lookahead n) nMap =
 
                 filtered =
                     Map.filterWithKey
-                        (\(ChunkedDistance _ k) _ -> kMin <= k && k <= kMax)
+                        (\(IxChunk k) _ -> kMin <= k && k <= kMax)
                         nMap
