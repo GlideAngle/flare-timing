@@ -15,6 +15,7 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DuplicateRecordFields #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
 module Flight.Allot
@@ -43,6 +44,8 @@ module Flight.Allot
     , SumOfDifficulty(..)
     , RelativeDifficulty(..)
     , DifficultyFraction(..)
+    , ChunkRelativeDifficulty(..)
+    , ChunkDifficultyFraction(..)
     , Difficulty(..)
     , difficulty
     ) where
@@ -52,7 +55,7 @@ import Control.Newtype (Newtype(..))
 import Data.Scientific (Scientific)
 import Data.Ratio ((%))
 import qualified Data.List as List (minimum)
-import Data.List (sort, group)
+import Data.List (sort, sortOn, group)
 import Data.Maybe (fromMaybe)
 import qualified Data.Map.Strict as Map
 import Data.Aeson (ToJSON(..), FromJSON(..))
@@ -186,11 +189,25 @@ instance FromJSON DifficultyFraction where
         ViaScientific x <- parseJSON o
         return x
 
+data ChunkRelativeDifficulty =
+    ChunkRelativeDifficulty
+        { chunk :: IxChunk
+        , rel :: RelativeDifficulty
+        }
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+
+data ChunkDifficultyFraction =
+    ChunkDifficultyFraction
+        { chunk :: IxChunk
+        , frac :: DifficultyFraction
+        }
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+
 data Difficulty =
     Difficulty
         { sumOf :: SumOfDifficulty
-        , relative :: [RelativeDifficulty]
-        , fractional :: [DifficultyFraction]
+        , relative :: [ChunkRelativeDifficulty]
+        , fractional :: [ChunkDifficultyFraction]
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
@@ -365,8 +382,8 @@ difficulty
 difficulty md best xs =
     Difficulty
         { sumOf = SumOfDifficulty sumOfDiff
-        , relative = RelativeDifficulty <$> Map.elems relativeDiffMap
-        , fractional = zipWith (diffByChunk diffScoreMap) xs ys
+        , relative = relatives
+        , fractional = fractionals
         }
     where
         ys :: [IxChunk]
@@ -389,10 +406,16 @@ difficulty md best xs =
         relativeDiffMap :: Map.Map IxChunk Rational
         relativeDiffMap = (\d -> d % (2 * sumOfDiff)) <$> lookaheadMap
 
-        -- TODO: If distance > best flown * 10 then diff score is 0.5.
-        diffScoreMap :: Map.Map IxChunk Rational
-        diffScoreMap =
-            snd $ Map.mapAccum (\acc x -> (acc + x, x)) 0 relativeDiffMap
+        rels = sortOn fst $ Map.toList relativeDiffMap
+        fracs = scanl1 (\(_, b) (c, d) -> (c, b + d)) rels
+
+        relatives =
+            (\(a, b) -> ChunkRelativeDifficulty a (RelativeDifficulty b))
+            <$> rels
+
+        fractionals =
+            (\(a, b) -> ChunkDifficultyFraction a (DifficultyFraction b))
+            <$> fracs
 
 diffByChunk
     :: Map.Map IxChunk Rational

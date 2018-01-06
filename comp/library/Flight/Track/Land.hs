@@ -27,8 +27,8 @@ import Flight.Score
     , Chunks
     , IxChunk
     , SumOfDifficulty
-    , RelativeDifficulty
-    , DifficultyFraction
+    , ChunkRelativeDifficulty
+    , ChunkDifficultyFraction
     )
 
 -- | For each task, the masking for that task.
@@ -47,9 +47,9 @@ data Landing =
         , sumOfDifficulty :: [Maybe SumOfDifficulty]
         -- ^ The difficulty of each chunk is relative to the sum of
         -- difficulties.
-        , relativeDifficulty :: [Maybe [RelativeDifficulty]]
+        , relativeDifficulty :: [Maybe [ChunkRelativeDifficulty]]
         -- ^ The relative difficulty of each chunk.
-        , fractionalDifficulty :: [Maybe [DifficultyFraction]]
+        , fractionalDifficulty :: [Maybe [ChunkDifficultyFraction]]
         -- ^ The fractional difficulty, being the sum of relative difficulties
         -- up to the chunk of landing.
         , chunkLandings :: [[(IxChunk, Int)]]
