@@ -70,8 +70,10 @@ module Flight.Score
     , chunks
     , landouts
     , SumOfDifficulty(..)
+    , RelativeDifficulty(..)
     , DifficultyFraction(..)
-    , difficultyFraction
+    , Difficulty(..)
+    , difficulty
     -- * Fractional allotment of leading points 
     , TaskTime(..)
     , DistanceToEss(..)

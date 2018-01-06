@@ -41,8 +41,10 @@ module Flight.Allot
     , chunks
     , landouts
     , SumOfDifficulty(..)
+    , RelativeDifficulty(..)
     , DifficultyFraction(..)
-    , difficultyFraction
+    , Difficulty(..)
+    , difficulty
     ) where
 
 import Prelude hiding (minimum)
@@ -146,8 +148,51 @@ newtype IxChunk = IxChunk Int
 newtype SumOfDifficulty = SumOfDifficulty Integer
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
+-- | The relative difficulty of a chunk.
+newtype RelativeDifficulty = RelativeDifficulty Rational
+    deriving (Eq, Ord, Show)
+
+instance DefaultDecimalPlaces RelativeDifficulty where
+    defdp _ = DecimalPlaces 8
+
+instance Newtype RelativeDifficulty Rational where
+    pack = RelativeDifficulty
+    unpack (RelativeDifficulty a) = a
+
+instance ToJSON RelativeDifficulty where
+    toJSON x = toJSON $ ViaScientific x
+
+instance FromJSON RelativeDifficulty where
+    parseJSON o = do
+        ViaScientific x <- parseJSON o
+        return x
+
+-- | The sum of relative difficulties up until the chunk of landing.
 newtype DifficultyFraction = DifficultyFraction Rational
     deriving (Eq, Ord, Show)
+
+instance DefaultDecimalPlaces DifficultyFraction where
+    defdp _ = DecimalPlaces 8
+
+instance Newtype DifficultyFraction Rational where
+    pack = DifficultyFraction
+    unpack (DifficultyFraction a) = a
+
+instance ToJSON DifficultyFraction where
+    toJSON x = toJSON $ ViaScientific x
+
+instance FromJSON DifficultyFraction where
+    parseJSON o = do
+        ViaScientific x <- parseJSON o
+        return x
+
+data Difficulty =
+    Difficulty
+        { sumOf :: SumOfDifficulty
+        , relative :: [RelativeDifficulty]
+        , fractional :: [DifficultyFraction]
+        }
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 -- | How far to look ahead, in units of 100m chunks.
 newtype Lookahead = Lookahead Int
@@ -312,13 +357,17 @@ chunkLandouts md xs =
 
 -- | For a list of distances flown by pilots, works out the distance difficulty
 -- fraction for each pilot.
-difficultyFraction
+difficulty
     :: MinimumDistance
     -> BestDistance
     -> [PilotDistance (Quantity Double [u| km |])]
-    -> (SumOfDifficulty, [DifficultyFraction])
-difficultyFraction md best xs =
-    (SumOfDifficulty sumOfDiff, zipWith (diffByChunk diffScoreMap) xs ys)
+    -> Difficulty
+difficulty md best xs =
+    Difficulty
+        { sumOf = SumOfDifficulty sumOfDiff
+        , relative = RelativeDifficulty <$> Map.elems relativeDiffMap
+        , fractional = zipWith (diffByChunk diffScoreMap) xs ys
+        }
     where
         ys :: [IxChunk]
         ys = chunkLandouts md xs
@@ -332,7 +381,7 @@ difficultyFraction md best xs =
         n = lookahead best xs
 
         lookaheadMap :: Map.Map IxChunk Integer
-        lookaheadMap = toInteger <$> difficulty md n nMap
+        lookaheadMap = toInteger <$> lookaheadDifficulty md n nMap
 
         sumOfDiff :: Integer
         sumOfDiff = toInteger $ sum $ Map.elems lookaheadMap
@@ -363,12 +412,12 @@ diffByChunk diffMap (PilotDistance (MkQuantity pd)) pc@(IxChunk pdChunk) =
         (_, pDiffNext :: Rational) =
             fromMaybe (IxChunk 0, 0 % 1) $ Map.lookupGT pc diffMap
 
-difficulty
+lookaheadDifficulty
     :: MinimumDistance
     -> Lookahead
     -> Map.Map IxChunk Int
     -> Map.Map IxChunk Int
-difficulty _ (Lookahead n) nMap =
+lookaheadDifficulty _ (Lookahead n) nMap =
     Map.mapWithKey f nMap
     where
         f :: IxChunk -> Int -> Int

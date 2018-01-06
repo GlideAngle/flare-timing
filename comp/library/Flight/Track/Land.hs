@@ -22,7 +22,14 @@ import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 
 import Flight.Field (FieldOrdering(..))
-import Flight.Score (Lookahead, Chunks, IxChunk, SumOfDifficulty)
+import Flight.Score
+    ( Lookahead
+    , Chunks
+    , IxChunk
+    , SumOfDifficulty
+    , RelativeDifficulty
+    , DifficultyFraction
+    )
 
 -- | For each task, the masking for that task.
 data Landing =
@@ -40,6 +47,11 @@ data Landing =
         , sumOfDifficulty :: [Maybe SumOfDifficulty]
         -- ^ The difficulty of each chunk is relative to the sum of
         -- difficulties.
+        , relativeDifficulty :: [Maybe [RelativeDifficulty]]
+        -- ^ The relative difficulty of each chunk.
+        , fractionalDifficulty :: [Maybe [DifficultyFraction]]
+        -- ^ The fractional difficulty, being the sum of relative difficulties
+        -- up to the chunk of landing.
         , chunkLandings :: [[(IxChunk, Int)]]
         -- ^ For each task, the number of landouts in each chunk, chunks with
         -- no landouts ommitted.
@@ -76,6 +88,21 @@ cmp a b =
         ("sumOfDifficulty", "landout") -> GT
         ("sumOfDifficulty", "lookahead") -> GT
         ("sumOfDifficulty", _) -> LT
+
+        ("relativeDifficulty", "minDistance") -> GT
+        ("relativeDifficulty", "bestDistance") -> GT
+        ("relativeDifficulty", "landout") -> GT
+        ("relativeDifficulty", "lookahead") -> GT
+        ("relativeDifficulty", "sumOfDifficulty") -> GT
+        ("relativeDifficulty", _) -> LT
+
+        ("fractionalDifficulty", "minDistance") -> GT
+        ("fractionalDifficulty", "bestDistance") -> GT
+        ("fractionalDifficulty", "landout") -> GT
+        ("fractionalDifficulty", "lookahead") -> GT
+        ("fractionalDifficulty", "sumOfDifficulty") -> GT
+        ("fractionalDifficulty", "relativeDifficulty") -> GT
+        ("fractionalDifficulty", _) -> LT
 
         ("chunkLandings", "minDistance") -> GT
         ("chunkLandings", "bestDistance") -> GT
