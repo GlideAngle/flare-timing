@@ -25,10 +25,10 @@ import Flight.Field (FieldOrdering(..))
 import Flight.Score
     ( Lookahead
     , Chunks
-    , IxChunk
     , SumOfDifficulty
     , ChunkRelativeDifficulty
     , ChunkDifficultyFraction
+    , ChunkLandings
     )
 
 -- | For each task, the masking for that task.
@@ -52,7 +52,7 @@ data Landing =
         , fractionalDifficulty :: [Maybe [ChunkDifficultyFraction]]
         -- ^ The fractional difficulty, being the sum of relative difficulties
         -- up to the chunk of landing.
-        , chunkLandings :: [[(IxChunk, Int)]]
+        , chunkLandings :: [[ChunkLandings]]
         -- ^ For each task, the number of landouts in each chunk, chunks with
         -- no landouts ommitted.
         , chunks :: [Chunks]

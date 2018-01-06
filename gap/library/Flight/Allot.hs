@@ -46,6 +46,7 @@ module Flight.Allot
     , DifficultyFraction(..)
     , ChunkRelativeDifficulty(..)
     , ChunkDifficultyFraction(..)
+    , ChunkLandings(..)
     , Difficulty(..)
     , difficulty
     ) where
@@ -189,6 +190,7 @@ instance FromJSON DifficultyFraction where
         ViaScientific x <- parseJSON o
         return x
 
+-- | The relative difficulty for this chunk.
 data ChunkRelativeDifficulty =
     ChunkRelativeDifficulty
         { chunk :: IxChunk
@@ -196,10 +198,19 @@ data ChunkRelativeDifficulty =
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
+-- | The difficulty fraction for this chunk.
 data ChunkDifficultyFraction =
     ChunkDifficultyFraction
         { chunk :: IxChunk
         , frac :: DifficultyFraction
+        }
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+
+-- | How many pilots down in this chunk.
+data ChunkLandings =
+    ChunkLandings
+        { chunk :: IxChunk
+        , down :: Int
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
@@ -358,9 +369,10 @@ toChunk (MinimumDistance md) (PilotDistance d)
 landouts
     :: MinimumDistance
     -> [PilotDistance (Quantity Double [u| km |])]
-    -> [(IxChunk, Int)]
+    -> [ChunkLandings]
 landouts md xs =
-    sumLandouts $ chunkLandouts md xs
+    uncurry ChunkLandings
+    <$> (sumLandouts $ chunkLandouts md xs)
 
 sumLandouts :: [IxChunk] -> [(IxChunk, Int)]
 sumLandouts = fmap (\gXs@(gX : _) -> (gX, length gXs)) . group
