@@ -22,7 +22,7 @@ import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 
 import Flight.Field (FieldOrdering(..))
-import Flight.Score (Lookahead, Chunks)
+import Flight.Score (Lookahead, Chunks, ChunkedDistance)
 
 -- | For each task, the masking for that task.
 data Landing =
@@ -37,6 +37,9 @@ data Landing =
         -- ^ For each task, the number of pilots landing out.
         , lookahead :: [Maybe Lookahead]
         -- ^ For each task, how many 100m chunks to look ahead for land outs.
+        , chunkLandings :: [[(ChunkedDistance, Int)]]
+        -- ^ For each task, the number of landouts in each chunk, chunks with
+        -- no landouts ommitted.
         , chunks :: [Chunks]
         -- ^ For each task, the task distance to the end of each 100m chunk.
         }
@@ -64,6 +67,12 @@ cmp a b =
         ("lookahead", "bestDistance") -> GT
         ("lookahead", "landout") -> GT
         ("lookahead", _) -> LT
+
+        ("chunkLandings", "minDistance") -> GT
+        ("chunkLandings", "bestDistance") -> GT
+        ("chunkLandings", "landout") -> GT
+        ("chunkLandings", "lookahead") -> GT
+        ("chunkLandings", _) -> LT
 
         ("chunks", _) -> GT
 

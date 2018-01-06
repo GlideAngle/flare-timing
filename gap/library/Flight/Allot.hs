@@ -14,6 +14,8 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE DeriveGeneric #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
 module Flight.Allot
@@ -26,6 +28,7 @@ module Flight.Allot
     , bestTime
     , SpeedFraction(..)
     , speedFraction
+    , MinimumDistance(..)
     , BestDistance(..)
     , PilotDistance(..)
     , LinearFraction(..)
@@ -37,14 +40,17 @@ module Flight.Allot
     , lookahead
     , toChunk
     , chunks
+    , landouts
     , DifficultyFraction(..)
     , difficultyFraction
     ) where
 
+import Prelude hiding (minimum)
 import Control.Newtype (Newtype(..))
 import Data.Scientific (Scientific)
 import Data.Ratio ((%))
-import Data.List (sort, group, minimum)
+import qualified Data.List as List (minimum)
+import Data.List (sort, group)
 import Data.Maybe (fromMaybe)
 import qualified Data.Map.Strict as Map
 import Data.Aeson (ToJSON(..), FromJSON(..))
@@ -55,18 +61,36 @@ import Data.UnitsOfMeasure.Show (showQuantity)
 import Data.UnitsOfMeasure.Read (QuantityWithUnit(..), Some(..), readQuantity)
 
 import Flight.Ratio (pattern (:%))
+import GHC.Generics (Generic)
 import Data.Aeson.ViaScientific (DefaultDecimalPlaces(..), DecimalPlaces(..))
-import Flight.Validity (MinimumDistance(..))
 import Flight.Units ()
 import Data.Aeson.ViaScientific
 
+newtype MinimumDistance = MinimumDistance (Quantity Double [u| km |])
+    deriving (Eq, Ord, Show)
+
+instance DefaultDecimalPlaces MinimumDistance where
+    defdp _ = DecimalPlaces 1
+
+instance (u ~ [u| km |]) => Newtype MinimumDistance (Quantity Double u) where
+    pack = MinimumDistance
+    unpack (MinimumDistance a) = a
+
+instance ToJSON MinimumDistance where
+    toJSON x = toJSON $ ViaQ x
+
+instance FromJSON MinimumDistance where
+    parseJSON o = do
+        ViaQ x <- parseJSON o
+        return x
+
 -- | The number of pilots completing the speed section of the task.
 newtype PilotsAtEss = PilotsAtEss Integer
-    deriving (Eq, Ord, Show, ToJSON, FromJSON)
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 -- | A 1-based rank of the pilot arrival at goal, 1st in is 1, 2nd is 2 etc.
 newtype PositionAtEss = PositionAtEss Integer
-    deriving (Eq, Ord, Show, ToJSON, FromJSON)
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 newtype ArrivalFraction = ArrivalFraction Rational
     deriving (Eq, Ord, Show)
@@ -115,17 +139,17 @@ newtype LinearFraction = LinearFraction Rational deriving (Eq, Ord, Show)
 
 data ChunkedDistance =
     ChunkedDistance
-        { mimimum :: MinimumDistance (Quantity Double [u| km |])
+        { minimum :: MinimumDistance
         , chunkOffset :: Int
         }
-    deriving (Eq, Ord, Show)
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 newtype DifficultyFraction = DifficultyFraction Rational
     deriving (Eq, Ord, Show)
 
 -- | How far to look ahead, in units of 100m chunks.
 newtype Lookahead = Lookahead Int
-    deriving (Eq, Ord, Show, ToJSON, FromJSON)
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 data ViaQ n a u where
     ViaQ
@@ -136,13 +160,12 @@ data ViaQ n a u where
 instance
     ( DefaultDecimalPlaces n
     , Newtype n (Quantity a u)
-    , n ~ Chunk
     , Real a
     , u ~ [u| km |]
     , KnownUnit (Unpack u)
     )
     => ToJSON (ViaQ n a u) where
-    toJSON (ViaQ x@(Chunk _)) = toJSON . showQuantity $ y
+    toJSON (ViaQ x) = toJSON . showQuantity $ y
          where
              MkQuantity a = toRational' . unpack $ x
 
@@ -152,9 +175,8 @@ instance
 instance
     ( DefaultDecimalPlaces n
     , Newtype n (Quantity a u)
-    , n ~ Chunk
     , Real a
-    , u ~ [u| km |]
+    , Fractional a
     , KnownUnit (Unpack u)
     )
     => FromJSON (ViaQ n a u) where
@@ -188,7 +210,7 @@ unSome (Some (QuantityWithUnit (MkQuantity q) _)) = q
 
 -- | A sequence of chunk ends, distances on course in km.
 newtype Chunks = Chunks [Chunk]
-    deriving (Eq, Ord, Show, ToJSON, FromJSON)
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 arrivalFraction :: PilotsAtEss -> PositionAtEss -> ArrivalFraction
 arrivalFraction (PilotsAtEss n) (PositionAtEss rank)
@@ -209,7 +231,7 @@ arrivalFraction (PilotsAtEss n) (PositionAtEss rank)
 
 bestTime :: [PilotTime] -> Maybe BestTime
 bestTime [] = Nothing
-bestTime xs = let PilotTime t = minimum xs in Just $ BestTime t
+bestTime xs = let PilotTime t = List.minimum xs in Just $ BestTime t
 
 speedFraction :: BestTime -> PilotTime -> SpeedFraction
 speedFraction (BestTime best) (PilotTime t) =
@@ -247,7 +269,7 @@ lookahead (BestDistance (MkQuantity best)) xs =
 -- | A list of 100m chunks of distance starting from the minimum distance set
 -- up for the competition. Pilots that fly less than minimum distance get
 -- awarded that distance.
-chunks :: MinimumDistance (Quantity Double [u| km |]) -> BestDistance -> Chunks
+chunks :: MinimumDistance -> BestDistance -> Chunks
 chunks (MinimumDistance md) (BestDistance best) =
     Chunks $ Chunk . MkQuantity <$> [x0, x1 .. xN]
     where
@@ -258,7 +280,7 @@ chunks (MinimumDistance md) (BestDistance best) =
 -- | Converts from pilot distance to distance in units of the number of 100m
 -- chunks offset from the minium distance set for the competition.
 toChunk
-    :: MinimumDistance (Quantity Double [u| km |])
+    :: MinimumDistance
     -> PilotDistance (Quantity Double [u| km |])
     -> ChunkedDistance
 toChunk dMin@(MinimumDistance md) (PilotDistance d)
@@ -267,31 +289,45 @@ toChunk dMin@(MinimumDistance md) (PilotDistance d)
     where
         MkQuantity x = convert (d -: md) :: Quantity _ [u| hm |]
 
+-- | In each 100m chunk where pilots landed out, how many pilots landed in that
+-- chunk.
+landouts
+    :: MinimumDistance
+    -> [PilotDistance (Quantity Double [u| km |])]
+    -> [(ChunkedDistance, Int)]
+landouts md xs =
+    sumLandouts $ chunkLandouts md xs
+
+sumLandouts :: [ChunkedDistance] -> [(ChunkedDistance, Int)]
+sumLandouts = fmap (\gXs@(gX : _) -> (gX, length gXs)) . group
+
+chunkLandouts
+    :: MinimumDistance
+    -> [PilotDistance (Quantity Double [u| km |])]
+    -> [ChunkedDistance]
+chunkLandouts md xs =
+    toChunk md <$> sort xs
+
 -- | For a list of distances flown by pilots, works out the distance difficulty
 -- fraction for each pilot.
 difficultyFraction
-    :: MinimumDistance (Quantity Double [u| km |])
+    :: MinimumDistance
     -> BestDistance
     -> [PilotDistance (Quantity Double [u| km |])]
     -> [DifficultyFraction]
 difficultyFraction md best xs =
-    zipWith (diffByChunk diffScoreMap) xs' ys
+    zipWith (diffByChunk diffScoreMap) xs ys
     where
-        n = lookahead best xs
-
-        xs' = sort xs
-
         ys :: [ChunkedDistance]
-        ys = toChunk md <$> xs'
-
-        gs :: [[ChunkedDistance]]
-        gs = group ys
+        ys = chunkLandouts md xs
 
         ns :: [(ChunkedDistance, Int)]
-        ns = (\gXs@(gX : _) -> (gX, length gXs)) <$> gs
+        ns = sumLandouts ys
 
         nMap :: Map.Map ChunkedDistance Int
         nMap = Map.fromList ns
+
+        n = lookahead best xs
 
         lookaheadMap :: Map.Map ChunkedDistance Integer
         lookaheadMap = toInteger <$> difficulty md n nMap
@@ -329,7 +365,7 @@ diffByChunk
             fromMaybe (ChunkedDistance md 0, 0 % 1) $ Map.lookupGT pc diffMap
 
 difficulty
-    :: MinimumDistance (Quantity Double [u| km |])
+    :: MinimumDistance
     -> Lookahead
     -> Map.Map ChunkedDistance Int
     -> Map.Map ChunkedDistance Int

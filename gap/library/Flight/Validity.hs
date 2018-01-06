@@ -20,10 +20,12 @@ module Flight.Validity
 
 import Data.Ratio ((%))
 import Flight.Ratio (pattern (:%))
+import Data.UnitsOfMeasure.Internal (Quantity(..))
+
+import Flight.Allot (MinimumDistance(..))
 
 newtype NominalLaunch = NominalLaunch Rational deriving (Eq, Show)
 type SumOfDistance = Metres
-newtype MinimumDistance a = MinimumDistance a deriving (Eq, Ord, Show)
 newtype MaximumDistance = MaximumDistance Integer deriving (Eq, Show)
 newtype NominalDistance = NominalDistance Integer deriving (Eq, Show)
 newtype NominalTime = NominalTime Integer deriving (Eq, Show)
@@ -80,7 +82,7 @@ dvr (n :% d) nFly dSum = (dSum % 1) * (d % (nFly * n))
 distanceValidity :: NominalGoal
                  -> NominalDistance
                  -> Integer
-                 -> MinimumDistance Integer
+                 -> MinimumDistance
                  -> MaximumDistance
                  -> SumOfDistance
                  -> DistanceValidity
@@ -94,7 +96,7 @@ distanceValidity
     (NominalGoal (0 :% _))
     (NominalDistance nd)
     nFly
-    (MinimumDistance dMin)
+    (MinimumDistance (MkQuantity dMin'))
     _
     dSum
     | nd < dMin =
@@ -102,13 +104,14 @@ distanceValidity
     | otherwise =
         DistanceValidity $ min 1 $ dvr area nFly dSum
         where
+            dMin = round dMin'
             area = num % (2 * den)
             (num :% den) = min 0 (nd - dMin) % 1
 distanceValidity
     (NominalGoal ng)
     (NominalDistance nd)
     nFly
-    (MinimumDistance dMin)
+    (MinimumDistance (MkQuantity dMin'))
     (MaximumDistance dMax)
     dSum
     | nd < dMin =
@@ -116,6 +119,7 @@ distanceValidity
     | otherwise =
         DistanceValidity $ min 1 $ dvr area nFly dSum
     where
+        dMin = round dMin'
         area = num % (2 * den)
         (num :% den) =
             (ng + (1 % 1) * ((nd - dMin) % 1)) + max 0 (ng * ((dMax - nd) % 1))

@@ -53,7 +53,7 @@ import Flight.Score
     , Chunk(..)
     , Chunks(..)
     )
-import Flight.Score as Gap (lookahead, chunks)
+import Flight.Score as Gap (landouts, lookahead, chunks)
 
 driverMain :: IO ()
 driverMain = do
@@ -97,6 +97,7 @@ difficulty CompSettings{nominal} Masking{bestDistance, land} =
         , landout = length <$> land
         , lookahead = ahead
         , chunks = (fromMaybe zeroChunk . fmap (Gap.chunks md'')) <$> bests
+        , chunkLandings = Gap.landouts md'' <$> pss
         }
     where
         md = free nominal
@@ -122,4 +123,3 @@ difficulty CompSettings{nominal} Masking{bestDistance, land} =
             | b <- bests
             | ps <- pss
             ]
-
