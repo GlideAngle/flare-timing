@@ -455,13 +455,13 @@ nighTrackLine Nothing _ (p, Time.TimeRow{distance}) =
 nighTrackLine (Just (TaskDistance td)) zsTaskTicked (p, row@Time.TimeRow{distance}) =
     (p,) TrackDistance
         { togo = Just line
-        , made = Just . unTaskDistance . TaskDistance $ td -: togo'
+        , made = Just . unTaskDistance . TaskDistance $ td -: mTogo
         }
     where
-        togo :: Quantity Double [u| km |]
-        togo = MkQuantity distance
+        kmTogo :: Quantity Double [u| km |]
+        kmTogo = MkQuantity distance
 
-        togo' = convert togo :: Quantity Double [u| m |]
+        mTogo = convert kmTogo :: Quantity Double [u| m |]
 
         line =
             case Map.lookup p zsTaskTicked of
