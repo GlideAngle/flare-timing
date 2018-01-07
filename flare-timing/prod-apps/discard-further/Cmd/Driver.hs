@@ -6,9 +6,7 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE QuasiQuotes #-}
 
-{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE PartialTypeSignatures #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
@@ -98,7 +96,7 @@ drive o = do
 
 go :: CmdOptions -> CompInputFile -> IO ()
 go CmdOptions{..} compFile@(CompInputFile compPath) = do
-    let lenFile@(TaskLengthFile lenPath) = compToTaskLength $ compFile
+    let lenFile@(TaskLengthFile lenPath) = compToTaskLength compFile
     let tagFile@(TagZoneFile tagPath) = crossToTag . compToCross $ compFile
     putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
     putStrLn $ "Reading task length from '" ++ takeFileName lenPath ++ "'"
@@ -180,7 +178,7 @@ filterTime
                     | la <- raceLastArrival
                     ]
 
-            _ <- sequence $ zipWith4
+            sequence_ $ zipWith4
                 (\ n toLeg rt pilots ->
                         mapM_
                         (readFilterWrite
