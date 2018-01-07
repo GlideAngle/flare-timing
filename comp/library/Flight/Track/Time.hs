@@ -73,10 +73,11 @@ import Flight.Score
     , LcTrack
     , LengthOfSs(..)
     , TaskDeadline(..)
+    , EssTime(..)
     , areaSteps
+    , showSecs
     )
 import Flight.Distance (TaskDistance(..))
-import Flight.Score (EssTime(..), showSecs)
 import Flight.Comp (SpeedSection)
 
 -- | Seconds from first speed zone crossing irrespective of start time.
@@ -269,7 +270,7 @@ leadingArea
 toLcPoint :: (Int -> Leg) -> TickRow -> Maybe LcPoint
 toLcPoint _ TickRow{tickLead = Nothing} = Nothing
 toLcPoint toLeg TickRow{leg, tickLead = Just (LeadTick t), distance} =
-    Just $ LcPoint
+    Just LcPoint
         { leg = toLeg leg
         , mark = TaskTime $ toRational t
         , togo = DistanceToEss $ toRational distance
@@ -357,9 +358,7 @@ landOutRow (EssTime t) d =
 
 taskToLeading :: TaskDistance Double -> LeadingDistance
 taskToLeading (TaskDistance d) =
-    LeadingDistance $ d'
-    where
-        d' = convert d :: Quantity Double [u| km |]
+    LeadingDistance (convert d :: Quantity Double [u| km |])
 
 timeToTick :: TimeRow -> TickRow
 timeToTick TimeRow{leg, tickLead, tickRace, distance} =

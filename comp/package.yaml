@@ -73,6 +73,7 @@ tests:
     - uom-plugin
     - vector
     - aeson-via
+    - flight-units
     - flight-latlng
     - flight-zone
     - flight-route
