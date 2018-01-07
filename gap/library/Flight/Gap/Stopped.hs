@@ -2,7 +2,8 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-module Flight.Stopped
+
+module Flight.Gap.Stopped
     ( TaskStopTime(..)
     , AnnouncedTime(..)
     , ScoreBackTime(..)
@@ -37,8 +38,8 @@ import Data.List (partition, sortBy)
 import qualified Data.Vector as V
 import qualified Data.Map as Map
 
-import Flight.Points (Hg, Pg)
-import Flight.Leading (TaskTime(..))
+import Flight.Gap.Points (Hg, Pg)
+import Flight.Gap.Leading (TaskTime(..))
 
 newtype TaskStopTime = TaskStopTime Rational deriving (Eq, Ord, Show)
 newtype AnnouncedTime = AnnouncedTime Rational deriving (Eq, Ord, Show)

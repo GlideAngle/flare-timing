@@ -17,7 +17,7 @@
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module Flight.Allot
+module Flight.Gap.Allot
     ( PilotsAtEss(..)
     , PositionAtEss(..)
     , ArrivalFraction(..)
@@ -59,9 +59,9 @@ import qualified Data.Map.Strict as Map
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.UnitsOfMeasure ((+:), (-:), u, convert, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
-
-import Flight.Ratio (pattern (:%))
 import GHC.Generics (Generic)
+
+import Flight.Gap.Ratio (pattern (:%))
 import Flight.Units ()
 import Data.Aeson.Via.Scientific
     (DefaultDecimalPlaces(..), DecimalPlaces(..), ViaSci(..))

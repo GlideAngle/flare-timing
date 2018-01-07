@@ -4,7 +4,8 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE RankNTypes #-}
-module Flight.Ratio (pattern (:%), isNormal, isFoldNormal) where
+
+module Flight.Gap.Ratio (pattern (:%), isNormal, isFoldNormal) where
 
 import Data.Ratio (Ratio, (%), numerator, denominator)
 

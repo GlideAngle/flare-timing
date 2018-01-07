@@ -6,7 +6,7 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE NamedFieldPuns #-}
 
-module Flight.Leading
+module Flight.Gap.Leading
     ( TaskTime(..)
     , DistanceToEss(..)
     , Leg(..)
@@ -36,11 +36,12 @@ import Prelude hiding (seq)
 import Control.Newtype (Newtype(..))
 import Control.Arrow (second)
 import Data.Ratio ((%))
-import Flight.Ratio (pattern (:%))
 import Data.List (partition, sortBy)
 import Data.Maybe (catMaybes)
 import Data.Aeson (ToJSON(..), FromJSON(..))
+
 import Data.Aeson.Via.Scientific (DefaultDecimalPlaces(..), DecimalPlaces(..))
+import Flight.Gap.Ratio (pattern (:%))
 
 -- | Time in seconds from the moment the first pilot crossed the start of the speed
 -- section.

@@ -2,7 +2,8 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE StandaloneDeriving #-}
-module Flight.Points
+
+module Flight.Gap.Points
     ( LaunchToSssPoints(..)
     , MinimumDistancePoints(..)
     , SecondsPerPoint(..)

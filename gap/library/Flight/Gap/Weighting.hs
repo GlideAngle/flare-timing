@@ -2,10 +2,12 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE StandaloneDeriving #-}
-module Flight.Weighting where
+
+module Flight.Gap.Weighting where
 
 import Data.Ratio ((%))
-import Flight.Ratio (pattern (:%))
+
+import Flight.Gap.Ratio (pattern (:%))
 
 -- | Pilots in goal versus pilots flying.
 newtype GoalRatio = GoalRatio Rational deriving (Eq, Show)

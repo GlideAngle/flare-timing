@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-module Flight.Validity
+
+module Flight.Gap.Validity
     ( NominalLaunch(..)
     , NominalTime(..)
     , NominalDistance(..)
@@ -19,10 +20,10 @@ module Flight.Validity
     ) where
 
 import Data.Ratio ((%))
-import Flight.Ratio (pattern (:%))
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import Flight.Allot (MinimumDistance(..))
+import Flight.Gap.Ratio (pattern (:%))
+import Flight.Gap.Allot (MinimumDistance(..))
 
 newtype NominalLaunch = NominalLaunch Rational deriving (Eq, Show)
 type SumOfDistance = Metres

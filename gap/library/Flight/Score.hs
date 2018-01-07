@@ -142,13 +142,13 @@ module Flight.Score
     , applyGlides
     ) where
 
-import Flight.Ratio
-import Flight.Allot
-import Flight.Leading
-import Flight.Validity
-import Flight.Weighting
-import Flight.Points
-import Flight.Stopped
+import Flight.Gap.Ratio
+import Flight.Gap.Allot
+import Flight.Gap.Leading
+import Flight.Gap.Validity
+import Flight.Gap.Weighting
+import Flight.Gap.Points
+import Flight.Gap.Stopped
 
 type DistancePoint = Rational
 type SpeedPoint = Rational
