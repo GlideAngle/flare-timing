@@ -1,28 +1,20 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE QuasiQuotes #-}
-{-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
 
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE PartialTypeSignatures #-}
-{-# LANGUAGE TypeSynonymInstances #-}
-{-# LANGUAGE GADTs #-}
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module Flight.Gap.Distance
+module Flight.Gap.Distance.Difficulty
     ( MinimumDistance(..)
-    , BestDistance(..)
-    , PilotDistance(..)
-    , LinearFraction(..)
-    , linearFraction
     , Lookahead(..)
     , Chunk(..)
     , Chunks(..)
@@ -47,7 +39,7 @@ import Data.List (sort, sortOn, group)
 import Data.Maybe (fromMaybe)
 import qualified Data.Map.Strict as Map
 import Data.Aeson (ToJSON(..), FromJSON(..))
-import Data.UnitsOfMeasure ((+:), (-:), u, convert, toRational')
+import Data.UnitsOfMeasure ((+:), (-:), u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import GHC.Generics (Generic)
 
@@ -56,6 +48,7 @@ import Flight.Units ()
 import Data.Aeson.Via.Scientific
     (DefaultDecimalPlaces(..), DecimalPlaces(..), ViaSci(..))
 import Data.Aeson.Via.UnitsOfMeasure (ViaQ(..))
+import Flight.Gap.Distance.Linear (BestDistance(..), PilotDistance(..))
 
 newtype MinimumDistance = MinimumDistance (Quantity Double [u| km |])
     deriving (Eq, Ord, Show)
@@ -74,11 +67,6 @@ instance FromJSON MinimumDistance where
     parseJSON o = do
         ViaQ x <- parseJSON o
         return x
-
-newtype BestDistance = BestDistance (Quantity Double [u| km |])
-    deriving (Eq, Ord, Show)
-
-newtype PilotDistance a = PilotDistance a deriving (Eq, Ord, Show)
 
 -- | The index of a 100m chunk. The zeroth chunk is any distance less than or
 -- equal to minimum distance.
@@ -184,19 +172,6 @@ instance FromJSON Chunk where
 -- | A sequence of chunk ends, distances on course in km.
 newtype Chunks = Chunks [Chunk]
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
-
-newtype LinearFraction = LinearFraction Rational deriving (Eq, Ord, Show)
-
--- | The linear fraction for distance.
-linearFraction
-    :: BestDistance
-    -> PilotDistance (Quantity Double [u| km |]) 
-    -> LinearFraction
-linearFraction (BestDistance bd) (PilotDistance pd) =
-    LinearFraction $ (np * db) % (dp * nb)
-    where
-        MkQuantity (nb :% db) = toRational' bd
-        MkQuantity (np :% dp) = toRational' pd
 
 -- | How many 100 m chunks to look ahead when working out the distance
 -- difficulty.

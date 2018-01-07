@@ -23,7 +23,7 @@ import Data.Ratio ((%))
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Gap.Ratio (pattern (:%))
-import Flight.Gap.Distance (MinimumDistance(..))
+import Flight.Gap.Distance.Difficulty (MinimumDistance(..))
 
 newtype NominalLaunch = NominalLaunch Rational deriving (Eq, Show)
 type SumOfDistance = Metres
