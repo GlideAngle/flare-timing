@@ -71,7 +71,7 @@ import Flight.Scribe
     (readComp, readRoute, readTagging, readAlignTime, writeDiscardFurther)
 import Flight.Lookup.Route (routeLength)
 import Flight.Lookup.Tag (TaskTimeLookup(..), tagTaskTime)
-import Data.Aeson.Via.Scientific (ViaScientific(..))
+import Data.Aeson.Via.Scientific (ViaSci(..))
 import Flight.Score (Leg(..))
 
 headers :: [String]
@@ -238,9 +238,9 @@ readFilterWrite
         taskLength = join (($ iTask) <$> lookupTaskLength)
 
         close = do
-            ViaScientific c <- leadClose raceTime
+            ViaSci c <- leadClose raceTime
             return $ LeadClose c
 
         arrival = do
-            ViaScientific a <- leadArrival raceTime
+            ViaSci a <- leadArrival raceTime
             return $ LeadArrival a

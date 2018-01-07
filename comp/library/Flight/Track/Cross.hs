@@ -29,7 +29,7 @@ import Flight.Pilot (Pilot(..), TrackFileFail)
 import Flight.LatLng.Raw (RawLat, RawLng)
 import Flight.Field (FieldOrdering(..))
 import Flight.Comp (FlyingSection)
-import Data.Aeson.Via.Scientific (ViaScientific(..))
+import Data.Aeson.Via.Scientific (ViaSci(..))
 
 -- | For each task, the crossing for that task.
 data Crossing =
@@ -94,9 +94,9 @@ data Fix =
         -- ^ The 0-based index into the list of fixes from the track log.
         , time :: UTCTime
         -- ^ The time this fix was made.
-        , lat :: ViaScientific RawLat
+        , lat :: ViaSci RawLat
         -- ^ The latitude in decimal degrees, +ve is N and -ve is S.
-        , lng :: ViaScientific RawLng
+        , lng :: ViaSci RawLng
         -- ^ The longitude in decimal degrees, +ve is E and -ve is W.
         }
         deriving (Eq, Ord, Show, Generic)

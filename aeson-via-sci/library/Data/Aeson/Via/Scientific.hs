@@ -4,7 +4,7 @@
 {-# LANGUAGE GADTs #-}
 
 module Data.Aeson.Via.Scientific
-    ( ViaScientific(..)
+    ( ViaSci(..)
     , DecimalPlaces(..)
     , DefaultDecimalPlaces(..)
     , fromSci
@@ -43,29 +43,33 @@ class DefaultDecimalPlaces a where
     defdp :: a -> DecimalPlaces
     defdp _ = DecimalPlaces 0
 
-data ViaScientific n where
-    ViaScientific :: (DefaultDecimalPlaces n, Newtype n Rational)
-                  => n 
-                  -> ViaScientific n
+data ViaSci n where
+    ViaSci
+        :: (DefaultDecimalPlaces n, Newtype n Rational)
+        => n 
+        -> ViaSci n
 
-deriving instance (Eq n) => Eq (ViaScientific n)
-deriving instance (Ord n) => Ord (ViaScientific n)
-deriving instance (Show n) => Show (ViaScientific n)
+deriving instance (Eq n) => Eq (ViaSci n)
+deriving instance (Ord n) => Ord (ViaSci n)
+deriving instance (Show n) => Show (ViaSci n)
 
-instance (DefaultDecimalPlaces n, Newtype n Rational)
-         => ToJSON (ViaScientific n) where
-    toJSON (ViaScientific x) = Number $ toSci (defdp x) (unpack x)
+instance
+    (DefaultDecimalPlaces n, Newtype n Rational)
+    => ToJSON (ViaSci n) where
+    toJSON (ViaSci x) = Number $ toSci (defdp x) (unpack x)
 
-instance (DefaultDecimalPlaces n, Newtype n Rational)
-         => FromJSON (ViaScientific n) where
-    parseJSON x@(Number _) =
-        ViaScientific <$> (pack . fromSci <$> parseJSON x)
+instance
+    (DefaultDecimalPlaces n, Newtype n Rational)
+    => FromJSON (ViaSci n) where
+    parseJSON x@(Number _) = ViaSci <$> (pack . fromSci <$> parseJSON x)
     parseJSON _ = empty
 
-instance (DefaultDecimalPlaces n, Newtype n Rational)
-         => ToField (ViaScientific n) where
-    toField (ViaScientific x) = toField $ toSci (defdp x) (unpack x)
+instance
+    (DefaultDecimalPlaces n, Newtype n Rational)
+    => ToField (ViaSci n) where
+    toField (ViaSci x) = toField $ toSci (defdp x) (unpack x)
 
-instance (DefaultDecimalPlaces n, Newtype n Rational)
-         => FromField (ViaScientific n) where
-    parseField x = ViaScientific <$> (pack . fromSci <$> parseField x)
+instance
+    (DefaultDecimalPlaces n, Newtype n Rational)
+    => FromField (ViaSci n) where
+    parseField x = ViaSci <$> (pack . fromSci <$> parseField x)

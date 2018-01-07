@@ -40,7 +40,7 @@ import Data.UnitsOfMeasure ((/:), (-:), u, convert, toRational', fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import System.FilePath (takeFileName)
 import qualified Data.Number.FixedFunctions as F
-import Data.Aeson.Via.Scientific (ViaScientific(..))
+import Data.Aeson.Via.Scientific (ViaSci(..))
 
 import qualified Flight.Comp as Cmp (openClose)
 import Flight.Comp
@@ -285,7 +285,7 @@ writeMask
             let vs :: [Maybe (BestTime, [(Pilot, TrackSpeed)])] = times <$> ys
 
             -- Times (ts).
-            let tsBest = (fmap . fmap) (ViaScientific . fst) vs
+            let tsBest = (fmap . fmap) (ViaSci . fst) vs
 
             -- For each task, for each pilot, the row closest to goal.
             rows :: [[Maybe (Pilot, Time.TickRow)]]
@@ -357,15 +357,15 @@ writeMask
                     <$> (fmap . fmap) snd rowsLeadingSum
 
             let lead :: [[(Pilot, TrackLead)]] =
-                    sortOn ((\TrackLead{coef = ViaScientific (LeadingCoefficient c)} ->
+                    sortOn ((\TrackLead{coef = ViaSci (LeadingCoefficient c)} ->
                         c) . snd)
                     <$>
                     [(fmap . fmap)
                         (\lc ->
                             TrackLead
-                                { coef = ViaScientific lc
+                                { coef = ViaSci lc
                                 , frac =
-                                    ViaScientific
+                                    ViaSci
                                     $ maybe
                                         (LeadingFraction 0)
                                         (`leadingFraction` lc)
@@ -425,7 +425,7 @@ writeMask
                     , bestTime = tsBest
                     , taskDistance = (fmap . fmap) unTaskDistance lsTask
                     , bestDistance = dsBest
-                    , minLead = (fmap . fmap) ViaScientific minLead
+                    , minLead = (fmap . fmap) ViaSci minLead
                     , lead = lead
                     , arrival = as
                     , speed = fromMaybe [] <$> (fmap . fmap) snd vs
@@ -559,7 +559,7 @@ arrivals xs =
         f position =
             TrackArrival
                 { rank = position
-                , frac = ViaScientific $ arrivalFraction pilots position
+                , frac = ViaSci $ arrivalFraction pilots position
                 }
 
 times :: [(Pilot, FlightStats)] -> Maybe (BestTime, [(Pilot, TrackSpeed)])
@@ -578,8 +578,8 @@ times xs =
 
         f best t =
             TrackSpeed
-                { time = ViaScientific t
-                , frac = ViaScientific $ speedFraction best t
+                { time = ViaSci t
+                , frac = ViaSci $ speedFraction best t
                 }
 
 check

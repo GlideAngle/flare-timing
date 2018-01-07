@@ -64,7 +64,7 @@ import Flight.Ratio (pattern (:%))
 import GHC.Generics (Generic)
 import Flight.Units ()
 import Data.Aeson.Via.Scientific
-    (DefaultDecimalPlaces(..), DecimalPlaces(..), ViaScientific(..))
+    (DefaultDecimalPlaces(..), DecimalPlaces(..), ViaSci(..))
 import Data.Aeson.Via.UnitsOfMeasure (ViaQ(..))
 
 newtype MinimumDistance = MinimumDistance (Quantity Double [u| km |])
@@ -159,11 +159,11 @@ instance Newtype RelativeDifficulty Rational where
     unpack (RelativeDifficulty a) = a
 
 instance ToJSON RelativeDifficulty where
-    toJSON x = toJSON $ ViaScientific x
+    toJSON x = toJSON $ ViaSci x
 
 instance FromJSON RelativeDifficulty where
     parseJSON o = do
-        ViaScientific x <- parseJSON o
+        ViaSci x <- parseJSON o
         return x
 
 -- | The sum of relative difficulties up until the chunk of landing.
@@ -178,11 +178,11 @@ instance Newtype DifficultyFraction Rational where
     unpack (DifficultyFraction a) = a
 
 instance ToJSON DifficultyFraction where
-    toJSON x = toJSON $ ViaScientific x
+    toJSON x = toJSON $ ViaSci x
 
 instance FromJSON DifficultyFraction where
     parseJSON o = do
-        ViaScientific x <- parseJSON o
+        ViaSci x <- parseJSON o
         return x
 
 -- | The relative difficulty for this chunk.

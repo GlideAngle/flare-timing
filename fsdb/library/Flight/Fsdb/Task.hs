@@ -42,7 +42,7 @@ import Flight.LatLng.Raw (RawLat(..), RawLng(..))
 import Flight.Zone.Raw (RawZone(..))
 import Flight.Comp
     (Task(..), SpeedSection, StartGate(..), OpenClose(..))
-import Data.Aeson.Via.Scientific (ViaScientific(..))
+import Data.Aeson.Via.Scientific (ViaSci(..))
 
 lexer :: GenTokenParser String u Identity
 lexer = P.makeTokenParser emptyDef
@@ -150,8 +150,8 @@ parseZone (name, tpLat, tpLng, tpRadius) =
         (Right [ lat', lng' ], Right rad') ->
             [ RawZone
                 name
-                (ViaScientific (RawLat lat'))
-                (ViaScientific (RawLng lng'))
+                (ViaSci (RawLat lat'))
+                (ViaSci (RawLng lng'))
                 rad'
             ]
 
