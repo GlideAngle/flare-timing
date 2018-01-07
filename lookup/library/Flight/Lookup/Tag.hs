@@ -55,7 +55,7 @@ taskTimeElapsed
     -> Maybe StartEndMark
 taskTimeElapsed _ _ Nothing = Nothing
 taskTimeElapsed x (IxTask i) ss = do
-    TrackTime{zonesFirst, zonesLast} <- (timing x ^? element (fromIntegral i - 1))
+    TrackTime{zonesFirst, zonesLast} <- timing x ^? element (fromIntegral i - 1)
     FirstLead start <- firstLead ss zonesFirst
     let end = (\(LastArrival a) -> a) <$> lastArrival ss zonesLast
     return $ StartEnd start end

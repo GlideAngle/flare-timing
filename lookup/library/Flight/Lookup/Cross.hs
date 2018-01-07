@@ -1,7 +1,7 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE PartialTypeSignatures #-}
-{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE DisambiguateRecordFields #-}
 
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
