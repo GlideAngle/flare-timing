@@ -51,7 +51,7 @@ dashPathToGoalR
     -> SpeedSection
     -> [TaskZone b]
     -> [(ZoneIdx, a)]
-    -> (Zs (PathDistance b))
+    -> Zs (PathDistance b)
 dashPathToGoalR _ _ _ _ _ [] =
     Z0
 

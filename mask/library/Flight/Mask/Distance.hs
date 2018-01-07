@@ -88,8 +88,7 @@ dashPathToGoalTimeRows
     if null zones then Z0 else
     dashPathToGoalR ticked sliver rowToPoint speedSection zs ixs
     where
-        zs = zoneToCyl <$> zones
-        ixs = reverse . index $ fixes
+        (zs, ixs) = indexCyls zoneToCyl zones fixes
         FlyCut{uncut = fixes} = clipToFlown flyCut
 
 dashPathToGoalMarkedFixes
@@ -107,9 +106,12 @@ dashPathToGoalMarkedFixes
     if null zones then Z0 else
     dashPathToGoalR ticked sliver fixToPoint speedSection zs ixs
     where
-        zs = zoneToCyl <$> zones
-        ixs = reverse . index $ fixes
+        (zs, ixs) = indexCyls zoneToCyl zones fixes
         FlyCut{uncut = MarkedFixes{fixes}} = clipToFlown flyCut
+
+indexCyls :: Functor f => (a -> b) -> f a -> [c] -> (f b, [(ZoneIdx, c)])
+indexCyls zoneToCyl zones fixes =
+    (zoneToCyl <$> zones, reverse . index $ fixes)
 
 -- | The distance from the last fix to goal passing through the remaining
 -- control zones.
