@@ -144,6 +144,7 @@ module Flight.Score
 
 import Flight.Gap.Ratio
 import Flight.Gap.Allot
+import Flight.Gap.Distance
 import Flight.Gap.Leading
 import Flight.Gap.Validity
 import Flight.Gap.Weighting
