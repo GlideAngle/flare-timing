@@ -43,13 +43,18 @@ tests:
     - containers
     - vector
     - statistics
-    - newtype
     - aeson
+    - newtype
+    - scientific
+    - uom-plugin
     - aeson-via
+    - siggy-chardust
+    - flight-units
     ghc-options:
     - -rtsopts
     - -threaded
     - -with-rtsopts=-N
+    - -fplugin Data.UnitsOfMeasure.Plugin
     main: HLint.hs
     source-dirs:
     - library

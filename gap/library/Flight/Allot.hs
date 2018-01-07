@@ -10,7 +10,6 @@
 
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE PartialTypeSignatures #-}
-{-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DeriveAnyClass #-}
@@ -51,7 +50,6 @@ module Flight.Allot
     , difficulty
     ) where
 
-import Prelude hiding (minimum)
 import Control.Newtype (Newtype(..))
 import Data.Scientific (Scientific)
 import Data.Ratio ((%))
@@ -68,9 +66,11 @@ import Data.UnitsOfMeasure.Read (QuantityWithUnit(..), Some(..), readQuantity)
 
 import Flight.Ratio (pattern (:%))
 import GHC.Generics (Generic)
-import Data.Aeson.ViaScientific (DefaultDecimalPlaces(..), DecimalPlaces(..))
 import Flight.Units ()
 import Data.Aeson.ViaScientific
+    ( DefaultDecimalPlaces(..), DecimalPlaces(..), ViaScientific(..)
+    , fromSci, toSci
+    )
 
 newtype MinimumDistance = MinimumDistance (Quantity Double [u| km |])
     deriving (Eq, Ord, Show)
@@ -372,7 +372,7 @@ landouts
     -> [ChunkLandings]
 landouts md xs =
     uncurry ChunkLandings
-    <$> (sumLandouts $ chunkLandouts md xs)
+    <$> sumLandouts (chunkLandouts md xs)
 
 sumLandouts :: [IxChunk] -> [(IxChunk, Int)]
 sumLandouts = fmap (\gXs@(gX : _) -> (gX, length gXs)) . group
