@@ -1,13 +1,11 @@
 flags: {}
 packages:
 - '.'
+- location: ../aeson-via
+  extra-dep: true
 - location: ../siggy-chardust
   extra-dep: true
 - location: ../units
-  extra-dep: true
-- location: ../aeson-via
-  extra-dep: true
-- location: ../aeson-via-uom
   extra-dep: true
 - location:
     git: https://github.com/adamgundry/uom-plugin.git

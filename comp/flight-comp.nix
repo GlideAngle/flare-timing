@@ -17,7 +17,7 @@ mkDerivation {
   testHaskellDepends = [
     aeson aeson-via base bytestring cassava containers directory
     filemanip filepath flight-gap flight-latlng flight-route
-    flight-zone hlint lens mtl path scientific split time
+    flight-units flight-zone hlint lens mtl path scientific split time
     unordered-containers uom-plugin vector
   ];
   homepage = "https://github.com/BlockScope/flare-timing#readme";

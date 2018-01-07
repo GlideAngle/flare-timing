@@ -51,26 +51,21 @@ module Flight.Allot
     ) where
 
 import Control.Newtype (Newtype(..))
-import Data.Scientific (Scientific)
 import Data.Ratio ((%))
 import qualified Data.List as List (minimum)
 import Data.List (sort, sortOn, group)
 import Data.Maybe (fromMaybe)
 import qualified Data.Map.Strict as Map
 import Data.Aeson (ToJSON(..), FromJSON(..))
-import Data.UnitsOfMeasure
-    (Unpack, KnownUnit, (+:), (-:), u, convert, fromRational', toRational')
+import Data.UnitsOfMeasure ((+:), (-:), u, convert, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
-import Data.UnitsOfMeasure.Show (showQuantity)
-import Data.UnitsOfMeasure.Read (QuantityWithUnit(..), Some(..), readQuantity)
 
 import Flight.Ratio (pattern (:%))
 import GHC.Generics (Generic)
 import Flight.Units ()
 import Data.Aeson.ViaScientific
-    ( DefaultDecimalPlaces(..), DecimalPlaces(..), ViaScientific(..)
-    , fromSci, toSci
-    )
+    (DefaultDecimalPlaces(..), DecimalPlaces(..), ViaScientific(..))
+import Data.Aeson.Via.UnitsOfMeasure (ViaQ(..))
 
 newtype MinimumDistance = MinimumDistance (Quantity Double [u| km |])
     deriving (Eq, Ord, Show)
@@ -226,42 +221,6 @@ data Difficulty =
 newtype Lookahead = Lookahead Int
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
-data ViaQ n a u where
-    ViaQ
-        :: (DefaultDecimalPlaces n, Newtype n (Quantity a u))
-        => n
-        -> ViaQ n a u
-
-instance
-    ( DefaultDecimalPlaces n
-    , Newtype n (Quantity a u)
-    , Real a
-    , u ~ [u| km |]
-    , KnownUnit (Unpack u)
-    )
-    => ToJSON (ViaQ n a u) where
-    toJSON (ViaQ x) = toJSON . showQuantity $ y
-         where
-             MkQuantity a = toRational' . unpack $ x
-
-             y :: Quantity Scientific [u| km |]
-             y = MkQuantity . toSci (defdp x) $ a
-
-instance
-    ( DefaultDecimalPlaces n
-    , Newtype n (Quantity a u)
-    , Real a
-    , Fractional a
-    , KnownUnit (Unpack u)
-    )
-    => FromJSON (ViaQ n a u) where
-    parseJSON o = do
-        s :: String <- parseJSON o
-        either
-            fail
-            (return . ViaQ . pack . fromRational' . MkQuantity . fromSci . unSome)
-            (readQuantity s)
-
 newtype Chunk = Chunk (Quantity Double [u| km |])
     deriving (Eq, Ord, Show)
 
@@ -279,9 +238,6 @@ instance FromJSON Chunk where
     parseJSON o = do
         ViaQ x <- parseJSON o
         return x
-
-unSome :: Some (QuantityWithUnit p) -> p
-unSome (Some (QuantityWithUnit (MkQuantity q) _)) = q
 
 -- | A sequence of chunk ends, distances on course in km.
 newtype Chunks = Chunks [Chunk]

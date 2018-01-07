@@ -80,6 +80,7 @@ lintRules = do
     phony "lint" $ need
         $ "lint-build"
         : "lint-aeson-via"
+        : "lint-aeson-via-uom"
         : "lint-siggy-chardust"
         : "lint-tasty-compare"
         : "lint-flare-timing"
@@ -90,6 +91,12 @@ lintRules = do
             (Cwd "aeson-via")
             Shell
             (cmdTestFor "aeson-via:hlint")
+
+    phony "lint-aeson-via-uom" $
+        cmd
+            (Cwd "aeson-via-uom")
+            Shell
+            (cmdTestFor "aeson-via-uom:hlint")
 
     phony "lint-siggy-chardust" $
         cmd

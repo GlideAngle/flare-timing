@@ -3,9 +3,11 @@ packages:
 - location: .
 - location: ../cmd
   extra-dep: true
+- location: ../units
+  extra-dep: true
 - location: ../aeson-via
   extra-dep: true
-- location: ../units
+- location: ../aeson-via-uom
   extra-dep: true
 - location: ../latlng
   extra-dep: true
