@@ -21,7 +21,6 @@
 
 module Cmd.Driver (driverMain) where
 
-import Prelude hiding (last)
 import qualified Data.Ratio as Ratio
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
@@ -33,6 +32,7 @@ import Formatting ((%), fprint)
 import Data.Time.Clock (UTCTime, diffUTCTime)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
+import Control.Arrow (second)
 import Control.Lens ((^?), element)
 import Control.Monad (join)
 import Control.Monad.Except (ExceptT, runExceptT)
@@ -69,7 +69,8 @@ import Flight.Comp
     )
 import Flight.Track.Cross (TrackFlyingSection(..))
 import Flight.Track.Tag (Tagging)
-import Flight.Track.Time (taskToLeading, leadingSum, minLeading)
+import Flight.Track.Time (LeadTick(..),taskToLeading, leadingSum, minLeading)
+import qualified Flight.Track.Time as Time (TimeRow(..), TickRow(..))
 import Flight.Distance (PathDistance, TaskDistance(..))
 import Flight.Units ()
 import Flight.Mask
@@ -92,8 +93,6 @@ import Flight.Track.Mask
     , racing
     )
 import Flight.Kml (MarkedFixes(..))
-import Flight.Track.Time (LeadTick(..))
-import qualified Flight.Track.Time as Time (TimeRow(..), TickRow(..))
 import Flight.Zone (Zone, Bearing(..))
 import Flight.Zone.Raw (RawZone)
 import Flight.LatLng.Rational (Epsilon(..), defEps)
@@ -200,8 +199,8 @@ drive o = do
 
 go :: CmdOptions -> CompInputFile -> IO ()
 go CmdOptions{..} compFile@(CompInputFile compPath) = do
-    let lenFile@(TaskLengthFile lenPath) = compToTaskLength $ compFile
-    let crossFile@(CrossZoneFile crossPath) = compToCross $ compFile
+    let lenFile@(TaskLengthFile lenPath) = compToTaskLength compFile
+    let crossFile@(CrossZoneFile crossPath) = compToCross compFile
     let tagFile@(TagZoneFile tagPath) = crossToTag . compToCross $ compFile
     putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
     putStrLn $ "Reading task length from '" ++ takeFileName lenPath ++ "'"
@@ -355,7 +354,7 @@ writeMask
 
             let minLead =
                     minLeading
-                    <$> ((fmap . fmap) snd rowsLeadingSum)
+                    <$> (fmap . fmap) snd rowsLeadingSum
 
             let lead :: [[(Pilot, TrackLead)]] =
                     sortOn ((\TrackLead{coef = ViaScientific (LeadingCoefficient c)} ->
@@ -367,9 +366,10 @@ writeMask
                                 { coef = ViaScientific lc
                                 , frac =
                                     ViaScientific
-                                    $ fromMaybe (LeadingFraction 0)
-                                    $ (flip leadingFraction $ lc)
-                                    <$> minL
+                                    $ maybe
+                                        (LeadingFraction 0)
+                                        (`leadingFraction` lc)
+                                        minL
                                 })
                         xs
                     | minL <- minLead
@@ -428,7 +428,7 @@ writeMask
                     , minLead = (fmap . fmap) ViaScientific minLead
                     , lead = lead
                     , arrival = as
-                    , speed = (fromMaybe []) <$> (fmap . fmap) snd vs
+                    , speed = fromMaybe [] <$> (fmap . fmap) snd vs
                     , nigh = dsNighRows'
                     , land = dsLand
                     }
@@ -447,15 +447,13 @@ nighTrackLine
     -> (Pilot, TrackDistance Nigh)
 
 nighTrackLine Nothing _ (p, Time.TimeRow{distance}) =
-    (p,)
-    $ TrackDistance
+    (p,) TrackDistance
         { togo = Just $ distanceOnlyLine distance
         , made = Nothing
         }
 
 nighTrackLine (Just (TaskDistance td)) zsTaskTicked (p, row@Time.TimeRow{distance}) =
-    (p,)
-    $ TrackDistance
+    (p,) TrackDistance
         { togo = Just line
         , made = Just . unTaskDistance . TaskDistance $ td -: togo'
         }
@@ -511,7 +509,7 @@ lookupPilotBestDistance
     -> Pilot
     -> Maybe (Pilot, TrackDistance Land)
 lookupPilotBestDistance m td p =
-    ((p,) . madeDistance td) <$> (Map.lookup p m)
+    ((p,) . madeDistance td) <$> Map.lookup p m
 
 madeDistance
     :: Maybe (TaskDistance Double)
@@ -566,7 +564,7 @@ arrivals xs =
 
 times :: [(Pilot, FlightStats)] -> Maybe (BestTime, [(Pilot, TrackSpeed)])
 times xs =
-    (\ bt -> (bt, sortOn (time . snd) $ (\(p, t) -> (p, f bt t)) <$> ys))
+    (\ bt -> (bt, sortOn (time . snd) $ second (f bt) <$> ys))
     <$> Gap.bestTime ts
     where
         ys :: [(Pilot, PilotTime)]
@@ -679,7 +677,7 @@ flown'
         landDistance task =
                 TrackDistance
                     { togo = unTaskDistance <$> dgLast task math
-                    , made = fromRational <$> unPilotDistance <$> dfLast task math
+                    , made = fromRational . unPilotDistance <$> dfLast task math
                     }
 
         dgLast :: Task -> Math -> Maybe (TaskDistance Double)
