@@ -3,6 +3,8 @@ packages:
 - location: .
 - location: ../aeson-via-sci
   extra-dep: true
+- location: ../aeson-via-uom
+  extra-dep: true
 - location: ../latlng
   extra-dep: true
 - location: ../zone

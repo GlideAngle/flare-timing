@@ -56,7 +56,7 @@ tests:
     - scientific
     - mtl
     - hcoord
-    - aeson-via
+    - aeson-via-sci
     - siggy-chardust
     - tasty-compare
     - flight-units

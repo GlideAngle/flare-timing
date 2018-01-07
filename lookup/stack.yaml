@@ -3,6 +3,8 @@ packages:
 - '.'
 - location: ../aeson-via-sci
   extra-dep: true
+- location: ../aeson-via-uom
+  extra-dep: true
 - location: ../siggy-chardust
   extra-dep: true
 - location: ../units

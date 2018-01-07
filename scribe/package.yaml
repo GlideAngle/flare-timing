@@ -63,7 +63,7 @@ tests:
     - mtl
     - yaml
     - vector
-    - aeson-via
+    - aeson-via-sci
     - flight-latlng
     - flight-zone
     - flight-route
