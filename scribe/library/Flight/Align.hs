@@ -11,7 +11,12 @@ import Control.Monad.Except (ExceptT(..), runExceptT, lift)
 import Control.Monad (zipWithM)
 import qualified Data.ByteString.Lazy as BL
 import Data.Csv
-    (Header, decodeByName, EncodeOptions(..), encodeByNameWith, defaultEncodeOptions)
+    (Header
+    , EncodeOptions(..)
+    , decodeByName
+    , encodeByNameWith
+    , defaultEncodeOptions
+    )
 import qualified Data.ByteString.Char8 as S (pack)
 import qualified Data.ByteString.Lazy.Char8 as L (writeFile)
 import Data.Vector (Vector)
@@ -48,22 +53,21 @@ readCompTimeRows
     -> (IxTask -> Bool)
     -> [[(Pilot, Maybe LeadTick)]]
     -> IO [[Maybe (Pilot, TimeRow)]]
-readCompTimeRows compFile includeTask pss =
+readCompTimeRows compFile includeTask =
     zipWithM
         (\ i ps ->
             if not (includeTask i)
                then return []
                else readTaskTimeRows compFile i ps)
         (IxTask <$> [1 .. ])
-        pss
 
 readTaskTimeRows
     :: CompInputFile
     -> IxTask
     -> [(Pilot, Maybe LeadTick)]
     -> IO [Maybe (Pilot, TimeRow)]
-readTaskTimeRows compFile i ps =
-    mapM (uncurry $ readPilotTimeRow compFile i) ps
+readTaskTimeRows compFile i =
+    mapM (uncurry $ readPilotTimeRow compFile i)
 
 readPilotTimeRow
     :: CompInputFile

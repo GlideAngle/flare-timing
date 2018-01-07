@@ -21,7 +21,6 @@ import qualified Data.ByteString.Lazy.Char8 as L (writeFile)
 import Data.Vector (Vector)
 import qualified Data.Vector as V (fromList, toList, null, last)
 
-import Flight.Comp (RouteLookup(..))
 import Flight.Track.Time
     (TickRow(..), LeadClose(..), LeadArrival(..), discard)
 import Flight.Track.Mask (RaceTime(..))
@@ -35,6 +34,7 @@ import Flight.Comp
     , DiscardDir(..)
     , AlignTimeFile(..)
     , DiscardFurtherFile(..)
+    , RouteLookup(..)
     , discardDir
     , alignPath
     , compFileToCompDir
@@ -65,22 +65,21 @@ readCompBestDistances
     -> (IxTask -> Bool)
     -> [[Pilot]]
     -> IO [[Maybe (Pilot, TickRow)]]
-readCompBestDistances compFile includeTask pss =
+readCompBestDistances compFile includeTask =
     zipWithM
         (\ i ps ->
             if not (includeTask i)
                then return []
                else readTaskBestDistances compFile i ps)
         (IxTask <$> [1 .. ])
-        pss
 
 readTaskBestDistances
     :: CompInputFile
     -> IxTask
     -> [Pilot]
     -> IO [Maybe (Pilot, TickRow)]
-readTaskBestDistances compFile i ps =
-    mapM (readPilotBestDistance compFile i) ps
+readTaskBestDistances compFile i =
+    mapM (readPilotBestDistance compFile i)
 
 readPilotBestDistance
     :: CompInputFile
@@ -103,19 +102,17 @@ readCompLeading
     -> CompInputFile
     -> (IxTask -> Bool)
     -> [IxTask]
-    -> [(Int -> Leg)]
+    -> [Int -> Leg]
     -> [Maybe RaceTime]
     -> [[Pilot]]
     -> IO [[(Pilot, [TickRow])]]
-readCompLeading lengths compFile select tasks toLeg raceTimes pilots = do
-    xs <-
-        sequence $ zipWith4
-            (readTaskLeading lengths compFile select)
-            tasks
-            toLeg
-            raceTimes
-            pilots
-    return xs
+readCompLeading lengths compFile select tasks toLeg raceTimes pilots =
+    sequence $ zipWith4
+        (readTaskLeading lengths compFile select)
+        tasks
+        toLeg
+        raceTimes
+        pilots
 
 readTaskLeading
     :: RouteLookup
