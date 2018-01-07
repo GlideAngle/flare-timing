@@ -113,8 +113,7 @@ shortestPath span distancePointToPoint cs builder angleCut tolerance xs =
                 (Z1, _) -> Z1
                 (Zx msg, _) -> Zx msg
                 (Zs (PathCost pcd), ptsCenterLine) ->
-                    Zs $
-                    PathDistance
+                    Zs PathDistance
                         { edgesSum = TaskDistance $ MkQuantity pcd
                         , vertices = ptsCenterLine
                         }
@@ -138,7 +137,7 @@ distance _ _ _ _ _ _ [_] = (Z1, [])
 distance span distancePointToPoint cs builder cut tolerance xs
     | not $ separatedZones span xs = (Zx "Zones not separated", [])
     | otherwise =
-        (\(a, b) -> (Zs a, b)) $
+        first Zs $
         case dist of
             Nothing -> (PathCost pointwise, edgesSum')
             Just d@(PathCost pcd) ->
