@@ -20,7 +20,7 @@ library:
   - scientific
   - mtl
   - hcoord
-  - aeson-via
+  - aeson-via-sci
   - siggy-chardust
   - flight-units
   - flight-latlng

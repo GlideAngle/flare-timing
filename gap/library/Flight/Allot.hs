@@ -63,7 +63,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Flight.Ratio (pattern (:%))
 import GHC.Generics (Generic)
 import Flight.Units ()
-import Data.Aeson.ViaScientific
+import Data.Aeson.Via.Scientific
     (DefaultDecimalPlaces(..), DecimalPlaces(..), ViaScientific(..))
 import Data.Aeson.Via.UnitsOfMeasure (ViaQ(..))
 

@@ -40,7 +40,7 @@ import Data.UnitsOfMeasure ((/:), (-:), u, convert, toRational', fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import System.FilePath (takeFileName)
 import qualified Data.Number.FixedFunctions as F
-import Data.Aeson.ViaScientific (ViaScientific(..))
+import Data.Aeson.Via.Scientific (ViaScientific(..))
 
 import qualified Flight.Comp as Cmp (openClose)
 import Flight.Comp

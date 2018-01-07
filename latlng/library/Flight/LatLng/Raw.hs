@@ -19,7 +19,7 @@ import Data.Aeson
     (ToJSON(..), FromJSON(..), (.:), (.=), object, withObject)
 import qualified Data.Csv as Csv ((.:))
 import Data.Csv (ToNamedRecord(..), FromNamedRecord(..), namedRecord, namedField)
-import Data.Aeson.ViaScientific
+import Data.Aeson.Via.Scientific
     ( ViaScientific(..), DefaultDecimalPlaces(..), DecimalPlaces(..)
     , fromSci, toSci, showSci
     )

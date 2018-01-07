@@ -48,7 +48,7 @@ buildFor x =
 buildRules :: Rules ()
 buildRules = do
     phony "nix" $
-        need [ "nix-aeson-via"
+        need [ "nix-aeson-via-sci"
              , "nix-aeson-via-uom"
              , "nix-siggy-chardust"
              , "nix-tasty-compare"
@@ -71,7 +71,7 @@ buildRules = do
              , "nix-flare-timing"
              ]
 
-    phony "nix-aeson-via" $ cmd Shell (buildFor "aeson-via")
+    phony "nix-aeson-via-sci" $ cmd Shell (buildFor "aeson-via-sci")
     phony "nix-aeson-via-uom" $ cmd Shell (buildFor "aeson-via-uom")
     phony "nix-siggy-chardust" $ cmd Shell (buildFor "siggy-chardust")
     phony "nix-tasty-compare" $ cmd Shell (buildFor "tasty-compare")
@@ -107,17 +107,17 @@ nixRules = do
     _ <- sequence_ $ nixRule <$> flyPkgs
 
     phony "cabal2nix" $ need
-        $ "cabal2nix-aeson-via"
+        $ "cabal2nix-aeson-via-sci"
         : "cabal2nix-aeson-via-uom"
         : "cabal2nix-siggy-chardust"
         : "cabal2nix-tasty-compare"
         : (prefix "cabal2nix-" <$> flyPkgs)
 
-    phony "cabal2nix-aeson-via" $
+    phony "cabal2nix-aeson-via-sci" $
         cmd
-            (Cwd "aeson-via")
+            (Cwd "aeson-via-sci")
             Shell
-            (nixFor "aeson-via")
+            (nixFor "aeson-via-sci")
 
     phony "cabal2nix-aeson-via-uom" $
         cmd
@@ -146,17 +146,17 @@ shellRules = do
     _ <- sequence_ $ shellRule <$> flyPkgs
 
     phony "nixshell" $ need
-        $ "nixshell-aeson-via"
+        $ "nixshell-aeson-via-sci"
         : "nixshell-aeson-via-uom"
         : "nixshell-siggy-chardust"
         : "nixshell-tasty-compare"
         : (prefix "nixshell-" <$> flyPkgs)
 
-    phony "nixshell-aeson-via" $
-        cmd (Cwd "aeson-via") Shell shell
+    phony "nixshell-aeson-via-sci" $
+        cmd (Cwd "aeson-via-sci") Shell shell
 
     phony "nixshell-aeson-via-uom" $
-        cmd (Cwd "aeson-via") Shell shell
+        cmd (Cwd "aeson-via-uom") Shell shell
 
     phony "nixshell-siggy-chardust" $
         cmd (Cwd "siggy-chardust") Shell shell

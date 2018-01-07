@@ -13,7 +13,7 @@ import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 
 import Flight.LatLng.Raw (RawLat, RawLng, showLat, showLng)
-import Data.Aeson.ViaScientific (ViaScientific(..))
+import Data.Aeson.Via.Scientific (ViaScientific(..))
 
 type RawRadius = Integer
 

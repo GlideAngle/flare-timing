@@ -40,7 +40,7 @@ import Flight.Ratio (pattern (:%))
 import Data.List (partition, sortBy)
 import Data.Maybe (catMaybes)
 import Data.Aeson (ToJSON(..), FromJSON(..))
-import Data.Aeson.ViaScientific (DefaultDecimalPlaces(..), DecimalPlaces(..))
+import Data.Aeson.Via.Scientific (DefaultDecimalPlaces(..), DecimalPlaces(..))
 
 -- | Time in seconds from the moment the first pilot crossed the start of the speed
 -- section.

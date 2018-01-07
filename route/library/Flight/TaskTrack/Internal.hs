@@ -38,12 +38,9 @@ import Flight.LatLng.Raw (RawLat(..), RawLng(..), RawLatLng(..))
 import Data.Number.RoundingFunctions (dpRound)
 import Flight.Zone (Zone(..), Radius(..), fromRationalZone)
 import Flight.Zone.Raw (RawZone(..))
---import Flight.Cylinder.Sample (Tolerance(..))
 import Flight.Distance (TaskDistance(..), PathDistance(..))
---import Flight.PointToPoint.Segment (SpanLatLng)
---import Flight.ShortestPath (DistancePointToPoint)
 import Flight.EastNorth (UtmZone(..), EastingNorthing(..))
-import Data.Aeson.ViaScientific (ViaScientific(..))
+import Data.Aeson.Via.Scientific (ViaScientific(..))
 import Flight.Task (Tolerance(..), SpanLatLng, DistancePointToPoint)
 
 mm30 :: Num a => Tolerance a 

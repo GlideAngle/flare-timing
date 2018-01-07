@@ -39,7 +39,7 @@ import Flight.Comp
     , alignPath
     , compFileToCompDir
     )
-import Data.Aeson.ViaScientific (ViaScientific(..))
+import Data.Aeson.Via.Scientific (ViaScientific(..))
 import Flight.Align (readAlignTime)
 import Flight.Score (Leg)
 

@@ -3,7 +3,7 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE GADTs #-}
 
-module Data.Aeson.ViaScientific
+module Data.Aeson.Via.Scientific
     ( ViaScientific(..)
     , DecimalPlaces(..)
     , DefaultDecimalPlaces(..)

@@ -43,7 +43,7 @@ import Flight.Score
     , LeadingFraction(..)
     , EssTime(..)
     )
-import Data.Aeson.ViaScientific (ViaScientific(..))
+import Data.Aeson.Via.Scientific (ViaScientific(..))
 import Flight.Field (FieldOrdering(..))
 
 type Nigh = TrackLine

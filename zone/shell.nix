@@ -4,16 +4,16 @@ let
 
   inherit (nixpkgs) pkgs;
 
-  f = { mkDerivation, aeson, aeson-via, base, bifunctors
-      , flight-latlng, flight-units, hlint, scientific, siggy-chardust
-      , stdenv, uom-plugin
+  f = { mkDerivation, aeson, aeson-via, aeson-via-sci, base
+      , bifunctors, flight-latlng, flight-units, hlint, scientific
+      , siggy-chardust, stdenv, uom-plugin
       }:
       mkDerivation {
         pname = "flight-zone";
         version = "0.1.0";
         src = ./.;
         libraryHaskellDepends = [
-          aeson aeson-via base bifunctors flight-latlng flight-units
+          aeson aeson-via-sci base bifunctors flight-latlng flight-units
           scientific siggy-chardust uom-plugin
         ];
         testHaskellDepends = [

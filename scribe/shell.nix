@@ -4,18 +4,18 @@ let
 
   inherit (nixpkgs) pkgs;
 
-  f = { mkDerivation, aeson, aeson-via, base, bytestring, cassava
-      , containers, directory, filemanip, filepath, flight-comp
-      , flight-gap, flight-latlng, flight-route, flight-zone, hlint, mtl
-      , path, scientific, split, stdenv, time, unordered-containers
-      , vector, yaml
+  f = { mkDerivation, aeson, aeson-via, aeson-via-sci, base
+      , bytestring, cassava, containers, directory, filemanip, filepath
+      , flight-comp, flight-gap, flight-latlng, flight-route, flight-zone
+      , hlint, mtl, path, scientific, split, stdenv, time
+      , unordered-containers, vector, yaml
       }:
       mkDerivation {
         pname = "flight-scribe";
         version = "0.0.0";
         src = ./.;
         libraryHaskellDepends = [
-          aeson aeson-via base bytestring cassava containers directory
+          aeson aeson-via-sci base bytestring cassava containers directory
           filemanip filepath flight-comp flight-gap flight-latlng
           flight-route flight-zone mtl path scientific split time
           unordered-containers vector yaml

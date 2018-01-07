@@ -61,7 +61,7 @@ import qualified Data.Vector as V (fromList, toList)
 
 import Flight.Units ()
 import Flight.LatLng.Raw (RawLat, RawLng)
-import Data.Aeson.ViaScientific (ViaScientific(..))
+import Data.Aeson.Via.Scientific (ViaScientific(..))
 import Flight.Score
     ( LeadingAreaStep(..)
     , LeadingCoefficient(..)

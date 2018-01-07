@@ -27,7 +27,7 @@ import Data.UnitsOfMeasure.Show (showQuantity)
 import Data.UnitsOfMeasure.Read (QuantityWithUnit(..), Some(..), readQuantity)
 
 import Flight.Units ()
-import Data.Aeson.ViaScientific (DefaultDecimalPlaces(..), fromSci, toSci)
+import Data.Aeson.Via.Scientific (DefaultDecimalPlaces(..), fromSci, toSci)
 
 data ViaQ n a u where
     ViaQ

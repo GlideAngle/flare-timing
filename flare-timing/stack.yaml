@@ -5,7 +5,7 @@ packages:
   extra-dep: true
 - location: ../units
   extra-dep: true
-- location: ../aeson-via
+- location: ../aeson-via-sci
   extra-dep: true
 - location: ../aeson-via-uom
   extra-dep: true

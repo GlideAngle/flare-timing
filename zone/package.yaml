@@ -16,7 +16,7 @@ library:
   - bifunctors
   - aeson
   - scientific
-  - aeson-via
+  - aeson-via-sci
   - siggy-chardust
   - flight-units
   - flight-latlng

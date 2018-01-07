@@ -20,7 +20,7 @@ library:
   - containers
   - split
   - time
-  - aeson-via
+  - aeson-via-sci
   - flight-latlng
   - flight-zone
   - flight-comp
@@ -50,7 +50,7 @@ tests:
     - containers
     - split
     - time
-    - aeson-via
+    - aeson-via-sci
     - flight-latlng
     - flight-zone
     - flight-comp

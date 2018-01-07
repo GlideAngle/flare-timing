@@ -40,7 +40,7 @@ library:
   - uom-plugin
   - fgl
   - cmdargs
-  - aeson-via
+  - aeson-via-sci
   - flight-units
   - flight-comp
   - flight-kml
@@ -81,7 +81,7 @@ tests:
     - fgl
     - uom-plugin
     - cmdargs
-    - aeson-via
+    - aeson-via-sci
     - flight-units
     - flight-comp
     - flight-kml

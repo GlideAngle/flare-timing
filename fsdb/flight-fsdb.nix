@@ -1,4 +1,4 @@
-{ mkDerivation, aeson, aeson-via, base, containers, flight-comp
+{ mkDerivation, aeson, aeson-via-sci, base, containers, flight-comp
 , flight-latlng, flight-zone, hlint, hxt, hxt-xpath, parsec, path
 , raw-strings-qq, scientific, smallcheck, split, stdenv, tasty
 , tasty-hunit, tasty-quickcheck, tasty-smallcheck, time
@@ -8,11 +8,11 @@ mkDerivation {
   version = "0.1.0";
   src = ./.;
   libraryHaskellDepends = [
-    aeson aeson-via base containers flight-comp flight-latlng
+    aeson aeson-via-sci base containers flight-comp flight-latlng
     flight-zone hxt hxt-xpath parsec path scientific split time
   ];
   testHaskellDepends = [
-    aeson aeson-via base containers flight-comp flight-latlng
+    aeson aeson-via-sci base containers flight-comp flight-latlng
     flight-zone hlint hxt hxt-xpath parsec path raw-strings-qq
     scientific smallcheck split tasty tasty-hunit tasty-quickcheck
     tasty-smallcheck time

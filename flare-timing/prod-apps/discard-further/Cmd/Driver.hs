@@ -71,7 +71,7 @@ import Flight.Scribe
     (readComp, readRoute, readTagging, readAlignTime, writeDiscardFurther)
 import Flight.Lookup.Route (routeLength)
 import Flight.Lookup.Tag (TaskTimeLookup(..), tagTaskTime)
-import Data.Aeson.ViaScientific (ViaScientific(..))
+import Data.Aeson.Via.Scientific (ViaScientific(..))
 import Flight.Score (Leg(..))
 
 headers :: [String]

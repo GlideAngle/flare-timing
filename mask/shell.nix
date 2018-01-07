@@ -4,7 +4,7 @@ let
 
   inherit (nixpkgs) pkgs;
 
-  f = { mkDerivation, aeson-via, base, bytestring, cmdargs
+  f = { mkDerivation, aeson-via-sci, base, bytestring, cmdargs
       , containers, directory, fgl, filepath, flight-comp, flight-gap
       , flight-kml, flight-latlng, flight-route, flight-scribe
       , flight-task, flight-track, flight-units, flight-zone, hlint, lens
@@ -15,16 +15,17 @@ let
         version = "0.0.0";
         src = ./.;
         libraryHaskellDepends = [
-          aeson-via base bytestring cmdargs containers directory fgl filepath
-          flight-comp flight-gap flight-kml flight-latlng flight-route
-          flight-scribe flight-task flight-track flight-units flight-zone
-          lens mtl path siggy-chardust split time uom-plugin yaml
+          aeson-via-sci base bytestring cmdargs containers directory fgl
+          filepath flight-comp flight-gap flight-kml flight-latlng
+          flight-route flight-scribe flight-task flight-track flight-units
+          flight-zone lens mtl path siggy-chardust split time uom-plugin yaml
         ];
         testHaskellDepends = [
-          aeson-via base bytestring cmdargs containers directory fgl filepath
-          flight-comp flight-gap flight-kml flight-latlng flight-route
-          flight-scribe flight-task flight-track flight-units flight-zone
-          hlint lens mtl siggy-chardust split time uom-plugin yaml
+          aeson-via-sci base bytestring cmdargs containers directory fgl
+          filepath flight-comp flight-gap flight-kml flight-latlng
+          flight-route flight-scribe flight-task flight-track flight-units
+          flight-zone hlint lens mtl siggy-chardust split time uom-plugin
+          yaml
         ];
         homepage = "https://github.com/BlockScope/haskell-flight-mask#readme";
         description = "Track logs masked by competition task zones";

@@ -16,7 +16,7 @@ library:
   - scientific
   - aeson
   - uom-plugin
-  - aeson-via
+  - aeson-via-sci
   - flight-units
   source-dirs: library
   exposed-modules:
@@ -39,7 +39,7 @@ tests:
     - scientific
     - aeson
     - uom-plugin
-    - aeson-via
+    - aeson-via-sci
     - flight-units
     ghc-options:
     - -rtsopts

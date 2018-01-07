@@ -17,10 +17,10 @@ library:
   - cassava
   source-dirs: library
   exposed-modules:
-  - Data.Aeson.ViaScientific
+  - Data.Aeson.Via.Scientific
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
-name: aeson-via
+name: aeson-via-sci
 synopsis: JSON encoding and decoding for rationals via scientific.
 description: Lossy JSON encoding for rationals.
 category: Flight

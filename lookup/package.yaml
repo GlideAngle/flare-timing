@@ -28,7 +28,7 @@ library:
   - mtl
   - hcoord
   - uom-plugin
-  - aeson-via
+  - aeson-via-sci
   - flight-latlng
   - flight-zone
   - flight-route
@@ -71,7 +71,7 @@ tests:
     - mtl
     - hcoord
     - uom-plugin
-    - aeson-via
+    - aeson-via-sci
     - flight-latlng
     - flight-zone
     - flight-route

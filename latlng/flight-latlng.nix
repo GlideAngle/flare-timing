@@ -1,4 +1,4 @@
-{ mkDerivation, aeson, aeson-via, base, bifunctors, bytestring
+{ mkDerivation, aeson, aeson-via-sci, base, bifunctors, bytestring
 , cassava, flight-units, formatting, hlint, newtype, numbers
 , siggy-chardust, stdenv, text, uom-plugin
 }:
@@ -7,11 +7,11 @@ mkDerivation {
   version = "0.1.0";
   src = ./.;
   libraryHaskellDepends = [
-    aeson aeson-via base bifunctors bytestring cassava flight-units
+    aeson aeson-via-sci base bifunctors bytestring cassava flight-units
     formatting newtype numbers siggy-chardust text uom-plugin
   ];
   testHaskellDepends = [
-    aeson aeson-via base bifunctors bytestring cassava flight-units
+    aeson aeson-via-sci base bifunctors bytestring cassava flight-units
     formatting hlint newtype numbers siggy-chardust text uom-plugin
   ];
   homepage = "https://github.com/BlockScope/flare-timing#readme";

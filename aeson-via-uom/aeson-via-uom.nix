@@ -1,4 +1,4 @@
-{ mkDerivation, aeson, aeson-via, base, flight-units, hlint
+{ mkDerivation, aeson, aeson-via-sci, base, flight-units, hlint
 , newtype, scientific, stdenv, uom-plugin
 }:
 mkDerivation {
@@ -6,10 +6,10 @@ mkDerivation {
   version = "0.1.0";
   src = ./.;
   libraryHaskellDepends = [
-    aeson aeson-via base flight-units newtype scientific uom-plugin
+    aeson aeson-via-sci base flight-units newtype scientific uom-plugin
   ];
   testHaskellDepends = [
-    aeson aeson-via base flight-units hlint newtype scientific
+    aeson aeson-via-sci base flight-units hlint newtype scientific
     uom-plugin
   ];
   homepage = "https://github.com/BlockScope/flare-timing#readme";

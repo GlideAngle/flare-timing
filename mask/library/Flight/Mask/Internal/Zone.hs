@@ -37,7 +37,7 @@ import Flight.Track.Time (TimeRow(..))
 import Flight.Track.Cross (Fix(..))
 import Flight.Comp (SpeedSection)
 import Flight.Units ()
-import Data.Aeson.ViaScientific (ViaScientific(..))
+import Data.Aeson.Via.Scientific (ViaScientific(..))
 
 type ZoneIdx = Int
 

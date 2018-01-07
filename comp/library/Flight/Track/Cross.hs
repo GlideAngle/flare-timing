@@ -29,7 +29,7 @@ import Flight.Pilot (Pilot(..), TrackFileFail)
 import Flight.LatLng.Raw (RawLat, RawLng)
 import Flight.Field (FieldOrdering(..))
 import Flight.Comp (FlyingSection)
-import Data.Aeson.ViaScientific (ViaScientific(..))
+import Data.Aeson.Via.Scientific (ViaScientific(..))
 
 -- | For each task, the crossing for that task.
 data Crossing =

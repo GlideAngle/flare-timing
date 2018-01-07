@@ -8,7 +8,7 @@ let
       , scientific, stdenv
       }:
       mkDerivation {
-        pname = "aeson-via";
+        pname = "aeson-via-sci";
         version = "0.1.0";
         src = ./.;
         libraryHaskellDepends = [ aeson base cassava newtype scientific ];

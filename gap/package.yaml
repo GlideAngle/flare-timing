@@ -16,11 +16,10 @@ library:
   - vector
   - statistics
   - aeson
-  - aeson-via
   - newtype
   - scientific
   - uom-plugin
-  - aeson-via
+  - aeson-via-sci
   - aeson-via-uom
   - siggy-chardust
   - flight-units
@@ -48,7 +47,7 @@ tests:
     - newtype
     - scientific
     - uom-plugin
-    - aeson-via
+    - aeson-via-sci
     - aeson-via-uom
     - siggy-chardust
     - flight-units
