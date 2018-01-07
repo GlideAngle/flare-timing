@@ -38,7 +38,7 @@ import Flight.Cmd.Paths (checkPaths)
 import Flight.Cmd.Options (CmdOptions(..), ProgramName(..), mkOptions)
 import Cmd.Options (description)
 
-import Flight.Track.Time (LeadTick(..), RaceTick(..))
+import Flight.Track.Time (LeadTick(..), RaceTick(..), TimeRow(..))
 import Flight.Comp
     ( AlignDir(..)
     , CompInputFile(..)
@@ -70,7 +70,6 @@ import Flight.Mask
 import Flight.Track.Cross (Fix(..), TrackFlyingSection(..))
 import Flight.Zone (Bearing(..))
 import Flight.Zone.Raw (RawZone)
-import Flight.Track.Time (TimeRow(..))
 import Flight.Track.Tag (Tagging(..), TrackTime(..), firstLead, firstStart)
 import Flight.Kml (MarkedFixes(..))
 import Data.Number.RoundingFunctions (dpRound)
@@ -115,7 +114,7 @@ drive o = do
 
 go :: CmdOptions -> CompInputFile -> IO ()
 go CmdOptions{..} compFile@(CompInputFile compPath) = do
-    let crossFile@(CrossZoneFile crossPath) = compToCross $ compFile
+    let crossFile@(CrossZoneFile crossPath) = compToCross compFile
     let tagFile@(TagZoneFile tagPath) = crossToTag . compToCross $ compFile
     putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
     putStrLn $ "Reading flying time range from '" ++ takeFileName crossPath ++ "'"
@@ -182,7 +181,7 @@ checkAll
              ]
          ]
 checkAll ssOnly flyingLookup tagging =
-    checkTracks $ (\CompSettings{tasks} -> group ssOnly flyingLookup tagging tasks)
+    checkTracks (\CompSettings{tasks} -> group ssOnly flyingLookup tagging tasks)
 
 includeTask :: [IxTask] -> IxTask -> Bool
 includeTask tasks = if null tasks then const True else (`elem` tasks)
@@ -254,7 +253,7 @@ group
         (Just task@Task{speedSection = ss@(Just (start, end))}, Just times) ->
             maybe
                 zs
-                ( (maybe zs (\z -> zs ++ [z]))
+                ( maybe zs (\z -> zs ++ [z])
                 . (\f ->
                     mkTimeRow
                         firstLead'
@@ -282,7 +281,7 @@ group
                 firstStart' =
                     join
                     $ (\OpenClose{open} -> firstStart ss open firstTimes)
-                    <$> (openClose ss (zoneTimes task))
+                    <$> openClose ss (zoneTimes task)
 
                 xs :: [MarkedFixes]
                 xs = groupByLeg span zoneToCyl task flyFixes
@@ -346,7 +345,7 @@ allLegDistances ticked times task@Task{speedSection, zoneTimes} leg xs =
         start =
             join
             $ (\OpenClose{open} -> firstStart speedSection open ts)
-            <$> (openClose speedSection zoneTimes)
+            <$> openClose speedSection zoneTimes
 
 legDistances
     :: Bool -- ^ Exclude zones outside speed section
