@@ -66,6 +66,14 @@ tests:
     - containers
     - vector
     - statistics
+    - aeson
+    - newtype
+    - scientific
+    - uom-plugin
+    - aeson-via-sci
+    - aeson-via-uom
+    - siggy-chardust
+    - flight-units
     - tasty
     - tasty-hunit
     - tasty-quickcheck
@@ -75,6 +83,7 @@ tests:
     - -rtsopts
     - -threaded
     - -with-rtsopts=-N
+    - -fplugin Data.UnitsOfMeasure.Plugin
     main: Score.hs
     source-dirs:
     - library

@@ -14,8 +14,7 @@
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
 module Flight.Gap.Distance.Difficulty
-    ( MinimumDistance(..)
-    , Lookahead(..)
+    ( Lookahead(..)
     , Chunk(..)
     , Chunks(..)
     , IxChunk(..)
@@ -49,24 +48,7 @@ import Data.Aeson.Via.Scientific
     (DefaultDecimalPlaces(..), DecimalPlaces(..), ViaSci(..))
 import Data.Aeson.Via.UnitsOfMeasure (ViaQ(..))
 import Flight.Gap.Distance.Linear (BestDistance(..), PilotDistance(..))
-
-newtype MinimumDistance = MinimumDistance (Quantity Double [u| km |])
-    deriving (Eq, Ord, Show)
-
-instance DefaultDecimalPlaces MinimumDistance where
-    defdp _ = DecimalPlaces 1
-
-instance (u ~ [u| km |]) => Newtype MinimumDistance (Quantity Double u) where
-    pack = MinimumDistance
-    unpack (MinimumDistance a) = a
-
-instance ToJSON MinimumDistance where
-    toJSON x = toJSON $ ViaQ x
-
-instance FromJSON MinimumDistance where
-    parseJSON o = do
-        ViaQ x <- parseJSON o
-        return x
+import Flight.Gap.Distance.MinMax (MinimumDistance(..))
 
 -- | The index of a 100m chunk. The zeroth chunk is any distance less than or
 -- equal to minimum distance.
@@ -176,7 +158,7 @@ newtype Chunks = Chunks [Chunk]
 -- | How many 100 m chunks to look ahead when working out the distance
 -- difficulty.
 lookahead
-    :: BestDistance
+    :: BestDistance (Quantity Double [u| km |])
     -> [PilotDistance (Quantity Double [u| km |])]
     -> Lookahead
 lookahead (BestDistance (MkQuantity best)) xs =
@@ -189,7 +171,7 @@ lookahead (BestDistance (MkQuantity best)) xs =
 -- | A list of 100m chunks of distance starting from the minimum distance set
 -- up for the competition. Pilots that fly less than minimum distance get
 -- awarded that distance.
-chunks :: MinimumDistance -> BestDistance -> Chunks
+chunks :: MinimumDistance -> BestDistance (Quantity Double [u| km |]) -> Chunks
 chunks (MinimumDistance md) (BestDistance best) =
     Chunks $ Chunk . MkQuantity <$> [x0, x1 .. xN]
     where
@@ -233,7 +215,7 @@ chunkLandouts md xs =
 -- fraction for each pilot.
 difficulty
     :: MinimumDistance
-    -> BestDistance
+    -> BestDistance (Quantity Double [u| km |])
     -> [PilotDistance (Quantity Double [u| km |])]
     -> Difficulty
 difficulty md best xs =

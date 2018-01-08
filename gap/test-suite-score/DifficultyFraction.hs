@@ -1,29 +1,62 @@
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE UndecidableInstances #-}
+
 module DifficultyFraction
-    ( difficultyFractionUnits
-    , lookaheadChunks
-    , difficultyFraction
+    ( difficultyUnits
+    , difficulty
+    , lookahead
     ) where
 
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit as HU ((@?=), testCase)
 import Data.Ratio ((%))
+import Data.Maybe (fromMaybe)
+import Data.UnitsOfMeasure (u)
+import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import qualified Flight.Score as FS
+import qualified Flight.Score as FS (lookahead, difficulty)
 import Flight.Score
     ( PilotDistance(..)
-    , LookaheadChunks(..)
-    , ChunkedDistance(..)
+    , Lookahead(..)
+    , MinimumDistance(..)
+    , BestDistance(..)
     , DifficultyFraction(..)
+    , ChunkDifficultyFraction(..)
+    , Difficulty(..)
     , isNormal
+    , bestDistance
     )
 
 import TestNewtypes
 
-dists10 :: [PilotDistance Rational]
-dists10 = [ PilotDistance $ 10 * x | x <- [ 1 .. 10 ]]
+min0 :: MinimumDistance
+min0 = (MinimumDistance . MkQuantity $ 0)
 
-dists100 :: [PilotDistance Rational]
-dists100 = [ PilotDistance x | x <- [ 1 .. 100 ]]
+min15 :: MinimumDistance
+min15 = (MinimumDistance . MkQuantity $ 15)
+
+dists10 :: [PilotDistance (Quantity Double [u| km |])]
+dists10 =
+    [ PilotDistance . MkQuantity . fromRational $ 10 * x
+    | x <- [ 1 .. 10 ]
+    ]
+
+best10 :: BestDistance (Quantity Double [u| km |])
+best10 = fromMaybe (BestDistance . MkQuantity $ 0) $ bestDistance dists10
+
+dists100 :: [PilotDistance (Quantity Double [u| km |])]
+dists100 =
+    [ PilotDistance . MkQuantity . fromRational $ x
+    | x <- [ 1 .. 100 ]
+    ]
+
+best100 :: BestDistance (Quantity Double [u| km |])
+best100 = fromMaybe (BestDistance . MkQuantity $ 0) $ bestDistance dists100
 
 expected10 :: [DifficultyFraction]
 expected10 =
@@ -77,30 +110,51 @@ expected100 =
     , 1 % 5270
     ]
 
-difficultyFractionUnits :: TestTree
-difficultyFractionUnits = testGroup "Difficulty fraction unit tests"
-    [ HU.testCase "10 pilots land out in 100 kms = 3000 look ahead chunks or 300 kms" $
-        FS.lookaheadChunks dists10 @?= LookaheadChunks 3000
+difficultyUnits :: TestTree
+difficultyUnits = testGroup "Difficulty fraction unit tests"
+    [ HU.testCase
+        "10 pilots land out in 100 kms = 3000 look ahead chunks or 300 kms"
+        $ FS.lookahead best10 dists10 @?= Lookahead 3000
 
-    , HU.testCase "100 pilots land out in 100 kms = 300 look ahead chunks or 30 kms" $
-        FS.lookaheadChunks dists100 @?= LookaheadChunks 300
+    , HU.testCase
+        "100 pilots land out in 100 kms = 300 look ahead chunks or 30 kms"
+        $ FS.lookahead best100 dists100 @?= Lookahead 300
 
-    , HU.testCase "10 pilots evenly land out over 100 kms" $
-        FS.difficultyFraction dists10
+    , HU.testCase
+        "10 pilots evenly land out over 100 kms, minimum distance = 0"
+        $ diffFracs (FS.difficulty min0 best10 dists10)
         @?= expected10
 
-    , HU.testCase "100 pilots evenly land out over 100 kms" $
-        FS.difficultyFraction dists100
+    , HU.testCase
+        "100 pilots evenly land out over 100 kms, minimum distance = 0"
+        $ diffFracs (FS.difficulty min0 best100 dists100)
+        @?= expected100
+
+    , HU.testCase
+        "10 pilots evenly land out over 100 kms, minimum distance = 15"
+        $ diffFracs (FS.difficulty min15 best10 dists10)
+        @?= expected10
+
+    , HU.testCase
+        "100 pilots evenly land out over 100 kms, minimum distance = 1"
+        $ diffFracs (FS.difficulty min15 best100 dists100)
         @?= expected100
     ]
 
-lookaheadChunks :: DfTest -> Bool
-lookaheadChunks (DfTest xs) =
-    (\(LookaheadChunks n) -> n >= 30 && n <= max 30 (30 * bestInChunks)) $ FS.lookaheadChunks xs
+lookahead :: DfTest -> Bool
+lookahead (DfTest (_, dBest@(BestDistance (MkQuantity best)), xs)) =
+    (\(Lookahead n) -> n >= 30 && n <= max 30 chunks)
+    $ FS.lookahead dBest xs
     where
-        (ChunkedDistance bestInChunks) =
-            if null xs then ChunkedDistance 30 else FS.toChunk $ maximum xs
+        chunks =
+            if null xs then 0
+                       else round $ 30.0 * best / (fromIntegral . length $ xs)
 
-difficultyFraction :: DfTest -> Bool
-difficultyFraction (DfTest xs) =
-    all (\(DifficultyFraction x) -> isNormal x) $ FS.difficultyFraction xs
+difficulty :: DfTest -> Bool
+difficulty (DfTest (dMin, dBest, xs)) =
+    all isNormal $ f <$> diffFracs (FS.difficulty dMin dBest xs)
+    where
+        f (DifficultyFraction df) = df
+
+diffFracs :: Difficulty -> [DifficultyFraction]
+diffFracs = fmap frac . fractional

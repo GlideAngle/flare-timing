@@ -4,6 +4,7 @@ module LeadingCoefficient
     , leadingFractions
     ) where
 
+import Prelude hiding (seq)
 import Data.List (sortBy)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit as HU ((@?=), testCase)
@@ -13,7 +14,10 @@ import qualified Flight.Score as FS
 import Flight.Score
     ( TaskTime(..)
     , DistanceToEss(..)
-    , LcTrack(..)
+    , LcTrack
+    , Leg(..)
+    , LcSeq(..)
+    , LcPoint(..)
     , TaskDeadline(..)
     , LengthOfSs(..)
     , LeadingCoefficient(..)
@@ -31,11 +35,16 @@ leadingCoefficientUnits = testGroup "Leading coefficient unit tests"
     , leadingFractionsUnits
     ]
 
-pt :: (Rational, Rational) -> (TaskTime, DistanceToEss)
-pt (t, d) = (TaskTime t, DistanceToEss d)
+pt :: (Rational, Rational) -> LcPoint
+pt (t, d) =
+    LcPoint
+        { leg = RaceLeg 0
+        , mark = TaskTime t
+        , togo = DistanceToEss d
+        }
 
 pts :: [(Rational, Rational)] -> LcTrack
-pts xs = LcTrack $ pt <$> xs
+pts xs = LcSeq (pt <$> xs) Nothing
 
 madeGoalUnits :: TestTree
 madeGoalUnits = testGroup "Made goal unit tests"
@@ -281,9 +290,14 @@ leadingFractionsUnits = testGroup "Leading fractions unit tests"
     ]
 
 isClean :: LengthOfSs -> LcTrack -> LcTrack-> Bool
-isClean _ (LcTrack []) _ =
+
+isClean _ LcSeq{seq = []} _ =
     True
-isClean (LengthOfSs len) rawTrack@(LcTrack ((_, DistanceToEss x) : _)) cleanedTrack
+
+isClean
+    (LengthOfSs len)
+    rawTrack@LcSeq{seq = LcPoint{togo = DistanceToEss x} : _}
+    cleanedTrack
     | any (< 1) ts || x > len || x < 0 = length ys < length xs
     | xs == sortBy (flip compare) xs = length ys == length xs
     | otherwise = length ys < length xs
@@ -293,10 +307,12 @@ isClean (LengthOfSs len) rawTrack@(LcTrack ((_, DistanceToEss x) : _)) cleanedTr
         ys = distances cleanedTrack
 
         times :: LcTrack -> [Rational]
-        times (LcTrack track) = (\(TaskTime t, _) -> t) <$> track
+        times (LcSeq track _) =
+            (\LcPoint{mark = TaskTime t} -> t) <$> track
 
         distances :: LcTrack -> [Rational]
-        distances (LcTrack track) = (\(_, DistanceToEss d) -> d) <$> track
+        distances LcSeq{seq = track} =
+            (\LcPoint{togo = DistanceToEss d} -> d) <$> track
 
 cleanTrack :: LcCleanTest -> Bool
 cleanTrack (LcCleanTest (len, track)) =

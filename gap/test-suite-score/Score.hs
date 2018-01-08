@@ -58,7 +58,7 @@ fractionUnits =
         , arrivalFractionUnits
         , speedFractionUnits
         , linearFractionUnits
-        , difficultyFractionUnits
+        , difficultyUnits
         , leadingCoefficientUnits
         ]
 
@@ -95,8 +95,8 @@ scProps = testGroup "(checked by SmallCheck)"
     , SC.testProperty "Speed fraction pilot time is not less than best time" speedFractionInputs
     , SC.testProperty "Speed fraction is in the range of [0, 1]" speedFraction
     , SC.testProperty "Linear distance fraction is in the range of [0, 1]" linearFraction
-    , SC.testProperty "Difficulty lookahead is in the range of [30, 30 * best flown] chunks" lookaheadChunks
-    , SC.testProperty "Difficulty fraction is in the range of [0, 1]" difficultyFraction
+    , SC.testProperty "Difficulty lookahead is in the range of [30, 30 * best flown] chunks" lookahead
+    , SC.testProperty "Difficulty fraction is in the range of [0, 1]" difficulty
     , SC.testProperty "A cleaned track is smaller if there is some flying away from goal" cleanTrack 
     , SC.testProperty "Leading fraction is in the range of [0, 1]" leadingFractions
     , SC.testProperty "Task points add up with Hg penalties" taskPointsHg
@@ -125,8 +125,8 @@ qcProps = testGroup "(checked by QuickCheck)"
     , QC.testProperty "Speed fraction pilot time is not less than best time" speedFractionInputs
     , QC.testProperty "Speed fraction is in the range of [0, 1]" speedFraction
     , QC.testProperty "Linear distance fraction is in the range of [0, 1]" linearFraction
-    , QC.testProperty "Difficulty lookahead is in the range of [30, 30 * best flown] chunks" lookaheadChunks
-    , QC.testProperty "Difficulty fraction is in the range of [0, 1]" difficultyFraction
+    , QC.testProperty "Difficulty lookahead is in the range of [30, 30 * best flown] chunks" lookahead
+    , QC.testProperty "Difficulty fraction is in the range of [0, 1]" difficulty
     , QC.testProperty "A cleaned track is smaller if there is some flying away from goal" cleanTrack 
     , QC.testProperty "Leading fraction is in the range of [0, 1]" leadingFractions
     , QC.testProperty "Task points add up with Hg penalties" taskPointsHg

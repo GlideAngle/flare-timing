@@ -1,3 +1,6 @@
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# lANGUAGE PatternSynonyms #-}
@@ -5,17 +8,19 @@ module TestNewtypes where
 
 -- NOTE: Avoid orphan instance warnings with these newtypes.
 
+import Prelude hiding (seq)
 import Data.Ratio ((%))
 import Data.List (sortBy)
 import Test.SmallCheck.Series as SC
 import Test.Tasty.QuickCheck as QC
 
-import Flight.Ratio (pattern (:%))
+import Flight.Gap.Ratio (pattern (:%))
 import Flight.Score
     ( Lw(..)
     , Aw(..)
     , GoalRatio(..)
     , NominalGoal(..)
+    , MinimumDistance(..)
     , NominalDistance(..)
     , DistanceRatio(..)
     , DistanceWeight(..)
@@ -32,7 +37,10 @@ import Flight.Score
     , PilotDistance(..)
     , TaskTime(..)
     , DistanceToEss(..)
-    , LcTrack(..)
+    , Leg(..)
+    , LcTrack
+    , LcSeq(..)
+    , LcPoint(..)
     , TaskDeadline(..)
     , LengthOfSs(..)
     , LaunchToSssPoints(..)
@@ -62,7 +70,11 @@ import Flight.Score
     , StoppedTrack(..)
     )
 
+import Data.UnitsOfMeasure (u)
+import Data.UnitsOfMeasure.Internal (Quantity(..))
+
 import Normal (Normal(..), NormalSum(..))
+import Flight.Units()
 
 -- | Nominal goal.
 newtype NgTest = NgTest NominalGoal deriving Show
@@ -184,27 +196,53 @@ instance QC.Arbitrary SfTest where
 
 -- | Linear fraction 
 newtype LfTest =
-    LfTest (BestDistance, PilotDistance Rational)
+    LfTest
+        ( BestDistance (Quantity Double [u| km |])
+        , PilotDistance (Quantity Double [u| km |])
+        )
     deriving Show
 
 instance Monad m => SC.Serial m LfTest where
     series =
-        cons1 $ \(Normal (n :% d)) ->
-             LfTest (BestDistance $ (d + n) % 1, PilotDistance (d % 1))
+        cons1 $ \(Normal ((n :% d) :: Rational))  ->
+             LfTest
+                 ( BestDistance . MkQuantity . fromIntegral $ d + n
+                 , PilotDistance . MkQuantity . fromIntegral $ d
+                 )
 
 instance QC.Arbitrary LfTest where
     arbitrary = do
-        (Normal (n :% d)) <- arbitrary
-        return $ LfTest (BestDistance $ (d + n) % 1, PilotDistance (d % 1))
+        (Normal ((n :% d) :: Rational)) <- arbitrary
+        return . LfTest $
+            ( BestDistance . MkQuantity . fromIntegral $ d + n
+            , PilotDistance . MkQuantity . fromIntegral $ d
+            )
 
 -- | Difficulty fraction
-newtype DfTest = DfTest [PilotDistance Rational] deriving Show
+newtype DfTest =
+    DfTest
+        ( MinimumDistance
+        , BestDistance (Quantity Double [u| km |])
+        , [PilotDistance (Quantity Double [u| km |])]
+        )
+    deriving Show
 
 mkDfTest :: [Int] -> DfTest
 mkDfTest xs =
     case toRational <$> sortBy (flip compare) (abs <$> xs) of
-         [] -> DfTest []
-         ys -> DfTest (PilotDistance <$> reverse ys)
+        [] ->
+            DfTest
+                ( MinimumDistance . MkQuantity $ 0
+                , BestDistance . MkQuantity $ 0
+                , []
+                )
+
+        ys ->
+            DfTest
+                ( MinimumDistance . MkQuantity . fromRational $ minimum ys
+                , BestDistance . MkQuantity . fromRational $ maximum ys
+                , PilotDistance . MkQuantity . fromRational <$> reverse ys
+                )
 
 instance Monad m => SC.Serial m DfTest where
     series = cons1 mkDfTest
@@ -220,8 +258,17 @@ newtype LcCleanTest = LcCleanTest (LengthOfSs, LcTrack) deriving Show
 mkLcTrack :: [Int] -> LcTrack
 mkLcTrack xs =
     case toRational <$> xs of
-         [] -> LcTrack []
-         ys -> LcTrack $ zip (TaskTime <$> [1 .. ]) (DistanceToEss <$> ys)
+         [] -> LcSeq [] Nothing
+         ys ->
+             LcSeq{seq = pts, extra = Nothing}
+             where
+                 ts = TaskTime <$> [1 .. ]
+                 ds = DistanceToEss <$> ys
+                 pts =
+                     zipWith
+                         (\t d -> LcPoint{leg = RaceLeg 0, mark = t, togo = d})
+                         ts
+                         ds
 
 mkLcCleanTest :: Rational -> [Int] -> LcCleanTest
 mkLcCleanTest len xs =
@@ -508,7 +555,7 @@ instance Monad m => SC.Serial m StopGlideTest where
         SC.><
         cons1 (\(SC.NonNegative x) -> AltitudeAboveGoal x)
         SC.><
-        cons1 (StoppedTrack $
+        cons1 (StoppedTrack .
                 zipWith
                     (\t (SC.NonNegative d) -> (TaskTime t, DistanceToGoal d))
                     [1 .. ])

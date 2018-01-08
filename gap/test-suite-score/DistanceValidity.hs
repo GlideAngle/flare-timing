@@ -11,13 +11,16 @@ import Test.SmallCheck.Series as SC
 import Test.Tasty.QuickCheck as QC
 import Test.Tasty.HUnit as HU ((@?=), testCase)
 import Data.Ratio ((%))
+import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import qualified Flight.Score as FS
 import Flight.Score
     ( NominalGoal(..)
     , NominalDistance(..)
-    , Metres
     , DistanceValidity(..)
+    , MinimumDistance(..)
+    , MaximumDistance(..)
+    , SumOfDistance(..)
     , isNormal
     )
 
@@ -26,45 +29,100 @@ import TestNewtypes
 distanceValidityUnits :: TestTree
 distanceValidityUnits = testGroup "Distance validity unit tests"
     [ HU.testCase "Distance validity 0 0 0 0 0 0 = 0" $
-        FS.distanceValidity (NominalGoal 0) (NominalDistance 0) 0 0 0 0
+        FS.distanceValidity
+            (NominalGoal 0)
+            (NominalDistance 0)
+            0
+            (MinimumDistance . MkQuantity $ 0)
+            (MaximumDistance . MkQuantity $ 0)
+            (SumOfDistance . MkQuantity $ 0)
         @?= DistanceValidity (0 % 1)
 
     , HU.testCase "Distance validity 1 1 1 1 1 1 = 1" $
-        FS.distanceValidity (NominalGoal 1) (NominalDistance 1) 1 1 1 1
+        FS.distanceValidity
+            (NominalGoal 1)
+            (NominalDistance 1)
+            1
+            (MinimumDistance . MkQuantity $ 1)
+            (MaximumDistance . MkQuantity $ 1)
+            (SumOfDistance . MkQuantity $ 1)
         @?= DistanceValidity (1 % 1)
 
     , HU.testCase "Distance validity 1 0 1 1 1 1 = 1" $
-        FS.distanceValidity (NominalGoal 1) (NominalDistance 0) 1 1 1 1
+        FS.distanceValidity
+            (NominalGoal 1)
+            (NominalDistance 0)
+            1
+            (MinimumDistance . MkQuantity $ 1)
+            (MaximumDistance . MkQuantity $ 1)
+            (SumOfDistance . MkQuantity $ 1)
         @?= DistanceValidity (1 % 1)
 
     , HU.testCase "Distance validity 1 1 0 1 1 1 = 0" $
-        FS.distanceValidity (NominalGoal 1) (NominalDistance 1) 0 1 1 1
+        FS.distanceValidity
+            (NominalGoal 1)
+            (NominalDistance 1)
+            0
+            (MinimumDistance . MkQuantity $ 1)
+            (MaximumDistance . MkQuantity $ 1)
+            (SumOfDistance . MkQuantity $ 1)
         @?= DistanceValidity (0 % 1)
 
     , HU.testCase "Distance validity 1 1 1 0 1 1 = 1" $
-        FS.distanceValidity (NominalGoal 1) (NominalDistance 1) 1 0 1 1
+        FS.distanceValidity
+            (NominalGoal 1)
+            (NominalDistance 1)
+            1
+            (MinimumDistance . MkQuantity $ 0)
+            (MaximumDistance . MkQuantity $ 1)
+            (SumOfDistance . MkQuantity $ 1)
         @?= DistanceValidity (1 % 1)
 
     , HU.testCase "Distance validity 1 1 1 1 0 1 = 0" $
-        FS.distanceValidity (NominalGoal 1) (NominalDistance 1) 1 1 0 1
+        FS.distanceValidity
+            (NominalGoal 1)
+            (NominalDistance 1)
+            1
+            (MinimumDistance . MkQuantity $ 1)
+            (MaximumDistance . MkQuantity $ 0)
+            (SumOfDistance . MkQuantity $ 1)
         @?= DistanceValidity (0 % 1)
 
     , HU.testCase "Distance validity 1 1 1 1 1 0 = 0" $
-        FS.distanceValidity (NominalGoal 1) (NominalDistance 1) 1 1 1 0
+        FS.distanceValidity
+            (NominalGoal 1)
+            (NominalDistance 1)
+            1
+            (MinimumDistance . MkQuantity $ 1)
+            (MaximumDistance . MkQuantity $ 1)
+            (SumOfDistance . MkQuantity $ 0)
         @?= DistanceValidity (0 % 1)
     ]
 
-distanceValidity :: NgTest
-                    -> NdTest -> Integer -> Metres -> Metres -> Metres -> Bool
-distanceValidity (NgTest ng) (NdTest nd) nFly dMin dMax dSum =
-    (\(DistanceValidity x) -> isNormal x) $ FS.distanceValidity ng nd nFly dMin dMax dSum
+distanceValidity
+    :: NgTest
+    -> NdTest
+    -> Integer
+    -> MinimumDistance
+    -> MaximumDistance
+    -> SumOfDistance
+    -> Bool
+distanceValidity
+    (NgTest ng)
+    (NdTest nd)
+    nFly
+    dMin
+    dMax
+    dSum =
+    (\(DistanceValidity x) -> isNormal x)
+    $ FS.distanceValidity ng nd nFly dMin dMax dSum
 
 scDistanceValidity :: NgTest
                       -> NdTest
                       -> SC.NonNegative Integer
-                      -> SC.NonNegative Metres
-                      -> SC.NonNegative Metres
-                      -> SC.NonNegative Metres
+                      -> SC.NonNegative Double
+                      -> SC.NonNegative Double
+                      -> SC.NonNegative Double
                       -> Bool
 scDistanceValidity
     ng
@@ -73,14 +131,20 @@ scDistanceValidity
     (SC.NonNegative dMin)
     (SC.NonNegative dMax)
     (SC.NonNegative dSum) =
-    distanceValidity ng nd nFly dMin dMax dSum
+    distanceValidity
+        ng
+        nd
+        nFly
+        (MinimumDistance . MkQuantity $ dMin)
+        (MaximumDistance . MkQuantity $ dMax)
+        (SumOfDistance . MkQuantity $ dSum)
 
 qcDistanceValidity :: NgTest
                       -> NdTest
                       -> QC.NonNegative Integer
-                      -> QC.NonNegative Metres
-                      -> QC.NonNegative Metres
-                      -> QC.NonNegative Metres
+                      -> QC.NonNegative Double
+                      -> QC.NonNegative Double
+                      -> QC.NonNegative Double
                       -> Bool
 qcDistanceValidity
     ng
@@ -89,5 +153,10 @@ qcDistanceValidity
     (QC.NonNegative dMin)
     (QC.NonNegative dMax)
     (QC.NonNegative dSum) =
-    distanceValidity ng nd nFly dMin dMax dSum
-
+    distanceValidity
+        ng
+        nd
+        nFly
+        (MinimumDistance . MkQuantity $ dMin)
+        (MaximumDistance . MkQuantity $ dMax)
+        (SumOfDistance . MkQuantity $ dSum)

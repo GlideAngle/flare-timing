@@ -116,7 +116,7 @@ difficulty CompSettings{nominal} Masking{bestDistance, land} =
             . snd)
             land
 
-        bests :: [Maybe BestDistance]
+        bests :: [Maybe (BestDistance (Quantity Double [u| km |]))]
         bests =
             (fmap . fmap) (BestDistance . MkQuantity) bestDistance
 

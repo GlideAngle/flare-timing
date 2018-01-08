@@ -7,6 +7,7 @@ module Flight.Gap.Distance.Linear
     , PilotDistance(..)
     , LinearFraction(..)
     , linearFraction
+    , bestDistance
     ) where
 
 import Data.Ratio ((%))
@@ -18,18 +19,20 @@ import Flight.Units ()
 
 newtype LinearFraction = LinearFraction Rational deriving (Eq, Ord, Show)
 
-newtype BestDistance = BestDistance (Quantity Double [u| km |])
-    deriving (Eq, Ord, Show)
-
+newtype BestDistance a = BestDistance a deriving (Eq, Ord, Show)
 newtype PilotDistance a = PilotDistance a deriving (Eq, Ord, Show)
 
 -- | The linear fraction for distance.
 linearFraction
-    :: BestDistance
-    -> PilotDistance (Quantity Double [u| km |]) 
+    :: BestDistance (Quantity Double [u| km |])
+    -> PilotDistance (Quantity Double [u| km |])
     -> LinearFraction
 linearFraction (BestDistance bd) (PilotDistance pd) =
     LinearFraction $ (np * db) % (dp * nb)
     where
         MkQuantity (nb :% db) = toRational' bd
         MkQuantity (np :% dp) = toRational' pd
+
+bestDistance :: Ord a => [PilotDistance a] -> Maybe (BestDistance a)
+bestDistance [] = Nothing
+bestDistance xs = let PilotDistance x = maximum xs in Just . BestDistance $ x

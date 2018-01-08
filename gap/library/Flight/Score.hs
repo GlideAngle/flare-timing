@@ -60,6 +60,7 @@ module Flight.Score
     , PilotDistance(..)
     , LinearFraction(..)
     , linearFraction
+    , bestDistance
     -- * Fractional allotment of difficulty distance points
     , Lookahead(..)
     , Chunk(..)
@@ -124,6 +125,8 @@ module Flight.Score
     , CanScoreStopped(..)
     , stopTaskTime
     , canScoreStopped
+    , MaximumDistance(..)
+    , SumOfDistance(..)
     , PilotsLaunched(..)
     , PilotsLandedBeforeStop(..)
     , DistanceLaunchToEss(..)
@@ -144,6 +147,7 @@ module Flight.Score
 
 import Flight.Gap.Ratio
 import Flight.Gap.Allot
+import Flight.Gap.Distance.MinMax
 import Flight.Gap.Distance.Linear
 import Flight.Gap.Distance.Difficulty
 import Flight.Gap.Leading
