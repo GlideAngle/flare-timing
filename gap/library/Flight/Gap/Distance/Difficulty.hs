@@ -35,14 +35,12 @@ module Flight.Gap.Distance.Difficulty
 import Control.Newtype (Newtype(..))
 import Data.Ratio ((%))
 import Data.List (sort, sortOn, group)
-import Data.Maybe (fromMaybe)
 import qualified Data.Map.Strict as Map
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.UnitsOfMeasure ((+:), (-:), u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import GHC.Generics (Generic)
 
-import Flight.Gap.Ratio (pattern (:%))
 import Flight.Units ()
 import Data.Aeson.Via.Scientific
     (DefaultDecimalPlaces(..), DecimalPlaces(..), ViaSci(..))
@@ -240,7 +238,7 @@ difficulty md best xs =
         n = lookahead best xs
 
         lookaheadMap :: Map.Map IxChunk Integer
-        lookaheadMap = toInteger <$> lookaheadDifficulty md n nMap
+        lookaheadMap = toInteger <$> sumLandoutsAhead n nMap
 
         sumOfDiff :: Integer
         sumOfDiff = toInteger $ sum $ Map.elems lookaheadMap
@@ -259,20 +257,20 @@ difficulty md best xs =
             (\(a, b) -> ChunkDifficultyFraction a (DifficultyFraction b))
             <$> fracs
 
-lookaheadDifficulty
-    :: MinimumDistance (Quantity Double [u| km |])
-    -> Lookahead
+-- | Sums the number of landouts in the next so many chunks to lookahead.
+sumLandoutsAhead
+    :: Lookahead
     -> Map.Map IxChunk Int
     -> Map.Map IxChunk Int
-lookaheadDifficulty _ (Lookahead n) nMap =
+sumLandoutsAhead (Lookahead n) nMap =
     Map.mapWithKey f nMap
     where
         f :: IxChunk -> Int -> Int
-        f (IxChunk cd) _ =
+        f (IxChunk ic) _ =
             sum $ Map.elems filtered
             where
-                kMin = cd
-                kMax = cd + n
+                kMin = ic 
+                kMax = ic + n
 
                 filtered =
                     Map.filterWithKey
