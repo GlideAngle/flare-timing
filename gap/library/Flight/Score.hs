@@ -147,10 +147,13 @@ module Flight.Score
 
 import Flight.Gap.Ratio
 import Flight.Gap.Allot
+import Flight.Gap.Distance.Linear
 import Flight.Gap.Distance.Min
 import Flight.Gap.Distance.Max
 import Flight.Gap.Distance.Sum
-import Flight.Gap.Distance.Linear
+import Flight.Gap.Distance.Relative
+import Flight.Gap.Distance.Fraction
+import Flight.Gap.Distance.Chunk
 import Flight.Gap.Distance.Difficulty
 import Flight.Gap.Leading
 import Flight.Gap.Validity
