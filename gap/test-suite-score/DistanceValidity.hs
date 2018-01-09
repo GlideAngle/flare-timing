@@ -112,7 +112,7 @@ distanceValidity
     -> Integer
     -> MinimumDistance (Quantity Double [u| km |])
     -> MaximumDistance (Quantity Double [u| km |])
-    -> SumOfDistance
+    -> SumOfDistance (Quantity Double [u| km |])
     -> Bool
 distanceValidity
     (NgTest ng)

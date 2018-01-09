@@ -82,7 +82,7 @@ timeValidity _ (NominalDistance 0) Nothing 0 = tvrValidity (0 % 1)
 timeValidity _ (NominalDistance 0) Nothing _ = tvrValidity (1 % 1)
 timeValidity _ (NominalDistance nd) Nothing d = tvrValidity $ min (d % nd) (1 % 1)
 
-dvr :: Rational -> Integer -> SumOfDistance -> Rational
+dvr :: Rational -> Integer -> SumOfDistance (Quantity Double [u| km |]) -> Rational
 dvr (0 :% _) _ _ =
     1 % 1
 dvr (n :% d) nFly (SumOfDistance dSum') =
@@ -93,7 +93,7 @@ distanceValidity :: NominalGoal
                  -> Integer
                  -> MinimumDistance (Quantity Double [u| km |])
                  -> MaximumDistance (Quantity Double [u| km |])
-                 -> SumOfDistance
+                 -> SumOfDistance (Quantity Double [u| km |])
                  -> DistanceValidity
 distanceValidity _ _ 0 _ _ _ =
     DistanceValidity 0

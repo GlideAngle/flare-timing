@@ -72,20 +72,24 @@ instance (q ~ Quantity Double [u| km |]) => FromJSON (MaximumDistance q) where
         ViaQ x <- parseJSON o
         return x
 
-newtype SumOfDistance = SumOfDistance (Quantity Double [u| km |])
+newtype SumOfDistance a = SumOfDistance a
     deriving (Eq, Ord, Show)
 
-instance DefaultDecimalPlaces SumOfDistance where
+instance
+    (q ~ Quantity Double [u| km |])
+    => DefaultDecimalPlaces (SumOfDistance q) where
     defdp _ = DecimalPlaces 1
 
-instance (u ~ [u| km |]) => Newtype SumOfDistance (Quantity Double u) where
+instance
+    (q ~ Quantity Double [u| km |])
+    => Newtype (SumOfDistance q) q where
     pack = SumOfDistance
     unpack (SumOfDistance a) = a
 
-instance ToJSON SumOfDistance where
+instance (q ~ Quantity Double [u| km |]) => ToJSON (SumOfDistance q) where
     toJSON x = toJSON $ ViaQ x
 
-instance FromJSON SumOfDistance where
+instance (q ~ Quantity Double [u| km |]) => FromJSON (SumOfDistance q) where
     parseJSON o = do
         ViaQ x <- parseJSON o
         return x
