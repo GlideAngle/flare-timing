@@ -171,7 +171,10 @@ lookahead (BestDistance (MkQuantity best)) xs =
 -- | A list of 100m chunks of distance starting from the minimum distance set
 -- up for the competition. Pilots that fly less than minimum distance get
 -- awarded that distance.
-chunks :: MinimumDistance -> BestDistance (Quantity Double [u| km |]) -> Chunks
+chunks
+    :: MinimumDistance (Quantity Double [u| km |])
+    -> BestDistance (Quantity Double [u| km |])
+    -> Chunks
 chunks (MinimumDistance md) (BestDistance best) =
     Chunks $ Chunk . MkQuantity <$> [x0, x1 .. xN]
     where
@@ -182,7 +185,7 @@ chunks (MinimumDistance md) (BestDistance best) =
 -- | Converts from pilot distance to distance in units of the number of 100m
 -- chunks offset from the minium distance set for the competition.
 toChunk
-    :: MinimumDistance
+    :: MinimumDistance (Quantity Double [u| km |])
     -> PilotDistance (Quantity Double [u| km |])
     -> IxChunk
 toChunk (MinimumDistance md) (PilotDistance d)
@@ -194,7 +197,7 @@ toChunk (MinimumDistance md) (PilotDistance d)
 -- | In each 100m chunk where pilots landed out, how many pilots landed in that
 -- chunk.
 landouts
-    :: MinimumDistance
+    :: MinimumDistance (Quantity Double [u| km |])
     -> [PilotDistance (Quantity Double [u| km |])]
     -> [ChunkLandings]
 landouts md xs =
@@ -205,7 +208,7 @@ sumLandouts :: [IxChunk] -> [(IxChunk, Int)]
 sumLandouts = fmap (\gXs@(gX : _) -> (gX, length gXs)) . group
 
 chunkLandouts
-    :: MinimumDistance
+    :: MinimumDistance (Quantity Double [u| km |])
     -> [PilotDistance (Quantity Double [u| km |])]
     -> [IxChunk]
 chunkLandouts md xs =
@@ -214,7 +217,7 @@ chunkLandouts md xs =
 -- | For a list of distances flown by pilots, works out the distance difficulty
 -- fraction for each pilot.
 difficulty
-    :: MinimumDistance
+    :: MinimumDistance (Quantity Double [u| km |])
     -> BestDistance (Quantity Double [u| km |])
     -> [PilotDistance (Quantity Double [u| km |])]
     -> Difficulty
@@ -275,7 +278,7 @@ diffByChunk diffMap (PilotDistance (MkQuantity pd)) pc@(IxChunk pdChunk) =
             fromMaybe (IxChunk 0, 0 % 1) $ Map.lookupGT pc diffMap
 
 lookaheadDifficulty
-    :: MinimumDistance
+    :: MinimumDistance (Quantity Double [u| km |])
     -> Lookahead
     -> Map.Map IxChunk Int
     -> Map.Map IxChunk Int

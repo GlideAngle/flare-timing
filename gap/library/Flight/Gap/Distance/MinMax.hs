@@ -28,20 +28,24 @@ import Flight.Units ()
 import Data.Aeson.Via.Scientific (DefaultDecimalPlaces(..), DecimalPlaces(..))
 import Data.Aeson.Via.UnitsOfMeasure (ViaQ(..))
 
-newtype MinimumDistance = MinimumDistance (Quantity Double [u| km |])
+newtype MinimumDistance a = MinimumDistance a
     deriving (Eq, Ord, Show)
 
-instance DefaultDecimalPlaces MinimumDistance where
+instance
+    (q ~ Quantity Double [u| km |])
+    => DefaultDecimalPlaces (MinimumDistance q) where
     defdp _ = DecimalPlaces 1
 
-instance (u ~ [u| km |]) => Newtype MinimumDistance (Quantity Double u) where
+instance
+    (q ~ Quantity Double [u| km |])
+    => Newtype (MinimumDistance q) q where
     pack = MinimumDistance
     unpack (MinimumDistance a) = a
 
-instance ToJSON MinimumDistance where
+instance (q ~ Quantity Double [u| km |]) => ToJSON (MinimumDistance q) where
     toJSON x = toJSON $ ViaQ x
 
-instance FromJSON MinimumDistance where
+instance (q ~ Quantity Double [u| km |]) => FromJSON (MinimumDistance q) where
     parseJSON o = do
         ViaQ x <- parseJSON o
         return x

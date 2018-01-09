@@ -1,5 +1,11 @@
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE UndecidableInstances #-}
+
 module DistanceValidity
     ( distanceValidityUnits
     , scDistanceValidity
@@ -11,6 +17,7 @@ import Test.SmallCheck.Series as SC
 import Test.Tasty.QuickCheck as QC
 import Test.Tasty.HUnit as HU ((@?=), testCase)
 import Data.Ratio ((%))
+import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import qualified Flight.Score as FS
@@ -103,7 +110,7 @@ distanceValidity
     :: NgTest
     -> NdTest
     -> Integer
-    -> MinimumDistance
+    -> MinimumDistance (Quantity Double [u| km |])
     -> MaximumDistance
     -> SumOfDistance
     -> Bool

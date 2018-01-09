@@ -221,7 +221,7 @@ instance QC.Arbitrary LfTest where
 -- | Difficulty fraction
 newtype DfTest =
     DfTest
-        ( MinimumDistance
+        ( MinimumDistance (Quantity Double [u| km |])
         , BestDistance (Quantity Double [u| km |])
         , [PilotDistance (Quantity Double [u| km |])]
         )

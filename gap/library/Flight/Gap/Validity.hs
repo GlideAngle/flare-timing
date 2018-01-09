@@ -1,5 +1,12 @@
-{-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE UndecidableInstances #-}
+
+{-# LANGUAGE PatternSynonyms #-}
 
 module Flight.Gap.Validity
     ( NominalLaunch(..)
@@ -19,7 +26,7 @@ module Flight.Gap.Validity
     ) where
 
 import Data.Ratio ((%))
-import Data.UnitsOfMeasure (toRational')
+import Data.UnitsOfMeasure (u, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Gap.Ratio (pattern (:%))
@@ -84,7 +91,7 @@ dvr (n :% d) nFly (SumOfDistance dSum') =
 distanceValidity :: NominalGoal
                  -> NominalDistance
                  -> Integer
-                 -> MinimumDistance
+                 -> MinimumDistance (Quantity Double [u| km |])
                  -> MaximumDistance
                  -> SumOfDistance
                  -> DistanceValidity

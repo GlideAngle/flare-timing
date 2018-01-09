@@ -34,10 +34,10 @@ import Flight.Score
 
 import TestNewtypes
 
-min0 :: MinimumDistance
+min0 :: MinimumDistance (Quantity Double [u| km |])
 min0 = (MinimumDistance . MkQuantity $ 0)
 
-min15 :: MinimumDistance
+min15 :: MinimumDistance (Quantity Double [u| km |])
 min15 = (MinimumDistance . MkQuantity $ 15)
 
 dists10 :: [PilotDistance (Quantity Double [u| km |])]
