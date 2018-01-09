@@ -66,33 +66,36 @@ data TaskPointParts =
 type TaskPointTally = TaskPointParts -> TaskPoints
 
 zeroPoints :: TaskPointParts
-zeroPoints = TaskPointParts { distance = 0, leading = 0, time = 0, arrival = 0 }
+zeroPoints =
+    TaskPointParts {distance = 0, leading = 0, time = 0, arrival = 0}
 
 tallyPoints :: forall a. Maybe (Penalty a) -> TaskPointTally
 
 tallyPoints Nothing =
-    \ TaskPointParts {..} -> TaskPoints $ distance + leading + time + arrival
+    \TaskPointParts{..} -> TaskPoints $ distance + leading + time + arrival
 
 tallyPoints (Just (JumpedTooEarly (MinimumDistancePoints p))) =
     const $ TaskPoints p
 
 tallyPoints (Just (JumpedNoGoal secs jump)) =
-    \ TaskPointParts {..} ->
-        jumpTheGun secs jump $ TaskPoints $ distance + leading + (8 % 10) * (time + arrival)
+    \TaskPointParts{..} ->
+        jumpTheGun secs jump . TaskPoints
+        $ distance + leading + (8 % 10) * (time + arrival)
 
 tallyPoints (Just (Jumped secs jump)) =
-    \ TaskPointParts {..} ->
-        jumpTheGun secs jump $ TaskPoints $ distance + leading + time + arrival
+    \TaskPointParts{..} ->
+        jumpTheGun secs jump . TaskPoints
+        $ distance + leading + time + arrival
 
 tallyPoints (Just NoGoalHg) =
-    \ TaskPointParts {..} ->
+    \TaskPointParts{..} ->
         TaskPoints $ distance + leading + (8 % 10) * (time + arrival)
 
 tallyPoints (Just (Early (LaunchToSssPoints d))) =
     const $ TaskPoints d
 
 tallyPoints (Just NoGoalPg) =
-    \ TaskPointParts {..} -> TaskPoints $ distance + leading
+    \TaskPointParts{..} -> TaskPoints $ distance + leading
 
 jumpTheGun :: SecondsPerPoint -> JumpedTheGun -> TaskPoints -> TaskPoints
 jumpTheGun (SecondsPerPoint secs) (JumpedTheGun jump) (TaskPoints pts) =
