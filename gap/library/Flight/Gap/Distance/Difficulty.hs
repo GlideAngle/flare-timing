@@ -258,10 +258,7 @@ difficulty md best xs =
             <$> fracs
 
 -- | Sums the number of landouts in the next so many chunks to lookahead.
-sumLandoutsAhead
-    :: Lookahead
-    -> Map.Map IxChunk Int
-    -> Map.Map IxChunk Int
+sumLandoutsAhead :: Lookahead -> Map.Map IxChunk Int -> Map.Map IxChunk Int
 sumLandoutsAhead (Lookahead n) nMap =
     Map.mapWithKey f nMap
     where
