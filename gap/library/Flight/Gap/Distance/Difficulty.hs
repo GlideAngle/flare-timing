@@ -259,24 +259,6 @@ difficulty md best xs =
             (\(a, b) -> ChunkDifficultyFraction a (DifficultyFraction b))
             <$> fracs
 
-diffByChunk
-    :: Map.Map IxChunk Rational
-    -> PilotDistance (Quantity Double [u| km |])
-    -> IxChunk
-    -> DifficultyFraction
-diffByChunk diffMap (PilotDistance (MkQuantity pd)) pc@(IxChunk pdChunk) =
-    DifficultyFraction $
-    pDiff
-    + (pDiffNext - pDiff)
-    * (((10 * n) % d) - (toInteger pdChunk % 1))
-    where
-        (n :% d) = toRational pd
-        pDiff :: Rational
-        pDiff = fromMaybe (0 % 1) $ Map.lookup pc diffMap
-
-        (_, pDiffNext :: Rational) =
-            fromMaybe (IxChunk 0, 0 % 1) $ Map.lookupGT pc diffMap
-
 lookaheadDifficulty
     :: MinimumDistance (Quantity Double [u| km |])
     -> Lookahead
