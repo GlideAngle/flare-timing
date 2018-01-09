@@ -30,8 +30,9 @@ import Data.UnitsOfMeasure (u, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Gap.Ratio (pattern (:%))
-import Flight.Gap.Distance.MinMax
-    (MinimumDistance(..), MaximumDistance(..), SumOfDistance(..))
+import Flight.Gap.Distance.Min (MinimumDistance(..))
+import Flight.Gap.Distance.Max (MaximumDistance(..))
+import Flight.Gap.Distance.Sum (SumOfDistance(..))
 
 newtype NominalLaunch = NominalLaunch Rational deriving (Eq, Show)
 newtype NominalDistance = NominalDistance Integer deriving (Eq, Show)
