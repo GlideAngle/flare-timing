@@ -92,7 +92,7 @@ distanceValidity :: NominalGoal
                  -> NominalDistance
                  -> Integer
                  -> MinimumDistance (Quantity Double [u| km |])
-                 -> MaximumDistance
+                 -> MaximumDistance (Quantity Double [u| km |])
                  -> SumOfDistance
                  -> DistanceValidity
 distanceValidity _ _ 0 _ _ _ =

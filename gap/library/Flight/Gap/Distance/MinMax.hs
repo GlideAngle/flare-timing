@@ -50,20 +50,24 @@ instance (q ~ Quantity Double [u| km |]) => FromJSON (MinimumDistance q) where
         ViaQ x <- parseJSON o
         return x
 
-newtype MaximumDistance = MaximumDistance (Quantity Double [u| km |])
+newtype MaximumDistance a = MaximumDistance a
     deriving (Eq, Ord, Show)
 
-instance DefaultDecimalPlaces MaximumDistance where
+instance
+    (q ~ Quantity Double [u| km |])
+    => DefaultDecimalPlaces (MaximumDistance q) where
     defdp _ = DecimalPlaces 1
 
-instance (u ~ [u| km |]) => Newtype MaximumDistance (Quantity Double u) where
+instance
+    (q ~ Quantity Double [u| km |])
+    => Newtype (MaximumDistance q) q where
     pack = MaximumDistance
     unpack (MaximumDistance a) = a
 
-instance ToJSON MaximumDistance where
+instance (q ~ Quantity Double [u| km |]) => ToJSON (MaximumDistance q) where
     toJSON x = toJSON $ ViaQ x
 
-instance FromJSON MaximumDistance where
+instance (q ~ Quantity Double [u| km |]) => FromJSON (MaximumDistance q) where
     parseJSON o = do
         ViaQ x <- parseJSON o
         return x

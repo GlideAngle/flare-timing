@@ -111,7 +111,7 @@ distanceValidity
     -> NdTest
     -> Integer
     -> MinimumDistance (Quantity Double [u| km |])
-    -> MaximumDistance
+    -> MaximumDistance (Quantity Double [u| km |])
     -> SumOfDistance
     -> Bool
 distanceValidity
