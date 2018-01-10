@@ -75,10 +75,10 @@ difficulty md best xs =
         , endAhead = zip ys ends'
         , downward = uncurry ChunkLandings <$> downs
         , relative =
-            (uncurry ChunkRelativeDifficulty . (fmap RelativeDifficulty))
+            uncurry ChunkRelativeDifficulty . fmap RelativeDifficulty
             <$> rels
         , fractional =
-            (uncurry ChunkDifficultyFraction . (fmap DifficultyFraction))
+            uncurry ChunkDifficultyFraction . fmap DifficultyFraction
             <$> fracs
         }
     where

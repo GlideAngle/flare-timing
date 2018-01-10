@@ -4,7 +4,6 @@ module LeadingCoefficient
     , leadingFractions
     ) where
 
-import Prelude hiding (seq)
 import Data.List (sortBy)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit as HU ((@?=), testCase)
@@ -16,7 +15,6 @@ import Flight.Score
     , DistanceToEss(..)
     , LcTrack
     , Leg(..)
-    , LcSeq(..)
     , LcPoint(..)
     , TaskDeadline(..)
     , LengthOfSs(..)
@@ -24,6 +22,7 @@ import Flight.Score
     , LeadingFraction(..)
     , isNormal
     )
+import qualified Flight.Score as Gap (LcSeq(..))
 
 import TestNewtypes
 
@@ -44,7 +43,7 @@ pt (t, d) =
         }
 
 pts :: [(Rational, Rational)] -> LcTrack
-pts xs = LcSeq (pt <$> xs) Nothing
+pts xs = Gap.LcSeq (pt <$> xs) Nothing
 
 madeGoalUnits :: TestTree
 madeGoalUnits = testGroup "Made goal unit tests"
@@ -291,12 +290,12 @@ leadingFractionsUnits = testGroup "Leading fractions unit tests"
 
 isClean :: LengthOfSs -> LcTrack -> LcTrack-> Bool
 
-isClean _ LcSeq{seq = []} _ =
+isClean _ Gap.LcSeq{seq = []} _ =
     True
 
 isClean
     (LengthOfSs len)
-    rawTrack@LcSeq{seq = LcPoint{togo = DistanceToEss x} : _}
+    rawTrack@Gap.LcSeq{seq = LcPoint{togo = DistanceToEss x} : _}
     cleanedTrack
     | any (< 1) ts || x > len || x < 0 = length ys < length xs
     | xs == sortBy (flip compare) xs = length ys == length xs
@@ -307,11 +306,11 @@ isClean
         ys = distances cleanedTrack
 
         times :: LcTrack -> [Rational]
-        times (LcSeq track _) =
+        times (Gap.LcSeq track _) =
             (\LcPoint{mark = TaskTime t} -> t) <$> track
 
         distances :: LcTrack -> [Rational]
-        distances LcSeq{seq = track} =
+        distances Gap.LcSeq{seq = track} =
             (\LcPoint{togo = DistanceToEss d} -> d) <$> track
 
 cleanTrack :: LcCleanTest -> Bool
