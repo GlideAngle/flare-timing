@@ -8,7 +8,6 @@
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE PartialTypeSignatures #-}
-{-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
 module Flight.Gap.Distance.Chunk
@@ -69,8 +68,8 @@ instance (q ~ Quantity Double [u| km |]) => FromJSON (Chunk q) where
 newtype Chunks a = Chunks [Chunk a]
     deriving (Eq, Ord, Show, Generic)
 
-deriving instance (ToJSON (Chunk a)) => ToJSON (Chunks a)
-deriving instance (FromJSON (Chunk a)) => FromJSON (Chunks a)
+instance (ToJSON (Chunk a)) => ToJSON (Chunks a)
+instance (FromJSON (Chunk a)) => FromJSON (Chunks a)
 
 -- | How far to look ahead, in units of 100m chunks.
 newtype Lookahead = Lookahead Int
