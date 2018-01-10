@@ -1,3 +1,5 @@
+{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -19,6 +21,8 @@ module Flight.Track.Land
 import Data.String (IsString())
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
+import Data.UnitsOfMeasure (u)
+import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Field (FieldOrdering(..))
 import Flight.Score
@@ -54,7 +58,7 @@ data Landing =
         , chunkLandings :: [[ChunkLandings]]
         -- ^ For each task, the number of landouts in each chunk, chunks with
         -- no landouts ommitted.
-        , chunks :: [Chunks]
+        , chunks :: [Chunks (Quantity Double [u| km |])]
         -- ^ For each task, the task distance to the end of each 100m chunk.
         }
         deriving (Eq, Ord, Show, Generic)

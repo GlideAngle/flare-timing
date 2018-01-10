@@ -1,16 +1,14 @@
-{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
-
-{-# LANGUAGE PatternSynonyms #-}
-{-# LANGUAGE PartialTypeSignatures #-}
-{-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE PartialTypeSignatures #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
 module Flight.Gap.Distance.Chunk
@@ -49,27 +47,30 @@ import Flight.Gap.Distance.Min (MinimumDistance(..))
 newtype IxChunk = IxChunk Int
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
-newtype Chunk = Chunk (Quantity Double [u| km |])
+newtype Chunk a = Chunk a
     deriving (Eq, Ord, Show)
 
-instance DefaultDecimalPlaces Chunk where
+instance (q ~ Quantity Double [u| km |]) => DefaultDecimalPlaces (Chunk q) where
     defdp _ = DecimalPlaces 1
 
-instance (u ~ [u| km |]) => Newtype Chunk (Quantity Double u) where
+instance (q ~ Quantity Double [u| km |]) => Newtype (Chunk q) q where
     pack = Chunk
     unpack (Chunk a) = a
 
-instance ToJSON Chunk where
+instance (q ~ Quantity Double [u| km |]) => ToJSON (Chunk q) where
     toJSON x = toJSON $ ViaQ x
 
-instance FromJSON Chunk where
+instance (q ~ Quantity Double [u| km |]) => FromJSON (Chunk q) where
     parseJSON o = do
         ViaQ x <- parseJSON o
         return x
 
 -- | A sequence of chunk ends, distances on course in km.
-newtype Chunks = Chunks [Chunk]
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+newtype Chunks a = Chunks [Chunk a]
+    deriving (Eq, Ord, Show, Generic)
+
+deriving instance (ToJSON (Chunk a)) => ToJSON (Chunks a)
+deriving instance (FromJSON (Chunk a)) => FromJSON (Chunks a)
 
 -- | How far to look ahead, in units of 100m chunks.
 newtype Lookahead = Lookahead Int
@@ -118,7 +119,7 @@ lookahead (BestDistance (MkQuantity best)) xs =
 chunks
     :: MinimumDistance (Quantity Double [u| km |])
     -> BestDistance (Quantity Double [u| km |])
-    -> Chunks
+    -> Chunks (Quantity Double [u| km |])
 chunks (MinimumDistance md) (BestDistance best) =
     Chunks $ Chunk . MkQuantity <$> [x0, x1 .. xN]
     where
