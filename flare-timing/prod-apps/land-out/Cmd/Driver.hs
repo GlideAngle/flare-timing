@@ -52,9 +52,6 @@ import Flight.Score
     , PilotDistance(..)
     , Chunk(..)
     , Chunks(..)
-    , ChunkLandings(..)
-    , ChunkRelativeDifficulty(..)
-    , ChunkDifficultyFraction(..)
     , Difficulty(..)
     , mergeChunks
     )
@@ -135,34 +132,14 @@ difficulty CompSettings{nominal} Masking{bestDistance, land} =
             | ps <- pss
             ]
 
-        landings :: [[ChunkLandings]]
-        landings = Gap.landouts md'' <$> pss
-
-        downs :: [Maybe [ChunkLandings]]
-        downs = (fmap downward) <$> ds
-
-        rels :: [Maybe [ChunkRelativeDifficulty]]
-        rels = (fmap relative) <$> ds
-
-        fracs :: [Maybe [ChunkDifficultyFraction]]
-        fracs = (fmap fractional) <$> ds
-
         cs :: [Maybe [Gap.ChunkDifficulty]] =
-            [ merge ls as rs fs
-            | ls <- landings
-            | as <- downs
-            | rs <- rels
-            | fs <- fracs
+            [ do
+                as' <- as
+                rs' <- rs
+                fs' <- fs
+                return $ mergeChunks ls as' rs' fs'
+            | ls <- Gap.landouts md'' <$> pss
+            | as <- (fmap downward) <$> ds
+            | rs <- (fmap relative) <$> ds
+            | fs <- (fmap fractional) <$> ds
             ]
-
-merge
-    :: [ChunkLandings]
-    -> Maybe [ChunkLandings]
-    -> Maybe [ChunkRelativeDifficulty]
-    -> Maybe [ChunkDifficultyFraction]
-    -> Maybe [Gap.ChunkDifficulty]
-merge ls as rs fs = do
-    as' <- as
-    rs' <- rs
-    fs' <- fs
-    return $ mergeChunks ls as' rs' fs'
