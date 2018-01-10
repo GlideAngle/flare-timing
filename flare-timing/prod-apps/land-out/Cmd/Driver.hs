@@ -55,11 +55,11 @@ import Flight.Score
     , ChunkLandings(..)
     , ChunkRelativeDifficulty(..)
     , ChunkDifficultyFraction(..)
-    , ChunkDifficulty(..)
     , Difficulty(..)
     , mergeChunks
     )
-import qualified Flight.Score as Gap (landouts, lookahead, chunks, difficulty)
+import qualified Flight.Score as Gap
+    (ChunkDifficulty(..), landouts, lookahead, chunks, difficulty)
 
 driverMain :: IO ()
 driverMain = do
@@ -138,25 +138,31 @@ difficulty CompSettings{nominal} Masking{bestDistance, land} =
         landings :: [[ChunkLandings]]
         landings = Gap.landouts md'' <$> pss
 
+        downs :: [Maybe [ChunkLandings]]
+        downs = (fmap downward) <$> ds
+
         rels :: [Maybe [ChunkRelativeDifficulty]]
         rels = (fmap relative) <$> ds
 
         fracs :: [Maybe [ChunkDifficultyFraction]]
         fracs = (fmap fractional) <$> ds
 
-        cs :: [Maybe [ChunkDifficulty]] =
-            [ merge ls rs fs
+        cs :: [Maybe [Gap.ChunkDifficulty]] =
+            [ merge ls as rs fs
             | ls <- landings
+            | as <- downs
             | rs <- rels
             | fs <- fracs
             ]
 
 merge
     :: [ChunkLandings]
+    -> Maybe [ChunkLandings]
     -> Maybe [ChunkRelativeDifficulty]
     -> Maybe [ChunkDifficultyFraction]
-    -> Maybe [ChunkDifficulty]
-merge ls rs fs = do
+    -> Maybe [Gap.ChunkDifficulty]
+merge ls as rs fs = do
+    as' <- as
     rs' <- rs
     fs' <- fs
-    return $ mergeChunks ls rs' fs'
+    return $ mergeChunks ls as' rs' fs'

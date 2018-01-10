@@ -108,37 +108,43 @@ data ChunkDifficulty =
     ChunkDifficulty
         { chunk :: IxChunk
         , down :: Int
+        , downward :: Int
         , rel :: RelativeDifficulty
         , frac :: DifficultyFraction
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 mergeChunks
-    :: [ChunkLandings]
+    :: [ChunkLandings] -- ^ Landings in each chunk
+    -> [ChunkLandings] -- ^ Landings summed over the lookahead
     -> [ChunkRelativeDifficulty]
     -> [ChunkDifficultyFraction]
     -> [ChunkDifficulty]
-mergeChunks ls rs ds =
+mergeChunks ls as rs ds =
     catMaybes
-    [ overlay l r d
+    [ overlay l a r d
     | l <- ls
+    | a <- as
     | r <- rs
     | d <- ds
     ]
 
 overlay
     :: ChunkLandings
+    -> ChunkLandings
     -> ChunkRelativeDifficulty
     -> ChunkDifficultyFraction
     -> Maybe ChunkDifficulty
 overlay
     ChunkLandings{chunk = l, down}
+    ChunkLandings{chunk = a, down = ahead}
     ChunkRelativeDifficulty{chunk = r, rel}
     ChunkDifficultyFraction{chunk = d, frac}
-        | (l == r) && (r == d) =
+        | (l == a) && (a == r) && (r == d) =
           Just ChunkDifficulty
               { chunk = l
               , down = down
+              , downward = ahead
               , rel = rel
               , frac = frac
               }

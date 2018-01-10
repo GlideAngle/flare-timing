@@ -25,6 +25,7 @@ import Flight.Gap.Distance.Fraction (DifficultyFraction(..))
 import Flight.Gap.Distance.Chunk
     ( IxChunk(..)
     , Lookahead(..)
+    , ChunkLandings(..)
     , ChunkRelativeDifficulty(..)
     , ChunkDifficultyFraction(..)
     , lookahead
@@ -39,8 +40,14 @@ newtype SumOfDifficulty = SumOfDifficulty Integer
 data Difficulty =
     Difficulty
         { sumOf :: SumOfDifficulty
+        -- ^ The sum of the downward counts.
+        , downward :: [ChunkLandings]
+        -- ^ The number on their way down for a landing between this chunk and
+        -- the lookahead offset.
         , relative :: [ChunkRelativeDifficulty]
+        -- ^ The relative difficulty of each chunk.
         , fractional :: [ChunkDifficultyFraction]
+        -- ^ The fractional difficulty of each chunk.
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
@@ -54,8 +61,13 @@ difficulty
 difficulty md best xs =
     Difficulty
         { sumOf = SumOfDifficulty sumOfDiff
-        , relative = relatives
-        , fractional = fractionals
+        , downward = uncurry ChunkLandings <$> downs
+        , relative =
+            (uncurry ChunkRelativeDifficulty . (fmap RelativeDifficulty))
+            <$> rels
+        , fractional =
+            (uncurry ChunkDifficultyFraction . (fmap DifficultyFraction))
+            <$> fracs
         }
     where
         ys :: [IxChunk]
@@ -68,9 +80,10 @@ difficulty md best xs =
         nMap = Map.fromList ns
 
         n = lookahead best xs
+        sumOfDowns = sumLandoutsAhead n nMap
 
         lookaheadMap :: Map.Map IxChunk Integer
-        lookaheadMap = toInteger <$> sumLandoutsAhead n nMap
+        lookaheadMap = toInteger <$> sumOfDowns 
 
         sumOfDiff :: Integer
         sumOfDiff = toInteger $ sum $ Map.elems lookaheadMap
@@ -78,16 +91,9 @@ difficulty md best xs =
         relativeDiffMap :: Map.Map IxChunk Rational
         relativeDiffMap = (\d -> d % (2 * sumOfDiff)) <$> lookaheadMap
 
+        downs = sortOn fst $ Map.toList sumOfDowns
         rels = sortOn fst $ Map.toList relativeDiffMap
         fracs = scanl1 (\(_, b) (c, d) -> (c, b + d)) rels
-
-        relatives =
-            (\(a, b) -> ChunkRelativeDifficulty a (RelativeDifficulty b))
-            <$> rels
-
-        fractionals =
-            (\(a, b) -> ChunkDifficultyFraction a (DifficultyFraction b))
-            <$> fracs
 
 -- | Sums the number of landouts in the next so many chunks to lookahead.
 sumLandoutsAhead :: Lookahead -> Map.Map IxChunk Int -> Map.Map IxChunk Int

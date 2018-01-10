@@ -69,8 +69,13 @@ cmp a b =
         ("down", "chunk") -> GT
         ("down", _) -> LT
 
+        ("downward", "chunk") -> GT
+        ("downward", "down") -> GT
+        ("downward", _) -> LT
+
         ("rel", "chunk") -> GT
         ("rel", "down") -> GT
+        ("rel", "downward") -> GT
         ("rel", _) -> LT
 
         ("frac", _) -> GT
