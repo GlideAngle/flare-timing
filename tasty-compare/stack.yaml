@@ -2,5 +2,5 @@ flags: {}
 packages:
 - '.'
 extra-deps: []
-resolver: nightly-2017-12-09
+resolver: nightly-2018-01-09
 local-bin-path: ../__shake-build
