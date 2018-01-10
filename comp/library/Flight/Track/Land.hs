@@ -50,8 +50,6 @@ data Landing =
         -- difficulties.
         , difficulty :: [Maybe [ChunkDifficulty]]
         -- ^ The difficulty of each chunk.
-        , chunks :: [Chunks (Quantity Double [u| km |])]
-        -- ^ For each task, the task distance to the end of each 100m chunk.
         }
         deriving (Eq, Ord, Show, Generic)
 
@@ -100,13 +98,6 @@ cmp a b =
         ("sumOfDifficulty", "lookahead") -> GT
         ("sumOfDifficulty", _) -> LT
 
-        ("difficulty", "minDistance") -> GT
-        ("difficulty", "bestDistance") -> GT
-        ("difficulty", "landout") -> GT
-        ("difficulty", "lookahead") -> GT
-        ("difficulty", "sumOfDifficulty") -> GT
-        ("difficulty", _) -> LT
-
-        ("chunks", _) -> GT
+        ("difficulty", _) -> GT
 
         _ -> compare a b

@@ -97,7 +97,6 @@ difficulty CompSettings{nominal} Masking{bestDistance, land} =
         , bestDistance = bestDistance
         , landout = length <$> land
         , lookahead = ahead
-        , chunks = (fromMaybe zeroChunk . fmap (Gap.chunks md'')) <$> bests
         , sumOfDifficulty = (fmap sumOf) <$> ds
         , difficulty = cs
         }
