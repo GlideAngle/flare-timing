@@ -306,6 +306,43 @@ executables:
     - -fplugin Data.UnitsOfMeasure.Plugin
     main: Main.hs
     source-dirs: prod-apps/land-out
+  gap-point:
+    dependencies:
+    - base
+    - directory
+    - filepath
+    - system-filepath
+    - filemanip
+    - raw-strings-qq
+    - cmdargs
+    - mtl
+    - transformers
+    - yaml
+    - aeson
+    - uom-plugin
+    - bytestring
+    - clock
+    - formatting
+    - siggy-chardust
+    - flight-cmd
+    - flight-units
+    - flight-latlng
+    - flight-comp
+    - flight-kml
+    - flight-track
+    - flight-zone
+    - flight-task
+    - flight-gap
+    - flight-mask
+    - flight-scribe
+    ghc-options:
+    - -rtsopts
+    - -threaded
+    - -with-rtsopts=-N
+    - -Wall
+    - -fplugin Data.UnitsOfMeasure.Plugin
+    main: Main.hs
+    source-dirs: prod-apps/gap-point
   test-fsdb-parser:
     dependencies:
     - base

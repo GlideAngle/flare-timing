@@ -49,6 +49,7 @@ prodApps =
     , "discard-further"
     , "mask-track"
     , "land-out"
+    , "gap-point"
     ] 
 
 -- | The names of the production app executables
