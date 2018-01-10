@@ -7,6 +7,8 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE ParallelListComp #-}
 {-# LANGUAGE PartialTypeSignatures #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
@@ -18,14 +20,17 @@ module Flight.Gap.Distance.Chunk
     , ChunkRelativeDifficulty(..)
     , ChunkDifficultyFraction(..)
     , ChunkLandings(..)
+    , ChunkDifficulty(..)
     , lookahead
     , toChunk
     , chunks
     , landouts
     , chunkLandouts
     , sumLandouts
+    , mergeChunks
     ) where
 
+import Data.Maybe (catMaybes)
 import Data.List (sort, group)
 import Control.Newtype (Newtype(..))
 import Data.Aeson (ToJSON(..), FromJSON(..))
@@ -98,6 +103,46 @@ data ChunkLandings =
         , down :: Int
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+
+data ChunkDifficulty =
+    ChunkDifficulty
+        { chunk :: IxChunk
+        , down :: Int
+        , rel :: RelativeDifficulty
+        , frac :: DifficultyFraction
+        }
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+
+mergeChunks
+    :: [ChunkLandings]
+    -> [ChunkRelativeDifficulty]
+    -> [ChunkDifficultyFraction]
+    -> [ChunkDifficulty]
+mergeChunks ls rs ds =
+    catMaybes
+    [ overlay l r d
+    | l <- ls
+    | r <- rs
+    | d <- ds
+    ]
+
+overlay
+    :: ChunkLandings
+    -> ChunkRelativeDifficulty
+    -> ChunkDifficultyFraction
+    -> Maybe ChunkDifficulty
+overlay
+    ChunkLandings{chunk = l, down}
+    ChunkRelativeDifficulty{chunk = r, rel}
+    ChunkDifficultyFraction{chunk = d, frac}
+        | (l == r) && (r == d) =
+          Just ChunkDifficulty
+              { chunk = l
+              , down = down
+              , rel = rel
+              , frac = frac
+              }
+        | otherwise = Nothing
 
 -- | How many 100 m chunks to look ahead when working out the distance
 -- difficulty.

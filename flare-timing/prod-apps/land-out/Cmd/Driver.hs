@@ -44,7 +44,7 @@ import Flight.Comp
     )
 import Flight.Units ()
 import Flight.Track.Mask (Masking(..), TrackDistance(..))
-import Flight.Track.Land (Landing(..))
+import qualified Flight.Track.Land as Cmp (Landing(..))
 import Flight.Scribe (readComp, readMasking, writeLanding)
 import Flight.Score
     ( MinimumDistance(..)
@@ -52,7 +52,12 @@ import Flight.Score
     , PilotDistance(..)
     , Chunk(..)
     , Chunks(..)
+    , ChunkLandings(..)
+    , ChunkRelativeDifficulty(..)
+    , ChunkDifficultyFraction(..)
+    , ChunkDifficulty(..)
     , Difficulty(..)
+    , mergeChunks
     )
 import qualified Flight.Score as Gap (landouts, lookahead, chunks, difficulty)
 
@@ -88,18 +93,16 @@ go CmdOptions{..} compFile = do
         (Right cs, Right mk) -> do
             writeLanding landFile $ difficulty cs mk
 
-difficulty :: CompSettings -> Masking -> Landing
+difficulty :: CompSettings -> Masking -> Cmp.Landing
 difficulty CompSettings{nominal} Masking{bestDistance, land} =
-    Landing 
+    Cmp.Landing 
         { minDistance = md
         , bestDistance = bestDistance
         , landout = length <$> land
         , lookahead = ahead
         , chunks = (fromMaybe zeroChunk . fmap (Gap.chunks md'')) <$> bests
-        , chunkLandings = Gap.landouts md'' <$> pss
         , sumOfDifficulty = (fmap sumOf) <$> ds
-        , relativeDifficulty = (fmap relative) <$> ds
-        , fractionalDifficulty = (fmap fractional) <$> ds
+        , difficulty = cs
         }
     where
         md = free nominal
@@ -132,3 +135,28 @@ difficulty CompSettings{nominal} Masking{bestDistance, land} =
             | ps <- pss
             ]
 
+        landings :: [[ChunkLandings]]
+        landings = Gap.landouts md'' <$> pss
+
+        rels :: [Maybe [ChunkRelativeDifficulty]]
+        rels = (fmap relative) <$> ds
+
+        fracs :: [Maybe [ChunkDifficultyFraction]]
+        fracs = (fmap fractional) <$> ds
+
+        cs :: [Maybe [ChunkDifficulty]] =
+            [ merge ls rs fs
+            | ls <- landings
+            | rs <- rels
+            | fs <- fracs
+            ]
+
+merge
+    :: [ChunkLandings]
+    -> Maybe [ChunkRelativeDifficulty]
+    -> Maybe [ChunkDifficultyFraction]
+    -> Maybe [ChunkDifficulty]
+merge ls rs fs = do
+    rs' <- rs
+    fs' <- fs
+    return $ mergeChunks ls rs' fs'

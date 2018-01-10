@@ -29,9 +29,7 @@ import Flight.Score
     ( Lookahead
     , Chunks
     , SumOfDifficulty
-    , ChunkRelativeDifficulty
-    , ChunkDifficultyFraction
-    , ChunkLandings
+    , ChunkDifficulty
     )
 
 -- | For each task, the masking for that task.
@@ -50,14 +48,8 @@ data Landing =
         , sumOfDifficulty :: [Maybe SumOfDifficulty]
         -- ^ The difficulty of each chunk is relative to the sum of
         -- difficulties.
-        , relativeDifficulty :: [Maybe [ChunkRelativeDifficulty]]
-        -- ^ The relative difficulty of each chunk.
-        , fractionalDifficulty :: [Maybe [ChunkDifficultyFraction]]
-        -- ^ The fractional difficulty, being the sum of relative difficulties
-        -- up to the chunk of landing.
-        , chunkLandings :: [[ChunkLandings]]
-        -- ^ For each task, the number of landouts in each chunk, chunks with
-        -- no landouts ommitted.
+        , difficulty :: [Maybe [ChunkDifficulty]]
+        -- ^ The difficulty of each chunk.
         , chunks :: [Chunks (Quantity Double [u| km |])]
         -- ^ For each task, the task distance to the end of each 100m chunk.
         }
@@ -72,6 +64,17 @@ instance FieldOrdering Landing where
 cmp :: (Ord a, IsString a) => a -> a -> Ordering
 cmp a b =
     case (a, b) of
+        ("chunk", _) -> LT
+
+        ("down", "chunk") -> GT
+        ("down", _) -> LT
+
+        ("rel", "chunk") -> GT
+        ("rel", "down") -> GT
+        ("rel", _) -> LT
+
+        ("frac", _) -> GT
+
         ("minDistance", _) -> LT
 
         ("bestDistance", "minDistance") -> GT
@@ -92,27 +95,12 @@ cmp a b =
         ("sumOfDifficulty", "lookahead") -> GT
         ("sumOfDifficulty", _) -> LT
 
-        ("relativeDifficulty", "minDistance") -> GT
-        ("relativeDifficulty", "bestDistance") -> GT
-        ("relativeDifficulty", "landout") -> GT
-        ("relativeDifficulty", "lookahead") -> GT
-        ("relativeDifficulty", "sumOfDifficulty") -> GT
-        ("relativeDifficulty", _) -> LT
-
-        ("fractionalDifficulty", "minDistance") -> GT
-        ("fractionalDifficulty", "bestDistance") -> GT
-        ("fractionalDifficulty", "landout") -> GT
-        ("fractionalDifficulty", "lookahead") -> GT
-        ("fractionalDifficulty", "sumOfDifficulty") -> GT
-        ("fractionalDifficulty", "relativeDifficulty") -> GT
-        ("fractionalDifficulty", _) -> LT
-
-        ("chunkLandings", "minDistance") -> GT
-        ("chunkLandings", "bestDistance") -> GT
-        ("chunkLandings", "landout") -> GT
-        ("chunkLandings", "lookahead") -> GT
-        ("chunkLandings", "sumOfDifficulty") -> GT
-        ("chunkLandings", _) -> LT
+        ("difficulty", "minDistance") -> GT
+        ("difficulty", "bestDistance") -> GT
+        ("difficulty", "landout") -> GT
+        ("difficulty", "lookahead") -> GT
+        ("difficulty", "sumOfDifficulty") -> GT
+        ("difficulty", _) -> LT
 
         ("chunks", _) -> GT
 

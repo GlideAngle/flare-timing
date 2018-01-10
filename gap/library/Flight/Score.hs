@@ -70,12 +70,14 @@ module Flight.Score
     , toChunk
     , chunks
     , landouts
+    , mergeChunks
     , SumOfDifficulty(..)
     , RelativeDifficulty(..)
     , DifficultyFraction(..)
     , ChunkRelativeDifficulty(..)
     , ChunkDifficultyFraction(..)
     , ChunkLandings(..)
+    , ChunkDifficulty(..)
     , Difficulty(..)
     , difficulty
     -- * Fractional allotment of leading points 
