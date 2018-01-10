@@ -130,14 +130,16 @@ difficulty CompSettings{nominal} Masking{bestDistance, land} =
 
         cs :: [Maybe [Gap.ChunkDifficulty]] =
             [ do
-                is' <- is
+                ils' <- ils
                 as' <- as
+                ias' <- ias
                 rs' <- rs
                 fs' <- fs
-                return $ mergeChunks ls is' as' rs' fs'
+                return $ mergeChunks ls ils' as' ias' rs' fs'
             | ls <- Gap.landouts md'' <$> pss
-            | is <- (fmap . fmap) endChunk ds
+            | ils <- (fmap . fmap) endChunk ds
             | as <- (fmap downward) <$> ds
+            | ias <- (fmap . fmap) endAhead ds
             | rs <- (fmap relative) <$> ds
             | fs <- (fmap fractional) <$> ds
             ]

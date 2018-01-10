@@ -110,6 +110,7 @@ data ChunkDifficulty =
     ChunkDifficulty
         { chunk :: IxChunk
         , endChunk :: Chunk (Quantity Double [u| km |])
+        , endAhead :: Chunk (Quantity Double [u| km |])
         , down :: Int
         , downward :: Int
         , rel :: RelativeDifficulty
@@ -119,17 +120,19 @@ data ChunkDifficulty =
 
 mergeChunks
     :: [ChunkLandings] -- ^ Landings in each chunk
-    -> [(IxChunk, Chunk (Quantity Double [u| km |]))]
+    -> [(IxChunk, Chunk (Quantity Double [u| km |]))] -- ^ End of each chunk
     -> [ChunkLandings] -- ^ Landings summed over the lookahead
+    -> [(IxChunk, Chunk (Quantity Double [u| km |]))] -- ^ End of ahead chunk
     -> [ChunkRelativeDifficulty]
     -> [ChunkDifficultyFraction]
     -> [ChunkDifficulty]
-mergeChunks ls is as rs ds =
+mergeChunks ls ils as ias rs ds =
     catMaybes
-    [ overlay l i a r d
+    [ overlay l il a ia r d
     | l <- ls
-    | i <- is
+    | il <- ils
     | a <- as
+    | ia <- ias
     | r <- rs
     | d <- ds
     ]
@@ -138,19 +141,22 @@ overlay
     :: ChunkLandings
     -> (IxChunk, Chunk (Quantity Double [u| km |]))
     -> ChunkLandings
+    -> (IxChunk, Chunk (Quantity Double [u| km |]))
     -> ChunkRelativeDifficulty
     -> ChunkDifficultyFraction
     -> Maybe ChunkDifficulty
 overlay
     ChunkLandings{chunk = l, down}
-    (ix, e) 
+    (il, el) 
     ChunkLandings{chunk = a, down = ahead}
+    (ia, ea) 
     ChunkRelativeDifficulty{chunk = r, rel}
     ChunkDifficultyFraction{chunk = d, frac}
-        | (l == ix) && (ix == a) && (a == r) && (r == d) =
+        | (l == il) && (il == a) && (a == ia) && (ia == r) && (r == d) =
           Just ChunkDifficulty
               { chunk = l
-              , endChunk = e
+              , endChunk = el
+              , endAhead = ea
               , down = down
               , downward = ahead
               , rel = rel

@@ -68,16 +68,24 @@ cmp a b =
         ("endChunk", "chunk") -> GT
         ("endChunk", _) -> LT
 
+        ("endAhead", "chunk") -> GT
+        ("endAhead", "endChunk") -> GT
+        ("endAhead", _) -> LT
+
         ("down", "chunk") -> GT
         ("down", "endChunk") -> GT
+        ("down", "endAhead") -> GT
         ("down", _) -> LT
 
         ("downward", "chunk") -> GT
+        ("downward", "endChunk") -> GT
+        ("downward", "endAhead") -> GT
         ("downward", "down") -> GT
         ("downward", _) -> LT
 
         ("rel", "chunk") -> GT
         ("rel", "endChunk") -> GT
+        ("rel", "endAhead") -> GT
         ("rel", "down") -> GT
         ("rel", "downward") -> GT
         ("rel", _) -> LT

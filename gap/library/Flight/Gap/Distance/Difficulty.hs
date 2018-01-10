@@ -46,6 +46,8 @@ data Difficulty =
         -- ^ The sum of the downward counts.
         , endChunk :: [(IxChunk, Chunk (Quantity Double [u| km |]))]
         -- ^ The task distance to the end of this chunk.
+        , endAhead :: [(IxChunk, Chunk (Quantity Double [u| km |]))]
+        -- ^ The task distance to the end of lookahead chunk.
         , downward :: [ChunkLandings]
         -- ^ The number on their way down for a landing between this chunk and
         -- the lookahead offset.
@@ -67,6 +69,7 @@ difficulty md best xs =
     Difficulty
         { sumOf = SumOfDifficulty sumOfDiff
         , endChunk = zip ys ends
+        , endAhead = zip ys ends'
         , downward = uncurry ChunkLandings <$> downs
         , relative =
             (uncurry ChunkRelativeDifficulty . (fmap RelativeDifficulty))
@@ -76,10 +79,13 @@ difficulty md best xs =
             <$> fracs
         }
     where
+        ahead@(Lookahead n) = lookahead best xs
+
         ys :: [IxChunk]
         ys = chunkLandouts md xs
 
         ends = toChunk md <$> ys
+        ends' = toChunk md . (\(IxChunk x) -> IxChunk $ x + n) <$> ys
 
         ns :: [(IxChunk, Int)]
         ns = sumLandouts ys
@@ -87,8 +93,7 @@ difficulty md best xs =
         nMap :: Map.Map IxChunk Int
         nMap = Map.fromList ns
 
-        n = lookahead best xs
-        sumOfDowns = sumLandoutsAhead n nMap
+        sumOfDowns = sumLandoutsAhead ahead nMap
 
         lookaheadMap :: Map.Map IxChunk Integer
         lookaheadMap = toInteger <$> sumOfDowns 
