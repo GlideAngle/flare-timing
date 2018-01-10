@@ -18,7 +18,6 @@
 
 module Cmd.Driver (driverMain) where
 
-import Data.Maybe (fromMaybe)
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
 import Formatting ((%), fprint)
@@ -30,31 +29,22 @@ import System.FilePath (takeFileName)
 import Flight.Cmd.Paths (checkPaths)
 import Flight.Cmd.Options (CmdOptions(..), ProgramName(..), mkOptions)
 import Cmd.Options (description)
-import Data.UnitsOfMeasure (u)
-import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Comp
     ( CompInputFile(..)
     , CompSettings(..)
-    , Nominal(..)
     , MaskTrackFile(..)
+    , LandOutFile(..)
     , compToMask
     , compToLand
+    , compToPoint
     , findCompInput
     )
 import Flight.Units ()
-import Flight.Track.Mask (Masking(..), TrackDistance(..))
+import Flight.Track.Mask (Masking(..))
+import Flight.Track.Point (Pointing(..))
 import qualified Flight.Track.Land as Cmp (Landing(..))
-import Flight.Scribe (readComp, readMasking, writeLanding)
-import Flight.Score
-    ( MinimumDistance(..)
-    , BestDistance(..)
-    , PilotDistance(..)
-    , Difficulty(..)
-    , mergeChunks
-    )
-import qualified Flight.Score as Gap
-    (ChunkDifficulty(..), landouts, lookahead, difficulty)
+import Flight.Scribe (readComp, readMasking, readLanding, writePointing)
 
 driverMain :: IO ()
 driverMain = do
@@ -71,77 +61,29 @@ drive o = do
     if null files then putStrLn "Couldn't find any input files."
                   else mapM_ (go o) files
     end <- getTime Monotonic
-    fprint ("Land outs counted for distance difficulty completed in " % timeSpecs % "\n") start end
+    fprint ("Tallying points completed in " % timeSpecs % "\n") start end
 
 go :: CmdOptions -> CompInputFile -> IO ()
 go CmdOptions{..} compFile = do
     let maskFile@(MaskTrackFile maskPath) = compToMask compFile
-    let landFile = compToLand compFile
-    putStrLn $ "Reading land outs from '" ++ takeFileName maskPath ++ "'"
+    let landFile@(LandOutFile landPath) = compToLand compFile
+    let pointFile = compToPoint compFile
+    putStrLn $ "Reading masked tracks from '" ++ takeFileName maskPath ++ "'"
+    putStrLn $ "Reading distance difficulty from '" ++ takeFileName landPath ++ "'"
 
     compSettings <- runExceptT $ readComp compFile
     masking <- runExceptT $ readMasking maskFile
+    landing <- runExceptT $ readLanding landFile
 
-    case (compSettings, masking) of
-        (Left msg, _) -> putStrLn msg
-        (_, Left msg) -> putStrLn msg
-        (Right cs, Right mk) -> do
-            writeLanding landFile $ difficulty cs mk
+    case (compSettings, masking, landing) of
+        (Left msg, _, _) -> putStrLn msg
+        (_, Left msg, _) -> putStrLn msg
+        (_, _, Left msg) -> putStrLn msg
+        (Right cs, Right mk, Right lg) -> do
+            writePointing pointFile $ points cs mk lg
 
-difficulty :: CompSettings -> Masking -> Cmp.Landing
-difficulty CompSettings{nominal} Masking{bestDistance, land} =
-    Cmp.Landing 
-        { minDistance = md''
-        , bestDistance = bests
-        , landout = length <$> land
-        , lookahead = ahead
-        , sumOfDifficulty = (fmap sumOf) <$> ds
-        , difficulty = cs
+points :: CompSettings -> Masking -> Cmp.Landing -> Pointing
+points CompSettings{tasks} _ _ =
+    Pointing 
+        { goalRatio = const 0 <$> tasks
         }
-    where
-        md = free nominal
-        md' = MkQuantity $ md
-        md'' = MinimumDistance md'
-
-        pss :: [[PilotDistance (Quantity Double [u| km |])]]
-        pss =
-            (fmap . fmap)
-            (PilotDistance
-            . MkQuantity
-            . (\TrackDistance{made} -> fromMaybe 0 made)
-            . snd)
-            land
-
-        bests :: [Maybe (BestDistance (Quantity Double [u| km |]))]
-        bests =
-            (fmap . fmap) (BestDistance . MkQuantity) bestDistance
-
-        ahead =
-            [ flip Gap.lookahead ps <$> b
-            | b <- bests
-            | ps <- pss
-            ]
-
-        ds :: [Maybe Difficulty] =
-            [ (\bd -> Gap.difficulty md'' bd ps) <$> b
-            | b <- bests
-            | ps <- pss
-            ]
-
-        cs :: [Maybe [Gap.ChunkDifficulty]] =
-            [ do
-                ils' <- ils
-                jls' <- jls
-                as' <- as
-                jas' <- jas
-                rs' <- rs
-                fs' <- fs
-                return $ mergeChunks ls ils' jls' as' jas' rs' fs'
-            | ls <- Gap.landouts md'' <$> pss
-            | ils <- (fmap . fmap) startChunk ds
-            | jls <- (fmap . fmap) endChunk ds
-            | as <- (fmap downward) <$> ds
-            | jas <- (fmap . fmap) endAhead ds
-            | rs <- (fmap relative) <$> ds
-            | fs <- (fmap fractional) <$> ds
-            ]

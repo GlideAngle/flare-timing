@@ -5,6 +5,7 @@ module Flight.Scribe
     , readTagging, writeTagging
     , readMasking, writeMasking
     , readLanding, writeLanding
+    , readPointing, writePointing
     , module Flight.Align
     , module Flight.Discard
     ) where
@@ -19,6 +20,7 @@ import Flight.Track.Tag (Tagging(..))
 import Flight.Track.Cross (Crossing)
 import Flight.Track.Mask (Masking)
 import Flight.Track.Land (Landing)
+import Flight.Track.Point (Pointing)
 import Flight.Field (FieldOrdering(..))
 import Flight.Comp
     ( CompInputFile(..)
@@ -27,6 +29,7 @@ import Flight.Comp
     , TagZoneFile(..)
     , MaskTrackFile(..)
     , LandOutFile(..)
+    , GapPointFile(..)
     , CompSettings(..)
     )
 import Flight.Align
@@ -98,4 +101,15 @@ writeLanding :: LandOutFile -> Landing -> IO ()
 writeLanding (LandOutFile path) landout = do
     let cfg = Y.setConfCompare (fieldOrder landout) Y.defConfig
     let yaml = Y.encodePretty cfg landout
+    BS.writeFile path yaml
+
+readPointing :: GapPointFile -> ExceptT String IO Pointing
+readPointing (GapPointFile path) = do
+    contents <- lift $ BS.readFile path
+    ExceptT . return $ decodeEither contents
+
+writePointing :: GapPointFile -> Pointing -> IO ()
+writePointing (GapPointFile path) gapPoint = do
+    let cfg = Y.setConfCompare (fieldOrder gapPoint) Y.defConfig
+    let yaml = Y.encodePretty cfg gapPoint
     BS.writeFile path yaml

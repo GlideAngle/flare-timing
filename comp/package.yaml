@@ -42,6 +42,7 @@ library:
   - Flight.Track.Time
   - Flight.Track.Mask
   - Flight.Track.Land
+  - Flight.Track.Point
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
 name: flight-comp
