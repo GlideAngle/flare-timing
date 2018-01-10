@@ -10,7 +10,7 @@ module Flight.Gap.Distance.Difficulty
     ) where
 
 import Data.Ratio ((%))
-import Data.List (sortOn)
+import Data.List (sortOn, nub)
 import qualified Data.Map.Strict as Map
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.UnitsOfMeasure (u)
@@ -84,8 +84,10 @@ difficulty md best xs =
     where
         ahead@(Lookahead n) = lookahead best xs
 
+        -- NOTE: More than one pilot can landout in the same chunk so remove
+        -- duplicates.
         ys :: [IxChunk]
-        ys = chunkLandouts md xs
+        ys = nub $ chunkLandouts md xs
 
         starts = toChunk md . (\(IxChunk x) -> IxChunk $ x - 1) <$> ys
         ends = toChunk md <$> ys
