@@ -27,19 +27,20 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Flight.Field (FieldOrdering(..))
 import Flight.Score
     ( Lookahead
-    , Chunks
     , SumOfDifficulty
     , ChunkDifficulty
+    , MinimumDistance(..)
+    , BestDistance(..)
     )
 
 -- | For each task, the masking for that task.
 data Landing =
     Landing 
-        { minDistance :: Double
+        { minDistance :: MinimumDistance (Quantity Double [u| km |])
         -- ^ The mimimum distance, set once for the comp. All pilots landing
         -- before this distance get this distance. The 100m segments start from
         -- here.
-        , bestDistance :: [Maybe Double]
+        , bestDistance :: [Maybe (BestDistance (Quantity Double [u| km |]))]
         -- ^ For each task, the best distance flown.
         , landout :: [Int]
         -- ^ For each task, the number of pilots landing out.

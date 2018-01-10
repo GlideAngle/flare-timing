@@ -50,13 +50,11 @@ import Flight.Score
     ( MinimumDistance(..)
     , BestDistance(..)
     , PilotDistance(..)
-    , Chunk(..)
-    , Chunks(..)
     , Difficulty(..)
     , mergeChunks
     )
 import qualified Flight.Score as Gap
-    (ChunkDifficulty(..), landouts, lookahead, chunks, difficulty)
+    (ChunkDifficulty(..), landouts, lookahead, difficulty)
 
 driverMain :: IO ()
 driverMain = do
@@ -93,8 +91,8 @@ go CmdOptions{..} compFile = do
 difficulty :: CompSettings -> Masking -> Cmp.Landing
 difficulty CompSettings{nominal} Masking{bestDistance, land} =
     Cmp.Landing 
-        { minDistance = md
-        , bestDistance = bestDistance
+        { minDistance = md''
+        , bestDistance = bests
         , landout = length <$> land
         , lookahead = ahead
         , sumOfDifficulty = (fmap sumOf) <$> ds
@@ -104,7 +102,6 @@ difficulty CompSettings{nominal} Masking{bestDistance, land} =
         md = free nominal
         md' = MkQuantity $ md
         md'' = MinimumDistance md'
-        zeroChunk = Chunks [Chunk md']
 
         pss :: [[PilotDistance (Quantity Double [u| km |])]]
         pss =

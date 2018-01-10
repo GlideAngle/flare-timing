@@ -152,6 +152,7 @@ import Flight.Gap.Allot
 import Flight.Gap.Distance.Linear
 import Flight.Gap.Distance.Min
 import Flight.Gap.Distance.Max
+import Flight.Gap.Distance.Best
 import Flight.Gap.Distance.Sum
 import Flight.Gap.Distance.Relative
 import Flight.Gap.Distance.Fraction

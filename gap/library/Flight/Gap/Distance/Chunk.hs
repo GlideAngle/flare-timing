@@ -43,8 +43,9 @@ import Data.Aeson.Via.Scientific (DefaultDecimalPlaces(..), DecimalPlaces(..))
 import Data.Aeson.Via.UnitsOfMeasure (ViaQ(..))
 import Flight.Gap.Distance.Relative (RelativeDifficulty(..))
 import Flight.Gap.Distance.Fraction (DifficultyFraction(..))
-import Flight.Gap.Distance.Linear (BestDistance(..), PilotDistance(..))
+import Flight.Gap.Distance.Linear (PilotDistance(..))
 import Flight.Gap.Distance.Min (MinimumDistance(..))
+import Flight.Gap.Distance.Best (BestDistance(..))
 
 -- | The index of a 100m chunk. The zeroth chunk is any distance less than or
 -- equal to minimum distance.
