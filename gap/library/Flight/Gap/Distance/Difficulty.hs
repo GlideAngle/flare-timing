@@ -26,9 +26,11 @@ import Flight.Gap.Distance.Fraction (DifficultyFraction(..))
 import Flight.Gap.Distance.Chunk
     ( IxChunk(..)
     , Lookahead(..)
+    , Chunk(..)
     , ChunkLandings(..)
     , ChunkRelativeDifficulty(..)
     , ChunkDifficultyFraction(..)
+    , toChunk
     , lookahead
     , chunkLandouts
     , sumLandouts
@@ -42,6 +44,8 @@ data Difficulty =
     Difficulty
         { sumOf :: SumOfDifficulty
         -- ^ The sum of the downward counts.
+        , endChunk :: [(IxChunk, Chunk (Quantity Double [u| km |]))]
+        -- ^ The task distance to the end of this chunk.
         , downward :: [ChunkLandings]
         -- ^ The number on their way down for a landing between this chunk and
         -- the lookahead offset.
@@ -62,6 +66,7 @@ difficulty
 difficulty md best xs =
     Difficulty
         { sumOf = SumOfDifficulty sumOfDiff
+        , endChunk = zip ys ends
         , downward = uncurry ChunkLandings <$> downs
         , relative =
             (uncurry ChunkRelativeDifficulty . (fmap RelativeDifficulty))
@@ -73,6 +78,8 @@ difficulty md best xs =
     where
         ys :: [IxChunk]
         ys = chunkLandouts md xs
+
+        ends = toChunk md <$> ys
 
         ns :: [(IxChunk, Int)]
         ns = sumLandouts ys

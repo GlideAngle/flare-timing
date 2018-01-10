@@ -22,6 +22,7 @@ module Flight.Gap.Distance.Chunk
     , ChunkLandings(..)
     , ChunkDifficulty(..)
     , lookahead
+    , toIxChunk
     , toChunk
     , chunks
     , landouts
@@ -34,7 +35,7 @@ import Data.Maybe (catMaybes)
 import Data.List (sort, group)
 import Control.Newtype (Newtype(..))
 import Data.Aeson (ToJSON(..), FromJSON(..))
-import Data.UnitsOfMeasure ((+:), (-:), u, convert)
+import Data.UnitsOfMeasure ((*:), (+:), (-:), u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import GHC.Generics (Generic)
 
@@ -108,6 +109,7 @@ data ChunkLandings =
 data ChunkDifficulty =
     ChunkDifficulty
         { chunk :: IxChunk
+        , endChunk :: Chunk (Quantity Double [u| km |])
         , down :: Int
         , downward :: Int
         , rel :: RelativeDifficulty
@@ -117,14 +119,16 @@ data ChunkDifficulty =
 
 mergeChunks
     :: [ChunkLandings] -- ^ Landings in each chunk
+    -> [(IxChunk, Chunk (Quantity Double [u| km |]))]
     -> [ChunkLandings] -- ^ Landings summed over the lookahead
     -> [ChunkRelativeDifficulty]
     -> [ChunkDifficultyFraction]
     -> [ChunkDifficulty]
-mergeChunks ls as rs ds =
+mergeChunks ls is as rs ds =
     catMaybes
-    [ overlay l a r d
+    [ overlay l i a r d
     | l <- ls
+    | i <- is
     | a <- as
     | r <- rs
     | d <- ds
@@ -132,18 +136,21 @@ mergeChunks ls as rs ds =
 
 overlay
     :: ChunkLandings
+    -> (IxChunk, Chunk (Quantity Double [u| km |]))
     -> ChunkLandings
     -> ChunkRelativeDifficulty
     -> ChunkDifficultyFraction
     -> Maybe ChunkDifficulty
 overlay
     ChunkLandings{chunk = l, down}
+    (ix, e) 
     ChunkLandings{chunk = a, down = ahead}
     ChunkRelativeDifficulty{chunk = r, rel}
     ChunkDifficultyFraction{chunk = d, frac}
-        | (l == a) && (a == r) && (r == d) =
+        | (l == ix) && (ix == a) && (a == r) && (r == d) =
           Just ChunkDifficulty
               { chunk = l
+              , endChunk = e
               , down = down
               , downward = ahead
               , rel = rel
@@ -178,13 +185,26 @@ chunks (MinimumDistance md) (BestDistance best) =
         MkQuantity x1 = md +: convert [u| 100m |]
         MkQuantity xN = best
 
+-- | Converts from a chunk, a number of 100m chunks offset from the minium
+-- distance set for the competition to the end of the chunks range.
+toChunk
+    :: MinimumDistance (Quantity Double [u| km |])
+    -> IxChunk
+    -> Chunk (Quantity Double [u| km |])
+toChunk (MinimumDistance md) (IxChunk ix)
+    | ix <= 0 = Chunk md
+    | otherwise = Chunk $ d +: md
+    where
+        d :: Quantity Double [u| km |]
+        d = convert $ fromIntegral ix *: [u| 1 hm |]
+
 -- | Converts from pilot distance to distance in units of the number of 100m
 -- chunks offset from the minium distance set for the competition.
-toChunk
+toIxChunk
     :: MinimumDistance (Quantity Double [u| km |])
     -> PilotDistance (Quantity Double [u| km |])
     -> IxChunk
-toChunk (MinimumDistance md) (PilotDistance d)
+toIxChunk (MinimumDistance md) (PilotDistance d)
     | d <= md = IxChunk 0
     | otherwise = IxChunk $ ceiling x
     where
@@ -208,4 +228,4 @@ chunkLandouts
     -> [PilotDistance (Quantity Double [u| km |])]
     -> [IxChunk]
 chunkLandouts md xs =
-    toChunk md <$> sort xs
+    toIxChunk md <$> sort xs

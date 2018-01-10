@@ -67,6 +67,7 @@ module Flight.Score
     , Chunks(..)
     , IxChunk(..)
     , lookahead
+    , toIxChunk
     , toChunk
     , chunks
     , landouts
