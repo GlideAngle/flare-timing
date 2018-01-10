@@ -65,25 +65,33 @@ cmp a b =
     case (a, b) of
         ("chunk", _) -> LT
 
+        ("startChunk", "chunk") -> GT
+        ("startChunk", _) -> LT
+
         ("endChunk", "chunk") -> GT
+        ("endChunk", "startChunk") -> GT
         ("endChunk", _) -> LT
 
         ("endAhead", "chunk") -> GT
+        ("endAhead", "startChunk") -> GT
         ("endAhead", "endChunk") -> GT
         ("endAhead", _) -> LT
 
         ("down", "chunk") -> GT
+        ("down", "startChunk") -> GT
         ("down", "endChunk") -> GT
         ("down", "endAhead") -> GT
         ("down", _) -> LT
 
         ("downward", "chunk") -> GT
+        ("downward", "startChunk") -> GT
         ("downward", "endChunk") -> GT
         ("downward", "endAhead") -> GT
         ("downward", "down") -> GT
         ("downward", _) -> LT
 
         ("rel", "chunk") -> GT
+        ("rel", "startChunk") -> GT
         ("rel", "endChunk") -> GT
         ("rel", "endAhead") -> GT
         ("rel", "down") -> GT

@@ -44,6 +44,8 @@ data Difficulty =
     Difficulty
         { sumOf :: SumOfDifficulty
         -- ^ The sum of the downward counts.
+        , startChunk :: [(IxChunk, Chunk (Quantity Double [u| km |]))]
+        -- ^ The task distance to the start of this chunk.
         , endChunk :: [(IxChunk, Chunk (Quantity Double [u| km |]))]
         -- ^ The task distance to the end of this chunk.
         , endAhead :: [(IxChunk, Chunk (Quantity Double [u| km |]))]
@@ -68,6 +70,7 @@ difficulty
 difficulty md best xs =
     Difficulty
         { sumOf = SumOfDifficulty sumOfDiff
+        , startChunk = zip ys starts
         , endChunk = zip ys ends
         , endAhead = zip ys ends'
         , downward = uncurry ChunkLandings <$> downs
@@ -84,6 +87,7 @@ difficulty md best xs =
         ys :: [IxChunk]
         ys = chunkLandouts md xs
 
+        starts = toChunk md . (\(IxChunk x) -> IxChunk $ x - 1) <$> ys
         ends = toChunk md <$> ys
         ends' = toChunk md . (\(IxChunk x) -> IxChunk $ x + n) <$> ys
 
