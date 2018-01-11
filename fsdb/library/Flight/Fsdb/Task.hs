@@ -4,6 +4,7 @@
 
 module Flight.Fsdb.Task (parseTasks) where
 
+import Data.List (sort)
 import Data.Map.Strict (Map, fromList, findWithDefault)
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
 import Text.XML.HXT.Core
@@ -126,7 +127,7 @@ getTask kps =
             >>> arr (unKeyPilot (keyMap kps) . Key)
 
         mkTask (name, (absentees, (section, (zs, (ts, gates))))) =
-            Task name zs section ts'' gates absentees
+            Task name zs section ts'' gates $ sort absentees
             where
                 -- NOTE: If all time zones are the same then collapse.
                 ts' = nub ts
