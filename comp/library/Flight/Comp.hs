@@ -165,6 +165,8 @@ data Task =
          , speedSection :: SpeedSection
          , zoneTimes :: [OpenClose]
          , startGates :: [StartGate]
+         , absent :: [Pilot]
+         -- ^ Pilots absent from this task.
          }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
@@ -197,6 +199,7 @@ cmp a b =
         ("taskFolders", "pilots") -> LT
         ("taskFolders", _) -> GT
         ("pilots", _) -> GT
+
         -- Comp fields
         ("compName", _) -> LT
         ("location", "compName") -> GT
@@ -205,18 +208,30 @@ cmp a b =
         ("civilId", "utcOffset") -> LT
         ("civilId", _) -> GT
         ("utcOffset", _) -> GT
+
         -- Task fields
         ("taskName", _) -> LT
+
         ("zones", "taskName") -> GT
         ("zones", _) -> LT
+
         ("speedSection", "zoneTimes") -> LT
         ("speedSection", "startGates") -> LT
+        ("speedSection", "absent") -> LT
         ("speedSection", _) -> GT
+
         ("zoneTimes", "startGates") -> LT
+        ("zoneTimes", "absent") -> LT
         ("zoneTimes", _) -> GT
+
+        ("startGates", "absent") -> LT
         ("startGates", _) -> GT
+        ("absent", _) -> GT
+
+        -- StartGates fields
         ("open", _) -> LT
         ("close", _) -> GT
+
         -- Turnpoint fields
         ("zoneName", _) -> LT
         ("lat", "zoneName") -> GT
@@ -225,5 +240,5 @@ cmp a b =
         ("lng", "lat") -> GT
         ("lng", _) -> LT
         ("radius", _) -> GT
-        _ -> compare a b
 
+        _ -> compare a b

@@ -22,6 +22,7 @@ import Text.XML.HXT.Core
     , listA
     , arr
     , deep
+    , notContaining
     )
 import Data.Time.Clock (UTCTime)
 import Data.Time.Format (parseTimeOrError, defaultTimeLocale)
@@ -41,7 +42,7 @@ import Text.Parsec.Prim (ParsecT, parsecMap)
 import Flight.LatLng.Raw (RawLat(..), RawLng(..))
 import Flight.Zone.Raw (RawZone(..))
 import Flight.Comp
-    (Task(..), SpeedSection, StartGate(..), OpenClose(..))
+    (Task(..), SpeedSection, StartGate(..), OpenClose(..), Pilot(..))
 import Data.Aeson.Via.Scientific (ViaSci(..))
 
 lexer :: GenTokenParser String u Identity
@@ -64,6 +65,7 @@ getTask =
     getChildren
     >>> deep (hasName "FsTask")
     >>> getAttrValue "name"
+    &&& getAbsent
     &&& getDefn
     >>> arr mkTask
     where
@@ -103,8 +105,20 @@ getTask =
             >>> getAttrValue "open"
             >>> arr parseStartGate
 
-        mkTask (name, (section, (zs, (ts, gates)))) =
-            Task name zs section ts'' gates
+        getAbsent =
+            getChildren
+            >>> hasName "FsParticipants"
+            >>> listA getAbsentees
+
+        getAbsentees =
+            getChildren
+            >>> hasName "FsParticipant"
+                `notContaining` (getChildren >>> hasName "FsFlightData")
+            >>> getAttrValue "id"
+            >>> arr Pilot
+
+        mkTask (name, (absentees, (section, (zs, (ts, gates))))) =
+            Task name zs section ts'' gates absentees
             where
                 -- NOTE: If all time zones are the same then collapse.
                 ts' = nub ts
