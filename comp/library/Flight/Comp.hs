@@ -106,26 +106,17 @@ type RoutesLookup a = IxTask -> Maybe a
 newtype RouteLookup = RouteLookup (Maybe (RoutesLookup (TaskDistance Double)))
 
 newtype StartGate = StartGate UTCTime
-    deriving (Eq, Ord, Show, Generic)
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
-instance ToJSON StartGate
-instance FromJSON StartGate
-
-newtype UtcOffset =
-    UtcOffset { timeZoneMinutes :: Int }
-    deriving (Eq, Ord, Show, Generic)
-
-instance ToJSON UtcOffset
-instance FromJSON UtcOffset
+newtype UtcOffset = UtcOffset { timeZoneMinutes :: Int }
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 data OpenClose =
-    OpenClose { open :: UTCTime 
-              , close :: UTCTime
-              }
-              deriving (Eq, Ord, Show, Generic)
-
-instance ToJSON OpenClose
-instance FromJSON OpenClose
+    OpenClose
+        { open :: UTCTime 
+        , close :: UTCTime
+        }
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 -- | If all the zone open and close times are the same then we may only be
 -- given a singleton list. This function retrieves the open close time
@@ -138,41 +129,35 @@ openClose _ [x] = Just x
 openClose (Just (_, e)) xs = listToMaybe . take 1 . drop (e - 1) $ xs
 
 data CompSettings =
-    CompSettings { comp :: Comp
-                 , nominal :: Nominal
-                 , tasks :: [Task]
-                 , taskFolders :: [TaskFolder]
-                 , pilots :: [[PilotTrackLogFile]]
-                 }
-                 deriving (Eq, Ord, Show, Generic)
-
-instance ToJSON CompSettings
-instance FromJSON CompSettings
+    CompSettings
+        { comp :: Comp
+        , nominal :: Nominal
+        , tasks :: [Task]
+        , taskFolders :: [TaskFolder]
+        , pilots :: [[PilotTrackLogFile]]
+        }
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 data Comp =
-    Comp { civilId :: String
-         , compName :: String 
-         , location :: String 
-         , from :: String 
-         , to :: String 
-         , utcOffset :: UtcOffset
-         }
-         deriving (Eq, Ord, Show, Generic)
-
-instance ToJSON Comp
-instance FromJSON Comp
+    Comp
+        { civilId :: String
+        , compName :: String 
+        , location :: String 
+        , from :: String 
+        , to :: String 
+        , utcOffset :: UtcOffset
+        }
+     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 data Nominal =
-    Nominal { distance :: Double
-            , free :: Double
-            -- ^ A mimimum distance awarded to pilots that bomb out for 'free'.
-            , time :: String 
-            , goal :: String 
-            }
-            deriving (Eq, Ord, Show, Generic)
-
-instance ToJSON Nominal
-instance FromJSON Nominal
+    Nominal
+        { distance :: Double
+        , free :: Double
+        -- ^ A mimimum distance awarded to pilots that bomb out for 'free'.
+        , time :: String 
+        , goal :: String 
+        }
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 data Task =
     Task { taskName :: String
@@ -180,10 +165,8 @@ data Task =
          , speedSection :: SpeedSection
          , zoneTimes :: [OpenClose]
          , startGates :: [StartGate]
-         } deriving (Eq, Ord, Show, Generic)
-
-instance ToJSON Task
-instance FromJSON Task
+         }
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 showTask :: Task -> String
 showTask Task {taskName, zones, speedSection, zoneTimes, startGates} =

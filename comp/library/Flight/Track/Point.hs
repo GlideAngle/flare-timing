@@ -1,6 +1,7 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE NamedFieldPuns #-}
@@ -27,10 +28,7 @@ data Pointing =
     Pointing 
         { goalRatio :: [Double]
         }
-        deriving (Eq, Ord, Show, Generic)
-
-instance ToJSON Pointing
-instance FromJSON Pointing
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 instance FieldOrdering Pointing where
     fieldOrder _ = cmp

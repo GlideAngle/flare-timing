@@ -1,6 +1,7 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE NamedFieldPuns #-}
@@ -52,10 +53,7 @@ data Landing =
         , difficulty :: [Maybe [ChunkDifficulty]]
         -- ^ The difficulty of each chunk.
         }
-        deriving (Eq, Ord, Show, Generic)
-
-instance ToJSON Landing
-instance FromJSON Landing
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 instance FieldOrdering Landing where
     fieldOrder _ = cmp

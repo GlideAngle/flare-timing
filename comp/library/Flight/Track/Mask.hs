@@ -77,10 +77,7 @@ data Masking =
         -- ^ For each task, the distance of the landing spot for each pilot
         -- landing out.
         }
-        deriving (Eq, Ord, Show, Generic)
-
-instance ToJSON Masking
-instance FromJSON Masking
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 -- | The racing time for the speed section is required for leading points.
 data RaceTime =
@@ -101,7 +98,7 @@ data RaceTime =
         , openClose :: ViaSci EssTime
         -- ^ Seconds from open to close
         }
-        deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 racing
     :: Maybe OpenClose
@@ -142,10 +139,7 @@ data TrackSpeed =
         { time :: ViaSci PilotTime
         , frac :: ViaSci SpeedFraction
         }
-        deriving (Eq, Ord, Show, Generic)
-
-instance ToJSON TrackSpeed
-instance FromJSON TrackSpeed
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 -- ^ If arrived at goal then arrival rank and fraction.
 data TrackArrival =
@@ -153,20 +147,14 @@ data TrackArrival =
         { rank :: PositionAtEss
         , frac :: ViaSci ArrivalFraction
         }
-        deriving (Eq, Ord, Show, Generic)
-
-instance ToJSON TrackArrival
-instance FromJSON TrackArrival
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 data TrackLead =
     TrackLead
         { coef :: ViaSci LeadingCoefficient
         , frac :: ViaSci LeadingFraction
         }
-        deriving (Eq, Ord, Show, Generic)
-
-instance ToJSON TrackLead
-instance FromJSON TrackLead
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 data TrackDistance a =
     TrackDistance
@@ -175,7 +163,7 @@ data TrackDistance a =
         , made :: Maybe Double
         -- ^ The task distance minus the distance to goal.
         }
-        deriving (Eq, Ord, Show, Generic)
+    deriving (Eq, Ord, Show, Generic)
 
 instance (ToJSON a) => ToJSON (TrackDistance a)
 instance (FromJSON a) => FromJSON (TrackDistance a)
@@ -299,5 +287,5 @@ cmp a b =
 
         ("togo", _) -> LT
         ("made", _) -> GT
-        _ -> compare a b
 
+        _ -> compare a b

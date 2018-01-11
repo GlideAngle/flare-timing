@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 {-|
@@ -37,10 +38,7 @@ data Tagging =
         , tagging :: [[PilotTrackTag]]
           -- ^ For each made zone, the tag.
         }
-        deriving (Eq, Ord, Show, Generic)
-
-instance ToJSON Tagging
-instance FromJSON Tagging
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 -- | The timing and tagging for a single task.
 data TrackTime =
@@ -56,10 +54,7 @@ data TrackTime =
         , zonesRankPilot :: [[Pilot]]
         -- ^ For each zone, the ordered pilots of each tag.
         }
-        deriving (Eq, Ord, Show, Generic)
-
-instance ToJSON TrackTime
-instance FromJSON TrackTime
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 firstLead :: SpeedSection -> [Maybe UTCTime] -> Maybe FirstLead
 firstLead _ [] = Nothing
@@ -105,10 +100,7 @@ newtype TrackTag =
         { zonesTag :: [Maybe Fix]
         -- ^ The interpolated fix tagging each made zone.
         }
-        deriving (Eq, Ord, Show, Generic)
-
-instance ToJSON TrackTag
-instance FromJSON TrackTag
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 -- | Associates a pilot with the zones they tag for a single task.
 data PilotTrackTag =
@@ -116,10 +108,7 @@ data PilotTrackTag =
         Pilot
         (Maybe TrackTag)
         -- ^ The tags should be Just if the pilot launched.
-        deriving (Eq, Ord, Show, Generic)
-
-instance ToJSON PilotTrackTag
-instance FromJSON PilotTrackTag
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 instance FieldOrdering Tagging where
     fieldOrder _ = cmp
