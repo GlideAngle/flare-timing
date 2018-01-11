@@ -9,10 +9,12 @@
 {-# LANGUAGE QuasiQuotes #-}
 
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DuplicateRecordFields #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE ParallelListComp #-}
 
@@ -82,14 +84,18 @@ import Flight.Comp (SpeedSection)
 
 -- | Seconds from first speed zone crossing irrespective of start time.
 newtype LeadTick = LeadTick Double
-    deriving (Eq, Ord, Num, Generic, ToJSON, FromJSON, ToField, FromField)
+    deriving (Eq, Ord, Generic)
+    deriving anyclass (ToJSON, FromJSON)
+    deriving newtype (Num, ToField, FromField)
 
 instance Show LeadTick where
     show (LeadTick t) = showSecs . toRational $ t
 
 -- | Seconds from first speed zone crossing made at or after the start time.
 newtype RaceTick = RaceTick Double
-    deriving (Eq, Ord, Num, Generic, ToJSON, FromJSON, ToField, FromField)
+    deriving (Eq, Ord, Generic)
+    deriving anyclass (ToJSON, FromJSON)
+    deriving newtype (Num, ToField, FromField)
 
 instance Show RaceTick where
     show (RaceTick t) = showSecs . toRational $ t
@@ -114,10 +120,7 @@ data TimeRow =
         , distance :: Double
         -- ^ Distance to goal in km
         }
-        deriving (Eq, Ord, Show, Generic)
-
-instance ToJSON TimeRow
-instance FromJSON TimeRow
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 -- | A fix but indexed off the first crossing time.
 data TickRow =
@@ -133,10 +136,7 @@ data TickRow =
         , area :: ViaSci LeadingAreaStep
         -- ^ Leading coefficient area step.
         }
-        deriving (Eq, Ord, Show, Generic)
-
-instance ToJSON TickRow
-instance FromJSON TickRow
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 quote :: String -> String
 quote s = "\"" ++ s ++ "\""
