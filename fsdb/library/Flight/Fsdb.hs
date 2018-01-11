@@ -8,7 +8,10 @@ Stability   : experimental
 Provides parsing the fsdb format for competitors, tasks and results.
 -}
 module Flight.Fsdb
-    ( parseComp
+    ( Key(..)
+    , KeyPilot(..)
+    , parseComp
+    , parseCompPilots
     , parseNominal
     , parseTasks
     , parsePilots

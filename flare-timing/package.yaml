@@ -18,6 +18,7 @@ executables:
     - bytestring
     - clock
     - formatting
+    - containers
     - flight-cmd
     - flight-latlng
     - flight-comp

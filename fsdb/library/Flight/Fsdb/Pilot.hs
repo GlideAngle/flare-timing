@@ -1,7 +1,10 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module Flight.Fsdb.Pilot
-    ( parsePilots
+    ( Key(..)
+    , KeyPilot(..)
+    , parseCompPilots
+    , parsePilots
     , parseTracks
     , parseTaskFolders
     ) where
@@ -31,13 +34,13 @@ import Text.XML.HXT.Core
 import Flight.Comp
     (TaskFolder(..), Pilot(..), TrackLogFile(..), PilotTrackLogFile(..))
 
-newtype KeyPilot = KeyPilot (String, String) deriving Show
+newtype KeyPilot = KeyPilot (Key, Pilot) deriving Show
 newtype KeyTrackLogFile = KeyTrackLogFile (String, String) deriving Show
-newtype Key = Key String deriving Show
-newtype TaskKey = TaskKey (String, [ Key ]) deriving Show
+newtype Key = Key String deriving (Eq, Ord, Show)
+newtype TaskKey = TaskKey (String, [Key]) deriving Show
 
 newtype TaskKeyTrackLogFile =
-    TaskKeyTrackLogFile (String, [ KeyTrackLogFile ]) deriving Show
+    TaskKeyTrackLogFile (String, [KeyTrackLogFile]) deriving Show
 
 getCompPilot :: ArrowXml a => a XmlTree KeyPilot
 getCompPilot =
@@ -47,7 +50,7 @@ getCompPilot =
     /> hasName "FsParticipant"
     >>> getAttrValue "id"
     &&& getAttrValue "name"
-    >>> arr KeyPilot
+    >>> arr (\(k, p) -> KeyPilot (Key k, (Pilot p)))
 
 getTaskFolder :: ArrowXml a => a XmlTree TaskFolder
 getTaskFolder =
@@ -101,38 +104,43 @@ getTaskPilotTrackLogFile =
             >>> hasName "FsFlightData"
             >>> getAttrValue "tracklog_filename"
 
-parsePilots :: String -> IO (Either String [[ Pilot ]])
+parseCompPilots :: String -> IO [KeyPilot]
+parseCompPilots contents = do
+    let doc = readString [withValidate no, withWarnings no] contents
+    runX $ doc >>> getCompPilot
+
+parsePilots :: String -> IO (Either String [[Pilot]])
 parsePilots contents = do
-    let doc = readString [ withValidate no, withWarnings no ] contents
-    xs :: [ KeyPilot ] <- runX $ doc >>> getCompPilot
-    ys :: [ TaskKey ] <- runX $ doc >>> getTaskPilot
+    let doc = readString [withValidate no, withWarnings no] contents
+    xs :: [KeyPilot] <- runX $ doc >>> getCompPilot
+    ys :: [TaskKey] <- runX $ doc >>> getTaskPilot
 
-    let xs' :: [ String ] =
-            sort $ (\(KeyPilot (_, name)) -> name) <$> xs
+    let xs' :: [String] =
+            sort $ (\(KeyPilot (_, Pilot p)) -> p) <$> xs
 
-    let compPilots :: [ Pilot ] = Pilot <$> xs'
+    let compPilots :: [Pilot] = Pilot <$> xs'
 
     let xsMap :: Map String String =
-            fromList $ (\(KeyPilot x) -> x) <$> xs
+            fromList $ (\(KeyPilot (Key k, Pilot p)) -> (k, p)) <$> xs
 
-    let zs :: [[ String ]] =
+    let zs :: [[String]] =
             (\(TaskKey (_, ks)) ->
                 sort
                 $ (\(Key y) -> findWithDefault y y xsMap) <$> ks)
             <$> ys
 
-    let taskPilots :: [[ Pilot ]] = (fmap . fmap) Pilot zs
+    let taskPilots :: [[Pilot]] = (fmap . fmap) Pilot zs
 
     return $ Right $ compPilots : taskPilots
 
-parseTracks :: String -> IO (Either String [[ PilotTrackLogFile ]])
+parseTracks :: String -> IO (Either String [[PilotTrackLogFile]])
 parseTracks contents = do
-    let doc = readString [ withValidate no, withWarnings no ] contents
-    xs :: [ KeyPilot ] <- runX $ doc >>> getCompPilot
-    ys :: [ TaskKeyTrackLogFile ] <- runX $ doc >>> getTaskPilotTrackLogFile
+    let doc = readString [withValidate no, withWarnings no] contents
+    xs :: [KeyPilot] <- runX $ doc >>> getCompPilot
+    ys :: [TaskKeyTrackLogFile] <- runX $ doc >>> getTaskPilotTrackLogFile
 
     let xsMap :: Map String String =
-            fromList $ (\(KeyPilot x) -> x) <$> xs
+            fromList $ (\(KeyPilot (Key k, Pilot p)) -> (k, p)) <$> xs
 
     let taskPilotLogs :: [[ PilotTrackLogFile ]] =
             (\(TaskKeyTrackLogFile (_, ks)) ->
@@ -151,8 +159,8 @@ parseTracks contents = do
 
     return $ Right taskPilotLogs
 
-parseTaskFolders :: String -> IO (Either String [ TaskFolder ])
+parseTaskFolders :: String -> IO (Either String [TaskFolder])
 parseTaskFolders contents = do
-    let doc = readString [ withValidate no, withWarnings no ] contents
+    let doc = readString [withValidate no, withWarnings no] contents
     xs <- runX $ doc >>> getTaskFolder
     return $ Right xs
