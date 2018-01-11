@@ -4,6 +4,7 @@
 
 module Flight.Fsdb.Task (parseTasks) where
 
+import Data.Map.Strict (Map, fromList, findWithDefault)
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
 import Text.XML.HXT.Core
     ( ArrowXml
@@ -44,6 +45,7 @@ import Flight.Zone.Raw (RawZone(..))
 import Flight.Comp
     (Task(..), SpeedSection, StartGate(..), OpenClose(..), Pilot(..))
 import Data.Aeson.Via.Scientific (ViaSci(..))
+import Flight.Fsdb.Pilot (Key(..), KeyPilot(..), getCompPilot)
 
 lexer :: GenTokenParser String u Identity
 lexer = P.makeTokenParser emptyDef
@@ -60,8 +62,14 @@ pRat errMsg = do
     x <- pFloat <?> errMsg
     return $ sign x
 
-getTask :: ArrowXml a => a XmlTree Task
-getTask =
+keyMap :: [KeyPilot] -> Map Key Pilot
+keyMap = fromList . fmap (\(KeyPilot x) -> x)
+                        
+unKeyPilot :: Map Key Pilot -> Key -> Pilot
+unKeyPilot ps k@(Key ip) = findWithDefault (Pilot ip) k ps
+
+getTask :: ArrowXml a => [KeyPilot] -> a XmlTree Task
+getTask kps =
     getChildren
     >>> deep (hasName "FsTask")
     >>> getAttrValue "name"
@@ -115,7 +123,7 @@ getTask =
             >>> hasName "FsParticipant"
                 `notContaining` (getChildren >>> hasName "FsFlightData")
             >>> getAttrValue "id"
-            >>> arr Pilot
+            >>> arr (unKeyPilot (keyMap kps) . Key)
 
         mkTask (name, (absentees, (section, (zs, (ts, gates))))) =
             Task name zs section ts'' gates absentees
@@ -127,7 +135,8 @@ getTask =
 parseTasks :: String -> IO (Either String [Task])
 parseTasks contents = do
     let doc = readString [ withValidate no, withWarnings no ] contents
-    xs <- runX $ doc >>> getTask
+    ps <- runX $ doc >>> getCompPilot
+    xs <- runX $ doc >>> getTask ps
     return $ Right xs
 
 pRadius :: GenParser Char st Integer

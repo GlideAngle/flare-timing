@@ -9,7 +9,6 @@ import System.Console.CmdArgs.Implicit (cmdArgs)
 import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
-import Data.Map.Strict (Map, fromList, findWithDefault)
 import Control.Monad (mapM_)
 import Control.Monad.Trans.Except (throwE)
 import Control.Monad.Except (ExceptT(..), runExceptT, lift)
@@ -17,10 +16,7 @@ import Control.Monad.Except (ExceptT(..), runExceptT, lift)
 import Flight.Cmd.Paths (checkPaths)
 import Cmd.Options (CmdOptions(..), mkOptions)
 import Flight.Fsdb
-    ( Key(..)
-    , KeyPilot(..)
-    , parseComp
-    , parseCompPilots
+    ( parseComp
     , parseNominal
     , parseTasks
     , parseTaskFolders
@@ -35,7 +31,6 @@ import Flight.Comp
     , Task(..)
     , TaskFolder(..)
     , PilotTrackLogFile(..)
-    , Pilot(..)
     , fsdbToComp
     , findFsdb
     )
@@ -76,9 +71,6 @@ fsdbComp (FsdbXml contents) = do
             lift $ print msg
             throwE msg
 
-fsdbCompPilots :: FsdbXml -> IO [KeyPilot]
-fsdbCompPilots (FsdbXml contents) = parseCompPilots contents
-
 fsdbNominal :: FsdbXml -> ExceptT String IO Nominal
 fsdbNominal (FsdbXml contents) = do
     ns <- lift $ parseNominal contents
@@ -108,7 +100,6 @@ fsdbTracks (FsdbXml contents) = do
 fsdbSettings :: FsdbXml -> ExceptT String IO CompSettings
 fsdbSettings fsdbXml = do
     c <- fsdbComp fsdbXml
-    cps <- lift $ fsdbCompPilots fsdbXml
     n <- fsdbNominal fsdbXml
     ts <- fsdbTasks fsdbXml
     fs <- fsdbTaskFolders fsdbXml
@@ -124,16 +115,7 @@ fsdbSettings fsdbXml = do
     lift . putStrLn $ msg
     return CompSettings { comp = c
                         , nominal = n
-                        , tasks = (unKeyTask $ keyMap cps) <$> ts
+                        , tasks = ts
                         , taskFolders = fs
                         , pilots = tps
                         }
-
-keyMap :: [KeyPilot] -> Map Key Pilot
-keyMap = fromList . fmap (\(KeyPilot x) -> x)
-                        
-unKeyTask :: Map Key Pilot -> Task -> Task
-unKeyTask ps x@Task{absent} = x{absent = unKeyPilot ps <$> absent}
-
-unKeyPilot :: Map Key Pilot -> Pilot -> Pilot
-unKeyPilot ps x@(Pilot k) = findWithDefault x (Key k) ps

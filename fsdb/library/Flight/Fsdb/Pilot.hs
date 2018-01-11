@@ -3,10 +3,10 @@
 module Flight.Fsdb.Pilot
     ( Key(..)
     , KeyPilot(..)
-    , parseCompPilots
     , parsePilots
     , parseTracks
     , parseTaskFolders
+    , getCompPilot
     ) where
 
 import Data.List (sort)
@@ -103,11 +103,6 @@ getTaskPilotTrackLogFile =
             getChildren
             >>> hasName "FsFlightData"
             >>> getAttrValue "tracklog_filename"
-
-parseCompPilots :: String -> IO [KeyPilot]
-parseCompPilots contents = do
-    let doc = readString [withValidate no, withWarnings no] contents
-    runX $ doc >>> getCompPilot
 
 parsePilots :: String -> IO (Either String [[Pilot]])
 parsePilots contents = do
