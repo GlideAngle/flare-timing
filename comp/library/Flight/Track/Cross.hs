@@ -1,4 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
 
@@ -41,18 +43,15 @@ data Crossing =
         , crossing :: [[PilotTrackCross]]
           -- ^ For each task, for each made zone, the pair of fixes cross it.
         }
-        deriving (Eq, Ord, Show, Generic)
-
-instance ToJSON Crossing
-instance FromJSON Crossing
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 -- NOTE: There's a similar Seconds newtype in the flight-kml package.  I don't
 -- want a dependency between these packages so I'm duplicating the newtype
 -- here.
-newtype Seconds = Seconds Integer deriving (Eq, Ord, Num, Show, Generic)
-
-instance ToJSON Seconds
-instance FromJSON Seconds
+newtype Seconds = Seconds Integer
+    deriving (Eq, Ord, Show, Generic)
+    deriving newtype Num
+    deriving anyclass (ToJSON, FromJSON)
 
 -- | For a single track, the flying section.
 data TrackFlyingSection =
@@ -70,10 +69,7 @@ data TrackFlyingSection =
         , flyingTimes :: FlyingSection UTCTime
         -- ^ The flying section as a time range.
         }
-        deriving (Eq, Ord, Show, Generic)
-
-instance ToJSON TrackFlyingSection
-instance FromJSON TrackFlyingSection
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 -- | For a single track, the zones crossed.
 data TrackCross =
@@ -83,10 +79,7 @@ data TrackCross =
         , zonesCrossNominees :: [[Maybe ZoneCross]]
         -- ^ Every crossing of every zone.
         }
-        deriving (Eq, Ord, Show, Generic)
-
-instance ToJSON TrackCross
-instance FromJSON TrackCross
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 -- | A timestamped latitude and longitude.
 data Fix =
@@ -99,10 +92,7 @@ data Fix =
         , lng :: ViaSci RawLng
         -- ^ The longitude in decimal degrees, +ve is E and -ve is W.
         }
-        deriving (Eq, Ord, Show, Generic)
-
-instance ToJSON Fix
-instance FromJSON Fix
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 -- | A pair of fixes that cross a zone.
 data ZoneCross =
@@ -112,10 +102,7 @@ data ZoneCross =
         , inZone :: [Bool]
         -- ^ Mark each fix as inside or outside the zone.
         }
-        deriving (Eq, Ord, Show, Generic)
-
-instance ToJSON ZoneCross
-instance FromJSON ZoneCross
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 -- | Associates a pilot with the zones they cross for a single task.
 data PilotTrackCross =
@@ -123,10 +110,7 @@ data PilotTrackCross =
         Pilot
         (Maybe TrackCross)
         -- ^ The cross should be Just if the pilot launched.
-        deriving (Eq, Ord, Show, Generic)
-
-instance ToJSON PilotTrackCross
-instance FromJSON PilotTrackCross
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 instance FieldOrdering Crossing where
     fieldOrder _ = cmp
@@ -166,5 +150,5 @@ cmp a b =
         ("loggedTimes", "flyingSeconds") -> GT
         ("loggedTimes", _) -> LT
         ("flyingTimes", _) -> GT
-        _ -> compare a b
 
+        _ -> compare a b
