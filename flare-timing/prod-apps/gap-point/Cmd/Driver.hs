@@ -46,13 +46,15 @@ import Flight.Comp
 import Flight.Units ()
 import Flight.Track.Cross (Crossing(..))
 import Flight.Track.Mask (Masking(..))
-import Flight.Track.Point (Pointing(..), Allocation(..), Weight(..))
+import Flight.Track.Point
+    (Pointing(..), Validity(..), Allocation(..), Weight(..))
 import qualified Flight.Track.Land as Cmp (Landing(..))
 import Flight.Scribe
     (readComp, readCrossing, readMasking, readLanding, writePointing)
 import Flight.Score
-    ( PilotsAtEss(..), GoalRatio(..), Lw(..), Aw(..)
+    ( NominalLaunch(..), PilotsAtEss(..), GoalRatio(..), Lw(..), Aw(..)
     , distanceWeight, leadingWeight, arrivalWeight, timeWeight
+    , launchValidity
     )
 
 driverMain :: IO ()
@@ -99,9 +101,16 @@ go CmdOptions{..} compFile@(CompInputFile compPath) = do
 points :: CompSettings -> Crossing -> Masking -> Cmp.Landing -> Pointing
 points CompSettings{pilots} Crossing{dnf} Masking{pilotsAtEss} _ =
     Pointing 
-        { weight = allocs
+        { validity = validities
+        , allocation = allocs
         }
     where
+        lvs =
+            [ launchValidity (NominalLaunch 1) ((p - d) % p)
+            | p <- toInteger . length <$> pilots
+            | d <- toInteger . length <$> dnf
+            ]
+
         grs =
             [ GoalRatio $ n % toInteger (p - d)
             | n <- (\(PilotsAtEss x) -> x) <$> pilotsAtEss
@@ -118,6 +127,11 @@ points CompSettings{pilots} Crossing{dnf} Masking{pilotsAtEss} _ =
             | dw <- dws
             | lw <- lws
             | aw <- aws
+            ]
+
+        validities =
+            [ Validity lv
+            | lv <- lvs
             ]
 
         allocs =

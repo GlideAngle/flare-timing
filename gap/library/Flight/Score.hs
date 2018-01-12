@@ -160,6 +160,10 @@ import Flight.Gap.Distance.Fraction
 import Flight.Gap.Distance.Chunk
 import Flight.Gap.Distance.Difficulty
 import Flight.Gap.Leading
+import Flight.Gap.Validity.Launch
+import Flight.Gap.Validity.Distance
+import Flight.Gap.Validity.Time
+import Flight.Gap.Validity.Task
 import Flight.Gap.Validity
 import Flight.Gap.Weight.GoalRatio
 import Flight.Gap.Weight.Distance

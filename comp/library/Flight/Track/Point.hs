@@ -17,6 +17,7 @@ Task points.
 -}
 module Flight.Track.Point
     ( Pointing(..)
+    , Validity(..)
     , Allocation(..)
     , Weight(..)
     ) where
@@ -27,12 +28,22 @@ import Data.Aeson (ToJSON(..), FromJSON(..))
 
 import Flight.Field (FieldOrdering(..))
 import Flight.Score
-    (GoalRatio, DistanceWeight, LeadingWeight, ArrivalWeight, TimeWeight)
+    (GoalRatio
+    , DistanceWeight, LeadingWeight, ArrivalWeight, TimeWeight
+    , LaunchValidity
+    )
 
 -- | For each task, the points for that task.
 data Pointing =
     Pointing 
-        { weight :: [Allocation]
+        { validity :: [Validity]
+        , allocation :: [Allocation]
+        }
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+
+data Validity =
+    Validity 
+        { launch :: LaunchValidity
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
@@ -58,9 +69,11 @@ instance FieldOrdering Pointing where
 cmp :: (Ord a, IsString a) => a -> a -> Ordering
 cmp a b =
     case (a, b) of
+        -- Allocation fields
         ("goalRatio", _) -> LT
         ("weight", _) -> GT
 
+        -- Weight fields
         ("distance", _) -> LT
 
         ("leading", "distance") -> GT
@@ -71,4 +84,9 @@ cmp a b =
         ("arrival", _) -> LT
 
         ("time", _) -> GT
+
+        -- Pointing fields
+        ("validity", _) -> LT
+        ("allocation", _) -> GT
+
         _ -> compare a b

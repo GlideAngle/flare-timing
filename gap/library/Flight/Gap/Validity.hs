@@ -13,10 +13,6 @@ module Flight.Gap.Validity
     , NominalTime(..)
     , NominalDistance(..)
     , NominalGoal(..)
-    , LaunchValidity(..)
-    , TimeValidity(..)
-    , DistanceValidity(..)
-    , TaskValidity(..)
     , Seconds
     , Metres
     , launchValidity
@@ -33,18 +29,15 @@ import Flight.Gap.Ratio (pattern (:%))
 import Flight.Gap.Distance.Min (MinimumDistance(..))
 import Flight.Gap.Distance.Max (MaximumDistance(..))
 import Flight.Gap.Distance.Sum (SumOfDistance(..))
+import Flight.Gap.Validity.Launch (LaunchValidity(..))
+import Flight.Gap.Validity.Distance (DistanceValidity(..))
+import Flight.Gap.Validity.Time (TimeValidity(..))
+import Flight.Gap.Validity.Task (TaskValidity(..))
 
 newtype NominalLaunch = NominalLaunch Rational deriving (Eq, Show)
 newtype NominalDistance = NominalDistance Integer deriving (Eq, Show)
 newtype NominalTime = NominalTime Integer deriving (Eq, Show)
 newtype NominalGoal = NominalGoal Rational deriving (Eq, Show)
-
-newtype LaunchValidity = LaunchValidity Rational deriving (Eq, Show)
-newtype TimeValidity = TimeValidity Rational deriving (Eq, Show)
-newtype DistanceValidity = DistanceValidity Rational deriving (Eq, Show)
-
--- | Also called Day Quality.
-newtype TaskValidity = TaskValidity Rational deriving (Eq, Show)
 
 type Seconds = Integer
 type Metres = Integer
