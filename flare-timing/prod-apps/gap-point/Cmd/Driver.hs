@@ -46,11 +46,11 @@ import Flight.Comp
 import Flight.Units ()
 import Flight.Track.Cross (Crossing(..))
 import Flight.Track.Mask (Masking(..))
-import Flight.Track.Point (Pointing(..))
+import Flight.Track.Point (Pointing(..), Allocation(..), Weight(..))
 import qualified Flight.Track.Land as Cmp (Landing(..))
 import Flight.Scribe
     (readComp, readCrossing, readMasking, readLanding, writePointing)
-import Flight.Score (PilotsAtEss(..), GoalRatio(..))
+import Flight.Score (PilotsAtEss(..), GoalRatio(..), distanceWeight)
 
 driverMain :: IO ()
 driverMain = do
@@ -96,12 +96,25 @@ go CmdOptions{..} compFile@(CompInputFile compPath) = do
 points :: CompSettings -> Crossing -> Masking -> Cmp.Landing -> Pointing
 points CompSettings{pilots} Crossing{dnf} Masking{pilotsAtEss} _ =
     Pointing 
-        { goalRatio = gr
+        { weight = allocs
         }
     where
-        gr =
+        grs =
             [ GoalRatio $ n % toInteger (p - d)
             | n <- (\(PilotsAtEss x) -> x) <$> pilotsAtEss
             | p <- length <$> pilots
             | d <- length <$> dnf
+            ]
+
+        dws = distanceWeight <$> grs
+
+        ws =
+            [ Weight dw
+            | dw <- dws
+            ]
+
+        allocs =
+            [ Allocation gr w
+            | gr <- grs
+            | w <- ws
             ]

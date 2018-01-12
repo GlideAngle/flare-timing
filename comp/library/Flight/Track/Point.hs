@@ -7,27 +7,44 @@
 {-# LANGUAGE NamedFieldPuns #-}
 
 {-|
-Module      : Flight.Track.Mask
+Module      : Flight.Track.Point
 Copyright   : (c) Block Scope Limited 2017
 License     : BSD3
 Maintainer  : phil.dejoux@blockscope.com
 Stability   : experimental
 
-Tracks masked with task control zones.
+Task points.
 -}
-module Flight.Track.Point (Pointing(..)) where
+module Flight.Track.Point
+    ( Pointing(..)
+    , Allocation(..)
+    , Weight(..)
+    ) where
 
 import Data.String (IsString())
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 
 import Flight.Field (FieldOrdering(..))
-import Flight.Score (GoalRatio)
+import Flight.Score (GoalRatio, DistanceWeight)
 
 -- | For each task, the points for that task.
 data Pointing =
     Pointing 
-        { goalRatio :: [GoalRatio]
+        { weight :: [Allocation]
+        }
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+
+data Allocation =
+    Allocation 
+        { goalRatio :: GoalRatio
+        , weight :: Weight
+        }
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+
+data Weight =
+    Weight 
+        { distance :: DistanceWeight
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
