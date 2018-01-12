@@ -30,7 +30,7 @@ import Flight.Field (FieldOrdering(..))
 import Flight.Score
     (GoalRatio
     , DistanceWeight, LeadingWeight, ArrivalWeight, TimeWeight
-    , LaunchValidity
+    , LaunchValidity, DistanceValidity
     )
 
 -- | For each task, the points for that task.
@@ -44,6 +44,7 @@ data Pointing =
 data Validity =
     Validity 
         { launch :: LaunchValidity
+        , distance :: DistanceValidity
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
@@ -72,6 +73,10 @@ cmp a b =
         -- Allocation fields
         ("goalRatio", _) -> LT
         ("weight", _) -> GT
+
+        -- Validity fields
+        ("launch", _) -> LT
+        ("distance ", "launch") -> GT
 
         -- Weight fields
         ("distance", _) -> LT

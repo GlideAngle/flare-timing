@@ -68,7 +68,12 @@ tvrValidity tvr =
             - (2098 % 1000) * tvr * tvr
             + (457 % 1000) * tvr * tvr * tvr
 
-timeValidity :: NominalTime -> NominalDistance -> Maybe Seconds -> Metres -> TimeValidity
+timeValidity
+    :: NominalTime
+    -> NominalDistance
+    -> Maybe Seconds
+    -> Metres
+    -> TimeValidity
 timeValidity (NominalTime 0) _ (Just 0) _ = tvrValidity (0 % 1)
 timeValidity (NominalTime 0) _ (Just _) _ = tvrValidity (1 % 1)
 timeValidity (NominalTime nt) _ (Just t) _ = tvrValidity $ min (t % nt) (1 % 1)
@@ -82,13 +87,14 @@ dvr (0 :% _) _ _ =
 dvr (n :% d) nFly (SumOfDistance dSum') =
     let MkQuantity dSum = toRational' dSum' in dSum * (d % (nFly * n))
 
-distanceValidity :: NominalGoal
-                 -> NominalDistance
-                 -> Integer
-                 -> MinimumDistance (Quantity Double [u| km |])
-                 -> MaximumDistance (Quantity Double [u| km |])
-                 -> SumOfDistance (Quantity Double [u| km |])
-                 -> DistanceValidity
+distanceValidity
+    :: NominalGoal
+    -> NominalDistance
+    -> Integer
+    -> MinimumDistance (Quantity Double [u| km |])
+    -> MaximumDistance (Quantity Double [u| km |])
+    -> SumOfDistance (Quantity Double [u| km |])
+    -> DistanceValidity
 distanceValidity _ _ 0 _ _ _ =
     DistanceValidity 0
 distanceValidity _ _ _ _ (MaximumDistance (MkQuantity 0)) _ =
@@ -128,6 +134,10 @@ distanceValidity
         (num :% den) =
             (ng + (1 % 1) * ((nd - dMin) % 1)) + max 0 (ng * ((dMax - nd) % 1))
 
-taskValidity :: LaunchValidity -> TimeValidity -> DistanceValidity -> TaskValidity
+taskValidity
+    :: LaunchValidity
+    -> TimeValidity
+    -> DistanceValidity
+    -> TaskValidity
 taskValidity (LaunchValidity l) (TimeValidity t) (DistanceValidity d) =
     TaskValidity $ l * t * d

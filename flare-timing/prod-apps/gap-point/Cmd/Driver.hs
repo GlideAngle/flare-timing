@@ -30,10 +30,13 @@ import System.FilePath (takeFileName)
 import Flight.Cmd.Paths (checkPaths)
 import Flight.Cmd.Options (CmdOptions(..), ProgramName(..), mkOptions)
 import Cmd.Options (description)
+import Data.UnitsOfMeasure (u)
+import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Comp
     ( CompInputFile(..)
     , CompSettings(..)
+    , Nominal(..)
     , CrossZoneFile(..)
     , MaskTrackFile(..)
     , LandOutFile(..)
@@ -52,9 +55,11 @@ import qualified Flight.Track.Land as Cmp (Landing(..))
 import Flight.Scribe
     (readComp, readCrossing, readMasking, readLanding, writePointing)
 import Flight.Score
-    ( NominalLaunch(..), PilotsAtEss(..), GoalRatio(..), Lw(..), Aw(..)
+    ( NominalLaunch(..), NominalGoal(..), NominalDistance(..)
+    , MinimumDistance(..), MaximumDistance(..), SumOfDistance(..)
+    , PilotsAtEss(..), GoalRatio(..), Lw(..), Aw(..)
     , distanceWeight, leadingWeight, arrivalWeight, timeWeight
-    , launchValidity
+    , launchValidity, distanceValidity
     )
 
 driverMain :: IO ()
@@ -99,16 +104,45 @@ go CmdOptions{..} compFile@(CompInputFile compPath) = do
             writePointing pointFile $ points cs cg mk lg
 
 points :: CompSettings -> Crossing -> Masking -> Cmp.Landing -> Pointing
-points CompSettings{pilots} Crossing{dnf} Masking{pilotsAtEss} _ =
+points
+    CompSettings{pilots, nominal = Nominal{goal = gNom', distance = dNom}}
+    Crossing{dnf}
+    Masking{pilotsAtEss, bestDistance, sumDistance} _ =
     Pointing 
         { validity = validities
         , allocation = allocs
         }
     where
+        gNom = read gNom' :: Double
+
         lvs =
             [ launchValidity (NominalLaunch 1) ((p - d) % p)
             | p <- toInteger . length <$> pilots
             | d <- toInteger . length <$> dnf
+            ]
+
+        dBests :: [MaximumDistance (Quantity Double [u| km |])] =
+            [ MaximumDistance . MkQuantity $ maybe 0 id b
+            | b <- bestDistance
+            ]
+
+        dSums :: [SumOfDistance (Quantity Double [u| km |])] =
+            [ SumOfDistance . MkQuantity $ maybe 0 id s
+            | s <- sumDistance
+            ]
+
+        dvs =
+            [ distanceValidity
+                (NominalGoal $ toRational gNom)
+                (NominalDistance $ round dNom)
+                (p - d)
+                (MinimumDistance [u| 5 km |])
+                b
+                s
+            | p <- toInteger . length <$> pilots
+            | d <- toInteger . length <$> dnf
+            | b <- dBests
+            | s <- dSums
             ]
 
         grs =
@@ -130,8 +164,9 @@ points CompSettings{pilots} Crossing{dnf} Masking{pilotsAtEss} _ =
             ]
 
         validities =
-            [ Validity lv
+            [ Validity lv dv
             | lv <- lvs
+            | dv <- dvs
             ]
 
         allocs =
