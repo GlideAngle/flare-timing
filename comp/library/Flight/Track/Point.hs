@@ -26,7 +26,8 @@ import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 
 import Flight.Field (FieldOrdering(..))
-import Flight.Score (GoalRatio, DistanceWeight)
+import Flight.Score
+    (GoalRatio, DistanceWeight, LeadingWeight, ArrivalWeight, TimeWeight)
 
 -- | For each task, the points for that task.
 data Pointing =
@@ -45,6 +46,9 @@ data Allocation =
 data Weight =
     Weight 
         { distance :: DistanceWeight
+        , leading :: LeadingWeight
+        , arrival :: ArrivalWeight
+        , time :: TimeWeight
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
@@ -55,5 +59,16 @@ cmp :: (Ord a, IsString a) => a -> a -> Ordering
 cmp a b =
     case (a, b) of
         ("goalRatio", _) -> LT
+        ("weight", _) -> GT
 
+        ("distance", _) -> LT
+
+        ("leading", "distance") -> GT
+        ("leading", _) -> LT
+
+        ("arrival", "distance") -> GT
+        ("arrival", "leading") -> GT
+        ("arrival", _) -> LT
+
+        ("time", _) -> GT
         _ -> compare a b

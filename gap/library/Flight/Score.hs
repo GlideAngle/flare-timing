@@ -163,6 +163,9 @@ import Flight.Gap.Leading
 import Flight.Gap.Validity
 import Flight.Gap.Weight.GoalRatio
 import Flight.Gap.Weight.Distance
+import Flight.Gap.Weight.Leading
+import Flight.Gap.Weight.Arrival
+import Flight.Gap.Weight.Time
 import Flight.Gap.Weighting
 import Flight.Gap.Points
 import Flight.Gap.Stopped

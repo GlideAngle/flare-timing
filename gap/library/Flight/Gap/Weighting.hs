@@ -10,13 +10,13 @@ import Data.Ratio ((%))
 import Flight.Gap.Ratio (pattern (:%))
 import Flight.Gap.Weight.GoalRatio (GoalRatio(..))
 import Flight.Gap.Weight.Distance (DistanceWeight(..))
+import Flight.Gap.Weight.Leading (LeadingWeight(..))
+import Flight.Gap.Weight.Arrival (ArrivalWeight(..))
+import Flight.Gap.Weight.Time (TimeWeight(..))
 
 -- | Best distance versus task distance.
 newtype DistanceRatio = DistanceRatio Rational deriving (Eq, Show)
 
-newtype LeadingWeight = LeadingWeight Rational deriving (Eq, Show)
-newtype ArrivalWeight = ArrivalWeight Rational deriving (Eq, Show)
-newtype TimeWeight = TimeWeight Rational deriving (Eq, Show)
 
 data Lw a where
     LwHg  :: DistanceWeight -> Lw Rational

@@ -50,7 +50,10 @@ import Flight.Track.Point (Pointing(..), Allocation(..), Weight(..))
 import qualified Flight.Track.Land as Cmp (Landing(..))
 import Flight.Scribe
     (readComp, readCrossing, readMasking, readLanding, writePointing)
-import Flight.Score (PilotsAtEss(..), GoalRatio(..), distanceWeight)
+import Flight.Score
+    ( PilotsAtEss(..), GoalRatio(..), Lw(..), Aw(..)
+    , distanceWeight, leadingWeight, arrivalWeight, timeWeight
+    )
 
 driverMain :: IO ()
 driverMain = do
@@ -107,10 +110,14 @@ points CompSettings{pilots} Crossing{dnf} Masking{pilotsAtEss} _ =
             ]
 
         dws = distanceWeight <$> grs
+        lws = leadingWeight . LwHg <$> dws
+        aws = arrivalWeight . AwHg <$> dws
 
         ws =
-            [ Weight dw
+            [ Weight dw lw aw (timeWeight dw lw aw)
             | dw <- dws
+            | lw <- lws
+            | aw <- aws
             ]
 
         allocs =
