@@ -42,7 +42,7 @@ import System.FilePath (takeFileName)
 import qualified Data.Number.FixedFunctions as F
 import Data.Aeson.Via.Scientific (ViaSci(..))
 
-import qualified Flight.Comp as Cmp (openClose)
+import qualified Flight.Comp as Cmp (Nominal(..), openClose)
 import Flight.Comp
     ( CompInputFile(..)
     , TaskLengthFile(..)
@@ -252,7 +252,7 @@ writeMask
             )
     -> IO ()
 writeMask
-    CompSettings{tasks}
+    CompSettings{nominal = Cmp.Nominal{distance = dNom}, tasks}
     lengths@(RouteLookup lookupTaskLength)
     (TaskTimeLookup lookupTaskTime)
     selectTasks selectPilots compFile f = do
@@ -399,6 +399,13 @@ writeMask
                         tsBest
                         dsMade
 
+            let dsSum :: [Maybe Double] =
+                    [ \case [] -> Nothing; xs -> Just . sum $ xs
+                      $ (\d -> max 0 (d - dNom))
+                      <$> ds
+                    | ds <- catMaybes <$> (fmap . fmap) (made . snd) dsNigh
+                    ]
+
             let rowTicks :: [[Maybe (Pilot, Maybe LeadTick)]] =
                     (fmap . fmap . fmap)
                         (fmap (\Time.TickRow{tickLead} -> tickLead))
@@ -425,6 +432,7 @@ writeMask
                     , bestTime = tsBest
                     , taskDistance = (fmap . fmap) unTaskDistance lsTask
                     , bestDistance = dsBest
+                    , sumDistance = dsSum
                     , minLead = (fmap . fmap) ViaSci minLead
                     , lead = lead
                     , arrival = as

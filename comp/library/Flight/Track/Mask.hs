@@ -62,6 +62,8 @@ data Masking =
         -- ^ For each task, the task distance.
         , bestDistance :: [Maybe Double]
         -- ^ For each task, the best distance made.
+        , sumDistance :: [Maybe Double]
+        -- ^ For each task, the sum of all distance flown over minimum distance.
         , minLead :: [Maybe (ViaSci LeadingCoefficient)]
         -- ^ For each task, the minimum of all pilot's leading coefficient.
         , lead :: [[(Pilot, TrackLead)]]
@@ -226,11 +228,19 @@ cmp a b =
         ("bestDistance", "taskDistance") -> GT
         ("bestDistance", _) -> LT
 
+        ("sumDistance", "pilotsAtEss") -> GT
+        ("sumDistance", "raceTime") -> GT
+        ("sumDistance", "sumTime") -> GT
+        ("sumDistance", "taskDistance") -> GT
+        ("sumDistance", "bestDistance") -> GT
+        ("sumDistance", _) -> LT
+
         ("minLead", "pilotsAtEss") -> GT
         ("minLead", "raceTime") -> GT
         ("minLead", "bestTime") -> GT
         ("minLead", "taskDistance") -> GT
         ("minLead", "bestDistance") -> GT
+        ("minLead", "sumDistance") -> GT
         ("minLead", _) -> LT
 
         ("lead", "pilotsAtEss") -> GT
@@ -238,6 +248,7 @@ cmp a b =
         ("lead", "bestTime") -> GT
         ("lead", "taskDistance") -> GT
         ("lead", "bestDistance") -> GT
+        ("lead", "sumDistance") -> GT
         ("lead", "minLead") -> GT
         ("lead", _) -> LT
 
@@ -246,6 +257,7 @@ cmp a b =
         ("arrival", "bestTime") -> GT
         ("arrival", "taskDistance") -> GT
         ("arrival", "bestDistance") -> GT
+        ("arrival", "sumDistance") -> GT
         ("arrival", "minLead") -> GT
         ("arrival", "lead") -> GT
         ("arrival", _) -> LT
@@ -255,6 +267,7 @@ cmp a b =
         ("speed", "bestTime") -> GT
         ("speed", "taskDistance") -> GT
         ("speed", "bestDistance") -> GT
+        ("speed", "sumDistance") -> GT
         ("speed", "minLead") -> GT
         ("speed", "lead") -> GT
         ("speed", "arrival") -> GT
@@ -265,6 +278,7 @@ cmp a b =
         ("nigh", "bestTime") -> GT
         ("nigh", "taskDistance") -> GT
         ("nigh", "bestDistance") -> GT
+        ("nigh", "sumDistance") -> GT
         ("nigh", "minLead") -> GT
         ("nigh", "lead") -> GT
         ("nigh", "arrival") -> GT
