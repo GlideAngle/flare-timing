@@ -55,12 +55,14 @@ import qualified Flight.Track.Land as Cmp (Landing(..))
 import Flight.Scribe
     (readComp, readCrossing, readMasking, readLanding, writePointing)
 import Flight.Score
-    ( NominalLaunch(..), NominalGoal(..), NominalDistance(..)
+    ( NominalLaunch(..), NominalGoal(..), NominalDistance(..), NominalTime(..)
     , MinimumDistance(..), MaximumDistance(..), SumOfDistance(..)
     , PilotsAtEss(..), GoalRatio(..), Lw(..), Aw(..)
+    , Metres, BestTime(..)
     , distanceWeight, leadingWeight, arrivalWeight, timeWeight
-    , launchValidity, distanceValidity
+    , launchValidity, distanceValidity, timeValidity
     )
+import Data.Aeson.Via.Scientific (ViaSci(..))
 
 driverMain :: IO ()
 driverMain = do
@@ -105,15 +107,20 @@ go CmdOptions{..} compFile@(CompInputFile compPath) = do
 
 points :: CompSettings -> Crossing -> Masking -> Cmp.Landing -> Pointing
 points
-    CompSettings{pilots, nominal = Nominal{goal = gNom', distance = dNom}}
+    CompSettings
+        { pilots
+        , nominal =
+            Nominal{goal = gNom', distance = dNom, time = tNom'}
+        }
     Crossing{dnf}
-    Masking{pilotsAtEss, bestDistance, sumDistance} _ =
+    Masking{pilotsAtEss, bestDistance, sumDistance, bestTime} _ =
     Pointing 
         { validity = validities
         , allocation = allocs
         }
     where
         gNom = read gNom' :: Double
+        tNom = 3600 * (read tNom' :: Double)
 
         lvs =
             [ launchValidity (NominalLaunch 1) ((p - d) % p)
@@ -145,6 +152,24 @@ points
             | s <- dSums
             ]
 
+        tBests :: [Maybe Metres] =
+            [ round . (* 3600) <$> b
+            | b <-
+                  (fmap . fmap)
+                      (\(ViaSci (BestTime x)) -> x)
+                      bestTime
+            ]
+
+        tvs =
+            [ timeValidity
+                (NominalTime $ round tNom)
+                (NominalDistance $ round dNom)
+                t
+                d
+            | t <- tBests
+            | d <- (\(MaximumDistance (MkQuantity x)) -> round x) <$> dBests
+            ]
+
         grs =
             [ GoalRatio $ n % toInteger (p - d)
             | n <- (\(PilotsAtEss x) -> x) <$> pilotsAtEss
@@ -164,9 +189,10 @@ points
             ]
 
         validities =
-            [ Validity lv dv
+            [ Validity lv dv tv
             | lv <- lvs
             | dv <- dvs
+            | tv <- tvs
             ]
 
         allocs =

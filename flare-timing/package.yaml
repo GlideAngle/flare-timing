@@ -325,6 +325,7 @@ executables:
     - clock
     - formatting
     - siggy-chardust
+    - aeson-via-sci
     - flight-cmd
     - flight-units
     - flight-latlng
