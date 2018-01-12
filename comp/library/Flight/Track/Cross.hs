@@ -37,11 +37,13 @@ import Data.Aeson.Via.Scientific (ViaSci(..))
 data Crossing =
     Crossing
         { errors :: [[(Pilot, TrackFileFail)]]
-          -- ^ For each task, the pilots with track log problems.
+        -- ^ For each task, the pilots with track log problems.
+        , dnf :: [[Pilot]]
+        -- ^ For each task, the pilots that did not fly.
         , flying :: [[(Pilot, Maybe TrackFlyingSection)]]
-          -- ^ For each task, the pilots' flying sections.
+        -- ^ For each task, the pilots' flying sections.
         , crossing :: [[PilotTrackCross]]
-          -- ^ For each task, for each made zone, the pair of fixes cross it.
+        -- ^ For each task, for each made zone, the pair of fixes cross it.
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
@@ -120,7 +122,11 @@ cmp a b =
     case (a, b) of
         ("errors", _) -> LT
 
+        ("dnf", "errors") -> GT
+        ("dnf", _) -> LT
+
         ("flying", "errors") -> GT
+        ("flying", "dnf") -> GT
         ("flying", _) -> LT
 
         ("crossings", _) -> GT

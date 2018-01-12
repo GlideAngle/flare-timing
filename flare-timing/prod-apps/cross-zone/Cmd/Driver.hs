@@ -11,6 +11,7 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE ParallelListComp #-}
 
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
@@ -21,7 +22,8 @@ import System.Console.CmdArgs.Implicit (cmdArgs)
 import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
-import Data.Maybe (catMaybes)
+import Data.Maybe (catMaybes, fromMaybe)
+import Data.List (nub, sort)
 import Control.Lens ((^?), element)
 import Control.Monad (mapM_)
 import Control.Monad.Except (ExceptT(..), runExceptT)
@@ -117,12 +119,31 @@ writeMask compFile task pilot f = do
                         xs
 
             let ps = fst <$> ys
+            let errs = catMaybes . snd <$> ys
+
+            let pErrs :: [[Pilot]] = (fmap. fmap) fst errs 
+
+            let flying = (fmap . fmap . fmap . fmap) madeZonesToFlying ps
+
+            let notFlys :: [[Pilot]] =
+                    (fmap . fmap) fst $
+                    (fmap (filter snd)) $
+                    (fmap . fmap . fmap)
+                        (fromMaybe False . (fmap (not . flew)))
+                        flying
+            let dnfs =
+                    [ sort . nub $ es ++ ns
+                    | es <- pErrs
+                    | ns <- notFlys
+                    ]
 
             let crossZone =
-                    Crossing { crossing = (fmap . fmap) crossings ps
-                             , errors = catMaybes . snd <$> ys
-                             , flying = (fmap . fmap . fmap . fmap) madeZonesToFlying ps
-                             }
+                    Crossing
+                        { errors = errs
+                        , dnf = dnfs
+                        , flying = flying
+                        , crossing = (fmap . fmap) crossings ps
+                        }
 
             writeCrossing (compToCross compFile) crossZone
 
@@ -136,6 +157,16 @@ madeZonesToCross x =
 crossings :: (Pilot, Maybe MadeZones) -> PilotTrackCross
 crossings (p, x) =
     PilotTrackCross p $ madeZonesToCross <$> x
+
+flew :: TrackFlyingSection -> Bool
+flew TrackFlyingSection{flyingFixes, flyingSeconds}
+    | flyingFixes == Nothing = False
+    | flyingSeconds == Nothing = False
+    | otherwise = f flyingFixes || f flyingSeconds
+    where
+        f :: Ord a => Maybe (a, a) -> Bool
+        f Nothing = False
+        f (Just (a, b)) = a < b
 
 madeZonesToFlying :: MadeZones -> TrackFlyingSection
 madeZonesToFlying MadeZones{flying} = flying
