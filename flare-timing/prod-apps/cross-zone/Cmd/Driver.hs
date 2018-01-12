@@ -126,11 +126,11 @@ writeMask compFile task pilot f = do
             let flying = (fmap . fmap . fmap . fmap) madeZonesToFlying ps
 
             let notFlys :: [[Pilot]] =
-                    (fmap . fmap) fst $
-                    (fmap (filter snd)) $
-                    (fmap . fmap . fmap)
-                        (fromMaybe False . (fmap (not . flew)))
-                        flying
+                    [ fmap fst . filter snd
+                      $ (fmap . fmap) (fromMaybe False . (fmap (not . flew))) fs
+                    | fs <- flying
+                    ]
+
             let dnfs =
                     [ sort . nub $ es ++ ns
                     | es <- pErrs
