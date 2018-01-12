@@ -8,9 +8,7 @@ module Flight.Gap.Weighting where
 import Data.Ratio ((%))
 
 import Flight.Gap.Ratio (pattern (:%))
-
--- | Pilots in goal versus pilots flying.
-newtype GoalRatio = GoalRatio Rational deriving (Eq, Show)
+import Flight.Gap.Weighting.GoalRatio (GoalRatio(..))
 
 -- | Best distance versus task distance.
 newtype DistanceRatio = DistanceRatio Rational deriving (Eq, Show)

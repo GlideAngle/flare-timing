@@ -22,11 +22,12 @@ import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 
 import Flight.Field (FieldOrdering(..))
+import Flight.Score (GoalRatio)
 
 -- | For each task, the points for that task.
 data Pointing =
     Pointing 
-        { goalRatio :: [Double]
+        { goalRatio :: [GoalRatio]
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 

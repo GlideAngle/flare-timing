@@ -161,6 +161,7 @@ import Flight.Gap.Distance.Chunk
 import Flight.Gap.Distance.Difficulty
 import Flight.Gap.Leading
 import Flight.Gap.Validity
+import Flight.Gap.Weighting.GoalRatio
 import Flight.Gap.Weighting
 import Flight.Gap.Points
 import Flight.Gap.Stopped
