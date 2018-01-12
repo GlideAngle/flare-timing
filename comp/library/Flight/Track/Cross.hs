@@ -119,9 +119,11 @@ cmp :: (Ord a, IsString a) => a -> a -> Ordering
 cmp a b =
     case (a, b) of
         ("errors", _) -> LT
-        ("crossings", "errors") -> GT
-        ("crossings", _) -> LT
-        ("flying", _) -> GT
+
+        ("flying", "errors") -> GT
+        ("flying", _) -> LT
+
+        ("crossings", _) -> GT
 
         ("zonesCrossSelected", _) -> LT
         ("zonesCrossNominees", _) -> GT
