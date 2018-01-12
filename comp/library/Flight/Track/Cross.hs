@@ -3,6 +3,7 @@
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE LambdaCase #-}
 
 {-|
 Module      : Flight.Track.Cross
@@ -20,14 +21,16 @@ module Flight.Track.Cross
     , TrackCross(..)
     , PilotTrackCross(..)
     , ZoneCross(..)
+    , TrackLogError(..)
     , Fix(..)
+    , trackLogErrors
     ) where
 
 import Data.String (IsString())
 import Data.Time.Clock (UTCTime)
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
-import Flight.Pilot (Pilot(..), TrackFileFail)
+import Flight.Pilot (Pilot(..), TrackFileFail(..))
 import Flight.LatLng.Raw (RawLat, RawLng)
 import Flight.Field (FieldOrdering(..))
 import Flight.Comp (FlyingSection)
@@ -36,14 +39,14 @@ import Data.Aeson.Via.Scientific (ViaSci(..))
 -- | For each task, the crossing for that task.
 data Crossing =
     Crossing
-        { errors :: [[(Pilot, TrackFileFail)]]
-        -- ^ For each task, the pilots with track log problems.
-        , dnf :: [[Pilot]]
+        { dnf :: [[Pilot]]
         -- ^ For each task, the pilots that did not fly.
         , flying :: [[(Pilot, Maybe TrackFlyingSection)]]
         -- ^ For each task, the pilots' flying sections.
         , crossing :: [[PilotTrackCross]]
         -- ^ For each task, for each made zone, the pair of fixes cross it.
+        , trackLogError :: [TrackLogError]
+        -- ^ For each task, the pilots with track log problems.
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
@@ -83,6 +86,35 @@ data TrackCross =
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
+-- | For a single task, which pilots have error detected with their track logs.
+data TrackLogError =
+    TrackLogError
+        { fileUnset :: [Pilot]
+        -- ^ Pilots without a track log file.
+        , dirMissing :: [Pilot]
+        -- ^ A directory part of the log file path is missing.
+        , fileMissing :: [Pilot]
+        -- ^ The log file is missing.
+        , fileUnread :: [Pilot]
+        -- ^ The log file could not be read.
+        }
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+
+trackLogErrors :: [(Pilot, TrackFileFail)] -> TrackLogError
+trackLogErrors xs =
+    TrackLogError
+        { fileUnset = unsets xs
+        , dirMissing = dirs xs
+        , fileMissing = files xs
+        , fileUnread = unreads xs
+        }
+    where
+        f p = fmap fst . filter (p . snd)
+        unsets = f (== TrackLogFileNotSet)
+        dirs = f (\case TaskFolderExistsNot _ -> True; _ -> False)
+        files = f (\case TrackLogFileExistsNot _ -> True; _ -> False)
+        unreads = f (\case TrackLogFileNotRead _ -> True; _ -> False)
+
 -- | A timestamped latitude and longitude.
 data Fix =
     Fix { fix :: Int
@@ -120,16 +152,27 @@ instance FieldOrdering Crossing where
 cmp :: (Ord a, IsString a) => a -> a -> Ordering
 cmp a b =
     case (a, b) of
-        ("errors", _) -> LT
+        ("fileUnset", _) -> LT
 
-        ("dnf", "errors") -> GT
+        ("dirMissing", "fileUnset") -> GT
+        ("dirMissing", _) -> LT
+
+        ("fileMissing", "fileUnset") -> GT
+        ("fileMissing", "dirMissing") -> GT
+        ("fileMissing", _) -> LT
+
+        ("fileUnread", _) -> GT
+
         ("dnf", _) -> LT
 
-        ("flying", "errors") -> GT
         ("flying", "dnf") -> GT
         ("flying", _) -> LT
 
-        ("crossings", _) -> GT
+        ("crossings", "dnf") -> LT
+        ("crossings", "flying") -> LT
+        ("crossings", _) -> LT
+
+        ("trackLogError", _) -> GT
 
         ("zonesCrossSelected", _) -> LT
         ("zonesCrossNominees", _) -> GT

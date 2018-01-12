@@ -43,7 +43,12 @@ import Flight.Comp
     )
 import Flight.Units ()
 import Flight.Track.Cross
-    (TrackFlyingSection(..), TrackCross(..), PilotTrackCross(..), Crossing(..))
+    (TrackFlyingSection(..)
+    , TrackCross(..)
+    , PilotTrackCross(..)
+    , Crossing(..)
+    , trackLogErrors
+    )
 import Flight.Zone.Raw (RawZone)
 import qualified Flight.PointToPoint.Rational as Rat (distanceHaversine)
 import qualified Flight.PointToPoint.Double as Dbl (distanceHaversine)
@@ -139,7 +144,7 @@ writeMask compFile task pilot f = do
 
             let crossZone =
                     Crossing
-                        { errors = errs
+                        { trackLogError = trackLogErrors <$> errs
                         , dnf = dnfs
                         , flying = flying
                         , crossing = (fmap . fmap) crossings ps
