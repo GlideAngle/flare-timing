@@ -35,7 +35,8 @@ import TestNewtypes
 
 distanceValidityUnits :: TestTree
 distanceValidityUnits = testGroup "Distance validity unit tests"
-    [ HU.testCase "Distance validity 0 0 0 0 0 0 = 0" $
+    [ HU.testCase
+        "Distance validity nom-goal=0 nom-dist=0 flying=0 min=0 max=0 sum=0 => 0" $
         FS.distanceValidity
             (NominalGoal 0)
             (NominalDistance . MkQuantity $ 0)
@@ -45,7 +46,8 @@ distanceValidityUnits = testGroup "Distance validity unit tests"
             (SumOfDistance . MkQuantity $ 0)
         @?= DistanceValidity (0 % 1)
 
-    , HU.testCase "Distance validity 1 1 1 1 1 1 = 1" $
+    , HU.testCase
+        "Distance validity nom-goal=1 nom-dist=1 flying=1 min=1 max=1 sum=1 => 0" $
         FS.distanceValidity
             (NominalGoal 1)
             (NominalDistance . MkQuantity $ 1)
@@ -53,9 +55,10 @@ distanceValidityUnits = testGroup "Distance validity unit tests"
             (MinimumDistance . MkQuantity $ 1)
             (MaximumDistance . MkQuantity $ 1)
             (SumOfDistance . MkQuantity $ 1)
-        @?= DistanceValidity (1 % 1)
+        @?= DistanceValidity (0 % 1)
 
-    , HU.testCase "Distance validity 1 0 1 1 1 1 = 1" $
+    , HU.testCase
+    "Distance validity nom-goal=1 nom-dist=0 flying=1 min=1 max=1 sum=1 => 1" $
         FS.distanceValidity
             (NominalGoal 1)
             (NominalDistance . MkQuantity $ 0)
@@ -65,7 +68,8 @@ distanceValidityUnits = testGroup "Distance validity unit tests"
             (SumOfDistance . MkQuantity $ 1)
         @?= DistanceValidity (1 % 1)
 
-    , HU.testCase "Distance validity 1 1 0 1 1 1 = 0" $
+    , HU.testCase
+        "Distance validity nom-goal=1 nom-dist=1 flying=0 min=1 max=1 sum=1 => 0" $
         FS.distanceValidity
             (NominalGoal 1)
             (NominalDistance . MkQuantity $ 1)
@@ -75,7 +79,8 @@ distanceValidityUnits = testGroup "Distance validity unit tests"
             (SumOfDistance . MkQuantity $ 1)
         @?= DistanceValidity (0 % 1)
 
-    , HU.testCase "Distance validity 1 1 1 0 1 1 = 1" $
+    , HU.testCase
+        "Distance validity nom-goal=1 nom-dist=1 flying=1 min=0 max=1 sum=1 => 1" $
         FS.distanceValidity
             (NominalGoal 1)
             (NominalDistance . MkQuantity $ 1)
@@ -85,7 +90,8 @@ distanceValidityUnits = testGroup "Distance validity unit tests"
             (SumOfDistance . MkQuantity $ 1)
         @?= DistanceValidity (1 % 1)
 
-    , HU.testCase "Distance validity 1 1 1 1 0 1 = 0" $
+    , HU.testCase
+        "Distance validity nom-goal=1 nom-dist=1 flying=1 min=1 max=0 sum=1 => 0" $
         FS.distanceValidity
             (NominalGoal 1)
             (NominalDistance . MkQuantity $ 1)
@@ -95,10 +101,8 @@ distanceValidityUnits = testGroup "Distance validity unit tests"
             (SumOfDistance . MkQuantity $ 1)
         @?= DistanceValidity (0 % 1)
 
-    -- WARNING: Distance validity test fail.
-    -- expected: DistanceValidity (0 % 1)
-    -- but got: DistanceValidity (1 % 1)
-    , HU.testCase "Distance validity 1 1 1 1 1 0 = 0" $
+    , HU.testCase
+        "Distance validity nom-goal=1 nom-dist=1 flying=1 min=1 max=1 sum=0 => 0" $
         FS.distanceValidity
             (NominalGoal 1)
             (NominalDistance . MkQuantity $ 1)

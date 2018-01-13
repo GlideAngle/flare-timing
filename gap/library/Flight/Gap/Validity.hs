@@ -98,10 +98,13 @@ dvr
     -> Integer
     -> SumOfDistance (Quantity Double [u| km |])
     -> Rational
-dvr (NominalDistanceArea (0 :% _)) _ _ =
-    1 % 1
-dvr (NominalDistanceArea (n :% d)) nFly (SumOfDistance dSum') =
-    let MkQuantity dSum = toRational' dSum' in dSum * (d % (nFly * n))
+dvr (NominalDistanceArea dNom@(n :% d)) nFly (SumOfDistance dSum)
+    | dNom <= 0 = 0 % 1
+    | nFly <= 0 = 0 % 1
+    | dSum <= [u| 0 km |] = 0 % 1
+    | otherwise = dSum' * (d % (nFly * n))
+    where
+        MkQuantity dSum' = toRational' dSum
 
 distanceValidity
     :: NominalGoal
@@ -131,7 +134,7 @@ distanceValidity
     | dNom < dMin =
         DistanceValidity (1 % 1)
     | otherwise =
-        DistanceValidity $ min 1 $ dvr area nFly dSum
+        DistanceValidity . min 1 $ dvr area nFly dSum
     where
         MkQuantity dNom = toRational' dNom'
         MkQuantity dMin = toRational' dMin'
@@ -152,7 +155,7 @@ distanceValidity
     | dNom < dMin =
         DistanceValidity (1 % 1)
     | otherwise =
-        DistanceValidity $ min 1 $ dvr area nFly dSum
+        DistanceValidity . min 1 $ dvr area nFly dSum
     where
         MkQuantity dNom = toRational' dNom'
         MkQuantity dMin = toRational' dMin'
