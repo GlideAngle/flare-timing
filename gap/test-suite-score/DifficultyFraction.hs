@@ -112,19 +112,13 @@ expected100 =
 
 difficultyUnits :: TestTree
 difficultyUnits = testGroup "Difficulty fraction unit tests"
-    -- WARNING: Distance fraction test fail.
-    -- expected: Lookahead 3000
-    -- but got: Lookahead 300
     [ HU.testCase
-        "10 pilots land out in 100 kms = 3000 look ahead chunks or 300 kms"
-        $ FS.lookahead best10 dists10 @?= Lookahead 3000
+        "10 pilots land out in 100 kms = 300 x 100 hm look ahead chunks or 30 kms"
+        $ FS.lookahead best10 dists10 @?= Lookahead 300
 
-    -- WARNING: Distance fraction test fail.
-    -- expected: Lookahead 300
-    -- but got: Lookahead 30
     , HU.testCase
-        "100 pilots land out in 100 kms = 300 look ahead chunks or 30 kms"
-        $ FS.lookahead best100 dists100 @?= Lookahead 300
+        "100 pilots land out in 100 kms = 30 x 100 hm look ahead chunks or 3 kms"
+        $ FS.lookahead best100 dists100 @?= Lookahead 30
 
     -- WARNING: Distance fraction test fail.
     -- expected: [DifficultyFraction (1 % 11),DifficultyFraction (9 % 110),DifficultyFraction (4 % 55),DifficultyFraction (7 % 110),DifficultyFraction (3 % 55),DifficultyFraction (1 % 22),DifficultyFraction (2 % 55),DifficultyFraction (3 % 110),DifficultyFraction (1 % 55),DifficultyFraction (1 % 110)]
