@@ -144,6 +144,9 @@ coefficientUnits = testGroup "Leading coefficient (LC) unit tests"
                  ])
         @?= (LeadingCoefficient $ 1 % 900)
 
+    -- WARNING: Leading coefficient test fail.
+    -- expected: LeadingCoefficient (1 % 720)
+    -- but got: LeadingCoefficient (1 % 800)
     , HU.testCase "3 track points evenly spread from SSS to ESS = 1 / 720 LC" $
         FS.leadingCoefficient
             (TaskDeadline 3)
@@ -154,6 +157,9 @@ coefficientUnits = testGroup "Leading coefficient (LC) unit tests"
                  ])
         @?= (LeadingCoefficient $ 1 % 720)
 
+    -- WARNING: Leading coefficient test fail.
+    -- expected: LeadingCoefficient (29 % 16200)
+    -- but got: LeadingCoefficient (23 % 16200)
     , HU.testCase "4 track points evenly spread from SSS to ESS = 29 / 16200 LC" $
         FS.leadingCoefficient
             (TaskDeadline 4)
@@ -165,6 +171,9 @@ coefficientUnits = testGroup "Leading coefficient (LC) unit tests"
                  ])
         @?= (LeadingCoefficient $ 29 % 16200)
 
+    -- WARNING: Leading coefficient test fail.
+    -- expected: LeadingCoefficient (11 % 4800)
+    -- but got: LeadingCoefficient (23 % 14400)
     , HU.testCase "5 track points evenly spread from SSS to ESS = 11 / 4800 LC" $
         FS.leadingCoefficient
             (TaskDeadline 5)
@@ -177,6 +186,9 @@ coefficientUnits = testGroup "Leading coefficient (LC) unit tests"
                  ])
         @?= (LeadingCoefficient $ 11 % 4800)
 
+    -- WARNING: Leading coefficient test fail.
+    -- expected: LeadingCoefficient (1 % 480)
+    -- but got: LeadingCoefficient (29 % 28800)
     , HU.testCase "5 track points cut short to 3 by a task deadline = 1 / 480 LC" $
         FS.leadingCoefficient
             (TaskDeadline 3)
@@ -189,6 +201,9 @@ coefficientUnits = testGroup "Leading coefficient (LC) unit tests"
                  ])
         @?= (LeadingCoefficient $ 1 % 480)
 
+    -- WARNING: Leading coefficient test fail.
+    -- expected: LeadingCoefficient (3 % 400)
+    -- but got: LeadingCoefficient (23 % 3600)
     , HU.testCase "5 track points with an equal distance flown before the speed section = 3 / 400 LC" $
         FS.leadingCoefficient
             (TaskDeadline 5)

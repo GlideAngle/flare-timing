@@ -95,6 +95,9 @@ distanceValidityUnits = testGroup "Distance validity unit tests"
             (SumOfDistance . MkQuantity $ 1)
         @?= DistanceValidity (0 % 1)
 
+    -- WARNING: Distance validity test fail.
+    -- expected: DistanceValidity (0 % 1)
+    -- but got: DistanceValidity (1 % 1)
     , HU.testCase "Distance validity 1 1 1 1 1 0 = 0" $
         FS.distanceValidity
             (NominalGoal 1)
