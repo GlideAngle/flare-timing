@@ -144,10 +144,7 @@ coefficientUnits = testGroup "Leading coefficient (LC) unit tests"
                  ])
         @?= (LeadingCoefficient $ 1 % 900)
 
-    -- WARNING: Leading coefficient test fail.
-    -- expected: LeadingCoefficient (1 % 720)
-    -- but got: LeadingCoefficient (1 % 800)
-    , HU.testCase "3 track points evenly spread from SSS to ESS = 1 / 720 LC" $
+    , HU.testCase "3 track points evenly spread from SSS to ESS = 1 / 800 LC" $
         FS.leadingCoefficient
             (TaskDeadline 3)
             (LengthOfSs 2)
@@ -155,12 +152,9 @@ coefficientUnits = testGroup "Leading coefficient (LC) unit tests"
                  , (2, 1)
                  , (3, 0)
                  ])
-        @?= (LeadingCoefficient $ 1 % 720)
+        @?= (LeadingCoefficient $ 1 % 800)
 
-    -- WARNING: Leading coefficient test fail.
-    -- expected: LeadingCoefficient (29 % 16200)
-    -- but got: LeadingCoefficient (23 % 16200)
-    , HU.testCase "4 track points evenly spread from SSS to ESS = 29 / 16200 LC" $
+    , HU.testCase "4 track points evenly spread from SSS to ESS = 23 / 16200 LC" $
         FS.leadingCoefficient
             (TaskDeadline 4)
             (LengthOfSs 3)
@@ -169,12 +163,9 @@ coefficientUnits = testGroup "Leading coefficient (LC) unit tests"
                  , (3, 1)
                  , (4, 0)
                  ])
-        @?= (LeadingCoefficient $ 29 % 16200)
+        @?= (LeadingCoefficient $ 23 % 16200)
 
-    -- WARNING: Leading coefficient test fail.
-    -- expected: LeadingCoefficient (11 % 4800)
-    -- but got: LeadingCoefficient (23 % 14400)
-    , HU.testCase "5 track points evenly spread from SSS to ESS = 11 / 4800 LC" $
+    , HU.testCase "5 track points evenly spread from SSS to ESS = 23 / 14400 LC" $
         FS.leadingCoefficient
             (TaskDeadline 5)
             (LengthOfSs 4)
@@ -184,12 +175,9 @@ coefficientUnits = testGroup "Leading coefficient (LC) unit tests"
                  , (4, 1)
                  , (5, 0)
                  ])
-        @?= (LeadingCoefficient $ 11 % 4800)
+        @?= (LeadingCoefficient $ 23 % 14400)
 
-    -- WARNING: Leading coefficient test fail.
-    -- expected: LeadingCoefficient (1 % 480)
-    -- but got: LeadingCoefficient (29 % 28800)
-    , HU.testCase "5 track points cut short to 3 by a task deadline = 1 / 480 LC" $
+    , HU.testCase "5 track points cut short to 3 by a task deadline = 29 / 28800 LC" $
         FS.leadingCoefficient
             (TaskDeadline 3)
             (LengthOfSs 4)
@@ -199,12 +187,9 @@ coefficientUnits = testGroup "Leading coefficient (LC) unit tests"
                  , (4, 1)
                  , (5, 0)
                  ])
-        @?= (LeadingCoefficient $ 1 % 480)
+        @?= (LeadingCoefficient $ 29 % 28800)
 
-    -- WARNING: Leading coefficient test fail.
-    -- expected: LeadingCoefficient (3 % 400)
-    -- but got: LeadingCoefficient (23 % 3600)
-    , HU.testCase "5 track points with an equal distance flown before the speed section = 3 / 400 LC" $
+    , HU.testCase "5 track points with an equal distance flown before the speed section = 23 / 3600 LC" $
         FS.leadingCoefficient
             (TaskDeadline 5)
             (LengthOfSs 2)
@@ -214,7 +199,7 @@ coefficientUnits = testGroup "Leading coefficient (LC) unit tests"
                  , (4, 1)
                  , (5, 0)
                  ])
-        @?= (LeadingCoefficient $ 3 % 400)
+        @?= (LeadingCoefficient $ 23 % 3600)
     ]
 
 leadingFractionsUnits :: TestTree
