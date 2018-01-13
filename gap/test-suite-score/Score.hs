@@ -104,6 +104,11 @@ scProps = testGroup "(checked by SmallCheck)"
     , SC.testProperty "Stop task time from announced time, Hg" stopTaskTimeHg
     , SC.testProperty "Stop task time from announced time, Pg" stopTaskTimePg
     , SC.testProperty "Can score a stopped task, Hg" canScoreStoppedHg
+
+    -- WARNING: Can score a stopped task, Pg fail.
+    -- *** Failed! Falsifiable (after 89 tests):
+    -- StopCanScoreTest (FromLastStart [954s,2943s,6346s,2637s,7257s,992s,8886s,3291s,3190s,3403s,1233s,5817s,2146s,3348s,7421s,7570s,552s,7939s,2780s,637s,7111s,3133s,2050s,9711s,7258s,7602s,4471s,159s,1571s,5648s,4294s,8953s,3913s,354s,1606s,9543s,7268s,1551s,5724s,9632s,9365s,8868s,5766s,1s,2082s,2874s,5297s,2137s,9252s,9823s,1795s,3996s,2084s,1261s,2809s,1707s,1184s,4387s,2575s,8657s,3559s,6273s,5586s,6422s,1735s,9599s,8674s,7363s,8094s,8125s,6898s,80s,4699s,3595s,2444s,2711s,102s,9515s,772s,1801s,4429s,3097s] (TaskStopTime (292652705910549 % 65505319040)))
+    -- Use --quickcheck-replay=129015 to reproduce.
     , SC.testProperty "Can score a stopped task, Pg" canScoreStoppedPg
     , SC.testProperty "Stopped validity is in the range of [0, 1]" stoppedValidity
     , SC.testProperty "Score time window is in the range [0, stop time]" scoreTimeWindow
