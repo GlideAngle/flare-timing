@@ -12,7 +12,6 @@ module Flight.Gap.Validity
     ( NominalLaunch(..)
     , NominalTime(..)
     , NominalDistance(..)
-    , NominalGoal(..)
     , Seconds
     , Metres
     , launchValidity
@@ -33,11 +32,11 @@ import Flight.Gap.Validity.Launch (LaunchValidity(..))
 import Flight.Gap.Validity.Distance (DistanceValidity(..))
 import Flight.Gap.Validity.Time (TimeValidity(..))
 import Flight.Gap.Validity.Task (TaskValidity(..))
+import Flight.Gap.Nominal.Goal (NominalGoal(..))
 
 newtype NominalLaunch = NominalLaunch Rational deriving (Eq, Show)
 newtype NominalDistance = NominalDistance Integer deriving (Eq, Show)
 newtype NominalTime = NominalTime Integer deriving (Eq, Show)
-newtype NominalGoal = NominalGoal Rational deriving (Eq, Show)
 
 type Seconds = Integer
 type Metres = Integer

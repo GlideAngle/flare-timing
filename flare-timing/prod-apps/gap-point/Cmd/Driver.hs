@@ -55,7 +55,7 @@ import qualified Flight.Track.Land as Cmp (Landing(..))
 import Flight.Scribe
     (readComp, readCrossing, readMasking, readLanding, writePointing)
 import Flight.Score
-    ( NominalLaunch(..), NominalGoal(..), NominalDistance(..), NominalTime(..)
+    ( NominalLaunch(..), NominalDistance(..), NominalTime(..)
     , MinimumDistance(..), MaximumDistance(..), SumOfDistance(..)
     , PilotsAtEss(..), GoalRatio(..), Lw(..), Aw(..)
     , Metres, BestTime(..)
@@ -110,7 +110,7 @@ points
     CompSettings
         { pilots
         , nominal =
-            Nominal{goal = gNom', distance = dNom, time = tNom'}
+            Nominal{goal = gNom, distance = dNom, time = tNom'}
         }
     Crossing{dnf}
     Masking{pilotsAtEss, bestDistance, sumDistance, bestTime} _ =
@@ -119,7 +119,6 @@ points
         , allocation = allocs
         }
     where
-        gNom = read gNom' :: Double
         tNom = 3600 * (read tNom' :: Double)
 
         lvs =
@@ -140,7 +139,7 @@ points
 
         dvs =
             [ distanceValidity
-                (NominalGoal $ toRational gNom)
+                gNom
                 (NominalDistance $ round dNom)
                 (p - d)
                 (MinimumDistance [u| 5 km |])

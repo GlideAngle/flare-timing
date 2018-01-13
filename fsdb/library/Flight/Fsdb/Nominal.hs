@@ -22,6 +22,7 @@ import Text.Parsec.Token as P
 import Text.ParserCombinators.Parsec
     ( GenParser
     , (<?>)
+    , (<|>)
     )
 import qualified Text.ParserCombinators.Parsec as P (parse)
 import Text.Parsec.Language (emptyDef)
@@ -29,12 +30,16 @@ import Data.Functor.Identity (Identity)
 import Text.Parsec.Prim (ParsecT, parsecMap)
 
 import Flight.Comp (Nominal(..))
+import Flight.Score (NominalGoal(..))
 
 lexer :: GenTokenParser String u Identity
 lexer = P.makeTokenParser emptyDef
 
 pFloat:: ParsecT String u Identity Double
 pFloat = parsecMap (either fromInteger id) $ P.naturalOrFloat lexer 
+
+pNat :: ParsecT String u Identity Integer
+pNat = P.natural lexer 
 
 getNominal :: ArrowXml a => a XmlTree [Nominal]
 getNominal =
@@ -52,8 +57,14 @@ getNominal =
             >>> arr (\(d, (m, (t, g))) -> either (const []) id $ do
                 d' <- P.parse pNominalDistance "" d
                 m' <- P.parse pMinimumDistance "" m
-                return [Nominal d' m' t g])
+                g' <- NominalGoal . toRational <$> P.parse pNominalGoal "" g
+                return [Nominal d' m' t g'])
 
+
+pNominalGoal :: GenParser Char st Double
+pNominalGoal =
+    (pFloat <?> "No nominal goal as float")
+    <|> fromIntegral <$> (pNat <?> "No nominal goal as a nat")
 
 pNominalDistance :: GenParser Char st Double
 pNominalDistance = pFloat <?> "No nominal distance"

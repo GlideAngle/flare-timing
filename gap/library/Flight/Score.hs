@@ -150,6 +150,7 @@ module Flight.Score
 
 import Flight.Gap.Ratio
 import Flight.Gap.Allot
+import Flight.Gap.Nominal.Goal
 import Flight.Gap.Distance.Linear
 import Flight.Gap.Distance.Min
 import Flight.Gap.Distance.Max

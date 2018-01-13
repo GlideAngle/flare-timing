@@ -58,7 +58,7 @@ import Flight.Field (FieldOrdering(..))
 import Flight.Pilot
 import Flight.Path
 import Flight.Distance (TaskDistance(..))
-import Flight.Score (Leg(..))
+import Flight.Score (Leg(..), NominalGoal)
 
 -- | The time of first lead into the speed section. This won't exist if no one
 -- is able to cross the start of the speed section without bombing out.
@@ -155,7 +155,7 @@ data Nominal =
         , free :: Double
         -- ^ A mimimum distance awarded to pilots that bomb out for 'free'.
         , time :: String 
-        , goal :: String 
+        , goal :: NominalGoal
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 

@@ -24,6 +24,7 @@ library:
   - flight-latlng
   - flight-zone
   - flight-comp
+  - flight-gap
   source-dirs: library
   exposed-modules:
   - Flight.Fsdb
