@@ -86,13 +86,20 @@ instance QC.Arbitrary NgTest where
     arbitrary = arbitrary >>= \(Normal x) -> return $ NgTest (NominalGoal x)
 
 -- | Nominal distance.
-newtype NdTest = NdTest NominalDistance deriving Show
+newtype NdTest = NdTest (NominalDistance (Quantity Double [u| km |]))
+    deriving Show
 
 instance Monad m => SC.Serial m NdTest where
-    series = cons1 $ \(SC.NonNegative x) -> NdTest (NominalDistance x)
+    series =
+        cons1
+        $ \(SC.NonNegative x) ->
+            NdTest (NominalDistance $ MkQuantity x)
 
 instance QC.Arbitrary NdTest where
-    arbitrary = arbitrary >>= \(QC.NonNegative x) -> return $ NdTest (NominalDistance x)
+    arbitrary =
+        arbitrary
+        >>= \(QC.NonNegative x) ->
+            return $ NdTest (NominalDistance $ MkQuantity x)
 
 -- | Leading weight.
 newtype LwTest = LwTest (Lw Rational) deriving Show

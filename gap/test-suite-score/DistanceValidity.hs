@@ -38,7 +38,7 @@ distanceValidityUnits = testGroup "Distance validity unit tests"
     [ HU.testCase "Distance validity 0 0 0 0 0 0 = 0" $
         FS.distanceValidity
             (NominalGoal 0)
-            (NominalDistance 0)
+            (NominalDistance . MkQuantity $ 0)
             0
             (MinimumDistance . MkQuantity $ 0)
             (MaximumDistance . MkQuantity $ 0)
@@ -48,7 +48,7 @@ distanceValidityUnits = testGroup "Distance validity unit tests"
     , HU.testCase "Distance validity 1 1 1 1 1 1 = 1" $
         FS.distanceValidity
             (NominalGoal 1)
-            (NominalDistance 1)
+            (NominalDistance . MkQuantity $ 1)
             1
             (MinimumDistance . MkQuantity $ 1)
             (MaximumDistance . MkQuantity $ 1)
@@ -58,7 +58,7 @@ distanceValidityUnits = testGroup "Distance validity unit tests"
     , HU.testCase "Distance validity 1 0 1 1 1 1 = 1" $
         FS.distanceValidity
             (NominalGoal 1)
-            (NominalDistance 0)
+            (NominalDistance . MkQuantity $ 0)
             1
             (MinimumDistance . MkQuantity $ 1)
             (MaximumDistance . MkQuantity $ 1)
@@ -68,7 +68,7 @@ distanceValidityUnits = testGroup "Distance validity unit tests"
     , HU.testCase "Distance validity 1 1 0 1 1 1 = 0" $
         FS.distanceValidity
             (NominalGoal 1)
-            (NominalDistance 1)
+            (NominalDistance . MkQuantity $ 1)
             0
             (MinimumDistance . MkQuantity $ 1)
             (MaximumDistance . MkQuantity $ 1)
@@ -78,7 +78,7 @@ distanceValidityUnits = testGroup "Distance validity unit tests"
     , HU.testCase "Distance validity 1 1 1 0 1 1 = 1" $
         FS.distanceValidity
             (NominalGoal 1)
-            (NominalDistance 1)
+            (NominalDistance . MkQuantity $ 1)
             1
             (MinimumDistance . MkQuantity $ 0)
             (MaximumDistance . MkQuantity $ 1)
@@ -88,7 +88,7 @@ distanceValidityUnits = testGroup "Distance validity unit tests"
     , HU.testCase "Distance validity 1 1 1 1 0 1 = 0" $
         FS.distanceValidity
             (NominalGoal 1)
-            (NominalDistance 1)
+            (NominalDistance . MkQuantity $ 1)
             1
             (MinimumDistance . MkQuantity $ 1)
             (MaximumDistance . MkQuantity $ 0)
@@ -98,7 +98,7 @@ distanceValidityUnits = testGroup "Distance validity unit tests"
     , HU.testCase "Distance validity 1 1 1 1 1 0 = 0" $
         FS.distanceValidity
             (NominalGoal 1)
-            (NominalDistance 1)
+            (NominalDistance . MkQuantity $ 1)
             1
             (MinimumDistance . MkQuantity $ 1)
             (MaximumDistance . MkQuantity $ 1)
