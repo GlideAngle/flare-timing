@@ -11,7 +11,6 @@
 module Flight.Gap.Validity
     ( NominalLaunch(..)
     , NominalTime(..)
-    , NominalDistance(..)
     , Seconds
     , Metres
     , launchValidity
@@ -33,10 +32,16 @@ import Flight.Gap.Validity.Distance (DistanceValidity(..))
 import Flight.Gap.Validity.Time (TimeValidity(..))
 import Flight.Gap.Validity.Task (TaskValidity(..))
 import Flight.Gap.Nominal.Goal (NominalGoal(..))
+import Flight.Gap.Nominal.Distance (NominalDistance(..))
 
-newtype NominalLaunch = NominalLaunch Rational deriving (Eq, Show)
-newtype NominalDistance = NominalDistance Integer deriving (Eq, Show)
-newtype NominalTime = NominalTime Integer deriving (Eq, Show)
+newtype NominalDistanceArea = NominalDistanceArea Rational
+    deriving (Eq, Show)
+
+newtype NominalLaunch = NominalLaunch Rational
+    deriving (Eq, Show)
+
+newtype NominalTime = NominalTime Integer
+    deriving (Eq, Show)
 
 type Seconds = Integer
 type Metres = Integer
@@ -69,26 +74,38 @@ tvrValidity tvr =
 
 timeValidity
     :: NominalTime
-    -> NominalDistance
+    -> NominalDistance (Quantity Double [u| km |])
     -> Maybe Seconds
     -> Metres
     -> TimeValidity
-timeValidity (NominalTime 0) _ (Just 0) _ = tvrValidity (0 % 1)
-timeValidity (NominalTime 0) _ (Just _) _ = tvrValidity (1 % 1)
-timeValidity (NominalTime nt) _ (Just t) _ = tvrValidity $ min (t % nt) (1 % 1)
-timeValidity _ (NominalDistance 0) Nothing 0 = tvrValidity (0 % 1)
-timeValidity _ (NominalDistance 0) Nothing _ = tvrValidity (1 % 1)
-timeValidity _ (NominalDistance nd) Nothing d = tvrValidity $ min (d % nd) (1 % 1)
+timeValidity (NominalTime 0) _ (Just 0) _ =
+    tvrValidity (0 % 1)
+timeValidity (NominalTime 0) _ (Just _) _ =
+    tvrValidity (1 % 1)
+timeValidity (NominalTime nt) _ (Just t) _ = 
+    tvrValidity $ min (t % nt) (1 % 1)
+timeValidity _ (NominalDistance (MkQuantity 0)) Nothing 0 =
+    tvrValidity (0 % 1)
+timeValidity _ (NominalDistance (MkQuantity 0)) Nothing _ =
+    tvrValidity (1 % 1)
+timeValidity _ (NominalDistance dNom') Nothing d =
+    tvrValidity $ min dNom (1 % 1)
+    where
+        MkQuantity dNom = toRational' dNom'
 
-dvr :: Rational -> Integer -> SumOfDistance (Quantity Double [u| km |]) -> Rational
-dvr (0 :% _) _ _ =
+dvr
+    :: NominalDistanceArea
+    -> Integer
+    -> SumOfDistance (Quantity Double [u| km |])
+    -> Rational
+dvr (NominalDistanceArea (0 :% _)) _ _ =
     1 % 1
-dvr (n :% d) nFly (SumOfDistance dSum') =
+dvr (NominalDistanceArea (n :% d)) nFly (SumOfDistance dSum') =
     let MkQuantity dSum = toRational' dSum' in dSum * (d % (nFly * n))
 
 distanceValidity
     :: NominalGoal
-    -> NominalDistance
+    -> NominalDistance (Quantity Double [u| km |])
     -> Integer
     -> MinimumDistance (Quantity Double [u| km |])
     -> MaximumDistance (Quantity Double [u| km |])
@@ -96,42 +113,59 @@ distanceValidity
     -> DistanceValidity
 distanceValidity _ _ 0 _ _ _ =
     DistanceValidity 0
+
 distanceValidity _ _ _ _ (MaximumDistance (MkQuantity 0)) _ =
     DistanceValidity 0
-distanceValidity (NominalGoal (0 :% _)) (NominalDistance 0) nFly _ _ dSum =
-    DistanceValidity $ min 1 $ dvr (0 % 1) nFly dSum
+
+distanceValidity
+    (NominalGoal (0 :% _)) (NominalDistance (MkQuantity 0)) nFly _ _ dSum =
+    DistanceValidity $ min 1 $ dvr (NominalDistanceArea 0) nFly dSum
+
 distanceValidity
     (NominalGoal (0 :% _))
-    (NominalDistance nd)
+    (NominalDistance dNom')
     nFly
-    (MinimumDistance (MkQuantity dMin'))
+    (MinimumDistance dMin')
     _
     dSum
-    | nd < dMin =
-        DistanceValidity (1 % 1)
-    | otherwise =
-        DistanceValidity $ min 1 $ dvr area nFly dSum
-        where
-            dMin = round dMin'
-            area = num % (2 * den)
-            (num :% den) = min 0 (nd - dMin) % 1
-distanceValidity
-    (NominalGoal ng)
-    (NominalDistance nd)
-    nFly
-    (MinimumDistance (MkQuantity dMin'))
-    (MaximumDistance (MkQuantity dMax'))
-    dSum
-    | nd < dMin =
+    | dNom < dMin =
         DistanceValidity (1 % 1)
     | otherwise =
         DistanceValidity $ min 1 $ dvr area nFly dSum
     where
-        dMin = round dMin'
-        dMax = round dMax'
-        area = num % (2 * den)
-        (num :% den) =
-            (ng + (1 % 1) * ((nd - dMin) % 1)) + max 0 (ng * ((dMax - nd) % 1))
+        MkQuantity dNom = toRational' dNom'
+        MkQuantity dMin = toRational' dMin'
+
+        a :: Rational
+        a = dNom - dMin
+
+        area :: NominalDistanceArea
+        area = NominalDistanceArea $ a * (1 % 2)
+
+distanceValidity
+    (NominalGoal gNom)
+    (NominalDistance dNom')
+    nFly
+    (MinimumDistance dMin')
+    (MaximumDistance dMax')
+    dSum
+    | dNom < dMin =
+        DistanceValidity (1 % 1)
+    | otherwise =
+        DistanceValidity $ min 1 $ dvr area nFly dSum
+    where
+        MkQuantity dNom = toRational' dNom'
+        MkQuantity dMin = toRational' dMin'
+        MkQuantity dMax = toRational' dMax'
+
+        a :: Rational
+        a = (gNom + 1) * (dNom - dMin)
+
+        b :: Rational
+        b = max 0 $ gNom * (dMax - dNom)
+
+        area :: NominalDistanceArea
+        area = NominalDistanceArea $ (a + b) * (1 % 2)
 
 taskValidity
     :: LaunchValidity

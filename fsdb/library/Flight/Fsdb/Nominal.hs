@@ -28,9 +28,10 @@ import qualified Text.ParserCombinators.Parsec as P (parse)
 import Text.Parsec.Language (emptyDef)
 import Data.Functor.Identity (Identity)
 import Text.Parsec.Prim (ParsecT, parsecMap)
+import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Comp (Nominal(..))
-import Flight.Score (NominalGoal(..))
+import Flight.Score (NominalGoal(..), NominalDistance(..))
 
 lexer :: GenTokenParser String u Identity
 lexer = P.makeTokenParser emptyDef
@@ -55,9 +56,16 @@ getNominal =
             &&& getAttrValue "nom_time"
             &&& getAttrValue "nom_goal"
             >>> arr (\(d, (m, (t, g))) -> either (const []) id $ do
-                d' <- P.parse pNominalDistance "" d
+                d' <-
+                    NominalDistance . MkQuantity
+                    <$> P.parse pNominalDistance "" d
+
                 m' <- P.parse pMinimumDistance "" m
-                g' <- NominalGoal . toRational <$> P.parse pNominalGoal "" g
+
+                g' <-
+                    NominalGoal . toRational
+                    <$> P.parse pNominalGoal "" g
+
                 return [Nominal d' m' t g'])
 
 

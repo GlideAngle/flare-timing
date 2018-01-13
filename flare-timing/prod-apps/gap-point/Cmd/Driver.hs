@@ -140,7 +140,7 @@ points
         dvs =
             [ distanceValidity
                 gNom
-                (NominalDistance $ round dNom)
+                dNom
                 (p - d)
                 (MinimumDistance [u| 5 km |])
                 b

@@ -133,6 +133,7 @@ import Flight.Score
     , PilotTime(..)
     , LeadingCoefficient(..)
     , LeadingFraction(..)
+    , NominalDistance(..)
     , arrivalFraction
     , leadingFraction
     , speedFraction
@@ -252,7 +253,13 @@ writeMask
             )
     -> IO ()
 writeMask
-    CompSettings{nominal = Cmp.Nominal{distance = dNom}, tasks}
+    CompSettings
+        { nominal =
+            Cmp.Nominal
+                { distance = NominalDistance (MkQuantity dNom)
+                }
+        , tasks
+        }
     lengths@(RouteLookup lookupTaskLength)
     (TaskTimeLookup lookupTaskTime)
     selectTasks selectPilots compFile f = do

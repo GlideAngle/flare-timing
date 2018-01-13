@@ -1,3 +1,5 @@
+{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE ConstrainedClassMethods #-}
@@ -52,13 +54,15 @@ import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.Maybe (listToMaybe)
 import Data.List (intercalate)
 import Data.String (IsString())
+import Data.UnitsOfMeasure (u)
+import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Zone.Raw (RawZone, showZone)
 import Flight.Field (FieldOrdering(..))
 import Flight.Pilot
 import Flight.Path
 import Flight.Distance (TaskDistance(..))
-import Flight.Score (Leg(..), NominalGoal)
+import Flight.Score (Leg(..), NominalGoal, NominalDistance(..))
 
 -- | The time of first lead into the speed section. This won't exist if no one
 -- is able to cross the start of the speed section without bombing out.
@@ -151,7 +155,7 @@ data Comp =
 
 data Nominal =
     Nominal
-        { distance :: Double
+        { distance :: NominalDistance (Quantity Double [u| km |])
         , free :: Double
         -- ^ A mimimum distance awarded to pilots that bomb out for 'free'.
         , time :: String 
