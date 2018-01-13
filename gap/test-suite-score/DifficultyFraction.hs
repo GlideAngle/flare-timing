@@ -107,43 +107,43 @@ expected10 :: [DifficultyFraction]
 expected10 =
     DifficultyFraction <$>
     take 7 [ n % 17 | n <- [1 .. ]]
-    ++ [31 % 68, 33 % 68, 1 % 2]
+    ++ [31 % (4 * 17), 33 % (4 * 17), 1 % 2]
 
 expected100 :: [DifficultyFraction]
 expected100 =
     DifficultyFraction <$>
     take 97 [ n % 197 | n <- [1 .. ]]
-    ++ [391 % 788, 393 % 788, 1 % 2]
+    ++ [391 % (4 * 197), 393 % (4 * 197), 1 % 2]
 
 expected100_min2 :: [DifficultyFraction]
 expected100_min2 =
     DifficultyFraction <$>
     take 96 [ n % 195 | n <- [1 .. ]]
-    ++ [129 % 260, 389 % 780, 1 % 2]
+    ++ [387 % (4 * 195), 389 % (4 * 195), 1 % 2]
 
 expected100_min5 :: [DifficultyFraction]
 expected100_min5 =
     DifficultyFraction <$>
     take 93 [ n % 189 | n <- [1 .. ]]
-    ++ [125 % 252, 377 % 756, 1 % 2]
+    ++ [375 % (4 * 189), 377 % (4 * 189), 1 % 2]
 
 expected100_min10 :: [DifficultyFraction]
 expected100_min10 =
     DifficultyFraction <$>
     take 88 [ n % 179 | n <- [1 .. ]]
-    ++ [355 % 716, 357 % 716, 1 % 2]
+    ++ [355 % (4 * 179), 357 % (4 * 179), 1 % 2]
 
 expected100_min15 :: [DifficultyFraction]
 expected100_min15 =
     DifficultyFraction <$>
     take 83 [ n % 169 | n <- [1 .. ]]
-    ++ [335 % 676, 337 % 676, 1 % 2]
+    ++ [335 % (4 * 169), 337 % (4 * 169), 1 % 2]
 
 expected100_min20 :: [DifficultyFraction]
 expected100_min20 =
     DifficultyFraction <$>
     take 78 [ n % 159 | n <- [1 .. ]]
-    ++ [105 % 212, 317 % 636, 1 % 2]
+    ++ [315 % (4 * 159), 317 % (4 * 159), 1 % 2]
 
 difficultyUnits :: TestTree
 difficultyUnits = testGroup "Difficulty fraction unit tests"
