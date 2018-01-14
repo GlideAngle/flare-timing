@@ -22,7 +22,8 @@ import Text.Parsec.Token as P
 import Text.ParserCombinators.Parsec
     ( GenParser
     , (<?>)
-    , (<|>)
+    , option
+    , choice
     )
 import qualified Text.ParserCombinators.Parsec as P (parse)
 import Text.Parsec.Language (emptyDef)
@@ -31,7 +32,7 @@ import Text.Parsec.Prim (ParsecT, parsecMap)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Comp (Nominal(..))
-import Flight.Score (NominalGoal(..), NominalDistance(..))
+import Flight.Score (NominalLaunch(..), NominalGoal(..), NominalDistance(..))
 
 lexer :: GenTokenParser String u Identity
 lexer = P.makeTokenParser emptyDef
@@ -51,28 +52,43 @@ getNominal =
         getScoreFormula =
             getChildren
             >>> hasName "FsScoreFormula"
-            >>> getAttrValue "nom_dist"
+            >>> getAttrValue "nom_launch"
+            &&& getAttrValue "nom_goal"
+            &&& getAttrValue "nom_dist"
             &&& getAttrValue "min_dist"
             &&& getAttrValue "nom_time"
-            &&& getAttrValue "nom_goal"
-            >>> arr (\(d, (m, (t, g))) -> either (const []) id $ do
+            >>> arr (\(l, (g, (d, (m, t)))) -> either (const []) id $ do
+                l' <-
+                    NominalLaunch .toRational
+                    <$> P.parse pNominalLaunch "" l
+
+                g' <-
+                    NominalGoal . toRational
+                    <$> P.parse pNominalGoal "" g
+
                 d' <-
                     NominalDistance . MkQuantity
                     <$> P.parse pNominalDistance "" d
 
                 m' <- P.parse pMinimumDistance "" m
 
-                g' <-
-                    NominalGoal . toRational
-                    <$> P.parse pNominalGoal "" g
+                return [Nominal l' g' d' m' t])
 
-                return [Nominal d' m' t g'])
 
+pNominalLaunch :: GenParser Char st Double
+pNominalLaunch =
+    option 1
+    $ choice
+        [ pFloat <?> "No nominal launch as float"
+        , fromIntegral <$> pNat <?> "No nominal launch as a nat"
+        ]
 
 pNominalGoal :: GenParser Char st Double
 pNominalGoal =
-    (pFloat <?> "No nominal goal as float")
-    <|> fromIntegral <$> (pNat <?> "No nominal goal as a nat")
+    choice
+        [ pFloat <?> "No nominal goal as float"
+        , fromIntegral <$> pNat <?> "No nominal goal as a nat"
+        ]
 
 pNominalDistance :: GenParser Char st Double
 pNominalDistance = pFloat <?> "No nominal distance"

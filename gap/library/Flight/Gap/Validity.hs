@@ -9,8 +9,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 
 module Flight.Gap.Validity
-    ( NominalLaunch(..)
-    , NominalTime(..)
+    ( NominalTime(..)
     , Seconds
     , Metres
     , launchValidity
@@ -31,13 +30,11 @@ import Flight.Gap.Validity.Launch (LaunchValidity(..))
 import Flight.Gap.Validity.Distance (DistanceValidity(..))
 import Flight.Gap.Validity.Time (TimeValidity(..))
 import Flight.Gap.Validity.Task (TaskValidity(..))
+import Flight.Gap.Nominal.Launch (NominalLaunch(..))
 import Flight.Gap.Nominal.Goal (NominalGoal(..))
 import Flight.Gap.Nominal.Distance (NominalDistance(..))
 
 newtype NominalDistanceArea = NominalDistanceArea Rational
-    deriving (Eq, Show)
-
-newtype NominalLaunch = NominalLaunch Rational
     deriving (Eq, Show)
 
 newtype NominalTime = NominalTime Integer

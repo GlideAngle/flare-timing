@@ -62,7 +62,7 @@ import Flight.Field (FieldOrdering(..))
 import Flight.Pilot
 import Flight.Path
 import Flight.Distance (TaskDistance(..))
-import Flight.Score (Leg(..), NominalGoal, NominalDistance(..))
+import Flight.Score (Leg(..), NominalLaunch(..), NominalGoal, NominalDistance(..))
 
 -- | The time of first lead into the speed section. This won't exist if no one
 -- is able to cross the start of the speed section without bombing out.
@@ -155,11 +155,12 @@ data Comp =
 
 data Nominal =
     Nominal
-        { distance :: NominalDistance (Quantity Double [u| km |])
+        { launch :: NominalLaunch
+        , goal :: NominalGoal
+        , distance :: NominalDistance (Quantity Double [u| km |])
         , free :: Double
         -- ^ A mimimum distance awarded to pilots that bomb out for 'free'.
         , time :: String 
-        , goal :: NominalGoal
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
@@ -203,6 +204,23 @@ cmp a b =
         ("taskFolders", "pilots") -> LT
         ("taskFolders", _) -> GT
         ("pilots", _) -> GT
+
+        -- Nominal fields
+        ("launch", _) -> LT
+
+        ("goal", "launch") -> GT
+        ("goal", "") -> LT
+
+        ("distance", "launch") -> GT
+        ("distance", "goal") -> GT
+        ("distance", _) -> LT
+
+        ("free", "launch") -> GT
+        ("free", "goal") -> GT
+        ("free", "distance") -> GT
+        ("free", _) -> LT
+
+        ("time", _) -> GT
 
         -- Comp fields
         ("compName", _) -> LT
