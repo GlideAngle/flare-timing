@@ -6,7 +6,6 @@ module Flight.Gap.Pilots
     , PilotsInGoalAtStop(..)
     , PilotsLaunched(..)
     , PilotsLandedBeforeStop(..)
-    , PilotsMakingEss(..)
     ) where
 
 import Data.Aeson (ToJSON(..), FromJSON(..))
@@ -17,6 +16,5 @@ newtype PilotsAtEss = PilotsAtEss Integer
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 newtype PilotsInGoalAtStop = PilotsInGoalAtStop Int deriving (Eq, Ord, Show)
-newtype PilotsMakingEss = PilotsMakingEss Int deriving (Eq, Ord, Show)
 newtype PilotsLandedBeforeStop = PilotsLandedBeforeStop Int deriving (Eq, Show)
 newtype PilotsLaunched = PilotsLaunched Int deriving (Eq, Show)
