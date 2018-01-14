@@ -124,7 +124,7 @@ module Flight.Score
     , ScoreBackTime(..)
     , StartGateInterval(..)
     , StopTime(..)
-    , NumberInGoalAtStop(..)
+    , PilotsInGoalAtStop(..)
     , CanScoreStopped(..)
     , stopTaskTime
     , canScoreStopped
@@ -150,6 +150,7 @@ module Flight.Score
 
 import Flight.Gap.Ratio
 import Flight.Gap.Allot
+import Flight.Gap.Pilots
 import Flight.Gap.Nominal.Launch
 import Flight.Gap.Nominal.Goal
 import Flight.Gap.Nominal.Distance

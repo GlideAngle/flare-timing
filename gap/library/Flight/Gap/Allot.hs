@@ -17,8 +17,7 @@
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
 module Flight.Gap.Allot
-    ( PilotsAtEss(..)
-    , PositionAtEss(..)
+    ( PositionAtEss(..)
     , ArrivalFraction(..)
     , arrivalFraction
     , BestTime(..)
@@ -36,10 +35,7 @@ import GHC.Generics (Generic)
 
 import Flight.Units ()
 import Data.Aeson.Via.Scientific (DefaultDecimalPlaces(..), DecimalPlaces(..))
-
--- | The number of pilots completing the speed section of the task.
-newtype PilotsAtEss = PilotsAtEss Integer
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+import Flight.Gap.Pilots (PilotsAtEss(..))
 
 -- | A 1-based rank of the pilot arrival at goal, 1st in is 1, 2nd is 2 etc.
 newtype PositionAtEss = PositionAtEss Integer

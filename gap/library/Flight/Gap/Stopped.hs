@@ -9,12 +9,9 @@ module Flight.Gap.Stopped
     , ScoreBackTime(..)
     , StartGateInterval(..)
     , StopTime(..)
-    , NumberInGoalAtStop(..)
     , CanScoreStopped(..)
     , stopTaskTime
     , canScoreStopped
-    , PilotsLaunched(..)
-    , PilotsLandedBeforeStop(..)
     , DistanceLaunchToEss(..)
     , DistanceFlown(..)
     , StoppedValidity(..)
@@ -40,6 +37,8 @@ import qualified Data.Map as Map
 
 import Flight.Gap.Points (Hg, Pg)
 import Flight.Gap.Leading (TaskTime(..))
+import Flight.Gap.Pilots
+    (PilotsLaunched(..), PilotsLandedBeforeStop(..), PilotsInGoalAtStop(..))
 
 newtype TaskStopTime = TaskStopTime Rational deriving (Eq, Ord, Show)
 newtype AnnouncedTime = AnnouncedTime Rational deriving (Eq, Ord, Show)
@@ -61,20 +60,19 @@ stopTaskTime (InterGateStop (StartGateInterval sgi) (AnnouncedTime at)) =
 stopTaskTime (SingleGateStop (AnnouncedTime at)) = 
     TaskStopTime $ at - ((15 * 60) % 1)
 
-newtype NumberInGoalAtStop = NumberInGoalAtStop Int deriving (Eq, Ord, Show)
     
 data CanScoreStopped a where
-    Womens :: NumberInGoalAtStop -> TaskStopTime -> CanScoreStopped Hg
-    GoalOrDuration :: NumberInGoalAtStop -> TaskStopTime -> CanScoreStopped Hg
+    Womens :: PilotsInGoalAtStop -> TaskStopTime -> CanScoreStopped Hg
+    GoalOrDuration :: PilotsInGoalAtStop -> TaskStopTime -> CanScoreStopped Hg
     FromGetGo :: TaskStopTime -> CanScoreStopped Pg
     FromLastStart :: [TaskTime] -> TaskStopTime -> CanScoreStopped Pg
 
 deriving instance Show (CanScoreStopped a)
 
 canScoreStopped :: forall a. CanScoreStopped a -> Bool
-canScoreStopped (Womens (NumberInGoalAtStop n) (TaskStopTime t)) =
+canScoreStopped (Womens (PilotsInGoalAtStop n) (TaskStopTime t)) =
     n > 0 || t >= 60 * 60
-canScoreStopped (GoalOrDuration (NumberInGoalAtStop n) (TaskStopTime t)) =
+canScoreStopped (GoalOrDuration (PilotsInGoalAtStop n) (TaskStopTime t)) =
     n > 0 || t >= 90 * 60
 canScoreStopped (FromGetGo (TaskStopTime t)) =
     t >= 60 * 60
@@ -85,18 +83,16 @@ canScoreStopped (FromLastStart xs (TaskStopTime t)) =
     where
         lastStart = minimum $ (\(TaskTime x) -> x) <$> xs
 
-newtype PilotsMakingEss = PilotsMakingEss Int deriving (Eq, Ord, Show)
 newtype StoppedValidity = StoppedValidity Rational deriving (Eq, Show)
 newtype DistanceFlown = DistanceFlown Rational deriving (Eq, Show)
 newtype DistanceLaunchToEss = DistanceLaunchToEss Rational deriving (Eq, Show)
-newtype PilotsLandedBeforeStop = PilotsLandedBeforeStop Int deriving (Eq, Show)
-newtype PilotsLaunched = PilotsLaunched Int deriving (Eq, Show)
 
-stoppedValidity :: PilotsLaunched
-                   -> PilotsLandedBeforeStop
-                   -> DistanceLaunchToEss
-                   -> [DistanceFlown]
-                   -> StoppedValidity
+stoppedValidity
+    :: PilotsLaunched
+    -> PilotsLandedBeforeStop
+    -> DistanceLaunchToEss
+    -> [DistanceFlown]
+    -> StoppedValidity
 stoppedValidity _ _ _ [] =
     StoppedValidity 0
 stoppedValidity

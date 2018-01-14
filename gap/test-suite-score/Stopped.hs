@@ -27,7 +27,7 @@ import Flight.Score
     , TaskTime(..)
     , TaskStopTime(..)
     , CanScoreStopped(..)
-    , NumberInGoalAtStop(..)
+    , PilotsInGoalAtStop(..)
     , PilotsLaunched(..)
     , PilotsLandedBeforeStop(..)
     , DistanceLaunchToEss(..)
@@ -62,21 +62,21 @@ stoppedTimeUnits = testGroup "Effective task stop time"
 stoppedScoreUnits :: TestTree
 stoppedScoreUnits = testGroup "Can score a stopped task?"
     [ HU.testCase "Not when noone made goal and the task ran less than an hour, Hg womens" $
-        FS.canScoreStopped(Womens (NumberInGoalAtStop 0) (TaskStopTime $ 59 * 60)) @?= False
+        FS.canScoreStopped(Womens (PilotsInGoalAtStop 0) (TaskStopTime $ 59 * 60)) @?= False
 
     , HU.testCase "When someone made goal, Hg womens" $
-        FS.canScoreStopped(Womens (NumberInGoalAtStop 1) (TaskStopTime 0)) @?= True
+        FS.canScoreStopped(Womens (PilotsInGoalAtStop 1) (TaskStopTime 0)) @?= True
 
     , HU.testCase "When the task ran for 1 hr, Hg womans" $
-        FS.canScoreStopped(Womens (NumberInGoalAtStop 0) (TaskStopTime $ 60 * 60)) @?= True
+        FS.canScoreStopped(Womens (PilotsInGoalAtStop 0) (TaskStopTime $ 60 * 60)) @?= True
 
     , HU.testCase "Not when noone made goal and the task ran less than 90 mins, Hg" $
-        FS.canScoreStopped(GoalOrDuration (NumberInGoalAtStop 0) (TaskStopTime $ 89 * 60)) @?= False
+        FS.canScoreStopped(GoalOrDuration (PilotsInGoalAtStop 0) (TaskStopTime $ 89 * 60)) @?= False
     , HU.testCase "When someone made goal, Hg" $
-        FS.canScoreStopped(GoalOrDuration (NumberInGoalAtStop 1) (TaskStopTime 0)) @?= True
+        FS.canScoreStopped(GoalOrDuration (PilotsInGoalAtStop 1) (TaskStopTime 0)) @?= True
 
     , HU.testCase "When the task ran for 90 mins, Hg" $
-        FS.canScoreStopped(GoalOrDuration (NumberInGoalAtStop 0) (TaskStopTime $ 90 * 60)) @?= True
+        FS.canScoreStopped(GoalOrDuration (PilotsInGoalAtStop 0) (TaskStopTime $ 90 * 60)) @?= True
 
     , HU.testCase "When the task ran for 1 hr, Pg" $
         FS.canScoreStopped(FromGetGo (TaskStopTime $ 60 * 60)) @?= True
@@ -328,11 +328,11 @@ stopTaskTimeHg (StopTimeTest x@(SingleGateStop _)) =
     correctTime x $ FS.stopTaskTime x
 
 correctCan :: forall a. CanScoreStopped a -> Bool -> Bool
-correctCan (Womens (NumberInGoalAtStop n) (TaskStopTime t)) canScore
+correctCan (Womens (PilotsInGoalAtStop n) (TaskStopTime t)) canScore
     | n >= 1 = canScore
     | t >= 60 * 60 = canScore
     | otherwise = not canScore
-correctCan (GoalOrDuration (NumberInGoalAtStop n) (TaskStopTime t)) canScore
+correctCan (GoalOrDuration (PilotsInGoalAtStop n) (TaskStopTime t)) canScore
     | n >= 1 = canScore
     | t >= 90 * 60 = canScore
     | otherwise = not canScore

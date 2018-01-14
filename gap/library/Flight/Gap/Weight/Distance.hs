@@ -10,7 +10,6 @@ import Flight.Units ()
 import Data.Aeson.Via.Scientific
     (DefaultDecimalPlaces(..), DecimalPlaces(..), ViaSci(..))
 
--- | Pilots in goal versus pilots flying.
 newtype DistanceWeight = DistanceWeight Rational
     deriving (Eq, Ord, Show)
 

@@ -55,7 +55,7 @@ import Flight.Score
     , ScoreBackTime(..)
     , AnnouncedTime(..)
     , StartGateInterval(..)
-    , NumberInGoalAtStop(..)
+    , PilotsInGoalAtStop(..)
     , CanScoreStopped(..)
     , TaskStopTime(..)
     , PilotsLaunched(..)
@@ -453,9 +453,9 @@ newtype StopCanScoreTest a = StopCanScoreTest (CanScoreStopped a) deriving Show
 instance Monad m => SC.Serial m (StopCanScoreTest Hg) where
     series = StopCanScoreTest <$>
                 cons2 (\(SC.Positive n) (SC.Positive t) ->
-                    Womens (NumberInGoalAtStop n) (TaskStopTime t))
+                    Womens (PilotsInGoalAtStop n) (TaskStopTime t))
                 \/ cons2 (\(SC.Positive n) (SC.Positive t) ->
-                    GoalOrDuration (NumberInGoalAtStop n) (TaskStopTime t))
+                    GoalOrDuration (PilotsInGoalAtStop n) (TaskStopTime t))
 
 instance Monad m => SC.Serial m (StopCanScoreTest Pg) where
     series = StopCanScoreTest <$>
@@ -470,11 +470,11 @@ instance QC.Arbitrary (StopCanScoreTest Hg) where
             [ do
                 (QC.Positive n) <- arbitrary
                 (QC.Positive t) <- arbitrary
-                return $ Womens (NumberInGoalAtStop n) (TaskStopTime t)
+                return $ Womens (PilotsInGoalAtStop n) (TaskStopTime t)
             , do
                 (QC.Positive n) <- arbitrary
                 (QC.Positive t) <- arbitrary
-                return $ GoalOrDuration (NumberInGoalAtStop n) (TaskStopTime t)
+                return $ GoalOrDuration (PilotsInGoalAtStop n) (TaskStopTime t)
             ]
 
 instance QC.Arbitrary (StopCanScoreTest Pg) where
