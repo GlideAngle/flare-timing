@@ -45,7 +45,6 @@ module Flight.Score
     , arrivalWeight
     , timeWeight
     -- * Fractional allotment of arrival points
-    , PilotsAtEss(..)
     , PositionAtEss(..)
     , ArrivalFraction(..)
     , arrivalFraction
@@ -124,14 +123,11 @@ module Flight.Score
     , ScoreBackTime(..)
     , StartGateInterval(..)
     , StopTime(..)
-    , PilotsInGoalAtStop(..)
     , CanScoreStopped(..)
     , stopTaskTime
     , canScoreStopped
     , MaximumDistance(..)
     , SumOfDistance(..)
-    , PilotsLaunched(..)
-    , PilotsLandedBeforeStop(..)
     , DistanceLaunchToEss(..)
     , DistanceFlown(..)
     , StoppedValidity(..)
@@ -146,6 +142,13 @@ module Flight.Score
     , StoppedTrack(..)
     , applyGlide
     , applyGlides
+    -- * Pilot counts
+    , PilotsAtEss(..)
+    , PilotsLaunched(..)
+    , PilotsInGoalAtStop(..)
+    , PilotsLandedBeforeStop(..)
+    , PilotsPresent(..)
+    , PilotsFlying(..)
     ) where
 
 import Flight.Gap.Ratio

@@ -33,6 +33,7 @@ import Flight.Gap.Validity.Task (TaskValidity(..))
 import Flight.Gap.Nominal.Launch (NominalLaunch(..))
 import Flight.Gap.Nominal.Goal (NominalGoal(..))
 import Flight.Gap.Nominal.Distance (NominalDistance(..))
+import Flight.Gap.Pilots (PilotsPresent(..), PilotsFlying(..))
 
 newtype NominalDistanceArea = NominalDistanceArea Rational
     deriving (Eq, Show)
@@ -43,18 +44,26 @@ newtype NominalTime = NominalTime Integer
 type Seconds = Integer
 type Metres = Integer
 
-launchValidity :: NominalLaunch -> Rational -> LaunchValidity
-launchValidity (NominalLaunch (_ :% _)) (0 :% _) =
+launchValidity
+    :: NominalLaunch
+    -> PilotsPresent
+    -> PilotsFlying
+    -> LaunchValidity
+
+launchValidity (NominalLaunch (_ :% _)) _ (PilotsFlying 0) =
     LaunchValidity (0 % 1)
-launchValidity (NominalLaunch (0 :% _)) (_ :% _) =
+
+launchValidity (NominalLaunch (0 :% _)) _ _ =
     LaunchValidity (1 % 1)
-launchValidity (NominalLaunch (n :% d)) (flying :% present) =
+
+launchValidity
+    (NominalLaunch (n :% d)) (PilotsPresent present) (PilotsFlying flying) =
     LaunchValidity $
     (27 % 1000) * lvr
     + (2917 % 1000) * lvr * lvr
     - (1944 % 1000) * lvr * lvr * lvr
     where
-        lvr' = (flying * d) % (present * n)
+        lvr' = (toInteger flying * d) % (toInteger present * n)
         lvr = min lvr' (1 % 1)
 
 tvrValidity :: Rational -> TimeValidity

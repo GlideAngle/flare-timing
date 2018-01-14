@@ -55,9 +55,10 @@ import qualified Flight.Track.Land as Cmp (Landing(..))
 import Flight.Scribe
     (readComp, readCrossing, readMasking, readLanding, writePointing)
 import Flight.Score
-    ( NominalLaunch(..), NominalTime(..)
+    ( NominalTime(..)
     , MinimumDistance(..), MaximumDistance(..), SumOfDistance(..)
-    , PilotsAtEss(..), GoalRatio(..), Lw(..), Aw(..)
+    , PilotsAtEss(..), PilotsPresent(..), PilotsFlying(..)
+    , GoalRatio(..), Lw(..), Aw(..)
     , Metres, BestTime(..)
     , distanceWeight, leadingWeight, arrivalWeight, timeWeight
     , launchValidity, distanceValidity, timeValidity
@@ -110,7 +111,12 @@ points
     CompSettings
         { pilots
         , nominal =
-            Nominal{goal = gNom, distance = dNom, time = tNom'}
+            Nominal
+                { launch = lNom
+                , goal = gNom
+                , distance = dNom
+                , time = tNom'
+                }
         }
     Crossing{dnf}
     Masking{pilotsAtEss, bestDistance, sumDistance, bestTime} _ =
@@ -122,7 +128,10 @@ points
         tNom = 3600 * (read tNom' :: Double)
 
         lvs =
-            [ launchValidity (NominalLaunch 1) ((p - d) % p)
+            [ launchValidity
+                lNom
+                (PilotsPresent . fromInteger $ p)
+                (PilotsFlying . fromInteger $ p - d)
             | p <- toInteger . length <$> pilots
             | d <- toInteger . length <$> dnf
             ]
