@@ -55,7 +55,7 @@ import qualified Flight.Track.Land as Cmp (Landing(..))
 import Flight.Scribe
     (readComp, readCrossing, readMasking, readLanding, writePointing)
 import Flight.Score
-    ( NominalLaunch(..), NominalDistance(..), NominalTime(..)
+    ( NominalLaunch(..), NominalTime(..)
     , MinimumDistance(..), MaximumDistance(..), SumOfDistance(..)
     , PilotsAtEss(..), GoalRatio(..), Lw(..), Aw(..)
     , Metres, BestTime(..)
@@ -162,7 +162,7 @@ points
         tvs =
             [ timeValidity
                 (NominalTime $ round tNom)
-                (NominalDistance $ round dNom)
+                dNom
                 t
                 d
             | t <- tBests
