@@ -32,7 +32,8 @@ import Text.Parsec.Prim (ParsecT, parsecMap)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Comp (Nominal(..))
-import Flight.Score (NominalLaunch(..), NominalGoal(..), NominalDistance(..))
+import Flight.Score
+    (NominalLaunch(..), NominalGoal(..), NominalDistance(..), MinimumDistance(..))
 
 lexer :: GenTokenParser String u Identity
 lexer = P.makeTokenParser emptyDef
@@ -70,7 +71,9 @@ getNominal =
                     NominalDistance . MkQuantity
                     <$> P.parse pNominalDistance "" d
 
-                m' <- P.parse pMinimumDistance "" m
+                m' <-
+                    MinimumDistance . MkQuantity
+                    <$> P.parse pMinimumDistance "" m
 
                 return [Nominal l' g' d' m' t])
 
