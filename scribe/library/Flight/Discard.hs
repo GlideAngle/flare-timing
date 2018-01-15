@@ -39,7 +39,6 @@ import Flight.Comp
     , alignPath
     , compFileToCompDir
     )
-import Data.Aeson.Via.Scientific (ViaSci(..))
 import Flight.Align (readAlignTime)
 import Flight.Score (Leg)
 
@@ -158,9 +157,9 @@ readPilotLeading
         taskLength = join (($ iTask) <$> lookupTaskLength)
 
         close = do
-            ViaSci c <- leadClose raceTime
+            c <- leadClose raceTime
             return $ LeadClose c
 
         arrival = do
-            ViaSci a <- leadArrival raceTime
+            a <- leadArrival raceTime
             return $ LeadArrival a

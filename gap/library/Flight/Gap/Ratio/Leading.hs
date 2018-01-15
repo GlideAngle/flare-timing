@@ -6,6 +6,7 @@ module Flight.Gap.Ratio.Leading
     ( LeadingAreaStep(..)
     , LeadingCoefficient(..)
     , LeadingFraction(..)
+    , EssTime(..)
     ) where
 
 import Control.Newtype (Newtype(..))
@@ -31,6 +32,7 @@ instance Newtype LeadingCoefficient Rational where
 
 deriveDefDec 8 ''LeadingCoefficient
 deriveViaSci ''LeadingCoefficient
+deriveCsvViaSci ''LeadingCoefficient
 
 newtype LeadingFraction = LeadingFraction Rational
     deriving (Eq, Ord, Show)
@@ -41,3 +43,16 @@ instance Newtype LeadingFraction Rational where
 
 deriveDefDec 8 ''LeadingFraction
 deriveViaSci ''LeadingFraction
+deriveCsvViaSci ''LeadingFraction
+
+-- | Task time when the last pilot made the end of the speed section.
+newtype EssTime = EssTime Rational
+    deriving (Eq, Ord, Show)
+
+instance Newtype EssTime Rational where
+    pack = EssTime
+    unpack (EssTime a) = a
+
+deriveDefDec 3 ''EssTime
+deriveViaSci ''EssTime
+deriveCsvViaSci ''EssTime

@@ -152,6 +152,7 @@ import Flight.Gap.Ratio
 import Flight.Gap.Allot
 import Flight.Gap.Pilots
 import Flight.Gap.Ratio.Launch
+import Flight.Gap.Ratio.Leading
 import Flight.Gap.Ratio.Goal
 import Flight.Gap.Time.Nominal
 import Flight.Gap.Time.Best

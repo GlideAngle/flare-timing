@@ -47,7 +47,6 @@ import Flight.Score
     , LeadingFraction(..)
     , EssTime(..)
     )
-import Data.Aeson.Via.Scientific (ViaSci(..))
 import Flight.Field (FieldOrdering(..))
 import Flight.Units ()
 
@@ -69,7 +68,7 @@ data Masking =
         -- ^ For each task, the best distance made.
         , sumDistance :: [Maybe Double]
         -- ^ For each task, the sum of all distance flown over minimum distance.
-        , minLead :: [Maybe (ViaSci LeadingCoefficient)]
+        , minLead :: [Maybe LeadingCoefficient]
         -- ^ For each task, the minimum of all pilot's leading coefficient.
         , lead :: [[(Pilot, TrackLead)]]
         -- ^ For each task, the rank order of leading and leading fraction.
@@ -96,13 +95,13 @@ data RaceTime =
         , firstLead :: Maybe FirstLead
         , firstStart :: Maybe FirstStart
         , lastArrival :: Maybe LastArrival
-        , leadArrival :: Maybe (ViaSci EssTime)
+        , leadArrival :: Maybe EssTime
         -- ^ When the last pilot arrives at goal, seconds from the time of first lead.
-        , leadClose :: Maybe (ViaSci EssTime)
+        , leadClose :: Maybe EssTime
         -- ^ When the task closes, seconds from the time of first lead.
-        , tickClose :: Maybe (ViaSci EssTime)
+        , tickClose :: Maybe EssTime
         -- ^ When the task closes, seconds from the time of first race start.
-        , openClose :: ViaSci EssTime
+        , openClose :: EssTime
         -- ^ Seconds from open to close
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
@@ -123,20 +122,20 @@ racing oc firstLead firstStart lastArrival = do
             , firstStart = firstStart
             , lastArrival = lastArrival
 
-            , leadArrival = ViaSci . EssTime . toRational <$> do
+            , leadArrival = EssTime . toRational <$> do
                 FirstLead lead <- firstLead
                 LastArrival end <- lastArrival
                 return $ end `diffUTCTime` lead
                 
-            , leadClose = ViaSci . EssTime . toRational <$> do
+            , leadClose = EssTime . toRational <$> do
                 FirstLead lead <- firstLead
                 return $ close `diffUTCTime` lead
 
-            , tickClose = ViaSci . EssTime . toRational <$> do
+            , tickClose = EssTime . toRational <$> do
                 FirstStart start <- firstStart
                 return $ close `diffUTCTime` start
 
-            , openClose = ViaSci . EssTime . toRational $
+            , openClose = EssTime . toRational $
                 close `diffUTCTime` open 
             }
 
@@ -158,8 +157,8 @@ data TrackArrival =
 
 data TrackLead =
     TrackLead
-        { coef :: ViaSci LeadingCoefficient
-        , frac :: ViaSci LeadingFraction
+        { coef :: LeadingCoefficient
+        , frac :: LeadingFraction
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 

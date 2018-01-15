@@ -201,7 +201,6 @@ executables:
     - cassava
     - vector
     - split
-    - aeson-via-sci
     - siggy-chardust
     - flight-cmd
     - flight-units
@@ -247,7 +246,6 @@ executables:
     - time
     - vector
     - containers
-    - aeson-via-sci
     - siggy-chardust
     - flight-cmd
     - flight-units
@@ -325,7 +323,6 @@ executables:
     - clock
     - formatting
     - siggy-chardust
-    - aeson-via-sci
     - flight-cmd
     - flight-units
     - flight-latlng

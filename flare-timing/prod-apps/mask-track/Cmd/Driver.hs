@@ -39,7 +39,6 @@ import Data.UnitsOfMeasure ((/:), (-:), u, convert, toRational', fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import System.FilePath (takeFileName)
 import qualified Data.Number.FixedFunctions as F
-import Data.Aeson.Via.Scientific (ViaSci(..))
 
 import qualified Flight.Comp as Cmp (Nominal(..), openClose)
 import Flight.Comp
@@ -364,16 +363,15 @@ writeMask
                     <$> (fmap . fmap) snd rowsLeadingSum
 
             let lead :: [[(Pilot, TrackLead)]] =
-                    sortOn ((\TrackLead{coef = ViaSci (LeadingCoefficient c)} ->
+                    sortOn ((\TrackLead{coef = LeadingCoefficient c} ->
                         c) . snd)
                     <$>
                     [(fmap . fmap)
                         (\lc ->
                             TrackLead
-                                { coef = ViaSci lc
+                                { coef = lc
                                 , frac =
-                                    ViaSci
-                                    $ maybe
+                                    maybe
                                         (LeadingFraction 0)
                                         (`leadingFraction` lc)
                                         minL
@@ -440,7 +438,7 @@ writeMask
                     , taskDistance = (fmap . fmap) unTaskDistance lsTask
                     , bestDistance = dsBest
                     , sumDistance = dsSum
-                    , minLead = (fmap . fmap) ViaSci minLead
+                    , minLead = minLead
                     , lead = lead
                     , arrival = as
                     , speed = fromMaybe [] <$> (fmap . fmap) snd vs

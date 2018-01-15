@@ -16,10 +16,6 @@ module Flight.Gap.Leading
     , LcArea
     , TaskDeadline(..)
     , LengthOfSs(..)
-    , LeadingAreaStep(..)
-    , LeadingCoefficient(..)
-    , LeadingFraction(..)
-    , EssTime(..)
     , madeGoal
     , cleanTrack
     , areaScaling
@@ -43,7 +39,7 @@ import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.Aeson.Via.Scientific (DefaultDecimalPlaces(..), DecimalPlaces(..))
 import Flight.Gap.Ratio (pattern (:%))
 import Flight.Gap.Ratio.Leading
-    (LeadingAreaStep(..), LeadingCoefficient(..), LeadingFraction(..))
+    (LeadingAreaStep(..), LeadingCoefficient(..), LeadingFraction(..), EssTime(..))
 
 -- | Time in seconds from the moment the first pilot crossed the start of the speed
 -- section.
@@ -51,13 +47,6 @@ newtype TaskTime = TaskTime Rational deriving (Eq, Ord)
 
 instance Show TaskTime where
     show (TaskTime t) = showSecs t
-
--- | Task time when the last pilot made the end of the speed section.
-newtype EssTime = EssTime Rational
-    deriving (Eq, Ord, ToJSON, FromJSON)
-
-instance Show EssTime where
-    show (EssTime t) = showSecs t
 
 showSecs :: Rational -> String
 showSecs t =
@@ -68,13 +57,6 @@ showSecs t =
 
         i :: Int
         i = truncate d
-
-instance DefaultDecimalPlaces EssTime where
-    defdp _ = DecimalPlaces 3
-
-instance Newtype EssTime Rational where
-    pack = EssTime 
-    unpack (EssTime a) = a
 
 -- | Time in seconds for the close of the task. 
 -- section.
