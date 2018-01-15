@@ -104,11 +104,6 @@ maxUnits = testGroup "Maximum tests"
         (PilotTime $ hms 3 0 1) `compare` maxS
         @?= LT
     ]
-    where
-        xx =
-            FS.speedFraction
-            (fromHour [u| 1h |]) 
-            (PilotTime $ hms 1 0 0)
 
 minUnits :: TestTree
 minUnits = testGroup "Minimum tests"
