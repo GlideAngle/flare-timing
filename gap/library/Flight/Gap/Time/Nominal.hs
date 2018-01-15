@@ -21,7 +21,7 @@ newtype NominalTime a = NominalTime a
 instance
     (q ~ Quantity Double [u| h |])
     => DefaultDecimalPlaces (NominalTime q) where
-    defdp _ = DecimalPlaces 1
+    defdp _ = DecimalPlaces 6
 
 instance
     (q ~ Quantity Double [u| h |])

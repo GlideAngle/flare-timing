@@ -22,7 +22,7 @@ newtype PilotTime a = PilotTime a
 instance
     (q ~ Quantity Double [u| h |])
     => DefaultDecimalPlaces (PilotTime q) where
-    defdp _ = DecimalPlaces 4
+    defdp _ = DecimalPlaces 6
 
 instance
     (q ~ Quantity Double [u| h |])
