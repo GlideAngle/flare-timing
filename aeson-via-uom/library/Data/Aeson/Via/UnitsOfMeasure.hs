@@ -20,8 +20,7 @@ module Data.Aeson.Via.UnitsOfMeasure (ViaQ(..)) where
 import Control.Newtype (Newtype(..))
 import Data.Scientific (Scientific)
 import Data.Aeson (ToJSON(..), FromJSON(..))
-import Data.UnitsOfMeasure
-    (Unpack, KnownUnit, u, fromRational', toRational')
+import Data.UnitsOfMeasure (Unpack, KnownUnit, fromRational', toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Data.UnitsOfMeasure.Show (showQuantity)
 import Data.UnitsOfMeasure.Read (QuantityWithUnit(..), Some(..), readQuantity)
@@ -39,7 +38,6 @@ instance
     ( DefaultDecimalPlaces n
     , Newtype n (Quantity a u)
     , Real a
-    , u ~ [u| km |]
     , KnownUnit (Unpack u)
     )
     => ToJSON (ViaQ n a u) where
@@ -47,7 +45,7 @@ instance
          where
              MkQuantity a = toRational' . unpack $ x
 
-             y :: Quantity Scientific [u| km |]
+             y :: Quantity Scientific u
              y = MkQuantity . toSci (defdp x) $ a
 
 instance
