@@ -5,7 +5,7 @@
 module Flight.Gap.Weight.Distance (DistanceWeight(..)) where
 
 import Control.Newtype (Newtype(..))
-import Data.Aeson.Via.Scientific (deriveDefaultDecimalPlaces, deriveViaSci)
+import Data.Aeson.Via.Scientific (deriveDefDec, deriveViaSci)
 
 newtype DistanceWeight = DistanceWeight Rational
     deriving (Eq, Ord, Show)
@@ -14,5 +14,5 @@ instance Newtype DistanceWeight Rational where
     pack = DistanceWeight
     unpack (DistanceWeight a) = a
 
-deriveDefaultDecimalPlaces 8 ''DistanceWeight
+deriveDefDec 8 ''DistanceWeight
 deriveViaSci ''DistanceWeight

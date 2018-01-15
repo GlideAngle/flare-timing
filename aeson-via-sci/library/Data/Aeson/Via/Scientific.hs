@@ -11,7 +11,7 @@ module Data.Aeson.Via.Scientific
     , fromSci
     , toSci
     , showSci
-    , deriveDefaultDecimalPlaces
+    , deriveDefDec
     , deriveViaSci
     ) where
 
@@ -79,8 +79,8 @@ instance
     parseField x = ViaSci <$> (pack . fromSci <$> parseField x)
 
 -- SEE: https://markkarpov.com/tutorial/th.html
-deriveDefaultDecimalPlaces :: Int -> Name -> Q [Dec]
-deriveDefaultDecimalPlaces dp name =
+deriveDefDec :: Int -> Name -> Q [Dec]
+deriveDefDec dp name =
     [d|
         instance DefaultDecimalPlaces $a where
             defdp _ = DecimalPlaces dp

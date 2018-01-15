@@ -5,7 +5,7 @@
 module Flight.Gap.Distance.Fraction (DifficultyFraction(..)) where
 
 import Control.Newtype (Newtype(..))
-import Data.Aeson.Via.Scientific (deriveDefaultDecimalPlaces, deriveViaSci)
+import Data.Aeson.Via.Scientific (deriveDefDec, deriveViaSci)
 
 -- | The sum of relative difficulties up until the chunk of landing.
 newtype DifficultyFraction = DifficultyFraction Rational
@@ -15,5 +15,5 @@ instance Newtype DifficultyFraction Rational where
     pack = DifficultyFraction
     unpack (DifficultyFraction a) = a
 
-deriveDefaultDecimalPlaces 8 ''DifficultyFraction
+deriveDefDec 8 ''DifficultyFraction
 deriveViaSci ''DifficultyFraction

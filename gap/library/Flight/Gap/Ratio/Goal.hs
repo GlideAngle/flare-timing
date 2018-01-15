@@ -5,7 +5,7 @@
 module Flight.Gap.Ratio.Goal (NominalGoal(..)) where
 
 import Control.Newtype (Newtype(..))
-import Data.Aeson.Via.Scientific (deriveDefaultDecimalPlaces, deriveViaSci)
+import Data.Aeson.Via.Scientific (deriveDefDec, deriveViaSci)
 
 newtype NominalGoal = NominalGoal Rational
     deriving (Eq, Ord, Show)
@@ -14,5 +14,5 @@ instance Newtype NominalGoal Rational where
     pack = NominalGoal
     unpack (NominalGoal a) = a
 
-deriveDefaultDecimalPlaces 8 ''NominalGoal
+deriveDefDec 8 ''NominalGoal
 deriveViaSci ''NominalGoal

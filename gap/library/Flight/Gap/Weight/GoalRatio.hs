@@ -5,7 +5,7 @@
 module Flight.Gap.Weight.GoalRatio (GoalRatio(..)) where
 
 import Control.Newtype (Newtype(..))
-import Data.Aeson.Via.Scientific (deriveDefaultDecimalPlaces, deriveViaSci)
+import Data.Aeson.Via.Scientific (deriveDefDec, deriveViaSci)
 
 -- | Pilots in goal versus pilots flying.
 newtype GoalRatio = GoalRatio Rational
@@ -15,5 +15,5 @@ instance Newtype GoalRatio Rational where
     pack = GoalRatio
     unpack (GoalRatio a) = a
 
-deriveDefaultDecimalPlaces 8 ''GoalRatio
+deriveDefDec 8 ''GoalRatio
 deriveViaSci ''GoalRatio
