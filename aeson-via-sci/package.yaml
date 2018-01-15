@@ -15,6 +15,7 @@ library:
   - scientific
   - aeson
   - cassava
+  - template-haskell
   source-dirs: library
   exposed-modules:
   - Data.Aeson.Via.Scientific
@@ -36,6 +37,7 @@ tests:
     - scientific
     - aeson
     - cassava
+    - template-haskell
     ghc-options:
     - -rtsopts
     - -threaded

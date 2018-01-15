@@ -2,6 +2,7 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE TemplateHaskell #-}
 
 module Data.Aeson.Via.Scientific
     ( ViaSci(..)
@@ -10,6 +11,8 @@ module Data.Aeson.Via.Scientific
     , fromSci
     , toSci
     , showSci
+    , deriveDefaultDecimalPlaces
+    , deriveViaSci
     ) where
 
 import Control.Newtype (Newtype(..))
@@ -23,6 +26,7 @@ import Data.Scientific
     , fromRationalRepetend
     , formatScientific
     )
+import Language.Haskell.TH (Q, Name, Dec, conT)
 
 newtype DecimalPlaces = DecimalPlaces Int
 
@@ -73,3 +77,27 @@ instance
     (DefaultDecimalPlaces n, Newtype n Rational)
     => FromField (ViaSci n) where
     parseField x = ViaSci <$> (pack . fromSci <$> parseField x)
+
+-- SEE: https://markkarpov.com/tutorial/th.html
+deriveDefaultDecimalPlaces :: Int -> Name -> Q [Dec]
+deriveDefaultDecimalPlaces dp name =
+    [d|
+        instance DefaultDecimalPlaces $a where
+            defdp _ = DecimalPlaces dp
+        |]
+    where
+        a = conT name
+
+deriveViaSci :: Name -> Q [Dec]
+deriveViaSci name =
+    [d|
+        instance ToJSON $a where
+            toJSON x = toJSON $ ViaSci x
+
+        instance FromJSON $a where
+            parseJSON o = do
+                ViaSci x <- parseJSON o
+                return x
+        |]
+    where
+        a = conT name

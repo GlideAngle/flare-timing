@@ -19,6 +19,7 @@ library:
   - newtype
   - scientific
   - uom-plugin
+  - template-haskell
   - aeson-via-sci
   - aeson-via-uom
   - siggy-chardust
