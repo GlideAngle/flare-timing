@@ -15,4 +15,5 @@ node_modules
 *.swn
 *.swm
 *.prof
+*.dump-splices
 result
