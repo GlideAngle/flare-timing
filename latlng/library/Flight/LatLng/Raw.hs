@@ -20,12 +20,10 @@ import Data.Aeson
     (ToJSON(..), FromJSON(..), (.:), (.=), object, withObject)
 import qualified Data.Csv as Csv ((.:))
 import Data.Csv
-    ( ToNamedRecord(..), FromNamedRecord(..), ToField(..), FromField(..)
-    , namedRecord, namedField
-    )
+    (ToNamedRecord(..), FromNamedRecord(..), namedRecord, namedField)
 import Data.Aeson.Via.Scientific
-    ( DefaultDecimalPlaces(..)
-    , dpDegree, fromSci, toSci, showSci, deriveConstDec, deriveViaSci
+    ( dpDegree, fromSci, toSci, showSci
+    , deriveConstDec, deriveViaSci, deriveCsvViaSci
     )
 
 data RawLatLng =
@@ -51,6 +49,9 @@ deriveConstDec dpDegree ''RawLng
 deriveViaSci ''RawLat
 deriveViaSci ''RawLng
 
+deriveCsvViaSci ''RawLat
+deriveCsvViaSci ''RawLng
+
 instance Newtype RawLat Rational where
     pack = RawLat
     unpack (RawLat a) = a
@@ -58,18 +59,6 @@ instance Newtype RawLat Rational where
 instance Newtype RawLng Rational where
     pack = RawLng
     unpack (RawLng a) = a
-
-instance ToField RawLat where
-    toField x = toField $ toSci (defdp x) (unpack x)
-
-instance FromField RawLat where
-    parseField x = pack . fromSci <$> parseField x
-
-instance ToField RawLng where
-    toField x = toField $ toSci (defdp x) (unpack x)
-
-instance FromField RawLng where
-    parseField x = pack . fromSci <$> parseField x
 
 csvSci :: Rational -> String
 csvSci = showSci dpDegree . toSci dpDegree

@@ -16,6 +16,7 @@ module Data.Aeson.Via.Scientific
     , deriveDefDec
     , deriveConstDec
     , deriveViaSci
+    , deriveCsvViaSci
     ) where
 
 import Control.Newtype (Newtype(..))
@@ -117,6 +118,20 @@ deriveViaSci name =
         instance FromJSON $a where
             parseJSON o = do
                 ViaSci x <- parseJSON o
+                return x
+        |]
+    where
+        a = conT name
+
+deriveCsvViaSci :: Name -> Q [Dec]
+deriveCsvViaSci name =
+    [d|
+        instance ToField $a where
+            toField x = toField . ViaSci $ x
+
+        instance FromField $a where
+            parseField c = do
+                ViaSci x <- parseField c
                 return x
         |]
     where
