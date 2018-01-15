@@ -3,6 +3,7 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE DeriveLift #-}
 
 module Data.Aeson.Via.Scientific
     ( ViaSci(..)
@@ -11,7 +12,9 @@ module Data.Aeson.Via.Scientific
     , fromSci
     , toSci
     , showSci
+    , dpDegree
     , deriveDefDec
+    , deriveConstDec
     , deriveViaSci
     ) where
 
@@ -27,8 +30,20 @@ import Data.Scientific
     , formatScientific
     )
 import Language.Haskell.TH (Q, Name, Dec, conT)
+import Language.Haskell.TH.Syntax
 
-newtype DecimalPlaces = DecimalPlaces Int
+-- | Decimal degrees at 8 decimal places is just a bit more than a mm.
+--
+--     * 1.1132 mm at the equator
+--     * 1.0247 mm at 23 N/S
+--     * 787.1 µm at 45 N/S
+--     * 434.96 µm at 67 N/S
+-- SOURCE: <https://en.wikipedia.org/wiki/Decimal_degrees>
+dpDegree :: DecimalPlaces
+dpDegree = DecimalPlaces 8
+
+-- NOTE: For deriving Lift, see https://ghc.haskell.org/trac/ghc/ticket/14296
+newtype DecimalPlaces = DecimalPlaces Int deriving Lift
 
 fromSci :: Scientific -> Rational
 fromSci x = toRational (toRealFloat x :: Double)
@@ -82,11 +97,16 @@ instance
 deriveDefDec :: Int -> Name -> Q [Dec]
 deriveDefDec dp name =
     [d|
-        instance DefaultDecimalPlaces $a where
+        instance DefaultDecimalPlaces $(conT name) where
             defdp _ = DecimalPlaces dp
         |]
-    where
-        a = conT name
+
+deriveConstDec :: DecimalPlaces -> Name -> Q [Dec]
+deriveConstDec dp name =
+    [d|
+        instance DefaultDecimalPlaces $(conT name) where
+            defdp _ = $(lift dp)
+        |]
 
 deriveViaSci :: Name -> Q [Dec]
 deriveViaSci name =

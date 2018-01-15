@@ -16,7 +16,6 @@ library:
   - bifunctors
   - aeson
   - scientific
-  - aeson-via-sci
   - siggy-chardust
   - flight-units
   - flight-latlng
@@ -42,7 +41,6 @@ tests:
     - bifunctors
     - aeson
     - scientific
-    - aeson-via-sci
     - siggy-chardust
     - flight-units
     - flight-latlng

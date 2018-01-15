@@ -40,7 +40,6 @@ import Flight.Zone (Zone(..), Radius(..), fromRationalZone)
 import Flight.Zone.Raw (RawZone(..))
 import Flight.Distance (TaskDistance(..), PathDistance(..))
 import Flight.EastNorth (UtmZone(..), EastingNorthing(..))
-import Data.Aeson.Via.Scientific (ViaSci(..))
 import Flight.Task (Tolerance(..), SpanLatLng, DistancePointToPoint)
 
 mm30 :: Num a => Tolerance a 
@@ -85,8 +84,8 @@ addTaskDistance (TaskDistance a) (TaskDistance b) = TaskDistance $ a +: b
 
 convertLatLng :: (Real a, Fractional a) => LatLng a [u| rad |] -> RawLatLng
 convertLatLng (LatLng (Lat eLat, Lng eLng)) =
-    RawLatLng { lat = ViaSci . RawLat $ toRational eLat'
-              , lng = ViaSci . RawLng $ toRational eLng'
+    RawLatLng { lat = RawLat $ toRational eLat'
+              , lng = RawLng $ toRational eLng'
               }
     where
         MkQuantity eLat' =
@@ -96,10 +95,10 @@ convertLatLng (LatLng (Lat eLat, Lng eLng)) =
             convert eLng :: Quantity _ [u| deg |]
 
 rawToLatLng :: Fractional a
-            => ViaSci RawLat
-            -> ViaSci RawLng
+            => RawLat
+            -> RawLng
             -> LatLng a [u| rad |]
-rawToLatLng (ViaSci (RawLat lat')) (ViaSci (RawLng lng')) =
+rawToLatLng (RawLat lat') (RawLng lng') =
     LatLng (Lat latRad, Lng lngRad)
     where
         latDeg :: Quantity _ [u| deg |]

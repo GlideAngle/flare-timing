@@ -113,9 +113,9 @@ data TimeRow =
         -- ^ Seconds from first start.
         , time :: UTCTime
         -- ^ Time of the fix
-        , lat :: ViaSci RawLat
+        , lat :: RawLat
         -- ^ Latitude of the fix
-        , lng :: ViaSci RawLng
+        , lng :: RawLng
         -- ^ Longitude of the fix
         , distance :: Double
         -- ^ Distance to goal in km

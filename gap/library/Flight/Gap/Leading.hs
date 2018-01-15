@@ -42,6 +42,8 @@ import Data.Aeson (ToJSON(..), FromJSON(..))
 
 import Data.Aeson.Via.Scientific (DefaultDecimalPlaces(..), DecimalPlaces(..))
 import Flight.Gap.Ratio (pattern (:%))
+import Flight.Gap.Ratio.Leading
+    (LeadingAreaStep(..), LeadingCoefficient(..), LeadingFraction(..))
 
 -- | Time in seconds from the moment the first pilot crossed the start of the speed
 -- section.
@@ -87,26 +89,6 @@ instance Show DistanceToEss where
 -- | The length of the speed section in km.
 newtype LengthOfSs = LengthOfSs Rational deriving (Eq, Ord, Show)
 
-newtype LeadingAreaStep = LeadingAreaStep Rational
-    deriving (Eq, Ord, Show, ToJSON, FromJSON)
-
-instance DefaultDecimalPlaces LeadingAreaStep where
-    defdp _ = DecimalPlaces 8
-
-instance Newtype LeadingAreaStep Rational where
-    pack = LeadingAreaStep
-    unpack (LeadingAreaStep a) = a
-
-newtype LeadingCoefficient = LeadingCoefficient Rational
-    deriving (Eq, Ord, Show, ToJSON, FromJSON)
-
-instance DefaultDecimalPlaces LeadingCoefficient where
-    defdp _ = DecimalPlaces 8
-
-instance Newtype LeadingCoefficient Rational where
-    pack = LeadingCoefficient
-    unpack (LeadingCoefficient a) = a
-
 data Leg
     = PrologLeg Int
     | RaceLeg Int
@@ -135,16 +117,6 @@ data LcSeq a =
 type LcTrack = LcSeq LcPoint
 
 type LcArea = LcSeq LeadingAreaStep
-
-newtype LeadingFraction = LeadingFraction Rational
-    deriving (Eq, Ord, Show, ToJSON, FromJSON)
-
-instance DefaultDecimalPlaces LeadingFraction where
-    defdp _ = DecimalPlaces 8
-
-instance Newtype LeadingFraction Rational where
-    pack = LeadingFraction
-    unpack (LeadingFraction a) = a
 
 madeGoal :: LcTrack -> Bool
 madeGoal LcSeq{seq = xs} =

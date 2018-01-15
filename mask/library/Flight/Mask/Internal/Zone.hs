@@ -37,7 +37,6 @@ import Flight.Track.Time (TimeRow(..))
 import Flight.Track.Cross (Fix(..))
 import Flight.Comp (SpeedSection)
 import Flight.Units ()
-import Data.Aeson.Via.Scientific (ViaSci(..))
 
 type ZoneIdx = Int
 
@@ -91,8 +90,8 @@ fixFromFix mark0 i x =
     -- SEE: https://ocharles.org.uk/blog/posts/2013-12-15-24-days-of-hackage-time.html
     Fix { fix = i
         , time = fromInteger secs `addUTCTime` mark0
-        , lat = ViaSci . RawLat $ lat
-        , lng = ViaSci . RawLng $ lng
+        , lat = RawLat $ lat
+        , lng = RawLng $ lng
         }
     where
         Kml.Seconds secs = Kml.mark x
@@ -108,7 +107,7 @@ fixToPoint fix =
 
 rowToPoint :: (Eq a, Fractional a) => TimeRow -> TrackZone a
 rowToPoint
-    TimeRow{lat = ViaSci (RawLat lat), lng = ViaSci (RawLng lng)} =
+    TimeRow{lat = RawLat lat, lng = RawLng lng} =
     TrackZone $ Point (toLL (lat, lng))
 
 zoneToCylinder :: (Eq a, Fractional a) => Raw.RawZone -> TaskZone a
@@ -119,5 +118,5 @@ zoneToCylinder z =
         r' = fromRational $ r % 1
 
         radius = Radius (MkQuantity r')
-        ViaSci (RawLat lat) = Raw.lat z
-        ViaSci (RawLng lng) = Raw.lng z
+        RawLat lat = Raw.lat z
+        RawLng lng = Raw.lng z
