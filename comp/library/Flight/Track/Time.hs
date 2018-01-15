@@ -63,7 +63,6 @@ import qualified Data.Vector as V (fromList, toList)
 
 import Flight.Units ()
 import Flight.LatLng.Raw (RawLat, RawLng)
-import Data.Aeson.Via.Scientific (ViaSci(..))
 import Flight.Score
     ( LeadingAreaStep(..)
     , LeadingCoefficient(..)
@@ -133,7 +132,7 @@ data TickRow =
         -- ^ Seconds from first start.
         , distance :: Double
         -- ^ Distance to goal in km.
-        , area :: ViaSci LeadingAreaStep
+        , area :: LeadingAreaStep
         -- ^ Leading coefficient area step.
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
@@ -192,7 +191,7 @@ instance ToNamedRecord TickRow where
             ]
         where
             f = unquote . unpack . encode
-            g (ViaSci (LeadingAreaStep x)) = f $ fromRational x
+            g (LeadingAreaStep x) = f $ fromRational x
 
 instance FromNamedRecord TickRow where
     parseNamedRecord m =
@@ -220,13 +219,13 @@ leadingSum _ _ [] = Nothing
 leadingSum (Just _) Nothing xs =
     Just . LeadingCoefficient $ sum ys
     where
-        ys = (\TickRow{area = ViaSci (LeadingAreaStep a)} -> a) <$> xs
+        ys = (\TickRow{area = LeadingAreaStep a} -> a) <$> xs
 leadingSum (Just _) (Just (start, _)) xs =
     if null ys then Nothing else
     Just . LeadingCoefficient $ sum ys
     where
         ys =
-            (\TickRow{area = ViaSci (LeadingAreaStep a)} -> a)
+            (\TickRow{area = LeadingAreaStep a} -> a)
             <$> filter (\TickRow{leg} -> leg >= start) xs
 
 leadingArea
@@ -248,7 +247,7 @@ leadingArea
     toLeg
     (Just (TaskDistance (MkQuantity d)))
     close@(Just (LeadClose (EssTime tt))) arrival rows =
-    [ r{area = ViaSci step}
+    [ r{area = step}
     | r <- rows
     | step <- seq
     ]
@@ -265,7 +264,7 @@ leadingArea
         extraRow = maybeToList $ do
             lr <- lastRow
             e <- extra
-            return $ lr{area = ViaSci e}
+            return $ lr{area = e}
 
 toLcPoint :: (Int -> Leg) -> TickRow -> Maybe LcPoint
 toLcPoint _ TickRow{tickLead = Nothing} = Nothing
@@ -367,7 +366,7 @@ timeToTick TimeRow{leg, tickLead, tickRace, distance} =
         , tickLead = tickLead
         , tickRace = tickRace
         , distance = distance
-        , area = ViaSci (LeadingAreaStep 0)
+        , area = LeadingAreaStep 0
         }
 
 discard

@@ -9,7 +9,7 @@ module Flight.Gap.Ratio.Leading
     ) where
 
 import Control.Newtype (Newtype(..))
-import Data.Aeson.Via.Scientific (deriveDefDec, deriveViaSci)
+import Data.Aeson.Via.Scientific (deriveDefDec, deriveViaSci, deriveCsvViaSci)
 
 newtype LeadingAreaStep = LeadingAreaStep Rational
     deriving (Eq, Ord, Show)
@@ -20,6 +20,7 @@ instance Newtype LeadingAreaStep Rational where
 
 deriveDefDec 8 ''LeadingAreaStep
 deriveViaSci ''LeadingAreaStep
+deriveCsvViaSci ''LeadingAreaStep
 
 newtype LeadingCoefficient = LeadingCoefficient Rational
     deriving (Eq, Ord, Show)
