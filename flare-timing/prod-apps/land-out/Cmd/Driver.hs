@@ -91,7 +91,7 @@ go CmdOptions{..} compFile = do
 difficulty :: CompSettings -> Masking -> Cmp.Landing
 difficulty CompSettings{nominal} Masking{bestDistance, land} =
     Cmp.Landing 
-        { minDistance = md''
+        { minDistance = md
         , bestDistance = bests
         , landout = length <$> land
         , lookahead = ahead
@@ -100,8 +100,6 @@ difficulty CompSettings{nominal} Masking{bestDistance, land} =
         }
     where
         md = free nominal
-        md' = MkQuantity $ md
-        md'' = MinimumDistance md'
 
         pss :: [[PilotDistance (Quantity Double [u| km |])]]
         pss =
@@ -123,7 +121,7 @@ difficulty CompSettings{nominal} Masking{bestDistance, land} =
             ]
 
         ds :: [Maybe Difficulty] =
-            [ (\bd -> Gap.difficulty md'' bd ps) <$> b
+            [ (\bd -> Gap.difficulty md bd ps) <$> b
             | b <- bests
             | ps <- pss
             ]
@@ -137,7 +135,7 @@ difficulty CompSettings{nominal} Masking{bestDistance, land} =
                 rs' <- rs
                 fs' <- fs
                 return $ mergeChunks ls ils' jls' as' jas' rs' fs'
-            | ls <- Gap.landouts md'' <$> pss
+            | ls <- Gap.landouts md <$> pss
             | ils <- (fmap . fmap) startChunk ds
             | jls <- (fmap . fmap) endChunk ds
             | as <- (fmap downward) <$> ds

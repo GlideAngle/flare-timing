@@ -1,3 +1,5 @@
+{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -27,6 +29,8 @@ module Flight.Track.Mask
 
 import Data.Time.Clock (UTCTime, diffUTCTime)
 import Data.String (IsString())
+import Data.UnitsOfMeasure (u)
+import Data.UnitsOfMeasure.Internal (Quantity(..))
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import Flight.Comp (OpenClose(..), FirstLead(..), FirstStart(..), LastArrival(..))
@@ -45,6 +49,7 @@ import Flight.Score
     )
 import Data.Aeson.Via.Scientific (ViaSci(..))
 import Flight.Field (FieldOrdering(..))
+import Flight.Units ()
 
 type Nigh = TrackLine
 type Land = Double
@@ -56,7 +61,7 @@ data Masking =
         -- ^ For each task, the number of pilots at goal.
         , raceTime :: [Maybe RaceTime]
         -- ^ For each task, the time of the last pilot crossing goal.
-        , bestTime :: [Maybe (ViaSci BestTime)]
+        , bestTime :: [Maybe (BestTime (Quantity Double [u| h |]))]
         -- ^ For each task, the best time.
         , taskDistance :: [Maybe Double]
         -- ^ For each task, the task distance.
@@ -138,8 +143,8 @@ racing oc firstLead firstStart lastArrival = do
 -- ^ If arrived at goal then speed fraction.
 data TrackSpeed =
     TrackSpeed
-        { time :: ViaSci PilotTime
-        , frac :: ViaSci SpeedFraction
+        { time :: PilotTime (Quantity Double [u| h |])
+        , frac :: SpeedFraction
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
@@ -147,7 +152,7 @@ data TrackSpeed =
 data TrackArrival =
     TrackArrival
         { rank :: PositionAtEss
-        , frac :: ViaSci ArrivalFraction
+        , frac :: ArrivalFraction
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 

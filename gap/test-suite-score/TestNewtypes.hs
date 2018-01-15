@@ -189,17 +189,28 @@ instance QC.Arbitrary AfTest where
         return $ AfTest (PilotsAtEss n, PositionAtEss $ max 1 rank)
 
 -- | Speed fraction
-newtype SfTest = SfTest (BestTime, PilotTime) deriving Show
+newtype SfTest =
+    SfTest
+        ( BestTime (Quantity Double [u| h |])
+        , PilotTime (Quantity Double [u| h |])
+        )
+    deriving Show
 
 instance Monad m => SC.Serial m SfTest where
     series =
         cons1 $ \(Normal (n :% d)) ->
-             SfTest (BestTime (d % 1), PilotTime $ (d + n) % 1)
+             SfTest
+                 (BestTime . MkQuantity . fromRational $ (d % 1)
+                 , PilotTime . MkQuantity . fromRational $ (d + n) % 1
+                 )
 
 instance QC.Arbitrary SfTest where
     arbitrary = do
         (Normal (n :% d)) <- arbitrary
-        return $ SfTest (BestTime (d % 1), PilotTime $ (d + n) % 1)
+        return . SfTest $
+            ( BestTime . MkQuantity . fromRational $ (d % 1)
+            , PilotTime . MkQuantity . fromRational $ (d + n) % 1
+            )
 
 -- | Linear fraction 
 newtype LfTest =

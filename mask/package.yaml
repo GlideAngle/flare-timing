@@ -97,8 +97,22 @@ tests:
     - -rtsopts
     - -threaded
     - -with-rtsopts=-N
+    - -fplugin Data.UnitsOfMeasure.Plugin
     default-extensions:
+    - ScopedTypeVariables
+    - DataKinds
+    - FlexibleContexts
+    - FlexibleInstances
+    - MultiParamTypeClasses
+    - TypeOperators
+    - TypeFamilies
+    - UndecidableInstances
     - QuasiQuotes
+    - DisambiguateRecordFields
+    - NamedFieldPuns
+    - LambdaCase
+    - PartialTypeSignatures
+    - RecordWildCards
     main: HLint.hs
     source-dirs:
     - library

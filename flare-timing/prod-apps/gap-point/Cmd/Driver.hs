@@ -13,8 +13,10 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE ParallelListComp #-}
+{-# LANGUAGE PartialTypeSignatures #-}
 
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
+{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
 module Cmd.Driver (driverMain) where
 
@@ -30,7 +32,7 @@ import System.FilePath (takeFileName)
 import Flight.Cmd.Paths (checkPaths)
 import Flight.Cmd.Options (CmdOptions(..), ProgramName(..), mkOptions)
 import Cmd.Options (description)
-import Data.UnitsOfMeasure (u)
+import Data.UnitsOfMeasure (u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Comp
@@ -55,15 +57,14 @@ import qualified Flight.Track.Land as Cmp (Landing(..))
 import Flight.Scribe
     (readComp, readCrossing, readMasking, readLanding, writePointing)
 import Flight.Score
-    ( NominalTime(..)
-    , MinimumDistance(..), MaximumDistance(..), SumOfDistance(..)
+    ( MinimumDistance(..), MaximumDistance(..)
+    , BestDistance(..), SumOfDistance(..)
     , PilotsAtEss(..), PilotsPresent(..), PilotsFlying(..)
     , GoalRatio(..), Lw(..), Aw(..)
-    , Metres, BestTime(..)
+    , NominalTime(..), BestTime(..)
     , distanceWeight, leadingWeight, arrivalWeight, timeWeight
     , launchValidity, distanceValidity, timeValidity
     )
-import Data.Aeson.Via.Scientific (ViaSci(..))
 
 driverMain :: IO ()
 driverMain = do
@@ -115,7 +116,7 @@ points
                 { launch = lNom
                 , goal = gNom
                 , distance = dNom
-                , time = tNom'
+                , time = tNom
                 }
         }
     Crossing{dnf}
@@ -125,8 +126,6 @@ points
         , allocation = allocs
         }
     where
-        tNom = 3600 * (read tNom' :: Double)
-
         lvs =
             [ launchValidity
                 lNom
@@ -160,22 +159,21 @@ points
             | s <- dSums
             ]
 
-        tBests :: [Maybe Metres] =
-            [ round . (* 3600) <$> b
-            | b <-
-                  (fmap . fmap)
-                      (\(ViaSci (BestTime x)) -> x)
-                      bestTime
-            ]
-
         tvs =
             [ timeValidity
-                (NominalTime $ round tNom)
-                dNom
+                ((\(NominalTime x) ->
+                    NominalTime (convert x :: Quantity _ [u| s |])) tNom)
                 t
+                dNom
                 d
-            | t <- tBests
-            | d <- (\(MaximumDistance (MkQuantity x)) -> round x) <$> dBests
+            | t <-
+                (fmap . fmap)
+                    (\(BestTime x) -> BestTime (convert x :: Quantity _ [u| s |]))
+                    bestTime
+
+            | d <-
+                (\(MaximumDistance x) -> BestDistance x)
+                <$> dBests
             ]
 
         grs =

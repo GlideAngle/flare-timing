@@ -6,6 +6,8 @@ import Prelude hiding (span)
 import Data.Time.Clock (UTCTime, diffUTCTime)
 import qualified Data.List as List (find)
 import Data.Ratio ((%))
+import Data.UnitsOfMeasure (u)
+import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Kml (Fix, Seconds(..), FixMark(..), MarkedFixes(..))
 import Flight.Comp (Task(..), SpeedSection, OpenClose(..), StartGate(..))
@@ -26,7 +28,7 @@ timeFlown :: (Real a, Fractional a)
           -> (Raw.RawZone -> TaskZone a)
           -> Task
           -> MarkedFixes
-          -> Maybe PilotTime
+          -> Maybe (PilotTime (Quantity Double [u| h |]))
 timeFlown span zoneToCyl task@Task{speedSection, zones, zoneTimes, startGates} xs =
     if null zones || not atGoal then Nothing else
     flownDuration span speedSection fs cs zoneTimes startGates xs
@@ -47,7 +49,7 @@ flownDuration :: (Real a, Fractional a)
               -> [OpenClose]
               -> [StartGate]
               -> MarkedFixes
-              -> Maybe PilotTime
+              -> Maybe (PilotTime (Quantity Double [u| h |]))
 flownDuration span speedSection fs zs os gs MarkedFixes{mark0, fixes}
     | null zs = Nothing
     | null fixes = Nothing
@@ -65,7 +67,7 @@ durationViaZones :: (Real a, Fractional a)
                  -> [StartGate]
                  -> UTCTime
                  -> [Fix]
-                 -> Maybe PilotTime
+                 -> Maybe (PilotTime (Quantity Double [u| h |]))
 durationViaZones span mkZone atTime speedSection _ zs os gs t0 xs =
     if null xs then Nothing else
     case (osSpeed, zsSpeed, reverse zsSpeed) of
@@ -124,7 +126,8 @@ durationViaZones span mkZone atTime speedSection _ zs os gs t0 xs =
                 (Nothing, _) -> Nothing
                 (_, Nothing) -> Nothing
                 (Just s0, Just sN) ->
-                    Just . PilotTime $ (deltaFlying + deltaStart) % 1
+                    Just . PilotTime . MkQuantity . fromRational
+                    $ (deltaFlying + deltaStart) % 1
                     where
                         gs' = reverse gs
                         laterStart (StartGate g) = g > t0

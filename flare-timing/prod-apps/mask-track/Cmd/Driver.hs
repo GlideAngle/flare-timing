@@ -21,7 +21,6 @@
 
 module Cmd.Driver (driverMain) where
 
-import qualified Data.Ratio as Ratio
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
 import Data.Maybe (fromMaybe, catMaybes, isJust)
@@ -143,7 +142,7 @@ import Flight.TaskTrack.Double ()
     
 data FlightStats =
     FlightStats
-        { statTimeRank :: Maybe (PilotTime, PositionAtEss)
+        { statTimeRank :: Maybe (PilotTime (Quantity Double [u| h |]), PositionAtEss)
         , statLand :: Maybe (TrackDistance Land)
         , statDash :: DashPathInputs
         }
@@ -289,10 +288,11 @@ writeMask
             let as :: [[(Pilot, TrackArrival)]] = arrivals <$> ys
 
             -- Velocities (vs).
-            let vs :: [Maybe (BestTime, [(Pilot, TrackSpeed)])] = times <$> ys
+            let vs :: [Maybe (BestTime (Quantity Double [u| h |]), [(Pilot, TrackSpeed)])] =
+                    times <$> ys
 
             -- Times (ts).
-            let tsBest = (fmap . fmap) (ViaSci . fst) vs
+            let tsBest = (fmap . fmap) fst vs
 
             -- For each task, for each pilot, the row closest to goal.
             rows :: [[Maybe (Pilot, Time.TickRow)]]
@@ -574,27 +574,29 @@ arrivals xs =
         f position =
             TrackArrival
                 { rank = position
-                , frac = ViaSci $ arrivalFraction pilots position
+                , frac = arrivalFraction pilots position
                 }
 
-times :: [(Pilot, FlightStats)] -> Maybe (BestTime, [(Pilot, TrackSpeed)])
+times
+    :: [(Pilot, FlightStats)]
+    -> Maybe (BestTime (Quantity Double [u| h |]), [(Pilot, TrackSpeed)])
 times xs =
     (\ bt -> (bt, sortOn (time . snd) $ second (f bt) <$> ys))
     <$> Gap.bestTime ts
     where
-        ys :: [(Pilot, PilotTime)]
+        ys :: [(Pilot, PilotTime (Quantity Double [u| h |]))]
         ys =
             catMaybes
             $ (\(p, FlightStats{..}) -> ((p,) . fst) <$> statTimeRank)
             <$> xs
 
-        ts :: [PilotTime]
+        ts :: [PilotTime (Quantity Double [u| h |])]
         ts = snd <$> ys
 
         f best t =
             TrackSpeed
-                { time = ViaSci t
-                , frac = ViaSci $ speedFraction best t
+                { time = t
+                , frac = speedFraction best t
                 }
 
 check
@@ -791,11 +793,14 @@ csegR = Rat.costSegment spanR
 csegF :: Zone Double -> Zone Double -> PathDistance Double
 csegF = Dbl.costSegment spanF
 
-diffTimeHours :: StartEndMark -> Maybe PilotTime
+diffTimeHours :: StartEndMark -> Maybe (PilotTime (Quantity Double [u| h |]))
 diffTimeHours StartEnd{unEnd = Nothing} =
     Nothing
 diffTimeHours StartEnd{unStart, unEnd = Just end} =
-    Just $ PilotTime hours
+    Just . PilotTime $ hrs
     where
-        secs = toRational $ diffUTCTime end unStart
-        hours = secs * (1 Ratio.% 3600)
+        secs :: Quantity Double [u| s |]
+        secs = fromRational' . MkQuantity . toRational $ diffUTCTime end unStart
+
+        hrs :: Quantity _ [u| h |]
+        hrs = convert secs

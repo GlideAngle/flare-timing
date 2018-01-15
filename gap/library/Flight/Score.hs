@@ -16,9 +16,6 @@ module Flight.Score
     , NominalDistance(..)
     , MinimumDistance(..)
     , NominalGoal(..)
-    -- * Units
-    , Seconds
-    , Metres
     -- * Ratio
     , isNormal
     , isFoldNormal
@@ -154,9 +151,11 @@ module Flight.Score
 import Flight.Gap.Ratio
 import Flight.Gap.Allot
 import Flight.Gap.Pilots
-import Flight.Gap.Nominal.Launch
-import Flight.Gap.Nominal.Goal
-import Flight.Gap.Nominal.Distance
+import Flight.Gap.Ratio.Launch
+import Flight.Gap.Ratio.Goal
+import Flight.Gap.Time.Nominal
+import Flight.Gap.Time.Best
+import Flight.Gap.Distance.Nominal
 import Flight.Gap.Distance.Linear
 import Flight.Gap.Distance.Min
 import Flight.Gap.Distance.Max
@@ -180,31 +179,3 @@ import Flight.Gap.Weight.Time
 import Flight.Gap.Weighting
 import Flight.Gap.Points
 import Flight.Gap.Stopped
-
-type DistancePoint = Rational
-type SpeedPoint = Rational
-type DeparturePoint = Rational
-type ArrivalPoint = Rational
-
-data FixDistance = FixDistance Seconds Metres
-data PointsAllocation =
-    PointsAllocation { distance :: Rational
-                     , speed :: Rational
-                     , departure :: Rational
-                     , arrival :: Rational
-                     }
-
-distancePoints :: [Metres] -> [DistancePoint]
-distancePoints = undefined
-
-speedPoints :: [Seconds] -> [SpeedPoint]
-speedPoints = undefined
-
-departurePoints :: [FixDistance] -> [DeparturePoint]
-departurePoints = undefined
-
-arrivalPoints :: Int -> [ArrivalPoint]
-arrivalPoints = undefined
-
-allocatePoints :: Rational -> PointsAllocation
-allocatePoints = undefined

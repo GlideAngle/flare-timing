@@ -1,4 +1,5 @@
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
@@ -20,65 +21,29 @@ module Flight.Gap.Allot
     ( PositionAtEss(..)
     , ArrivalFraction(..)
     , arrivalFraction
-    , BestTime(..)
     , PilotTime(..)
     , bestTime
     , SpeedFraction(..)
     , speedFraction
     ) where
 
-import Control.Newtype (Newtype(..))
 import Data.Ratio ((%))
 import qualified Data.List as List (minimum)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import GHC.Generics (Generic)
+import Data.UnitsOfMeasure (u, toRational')
+import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
-import Data.Aeson.Via.Scientific (DefaultDecimalPlaces(..), DecimalPlaces(..))
 import Flight.Gap.Pilots (PilotsAtEss(..))
+import Flight.Gap.Time.Best (BestTime(..))
+import Flight.Gap.Time.Pilot (PilotTime(..))
+import Flight.Gap.Ratio.Arrival (ArrivalFraction(..))
+import Flight.Gap.Ratio.Speed (SpeedFraction(..))
 
 -- | A 1-based rank of the pilot arrival at goal, 1st in is 1, 2nd is 2 etc.
 newtype PositionAtEss = PositionAtEss Integer
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
-
-newtype ArrivalFraction = ArrivalFraction Rational
-    deriving (Eq, Ord, Show)
-
-instance DefaultDecimalPlaces ArrivalFraction where
-    defdp _ = DecimalPlaces 8
-
-instance Newtype ArrivalFraction Rational where
-    pack = ArrivalFraction
-    unpack (ArrivalFraction a) = a
-
-newtype SpeedFraction = SpeedFraction Rational deriving (Eq, Ord, Show)
-
-instance DefaultDecimalPlaces SpeedFraction where
-    defdp _ = DecimalPlaces 8
-
-instance Newtype SpeedFraction Rational where
-    pack = SpeedFraction
-    unpack (SpeedFraction a) = a
-
--- | Best time for the task, units of hours.
-newtype BestTime = BestTime Rational deriving (Eq, Ord, Show)
-
-instance DefaultDecimalPlaces BestTime where
-    defdp _ = DecimalPlaces 8
-
-instance Newtype BestTime Rational where
-    pack = BestTime
-    unpack (BestTime a) = a
-
--- | Pilot time for the task, units of hours.
-newtype PilotTime = PilotTime Rational deriving (Eq, Ord, Show)
-
-instance DefaultDecimalPlaces PilotTime where
-    defdp _ = DecimalPlaces 8
-
-instance Newtype PilotTime Rational where
-    pack = PilotTime
-    unpack (PilotTime a) = a
 
 arrivalFraction :: PilotsAtEss -> PositionAtEss -> ArrivalFraction
 arrivalFraction (PilotsAtEss n) (PositionAtEss rank)
@@ -97,14 +62,24 @@ arrivalFraction (PilotsAtEss n) (PositionAtEss rank)
         where
             ac = 1 - ((rank - 1) % n)
 
-bestTime :: [PilotTime] -> Maybe BestTime
+bestTime
+    :: [PilotTime (Quantity Double [u| h |])]
+    -> Maybe (BestTime (Quantity Double [u| h |]))
 bestTime [] = Nothing
-bestTime xs = let PilotTime t = List.minimum xs in Just $ BestTime t
+bestTime xs =
+    Just . BestTime $ t
+    where
+        PilotTime t = List.minimum xs
 
-speedFraction :: BestTime -> PilotTime -> SpeedFraction
-speedFraction (BestTime best) (PilotTime t) =
+speedFraction
+    :: BestTime (Quantity Double [u| h |])
+    -> PilotTime (Quantity Double [u| h |])
+    -> SpeedFraction
+speedFraction (BestTime best') (PilotTime t') =
     SpeedFraction $ max (0 % 1) sf
     where
+        MkQuantity best = toRational' best'
+        MkQuantity t = toRational' t'
         numerator = fromRational $ t - best :: Double
         denominator = fromRational best ** (1 / 2)
         frac = (numerator / denominator) ** (2 / 3)

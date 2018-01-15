@@ -11,9 +11,9 @@ import qualified Flight.Score as FS
 import Flight.Score
     ( TimeValidity(..)
     , NominalTime(..)
+    , BestTime(..)
     , NominalDistance(..)
-    , Seconds
-    , Metres
+    , BestDistance(..)
     , isNormal
     )
 
@@ -28,108 +28,93 @@ timeValidityUnits :: TestTree
 timeValidityUnits = testGroup "Time validity unit tests"
     [ HU.testCase "Time validity 0 0 (Just 0) 0 = 0" $
         FS.timeValidity
-            (NominalTime 0)
+            (NominalTime . MkQuantity $ 0)
+            (Just . BestTime . MkQuantity $ 0)
             (NominalDistance . MkQuantity $ 0)
-            (Just 0)
-            0
+            (BestDistance . MkQuantity $ 0)
         @?= TimeValidity 0
 
     , HU.testCase "Time validity 1 0 (Just 1) 0 = 1" $
         FS.timeValidity
-            (NominalTime 1)
+            (NominalTime . MkQuantity $ 1)
+            (Just . BestTime . MkQuantity $ 1)
             (NominalDistance . MkQuantity $ 0)
-            (Just 1)
-            0
+            (BestDistance . MkQuantity $ 0)
         @?= TimeValidity 1
 
     , HU.testCase "Time validity 1 1 (Just 1) 1 = 1" $
         FS.timeValidity
-            (NominalTime 1)
+            (NominalTime . MkQuantity $ 1)
+            (Just . BestTime . MkQuantity $ 1)
             (NominalDistance . MkQuantity $ 1)
-            (Just 1)
-            1
+            (BestDistance . MkQuantity $ 1)
         @?= TimeValidity 1
 
     , HU.testCase "Time validity 0 0 Nothing 0 = 0" $
         FS.timeValidity
-            (NominalTime 0)
-            (NominalDistance . MkQuantity $ 0)
+            (NominalTime . MkQuantity $ 0)
             Nothing
-            0
+            (NominalDistance . MkQuantity $ 0)
+            (BestDistance . MkQuantity $ 0)
         @?= TimeValidity 0
 
     , HU.testCase "Time validity 0 1 Nothing 1 = 1" $
         FS.timeValidity
-            (NominalTime 0)
-            (NominalDistance . MkQuantity $ 1)
+            (NominalTime . MkQuantity $ 0)
             Nothing
-            1
+            (NominalDistance . MkQuantity $ 1)
+            (BestDistance . MkQuantity $ 1)
         @?= TimeValidity 1
 
     , HU.testCase "Time validity 1 1 Nothing 1 = 1" $
         FS.timeValidity
-            (NominalTime 1)
-            (NominalDistance . MkQuantity $ 1)
+            (NominalTime . MkQuantity $ 1)
             Nothing
-            1
+            (NominalDistance . MkQuantity $ 1)
+            (BestDistance . MkQuantity $ 1)
         @?= TimeValidity 1
     ]
 
 timeValidity
-    :: NominalTime
+    :: NominalTime (Quantity Double [u| s |])
+    -> Maybe (BestTime (Quantity Double [u| s |]))
     -> NominalDistance (Quantity Double [u| km |])
-    -> Maybe Seconds
-    -> Metres
+    -> BestDistance (Quantity Double [u| km |])
     -> Bool
-timeValidity nt nd t d =
-    (\(TimeValidity x) -> isNormal x) $ FS.timeValidity nt nd t d
+timeValidity nt t nd d =
+    (\(TimeValidity x) -> isNormal x)
+    $ FS.timeValidity nt t nd d
 
 scTimeValidity
-    :: SC.NonNegative Integer
+    :: SC.NonNegative Double
+    -> Maybe (SC.NonNegative Double)
     -> SC.NonNegative Double
-    -> Maybe (SC.NonNegative Seconds)
-    -> SC.NonNegative Metres
+    -> SC.NonNegative Double
     -> Bool
-scTimeValidity
-    (SC.NonNegative nt) (SC.NonNegative nd) Nothing (SC.NonNegative d) =
-    timeValidity
-        (NominalTime nt)
-        (NominalDistance . MkQuantity $ nd)
-        Nothing
-        d
-
 scTimeValidity
     (SC.NonNegative nt)
+    t
     (SC.NonNegative nd)
-    (Just (SC.NonNegative t))
     (SC.NonNegative d) =
     timeValidity
-        (NominalTime nt)
+        (NominalTime . MkQuantity $ nt)
+        ((\(SC.NonNegative x) -> BestTime . MkQuantity $ x) <$> t)
         (NominalDistance . MkQuantity $ nd)
-        (Just t)
-        d
+        (BestDistance . MkQuantity $ d)
 
 qcTimeValidity
-    :: QC.NonNegative Integer
+    :: QC.NonNegative Double 
+    -> Maybe (QC.NonNegative Double)
     -> QC.NonNegative Double
-    -> Maybe (QC.NonNegative Seconds)
-    -> QC.NonNegative Metres
+    -> QC.NonNegative Double
     -> Bool
 qcTimeValidity
-    (QC.NonNegative nt) (QC.NonNegative nd) Nothing (QC.NonNegative d) =
-    timeValidity
-        (NominalTime nt)
-        (NominalDistance . MkQuantity $ nd)
-        Nothing
-        d
-
-qcTimeValidity
     (QC.NonNegative nt)
+    t
     (QC.NonNegative nd)
-    (Just (QC.NonNegative t))
     (QC.NonNegative d) =
     timeValidity
-        (NominalTime nt)
+        (NominalTime . MkQuantity $ nt)
+        ((\(QC.NonNegative x) -> BestTime . MkQuantity $ x) <$> t)
         (NominalDistance . MkQuantity $ nd)
-        (Just t)
-        d
+        (BestDistance . MkQuantity $ d)

@@ -5,13 +5,11 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
-
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE NamedFieldPuns #-}
 
 module Flight.Gap.Validity
     ( NominalTime(..)
-    , Seconds
-    , Metres
     , launchValidity
     , distanceValidity
     , timeValidity
@@ -23,6 +21,8 @@ import Data.UnitsOfMeasure (u, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Gap.Ratio (pattern (:%))
+import Flight.Gap.Distance.Nominal (NominalDistance(..))
+import Flight.Gap.Distance.Best (BestDistance(..))
 import Flight.Gap.Distance.Min (MinimumDistance(..))
 import Flight.Gap.Distance.Max (MaximumDistance(..))
 import Flight.Gap.Distance.Sum (SumOfDistance(..))
@@ -30,19 +30,14 @@ import Flight.Gap.Validity.Launch (LaunchValidity(..))
 import Flight.Gap.Validity.Distance (DistanceValidity(..))
 import Flight.Gap.Validity.Time (TimeValidity(..))
 import Flight.Gap.Validity.Task (TaskValidity(..))
-import Flight.Gap.Nominal.Launch (NominalLaunch(..))
-import Flight.Gap.Nominal.Goal (NominalGoal(..))
-import Flight.Gap.Nominal.Distance (NominalDistance(..))
+import Flight.Gap.Ratio.Launch (NominalLaunch(..))
+import Flight.Gap.Ratio.Goal (NominalGoal(..))
+import Flight.Gap.Time.Nominal (NominalTime(..))
+import Flight.Gap.Time.Best (BestTime(..))
 import Flight.Gap.Pilots (PilotsPresent(..), PilotsFlying(..))
 
 newtype NominalDistanceArea = NominalDistanceArea Rational
     deriving (Eq, Show)
-
-newtype NominalTime = NominalTime Integer
-    deriving (Eq, Show)
-
-type Seconds = Integer
-type Metres = Integer
 
 launchValidity
     :: NominalLaunch
@@ -66,38 +61,68 @@ launchValidity
         lvr' = (toInteger flying * d) % (toInteger present * n)
         lvr = min lvr' (1 % 1)
 
-tvrValidity :: Rational -> TimeValidity
-tvrValidity (0 :% _) =
-    TimeValidity 0
-tvrValidity tvr =
-    TimeValidity $ max 0 $ min 1 x
-    where
-        x =
-            (- 271 % 1000)
-            + (2912 % 1000) * tvr
-            - (2098 % 1000) * tvr * tvr
-            + (457 % 1000) * tvr * tvr * tvr
+tvrValidity :: TimeValidityRatio -> TimeValidity
 
-timeValidity
-    :: NominalTime
-    -> NominalDistance (Quantity Double [u| km |])
-    -> Maybe Seconds
-    -> Metres
-    -> TimeValidity
-timeValidity (NominalTime 0) _ (Just 0) _ =
-    tvrValidity (0 % 1)
-timeValidity (NominalTime 0) _ (Just _) _ =
-    tvrValidity (1 % 1)
-timeValidity (NominalTime nt) _ (Just t) _ = 
-    tvrValidity $ min (t % nt) (1 % 1)
-timeValidity _ (NominalDistance (MkQuantity 0)) Nothing 0 =
-    tvrValidity (0 % 1)
-timeValidity _ (NominalDistance (MkQuantity 0)) Nothing _ =
-    tvrValidity (1 % 1)
-timeValidity _ (NominalDistance dNom') Nothing d =
-    tvrValidity $ min dNom (1 % 1)
+tvrValidity
+    TimeRatio
+        { nominalTime = NominalTime tNom
+        , bestTime = BestTime tBest
+        } =
+        tvrPolynomial (min 1 $ nom * bInv)
     where
-        MkQuantity dNom = toRational' dNom'
+        MkQuantity nom = toRational' tNom
+        MkQuantity (nb :% db) = toRational' tBest
+        bInv = db % nb
+
+tvrValidity
+    DistanceRatio
+        { nominalDistance = NominalDistance dNom
+        , bestDistance = BestDistance dBest
+        } =
+        tvrPolynomial (min 1 $ nom * bInv)
+    where
+        MkQuantity nom = toRational' dNom
+        MkQuantity (nb :% db) = toRational' dBest
+        bInv = db % nb
+
+tvrPolynomial :: Rational -> TimeValidity
+tvrPolynomial tvr =
+    TimeValidity . max 0 . min 1
+    $ (- 271 % 1000)
+    + (2912 % 1000) * tvr
+    - (2098 % 1000) * tvr * tvr
+    + (457 % 1000) * tvr * tvr * tvr
+
+-- | Time validity uses the ratio of times or distances depending on whether
+-- any pilots make it to the end of the speed section.
+data TimeValidityRatio
+    = TimeRatio
+        { nominalTime :: NominalTime (Quantity Double [u| s |])
+        , bestTime :: BestTime (Quantity Double [u| s |])
+        }
+    | DistanceRatio
+        { nominalDistance :: NominalDistance (Quantity Double [u| km |])
+        , bestDistance :: BestDistance (Quantity Double [u| km |])
+        }
+
+-- | If a best time is given then at least one pilot has finished the speed
+-- section.
+timeValidity
+    :: NominalTime (Quantity Double [u| s |])
+    -> Maybe (BestTime (Quantity Double [u| s |]))
+    -> NominalDistance (Quantity Double [u| km |])
+    -> BestDistance (Quantity Double [u| km |])
+    -> TimeValidity
+
+timeValidity _ Nothing dNom@(NominalDistance nd) dBest@(BestDistance bd)
+    | nd <= [u| 0 km |] = TimeValidity $ 0 % 1
+    | bd <= [u| 0 km |] = TimeValidity $ 0 % 1
+    | otherwise = tvrValidity $ DistanceRatio dNom dBest
+
+timeValidity tNom@(NominalTime nt) (Just tBest@(BestTime bt)) _ _
+    | nt <= [u| 0 s |] = TimeValidity $ 0 % 1
+    | bt <= [u| 0 s |] = TimeValidity $ 0 % 1
+    | otherwise = tvrValidity $ TimeRatio tNom tBest
 
 dvr
     :: NominalDistanceArea

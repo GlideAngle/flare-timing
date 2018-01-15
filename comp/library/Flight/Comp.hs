@@ -68,6 +68,7 @@ import Flight.Score
     , NominalGoal
     , NominalDistance(..)
     , MinimumDistance(..)
+    , NominalTime(..)
     )
 
 -- | The time of first lead into the speed section. This won't exist if no one
@@ -166,7 +167,7 @@ data Nominal =
         , distance :: NominalDistance (Quantity Double [u| km |])
         , free :: MinimumDistance (Quantity Double [u| km |])
         -- ^ A mimimum distance awarded to pilots that bomb out for 'free'.
-        , time :: String 
+        , time :: NominalTime (Quantity Double [u| h |])
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 

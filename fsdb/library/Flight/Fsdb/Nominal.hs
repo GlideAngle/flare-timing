@@ -1,6 +1,9 @@
+{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+
 module Flight.Fsdb.Nominal (parseNominal, pFloat) where
 
-import Debug.Trace
 import Data.Either (either)
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
 import Text.XML.HXT.Core
@@ -29,11 +32,17 @@ import qualified Text.ParserCombinators.Parsec as P (parse)
 import Text.Parsec.Language (emptyDef)
 import Data.Functor.Identity (Identity)
 import Text.Parsec.Prim (ParsecT, parsecMap)
+import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Comp (Nominal(..))
 import Flight.Score
-    (NominalLaunch(..), NominalGoal(..), NominalDistance(..), MinimumDistance(..))
+    ( NominalLaunch(..)
+    , NominalGoal(..)
+    , NominalDistance(..)
+    , MinimumDistance(..)
+    , NominalTime(..)
+    )
 
 lexer :: GenTokenParser String u Identity
 lexer = P.makeTokenParser emptyDef
@@ -75,8 +84,18 @@ getNominal =
                     MinimumDistance . MkQuantity
                     <$> P.parse pMinimumDistance "" m
 
-                return [Nominal l' g' d' m' t])
+                t' :: Quantity Double [u| h |] <-
+                    MkQuantity <$> P.parse pNominalTime "" t
 
+                return [Nominal l' g' d' m' (NominalTime t')])
+
+
+pNominalTime :: GenParser Char st Double
+pNominalTime =
+    choice
+        [ pFloat <?> "No nominal time as float"
+        , fromIntegral <$> pNat <?> "No nominal time as a nat"
+        ]
 
 pNominalLaunch :: GenParser Char st Double
 pNominalLaunch =
@@ -103,4 +122,4 @@ parseNominal :: String -> IO (Either String [Nominal])
 parseNominal contents = do
     let doc = readString [ withValidate no, withWarnings no ] contents
     xs <- runX $ doc >>> getNominal
-    return . Right . concat $ traceShow xs xs
+    return . Right . concat $ xs

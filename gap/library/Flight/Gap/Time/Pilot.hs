@@ -4,7 +4,7 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE TypeFamilies #-}
 
-module Flight.Gap.Nominal.Distance (NominalDistance(..)) where
+module Flight.Gap.Time.Pilot (PilotTime(..)) where
 
 import Control.Newtype (Newtype(..))
 import Data.Aeson (ToJSON(..), FromJSON(..))
@@ -15,24 +15,25 @@ import Flight.Units ()
 import Data.Aeson.Via.Scientific (DefaultDecimalPlaces(..), DecimalPlaces(..))
 import Data.Aeson.Via.UnitsOfMeasure (ViaQ(..))
 
-newtype NominalDistance a = NominalDistance a
+-- | Pilot time for the task, units of hours.
+newtype PilotTime a = PilotTime a
     deriving (Eq, Ord, Show)
 
 instance
-    (q ~ Quantity Double [u| km |])
-    => DefaultDecimalPlaces (NominalDistance q) where
-    defdp _ = DecimalPlaces 1
+    (q ~ Quantity Double [u| h |])
+    => DefaultDecimalPlaces (PilotTime q) where
+    defdp _ = DecimalPlaces 4
 
 instance
-    (q ~ Quantity Double [u| km |])
-    => Newtype (NominalDistance q) q where
-    pack = NominalDistance
-    unpack (NominalDistance a) = a
+    (q ~ Quantity Double [u| h |])
+    => Newtype (PilotTime q) q where
+    pack = PilotTime
+    unpack (PilotTime a) = a
 
-instance (q ~ Quantity Double [u| km |]) => ToJSON (NominalDistance q) where
+instance (q ~ Quantity Double [u| h |]) => ToJSON (PilotTime q) where
     toJSON x = toJSON $ ViaQ x
 
-instance (q ~ Quantity Double [u| km |]) => FromJSON (NominalDistance q) where
+instance (q ~ Quantity Double [u| h |]) => FromJSON (PilotTime q) where
     parseJSON o = do
         ViaQ x <- parseJSON o
         return x
