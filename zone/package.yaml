@@ -13,10 +13,12 @@ library:
   dependencies:
   - base >=4.5 && <5
   - uom-plugin
-  - bifunctors
   - aeson
   - scientific
+  - newtype
   - siggy-chardust
+  - aeson-via-sci
+  - aeson-via-uom
   - flight-units
   - flight-latlng
   source-dirs: library
@@ -38,10 +40,12 @@ tests:
     - base
     - hlint
     - uom-plugin
-    - bifunctors
     - aeson
     - scientific
+    - newtype
     - siggy-chardust
+    - aeson-via-sci
+    - aeson-via-uom
     - flight-units
     - flight-latlng
     ghc-options:

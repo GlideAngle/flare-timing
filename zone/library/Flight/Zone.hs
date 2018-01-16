@@ -33,24 +33,12 @@ module Flight.Zone
     , toRationalLatLng
     ) where
 
-import Data.UnitsOfMeasure (u, zero, toRational', fromRational')
+import Data.UnitsOfMeasure (u, toRational', fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
-import Data.Number.RoundingFunctions (dpRound)
-import Data.Bifunctor.Flip (Flip(..))
 
 import Flight.Units (showRadian, realToFrac')
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
-
--- | The radius component of zones that are cylinder-like, and most are in some
--- way.
-newtype Radius a = Radius (Quantity a [u| m |]) deriving (Eq, Ord)
-
-instance Real a => Show (Radius a) where
-    show (Radius d) = "r = " ++ show dbl
-        where
-            d' = toRational' d
-            Flip rounded = dpRound 3 <$> Flip d'
-            MkQuantity dbl = fromRational' rounded :: Quantity Double [u| m |]
+import Flight.Zone.Radius (Radius(..))
 
 -- | The incline component of a conical zone.
 newtype Incline = Incline (Quantity Rational [u| rad |]) deriving (Eq, Ord)
@@ -80,7 +68,7 @@ data Zone a where
 
     -- | The turnpoint cylinder.
     Cylinder :: Eq a
-             => Radius a
+             => Radius a [u| m |]
              -> LatLng a [u| rad |]
              -> Zone a
 
@@ -88,13 +76,13 @@ data Zone a where
     -- used to discourage too low an end to final glides.
     Conical :: Eq a
             => Incline
-            -> Radius a
+            -> Radius a [u| m |]
             -> LatLng a [u| rad |]
             -> Zone a
 
     -- | A goal line perpendicular to the course line.
     Line :: Eq a
-         => Radius a
+         => Radius a [u| m |]
          -> LatLng a [u| rad |]
          -> Zone a
 
@@ -102,21 +90,21 @@ data Zone a where
     -- a goal line perpendicular to the course line followed by half
     -- a cylinder.
     SemiCircle :: Eq a
-               => Radius a
+               => Radius a [u| m |]
                -> LatLng a [u| rad |]
                -> Zone a
 
 deriving instance Eq (Zone a)
 
-fromRationalRadius :: Fractional a => Radius Rational -> Radius a
+fromRationalRadius :: Fractional a => Radius Rational u -> Radius a u
 fromRationalRadius (Radius r) =
     Radius $ fromRational' r
 
-toRationalRadius :: Real a => Radius a -> Radius Rational
+toRationalRadius :: Real a => Radius a u -> Radius Rational u
 toRationalRadius (Radius r) =
     Radius $ toRational' r
 
-realToFracRadius :: (Real a, Fractional b) => Radius a -> Radius b
+realToFracRadius :: (Real a, Fractional b) => Radius a u -> Radius b u
 realToFracRadius (Radius r) =
     Radius $ realToFrac' r
 
@@ -223,9 +211,9 @@ center (Line _ x) = x
 center (SemiCircle _ x) = x
 
 -- | The effective radius of a zone.
-radius :: Num a => Zone a -> Radius a
-radius (Point _) = Radius zero
-radius (Vector _ _) = Radius zero
+radius :: Num a => Zone a -> Radius a [u| m |]
+radius (Point _) = Radius [u| 0m |]
+radius (Vector _ _) = Radius [u| 0m |]
 radius (Cylinder r _) = r
 radius (Conical _ r _) = r
 radius (Line r _) = r

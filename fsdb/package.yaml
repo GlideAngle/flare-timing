@@ -25,6 +25,7 @@ library:
   - uom-plugin
   - aeson-via-sci
   - flight-latlng
+  - flight-units
   - flight-zone
   - flight-comp
   - flight-gap
@@ -56,6 +57,7 @@ tests:
     - time
     - aeson-via-sci
     - flight-latlng
+    - flight-units
     - flight-zone
     - flight-comp
     ghc-options:

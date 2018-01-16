@@ -17,8 +17,7 @@ module Flight.Mask.Internal.Zone
     ) where
 
 import Data.Time.Clock (UTCTime, addUTCTime)
-import Data.Ratio ((%))
-import Data.UnitsOfMeasure (u, convert)
+import Data.UnitsOfMeasure (u, convert, fromRational', toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import qualified Flight.Kml as Kml
@@ -32,7 +31,7 @@ import qualified Flight.Kml as Kml
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.LatLng.Raw (RawLat(..), RawLng(..))
 import Flight.Zone (Radius(..), Zone(..))
-import qualified Flight.Zone.Raw as Raw (RawZone(..))
+import qualified Flight.Zone.Raw as Raw (RawZone(..), RawRadius(..))
 import Flight.Track.Time (TimeRow(..))
 import Flight.Track.Cross (Fix(..))
 import Flight.Comp (SpeedSection)
@@ -112,11 +111,10 @@ rowToPoint
 
 zoneToCylinder :: (Eq a, Fractional a) => Raw.RawZone -> TaskZone a
 zoneToCylinder z =
-    TaskZone $ Cylinder radius (toLL(lat, lng))
+    TaskZone $ Cylinder (Radius r) (toLL(lat, lng))
     where
-        r = Raw.radius z
-        r' = fromRational $ r % 1
+        r = fromRational' . toRational' $ radius
 
-        radius = Radius (MkQuantity r')
+        Raw.RawRadius radius = Raw.radius z
         RawLat lat = Raw.lat z
         RawLng lng = Raw.lng z

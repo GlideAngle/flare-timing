@@ -1,3 +1,5 @@
+{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE PartialTypeSignatures #-}
 {-# LANGUAGE FlexibleInstances #-}
@@ -6,6 +8,7 @@ module Flight.Fsdb.Task (parseTasks) where
 
 import Data.List (sort)
 import Data.Map.Strict (Map, fromList, findWithDefault)
+import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
 import Text.XML.HXT.Core
     ( ArrowXml
@@ -35,6 +38,7 @@ import Text.ParserCombinators.Parsec
     , (<?>)
     , char
     , option
+    , choice
     )
 import qualified Text.ParserCombinators.Parsec as P (parse)
 import Text.Parsec.Language (emptyDef)
@@ -42,16 +46,17 @@ import Data.Functor.Identity (Identity)
 import Text.Parsec.Prim (ParsecT, parsecMap)
 
 import Flight.LatLng.Raw (RawLat(..), RawLng(..))
-import Flight.Zone.Raw (RawZone(..))
+import Flight.Zone.Raw (RawZone(..), RawRadius(..))
 import Flight.Comp
     (Task(..), SpeedSection, StartGate(..), OpenClose(..), Pilot(..))
 import Flight.Fsdb.Pilot (Key(..), KeyPilot(..), getCompPilot)
+import Flight.Units ()
 
 lexer :: GenTokenParser String u Identity
 lexer = P.makeTokenParser emptyDef
 
-pFloat:: ParsecT String u Identity Rational
-pFloat = parsecMap toRational $ P.float lexer 
+pFloat:: ParsecT String u Identity Double
+pFloat = parsecMap (either fromInteger id) $ P.naturalOrFloat lexer 
 
 pNat :: ParsecT String u Identity Integer
 pNat = P.natural lexer 
@@ -59,7 +64,7 @@ pNat = P.natural lexer
 pRat :: String -> GenParser Char st Rational
 pRat errMsg = do
     sign <- option id $ const negate <$> char '-'
-    x <- pFloat <?> errMsg
+    x <- parsecMap toRational (pFloat <?> errMsg)
     return $ sign x
 
 keyMap :: [KeyPilot] -> Map Key Pilot
@@ -139,8 +144,12 @@ parseTasks contents = do
     xs <- runX $ doc >>> getTask ps
     return $ Right xs
 
-pRadius :: GenParser Char st Integer
-pRadius = pNat <?> "No radius"
+pRadius :: GenParser Char st Double
+pRadius =
+    choice
+        [ pFloat <?> "No radius as float"
+        , fromIntegral <$> pNat <?> "No radius as a nat"
+        ]
 
 parseUtcTime :: String -> UTCTime
 parseUtcTime =
@@ -175,7 +184,7 @@ parseZone (name, tpLat, tpLng, tpRadius) =
                 name
                 (RawLat lat')
                 (RawLng lng')
-                rad'
+                (RawRadius (MkQuantity rad'))
             ]
 
         _ ->
@@ -187,4 +196,4 @@ parseZone (name, tpLat, tpLng, tpRadius) =
                      ]
 
         rad =
-            P.parse pRadius "" tpRadius
+            P.parse pRadius "" tpRadius)

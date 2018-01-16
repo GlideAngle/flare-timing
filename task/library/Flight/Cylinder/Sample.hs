@@ -77,7 +77,7 @@ data ZonePoint a
         , radial :: Bearing a
         -- ^ A point on the edge of this zone with this bearing from
         -- the origin.
-        , orbit :: Radius a
+        , orbit :: Radius a [u| m |]
         -- ^ A point on the edge of this zone at this distance from the
         -- origin.
         }

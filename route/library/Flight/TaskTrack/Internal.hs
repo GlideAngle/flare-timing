@@ -28,7 +28,7 @@ module Flight.TaskTrack.Internal
     ) where
 
 import Prelude hiding (span)
-import Data.UnitsOfMeasure ((+:), u, convert)
+import Data.UnitsOfMeasure ((+:), u, convert, fromRational', toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import qualified UTMRef as HC (UTMRef(..))
 
@@ -37,7 +37,7 @@ import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.LatLng.Raw (RawLat(..), RawLng(..), RawLatLng(..))
 import Data.Number.RoundingFunctions (dpRound)
 import Flight.Zone (Zone(..), Radius(..), fromRationalZone)
-import Flight.Zone.Raw (RawZone(..))
+import Flight.Zone.Raw (RawZone(..), RawRadius(..))
 import Flight.Distance (TaskDistance(..), PathDistance(..))
 import Flight.EastNorth (UtmZone(..), EastingNorthing(..))
 import Flight.Task (Tolerance(..), SpanLatLng, DistancePointToPoint)
@@ -110,6 +110,13 @@ rawToLatLng (RawLat lat') (RawLng lng') =
         latRad = convert latDeg :: Quantity _ [u| rad |]
         lngRad = convert lngDeg :: Quantity _ [u| rad |]
 
+rawToRadius
+    :: Fractional a
+    => RawRadius (Quantity Double [u| m |])
+    -> Radius a [u| m |]
+rawToRadius (RawRadius r) =
+    Radius . fromRational' . toRational' $ r
+
 toPoint :: (Eq a, Fractional a) => RawLatLng -> Zone a
 toPoint RawLatLng{..} =
     fromRationalZone . Point $ rawToLatLng lat lng
@@ -117,5 +124,5 @@ toPoint RawLatLng{..} =
 toCylinder :: (Eq a, Num a, Fractional a) => RawZone -> Zone a
 toCylinder RawZone{..} =
     Cylinder
-        (Radius (MkQuantity $ fromInteger radius))
+        (rawToRadius radius)
         (rawToLatLng lat lng)

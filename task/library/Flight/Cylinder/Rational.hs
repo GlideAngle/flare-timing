@@ -51,7 +51,7 @@ import Flight.Cylinder.Sample
 -- radius on the given radial true course 'rtc'.
 circum :: Epsilon
        -> LatLng Rational [u| rad |]
-       -> Radius Rational
+       -> Radius Rational [u| m |]
        -> TrueCourse Rational 
        -> LatLng Rational [u| rad |]
 circum
@@ -150,7 +150,7 @@ getClose :: Epsilon
          -> Rational -- ^ The limit radius.
          -> Tolerance Rational
          -> Int -- ^ How many tries.
-         -> Radius Rational -- ^ How far from the center.
+         -> Radius Rational [u| m |] -- ^ How far from the center.
          -> (TrueCourse Rational -> LatLng Rational [u| rad |]) -- ^ A point from the origin on this radial
          -> TrueCourse Rational -- ^ The true course for this radial.
          -> (ZonePoint Rational, TrueCourse Rational)
