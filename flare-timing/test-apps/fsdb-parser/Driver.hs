@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module Cmd.Driver (driverMain) where
+module Driver (driverMain) where
 
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
@@ -9,7 +9,6 @@ import Control.Monad (mapM_, when)
 import System.FilePath (takeFileName)
 
 import Flight.Cmd.Paths (checkPaths)
-import Cmd.Options (FsdbOptions(..), Detail(..), mkOptions)
 import Flight.Fsdb
     ( parseComp
     , parseNominal
@@ -25,6 +24,7 @@ import Flight.Comp
     , showTask
     , findFsdb
     )
+import Options (FsdbOptions(..), Detail(..), mkOptions)
 
 driverMain :: IO ()
 driverMain = do

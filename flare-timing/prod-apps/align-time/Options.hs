@@ -1,6 +1,6 @@
 {-# LANGUAGE QuasiQuotes #-}
 
-module Cmd.Options (description) where
+module Options (description) where
 
 import Text.RawString.QQ (r)
 import Flight.Cmd.Options (Description(..))

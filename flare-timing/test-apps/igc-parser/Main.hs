@@ -1,4 +1,4 @@
-import Igc.Driver (driverMain)
+import Driver (driverMain)
 
 main :: IO ()
 main = driverMain

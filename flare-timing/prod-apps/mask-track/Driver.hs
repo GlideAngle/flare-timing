@@ -19,7 +19,7 @@
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module Cmd.Driver (driverMain) where
+module Driver (driverMain) where
 
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
@@ -94,7 +94,6 @@ import Flight.Task (fromZs)
 
 import Flight.Cmd.Paths (checkPaths)
 import Flight.Cmd.Options (Math(..), CmdOptions(..), ProgramName(..), mkOptions)
-import Cmd.Options (description)
 import Flight.Lookup.Cross
     (FlyingLookup(..), crossFlying)
 import Flight.Lookup.Tag
@@ -129,6 +128,7 @@ import Flight.Route (ToTrackLine(..), TrackLine(..))
 import Flight.TaskTrack.Double ()
 import Span.Double (zoneToCylF, spanF, csF, cutF, dppF, csegF)
 import Span.Rational (zoneToCylR, spanR, csR, cutR, dppR, csegR)
+import Options (description)
     
 data FlightStats =
     FlightStats

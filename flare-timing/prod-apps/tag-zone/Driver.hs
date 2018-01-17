@@ -13,7 +13,7 @@
 
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
-module Cmd.Driver (driverMain) where
+module Driver (driverMain) where
 
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
@@ -30,7 +30,6 @@ import System.FilePath (takeFileName)
 import Flight.Cmd.Paths (checkPaths)
 import Flight.Cmd.Options
     (CmdOptions(..), ProgramName(..), Extension(..), mkOptions)
-import Cmd.Options (description)
 
 import Flight.Units ()
 import Flight.Mask (tagZones)
@@ -45,6 +44,7 @@ import Flight.Track.Cross
 import Flight.Track.Tag
     (Tagging(..), TrackTime(..), TrackTag(..), PilotTrackTag(..))
 import Flight.Scribe (readCrossing, writeTagging)
+import Options (description)
 
 driverMain :: IO ()
 driverMain = do

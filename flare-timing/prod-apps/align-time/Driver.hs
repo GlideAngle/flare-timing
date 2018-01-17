@@ -17,7 +17,7 @@
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module Cmd.Driver (driverMain) where
+module Driver (driverMain) where
 
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
@@ -34,10 +34,9 @@ import Data.UnitsOfMeasure ((/:), u, convert, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import System.Directory (createDirectoryIfMissing)
 import System.FilePath ((</>), takeFileName)
+
 import Flight.Cmd.Paths (checkPaths)
 import Flight.Cmd.Options (CmdOptions(..), ProgramName(..), mkOptions)
-import Cmd.Options (description)
-
 import Flight.Track.Time (LeadTick(..), RaceTick(..), TimeRow(..))
 import Flight.Comp
     ( AlignDir(..)
@@ -83,6 +82,7 @@ import Flight.Lookup.Cross
     (FlyingLookup(..), crossFlying)
 import Flight.Lookup.Tag
     (TickLookup(..), TagLookup(..), tagTicked, tagPilotTag)
+import Options (description)
 
 type Leg = Int
 

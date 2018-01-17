@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE QuasiQuotes #-}
 
-module Igc.Options (IgcOptions(..), mkOptions) where
+module Options (CmdOptions(..), mkOptions) where
 
 import Text.RawString.QQ (r)
 import System.Console.CmdArgs.Implicit
@@ -10,13 +10,14 @@ import System.Console.CmdArgs.Implicit
     , Default(def)
     , summary
     , program
+    , groupname
     , help
     , (&=)
     )
 
 -- | Options passed in on the command line.
-data IgcOptions
-    = IgcOptions { dir :: FilePath
+data CmdOptions
+    = CmdOptions { dir :: FilePath
                  -- ^ Picking all competition in this directory.
                  , file :: FilePath
                  -- ^ Picking the competition in this file.
@@ -25,15 +26,23 @@ data IgcOptions
 
 description :: String
 description = [r|
-A parser for IGC, a plain-text file format from the International Gliding
-Commission for recording flights.
+Extracts just the inputs needed for scoring a competition.
+
+Where 'c' is the comp name and '.' is the folder with competition inputs;
+    Reads  ./c.fsdb
+    Writes ./c.comp-inputs.yaml
 |]
 
-mkOptions :: String -> IgcOptions
+mkOptions :: String -> CmdOptions
 mkOptions programName =
-    IgcOptions
-        { dir = def &= help "Over all the IGC files in this directory"
-        , file = def &= help "With this one IGC file"
+    CmdOptions
+        { dir = def
+        &= help "Over all the competition FSDB files in this directory"
+        &= groupname "Source"
+
+        , file = def
+        &= help "With this one competition FSDB file"
+        &= groupname "Source"
         }
         &= summary description
         &= program programName

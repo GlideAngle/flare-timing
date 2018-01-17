@@ -15,7 +15,7 @@
 
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
-module Cmd.Driver (driverMain) where
+module Driver (driverMain) where
 
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
@@ -28,9 +28,9 @@ import Control.Lens ((^?), element)
 import Control.Monad (mapM_)
 import Control.Monad.Except (ExceptT(..), runExceptT)
 import System.FilePath (takeFileName)
+
 import Flight.Cmd.Paths (checkPaths)
 import Flight.Cmd.Options (Math(..), CmdOptions(..), ProgramName(..), mkOptions)
-import Cmd.Options (description)
 
 import Flight.Comp
     ( CompInputFile(..)
@@ -68,6 +68,7 @@ import Flight.Mask
     , nullFlying
     )
 import Flight.Scribe (writeCrossing)
+import Options (description)
 
 driverMain :: IO ()
 driverMain = do

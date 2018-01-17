@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE QuasiQuotes #-}
 
-module Cmd.Options (FsdbOptions(..), Detail(..), mkOptions) where
+module Options (FsdbOptions(..), Detail(..), mkOptions) where
 
 import Text.RawString.QQ (r)
 import System.Console.CmdArgs.Implicit

@@ -16,7 +16,7 @@
 
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
-module Cmd.Driver (driverMain) where
+module Driver (driverMain) where
 
 import Data.Maybe (fromMaybe)
 import System.Environment (getProgName)
@@ -27,12 +27,11 @@ import System.Clock (getTime, Clock(Monotonic))
 import Control.Monad (mapM_)
 import Control.Monad.Except (runExceptT)
 import System.FilePath (takeFileName)
-import Flight.Cmd.Paths (checkPaths)
-import Flight.Cmd.Options (CmdOptions(..), ProgramName(..), mkOptions)
-import Cmd.Options (description)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
+import Flight.Cmd.Paths (checkPaths)
+import Flight.Cmd.Options (CmdOptions(..), ProgramName(..), mkOptions)
 import Flight.Comp
     ( CompInputFile(..)
     , CompSettings(..)
@@ -47,14 +46,14 @@ import Flight.Track.Mask (Masking(..), TrackDistance(..))
 import qualified Flight.Track.Land as Cmp (Landing(..))
 import Flight.Scribe (readComp, readMasking, writeLanding)
 import Flight.Score
-    ( MinimumDistance(..)
-    , BestDistance(..)
+    ( BestDistance(..)
     , PilotDistance(..)
     , Difficulty(..)
     , mergeChunks
     )
 import qualified Flight.Score as Gap
     (ChunkDifficulty(..), landouts, lookahead, difficulty)
+import Options (description)
 
 driverMain :: IO ()
 driverMain = do

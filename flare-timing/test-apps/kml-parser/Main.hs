@@ -1,4 +1,4 @@
-import Kml.Driver (driverMain)
+import Driver (driverMain)
 
 main :: IO ()
 main = driverMain

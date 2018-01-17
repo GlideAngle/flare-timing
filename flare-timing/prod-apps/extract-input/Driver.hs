@@ -2,7 +2,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE NamedFieldPuns #-}
 
-module Cmd.Driver (driverMain) where
+module Driver (driverMain) where
 
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
@@ -14,7 +14,6 @@ import Control.Monad.Trans.Except (throwE)
 import Control.Monad.Except (ExceptT(..), runExceptT, lift)
 
 import Flight.Cmd.Paths (checkPaths)
-import Cmd.Options (CmdOptions(..), mkOptions)
 import Flight.Fsdb
     ( parseComp
     , parseNominal
@@ -35,6 +34,7 @@ import Flight.Comp
     , findFsdb
     )
 import Flight.Scribe (writeComp)
+import Options (CmdOptions(..), mkOptions)
 
 driverMain :: IO ()
 driverMain = do

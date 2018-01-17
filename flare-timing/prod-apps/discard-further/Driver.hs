@@ -17,7 +17,7 @@
 
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module Cmd.Driver (driverMain) where
+module Driver (driverMain) where
 
 import Data.List (zipWith4)
 import System.Environment (getProgName)
@@ -32,8 +32,6 @@ import System.FilePath ((</>), takeFileName)
 
 import Flight.Cmd.Paths (checkPaths)
 import Flight.Cmd.Options (CmdOptions(..), ProgramName(..), mkOptions)
-import Cmd.Options (description)
-
 import qualified Flight.Comp as Cmp (openClose)
 import Flight.Comp
     ( DiscardDir(..)
@@ -72,6 +70,7 @@ import Flight.Scribe
 import Flight.Lookup.Route (routeLength)
 import Flight.Lookup.Tag (TaskTimeLookup(..), tagTaskTime)
 import Flight.Score (Leg(..))
+import Options (description)
 
 headers :: [String]
 headers = ["leg", "tickLead", "tickRace", "distance", "area"]

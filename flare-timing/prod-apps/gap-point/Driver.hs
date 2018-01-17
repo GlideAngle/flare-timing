@@ -18,7 +18,7 @@
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module Cmd.Driver (driverMain) where
+module Driver (driverMain) where
 
 import Data.Ratio ((%))
 import System.Environment (getProgName)
@@ -29,12 +29,11 @@ import System.Clock (getTime, Clock(Monotonic))
 import Control.Monad (mapM_)
 import Control.Monad.Except (runExceptT)
 import System.FilePath (takeFileName)
-import Flight.Cmd.Paths (checkPaths)
-import Flight.Cmd.Options (CmdOptions(..), ProgramName(..), mkOptions)
-import Cmd.Options (description)
 import Data.UnitsOfMeasure (u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
+import Flight.Cmd.Paths (checkPaths)
+import Flight.Cmd.Options (CmdOptions(..), ProgramName(..), mkOptions)
 import Flight.Comp
     ( CompInputFile(..)
     , CompSettings(..)
@@ -65,6 +64,7 @@ import Flight.Score
     , distanceWeight, leadingWeight, arrivalWeight, timeWeight
     , launchValidity, distanceValidity, timeValidity
     )
+import Options (description)
 
 driverMain :: IO ()
 driverMain = do

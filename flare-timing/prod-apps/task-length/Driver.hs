@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module Cmd.Driver (driverMain) where
+module Driver (driverMain) where
 
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
@@ -13,8 +13,6 @@ import Control.Monad.Except (runExceptT)
 import System.FilePath (takeFileName)
 
 import Flight.Cmd.Paths (checkPaths)
-import Cmd.Options (CmdOptions(..), mkOptions)
-
 import Flight.Units ()
 import Flight.Comp
     ( CompSettings(tasks)
@@ -25,6 +23,7 @@ import Flight.Comp
     )
 import Flight.TaskTrack.Rational (taskTracks)
 import Flight.Scribe (readComp, writeRoute)
+import Options (CmdOptions(..), mkOptions)
 
 driverMain :: IO ()
 driverMain = do
