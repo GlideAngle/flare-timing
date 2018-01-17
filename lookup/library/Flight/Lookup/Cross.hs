@@ -8,12 +8,15 @@
 module Flight.Lookup.Cross
     ( FlyingLookup(..)
     , crossFlying
+    , flyingRange
     ) where
 
+import Data.Time.Clock (UTCTime)
+import Data.Maybe (fromMaybe)
 import Data.List (find)
 import Control.Monad (join)
 import Control.Lens ((^?), element)
-import Flight.Comp (IxTask(..), Pilot(..))
+import Flight.Comp (IxTask(..), Pilot(..), FlyingSection)
 import Flight.Track.Cross (TrackFlyingSection(..))
 import qualified Flight.Track.Cross as C (Crossing(..))
 
@@ -32,3 +35,8 @@ flyingTask C.Crossing{flying = xs} (IxTask i) pilot =
         Just ys ->
             join
             $ snd <$> find (\(p, _) -> p == pilot) ys
+
+flyingRange :: FlyingLookup -> UTCTime -> IxTask -> Pilot -> FlyingSection UTCTime
+flyingRange (FlyingLookup flying) mark0 iTask p =
+    fromMaybe (Just (mark0, mark0))
+    $ join (fmap flyingTimes . (\f -> f iTask p) <$> flying)

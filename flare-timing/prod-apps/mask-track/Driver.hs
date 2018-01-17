@@ -28,7 +28,6 @@ import Data.List (sortOn)
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map (fromList, lookup)
 import Formatting ((%), fprint)
-import Data.Time.Clock (UTCTime)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Control.Arrow (second)
@@ -50,7 +49,6 @@ import Flight.Comp
     , Task(..)
     , IxTask(..)
     , TrackFileFail(..)
-    , FlyingSection
     , RouteLookup(..)
     , FirstLead(..)
     , FirstStart(..)
@@ -73,7 +71,6 @@ import Flight.Mask
     , dashDistanceToGoal
     , dashDistanceFlown
     )
-import Flight.Track.Cross (TrackFlyingSection(..))
 import Flight.Track.Tag (Tagging)
 import Flight.Track.Time (LeadTick(..),taskToLeading, leadingSum, minLeading)
 import qualified Flight.Track.Time as Time (TimeRow(..), TickRow(..))
@@ -88,7 +85,7 @@ import Flight.Task (fromZs)
 import Flight.Cmd.Paths (checkPaths)
 import Flight.Cmd.Options (Math(..), CmdOptions(..), ProgramName(..), mkOptions)
 import Flight.Lookup.Cross
-    (FlyingLookup(..), crossFlying)
+    (FlyingLookup(..), crossFlying, flyingRange)
 import Flight.Lookup.Tag
     ( TaskTimeLookup(..)
     , ArrivalRankLookup(..)
@@ -594,7 +591,7 @@ flown' :: TaskDistance Double
        -> FnIxTask (Pilot -> FlightStats)
 flown'
     dTaskF@(TaskDistance td)
-    (FlyingLookup lookupFlying)
+    flying
     math tags tasks iTask@(IxTask i)
     mf@MarkedFixes{mark0}
     p =
@@ -618,13 +615,9 @@ flown'
             fromMaybe (RaceSections [] [] [])
             $ join ((\f -> f iTask speedSection' p mf) <$> lookupTicked)
 
-        flyingRange :: FlyingSection UTCTime =
-            fromMaybe (Just (mark0, mark0))
-            $ join (fmap flyingTimes . (\f -> f iTask p) <$> lookupFlying)
-
         xs =
             FlyCut
-                { cut = flyingRange
+                { cut = flyingRange flying mark0 iTask p
                 , uncut = mf
                 }
 
