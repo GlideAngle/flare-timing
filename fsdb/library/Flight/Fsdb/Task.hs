@@ -196,4 +196,4 @@ parseZone (name, tpLat, tpLng, tpRadius) =
                      ]
 
         rad =
-            P.parse pRadius "" tpRadius)
+            P.parse pRadius "" tpRadius
