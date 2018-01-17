@@ -85,7 +85,7 @@ import Flight.Task (fromZs)
 import Flight.Cmd.Paths (checkPaths)
 import Flight.Cmd.Options (Math(..), CmdOptions(..), ProgramName(..), mkOptions)
 import Flight.Lookup.Cross
-    (FlyingLookup(..), crossFlying, flyingRange)
+    (FlyingLookup(..), crossFlying, flyingTimeRange)
 import Flight.Lookup.Tag
     ( TaskTimeLookup(..)
     , ArrivalRankLookup(..)
@@ -617,7 +617,7 @@ flown'
 
         xs =
             FlyCut
-                { cut = flyingRange flying mark0 iTask p
+                { cut = flyingTimeRange flying mark0 iTask p
                 , uncut = mf
                 }
 
