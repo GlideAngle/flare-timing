@@ -28,7 +28,7 @@ import Data.List (sortOn)
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map (fromList, lookup)
 import Formatting ((%), fprint)
-import Data.Time.Clock (UTCTime, diffUTCTime)
+import Data.Time.Clock (UTCTime)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Control.Arrow (second)
@@ -88,6 +88,7 @@ import Flight.Track.Mask
     , Land
     , racing
     )
+import Flight.Track.Speed (pilotTime)
 import Flight.Kml (MarkedFixes(..))
 import Data.Number.RoundingFunctions (dpRound)
 import Flight.Task (fromZs)
@@ -609,7 +610,7 @@ flown'
         Nothing -> nullStats
 
         Just task' ->
-            case (pilotTime, arrivalRank) of
+            case (pilotTime', arrivalRank) of
                 (Nothing, _) ->
                     tickedStats {statLand = Just $ landDistance task' }
 
@@ -645,9 +646,9 @@ flown'
                         }
                 }
 
-        pilotTime =
+        pilotTime' =
             join
-            $ diffTimeHours
+            $ pilotTime
             <$> join ((\f -> f iTask speedSection' p mf) <$> lookupPilotTime)
 
         arrivalRank =
@@ -703,15 +704,3 @@ flown'
         (ArrivalRankLookup lookupArrivalRank) = tagArrivalRank tags
         (TimeLookup lookupPilotTime) = tagPilotTime tags
         dTaskR = TaskDistance $ toRational' td
-
-diffTimeHours :: StartEndMark -> Maybe (PilotTime (Quantity Double [u| h |]))
-diffTimeHours StartEnd{unEnd = Nothing} =
-    Nothing
-diffTimeHours StartEnd{unStart, unEnd = Just end} =
-    Just . PilotTime $ hrs
-    where
-        secs :: Quantity Double [u| s |]
-        secs = fromRational' . MkQuantity . toRational $ diffUTCTime end unStart
-
-        hrs :: Quantity _ [u| h |]
-        hrs = convert secs

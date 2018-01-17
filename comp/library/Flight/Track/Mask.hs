@@ -40,15 +40,14 @@ import Flight.Score
     ( PilotsAtEss(..)
     , PositionAtEss(..)
     , ArrivalFraction(..)
-    , SpeedFraction(..)
     , BestTime(..)
-    , PilotTime(..)
     , LeadingCoefficient(..)
     , LeadingFraction(..)
     , EssTime(..)
     )
 import Flight.Field (FieldOrdering(..))
 import Flight.Units ()
+import Flight.Track.Speed (TrackSpeed(..))
 
 type Nigh = TrackLine
 type Land = Double
@@ -138,14 +137,6 @@ racing oc firstLead firstStart lastArrival = do
             , openClose = EssTime . toRational $
                 close `diffUTCTime` open 
             }
-
--- ^ If arrived at goal then speed fraction.
-data TrackSpeed =
-    TrackSpeed
-        { time :: PilotTime (Quantity Double [u| h |])
-        , frac :: SpeedFraction
-        }
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 -- ^ If arrived at goal then arrival rank and fraction.
 data TrackArrival =
