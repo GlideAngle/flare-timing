@@ -65,7 +65,7 @@ import Flight.Comp
 import Flight.Distance (TaskDistance(..))
 import Flight.Units ()
 import Flight.Mask
-    ( Sliver(..), FnIxTask, RaceSections(..), FlyCut(..)
+    ( Sliver(..), FnIxTask, FlyCut(..)
     , checkTracks
     , dashPathToGoalTimeRows
     , dashDistanceToGoal
@@ -78,19 +78,17 @@ import Flight.Track.Arrival (TrackArrival(..))
 import Flight.Track.Distance (TrackDistance(..))
 import Flight.Track.Lead (TrackLead(..))
 import Flight.Track.Mask (Masking(..), RaceTime(..), Nigh, Land, racing)
-import Flight.Track.Speed (TrackSpeed(..), pilotTime)
+import Flight.Track.Speed (TrackSpeed(..))
 import Flight.Kml (MarkedFixes(..))
 import Data.Number.RoundingFunctions (dpRound)
 import Flight.Task (fromZs)
 import Flight.Cmd.Paths (checkPaths)
 import Flight.Cmd.Options (Math(..), CmdOptions(..), ProgramName(..), mkOptions)
-import Flight.Lookup.Cross
-    (FlyingLookup(..), crossFlying, flyingTimeRange)
+import Flight.Lookup.Cross (FlyingLookup(..), crossFlying)
+import qualified Flight.Lookup as Lookup
+    (flyingTimeRange, arrivalRank, pilotTime, ticked)
 import Flight.Lookup.Tag
     ( TaskTimeLookup(..)
-    , ArrivalRankLookup(..)
-    , TimeLookup(..)
-    , TickLookup(..)
     , tagTaskTime
     , tagArrivalRank
     , tagPilotTime
@@ -611,15 +609,16 @@ flown'
     where
         maybeTask = tasks ^? element (i - 1)
 
-        ticked =
-            fromMaybe (RaceSections [] [] [])
-            $ join ((\f -> f iTask speedSection' p mf) <$> lookupTicked)
+        ticked = Lookup.ticked (tagTicked tags) mf iTask speedSection' p
+        pilotTime' = Lookup.pilotTime (tagPilotTime tags) mf iTask speedSection' p
+        arrivalRank = Lookup.arrivalRank (tagArrivalRank tags) mf iTask speedSection' p
 
         xs =
             FlyCut
-                { cut = flyingTimeRange flying mark0 iTask p
+                { cut = Lookup.flyingTimeRange flying mark0 iTask p
                 , uncut = mf
                 }
+
 
         tickedStats =
             nullStats
@@ -630,15 +629,6 @@ flown'
                         , dashFlyCut = Just xs
                         }
                 }
-
-        pilotTime' =
-            join
-            $ pilotTime
-            <$> join ((\f -> f iTask speedSection' p mf) <$> lookupPilotTime)
-
-        arrivalRank =
-            PositionAtEss . toInteger
-            <$> join ((\f -> f iTask speedSection' p mf) <$> lookupArrivalRank)
 
         landDistance task =
                 TrackDistance
@@ -685,7 +675,4 @@ flown'
                 Nothing -> Nothing
                 Just Task{..} -> speedSection
 
-        (TickLookup lookupTicked) = tagTicked tags
-        (ArrivalRankLookup lookupArrivalRank) = tagArrivalRank tags
-        (TimeLookup lookupPilotTime) = tagPilotTime tags
         dTaskR = TaskDistance $ toRational' td

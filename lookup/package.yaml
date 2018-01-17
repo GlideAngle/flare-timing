@@ -41,6 +41,7 @@ library:
   - Flight.Lookup.Route
   - Flight.Lookup.Cross
   - Flight.Lookup.Tag
+  - Flight.Lookup
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
 name: flight-lookup

@@ -22,6 +22,7 @@ module Flight.Mask
     , FlyClipping(..)
     , FlyClipSection(..)
     , FlyCut(..)
+    , ZoneIdx
     , countFixes
     , checkTracks
     , madeZones
@@ -46,7 +47,7 @@ import Flight.Mask.Tag
 import Flight.Mask.Distance
 import Flight.Mask.Time
 import Flight.Mask.Tracks
-import Flight.Mask.Internal.Zone (TaskZone, zoneToCylinder, slice)
+import Flight.Mask.Internal.Zone (ZoneIdx, TaskZone, zoneToCylinder, slice)
 import Flight.Mask.Internal.Race
     ( FlyClipping(..)
     , FlyClipSection(..)
