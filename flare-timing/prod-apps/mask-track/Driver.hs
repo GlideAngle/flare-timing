@@ -71,7 +71,7 @@ import qualified Flight.Track.Time as Time (TimeRow(..), TickRow(..))
 import Flight.Distance (TaskDistance(..))
 import Flight.Units ()
 import Flight.Mask
-    ( Sliver(..), FnIxTask, RaceSections(..), FlyCut(..), Ticked
+    ( Sliver(..), FnIxTask, RaceSections(..), FlyCut(..)
     , checkTracks
     , dashPathToGoalTimeRows
     , dashDistanceToGoal
@@ -129,34 +129,8 @@ import Flight.TaskTrack.Double ()
 import Span.Double (zoneToCylF, spanF, csF, cutF, dppF, csegF)
 import Span.Rational (zoneToCylR, spanR, csR, cutR, dppR, csegR)
 import Options (description)
+import Stats (FlightStats(..), DashPathInputs(..), nullStats)
     
-data FlightStats =
-    FlightStats
-        { statTimeRank :: Maybe (PilotTime (Quantity Double [u| h |]), PositionAtEss)
-        , statLand :: Maybe (TrackDistance Land)
-        , statDash :: DashPathInputs
-        }
-
-data DashPathInputs =
-    DashPathInputs
-        { dashTask :: Maybe Task
-        , dashTicked :: Ticked
-        , dashFlyCut :: Maybe (FlyCut UTCTime MarkedFixes)
-        }
-
-nullStats :: FlightStats
-nullStats =
-    FlightStats
-        { statTimeRank = Nothing
-        , statLand = Nothing
-        , statDash =
-            DashPathInputs
-                { dashTask = Nothing
-                , dashTicked = RaceSections [] [] []
-                , dashFlyCut = Nothing
-                }
-        }
-
 driverMain :: IO ()
 driverMain = do
     name <- getProgName
