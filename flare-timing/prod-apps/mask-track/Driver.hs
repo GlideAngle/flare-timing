@@ -38,7 +38,7 @@ import Data.UnitsOfMeasure ((-:), u, convert, toRational', fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import System.FilePath (takeFileName)
 
-import qualified Flight.Comp as Cmp (Nominal(..), openClose)
+import qualified Flight.Comp as Cmp (Nominal(..))
 import Flight.Comp
     ( CompInputFile(..)
     , TaskLengthFile(..)
@@ -50,11 +50,6 @@ import Flight.Comp
     , IxTask(..)
     , TrackFileFail(..)
     , RouteLookup(..)
-    , FirstLead(..)
-    , FirstStart(..)
-    , LastArrival(..)
-    , StartEnd(..)
-    , StartEndMark
     , compToTaskLength
     , compToCross
     , compToMask
@@ -77,7 +72,7 @@ import qualified Flight.Track.Time as Time (TimeRow(..), TickRow(..))
 import Flight.Track.Arrival (TrackArrival(..))
 import Flight.Track.Distance (TrackDistance(..))
 import Flight.Track.Lead (TrackLead(..))
-import Flight.Track.Mask (Masking(..), RaceTime(..), Nigh, Land, racing)
+import Flight.Track.Mask (Masking(..), Nigh, Land)
 import Flight.Track.Speed (TrackSpeed(..))
 import Flight.Kml (MarkedFixes(..))
 import Data.Number.RoundingFunctions (dpRound)
@@ -86,7 +81,7 @@ import Flight.Cmd.Paths (checkPaths)
 import Flight.Cmd.Options (Math(..), CmdOptions(..), ProgramName(..), mkOptions)
 import Flight.Lookup.Cross (FlyingLookup(..), crossFlying)
 import qualified Flight.Lookup as Lookup
-    (flyingTimeRange, arrivalRank, pilotTime, ticked)
+    (flyingTimeRange, arrivalRank, pilotTime, ticked, compRoutes, compRaceTimes)
 import Flight.Lookup.Tag
     ( TaskTimeLookup(..)
     , tagTaskTime
@@ -211,8 +206,8 @@ writeMask
                 }
         , tasks
         }
-    lengths@(RouteLookup lookupTaskLength)
-    (TaskTimeLookup lookupTaskTime)
+    routes
+    lookupTaskTime
     selectTasks selectPilots compFile f = do
 
     checks <- runExceptT $ f compFile selectTasks selectPilots
@@ -254,9 +249,7 @@ writeMask
                     ((fmap . fmap) fst dsLand)
 
             -- Task lengths (ls).
-            let lsTask :: [Maybe (TaskDistance Double)] =
-                    (\i -> join ((\g -> g i) <$> lookupTaskLength))
-                    <$> iTasks
+            let lsTask = Lookup.compRoutes routes iTasks
 
             let pilotsArriving = (fmap . fmap) fst as 
             let pilotsLandingOut = (fmap . fmap) fst dsLand
@@ -266,35 +259,11 @@ writeMask
                     | pLs <- pilotsLandingOut
                     ]
 
-            let raceStartEnd :: [Maybe StartEndMark] =
-                    join <$>
-                    [ ($ s) . ($ i) <$> lookupTaskTime
-                    | i <- iTasks
-                    | s <- speedSection <$> tasks
-                    ]
-
-            let raceFirstLead :: [Maybe FirstLead] =
-                    (fmap . fmap) (FirstLead . unStart) raceStartEnd
-
-            let raceFirstStart :: [Maybe FirstStart] =
-                    (fmap . fmap) (FirstStart . unStart) raceStartEnd
-
-            let raceLastArrival :: [Maybe LastArrival] =
-                    join
-                    <$> (fmap . fmap) (fmap LastArrival . unEnd) raceStartEnd
-
-            let raceTime :: [Maybe RaceTime] =
-                    [ racing (Cmp.openClose ss zt) fl fs la
-                    | ss <- speedSection <$> tasks
-                    | zt <- zoneTimes <$> tasks
-                    | fl <- raceFirstLead
-                    | fs <- raceFirstStart
-                    | la <- raceLastArrival
-                    ]
+            let raceTime = Lookup.compRaceTimes lookupTaskTime iTasks tasks
 
             rowsLeadingStep :: [[(Pilot, [Time.TickRow])]]
                 <- readCompLeading
-                        lengths compFile (includeTask selectTasks)
+                        routes compFile (includeTask selectTasks)
                         (IxTask <$> [1 .. ])
                         (speedSectionToLeg . speedSection <$> tasks)
                         raceTime
