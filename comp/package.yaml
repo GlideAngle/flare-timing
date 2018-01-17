@@ -44,6 +44,9 @@ library:
   - Flight.Track.Land
   - Flight.Track.Point
   - Flight.Track.Speed
+  - Flight.Track.Arrival
+  - Flight.Track.Lead
+  - Flight.Track.Distance
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
 name: flight-comp

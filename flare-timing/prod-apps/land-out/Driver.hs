@@ -42,7 +42,8 @@ import Flight.Comp
     , findCompInput
     )
 import Flight.Units ()
-import Flight.Track.Mask (Masking(..), TrackDistance(..))
+import Flight.Track.Distance (TrackDistance(..))
+import Flight.Track.Mask (Masking(..))
 import qualified Flight.Track.Land as Cmp (Landing(..))
 import Flight.Scribe (readComp, readMasking, writeLanding)
 import Flight.Score

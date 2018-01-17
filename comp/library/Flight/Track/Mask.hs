@@ -1,7 +1,6 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE NamedFieldPuns #-}
@@ -17,10 +16,6 @@ Tracks masked with task control zones.
 -}
 module Flight.Track.Mask
     ( Masking(..)
-    , TrackDistance(..)
-    , TrackArrival(..)
-    , TrackSpeed(..)
-    , TrackLead(..)
     , RaceTime(..)
     , Nigh
     , Land
@@ -38,16 +33,16 @@ import Flight.Pilot (Pilot(..))
 import Flight.Route (TrackLine(..))
 import Flight.Score
     ( PilotsAtEss(..)
-    , PositionAtEss(..)
-    , ArrivalFraction(..)
     , BestTime(..)
     , LeadingCoefficient(..)
-    , LeadingFraction(..)
     , EssTime(..)
     )
 import Flight.Field (FieldOrdering(..))
 import Flight.Units ()
 import Flight.Track.Speed (TrackSpeed(..))
+import Flight.Track.Arrival (TrackArrival(..))
+import Flight.Track.Lead (TrackLead(..))
+import Flight.Track.Distance (TrackDistance(..))
 
 type Nigh = TrackLine
 type Land = Double
@@ -137,33 +132,6 @@ racing oc firstLead firstStart lastArrival = do
             , openClose = EssTime . toRational $
                 close `diffUTCTime` open 
             }
-
--- ^ If arrived at goal then arrival rank and fraction.
-data TrackArrival =
-    TrackArrival
-        { rank :: PositionAtEss
-        , frac :: ArrivalFraction
-        }
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
-
-data TrackLead =
-    TrackLead
-        { coef :: LeadingCoefficient
-        , frac :: LeadingFraction
-        }
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
-
-data TrackDistance a =
-    TrackDistance
-        { togo :: Maybe a
-        -- ^ The distance to goal.
-        , made :: Maybe Double
-        -- ^ The task distance minus the distance to goal.
-        }
-    deriving (Eq, Ord, Show, Generic)
-
-instance (ToJSON a) => ToJSON (TrackDistance a)
-instance (FromJSON a) => FromJSON (TrackDistance a)
 
 instance FieldOrdering Masking where
     fieldOrder _ = cmp

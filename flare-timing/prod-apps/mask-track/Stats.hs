@@ -9,7 +9,8 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Kml (MarkedFixes(..))
 import Flight.Comp (Task(..))
-import Flight.Track.Mask (TrackDistance(..), Land)
+import Flight.Track.Distance (TrackDistance(..))
+import Flight.Track.Mask (Land)
 import Flight.Mask (FlyCut(..), Ticked, RaceSections(..))
 import Flight.Score (PilotTime(..), PositionAtEss(..))
 

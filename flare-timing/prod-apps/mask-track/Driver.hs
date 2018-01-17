@@ -64,10 +64,6 @@ import Flight.Comp
     , findCompInput
     , speedSectionToLeg
     )
-import Flight.Track.Cross (TrackFlyingSection(..))
-import Flight.Track.Tag (Tagging)
-import Flight.Track.Time (LeadTick(..),taskToLeading, leadingSum, minLeading)
-import qualified Flight.Track.Time as Time (TimeRow(..), TickRow(..))
 import Flight.Distance (TaskDistance(..))
 import Flight.Units ()
 import Flight.Mask
@@ -77,22 +73,18 @@ import Flight.Mask
     , dashDistanceToGoal
     , dashDistanceFlown
     )
-import Flight.Track.Mask
-    ( Masking(..)
-    , TrackArrival(..)
-    , TrackSpeed(..)
-    , TrackLead(..)
-    , TrackDistance(..)
-    , RaceTime(..)
-    , Nigh
-    , Land
-    , racing
-    )
-import Flight.Track.Speed (pilotTime)
+import Flight.Track.Cross (TrackFlyingSection(..))
+import Flight.Track.Tag (Tagging)
+import Flight.Track.Time (LeadTick(..),taskToLeading, leadingSum, minLeading)
+import qualified Flight.Track.Time as Time (TimeRow(..), TickRow(..))
+import Flight.Track.Arrival (TrackArrival(..))
+import Flight.Track.Distance (TrackDistance(..))
+import Flight.Track.Lead (TrackLead(..))
+import Flight.Track.Mask (Masking(..), RaceTime(..), Nigh, Land, racing)
+import Flight.Track.Speed (TrackSpeed(..), pilotTime)
 import Flight.Kml (MarkedFixes(..))
 import Data.Number.RoundingFunctions (dpRound)
 import Flight.Task (fromZs)
-
 import Flight.Cmd.Paths (checkPaths)
 import Flight.Cmd.Options (Math(..), CmdOptions(..), ProgramName(..), mkOptions)
 import Flight.Lookup.Cross
