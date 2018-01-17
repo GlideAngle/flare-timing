@@ -35,10 +35,9 @@ import Control.Arrow (second)
 import Control.Lens ((^?), element)
 import Control.Monad (join)
 import Control.Monad.Except (ExceptT, runExceptT)
-import Data.UnitsOfMeasure ((/:), (-:), u, convert, toRational', fromRational')
+import Data.UnitsOfMeasure ((-:), u, convert, toRational', fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import System.FilePath (takeFileName)
-import qualified Data.Number.FixedFunctions as F
 
 import qualified Flight.Comp as Cmp (Nominal(..), openClose)
 import Flight.Comp
@@ -69,15 +68,14 @@ import Flight.Track.Cross (TrackFlyingSection(..))
 import Flight.Track.Tag (Tagging)
 import Flight.Track.Time (LeadTick(..),taskToLeading, leadingSum, minLeading)
 import qualified Flight.Track.Time as Time (TimeRow(..), TickRow(..))
-import Flight.Distance (PathDistance, TaskDistance(..))
+import Flight.Distance (TaskDistance(..))
 import Flight.Units ()
 import Flight.Mask
-    ( Sliver(..), FnIxTask, TaskZone, RaceSections(..), FlyCut(..), Ticked
+    ( Sliver(..), FnIxTask, RaceSections(..), FlyCut(..), Ticked
     , checkTracks
     , dashPathToGoalTimeRows
     , dashDistanceToGoal
     , dashDistanceFlown
-    , zoneToCylinder
     )
 import Flight.Track.Mask
     ( Masking(..)
@@ -91,17 +89,8 @@ import Flight.Track.Mask
     , racing
     )
 import Flight.Kml (MarkedFixes(..))
-import Flight.Zone (Zone, Bearing(..))
-import Flight.Zone.Raw (RawZone)
-import Flight.LatLng.Rational (Epsilon(..), defEps)
 import Data.Number.RoundingFunctions (dpRound)
-import Flight.Task (SpanLatLng, CircumSample, AngleCut(..), fromZs)
-import qualified Flight.PointToPoint.Rational as Rat
-    (distanceHaversine, distancePointToPoint, costSegment)
-import qualified Flight.PointToPoint.Double as Dbl
-    (distanceHaversine, distancePointToPoint, costSegment)
-import qualified Flight.Cylinder.Rational as Rat (circumSample)
-import qualified Flight.Cylinder.Double as Dbl (circumSample)
+import Flight.Task (fromZs)
 
 import Flight.Cmd.Paths (checkPaths)
 import Flight.Cmd.Options (Math(..), CmdOptions(..), ProgramName(..), mkOptions)
@@ -138,6 +127,8 @@ import Flight.Score
     )
 import Flight.Route (ToTrackLine(..), TrackLine(..))
 import Flight.TaskTrack.Double ()
+import Span.Double (zoneToCylF, spanF, csF, cutF, dppF, csegF)
+import Span.Rational (zoneToCylR, spanR, csR, cutR, dppR, csegR)
     
 data FlightStats =
     FlightStats
@@ -738,58 +729,6 @@ flown'
         (ArrivalRankLookup lookupArrivalRank) = tagArrivalRank tags
         (TimeLookup lookupPilotTime) = tagPilotTime tags
         dTaskR = TaskDistance $ toRational' td
-
-zoneToCylR :: RawZone -> TaskZone Rational
-zoneToCylR = zoneToCylinder
-
-zoneToCylF :: RawZone -> TaskZone Double
-zoneToCylF = zoneToCylinder
-
-spanR :: SpanLatLng Rational
-spanR = Rat.distanceHaversine defEps
-
-spanF :: SpanLatLng Double
-spanF = Dbl.distanceHaversine
-
-csR :: CircumSample Rational
-csR = Rat.circumSample
-
-csF :: CircumSample Double
-csF = Dbl.circumSample
-
-cutR :: AngleCut Rational
-cutR =
-    AngleCut
-        { sweep = let (Epsilon e) = defEps in Bearing . MkQuantity $ F.pi e
-        , nextSweep = nextCutR
-        }
-
-cutF :: AngleCut Double
-cutF =
-    AngleCut
-        { sweep = Bearing $ MkQuantity pi
-        , nextSweep = nextCutF
-        }
-
-nextCutR :: AngleCut Rational -> AngleCut Rational
-nextCutR x@AngleCut{sweep} =
-    let (Bearing b) = sweep in x{sweep = Bearing $ b /: 2}
-
-nextCutF :: AngleCut Double -> AngleCut Double
-nextCutF x@AngleCut{sweep} =
-    let (Bearing b) = sweep in x{sweep = Bearing $ b /: 2}
-
-dppR :: SpanLatLng Rational -> [Zone Rational] -> PathDistance Rational
-dppR = Rat.distancePointToPoint
-
-dppF :: SpanLatLng Double -> [Zone Double] -> PathDistance Double
-dppF = Dbl.distancePointToPoint
-
-csegR :: Zone Rational -> Zone Rational -> PathDistance Rational
-csegR = Rat.costSegment spanR
-
-csegF :: Zone Double -> Zone Double -> PathDistance Double
-csegF = Dbl.costSegment spanF
 
 diffTimeHours :: StartEndMark -> Maybe (PilotTime (Quantity Double [u| h |]))
 diffTimeHours StartEnd{unEnd = Nothing} =

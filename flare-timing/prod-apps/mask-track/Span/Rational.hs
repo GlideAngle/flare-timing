@@ -1,0 +1,51 @@
+{-# LANGUAGE NamedFieldPuns #-}
+
+module Span.Rational
+    ( zoneToCylR
+    , spanR
+    , csR
+    , cutR
+    , nextCutR
+    , dppR
+    , csegR
+    ) where
+
+import Data.UnitsOfMeasure ((/:))
+import Data.UnitsOfMeasure.Internal (Quantity(..))
+import qualified Data.Number.FixedFunctions as F
+
+import qualified Flight.PointToPoint.Rational as Rat
+    (distanceHaversine, distancePointToPoint, costSegment)
+import qualified Flight.Cylinder.Rational as Rat (circumSample)
+import Flight.Distance (PathDistance)
+import Flight.Zone (Zone, Bearing(..))
+import Flight.Zone.Raw (RawZone)
+import Flight.Task (SpanLatLng, CircumSample, AngleCut(..))
+import Flight.Mask (TaskZone, zoneToCylinder)
+import Flight.LatLng.Rational (Epsilon(..), defEps)
+
+zoneToCylR :: RawZone -> TaskZone Rational
+zoneToCylR = zoneToCylinder
+
+spanR :: SpanLatLng Rational
+spanR = Rat.distanceHaversine defEps
+
+csR :: CircumSample Rational
+csR = Rat.circumSample
+
+cutR :: AngleCut Rational
+cutR =
+    AngleCut
+        { sweep = let (Epsilon e) = defEps in Bearing . MkQuantity $ F.pi e
+        , nextSweep = nextCutR
+        }
+
+nextCutR :: AngleCut Rational -> AngleCut Rational
+nextCutR x@AngleCut{sweep} =
+    let (Bearing b) = sweep in x{sweep = Bearing $ b /: 2}
+
+dppR :: SpanLatLng Rational -> [Zone Rational] -> PathDistance Rational
+dppR = Rat.distancePointToPoint
+
+csegR :: Zone Rational -> Zone Rational -> PathDistance Rational
+csegR = Rat.costSegment spanR
