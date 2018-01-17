@@ -67,11 +67,11 @@ import Flight.Mask
     , dashDistanceFlown
     )
 import Flight.Track.Tag (Tagging)
-import Flight.Track.Time (LeadTick(..),taskToLeading, leadingSum, minLeading)
+import Flight.Track.Time (LeadTick(..))
 import qualified Flight.Track.Time as Time (TimeRow(..), TickRow(..))
 import Flight.Track.Arrival (TrackArrival(..))
 import Flight.Track.Distance (TrackDistance(..))
-import Flight.Track.Lead (TrackLead(..))
+import Flight.Track.Lead (compLeading)
 import Flight.Track.Mask (Masking(..), Nigh, Land)
 import Flight.Track.Speed (TrackSpeed(..))
 import Flight.Kml (MarkedFixes(..))
@@ -100,11 +100,8 @@ import Flight.Score
     , PositionAtEss(..)
     , BestTime(..)
     , PilotTime(..)
-    , LeadingCoefficient(..)
-    , LeadingFraction(..)
     , NominalDistance(..)
     , arrivalFraction
-    , leadingFraction
     , speedFraction
     )
 import Flight.Route (ToTrackLine(..), TrackLine(..))
@@ -269,39 +266,7 @@ writeMask
                         raceTime
                         pilots
 
-            let rowsLeadingSum' :: [[(Pilot, Maybe LeadingCoefficient)]] =
-                        [ (fmap . fmap) (leadingSum l s) xs
-                        | l <- (fmap . fmap) taskToLeading lsTask
-                        | s <- speedSection <$> tasks
-                        | xs <- rowsLeadingStep
-                        ]
-
-            let rowsLeadingSum :: [[(Pilot, LeadingCoefficient)]] =
-                    catMaybes
-                    <$> (fmap . fmap) floatMaybe rowsLeadingSum'
-
-            let minLead =
-                    minLeading
-                    <$> (fmap . fmap) snd rowsLeadingSum
-
-            let lead :: [[(Pilot, TrackLead)]] =
-                    sortOn ((\TrackLead{coef = LeadingCoefficient c} ->
-                        c) . snd)
-                    <$>
-                    [(fmap . fmap)
-                        (\lc ->
-                            TrackLead
-                                { coef = lc
-                                , frac =
-                                    maybe
-                                        (LeadingFraction 0)
-                                        (`leadingFraction` lc)
-                                        minL
-                                })
-                        xs
-                    | minL <- minLead
-                    | xs <- rowsLeadingSum
-                    ]
+            let (minLead, lead) = compLeading rowsLeadingStep lsTask tasks
 
             -- Distances (ds) of point in the flight closest to goal.
             let dsNigh :: [[(Pilot, TrackDistance Land)]] =
@@ -367,10 +332,6 @@ writeMask
                     , nigh = dsNighRows'
                     , land = dsLand
                     }
-
-floatMaybe :: (a, Maybe b) -> Maybe (a, b)
-floatMaybe (_, Nothing) = Nothing
-floatMaybe (a, Just b) = Just (a, b)
 
 includeTask :: [IxTask] -> IxTask -> Bool
 includeTask tasks = if null tasks then const True else (`elem` tasks)
