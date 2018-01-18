@@ -30,7 +30,7 @@ import Control.Lens ((^?), element)
 import Data.Maybe (catMaybes, fromMaybe, listToMaybe)
 import Control.Monad (join, mapM_, when, zipWithM_)
 import Control.Monad.Except (ExceptT, runExceptT)
-import Data.UnitsOfMeasure ((/:), u, convert, toRational')
+import Data.UnitsOfMeasure (u, convert, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import System.Directory (createDirectoryIfMissing)
 import System.FilePath ((</>), takeFileName)
@@ -63,26 +63,21 @@ import Flight.Comp
 import Flight.Units ()
 import qualified Flight.Mask as Mask (Sliver(..))
 import Flight.Mask
-    ( FnIxTask, TaskZone, RaceSections(..), FlyCut(..), Ticked
-    , checkTracks, groupByLeg, dashDistancesToGoal, zoneToCylinder
+    ( FnIxTask, RaceSections(..), FlyCut(..), Ticked
+    , checkTracks, groupByLeg, dashDistancesToGoal
     )
 import Flight.Track.Cross (Fix(..), TrackFlyingSection(..))
-import Flight.Zone (Bearing(..))
-import Flight.Zone.Raw (RawZone)
 import Flight.Track.Tag (Tagging(..), TrackTime(..), firstLead, firstStart)
 import Flight.Kml (MarkedFixes(..))
 import Data.Number.RoundingFunctions (dpRound)
 import Flight.Distance (TaskDistance(..))
-import Flight.Task (SpanLatLng, CircumSample, AngleCut(..))
-import Flight.PointToPoint.Double
-    (distanceHaversine, distancePointToPoint, costSegment)
-import Flight.Cylinder.Double (circumSample)
 import Flight.Scribe (readCrossing, readTagging, writeAlignTime)
 import Flight.Lookup.Cross
     (FlyingLookup(..), crossFlying)
 import Flight.Lookup.Tag
     (TickLookup(..), TagLookup(..), tagTicked, tagPilotTag)
 import Options (description)
+import Flight.Span.Double (zoneToCylF, spanF, csF, cutF, dppF, csegF)
 
 type Leg = Int
 
@@ -284,7 +279,7 @@ group
                     <$> openClose ss (zoneTimes task)
 
                 xs :: [MarkedFixes]
-                xs = groupByLeg span zoneToCyl task flyFixes
+                xs = groupByLeg spanF zoneToCylF task flyFixes
 
                 ys = FlyCut flyingRange <$> xs
 
@@ -334,11 +329,9 @@ allLegDistances
 allLegDistances ticked times task@Task{speedSection, zoneTimes} leg xs =
     mkTimeRows lead start leg xs'
     where
-        sliver = Mask.Sliver span dpp cseg cs angleCut
-        xs' = dashDistancesToGoal ticked sliver zoneToCyl task xs
+        sliver = Mask.Sliver spanF dppF csegF csF cutF
+        xs' = dashDistancesToGoal ticked sliver zoneToCylF task xs
         ts = zonesFirst times
-        dpp = distancePointToPoint
-        cseg = costSegment span
 
         lead = firstLead speedSection ts
 
@@ -368,23 +361,3 @@ legDistances True ticked times task@Task{speedSection} leg xs =
                 False
                 (\(start, end) -> leg' < start || leg' > end)
                 speedSection
-
-zoneToCyl :: RawZone -> TaskZone Double
-zoneToCyl = zoneToCylinder
-
-span :: SpanLatLng Double
-span = distanceHaversine
-
-cs :: CircumSample Double
-cs = circumSample
-
-angleCut :: AngleCut Double
-angleCut =
-    AngleCut
-        { sweep = Bearing . MkQuantity $ pi
-        , nextSweep = nextCut
-        }
-
-nextCut :: AngleCut Double -> AngleCut Double
-nextCut x@AngleCut{sweep} =
-    let (Bearing b) = sweep in x{sweep = Bearing $ b /: 2}
