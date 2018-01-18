@@ -1,6 +1,8 @@
 flags: {}
 packages:
 - location: .
+- location: ../span
+  extra-dep: true
 - location: ../cmd
   extra-dep: true
 - location: ../units

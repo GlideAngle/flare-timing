@@ -1,5 +1,5 @@
-{ mkDerivation, aeson, aeson-via, aeson-via-sci, base, bifunctors
-, fgl, flight-latlng, flight-units, flight-zone, hcoord, hlint, mtl
+{ mkDerivation, aeson, aeson-via-sci, base, bifunctors, fgl
+, flight-latlng, flight-units, flight-zone, hcoord, hlint, mtl
 , numbers, scientific, siggy-chardust, smallcheck, stdenv, tasty
 , tasty-compare, tasty-hunit, tasty-quickcheck, tasty-smallcheck
 , uom-plugin
@@ -13,7 +13,7 @@ mkDerivation {
     flight-zone hcoord mtl numbers scientific siggy-chardust uom-plugin
   ];
   testHaskellDepends = [
-    aeson aeson-via base bifunctors fgl flight-latlng flight-units
+    aeson aeson-via-sci base bifunctors fgl flight-latlng flight-units
     flight-zone hcoord hlint mtl numbers scientific siggy-chardust
     smallcheck tasty tasty-compare tasty-hunit tasty-quickcheck
     tasty-smallcheck uom-plugin

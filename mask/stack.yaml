@@ -1,6 +1,8 @@
 flags: {}
 packages:
 - location: .
+- location: ../span
+  extra-dep: true
 - location: ../aeson-via-sci
   extra-dep: true
 - location: ../aeson-via-uom

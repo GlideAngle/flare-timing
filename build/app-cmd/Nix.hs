@@ -28,6 +28,7 @@ flyPkgs =
     , "units"
     , "zone"
     , "route"
+    , "span"
     ] 
 
 prefix :: String -> String -> String
@@ -67,6 +68,7 @@ buildRules = do
              , "nix-flight-track"
              , "nix-flight-units"
              , "nix-flight-zone"
+             , "nix-flight-span"
 
              , "nix-flare-timing"
              ]
@@ -91,6 +93,7 @@ buildRules = do
     phony "nix-flight-units" $ cmd Shell (buildFor "flight-units")
     phony "nix-flight-zone" $ cmd Shell (buildFor "flight-zone")
     phony "nix-flight-route" $ cmd Shell (buildFor "flight-route")
+    phony "nix-flight-span" $ cmd Shell (buildFor "flight-span")
 
     phony "nix-flare-timing" $ cmd Shell (buildFor "flare-timing")
 

@@ -37,7 +37,7 @@ import qualified Flight.Track.Time as Time (TimeRow(..), TickRow(..))
 import Flight.Task (fromZs)
 import Flight.Mask (dashPathToGoalTimeRows)
 import Flight.Mask.Internal.Race (Ticked, FlyCut(..), Sliver(..))
-import Flight.Task.Span.Double (zoneToCylF, spanF, csF, cutF, dppF, csegF)
+import Flight.Span.Double (zoneToCylF, spanF, csF, cutF, dppF, csegF)
 
 data DashPathInputs =
     DashPathInputs

@@ -34,7 +34,7 @@ import Control.Arrow (second)
 import Control.Lens ((^?), element)
 import Control.Monad (join)
 import Control.Monad.Except (ExceptT, runExceptT)
-import Data.UnitsOfMeasure (u, convert, toRational', fromRational')
+import Data.UnitsOfMeasure (u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import System.FilePath (takeFileName)
 
@@ -60,10 +60,10 @@ import Flight.Comp
 import Flight.Distance (TaskDistance(..), unTaskDistance)
 import Flight.Units ()
 import Flight.Mask
-    ( Sliver(..), FnIxTask, FlyCut(..)
+    ( FnIxTask, FlyCut(..)
     , checkTracks
-    , dashDistanceToGoal
-    , dashDistanceFlown
+    , togoAtLanding
+    , madeAtLanding
     )
 import Flight.Comp.Distance (compDistance, compNigh)
 import Flight.Track.Tag (Tagging)
@@ -76,7 +76,7 @@ import Flight.Track.Speed (TrackSpeed(..))
 import Flight.Kml (MarkedFixes(..))
 import Data.Number.RoundingFunctions (dpRound)
 import Flight.Cmd.Paths (checkPaths)
-import Flight.Cmd.Options (Math(..), CmdOptions(..), ProgramName(..), mkOptions)
+import Flight.Cmd.Options (CmdOptions(..), ProgramName(..), mkOptions)
 import Flight.Lookup.Cross (FlyingLookup(..), crossFlying)
 import qualified Flight.Lookup as Lookup
     (flyingTimeRange, arrivalRank, pilotTime, ticked, compRoutes, compRaceTimes)
@@ -102,9 +102,7 @@ import Flight.Score
     , arrivalFraction
     , speedFraction
     )
-import Flight.TaskTrack.Double ()
-import Flight.Task.Span.Double (zoneToCylF, spanF, csF, cutF, dppF, csegF)
-import Flight.Task.Span.Rational (zoneToCylR, spanR, csR, cutR, dppR, csegR)
+import Flight.Span.Math (Math(..))
 import Options (description)
 import Stats (FlightStats(..), DashPathInputs(..), nullStats)
     
@@ -367,11 +365,7 @@ flown :: Math
       -> FlyingLookup
       -> Either String Tagging
       -> FnIxTask (Pilot -> FlightStats)
-flown
-    math
-    (RouteLookup lookupTaskLength)
-    flying
-    tags tasks iTask fixes =
+flown math (RouteLookup lookupTaskLength) flying tags tasks iTask fixes =
     maybe
         (const nullStats)
         (\d -> flown' d flying math tags tasks iTask fixes)
@@ -384,12 +378,7 @@ flown' :: TaskDistance Double
        -> Math
        -> Either String Tagging
        -> FnIxTask (Pilot -> FlightStats)
-flown'
-    dTaskF@(TaskDistance td)
-    flying
-    math tags tasks iTask@(IxTask i)
-    mf@MarkedFixes{mark0}
-    p =
+flown' dTaskF flying math tags tasks iTask@(IxTask i) mf@MarkedFixes{mark0} p =
     case maybeTask of
         Nothing -> nullStats
 
@@ -429,47 +418,14 @@ flown'
 
         landDistance task =
                 TrackDistance
-                    { togo = unTaskDistance <$> dgLast task math
-                    , made = fromRational . unPilotDistance <$> dfLast task math
+                    { togo = unTaskDistance <$> togoAtLanding math ticked task xs
+                    , made =
+                        fromRational . unPilotDistance
+                        <$> madeAtLanding math dTaskF ticked task xs
                     }
-
-        dgLast :: Task -> Math -> Maybe (TaskDistance Double)
-        dgLast task =
-            \case
-            Floating ->
-                dashDistanceToGoal
-                    ticked
-                    (Sliver spanF dppF csegF csF cutF)
-                    zoneToCylF task xs
-
-            Rational ->
-                (\(TaskDistance d) -> TaskDistance $ fromRational' d) <$>
-                dashDistanceToGoal
-                    ticked
-                    (Sliver spanR dppR csegR csR cutR)
-                    zoneToCylR task xs
-
-        dfLast :: Task -> Math -> Maybe (Gap.PilotDistance Double)
-        dfLast task =
-            \case
-            Floating ->
-                dashDistanceFlown
-                    dTaskF
-                    ticked
-                    (Sliver spanF dppF csegF csF cutF)
-                    zoneToCylF task xs
-
-            Rational ->
-                (\(Gap.PilotDistance d) -> Gap.PilotDistance $ fromRational d) <$>
-                dashDistanceFlown
-                    dTaskR
-                    ticked
-                    (Sliver spanR dppR csegR csR cutR)
-                    zoneToCylR task xs
 
         speedSection' =
             case tasks ^? element (fromIntegral i - 1) of
                 Nothing -> Nothing
                 Just Task{..} -> speedSection
 
-        dTaskR = TaskDistance $ toRational' td

@@ -1,8 +1,8 @@
 { mkDerivation, aeson, aeson-via-sci, aeson-via-uom, base
 , containers, flight-units, hlint, newtype, scientific
 , siggy-chardust, smallcheck, statistics, stdenv, tasty
-, tasty-hunit, tasty-quickcheck, tasty-smallcheck, uom-plugin
-, vector
+, tasty-hunit, tasty-quickcheck, tasty-smallcheck, template-haskell
+, uom-plugin, vector
 }:
 mkDerivation {
   pname = "flight-gap";
@@ -10,7 +10,8 @@ mkDerivation {
   src = ./.;
   libraryHaskellDepends = [
     aeson aeson-via-sci aeson-via-uom base containers flight-units
-    newtype scientific siggy-chardust statistics uom-plugin vector
+    newtype scientific siggy-chardust statistics template-haskell
+    uom-plugin vector
   ];
   testHaskellDepends = [
     aeson aeson-via-sci aeson-via-uom base containers flight-units

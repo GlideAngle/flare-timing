@@ -41,6 +41,8 @@ module Flight.Mask
     , slice
     , section
     , nullFlying
+    , togoAtLanding
+    , madeAtLanding
     ) where
 
 import Flight.Mask.Tag

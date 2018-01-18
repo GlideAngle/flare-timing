@@ -1,8 +1,5 @@
 flags: {}
 packages:
-- '.'
-- location: ../span
-  extra-dep: true
-extra-deps: []
+- location: .
 resolver: nightly-2018-01-09
 local-bin-path: ../__shake-build

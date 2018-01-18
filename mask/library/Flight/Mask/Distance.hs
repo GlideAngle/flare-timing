@@ -4,11 +4,13 @@ module Flight.Mask.Distance
     , dashPathToGoalMarkedFixes
     , dashPathToGoalTimeRows
     , dashDistanceFlown
+    , togoAtLanding
+    , madeAtLanding
     ) where
 
 import Data.Time.Clock (UTCTime)
 import Data.List (inits)
-import Data.UnitsOfMeasure ((-:))
+import Data.UnitsOfMeasure ((-:), fromRational', toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Kml (MarkedFixes(..))
@@ -25,6 +27,10 @@ import Flight.Mask.Internal.Dash (dashPathToGoalR, dashToGoalR)
 import qualified Flight.Zone.Raw as Raw (RawZone(..))
 import Flight.Distance (PathDistance(..), TaskDistance(..))
 import Flight.Task (Zs(..), fromZs)
+import qualified Flight.Score as Gap (PilotDistance(..))
+import Flight.Span.Math (Math(..))
+import Flight.Span.Double (zoneToCylF, spanF, csF, cutF, dppF, csegF)
+import Flight.Span.Rational (zoneToCylR, spanR, csR, cutR, dppR, csegR)
 
 dashDistancesToGoal
     :: (Real a, Fractional a, FlyClipping UTCTime MarkedFixes)
@@ -169,3 +175,50 @@ dashDistanceFlown
 
 index :: [a] -> [(ZoneIdx, a)]
 index = zip [1 .. ]
+
+togoAtLanding
+    :: Math
+    -> Ticked
+    -> Task
+    -> FlyCut UTCTime MarkedFixes
+    -> Maybe (TaskDistance Double) 
+togoAtLanding math ticked task xs =
+    case math of
+        Floating ->
+            dashDistanceToGoal
+                ticked
+                (Sliver spanF dppF csegF csF cutF)
+                zoneToCylF task xs
+
+        Rational ->
+            (\(TaskDistance d) -> TaskDistance $ fromRational' d) <$>
+            dashDistanceToGoal
+                ticked
+                (Sliver spanR dppR csegR csR cutR)
+                zoneToCylR task xs
+
+madeAtLanding
+    :: Math
+    -> TaskDistance Double
+    -> Ticked
+    -> Task
+    -> FlyCut UTCTime MarkedFixes
+    -> Maybe (PilotDistance Double) 
+madeAtLanding math dTaskF@(TaskDistance td) ticked task xs =
+    case math of
+        Floating ->
+            dashDistanceFlown
+                dTaskF
+                ticked
+                (Sliver spanF dppF csegF csF cutF)
+                zoneToCylF task xs
+
+        Rational ->
+            (\(Gap.PilotDistance d) -> Gap.PilotDistance $ fromRational d) <$>
+            dashDistanceFlown
+                dTaskR
+                ticked
+                (Sliver spanR dppR csegR csR cutR)
+                zoneToCylR task xs
+    where
+        dTaskR = TaskDistance $ toRational' td

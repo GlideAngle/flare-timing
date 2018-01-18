@@ -81,6 +81,7 @@ executables:
     - formatting
     - lens
     - siggy-chardust
+    - flight-span
     - flight-cmd
     - flight-units
     - flight-latlng
@@ -247,6 +248,7 @@ executables:
     - vector
     - containers
     - siggy-chardust
+    - flight-span
     - flight-cmd
     - flight-units
     - flight-latlng

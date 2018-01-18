@@ -6,47 +6,29 @@ extra-source-files:
 - changelog.md
 - README.md
 - stack.yaml
-ghc-options:
-- -Wall
+ghc-options: -Wall
 library:
   dependencies:
   - base >=4.5 && <5
-  - directory
-  - filepath
-  - system-filepath
-  - filemanip
-  - raw-strings-qq
   - cmdargs
-  - mtl
-  - transformers
-  - flight-span
   source-dirs: library
   exposed-modules:
-  - Flight.Cmd.Options
-  - Flight.Cmd.Paths
+  - Flight.Span.Math
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
-name: flight-cmd
-synopsis: Command line options.
-description: Command line options such as file or directory, task or pilot.
-category: Flight
+name: flight-span
+synopsis: How to measure a distance that spans two points.
+description: How to measure a distance that spans tow points.
+category: Data
 license: BSD3
 license-file: LICENSE.md
-github: BlockScope/flare-timing
+github: BlockScope/haskell-flight-mask
 tests:
   hlint:
     dependencies:
     - base
     - hlint
-    - directory
-    - filepath
-    - system-filepath
-    - filemanip
-    - raw-strings-qq
     - cmdargs
-    - mtl
-    - transformers
-    - flight-span
     ghc-options:
     - -rtsopts
     - -threaded
@@ -55,4 +37,3 @@ tests:
     source-dirs:
     - library
     - test-suite-hlint
-version: '0.1.0'

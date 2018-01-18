@@ -6,7 +6,6 @@ module Flight.Cmd.Options
     , ProgramName(..)
     , Description(..)
     , Extension(..)
-    , Math(..)
     , mkOptions
     ) where
 
@@ -24,10 +23,7 @@ import System.Console.CmdArgs.Implicit
     , (&=)
     )
 
-data Math = Rational | Floating deriving (Eq, Data, Typeable, Show)
-
-instance Default Math where
-    def = Floating
+import Flight.Span.Math (Math(..))
 
 -- | Options passed in on the command line.
 data CmdOptions

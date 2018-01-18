@@ -30,8 +30,7 @@ import Control.Monad.Except (ExceptT(..), runExceptT)
 import System.FilePath (takeFileName)
 
 import Flight.Cmd.Paths (checkPaths)
-import Flight.Cmd.Options (Math(..), CmdOptions(..), ProgramName(..), mkOptions)
-
+import Flight.Cmd.Options (CmdOptions(..), ProgramName(..), mkOptions)
 import Flight.Comp
     ( CompInputFile(..)
     , CompSettings(..)
@@ -69,6 +68,7 @@ import Flight.Mask
     )
 import Flight.Scribe (writeCrossing)
 import Options (description)
+import Flight.Span.Math (Math(..))
 
 driverMain :: IO ()
 driverMain = do

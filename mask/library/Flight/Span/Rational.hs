@@ -1,6 +1,6 @@
 {-# LANGUAGE NamedFieldPuns #-}
 
-module Flight.Task.Span.Rational
+module Flight.Span.Rational
     ( zoneToCylR
     , spanR
     , csR
@@ -21,7 +21,7 @@ import Flight.Distance (PathDistance)
 import Flight.Zone (Zone, Bearing(..))
 import Flight.Zone.Raw (RawZone)
 import Flight.Task (SpanLatLng, CircumSample, AngleCut(..))
-import Flight.Mask (TaskZone, zoneToCylinder)
+import Flight.Mask.Internal.Zone (TaskZone, zoneToCylinder)
 import Flight.LatLng.Rational (Epsilon(..), defEps)
 
 zoneToCylR :: RawZone -> TaskZone Rational

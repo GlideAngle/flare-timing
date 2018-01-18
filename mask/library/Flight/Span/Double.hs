@@ -1,6 +1,6 @@
 {-# LANGUAGE NamedFieldPuns #-}
 
-module Flight.Task.Span.Double
+module Flight.Span.Double
     ( zoneToCylF
     , spanF
     , csF
@@ -20,7 +20,7 @@ import Flight.Distance (PathDistance)
 import Flight.Zone (Zone, Bearing(..))
 import Flight.Zone.Raw (RawZone)
 import Flight.Task (SpanLatLng, CircumSample, AngleCut(..))
-import Flight.Mask (TaskZone, zoneToCylinder)
+import Flight.Mask.Internal.Zone (TaskZone, zoneToCylinder)
 
 zoneToCylF :: RawZone -> TaskZone Double
 zoneToCylF = zoneToCylinder
