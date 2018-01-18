@@ -14,6 +14,7 @@
 module Flight.Distance
     ( TaskDistance(..)
     , PathDistance(..)
+    , unTaskDistance
     , fromKms
     , toKm
     ) where
@@ -45,6 +46,12 @@ showDistance d =
         km = convert d :: Quantity Rational [u| km |]
         Flip rounded = dpRound 3 <$> Flip km
         dbl = fromRational' rounded :: Quantity Double [u| km |]
+
+unTaskDistance :: (Real a, Fractional a) => TaskDistance a -> a
+unTaskDistance (TaskDistance d) =
+    fromRational $ dpRound 3 dKm
+    where 
+        MkQuantity dKm = toRational' $ convert d :: Quantity _ [u| km |]
 
 newtype TaskDistance a =
     TaskDistance (Quantity a [u| m |])

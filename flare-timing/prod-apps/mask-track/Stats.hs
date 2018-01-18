@@ -3,15 +3,12 @@
 
 module Stats (FlightStats(..), DashPathInputs(..), nullStats) where
 
-import Data.Time.Clock (UTCTime)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import Flight.Kml (MarkedFixes(..))
-import Flight.Comp (Task(..))
-import Flight.Track.Distance (TrackDistance(..))
-import Flight.Track.Mask (Land)
-import Flight.Mask (FlyCut(..), Ticked, RaceSections(..))
+import Flight.Track.Distance (TrackDistance(..), Land)
+import Flight.Mask (RaceSections(..))
+import Flight.Comp.Distance (DashPathInputs(..))
 import Flight.Score (PilotTime(..), PositionAtEss(..))
 
 data FlightStats =
@@ -20,13 +17,6 @@ data FlightStats =
             :: Maybe (PilotTime (Quantity Double [u| h |]), PositionAtEss)
         , statLand :: Maybe (TrackDistance Land)
         , statDash :: DashPathInputs
-        }
-
-data DashPathInputs =
-    DashPathInputs
-        { dashTask :: Maybe Task
-        , dashTicked :: Ticked
-        , dashFlyCut :: Maybe (FlyCut UTCTime MarkedFixes)
         }
 
 nullStats :: FlightStats

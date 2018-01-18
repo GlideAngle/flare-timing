@@ -1,6 +1,6 @@
 {-# LANGUAGE NamedFieldPuns #-}
 
-module Span.Rational
+module Flight.Task.Span.Rational
     ( zoneToCylR
     , spanR
     , csR

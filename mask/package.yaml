@@ -40,6 +40,7 @@ library:
   - uom-plugin
   - fgl
   - cmdargs
+  - numbers
   - aeson-via-sci
   - flight-units
   - flight-comp
@@ -55,6 +56,9 @@ library:
   source-dirs: library
   exposed-modules:
   - Flight.Mask
+  - Flight.Comp.Distance
+  - Flight.Task.Span.Double
+  - Flight.Task.Span.Rational
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
 name: flight-mask

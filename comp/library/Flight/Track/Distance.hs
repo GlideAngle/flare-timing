@@ -10,10 +10,15 @@ Stability   : experimental
 
 The distance standing of a pilot's track in comparison to other pilots landing out.
 -}
-module Flight.Track.Distance (TrackDistance(..)) where
+module Flight.Track.Distance (TrackDistance(..), Nigh, Land) where
 
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
+
+import Flight.Route (TrackLine(..))
+
+type Nigh = TrackLine
+type Land = Double
 
 data TrackDistance a =
     TrackDistance

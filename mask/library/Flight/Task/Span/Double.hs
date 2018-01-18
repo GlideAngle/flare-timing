@@ -1,6 +1,6 @@
 {-# LANGUAGE NamedFieldPuns #-}
 
-module Span.Double
+module Flight.Task.Span.Double
     ( zoneToCylF
     , spanF
     , csF

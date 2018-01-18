@@ -17,8 +17,6 @@ Tracks masked with task control zones.
 module Flight.Track.Mask
     ( Masking(..)
     , RaceTime(..)
-    , Nigh
-    , Land
     , racing
     ) where
 
@@ -28,9 +26,9 @@ import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
+
 import Flight.Comp (OpenClose(..), FirstLead(..), FirstStart(..), LastArrival(..))
 import Flight.Pilot (Pilot(..))
-import Flight.Route (TrackLine(..))
 import Flight.Score
     ( PilotsAtEss(..)
     , BestTime(..)
@@ -42,10 +40,7 @@ import Flight.Units ()
 import Flight.Track.Speed (TrackSpeed(..))
 import Flight.Track.Arrival (TrackArrival(..))
 import Flight.Track.Lead (TrackLead(..))
-import Flight.Track.Distance (TrackDistance(..))
-
-type Nigh = TrackLine
-type Land = Double
+import Flight.Track.Distance (TrackDistance(..), Nigh, Land)
 
 -- | For each task, the masking for that task.
 data Masking =
