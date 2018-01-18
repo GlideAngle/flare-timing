@@ -7,6 +7,7 @@ arguments :: [String]
 arguments =
     [ "library"
     , "test-suite-hlint"
+    , "-XQuasiQuotes"
     ]
 
 main :: IO ()

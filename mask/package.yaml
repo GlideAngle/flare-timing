@@ -86,6 +86,7 @@ tests:
     - fgl
     - uom-plugin
     - cmdargs
+    - numbers
     - aeson-via-sci
     - flight-span
     - flight-units
