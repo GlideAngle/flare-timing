@@ -1,7 +1,15 @@
 {-# LANGUAGE GADTs #-}
-{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE DisambiguateRecordFields #-}
+
+-- WARNING: This extension needs to be enabled at the definition site of a set
+-- of record fields in order for them to be re-exported by a single module.
+-- SEE: https://ghc.haskell.org/trac/ghc/ticket/13352
+{-# LANGUAGE DuplicateRecordFields #-}
 
 module Flight.Gap.Points
     ( LaunchToSssPoints(..)
@@ -11,18 +19,31 @@ module Flight.Gap.Points
     , Hg
     , Pg
     , Penalty(..)
-    , TaskPointParts(..)
-    , TaskPoints(..)
+    , Points(..)
     , zeroPoints
     , taskPoints
     , applyPointPenalty
+    , availablePoints
     ) where
 
 import Data.Ratio ((%))
+import GHC.Generics (Generic)
+import Data.Aeson (ToJSON(..), FromJSON(..))
+
+import Flight.Gap.Points.Distance (DistancePoints(..))
+import Flight.Gap.Points.Time (TimePoints(..))
+import Flight.Gap.Points.Leading (LeadingPoints(..))
+import Flight.Gap.Points.Arrival (ArrivalPoints(..))
+import Flight.Gap.Points.Task (TaskPoints(..))
+import Flight.Gap.Validity.Task (TaskValidity(..))
+import Flight.Gap.Weighting (Weights(..))
+import Flight.Gap.Weight.Distance (DistanceWeight(..))
+import Flight.Gap.Weight.Leading (LeadingWeight(..))
+import Flight.Gap.Weight.Arrival (ArrivalWeight(..))
+import Flight.Gap.Weight.Time (TimeWeight(..))
 
 newtype LaunchToSssPoints = LaunchToSssPoints Rational deriving (Eq, Show)
 newtype MinimumDistancePoints = MinimumDistancePoints Rational deriving (Eq, Show)
-newtype TaskPoints = TaskPoints Rational deriving (Eq, Show)
 
 -- | Jumped the gun by this many seconds.
 newtype JumpedTheGun = JumpedTheGun Rational deriving (Eq, Show)
@@ -55,53 +76,77 @@ data PointPenalty
 deriving instance Eq (Penalty a)
 deriving instance Show (Penalty a)
 
-data TaskPointParts =
-    TaskPointParts
-        { distance :: Rational
-        , leading :: Rational
-        , time :: Rational
-        , arrival :: Rational
-        } deriving (Eq, Show)
+data Points =
+    Points 
+        { distance :: DistancePoints
+        , leading :: LeadingPoints
+        , arrival :: ArrivalPoints
+        , time :: TimePoints
+        }
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
-type TaskPointTally = TaskPointParts -> TaskPoints
+type TaskPointTally = Points -> TaskPoints
 
-zeroPoints :: TaskPointParts
+zeroPoints :: Points
 zeroPoints =
-    TaskPointParts {distance = 0, leading = 0, time = 0, arrival = 0}
+    Points
+        { distance = DistancePoints 0
+        , leading = LeadingPoints 0
+        , time = TimePoints 0
+        , arrival = ArrivalPoints 0
+        }
 
 tallyPoints :: forall a. Maybe (Penalty a) -> TaskPointTally
 
 tallyPoints Nothing =
-    \TaskPointParts{..} -> TaskPoints $ distance + leading + time + arrival
+    \Points
+        { distance = DistancePoints d
+        , leading = LeadingPoints l
+        , time = TimePoints t
+        , arrival = ArrivalPoints a
+        } -> TaskPoints $ d + l + t + a
 
 tallyPoints (Just (JumpedTooEarly (MinimumDistancePoints p))) =
     const $ TaskPoints p
 
 tallyPoints (Just (JumpedNoGoal secs jump)) =
-    \TaskPointParts{..} ->
-        jumpTheGun secs jump . TaskPoints
-        $ distance + leading + (8 % 10) * (time + arrival)
+    \Points
+        { distance = DistancePoints d
+        , leading = LeadingPoints l
+        , time = TimePoints t
+        , arrival = ArrivalPoints a
+        }-> jumpTheGun secs jump . TaskPoints $ d + l + (8 % 10) * (t + a)
 
 tallyPoints (Just (Jumped secs jump)) =
-    \TaskPointParts{..} ->
-        jumpTheGun secs jump . TaskPoints
-        $ distance + leading + time + arrival
+    \Points
+        { distance = DistancePoints d
+        , leading = LeadingPoints l
+        , time = TimePoints t
+        , arrival = ArrivalPoints a
+        } -> jumpTheGun secs jump . TaskPoints $ d + l + t + a
 
 tallyPoints (Just NoGoalHg) =
-    \TaskPointParts{..} ->
-        TaskPoints $ distance + leading + (8 % 10) * (time + arrival)
+    \Points
+        { distance = DistancePoints d
+        , leading = LeadingPoints l
+        , time = TimePoints t
+        , arrival = ArrivalPoints a
+        } -> TaskPoints $ d + l + (8 % 10) * (t + a)
 
 tallyPoints (Just (Early (LaunchToSssPoints d))) =
     const $ TaskPoints d
 
 tallyPoints (Just NoGoalPg) =
-    \TaskPointParts{..} -> TaskPoints $ distance + leading
+    \Points
+        { distance = DistancePoints d
+        , leading = LeadingPoints l
+        } -> TaskPoints $ d + l
 
 jumpTheGun :: SecondsPerPoint -> JumpedTheGun -> TaskPoints -> TaskPoints
 jumpTheGun (SecondsPerPoint secs) (JumpedTheGun jump) (TaskPoints pts) =
     TaskPoints $ max 0 (pts - jump / secs)
 
-taskPoints :: forall a. Maybe (Penalty a) -> TaskPointParts -> TaskPoints
+taskPoints :: forall a. Maybe (Penalty a) -> Points -> TaskPoints
 taskPoints = tallyPoints
 
 applyPointPenalty :: PointPenalty-> TaskPoints -> TaskPoints
@@ -109,3 +154,21 @@ applyPointPenalty (PenaltyPoints n) (TaskPoints p) =
     TaskPoints $ p - (n % 1)
 applyPointPenalty (PenaltyFraction n) (TaskPoints p) =
     TaskPoints $ p - p * n
+
+availablePoints :: TaskValidity -> Weights -> (Points, TaskPoints)
+availablePoints (TaskValidity tv) Weights{..} =
+    (pts, tallyPoints Nothing pts)
+    where
+        DistanceWeight dw = distance
+        LeadingWeight lw = leading
+        ArrivalWeight aw = arrival
+        TimeWeight tw = time
+        k x = 1000 * tv * x
+
+        pts =
+            Points
+                { distance = DistancePoints . k $ dw
+                , leading = LeadingPoints . k $ lw
+                , arrival = ArrivalPoints . k $ aw
+                , time = TimePoints . k $ tw
+                }

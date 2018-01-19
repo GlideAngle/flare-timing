@@ -7,9 +7,17 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveAnyClass #-}
+
+-- WARNING: This extension needs to be enabled at the definition site of a set
+-- of record fields in order for them to be re-exported by a single module.
+-- SEE: https://ghc.haskell.org/trac/ghc/ticket/13352
+{-# LANGUAGE DuplicateRecordFields #-}
 
 module Flight.Gap.Validity
     ( NominalTime(..)
+    , Validity(..)
     , launchValidity
     , distanceValidity
     , timeValidity
@@ -17,6 +25,8 @@ module Flight.Gap.Validity
     ) where
 
 import Data.Ratio ((%))
+import GHC.Generics (Generic)
+import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.UnitsOfMeasure (u, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
@@ -35,6 +45,15 @@ import Flight.Gap.Ratio.Goal (NominalGoal(..))
 import Flight.Gap.Time.Nominal (NominalTime(..))
 import Flight.Gap.Time.Best (BestTime(..))
 import Flight.Gap.Pilots (PilotsPresent(..), PilotsFlying(..))
+
+data Validity =
+    Validity 
+        { task :: TaskValidity
+        , launch :: LaunchValidity
+        , distance :: DistanceValidity
+        , time :: TimeValidity
+        }
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 newtype NominalDistanceArea = NominalDistanceArea Rational
     deriving (Eq, Show)

@@ -50,8 +50,7 @@ import Flight.Comp
 import Flight.Units ()
 import Flight.Track.Cross (Crossing(..))
 import Flight.Track.Mask (Masking(..))
-import Flight.Track.Point
-    (Pointing(..), Validity(..), Allocation(..), Weight(..))
+import Flight.Track.Point (Pointing(..), Allocation(..))
 import qualified Flight.Track.Land as Cmp (Landing(..))
 import Flight.Scribe
     (readComp, readCrossing, readMasking, readLanding, writePointing)
@@ -61,9 +60,12 @@ import Flight.Score
     , PilotsAtEss(..), PilotsPresent(..), PilotsFlying(..)
     , GoalRatio(..), Lw(..), Aw(..)
     , NominalTime(..), BestTime(..)
+    , Validity(..), Weights(..)
     , distanceWeight, leadingWeight, arrivalWeight, timeWeight
     , taskValidity, launchValidity, distanceValidity, timeValidity
+    , availablePoints
     )
+import qualified Flight.Score as Gap (Validity(..))
 import Options (description)
 
 driverMain :: IO ()
@@ -105,10 +107,10 @@ go CmdOptions{..} compFile@(CompInputFile compPath) = do
         (_, _, Left msg, _) -> putStrLn msg
         (_, _, _, Left msg) -> putStrLn msg
         (Right cs, Right cg, Right mk, Right lg) -> do
-            writePointing pointFile $ points cs cg mk lg
+            writePointing pointFile $ points' cs cg mk lg
 
-points :: CompSettings -> Crossing -> Masking -> Cmp.Landing -> Pointing
-points
+points' :: CompSettings -> Crossing -> Masking -> Cmp.Landing -> Pointing
+points'
     CompSettings
         { pilots
         , nominal =
@@ -194,7 +196,7 @@ points
         aws = arrivalWeight . AwHg <$> dws
 
         ws =
-            [ Weight dw lw aw (timeWeight dw lw aw)
+            [ Weights dw lw aw (timeWeight dw lw aw)
             | dw <- dws
             | lw <- lws
             | aw <- aws
@@ -209,8 +211,8 @@ points
             ]
 
         allocs =
-            [ maybeTask $ Allocation gr w
+            [ ((uncurry (Allocation gr w)) . (flip availablePoints w)) <$> v
             | gr <- grs
             | w <- ws
-            | maybeTask <- maybeTasks
+            | v <- (fmap . fmap) Gap.task validities
             ]

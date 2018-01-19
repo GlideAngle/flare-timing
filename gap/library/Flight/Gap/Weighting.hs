@@ -2,10 +2,23 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveAnyClass #-}
 
-module Flight.Gap.Weighting where
+module Flight.Gap.Weighting
+    ( Weights(..)
+    , Lw(..)
+    , Aw(..)
+    , DistanceRatio(..)
+    , distanceWeight
+    , leadingWeight
+    , arrivalWeight
+    , timeWeight
+    ) where
 
 import Data.Ratio ((%))
+import GHC.Generics (Generic)
+import Data.Aeson (ToJSON(..), FromJSON(..))
 
 import Flight.Gap.Ratio (pattern (:%))
 import Flight.Gap.Weight.GoalRatio (GoalRatio(..))
@@ -14,9 +27,17 @@ import Flight.Gap.Weight.Leading (LeadingWeight(..))
 import Flight.Gap.Weight.Arrival (ArrivalWeight(..))
 import Flight.Gap.Weight.Time (TimeWeight(..))
 
+data Weights =
+    Weights
+        { distance :: DistanceWeight
+        , leading :: LeadingWeight
+        , arrival :: ArrivalWeight
+        , time :: TimeWeight
+        }
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+
 -- | Best distance versus task distance.
 newtype DistanceRatio = DistanceRatio Rational deriving (Eq, Show)
-
 
 data Lw a where
     LwHg  :: DistanceWeight -> Lw Rational

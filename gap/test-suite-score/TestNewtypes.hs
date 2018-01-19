@@ -50,7 +50,11 @@ import Flight.Score
     , Hg
     , Pg
     , Penalty(..)
-    , TaskPointParts(..)
+    , DistancePoints(..)
+    , LeadingPoints(..)
+    , ArrivalPoints(..)
+    , TimePoints(..)
+    , Points(..)
     , StopTime(..)
     , ScoreBackTime(..)
     , AnnouncedTime(..)
@@ -163,17 +167,17 @@ instance QC.Arbitrary TwTest where
         return $ TwTest (DistanceWeight x, LeadingWeight y, ArrivalWeight z)
 
 -- | Task validity
-newtype TvTest = TvTest (LaunchValidity, TimeValidity, DistanceValidity) deriving Show
+newtype TvTest = TvTest (LaunchValidity, DistanceValidity, TimeValidity) deriving Show
 
 instance Monad m => SC.Serial m TvTest where
     series =
         cons1 $ \(NormalSum (x, y, z)) ->
-             TvTest (LaunchValidity x, TimeValidity y, DistanceValidity z)
+             TvTest (LaunchValidity x, DistanceValidity y, TimeValidity z)
 
 instance QC.Arbitrary TvTest where
     arbitrary = do
         (NormalSum (x, y, z)) <- arbitrary
-        return $ TvTest (LaunchValidity x, TimeValidity y, DistanceValidity z)
+        return $ TvTest (LaunchValidity x, DistanceValidity y, TimeValidity z)
 
 -- | Arrival fraction
 newtype AfTest = AfTest (PilotsAtEss, PositionAtEss) deriving Show
@@ -322,12 +326,12 @@ instance QC.Arbitrary LcTest where
         return $ mkLcTest deadline len xs
 
 -- | Task points, tally and penalties.
-newtype PtTest a = PtTest (Maybe (Penalty a), TaskPointParts) deriving Show
+newtype PtTest a = PtTest (Maybe (Penalty a), Points) deriving Show
 
 instance Monad m => SC.Serial m (PtTest Hg) where
     series = decDepth $ mkPtTest <$> penalty <~> cons4 mkParts
         where
-            mkPtTest :: Maybe (Penalty Hg) -> TaskPointParts -> PtTest Hg
+            mkPtTest :: Maybe (Penalty Hg) -> Points -> PtTest Hg
             mkPtTest a b = PtTest (a, b)
 
             mkParts
@@ -336,7 +340,12 @@ instance Monad m => SC.Serial m (PtTest Hg) where
                 (SC.Positive t)
                 (SC.Positive a) =
 
-                TaskPointParts { distance = d, leading = l, time = t, arrival = a }
+                Points
+                    { distance = DistancePoints d
+                    , leading = LeadingPoints l
+                    , time = TimePoints t
+                    , arrival = ArrivalPoints a 
+                    }
 
             penalty =
                 cons0 Nothing
@@ -351,7 +360,7 @@ instance Monad m => SC.Serial m (PtTest Hg) where
 instance Monad m => SC.Serial m (PtTest Pg) where
     series = decDepth $ mkPtTest <$> penalty <~> cons4 mkParts
         where
-            mkPtTest :: Maybe (Penalty Pg) -> TaskPointParts -> PtTest Pg
+            mkPtTest :: Maybe (Penalty Pg) -> Points -> PtTest Pg
             mkPtTest a b = PtTest (a, b)
 
             mkParts
@@ -360,13 +369,18 @@ instance Monad m => SC.Serial m (PtTest Pg) where
                 (SC.Positive t)
                 (SC.Positive a) =
 
-                TaskPointParts { distance = d, leading = l, time = t, arrival = a }
+                Points
+                    { distance = DistancePoints d
+                    , leading = LeadingPoints l
+                    , time = TimePoints t
+                    , arrival = ArrivalPoints a 
+                    }
 
             penalty =
                 cons0 Nothing
                 \/ cons1 (\(SC.Positive lts) -> Just $ Early (LaunchToSssPoints lts))
 
-newtype PointParts = PointParts TaskPointParts deriving Show
+newtype PointParts = PointParts Points deriving Show
 
 instance QC.Arbitrary PointParts where
     arbitrary = do
@@ -374,7 +388,12 @@ instance QC.Arbitrary PointParts where
         (QC.Positive l) <- arbitrary
         (QC.Positive t) <- arbitrary
         (QC.Positive a) <- arbitrary
-        return $ PointParts TaskPointParts { distance = d, leading = l, time = t, arrival = a }
+        return . PointParts $ Points
+            { distance = DistancePoints d
+            , leading = LeadingPoints l
+            , time = TimePoints t
+            , arrival = ArrivalPoints a
+            }
 
 instance QC.Arbitrary (PtTest Hg) where
     arbitrary = do

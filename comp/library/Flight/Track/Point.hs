@@ -17,9 +17,7 @@ Task points.
 -}
 module Flight.Track.Point
     ( Pointing(..)
-    , Validity(..)
     , Allocation(..)
-    , Weight(..)
     ) where
 
 import Data.String (IsString())
@@ -29,8 +27,7 @@ import Data.Aeson (ToJSON(..), FromJSON(..))
 import Flight.Field (FieldOrdering(..))
 import Flight.Score
     ( GoalRatio
-    , DistanceWeight, LeadingWeight, ArrivalWeight, TimeWeight
-    , TaskValidity, LaunchValidity, DistanceValidity, TimeValidity
+    , TaskPoints, Points, Validity, Weights
     )
 
 -- | For each task, the points for that task.
@@ -41,28 +38,12 @@ data Pointing =
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
-data Validity =
-    Validity 
-        { task :: TaskValidity
-        , launch :: LaunchValidity
-        , distance :: DistanceValidity
-        , time :: TimeValidity
-        }
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
-
 data Allocation =
     Allocation 
         { goalRatio :: GoalRatio
-        , weight :: Weight
-        }
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
-
-data Weight =
-    Weight 
-        { distance :: DistanceWeight
-        , leading :: LeadingWeight
-        , arrival :: ArrivalWeight
-        , time :: TimeWeight
+        , weight :: Weights
+        , points :: Points
+        , taskPoints :: TaskPoints
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
@@ -74,7 +55,15 @@ cmp a b =
     case (a, b) of
         -- Allocation fields
         ("goalRatio", _) -> LT
-        ("weight", _) -> GT
+
+        ("weight", "goalRatio") -> GT
+        ("weight", _) -> LT
+
+        ("points", "goalRatio") -> GT
+        ("points", "weight") -> GT
+        ("points", _) -> LT
+
+        ("taskPoints", _) -> GT
 
         -- Validity fields
         ("task", _) -> LT
@@ -89,8 +78,6 @@ cmp a b =
         ("time", _) -> GT
 
         -- Weight fields
-        ("distance", _) -> LT
-
         ("leading", "distance") -> GT
         ("leading", _) -> LT
 
@@ -98,7 +85,6 @@ cmp a b =
         ("arrival", "leading") -> GT
         ("arrival", _) -> LT
 
-        ("time", _) -> GT
 
         -- Pointing fields
         ("validity", _) -> LT

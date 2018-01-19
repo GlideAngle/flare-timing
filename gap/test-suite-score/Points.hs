@@ -17,8 +17,12 @@ import Flight.Score
     , Hg
     , Pg
     , Penalty(..)
-    , TaskPointParts(..)
+    , DistancePoints(..)
+    , LeadingPoints(..)
+    , ArrivalPoints(..)
+    , TimePoints(..)
     , TaskPoints(..)
+    , Points(..)
     , zeroPoints
     )
 
@@ -32,63 +36,104 @@ tallyUnits = testGroup "Tally task points, with and without penalties"
     , HU.testCase "No penalties = sum of distance, leading, time & arrival points" $
         FS.taskPoints
             Nothing
-            TaskPointParts { distance = 1, leading = 1, time = 1, arrival = 1 }
+            Points
+                { distance = DistancePoints 1
+                , leading = LeadingPoints 1
+                , arrival = ArrivalPoints 1
+                , time = TimePoints 1
+                }
             @?= TaskPoints 4
 
     , HU.testCase "Early start PG = distance to start points only" $
         FS.taskPoints
             (Just (Early $ LaunchToSssPoints 1))
-            TaskPointParts { distance = 10, leading = 10, time = 10, arrival = 10 }
+            Points
+                { distance = DistancePoints 10
+                , leading = LeadingPoints 10
+                , arrival = ArrivalPoints 10
+                , time = TimePoints 10
+                }
             @?= TaskPoints 1
 
     , HU.testCase "Way too early start HG = minimum distance points only" $
         FS.taskPoints
             (Just (JumpedTooEarly $ MinimumDistancePoints 1))
-            TaskPointParts { distance = 10, leading = 10, time = 10, arrival = 10 }
+            Points
+                { distance = DistancePoints 10
+                , leading = LeadingPoints 10
+                , arrival = ArrivalPoints 10
+                , time = TimePoints 10
+                }
             @?= TaskPoints 1
 
     , HU.testCase "Somewhat early start HG = full points minus jump the gun penalty" $
         FS.taskPoints
             (Just (Jumped (SecondsPerPoint 1) (JumpedTheGun 1)))
-            TaskPointParts { distance = 10, leading = 10, time = 10, arrival = 10 }
+            Points
+                { distance = DistancePoints 10
+                , leading = LeadingPoints 10
+                , arrival = ArrivalPoints 10
+                , time = TimePoints 10
+                }
             @?= TaskPoints 39
     ]
 
-correct :: forall a. Maybe (Penalty a) -> TaskPointParts -> TaskPoints -> Bool
+correct :: forall a. Maybe (Penalty a) -> Points -> TaskPoints -> Bool
 
-correct Nothing TaskPointParts{..} (TaskPoints pts) =
-    pts == distance + leading + time + arrival
+correct Nothing Points{..} pts =
+    pts == TaskPoints (d + l + t + a)
+    where
+        DistancePoints d = distance
+        LeadingPoints l = leading
+        ArrivalPoints a = arrival
+        TimePoints t = time
 
 correct
     (Just (JumpedTooEarly (MinimumDistancePoints md)))
-    TaskPointParts{..}
-    (TaskPoints pts) =
-    pts == md
+    _
+    pts =
+    pts == TaskPoints md
 
 correct
     (Just (Jumped (SecondsPerPoint spp) (JumpedTheGun jtg)))
-    TaskPointParts{..}
-    (TaskPoints pts) =
-    pts == max 0 x
+    Points{..}
+    pts =
+    pts == TaskPoints (max 0 x)
     where
-        x = (distance + leading + time + arrival) - jtg / spp
+        DistancePoints d = distance
+        LeadingPoints l = leading
+        ArrivalPoints a = arrival
+        TimePoints t = time
+        x = (d + l + t + a) - jtg / spp
 
 correct
     (Just (JumpedNoGoal (SecondsPerPoint spp) (JumpedTheGun jtg)))
-    TaskPointParts{..}
-    (TaskPoints pts) =
-    pts == max 0 x
+    Points{..}
+    pts =
+    pts == TaskPoints (max 0 x)
     where
-        x = (distance + leading + (8 % 10) * (time + arrival)) - jtg / spp
+        DistancePoints d = distance
+        LeadingPoints l = leading
+        ArrivalPoints a = arrival
+        TimePoints t = time
+        x = (d + l + (8 % 10) * (t + a)) - jtg / spp
 
-correct (Just NoGoalHg) TaskPointParts{..} (TaskPoints pts) =
-    pts == distance + leading + (8 % 10) * (time + arrival)
+correct (Just NoGoalHg) Points{..} pts =
+    pts == TaskPoints (d + l + (8 % 10) * (t + a))
+    where
+        DistancePoints d = distance
+        LeadingPoints l = leading
+        ArrivalPoints a = arrival
+        TimePoints t = time
 
-correct (Just (Early (LaunchToSssPoints lts))) TaskPointParts{..} (TaskPoints pts) =
+correct (Just (Early (LaunchToSssPoints lts))) Points{..} (TaskPoints pts) =
     pts == lts
 
-correct (Just NoGoalPg) TaskPointParts{..} (TaskPoints pts) =
-    pts == distance + leading
+correct (Just NoGoalPg) Points{..} pts =
+    pts == TaskPoints (d + l)
+    where
+        DistancePoints d = distance
+        LeadingPoints l = leading
 
 taskPointsHg :: PtTest Hg -> Bool
 taskPointsHg (PtTest (penalty, parts)) =

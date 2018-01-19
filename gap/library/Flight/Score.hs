@@ -1,4 +1,4 @@
-{-# OPTIONS_GHC -fno-warn-unused-binds #-}
+{-# LANGUAGE DuplicateRecordFields #-}
 
 {-|
 Module      : Flight.Score
@@ -24,6 +24,7 @@ module Flight.Score
     , TimeValidity(..)
     , DistanceValidity(..)
     , TaskValidity(..)
+    , Validity(..)
     , launchValidity
     , distanceValidity
     , timeValidity
@@ -37,6 +38,7 @@ module Flight.Score
     , TimeWeight(..)
     , Lw(..)
     , Aw(..)
+    , Weights(..)
     , distanceWeight
     , leadingWeight
     , arrivalWeight
@@ -109,11 +111,16 @@ module Flight.Score
     , Hg
     , Pg
     , Penalty(..)
-    , TaskPointParts(..)
+    , ArrivalPoints(..)
+    , DistancePoints(..)
+    , LeadingPoints(..)
+    , TimePoints(..)
     , TaskPoints(..)
+    , Points(..)
     , zeroPoints
     , taskPoints
     , applyPointPenalty
+    , availablePoints
     -- * Stopped task 
     , TaskStopTime(..)
     , AnnouncedTime(..)
@@ -167,6 +174,11 @@ import Flight.Gap.Distance.Fraction
 import Flight.Gap.Distance.Chunk
 import Flight.Gap.Distance.Difficulty
 import Flight.Gap.Leading
+import Flight.Gap.Points.Arrival
+import Flight.Gap.Points.Distance
+import Flight.Gap.Points.Leading
+import Flight.Gap.Points.Time
+import Flight.Gap.Points.Task
 import Flight.Gap.Validity.Launch
 import Flight.Gap.Validity.Distance
 import Flight.Gap.Validity.Time
