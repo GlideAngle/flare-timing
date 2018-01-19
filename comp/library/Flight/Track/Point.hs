@@ -26,14 +26,13 @@ import Data.Aeson (ToJSON(..), FromJSON(..))
 
 import Flight.Field (FieldOrdering(..))
 import Flight.Score
-    ( GoalRatio
-    , TaskPoints, Points, Validity, Weights
-    )
+    (GoalRatio, TaskPoints, Points, Validity, ValidityWorking, Weights)
 
 -- | For each task, the points for that task.
 data Pointing =
     Pointing 
-        { validity :: [Maybe Validity]
+        { validityWorking :: [Maybe ValidityWorking]
+        , validity :: [Maybe Validity]
         , allocation :: [Maybe Allocation]
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
@@ -53,6 +52,14 @@ instance FieldOrdering Pointing where
 cmp :: (Ord a, IsString a) => a -> a -> Ordering
 cmp a b =
     case (a, b) of
+        -- Pointing fields
+        ("validityWorking", _) -> LT
+
+        ("validity", "validityWorking") -> GT
+        ("validity", _) -> LT
+
+        ("allocation", _) -> GT
+
         -- Allocation fields
         ("goalRatio", _) -> LT
 
@@ -64,6 +71,36 @@ cmp a b =
         ("points", _) -> LT
 
         ("taskPoints", _) -> GT
+
+        -- ValidityWorking fields
+        ("sum", _) -> LT
+
+        ("flying", "sum") -> GT
+        ("flying", _) -> LT
+
+        ("area", "sum") -> GT
+        ("area", "flying") -> GT
+        ("area", _) -> LT
+
+        ("nominalGoal", "sum") -> GT
+        ("nominalGoal", "flying") -> GT
+        ("nominalGoal", "area") -> GT
+        ("nominalGoal", _) -> LT
+
+        ("nominalDistance", "sum") -> GT
+        ("nominalDistance", "flying") -> GT
+        ("nominalDistance", "area") -> GT
+        ("nominalDistance", "nominalGoal") -> GT
+        ("nominalDistance", _) -> LT
+
+        ("minimumDistance", "sum") -> GT
+        ("minimumDistance", "flying") -> GT
+        ("minimumDistance", "area") -> GT
+        ("minimumDistance", "nominalGoal") -> GT
+        ("minimumDistance", "nominalDistance") -> GT
+        ("minimumDistance", _) -> LT
+
+        ("best", _) -> GT
 
         -- Validity fields
         ("task", _) -> LT
@@ -84,10 +121,5 @@ cmp a b =
         ("arrival", "distance") -> GT
         ("arrival", "leading") -> GT
         ("arrival", _) -> LT
-
-
-        -- Pointing fields
-        ("validity", _) -> LT
-        ("allocation", _) -> GT
 
         _ -> compare a b

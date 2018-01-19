@@ -9,6 +9,7 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE DisambiguateRecordFields #-}
 
 -- WARNING: This extension needs to be enabled at the definition site of a set
 -- of record fields in order for them to be re-exported by a single module.
@@ -18,6 +19,8 @@
 module Flight.Gap.Validity
     ( NominalTime(..)
     , Validity(..)
+    , ValidityWorking(..)
+    , DistanceValidityWorking(..)
     , launchValidity
     , distanceValidity
     , timeValidity
@@ -36,6 +39,7 @@ import Flight.Gap.Distance.Best (BestDistance(..))
 import Flight.Gap.Distance.Min (MinimumDistance(..))
 import Flight.Gap.Distance.Max (MaximumDistance(..))
 import Flight.Gap.Distance.Sum (SumOfDistance(..))
+import Flight.Gap.Validity.Area (NominalDistanceArea(..))
 import Flight.Gap.Validity.Launch (LaunchValidity(..))
 import Flight.Gap.Validity.Distance (DistanceValidity(..))
 import Flight.Gap.Validity.Time (TimeValidity(..))
@@ -55,8 +59,23 @@ data Validity =
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
-newtype NominalDistanceArea = NominalDistanceArea Rational
-    deriving (Eq, Show)
+data ValidityWorking =
+    ValidityWorking 
+        { distance :: DistanceValidityWorking
+        }
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+
+data DistanceValidityWorking =
+    DistanceValidityWorking 
+        { sum :: SumOfDistance (Quantity Double [u| km |])
+        , flying :: Integer
+        , area :: NominalDistanceArea
+        , nominalGoal :: NominalGoal
+        , nominalDistance :: NominalDistance (Quantity Double [u| km |])
+        , minimumDistance :: MinimumDistance (Quantity Double [u| km |])
+        , best :: MaximumDistance (Quantity Double [u| km |])
+        }
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 launchValidity
     :: NominalLaunch
@@ -163,28 +182,36 @@ distanceValidity
     -> MinimumDistance (Quantity Double [u| km |])
     -> MaximumDistance (Quantity Double [u| km |])
     -> SumOfDistance (Quantity Double [u| km |])
-    -> DistanceValidity
+    -> (DistanceValidity, Maybe DistanceValidityWorking)
 distanceValidity _ _ 0 _ _ _ =
-    DistanceValidity 0
+    (DistanceValidity 0, Nothing)
 
 distanceValidity _ _ _ _ (MaximumDistance (MkQuantity 0)) _ =
-    DistanceValidity 0
+    (DistanceValidity 0, Nothing)
 
 distanceValidity
-    (NominalGoal (0 :% _)) (NominalDistance (MkQuantity 0)) nFly _ _ dSum =
-    DistanceValidity $ min 1 $ dvr (NominalDistanceArea 0) nFly dSum
+    ng@(NominalGoal (0 :% _)) nd@(NominalDistance (MkQuantity 0)) nFly md bd dSum =
+    ( DistanceValidity $ min 1 $ dvr area nFly dSum
+    , Just $ DistanceValidityWorking dSum nFly area ng nd md bd
+    )
+    where
+        area = NominalDistanceArea 0
 
 distanceValidity
-    (NominalGoal (0 :% _))
-    (NominalDistance dNom')
+    ng@(NominalGoal (0 :% _))
+    nd@(NominalDistance dNom')
     nFly
-    (MinimumDistance dMin')
-    _
+    md@(MinimumDistance dMin')
+    bd 
     dSum
     | dNom < dMin =
-        DistanceValidity (1 % 1)
+        ( DistanceValidity (1 % 1)
+        , Nothing
+        )
     | otherwise =
-        DistanceValidity . min 1 $ dvr area nFly dSum
+        ( DistanceValidity . min 1 $ dvr area nFly dSum
+        , Just $ DistanceValidityWorking dSum nFly area ng nd md bd
+        )
     where
         MkQuantity dNom = toRational' dNom'
         MkQuantity dMin = toRational' dMin'
@@ -196,16 +223,20 @@ distanceValidity
         area = NominalDistanceArea $ a * (1 % 2)
 
 distanceValidity
-    (NominalGoal gNom)
-    (NominalDistance dNom')
+    ng@(NominalGoal gNom)
+    nd@(NominalDistance dNom')
     nFly
-    (MinimumDistance dMin')
-    (MaximumDistance dMax')
+    md@(MinimumDistance dMin')
+    bd@(MaximumDistance dMax')
     dSum
     | dNom < dMin =
-        DistanceValidity (1 % 1)
+        ( DistanceValidity (1 % 1)
+        , Nothing
+        )
     | otherwise =
-        DistanceValidity . min 1 $ dvr area nFly dSum
+        ( DistanceValidity . min 1 $ dvr area nFly dSum
+        , Just $ DistanceValidityWorking dSum nFly area ng nd md bd
+        ) 
     where
         MkQuantity dNom = toRational' dNom'
         MkQuantity dMin = toRational' dMin'

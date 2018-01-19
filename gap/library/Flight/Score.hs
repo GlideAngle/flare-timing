@@ -23,8 +23,10 @@ module Flight.Score
     , LaunchValidity(..)
     , TimeValidity(..)
     , DistanceValidity(..)
+    , DistanceValidityWorking(..)
     , TaskValidity(..)
     , Validity(..)
+    , ValidityWorking(..)
     , launchValidity
     , distanceValidity
     , timeValidity

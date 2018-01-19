@@ -60,7 +60,7 @@ import Flight.Score
     , PilotsAtEss(..), PilotsPresent(..), PilotsFlying(..)
     , GoalRatio(..), Lw(..), Aw(..)
     , NominalTime(..), BestTime(..)
-    , Validity(..), Weights(..)
+    , Validity(..), ValidityWorking(..), Weights(..)
     , distanceWeight, leadingWeight, arrivalWeight, timeWeight
     , taskValidity, launchValidity, distanceValidity, timeValidity
     , availablePoints
@@ -124,7 +124,8 @@ points'
     Crossing{dnf}
     Masking{pilotsAtEss, bestDistance, sumDistance, bestTime} _ =
     Pointing 
-        { validity = validities
+        { validityWorking = workings
+        , validity = validities
         , allocation = allocs
         }
     where
@@ -167,6 +168,11 @@ points'
             | s <- dSums
             ]
 
+        workings :: [Maybe ValidityWorking] =
+            [ ValidityWorking <$> v
+            | v <- snd <$> dvs
+            ]
+
         tvs =
             [ timeValidity
                 ((\(NominalTime x) ->
@@ -205,7 +211,7 @@ points'
         validities =
             [ maybeTask $ Validity (taskValidity lv dv tv) lv dv tv
             | lv <- lvs
-            | dv <- dvs
+            | dv <- fst <$> dvs
             | tv <- tvs
             | maybeTask <- maybeTasks
             ]
