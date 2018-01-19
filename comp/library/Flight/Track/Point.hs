@@ -36,8 +36,8 @@ import Flight.Score
 -- | For each task, the points for that task.
 data Pointing =
     Pointing 
-        { validity :: [Validity]
-        , allocation :: [Allocation]
+        { validity :: [Maybe Validity]
+        , allocation :: [Maybe Allocation]
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 

@@ -126,6 +126,12 @@ points
         , allocation = allocs
         }
     where
+        -- NOTE: If there is no best distance, then either the task wasn't run
+        -- or it has not been scored yet.
+        maybeTasks :: [a -> Maybe a]
+        maybeTasks =
+            [ if null ds then const Nothing else Just | ds <- bestDistance ]
+
         lvs =
             [ launchValidity
                 lNom
@@ -195,14 +201,16 @@ points
             ]
 
         validities =
-            [ Validity (taskValidity lv dv tv) lv dv tv
+            [ maybeTask $ Validity (taskValidity lv dv tv) lv dv tv
             | lv <- lvs
             | dv <- dvs
             | tv <- tvs
+            | maybeTask <- maybeTasks
             ]
 
         allocs =
-            [ Allocation gr w
+            [ maybeTask $ Allocation gr w
             | gr <- grs
             | w <- ws
+            | maybeTask <- maybeTasks
             ]
