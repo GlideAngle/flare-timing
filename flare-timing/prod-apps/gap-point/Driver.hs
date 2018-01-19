@@ -62,7 +62,7 @@ import Flight.Score
     , GoalRatio(..), Lw(..), Aw(..)
     , NominalTime(..), BestTime(..)
     , distanceWeight, leadingWeight, arrivalWeight, timeWeight
-    , launchValidity, distanceValidity, timeValidity
+    , taskValidity, launchValidity, distanceValidity, timeValidity
     )
 import Options (description)
 
@@ -195,7 +195,7 @@ points
             ]
 
         validities =
-            [ Validity lv dv tv
+            [ Validity (taskValidity lv dv tv) lv dv tv
             | lv <- lvs
             | dv <- dvs
             | tv <- tvs

@@ -203,8 +203,8 @@ distanceValidity
 
 taskValidity
     :: LaunchValidity
-    -> TimeValidity
     -> DistanceValidity
+    -> TimeValidity
     -> TaskValidity
-taskValidity (LaunchValidity l) (TimeValidity t) (DistanceValidity d) =
+taskValidity (LaunchValidity l) (DistanceValidity d) (TimeValidity t) =
     TaskValidity $ l * t * d

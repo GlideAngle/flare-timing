@@ -28,9 +28,9 @@ import Data.Aeson (ToJSON(..), FromJSON(..))
 
 import Flight.Field (FieldOrdering(..))
 import Flight.Score
-    (GoalRatio
+    ( GoalRatio
     , DistanceWeight, LeadingWeight, ArrivalWeight, TimeWeight
-    , LaunchValidity, DistanceValidity, TimeValidity
+    , TaskValidity, LaunchValidity, DistanceValidity, TimeValidity
     )
 
 -- | For each task, the points for that task.
@@ -43,7 +43,8 @@ data Pointing =
 
 data Validity =
     Validity 
-        { launch :: LaunchValidity
+        { task :: TaskValidity
+        , launch :: LaunchValidity
         , distance :: DistanceValidity
         , time :: TimeValidity
         }
@@ -76,11 +77,16 @@ cmp a b =
         ("weight", _) -> GT
 
         -- Validity fields
+        ("task", _) -> LT
+
+        ("launch", "task") -> GT
         ("launch", _) -> LT
-        ("distance ", "launch") -> GT
-        ("distance ", "time") -> LT
-        ("time", "launch") -> GT
-        ("time", "distance") -> GT
+
+        ("distance", "task") -> GT
+        ("distance", "launch") -> GT
+        ("distance", _) -> LT
+
+        ("time", _) -> GT
 
         -- Weight fields
         ("distance", _) -> LT
