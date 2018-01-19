@@ -18,10 +18,12 @@ newtype PilotsAtEss = PilotsAtEss Integer
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 -- | The number of pilots present for a task.
-newtype PilotsPresent = PilotsPresent Int deriving (Eq, Ord, Show)
+newtype PilotsPresent = PilotsPresent Integer
+    deriving (Eq, Ord, Show, ToJSON, FromJSON)
 
 -- | The number of pilots flying a task.
-newtype PilotsFlying = PilotsFlying Int deriving (Eq, Ord, Show)
+newtype PilotsFlying = PilotsFlying Integer
+    deriving (Eq, Ord, Show, ToJSON, FromJSON)
 
 -- | The number of pilots that launched on a task.
 newtype PilotsLaunched = PilotsLaunched Int deriving (Eq, Show)

@@ -23,45 +23,51 @@ import Data.Ratio ((%))
 launchValidityUnits :: TestTree
 launchValidityUnits = testGroup "Launch validity unit tests"
     [ HU.testCase "Launch validity nom-launch=0 present=1 flying=0 = 0" $
-        FS.launchValidity
-        (NominalLaunch 0)
-        (PilotsPresent 1)
-        (PilotsFlying 0)
+        fst
+        (FS.launchValidity
+            (NominalLaunch 0)
+            (PilotsPresent 1)
+            (PilotsFlying 0))
         @?= LaunchValidity 0
 
     , HU.testCase "Launch validity nom-launch=1 present=1 flying=0 = 0" $
-        FS.launchValidity
-        (NominalLaunch 1)
-        (PilotsPresent 1)
-        (PilotsFlying 0)
+        fst
+        (FS.launchValidity
+            (NominalLaunch 1)
+            (PilotsPresent 1)
+            (PilotsFlying 0))
         @?= LaunchValidity 0
 
     , HU.testCase "Launch validity nom-launch=0 present=1 flying=1 = 1" $
-        FS.launchValidity
-        (NominalLaunch 0)
-        (PilotsPresent 1)
-        (PilotsFlying 1)
+        fst
+        (FS.launchValidity
+            (NominalLaunch 0)
+            (PilotsPresent 1)
+            (PilotsFlying 1))
         @?= LaunchValidity 1
 
     , HU.testCase "Launch validity nom-launch=1 present=1 flying=1 = 1" $
-        FS.launchValidity
-        (NominalLaunch 1)
-        (PilotsPresent 1)
-        (PilotsFlying 1)
+        fst
+        (FS.launchValidity
+            (NominalLaunch 1)
+            (PilotsPresent 1)
+            (PilotsFlying 1))
         @?= LaunchValidity 1
     ]
 
 launchValidity :: Integer -> Integer -> PilotsPresent -> PilotsFlying -> Bool
 launchValidity nx dx np nf =
-    let nominalLaunch = NominalLaunch (nx % dx)
-    in (\(LaunchValidity x) -> isNormal x) $ FS.launchValidity nominalLaunch np nf
+    (\(LaunchValidity x) -> isNormal x) . fst
+    $ FS.launchValidity nominalLaunch np nf
+    where
+        nominalLaunch = NominalLaunch (nx % dx)
 
 scLaunchValidity
     :: Monad m
     => SC.NonNegative Integer
     -> SC.Positive Integer
-    -> SC.NonNegative Int
-    -> SC.Positive Int
+    -> SC.NonNegative Integer
+    -> SC.Positive Integer
     -> SC.Property m
 scLaunchValidity
     (SC.NonNegative nx)
@@ -74,8 +80,8 @@ scLaunchValidity
 qcLaunchValidity
     :: QC.NonNegative Integer
     -> QC.Positive Integer
-    -> QC.NonNegative Int
-    -> QC.Positive Int
+    -> QC.NonNegative Integer
+    -> QC.Positive Integer
     -> QC.Property
 qcLaunchValidity
     (QC.NonNegative nx)

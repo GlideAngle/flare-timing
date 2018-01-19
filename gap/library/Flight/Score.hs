@@ -21,6 +21,7 @@ module Flight.Score
     , isFoldNormal
     -- * Validity
     , LaunchValidity(..)
+    , LaunchValidityWorking(..)
     , TimeValidity(..)
     , DistanceValidity(..)
     , DistanceValidityWorking(..)

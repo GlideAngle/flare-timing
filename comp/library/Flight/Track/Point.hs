@@ -72,7 +72,7 @@ cmp a b =
 
         ("taskPoints", _) -> GT
 
-        -- ValidityWorking fields
+        -- DistanceValidityWorking fields
         ("sum", _) -> LT
 
         ("flying", "sum") -> GT
@@ -101,6 +101,14 @@ cmp a b =
         ("minimumDistance", _) -> LT
 
         ("best", _) -> GT
+
+        -- LaunchValidityWorking fields
+        ("nominalLaunch", "flying") -> GT
+        ("nominalLaunch", _) -> LT
+
+        ("present", "flying") -> GT
+        ("present", "nominalLaunch") -> GT
+        ("present", _) -> LT
 
         -- Validity fields
         ("task", _) -> LT

@@ -21,6 +21,7 @@ module Flight.Gap.Validity
     , Validity(..)
     , ValidityWorking(..)
     , DistanceValidityWorking(..)
+    , LaunchValidityWorking(..)
     , launchValidity
     , distanceValidity
     , timeValidity
@@ -61,14 +62,15 @@ data Validity =
 
 data ValidityWorking =
     ValidityWorking 
-        { distance :: DistanceValidityWorking
+        { launch :: LaunchValidityWorking
+        , distance :: DistanceValidityWorking
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 data DistanceValidityWorking =
     DistanceValidityWorking 
         { sum :: SumOfDistance (Quantity Double [u| km |])
-        , flying :: Integer
+        , flying :: PilotsFlying
         , area :: NominalDistanceArea
         , nominalGoal :: NominalGoal
         , nominalDistance :: NominalDistance (Quantity Double [u| km |])
@@ -77,27 +79,40 @@ data DistanceValidityWorking =
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
+data LaunchValidityWorking =
+    LaunchValidityWorking 
+        { flying :: PilotsFlying
+        , present :: PilotsPresent
+        , nominalLaunch :: NominalLaunch
+        }
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+
 launchValidity
     :: NominalLaunch
     -> PilotsPresent
     -> PilotsFlying
-    -> LaunchValidity
+    -> (LaunchValidity, Maybe LaunchValidityWorking)
 
 launchValidity (NominalLaunch (_ :% _)) _ (PilotsFlying 0) =
-    LaunchValidity (0 % 1)
+    (LaunchValidity (0 % 1), Nothing)
 
 launchValidity (NominalLaunch (0 :% _)) _ _ =
-    LaunchValidity (1 % 1)
+    (LaunchValidity (1 % 1), Nothing)
 
 launchValidity
-    (NominalLaunch (n :% d)) (PilotsPresent present) (PilotsFlying flying) =
-    LaunchValidity $
-    (27 % 1000) * lvr
-    + (2917 % 1000) * lvr * lvr
-    - (1944 % 1000) * lvr * lvr * lvr
+    nl@(NominalLaunch (n :% d))
+    pp@(PilotsPresent present)
+    pf@(PilotsFlying flying) =
+        (lv, Just $ LaunchValidityWorking pf pp nl)
     where
-        lvr' = (toInteger flying * d) % (toInteger present * n)
+        lvr' = (flying * d) % (toInteger present * n)
         lvr = min lvr' (1 % 1)
+
+        lv =
+            LaunchValidity $
+            (27 % 1000) * lvr
+            + (2917 % 1000) * lvr * lvr
+            - (1944 % 1000) * lvr * lvr * lvr
 
 tvrValidity :: TimeValidityRatio -> TimeValidity
 
@@ -164,10 +179,13 @@ timeValidity tNom@(NominalTime nt) (Just tBest@(BestTime bt)) _ _
 
 dvr
     :: NominalDistanceArea
-    -> Integer
+    -> PilotsFlying
     -> SumOfDistance (Quantity Double [u| km |])
     -> Rational
-dvr (NominalDistanceArea dNom@(n :% d)) nFly (SumOfDistance dSum)
+dvr
+    (NominalDistanceArea dNom@(n :% d))
+    (PilotsFlying nFly)
+    (SumOfDistance dSum)
     | dNom <= 0 = 0 % 1
     | nFly <= 0 = 0 % 1
     | dSum <= [u| 0 km |] = 0 % 1
@@ -178,19 +196,21 @@ dvr (NominalDistanceArea dNom@(n :% d)) nFly (SumOfDistance dSum)
 distanceValidity
     :: NominalGoal
     -> NominalDistance (Quantity Double [u| km |])
-    -> Integer
+    -> PilotsFlying
     -> MinimumDistance (Quantity Double [u| km |])
     -> MaximumDistance (Quantity Double [u| km |])
     -> SumOfDistance (Quantity Double [u| km |])
     -> (DistanceValidity, Maybe DistanceValidityWorking)
-distanceValidity _ _ 0 _ _ _ =
+distanceValidity _ _ (PilotsFlying 0) _ _ _ =
     (DistanceValidity 0, Nothing)
 
 distanceValidity _ _ _ _ (MaximumDistance (MkQuantity 0)) _ =
     (DistanceValidity 0, Nothing)
 
 distanceValidity
-    ng@(NominalGoal (0 :% _)) nd@(NominalDistance (MkQuantity 0)) nFly md bd dSum =
+    ng@(NominalGoal (0 :% _))
+    nd@(NominalDistance (MkQuantity 0))
+    nFly md bd dSum =
     ( DistanceValidity $ min 1 $ dvr area nFly dSum
     , Just $ DistanceValidityWorking dSum nFly area ng nd md bd
     )

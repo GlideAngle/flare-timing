@@ -158,7 +158,7 @@ points'
             [ distanceValidity
                 gNom
                 dNom
-                (p - d)
+                (PilotsFlying $ p - d)
                 (MinimumDistance [u| 5 km |])
                 b
                 s
@@ -169,8 +169,12 @@ points'
             ]
 
         workings :: [Maybe ValidityWorking] =
-            [ ValidityWorking <$> v
-            | v <- snd <$> dvs
+            [ do
+                lv' <- lv
+                dv' <- dv
+                return $ ValidityWorking lv' dv'
+            | lv <- snd <$> lvs
+            | dv <- snd <$> dvs
             ]
 
         tvs =
@@ -210,7 +214,7 @@ points'
 
         validities =
             [ maybeTask $ Validity (taskValidity lv dv tv) lv dv tv
-            | lv <- lvs
+            | lv <- fst <$> lvs
             | dv <- fst <$> dvs
             | tv <- tvs
             | maybeTask <- maybeTasks
