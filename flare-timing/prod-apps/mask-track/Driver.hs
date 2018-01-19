@@ -92,7 +92,7 @@ import Flight.Scribe
     , readCompLeading, readCompBestDistances, readCompTimeRows
     )
 import Flight.Lookup.Route (routeLength)
-import qualified Flight.Score as Gap (PilotDistance(..), bestTime)
+import qualified Flight.Score as Gap (PilotDistance(..), bestTime')
 import Flight.Score
     ( PilotsAtEss(..)
     , PositionAtEss(..)
@@ -328,7 +328,7 @@ times
     -> Maybe (BestTime (Quantity Double [u| h |]), [(Pilot, TrackSpeed)])
 times xs =
     (\ bt -> (bt, sortOn (time . snd) $ second (f bt) <$> ys))
-    <$> Gap.bestTime ts
+    <$> Gap.bestTime' ts
     where
         ys :: [(Pilot, PilotTime (Quantity Double [u| h |]))]
         ys =

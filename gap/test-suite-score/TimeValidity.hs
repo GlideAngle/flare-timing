@@ -27,51 +27,63 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 timeValidityUnits :: TestTree
 timeValidityUnits = testGroup "Time validity unit tests"
     [ HU.testCase "Time validity 0 0 (Just 0) 0 = 0" $
-        FS.timeValidity
+
+        fst
+        (FS.timeValidity
             (NominalTime . MkQuantity $ 0)
             (Just . BestTime . MkQuantity $ 0)
             (NominalDistance . MkQuantity $ 0)
-            (BestDistance . MkQuantity $ 0)
+            (BestDistance . MkQuantity $ 0))
         @?= TimeValidity 0
 
     , HU.testCase "Time validity 1 0 (Just 1) 0 = 1" $
-        FS.timeValidity
+
+        fst
+        (FS.timeValidity
             (NominalTime . MkQuantity $ 1)
             (Just . BestTime . MkQuantity $ 1)
             (NominalDistance . MkQuantity $ 0)
-            (BestDistance . MkQuantity $ 0)
+            (BestDistance . MkQuantity $ 0))
         @?= TimeValidity 1
 
     , HU.testCase "Time validity 1 1 (Just 1) 1 = 1" $
-        FS.timeValidity
+
+        fst
+        (FS.timeValidity
             (NominalTime . MkQuantity $ 1)
             (Just . BestTime . MkQuantity $ 1)
             (NominalDistance . MkQuantity $ 1)
-            (BestDistance . MkQuantity $ 1)
+            (BestDistance . MkQuantity $ 1))
         @?= TimeValidity 1
 
     , HU.testCase "Time validity 0 0 Nothing 0 = 0" $
-        FS.timeValidity
+
+        fst
+        (FS.timeValidity
             (NominalTime . MkQuantity $ 0)
             Nothing
             (NominalDistance . MkQuantity $ 0)
-            (BestDistance . MkQuantity $ 0)
+            (BestDistance . MkQuantity $ 0))
         @?= TimeValidity 0
 
     , HU.testCase "Time validity 0 1 Nothing 1 = 1" $
-        FS.timeValidity
+
+        fst
+        (FS.timeValidity
             (NominalTime . MkQuantity $ 0)
             Nothing
             (NominalDistance . MkQuantity $ 1)
-            (BestDistance . MkQuantity $ 1)
+            (BestDistance . MkQuantity $ 1))
         @?= TimeValidity 1
 
     , HU.testCase "Time validity 1 1 Nothing 1 = 1" $
-        FS.timeValidity
+
+        fst
+        (FS.timeValidity
             (NominalTime . MkQuantity $ 1)
             Nothing
             (NominalDistance . MkQuantity $ 1)
-            (BestDistance . MkQuantity $ 1)
+            (BestDistance . MkQuantity $ 1))
         @?= TimeValidity 1
     ]
 
@@ -82,7 +94,7 @@ timeValidity
     -> BestDistance (Quantity Double [u| km |])
     -> Bool
 timeValidity nt t nd d =
-    (\(TimeValidity x) -> isNormal x)
+    (\(TimeValidity x) -> isNormal x) . fst
     $ FS.timeValidity nt t nd d
 
 scTimeValidity

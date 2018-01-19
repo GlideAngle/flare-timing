@@ -20,8 +20,9 @@ module Flight.Gap.Validity
     ( NominalTime(..)
     , Validity(..)
     , ValidityWorking(..)
-    , DistanceValidityWorking(..)
     , LaunchValidityWorking(..)
+    , DistanceValidityWorking(..)
+    , TimeValidityWorking(..)
     , launchValidity
     , distanceValidity
     , timeValidity
@@ -31,7 +32,7 @@ module Flight.Gap.Validity
 import Data.Ratio ((%))
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
-import Data.UnitsOfMeasure (u, toRational')
+import Data.UnitsOfMeasure (u, convert, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Gap.Ratio (pattern (:%))
@@ -64,6 +65,7 @@ data ValidityWorking =
     ValidityWorking 
         { launch :: LaunchValidityWorking
         , distance :: DistanceValidityWorking
+        , time :: TimeValidityWorking
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
@@ -75,7 +77,7 @@ data DistanceValidityWorking =
         , nominalGoal :: NominalGoal
         , nominalDistance :: NominalDistance (Quantity Double [u| km |])
         , minimumDistance :: MinimumDistance (Quantity Double [u| km |])
-        , best :: MaximumDistance (Quantity Double [u| km |])
+        , bestDistance :: MaximumDistance (Quantity Double [u| km |])
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
@@ -84,6 +86,15 @@ data LaunchValidityWorking =
         { flying :: PilotsFlying
         , present :: PilotsPresent
         , nominalLaunch :: NominalLaunch
+        }
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+
+data TimeValidityWorking =
+    TimeValidityWorking 
+        { bestTime :: Maybe (BestTime (Quantity Double [u| h |]))
+        , bestDistance :: BestDistance (Quantity Double [u| km |])
+        , nominalTime :: NominalTime (Quantity Double [u| h |])
+        , nominalDistance :: NominalDistance (Quantity Double [u| km |])
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
@@ -158,6 +169,21 @@ data TimeValidityRatio
         , bestDistance :: BestDistance (Quantity Double [u| km |])
         }
 
+tvZero :: (TimeValidity, Maybe a)
+tvZero = (TimeValidity 0, Nothing)
+
+ntHours
+    :: NominalTime (Quantity Double [u| s |])
+    -> NominalTime (Quantity Double [u| h |])
+ntHours (NominalTime t) =
+    NominalTime (convert t :: Quantity Double [u| h |])
+
+btHours
+    :: BestTime (Quantity Double [u| s |])
+    -> BestTime (Quantity Double [u| h |])
+btHours (BestTime t) =
+    BestTime (convert t :: Quantity Double [u| h |])
+
 -- | If a best time is given then at least one pilot has finished the speed
 -- section.
 timeValidity
@@ -165,17 +191,23 @@ timeValidity
     -> Maybe (BestTime (Quantity Double [u| s |]))
     -> NominalDistance (Quantity Double [u| km |])
     -> BestDistance (Quantity Double [u| km |])
-    -> TimeValidity
+    -> (TimeValidity, Maybe TimeValidityWorking)
 
-timeValidity _ Nothing dNom@(NominalDistance nd) dBest@(BestDistance bd)
-    | nd <= [u| 0 km |] = TimeValidity $ 0 % 1
-    | bd <= [u| 0 km |] = TimeValidity $ 0 % 1
-    | otherwise = tvrValidity $ DistanceRatio dNom dBest
+timeValidity tNom Nothing dNom@(NominalDistance nd) dBest@(BestDistance bd)
+    | nd <= [u| 0 km |] = tvZero
+    | bd <= [u| 0 km |] = tvZero
+    | otherwise =
+        ( tvrValidity $ DistanceRatio dNom dBest
+        , Just $ TimeValidityWorking Nothing dBest (ntHours tNom) dNom
+        )
 
-timeValidity tNom@(NominalTime nt) (Just tBest@(BestTime bt)) _ _
-    | nt <= [u| 0 s |] = TimeValidity $ 0 % 1
-    | bt <= [u| 0 s |] = TimeValidity $ 0 % 1
-    | otherwise = tvrValidity $ TimeRatio tNom tBest
+timeValidity tNom@(NominalTime nt) (Just tBest@(BestTime bt)) dNom dBest
+    | nt <= [u| 0 s |] = tvZero
+    | bt <= [u| 0 s |] = tvZero
+    | otherwise =
+        ( tvrValidity $ TimeRatio tNom tBest
+        , Just $ TimeValidityWorking (Just (btHours tBest)) dBest (ntHours tNom) dNom
+        )
 
 dvr
     :: NominalDistanceArea

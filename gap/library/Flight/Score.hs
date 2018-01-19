@@ -23,6 +23,7 @@ module Flight.Score
     , LaunchValidity(..)
     , LaunchValidityWorking(..)
     , TimeValidity(..)
+    , TimeValidityWorking(..)
     , DistanceValidity(..)
     , DistanceValidityWorking(..)
     , TaskValidity(..)
@@ -54,14 +55,14 @@ module Flight.Score
     , BestTime(..)
     , PilotTime(..)
     , SpeedFraction(..)
-    , bestTime
+    , bestTime'
     , speedFraction
     -- * Fractional allotment of linear distance points
     , BestDistance(..)
     , PilotDistance(..)
     , LinearFraction(..)
     , linearFraction
-    , bestDistance
+    , bestDistance'
     -- * Fractional allotment of difficulty distance points
     , Lookahead(..)
     , Chunk(..)

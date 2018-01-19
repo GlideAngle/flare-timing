@@ -22,7 +22,7 @@ module Flight.Gap.Allot
     , ArrivalFraction(..)
     , arrivalFraction
     , PilotTime(..)
-    , bestTime
+    , bestTime'
     , SpeedFraction(..)
     , speedFraction
     ) where
@@ -62,11 +62,11 @@ arrivalFraction (PilotsAtEss n) (PositionAtEss rank)
         where
             ac = 1 - ((rank - 1) % n)
 
-bestTime
+bestTime'
     :: [PilotTime (Quantity Double [u| h |])]
     -> Maybe (BestTime (Quantity Double [u| h |]))
-bestTime [] = Nothing
-bestTime xs =
+bestTime' [] = Nothing
+bestTime' xs =
     Just . BestTime $ t
     where
         PilotTime t = List.minimum xs

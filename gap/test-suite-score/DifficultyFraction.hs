@@ -29,7 +29,7 @@ import Flight.Score
     , ChunkDifficultyFraction(..)
     , Difficulty(..)
     , isNormal
-    , bestDistance
+    , bestDistance'
     )
 
 import TestNewtypes
@@ -92,7 +92,7 @@ dists10 =
     ]
 
 best10 :: BestDistance (Quantity Double [u| km |])
-best10 = fromMaybe (BestDistance . MkQuantity $ 0) $ bestDistance dists10
+best10 = fromMaybe (BestDistance . MkQuantity $ 0) $ bestDistance' dists10
 
 dists100 :: [PilotDistance (Quantity Double [u| km |])]
 dists100 =
@@ -101,7 +101,7 @@ dists100 =
     ]
 
 best100 :: BestDistance (Quantity Double [u| km |])
-best100 = fromMaybe (BestDistance . MkQuantity $ 0) $ bestDistance dists100
+best100 = fromMaybe (BestDistance . MkQuantity $ 0) $ bestDistance' dists100
 
 expected10 :: [DifficultyFraction]
 expected10 =

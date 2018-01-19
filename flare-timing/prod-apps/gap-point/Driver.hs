@@ -172,9 +172,11 @@ points'
             [ do
                 lv' <- lv
                 dv' <- dv
-                return $ ValidityWorking lv' dv'
+                tv' <- tv
+                return $ ValidityWorking lv' dv' tv'
             | lv <- snd <$> lvs
             | dv <- snd <$> dvs
+            | tv <- snd <$> tvs
             ]
 
         tvs =
@@ -216,7 +218,7 @@ points'
             [ maybeTask $ Validity (taskValidity lv dv tv) lv dv tv
             | lv <- fst <$> lvs
             | dv <- fst <$> dvs
-            | tv <- tvs
+            | tv <- fst <$> tvs
             | maybeTask <- maybeTasks
             ]
 

@@ -6,7 +6,7 @@ module Flight.Gap.Distance.Linear
     ( PilotDistance(..)
     , LinearFraction(..)
     , linearFraction
-    , bestDistance
+    , bestDistance'
     ) where
 
 import Data.Ratio ((%))
@@ -32,6 +32,6 @@ linearFraction (BestDistance bd) (PilotDistance pd) =
         MkQuantity (nb :% db) = toRational' bd
         MkQuantity (np :% dp) = toRational' pd
 
-bestDistance :: Ord a => [PilotDistance a] -> Maybe (BestDistance a)
-bestDistance [] = Nothing
-bestDistance xs = let PilotDistance x = maximum xs in Just . BestDistance $ x
+bestDistance' :: Ord a => [PilotDistance a] -> Maybe (BestDistance a)
+bestDistance' [] = Nothing
+bestDistance' xs = let PilotDistance x = maximum xs in Just . BestDistance $ x

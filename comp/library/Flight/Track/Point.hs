@@ -76,6 +76,7 @@ cmp a b =
         ("sum", _) -> LT
 
         ("flying", "sum") -> GT
+        ("flying", "nominalLaunch") -> GT
         ("flying", _) -> LT
 
         ("area", "sum") -> GT
@@ -103,12 +104,23 @@ cmp a b =
         ("best", _) -> GT
 
         -- LaunchValidityWorking fields
-        ("nominalLaunch", "flying") -> GT
         ("nominalLaunch", _) -> LT
 
         ("present", "flying") -> GT
         ("present", "nominalLaunch") -> GT
         ("present", _) -> LT
+
+        -- TimeValidityWorking fields
+        ("nominalTime", "_") -> LT
+
+        ("bestTime", "nominalTime") -> GT
+        ("bestTime", "_") -> LT
+
+        ("nominalDistance", "nominalTime") -> GT
+        ("nominalDistance", "bestTime") -> GT
+        ("bestTime", "_") -> LT
+
+        ("bestDistance", _) -> GT
 
         -- Validity fields
         ("task", _) -> LT
