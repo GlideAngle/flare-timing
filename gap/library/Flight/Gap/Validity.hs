@@ -216,15 +216,16 @@ dvr
     -> SumOfDistance (Quantity Double [u| km |])
     -> Rational
 dvr
-    (NominalDistanceArea dNom@(n :% d))
-    (PilotsFlying nFly)
+    (NominalDistanceArea nda)
+    (PilotsFlying flying)
     (SumOfDistance dSum)
-    | dNom <= 0 = 0 % 1
-    | nFly <= 0 = 0 % 1
-    | dSum <= [u| 0 km |] = 0 % 1
-    | otherwise = dSum' * (d % (nFly * n))
+    | nda <= 0 = 0
+    | flying <= 0 = 0
+    | dSum <= [u| 0 km |] = 0
+    | otherwise = d / (f * nda)
     where
-        MkQuantity dSum' = toRational' dSum
+        f = toRational flying
+        MkQuantity d = toRational' dSum
 
 distanceValidity
     :: NominalGoal
