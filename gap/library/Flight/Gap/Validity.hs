@@ -132,22 +132,20 @@ tvrValidity
         { nominalTime = NominalTime tNom
         , bestTime = BestTime tBest
         } =
-        tvrPolynomial (min 1 $ nom * bInv)
+    tvrPolynomial . min 1 $ b / n
     where
-        MkQuantity nom = toRational' tNom
-        MkQuantity (nb :% db) = toRational' tBest
-        bInv = db % nb
+        MkQuantity n = toRational' tNom
+        MkQuantity b = toRational' tBest
 
 tvrValidity
     DistanceRatio
         { nominalDistance = NominalDistance dNom
         , bestDistance = BestDistance dBest
         } =
-        tvrPolynomial (min 1 $ nom * bInv)
+    tvrPolynomial . min 1 $ b / n
     where
-        MkQuantity nom = toRational' dNom
-        MkQuantity (nb :% db) = toRational' dBest
-        bInv = db % nb
+        MkQuantity n = toRational' dNom
+        MkQuantity b = toRational' dBest
 
 tvrPolynomial :: Rational -> TimeValidity
 tvrPolynomial tvr =
@@ -168,6 +166,7 @@ data TimeValidityRatio
         { nominalDistance :: NominalDistance (Quantity Double [u| km |])
         , bestDistance :: BestDistance (Quantity Double [u| km |])
         }
+    deriving Show
 
 tvZero :: (TimeValidity, Maybe a)
 tvZero = (TimeValidity 0, Nothing)
