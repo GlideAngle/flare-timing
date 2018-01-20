@@ -111,19 +111,21 @@ launchValidity (NominalLaunch (0 :% _)) _ _ =
     (LaunchValidity (1 % 1), Nothing)
 
 launchValidity
-    nl@(NominalLaunch (n :% d))
+    nl@(NominalLaunch nominal)
     pp@(PilotsPresent present)
     pf@(PilotsFlying flying) =
-        (lv, Just $ LaunchValidityWorking pf pp nl)
+    (lvrPolynomial . min 1 $ f / (p * n), Just $ LaunchValidityWorking pf pp nl)
     where
-        lvr' = (flying * d) % (toInteger present * n)
-        lvr = min lvr' (1 % 1)
+        n = toRational nominal
+        p = toRational present
+        f = toRational flying
 
-        lv =
-            LaunchValidity $
-            (27 % 1000) * lvr
-            + (2917 % 1000) * lvr * lvr
-            - (1944 % 1000) * lvr * lvr * lvr
+lvrPolynomial :: Rational -> LaunchValidity
+lvrPolynomial lvr =
+    LaunchValidity $
+    (27 % 1000) * lvr
+    + (2917 % 1000) * lvr * lvr
+    - (1944 % 1000) * lvr * lvr * lvr
 
 tvrValidity :: TimeValidityRatio -> TimeValidity
 
