@@ -30,7 +30,7 @@ import Flight.Kml (MarkedFixes(..))
 import Flight.Distance (TaskDistance(..), unTaskDistance)
 import Flight.Comp (Pilot, Task(..))
 import Flight.Route (TrackLine(..), toTrackLine)
-import Flight.Score (BestTime(..))
+import Flight.Score (BestTime(..), MinimumDistance(..))
 import Flight.Track.Time (LeadTick(..))
 import Flight.Track.Distance (TrackDistance(..), Land, Nigh)
 import qualified Flight.Track.Time as Time (TimeRow(..), TickRow(..))
@@ -47,18 +47,29 @@ data DashPathInputs =
         }
 
 compDistance
-    :: Double
+    -- | The minimum distance for the comp, the same for each task.
+    :: MinimumDistance (Quantity Double [u| km |])
+    -- | The distance of each task.
     -> [Maybe (TaskDistance Double)]
+    -- | The pilots arriving at goal for each task.
     -> [[Pilot]]
+    -- | The pilots landing out for each task.
+    -> [[Pilot]]
+    -- | The best time to make goal for each task.
     -> [Maybe (BestTime (Quantity Double [u| h |]))]
+    -- | For each task, for each pilot excluding those having made goal, the
+    -- row closest to goal.
     -> [[Maybe (Pilot, Time.TickRow)]]
-    -> ( [Maybe Double]
-       , [Maybe Double]
-       , [[Maybe (Pilot, Maybe LeadTick)]]
+    -> ( [Maybe Double] -- ^ The sum of distance over min of those arriving at goal.
+       , [Maybe Double] -- ^ The sum of distance over min of those landing out.
+       , [Maybe Double] -- ^ The best distance
+       , [[Maybe (Pilot, Maybe LeadTick)]] -- ^ The lead time of the point closest to goal.
        )
-compDistance dNom lsTask pilotsLandingOut tsBest rows =
-    (dsSum, dsBest, rowTicks)
+compDistance dMin lsTask pilotsArriving pilotsLandingOut tsBest rows =
+    (dsSumArriving, dsSumLandingOut, dsBest, rowTicks)
     where
+        MinimumDistance (MkQuantity dMin') = dMin
+
         -- Distances (ds) of point in the flight closest to goal.
         dsNigh :: [[(Pilot, TrackDistance Land)]] =
                 zipWith3
@@ -67,13 +78,13 @@ compDistance dNom lsTask pilotsLandingOut tsBest rows =
                     lsTask
                     pilotsLandingOut
 
-        -- For each task, for each pilot, the best distance made.
+        -- For each task, the best distance made.
         dsMade :: [Maybe Double] =
                 (\xs -> if null xs then Nothing else Just . maximum $ xs)
                 . catMaybes
                 <$> (fmap . fmap) (made . snd) dsNigh
 
-        -- If a pilot makes goal then their best distance is the task
+        -- If even a single pilot makes goal then the best distance is the task
         -- distance.
         dsBest :: [Maybe Double] =
                 zipWith3
@@ -82,11 +93,28 @@ compDistance dNom lsTask pilotsLandingOut tsBest rows =
                     tsBest
                     dsMade
 
-        dsSum :: [Maybe Double] =
+        -- The sum of distance of those pilots landing out but this does not
+        -- include the sum of distance of those pilots making goal.
+        dsSumLandingOut :: [Maybe Double] =
                 [ \case [] -> Nothing; xs -> Just . sum $ xs
-                  $ (\d -> max 0 (d - dNom))
+                  $ (\d -> max 0 (d - dMin'))
                   <$> ds
                 | ds <- catMaybes <$> (fmap . fmap) (made . snd) dsNigh
+                ]
+
+        dsTaskOverMin = 
+                [ do
+                    l' <- l
+                    return . max 0 $ l' - dMin'
+                | l <- (fmap . fmap) unTaskDistance lsTask
+                ]
+
+        dsSumArriving:: [Maybe Double] =
+                [ if null ps then Nothing else do
+                    dt' <- dt
+                    return $ (fromIntegral $ length ps) * dt'
+                | dt <- dsTaskOverMin
+                | ps <- pilotsArriving
                 ]
 
         rowTicks :: [[Maybe (Pilot, Maybe LeadTick)]] =

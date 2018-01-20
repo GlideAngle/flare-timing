@@ -32,7 +32,7 @@ import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Control.Arrow (second)
 import Control.Lens ((^?), element)
-import Control.Monad (join)
+import Control.Monad (join, liftM2)
 import Control.Monad.Except (ExceptT, runExceptT)
 import Data.UnitsOfMeasure (u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
@@ -94,13 +94,8 @@ import Flight.Scribe
 import Flight.Lookup.Route (routeLength)
 import qualified Flight.Score as Gap (PilotDistance(..), bestTime')
 import Flight.Score
-    ( PilotsAtEss(..)
-    , PositionAtEss(..)
-    , BestTime(..)
-    , PilotTime(..)
-    , NominalDistance(..)
-    , arrivalFraction
-    , speedFraction
+    ( PilotsAtEss(..), PositionAtEss(..), BestTime(..), PilotTime(..)
+    , arrivalFraction, speedFraction
     )
 import Flight.Span.Math (Math(..))
 import Options (description)
@@ -186,10 +181,7 @@ writeMask
     -> IO ()
 writeMask
     CompSettings
-        { nominal =
-            Cmp.Nominal
-                { distance = NominalDistance (MkQuantity dNom)
-                }
+        { nominal = Cmp.Nominal{free}
         , tasks
         }
     routes
@@ -257,13 +249,20 @@ writeMask
 
             let (minLead, lead) = compLeading rowsLeadingStep lsTask tasks
 
-            let (dsSum, dsBest, rowTicks) =
+            let (dsSumArriving, dsSumLandingOut, dsBest, rowTicks) =
                     compDistance
-                        dNom
+                        free
                         lsTask
+                        pilotsArriving
                         pilotsLandingOut
                         tsBest
                         rows
+
+            let dsSum =
+                    [ liftM2 (+) aSum lSum
+                    | aSum <- dsSumArriving
+                    | lSum <- dsSumLandingOut
+                    ]
 
             dsNighRows :: [[Maybe (Pilot, Time.TimeRow)]]
                 <- readCompTimeRows
