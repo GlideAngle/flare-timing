@@ -32,7 +32,8 @@ import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Control.Arrow (second)
 import Control.Lens ((^?), element)
-import Control.Monad (join, liftM2)
+import Control.Monad (join)
+import Control.Applicative (liftA2)
 import Control.Monad.Except (ExceptT, runExceptT)
 import Data.UnitsOfMeasure (u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
@@ -259,7 +260,7 @@ writeMask
                         rows
 
             let dsSum =
-                    [ liftM2 (+) aSum lSum
+                    [ liftA2 (+) aSum lSum
                     | aSum <- dsSumArriving
                     | lSum <- dsSumLandingOut
                     ]
