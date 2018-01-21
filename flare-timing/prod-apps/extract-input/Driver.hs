@@ -30,6 +30,7 @@ import Flight.Comp
     , Task(..)
     , TaskFolder(..)
     , PilotTrackLogFile(..)
+    , defaultNominal
     , fsdbToComp
     , findFsdb
     )
@@ -73,7 +74,7 @@ fsdbComp (FsdbXml contents) = do
 
 fsdbNominal :: FsdbXml -> ExceptT String IO Nominal
 fsdbNominal (FsdbXml contents) = do
-    ns <- lift $ parseNominal contents
+    ns <- lift $ parseNominal defaultNominal contents
     case ns of
         Left msg -> ExceptT . return $ Left msg
         Right [n] -> ExceptT . return $ Right n

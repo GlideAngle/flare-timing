@@ -22,6 +22,7 @@ module Flight.Comp
     , Comp(..)
     , Nominal(..)
     , UtcOffset(..)
+    , defaultNominal
     -- * Task
     , Task(..)
     , IxTask(..)
@@ -48,6 +49,7 @@ module Flight.Comp
     , module Flight.Path
     ) where
 
+import Data.Ratio ((%))
 import Data.Time.Clock (UTCTime)
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
@@ -65,7 +67,7 @@ import Flight.Distance (TaskDistance(..))
 import Flight.Score
     ( Leg(..)
     , NominalLaunch(..)
-    , NominalGoal
+    , NominalGoal(..)
     , NominalDistance(..)
     , MinimumDistance(..)
     , NominalTime(..)
@@ -170,6 +172,16 @@ data Nominal =
         , time :: NominalTime (Quantity Double [u| h |])
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+
+defaultNominal :: Nominal
+defaultNominal =
+    Nominal
+        { launch = NominalLaunch $ 96 % 100
+        , goal = NominalGoal $ 25 % 100
+        , distance = NominalDistance . MkQuantity $ 70
+        , free = MinimumDistance . MkQuantity $ 7
+        , time = NominalTime . MkQuantity $ 1.5
+        }
 
 data Task =
     Task { taskName :: String
