@@ -1,7 +1,7 @@
 { mkDerivation, aeson, aeson-via-sci, base, containers, flight-comp
 , flight-gap, flight-latlng, flight-units, flight-zone, hlint, hxt
-, hxt-xpath, parsec, path, raw-strings-qq, scientific, smallcheck
-, split, stdenv, tasty, tasty-hunit, tasty-quickcheck
+, hxt-xpath, megaparsec, parsec, path, raw-strings-qq, scientific
+, smallcheck, split, stdenv, tasty, tasty-hunit, tasty-quickcheck
 , tasty-smallcheck, time, uom-plugin
 }:
 mkDerivation {
@@ -10,12 +10,12 @@ mkDerivation {
   src = ./.;
   libraryHaskellDepends = [
     aeson aeson-via-sci base containers flight-comp flight-gap
-    flight-latlng flight-units flight-zone hxt hxt-xpath parsec path
-    scientific split time uom-plugin
+    flight-latlng flight-units flight-zone hxt hxt-xpath megaparsec
+    path scientific split time uom-plugin
   ];
   testHaskellDepends = [
     aeson aeson-via-sci base containers flight-comp flight-latlng
-    flight-units flight-zone hlint hxt hxt-xpath parsec path
+    flight-units flight-zone hlint hxt hxt-xpath megaparsec parsec path
     raw-strings-qq scientific smallcheck split tasty tasty-hunit
     tasty-quickcheck tasty-smallcheck time
   ];

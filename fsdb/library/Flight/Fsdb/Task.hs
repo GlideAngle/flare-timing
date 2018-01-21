@@ -32,7 +32,7 @@ import Text.XML.HXT.Core
 import Data.Time.Clock (UTCTime)
 import Data.Time.Format (parseTimeOrError, defaultTimeLocale)
 import Data.List (concatMap, nub)
-import Text.Megaparsec
+import Text.Megaparsec ((<?>))
 
 import Flight.LatLng.Raw (RawLat(..), RawLng(..))
 import qualified Flight.Zone.Raw as Z (RawZone(..))
@@ -41,7 +41,7 @@ import Flight.Comp
     (Task(..), SpeedSection, StartGate(..), OpenClose(..), Pilot(..))
 import Flight.Fsdb.Pilot (Key(..), KeyPilot(..), getCompPilot)
 import Flight.Units ()
-import Flight.Fsdb.Internal
+import Flight.Fsdb.Internal (prs, sci, sciToInt, sciToFloat, sciToRational)
 
 keyMap :: [KeyPilot] -> Map Key Pilot
 keyMap = fromList . fmap (\(KeyPilot x) -> x)

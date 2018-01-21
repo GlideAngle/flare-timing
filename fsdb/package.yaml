@@ -34,7 +34,7 @@ library:
   - Flight.Fsdb
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
-name: flight-fsdb 
+name: flight-fsdb
 synopsis: A parser for fsdb, the database XML format of FS.
 description: Hang gliding and paragliding competitors, tasks and results as XML.
 category: Data, Parsing

@@ -22,10 +22,10 @@ import Text.XML.HXT.Core
     )
 
 import Data.Bifunctor (bimap)
-import Text.Megaparsec
+import Text.Megaparsec ((<?>))
 
 import Flight.Comp (Comp(..), UtcOffset(..))
-import Flight.Fsdb.Internal
+import Flight.Fsdb.Internal (prs, sci, sciToInt)
 
 getComp :: ArrowXml a => a XmlTree (Either String Comp)
 getComp =
