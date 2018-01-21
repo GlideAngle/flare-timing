@@ -13,7 +13,7 @@ library:
   dependencies:
   - base >=4.5 && <5
   - split
-  - parsec
+  - megaparsec
   - hxt
   - path
   - hxt-xpath
@@ -45,7 +45,7 @@ tests:
   hlint:
     dependencies:
     - base
-    - parsec
+    - megaparsec
     - hxt
     - path
     - hxt-xpath

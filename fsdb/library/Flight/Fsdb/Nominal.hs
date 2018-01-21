@@ -3,7 +3,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE NamedFieldPuns #-}
 
-module Flight.Fsdb.Nominal (parseNominal, pFloat) where
+module Flight.Fsdb.Nominal (parseNominal) where
 
 import Data.Either (either)
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
@@ -22,18 +22,12 @@ import Text.XML.HXT.Core
     , deep
     , arr
     )
-import Text.Parsec.Token as P
-import Text.ParserCombinators.Parsec
-    ( GenParser
-    , (<?>)
-    , optionMaybe
-    , choice
-    )
-import qualified Text.ParserCombinators.Parsec as P (parse)
-import Text.Parsec.Language (emptyDef)
-import Data.Functor.Identity (Identity)
-import Text.Parsec.Prim (ParsecT, parsecMap)
+import Control.Applicative
+import Text.Megaparsec
 import Data.UnitsOfMeasure.Internal (Quantity(..))
+import Data.Void
+import Data.Functor.Identity
+import Data.Scientific
 
 import Flight.Comp (Nominal(..))
 import Flight.Score
@@ -43,15 +37,7 @@ import Flight.Score
     , MinimumDistance(..)
     , NominalTime(..)
     )
-
-lexer :: GenTokenParser String u Identity
-lexer = P.makeTokenParser emptyDef
-
-pFloat:: ParsecT String u Identity Double
-pFloat = parsecMap (either fromInteger id) $ P.naturalOrFloat lexer 
-
-pNat :: ParsecT String u Identity Integer
-pNat = P.natural lexer 
+import Flight.Fsdb.Internal
 
 getNominal :: ArrowXml a => Nominal -> a XmlTree [Nominal]
 getNominal Nominal{launch = nl, goal = ng, distance = nd, free = nf, time = nt} =
@@ -73,61 +59,49 @@ getNominal Nominal{launch = nl, goal = ng, distance = nd, free = nf, time = nt} 
                     { launch =
                         either
                             (const nl)
-                            (maybe nl (NominalLaunch . toRational))
-                            (P.parse pNominalLaunch "" l)
+                            (maybe nl (NominalLaunch . toRational . sciToFloat))
+                            (prs pNominalLaunch l)
                     , goal =
                         either
                             (const ng)
-                            (maybe ng (NominalGoal . toRational))
-                            (P.parse pNominalGoal "" g)
+                            (maybe ng (NominalGoal . toRational . sciToFloat))
+                            (prs pNominalGoal g)
                     , distance =
                         either
                             (const nd)
-                            (maybe nd (NominalDistance . MkQuantity))
-                            (P.parse pNominalDistance "" d)
+                            (maybe nd (NominalDistance . MkQuantity . sciToFloat))
+                            (prs pNominalDistance d)
                     , free =
                         either
                             (const nf)
-                            (maybe nf (MinimumDistance . MkQuantity))
-                            (P.parse pMinimumDistance "" m)
+                            (maybe nf (MinimumDistance . MkQuantity . sciToFloat))
+                            (prs pMinimumDistance m)
                     , time =
                         either
                             (const nt)
-                            (maybe nt (NominalTime . MkQuantity))
-                            (P.parse pNominalTime "" t)
+                            (maybe nt (NominalTime . MkQuantity . sciToFloat))
+                            (prs pNominalTime t)
                     })
 
-pNominalTime :: GenParser Char st (Maybe Double)
+pNominalTime :: ParsecT Void String Identity (Maybe Scientific)
 pNominalTime =
-    optionMaybe
-    $ choice
-        [ pFloat <?> "No nominal time as float"
-        , fromIntegral <$> pNat <?> "No nominal time as a nat"
-        ]
+    optional (sci <?> "No nominal time as float")
 
-pNominalLaunch :: GenParser Char st (Maybe Double)
+pNominalLaunch :: ParsecT Void String Identity (Maybe Scientific)
 pNominalLaunch =
-    optionMaybe
-    $ choice
-        [ pFloat <?> "No nominal launch as float"
-        , fromIntegral <$> pNat <?> "No nominal launch as a nat"
-        ]
+    optional (sci <?> "No nominal launch as float")
 
-pNominalGoal :: GenParser Char st (Maybe Double)
+pNominalGoal :: ParsecT Void String Identity (Maybe Scientific)
 pNominalGoal =
-    optionMaybe
-    $ choice
-        [ pFloat <?> "No nominal goal as float"
-        , fromIntegral <$> pNat <?> "No nominal goal as a nat"
-        ]
+    optional (sci <?> "No nominal goal as float")
 
-pNominalDistance :: GenParser Char st (Maybe Double)
+pNominalDistance :: ParsecT Void String Identity (Maybe Scientific)
 pNominalDistance =
-    optionMaybe (pFloat <?> "No nominal distance")
+    optional (sci <?> "No nominal distance")
 
-pMinimumDistance :: GenParser Char st (Maybe Double)
+pMinimumDistance :: ParsecT Void String Identity (Maybe Scientific)
 pMinimumDistance =
-    optionMaybe (pFloat <?> "No minimum distance")
+    optional (sci <?> "No minimum distance")
 
 parseNominal :: Nominal -> String -> IO (Either String [Nominal])
 parseNominal defNominal contents = do

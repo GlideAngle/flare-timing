@@ -1,3 +1,7 @@
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE PartialTypeSignatures #-}
+{-# LANGUAGE OverloadedStrings #-}
+
 module Flight.Fsdb.Comp (parseComp) where
 
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
@@ -18,18 +22,10 @@ import Text.XML.HXT.Core
     )
 
 import Data.Bifunctor (bimap)
+import Text.Megaparsec
+
 import Flight.Comp (Comp(..), UtcOffset(..))
-import Text.Parsec.Token as P
-import qualified Text.ParserCombinators.Parsec as P (parse)
-import Text.Parsec.Language (emptyDef)
-import Data.Functor.Identity (Identity)
-import Text.Parsec.Prim (ParsecT)
-
-lexer :: GenTokenParser String u Identity
-lexer = P.makeTokenParser emptyDef
-
-pNat :: ParsecT String u Identity Integer
-pNat = P.natural lexer 
+import Flight.Fsdb.Internal
 
 getComp :: ArrowXml a => a XmlTree (Either String Comp)
 getComp =
@@ -49,13 +45,15 @@ getComp =
 
 parseUtcOffset :: String -> Either String UtcOffset
 parseUtcOffset s =
-    bimap show (UtcOffset . toMins) hrs
+    bimap show (UtcOffset . toMins) hrs'
     where
-        hrs = P.parse pNat "" s
+        hrs = prs (sci <?> "Seconds of UTC offset") s
         toMins h = fromIntegral (h * 60)
+        hrs' = sciToInt <$> hrs
 
 parseComp :: String -> IO (Either String [Comp])
 parseComp contents = do
     let doc = readString [ withValidate no, withWarnings no ] contents
     xs <- runX $ doc >>> getComp
     return $ sequence xs
+

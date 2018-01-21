@@ -32,40 +32,16 @@ import Text.XML.HXT.Core
 import Data.Time.Clock (UTCTime)
 import Data.Time.Format (parseTimeOrError, defaultTimeLocale)
 import Data.List (concatMap, nub)
-import Text.Parsec.Token as P
-import Text.ParserCombinators.Parsec
-    ( GenParser
-    , (<?>)
-    , char
-    , option
-    , choice
-    )
-import qualified Text.ParserCombinators.Parsec as P (parse)
-import Text.Parsec.Language (emptyDef)
-import Data.Functor.Identity (Identity)
-import Text.Parsec.Prim (ParsecT, parsecMap)
+import Text.Megaparsec
 
 import Flight.LatLng.Raw (RawLat(..), RawLng(..))
-import Flight.Zone.Raw (RawZone(..), RawRadius(..))
+import qualified Flight.Zone.Raw as Z (RawZone(..))
+import Flight.Zone.Raw as Z (RawRadius(..))
 import Flight.Comp
     (Task(..), SpeedSection, StartGate(..), OpenClose(..), Pilot(..))
 import Flight.Fsdb.Pilot (Key(..), KeyPilot(..), getCompPilot)
 import Flight.Units ()
-
-lexer :: GenTokenParser String u Identity
-lexer = P.makeTokenParser emptyDef
-
-pFloat:: ParsecT String u Identity Double
-pFloat = parsecMap (either fromInteger id) $ P.naturalOrFloat lexer 
-
-pNat :: ParsecT String u Identity Integer
-pNat = P.natural lexer 
-
-pRat :: String -> GenParser Char st Rational
-pRat errMsg = do
-    sign <- option id $ const negate <$> char '-'
-    x <- parsecMap toRational (pFloat <?> errMsg)
-    return $ sign x
+import Flight.Fsdb.Internal
 
 keyMap :: [KeyPilot] -> Map Key Pilot
 keyMap = fromList . fmap (\(KeyPilot x) -> x)
@@ -144,13 +120,6 @@ parseTasks contents = do
     xs <- runX $ doc >>> getTask ps
     return $ Right xs
 
-pRadius :: GenParser Char st Double
-pRadius =
-    choice
-        [ pFloat <?> "No radius as float"
-        , fromIntegral <$> pNat <?> "No radius as a nat"
-        ]
-
 parseUtcTime :: String -> UTCTime
 parseUtcTime =
     -- NOTE: %F is %Y-%m-%d, %T is %H:%M:%S and %z is -HHMM or -HH:MM
@@ -172,28 +141,23 @@ parseSpeedSection ((ss, es) : _) =
         _ -> Nothing
     where
         section =
-            sequence [ P.parse pNat "" ss
-                     , P.parse pNat "" es
-                     ]
+            sequence
+                [ do
+                    ss'' <- prs (sci <?> "Start of speed section") ss
+                    return $ sciToInt ss''
+                , do
+                    es'' <- prs (sci <?> "End of speed section") es
+                    return $ sciToInt es''
+                ]
 
-parseZone :: (String, String, String, String) -> [RawZone]
-parseZone (name, tpLat, tpLng, tpRadius) =
-    case (latlng, rad) of
-        (Right [ lat', lng' ], Right rad') ->
-            [ RawZone
-                name
-                (RawLat lat')
-                (RawLng lng')
-                (RawRadius (MkQuantity rad'))
-            ]
-
-        _ ->
-            []
-    where
-        latlng =
-            sequence [ P.parse (pRat "No latitude") "" tpLat
-                     , P.parse (pRat "No longitude") "" tpLng
-                     ]
-
-        rad =
-            P.parse pRadius "" tpRadius
+parseZone :: (String, String, String, String) -> [Z.RawZone]
+parseZone (name, lat', lng', rad') = either (const []) (: []) $ do
+    lat <- prs (sci <?> "No latitude") lat'
+    lng <- prs (sci <?> "No longitude") lng'
+    rad <- prs (sci <?> "No radius") rad'
+    return $
+        Z.RawZone
+            name
+            (RawLat $ sciToRational lat)
+            (RawLng $ sciToRational lng)
+            (RawRadius (MkQuantity $ sciToFloat rad))
