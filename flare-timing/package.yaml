@@ -324,6 +324,7 @@ executables:
     - bytestring
     - clock
     - formatting
+    - containers
     - siggy-chardust
     - flight-cmd
     - flight-units

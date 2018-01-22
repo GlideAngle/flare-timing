@@ -14,6 +14,8 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE ParallelListComp #-}
 {-# LANGUAGE PartialTypeSignatures #-}
+{-# LANGUAGE DisambiguateRecordFields #-}
+{-# LANGUAGE DuplicateRecordFields #-}
 
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
@@ -26,6 +28,7 @@ import System.Console.CmdArgs.Implicit (cmdArgs)
 import qualified Formatting as Fmt ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
+import qualified Data.Map.Strict as Map
 import Control.Monad (mapM_)
 import Control.Monad.Except (runExceptT)
 import System.FilePath (takeFileName)
@@ -51,6 +54,7 @@ import Flight.Comp
 import Flight.Units ()
 import Flight.Track.Cross (Crossing(..))
 import Flight.Track.Lead (TrackLead(..))
+import Flight.Track.Arrival (TrackArrival(..))
 import Flight.Track.Mask (Masking(..))
 import Flight.Track.Point (Pointing(..), Allocation(..))
 import qualified Flight.Track.Land as Cmp (Landing(..))
@@ -63,14 +67,14 @@ import Flight.Score
     , GoalRatio(..), Lw(..), Aw(..)
     , NominalTime(..), BestTime(..)
     , Validity(..), ValidityWorking(..)
-    , LeadingFraction(..)
+    , LeadingFraction(..), ArrivalFraction(..)
     , DistancePoints(..), LeadingPoints(..), ArrivalPoints(..), TimePoints(..)
-    , Points(..), TaskPoints(..)
+    , TaskPoints(..)
     , distanceWeight, leadingWeight, arrivalWeight, timeWeight
     , taskValidity, launchValidity, distanceValidity, timeValidity
     , availablePoints
     )
-import qualified Flight.Score as Gap (Validity(..), Weights(..))
+import qualified Flight.Score as Gap (Validity(..), Points(..), Weights(..))
 import Options (description)
 
 driverMain :: IO ()
@@ -133,6 +137,7 @@ points'
         , sumDistance
         , bestTime
         , lead
+        , arrival
         }
         _ =
     Pointing 
@@ -242,7 +247,7 @@ points'
             | v <- (fmap . fmap) Gap.task validities
             ]
 
-        leadPoints :: [[(Pilot, LeadingPoints)]] =
+        leadingPoints :: [[(Pilot, LeadingPoints)]] =
             [ maybe
                 []
                 (\ps' -> (fmap . fmap) (applyLeading ps') ls)
@@ -251,20 +256,63 @@ points'
             | ls <- lead
             ]
 
-        score :: [[(Pilot, (Points, TaskPoints))]] =
-            [ (fmap . fmap) (\l -> (zeroPoints{leading = l}, TaskPoints 0)) ls
-            | ls <- leadPoints
+        arrivalPoints :: [[(Pilot, ArrivalPoints)]] =
+            [ maybe
+                []
+                (\ps' -> (fmap . fmap) (applyArrival ps') ls)
+                ps
+            | ps <- (fmap . fmap) points allocs
+            | ls <- arrival
             ]
 
-zeroPoints :: Points
+        score :: [[(Pilot, (Gap.Points, TaskPoints))]] =
+            [ ((fmap . fmap) tally) $ collate ls as
+            | ls <- leadingPoints
+            | as <- arrivalPoints
+            ]
+
+zeroPoints :: Gap.Points
 zeroPoints =
-    Points 
+    Gap.Points 
         { distance = DistancePoints 0
         , leading = LeadingPoints 0
         , arrival = ArrivalPoints 0
         , time = TimePoints 0
         }
 
-applyLeading :: Points -> TrackLead -> LeadingPoints
-applyLeading Points{leading = LeadingPoints y} TrackLead{frac = LeadingFraction x} =
+applyLeading :: Gap.Points -> TrackLead -> LeadingPoints
+applyLeading
+    Gap.Points{leading = LeadingPoints y}
+    TrackLead{frac = LeadingFraction x} =
     LeadingPoints $ x * y
+
+applyArrival :: Gap.Points -> TrackArrival -> ArrivalPoints
+applyArrival
+    Gap.Points{arrival = ArrivalPoints y}
+    TrackArrival{frac = ArrivalFraction x} =
+    ArrivalPoints $ x * y
+
+collate
+    :: [(Pilot, LeadingPoints)]
+    -> [(Pilot, ArrivalPoints)]
+    -> [(Pilot, Gap.Points)]
+collate ls as =
+    Map.toList $ Map.intersectionWith glue ml ma
+    where
+        ml = Map.fromList ls
+        ma = Map.fromList as
+
+glue :: LeadingPoints -> ArrivalPoints -> Gap.Points
+glue l a =
+    zeroPoints {Gap.leading = l, Gap.arrival = a}
+
+tally :: Gap.Points -> (Gap.Points, TaskPoints)
+tally
+    x@Gap.Points
+        { distance = DistancePoints d
+        , leading = LeadingPoints l
+        , arrival = ArrivalPoints a
+        , time = TimePoints t
+        } =
+    (x, TaskPoints $ d + l + a + t)
+
