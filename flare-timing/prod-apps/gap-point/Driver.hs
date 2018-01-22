@@ -55,6 +55,7 @@ import Flight.Units ()
 import Flight.Track.Cross (Crossing(..))
 import Flight.Track.Lead (TrackLead(..))
 import Flight.Track.Arrival (TrackArrival(..))
+import Flight.Track.Speed (TrackSpeed(..))
 import Flight.Track.Mask (Masking(..))
 import Flight.Track.Point (Pointing(..), Allocation(..))
 import qualified Flight.Track.Land as Cmp (Landing(..))
@@ -67,7 +68,7 @@ import Flight.Score
     , GoalRatio(..), Lw(..), Aw(..)
     , NominalTime(..), BestTime(..)
     , Validity(..), ValidityWorking(..)
-    , LeadingFraction(..), ArrivalFraction(..)
+    , LeadingFraction(..), ArrivalFraction(..), SpeedFraction(..)
     , DistancePoints(..), LeadingPoints(..), ArrivalPoints(..), TimePoints(..)
     , TaskPoints(..)
     , distanceWeight, leadingWeight, arrivalWeight, timeWeight
@@ -138,6 +139,7 @@ points'
         , bestTime
         , lead
         , arrival
+        , speed
         }
         _ =
     Pointing 
@@ -250,25 +252,35 @@ points'
         leadingPoints :: [[(Pilot, LeadingPoints)]] =
             [ maybe
                 []
-                (\ps' -> (fmap . fmap) (applyLeading ps') ls)
+                (\ps' -> (fmap . fmap) (applyLeading ps') xs)
                 ps
             | ps <- (fmap . fmap) points allocs
-            | ls <- lead
+            | xs <- lead
             ]
 
         arrivalPoints :: [[(Pilot, ArrivalPoints)]] =
             [ maybe
                 []
-                (\ps' -> (fmap . fmap) (applyArrival ps') ls)
+                (\ps' -> (fmap . fmap) (applyArrival ps') xs)
                 ps
             | ps <- (fmap . fmap) points allocs
-            | ls <- arrival
+            | xs <- arrival
+            ]
+
+        timePoints :: [[(Pilot, TimePoints)]] =
+            [ maybe
+                []
+                (\ps' -> (fmap . fmap) (applyTime ps') xs)
+                ps
+            | ps <- (fmap . fmap) points allocs
+            | xs <- speed
             ]
 
         score :: [[(Pilot, (Gap.Points, TaskPoints))]] =
-            [ ((fmap . fmap) tally) $ collate ls as
+            [ ((fmap . fmap) tally) $ collate ls as ts
             | ls <- leadingPoints
             | as <- arrivalPoints
+            | ts <- timePoints
             ]
 
 zeroPoints :: Gap.Points
@@ -292,19 +304,31 @@ applyArrival
     TrackArrival{frac = ArrivalFraction x} =
     ArrivalPoints $ x * y
 
+applyTime :: Gap.Points -> TrackSpeed -> TimePoints
+applyTime
+    Gap.Points{time = TimePoints y}
+    TrackSpeed{frac = SpeedFraction x} =
+    TimePoints $ x * y
+
 collate
     :: [(Pilot, LeadingPoints)]
     -> [(Pilot, ArrivalPoints)]
+    -> [(Pilot, TimePoints)]
     -> [(Pilot, Gap.Points)]
-collate ls as =
-    Map.toList $ Map.intersectionWith glue ml ma
+collate ls as ts =
+    Map.toList
+    $ Map.intersectionWith glueT mt
+    $ Map.intersectionWith glueLA ml ma
     where
         ml = Map.fromList ls
         ma = Map.fromList as
+        mt = Map.fromList ts
 
-glue :: LeadingPoints -> ArrivalPoints -> Gap.Points
-glue l a =
-    zeroPoints {Gap.leading = l, Gap.arrival = a}
+glueLA :: LeadingPoints -> ArrivalPoints -> Gap.Points
+glueLA l a = zeroPoints {Gap.leading = l, Gap.arrival = a}
+
+glueT :: TimePoints -> Gap.Points -> Gap.Points
+glueT t p = p {Gap.time = t}
 
 tally :: Gap.Points -> (Gap.Points, TaskPoints)
 tally
