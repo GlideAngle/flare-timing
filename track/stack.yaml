@@ -17,6 +17,8 @@ packages:
   extra-dep: true
 - location: ../kml
   extra-dep: true
+- location: ../igc
+  extra-dep: true
 - location: ../task
   extra-dep: true
 - location: ../route

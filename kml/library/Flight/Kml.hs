@@ -12,9 +12,9 @@ Stability   : experimental
 Provides parsing the KML format for waypoint fixes.
 -}
 module Flight.Kml
-    ( Fix
+    ( Fix(..)
     , MarkedFixes(..)
-    , LLA
+    , LLA(..)
     , T.LatLngAlt(..)
     , T.FixMark(..)
     , Seconds(..)

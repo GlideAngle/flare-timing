@@ -17,6 +17,8 @@ library:
   - hxt-xpath
   - aeson
   - time
+  - aeson-via-sci
+  - siggy-chardust
   source-dirs: library
   exposed-modules:
   - Flight.Kml
@@ -41,6 +43,8 @@ tests:
     - aeson
     - time
     - hlint
+    - aeson-via-sci
+    - siggy-chardust
     ghc-options:
     - -rtsopts
     - -threaded
@@ -65,6 +69,8 @@ tests:
     - tasty-quickcheck
     - tasty-smallcheck
     - smallcheck
+    - aeson-via-sci
+    - siggy-chardust
     ghc-options:
     - -rtsopts
     - -threaded

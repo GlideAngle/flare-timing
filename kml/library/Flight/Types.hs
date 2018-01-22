@@ -1,6 +1,9 @@
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE TemplateHaskell #-}
 
 module Flight.Types
     ( Fix(..)
@@ -26,40 +29,69 @@ import Data.Time.Clock (UTCTime, addUTCTime)
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 
-newtype Latitude = Latitude Rational deriving (Show, Eq, Generic)
-newtype Longitude = Longitude Rational deriving (Show, Eq, Generic)
-newtype Altitude = Altitude Integer deriving (Show, Eq, Ord, Num, Generic)
-newtype Seconds = Seconds Integer deriving (Show, Eq, Ord, Num, Generic)
+import Data.Aeson.Via.Scientific
+    ( DefaultDecimalPlaces(..)
+    , deriveDefDec, toSci, showSci
+    )
 
-instance ToJSON Latitude
-instance FromJSON Latitude
+newtype Latitude = Latitude Rational
+    deriving (Eq, Generic)
+    deriving anyclass (ToJSON, FromJSON)
 
-instance ToJSON Longitude
-instance FromJSON Longitude
+newtype Longitude = Longitude Rational
+    deriving (Eq, Generic)
+    deriving anyclass (ToJSON, FromJSON)
 
-instance ToJSON Altitude
-instance FromJSON Altitude
+newtype Altitude = Altitude Integer
+    deriving (Eq, Ord, Generic)
+    deriving newtype Num
+    deriving anyclass (ToJSON, FromJSON)
 
-instance ToJSON Seconds
-instance FromJSON Seconds
+newtype Seconds = Seconds Integer
+    deriving (Eq, Ord, Generic)
+    deriving newtype Num
+    deriving anyclass (ToJSON, FromJSON)
+
+deriveDefDec 8 ''Latitude
+deriveDefDec 8 ''Longitude
+deriveDefDec 8 ''Altitude
+deriveDefDec 8 ''Seconds
+
+instance Show Latitude where
+    show x@(Latitude lat') =
+        "lat=" ++ showSci dp (toSci dp lat')
+            where
+                dp = defdp x
+
+instance Show Longitude where
+    show x@(Longitude lng') =
+        "lng=" ++ showSci dp (toSci dp lng')
+            where
+                dp = defdp x
+
+instance Show Altitude where
+    show (Altitude alt) = "alt=" ++ show alt
+
+instance Show Seconds where
+    show (Seconds sec) = "sec=" ++ show sec
 
 data LLA =
-    LLA { llaLat :: Latitude
+    LLA
+        { llaLat :: Latitude
         , llaLng :: Longitude
         , llaAltGps :: Altitude
-        } deriving (Eq, Show, Generic)
-
-instance ToJSON LLA
-instance FromJSON LLA
+        }
+    deriving (Eq, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
 
 data Fix =
-    Fix { fixMark :: Seconds
+    Fix
+        { fixMark :: Seconds
         , fix :: LLA
         , fixAltBaro :: Maybe Altitude
-        } deriving (Eq, Show, Generic)
-
-instance ToJSON Fix
-instance FromJSON Fix
+        }
+    deriving (Eq, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
 
 showTimeAlt :: Fix -> String
 showTimeAlt Fix{fixMark, fix} =
@@ -96,12 +128,11 @@ instance FixMark Fix where
     altBaro Fix{fixAltBaro} = fixAltBaro
 
 data MarkedFixes =
-    MarkedFixes { mark0 :: UTCTime
-                , fixes :: [Fix]
-                } deriving (Eq, Show, Generic)
-
-instance ToJSON MarkedFixes
-instance FromJSON MarkedFixes
+    MarkedFixes
+        { mark0 :: UTCTime
+        , fixes :: [Fix]
+        }
+    deriving (Eq, Show, Generic, ToJSON, FromJSON)
 
 fixesLength :: MarkedFixes -> Int
 fixesLength MarkedFixes{fixes} =

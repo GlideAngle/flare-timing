@@ -1,6 +1,10 @@
 flags: {}
 packages:
 - '.'
+- location: ../aeson-via-sci
+  extra-dep: true
+- location: ../siggy-chardust
+  extra-dep: true
 extra-deps:
 - hxt-xpath-9.1.2.2
 resolver: nightly-2018-01-09
