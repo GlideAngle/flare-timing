@@ -41,6 +41,7 @@ import Flight.Comp
     , CrossZoneFile(..)
     , MaskTrackFile(..)
     , LandOutFile(..)
+    , Pilot
     , compToCross
     , compToMask
     , compToLand
@@ -49,6 +50,7 @@ import Flight.Comp
     )
 import Flight.Units ()
 import Flight.Track.Cross (Crossing(..))
+import Flight.Track.Lead (TrackLead(..))
 import Flight.Track.Mask (Masking(..))
 import Flight.Track.Point (Pointing(..), Allocation(..))
 import qualified Flight.Track.Land as Cmp (Landing(..))
@@ -60,12 +62,15 @@ import Flight.Score
     , PilotsAtEss(..), PilotsPresent(..), PilotsFlying(..)
     , GoalRatio(..), Lw(..), Aw(..)
     , NominalTime(..), BestTime(..)
-    , Validity(..), ValidityWorking(..), Weights(..)
+    , Validity(..), ValidityWorking(..)
+    , LeadingFraction(..)
+    , DistancePoints(..), LeadingPoints(..), ArrivalPoints(..), TimePoints(..)
+    , Points(..), TaskPoints(..)
     , distanceWeight, leadingWeight, arrivalWeight, timeWeight
     , taskValidity, launchValidity, distanceValidity, timeValidity
     , availablePoints
     )
-import qualified Flight.Score as Gap (Validity(..))
+import qualified Flight.Score as Gap (Validity(..), Weights(..))
 import Options (description)
 
 driverMain :: IO ()
@@ -122,11 +127,19 @@ points'
                 }
         }
     Crossing{dnf}
-    Masking{pilotsAtEss, bestDistance, sumDistance, bestTime} _ =
+    Masking
+        { pilotsAtEss
+        , bestDistance
+        , sumDistance
+        , bestTime
+        , lead
+        }
+        _ =
     Pointing 
         { validityWorking = workings
         , validity = validities
         , allocation = allocs
+        , score = score
         }
     where
         -- NOTE: If there is no best distance, then either the task wasn't run
@@ -208,7 +221,7 @@ points'
         aws = arrivalWeight . AwHg <$> dws
 
         ws =
-            [ Weights dw lw aw (timeWeight dw lw aw)
+            [ Gap.Weights dw lw aw (timeWeight dw lw aw)
             | dw <- dws
             | lw <- lws
             | aw <- aws
@@ -228,3 +241,30 @@ points'
             | w <- ws
             | v <- (fmap . fmap) Gap.task validities
             ]
+
+        leadPoints :: [[(Pilot, LeadingPoints)]] =
+            [ maybe
+                []
+                (\ps' -> (fmap . fmap) (applyLeading ps') ls)
+                ps
+            | ps <- (fmap . fmap) points allocs
+            | ls <- lead
+            ]
+
+        score :: [[(Pilot, (Points, TaskPoints))]] =
+            [ (fmap . fmap) (\l -> (zeroPoints{leading = l}, TaskPoints 0)) ls
+            | ls <- leadPoints
+            ]
+
+zeroPoints :: Points
+zeroPoints =
+    Points 
+        { distance = DistancePoints 0
+        , leading = LeadingPoints 0
+        , arrival = ArrivalPoints 0
+        , time = TimePoints 0
+        }
+
+applyLeading :: Points -> TrackLead -> LeadingPoints
+applyLeading Points{leading = LeadingPoints y} TrackLead{frac = LeadingFraction x} =
+    LeadingPoints $ x * y

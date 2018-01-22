@@ -27,6 +27,7 @@ import Data.Aeson (ToJSON(..), FromJSON(..))
 import Flight.Field (FieldOrdering(..))
 import Flight.Score
     (GoalRatio, TaskPoints, Points, Validity, ValidityWorking, Weights)
+import Flight.Pilot (Pilot)
 
 -- | For each task, the points for that task.
 data Pointing =
@@ -34,6 +35,7 @@ data Pointing =
         { validityWorking :: [Maybe ValidityWorking]
         , validity :: [Maybe Validity]
         , allocation :: [Maybe Allocation]
+        , score :: [[(Pilot, (Points, TaskPoints))]]
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
@@ -70,7 +72,12 @@ cmp a b =
         ("points", "weight") -> GT
         ("points", _) -> LT
 
-        ("taskPoints", _) -> GT
+        ("taskPoints", "goalRatio") -> GT
+        ("taskPoints", "weight") -> GT
+        ("taskPoints", "points") -> GT
+        ("taskPoints", _) -> LT
+
+        ("score", _) -> GT
 
         -- DistanceValidityWorking fields
         ("sum", _) -> LT
