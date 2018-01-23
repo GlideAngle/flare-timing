@@ -1,3 +1,13 @@
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE QuasiQuotes #-}
+
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveGeneric #-}
@@ -16,23 +26,41 @@ Stability   : experimental
 Task points.
 -}
 module Flight.Track.Point
-    ( Breakdown(..)
+    ( Velocity(..)
+    , Breakdown(..)
     , Pointing(..)
     , Allocation(..)
     ) where
 
+import Data.Time.Clock (UTCTime)
 import Data.String (IsString())
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
+import Data.UnitsOfMeasure (u)
+import Data.UnitsOfMeasure.Internal (Quantity(..))
 
+import Flight.Units ()
 import Flight.Field (FieldOrdering(..))
 import Flight.Score
-    (GoalRatio, TaskPoints, Points, Validity, ValidityWorking, Weights)
+    ( GoalRatio, TaskPoints, Points, Validity, ValidityWorking, Weights
+    , PilotTime, PilotDistance, PilotVelocity
+    )
 import Flight.Pilot (Pilot)
+
+data Velocity =
+    Velocity
+        { ss :: Maybe UTCTime
+        , es :: Maybe UTCTime
+        , elapsed :: Maybe (PilotTime (Quantity Double [u| h |]))
+        , distance :: Maybe (PilotDistance (Quantity Double [u| km |]))
+        , velocity :: Maybe (PilotVelocity (Quantity Double [u| km / h |]))
+        }
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 data Breakdown =
     Breakdown
-        { breakdown :: Points
+        { velocity :: Velocity
+        , breakdown :: Points
         , total :: TaskPoints
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)

@@ -54,6 +54,7 @@ module Flight.Score
     -- * Fractional allotment of time points
     , BestTime(..)
     , PilotTime(..)
+    , PilotVelocity(..)
     , SpeedFraction(..)
     , bestTime'
     , speedFraction
@@ -169,6 +170,7 @@ import Flight.Gap.Ratio.Leading
 import Flight.Gap.Ratio.Goal
 import Flight.Gap.Time.Nominal
 import Flight.Gap.Time.Best
+import Flight.Gap.Time.Velocity
 import Flight.Gap.Distance.Nominal
 import Flight.Gap.Distance.Linear
 import Flight.Gap.Distance.Min

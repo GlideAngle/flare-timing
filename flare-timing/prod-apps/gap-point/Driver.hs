@@ -17,6 +17,7 @@
 {-# LANGUAGE DisambiguateRecordFields #-}
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE MultiWayIf #-}
+{-# LANGUAGE TupleSections #-}
 
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
@@ -63,7 +64,8 @@ import Flight.Track.Arrival (TrackArrival(..))
 import Flight.Track.Speed (TrackSpeed(..))
 import Flight.Track.Mask (Masking(..))
 import Flight.Track.Land (Landing(..))
-import Flight.Track.Point (Breakdown(..), Pointing(..), Allocation(..))
+import Flight.Track.Point
+    (Velocity(..), Breakdown(..), Pointing(..), Allocation(..))
 import qualified Flight.Track.Land as Cmp (Landing(..))
 import Flight.Scribe
     (readComp, readCrossing, readMasking, readLanding, writePointing)
@@ -78,7 +80,7 @@ import Flight.Score
     , ArrivalFraction(..), SpeedFraction(..)
     , DistancePoints(..), LinearPoints(..), DifficultyPoints(..)
     , LeadingPoints(..), ArrivalPoints(..), TimePoints(..)
-    , TaskPoints(..)
+    , TaskPoints(..), PilotVelocity(..), PilotTime(..)
     , IxChunk(..), ChunkDifficulty(..)
     , distanceWeight, leadingWeight, arrivalWeight, timeWeight
     , taskValidity, launchValidity, distanceValidity, timeValidity
@@ -263,6 +265,15 @@ points'
             | v <- (fmap . fmap) Gap.task validities
             ]
 
+        linearDistance :: [[(Pilot, Maybe Double)]] =
+            [ let xs' = (fmap . fmap) madeLinear xs
+                  ys' = (fmap . fmap) (const bd) ys
+              in (xs' ++ ys')
+            | bd <- bestDistance
+            | xs <- nigh
+            | ys <- arrival
+            ]
+
         difficultyDistancePoints :: [[(Pilot, DifficultyPoints)]] =
             [ maybe
                 []
@@ -286,18 +297,14 @@ points'
             [ maybe
                 []
                 (\ps' ->
-                    let xs' = (fmap . fmap) madeLinear xs
-                        ys' = (fmap . fmap) (const bd) ys
-                    in
-                        (fmap . fmap)
-                        (applyLinear bd ps')
-                        (xs' ++ ys')
+                    (fmap . fmap)
+                    (applyLinear bd ps')
+                    ds
                 )
                 ps
             | bd <- bestDistance
             | ps <- (fmap . fmap) points allocs
-            | xs <- nigh
-            | ys <- arrival
+            | ds <- linearDistance
             ]
 
         leadingPoints :: [[(Pilot, LeadingPoints)]] =
@@ -354,12 +361,13 @@ points'
         score :: [[(Pilot, Breakdown)]] =
             [ sortOn (total . snd)
               $ ((fmap . fmap) tally)
-              $ collate diffs linears ls as ts
+              $ collate diffs linears ls as ts ds
             | diffs <- difficultyDistancePoints
             | linears <- linearDistancePoints
             | ls <- leadingPoints
             | as <- arrivalPoints
             | ts <- timePoints
+            | ds <- linearDistance
             ]
 
 zeroPoints :: Gap.Points
@@ -448,9 +456,11 @@ collate
     -> [(Pilot, LeadingPoints)]
     -> [(Pilot, ArrivalPoints)]
     -> [(Pilot, TimePoints)]
-    -> [(Pilot, Gap.Points)]
-collate diffs linears ls as ts =
+    -> [(Pilot, Maybe Double)]
+    -> [(Pilot, (Maybe Double, Gap.Points))]
+collate diffs linears ls as ts ds =
     Map.toList
+    $ Map.intersectionWith (,) md
     $ Map.intersectionWith glueDiff mDiff
     $ Map.intersectionWith glueLinear mLinear
     $ Map.intersectionWith glueTime mt
@@ -461,6 +471,7 @@ collate diffs linears ls as ts =
         ml = Map.fromList ls
         ma = Map.fromList as
         mt = Map.fromList ts
+        md = Map.fromList ds
 
 glueDiff :: DifficultyPoints -> Gap.Points -> Gap.Points
 glueDiff
@@ -480,17 +491,30 @@ glueLA l a = zeroPoints {Gap.leading = l, Gap.arrival = a}
 glueTime :: TimePoints -> Gap.Points -> Gap.Points
 glueTime t p = p {Gap.time = t}
 
-tally :: Gap.Points -> Breakdown
+zeroVelocity :: Velocity
+zeroVelocity =
+    Velocity
+        { ss = Nothing
+        , es = Nothing
+        , elapsed = Nothing
+        , distance = Nothing
+        , velocity = Nothing
+        }
+
+tally :: (Maybe Double, Gap.Points) -> Breakdown
 tally
-    x@Gap.Points
+    ( d
+    , x@Gap.Points
         { reach = LinearPoints r
         , effort = DifficultyPoints e
         , leading = LeadingPoints l
         , arrival = ArrivalPoints a
         , time = TimePoints t
-        } =
+        }
+    ) =
     Breakdown
-        { breakdown = x
+        { velocity = zeroVelocity{distance = PilotDistance . MkQuantity <$> d}
+        , breakdown = x
         , total = TaskPoints $ r + e + l + a + t
         }
 

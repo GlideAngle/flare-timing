@@ -16,10 +16,9 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Flight.Gap.Ratio (pattern (:%))
 import Flight.Units ()
 import Flight.Gap.Distance.Best (BestDistance(..))
+import Flight.Gap.Distance.Pilot (PilotDistance(..))
 
 newtype LinearFraction = LinearFraction Rational deriving (Eq, Ord, Show)
-
-newtype PilotDistance a = PilotDistance a deriving (Eq, Ord, Show)
 
 -- | The linear fraction for distance.
 linearFraction

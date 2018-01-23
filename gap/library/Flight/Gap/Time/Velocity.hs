@@ -4,7 +4,7 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE TypeFamilies #-}
 
-module Flight.Gap.Distance.Best (BestDistance(..)) where
+module Flight.Gap.Time.Velocity (PilotVelocity(..)) where
 
 import Control.Newtype (Newtype(..))
 import Data.Aeson (ToJSON(..), FromJSON(..))
@@ -15,24 +15,24 @@ import Flight.Units ()
 import Data.Aeson.Via.Scientific (DefaultDecimalPlaces(..), DecimalPlaces(..))
 import Data.Aeson.Via.UnitsOfMeasure (ViaQ(..))
 
-newtype BestDistance a = BestDistance a
+newtype PilotVelocity a = PilotVelocity a
     deriving (Eq, Ord, Show)
 
 instance
-    (q ~ Quantity Double [u| km |])
-    => DefaultDecimalPlaces (BestDistance q) where
+    (q ~ Quantity Double [u| km / h |])
+    => DefaultDecimalPlaces (PilotVelocity q) where
     defdp _ = DecimalPlaces 1
 
 instance
-    (q ~ Quantity Double [u| km |])
-    => Newtype (BestDistance q) q where
-    pack = BestDistance
-    unpack (BestDistance a) = a
+    (q ~ Quantity Double [u| km / h |])
+    => Newtype (PilotVelocity q) q where
+    pack = PilotVelocity
+    unpack (PilotVelocity a) = a
 
-instance (q ~ Quantity Double [u| km |]) => ToJSON (BestDistance q) where
+instance (q ~ Quantity Double [u| km / h |]) => ToJSON (PilotVelocity q) where
     toJSON x = toJSON $ ViaQ x
 
-instance (q ~ Quantity Double [u| km |]) => FromJSON (BestDistance q) where
+instance (q ~ Quantity Double [u| km / h |]) => FromJSON (PilotVelocity q) where
     parseJSON o = do
         ViaQ x <- parseJSON o
         return x
