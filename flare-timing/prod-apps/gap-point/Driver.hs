@@ -30,6 +30,7 @@ import qualified Formatting as Fmt ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import qualified Data.Map.Strict as Map
+import Data.List (sortOn)
 import Control.Monad (mapM_)
 import Control.Monad.Except (runExceptT)
 import System.FilePath (takeFileName)
@@ -298,7 +299,9 @@ points'
             ]
 
         score :: [[(Pilot, (Gap.Points, TaskPoints))]] =
-            [ ((fmap . fmap) tally) $ collate linears ls as ts
+            [ sortOn (snd . snd)
+              $ ((fmap . fmap) tally)
+              $ collate linears ls as ts
             | linears <- linearDistancePoints
             | ls <- leadingPoints
             | as <- arrivalPoints
