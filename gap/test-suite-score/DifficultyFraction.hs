@@ -19,7 +19,7 @@ import Data.Maybe (fromMaybe)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import qualified Flight.Score as FS (lookahead, difficulty)
+import qualified Flight.Score as FS (lookahead, gradeDifficulty)
 import Flight.Score
     ( PilotDistance(..)
     , Lookahead(..)
@@ -160,119 +160,119 @@ difficultyUnits = testGroup "Difficulty fraction unit tests"
     , testGroup "10 pilots evenly land out"
         [ HU.testCase
             "10 pilots evenly land out over 100 kms, minimum distance = 0"
-            $ diffFracs (FS.difficulty min0 best10 dists10)
+            $ diffFracs (FS.gradeDifficulty min0 best10 dists10)
             @?= expected10
 
         , HU.testCase
             "10 pilots evenly land out over 100 kms, minimum distance = 1"
-            $ diffFracs (FS.difficulty min1 best10 dists10)
+            $ diffFracs (FS.gradeDifficulty min1 best10 dists10)
             @?= expected10
 
         , HU.testCase
             "10 pilots evenly land out over 100 kms, minimum distance = 2"
-            $ diffFracs (FS.difficulty min2 best10 dists10)
+            $ diffFracs (FS.gradeDifficulty min2 best10 dists10)
             @?= expected10
 
         , HU.testCase
             "10 pilots evenly land out over 100 kms, minimum distance = 3"
-            $ diffFracs (FS.difficulty min3 best10 dists10)
+            $ diffFracs (FS.gradeDifficulty min3 best10 dists10)
             @?= expected10
 
         , HU.testCase
             "10 pilots evenly land out over 100 kms, minimum distance = 4"
-            $ diffFracs (FS.difficulty min4 best10 dists10)
+            $ diffFracs (FS.gradeDifficulty min4 best10 dists10)
             @?= expected10
 
         , HU.testCase
             "10 pilots evenly land out over 100 kms, minimum distance = 5"
-            $ diffFracs (FS.difficulty min5 best10 dists10)
+            $ diffFracs (FS.gradeDifficulty min5 best10 dists10)
             @?= expected10
 
         , HU.testCase
             "10 pilots evenly land out over 100 kms, minimum distance = 6"
-            $ diffFracs (FS.difficulty min6 best10 dists10)
+            $ diffFracs (FS.gradeDifficulty min6 best10 dists10)
             @?= expected10
 
         , HU.testCase
             "10 pilots evenly land out over 100 kms, minimum distance = 7"
-            $ diffFracs (FS.difficulty min7 best10 dists10)
+            $ diffFracs (FS.gradeDifficulty min7 best10 dists10)
             @?= expected10
 
         , HU.testCase
             "10 pilots evenly land out over 100 kms, minimum distance = 8"
-            $ diffFracs (FS.difficulty min8 best10 dists10)
+            $ diffFracs (FS.gradeDifficulty min8 best10 dists10)
             @?= expected10
 
         , HU.testCase
             "10 pilots evenly land out over 100 kms, minimum distance = 9"
-            $ diffFracs (FS.difficulty min9 best10 dists10)
+            $ diffFracs (FS.gradeDifficulty min9 best10 dists10)
             @?= expected10
 
         , HU.testCase
             "10 pilots evenly land out over 100 kms, minimum distance = 10"
-            $ diffFracs (FS.difficulty min10 best10 dists10)
+            $ diffFracs (FS.gradeDifficulty min10 best10 dists10)
             @?= expected10
 
         , HU.testCase
             "10 pilots evenly land out over 100 kms, minimum distance = 11"
-            $ diffFracs (FS.difficulty min11 best10 dists10)
+            $ diffFracs (FS.gradeDifficulty min11 best10 dists10)
             @?= expected10
 
         , HU.testCase
             "10 pilots evenly land out over 100 kms, minimum distance = 12"
-            $ diffFracs (FS.difficulty min12 best10 dists10)
+            $ diffFracs (FS.gradeDifficulty min12 best10 dists10)
             @?= expected10
 
         , HU.testCase
             "10 pilots evenly land out over 100 kms, minimum distance = 13"
-            $ diffFracs (FS.difficulty min13 best10 dists10)
+            $ diffFracs (FS.gradeDifficulty min13 best10 dists10)
             @?= expected10
 
         , HU.testCase
             "10 pilots evenly land out over 100 kms, minimum distance = 14"
-            $ diffFracs (FS.difficulty min14 best10 dists10)
+            $ diffFracs (FS.gradeDifficulty min14 best10 dists10)
             @?= expected10
 
         , HU.testCase
             "10 pilots evenly land out over 100 kms, minimum distance = 15"
-            $ diffFracs (FS.difficulty min15 best10 dists10)
+            $ diffFracs (FS.gradeDifficulty min15 best10 dists10)
             @?= expected10
         ]
 
     , testGroup "100 pilots evenly land out"
         [ HU.testCase
             "100 pilots evenly land out over 100 kms, minimum distance = 0"
-            $ diffFracs (FS.difficulty min0 best100 dists100)
+            $ diffFracs (FS.gradeDifficulty min0 best100 dists100)
             @?= expected100
 
         , HU.testCase
             "100 pilots evenly land out over 100 kms, minimum distance = 1"
-            $ diffFracs (FS.difficulty min1 best100 dists100)
+            $ diffFracs (FS.gradeDifficulty min1 best100 dists100)
             @?= expected100
 
         , HU.testCase
             "100 pilots evenly land out over 100 kms, minimum distance = 2"
-            $ diffFracs (FS.difficulty min2 best100 dists100)
+            $ diffFracs (FS.gradeDifficulty min2 best100 dists100)
             @?= expected100_min2
 
         , HU.testCase
             "100 pilots evenly land out over 100 kms, minimum distance = 5"
-            $ diffFracs (FS.difficulty min5 best100 dists100)
+            $ diffFracs (FS.gradeDifficulty min5 best100 dists100)
             @?= expected100_min5
 
         , HU.testCase
             "100 pilots evenly land out over 100 kms, minimum distance = 10"
-            $ diffFracs (FS.difficulty min10 best100 dists100)
+            $ diffFracs (FS.gradeDifficulty min10 best100 dists100)
             @?= expected100_min10
 
         , HU.testCase
             "100 pilots evenly land out over 100 kms, minimum distance = 15"
-            $ diffFracs (FS.difficulty min15 best100 dists100)
+            $ diffFracs (FS.gradeDifficulty min15 best100 dists100)
             @?= expected100_min15
 
         , HU.testCase
             "100 pilots evenly land out over 100 kms, minimum distance = 20"
-            $ diffFracs (FS.difficulty min20 best100 dists100)
+            $ diffFracs (FS.gradeDifficulty min20 best100 dists100)
             @?= expected100_min20
         ]
     ]
@@ -288,7 +288,7 @@ lookahead (DfTest (_, dBest@(BestDistance (MkQuantity best)), xs)) =
 
 difficulty :: DfTest -> Bool
 difficulty (DfTest (dMin, dBest, xs)) =
-    all isNormal $ f <$> diffFracs (FS.difficulty dMin dBest xs)
+    all isNormal $ f <$> diffFracs (FS.gradeDifficulty dMin dBest xs)
     where
         f (DifficultyFraction df) = df
 

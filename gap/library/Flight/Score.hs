@@ -82,7 +82,7 @@ module Flight.Score
     , ChunkLandings(..)
     , ChunkDifficulty(..)
     , Difficulty(..)
-    , difficulty
+    , gradeDifficulty
     -- * Fractional allotment of leading points 
     , TaskTime(..)
     , DistanceToEss(..)
@@ -115,9 +115,11 @@ module Flight.Score
     , Hg
     , Pg
     , Penalty(..)
-    , ArrivalPoints(..)
     , DistancePoints(..)
+    , LinearPoints(..)
+    , DifficultyPoints(..)
     , LeadingPoints(..)
+    , ArrivalPoints(..)
     , TimePoints(..)
     , TaskPoints(..)
     , Points(..)

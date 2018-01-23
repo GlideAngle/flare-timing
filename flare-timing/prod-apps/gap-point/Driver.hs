@@ -60,6 +60,7 @@ import Flight.Track.Lead (TrackLead(..))
 import Flight.Track.Arrival (TrackArrival(..))
 import Flight.Track.Speed (TrackSpeed(..))
 import Flight.Track.Mask (Masking(..))
+import Flight.Track.Land (Landing(..))
 import Flight.Track.Point (Pointing(..), Allocation(..))
 import qualified Flight.Track.Land as Cmp (Landing(..))
 import Flight.Scribe
@@ -71,12 +72,16 @@ import Flight.Score
     , GoalRatio(..), Lw(..), Aw(..)
     , NominalTime(..), BestTime(..)
     , Validity(..), ValidityWorking(..)
-    , LeadingFraction(..), ArrivalFraction(..), SpeedFraction(..)
-    , DistancePoints(..), LeadingPoints(..), ArrivalPoints(..), TimePoints(..)
+    , DifficultyFraction(..), LeadingFraction(..)
+    , ArrivalFraction(..), SpeedFraction(..)
+    , DistancePoints(..), LinearPoints(..), DifficultyPoints(..)
+    , LeadingPoints(..), ArrivalPoints(..), TimePoints(..)
     , TaskPoints(..)
+    , IxChunk(..), ChunkDifficulty(..)
     , distanceWeight, leadingWeight, arrivalWeight, timeWeight
     , taskValidity, launchValidity, distanceValidity, timeValidity
     , availablePoints
+    , toIxChunk
     )
 import qualified Flight.Score as Gap (Validity(..), Points(..), Weights(..))
 import Options (description)
@@ -132,6 +137,7 @@ points'
                 , goal = gNom
                 , distance = dNom
                 , time = tNom
+                , free
                 }
         }
     Crossing{dnf}
@@ -253,7 +259,24 @@ points'
             | v <- (fmap . fmap) Gap.task validities
             ]
 
-        linearDistancePoints :: [[(Pilot, DistancePoints)]] =
+        difficultyDistancePoints :: [[(Pilot, DifficultyPoints)]] =
+            [ maybe
+                []
+                (\ps' ->
+                    let xs' = (fmap . fmap) madeDifficulty xs
+                        ys' = (fmap . fmap) (const (DifficultyFraction 1)) ys
+                    in
+                        (fmap . fmap)
+                        (applyDifficulty ps')
+                        (xs' ++ ys')
+                )
+                ps
+            | ps <- (fmap . fmap) points allocs
+            | xs <- nigh
+            | ys <- arrivalPoints
+            ]
+
+        linearDistancePoints :: [[(Pilot, LinearPoints)]] =
             [ maybe
                 []
                 (\ps' ->
@@ -301,7 +324,8 @@ points'
         score :: [[(Pilot, (Gap.Points, TaskPoints))]] =
             [ sortOn (snd . snd)
               $ ((fmap . fmap) tally)
-              $ collate linears ls as ts
+              $ collate diffs linears ls as ts
+            | diffs <- difficultyDistancePoints
             | linears <- linearDistancePoints
             | ls <- leadingPoints
             | as <- arrivalPoints
@@ -311,11 +335,25 @@ points'
 zeroPoints :: Gap.Points
 zeroPoints =
     Gap.Points 
-        { distance = DistancePoints 0
+        { reach = LinearPoints 0
+        , effort = DifficultyPoints 0
+        , distance = DistancePoints 0
         , leading = LeadingPoints 0
         , arrival = ArrivalPoints 0
         , time = TimePoints 0
         }
+
+applyDifficulty
+    :: Gap.Points
+    -> DifficultyFraction
+    -> DifficultyPoints
+applyDifficulty Gap.Points{effort = DifficultyPoints y} (DifficultyFraction frac) =
+    DifficultyPoints $ frac * y
+
+-- TODO: If made < minimum distance, use minimum distance.
+madeDifficulty :: TrackDistance Nigh -> DifficultyFraction
+madeDifficulty TrackDistance{made = Nothing} = DifficultyFraction 0
+madeDifficulty TrackDistance{made = Just _} = DifficultyFraction 1
 
 madeLinear :: TrackDistance Nigh -> Maybe Double
 madeLinear TrackDistance{made} = made
@@ -325,18 +363,18 @@ applyLinear
     :: Maybe Double -- ^ The best distance
     -> Gap.Points
     -> Maybe Double -- ^ The distance made
-    -> DistancePoints
-applyLinear Nothing _ _ = DistancePoints 0
-applyLinear _ _ Nothing = DistancePoints 0
+    -> LinearPoints
+applyLinear Nothing _ _ = LinearPoints 0
+applyLinear _ _ Nothing = LinearPoints 0
 applyLinear
     (Just best)
-    Gap.Points{distance = DistancePoints y}
+    Gap.Points{reach = LinearPoints y}
     (Just made) =
-        if | best <= 0 -> DistancePoints 0
-           | otherwise -> DistancePoints $ frac * y
+        if | best <= 0 -> LinearPoints 0
+           | otherwise -> LinearPoints $ frac * y
     where
         frac :: Rational
-        frac = toRational made / (2 * toRational best)
+        frac = toRational made / toRational best
 
 applyLeading :: Gap.Points -> TrackLead -> LeadingPoints
 applyLeading
@@ -357,24 +395,36 @@ applyTime
     TimePoints $ x * y
 
 collate
-    :: [(Pilot, DistancePoints)]
+    :: [(Pilot, DifficultyPoints)]
+    -> [(Pilot, LinearPoints)]
     -> [(Pilot, LeadingPoints)]
     -> [(Pilot, ArrivalPoints)]
     -> [(Pilot, TimePoints)]
     -> [(Pilot, Gap.Points)]
-collate linears ls as ts =
+collate diffs linears ls as ts =
     Map.toList
+    $ Map.intersectionWith glueDiff mDiff
     $ Map.intersectionWith glueLinear mLinear
     $ Map.intersectionWith glueTime mt
     $ Map.intersectionWith glueLA ml ma
     where
+        mDiff = Map.fromList diffs
         mLinear = Map.fromList linears
         ml = Map.fromList ls
         ma = Map.fromList as
         mt = Map.fromList ts
 
-glueLinear :: DistancePoints -> Gap.Points -> Gap.Points
-glueLinear d p = p {Gap.distance = d}
+glueDiff :: DifficultyPoints -> Gap.Points -> Gap.Points
+glueDiff
+    effort@(DifficultyPoints diff)
+    p@Gap.Points {Gap.reach = LinearPoints linear} =
+    p
+        { Gap.effort = effort
+        , Gap.distance = DistancePoints $ diff + linear
+        }
+
+glueLinear :: LinearPoints -> Gap.Points -> Gap.Points
+glueLinear r p = p {Gap.reach = r}
 
 glueLA :: LeadingPoints -> ArrivalPoints -> Gap.Points
 glueLA l a = zeroPoints {Gap.leading = l, Gap.arrival = a}
@@ -385,10 +435,11 @@ glueTime t p = p {Gap.time = t}
 tally :: Gap.Points -> (Gap.Points, TaskPoints)
 tally
     x@Gap.Points
-        { distance = DistancePoints d
+        { reach = LinearPoints r
+        , effort = DifficultyPoints e
         , leading = LeadingPoints l
         , arrival = ArrivalPoints a
         , time = TimePoints t
         } =
-    (x, TaskPoints $ d + l + a + t)
+    (x, TaskPoints $ r + e + l + a + t)
 

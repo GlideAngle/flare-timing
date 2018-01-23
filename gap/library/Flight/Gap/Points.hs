@@ -30,7 +30,8 @@ import Data.Ratio ((%))
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 
-import Flight.Gap.Points.Distance (DistancePoints(..))
+import Flight.Gap.Points.Distance
+    (DistancePoints(..), LinearPoints(..), DifficultyPoints(..))
 import Flight.Gap.Points.Time (TimePoints(..))
 import Flight.Gap.Points.Leading (LeadingPoints(..))
 import Flight.Gap.Points.Arrival (ArrivalPoints(..))
@@ -78,7 +79,9 @@ deriving instance Show (Penalty a)
 
 data Points =
     Points 
-        { distance :: DistancePoints
+        { reach :: LinearPoints
+        , effort :: DifficultyPoints
+        , distance :: DistancePoints
         , leading :: LeadingPoints
         , arrival :: ArrivalPoints
         , time :: TimePoints
@@ -90,7 +93,9 @@ type TaskPointTally = Points -> TaskPoints
 zeroPoints :: Points
 zeroPoints =
     Points
-        { distance = DistancePoints 0
+        { reach = LinearPoints 0
+        , effort = DifficultyPoints 0
+        , distance = DistancePoints 0
         , leading = LeadingPoints 0
         , time = TimePoints 0
         , arrival = ArrivalPoints 0
@@ -100,47 +105,62 @@ tallyPoints :: forall a. Maybe (Penalty a) -> TaskPointTally
 
 tallyPoints Nothing =
     \Points
-        { distance = DistancePoints d
+        { reach = LinearPoints linear 
+        , effort = DifficultyPoints diff
         , leading = LeadingPoints l
         , time = TimePoints t
         , arrival = ArrivalPoints a
-        } -> TaskPoints $ d + l + t + a
+        } ->
+        TaskPoints $ linear + diff + l + t + a
 
 tallyPoints (Just (JumpedTooEarly (MinimumDistancePoints p))) =
     const $ TaskPoints p
 
 tallyPoints (Just (JumpedNoGoal secs jump)) =
     \Points
-        { distance = DistancePoints d
+        { reach = LinearPoints linear 
+        , effort = DifficultyPoints diff
         , leading = LeadingPoints l
         , time = TimePoints t
         , arrival = ArrivalPoints a
-        }-> jumpTheGun secs jump . TaskPoints $ d + l + (8 % 10) * (t + a)
+        } ->
+        jumpTheGun secs jump
+        . TaskPoints
+        $ linear + diff + l + (8 % 10) * (t + a)
 
 tallyPoints (Just (Jumped secs jump)) =
     \Points
-        { distance = DistancePoints d
+        { reach = LinearPoints linear 
+        , effort = DifficultyPoints diff
         , leading = LeadingPoints l
         , time = TimePoints t
         , arrival = ArrivalPoints a
-        } -> jumpTheGun secs jump . TaskPoints $ d + l + t + a
+        } ->
+        jumpTheGun secs jump
+        . TaskPoints
+        $ linear + diff + l + t + a
 
 tallyPoints (Just NoGoalHg) =
     \Points
-        { distance = DistancePoints d
+        { reach = LinearPoints linear 
+        , effort = DifficultyPoints diff
         , leading = LeadingPoints l
         , time = TimePoints t
         , arrival = ArrivalPoints a
-        } -> TaskPoints $ d + l + (8 % 10) * (t + a)
+        } ->
+        TaskPoints
+        $ linear + diff + l + (8 % 10) * (t + a)
 
 tallyPoints (Just (Early (LaunchToSssPoints d))) =
     const $ TaskPoints d
 
 tallyPoints (Just NoGoalPg) =
     \Points
-        { distance = DistancePoints d
+        { reach = LinearPoints linear 
+        , effort = DifficultyPoints diff
         , leading = LeadingPoints l
-        } -> TaskPoints $ d + l
+        } ->
+        TaskPoints $ linear + diff + l
 
 jumpTheGun :: SecondsPerPoint -> JumpedTheGun -> TaskPoints -> TaskPoints
 jumpTheGun (SecondsPerPoint secs) (JumpedTheGun jump) (TaskPoints pts) =
@@ -160,6 +180,8 @@ availablePoints (TaskValidity tv) Weights{..} =
     (pts, tallyPoints Nothing pts)
     where
         DistanceWeight dw = distance
+        linear = dw / 2
+        diff = dw / 2
         LeadingWeight lw = leading
         ArrivalWeight aw = arrival
         TimeWeight tw = time
@@ -167,7 +189,9 @@ availablePoints (TaskValidity tv) Weights{..} =
 
         pts =
             Points
-                { distance = DistancePoints . k $ dw
+                { reach = LinearPoints . k $ linear
+                , effort = DifficultyPoints . k $ diff
+                , distance = DistancePoints . k $ linear + diff
                 , leading = LeadingPoints . k $ lw
                 , arrival = ArrivalPoints . k $ aw
                 , time = TimePoints . k $ tw

@@ -17,7 +17,8 @@ import Flight.Score
     , Hg
     , Pg
     , Penalty(..)
-    , DistancePoints(..)
+    , LinearPoints(..)
+    , DifficultyPoints(..)
     , LeadingPoints(..)
     , ArrivalPoints(..)
     , TimePoints(..)
@@ -37,7 +38,8 @@ tallyUnits = testGroup "Tally task points, with and without penalties"
         FS.taskPoints
             Nothing
             Points
-                { distance = DistancePoints 1
+                { reach = LinearPoints 1
+                , effort = DifficultyPoints 1
                 , leading = LeadingPoints 1
                 , arrival = ArrivalPoints 1
                 , time = TimePoints 1
@@ -48,7 +50,8 @@ tallyUnits = testGroup "Tally task points, with and without penalties"
         FS.taskPoints
             (Just (Early $ LaunchToSssPoints 1))
             Points
-                { distance = DistancePoints 10
+                { reach = LinearPoints 10
+                , effort = DifficultyPoints 10
                 , leading = LeadingPoints 10
                 , arrival = ArrivalPoints 10
                 , time = TimePoints 10
@@ -59,7 +62,8 @@ tallyUnits = testGroup "Tally task points, with and without penalties"
         FS.taskPoints
             (Just (JumpedTooEarly $ MinimumDistancePoints 1))
             Points
-                { distance = DistancePoints 10
+                { reach = LinearPoints 10
+                , effort = DifficultyPoints 10
                 , leading = LeadingPoints 10
                 , arrival = ArrivalPoints 10
                 , time = TimePoints 10
@@ -70,7 +74,8 @@ tallyUnits = testGroup "Tally task points, with and without penalties"
         FS.taskPoints
             (Just (Jumped (SecondsPerPoint 1) (JumpedTheGun 1)))
             Points
-                { distance = DistancePoints 10
+                { reach = LinearPoints 10
+                , effort = DifficultyPoints 10
                 , leading = LeadingPoints 10
                 , arrival = ArrivalPoints 10
                 , time = TimePoints 10
@@ -81,9 +86,10 @@ tallyUnits = testGroup "Tally task points, with and without penalties"
 correct :: forall a. Maybe (Penalty a) -> Points -> TaskPoints -> Bool
 
 correct Nothing Points{..} pts =
-    pts == TaskPoints (d + l + t + a)
+    pts == TaskPoints (r + e + l + t + a)
     where
-        DistancePoints d = distance
+        LinearPoints r = reach
+        DifficultyPoints e = effort
         LeadingPoints l = leading
         ArrivalPoints a = arrival
         TimePoints t = time
@@ -100,11 +106,12 @@ correct
     pts =
     pts == TaskPoints (max 0 x)
     where
-        DistancePoints d = distance
+        LinearPoints r = reach
+        DifficultyPoints e = effort
         LeadingPoints l = leading
         ArrivalPoints a = arrival
         TimePoints t = time
-        x = (d + l + t + a) - jtg / spp
+        x = (r + e + l + t + a) - jtg / spp
 
 correct
     (Just (JumpedNoGoal (SecondsPerPoint spp) (JumpedTheGun jtg)))
@@ -112,16 +119,18 @@ correct
     pts =
     pts == TaskPoints (max 0 x)
     where
-        DistancePoints d = distance
+        LinearPoints r = reach
+        DifficultyPoints e = effort
         LeadingPoints l = leading
         ArrivalPoints a = arrival
         TimePoints t = time
-        x = (d + l + (8 % 10) * (t + a)) - jtg / spp
+        x = (r + e + l + (8 % 10) * (t + a)) - jtg / spp
 
 correct (Just NoGoalHg) Points{..} pts =
-    pts == TaskPoints (d + l + (8 % 10) * (t + a))
+    pts == TaskPoints (r + e + l + (8 % 10) * (t + a))
     where
-        DistancePoints d = distance
+        LinearPoints r = reach
+        DifficultyPoints e = effort
         LeadingPoints l = leading
         ArrivalPoints a = arrival
         TimePoints t = time
@@ -130,9 +139,10 @@ correct (Just (Early (LaunchToSssPoints lts))) Points{..} (TaskPoints pts) =
     pts == lts
 
 correct (Just NoGoalPg) Points{..} pts =
-    pts == TaskPoints (d + l)
+    pts == TaskPoints (r + e + l)
     where
-        DistancePoints d = distance
+        LinearPoints r = reach
+        DifficultyPoints e = effort
         LeadingPoints l = leading
 
 taskPointsHg :: PtTest Hg -> Bool

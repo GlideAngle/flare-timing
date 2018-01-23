@@ -6,7 +6,7 @@
 module Flight.Gap.Distance.Difficulty
     ( SumOfDifficulty(..)
     , Difficulty(..)
-    , difficulty
+    , gradeDifficulty
     ) where
 
 import Data.Ratio ((%))
@@ -61,13 +61,16 @@ data Difficulty =
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 -- | For a list of distances flown by pilots, works out the distance difficulty
--- fraction for each pilot.
-difficulty
+-- fraction for each pilot. A consensus on difficulty is attained by counting
+-- those who landout in sections of the course. A section is drawn from the
+-- chunk of landing and then so many chunks further along the course. How far
+-- to look ahead depends on the task and the number of landouts.
+gradeDifficulty
     :: MinimumDistance (Quantity Double [u| km |])
     -> BestDistance (Quantity Double [u| km |])
     -> [PilotDistance (Quantity Double [u| km |])]
     -> Difficulty
-difficulty md best xs =
+gradeDifficulty md best xs =
     Difficulty
         { sumOf = SumOfDifficulty sumOfDiff
         , startChunk = zip ys starts

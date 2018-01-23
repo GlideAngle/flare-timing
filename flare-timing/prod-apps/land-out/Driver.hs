@@ -53,7 +53,7 @@ import Flight.Score
     , mergeChunks
     )
 import qualified Flight.Score as Gap
-    (ChunkDifficulty(..), landouts, lookahead, difficulty)
+    (ChunkDifficulty(..), landouts, lookahead, gradeDifficulty)
 import Options (description)
 
 driverMain :: IO ()
@@ -121,7 +121,7 @@ difficulty CompSettings{nominal} Masking{bestDistance, land} =
             ]
 
         ds :: [Maybe Difficulty] =
-            [ (\bd -> Gap.difficulty md bd ps) <$> b
+            [ (\bd -> Gap.gradeDifficulty md bd ps) <$> b
             | b <- bests
             | ps <- pss
             ]

@@ -99,7 +99,9 @@ cmp a b =
         ("nominalDistance", "flying") -> GT
         ("nominalDistance", "area") -> GT
         ("nominalDistance", "nominalGoal") -> GT
-        ("nominalDistance", _) -> LT
+
+        -- NOTE: Duplicate record fields, see TimeValidityWorking for wildcard.
+        -- ("nominalDistance", _) -> LT
 
         ("minimumDistance", "sum") -> GT
         ("minimumDistance", "flying") -> GT
@@ -125,9 +127,37 @@ cmp a b =
 
         ("nominalDistance", "nominalTime") -> GT
         ("nominalDistance", "bestTime") -> GT
-        ("bestTime", "_") -> LT
+        ("nominalDistance", _) -> LT
 
         ("bestDistance", _) -> GT
+
+        -- Point fields
+        ("reach", _) -> LT
+
+        ("effort", "reach") -> GT
+        ("effort", _) -> LT
+
+        ("distance", "reach") -> GT
+        ("distance", "effort") -> GT
+        ("distance", _) -> LT
+
+        ("leading", "reach") -> GT
+        ("leading", "effort") -> GT
+        ("leading", "distance") -> GT
+        ("leading", _) -> LT
+
+        ("arrival", "reach") -> GT
+        ("arrival", "effort") -> GT
+        ("arrival", "distance") -> GT
+        ("arrival", "leading") -> GT
+        ("arrival", _) -> LT
+
+        ("time", "reach") -> GT
+        ("time", "effort") -> GT
+        ("time", "distance") -> GT
+        ("time", "leading") -> GT
+        ("time", "arrival") -> GT
+        ("time", _) -> LT
 
         -- Validity fields
         ("task", _) -> LT
@@ -135,18 +165,12 @@ cmp a b =
         ("launch", "task") -> GT
         ("launch", _) -> LT
 
-        ("distance", "task") -> GT
-        ("distance", "launch") -> GT
-        ("distance", _) -> LT
+        -- NOTE: Duplicate field names between Point and Validity, redundant pattern.
+        -- ("distance", "task") -> GT
+        -- ("distance", "launch") -> GT
+        -- ("distance", _) -> LT
+        -- ("time", _) -> GT
 
-        ("time", _) -> GT
-
-        -- Weight fields
-        ("leading", "distance") -> GT
-        ("leading", _) -> LT
-
-        ("arrival", "distance") -> GT
-        ("arrival", "leading") -> GT
-        ("arrival", _) -> LT
+        -- NOTE: Weight fields catered for by Point fields
 
         _ -> compare a b
