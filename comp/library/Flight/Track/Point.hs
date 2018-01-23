@@ -59,9 +59,9 @@ data Velocity =
 
 data Breakdown =
     Breakdown
-        { velocity :: Velocity
+        { total :: TaskPoints
         , breakdown :: Points
-        , total :: TaskPoints
+        , velocity :: Velocity
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
@@ -90,6 +90,34 @@ instance FieldOrdering Pointing where
 cmp :: (Ord a, IsString a) => a -> a -> Ordering
 cmp a b =
     case (a, b) of
+        -- Breakdown fields
+        ("total", _) -> LT
+
+        ("breakdown", "total") -> GT
+        ("breakdown", _) -> LT
+
+        -- NOTE: Duplicate record fields.
+        -- ("velocity", _) -> GT
+
+        -- Velocity fields
+        ("ss", _) -> LT
+
+        ("es", "ss") -> GT
+        ("es", _) -> LT
+
+        ("distance", "ss") -> GT
+        ("distance", "es") -> GT
+
+        -- NOTE: Duplicate record fields.
+        -- ("distance", _) -> LT
+
+        ("elapsed", "ss") -> GT
+        ("elapsed", "es") -> GT
+        ("elapsed", "distance") -> GT
+        ("elapsed", _) -> LT
+
+        ("velocity", _) -> GT
+
         -- Pointing fields
         ("validityWorking", _) -> LT
 
