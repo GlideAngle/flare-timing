@@ -14,5 +14,5 @@ instance Newtype TimePoints Rational where
     pack = TimePoints
     unpack (TimePoints a) = a
 
-deriveDefDec 0 ''TimePoints
+deriveDefDec 1 ''TimePoints
 deriveViaSci ''TimePoints

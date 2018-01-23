@@ -18,7 +18,7 @@ instance Newtype DistancePoints Rational where
     pack = DistancePoints
     unpack (DistancePoints a) = a
 
-deriveDefDec 0 ''DistancePoints
+deriveDefDec 1 ''DistancePoints
 deriveViaSci ''DistancePoints
 
 newtype LinearPoints = LinearPoints Rational
@@ -28,7 +28,7 @@ instance Newtype LinearPoints Rational where
     pack = LinearPoints
     unpack (LinearPoints a) = a
 
-deriveDefDec 0 ''LinearPoints
+deriveDefDec 1 ''LinearPoints
 deriveViaSci ''LinearPoints
 
 newtype DifficultyPoints = DifficultyPoints Rational
@@ -38,5 +38,5 @@ instance Newtype DifficultyPoints Rational where
     pack = DifficultyPoints
     unpack (DifficultyPoints a) = a
 
-deriveDefDec 0 ''DifficultyPoints
+deriveDefDec 1 ''DifficultyPoints
 deriveViaSci ''DifficultyPoints

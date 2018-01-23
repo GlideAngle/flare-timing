@@ -14,5 +14,5 @@ instance Newtype LeadingPoints Rational where
     pack = LeadingPoints
     unpack (LeadingPoints a) = a
 
-deriveDefDec 0 ''LeadingPoints
+deriveDefDec 1 ''LeadingPoints
 deriveViaSci ''LeadingPoints

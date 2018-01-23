@@ -14,5 +14,5 @@ instance Newtype ArrivalPoints Rational where
     pack = ArrivalPoints
     unpack (ArrivalPoints a) = a
 
-deriveDefDec 0 ''ArrivalPoints
+deriveDefDec 1 ''ArrivalPoints
 deriveViaSci ''ArrivalPoints
