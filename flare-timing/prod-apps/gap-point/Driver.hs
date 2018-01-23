@@ -24,11 +24,13 @@
 module Driver (driverMain) where
 
 import Data.Ratio ((%))
+import Data.Maybe (fromMaybe)
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
 import qualified Formatting as Fmt ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
+import Data.Map (Map)
 import qualified Data.Map.Strict as Map
 import Data.List (sortOn)
 import Control.Monad (mapM_)
@@ -67,7 +69,7 @@ import Flight.Scribe
     (readComp, readCrossing, readMasking, readLanding, writePointing)
 import Flight.Score
     ( MinimumDistance(..), MaximumDistance(..)
-    , BestDistance(..), SumOfDistance(..)
+    , BestDistance(..), SumOfDistance(..), PilotDistance(..)
     , PilotsAtEss(..), PilotsPresent(..), PilotsFlying(..)
     , GoalRatio(..), Lw(..), Aw(..)
     , NominalTime(..), BestTime(..)
@@ -151,7 +153,9 @@ points'
         , speed
         , nigh
         }
-        _ =
+    Landing
+        { difficulty = landoutDifficulty
+        } =
     Pointing 
         { validityWorking = workings
         , validity = validities
@@ -263,8 +267,9 @@ points'
             [ maybe
                 []
                 (\ps' ->
-                    let xs' = (fmap . fmap) madeDifficulty xs
-                        ys' = (fmap . fmap) (const (DifficultyFraction 1)) ys
+                    let ld' = mapOfDifficulty ld
+                        xs' = (fmap . fmap) (madeDifficulty free ld') xs
+                        ys' = (fmap . fmap) (const $ DifficultyFraction 1) ys
                     in
                         (fmap . fmap)
                         (applyDifficulty ps')
@@ -273,7 +278,8 @@ points'
                 ps
             | ps <- (fmap . fmap) points allocs
             | xs <- nigh
-            | ys <- arrivalPoints
+            | ys <- arrival
+            | ld <- landoutDifficulty
             ]
 
         linearDistancePoints :: [[(Pilot, LinearPoints)]] =
@@ -291,34 +297,58 @@ points'
             | bd <- bestDistance
             | ps <- (fmap . fmap) points allocs
             | xs <- nigh
-            | ys <- arrivalPoints
+            | ys <- arrival
             ]
 
         leadingPoints :: [[(Pilot, LeadingPoints)]] =
             [ maybe
                 []
-                (\ps' -> (fmap . fmap) (applyLeading ps') xs)
+                (\ps' ->
+                    let xs' = (fmap . fmap) (const $ LeadingFraction 0) xs
+                        ys' = (fmap . fmap) leadingFraction ys
+                    in
+                        (fmap . fmap)
+                        (applyLeading ps')
+                        (xs' ++ ys')
+                )
                 ps
             | ps <- (fmap . fmap) points allocs
-            | xs <- lead
+            | xs <- nigh
+            | ys <- lead
             ]
 
         arrivalPoints :: [[(Pilot, ArrivalPoints)]] =
             [ maybe
                 []
-                (\ps' -> (fmap . fmap) (applyArrival ps') xs)
+                (\ps' ->
+                    let xs' = (fmap . fmap) (const $ ArrivalFraction 0) xs
+                        ys' = (fmap . fmap) arrivalFraction ys
+                    in
+                        (fmap . fmap)
+                        (applyArrival ps')
+                        (xs' ++ ys')
+                )
                 ps
             | ps <- (fmap . fmap) points allocs
-            | xs <- arrival
+            | xs <- nigh
+            | ys <- arrival
             ]
 
         timePoints :: [[(Pilot, TimePoints)]] =
             [ maybe
                 []
-                (\ps' -> (fmap . fmap) (applyTime ps') xs)
+                (\ps' ->
+                    let xs' = (fmap . fmap) (const $ SpeedFraction 0) xs
+                        ys' = (fmap . fmap) speedFraction ys
+                    in
+                        (fmap . fmap)
+                        (applyTime ps')
+                        (xs' ++ ys')
+                )
                 ps
             | ps <- (fmap . fmap) points allocs
-            | xs <- speed
+            | xs <- nigh
+            | ys <- speed
             ]
 
         score :: [[(Pilot, (Gap.Points, TaskPoints))]] =
@@ -343,6 +373,11 @@ zeroPoints =
         , time = TimePoints 0
         }
 
+mapOfDifficulty :: Maybe [ChunkDifficulty] -> Map IxChunk DifficultyFraction
+mapOfDifficulty Nothing = Map.fromList []
+mapOfDifficulty (Just xs) =
+    Map.fromList $ (\ChunkDifficulty{chunk, frac} -> (chunk, frac)) <$> xs
+
 applyDifficulty
     :: Gap.Points
     -> DifficultyFraction
@@ -350,10 +385,20 @@ applyDifficulty
 applyDifficulty Gap.Points{effort = DifficultyPoints y} (DifficultyFraction frac) =
     DifficultyPoints $ frac * y
 
--- TODO: If made < minimum distance, use minimum distance.
-madeDifficulty :: TrackDistance Nigh -> DifficultyFraction
-madeDifficulty TrackDistance{made = Nothing} = DifficultyFraction 0
-madeDifficulty TrackDistance{made = Just _} = DifficultyFraction 1
+madeDistance :: TrackDistance Nigh -> PilotDistance (Quantity Double [u| km |])
+madeDistance TrackDistance{made = Nothing} = PilotDistance . MkQuantity $ 0
+madeDistance TrackDistance{made = Just d} = PilotDistance . MkQuantity $ d
+
+madeDifficulty
+    :: MinimumDistance (Quantity Double [u| km |])
+    -> Map IxChunk DifficultyFraction
+    -> TrackDistance Nigh
+    -> DifficultyFraction
+madeDifficulty md mapIxToFrac td =
+    fromMaybe (DifficultyFraction 0) $ Map.lookup ix mapIxToFrac
+    where
+        pd = madeDistance td
+        ix = toIxChunk md pd
 
 madeLinear :: TrackDistance Nigh -> Maybe Double
 madeLinear TrackDistance{made} = made
@@ -376,22 +421,25 @@ applyLinear
         frac :: Rational
         frac = toRational made / toRational best
 
-applyLeading :: Gap.Points -> TrackLead -> LeadingPoints
-applyLeading
-    Gap.Points{leading = LeadingPoints y}
-    TrackLead{frac = LeadingFraction x} =
+leadingFraction :: TrackLead -> LeadingFraction
+leadingFraction TrackLead{frac} = frac
+
+applyLeading :: Gap.Points -> LeadingFraction -> LeadingPoints
+applyLeading Gap.Points{leading = LeadingPoints y} (LeadingFraction x) =
     LeadingPoints $ x * y
 
-applyArrival :: Gap.Points -> TrackArrival -> ArrivalPoints
-applyArrival
-    Gap.Points{arrival = ArrivalPoints y}
-    TrackArrival{frac = ArrivalFraction x} =
+arrivalFraction :: TrackArrival -> ArrivalFraction
+arrivalFraction TrackArrival{frac} = frac
+
+applyArrival :: Gap.Points -> ArrivalFraction -> ArrivalPoints
+applyArrival Gap.Points{arrival = ArrivalPoints y} (ArrivalFraction x) =
     ArrivalPoints $ x * y
 
-applyTime :: Gap.Points -> TrackSpeed -> TimePoints
-applyTime
-    Gap.Points{time = TimePoints y}
-    TrackSpeed{frac = SpeedFraction x} =
+speedFraction :: TrackSpeed -> SpeedFraction
+speedFraction TrackSpeed{frac} = frac
+
+applyTime :: Gap.Points -> SpeedFraction -> TimePoints
+applyTime Gap.Points{time = TimePoints y} (SpeedFraction x) =
     TimePoints $ x * y
 
 collate
