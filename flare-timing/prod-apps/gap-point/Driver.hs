@@ -63,7 +63,7 @@ import Flight.Track.Arrival (TrackArrival(..))
 import Flight.Track.Speed (TrackSpeed(..))
 import Flight.Track.Mask (Masking(..))
 import Flight.Track.Land (Landing(..))
-import Flight.Track.Point (Pointing(..), Allocation(..))
+import Flight.Track.Point (Breakdown(..), Pointing(..), Allocation(..))
 import qualified Flight.Track.Land as Cmp (Landing(..))
 import Flight.Scribe
     (readComp, readCrossing, readMasking, readLanding, writePointing)
@@ -351,8 +351,8 @@ points'
             | ys <- speed
             ]
 
-        score :: [[(Pilot, (Gap.Points, TaskPoints))]] =
-            [ sortOn (snd . snd)
+        score :: [[(Pilot, Breakdown)]] =
+            [ sortOn (total . snd)
               $ ((fmap . fmap) tally)
               $ collate diffs linears ls as ts
             | diffs <- difficultyDistancePoints
@@ -480,7 +480,7 @@ glueLA l a = zeroPoints {Gap.leading = l, Gap.arrival = a}
 glueTime :: TimePoints -> Gap.Points -> Gap.Points
 glueTime t p = p {Gap.time = t}
 
-tally :: Gap.Points -> (Gap.Points, TaskPoints)
+tally :: Gap.Points -> Breakdown
 tally
     x@Gap.Points
         { reach = LinearPoints r
@@ -489,5 +489,8 @@ tally
         , arrival = ArrivalPoints a
         , time = TimePoints t
         } =
-    (x, TaskPoints $ r + e + l + a + t)
+    Breakdown
+        { breakdown = x
+        , total = TaskPoints $ r + e + l + a + t
+        }
 

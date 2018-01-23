@@ -16,7 +16,8 @@ Stability   : experimental
 Task points.
 -}
 module Flight.Track.Point
-    ( Pointing(..)
+    ( Breakdown(..)
+    , Pointing(..)
     , Allocation(..)
     ) where
 
@@ -29,13 +30,20 @@ import Flight.Score
     (GoalRatio, TaskPoints, Points, Validity, ValidityWorking, Weights)
 import Flight.Pilot (Pilot)
 
+data Breakdown =
+    Breakdown
+        { breakdown :: Points
+        , total :: TaskPoints
+        }
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+
 -- | For each task, the points for that task.
 data Pointing =
     Pointing 
         { validityWorking :: [Maybe ValidityWorking]
         , validity :: [Maybe Validity]
         , allocation :: [Maybe Allocation]
-        , score :: [[(Pilot, (Points, TaskPoints))]]
+        , score :: [[(Pilot, Breakdown)]]
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
