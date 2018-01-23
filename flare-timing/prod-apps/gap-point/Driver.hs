@@ -16,6 +16,7 @@
 {-# LANGUAGE PartialTypeSignatures #-}
 {-# LANGUAGE DisambiguateRecordFields #-}
 {-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE MultiWayIf #-}
 
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
@@ -53,6 +54,7 @@ import Flight.Comp
     )
 import Flight.Units ()
 import Flight.Track.Cross (Crossing(..))
+import Flight.Track.Distance (TrackDistance(..), Nigh)
 import Flight.Track.Lead (TrackLead(..))
 import Flight.Track.Arrival (TrackArrival(..))
 import Flight.Track.Speed (TrackSpeed(..))
@@ -140,6 +142,7 @@ points'
         , lead
         , arrival
         , speed
+        , nigh
         }
         _ =
     Pointing 
@@ -249,6 +252,24 @@ points'
             | v <- (fmap . fmap) Gap.task validities
             ]
 
+        linearDistancePoints :: [[(Pilot, DistancePoints)]] =
+            [ maybe
+                []
+                (\ps' ->
+                    let xs' = (fmap . fmap) madeLinear xs
+                        ys' = (fmap . fmap) (const bd) ys
+                    in
+                        (fmap . fmap)
+                        (applyLinear bd ps')
+                        (xs' ++ ys')
+                )
+                ps
+            | bd <- bestDistance
+            | ps <- (fmap . fmap) points allocs
+            | xs <- nigh
+            | ys <- arrivalPoints
+            ]
+
         leadingPoints :: [[(Pilot, LeadingPoints)]] =
             [ maybe
                 []
@@ -277,7 +298,8 @@ points'
             ]
 
         score :: [[(Pilot, (Gap.Points, TaskPoints))]] =
-            [ ((fmap . fmap) tally) $ collate ls as ts
+            [ ((fmap . fmap) tally) $ collate linears ls as ts
+            | linears <- linearDistancePoints
             | ls <- leadingPoints
             | as <- arrivalPoints
             | ts <- timePoints
@@ -291,6 +313,27 @@ zeroPoints =
         , arrival = ArrivalPoints 0
         , time = TimePoints 0
         }
+
+madeLinear :: TrackDistance Nigh -> Maybe Double
+madeLinear TrackDistance{made} = made
+
+-- TODO: If made < minimum distance, use minimum distance.
+applyLinear
+    :: Maybe Double -- ^ The best distance
+    -> Gap.Points
+    -> Maybe Double -- ^ The distance made
+    -> DistancePoints
+applyLinear Nothing _ _ = DistancePoints 0
+applyLinear _ _ Nothing = DistancePoints 0
+applyLinear
+    (Just best)
+    Gap.Points{distance = DistancePoints y}
+    (Just made) =
+        if | best <= 0 -> DistancePoints 0
+           | otherwise -> DistancePoints $ frac * y
+    where
+        frac :: Rational
+        frac = toRational made / (2 * toRational best)
 
 applyLeading :: Gap.Points -> TrackLead -> LeadingPoints
 applyLeading
@@ -311,24 +354,30 @@ applyTime
     TimePoints $ x * y
 
 collate
-    :: [(Pilot, LeadingPoints)]
+    :: [(Pilot, DistancePoints)]
+    -> [(Pilot, LeadingPoints)]
     -> [(Pilot, ArrivalPoints)]
     -> [(Pilot, TimePoints)]
     -> [(Pilot, Gap.Points)]
-collate ls as ts =
+collate linears ls as ts =
     Map.toList
-    $ Map.intersectionWith glueT mt
+    $ Map.intersectionWith glueLinear mLinear
+    $ Map.intersectionWith glueTime mt
     $ Map.intersectionWith glueLA ml ma
     where
+        mLinear = Map.fromList linears
         ml = Map.fromList ls
         ma = Map.fromList as
         mt = Map.fromList ts
 
+glueLinear :: DistancePoints -> Gap.Points -> Gap.Points
+glueLinear d p = p {Gap.distance = d}
+
 glueLA :: LeadingPoints -> ArrivalPoints -> Gap.Points
 glueLA l a = zeroPoints {Gap.leading = l, Gap.arrival = a}
 
-glueT :: TimePoints -> Gap.Points -> Gap.Points
-glueT t p = p {Gap.time = t}
+glueTime :: TimePoints -> Gap.Points -> Gap.Points
+glueTime t p = p {Gap.time = t}
 
 tally :: Gap.Points -> (Gap.Points, TaskPoints)
 tally
