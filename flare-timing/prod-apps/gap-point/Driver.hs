@@ -34,10 +34,11 @@ import System.Clock (getTime, Clock(Monotonic))
 import Data.Map (Map)
 import qualified Data.Map.Strict as Map
 import Data.List (sortOn)
+import Control.Applicative (liftA2)
 import Control.Monad (mapM_)
 import Control.Monad.Except (runExceptT)
 import System.FilePath (takeFileName)
-import Data.UnitsOfMeasure (u, convert)
+import Data.UnitsOfMeasure ((/:), u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Cmd.Paths (checkPaths)
@@ -61,7 +62,7 @@ import Flight.Track.Cross (Crossing(..))
 import Flight.Track.Distance (TrackDistance(..), Nigh)
 import Flight.Track.Lead (TrackLead(..))
 import Flight.Track.Arrival (TrackArrival(..))
-import Flight.Track.Speed (TrackSpeed(..))
+import qualified Flight.Track.Speed as Speed (TrackSpeed(..))
 import Flight.Track.Mask (Masking(..))
 import Flight.Track.Land (Landing(..))
 import Flight.Track.Point
@@ -358,16 +359,28 @@ points'
             | ys <- speed
             ]
 
+        elapsedTime :: [[(Pilot, Maybe (PilotTime (Quantity Double [u| h |])))]] =
+            [ let xs' = (fmap . fmap) (const Nothing) xs
+                  ys' = (fmap . fmap) (Just . Speed.time) ys
+              in (xs' ++ ys')
+            | xs <- nigh
+            | ys <- speed
+            ]
+
         score :: [[(Pilot, Breakdown)]] =
             [ sortOn (total . snd)
               $ ((fmap . fmap) tally)
-              $ collate diffs linears ls as ts ds
+              $ collate diffs linears ls as ts ds es
             | diffs <- difficultyDistancePoints
             | linears <- linearDistancePoints
             | ls <- leadingPoints
             | as <- arrivalPoints
             | ts <- timePoints
-            | ds <- linearDistance
+            | ds <-
+                (fmap . fmap)
+                    ((fmap . fmap) (PilotDistance . MkQuantity))
+                    linearDistance
+            | es <- elapsedTime
             ]
 
 zeroPoints :: Gap.Points
@@ -443,8 +456,8 @@ applyArrival :: Gap.Points -> ArrivalFraction -> ArrivalPoints
 applyArrival Gap.Points{arrival = ArrivalPoints y} (ArrivalFraction x) =
     ArrivalPoints $ x * y
 
-speedFraction :: TrackSpeed -> SpeedFraction
-speedFraction TrackSpeed{frac} = frac
+speedFraction :: Speed.TrackSpeed -> SpeedFraction
+speedFraction Speed.TrackSpeed{frac} = frac
 
 applyTime :: Gap.Points -> SpeedFraction -> TimePoints
 applyTime Gap.Points{time = TimePoints y} (SpeedFraction x) =
@@ -456,10 +469,12 @@ collate
     -> [(Pilot, LeadingPoints)]
     -> [(Pilot, ArrivalPoints)]
     -> [(Pilot, TimePoints)]
-    -> [(Pilot, Maybe Double)]
-    -> [(Pilot, (Maybe Double, Gap.Points))]
-collate diffs linears ls as ts ds =
+    -> [(Pilot, Maybe a)]
+    -> [(Pilot, Maybe b)]
+    -> [(Pilot, (Maybe b, (Maybe a, Gap.Points)))]
+collate diffs linears ls as ts ds es =
     Map.toList
+    $ Map.intersectionWith (,) me
     $ Map.intersectionWith (,) md
     $ Map.intersectionWith glueDiff mDiff
     $ Map.intersectionWith glueLinear mLinear
@@ -472,6 +487,7 @@ collate diffs linears ls as ts ds =
         ma = Map.fromList as
         mt = Map.fromList ts
         md = Map.fromList ds
+        me = Map.fromList es
 
 glueDiff :: DifficultyPoints -> Gap.Points -> Gap.Points
 glueDiff
@@ -501,20 +517,43 @@ zeroVelocity =
         , velocity = Nothing
         }
 
-tally :: (Maybe Double, Gap.Points) -> Breakdown
 tally
-    ( d
-    , x@Gap.Points
-        { reach = LinearPoints r
-        , effort = DifficultyPoints e
-        , leading = LeadingPoints l
-        , arrival = ArrivalPoints a
-        , time = TimePoints t
-        }
+    ::
+        ( Maybe (PilotTime (Quantity Double [u| h |]))
+        ,
+            ( Maybe (PilotDistance (Quantity Double [u| km |]))
+            , Gap.Points
+            )
+        )
+    -> Breakdown
+tally
+    ( t
+    ,
+        ( d
+        , x@Gap.Points
+            { reach = LinearPoints r
+            , effort = DifficultyPoints dp
+            , leading = LeadingPoints l
+            , arrival = ArrivalPoints a
+            , time = TimePoints tp
+            }
+        )
     ) =
     Breakdown
-        { velocity = zeroVelocity{distance = PilotDistance . MkQuantity <$> d}
+        { velocity =
+            zeroVelocity
+                { distance = d
+                , elapsed = t
+                , velocity = liftA2 mkVelocity d t
+                }
         , breakdown = x
-        , total = TaskPoints $ r + e + l + a + t
+        , total = TaskPoints $ r + dp + l + a + tp
         }
+
+mkVelocity
+    :: PilotDistance (Quantity Double [u| km |])
+    -> PilotTime (Quantity Double [u| h |])
+    -> PilotVelocity (Quantity Double [u| km / h |])
+mkVelocity (PilotDistance d) (PilotTime t) =
+    PilotVelocity $ d /: t
 
