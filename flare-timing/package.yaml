@@ -323,6 +323,7 @@ executables:
     - uom-plugin
     - bytestring
     - clock
+    - time
     - formatting
     - containers
     - siggy-chardust

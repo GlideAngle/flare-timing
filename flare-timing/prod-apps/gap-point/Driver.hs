@@ -31,11 +31,12 @@ import System.Console.CmdArgs.Implicit (cmdArgs)
 import qualified Formatting as Fmt ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
+import Data.Time.Clock (UTCTime)
 import Data.Map (Map)
 import qualified Data.Map.Strict as Map
 import Data.List (sortOn)
 import Control.Applicative (liftA2)
-import Control.Monad (mapM_)
+import Control.Monad (mapM_, join)
 import Control.Monad.Except (runExceptT)
 import System.FilePath (takeFileName)
 import Data.UnitsOfMeasure ((/:), u, convert)
@@ -48,17 +49,23 @@ import Flight.Comp
     , CompSettings(..)
     , Nominal(..)
     , CrossZoneFile(..)
+    , TagZoneFile(..)
     , MaskTrackFile(..)
     , LandOutFile(..)
     , Pilot
+    , SpeedSection
+    , StartEnd(..)
+    , Task(..)
     , compToCross
+    , crossToTag
     , compToMask
     , compToLand
     , compToPoint
     , findCompInput
     )
 import Flight.Units ()
-import Flight.Track.Cross (Crossing(..))
+import Flight.Track.Cross (Crossing(..), Fix(..))
+import Flight.Track.Tag (Tagging(..), PilotTrackTag(..), TrackTag(..))
 import Flight.Track.Distance (TrackDistance(..), Nigh)
 import Flight.Track.Lead (TrackLead(..))
 import Flight.Track.Arrival (TrackArrival(..))
@@ -69,7 +76,8 @@ import Flight.Track.Point
     (Velocity(..), Breakdown(..), Pointing(..), Allocation(..))
 import qualified Flight.Track.Land as Cmp (Landing(..))
 import Flight.Scribe
-    (readComp, readCrossing, readMasking, readLanding, writePointing)
+    (readComp, readCrossing, readTagging, readMasking, readLanding, writePointing)
+import Flight.Mask (Ticked, RaceSections(..), section)
 import Flight.Score
     ( MinimumDistance(..), MaximumDistance(..)
     , BestDistance(..), SumOfDistance(..), PilotDistance(..)
@@ -91,6 +99,8 @@ import Flight.Score
 import qualified Flight.Score as Gap (Validity(..), Points(..), Weights(..))
 import Options (description)
 
+type StartEndTags = StartEnd (Maybe Fix) Fix
+
 driverMain :: IO ()
 driverMain = do
     name <- getProgName
@@ -111,6 +121,7 @@ drive o = do
 go :: CmdOptions -> CompInputFile -> IO ()
 go CmdOptions{..} compFile@(CompInputFile compPath) = do
     let crossFile@(CrossZoneFile crossPath) = compToCross compFile
+    let tagFile@(TagZoneFile tagPath) = crossToTag crossFile
     let maskFile@(MaskTrackFile maskPath) = compToMask compFile
     let landFile@(LandOutFile landPath) = compToLand compFile
     let pointFile = compToPoint compFile
@@ -121,18 +132,20 @@ go CmdOptions{..} compFile@(CompInputFile compPath) = do
 
     compSettings <- runExceptT $ readComp compFile
     crossing <- runExceptT $ readCrossing crossFile
+    tagging <- runExceptT $ readTagging tagFile
     masking <- runExceptT $ readMasking maskFile
     landing <- runExceptT $ readLanding landFile
 
-    case (compSettings, crossing, masking, landing) of
-        (Left msg, _, _, _) -> putStrLn msg
-        (_, Left msg, _, _) -> putStrLn msg
-        (_, _, Left msg, _) -> putStrLn msg
-        (_, _, _, Left msg) -> putStrLn msg
-        (Right cs, Right cg, Right mk, Right lg) -> do
-            writePointing pointFile $ points' cs cg mk lg
+    case (compSettings, crossing, tagging, masking, landing) of
+        (Left msg, _, _, _, _) -> putStrLn msg
+        (_, Left msg, _, _, _) -> putStrLn msg
+        (_, _, Left msg, _, _) -> putStrLn msg
+        (_, _, _, Left msg, _) -> putStrLn msg
+        (_, _, _, _, Left msg) -> putStrLn msg
+        (Right cs, Right cg, Right tg, Right mk, Right lg) -> do
+            writePointing pointFile $ points' cs cg tg mk lg
 
-points' :: CompSettings -> Crossing -> Masking -> Cmp.Landing -> Pointing
+points' :: CompSettings -> Crossing -> Tagging -> Masking -> Cmp.Landing -> Pointing
 points'
     CompSettings
         { pilots
@@ -144,8 +157,10 @@ points'
                 , time = tNom
                 , free
                 }
+        , tasks
         }
     Crossing{dnf}
+    Tagging{tagging}
     Masking
         { pilotsAtEss
         , bestDistance
@@ -367,10 +382,21 @@ points'
             | ys <- speed
             ]
 
+        speedSections :: [SpeedSection] = speedSection <$> tasks
+
+        tags :: [[(Pilot, Maybe StartEndTags)]] =
+            [ ( (fmap . fmap) (startEnd . section ss)
+              . (\(PilotTrackTag p tag) -> (p, zonesTag <$> tag))
+              )
+              <$> tags
+            | ss <- speedSections
+            | tags <- tagging
+            ]
+
         score :: [[(Pilot, Breakdown)]] =
             [ sortOn (total . snd)
               $ ((fmap . fmap) tally)
-              $ collate diffs linears ls as ts ds es
+              $ collate diffs linears ls as ts ds es gs
             | diffs <- difficultyDistancePoints
             | linears <- linearDistancePoints
             | ls <- leadingPoints
@@ -381,6 +407,7 @@ points'
                     ((fmap . fmap) (PilotDistance . MkQuantity))
                     linearDistance
             | es <- elapsedTime
+            | gs <- tags
             ]
 
 zeroPoints :: Gap.Points
@@ -471,9 +498,11 @@ collate
     -> [(Pilot, TimePoints)]
     -> [(Pilot, Maybe a)]
     -> [(Pilot, Maybe b)]
-    -> [(Pilot, (Maybe b, (Maybe a, Gap.Points)))]
-collate diffs linears ls as ts ds es =
+    -> [(Pilot, Maybe c)]
+    -> [(Pilot, (Maybe c, (Maybe b, (Maybe a, Gap.Points))))]
+collate diffs linears ls as ts ds es gs =
     Map.toList
+    $ Map.intersectionWith (,) mg
     $ Map.intersectionWith (,) me
     $ Map.intersectionWith (,) md
     $ Map.intersectionWith glueDiff mDiff
@@ -488,6 +517,7 @@ collate diffs linears ls as ts ds es =
         mt = Map.fromList ts
         md = Map.fromList ds
         me = Map.fromList es
+        mg = Map.fromList gs
 
 glueDiff :: DifficultyPoints -> Gap.Points -> Gap.Points
 glueDiff
@@ -519,36 +549,47 @@ zeroVelocity =
 
 tally
     ::
-        ( Maybe (PilotTime (Quantity Double [u| h |]))
+        ( Maybe StartEndTags
         ,
-            ( Maybe (PilotDistance (Quantity Double [u| km |]))
-            , Gap.Points
+            ( Maybe (PilotTime (Quantity Double [u| h |]))
+            ,
+                ( Maybe (PilotDistance (Quantity Double [u| km |]))
+                , Gap.Points
+                )
             )
         )
     -> Breakdown
 tally
-    ( t
+    ( g
     ,
-        ( d
-        , x@Gap.Points
-            { reach = LinearPoints r
-            , effort = DifficultyPoints dp
-            , leading = LeadingPoints l
-            , arrival = ArrivalPoints a
-            , time = TimePoints tp
-            }
+        ( t
+        ,
+            ( d
+            , x@Gap.Points
+                { reach = LinearPoints r
+                , effort = DifficultyPoints dp
+                , leading = LeadingPoints l
+                , arrival = ArrivalPoints a
+                , time = TimePoints tp
+                }
+            )
         )
     ) =
     Breakdown
         { velocity =
             zeroVelocity
-                { distance = d
+                { ss = getTag unStart
+                , es = getTag unEnd
+                , distance = d
                 , elapsed = t
                 , velocity = liftA2 mkVelocity d t
                 }
         , breakdown = x
         , total = TaskPoints $ r + dp + l + a + tp
         }
+    where
+        getTag accessor =
+            join $ fmap (accessor) g
 
 mkVelocity
     :: PilotDistance (Quantity Double [u| km |])
@@ -557,3 +598,9 @@ mkVelocity
 mkVelocity (PilotDistance d) (PilotTime t) =
     PilotVelocity $ d /: t
 
+startEnd :: RaceSections (Maybe Fix) -> StartEndTags
+startEnd RaceSections{race} =
+    case (race, reverse race) of
+        ([], _) -> StartEnd Nothing Nothing
+        (_, []) -> StartEnd Nothing Nothing
+        (x : _, y : _) -> StartEnd x y

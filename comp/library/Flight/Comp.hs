@@ -94,6 +94,7 @@ data StartEnd a b =
         { unStart :: a
         , unEnd :: Maybe b
         }
+    deriving Show
 
 type StartEndMark = StartEnd UTCTime UTCTime
 

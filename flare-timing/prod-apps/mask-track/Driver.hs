@@ -405,7 +405,6 @@ flown' dTaskF flying math tags tasks iTask@(IxTask i) mf@MarkedFixes{mark0} p =
                 , uncut = mf
                 }
 
-
         tickedStats =
             nullStats
                 { statDash =

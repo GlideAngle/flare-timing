@@ -46,11 +46,12 @@ import Flight.Score
     , PilotTime, PilotDistance, PilotVelocity
     )
 import Flight.Pilot (Pilot)
+import Flight.Track.Cross (Fix)
 
 data Velocity =
     Velocity
-        { ss :: Maybe UTCTime
-        , es :: Maybe UTCTime
+        { ss :: Maybe Fix
+        , es :: Maybe Fix
         , elapsed :: Maybe (PilotTime (Quantity Double [u| h |]))
         , distance :: Maybe (PilotDistance (Quantity Double [u| km |]))
         , velocity :: Maybe (PilotVelocity (Quantity Double [u| km / h |]))
