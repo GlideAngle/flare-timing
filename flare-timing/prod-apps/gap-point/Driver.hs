@@ -31,7 +31,6 @@ import System.Console.CmdArgs.Implicit (cmdArgs)
 import qualified Formatting as Fmt ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
-import Data.Time.Clock (UTCTime)
 import Data.Map (Map)
 import qualified Data.Map.Strict as Map
 import Data.List (sortOn)
@@ -77,7 +76,7 @@ import Flight.Track.Point
 import qualified Flight.Track.Land as Cmp (Landing(..))
 import Flight.Scribe
     (readComp, readCrossing, readTagging, readMasking, readLanding, writePointing)
-import Flight.Mask (Ticked, RaceSections(..), section)
+import Flight.Mask (RaceSections(..), section)
 import Flight.Score
     ( MinimumDistance(..), MaximumDistance(..)
     , BestDistance(..), SumOfDistance(..), PilotDistance(..)
@@ -127,6 +126,7 @@ go CmdOptions{..} compFile@(CompInputFile compPath) = do
     let pointFile = compToPoint compFile
     putStrLn $ "Reading pilots absent from task from '" ++ takeFileName compPath ++ "'"
     putStrLn $ "Reading pilots that did not fly from '" ++ takeFileName crossPath ++ "'"
+    putStrLn $ "Reading start and end zone tagging from '" ++ takeFileName tagPath ++ "'"
     putStrLn $ "Reading masked tracks from '" ++ takeFileName maskPath ++ "'"
     putStrLn $ "Reading distance difficulty from '" ++ takeFileName landPath ++ "'"
 
@@ -388,9 +388,9 @@ points'
             [ ( (fmap . fmap) (startEnd . section ss)
               . (\(PilotTrackTag p tag) -> (p, zonesTag <$> tag))
               )
-              <$> tags
+              <$> gs
             | ss <- speedSections
-            | tags <- tagging
+            | gs <- tagging
             ]
 
         score :: [[(Pilot, Breakdown)]] =
@@ -578,8 +578,8 @@ tally
     Breakdown
         { velocity =
             zeroVelocity
-                { ss = getTag unStart
-                , es = getTag unEnd
+                { ss = getTagTime unStart
+                , es = getTagTime unEnd
                 , distance = d
                 , elapsed = t
                 , velocity = liftA2 mkVelocity d t
@@ -588,8 +588,9 @@ tally
         , total = TaskPoints $ r + dp + l + a + tp
         }
     where
-        getTag accessor =
-            join $ fmap (accessor) g
+        getTagTime accessor =
+            (time :: Fix -> _)
+            <$> (join $ fmap (accessor) g)
 
 mkVelocity
     :: PilotDistance (Quantity Double [u| km |])

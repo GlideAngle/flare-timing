@@ -50,8 +50,8 @@ import Flight.Track.Cross (Fix)
 
 data Velocity =
     Velocity
-        { ss :: Maybe Fix
-        , es :: Maybe Fix
+        { ss :: Maybe UTCTime
+        , es :: Maybe UTCTime
         , elapsed :: Maybe (PilotTime (Quantity Double [u| h |]))
         , distance :: Maybe (PilotDistance (Quantity Double [u| km |]))
         , velocity :: Maybe (PilotVelocity (Quantity Double [u| km / h |]))
