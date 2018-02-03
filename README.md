@@ -29,3 +29,5 @@ With an FS comp file and related track logs as inputs, **score** the comp;
 7. Mask a task over its tracklogs with [`mask-track`](flare-timing/prod-apps/mask-track).  
 8. Group and count land outs with [`land-out`](flare-timing/prod-apps/land-out).  
 9. Score the competition with [`gap-point`](flare-timing/prod-apps/gap-point).  
+
+Documentation is available online at [flare-timing.readthedocs.io](http://flare-timing.readthedocs.io/).
