@@ -4,9 +4,9 @@ Aligning Tracks by Elapsed Time
 Next we align the tracks in time elapsed from the first start and work
 out the distance flown for each fix.
 
-::
-
-    leg,time,lat,lng,tickLead,tickRace,distance
+.. csv-table::
+    :header: "leg","time","lat","lng","tickLead","tickRace","distance"
+    
     0,2012-01-14T02:19:37Z,-33.36082199,147.93187399,-1407.0,-1407.0,159.275
     1,2012-01-14T02:19:41Z,-33.36058599,147.93161599,-1403.0,-1403.0,159.279
     ...

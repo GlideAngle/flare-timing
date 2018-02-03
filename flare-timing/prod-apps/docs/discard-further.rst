@@ -4,9 +4,9 @@ Discarding Fixes further from Goal
 Then we discard any fixes that get further from goal and work out the
 leading area for each increment of distance.
 
-::
+.. csv-table::
+    :header: "leg","tickLead","tickRace","distance", "area"
 
-    leg,tickLead,tickRace,distance,area
     0,-1407.0,-1407.0,159.275,0.0
     1,-1367.0,-1367.0,159.264,0.0
     ...
