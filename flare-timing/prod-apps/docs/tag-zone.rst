@@ -3,7 +3,7 @@ Interpolating Zone Taggings
 
 Between the pair of fixes straddling a control zone, we need to
 interpolate the point at which the pilot is most likely to have crossed
-and the time of this tagging of the turnpoint [6]_.
+and the time of this tagging of the turnpoint [#]_.
 
 ::
 
@@ -68,6 +68,6 @@ the count of taggings and the pilots.
         - Jonas Lobitz
         - ...
 
-.. [6]
+.. [#]
    Currently ``flare-timing`` is just picking the fix inside the control
    zone.

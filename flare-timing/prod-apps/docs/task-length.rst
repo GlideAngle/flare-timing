@@ -9,7 +9,7 @@ large network with the accuracy required so in an iterative process, as
 the arc of the circle is shortened, getting closer to the optimal
 crossing point, the density of nodes is increased. All happening on the
 FAI sphere, this is the edge to edge optimal route. Routes are shown
-with waypoints, segment distances  [3]_ and total distance.
+with waypoints, segment distances  [#]_ and total distance.
 
 ::
 
@@ -67,10 +67,6 @@ centers of each control zone. This is the point to point distance.
           lng: 147.57322998
         - lat: -33.36099999
           lng: 147.93149998
-
-.. raw:: latex
-
-   \newpage
 
 Knowing that FS uses a plane to work out the shortest route in two
 dimensions, on the the Universal Transverse Mercator projection, we can
@@ -144,7 +140,7 @@ on the plane but possibly sub-optimal on the sphere.
           - latZone: H
             lngZone: 55
 
-.. [3]
+.. [#]
    A zero leg distance indicates that the turnpoint was touched at one
    point only, the optimal route does not traverse the interior of the
    cylinder. The entry and exit waypoints are both shown but can be the

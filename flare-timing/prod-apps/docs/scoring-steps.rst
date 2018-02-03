@@ -6,7 +6,7 @@ Fig \ `[fig:flare-timing] <#fig:flare-timing>`__, and look at snippets
 of the files it writes.
 
 Starting with an ``*.fsdb`` comp and related ``*.igc`` or ``*.kml``
-track logs, scoring proceeds in steps  [1]_;
+track logs, scoring proceeds in steps  [#]_;
 
 #. Extract the inputs with
    `extract-input <https://github.com/BlockScope/flare-timing/tree/master/flare-timing/prod-apps/extract-input>`__.
@@ -36,7 +36,7 @@ track logs, scoring proceeds in steps  [1]_;
 #. Score the competition with
    `gap-point <https://github.com/BlockScope/flare-timing/tree/master/flare-timing/prod-apps/gap-point>`__.
 
-.. [1]
+.. [#]
    Reuse of inputs is not shown in
    Fig \ `[fig:flare-timing] <#fig:flare-timing>`__ as this would
    clutter the diagram too much. For instance ``*.kml`` and ``*.igc``

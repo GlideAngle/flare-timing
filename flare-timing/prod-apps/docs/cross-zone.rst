@@ -3,7 +3,7 @@ Finding Zone Crossings
 
 Before we can determine if any zones have been crossed we’ll have to
 decide how to tell which parts of a track log are flown and which are
-walked or driven in the retrieve car, possibly even back to goal. [4]_
+walked or driven in the retrieve car, possibly even back to goal. [#]_
 
 To work out when a pilot is flying, select the longest run of fixes that
 are not the same allowing for some stickiness when the GPS loses signal.
@@ -33,7 +33,7 @@ location and not likely recorded during flight.
 Next we need to find and nominate every crossing of each control zone
 and from among those work out which pair to select as the zone crossing.
 The same control zone may be crossed multiple times and we need a
-sequence of crossings ordered in time that fits the task [5]_.
+sequence of crossings ordered in time that fits the task [#]_.
 
 ::
 
@@ -58,7 +58,7 @@ sequence of crossings ordered in time that fits the task [5]_.
             - true
         - zonesCrossNominated: ...
 
-.. [4]
+.. [#]
    Some pilots’ track logs will have initial values way off from the
    location of the device. I suspect that the GPS logger is remembering
    the position it had when last turned off, most likely at the end of
@@ -68,5 +68,5 @@ sequence of crossings ordered in time that fits the task [5]_.
    means that a pilot may turn on their instrument inside the start
    circle but their tracklog will start outside of it.
 
-.. [5]
+.. [#]
    On a triangle course early fixes may cross goal.

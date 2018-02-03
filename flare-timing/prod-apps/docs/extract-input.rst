@@ -3,7 +3,7 @@ Extracting Inputs
 
 In the ``*.fsdb`` FS keeps both inputs and outputs. We’re only
 interested in a subset of the input data, just enough to do the
-scoring [2]_;
+scoring [#]_;
 
 Competition
     id, name, location, dates and UTC offset.
@@ -62,7 +62,7 @@ default values.
       </FsCompetition>
     </Fs>
 
-.. [2]
+.. [#]
    As ``flare-timing`` is a work in progress, some further inputs will
    be needed as different kinds of task are tested, such as those with
    start gates, stopped tasks and those with penalties
