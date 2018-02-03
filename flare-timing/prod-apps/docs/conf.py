@@ -47,7 +47,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'Flare Timing'
-copyright = '2018, Phil de Joux'
+copyright = '2018, Block Scope Limited'
 author = 'Phil de Joux'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -140,7 +140,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
     (master_doc, 'FlareTiming.tex', 'Flare Timing Documentation',
-     'Phil de Joux', 'manual'),
+     'Block Scope Limited', 'manual'),
 ]
 
 
