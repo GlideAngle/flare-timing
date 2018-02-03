@@ -2,8 +2,14 @@ Scoring Steps
 -------------
 
 Let’s now walk through the process of scoring with ``flare-timing``, see
-Fig \ `[fig:flare-timing] <#fig:flare-timing>`__, and look at snippets
-of the files it writes.
+:numref:`score-steps`, and look at snippets of the files it writes.
+
+.. _score-steps:
+.. figure:: score-steps.png
+    :align: center
+    :height: 100px
+    
+    Scoring as numbered steps from original inputs to ``*.csv`` or ``*.yaml`` outputs.
 
 Starting with an ``*.fsdb`` comp and related ``*.igc`` or ``*.kml``
 track logs, scoring proceeds in steps  [#]_;
@@ -37,7 +43,6 @@ track logs, scoring proceeds in steps  [#]_;
    `gap-point <https://github.com/BlockScope/flare-timing/tree/master/flare-timing/prod-apps/gap-point>`__.
 
 .. [#]
-   Reuse of inputs is not shown in
-   Fig \ `[fig:flare-timing] <#fig:flare-timing>`__ as this would
-   clutter the diagram too much. For instance ``*.kml`` and ``*.igc``
-   track logs are also needed as inputs for the align step.
+   Reuse of inputs is not shown in :numref:`score-steps` as this would clutter
+   the diagram too much. For instance ``*.kml`` and ``*.igc`` track logs are
+   also needed as inputs for the align step.
