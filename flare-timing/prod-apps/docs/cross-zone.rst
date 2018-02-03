@@ -1,0 +1,78 @@
+Finding Zone Crossings
+----------------------
+
+Before we can determine if any zones have been crossed we’ll have to
+decide how to tell which parts of a track log are flown and which are
+walked or driven in the retrieve car, possibly even back to goal. [4]_
+
+To work out when a pilot is flying, select the longest run of fixes that
+are not the same allowing for some stickiness when the GPS loses signal.
+For example we might consider within ± 1m altitude or within ±
+1/10,000th of a degree of latitude or longitude to be in the same
+location and not likely recorded during flight.
+
+::
+
+    flying:
+      - - Gerolf Heinrichs
+        - loggedFixes: 4786
+          flyingFixes:
+          - 293
+          - 4775
+          loggedSeconds: 19140
+          flyingSeconds:
+          - 1172
+          - 19100
+          loggedTimes:
+          - 2012-01-14T02:00:05Z
+          - 2012-01-14T07:19:05Z
+          flyingTimes:
+          - 2012-01-14T02:19:37Z
+          - 2012-01-14T07:18:25Z
+
+Next we need to find and nominate every crossing of each control zone
+and from among those work out which pair to select as the zone crossing.
+The same control zone may be crossed multiple times and we need a
+sequence of crossings ordered in time that fits the task [5]_.
+
+::
+
+    crossing:
+      - - Gerolf Heinrichs
+        - zonesCrossSelected:
+          - crossingPair: ...
+          - crossingPair: ...
+          - crossingPair: ...
+          - crossingPair: ...
+          - crossingPair: ...
+            - fix: 4711
+              time: 2012-01-14T07:14:09Z
+              lat: -33.35869799
+              lng: 147.927904
+            - fix: 4712
+              time: 2012-01-14T07:14:13Z
+              lat: -33.35934199
+              lng: 147.928741
+            inZone:
+            - false
+            - true
+        - zonesCrossNominated: ...
+
+.. raw:: latex
+
+   \newpage
+
+
+.. [4]
+   Some pilots’ track logs will have initial values way off from the
+   location of the device. I suspect that the GPS logger is remembering
+   the position it had when last turned off, most likely at the end of
+   yesterday’s flight, somewhere near where the pilot landed that day.
+   Until the GPS receiver gets a satellite fix and can compute the
+   current position the stale, last known, position gets logged. This
+   means that a pilot may turn on their instrument inside the start
+   circle but their tracklog will start outside of it.
+
+.. [5]
+   On a triangle course early fixes may cross goal.
+
