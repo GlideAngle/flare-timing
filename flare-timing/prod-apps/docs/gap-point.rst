@@ -1,10 +1,10 @@
 Collating Scores
 ----------------
 
-To calculate validites, we need nominal values, the fraction of pilots
-flying, the best distance and the best time and the sum of the distance
-flown. From the ratio of pilots making goal we can work out the weights
-and then with the validities we can work out the available points.
+To calculate validities, we need nominal values, the fraction of pilots flying,
+the best distance and the best time and the sum of the distance flown. From the
+ratio of pilots making goal we can work out the weights and then with the
+validities we can work out the available points.
 
 ::
 
