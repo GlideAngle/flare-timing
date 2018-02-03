@@ -17,3 +17,7 @@ node_modules
 *.prof
 *.dump-splices
 result
+
+**/_build/**
+**/_static/**
+**/_template/**
