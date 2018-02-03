@@ -144,10 +144,6 @@ on the plane but possibly sub-optimal on the sphere.
           - latZone: H
             lngZone: 55
 
-.. raw:: latex
-
-   \newpage
-
 .. [3]
    A zero leg distance indicates that the turnpoint was touched at one
    point only, the optimal route does not traverse the interior of the

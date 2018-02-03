@@ -67,9 +67,3 @@ pilots.
         downward: 1
         rel: 1.86567e-3
         frac: 0.5
-
-.. raw:: latex
-
-   \newpage
-
-

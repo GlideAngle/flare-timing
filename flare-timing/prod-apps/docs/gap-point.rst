@@ -47,10 +47,6 @@ and then with the validities we can work out the available points.
         time: 344.5
       taskPoints: 994.0
 
-.. raw:: latex
-
-   \newpage
-
 With all the information now at hand, we can tally points for the total
 task score.
 
@@ -88,4 +84,3 @@ task score.
             distance: 159.3 km
             elapsed: 3.716666 h
             velocity: 42.8 km / h
-

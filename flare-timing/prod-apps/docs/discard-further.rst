@@ -21,9 +21,3 @@ leading area for each increment of distance.
     ...
     4,16265.0,16265.0,0.421,3.46272001957514e-11
     5,16269.0,16269.0,0.0,6.306949125520327e-11
-
-.. raw:: latex
-
-   \newpage
-
-

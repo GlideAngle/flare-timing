@@ -68,11 +68,6 @@ the count of taggings and the pilots.
         - Jonas Lobitz
         - ...
 
-.. raw:: latex
-
-   \newpage
-
-
 .. [6]
    Currently ``flare-timing`` is just picking the fix inside the control
    zone.

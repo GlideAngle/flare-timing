@@ -58,11 +58,6 @@ sequence of crossings ordered in time that fits the task [5]_.
             - true
         - zonesCrossNominated: ...
 
-.. raw:: latex
-
-   \newpage
-
-
 .. [4]
    Some pilots’ track logs will have initial values way off from the
    location of the device. I suspect that the GPS logger is remembering
@@ -75,4 +70,3 @@ sequence of crossings ordered in time that fits the task [5]_.
 
 .. [5]
    On a triangle course early fixes may cross goal.
-

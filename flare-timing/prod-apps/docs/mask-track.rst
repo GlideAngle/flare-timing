@@ -64,10 +64,6 @@ pilots landed to have the distance fractions.
           frac: 0.77575361
       ...
 
-.. raw:: latex
-
-   \newpage
-
 For those landing out, how close or nigh were they to goal and where did
 they land?
 
@@ -123,9 +119,3 @@ they land?
       - - Hadewych van Kempen
         - togo: 124.013
           made: 35.361
-
-.. raw:: latex
-
-   \newpage
-
-
