@@ -1,7 +1,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE QuasiQuotes #-}
 
-module Flight.Ellipsoid.Projected.Internal
+module Flight.Flat.Projected.Internal
     ( pythagorean
     , zoneToProjectedEastNorth 
     , tooFar

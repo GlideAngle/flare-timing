@@ -31,9 +31,6 @@ library:
   - Flight.Sphere.Cylinder.Rational
   - Flight.Sphere.PointToPoint.Double
   - Flight.Sphere.PointToPoint.Rational
-  - Flight.Sphere.Projected.Double
-  - Flight.Sphere.Projected.Rational
-  - Flight.Sphere
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
 name: flight-earth-sphere

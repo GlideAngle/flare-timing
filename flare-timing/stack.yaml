@@ -29,6 +29,8 @@ packages:
   extra-dep: true
 - location: ../earth-sphere
   extra-dep: true
+- location: ../earth-flat
+  extra-dep: true
 - location: ../task
   extra-dep: true
 - location: ../gap

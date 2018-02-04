@@ -10,7 +10,7 @@ let
       , uom-plugin
       }:
       mkDerivation {
-        pname = "flight-earth-ellipsoid";
+        pname = "flight-earth-flat";
         version = "0.1.0";
         src = ./.;
         libraryHaskellDepends = [
@@ -23,7 +23,7 @@ let
           tasty-compare uom-plugin
         ];
         homepage = "https://github.com/BlockScope/haskell-flight-task#readme";
-        description = "Distances on the WGS84 ellipsoid";
+        description = "Distances on a UTM projection";
         license = stdenv.lib.licenses.bsd3;
       };
 

@@ -5,11 +5,12 @@ let
   inherit (nixpkgs) pkgs;
 
   f = { mkDerivation, aeson-via-sci, base, bytestring, cmdargs
-      , containers, directory, fgl, filepath, flight-comp, flight-gap
-      , flight-kml, flight-latlng, flight-route, flight-scribe
-      , flight-span, flight-sphere, flight-task, flight-track
-      , flight-units, flight-zone, hlint, lens, mtl, numbers, path
-      , siggy-chardust, split, stdenv, time, uom-plugin, yaml
+      , containers, directory, fgl, filepath, flight-comp
+      , flight-earth-sphere, flight-gap, flight-kml, flight-latlng
+      , flight-route, flight-scribe, flight-span, flight-task
+      , flight-track, flight-units, flight-zone, hlint, lens, mtl
+      , numbers, path, siggy-chardust, split, stdenv, time, uom-plugin
+      , yaml
       }:
       mkDerivation {
         pname = "flight-mask";
@@ -17,15 +18,15 @@ let
         src = ./.;
         libraryHaskellDepends = [
           aeson-via-sci base bytestring cmdargs containers directory fgl
-          filepath flight-comp flight-gap flight-kml flight-latlng
-          flight-route flight-scribe flight-span flight-sphere flight-task
+          filepath flight-comp flight-earth-sphere flight-gap flight-kml
+          flight-latlng flight-route flight-scribe flight-span flight-task
           flight-track flight-units flight-zone lens mtl numbers path
           siggy-chardust split time uom-plugin yaml
         ];
         testHaskellDepends = [
           aeson-via-sci base bytestring cmdargs containers directory fgl
-          filepath flight-comp flight-gap flight-kml flight-latlng
-          flight-route flight-scribe flight-span flight-sphere flight-task
+          filepath flight-comp flight-earth-sphere flight-gap flight-kml
+          flight-latlng flight-route flight-scribe flight-span flight-task
           flight-track flight-units flight-zone hlint lens mtl numbers
           siggy-chardust split time uom-plugin yaml
         ];

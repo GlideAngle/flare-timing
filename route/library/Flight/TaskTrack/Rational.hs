@@ -32,10 +32,10 @@ import Flight.Zone (Zone(..), Bearing(..), center)
 import Flight.Zone.Raw (RawZone(..))
 import Flight.Zone.Cylinder (CircumSample)
 import Flight.Sphere.Cylinder.Rational (circumSample)
-import Flight.Sphere.Projected.Rational (costEastNorth)
 import Flight.Sphere.PointToPoint.Rational
     (distancePointToPoint, costSegment, distanceHaversine)
-import Flight.Sphere (zoneToProjectedEastNorth)
+import Flight.Flat (zoneToProjectedEastNorth)
+import Flight.Flat.Projected.Rational (costEastNorth)
 import Flight.Route
     ( TaskDistanceMeasure(..)
     , TaskTrack(..)

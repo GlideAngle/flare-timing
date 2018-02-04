@@ -4,7 +4,7 @@
 {-# LANGUAGE PartialTypeSignatures #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module Flight.Ellipsoid.Projected.Double (costEastNorth) where
+module Flight.Flat.Projected.Double (costEastNorth) where
 
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
@@ -12,7 +12,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Flight.Zone (Zone(..), center, realToFracZone)
 import Flight.Distance (TaskDistance(..), PathDistance(..))
 import Flight.Units ()
-import Flight.Ellipsoid.Projected.Internal
+import Flight.Flat.Projected.Internal
     (pythagorean , zoneToProjectedEastNorth, tooFar)
 
 -- | The task distance returned is for the projected UTM plane with

@@ -27,15 +27,14 @@ library:
   - flight-zone
   source-dirs: library
   exposed-modules:
-  - Flight.Ellipsoid.Cylinder.Double
-  - Flight.Ellipsoid.Cylinder.Rational
-  - Flight.Ellipsoid.PointToPoint.Double
-  - Flight.Ellipsoid.PointToPoint.Rational
+  - Flight.Flat.Projected.Double
+  - Flight.Flat.Projected.Rational
+  - Flight.Flat
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
-name: flight-earth-ellipsoid
-synopsis: Distances on the WGS84 ellipsoid.
-description: Distances on the WGS84 ellipsoid for hang gliding and paragliding competitons.
+name: flight-earth-flat
+synopsis: Distances on a UTM projection.
+description: Distances on a UTM projection for hang gliding and paragliding competitons.
 category: Flight
 license: BSD3
 license-file: LICENSE.md
