@@ -13,7 +13,7 @@ packages:
   extra-dep: true
 - location: ../zone
   extra-dep: true
-- location: ../sphere
+- location: ../earth-sphere
   extra-dep: true
 - location: ../task
   extra-dep: true

@@ -1,11 +1,10 @@
 { mkDerivation, aeson, aeson-via-sci, base, bifunctors, fgl
 , flight-latlng, flight-units, flight-zone, hcoord, hlint, mtl
-, numbers, scientific, siggy-chardust, smallcheck, stdenv, tasty
-, tasty-compare, tasty-hunit, tasty-quickcheck, tasty-smallcheck
+, numbers, scientific, siggy-chardust, stdenv, tasty-compare
 , uom-plugin
 }:
 mkDerivation {
-  pname = "flight-sphere";
+  pname = "flight-earth-ellipsoid";
   version = "0.1.0";
   src = ./.;
   libraryHaskellDepends = [
@@ -15,8 +14,7 @@ mkDerivation {
   testHaskellDepends = [
     aeson aeson-via-sci base bifunctors fgl flight-latlng flight-units
     flight-zone hcoord hlint mtl numbers scientific siggy-chardust
-    smallcheck tasty tasty-compare tasty-hunit tasty-quickcheck
-    tasty-smallcheck uom-plugin
+    tasty-compare uom-plugin
   ];
   homepage = "https://github.com/BlockScope/haskell-flight-task#readme";
   description = "Distances on the FAI sphere";

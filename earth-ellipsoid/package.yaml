@@ -27,18 +27,18 @@ library:
   - flight-zone
   source-dirs: library
   exposed-modules:
-  - Flight.Sphere.Cylinder.Double
-  - Flight.Sphere.Cylinder.Rational
-  - Flight.Sphere.PointToPoint.Double
-  - Flight.Sphere.PointToPoint.Rational
-  - Flight.Sphere.Projected.Double
-  - Flight.Sphere.Projected.Rational
-  - Flight.Sphere
+  - Flight.Ellipsoid.Cylinder.Double
+  - Flight.Ellipsoid.Cylinder.Rational
+  - Flight.Ellipsoid.PointToPoint.Double
+  - Flight.Ellipsoid.PointToPoint.Rational
+  - Flight.Ellipsoid.Projected.Double
+  - Flight.Ellipsoid.Projected.Rational
+  - Flight.Ellipsoid
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
-name: flight-sphere
-synopsis: Distances on the FAI sphere.
-description: Distances on the FAI sphere for hang gliding and paragliding competitons.
+name: flight-earth-ellipsoid
+synopsis: Distances on the WGS84 ellipsoid.
+description: Distances on the WGS84 ellipsoid for hang gliding and paragliding competitons.
 category: Flight
 license: BSD3
 license-file: LICENSE.md

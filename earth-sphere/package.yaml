@@ -25,15 +25,20 @@ library:
   - flight-units
   - flight-latlng
   - flight-zone
-  - flight-earth-sphere
   source-dirs: library
   exposed-modules:
-  - Flight.Task
+  - Flight.Sphere.Cylinder.Double
+  - Flight.Sphere.Cylinder.Rational
+  - Flight.Sphere.PointToPoint.Double
+  - Flight.Sphere.PointToPoint.Rational
+  - Flight.Sphere.Projected.Double
+  - Flight.Sphere.Projected.Rational
+  - Flight.Sphere
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
-name: flight-task
-synopsis: Tasks to fly.
-description: Tasks for hang gliding and paragliding competitons.
+name: flight-earth-sphere
+synopsis: Distances on the FAI sphere.
+description: Distances on the FAI sphere for hang gliding and paragliding competitons.
 category: Flight
 license: BSD3
 license-file: LICENSE.md
@@ -57,7 +62,6 @@ tests:
     - flight-units
     - flight-latlng
     - flight-zone
-    - flight-earth-sphere
     ghc-options:
     - -rtsopts
     - -threaded
@@ -66,34 +70,4 @@ tests:
     source-dirs:
     - library
     - test-suite-hlint
-  task:
-    dependencies:
-    - base
-    - numbers
-    - fgl
-    - bifunctors
-    - uom-plugin
-    - aeson
-    - scientific
-    - mtl
-    - hcoord
-    - siggy-chardust
-    - tasty-compare
-    - flight-units
-    - flight-latlng
-    - flight-zone
-    - flight-earth-sphere
-    - tasty
-    - tasty-hunit
-    - tasty-quickcheck
-    - tasty-smallcheck
-    - smallcheck
-    ghc-options:
-    - -rtsopts
-    - -threaded
-    - -with-rtsopts=-N
-    main: Task.hs
-    source-dirs:
-    - library
-    - test-suite-task
 version: '0.1.0'
