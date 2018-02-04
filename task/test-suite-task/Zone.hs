@@ -331,7 +331,9 @@ distanceEdge :: ZonesTest -> Bool
 distanceEdge (ZonesTest xs) =
     case dEE of
         Zs d -> correctCenter xs $ edgesSum d
-        _ -> False
+        Z0 -> False
+        Z1 -> False
+        Zx _ -> False
     where
         dEE =
             FS.distanceEdgeToEdge
@@ -349,7 +351,9 @@ distanceLess (ZonesTest xs)
     | otherwise =
         case dEE of
             Zs (PathDistance dCenter _) -> dCenter <= dPoint
-            _ -> False
+            Z0 -> False
+            Z1 -> False
+            Zx _ -> False
         where
             dEE =
                 FS.distanceEdgeToEdge
