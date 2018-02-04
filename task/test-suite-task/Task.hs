@@ -36,10 +36,6 @@ scProps = testGroup "(checked by SmallCheck)"
     , SC.testProperty "Haversine distances, are not negative" distanceHaversine
     , SC.testProperty "Zone distances, point-to-point, are not negative" distancePoint
     , SC.testProperty "Zone distances, point-to-point, are not negative" distancePoint
-
-    -- WARNING: Failing test
-    -- there exists ZonesTest [] such that
-    -- condition is false
     , SC.testProperty "Zone distances, edge-to-edge, are not negative" distanceEdge
     , SC.testProperty "Zone distances, edge-to-edge are less or equal to point-to-point" distanceLess
     ]
