@@ -50,6 +50,21 @@ qcProps = testGroup "(checked by QuickCheck)"
     -- *** Failed! Falsifiable (after 1 test):
     -- ZonesTest [Cylinder RawRadius [u| 4858900382869 % 4950993925855 m |] (0.0 rad, 0.0 rad),Cylinder RawRadius [u| 7377242202805 % 1105125749454 m |] (0.0 rad, 0.0 rad),Cylinder RawRadius [u| 531803483648 % 3572008096645 m |] (0.0 rad, 0.0 rad),Conical i = 7.61 RawRadius [u| 1243886831935 % 5478073641708 m |] (0.0 rad, 0.0 rad)]
     -- Use --quickcheck-replay=324283 to reproduce.
+    --
+    -- WARNING: Failing test
+    -- *** Failed! Falsifiable (after 1 test):
+    -- ZonesTest [Cylinder RawRadius [u| 7704166527242 % 5816019819939 m |] (0.0 rad, 0.0 rad),Vector r = 103.942 (0.0 rad, 0.0 rad)]
+    -- Use --quickcheck-replay=222849 to reproduce.
+    --
+    -- WARNING: Failing test
+    -- *** Failed! Falsifiable (after 1 test):
+    -- ZonesTest [Cylinder RawRadius [u| 5010860525471 % 6659951357410 m |] (0.0 rad, 0.0 rad),Line RawRadius [u| 3191264414219 % 187558876329 m |] (0.0 rad, 0.0 rad)]
+    -- Use --quickcheck-replay=932235 to reproduce.
+    --
+    -- WARNING: Failing test
+    -- *** Failed! Falsifiable (after 1 test):
+    -- ZonesTest [Point (0.0 rad, 0.0 rad),Cylinder RawRadius [u| 103315914199 % 843249267093 m |] (0.0 rad, 0.0 rad),SemiCircle RawRadius [u| 2139156801823 % 33093703080 m |] (0.0 rad, 0.0 rad)]
+    -- Use --quickcheck-replay=116525 to reproduce.
     , QC.testProperty "Zone distances, edge-to-edge, are not negative" distanceEdge
     , QC.testProperty "Zone distances, edge-to-edge are less or equal to point-to-point" distanceLess
     ]
