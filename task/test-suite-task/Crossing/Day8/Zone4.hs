@@ -18,9 +18,9 @@ import Test.Tasty.HUnit as HU (testCase)
 import Test.Tasty.HUnit.Compare ((@?>=), (@?<=))
 import Data.UnitsOfMeasure (u, unQuantity)
 
-import qualified Flight.PointToPoint.Double as Dbl (distanceHaversine)
 import Flight.Units ()
-import Flight.Task (TaskDistance(..))
+import Flight.Distance (TaskDistance(..))
+import qualified Flight.Sphere.PointToPoint.Double as Dbl (distanceHaversine)
 import EdgeToEdge (toLatLngDbl)
 
 --     - - crossingPair:

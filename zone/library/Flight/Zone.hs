@@ -95,6 +95,12 @@ data Zone a where
                -> Zone a
 
 deriving instance Eq (Zone a)
+deriving instance
+    ( Show (Bearing a)
+    , Show (Radius a [u| m |])
+    , Show (LatLng a [u| rad |])
+    )
+    => Show (Zone a)
 
 fromRationalRadius :: Fractional a => Radius Rational u -> Radius a u
 fromRationalRadius (Radius r) =

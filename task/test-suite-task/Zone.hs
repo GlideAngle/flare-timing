@@ -28,13 +28,10 @@ import Data.UnitsOfMeasure ((/:), u, zero)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import qualified Data.Number.FixedFunctions as F
 
-import qualified Flight.PointToPoint.Double as Dbl (distanceHaversine)
-import qualified Flight.PointToPoint.Rational as Rat
-    (distanceHaversine, distancePointToPoint, costSegment)
-import qualified Flight.Cylinder.Rational as Rat (circumSample)
 import qualified Flight.Task as FS (distanceEdgeToEdge)
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..), earthRadius)
 import Flight.LatLng.Rational (Epsilon(..), defEps)
+import Flight.Distance (TaskDistance(..), PathDistance(..), SpanLatLng)
 import Flight.Zone
     ( Zone(..)
     , Radius(..)
@@ -42,15 +39,12 @@ import Flight.Zone
     , Bearing(..)
     , center
     )
-import Flight.Task
-    ( TaskDistance(..)
-    , PathDistance(..)
-    , Tolerance(..)
-    , SpanLatLng
-    , CircumSample
-    , separatedZones
-    )
-import Flight.ShortestPath (AngleCut(..))
+import Flight.Zone.Cylinder (Tolerance(..), CircumSample)
+import qualified Flight.Sphere.PointToPoint.Double as Dbl (distanceHaversine)
+import qualified Flight.Sphere.PointToPoint.Rational as Rat
+    (distanceHaversine, distancePointToPoint, costSegment)
+import qualified Flight.Sphere.Cylinder.Rational as Rat (circumSample)
+import Flight.Task (Zs(..), AngleCut(..), separatedZones)
 
 import TestNewtypes
 
@@ -335,24 +329,29 @@ distancePoint (ZonesTest xs) =
 
 distanceEdge :: ZonesTest -> Bool
 distanceEdge (ZonesTest xs) =
-    correctCenter xs
-    $ edgesSum
-    $ FS.distanceEdgeToEdge
-        span
-        Rat.distancePointToPoint
-        (Rat.costSegment span)
-        cs
-        cut
-        mm10
-        xs
+    case dEE of
+        Zs d -> correctCenter xs $ edgesSum d
+        _ -> False
+    where
+        dEE =
+            FS.distanceEdgeToEdge
+                span
+                Rat.distancePointToPoint
+                (Rat.costSegment span)
+                cs
+                cut
+                mm10
+                xs
 
 distanceLess :: ZonesTest -> Bool
 distanceLess (ZonesTest xs)
     | length xs < 3 = True
     | otherwise =
-        dCenter <= dPoint
+        case dEE of
+            Zs (PathDistance dCenter _) -> dCenter <= dPoint
+            _ -> False
         where
-            PathDistance dCenter _ =
+            dEE =
                 FS.distanceEdgeToEdge
                     span
                     Rat.distancePointToPoint

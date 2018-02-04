@@ -21,24 +21,15 @@ import Test.Tasty.QuickCheck as QC
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import Flight.Zone
-    ( Lat(..)
-    , Lng(..)
-    , LatLng(..)
-    , Radius(..)
-    , Incline(..)
-    , Bearing(..)
-    , Zone(..)
-    )
+import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
+import Flight.Zone (Radius(..), Incline(..), Bearing(..), Zone(..))
 
 newtype HaversineTest a =
     HaversineTest (LatLng a [u| rad |], LatLng a [u| rad |])
 
 deriving instance Show (LatLng a [u| rad |]) => Show (HaversineTest a)
 
-newtype ZoneTest = ZoneTest (Zone Rational)
-deriving instance Show (Zone Rational)
-
+newtype ZoneTest = ZoneTest (Zone Rational) deriving Show
 newtype ZonesTest = ZonesTest [Zone Rational] deriving Show
 
 instance (Monad m, SC.Serial m a) => SC.Serial m (HaversineTest a) where

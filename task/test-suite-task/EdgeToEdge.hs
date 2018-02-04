@@ -23,30 +23,18 @@ import Data.UnitsOfMeasure ((/:), u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Data.Bifunctor.Flip (Flip(..))
 
-import qualified Flight.PointToPoint.Rational as Rat
-    (distanceHaversine, distancePointToPoint, costSegment)
-import qualified Flight.Cylinder.Rational as Rat (circumSample)
+import Flight.Units ()
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.LatLng.Rational (Epsilon(..), defEps)
-import Flight.Units ()
-import Flight.Zone
-    ( Bearing(..)
-    , Radius(..)
-    , Zone(..)
-    )
+import Flight.Distance (TaskDistance(..), PathDistance(..), SpanLatLng, fromKms)
+import Flight.Zone (Bearing(..), Radius(..), Zone(..))
+import Flight.Zone.Cylinder
+    (Samples(..), SampleParams(..), Tolerance(..), CircumSample)
+import qualified Flight.Sphere.PointToPoint.Rational as Rat
+    (distanceHaversine, distancePointToPoint, costSegment)
+import qualified Flight.Sphere.Cylinder.Rational as Rat (circumSample)
 import qualified Flight.Task as FS (distanceEdgeToEdge)
-import Flight.Task
-    ( Samples(..)
-    , SampleParams(..)
-    , Tolerance(..)
-    , TaskDistance(..)
-    , PathDistance(..)
-    , SpanLatLng
-    , CircumSample
-    , fromKms
-    , separatedZones
-    )
-import Flight.ShortestPath (AngleCut(..), CostSegment)
+import Flight.Task (Zs(..), AngleCut(..), CostSegment, separatedZones)
 import Data.Number.RoundingFunctions (dpRound)
 
 (.>=.) :: (Show a, Show b) => a -> b -> String
@@ -442,16 +430,34 @@ mkDayUnits title pDay dDay dsDay = testGroup title
         ++ " <= "
         ++ show dsDay
         ) $
-            distLess eeDayInits dsDay @? eeDayInits .<=. dsDay
+        distLess eeDayInits dsDay @? eeDayInits .<=. dsDay
     ]
     where
+        pp :: [Zone Rational] -> PathDistance Rational
         pp = Rat.distancePointToPoint span
-        ee = distanceEdgeToEdge'
+
+        ee :: [Zone Rational] -> PathDistance Rational
+        ee xs =
+            case distanceEdgeToEdge' xs of
+                Zs x -> x
+                _ -> PathDistance (TaskDistance [u| 0 m |]) []
+
+        ppDay :: TaskDistance Rational
         ppDay = edgesSum $ pp pDay
+
+        eeDay :: TaskDistance Rational
         eeDay = edgesSum $ ee pDay
+
+        pDayInits :: [[Zone Rational]]
         pDayInits = drop 1 $ inits pDay
+
+        ppDayInits :: [TaskDistance Rational]
         ppDayInits = edgesSum . pp <$> pDayInits
+
+        eeDayInits :: [TaskDistance Rational]
         eeDayInits = edgesSum . ee <$> pDayInits
+
+        distLess :: Ord a => [a] -> [a] -> Bool
         distLess xs ys = take 1 (reverse xs) < take 1 (reverse ys)
 
 day1Units :: TestTree
@@ -913,7 +919,7 @@ dsDay8 =
         , 158.848
         ]
 
-distanceEdgeToEdge' :: [Zone Rational] -> PathDistance Rational
+distanceEdgeToEdge' :: [Zone Rational] -> Zs (PathDistance Rational)
 distanceEdgeToEdge' = 
     FS.distanceEdgeToEdge span Rat.distancePointToPoint segCost cs cut mm30
 
