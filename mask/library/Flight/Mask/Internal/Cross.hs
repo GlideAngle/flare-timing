@@ -15,9 +15,10 @@ import Data.List (nub, sort, findIndex)
 import Control.Lens ((^?), element)
 
 import qualified Flight.Zone.Raw as Raw (RawZone(..))
+import Flight.Distance (SpanLatLng)
 import Flight.Comp (Task(..))
 import Flight.Units ()
-import Flight.Task (SpanLatLng, separatedZones)
+import Flight.Task (separatedZones)
 import Flight.Mask.Internal.Zone
     ( TaskZone(..)
     , TrackZone(..)

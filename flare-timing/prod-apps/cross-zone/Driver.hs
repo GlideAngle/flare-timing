@@ -48,10 +48,10 @@ import Flight.Track.Cross
     , Crossing(..)
     , trackLogErrors
     )
-import Flight.Zone.Raw (RawZone)
-import qualified Flight.PointToPoint.Rational as Rat (distanceHaversine)
-import qualified Flight.PointToPoint.Double as Dbl (distanceHaversine)
 import Flight.LatLng.Rational (defEps)
+import Flight.Zone.Raw (RawZone)
+import qualified Flight.Sphere.PointToPoint.Rational as Rat (distanceHaversine)
+import qualified Flight.Sphere.PointToPoint.Double as Dbl (distanceHaversine)
 import Flight.Mask
     ( TaskZone
     , FnIxTask

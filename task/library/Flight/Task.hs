@@ -13,12 +13,7 @@ order along the way.
 -}
 module Flight.Task
     ( -- * Optimized Shortest Path 
-      SpanLatLng
-    , Samples(..)
-    , Tolerance(..)
-    , SampleParams(..)
-    , CircumSample
-    , CostSegment
+      CostSegment
     , DistancePointToPoint
     , AngleCut(..)
     , Zs(..)
@@ -26,13 +21,8 @@ module Flight.Task
     -- * Zones
     , separatedZones
     , fromZs
-    , zoneToProjectedEastNorth
     ) where
 
-import Flight.PointToPoint.Segment (SpanLatLng)
 import Flight.EdgeToEdge
 import Flight.Separated
-import Flight.Cylinder.Sample
-import Flight.Cylinder.Edge
 import Flight.ShortestPath
-import Flight.Projected.Internal (zoneToProjectedEastNorth)

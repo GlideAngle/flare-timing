@@ -12,7 +12,7 @@
 {-# LANGUAGE PartialTypeSignatures #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module Flight.PointToPoint.Rational
+module Flight.Sphere.PointToPoint.Rational
     ( distancePointToPoint
     , distanceHaversine
     , costSegment
@@ -34,8 +34,7 @@ import Flight.Zone
     , fromRationalLatLng
     , toRationalZone
     )
-import Flight.Distance (TaskDistance(..), PathDistance(..))
-import Flight.PointToPoint.Segment (SpanLatLng)
+import Flight.Distance (TaskDistance(..), PathDistance(..), SpanLatLng)
 
 costSegment :: (Real a, Fractional a)
             => SpanLatLng a

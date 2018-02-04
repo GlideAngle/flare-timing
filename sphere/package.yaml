@@ -12,44 +12,56 @@ ghc-options:
 library:
   dependencies:
   - base >=4.5 && <5
+  - numbers
+  - fgl
   - uom-plugin
+  - bifunctors
   - aeson
   - scientific
-  - newtype
-  - siggy-chardust
+  - mtl
+  - hcoord
   - aeson-via-sci
-  - aeson-via-uom
+  - siggy-chardust
   - flight-units
   - flight-latlng
+  - flight-zone
   source-dirs: library
   exposed-modules:
-  - Flight.Zone
-  - Flight.Zone.Raw
-  - Flight.Zone.Cylinder.Edge
-  - Flight.Zone.Cylinder.Sample
+  - Flight.Sphere.Cylinder.Double
+  - Flight.Sphere.Cylinder.Rational
+  - Flight.Sphere.PointToPoint.Double
+  - Flight.Sphere.PointToPoint.Rational
+  - Flight.Sphere.Projected.Double
+  - Flight.Sphere.Projected.Rational
+  - Flight.Sphere
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
-name: flight-zone
-synopsis: Control zones to fly.
-description: Control zones for hang gliding and paragliding competitons.
+name: flight-sphere
+synopsis: Distances on the FAI sphere.
+description: Distances on the FAI sphere for hang gliding and paragliding competitons.
 category: Flight
 license: BSD3
 license-file: LICENSE.md
-github: BlockScope/flare-timing
+github: BlockScope/haskell-flight-task
 tests:
   hlint:
     dependencies:
     - base
     - hlint
+    - numbers
+    - fgl
     - uom-plugin
+    - bifunctors
     - aeson
     - scientific
-    - newtype
-    - siggy-chardust
+    - mtl
+    - hcoord
     - aeson-via-sci
-    - aeson-via-uom
+    - siggy-chardust
+    - tasty-compare
     - flight-units
     - flight-latlng
+    - flight-zone
     ghc-options:
     - -rtsopts
     - -threaded

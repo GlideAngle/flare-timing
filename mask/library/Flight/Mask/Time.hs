@@ -9,6 +9,7 @@ import Data.Ratio ((%))
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
+import Flight.Distance (SpanLatLng)
 import Flight.Kml (Fix, Seconds(..), FixMark(..), MarkedFixes(..))
 import Flight.Comp (Task(..), SpeedSection, OpenClose(..), StartGate(..))
 import Flight.Score (PilotTime(..))
@@ -21,7 +22,6 @@ import Flight.Mask.Internal.Zone
 import Flight.Mask.Internal.Cross
     (CrossingPredicate, entersSeq, exitsSeq, isStartExit, crossingPredicates)
 import qualified Flight.Zone.Raw as Raw (RawZone(..))
-import Flight.Task (SpanLatLng)
 
 timeFlown :: (Real a, Fractional a)
           => SpanLatLng a

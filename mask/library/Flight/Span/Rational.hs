@@ -14,13 +14,14 @@ import Data.UnitsOfMeasure ((/:))
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import qualified Data.Number.FixedFunctions as F
 
-import qualified Flight.PointToPoint.Rational as Rat
-    (distanceHaversine, distancePointToPoint, costSegment)
-import qualified Flight.Cylinder.Rational as Rat (circumSample)
-import Flight.Distance (PathDistance)
+import Flight.Distance (PathDistance, SpanLatLng)
 import Flight.Zone (Zone, Bearing(..))
 import Flight.Zone.Raw (RawZone)
-import Flight.Task (SpanLatLng, CircumSample, AngleCut(..))
+import Flight.Zone.Cylinder.Edge (CircumSample)
+import qualified Flight.Sphere.PointToPoint.Rational as Rat
+    (distanceHaversine, distancePointToPoint, costSegment)
+import qualified Flight.Sphere.Cylinder.Rational as Rat (circumSample)
+import Flight.Task (AngleCut(..))
 import Flight.Mask.Internal.Zone (TaskZone, zoneToCylinder)
 import Flight.LatLng.Rational (Epsilon(..), defEps)
 

@@ -19,10 +19,9 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
 import Flight.Zone (Zone(..), Radius(..), radius)
-import Flight.PointToPoint.Segment (SpanLatLng)
-import Flight.PointToPoint.Double (distancePointToPoint)
-import Flight.Distance (TaskDistance(..), PathDistance(..))
+import Flight.Distance (TaskDistance(..), PathDistance(..), SpanLatLng)
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..), earthRadius)
+import Flight.Sphere.PointToPoint.Double (distancePointToPoint)
 
 boundingBoxSeparated :: (Num a, Ord a, Fractional a)
                      => Zone a

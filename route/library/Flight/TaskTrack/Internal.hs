@@ -38,9 +38,10 @@ import Flight.LatLng.Raw (RawLat(..), RawLng(..), RawLatLng(..))
 import Data.Number.RoundingFunctions (dpRound)
 import Flight.Zone (Zone(..), Radius(..), fromRationalZone)
 import Flight.Zone.Raw (RawZone(..), RawRadius(..))
-import Flight.Distance (TaskDistance(..), PathDistance(..))
+import Flight.Zone.Cylinder.Sample (Tolerance(..))
+import Flight.Distance (TaskDistance(..), PathDistance(..), SpanLatLng)
 import Flight.EastNorth (UtmZone(..), EastingNorthing(..))
-import Flight.Task (Tolerance(..), SpanLatLng, DistancePointToPoint)
+import Flight.Task (DistancePointToPoint)
 
 mm30 :: Num a => Tolerance a 
 mm30 = Tolerance 30

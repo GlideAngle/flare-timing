@@ -23,6 +23,7 @@ library:
   - flight-units
   - flight-latlng
   - flight-zone
+  - flight-sphere
   - flight-task
   source-dirs: library
   exposed-modules:
@@ -54,6 +55,7 @@ tests:
     - flight-units
     - flight-latlng
     - flight-zone
+    - flight-sphere
     - flight-task
     ghc-options:
     - -rtsopts

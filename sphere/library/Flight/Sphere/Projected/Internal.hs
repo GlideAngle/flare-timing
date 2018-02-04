@@ -10,7 +10,7 @@
 
 {-# LANGUAGE PartialTypeSignatures #-}
 
-module Flight.Projected.Internal
+module Flight.Sphere.Projected.Internal
     ( pythagorean
     , zoneToProjectedEastNorth 
     , tooFar

@@ -27,13 +27,15 @@ import Flight.Units ()
 import Flight.LatLng (LatLng(..))
 import Flight.LatLng.Raw (RawLatLng(..))
 import Flight.LatLng.Rational (Epsilon(..), defEps)
+import Flight.Distance (TaskDistance(..), PathDistance(..), SpanLatLng, toKm)
 import Flight.Zone (Zone(..), Bearing(..), center)
 import Flight.Zone.Raw (RawZone(..))
-import Flight.Cylinder.Rational (circumSample)
-import Flight.Distance (TaskDistance(..), PathDistance(..), toKm)
-import Flight.Projected.Rational (costEastNorth)
-import Flight.PointToPoint.Rational
+import Flight.Zone.Cylinder.Edge (CircumSample)
+import Flight.Sphere.Cylinder.Rational (circumSample)
+import Flight.Sphere.Projected.Rational (costEastNorth)
+import Flight.Sphere.PointToPoint.Rational
     (distancePointToPoint, costSegment, distanceHaversine)
+import Flight.Sphere (zoneToProjectedEastNorth)
 import Flight.Route
     ( TaskDistanceMeasure(..)
     , TaskTrack(..)
@@ -52,10 +54,7 @@ import Flight.TaskTrack.Internal
     , toPoint
     , toCylinder
     )
-import Flight.Task
-    ( Zs(..), SpanLatLng, CostSegment, CircumSample, AngleCut(..)
-    , fromZs, distanceEdgeToEdge, zoneToProjectedEastNorth
-    )
+import Flight.Task (Zs(..), CostSegment, AngleCut(..), fromZs, distanceEdgeToEdge)
 
 taskTracks :: Bool
            -> (Int -> Bool)
@@ -75,26 +74,34 @@ taskTrack excludeWaypoints tdm zsRaw =
     case tdm of
         TaskDistanceByAllMethods ->
             TaskTrack
-                { pointToPoint = Just pointTrackline
-                , edgeToEdge = edgeTrackline
+                { ellipsoidPointToPoint = Just pointTrackline
+                , ellipsoidEdgeToEdge = edgeTrackline
+                , sphericalPointToPoint = Just pointTrackline
+                , sphericalEdgeToEdge = edgeTrackline
                 , projection = projTrackline
                 }
         TaskDistanceByPoints ->
             TaskTrack
-                { pointToPoint = Just pointTrackline
-                , edgeToEdge = Nothing
+                { ellipsoidPointToPoint = Just pointTrackline
+                , ellipsoidEdgeToEdge = Nothing
+                , sphericalPointToPoint = Just pointTrackline
+                , sphericalEdgeToEdge = Nothing
                 , projection = Nothing
                 }
         TaskDistanceByEdges ->
             TaskTrack
-                { pointToPoint = Nothing
-                , edgeToEdge = edgeTrackline
+                { ellipsoidPointToPoint = Nothing
+                , ellipsoidEdgeToEdge = edgeTrackline
+                , sphericalPointToPoint = Nothing
+                , sphericalEdgeToEdge = edgeTrackline
                 , projection = Nothing
                 }
         TaskDistanceByProjection ->
             TaskTrack
-                { pointToPoint = Nothing
-                , edgeToEdge = Nothing
+                { ellipsoidPointToPoint = Nothing
+                , ellipsoidEdgeToEdge = Nothing
+                , sphericalPointToPoint = Nothing
+                , sphericalEdgeToEdge = Nothing
                 , projection = projTrackline
                 }
     where
@@ -156,6 +163,7 @@ goByProj excludeWaypoints zs = do
         ProjectedTrackLine
             { planar = planar
             , spherical = spherical
+            , ellipsoid = spherical
             }
 
 goByPoint :: Bool -> [Zone Rational] -> TrackLine

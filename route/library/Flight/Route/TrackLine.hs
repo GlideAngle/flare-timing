@@ -18,11 +18,10 @@ import Data.UnitsOfMeasure (u)
 
 import Flight.LatLng (LatLng(..))
 import Flight.LatLng.Raw (RawLatLng(..))
-import Flight.Distance (TaskDistance(..), PathDistance(..), toKm)
+import Flight.Distance (TaskDistance(..), PathDistance(..), SpanLatLng, toKm)
 import Flight.Zone (Zone(..))
 import Flight.TaskTrack.Internal (convertLatLng, legDistances, addTaskDistance)
-import Flight.PointToPoint.Double (distancePointToPoint, distanceHaversine)
-import Flight.Task (SpanLatLng)
+import Flight.Sphere.PointToPoint.Double (distancePointToPoint, distanceHaversine)
 
 data TrackLine =
     TrackLine { distance :: Double

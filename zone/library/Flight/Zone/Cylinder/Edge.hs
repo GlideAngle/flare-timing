@@ -1,6 +1,6 @@
 {-# LANGUAGE RankNTypes #-}
 
-module Flight.Cylinder.Edge (CircumSample, sample) where
+module Flight.Zone.Cylinder.Edge (CircumSample, sample) where
 
 import Data.UnitsOfMeasure (zero)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
@@ -10,7 +10,7 @@ import Flight.Zone
     , Radius(..)
     , Bearing(..)
     )
-import Flight.Cylinder.Sample (SampleParams, ZonePoint(..), TrueCourse)
+import Flight.Zone.Cylinder.Sample (SampleParams, ZonePoint(..), TrueCourse)
 
 -- | The type of function that samples points on the circumference of a circle.
 type CircumSample a

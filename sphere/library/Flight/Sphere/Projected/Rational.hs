@@ -10,7 +10,7 @@
 
 {-# LANGUAGE PartialTypeSignatures #-}
 
-module Flight.Projected.Rational (costEastNorth) where
+module Flight.Sphere.Projected.Rational (costEastNorth) where
 
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
@@ -18,7 +18,8 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Flight.Zone (Zone(..), center, toRationalZone)
 import Flight.Distance (TaskDistance(..), PathDistance(..))
 import Flight.Units ()
-import Flight.Projected.Internal (pythagorean , zoneToProjectedEastNorth, tooFar)
+import Flight.Sphere.Projected.Internal
+    (pythagorean , zoneToProjectedEastNorth, tooFar)
 
 -- | The task distance returned is for the projected UTM plane with
 -- eastings and northings. If you need to calculate the distance in sperical

@@ -23,6 +23,7 @@ import Data.List (nub, group, elemIndex, findIndex)
 import Data.List.Split (split, whenElt, keepDelimsL, chop)
 import Control.Lens ((^?), element)
 
+import Flight.Distance (SpanLatLng)
 import Flight.Kml (Latitude(..), Longitude(..), MarkedFixes(..))
 import qualified Flight.Kml as Kml
     (LatLngAlt(..), Fix, FixMark(..), Seconds(..))
@@ -51,7 +52,6 @@ import Flight.Mask.Internal.Cross
     , reindex
     )
 import qualified Flight.Zone.Raw as Raw (RawZone(..))
-import Flight.Task (SpanLatLng)
 
 data MadeZones =
     MadeZones

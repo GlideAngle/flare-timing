@@ -11,7 +11,7 @@
 {-# LANGUAGE PartialTypeSignatures #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module Flight.PointToPoint.Double
+module Flight.Sphere.PointToPoint.Double
     ( distancePointToPoint
     , distanceHaversine
     , costSegment
@@ -23,8 +23,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..), mk)
 
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..), earthRadius)
 import Flight.Zone (Zone(..), Radius(..), center)
-import Flight.Distance (TaskDistance(..), PathDistance(..))
-import Flight.PointToPoint.Segment (SpanLatLng)
+import Flight.Distance (TaskDistance(..), PathDistance(..), SpanLatLng)
 
 costSegment :: Real a
             => SpanLatLng a

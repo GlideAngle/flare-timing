@@ -25,15 +25,10 @@ library:
   - flight-units
   - flight-latlng
   - flight-zone
+  - flight-sphere
   source-dirs: library
   exposed-modules:
   - Flight.Task
-  - Flight.Cylinder.Double
-  - Flight.Cylinder.Rational
-  - Flight.PointToPoint.Double
-  - Flight.PointToPoint.Rational
-  - Flight.Projected.Double
-  - Flight.Projected.Rational
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
 name: flight-task
@@ -62,6 +57,7 @@ tests:
     - flight-units
     - flight-latlng
     - flight-zone
+    - flight-sphere
     ghc-options:
     - -rtsopts
     - -threaded
@@ -86,6 +82,7 @@ tests:
     - flight-units
     - flight-latlng
     - flight-zone
+    - flight-sphere
     - tasty
     - tasty-hunit
     - tasty-quickcheck

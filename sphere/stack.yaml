@@ -1,45 +1,21 @@
 flags: {}
 packages:
-- location: .
-- location: ../span
-  extra-dep: true
-- location: ../cmd
-  extra-dep: true
-- location: ../units
+- '.'
+- location: ../siggy-chardust
   extra-dep: true
 - location: ../aeson-via-sci
   extra-dep: true
 - location: ../aeson-via-uom
   extra-dep: true
+- location: ../units
+  extra-dep: true
 - location: ../latlng
   extra-dep: true
 - location: ../zone
   extra-dep: true
-- location: ../route
-  extra-dep: true
-- location: ../comp
-  extra-dep: true
-- location: ../fsdb
-  extra-dep: true
-- location: ../igc
-  extra-dep: true
-- location: ../kml
-  extra-dep: true
-- location: ../track
-  extra-dep: true
-- location: ../sphere
-  extra-dep: true
-- location: ../task
+- location: ../tasty-compare
   extra-dep: true
 - location: ../gap
-  extra-dep: true
-- location: ../siggy-chardust
-  extra-dep: true
-- location: ../mask
-  extra-dep: true
-- location: ../lookup
-  extra-dep: true
-- location: ../scribe
   extra-dep: true
 - location:
     git: https://github.com/danfran/hcoord.git
@@ -55,7 +31,6 @@ packages:
   subdirs:
   - uom-plugin
   extra-dep: true
-extra-deps:
-- hxt-xpath-9.1.2.2
+extra-deps: []
 resolver: nightly-2018-01-09
 local-bin-path: ../__shake-build

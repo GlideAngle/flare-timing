@@ -11,7 +11,8 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Data.Graph.Inductive.Graph (Node, LEdge)
 
 import Flight.Zone (Zone(..))
-import Flight.Cylinder.Sample (Tolerance, ZonePoint(..))
+import Flight.Zone.Cylinder.Sample (Tolerance, ZonePoint(..))
+import Flight.Zone.Cylinder.Edge (CircumSample)
 import Flight.Units ()
 import Flight.ShortestPath
     ( Zs(..)
@@ -24,9 +25,7 @@ import Flight.ShortestPath
     , shortestPath
     , buildGraph
     )
-import Flight.Cylinder.Edge (CircumSample)
-import Flight.Distance (TaskDistance(..), PathDistance(..))
-import Flight.PointToPoint.Segment (SpanLatLng)
+import Flight.Distance (TaskDistance(..), PathDistance(..), SpanLatLng)
 
 distanceEdgeToEdge :: (Real a, Fractional a)
                    => SpanLatLng a

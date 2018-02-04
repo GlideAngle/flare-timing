@@ -15,7 +15,7 @@ import qualified Data.ByteString as BS
 import Data.Yaml (decodeEither)
 import qualified Data.Yaml.Pretty as Y
 
-import Flight.Route (TaskRoutes(..), TaskTrack(..))
+import Flight.Route (TaskRoute(..))
 import Flight.Track.Tag (Tagging(..))
 import Flight.Track.Cross (Crossing)
 import Flight.Track.Mask (Masking)
@@ -46,18 +46,17 @@ writeComp (CompInputFile path) compInput = do
     let yaml = Y.encodePretty cfg compInput
     BS.writeFile path yaml
 
-readRoute :: TaskLengthFile -> ExceptT String IO TaskRoutes
+readRoute :: TaskLengthFile -> ExceptT String IO TaskRoute
 readRoute (TaskLengthFile path) = do
     contents <- lift $ BS.readFile path
     ExceptT . return $ decodeEither contents
 
-writeRoute :: TaskLengthFile -> [Maybe TaskTrack] -> IO ()
-writeRoute (TaskLengthFile lenPath) os = 
+writeRoute :: TaskLengthFile -> TaskRoute -> IO ()
+writeRoute (TaskLengthFile lenPath) route = 
     BS.writeFile lenPath yaml
     where
-        taskLength = TaskRoutes { taskRoutes = os }
-        cfg = Y.setConfCompare (fieldOrder taskLength) Y.defConfig
-        yaml = Y.encodePretty cfg taskLength
+        cfg = Y.setConfCompare (fieldOrder route) Y.defConfig
+        yaml = Y.encodePretty cfg route
 
 readCrossing :: CrossZoneFile -> ExceptT String IO Crossing
 readCrossing (CrossZoneFile path) = do

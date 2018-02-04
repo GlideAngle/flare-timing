@@ -13,13 +13,14 @@ module Flight.Span.Double
 import Data.UnitsOfMeasure ((/:))
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import qualified Flight.PointToPoint.Double as Dbl
-    (distanceHaversine, distancePointToPoint, costSegment)
-import qualified Flight.Cylinder.Double as Dbl (circumSample)
-import Flight.Distance (PathDistance)
+import Flight.Distance (PathDistance, SpanLatLng)
 import Flight.Zone (Zone, Bearing(..))
 import Flight.Zone.Raw (RawZone)
-import Flight.Task (SpanLatLng, CircumSample, AngleCut(..))
+import Flight.Zone.Cylinder.Edge (CircumSample)
+import qualified Flight.Sphere.PointToPoint.Double as Dbl
+    (distanceHaversine, distancePointToPoint, costSegment)
+import qualified Flight.Sphere.Cylinder.Double as Dbl (circumSample)
+import Flight.Task (AngleCut(..))
 import Flight.Mask.Internal.Zone (TaskZone, zoneToCylinder)
 
 zoneToCylF :: RawZone -> TaskZone Double

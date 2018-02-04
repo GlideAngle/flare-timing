@@ -18,20 +18,16 @@ import Data.Ratio ((%))
 import Data.Time.Clock (UTCTime, diffUTCTime)
 import Data.List (findIndices)
 
+import Flight.Distance (SpanLatLng)
 import Flight.Kml (FixMark(mark), MarkedFixes(..), Seconds(..))
 import Flight.Zone (Zone(..))
+import Flight.Zone.Cylinder.Edge (CircumSample)
+import Flight.Zone.Cylinder.Sample (Tolerance(..))
 import Flight.Track.Time (TimeRow(..))
 import Flight.Comp (SpeedSection, FlyingSection)
 import Flight.Units ()
 import Flight.Distance (TaskDistance(..))
-import Flight.Task
-    ( Tolerance(..)
-    , SpanLatLng
-    , CostSegment
-    , DistancePointToPoint
-    , AngleCut(..)
-    , CircumSample
-    )
+import Flight.Task (CostSegment, DistancePointToPoint, AngleCut(..))
 import Flight.Mask.Internal.Zone (ZoneIdx, TaskZone(..), TrackZone(..))
 import Flight.Mask.Internal.Cross (CrossingPredicate)
 

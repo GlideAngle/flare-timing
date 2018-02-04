@@ -37,7 +37,6 @@ import System.FilePath
     )
 
 import qualified Flight.Kml as K
-    -- (MarkedFixes(..), Fix(..), LLA(..), parse)
 import qualified Flight.Igc as I (parse)
 import Flight.Igc
 import Flight.Comp

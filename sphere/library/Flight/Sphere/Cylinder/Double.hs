@@ -11,28 +11,25 @@
 
 {-# LANGUAGE PartialTypeSignatures #-}
 
-module Flight.Cylinder.Rational (circumSample) where
+module Flight.Sphere.Cylinder.Double (circumSample) where
 
-import Data.Ratio ((%))
-import qualified Data.Number.FixedFunctions as F
 import Data.Fixed (mod')
-import Data.UnitsOfMeasure (u, unQuantity, fromRational')
+import Data.UnitsOfMeasure (u, unQuantity)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..), earthRadius)
-import Flight.LatLng.Rational (Epsilon(..), defEps)
 import Flight.Zone
     ( Zone(..)
     , Radius(..)
     , Bearing(..)
     , center
     , radius
-    , toRationalZone
+    , realToFracZone
     )
-import Flight.PointToPoint.Rational (distancePointToPoint, distanceHaversine)
+import Flight.Sphere.PointToPoint.Double (distancePointToPoint, distanceHaversine)
 import Flight.Distance (TaskDistance(..), PathDistance(..))
-import Flight.Cylinder.Edge (CircumSample)
-import Flight.Cylinder.Sample
+import Flight.Zone.Cylinder.Edge (CircumSample)
+import Flight.Zone.Cylinder.Sample
     ( TrueCourse(..)
     , ZonePoint(..)
     , Tolerance(..)
@@ -42,44 +39,42 @@ import Flight.Cylinder.Sample
     , radial
     , point
     , sourceZone
-    , fromRationalZonePoint
     )
 
 -- | Using a method from the
 -- <http://www.edwilliams.org/avform.htm#LL Aviation Formulary>
 -- a point on a cylinder wall is found by going out to the distance of the
 -- radius on the given radial true course 'rtc'.
-circum :: Epsilon
-       -> LatLng Rational [u| rad |]
-       -> Radius Rational [u| m |]
-       -> TrueCourse Rational 
-       -> LatLng Rational [u| rad |]
+circum :: Real a
+       => LatLng a [u| rad |]
+       -> Radius a [u| m |]
+       -> TrueCourse a
+       -> LatLng Double [u| rad |]
 circum
-    _
     (LatLng (Lat (MkQuantity latRadian'), Lng (MkQuantity lngRadian')))
     (Radius (MkQuantity rRadius))
-    (TrueCourse rtc) =
+    (TrueCourse (MkQuantity rtc)) =
     LatLng (Lat lat'', Lng lng'')
     where
         lat :: Double
-        lat = fromRational latRadian'
+        lat = realToFrac latRadian'
 
         lng :: Double
-        lng = fromRational lngRadian'
+        lng = realToFrac lngRadian'
 
-        MkQuantity tc = fromRational' rtc :: Quantity Double [u| rad |]
+        MkQuantity tc = MkQuantity $ realToFrac rtc
 
         radius' :: Double
-        radius' = fromRational . toRational $ rRadius
+        radius' = realToFrac rRadius
 
-        bigR = fromRational $ unQuantity earthRadius
+        bigR = unQuantity earthRadius
 
         lat' :: Double
         lat' = asin (sin lat * cos d + cos lat * sin d * cos tc)
 
         dlng = atan ((sin tc * sin d * cos lat) / (cos d - sin lat * sin lat))
 
-        a = lng - dlng + pi 
+        a = lng - dlng + pi
         b = 2 * pi 
 
         lng' :: Double
@@ -87,11 +82,11 @@ circum
 
         d = radius' / bigR
 
-        lat'' :: Quantity Rational [u| rad |]
-        lat'' = MkQuantity $ toRational lat'
+        lat'' :: Quantity Double [u| rad |]
+        lat'' = MkQuantity lat'
 
-        lng'' :: Quantity Rational [u| rad |]
-        lng'' = MkQuantity $ toRational lng'
+        lng'' :: Quantity Double [u| rad |]
+        lng'' = MkQuantity lng'
 
 -- | Generates a pair of lists, the lat/lng of each generated point
 -- and its distance from the center. It will generate 'samples' number of such
@@ -99,62 +94,63 @@ circum
 -- the distance to the origin and the radius should be less han the 'tolerance'.
 --
 -- The points of the compass are divided by the number of samples requested.
-circumSample :: CircumSample Rational
+circumSample :: CircumSample Double
 circumSample SampleParams{..} (Bearing (MkQuantity bearing)) zp zone =
-    (fromRationalZonePoint <$> fst ys, snd ys)
+    ys
     where
-        (Epsilon eps) = defEps
-
         nNum = unSamples spSamples
         half = nNum `div` 2
-        pi' = F.pi eps
-        halfRange = pi' / bearing
+        halfRange = pi / bearing
 
-        zone' :: Zone Rational
+        zone' :: Zone Double
         zone' =
             case zp of
               Nothing -> zone
               Just ZonePoint{..} -> sourceZone
 
-        xs :: [TrueCourse Rational]
+        xs :: [TrueCourse Double]
         xs =
             TrueCourse . MkQuantity <$>
             case zp of
                 Nothing ->
-                    [ (2 * n % nNum) * pi' | n <- [0 .. nNum]]
+                    [ 2.0 * fromInteger n / fromInteger nNum * pi
+                    | n <- [0 .. nNum]
+                    ]
 
                 Just ZonePoint{..} ->
                     [b]
                     ++ 
-                    [ b - (n % half) * halfRange | n <- [1 .. half] ]
+                    [ b - fromInteger n / fromInteger half * halfRange
+                    | n <- [1 .. half]
+                    ]
                     ++
-                    [ b + (n % half) * halfRange | n <- [1 .. half]]
+                    [ b + fromInteger n / fromInteger half * halfRange
+                    | n <- [1 .. half]
+                    ]
                     where
                         (Bearing (MkQuantity b)) = radial
 
-        (Radius (MkQuantity limitRadius)) = radius zone'
-        limitRadius' = toRational limitRadius
-        r = Radius (MkQuantity limitRadius')
+        r :: Radius Double [u| m |]
+        r@(Radius (MkQuantity limitRadius)) = radius zone'
 
         ptCenter = center zone'
-        circumR = circum defEps ptCenter
+        circumR = circum ptCenter
 
-        getClose' = getClose defEps zone' ptCenter limitRadius' spTolerance
+        getClose' = getClose zone' ptCenter limitRadius spTolerance
 
-        ys :: ([ZonePoint Rational], [TrueCourse Rational])
+        ys :: ([ZonePoint Double], [TrueCourse Double])
         ys = unzip $ getClose' 10 (Radius (MkQuantity 0)) (circumR r) <$> xs
 
-getClose :: Epsilon
-         -> Zone Rational
-         -> LatLng Rational [u| rad |] -- ^ The center point.
-         -> Rational -- ^ The limit radius.
-         -> Tolerance Rational
+getClose :: Zone Double
+         -> LatLng Double [u| rad |] -- ^ The center point.
+         -> Double -- ^ The limit radius.
+         -> Tolerance Double
          -> Int -- ^ How many tries.
-         -> Radius Rational [u| m |] -- ^ How far from the center.
-         -> (TrueCourse Rational -> LatLng Rational [u| rad |]) -- ^ A point from the origin on this radial
-         -> TrueCourse Rational -- ^ The true course for this radial.
-         -> (ZonePoint Rational, TrueCourse Rational)
-getClose epsilon zone' ptCenter limitRadius spTolerance trys yr@(Radius (MkQuantity offset)) f x@(TrueCourse tc)
+         -> Radius Double [u| m |] -- ^ How far from the center.
+         -> (TrueCourse Double -> LatLng Double [u| rad |]) -- ^ A point from the origin on this radial
+         -> TrueCourse Double -- ^ The true course for this radial.
+         -> (ZonePoint Double, TrueCourse Double)
+getClose zone' ptCenter limitRadius spTolerance trys yr@(Radius (MkQuantity offset)) f x@(TrueCourse tc)
     | trys <= 0 = (zp', x)
     | unTolerance spTolerance <= 0 = (zp', x)
     | limitRadius <= unTolerance spTolerance = (zp', x)
@@ -172,7 +168,6 @@ getClose epsilon zone' ptCenter limitRadius spTolerance trys yr@(Radius (MkQuant
 
                  in
                      getClose
-                         epsilon
                          zone'
                          ptCenter
                          limitRadius
@@ -183,7 +178,7 @@ getClose epsilon zone' ptCenter limitRadius spTolerance trys yr@(Radius (MkQuant
                          x
                  
              LT ->
-                 if d > toRational (limitRadius - unTolerance spTolerance)
+                 if d > (limitRadius - unTolerance spTolerance)
                  then (zp', x)
                  else
                      let offset' =
@@ -191,9 +186,9 @@ getClose epsilon zone' ptCenter limitRadius spTolerance trys yr@(Radius (MkQuant
 
                          f' =
                              circumR (Radius (MkQuantity $ limitRadius + offset'))
+
                      in
                          getClose
-                             epsilon
                              zone'
                              ptCenter
                              limitRadius
@@ -203,17 +198,17 @@ getClose epsilon zone' ptCenter limitRadius spTolerance trys yr@(Radius (MkQuant
                              f'
                              x
     where
-        circumR = circum epsilon ptCenter
+        circumR = circum ptCenter
 
         y = f x
-        zp' = ZonePoint { sourceZone = toRationalZone zone'
+        zp' = ZonePoint { sourceZone = realToFracZone zone'
                         , point = y
                         , radial = Bearing tc
                         , orbit = yr
-                        } :: ZonePoint Rational
+                        } :: ZonePoint Double
                        
         (TaskDistance (MkQuantity d)) =
             edgesSum
             $ distancePointToPoint
-                (distanceHaversine defEps)
-                [Point ptCenter, Point y]
+                distanceHaversine
+                (realToFracZone <$> [Point ptCenter, Point y])

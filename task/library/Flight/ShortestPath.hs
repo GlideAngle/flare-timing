@@ -41,17 +41,16 @@ import Data.Graph.Inductive.PatriciaTree (Gr)
 
 import Flight.LatLng (LatLng(..))
 import Flight.Zone (Zone(..), Bearing(..), center)
-import Flight.PointToPoint.Segment (SpanLatLng)
 import Flight.Separated (separatedZones)
-import Flight.Cylinder.Sample
+import Flight.Zone.Cylinder.Sample
     ( Tolerance(..)
     , Samples(..)
     , SampleParams(..)
     , ZonePoint(..)
     )
-import Flight.Cylinder.Edge (CircumSample, sample)
+import Flight.Zone.Cylinder.Edge (CircumSample, sample)
 import Flight.Units ()
-import Flight.Distance (TaskDistance(..), PathDistance(..))
+import Flight.Distance (TaskDistance(..), PathDistance(..), SpanLatLng)
 
 type CostSegment a = Zone a -> Zone a -> PathDistance a
 

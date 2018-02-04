@@ -13,6 +13,8 @@ packages:
   extra-dep: true
 - location: ../zone
   extra-dep: true
+- location: ../sphere
+  extra-dep: true
 - location: ../tasty-compare
   extra-dep: true
 - location: ../gap

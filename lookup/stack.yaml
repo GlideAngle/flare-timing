@@ -21,7 +21,11 @@ packages:
   extra-dep: true
 - location: ../kml
   extra-dep: true
+- location: ../igc
+  extra-dep: true
 - location: ../mask
+  extra-dep: true
+- location: ../span
   extra-dep: true
 - location: ../task
   extra-dep: true

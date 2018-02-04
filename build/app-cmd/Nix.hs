@@ -23,6 +23,7 @@ flyPkgs =
     , "lookup"
     , "mask"
     , "scribe"
+    , "sphere"
     , "task"
     , "track"
     , "units"

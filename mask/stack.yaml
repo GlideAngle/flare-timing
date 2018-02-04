@@ -19,7 +19,11 @@ packages:
   extra-dep: true
 - location: ../kml
   extra-dep: true
+- location: ../igc
+  extra-dep: true
 - location: ../track
+  extra-dep: true
+- location: ../sphere
   extra-dep: true
 - location: ../task
   extra-dep: true

@@ -10,7 +10,7 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RankNTypes #-}
 
-module Flight.Cylinder.Sample
+module Flight.Zone.Cylinder.Sample
     ( TrueCourse(..)
     , Samples(..)
     , Tolerance(..)

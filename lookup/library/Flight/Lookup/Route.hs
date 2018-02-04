@@ -12,7 +12,7 @@ import Control.Lens ((^?), element)
 import Data.UnitsOfMeasure (u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import Flight.Route (TaskRoutes(..), TaskTrack(..), TrackLine(..))
+import Flight.Route (TaskRoute(..), TaskTrack(..), TrackLine(..))
 import Flight.Distance (TaskDistance(..))
 import Flight.Comp (IxTask(..), RouteLookup(..))
 
@@ -26,11 +26,11 @@ fromKm dRawKm =
 
         dm = convert dKm :: Quantity Double [u| m |]
 
-routeLength :: Either String TaskRoutes -> RouteLookup
+routeLength :: Either String TaskRoute -> RouteLookup
 routeLength = RouteLookup . either (const Nothing) (Just . length)
 
-length :: TaskRoutes -> IxTask -> Maybe (TaskDistance Double)
-length TaskRoutes{taskRoutes} (IxTask i) = do
-    x <- join $ taskRoutes ^? element (fromIntegral i - 1)
-    d <- edgeToEdge x
+length :: TaskRoute -> IxTask -> Maybe (TaskDistance Double)
+length TaskRoute{taskRoute} (IxTask i) = do
+    x <- join $ taskRoute ^? element (fromIntegral i - 1)
+    d <- sphericalEdgeToEdge x
     return . fromKm . distance $ d
