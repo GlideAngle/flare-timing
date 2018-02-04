@@ -25,8 +25,7 @@ library:
   exposed-modules:
   - Flight.Zone
   - Flight.Zone.Raw
-  - Flight.Zone.Cylinder.Edge
-  - Flight.Zone.Cylinder.Sample
+  - Flight.Zone.Cylinder
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
 name: flight-zone

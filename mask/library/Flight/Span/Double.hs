@@ -16,7 +16,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Flight.Distance (PathDistance, SpanLatLng)
 import Flight.Zone (Zone, Bearing(..))
 import Flight.Zone.Raw (RawZone)
-import Flight.Zone.Cylinder.Edge (CircumSample)
+import Flight.Zone.Cylinder (CircumSample)
 import qualified Flight.Sphere.PointToPoint.Double as Dbl
     (distanceHaversine, distancePointToPoint, costSegment)
 import qualified Flight.Sphere.Cylinder.Double as Dbl (circumSample)

@@ -11,8 +11,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Data.Graph.Inductive.Graph (Node, LEdge)
 
 import Flight.Zone (Zone(..))
-import Flight.Zone.Cylinder.Sample (Tolerance, ZonePoint(..))
-import Flight.Zone.Cylinder.Edge (CircumSample)
+import Flight.Zone.Cylinder (Tolerance, ZonePoint(..), CircumSample)
 import Flight.Units ()
 import Flight.ShortestPath
     ( Zs(..)

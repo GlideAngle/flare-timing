@@ -31,13 +31,13 @@ import Flight.Zone
     )
 import Flight.Sphere.PointToPoint.Rational (distancePointToPoint, distanceHaversine)
 import Flight.Distance (TaskDistance(..), PathDistance(..))
-import Flight.Zone.Cylinder.Edge (CircumSample)
-import Flight.Zone.Cylinder.Sample
+import Flight.Zone.Cylinder
     ( TrueCourse(..)
     , ZonePoint(..)
     , Tolerance(..)
     , Samples(..)
     , SampleParams(..)
+    , CircumSample
     , orbit
     , radial
     , point

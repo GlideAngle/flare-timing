@@ -28,7 +28,7 @@ import Flight.LatLng.Raw (RawLatLng(..))
 import Flight.Distance (TaskDistance(..), PathDistance(..), SpanLatLng, toKm)
 import Flight.Zone (Zone(..), Bearing(..), center)
 import Flight.Zone.Raw (RawZone(..))
-import Flight.Zone.Cylinder.Edge (CircumSample)
+import Flight.Zone.Cylinder (CircumSample)
 import Flight.Sphere.Cylinder.Double (circumSample)
 import Flight.Sphere.Projected.Double (costEastNorth)
 import Flight.Sphere.PointToPoint.Double
