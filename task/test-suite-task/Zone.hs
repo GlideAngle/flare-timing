@@ -333,7 +333,7 @@ distanceEdge (ZonesTest xs) =
         Zs d -> correctCenter xs $ edgesSum d
         Z0 -> length xs == 0
         Z1 -> length xs == 1
-        Zx _ -> False
+        ZxNotSeparated -> not . separatedZones span $ xs
     where
         dEE =
             FS.distanceEdgeToEdge
@@ -346,27 +346,25 @@ distanceEdge (ZonesTest xs) =
                 xs
 
 distanceLess :: ZonesTest -> Bool
-distanceLess (ZonesTest xs)
-    | length xs < 3 = True
-    | otherwise =
-        case dEE of
-            Zs (PathDistance dCenter _) -> dCenter <= dPoint
-            Z0 -> length xs == 0
-            Z1 -> length xs == 1
-            Zx _ -> False
-        where
-            dEE =
-                FS.distanceEdgeToEdge
-                    span
-                    Rat.distancePointToPoint
-                    (Rat.costSegment span)
-                    cs
-                    cut
-                    mm10
-                    xs
+distanceLess (ZonesTest xs) =
+    case dEE of
+        Zs (PathDistance dCenter _) -> dCenter <= dPoint
+        Z0 -> length xs == 0
+        Z1 -> length xs == 1
+        ZxNotSeparated -> False
+    where
+        dEE =
+            FS.distanceEdgeToEdge
+                span
+                Rat.distancePointToPoint
+                (Rat.costSegment span)
+                cs
+                cut
+                mm10
+                xs
 
-            PathDistance dPoint _ =
-                Rat.distancePointToPoint span xs
+        PathDistance dPoint _ =
+            Rat.distancePointToPoint span xs
 
 mm10 :: Tolerance Rational
 mm10 = Tolerance $ 10 % 1000

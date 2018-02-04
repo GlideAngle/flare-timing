@@ -69,10 +69,10 @@ type GraphBuilder a =
 newtype PathCost a = PathCost a deriving (Eq, Ord, Num, Real)
 
 data Zs a
-    = Zs a -- ^ All good, here's the wrapped value
-    | Z0 -- ^ No items when 2+ required
-    | Z1 -- ^ Only 1 item when 2+ required
-    | Zx String -- ^ Something else wrong
+    = Zs a -- ^ All good, here's the wrapped value.
+    | Z0 -- ^ No items when 2+ required.
+    | Z1 -- ^ Only 1 item when 2+ required.
+    | ZxNotSeparated -- ^ Zones are not separated.
     deriving (Eq, Ord, Functor)
 
 deriving instance Show a => Show (Zs a)
@@ -111,7 +111,7 @@ shortestPath span distancePointToPoint cs builder angleCut tolerance xs =
             case zd of
                 (Z0, _) -> Z0
                 (Z1, _) -> Z1
-                (Zx msg, _) -> Zx msg
+                (ZxNotSeparated, _) -> ZxNotSeparated
                 (Zs (PathCost pcd), ptsCenterLine) ->
                     Zs PathDistance
                         { edgesSum = TaskDistance $ MkQuantity pcd
@@ -135,7 +135,7 @@ distance :: (Real a, Fractional a)
 distance _ _ _ _ _ _ [] = (Z0, [])
 distance _ _ _ _ _ _ [_] = (Z1, [])
 distance span distancePointToPoint cs builder cut tolerance xs
-    | not $ separatedZones span xs = (Zx "Zones not separated", [])
+    | not $ separatedZones span xs = (ZxNotSeparated, [])
     | otherwise =
         first Zs $
         case dist of
