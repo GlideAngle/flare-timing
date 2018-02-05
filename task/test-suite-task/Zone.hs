@@ -351,7 +351,7 @@ distanceLess (ZonesTest xs) =
         Zs (PathDistance dCenter _) -> dCenter <= dPoint
         Z0 -> length xs == 0
         Z1 -> length xs == 1
-        ZxNotSeparated -> False
+        ZxNotSeparated -> not . separatedZones span $ xs
     where
         dEE =
             FS.distanceEdgeToEdge

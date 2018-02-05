@@ -46,10 +46,5 @@ qcProps = testGroup "(checked by QuickCheck)"
     , QC.testProperty "Haversine distances, are not negative" distanceHaversine
     , QC.testProperty "Zone distances, point-to-point, are not negative" distancePoint
     , QC.testProperty "Zone distances, edge-to-edge, are not negative" distanceEdge
-
-    -- WARNING: Failing test
-    -- *** Failed! Falsifiable (after 1 test):
-    -- ZonesTest [Cylinder RawRadius [u| 1217141897911 % 5069634239094 m |] (0.0 rad, 0.0 rad),SemiCircle RawRadius [u| 4375311250133 % 1682149601746 m |] (0.0 rad, 0.0 rad),Cylinder RawRadius [u| 3207425451422 % 9655426298501 m |] (0.0 rad, 0.0 rad),Cylinder RawRadius [u| 3750019150447 % 1189407740192 m |] (0.0 rad, 0.0 rad)]
-    -- Use --quickcheck-replay=922972 to reproduce.
     , QC.testProperty "Zone distances, edge-to-edge are less or equal to point-to-point" distanceLess
     ]
