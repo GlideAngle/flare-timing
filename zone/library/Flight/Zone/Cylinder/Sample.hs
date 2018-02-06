@@ -9,6 +9,7 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE StandaloneDeriving #-}
 
 module Flight.Zone.Cylinder.Sample
     ( TrueCourse(..)
@@ -22,7 +23,7 @@ module Flight.Zone.Cylinder.Sample
 import Data.UnitsOfMeasure (u, fromRational', toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import Flight.LatLng (LatLng(..))
+import Flight.LatLng (LatLng(..), Lat, Lng)
 import Flight.Zone
     ( Zone(..)
     , Radius(..)
@@ -81,6 +82,15 @@ data ZonePoint a
         -- ^ A point on the edge of this zone at this distance from the
         -- origin.
         }
+    deriving Eq
+
+deriving instance
+    ( Show a
+    , Real a
+    , Show (Lat a [u| rad |])
+    , Show (Lng a [u| rad |])
+    )
+    => Show (ZonePoint a)
 
 fromRationalZonePoint :: (Eq a, Fractional a)
                       => ZonePoint Rational
