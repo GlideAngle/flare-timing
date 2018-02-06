@@ -19,7 +19,7 @@ import qualified Data.Number.FixedFunctions as F
 import Data.List (inits)
 import Test.Tasty (TestTree, TestName, testGroup)
 import Test.Tasty.HUnit as HU ((@?=), (@?), testCase)
-import Data.UnitsOfMeasure ((/:), u, convert)
+import Data.UnitsOfMeasure ((/:), (-:), u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Data.Bifunctor.Flip (Flip(..))
 
@@ -29,7 +29,7 @@ import Flight.LatLng.Rational (Epsilon(..), defEps)
 import Flight.Distance (TaskDistance(..), PathDistance(..), SpanLatLng, fromKms)
 import Flight.Zone (Bearing(..), Radius(..), Zone(..))
 import Flight.Zone.Cylinder
-    (Samples(..), SampleParams(..), Tolerance(..), CircumSample)
+    (Samples(..), SampleParams(..), Tolerance(..), CircumSample, ZonePoint(..))
 import qualified Flight.Sphere.PointToPoint.Rational as Rat
     (distanceHaversine, distancePointToPoint, costSegment)
 import qualified Flight.Sphere.Cylinder.Rational as Rat (circumSample)
@@ -88,66 +88,85 @@ circumSampleUnits = testGroup "Points just within the zone"
     [ testGroup "Outside the zone."
         [ HU.testCase
             "No points > 0mm outside a 40m cylinder when searching within 1mm" $
-            filter (> 40 + unmilli 0)
-            (snd $ cs (sampleParams { spTolerance = mm1 }) br Nothing (Cylinder (Radius $ MkQuantity 40) ll))
+            zpFilter (>) ll ([u| 40 m |])
+            (fst $ cs (sampleParams { spTolerance = mm1 }) br Nothing (Cylinder (Radius $ MkQuantity 40) ll))
             @?= [] 
 
         , HU.testCase
             "No points > 0mm outside a 400m cylinder when searching within 1mm" $
-            filter (> 400 + unmilli 0)
-            (snd $ cs (sampleParams { spTolerance = mm1 }) br Nothing (Cylinder (Radius $ MkQuantity 400) ll))
+            zpFilter (>) ll ([u| 400 m |])
+            (fst $ cs (sampleParams { spTolerance = mm1 }) br Nothing (Cylinder (Radius $ MkQuantity 400) ll))
             @?= [] 
 
         , HU.testCase
             "No points > 0mm outside a 1km cylinder when searching within 10mm" $
-            filter (> unkilo 1 + unmilli 0) 
-            (snd $ cs (sampleParams { spTolerance = mm10 }) br Nothing (Cylinder (Radius $ MkQuantity $ unkilo 1) ll))
+            zpFilter (>) ll (convert [u| 1 km |]) 
+            (fst $ cs (sampleParams { spTolerance = mm10 }) br Nothing (Cylinder (Radius $ MkQuantity $ unkilo 1) ll))
             @?= [] 
 
         , HU.testCase
             "No points > 0mm outside a 10km cylinder when searching within 100mm" $
-            filter (> unkilo 10 + unmilli 0)
-            (snd $ cs (sampleParams { spTolerance = mm100 }) br Nothing (Cylinder (Radius $ MkQuantity $ unkilo 10) ll))
+            zpFilter (>) ll (convert [u| 10 km |])
+            (fst $ cs (sampleParams { spTolerance = mm100 }) br Nothing (Cylinder (Radius $ MkQuantity $ unkilo 10) ll))
             @?= [] 
 
         , HU.testCase 
             "No points > 0m outside a 100km cylinder when searching within 100m" $
-            filter (> unkilo 100 + 0)
-            (snd $ cs (sampleParams { spTolerance = m100 }) br Nothing (Cylinder (Radius $ MkQuantity $ unkilo 100) ll))
+            zpFilter (>) ll (convert [u| 100 km |])
+            (fst $ cs (sampleParams { spTolerance = m100 }) br Nothing (Cylinder (Radius $ MkQuantity $ unkilo 100) ll))
             @?= [] 
         ]
     , testGroup "Inside the zone."
         [ HU.testCase
             "No points > 1mm inside a 40m cylinder when searching within 1mm" $
-            filter (< 40.0 - unmilli 1)
-            (snd $ cs (sampleParams { spTolerance = mm1 }) br Nothing (Cylinder (Radius $ MkQuantity 40) ll))
+            zpFilter (<) ll ([u| 40 m |] -: convert [u| 1 mm |])
+            (fst $ cs (sampleParams { spTolerance = mm1 }) br Nothing (Cylinder (Radius $ MkQuantity 40) ll))
             @?= [] 
 
         , HU.testCase
             "No points > 1mm inside a 400m cylinder when searching within 1mm" $
-            filter (< 400.0 - unmilli 1)
-            (snd $ cs (sampleParams { spTolerance = mm1 }) br Nothing (Cylinder (Radius $ MkQuantity 400) ll))
+            zpFilter (<) ll ([u| 400 m |] -: convert [u| 1 mm |])
+            (fst $ cs (sampleParams { spTolerance = mm1 }) br Nothing (Cylinder (Radius $ MkQuantity 400) ll))
             @?= [] 
 
         , HU.testCase
             "No points > 9mm inside a 1km cylinder when searching within 10mm" $
-            filter (< unkilo 1 - unmilli 9)
-            (snd $ cs (sampleParams { spTolerance = mm10 }) br Nothing (Cylinder (Radius $ MkQuantity $ unkilo 1) ll))
+            zpFilter (<) ll (convert [u| 1 km |] -: convert [u| 9 mm |])
+            (fst $ cs (sampleParams { spTolerance = mm10 }) br Nothing (Cylinder (Radius $ MkQuantity $ unkilo 1) ll))
             @?= [] 
 
         , HU.testCase
             "No points > 97mm inside a 10km cylinder when searching within 100mm" $
-            filter (< unkilo 10 - unmilli 97)
-            (snd $ cs (sampleParams { spTolerance = mm100 }) br Nothing (Cylinder (Radius $ MkQuantity $ unkilo 10) ll))
+            zpFilter (<) ll (convert [u| 10 km |] -: convert [u| 97 mm |])
+            (fst $ cs (sampleParams { spTolerance = mm100 }) br Nothing (Cylinder (Radius $ MkQuantity $ unkilo 10) ll))
             @?= [] 
 
         , HU.testCase
             "No points > 85m inside a 100km cylinder when searching within 100m" $
-            filter (< unkilo 100 - 85)
-            (snd $ cs (sampleParams { spTolerance = m100 }) br Nothing (Cylinder (Radius $ MkQuantity $ unkilo 100) ll))
+            zpFilter (<) ll (convert [u| 100 km |] -: [u| 85 m |])
+            (fst $ cs (sampleParams { spTolerance = m100 }) br Nothing (Cylinder (Radius $ MkQuantity $ unkilo 100) ll))
             @?= [] 
         ]
     ]
+
+zpFilter
+    :: (Quantity Rational [u| m |] -> Quantity Rational [u| m |] -> Bool)
+    -> LatLng Rational [u| rad |]
+    -> Quantity Rational [u| m |]
+    -> [ZonePoint Rational]
+    -> [ZonePoint Rational]
+zpFilter cmp origin d =
+    filter (\x -> zpDistance origin x `cmp` d)
+
+zpDistance
+    :: LatLng Rational [u| rad |]
+    -> ZonePoint Rational
+    -> Quantity Rational [u| m |]
+zpDistance origin ZonePoint{point} =
+    d
+    where
+        TaskDistance d =
+            edgesSum $ Rat.distancePointToPoint span [Point origin, Point point]
 
 -- | The input pair is in degrees while the output is in radians.
 toLatLngDbl :: (Double, Double) -> LatLng Double [u| rad |]
@@ -195,9 +214,6 @@ forbesUnits = testGroup "Forbes 2011/2012 distances"
     , day8PartUnits
     , day8Units
     ]
-
-unmilli :: Fractional a => a -> a
-unmilli x = x / 1000
 
 unkilo :: Num a => a -> a
 unkilo x = x * 1000
