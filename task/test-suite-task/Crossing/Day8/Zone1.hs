@@ -23,31 +23,38 @@ import Flight.Distance (TaskDistance(..))
 import qualified Flight.Sphere.PointToPoint.Double as Dbl (distanceHaversine)
 import EdgeToEdge (toLatLngDbl)
 
---    - - crossingPair:
---          - time: 2012-01-14T02:29:12Z
+--      zonesCrossNominees:
+--      - - crossingPair:
+--          - fix: 25
+--            time: 2012-01-14T02:29:12Z
 --            lat: -33.36088699
 --            lng: 147.93120899
---          - time: 2012-01-14T02:29:16Z
+--          - fix: 26
+--            time: 2012-01-14T02:29:16Z
 --            lat: -33.360415
 --            lng: 147.93073699
 --          inZone:
 --          - true
 --          - false
 --        - crossingPair:
---          - time: 2012-01-14T07:57:44Z
+--          - fix: 4953
+--            time: 2012-01-14T07:57:44Z
 --            lat: -33.36019999
 --            lng: 147.930651
---          - time: 2012-01-14T07:57:48Z
+--          - fix: 4954
+--            time: 2012-01-14T07:57:48Z
 --            lat: -33.360951
 --            lng: 147.931488
 --          inZone:
 --          - false
 --          - true
 --        - crossingPair:
---          - time: 2012-01-14T07:57:52Z
+--          - fix: 4955
+--            time: 2012-01-14T07:57:52Z
 --            lat: -33.36168099
 --            lng: 147.93226
---          - time: 2012-01-14T07:57:56Z
+--          - fix: 4956
+--            time: 2012-01-14T07:57:56Z
 --            lat: -33.36219499
 --            lng: 147.93298999
 --          inZone:
@@ -69,15 +76,15 @@ units = testGroup "Task 8 Zone 1 Crossings"
         r = unQuantity [u| 100m |]
         x = toLatLngDbl (negate 33.36137, 147.93207)
 
-        -- 2012-01-14T02:29:12/16
+        -- 2012-01-14T02:29:12/16 (true/false)
         y1 = toLatLngDbl (negate 33.36088699, 147.93120899)
         z1 = toLatLngDbl (negate 33.360415, 147.93073699)
 
-        -- 2012-01-14T07:57:44/48
+        -- 2012-01-14T07:57:44/48 (false/true)
         y2 = toLatLngDbl (negate 33.36019999, 147.930651)
         z2 = toLatLngDbl (negate 33.360951, 147.931488)
 
-        -- 2012-01-14T07:57:52/56
+        -- 2012-01-14T07:57:52/56 (true/false)
         y3 = toLatLngDbl (negate 33.36168099, 147.93226)
         z3 = toLatLngDbl (negate 33.36219499, 147.93298999)
 

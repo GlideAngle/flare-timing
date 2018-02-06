@@ -23,6 +23,7 @@ import Flight.Distance (TaskDistance(..))
 import qualified Flight.Sphere.PointToPoint.Double as Dbl (distanceHaversine)
 import EdgeToEdge (toLatLngDbl)
 
+--      zonesCrossNominees:
 --     - - crossingPair:
 --          - time: 2012-01-14T06:39:24Z
 --            lat: -33.132598
@@ -56,11 +57,11 @@ units = testGroup "Task 8 Zone 4 Crossings"
         r = unQuantity [u| 400m |]
         x = toLatLngDbl (negate 33.12908, 147.57322999)
 
-        -- 2012-01-14T06:39:24/28
+        -- 2012-01-14T06:39:24/28 (false/true)
         y1 = toLatLngDbl (negate 33.132598, 147.57552599)
         z1 = toLatLngDbl (negate 33.13195499, 147.57574099)
 
-        -- 2012-01-14T06:39:36/40
+        -- 2012-01-14T06:39:36/40 (true/false)
         y2 = toLatLngDbl (negate 33.130946, 147.576771)
         z2 = toLatLngDbl (negate 33.130817, 147.57756499)
 

@@ -14,7 +14,7 @@ crossingUnits = testGroup "Zone edge shortest path unit tests"
     ]
 
 forbesUnits :: TestTree
-forbesUnits = testGroup "Forbes 2011/2012 crossings"
+forbesUnits = testGroup "Forbes 2011/2012 crossings, pilot Lukas Bader"
     [ D8Z1.units
     , D8Z2.units
     , D8Z3.units
