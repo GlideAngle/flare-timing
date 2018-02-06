@@ -237,13 +237,13 @@ day1PartUnits = testGroup "Task 1 [...]"
                 ]
 
             p1 = take 2 xs
-            d1 = fromKms [u| 54.76 km |]
+            d1 = fromKms [u| 54.755578 km |]
 
             p2 = take 2 $ drop 1 xs
-            d2 = fromKms [u| 59.28 km |]
+            d2 = fromKms [u| 59.276627 km |]
 
             p3 = take 2 $ drop 2 xs
-            d3 = fromKms [u| 20.89 km |]
+            d3 = fromKms [u| 20.88547 km |]
 
 day2PartUnits :: TestTree
 day2PartUnits = testGroup "Task 2 [...]"
@@ -261,13 +261,13 @@ day2PartUnits = testGroup "Task 2 [...]"
                 ]
 
             p1 = take 2 xs
-            d1 = fromKms [u| 51.29 km |]
+            d1 = fromKms [u| 51.290669 km |]
 
             p2 = take 2 $ drop 1 xs
-            d2 = fromKms [u| 40.57 km |]
+            d2 = fromKms [u| 40.569544 km |]
 
             p3 = take 2 $ drop 2 xs
-            d3 = fromKms [u| 38.31 km |]
+            d3 = fromKms [u| 38.30752 km |]
 
 day3PartUnits :: TestTree
 day3PartUnits = testGroup "Task 3 [...]"
@@ -285,13 +285,13 @@ day3PartUnits = testGroup "Task 3 [...]"
                 ]
 
             p1 = take 2 xs
-            d1 = fromKms [u| 78.15 km |]
+            d1 = fromKms [u| 78.147093 km |]
 
             p2 = take 2 $ drop 1 xs
-            d2 = fromKms [u| 27.78 km |]
+            d2 = fromKms [u| 27.780099 km |]
 
             p3 = take 2 $ drop 2 xs
-            d3 = fromKms [u| 79.72 km |]
+            d3 = fromKms [u| 79.716223 km |]
 
 day4PartUnits :: TestTree
 day4PartUnits = testGroup "Task 4 [...]"
@@ -308,10 +308,10 @@ day4PartUnits = testGroup "Task 4 [...]"
 
             -- NOTE: Use p1' to avoid an hlint duplication warning.
             p1' = take 2 xs
-            d1 = fromKms [u| 51.29 km |]
+            d1 = fromKms [u| 51.290669 km |]
 
             p2 = take 2 $ drop 1 xs
-            d2 = fromKms [u| 105.9 km |]
+            d2 = fromKms [u| 105.87255 km |]
 
 day5PartUnits :: TestTree
 day5PartUnits = testGroup "Task 5 [...]"
@@ -327,10 +327,10 @@ day5PartUnits = testGroup "Task 5 [...]"
                 ]
 
             p1 = take 2 xs
-            d1 = fromKms [u| 92.6 km |]
+            d1 = fromKms [u| 92.601904 km |]
 
             p2 = take 2 $ drop 1 xs
-            d2 = fromKms [u| 128.9 km |]
+            d2 = fromKms [u| 128.87562 km |]
 
 day6PartUnits :: TestTree
 day6PartUnits = testGroup "Task 6 [...]"
@@ -346,10 +346,10 @@ day6PartUnits = testGroup "Task 6 [...]"
                 ]
 
             p1 = take 2 xs
-            d1 = fromKms [u| 130.7 km |]
+            d1 = fromKms [u| 130.665489 km |]
 
             p2 = take 2 $ drop 1 xs
-            d2 = fromKms [u| 75.18 km |]
+            d2 = fromKms [u| 75.17947 km |]
 
 day7PartUnits :: TestTree
 day7PartUnits = testGroup "Task 7 [...]"
@@ -367,13 +367,13 @@ day7PartUnits = testGroup "Task 7 [...]"
                 ]
 
             p1 = take 2 xs
-            d1 = fromKms [u| 57.37 km |]
+            d1 = fromKms [u| 57.365312 km |]
 
             p2 = take 2 $ drop 1 xs
-            d2 = fromKms [u| 104.5 km |]
+            d2 = fromKms [u| 104.509732 km |]
 
             p3 = take 2 $ drop 2 xs
-            d3 = fromKms [u| 21.61 km |]
+            d3 = fromKms [u| 21.613886 km |]
 
 
 day8PartUnits :: TestTree
@@ -392,20 +392,20 @@ day8PartUnits = testGroup "Task 8 [...]"
                 ]
 
             p1 = take 2 xs
-            d1 = fromKms [u| 57.43 km |]
+            d1 = fromKms [u| 57.427511 km |]
 
             p2 = take 2 $ drop 1 xs
-            d2 = fromKms [u| 69.55 km |]
+            d2 = fromKms [u| 69.547668 km |]
 
             p3 = take 2 $ drop 2 xs
-            d3 = fromKms [u| 42.13 km |]
+            d3 = fromKms [u| 42.131961 km |]
 
 mkDayUnits :: TestName
            -> [Zone Rational]
            -> TaskDistance Rational
            -> [TaskDistance Rational]
            -> TestTree
-mkDayUnits title pDay dDay dsDay = testGroup title
+mkDayUnits title pDay dDay' dsDay' = testGroup title
     [ HU.testCase "zones are separated" $ separatedZones span pDay @?= True
 
     , HU.testCase
@@ -433,6 +433,9 @@ mkDayUnits title pDay dDay dsDay = testGroup title
         distLess eeDayInits dsDay @? eeDayInits .<=. dsDay
     ]
     where
+        dDay = tdRound dDay'
+        dsDay = tdRound <$> dsDay'
+
         pp :: [Zone Rational] -> PathDistance Rational
         pp = Rat.distancePointToPoint span
 
@@ -443,22 +446,26 @@ mkDayUnits title pDay dDay dsDay = testGroup title
                 _ -> PathDistance (TaskDistance [u| 0 m |]) []
 
         ppDay :: TaskDistance Rational
-        ppDay = edgesSum $ pp pDay
+        ppDay = tdRound . edgesSum $ pp pDay
 
         eeDay :: TaskDistance Rational
-        eeDay = edgesSum $ ee pDay
+        eeDay = tdRound . edgesSum $ ee pDay
 
         pDayInits :: [[Zone Rational]]
         pDayInits = drop 1 $ inits pDay
 
         ppDayInits :: [TaskDistance Rational]
-        ppDayInits = edgesSum . pp <$> pDayInits
+        ppDayInits = tdRound . edgesSum . pp <$> pDayInits
 
         eeDayInits :: [TaskDistance Rational]
-        eeDayInits = edgesSum . ee <$> pDayInits
+        eeDayInits = tdRound . edgesSum . ee <$> pDayInits
 
         distLess :: Ord a => [a] -> [a] -> Bool
-        distLess xs ys = take 1 (reverse xs) < take 1 (reverse ys)
+        distLess xs ys = take 1 (reverse xs) <= take 1 (reverse ys)
+
+tdRound :: TaskDistance Rational -> TaskDistance Rational
+tdRound (TaskDistance (MkQuantity d)) =
+    TaskDistance . MkQuantity . dpRound 2 $ d
 
 day1Units :: TestTree
 day1Units = mkDayUnits "Task 1" pDay1 dDay1 dsDay1
@@ -485,6 +492,31 @@ day8Units :: TestTree
 day8Units = mkDayUnits "Task 8" pDay8 dDay8 dsDay8
 
 {-
+NOTE: The task distances show below are taken from the competition *.fsdb file
+at the path /Fs/FsCompetition/FsTasks/FsTask/FsTaskScoreParams/FsTaskDistToTp.
+The first distance is not 9.9 kms, 10 kms - 100m.
+
+Some flight instruments use WGS84 and others use the FAI spheriod. To
+accomodate this, there is a tolerance of either 0.01% or 0.5% used, depending
+on the competition. For category 1 events since 2015-01-01 it is 0.01%.
+Category 2 events can elect to use the wider margin. This tolerance is used for
+working out if tracks reach control zones.
+
+The optimised route is worked out by FS in 2D space from a UTM projection. This
+accounts for the discrepency with errors coming from choosing wrong waypoints
+for the optimal route and from the conversion of these points back to the FAI
+sphere.
+
+TODO: Find out why the first distance is 9.882 and not 9.9 km.
+<FsTaskDistToTp tp_no="1" distance="0.000" />
+<FsTaskDistToTp tp_no="2" distance="9.882" />
+<FsTaskDistToTp tp_no="3" distance="54.254" />
+<FsTaskDistToTp tp_no="4" distance="112.779" />
+<FsTaskDistToTp tp_no="5" distance="133.357" />
+
+The unit tests here are not comparing to distances of FS but to point to point
+distances worked out on the FAI sphere.
+
 SEE: http://www.stevemorse.org/nearest/distancebatch.html
 SEE: http://www.movable-type.co.uk/scripts/latlong-vincenty.html
 SEE: http://www.anycalculator.com/longitude.htm
@@ -519,6 +551,26 @@ NOTE: Point to point distances using Vincenty method.
 
 134.7 - 10 - 0.4
 => 124.30
+
+- sphericalPointToPoint:
+    distance: 134.917675
+    legs:
+    - 54.755578
+    - 59.276627
+    - 20.88547
+    legsSum:
+    - 54.755578
+    - 114.032205
+    - 134.917675
+    waypoints:
+    - lat: -33.36137
+      lng: 147.93207
+    - lat: -33.85372998
+      lng: 147.94194999
+    - lat: -33.4397
+      lng: 148.34532999
+    - lat: -33.61965
+      lng: 148.40989999
 -}
 pDay1 :: [Zone Rational]
 pDay1 =
@@ -530,37 +582,16 @@ pDay1 =
     ]
 
 dDay1 :: TaskDistance Rational
-dDay1 = fromKms [u| 133.357 km |]
+dDay1 = fromKms [u| 134.917675 km |]
 
-{-
-NOTE: The task distances show below are taken from the competition *.fsdb file at the
-path /Fs/FsCompetition/FsTasks/FsTask/FsTaskScoreParams/FsTaskDistToTp. The first
-distance is not 9.9 kms, 10 kms - 100m.
-
-Some flight instruments use WGS84 and others use the FAI spheriod. To accomodate this,
-there is a tolerance of either 0.01% or 0.5% used, depending on the competition. For
-category 1 events since 2015-01-01 it is 0.01%. Category 2 events can elect to use the
-wider margin. This tolerance is used for working out if tracks reach control zones.
-
-The optimised route is worked out in 2D space from a UTM projection. This accounts for
-the discrepency with errors coming from choosing wrong waypoints for the optimal route
-and from the conversion of these points back to the FAI sphere.
-
-TODO: Find out why the first distance is 9.882 and not 9.9 km.
-<FsTaskDistToTp tp_no="1" distance="0.000" />
-<FsTaskDistToTp tp_no="2" distance="9.882" />
-<FsTaskDistToTp tp_no="3" distance="54.254" />
-<FsTaskDistToTp tp_no="4" distance="112.779" />
-<FsTaskDistToTp tp_no="5" distance="133.357" />
--}
 dsDay1 :: [TaskDistance Rational]
 dsDay1 =
     fromKms . MkQuantity <$>
-        [ 0.000
-        , 9.882
-        , 54.254
-        , 112.779
-        , 133.357
+        [ 0
+        , 9.9
+        , 54.755578
+        , 114.032205
+        , 134.917675
         ]
 
 {-
@@ -593,6 +624,26 @@ NOTE: Point to point distances using Vincenty method.
 
 130.15 - 5 - 0.4
 => 124.75
+
+- sphericalPointToPoint:
+    distance: 130.167733
+    legs:
+    - 51.290669
+    - 40.569544
+    - 38.30752
+    legsSum:
+    - 51.290669
+    - 91.860213
+    - 130.167733
+    waypoints:
+    - lat: -33.36137
+      lng: 147.93207
+    - lat: -32.90223
+      lng: 147.98491999
+    - lat: -32.9536
+      lng: 147.55457
+    - lat: -33.12592
+      lng: 147.91042999
 -}
 pDay2 :: [Zone Rational]
 pDay2 =
@@ -604,16 +655,16 @@ pDay2 =
     ]
 
 dDay2 :: TaskDistance Rational
-dDay2 = fromKms [u| 128.284 km |]
+dDay2 = fromKms [u| 130.167733 km |]
 
 dsDay2 :: [TaskDistance Rational]
 dsDay2 =
     fromKms . MkQuantity <$>
         [ 0.000
-        , 4.891
-        , 50.789
-        , 90.732
-        , 128.284
+        , 4.9
+        , 51.290669
+        , 91.860213
+        , 130.167733
         ]
 
 {-
@@ -646,6 +697,26 @@ NOTE: Point to point distances using Vincenty method.
 
 185.35 - 25 - 0.4
 => 159.95
+
+- sphericalPointToPoint:
+    distance: 185.643415
+    legs:
+    - 78.147093
+    - 27.780099
+    - 79.716223
+    legsSum:
+    - 78.147093
+    - 105.927192
+    - 185.643415
+    waypoints:
+    - lat: -33.36137
+      lng: 147.93207
+    - lat: -34.02107
+      lng: 148.22329998
+    - lat: -34.11795
+      lng: 148.50129999
+    - lat: -34.82197
+      lng: 148.66542999
 -}
 pDay3 :: [Zone Rational]
 pDay3 =
@@ -657,16 +728,16 @@ pDay3 =
     ]
 
 dDay3 :: TaskDistance Rational
-dDay3 = fromKms [u| 183.856 km |]
+dDay3 = fromKms [u| 185.643415 km |]
 
 dsDay3 :: [TaskDistance Rational]
 dsDay3 =
     fromKms . MkQuantity <$>
         [ 0.000
-        , 24.854
-        , 77.646
-        , 105.113
-        , 183.856
+        , 24.9
+        , 78.147093
+        , 105.927192
+        , 185.643415
         ]
 
 {-
@@ -696,6 +767,22 @@ NOTE: Point to point distances using Vincenty method.
 
 157.16 - 15 - 0.4
 => 141.76
+
+- sphericalPointToPoint:
+    distance: 157.16322
+    legs:
+    - 51.290669
+    - 105.87255
+    legsSum:
+    - 51.290669
+    - 157.16322
+    waypoints:
+    - lat: -33.36137
+      lng: 147.93207
+    - lat: -32.90223
+      lng: 147.98491999
+    - lat: -32.46363
+      lng: 148.989
 -}
 pDay4 :: [Zone Rational]
 pDay4 =
@@ -706,15 +793,15 @@ pDay4 =
     ]
 
 dDay4 :: TaskDistance Rational
-dDay4 = fromKms [u| 144.030 km |]
+dDay4 = fromKms [u| 157.16322 km |]
 
 dsDay4 :: [TaskDistance Rational]
 dsDay4 =
     fromKms . MkQuantity <$>
         [ 0.000
-        , 14.873
-        , 26.119
-        , 144.030
+        , 14.9
+        , 51.290669
+        , 157.16322
         ]
 
 {-
@@ -744,6 +831,22 @@ NOTE: Point to point distances using Vincenty method.
 
 221.4 - 15 - 0.4
 => 206.0
+
+- sphericalPointToPoint:
+    distance: 221.477524
+    legs:
+    - 92.601904
+    - 128.87562
+    legsSum:
+    - 92.601904
+    - 221.477524
+    waypoints:
+    - lat: -33.36137
+      lng: 147.93207
+    - lat: -32.56607998
+      lng: 148.22657
+    - lat: -32.01639998
+      lng: 149.43362998
 -}
 pDay5 :: [Zone Rational]
 pDay5 =
@@ -754,15 +857,15 @@ pDay5 =
     ]
 
 dDay5 :: TaskDistance Rational
-dDay5 = fromKms [u| 217.389 km |]
+dDay5 = fromKms [u| 221.477524 km |]
 
 dsDay5 :: [TaskDistance Rational]
 dsDay5 =
     fromKms . MkQuantity <$>
         [ 0.000
-        , 14.873
-        , 87.489
-        , 217.389
+        , 14.9
+        , 92.601904
+        , 221.477524
         ]
 
 {-
@@ -792,6 +895,22 @@ NOTE: Point to point distances using Vincenty method.
 
 205.43 - 15 - 0.4
 => 190.03
+
+- sphericalPointToPoint:
+    distance: 205.844959
+    legs:
+    - 130.665489
+    - 75.17947
+    legsSum:
+    - 130.665489
+    - 205.844959
+    waypoints:
+    - lat: -33.36137
+      lng: 147.93207
+    - lat: -32.19498
+      lng: 147.76218
+    - lat: -31.69322998
+      lng: 148.29623
 -}
 pDay6 :: [Zone Rational]
 pDay6 =
@@ -802,15 +921,15 @@ pDay6 =
     ]
 
 dDay6 :: TaskDistance Rational
-dDay6 = fromKms [u| 201.822 km |]
+dDay6 = fromKms [u| 205.844959 km |]
 
 dsDay6 :: [TaskDistance Rational]
 dsDay6 =
     fromKms . MkQuantity <$>
         [ 0.000
-        , 14.873
-        , 125.550
-        , 201.822
+        , 14.9
+        , 130.665489
+        , 205.844959
         ]
 
 {-
@@ -843,6 +962,26 @@ NOTE: Point to point distances using Vincenty method.
 
 183.60 - 10 - 0.4
 => 173.2
+
+- sphericalPointToPoint:
+    distance: 183.488931
+    legs:
+    - 57.365312
+    - 104.509732
+    - 21.613886
+    legsSum:
+    - 57.365312
+    - 161.875045
+    - 183.488931
+    waypoints:
+    - lat: -33.36137
+      lng: 147.93207
+    - lat: -32.9536
+      lng: 147.55457
+    - lat: -32.76051998
+      lng: 148.64957999
+    - lat: -32.93585
+      lng: 148.74947
 -}
 pDay7 :: [Zone Rational]
 pDay7 =
@@ -854,16 +993,16 @@ pDay7 =
     ]
 
 dDay7 :: TaskDistance Rational
-dDay7 = fromKms [u| 174.525 km |]
+dDay7 = fromKms [u| 183.488931 km |]
 
 dsDay7 :: [TaskDistance Rational]
 dsDay7 =
     fromKms . MkQuantity <$>
         [ 0.000
-        , 9.882
-        , 52.259
-        , 153.014
-        , 174.525
+        , 9.9
+        , 57.365312
+        , 161.875045
+        , 183.488931
         ]
 
 {-
@@ -896,6 +1035,26 @@ NOTE: Point to point distances using Vincenty method.
 
 169.92 - 10 - 0.4
 => 159.52
+
+- sphericalPointToPoint:
+    distance: 169.10714
+    legs:
+    - 57.427511
+    - 69.547668
+    - 42.131961
+    legsSum:
+    - 57.427511
+    - 126.975179
+    - 169.10714
+    waypoints:
+    - lat: -33.36137
+      lng: 147.93207
+    - lat: -33.75343
+      lng: 147.52864998
+    - lat: -33.12908
+      lng: 147.57322998
+    - lat: -33.36099999
+      lng: 147.93149998
 -}
 pDay8 :: [Zone Rational]
 pDay8 =
@@ -907,16 +1066,16 @@ pDay8 =
     ]
 
 dDay8 :: TaskDistance Rational
-dDay8 = fromKms [u| 158.848 km |]
+dDay8 = fromKms [u| 169.10714 km |]
 
 dsDay8 :: [TaskDistance Rational]
 dsDay8 =
     fromKms . MkQuantity <$>
         [ 0.000
-        , 9.882
-        , 52.323
-        , 117.028
-        , 158.848
+        , 9.9
+        , 57.427511
+        , 126.975179
+        , 169.10714
         ]
 
 distanceEdgeToEdge' :: [Zone Rational] -> Zs (PathDistance Rational)
