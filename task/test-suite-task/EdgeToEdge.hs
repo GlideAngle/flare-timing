@@ -89,62 +89,62 @@ circumSampleUnits = testGroup "Points just within the zone"
         [ HU.testCase
             "No points > 0mm outside a 40m cylinder when searching within 1mm" $
             zpFilter (>) ll ([u| 40 m |])
-            (fst $ cs (sampleParams { spTolerance = mm1 }) br Nothing (Cylinder (Radius $ MkQuantity 40) ll))
+            (fst $ cs (sampleParams { spTolerance = mm1 }) br Nothing (Cylinder (Radius $ [u| 40 m |]) ll))
             @?= [] 
 
         , HU.testCase
             "No points > 0mm outside a 400m cylinder when searching within 1mm" $
             zpFilter (>) ll ([u| 400 m |])
-            (fst $ cs (sampleParams { spTolerance = mm1 }) br Nothing (Cylinder (Radius $ MkQuantity 400) ll))
+            (fst $ cs (sampleParams { spTolerance = mm1 }) br Nothing (Cylinder (Radius $ [u| 400 m |]) ll))
             @?= [] 
 
         , HU.testCase
             "No points > 0mm outside a 1km cylinder when searching within 10mm" $
             zpFilter (>) ll (convert [u| 1 km |]) 
-            (fst $ cs (sampleParams { spTolerance = mm10 }) br Nothing (Cylinder (Radius $ MkQuantity $ unkilo 1) ll))
+            (fst $ cs (sampleParams { spTolerance = mm10 }) br Nothing (Cylinder (Radius $ convert [u| 1 km |]) ll))
             @?= [] 
 
         , HU.testCase
             "No points > 0mm outside a 10km cylinder when searching within 100mm" $
             zpFilter (>) ll (convert [u| 10 km |])
-            (fst $ cs (sampleParams { spTolerance = mm100 }) br Nothing (Cylinder (Radius $ MkQuantity $ unkilo 10) ll))
+            (fst $ cs (sampleParams { spTolerance = mm100 }) br Nothing (Cylinder (Radius $ convert [u| 10 km |]) ll))
             @?= [] 
 
         , HU.testCase 
             "No points > 0m outside a 100km cylinder when searching within 100m" $
             zpFilter (>) ll (convert [u| 100 km |])
-            (fst $ cs (sampleParams { spTolerance = m100 }) br Nothing (Cylinder (Radius $ MkQuantity $ unkilo 100) ll))
+            (fst $ cs (sampleParams { spTolerance = m100 }) br Nothing (Cylinder (Radius $ convert [u| 100 km |]) ll))
             @?= [] 
         ]
     , testGroup "Inside the zone."
         [ HU.testCase
             "No points > 1mm inside a 40m cylinder when searching within 1mm" $
             zpFilter (<) ll ([u| 40 m |] -: convert [u| 1 mm |])
-            (fst $ cs (sampleParams { spTolerance = mm1 }) br Nothing (Cylinder (Radius $ MkQuantity 40) ll))
+            (fst $ cs (sampleParams { spTolerance = mm1 }) br Nothing (Cylinder (Radius $ [u| 40 m |]) ll))
             @?= [] 
 
         , HU.testCase
             "No points > 1mm inside a 400m cylinder when searching within 1mm" $
             zpFilter (<) ll ([u| 400 m |] -: convert [u| 1 mm |])
-            (fst $ cs (sampleParams { spTolerance = mm1 }) br Nothing (Cylinder (Radius $ MkQuantity 400) ll))
+            (fst $ cs (sampleParams { spTolerance = mm1 }) br Nothing (Cylinder (Radius $ [u| 400 m |]) ll))
             @?= [] 
 
         , HU.testCase
             "No points > 9mm inside a 1km cylinder when searching within 10mm" $
             zpFilter (<) ll (convert [u| 1 km |] -: convert [u| 9 mm |])
-            (fst $ cs (sampleParams { spTolerance = mm10 }) br Nothing (Cylinder (Radius $ MkQuantity $ unkilo 1) ll))
+            (fst $ cs (sampleParams { spTolerance = mm10 }) br Nothing (Cylinder (Radius $ convert [u| 1 km |]) ll))
             @?= [] 
 
         , HU.testCase
             "No points > 97mm inside a 10km cylinder when searching within 100mm" $
             zpFilter (<) ll (convert [u| 10 km |] -: convert [u| 97 mm |])
-            (fst $ cs (sampleParams { spTolerance = mm100 }) br Nothing (Cylinder (Radius $ MkQuantity $ unkilo 10) ll))
+            (fst $ cs (sampleParams { spTolerance = mm100 }) br Nothing (Cylinder (Radius $ convert [u| 10 km |]) ll))
             @?= [] 
 
         , HU.testCase
             "No points > 85m inside a 100km cylinder when searching within 100m" $
             zpFilter (<) ll (convert [u| 100 km |] -: [u| 85 m |])
-            (fst $ cs (sampleParams { spTolerance = m100 }) br Nothing (Cylinder (Radius $ MkQuantity $ unkilo 100) ll))
+            (fst $ cs (sampleParams { spTolerance = m100 }) br Nothing (Cylinder (Radius $ convert [u| 100 km |] ) ll))
             @?= [] 
         ]
     ]
@@ -214,9 +214,6 @@ forbesUnits = testGroup "Forbes 2011/2012 distances"
     , day8PartUnits
     , day8Units
     ]
-
-unkilo :: Num a => a -> a
-unkilo x = x * 1000
 
 mkPartDayUnits :: TestName
                -> [Zone Rational]
@@ -524,7 +521,7 @@ for the optimal route and from the conversion of these points back to the FAI
 sphere.
 
 TODO: Find out why the first distance is 9.882 and not 9.9 km.
-<FsTaskDistToTp tp_no="1" distance="0.000" />
+<FsTaskDistToTp tp_no="1" distance="0" />
 <FsTaskDistToTp tp_no="2" distance="9.882" />
 <FsTaskDistToTp tp_no="3" distance="54.254" />
 <FsTaskDistToTp tp_no="4" distance="112.779" />
@@ -676,7 +673,7 @@ dDay2 = fromKms [u| 130.167733 km |]
 dsDay2 :: [TaskDistance Rational]
 dsDay2 =
     fromKms . MkQuantity <$>
-        [ 0.000
+        [ 0
         , 4.9
         , 51.290669
         , 91.860213
@@ -749,7 +746,7 @@ dDay3 = fromKms [u| 185.643415 km |]
 dsDay3 :: [TaskDistance Rational]
 dsDay3 =
     fromKms . MkQuantity <$>
-        [ 0.000
+        [ 0
         , 24.9
         , 78.147093
         , 105.927192
@@ -814,7 +811,7 @@ dDay4 = fromKms [u| 157.16322 km |]
 dsDay4 :: [TaskDistance Rational]
 dsDay4 =
     fromKms . MkQuantity <$>
-        [ 0.000
+        [ 0
         , 14.9
         , 51.290669
         , 157.16322
@@ -878,7 +875,7 @@ dDay5 = fromKms [u| 221.477524 km |]
 dsDay5 :: [TaskDistance Rational]
 dsDay5 =
     fromKms . MkQuantity <$>
-        [ 0.000
+        [ 0
         , 14.9
         , 92.601904
         , 221.477524
@@ -942,7 +939,7 @@ dDay6 = fromKms [u| 205.844959 km |]
 dsDay6 :: [TaskDistance Rational]
 dsDay6 =
     fromKms . MkQuantity <$>
-        [ 0.000
+        [ 0
         , 14.9
         , 130.665489
         , 205.844959
@@ -1014,7 +1011,7 @@ dDay7 = fromKms [u| 183.488931 km |]
 dsDay7 :: [TaskDistance Rational]
 dsDay7 =
     fromKms . MkQuantity <$>
-        [ 0.000
+        [ 0
         , 9.9
         , 57.365312
         , 161.875045
@@ -1087,7 +1084,7 @@ dDay8 = fromKms [u| 169.10714 km |]
 dsDay8 :: [TaskDistance Rational]
 dsDay8 =
     fromKms . MkQuantity <$>
-        [ 0.000
+        [ 0
         , 9.9
         , 57.427511
         , 126.975179
