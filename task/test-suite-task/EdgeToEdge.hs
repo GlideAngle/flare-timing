@@ -229,12 +229,12 @@ mkPartDayUnits title zs (TaskDistance d) = testGroup title
     ]
     where
         dKm = convert d :: Quantity Rational [u| km |]
-        Flip r = dpRound 2 <$> Flip dKm
+        Flip r = dpRound 3 <$> Flip dKm
         tdR = TaskDistance (convert r :: Quantity Rational [u| m |])
 
         td'@(TaskDistance d') = edgesSum $ Rat.distancePointToPoint span zs
         dKm' = convert d' :: Quantity Rational [u| km |]
-        Flip r' = dpRound 2 <$> Flip dKm'
+        Flip r' = dpRound 3 <$> Flip dKm'
         tdR' = TaskDistance (convert r' :: Quantity Rational [u| m |])
 
 day1PartUnits :: TestTree
