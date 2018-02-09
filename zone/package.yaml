@@ -24,6 +24,7 @@ library:
   source-dirs: library
   exposed-modules:
   - Flight.Zone
+  - Flight.Zone.Path
   - Flight.Zone.Raw
   - Flight.Zone.Cylinder
 author: Phil de Joux

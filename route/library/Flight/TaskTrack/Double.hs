@@ -27,11 +27,11 @@ import Flight.LatLng (LatLng(..))
 import Flight.LatLng.Raw (RawLatLng(..))
 import Flight.Distance (TaskDistance(..), PathDistance(..), SpanLatLng, toKm)
 import Flight.Zone (Zone(..), Bearing(..), center)
+import Flight.Zone.Path (distancePointToPoint, costSegment)
 import Flight.Zone.Raw (RawZone(..))
 import Flight.Zone.Cylinder (CircumSample)
 import Flight.Sphere.Cylinder.Double (circumSample)
-import Flight.Sphere.PointToPoint.Double
-    (distancePointToPoint, costSegment, distanceHaversine)
+import Flight.Sphere.PointToPoint.Double (distanceHaversine)
 import Flight.Flat (zoneToProjectedEastNorth)
 import Flight.Flat.Projected.Double (costEastNorth)
 import Flight.Route

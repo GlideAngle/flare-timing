@@ -17,7 +17,6 @@ module Flight.LatLng
     , RadToDeg
     , degToRadLL
     , radToDegLL
-    , earthRadius
     ) where
 
 import Data.Proxy
@@ -28,10 +27,6 @@ import qualified Flight.LatLng.Double as D
 import qualified Flight.LatLng.Float as F
 import qualified Flight.LatLng.Rational as R
 --
--- | The radius of the earth in the FAI sphere is 6,371 km.
-earthRadius :: Num a => Quantity a [u| m |]
-earthRadius = [u| 6371000 m |]
-
 newtype Lat a u = Lat (Quantity a u) deriving (Eq, Ord)
 newtype Lng a u = Lng (Quantity a u) deriving (Eq, Ord)
 newtype LatLng a u = LatLng (Lat a u, Lng a u) deriving (Eq, Ord)

@@ -5,144 +5,111 @@
 {-# LANGUAGE PartialTypeSignatures #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module Flight.Ellipsoid.PointToPoint.Rational
-    ( distancePointToPoint
-    , distanceHaversine
-    , costSegment
-    ) where
+module Flight.Ellipsoid.PointToPoint.Rational (distanceVincenty) where
 
 import Prelude hiding (sum, span)
 import Data.Ratio((%))
 import qualified Data.Number.FixedFunctions as F
-import Data.UnitsOfMeasure (One, (+:), (-:), (*:), u, abs', zero, fromRational', toRational')
-import Data.UnitsOfMeasure.Internal (Quantity(..), mk)
+import Data.UnitsOfMeasure (fromRational')
+import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import Flight.LatLng (Lat(..), Lng(..), LatLng(..), earthRadius)
+import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.LatLng.Rational (Epsilon(..))
-import Flight.Zone
-    ( Zone(..)
-    , Radius(..)
-    , center
-    , toRationalLatLng
-    , fromRationalLatLng
-    , toRationalZone
-    )
-import Flight.Distance (TaskDistance(..), PathDistance(..), SpanLatLng)
+import Flight.Zone (toRationalLatLng)
+import Flight.Distance (TaskDistance(..), SpanLatLng)
+import Flight.Ellipsoid (Ellipsoid(..), flattening, toRationalEllipsoid)
 
-costSegment :: (Real a, Fractional a)
-            => SpanLatLng a
-            -> Zone a
-            -> Zone a
-            -> PathDistance a 
-costSegment span x y =
-    distancePointToPoint span [x, y]
-
-haversine :: Epsilon
-          -> Quantity Rational [u| rad |]
-          -> Quantity Rational [u| rad |]
-haversine (Epsilon eps) (MkQuantity x) =
-    MkQuantity $ y * y
+vincentyInverse
+    :: Epsilon
+    -> Ellipsoid Rational
+    -> Rational
+    -> Rational
+    -> Rational
+    -> Rational
+    -> Rational
+    -> Rational
+vincentyInverse
+    e@(Epsilon eps) ellipsoid@Ellipsoid{semiMajor, semiMinor} tolerance λ l u1 u2 =
+    if abs (λ - λ') < tolerance
+       then s
+       else vincentyInverse e ellipsoid tolerance λ' l u1 u2
     where
-        y :: Rational
-        y = F.sin eps (x * (1 % 2))
+        f :: Rational
+        f = toRational . flattening $ ellipsoid
 
-aOfHaversine :: Epsilon
-  -> LatLng Rational [u| rad |]
-  -> LatLng Rational [u| rad |]
-  -> Rational
-aOfHaversine
-    e@(Epsilon eps)
-    (LatLng (Lat xLat, Lng xLng))
-    (LatLng (Lat yLat, Lng yLng)) =
-    hLat
-    + F.cos eps xLat'
-    * F.cos eps yLat'
-    * hLng
+        i = cos' u2 * sin' λ
+        j = cos' u1 * sin' u2 - sin' u1 * cos' u2 * cos' λ
+        i² = i * i
+        j² = j * j
+        sinσ = F.sqrt eps $ i² + j²
+        cosσ = sin' u1 * sin' u2 + cos' u1 * cos' u2 * cos' λ
+        σ = atan' $ sinσ / cosσ
+        sinα = cos' u1 * cos' u2 * sin' λ / sin' σ
+        cos²α = 1 - sinα * sinα 
+        cos2σm = cosσ - 2 * sin' u1 * sin' u2 / cos²α
+        cos²2σm = cos2σm * cos2σm
+        c = f / 16 * cos²α * (4 - 3 * cos²α)
+        x = σ + c * sinσ * y
+        y = cos' (2 * cos2σm + c * cosσ * (negate 1 + 2 * cos²2σm))
+        λ' = l + (1 - c) * f * sinα * x
+
+        sin' = F.sin eps
+        cos' = F.cos eps
+        atan' = F.atan eps
+
+        MkQuantity a = semiMajor
+        MkQuantity b = semiMinor
+        a² = a * a
+        b² = b * b
+        u² = cos²α * (a² - b²) / b² 
+        _A = 1 + u² / 16384 * (4096 + u² * (negate 768 + u² * (320 - 175 * u²)))
+        _B = u² / 1024 * (256 + u² * (negate 128 + u² * (74 - 47 * u²)))
+        sin²σ = sinσ * sinσ
+
+        _Δσ =
+            _B * sinσ *
+                (cos2σm + _B / 4 *
+                    (cosσ * (negate 1 + 2 * cos²2σm)
+                    - _B / 6
+                    * cos2σm
+                    * (negate 3 + 4 * sin²σ)
+                    * (negate 3 + 4 * cos²2σm)
+                    )
+                )
+
+        s = _B * _A * (σ - _Δσ)
+
+-- | Sperical distance using inverse Vincenty and rational numbers.
+distanceVincenty
+    :: (Real a, Fractional a)
+    => Epsilon
+    -> Ellipsoid a
+    -> SpanLatLng a
+distanceVincenty e@(Epsilon eps) ellipsoid x y =
+    TaskDistance . fromRational' . MkQuantity $ d
     where
-        (dLat, dLng) = (yLat -: xLat, yLng -: xLng)
-        (MkQuantity xLat') = xLat
-        (MkQuantity yLat') = yLat
-        (MkQuantity hLat) = haversine e dLat
-        (MkQuantity hLng) = haversine e dLng
+        (LatLng (Lat (MkQuantity _Φ1), Lng (MkQuantity l1))) = toRationalLatLng x
+        (LatLng (Lat (MkQuantity _Φ2), Lng (MkQuantity l2))) = toRationalLatLng y
 
--- | Sperical distance using haversines and rational numbers.
-distanceHaversine :: (Real a, Fractional a) => Epsilon -> SpanLatLng a
-distanceHaversine e@(Epsilon eps) x y =
-    TaskDistance . fromRational' $ radDist *: earthRadius
-    where
-        x' = toRationalLatLng x
-        y' = toRationalLatLng y
-        radDist :: Quantity Rational One
-        radDist = mk $ 2 * F.asin eps (F.sqrt eps $ aOfHaversine e x' y')
+        u1 :: Rational
+        u1 = atan' $ (1 - f) * tan' _Φ1
 
--- | One way of measuring task distance is going point-to-point through each control
--- zone's center along the course from start to goal. This is not used by CIVL
--- but sometimes task distance will be reported this way.
---
--- The speed section  usually goes from start exit cylinder to goal cylinder
--- or to goal line. The optimal way to fly this in a zig-zagging course will
--- avoid zone centers for a shorter flown distance.
-distancePointToPoint :: (Real a, Fractional a)
-                     => SpanLatLng a
-                     -> [Zone a]
-                     -> PathDistance a
-distancePointToPoint span xs =
-    PathDistance
-        { edgesSum = distanceViaCenters span xs
-        , vertices = center <$> xs
-        }
+        u2 :: Rational
+        u2 = atan' $ (1 - f) * tan' _Φ2
 
-distanceViaCenters :: (Real a, Fractional a)
-                   => SpanLatLng a
-                   -> [Zone a]
-                   -> TaskDistance a
+        l :: Rational
+        l = l2 - l1
 
-distanceViaCenters _ [] = TaskDistance [u| 0 m |]
+        λ :: Rational
+        λ = l
 
-distanceViaCenters _ [_] = TaskDistance [u| 0 m |]
+        ellipsoidR = toRationalEllipsoid ellipsoid
 
-distanceViaCenters span [Cylinder (Radius xR) x, Cylinder (Radius yR) y]
-    | x == y && xR /= yR = TaskDistance $ fromRational' dR
-    | otherwise = distanceViaCenters span ([Point x, Point y] :: [Zone _])
-    where
-        xR' = toRational' xR
-        yR' = toRational' yR
+        d :: Rational
+        d = vincentyInverse e ellipsoidR (1 % 1000000000000) λ l u1 u2
 
-        dR :: Quantity Rational [u| m |]
-        dR = abs' $ xR' -: yR'
+        f :: Rational
+        f = flattening ellipsoidR
 
-distanceViaCenters span xs@[a, b]
-    | a == b = TaskDistance zero
-    | otherwise = distance span xs
-
-distanceViaCenters span xs = distance span xs
-
-sum :: Num a => [Quantity a [u| m |]] -> Quantity a [u| m |]
-sum = foldr (+:) zero
-
-distance :: (Real a, Fractional a)
-         => SpanLatLng a
-         -> [Zone a]
-         -> TaskDistance a
-distance span xs =
-    TaskDistance $ fromRational' d
-    where
-        ys :: [LatLng Rational [u| rad |]]
-        ys = center . toRationalZone <$> xs
-
-        unwrap (TaskDistance x) = x
-
-        f :: LatLng Rational [u| rad |]
-          -> LatLng Rational [u| rad |]
-          -> Quantity Rational [u| m |]
-        f = (unwrap .) . span'
-
-        d :: Quantity Rational [u| m |]
-        d = sum $ zipWith f ys (tail ys)
-
-        span' :: SpanLatLng Rational
-        span' x y =
-            TaskDistance $ toRational' sd
-            where
-                TaskDistance sd =
-                    span (fromRationalLatLng x) (fromRationalLatLng y)
+        tan' = F.tan eps
+        atan' = F.atan eps

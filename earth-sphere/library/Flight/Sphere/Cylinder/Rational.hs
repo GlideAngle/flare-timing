@@ -10,7 +10,7 @@ import Data.Fixed (mod')
 import Data.UnitsOfMeasure (u, unQuantity, fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import Flight.LatLng (Lat(..), Lng(..), LatLng(..), earthRadius)
+import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.LatLng.Rational (Epsilon(..), defEps)
 import Flight.Zone
     ( Zone(..)
@@ -20,7 +20,8 @@ import Flight.Zone
     , radius
     , toRationalZone
     )
-import Flight.Sphere.PointToPoint.Rational (distancePointToPoint, distanceHaversine)
+import Flight.Zone.Path (distancePointToPoint)
+import Flight.Sphere.PointToPoint.Rational (distanceHaversine)
 import Flight.Distance (TaskDistance(..), PathDistance(..))
 import Flight.Zone.Cylinder
     ( TrueCourse(..)
@@ -35,6 +36,7 @@ import Flight.Zone.Cylinder
     , sourceZone
     , fromRationalZonePoint
     )
+import Flight.Sphere (earthRadius)
 
 -- | Using a method from the
 -- <http://www.edwilliams.org/avform.htm#LL Aviation Formulary>

@@ -29,6 +29,7 @@ library:
   exposed-modules:
   - Flight.Flat.Projected.Double
   - Flight.Flat.Projected.Rational
+  - Flight.Flat.Separated
   - Flight.Flat
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
@@ -66,4 +67,35 @@ tests:
     source-dirs:
     - library
     - test-suite-hlint
+  flat:
+    dependencies:
+    - base
+    - hlint
+    - numbers
+    - fgl
+    - uom-plugin
+    - bifunctors
+    - aeson
+    - scientific
+    - mtl
+    - hcoord
+    - aeson-via-sci
+    - siggy-chardust
+    - tasty
+    - tasty-hunit
+    - tasty-quickcheck
+    - tasty-smallcheck
+    - smallcheck
+    - tasty-compare
+    - flight-units
+    - flight-latlng
+    - flight-zone
+    ghc-options:
+    - -rtsopts
+    - -threaded
+    - -with-rtsopts=-N
+    main: Flat.hs
+    source-dirs:
+    - library
+    - test-suite-flat
 version: '0.1.0'

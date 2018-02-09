@@ -31,6 +31,8 @@ library:
   - Flight.Sphere.Cylinder.Rational
   - Flight.Sphere.PointToPoint.Double
   - Flight.Sphere.PointToPoint.Rational
+  - Flight.Sphere.Separated
+  - Flight.Sphere
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
 name: flight-earth-sphere
@@ -67,4 +69,35 @@ tests:
     source-dirs:
     - library
     - test-suite-hlint
+  sphere:
+    dependencies:
+    - base
+    - hlint
+    - numbers
+    - fgl
+    - uom-plugin
+    - bifunctors
+    - aeson
+    - scientific
+    - mtl
+    - hcoord
+    - aeson-via-sci
+    - siggy-chardust
+    - tasty
+    - tasty-hunit
+    - tasty-quickcheck
+    - tasty-smallcheck
+    - smallcheck
+    - tasty-compare
+    - flight-units
+    - flight-latlng
+    - flight-zone
+    ghc-options:
+    - -rtsopts
+    - -threaded
+    - -with-rtsopts=-N
+    main: Sphere.hs
+    source-dirs:
+    - library
+    - test-suite-sphere
 version: '0.1.0'

@@ -1,13 +1,28 @@
-{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE QuasiQuotes #-}
 
-module Flight.Ellipsoid.Cylinder.Double (circumSample) where
+{-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE PartialTypeSignatures #-}
+{-# LANGUAGE RecordWildCards #-}
 
-import Data.UnitsOfMeasure (u)
+module Flight.Flat.Cylinder.Double (circumSample) where
+
+import Data.Functor.Identity (runIdentity)
+import Control.Monad.Except (runExceptT)
+import Data.UnitsOfMeasure (u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
+import qualified UTMRef as HCEN (UTMRef(..), toLatLng)
+import qualified LatLng as HCLL (LatLng(..))
 
-import Flight.LatLng (LatLng(..))
+import Flight.Units ()
+import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.Zone
     ( Zone(..)
     , Radius(..)
@@ -17,7 +32,7 @@ import Flight.Zone
     , realToFracZone
     )
 import Flight.Zone.Path (distancePointToPoint)
-import Flight.Ellipsoid.PointToPoint.Double (distanceVincenty)
+import Flight.Flat.PointToPoint.Double (distanceEuclidean)
 import Flight.Distance (TaskDistance(..), PathDistance(..))
 import Flight.Zone.Cylinder
     ( TrueCourse(..)
@@ -31,26 +46,78 @@ import Flight.Zone.Cylinder
     , point
     , sourceZone
     )
-import Flight.Ellipsoid (wgs84)
+import Flight.Flat.Projected.Internal (zoneToProjectedEastNorth)
 
-directVincenty
+fromHcLatLng :: HCLL.LatLng -> LatLng Double [u| rad |]
+fromHcLatLng HCLL.LatLng{latitude, longitude} =
+    LatLng (Lat . convert $ lat, Lng . convert $ lng)
+    where
+        lat :: Quantity Double [u| deg |]
+        lat = MkQuantity $ latitude
+
+        lng :: Quantity Double [u| deg |]
+        lng = MkQuantity $ longitude
+
+eastNorthToLatLng :: HCEN.UTMRef -> Either String HCLL.LatLng
+eastNorthToLatLng = runIdentity . runExceptT . HCEN.toLatLng
+
+errorHc :: a
+errorHc = error "Cannot convert between lat/lng and easting/northing."
+
+circum
     :: Real a
     => LatLng a [u| rad |]
     -> Radius a [u| m |]
     -> TrueCourse a
     -> LatLng Double [u| rad |]
-directVincenty = undefined
+circum xLL r tc =
+    case circumEN xLL r tc of
+        Left _ -> errorHc
+        Right yEN ->
+            case eastNorthToLatLng yEN of
+                Left _ -> errorHc
+                Right yLL -> fromHcLatLng yLL
 
--- | Using a method from the
--- <http://www.edwilliams.org/avform.htm#LL Aviation Formulary>
--- a point on a cylinder wall is found by going out to the distance of the
--- radius on the given radial true course 'rtc'.
-circum :: Real a
-       => LatLng a [u| rad |]
-       -> Radius a [u| m |]
-       -> TrueCourse a
-       -> LatLng Double [u| rad |]
-circum = directVincenty
+circumEN
+    :: Real a
+    => LatLng a [u| rad |]
+    -> Radius a [u| m |]
+    -> TrueCourse a
+    -> Either String HCEN.UTMRef
+circumEN xLL r tc =
+    translate r tc <$> zoneToProjectedEastNorth (Point xLL)
+
+translate
+    :: Real a
+    => Radius a [u| m |]
+    -> TrueCourse a
+    -> HCEN.UTMRef
+    -> HCEN.UTMRef
+translate (Radius (MkQuantity rRadius)) (TrueCourse (MkQuantity rtc)) x =
+    HCEN.UTMRef
+        (xE + dE)
+        (xN + dN)
+        (HCEN.latZone x)
+        (HCEN.lngZone x)
+        (HCEN.datum x)
+    where
+        xE :: Double
+        xE = HCEN.easting x
+
+        xN :: Double
+        xN = HCEN.northing x
+
+        rRadius' :: Double
+        rRadius' = realToFrac rRadius
+
+        rtc' :: Double
+        rtc' = realToFrac rtc
+
+        dE :: Double
+        dE = rRadius' * cos rtc'
+
+        dN :: Double
+        dN = rRadius' * sin rtc'
 
 -- | Generates a pair of lists, the lat/lng of each generated point
 -- and its distance from the center. It will generate 'samples' number of such
@@ -174,5 +241,5 @@ getClose zone' ptCenter limitRadius spTolerance trys yr@(Radius (MkQuantity offs
         (TaskDistance (MkQuantity d)) =
             edgesSum
             $ distancePointToPoint
-                (distanceVincenty wgs84)
+                distanceEuclidean
                 (realToFracZone <$> [Point ptCenter, Point y])

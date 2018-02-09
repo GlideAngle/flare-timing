@@ -19,10 +19,8 @@ module Flight.Task
     , Zs(..)
     , distanceEdgeToEdge
     -- * Zones
-    , separatedZones
     , fromZs
     ) where
 
 import Flight.EdgeToEdge
-import Flight.Separated
 import Flight.ShortestPath

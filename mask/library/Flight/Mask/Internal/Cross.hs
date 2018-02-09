@@ -18,7 +18,6 @@ import qualified Flight.Zone.Raw as Raw (RawZone(..))
 import Flight.Distance (SpanLatLng)
 import Flight.Comp (Task(..))
 import Flight.Units ()
-import Flight.Task (separatedZones)
 import Flight.Mask.Internal.Zone
     ( TaskZone(..)
     , TrackZone(..)
@@ -27,6 +26,7 @@ import Flight.Mask.Internal.Zone
     , Crossing
     , OrdCrossing(..)
     )
+import Flight.Sphere.Separated (separatedZones)
 
 -- | A function that tests whether a flight track, represented as a series of point
 -- zones crosses a zone.

@@ -8,10 +8,11 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE QuasiQuotes #-}
 
+{-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE PartialTypeSignatures #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module Flight.Separated (separatedZones) where
+module Flight.Ellipsoid.Separated (separatedZones) where
 
 import Prelude hiding (span)
 import Data.UnitsOfMeasure ((+:), (-:), (*:), u, unQuantity, recip')
@@ -19,31 +20,38 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
 import Flight.Zone (Zone(..), Radius(..), radius)
+import Flight.Zone.Path (distancePointToPoint)
 import Flight.Distance (TaskDistance(..), PathDistance(..), SpanLatLng)
-import Flight.LatLng (Lat(..), Lng(..), LatLng(..), earthRadius)
-import Flight.Sphere.PointToPoint.Double (distancePointToPoint)
+import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
+import Flight.Ellipsoid (Ellipsoid(..))
 
-boundingBoxSeparated :: (Num a, Ord a, Fractional a)
-                     => Zone a
-                     -> Zone a
-                     -> Bool
-boundingBoxSeparated (Point xLL) (Cylinder (Radius ry) yLL) =
-    boxSeparated (ry, yLL) xLL
-boundingBoxSeparated _ _ = False
+boundingBoxSeparated
+    :: (Num a, Ord a, Fractional a)
+    => Ellipsoid a
+    -> Zone a
+    -> Zone a
+    -> Bool
+boundingBoxSeparated ellipsoid (Point xLL) (Cylinder (Radius ry) yLL) =
+    boxSeparated  ellipsoid (ry, yLL) xLL
+boundingBoxSeparated _ _ _ = False
 
-boxSeparated :: (Num a, Ord a, Fractional a)
-             => (Quantity a [u| m |], LatLng a [u| rad |])
-             -> LatLng a [u| rad |]
-             -> Bool
 boxSeparated
+    :: (Num a, Ord a, Fractional a)
+    => Ellipsoid a
+    -> (Quantity a [u| m |], LatLng a [u| rad |])
+    -> LatLng a [u| rad |]
+    -> Bool
+boxSeparated
+    Ellipsoid{semiMajor, semiMinor}
     (r', LatLng (Lat yLat, Lng yLng))
     (LatLng (xLLx, xLLy)) =
         xLo || xHi || yLo || yHi
     where
-        -- NOTE: Use *: recip' instead of /: to avoid needing a
-        -- Floating constraint that is not available for Rational.
-        r :: Quantity _ [u| rad |]
-        r = (r' *: recip' earthRadius) *: [u| 1 rad |]
+        rLat :: Quantity _ [u| rad |]
+        rLat = (r' *: recip' semiMinor) *: [u| 1 rad |]
+
+        rLng :: Quantity _ [u| rad |]
+        rLng = (r' *: recip' semiMajor) *: [u| 1 rad |]
 
         xLo :: Bool
         xLo = xLat' < MkQuantity (negate 1) 
@@ -58,16 +66,16 @@ boxSeparated
         yHi = xLng' > MkQuantity 1
 
         xZero :: Quantity _ [u| rad |]
-        xZero = yLat -: r
+        xZero = yLat -: rLat
 
         yZero :: Quantity _ [u| rad |]
-        yZero = yLng -: r
+        yZero = yLng -: rLng
 
         xScale :: Quantity _ [u| rad |]
-        xScale = (yLat +: r) -: (yLat -: r)
+        xScale = (yLat +: rLat) -: (yLat -: rLat)
 
         yScale :: Quantity _ [u| rad |]
-        yScale = (yLng +: r) -: (yLng -: r)
+        yScale = (yLng +: rLng) -: (yLng -: rLng)
 
         xTranslate :: Lat _ [u| rad |] -> Lat _ [u| rad |]
         xTranslate (Lat lat) =
@@ -86,28 +94,31 @@ boxSeparated
         (Lat xLat') = xTranslate xLLx
         (Lng xLng') = yTranslate xLLy
 
-separated :: (Real a, Fractional a)
-          => SpanLatLng a
-          -> Zone a
-          -> Zone a
-          -> Bool
+separated
+    :: (Real a, Fractional a)
+    => Ellipsoid a
+    -> SpanLatLng a
+    -> Zone a
+    -> Zone a
+    -> Bool
 
-separated _ x@(Point _) y@(Point _) =
+separated _ _ x@(Point _) y@(Point _) =
     x /= y
 
-separated span x y@(Point _) =
-    separated span y x
+separated ellipsoid span x y@(Point _) =
+    separated ellipsoid span y x
 
 separated
+    ellipsoid
     span
     x@(Point _)
     y@(Cylinder r _) =
-    boundingBoxSeparated x y || d > ry
+    boundingBoxSeparated ellipsoid x y || d > ry
     where
         (Radius ry) = r
         (TaskDistance d) = edgesSum $ distancePointToPoint span [x, y]
 
-separated span x@(Point _) y =
+separated _ span x@(Point _) y =
     d > ry
     where
         (Radius ry) = radius y
@@ -115,7 +126,7 @@ separated span x@(Point _) y =
 
 -- | Consider cylinders separated if one fits inside the other or if they don't
 -- touch.
-separated span xc@(Cylinder (Radius xR) x) yc@(Cylinder (Radius yR) y)
+separated _ span xc@(Cylinder (Radius xR) x) yc@(Cylinder (Radius yR) y)
     | x == y = xR /= yR
     | dxy + minR < maxR = True
     | otherwise = clearlySeparated span xc yc
@@ -129,7 +140,7 @@ separated span xc@(Cylinder (Radius xR) x) yc@(Cylinder (Radius yR) y)
         (MkQuantity minR) = max xR yR
         (MkQuantity maxR) = min xR yR
 
-separated span x y =
+separated _ span x y =
     clearlySeparated span x y
 
 -- | Are the control zones separated? This a prerequisite to being able to work
@@ -138,9 +149,14 @@ separated span x y =
 -- distance between them. This will be seen where the smaller concentric cylinder
 -- marks the launch and the larger one, as an exit cylinder, marks the start of the
 -- speed section.
-separatedZones :: (Real a, Fractional a) => SpanLatLng a -> [Zone a] -> Bool
-separatedZones span xs =
-    and $ zipWith (separated span) xs (tail xs)
+separatedZones
+    :: (Real a, Fractional a)
+    => Ellipsoid a
+    -> SpanLatLng a
+    -> [Zone a]
+    -> Bool
+separatedZones ellipsoid span xs =
+    and $ zipWith (separated ellipsoid span) xs (tail xs)
 
 clearlySeparated :: Real a => SpanLatLng a -> Zone a -> Zone a -> Bool
 clearlySeparated span x y =

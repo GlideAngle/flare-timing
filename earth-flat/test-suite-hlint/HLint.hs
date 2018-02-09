@@ -7,7 +7,7 @@ arguments :: [String]
 arguments =
     [ "library"
     , "test-suite-hlint"
-    , "test-suite-task"
+    , "test-suite-flat"
     ]
 
 main :: IO ()

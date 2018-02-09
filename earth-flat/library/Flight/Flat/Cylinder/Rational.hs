@@ -1,15 +1,29 @@
-{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE QuasiQuotes #-}
 
-module Flight.Ellipsoid.Cylinder.Rational (circumSample) where
+{-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE PartialTypeSignatures #-}
+{-# LANGUAGE RecordWildCards #-}
 
+module Flight.Flat.Cylinder.Rational (circumSample) where
+
+import Data.Functor.Identity (runIdentity)
+import Control.Monad.Except (runExceptT)
 import Data.Ratio ((%))
 import qualified Data.Number.FixedFunctions as F
-import Data.UnitsOfMeasure (u)
+import Data.UnitsOfMeasure (u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
+import qualified UTMRef as HCEN (UTMRef(..), toLatLng)
+import qualified LatLng as HCLL (LatLng(..))
 
-import Flight.LatLng (LatLng(..))
+import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.LatLng.Rational (Epsilon(..), defEps)
 import Flight.Zone
     ( Zone(..)
@@ -20,7 +34,7 @@ import Flight.Zone
     , toRationalZone
     )
 import Flight.Zone.Path (distancePointToPoint)
-import Flight.Ellipsoid.PointToPoint.Rational (distanceVincenty)
+import Flight.Flat.PointToPoint.Rational (distanceEuclidean)
 import Flight.Distance (TaskDistance(..), PathDistance(..))
 import Flight.Zone.Cylinder
     ( TrueCourse(..)
@@ -35,26 +49,70 @@ import Flight.Zone.Cylinder
     , sourceZone
     , fromRationalZonePoint
     )
-import Flight.Ellipsoid (wgs84)
+import Flight.Flat.Projected.Internal (zoneToProjectedEastNorth)
 
-directVincenty
+fromHcLatLng :: HCLL.LatLng -> LatLng Rational [u| rad |]
+fromHcLatLng HCLL.LatLng{latitude, longitude} =
+    LatLng (Lat . convert $ lat, Lng . convert $ lng)
+    where
+        lat :: Quantity Rational [u| deg |]
+        lat = MkQuantity . toRational $ latitude
+
+        lng :: Quantity Rational [u| deg |]
+        lng = MkQuantity . toRational $ longitude
+
+eastNorthToLatLng :: HCEN.UTMRef -> Either String HCLL.LatLng
+eastNorthToLatLng = runIdentity . runExceptT . HCEN.toLatLng
+
+circum
     :: Epsilon
     -> LatLng Rational [u| rad |]
     -> Radius Rational [u| m |]
     -> TrueCourse Rational 
     -> LatLng Rational [u| rad |]
-directVincenty = undefined
+circum e xLL r tc =
+    case circumEN e xLL r tc of
+        Left _ -> xLL
+        Right yEN ->
+            case eastNorthToLatLng yEN of
+                Left _ -> xLL
+                Right yLL -> fromHcLatLng yLL
 
--- | Using a method from the
--- <http://www.edwilliams.org/avform.htm#LL Aviation Formulary>
--- a point on a cylinder wall is found by going out to the distance of the
--- radius on the given radial true course 'rtc'.
-circum :: Epsilon
-       -> LatLng Rational [u| rad |]
-       -> Radius Rational [u| m |]
-       -> TrueCourse Rational 
-       -> LatLng Rational [u| rad |]
-circum = directVincenty
+circumEN
+    :: Epsilon
+    -> LatLng Rational [u| rad |]
+    -> Radius Rational [u| m |]
+    -> TrueCourse Rational 
+    -> Either String HCEN.UTMRef
+circumEN e xLL r tc =
+    translate e r tc <$> zoneToProjectedEastNorth (Point xLL)
+
+translate
+    :: Epsilon
+    -> Radius Rational [u| m |]
+    -> TrueCourse Rational
+    -> HCEN.UTMRef
+    -> HCEN.UTMRef
+translate
+    (Epsilon e) (Radius (MkQuantity rRadius)) (TrueCourse (MkQuantity rtc)) x =
+    HCEN.UTMRef
+        (fromRational (xE + dE))
+        (fromRational (xN + dN))
+        (HCEN.latZone x)
+        (HCEN.lngZone x)
+        (HCEN.datum x)
+    where
+        xE :: Rational
+        xE = toRational $ HCEN.easting x
+
+        xN :: Rational
+        xN = toRational $ HCEN.northing x
+
+        dE :: Rational
+        dE = rRadius * F.cos e rtc
+
+        dN :: Rational
+        dN = rRadius * F.sin e rtc
 
 -- | Generates a pair of lists, the lat/lng of each generated point
 -- and its distance from the center. It will generate 'samples' number of such
@@ -178,5 +236,5 @@ getClose epsilon zone' ptCenter limitRadius spTolerance trys yr@(Radius (MkQuant
         (TaskDistance (MkQuantity d)) =
             edgesSum
             $ distancePointToPoint
-                (distanceVincenty defEps wgs84)
+                distanceEuclidean
                 [Point ptCenter, Point y]

@@ -13,17 +13,17 @@ import Flight.Zone (Zone(..), center, realToFracZone)
 import Flight.Distance (TaskDistance(..), PathDistance(..))
 import Flight.Units ()
 import Flight.Flat.Projected.Internal
-    (pythagorean , zoneToProjectedEastNorth, tooFar)
+    (pythagorean, zoneToProjectedEastNorth, tooFar)
 
 -- | The task distance returned is for the projected UTM plane with
 -- eastings and northings. If you need to calculate the distance in sperical
 -- coordinates, the latitude and longitude of each vertex of the path can be
 -- used to work that out.
-costEastNorth :: (Real a, Eq b, Fractional b)
-              => Zone a
-              -> Zone a
-              -> PathDistance b
-
+costEastNorth
+    :: (Real a, Eq b, Fractional b)
+    => Zone a
+    -> Zone a
+    -> PathDistance b
 costEastNorth x@(Point _) y@(Point _) =
     PathDistance { edgesSum = d'
                  , vertices = center . realToFracZone <$> [x, y]
@@ -31,11 +31,11 @@ costEastNorth x@(Point _) y@(Point _) =
     where
         d' =
             case (zoneToProjectedEastNorth x, zoneToProjectedEastNorth y) of
-                (Right xLL, Right yLL) ->
+                (Right xEN, Right yEN) ->
                     TaskDistance dm
                     where
                         d :: Double
-                        d = pythagorean xLL yLL
+                        d = pythagorean xEN yEN
 
                         dm :: Quantity _ [u| m |]
                         dm = MkQuantity $ realToFrac d

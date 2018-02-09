@@ -16,10 +16,10 @@ import qualified Data.Number.FixedFunctions as F
 
 import Flight.Distance (PathDistance, SpanLatLng)
 import Flight.Zone (Zone, Bearing(..))
+import Flight.Zone.Path (distancePointToPoint, costSegment)
 import Flight.Zone.Raw (RawZone)
 import Flight.Zone.Cylinder (CircumSample)
-import qualified Flight.Sphere.PointToPoint.Rational as Rat
-    (distanceHaversine, distancePointToPoint, costSegment)
+import qualified Flight.Sphere.PointToPoint.Rational as Rat (distanceHaversine)
 import qualified Flight.Sphere.Cylinder.Rational as Rat (circumSample)
 import Flight.Task (AngleCut(..))
 import Flight.Mask.Internal.Zone (TaskZone, zoneToCylinder)
@@ -46,7 +46,7 @@ nextCutR x@AngleCut{sweep} =
     let (Bearing b) = sweep in x{sweep = Bearing $ b /: 2}
 
 dppR :: SpanLatLng Rational -> [Zone Rational] -> PathDistance Rational
-dppR = Rat.distancePointToPoint
+dppR = distancePointToPoint
 
 csegR :: Zone Rational -> Zone Rational -> PathDistance Rational
-csegR = Rat.costSegment spanR
+csegR = costSegment spanR

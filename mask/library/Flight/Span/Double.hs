@@ -15,10 +15,10 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Distance (PathDistance, SpanLatLng)
 import Flight.Zone (Zone, Bearing(..))
+import Flight.Zone.Path (distancePointToPoint, costSegment)
 import Flight.Zone.Raw (RawZone)
 import Flight.Zone.Cylinder (CircumSample)
-import qualified Flight.Sphere.PointToPoint.Double as Dbl
-    (distanceHaversine, distancePointToPoint, costSegment)
+import qualified Flight.Sphere.PointToPoint.Double as Dbl (distanceHaversine)
 import qualified Flight.Sphere.Cylinder.Double as Dbl (circumSample)
 import Flight.Task (AngleCut(..))
 import Flight.Mask.Internal.Zone (TaskZone, zoneToCylinder)
@@ -44,7 +44,7 @@ nextCutF x@AngleCut{sweep} =
     let (Bearing b) = sweep in x{sweep = Bearing $ b /: 2}
 
 dppF :: SpanLatLng Double -> [Zone Double] -> PathDistance Double
-dppF = Dbl.distancePointToPoint
+dppF = distancePointToPoint
 
 csegF :: Zone Double -> Zone Double -> PathDistance Double
-csegF = Dbl.costSegment spanF
+csegF = costSegment spanF

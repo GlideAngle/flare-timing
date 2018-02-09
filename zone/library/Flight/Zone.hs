@@ -31,6 +31,7 @@ module Flight.Zone
     , realToFracZone
     , fromRationalLatLng
     , toRationalLatLng
+    , realToFracLatLng
     ) where
 
 import Data.UnitsOfMeasure (u, toRational', fromRational')
