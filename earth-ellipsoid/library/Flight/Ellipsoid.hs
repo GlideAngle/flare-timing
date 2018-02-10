@@ -4,11 +4,14 @@
 
 module Flight.Ellipsoid
     ( Ellipsoid(..)
+    , VincentyAccuracy(..)
+    , defaultVincentyAccuracy
     , wgs84
     , flattening
     , toRationalEllipsoid
     ) where
 
+import Data.Ratio ((%))
 import Data.UnitsOfMeasure (u, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
@@ -41,3 +44,8 @@ flattening Ellipsoid{semiMajor, semiMinor} =
     where
         MkQuantity a = semiMajor
         MkQuantity b = semiMinor
+
+newtype VincentyAccuracy a = VincentyAccuracy a
+
+defaultVincentyAccuracy :: VincentyAccuracy Rational
+defaultVincentyAccuracy = VincentyAccuracy $ 1 % 1000000000000

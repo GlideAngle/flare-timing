@@ -12,7 +12,8 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.Distance (TaskDistance(..), SpanLatLng)
-import Flight.Ellipsoid (Ellipsoid(..), flattening)
+import Flight.Ellipsoid
+    (Ellipsoid(..), VincentyAccuracy(..), defaultVincentyAccuracy, flattening)
 
 -- SEE: https://en.wikipedia.org/wiki/Vincenty%27s_formulae#Inverse_problem
 -- Notation[edit]
@@ -57,34 +58,38 @@ import Flight.Ellipsoid (Ellipsoid(..), flattening)
 vincentyInverse
     :: (Num a, Floating a, Fractional a, RealFloat a)
     => Ellipsoid a
+    -> VincentyAccuracy a
     -> a
     -> a
     -> a
     -> a
     -> a
-    -> a
-vincentyInverse ellipsoid@Ellipsoid{semiMajor, semiMinor} tolerance λ l u1 u2 =
+vincentyInverse
+    ellipsoid@Ellipsoid{semiMajor, semiMinor}
+    accuracy@(VincentyAccuracy tolerance)
+    λ _L _U1 _U2 =
     if abs (λ - λ') < tolerance
        then s
-       else vincentyInverse ellipsoid tolerance λ' l u1 u2
+       else vincentyInverse ellipsoid accuracy λ' _L _U1 _U2
     where
         f = flattening ellipsoid
 
-        i = cos u2 * sin λ
-        j = cos u1 * sin u2 - sin u1 * cos u2 * cos λ
+        i = cos _U2 * sin λ
+        j = cos _U1 * sin _U2 - sin _U1 * cos _U2 * cos λ
         i² = i * i 
         j² = j * j
         sinσ = sqrt $ i² + j²
-        cosσ = sin u1 * sin u2 + cos u1 * cos u2 * cos λ
+        cosσ = sin _U1 * sin _U2 + cos _U1 * cos _U2 * cos λ
         σ = atan2 sinσ cosσ
-        sinα = cos u1 * cos u2 * sin λ / sin σ
-        cos²α = 1 - sinα * sinα 
-        cos2σm = cosσ - 2 * sin u1 * sin u2 / cos²α
+        sinα = cos _U1 * cos _U2 * sin λ / sin σ
+        sin²α = sinα * sinα 
+        cos²α = 1 - sin²α 
+        cos2σm = cosσ - 2 * sin _U1 * sin _U2 / cos²α
         cos²2σm = cos2σm * cos2σm
-        c = f / 16 * cos²α * (4 - 3 * cos²α)
-        x = σ + c * sinσ * y
-        y = cos (2 * cos2σm + c * cosσ * (negate 1 + 2 * cos²2σm))
-        λ' = l + (1 - c) * f * sinα * x
+        _C = f / 16 * cos²α * (4 - 3 * cos²α)
+        x = σ + _C * sinσ * y
+        y = cos (2 * cos2σm + _C * cosσ * (negate 1 + 2 * cos²2σm))
+        λ' = _L + (1 - _C) * f * sinα * x
 
         MkQuantity a = semiMajor
         MkQuantity b = semiMinor
@@ -112,13 +117,16 @@ vincentyInverse ellipsoid@Ellipsoid{semiMajor, semiMinor} tolerance λ l u1 u2 =
 distanceVincenty :: RealFloat a => Ellipsoid a -> SpanLatLng a
 distanceVincenty
     ellipsoid
-    (LatLng (Lat (MkQuantity _Φ1), Lng (MkQuantity l1)))
-    (LatLng (Lat (MkQuantity _Φ2), Lng (MkQuantity l2))) =
+    (LatLng (Lat (MkQuantity _Φ1), Lng (MkQuantity _L1)))
+    (LatLng (Lat (MkQuantity _Φ2), Lng (MkQuantity _L2))) =
     TaskDistance . MkQuantity $ d
     where
-        u1 = atan $ (1 - f) * tan _Φ1
-        u2 = atan $ (1 - f) * tan _Φ2
-        l = l2 - l1
-        λ = l 
-        d = vincentyInverse ellipsoid 0.000000000001 λ l u1 u2
+        _U1 = atan $ (1 - f) * tan _Φ1
+        _U2 = atan $ (1 - f) * tan _Φ2
+        _L = _L2 - _L1
+        λ = _L 
+        d = vincentyInverse ellipsoid accuracy' λ _L _U1 _U2
         f = flattening ellipsoid
+
+        VincentyAccuracy accuracy = defaultVincentyAccuracy
+        accuracy' = VincentyAccuracy $ fromRational accuracy

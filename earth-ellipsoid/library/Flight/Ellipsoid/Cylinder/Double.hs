@@ -1,13 +1,14 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE NamedFieldPuns #-}
 
 module Flight.Ellipsoid.Cylinder.Double (circumSample) where
 
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import Flight.LatLng (LatLng(..))
+import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.Zone
     ( Zone(..)
     , Radius(..)
@@ -15,6 +16,7 @@ import Flight.Zone
     , center
     , radius
     , realToFracZone
+    , realToFracLatLng
     )
 import Flight.Zone.Path (distancePointToPoint)
 import Flight.Ellipsoid.PointToPoint.Double (distanceVincenty)
@@ -31,26 +33,113 @@ import Flight.Zone.Cylinder
     , point
     , sourceZone
     )
-import Flight.Ellipsoid (wgs84)
+import Flight.Ellipsoid
+    (Ellipsoid(..), VincentyAccuracy(..)
+    , defaultVincentyAccuracy, wgs84, flattening
+    )
 
-directVincenty
-    :: Real a
+iterateVincenty
+    :: (Floating a, Ord a)
+    => VincentyAccuracy a -> a -> a -> a -> a -> a -> a -> a
+iterateVincenty
+    accuracy@(VincentyAccuracy tolerance)
+    _A
+    _B
+    s
+    b
+    σ1
+    σ =
+    if σ < tolerance
+       then σ 
+       else iterateVincenty accuracy _A _B s b σ1 σ'
+    where
+        _2σm = 2 * σ1 + σ
+        cos2σm = cos _2σm
+        cos²2σm = cos2σm * cos2σm
+        sinσ = sin σ
+        cosσ = cos σ
+        sin²σ = sinσ * sinσ
+
+        _Δσ =
+            _B * sinσ *
+                (cos2σm + _B / 4 *
+                    (cosσ * (negate 1 + 2 * cos²2σm)
+                    - _B / 6
+                    * cos2σm
+                    * (negate 3 + 4 * sin²σ)
+                    * (negate 3 + 4 * cos²2σm)
+                    )
+                )
+
+        σ' = s / b * _A + _Δσ
+
+vincentyDirect
+    :: (Real a, Floating a, Fractional a, RealFloat a)
+    => Ellipsoid a
+    -> VincentyAccuracy a
+    -> LatLng a [u| rad |]
+    -> Radius a [u| m |]
+    -> TrueCourse a
+    -> LatLng a [u| rad |]
+vincentyDirect
+    ellipsoid@Ellipsoid{semiMajor, semiMinor}
+    accuracy
+    (LatLng (Lat (MkQuantity _Φ1), Lng (MkQuantity _L1)))
+    (Radius (MkQuantity s))
+    (TrueCourse (MkQuantity α1)) =
+    LatLng (Lat . MkQuantity $ _Φ2, Lng . MkQuantity $ _L2)
+    where
+        f = flattening ellipsoid
+
+        -- Initial setup
+        _U1 = atan $ (1 - f) * tan _Φ1
+        σ1 = atan2 (tan _U1) (cos α1)
+        sinα = cos _U1 * sin α1
+        sin²α = sinα * sinα
+        cos²α = 1 - sin²α 
+        _A = 1 + u² / 16384 * (4096 + u² * (negate 768 + u² * (320 - 175 * u²)))
+        _B = u² / 1024 * (256 + u² * (negate 128 + u² * (74 - 47 * u²)))
+
+        -- Solution
+        σ = iterateVincenty accuracy _A _B s b σ1 (s / (b * _A))
+        sinσ = sin σ
+        cosσ = cos σ
+        cosα1 = cos α1
+        sinU1 = sin _U1
+        cosU1 = cos _U1
+        v = sinU1 * cosσ + cosU1 * sinσ * cosα1
+        j = sinU1 * sinσ - cosU1 * cosσ * cosα1
+        w = (1 - f) * sqrt (sin²α + j * j)
+        _Φ2 = atan2 v w
+        λ = atan2 (sinσ * sin α1) (cosU1 * cosσ - sinU1 * sinσ * cosα1)
+        _C = f / 16 * cos²α * (4 - 3 * cos²α)
+
+        _2σm = 2 * σ1 + σ
+        cos2σm = cos _2σm
+        cos²2σm = cos2σm * cos2σm
+        x = σ + _C * sinσ * y
+        y = cos (2 * cos2σm + _C * cosσ * (negate 1 + 2 * cos²2σm))
+        _L = λ * (1 - _C) * f * sinα * x
+
+        _L2 = _L + _L1
+
+        MkQuantity a = semiMajor
+        MkQuantity b = semiMinor
+        a² = a * a
+        b² = b * b
+        u² = cos²α * (a² - b²) / b² 
+
+circum
+    :: (Real a, Fractional a, RealFloat a)
     => LatLng a [u| rad |]
     -> Radius a [u| m |]
     -> TrueCourse a
     -> LatLng Double [u| rad |]
-directVincenty = undefined
-
--- | Using a method from the
--- <http://www.edwilliams.org/avform.htm#LL Aviation Formulary>
--- a point on a cylinder wall is found by going out to the distance of the
--- radius on the given radial true course 'rtc'.
-circum :: Real a
-       => LatLng a [u| rad |]
-       -> Radius a [u| m |]
-       -> TrueCourse a
-       -> LatLng Double [u| rad |]
-circum = directVincenty
+circum x r tc =
+    realToFracLatLng $ vincentyDirect wgs84 accuracy' x r tc
+    where
+        VincentyAccuracy accuracy = defaultVincentyAccuracy
+        accuracy' = VincentyAccuracy $ fromRational accuracy
 
 -- | Generates a pair of lists, the lat/lng of each generated point
 -- and its distance from the center. It will generate 'samples' number of such
