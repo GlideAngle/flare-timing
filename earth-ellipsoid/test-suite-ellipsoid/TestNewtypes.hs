@@ -16,9 +16,11 @@ module TestNewtypes where
 
 -- NOTE: Avoid orphan instance warnings with these newtypes.
 
+import Control.Monad (guard)
 import Test.SmallCheck.Series as SC
 import Test.Tasty.QuickCheck as QC
 import Data.UnitsOfMeasure (u)
+import Data.UnitsOfMeasure.Convert (Convertible)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
@@ -32,11 +34,37 @@ deriving instance Show (LatLng a [u| rad |]) => Show (VincentyTest a)
 newtype ZoneTest = ZoneTest (Zone Rational) deriving Show
 newtype ZonesTest = ZonesTest [Zone Rational] deriving Show
 
-instance (Monad m, SC.Serial m a) => SC.Serial m (VincentyTest a) where
+instance
+    ( Monad m
+    , Serial m a
+    , Real a
+    , Fractional a
+    , Convertible u [u| deg |]
+    )
+    => Serial m (Lat a u) where
+    series = series >>- \x -> guard (x >= minBound && x <= maxBound) >> return x
+
+instance
+    ( Monad m
+    , Serial m a
+    , Real a
+    , Fractional a
+    , Convertible u [u| deg |]
+    )
+    => Serial m (Lng a u) where
+    series = series >>- \x -> guard (x >= minBound && x <= maxBound) >> return x
+
+instance
+    ( Monad m
+    , SC.Serial m a
+    , Real a
+    , Fractional a
+    )
+    => SC.Serial m (VincentyTest a) where
     series = decDepth $ VincentyTest <$>
         cons4 (\xlat xlng ylat ylng ->
-            ( LatLng (Lat $ MkQuantity xlat, Lng $ MkQuantity xlng)
-            , LatLng (Lat $ MkQuantity ylat, Lng $ MkQuantity ylng)
+            ( LatLng (xlat, xlng)
+            , LatLng (ylat, ylng)
             ))
 
 instance Monad m => SC.Serial m ZoneTest where
@@ -73,14 +101,17 @@ instance Monad m => SC.Serial m ZoneTest where
 instance Monad m => SC.Serial m ZonesTest where
     series = decDepth $ cons1 (\xs -> ZonesTest $ (\(ZoneTest x) -> x) <$> xs)
 
-instance Arbitrary a => QC.Arbitrary (VincentyTest a) where
+newtype LatTest a u = LatTest (Lat a u)
+deriving instance (Show (Lat a u)) => Show (LatTest a u)
+
+instance (Real a, Fractional a, Arbitrary a) => QC.Arbitrary (VincentyTest a) where
     arbitrary = VincentyTest <$> do
-        xlat <- arbitrary
-        xlng <- arbitrary
-        ylat <- arbitrary
-        ylng <- arbitrary
-        return ( LatLng (Lat $ MkQuantity xlat, Lng $ MkQuantity xlng)
-               , LatLng (Lat $ MkQuantity ylat, Lng $ MkQuantity ylng)
+        xlat <- arbitraryBoundedRandom
+        xlng <- arbitraryBoundedRandom
+        ylat <- arbitraryBoundedRandom
+        ylng <- arbitraryBoundedRandom
+        return ( LatLng (xlat, xlng)
+               , LatLng (ylat, ylng)
                )
 
 instance QC.Arbitrary ZoneTest where
