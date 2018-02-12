@@ -19,9 +19,11 @@ module Flight.LatLng
     , radToDegLL
     ) where
 
+import System.Random
 import Data.Proxy
-import Data.UnitsOfMeasure (KnownUnit, Unpack, u)
+import Data.UnitsOfMeasure (KnownUnit, Unpack, u, convert, fromRational', toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
+import Data.UnitsOfMeasure.Convert (Convertible)
 import Flight.Units ()
 import qualified Flight.LatLng.Double as D
 import qualified Flight.LatLng.Float as F
@@ -97,3 +99,63 @@ radToDegLL radToDeg (LatLng (Lat lat, Lng lng)) =
     where
         lat' = radToDeg lat
         lng' = radToDeg lng
+
+instance (Fractional a, Convertible u [u| deg |]) => Bounded (Lat a u) where
+    minBound = Lat $ convert [u| - 90 deg |]
+    maxBound = Lat $ convert [u| 90 deg |]
+
+instance (Fractional a, Convertible u [u| deg |]) => Bounded (Lng a u) where
+    minBound = Lng $ convert [u| - 180 deg |]
+    maxBound = Lng $ convert [u| 180 deg |]
+
+instance
+    (Real a, Fractional a, Convertible u [u| deg |])
+    => Random (Lat a u) where
+    randomR (Lat (MkQuantity lo), Lat (MkQuantity hi)) g =
+        (Lat z, g')
+        where
+            (n, g') = next g
+            (a, b) = genRange g
+
+            dn :: Double
+            dn = realToFrac hi - realToFrac lo
+
+            dd :: Double
+            dd = fromIntegral (b - a + 1)
+
+            scale :: Double
+            scale = dn / dd
+
+            y :: Quantity Double u
+            y = MkQuantity $ scale * fromIntegral (n - a) + realToFrac lo
+
+            z :: Quantity a u
+            z = fromRational' . toRational' . convert $ y
+
+    random = randomR (Lat $ convert [u| - 90 deg |], Lat $ convert [u| 90 deg |])
+
+instance
+    (Real a, Fractional a, Convertible u [u| deg |])
+    => Random (Lng a u) where
+    randomR (Lng (MkQuantity lo), Lng (MkQuantity hi)) g =
+        (Lng z, g')
+        where
+            (n, g') = next g
+            (a, b) = genRange g
+
+            dn :: Double
+            dn = realToFrac hi - realToFrac lo
+
+            dd :: Double
+            dd = fromIntegral (b - a + 1)
+
+            scale :: Double
+            scale = dn / dd
+
+            y :: Quantity Double u
+            y = MkQuantity $ scale * fromIntegral (n - a) + realToFrac lo
+
+            z :: Quantity a u
+            z = fromRational' . toRational' . convert $ y
+
+    random = randomR (Lng $ convert [u| - 180 deg |], Lng $ convert [u| 180 deg |])

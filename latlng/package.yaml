@@ -13,6 +13,7 @@ library:
   dependencies:
   - base >=4.5 && <5
   - numbers
+  - random
   - aeson
   - cassava
   - bytestring
