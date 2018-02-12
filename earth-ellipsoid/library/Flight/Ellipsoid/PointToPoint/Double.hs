@@ -8,6 +8,7 @@
 module Flight.Ellipsoid.PointToPoint.Double (distanceVincenty) where
 
 import Prelude hiding (sum, span)
+import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
@@ -56,7 +57,7 @@ import Flight.Ellipsoid
 -- σ
 -- arc length between points on the auxiliary sphere
 vincentyInverse
-    :: (Num a, Floating a, Fractional a, RealFloat a)
+    :: (Num a, Floating a, Fractional a, RealFloat a, Show a)
     => Ellipsoid a
     -> VincentyAccuracy a
     -> a
@@ -84,11 +85,19 @@ vincentyInverse
         sinα = cos _U1 * cos _U2 * sin λ / sin σ
         sin²α = sinα * sinα 
         cos²α = 1 - sin²α 
-        cos2σm = cosσ - 2 * sin _U1 * sin _U2 / cos²α
+
+        cos2σm =
+            if cos²α == 0
+                then
+                    -- NOTE: Start and end points on the equator, _C = 0.
+                    0
+                else
+                    cosσ - 2 * sin _U1 * sin _U2 / cos²α
+
         cos²2σm = cos2σm * cos2σm
         _C = f / 16 * cos²α * (4 - 3 * cos²α)
         x = σ + _C * sinσ * y
-        y = cos (2 * cos2σm + _C * cosσ * (negate 1 + 2 * cos²2σm))
+        y = cos2σm + _C * cosσ * (negate 1 + 2 * cos²2σm)
         λ' = _L + (1 - _C) * f * sinα * x
 
         MkQuantity a = semiMajor
@@ -102,31 +111,46 @@ vincentyInverse
 
         _Δσ =
             _B * sinσ *
-                (cos2σm + _B / 4 *
-                    (cosσ * (negate 1 + 2 * cos²2σm)
-                    - _B / 6
-                    * cos2σm
-                    * (negate 3 + 4 * sin²σ)
-                    * (negate 3 + 4 * cos²2σm)
-                    )
+                (cos2σm
+                    + _B / 4
+                    *
+                        (cosσ * (negate 1 + 2 * cos²2σm)
+                        - _B / 6
+                        * cos2σm
+                        * (negate 3 + 4 * sin²σ)
+                        * (negate 3 + 4 * cos²2σm)
+                        )
                 )
 
-        s = _B * _A * (σ - _Δσ)
+        s = b * _A * (σ - _Δσ)
 
 -- | Sperical distance using inverse Vincenty and floating point numbers.
-distanceVincenty :: RealFloat a => Ellipsoid a -> SpanLatLng a
+distanceVincenty :: (RealFloat a, Show a) => Ellipsoid a -> SpanLatLng a
 distanceVincenty
     ellipsoid
-    (LatLng (Lat (MkQuantity _Φ1), Lng (MkQuantity _L1)))
-    (LatLng (Lat (MkQuantity _Φ2), Lng (MkQuantity _L2))) =
-    TaskDistance . MkQuantity $ d
-    where
-        _U1 = atan $ (1 - f) * tan _Φ1
-        _U2 = atan $ (1 - f) * tan _Φ2
-        _L = _L2 - _L1
-        λ = _L 
-        d = vincentyInverse ellipsoid accuracy' λ _L _U1 _U2
-        f = flattening ellipsoid
+    x@(LatLng xLat@(Lat (MkQuantity _Φ1), xLng@(Lng (MkQuantity _L1))))
+    y@(LatLng yLat@(Lat (MkQuantity _Φ2), yLng@(Lng (MkQuantity _L2))))
 
-        VincentyAccuracy accuracy = defaultVincentyAccuracy
-        accuracy' = VincentyAccuracy $ fromRational accuracy
+    | xLat < minBound = error "Latitude x < -90 deg"
+    | xLat > maxBound = error "Latitude x > 90 deg"
+    | xLng < minBound = error "Longitude x < -180 deg"
+    | xLng > maxBound = error "Longitude x > 180 deg"
+
+    | yLat < minBound = error "Latitude y < -90 deg"
+    | yLat > maxBound = error "Latitude y > 90 deg"
+    | yLng < minBound = error "Longitude y < -180 deg"
+    | yLng > maxBound = error "Longitude y > 180 deg"
+
+    | x == y = TaskDistance [u| 0 m |]
+    | otherwise =
+        TaskDistance . MkQuantity $ d
+        where
+            _U1 = atan $ (1 - f) * tan _Φ1
+            _U2 = atan $ (1 - f) * tan _Φ2
+            _L = _L2 - _L1
+            λ = _L 
+            d = vincentyInverse ellipsoid accuracy' λ _L _U1 _U2
+            f = flattening ellipsoid
+
+            VincentyAccuracy accuracy = defaultVincentyAccuracy
+            accuracy' = VincentyAccuracy $ fromRational accuracy
