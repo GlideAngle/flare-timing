@@ -17,12 +17,13 @@ import Flight.LatLng.Rational (Epsilon(..))
 import Flight.Zone (toRationalLatLng)
 import Flight.Distance (TaskDistance(..), SpanLatLng)
 import Flight.Ellipsoid
-    (Ellipsoid(..), VincentyAccuracy(..)
+    ( Ellipsoid(..), AbnormalLatLng(..), VincentyInverse(..), VincentyAccuracy(..)
     , defaultVincentyAccuracy, flattening, toRationalEllipsoid
     )
 
 -- | The numbers package doesn't have atan2.
 -- SEE: https://hackage.haskell.org/package/base
+-- SEE: https://stackoverflow.com/questions/283406/what-is-the-difference-between-atan-and-atan2-in-c
 atan2' :: Epsilon -> Rational -> Rational -> Rational
 atan2' e@(Epsilon eps) y x
     | x > 0 = atan' $ y / x
@@ -44,17 +45,17 @@ vincentyInverse
     -> Rational
     -> Rational
     -> Rational
-    -> Rational
+    -> VincentyInverse Rational
 vincentyInverse
     e@(Epsilon eps)
     ellipsoid@Ellipsoid{semiMajor, semiMinor}
     accuracy@(VincentyAccuracy tolerance)
     λ _L _U1 _U2 =
     if abs λ > F.pi eps
-        then error "Vincenty not defined for nearly antipodal points."
+        then VincentyAntipodal
         else
             if abs (λ - λ') < tolerance
-                then s
+                then VincentyInverse s
                 else vincentyInverse e ellipsoid accuracy λ' _L _U1 _U2
     where
         f :: Rational
@@ -112,29 +113,49 @@ vincentyInverse
 
         s = b * _A * (σ - _Δσ)
 
+tooFar :: Num a => TaskDistance a
+tooFar = TaskDistance [u| 20000000 m |]
+
 -- | Sperical distance using inverse Vincenty and rational numbers.
 distanceVincenty
-    :: (Real a, Fractional a)
+    :: (Real a, Fractional a, Show a)
     => Epsilon
     -> Ellipsoid a
     -> SpanLatLng a
-distanceVincenty e@(Epsilon eps) ellipsoid
+distanceVincenty epsilon ellipsoid lat lng =
+    case distanceVincenty' epsilon ellipsoid lat lng of
+        VincentyInverse d' -> d'
+        VincentyAntipodal -> tooFar
+        VincentyAbnormal _ -> tooFar
+
+distanceVincenty'
+    :: (Real a, Fractional a)
+    => Epsilon
+    -> Ellipsoid a
+    -> LatLng a [u| rad |]
+    -> LatLng a [u| rad |]
+    -> VincentyInverse (TaskDistance a)
+distanceVincenty' e@(Epsilon eps) ellipsoid
     x@(LatLng (xLat, xLng))
     y@(LatLng (yLat, yLng))
 
-    | xLat < minBound = error "Latitude x < -90 deg"
-    | xLat > maxBound = error "Latitude x > 90 deg"
-    | xLng < minBound = error "Longitude x < -180 deg"
-    | xLng > maxBound = error "Longitude x > 180 deg"
+    | xLat < minBound = VincentyAbnormal LatUnder
+    | xLat > maxBound = VincentyAbnormal LatOver
+    | xLng < minBound = VincentyAbnormal LngUnder
+    | xLng > maxBound = VincentyAbnormal LngOver
 
-    | yLat < minBound = error "Latitude y < -90 deg"
-    | yLat > maxBound = error "Latitude y > 90 deg"
-    | yLng < minBound = error "Longitude y < -180 deg"
-    | yLng > maxBound = error "Longitude y > 180 deg"
+    | yLat < minBound = VincentyAbnormal LatUnder
+    | yLat > maxBound = VincentyAbnormal LatOver
+    | yLng < minBound = VincentyAbnormal LngUnder
+    | yLng > maxBound = VincentyAbnormal LngOver
 
-    | x == y = TaskDistance [u| 0 m |]
+    | x == y = VincentyInverse $ TaskDistance [u| 0 m |]
     | otherwise =
-        TaskDistance . fromRational' . MkQuantity $ d
+        case d of
+            VincentyInverse d' ->
+                VincentyInverse . TaskDistance . fromRational' . MkQuantity $ d'
+            VincentyAntipodal -> VincentyAntipodal
+            VincentyAbnormal ab -> VincentyAbnormal ab
         where
             (LatLng (Lat (MkQuantity _Φ1), Lng (MkQuantity _L1))) =
                     toRationalLatLng x
@@ -151,7 +172,6 @@ distanceVincenty e@(Epsilon eps) ellipsoid
             f = flattening ellipsoidR
             accuracy = defaultVincentyAccuracy
 
-            d :: Rational
             d = vincentyInverse e ellipsoidR accuracy λ _L _U1 _U2
 
             tan' = F.tan eps

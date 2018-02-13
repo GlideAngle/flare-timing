@@ -4,6 +4,8 @@
 
 module Flight.Ellipsoid
     ( Ellipsoid(..)
+    , AbnormalLatLng(..)
+    , VincentyInverse(..)
     , VincentyAccuracy(..)
     , defaultVincentyAccuracy
     , wgs84
@@ -22,6 +24,23 @@ data Ellipsoid a =
         { semiMajor :: Quantity a [u| m |]
         , semiMinor :: Quantity a [u| m |]
         }
+
+data AbnormalLatLng
+    = LatUnder
+    | LatOver
+    | LngUnder
+    | LngOver
+
+data VincentyInverse a
+    = VincentyAbnormal AbnormalLatLng
+    -- ^ Vincenty requires normalized latitude and longitude inputs, in radians
+    -- the equivalent of -90 <= latitude <= 90 and -180 <= longitude <= 180
+    -- degrees.
+    | VincentyAntipodal
+    -- ^ Vincenty's solution to the inverse problem is indeterminate if the
+    -- points are antipodal, checked for when abs λ > π.
+    | VincentyInverse a
+    -- ^ Vincenty's solution to the inverse problem.
 
 toRationalEllipsoid :: Real a => Ellipsoid a -> Ellipsoid Rational
 toRationalEllipsoid Ellipsoid{semiMajor, semiMinor} =

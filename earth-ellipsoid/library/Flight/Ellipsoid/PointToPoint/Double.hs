@@ -14,7 +14,9 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.Distance (TaskDistance(..), SpanLatLng)
 import Flight.Ellipsoid
-    (Ellipsoid(..), VincentyAccuracy(..), defaultVincentyAccuracy, flattening)
+    ( Ellipsoid(..), AbnormalLatLng(..), VincentyInverse(..), VincentyAccuracy(..)
+    , defaultVincentyAccuracy, flattening
+    )
 
 -- SEE: https://en.wikipedia.org/wiki/Vincenty%27s_formulae#Inverse_problem
 -- Notation[edit]
@@ -64,16 +66,16 @@ vincentyInverse
     -> a
     -> a
     -> a
-    -> a
+    -> VincentyInverse a
 vincentyInverse
     ellipsoid@Ellipsoid{semiMajor, semiMinor}
     accuracy@(VincentyAccuracy tolerance)
     λ _L _U1 _U2 =
     if abs λ > pi
-        then error "Vincenty not defined for nearly antipodal points."
+        then VincentyAntipodal
         else
             if abs (λ - λ') < tolerance
-                then s
+                then VincentyInverse s
                 else vincentyInverse ellipsoid accuracy λ' _L _U1 _U2
     where
         f = flattening ellipsoid
@@ -127,26 +129,44 @@ vincentyInverse
 
         s = b * _A * (σ - _Δσ)
 
+tooFar :: Num a => TaskDistance a
+tooFar = TaskDistance [u| 20000000 m |]
+
 -- | Sperical distance using inverse Vincenty and floating point numbers.
 distanceVincenty :: (RealFloat a, Show a) => Ellipsoid a -> SpanLatLng a
-distanceVincenty
+distanceVincenty e lat lng =
+    case distanceVincenty' e lat lng of
+        VincentyInverse d' -> d'
+        VincentyAntipodal -> tooFar
+        VincentyAbnormal _ -> tooFar
+
+distanceVincenty'
+    :: (RealFloat a, Show a)
+    => Ellipsoid a
+    -> LatLng a [u| rad |]
+    -> LatLng a [u| rad |]
+    -> VincentyInverse (TaskDistance a)
+distanceVincenty'
     ellipsoid
     x@(LatLng xLat@(Lat (MkQuantity _Φ1), xLng@(Lng (MkQuantity _L1))))
     y@(LatLng yLat@(Lat (MkQuantity _Φ2), yLng@(Lng (MkQuantity _L2))))
 
-    | xLat < minBound = error "Latitude x < -90 deg"
-    | xLat > maxBound = error "Latitude x > 90 deg"
-    | xLng < minBound = error "Longitude x < -180 deg"
-    | xLng > maxBound = error "Longitude x > 180 deg"
+    | xLat < minBound = VincentyAbnormal LatUnder
+    | xLat > maxBound = VincentyAbnormal LatOver
+    | xLng < minBound = VincentyAbnormal LngUnder
+    | xLng > maxBound = VincentyAbnormal LngOver
 
-    | yLat < minBound = error "Latitude y < -90 deg"
-    | yLat > maxBound = error "Latitude y > 90 deg"
-    | yLng < minBound = error "Longitude y < -180 deg"
-    | yLng > maxBound = error "Longitude y > 180 deg"
+    | yLat < minBound = VincentyAbnormal LatUnder
+    | yLat > maxBound = VincentyAbnormal LatOver
+    | yLng < minBound = VincentyAbnormal LngUnder
+    | yLng > maxBound = VincentyAbnormal LngOver
 
-    | x == y = TaskDistance [u| 0 m |]
+    | x == y = VincentyInverse $ TaskDistance [u| 0 m |]
     | otherwise =
-        TaskDistance . MkQuantity $ d
+        case d of
+            VincentyInverse d' -> VincentyInverse . TaskDistance . MkQuantity $ d'
+            VincentyAntipodal -> VincentyAntipodal
+            VincentyAbnormal ab -> VincentyAbnormal ab
         where
             _U1 = atan $ (1 - f) * tan _Φ1
             _U2 = atan $ (1 - f) * tan _Φ2
