@@ -69,9 +69,12 @@ vincentyInverse
     ellipsoid@Ellipsoid{semiMajor, semiMinor}
     accuracy@(VincentyAccuracy tolerance)
     λ _L _U1 _U2 =
-    if abs (λ - λ') < tolerance
-       then s
-       else vincentyInverse ellipsoid accuracy λ' _L _U1 _U2
+    if abs λ > pi
+        then error "Vincenty not defined for nearly antipodal points."
+        else
+            if abs (λ - λ') < tolerance
+                then s
+                else vincentyInverse ellipsoid accuracy λ' _L _U1 _U2
     where
         f = flattening ellipsoid
 

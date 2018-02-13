@@ -21,6 +21,21 @@ import Flight.Ellipsoid
     , defaultVincentyAccuracy, flattening, toRationalEllipsoid
     )
 
+-- | The numbers package doesn't have atan2.
+-- SEE: https://hackage.haskell.org/package/base
+atan2' :: Epsilon -> Rational -> Rational -> Rational
+atan2' e@(Epsilon eps) y x
+    | x > 0 = atan' $ y / x
+    | x == 0 && y > 0 = pi' / 2
+    | x <  0 && y > 0 = pi' + atan' (y / x)
+    | (x <= 0 && y < 0) = negate $ atan2' e (-y) x
+    | y == 0 = pi'
+    | x == 0 && y == 0 = y
+    | otherwise = atan' $ y / x
+    where
+        atan' = F.atan eps
+        pi' = F.pi eps
+
 vincentyInverse
     :: Epsilon
     -> Ellipsoid Rational
@@ -35,9 +50,12 @@ vincentyInverse
     ellipsoid@Ellipsoid{semiMajor, semiMinor}
     accuracy@(VincentyAccuracy tolerance)
     λ _L _U1 _U2 =
-    if abs (λ - λ') < tolerance
-       then s
-       else vincentyInverse e ellipsoid accuracy λ' _L _U1 _U2
+    if abs λ > F.pi eps
+        then error "Vincenty not defined for nearly antipodal points."
+        else
+            if abs (λ - λ') < tolerance
+                then s
+                else vincentyInverse e ellipsoid accuracy λ' _L _U1 _U2
     where
         f :: Rational
         f = toRational . flattening $ ellipsoid
@@ -48,7 +66,7 @@ vincentyInverse
         j² = j * j
         sinσ = F.sqrt eps $ i² + j²
         cosσ = sin' _U1 * sin' _U2 + cos' _U1 * cos' _U2 * cos' λ
-        σ = atan' $ sinσ / cosσ
+        σ = atan2' e sinσ cosσ
         sinα = cos' _U1 * cos' _U2 * sin' λ / sin' σ
         sin²α = sinα * sinα 
         cos²α = 1 - sin²α 
@@ -69,7 +87,6 @@ vincentyInverse
 
         sin' = F.sin eps
         cos' = F.cos eps
-        atan' = F.atan eps
 
         MkQuantity a = semiMajor
         MkQuantity b = semiMinor

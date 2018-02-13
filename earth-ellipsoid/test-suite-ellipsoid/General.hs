@@ -26,7 +26,7 @@ import Data.UnitsOfMeasure (u, zero)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
-import Flight.LatLng.Rational (defEps)
+import Flight.LatLng.Rational (Epsilon(..), defEps)
 import Flight.Distance (TaskDistance(..), PathDistance(..), SpanLatLng)
 import Flight.Zone
     ( Zone(..)
@@ -309,7 +309,8 @@ distanceVincenty :: VincentyTest Rational -> Bool
 distanceVincenty (VincentyTest (x, y)) =
     [u| 0 m |] <= d
     where
-        TaskDistance d = Rat.distanceVincenty defEps wgs84 x y
+        e = Epsilon $ 1 % 1000000000000000000
+        TaskDistance d = Rat.distanceVincenty e wgs84 x y
 
 distancePoint :: ZonesTest Rational -> Bool
 distancePoint (ZonesTest xs) =
