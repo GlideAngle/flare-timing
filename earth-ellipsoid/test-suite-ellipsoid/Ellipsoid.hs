@@ -2,6 +2,7 @@ module Ellipsoid (main) where
 
 import Test.Tasty (TestTree, testGroup, defaultMain)
 import Test.Tasty.QuickCheck as QC
+import Test.Tasty.Providers as QC
 
 import General
 import Specific
@@ -29,6 +30,14 @@ units = testGroup "Units"
 qcProps :: TestTree
 qcProps = testGroup "(checked by QuickCheck)"
     [ QC.testProperty "VincentyF distances, are not negative" distanceVincentyF
-    , QC.testProperty "Vincenty distances, are not negative" distanceVincenty
-    , QC.testProperty "Zone distances, point-to-point, are not negative" distancePoint
+    , QC.singleTest
+        "Vincenty distances, are not negative"
+        $ QC.QC
+        $ QC.withMaxSuccess 10
+        $ QC.property distanceVincenty
+    , QC.singleTest
+        "Zone distances, point-to-point, are not negative"
+        $ QC.QC
+        $ QC.withMaxSuccess 10
+        $ QC.property distancePoint
     ]
