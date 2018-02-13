@@ -31,8 +31,11 @@ newtype VincentyTest a =
 
 deriving instance Show (LatLng a [u| rad |]) => Show (VincentyTest a)
 
-newtype ZoneTest = ZoneTest (Zone Rational) deriving Show
-newtype ZonesTest = ZonesTest [Zone Rational] deriving Show
+newtype ZoneTest a = ZoneTest (Zone a)
+newtype ZonesTest a = ZonesTest [Zone a]
+
+deriving instance (Real a, Show a, Show (LatLng a [u| rad |])) => Show (ZoneTest a)
+deriving instance (Real a, Show a, Show (LatLng a [u| rad |])) => Show (ZonesTest a)
 
 instance
     ( Monad m
@@ -67,44 +70,55 @@ instance
             , LatLng (ylat, ylng)
             ))
 
-instance Monad m => SC.Serial m ZoneTest where
+instance
+    ( Monad m
+    , SC.Serial m a
+    , Real a
+    , Fractional a
+    )
+    => SC.Serial m (ZoneTest a) where
     series = decDepth $ ZoneTest <$>
         cons2 (\lat lng ->
-            Point (LatLng (Lat $ MkQuantity lat, Lng $ MkQuantity lng)))
+            Point (LatLng (lat, lng)))
 
         \/ cons3 (\lat lng b ->
             Vector
                 (Bearing $ MkQuantity b)
-                (LatLng (Lat $ MkQuantity lat, Lng $ MkQuantity lng)))
+                (LatLng (lat, lng)))
 
         \/ cons3 (\lat lng (SC.Positive r) ->
             Cylinder
                 (Radius $ MkQuantity r)
-                (LatLng (Lat $ MkQuantity lat, Lng $ MkQuantity lng)))
+                (LatLng (lat, lng)))
 
         \/ cons4 (\lat lng (SC.Positive r) i ->
             Conical
                 (Incline $ MkQuantity i)
                 (Radius $ MkQuantity r)
-                (LatLng (Lat $ MkQuantity lat, Lng $ MkQuantity lng)))
+                (LatLng (lat, lng)))
 
         \/ cons3 (\lat lng (SC.Positive r) ->
             Line
                 (Radius $ MkQuantity r)
-                (LatLng (Lat $ MkQuantity lat, Lng $ MkQuantity lng)))
+                (LatLng (lat, lng)))
 
         \/ cons3 (\lat lng (SC.Positive r) ->
             SemiCircle
                 (Radius $ MkQuantity r)
-                (LatLng (Lat $ MkQuantity lat, Lng $ MkQuantity lng)))
+                (LatLng (lat, lng)))
 
-instance Monad m => SC.Serial m ZonesTest where
+instance
+    ( Monad m
+    , SC.Serial m a
+    , Real a
+    , Fractional a
+    )
+    => SC.Serial m (ZonesTest a) where
     series = decDepth $ cons1 (\xs -> ZonesTest $ (\(ZoneTest x) -> x) <$> xs)
 
-newtype LatTest a u = LatTest (Lat a u)
-deriving instance (Show (Lat a u)) => Show (LatTest a u)
-
-instance (Real a, Fractional a, Arbitrary a) => QC.Arbitrary (VincentyTest a) where
+instance
+    (Real a, Fractional a, Arbitrary a)
+    => QC.Arbitrary (VincentyTest a) where
     arbitrary = VincentyTest <$> do
         xlat <- arbitraryBoundedRandom
         xlng <- arbitraryBoundedRandom
@@ -114,11 +128,13 @@ instance (Real a, Fractional a, Arbitrary a) => QC.Arbitrary (VincentyTest a) wh
                , LatLng (ylat, ylng)
                )
 
-instance QC.Arbitrary ZoneTest where
+instance
+    (Real a, Fractional a, Arbitrary a)
+    => QC.Arbitrary (ZoneTest a) where
     arbitrary = ZoneTest <$> do
-        lat <- arbitrary
-        lng <- arbitrary
-        let ll = LatLng (Lat $ MkQuantity lat, Lng $ MkQuantity lng)
+        lat <- arbitraryBoundedRandom
+        lng <- arbitraryBoundedRandom
+        let ll = LatLng (lat, lng)
 
         QC.frequency $
             zip
@@ -142,7 +158,9 @@ instance QC.Arbitrary ZoneTest where
                     return $ SemiCircle (Radius $ MkQuantity r) ll
                 ]
 
-instance QC.Arbitrary ZonesTest where
+instance
+    (Real a, Fractional a, Arbitrary a)
+    => QC.Arbitrary (ZonesTest a) where
     arbitrary = do
         len <- choose (2, 4)
         xs <- vector len

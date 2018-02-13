@@ -311,7 +311,7 @@ distanceVincenty (VincentyTest (x, y)) =
     where
         TaskDistance d = Rat.distanceVincenty defEps wgs84 x y
 
-distancePoint :: ZonesTest -> Bool
+distancePoint :: ZonesTest Rational -> Bool
 distancePoint (ZonesTest xs) =
     (\(PathDistance d _) -> correctPoint xs d)
     $ distancePointToPoint span xs
