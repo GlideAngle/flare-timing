@@ -6,6 +6,7 @@ import Test.Tasty.Providers as QC
 
 import General
 import Specific
+import Bedford
 
 main :: IO ()
 main = defaultMain tests
@@ -23,7 +24,8 @@ properties = testGroup "Properties"
 
 units :: TestTree
 units = testGroup "Units"
-        [ zoneUnits
+        [ bedfordUnits
+        , zoneUnits
         , specificUnits
         ]
 
