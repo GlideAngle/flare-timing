@@ -92,6 +92,8 @@ distanceVincenty'
     x@(LatLng xLat@(Lat (MkQuantity _Φ1), xLng@(Lng (MkQuantity _L1))))
     y@(LatLng yLat@(Lat (MkQuantity _Φ2), yLng@(Lng (MkQuantity _L2))))
 
+    | x == y = VincentyInverse $ TaskDistance [u| 0 m |]
+
     | xLat < minBound = VincentyAbnormal LatUnder
     | xLat > maxBound = VincentyAbnormal LatOver
     | xLng < minBound = VincentyAbnormal LngUnder
@@ -102,7 +104,6 @@ distanceVincenty'
     | yLng < minBound = VincentyAbnormal LngUnder
     | yLng > maxBound = VincentyAbnormal LngOver
 
-    | x == y = VincentyInverse $ TaskDistance [u| 0 m |]
     | otherwise =
         case d of
             VincentyInverse d' ->

@@ -117,6 +117,8 @@ distanceVincenty' e@(Epsilon eps) ellipsoid
     x@(LatLng (xLat, xLng))
     y@(LatLng (yLat, yLng))
 
+    | x == y = VincentyInverse $ TaskDistance [u| 0 m |]
+
     | xLat < minBound = VincentyAbnormal LatUnder
     | xLat > maxBound = VincentyAbnormal LatOver
     | xLng < minBound = VincentyAbnormal LngUnder
@@ -127,7 +129,6 @@ distanceVincenty' e@(Epsilon eps) ellipsoid
     | yLng < minBound = VincentyAbnormal LngUnder
     | yLng > maxBound = VincentyAbnormal LngOver
 
-    | x == y = VincentyInverse $ TaskDistance [u| 0 m |]
     | otherwise =
         case d of
             VincentyInverse d' ->
