@@ -18,46 +18,6 @@ import Flight.Ellipsoid
     , defaultVincentyAccuracy, flattening
     )
 
--- SEE: https://en.wikipedia.org/wiki/Vincenty%27s_formulae#Inverse_problem
--- Notation[edit]
--- Define the following notation:
---
--- a
--- length of semi-major axis of the ellipsoid (radius at equator) (6378137.0
--- metres in WGS-84)
---
--- ƒ
--- flattening of the ellipsoid
--- (1/298.257223563 in WGS-84)
---
--- b = (1 − ƒ) a
--- length of semi-minor axis of the ellipsoid (radius at the poles)
--- (6356752.314245 meters in WGS-84)
---
--- Φ1, Φ2
--- latitude of the points
---
--- U1 = arctan[(1 − ƒ) tan Φ1]
--- U2 = arctan[(1 − ƒ) tan Φ2]
--- reduced latitude (latitude on the auxiliary sphere)
---
--- L = L2 − L1
--- difference in longitude of two points
---
--- λ1, λ2
--- longitude of the points on the auxiliary sphere
---
--- α1, α2
--- forward azimuths at the points
---
--- α
--- azimuth at the equator
---
--- s
--- ellipsoidal distance between the two points
---
--- σ
--- arc length between points on the auxiliary sphere
 vincentyInverse
     :: (Num a, Floating a, Fractional a, RealFloat a, Show a)
     => Ellipsoid a
