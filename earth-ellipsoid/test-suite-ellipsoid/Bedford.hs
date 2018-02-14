@@ -23,8 +23,9 @@ module Bedford (bedfordUnits) where
 import Prelude hiding (min)
 import Data.Ratio ((%))
 import Test.Tasty (TestTree, testGroup)
-import Test.Tasty.HUnit as HU ((@?=), testCase)
-import Data.UnitsOfMeasure (u, convert, toRational')
+import Test.Tasty.HUnit as HU (testCase)
+import Test.Tasty.HUnit.Compare ((@?<=))
+import Data.UnitsOfMeasure ((-:), u, convert, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
@@ -54,6 +55,10 @@ toDeg (DMS (deg, min, s)) =
         where
             d = fromIntegral deg
             m = fromIntegral min 
+
+diff :: Num a => TaskDistance a -> TaskDistance a -> TaskDistance a
+diff (TaskDistance a) (TaskDistance b) =
+    TaskDistance $ a -: b
 
 points :: [((DMS, DMS), (DMS, DMS))]
 points =
@@ -114,69 +119,70 @@ points =
 
 solutions :: [TaskDistance Double]
 solutions =
-    TaskDistance . MkQuantity <$>
-    [ 80466.478
-    , 80466.478
-    , 80466.478
-
-    , 80466.477
-    , 80466.478
-    , 80466.478
-
-    , 80466.476
-    , 80466.477
-    , 80466.478
-
-    , 80466.478
-    , 80466.478
-    , 80466.478
-
-    , 482798.868
-    , 482798.868
-    , 482798.868
-
-    , 482798.868
-    , 482798.868
-    , 482798.868
-
-    , 482798.868
-    , 482798.868
-    , 482798.868
-
-    , 804664.780
-    , 804664.780
-    , 804664.780
-
-    , 804664.780
-    , 804664.780
-    , 804664.780
-
-    , 804664.780
-    , 804664.780
-    , 804664.780
-
-    , 4827988.683
-    , 4827988.683
-    , 4827988.683
-
-    , 4827988.683
-    , 4827988.683
-    , 4827988.683
-
-    , 4827988.683
-    , 4827988.683
-    , 4827988.683
+    TaskDistance . convert <$>
+    [ [u| 80.471341 km |]
+    , [u| 80.467842 km |]
+    , [u| 80.463616 km |]
+    , [u| 80.468422 km |]
+    , [u| 80.466106 km |]
+    , [u| 80.463284 km |]
+    , [u| 80.465497 km |]
+    , [u| 80.464363 km |]
+    , [u| 80.462951 km |]
+    , [u| 80.466994 km |]
+    , [u| 80.4659 km |]
+    , [u| 80.463589 km |]
+    , [u| 482.827311 km |]
+    , [u| 482.805398 km |]
+    , [u| 482.780699 km |]
+    , [u| 482.810039 km |]
+    , [u| 482.795399 km |]
+    , [u| 482.778968 km |]
+    , [u| 482.793074 km |]
+    , [u| 482.786227 km |]
+    , [u| 482.777777 km |]
+    , [u| 804.711122 km |]
+    , [u| 804.673374 km |]
+    , [u| 804.633279 km |]
+    , [u| 804.682723 km |]
+    , [u| 804.657459 km |]
+    , [u| 804.630834 km |]
+    , [u| 804.655123 km |]
+    , [u| 804.643847 km |]
+    , [u| 804.629907 km |]
+    , [u| 4828.136258 km |]
+    , [u| 4827.891819 km |]
+    , [u| 4827.781145 km |]
+    , [u| 4828.022935 km |]
+    , [u| 4827.861414 km |]
+    , [u| 4827.797208 km |]
+    , [u| 4827.933527 km |]
+    , [u| 4827.899946 km |]
+    , [u| 4827.858337 km |]
     ]
+
+mmTolerance :: Quantity Double [u| mm |]
+mmTolerance = [u| 1 % 2 mm |]
 
 dblChecks :: [TaskDistance Double] -> [((DMS, DMS), (DMS, DMS))] -> [TestTree]
 dblChecks slns pts =
     zipWith
-        (\d (x, y) ->
-            HU.testCase (show x ++ " to " ++ show y)
-            $ Dbl.distanceVincenty wgs84 (toLL x) (toLL y) @?= d)
+        (\expected (x, y) ->
+            HU.testCase
+                ( show x
+                ++ " to "
+                ++ show y
+                ++ " = "
+                ++ show expected
+                )
+            $ diff (found x y) expected
+            @?<= tolerance)
         slns
         pts
     where
+        tolerance = TaskDistance . convert $ mmTolerance
+        found x y = Dbl.distanceVincenty wgs84 (toLL x) (toLL y)
+
         toLL :: (DMS, DMS) -> LatLng Double [u| rad |]
         toLL (lat, lng) =
             LatLng (Lat lat'', Lng lng'')
@@ -194,12 +200,22 @@ ratChecks :: [TaskDistance Double] -> [((DMS, DMS), (DMS, DMS))] -> [TestTree]
 ratChecks slns pts =
     zipWith
         (\(TaskDistance d) (x, y) ->
-            HU.testCase (show x ++ " to " ++ show y)
-            $ Rat.distanceVincenty e wgs84 (toLL x) (toLL y)
-            @?= TaskDistance (toRational' d))
+            HU.testCase
+                ( show x
+                ++ " to "
+                ++ show y
+                ++ " = "
+                ++ show (expected d)
+                )
+            $ diff (found x y) (expected d)
+            @?<= tolerance)
         slns
         pts
     where
+        tolerance = TaskDistance [u| 20 % 1000 m |]
+        expected d = TaskDistance $ toRational' d
+        found x y = Rat.distanceVincenty e wgs84 (toLL x) (toLL y)
+
         e = Epsilon $ 1 % 1000000000000000000
         toLL :: (DMS, DMS) -> LatLng Rational [u| rad |]
         toLL (lat, lng) =
@@ -216,7 +232,7 @@ ratChecks slns pts =
 
 bedfordUnits :: TestTree
 bedfordUnits =
-    testGroup "Bedford Institute of Oceanography distances"
+    testGroup ("Bedford Institute of Oceanography distances ± " ++ show mmTolerance)
     [ testGroup "with doubles" $ dblChecks solutions points
     , testGroup "with rationals" $ ratChecks solutions points
     ]
