@@ -46,15 +46,15 @@ toKm' f (TaskDistance d) =
 
 showDistance :: Quantity Rational [u| m |] -> String
 showDistance d =
-    "d = " ++ show dbl
+    show dbl
     where
         km = convert d :: Quantity Rational [u| km |]
-        Flip rounded = dpRound 3 <$> Flip km
+        Flip rounded = dpRound 6 <$> Flip km
         dbl = fromRational' rounded :: Quantity Double [u| km |]
 
 unTaskDistance :: (Real a, Fractional a) => TaskDistance a -> a
 unTaskDistance (TaskDistance d) =
-    fromRational $ dpRound 3 dKm
+    fromRational $ dpRound 6 dKm
     where 
         MkQuantity dKm = toRational' $ convert d :: Quantity _ [u| km |]
 
