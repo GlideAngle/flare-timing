@@ -100,7 +100,7 @@ vincentyInverse
                     cosσ - 2 * sin _U1 * sin _U2 / cos²α
 
         cos²2σm = cos2σm * cos2σm
-        _C = f / 16 * cos²α * (4 - 3 * cos²α)
+        _C = f / 16 * cos²α * (4 + f * (4 - 3 * cos²α))
         x = σ + _C * sinσ * y
         y = cos2σm + _C * cosσ * (negate 1 + 2 * cos²2σm)
         λ' = _L + (1 - _C) * f * sinα * x
