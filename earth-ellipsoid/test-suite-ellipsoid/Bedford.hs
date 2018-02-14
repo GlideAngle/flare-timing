@@ -21,15 +21,18 @@
 module Bedford (bedfordUnits) where
 
 import Prelude hiding (min)
+import Data.Ratio ((%))
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit as HU ((@?=), testCase)
-import Data.UnitsOfMeasure (u, convert)
+import Data.UnitsOfMeasure (u, convert, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
+import Flight.LatLng.Rational (Epsilon(..))
 import Flight.Distance (TaskDistance(..))
 import qualified Flight.Ellipsoid.PointToPoint.Double as Dbl (distanceVincenty)
+import qualified Flight.Ellipsoid.PointToPoint.Rational as Rat (distanceVincenty)
 import Flight.Ellipsoid (wgs84)
 
 newtype DMS = DMS (Int, Int, Double)
@@ -46,19 +49,6 @@ showDMS (DMS (deg, min, sec)) =
 toDeg :: DMS -> Double
 toDeg (DMS (deg, min, sec)) =
     fromIntegral deg + (fromIntegral min / 60) + (sec / 3600)
-
-toLL :: (DMS, DMS) -> LatLng Double [u| rad |]
-toLL (lat, lng) =
-    LatLng (Lat lat'', Lng lng'')
-        where
-            lat' :: Quantity Double [u| deg |]
-            lat' = MkQuantity . toDeg $ lat
-
-            lng' :: Quantity Double [u| deg |]
-            lng' = MkQuantity . toDeg $ lng
-
-            lat'' = convert lat' :: Quantity _ [u| rad |]
-            lng'' = convert lng' :: Quantity _ [u| rad |]
 
 points :: [((DMS, DMS), (DMS, DMS))]
 points =
@@ -173,16 +163,55 @@ solutions =
     , 4827988.683
     ]
 
-checks :: [TaskDistance Double] -> [((DMS, DMS), (DMS, DMS))] -> [TestTree]
-checks slns pts =
+dblChecks :: [TaskDistance Double] -> [((DMS, DMS), (DMS, DMS))] -> [TestTree]
+dblChecks slns pts =
     zipWith
         (\d (x, y) ->
             HU.testCase (show x ++ " to " ++ show y)
             $ Dbl.distanceVincenty wgs84 (toLL x) (toLL y) @?= d)
         slns
         pts
+    where
+        toLL :: (DMS, DMS) -> LatLng Double [u| rad |]
+        toLL (lat, lng) =
+            LatLng (Lat lat'', Lng lng'')
+                where
+                    lat' :: Quantity Double [u| deg |]
+                    lat' = MkQuantity . toDeg $ lat
+
+                    lng' :: Quantity Double [u| deg |]
+                    lng' = MkQuantity . toDeg $ lng
+
+                    lat'' = convert lat' :: Quantity _ [u| rad |]
+                    lng'' = convert lng' :: Quantity _ [u| rad |]
+
+ratChecks :: [TaskDistance Double] -> [((DMS, DMS), (DMS, DMS))] -> [TestTree]
+ratChecks slns pts =
+    zipWith
+        (\(TaskDistance d) (x, y) ->
+            HU.testCase (show x ++ " to " ++ show y)
+            $ Rat.distanceVincenty e wgs84 (toLL x) (toLL y)
+            @?= TaskDistance (toRational' d))
+        slns
+        pts
+    where
+        e = Epsilon $ 1 % 1000000000000000000
+        toLL :: (DMS, DMS) -> LatLng Rational [u| rad |]
+        toLL (lat, lng) =
+            LatLng (Lat lat'', Lng lng'')
+                where
+                    lat' :: Quantity Rational [u| deg |]
+                    lat' = toRational' . MkQuantity . toDeg $ lat
+
+                    lng' :: Quantity Rational [u| deg |]
+                    lng' = toRational' . MkQuantity . toDeg $ lng
+
+                    lat'' = convert lat' :: Quantity _ [u| rad |]
+                    lng'' = convert lng' :: Quantity _ [u| rad |]
 
 bedfordUnits :: TestTree
 bedfordUnits =
     testGroup "Bedford Institute of Oceanography distances"
-    $ checks solutions points
+    [ testGroup "with doubles" $ dblChecks solutions points
+    , testGroup "with rationals" $ ratChecks solutions points
+    ]
