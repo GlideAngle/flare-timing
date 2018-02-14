@@ -89,11 +89,12 @@ toRationalEllipsoid Ellipsoid{semiMajor, semiMinor} =
         }
 
 -- SEE: https://en.wikipedia.org/wiki/World_Geodetic_System
+-- https://en.wikipedia.org/wiki/World_Geodetic_System#A_new_World_Geodetic_System:_WGS_84
 wgs84 :: Fractional a => Ellipsoid a
 wgs84 =
     Ellipsoid
         { semiMajor = [u| 6378137 m |]
-        , semiMinor = [u| 6356752.3142 m |]
+        , semiMinor = [u| 6356752.314245 m |]
         }
 
 flattening :: Fractional a => Ellipsoid a -> a
