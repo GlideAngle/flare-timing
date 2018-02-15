@@ -46,25 +46,60 @@ vincentyInverse
     -> Rational
     -> Rational
     -> VincentyInverse Rational
-vincentyInverse
+vincentyInverse e@(Epsilon eps) ellipsoid accuracy λ _L _U1 _U2 =
+    vincentyLoop
+        e
+        ellipsoid
+        accuracy
+        λ
+        _L
+        (toRational . flattening $ ellipsoid)
+        ss
+        cc
+        (sinU1 * sinU2)
+        (cosU1 * cosU2)
+    where
+        sin' = F.sin eps
+        cos' = F.cos eps
+        ss@(sinU1, sinU2) = (sin' _U1, sin' _U2)
+        cc@(cosU1, cosU2) = (cos' _U1, cos' _U2)
+
+vincentyLoop
+    :: Epsilon
+    -> Ellipsoid Rational
+    -> VincentyAccuracy Rational
+    -> Rational
+    -> Rational
+    -> Rational
+    -> (Rational, Rational)
+    -> (Rational, Rational)
+    -> Rational
+    -> Rational
+    -> VincentyInverse Rational
+vincentyLoop
     e@(Epsilon eps)
     ellipsoid@Ellipsoid{semiMajor = MkQuantity a, semiMinor = MkQuantity b}
     accuracy@(VincentyAccuracy tolerance)
-    λ _L _U1 _U2 =
+    λ
+    _L 
+    f
+    ss@(sinU1, sinU2)
+    cc@(cosU1, cosU2)
+    sinU1sinU2
+    cosU1cosU2 =
     if abs λ > F.pi eps
         then VincentyAntipodal
         else
             if abs (λ - λ') < tolerance
                 then VincentyInverse $ b * _A * (σ - _Δσ)
-                else vincentyInverse e ellipsoid accuracy λ' _L _U1 _U2
+                else
+                    vincentyLoop
+                        e ellipsoid accuracy λ' _L f ss cc sinU1sinU2 cosU1cosU2
     where
         sin' = F.sin eps
         cos' = F.cos eps
-        f = toRational . flattening $ ellipsoid
-        (sinU1, sinU2, sinλ) = (sin' _U1, sin' _U2, sin' λ)
-        (cosU1, cosU2, cosλ) = (cos' _U1, cos' _U2, cos' λ)
-        sinU1sinU2 = sinU1 * sinU2
-        cosU1cosU2 = cosU1 * cosU2
+        sinλ = sin' λ
+        cosλ = cos' λ
 
         i = cosU2 * sinλ
         j = cosU1 * sinU2 - sinU1 * cosU2 * cosλ
@@ -93,6 +128,7 @@ vincentyInverse
         y =
             cosσ * (-1 + 2 * cos²2σm)
             - _B / 6 * cos2σm * (-3 + 4 * sin²σ) * (-3 + 4 * cos²2σm)
+
 tooFar :: Num a => TaskDistance a
 tooFar = TaskDistance [u| 20000000 m |]
 
