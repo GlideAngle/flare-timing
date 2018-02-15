@@ -44,88 +44,61 @@ vincentyInverse
     -> Ellipsoid Rational
     -> VincentyAccuracy Rational
     -> Rational
-    -> Rational
     -> VincentyInverse Rational
-vincentyInverse _U1 _U2 e@(Epsilon eps) ellipsoid =
-    vincentyLoop
-        (toRational . flattening $ ellipsoid)
-        ss
-        cc
-        (sinU1 * sinU2)
-        (cosU1 * cosU2)
-        e
-        ellipsoid
-    where
-        sin' = F.sin eps
-        cos' = F.cos eps
-        ss@(sinU1, sinU2) = (sin' _U1, sin' _U2)
-        cc@(cosU1, cosU2) = (cos' _U1, cos' _U2)
-
-vincentyLoop
-    :: Rational
-    -> (Rational, Rational)
-    -> (Rational, Rational)
-    -> Rational
-    -> Rational
-    -> Epsilon
-    -> Ellipsoid Rational
-    -> VincentyAccuracy Rational
-    -> Rational
-    -> Rational
-    -> VincentyInverse Rational
-vincentyLoop
-    f
-    ss@(sinU1, sinU2)
-    cc@(cosU1, cosU2)
-    sinU1sinU2
-    cosU1cosU2
+vincentyInverse
+    _U1 _U2
     e@(Epsilon eps)
     ellipsoid@Ellipsoid{semiMajor = MkQuantity a, semiMinor = MkQuantity b}
-    accuracy@(VincentyAccuracy tolerance)
-    λ
+    (VincentyAccuracy tolerance)
     _L =
-    if abs λ > F.pi eps
-        then VincentyAntipodal
-        else
-            if abs (λ - λ') < tolerance
-                then VincentyInverse $ b * _A * (σ - _Δσ)
-                else
-                    vincentyLoop
-                        f ss cc sinU1sinU2 cosU1cosU2
-                        e ellipsoid accuracy λ' _L
+    loop _L
     where
         sin' = F.sin eps
         cos' = F.cos eps
-        sinλ = sin' λ
-        cosλ = cos' λ
+        (sinU1, sinU2) = (sin' _U1, sin' _U2)
+        (cosU1, cosU2) = (cos' _U1, cos' _U2)
+        sinU1sinU2 = sinU1 * sinU2
+        cosU1cosU2 = cosU1 * cosU2
+        f = toRational . flattening $ ellipsoid
 
-        i = cosU2 * sinλ
-        j = cosU1 * sinU2 - sinU1 * cosU2 * cosλ
-        sin²σ = i * i + j * j
-        sinσ = F.sqrt eps sin²σ
-        cosσ = sinU1sinU2 + cosU1cosU2 * cosλ
+        loop λ =
+            if abs λ > F.pi eps
+                then VincentyAntipodal
+                else
+                    if abs (λ - λ') < tolerance
+                        then VincentyInverse $ b * _A * (σ - _Δσ)
+                        else loop λ'
+            where
+                sinλ = sin' λ
+                cosλ = cos' λ
 
-        σ = atan2' e sinσ cosσ
+                i = cosU2 * sinλ
+                j = cosU1 * sinU2 - sinU1 * cosU2 * cosλ
+                sin²σ = i * i + j * j
+                sinσ = F.sqrt eps sin²σ
+                cosσ = sinU1sinU2 + cosU1cosU2 * cosλ
 
-        sinα = cosU1cosU2 * sinλ / sinσ
-        cos²α = 1 - sinα * sinα
+                σ = atan2' e sinσ cosσ
 
-        -- NOTE: Start and end points on the equator, _C = 0.
-        cos2σm = if cos²α == 0 then 0 else cosσ - 2 * sinU1sinU2 / cos²α
+                sinα = cosU1cosU2 * sinλ / sinσ
+                cos²α = 1 - sinα * sinα
 
-        cos²2σm = cos2σm * cos2σm
-        _C = f / 16 * cos²α * (4 + f * (4 - 3 * cos²α))
-        λ' = _L + (1 - _C) * f * sinα * (σ + _C * sinσ * x)
-        x = cos2σm + _C * cosσ * (-1 + 2 * cos²2σm)
+                -- NOTE: Start and end points on the equator, _C = 0.
+                cos2σm = if cos²α == 0 then 0 else cosσ - 2 * sinU1sinU2 / cos²α
 
-        u² = let b² = b * b in cos²α * (a * a - b²) / b² 
-        _A = 1 + u² / 16384 * (4096 + u² * (-768 + u² * (320 - 175 * u²)))
-        _B = u² / 1024 * (256 + u² * (-128 + u² * (74 - 47 * u²)))
+                cos²2σm = cos2σm * cos2σm
+                _C = f / 16 * cos²α * (4 + f * (4 - 3 * cos²α))
+                λ' = _L + (1 - _C) * f * sinα * (σ + _C * sinσ * x)
+                x = cos2σm + _C * cosσ * (-1 + 2 * cos²2σm)
 
-        _Δσ = _B * sinσ * (cos2σm + _B / 4 * y)
-        y =
-            cosσ * (-1 + 2 * cos²2σm)
-            - _B / 6 * cos2σm * (-3 + 4 * sin²σ) * (-3 + 4 * cos²2σm)
+                u² = let b² = b * b in cos²α * (a * a - b²) / b² 
+                _A = 1 + u² / 16384 * (4096 + u² * (-768 + u² * (320 - 175 * u²)))
+                _B = u² / 1024 * (256 + u² * (-128 + u² * (74 - 47 * u²)))
+
+                _Δσ = _B * sinσ * (cos2σm + _B / 4 * y)
+                y =
+                    cosσ * (-1 + 2 * cos²2σm)
+                    - _B / 6 * cos2σm * (-3 + 4 * sin²σ) * (-3 + 4 * cos²2σm)
 
 tooFar :: Num a => TaskDistance a
 tooFar = TaskDistance [u| 20000000 m |]
@@ -186,9 +159,5 @@ distanceVincenty' e@(Epsilon eps) ellipsoid
 
             _U1 = atan' $ (1 - f) * tan' _Φ1
             _U2 = atan' $ (1 - f) * tan' _Φ2
-            _L = _L2 - _L1
-            λ = _L
-
             accuracy = defaultVincentyAccuracy
-
-            d = vincentyInverse _U1 _U2 e ellipsoidR accuracy λ _L
+            d = vincentyInverse _U1 _U2 e ellipsoidR accuracy (_L2 - _L1)
