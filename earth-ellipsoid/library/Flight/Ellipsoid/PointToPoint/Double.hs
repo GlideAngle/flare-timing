@@ -41,20 +41,22 @@ vincentyInverse
         f = flattening ellipsoid
         (sinU1, sinU2, sinλ) = (sin _U1, sin _U2, sin λ)
         (cosU1, cosU2, cosλ) = (cos _U1, cos _U2, cos λ)
+        sinU1sinU2 = sinU1 * sinU2
+        cosU1cosU2 = cosU1 * cosU2
 
         i = cosU2 * sinλ
         j = cosU1 * sinU2 - sinU1 * cosU2 * cosλ
         sin²σ = i * i + j * j
         sinσ = sqrt sin²σ
-        cosσ = sinU1 * sinU2 + cosU1 * cosU2 * cosλ
+        cosσ = sinU1sinU2 + cosU1cosU2 * cosλ
 
         σ = atan2 sinσ cosσ
 
-        sinα = cosU1 * cosU2 * sinλ / sinσ
+        sinα = cosU1cosU2 * sinλ / sinσ
         cos²α = 1 - sinα * sinα
 
         -- NOTE: Start and end points on the equator, _C = 0.
-        cos2σm = if cos²α == 0 then 0 else cosσ - 2 * sinU1 * sinU2 / cos²α
+        cos2σm = if cos²α == 0 then 0 else cosσ - 2 * sinU1sinU2 / cos²α
 
         cos²2σm = cos2σm * cos2σm
         _C = f / 16 * cos²α * (4 + f * (4 - 3 * cos²α))
