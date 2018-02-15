@@ -7,9 +7,7 @@ arguments :: [String]
 arguments =
     [ "library"
     , "test-suite-hlint"
-    , "test-suite-flat"
-    , "test-suite-sphere"
-    , "test-suite-ellipsoid"
+    , "test-suite-earth"
     ]
 
 main :: IO ()

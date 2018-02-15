@@ -22,6 +22,8 @@ library:
   - formatting
   - text
   - newtype
+  - tasty-quickcheck
+  - smallcheck
   - aeson-via-sci
   - siggy-chardust
   - flight-units
@@ -49,6 +51,7 @@ tests:
     dependencies:
     - base
     - numbers
+    - random
     - aeson
     - cassava
     - bytestring
@@ -57,6 +60,8 @@ tests:
     - formatting
     - text
     - newtype
+    - tasty-quickcheck
+    - smallcheck
     - aeson-via-sci
     - siggy-chardust
     - flight-units

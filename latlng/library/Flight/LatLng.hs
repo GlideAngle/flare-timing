@@ -9,6 +9,9 @@
 {-# LANGUAGE UnicodeSyntax #-}
 {-# LANGUAGE QuasiQuotes #-}
 
+{-# LANGUAGE PartialTypeSignatures #-}
+{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
+
 module Flight.LatLng
     ( Lat(..)
     , Lng(..)
@@ -24,6 +27,10 @@ import Data.Proxy
 import Data.UnitsOfMeasure (KnownUnit, Unpack, u, convert, fromRational', toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Data.UnitsOfMeasure.Convert (Convertible)
+import Control.Monad (guard)
+import Test.SmallCheck.Series as SC (Serial(..), (>>-), cons2, decDepth)
+import Test.Tasty.QuickCheck as QC (Arbitrary(..), arbitraryBoundedRandom)
+
 import Flight.Units ()
 import qualified Flight.LatLng.Double as D
 import qualified Flight.LatLng.Float as F
@@ -109,53 +116,102 @@ instance (Fractional a, Convertible u [u| deg |]) => Bounded (Lng a u) where
     maxBound = Lng $ convert [u| 180 deg |]
 
 instance
-    (Real a, Fractional a, Convertible u [u| deg |])
+    ( Real a
+    , Fractional a
+    , Convertible u [u| deg |]
+    , u ~ [u| rad |]
+    )
     => Random (Lat a u) where
-    randomR (Lat (MkQuantity lo), Lat (MkQuantity hi)) g =
-        (Lat z, g')
+    randomR (Lat lo, Lat hi) g =
+        (Lat . convert $ z, g')
         where
-            (n, g') = next g
-            (a, b) = genRange g
-
-            dn :: Double
-            dn = realToFrac hi - realToFrac lo
-
-            dd :: Double
-            dd = fromIntegral (b - a + 1)
-
-            scale :: Double
-            scale = dn / dd
-
-            y :: Quantity Double u
-            y = MkQuantity $ scale * fromIntegral (n - a) + realToFrac lo
-
-            z :: Quantity a u
-            z = fromRational' . toRational' . convert $ y
+            (z, g') = qRandomR g lo hi
 
     random = randomR (Lat $ convert [u| - 90 deg |], Lat $ convert [u| 90 deg |])
 
 instance
-    (Real a, Fractional a, Convertible u [u| deg |])
+    ( Real a
+    , Fractional a
+    , Convertible u [u| deg |]
+    , u ~ [u| rad |]
+    )
     => Random (Lng a u) where
-    randomR (Lng (MkQuantity lo), Lng (MkQuantity hi)) g =
-        (Lng z, g')
+    randomR (Lng lo, Lng hi) g =
+        (Lng . convert $ z, g')
         where
-            (n, g') = next g
-            (a, b) = genRange g
-
-            dn :: Double
-            dn = realToFrac hi - realToFrac lo
-
-            dd :: Double
-            dd = fromIntegral (b - a + 1)
-
-            scale :: Double
-            scale = dn / dd
-
-            y :: Quantity Double u
-            y = MkQuantity $ scale * fromIntegral (n - a) + realToFrac lo
-
-            z :: Quantity a u
-            z = fromRational' . toRational' . convert $ y
+            (z, g') = qRandomR g lo hi
 
     random = randomR (Lng $ convert [u| - 180 deg |], Lng $ convert [u| 180 deg |])
+
+qRandomR
+    :: (Real a, Fractional a, RandomGen g)
+    => g
+    -> Quantity a [u| rad |]
+    -> Quantity a [u| rad |]
+    -> (Quantity a [u| rad |], g)
+qRandomR g (MkQuantity lo) (MkQuantity hi) =
+    (z, g')
+    where
+        (n, g') = next g
+        (a, b) = genRange g
+
+        dn :: Double
+        dn = realToFrac hi - realToFrac lo
+
+        dd :: Double
+        dd = fromIntegral (b - a + 1)
+
+        scale :: Double
+        scale = dn / dd
+
+        y :: Quantity Double [u| rad |]
+        y = MkQuantity $ scale * fromIntegral (n - a) + realToFrac lo
+
+        z :: Quantity _ [u| rad |]
+        z = fromRational' . toRational' $ y
+
+instance
+    ( Monad m
+    , Serial m a
+    , Real a
+    , Fractional a
+    , Convertible u [u| deg |]
+    , u ~ [u| rad |]
+    )
+    => Serial m (Lat a u) where
+    series = series >>- \x -> guard (x >= minBound && x <= maxBound) >> return x
+
+instance
+    ( Monad m
+    , Serial m a
+    , Real a
+    , Fractional a
+    , Convertible u [u| deg |]
+    , u ~ [u| rad |]
+    )
+    => Serial m (Lng a u) where
+    series = series >>- \x -> guard (x >= minBound && x <= maxBound) >> return x
+
+instance
+    ( Monad m
+    , SC.Serial m a
+    , Real a
+    , Fractional a
+    , Convertible u [u| deg |]
+    , u ~ [u| rad |]
+    )
+    => SC.Serial m (LatLng a u) where
+    series = decDepth $ LatLng <$> cons2 (\lat lng -> (lat, lng))
+
+instance
+    ( Real a
+    , Fractional a
+    , Arbitrary a
+    , Convertible u [u| deg |]
+    , u ~ [u| rad |]
+    )
+    => QC.Arbitrary (LatLng a u) where
+    arbitrary = LatLng <$> do
+        lat <- arbitraryBoundedRandom
+        lng <- arbitraryBoundedRandom
+        return (lat, lng)

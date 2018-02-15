@@ -16,14 +16,12 @@ module Props.Zone (ZonesTest(..)) where
 
 -- NOTE: Avoid orphan instance warnings with these newtypes.
 
-import Control.Monad (guard)
 import Test.SmallCheck.Series as SC
 import Test.Tasty.QuickCheck as QC
 import Data.UnitsOfMeasure (u)
-import Data.UnitsOfMeasure.Convert (Convertible)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
+import Flight.LatLng (LatLng(..))
 import Flight.Zone (Radius(..), Incline(..), Bearing(..), Zone(..))
 
 newtype ZoneTest a = ZoneTest (Zone a)
@@ -31,26 +29,6 @@ newtype ZonesTest a = ZonesTest [Zone a]
 
 deriving instance (Real a, Show a, Show (LatLng a [u| rad |])) => Show (ZoneTest a)
 deriving instance (Real a, Show a, Show (LatLng a [u| rad |])) => Show (ZonesTest a)
-
-instance
-    ( Monad m
-    , Serial m a
-    , Real a
-    , Fractional a
-    , Convertible u [u| deg |]
-    )
-    => Serial m (Lat a u) where
-    series = series >>- \x -> guard (x >= minBound && x <= maxBound) >> return x
-
-instance
-    ( Monad m
-    , Serial m a
-    , Real a
-    , Fractional a
-    , Convertible u [u| deg |]
-    )
-    => Serial m (Lng a u) where
-    series = series >>- \x -> guard (x >= minBound && x <= maxBound) >> return x
 
 instance
     ( Monad m
