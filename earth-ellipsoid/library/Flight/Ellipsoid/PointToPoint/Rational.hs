@@ -88,16 +88,13 @@ vincentyInverse
 
                 sinα = cosU₁cosU₂ * sinλ / sinσ
                 cos²α = 1 - sinα * sinα
+                _C = f / 16 * cos²α * (4 + f * (4 - 3 * cos²α))
+                u² = let b² = b * b in cos²α * (a * a - b²) / b² 
 
                 -- NOTE: Start and end points on the equator, _C = 0.
                 cos2σm = if cos²α == 0 then 0 else cosσ - 2 * sinU₁sinU₂ / cos²α
-
                 cos²2σm = cos2σm * cos2σm
-                _C = f / 16 * cos²α * (4 + f * (4 - 3 * cos²α))
-                λ' = _L + (1 - _C) * f * sinα * (σ + _C * sinσ * x)
-                x = cos2σm + _C * cosσ * (-1 + 2 * cos²2σm)
 
-                u² = let b² = b * b in cos²α * (a * a - b²) / b² 
                 _A = 1 + u² / 16384 * (4096 + u² * (-768 + u² * (320 - 175 * u²)))
                 _B = u² / 1024 * (256 + u² * (-128 + u² * (74 - 47 * u²)))
 
@@ -105,6 +102,9 @@ vincentyInverse
                 y =
                     cosσ * (-1 + 2 * cos²2σm)
                     - _B / 6 * cos2σm * (-3 + 4 * sin²σ) * (-3 + 4 * cos²2σm)
+
+                λ' = _L + (1 - _C) * f * sinα * (σ + _C * sinσ * x)
+                x = cos2σm + _C * cosσ * (-1 + 2 * cos²2σm)
 
 tooFar :: Num a => TaskDistance a
 tooFar = TaskDistance [u| 20000000 m |]
