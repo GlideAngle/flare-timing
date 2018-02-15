@@ -26,7 +26,7 @@ import Flight.Mask.Internal.Zone
     , Crossing
     , OrdCrossing(..)
     )
-import Flight.Sphere.Separated (separatedZones)
+import Flight.Earth.Sphere.Separated (separatedZones)
 
 -- | A function that tests whether a flight track, represented as a series of point
 -- zones crosses a zone.

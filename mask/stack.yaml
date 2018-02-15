@@ -23,11 +23,7 @@ packages:
   extra-dep: true
 - location: ../track
   extra-dep: true
-- location: ../earth-flat
-  extra-dep: true
-- location: ../earth-sphere
-  extra-dep: true
-- location: ../earth-ellipsoid
+- location: ../earth
   extra-dep: true
 - location: ../task
   extra-dep: true

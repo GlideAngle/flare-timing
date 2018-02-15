@@ -50,7 +50,7 @@ library:
   - flight-zone
   - flight-route
   - flight-track
-  - flight-earth-sphere
+  - flight-earth
   - flight-task
   - flight-gap
   - flight-scribe
@@ -98,7 +98,7 @@ tests:
     - flight-route
     - flight-track
     - flight-task
-    - flight-earth-sphere
+    - flight-earth
     - flight-gap
     - flight-scribe
     - siggy-chardust

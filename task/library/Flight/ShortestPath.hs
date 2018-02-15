@@ -51,7 +51,7 @@ import Flight.Zone.Cylinder
     )
 import Flight.Units ()
 import Flight.Distance (TaskDistance(..), PathDistance(..), SpanLatLng)
-import Flight.Sphere.Separated (separatedZones)
+import Flight.Earth.Sphere.Separated (separatedZones)
 
 type CostSegment a = Zone a -> Zone a -> PathDistance a
 
