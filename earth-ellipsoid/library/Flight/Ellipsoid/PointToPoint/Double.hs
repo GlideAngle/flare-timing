@@ -37,8 +37,8 @@ vincentyInverse
         _U₂ = atan $ (1 - f) * tan _Φ₂
         _L = _L₂ - _L₁
 
-        (sinU₁, sinU₂) = (sin _U₁, sin _U₂)
-        (cosU₁, cosU₂) = (cos _U₁, cos _U₂)
+        sinU₁ = sin _U₁; sinU₂ = sin _U₂
+        cosU₁ = cos _U₁; cosU₂ = cos _U₂
         sinU₁sinU₂ = sinU₁ * sinU₂
         cosU₁cosU₂ = cosU₁ * cosU₂
 
