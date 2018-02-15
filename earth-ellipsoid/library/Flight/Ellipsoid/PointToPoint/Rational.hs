@@ -58,8 +58,8 @@ vincentyInverse
         atan' = F.atan eps
 
         f = flattening ellipsoid
-        _U₁ = atan' $ (1 - f) * tan' _Φ₁
-        _U₂ = atan' $ (1 - f) * tan' _Φ₂
+        auxLat = atan' . ((1 - f) *) . tan'
+        _U₁ = auxLat _Φ₁; _U₂ = auxLat _Φ₂
         _L = _L₂ - _L₁
 
         sinU₁ = sin' _U₁; sinU₂ = sin' _U₂
