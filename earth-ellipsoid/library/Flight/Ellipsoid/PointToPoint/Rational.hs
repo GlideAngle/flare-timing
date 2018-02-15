@@ -21,9 +21,9 @@ import Flight.Ellipsoid
     , defaultVincentyAccuracy, flattening, toRationalEllipsoid
     )
 
--- | The numbers package doesn't have atan2.
+-- | The numbers package doesn't have atan₂.
 -- SEE: https://hackage.haskell.org/package/base
--- SEE: https://stackoverflow.com/questions/283406/what-is-the-difference-between-atan-and-atan2-in-c
+-- SEE: https://stackoverflow.com/questions/₂83406/what-is-the-difference-between-atan-and-atan₂-in-c
 atan2' :: Epsilon -> Rational -> Rational -> Rational
 atan2' e@(Epsilon eps) y x
     | x > 0 = atan' $ y / x
@@ -48,8 +48,8 @@ vincentyInverse
     e@(Epsilon eps)
     ellipsoid@Ellipsoid{semiMajor = MkQuantity a, semiMinor = MkQuantity b}
     (VincentyAccuracy tolerance)
-    (LatLng (Lat (MkQuantity _Φ1), Lng (MkQuantity _L1)))
-    (LatLng (Lat (MkQuantity _Φ2), Lng (MkQuantity _L2))) =
+    (LatLng (Lat (MkQuantity _Φ₁), Lng (MkQuantity _L₁)))
+    (LatLng (Lat (MkQuantity _Φ₂), Lng (MkQuantity _L₂))) =
     loop _L
     where
         sin' = F.sin eps
@@ -58,14 +58,14 @@ vincentyInverse
         atan' = F.atan eps
 
         f = flattening ellipsoid
-        _U1 = atan' $ (1 - f) * tan' _Φ1
-        _U2 = atan' $ (1 - f) * tan' _Φ2
-        _L = _L2 - _L1
+        _U₁ = atan' $ (1 - f) * tan' _Φ₁
+        _U₂ = atan' $ (1 - f) * tan' _Φ₂
+        _L = _L₂ - _L₁
 
-        (sinU1, sinU2) = (sin' _U1, sin' _U2)
-        (cosU1, cosU2) = (cos' _U1, cos' _U2)
-        sinU1sinU2 = sinU1 * sinU2
-        cosU1cosU2 = cosU1 * cosU2
+        (sinU₁, sinU₂) = (sin' _U₁, sin' _U₂)
+        (cosU₁, cosU₂) = (cos' _U₁, cos' _U₂)
+        sinU₁sinU₂ = sinU₁ * sinU₂
+        cosU₁cosU₂ = cosU₁ * cosU₂
 
         loop λ =
             if abs λ > F.pi eps
@@ -78,19 +78,19 @@ vincentyInverse
                 sinλ = sin' λ
                 cosλ = cos' λ
 
-                i = cosU2 * sinλ
-                j = cosU1 * sinU2 - sinU1 * cosU2 * cosλ
+                i = cosU₂ * sinλ
+                j = cosU₁ * sinU₂ - sinU₁ * cosU₂ * cosλ
                 sin²σ = i * i + j * j
                 sinσ = F.sqrt eps sin²σ
-                cosσ = sinU1sinU2 + cosU1cosU2 * cosλ
+                cosσ = sinU₁sinU₂ + cosU₁cosU₂ * cosλ
 
                 σ = atan2' e sinσ cosσ
 
-                sinα = cosU1cosU2 * sinλ / sinσ
+                sinα = cosU₁cosU₂ * sinλ / sinσ
                 cos²α = 1 - sinα * sinα
 
                 -- NOTE: Start and end points on the equator, _C = 0.
-                cos2σm = if cos²α == 0 then 0 else cosσ - 2 * sinU1sinU2 / cos²α
+                cos2σm = if cos²α == 0 then 0 else cosσ - 2 * sinU₁sinU₂ / cos²α
 
                 cos²2σm = cos2σm * cos2σm
                 _C = f / 16 * cos²α * (4 + f * (4 - 3 * cos²α))
