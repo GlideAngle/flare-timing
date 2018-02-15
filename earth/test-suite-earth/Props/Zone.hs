@@ -12,82 +12,99 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
-module Sphere.TestNewtypes where
+module Props.Zone (ZonesTest(..)) where
 
 -- NOTE: Avoid orphan instance warnings with these newtypes.
 
+import Control.Monad (guard)
 import Test.SmallCheck.Series as SC
 import Test.Tasty.QuickCheck as QC
 import Data.UnitsOfMeasure (u)
+import Data.UnitsOfMeasure.Convert (Convertible)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.Zone (Radius(..), Incline(..), Bearing(..), Zone(..))
 
-newtype HaversineTest a =
-    HaversineTest (LatLng a [u| rad |], LatLng a [u| rad |])
+newtype ZoneTest a = ZoneTest (Zone a)
+newtype ZonesTest a = ZonesTest [Zone a]
 
-deriving instance Show (LatLng a [u| rad |]) => Show (HaversineTest a)
+deriving instance (Real a, Show a, Show (LatLng a [u| rad |])) => Show (ZoneTest a)
+deriving instance (Real a, Show a, Show (LatLng a [u| rad |])) => Show (ZonesTest a)
 
-newtype ZoneTest = ZoneTest (Zone Rational) deriving Show
-newtype ZonesTest = ZonesTest [Zone Rational] deriving Show
+instance
+    ( Monad m
+    , Serial m a
+    , Real a
+    , Fractional a
+    , Convertible u [u| deg |]
+    )
+    => Serial m (Lat a u) where
+    series = series >>- \x -> guard (x >= minBound && x <= maxBound) >> return x
 
-instance (Monad m, SC.Serial m a) => SC.Serial m (HaversineTest a) where
-    series = decDepth $ HaversineTest <$>
-        cons4 (\xlat xlng ylat ylng ->
-            ( LatLng (Lat $ MkQuantity xlat, Lng $ MkQuantity xlng)
-            , LatLng (Lat $ MkQuantity ylat, Lng $ MkQuantity ylng)
-            ))
+instance
+    ( Monad m
+    , Serial m a
+    , Real a
+    , Fractional a
+    , Convertible u [u| deg |]
+    )
+    => Serial m (Lng a u) where
+    series = series >>- \x -> guard (x >= minBound && x <= maxBound) >> return x
 
-instance Monad m => SC.Serial m ZoneTest where
+instance
+    ( Monad m
+    , SC.Serial m a
+    , Real a
+    , Fractional a
+    )
+    => SC.Serial m (ZoneTest a) where
     series = decDepth $ ZoneTest <$>
         cons2 (\lat lng ->
-            Point (LatLng (Lat $ MkQuantity lat, Lng $ MkQuantity lng)))
+            Point (LatLng (lat, lng)))
 
         \/ cons3 (\lat lng b ->
             Vector
                 (Bearing $ MkQuantity b)
-                (LatLng (Lat $ MkQuantity lat, Lng $ MkQuantity lng)))
+                (LatLng (lat, lng)))
 
         \/ cons3 (\lat lng (SC.Positive r) ->
             Cylinder
                 (Radius $ MkQuantity r)
-                (LatLng (Lat $ MkQuantity lat, Lng $ MkQuantity lng)))
+                (LatLng (lat, lng)))
 
         \/ cons4 (\lat lng (SC.Positive r) i ->
             Conical
                 (Incline $ MkQuantity i)
                 (Radius $ MkQuantity r)
-                (LatLng (Lat $ MkQuantity lat, Lng $ MkQuantity lng)))
+                (LatLng (lat, lng)))
 
         \/ cons3 (\lat lng (SC.Positive r) ->
             Line
                 (Radius $ MkQuantity r)
-                (LatLng (Lat $ MkQuantity lat, Lng $ MkQuantity lng)))
+                (LatLng (lat, lng)))
 
         \/ cons3 (\lat lng (SC.Positive r) ->
             SemiCircle
                 (Radius $ MkQuantity r)
-                (LatLng (Lat $ MkQuantity lat, Lng $ MkQuantity lng)))
+                (LatLng (lat, lng)))
 
-instance Monad m => SC.Serial m ZonesTest where
+instance
+    ( Monad m
+    , SC.Serial m a
+    , Real a
+    , Fractional a
+    )
+    => SC.Serial m (ZonesTest a) where
     series = decDepth $ cons1 (\xs -> ZonesTest $ (\(ZoneTest x) -> x) <$> xs)
 
-instance Arbitrary a => QC.Arbitrary (HaversineTest a) where
-    arbitrary = HaversineTest <$> do
-        xlat <- arbitrary
-        xlng <- arbitrary
-        ylat <- arbitrary
-        ylng <- arbitrary
-        return ( LatLng (Lat $ MkQuantity xlat, Lng $ MkQuantity xlng)
-               , LatLng (Lat $ MkQuantity ylat, Lng $ MkQuantity ylng)
-               )
-
-instance QC.Arbitrary ZoneTest where
+instance
+    (Real a, Fractional a, Arbitrary a)
+    => QC.Arbitrary (ZoneTest a) where
     arbitrary = ZoneTest <$> do
-        lat <- arbitrary
-        lng <- arbitrary
-        let ll = LatLng (Lat $ MkQuantity lat, Lng $ MkQuantity lng)
+        lat <- arbitraryBoundedRandom
+        lng <- arbitraryBoundedRandom
+        let ll = LatLng (lat, lng)
 
         QC.frequency $
             zip
@@ -111,7 +128,9 @@ instance QC.Arbitrary ZoneTest where
                     return $ SemiCircle (Radius $ MkQuantity r) ll
                 ]
 
-instance QC.Arbitrary ZonesTest where
+instance
+    (Real a, Fractional a, Arbitrary a)
+    => QC.Arbitrary (ZonesTest a) where
     arbitrary = do
         len <- choose (2, 4)
         xs <- vector len

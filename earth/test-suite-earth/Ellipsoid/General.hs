@@ -42,7 +42,8 @@ import qualified Flight.Earth.Ellipsoid.PointToPoint.Rational as Rat
 import Flight.Earth.Ellipsoid.Separated (separatedZones)
 import Flight.Earth.Ellipsoid (wgs84)
 
-import Ellipsoid.TestNewtypes
+import Props.Zone (ZonesTest(..))
+import Props.Vincenty (VincentyTest(..))
 
 -- | The radius of the earth in the FAI sphere is 6,371 km.
 earthRadius :: Num a => Quantity a [u| m |]

@@ -41,7 +41,8 @@ import qualified Flight.Earth.Sphere.PointToPoint.Rational as Rat (distanceHaver
 import Flight.Earth.Sphere.Separated (separatedZones)
 import Flight.Earth.Sphere (earthRadius)
 
-import Sphere.TestNewtypes
+import Props.Zone (ZonesTest(..))
+import Props.Haversine (HaversineTest(..))
 
 type Pt = (Rational, Rational)
 
@@ -313,7 +314,7 @@ distanceHaversine (HaversineTest (x, y)) =
     where
         TaskDistance d = Rat.distanceHaversine defEps x y
 
-distancePoint :: ZonesTest -> Bool
+distancePoint :: ZonesTest Rational -> Bool
 distancePoint (ZonesTest xs) =
     (\(PathDistance d _) -> correctPoint xs d)
     $ distancePointToPoint span xs

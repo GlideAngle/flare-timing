@@ -39,7 +39,8 @@ import qualified Flight.Earth.Flat.PointToPoint.Double as Dbl (distanceEuclidean
 import qualified Flight.Earth.Flat.PointToPoint.Rational as Rat (distanceEuclidean)
 import Flight.Earth.Flat.Separated (separatedZones)
 
-import Flat.TestNewtypes
+import Props.Zone (ZonesTest(..))
+import Props.Euclidean (EuclideanTest(..))
 
 -- | The radius of the earth in the FAI sphere is 6,371 km.
 earthRadius :: Num a => Quantity a [u| m |]
@@ -314,7 +315,7 @@ distanceEuclidean (EuclideanTest (x, y)) =
     where
         TaskDistance d = Rat.distanceEuclidean x y
 
-distancePoint :: ZonesTest -> Bool
+distancePoint :: ZonesTest Rational -> Bool
 distancePoint (ZonesTest xs) =
     (\(PathDistance d _) -> correctPoint xs d)
     $ distancePointToPoint span xs
