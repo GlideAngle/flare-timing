@@ -20,24 +20,27 @@ import Flight.Ellipsoid
 
 vincentyInverse
     :: (Num a, Floating a, Fractional a, RealFloat a, Show a)
-    => a
-    -> a
-    -> Ellipsoid a
+    => Ellipsoid a
     -> VincentyAccuracy a
-    -> a
+    -> LatLng a [u| rad |]
+    -> LatLng a [u| rad |]
     -> VincentyInverse a
 vincentyInverse
-    _U1 _U2
     ellipsoid@Ellipsoid{semiMajor = MkQuantity a, semiMinor = MkQuantity b}
     (VincentyAccuracy tolerance)
-    _L =
+    (LatLng (Lat (MkQuantity _Φ1), Lng (MkQuantity _L1)))
+    (LatLng (Lat (MkQuantity _Φ2), Lng (MkQuantity _L2))) =
     loop _L
     where
+        f = flattening ellipsoid
+        _U1 = atan $ (1 - f) * tan _Φ1
+        _U2 = atan $ (1 - f) * tan _Φ2
+        _L = _L2 - _L1
+
         (sinU1, sinU2) = (sin _U1, sin _U2)
         (cosU1, cosU2) = (cos _U1, cos _U2)
         sinU1sinU2 = sinU1 * sinU2
         cosU1cosU2 = cosU1 * cosU2
-        f = flattening ellipsoid
 
         loop λ =
             if abs λ > pi
@@ -95,10 +98,7 @@ distanceVincenty'
     -> LatLng a [u| rad |]
     -> LatLng a [u| rad |]
     -> VincentyInverse (TaskDistance a)
-distanceVincenty'
-    ellipsoid
-    x@(LatLng xLat@(Lat (MkQuantity _Φ1), xLng@(Lng (MkQuantity _L1))))
-    y@(LatLng yLat@(Lat (MkQuantity _Φ2), yLng@(Lng (MkQuantity _L2))))
+distanceVincenty' ellipsoid x@(LatLng (xLat, xLng)) y@(LatLng (yLat, yLng))
 
     | x == y = VincentyInverse $ TaskDistance [u| 0 m |]
 
@@ -113,18 +113,11 @@ distanceVincenty'
     | yLng > maxBound = VincentyAbnormal LngOver
 
     | otherwise =
-        case d of
-            VincentyInverse d' ->
-                VincentyInverse . TaskDistance . MkQuantity $ d'
-                
+        case vincentyInverse ellipsoid accuracy' x y of
+            VincentyInverse d' -> VincentyInverse . TaskDistance . MkQuantity $ d'
             VincentyAntipodal -> VincentyAntipodal
             VincentyAbnormal ab -> VincentyAbnormal ab
         where
-            f = flattening ellipsoid
-            _U1 = atan $ (1 - f) * tan _Φ1
-            _U2 = atan $ (1 - f) * tan _Φ2
-
             VincentyAccuracy accuracy = defaultVincentyAccuracy
             accuracy' = VincentyAccuracy $ fromRational accuracy
 
-            d = vincentyInverse _U1 _U2 ellipsoid accuracy' (_L2 - _L1)

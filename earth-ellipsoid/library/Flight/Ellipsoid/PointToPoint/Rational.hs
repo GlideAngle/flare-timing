@@ -38,28 +38,34 @@ atan2' e@(Epsilon eps) y x
         pi' = F.pi eps
 
 vincentyInverse
-    :: Rational
-    -> Rational
-    -> Epsilon
+    :: Epsilon
     -> Ellipsoid Rational
     -> VincentyAccuracy Rational
-    -> Rational
+    -> LatLng Rational [u| rad |]
+    -> LatLng Rational [u| rad |]
     -> VincentyInverse Rational
 vincentyInverse
-    _U1 _U2
     e@(Epsilon eps)
     ellipsoid@Ellipsoid{semiMajor = MkQuantity a, semiMinor = MkQuantity b}
     (VincentyAccuracy tolerance)
-    _L =
+    (LatLng (Lat (MkQuantity _Φ1), Lng (MkQuantity _L1)))
+    (LatLng (Lat (MkQuantity _Φ2), Lng (MkQuantity _L2))) =
     loop _L
     where
         sin' = F.sin eps
         cos' = F.cos eps
+        tan' = F.tan eps
+        atan' = F.atan eps
+
+        f = flattening ellipsoid
+        _U1 = atan' $ (1 - f) * tan' _Φ1
+        _U2 = atan' $ (1 - f) * tan' _Φ2
+        _L = _L2 - _L1
+
         (sinU1, sinU2) = (sin' _U1, sin' _U2)
         (cosU1, cosU2) = (cos' _U1, cos' _U2)
         sinU1sinU2 = sinU1 * sinU2
         cosU1cosU2 = cosU1 * cosU2
-        f = toRational . flattening $ ellipsoid
 
         loop λ =
             if abs λ > F.pi eps
@@ -122,7 +128,7 @@ distanceVincenty'
     -> LatLng a [u| rad |]
     -> LatLng a [u| rad |]
     -> VincentyInverse (TaskDistance a)
-distanceVincenty' e@(Epsilon eps) ellipsoid
+distanceVincenty' e ellipsoid
     x@(LatLng (xLat, xLng))
     y@(LatLng (yLat, yLng))
 
@@ -139,25 +145,13 @@ distanceVincenty' e@(Epsilon eps) ellipsoid
     | yLng > maxBound = VincentyAbnormal LngOver
 
     | otherwise =
-        case d of
+        case vincentyInverse e ellipsoidR accuracy (llR x) (llR y) of
             VincentyInverse d' ->
                 VincentyInverse . TaskDistance . fromRational' . MkQuantity $ d'
                 
             VincentyAntipodal -> VincentyAntipodal
             VincentyAbnormal ab -> VincentyAbnormal ab
         where
-            tan' = F.tan eps
-            atan' = F.atan eps
             ellipsoidR = toRationalEllipsoid ellipsoid
-            f = flattening ellipsoidR
-
-            (LatLng (Lat (MkQuantity _Φ1), Lng (MkQuantity _L1))) =
-                    toRationalLatLng x
-
-            (LatLng (Lat (MkQuantity _Φ2), Lng (MkQuantity _L2))) =
-                    toRationalLatLng y
-
-            _U1 = atan' $ (1 - f) * tan' _Φ1
-            _U2 = atan' $ (1 - f) * tan' _Φ2
+            llR = toRationalLatLng
             accuracy = defaultVincentyAccuracy
-            d = vincentyInverse _U1 _U2 e ellipsoidR accuracy (_L2 - _L1)
