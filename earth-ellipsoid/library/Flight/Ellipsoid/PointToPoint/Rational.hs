@@ -38,26 +38,23 @@ atan2' e@(Epsilon eps) y x
         pi' = F.pi eps
 
 vincentyInverse
-    :: Epsilon
+    :: Rational
+    -> Rational
+    -> Epsilon
     -> Ellipsoid Rational
     -> VincentyAccuracy Rational
     -> Rational
     -> Rational
-    -> Rational
-    -> Rational
     -> VincentyInverse Rational
-vincentyInverse e@(Epsilon eps) ellipsoid accuracy λ _L _U1 _U2 =
+vincentyInverse _U1 _U2 e@(Epsilon eps) ellipsoid =
     vincentyLoop
-        e
-        ellipsoid
-        accuracy
-        λ
-        _L
         (toRational . flattening $ ellipsoid)
         ss
         cc
         (sinU1 * sinU2)
         (cosU1 * cosU2)
+        e
+        ellipsoid
     where
         sin' = F.sin eps
         cos' = F.cos eps
@@ -65,28 +62,28 @@ vincentyInverse e@(Epsilon eps) ellipsoid accuracy λ _L _U1 _U2 =
         cc@(cosU1, cosU2) = (cos' _U1, cos' _U2)
 
 vincentyLoop
-    :: Epsilon
+    :: Rational
+    -> (Rational, Rational)
+    -> (Rational, Rational)
+    -> Rational
+    -> Rational
+    -> Epsilon
     -> Ellipsoid Rational
     -> VincentyAccuracy Rational
     -> Rational
     -> Rational
-    -> Rational
-    -> (Rational, Rational)
-    -> (Rational, Rational)
-    -> Rational
-    -> Rational
     -> VincentyInverse Rational
 vincentyLoop
-    e@(Epsilon eps)
-    ellipsoid@Ellipsoid{semiMajor = MkQuantity a, semiMinor = MkQuantity b}
-    accuracy@(VincentyAccuracy tolerance)
-    λ
-    _L 
     f
     ss@(sinU1, sinU2)
     cc@(cosU1, cosU2)
     sinU1sinU2
-    cosU1cosU2 =
+    cosU1cosU2
+    e@(Epsilon eps)
+    ellipsoid@Ellipsoid{semiMajor = MkQuantity a, semiMinor = MkQuantity b}
+    accuracy@(VincentyAccuracy tolerance)
+    λ
+    _L =
     if abs λ > F.pi eps
         then VincentyAntipodal
         else
@@ -94,7 +91,8 @@ vincentyLoop
                 then VincentyInverse $ b * _A * (σ - _Δσ)
                 else
                     vincentyLoop
-                        e ellipsoid accuracy λ' _L f ss cc sinU1sinU2 cosU1cosU2
+                        f ss cc sinU1sinU2 cosU1cosU2
+                        e ellipsoid accuracy λ' _L
     where
         sin' = F.sin eps
         cos' = F.cos eps
@@ -193,4 +191,4 @@ distanceVincenty' e@(Epsilon eps) ellipsoid
 
             accuracy = defaultVincentyAccuracy
 
-            d = vincentyInverse e ellipsoidR accuracy λ _L _U1 _U2
+            d = vincentyInverse _U1 _U2 e ellipsoidR accuracy λ _L

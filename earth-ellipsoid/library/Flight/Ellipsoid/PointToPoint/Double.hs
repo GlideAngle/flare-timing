@@ -20,50 +20,47 @@ import Flight.Ellipsoid
 
 vincentyInverse
     :: (Num a, Floating a, Fractional a, RealFloat a, Show a)
-    => Ellipsoid a
+    => a
+    -> a
+    -> Ellipsoid a
     -> VincentyAccuracy a
     -> a
     -> a
-    -> a
-    -> a
     -> VincentyInverse a
-vincentyInverse ellipsoid accuracy λ _L _U1 _U2 =
+vincentyInverse _U1 _U2 ellipsoid =
     vincentyLoop
-        ellipsoid
-        accuracy
-        λ
-        _L
         (flattening ellipsoid)
         ss
         cc
         (sinU1 * sinU2)
         (cosU1 * cosU2)
+        ellipsoid
     where
         ss@(sinU1, sinU2) = (sin _U1, sin _U2)
         cc@(cosU1, cosU2) = (cos _U1, cos _U2)
 
 vincentyLoop
     :: RealFloat a
-    => Ellipsoid a
+    => a
+    -> (a, a)
+    -> (a, a)
+    -> a
+    -> a
+    -> Ellipsoid a
     -> VincentyAccuracy a
-    -> a
-    -> a
-    -> a
-    -> (a, a)
-    -> (a, a)
     -> a
     -> a
     -> VincentyInverse a
 vincentyLoop
-    ellipsoid@Ellipsoid{semiMajor = MkQuantity a, semiMinor = MkQuantity b}
-    accuracy@(VincentyAccuracy tolerance)
-    λ
-    _L 
     f
     ss@(sinU1, sinU2)
     cc@(cosU1, cosU2)
     sinU1sinU2
-    cosU1cosU2 =
+    cosU1cosU2
+    ellipsoid@Ellipsoid{semiMajor = MkQuantity a, semiMinor = MkQuantity b}
+    accuracy@(VincentyAccuracy tolerance)
+    λ
+    _L =
     if abs λ > pi
         then VincentyAntipodal
         else
@@ -71,7 +68,8 @@ vincentyLoop
                 then VincentyInverse $ b * _A * (σ - _Δσ)
                 else
                     vincentyLoop
-                        ellipsoid accuracy λ' _L f ss cc sinU1sinU2 cosU1cosU2
+                        f ss cc sinU1sinU2 cosU1cosU2
+                        ellipsoid accuracy λ' _L 
     where
         sinλ = sin λ
         cosλ = cos λ
@@ -155,4 +153,4 @@ distanceVincenty'
             VincentyAccuracy accuracy = defaultVincentyAccuracy
             accuracy' = VincentyAccuracy $ fromRational accuracy
             
-            d = vincentyInverse ellipsoid accuracy' λ _L _U1 _U2
+            d = vincentyInverse _U1 _U2 ellipsoid accuracy' λ _L
