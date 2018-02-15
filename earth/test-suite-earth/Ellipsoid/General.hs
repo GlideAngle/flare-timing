@@ -11,11 +11,11 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
-module General
+module Ellipsoid.General
     ( zoneUnits
     , distancePoint
-    , distanceHaversine
-    , distanceHaversineF
+    , distanceVincenty
+    , distanceVincentyF
     ) where
 
 import Prelude hiding (span)
@@ -26,7 +26,7 @@ import Data.UnitsOfMeasure (u, zero)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
-import Flight.LatLng.Rational (defEps)
+import Flight.LatLng.Rational (Epsilon(..), defEps)
 import Flight.Distance (TaskDistance(..), PathDistance(..), SpanLatLng)
 import Flight.Zone
     ( Zone(..)
@@ -36,12 +36,17 @@ import Flight.Zone
     , center
     )
 import Flight.Zone.Path (distancePointToPoint)
-import qualified Flight.Earth.Sphere.PointToPoint.Double as Dbl (distanceHaversine)
-import qualified Flight.Earth.Sphere.PointToPoint.Rational as Rat (distanceHaversine)
-import Flight.Earth.Sphere.Separated (separatedZones)
-import Flight.Earth.Sphere (earthRadius)
+import qualified Flight.Earth.Ellipsoid.PointToPoint.Double as Dbl (distanceVincenty)
+import qualified Flight.Earth.Ellipsoid.PointToPoint.Rational as Rat
+    (distanceVincenty)
+import Flight.Earth.Ellipsoid.Separated (separatedZones)
+import Flight.Earth.Ellipsoid (wgs84)
 
-import TestNewtypes
+import Ellipsoid.TestNewtypes
+
+-- | The radius of the earth in the FAI sphere is 6,371 km.
+earthRadius :: Num a => Quantity a [u| m |]
+earthRadius = [u| 6371000 m |]
 
 type Pt = (Rational, Rational)
 
@@ -173,7 +178,7 @@ coincident title xs =
                                  , show $ head x
                                  , " = not separate"
                                  ]) $
-                separatedZones span x
+                separatedZones wgs84 span x
                     @?= False
 
 ptsCoincident :: [[Pt]]
@@ -211,7 +216,7 @@ touching title xs =
                                  , show x
                                  , " = not separate"
                                  ]) $
-                separatedZones span x
+                separatedZones wgs84 span x
                     @?= False
 
 epsM :: Rational
@@ -244,7 +249,7 @@ disjoint title xs =
                                  , show x 
                                  , " = separate"
                                  ]) $
-                separatedZones span x
+                separatedZones wgs84 span x
                     @?= True
 
 eps :: Rational
@@ -295,22 +300,23 @@ correctPoint xs (TaskDistance (MkQuantity d))
     where
         ys = center <$> xs
 
-distanceHaversineF :: HaversineTest Double -> Bool
-distanceHaversineF (HaversineTest (x, y)) =
+distanceVincentyF :: VincentyTest Double -> Bool
+distanceVincentyF (VincentyTest (x, y)) =
     [u| 0 m |] <= d
     where
-        TaskDistance d = Dbl.distanceHaversine x y
+        TaskDistance d = Dbl.distanceVincenty wgs84 x y
 
-distanceHaversine :: HaversineTest Rational -> Bool
-distanceHaversine (HaversineTest (x, y)) =
+distanceVincenty :: VincentyTest Rational -> Bool
+distanceVincenty (VincentyTest (x, y)) =
     [u| 0 m |] <= d
     where
-        TaskDistance d = Rat.distanceHaversine defEps x y
+        e = Epsilon $ 1 % 1000000000000000000
+        TaskDistance d = Rat.distanceVincenty e wgs84 x y
 
-distancePoint :: ZonesTest -> Bool
+distancePoint :: ZonesTest Rational -> Bool
 distancePoint (ZonesTest xs) =
     (\(PathDistance d _) -> correctPoint xs d)
     $ distancePointToPoint span xs
 
 span :: SpanLatLng Rational
-span = Rat.distanceHaversine defEps
+span = Rat.distanceVincenty defEps wgs84

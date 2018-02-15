@@ -1,15 +1,12 @@
-module Ellipsoid (main) where
+module Ellipsoid.Ellipsoid (properties, units, tests) where
 
-import Test.Tasty (TestTree, testGroup, defaultMain)
+import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.QuickCheck as QC
 import Test.Tasty.Providers as QC
 
-import General
-import Specific
-import Bedford
-
-main :: IO ()
-main = defaultMain tests
+import Ellipsoid.General
+import Ellipsoid.Specific
+import Ellipsoid.Bedford
 
 tests :: TestTree
 tests = testGroup "Tests"

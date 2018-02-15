@@ -11,7 +11,7 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
-module Specific (specificUnits, toLatLngDbl) where
+module Sphere.Specific (specificUnits, toLatLngDbl) where
 
 import Prelude hiding (span)
 import Data.Ratio((%))

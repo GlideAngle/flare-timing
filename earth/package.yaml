@@ -79,7 +79,7 @@ tests:
     source-dirs:
     - library
     - test-suite-hlint
-  flat:
+  earth:
     dependencies:
     - base
     - hlint
@@ -106,70 +106,8 @@ tests:
     - -rtsopts
     - -threaded
     - -with-rtsopts=-N
-    main: Ellipsoid.hs
+    main: Earth.hs
     source-dirs:
     - library
-    - test-suite-flat
-  sphere:
-    dependencies:
-    - base
-    - hlint
-    - numbers
-    - fgl
-    - uom-plugin
-    - bifunctors
-    - aeson
-    - scientific
-    - mtl
-    - hcoord
-    - aeson-via-sci
-    - siggy-chardust
-    - tasty
-    - tasty-hunit
-    - tasty-quickcheck
-    - tasty-smallcheck
-    - smallcheck
-    - tasty-compare
-    - flight-units
-    - flight-latlng
-    - flight-zone
-    ghc-options:
-    - -rtsopts
-    - -threaded
-    - -with-rtsopts=-N
-    main: Ellipsoid.hs
-    source-dirs:
-    - library
-    - test-suite-sphere
-  ellipsoid:
-    dependencies:
-    - base
-    - hlint
-    - numbers
-    - fgl
-    - uom-plugin
-    - bifunctors
-    - aeson
-    - scientific
-    - mtl
-    - hcoord
-    - aeson-via-sci
-    - siggy-chardust
-    - tasty
-    - tasty-hunit
-    - tasty-quickcheck
-    - tasty-smallcheck
-    - smallcheck
-    - tasty-compare
-    - flight-units
-    - flight-latlng
-    - flight-zone
-    ghc-options:
-    - -rtsopts
-    - -threaded
-    - -with-rtsopts=-N
-    main: Ellipsoid.hs
-    source-dirs:
-    - library
-    - test-suite-ellipsoid
+    - test-suite-earth
 version: '0.1.0'

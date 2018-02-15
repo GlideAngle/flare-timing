@@ -11,7 +11,7 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
-module Specific (specificUnits, toLatLngDbl) where
+module Ellipsoid.Specific (specificUnits, toLatLngDbl) where
 
 import Prelude hiding (span)
 import Data.Ratio((%))
@@ -31,8 +31,10 @@ import Flight.Zone (Bearing(..), Radius(..), Zone(..))
 import Flight.Zone.Cylinder
     (Samples(..), SampleParams(..), Tolerance(..), CircumSample, ZonePoint(..))
 import Flight.Zone.Path (distancePointToPoint)
-import qualified Flight.Earth.Flat.PointToPoint.Rational as Rat (distanceEuclidean)
-import qualified Flight.Earth.Flat.Cylinder.Rational as Rat (circumSample)
+import qualified Flight.Earth.Ellipsoid.PointToPoint.Rational as Rat
+    (distanceVincenty)
+import qualified Flight.Earth.Ellipsoid.Cylinder.Rational as Rat (circumSample)
+import Flight.Earth.Ellipsoid (wgs84)
 import Data.Number.RoundingFunctions (dpRound)
 
 (.>=.) :: (Show a, Show b) => a -> b -> String
@@ -507,7 +509,7 @@ SEE: http://andrew.hedges.name/experiments/haversine/
 -33.85373, 147.94195, -33.4397, 148.34533
 -33.4397, 148.34533, -33.61965, 148.4099
 
-NOTE: Point to point distances using Euclidean method.
+NOTE: Point to point distances using Vincenty method.
 => 
 54.76
 59.28
@@ -580,7 +582,7 @@ dsDay1 =
 -32.90223, 147.98492, -32.9536, 147.55457
 -32.9536, 147.55457, -33.12592, 147.91043
 
-NOTE: Point to point distances using Euclidean method.
+NOTE: Point to point distances using Vincenty method.
 =>
 51.29
 40.57
@@ -653,7 +655,7 @@ dsDay2 =
 -34.02107, 148.2233, -34.11795, 148.5013
 -34.11795, 148.5013, -34.82197, 148.66543
 
-NOTE: Point to point distances using Euclidean method.
+NOTE: Point to point distances using Vincenty method.
 =>
 78.15
 27.78
@@ -725,7 +727,7 @@ dsDay3 =
 -33.36137, 147.93207, -32.90223, 147.98492
 -32.90223, 147.98492, -32.46363, 148.989
 
-NOTE: Point to point distances using Euclidean method.
+NOTE: Point to point distances using Vincenty method.
 =>
 51.29
 105.9
@@ -789,7 +791,7 @@ dsDay4 =
 -33.36137, 147.93207, -32.56608, 148.22657
 -32.56608, 148.22657, -32.0164, 149.43363
 
-NOTE: Point to point distances using Euclidean method.
+NOTE: Point to point distances using Vincenty method.
 =>
 92.6
 128.9
@@ -853,7 +855,7 @@ dsDay5 =
 -33.36137, 147.93207, -32.19498, 147.76218
 -32.19498, 147.76218, -31.69323, 148.29623
 
-NOTE: Point to point distances using Euclidean method.
+NOTE: Point to point distances using Vincenty method.
 =>
 130.7
 75.18
@@ -918,7 +920,7 @@ dsDay6 =
 -32.9536, 147.55457, -32.76052, 148.64958
 -32.76052, 148.64958, -32.93585, 148.74947
 
-NOTE: Point to point distances using Euclidean method.
+NOTE: Point to point distances using Vincenty method.
 =>
 57.37
 104.5
@@ -991,7 +993,7 @@ dsDay7 =
 -33.75343, 147.52865, -33.12908, 147.57323
 -33.12908, 147.57323, -33.361, 147.9315
 
-NOTE: Point to point distances using Euclidean method.
+NOTE: Point to point distances using Vincenty method.
 =>
 57.43
 69.55
@@ -1058,7 +1060,7 @@ dsDay8 =
         ]
 
 span :: SpanLatLng Rational
-span = Rat.distanceEuclidean
+span = Rat.distanceVincenty defEps wgs84
 
 cs :: CircumSample Rational
 cs = Rat.circumSample

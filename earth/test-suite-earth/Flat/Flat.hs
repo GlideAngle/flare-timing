@@ -1,14 +1,11 @@
-module Sphere (main) where
+module Flat.Flat (properties, units, tests) where
 
-import Test.Tasty (TestTree, testGroup, defaultMain)
+import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.SmallCheck as SC
 import Test.Tasty.QuickCheck as QC
 
-import General
-import Specific
-
-main :: IO ()
-main = defaultMain tests
+import Flat.General
+import Flat.Specific
 
 tests :: TestTree
 tests = testGroup "Tests"
@@ -30,15 +27,15 @@ units = testGroup "Units"
 
 scProps :: TestTree
 scProps = testGroup "(checked by SmallCheck)"
-    [ SC.testProperty "HaversineF distances, are not negative" distanceHaversineF
-    , SC.testProperty "Haversine distances, are not negative" distanceHaversine
+    [ SC.testProperty "EuclideanF distances, are not negative" distanceEuclideanF
+    , SC.testProperty "Euclidean distances, are not negative" distanceEuclidean
     , SC.testProperty "Zone distances, point-to-point, are not negative" distancePoint
     , SC.testProperty "Zone distances, point-to-point, are not negative" distancePoint
     ]
 
 qcProps :: TestTree
 qcProps = testGroup "(checked by QuickCheck)"
-    [ QC.testProperty "HaversineF distances, are not negative" distanceHaversineF
-    , QC.testProperty "Haversine distances, are not negative" distanceHaversine
+    [ QC.testProperty "EuclideanF distances, are not negative" distanceEuclideanF
+    , QC.testProperty "Euclidean distances, are not negative" distanceEuclidean
     , QC.testProperty "Zone distances, point-to-point, are not negative" distancePoint
     ]

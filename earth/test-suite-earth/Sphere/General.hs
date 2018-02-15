@@ -11,11 +11,11 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
-module General
+module Sphere.General
     ( zoneUnits
     , distancePoint
-    , distanceEuclidean
-    , distanceEuclideanF
+    , distanceHaversine
+    , distanceHaversineF
     ) where
 
 import Prelude hiding (span)
@@ -26,6 +26,7 @@ import Data.UnitsOfMeasure (u, zero)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
+import Flight.LatLng.Rational (defEps)
 import Flight.Distance (TaskDistance(..), PathDistance(..), SpanLatLng)
 import Flight.Zone
     ( Zone(..)
@@ -35,15 +36,12 @@ import Flight.Zone
     , center
     )
 import Flight.Zone.Path (distancePointToPoint)
-import qualified Flight.Earth.Flat.PointToPoint.Double as Dbl (distanceEuclidean)
-import qualified Flight.Earth.Flat.PointToPoint.Rational as Rat (distanceEuclidean)
-import Flight.Earth.Flat.Separated (separatedZones)
+import qualified Flight.Earth.Sphere.PointToPoint.Double as Dbl (distanceHaversine)
+import qualified Flight.Earth.Sphere.PointToPoint.Rational as Rat (distanceHaversine)
+import Flight.Earth.Sphere.Separated (separatedZones)
+import Flight.Earth.Sphere (earthRadius)
 
-import TestNewtypes
-
--- | The radius of the earth in the FAI sphere is 6,371 km.
-earthRadius :: Num a => Quantity a [u| m |]
-earthRadius = [u| 6371000 m |]
+import Sphere.TestNewtypes
 
 type Pt = (Rational, Rational)
 
@@ -297,17 +295,17 @@ correctPoint xs (TaskDistance (MkQuantity d))
     where
         ys = center <$> xs
 
-distanceEuclideanF :: EuclideanTest Double -> Bool
-distanceEuclideanF (EuclideanTest (x, y)) =
+distanceHaversineF :: HaversineTest Double -> Bool
+distanceHaversineF (HaversineTest (x, y)) =
     [u| 0 m |] <= d
     where
-        TaskDistance d = Dbl.distanceEuclidean x y
+        TaskDistance d = Dbl.distanceHaversine x y
 
-distanceEuclidean :: EuclideanTest Rational -> Bool
-distanceEuclidean (EuclideanTest (x, y)) =
+distanceHaversine :: HaversineTest Rational -> Bool
+distanceHaversine (HaversineTest (x, y)) =
     [u| 0 m |] <= d
     where
-        TaskDistance d = Rat.distanceEuclidean x y
+        TaskDistance d = Rat.distanceHaversine defEps x y
 
 distancePoint :: ZonesTest -> Bool
 distancePoint (ZonesTest xs) =
@@ -315,4 +313,4 @@ distancePoint (ZonesTest xs) =
     $ distancePointToPoint span xs
 
 span :: SpanLatLng Rational
-span = Rat.distanceEuclidean
+span = Rat.distanceHaversine defEps

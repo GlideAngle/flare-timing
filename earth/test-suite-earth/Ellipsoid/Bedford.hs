@@ -18,7 +18,7 @@
 -- Bedford Institute of Oceanography
 -- Evaluation Direct and Inverse Geodetic Algorithms
 -- Paul Delorme, September 1978.
-module Bedford (bedfordUnits) where
+module Ellipsoid.Bedford (bedfordUnits) where
 
 import Prelude hiding (min)
 import Data.Ratio ((%))

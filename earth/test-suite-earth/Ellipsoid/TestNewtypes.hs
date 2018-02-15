@@ -12,7 +12,7 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
-module TestNewtypes where
+module Ellipsoid.TestNewtypes where
 
 -- NOTE: Avoid orphan instance warnings with these newtypes.
 

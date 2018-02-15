@@ -12,7 +12,7 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
-module TestNewtypes where
+module Sphere.TestNewtypes where
 
 -- NOTE: Avoid orphan instance warnings with these newtypes.
 
@@ -24,16 +24,16 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.Zone (Radius(..), Incline(..), Bearing(..), Zone(..))
 
-newtype EuclideanTest a =
-    EuclideanTest (LatLng a [u| rad |], LatLng a [u| rad |])
+newtype HaversineTest a =
+    HaversineTest (LatLng a [u| rad |], LatLng a [u| rad |])
 
-deriving instance Show (LatLng a [u| rad |]) => Show (EuclideanTest a)
+deriving instance Show (LatLng a [u| rad |]) => Show (HaversineTest a)
 
 newtype ZoneTest = ZoneTest (Zone Rational) deriving Show
 newtype ZonesTest = ZonesTest [Zone Rational] deriving Show
 
-instance (Monad m, SC.Serial m a) => SC.Serial m (EuclideanTest a) where
-    series = decDepth $ EuclideanTest <$>
+instance (Monad m, SC.Serial m a) => SC.Serial m (HaversineTest a) where
+    series = decDepth $ HaversineTest <$>
         cons4 (\xlat xlng ylat ylng ->
             ( LatLng (Lat $ MkQuantity xlat, Lng $ MkQuantity xlng)
             , LatLng (Lat $ MkQuantity ylat, Lng $ MkQuantity ylng)
@@ -73,8 +73,8 @@ instance Monad m => SC.Serial m ZoneTest where
 instance Monad m => SC.Serial m ZonesTest where
     series = decDepth $ cons1 (\xs -> ZonesTest $ (\(ZoneTest x) -> x) <$> xs)
 
-instance Arbitrary a => QC.Arbitrary (EuclideanTest a) where
-    arbitrary = EuclideanTest <$> do
+instance Arbitrary a => QC.Arbitrary (HaversineTest a) where
+    arbitrary = HaversineTest <$> do
         xlat <- arbitrary
         xlng <- arbitrary
         ylat <- arbitrary

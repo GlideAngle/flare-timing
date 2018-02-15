@@ -11,11 +11,11 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
-module General
+module Flat.General
     ( zoneUnits
     , distancePoint
-    , distanceVincenty
-    , distanceVincentyF
+    , distanceEuclidean
+    , distanceEuclideanF
     ) where
 
 import Prelude hiding (span)
@@ -26,7 +26,6 @@ import Data.UnitsOfMeasure (u, zero)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
-import Flight.LatLng.Rational (Epsilon(..), defEps)
 import Flight.Distance (TaskDistance(..), PathDistance(..), SpanLatLng)
 import Flight.Zone
     ( Zone(..)
@@ -36,13 +35,11 @@ import Flight.Zone
     , center
     )
 import Flight.Zone.Path (distancePointToPoint)
-import qualified Flight.Earth.Ellipsoid.PointToPoint.Double as Dbl (distanceVincenty)
-import qualified Flight.Earth.Ellipsoid.PointToPoint.Rational as Rat
-    (distanceVincenty)
-import Flight.Earth.Ellipsoid.Separated (separatedZones)
-import Flight.Earth.Ellipsoid (wgs84)
+import qualified Flight.Earth.Flat.PointToPoint.Double as Dbl (distanceEuclidean)
+import qualified Flight.Earth.Flat.PointToPoint.Rational as Rat (distanceEuclidean)
+import Flight.Earth.Flat.Separated (separatedZones)
 
-import TestNewtypes
+import Flat.TestNewtypes
 
 -- | The radius of the earth in the FAI sphere is 6,371 km.
 earthRadius :: Num a => Quantity a [u| m |]
@@ -178,7 +175,7 @@ coincident title xs =
                                  , show $ head x
                                  , " = not separate"
                                  ]) $
-                separatedZones wgs84 span x
+                separatedZones span x
                     @?= False
 
 ptsCoincident :: [[Pt]]
@@ -216,7 +213,7 @@ touching title xs =
                                  , show x
                                  , " = not separate"
                                  ]) $
-                separatedZones wgs84 span x
+                separatedZones span x
                     @?= False
 
 epsM :: Rational
@@ -249,7 +246,7 @@ disjoint title xs =
                                  , show x 
                                  , " = separate"
                                  ]) $
-                separatedZones wgs84 span x
+                separatedZones span x
                     @?= True
 
 eps :: Rational
@@ -300,23 +297,22 @@ correctPoint xs (TaskDistance (MkQuantity d))
     where
         ys = center <$> xs
 
-distanceVincentyF :: VincentyTest Double -> Bool
-distanceVincentyF (VincentyTest (x, y)) =
+distanceEuclideanF :: EuclideanTest Double -> Bool
+distanceEuclideanF (EuclideanTest (x, y)) =
     [u| 0 m |] <= d
     where
-        TaskDistance d = Dbl.distanceVincenty wgs84 x y
+        TaskDistance d = Dbl.distanceEuclidean x y
 
-distanceVincenty :: VincentyTest Rational -> Bool
-distanceVincenty (VincentyTest (x, y)) =
+distanceEuclidean :: EuclideanTest Rational -> Bool
+distanceEuclidean (EuclideanTest (x, y)) =
     [u| 0 m |] <= d
     where
-        e = Epsilon $ 1 % 1000000000000000000
-        TaskDistance d = Rat.distanceVincenty e wgs84 x y
+        TaskDistance d = Rat.distanceEuclidean x y
 
-distancePoint :: ZonesTest Rational -> Bool
+distancePoint :: ZonesTest -> Bool
 distancePoint (ZonesTest xs) =
     (\(PathDistance d _) -> correctPoint xs d)
     $ distancePointToPoint span xs
 
 span :: SpanLatLng Rational
-span = Rat.distanceVincenty defEps wgs84
+span = Rat.distanceEuclidean
