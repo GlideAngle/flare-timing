@@ -79,7 +79,8 @@ br :: Bearing Rational
 br = let (Epsilon e) = defEps in (Bearing . MkQuantity $ F.pi e)
 
 circumSampleUnits :: TestTree
-circumSampleUnits = testGroup "Points just within the zone"
+circumSampleUnits =
+    testGroup "Points just within the zone"
     [ testGroup "Outside the zone."
         [ HU.testCase
             "No points > 0mm outside a 40m cylinder when searching within 1mm" $
@@ -184,7 +185,8 @@ toLL (lat, lng) =
             lng'' = convert lng' :: Quantity Rational [u| rad |]
 
 forbesUnits :: TestTree
-forbesUnits = testGroup "Forbes 2011/2012 distances"
+forbesUnits =
+    testGroup "Forbes 2011/2012 distances"
     [ day1PartUnits
     , day1Units
 
@@ -230,7 +232,8 @@ mkPartDayUnits title zs (TaskDistance d) = testGroup title
         tdR' = TaskDistance (convert r' :: Quantity Rational [u| m |])
 
 day1PartUnits :: TestTree
-day1PartUnits = testGroup "Task 1 [...]"
+day1PartUnits =
+    testGroup "Task 1 [...]"
     [ mkPartDayUnits "Task 1 [x, x, _, _]" p1 d1
     , mkPartDayUnits "Task 1 [_, x, x, _]" p2 d2
     , mkPartDayUnits "Task 1 [_, _, x, x]" p3 d3
@@ -254,7 +257,8 @@ day1PartUnits = testGroup "Task 1 [...]"
             d3 = fromKms [u| 20.88547 km |]
 
 day2PartUnits :: TestTree
-day2PartUnits = testGroup "Task 2 [...]"
+day2PartUnits =
+    testGroup "Task 2 [...]"
     [ mkPartDayUnits "Task 2 [x, x, _, _]" p1 d1
     , mkPartDayUnits "Task 2 [_, x, x, _]" p2 d2
     , mkPartDayUnits "Task 2 [_, _, x, x]" p3 d3
@@ -278,7 +282,8 @@ day2PartUnits = testGroup "Task 2 [...]"
             d3 = fromKms [u| 38.30752 km |]
 
 day3PartUnits :: TestTree
-day3PartUnits = testGroup "Task 3 [...]"
+day3PartUnits =
+    testGroup "Task 3 [...]"
     [ mkPartDayUnits "Task 3 [x, x, _, _]" p1 d1
     , mkPartDayUnits "Task 3 [_, x, x, _]" p2 d2
     , mkPartDayUnits "Task 3 [_, _, x, x]" p3 d3
@@ -302,7 +307,8 @@ day3PartUnits = testGroup "Task 3 [...]"
             d3 = fromKms [u| 79.716223 km |]
 
 day4PartUnits :: TestTree
-day4PartUnits = testGroup "Task 4 [...]"
+day4PartUnits =
+    testGroup "Task 4 [...]"
     [ mkPartDayUnits "Task 4 [x, x, _]" p1' d1
     , mkPartDayUnits "Task 4 [_, x, x]" p2 d2
     ]
@@ -322,7 +328,8 @@ day4PartUnits = testGroup "Task 4 [...]"
             d2 = fromKms [u| 105.87255 km |]
 
 day5PartUnits :: TestTree
-day5PartUnits = testGroup "Task 5 [...]"
+day5PartUnits =
+    testGroup "Task 5 [...]"
     [ mkPartDayUnits "Task 5 [x, x, _]" p1 d1
     , mkPartDayUnits "Task 5 [_, x, x]" p2 d2
     ]
@@ -341,7 +348,8 @@ day5PartUnits = testGroup "Task 5 [...]"
             d2 = fromKms [u| 128.87562 km |]
 
 day6PartUnits :: TestTree
-day6PartUnits = testGroup "Task 6 [...]"
+day6PartUnits =
+    testGroup "Task 6 [...]"
     [ mkPartDayUnits "Task 6 [x, x, _]" p1 d1
     , mkPartDayUnits "Task 6 [_, x, x]" p2 d2
     ]
@@ -360,7 +368,8 @@ day6PartUnits = testGroup "Task 6 [...]"
             d2 = fromKms [u| 75.17947 km |]
 
 day7PartUnits :: TestTree
-day7PartUnits = testGroup "Task 7 [...]"
+day7PartUnits =
+    testGroup "Task 7 [...]"
     [ mkPartDayUnits "Task 7 [x, x, _, _]" p1 d1
     , mkPartDayUnits "Task 7 [_, x, x, _]" p2 d2
     , mkPartDayUnits "Task 7 [_, _, x, x]" p3 d3
@@ -385,7 +394,8 @@ day7PartUnits = testGroup "Task 7 [...]"
 
 
 day8PartUnits :: TestTree
-day8PartUnits = testGroup "Task 8 [...]"
+day8PartUnits =
+    testGroup "Task 8 [...]"
     [ mkPartDayUnits "Task 8 [x, x, _, _]" p1 d1
     , mkPartDayUnits "Task 8 [_, x, x, _]" p2 d2
     , mkPartDayUnits "Task 8 [_, _, x, x]" p3 d3

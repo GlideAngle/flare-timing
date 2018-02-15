@@ -77,7 +77,8 @@ semicircle x =
     SemiCircle (Radius earthRadius) (toLL x)
 
 zoneUnits :: TestTree
-zoneUnits = testGroup "Zone unit tests"
+zoneUnits =
+    testGroup "Zone unit tests"
     [ distanceUnits
     , coincidentUnits
     , touchingUnits
@@ -85,7 +86,8 @@ zoneUnits = testGroup "Zone unit tests"
     ]
 
 distanceUnits :: TestTree
-distanceUnits = testGroup "Point-to-point distance"
+distanceUnits =
+    testGroup "Point-to-point distance"
     [ emptyDistance
     , pointDistance
     , vectorDistance
@@ -96,7 +98,8 @@ distanceUnits = testGroup "Point-to-point distance"
     ]
 
 coincidentUnits :: TestTree
-coincidentUnits = testGroup "Coincident zone separation"
+coincidentUnits =
+    testGroup "Coincident zone separation"
     [ pointCoincident
     , vectorCoincident
     , cylinderCoincident
@@ -106,7 +109,8 @@ coincidentUnits = testGroup "Coincident zone separation"
     ]
 
 touchingUnits :: TestTree
-touchingUnits = testGroup "Touching zone separation"
+touchingUnits =
+    testGroup "Touching zone separation"
     [ cylinderTouching
     , conicalTouching
     , lineTouching
@@ -114,7 +118,8 @@ touchingUnits = testGroup "Touching zone separation"
     ]
 
 disjointUnits :: TestTree
-disjointUnits = testGroup "Disjoint zone separation"
+disjointUnits =
+    testGroup "Disjoint zone separation"
     [ pointDisjoint
     , vectorDisjoint
     , cylinderDisjoint
@@ -124,7 +129,8 @@ disjointUnits = testGroup "Disjoint zone separation"
     ]
 
 emptyDistance :: TestTree
-emptyDistance = testGroup "Point-to-point distance"
+emptyDistance =
+    testGroup "Point-to-point distance"
     [ HU.testCase "No zones = zero point-to-point distance" $
         edgesSum (distancePointToPoint span []) @?= (TaskDistance $ MkQuantity 0)
     ]

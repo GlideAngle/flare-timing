@@ -8,25 +8,29 @@ import Sphere.General
 import Sphere.Specific
 
 tests :: TestTree
-tests = testGroup "Tests"
-        [ units
-        , properties
-        ]
+tests =
+    testGroup "Earth FAI Sphere Tests"
+    [ units
+    , properties
+    ]
 
 properties :: TestTree
-properties = testGroup "Properties"
-        [ scProps
-        , qcProps
-        ]
+properties =
+    testGroup "Properties"
+    [ scProps
+    , qcProps
+    ]
 
 units :: TestTree
-units = testGroup "Units"
-        [ zoneUnits
-        , specificUnits
-        ]
+units =
+    testGroup "Units"
+    [ zoneUnits
+    , specificUnits
+    ]
 
 scProps :: TestTree
-scProps = testGroup "(checked by SmallCheck)"
+scProps =
+    testGroup "(checked by SmallCheck)"
     [ SC.testProperty "HaversineF distances, are not negative" distanceHaversineF
     , SC.testProperty "Haversine distances, are not negative" distanceHaversine
     , SC.testProperty "Zone distances, point-to-point, are not negative" distancePoint

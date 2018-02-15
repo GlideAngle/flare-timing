@@ -9,22 +9,25 @@ import Ellipsoid.Specific
 import Ellipsoid.Bedford
 
 tests :: TestTree
-tests = testGroup "Tests"
-        [ units
-        , properties
-        ]
+tests =
+    testGroup "Earth Ellipsoid Tests"
+    [ units
+    , properties
+    ]
 
 properties :: TestTree
-properties = testGroup "Properties"
-        [ qcProps
-        ]
+properties =
+    testGroup "Properties"
+    [ qcProps
+    ]
 
 units :: TestTree
-units = testGroup "Units"
-        [ bedfordUnits
-        , zoneUnits
-        , specificUnits
-        ]
+units =
+    testGroup "Units"
+    [ bedfordUnits
+    , zoneUnits
+    , specificUnits
+    ]
 
 qcProps :: TestTree
 qcProps = testGroup "(checked by QuickCheck)"

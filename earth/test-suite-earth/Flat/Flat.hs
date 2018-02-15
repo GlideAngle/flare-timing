@@ -8,25 +8,29 @@ import Flat.General
 import Flat.Specific
 
 tests :: TestTree
-tests = testGroup "Tests"
-        [ units
-        , properties
-        ]
+tests =
+    testGroup "Earth Flat (UTM Projection) Tests"
+    [ units
+    , properties
+    ]
 
 properties :: TestTree
-properties = testGroup "Properties"
-        [ scProps
-        , qcProps
-        ]
+properties =
+    testGroup "Properties"
+    [ scProps
+    , qcProps
+    ]
 
 units :: TestTree
-units = testGroup "Units"
-        [ zoneUnits
-        , specificUnits
-        ]
+units =
+    testGroup "Units"
+    [ zoneUnits
+    , specificUnits
+    ]
 
 scProps :: TestTree
-scProps = testGroup "(checked by SmallCheck)"
+scProps =
+    testGroup "(checked by SmallCheck)"
     [ SC.testProperty "EuclideanF distances, are not negative" distanceEuclideanF
     , SC.testProperty "Euclidean distances, are not negative" distanceEuclidean
     , SC.testProperty "Zone distances, point-to-point, are not negative" distancePoint
@@ -34,7 +38,8 @@ scProps = testGroup "(checked by SmallCheck)"
     ]
 
 qcProps :: TestTree
-qcProps = testGroup "(checked by QuickCheck)"
+qcProps =
+    testGroup "(checked by QuickCheck)"
     [ QC.testProperty "EuclideanF distances, are not negative" distanceEuclideanF
     , QC.testProperty "Euclidean distances, are not negative" distanceEuclidean
     , QC.testProperty "Zone distances, point-to-point, are not negative" distancePoint

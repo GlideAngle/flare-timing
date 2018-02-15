@@ -10,4 +10,9 @@ main :: IO ()
 main = defaultMain tests
 
 tests :: TestTree
-tests = testGroup "Tests" [F.tests, S.tests, E.tests]
+tests =
+    testGroup "Earth Tests"
+        [ F.tests
+        , S.tests
+        , E.tests
+        ]
