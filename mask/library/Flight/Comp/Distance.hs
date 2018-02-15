@@ -180,7 +180,7 @@ pathToGo DashPathInputs{..} x@Time.TimeRow{time} d =
         Just dashTask' ->
             maybe
                 (distanceOnlyLine d)
-                (toTrackLine False)
+                (toTrackLine spanF False)
                 (fromZs path)
             where
                 path = dashPathToGoalTimeRows

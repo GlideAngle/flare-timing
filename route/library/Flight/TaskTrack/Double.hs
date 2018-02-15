@@ -30,10 +30,11 @@ import Flight.Zone (Zone(..), Bearing(..), center)
 import Flight.Zone.Path (distancePointToPoint, costSegment)
 import Flight.Zone.Raw (RawZone(..))
 import Flight.Zone.Cylinder (CircumSample)
-import Flight.Sphere.Cylinder.Double (circumSample)
-import Flight.Sphere.PointToPoint.Double (distanceHaversine)
 import Flight.Flat (zoneToProjectedEastNorth)
 import Flight.Flat.Projected.Double (costEastNorth)
+import Flight.Sphere.Cylinder.Double (circumSample)
+import Flight.Sphere.PointToPoint.Double (distanceHaversine)
+import Flight.Ellipsoid.PointToPoint.Double (distanceVincenty)
 import Flight.Route
     ( TaskDistanceMeasure(..)
     , TaskTrack(..)
@@ -54,6 +55,7 @@ import Flight.TaskTrack.Internal
     )
 import Flight.Task (Zs(..), CostSegment, AngleCut(..) , fromZs, distanceEdgeToEdge)
 import Flight.Route.TrackLine (ToTrackLine(..))
+import Flight.Ellipsoid (wgs84)
 
 taskTracks :: Bool
            -> (Int -> Bool)
@@ -74,9 +76,9 @@ taskTrack excludeWaypoints tdm zsRaw =
         TaskDistanceByAllMethods ->
             TaskTrack
                 { ellipsoidPointToPoint = Just pointTrackline
-                , ellipsoidEdgeToEdge = edgeTrackline
+                , ellipsoidEdgeToEdge = ellipsoidTrackline
                 , sphericalPointToPoint = Just pointTrackline
-                , sphericalEdgeToEdge = edgeTrackline
+                , sphericalEdgeToEdge = sphereTrackline
                 , projection = projTrackline
                 }
         TaskDistanceByPoints ->
@@ -90,9 +92,9 @@ taskTrack excludeWaypoints tdm zsRaw =
         TaskDistanceByEdges ->
             TaskTrack
                 { ellipsoidPointToPoint = Nothing
-                , ellipsoidEdgeToEdge = edgeTrackline
+                , ellipsoidEdgeToEdge = ellipsoidTrackline
                 , sphericalPointToPoint = Nothing
-                , sphericalEdgeToEdge = edgeTrackline
+                , sphericalEdgeToEdge = sphereTrackline
                 , projection = Nothing
                 }
         TaskDistanceByProjection ->
@@ -109,10 +111,15 @@ taskTrack excludeWaypoints tdm zsRaw =
 
         pointTrackline = goByPoint excludeWaypoints zs
 
-        edgeTrackline =
+        sphereTrackline =
             fromZs
-            $ toTrackLine excludeWaypoints
-            <$> distanceEdgeToEdge' (costSegment span) zs
+            $ toTrackLine spanS excludeWaypoints
+            <$> distanceEdgeSphere (costSegment spanS) zs
+
+        ellipsoidTrackline =
+            fromZs
+            $ toTrackLine spanE excludeWaypoints
+            <$> distanceEdgeEllipsoid (costSegment spanE) zs
 
         projTrackline = goByProj excludeWaypoints zs
 
@@ -120,9 +127,9 @@ taskTrack excludeWaypoints tdm zsRaw =
 -- projected plane but he distance for each leg is measured on the sphere.
 goByProj :: Bool -> [Zone Double] -> Maybe ProjectedTrackLine
 goByProj excludeWaypoints zs = do
-    dEE <- fromZs $ distanceEdgeToEdge' costEastNorth zs
+    dEE <- fromZs $ distanceEdgeSphere costEastNorth zs
 
-    let projected = toTrackLine excludeWaypoints dEE
+    let projected = toTrackLine spanF excludeWaypoints dEE
     let ps = toPoint <$> waypoints projected
     let (_, es) = partitionEithers $ zoneToProjectedEastNorth <$> ps
 
@@ -131,7 +138,7 @@ goByProj excludeWaypoints zs = do
             zipWith
                 (\ a b ->
                     edgesSum
-                    <$> distanceEdgeToEdge' costEastNorth [a, b])
+                    <$> distanceEdgeSphere costEastNorth [a, b])
                 ps
                 (tail ps)
 
@@ -140,7 +147,7 @@ goByProj excludeWaypoints zs = do
     let spherical =
             projected
                 { distance =
-                    toKm . edgesSum <$> distancePointToPoint span $ ps
+                    toKm . edgesSum <$> distancePointToPoint spanS $ ps
                 } :: TrackLine
 
     let planar =
@@ -175,7 +182,7 @@ goByPoint excludeWaypoints zs =
         }
     where
         d :: TaskDistance Double
-        d = edgesSum $ distancePointToPoint span zs
+        d = edgesSum $ distancePointToPoint spanS zs
 
         -- NOTE: Concentric zones of different radii can be defined that
         -- share the same center. Remove duplicate edgesSum.
@@ -189,23 +196,41 @@ goByPoint excludeWaypoints zs =
         ds =
             legDistances
                 distancePointToPoint
-                span
+                spanS
                 (Point <$> edgesSum' :: [Zone Double])
 
         dsSum :: [TaskDistance Double]
         dsSum = scanl1 addTaskDistance ds
 
-distanceEdgeToEdge' :: CostSegment Double
-                    -> [Zone Double]
-                    -> Zs (PathDistance Double)
-distanceEdgeToEdge' segCost = 
-    distanceEdgeToEdge span distancePointToPoint segCost cs cut mm30
+distanceEdgeSphere
+    :: CostSegment Double
+    -> [Zone Double]
+    -> Zs (PathDistance Double)
+distanceEdgeSphere segCost = 
+    distanceEdgeToEdge spanS distancePointToPoint segCost cs cut mm30
+
+distanceEdgeEllipsoid
+    :: CostSegment Double
+    -> [Zone Double]
+    -> Zs (PathDistance Double)
+distanceEdgeEllipsoid segCost = 
+    distanceEdgeToEdge spanE distancePointToPoint segCost cs cut mm30
 
 cs :: CircumSample Double
 cs = circumSample
 
-span :: SpanLatLng Double
-span = distanceHaversine
+-- | Span on a flat projected plane.
+spanF :: SpanLatLng Double
+spanF = distanceHaversine
+
+-- | Span on a sphere using haversines.
+spanS :: SpanLatLng Double
+spanS = distanceHaversine
+
+-- | Span on the WGS 84 ellipsoid using Vincenty's solution to the inverse
+-- problem.
+spanE :: SpanLatLng Double
+spanE = distanceVincenty wgs84
 
 cut :: AngleCut Double
 cut =

@@ -13,7 +13,11 @@ packages:
   extra-dep: true
 - location: ../zone
   extra-dep: true
+- location: ../earth-flat
+  extra-dep: true
 - location: ../earth-sphere
+  extra-dep: true
+- location: ../earth-ellipsoid
   extra-dep: true
 - location: ../tasty-compare
   extra-dep: true

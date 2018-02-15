@@ -17,6 +17,7 @@
 module Flight.TaskTrack.Rational (taskTracks) where
 
 import Prelude hiding (span)
+import Data.Ratio ((%))
 import qualified Data.Number.FixedFunctions as F
 import Data.Either (partitionEithers)
 import Data.List (nub)
@@ -32,10 +33,11 @@ import Flight.Zone (Zone(..), Bearing(..), center)
 import Flight.Zone.Path (distancePointToPoint, costSegment)
 import Flight.Zone.Raw (RawZone(..))
 import Flight.Zone.Cylinder (CircumSample)
-import Flight.Sphere.Cylinder.Rational (circumSample)
-import Flight.Sphere.PointToPoint.Rational (distanceHaversine)
 import Flight.Flat (zoneToProjectedEastNorth)
 import Flight.Flat.Projected.Rational (costEastNorth)
+import Flight.Sphere.Cylinder.Rational (circumSample)
+import Flight.Sphere.PointToPoint.Rational (distanceHaversine)
+import Flight.Ellipsoid.PointToPoint.Rational (distanceVincenty)
 import Flight.Route
     ( TaskDistanceMeasure(..)
     , TaskTrack(..)
@@ -55,6 +57,8 @@ import Flight.TaskTrack.Internal
     , toCylinder
     )
 import Flight.Task (Zs(..), CostSegment, AngleCut(..), fromZs, distanceEdgeToEdge)
+import Flight.Route.TrackLine (ToTrackLine(..))
+import Flight.Ellipsoid (wgs84)
 
 taskTracks :: Bool
            -> (Int -> Bool)
@@ -75,9 +79,9 @@ taskTrack excludeWaypoints tdm zsRaw =
         TaskDistanceByAllMethods ->
             TaskTrack
                 { ellipsoidPointToPoint = Just pointTrackline
-                , ellipsoidEdgeToEdge = edgeTrackline
+                , ellipsoidEdgeToEdge = ellipsoidTrackline
                 , sphericalPointToPoint = Just pointTrackline
-                , sphericalEdgeToEdge = edgeTrackline
+                , sphericalEdgeToEdge = sphereTrackline
                 , projection = projTrackline
                 }
         TaskDistanceByPoints ->
@@ -91,9 +95,9 @@ taskTrack excludeWaypoints tdm zsRaw =
         TaskDistanceByEdges ->
             TaskTrack
                 { ellipsoidPointToPoint = Nothing
-                , ellipsoidEdgeToEdge = edgeTrackline
+                , ellipsoidEdgeToEdge = ellipsoidTrackline
                 , sphericalPointToPoint = Nothing
-                , sphericalEdgeToEdge = edgeTrackline
+                , sphericalEdgeToEdge = sphereTrackline
                 , projection = Nothing
                 }
         TaskDistanceByProjection ->
@@ -110,10 +114,15 @@ taskTrack excludeWaypoints tdm zsRaw =
 
         pointTrackline = goByPoint excludeWaypoints zs
 
-        edgeTrackline =
+        sphereTrackline =
             fromZs
-            $ goByEdge excludeWaypoints
-            <$> distanceEdgeToEdge' (costSegment span) zs
+            $ toTrackLine spanS excludeWaypoints
+            <$> distanceEdgeSphere (costSegment spanS) zs
+
+        ellipsoidTrackline =
+            fromZs
+            $ toTrackLine spanE excludeWaypoints
+            <$> distanceEdgeEllipsoid (costSegment spanE) zs
 
         projTrackline = goByProj excludeWaypoints zs
 
@@ -121,9 +130,9 @@ taskTrack excludeWaypoints tdm zsRaw =
 -- projected plane but he distance for each leg is measured on the sphere.
 goByProj :: Bool -> [Zone Rational] -> Maybe ProjectedTrackLine
 goByProj excludeWaypoints zs = do
-    dEE <- fromZs $ distanceEdgeToEdge' costEastNorth zs
+    dEE <- fromZs $ distanceEdgeSphere costEastNorth zs
 
-    let projected = goByEdge excludeWaypoints dEE
+    let projected = toTrackLine spanF excludeWaypoints dEE
     let ps = toPoint <$> waypoints projected
     let (_, es) = partitionEithers $ zoneToProjectedEastNorth <$> ps 
 
@@ -132,7 +141,7 @@ goByProj excludeWaypoints zs = do
             zipWith
                 (\ a b ->
                     edgesSum
-                    <$> distanceEdgeToEdge' costEastNorth [a, b])
+                    <$> distanceEdgeSphere costEastNorth [a, b])
                 ps
                 (tail ps)
 
@@ -141,7 +150,7 @@ goByProj excludeWaypoints zs = do
     let spherical =
             projected
                 { distance =
-                    toKm . edgesSum <$> distancePointToPoint span $ ps
+                    toKm . edgesSum <$> distancePointToPoint spanS $ ps
                 } :: TrackLine
 
     let planar =
@@ -176,7 +185,7 @@ goByPoint excludeWaypoints zs =
         }
     where
         d :: TaskDistance Rational
-        d = edgesSum $ distancePointToPoint span zs
+        d = edgesSum $ distancePointToPoint spanS zs
 
         -- NOTE: Concentric zones of different radii can be defined that
         -- share the same center. Remove duplicate edgesSum.
@@ -190,58 +199,44 @@ goByPoint excludeWaypoints zs =
         ds =
             legDistances
                 distancePointToPoint
-                span
+                spanS
                 (Point <$> edgesSum' :: [Zone Rational])
 
         dsSum :: [TaskDistance Rational]
         dsSum = scanl1 addTaskDistance ds
 
-goByEdge :: Bool -> PathDistance Rational -> TrackLine
-goByEdge excludeWaypoints ed =
-    TrackLine
-        { distance = toKm d
-        , waypoints = if excludeWaypoints then [] else xs
-        , legs = toKm <$> ds 
-        , legsSum = toKm <$> dsSum
-        }
-    where
-        d :: TaskDistance Rational
-        d = edgesSum ed
+distanceEdgeSphere
+    :: CostSegment Rational
+    -> [Zone Rational]
+    -> Zs (PathDistance Rational)
+distanceEdgeSphere segCost = 
+    distanceEdgeToEdge spanS distancePointToPoint segCost cs cut mm30
 
-        -- NOTE: The graph of points created for determining the shortest
-        -- path can have duplicate points, so the shortest path too can have
-        -- duplicate points. Remove these duplicates.
-        --
-        -- I found that by decreasing defEps, the default epsilon, used for
-        -- rational math from 1/10^9 to 1/10^12 these duplicates stopped
-        -- occuring.
-        vertices' :: [LatLng Rational [u| rad |]]
-        vertices' = nub $ vertices ed
-
-        xs :: [RawLatLng]
-        xs = convertLatLng <$> vertices'
-
-        ds :: [TaskDistance Rational]
-        ds =
-            legDistances
-                distancePointToPoint
-                span
-                (Point <$> vertices' :: [Zone Rational])
-
-        dsSum :: [TaskDistance Rational]
-        dsSum = scanl1 addTaskDistance ds
-
-distanceEdgeToEdge' :: CostSegment Rational
-                    -> [Zone Rational]
-                    -> Zs (PathDistance Rational)
-distanceEdgeToEdge' segCost = 
-    distanceEdgeToEdge span distancePointToPoint segCost cs cut mm30
+distanceEdgeEllipsoid
+    :: CostSegment Rational
+    -> [Zone Rational]
+    -> Zs (PathDistance Rational)
+distanceEdgeEllipsoid segCost = 
+    distanceEdgeToEdge spanE distancePointToPoint segCost cs cut mm30
 
 cs :: CircumSample Rational
 cs = circumSample
 
-span :: SpanLatLng Rational
-span = distanceHaversine defEps
+-- | Span on a flat projected plane.
+spanF :: SpanLatLng Rational
+spanF = distanceHaversine defEps
+
+-- | Span on a sphere using haversines.
+spanS :: SpanLatLng Rational
+spanS = distanceHaversine defEps
+
+-- | Span on the WGS 84 ellipsoid using Vincenty's solution to the inverse
+-- problem.
+spanE :: SpanLatLng Rational
+spanE =
+    distanceVincenty e wgs84
+    where
+        e = Epsilon $ 1 % 1000000000000000000
 
 cut :: AngleCut Rational
 cut =

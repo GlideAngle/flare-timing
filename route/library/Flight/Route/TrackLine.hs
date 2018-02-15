@@ -1,6 +1,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DuplicateRecordFields #-}
@@ -35,46 +36,75 @@ data TrackLine =
 instance ToJSON TrackLine
 instance FromJSON TrackLine
 
-class ToTrackLine a where
-    toTrackLine :: Bool -> a -> TrackLine
+class ToTrackLine a b where
+    toTrackLine :: SpanLatLng a -> Bool -> b -> TrackLine
 
-instance ToTrackLine (PathDistance Double) where
-    toTrackLine = goByEdge
+instance ToTrackLine Double (PathDistance Double) where
+    toTrackLine span excludeWaypoints ed =
+        TrackLine
+            { distance = toKm d
+            , waypoints = if excludeWaypoints then [] else xs
+            , legs = toKm <$> ds 
+            , legsSum = toKm <$> dsSum
+            }
+        where
+            d :: TaskDistance Double
+            d = edgesSum ed
 
-goByEdge :: Bool -> PathDistance Double -> TrackLine
-goByEdge excludeWaypoints ed =
-    TrackLine
-        { distance = toKm d
-        , waypoints = if excludeWaypoints then [] else xs
-        , legs = toKm <$> ds 
-        , legsSum = toKm <$> dsSum
-        }
-    where
-        d :: TaskDistance Double
-        d = edgesSum ed
+            -- NOTE: The graph of points created for determining the shortest
+            -- path can have duplicate points, so the shortest path too can have
+            -- duplicate points. Remove these duplicates.
+            --
+            -- I found that by decreasing defEps, the default epsilon, used for
+            -- rational math from 1/10^9 to 1/10^12 these duplicates stopped
+            -- occuring.
+            vertices' :: [LatLng Double [u| rad |]]
+            vertices' = nub $ vertices ed
 
-        -- NOTE: The graph of points created for determining the shortest
-        -- path can have duplicate points, so the shortest path too can have
-        -- duplicate points. Remove these duplicates.
-        --
-        -- I found that by decreasing defEps, the default epsilon, used for
-        -- rational math from 1/10^9 to 1/10^12 these duplicates stopped
-        -- occuring.
-        vertices' :: [LatLng Double [u| rad |]]
-        vertices' = nub $ vertices ed
+            xs :: [RawLatLng]
+            xs = convertLatLng <$> vertices'
 
-        xs :: [RawLatLng]
-        xs = convertLatLng <$> vertices'
+            ds :: [TaskDistance Double]
+            ds =
+                legDistances
+                    distancePointToPoint
+                    span
+                    (Point <$> vertices' :: [Zone Double])
 
-        ds :: [TaskDistance Double]
-        ds =
-            legDistances
-                distancePointToPoint
-                span
-                (Point <$> vertices' :: [Zone Double])
+            dsSum :: [TaskDistance Double]
+            dsSum = scanl1 addTaskDistance ds
 
-        dsSum :: [TaskDistance Double]
-        dsSum = scanl1 addTaskDistance ds
+instance ToTrackLine Rational (PathDistance Rational) where
+    toTrackLine span excludeWaypoints ed =
+        TrackLine
+            { distance = toKm d
+            , waypoints = if excludeWaypoints then [] else xs
+            , legs = toKm <$> ds 
+            , legsSum = toKm <$> dsSum
+            }
+        where
+            d :: TaskDistance Rational
+            d = edgesSum ed
 
-span :: SpanLatLng Double
-span = distanceHaversine
+            -- NOTE: The graph of points created for determining the shortest
+            -- path can have duplicate points, so the shortest path too can have
+            -- duplicate points. Remove these duplicates.
+            --
+            -- I found that by decreasing defEps, the default epsilon, used for
+            -- rational math from 1/10^9 to 1/10^12 these duplicates stopped
+            -- occuring.
+            vertices' :: [LatLng Rational [u| rad |]]
+            vertices' = nub $ vertices ed
+
+            xs :: [RawLatLng]
+            xs = convertLatLng <$> vertices'
+
+            ds :: [TaskDistance Rational]
+            ds =
+                legDistances
+                    distancePointToPoint
+                    span
+                    (Point <$> vertices' :: [Zone Rational])
+
+            dsSum :: [TaskDistance Rational]
+            dsSum = scanl1 addTaskDistance ds
