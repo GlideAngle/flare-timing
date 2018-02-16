@@ -15,24 +15,23 @@ module Sphere.Specific (forbesUnits) where
 
 import Prelude hiding (span)
 import Test.Tasty (TestTree, TestName, testGroup)
-import Test.Tasty.HUnit as HU ((@?), testCase)
-import Data.UnitsOfMeasure (u, convert)
-import Data.UnitsOfMeasure.Internal (Quantity(..))
-import Data.Bifunctor.Flip (Flip(..))
+import Data.UnitsOfMeasure (u)
 
 import Flight.Units ()
 import Flight.LatLng.Rational (defEps)
-import Flight.Distance (TaskDistance(..), PathDistance(..), SpanLatLng, fromKms)
+import Flight.Distance (TaskDistance(..), SpanLatLng, fromKms)
 import Flight.Zone (Zone(..))
 import Flight.Zone.Path (distancePointToPoint)
 import qualified Flight.Earth.Sphere.PointToPoint.Rational as Rat (distanceHaversine)
-import Data.Number.RoundingFunctions (dpRound)
-import qualified Forbes as F (d1, d2, d3, d4, d5, d6, d7, d8, mkDayUnits)
+import qualified Forbes as F
+    ( d1, d2, d3, d4, d5, d6, d7, d8
+    , mkDayUnits, mkPartDayUnits
+    )
 import qualified Sphere.Forbes as F
     ( dd1, dd2, dd3, dd4, dd5, dd6, dd7, dd8
     , dsd1, dsd2, dsd3, dsd4, dsd5, dsd6, dsd7, dsd8
     )
-import Forbes ((.~=.), toLL)
+import Forbes (toLL)
 
 mkDayUnits
     :: TestName
@@ -41,6 +40,13 @@ mkDayUnits
     -> [TaskDistance Rational]
     -> TestTree
 mkDayUnits = F.mkDayUnits (distancePointToPoint span)
+
+mkPartDayUnits
+    :: TestName
+    -> [Zone Rational]
+    -> TaskDistance Rational
+    -> TestTree
+mkPartDayUnits = F.mkPartDayUnits (distancePointToPoint span)
 
 forbesUnits :: TestTree
 forbesUnits =
@@ -69,29 +75,6 @@ forbesUnits =
     , day8PartUnits
     , day8Units
     ]
-
-mkPartDayUnits :: TestName
-               -> [Zone Rational]
-               -> TaskDistance Rational
-               -> TestTree
-mkPartDayUnits title zs (TaskDistance d) = testGroup title
-    [ HU.testCase
-        ( "point-to-point distance "
-        ++ show td'
-        ++ " ~= "
-        ++ show tdR
-        )
-        $ (tdR' == tdR) @? tdR' .~=. tdR
-    ]
-    where
-        dKm = convert d :: Quantity Rational [u| km |]
-        Flip r = dpRound 3 <$> Flip dKm
-        tdR = TaskDistance (convert r :: Quantity Rational [u| m |])
-
-        td'@(TaskDistance d') = edgesSum $ distancePointToPoint span zs
-        dKm' = convert d' :: Quantity Rational [u| km |]
-        Flip r' = dpRound 3 <$> Flip dKm'
-        tdR' = TaskDistance (convert r' :: Quantity Rational [u| m |])
 
 day1PartUnits :: TestTree
 day1PartUnits =

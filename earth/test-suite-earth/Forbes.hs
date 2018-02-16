@@ -10,7 +10,7 @@ module Forbes
     , tasks
     , d1, d2, d3, d4, d5, d6, d7, d8
     , toLL
-    , mkDayUnits
+    , mkDayUnits, mkPartDayUnits
     , tdRound
     ) where
 
@@ -19,6 +19,7 @@ import Test.Tasty (TestTree, TestName, testGroup)
 import Test.Tasty.HUnit ((@?), testCase)
 import Data.UnitsOfMeasure (u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
+import Data.Bifunctor.Flip (Flip(..))
 
 import Flight.Units ()
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
@@ -81,6 +82,30 @@ mkDayUnits pp title pDay dDay' dsDay' = testGroup title
         ppDayInits :: [TaskDistance Rational]
         ppDayInits = tdRound . edgesSum . pp <$> pDayInits
 
+mkPartDayUnits
+    :: ([Zone Rational] -> PathDistance Rational)
+    -> TestName
+    -> [Zone Rational]
+    -> TaskDistance Rational
+    -> TestTree
+mkPartDayUnits pp title zs (TaskDistance d) = testGroup title
+    [ testCase
+        ( "point-to-point distance "
+        ++ show td'
+        ++ " ~= "
+        ++ show tdR
+        )
+        $ (tdR' == tdR) @? tdR' .~=. tdR
+    ]
+    where
+        dKm = convert d :: Quantity Rational [u| km |]
+        Flip r = dpRound 3 <$> Flip dKm
+        tdR = TaskDistance (convert r :: Quantity Rational [u| m |])
+
+        td'@(TaskDistance d') = edgesSum $ pp zs
+        dKm' = convert d' :: Quantity Rational [u| km |]
+        Flip r' = dpRound 3 <$> Flip dKm'
+        tdR' = TaskDistance (convert r' :: Quantity Rational [u| m |])
 
 tasks :: [[Zone Rational]]
 tasks = [d1, d2, d3, d4, d5, d6, d7, d8]
