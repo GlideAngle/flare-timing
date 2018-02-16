@@ -116,71 +116,71 @@ tasks = [d1, d2, d3, d4, d5, d6, d7, d8]
 
 d1 :: [Zone Rational]
 d1 =
-    [ Cylinder (Radius $ MkQuantity 100) $ toLL (negate 33.36137, 147.93207)
-    , Cylinder (Radius $ MkQuantity 10000) $ toLL (negate 33.36137, 147.93207)
-    , Cylinder (Radius $ MkQuantity 400) $ toLL (negate 33.85373, 147.94195)
-    , Cylinder (Radius $ MkQuantity 400) $ toLL (negate 33.4397, 148.34533)
-    , Cylinder (Radius $ MkQuantity 400) $ toLL (negate 33.61965, 148.4099)
+    [ Cylinder (Radius $ MkQuantity 100) $ toLL (-33.36137, 147.93207)
+    , Cylinder (Radius $ MkQuantity 10000) $ toLL (-33.36137, 147.93207)
+    , Cylinder (Radius $ MkQuantity 400) $ toLL (-33.85373, 147.94195)
+    , Cylinder (Radius $ MkQuantity 400) $ toLL (-33.4397, 148.34533)
+    , Cylinder (Radius $ MkQuantity 400) $ toLL (-33.61965, 148.4099)
     ]
 
 d2 :: [Zone Rational]
 d2 =
-    [ Cylinder (Radius $ MkQuantity 100) (toLL (negate 33.36137, 147.93207))
-    , Cylinder (Radius $ MkQuantity 5000) (toLL (negate 33.36137, 147.93207))
-    , Cylinder (Radius $ MkQuantity 400) (toLL (negate 32.90223, 147.98492))
-    , Cylinder (Radius $ MkQuantity 400) (toLL (negate 32.9536, 147.55457))
-    , Cylinder (Radius $ MkQuantity 400) (toLL (negate 33.12592, 147.91043))
+    [ Cylinder (Radius $ MkQuantity 100) (toLL (-33.36137, 147.93207))
+    , Cylinder (Radius $ MkQuantity 5000) (toLL (-33.36137, 147.93207))
+    , Cylinder (Radius $ MkQuantity 400) (toLL (-32.90223, 147.98492))
+    , Cylinder (Radius $ MkQuantity 400) (toLL (-32.9536, 147.55457))
+    , Cylinder (Radius $ MkQuantity 400) (toLL (-33.12592, 147.91043))
     ]
 
 d3 :: [Zone Rational]
 d3 =
-    [ Cylinder (Radius $ MkQuantity 100) (toLL (negate 33.36137, 147.93207))
-    , Cylinder (Radius $ MkQuantity 25000) (toLL (negate 33.36137, 147.93207))
-    , Cylinder (Radius $ MkQuantity 400) (toLL (negate 34.02107, 148.2233))
-    , Cylinder (Radius $ MkQuantity 400) (toLL (negate 34.11795, 148.5013))
-    , Cylinder (Radius $ MkQuantity 400) (toLL (negate 34.82197, 148.66543))
+    [ Cylinder (Radius $ MkQuantity 100) (toLL (-33.36137, 147.93207))
+    , Cylinder (Radius $ MkQuantity 25000) (toLL (-33.36137, 147.93207))
+    , Cylinder (Radius $ MkQuantity 400) (toLL (-34.02107, 148.2233))
+    , Cylinder (Radius $ MkQuantity 400) (toLL (-34.11795, 148.5013))
+    , Cylinder (Radius $ MkQuantity 400) (toLL (-34.82197, 148.66543))
     ]
 
 d4 :: [Zone Rational]
 d4 =
-    [ Cylinder (Radius $ MkQuantity 100) (toLL (negate 33.36137, 147.93207))
-    , Cylinder (Radius $ MkQuantity 15000) (toLL (negate 33.36137, 147.93207))
-    , Cylinder (Radius $ MkQuantity 25000) (toLL (negate 32.90223, 147.98492))
-    , Cylinder (Radius $ MkQuantity 400) (toLL (negate 32.46363, 148.989))
+    [ Cylinder (Radius $ MkQuantity 100) (toLL (-33.36137, 147.93207))
+    , Cylinder (Radius $ MkQuantity 15000) (toLL (-33.36137, 147.93207))
+    , Cylinder (Radius $ MkQuantity 25000) (toLL (-32.90223, 147.98492))
+    , Cylinder (Radius $ MkQuantity 400) (toLL (-32.46363, 148.989))
     ]
 
 d5 :: [Zone Rational]
 d5 =
-    [ Cylinder (Radius $ MkQuantity 100) (toLL (negate 33.36137, 147.93207))
-    , Cylinder (Radius $ MkQuantity 15000) (toLL (negate 33.36137, 147.93207))
-    , Cylinder (Radius $ MkQuantity 5000) (toLL (negate 32.56608, 148.22657))
-    , Cylinder (Radius $ MkQuantity 400) (toLL (negate 32.0164, 149.43363))
+    [ Cylinder (Radius $ MkQuantity 100) (toLL (-33.36137, 147.93207))
+    , Cylinder (Radius $ MkQuantity 15000) (toLL (-33.36137, 147.93207))
+    , Cylinder (Radius $ MkQuantity 5000) (toLL (-32.56608, 148.22657))
+    , Cylinder (Radius $ MkQuantity 400) (toLL (-32.0164, 149.43363))
     ]
 
 d6 :: [Zone Rational]
 d6 =
-    [ Cylinder (Radius $ MkQuantity 100) (toLL (negate 33.36137, 147.93207))
-    , Cylinder (Radius $ MkQuantity 15000) (toLL (negate 33.36137, 147.93207))
-    , Cylinder (Radius $ MkQuantity 5000) (toLL (negate 32.19498, 147.76218))
-    , Cylinder (Radius $ MkQuantity 400) (toLL (negate 31.69323, 148.29623))
+    [ Cylinder (Radius $ MkQuantity 100) (toLL (-33.36137, 147.93207))
+    , Cylinder (Radius $ MkQuantity 15000) (toLL (-33.36137, 147.93207))
+    , Cylinder (Radius $ MkQuantity 5000) (toLL (-32.19498, 147.76218))
+    , Cylinder (Radius $ MkQuantity 400) (toLL (-31.69323, 148.29623))
     ]
 
 d7 :: [Zone Rational]
 d7 =
-    [ Cylinder (Radius $ MkQuantity 100) (toLL (negate 33.36137, 147.93207))
-    , Cylinder (Radius $ MkQuantity 10000) (toLL (negate 33.36137, 147.93207))
-    , Cylinder (Radius $ MkQuantity 5000) (toLL (negate 32.9536, 147.55457))
-    , Cylinder (Radius $ MkQuantity 400) (toLL (negate 32.76052, 148.64958))
-    , Cylinder (Radius $ MkQuantity 400) (toLL (negate 32.93585, 148.74947))
+    [ Cylinder (Radius $ MkQuantity 100) (toLL (-33.36137, 147.93207))
+    , Cylinder (Radius $ MkQuantity 10000) (toLL (-33.36137, 147.93207))
+    , Cylinder (Radius $ MkQuantity 5000) (toLL (-32.9536, 147.55457))
+    , Cylinder (Radius $ MkQuantity 400) (toLL (-32.76052, 148.64958))
+    , Cylinder (Radius $ MkQuantity 400) (toLL (-32.93585, 148.74947))
     ]
 
 d8 :: [Zone Rational]
 d8 =
-    [ Cylinder (Radius $ MkQuantity 100) (toLL (negate 33.36137, 147.93207))
-    , Cylinder (Radius $ MkQuantity 10000) (toLL (negate 33.36137, 147.93207))
-    , Cylinder (Radius $ MkQuantity 5000) (toLL (negate 33.75343, 147.52865))
-    , Cylinder (Radius $ MkQuantity 400) (toLL (negate 33.12908, 147.57323))
-    , Cylinder (Radius $ MkQuantity 400) (toLL (negate 33.361, 147.9315))
+    [ Cylinder (Radius $ MkQuantity 100) (toLL (-33.36137, 147.93207))
+    , Cylinder (Radius $ MkQuantity 10000) (toLL (-33.36137, 147.93207))
+    , Cylinder (Radius $ MkQuantity 5000) (toLL (-33.75343, 147.52865))
+    , Cylinder (Radius $ MkQuantity 400) (toLL (-33.12908, 147.57323))
+    , Cylinder (Radius $ MkQuantity 400) (toLL (-33.361, 147.9315))
     ]
 
 type MkPart
@@ -199,10 +199,10 @@ p1 mk t1 t2 t3 =
         where
             xs =
                 Point . toLL <$>
-                [ (negate 33.36137, 147.93207)
-                , (negate 33.85373, 147.94195)
-                , (negate 33.4397, 148.34533)
-                , (negate 33.61965, 148.4099)
+                [ (-33.36137, 147.93207)
+                , (-33.85373, 147.94195)
+                , (-33.4397, 148.34533)
+                , (-33.61965, 148.4099)
                 ]
 
             s1 = take 2 xs
@@ -219,10 +219,10 @@ p2 mk t1 t2 t3 =
         where
             xs =
                 Point . toLL <$>
-                [ (negate 33.36137, 147.93207)
-                , (negate 32.90223, 147.98492)
-                , (negate 32.9536, 147.55457)
-                , (negate 33.12592, 147.91043)
+                [ (-33.36137, 147.93207)
+                , (-32.90223, 147.98492)
+                , (-32.9536, 147.55457)
+                , (-33.12592, 147.91043)
                 ]
 
             s1 = take 2 xs
@@ -239,10 +239,10 @@ p3 mk t1 t2 t3 =
         where
             xs =
                 Point . toLL <$>
-                [ (negate 33.36137, 147.93207)
-                , (negate 34.02107, 148.2233)
-                , (negate 34.11795, 148.5013)
-                , (negate 34.82197, 148.66543)
+                [ (-33.36137, 147.93207)
+                , (-34.02107, 148.2233)
+                , (-34.11795, 148.5013)
+                , (-34.82197, 148.66543)
                 ]
 
             s1 = take 2 xs
@@ -258,9 +258,9 @@ p4 mk t1 t2 =
         where
             xs =
                 Point . toLL <$>
-                [ (negate 33.36137, 147.93207)
-                , (negate 32.90223, 147.98492)
-                , (negate 32.46363, 148.989)
+                [ (-33.36137, 147.93207)
+                , (-32.90223, 147.98492)
+                , (-32.46363, 148.989)
                 ]
 
             s1 = take 2 xs
@@ -275,9 +275,9 @@ p5 mk t1 t2 =
         where
             xs =
                 Point . toLL <$>
-                [ (negate 33.36137, 147.93207)
-                , (negate 32.56608, 148.22657)
-                , (negate 32.0164, 149.43363)
+                [ (-33.36137, 147.93207)
+                , (-32.56608, 148.22657)
+                , (-32.0164, 149.43363)
                 ]
 
             s1 = take 2 xs
@@ -292,9 +292,9 @@ p6 mk t1 t2 =
         where
             xs =
                 Point . toLL <$>
-                [ (negate 33.36137, 147.93207)
-                , (negate 32.19498, 147.76218)
-                , (negate 31.69323, 148.29623)
+                [ (-33.36137, 147.93207)
+                , (-32.19498, 147.76218)
+                , (-31.69323, 148.29623)
                 ]
 
             s1 = take 2 xs
@@ -310,10 +310,10 @@ p7 mk t1 t2 t3 =
         where
             xs =
                 Point . toLL <$>
-                [ (negate 33.36137, 147.93207)
-                , (negate 32.9536, 147.55457)
-                , (negate 32.76052, 148.64958)
-                , (negate 32.93585, 148.74947)
+                [ (-33.36137, 147.93207)
+                , (-32.9536, 147.55457)
+                , (-32.76052, 148.64958)
+                , (-32.93585, 148.74947)
                 ]
 
             s1 = take 2 xs
@@ -330,10 +330,10 @@ p8 mk t1 t2 t3 =
         where
             xs =
                 Point . toLL <$>
-                [ (negate 33.36137, 147.93207)
-                , (negate 33.75343, 147.52865)
-                , (negate 33.12908, 147.57323)
-                , (negate 33.361, 147.9315)
+                [ (-33.36137, 147.93207)
+                , (-33.75343, 147.52865)
+                , (-33.12908, 147.57323)
+                , (-33.361, 147.9315)
                 ]
 
             s1 = take 2 xs
