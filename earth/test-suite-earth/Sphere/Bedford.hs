@@ -13,7 +13,7 @@
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module Ellipsoid.Bedford (bedfordUnits) where
+module Sphere.Bedford (bedfordUnits) where
 
 import Prelude hiding (min)
 import Data.Ratio ((%))
@@ -27,9 +27,8 @@ import Flight.Units ()
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.LatLng.Rational (Epsilon(..))
 import Flight.Distance (TaskDistance(..))
-import qualified Flight.Earth.Ellipsoid.PointToPoint.Double as Dbl (distanceVincenty)
-import qualified Flight.Earth.Ellipsoid.PointToPoint.Rational as Rat (distanceVincenty)
-import Flight.Earth.Ellipsoid (wgs84)
+import qualified Flight.Earth.Sphere.PointToPoint.Double as Dbl (distanceHaversine)
+import qualified Flight.Earth.Sphere.PointToPoint.Rational as Rat (distanceHaversine)
 import DegMinSec (DMS(..), toDeg)
 import Bedford (points, solutions, diff, showTolerance)
 
@@ -37,7 +36,13 @@ getTolerance
     :: (Real a, Fractional a)
     => Quantity a [u| m |]
     -> Quantity a [u| km |]
-getTolerance = const . convert $ [u| 0.5 mm |]
+getTolerance d'
+    | d < [u| 100 km |] = convert [u| 425.4 m |]
+    | d < [u| 500 km |] = convert [u| 2.495 km |]
+    | d < [u| 1000 km |] = [u| 4.06 km |]
+    | otherwise = [u| 19.5 km |]
+    where
+        d = convert d'
 
 dblChecks :: [TaskDistance Double] -> [((DMS, DMS), (DMS, DMS))] -> [TestTree]
 dblChecks =
@@ -60,7 +65,7 @@ dblChecks =
                     convert . getTolerance
                     $ (\(TaskDistance q) -> q) expected
 
-        found x y = Dbl.distanceVincenty wgs84 (toLL x) (toLL y)
+        found x y = Dbl.distanceHaversine (toLL x) (toLL y)
 
         toLL :: (DMS, DMS) -> LatLng Double [u| rad |]
         toLL (lat, lng) =
@@ -98,7 +103,7 @@ ratChecks =
                     $ (\(TaskDistance q) -> q) expected'
 
         expected d = TaskDistance $ toRational' d
-        found x y = Rat.distanceVincenty e wgs84 (toLL x) (toLL y)
+        found x y = Rat.distanceHaversine e (toLL x) (toLL y)
 
         e = Epsilon $ 1 % 1000000000000000000
         toLL :: (DMS, DMS) -> LatLng Rational [u| rad |]

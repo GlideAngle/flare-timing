@@ -18,10 +18,31 @@
 -- Bedford Institute of Oceanography
 -- Evaluation Direct and Inverse Geodetic Algorithms
 -- Paul Delorme, September 1978.
-module Bedford (points) where
+module Bedford (points, solutions, diff, showTolerance) where
 
 import Prelude hiding (min)
+import Data.UnitsOfMeasure ((-:), u, convert, fromRational', toRational', abs')
+import Data.UnitsOfMeasure.Internal (Quantity(..))
+
+import Flight.Units ()
+import Flight.Distance (TaskDistance(..))
 import DegMinSec (DMS(..))
+
+showTolerance :: (Real a, Fractional a) => Quantity a [u| m |] -> String
+showTolerance d
+    | dmm < [u| 1000 mm |] = show dmm
+    | dkm < [u| 1 km |] = show dm
+    | otherwise = show (TaskDistance dm)
+    where
+        dm :: Quantity Double _
+        dm = fromRational' . toRational' $ d
+        
+        dkm = convert dm
+        dmm = convert dm
+
+diff :: Num a => TaskDistance a -> TaskDistance a -> TaskDistance a
+diff (TaskDistance a) (TaskDistance b) =
+    TaskDistance . abs' $ a -: b
 
 points :: [((DMS, DMS), (DMS, DMS))]
 points =
@@ -78,4 +99,61 @@ points =
     , (((10,  0,  0.0), (-18,  0,  0.0)), (( 7, 14,  5.521), ( 25, 48, 13.908)))
     , (((40,  0,  0.0), (-18,  0,  0.0)), ((27, 49, 42.130), ( 32, 54, 13.184)))
     , (((70,  0,  0.0), (-18,  0,  0.0)), ((43,  7, 36.475), ( 52,  1,  0.626)))
+    ]
+
+solutions :: [TaskDistance Double]
+solutions =
+    TaskDistance . convert
+    <$>
+    [ [u| 80.471341 km |]
+    , [u| 80.467842 km |]
+    , [u| 80.463616 km |]
+
+    , [u| 80.468422 km |]
+    , [u| 80.466106 km |]
+    , [u| 80.463284 km |]
+
+    , [u| 80.465497 km |]
+    , [u| 80.464363 km |]
+    , [u| 80.462951 km |]
+
+    , [u| 80.466994 km |]
+    , [u| 80.4659 km |]
+    , [u| 80.463589 km |]
+
+    , [u| 482.827311 km |]
+    , [u| 482.805398 km |]
+    , [u| 482.780699 km |]
+
+    , [u| 482.810039 km |]
+    , [u| 482.795399 km |]
+    , [u| 482.778968 km |]
+
+    , [u| 482.793074 km |]
+    , [u| 482.786227 km |]
+    , [u| 482.777777 km |]
+
+    , [u| 804.711122 km |]
+    , [u| 804.673374 km |]
+    , [u| 804.633279 km |]
+
+    , [u| 804.682723 km |]
+    , [u| 804.657459 km |]
+    , [u| 804.630834 km |]
+
+    , [u| 804.655123 km |]
+    , [u| 804.643847 km |]
+    , [u| 804.629907 km |]
+
+    , [u| 4828.136258 km |]
+    , [u| 4827.891819 km |]
+    , [u| 4827.781145 km |]
+
+    , [u| 4828.022935 km |]
+    , [u| 4827.861414 km |]
+    , [u| 4827.797208 km |]
+
+    , [u| 4827.933527 km |]
+    , [u| 4827.899946 km |]
+    , [u| 4827.858337 km |]
     ]

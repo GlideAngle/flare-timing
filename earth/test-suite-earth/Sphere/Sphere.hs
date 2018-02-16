@@ -6,10 +6,11 @@ import Test.Tasty.QuickCheck as QC
 
 import Sphere.General
 import Sphere.Specific
+import Sphere.Bedford
 
 tests :: TestTree
 tests =
-    testGroup "Earth FAI Sphere Tests"
+    testGroup "On the FAI sphere using haversines"
     [ units
     , properties
     ]
@@ -23,9 +24,10 @@ properties =
 
 units :: TestTree
 units =
-    testGroup "Units"
+    testGroup "Unit Tests"
     [ zoneUnits
     , specificUnits
+    , bedfordUnits
     ]
 
 scProps :: TestTree

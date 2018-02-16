@@ -10,7 +10,7 @@ import Ellipsoid.Bedford
 
 tests :: TestTree
 tests =
-    testGroup "Earth Ellipsoid Tests"
+    testGroup "On the WGS84 ellipsoid using Vincenty's solution to the inverse geodetic problem"
     [ units
     , properties
     ]

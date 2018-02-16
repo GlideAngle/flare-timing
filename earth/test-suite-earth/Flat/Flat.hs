@@ -6,10 +6,12 @@ import Test.Tasty.QuickCheck as QC
 
 import Flat.General
 import Flat.Specific
+import Flat.Bedford
 
 tests :: TestTree
 tests =
-    testGroup "Earth Flat (UTM Projection) Tests"
+    testGroup
+    "On a flat Earth (UTM Projection) using Pythagoras' theorem a² + b² = c²"
     [ units
     , properties
     ]
@@ -26,6 +28,7 @@ units =
     testGroup "Units"
     [ zoneUnits
     , specificUnits
+    , bedfordUnits
     ]
 
 scProps :: TestTree
