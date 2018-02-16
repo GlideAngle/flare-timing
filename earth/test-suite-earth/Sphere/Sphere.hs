@@ -7,6 +7,7 @@ import Test.Tasty.QuickCheck as QC
 import Sphere.General
 import Sphere.Specific
 import Sphere.Bedford
+import Sphere.Cylinder
 
 tests :: TestTree
 tests =
@@ -26,8 +27,9 @@ units :: TestTree
 units =
     testGroup "Unit Tests"
     [ zoneUnits
-    , specificUnits
+    , forbesUnits
     , bedfordUnits
+    , circumSampleUnits
     ]
 
 scProps :: TestTree
