@@ -16,7 +16,6 @@ module Sphere.Specific (specificUnits) where
 import Prelude hiding (span)
 import Data.Ratio((%))
 import qualified Data.Number.FixedFunctions as F
-import Data.List (inits)
 import Test.Tasty (TestTree, TestName, testGroup)
 import Test.Tasty.HUnit as HU ((@?=), (@?), testCase)
 import Data.UnitsOfMeasure ((-:), u, convert)
@@ -34,18 +33,20 @@ import Flight.Zone.Cylinder
 import qualified Flight.Earth.Sphere.PointToPoint.Rational as Rat (distanceHaversine)
 import qualified Flight.Earth.Sphere.Cylinder.Rational as Rat (circumSample)
 import Data.Number.RoundingFunctions (dpRound)
-import qualified Forbes as F (d1, d2, d3, d4, d5, d6, d7, d8)
+import qualified Forbes as F (d1, d2, d3, d4, d5, d6, d7, d8, mkDayUnits)
 import qualified Sphere.Forbes as F
     ( dd1, dd2, dd3, dd4, dd5, dd6, dd7, dd8
     , dsd1, dsd2, dsd3, dsd4, dsd5, dsd6, dsd7, dsd8
     )
-import Forbes (toLL)
+import Forbes ((.~=.), toLL)
 
-(.>=.) :: (Show a, Show b) => a -> b -> String
-(.>=.) x y = show x ++ " >= " ++ show y
-
-(.~=.) :: (Show a, Show b) => a -> b -> String
-(.~=.) x y = show x ++ " ~= " ++ show y
+mkDayUnits
+    :: TestName
+    -> [Zone Rational]
+    -> TaskDistance Rational
+    -> [TaskDistance Rational]
+    -> TestTree
+mkDayUnits = F.mkDayUnits (distancePointToPoint span)
 
 specificUnits :: TestTree
 specificUnits =
@@ -408,46 +409,6 @@ day8PartUnits =
 
             p3 = take 2 $ drop 2 xs
             d3 = fromKms [u| 42.131961 km |]
-
-mkDayUnits :: TestName
-           -> [Zone Rational]
-           -> TaskDistance Rational
-           -> [TaskDistance Rational]
-           -> TestTree
-mkDayUnits title pDay dDay' dsDay' = testGroup title
-    [ HU.testCase
-        ("point-to-point distance >= " ++ show dDay)
-        $ (ppDay >= dDay) @? ppDay .>=. dDay
-
-    , testGroup
-        ( "\n>=\n"
-        ++ show ppDayInits
-        ++ "\n"
-        ++ show dsDay
-        )
-        [ HU.testCase "point-to-point distances"
-          $ (ppDayInits >= dsDay) @? ppDayInits .>=. dsDay
-        ]
-    ]
-    where
-        dDay = tdRound dDay'
-        dsDay = tdRound <$> dsDay'
-
-        pp :: [Zone Rational] -> PathDistance Rational
-        pp = distancePointToPoint span
-
-        ppDay :: TaskDistance Rational
-        ppDay = tdRound . edgesSum $ pp pDay
-
-        pDayInits :: [[Zone Rational]]
-        pDayInits = drop 1 $ inits pDay
-
-        ppDayInits :: [TaskDistance Rational]
-        ppDayInits = tdRound . edgesSum . pp <$> pDayInits
-
-tdRound :: TaskDistance Rational -> TaskDistance Rational
-tdRound (TaskDistance (MkQuantity d)) =
-    TaskDistance . MkQuantity . dpRound 2 $ d
 
 day1Units :: TestTree
 day1Units = mkDayUnits "Task 1" F.d1 F.dd1 F.dsd1
