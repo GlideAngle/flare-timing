@@ -1,16 +1,4 @@
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE QuasiQuotes #-}
-
-module Sphere.Forbes
-    ( dd1, dd2, dd3, dd4, dd5, dd6, dd7, dd8
-    , dsd1, dsd2, dsd3, dsd4, dsd5, dsd6, dsd7, dsd8
-    ) where
-
-import Data.UnitsOfMeasure (u)
-import Data.UnitsOfMeasure.Internal (Quantity(..))
-
-import Flight.Units ()
-import Flight.Distance (TaskDistance(..), fromKms)
+module Sphere.Forbes where
 
 {-
 NOTE: The task distances show below are taken from the competition *.fsdb file
@@ -93,18 +81,6 @@ NOTE: Point to point distances using Vincenty method.
     - lat: -33.61965
       lng: 148.40989999
 -}
-dd1 :: TaskDistance Rational
-dd1 = fromKms [u| 134.917675 km |]
-
-dsd1 :: [TaskDistance Rational]
-dsd1 =
-    fromKms . MkQuantity <$>
-        [ 0
-        , 9.9
-        , 54.755578
-        , 114.032205
-        , 134.917675
-        ]
 
 {-
 -33.36137, 147.93207, -32.90223, 147.98492, -32.9536, 147.55457, -33.12592, 147.91043
@@ -157,18 +133,6 @@ NOTE: Point to point distances using Vincenty method.
     - lat: -33.12592
       lng: 147.91042999
 -}
-dd2 :: TaskDistance Rational
-dd2 = fromKms [u| 130.167733 km |]
-
-dsd2 :: [TaskDistance Rational]
-dsd2 =
-    fromKms . MkQuantity <$>
-        [ 0
-        , 4.9
-        , 51.290669
-        , 91.860213
-        , 130.167733
-        ]
 
 {-
 -33.36137, 147.93207, -34.02107, 148.2233, -34.11795, 148.5013, -34.82197, 148.66543
@@ -221,18 +185,6 @@ NOTE: Point to point distances using Vincenty method.
     - lat: -34.82197
       lng: 148.66542999
 -}
-dd3 :: TaskDistance Rational
-dd3 = fromKms [u| 185.643415 km |]
-
-dsd3 :: [TaskDistance Rational]
-dsd3 =
-    fromKms . MkQuantity <$>
-        [ 0
-        , 24.9
-        , 78.147093
-        , 105.927192
-        , 185.643415
-        ]
 
 {-
 -33.36137, 147.93207, -32.90223, 147.98492, -32.46363, 148.989
@@ -278,17 +230,6 @@ NOTE: Point to point distances using Vincenty method.
     - lat: -32.46363
       lng: 148.989
 -}
-dd4 :: TaskDistance Rational
-dd4 = fromKms [u| 157.16322 km |]
-
-dsd4 :: [TaskDistance Rational]
-dsd4 =
-    fromKms . MkQuantity <$>
-        [ 0
-        , 14.9
-        , 51.290669
-        , 157.16322
-        ]
 
 {-
 -33.36137, 147.93207, -32.56608, 148.22657, -32.0164, 149.43363
@@ -334,17 +275,6 @@ NOTE: Point to point distances using Vincenty method.
     - lat: -32.01639998
       lng: 149.43362998
 -}
-dd5 :: TaskDistance Rational
-dd5 = fromKms [u| 221.477524 km |]
-
-dsd5 :: [TaskDistance Rational]
-dsd5 =
-    fromKms . MkQuantity <$>
-        [ 0
-        , 14.9
-        , 92.601904
-        , 221.477524
-        ]
 
 {-
 -33.36137, 147.93207, -32.19498, 147.76218, -31.69323, 148.29623
@@ -390,17 +320,6 @@ NOTE: Point to point distances using Vincenty method.
     - lat: -31.69322998
       lng: 148.29623
 -}
-dd6 :: TaskDistance Rational
-dd6 = fromKms [u| 205.844959 km |]
-
-dsd6 :: [TaskDistance Rational]
-dsd6 =
-    fromKms . MkQuantity <$>
-        [ 0
-        , 14.9
-        , 130.665489
-        , 205.844959
-        ]
 
 {-
 -33.36137, 147.93207, -32.9536, 147.55457, -32.76052, 148.64958, -32.93585, 148.74947
@@ -453,18 +372,6 @@ NOTE: Point to point distances using Vincenty method.
     - lat: -32.93585
       lng: 148.74947
 -}
-dd7 :: TaskDistance Rational
-dd7 = fromKms [u| 183.488931 km |]
-
-dsd7 :: [TaskDistance Rational]
-dsd7 =
-    fromKms . MkQuantity <$>
-        [ 0
-        , 9.9
-        , 57.365312
-        , 161.875045
-        , 183.488931
-        ]
 
 {-
 -33.36137, 147.93207, -33.75343, 147.52865, -33.12908, 147.57323, -33.361, 147.9315
@@ -517,15 +424,3 @@ NOTE: Point to point distances using Vincenty method.
     - lat: -33.36099999
       lng: 147.93149998
 -}
-dd8 :: TaskDistance Rational
-dd8 = fromKms [u| 169.10714 km |]
-
-dsd8 :: [TaskDistance Rational]
-dsd8 =
-    fromKms . MkQuantity <$>
-        [ 0
-        , 9.9
-        , 57.427511
-        , 126.975179
-        , 169.10714
-        ]

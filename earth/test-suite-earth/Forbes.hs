@@ -55,8 +55,8 @@ mkDayUnits
     :: ([Zone Rational] -> PathDistance Rational)
     -> TestName
     -> [Zone Rational]
-    -> TaskDistance Rational
-    -> [TaskDistance Rational]
+    -> Quantity Rational [u| km |]
+    -> [Quantity Rational [u| km |]]
     -> TestTree
 mkDayUnits pp title pDay dDay' dsDay' = testGroup title
     [ testCase
@@ -74,8 +74,8 @@ mkDayUnits pp title pDay dDay' dsDay' = testGroup title
         ]
     ]
     where
-        dDay = tdRound dDay'
-        dsDay = tdRound <$> dsDay'
+        dDay = tdRound . fromKms $ dDay'
+        dsDay = tdRound . fromKms <$> dsDay'
 
         ppDay :: TaskDistance Rational
         ppDay = tdRound . edgesSum $ pp pDay
