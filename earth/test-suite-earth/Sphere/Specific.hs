@@ -52,28 +52,28 @@ forbesUnits :: TestTree
 forbesUnits =
     testGroup "Forbes 2011/2012 distances"
     [ day1PartUnits
-    , day1Units
+    , mkDayUnits "Task 1" F.d1 F.dd1 F.dsd1
 
     , day2PartUnits
-    , day2Units
+    , mkDayUnits "Task 2" F.d2 F.dd2 F.dsd2
 
     , day3PartUnits
-    , day3Units
+    , mkDayUnits "Task 3" F.d3 F.dd3 F.dsd3
 
     , day4PartUnits
-    , day4Units
+    , mkDayUnits "Task 4" F.d4 F.dd4 F.dsd4
 
     , day5PartUnits
-    , day5Units
+    , mkDayUnits "Task 5" F.d5 F.dd5 F.dsd5
 
     , day6PartUnits
-    , day6Units
+    , mkDayUnits "Task 6" F.d6 F.dd6 F.dsd6
 
     , day7PartUnits
-    , day7Units
+    , mkDayUnits "Task 7" F.d7 F.dd7 F.dsd7
 
     , day8PartUnits
-    , day8Units
+    , mkDayUnits "Task 8" F.d8 F.dd8 F.dsd8
     ]
 
 day1PartUnits :: TestTree
@@ -262,30 +262,6 @@ day8PartUnits =
 
             p3 = take 2 $ drop 2 xs
             d3 = fromKms [u| 42.131961 km |]
-
-day1Units :: TestTree
-day1Units = mkDayUnits "Task 1" F.d1 F.dd1 F.dsd1
-
-day2Units :: TestTree
-day2Units = mkDayUnits "Task 2" F.d2 F.dd2 F.dsd2
-
-day3Units :: TestTree
-day3Units = mkDayUnits "Task 3" F.d3 F.dd3 F.dsd3
-
-day4Units :: TestTree
-day4Units = mkDayUnits "Task 4" F.d4 F.dd4 F.dsd4
-
-day5Units :: TestTree
-day5Units = mkDayUnits "Task 5" F.d5 F.dd5 F.dsd5
-
-day6Units :: TestTree
-day6Units = mkDayUnits "Task 6" F.d6 F.dd6 F.dsd6
-
-day7Units :: TestTree
-day7Units = mkDayUnits "Task 7" F.d7 F.dd7 F.dsd7
-
-day8Units :: TestTree
-day8Units = mkDayUnits "Task 8" F.d8 F.dd8 F.dsd8
 
 span :: SpanLatLng Rational
 span = Rat.distanceHaversine defEps
