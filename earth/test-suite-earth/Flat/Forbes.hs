@@ -24,7 +24,7 @@ import Flight.LatLng.Rational (defEps)
 import Flight.Distance (TaskDistance(..), SpanLatLng)
 import Flight.Zone (Zone(..))
 import Flight.Zone.Path (distancePointToPoint)
-import qualified Flight.Earth.Sphere.PointToPoint.Rational as Rat (distanceHaversine)
+import qualified Flight.Earth.Flat.PointToPoint.Rational as Rat (distanceEuclidean)
 import qualified Forbes as F (mkDayUnits, mkPartDayUnits)
 import Forbes
     ( d1, d2, d3, d4, d5, d6, d7, d8
@@ -32,7 +32,7 @@ import Forbes
     )
 
 span :: SpanLatLng Rational
-span = Rat.distanceHaversine defEps
+span = Rat.distanceEuclidean
 
 mkDay
     :: TestName
@@ -53,108 +53,108 @@ forbesUnits :: TestTree
 forbesUnits =
     testGroup "Forbes 2011/2012 distances"
     [ mkDay "Task 1" d1
-        [u| 134.917675 km |]
+        [u| 134.66008 km |]
         [ [u| 0 km |]
         , [u| 9.9 km |]
-        , [u| 54.755578 km |]
-        , [u| 114.032205 km |]
-        , [u| 134.917675 km |]
+        , [u| 54.60121 km |]
+        , [u| 113.8235 km |]
+        , [u| 134.66008 km |]
         ]
 
     , p1 mkPart
-        [u| 54.755578 km |]
-        [u| 59.276627 km |]
-        [u| 20.88547 km |]
+        [u| 54.601205km |]
+        [u| 59.222292 km |]
+        [u| 20.836587km |]
 
     , mkDay "Task 2" d2
-        [u| 130.167733 km |]
+        [u| 130.11278 km |]
         [ [u| 0 km |]
         , [u| 4.9 km |]
-        , [u| 51.290669 km |]
-        , [u| 91.860213 km |]
-        , [u| 130.167733 km |]
+        , [u| 51.14458 km |]
+        , [u| 91.78241 km |]
+        , [u| 130.11278 km |]
         ]
 
     , p2 mkPart
-        [u| 51.290669 km |]
-        [u| 40.569544 km |]
-        [u| 38.30752 km |]
+        [u| 51.14458 km |]
+        [u| 40.637825 km |]
+        [u| 38.330373 km |]
 
     , mkDay "Task 3" d3
-        [u| 185.643415 km |]
+        [u| 185.31784 km |]
         [ [u| 0 km |]
         , [u| 24.9 km |]
-        , [u| 78.147093 km |]
-        , [u| 105.927192 km |]
-        , [u| 185.643415 km |]
+        , [u| 77.97341 km |]
+        , [u| 105.78896 km |]
+        , [u| 185.31784 km |]
         ]
 
     , p3 mkPart
-        [u| 78.147093 km |]
-        [u| 27.780099 km |]
-        [u| 79.716223 km |]
+        [u| 77.973409 km |]
+        [u| 27.815554 km |]
+        [u| 79.528874 km |]
 
     , mkDay "Task 4" d4
-        [u| 157.16322 km |]
+        [u| 157.11658 km |]
         [ [u| 0 km |]
         , [u| 14.9 km |]
-        , [u| 51.290669 km |]
-        , [u| 157.16322 km |]
+        , [u| 51.14458 km |]
+        , [u| 157.11658 km |]
         ]
 
     , p4 mkPart
-        [u| 51.290669 km |]
-        [u| 105.87255 km |]
+        [u| 51.14458km |]
+        [u| 105.972002 km |]
 
     , mkDay "Task 5" d5
-        [u| 221.477524 km |]
+        [u| 221.37478 km |]
         [ [u| 0 km |]
         , [u| 14.9 km |]
-        , [u| 92.601904 km |]
-        , [u| 221.477524 km |]
+        , [u| 92.37285 km |]
+        , [u| 221.37478 km |]
         ]
 
     , p5 mkPart
-        [u| 92.601904 km |]
-        [u| 128.87562 km |]
+        [u| 92.37285 km |]
+        [u| 129.00193 km |]
 
     , mkDay "Task 6" d6
-        [u| 205.844959 km |]
+        [u| 205.39982 km |]
         [ [u| 0 km |]
         , [u| 14.9 km |]
-        , [u| 130.665489 km |]
-        , [u| 205.844959 km |]
+        , [u| 130.28674 km |]
+        , [u| 205.39982 km |]
         ]
 
     , p6 mkPart
-        [u| 130.665489 km |]
-        [u| 75.17947 km |]
+        [u| 130.286739 km |]
+        [u| 75.113085 km |]
 
     , mkDay "Task 7" d7
-        [u| 183.488931 km |]
+        [u| 183.55533 km |]
         [ [u| 0 km |]
         , [u| 9.9 km |]
-        , [u| 57.365312 km |]
-        , [u| 161.875045 km |]
-        , [u| 183.488931 km |]
+        , [u| 57.29901 km |]
+        , [u| 161.98118 km |]
+        , [u| 183.55533 km |]
         ]
 
     , p7 mkPart
-        [u| 57.365312 km |]
-        [u| 104.509732 km |]
-        [u| 21.613886 km |]
+        [u| 57.299009 km |]
+        [u| 104.682168 km |]
+        [u| 21.574149 km |]
 
     , mkDay "Task 8" d8
-        [u| 169.10714 km |]
+        [u| 168.85663 km |]
         [ [u| 0 km |]
         , [u| 9.9 km |]
-        , [u| 57.427511 km |]
-        , [u| 126.975179 km |]
-        , [u| 169.10714 km |]
+        , [u| 57.37677 km |]
+        , [u| 126.72334 km |]
+        , [u| 168.85663 km |]
         ]
 
     , p8 mkPart
-        [u| 57.427511 km |]
-        [u| 69.547668 km |]
-        [u| 42.131961 km |]
+        [u| 57.376771 km |]
+        [u| 69.346572 km |]
+        [u| 42.133287 km |]
     ]
