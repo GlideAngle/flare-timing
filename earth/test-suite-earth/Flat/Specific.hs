@@ -11,7 +11,7 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
-module Flat.Specific (specificUnits, toLatLngDbl) where
+module Flat.Specific (specificUnits) where
 
 import Prelude hiding (span)
 import Data.Ratio((%))
@@ -34,6 +34,8 @@ import Flight.Zone.Path (distancePointToPoint)
 import qualified Flight.Earth.Flat.PointToPoint.Rational as Rat (distanceEuclidean)
 import qualified Flight.Earth.Flat.Cylinder.Rational as Rat (circumSample)
 import Data.Number.RoundingFunctions (dpRound)
+import qualified Forbes as F (d1, d2, d3, d4, d5, d6, d7, d8)
+import Forbes (toLL)
 
 (.>=.) :: (Show a, Show b) => a -> b -> String
 (.>=.) x y = show x ++ " >= " ++ show y
@@ -163,26 +165,6 @@ zpDistance origin ZonePoint{point} =
     where
         TaskDistance d =
             edgesSum $ distancePointToPoint span [Point origin, Point point]
-
--- | The input pair is in degrees while the output is in radians.
-toLatLngDbl :: (Double, Double) -> LatLng Double [u| rad |]
-toLatLngDbl (lat, lng) =
-    LatLng (Lat lat'', Lng lng'')
-        where
-            lat' = MkQuantity lat :: Quantity Double [u| deg |]
-            lng' = MkQuantity lng :: Quantity Double [u| deg |]
-            lat'' = convert lat' :: Quantity Double [u| rad |]
-            lng'' = convert lng' :: Quantity Double [u| rad |]
-
--- | The input pair is in degrees while the output is in radians.
-toLL :: (Double, Double) -> LatLng Rational [u| rad |]
-toLL (lat, lng) =
-    LatLng (Lat lat'', Lng lng'')
-        where
-            lat' = (MkQuantity $ toRational lat) :: Quantity Rational [u| deg |]
-            lng' = (MkQuantity $ toRational lng) :: Quantity Rational [u| deg |]
-            lat'' = convert lat' :: Quantity Rational [u| rad |]
-            lng'' = convert lng' :: Quantity Rational [u| rad |]
 
 forbesUnits :: TestTree
 forbesUnits =
@@ -457,28 +439,28 @@ tdRound (TaskDistance (MkQuantity d)) =
     TaskDistance . MkQuantity . dpRound 2 $ d
 
 day1Units :: TestTree
-day1Units = mkDayUnits "Task 1" pDay1 dDay1 dsDay1
+day1Units = mkDayUnits "Task 1" F.d1 dDay1 dsDay1
 
 day2Units :: TestTree
-day2Units = mkDayUnits "Task 2" pDay2 dDay2 dsDay2
+day2Units = mkDayUnits "Task 2" F.d2 dDay2 dsDay2
 
 day3Units :: TestTree
-day3Units = mkDayUnits "Task 3" pDay3 dDay3 dsDay3
+day3Units = mkDayUnits "Task 3" F.d3 dDay3 dsDay3
 
 day4Units :: TestTree
-day4Units = mkDayUnits "Task 4" pDay4 dDay4 dsDay4
+day4Units = mkDayUnits "Task 4" F.d4 dDay4 dsDay4
 
 day5Units :: TestTree
-day5Units = mkDayUnits "Task 5" pDay5 dDay5 dsDay5
+day5Units = mkDayUnits "Task 5" F.d5 dDay5 dsDay5
 
 day6Units :: TestTree
-day6Units = mkDayUnits "Task 6" pDay6 dDay6 dsDay6
+day6Units = mkDayUnits "Task 6" F.d6 dDay6 dsDay6
 
 day7Units :: TestTree
-day7Units = mkDayUnits "Task 7" pDay7 dDay7 dsDay7
+day7Units = mkDayUnits "Task 7" F.d7 dDay7 dsDay7
 
 day8Units :: TestTree
-day8Units = mkDayUnits "Task 8" pDay8 dDay8 dsDay8
+day8Units = mkDayUnits "Task 8" F.d8 dDay8 dsDay8
 
 {-
 NOTE: The task distances show below are taken from the competition *.fsdb file
@@ -561,15 +543,6 @@ NOTE: Point to point distances using Vincenty method.
     - lat: -33.61965
       lng: 148.40989999
 -}
-pDay1 :: [Zone Rational]
-pDay1 =
-    [ Cylinder (Radius $ MkQuantity 100) $ toLL (negate 33.36137, 147.93207)
-    , Cylinder (Radius $ MkQuantity 10000) $ toLL (negate 33.36137, 147.93207)
-    , Cylinder (Radius $ MkQuantity 400) $ toLL (negate 33.85373, 147.94195)
-    , Cylinder (Radius $ MkQuantity 400) $ toLL (negate 33.4397, 148.34533)
-    , Cylinder (Radius $ MkQuantity 400) $ toLL (negate 33.61965, 148.4099)
-    ]
-
 dDay1 :: TaskDistance Rational
 dDay1 = fromKms [u| 134.917675 km |]
 
@@ -634,15 +607,6 @@ NOTE: Point to point distances using Vincenty method.
     - lat: -33.12592
       lng: 147.91042999
 -}
-pDay2 :: [Zone Rational]
-pDay2 =
-    [ Cylinder (Radius $ MkQuantity 100) (toLL (negate 33.36137, 147.93207))
-    , Cylinder (Radius $ MkQuantity 5000) (toLL (negate 33.36137, 147.93207))
-    , Cylinder (Radius $ MkQuantity 400) (toLL (negate 32.90223, 147.98492))
-    , Cylinder (Radius $ MkQuantity 400) (toLL (negate 32.9536, 147.55457))
-    , Cylinder (Radius $ MkQuantity 400) (toLL (negate 33.12592, 147.91043))
-    ]
-
 dDay2 :: TaskDistance Rational
 dDay2 = fromKms [u| 130.167733 km |]
 
@@ -707,15 +671,6 @@ NOTE: Point to point distances using Vincenty method.
     - lat: -34.82197
       lng: 148.66542999
 -}
-pDay3 :: [Zone Rational]
-pDay3 =
-    [ Cylinder (Radius $ MkQuantity 100) (toLL (negate 33.36137, 147.93207))
-    , Cylinder (Radius $ MkQuantity 25000) (toLL (negate 33.36137, 147.93207))
-    , Cylinder (Radius $ MkQuantity 400) (toLL (negate 34.02107, 148.2233))
-    , Cylinder (Radius $ MkQuantity 400) (toLL (negate 34.11795, 148.5013))
-    , Cylinder (Radius $ MkQuantity 400) (toLL (negate 34.82197, 148.66543))
-    ]
-
 dDay3 :: TaskDistance Rational
 dDay3 = fromKms [u| 185.643415 km |]
 
@@ -773,14 +728,6 @@ NOTE: Point to point distances using Vincenty method.
     - lat: -32.46363
       lng: 148.989
 -}
-pDay4 :: [Zone Rational]
-pDay4 =
-    [ Cylinder (Radius $ MkQuantity 100) (toLL (negate 33.36137, 147.93207))
-    , Cylinder (Radius $ MkQuantity 15000) (toLL (negate 33.36137, 147.93207))
-    , Cylinder (Radius $ MkQuantity 25000) (toLL (negate 32.90223, 147.98492))
-    , Cylinder (Radius $ MkQuantity 400) (toLL (negate 32.46363, 148.989))
-    ]
-
 dDay4 :: TaskDistance Rational
 dDay4 = fromKms [u| 157.16322 km |]
 
@@ -837,14 +784,6 @@ NOTE: Point to point distances using Vincenty method.
     - lat: -32.01639998
       lng: 149.43362998
 -}
-pDay5 :: [Zone Rational]
-pDay5 =
-    [ Cylinder (Radius $ MkQuantity 100) (toLL (negate 33.36137, 147.93207))
-    , Cylinder (Radius $ MkQuantity 15000) (toLL (negate 33.36137, 147.93207))
-    , Cylinder (Radius $ MkQuantity 5000) (toLL (negate 32.56608, 148.22657))
-    , Cylinder (Radius $ MkQuantity 400) (toLL (negate 32.0164, 149.43363))
-    ]
-
 dDay5 :: TaskDistance Rational
 dDay5 = fromKms [u| 221.477524 km |]
 
@@ -901,14 +840,6 @@ NOTE: Point to point distances using Vincenty method.
     - lat: -31.69322998
       lng: 148.29623
 -}
-pDay6 :: [Zone Rational]
-pDay6 =
-    [ Cylinder (Radius $ MkQuantity 100) (toLL (negate 33.36137, 147.93207))
-    , Cylinder (Radius $ MkQuantity 15000) (toLL (negate 33.36137, 147.93207))
-    , Cylinder (Radius $ MkQuantity 5000) (toLL (negate 32.19498, 147.76218))
-    , Cylinder (Radius $ MkQuantity 400) (toLL (negate 31.69323, 148.29623))
-    ]
-
 dDay6 :: TaskDistance Rational
 dDay6 = fromKms [u| 205.844959 km |]
 
@@ -972,15 +903,6 @@ NOTE: Point to point distances using Vincenty method.
     - lat: -32.93585
       lng: 148.74947
 -}
-pDay7 :: [Zone Rational]
-pDay7 =
-    [ Cylinder (Radius $ MkQuantity 100) (toLL (negate 33.36137, 147.93207))
-    , Cylinder (Radius $ MkQuantity 10000) (toLL (negate 33.36137, 147.93207))
-    , Cylinder (Radius $ MkQuantity 5000) (toLL (negate 32.9536, 147.55457))
-    , Cylinder (Radius $ MkQuantity 400) (toLL (negate 32.76052, 148.64958))
-    , Cylinder (Radius $ MkQuantity 400) (toLL (negate 32.93585, 148.74947))
-    ]
-
 dDay7 :: TaskDistance Rational
 dDay7 = fromKms [u| 183.488931 km |]
 
@@ -1045,15 +967,6 @@ NOTE: Point to point distances using Vincenty method.
     - lat: -33.36099999
       lng: 147.93149998
 -}
-pDay8 :: [Zone Rational]
-pDay8 =
-    [ Cylinder (Radius $ MkQuantity 100) (toLL (negate 33.36137, 147.93207))
-    , Cylinder (Radius $ MkQuantity 10000) (toLL (negate 33.36137, 147.93207))
-    , Cylinder (Radius $ MkQuantity 5000) (toLL (negate 33.75343, 147.52865))
-    , Cylinder (Radius $ MkQuantity 400) (toLL (negate 33.12908, 147.57323))
-    , Cylinder (Radius $ MkQuantity 400) (toLL (negate 33.361, 147.9315))
-    ]
-
 dDay8 :: TaskDistance Rational
 dDay8 = fromKms [u| 169.10714 km |]
 
