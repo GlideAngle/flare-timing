@@ -39,7 +39,7 @@ import Data.Number.RoundingFunctions (dpRound)
 
 tdRound :: TaskDistance Rational -> TaskDistance Rational
 tdRound (TaskDistance (MkQuantity d)) =
-    TaskDistance . MkQuantity . dpRound 2 $ d
+    TaskDistance . MkQuantity . dpRound 3 $ d
 
 -- | The input pair is in degrees while the output is in radians.
 toLL :: (Double, Double) -> LatLng Rational [u| rad |]
@@ -103,12 +103,12 @@ mkPartDayUnits pp title zs (TaskDistance d) = testGroup title
     ]
     where
         dKm = convert d :: Quantity Rational [u| km |]
-        Flip r = dpRound 3 <$> Flip dKm
+        Flip r = dpRound 6 <$> Flip dKm
         tdR = TaskDistance (convert r :: Quantity Rational [u| m |])
 
         td'@(TaskDistance d') = edgesSum $ pp zs
         dKm' = convert d' :: Quantity Rational [u| km |]
-        Flip r' = dpRound 3 <$> Flip dKm'
+        Flip r' = dpRound 6 <$> Flip dKm'
         tdR' = TaskDistance (convert r' :: Quantity Rational [u| m |])
 
 tasks :: [[Zone Rational]]
