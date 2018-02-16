@@ -1,6 +1,9 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE QuasiQuotes #-}
 
+{-# LANGUAGE PartialTypeSignatures #-}
+{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
+
 -- | Test data from the Forbes PreWords
 -- 
 -- SEE: http://www.forbesflatlands.com/results-2012
@@ -9,6 +12,7 @@ module Forbes
     , (.~=.)
     , tasks
     , d1, d2, d3, d4, d5, d6, d7, d8
+    , p1, p2, p3, p4, p5, p6, p7, p8
     , toLL
     , mkDayUnits, mkPartDayUnits
     , tdRound
@@ -23,7 +27,7 @@ import Data.Bifunctor.Flip (Flip(..))
 
 import Flight.Units ()
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
-import Flight.Distance (TaskDistance(..), PathDistance(..))
+import Flight.Distance (TaskDistance(..), PathDistance(..), fromKms)
 import Flight.Zone (Radius(..), Zone(..))
 import Data.Number.RoundingFunctions (dpRound)
 
@@ -178,3 +182,160 @@ d8 =
     , Cylinder (Radius $ MkQuantity 400) (toLL (negate 33.12908, 147.57323))
     , Cylinder (Radius $ MkQuantity 400) (toLL (negate 33.361, 147.9315))
     ]
+
+type MkPart
+    = TestName
+    -> [Zone Rational]
+    -> TaskDistance Rational
+    -> TestTree
+
+p1 :: MkPart -> _ -> _ -> _ -> TestTree
+p1 mk t1 t2 t3 =
+    testGroup "Task 1 [...]"
+    [ mk "Task 1 [x, x, _, _]" s1 (fromKms t1)
+    , mk "Task 1 [_, x, x, _]" s2 (fromKms t2)
+    , mk "Task 1 [_, _, x, x]" s3 (fromKms t3)
+    ]
+        where
+            xs =
+                Point . toLL <$>
+                [ (negate 33.36137, 147.93207)
+                , (negate 33.85373, 147.94195)
+                , (negate 33.4397, 148.34533)
+                , (negate 33.61965, 148.4099)
+                ]
+
+            s1 = take 2 xs
+            s2 = take 2 $ drop 1 xs
+            s3 = take 2 $ drop 2 xs
+
+p2 :: MkPart -> _ -> _ -> _ -> TestTree
+p2 mk t1 t2 t3 =
+    testGroup "Task 2 [...]"
+    [ mk "Task 2 [x, x, _, _]" s1 (fromKms t1)
+    , mk "Task 2 [_, x, x, _]" s2 (fromKms t2)
+    , mk "Task 2 [_, _, x, x]" s3 (fromKms t3)
+    ]
+        where
+            xs =
+                Point . toLL <$>
+                [ (negate 33.36137, 147.93207)
+                , (negate 32.90223, 147.98492)
+                , (negate 32.9536, 147.55457)
+                , (negate 33.12592, 147.91043)
+                ]
+
+            s1 = take 2 xs
+            s2 = take 2 $ drop 1 xs
+            s3 = take 2 $ drop 2 xs
+
+p3 :: MkPart -> _ -> _ -> _ -> TestTree
+p3 mk t1 t2 t3 =
+    testGroup "Task 3 [...]"
+    [ mk "Task 3 [x, x, _, _]" s1 (fromKms t1)
+    , mk "Task 3 [_, x, x, _]" s2 (fromKms t2)
+    , mk "Task 3 [_, _, x, x]" s3 (fromKms t3)
+    ]
+        where
+            xs =
+                Point . toLL <$>
+                [ (negate 33.36137, 147.93207)
+                , (negate 34.02107, 148.2233)
+                , (negate 34.11795, 148.5013)
+                , (negate 34.82197, 148.66543)
+                ]
+
+            s1 = take 2 xs
+            s2 = take 2 $ drop 1 xs
+            s3 = take 2 $ drop 2 xs
+
+p4 :: MkPart -> _ -> _ -> TestTree
+p4 mk t1 t2 =
+    testGroup "Task 4 [...]"
+    [ mk "Task 4 [x, x, _]" s1 (fromKms t1)
+    , mk "Task 4 [_, x, x]" s2 (fromKms t2)
+    ]
+        where
+            xs =
+                Point . toLL <$>
+                [ (negate 33.36137, 147.93207)
+                , (negate 32.90223, 147.98492)
+                , (negate 32.46363, 148.989)
+                ]
+
+            s1 = take 2 xs
+            s2 = take 2 $ drop 1 xs
+
+p5 :: MkPart -> _ -> _ -> TestTree
+p5 mk t1 t2 =
+    testGroup "Task 5 [...]"
+    [ mk "Task 5 [x, x, _]" s1 (fromKms t1)
+    , mk "Task 5 [_, x, x]" s2 (fromKms t2)
+    ]
+        where
+            xs =
+                Point . toLL <$>
+                [ (negate 33.36137, 147.93207)
+                , (negate 32.56608, 148.22657)
+                , (negate 32.0164, 149.43363)
+                ]
+
+            s1 = take 2 xs
+            s2 = take 2 $ drop 1 xs
+
+p6 :: MkPart -> _ -> _ -> TestTree
+p6 mk t1 t2 =
+    testGroup "Task 6 [...]"
+    [ mk "Task 6 [x, x, _]" s1 (fromKms t1)
+    , mk "Task 6 [_, x, x]" s2 (fromKms t2)
+    ]
+        where
+            xs =
+                Point . toLL <$>
+                [ (negate 33.36137, 147.93207)
+                , (negate 32.19498, 147.76218)
+                , (negate 31.69323, 148.29623)
+                ]
+
+            s1 = take 2 xs
+            s2 = take 2 $ drop 1 xs
+
+p7 :: MkPart -> _ -> _ -> _ -> TestTree
+p7 mk t1 t2 t3 =
+    testGroup "Task 7 [...]"
+    [ mk "Task 7 [x, x, _, _]" s1 (fromKms t1)
+    , mk "Task 7 [_, x, x, _]" s2 (fromKms t2)
+    , mk "Task 7 [_, _, x, x]" s3 (fromKms t3)
+    ]
+        where
+            xs =
+                Point . toLL <$>
+                [ (negate 33.36137, 147.93207)
+                , (negate 32.9536, 147.55457)
+                , (negate 32.76052, 148.64958)
+                , (negate 32.93585, 148.74947)
+                ]
+
+            s1 = take 2 xs
+            s2 = take 2 $ drop 1 xs
+            s3 = take 2 $ drop 2 xs
+
+p8 :: MkPart -> _ -> _ -> _ -> TestTree
+p8 mk t1 t2 t3 =
+    testGroup "Task 8 [...]"
+    [ mk "Task 8 [x, x, _, _]" s1 (fromKms t1)
+    , mk "Task 8 [_, x, x, _]" s2 (fromKms t2)
+    , mk "Task 8 [_, _, x, x]" s3 (fromKms t3)
+    ]
+        where
+            xs =
+                Point . toLL <$>
+                [ (negate 33.36137, 147.93207)
+                , (negate 33.75343, 147.52865)
+                , (negate 33.12908, 147.57323)
+                , (negate 33.361, 147.9315)
+                ]
+
+            s1 = take 2 xs
+            s2 = take 2 $ drop 1 xs
+            s3 = take 2 $ drop 2 xs
