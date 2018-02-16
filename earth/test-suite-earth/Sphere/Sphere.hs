@@ -5,7 +5,7 @@ import Test.Tasty.SmallCheck as SC
 import Test.Tasty.QuickCheck as QC
 
 import Sphere.General
-import Sphere.Specific
+import Sphere.Forbes
 import Sphere.Bedford
 import Sphere.Cylinder
 
