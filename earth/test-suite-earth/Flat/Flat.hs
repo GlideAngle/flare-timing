@@ -5,8 +5,8 @@ import Test.Tasty.SmallCheck as SC
 import Test.Tasty.QuickCheck as QC
 
 import Flat.General
-import Flat.Specific
 import Flat.Bedford
+import Flat.Forbes
 
 tests :: TestTree
 tests =
@@ -26,9 +26,9 @@ properties =
 units :: TestTree
 units =
     testGroup "Units"
-    [ zoneUnits
-    , specificUnits
+    [ forbesUnits
     , bedfordUnits
+    , zoneUnits
     ]
 
 scProps :: TestTree

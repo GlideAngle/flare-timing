@@ -5,8 +5,8 @@ import Test.Tasty.QuickCheck as QC
 import Test.Tasty.Providers as QC
 
 import Ellipsoid.General
-import Ellipsoid.Specific
 import Ellipsoid.Bedford
+import Ellipsoid.Forbes
 
 tests :: TestTree
 tests =
@@ -25,8 +25,8 @@ units :: TestTree
 units =
     testGroup "Units"
     [ bedfordUnits
+    , forbesUnits
     , zoneUnits
-    , specificUnits
     ]
 
 qcProps :: TestTree
