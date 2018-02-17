@@ -188,6 +188,17 @@ ptsRadiiMeridian :: [Radius Rational [u| m |]]
 ptsRadiiMeridian =
     Radius
     <$>
+    -- NOTE: These distances are not from Vincenty. They come from the first
+    -- column of Table 3;
+    -- "Comparison of series formulas for the Calculation of Meridian Arcs"
+    --
+    -- in the article;
+    -- "New Meridian Arc formulas for Sailing Calculations in Navigational GIS"
+    --
+    -- in the journal;
+    -- "International Hydrographic Review", May 2009.
+    --
+    -- SEE: https://journals.lib.unb.ca/index.php/ihr/article/view/20832
     [ [u| 552885.45156 m |]
     , [u| 1105854.83418 m |]
     , [u| 1658989.59067 m |]
