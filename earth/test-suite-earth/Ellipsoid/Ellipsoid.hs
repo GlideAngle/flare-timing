@@ -4,7 +4,8 @@ import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.QuickCheck as QC
 import Test.Tasty.Providers as QC
 
-import Ellipsoid.General
+import Ellipsoid.Coincident
+import Ellipsoid.Meridian
 import Ellipsoid.Bedford
 import Ellipsoid.Forbes
 import Props.Vincenty
@@ -24,10 +25,11 @@ properties =
 
 units :: TestTree
 units =
-    testGroup "Units"
+    testGroup "Unit tests"
     [ bedfordUnits
     , forbesUnits
-    , zoneUnits
+    , coincidentUnits
+    , meridianUnits
     ]
 
 qcProps :: TestTree
