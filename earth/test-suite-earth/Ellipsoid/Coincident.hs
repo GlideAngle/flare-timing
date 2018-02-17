@@ -24,6 +24,7 @@ import Flight.Distance (TaskDistance(..), PathDistance(..))
 import Flight.Zone (Radius(..))
 import Flight.Zone.Path (distancePointToPoint)
 import Ellipsoid.Distance
+import Zone
 
 coincidentUnits :: TestTree
 coincidentUnits =

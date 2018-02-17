@@ -20,6 +20,7 @@ import Data.UnitsOfMeasure ((*:), u, convert)
 
 import Flight.Zone (Radius(..))
 import Ellipsoid.Distance
+import Zone
 
 meridianUnits :: TestTree
 meridianUnits =
