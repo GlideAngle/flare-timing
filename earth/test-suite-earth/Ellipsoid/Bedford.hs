@@ -31,7 +31,8 @@ import qualified Flight.Earth.Ellipsoid.PointToPoint.Double as Dbl (distanceVinc
 import qualified Flight.Earth.Ellipsoid.PointToPoint.Rational as Rat (distanceVincenty)
 import Flight.Earth.Ellipsoid (wgs84)
 import DegMinSec (DMS(..), toDeg)
-import Bedford (points, solutions, diff, showTolerance)
+import Tolerance (diff, showTolerance)
+import Bedford (points, solutions)
 
 getTolerance
     :: (Real a, Fractional a)

@@ -154,22 +154,28 @@ ptsDistance =
     ]
 
 pointDistance :: TestTree
-pointDistance = toDistance "Distance over point zones" ((fmap . fmap) point ptsDistance)
+pointDistance =
+    toDistance "Distance over point zones" ((fmap . fmap) point ptsDistance)
 
 vectorDistance :: TestTree
-vectorDistance = toDistance "Distance over vector zones" ((fmap . fmap) vector ptsDistance)
+vectorDistance =
+    toDistance "Distance over vector zones" ((fmap . fmap) vector ptsDistance)
 
 cylinderDistance :: TestTree
-cylinderDistance = toDistance "Distance over cylinder zones" ((fmap . fmap) cylinder ptsDistance)
+cylinderDistance =
+    toDistance "Distance over cylinder zones" ((fmap . fmap) cylinder ptsDistance)
 
 conicalDistance :: TestTree
-conicalDistance = toDistance "Distance over conical zones" ((fmap . fmap) conical ptsDistance)
+conicalDistance =
+    toDistance "Distance over conical zones" ((fmap . fmap) conical ptsDistance)
 
 lineDistance :: TestTree
-lineDistance = toDistance "Distance over line zones" ((fmap . fmap) line ptsDistance)
+lineDistance =
+    toDistance "Distance over line zones" ((fmap . fmap) line ptsDistance)
 
 semicircleDistance :: TestTree
-semicircleDistance = toDistance "Distance over semicircle zones" ((fmap . fmap) semicircle ptsDistance)
+semicircleDistance =
+    toDistance "Distance over semicircle zones" ((fmap . fmap) semicircle ptsDistance)
 
 coincident :: String -> [[Zone Rational]] -> TestTree
 coincident title xs =

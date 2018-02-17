@@ -26,8 +26,8 @@ properties =
 units :: TestTree
 units =
     testGroup "Units"
-    [ forbesUnits
-    , bedfordUnits
+    [ bedfordUnits
+    , forbesUnits
     , zoneUnits
     ]
 

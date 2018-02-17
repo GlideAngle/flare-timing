@@ -18,31 +18,14 @@
 -- Bedford Institute of Oceanography
 -- Evaluation Direct and Inverse Geodetic Algorithms
 -- Paul Delorme, September 1978.
-module Bedford (points, solutions, diff, showTolerance) where
+module Bedford (points, solutions) where
 
 import Prelude hiding (min)
-import Data.UnitsOfMeasure ((-:), u, convert, fromRational', toRational', abs')
-import Data.UnitsOfMeasure.Internal (Quantity(..))
+import Data.UnitsOfMeasure (u, convert)
 
 import Flight.Units ()
 import Flight.Distance (TaskDistance(..))
 import DegMinSec (DMS(..))
-
-showTolerance :: (Real a, Fractional a) => Quantity a [u| m |] -> String
-showTolerance d
-    | dmm < [u| 1000 mm |] = show dmm
-    | dkm < [u| 1 km |] = show dm
-    | otherwise = show (TaskDistance dm)
-    where
-        dm :: Quantity Double _
-        dm = fromRational' . toRational' $ d
-        
-        dkm = convert dm
-        dmm = convert dm
-
-diff :: Num a => TaskDistance a -> TaskDistance a -> TaskDistance a
-diff (TaskDistance a) (TaskDistance b) =
-    TaskDistance . abs' $ a -: b
 
 points :: [((DMS, DMS), (DMS, DMS))]
 points =

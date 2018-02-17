@@ -28,7 +28,8 @@ import Flight.Distance (TaskDistance(..))
 import qualified Flight.Earth.Flat.PointToPoint.Double as Dbl (distanceEuclidean)
 import qualified Flight.Earth.Flat.PointToPoint.Rational as Rat (distanceEuclidean)
 import DegMinSec (DMS(..), toDeg)
-import Bedford (points, solutions, diff, showTolerance)
+import Tolerance (diff, showTolerance)
+import Bedford (points, solutions)
 
 getTolerance
     :: (Real a, Fractional a)

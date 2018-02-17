@@ -7,6 +7,7 @@ import Test.Tasty.Providers as QC
 import Ellipsoid.General
 import Ellipsoid.Bedford
 import Ellipsoid.Forbes
+import Props.Vincenty
 
 tests :: TestTree
 tests =

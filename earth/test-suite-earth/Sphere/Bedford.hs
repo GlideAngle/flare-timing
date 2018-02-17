@@ -30,7 +30,8 @@ import Flight.Distance (TaskDistance(..))
 import qualified Flight.Earth.Sphere.PointToPoint.Double as Dbl (distanceHaversine)
 import qualified Flight.Earth.Sphere.PointToPoint.Rational as Rat (distanceHaversine)
 import DegMinSec (DMS(..), toDeg)
-import Bedford (points, solutions, diff, showTolerance)
+import Tolerance (diff, showTolerance)
+import Bedford (points, solutions)
 
 getTolerance
     :: (Real a, Fractional a)

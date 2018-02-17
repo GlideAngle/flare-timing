@@ -8,321 +8,298 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE QuasiQuotes #-}
 
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
-module Ellipsoid.General
-    ( zoneUnits
-    , distancePoint
-    , distanceVincenty
-    , distanceVincentyF
-    ) where
+module Ellipsoid.General (zoneUnits) where
 
 import Prelude hiding (span)
-import Data.Ratio ((%))
 import Test.Tasty (TestTree, testGroup)
-import Test.Tasty.HUnit as HU ((@?=), testCase)
-import Data.UnitsOfMeasure (u, zero)
+import Test.Tasty.HUnit ((@?=), testCase)
+import Test.Tasty.HUnit.Compare ((@?<=))
+import Data.UnitsOfMeasure ((*:), u, convert, zero, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
-import Flight.LatLng.Rational (Epsilon(..), defEps)
+import Flight.LatLng.Rational (defEps)
 import Flight.Distance (TaskDistance(..), PathDistance(..), SpanLatLng)
 import Flight.Zone
     ( Zone(..)
     , Radius(..)
     , Incline (..)
     , Bearing(..)
-    , center
     )
 import Flight.Zone.Path (distancePointToPoint)
-import qualified Flight.Earth.Ellipsoid.PointToPoint.Double as Dbl (distanceVincenty)
 import qualified Flight.Earth.Ellipsoid.PointToPoint.Rational as Rat
     (distanceVincenty)
-import Flight.Earth.Ellipsoid.Separated (separatedZones)
 import Flight.Earth.Ellipsoid (wgs84)
+import Tolerance (diff, showTolerance)
+import DegMinSec (fromQ)
 
-import Props.Zone (ZonesTest(..))
-import Props.Vincenty (VincentyTest(..))
+span :: SpanLatLng Rational
+span = Rat.distanceVincenty defEps wgs84
 
--- | The radius of the earth in the FAI sphere is 6,371 km.
-earthRadius :: Num a => Quantity a [u| m |]
-earthRadius = [u| 6371000 m |]
+type QLL a = (Quantity a [u| rad |], Quantity a [u| rad |])
 
-type Pt = (Rational, Rational)
+showQ :: QLL Double -> String
+showQ (x, y) =
+    show (fromQ x, fromQ y)
 
-toLL :: (Rational, Rational) -> LatLng Rational [u| rad |]
+toLL :: Real a => QLL a -> LatLng Rational [u| rad |]
 toLL (lat, lng) =
     LatLng (Lat lat', Lng lng')
     where
-        lat' = MkQuantity lat
-        lng' = MkQuantity lng
+        lat' = toRational' lat
+        lng' = toRational' lng
 
-point :: (Rational, Rational) -> Zone Rational
-point x =
-    Point $ toLL x
+type MkZone a = Real a => Radius Rational [u| m |] -> QLL a -> Zone Rational
 
-vector :: (Rational, Rational) -> Zone Rational
-vector x =
-    Vector (Bearing zero) (toLL x) 
+point :: MkZone a
+point _ x = Point $ toLL x
 
-cylinder :: (Rational, Rational) -> Zone Rational
-cylinder x =
-    Cylinder (Radius earthRadius) (toLL x)
+vector :: MkZone a
+vector _ x = Vector (Bearing zero) (toLL x) 
 
-conical :: (Rational, Rational) -> Zone Rational
-conical x =
-    Conical (Incline $ MkQuantity 1) (Radius earthRadius) (toLL x)
+cylinder :: MkZone a
+cylinder r x = Cylinder r (toLL x)
 
-line :: (Rational, Rational) -> Zone Rational
-line x =
-    Line (Radius earthRadius) (toLL x) 
+conical :: MkZone a
+conical r x = Conical (Incline $ MkQuantity 1) r (toLL x)
 
-semicircle :: (Rational, Rational) -> Zone Rational
-semicircle x =
-    SemiCircle (Radius earthRadius) (toLL x)
+line :: MkZone a
+line r x = Line r (toLL x) 
+
+semicircle :: MkZone a
+semicircle r x = SemiCircle r (toLL x)
 
 zoneUnits :: TestTree
 zoneUnits =
     testGroup "Zone unit tests"
     [ distanceUnits
-    , coincidentUnits
-    , touchingUnits
-    , disjointUnits
     ]
 
 distanceUnits :: TestTree
 distanceUnits =
     testGroup "Point-to-point distance"
     [ emptyDistance
-    , pointDistance
-    , vectorDistance
-    , cylinderDistance
-    , conicalDistance
-    , lineDistance
-    , semicircleDistance
-    ]
-
-coincidentUnits :: TestTree
-coincidentUnits =
-    testGroup "Coincident zone separation"
-    [ pointCoincident
-    , vectorCoincident
-    , cylinderCoincident
-    , conicalCoincident
-    , lineCoincident
-    , semicircleCoincident
-    ]
-
-touchingUnits :: TestTree
-touchingUnits =
-    testGroup "Touching zone separation"
-    [ cylinderTouching
-    , conicalTouching
-    , lineTouching
-    , semicircleTouching
-    ]
-
-disjointUnits :: TestTree
-disjointUnits =
-    testGroup "Disjoint zone separation"
-    [ pointDisjoint
-    , vectorDisjoint
-    , cylinderDisjoint
-    , conicalDisjoint
-    , lineDisjoint
-    , semicircleDisjoint
+    , pointDistanceZero
+    , pointDistanceMeridian
+    , vectorDistanceZero
+    , vectorDistanceMeridian
+    , cylinderDistanceZero
+    , cylinderDistanceMeridian
+    , conicalDistanceZero
+    , conicalDistanceMeridian
+    , lineDistanceZero
+    , lineDistanceMeridian
+    , semicircleDistanceZero
+    , semicircleDistanceMeridian
     ]
 
 emptyDistance :: TestTree
-emptyDistance = testGroup "Point-to-point distance"
-    [ HU.testCase "No zones = zero point-to-point distance" $
+emptyDistance =
+    testGroup "Point-to-point distance"
+    [ testCase "No zones = zero point-to-point distance" $
         edgesSum (distancePointToPoint span []) @?= (TaskDistance $ MkQuantity 0)
     ]
 
-toDistance :: String -> [[Zone Rational]] -> TestTree
-toDistance title xs =
-    testGroup title (f <$> xs)
+toDistanceEqual
+    :: Quantity Rational [u| m |]
+    -> String
+    -> (Zone Rational, Zone Rational)
+    -> TestTree
+toDistanceEqual expected title xy =
+    testGroup title (f xy)
     where
-        f x =
-            HU.testCase (mconcat [ "distance ", show x, " = earth radius" ]) $
-                edgesSum (distancePointToPoint span x)
-                    @?= TaskDistance earthRadius
+        f (x, y) =
+            [ testCase
+                ( "within ± "
+                ++ showTolerance tolerance'
+                ++ " of expected "
+                ++ show (TaskDistance expected)
+                )
+                $ found @?= (TaskDistance expected)
+            ]
+            where
+                found = edgesSum $ distancePointToPoint span [x, y]
 
-ptsDistance :: [[Pt]]
-ptsDistance =
-    [ [ (1, 0), (0, 0) ]
-    , [ (0, 1), (0, 0) ]
-    , [ (0, 0), (0, 1) ]
-    , [ (0, 0), (1, 0) ]
+        tolerance :: Quantity Double [u| mm |]
+        tolerance = [u| 2.8 mm |]
+
+        tolerance' = convert tolerance
+
+toDistanceClose
+    :: Quantity Rational [u| m |]
+    -> String
+    -> (Zone Rational, Zone Rational)
+    -> TestTree
+toDistanceClose expected title xy =
+    testGroup title (f xy)
+    where
+        f (x, y) =
+            [ testCase
+                ( "within ± "
+                ++ showTolerance tolerance'
+                ++ " of expected "
+                ++ show (TaskDistance expected)
+                )
+                $ diff found (TaskDistance expected)
+                @?<= (TaskDistance . toRational' $ tolerance')
+            ]
+            where
+                found = edgesSum $ distancePointToPoint span [x, y]
+
+        tolerance :: Quantity Double [u| mm |]
+        tolerance = [u| 2.8 mm |]
+
+        tolerance' = convert tolerance
+
+ptsDistanceZero :: (Enum a, Real a, Fractional a) => [(QLL a, QLL a)]
+ptsDistanceZero =
+    [ ((z, z), (z, z))
+    , ((m, z), (m, z))
+    , ((z, m), (z, m))
+    , ((m, m), (m, m))
+    ]
+    where
+        z = [u| 0 rad |]
+        m = convert [u| 45 deg |]
+
+ptsDistanceMeridian :: (Enum a, Real a, Fractional a) => [(QLL a, QLL a)]
+ptsDistanceMeridian =
+    meridianArc . convert
+    <$> [ x *: [u| 1 deg |] | x <- [5, 10 .. 90]]
+    where
+        meridianArc d =
+            (([u| 0 rad |], [u| 0 rad |]), (d, [u| 0 rad |]))
+
+ptsRadiiZero :: [Radius Rational [u| m |]]
+ptsRadiiZero =
+    Radius <$> replicate 4 [u| 0 m |]
+
+ptsRadiiMeridian :: [Radius Rational [u| m |]]
+ptsRadiiMeridian =
+    Radius
+    <$>
+    [ [u| 552885.45156 m |]
+    , [u| 1105854.83418 m |]
+    , [u| 1658989.59067 m |]
+    , [u| 2212366.25562 m |]
+    , [u| 2766054.17059 m |]
+    , [u| 3320113.39921 m |]
+    , [u| 3874592.90264 m |]
+    , [u| 4429529.03085 m |]
+    , [u| 4984944.37798 m |]
+    , [u| 5540847.04118 m |]
+    , [u| 6097230.31218 m |]
+    , [u| 6654072.81821 m |]
+    , [u| 7211339.11585 m |]
+    , [u| 7768980.72630 m |]
+    , [u| 8326937.59000 m |]
+    , [u| 8885139.87094 m |]
+    , [u| 9443510.14009 m |]
+    , [u| 10001965.72922 m |]
     ]
 
-pointDistance :: TestTree
-pointDistance = toDistance "Distance over point zones" ((fmap . fmap) point ptsDistance)
+distanceZero
+    :: String
+    -> MkZone Double
+    -> TestTree
+distanceZero s f =
+    testGroup s
+    $ zipWith
+        (\r@(Radius r') (x, y) ->
+            toDistanceEqual
+                r'
+                (showQ x ++ " " ++ showQ y)
+                (f r x, f r y))
+        ptsRadiiZero
+        (ptsDistanceZero :: [(QLL Double, QLL Double)])
 
-vectorDistance :: TestTree
-vectorDistance = toDistance "Distance over vector zones" ((fmap . fmap) vector ptsDistance)
+pointDistanceZero :: TestTree
+pointDistanceZero =
+    distanceZero
+        "Distance between coincident point zones"
+        point
 
-cylinderDistance :: TestTree
-cylinderDistance = toDistance "Distance over cylinder zones" ((fmap . fmap) cylinder ptsDistance)
+vectorDistanceZero :: TestTree
+vectorDistanceZero =
+    distanceZero
+        "Distance between coincident vector zones"
+        vector
 
-conicalDistance :: TestTree
-conicalDistance = toDistance "Distance over conical zones" ((fmap . fmap) conical ptsDistance)
+cylinderDistanceZero :: TestTree
+cylinderDistanceZero =
+    distanceZero
+        "Distance between coincident cylinder zones"
+        cylinder
 
-lineDistance :: TestTree
-lineDistance = toDistance "Distance over line zones" ((fmap . fmap) line ptsDistance)
+conicalDistanceZero :: TestTree
+conicalDistanceZero =
+    distanceZero
+        "Distance between coincident conical zones"
+        conical
 
-semicircleDistance :: TestTree
-semicircleDistance = toDistance "Distance over semicircle zones" ((fmap . fmap) semicircle ptsDistance)
+lineDistanceZero :: TestTree
+lineDistanceZero =
+    distanceZero
+        "Distance between coincident line zones"
+        line
 
-coincident :: String -> [[Zone Rational]] -> TestTree
-coincident title xs =
-    testGroup title (f <$> xs)
-    where
-        f x =
-            HU.testCase (mconcat [ "concident pair of "
-                                 , show $ head x
-                                 , " = not separate"
-                                 ]) $
-                separatedZones wgs84 span x
-                    @?= False
+semicircleDistanceZero :: TestTree
+semicircleDistanceZero =
+    distanceZero
+        "Distance between coincident semicircle zones"
+        semicircle
 
-ptsCoincident :: [[Pt]]
-ptsCoincident =
-    [ [ (1, 0), (1, 0) ]
-    , [ (0, 1), (0, 1) ]
-    , [ (1, 0), (1, 0) ]
-    , [ (1, 1), (1, 1) ]
-    ]
+distanceMeridian
+    :: String
+    -> MkZone Double
+    -> TestTree
+distanceMeridian s f =
+    testGroup s
+    $ zipWith
+        (\r@(Radius r') (x, y) ->
+            toDistanceClose
+                r'
+                (showQ x ++ " " ++ showQ y)
+                (f r x, f r y))
+        ptsRadiiMeridian
+        (ptsDistanceMeridian :: [(QLL Double, QLL Double)])
 
-pointCoincident :: TestTree
-pointCoincident = coincident "Point zones" ((fmap . fmap) point ptsCoincident)
+pointDistanceMeridian :: TestTree
+pointDistanceMeridian =
+    distanceMeridian
+        "Distance between point zones on meridians"
+        point
 
-vectorCoincident :: TestTree
-vectorCoincident = coincident "Vector zones" ((fmap . fmap) vector ptsCoincident)
+vectorDistanceMeridian :: TestTree
+vectorDistanceMeridian =
+    distanceMeridian
+        "Distance between vector zones on meridians"
+        vector
 
-cylinderCoincident :: TestTree
-cylinderCoincident = coincident "Cylinder zones" ((fmap . fmap) cylinder ptsCoincident)
+cylinderDistanceMeridian :: TestTree
+cylinderDistanceMeridian =
+    distanceMeridian
+        "Distance between cylinder zones on meridians"
+        cylinder
 
-conicalCoincident :: TestTree
-conicalCoincident = coincident "Conical zones" ((fmap . fmap) conical ptsCoincident)
+conicalDistanceMeridian :: TestTree
+conicalDistanceMeridian =
+    distanceMeridian
+        "Distance between conical zones on meridians"
+        conical
 
-lineCoincident :: TestTree
-lineCoincident = coincident "Line zones" ((fmap . fmap) line ptsCoincident)
+lineDistanceMeridian :: TestTree
+lineDistanceMeridian =
+    distanceMeridian
+        "Distance between line zones on meridians"
+        line
 
-semicircleCoincident :: TestTree
-semicircleCoincident = coincident "Semicircle zones" ((fmap . fmap) semicircle ptsCoincident)
-
-touching :: String -> [[Zone Rational]] -> TestTree
-touching title xs =
-    testGroup title (f <$> xs)
-    where
-        f x =
-            HU.testCase (mconcat [ "touching pair of "
-                                 , show x
-                                 , " = not separate"
-                                 ]) $
-                separatedZones wgs84 span x
-                    @?= False
-
-epsM :: Rational
-epsM = 2 % 1 - 1 % 100000000
-
-radiiTouching :: [[Pt]]
-radiiTouching =
-    [ [ (0, epsM), (0, 0) ]
-    , [ (0, negate epsM), (0, 0) ]
-    ]
-
-cylinderTouching :: TestTree
-cylinderTouching = touching "Cylinder zones" ((fmap . fmap) cylinder radiiTouching)
-
-conicalTouching :: TestTree
-conicalTouching = touching "Conical zones" ((fmap . fmap) conical radiiTouching)
-
-lineTouching :: TestTree
-lineTouching = touching "Line zones" ((fmap . fmap) line radiiTouching)
-
-semicircleTouching :: TestTree
-semicircleTouching = touching "Semicircle zones" ((fmap . fmap) semicircle radiiTouching)
-
-disjoint :: String -> [[Zone Rational]] -> TestTree
-disjoint title xs =
-    testGroup title (f <$> xs)
-    where
-        f x =
-            HU.testCase (mconcat [ "disjoint pair of "
-                                 , show x 
-                                 , " = separate"
-                                 ]) $
-                separatedZones wgs84 span x
-                    @?= True
-
-eps :: Rational
-eps = 2 % 1 + 1 % 100000000
-
-ptsDisjoint :: [[Pt]]
-ptsDisjoint =
-    [ [ (0, eps), (0, 0) ]
-    , [ (0, negate eps), (1, 0) ]
-    ]
-
-epsR :: Rational
-epsR = 2 % 1 + 1 % 100000000
-
-radiiDisjoint :: [[Pt]]
-radiiDisjoint =
-    [ [ (0, epsR), (0, 0) ]
-    , [ (0, negate epsR), (0, 0) ]
-    ]
-
-pointDisjoint :: TestTree
-pointDisjoint = disjoint "Point zones" ((fmap . fmap) point ptsDisjoint)
-
-vectorDisjoint :: TestTree
-vectorDisjoint = disjoint "Vector zones" ((fmap . fmap) vector ptsDisjoint)
-
-cylinderDisjoint :: TestTree
-cylinderDisjoint = disjoint "Cylinder zones" ((fmap . fmap) cylinder radiiDisjoint)
-
-conicalDisjoint :: TestTree
-conicalDisjoint = disjoint "Conical zones" ((fmap . fmap) conical radiiDisjoint)
-
-lineDisjoint :: TestTree
-lineDisjoint = disjoint "Line zones" ((fmap . fmap) line radiiDisjoint)
-
-semicircleDisjoint :: TestTree
-semicircleDisjoint = disjoint "Semicircle zones" ((fmap . fmap) semicircle radiiDisjoint)
-
-correctPoint :: [Zone Rational] -> TaskDistance Rational -> Bool
-correctPoint [] (TaskDistance (MkQuantity d)) = d == 0
-correctPoint [_] (TaskDistance (MkQuantity d)) = d == 0
-correctPoint [Cylinder xR x, Cylinder yR y] (TaskDistance (MkQuantity d))
-    | x == y = (xR == yR && d == 0) || d > 0
-    | otherwise = d > 0
-correctPoint xs (TaskDistance (MkQuantity d))
-    | all (== head ys) (tail ys) = d == 0
-    | otherwise = d > 0
-    where
-        ys = center <$> xs
-
-distanceVincentyF :: VincentyTest Double -> Bool
-distanceVincentyF (VincentyTest (x, y)) =
-    [u| 0 m |] <= d
-    where
-        TaskDistance d = Dbl.distanceVincenty wgs84 x y
-
-distanceVincenty :: VincentyTest Rational -> Bool
-distanceVincenty (VincentyTest (x, y)) =
-    [u| 0 m |] <= d
-    where
-        e = Epsilon $ 1 % 1000000000000000000
-        TaskDistance d = Rat.distanceVincenty e wgs84 x y
-
-distancePoint :: ZonesTest Rational -> Bool
-distancePoint (ZonesTest xs) =
-    (\(PathDistance d _) -> correctPoint xs d)
-    $ distancePointToPoint span xs
-
-span :: SpanLatLng Rational
-span = Rat.distanceVincenty defEps wgs84
+semicircleDistanceMeridian :: TestTree
+semicircleDistanceMeridian =
+    distanceMeridian
+        "Distance between semicircle zones on meridians"
+        semicircle

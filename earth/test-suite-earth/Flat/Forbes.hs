@@ -20,7 +20,6 @@ import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
-import Flight.LatLng.Rational (defEps)
 import Flight.Distance (TaskDistance(..), SpanLatLng)
 import Flight.Zone (Zone(..))
 import Flight.Zone.Path (distancePointToPoint)
