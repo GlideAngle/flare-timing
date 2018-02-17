@@ -82,20 +82,26 @@ zoneUnits =
 distanceUnits :: TestTree
 distanceUnits =
     testGroup "Point-to-point distance"
-    [ emptyDistance
-    , pointDistanceZero
-    , pointDistanceMeridian
-    , vectorDistanceZero
-    , vectorDistanceMeridian
-    , cylinderDistanceZero
-    , cylinderDistanceMeridian
-    , conicalDistanceZero
-    , conicalDistanceMeridian
-    , lineDistanceZero
-    , lineDistanceMeridian
-    , semicircleDistanceZero
-    , semicircleDistanceMeridian
-    ]
+    $ emptyDistance
+    : ((uncurry f) <$> xs)
+    ++ ((uncurry g) <$> xs)
+    where
+        f s =
+            distanceZero
+                ("Distance between coincident " ++ s ++ " zones")
+
+        g s  =
+            distanceMeridian
+                ("Distance between meridian " ++ s ++ " zones")
+
+        xs =
+            [ ("point", point)
+            , ("vector", vector)
+            , ("cylinder", cylinder)
+            , ("conical", conical)
+            , ("line", line)
+            , ("semicircle", semicircle)
+            ]
 
 emptyDistance :: TestTree
 emptyDistance =
@@ -217,42 +223,6 @@ distanceZero s f =
         ptsRadiiZero
         (ptsDistanceZero :: [(QLL Double, QLL Double)])
 
-pointDistanceZero :: TestTree
-pointDistanceZero =
-    distanceZero
-        "Distance between coincident point zones"
-        point
-
-vectorDistanceZero :: TestTree
-vectorDistanceZero =
-    distanceZero
-        "Distance between coincident vector zones"
-        vector
-
-cylinderDistanceZero :: TestTree
-cylinderDistanceZero =
-    distanceZero
-        "Distance between coincident cylinder zones"
-        cylinder
-
-conicalDistanceZero :: TestTree
-conicalDistanceZero =
-    distanceZero
-        "Distance between coincident conical zones"
-        conical
-
-lineDistanceZero :: TestTree
-lineDistanceZero =
-    distanceZero
-        "Distance between coincident line zones"
-        line
-
-semicircleDistanceZero :: TestTree
-semicircleDistanceZero =
-    distanceZero
-        "Distance between coincident semicircle zones"
-        semicircle
-
 distanceMeridian
     :: String
     -> MkZone Double
@@ -268,38 +238,3 @@ distanceMeridian s f =
         ptsRadiiMeridian
         (ptsDistanceMeridian :: [(QLL Double, QLL Double)])
 
-pointDistanceMeridian :: TestTree
-pointDistanceMeridian =
-    distanceMeridian
-        "Distance between point zones on meridians"
-        point
-
-vectorDistanceMeridian :: TestTree
-vectorDistanceMeridian =
-    distanceMeridian
-        "Distance between vector zones on meridians"
-        vector
-
-cylinderDistanceMeridian :: TestTree
-cylinderDistanceMeridian =
-    distanceMeridian
-        "Distance between cylinder zones on meridians"
-        cylinder
-
-conicalDistanceMeridian :: TestTree
-conicalDistanceMeridian =
-    distanceMeridian
-        "Distance between conical zones on meridians"
-        conical
-
-lineDistanceMeridian :: TestTree
-lineDistanceMeridian =
-    distanceMeridian
-        "Distance between line zones on meridians"
-        line
-
-semicircleDistanceMeridian :: TestTree
-semicircleDistanceMeridian =
-    distanceMeridian
-        "Distance between semicircle zones on meridians"
-        semicircle
