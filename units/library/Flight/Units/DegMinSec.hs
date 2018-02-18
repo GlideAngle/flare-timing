@@ -71,5 +71,5 @@ fromQ q' =
 
         s = signum totalSecs
 
-        (dd, ms) = quotRem totalSecs 3600
+        (dd, ms) = quotRem (abs totalSecs) 3600
         (mm, ss) = quotRem ms 60
