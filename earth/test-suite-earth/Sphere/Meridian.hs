@@ -17,7 +17,7 @@ import Prelude hiding (span)
 import Data.List (intersperse)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit as HU ((@?=), testCase)
-import Data.UnitsOfMeasure (u, convert)
+import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.LatLng.Rational (defEps)
@@ -68,14 +68,11 @@ toDistance title xs =
 
 pts :: [(QLL Rational, QLL Rational)]
 pts =
-    [ ((m, z), (m, z))
-    , ((z, m), (z, m))
-    , ((m, z), (m, z))
-    , ((m, m), (m, m))
+    [ ((z, z), (z, [u| 1 rad |]))
+    , ((z, z), (z, [u| -1 rad |]))
     ]
     where
         z = [u| 0 rad |]
-        m = convert [u| 45 deg |]
 
 pointDistance :: TestTree
 pointDistance =
