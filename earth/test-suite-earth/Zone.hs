@@ -23,6 +23,7 @@ import Prelude hiding (span)
 import Data.UnitsOfMeasure (u, zero, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
+import Flight.Units.DegMinSec (fromQ)
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.Zone
     ( Zone(..)
@@ -30,7 +31,6 @@ import Flight.Zone
     , Incline (..)
     , Bearing(..)
     )
-import DegMinSec (fromQ)
 
 type QLL a = (Quantity a [u| rad |], Quantity a [u| rad |])
 type MkZone a = Real a => Radius Rational [u| m |] -> QLL a -> Zone Rational

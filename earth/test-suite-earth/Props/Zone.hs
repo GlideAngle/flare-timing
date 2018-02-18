@@ -27,8 +27,13 @@ import Flight.Zone (Radius(..), Incline(..), Bearing(..), Zone(..))
 newtype ZoneTest a = ZoneTest (Zone a)
 newtype ZonesTest a = ZonesTest [Zone a]
 
-deriving instance (Real a, Show a, Show (LatLng a [u| rad |])) => Show (ZoneTest a)
-deriving instance (Real a, Show a, Show (LatLng a [u| rad |])) => Show (ZonesTest a)
+deriving instance
+    (Real a, Fractional a, Show a, Show (LatLng a [u| rad |]))
+    => Show (ZoneTest a)
+
+deriving instance
+    (Real a, Fractional a, Show a, Show (LatLng a [u| rad |]))
+    => Show (ZonesTest a)
 
 instance
     ( Monad m

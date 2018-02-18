@@ -21,6 +21,7 @@ module Flight.Zone
     , Interval(..)
     , StartGates(..)
     , Task(..)
+    , showZoneDMS
     , center
     , radius
     , fromRationalRadius
@@ -38,17 +39,18 @@ import Data.UnitsOfMeasure (u, toRational', fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units (showRadian, realToFrac')
+import Flight.Units.DegMinSec (fromQ)
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.Zone.Radius (Radius(..))
 
 -- | The incline component of a conical zone.
-newtype Incline = Incline (Quantity Rational [u| rad |]) deriving (Eq, Ord)
+newtype Incline a = Incline (Quantity a [u| rad |]) deriving (Eq, Ord)
 
 -- | The bearing component of a vector zone.
 newtype Bearing a = Bearing (Quantity a [u| rad |]) deriving (Eq, Ord)
 
-instance Show Incline where
-    show (Incline angle) = "i = " ++ showRadian angle
+instance Real a => Show (Incline a) where
+    show (Incline i) = "i = " ++ showRadian (toRational' i)
 
 instance Real a => Show (Bearing a) where
     show (Bearing b) = "r = " ++ showRadian (toRational' b)
@@ -76,7 +78,7 @@ data Zone a where
     -- | Only used in paragliding, this is the conical end of speed section
     -- used to discourage too low an end to final glides.
     Conical :: Eq a
-            => Incline
+            => Incline a
             -> Radius a [u| m |]
             -> LatLng a [u| rad |]
             -> Zone a
@@ -97,11 +99,36 @@ data Zone a where
 
 deriving instance Eq (Zone a)
 deriving instance
-    ( Show (Bearing a)
+    ( Show (Incline a)
+    , Show (Bearing a)
     , Show (Radius a [u| m |])
     , Show (LatLng a [u| rad |])
     )
     => Show (Zone a)
+
+showZoneDMS :: Zone Double -> String
+showZoneDMS (Point (LatLng (Lat x, Lng y))) =
+    "Point " ++ show (fromQ x, fromQ y)
+
+showZoneDMS (Vector (Bearing b) (LatLng (Lat x, Lng y))) =
+    "Vector " ++ show (fromQ b) ++ " " ++ show (fromQ x, fromQ y)
+
+showZoneDMS (Cylinder r (LatLng (Lat x, Lng y))) =
+    "Cylinder " ++ show r ++ " " ++ show (fromQ x, fromQ y)
+
+showZoneDMS (Conical (Incline i) r (LatLng (Lat x, Lng y))) =
+    "Conical "
+    ++ show (fromQ i)
+    ++ " "
+    ++ show r
+    ++ " "
+    ++ show (fromQ x, fromQ y)
+
+showZoneDMS (Line r (LatLng (Lat x, Lng y))) =
+    "Line " ++ show r ++ " " ++ show (fromQ x, fromQ y)
+
+showZoneDMS (SemiCircle r (LatLng (Lat x, Lng y))) =
+    "SemiCircle " ++ show r ++ " " ++ show (fromQ x, fromQ y)
 
 fromRationalRadius :: Fractional a => Radius Rational u -> Radius a u
 fromRationalRadius (Radius r) =
@@ -161,8 +188,11 @@ fromRationalZone (Vector (Bearing b) x) =
 fromRationalZone (Cylinder r x) =
     Cylinder (fromRationalRadius r) (fromRationalLatLng x)
 
-fromRationalZone (Conical i r x) =
-    Conical i (fromRationalRadius r) (fromRationalLatLng x)
+fromRationalZone (Conical (Incline i) r x) =
+    Conical
+        (Incline $ fromRational' i)
+        (fromRationalRadius r)
+        (fromRationalLatLng x)
 
 fromRationalZone (Line r x) =
     Line (fromRationalRadius r) (fromRationalLatLng x)
@@ -180,8 +210,11 @@ toRationalZone (Vector (Bearing b) x) =
 toRationalZone (Cylinder r x) =
     Cylinder (toRationalRadius r) (toRationalLatLng x)
 
-toRationalZone (Conical i r x) =
-    Conical i (toRationalRadius r) (toRationalLatLng x)
+toRationalZone (Conical (Incline i) r x) =
+    Conical
+        (Incline $ toRational' i)
+        (toRationalRadius r)
+        (toRationalLatLng x)
 
 toRationalZone (Line r x) =
     Line (toRationalRadius r) (toRationalLatLng x)
@@ -199,8 +232,11 @@ realToFracZone (Vector (Bearing (MkQuantity b)) x) =
 realToFracZone (Cylinder r x) =
     Cylinder (realToFracRadius r) (realToFracLatLng x)
 
-realToFracZone (Conical i r x) =
-    Conical i (realToFracRadius r) (realToFracLatLng x)
+realToFracZone (Conical (Incline (MkQuantity i)) r x) =
+    Conical
+        (Incline (MkQuantity $ realToFrac i))
+        (realToFracRadius r)
+        (realToFracLatLng x)
 
 realToFracZone (Line r x) =
     Line (realToFracRadius r) (realToFracLatLng x)

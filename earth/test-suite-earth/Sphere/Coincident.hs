@@ -20,7 +20,7 @@ import Data.UnitsOfMeasure (u, convert)
 
 import Flight.LatLng.Rational (defEps)
 import Flight.Distance (SpanLatLng)
-import Flight.Zone (Zone(..), Radius(..))
+import Flight.Zone (Zone(..), Radius(..), showZoneDMS, fromRationalZone)
 import qualified Flight.Earth.Sphere.PointToPoint.Rational as Rat (distanceHaversine)
 import Flight.Earth.Sphere.Separated (separatedZones)
 import Flight.Earth.Sphere (earthRadius)
@@ -47,7 +47,7 @@ coincident title xs =
     where
         f x =
             HU.testCase (mconcat [ "concident pair of "
-                                 , show $ head x
+                                 , showZoneDMS . fromRationalZone . head $ x
                                  , " = not separate"
                                  ]) $
                 separatedZones span x

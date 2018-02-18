@@ -23,11 +23,11 @@ import Data.UnitsOfMeasure (u, convert, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
+import Flight.Units.DegMinSec (DMS(..), toDeg)
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.Distance (TaskDistance(..))
 import qualified Flight.Earth.Flat.PointToPoint.Double as Dbl (distanceEuclidean)
 import qualified Flight.Earth.Flat.PointToPoint.Rational as Rat (distanceEuclidean)
-import DegMinSec (DMS(..), toDeg)
 import Tolerance (diff, showTolerance)
 import Bedford (points, solutions)
 

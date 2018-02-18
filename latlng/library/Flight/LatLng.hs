@@ -62,7 +62,11 @@ class (KnownUnit (Unpack u)) => ShowLng (flag :: Bool) a u where
 instance (KnownUnit (Unpack u), Show a) => ShowLat 'False a u where
     showLat _ (Lat lat) = show lat
 
-instance (KnownUnit (Unpack u)) => ShowLat 'True Double u where
+instance
+    ( KnownUnit (Unpack u)
+    , Convertible u [u| deg |]
+    )
+    => ShowLat 'True Double u where
     showLat _ (Lat lat) = D.showAngle lat
 
 instance (KnownUnit (Unpack u)) => ShowLat 'True Float u where
@@ -74,7 +78,11 @@ instance (KnownUnit (Unpack u)) => ShowLat 'True Rational u where
 instance (KnownUnit (Unpack u), Show a) => ShowLng 'False a u where
     showLng _ (Lng lng) = show lng
 
-instance (KnownUnit (Unpack u)) => ShowLng 'True Double u where
+instance
+    ( KnownUnit (Unpack u)
+    , Convertible u [u| deg |]
+    )
+    => ShowLng 'True Double u where
     showLng _ (Lng lng) = D.showAngle lng
 
 instance (KnownUnit (Unpack u)) => ShowLng 'True Float u where

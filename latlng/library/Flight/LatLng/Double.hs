@@ -19,13 +19,18 @@ import qualified Formatting.ShortFormatters as Fmt (f)
 import Data.UnitsOfMeasure (KnownUnit, Unpack, u)
 import Data.UnitsOfMeasure.Show (showUnit, showQuantity)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
+import Data.UnitsOfMeasure.Convert (Convertible)
 import Flight.Units ()
+import Flight.Units.DegMinSec (fromQ)
 
-showAngle :: KnownUnit (Unpack u) => Quantity Double u -> String
+showAngle
+    :: (KnownUnit (Unpack u), Convertible u [u| deg |])
+    => Quantity Double u -> String
 showAngle q@(MkQuantity x) =
     case showUnit q of
-        "deg" -> unpack $ format (Fmt.f 8 % "°") x
         "rad" -> unpack $ format (Fmt.f 8 % "rad") x
+        "deg" -> unpack $ format (Fmt.f 8 % "°") x
+        "dms" -> show . fromQ $ q
         _ -> showQuantity q
 
 -- | Conversion of degrees to radians.

@@ -24,8 +24,8 @@ import Flight.Units ()
 showAngle :: KnownUnit (Unpack u) => Quantity Float u -> String
 showAngle q@(MkQuantity x) =
     case showUnit q of
-        "deg" -> unpack $ format (Fmt.f 8 % "°") x
         "rad" -> unpack $ format (Fmt.f 8 % "rad") x
+        "deg" -> unpack $ format (Fmt.f 8 % "°") x
         _ -> showQuantity q
 
 -- | Conversion of degrees to radians.

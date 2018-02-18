@@ -28,8 +28,8 @@ import Data.Number.RoundingFunctions (dpRound)
 showAngle :: KnownUnit (Unpack u) => Quantity Rational u -> String
 showAngle q@(MkQuantity x) =
     case showUnit q of
-        "deg" -> show (fromRational (dpRound 11 x) :: Double) ++ "°"
         "rad" -> show (fromRational (dpRound 11 x) :: Double) ++ " rad"
+        "deg" -> show (fromRational (dpRound 11 x) :: Double) ++ "°"
         _ -> showQuantity q
 
 newtype Epsilon = Epsilon Rational deriving (Eq, Ord, Show)

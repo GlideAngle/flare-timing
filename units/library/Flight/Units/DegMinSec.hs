@@ -11,7 +11,7 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
-module DegMinSec
+module Flight.Units.DegMinSec
     ( DMS(..)
     , toDeg
     , toQDeg
@@ -37,7 +37,13 @@ showDMS (DMS (deg, 0, 0)) =
 showDMS (DMS (deg, min, 0)) =
     show deg ++ "°" ++ show min ++ "'"
 showDMS (DMS (deg, min, sec)) =
-    show deg ++ "°" ++ show min ++ "'" ++ show sec ++ "''"
+    if fromIntegral isec == sec then
+        show deg ++ "°" ++ show min ++ "'" ++ show isec ++ "''"
+    else
+        show deg ++ "°" ++ show min ++ "'" ++ show sec ++ "''"
+    where
+        isec :: Int
+        isec = floor sec
 
 toDeg :: DMS -> Double
 toDeg (DMS (deg, min, s)) =

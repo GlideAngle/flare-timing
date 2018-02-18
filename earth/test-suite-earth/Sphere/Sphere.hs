@@ -31,7 +31,7 @@ units :: TestTree
 units =
     testGroup "FAI Sphere tests"
     [ bedfordUnits
-    ,forbesUnits
+    , forbesUnits
     , circumSampleUnits
     , meridianUnits
     , disjointUnits

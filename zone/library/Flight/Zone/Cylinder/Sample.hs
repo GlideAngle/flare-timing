@@ -87,6 +87,7 @@ data ZonePoint a
 deriving instance
     ( Show a
     , Real a
+    , Fractional a
     , Show (Lat a [u| rad |])
     , Show (Lng a [u| rad |])
     )

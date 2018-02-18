@@ -24,8 +24,8 @@ import Prelude hiding (min)
 import Data.UnitsOfMeasure (u, convert)
 
 import Flight.Units ()
+import Flight.Units.DegMinSec (DMS(..))
 import Flight.Distance (TaskDistance(..))
-import DegMinSec (DMS(..))
 
 points :: [((DMS, DMS), (DMS, DMS))]
 points =
