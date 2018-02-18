@@ -1,7 +1,6 @@
 module Sphere.Sphere (properties, units, tests) where
 
 import Test.Tasty (TestTree, testGroup)
-import Test.Tasty.SmallCheck as SC
 import Test.Tasty.QuickCheck as QC
 
 import Sphere.Meridian (meridianUnits)
@@ -23,8 +22,7 @@ tests =
 properties :: TestTree
 properties =
     testGroup "Properties"
-    [ scProps
-    , qcProps
+    [ qcProps
     ]
 
 units :: TestTree
@@ -37,26 +35,6 @@ units =
     , disjointUnits
     , touchingUnits
     , coincidentUnits
-    ]
-
-scProps :: TestTree
-scProps =
-    testGroup "(checked by SmallCheck)"
-    [ SC.testProperty
-        "HaversineF distances, are not negative"
-        distanceHaversineF
-
-    , SC.testProperty
-        "Haversine distances, are not negative"
-        distanceHaversine
-
-    , SC.testProperty
-        "Zone distances, point-to-point, are not negative"
-        distancePoint
-
-    , SC.testProperty
-        "Zone distances, point-to-point, are not negative"
-        distancePoint
     ]
 
 qcProps :: TestTree
