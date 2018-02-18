@@ -14,6 +14,7 @@
 module Sphere.Meridian (meridianUnits) where
 
 import Prelude hiding (span)
+import Data.List (intersperse)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit as HU ((@?=), testCase)
 import Data.UnitsOfMeasure (u, convert)
@@ -21,7 +22,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.LatLng.Rational (defEps)
 import Flight.Distance (TaskDistance(..), PathDistance(..), SpanLatLng)
-import Flight.Zone (Zone(..), Radius(..))
+import Flight.Zone (Zone(..), Radius(..), showZoneDMS, fromRationalZone)
 import Flight.Zone.Path (distancePointToPoint)
 import qualified Flight.Earth.Sphere.PointToPoint.Rational as Rat (distanceHaversine)
 import Flight.Earth.Sphere (earthRadius)
@@ -55,7 +56,13 @@ toDistance title xs =
     testGroup title (f <$> xs)
     where
         f x =
-            HU.testCase (mconcat [ "distance ", show x, " = earth radius" ]) $
+            HU.testCase
+                (mconcat
+                    ([ "distance [" ]
+                    ++ intersperse ", " (showZoneDMS . fromRationalZone <$> x)
+                    ++ [ "] = earth radius" ])
+                )
+                $
                 edgesSum (distancePointToPoint span x)
                     @?= TaskDistance earthRadius
 

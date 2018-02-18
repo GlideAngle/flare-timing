@@ -22,7 +22,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.LatLng.Rational (defEps)
 import Flight.Distance (SpanLatLng)
-import Flight.Zone (Zone(..), Radius(..))
+import Flight.Zone (Zone(..), Radius(..), showZoneDMS, fromRationalZone)
 import qualified Flight.Earth.Sphere.PointToPoint.Rational as Rat (distanceHaversine)
 import Flight.Earth.Sphere.Separated (separatedZones)
 import Flight.Earth.Sphere (earthRadius)
@@ -46,11 +46,14 @@ touching title xs =
     testGroup title (f <$> xs)
     where
         f x =
-            HU.testCase (mconcat [ "touching pair of "
-                                 , show x
-                                 , " = not separate"
-                                 ]) $
-                separatedZones span x
+            HU.testCase
+                (mconcat
+                    [ "touching pair of "
+                    , showZoneDMS . fromRationalZone . head $ x
+                    , " = not separate"
+                    ]
+                )
+                $ separatedZones span x
                     @?= False
 
 eps :: Quantity Rational [u| 1 |]

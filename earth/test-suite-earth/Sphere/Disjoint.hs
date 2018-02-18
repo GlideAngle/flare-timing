@@ -22,7 +22,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.LatLng.Rational (defEps)
 import Flight.Distance (SpanLatLng)
-import Flight.Zone (Zone(..), Radius(..))
+import Flight.Zone (Zone(..), Radius(..), showZoneDMS, fromRationalZone)
 import qualified Flight.Earth.Sphere.PointToPoint.Rational as Rat (distanceHaversine)
 import Flight.Earth.Sphere.Separated (separatedZones)
 import Flight.Earth.Sphere (earthRadius)
@@ -48,11 +48,14 @@ disjoint title xs =
     testGroup title (f <$> xs)
     where
         f x =
-            HU.testCase (mconcat [ "disjoint pair of "
-                                 , show x 
-                                 , " = separate"
-                                 ]) $
-                separatedZones span x
+            HU.testCase
+                (mconcat
+                    [ "disjoint pair of "
+                    , showZoneDMS . fromRationalZone . head $ x
+                    , " = separate"
+                    ]
+                )
+                $ separatedZones span x
                     @?= True
 
 eps :: Quantity Rational [u| 1 |]

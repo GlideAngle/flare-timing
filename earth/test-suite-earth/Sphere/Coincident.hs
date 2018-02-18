@@ -46,11 +46,14 @@ coincident title xs =
     testGroup title (f <$> xs)
     where
         f x =
-            HU.testCase (mconcat [ "concident pair of "
-                                 , showZoneDMS . fromRationalZone . head $ x
-                                 , " = not separate"
-                                 ]) $
-                separatedZones span x
+            HU.testCase
+                (mconcat
+                    [ "concident pair of "
+                    , showZoneDMS . fromRationalZone . head $ x
+                    , " = not separate"
+                    ]
+                )
+                $ separatedZones span x
                     @?= False
 
 pts :: [(QLL Rational, QLL Rational)]
