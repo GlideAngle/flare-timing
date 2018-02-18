@@ -31,16 +31,16 @@ meridianUnits =
             distanceMeridian
                 ("Distance between " ++ s ++ " zones on meridian arcs")
 
-ptsDistanceMeridian :: (Enum a, Real a, Fractional a) => [(QLL a, QLL a)]
-ptsDistanceMeridian =
+pts :: (Enum a, Real a, Fractional a) => [(QLL a, QLL a)]
+pts =
     meridianArc . convert
     <$> [ x *: [u| 1 deg |] | x <- [5, 10 .. 90]]
     where
         meridianArc d =
             (([u| 0 rad |], [u| 0 rad |]), (d, [u| 0 rad |]))
 
-ptsRadiiMeridian :: [Radius Rational [u| m |]]
-ptsRadiiMeridian =
+distances :: [Radius Rational [u| m |]]
+distances =
     Radius
     <$>
     -- NOTE: These distances are not from Vincenty. They come from the first
@@ -86,5 +86,5 @@ distanceMeridian s f =
                 r'
                 (showQ x ++ " " ++ showQ y)
                 (f r x, f r y))
-        ptsRadiiMeridian
-        (ptsDistanceMeridian :: [(QLL Double, QLL Double)])
+        distances
+        (pts :: [(QLL Double, QLL Double)])
