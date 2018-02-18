@@ -4,15 +4,16 @@ import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.QuickCheck as QC
 import Test.Tasty.Providers as QC
 
-import Ellipsoid.Coincident
-import Ellipsoid.Meridian
-import Ellipsoid.Bedford
-import Ellipsoid.Forbes
-import Props.Vincenty
+import Ellipsoid.Coincident (coincidentUnits)
+import Ellipsoid.Meridian (meridianUnits)
+import Ellipsoid.Bedford (bedfordUnits)
+import Ellipsoid.Forbes (forbesUnits)
+import Props.Vincenty (distancePoint, distanceVincentyF, distanceVincenty)
 
 tests :: TestTree
 tests =
-    testGroup "On the WGS84 ellipsoid using Vincenty's solution to the inverse geodetic problem"
+    testGroup
+    "On the WGS84 ellipsoid using Vincenty's solution to the inverse geodetic problem"
     [ units
     , properties
     ]
