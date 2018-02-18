@@ -33,6 +33,7 @@ import Data.Number.RoundingFunctions (dpRound)
 
 [u| rad |]
 [u| deg = (5030569068109113 % 288230376151711744) rad |]
+[u| dms = (5030569068109113 % 288230376151711744) rad |]
 
 -- | Convert any 'Real' quantity into a 'Fractional' type ('realToFrac').
 realToFrac' :: (Real a, Fractional b) => Quantity a u -> Quantity b u
