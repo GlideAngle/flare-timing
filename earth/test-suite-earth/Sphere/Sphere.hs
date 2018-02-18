@@ -4,10 +4,14 @@ import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.SmallCheck as SC
 import Test.Tasty.QuickCheck as QC
 
-import Sphere.General
-import Sphere.Bedford
-import Sphere.Forbes
-import Sphere.Cylinder
+import Sphere.Meridian (meridianUnits)
+import Sphere.Touching (touchingUnits)
+import Sphere.Coincident (coincidentUnits)
+import Sphere.Disjoint (disjointUnits)
+import Sphere.Bedford (bedfordUnits)
+import Sphere.Forbes (forbesUnits)
+import Sphere.Cylinder (circumSampleUnits)
+import Props.Haversine (distancePoint, distanceHaversineF, distanceHaversine)
 
 tests :: TestTree
 tests =
@@ -25,25 +29,47 @@ properties =
 
 units :: TestTree
 units =
-    testGroup "Unit Tests"
+    testGroup "FAI Sphere tests"
     [ bedfordUnits
-    , forbesUnits
+    ,forbesUnits
     , circumSampleUnits
-    , zoneUnits
+    , meridianUnits
+    , disjointUnits
+    , touchingUnits
+    , coincidentUnits
     ]
 
 scProps :: TestTree
 scProps =
     testGroup "(checked by SmallCheck)"
-    [ SC.testProperty "HaversineF distances, are not negative" distanceHaversineF
-    , SC.testProperty "Haversine distances, are not negative" distanceHaversine
-    , SC.testProperty "Zone distances, point-to-point, are not negative" distancePoint
-    , SC.testProperty "Zone distances, point-to-point, are not negative" distancePoint
+    [ SC.testProperty
+        "HaversineF distances, are not negative"
+        distanceHaversineF
+
+    , SC.testProperty
+        "Haversine distances, are not negative"
+        distanceHaversine
+
+    , SC.testProperty
+        "Zone distances, point-to-point, are not negative"
+        distancePoint
+
+    , SC.testProperty
+        "Zone distances, point-to-point, are not negative"
+        distancePoint
     ]
 
 qcProps :: TestTree
 qcProps = testGroup "(checked by QuickCheck)"
-    [ QC.testProperty "HaversineF distances, are not negative" distanceHaversineF
-    , QC.testProperty "Haversine distances, are not negative" distanceHaversine
-    , QC.testProperty "Zone distances, point-to-point, are not negative" distancePoint
+    [ QC.testProperty
+        "HaversineF distances, are not negative"
+        distanceHaversineF
+
+    , QC.testProperty
+        "Haversine distances, are not negative"
+        distanceHaversine
+
+    , QC.testProperty
+        "Zone distances, point-to-point, are not negative"
+        distancePoint
     ]

@@ -14,7 +14,7 @@
 
 module Zone
     ( QLL, MkZone
-    , point, vector, cylinder, line, semicircle
+    , point, vector, cylinder, line, conical, semicircle
     , describedZones
     , showQ
     ) where
