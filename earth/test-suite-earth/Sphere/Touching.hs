@@ -15,9 +15,10 @@ module Sphere.Touching (touchingUnits) where
 
 import Prelude hiding (span)
 import Data.Ratio ((%))
+import Data.List (intersperse)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit as HU ((@?=), testCase)
-import Data.UnitsOfMeasure ((*:), u, convert, negate')
+import Data.UnitsOfMeasure ((*:), u, negate')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.LatLng.Rational (defEps)
@@ -48,10 +49,9 @@ touching title xs =
         f x =
             HU.testCase
                 (mconcat
-                    [ "touching pair of "
-                    , showZoneDMS . fromRationalZone . head $ x
-                    , " = not separate"
-                    ]
+                    ([ "touching pair of [" ]
+                    ++ intersperse ", " (showZoneDMS . fromRationalZone <$> x)
+                    ++ [ "[ = not separate" ])
                 )
                 $ separatedZones span x
                     @?= False
@@ -61,13 +61,15 @@ eps = MkQuantity $ 2 % 1 - 1 % 100000000
 
 pts :: [(QLL Rational, QLL Rational)]
 pts =
-    [ ((z, pos), (z, z))
-    , ((z, neg), (z, z))
+    [ ((z, z), (z, pos))
+    , ((z, z), (z, neg))
     ]
     where
+        z :: Quantity Rational [u| rad |]
         z = [u| 0 rad |]
-        pos = convert $ eps *: [u| 1 deg |]
-        neg = convert $ negate' eps *: [u| -1 deg |]
+
+        pos = eps *: [u| 1 rad |]
+        neg = negate' eps *: [u| 1 rad |]
 
 cylinderTouching :: TestTree
 cylinderTouching =

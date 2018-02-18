@@ -15,9 +15,10 @@ module Sphere.Disjoint (disjointUnits) where
 
 import Prelude hiding (span)
 import Data.Ratio ((%))
+import Data.List (intersperse)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit as HU ((@?=), testCase)
-import Data.UnitsOfMeasure ((*:), u, convert, negate')
+import Data.UnitsOfMeasure ((*:), u, negate')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.LatLng.Rational (defEps)
@@ -50,10 +51,9 @@ disjoint title xs =
         f x =
             HU.testCase
                 (mconcat
-                    [ "disjoint pair of "
-                    , showZoneDMS . fromRationalZone . head $ x
-                    , " = separate"
-                    ]
+                    ([ "disjoint pair of [" ]
+                    ++ intersperse ", " (showZoneDMS . fromRationalZone <$> x)
+                    ++ [ "] = separate" ])
                 )
                 $ separatedZones span x
                     @?= True
@@ -63,14 +63,15 @@ eps = MkQuantity $ 2 % 1 + 1 % 100000000
 
 pts :: [(QLL Rational, QLL Rational)]
 pts =
-    [ ((z, pos), (z, z))
-    , ((z, neg), (m, z))
+    [ ((z, z), (z, pos))
+    , ((z, z), (z, neg))
     ]
     where
+        z :: Quantity Rational [u| rad |]
         z = [u| 0 rad |]
-        m = convert [u| 45 deg |]
-        pos = convert $ eps *: [u| 1 deg |]
-        neg = convert $ negate' eps *: [u| 1 deg |]
+
+        pos = eps *: [u| 1 rad |]
+        neg = negate' eps *: [u| 1 rad |]
 
 pointDisjoint :: TestTree
 pointDisjoint =
