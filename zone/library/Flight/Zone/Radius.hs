@@ -1,13 +1,27 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE UndecidableInstances #-}
 
 module Flight.Zone.Radius (Radius(..)) where
 
-import Data.UnitsOfMeasure (KnownUnit, Unpack)
+import Data.UnitsOfMeasure (u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
+import Data.UnitsOfMeasure.Convert (Convertible)
+
+import Flight.Units ()
+import Flight.Distance (TaskDistance(..))
 import Flight.Zone.Raw.Radius
 
 newtype Radius a u = Radius (Quantity a u)
     deriving (Eq, Ord)
 
-instance (Show a, KnownUnit (Unpack u)) => Show (Radius a u) where
-    show (Radius q) = show (RawRadius q)
+instance
+    ( Real a
+    , Fractional a
+    , Show a
+    , Convertible u [u| m |]
+    )
+    => Show (Radius a u) where
+    show (Radius q) = show . TaskDistance . convert $ q
