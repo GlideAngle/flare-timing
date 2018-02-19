@@ -12,7 +12,7 @@ main = defaultMain tests
 tests :: TestTree
 tests =
     testGroup "Earth Tests"
-        [ F.tests
+        [ E.tests
         , S.tests
-        , E.tests
+        , F.tests
         ]

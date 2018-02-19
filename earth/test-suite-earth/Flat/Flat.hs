@@ -1,7 +1,6 @@
 module Flat.Flat (properties, units, tests) where
 
 import Test.Tasty (TestTree, testGroup)
-import Test.Tasty.SmallCheck as SC
 import Test.Tasty.QuickCheck as QC
 
 import Flat.General
@@ -19,8 +18,7 @@ tests =
 properties :: TestTree
 properties =
     testGroup "Properties"
-    [ scProps
-    , qcProps
+    [ qcProps
     ]
 
 units :: TestTree
@@ -29,15 +27,6 @@ units =
     [ bedfordUnits
     , forbesUnits
     , zoneUnits
-    ]
-
-scProps :: TestTree
-scProps =
-    testGroup "(checked by SmallCheck)"
-    [ SC.testProperty "EuclideanF distances, are not negative" distanceEuclideanF
-    , SC.testProperty "Euclidean distances, are not negative" distanceEuclidean
-    , SC.testProperty "Zone distances, point-to-point, are not negative" distancePoint
-    , SC.testProperty "Zone distances, point-to-point, are not negative" distancePoint
     ]
 
 qcProps :: TestTree
