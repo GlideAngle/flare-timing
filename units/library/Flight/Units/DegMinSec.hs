@@ -8,6 +8,7 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE QuasiQuotes #-}
 
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
@@ -20,6 +21,9 @@ module Flight.Units.DegMinSec
     ) where
 
 import Prelude hiding (min)
+import Data.Text.Lazy (unpack)
+import Formatting ((%), format)
+import qualified Formatting.ShortFormatters as Fmt (f)
 import Data.UnitsOfMeasure (u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Data.UnitsOfMeasure.Convert (Convertible)
@@ -40,7 +44,11 @@ showDMS (DMS (deg, min, sec)) =
     if fromIntegral isec == sec then
         show deg ++ "°" ++ show min ++ "'" ++ show isec ++ "''"
     else
-        show deg ++ "°" ++ show min ++ "'" ++ show sec ++ "''"
+        show deg
+        ++ "°"
+        ++ show min
+        ++ "'"
+        ++ (unpack $ format (Fmt.f 8 % "''") sec)
     where
         isec :: Int
         isec = floor sec
@@ -62,7 +70,7 @@ toQRad dms =
 
 fromQ :: Convertible u [u| deg |] => Quantity Double u -> DMS
 fromQ q' =
-    DMS (s * dd, mm, fromIntegral ss)
+    DMS (s * dd, mm, ss)
     where
         MkQuantity d = convert q' :: Quantity Double [u| deg |]
 
@@ -72,4 +80,8 @@ fromQ q' =
         s = signum totalSecs
 
         (dd, ms) = quotRem (abs totalSecs) 3600
-        (mm, ss) = quotRem ms 60
+        mm = quot ms 60
+
+        ss =
+            ((abs d) - fromIntegral dd) * 3600.0
+            - (fromIntegral $ mm * 60)
