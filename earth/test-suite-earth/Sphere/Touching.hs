@@ -11,21 +11,22 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
-module Sphere.Touching (touchingUnits) where
+module Sphere.Touching (Overlay(..), separatedZones, touchingUnits) where
 
 import Prelude hiding (span)
 import Data.Ratio ((%))
 import Data.List (intersperse)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit as HU ((@?=), testCase)
-import Data.UnitsOfMeasure ((*:), u, negate')
+import Data.UnitsOfMeasure ((-:), (*:), u, convert, negate', fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.LatLng.Rational (defEps)
 import Flight.Distance (SpanLatLng)
 import Flight.Zone (Zone(..), Radius(..), showZoneDMS, fromRationalZone)
+import Flight.LatLng.Double (showAngle)
 import qualified Flight.Earth.Sphere.PointToPoint.Rational as Rat (distanceHaversine)
-import Flight.Earth.Sphere.Separated (separatedZones)
+import qualified Flight.Earth.Sphere.Separated as S (separatedZones)
 import Flight.Earth.Sphere (earthRadius)
 
 import Zone (QLL, cylinder, line, conical, semicircle)
@@ -35,29 +36,76 @@ span = Rat.distanceHaversine defEps
 
 touchingUnits :: TestTree
 touchingUnits =
-    testGroup "Touching zone separation"
+    testGroup "Overlapping zones are touching"
     [ cylinderTouching
     , conicalTouching
     , lineTouching
     , semicircleTouching
     ]
 
-touching :: String -> [[Zone Rational]] -> TestTree
-touching title xs =
+data Overlay = Overlap | Disjoint deriving Eq
+
+separatedZones
+    :: Overlay
+    -> Quantity Rational [u| 1 |]
+    -> Quantity Rational [u| 1 |]
+    -> String
+    -> [[Zone Rational]]
+    -> TestTree
+separatedZones expected delta' radius' title xs =
     testGroup title (f <$> xs)
     where
         f x =
-            HU.testCase
-                (mconcat
-                    ([ "touching pair of [" ]
-                    ++ intersperse ", " (showZoneDMS . fromRationalZone <$> x)
-                    ++ [ "[ = not separate" ])
-                )
-                $ separatedZones span x
-                    @?= False
+            testGroup sZone
+                [ testGroup sRadius
+                    [ HU.testCase sSep
+                        $ S.separatedZones span x
+                            @?= (expected == Disjoint)
+                    ]
+                ]
+            where
+                sRadius =
+                    mconcat
+                        [ "radius="
+                        , showAngle radiusDMS
+                        , " or "
+                        , show radiusRad
+                        ]
 
-eps :: Quantity Rational [u| 1 |]
-eps = MkQuantity $ 2 % 1 - 1 % 100000000
+                sSep =
+                    mconcat
+                        [ if expected == Disjoint
+                            then "separation="
+                            else "overlap="
+                        , showAngle deltaDMS
+                        , " or "
+                        , show deltaRad
+                        ]
+
+                sZone =
+                    mconcat
+                    $ intersperse ", " (showZoneDMS . fromRationalZone <$> x)
+
+        deltaDMS :: Quantity Double [u| dms |]
+        deltaDMS = fromRational' . convert $ delta' *: [u| 1 rad |]
+
+        deltaRad :: Quantity Double [u| rad |]
+        deltaRad = fromRational' $ delta' *: [u| 1 rad |]
+
+        radiusDMS :: Quantity Double [u| dms |]
+        radiusDMS = fromRational' . convert $ radius' *: [u| 1 rad |]
+
+        radiusRad :: Quantity Double [u| rad |]
+        radiusRad = fromRational' $ radius' *: [u| 1 rad |]
+
+touching :: String -> [[Zone Rational]] -> TestTree
+touching = separatedZones Overlap delta radius
+
+delta :: Quantity Rational [u| 1 |]
+delta = MkQuantity $ 1 % 100000000
+
+radius :: Quantity Rational [u| 1 |]
+radius = MkQuantity $ 2 % 1
 
 pts :: [(QLL Rational, QLL Rational)]
 pts =
@@ -68,8 +116,8 @@ pts =
         z :: Quantity Rational [u| rad |]
         z = [u| 0 rad |]
 
-        pos = eps *: [u| 1 rad |]
-        neg = negate' eps *: [u| 1 rad |]
+        pos = (radius -: delta) *: [u| 1 rad |]
+        neg = negate' (radius -: delta) *: [u| 1 rad |]
 
 cylinderTouching :: TestTree
 cylinderTouching =
