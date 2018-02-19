@@ -3,7 +3,7 @@
 
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
-module Ellipsoid.Distance where
+module Sphere.Distance where
 
 import Prelude hiding (span)
 import Test.Tasty (TestTree)
@@ -13,13 +13,12 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Flight.LatLng.Rational (defEps)
 import Flight.Distance (SpanLatLng)
 import Flight.Zone (Zone(..))
-import qualified Flight.Earth.Ellipsoid.PointToPoint.Rational as Rat
-    (distanceVincenty)
-import Flight.Earth.Ellipsoid (wgs84)
+import qualified Flight.Earth.Sphere.PointToPoint.Rational as Rat
+    (distanceHaversine)
 import qualified Distance as D
 
 span :: SpanLatLng Rational
-span = Rat.distanceVincenty defEps wgs84
+span = Rat.distanceHaversine defEps
 
 toDistanceEqual
     :: Quantity Rational [u| m |]
