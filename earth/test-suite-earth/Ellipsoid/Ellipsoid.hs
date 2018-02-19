@@ -20,13 +20,13 @@ tests =
 
 properties :: TestTree
 properties =
-    testGroup "Properties"
+    testGroup "Property tests on the WGS84 ellipsoid using Vincenty's solution"
     [ qcProps
     ]
 
 units :: TestTree
 units =
-    testGroup "Unit tests"
+    testGroup "Unit tests on the WGS84 ellipsoid using Vincenty's solution"
     [ bedfordUnits
     , forbesUnits
     , coincidentUnits

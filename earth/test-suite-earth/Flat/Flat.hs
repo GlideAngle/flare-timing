@@ -17,13 +17,13 @@ tests =
 
 properties :: TestTree
 properties =
-    testGroup "Properties"
+    testGroup "Property tests on the flat Earth using Pythagoras' theorem a² + b² = c²"
     [ qcProps
     ]
 
 units :: TestTree
 units =
-    testGroup "Units"
+    testGroup "Unit tests on the flat Earth using Pythagoras' theorem a² + b² = c²"
     [ bedfordUnits
     , forbesUnits
     , zoneUnits

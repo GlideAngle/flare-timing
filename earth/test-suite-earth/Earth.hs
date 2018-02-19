@@ -12,7 +12,22 @@ main = defaultMain tests
 tests :: TestTree
 tests =
     testGroup "Earth Tests"
-        [ E.tests
-        , S.tests
-        , F.tests
+        [ properties
+        , units
+        ]
+
+units :: TestTree
+units =
+    testGroup "Earth unit tests"
+        [ E.units
+        , S.units
+        , F.units
+        ]
+
+properties :: TestTree
+properties =
+    testGroup "Earth property tests"
+        [ E.properties
+        , S.properties
+        , F.properties
         ]

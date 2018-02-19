@@ -21,13 +21,13 @@ tests =
 
 properties :: TestTree
 properties =
-    testGroup "Properties"
+    testGroup "Property tests on the FAI sphere using haversines"
     [ qcProps
     ]
 
 units :: TestTree
 units =
-    testGroup "FAI Sphere tests"
+    testGroup "Unit tests on the FAI sphere using haversines"
     [ bedfordUnits
     , forbesUnits
     , circumSampleUnits
