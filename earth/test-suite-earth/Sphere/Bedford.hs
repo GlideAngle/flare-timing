@@ -15,28 +15,21 @@
 
 module Sphere.Bedford (bedfordUnits) where
 
-import Prelude hiding (min)
+import Prelude hiding (span, min)
 import Data.Ratio ((%))
 import Test.Tasty (TestTree, testGroup)
-import Test.Tasty.HUnit as HU (testCase)
-import Test.Tasty.HUnit.Compare ((@?<=))
-import Data.UnitsOfMeasure (u, convert, toRational')
-import Data.UnitsOfMeasure.Internal (Quantity(..))
+import Data.UnitsOfMeasure (u, convert)
 
 import Flight.Units ()
-import Flight.Units.DegMinSec (DMS(..), toDeg)
-import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
+import Flight.Units.DegMinSec (DMS(..))
 import Flight.LatLng.Rational (Epsilon(..))
 import Flight.Distance (TaskDistance(..))
 import qualified Flight.Earth.Sphere.PointToPoint.Double as Dbl (distanceHaversine)
 import qualified Flight.Earth.Sphere.PointToPoint.Rational as Rat (distanceHaversine)
-import Tolerance (diff, showTolerance)
-import Bedford (points, solutions)
+import Bedford (GetTolerance, points, solutions)
+import qualified Bedford as B (dblChecks, ratChecks)
 
-getTolerance
-    :: (Real a, Fractional a)
-    => Quantity a [u| m |]
-    -> Quantity a [u| km |]
+getTolerance :: (Ord a, Fractional a) => GetTolerance a
 getTolerance d'
     | d < [u| 100 km |] = convert [u| 425.4 m |]
     | d < [u| 500 km |] = convert [u| 2.495 km |]
@@ -45,80 +38,22 @@ getTolerance d'
     where
         d = convert d'
 
-dblChecks :: [TaskDistance Double] -> [((DMS, DMS), (DMS, DMS))] -> [TestTree]
+dblChecks
+    :: [TaskDistance Double]
+    -> [((DMS, DMS), (DMS, DMS))]
+    -> [TestTree]
 dblChecks =
-    zipWith f
-    where
-        f expected (x, y) =
-            HU.testCase
-                ( show x
-                ++ " to "
-                ++ show y
-                ++ " = "
-                ++ show expected
-                ++ " ± "
-                ++ showTolerance tolerance'
-                )
-            $ diff (found x y) expected
-            @?<= (TaskDistance tolerance')
-            where
-                tolerance' =
-                    convert . getTolerance
-                    $ (\(TaskDistance q) -> q) expected
+    B.dblChecks (Dbl.distanceHaversine) getTolerance
 
-        found x y = Dbl.distanceHaversine (toLL x) (toLL y)
-
-        toLL :: (DMS, DMS) -> LatLng Double [u| rad |]
-        toLL (lat, lng) =
-            LatLng (Lat lat'', Lng lng'')
-                where
-                    lat' :: Quantity Double [u| deg |]
-                    lat' = MkQuantity . toDeg $ lat
-
-                    lng' :: Quantity Double [u| deg |]
-                    lng' = MkQuantity . toDeg $ lng
-
-                    lat'' = convert lat' :: Quantity _ [u| rad |]
-                    lng'' = convert lng' :: Quantity _ [u| rad |]
-
-ratChecks :: [TaskDistance Double] -> [((DMS, DMS), (DMS, DMS))] -> [TestTree]
+ratChecks
+    :: [TaskDistance Double]
+    -> [((DMS, DMS), (DMS, DMS))]
+    -> [TestTree]
 ratChecks =
-    zipWith f
+    B.ratChecks span getTolerance
     where
-        f (TaskDistance d) (x, y) =
-            HU.testCase
-                ( show x
-                ++ " to "
-                ++ show y
-                ++ " = "
-                ++ show expected'
-                ++ " ± "
-                ++ showTolerance tolerance'
-                )
-            $ diff (found x y) expected'
-            @?<= (TaskDistance tolerance')
-            where
-                expected' = expected d
-                tolerance' =
-                    convert . getTolerance
-                    $ (\(TaskDistance q) -> q) expected'
-
-        expected d = TaskDistance $ toRational' d
-        found x y = Rat.distanceHaversine e (toLL x) (toLL y)
-
+        span = Rat.distanceHaversine e
         e = Epsilon $ 1 % 1000000000000000000
-        toLL :: (DMS, DMS) -> LatLng Rational [u| rad |]
-        toLL (lat, lng) =
-            LatLng (Lat lat'', Lng lng'')
-                where
-                    lat' :: Quantity Rational [u| deg |]
-                    lat' = toRational' . MkQuantity . toDeg $ lat
-
-                    lng' :: Quantity Rational [u| deg |]
-                    lng' = toRational' . MkQuantity . toDeg $ lng
-
-                    lat'' = convert lat' :: Quantity _ [u| rad |]
-                    lng'' = convert lng' :: Quantity _ [u| rad |]
 
 bedfordUnits :: TestTree
 bedfordUnits =

@@ -20,6 +20,7 @@ module Flight.LatLng
     , RadToDeg
     , degToRadLL
     , radToDegLL
+    , fromDMS
     ) where
 
 import System.Random
@@ -32,6 +33,7 @@ import Test.SmallCheck.Series as SC (Serial(..), (>>-), cons2, decDepth)
 import Test.Tasty.QuickCheck as QC (Arbitrary(..), arbitraryBoundedRandom)
 
 import Flight.Units ()
+import Flight.Units.DegMinSec (DMS(..), toDeg)
 import qualified Flight.LatLng.Double as D
 import qualified Flight.LatLng.Float as F
 import qualified Flight.LatLng.Rational as R
@@ -39,6 +41,19 @@ import qualified Flight.LatLng.Rational as R
 newtype Lat a u = Lat (Quantity a u) deriving (Eq, Ord)
 newtype Lng a u = Lng (Quantity a u) deriving (Eq, Ord)
 newtype LatLng a u = LatLng (Lat a u, Lng a u) deriving (Eq, Ord)
+
+fromDMS :: (DMS, DMS) -> LatLng Double [u| rad |]
+fromDMS (lat, lng) =
+    LatLng (Lat lat'', Lng lng'')
+        where
+            lat' :: Quantity Double [u| deg |]
+            lat' = MkQuantity . toDeg $ lat
+
+            lng' :: Quantity Double [u| deg |]
+            lng' = MkQuantity . toDeg $ lng
+
+            lat'' = convert lat' :: Quantity _ [u| rad |]
+            lng'' = convert lng' :: Quantity _ [u| rad |]
 
 -- SEE: https://kseo.github.io/posts/2017-02-05-avoid-overlapping-instances-with-closed-type-families.html
 type family F a :: Bool where
