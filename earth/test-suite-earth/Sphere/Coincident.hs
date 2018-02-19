@@ -8,6 +8,7 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE QuasiQuotes #-}
 
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
@@ -17,100 +18,57 @@ import Prelude hiding (span)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit as HU ((@?=), testCase)
 import Data.UnitsOfMeasure (u, convert)
+import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import Flight.LatLng.Rational (defEps)
-import Flight.Distance (SpanLatLng)
-import Flight.Zone (Zone(..), Radius(..), showZoneDMS, fromRationalZone)
-import qualified Flight.Earth.Sphere.PointToPoint.Rational as Rat (distanceHaversine)
-import Flight.Earth.Sphere.Separated (separatedZones)
-import Flight.Earth.Sphere (earthRadius)
-
-import Zone (QLL, point, vector, cylinder, line, conical, semicircle)
-
-span :: SpanLatLng Rational
-span = Rat.distanceHaversine defEps
+import Flight.Distance (TaskDistance(..), PathDistance(..))
+import Flight.Zone (Radius(..))
+import Flight.Zone.Path (distancePointToPoint)
+import Sphere.Distance (span, toDistanceEqual)
+import Zone (MkZone, QLL, showQ, describedZones)
 
 coincidentUnits :: TestTree
 coincidentUnits =
-    testGroup "Coincident zone separation"
-    [ pointCoincident
-    , vectorCoincident
-    , cylinderCoincident
-    , conicalCoincident
-    , lineCoincident
-    , semicircleCoincident
+    testGroup "Coincident zones unit tests"
+    $ emptyDistance
+    : ((uncurry f) <$> describedZones)
+    where
+        f s =
+            distanceZero
+                ("Distance between coincident " ++ s ++ " zones")
+
+emptyDistance :: TestTree
+emptyDistance =
+    testGroup "Point-to-point distance"
+    [ testCase "No zones = zero point-to-point distance" $
+        edgesSum (distancePointToPoint span []) @?= (TaskDistance $ MkQuantity 0)
     ]
 
-coincident :: String -> [[Zone Rational]] -> TestTree
-coincident title xs =
-    testGroup title (f <$> xs)
-    where
-        f x =
-            HU.testCase
-                (mconcat
-                    [ "concident pair of "
-                    , showZoneDMS . fromRationalZone . head $ x
-                    , " = not separate"
-                    ]
-                )
-                $ separatedZones span x
-                    @?= False
-
-pts :: [(QLL Rational, QLL Rational)]
+pts :: (Enum a, Real a, Fractional a) => [(QLL a, QLL a)]
 pts =
-    [ ((m, z), (m, z))
-    , ((z, m), (z, m))
+    [ ((z, z), (z, z))
     , ((m, z), (m, z))
+    , ((z, m), (z, m))
     , ((m, m), (m, m))
     ]
     where
         z = [u| 0 rad |]
         m = convert [u| 45 deg |]
 
-pointCoincident :: TestTree
-pointCoincident =
-    coincident
-    "Point zones"
-    ((\(x, y) -> [f x, f y]) <$> pts)
-    where
-        f = point $ Radius earthRadius
+distances :: [Radius Rational [u| m |]]
+distances =
+    Radius <$> replicate 4 [u| 0 m |]
 
-vectorCoincident :: TestTree
-vectorCoincident =
-    coincident
-    "Vector zones"
-    ((\(x, y) -> [f x, f y]) <$> pts)
-    where
-        f = vector $ Radius earthRadius
-
-cylinderCoincident :: TestTree
-cylinderCoincident =
-    coincident
-    "Cylinder zones"
-    ((\(x, y) -> [f x, f y]) <$> pts)
-    where
-        f = cylinder $ Radius earthRadius
-
-conicalCoincident :: TestTree
-conicalCoincident =
-    coincident
-    "Conical zones"
-    ((\(x, y) -> [f x, f y]) <$> pts)
-    where
-        f = conical $ Radius earthRadius
-
-lineCoincident :: TestTree
-lineCoincident =
-    coincident
-    "Line zones"
-    ((\(x, y) -> [f x, f y]) <$> pts)
-    where
-        f = line $ Radius earthRadius
-
-semicircleCoincident :: TestTree
-semicircleCoincident =
-    coincident
-    "Semicircle zones"
-    ((\(x, y) -> [f x, f y]) <$> pts)
-    where
-        f = semicircle $ Radius earthRadius
+distanceZero
+    :: String
+    -> MkZone Double
+    -> TestTree
+distanceZero s f =
+    testGroup s
+    $ zipWith
+        (\r@(Radius r') (x, y) ->
+            toDistanceEqual
+                r'
+                (showQ x ++ " " ++ showQ y)
+                (f r x, f r y))
+        distances
+        (pts :: [(QLL Double, QLL Double)])

@@ -23,8 +23,8 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Flight.Distance (TaskDistance(..), PathDistance(..))
 import Flight.Zone (Radius(..))
 import Flight.Zone.Path (distancePointToPoint)
-import Ellipsoid.Distance
-import Zone
+import Ellipsoid.Distance (span, toDistanceEqual)
+import Zone (MkZone, QLL, showQ, describedZones)
 
 coincidentUnits :: TestTree
 coincidentUnits =
