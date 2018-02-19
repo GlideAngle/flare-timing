@@ -18,10 +18,11 @@ import Flight.Zone.Path (distancePointToPoint)
 import Tolerance (diff, showTolerance)
 
 toDistanceEqual
-    :: SpanLatLng Rational
-    -> Quantity Rational [u| m |]
+    :: (Real a, Fractional a)
+    => SpanLatLng a 
+    -> Quantity a [u| m |]
     -> String
-    -> (Zone Rational, Zone Rational)
+    -> (Zone a, Zone a)
     -> TestTree
 toDistanceEqual span expected title xy =
     testGroup title (f xy)
@@ -35,11 +36,12 @@ toDistanceEqual span expected title xy =
                 found = edgesSum $ distancePointToPoint span [x, y]
 
 toDistanceClose
-    :: SpanLatLng Rational
-    -> Quantity Rational [u| mm |]
-    -> Quantity Rational [u| m |]
+    :: (Real a, Fractional a)
+    => SpanLatLng a
+    -> Quantity a [u| mm |]
+    -> Quantity a [u| m |]
     -> String
-    -> (Zone Rational, Zone Rational)
+    -> (Zone a, Zone a)
     -> TestTree
 toDistanceClose span tolerance expected title xy =
     testGroup title (f xy)
@@ -52,7 +54,7 @@ toDistanceClose span tolerance expected title xy =
                 ++ show (TaskDistance expected)
                 )
                 $ diff found (TaskDistance expected)
-                @?<= (TaskDistance . toRational' $ tolerance')
+                @?<= (TaskDistance tolerance')
             ]
             where
                 found = edgesSum $ distancePointToPoint span [x, y]

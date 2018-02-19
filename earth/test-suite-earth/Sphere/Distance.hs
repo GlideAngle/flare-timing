@@ -3,7 +3,7 @@
 
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
-module Sphere.Distance where
+module Sphere.Distance (toDistanceEqual, toDistanceClose) where
 
 import Prelude hiding (span)
 import Test.Tasty (TestTree)
@@ -17,20 +17,21 @@ import qualified Flight.Earth.Sphere.PointToPoint.Rational as Rat
     (distanceHaversine)
 import qualified Distance as D
 
-span :: SpanLatLng Rational
-span = Rat.distanceHaversine defEps
-
 toDistanceEqual
-    :: Quantity Rational [u| m |]
+    :: (Real a, Fractional a)
+    => SpanLatLng a
+    -> Quantity a [u| m |]
     -> String
-    -> (Zone Rational, Zone Rational)
+    -> (Zone a, Zone a)
     -> TestTree
-toDistanceEqual = D.toDistanceEqual span
+toDistanceEqual span = D.toDistanceEqual span
 
 toDistanceClose
-    :: Quantity Rational [u| mm |]
-    -> Quantity Rational [u| m |]
+    :: (Real a, Fractional a)
+    => SpanLatLng a
+    -> Quantity a [u| mm |]
+    -> Quantity a [u| m |]
     -> String
-    -> (Zone Rational, Zone Rational)
+    -> (Zone a, Zone a)
     -> TestTree
-toDistanceClose = D.toDistanceClose span
+toDistanceClose span = D.toDistanceClose span

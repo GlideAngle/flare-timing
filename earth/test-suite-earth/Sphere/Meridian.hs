@@ -12,10 +12,17 @@ import Prelude hiding (span)
 import Test.Tasty (TestTree, testGroup)
 import Data.UnitsOfMeasure (u)
 
+import Flight.LatLng.Rational (defEps)
+import Flight.Distance (SpanLatLng)
 import Flight.Zone (Radius(..))
 import Flight.Earth.Sphere (earthRadius)
+import qualified Flight.Earth.Sphere.PointToPoint.Double as Dbl (distanceHaversine)
+import qualified Flight.Earth.Sphere.PointToPoint.Rational as Rat (distanceHaversine)
 import Sphere.Distance (toDistanceEqual)
 import Zone (MkZone, QLL, describedZones, showQ)
+
+span :: SpanLatLng Rational
+span = Rat.distanceHaversine defEps
 
 meridianUnits :: TestTree
 meridianUnits =
@@ -46,7 +53,7 @@ distanceMeridian s f =
     testGroup s
     $ zipWith
         (\r@(Radius r') (x, y) ->
-            toDistanceEqual
+            toDistanceEqual span
                 r'
                 (showQ x ++ " " ++ showQ y)
                 (f r x, f r y))

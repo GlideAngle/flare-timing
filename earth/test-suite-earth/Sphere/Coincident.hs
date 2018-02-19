@@ -20,11 +20,17 @@ import Test.Tasty.HUnit as HU ((@?=), testCase)
 import Data.UnitsOfMeasure (u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import Flight.Distance (TaskDistance(..), PathDistance(..))
+import Flight.LatLng.Rational (defEps)
+import Flight.Distance (TaskDistance(..), PathDistance(..), SpanLatLng)
 import Flight.Zone (Radius(..))
 import Flight.Zone.Path (distancePointToPoint)
-import Sphere.Distance (span, toDistanceEqual)
+import qualified Flight.Earth.Sphere.PointToPoint.Double as Dbl (distanceHaversine)
+import qualified Flight.Earth.Sphere.PointToPoint.Rational as Rat (distanceHaversine)
+import Sphere.Distance (toDistanceEqual)
 import Zone (MkZone, QLL, showQ, describedZones)
+
+span :: SpanLatLng Rational
+span = Rat.distanceHaversine defEps
 
 coincidentUnits :: TestTree
 coincidentUnits =
@@ -66,7 +72,7 @@ distanceZero s f =
     testGroup s
     $ zipWith
         (\r@(Radius r') (x, y) ->
-            toDistanceEqual
+            toDistanceEqual span
                 r'
                 (showQ x ++ " " ++ showQ y)
                 (f r x, f r y))
