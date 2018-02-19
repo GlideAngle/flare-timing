@@ -45,27 +45,19 @@ toDistanceEqual expected title xy =
     where
         f (x, y) =
             [ testCase
-                ( "within ± "
-                ++ showTolerance tolerance'
-                ++ " of expected "
-                ++ show (TaskDistance expected)
-                )
+                (show (TaskDistance expected))
                 $ found @?= (TaskDistance expected)
             ]
             where
                 found = edgesSum $ distancePointToPoint span [x, y]
 
-        tolerance :: Quantity Double [u| mm |]
-        tolerance = [u| 2.8 mm |]
-
-        tolerance' = convert tolerance
-
 toDistanceClose
-    :: Quantity Rational [u| m |]
+    :: Quantity Rational [u| mm |]
+    -> Quantity Rational [u| m |]
     -> String
     -> (Zone Rational, Zone Rational)
     -> TestTree
-toDistanceClose expected title xy =
+toDistanceClose tolerance expected title xy =
     testGroup title (f xy)
     where
         f (x, y) =
@@ -80,8 +72,5 @@ toDistanceClose expected title xy =
             ]
             where
                 found = edgesSum $ distancePointToPoint span [x, y]
-
-        tolerance :: Quantity Double [u| mm |]
-        tolerance = [u| 2.8 mm |]
 
         tolerance' = convert tolerance
