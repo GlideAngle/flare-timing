@@ -43,8 +43,8 @@ emptyDistance =
         edgesSum (distancePointToPoint span []) @?= (TaskDistance $ MkQuantity 0)
     ]
 
-ptsDistanceZero :: (Enum a, Real a, Fractional a) => [(QLL a, QLL a)]
-ptsDistanceZero =
+pts :: (Enum a, Real a, Fractional a) => [(QLL a, QLL a)]
+pts =
     [ ((z, z), (z, z))
     , ((m, z), (m, z))
     , ((z, m), (z, m))
@@ -54,8 +54,8 @@ ptsDistanceZero =
         z = [u| 0 rad |]
         m = convert [u| 45 deg |]
 
-ptsRadiiZero :: [Radius Rational [u| m |]]
-ptsRadiiZero =
+distances :: [Radius Rational [u| m |]]
+distances =
     Radius <$> replicate 4 [u| 0 m |]
 
 distanceZero
@@ -70,5 +70,5 @@ distanceZero s f =
                 r'
                 (showQ x ++ " " ++ showQ y)
                 (f r x, f r y))
-        ptsRadiiZero
-        (ptsDistanceZero :: [(QLL Double, QLL Double)])
+        distances
+        (pts :: [(QLL Double, QLL Double)])
