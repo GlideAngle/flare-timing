@@ -23,7 +23,7 @@ module Flight.Units.DegMinSec
 import Prelude hiding (min)
 import Data.Text.Lazy (unpack)
 import Formatting ((%), format)
-import qualified Formatting.ShortFormatters as Fmt (f)
+import qualified Formatting.ShortFormatters as Fmt (sf)
 import Data.UnitsOfMeasure (u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Data.UnitsOfMeasure.Convert (Convertible)
@@ -48,7 +48,7 @@ showDMS (DMS (deg, min, sec)) =
         ++ "°"
         ++ show min
         ++ "'"
-        ++ (unpack $ format (Fmt.f 8 % "''") sec)
+        ++ (unpack $ format (Fmt.sf % "''") sec)
     where
         isec :: Int
         isec = floor sec

@@ -15,7 +15,7 @@ module Flight.LatLng.Double (showAngle, degToRad, radToDeg) where
 
 import Data.Text.Lazy (unpack)
 import Formatting ((%), format)
-import qualified Formatting.ShortFormatters as Fmt (f)
+import qualified Formatting.ShortFormatters as Fmt (sf)
 import Data.UnitsOfMeasure (KnownUnit, Unpack, u)
 import Data.UnitsOfMeasure.Show (showUnit, showQuantity)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
@@ -28,8 +28,8 @@ showAngle
     => Quantity Double u -> String
 showAngle q@(MkQuantity x) =
     case showUnit q of
-        "rad" -> unpack $ format (Fmt.f 8 % "rad") x
-        "deg" -> unpack $ format (Fmt.f 8 % "°") x
+        "rad" -> unpack $ format (Fmt.sf % "rad") x
+        "deg" -> unpack $ format (Fmt.sf % "°") x
         "dms" -> show . fromQ $ q
         _ -> showQuantity q
 
