@@ -24,7 +24,6 @@ import Flight.LatLng.Rational (defEps)
 import Flight.Distance (TaskDistance(..), PathDistance(..), SpanLatLng)
 import Flight.Zone (Radius(..))
 import Flight.Zone.Path (distancePointToPoint)
-import qualified Flight.Earth.Sphere.PointToPoint.Double as Dbl (distanceHaversine)
 import qualified Flight.Earth.Sphere.PointToPoint.Rational as Rat (distanceHaversine)
 import Sphere.Distance (toDistanceEqual)
 import Zone (MkZone, QLL, showQ, describedZones)
@@ -62,7 +61,7 @@ pts =
 
 distances :: [Radius Rational [u| m |]]
 distances =
-    Radius <$> replicate 4 [u| 0 m |]
+    repeat $ Radius [u| 0 m |]
 
 distanceZero
     :: String

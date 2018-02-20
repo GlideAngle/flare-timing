@@ -9,7 +9,7 @@ import Prelude hiding (span)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit ((@?=), testCase)
 import Test.Tasty.HUnit.Compare ((@?<=))
-import Data.UnitsOfMeasure (u, convert, toRational')
+import Data.UnitsOfMeasure (u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Distance (TaskDistance(..), PathDistance(..), SpanLatLng)

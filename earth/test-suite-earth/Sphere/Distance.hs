@@ -10,11 +10,8 @@ import Test.Tasty (TestTree)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import Flight.LatLng.Rational (defEps)
 import Flight.Distance (SpanLatLng)
 import Flight.Zone (Zone(..))
-import qualified Flight.Earth.Sphere.PointToPoint.Rational as Rat
-    (distanceHaversine)
 import qualified Distance as D
 
 toDistanceEqual

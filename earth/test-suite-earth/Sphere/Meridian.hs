@@ -16,7 +16,6 @@ import Flight.LatLng.Rational (defEps)
 import Flight.Distance (SpanLatLng)
 import Flight.Zone (Radius(..))
 import Flight.Earth.Sphere (earthRadius)
-import qualified Flight.Earth.Sphere.PointToPoint.Double as Dbl (distanceHaversine)
 import qualified Flight.Earth.Sphere.PointToPoint.Rational as Rat (distanceHaversine)
 import Sphere.Distance (toDistanceEqual)
 import Zone (MkZone, QLL, describedZones, showQ)
@@ -43,7 +42,7 @@ pts =
 
 distances :: [Radius Rational [u| m |]]
 distances =
-    Radius <$> repeat earthRadius
+    repeat $ Radius earthRadius
 
 distanceMeridian
     :: String

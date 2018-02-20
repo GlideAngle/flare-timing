@@ -8,6 +8,7 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE QuasiQuotes #-}
 
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
@@ -16,91 +17,58 @@ module Sphere.Disjoint (disjointUnits) where
 import Prelude hiding (span)
 import Data.Ratio ((%))
 import Test.Tasty (TestTree, testGroup)
-import Data.UnitsOfMeasure ((+:), (*:), u, negate')
+import Data.UnitsOfMeasure ((+:), (*:), u, negate', fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Zone (Zone(..), Radius(..))
 import Flight.Earth.Sphere (earthRadius)
 
-import Zone (QLL, point, vector, cylinder, line, conical, semicircle)
+import Zone (MkZone, QLL, showQ, describedZones)
 import Sphere.Touching (Overlay(..), separatedZones)
 
 disjointUnits :: TestTree
 disjointUnits =
     testGroup "Disjoint zones are separated"
-    [ pointDisjoint
-    , vectorDisjoint
-    , cylinderDisjoint
-    , conicalDisjoint
-    , lineDisjoint
-    , semicircleDisjoint
-    ]
+    $ ((uncurry f) <$> describedZones)
+    where
+        f s =
+            distanceDisjoint
+                (s ++ " zones")
 
 disjoint :: String -> [[Zone Rational]] -> TestTree
 disjoint = separatedZones Disjoint delta radius
 
-delta :: Quantity Rational [u| 1 |]
-delta = MkQuantity $ 1 % 100000000
+delta :: (Real a, Fractional a) => Quantity a [u| 1 |]
+delta = fromRational' . MkQuantity $ 1 % 100000000
 
-radius :: Quantity Rational [u| 1 |]
-radius = MkQuantity $ 2 % 1
+radius :: (Real a, Fractional a) => Quantity a [u| 1 |]
+radius = fromRational' . MkQuantity $ 2 % 1
 
-pts :: [(QLL Rational, QLL Rational)]
+pts :: (Enum a, Real a, Fractional a) => [(QLL a, QLL a)]
 pts =
     [ ((z, z), (z, pos))
     , ((z, z), (z, neg))
     ]
     where
-        z :: Quantity Rational [u| rad |]
         z = [u| 0 rad |]
 
         pos = (radius +: delta) *: [u| 1 rad |]
         neg = negate' (radius +: delta) *: [u| 1 rad |]
 
-pointDisjoint :: TestTree
-pointDisjoint =
-    disjoint
-    "Point zones"
-    ((\(x, y) -> [f x, f y]) <$> pts)
-    where
-        f = point $ Radius earthRadius
+distances :: (Real a, Fractional a) => [Radius a [u| m |]]
+distances =
+    repeat $ Radius earthRadius
 
-vectorDisjoint :: TestTree
-vectorDisjoint =
-    disjoint
-    "Vector zones"
-    ((\(x, y) -> [f x, f y]) <$> pts)
-    where
-        f = vector $ Radius earthRadius
-
-cylinderDisjoint :: TestTree
-cylinderDisjoint =
-    disjoint
-    "Cylinder zones"
-    ((\(x, y) -> [f x, f y]) <$> pts)
-    where
-        f = cylinder $ Radius earthRadius
-
-conicalDisjoint :: TestTree
-conicalDisjoint =
-    disjoint
-    "Conical zones"
-    ((\(x, y) -> [f x, f y]) <$> pts)
-    where
-        f = conical $ Radius earthRadius
-
-lineDisjoint :: TestTree
-lineDisjoint =
-    disjoint
-    "Line zones"
-    ((\(x, y) -> [f x, f y]) <$> pts)
-    where
-        f = line $ Radius earthRadius
-
-semicircleDisjoint :: TestTree
-semicircleDisjoint =
-    disjoint
-    "Semicircle zones"
-    ((\(x, y) -> [f x, f y]) <$> pts)
-    where
-        f = semicircle $ Radius earthRadius
+distanceDisjoint
+    :: String
+    -> MkZone Double
+    -> TestTree
+distanceDisjoint s f =
+    testGroup s
+    $ zipWith
+        (\r (x, y) ->
+            disjoint
+                (showQ x ++ " " ++ showQ y)
+                [[f r x, f r y]])
+        distances
+        (pts :: [(QLL Double, QLL Double)])
