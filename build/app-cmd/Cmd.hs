@@ -14,6 +14,11 @@ cmdTestFor :: String -> String
 cmdTestFor x =
     "stack test " ++ x
 
+-- SEE: https://lexi-lambda.github.io/blog/2018/02/10/an-opinionated-guide-to-haskell-in-2018/
+compilerToolFor :: String -> String
+compilerToolFor x =
+    "stack build --copy-compiler-tool " ++ x
+
 cmdBuildFor :: String -> String
 cmdBuildFor x =
     "stack build " ++ x ++ " --copy-bins"
@@ -151,3 +156,15 @@ buildRules = do
     phony "test-apps" $ need testApps
     phony "prod-apps" $ need prodApps
     phony "www-apps" $ need wwwApps
+
+    phony "weeder" $
+        cmd
+            (Cwd "flare-timing")
+            Shell
+            (compilerToolFor "weeder")
+
+    phony "hoogle" $
+        cmd
+            (Cwd "flare-timing")
+            Shell
+            (compilerToolFor "hoogle")
