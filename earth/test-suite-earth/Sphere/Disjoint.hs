@@ -24,7 +24,7 @@ import Flight.Zone (Zone(..), Radius(..))
 import Flight.Earth.Sphere (earthRadius)
 
 import Zone (MkZone, QLL, showQ, dotZones, areaZones)
-import Sphere.Touching (Overlay(..), ZoneSpace(..), separatedZones)
+import Sphere.Touching (Overlay(..), separatedZones)
 
 disjointUnits :: TestTree
 disjointUnits =
@@ -35,12 +35,12 @@ disjointUnits =
         f s =
             zonesDisjoint
                 (s ++ " zones")
-                (separatedZones DotZone Disjoint delta radius)
+                (separatedZones Disjoint delta radius)
 
         g s =
             zonesDisjoint
                 (s ++ " zones")
-                (separatedZones AreaZone Disjoint delta radius)
+                (separatedZones Disjoint delta radius)
 
 type Disjoint = String -> [[Zone Rational]] -> TestTree
 

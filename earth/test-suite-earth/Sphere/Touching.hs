@@ -12,10 +12,7 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
-module Sphere.Touching
-    (Overlay(..), ZoneSpace(..)
-    , separatedZones, touchingUnits
-    ) where
+module Sphere.Touching (Overlay(..), separatedZones, touchingUnits) where
 
 import Prelude hiding (span)
 import Data.Ratio ((%))
@@ -27,7 +24,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.LatLng.Rational (defEps)
 import Flight.Distance (SpanLatLng)
-import Flight.Zone (Zone(..), Radius(..), showZoneDMS, fromRationalZone)
+import Flight.Zone (HasArea(..), Zone(..), Radius(..), showZoneDMS, fromRationalZone)
 import Flight.LatLng.Double (showAngle)
 import qualified Flight.Earth.Sphere.PointToPoint.Rational as Rat (distanceHaversine)
 import qualified Flight.Earth.Sphere.Separated as S (separatedZones)
@@ -48,25 +45,23 @@ touchingUnits =
         f s =
             zonesTouching
                 (s ++ " zones")
-                (separatedZones DotZone Overlap delta radius)
+                (separatedZones Overlap delta radius)
 
         g s =
             zonesTouching
                 (s ++ " zones")
-                (separatedZones AreaZone Overlap delta radius)
+                (separatedZones Overlap delta radius)
 
 data Overlay = Overlap | Disjoint deriving (Eq, Show)
-data ZoneSpace = DotZone | AreaZone deriving (Eq, Show)
 
 separatedZones
-    :: ZoneSpace
-    -> Overlay
+    :: Overlay
     -> Quantity Rational [u| 1 |]
     -> Quantity Rational [u| 1 |]
     -> String
     -> [[Zone Rational]]
     -> TestTree
-separatedZones zt expected delta' radius' title xs =
+separatedZones expected delta' radius' title xs =
     testGroup title (f <$> xs)
     where
         f x =
@@ -74,10 +69,12 @@ separatedZones zt expected delta' radius' title xs =
                 [ testGroup sRadius
                     [ HU.testCase sSep
                         $ S.separatedZones span x
-                            @?= (expected == Disjoint || zt == DotZone)
+                            @?= (expected == Disjoint || withoutArea)
                     ]
                 ]
             where
+                withoutArea = any (not . hasArea) $ concat xs
+
                 sRadius =
                     mconcat
                         [ "radius="

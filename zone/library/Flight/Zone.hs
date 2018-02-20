@@ -12,7 +12,8 @@
 {-# LANGUAGE StandaloneDeriving #-}
 
 module Flight.Zone
-    ( Radius(..)
+    ( HasArea(..)
+    , Radius(..)
     , Incline(..)
     , Bearing(..)
     , Zone(..)
@@ -35,13 +36,17 @@ module Flight.Zone
     , realToFracLatLng
     ) where
 
-import Data.UnitsOfMeasure (u, toRational', fromRational')
+import Data.UnitsOfMeasure (u, toRational', fromRational', zero)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units (showRadian, realToFrac')
 import Flight.Units.DegMinSec (fromQ)
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.Zone.Radius (Radius(..))
+
+-- | Does it have area?
+class HasArea a where
+    hasArea :: a -> Bool
 
 -- | The incline component of a conical zone.
 newtype Incline a = Incline (Quantity a [u| rad |]) deriving (Eq, Ord)
@@ -105,6 +110,14 @@ deriving instance
     , Show (LatLng a [u| rad |])
     )
     => Show (Zone a)
+
+instance (Ord a, Num a) => HasArea (Zone a) where
+    hasArea (Point _) = False
+    hasArea (Vector _ _) = False
+    hasArea (Cylinder (Radius x) _) = x > zero
+    hasArea (Conical _ (Radius x) _) = x > zero
+    hasArea (Line (Radius x) _) = x > zero
+    hasArea (SemiCircle (Radius x) _) = x > zero
 
 showZoneDMS :: Zone Double -> String
 showZoneDMS (Point (LatLng (Lat x, Lng y))) =
