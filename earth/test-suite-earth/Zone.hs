@@ -15,7 +15,7 @@
 module Zone
     ( QLL, MkZone
     , point, vector, cylinder, line, conical, semicircle
-    , describedZones
+    , dotZones, areaZones, describedZones
     , showQ
     ) where
 
@@ -73,11 +73,32 @@ describedZones
             )
         ]
 describedZones =
+    dotZones ++ areaZones
+
+dotZones
+    :: Real a
+    =>
+        [
+            ( String
+            , Radius Rational [u| m |] -> QLL a -> Zone Rational
+            )
+        ]
+dotZones =
     [ ("point", point)
     , ("vector", vector)
-    , ("cylinder", cylinder)
+    ]
+
+areaZones
+    :: Real a
+    =>
+        [
+            ( String
+            , Radius Rational [u| m |] -> QLL a -> Zone Rational
+            )
+        ]
+areaZones =
+    [ ("cylinder", cylinder)
     , ("conical", conical)
     , ("line", line)
     , ("semicircle", semicircle)
     ]
-

@@ -23,20 +23,26 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Flight.Zone (Zone(..), Radius(..))
 import Flight.Earth.Sphere (earthRadius)
 
-import Zone (MkZone, QLL, showQ, describedZones)
-import Sphere.Touching (Overlay(..), separatedZones)
+import Zone (MkZone, QLL, showQ, dotZones, areaZones)
+import Sphere.Touching (Overlay(..), ZoneSpace(..), separatedZones)
 
 disjointUnits :: TestTree
 disjointUnits =
     testGroup "Disjoint zones are separated"
-    $ ((uncurry f) <$> describedZones)
+    $ ((uncurry f) <$> dotZones)
+    ++ ((uncurry g) <$> areaZones)
     where
         f s =
-            distanceDisjoint
+            zonesDisjoint
                 (s ++ " zones")
+                (separatedZones DotZone Disjoint delta radius)
 
-disjoint :: String -> [[Zone Rational]] -> TestTree
-disjoint = separatedZones Disjoint delta radius
+        g s =
+            zonesDisjoint
+                (s ++ " zones")
+                (separatedZones AreaZone Disjoint delta radius)
+
+type Disjoint = String -> [[Zone Rational]] -> TestTree
 
 delta :: (Real a, Fractional a) => Quantity a [u| 1 |]
 delta = fromRational' . MkQuantity $ 1 % 100000000
@@ -59,16 +65,14 @@ distances :: (Real a, Fractional a) => [Radius a [u| m |]]
 distances =
     repeat $ Radius earthRadius
 
-distanceDisjoint
+zonesDisjoint
     :: String
+    -> Disjoint
     -> MkZone Double
     -> TestTree
-distanceDisjoint s f =
+zonesDisjoint s f g =
     testGroup s
     $ zipWith
-        (\r (x, y) ->
-            disjoint
-                (showQ x ++ " " ++ showQ y)
-                [[f r x, f r y]])
+        (\r (x, y) -> f (showQ x ++ " " ++ showQ y) [[g r x, g r y]])
         distances
         (pts :: [(QLL Double, QLL Double)])

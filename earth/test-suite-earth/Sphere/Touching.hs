@@ -8,10 +8,14 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE QuasiQuotes #-}
 
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
-module Sphere.Touching (Overlay(..), separatedZones, touchingUnits) where
+module Sphere.Touching
+    (Overlay(..), ZoneSpace(..)
+    , separatedZones, touchingUnits
+    ) where
 
 import Prelude hiding (span)
 import Data.Ratio ((%))
@@ -29,30 +33,40 @@ import qualified Flight.Earth.Sphere.PointToPoint.Rational as Rat (distanceHaver
 import qualified Flight.Earth.Sphere.Separated as S (separatedZones)
 import Flight.Earth.Sphere (earthRadius)
 
-import Zone (QLL, cylinder, line, conical, semicircle)
+import Zone (MkZone, QLL, showQ, dotZones, areaZones)
 
 span :: SpanLatLng Rational
 span = Rat.distanceHaversine defEps
 
 touchingUnits :: TestTree
 touchingUnits =
-    testGroup "Overlapping zones are touching"
-    [ cylinderTouching
-    , conicalTouching
-    , lineTouching
-    , semicircleTouching
+    testGroup "Potentially overlapping zones are touching"
+    [ testGroup "Zones without area are not touching" ((uncurry f) <$> dotZones)
+    , testGroup "Zones with area are touching" ((uncurry g) <$> areaZones)
     ]
+    where
+        f s =
+            zonesTouching
+                (s ++ " zones")
+                (separatedZones DotZone Overlap delta radius)
 
-data Overlay = Overlap | Disjoint deriving Eq
+        g s =
+            zonesTouching
+                (s ++ " zones")
+                (separatedZones AreaZone Overlap delta radius)
+
+data Overlay = Overlap | Disjoint deriving (Eq, Show)
+data ZoneSpace = DotZone | AreaZone deriving (Eq, Show)
 
 separatedZones
-    :: Overlay
+    :: ZoneSpace
+    -> Overlay
     -> Quantity Rational [u| 1 |]
     -> Quantity Rational [u| 1 |]
     -> String
     -> [[Zone Rational]]
     -> TestTree
-separatedZones expected delta' radius' title xs =
+separatedZones zt expected delta' radius' title xs =
     testGroup title (f <$> xs)
     where
         f x =
@@ -60,7 +74,7 @@ separatedZones expected delta' radius' title xs =
                 [ testGroup sRadius
                     [ HU.testCase sSep
                         $ S.separatedZones span x
-                            @?= (expected == Disjoint)
+                            @?= (expected == Disjoint || zt == DotZone)
                     ]
                 ]
             where
@@ -98,55 +112,37 @@ separatedZones expected delta' radius' title xs =
         radiusRad :: Quantity Double [u| rad |]
         radiusRad = fromRational' $ radius' *: [u| 1 rad |]
 
-touching :: String -> [[Zone Rational]] -> TestTree
-touching = separatedZones Overlap delta radius
+type Touching = String -> [[Zone Rational]] -> TestTree
 
-delta :: Quantity Rational [u| 1 |]
-delta = MkQuantity $ 1 % 100000000
+delta :: (Real a, Fractional a) => Quantity a [u| 1 |]
+delta = fromRational' . MkQuantity $ 1 % 100000000
 
-radius :: Quantity Rational [u| 1 |]
-radius = MkQuantity $ 2 % 1
+radius :: (Real a, Fractional a) => Quantity a [u| 1 |]
+radius = fromRational' . MkQuantity $ 2 % 1
 
-pts :: [(QLL Rational, QLL Rational)]
+pts :: (Enum a, Real a, Fractional a) => [(QLL a, QLL a)]
 pts =
     [ ((z, z), (z, pos))
     , ((z, z), (z, neg))
     ]
     where
-        z :: Quantity Rational [u| rad |]
         z = [u| 0 rad |]
 
         pos = (radius -: delta) *: [u| 1 rad |]
         neg = negate' (radius -: delta) *: [u| 1 rad |]
 
-cylinderTouching :: TestTree
-cylinderTouching =
-    touching
-    "Cylinder zones"
-    ((\(x, y) -> [f x, f y]) <$> pts)
-    where
-        f = cylinder $ Radius earthRadius
+distances :: (Real a, Fractional a) => [Radius a [u| m |]]
+distances =
+    repeat $ Radius earthRadius
 
-conicalTouching :: TestTree
-conicalTouching =
-    touching
-    "Conical zones"
-    ((\(x, y) -> [f x, f y]) <$> pts)
-    where
-        f = conical $ Radius earthRadius
-
-lineTouching :: TestTree
-lineTouching =
-    touching
-    "Line zones"
-    ((\(x, y) -> [f x, f y]) <$> pts)
-    where
-        f = line $ Radius earthRadius
-
-semicircleTouching :: TestTree
-semicircleTouching =
-    touching
-    "Semicircle zones"
-    ((\(x, y) -> [f x, f y]) <$> pts)
-    where
-        f = semicircle $ Radius earthRadius
+zonesTouching
+    :: String
+    -> Touching
+    -> MkZone Double
+    -> TestTree
+zonesTouching s f g =
+    testGroup s
+    $ zipWith
+        (\r (x, y) -> f (showQ x ++ " " ++ showQ y) [[g r x, g r y]])
+        distances
+        (pts :: [(QLL Double, QLL Double)])
