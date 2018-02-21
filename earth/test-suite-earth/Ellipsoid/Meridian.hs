@@ -10,21 +10,45 @@ module Ellipsoid.Meridian (meridianUnits) where
 
 import Prelude hiding (span)
 import Test.Tasty (TestTree, testGroup)
-import Data.UnitsOfMeasure ((*:), u, convert)
+import Data.UnitsOfMeasure ((*:), u, convert, fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
+import Flight.Units ()
+import Flight.LatLng.Rational (defEps)
+import Flight.Distance (SpanLatLng)
 import Flight.Zone (Radius(..))
-import Ellipsoid.Distance (toDistanceClose)
 import Zone (MkZone, QLL, describedZones, showQ)
+import qualified Flight.Earth.Ellipsoid.PointToPoint.Double as Dbl
+    (distanceVincenty)
+import qualified Flight.Earth.Ellipsoid.PointToPoint.Rational as Rat
+    (distanceVincenty)
+import Flight.Earth.Ellipsoid (wgs84)
+import qualified Distance as D (DistanceClose, toDistanceClose)
+
+spanD :: SpanLatLng Double
+spanD = Dbl.distanceVincenty wgs84
+
+spanR :: SpanLatLng Rational
+spanR = Rat.distanceVincenty defEps wgs84
 
 meridianUnits :: TestTree
 meridianUnits =
     testGroup "Meridian arc distance tests"
-    $ ((uncurry f) <$> describedZones)
+    [ testGroup "With doubles" $ ((uncurry f) <$> describedZones)
+    , testGroup "With rationals" $ ((uncurry g) <$> describedZones)
+    ]
     where
         f s  =
             distanceMeridian
                 ("Distance between " ++ s ++ " zones on meridian arcs")
+                (D.toDistanceClose spanD)
+                tolerancesD
+
+        g s  =
+            distanceMeridian
+                ("Distance between " ++ s ++ " zones on meridian arcs")
+                (D.toDistanceClose spanR)
+                tolerancesR
 
 pts :: (Enum a, Real a, Fractional a) => [(QLL a, QLL a)]
 pts =
@@ -34,9 +58,9 @@ pts =
         meridianArc d =
             (([u| 0 rad |], [u| 0 rad |]), (d, [u| 0 rad |]))
 
-distances :: [Radius Rational [u| m |]]
+distances :: (Real a, Fractional a) => [Radius a [u| m |]]
 distances =
-    Radius
+    Radius . fromRational'
     <$>
     -- NOTE: These distances are not from Vincenty. They come from the first
     -- column of Table 3;
@@ -86,8 +110,16 @@ distances =
     , [u| 10001965.72922 m |]
     ]
 
-tolerances :: [Quantity Rational [u| mm |]]
-tolerances =
+tolerancesD :: (Real a, Fractional a) => [Quantity a [u| mm |]]
+tolerancesD =
+    -- Only change is to replace 50° tolerance with 1mm instead of 0.5mm.
+    take 9 tolerancesR
+    ++ [fromRational' [u| 1.0 mm |]]
+    ++ drop 10 tolerancesR
+
+tolerancesR :: (Real a, Fractional a) => [Quantity a [u| mm |]]
+tolerancesR =
+    fromRational' <$>
     -- 5°, 10°
     [ [u| 1.0 mm |]
     , [u| 1.0 mm |]
@@ -126,18 +158,21 @@ tolerances =
     ]
 
 distanceMeridian
-    :: String
-    -> MkZone Double
+    :: (Enum a, Real a, Fractional a)
+    => String
+    -> D.DistanceClose a
+    -> [Quantity a [u| mm |]]
+    -> MkZone a a
     -> TestTree
-distanceMeridian s f =
+distanceMeridian s f tolerances g =
     testGroup s
     $ zipWith3
         (\tolerance r@(Radius r') (x, y) ->
-            toDistanceClose
+                f
                 tolerance
                 r'
                 (showQ x ++ " " ++ showQ y)
-                (f r x, f r y))
+                (g r x, g r y))
         tolerances
         distances
-        (pts :: [(QLL Double, QLL Double)])
+        pts

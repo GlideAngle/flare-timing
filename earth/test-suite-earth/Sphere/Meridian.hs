@@ -11,26 +11,43 @@ module Sphere.Meridian (meridianUnits) where
 import Prelude hiding (span)
 import Test.Tasty (TestTree, testGroup)
 import Data.UnitsOfMeasure (u)
+import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.LatLng.Rational (defEps)
 import Flight.Distance (SpanLatLng)
 import Flight.Zone (Radius(..))
+import qualified Flight.Earth.Sphere.PointToPoint.Double as Dbl
+    (distanceHaversine)
+import qualified Flight.Earth.Sphere.PointToPoint.Rational as Rat
+    (distanceHaversine)
 import Flight.Earth.Sphere (earthRadius)
-import qualified Flight.Earth.Sphere.PointToPoint.Rational as Rat (distanceHaversine)
-import Sphere.Distance (toDistanceEqual)
 import Zone (MkZone, QLL, describedZones, showQ)
+import qualified Distance as D (DistanceClose, toDistanceClose)
 
-span :: SpanLatLng Rational
-span = Rat.distanceHaversine defEps
+spanD :: SpanLatLng Double
+spanD = Dbl.distanceHaversine
+
+spanR :: SpanLatLng Rational
+spanR = Rat.distanceHaversine defEps
 
 meridianUnits :: TestTree
 meridianUnits =
     testGroup "Meridian arc distance tests"
-    $ ((uncurry f) <$> describedZones)
+    [ testGroup "With doubles" $ ((uncurry f) <$> describedZones)
+    , testGroup "With rationals" $ ((uncurry g) <$> describedZones)
+    ]
     where
         f s  =
             distanceMeridian
                 ("Distance between " ++ s ++ " zones on meridian arcs")
+                (D.toDistanceClose spanD)
+                tolerancesD
+
+        g s  =
+            distanceMeridian
+                ("Distance between " ++ s ++ " zones on meridian arcs")
+                (D.toDistanceClose spanR)
+                tolerancesR
 
 pts :: (Enum a, Real a, Fractional a) => [(QLL a, QLL a)]
 pts =
@@ -40,21 +57,34 @@ pts =
     where
         z = [u| 0 rad |]
 
-distances :: [Radius Rational [u| m |]]
+distances :: (Real a, Fractional a) => [Radius a [u| m |]]
 distances =
     repeat $ Radius earthRadius
 
+tolerancesD :: (Real a, Fractional a) => [Quantity a [u| mm |]]
+tolerancesD =
+    repeat $ [u| 0 mm |]
+
+tolerancesR :: (Real a, Fractional a) => [Quantity a [u| mm |]]
+tolerancesR =
+    repeat $ [u| 0 mm |]
+
 distanceMeridian
-    :: String
-    -> MkZone Double
+    :: (Enum a, Real a, Fractional a)
+    => String
+    -> D.DistanceClose a
+    -> [Quantity a [u| mm |]]
+    -> MkZone a a
     -> TestTree
-distanceMeridian s f =
+distanceMeridian s f tolerances g =
     testGroup s
-    $ zipWith
-        (\r@(Radius r') (x, y) ->
-            toDistanceEqual span
+    $ zipWith3
+        (\tolerance r@(Radius r') (x, y) ->
+                f
+                tolerance
                 r'
                 (showQ x ++ " " ++ showQ y)
-                (f r x, f r y))
+                (g r x, g r y))
+        tolerances
         distances
-        (pts :: [(QLL Double, QLL Double)])
+        pts

@@ -17,35 +17,50 @@ module Sphere.Coincident (coincidentUnits) where
 import Prelude hiding (span)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit as HU ((@?=), testCase)
-import Data.UnitsOfMeasure (u, convert)
+import Data.UnitsOfMeasure (u, convert, fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.LatLng.Rational (defEps)
 import Flight.Distance (TaskDistance(..), PathDistance(..), SpanLatLng)
 import Flight.Zone (Radius(..))
 import Flight.Zone.Path (distancePointToPoint)
-import qualified Flight.Earth.Sphere.PointToPoint.Rational as Rat (distanceHaversine)
-import Sphere.Distance (toDistanceEqual)
+import qualified Flight.Earth.Sphere.PointToPoint.Double as Dbl
+    (distanceHaversine)
+import qualified Flight.Earth.Sphere.PointToPoint.Rational as Rat
+    (distanceHaversine)
 import Zone (MkZone, QLL, showQ, describedZones)
+import qualified Distance as D (DistanceEqual, toDistanceEqual)
 
-span :: SpanLatLng Rational
-span = Rat.distanceHaversine defEps
+spanD :: SpanLatLng Double
+spanD = Dbl.distanceHaversine
+
+spanR :: SpanLatLng Rational
+spanR = Rat.distanceHaversine defEps
 
 coincidentUnits :: TestTree
 coincidentUnits =
     testGroup "Coincident zones unit tests"
     $ emptyDistance
-    : ((uncurry f) <$> describedZones)
+    :
+    [ testGroup "With doubles" $ ((uncurry f) <$> describedZones)
+    , testGroup "With rationals" $ ((uncurry g) <$> describedZones)
+    ]
     where
         f s =
             distanceZero
                 ("Distance between coincident " ++ s ++ " zones")
+                (D.toDistanceEqual spanD)
+
+        g s =
+            distanceZero
+                ("Distance between coincident " ++ s ++ " zones")
+                (D.toDistanceEqual spanR)
 
 emptyDistance :: TestTree
 emptyDistance =
     testGroup "Point-to-point distance"
     [ testCase "No zones = zero point-to-point distance" $
-        edgesSum (distancePointToPoint span []) @?= (TaskDistance $ MkQuantity 0)
+        edgesSum (distancePointToPoint spanR []) @?= (TaskDistance $ MkQuantity 0)
     ]
 
 pts :: (Enum a, Real a, Fractional a) => [(QLL a, QLL a)]
@@ -59,21 +74,23 @@ pts =
         z = [u| 0 rad |]
         m = convert [u| 45 deg |]
 
-distances :: [Radius Rational [u| m |]]
+distances :: (Real a, Fractional a) => [Radius a [u| m |]]
 distances =
-    repeat $ Radius [u| 0 m |]
+    repeat . Radius . fromRational' $ [u| 0 m |]
 
 distanceZero
-    :: String
-    -> MkZone Double
+    :: (Enum a, Real a, Fractional a)
+    => String
+    -> D.DistanceEqual a
+    -> MkZone a a
     -> TestTree
-distanceZero s f =
+distanceZero s f g =
     testGroup s
     $ zipWith
         (\r@(Radius r') (x, y) ->
-            toDistanceEqual span
+                f
                 r'
                 (showQ x ++ " " ++ showQ y)
-                (f r x, f r y))
+                (g r x, g r y))
         distances
-        (pts :: [(QLL Double, QLL Double)])
+        pts

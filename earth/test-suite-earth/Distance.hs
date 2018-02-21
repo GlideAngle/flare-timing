@@ -3,7 +3,12 @@
 
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
-module Distance where
+module Distance
+    ( DistanceEqual
+    , DistanceClose
+    , toDistanceEqual
+    , toDistanceClose
+    ) where
 
 import Prelude hiding (span)
 import Test.Tasty (TestTree, testGroup)
@@ -17,13 +22,20 @@ import Flight.Zone (Zone(..))
 import Flight.Zone.Path (distancePointToPoint)
 import Tolerance (diff, showTolerance)
 
-toDistanceEqual
-    :: (Real a, Fractional a)
-    => SpanLatLng a 
+type DistanceEqual a
+    = Quantity a [u| m |]
+    -> String
+    -> (Zone a, Zone a)
+    -> TestTree
+
+type DistanceClose a
+    = Quantity a [u| mm |]
     -> Quantity a [u| m |]
     -> String
     -> (Zone a, Zone a)
     -> TestTree
+
+toDistanceEqual :: (Real a, Fractional a) => SpanLatLng a -> DistanceEqual a
 toDistanceEqual span expected title xy =
     testGroup title (f xy)
     where
@@ -35,14 +47,7 @@ toDistanceEqual span expected title xy =
             where
                 found = edgesSum $ distancePointToPoint span [x, y]
 
-toDistanceClose
-    :: (Real a, Fractional a)
-    => SpanLatLng a
-    -> Quantity a [u| mm |]
-    -> Quantity a [u| m |]
-    -> String
-    -> (Zone a, Zone a)
-    -> TestTree
+toDistanceClose :: (Real a, Fractional a) => SpanLatLng a -> DistanceClose a
 toDistanceClose span tolerance expected title xy =
     testGroup title (f xy)
     where

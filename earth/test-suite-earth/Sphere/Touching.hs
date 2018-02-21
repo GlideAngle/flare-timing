@@ -19,56 +19,90 @@ import Data.Ratio ((%))
 import Data.List (intersperse)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit as HU ((@?=), testCase)
-import Data.UnitsOfMeasure ((-:), (*:), u, convert, negate', fromRational')
+import Data.UnitsOfMeasure
+    ((-:), (*:), u, convert, negate', fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.LatLng.Rational (defEps)
 import Flight.Distance (SpanLatLng)
-import Flight.Zone (HasArea(..), Zone(..), Radius(..), showZoneDMS, fromRationalZone)
+import Flight.Zone
+    ( HasArea(..), Zone(..), Radius(..)
+    , showZoneDMS, fromRationalZone, toRationalZone
+    )
 import Flight.LatLng.Double (showAngle)
-import qualified Flight.Earth.Sphere.PointToPoint.Rational as Rat (distanceHaversine)
+import qualified Flight.Earth.Sphere.PointToPoint.Double as Dbl
+    (distanceHaversine)
+import qualified Flight.Earth.Sphere.PointToPoint.Rational as Rat
+    (distanceHaversine)
 import qualified Flight.Earth.Sphere.Separated as S (separatedZones)
 import Flight.Earth.Sphere (earthRadius)
 
 import Zone (MkZone, QLL, showQ, dotZones, areaZones)
 
-span :: SpanLatLng Rational
-span = Rat.distanceHaversine defEps
+spanD :: SpanLatLng Double
+spanD = Dbl.distanceHaversine
+
+spanR :: SpanLatLng Rational
+spanR = Rat.distanceHaversine defEps
+
+sepD :: [Zone Double] -> Bool
+sepD = S.separatedZones spanD
+
+sepR :: [Zone Rational] -> Bool
+sepR = S.separatedZones spanR
 
 touchingUnits :: TestTree
 touchingUnits =
     testGroup "Potentially overlapping zones are touching"
-    [ testGroup "Zones without area are not touching" ((uncurry f) <$> dotZones)
-    , testGroup "Zones with area are touching" ((uncurry g) <$> areaZones)
+    [ testGroup "With doubles"
+        [ testGroup "Zones without area are not touching" ((uncurry fD) <$> dotZones)
+        , testGroup "Zones with area are touching" ((uncurry gD) <$> areaZones)
+        ]
+    , testGroup "With rationals"
+        [ testGroup "Zones without area are not touching" ((uncurry fR) <$> dotZones)
+        , testGroup "Zones with area are touching" ((uncurry gR) <$> areaZones)
+        ]
     ]
     where
-        f s =
+        fD s =
             zonesTouching
                 (s ++ " zones")
-                (separatedZones Overlap delta radius)
+                (separatedZones sepD Overlap delta radius)
 
-        g s =
+        gD s =
             zonesTouching
                 (s ++ " zones")
-                (separatedZones Overlap delta radius)
+                (separatedZones sepD Overlap delta radius)
+
+        fR s =
+            zonesTouching
+                (s ++ " zones")
+                (separatedZones sepR Overlap delta radius)
+
+        gR s =
+            zonesTouching
+                (s ++ " zones")
+                (separatedZones sepR Overlap delta radius)
 
 data Overlay = Overlap | Disjoint deriving (Eq, Show)
 
 separatedZones
-    :: Overlay
-    -> Quantity Rational [u| 1 |]
-    -> Quantity Rational [u| 1 |]
+    :: (Ord a, Real a)
+    => ([Zone a] -> Bool)
+    -> Overlay
+    -> Quantity a [u| 1 |]
+    -> Quantity a [u| 1 |]
     -> String
-    -> [[Zone Rational]]
+    -> [[Zone a]]
     -> TestTree
-separatedZones expected delta' radius' title xs =
+separatedZones sep expected delta' radius' title xs =
     testGroup title (f <$> xs)
     where
         f x =
             testGroup sZone
                 [ testGroup sRadius
                     [ HU.testCase sSep
-                        $ S.separatedZones span x
+                        $ sep x
                             @?= (expected == Disjoint || withoutArea)
                     ]
                 ]
@@ -95,21 +129,23 @@ separatedZones expected delta' radius' title xs =
 
                 sZone =
                     mconcat
-                    $ intersperse ", " (showZoneDMS . fromRationalZone <$> x)
+                     $ intersperse
+                         ", "
+                         (showZoneDMS . fromRationalZone . toRationalZone <$> x)
 
         deltaDMS :: Quantity Double [u| dms |]
-        deltaDMS = fromRational' . convert $ delta' *: [u| 1 rad |]
+        deltaDMS = convert $ (realToFrac delta') *: [u| 1 rad |]
 
         deltaRad :: Quantity Double [u| rad |]
-        deltaRad = fromRational' $ delta' *: [u| 1 rad |]
+        deltaRad = (realToFrac delta') *: [u| 1 rad |]
 
         radiusDMS :: Quantity Double [u| dms |]
-        radiusDMS = fromRational' . convert $ radius' *: [u| 1 rad |]
+        radiusDMS = convert $ (realToFrac radius') *: [u| 1 rad |]
 
         radiusRad :: Quantity Double [u| rad |]
-        radiusRad = fromRational' $ radius' *: [u| 1 rad |]
+        radiusRad = (realToFrac radius') *: [u| 1 rad |]
 
-type Touching = String -> [[Zone Rational]] -> TestTree
+type Touching a = String -> [[Zone a]] -> TestTree
 
 delta :: (Real a, Fractional a) => Quantity a [u| 1 |]
 delta = fromRational' . MkQuantity $ 1 % 100000000
@@ -133,13 +169,14 @@ distances =
     repeat $ Radius earthRadius
 
 zonesTouching
-    :: String
-    -> Touching
-    -> MkZone Double
+    :: (Enum a, Real a, Fractional a)
+    => String
+    -> Touching a
+    -> MkZone a a
     -> TestTree
 zonesTouching s f g =
     testGroup s
     $ zipWith
         (\r (x, y) -> f (showQ x ++ " " ++ showQ y) [[g r x, g r y]])
         distances
-        (pts :: [(QLL Double, QLL Double)])
+        pts

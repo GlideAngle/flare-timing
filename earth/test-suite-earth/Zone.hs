@@ -30,14 +30,19 @@ import Flight.Zone
     , Radius(..)
     , Incline (..)
     , Bearing(..)
+    , toRationalRadius
+    , realToFracLatLng
+    , fromRationalZone
     )
 
 type QLL a = (Quantity a [u| rad |], Quantity a [u| rad |])
-type MkZone a = Real a => Radius Rational [u| m |] -> QLL a -> Zone Rational
+type MkZone a b = Real a => Radius a [u| m |] -> QLL a -> Zone b
 
-showQ :: QLL Double -> String
+showQ :: Real a => QLL a -> String
 showQ (x, y) =
-    show (fromQ x, fromQ y)
+    show (fromQ x', fromQ y')
+    where
+        LatLng (Lat x', Lng y') = realToFracLatLng . LatLng $ (Lat x, Lng y)
 
 toLL :: Real a => QLL a -> LatLng Rational [u| rad |]
 toLL (lat, lng) =
@@ -46,41 +51,53 @@ toLL (lat, lng) =
         lat' = toRational' lat
         lng' = toRational' lng
 
-point :: MkZone a
-point _ x = Point $ toLL x
+point :: (Eq b, Fractional b) => MkZone a b
+point _ x =
+    fromRationalZone
+    $ Point (toLL x)
 
-vector :: MkZone a
-vector _ x = Vector (Bearing zero) (toLL x) 
+vector :: (Eq b, Fractional b) => MkZone a b
+vector _ x =
+    fromRationalZone
+    $ Vector (Bearing zero) (toLL x) 
 
-cylinder :: MkZone a
-cylinder r x = Cylinder r (toLL x)
+cylinder :: (Eq b, Fractional b) => MkZone a b
+cylinder r x =
+    fromRationalZone
+    $ Cylinder (toRationalRadius r) (toLL x)
 
-conical :: MkZone a
-conical r x = Conical (Incline $ MkQuantity 1) r (toLL x)
+conical :: (Eq b, Fractional b) => MkZone a b
+conical r x =
+    fromRationalZone
+    $ Conical (Incline $ MkQuantity 1) (toRationalRadius r) (toLL x)
 
-line :: MkZone a
-line r x = Line r (toLL x) 
+line :: (Eq b, Fractional b) => MkZone a b
+line r x =
+    fromRationalZone
+    $ Line (toRationalRadius r) (toLL x) 
 
-semicircle :: MkZone a
-semicircle r x = SemiCircle r (toLL x)
+semicircle :: (Eq b, Fractional b) => MkZone a b
+semicircle r x =
+    fromRationalZone
+    $ SemiCircle (toRationalRadius r) (toLL x)
 
 describedZones
-    :: Real a
+    :: (Real a, Fractional a)
     =>
         [
             ( String
-            , Radius Rational [u| m |] -> QLL a -> Zone Rational
+            , Radius a [u| m |] -> QLL a -> Zone a
             )
         ]
 describedZones =
     dotZones ++ areaZones
 
 dotZones
-    :: Real a
+    :: (Real a, Fractional a)
     =>
         [
             ( String
-            , Radius Rational [u| m |] -> QLL a -> Zone Rational
+            , Radius a [u| m |] -> QLL a -> Zone a
             )
         ]
 dotZones =
@@ -89,11 +106,11 @@ dotZones =
     ]
 
 areaZones
-    :: Real a
+    :: (Real a, Fractional a)
     =>
         [
             ( String
-            , Radius Rational [u| m |] -> QLL a -> Zone Rational
+            , Radius a [u| m |] -> QLL a -> Zone a
             )
         ]
 areaZones =
