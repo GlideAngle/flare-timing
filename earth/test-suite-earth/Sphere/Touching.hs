@@ -19,37 +19,17 @@ import Data.Ratio ((%))
 import Data.List (intersperse)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit as HU ((@?=), testCase)
-import Data.UnitsOfMeasure
-    ((-:), (*:), u, convert, negate', fromRational')
+import Data.UnitsOfMeasure ((-:), (*:), u, convert, negate', fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import Flight.LatLng.Rational (defEps)
-import Flight.Distance (SpanLatLng)
 import Flight.Zone
     ( HasArea(..), Zone(..), Radius(..)
     , showZoneDMS, fromRationalZone, toRationalZone
     )
 import Flight.LatLng.Double (showAngle)
-import qualified Flight.Earth.Sphere.PointToPoint.Double as Dbl
-    (distanceHaversine)
-import qualified Flight.Earth.Sphere.PointToPoint.Rational as Rat
-    (distanceHaversine)
-import qualified Flight.Earth.Sphere.Separated as S (separatedZones)
 import Flight.Earth.Sphere (earthRadius)
-
 import Zone (MkZone, QLL, showQ, dotZones, areaZones)
-
-spanD :: SpanLatLng Double
-spanD = Dbl.distanceHaversine
-
-spanR :: SpanLatLng Rational
-spanR = Rat.distanceHaversine defEps
-
-sepD :: [Zone Double] -> Bool
-sepD = S.separatedZones spanD
-
-sepR :: [Zone Rational] -> Bool
-sepR = S.separatedZones spanR
+import Sphere.Span (sepD, sepR)
 
 touchingUnits :: TestTree
 touchingUnits =

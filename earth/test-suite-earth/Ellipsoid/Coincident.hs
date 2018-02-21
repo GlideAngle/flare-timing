@@ -20,23 +20,12 @@ import Test.Tasty.HUnit ((@?=), testCase)
 import Data.UnitsOfMeasure (u, convert, fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import Flight.LatLng.Rational (defEps)
-import Flight.Distance (TaskDistance(..), PathDistance(..), SpanLatLng)
+import Flight.Distance (TaskDistance(..), PathDistance(..))
 import Flight.Zone (Radius(..))
 import Flight.Zone.Path (distancePointToPoint)
 import Zone (MkZone, QLL, showQ, describedZones)
-import qualified Flight.Earth.Ellipsoid.PointToPoint.Double as Dbl
-    (distanceVincenty)
-import qualified Flight.Earth.Ellipsoid.PointToPoint.Rational as Rat
-    (distanceVincenty)
-import Flight.Earth.Ellipsoid (wgs84)
 import qualified Distance as D (DistanceEqual, toDistanceEqual)
-
-spanD :: SpanLatLng Double
-spanD = Dbl.distanceVincenty wgs84
-
-spanR :: SpanLatLng Rational
-spanR = Rat.distanceVincenty defEps wgs84
+import Ellipsoid.Span (spanD, spanR)
 
 coincidentUnits :: TestTree
 coincidentUnits =

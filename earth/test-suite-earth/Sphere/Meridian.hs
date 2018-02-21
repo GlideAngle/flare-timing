@@ -13,22 +13,11 @@ import Test.Tasty (TestTree, testGroup)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import Flight.LatLng.Rational (defEps)
-import Flight.Distance (SpanLatLng)
 import Flight.Zone (Radius(..))
-import qualified Flight.Earth.Sphere.PointToPoint.Double as Dbl
-    (distanceHaversine)
-import qualified Flight.Earth.Sphere.PointToPoint.Rational as Rat
-    (distanceHaversine)
 import Flight.Earth.Sphere (earthRadius)
 import Zone (MkZone, QLL, describedZones, showQ)
 import qualified Distance as D (DistanceClose, toDistanceClose)
-
-spanD :: SpanLatLng Double
-spanD = Dbl.distanceHaversine
-
-spanR :: SpanLatLng Rational
-spanR = Rat.distanceHaversine defEps
+import Sphere.Span (spanD, spanR)
 
 meridianUnits :: TestTree
 meridianUnits =

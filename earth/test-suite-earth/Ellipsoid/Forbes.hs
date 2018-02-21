@@ -14,26 +14,20 @@
 
 module Ellipsoid.Forbes (forbesUnits) where
 
-import Prelude hiding (span)
 import Test.Tasty (TestTree, TestName, testGroup)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
-import Flight.LatLng.Rational (defEps)
-import Flight.Distance (TaskDistance(..), SpanLatLng)
+import Flight.Distance (TaskDistance(..))
 import Flight.Zone (Zone(..))
 import Flight.Zone.Path (distancePointToPoint)
-import qualified Flight.Earth.Ellipsoid.PointToPoint.Rational as Rat (distanceVincenty)
 import qualified Forbes as F (mkDayUnits, mkPartDayUnits)
 import Forbes
     ( d1, d2, d3, d4, d5, d6, d7, d8
     , p1, p2, p3, p4, p5, p6, p7, p8
     )
-import Flight.Earth.Ellipsoid (wgs84)
-
-span :: SpanLatLng Rational
-span = Rat.distanceVincenty defEps wgs84
+import Ellipsoid.Span (spanR)
 
 mkDay
     :: TestName
@@ -41,14 +35,14 @@ mkDay
     -> Quantity Rational [u| km |]
     -> [(Quantity Rational [u| km |])]
     -> TestTree
-mkDay = F.mkDayUnits (distancePointToPoint span)
+mkDay = F.mkDayUnits (distancePointToPoint spanR)
 
 mkPart
     :: TestName
     -> [Zone Rational]
     -> TaskDistance Rational
     -> TestTree
-mkPart = F.mkPartDayUnits (distancePointToPoint span)
+mkPart = F.mkPartDayUnits (distancePointToPoint spanR)
 
 forbesUnits :: TestTree
 forbesUnits =

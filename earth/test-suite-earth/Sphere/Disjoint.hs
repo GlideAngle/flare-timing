@@ -20,30 +20,11 @@ import Test.Tasty (TestTree, testGroup)
 import Data.UnitsOfMeasure ((+:), (*:), u, negate', fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import Flight.LatLng.Rational (defEps)
-import Flight.Distance (SpanLatLng)
 import Flight.Zone (Zone(..), Radius(..))
-import qualified Flight.Earth.Sphere.PointToPoint.Double as Dbl
-    (distanceHaversine)
-import qualified Flight.Earth.Sphere.PointToPoint.Rational as Rat
-    (distanceHaversine)
-import qualified Flight.Earth.Sphere.Separated as S (separatedZones)
 import Flight.Earth.Sphere (earthRadius)
-
 import Zone (MkZone, QLL, showQ, dotZones, areaZones)
 import Sphere.Touching (Overlay(..), separatedZones)
-
-spanD :: SpanLatLng Double
-spanD = Dbl.distanceHaversine
-
-spanR :: SpanLatLng Rational
-spanR = Rat.distanceHaversine defEps
-
-sepD :: [Zone Double] -> Bool
-sepD = S.separatedZones spanD
-
-sepR :: [Zone Rational] -> Bool
-sepR = S.separatedZones spanR
+import Sphere.Span (sepD, sepR)
 
 disjointUnits :: TestTree
 disjointUnits =

@@ -8,28 +8,15 @@
 
 module Ellipsoid.Meridian (meridianUnits) where
 
-import Prelude hiding (span)
 import Test.Tasty (TestTree, testGroup)
 import Data.UnitsOfMeasure ((*:), u, convert, fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
-import Flight.LatLng.Rational (defEps)
-import Flight.Distance (SpanLatLng)
 import Flight.Zone (Radius(..))
 import Zone (MkZone, QLL, describedZones, showQ)
-import qualified Flight.Earth.Ellipsoid.PointToPoint.Double as Dbl
-    (distanceVincenty)
-import qualified Flight.Earth.Ellipsoid.PointToPoint.Rational as Rat
-    (distanceVincenty)
-import Flight.Earth.Ellipsoid (wgs84)
 import qualified Distance as D (DistanceClose, toDistanceClose)
-
-spanD :: SpanLatLng Double
-spanD = Dbl.distanceVincenty wgs84
-
-spanR :: SpanLatLng Rational
-spanR = Rat.distanceVincenty defEps wgs84
+import Ellipsoid.Span (spanD, spanR)
 
 meridianUnits :: TestTree
 meridianUnits =
