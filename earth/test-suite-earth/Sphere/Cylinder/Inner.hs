@@ -91,7 +91,11 @@ csR = Rat.circumSample
 pts :: (Enum a, Real a, Fractional a) => [QLL a]
 pts =
     f
-    <$> [ (x *: [u| 1 deg |], y *: [u| 1 deg |]) | x <- [5, 10 .. 90], y <- [0]]
+    <$>
+    [ ((x - 90) *: [u| 1 deg |], (y - 180) *: [u| 1 deg |])
+    | x <- [0, 45 .. 180]
+    , y <- [0, 90 .. 360]
+    ]
     where
         f (x, y) =
             (convert x, convert y)
@@ -112,9 +116,9 @@ tolerancesR =
     fromRational' <$>
     [ [u| 1 mm |]
     , [u| 1 mm |]
-    , [u| 9 mm |]
-    , [u| 97 mm |]
-    , convert [u| 85 m |]
+    , [u| 10 mm |]
+    , [u| 100 mm |]
+    , convert [u| 100 m |]
     ]
 
 searchRangesR :: (Real a, Fractional a) => [Quantity a [u| m |]]
@@ -132,9 +136,9 @@ innerCylinderUnits :: TestTree
 innerCylinderUnits =
     testGroup "When points meant to be on the boundary are inside a cylinder"
         [ let f = zpFilter in innerCheck spanR csR spR bearingR t s f d p
-        | d <- distances
-        | t <- Tolerance . unQuantity <$> tolerancesR
-        | s <- searchRangesR
+        | d <- cycle distances
+        | t <- Tolerance . unQuantity <$> cycle tolerancesR
+        | s <- cycle searchRangesR
         | p <- (\(x, y) -> (LatLng (Lat x, Lng y))) <$> pts
         ]
 
@@ -159,7 +163,8 @@ innerCheck
     (Tolerance tolerance)
     sr@(MkQuantity searchRange)
     zpf r@(Radius radius) ll =
-    HU.testCase
+    testGroup ("At " ++ show ll)
+    [ HU.testCase
         msg
         $ zpf
             span
@@ -168,6 +173,7 @@ innerCheck
             (convert radius -: (convert tolerance'))
             (fst $ cs sp br Nothing cyl)
         @?= []
+    ]
     where
         msg =
             "No points > "
