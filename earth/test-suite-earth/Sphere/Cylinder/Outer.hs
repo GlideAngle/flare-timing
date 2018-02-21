@@ -17,7 +17,6 @@
 module Sphere.Cylinder.Outer (outerCylinderUnits) where
 
 import Prelude hiding (span)
-import qualified Data.Number.FixedFunctions as F
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit as HU ((@?=), testCase)
 import Data.UnitsOfMeasure
@@ -26,7 +25,6 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
-import Flight.LatLng.Rational (Epsilon(..), defEps)
 import Flight.Distance (SpanLatLng)
 import Flight.Zone (Bearing(..), Radius(..), Zone(..))
 import Flight.Zone.Cylinder (SampleParams(..), Tolerance(..), CircumSample)
@@ -38,21 +36,45 @@ import Sphere.Cylinder.Span
     , zpFilter
     )
 
-bearingD :: Bearing Double
+bearingD :: [Bearing Double]
 bearingD =
-    Bearing . MkQuantity $ pi
+    Bearing <$>
+    [ f $ x *: [u| 1 deg |]
+    | x <- [0, 45 .. 360]
+    ]
+    where
+        f :: Quantity Double [u| deg |] -> Quantity Double [u| rad |]
+        f = convert
 
-bearingR :: Bearing Rational
+bearingR :: [Bearing Rational]
 bearingR =
-    let (Epsilon e) = defEps in (Bearing . MkQuantity $ F.pi e)
+    Bearing . toRational' <$>
+    [ f $ x *: [u| 1 deg |]
+    | x <- [0, 120]
+    ]
+    where
+        f :: Quantity Double [u| deg |] -> Quantity Double [u| rad |]
+        f = convert
 
-pts :: (Enum a, Real a, Fractional a) => [QLL a]
-pts =
+ptsD :: (Enum a, Real a, Fractional a) => [QLL a]
+ptsD =
     f
     <$>
     [ ((x - 90) *: [u| 1 deg |], (y - 180) *: [u| 1 deg |])
     | x <- [0, 45 .. 180]
     , y <- [0, 90 .. 360]
+    ]
+    where
+        f (x, y) =
+            (convert x, convert y)
+
+ptsR :: (Enum a, Real a, Fractional a) => [QLL a]
+ptsR =
+    f
+    <$>
+    [ ((x - 90) *: [u| 1 deg |], (y - 180) *: [u| 1 deg |])
+    | x <- [0, 90 .. 180]
+    , y <- [0, 180 .. 360]
     ]
     where
         f (x, y) =
@@ -92,19 +114,27 @@ outerCylinderUnits :: TestTree
 outerCylinderUnits =
     testGroup "When points meant to be on the boundary are outside a cylinder"
     [ testGroup "With doubles"
-        [ let f = zpFilter in outerCheck spanD csD spD bearingD t s f d p
-        | d <- cycle distances
-        | t <- Tolerance . unQuantity <$> tolerancesD
-        | s <- cycle searchRanges
-        | p <- (\(x, y) -> (LatLng (Lat x, Lng y))) <$> pts
+        [ outerCheck spanD csD spD b t s zpFilter d p
+        | p <- (\(x, y) -> (LatLng (Lat x, Lng y))) <$> ptsD
+        , b <- bearingD
+        , (d, t, s) <-
+            [ (d, t, s)
+            | d <- distances
+            | t <- Tolerance . unQuantity <$> tolerancesD
+            | s <- searchRanges
+            ]
         ]
 
-    , testGroup "With rationals"
-        [ let f = zpFilter in outerCheck spanR csR spR bearingR t s f d p
-        | d <- cycle distances
-        | t <- Tolerance . unQuantity <$> tolerancesR
-        | s <- cycle searchRanges
-        | p <- (\(x, y) -> (LatLng (Lat x, Lng y))) <$> pts
+    , testGroup "With rationals" $
+        [ outerCheck spanR csR spR b t s zpFilter d p
+        | p <- (\(x, y) -> (LatLng (Lat x, Lng y))) <$> ptsR
+        , b <- bearingR
+        , (d, t, s) <-
+            [ (d, t, s)
+            | d <- distances
+            | t <- Tolerance . unQuantity <$> tolerancesR
+            | s <- searchRanges
+            ]
         ]
     ]
 
@@ -129,7 +159,7 @@ outerCheck
     (Tolerance tolerance)
     sr@(MkQuantity searchRange)
     zpf r@(Radius radius) ll =
-    testGroup ("At " ++ showQ (lat, lng))
+    testGroup ("From origin " ++ showQ (lat, lng) ++ " bearing " ++ show br)
     [ HU.testCase
         msg
         $ zpf
