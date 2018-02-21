@@ -17,7 +17,6 @@
 module Sphere.Cylinder.Inner (innerCylinderUnits) where
 
 import Prelude hiding (span)
-import Data.Ratio((%))
 import qualified Data.Number.FixedFunctions as F
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit as HU ((@?=), testCase)
@@ -28,65 +27,15 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Flight.Units ()
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.LatLng.Rational (Epsilon(..), defEps)
-import Flight.Distance (TaskDistance(..), PathDistance(..), SpanLatLng)
+import Flight.Distance (SpanLatLng)
 import Flight.Zone (Bearing(..), Radius(..), Zone(..))
-import Flight.Zone.Path (distancePointToPoint)
-import Flight.Zone.Cylinder
-    (Samples(..), SampleParams(..), Tolerance(..), CircumSample, ZonePoint(..))
-import qualified Flight.Earth.Sphere.PointToPoint.Rational as Rat (distanceHaversine)
-import qualified Flight.Earth.Sphere.Cylinder.Rational as Rat (circumSample)
+import Flight.Zone.Cylinder (SampleParams(..), Tolerance(..), CircumSample)
 import Zone (QLL, showQ)
-
-mm30 :: Fractional a => Tolerance a
-mm30 = Tolerance . fromRational $ 30 % 1000
+import Sphere.Cylinder.Span (ZonePointFilter, spanR, csR, spR, zpFilter)
 
 bearingR :: Bearing Rational
 bearingR =
     let (Epsilon e) = defEps in (Bearing . MkQuantity $ F.pi e)
-
-type ZonePointFilter a
-    = SpanLatLng a
-    -> (Quantity a [u| m |] -> Quantity a [u| m |] -> Bool)
-    -> LatLng a [u| rad |]
-    -> Quantity a [u| m |]
-    -> [ZonePoint a]
-    -> [ZonePoint a]
-
-zpFilter
-    :: Real a
-    => SpanLatLng a
-    -> (Quantity a [u| m |] -> Quantity a [u| m |] -> Bool)
-    -> LatLng a [u| rad |]
-    -> Quantity a [u| m |]
-    -> [ZonePoint a]
-    -> [ZonePoint a]
-zpFilter span cmp origin d =
-    filter (\x -> zpDistance span origin x `cmp` d)
-
-zpDistance
-    :: (Eq a, Real a)
-    => SpanLatLng a
-    -> LatLng a [u| rad |]
-    -> ZonePoint a
-    -> Quantity a [u| m |]
-zpDistance span origin ZonePoint{point} =
-    d
-    where
-        TaskDistance d =
-            edgesSum $ distancePointToPoint span [Point origin, Point point]
-
-spR :: SampleParams Rational
-spR =
-    SampleParams
-        { spSamples = Samples 100
-        , spTolerance = mm30
-        }
-
-spanR :: SpanLatLng Rational
-spanR = Rat.distanceHaversine defEps
-
-csR :: CircumSample Rational
-csR = Rat.circumSample
 
 pts :: (Enum a, Real a, Fractional a) => [QLL a]
 pts =
