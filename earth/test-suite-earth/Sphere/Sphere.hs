@@ -9,7 +9,8 @@ import Sphere.Coincident (coincidentUnits)
 import Sphere.Disjoint (disjointUnits)
 import Sphere.Bedford (bedfordUnits)
 import Sphere.Forbes (forbesUnits)
-import Sphere.Cylinder (circumSampleUnits)
+import Sphere.Cylinder.Outer (outerCylinderUnits)
+import Sphere.Cylinder.Inner (innerCylinderUnits)
 import Props.Haversine (distancePoint, distanceHaversineF, distanceHaversine)
 
 tests :: TestTree
@@ -30,11 +31,12 @@ units =
     testGroup "Unit tests on the FAI sphere using haversines"
     [ bedfordUnits
     , forbesUnits
-    , circumSampleUnits
     , meridianUnits
     , disjointUnits
     , touchingUnits
     , coincidentUnits
+    , outerCylinderUnits
+    , innerCylinderUnits
     ]
 
 qcProps :: TestTree
