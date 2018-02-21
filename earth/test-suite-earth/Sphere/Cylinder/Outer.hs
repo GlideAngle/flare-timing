@@ -35,7 +35,7 @@ import Flight.Zone.Cylinder
     (Samples(..), SampleParams(..), Tolerance(..), CircumSample, ZonePoint(..))
 import qualified Flight.Earth.Sphere.PointToPoint.Rational as Rat (distanceHaversine)
 import qualified Flight.Earth.Sphere.Cylinder.Rational as Rat (circumSample)
-import Zone (QLL)
+import Zone (QLL, showQ)
 
 mm30 :: Fractional a => Tolerance a
 mm30 = Tolerance . fromRational $ 30 % 1000
@@ -157,7 +157,7 @@ outerCheck
     (Tolerance tolerance)
     sr@(MkQuantity searchRange)
     zpf r@(Radius radius) ll =
-    testGroup ("At " ++ show ll)
+    testGroup ("At " ++ showQ (lat, lng))
     [ HU.testCase
         msg
         $ zpf
@@ -169,6 +169,8 @@ outerCheck
         @?= []
     ]
     where
+        LatLng (Lat lat, Lng lng) = ll
+
         msg =
             "No points > "
             ++ show tol
