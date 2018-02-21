@@ -31,7 +31,16 @@ import Flight.Distance (SpanLatLng)
 import Flight.Zone (Bearing(..), Radius(..), Zone(..))
 import Flight.Zone.Cylinder (SampleParams(..), Tolerance(..), CircumSample)
 import Zone (QLL, showQ)
-import Sphere.Cylinder.Span (ZonePointFilter, spanR, csR, spR, zpFilter)
+import Sphere.Cylinder.Span
+    ( ZonePointFilter
+    , spanD, csD, spD
+    , spanR, csR, spR
+    , zpFilter
+    )
+
+bearingD :: Bearing Double
+bearingD =
+    Bearing . MkQuantity $ pi
 
 bearingR :: Bearing Rational
 bearingR =
@@ -60,6 +69,9 @@ distances =
     , convert [u| 100 km |]
     ]
 
+tolerancesD :: (Real a, Fractional a) => [Quantity a [u| mm |]]
+tolerancesD = tolerancesR
+
 tolerancesR :: (Real a, Fractional a) => [Quantity a [u| mm |]]
 tolerancesR =
     fromRational' <$>
@@ -70,8 +82,8 @@ tolerancesR =
     , convert [u| 100 m |]
     ]
 
-searchRangesR :: (Real a, Fractional a) => [Quantity a [u| m |]]
-searchRangesR =
+searchRanges :: (Real a, Fractional a) => [Quantity a [u| m |]]
+searchRanges =
     fromRational'
     <$>
     [ convert [u| 1 mm |]
@@ -84,12 +96,22 @@ searchRangesR =
 innerCylinderUnits :: TestTree
 innerCylinderUnits =
     testGroup "When points meant to be on the boundary are inside a cylinder"
+    [ testGroup "With doubles"
+        [ let f = zpFilter in innerCheck spanD csD spD bearingD t s f d p
+        | d <- cycle distances
+        | t <- Tolerance . unQuantity <$> cycle tolerancesD
+        | s <- cycle searchRanges
+        | p <- (\(x, y) -> (LatLng (Lat x, Lng y))) <$> pts
+        ]
+
+    , testGroup "With rationals"
         [ let f = zpFilter in innerCheck spanR csR spR bearingR t s f d p
         | d <- cycle distances
         | t <- Tolerance . unQuantity <$> cycle tolerancesR
-        | s <- cycle searchRangesR
+        | s <- cycle searchRanges
         | p <- (\(x, y) -> (LatLng (Lat x, Lng y))) <$> pts
         ]
+    ]
 
 innerCheck
     ::

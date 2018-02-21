@@ -14,7 +14,12 @@
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
-module Sphere.Cylinder.Span (ZonePointFilter, spanR, csR, spR, zpFilter) where
+module Sphere.Cylinder.Span
+    ( ZonePointFilter
+    , spanD, csD, spD
+    , spanR, csR, spR
+    , zpFilter
+    ) where
 
 import Prelude hiding (span)
 import Data.Ratio((%))
@@ -29,17 +34,32 @@ import Flight.Zone (Zone(..))
 import Flight.Zone.Path (distancePointToPoint)
 import Flight.Zone.Cylinder
     (Samples(..), SampleParams(..), Tolerance(..), CircumSample, ZonePoint(..))
+import qualified Flight.Earth.Sphere.PointToPoint.Double as Dbl (distanceHaversine)
 import qualified Flight.Earth.Sphere.PointToPoint.Rational as Rat (distanceHaversine)
+import qualified Flight.Earth.Sphere.Cylinder.Double as Dbl (circumSample)
 import qualified Flight.Earth.Sphere.Cylinder.Rational as Rat (circumSample)
 
 mm30 :: Fractional a => Tolerance a
 mm30 = Tolerance . fromRational $ 30 % 1000
 
+spanD :: SpanLatLng Double
+spanD = Dbl.distanceHaversine
+
 spanR :: SpanLatLng Rational
 spanR = Rat.distanceHaversine defEps
 
+csD :: CircumSample Double
+csD = Dbl.circumSample
+
 csR :: CircumSample Rational
 csR = Rat.circumSample
+
+spD :: SampleParams Double
+spD =
+    SampleParams
+        { spSamples = Samples 100
+        , spTolerance = mm30
+        }
 
 spR :: SampleParams Rational
 spR =
