@@ -8,6 +8,8 @@ import Ellipsoid.Coincident (coincidentUnits)
 import Ellipsoid.Meridian (meridianUnits)
 import Ellipsoid.Bedford (bedfordUnits)
 import Ellipsoid.Forbes (forbesUnits)
+import Ellipsoid.Cylinder.Outer (outerCylinderUnits)
+import Ellipsoid.Cylinder.Inner (innerCylinderUnits)
 import Props.Vincenty (distancePoint, distanceVincentyF, distanceVincenty)
 
 tests :: TestTree
@@ -31,6 +33,8 @@ units =
     , forbesUnits
     , coincidentUnits
     , meridianUnits
+    , outerCylinderUnits
+    , innerCylinderUnits
     ]
 
 qcProps :: TestTree
