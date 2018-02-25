@@ -3,7 +3,10 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE NamedFieldPuns #-}
 
-module Flight.Earth.Ellipsoid.Cylinder.Double (circumSample) where
+module Flight.Earth.Ellipsoid.Cylinder.Double
+    ( circumSample
+    , vincentyDirect
+    ) where
 
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
@@ -49,9 +52,10 @@ iterateVincenty
     b
     σ1
     σ =
-    if σ < tolerance
-       then σ 
-       else iterateVincenty accuracy _A _B s b σ1 σ'
+    if abs (σ - σ') < tolerance
+        then σ 
+        else
+            iterateVincenty accuracy _A _B s b σ1 σ'
     where
         _2σm = 2 * σ1 + σ
         cos2σm = cos _2σm
@@ -63,11 +67,11 @@ iterateVincenty
         _Δσ =
             _B * sinσ *
                 (cos2σm + _B / 4 *
-                    (cosσ * (negate 1 + 2 * cos²2σm)
+                    (cosσ * (-1 + 2 * cos²2σm)
                     - _B / 6
                     * cos2σm
-                    * (negate 3 + 4 * sin²σ)
-                    * (negate 3 + 4 * cos²2σm)
+                    * (-3 + 4 * sin²σ)
+                    * (-3 + 4 * cos²2σm)
                     )
                 )
 
@@ -97,8 +101,8 @@ vincentyDirect
         sinα = cos _U1 * sin α1
         sin²α = sinα * sinα
         cos²α = 1 - sin²α 
-        _A = 1 + u² / 16384 * (4096 + u² * (negate 768 + u² * (320 - 175 * u²)))
-        _B = u² / 1024 * (256 + u² * (negate 128 + u² * (74 - 47 * u²)))
+        _A = 1 + u² / 16384 * (4096 + u² * (-768 + u² * (320 - 175 * u²)))
+        _B = u² / 1024 * (256 + u² * (-128 + u² * (74 - 47 * u²)))
 
         -- Solution
         σ = iterateVincenty accuracy _A _B s b σ1 (s / (b * _A))
@@ -118,7 +122,7 @@ vincentyDirect
         cos2σm = cos _2σm
         cos²2σm = cos2σm * cos2σm
         x = σ + _C * sinσ * y
-        y = cos (2 * cos2σm + _C * cosσ * (negate 1 + 2 * cos²2σm))
+        y = cos (2 * cos2σm + _C * cosσ * (-1 + 2 * cos²2σm))
         _L = λ * (1 - _C) * f * sinα * x
 
         _L2 = _L + _L1
