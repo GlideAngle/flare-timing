@@ -44,6 +44,7 @@
 module Flight.Earth.Ellipsoid
     ( Ellipsoid(..)
     , AbnormalLatLng(..)
+    , VincentyDirect(..)
     , VincentyInverse(..)
     , VincentyAccuracy(..)
     , defaultVincentyAccuracy
@@ -70,12 +71,26 @@ data AbnormalLatLng
     | LngUnder
     | LngOver
 
-data VincentyInverse a
-    = VincentyAbnormal AbnormalLatLng
+data VincentyDirect a
+    = VincentyDirectAbnormal AbnormalLatLng
     -- ^ Vincenty requires normalized latitude and longitude inputs, in radians
     -- the equivalent of -90 <= latitude <= 90 and -180 <= longitude <= 180
     -- degrees.
-    | VincentyAntipodal
+    | VincentyDirectEquatorial
+    -- ^ Vincenty's solution to the direct problem is indeterminate if the
+    -- points are equatorial, checked for when abs λ > π.
+    | VincentyDirectAntipodal
+    -- ^ Vincenty's solution to the direct problem is indeterminate if the
+    -- points are antipodal, checked for when abs λ > π.
+    | VincentyDirect a
+    -- ^ Vincenty's solution to the inverse problem.
+
+data VincentyInverse a
+    = VincentyInverseAbnormal AbnormalLatLng
+    -- ^ Vincenty requires normalized latitude and longitude inputs, in radians
+    -- the equivalent of -90 <= latitude <= 90 and -180 <= longitude <= 180
+    -- degrees.
+    | VincentyInverseAntipodal
     -- ^ Vincenty's solution to the inverse problem is indeterminate if the
     -- points are antipodal, checked for when abs λ > π.
     | VincentyInverse a

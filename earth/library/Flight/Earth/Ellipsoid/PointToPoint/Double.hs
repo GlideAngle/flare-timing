@@ -2,13 +2,18 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE NamedFieldPuns #-}
 
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE PartialTypeSignatures #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module Flight.Earth.Ellipsoid.PointToPoint.Double (distanceVincenty) where
+module Flight.Earth.Ellipsoid.PointToPoint.Double
+    ( distanceVincenty
+    , vincentyInverse
+    ) where
 
 import Prelude hiding (sum, span)
-import Data.UnitsOfMeasure (u)
+import Data.UnitsOfMeasure (KnownUnit, Unpack, u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
@@ -44,7 +49,7 @@ vincentyInverse
 
         loop λ =
             if abs λ > pi
-                then VincentyAntipodal
+                then VincentyInverseAntipodal
                 else
                     if abs (λ - λ') < tolerance
                         then VincentyInverse $ b * _A * (σ - _Δσ)
@@ -85,12 +90,16 @@ tooFar :: Num a => TaskDistance a
 tooFar = TaskDistance [u| 20000000 m |]
 
 -- | Sperical distance using inverse Vincenty and floating point numbers.
-distanceVincenty :: (RealFloat a, Show a) => Ellipsoid a -> SpanLatLng a
-distanceVincenty e lat lng =
-    case distanceVincenty' e lat lng of
+distanceVincenty
+    :: (RealFloat a, Show a
+       , KnownUnit (Unpack u), Show (Lat a u), Show (Lng a u), u ~ [u| rad |])
+    => Ellipsoid a
+    -> SpanLatLng a
+distanceVincenty e x y =
+    case distanceVincenty' e x y of
         VincentyInverse d' -> d'
-        VincentyAntipodal -> tooFar
-        VincentyAbnormal _ -> tooFar
+        VincentyInverseAntipodal -> tooFar
+        VincentyInverseAbnormal _ -> tooFar
 
 distanceVincenty'
     :: (RealFloat a, Show a)
@@ -102,21 +111,21 @@ distanceVincenty' ellipsoid x@(LatLng (xLat, xLng)) y@(LatLng (yLat, yLng))
 
     | x == y = VincentyInverse $ TaskDistance [u| 0 m |]
 
-    | xLat < minBound = VincentyAbnormal LatUnder
-    | xLat > maxBound = VincentyAbnormal LatOver
-    | xLng < minBound = VincentyAbnormal LngUnder
-    | xLng > maxBound = VincentyAbnormal LngOver
+    | xLat < minBound = VincentyInverseAbnormal LatUnder
+    | xLat > maxBound = VincentyInverseAbnormal LatOver
+    | xLng < minBound = VincentyInverseAbnormal LngUnder
+    | xLng > maxBound = VincentyInverseAbnormal LngOver
 
-    | yLat < minBound = VincentyAbnormal LatUnder
-    | yLat > maxBound = VincentyAbnormal LatOver
-    | yLng < minBound = VincentyAbnormal LngUnder
-    | yLng > maxBound = VincentyAbnormal LngOver
+    | yLat < minBound = VincentyInverseAbnormal LatUnder
+    | yLat > maxBound = VincentyInverseAbnormal LatOver
+    | yLng < minBound = VincentyInverseAbnormal LngUnder
+    | yLng > maxBound = VincentyInverseAbnormal LngOver
 
     | otherwise =
         case vincentyInverse ellipsoid accuracy' x y of
             VincentyInverse d' -> VincentyInverse . TaskDistance . MkQuantity $ d'
-            VincentyAntipodal -> VincentyAntipodal
-            VincentyAbnormal ab -> VincentyAbnormal ab
+            VincentyInverseAntipodal -> VincentyInverseAntipodal
+            VincentyInverseAbnormal ab -> VincentyInverseAbnormal ab
         where
             VincentyAccuracy accuracy = defaultVincentyAccuracy
             accuracy' = VincentyAccuracy $ fromRational accuracy

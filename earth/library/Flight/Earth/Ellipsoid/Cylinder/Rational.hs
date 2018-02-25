@@ -3,11 +3,14 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE NamedFieldPuns #-}
 
-module Flight.Earth.Ellipsoid.Cylinder.Rational (circumSample) where
+module Flight.Earth.Ellipsoid.Cylinder.Rational
+    ( circumSample
+    , vincentyDirect
+    ) where
 
 import Data.Ratio ((%))
 import qualified Data.Number.FixedFunctions as F
-import Data.UnitsOfMeasure (u)
+import Data.UnitsOfMeasure (u, convert, fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
@@ -18,7 +21,10 @@ import Flight.Zone
     , Bearing(..)
     , center
     , radius
+    , fromRationalRadius
     , toRationalZone
+    , fromRationalLatLng
+    , toRationalLatLng
     )
 import Flight.Zone.Path (distancePointToPoint)
 import Flight.Earth.Ellipsoid.PointToPoint.Rational (distanceVincenty)
@@ -37,9 +43,11 @@ import Flight.Zone.Cylinder
     , fromRationalZonePoint
     )
 import Flight.Earth.Ellipsoid
-    (Ellipsoid(..), VincentyAccuracy(..)
+    (Ellipsoid(..), VincentyDirect(..), VincentyAccuracy(..)
     , defaultVincentyAccuracy, wgs84, flattening
     )
+import qualified Flight.Earth.Ellipsoid.PointToPoint.Rational as F (atan2')
+import qualified Flight.Earth.Ellipsoid.Cylinder.Double as Dbl (vincentyDirect)
 
 iterateVincenty
     :: Epsilon
@@ -60,7 +68,7 @@ iterateVincenty
     b
     σ1
     σ =
-    if σ < tolerance
+    if abs (σ - σ') < tolerance
        then σ 
        else iterateVincenty epsilon accuracy _A _B s b σ1 σ'
     where
@@ -74,11 +82,11 @@ iterateVincenty
         _Δσ =
             _B * sinσ *
                 (cos2σm + _B / 4 *
-                    (cosσ * (negate 1 + 2 * cos²2σm)
+                    (cosσ * (-1 + 2 * cos²2σm)
                     - _B / 6
                     * cos2σm
-                    * (negate 3 + 4 * sin²σ)
-                    * (negate 3 + 4 * cos²2σm)
+                    * (-3 + 4 * sin²σ)
+                    * (-3 + 4 * cos²2σm)
                     )
                 )
 
@@ -87,33 +95,37 @@ iterateVincenty
         sin' = F.sin eps
         cos' = F.cos eps
 
-vincentyDirect
+vincentyDirect'
     :: Epsilon
     -> Ellipsoid Rational
     -> VincentyAccuracy Rational
     -> LatLng Rational [u| rad |]
     -> Radius Rational [u| m |]
     -> TrueCourse Rational
-    -> LatLng Rational [u| rad |]
-vincentyDirect
+    -> VincentyDirect (LatLng Rational [u| rad |])
+vincentyDirect'
     epsilon@(Epsilon eps)
     ellipsoid@Ellipsoid{semiMajor, semiMinor}
     accuracy
     (LatLng (Lat (MkQuantity _Φ1), Lng (MkQuantity _L1)))
     (Radius (MkQuantity s))
     (TrueCourse (MkQuantity α1)) =
-    LatLng (Lat . MkQuantity $ _Φ2, Lng . MkQuantity $ _L2)
+    if (cosU1 * cosσ - sinU1 * sinσ * cosα1) == 0
+        then VincentyDirectEquatorial
+        else
+            VincentyDirect
+            $ LatLng (Lat . MkQuantity $ _Φ2, Lng . MkQuantity $ _L2)
     where
         f = flattening ellipsoid
 
         -- Initial setup
         _U1 = atan' $ (1 - f) * tan' _Φ1
-        σ1 = atan' $ (tan' _U1) / (cos' α1)
+        σ1 = atan2' (tan' _U1) (cos' α1)
         sinα = cos' _U1 * sin' α1
         sin²α = sinα * sinα
         cos²α = 1 - sin²α 
-        _A = 1 + u² / 16384 * (4096 + u² * (negate 768 + u² * (320 - 175 * u²)))
-        _B = u² / 1024 * (256 + u² * (negate 128 + u² * (74 - 47 * u²)))
+        _A = 1 + u² / 16384 * (4096 + u² * (-768 + u² * (320 - 175 * u²)))
+        _B = u² / 1024 * (256 + u² * (-128 + u² * (74 - 47 * u²)))
 
         -- Solution
         σ = iterateVincenty epsilon accuracy _A _B s b σ1 (s / (b * _A))
@@ -125,15 +137,15 @@ vincentyDirect
         v = sinU1 * cosσ + cosU1 * sinσ * cosα1
         j = sinU1 * sinσ - cosU1 * cosσ * cosα1
         w = (1 - f) * sqrt' (sin²α + j * j)
-        _Φ2 = atan' $ v / w
-        λ = atan' $ (sinσ * sin' α1) / (cosU1 * cosσ - sinU1 * sinσ * cosα1)
+        _Φ2 = atan2' v w
+        λ = atan2' (sinσ * sin' α1) (cosU1 * cosσ - sinU1 * sinσ * cosα1)
         _C = f / 16 * cos²α * (4 - 3 * cos²α)
 
         _2σm = 2 * σ1 + σ
         cos2σm = cos' _2σm
         cos²2σm = cos2σm * cos2σm
         x = σ + _C * sinσ * y
-        y = cos' (2 * cos2σm + _C * cosσ * (negate 1 + 2 * cos²2σm))
+        y = cos' (2 * cos2σm + _C * cosσ * (-1 + 2 * cos²2σm))
         _L = λ * (1 - _C) * f * sinα * x
 
         _L2 = _L + _L1
@@ -143,6 +155,7 @@ vincentyDirect
         tan' = F.tan eps
         atan' = F.atan eps
         sqrt' = F.sqrt eps
+        atan2' = F.atan2' epsilon
 
         MkQuantity a = semiMajor
         MkQuantity b = semiMinor
@@ -150,11 +163,70 @@ vincentyDirect
         b² = b * b
         u² = cos²α * (a² - b²) / b² 
 
-circum :: Epsilon
-       -> LatLng Rational [u| rad |]
-       -> Radius Rational [u| m |]
-       -> TrueCourse Rational 
-       -> LatLng Rational [u| rad |]
+vincentyDirect
+    :: Epsilon
+    -> Ellipsoid Rational
+    -> VincentyAccuracy Rational
+    -> LatLng Rational [u| rad |]
+    -> Radius Rational [u| m |]
+    -> TrueCourse Rational
+    -> LatLng Rational [u| rad |]
+vincentyDirect
+    e ellipsoid accuracy
+    x@(LatLng (xLat, xLng))
+    r tc@(TrueCourse b)
+
+    -- NOTE: If we have an initial point at the poles then defer to the
+    -- solution using doubles.
+    | xLat == minBound = v''
+    | xLat == maxBound = v''
+
+    -- NOTE: If we have an initial point out of bounds defer to the
+    -- solution using doubles.
+    | xLat < minBound = v''
+    | xLat > maxBound = v''
+
+    | xLng <= minBound = v''
+    | xLng >= maxBound = v''
+
+    | xLng < (Lng $ convert [u| -179 deg |]) = v''
+    | xLng > (Lng $ convert [u| 179 deg |]) = v''
+
+    -- NOTE: If we have an azimuth of due east or west then defer to the
+    -- solution using doubles.
+    | b' > [u| 89 deg |] && b' < [u| 91 deg |] = v''
+    | b' > [u| 269 deg |] && b' < [u| 271 deg |]  = v''
+
+    | otherwise =
+        case v of
+            VincentyDirect y -> y
+            _ -> v''
+    where
+        VincentyAccuracy accuracy' = accuracy
+        accuracy'' = VincentyAccuracy $ fromRational accuracy'
+
+        b' :: Quantity Double [u| deg |]
+        b' = convert . fromRational' $ b
+
+        v = vincentyDirect' e ellipsoid accuracy x r tc
+
+        v' :: LatLng Double [u| rad |]
+        v' =
+            Dbl.vincentyDirect
+                wgs84
+                accuracy''
+                (fromRationalLatLng x)
+                (fromRationalRadius r)
+                (TrueCourse . fromRational' $ b)
+
+        v'' = toRationalLatLng v'
+
+circum
+    :: Epsilon
+    -> LatLng Rational [u| rad |]
+    -> Radius Rational [u| m |]
+    -> TrueCourse Rational 
+    -> LatLng Rational [u| rad |]
 circum e x r tc =
     vincentyDirect e wgs84 defaultVincentyAccuracy x r tc
 

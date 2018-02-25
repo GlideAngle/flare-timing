@@ -5,7 +5,11 @@
 {-# LANGUAGE PartialTypeSignatures #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module Flight.Earth.Ellipsoid.PointToPoint.Rational (distanceVincenty) where
+module Flight.Earth.Ellipsoid.PointToPoint.Rational
+    ( distanceVincenty
+    , vincentyInverse
+    , atan2'
+    ) where
 
 import Prelude hiding (sum, span)
 import qualified Data.Number.FixedFunctions as F
@@ -69,7 +73,7 @@ vincentyInverse
 
         loop λ =
             if abs λ > F.pi eps
-                then VincentyAntipodal
+                then VincentyInverseAntipodal
                 else
                     if abs (λ - λ') < tolerance
                         then VincentyInverse $ b * _A * (σ - _Δσ)
@@ -118,8 +122,8 @@ distanceVincenty
 distanceVincenty epsilon ellipsoid lat lng =
     case distanceVincenty' epsilon ellipsoid lat lng of
         VincentyInverse d' -> d'
-        VincentyAntipodal -> tooFar
-        VincentyAbnormal _ -> tooFar
+        VincentyInverseAntipodal -> tooFar
+        VincentyInverseAbnormal _ -> tooFar
 
 distanceVincenty'
     :: (Real a, Fractional a)
@@ -134,23 +138,23 @@ distanceVincenty' e ellipsoid
 
     | x == y = VincentyInverse $ TaskDistance [u| 0 m |]
 
-    | xLat < minBound = VincentyAbnormal LatUnder
-    | xLat > maxBound = VincentyAbnormal LatOver
-    | xLng < minBound = VincentyAbnormal LngUnder
-    | xLng > maxBound = VincentyAbnormal LngOver
+    | xLat < minBound = VincentyInverseAbnormal LatUnder
+    | xLat > maxBound = VincentyInverseAbnormal LatOver
+    | xLng < minBound = VincentyInverseAbnormal LngUnder
+    | xLng > maxBound = VincentyInverseAbnormal LngOver
 
-    | yLat < minBound = VincentyAbnormal LatUnder
-    | yLat > maxBound = VincentyAbnormal LatOver
-    | yLng < minBound = VincentyAbnormal LngUnder
-    | yLng > maxBound = VincentyAbnormal LngOver
+    | yLat < minBound = VincentyInverseAbnormal LatUnder
+    | yLat > maxBound = VincentyInverseAbnormal LatOver
+    | yLng < minBound = VincentyInverseAbnormal LngUnder
+    | yLng > maxBound = VincentyInverseAbnormal LngOver
 
     | otherwise =
         case vincentyInverse e ellipsoidR accuracy (llR x) (llR y) of
             VincentyInverse d' ->
                 VincentyInverse . TaskDistance . fromRational' . MkQuantity $ d'
                 
-            VincentyAntipodal -> VincentyAntipodal
-            VincentyAbnormal ab -> VincentyAbnormal ab
+            VincentyInverseAntipodal -> VincentyInverseAntipodal
+            VincentyInverseAbnormal ab -> VincentyInverseAbnormal ab
         where
             ellipsoidR = toRationalEllipsoid ellipsoid
             llR = toRationalLatLng
