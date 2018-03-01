@@ -52,6 +52,22 @@ diff :: Num a => TaskDistance a -> TaskDistance a -> TaskDistance a
 diff (TaskDistance a) (TaskDistance b) =
     TaskDistance . abs' $ a -: b
 
+describeInverse
+    :: (Real a, Fractional a)
+    => (DMS, DMS)
+    -> (DMS, DMS)
+    -> TaskDistance a
+    -> Quantity a [u| m |]
+    -> String
+describeInverse x y expected tolerance =
+    show x
+    ++ " to "
+    ++ show y
+    ++ " = "
+    ++ show expected
+    ++ " ± "
+    ++ showTolerance tolerance
+
 dblInverseChecks
     :: SpanLatLng Double
     -> GetTolerance Double
@@ -62,15 +78,7 @@ dblInverseChecks span getTolerance =
     zipWith f
     where
         f expected (x, y) =
-            HU.testCase
-                ( show x
-                ++ " to "
-                ++ show y
-                ++ " = "
-                ++ show expected
-                ++ " ± "
-                ++ showTolerance tolerance'
-                )
+            HU.testCase (describeInverse x y expected tolerance')
             $ diff (found x y) expected
             @?<= (TaskDistance tolerance')
             where
@@ -90,15 +98,7 @@ ratInverseChecks span getTolerance =
     zipWith f
     where
         f (TaskDistance d) (x, y) =
-            HU.testCase
-                ( show x
-                ++ " to "
-                ++ show y
-                ++ " = "
-                ++ show expected'
-                ++ " ± "
-                ++ showTolerance tolerance'
-                )
+            HU.testCase (describeInverse x y expected' tolerance')
             $ diff (found x y) expected'
             @?<= (TaskDistance tolerance')
             where
