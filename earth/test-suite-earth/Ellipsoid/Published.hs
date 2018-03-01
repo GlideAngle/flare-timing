@@ -21,30 +21,28 @@ import Test.Tasty (TestTree, testGroup)
 import Data.UnitsOfMeasure (u, convert)
 
 import Flight.Units ()
-import Flight.Units.DegMinSec (DMS(..))
 import Flight.LatLng.Rational (Epsilon(..))
-import Flight.Distance (TaskDistance(..))
 import qualified Flight.Earth.Ellipsoid.PointToPoint.Double as Dbl (distanceVincenty)
 import qualified Flight.Earth.Ellipsoid.PointToPoint.Rational as Rat (distanceVincenty)
 import Flight.Earth.Ellipsoid (wgs84)
 import qualified Published.Bedford as B (inverseProblems, inverseSolutions)
 import qualified Published.GeoscienceAustralia as G (inverseProblems, inverseSolutions)
 import qualified Tolerance as T (GetTolerance, dblInverseChecks, ratInverseChecks)
-import Geodesy (InverseProblem(..))
+import Geodesy (IProb, ISoln)
 
 getTolerance :: Fractional a => T.GetTolerance a
 getTolerance = const . convert $ [u| 0.5 mm |]
 
 dblInverseChecks
-    :: [TaskDistance Double]
-    -> [InverseProblem (DMS, DMS)]
+    :: [ISoln]
+    -> [IProb]
     -> [TestTree]
 dblInverseChecks =
     T.dblInverseChecks (Dbl.distanceVincenty wgs84) getTolerance
 
 ratInverseChecks
-    :: [TaskDistance Double]
-    -> [InverseProblem (DMS, DMS)]
+    :: [ISoln]
+    -> [IProb]
     -> [TestTree]
 ratInverseChecks =
     T.ratInverseChecks span getTolerance

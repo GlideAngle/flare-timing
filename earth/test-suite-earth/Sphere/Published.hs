@@ -21,15 +21,13 @@ import Test.Tasty (TestTree, testGroup)
 import Data.UnitsOfMeasure (u, convert)
 
 import Flight.Units ()
-import Flight.Units.DegMinSec (DMS(..))
 import Flight.LatLng.Rational (Epsilon(..))
-import Flight.Distance (TaskDistance(..))
 import qualified Flight.Earth.Sphere.PointToPoint.Double as Dbl (distanceHaversine)
 import qualified Flight.Earth.Sphere.PointToPoint.Rational as Rat (distanceHaversine)
 import qualified Tolerance as T (GetTolerance, dblInverseChecks, ratInverseChecks)
 import qualified Published.Bedford as B (inverseProblems, inverseSolutions)
 import qualified Published.GeoscienceAustralia as G (inverseProblems, inverseSolutions)
-import Geodesy (InverseProblem(..))
+import Geodesy (IProb, ISoln)
 
 getTolerance :: (Ord a, Fractional a) => T.GetTolerance a
 getTolerance d'
@@ -41,15 +39,15 @@ getTolerance d'
         d = convert d'
 
 dblInverseChecks
-    :: [TaskDistance Double]
-    -> [InverseProblem (DMS, DMS)]
+    :: [ISoln]
+    -> [IProb]
     -> [TestTree]
 dblInverseChecks =
     T.dblInverseChecks (Dbl.distanceHaversine) getTolerance
 
 ratInverseChecks
-    :: [TaskDistance Double]
-    -> [InverseProblem (DMS, DMS)]
+    :: [ISoln]
+    -> [IProb]
     -> [TestTree]
 ratInverseChecks =
     T.ratInverseChecks span getTolerance

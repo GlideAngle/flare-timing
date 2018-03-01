@@ -8,6 +8,7 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE QuasiQuotes #-}
 
+{-# LANGUAGE ParallelListComp #-}
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
 -- | Test data from ...
@@ -18,16 +19,20 @@
 module Published.Bedford (inverseProblems, inverseSolutions) where
 
 import Data.UnitsOfMeasure (u, convert)
+import Data.UnitsOfMeasure.Internal (Quantity)
 
 import Flight.Units ()
 import Flight.Units.DegMinSec (DMS(..))
 import Flight.Distance (TaskDistance(..))
-import Geodesy (InverseProblem(..))
+import Geodesy (InverseProblem(..), InverseSolution(..), IProb, ISoln)
 
-inverseProblems :: [InverseProblem (DMS, DMS)]
+inverseProblems :: [IProb]
 inverseProblems =
     (\((xLat, xLng), (yLat, yLng)) ->
-        InverseProblem (DMS xLat, DMS xLng) (DMS yLat, DMS yLng))
+        InverseProblem
+            { x = (DMS xLat, DMS xLng)
+            , y = (DMS yLat, DMS yLng)
+            })
     <$>
     [ (((10,  0,  0.0), (-18,  0,  0.0)), ((10, 43, 39.078), (-18,  0,  0.0)))
     , (((40,  0,  0.0), (-18,  0,  0.0)), ((40, 43, 28.790), (-18,  0,  0.0)))
@@ -82,10 +87,20 @@ inverseProblems =
     , (((70,  0,  0.0), (-18,  0,  0.0)), ((43,  7, 36.475), ( 52,  1,  0.626)))
     ]
 
-inverseSolutions :: [TaskDistance Double]
+inverseSolutions :: [ISoln]
 inverseSolutions =
-    TaskDistance . convert
-    <$>
+    [ InverseSolution
+        { s = d
+        , α₁ = azX
+        , α₂ = azY
+        }
+    | d <- TaskDistance . convert <$> distances
+    | azX <- xAzimuths
+    | azY <- yAzimuths
+    ]
+
+distances :: [Quantity Double [u| km |]]
+distances =
     [ [u| 80.471341 km |]
     , [u| 80.467842 km |]
     , [u| 80.463616 km |]
@@ -138,3 +153,9 @@ inverseSolutions =
     , [u| 4827.899946 km |]
     , [u| 4827.858337 km |]
     ]
+
+xAzimuths :: [DMS]
+xAzimuths = []
+
+yAzimuths :: [DMS]
+yAzimuths = []

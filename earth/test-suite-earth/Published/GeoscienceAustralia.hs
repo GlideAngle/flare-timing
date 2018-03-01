@@ -44,16 +44,20 @@ import Data.UnitsOfMeasure (u)
 import Flight.Units ()
 import Flight.Units.DegMinSec (DMS(..))
 import Flight.Distance (TaskDistance(..))
-import Geodesy (InverseProblem(..))
+import Geodesy (InverseProblem(..), InverseSolution(..), IProb, ISoln)
 
-inverseProblems :: [InverseProblem (DMS, DMS)]
+inverseProblems :: [IProb]
 inverseProblems =
     [InverseProblem flindersPeak buninyong]
     where
         flindersPeak = (DMS (-37, 57, 03.7203), DMS (144, 25, 29.5244))
         buninyong = (DMS (-37, 39, 10.1561), DMS (143, 55, 35.3839))
 
-inverseSolutions :: [TaskDistance Double]
+inverseSolutions :: [ISoln]
 inverseSolutions =
-    [TaskDistance [u| 54972.271 m |]]
-
+    [ InverseSolution
+        { s = TaskDistance [u| 54972.271 m |]
+        , α₁ = DMS (306, 52, 05.373)
+        , α₂ = DMS (127, 10, 25.070)
+        }
+    ]
