@@ -3,11 +3,12 @@ module Sphere.Sphere (properties, units, tests) where
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.QuickCheck as QC
 
+import Sphere.GeoscienceAustralia (geoSciAuUnits)
+import Sphere.Bedford (bedfordUnits)
 import Sphere.Meridian (meridianUnits)
 import Sphere.Touching (touchingUnits)
 import Sphere.Coincident (coincidentUnits)
 import Sphere.Disjoint (disjointUnits)
-import Sphere.Bedford (bedfordUnits)
 import Sphere.Forbes (forbesUnits)
 import Sphere.Cylinder.Outer (outerCylinderUnits)
 import Sphere.Cylinder.Inner (innerCylinderUnits)
@@ -29,7 +30,8 @@ properties =
 units :: TestTree
 units =
     testGroup "Unit tests on the FAI sphere using haversines"
-    [ bedfordUnits
+    [ geoSciAuUnits
+    , bedfordUnits
     , forbesUnits
     , meridianUnits
     , disjointUnits
