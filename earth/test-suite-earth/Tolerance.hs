@@ -17,8 +17,8 @@ module Tolerance
     ( GetTolerance
     , diff
     , showTolerance
-    , dblChecks
-    , ratChecks
+    , dblInverseChecks
+    , ratInverseChecks
     ) where
 
 import Prelude hiding (span)
@@ -52,12 +52,13 @@ diff :: Num a => TaskDistance a -> TaskDistance a -> TaskDistance a
 diff (TaskDistance a) (TaskDistance b) =
     TaskDistance . abs' $ a -: b
 
-dblChecks
+dblInverseChecks
     :: SpanLatLng Double
     -> GetTolerance Double
     -> [TaskDistance Double]
-    -> [((DMS, DMS), (DMS, DMS))] -> [TestTree]
-dblChecks span getTolerance =
+    -> [((DMS, DMS), (DMS, DMS))]
+    -> [TestTree]
+dblInverseChecks span getTolerance =
     zipWith f
     where
         f expected (x, y) =
@@ -79,13 +80,13 @@ dblChecks span getTolerance =
 
         found x y = span (fromDMS x) (fromDMS y)
 
-ratChecks
+ratInverseChecks
     :: SpanLatLng Rational
     -> GetTolerance Rational
     -> [TaskDistance Double]
     -> [((DMS, DMS), (DMS, DMS))]
     -> [TestTree]
-ratChecks span getTolerance =
+ratInverseChecks span getTolerance =
     zipWith f
     where
         f (TaskDistance d) (x, y) =

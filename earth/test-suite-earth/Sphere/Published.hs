@@ -26,9 +26,9 @@ import Flight.LatLng.Rational (Epsilon(..))
 import Flight.Distance (TaskDistance(..))
 import qualified Flight.Earth.Sphere.PointToPoint.Double as Dbl (distanceHaversine)
 import qualified Flight.Earth.Sphere.PointToPoint.Rational as Rat (distanceHaversine)
-import qualified Tolerance as T (GetTolerance, dblChecks, ratChecks)
-import qualified Bedford as B (points, solutions)
-import qualified GeoscienceAustralia as G (points, solutions)
+import qualified Tolerance as T (GetTolerance, dblInverseChecks, ratInverseChecks)
+import qualified Bedford as B (points, inverseSolutions)
+import qualified GeoscienceAustralia as G (points, inverseSolutions)
 
 getTolerance :: (Ord a, Fractional a) => T.GetTolerance a
 getTolerance d'
@@ -39,19 +39,19 @@ getTolerance d'
     where
         d = convert d'
 
-dblChecks
+dblInverseChecks
     :: [TaskDistance Double]
     -> [((DMS, DMS), (DMS, DMS))]
     -> [TestTree]
-dblChecks =
-    T.dblChecks (Dbl.distanceHaversine) getTolerance
+dblInverseChecks =
+    T.dblInverseChecks (Dbl.distanceHaversine) getTolerance
 
-ratChecks
+ratInverseChecks
     :: [TaskDistance Double]
     -> [((DMS, DMS), (DMS, DMS))]
     -> [TestTree]
-ratChecks =
-    T.ratChecks span getTolerance
+ratInverseChecks =
+    T.ratInverseChecks span getTolerance
     where
         span = Rat.distanceHaversine e
         e = Epsilon $ 1 % 1000000000000000000
@@ -59,15 +59,15 @@ ratChecks =
 bedfordUnits :: TestTree
 bedfordUnits =
     testGroup "Bedford Institute of Oceanography distances"
-    [ testGroup "with doubles" $ dblChecks B.solutions B.points
-    , testGroup "with rationals" $ ratChecks B.solutions B.points
+    [ testGroup "with doubles" $ dblInverseChecks B.inverseSolutions B.points
+    , testGroup "with rationals" $ ratInverseChecks B.inverseSolutions B.points
     ]
 
 geoSciAuUnits :: TestTree
 geoSciAuUnits =
     testGroup "Geoscience Australia distances between Flinders Peak and Buninyong"
-    [ testGroup "with doubles" $ dblChecks G.solutions G.points
-    , testGroup "with rationals" $ ratChecks G.solutions G.points
+    [ testGroup "with doubles" $ dblInverseChecks G.inverseSolutions G.points
+    , testGroup "with rationals" $ ratInverseChecks G.inverseSolutions G.points
     ]
 
 publishedUnits :: TestTree

@@ -15,7 +15,7 @@
 -- Bedford Institute of Oceanography
 -- Evaluation Direct and Inverse Geodetic Algorithms
 -- Paul Delorme, September 1978.
-module Bedford (points, solutions) where
+module Bedford (points, inverseSolutions) where
 
 import Data.UnitsOfMeasure (u, convert)
 
@@ -80,8 +80,8 @@ points =
     , (((70,  0,  0.0), (-18,  0,  0.0)), ((43,  7, 36.475), ( 52,  1,  0.626)))
     ]
 
-solutions :: [TaskDistance Double]
-solutions =
+inverseSolutions :: [TaskDistance Double]
+inverseSolutions =
     TaskDistance . convert
     <$>
     [ [u| 80.471341 km |]
