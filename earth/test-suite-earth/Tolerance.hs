@@ -13,14 +13,28 @@
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module Tolerance (diff, showTolerance) where
+module Tolerance
+    ( GetTolerance
+    , diff
+    , showTolerance
+    , dblChecks
+    , ratChecks
+    ) where
 
-import Prelude hiding (min)
+import Prelude hiding (span)
+import Test.Tasty (TestTree)
+import Test.Tasty.HUnit as HU (testCase)
+import Test.Tasty.HUnit.Compare ((@?<=))
 import Data.UnitsOfMeasure ((-:), u, convert, fromRational', toRational', abs')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
-import Flight.Distance (TaskDistance(..))
+import Flight.Units.DegMinSec (DMS(..))
+import Flight.LatLng (fromDMS)
+import Flight.Distance (TaskDistance(..), SpanLatLng)
+import Flight.Zone (toRationalLatLng)
+
+type GetTolerance a = Quantity a [u| m |] -> Quantity a [u| km |]
 
 showTolerance :: (Real a, Fractional a) => Quantity a [u| m |] -> String
 showTolerance d
@@ -37,3 +51,61 @@ showTolerance d
 diff :: Num a => TaskDistance a -> TaskDistance a -> TaskDistance a
 diff (TaskDistance a) (TaskDistance b) =
     TaskDistance . abs' $ a -: b
+
+dblChecks
+    :: SpanLatLng Double
+    -> GetTolerance Double
+    -> [TaskDistance Double]
+    -> [((DMS, DMS), (DMS, DMS))] -> [TestTree]
+dblChecks span getTolerance =
+    zipWith f
+    where
+        f expected (x, y) =
+            HU.testCase
+                ( show x
+                ++ " to "
+                ++ show y
+                ++ " = "
+                ++ show expected
+                ++ " ± "
+                ++ showTolerance tolerance'
+                )
+            $ diff (found x y) expected
+            @?<= (TaskDistance tolerance')
+            where
+                tolerance' =
+                    convert . getTolerance
+                    $ (\(TaskDistance q) -> q) expected
+
+        found x y = span (fromDMS x) (fromDMS y)
+
+ratChecks
+    :: SpanLatLng Rational
+    -> GetTolerance Rational
+    -> [TaskDistance Double]
+    -> [((DMS, DMS), (DMS, DMS))]
+    -> [TestTree]
+ratChecks span getTolerance =
+    zipWith f
+    where
+        f (TaskDistance d) (x, y) =
+            HU.testCase
+                ( show x
+                ++ " to "
+                ++ show y
+                ++ " = "
+                ++ show expected'
+                ++ " ± "
+                ++ showTolerance tolerance'
+                )
+            $ diff (found x y) expected'
+            @?<= (TaskDistance tolerance')
+            where
+                expected' = expected d
+                tolerance' =
+                    convert . getTolerance
+                    $ (\(TaskDistance q) -> q) expected'
+
+        expected d = TaskDistance $ toRational' d
+        found x y = span (fromDMS' x) (fromDMS' y)
+        fromDMS' = toRationalLatLng . fromDMS

@@ -8,31 +8,20 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE QuasiQuotes #-}
 
-{-# LANGUAGE NamedFieldPuns #-}
-{-# LANGUAGE PartialTypeSignatures #-}
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
-{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
 -- | Test data from ...
 -- 
 -- Bedford Institute of Oceanography
 -- Evaluation Direct and Inverse Geodetic Algorithms
 -- Paul Delorme, September 1978.
-module Bedford (GetTolerance, points, solutions, dblChecks, ratChecks) where
+module Bedford (points, solutions) where
 
-import Prelude hiding (span, min)
-import Test.Tasty (TestTree)
-import Test.Tasty.HUnit as HU (testCase)
-import Test.Tasty.HUnit.Compare ((@?<=))
-import Data.UnitsOfMeasure (u, convert, toRational')
-import Data.UnitsOfMeasure.Internal (Quantity(..))
+import Data.UnitsOfMeasure (u, convert)
 
 import Flight.Units ()
 import Flight.Units.DegMinSec (DMS(..))
-import Flight.LatLng (fromDMS)
-import Flight.Distance (TaskDistance(..), SpanLatLng)
-import Flight.Zone (toRationalLatLng)
-import Tolerance (diff, showTolerance)
+import Flight.Distance (TaskDistance(..))
 
 points :: [((DMS, DMS), (DMS, DMS))]
 points =
@@ -147,63 +136,3 @@ solutions =
     , [u| 4827.899946 km |]
     , [u| 4827.858337 km |]
     ]
-
-type GetTolerance a = Quantity a [u| m |] -> Quantity a [u| km |]
-
-dblChecks
-    :: SpanLatLng Double
-    -> GetTolerance Double
-    -> [TaskDistance Double]
-    -> [((DMS, DMS), (DMS, DMS))] -> [TestTree]
-dblChecks span getTolerance =
-    zipWith f
-    where
-        f expected (x, y) =
-            HU.testCase
-                ( show x
-                ++ " to "
-                ++ show y
-                ++ " = "
-                ++ show expected
-                ++ " ± "
-                ++ showTolerance tolerance'
-                )
-            $ diff (found x y) expected
-            @?<= (TaskDistance tolerance')
-            where
-                tolerance' =
-                    convert . getTolerance
-                    $ (\(TaskDistance q) -> q) expected
-
-        found x y = span (fromDMS x) (fromDMS y)
-
-ratChecks
-    :: SpanLatLng Rational
-    -> GetTolerance Rational
-    -> [TaskDistance Double]
-    -> [((DMS, DMS), (DMS, DMS))]
-    -> [TestTree]
-ratChecks span getTolerance =
-    zipWith f
-    where
-        f (TaskDistance d) (x, y) =
-            HU.testCase
-                ( show x
-                ++ " to "
-                ++ show y
-                ++ " = "
-                ++ show expected'
-                ++ " ± "
-                ++ showTolerance tolerance'
-                )
-            $ diff (found x y) expected'
-            @?<= (TaskDistance tolerance')
-            where
-                expected' = expected d
-                tolerance' =
-                    convert . getTolerance
-                    $ (\(TaskDistance q) -> q) expected'
-
-        expected d = TaskDistance $ toRational' d
-        found x y = span (fromDMS' x) (fromDMS' y)
-        fromDMS' = toRationalLatLng . fromDMS

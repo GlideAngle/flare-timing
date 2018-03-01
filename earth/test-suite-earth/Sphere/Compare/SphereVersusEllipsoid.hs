@@ -26,10 +26,9 @@ import Flight.LatLng.Rational (Epsilon(..))
 import Flight.Distance (TaskDistance(..))
 import qualified Flight.Earth.Sphere.PointToPoint.Double as Dbl (distanceHaversine)
 import qualified Flight.Earth.Sphere.PointToPoint.Rational as Rat (distanceHaversine)
-import Bedford (GetTolerance)
-import qualified Bedford as B (dblChecks, ratChecks)
+import qualified Tolerance as T (GetTolerance, dblChecks, ratChecks)
 
-getTolerance :: (Ord a, Fractional a) => GetTolerance a
+getTolerance :: (Ord a, Fractional a) => T.GetTolerance a
 getTolerance d'
     | d < [u| 100 km |] = convert [u| 425.4 m |]
     | d < [u| 500 km |] = convert [u| 2.495 km |]
@@ -43,14 +42,14 @@ dblChecks
     -> [((DMS, DMS), (DMS, DMS))]
     -> [TestTree]
 dblChecks =
-    B.dblChecks (Dbl.distanceHaversine) getTolerance
+    T.dblChecks (Dbl.distanceHaversine) getTolerance
 
 ratChecks
     :: [TaskDistance Double]
     -> [((DMS, DMS), (DMS, DMS))]
     -> [TestTree]
 ratChecks =
-    B.ratChecks span getTolerance
+    T.ratChecks span getTolerance
     where
         span = Rat.distanceHaversine e
         e = Epsilon $ 1 % 1000000000000000000

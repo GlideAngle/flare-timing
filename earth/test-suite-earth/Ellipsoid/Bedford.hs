@@ -27,10 +27,10 @@ import Flight.Distance (TaskDistance(..))
 import qualified Flight.Earth.Ellipsoid.PointToPoint.Double as Dbl (distanceVincenty)
 import qualified Flight.Earth.Ellipsoid.PointToPoint.Rational as Rat (distanceVincenty)
 import Flight.Earth.Ellipsoid (wgs84)
-import Bedford (GetTolerance, points, solutions)
-import qualified Bedford as B (dblChecks, ratChecks)
+import Bedford (points, solutions)
+import qualified Tolerance as T (GetTolerance, dblChecks, ratChecks)
 
-getTolerance :: Fractional a => GetTolerance a
+getTolerance :: Fractional a => T.GetTolerance a
 getTolerance = const . convert $ [u| 0.5 mm |]
 
 dblChecks
@@ -38,14 +38,14 @@ dblChecks
     -> [((DMS, DMS), (DMS, DMS))]
     -> [TestTree]
 dblChecks =
-    B.dblChecks (Dbl.distanceVincenty wgs84) getTolerance
+    T.dblChecks (Dbl.distanceVincenty wgs84) getTolerance
 
 ratChecks
     :: [TaskDistance Double]
     -> [((DMS, DMS), (DMS, DMS))]
     -> [TestTree]
 ratChecks =
-    B.ratChecks span getTolerance
+    T.ratChecks span getTolerance
     where
         span = Rat.distanceVincenty e wgs84
         e = Epsilon $ 1 % 1000000000000000000
