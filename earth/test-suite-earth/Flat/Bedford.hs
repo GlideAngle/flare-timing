@@ -29,7 +29,7 @@ import Flight.Distance (TaskDistance(..))
 import qualified Flight.Earth.Flat.PointToPoint.Double as Dbl (distanceEuclidean)
 import qualified Flight.Earth.Flat.PointToPoint.Rational as Rat (distanceEuclidean)
 import Tolerance (diff, describeInverse)
-import Published.Bedford (points, inverseSolutions)
+import Published.Bedford (inverseProblems, inverseSolutions)
 
 getTolerance
     :: (Real a, Fractional a)
@@ -110,6 +110,6 @@ ratInverseChecks =
 bedfordUnits :: TestTree
 bedfordUnits =
     testGroup "Bedford Institute of Oceanography distances"
-    [ testGroup "with doubles" $ dblInverseChecks inverseSolutions points
-    , testGroup "with rationals" $ ratInverseChecks inverseSolutions points
+    [ testGroup "with doubles" $ dblInverseChecks inverseSolutions inverseProblems
+    , testGroup "with rationals" $ ratInverseChecks inverseSolutions inverseProblems
     ]

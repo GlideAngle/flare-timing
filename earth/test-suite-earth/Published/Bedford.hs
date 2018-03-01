@@ -15,7 +15,7 @@
 -- Bedford Institute of Oceanography
 -- Evaluation Direct and Inverse Geodetic Algorithms
 -- Paul Delorme, September 1978.
-module Published.Bedford (points, inverseSolutions) where
+module Published.Bedford (inverseProblems, inverseSolutions) where
 
 import Data.UnitsOfMeasure (u, convert)
 
@@ -23,8 +23,8 @@ import Flight.Units ()
 import Flight.Units.DegMinSec (DMS(..))
 import Flight.Distance (TaskDistance(..))
 
-points :: [((DMS, DMS), (DMS, DMS))]
-points =
+inverseProblems :: [((DMS, DMS), (DMS, DMS))]
+inverseProblems =
     (\((xLat, xLng), (yLat, yLng)) -> ((DMS xLat, DMS xLng), (DMS yLat, DMS yLng)))
     <$>
     [ (((10,  0,  0.0), (-18,  0,  0.0)), ((10, 43, 39.078), (-18,  0,  0.0)))

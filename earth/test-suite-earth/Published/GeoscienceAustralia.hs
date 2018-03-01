@@ -34,7 +34,7 @@
 -- Distance: 54972.271m
 -- Azimuth 1-2: 306°52'05.373"
 -- Azimuth 2-1: 127°10'25.070"
-module Published.GeoscienceAustralia (points, inverseSolutions) where
+module Published.GeoscienceAustralia (inverseProblems, inverseSolutions) where
 
 import Prelude hiding (span, min)
 import Data.UnitsOfMeasure (u)
@@ -43,8 +43,8 @@ import Flight.Units ()
 import Flight.Units.DegMinSec (DMS(..))
 import Flight.Distance (TaskDistance(..))
 
-points :: [((DMS, DMS), (DMS, DMS))]
-points =
+inverseProblems :: [((DMS, DMS), (DMS, DMS))]
+inverseProblems =
     [(flindersPeak, buninyong)]
     where
         flindersPeak = (DMS (-37, 57, 03.7203), DMS (144, 25, 29.5244))

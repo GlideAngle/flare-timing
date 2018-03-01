@@ -27,8 +27,8 @@ import Flight.Distance (TaskDistance(..))
 import qualified Flight.Earth.Ellipsoid.PointToPoint.Double as Dbl (distanceVincenty)
 import qualified Flight.Earth.Ellipsoid.PointToPoint.Rational as Rat (distanceVincenty)
 import Flight.Earth.Ellipsoid (wgs84)
-import qualified Published.Bedford as B (points, inverseSolutions)
-import qualified Published.GeoscienceAustralia as G (points, inverseSolutions)
+import qualified Published.Bedford as B (inverseProblems, inverseSolutions)
+import qualified Published.GeoscienceAustralia as G (inverseProblems, inverseSolutions)
 import qualified Tolerance as T (GetTolerance, dblInverseChecks, ratInverseChecks)
 
 getTolerance :: Fractional a => T.GetTolerance a
@@ -54,15 +54,19 @@ ratInverseChecks =
 bedfordUnits :: TestTree
 bedfordUnits =
     testGroup "Bedford Institute of Oceanography distances"
-    [ testGroup "with doubles" $ dblInverseChecks B.inverseSolutions B.points
-    , testGroup "with rationals" $ ratInverseChecks B.inverseSolutions B.points
+    [ testGroup "with doubles"
+        $ dblInverseChecks B.inverseSolutions B.inverseProblems
+    , testGroup "with rationals"
+        $ ratInverseChecks B.inverseSolutions B.inverseProblems
     ]
 
 geoSciAuUnits :: TestTree
 geoSciAuUnits =
     testGroup "Geoscience Australia distances between Flinders Peak and Buninyong"
-    [ testGroup "with doubles" $ dblInverseChecks G.inverseSolutions G.points
-    , testGroup "with rationals" $ ratInverseChecks G.inverseSolutions G.points
+    [ testGroup "with doubles"
+        $ dblInverseChecks G.inverseSolutions G.inverseProblems
+    , testGroup "with rationals"
+        $ ratInverseChecks G.inverseSolutions G.inverseProblems
     ]
 
 publishedUnits :: TestTree
