@@ -6,7 +6,7 @@ import Test.Tasty.Providers as QC
 
 import Ellipsoid.Coincident (coincidentUnits)
 import Ellipsoid.Meridian (meridianUnits)
-import Ellipsoid.Bedford (bedfordUnits)
+import Ellipsoid.Published (publishedUnits)
 import Ellipsoid.Forbes (forbesUnits)
 import Ellipsoid.Cylinder.Outer (outerCylinderUnits)
 import Ellipsoid.Cylinder.Inner (innerCylinderUnits)
@@ -29,7 +29,7 @@ properties =
 units :: TestTree
 units =
     testGroup "Unit tests on the WGS84 ellipsoid using Vincenty's solution"
-    [ bedfordUnits
+    [ publishedUnits
     , forbesUnits
     , coincidentUnits
     , meridianUnits

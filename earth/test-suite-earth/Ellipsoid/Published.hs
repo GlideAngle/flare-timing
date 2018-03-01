@@ -13,7 +13,7 @@
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module Ellipsoid.Bedford (bedfordUnits) where
+module Ellipsoid.Published (publishedUnits, bedfordUnits, geoSciAuUnits) where
 
 import Prelude hiding (span, min)
 import Data.Ratio ((%))
@@ -27,7 +27,8 @@ import Flight.Distance (TaskDistance(..))
 import qualified Flight.Earth.Ellipsoid.PointToPoint.Double as Dbl (distanceVincenty)
 import qualified Flight.Earth.Ellipsoid.PointToPoint.Rational as Rat (distanceVincenty)
 import Flight.Earth.Ellipsoid (wgs84)
-import Bedford (points, solutions)
+import qualified Bedford as B (points, solutions)
+import qualified GeoscienceAustralia as G (points, solutions)
 import qualified Tolerance as T (GetTolerance, dblChecks, ratChecks)
 
 getTolerance :: Fractional a => T.GetTolerance a
@@ -53,6 +54,20 @@ ratChecks =
 bedfordUnits :: TestTree
 bedfordUnits =
     testGroup "Bedford Institute of Oceanography distances"
-    [ testGroup "with doubles" $ dblChecks solutions points
-    , testGroup "with rationals" $ ratChecks solutions points
+    [ testGroup "with doubles" $ dblChecks B.solutions B.points
+    , testGroup "with rationals" $ ratChecks B.solutions B.points
+    ]
+
+geoSciAuUnits :: TestTree
+geoSciAuUnits =
+    testGroup "Geoscience Australia distances between Flinders Peak and Buninyong"
+    [ testGroup "with doubles" $ dblChecks G.solutions G.points
+    , testGroup "with rationals" $ ratChecks G.solutions G.points
+    ]
+
+publishedUnits :: TestTree
+publishedUnits =
+    testGroup "With published data sets"
+    [ geoSciAuUnits
+    , bedfordUnits
     ]
