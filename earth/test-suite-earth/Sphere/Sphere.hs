@@ -3,8 +3,8 @@ module Sphere.Sphere (properties, units, tests) where
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.QuickCheck as QC
 
-import Sphere.GeoscienceAustralia (geoSciAuUnits)
-import Sphere.Bedford (bedfordUnits)
+import Sphere.Compare.GeoscienceAustralia (geoSciAuUnits)
+import Sphere.Compare.Bedford (bedfordUnits)
 import Sphere.Meridian (meridianUnits)
 import Sphere.Touching (touchingUnits)
 import Sphere.Coincident (coincidentUnits)

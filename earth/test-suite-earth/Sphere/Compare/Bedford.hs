@@ -13,7 +13,7 @@
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module Sphere.Bedford (bedfordUnits) where
+module Sphere.Compare.Bedford (bedfordUnits) where
 
 import Prelude hiding (span, min)
 import Data.Ratio ((%))

@@ -13,7 +13,7 @@
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module Sphere.GeoscienceAustralia (geoSciAuUnits) where
+module Sphere.Compare.GeoscienceAustralia (geoSciAuUnits) where
 
 import Prelude hiding (span, min)
 import Data.Ratio ((%))
