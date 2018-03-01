@@ -13,11 +13,11 @@
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module Sphere.Compare.SphereVersusEllipsoid (dblChecks, ratChecks) where
+module Sphere.Published (publishedUnits, bedfordUnits, geoSciAuUnits) where
 
 import Prelude hiding (span, min)
 import Data.Ratio ((%))
-import Test.Tasty (TestTree)
+import Test.Tasty (TestTree, testGroup)
 import Data.UnitsOfMeasure (u, convert)
 
 import Flight.Units ()
@@ -27,6 +27,8 @@ import Flight.Distance (TaskDistance(..))
 import qualified Flight.Earth.Sphere.PointToPoint.Double as Dbl (distanceHaversine)
 import qualified Flight.Earth.Sphere.PointToPoint.Rational as Rat (distanceHaversine)
 import qualified Tolerance as T (GetTolerance, dblChecks, ratChecks)
+import qualified Bedford as B (points, solutions)
+import qualified GeoscienceAustralia as G (points, solutions)
 
 getTolerance :: (Ord a, Fractional a) => T.GetTolerance a
 getTolerance d'
@@ -53,3 +55,24 @@ ratChecks =
     where
         span = Rat.distanceHaversine e
         e = Epsilon $ 1 % 1000000000000000000
+
+bedfordUnits :: TestTree
+bedfordUnits =
+    testGroup "Bedford Institute of Oceanography distances"
+    [ testGroup "with doubles" $ dblChecks B.solutions B.points
+    , testGroup "with rationals" $ ratChecks B.solutions B.points
+    ]
+
+geoSciAuUnits :: TestTree
+geoSciAuUnits =
+    testGroup "Geoscience Australia distances between Flinders Peak and Buninyong"
+    [ testGroup "with doubles" $ dblChecks G.solutions G.points
+    , testGroup "with rationals" $ ratChecks G.solutions G.points
+    ]
+
+publishedUnits :: TestTree
+publishedUnits =
+    testGroup "With published data sets"
+    [ geoSciAuUnits
+    , bedfordUnits
+    ]
