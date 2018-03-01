@@ -27,8 +27,8 @@ import Flight.Distance (TaskDistance(..))
 import qualified Flight.Earth.Ellipsoid.PointToPoint.Double as Dbl (distanceVincenty)
 import qualified Flight.Earth.Ellipsoid.PointToPoint.Rational as Rat (distanceVincenty)
 import Flight.Earth.Ellipsoid (wgs84)
-import qualified Bedford as B (points, inverseSolutions)
-import qualified GeoscienceAustralia as G (points, inverseSolutions)
+import qualified Published.Bedford as B (points, inverseSolutions)
+import qualified Published.GeoscienceAustralia as G (points, inverseSolutions)
 import qualified Tolerance as T (GetTolerance, dblInverseChecks, ratInverseChecks)
 
 getTolerance :: Fractional a => T.GetTolerance a

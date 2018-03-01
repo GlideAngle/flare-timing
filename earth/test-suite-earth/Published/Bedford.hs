@@ -15,7 +15,7 @@
 -- Bedford Institute of Oceanography
 -- Evaluation Direct and Inverse Geodetic Algorithms
 -- Paul Delorme, September 1978.
-module Bedford (points, inverseSolutions) where
+module Published.Bedford (points, inverseSolutions) where
 
 import Data.UnitsOfMeasure (u, convert)
 

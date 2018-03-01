@@ -27,8 +27,8 @@ import Flight.Distance (TaskDistance(..))
 import qualified Flight.Earth.Sphere.PointToPoint.Double as Dbl (distanceHaversine)
 import qualified Flight.Earth.Sphere.PointToPoint.Rational as Rat (distanceHaversine)
 import qualified Tolerance as T (GetTolerance, dblInverseChecks, ratInverseChecks)
-import qualified Bedford as B (points, inverseSolutions)
-import qualified GeoscienceAustralia as G (points, inverseSolutions)
+import qualified Published.Bedford as B (points, inverseSolutions)
+import qualified Published.GeoscienceAustralia as G (points, inverseSolutions)
 
 getTolerance :: (Ord a, Fractional a) => T.GetTolerance a
 getTolerance d'

@@ -34,7 +34,7 @@
 -- Distance: 54972.271m
 -- Azimuth 1-2: 306°52'05.373"
 -- Azimuth 2-1: 127°10'25.070"
-module GeoscienceAustralia (points, inverseSolutions) where
+module Published.GeoscienceAustralia (points, inverseSolutions) where
 
 import Prelude hiding (span, min)
 import Data.UnitsOfMeasure (u)
