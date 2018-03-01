@@ -17,6 +17,7 @@ module Tolerance
     ( GetTolerance
     , diff
     , showTolerance
+    , describeInverse
     , dblInverseChecks
     , ratInverseChecks
     ) where

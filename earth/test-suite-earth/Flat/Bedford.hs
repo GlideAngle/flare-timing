@@ -28,7 +28,7 @@ import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.Distance (TaskDistance(..))
 import qualified Flight.Earth.Flat.PointToPoint.Double as Dbl (distanceEuclidean)
 import qualified Flight.Earth.Flat.PointToPoint.Rational as Rat (distanceEuclidean)
-import Tolerance (diff, showTolerance)
+import Tolerance (diff, describeInverse)
 import Published.Bedford (points, inverseSolutions)
 
 getTolerance
@@ -51,15 +51,7 @@ dblInverseChecks =
     zipWith f
     where
         f expected (x, y) =
-            HU.testCase
-                ( show x
-                ++ " to "
-                ++ show y
-                ++ " = "
-                ++ show expected
-                ++ " ± "
-                ++ showTolerance tolerance'
-                )
+            HU.testCase (describeInverse x y expected tolerance')
             $ diff (found x y) expected
             @?<= (TaskDistance tolerance')
             where
@@ -90,15 +82,7 @@ ratInverseChecks =
     zipWith f
     where
         f (TaskDistance d) (x, y) =
-            HU.testCase
-                ( show x
-                ++ " to "
-                ++ show y
-                ++ " = "
-                ++ show expected'
-                ++ " ± "
-                ++ showTolerance tolerance'
-                )
+            HU.testCase (describeInverse x y expected' tolerance')
             $ diff (found x y) expected'
             @?<= (TaskDistance tolerance')
             where
