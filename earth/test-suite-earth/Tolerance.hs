@@ -1,11 +1,4 @@
-{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE QuasiQuotes #-}
 
 {-# LANGUAGE NamedFieldPuns #-}
@@ -79,7 +72,7 @@ dblInverseChecks
 dblInverseChecks span getTolerance =
     zipWith f
     where
-        f expected (InverseProblem x y) =
+        f expected InverseProblem{x, y} =
             HU.testCase (describeInverse x y expected tolerance')
             $ diff (found x y) expected
             @?<= (TaskDistance tolerance')
@@ -99,7 +92,7 @@ ratInverseChecks
 ratInverseChecks span getTolerance =
     zipWith f
     where
-        f (TaskDistance d) (InverseProblem x y) =
+        f (TaskDistance d) InverseProblem{x, y} =
             HU.testCase (describeInverse x y expected' tolerance')
             $ diff (found x y) expected'
             @?<= (TaskDistance tolerance')
