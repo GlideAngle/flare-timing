@@ -17,18 +17,16 @@ module Flat.Bedford (bedfordUnits) where
 
 import Prelude hiding (min)
 import Test.Tasty (TestTree, testGroup)
-import Test.Tasty.HUnit as HU (testCase)
-import Test.Tasty.HUnit.Compare ((@?<=))
-import Data.UnitsOfMeasure (u, convert, toRational')
+import Data.UnitsOfMeasure (u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
-import Flight.Units.DegMinSec (DMS(..), toDeg)
-import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
+import Flight.Units.DegMinSec (DMS(..))
 import Flight.Distance (TaskDistance(..))
 import qualified Flight.Earth.Flat.PointToPoint.Double as Dbl (distanceEuclidean)
 import qualified Flight.Earth.Flat.PointToPoint.Rational as Rat (distanceEuclidean)
-import Tolerance (diff, describeInverse)
+import qualified Tolerance as T
+    (dblInverseChecks, ratInverseChecks)
 import Published.Bedford (inverseProblems, inverseSolutions)
 
 getTolerance
@@ -48,68 +46,20 @@ dblInverseChecks
     -> [((DMS, DMS), (DMS, DMS))]
     -> [TestTree]
 dblInverseChecks =
-    zipWith f
-    where
-        f expected (x, y) =
-            HU.testCase (describeInverse x y expected tolerance')
-            $ diff (found x y) expected
-            @?<= (TaskDistance tolerance')
-            where
-                tolerance' =
-                    convert . getTolerance
-                    $ (\(TaskDistance q) -> q) expected
-
-        found x y = Dbl.distanceEuclidean (toLL x) (toLL y)
-
-        toLL :: (DMS, DMS) -> LatLng Double [u| rad |]
-        toLL (lat, lng) =
-            LatLng (Lat lat'', Lng lng'')
-                where
-                    lat' :: Quantity Double [u| deg |]
-                    lat' = MkQuantity . toDeg $ lat
-
-                    lng' :: Quantity Double [u| deg |]
-                    lng' = MkQuantity . toDeg $ lng
-
-                    lat'' = convert lat' :: Quantity _ [u| rad |]
-                    lng'' = convert lng' :: Quantity _ [u| rad |]
+    T.dblInverseChecks Dbl.distanceEuclidean getTolerance
 
 ratInverseChecks
     :: [TaskDistance Double]
     -> [((DMS, DMS), (DMS, DMS))]
     -> [TestTree]
 ratInverseChecks =
-    zipWith f
-    where
-        f (TaskDistance d) (x, y) =
-            HU.testCase (describeInverse x y expected' tolerance')
-            $ diff (found x y) expected'
-            @?<= (TaskDistance tolerance')
-            where
-                expected' = expected d
-                tolerance' =
-                    convert . getTolerance
-                    $ (\(TaskDistance q) -> q) expected'
-
-        expected d = TaskDistance $ toRational' d
-        found x y = Rat.distanceEuclidean (toLL x) (toLL y)
-
-        toLL :: (DMS, DMS) -> LatLng Rational [u| rad |]
-        toLL (lat, lng) =
-            LatLng (Lat lat'', Lng lng'')
-                where
-                    lat' :: Quantity Rational [u| deg |]
-                    lat' = toRational' . MkQuantity . toDeg $ lat
-
-                    lng' :: Quantity Rational [u| deg |]
-                    lng' = toRational' . MkQuantity . toDeg $ lng
-
-                    lat'' = convert lat' :: Quantity _ [u| rad |]
-                    lng'' = convert lng' :: Quantity _ [u| rad |]
+    T.ratInverseChecks Rat.distanceEuclidean getTolerance
 
 bedfordUnits :: TestTree
 bedfordUnits =
     testGroup "Bedford Institute of Oceanography distances"
-    [ testGroup "with doubles" $ dblInverseChecks inverseSolutions inverseProblems
-    , testGroup "with rationals" $ ratInverseChecks inverseSolutions inverseProblems
+    [ testGroup "with doubles"
+        $ dblInverseChecks inverseSolutions inverseProblems
+    , testGroup "with rationals"
+        $ ratInverseChecks inverseSolutions inverseProblems
     ]
