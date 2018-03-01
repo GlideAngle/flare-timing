@@ -30,20 +30,21 @@ import Flight.Earth.Ellipsoid (wgs84)
 import qualified Published.Bedford as B (inverseProblems, inverseSolutions)
 import qualified Published.GeoscienceAustralia as G (inverseProblems, inverseSolutions)
 import qualified Tolerance as T (GetTolerance, dblInverseChecks, ratInverseChecks)
+import Geodesy (InverseProblem(..))
 
 getTolerance :: Fractional a => T.GetTolerance a
 getTolerance = const . convert $ [u| 0.5 mm |]
 
 dblInverseChecks
     :: [TaskDistance Double]
-    -> [((DMS, DMS), (DMS, DMS))]
+    -> [InverseProblem (DMS, DMS)]
     -> [TestTree]
 dblInverseChecks =
     T.dblInverseChecks (Dbl.distanceVincenty wgs84) getTolerance
 
 ratInverseChecks
     :: [TaskDistance Double]
-    -> [((DMS, DMS), (DMS, DMS))]
+    -> [InverseProblem (DMS, DMS)]
     -> [TestTree]
 ratInverseChecks =
     T.ratInverseChecks span getTolerance

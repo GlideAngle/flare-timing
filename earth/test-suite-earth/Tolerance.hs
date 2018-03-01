@@ -34,6 +34,7 @@ import Flight.Units.DegMinSec (DMS(..))
 import Flight.LatLng (fromDMS)
 import Flight.Distance (TaskDistance(..), SpanLatLng)
 import Flight.Zone (toRationalLatLng)
+import Geodesy (InverseProblem(..))
 
 type GetTolerance a = Quantity a [u| m |] -> Quantity a [u| km |]
 
@@ -73,12 +74,12 @@ dblInverseChecks
     :: SpanLatLng Double
     -> GetTolerance Double
     -> [TaskDistance Double]
-    -> [((DMS, DMS), (DMS, DMS))]
+    -> [InverseProblem (DMS, DMS)]
     -> [TestTree]
 dblInverseChecks span getTolerance =
     zipWith f
     where
-        f expected (x, y) =
+        f expected (InverseProblem x y) =
             HU.testCase (describeInverse x y expected tolerance')
             $ diff (found x y) expected
             @?<= (TaskDistance tolerance')
@@ -93,12 +94,12 @@ ratInverseChecks
     :: SpanLatLng Rational
     -> GetTolerance Rational
     -> [TaskDistance Double]
-    -> [((DMS, DMS), (DMS, DMS))]
+    -> [InverseProblem (DMS, DMS)]
     -> [TestTree]
 ratInverseChecks span getTolerance =
     zipWith f
     where
-        f (TaskDistance d) (x, y) =
+        f (TaskDistance d) (InverseProblem x y) =
             HU.testCase (describeInverse x y expected' tolerance')
             $ diff (found x y) expected'
             @?<= (TaskDistance tolerance')

@@ -17,6 +17,7 @@ import qualified Flight.Earth.Flat.PointToPoint.Double as Dbl (distanceEuclidean
 import qualified Flight.Earth.Flat.PointToPoint.Rational as Rat (distanceEuclidean)
 import qualified Tolerance as T (dblInverseChecks, ratInverseChecks)
 import Published.Bedford (inverseProblems, inverseSolutions)
+import Geodesy (InverseProblem(..))
 
 getTolerance
     :: (Real a, Fractional a)
@@ -32,14 +33,14 @@ getTolerance d'
 
 dblInverseChecks
     :: [TaskDistance Double]
-    -> [((DMS, DMS), (DMS, DMS))]
+    -> [InverseProblem (DMS, DMS)]
     -> [TestTree]
 dblInverseChecks =
     T.dblInverseChecks Dbl.distanceEuclidean getTolerance
 
 ratInverseChecks
     :: [TaskDistance Double]
-    -> [((DMS, DMS), (DMS, DMS))]
+    -> [InverseProblem (DMS, DMS)]
     -> [TestTree]
 ratInverseChecks =
     T.ratInverseChecks Rat.distanceEuclidean getTolerance

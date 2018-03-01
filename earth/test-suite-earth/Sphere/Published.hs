@@ -29,6 +29,7 @@ import qualified Flight.Earth.Sphere.PointToPoint.Rational as Rat (distanceHaver
 import qualified Tolerance as T (GetTolerance, dblInverseChecks, ratInverseChecks)
 import qualified Published.Bedford as B (inverseProblems, inverseSolutions)
 import qualified Published.GeoscienceAustralia as G (inverseProblems, inverseSolutions)
+import Geodesy (InverseProblem(..))
 
 getTolerance :: (Ord a, Fractional a) => T.GetTolerance a
 getTolerance d'
@@ -41,14 +42,14 @@ getTolerance d'
 
 dblInverseChecks
     :: [TaskDistance Double]
-    -> [((DMS, DMS), (DMS, DMS))]
+    -> [InverseProblem (DMS, DMS)]
     -> [TestTree]
 dblInverseChecks =
     T.dblInverseChecks (Dbl.distanceHaversine) getTolerance
 
 ratInverseChecks
     :: [TaskDistance Double]
-    -> [((DMS, DMS), (DMS, DMS))]
+    -> [InverseProblem (DMS, DMS)]
     -> [TestTree]
 ratInverseChecks =
     T.ratInverseChecks span getTolerance

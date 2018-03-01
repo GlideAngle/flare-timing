@@ -22,10 +22,12 @@ import Data.UnitsOfMeasure (u, convert)
 import Flight.Units ()
 import Flight.Units.DegMinSec (DMS(..))
 import Flight.Distance (TaskDistance(..))
+import Geodesy (InverseProblem(..))
 
-inverseProblems :: [((DMS, DMS), (DMS, DMS))]
+inverseProblems :: [InverseProblem (DMS, DMS)]
 inverseProblems =
-    (\((xLat, xLng), (yLat, yLng)) -> ((DMS xLat, DMS xLng), (DMS yLat, DMS yLng)))
+    (\((xLat, xLng), (yLat, yLng)) ->
+        InverseProblem (DMS xLat, DMS xLng) (DMS yLat, DMS yLng))
     <$>
     [ (((10,  0,  0.0), (-18,  0,  0.0)), ((10, 43, 39.078), (-18,  0,  0.0)))
     , (((40,  0,  0.0), (-18,  0,  0.0)), ((40, 43, 28.790), (-18,  0,  0.0)))
