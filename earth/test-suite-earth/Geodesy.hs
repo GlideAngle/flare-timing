@@ -32,7 +32,7 @@ data InverseProblem a =
 data DirectSolution a α =
     DirectSolution
         { y :: a -- ^ The arrival point.
-        , α₂ :: α -- ^ The azimuth at the arrival point.
+        , α₂ :: Maybe α -- ^ The azimuth at the arrival point.
         }
 
 -- | The outputs for the solution to the inverse or reverse problem in geodesy.
@@ -40,7 +40,7 @@ data InverseSolution a α =
     InverseSolution
         { s :: a -- ^ The distance between departure and arrival points.
         , α₁ :: α -- ^ The azimuth at the departure point.
-        , α₂ :: α -- ^ The azimuth at the arrival point.
+        , α₂ :: Maybe α -- ^ The azimuth at the arrival point.
         }
 
 type DProb = DirectProblem (DMS, DMS) DMS (TaskDistance Double)

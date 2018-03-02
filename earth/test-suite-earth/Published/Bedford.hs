@@ -155,7 +155,24 @@ distances =
     ]
 
 xAzimuths :: [DMS]
-xAzimuths = []
+xAzimuths =
+    replicate 3 z
+    ++ replicate 3 (deg 45)
+    ++ replicate 3 (deg 90)
+    ++ [deg 120, deg 230, deg 350]
+    ++ replicate 3 z
+    ++ replicate 3 (deg 45)
+    ++ replicate 3 (deg 90)
+    ++ replicate 3 z
+    ++ replicate 3 (deg 45)
+    ++ replicate 3 (deg 90)
+    ++ replicate 3 z
+    ++ replicate 3 (deg 45)
+    ++ replicate 3 (deg 90)
+    where
+        deg d = DMS (d, 0, 0)
+        z = deg 0
 
-yAzimuths :: [DMS]
-yAzimuths = []
+yAzimuths :: [Maybe DMS]
+yAzimuths =
+    repeat Nothing

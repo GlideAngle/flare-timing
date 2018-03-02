@@ -58,6 +58,6 @@ inverseSolutions =
     [ InverseSolution
         { s = TaskDistance [u| 54972.271 m |]
         , α₁ = DMS (306, 52, 05.373)
-        , α₂ = DMS (127, 10, 25.070)
+        , α₂ = Just $ DMS (127, 10, 25.070)
         }
     ]
