@@ -10,7 +10,7 @@ module Flight.Earth.Ellipsoid.Cylinder.Rational
 
 import Data.Ratio ((%))
 import qualified Data.Number.FixedFunctions as F
-import Data.UnitsOfMeasure (u, convert, fromRational')
+import Data.UnitsOfMeasure (u, convert, fromRational', toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
@@ -25,7 +25,6 @@ import Flight.Zone
     , toRationalZone
     , fromRationalLatLng
     , toRationalLatLng
-    , realToFracLatLng
     )
 import Flight.Zone.Path (distancePointToPoint)
 import Flight.Earth.Ellipsoid.PointToPoint.Rational (distanceVincenty)
@@ -101,22 +100,30 @@ vincentyDirect'
     :: Epsilon
     -> Ellipsoid Rational
     -> VincentyAccuracy Rational
-    -> LatLng Rational [u| rad |]
-    -> Radius Rational [u| m |]
-    -> TrueCourse Rational
-    -> VincentyDirect (LatLng Rational [u| rad |])
+    -> DirectProblem
+        (LatLng Rational [u| rad |])
+        (TrueCourse Rational)
+        (Radius Rational [u| m |])
+    -> VincentyDirect
+        (DirectSolution
+            (LatLng Rational [u| rad |])
+            (TrueCourse Rational)
+        )
 vincentyDirect'
     epsilon@(Epsilon eps)
     ellipsoid@Ellipsoid{semiMajor, semiMinor}
     accuracy
-    (LatLng (Lat (MkQuantity _Φ1), Lng (MkQuantity _L1)))
-    (Radius (MkQuantity s))
-    (TrueCourse (MkQuantity α1)) =
-    if (cosU1 * cosσ - sinU1 * sinσ * cosα1) == 0
-        then VincentyDirectEquatorial
-        else
-            VincentyDirect
-            $ LatLng (Lat . MkQuantity $ _Φ2, Lng . MkQuantity $ _L2)
+    DirectProblem
+        { x = (LatLng (Lat (MkQuantity _Φ1), Lng (MkQuantity _L1)))
+        , α₁= TrueCourse (MkQuantity α1)
+        , s = Radius (MkQuantity s)
+        } =
+    if (cosU1 * cosσ - sinU1 * sinσ * cosα1) == 0 then VincentyDirectEquatorial else
+    VincentyDirect $
+    DirectSolution
+        { y = LatLng (Lat . MkQuantity $ _Φ2, Lng . MkQuantity $ _L2)
+        , α₂ = Nothing
+        }
     where
         f = flattening ellipsoid
 
@@ -169,40 +176,48 @@ vincentyDirect
     :: Epsilon
     -> Ellipsoid Rational
     -> VincentyAccuracy Rational
-    -> LatLng Rational [u| rad |]
-    -> Radius Rational [u| m |]
-    -> TrueCourse Rational
-    -> LatLng Rational [u| rad |]
+    -> DirectProblem
+        (LatLng Rational [u| rad |])
+        (TrueCourse Rational)
+        (Radius Rational [u| m |])
+    -> VincentyDirect
+        (DirectSolution
+            (LatLng Rational [u| rad |])
+            (TrueCourse Rational)
+        )
 vincentyDirect
     e ellipsoid accuracy
-    x@(LatLng (xLat, xLng))
-    r tc@(TrueCourse b)
+    prob@DirectProblem
+        { x = x@(LatLng (xLat, xLng))
+        , α₁ = (TrueCourse b)
+        , s = r
+        }
 
     -- NOTE: If we have an initial point at the poles then defer to the
     -- solution using doubles.
-    | xLat == minBound = v''
-    | xLat == maxBound = v''
+    | xLat == minBound = v'
+    | xLat == maxBound = v'
 
     -- NOTE: If we have an initial point out of bounds defer to the
     -- solution using doubles.
-    | xLat < minBound = v''
-    | xLat > maxBound = v''
+    | xLat < minBound = v'
+    | xLat > maxBound = v'
 
-    | xLng <= minBound = v''
-    | xLng >= maxBound = v''
+    | xLng <= minBound = v'
+    | xLng >= maxBound = v'
 
-    | xLng < (Lng $ convert [u| -179 deg |]) = v''
-    | xLng > (Lng $ convert [u| 179 deg |]) = v''
+    | xLng < (Lng $ convert [u| -179 deg |]) = v'
+    | xLng > (Lng $ convert [u| 179 deg |]) = v'
 
     -- NOTE: If we have an azimuth of due east or west then defer to the
     -- solution using doubles.
-    | b' > [u| 89 deg |] && b' < [u| 91 deg |] = v''
-    | b' > [u| 269 deg |] && b' < [u| 271 deg |]  = v''
+    | b' > [u| 89 deg |] && b' < [u| 91 deg |] = v'
+    | b' > [u| 269 deg |] && b' < [u| 271 deg |]  = v'
 
     | otherwise =
-        case v of
-            VincentyDirect y -> y
-            _ -> v''
+        case vincentyDirect' e ellipsoid accuracy prob of
+            v@(VincentyDirect _) -> v
+            _ -> v'
     where
         VincentyAccuracy accuracy' = accuracy
         accuracy'' = VincentyAccuracy $ fromRational accuracy'
@@ -210,33 +225,43 @@ vincentyDirect
         b' :: Quantity Double [u| deg |]
         b' = convert . fromRational' $ b
 
-        v = vincentyDirect' e ellipsoid accuracy x r tc
-
-        v' :: LatLng Double [u| rad |]
-        v' =
-            case Dbl.vincentyDirect wgs84 accuracy'' prob of
-                VincentyDirectAbnormal _ ->
-                    error "Vincenty direct abnormal"
-                VincentyDirectEquatorial ->
-                    error "Vincenty direct equatorial"
-                VincentyDirectAntipodal ->
-                    error "Vincenty direct antipodal"
-                VincentyDirect DirectSolution{y} ->
-                    realToFracLatLng y
-
-        prob
+        prob'
             :: DirectProblem
                 (LatLng Double [u| rad |])
                 (TrueCourse Double)
                 (Radius Double [u| m |])
-        prob =
+        prob' =
             DirectProblem
                 { x = fromRationalLatLng x
                 , α₁ = TrueCourse . fromRational' $ b
                 , s = fromRationalRadius r
                 }
 
-        v'' = toRationalLatLng v'
+        v'
+            :: VincentyDirect
+                (DirectSolution
+                    (LatLng Rational [u| rad |])
+                    (TrueCourse Rational)
+                )
+        v' =
+            case Dbl.vincentyDirect wgs84 accuracy'' prob' of
+                VincentyDirectAbnormal ab -> VincentyDirectAbnormal ab
+                VincentyDirectEquatorial -> VincentyDirectEquatorial
+                VincentyDirectAntipodal -> VincentyDirectAntipodal
+                VincentyDirect soln ->
+                    VincentyDirect $ toRationalDirectSolution soln
+
+toRationalDirectSolution
+    :: DirectSolution (LatLng Double [u| rad |]) (TrueCourse Double)
+    -> DirectSolution (LatLng Rational [u| rad |]) (TrueCourse Rational)
+toRationalDirectSolution DirectSolution{y, α₂} =
+    DirectSolution
+        { y = toRationalLatLng y
+        , α₂ = toRationalTrueCourse <$> α₂
+        }
+    where
+        toRationalTrueCourse (TrueCourse x) =
+            TrueCourse $ toRational' x
 
 circum
     :: Epsilon
@@ -245,7 +270,18 @@ circum
     -> TrueCourse Rational 
     -> LatLng Rational [u| rad |]
 circum e x r tc =
-    vincentyDirect e wgs84 defaultVincentyAccuracy x r tc
+    case vincentyDirect e wgs84 defaultVincentyAccuracy prob of
+        VincentyDirectAbnormal _ -> error "Vincenty direct abnormal"
+        VincentyDirectEquatorial -> error "Vincenty direct equatorial"
+        VincentyDirectAntipodal -> error "Vincenty direct antipodal"
+        VincentyDirect DirectSolution{y} -> y
+    where
+        prob =
+            DirectProblem
+                { x = x
+                , α₁ = tc
+                , s = r
+                }
 
 -- | Generates a pair of lists, the lat/lng of each generated point
 -- and its distance from the center. It will generate 'samples' number of such
