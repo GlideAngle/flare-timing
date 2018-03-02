@@ -24,11 +24,12 @@ import Prelude hiding (min)
 import Data.Text.Lazy (unpack)
 import Formatting ((%), format)
 import qualified Formatting.ShortFormatters as Fmt (sf)
-import Data.UnitsOfMeasure (u, convert)
+import Data.UnitsOfMeasure ((+:), u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Data.UnitsOfMeasure.Convert (Convertible)
 
 import Flight.Units ()
+import Flight.Units.Angle (Angle(..))
 
 newtype DMS = DMS (Int, Int, Double)
 
@@ -85,3 +86,16 @@ fromQ q' =
         ss =
             ((abs d) - fromIntegral dd) * 3600.0
             - (fromIntegral $ mm * 60)
+
+instance Angle DMS where
+    rotate rotation dms =
+        fromQuantity $ d +: r
+        where
+            r :: Quantity Double [u| deg |]
+            r = toQuantity rotation
+
+            d :: Quantity Double [u| deg |]
+            d = toQuantity dms
+
+    fromQuantity = fromQ
+    toQuantity = convert . toQDeg

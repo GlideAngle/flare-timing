@@ -21,6 +21,7 @@ library:
   source-dirs: library
   exposed-modules:
   - Flight.Units
+  - Flight.Units.Angle
   - Flight.Units.DegMinSec
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com

@@ -1,7 +1,14 @@
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE QuasiQuotes #-}
+
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE NamedFieldPuns #-}
 
 module Geodesy
-    ( DirectProblem(..)
+    ( GeodesyProblems(..)
+    , DirectProblem(..)
     , DirectSolution(..)
     , InverseProblem(..)
     , InverseSolution(..)
@@ -9,7 +16,10 @@ module Geodesy
     , IProb, ISoln
     ) where
 
+import Data.UnitsOfMeasure (u)
+
 import Flight.Units ()
+import Flight.Units.Angle (Angle(..))
 import Flight.Units.DegMinSec (DMS(..))
 import Flight.Distance (TaskDistance(..))
 
@@ -36,9 +46,9 @@ data DirectSolution a α =
         }
 
 -- | The outputs for the solution to the inverse or reverse problem in geodesy.
-data InverseSolution a α =
+data InverseSolution s α =
     InverseSolution
-        { s :: a -- ^ The distance between departure and arrival points.
+        { s :: s -- ^ The distance between departure and arrival points.
         , α₁ :: α -- ^ The azimuth at the departure point.
         , α₂ :: Maybe α -- ^ The azimuth at the arrival point.
         }
@@ -48,3 +58,32 @@ type DSoln = DirectSolution (DMS, DMS) DMS
 
 type IProb = InverseProblem (DMS, DMS)
 type ISoln = InverseSolution (TaskDistance Double) DMS
+
+class GeodesyProblems a α s where
+    direct
+        :: InverseProblem a
+        -> InverseSolution s α
+        -> Maybe (DirectProblem a α s, DirectSolution a α)
+
+    inverse
+        :: DirectProblem a α s
+        -> DirectSolution a α
+        -> Maybe (InverseProblem a, InverseSolution s α)
+
+instance Angle α => GeodesyProblems a α s where
+    direct _ InverseSolution{α₂ = Nothing} = Nothing
+    direct InverseProblem{x = y, y = x} InverseSolution{s, α₁, α₂ = Just α₂} =
+        Just $
+            ( DirectProblem{x, α₁ = flip180 α₂, s}
+            , DirectSolution{y, α₂ = Just $ flip180 α₁}
+            )
+
+    inverse _ DirectSolution{α₂ = Nothing} = Nothing
+    inverse DirectProblem{x = y, α₁, s} DirectSolution{y = x, α₂ = Just α₂} =
+        Just $
+            ( InverseProblem{x, y}
+            , InverseSolution{s, α₁ = flip180 α₂, α₂ = Just $ flip180 α₁}
+            )
+
+flip180 :: Angle a => a -> a
+flip180 x = rotate x $ fromQuantity [u| 180 deg |]
