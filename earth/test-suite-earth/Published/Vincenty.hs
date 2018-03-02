@@ -17,15 +17,38 @@
 -- of Nested Equations
 -- Survey Review XXII, 176
 -- T. Vincenty, April 1975.
-module Published.Vincenty (inverseProblems, inverseSolutions) where
+module Published.Vincenty
+    ( directProblems, directSolutions
+    , inverseProblems, inverseSolutions
+    ) where
 
+import Data.Maybe (catMaybes)
 import Data.UnitsOfMeasure (u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity)
 
 import Flight.Units ()
 import Flight.Units.DegMinSec (DMS(..))
 import Flight.Distance (TaskDistance(..))
-import Geodesy (InverseProblem(..), InverseSolution(..), IProb, ISoln)
+import Geodesy
+    ( GeodesyProblems(..)
+    , InverseProblem(..), InverseSolution(..)
+    , DProb, DSoln
+    , IProb, ISoln
+    )
+
+directPairs :: [(DProb, DSoln)]
+directPairs =
+    catMaybes $
+    [ direct ip is
+    | ip <- inverseProblems
+    | is <- inverseSolutions
+    ]
+
+directProblems :: [DProb]
+directProblems = fst <$> directPairs
+
+directSolutions :: [DSoln]
+directSolutions = snd <$> directPairs
 
 inverseProblems :: [IProb]
 inverseProblems =

@@ -8,6 +8,7 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE QuasiQuotes #-}
 
+{-# LANGUAGE ParallelListComp #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE PartialTypeSignatures #-}
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
@@ -35,16 +36,36 @@
 -- Azimuth 1-2: 306°52'05.373"
 -- Azimuth 2-1: 127°10'25.070"
 module Published.GeoscienceAustralia
-    ( inverseProblems
-    , inverseSolutions
+    ( directProblems, directSolutions
+    , inverseProblems, inverseSolutions
     ) where
 
+import Data.Maybe (catMaybes)
 import Data.UnitsOfMeasure (u)
 
 import Flight.Units ()
 import Flight.Units.DegMinSec (DMS(..))
 import Flight.Distance (TaskDistance(..))
-import Geodesy (InverseProblem(..), InverseSolution(..), IProb, ISoln)
+import Geodesy
+    ( GeodesyProblems(..)
+    , InverseProblem(..), InverseSolution(..)
+    , DProb, DSoln
+    , IProb, ISoln
+    )
+
+directPairs :: [(DProb, DSoln)]
+directPairs =
+    catMaybes $
+    [ direct ip is
+    | ip <- inverseProblems
+    | is <- inverseSolutions
+    ]
+
+directProblems :: [DProb]
+directProblems = fst <$> directPairs
+
+directSolutions :: [DSoln]
+directSolutions = snd <$> directPairs
 
 inverseProblems :: [IProb]
 inverseProblems =
