@@ -16,15 +16,38 @@
 -- Bedford Institute of Oceanography
 -- Evaluation Direct and Inverse Geodetic Algorithms
 -- Paul Delorme, September 1978.
-module Published.Bedford (inverseProblems, inverseSolutions) where
+module Published.Bedford
+    ( directProblems, directSolutions
+    , inverseProblems, inverseSolutions
+    ) where
 
+import Data.Maybe (catMaybes)
 import Data.UnitsOfMeasure (u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity)
 
 import Flight.Units ()
 import Flight.Units.DegMinSec (DMS(..))
 import Flight.Distance (TaskDistance(..))
-import Geodesy (InverseProblem(..), InverseSolution(..), IProb, ISoln)
+import Geodesy
+    ( GeodesyProblems(..)
+    , InverseProblem(..), InverseSolution(..)
+    , DProb, DSoln
+    , IProb, ISoln
+    )
+
+directPairs :: [(DProb, DSoln)]
+directPairs =
+    catMaybes $
+    [ direct ip is
+    | ip <- inverseProblems
+    | is <- inverseSolutions
+    ]
+
+directProblems :: [DProb]
+directProblems = fst <$> directPairs
+
+directSolutions :: [DSoln]
+directSolutions = snd <$> directPairs
 
 inverseProblems :: [IProb]
 inverseProblems =
@@ -175,4 +198,49 @@ xAzimuths =
 
 yAzimuths :: [Maybe DMS]
 yAzimuths =
-    repeat Nothing
+    Just . DMS <$>
+    xs ++
+    [ (225,  5, 33.202)
+    , (225, 26,  1.695)
+    , (226,  7, 13.935)
+
+    , (270,  7, 38.779)
+    , (270, 36, 20.315)
+    , (271, 58, 45.080)
+
+    , (300,  6, 29.736)
+    , ( 49, 32, 29.011)
+    , (169, 38, 35.667)
+    ]
+    ++ xs ++
+    [ (225, 37, 46.346)
+    , (227, 46, 32.221)
+    , (234, 50, 49.050)
+
+    , (270, 45, 49.945)
+    , (273, 37, 32.768)
+    , (281, 42, 12.088)
+    ]
+    ++ xs ++
+    [ (226,  9,  1.224)
+    , (229, 52, 15.525)
+    , (243, 13, 18.356)
+
+    , (271, 16, 14.933)
+    , (276,  1,  6.634)
+    , (289,  1,  2.923)
+
+    , (180,  0,  0.0)
+    , (180,  0,  0.0)
+    , (  0,  0,  0.0)
+
+    , (240, 59, 37.859)
+    , (274, 57, 29.108)
+    , (332, 38, 58.143)
+
+    , (276, 53, 56.143)
+    , (299, 54, 41.259)
+    , (332,  0, 43.685)
+    ]
+    where
+        xs = replicate 3 (180,  0,  0.0)
