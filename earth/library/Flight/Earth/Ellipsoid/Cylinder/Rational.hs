@@ -25,6 +25,7 @@ import Flight.Zone
     , toRationalZone
     , fromRationalLatLng
     , toRationalLatLng
+    , realToFracLatLng
     )
 import Flight.Zone.Path (distancePointToPoint)
 import Flight.Earth.Ellipsoid.PointToPoint.Rational (distanceVincenty)
@@ -48,6 +49,7 @@ import Flight.Earth.Ellipsoid
     )
 import qualified Flight.Earth.Ellipsoid.PointToPoint.Rational as F (atan2')
 import qualified Flight.Earth.Ellipsoid.Cylinder.Double as Dbl (vincentyDirect)
+import Flight.Earth.Geodesy (DirectProblem(..), DirectSolution(..))
 
 iterateVincenty
     :: Epsilon
@@ -212,12 +214,27 @@ vincentyDirect
 
         v' :: LatLng Double [u| rad |]
         v' =
-            Dbl.vincentyDirect
-                wgs84
-                accuracy''
-                (fromRationalLatLng x)
-                (fromRationalRadius r)
-                (TrueCourse . fromRational' $ b)
+            case Dbl.vincentyDirect wgs84 accuracy'' prob of
+                VincentyDirectAbnormal _ ->
+                    error "Vincenty direct abnormal"
+                VincentyDirectEquatorial ->
+                    error "Vincenty direct equatorial"
+                VincentyDirectAntipodal ->
+                    error "Vincenty direct antipodal"
+                VincentyDirect DirectSolution{y} ->
+                    realToFracLatLng y
+
+        prob
+            :: DirectProblem
+                (LatLng Double [u| rad |])
+                (TrueCourse Double)
+                (Radius Double [u| m |])
+        prob =
+            DirectProblem
+                { x = fromRationalLatLng x
+                , α₁ = TrueCourse . fromRational' $ b
+                , s = fromRationalRadius r
+                }
 
         v'' = toRationalLatLng v'
 

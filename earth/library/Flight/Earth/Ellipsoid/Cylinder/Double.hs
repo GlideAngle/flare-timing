@@ -37,9 +37,10 @@ import Flight.Zone.Cylinder
     , sourceZone
     )
 import Flight.Earth.Ellipsoid
-    (Ellipsoid(..), VincentyAccuracy(..)
+    ( Ellipsoid(..), VincentyAccuracy(..), VincentyDirect(..)
     , defaultVincentyAccuracy, wgs84, flattening
     )
+import Flight.Earth.Geodesy (DirectProblem(..), DirectSolution(..))
 
 iterateVincenty
     :: (Floating a, Ord a)
@@ -81,17 +82,28 @@ vincentyDirect
     :: (Real a, Floating a, Fractional a, RealFloat a)
     => Ellipsoid a
     -> VincentyAccuracy a
-    -> LatLng a [u| rad |]
-    -> Radius a [u| m |]
-    -> TrueCourse a
-    -> LatLng a [u| rad |]
+    -> DirectProblem
+        (LatLng a [u| rad |])
+        (TrueCourse a)
+        (Radius a [u| m |])
+    -> VincentyDirect
+        (DirectSolution
+            (LatLng a [u| rad |])
+            (TrueCourse a)
+        )
 vincentyDirect
     ellipsoid@Ellipsoid{semiMajor, semiMinor}
     accuracy
-    (LatLng (Lat (MkQuantity _Φ1), Lng (MkQuantity _L1)))
-    (Radius (MkQuantity s))
-    (TrueCourse (MkQuantity α1)) =
-    LatLng (Lat . MkQuantity $ _Φ2, Lng . MkQuantity $ _L2)
+    DirectProblem
+        { x = (LatLng (Lat (MkQuantity _Φ1), Lng (MkQuantity _L1)))
+        , α₁ = TrueCourse (MkQuantity α1)
+        , s = (Radius (MkQuantity s))
+        } =
+    VincentyDirect $
+    DirectSolution
+        { y = LatLng (Lat . MkQuantity $ _Φ2, Lng . MkQuantity $ _L2)
+        , α₂ = Nothing
+        }
     where
         f = flattening ellipsoid
 
@@ -140,10 +152,21 @@ circum
     -> TrueCourse a
     -> LatLng Double [u| rad |]
 circum x r tc =
-    realToFracLatLng $ vincentyDirect wgs84 accuracy' x r tc
+    case vincentyDirect wgs84 accuracy' prob of
+        VincentyDirectAbnormal _ -> error "Vincenty direct abnormal"
+        VincentyDirectEquatorial -> error "Vincenty direct equatorial"
+        VincentyDirectAntipodal -> error "Vincenty direct antipodal"
+        VincentyDirect DirectSolution{y} -> realToFracLatLng y
     where
         VincentyAccuracy accuracy = defaultVincentyAccuracy
         accuracy' = VincentyAccuracy $ fromRational accuracy
+
+        prob =
+            DirectProblem
+                { x = x
+                , α₁ = tc
+                , s = r
+                }
 
 -- | Generates a pair of lists, the lat/lng of each generated point
 -- and its distance from the center. It will generate 'samples' number of such
