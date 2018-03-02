@@ -27,7 +27,8 @@ import Flight.Units.DegMinSec (DMS(..))
 import Flight.LatLng (fromDMS)
 import Flight.Distance (TaskDistance(..), SpanLatLng)
 import Flight.Zone (toRationalLatLng)
-import Geodesy (InverseProblem(..), InverseSolution(..), IProb, ISoln)
+import Flight.Earth.Geodesy
+    (InverseProblem(..), InverseSolution(..), IProb, ISoln)
 
 type GetTolerance a = Quantity a [u| m |] -> Quantity a [u| km |]
 

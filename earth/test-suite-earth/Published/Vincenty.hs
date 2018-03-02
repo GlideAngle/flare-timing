@@ -29,7 +29,7 @@ import Data.UnitsOfMeasure.Internal (Quantity)
 import Flight.Units ()
 import Flight.Units.DegMinSec (DMS(..))
 import Flight.Distance (TaskDistance(..))
-import Geodesy
+import Flight.Earth.Geodesy
     ( GeodesyProblems(..)
     , InverseProblem(..), InverseSolution(..)
     , DProb, DSoln

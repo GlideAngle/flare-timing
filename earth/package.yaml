@@ -43,6 +43,7 @@ library:
   - Flight.Earth.Ellipsoid.PointToPoint.Rational
   - Flight.Earth.Ellipsoid.Separated
   - Flight.Earth.Ellipsoid
+  - Flight.Earth.Geodesy
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
 name: flight-earth

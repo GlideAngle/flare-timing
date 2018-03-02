@@ -6,7 +6,7 @@
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE NamedFieldPuns #-}
 
-module Geodesy
+module Flight.Earth.Geodesy
     ( GeodesyProblems(..)
     , DirectProblem(..)
     , DirectSolution(..)
