@@ -8,6 +8,7 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE QuasiQuotes #-}
 
+{-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE ParallelListComp #-}
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
@@ -28,6 +29,8 @@ import Data.UnitsOfMeasure.Internal (Quantity)
 import Flight.Units ()
 import Flight.Units.DegMinSec (DMS(..))
 import Flight.Distance (TaskDistance(..))
+import qualified Geodesy as G
+    (DirectProblem(..), DirectSolution(..))
 import Geodesy
     ( GeodesyProblems(..)
     , InverseProblem(..), InverseSolution(..)
@@ -35,12 +38,28 @@ import Geodesy
     , IProb, ISoln
     )
 
+-- ghc: panic! (the 'impossible' happened)
+--  (GHC version 8.2.2 for x86_64-apple-darwin):
+-- translateConPatVec: lookup
+--
+-- Please report this as a GHC bug:  http://www.haskell.org/ghc/reportabug
+updateDistance
+    :: TaskDistance Double
+    -> (DProb, DSoln)
+    -> (DProb, DSoln)
+updateDistance _ (G.DirectProblem{x, α₁}, soln) =
+    (prob', soln)
+    where
+        prob' =
+            G.DirectProblem{x = x, α₁ = α₁}
+
 directPairs :: [(DProb, DSoln)]
 directPairs =
     catMaybes $
-    [ direct ip is
+    [ updateDistance d <$> direct ip is
     | ip <- inverseProblems
     | is <- inverseSolutions
+    | d <-TaskDistance <$> directDistances
     ]
 
 directProblems :: [DProb]
@@ -117,13 +136,13 @@ inverseSolutions =
         , α₁ = azX
         , α₂ = azY
         }
-    | d <- TaskDistance . convert <$> distances
+    | d <- TaskDistance . convert <$> inverseDistances
     | azX <- xAzimuths
     | azY <- yAzimuths
     ]
 
-distances :: [Quantity Double [u| km |]]
-distances =
+inverseDistances :: [Quantity Double [u| km |]]
+inverseDistances =
     [ [u| 80.471341 km |]
     , [u| 80.467842 km |]
     , [u| 80.463616 km |]
@@ -244,3 +263,22 @@ yAzimuths =
     ]
     where
         xs = replicate 3 (180,  0,  0.0)
+
+directDistances :: [Quantity Double [u| m |]]
+directDistances =
+    replicate 3 [u| 80466.478 m |]
+    ++
+    [ [u| 80466.477 m |]
+    ]
+    ++ replicate 2 [u| 80466.478 m |]
+    ++
+    [ [u| 80466616 m |]
+    ]
+    ++
+    [ [u| 80466.476 m |] 
+    , [u| 80466.477 m |] 
+    ]
+    ++ replicate 4 [u| 80466.478 m |]
+    ++ replicate 9 [u| 482798.868 m |]
+    ++ replicate 9 [u| 804664.780 m |]
+    ++ replicate 9 [u| 4827988.683 m |]
