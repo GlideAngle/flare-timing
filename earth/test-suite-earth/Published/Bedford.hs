@@ -43,6 +43,8 @@ import Geodesy
 -- translateConPatVec: lookup
 --
 -- Please report this as a GHC bug:  http://www.haskell.org/ghc/reportabug
+--
+-- SEE: https://ghc.haskell.org/trac/ghc/ticket/12158
 updateDistance
     :: TaskDistance Double
     -> (DProb, DSoln)
