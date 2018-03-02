@@ -122,7 +122,7 @@ vincentyDirect'
     VincentyDirect $
     DirectSolution
         { y = LatLng (Lat . MkQuantity $ _Φ2, Lng . MkQuantity $ _L2)
-        , α₂ = Nothing
+        , α₂ = Just . TrueCourse . MkQuantity $ sinα / (-j)
         }
     where
         f = flattening ellipsoid
