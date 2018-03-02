@@ -29,31 +29,24 @@ import Data.UnitsOfMeasure.Internal (Quantity)
 import Flight.Units ()
 import Flight.Units.DegMinSec (DMS(..))
 import Flight.Distance (TaskDistance(..))
-import qualified Geodesy as G
-    (DirectProblem(..), DirectSolution(..))
+-- WARNING: Import qualified here to work around a GHC panic.
+-- SEE: https://ghc.haskell.org/trac/ghc/ticket/12158
+import qualified Geodesy as D
+    (DirectProblem(..))
+import qualified Geodesy as I
+    (InverseProblem(..), InverseSolution(..))
 import Geodesy
     ( GeodesyProblems(..)
-    , InverseProblem(..), InverseSolution(..)
     , DProb, DSoln
     , IProb, ISoln
     )
 
--- ghc: panic! (the 'impossible' happened)
---  (GHC version 8.2.2 for x86_64-apple-darwin):
--- translateConPatVec: lookup
---
--- Please report this as a GHC bug:  http://www.haskell.org/ghc/reportabug
---
--- SEE: https://ghc.haskell.org/trac/ghc/ticket/12158
 updateDistance
     :: TaskDistance Double
     -> (DProb, DSoln)
     -> (DProb, DSoln)
-updateDistance _ (G.DirectProblem{x, α₁}, soln) =
-    (prob', soln)
-    where
-        prob' =
-            G.DirectProblem{x = x, α₁ = α₁}
+updateDistance d (prob, soln) =
+    (prob{D.s = d}, soln)
 
 directPairs :: [(DProb, DSoln)]
 directPairs =
@@ -73,9 +66,9 @@ directSolutions = snd <$> directPairs
 inverseProblems :: [IProb]
 inverseProblems =
     (\((xLat, xLng), (yLat, yLng)) ->
-        InverseProblem
-            { x = (DMS xLat, DMS xLng)
-            , y = (DMS yLat, DMS yLng)
+        I.InverseProblem
+            { I.x = (DMS xLat, DMS xLng)
+            , I.y = (DMS yLat, DMS yLng)
             })
     <$>
     [ (((10,  0,  0.0), (-18,  0,  0.0)), ((10, 43, 39.078), (-18,  0,  0.0)))
@@ -133,10 +126,10 @@ inverseProblems =
 
 inverseSolutions :: [ISoln]
 inverseSolutions =
-    [ InverseSolution
-        { s = d
-        , α₁ = azX
-        , α₂ = azY
+    [ I.InverseSolution
+        { I.s = d
+        , I.α₁ = azX
+        , I.α₂ = azY
         }
     | d <- TaskDistance . convert <$> inverseDistances
     | azX <- xAzimuths
