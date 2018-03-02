@@ -13,7 +13,7 @@ module Flight.Earth.Ellipsoid.PointToPoint.Double
     ) where
 
 import Prelude hiding (sum, span)
-import Data.UnitsOfMeasure (KnownUnit, Unpack, u)
+import Data.UnitsOfMeasure (KnownUnit, Unpack, u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
@@ -22,19 +22,25 @@ import Flight.Earth.Ellipsoid
     ( Ellipsoid(..), AbnormalLatLng(..), VincentyInverse(..), VincentyAccuracy(..)
     , defaultVincentyAccuracy, flattening
     )
+import Flight.Earth.Geodesy (InverseProblem(..), InverseSolution(..))
 
 vincentyInverse
     :: (Num a, Floating a, Fractional a, RealFloat a, Show a)
     => Ellipsoid a
     -> VincentyAccuracy a
-    -> LatLng a [u| rad |]
-    -> LatLng a [u| rad |]
-    -> VincentyInverse a
+    -> InverseProblem (LatLng a [u| rad |])
+    -> VincentyInverse
+        (InverseSolution
+            (TaskDistance a)
+            (Quantity a [u| rad |])
+        )
 vincentyInverse
     ellipsoid@Ellipsoid{semiMajor = MkQuantity a, semiMinor = MkQuantity b}
     (VincentyAccuracy tolerance)
-    (LatLng (Lat (MkQuantity _Φ₁), Lng (MkQuantity _L₁)))
-    (LatLng (Lat (MkQuantity _Φ₂), Lng (MkQuantity _L₂))) =
+    InverseProblem
+        { x = LatLng (Lat (MkQuantity _Φ₁), Lng (MkQuantity _L₁))
+        , y = LatLng (Lat (MkQuantity _Φ₂), Lng (MkQuantity _L₂))
+        } =
     loop _L
     where
         f = flattening ellipsoid
@@ -48,18 +54,24 @@ vincentyInverse
         cosU₁cosU₂ = cosU₁ * cosU₂
 
         loop λ =
-            if abs λ > pi
-                then VincentyInverseAntipodal
-                else
-                    if abs (λ - λ') < tolerance
-                        then VincentyInverse $ b * _A * (σ - _Δσ)
-                        else loop λ'
+            if abs λ > pi then VincentyInverseAntipodal else
+            if abs (λ - λ') >= tolerance then loop λ' else
+            VincentyInverse $
+            InverseSolution
+                { s = TaskDistance . MkQuantity $ b * _A * (σ - _Δσ)
+                , α₁ = MkQuantity $ i / j
+                , α₂ = Just . MkQuantity $ i' / j'
+                } 
             where
                 sinλ = sin λ
                 cosλ = cos λ
 
+                i' = cosU₁ * sinλ
+                j' = -sinU₁ * cosU₂ + cosU₁ * sinU₂ * cosλ
+
                 i = cosU₂ * sinλ
                 j = cosU₁ * sinU₂ - sinU₁ * cosU₂ * cosλ
+
                 sin²σ = i * i + j * j
                 sinσ = sqrt sin²σ
                 cosσ = sinU₁sinU₂ + cosU₁cosU₂ * cosλ
@@ -86,6 +98,7 @@ vincentyInverse
                 λ' = _L + (1 - _C) * f * sinα * (σ + _C * sinσ * x)
                 x = cos2σm + _C * cosσ * (-1 + 2 * cos²2σm)
 
+
 tooFar :: Num a => TaskDistance a
 tooFar = TaskDistance [u| 20000000 m |]
 
@@ -96,20 +109,31 @@ distanceVincenty
     => Ellipsoid a
     -> SpanLatLng a
 distanceVincenty e x y =
-    case distanceVincenty' e x y of
-        VincentyInverse d' -> d'
+    case distanceVincenty' e (InverseProblem x y) of
         VincentyInverseAntipodal -> tooFar
         VincentyInverseAbnormal _ -> tooFar
+        VincentyInverse InverseSolution{s} -> s
 
 distanceVincenty'
     :: (RealFloat a, Show a)
     => Ellipsoid a
-    -> LatLng a [u| rad |]
-    -> LatLng a [u| rad |]
-    -> VincentyInverse (TaskDistance a)
-distanceVincenty' ellipsoid x@(LatLng (xLat, xLng)) y@(LatLng (yLat, yLng))
+    -> InverseProblem (LatLng a [u| rad |])
+    -> VincentyInverse
+        (InverseSolution (TaskDistance a) (Quantity a [u| rad |]))
+distanceVincenty'
+    ellipsoid
+    prob@InverseProblem
+        { x = x@(LatLng (xLat, xLng))
+        , y = y@(LatLng (yLat, yLng))
+        }
 
-    | x == y = VincentyInverse $ TaskDistance [u| 0 m |]
+    | x == y =
+        VincentyInverse $
+            InverseSolution
+                { s = TaskDistance [u| 0 m |]
+                , α₁ = convert [u| 0 deg |]
+                , α₂ = Just $ convert [u| 180 deg |]
+                }
 
     | xLat < minBound = VincentyInverseAbnormal LatUnder
     | xLat > maxBound = VincentyInverseAbnormal LatOver
@@ -122,11 +146,7 @@ distanceVincenty' ellipsoid x@(LatLng (xLat, xLng)) y@(LatLng (yLat, yLng))
     | yLng > maxBound = VincentyInverseAbnormal LngOver
 
     | otherwise =
-        case vincentyInverse ellipsoid accuracy' x y of
-            VincentyInverse d' -> VincentyInverse . TaskDistance . MkQuantity $ d'
-            VincentyInverseAntipodal -> VincentyInverseAntipodal
-            VincentyInverseAbnormal ab -> VincentyInverseAbnormal ab
+        vincentyInverse ellipsoid accuracy' prob
         where
             VincentyAccuracy accuracy = defaultVincentyAccuracy
             accuracy' = VincentyAccuracy $ fromRational accuracy
-
