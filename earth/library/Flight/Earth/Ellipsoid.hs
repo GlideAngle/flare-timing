@@ -49,7 +49,10 @@ module Flight.Earth.Ellipsoid
     , VincentyAccuracy(..)
     , defaultVincentyAccuracy
     , wgs84
+    , bessel
+    , hayford
     , flattening
+    , polarRadius
     , toRationalEllipsoid
     ) where
 
@@ -61,8 +64,10 @@ import Flight.Units ()
 
 data Ellipsoid a =
     Ellipsoid
-        { semiMajor :: Quantity a [u| m |]
-        , semiMinor :: Quantity a [u| m |]
+        { equatorialR :: Quantity a [u| m |]
+        -- ^ Equatorial radius or semi-major axis of the ellipsoid.
+        , recipF :: a
+        -- ^ Reciprocal of the flattening of the ellipsoid or 1/ƒ.
         }
 
 data AbnormalLatLng
@@ -97,10 +102,10 @@ data VincentyInverse a
     -- ^ Vincenty's solution to the inverse problem.
 
 toRationalEllipsoid :: Real a => Ellipsoid a -> Ellipsoid Rational
-toRationalEllipsoid Ellipsoid{semiMajor, semiMinor} =
+toRationalEllipsoid Ellipsoid{equatorialR, recipF} =
     Ellipsoid
-        { semiMajor = toRational' semiMajor
-        , semiMinor = toRational' semiMinor
+        { equatorialR = toRational' equatorialR
+        , recipF = toRational recipF
         }
 
 -- SEE: https://en.wikipedia.org/wiki/World_Geodetic_System
@@ -108,16 +113,40 @@ toRationalEllipsoid Ellipsoid{semiMajor, semiMinor} =
 wgs84 :: Fractional a => Ellipsoid a
 wgs84 =
     Ellipsoid
-        { semiMajor = [u| 6378137 m |]
-        , semiMinor = [u| 6356752.314245 m |]
+        { equatorialR = [u| 6378137 m |]
+        , recipF = 298.257223563
         }
 
+-- | The Bessel ellipsoid from Vincenty 1975. Note that the flattening from
+-- Wikipedia for the Bessel ellipsoid is 299.1528153513233 not 299.1528128.
+-- SEE: https://en.wikipedia.org/wiki/Bessel_ellipsoid
+bessel :: Fractional a => Ellipsoid a
+bessel =
+    Ellipsoid
+        { equatorialR = [u| 6377397.155 m |]
+        , recipF = 299.1528128
+
+        }
+
+-- | The International ellipsoid 1924 also known as the Hayford ellipsoid from
+-- Vincenty 1975.
+-- SEE: https://en.wikipedia.org/wiki/Hayford_ellipsoid
+hayford :: Fractional a => Ellipsoid a
+hayford =
+    Ellipsoid
+        { equatorialR = [u| 6378388 m |]
+        , recipF = 297
+        }
+
+-- | The flattening of the ellipsoid.
 flattening :: Fractional a => Ellipsoid a -> a
-flattening Ellipsoid{semiMajor, semiMinor} =
-    1 - b / a
-    where
-        MkQuantity a = semiMajor
-        MkQuantity b = semiMinor
+flattening Ellipsoid{recipF} =
+    recip recipF 
+
+-- | The polar radius or semi-minor axis of the ellipsoid.
+polarRadius :: Fractional a => Ellipsoid a -> Quantity a [u| m |]
+polarRadius e@Ellipsoid{equatorialR = MkQuantity r} =
+    MkQuantity $ r * (1 - flattening e)
 
 newtype VincentyAccuracy a = VincentyAccuracy a
 

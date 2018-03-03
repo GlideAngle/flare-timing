@@ -23,7 +23,7 @@ import Flight.Zone (Zone(..), Radius(..), radius)
 import Flight.Zone.Path (distancePointToPoint)
 import Flight.Distance (TaskDistance(..), PathDistance(..), SpanLatLng)
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
-import Flight.Earth.Ellipsoid (Ellipsoid(..))
+import Flight.Earth.Ellipsoid (Ellipsoid(..), polarRadius)
 
 boundingBoxSeparated
     :: (Num a, Ord a, Fractional a)
@@ -42,16 +42,18 @@ boxSeparated
     -> LatLng a [u| rad |]
     -> Bool
 boxSeparated
-    Ellipsoid{semiMajor, semiMinor}
+    ellipsoid@Ellipsoid{equatorialR}
     (r', LatLng (Lat yLat, Lng yLng))
     (LatLng (xLLx, xLLy)) =
         xLo || xHi || yLo || yHi
     where
+        polarR = polarRadius ellipsoid
+
         rLat :: Quantity _ [u| rad |]
-        rLat = (r' *: recip' semiMinor) *: [u| 1 rad |]
+        rLat = (r' *: recip' polarR) *: [u| 1 rad |]
 
         rLng :: Quantity _ [u| rad |]
-        rLng = (r' *: recip' semiMajor) *: [u| 1 rad |]
+        rLng = (r' *: recip' equatorialR) *: [u| 1 rad |]
 
         xLo :: Bool
         xLo = xLat' < MkQuantity (negate 1) 

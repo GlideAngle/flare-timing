@@ -20,7 +20,7 @@ import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.Distance (TaskDistance(..), SpanLatLng)
 import Flight.Earth.Ellipsoid
     ( Ellipsoid(..), AbnormalLatLng(..), VincentyInverse(..), VincentyAccuracy(..)
-    , defaultVincentyAccuracy, flattening
+    , defaultVincentyAccuracy, flattening, polarRadius
     )
 import Flight.Earth.Geodesy (InverseProblem(..), InverseSolution(..))
 
@@ -35,7 +35,7 @@ vincentyInverse
             (Quantity a [u| rad |])
         )
 vincentyInverse
-    ellipsoid@Ellipsoid{semiMajor = MkQuantity a, semiMinor = MkQuantity b}
+    ellipsoid@Ellipsoid{equatorialR = MkQuantity a}
     (VincentyAccuracy tolerance)
     InverseProblem
         { x = LatLng (Lat (MkQuantity _Φ₁), Lng (MkQuantity _L₁))
@@ -43,7 +43,9 @@ vincentyInverse
         } =
     loop _L
     where
+        MkQuantity b = polarRadius ellipsoid
         f = flattening ellipsoid
+
         auxLat = atan . ((1 - f) *) . tan
         _U₁ = auxLat _Φ₁; _U₂ = auxLat _Φ₂
         _L = _L₂ - _L₁

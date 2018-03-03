@@ -38,7 +38,7 @@ import Flight.Zone.Cylinder
     )
 import Flight.Earth.Ellipsoid
     ( Ellipsoid(..), VincentyAccuracy(..), VincentyDirect(..)
-    , defaultVincentyAccuracy, wgs84, flattening
+    , defaultVincentyAccuracy, wgs84, flattening, polarRadius
     )
 import Flight.Earth.Geodesy (DirectProblem(..), DirectSolution(..))
 
@@ -92,7 +92,7 @@ vincentyDirect
             (TrueCourse a)
         )
 vincentyDirect
-    ellipsoid@Ellipsoid{semiMajor, semiMinor}
+    ellipsoid@Ellipsoid{equatorialR = MkQuantity a}
     accuracy
     DirectProblem
         { x = (LatLng (Lat (MkQuantity _Φ1), Lng (MkQuantity _L1)))
@@ -105,6 +105,7 @@ vincentyDirect
         , α₂ = Just . TrueCourse . MkQuantity $ sinα / (-j)
         }
     where
+        MkQuantity b = polarRadius ellipsoid
         f = flattening ellipsoid
 
         -- Initial setup
@@ -139,8 +140,6 @@ vincentyDirect
 
         _L2 = _L + _L1
 
-        MkQuantity a = semiMajor
-        MkQuantity b = semiMinor
         a² = a * a
         b² = b * b
         u² = cos²α * (a² - b²) / b² 
