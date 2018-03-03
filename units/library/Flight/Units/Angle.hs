@@ -22,6 +22,7 @@ import Data.UnitsOfMeasure.Convert (Convertible)
 import Flight.Units ()
 
 class Angle a where
+    normalize :: a -> a
     rotate :: a -> a -> a
     fromQuantity :: Convertible u [u| deg |] => Quantity Double u -> a
     toQuantity :: Convertible u [u| deg |] => a -> Quantity Double u

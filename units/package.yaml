@@ -13,6 +13,7 @@ library:
   dependencies:
   - base >=4.5 && <5
   - numbers
+  - fixed
   - bifunctors
   - text
   - formatting
@@ -38,6 +39,7 @@ tests:
     - base
     - hlint
     - numbers
+    - fixed
     - bifunctors
     - text
     - formatting

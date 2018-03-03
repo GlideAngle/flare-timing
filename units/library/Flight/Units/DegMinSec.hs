@@ -21,6 +21,7 @@ module Flight.Units.DegMinSec
     ) where
 
 import Prelude hiding (min)
+import Data.Fixed (mod')
 import Data.Text.Lazy (unpack)
 import Formatting ((%), format)
 import qualified Formatting.ShortFormatters as Fmt (sf)
@@ -88,8 +89,16 @@ fromQ q' =
             - (fromIntegral $ mm * 60)
 
 instance Angle DMS where
+    normalize dms =
+        fromQuantity n
+        where
+            n :: Quantity Double [u| deg |]
+            n = MkQuantity $ d `mod'` 360.0
+
+            (MkQuantity d) = toQuantity dms :: Quantity Double [u| deg |]
+
     rotate rotation dms =
-        fromQuantity $ d +: r
+        normalize . fromQuantity $ d +: r
         where
             r :: Quantity Double [u| deg |]
             r = toQuantity rotation
