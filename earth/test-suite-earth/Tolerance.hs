@@ -61,9 +61,9 @@ describeDirect
     -> String
 describeDirect x angle s yExpected tolerance =
     show x
-    ++ " bearing "
+    ++ " "
     ++ show angle
-    ++ " range "
+    ++ " "
     ++ show s
     ++ " = "
     ++ show yExpected
