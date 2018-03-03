@@ -40,30 +40,40 @@ instance Show DMS where
 showDMS :: DMS -> String
 showDMS (DMS (deg, 0, 0)) =
     show deg ++ "°"
-showDMS (DMS (deg, min, 0)) =
-    show deg ++ "°" ++ show min ++ "'"
-showDMS (DMS (deg, min, sec)) =
+showDMS dms@(DMS (deg, min, 0)) =
+    (signSymbolDMS dms) ++
+    show (abs deg) ++ "°" ++ show (abs min) ++ "'"
+showDMS dms@(DMS (deg, min, sec)) =
+    (signSymbolDMS dms) ++
     if fromIntegral isec == sec then
-        show deg ++ "°" ++ show min ++ "'" ++ show isec ++ "''"
+    show (abs deg) ++ "°" ++ show (abs min) ++ "'" ++ show (abs isec) ++ "''"
     else
-        show deg
+        show (abs deg)
         ++ "°"
-        ++ show min
+        ++ show (abs min)
         ++ "'"
-        ++ (unpack $ format (Fmt.sf % "''") sec)
+        ++ (unpack $ format (Fmt.sf % "''") (abs sec))
     where
         isec :: Int
         isec = floor sec
 
 toDeg :: DMS -> Double
-toDeg (DMS (deg, min, s)) =
-    sign * (abs d + abs m / 60 + abs s / 3600)
-        where
-            d = fromIntegral deg
-            m = fromIntegral min 
-            sign =
-                if odd . length . filter (== -1) $ signum <$> [d, m, s]
-                then -1 else 1
+toDeg dms@(DMS (deg, min, s)) =
+    signDMS dms * (abs d + abs m / 60 + abs s / 3600)
+    where
+        d = fromIntegral deg
+        m = fromIntegral min
+
+signSymbolDMS :: DMS -> String
+signSymbolDMS dms =
+    if signDMS dms < 0 then "-" else ""
+
+signDMS :: DMS -> Double
+signDMS (DMS (deg, min, s)) =
+    if any (== -1) $ signum <$> [d, m, s] then -1 else 1
+    where
+        d = fromIntegral deg
+        m = fromIntegral min 
 
 toQDeg :: DMS -> Quantity Double [u| deg |]
 toQDeg dms =
