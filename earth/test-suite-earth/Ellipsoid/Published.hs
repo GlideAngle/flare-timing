@@ -53,28 +53,15 @@ getTolerance = const . convert $ [u| 0.5 mm |]
 vincentyTolerance :: Fractional a => T.GetTolerance a
 vincentyTolerance = const . convert $ [u| 0.8 mm |]
 
-bedfordToleranceDirect
+bedfordTolerance
     :: (Real a, Fractional a)
     => Quantity a [u| m |]
     -> Quantity a [u| km |]
-bedfordToleranceDirect d'
+bedfordTolerance d'
     | d < [u| 100 km |] = convert [u| 37 mm |]
     | d < [u| 500 km |] = convert [u| 12 mm |]
     | d < [u| 1000 km |] = convert [u| 15 mm |]
     | otherwise = convert [u| 16 mm |]
-    where
-        d = convert d'
-
--- | TODO: Investigate why these tolerances are way too big.
-bedfordToleranceInverse
-    :: (Real a, Fractional a)
-    => Quantity a [u| m |]
-    -> Quantity a [u| km |]
-bedfordToleranceInverse d'
-    | d < [u| 100 km |] = convert [u| 5 m |]
-    | d < [u| 500 km |] = convert [u| 29 m |]
-    | d < [u| 1000 km |] = convert [u| 47 m |]
-    | otherwise = convert [u| 208 m |]
     where
         d = convert d'
 
@@ -200,14 +187,14 @@ bedfordUnits =
     [ testGroup "Inverse Problem of Geodesy"
         [ testGroup "with doubles"
             $ dblInverseChecks
-                bedfordToleranceInverse
+                bedfordTolerance
                 (repeat clarke)
                 B.inverseSolutions
                 B.inverseProblems
 
         , testGroup "with rationals"
             $ ratInverseChecks
-                bedfordToleranceInverse
+                bedfordTolerance
                 (repeat clarke)
                 B.inverseSolutions
                 B.inverseProblems
@@ -216,14 +203,14 @@ bedfordUnits =
     , testGroup "Direct Problem of Geodesy"
         [ testGroup "with doubles"
             $ dblDirectChecks
-                bedfordToleranceDirect
+                bedfordTolerance
                 (repeat clarke)
                 B.directSolutions
                 B.directProblems
 
         , testGroup "with rationals"
             $ ratDirectChecks
-                bedfordToleranceDirect
+                bedfordTolerance
                 (repeat clarke)
                 B.directSolutions
                 B.directProblems

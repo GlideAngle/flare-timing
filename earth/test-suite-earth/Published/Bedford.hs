@@ -31,8 +31,6 @@ import Flight.Units.DegMinSec (DMS(..))
 import Flight.Distance (TaskDistance(..))
 -- WARNING: Import qualified here to work around a GHC panic.
 -- SEE: https://ghc.haskell.org/trac/ghc/ticket/12158
-import qualified Flight.Earth.Geodesy as D
-    (DirectProblem(..))
 import qualified Flight.Earth.Geodesy as I
     (InverseProblem(..), InverseSolution(..))
 import Flight.Earth.Geodesy
@@ -41,20 +39,12 @@ import Flight.Earth.Geodesy
     , IProb, ISoln
     )
 
-updateDistance
-    :: TaskDistance Double
-    -> (DProb, DSoln)
-    -> (DProb, DSoln)
-updateDistance d (prob, soln) =
-    (prob{D.s = d}, soln)
-
 directPairs :: [(DProb, DSoln)]
 directPairs =
     catMaybes $
-    [ updateDistance d <$> direct ip is
+    [ direct ip is
     | ip <- inverseProblems
     | is <- inverseSolutions
-    | d <-TaskDistance <$> directDistances
     ]
 
 directProblems :: [DProb]
@@ -131,65 +121,72 @@ inverseSolutions =
         , I.α₁ = azX
         , I.α₂ = azY
         }
-    | d <- TaskDistance . convert <$> inverseDistances
+    | d <- TaskDistance . convert <$> distances
     | azX <- xAzimuths
     | azY <- yAzimuths
     ]
 
-inverseDistances :: [Quantity Double [u| km |]]
-inverseDistances =
-    [ [u| 80.471341 km |]
-    , [u| 80.467842 km |]
-    , [u| 80.463616 km |]
+-- SEE: https://www.ngs.noaa.gov/PC_PROD/Inv_Fwd/
+{--
+    Program Inverse  -  Version 3.0
 
-    , [u| 80.468422 km |]
-    , [u| 80.466106 km |]
-    , [u| 80.463284 km |]
+   Ellipsoid options :
 
-    , [u| 80.465497 km |]
-    , [u| 80.464363 km |]
-    , [u| 80.462951 km |]
+   1) GRS80 / WGS84  (NAD83)
+   2) Clarke 1866    (NAD27)
+   3) Any other ellipsoid
 
-    , [u| 80.466994 km |]
-    , [u| 80.4659 km |]
-    , [u| 80.463589 km |]
+   Enter choice :
+2
 
-    , [u| 482.827311 km |]
-    , [u| 482.805398 km |]
-    , [u| 482.780699 km |]
+   Enter First Station
+                  (Separate D,M,S by blanks or commas)
+ hDD MM SS.sssss  Latitude :        (h default = N )
+10 0 0
+ hDDD MM SS.sssss Longitude :       (h default = W )
+-18 0 0
 
-    , [u| 482.810039 km |]
-    , [u| 482.795399 km |]
-    , [u| 482.778968 km |]
+   Enter Second Station
+                  (Separate D,M,S by blanks or commas)
+ hDD MM SS.sssss  Latitude :        (h default = N )
+10 43 39.078
+ hDDD MM SS.sssss Longitude :       (h default = W )
+-18 0 0
 
-    , [u| 482.793074 km |]
-    , [u| 482.786227 km |]
-    , [u| 482.777777 km |]
+  Ellipsoid : Clarke 1866    (NAD27)
+  Equatorial axis,    a   =    6378206.4000
+  Polar axis,         b   =    6356583.8000
+  Inverse flattening, 1/f =  294.97869821380
 
-    , [u| 804.711122 km |]
-    , [u| 804.673374 km |]
-    , [u| 804.633279 km |]
+   First  Station :
+   ----------------
+    LAT =  10  0  0.00000 North
+    LON =  18  0  0.00000 West
 
-    , [u| 804.682723 km |]
-    , [u| 804.657459 km |]
-    , [u| 804.630834 km |]
+   Second Station :
+   ----------------
+    LAT =  10 43 39.07800 North
+    LON =  18  0  0.00000 West
 
-    , [u| 804.655123 km |]
-    , [u| 804.643847 km |]
-    , [u| 804.629907 km |]
-
-    , [u| 4828.136258 km |]
-    , [u| 4827.891819 km |]
-    , [u| 4827.781145 km |]
-
-    , [u| 4828.022935 km |]
-    , [u| 4827.861414 km |]
-    , [u| 4827.797208 km |]
-
-    , [u| 4827.933527 km |]
-    , [u| 4827.899946 km |]
-    , [u| 4827.858337 km |]
+  Forward azimuth        FAZ =   0  0  0.0000 From North
+  Back azimuth           BAZ = 180  0  0.0000 From North
+  Ellipsoidal distance     S =     80466.4897 m
+--}
+distances :: [Quantity Double [u| m |]]
+distances =
+    replicate 3 [u| 80466.478 m |]
+    ++
+    [ [u| 80466.477 m |]
     ]
+    ++ replicate 2 [u| 80466.478 m |]
+    ++
+    [ [u| 80466.476 m |] 
+    , [u| 80466.477 m |] 
+    ]
+    ++ replicate 4 [u| 80466.478 m |]
+    ++ replicate 9 [u| 482798.868 m |]
+    ++ replicate 9 [u| 804664.780 m |]
+    ++ replicate 9 [u| 4827988.683 m |]
 
 xAzimuths :: [DMS]
 xAzimuths =
@@ -258,19 +255,3 @@ yAzimuths =
     ]
     where
         xs = replicate 3 (180,  0,  0.0)
-
-directDistances :: [Quantity Double [u| m |]]
-directDistances =
-    replicate 3 [u| 80466.478 m |]
-    ++
-    [ [u| 80466.477 m |]
-    ]
-    ++ replicate 2 [u| 80466.478 m |]
-    ++
-    [ [u| 80466.476 m |] 
-    , [u| 80466.477 m |] 
-    ]
-    ++ replicate 4 [u| 80466.478 m |]
-    ++ replicate 9 [u| 482798.868 m |]
-    ++ replicate 9 [u| 804664.780 m |]
-    ++ replicate 9 [u| 4827988.683 m |]
