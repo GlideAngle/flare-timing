@@ -26,7 +26,7 @@ import Flight.LatLng.Rational (Epsilon(..))
 import Flight.Distance (SpanLatLng)
 import qualified Flight.Earth.Ellipsoid.PointToPoint.Double as Dbl (distanceVincenty)
 import qualified Flight.Earth.Ellipsoid.PointToPoint.Rational as Rat (distanceVincenty)
-import Flight.Earth.Ellipsoid (Ellipsoid, wgs84)
+import Flight.Earth.Ellipsoid (Ellipsoid, wgs84, clarke)
 import qualified Published.GeoscienceAustralia as G
     ( directProblems, directSolutions
     , inverseProblems, inverseSolutions
@@ -53,11 +53,24 @@ getTolerance = const . convert $ [u| 0.5 mm |]
 vincentyTolerance :: Fractional a => T.GetTolerance a
 vincentyTolerance = const . convert $ [u| 0.8 mm |]
 
-bedfordDirectTolerance
+bedfordToleranceDirect
     :: (Real a, Fractional a)
     => Quantity a [u| m |]
     -> Quantity a [u| km |]
-bedfordDirectTolerance d'
+bedfordToleranceDirect d'
+    | d < [u| 100 km |] = convert [u| 37 mm |]
+    | d < [u| 500 km |] = convert [u| 12 mm |]
+    | d < [u| 1000 km |] = convert [u| 15 mm |]
+    | otherwise = convert [u| 16 mm |]
+    where
+        d = convert d'
+
+-- | TODO: Investigate why these tolerances are way too big.
+bedfordToleranceInverse
+    :: (Real a, Fractional a)
+    => Quantity a [u| m |]
+    -> Quantity a [u| km |]
+bedfordToleranceInverse d'
     | d < [u| 100 km |] = convert [u| 5 m |]
     | d < [u| 500 km |] = convert [u| 29 m |]
     | d < [u| 1000 km |] = convert [u| 47 m |]
@@ -187,15 +200,15 @@ bedfordUnits =
     [ testGroup "Inverse Problem of Geodesy"
         [ testGroup "with doubles"
             $ dblInverseChecks
-                getTolerance
-                (repeat wgs84)
+                bedfordToleranceInverse
+                (repeat clarke)
                 B.inverseSolutions
                 B.inverseProblems
 
         , testGroup "with rationals"
             $ ratInverseChecks
-                getTolerance
-                (repeat wgs84)
+                bedfordToleranceInverse
+                (repeat clarke)
                 B.inverseSolutions
                 B.inverseProblems
         ]
@@ -203,15 +216,15 @@ bedfordUnits =
     , testGroup "Direct Problem of Geodesy"
         [ testGroup "with doubles"
             $ dblDirectChecks
-                bedfordDirectTolerance
-                (repeat wgs84)
+                bedfordToleranceDirect
+                (repeat clarke)
                 B.directSolutions
                 B.directProblems
 
         , testGroup "with rationals"
             $ ratDirectChecks
-                bedfordDirectTolerance
-                (repeat wgs84)
+                bedfordToleranceDirect
+                (repeat clarke)
                 B.directSolutions
                 B.directProblems
         ]

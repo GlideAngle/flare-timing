@@ -51,6 +51,7 @@ module Flight.Earth.Ellipsoid
     , wgs84
     , bessel
     , hayford
+    , clarke
     , flattening
     , polarRadius
     , toRationalEllipsoid
@@ -136,6 +137,18 @@ hayford =
     Ellipsoid
         { equatorialR = [u| 6378388 m |]
         , recipF = 297
+        }
+
+-- | Clarke's 1866 ellipsoid approximated in metres.
+-- "Clarke actually defined his 1866 spheroid as
+-- a = 20,926,062 British feet,
+-- b = 20,855,121 British feet"
+-- SEE: https://en.wikipedia.org/wiki/North_American_Datum
+clarke :: Fractional a => Ellipsoid a
+clarke =
+    Ellipsoid
+        { equatorialR = [u| 6378206.4 m |]
+        , recipF = 294.978698214
         }
 
 -- | The flattening of the ellipsoid.
