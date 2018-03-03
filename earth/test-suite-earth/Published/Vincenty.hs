@@ -20,6 +20,7 @@
 module Published.Vincenty
     ( directProblems, directSolutions
     , inverseProblems, inverseSolutions
+    , ellipsoids
     ) where
 
 import Data.Maybe (catMaybes)
@@ -29,12 +30,17 @@ import Data.UnitsOfMeasure.Internal (Quantity)
 import Flight.Units ()
 import Flight.Units.DegMinSec (DMS(..))
 import Flight.Distance (TaskDistance(..))
+import Flight.Earth.Ellipsoid (Ellipsoid, bessel, hayford)
 import Flight.Earth.Geodesy
     ( GeodesyProblems(..)
     , InverseProblem(..), InverseSolution(..)
     , DProb, DSoln
     , IProb, ISoln
     )
+
+ellipsoids :: Fractional a => [Ellipsoid a]
+ellipsoids =
+    bessel : repeat hayford
 
 directPairs :: [(DProb, DSoln)]
 directPairs =
@@ -94,7 +100,7 @@ inverseProblems =
             , (  0,  0,  0.0)
             )
         ,
-            ( (  0, 59, 53.83076)
+            ( ( 0, -59, 53.83076)
             , (179, 17, 48.02997)
             )
         )

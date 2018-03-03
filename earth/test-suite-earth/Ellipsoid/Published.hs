@@ -26,7 +26,7 @@ import Flight.LatLng.Rational (Epsilon(..))
 import Flight.Distance (SpanLatLng)
 import qualified Flight.Earth.Ellipsoid.PointToPoint.Double as Dbl (distanceVincenty)
 import qualified Flight.Earth.Ellipsoid.PointToPoint.Rational as Rat (distanceVincenty)
-import Flight.Earth.Ellipsoid (wgs84)
+import Flight.Earth.Ellipsoid (Ellipsoid, wgs84)
 import qualified Published.GeoscienceAustralia as G
     ( directProblems, directSolutions
     , inverseProblems, inverseSolutions
@@ -34,6 +34,7 @@ import qualified Published.GeoscienceAustralia as G
 import qualified Published.Vincenty as V
     ( directProblems, directSolutions
     , inverseProblems, inverseSolutions
+    , ellipsoids
     )
 import qualified Published.Bedford as B
     ( directProblems, directSolutions
@@ -48,6 +49,9 @@ import Flight.Earth.Geodesy (DProb, DSoln, IProb, ISoln)
 
 getTolerance :: Fractional a => T.GetTolerance a
 getTolerance = const . convert $ [u| 0.5 mm |]
+
+vincentyTolerance :: Fractional a => T.GetTolerance a
+vincentyTolerance = const . convert $ [u| 0.8 mm |]
 
 bedfordDirectTolerance
     :: (Real a, Fractional a)
@@ -64,56 +68,80 @@ bedfordDirectTolerance d'
 e :: Epsilon
 e = Epsilon $ 1 % 1000000000000000000
 
-spanR :: SpanLatLng Rational
-spanR = Rat.distanceVincenty e wgs84
+spanD :: Ellipsoid Double -> SpanLatLng Double
+spanD = Dbl.distanceVincenty
+
+spanR :: Ellipsoid Rational -> SpanLatLng Rational
+spanR = Rat.distanceVincenty e
 
 dblDirectChecks
     :: T.GetTolerance Double
+    -> [Ellipsoid Double]
     -> [DSoln]
     -> [DProb]
     -> [TestTree]
-dblDirectChecks tolerance =
-    T.dblDirectChecks (Dbl.distanceVincenty wgs84) tolerance
+dblDirectChecks tolerance ellipsoid =
+    T.dblDirectChecks tolerance (spanD <$> ellipsoid)
 
 ratDirectChecks
     :: T.GetTolerance Rational
+    -> [Ellipsoid Rational]
     -> [DSoln]
     -> [DProb]
     -> [TestTree]
-ratDirectChecks tolerance =
-    T.ratDirectChecks spanR tolerance
+ratDirectChecks tolerance ellipsoid =
+    T.ratDirectChecks tolerance (spanR <$> ellipsoid)
 
 dblInverseChecks
     :: T.GetTolerance Double
+    -> [Ellipsoid Double]
     -> [ISoln]
     -> [IProb]
     -> [TestTree]
-dblInverseChecks tolerance =
-    T.dblInverseChecks (Dbl.distanceVincenty wgs84) tolerance
+dblInverseChecks tolerance ellipsoid =
+    T.dblInverseChecks tolerance (spanD <$> ellipsoid)
 
 ratInverseChecks
     :: T.GetTolerance Rational
+    -> [Ellipsoid Rational]
     -> [ISoln]
     -> [IProb]
     -> [TestTree]
-ratInverseChecks tolerance =
-    T.ratInverseChecks spanR tolerance
+ratInverseChecks tolerance ellipsoid =
+    T.ratInverseChecks tolerance (spanR <$> ellipsoid)
 
 geoSciAuUnits :: TestTree
 geoSciAuUnits =
     testGroup "Geoscience Australia distances between Flinders Peak and Buninyong"
     [ testGroup "Inverse Problem of Geodesy"
         [ testGroup "with doubles"
-            $ dblInverseChecks getTolerance G.inverseSolutions G.inverseProblems
+            $ dblInverseChecks
+                getTolerance
+                (repeat wgs84)
+                G.inverseSolutions
+                G.inverseProblems
+
         , testGroup "with rationals"
-            $ ratInverseChecks getTolerance G.inverseSolutions G.inverseProblems
+            $ ratInverseChecks
+                getTolerance
+                (repeat wgs84)
+                G.inverseSolutions
+                G.inverseProblems
         ]
 
     , testGroup "Direct Problem of Geodesy"
         [ testGroup "with doubles"
-            $ dblDirectChecks getTolerance G.directSolutions G.directProblems
+            $ dblDirectChecks
+                getTolerance
+                (repeat wgs84)
+                G.directSolutions
+                G.directProblems
         , testGroup "with rationals"
-            $ ratDirectChecks getTolerance G.directSolutions G.directProblems
+            $ ratDirectChecks
+                getTolerance
+                (repeat wgs84)
+                G.directSolutions
+                G.directProblems
         ]
     ]
 
@@ -122,16 +150,34 @@ vincentyUnits =
     testGroup "Vincenty's distances, from Rainsford 1955"
     [ testGroup "Inverse Problem of Geodesy"
         [ testGroup "with doubles"
-            $ dblInverseChecks getTolerance V.inverseSolutions V.inverseProblems
+            $ dblInverseChecks
+                vincentyTolerance
+                V.ellipsoids
+                V.inverseSolutions
+                V.inverseProblems
+
         , testGroup "with rationals"
-            $ ratInverseChecks getTolerance V.inverseSolutions V.inverseProblems
+            $ ratInverseChecks
+                vincentyTolerance
+                V.ellipsoids
+                V.inverseSolutions
+                V.inverseProblems
         ]
 
     , testGroup "Direct Problem of Geodesy"
         [ testGroup "with doubles"
-            $ dblDirectChecks getTolerance V.directSolutions V.directProblems
+            $ dblDirectChecks
+                vincentyTolerance
+                V.ellipsoids
+                V.directSolutions
+                V.directProblems
+
         , testGroup "with rationals"
-            $ ratDirectChecks getTolerance V.directSolutions V.directProblems
+            $ ratDirectChecks
+                vincentyTolerance
+                V.ellipsoids
+                V.directSolutions
+                V.directProblems
         ]
     ]
 
@@ -140,18 +186,34 @@ bedfordUnits =
     testGroup "Bedford Institute of Oceanography distances"
     [ testGroup "Inverse Problem of Geodesy"
         [ testGroup "with doubles"
-            $ dblInverseChecks getTolerance B.inverseSolutions B.inverseProblems
+            $ dblInverseChecks
+                getTolerance
+                (repeat wgs84)
+                B.inverseSolutions
+                B.inverseProblems
+
         , testGroup "with rationals"
-            $ ratInverseChecks getTolerance B.inverseSolutions B.inverseProblems
+            $ ratInverseChecks
+                getTolerance
+                (repeat wgs84)
+                B.inverseSolutions
+                B.inverseProblems
         ]
 
     , testGroup "Direct Problem of Geodesy"
         [ testGroup "with doubles"
             $ dblDirectChecks
-                bedfordDirectTolerance B.directSolutions B.directProblems
+                bedfordDirectTolerance
+                (repeat wgs84)
+                B.directSolutions
+                B.directProblems
+
         , testGroup "with rationals"
             $ ratDirectChecks
-                bedfordDirectTolerance B.directSolutions B.directProblems
+                bedfordDirectTolerance
+                (repeat wgs84)
+                B.directSolutions
+                B.directProblems
         ]
     ]
 

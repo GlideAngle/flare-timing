@@ -34,14 +34,14 @@ dblInverseChecks
     -> [IProb]
     -> [TestTree]
 dblInverseChecks =
-    T.dblInverseChecks Dbl.distanceEuclidean getTolerance
+    T.dblInverseChecks getTolerance $ repeat Dbl.distanceEuclidean
 
 ratInverseChecks
     :: [ISoln]
     -> [IProb]
     -> [TestTree]
 ratInverseChecks =
-    T.ratInverseChecks Rat.distanceEuclidean getTolerance
+    T.ratInverseChecks getTolerance $ repeat Rat.distanceEuclidean
 
 bedfordUnits :: TestTree
 bedfordUnits =

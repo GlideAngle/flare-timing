@@ -43,14 +43,14 @@ dblInverseChecks
     -> [IProb]
     -> [TestTree]
 dblInverseChecks =
-    T.dblInverseChecks (Dbl.distanceHaversine) getTolerance
+    T.dblInverseChecks getTolerance $ repeat Dbl.distanceHaversine
 
 ratInverseChecks
     :: [ISoln]
     -> [IProb]
     -> [TestTree]
 ratInverseChecks =
-    T.ratInverseChecks span getTolerance
+    T.ratInverseChecks getTolerance $ repeat span
     where
         span = Rat.distanceHaversine e
         e = Epsilon $ 1 % 1000000000000000000

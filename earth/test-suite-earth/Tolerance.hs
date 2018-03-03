@@ -87,91 +87,97 @@ describeInverse x y sExpected tolerance =
     ++ showTolerance tolerance
 
 dblDirectChecks
-    :: SpanLatLng Double
-    -> GetTolerance Double
+    :: GetTolerance Double
+    -> [SpanLatLng Double]
     -> [DSoln]
     -> [DProb]
     -> [TestTree]
-dblDirectChecks span getTolerance =
-    zipWith f
+dblDirectChecks getTolerance =
+    zipWith3 f
     where
         f
+            span
             D.DirectSolution{D.y = y}
             D.DirectProblem{D.x = x, D.α₁ = α₁, D.s = sExpected} =
             HU.testCase (describeDirect x α₁ sExpected y tolerance')
             $ diff (sFound x y) sExpected
             @?<= (TaskDistance tolerance')
             where
+                sFound x y = span (fromDMS x) (fromDMS y)
                 tolerance' =
                     convert . getTolerance
                     $ (\(TaskDistance q) -> q) sExpected
 
-        sFound x y = span (fromDMS x) (fromDMS y)
-
 ratDirectChecks
-    :: SpanLatLng Rational
-    -> GetTolerance Rational
+    :: GetTolerance Rational
+    -> [SpanLatLng Rational]
     -> [DSoln]
     -> [DProb]
     -> [TestTree]
-ratDirectChecks span getTolerance =
-    zipWith f
+ratDirectChecks getTolerance =
+    zipWith3 f
     where
         f
+            span
             D.DirectSolution{D.y = y}
             D.DirectProblem{D.x = x, D.α₁ = α₁, D.s = (TaskDistance d)} =
             HU.testCase (describeDirect x α₁ sExpected' y tolerance')
             $ diff (sFound x y) sExpected'
             @?<= (TaskDistance tolerance')
             where
+                sFound x y = span (fromDMS' x) (fromDMS' y)
                 sExpected' = expected d
                 tolerance' =
                     convert . getTolerance
                     $ (\(TaskDistance q) -> q) sExpected'
 
         expected d = TaskDistance $ toRational' d
-        sFound x y = span (fromDMS' x) (fromDMS' y)
         fromDMS' = toRationalLatLng . fromDMS
 
 dblInverseChecks
-    :: SpanLatLng Double
-    -> GetTolerance Double
+    :: GetTolerance Double
+    -> [SpanLatLng Double]
     -> [ISoln]
     -> [IProb]
     -> [TestTree]
-dblInverseChecks span getTolerance =
-    zipWith f
+dblInverseChecks getTolerance =
+    zipWith3 f
     where
-        f I.InverseSolution{I.s = sExpected} I.InverseProblem{I.x, I.y} =
+        f
+            span
+            I.InverseSolution{I.s = sExpected}
+            I.InverseProblem{I.x, I.y} =
             HU.testCase (describeInverse x y sExpected tolerance')
             $ diff (sFound x y) sExpected
             @?<= (TaskDistance tolerance')
             where
+                sFound x y = span (fromDMS x) (fromDMS y)
                 tolerance' =
                     convert . getTolerance
                     $ (\(TaskDistance q) -> q) sExpected
 
-        sFound x y = span (fromDMS x) (fromDMS y)
-
 ratInverseChecks
-    :: SpanLatLng Rational
-    -> GetTolerance Rational
+    :: GetTolerance Rational
+    -> [SpanLatLng Rational]
     -> [ISoln]
     -> [IProb]
     -> [TestTree]
-ratInverseChecks span getTolerance =
-    zipWith f
+ratInverseChecks getTolerance =
+    zipWith3 f
     where
-        f I.InverseSolution{I.s = TaskDistance d} I.InverseProblem{I.x, I.y} =
+        f
+            span
+            I.InverseSolution{I.s = TaskDistance d}
+            I.InverseProblem{I.x, I.y} =
             HU.testCase (describeInverse x y sExpected' tolerance')
             $ diff (sFound x y) sExpected'
             @?<= (TaskDistance tolerance')
             where
+                sFound x y = span (fromDMS' x) (fromDMS' y)
                 sExpected' = expected d
                 tolerance' =
                     convert . getTolerance
                     $ (\(TaskDistance q) -> q) sExpected'
 
         expected d = TaskDistance $ toRational' d
-        sFound x y = span (fromDMS' x) (fromDMS' y)
         fromDMS' = toRationalLatLng . fromDMS
