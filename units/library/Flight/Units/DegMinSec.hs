@@ -57,10 +57,13 @@ showDMS (DMS (deg, min, sec)) =
 
 toDeg :: DMS -> Double
 toDeg (DMS (deg, min, s)) =
-    signum d * (abs d + m / 60 + s / 3600)
+    sign * (abs d + abs m / 60 + abs s / 3600)
         where
             d = fromIntegral deg
             m = fromIntegral min 
+            sign =
+                if odd . length . filter (== -1) $ signum <$> [d, m, s]
+                then -1 else 1
 
 toQDeg :: DMS -> Quantity Double [u| deg |]
 toQDeg dms =
