@@ -13,7 +13,12 @@
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module Ellipsoid.Published (publishedUnits, bedfordUnits, geoSciAuUnits) where
+module Ellipsoid.Published
+    ( publishedUnits
+    , geoSciAuUnits
+    , vincentyUnits
+    , bedfordUnits
+    ) where
 
 import Prelude hiding (span, min)
 import Data.Ratio ((%))

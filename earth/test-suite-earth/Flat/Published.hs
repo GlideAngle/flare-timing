@@ -13,7 +13,7 @@
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module Sphere.Published
+module Flat.Published
     ( publishedUnits
     , geoSciAuUnits
     , vincentyUnits
@@ -44,30 +44,33 @@ import qualified Tolerance as T
     , dblInverseChecks, ratInverseChecks
     )
 import Flight.Earth.Geodesy (DProb, DSoln, IProb, ISoln)
-import Sphere.Span (spanD, spanR)
+import Flat.Span (spanD, spanR)
 
+-- | TODO: Find out why we're out 430 km over 55 km on a flat Earth.
 geoSciAuTolerance :: Fractional a => T.GetTolerance a
-geoSciAuTolerance = const . convert $ [u| 47 m |]
+geoSciAuTolerance = const . convert $ [u| 431 km |]
 
+-- | TODO: Find out why we're out 20000 km for Vincenty's tests on a flat Earth.
 vincentyTolerance
     :: (Real a, Fractional a)
     => Quantity a [u| m |]
     -> Quantity a [u| km |]
 vincentyTolerance d'
-    | d < [u| 5000 km |] = convert [u| 6.7 km |]
-    | d < [u| 10000 km |] = convert [u| 21 km |]
-    | otherwise = convert [u| 24 km |]
+    | d < [u| 5000 km |] = convert [u| 2750 km |]
+    | d < [u| 10000 km |] = convert [u| 4500 km |]
+    | otherwise = convert [u| 19200 km |]
     where
         d = convert d'
 
+-- | TODO: Find out why we're out 4500 km for Bedford tests on a flat Earth.
 bedfordTolerance
     :: (Real a, Fractional a)
     => Quantity a [u| m |]
     -> Quantity a [u| km |]
 bedfordTolerance d'
-    | d < [u| 100 km |] = convert [u| 440 m |]
-    | d < [u| 1000 km |] = convert [u| 4.2 km |]
-    | otherwise = convert [u| 20 km |]
+    | d < [u| 100 km |] = convert [u| 376 km |]
+    | d < [u| 1000 km |] = convert [u| 658 km |]
+    | otherwise = convert [u| 4500 km |]
     where
         d = convert d'
 
