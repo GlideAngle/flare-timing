@@ -126,52 +126,6 @@ inverseSolutions =
     | azY <- yAzimuths
     ]
 
--- SEE: https://www.ngs.noaa.gov/PC_PROD/Inv_Fwd/
-{--
-    Program Inverse  -  Version 3.0
-
-   Ellipsoid options :
-
-   1) GRS80 / WGS84  (NAD83)
-   2) Clarke 1866    (NAD27)
-   3) Any other ellipsoid
-
-   Enter choice :
-2
-
-   Enter First Station
-                  (Separate D,M,S by blanks or commas)
- hDD MM SS.sssss  Latitude :        (h default = N )
-10 0 0
- hDDD MM SS.sssss Longitude :       (h default = W )
--18 0 0
-
-   Enter Second Station
-                  (Separate D,M,S by blanks or commas)
- hDD MM SS.sssss  Latitude :        (h default = N )
-10 43 39.078
- hDDD MM SS.sssss Longitude :       (h default = W )
--18 0 0
-
-  Ellipsoid : Clarke 1866    (NAD27)
-  Equatorial axis,    a   =    6378206.4000
-  Polar axis,         b   =    6356583.8000
-  Inverse flattening, 1/f =  294.97869821380
-
-   First  Station :
-   ----------------
-    LAT =  10  0  0.00000 North
-    LON =  18  0  0.00000 West
-
-   Second Station :
-   ----------------
-    LAT =  10 43 39.07800 North
-    LON =  18  0  0.00000 West
-
-  Forward azimuth        FAZ =   0  0  0.0000 From North
-  Back azimuth           BAZ = 180  0  0.0000 From North
-  Ellipsoidal distance     S =     80466.4897 m
---}
 distances :: [Quantity Double [u| m |]]
 distances =
     replicate 3 [u| 80466.478 m |]
