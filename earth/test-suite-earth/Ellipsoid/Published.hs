@@ -47,8 +47,8 @@ import qualified Tolerance as T
     )
 import Flight.Earth.Geodesy (DProb, DSoln, IProb, ISoln)
 
-getTolerance :: Fractional a => T.GetTolerance a
-getTolerance = const . convert $ [u| 0.5 mm |]
+geoSciAuTolerance :: Fractional a => T.GetTolerance a
+geoSciAuTolerance = const . convert $ [u| 0.5 mm |]
 
 vincentyTolerance :: Fractional a => T.GetTolerance a
 vincentyTolerance = const . convert $ [u| 0.8 mm |]
@@ -116,14 +116,14 @@ geoSciAuUnits =
     [ testGroup "Inverse Problem of Geodesy"
         [ testGroup "with doubles"
             $ dblInverseChecks
-                getTolerance
+                geoSciAuTolerance
                 (repeat wgs84)
                 G.inverseSolutions
                 G.inverseProblems
 
         , testGroup "with rationals"
             $ ratInverseChecks
-                getTolerance
+                geoSciAuTolerance
                 (repeat wgs84)
                 G.inverseSolutions
                 G.inverseProblems
@@ -132,13 +132,13 @@ geoSciAuUnits =
     , testGroup "Direct Problem of Geodesy"
         [ testGroup "with doubles"
             $ dblDirectChecks
-                getTolerance
+                geoSciAuTolerance
                 (repeat wgs84)
                 G.directSolutions
                 G.directProblems
         , testGroup "with rationals"
             $ ratDirectChecks
-                getTolerance
+                geoSciAuTolerance
                 (repeat wgs84)
                 G.directSolutions
                 G.directProblems

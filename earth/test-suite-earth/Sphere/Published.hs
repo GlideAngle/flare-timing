@@ -16,66 +16,187 @@
 module Sphere.Published (publishedUnits, bedfordUnits, geoSciAuUnits) where
 
 import Prelude hiding (span, min)
-import Data.Ratio ((%))
 import Test.Tasty (TestTree, testGroup)
 import Data.UnitsOfMeasure (u, convert)
+import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
-import Flight.LatLng.Rational (Epsilon(..))
-import qualified Flight.Earth.Sphere.PointToPoint.Double as Dbl (distanceHaversine)
-import qualified Flight.Earth.Sphere.PointToPoint.Rational as Rat (distanceHaversine)
-import qualified Tolerance as T (GetTolerance, dblInverseChecks, ratInverseChecks)
-import qualified Published.Bedford as B (inverseProblems, inverseSolutions)
-import qualified Published.GeoscienceAustralia as G (inverseProblems, inverseSolutions)
-import Flight.Earth.Geodesy (IProb, ISoln)
+import qualified Published.GeoscienceAustralia as G
+    ( directProblems, directSolutions
+    , inverseProblems, inverseSolutions
+    )
+import qualified Published.Vincenty as V
+    ( directProblems, directSolutions
+    , inverseProblems, inverseSolutions
+    )
+import qualified Published.Bedford as B
+    ( directProblems, directSolutions
+    , inverseProblems, inverseSolutions
+    )
+import qualified Tolerance as T
+    ( GetTolerance
+    , dblDirectChecks, ratDirectChecks
+    , dblInverseChecks, ratInverseChecks
+    )
+import Flight.Earth.Geodesy (DProb, DSoln, IProb, ISoln)
+import Sphere.Span (spanD, spanR)
 
-getTolerance :: (Ord a, Fractional a) => T.GetTolerance a
-getTolerance d'
-    | d < [u| 100 km |] = convert [u| 425.4 m |]
-    | d < [u| 500 km |] = convert [u| 2.495 km |]
-    | d < [u| 1000 km |] = [u| 4.06 km |]
-    | otherwise = [u| 19.5 km |]
+geoSciAuTolerance :: Fractional a => T.GetTolerance a
+geoSciAuTolerance = const . convert $ [u| 47 m |]
+
+vincentyTolerance
+    :: (Real a, Fractional a)
+    => Quantity a [u| m |]
+    -> Quantity a [u| km |]
+vincentyTolerance d'
+    | d < [u| 5000 km |] = convert [u| 6.7 km |]
+    | d < [u| 10000 km |] = convert [u| 21 km |]
+    | otherwise = convert [u| 24 km |]
     where
         d = convert d'
 
+bedfordTolerance
+    :: (Real a, Fractional a)
+    => Quantity a [u| m |]
+    -> Quantity a [u| km |]
+bedfordTolerance d'
+    | d < [u| 100 km |] = convert [u| 440 m |]
+    | d < [u| 1000 km |] = convert [u| 4.2 km |]
+    | otherwise = convert [u| 20 km |]
+    where
+        d = convert d'
+
+dblDirectChecks
+    :: T.GetTolerance Double
+    -> [DSoln]
+    -> [DProb]
+    -> [TestTree]
+dblDirectChecks tolerance =
+    T.dblDirectChecks tolerance (repeat spanD)
+
+ratDirectChecks
+    :: T.GetTolerance Rational
+    -> [DSoln]
+    -> [DProb]
+    -> [TestTree]
+ratDirectChecks tolerance =
+    T.ratDirectChecks tolerance (repeat spanR)
+
 dblInverseChecks
-    :: [ISoln]
+    :: T.GetTolerance Double
+    -> [ISoln]
     -> [IProb]
     -> [TestTree]
-dblInverseChecks =
-    T.dblInverseChecks getTolerance $ repeat Dbl.distanceHaversine
+dblInverseChecks tolerance =
+    T.dblInverseChecks tolerance (repeat spanD)
 
 ratInverseChecks
-    :: [ISoln]
+    :: T.GetTolerance Rational
+    -> [ISoln]
     -> [IProb]
     -> [TestTree]
-ratInverseChecks =
-    T.ratInverseChecks getTolerance $ repeat span
-    where
-        span = Rat.distanceHaversine e
-        e = Epsilon $ 1 % 1000000000000000000
-
-bedfordUnits :: TestTree
-bedfordUnits =
-    testGroup "Bedford Institute of Oceanography distances"
-    [ testGroup "with doubles"
-        $ dblInverseChecks B.inverseSolutions B.inverseProblems
-    , testGroup "with rationals"
-        $ ratInverseChecks B.inverseSolutions B.inverseProblems
-    ]
+ratInverseChecks tolerance =
+    T.ratInverseChecks tolerance (repeat spanR)
 
 geoSciAuUnits :: TestTree
 geoSciAuUnits =
     testGroup "Geoscience Australia distances between Flinders Peak and Buninyong"
-    [ testGroup "with doubles"
-        $ dblInverseChecks G.inverseSolutions G.inverseProblems
-    , testGroup "with rationals"
-        $ ratInverseChecks G.inverseSolutions G.inverseProblems
+    [ testGroup "Inverse Problem of Geodesy"
+        [ testGroup "with doubles"
+            $ dblInverseChecks
+                geoSciAuTolerance
+                G.inverseSolutions
+                G.inverseProblems
+
+        , testGroup "with rationals"
+            $ ratInverseChecks
+                geoSciAuTolerance
+                G.inverseSolutions
+                G.inverseProblems
+        ]
+
+    , testGroup "Direct Problem of Geodesy"
+        [ testGroup "with doubles"
+            $ dblDirectChecks
+                geoSciAuTolerance
+                G.directSolutions
+                G.directProblems
+        , testGroup "with rationals"
+            $ ratDirectChecks
+                geoSciAuTolerance
+                G.directSolutions
+                G.directProblems
+        ]
+    ]
+
+vincentyUnits :: TestTree
+vincentyUnits =
+    testGroup "Vincenty's distances, from Rainsford 1955"
+    [ testGroup "Inverse Problem of Geodesy"
+        [ testGroup "with doubles"
+            $ dblInverseChecks
+                vincentyTolerance
+                V.inverseSolutions
+                V.inverseProblems
+
+        , testGroup "with rationals"
+            $ ratInverseChecks
+                vincentyTolerance
+                V.inverseSolutions
+                V.inverseProblems
+        ]
+
+    , testGroup "Direct Problem of Geodesy"
+        [ testGroup "with doubles"
+            $ dblDirectChecks
+                vincentyTolerance
+                V.directSolutions
+                V.directProblems
+
+        , testGroup "with rationals"
+            $ ratDirectChecks
+                vincentyTolerance
+                V.directSolutions
+                V.directProblems
+        ]
+    ]
+
+bedfordUnits :: TestTree
+bedfordUnits =
+    testGroup "Bedford Institute of Oceanography distances"
+    [ testGroup "Inverse Problem of Geodesy"
+        [ testGroup "with doubles"
+            $ dblInverseChecks
+                bedfordTolerance
+                B.inverseSolutions
+                B.inverseProblems
+
+        , testGroup "with rationals"
+            $ ratInverseChecks
+                bedfordTolerance
+                B.inverseSolutions
+                B.inverseProblems
+        ]
+
+    , testGroup "Direct Problem of Geodesy"
+        [ testGroup "with doubles"
+            $ dblDirectChecks
+                bedfordTolerance
+                B.directSolutions
+                B.directProblems
+
+        , testGroup "with rationals"
+            $ ratDirectChecks
+                bedfordTolerance
+                B.directSolutions
+                B.directProblems
+        ]
     ]
 
 publishedUnits :: TestTree
 publishedUnits =
     testGroup "With published data sets"
     [ geoSciAuUnits
+    , vincentyUnits
     , bedfordUnits
     ]
