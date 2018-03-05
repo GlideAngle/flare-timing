@@ -144,12 +144,36 @@ inversePairs =
 
 directPairs :: [(DProb, DSoln)]
 directPairs =
-    [
+    directLat45Lng180S40
+
+-- | With a common first station and ellipsoidal distance of;
+--
 --    First  Station :
 --    ----------------
 --     LAT =  45  0  0.00000 North
 --     LON = 180  0  0.00000 West
+--
+--   Ellipsoidal distance     S =        40.0000 m
+directLat45Lng180S40 :: [(DProb, DSoln)]
+directLat45Lng180S40 =
+    [
+--    Second Station :
+--    ----------------
+--     LAT =  45  0  1.29576 North
+--     LON = 180  0  0.00000 West
 -- 
+--   Forward azimuth        FAZ =   0  0  0.0000 From North
+--   Back azimuth           BAZ = 180  0  0.0000 From North
+        ( DirectProblem
+            (DMS (45, 0, 0), DMS (180, 0, 0)) 
+            (DMS (0, 0, 0))
+            (TaskDistance $ [u| 40 m |])
+        , DirectSolution
+            (DMS (45, 0, 1.29576), DMS (180, 0, 0)) 
+            (Just (DMS (180, 0, 0)))
+        )
+    ,
+
 --    Second Station :
 --    ----------------
 --     LAT =  45  0  0.00000 North
@@ -157,7 +181,6 @@ directPairs =
 -- 
 --   Forward azimuth        FAZ =  90  0  0.0000 From North
 --   Back azimuth           BAZ = 270  0  1.2914 From North
---   Ellipsoidal distance     S =        40.0000 m
         ( DirectProblem
             (DMS (45, 0, 0), DMS (180, 0, 0)) 
             (DMS (90, 0, 0))
@@ -165,5 +188,39 @@ directPairs =
         , DirectSolution
             (DMS (45, 0, 0), DMS (-179, 59, 58.17367)) 
             (Just (DMS (270, 0, 1.2914)))
+        )
+    ,
+
+--    Second Station :
+--    ----------------
+--     LAT =  44 59 58.70424 North
+--     LON = 180  0  0.00000 West
+-- 
+--   Forward azimuth        FAZ = 180  0  0.0000 From North
+--   Back azimuth           BAZ =   0  0  0.0000 From North
+        ( DirectProblem
+            (DMS (45, 0, 0), DMS (180, 0, 0)) 
+            (DMS (180, 0, 0))
+            (TaskDistance $ [u| 40 m |])
+        , DirectSolution
+            (DMS (44, 59, 58.70424), DMS (180, 0, 0)) 
+            (Just (DMS (0, 0, 0)))
+        )
+    ,
+
+--    Second Station :
+--    ----------------
+--     LAT =  45  0  0.00000 North
+--     LON = 179 59 58.17367 East
+-- 
+--   Forward azimuth        FAZ = 270  0  0.0000 From North
+--   Back azimuth           BAZ =  89 59 58.7086 From North
+        ( DirectProblem
+            (DMS (45, 0, 0), DMS (180, 0, 0)) 
+            (DMS (270, 0, 0))
+            (TaskDistance $ [u| 40 m |])
+        , DirectSolution
+            (DMS (45, 0, 0), DMS (179, 59, 58.17367)) 
+            (Just (DMS (89, 559, 58.7086)))
         )
     ]
