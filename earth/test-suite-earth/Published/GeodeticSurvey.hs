@@ -105,6 +105,7 @@ import Flight.Earth.Geodesy
 import qualified Published.GeodeticSurvey.LatN90LngE180S40 as LatN90LngE180S40
 import qualified Published.GeodeticSurvey.LatN45LngE180S40 as LatN45LngE180S40
 import qualified Published.GeodeticSurvey.LatN00LngE180S40 as LatN00LngE180S40
+import qualified Published.GeodeticSurvey.LatN00LngE000S40 as LatN00LngE000S40
 
 inverseProblems :: [IProb]
 inverseProblems = fst <$> inversePairs
@@ -131,4 +132,5 @@ directPairs =
     [ LatN90LngE180S40.fwd
     , LatN45LngE180S40.fwd
     , LatN00LngE180S40.fwd
+    , LatN00LngE000S40.fwd
     ]
