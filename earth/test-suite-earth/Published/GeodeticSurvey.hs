@@ -102,6 +102,7 @@ import Flight.Earth.Geodesy
     , DProb, DSoln
     , IProb, ISoln
     )
+import qualified Published.GeodeticSurvey.Lat90Lng180S40 as Lat90Lng180S40
 import qualified Published.GeodeticSurvey.Lat45Lng180S40 as Lat45Lng180S40
 
 inverseProblems :: [IProb]
@@ -125,4 +126,7 @@ inversePairs =
 
 directPairs :: [(DProb, DSoln)]
 directPairs =
-    Lat45Lng180S40.fwd
+    concat $
+    [ Lat90Lng180S40.fwd
+    , Lat45Lng180S40.fwd
+    ]
