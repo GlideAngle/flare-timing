@@ -63,7 +63,10 @@ vincentyInverse
 
         auxLat = atan . ((1 - f) *) . tan
         _U₁ = auxLat _Φ₁; _U₂ = auxLat _Φ₂
-        _L = (normalizeLng _L₂) - (normalizeLng _L₁)
+        _L =
+            case _L₂ - _L₁ of
+                _L' | abs _L' <= pi -> _L'
+                otherwise -> (normalizeLng _L₂) - (normalizeLng _L₁)
 
         sinU₁ = sin _U₁; sinU₂ = sin _U₂
         cosU₁ = cos _U₁; cosU₂ = cos _U₂
