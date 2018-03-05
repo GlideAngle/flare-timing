@@ -87,7 +87,7 @@ vincentyInverse
         _L =
             case _L₂ - _L₁ of
                 _L' | abs _L' <= F.pi eps -> _L'
-                otherwise -> (normalizeLng' _L₂) - (normalizeLng' _L₁)
+                _ -> (normalizeLng' _L₂) - (normalizeLng' _L₁)
 
         sinU₁ = sin' _U₁; sinU₂ = sin' _U₂
         cosU₁ = cos' _U₁; cosU₂ = cos' _U₂
