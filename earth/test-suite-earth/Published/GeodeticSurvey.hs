@@ -123,14 +123,6 @@ import Flight.Earth.Geodesy
     , IProb, ISoln
     )
 
-inversePairs :: [(IProb, ISoln)]
-inversePairs =
-    catMaybes $
-    [ inverse dp ds
-    | dp <- directProblems
-    | ds <- directSolutions
-    ]
-
 inverseProblems :: [IProb]
 inverseProblems = fst <$> inversePairs
 
@@ -138,16 +130,40 @@ inverseSolutions :: [ISoln]
 inverseSolutions = snd <$> inversePairs
 
 directProblems :: [DProb]
-directProblems =
-    [ DirectProblem
-        (DMS (45, 0, 0), DMS (180, 0, 0)) 
-        (DMS (90, 0, 0))
-        (TaskDistance $ [u| 40 m |])
-    ]
+directProblems = fst <$> directPairs
 
 directSolutions :: [DSoln]
-directSolutions =
-    [ DirectSolution
-        (DMS (45, 0, 0), DMS (-179, 59, 58.17367)) 
-        (Just (DMS (270, 0, 1.2914)))
+directSolutions = snd <$> directPairs
+
+inversePairs :: [(IProb, ISoln)]
+inversePairs =
+    catMaybes $
+    [ uncurry inverse $ dp
+    | dp <- directPairs
+    ]
+
+directPairs :: [(DProb, DSoln)]
+directPairs =
+    [
+--    First  Station :
+--    ----------------
+--     LAT =  45  0  0.00000 North
+--     LON = 180  0  0.00000 West
+-- 
+--    Second Station :
+--    ----------------
+--     LAT =  45  0  0.00000 North
+--     LON = 179 59 58.17367 West
+-- 
+--   Forward azimuth        FAZ =  90  0  0.0000 From North
+--   Back azimuth           BAZ = 270  0  1.2914 From North
+--   Ellipsoidal distance     S =        40.0000 m
+        ( DirectProblem
+            (DMS (45, 0, 0), DMS (180, 0, 0)) 
+            (DMS (90, 0, 0))
+            (TaskDistance $ [u| 40 m |])
+        , DirectSolution
+            (DMS (45, 0, 0), DMS (-179, 59, 58.17367)) 
+            (Just (DMS (270, 0, 1.2914)))
+        )
     ]
