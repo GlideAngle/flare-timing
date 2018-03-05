@@ -60,7 +60,7 @@ geoSciAuTolerance :: Fractional a => T.GetTolerance a
 geoSciAuTolerance = const . convert $ [u| 0.5 mm |]
 
 ngsTolerance :: Fractional a => T.GetTolerance a
-ngsTolerance = const . convert $ [u| 0.5 mm |]
+ngsTolerance = const . convert $ [u| 0.1 mm |]
 
 vincentyTolerance :: Fractional a => T.GetTolerance a
 vincentyTolerance = const . convert $ [u| 0.8 mm |]
