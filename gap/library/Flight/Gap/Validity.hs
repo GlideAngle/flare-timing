@@ -35,7 +35,7 @@ import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.UnitsOfMeasure (u, convert, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import Flight.Gap.Ratio (pattern (:%))
+import Flight.Ratio (pattern (:%))
 import Flight.Gap.Distance.Nominal (NominalDistance(..))
 import Flight.Gap.Distance.Best (BestDistance(..))
 import Flight.Gap.Distance.Min (MinimumDistance(..))

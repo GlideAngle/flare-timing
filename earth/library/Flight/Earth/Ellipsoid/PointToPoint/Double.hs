@@ -13,6 +13,7 @@ module Flight.Earth.Ellipsoid.PointToPoint.Double
     ) where
 
 import Prelude hiding (sum, span)
+import Data.Fixed (mod')
 import Data.UnitsOfMeasure (KnownUnit, Unpack, u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
@@ -23,6 +24,20 @@ import Flight.Earth.Ellipsoid
     , defaultVincentyAccuracy, flattening, polarRadius
     )
 import Flight.Earth.Geodesy (InverseProblem(..), InverseSolution(..))
+
+-- | In Vincenty's paper he says,
+--
+-- "The inverse formula may give no solution over a line between
+-- two nearly antipodal points. This will occur when λ, as computed
+-- by eqn. (11), is greater than π in absolute value."
+--
+-- (45°,-179°59'58.17367'') to (45°,180°)
+-- Comparing the above two points, longitudes are less than a minute apart.  To
+-- be able to get the difference using simple subtraction normalize the
+-- longitudes to a range 0 <= lng <= 2π.
+normalizeLng :: (Floating a, Real a) => a -> a
+normalizeLng lng =
+    lng `mod'` (2 * pi)
 
 vincentyInverse
     :: (Num a, Floating a, Fractional a, RealFloat a, Show a)
@@ -48,7 +63,7 @@ vincentyInverse
 
         auxLat = atan . ((1 - f) *) . tan
         _U₁ = auxLat _Φ₁; _U₂ = auxLat _Φ₂
-        _L = _L₂ - _L₁
+        _L = (normalizeLng _L₂) - (normalizeLng _L₁)
 
         sinU₁ = sin _U₁; sinU₂ = sin _U₂
         cosU₁ = cos _U₁; cosU₂ = cos _U₂

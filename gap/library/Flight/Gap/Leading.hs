@@ -29,17 +29,14 @@ module Flight.Gap.Leading
     ) where
 
 import Prelude hiding (seq)
-import Control.Newtype (Newtype(..))
 import Control.Arrow (second)
 import Data.Ratio ((%))
 import Data.List (partition, sortBy)
 import Data.Maybe (catMaybes)
-import Data.Aeson (ToJSON(..), FromJSON(..))
 
-import Data.Aeson.Via.Scientific (DefaultDecimalPlaces(..), DecimalPlaces(..))
-import Flight.Gap.Ratio (pattern (:%))
+import Flight.Ratio (pattern (:%))
 import Flight.Gap.Ratio.Leading
-    (LeadingAreaStep(..), LeadingCoefficient(..), LeadingFraction(..), EssTime(..))
+    (LeadingAreaStep(..), LeadingCoefficient(..), LeadingFraction(..))
 
 -- | Time in seconds from the moment the first pilot crossed the start of the speed
 -- section.

@@ -1,5 +1,6 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE PatternSynonyms #-}
 
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE PartialTypeSignatures #-}
@@ -12,10 +13,12 @@ module Flight.Earth.Ellipsoid.PointToPoint.Rational
     ) where
 
 import Prelude hiding (sum, span)
+import Data.Ratio ((%))
 import qualified Data.Number.FixedFunctions as F
 import Data.UnitsOfMeasure (u, convert, fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
+import Flight.Ratio (pattern (:%))
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.LatLng.Rational (Epsilon(..))
 import Flight.Zone (toRationalLatLng)
@@ -25,6 +28,14 @@ import Flight.Earth.Ellipsoid
     , defaultVincentyAccuracy, flattening, polarRadius, toRationalEllipsoid
     )
 import Flight.Earth.Geodesy (InverseProblem(..), InverseSolution(..))
+
+mod' :: Rational -> Rational -> Rational
+mod' (a :% b) (c :% d) =
+    ((d * a) `mod` (b * c)) % (b * d)
+
+normalizeLng :: Epsilon -> Rational -> Rational
+normalizeLng (Epsilon eps) lng =
+   lng `mod'` (2 * F.pi eps)
 
 -- | The numbers package doesn't have atan₂.
 -- SEE: https://hackage.haskell.org/package/base
@@ -68,11 +79,12 @@ vincentyInverse
         cos' = F.cos eps
         tan' = F.tan eps
         atan' = F.atan eps
+        normalizeLng' = normalizeLng e
 
         f = flattening ellipsoid
         auxLat = atan' . ((1 - f) *) . tan'
         _U₁ = auxLat _Φ₁; _U₂ = auxLat _Φ₂
-        _L = _L₂ - _L₁
+        _L = (normalizeLng' _L₂) - (normalizeLng' _L₁)
 
         sinU₁ = sin' _U₁; sinU₂ = sin' _U₂
         cosU₁ = cos' _U₁; cosU₂ = cos' _U₂

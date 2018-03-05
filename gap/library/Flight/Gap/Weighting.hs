@@ -20,7 +20,7 @@ import Data.Ratio ((%))
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 
-import Flight.Gap.Ratio (pattern (:%))
+import Flight.Ratio (pattern (:%))
 import Flight.Gap.Weight.GoalRatio (GoalRatio(..))
 import Flight.Gap.Weight.Distance (DistanceWeight(..))
 import Flight.Gap.Weight.Leading (LeadingWeight(..))

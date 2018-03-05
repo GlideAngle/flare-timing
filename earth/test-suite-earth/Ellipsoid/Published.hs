@@ -36,6 +36,10 @@ import qualified Published.GeoscienceAustralia as G
     ( directProblems, directSolutions
     , inverseProblems, inverseSolutions
     )
+import qualified Published.GeodeticSurvey as N
+    ( directProblems, directSolutions
+    , inverseProblems, inverseSolutions
+    )
 import qualified Published.Vincenty as V
     ( directProblems, directSolutions
     , inverseProblems, inverseSolutions
@@ -54,6 +58,9 @@ import Flight.Earth.Geodesy (DProb, DSoln, IProb, ISoln)
 
 geoSciAuTolerance :: Fractional a => T.GetTolerance a
 geoSciAuTolerance = const . convert $ [u| 0.5 mm |]
+
+ngsTolerance :: Fractional a => T.GetTolerance a
+ngsTolerance = const . convert $ [u| 0.5 mm |]
 
 vincentyTolerance :: Fractional a => T.GetTolerance a
 vincentyTolerance = const . convert $ [u| 0.8 mm |]
@@ -141,12 +148,49 @@ geoSciAuUnits =
                 (repeat wgs84)
                 G.directSolutions
                 G.directProblems
+
         , testGroup "with rationals"
             $ ratDirectChecks
                 geoSciAuTolerance
                 (repeat wgs84)
                 G.directSolutions
                 G.directProblems
+        ]
+    ]
+
+ngsUnits :: TestTree
+ngsUnits =
+    testGroup "National Geodetic Survey distances, using Vincenty"
+    [ testGroup "Inverse Problem of Geodesy"
+        [ testGroup "with doubles"
+            $ dblInverseChecks
+                ngsTolerance
+                (repeat wgs84)
+                N.inverseSolutions
+                N.inverseProblems
+
+        , testGroup "with rationals"
+            $ ratInverseChecks
+                ngsTolerance
+                (repeat wgs84)
+                N.inverseSolutions
+                N.inverseProblems
+        ]
+
+    , testGroup "Direct Problem of Geodesy"
+        [ testGroup "with doubles"
+            $ dblDirectChecks
+                ngsTolerance
+                (repeat wgs84)
+                N.directSolutions
+                N.directProblems
+
+        , testGroup "with rationals"
+            $ ratDirectChecks
+                ngsTolerance
+                (repeat wgs84)
+                N.directSolutions
+                N.directProblems
         ]
     ]
 
@@ -226,6 +270,7 @@ publishedUnits :: TestTree
 publishedUnits =
     testGroup "With published data sets"
     [ geoSciAuUnits
+    , ngsUnits
     , vincentyUnits
     , bedfordUnits
     ]

@@ -1,17 +1,9 @@
-{-# LANGUAGE PatternSynonyms #-}
-{-# LANGUAGE ViewPatterns #-}
-{-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE RankNTypes #-}
 
-module Flight.Gap.Ratio (pattern (:%), isNormal, isFoldNormal) where
+module Flight.Gap.Ratio (isNormal, isFoldNormal) where
 
-import Data.Ratio (Ratio, (%), numerator, denominator)
-
--- | SEE: http://stackoverflow.com/questions/33325370/why-cant-i-pattern-match-against-a-ratio-in-haskell
-pattern (:%) :: forall t. t -> t -> Ratio t
-pattern num :% denom <- (\x -> (numerator x, denominator x) -> (num, denom))
+import Data.Ratio ((%))
 
 class Num a => Normal a where
     isNormal :: a -> Bool

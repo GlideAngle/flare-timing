@@ -13,7 +13,7 @@ import Data.Ratio ((%))
 import Data.UnitsOfMeasure (u, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import Flight.Gap.Ratio (pattern (:%))
+import Flight.Ratio (pattern (:%))
 import Flight.Units ()
 import Flight.Gap.Distance.Best (BestDistance(..))
 import Flight.Gap.Distance.Pilot (PilotDistance(..))
