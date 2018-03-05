@@ -164,10 +164,7 @@ directLat45Lng180S40 =
 -- 
 --   Forward azimuth        FAZ =   0  0  0.0000 From North
 --   Back azimuth           BAZ = 180  0  0.0000 From North
-        ( DirectProblem
-            (DMS (45, 0, 0), DMS (180, 0, 0)) 
-            (DMS (0, 0, 0))
-            (TaskDistance $ [u| 40 m |])
+        ( DirectProblem x (DMS (0, 0, 0)) d
         , DirectSolution
             (DMS (45, 0, 1.29576), DMS (180, 0, 0)) 
             (Just (DMS (180, 0, 0)))
@@ -181,10 +178,7 @@ directLat45Lng180S40 =
 -- 
 --   Forward azimuth        FAZ =  90  0  0.0000 From North
 --   Back azimuth           BAZ = 270  0  1.2914 From North
-        ( DirectProblem
-            (DMS (45, 0, 0), DMS (180, 0, 0)) 
-            (DMS (90, 0, 0))
-            (TaskDistance $ [u| 40 m |])
+        ( DirectProblem x (DMS (90, 0, 0)) d
         , DirectSolution
             (DMS (45, 0, 0), DMS (-179, 59, 58.17367)) 
             (Just (DMS (270, 0, 1.2914)))
@@ -198,10 +192,7 @@ directLat45Lng180S40 =
 -- 
 --   Forward azimuth        FAZ = 180  0  0.0000 From North
 --   Back azimuth           BAZ =   0  0  0.0000 From North
-        ( DirectProblem
-            (DMS (45, 0, 0), DMS (180, 0, 0)) 
-            (DMS (180, 0, 0))
-            (TaskDistance $ [u| 40 m |])
+        ( DirectProblem x (DMS (180, 0, 0)) d
         , DirectSolution
             (DMS (44, 59, 58.70424), DMS (180, 0, 0)) 
             (Just (DMS (0, 0, 0)))
@@ -215,12 +206,12 @@ directLat45Lng180S40 =
 -- 
 --   Forward azimuth        FAZ = 270  0  0.0000 From North
 --   Back azimuth           BAZ =  89 59 58.7086 From North
-        ( DirectProblem
-            (DMS (45, 0, 0), DMS (180, 0, 0)) 
-            (DMS (270, 0, 0))
-            (TaskDistance $ [u| 40 m |])
+        ( DirectProblem x (DMS (270, 0, 0)) d
         , DirectSolution
             (DMS (45, 0, 0), DMS (179, 59, 58.17367)) 
             (Just (DMS (89, 559, 58.7086)))
         )
     ]
+    where
+        x = (DMS (45, 0, 0), DMS (180, 0, 0)) 
+        d = TaskDistance $ [u| 40 m |]
