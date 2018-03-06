@@ -4,7 +4,7 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
-module Published.GeodeticSurvey.LatN00LngE180S40 (fwd) where
+module Published.GeodeticSurvey.LatN00LngW180S40 (fwd) where
 
 import Data.UnitsOfMeasure (u)
 
@@ -47,7 +47,7 @@ fwd =
 --   Back azimuth           BAZ = 270  0  0.0000 From North
         ( DirectProblem x (DMS (90, 0, 0)) d
         , DirectSolution
-            (fst x, DMS (179, 59, 58.70643)) 
+            (fst x, DMS (-179, 59, 58.70643)) 
             (Just (DMS (270, 0, 0)))
         )
     ,
@@ -61,7 +61,7 @@ fwd =
 --   Back azimuth           BAZ =   0  0  0.0000 From North
         ( DirectProblem x (DMS (180, 0, 0)) d
         , DirectSolution
-            (DMS (0, 0, 1.30229), snd x)
+            (DMS (0, 0, -1.30229), snd x)
             (Just (DMS (0, 0, 0)))
         )
     ,
@@ -80,5 +80,5 @@ fwd =
         )
     ]
     where
-        x = (DMS (0, 0, 0), DMS (180, 0, 0)) 
+        x = (DMS (0, 0, 0), DMS (-180, 0, 0)) 
         d = TaskDistance $ [u| 40 m |]
