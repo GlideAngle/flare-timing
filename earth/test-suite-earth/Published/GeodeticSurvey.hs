@@ -108,6 +108,7 @@ import qualified Published.GeodeticSurvey.LatN00LngW180S40 as LatN00LngW180S40
 import qualified Published.GeodeticSurvey.LatN00LngE000S40 as LatN00LngE000S40
 import qualified Published.GeodeticSurvey.LatS90LngE180S40 as LatS90LngE180S40
 import qualified Published.GeodeticSurvey.Meridian as Meridian
+import qualified Published.GeodeticSurvey.Parallel as Parallel
 
 inverseProblems :: [IProb]
 inverseProblems =
@@ -145,4 +146,7 @@ fwds =
 
 revs :: [(IProb, ISoln)]
 revs =
-    Meridian.rev
+    concat $
+    [ Meridian.rev
+    , Parallel.rev
+    ]
