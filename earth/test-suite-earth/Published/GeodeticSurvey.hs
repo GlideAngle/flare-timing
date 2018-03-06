@@ -107,28 +107,34 @@ import qualified Published.GeodeticSurvey.LatN45LngW180S40 as LatN45LngW180S40
 import qualified Published.GeodeticSurvey.LatN00LngW180S40 as LatN00LngW180S40
 import qualified Published.GeodeticSurvey.LatN00LngE000S40 as LatN00LngE000S40
 import qualified Published.GeodeticSurvey.LatS90LngE180S40 as LatS90LngE180S40
+import qualified Published.GeodeticSurvey.Meridian as Meridian
 
 inverseProblems :: [IProb]
-inverseProblems = fst <$> inversePairs
+inverseProblems =
+    fst <$> (inversePairs fwds ++ revs)
 
 inverseSolutions :: [ISoln]
-inverseSolutions = snd <$> inversePairs
+inverseSolutions =
+    snd <$> (inversePairs fwds ++ revs)
 
 directProblems :: [DProb]
-directProblems = fst <$> directPairs
+directProblems =
+    fst <$> (directPairs revs ++ fwds)
 
 directSolutions :: [DSoln]
-directSolutions = snd <$> directPairs
+directSolutions =
+    snd <$> (directPairs revs ++ fwds)
 
-inversePairs :: [(IProb, ISoln)]
-inversePairs =
-    catMaybes $
-    [ uncurry inverse $ dp
-    | dp <- directPairs
-    ]
+inversePairs :: [(DProb, DSoln)] -> [(IProb, ISoln)]
+inversePairs xs =
+    catMaybes $ uncurry inverse <$> xs
 
-directPairs :: [(DProb, DSoln)]
-directPairs =
+directPairs :: [(IProb, ISoln)] -> [(DProb, DSoln)]
+directPairs xs =
+    catMaybes $ uncurry direct <$> xs
+
+fwds :: [(DProb, DSoln)]
+fwds =
     concat $
     [ LatN90LngW180S40.fwd
     , LatN45LngW180S40.fwd
@@ -136,3 +142,7 @@ directPairs =
     , LatN00LngE000S40.fwd
     , LatS90LngE180S40.fwd
     ]
+
+revs :: [(IProb, ISoln)]
+revs =
+    Meridian.rev
