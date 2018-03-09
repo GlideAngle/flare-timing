@@ -37,25 +37,40 @@ newtype DMS = DMS (Int, Int, Double)
 instance Show DMS where
     show = showDMS
 
-showDMS :: DMS -> String
-showDMS (DMS (deg, 0, 0)) =
-    show deg ++ "°"
-showDMS dms@(DMS (deg, min, 0)) =
-    (signSymbolDMS dms) ++
-    show (abs deg) ++ "°" ++ show (abs min) ++ "'"
-showDMS dms@(DMS (deg, min, sec)) =
-    (signSymbolDMS dms) ++
-    if fromIntegral isec == sec then
-    show (abs deg) ++ "°" ++ show (abs min) ++ "'" ++ show (abs isec) ++ "''"
-    else
-        show (abs deg)
-        ++ "°"
-        ++ show (abs min)
-        ++ "'"
-        ++ (unpack $ format (Fmt.sf % "''") (abs sec))
+secToShow :: Double -> String
+secToShow sec =
+    if fromIntegral isec == sec
+        then show (abs isec)
+        else (unpack $ format Fmt.sf (abs sec))
     where
         isec :: Int
         isec = floor sec
+
+showDMS :: DMS -> String
+showDMS (DMS (deg, 0, 0)) =
+    show deg ++ "°"
+showDMS (DMS (0, 0, sec)) =
+    secToShow sec ++ "''"
+showDMS dms@(DMS (deg, min, 0)) =
+    (signSymbolDMS dms)
+    ++ show (abs deg)
+    ++ "°"
+    ++ show (abs min)
+    ++ "'"
+showDMS dms@(DMS (0, min, sec)) =
+    (signSymbolDMS dms)
+    ++ show (abs min)
+    ++ "'"
+    ++ secToShow sec
+    ++ "''"
+showDMS dms@(DMS (deg, min, sec)) =
+    (signSymbolDMS dms)
+    ++ show (abs deg)
+    ++ "°"
+    ++ show (abs min)
+    ++ "'"
+    ++ secToShow sec
+    ++ "''"
 
 toDeg :: DMS -> Double
 toDeg dms@(DMS (deg, min, s)) =
