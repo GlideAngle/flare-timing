@@ -22,6 +22,8 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Data.Bifunctor.Flip (Flip(..))
 import Data.Number.RoundingFunctions (dpRound)
 
+import Flight.Units.Angle ()
+
 [u| s, m |]
 
 -- NOTE: hm is the hectometre, 100m.
@@ -30,10 +32,6 @@ import Data.Number.RoundingFunctions (dpRound)
 [u| min = 60 s, h = 3600 s, d = 86400 s |]
 
 [u| ft = 100 % 328 m, mi = 1609.344 m, mph = mi/h |]
-
-[u| rad |]
-[u| deg = (5030569068109113 % 288230376151711744) rad |]
-[u| dms = (5030569068109113 % 288230376151711744) rad |]
 
 -- | Convert any 'Real' quantity into a 'Fractional' type ('realToFrac').
 realToFrac' :: (Real a, Fractional b) => Quantity a u -> Quantity b u

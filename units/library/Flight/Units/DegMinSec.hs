@@ -23,16 +23,15 @@ module Flight.Units.DegMinSec
 import Prelude hiding (min)
 import Data.Fixed (mod')
 import Data.Text.Lazy (unpack)
-import Formatting ((%), format)
+import Formatting (format)
 import qualified Formatting.ShortFormatters as Fmt (sf)
 import Data.UnitsOfMeasure ((+:), u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Data.UnitsOfMeasure.Convert (Convertible)
 
-import Flight.Units ()
 import Flight.Units.Angle (Angle(..))
 
-newtype DMS = DMS (Int, Int, Double)
+newtype DMS = DMS (Int, Int, Double) deriving Eq
 
 instance Show DMS where
     show = showDMS
@@ -136,3 +135,12 @@ instance Angle DMS where
 
     fromQuantity = fromQ
     toQuantity = convert . toQDeg
+
+instance Ord DMS where
+    x <= y = x' <= y'
+        where
+            x' :: Quantity Double [u| deg |]
+            x' = toQuantity $ normalize x
+
+            y' :: Quantity Double [u| deg |]
+            y' = toQuantity $ normalize y
