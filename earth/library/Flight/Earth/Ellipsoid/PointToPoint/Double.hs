@@ -9,6 +9,8 @@
 
 module Flight.Earth.Ellipsoid.PointToPoint.Double
     ( distanceVincenty
+    , azimuthFwd
+    , azimuthRev
     , vincentyInverse
     ) where
 
@@ -18,6 +20,7 @@ import Data.UnitsOfMeasure (KnownUnit, Unpack, u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
+import Flight.LatLng (AzimuthFwd, AzimuthRev)
 import Flight.Distance (TaskDistance(..), SpanLatLng)
 import Flight.Earth.Ellipsoid
     ( Ellipsoid(..), AbnormalLatLng(..), VincentyInverse(..), VincentyAccuracy(..)
@@ -133,6 +136,20 @@ distanceVincenty e x y =
         VincentyInverseAntipodal -> tooFar
         VincentyInverseAbnormal _ -> tooFar
         VincentyInverse InverseSolution{s} -> s
+
+azimuthFwd :: (RealFloat a, Show a) => Ellipsoid a -> AzimuthFwd a
+azimuthFwd e x y =
+    case distanceVincenty' e (InverseProblem x y) of
+        VincentyInverseAntipodal -> Nothing
+        VincentyInverseAbnormal _ -> Nothing
+        VincentyInverse InverseSolution{α₁} -> Just α₁
+
+azimuthRev :: (RealFloat a, Show a) => Ellipsoid a -> AzimuthRev a
+azimuthRev e x y =
+    case distanceVincenty' e (InverseProblem x y) of
+        VincentyInverseAntipodal -> Nothing
+        VincentyInverseAbnormal _ -> Nothing
+        VincentyInverse InverseSolution{α₂} -> α₂
 
 distanceVincenty'
     :: (RealFloat a, Show a)

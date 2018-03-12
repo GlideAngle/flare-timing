@@ -1,5 +1,6 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE TypeFamilies #-}
 
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE PartialTypeSignatures #-}
@@ -10,7 +11,7 @@ module Tolerance
     ( GetTolerance
     , diff
     , showTolerance
-    , describeInverse
+    , describeInverseDistance
     , dblDirectChecks
     , ratDirectChecks
     , dblInverseChecks
@@ -18,6 +19,7 @@ module Tolerance
     ) where
 
 import Prelude hiding (span)
+import Data.List (zipWith5)
 import Test.Tasty (TestTree)
 import Test.Tasty.HUnit as HU (testCase)
 import Test.Tasty.HUnit.Compare ((@?<=))
@@ -26,7 +28,8 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
 import Flight.Units.DegMinSec (DMS(..))
-import Flight.LatLng (LatLng, fromDMS)
+import Flight.Units.Angle (Angle(..))
+import Flight.LatLng (LatLng, AzimuthFwd, AzimuthRev, fromDMS)
 import Flight.Distance (TaskDistance(..), SpanLatLng)
 import Flight.Zone (toRationalLatLng)
 import qualified Flight.Earth.Geodesy as D (DirectProblem(..), DirectSolution(..))
@@ -51,6 +54,16 @@ diff :: Num a => TaskDistance a -> TaskDistance a -> TaskDistance a
 diff (TaskDistance a) (TaskDistance b) =
     TaskDistance . abs' $ a -: b
 
+diffAz :: DMS -> DMS -> DMS
+diffAz x y =
+    fromQuantity $ x' -: y'
+    where
+        x' :: Quantity _ [u| rad |]
+        x' = toQuantity x
+
+        y' :: Quantity _ [u| rad |]
+        y' = toQuantity y
+
 describeDirect
     :: (Real a, Fractional a)
     => (DMS, DMS)
@@ -70,14 +83,14 @@ describeDirect x angle s yExpected tolerance =
     ++ " ± "
     ++ showTolerance tolerance
 
-describeInverse
+describeInverseDistance
     :: (Real a, Fractional a)
     => (DMS, DMS)
     -> (DMS, DMS)
     -> TaskDistance a
     -> Quantity a [u| m |]
     -> String
-describeInverse x y sExpected tolerance =
+describeInverseDistance x y sExpected tolerance =
     show x
     ++ " to "
     ++ show y
@@ -86,6 +99,36 @@ describeInverse x y sExpected tolerance =
     ++ " ± "
     ++ showTolerance tolerance
 
+describeAzimuthFwd
+    :: (DMS, DMS)
+    -> (DMS, DMS)
+    -> DMS
+    -> DMS
+    -> String
+describeAzimuthFwd x y azExpected tolerance =
+    show x
+    ++ " to "
+    ++ show y
+    ++ " -> "
+    ++ show azExpected
+    ++ " ± "
+    ++ show tolerance
+
+describeAzimuthRev
+    :: (DMS, DMS)
+    -> (DMS, DMS)
+    -> Maybe DMS
+    -> DMS
+    -> String
+describeAzimuthRev x y azExpected tolerance =
+    show x
+    ++ " to "
+    ++ show y
+    ++ " <- "
+    ++ show azExpected
+    ++ " ± "
+    ++ show tolerance
+
 sFoundD
     :: (LatLng Double [u| rad |] -> LatLng Double [u| rad |] -> a)
     -> (DMS, DMS)
@@ -93,6 +136,22 @@ sFoundD
     -> a
 sFoundD span x y =
     span (fromDMS x) (fromDMS y)
+
+azFwdFoundD
+    :: (LatLng Double [u| rad |] -> LatLng Double [u| rad |] -> a)
+    -> (DMS, DMS)
+    -> (DMS, DMS)
+    -> a
+azFwdFoundD azFwd x y =
+    azFwd (fromDMS x) (fromDMS y)
+
+azRevFoundD
+    :: (LatLng Double [u| rad |] -> LatLng Double [u| rad |] -> a)
+    -> (DMS, DMS)
+    -> (DMS, DMS)
+    -> a
+azRevFoundD azRev x y =
+    azRev (fromDMS x) (fromDMS y)
 
 sFoundR
     :: (LatLng Rational [u| rad |] -> LatLng Rational [u| rad |] -> a)
@@ -152,24 +211,45 @@ ratDirectChecks getTolerance =
 
 dblInverseChecks
     :: GetTolerance Double
+    -> DMS
     -> [SpanLatLng Double]
+    -> [AzimuthFwd Double]
+    -> [AzimuthRev Double]
     -> [ISoln]
     -> [IProb]
     -> [TestTree]
-dblInverseChecks getTolerance =
-    zipWith3 f
+dblInverseChecks
+    getTolerance
+    azTolerance
+    spans
+    azFwds
+    azRevs
+    solns
+    probs =
+        concat $ zipWith5 f spans azFwds azRevs solns probs
     where
         f
             span
-            I.InverseSolution{I.s = sExpected}
+            azFwd
+            azRev
+            I.InverseSolution{I.s, I.α₁, I.α₂}
             I.InverseProblem{I.x, I.y} =
-            HU.testCase (describeInverse x y sExpected tolerance)
-            $ diff (sFoundD span x y) sExpected
-            @?<= (TaskDistance tolerance)
+            [ HU.testCase (describeInverseDistance x y s tolerance)
+                $ diff (sFoundD span x y) s
+                @?<= (TaskDistance tolerance)
+
+            , HU.testCase (describeAzimuthFwd x y α₁ azTolerance)
+                $ (flip diffAz $ α₁) <$> (fromQuantity <$> azFwdFoundD azFwd x y) 
+                @?<= Just azTolerance
+
+            , HU.testCase (describeAzimuthRev x y α₂ azTolerance)
+                $ diffAz <$> (fromQuantity <$> azRevFoundD azRev x y) <*> α₂
+                @?<= Just azTolerance
+            ]
             where
                 tolerance =
                     convert . getTolerance
-                    $ (\(TaskDistance q) -> q) sExpected
+                    $ (\(TaskDistance q) -> q) s
 
 ratInverseChecks
     :: GetTolerance Rational
@@ -184,7 +264,7 @@ ratInverseChecks getTolerance =
             span
             I.InverseSolution{I.s = TaskDistance d}
             I.InverseProblem{I.x, I.y} =
-            HU.testCase (describeInverse x y sExpected tolerance)
+            HU.testCase (describeInverseDistance x y sExpected tolerance)
             $ diff (sFoundR span x y) sExpected
             @?<= (TaskDistance tolerance)
             where

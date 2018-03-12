@@ -26,6 +26,7 @@ import Data.UnitsOfMeasure (u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
+import Flight.Units.DegMinSec (DMS(..))
 import qualified Published.GeoscienceAustralia as G
     ( directProblems, directSolutions
     , inverseProblems, inverseSolutions
@@ -44,7 +45,10 @@ import qualified Tolerance as T
     , dblInverseChecks, ratInverseChecks
     )
 import Flight.Earth.Geodesy (DProb, DSoln, IProb, ISoln)
-import Flat.Span (spanD, spanR)
+import Flat.Span (spanD, spanR, azFwdD, azRevD)
+
+azTolerance :: DMS
+azTolerance = DMS (0, 0, 0.001)
 
 -- | TODO: Find out why we're out 430 km over 55 km on a flat Earth.
 geoSciAuTolerance :: Fractional a => T.GetTolerance a
@@ -96,7 +100,11 @@ dblInverseChecks
     -> [IProb]
     -> [TestTree]
 dblInverseChecks tolerance =
-    T.dblInverseChecks tolerance (repeat spanD)
+    T.dblInverseChecks tolerance
+        azTolerance
+        (repeat spanD)
+        (repeat azFwdD)
+        (repeat azRevD)
 
 ratInverseChecks
     :: T.GetTolerance Rational

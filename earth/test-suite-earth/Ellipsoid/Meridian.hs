@@ -16,6 +16,7 @@ import Flight.Units ()
 import Flight.Zone (Radius(..))
 import Zone (MkZone, QLL, describedZones, showQ)
 import qualified Distance as D (DistanceClose, toDistanceClose)
+import Flight.Earth.Ellipsoid (wgs84)
 import Ellipsoid.Span (spanD, spanR)
 
 meridianUnits :: TestTree
@@ -28,13 +29,13 @@ meridianUnits =
         f s  =
             distanceMeridian
                 ("Distance between " ++ s ++ " zones on meridian arcs")
-                (D.toDistanceClose spanD)
+                (D.toDistanceClose $ spanD wgs84)
                 tolerancesD
 
         g s  =
             distanceMeridian
                 ("Distance between " ++ s ++ " zones on meridian arcs")
-                (D.toDistanceClose spanR)
+                (D.toDistanceClose $ spanR wgs84)
                 tolerancesR
 
 pts :: (Enum a, Real a, Fractional a) => [(QLL a, QLL a)]

@@ -18,6 +18,8 @@ module Flight.LatLng
     , LatLng(..)
     , DegToRad
     , RadToDeg
+    , AzimuthFwd
+    , AzimuthRev
     , degToRadLL
     , radToDegLL
     , fromDMS
@@ -37,7 +39,21 @@ import Flight.Units.DegMinSec (DMS(..), toDeg)
 import qualified Flight.LatLng.Double as D
 import qualified Flight.LatLng.Float as F
 import qualified Flight.LatLng.Rational as R
---
+
+-- | A function calculating the forward azimuth between two points given as
+-- latitude longitude pairs in radians.
+type AzimuthFwd a
+    = LatLng a [u| rad |]
+    -> LatLng a [u| rad |]
+    -> Maybe (Quantity a [u| rad |])
+
+-- | A function calculating the reverse azimuth between two points given as
+-- latitude longitude pairs in radians.
+type AzimuthRev a
+    = LatLng a [u| rad |]
+    -> LatLng a [u| rad |]
+    -> Maybe (Quantity a [u| rad |])
+
 newtype Lat a u = Lat (Quantity a u) deriving (Eq, Ord)
 newtype Lng a u = Lng (Quantity a u) deriving (Eq, Ord)
 newtype LatLng a u = LatLng (Lat a u, Lng a u) deriving (Eq, Ord)

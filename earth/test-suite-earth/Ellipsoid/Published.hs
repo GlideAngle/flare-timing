@@ -21,16 +21,12 @@ module Ellipsoid.Published
     ) where
 
 import Prelude hiding (span, min)
-import Data.Ratio ((%))
 import Test.Tasty (TestTree, testGroup)
 import Data.UnitsOfMeasure (u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
-import Flight.LatLng.Rational (Epsilon(..))
-import Flight.Distance (SpanLatLng)
-import qualified Flight.Earth.Ellipsoid.PointToPoint.Double as Dbl (distanceVincenty)
-import qualified Flight.Earth.Ellipsoid.PointToPoint.Rational as Rat (distanceVincenty)
+import Flight.Units.DegMinSec (DMS(..))
 import Flight.Earth.Ellipsoid (Ellipsoid, wgs84, clarke)
 import qualified Published.GeoscienceAustralia as G
     ( directProblems, directSolutions
@@ -55,6 +51,10 @@ import qualified Tolerance as T
     , dblInverseChecks, ratInverseChecks
     )
 import Flight.Earth.Geodesy (DProb, DSoln, IProb, ISoln)
+import Ellipsoid.Span (spanD, spanR, azFwdD, azRevD)
+
+azTolerance :: DMS
+azTolerance = DMS (0, 0, 0.001)
 
 geoSciAuTolerance :: Fractional a => T.GetTolerance a
 geoSciAuTolerance = const . convert $ [u| 0.5 mm |]
@@ -76,15 +76,6 @@ bedfordTolerance d'
     | otherwise = convert [u| 16 mm |]
     where
         d = convert d'
-
-e :: Epsilon
-e = Epsilon $ 1 % 1000000000000000000
-
-spanD :: Ellipsoid Double -> SpanLatLng Double
-spanD = Dbl.distanceVincenty
-
-spanR :: Ellipsoid Rational -> SpanLatLng Rational
-spanR = Rat.distanceVincenty e
 
 dblDirectChecks
     :: T.GetTolerance Double
@@ -111,7 +102,12 @@ dblInverseChecks
     -> [IProb]
     -> [TestTree]
 dblInverseChecks tolerance ellipsoid =
-    T.dblInverseChecks tolerance (spanD <$> ellipsoid)
+    T.dblInverseChecks
+        tolerance
+        azTolerance
+        (spanD <$> ellipsoid)
+        (azFwdD <$> ellipsoid)
+        (azRevD <$> ellipsoid)
 
 ratInverseChecks
     :: T.GetTolerance Rational

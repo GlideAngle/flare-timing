@@ -19,7 +19,7 @@ import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
-import Flight.Distance (TaskDistance(..))
+import Flight.Distance (TaskDistance(..), SpanLatLng)
 import Flight.Zone (Zone(..))
 import Flight.Zone.Path (distancePointToPoint)
 import qualified Forbes as F (mkDayUnits, mkPartDayUnits)
@@ -27,7 +27,11 @@ import Forbes
     ( d1, d2, d3, d4, d5, d6, d7, d8
     , p1, p2, p3, p4, p5, p6, p7, p8
     )
-import Ellipsoid.Span (spanR)
+import Flight.Earth.Ellipsoid (wgs84)
+import qualified Ellipsoid.Span as Span (spanR)
+
+spanR :: SpanLatLng Rational
+spanR = Span.spanR wgs84
 
 mkDay
     :: TestName

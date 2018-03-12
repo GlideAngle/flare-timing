@@ -25,6 +25,7 @@ import Flight.Zone (Radius(..))
 import Flight.Zone.Path (distancePointToPoint)
 import Zone (MkZone, QLL, showQ, describedZones)
 import qualified Distance as D (DistanceEqual, toDistanceEqual)
+import Flight.Earth.Ellipsoid (wgs84)
 import Ellipsoid.Span (spanD, spanR)
 
 coincidentUnits :: TestTree
@@ -39,18 +40,19 @@ coincidentUnits =
         f s =
             distanceZero
                 ("Distance between coincident " ++ s ++ " zones")
-                (D.toDistanceEqual spanD)
+                (D.toDistanceEqual $ spanD wgs84)
 
         g s =
             distanceZero
                 ("Distance between coincident " ++ s ++ " zones")
-                (D.toDistanceEqual spanR)
+                (D.toDistanceEqual $ spanR wgs84)
 
 emptyDistance :: TestTree
 emptyDistance =
     testGroup "Point-to-point distance"
     [ testCase "No zones = zero point-to-point distance" $
-        edgesSum (distancePointToPoint spanR []) @?= (TaskDistance $ MkQuantity 0)
+        edgesSum (distancePointToPoint (spanR wgs84) [])
+        @?= (TaskDistance $ MkQuantity 0)
     ]
 
 pts :: (Enum a, Real a, Fractional a) => [(QLL a, QLL a)]

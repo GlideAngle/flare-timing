@@ -10,7 +10,7 @@ import Flight.Zone (Zone(..), center, toRationalZone)
 import Flight.Distance (TaskDistance(..), PathDistance(..))
 import Flight.Units ()
 import Flight.Earth.Flat.Projected.Internal
-    (pythagorean, zoneToProjectedEastNorth, tooFar)
+    (DistanceAzimuth(..), pythagorean, zoneToProjectedEastNorth, tooFar)
 
 -- | The task distance returned is for the projected UTM plane with
 -- eastings and northings. If you need to calculate the distance in sperical
@@ -28,11 +28,13 @@ costEastNorth x@(Point _) y@(Point _) =
     where
         d' =
             case (zoneToProjectedEastNorth x, zoneToProjectedEastNorth y) of
-                (Right xLL, Right yLL) ->
+                (Right xEN, Right yEN) ->
                     TaskDistance dm
                     where
-                        d :: Double
-                        d = pythagorean xLL yLL
+                        distAz :: DistanceAzimuth Double
+                        distAz = pythagorean xEN yEN
+
+                        MkQuantity d = dist distAz
 
                         dm :: Quantity Rational [u| m |]
                         dm = MkQuantity $ toRational d

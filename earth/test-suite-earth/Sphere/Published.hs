@@ -26,6 +26,7 @@ import Data.UnitsOfMeasure (u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
+import Flight.Units.DegMinSec (DMS(..))
 import qualified Published.GeoscienceAustralia as G
     ( directProblems, directSolutions
     , inverseProblems, inverseSolutions
@@ -44,7 +45,10 @@ import qualified Tolerance as T
     , dblInverseChecks, ratInverseChecks
     )
 import Flight.Earth.Geodesy (DProb, DSoln, IProb, ISoln)
-import Sphere.Span (spanD, spanR)
+import Sphere.Span (spanD, spanR, azFwdD, azRevD)
+
+azTolerance :: DMS
+azTolerance = DMS (0, 0, 0.001)
 
 geoSciAuTolerance :: Fractional a => T.GetTolerance a
 geoSciAuTolerance = const . convert $ [u| 47 m |]
@@ -93,7 +97,12 @@ dblInverseChecks
     -> [IProb]
     -> [TestTree]
 dblInverseChecks tolerance =
-    T.dblInverseChecks tolerance (repeat spanD)
+    T.dblInverseChecks
+        tolerance
+        azTolerance
+        (repeat spanD)
+        (repeat azFwdD)
+        (repeat azRevD)
 
 ratInverseChecks
     :: T.GetTolerance Rational
