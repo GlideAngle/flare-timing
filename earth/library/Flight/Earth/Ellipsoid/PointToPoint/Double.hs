@@ -82,8 +82,8 @@ vincentyInverse
             VincentyInverse $
             InverseSolution
                 { s = TaskDistance . MkQuantity $ b * _A * (σ - _Δσ)
-                , α₁ = MkQuantity $ i / j
-                , α₂ = Just . MkQuantity $ i' / j'
+                , α₁ = MkQuantity $ atan2 i j
+                , α₂ = Just . MkQuantity $ atan2 i' j'
                 } 
             where
                 sinλ = sin λ
@@ -127,8 +127,10 @@ tooFar = TaskDistance [u| 20000000 m |]
 
 -- | Sperical distance using inverse Vincenty and floating point numbers.
 distanceVincenty
-    :: (RealFloat a, Show a
-       , KnownUnit (Unpack u), Show (Lat a u), Show (Lng a u), u ~ [u| rad |])
+    :: ( RealFloat a, Show a
+       , KnownUnit (Unpack u), Show (Lat a u), Show (Lng a u)
+       , u ~ [u| rad |]
+       )
     => Ellipsoid a
     -> SpanLatLng a
 distanceVincenty e x y =
