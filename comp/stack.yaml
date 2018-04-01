@@ -9,6 +9,8 @@ packages:
   extra-dep: true
 - location: ../units
   extra-dep: true
+- location: ../earth
+  extra-dep: true
 - location: ../latlng
   extra-dep: true
 - location: ../zone
@@ -20,8 +22,11 @@ packages:
 - location: ../gap
   extra-dep: true
 - location:
-    git: https://github.com/danfran/hcoord.git
-    commit: e308934570874a6ce7f7ebdbf51a3c34e4acd745
+    git: https://github.com/blockscope/hcoord.git
+    commit: efee5918967a4b5309924bb6ac62c2daa56983a1
+  subdirs:
+  - hcoord
+  - hcoord-utm
   extra-dep: true
 - location:
     git: https://github.com/adamgundry/uom-plugin.git

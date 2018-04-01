@@ -23,7 +23,6 @@ import Flight.Distance (TaskDistance(..), PathDistance(..), SpanLatLng, toKm)
 import Flight.Zone (Zone(..))
 import Flight.Zone.Path (distancePointToPoint)
 import Flight.TaskTrack.Internal (convertLatLng, legDistances, addTaskDistance)
-import Flight.Earth.Sphere.PointToPoint.Double (distanceHaversine)
 
 data TrackLine =
     TrackLine { distance :: Double

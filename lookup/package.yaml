@@ -26,7 +26,6 @@ library:
   - filemanip
   - lens
   - mtl
-  - hcoord
   - uom-plugin
   - aeson-via-sci
   - flight-latlng
@@ -70,7 +69,6 @@ tests:
     - filemanip
     - lens
     - mtl
-    - hcoord
     - uom-plugin
     - aeson-via-sci
     - flight-latlng
