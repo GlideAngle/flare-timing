@@ -7,7 +7,7 @@ import Web (buildRules, cleanRules)
 import Nix (buildRules, nixRules, shellRules)
 
 allWants :: [ String ]
-allWants = [ "docs", "view-www", "nix", "cmd-apps" ]
+allWants = ["docs", "view-www", "nix", "prod-apps", "test-apps"]
 
 allRules :: Rules ()
 allRules = do
