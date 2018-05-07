@@ -10,21 +10,56 @@ import Development.Shake
     )
 import Nix (flyPkgs, prefix)
 
-cmdTestFor :: String -> String
-cmdTestFor x =
-    "stack test " ++ x
+data Tooling = CabalTooling | StackTooling
+
+type CabalProject = String
+type CabalTarget = String
+
+tooling :: Tooling -> String
+tooling CabalTooling = "cabal"
+tooling StackTooling = "stack"
+
+cmdTestFor :: Tooling -> String -> String
+cmdTestFor CabalTooling x = "cabal new-test " ++ x
+cmdTestFor StackTooling x = "stack test " ++ x
 
 -- SEE: https://lexi-lambda.github.io/blog/2018/02/10/an-opinionated-guide-to-haskell-in-2018/
-compilerToolFor :: String -> String
-compilerToolFor x =
-    "stack build --copy-compiler-tool " ++ x
+compilerToolFor :: Tooling -> String -> String
+compilerToolFor CabalTooling _ = ""
+compilerToolFor StackTooling x = "stack build --copy-compiler-tool " ++ x
 
-cmdBuildFor :: String -> String
-cmdBuildFor x =
-    "stack build " ++ x ++ " --copy-bins"
+cmdBuildFor :: Tooling -> String -> String
+cmdBuildFor CabalTooling x = "cabal new-build " ++ x
+cmdBuildFor StackTooling x = "stack build " ++ x ++ " --copy-bins"
 
 type Pkg = String
 type Test = String
+
+-- | The names of the library packages.
+pkgs :: [Pkg]
+pkgs =
+    [ "aeson-via-sci"
+    , "aeson-via-uom"
+    , "flight-cmd"
+    , "flight-comp"
+    , "flight-earth"
+    , "flight-fsdb"
+    , "flight-gap"
+    , "flight-igc"
+    , "flight-kml"
+    , "flight-latlng"
+    , "flight-lookup"
+    , "flight-mask"
+    , "flight-route"
+    , "flight-scribe"
+    , "siggy-chardust"
+    , "flight-span"
+    , "flight-task"
+    , "tasty-compare"
+    , "flight-track"
+    , "flight-units"
+    , "flight-zone"
+    ]
 
 -- | The pairs are names of the pkg and test.
 testPkgs :: [(Pkg, Test)]
@@ -35,7 +70,7 @@ testPkgs =
     , ("kml", "parse")
     ] 
 
--- | The names of the test app executables
+-- | The names of the test app executables.
 testApps :: [String]
 testApps =
     [ "test-fsdb-parser"
@@ -71,100 +106,143 @@ cleanRules = do
     phony "clean-test-apps" $
         removeFilesAfter "__shake-build" testApps
 
-lintRule :: String -> Rules ()
-lintRule s =
-    phony ("lint-" ++ s) $
+lintWithRule :: Tooling -> String -> Rules ()
+lintWithRule t' s = do
+    let t = tooling t'
+    phony (t ++ "-lint-" ++ s) $
         cmd
             (Cwd s) 
             Shell
-            (cmdTestFor "flight-" ++ s ++ ":hlint")
+            (cmdTestFor t' $ "flight-" ++ s ++ ":hlint")
 
-lintRules :: Rules ()
-lintRules = do
-    _ <- sequence_ $ lintRule <$> flyPkgs
+lintWithRules :: Tooling -> Rules ()
+lintWithRules t' = do
+    let t = tooling t'
+    _ <- sequence_ $ lintWithRule t' <$> flyPkgs
 
-    phony "lint" $ need
-        $ "lint-build"
-        : "lint-aeson-via-sci"
-        : "lint-aeson-via-uom"
-        : "lint-siggy-chardust"
-        : "lint-tasty-compare"
-        : "lint-flare-timing"
-        : (prefix "lint-" <$> flyPkgs)
+    phony (t ++ "-lint") $ need
+        $ (t ++ "-lint-build")
+        : (t ++ "-lint-aeson-via-sci")
+        : (t ++ "-lint-aeson-via-uom")
+        : (t ++ "-lint-siggy-chardust")
+        : (t ++ "-lint-tasty-compare")
+        : (t ++ "-lint-flare-timing")
+        : (prefix (t ++ "-lint-") <$> flyPkgs)
 
-    phony "lint-aeson-via-sci" $
+    phony (t ++ "-lint-aeson-via-sci") $
         cmd
             (Cwd "aeson-via-sci")
             Shell
-            (cmdTestFor "aeson-via-sci:hlint")
+            (cmdTestFor t' "aeson-via-sci:hlint")
 
-    phony "lint-aeson-via-uom" $
+    phony (t ++ "-lint-aeson-via-uom") $
         cmd
             (Cwd "aeson-via-uom")
             Shell
-            (cmdTestFor "aeson-via-uom:hlint")
+            (cmdTestFor t' "aeson-via-uom:hlint")
 
-    phony "lint-siggy-chardust" $
+    phony (t ++ "-lint-siggy-chardust") $
         cmd
             (Cwd "siggy-chardust")
             Shell
-            (cmdTestFor "siggy-chardust:hlint")
+            (cmdTestFor t' "siggy-chardust:hlint")
 
-    phony "lint-tasty-compare" $
+    phony (t ++ "-lint-tasty-compare") $
         cmd
             (Cwd "tasty-compare")
             Shell
-            (cmdTestFor "tasty-compare:hlint")
+            (cmdTestFor t' "tasty-compare:hlint")
 
-    phony "lint-build" $
+    phony (t ++ "-lint-build") $
         cmd
             (Cwd "build")
             Shell
-            (cmdTestFor "build-flare-timing:hlint")
+            (cmdTestFor t' "build-flare-timing:hlint")
 
-    phony "lint-flare-timing" $
+    phony (t ++ "-lint-flare-timing") $
         cmd
             (Cwd "flare-timing")
             Shell
-            (cmdTestFor "flare-timing:hlint")
+            (cmdTestFor t' "flare-timing:hlint")
 
-testRule :: (Pkg, Test) -> Rules ()
-testRule (pkg, test) =
-    phony ("test-" ++ pkg) $
+lintRules :: Rules ()
+lintRules = do
+    lintWithRules CabalTooling
+    lintWithRules StackTooling
+
+testRule :: Tooling -> (Pkg, Test) -> Rules ()
+testRule t' (pkg, test) = do
+    let t = tooling t'
+    phony (t ++ "-test-" ++ pkg) $
         cmd
             (Cwd pkg)
             Shell
-            (cmdTestFor $ "flight-" ++ pkg ++":" ++ test)
+            (cmdTestFor t' $ "flight-" ++ pkg ++":" ++ test)
+
+testWithRules :: Tooling -> Rules ()
+testWithRules t' = do
+    let t = tooling t'
+    _ <- sequence_ $ testRule t' <$> testPkgs
+
+    phony (t ++ "-test") $
+        need $ prefix (t ++ "-test-") . fst <$> testPkgs
 
 testRules :: Rules ()
 testRules = do
-    _ <- sequence_ $ testRule <$> testPkgs
-    phony "test" $ need $ prefix "test-" . fst <$> testPkgs
+    testWithRules CabalTooling
+    testWithRules StackTooling
 
-buildRule :: String -> String -> Rules ()
-buildRule project s =
-    phony s $
+buildRule :: Tooling -> CabalProject -> Maybe CabalTarget -> Rules ()
+
+buildRule t' project Nothing = do
+    let t = tooling t'
+    phony (t ++ "-" ++ project) $
+        cmd
+            Shell
+            (cmdBuildFor t' project)
+
+buildRule t' project (Just s) = do
+    let t = tooling t'
+    phony (t ++ "-" ++ project ++ "-" ++ s) $
         cmd
             (Cwd project)
             Shell
-            (cmdBuildFor $ project ++ ":" ++ s)
+            (cmdBuildFor t' $ project ++ ":" ++ s)
+
+buildWithRules :: Tooling -> Rules ()
+buildWithRules t' = do
+    _ <- sequence_
+            $ (\s -> buildRule t' s Nothing) <$> pkgs
+
+    _ <- sequence_
+            $ buildRule t' "flare-timing"
+            <$> (Just <$> (testApps ++ prodApps))
+
+    _ <- sequence_
+            $ buildRule t' "www"
+            <$> (Just <$> wwwApps)
+
+    phony (t ++ "-test-apps") $ need $ f <$> testApps
+    phony (t ++ "-prod-apps") $ need $ f <$> prodApps
+    phony (t ++ "-www-apps") $ need $ f <$> wwwApps
+    
+    where
+        t = tooling t'
+        f s = t ++ "-" ++ s
 
 buildRules :: Rules ()
 buildRules = do
-    _ <- sequence_ $ buildRule "flare-timing" <$> (testApps ++ prodApps)
-    _ <- sequence_ $ buildRule "www" <$> wwwApps
-    phony "test-apps" $ need testApps
-    phony "prod-apps" $ need prodApps
-    phony "www-apps" $ need wwwApps
+    buildWithRules CabalTooling
+    buildWithRules StackTooling
 
     phony "weeder" $
         cmd
             (Cwd "flare-timing")
             Shell
-            (compilerToolFor "weeder")
+            (compilerToolFor StackTooling "weeder")
 
     phony "hoogle" $
         cmd
             (Cwd "flare-timing")
             Shell
-            (compilerToolFor "hoogle")
+            (compilerToolFor StackTooling "hoogle")

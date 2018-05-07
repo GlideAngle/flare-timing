@@ -1,0 +1,27 @@
+packages:
+    .stack2cabal/fgl
+    , .stack2cabal/uom-plugin/uom-plugin
+    , .stack2cabal/hcoord/hcoord
+    , .stack2cabal/hcoord/hcoord-utm
+    , build
+    , aeson-via-sci
+    , aeson-via-uom
+    , cmd
+    , comp
+    , earth
+    , fsdb
+    , gap
+    , igc
+    , kml
+    , latlng
+    , lookup
+    , mask
+    , route
+    , scribe
+    , siggy-chardust
+    , span
+    , task
+    , tasty-compare
+    , track
+    , units
+    , zone
