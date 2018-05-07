@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 112247c9e3c4dba164a868320806a4b136206cfd6280518fd789c253c7ddd093
+-- hash: 1b164c43c6a0cdfdee74911fc7405d3793fed4eaeb6ae88496fc15b300dcda6a
 
 name:           flight-cmd
 version:        0.1.0
@@ -21,7 +21,6 @@ extra-source-files:
     changelog.md
     package.yaml
     README.md
-    stack.yaml
 
 source-repository head
   type: git

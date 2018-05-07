@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b4fb842c451dfa0bb774aadc2bd645aaed7a9342dd0a2751a597d48e63f1f007
+-- hash: 7c81a6088d8f12818ea81fd77ad94636aab1aa6a96cabfb65c7725cb74501095
 
 name:           flight-route
 version:        0.1.0
@@ -21,7 +21,6 @@ extra-source-files:
     changelog.md
     package.yaml
     README.md
-    stack.yaml
 
 source-repository head
   type: git

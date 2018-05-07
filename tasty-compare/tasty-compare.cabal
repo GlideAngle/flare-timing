@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 8a51e98305e1773d23b5052a2bfd22284471ba8dbd5fc4bc9dbaaf237a0378b3
+-- hash: cc4caced3d26bfc714f0df6648127acdc3b852299279c6e44f2046a069dbb3ca
 
 name:           tasty-compare
 version:        0.1.0
@@ -21,7 +21,6 @@ extra-source-files:
     changelog.md
     package.yaml
     README.md
-    stack.yaml
 
 source-repository head
   type: git

@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d6b7edefd7ca4bfea9d3a8b508a5a591e7c1a6dc5e6cc66209b49e01ee389e1f
+-- hash: ac981a8ed56f3fc70da97533d14207e94cb73938457fe28dd7ce4f0cf6857c67
 
 name:           siggy-chardust
 version:        0.1.0
@@ -21,7 +21,6 @@ extra-source-files:
     changelog.md
     package.yaml
     README.md
-    stack.yaml
 
 source-repository head
   type: git

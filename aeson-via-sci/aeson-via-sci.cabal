@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a86ab75538835985caafdbb38587579a6e25a4d1be8090f1f00fa1045ca427e2
+-- hash: ca1acce757591e931bb08ed0e4996bead1ce09fa153cd86187acc3894b0a762e
 
 name:           aeson-via-sci
 version:        0.1.0
@@ -21,7 +21,6 @@ extra-source-files:
     changelog.md
     package.yaml
     README.md
-    stack.yaml
 
 source-repository head
   type: git

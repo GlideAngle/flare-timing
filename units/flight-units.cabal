@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 9f60dfe77a85fc9fa625d14e970bf6656339cda3b9a847590d1766aa9d0fefc8
+-- hash: 0029d92cb84b6665fafab6109587c63cbac40eb64eefb863c94c1229e7a193f9
 
 name:           flight-units
 version:        0.1.0
@@ -21,7 +21,6 @@ extra-source-files:
     changelog.md
     package.yaml
     README.md
-    stack.yaml
 
 source-repository head
   type: git

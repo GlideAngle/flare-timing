@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 79a007c000a1c708ac67c5feb1c5fc17f855012270aa84ae14aaa8d9a585ec6c
+-- hash: aaafebaaea928e385278c734ccb707f0b9d81b7b0bb13c3e4735b31795091a62
 
 name:           flight-task
 version:        0.1.0
@@ -21,7 +21,6 @@ extra-source-files:
     changelog.md
     package.yaml
     README.md
-    stack.yaml
 
 source-repository head
   type: git

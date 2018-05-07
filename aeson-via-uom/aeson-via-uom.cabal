@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 2238c327d60d06be3b585e2e9565bfd15074031b21ea20eeb1576a45e8dd2efe
+-- hash: 34a7a5e16fa5923f5f9d8ec24bd678674e22f3d78edbbe319db7fc51be42ce65
 
 name:           aeson-via-uom
 version:        0.1.0
@@ -21,7 +21,6 @@ extra-source-files:
     changelog.md
     package.yaml
     README.md
-    stack.yaml
 
 source-repository head
   type: git

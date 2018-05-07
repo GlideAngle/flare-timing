@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 4a90082a1a96eeb4c5425acd296d8a112ae942ab1a9634d31d7a7f4ebd2438f4
+-- hash: 9d9718f1d12086194267cfa8daba63cdd3c377d0b0b22b7ea4ce012d2f2dd329
 
 name:           flight-earth
 version:        0.1.0
@@ -21,7 +21,6 @@ extra-source-files:
     changelog.md
     package.yaml
     README.md
-    stack.yaml
 
 source-repository head
   type: git

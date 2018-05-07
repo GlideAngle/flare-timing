@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e249ba9c56859e942a21e30d8056f5c98cd80e032d224ccaee08982499bf6285
+-- hash: 40ced7ecfd1c57d4bb7fd0bbc359600358ce3ecc4d8e5267c6dc6cd9f9c75100
 
 name:           flight-zone
 version:        0.1.0
@@ -21,7 +21,6 @@ extra-source-files:
     changelog.md
     package.yaml
     README.md
-    stack.yaml
 
 source-repository head
   type: git

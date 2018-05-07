@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 6d794e7507842b65b576aa22d7cfecdcf74a4ce00dcff5faa4285ad768c6834d
+-- hash: f661b5e8161cb98e96dda9f7b7390dde2a1d00139f52a180264da7645589cc5e
 
 name:           flight-latlng
 version:        0.1.0
@@ -21,7 +21,6 @@ extra-source-files:
     changelog.md
     package.yaml
     README.md
-    stack.yaml
 
 source-repository head
   type: git
