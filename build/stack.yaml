@@ -1,5 +1,0 @@
-flags: {}
-packages:
-- location: .
-resolver: nightly-2018-01-09
-local-bin-path: ../__shake-build

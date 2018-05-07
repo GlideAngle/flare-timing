@@ -1,0 +1,50 @@
+resolver: lts-11.7
+flags: {}
+packages:
+- build
+- aeson-via-sci
+- aeson-via-uom
+- cmd
+- comp
+- earth
+- fsdb
+- gap
+- igc
+- kml
+- latlng
+- lookup
+- mask
+- route
+- scribe
+- siggy-chardust
+- span
+- task
+- tasty-compare
+- track
+- units
+- zone
+- flare-timing
+- location:
+    git: https://github.com/blockscope/hcoord.git
+    commit: efee5918967a4b5309924bb6ac62c2daa56983a1
+  subdirs:
+  - hcoord
+  - hcoord-utm
+  extra-dep: true
+- location:
+    git: https://github.com/haskell/fgl.git
+    commit: e29503775e474b7a7cd8951b6bebcf1529b888b5
+  extra-dep: true
+- location:
+    git: https://github.com/blockscope/uom-plugin.git
+    commit: 107fdd7bcdb22e2afef5d868e7b902f49690dd30
+  subdirs:
+  - uom-plugin
+  extra-dep: true
+- location:
+    git: https://github.com/brunjlar/stack2cabal
+    commit: a8a4cdcacd697cee648af93856735f15de5987a6
+  extra-dep: true
+extra-deps:
+- hxt-xpath-9.1.2.2
+local-bin-path: __shake-build
