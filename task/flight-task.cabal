@@ -1,0 +1,130 @@
+-- This file has been generated from package.yaml by hpack version 0.28.2.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 79a007c000a1c708ac67c5feb1c5fc17f855012270aa84ae14aaa8d9a585ec6c
+
+name:           flight-task
+version:        0.1.0
+synopsis:       Tasks to fly.
+description:    Tasks for hang gliding and paragliding competitons.
+category:       Flight
+homepage:       https://github.com/BlockScope/haskell-flight-task#readme
+bug-reports:    https://github.com/BlockScope/haskell-flight-task/issues
+author:         Phil de Joux
+maintainer:     phil.dejoux@blockscope.com
+license:        BSD3
+license-file:   LICENSE.md
+build-type:     Simple
+cabal-version:  >= 1.10
+extra-source-files:
+    changelog.md
+    package.yaml
+    README.md
+    stack.yaml
+
+source-repository head
+  type: git
+  location: https://github.com/BlockScope/haskell-flight-task
+
+library
+  exposed-modules:
+      Flight.Task
+  other-modules:
+      Flight.EdgeToEdge
+      Flight.ShortestPath
+      Paths_flight_task
+  hs-source-dirs:
+      library
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin
+  build-depends:
+      aeson
+    , aeson-via-sci
+    , base >=4.5 && <5
+    , bifunctors
+    , fgl
+    , flight-earth
+    , flight-latlng
+    , flight-units
+    , flight-zone
+    , mtl
+    , numbers
+    , scientific
+    , siggy-chardust
+    , uom-plugin
+  default-language: Haskell2010
+
+test-suite hlint
+  type: exitcode-stdio-1.0
+  main-is: HLint.hs
+  other-modules:
+      Flight.EdgeToEdge
+      Flight.ShortestPath
+      Flight.Task
+      Paths_flight_task
+  hs-source-dirs:
+      library
+      test-suite-hlint
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      aeson
+    , aeson-via-sci
+    , base
+    , bifunctors
+    , fgl
+    , flight-earth
+    , flight-latlng
+    , flight-units
+    , flight-zone
+    , hlint
+    , mtl
+    , numbers
+    , scientific
+    , siggy-chardust
+    , tasty-compare
+    , uom-plugin
+  default-language: Haskell2010
+
+test-suite task
+  type: exitcode-stdio-1.0
+  main-is: Task.hs
+  other-modules:
+      Flight.EdgeToEdge
+      Flight.ShortestPath
+      Flight.Task
+      Crossing
+      Crossing.Day8.Zone1
+      Crossing.Day8.Zone2
+      Crossing.Day8.Zone3
+      Crossing.Day8.Zone4
+      Crossing.Day8.Zone5
+      EdgeToEdge
+      TestNewtypes
+      Zone
+      Paths_flight_task
+  hs-source-dirs:
+      library
+      test-suite-task
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base
+    , bifunctors
+    , fgl
+    , flight-earth-sphere
+    , flight-latlng
+    , flight-units
+    , flight-zone
+    , hcoord
+    , mtl
+    , numbers
+    , scientific
+    , siggy-chardust
+    , smallcheck
+    , tasty
+    , tasty-compare
+    , tasty-hunit
+    , tasty-quickcheck
+    , tasty-smallcheck
+    , uom-plugin
+  default-language: Haskell2010

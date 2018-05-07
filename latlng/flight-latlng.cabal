@@ -1,0 +1,99 @@
+-- This file has been generated from package.yaml by hpack version 0.28.2.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 6d794e7507842b65b576aa22d7cfecdcf74a4ce00dcff5faa4285ad768c6834d
+
+name:           flight-latlng
+version:        0.1.0
+synopsis:       Latitude and longitude as used in hang gliding and paragliding competitions.
+description:    Latitude and longitude.
+category:       Flight
+homepage:       https://github.com/BlockScope/flare-timing#readme
+bug-reports:    https://github.com/BlockScope/flare-timing/issues
+author:         Phil de Joux
+maintainer:     phil.dejoux@blockscope.com
+license:        BSD3
+license-file:   LICENSE.md
+build-type:     Simple
+cabal-version:  >= 1.10
+extra-source-files:
+    changelog.md
+    package.yaml
+    README.md
+    stack.yaml
+
+source-repository head
+  type: git
+  location: https://github.com/BlockScope/flare-timing
+
+library
+  exposed-modules:
+      Flight.Field
+      Flight.EastNorth
+      Flight.LatLng
+      Flight.LatLng.Raw
+      Flight.LatLng.Double
+      Flight.LatLng.Float
+      Flight.LatLng.Rational
+      Flight.Distance
+  other-modules:
+      Paths_flight_latlng
+  hs-source-dirs:
+      library
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin
+  build-depends:
+      aeson
+    , aeson-via-sci
+    , base >=4.5 && <5
+    , bifunctors
+    , bytestring
+    , cassava
+    , flight-units
+    , formatting
+    , newtype
+    , numbers
+    , random
+    , siggy-chardust
+    , smallcheck
+    , tasty-quickcheck
+    , text
+    , uom-plugin
+  default-language: Haskell2010
+
+test-suite hlint
+  type: exitcode-stdio-1.0
+  main-is: HLint.hs
+  other-modules:
+      Flight.Distance
+      Flight.EastNorth
+      Flight.Field
+      Flight.LatLng
+      Flight.LatLng.Double
+      Flight.LatLng.Float
+      Flight.LatLng.Rational
+      Flight.LatLng.Raw
+      Paths_flight_latlng
+  hs-source-dirs:
+      library
+      test-suite-hlint
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      aeson
+    , aeson-via-sci
+    , base
+    , bifunctors
+    , bytestring
+    , cassava
+    , flight-units
+    , formatting
+    , hlint
+    , newtype
+    , numbers
+    , random
+    , siggy-chardust
+    , smallcheck
+    , tasty-quickcheck
+    , text
+    , uom-plugin
+  default-language: Haskell2010

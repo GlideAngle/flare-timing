@@ -1,0 +1,226 @@
+-- This file has been generated from package.yaml by hpack version 0.28.2.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 4a90082a1a96eeb4c5425acd296d8a112ae942ab1a9634d31d7a7f4ebd2438f4
+
+name:           flight-earth
+version:        0.1.0
+synopsis:       Distances on the WGS84 ellipsoid, the FAI sphere and the UTM projection.
+description:    Distances on the Earth for hang gliding and paragliding competitons.
+category:       Flight
+homepage:       https://github.com/BlockScope/haskell-flight-task#readme
+bug-reports:    https://github.com/BlockScope/haskell-flight-task/issues
+author:         Phil de Joux
+maintainer:     phil.dejoux@blockscope.com
+license:        BSD3
+license-file:   LICENSE.md
+build-type:     Simple
+cabal-version:  >= 1.10
+extra-source-files:
+    changelog.md
+    package.yaml
+    README.md
+    stack.yaml
+
+source-repository head
+  type: git
+  location: https://github.com/BlockScope/haskell-flight-task
+
+library
+  exposed-modules:
+      Flight.Earth.Flat.Projected.Double
+      Flight.Earth.Flat.Projected.Rational
+      Flight.Earth.Flat.Separated
+      Flight.Earth.Flat
+      Flight.Earth.Sphere.Cylinder.Double
+      Flight.Earth.Sphere.Cylinder.Rational
+      Flight.Earth.Sphere.PointToPoint.Double
+      Flight.Earth.Sphere.PointToPoint.Rational
+      Flight.Earth.Sphere.Separated
+      Flight.Earth.Sphere
+      Flight.Earth.Ellipsoid.Cylinder.Double
+      Flight.Earth.Ellipsoid.Cylinder.Rational
+      Flight.Earth.Ellipsoid.PointToPoint.Double
+      Flight.Earth.Ellipsoid.PointToPoint.Rational
+      Flight.Earth.Ellipsoid.Separated
+      Flight.Earth.Ellipsoid
+      Flight.Earth.Geodesy
+  other-modules:
+      Flight.Earth.Flat.Cylinder.Double
+      Flight.Earth.Flat.Cylinder.Rational
+      Flight.Earth.Flat.PointToPoint.Double
+      Flight.Earth.Flat.PointToPoint.Rational
+      Flight.Earth.Flat.Projected.Internal
+      Paths_flight_earth
+  hs-source-dirs:
+      library
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin
+  build-depends:
+      aeson
+    , aeson-via-sci
+    , base >=4.5 && <5
+    , bifunctors
+    , fgl
+    , flight-latlng
+    , flight-units
+    , flight-zone
+    , hcoord
+    , hcoord-utm
+    , mtl
+    , numbers
+    , scientific
+    , siggy-chardust
+    , uom-plugin
+  default-language: Haskell2010
+
+test-suite earth
+  type: exitcode-stdio-1.0
+  main-is: Earth.hs
+  other-modules:
+      Flight.Earth.Ellipsoid
+      Flight.Earth.Ellipsoid.Cylinder.Double
+      Flight.Earth.Ellipsoid.Cylinder.Rational
+      Flight.Earth.Ellipsoid.PointToPoint.Double
+      Flight.Earth.Ellipsoid.PointToPoint.Rational
+      Flight.Earth.Ellipsoid.Separated
+      Flight.Earth.Flat
+      Flight.Earth.Flat.Cylinder.Double
+      Flight.Earth.Flat.Cylinder.Rational
+      Flight.Earth.Flat.PointToPoint.Double
+      Flight.Earth.Flat.PointToPoint.Rational
+      Flight.Earth.Flat.Projected.Double
+      Flight.Earth.Flat.Projected.Internal
+      Flight.Earth.Flat.Projected.Rational
+      Flight.Earth.Flat.Separated
+      Flight.Earth.Geodesy
+      Flight.Earth.Sphere
+      Flight.Earth.Sphere.Cylinder.Double
+      Flight.Earth.Sphere.Cylinder.Rational
+      Flight.Earth.Sphere.PointToPoint.Double
+      Flight.Earth.Sphere.PointToPoint.Rational
+      Flight.Earth.Sphere.Separated
+      Distance
+      Ellipsoid.Coincident
+      Ellipsoid.Cylinder.Inner
+      Ellipsoid.Cylinder.Outer
+      Ellipsoid.Cylinder.Span
+      Ellipsoid.Ellipsoid
+      Ellipsoid.Forbes
+      Ellipsoid.Meridian
+      Ellipsoid.Published
+      Ellipsoid.Span
+      Flat.Flat
+      Flat.Forbes
+      Flat.General
+      Flat.Published
+      Flat.Span
+      Forbes
+      ForbesComments
+      Props.Euclidean
+      Props.Haversine
+      Props.Vincenty
+      Props.Zone
+      Published.Bedford
+      Published.GeodeticSurvey
+      Published.GeodeticSurvey.LatN00LngE000S40
+      Published.GeodeticSurvey.LatN00LngW180S40
+      Published.GeodeticSurvey.LatN45LngW180S40
+      Published.GeodeticSurvey.LatN90LngW180S40
+      Published.GeodeticSurvey.LatS90LngE180S40
+      Published.GeodeticSurvey.Meridian
+      Published.GeodeticSurvey.Parallel
+      Published.GeoscienceAustralia
+      Published.Vincenty
+      Sphere.Coincident
+      Sphere.Cylinder.Inner
+      Sphere.Cylinder.Outer
+      Sphere.Cylinder.Span
+      Sphere.Disjoint
+      Sphere.Forbes
+      Sphere.Meridian
+      Sphere.Published
+      Sphere.Span
+      Sphere.Sphere
+      Sphere.Touching
+      Tolerance
+      Zone
+      Paths_flight_earth
+  hs-source-dirs:
+      library
+      test-suite-earth
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      aeson
+    , aeson-via-sci
+    , base
+    , bifunctors
+    , fgl
+    , flight-latlng
+    , flight-units
+    , flight-zone
+    , hcoord
+    , hlint
+    , mtl
+    , numbers
+    , scientific
+    , siggy-chardust
+    , smallcheck
+    , tasty
+    , tasty-compare
+    , tasty-hunit
+    , tasty-quickcheck
+    , tasty-smallcheck
+    , uom-plugin
+  default-language: Haskell2010
+
+test-suite hlint
+  type: exitcode-stdio-1.0
+  main-is: HLint.hs
+  other-modules:
+      Flight.Earth.Ellipsoid
+      Flight.Earth.Ellipsoid.Cylinder.Double
+      Flight.Earth.Ellipsoid.Cylinder.Rational
+      Flight.Earth.Ellipsoid.PointToPoint.Double
+      Flight.Earth.Ellipsoid.PointToPoint.Rational
+      Flight.Earth.Ellipsoid.Separated
+      Flight.Earth.Flat
+      Flight.Earth.Flat.Cylinder.Double
+      Flight.Earth.Flat.Cylinder.Rational
+      Flight.Earth.Flat.PointToPoint.Double
+      Flight.Earth.Flat.PointToPoint.Rational
+      Flight.Earth.Flat.Projected.Double
+      Flight.Earth.Flat.Projected.Internal
+      Flight.Earth.Flat.Projected.Rational
+      Flight.Earth.Flat.Separated
+      Flight.Earth.Geodesy
+      Flight.Earth.Sphere
+      Flight.Earth.Sphere.Cylinder.Double
+      Flight.Earth.Sphere.Cylinder.Rational
+      Flight.Earth.Sphere.PointToPoint.Double
+      Flight.Earth.Sphere.PointToPoint.Rational
+      Flight.Earth.Sphere.Separated
+      Paths_flight_earth
+  hs-source-dirs:
+      library
+      test-suite-hlint
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      aeson
+    , aeson-via-sci
+    , base
+    , bifunctors
+    , fgl
+    , flight-latlng
+    , flight-units
+    , flight-zone
+    , hcoord
+    , hcoord-utm
+    , hlint
+    , mtl
+    , numbers
+    , scientific
+    , siggy-chardust
+    , tasty-compare
+    , uom-plugin
+  default-language: Haskell2010

@@ -1,0 +1,89 @@
+-- This file has been generated from package.yaml by hpack version 0.28.2.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: b4fb842c451dfa0bb774aadc2bd645aaed7a9342dd0a2751a597d48e63f1f007
+
+name:           flight-route
+version:        0.1.0
+synopsis:       Control zones to fly.
+description:    Control zones for hang gliding and paragliding competitons.
+category:       Flight
+homepage:       https://github.com/BlockScope/flare-timing#readme
+bug-reports:    https://github.com/BlockScope/flare-timing/issues
+author:         Phil de Joux
+maintainer:     phil.dejoux@blockscope.com
+license:        BSD3
+license-file:   LICENSE.md
+build-type:     Simple
+cabal-version:  >= 1.10
+extra-source-files:
+    changelog.md
+    package.yaml
+    README.md
+    stack.yaml
+
+source-repository head
+  type: git
+  location: https://github.com/BlockScope/flare-timing
+
+library
+  exposed-modules:
+      Flight.Route
+      Flight.TaskTrack.Double
+      Flight.TaskTrack.Rational
+  other-modules:
+      Flight.Route.TrackLine
+      Flight.TaskTrack.Internal
+      Paths_flight_route
+  hs-source-dirs:
+      library
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin
+  build-depends:
+      aeson
+    , aeson-via-sci
+    , base >=4.5 && <5
+    , bifunctors
+    , flight-earth
+    , flight-latlng
+    , flight-task
+    , flight-units
+    , flight-zone
+    , hcoord-utm
+    , numbers
+    , scientific
+    , siggy-chardust
+    , uom-plugin
+  default-language: Haskell2010
+
+test-suite hlint
+  type: exitcode-stdio-1.0
+  main-is: HLint.hs
+  other-modules:
+      Flight.Route
+      Flight.Route.TrackLine
+      Flight.TaskTrack.Double
+      Flight.TaskTrack.Internal
+      Flight.TaskTrack.Rational
+      Paths_flight_route
+  hs-source-dirs:
+      library
+      test-suite-hlint
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      aeson
+    , aeson-via-sci
+    , base
+    , bifunctors
+    , flight-earth
+    , flight-latlng
+    , flight-task
+    , flight-units
+    , flight-zone
+    , hcoord-utm
+    , hlint
+    , numbers
+    , scientific
+    , siggy-chardust
+    , uom-plugin
+  default-language: Haskell2010
