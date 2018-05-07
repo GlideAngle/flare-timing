@@ -1,7 +1,7 @@
 .shake
 .stack-work
+.stack2cabal
 __*
-*.cabal
 node_modules
 *.fsdb
 *.comp.yaml
@@ -17,7 +17,8 @@ node_modules
 *.prof
 *.dump-splices
 result
-
 **/_build/**
 **/_static/**
 **/_template/**
+**/dist-newstyle/**
+.ghc.*
