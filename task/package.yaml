@@ -79,7 +79,7 @@ tests:
     - flight-units
     - flight-latlng
     - flight-zone
-    - flight-earth-sphere
+    - flight-earth
     - tasty
     - tasty-hunit
     - tasty-quickcheck

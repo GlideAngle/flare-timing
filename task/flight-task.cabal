@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: aaafebaaea928e385278c734ccb707f0b9d81b7b0bb13c3e4735b31795091a62
+-- hash: 9fc77722d5491b4f1edf0ed25010063bc27643643692e24f8aa0798c853d2607
 
 name:           flight-task
 version:        0.1.0
@@ -110,7 +110,7 @@ test-suite task
     , base
     , bifunctors
     , fgl
-    , flight-earth-sphere
+    , flight-earth
     , flight-latlng
     , flight-units
     , flight-zone
