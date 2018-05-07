@@ -5,7 +5,6 @@ extra-source-files:
 - package.yaml
 - changelog.md
 - README.md
-- stack.yaml
 ghc-options: -Wall
 library:
   dependencies:
