@@ -42,6 +42,7 @@ description: Scoring and viewing hang gliding and paragliding competitions.
 category: Data, Parsing
 license: BSD3
 license-file: LICENSE.md
+tested-with: GHC == 8.2.2
 github: BlockScope/flare-timing
 tests:
   hlint:

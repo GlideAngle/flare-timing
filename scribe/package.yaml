@@ -41,6 +41,7 @@ description: Reading and writing competition scoring files.
 category: Data
 license: BSD3
 license-file: LICENSE.md
+tested-with: GHC == 8.2.2
 github: BlockScope/flare-timing
 tests:
   hlint:

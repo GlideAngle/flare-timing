@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1b164c43c6a0cdfdee74911fc7405d3793fed4eaeb6ae88496fc15b300dcda6a
+-- hash: 27c2f80ae677d015871598381e27c73232ee012ce3cbc820f69296f077979049
 
 name:           flight-cmd
 version:        0.1.0
@@ -15,6 +15,7 @@ author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
 license:        BSD3
 license-file:   LICENSE.md
+tested-with:    GHC == 8.2.2
 build-type:     Simple
 cabal-version:  >= 1.10
 extra-source-files:

@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 7c81a6088d8f12818ea81fd77ad94636aab1aa6a96cabfb65c7725cb74501095
+-- hash: e2cf76d83e114c7402669408cc6fcafe9cef3605ad717df6cbc6ec8381939438
 
 name:           flight-route
 version:        0.1.0
@@ -15,6 +15,7 @@ author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
 license:        BSD3
 license-file:   LICENSE.md
+tested-with:    GHC == 8.2.2
 build-type:     Simple
 cabal-version:  >= 1.10
 extra-source-files:

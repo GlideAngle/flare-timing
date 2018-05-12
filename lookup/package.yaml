@@ -48,6 +48,7 @@ description: Lookup items for a task, for a pilot, etc.
 category: Data
 license: BSD3
 license-file: LICENSE.md
+tested-with: GHC == 8.2.2
 github: BlockScope/flare-timing
 tests:
   hlint:

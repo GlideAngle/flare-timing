@@ -21,6 +21,7 @@ description: IGC is a waypoint file format from the International Gliding Commis
 category: Data, Parsing
 license: BSD3
 license-file: LICENSE.md
+tested-with: GHC == 8.2.2
 github: BlockScope/haskell-flight-igc
 tests:
   hlint:

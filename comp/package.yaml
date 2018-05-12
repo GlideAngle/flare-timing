@@ -54,6 +54,7 @@ description: Hang gliding and paragliding competitors and tasks.
 category: Data
 license: BSD3
 license-file: LICENSE.md
+tested-with: GHC == 8.2.2
 github: BlockScope/flare-timing
 tests:
   hlint:

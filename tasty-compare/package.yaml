@@ -23,6 +23,7 @@ description: Adds assertCompare and operators for the same.
 category: Test
 license: BSD3
 license-file: LICENSE.md
+tested-with: GHC == 8.2.2
 github: BlockScope/tasty-compare
 tests:
   hlint:

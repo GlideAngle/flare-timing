@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 9d9718f1d12086194267cfa8daba63cdd3c377d0b0b22b7ea4ce012d2f2dd329
+-- hash: b0cd42ebdbf302937c03a055bd9251f8bf8a785364b3617a86b46a0830950083
 
 name:           flight-earth
 version:        0.1.0
@@ -15,6 +15,7 @@ author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
 license:        BSD3
 license-file:   LICENSE.md
+tested-with:    GHC == 8.2.2
 build-type:     Simple
 cabal-version:  >= 1.10
 extra-source-files:

@@ -39,6 +39,7 @@ description: Hang gliding and paragliding competitors, tasks and results as XML.
 category: Data, Parsing
 license: BSD3
 license-file: LICENSE.md
+tested-with: GHC == 8.2.2
 github: BlockScope/haskell-flight-fsdb
 tests:
   hlint:

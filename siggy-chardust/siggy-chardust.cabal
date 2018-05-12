@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ac981a8ed56f3fc70da97533d14207e94cb73938457fe28dd7ce4f0cf6857c67
+-- hash: 73d35f74ecc5ff0b1afc826384dc8dc3a3876e3effb43aff46bbfe060d5924ef
 
 name:           siggy-chardust
 version:        0.1.0
@@ -15,6 +15,7 @@ author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
 license:        BSD3
 license-file:   LICENSE.md
+tested-with:    GHC == 8.2.2
 build-type:     Simple
 cabal-version:  >= 1.10
 extra-source-files:

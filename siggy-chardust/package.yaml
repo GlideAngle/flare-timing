@@ -20,6 +20,7 @@ description: Round to a certain number of decimal places or significant digits.
 category: Data, Math
 license: BSD3
 license-file: LICENSE.md
+tested-with: GHC == 8.2.2
 github: BlockScope/haskell-siggy-chardust
 tests:
   hlint:

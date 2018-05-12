@@ -37,6 +37,7 @@ description: Control zones for hang gliding and paragliding competitons.
 category: Flight
 license: BSD3
 license-file: LICENSE.md
+tested-with: GHC == 8.2.2
 github: BlockScope/flare-timing
 tests:
   hlint:

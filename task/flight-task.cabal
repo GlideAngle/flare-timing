@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 9fc77722d5491b4f1edf0ed25010063bc27643643692e24f8aa0798c853d2607
+-- hash: 67e71ad5f7a38b3540d1e5ff106603cce14a32f1d6b3f1e9584921c30b674244
 
 name:           flight-task
 version:        0.1.0
@@ -15,6 +15,7 @@ author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
 license:        BSD3
 license-file:   LICENSE.md
+tested-with:    GHC == 8.2.2
 build-type:     Simple
 cabal-version:  >= 1.10
 extra-source-files:

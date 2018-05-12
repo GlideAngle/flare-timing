@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 0029d92cb84b6665fafab6109587c63cbac40eb64eefb863c94c1229e7a193f9
+-- hash: f6b8f4ea5eb993b7ea60c8fb58d9be3f757ed4a34bc85975a7d58b9b02ff7856
 
 name:           flight-units
 version:        0.1.0
@@ -15,6 +15,7 @@ author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
 license:        BSD3
 license-file:   LICENSE.md
+tested-with:    GHC == 8.2.2
 build-type:     Simple
 cabal-version:  >= 1.10
 extra-source-files:

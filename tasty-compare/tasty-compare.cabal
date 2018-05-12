@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: cc4caced3d26bfc714f0df6648127acdc3b852299279c6e44f2046a069dbb3ca
+-- hash: f1804f31012dc10d48521c71bbba5685695e0c82a5fc4f1f6429caa120b4decc
 
 name:           tasty-compare
 version:        0.1.0
@@ -15,6 +15,7 @@ author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
 license:        BSD3
 license-file:   LICENSE.md
+tested-with:    GHC == 8.2.2
 build-type:     Simple
 cabal-version:  >= 1.10
 extra-source-files:

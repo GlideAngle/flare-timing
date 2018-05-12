@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ca1acce757591e931bb08ed0e4996bead1ce09fa153cd86187acc3894b0a762e
+-- hash: a592ba74c74e0e7d4140603a8a8050ff6371b3f015fdb9e079a050f13a66df0f
 
 name:           aeson-via-sci
 version:        0.1.0
@@ -15,6 +15,7 @@ author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
 license:        BSD3
 license-file:   LICENSE.md
+tested-with:    GHC == 8.2.2
 build-type:     Simple
 cabal-version:  >= 1.10
 extra-source-files:

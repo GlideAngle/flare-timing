@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 40ced7ecfd1c57d4bb7fd0bbc359600358ce3ecc4d8e5267c6dc6cd9f9c75100
+-- hash: 803186d09d1cbecacd4864e287dce671a2c38798fb8c43469a7dfcbf453830b4
 
 name:           flight-zone
 version:        0.1.0
@@ -15,6 +15,7 @@ author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
 license:        BSD3
 license-file:   LICENSE.md
+tested-with:    GHC == 8.2.2
 build-type:     Simple
 cabal-version:  >= 1.10
 extra-source-files:

@@ -32,6 +32,7 @@ description: Unit definitions such as m, km, rad and deg.
 category: Flight
 license: BSD3
 license-file: LICENSE.md
+tested-with: GHC == 8.2.2
 github: BlockScope/haskell-flight-task
 tests:
   hlint:
