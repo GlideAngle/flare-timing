@@ -38,7 +38,7 @@ packages:
   extra-dep: true
 - location:
     git: https://github.com/blockscope/uom-plugin.git
-    commit: 107fdd7bcdb22e2afef5d868e7b902f49690dd30
+    commit: c170a2df329fe8e40d13aea0b4299758d5079bda
   subdirs:
   - uom-plugin
   extra-dep: true
