@@ -123,6 +123,7 @@ install:
       (cd "zone" && autoreconf -i);
     fi
   - rm -f cabal.project.freeze
+  - ghc --version
   - cabal new-build -w ${HC} ${TEST} ${BENCH} --project-file="cabal.project" --dep -j2 all
   - cabal new-build -w ${HC} --disable-tests --disable-benchmarks --project-file="cabal.project" --dep -j2 all
   - rm -rf .ghc.environment.* "build"/dist "aeson-via-sci"/dist "aeson-via-uom"/dist "cmd"/dist "comp"/dist "earth"/dist "fsdb"/dist "gap"/dist "igc"/dist "kml"/dist "latlng"/dist "lookup"/dist "mask"/dist "route"/dist "scribe"/dist "siggy-chardust"/dist "span"/dist "task"/dist "tasty-compare"/dist "track"/dist "units"/dist "zone"/dist
