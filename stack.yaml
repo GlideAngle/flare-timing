@@ -1,4 +1,5 @@
 resolver: lts-11.7
+tested-with: GHC == 8.2.2
 flags: {}
 packages:
 - build
@@ -26,7 +27,7 @@ packages:
 - flare-timing
 - location:
     git: https://github.com/blockscope/hcoord.git
-    commit: efee5918967a4b5309924bb6ac62c2daa56983a1
+    commit: b2fb75029f0374e48caf4cbbfcfcc2fd674cb4f3 
   subdirs:
   - hcoord
   - hcoord-utm
@@ -45,6 +46,10 @@ packages:
     git: https://github.com/brunjlar/stack2cabal
     commit: a8a4cdcacd697cee648af93856735f15de5987a6
   extra-dep: true
+- location:
+    git: https://github.com/haskell-CI/haskell-ci
+    commit: 105005cde6bde903e477e5b9724d02bdea06bae4
+  extra-dep: false
 extra-deps:
 - hxt-xpath-9.1.2.2
 local-bin-path: __shake-build
