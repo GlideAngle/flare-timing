@@ -1,0 +1,73 @@
+-- This file has been generated from package.yaml by hpack version 0.28.2.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: d5b3a37a64dfc93f6ad09da1249e917383f0fc7a8f4b2ef8ebf3e41f0cc6b7b4
+
+name:           flight-track
+version:        0.0.0
+synopsis:       Hang gliding and paragliding competition track logs.
+description:    Reading track logs for each pilot in each task of a competition.
+category:       Data
+homepage:       https://github.com/BlockScope/haskell-flight-track#readme
+bug-reports:    https://github.com/BlockScope/haskell-flight-track/issues
+author:         Phil de Joux
+maintainer:     phil.dejoux@blockscope.com
+license:        BSD3
+license-file:   LICENSE.md
+tested-with:    GHC == 8.2.2
+build-type:     Simple
+cabal-version:  >= 1.10
+extra-source-files:
+    changelog.md
+    package.yaml
+    README.md
+
+source-repository head
+  type: git
+  location: https://github.com/BlockScope/haskell-flight-track
+
+library
+  exposed-modules:
+      Flight.TrackLog
+  other-modules:
+      Paths_flight_track
+  hs-source-dirs:
+      library
+  ghc-options: -Wall
+  build-depends:
+      base >=4.5 && <5
+    , containers
+    , directory
+    , filepath
+    , flight-comp
+    , flight-igc
+    , flight-kml
+    , mtl
+    , path
+    , split
+    , time
+  default-language: Haskell2010
+
+test-suite hlint
+  type: exitcode-stdio-1.0
+  main-is: HLint.hs
+  other-modules:
+      Flight.TrackLog
+      Paths_flight_track
+  hs-source-dirs:
+      library
+      test-suite-hlint
+  ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      base
+    , containers
+    , directory
+    , filepath
+    , flight-comp
+    , flight-kml
+    , hlint
+    , mtl
+    , split
+    , time
+  default-language: Haskell2010

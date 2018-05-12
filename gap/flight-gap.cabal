@@ -1,0 +1,251 @@
+-- This file has been generated from package.yaml by hpack version 0.28.2.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: fcf51bb5a150f2351eca5660736fe635638e4ce8a3936a9461262a6eed69abcd
+
+name:           flight-gap
+version:        0.1.0
+synopsis:       GAP Scoring.
+description:    GAP scoring for hang gliding and paragliding competitons.
+category:       Flight
+homepage:       https://github.com/BlockScope/haskell-flight-gap#readme
+bug-reports:    https://github.com/BlockScope/haskell-flight-gap/issues
+author:         Phil de Joux
+maintainer:     phil.dejoux@blockscope.com
+license:        BSD3
+license-file:   LICENSE.md
+tested-with:    GHC == 8.2.2
+build-type:     Simple
+cabal-version:  >= 1.10
+extra-source-files:
+    changelog.md
+    package.yaml
+    README.md
+
+source-repository head
+  type: git
+  location: https://github.com/BlockScope/haskell-flight-gap
+
+library
+  exposed-modules:
+      Flight.Score
+  other-modules:
+      Flight.Gap.Allot
+      Flight.Gap.Distance.Best
+      Flight.Gap.Distance.Chunk
+      Flight.Gap.Distance.Difficulty
+      Flight.Gap.Distance.Fraction
+      Flight.Gap.Distance.Linear
+      Flight.Gap.Distance.Max
+      Flight.Gap.Distance.Min
+      Flight.Gap.Distance.Nominal
+      Flight.Gap.Distance.Pilot
+      Flight.Gap.Distance.Relative
+      Flight.Gap.Distance.Sum
+      Flight.Gap.Leading
+      Flight.Gap.Pilots
+      Flight.Gap.Points
+      Flight.Gap.Points.Arrival
+      Flight.Gap.Points.Distance
+      Flight.Gap.Points.Leading
+      Flight.Gap.Points.Task
+      Flight.Gap.Points.Time
+      Flight.Gap.Ratio
+      Flight.Gap.Ratio.Arrival
+      Flight.Gap.Ratio.Goal
+      Flight.Gap.Ratio.Launch
+      Flight.Gap.Ratio.Leading
+      Flight.Gap.Ratio.Speed
+      Flight.Gap.Stopped
+      Flight.Gap.Time.Best
+      Flight.Gap.Time.Nominal
+      Flight.Gap.Time.Pilot
+      Flight.Gap.Time.Velocity
+      Flight.Gap.Validity
+      Flight.Gap.Validity.Area
+      Flight.Gap.Validity.Distance
+      Flight.Gap.Validity.Launch
+      Flight.Gap.Validity.Task
+      Flight.Gap.Validity.Time
+      Flight.Gap.Weight.Arrival
+      Flight.Gap.Weight.Distance
+      Flight.Gap.Weight.GoalRatio
+      Flight.Gap.Weight.Leading
+      Flight.Gap.Weight.Time
+      Flight.Gap.Weighting
+      Paths_flight_gap
+  hs-source-dirs:
+      library
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin
+  build-depends:
+      aeson
+    , aeson-via-sci
+    , aeson-via-uom
+    , base >=4.5 && <5
+    , containers
+    , flight-units
+    , newtype
+    , scientific
+    , siggy-chardust
+    , statistics
+    , template-haskell
+    , uom-plugin
+    , vector
+  default-language: Haskell2010
+
+test-suite hlint
+  type: exitcode-stdio-1.0
+  main-is: HLint.hs
+  other-modules:
+      Flight.Gap.Allot
+      Flight.Gap.Distance.Best
+      Flight.Gap.Distance.Chunk
+      Flight.Gap.Distance.Difficulty
+      Flight.Gap.Distance.Fraction
+      Flight.Gap.Distance.Linear
+      Flight.Gap.Distance.Max
+      Flight.Gap.Distance.Min
+      Flight.Gap.Distance.Nominal
+      Flight.Gap.Distance.Pilot
+      Flight.Gap.Distance.Relative
+      Flight.Gap.Distance.Sum
+      Flight.Gap.Leading
+      Flight.Gap.Pilots
+      Flight.Gap.Points
+      Flight.Gap.Points.Arrival
+      Flight.Gap.Points.Distance
+      Flight.Gap.Points.Leading
+      Flight.Gap.Points.Task
+      Flight.Gap.Points.Time
+      Flight.Gap.Ratio
+      Flight.Gap.Ratio.Arrival
+      Flight.Gap.Ratio.Goal
+      Flight.Gap.Ratio.Launch
+      Flight.Gap.Ratio.Leading
+      Flight.Gap.Ratio.Speed
+      Flight.Gap.Stopped
+      Flight.Gap.Time.Best
+      Flight.Gap.Time.Nominal
+      Flight.Gap.Time.Pilot
+      Flight.Gap.Time.Velocity
+      Flight.Gap.Validity
+      Flight.Gap.Validity.Area
+      Flight.Gap.Validity.Distance
+      Flight.Gap.Validity.Launch
+      Flight.Gap.Validity.Task
+      Flight.Gap.Validity.Time
+      Flight.Gap.Weight.Arrival
+      Flight.Gap.Weight.Distance
+      Flight.Gap.Weight.GoalRatio
+      Flight.Gap.Weight.Leading
+      Flight.Gap.Weight.Time
+      Flight.Gap.Weighting
+      Flight.Score
+      Paths_flight_gap
+  hs-source-dirs:
+      library
+      test-suite-hlint
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N -fplugin Data.UnitsOfMeasure.Plugin
+  build-depends:
+      aeson
+    , aeson-via-sci
+    , aeson-via-uom
+    , base
+    , containers
+    , flight-units
+    , hlint
+    , newtype
+    , scientific
+    , siggy-chardust
+    , statistics
+    , uom-plugin
+    , vector
+  default-language: Haskell2010
+
+test-suite score
+  type: exitcode-stdio-1.0
+  main-is: Score.hs
+  other-modules:
+      Flight.Gap.Allot
+      Flight.Gap.Distance.Best
+      Flight.Gap.Distance.Chunk
+      Flight.Gap.Distance.Difficulty
+      Flight.Gap.Distance.Fraction
+      Flight.Gap.Distance.Linear
+      Flight.Gap.Distance.Max
+      Flight.Gap.Distance.Min
+      Flight.Gap.Distance.Nominal
+      Flight.Gap.Distance.Pilot
+      Flight.Gap.Distance.Relative
+      Flight.Gap.Distance.Sum
+      Flight.Gap.Leading
+      Flight.Gap.Pilots
+      Flight.Gap.Points
+      Flight.Gap.Points.Arrival
+      Flight.Gap.Points.Distance
+      Flight.Gap.Points.Leading
+      Flight.Gap.Points.Task
+      Flight.Gap.Points.Time
+      Flight.Gap.Ratio
+      Flight.Gap.Ratio.Arrival
+      Flight.Gap.Ratio.Goal
+      Flight.Gap.Ratio.Launch
+      Flight.Gap.Ratio.Leading
+      Flight.Gap.Ratio.Speed
+      Flight.Gap.Stopped
+      Flight.Gap.Time.Best
+      Flight.Gap.Time.Nominal
+      Flight.Gap.Time.Pilot
+      Flight.Gap.Time.Velocity
+      Flight.Gap.Validity
+      Flight.Gap.Validity.Area
+      Flight.Gap.Validity.Distance
+      Flight.Gap.Validity.Launch
+      Flight.Gap.Validity.Task
+      Flight.Gap.Validity.Time
+      Flight.Gap.Weight.Arrival
+      Flight.Gap.Weight.Distance
+      Flight.Gap.Weight.GoalRatio
+      Flight.Gap.Weight.Leading
+      Flight.Gap.Weight.Time
+      Flight.Gap.Weighting
+      Flight.Score
+      ArrivalFraction
+      DifficultyFraction
+      DistanceValidity
+      LaunchValidity
+      LeadingCoefficient
+      LinearFraction
+      Normal
+      Points
+      SpeedFraction
+      Stopped
+      TaskValidity
+      TestNewtypes
+      TimeValidity
+      Weighting
+      Paths_flight_gap
+  hs-source-dirs:
+      library
+      test-suite-score
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N -fplugin Data.UnitsOfMeasure.Plugin
+  build-depends:
+      aeson
+    , aeson-via-sci
+    , aeson-via-uom
+    , base
+    , containers
+    , flight-units
+    , newtype
+    , scientific
+    , siggy-chardust
+    , smallcheck
+    , statistics
+    , tasty
+    , tasty-hunit
+    , tasty-quickcheck
+    , tasty-smallcheck
+    , uom-plugin
+    , vector
+  default-language: Haskell2010

@@ -1,0 +1,61 @@
+-- This file has been generated from package.yaml by hpack version 0.28.2.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 0eb2bb5dcead4bc5ce55cf9c7d6c3f7dbf27badf9606605f56b1b0fcf8bc100e
+
+name:           build-flare-timing
+version:        0.1.0
+synopsis:       A shake build of flare-timing.
+description:    Builds the packages making up flare-timing.
+category:       Data, Parsing
+homepage:       https://github.com/BlockScope/flare-timing#readme
+bug-reports:    https://github.com/BlockScope/flare-timing/issues
+author:         Phil de Joux
+maintainer:     phil.dejoux@blockscope.com
+license:        BSD3
+license-file:   LICENSE.md
+tested-with:    GHC == 8.2.2
+build-type:     Simple
+cabal-version:  >= 1.10
+extra-source-files:
+    changelog.md
+    package.yaml
+    readme.md
+
+source-repository head
+  type: git
+  location: https://github.com/BlockScope/flare-timing
+
+executable build-flare-timing
+  main-is: Main.hs
+  other-modules:
+      Cmd
+      Doc
+      Driver
+      Nix
+      Target
+      Web
+      Paths_build_flare_timing
+  hs-source-dirs:
+      app-cmd
+  ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      ansi-terminal
+    , base
+    , shake
+    , time
+  default-language: Haskell2010
+
+test-suite hlint
+  type: exitcode-stdio-1.0
+  main-is: HLint.hs
+  other-modules:
+      Paths_build_flare_timing
+  hs-source-dirs:
+      test-suite-hlint
+  ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      base
+    , hlint
+  default-language: Haskell2010

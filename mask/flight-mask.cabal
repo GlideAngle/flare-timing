@@ -1,0 +1,136 @@
+-- This file has been generated from package.yaml by hpack version 0.28.2.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: d08d5998cfdd418b3b5df453deb57cb388954da45d7f18d5f82f17fdceb0629c
+
+name:           flight-mask
+version:        0.0.0
+synopsis:       Track logs masked by competition task zones.
+description:    Masking tracks with zones, work out; did the pilot launch, did they make goal and how long did that take? What was distance to goal?
+category:       Data
+homepage:       https://github.com/BlockScope/haskell-flight-mask#readme
+bug-reports:    https://github.com/BlockScope/haskell-flight-mask/issues
+author:         Phil de Joux
+maintainer:     phil.dejoux@blockscope.com
+license:        BSD3
+license-file:   LICENSE.md
+tested-with:    GHC == 8.2.2
+build-type:     Simple
+cabal-version:  >= 1.10
+extra-source-files:
+    changelog.md
+    package.yaml
+    README.md
+
+source-repository head
+  type: git
+  location: https://github.com/BlockScope/haskell-flight-mask
+
+library
+  exposed-modules:
+      Flight.Mask
+      Flight.Comp.Distance
+      Flight.Span.Double
+      Flight.Span.Rational
+  other-modules:
+      Flight.Mask.Distance
+      Flight.Mask.Internal.Cross
+      Flight.Mask.Internal.Dash
+      Flight.Mask.Internal.Dot
+      Flight.Mask.Internal.Race
+      Flight.Mask.Internal.Zone
+      Flight.Mask.Tag
+      Flight.Mask.Time
+      Flight.Mask.Tracks
+      Paths_flight_mask
+  hs-source-dirs:
+      library
+  default-extensions: ScopedTypeVariables DataKinds FlexibleContexts FlexibleInstances MultiParamTypeClasses TypeOperators TypeFamilies UndecidableInstances QuasiQuotes DisambiguateRecordFields NamedFieldPuns LambdaCase PartialTypeSignatures RecordWildCards
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin
+  build-depends:
+      aeson-via-sci
+    , base >=4.5 && <5
+    , bytestring
+    , cmdargs
+    , containers
+    , directory
+    , fgl
+    , filepath
+    , flight-comp
+    , flight-earth
+    , flight-gap
+    , flight-kml
+    , flight-latlng
+    , flight-route
+    , flight-scribe
+    , flight-span
+    , flight-task
+    , flight-track
+    , flight-units
+    , flight-zone
+    , lens
+    , mtl
+    , numbers
+    , path
+    , siggy-chardust
+    , split
+    , time
+    , uom-plugin
+    , yaml
+  default-language: Haskell2010
+
+test-suite hlint
+  type: exitcode-stdio-1.0
+  main-is: HLint.hs
+  other-modules:
+      Flight.Comp.Distance
+      Flight.Mask
+      Flight.Mask.Distance
+      Flight.Mask.Internal.Cross
+      Flight.Mask.Internal.Dash
+      Flight.Mask.Internal.Dot
+      Flight.Mask.Internal.Race
+      Flight.Mask.Internal.Zone
+      Flight.Mask.Tag
+      Flight.Mask.Time
+      Flight.Mask.Tracks
+      Flight.Span.Double
+      Flight.Span.Rational
+      Paths_flight_mask
+  hs-source-dirs:
+      library
+      test-suite-hlint
+  default-extensions: ScopedTypeVariables DataKinds FlexibleContexts FlexibleInstances MultiParamTypeClasses TypeOperators TypeFamilies UndecidableInstances QuasiQuotes DisambiguateRecordFields NamedFieldPuns LambdaCase PartialTypeSignatures RecordWildCards ScopedTypeVariables DataKinds FlexibleContexts FlexibleInstances MultiParamTypeClasses TypeOperators TypeFamilies UndecidableInstances QuasiQuotes DisambiguateRecordFields NamedFieldPuns LambdaCase PartialTypeSignatures RecordWildCards
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N -fplugin Data.UnitsOfMeasure.Plugin
+  build-depends:
+      aeson-via-sci
+    , base
+    , bytestring
+    , cmdargs
+    , containers
+    , directory
+    , fgl
+    , filepath
+    , flight-comp
+    , flight-earth
+    , flight-gap
+    , flight-kml
+    , flight-latlng
+    , flight-route
+    , flight-scribe
+    , flight-span
+    , flight-task
+    , flight-track
+    , flight-units
+    , flight-zone
+    , hlint
+    , lens
+    , mtl
+    , numbers
+    , siggy-chardust
+    , split
+    , time
+    , uom-plugin
+    , yaml
+  default-language: Haskell2010

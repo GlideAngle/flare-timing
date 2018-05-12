@@ -1,0 +1,101 @@
+-- This file has been generated from package.yaml by hpack version 0.28.2.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 64a6d82550f4cf05cbc0688c4e32f3b55674f880300f0a0bf8bfc65e7467aaad
+
+name:           flight-scribe
+version:        0.0.0
+synopsis:       Hang gliding and paragliding competition scoring files.
+description:    Reading and writing competition scoring files.
+category:       Data
+homepage:       https://github.com/BlockScope/flare-timing#readme
+bug-reports:    https://github.com/BlockScope/flare-timing/issues
+author:         Phil de Joux
+maintainer:     phil.dejoux@blockscope.com
+license:        BSD3
+license-file:   LICENSE.md
+tested-with:    GHC == 8.2.2
+build-type:     Simple
+cabal-version:  >= 1.10
+extra-source-files:
+    changelog.md
+    package.yaml
+    README.md
+
+source-repository head
+  type: git
+  location: https://github.com/BlockScope/flare-timing
+
+library
+  exposed-modules:
+      Flight.Scribe
+  other-modules:
+      Flight.Align
+      Flight.Discard
+      Paths_flight_scribe
+  hs-source-dirs:
+      library
+  ghc-options: -Wall
+  build-depends:
+      aeson
+    , aeson-via-sci
+    , base >=4.5 && <5
+    , bytestring
+    , cassava
+    , containers
+    , directory
+    , filemanip
+    , filepath
+    , flight-comp
+    , flight-gap
+    , flight-latlng
+    , flight-route
+    , flight-zone
+    , mtl
+    , path
+    , scientific
+    , split
+    , time
+    , unordered-containers
+    , vector
+    , yaml
+  default-language: Haskell2010
+
+test-suite hlint
+  type: exitcode-stdio-1.0
+  main-is: HLint.hs
+  other-modules:
+      Flight.Align
+      Flight.Discard
+      Flight.Scribe
+      Paths_flight_scribe
+  hs-source-dirs:
+      library
+      test-suite-hlint
+  ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      aeson
+    , aeson-via-sci
+    , base
+    , bytestring
+    , cassava
+    , containers
+    , directory
+    , filemanip
+    , filepath
+    , flight-comp
+    , flight-gap
+    , flight-latlng
+    , flight-route
+    , flight-zone
+    , hlint
+    , mtl
+    , path
+    , scientific
+    , split
+    , time
+    , unordered-containers
+    , vector
+    , yaml
+  default-language: Haskell2010
