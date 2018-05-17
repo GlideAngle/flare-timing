@@ -31,3 +31,11 @@ With an FS comp file and related track logs as inputs, **score** the comp;
 9. Score the competition with [`gap-point`](flare-timing/prod-apps/gap-point).  
 
 Documentation is available online at [flare-timing.readthedocs.io](http://flare-timing.readthedocs.io/).
+
+## License
+
+Copyright Phil de Joux 2017-2018
+
+This software is subject to the terms of the Mozilla Public License, v2.0. If
+a copy of the MPL was not distributed with this file, you can obtain one at
+http://mozilla.org/MPL/2.0/.
