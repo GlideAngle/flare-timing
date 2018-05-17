@@ -29,11 +29,12 @@ library:
   - Flight.Task
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
+copyright: Phil de Joux 2017-2018
 name: flight-task
 synopsis: Tasks to fly.
 description: Tasks for hang gliding and paragliding competitons.
 category: Flight
-license: BSD3
+license: MPL-2.0
 license-file: LICENSE.md
 tested-with: GHC == 8.2.2
 github: BlockScope/haskell-flight-task

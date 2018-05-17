@@ -48,11 +48,12 @@ library:
   - Flight.Track.Distance
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
+copyright: Phil de Joux 2017-2018
 name: flight-comp
 synopsis: Hang gliding and paragliding competition scoring inputs.
 description: Hang gliding and paragliding competitors and tasks.
 category: Data
-license: BSD3
+license: MPL-2.0
 license-file: LICENSE.md
 tested-with: GHC == 8.2.2
 github: BlockScope/flare-timing

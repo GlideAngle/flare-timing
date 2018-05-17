@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f6b8f4ea5eb993b7ea60c8fb58d9be3f757ed4a34bc85975a7d58b9b02ff7856
+-- hash: 9cf0cddc23b0b6fb399767566ce3cc6d62550a9e3218a2eb4fb667c197ff1776
 
 name:           flight-units
 version:        0.1.0
@@ -13,7 +13,8 @@ homepage:       https://github.com/BlockScope/haskell-flight-task#readme
 bug-reports:    https://github.com/BlockScope/haskell-flight-task/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
-license:        BSD3
+copyright:      Phil de Joux 2017-2018
+license:        MPL-2.0
 license-file:   LICENSE.md
 tested-with:    GHC == 8.2.2
 build-type:     Simple

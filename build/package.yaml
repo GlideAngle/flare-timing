@@ -21,11 +21,12 @@ extra-source-files:
 ghc-options: -Wall
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
+copyright: Phil de Joux 2017-2018
 name: build-flare-timing
 synopsis: A shake build of flare-timing.
 description: Builds the packages making up flare-timing.
 category: Data, Parsing
-license: BSD3
+license: MPL-2.0
 license-file: LICENSE.md
 tested-with: GHC == 8.2.2
 github: BlockScope/flare-timing

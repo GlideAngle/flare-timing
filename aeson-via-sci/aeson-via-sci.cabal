@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a592ba74c74e0e7d4140603a8a8050ff6371b3f015fdb9e079a050f13a66df0f
+-- hash: c55f4b9483b348543393e57ad6abeb900c45db12bda591bffd1bdc1930a71123
 
 name:           aeson-via-sci
 version:        0.1.0
@@ -13,7 +13,8 @@ homepage:       https://github.com/BlockScope/flare-timing#readme
 bug-reports:    https://github.com/BlockScope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
-license:        BSD3
+copyright:      Phil de Joux 2017-2018
+license:        MPL-2.0
 license-file:   LICENSE.md
 tested-with:    GHC == 8.2.2
 build-type:     Simple

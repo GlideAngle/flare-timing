@@ -14,11 +14,12 @@ library:
   - Data.Number.RoundingFunctions
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
+copyright: Phil de Joux 2017-2018
 name: siggy-chardust
 synopsis: Rounding keeping decimal places and significant digits.
 description: Round to a certain number of decimal places or significant digits.
 category: Data, Math
-license: BSD3
+license: MPL-2.0
 license-file: LICENSE.md
 tested-with: GHC == 8.2.2
 github: BlockScope/haskell-siggy-chardust

@@ -22,11 +22,12 @@ library:
   - Data.Aeson.Via.UnitsOfMeasure
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
+copyright: Phil de Joux 2017-2018
 name: aeson-via-uom
 synopsis: JSON encoding and decoding for rationals via scientific.
 description: Lossy JSON encoding for rationals.
 category: Flight
-license: BSD3
+license: MPL-2.0
 license-file: LICENSE.md
 tested-with: GHC == 8.2.2
 github: BlockScope/flare-timing

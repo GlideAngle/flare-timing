@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 803186d09d1cbecacd4864e287dce671a2c38798fb8c43469a7dfcbf453830b4
+-- hash: a3efe42daa69cee1b9820477e222c38a32a692fd9f207839f1b6f89a2c9b37dd
 
 name:           flight-zone
 version:        0.1.0
@@ -13,7 +13,8 @@ homepage:       https://github.com/BlockScope/flare-timing#readme
 bug-reports:    https://github.com/BlockScope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
-license:        BSD3
+copyright:      Phil de Joux 2017-2018
+license:        MPL-2.0
 license-file:   LICENSE.md
 tested-with:    GHC == 8.2.2
 build-type:     Simple

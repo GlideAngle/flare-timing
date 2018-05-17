@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 60c52e7305f49d6edf437472ad7c7fd82c2fd302e59a65e75a2526b9e9cfb256
+-- hash: 530d63571b963fa150b914480429da82cfcc524b876b80e3b1f684ad6363c2e3
 
 name:           flight-igc
 version:        0.1.0
@@ -13,7 +13,8 @@ homepage:       https://github.com/BlockScope/haskell-flight-igc#readme
 bug-reports:    https://github.com/BlockScope/haskell-flight-igc/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
-license:        BSD3
+copyright:      Phil de Joux 2017-2018
+license:        MPL-2.0
 license-file:   LICENSE.md
 tested-with:    GHC == 8.2.2
 build-type:     Simple

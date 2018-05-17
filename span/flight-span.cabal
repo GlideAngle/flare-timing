@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 24d8204d1319352cb513a9e890d5c0cd1cf0e8ed020369133e2fdb1df83e0691
+-- hash: ebd0c02f287fb2a69795190034a7d9a4e16a0a71eddfee52cb73e181924064c7
 
 name:           flight-span
 version:        0.0.0
@@ -13,7 +13,8 @@ homepage:       https://github.com/BlockScope/haskell-flight-mask#readme
 bug-reports:    https://github.com/BlockScope/haskell-flight-mask/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
-license:        BSD3
+copyright:      Phil de Joux 2017-2018
+license:        MPL-2.0
 license-file:   LICENSE.md
 tested-with:    GHC == 8.2.2
 build-type:     Simple

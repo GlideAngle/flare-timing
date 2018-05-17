@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 73d35f74ecc5ff0b1afc826384dc8dc3a3876e3effb43aff46bbfe060d5924ef
+-- hash: 30315924080e3b380c206dd9691aa22215db85e723fdfc7e84b4f8d7e48993ce
 
 name:           siggy-chardust
 version:        0.1.0
@@ -13,7 +13,8 @@ homepage:       https://github.com/BlockScope/haskell-siggy-chardust#readme
 bug-reports:    https://github.com/BlockScope/haskell-siggy-chardust/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
-license:        BSD3
+copyright:      Phil de Joux 2017-2018
+license:        MPL-2.0
 license-file:   LICENSE.md
 tested-with:    GHC == 8.2.2
 build-type:     Simple

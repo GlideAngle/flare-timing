@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d5b3a37a64dfc93f6ad09da1249e917383f0fc7a8f4b2ef8ebf3e41f0cc6b7b4
+-- hash: a05fa6e49d7ba00887b5c68f7823fa27d238cd98748d65d7c552e3423772ecf0
 
 name:           flight-track
 version:        0.0.0
@@ -13,7 +13,8 @@ homepage:       https://github.com/BlockScope/haskell-flight-track#readme
 bug-reports:    https://github.com/BlockScope/haskell-flight-track/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
-license:        BSD3
+copyright:      Phil de Joux 2017-2018
+license:        MPL-2.0
 license-file:   LICENSE.md
 tested-with:    GHC == 8.2.2
 build-type:     Simple

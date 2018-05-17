@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 6d7e2f6366a4cb7601bc4ad92af7bd4f6a836633fb178c6422bd1f5510974ba0
+-- hash: 003f04c2704d66a26cb0c12bc95cf3044d3faadf43fbc9e513ae237dc3c2b460
 
 name:           aeson-via-uom
 version:        0.1.0
@@ -13,7 +13,8 @@ homepage:       https://github.com/BlockScope/flare-timing#readme
 bug-reports:    https://github.com/BlockScope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
-license:        BSD3
+copyright:      Phil de Joux 2017-2018
+license:        MPL-2.0
 license-file:   LICENSE.md
 tested-with:    GHC == 8.2.2
 build-type:     Simple

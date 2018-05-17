@@ -414,11 +414,12 @@ extra-source-files:
 ghc-options: -Wall
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
+copyright: Phil de Joux 2017-2018
 name: flare-timing 
 synopsis: A collection of apps and libraries for scoring hang gliding and paragliding competitions.
 description: Scoring and viewing hang gliding and paragliding competitions.
 category: Data, Parsing
-license: BSD3
+license: MPL-2.0
 license-file: LICENSE.md
 tested-with: GHC == 8.2.2
 github: BlockScope/flare-timing

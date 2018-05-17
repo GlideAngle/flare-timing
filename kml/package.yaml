@@ -23,11 +23,12 @@ library:
   - Flight.Kml
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
+copyright: Phil de Joux 2017-2018
 name: flight-kml 
 synopsis: A parser for KML files.
 description: KML can be a source of flight waypoints.
 category: Data, Parsing
-license: BSD3
+license: MPL-2.0
 license-file: LICENSE.md
 tested-with: GHC == 8.2.2
 github: BlockScope/haskell-flight-kml

@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f1804f31012dc10d48521c71bbba5685695e0c82a5fc4f1f6429caa120b4decc
+-- hash: 9f618ac2783f12123a9bee9fdcc48646d4123714750fe246f0e246ec7e4c7913
 
 name:           tasty-compare
 version:        0.1.0
@@ -13,7 +13,8 @@ homepage:       https://github.com/BlockScope/tasty-compare#readme
 bug-reports:    https://github.com/BlockScope/tasty-compare/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
-license:        BSD3
+copyright:      Phil de Joux 2017-2018
+license:        MPL-2.0
 license-file:   LICENSE.md
 tested-with:    GHC == 8.2.2
 build-type:     Simple

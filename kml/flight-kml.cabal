@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3795e69ec0f76a3f20e0cff3612421a0cf1c595df6b016c9f53151e677ca0c48
+-- hash: 73247994d355cd1035b0ca538327f5e1be031614b454bb2415d071e0b8375c03
 
 name:           flight-kml
 version:        0.1.0
@@ -13,7 +13,8 @@ homepage:       https://github.com/BlockScope/haskell-flight-kml#readme
 bug-reports:    https://github.com/BlockScope/haskell-flight-kml/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
-license:        BSD3
+copyright:      Phil de Joux 2017-2018
+license:        MPL-2.0
 license-file:   LICENSE.md
 tested-with:    GHC == 8.2.2
 build-type:     Simple

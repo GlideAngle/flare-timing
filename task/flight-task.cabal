@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 67e71ad5f7a38b3540d1e5ff106603cce14a32f1d6b3f1e9584921c30b674244
+-- hash: 5801e797018bcac23c994ddfd123a90039c5fefa5acb681e8a0c5a37229c7edb
 
 name:           flight-task
 version:        0.1.0
@@ -13,7 +13,8 @@ homepage:       https://github.com/BlockScope/haskell-flight-task#readme
 bug-reports:    https://github.com/BlockScope/haskell-flight-task/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
-license:        BSD3
+copyright:      Phil de Joux 2017-2018
+license:        MPL-2.0
 license-file:   LICENSE.md
 tested-with:    GHC == 8.2.2
 build-type:     Simple

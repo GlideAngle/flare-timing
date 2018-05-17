@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3dbcc2b11c77f42c50d6586935d2e1b59ef3d27c7d27b8a54fec04a5d4b105b0
+-- hash: 0801fd1a0a0f0bd8814839f0d4b62d574d306922c27c4b5fd9afc2291016c2e4
 
 name:           flight-fsdb
 version:        0.1.0
@@ -13,7 +13,8 @@ homepage:       https://github.com/BlockScope/haskell-flight-fsdb#readme
 bug-reports:    https://github.com/BlockScope/haskell-flight-fsdb/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
-license:        BSD3
+copyright:      Phil de Joux 2017-2018
+license:        MPL-2.0
 license-file:   LICENSE.md
 tested-with:    GHC == 8.2.2
 build-type:     Simple

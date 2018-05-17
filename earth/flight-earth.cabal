@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b0cd42ebdbf302937c03a055bd9251f8bf8a785364b3617a86b46a0830950083
+-- hash: 2645f53258419b4e3a3eb9e6910319f59f1e6fe13a477767321392667470db57
 
 name:           flight-earth
 version:        0.1.0
@@ -13,7 +13,8 @@ homepage:       https://github.com/BlockScope/haskell-flight-task#readme
 bug-reports:    https://github.com/BlockScope/haskell-flight-task/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
-license:        BSD3
+copyright:      Phil de Joux 2017-2018
+license:        MPL-2.0
 license-file:   LICENSE.md
 tested-with:    GHC == 8.2.2
 build-type:     Simple

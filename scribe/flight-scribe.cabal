@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 64a6d82550f4cf05cbc0688c4e32f3b55674f880300f0a0bf8bfc65e7467aaad
+-- hash: 38822f8f897d89e6129d59e4cc08b5b429e5a0d70ca0d8460334ff446071ec4a
 
 name:           flight-scribe
 version:        0.0.0
@@ -13,7 +13,8 @@ homepage:       https://github.com/BlockScope/flare-timing#readme
 bug-reports:    https://github.com/BlockScope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
-license:        BSD3
+copyright:      Phil de Joux 2017-2018
+license:        MPL-2.0
 license-file:   LICENSE.md
 tested-with:    GHC == 8.2.2
 build-type:     Simple

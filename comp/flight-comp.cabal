@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 06b9f1a2dcb994f89d64c4cf150885f51fbfe6007ddce7d18f7fe62abfdb0a5e
+-- hash: 83ec48fbc481002380ffd215d3210ebf10a91e6fbbdd8d05b8fbc645e205387e
 
 name:           flight-comp
 version:        0.0.0
@@ -13,7 +13,8 @@ homepage:       https://github.com/BlockScope/flare-timing#readme
 bug-reports:    https://github.com/BlockScope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
-license:        BSD3
+copyright:      Phil de Joux 2017-2018
+license:        MPL-2.0
 license-file:   LICENSE.md
 tested-with:    GHC == 8.2.2
 build-type:     Simple

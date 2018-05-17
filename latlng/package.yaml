@@ -38,11 +38,12 @@ library:
   - Flight.Distance
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
+copyright: Phil de Joux 2017-2018
 name: flight-latlng
 synopsis: Latitude and longitude as used in hang gliding and paragliding competitions.
 description: Latitude and longitude.
 category: Flight
-license: BSD3
+license: MPL-2.0
 license-file: LICENSE.md
 tested-with: GHC == 8.2.2
 github: BlockScope/flare-timing

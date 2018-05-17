@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: fcf51bb5a150f2351eca5660736fe635638e4ce8a3936a9461262a6eed69abcd
+-- hash: e33df7df64228cb2b85550090ceecc023d87a6411914b0608c52e7b208a73a78
 
 name:           flight-gap
 version:        0.1.0
@@ -13,7 +13,8 @@ homepage:       https://github.com/BlockScope/haskell-flight-gap#readme
 bug-reports:    https://github.com/BlockScope/haskell-flight-gap/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
-license:        BSD3
+copyright:      Phil de Joux 2017-2018
+license:        MPL-2.0
 license-file:   LICENSE.md
 tested-with:    GHC == 8.2.2
 build-type:     Simple
