@@ -294,6 +294,5 @@ parse = P.parse igcFile "(stdin)"
 parseFromFile
     :: FilePath -- ^ An IGC file to parse.
     -> IO (Either ParseError [IgcRecord])
-parseFromFile fname = do
-    input <- readFile fname
-    return (runParser igcFile () fname input)
+parseFromFile fname =
+    runParser igcFile () fname <$> readFile fname
