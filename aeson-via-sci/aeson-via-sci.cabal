@@ -1,8 +1,8 @@
--- This file has been generated from package.yaml by hpack version 0.28.2.
+-- This file has been generated from package.dhall by hpack version 0.27.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 6369d64c777ce96546ca030238e85e6ffde9117a4187fa15a65bc6751903827f
+-- hash: def1197c2ed3ac732a2207a3822da01f613d9dc601f7c821dd46d9a654db626b
 
 name:           aeson-via-sci
 version:        0.1.0
@@ -19,9 +19,10 @@ license-file:   LICENSE.md
 tested-with:    GHC == 8.2.2
 build-type:     Simple
 cabal-version:  >= 1.10
+
 extra-source-files:
     changelog.md
-    package.yaml
+    package.dhall
     README.md
 
 source-repository head
