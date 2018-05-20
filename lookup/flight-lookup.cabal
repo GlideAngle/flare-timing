@@ -2,10 +2,10 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 45786767143a29fc7ea69a8cc2031a88f9e8bd5475df8fa2eaa9ef6cbdceadc9
+-- hash: 8ec25b1e5a301707bfe9c554935d0db2adfab1294bd354bbd3396839a54be869
 
 name:           flight-lookup
-version:        0.0.0
+version:        0.1.0
 synopsis:       Hang gliding and paragliding competition data access.
 description:    Lookup items for a task, for a pilot, etc.
 category:       Data

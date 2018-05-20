@@ -1,6 +1,22 @@
-# This YAML file describes your package. Stack will automatically generate a
-# Cabal file when you run `stack build`. See the hpack website for help with
-# this file: <https://github.com/sol/hpack>.
+name: flare-timing 
+version: '0.1.0'
+synopsis: A collection of apps and libraries for scoring hang gliding and paragliding competitions.
+description: Scoring and viewing hang gliding and paragliding competitions.
+category: Data, Parsing
+github: BlockScope/flare-timing
+author: Phil de Joux
+maintainer: phil.dejoux@blockscope.com
+copyright: Phil de Joux 2017-2018
+license: MPL-2.0
+license-file: LICENSE.md
+tested-with: GHC == 8.2.2
+extra-source-files:
+- package.yaml
+- changelog.md
+- readme.md
+
+ghc-options: -Wall
+
 executables:
   extract-input:
     dependencies:
@@ -407,22 +423,6 @@ executables:
     - -with-rtsopts=-N
     main: Main.hs
     source-dirs: test-apps/kml-parser
-extra-source-files:
-- package.yaml
-- changelog.md
-- readme.md
-ghc-options: -Wall
-author: Phil de Joux
-maintainer: phil.dejoux@blockscope.com
-copyright: Phil de Joux 2017-2018
-name: flare-timing 
-synopsis: A collection of apps and libraries for scoring hang gliding and paragliding competitions.
-description: Scoring and viewing hang gliding and paragliding competitions.
-category: Data, Parsing
-license: MPL-2.0
-license-file: LICENSE.md
-tested-with: GHC == 8.2.2
-github: BlockScope/flare-timing
 tests:
   hlint:
     dependencies:
@@ -435,4 +435,3 @@ tests:
     main: HLint.hs
     source-dirs:
     - test-suite-hlint
-version: '0.1.0'

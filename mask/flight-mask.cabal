@@ -2,10 +2,10 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 9f03a7c3e3484ed2e7b34f0d34773e00674f9f308f6a753a9ed4bef32f19e983
+-- hash: 399bd4e8296092e1754f62cd4108a9443315b6e6f46c711bb9cc2c2f7aa9a23a
 
 name:           flight-mask
-version:        0.0.0
+version:        0.1.0
 synopsis:       Track logs masked by competition task zones.
 description:    Masking tracks with zones, work out; did the pilot launch, did they make goal and how long did that take? What was distance to goal?
 category:       Data

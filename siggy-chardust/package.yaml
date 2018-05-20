@@ -1,28 +1,29 @@
-# This YAML file describes your package. Stack will automatically generate a
-# Cabal file when you run `stack build`. See the hpack website for help with
-# this file: <https://github.com/sol/hpack>.
+name: siggy-chardust
+version: '0.1.0'
+synopsis: Rounding keeping decimal places and significant digits.
+description: Round to a certain number of decimal places or significant digits.
+category: Data, Math
+github: BlockScope/haskell-siggy-chardust
+author: Phil de Joux
+maintainer: phil.dejoux@blockscope.com
+copyright: Phil de Joux 2017-2018
+license: MPL-2.0
+license-file: LICENSE.md
+tested-with: GHC == 8.2.2
 extra-source-files:
 - package.yaml
 - changelog.md
 - README.md
+
 ghc-options: -Wall
+
 library:
   dependencies:
   - base >=4.5 && <5
   source-dirs: library
   exposed-modules:
   - Data.Number.RoundingFunctions
-author: Phil de Joux
-maintainer: phil.dejoux@blockscope.com
-copyright: Phil de Joux 2017-2018
-name: siggy-chardust
-synopsis: Rounding keeping decimal places and significant digits.
-description: Round to a certain number of decimal places or significant digits.
-category: Data, Math
-license: MPL-2.0
-license-file: LICENSE.md
-tested-with: GHC == 8.2.2
-github: BlockScope/haskell-siggy-chardust
+
 tests:
   hlint:
     dependencies:
@@ -52,4 +53,3 @@ tests:
     source-dirs:
     - library
     - test-suite-digits
-version: '0.1.0'

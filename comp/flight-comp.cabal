@@ -2,10 +2,10 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 83ec48fbc481002380ffd215d3210ebf10a91e6fbbdd8d05b8fbc645e205387e
+-- hash: 3b38323035a9d42c36ab4967dbea3d054e538d24b9d64eabf06a30330296fd80
 
 name:           flight-comp
-version:        0.0.0
+version:        0.1.0
 synopsis:       Hang gliding and paragliding competition scoring inputs.
 description:    Hang gliding and paragliding competitors and tasks.
 category:       Data

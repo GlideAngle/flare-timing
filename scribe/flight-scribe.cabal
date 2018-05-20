@@ -2,10 +2,10 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 38822f8f897d89e6129d59e4cc08b5b429e5a0d70ca0d8460334ff446071ec4a
+-- hash: 25d90269d17daac6b72dca0817a9d38749be3af51b60c08e71690f47b3bcedd9
 
 name:           flight-scribe
-version:        0.0.0
+version:        0.1.0
 synopsis:       Hang gliding and paragliding competition scoring files.
 description:    Reading and writing competition scoring files.
 category:       Data

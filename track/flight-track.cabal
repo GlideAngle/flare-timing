@@ -2,10 +2,10 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a05fa6e49d7ba00887b5c68f7823fa27d238cd98748d65d7c552e3423772ecf0
+-- hash: 839feba7cc02bcdac6333b75e6ba6748ca75dd72ead933528ae11c7b7150ec97
 
 name:           flight-track
-version:        0.0.0
+version:        0.1.0
 synopsis:       Hang gliding and paragliding competition track logs.
 description:    Reading track logs for each pilot in each task of a competition.
 category:       Data

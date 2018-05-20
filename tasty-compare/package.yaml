@@ -1,11 +1,22 @@
-# This YAML file describes your package. Stack will automatically generate a
-# Cabal file when you run `stack build`. See the hpack website for help with
-# this file: <https://github.com/sol/hpack>.
+name: tasty-compare
+version: '0.1.0'
+synopsis: Tasty HUnit extensions for comparisons.
+description: Adds assertCompare and operators for the same.
+category: Test
+github: BlockScope/tasty-compare
+author: Phil de Joux
+maintainer: phil.dejoux@blockscope.com
+copyright: Phil de Joux 2017-2018
+license: MPL-2.0
+license-file: LICENSE.md
+tested-with: GHC == 8.2.2
 extra-source-files:
 - package.yaml
 - changelog.md
 - README.md
+
 ghc-options: -Wall
+
 library:
   dependencies:
   - base
@@ -15,17 +26,7 @@ library:
   source-dirs: library
   exposed-modules:
   - Test.Tasty.HUnit.Compare
-author: Phil de Joux
-maintainer: phil.dejoux@blockscope.com
-copyright: Phil de Joux 2017-2018
-name: tasty-compare
-synopsis: Tasty HUnit extensions for comparisons.
-description: Adds assertCompare and operators for the same.
-category: Test
-license: MPL-2.0
-license-file: LICENSE.md
-tested-with: GHC == 8.2.2
-github: BlockScope/tasty-compare
+
 tests:
   hlint:
     dependencies:
@@ -42,4 +43,3 @@ tests:
     source-dirs:
     - library
     - test-suite-hlint
-version: '0.1.0'

@@ -2,10 +2,10 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ebd0c02f287fb2a69795190034a7d9a4e16a0a71eddfee52cb73e181924064c7
+-- hash: 2529a9ad903184f16567737168ad004beb71cb77db210b06699beefdd438a127
 
 name:           flight-span
-version:        0.0.0
+version:        0.1.0
 synopsis:       How to measure a distance that spans two points.
 description:    How to measure a distance that spans tow points.
 category:       Data

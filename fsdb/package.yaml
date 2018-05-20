@@ -1,13 +1,24 @@
-# This YAML file describes your package. Stack will automatically generate a
-# Cabal file when you run `stack build`. See the hpack website for help with
-# this file: <https://github.com/sol/hpack>.
+name: flight-fsdb
+version: '0.1.0'
+synopsis: A parser for fsdb, the database XML format of FS.
+description: Hang gliding and paragliding competitors, tasks and results as XML.
+category: Data, Parsing
+github: BlockScope/haskell-flight-fsdb
+author: Phil de Joux
+maintainer: phil.dejoux@blockscope.com
+copyright: Phil de Joux 2017-2018
+license: MPL-2.0
+license-file: LICENSE.md
+tested-with: GHC == 8.2.2
 extra-source-files:
 - package.yaml
 - changelog.md
 - README.md
+
 ghc-options:
 - -Wall
 - -fplugin Data.UnitsOfMeasure.Plugin
+
 library:
   dependencies:
   - base >=4.5 && <5
@@ -31,17 +42,7 @@ library:
   source-dirs: library
   exposed-modules:
   - Flight.Fsdb
-author: Phil de Joux
-maintainer: phil.dejoux@blockscope.com
-copyright: Phil de Joux 2017-2018
-name: flight-fsdb
-synopsis: A parser for fsdb, the database XML format of FS.
-description: Hang gliding and paragliding competitors, tasks and results as XML.
-category: Data, Parsing
-license: MPL-2.0
-license-file: LICENSE.md
-tested-with: GHC == 8.2.2
-github: BlockScope/haskell-flight-fsdb
+
 tests:
   hlint:
     dependencies:
@@ -96,4 +97,3 @@ tests:
     source-dirs:
     - library
     - test-suite-parse
-version: '0.1.0'
