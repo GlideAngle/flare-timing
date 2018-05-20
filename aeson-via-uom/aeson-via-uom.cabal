@@ -1,8 +1,8 @@
--- This file has been generated from package.yaml by hpack version 0.28.2.
+-- This file has been generated from package.dhall by hpack version 0.27.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 81a0866988fceb45d0e01e135d9f9092ee0ded3b86bf95493fee426f9ea108b2
+-- hash: ee3782c3d4f84a412022f43305c30b20a7a52d2b3fdf83f90dc8bbc58e672b27
 
 name:           aeson-via-uom
 version:        0.1.0
@@ -19,9 +19,10 @@ license-file:   LICENSE.md
 tested-with:    GHC == 8.2.2
 build-type:     Simple
 cabal-version:  >= 1.10
+
 extra-source-files:
     changelog.md
-    package.yaml
+    package.dhall
     README.md
 
 source-repository head
@@ -56,7 +57,7 @@ test-suite hlint
   hs-source-dirs:
       library
       test-suite-hlint
-  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N -fplugin Data.UnitsOfMeasure.Plugin
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
     , aeson-via-sci
