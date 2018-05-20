@@ -1,8 +1,8 @@
--- This file has been generated from package.yaml by hpack version 0.28.2.
+-- This file has been generated from package.dhall by hpack version 0.27.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e80c49bf3220511b78842b7d4043290298158f2b6e453f2e768eed64e1ce9897
+-- hash: 2194865db78b1735f045fccd5a3631bbae5075ea6c559a4af8d7a518b61ef85f
 
 name:           build-flare-timing
 version:        0.1.0
@@ -19,10 +19,11 @@ license-file:   LICENSE.md
 tested-with:    GHC == 8.2.2
 build-type:     Simple
 cabal-version:  >= 1.10
+
 extra-source-files:
     changelog.md
-    package.yaml
-    readme.md
+    package.dhall
+    README.md
 
 source-repository head
   type: git
