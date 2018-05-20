@@ -1,8 +1,8 @@
--- This file has been generated from package.yaml by hpack version 0.28.2.
+-- This file has been generated from package.dhall by hpack version 0.27.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 932f21f7315f7885153326fca0c33937056c17e39f3786c8276ecc7388b24d3c
+-- hash: 82721c88ad9dbc8a6acce8797934631bdd1b572c4a47c9272ae497aadc5cc44e
 
 name:           flight-cmd
 version:        0.1.0
@@ -19,9 +19,10 @@ license-file:   LICENSE.md
 tested-with:    GHC == 8.2.2
 build-type:     Simple
 cabal-version:  >= 1.10
+
 extra-source-files:
     changelog.md
-    package.yaml
+    package.dhall
     README.md
 
 source-repository head
