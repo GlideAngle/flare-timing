@@ -2,15 +2,15 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 839feba7cc02bcdac6333b75e6ba6748ca75dd72ead933528ae11c7b7150ec97
+-- hash: 018d37f3e148ec81f4d3fa6fd884b10e3076a821193712ff6f6bddbe9938d0c8
 
 name:           flight-track
 version:        0.1.0
 synopsis:       Hang gliding and paragliding competition track logs.
 description:    Reading track logs for each pilot in each task of a competition.
 category:       Data
-homepage:       https://github.com/BlockScope/haskell-flight-track#readme
-bug-reports:    https://github.com/BlockScope/haskell-flight-track/issues
+homepage:       https://github.com/blockscope/flare-timing#readme
+bug-reports:    https://github.com/blockscope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
 copyright:      Phil de Joux 2017-2018
@@ -26,7 +26,8 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/BlockScope/haskell-flight-track
+  location: https://github.com/blockscope/flare-timing
+  subdir: track
 
 library
   exposed-modules:

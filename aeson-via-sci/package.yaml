@@ -3,7 +3,7 @@ version: '0.1.0'
 synopsis: JSON encoding and decoding for rationals via scientific.
 description: Lossy JSON encoding for rationals.
 category: Flight
-github: BlockScope/flare-timing
+github: blockscope/flare-timing/aeson-via-sci
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
 copyright: Phil de Joux 2017-2018

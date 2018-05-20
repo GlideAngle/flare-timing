@@ -2,15 +2,15 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 8ec25b1e5a301707bfe9c554935d0db2adfab1294bd354bbd3396839a54be869
+-- hash: a2b7d88bc2994d93409bd61b28831e4fd5a69861991b4f61b19cdf982f38e58a
 
 name:           flight-lookup
 version:        0.1.0
 synopsis:       Hang gliding and paragliding competition data access.
 description:    Lookup items for a task, for a pilot, etc.
 category:       Data
-homepage:       https://github.com/BlockScope/flare-timing#readme
-bug-reports:    https://github.com/BlockScope/flare-timing/issues
+homepage:       https://github.com/blockscope/flare-timing#readme
+bug-reports:    https://github.com/blockscope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
 copyright:      Phil de Joux 2017-2018
@@ -26,7 +26,8 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/BlockScope/flare-timing
+  location: https://github.com/blockscope/flare-timing
+  subdir: lookup
 
 library
   exposed-modules:

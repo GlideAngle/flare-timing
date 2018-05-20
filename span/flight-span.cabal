@@ -2,15 +2,15 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 2529a9ad903184f16567737168ad004beb71cb77db210b06699beefdd438a127
+-- hash: 8b6ca541e38466f9d73b92aacdae37483bd9882523f86d9c601acb6c81ef41d7
 
 name:           flight-span
 version:        0.1.0
 synopsis:       How to measure a distance that spans two points.
 description:    How to measure a distance that spans tow points.
 category:       Data
-homepage:       https://github.com/BlockScope/haskell-flight-mask#readme
-bug-reports:    https://github.com/BlockScope/haskell-flight-mask/issues
+homepage:       https://github.com/blockscope/flare-timing#readme
+bug-reports:    https://github.com/blockscope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
 copyright:      Phil de Joux 2017-2018
@@ -26,7 +26,8 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/BlockScope/haskell-flight-mask
+  location: https://github.com/blockscope/flare-timing
+  subdir: span
 
 library
   exposed-modules:

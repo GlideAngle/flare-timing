@@ -3,7 +3,7 @@ version: '0.1.0'
 synopsis: Tasty HUnit extensions for comparisons.
 description: Adds assertCompare and operators for the same.
 category: Test
-github: BlockScope/tasty-compare
+github: blockscope/flare-timing/tasty-compare
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
 copyright: Phil de Joux 2017-2018

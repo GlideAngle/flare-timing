@@ -3,7 +3,7 @@ version: '0.1.0'
 synopsis: A collection of apps and libraries for scoring hang gliding and paragliding competitions.
 description: Scoring and viewing hang gliding and paragliding competitions.
 category: Data, Parsing
-github: BlockScope/flare-timing
+github: blockscope/flare-timing/flare-timing
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
 copyright: Phil de Joux 2017-2018

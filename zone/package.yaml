@@ -3,7 +3,7 @@ version: '0.1.0'
 synopsis: Control zones to fly.
 description: Control zones for hang gliding and paragliding competitons.
 category: Flight
-github: BlockScope/flare-timing
+github: blockscope/flare-timing/zone
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
 copyright: Phil de Joux 2017-2018

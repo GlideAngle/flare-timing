@@ -3,7 +3,7 @@ version: '0.1.0'
 synopsis: Hang gliding and paragliding competition track logs.
 description: Reading track logs for each pilot in each task of a competition.
 category: Data
-github: BlockScope/haskell-flight-track
+github: blockscope/flare-timing/track
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
 copyright: Phil de Joux 2017-2018

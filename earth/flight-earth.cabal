@@ -2,15 +2,15 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 2645f53258419b4e3a3eb9e6910319f59f1e6fe13a477767321392667470db57
+-- hash: dd6d72394ac5bb98a9354e0b8218692262dd2be239db37e6504f06ca322b006d
 
 name:           flight-earth
 version:        0.1.0
 synopsis:       Distances on the WGS84 ellipsoid, the FAI sphere and the UTM projection.
 description:    Distances on the Earth for hang gliding and paragliding competitons.
 category:       Flight
-homepage:       https://github.com/BlockScope/haskell-flight-task#readme
-bug-reports:    https://github.com/BlockScope/haskell-flight-task/issues
+homepage:       https://github.com/blockscope/flare-timing#readme
+bug-reports:    https://github.com/blockscope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
 copyright:      Phil de Joux 2017-2018
@@ -26,7 +26,8 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/BlockScope/haskell-flight-task
+  location: https://github.com/blockscope/flare-timing
+  subdir: earth
 
 library
   exposed-modules:

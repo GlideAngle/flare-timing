@@ -2,15 +2,15 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 30315924080e3b380c206dd9691aa22215db85e723fdfc7e84b4f8d7e48993ce
+-- hash: 17481d864b75f0664fec00b15ba643ec91c5448f048977c82ef863491a1276cf
 
 name:           siggy-chardust
 version:        0.1.0
 synopsis:       Rounding keeping decimal places and significant digits.
 description:    Round to a certain number of decimal places or significant digits.
 category:       Data, Math
-homepage:       https://github.com/BlockScope/haskell-siggy-chardust#readme
-bug-reports:    https://github.com/BlockScope/haskell-siggy-chardust/issues
+homepage:       https://github.com/blockscope/flare-timing#readme
+bug-reports:    https://github.com/blockscope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
 copyright:      Phil de Joux 2017-2018
@@ -26,7 +26,8 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/BlockScope/haskell-siggy-chardust
+  location: https://github.com/blockscope/flare-timing
+  subdir: siggy-chardust
 
 library
   exposed-modules:

@@ -3,7 +3,7 @@ version: '0.1.0'
 synopsis: Rounding keeping decimal places and significant digits.
 description: Round to a certain number of decimal places or significant digits.
 category: Data, Math
-github: BlockScope/haskell-siggy-chardust
+github: blockscope/flare-timing/siggy-chardust
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
 copyright: Phil de Joux 2017-2018

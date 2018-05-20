@@ -2,15 +2,15 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 9cf0cddc23b0b6fb399767566ce3cc6d62550a9e3218a2eb4fb667c197ff1776
+-- hash: 62527d97d73c52baee31d2ae2140e9387328e18d565d66bf4ac4426819e6323f
 
 name:           flight-units
 version:        0.1.0
 synopsis:       Units used in hang gliding and paragliding competitions.
 description:    Unit definitions such as m, km, rad and deg.
 category:       Flight
-homepage:       https://github.com/BlockScope/haskell-flight-task#readme
-bug-reports:    https://github.com/BlockScope/haskell-flight-task/issues
+homepage:       https://github.com/blockscope/flare-timing#readme
+bug-reports:    https://github.com/blockscope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
 copyright:      Phil de Joux 2017-2018
@@ -26,7 +26,8 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/BlockScope/haskell-flight-task
+  location: https://github.com/blockscope/flare-timing
+  subdir: units
 
 library
   exposed-modules:

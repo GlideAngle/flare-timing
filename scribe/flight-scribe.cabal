@@ -2,15 +2,15 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 25d90269d17daac6b72dca0817a9d38749be3af51b60c08e71690f47b3bcedd9
+-- hash: d67377c14d612a3cf8483de3f2a732533aa2198949c09862fc9788bfc15cbd14
 
 name:           flight-scribe
 version:        0.1.0
 synopsis:       Hang gliding and paragliding competition scoring files.
 description:    Reading and writing competition scoring files.
 category:       Data
-homepage:       https://github.com/BlockScope/flare-timing#readme
-bug-reports:    https://github.com/BlockScope/flare-timing/issues
+homepage:       https://github.com/blockscope/flare-timing#readme
+bug-reports:    https://github.com/blockscope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
 copyright:      Phil de Joux 2017-2018
@@ -26,7 +26,8 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/BlockScope/flare-timing
+  location: https://github.com/blockscope/flare-timing
+  subdir: scribe
 
 library
   exposed-modules:

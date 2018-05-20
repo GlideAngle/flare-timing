@@ -2,15 +2,15 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 5801e797018bcac23c994ddfd123a90039c5fefa5acb681e8a0c5a37229c7edb
+-- hash: 5d5e318e1679a9bb030c08f89c9fbd3616359bab25944b3c54250e310e80e5aa
 
 name:           flight-task
 version:        0.1.0
 synopsis:       Tasks to fly.
 description:    Tasks for hang gliding and paragliding competitons.
 category:       Flight
-homepage:       https://github.com/BlockScope/haskell-flight-task#readme
-bug-reports:    https://github.com/BlockScope/haskell-flight-task/issues
+homepage:       https://github.com/blockscope/flare-timing#readme
+bug-reports:    https://github.com/blockscope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
 copyright:      Phil de Joux 2017-2018
@@ -26,7 +26,8 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/BlockScope/haskell-flight-task
+  location: https://github.com/blockscope/flare-timing
+  subdir: task
 
 library
   exposed-modules:

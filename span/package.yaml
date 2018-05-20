@@ -3,7 +3,7 @@ version: '0.1.0'
 synopsis: How to measure a distance that spans two points.
 description: How to measure a distance that spans tow points.
 category: Data
-github: BlockScope/haskell-flight-mask
+github: blockscope/flare-timing/span
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
 copyright: Phil de Joux 2017-2018

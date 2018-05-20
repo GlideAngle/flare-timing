@@ -2,15 +2,15 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 0801fd1a0a0f0bd8814839f0d4b62d574d306922c27c4b5fd9afc2291016c2e4
+-- hash: 79c55735a68e27b549ec469e99a049486f0ffcad3bd7f2161319406504cdf486
 
 name:           flight-fsdb
 version:        0.1.0
 synopsis:       A parser for fsdb, the database XML format of FS.
 description:    Hang gliding and paragliding competitors, tasks and results as XML.
 category:       Data, Parsing
-homepage:       https://github.com/BlockScope/haskell-flight-fsdb#readme
-bug-reports:    https://github.com/BlockScope/haskell-flight-fsdb/issues
+homepage:       https://github.com/blockscope/flare-timing#readme
+bug-reports:    https://github.com/blockscope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
 copyright:      Phil de Joux 2017-2018
@@ -26,7 +26,8 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/BlockScope/haskell-flight-fsdb
+  location: https://github.com/blockscope/flare-timing
+  subdir: fsdb
 
 library
   exposed-modules:

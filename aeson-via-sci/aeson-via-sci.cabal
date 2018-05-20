@@ -2,15 +2,15 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c55f4b9483b348543393e57ad6abeb900c45db12bda591bffd1bdc1930a71123
+-- hash: 6369d64c777ce96546ca030238e85e6ffde9117a4187fa15a65bc6751903827f
 
 name:           aeson-via-sci
 version:        0.1.0
 synopsis:       JSON encoding and decoding for rationals via scientific.
 description:    Lossy JSON encoding for rationals.
 category:       Flight
-homepage:       https://github.com/BlockScope/flare-timing#readme
-bug-reports:    https://github.com/BlockScope/flare-timing/issues
+homepage:       https://github.com/blockscope/flare-timing#readme
+bug-reports:    https://github.com/blockscope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
 copyright:      Phil de Joux 2017-2018
@@ -26,7 +26,8 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/BlockScope/flare-timing
+  location: https://github.com/blockscope/flare-timing
+  subdir: aeson-via-sci
 
 library
   exposed-modules:

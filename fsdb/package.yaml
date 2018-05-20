@@ -3,7 +3,7 @@ version: '0.1.0'
 synopsis: A parser for fsdb, the database XML format of FS.
 description: Hang gliding and paragliding competitors, tasks and results as XML.
 category: Data, Parsing
-github: BlockScope/haskell-flight-fsdb
+github: blockscope/flare-timing/fsdb
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
 copyright: Phil de Joux 2017-2018

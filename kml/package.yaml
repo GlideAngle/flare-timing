@@ -3,7 +3,7 @@ version: '0.1.0'
 synopsis: A parser for KML files.
 description: KML can be a source of flight waypoints.
 category: Data, Parsing
-github: BlockScope/haskell-flight-kml
+github: blockscope/flare-timing/kml
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
 copyright: Phil de Joux 2017-2018

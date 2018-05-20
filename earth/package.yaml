@@ -3,7 +3,7 @@ version: '0.1.0'
 synopsis: Distances on the WGS84 ellipsoid, the FAI sphere and the UTM projection.
 description: Distances on the Earth for hang gliding and paragliding competitons.
 category: Flight
-github: BlockScope/haskell-flight-task
+github: blockscope/flare-timing/earth
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
 copyright: Phil de Joux 2017-2018

@@ -2,15 +2,15 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 003f04c2704d66a26cb0c12bc95cf3044d3faadf43fbc9e513ae237dc3c2b460
+-- hash: 81a0866988fceb45d0e01e135d9f9092ee0ded3b86bf95493fee426f9ea108b2
 
 name:           aeson-via-uom
 version:        0.1.0
 synopsis:       JSON encoding and decoding for rationals via scientific.
 description:    Lossy JSON encoding for rationals.
 category:       Flight
-homepage:       https://github.com/BlockScope/flare-timing#readme
-bug-reports:    https://github.com/BlockScope/flare-timing/issues
+homepage:       https://github.com/blockscope/flare-timing#readme
+bug-reports:    https://github.com/blockscope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
 copyright:      Phil de Joux 2017-2018
@@ -26,7 +26,8 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/BlockScope/flare-timing
+  location: https://github.com/blockscope/flare-timing
+  subdir: aeson-via-uom
 
 library
   exposed-modules:

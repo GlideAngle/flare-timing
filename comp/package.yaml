@@ -3,7 +3,7 @@ version: '0.1.0'
 synopsis: Hang gliding and paragliding competition scoring inputs.
 description: Hang gliding and paragliding competitors and tasks.
 category: Data
-github: BlockScope/flare-timing
+github: blockscope/flare-timing/comp
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
 copyright: Phil de Joux 2017-2018

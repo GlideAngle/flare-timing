@@ -2,15 +2,15 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 088276c4a28ce8f5377f51170f042129d23c23e9d18216c1383d6c25e9e3ce79
+-- hash: 281ca0bb768e0266b5f89dcb3e14067422bacd6e345a4922383b12b9077aaad8
 
 name:           flight-latlng
 version:        0.1.0
 synopsis:       Latitude and longitude as used in hang gliding and paragliding competitions.
 description:    Latitude and longitude.
 category:       Flight
-homepage:       https://github.com/BlockScope/flare-timing#readme
-bug-reports:    https://github.com/BlockScope/flare-timing/issues
+homepage:       https://github.com/blockscope/flare-timing#readme
+bug-reports:    https://github.com/blockscope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
 copyright:      Phil de Joux 2017-2018
@@ -26,7 +26,8 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/BlockScope/flare-timing
+  location: https://github.com/blockscope/flare-timing
+  subdir: latlng
 
 library
   exposed-modules:

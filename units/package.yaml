@@ -3,7 +3,7 @@ version: '0.1.0'
 synopsis: Units used in hang gliding and paragliding competitions.
 description: Unit definitions such as m, km, rad and deg.
 category: Flight
-github: BlockScope/haskell-flight-task
+github: blockscope/flare-timing/units
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
 copyright: Phil de Joux 2017-2018

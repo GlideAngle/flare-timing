@@ -3,7 +3,7 @@ version: '0.1.0'
 synopsis: Track logs masked by competition task zones.
 description: Masking tracks with zones, work out; did the pilot launch, did they make goal and how long did that take? What was distance to goal?
 category: Data
-github: BlockScope/haskell-flight-mask
+github: blockscope/flare-timing/mask
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
 copyright: Phil de Joux 2017-2018

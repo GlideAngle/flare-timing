@@ -1,11 +1,22 @@
-# This YAML file describes your package. Stack will automatically generate a
-# Cabal file when you run `stack build`. See the hpack website for help with
-# this file: <https://github.com/sol/hpack>.
+name: flight-igc
+version: '0.1.0'
+synopsis: A parser for IGC files.
+description: IGC is a waypoint file format from the International Gliding Commission of FAI. This haskell library can parse B records from these files.
+category: Data, Parsing
+github: blockscope/flare-timing/igc
+author: Phil de Joux
+maintainer: phil.dejoux@blockscope.com
+copyright: Phil de Joux 2017-2018
+license: MPL-2.0
+license-file: LICENSE.md
+tested-with: GHC == 8.2.2
 extra-source-files:
 - package.yaml
 - changelog.md
 - README.md
+
 ghc-options: -Wall
+
 library:
   dependencies:
   - base >=4.5 && <5
@@ -13,17 +24,7 @@ library:
   source-dirs: library
   exposed-modules:
   - Flight.Igc
-author: Phil de Joux
-maintainer: phil.dejoux@blockscope.com
-copyright: Phil de Joux 2017-2018
-name: flight-igc 
-synopsis: A parser for IGC files.
-description: IGC is a waypoint file format from the International Gliding Commission of FAI. This haskell library can parse B records from these files.
-category: Data, Parsing
-license: MPL-2.0
-license-file: LICENSE.md
-tested-with: GHC == 8.2.2
-github: BlockScope/haskell-flight-igc
+
 tests:
   hlint:
     dependencies:
@@ -36,4 +37,3 @@ tests:
     - -with-rtsopts=-N
     main: HLint.hs
     source-dirs: test-suite
-version: '0.1.0'

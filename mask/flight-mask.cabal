@@ -2,15 +2,15 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 399bd4e8296092e1754f62cd4108a9443315b6e6f46c711bb9cc2c2f7aa9a23a
+-- hash: 80833a2ccab7b3df4951f9c6a11f094d739a0a09eb90d3cd571f981d2676cc3a
 
 name:           flight-mask
 version:        0.1.0
 synopsis:       Track logs masked by competition task zones.
 description:    Masking tracks with zones, work out; did the pilot launch, did they make goal and how long did that take? What was distance to goal?
 category:       Data
-homepage:       https://github.com/BlockScope/haskell-flight-mask#readme
-bug-reports:    https://github.com/BlockScope/haskell-flight-mask/issues
+homepage:       https://github.com/blockscope/flare-timing#readme
+bug-reports:    https://github.com/blockscope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
 copyright:      Phil de Joux 2017-2018
@@ -26,7 +26,8 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/BlockScope/haskell-flight-mask
+  location: https://github.com/blockscope/flare-timing
+  subdir: mask
 
 library
   exposed-modules:

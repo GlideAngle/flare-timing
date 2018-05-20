@@ -3,7 +3,7 @@ version: '0.1.0'
 synopsis: Command line options.
 description: Command line options such as file or directory, task or pilot.
 category: Flight
-github: BlockScope/flare-timing
+github: blockscope/flare-timing/cmd
 author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
 copyright: Phil de Joux 2017-2018

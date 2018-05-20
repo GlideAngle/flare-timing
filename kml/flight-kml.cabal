@@ -2,15 +2,15 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 73247994d355cd1035b0ca538327f5e1be031614b454bb2415d071e0b8375c03
+-- hash: 34f268acd07a76102642f625507aea063f7e296a50a4d5cadb38063a3531490d
 
 name:           flight-kml
 version:        0.1.0
 synopsis:       A parser for KML files.
 description:    KML can be a source of flight waypoints.
 category:       Data, Parsing
-homepage:       https://github.com/BlockScope/haskell-flight-kml#readme
-bug-reports:    https://github.com/BlockScope/haskell-flight-kml/issues
+homepage:       https://github.com/blockscope/flare-timing#readme
+bug-reports:    https://github.com/blockscope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
 copyright:      Phil de Joux 2017-2018
@@ -26,7 +26,8 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/BlockScope/haskell-flight-kml
+  location: https://github.com/blockscope/flare-timing
+  subdir: kml
 
 library
   exposed-modules:
