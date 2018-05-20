@@ -127,7 +127,7 @@ deriveCsvViaSci :: Name -> Q [Dec]
 deriveCsvViaSci name =
     [d|
         instance ToField $a where
-            toField x = toField . ViaSci $ x
+            toField = toField . ViaSci
 
         instance FromField $a where
             parseField c = do
