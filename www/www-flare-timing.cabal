@@ -1,0 +1,76 @@
+-- This file has been generated from package.dhall by hpack version 0.27.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 274c60a7d4a6bd1c757349e45f372a8355de09eb016843cd9c9b0058a65834ed
+
+name:           www-flare-timing
+version:        0.1.0
+synopsis:       A collection of apps and libraries for scoring hang gliding and paragliding competitions.
+description:    Scoring and viewing hang gliding and paragliding competitions.
+category:       Data, Parsing
+homepage:       https://github.com/blockscope/flare-timing#readme
+bug-reports:    https://github.com/blockscope/flare-timing/issues
+author:         Phil de Joux
+maintainer:     phil.dejoux@blockscope.com
+copyright:      Phil de Joux 2017-2018
+license:        MPL-2.0
+license-file:   LICENSE.md
+tested-with:    GHC == 8.2.2
+build-type:     Simple
+cabal-version:  >= 1.10
+
+extra-source-files:
+    changelog.md
+    package.dhall
+    README.md
+
+source-repository head
+  type: git
+  location: https://github.com/blockscope/flare-timing
+  subdir: www
+
+executable comp-serve
+  main-is: Main.hs
+  other-modules:
+      Serve.Args
+      Serve.Driver
+      Serve.Options
+      Paths_www_flare_timing
+  hs-source-dirs:
+      serve
+  ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base
+    , bytestring
+    , cmdargs
+    , directory
+    , filemanip
+    , filepath
+    , flight-comp
+    , mtl
+    , raw-strings-qq
+    , servant
+    , servant-server
+    , system-filepath
+    , transformers
+    , wai
+    , wai-cors
+    , warp
+    , yaml
+  default-language: Haskell2010
+
+test-suite hlint
+  type: exitcode-stdio-1.0
+  main-is: HLint.hs
+  other-modules:
+      Paths_www_flare_timing
+  hs-source-dirs:
+      test-suite-hlint
+  ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      base
+    , flight-comp
+    , hlint
+  default-language: Haskell2010
