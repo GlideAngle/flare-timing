@@ -1,8 +1,8 @@
--- This file has been generated from package.yaml by hpack version 0.28.2.
+-- This file has been generated from package.dhall by hpack version 0.27.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 79c55735a68e27b549ec469e99a049486f0ffcad3bd7f2161319406504cdf486
+-- hash: 3c77fada738809cb831b1ff23f4f8f4f3b7af2381c6e1131fa49bc89196526d7
 
 name:           flight-fsdb
 version:        0.1.0
@@ -19,9 +19,10 @@ license-file:   LICENSE.md
 tested-with:    GHC == 8.2.2
 build-type:     Simple
 cabal-version:  >= 1.10
+
 extra-source-files:
     changelog.md
-    package.yaml
+    package.dhall
     README.md
 
 source-repository head
