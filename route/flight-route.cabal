@@ -1,8 +1,8 @@
--- This file has been generated from package.yaml by hpack version 0.28.2.
+-- This file has been generated from package.dhall by hpack version 0.27.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 7f111bb34472e78cac241b16763c2af2bb85c0569807b5cdd3c07c30aa9912c6
+-- hash: a823515f1a71ed452359cc035ea7a3de4173895e5ba2f7e0009c60eade4612d0
 
 name:           flight-route
 version:        0.1.0
@@ -19,9 +19,10 @@ license-file:   LICENSE.md
 tested-with:    GHC == 8.2.2
 build-type:     Simple
 cabal-version:  >= 1.10
+
 extra-source-files:
     changelog.md
-    package.yaml
+    package.dhall
     README.md
 
 source-repository head
