@@ -1,8 +1,8 @@
--- This file has been generated from package.yaml by hpack version 0.28.2.
+-- This file has been generated from package.dhall by hpack version 0.27.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 532ab3ed8062bea915c26218ff39482fba04fdbabc8e961c65a09769d47c83d2
+-- hash: 4295d97aa3735922f14f7c3feefb2c347415377ef21800ec9231976ea6f927be
 
 name:           flare-timing
 version:        0.1.0
@@ -19,10 +19,11 @@ license-file:   LICENSE.md
 tested-with:    GHC == 8.2.2
 build-type:     Simple
 cabal-version:  >= 1.10
+
 extra-source-files:
     changelog.md
-    package.yaml
-    readme.md
+    package.dhall
+    README.md
 
 source-repository head
   type: git
