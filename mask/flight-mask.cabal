@@ -1,8 +1,8 @@
--- This file has been generated from package.yaml by hpack version 0.28.2.
+-- This file has been generated from package.dhall by hpack version 0.27.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 80833a2ccab7b3df4951f9c6a11f094d739a0a09eb90d3cd571f981d2676cc3a
+-- hash: 9ffc2d0951377bf5f94840418633751972896249411ef6519dfebe537c7499a3
 
 name:           flight-mask
 version:        0.1.0
@@ -19,9 +19,10 @@ license-file:   LICENSE.md
 tested-with:    GHC == 8.2.2
 build-type:     Simple
 cabal-version:  >= 1.10
+
 extra-source-files:
     changelog.md
-    package.yaml
+    package.dhall
     README.md
 
 source-repository head
