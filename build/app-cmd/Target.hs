@@ -5,6 +5,7 @@ import Doc (buildRules, cleanRules)
 import Cmd (buildRules, cleanRules, testRules, lintRules)
 import Web (buildRules, cleanRules)
 import Nix (buildRules, nixRules, shellRules)
+import Pkg (buildRules)
 
 allWants :: [ String ]
 allWants =
@@ -15,6 +16,8 @@ allWants =
     , "stack-prod-apps"
     , "cabal-test-apps"
     , "stack-test-apps"
+    , "dhall-format"
+    , "hpack-dhall"
     ]
 
 allRules :: Rules ()
@@ -32,6 +35,7 @@ cleanRules = do
 buildRules :: Rules ()
 buildRules = do
     Doc.buildRules
+    Pkg.buildRules
     Cmd.buildRules
     Web.buildRules
     Nix.buildRules
