@@ -1,8 +1,8 @@
--- This file has been generated from package.yaml by hpack version 0.28.2.
+-- This file has been generated from package.dhall by hpack version 0.27.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d67377c14d612a3cf8483de3f2a732533aa2198949c09862fc9788bfc15cbd14
+-- hash: e7320af6dc107d9b6265328c411b924ceeeafaa16948a66942e441cf95d63da0
 
 name:           flight-scribe
 version:        0.1.0
@@ -19,9 +19,10 @@ license-file:   LICENSE.md
 tested-with:    GHC == 8.2.2
 build-type:     Simple
 cabal-version:  >= 1.10
+
 extra-source-files:
     changelog.md
-    package.yaml
+    package.dhall
     README.md
 
 source-repository head
