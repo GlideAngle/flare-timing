@@ -33,27 +33,40 @@ As we're depending on some git packages, draw these down using
     flare-timing> stack exec stack2cabal -- .
     flare-timing> cabal new-build all
     
-The following library packages are included in this repository;
+## Library Packages
 
+For handling decimal places and significant digits;
 * [`aeson-via-sci`](aeson-via-sci)
 * [`aeson-via-uom`](aeson-via-uom)
-* [`flight-cmd`](cmd)
-* [`flight-comp`](comp)
+* [`siggy-chardust`](siggy-chardust)
+
+Units, latitudes, longitudes and distances on Earth;
+* [`flight-units`](units)
 * [`flight-earth`](earth)
+* [`flight-latlng`](latlng)
+
+Parsing input file formats;
 * [`flight-fsdb`](fsdb)
-* [`flight-gap`](gap)
 * [`flight-igc`](igc)
 * [`flight-kml`](kml)
-* [`flight-latlng`](latlng)
+
+Command line inputs;
+* [`flight-cmd`](cmd)
+* [`flight-span`](span)
+
+The competition and scoring;
+* [`flight-comp`](comp)
+* [`flight-gap`](gap)
 * [`flight-lookup`](lookup)
 * [`flight-mask`](mask)
-* [`flight-route`](route)
-* [`flight-scribe`](scribe)
-* [`siggy-chardust`](siggy-chardust)
-* [`flight-span`](span)
 * [`flight-task`](task)
-* [`tasty-compare`](tasty-compare)
+* [`flight-route`](route)
+
+To do with files read from and written to during scoring;
+* [`flight-scribe`](scribe)
 * [`flight-track`](track)
-* [`flight-units`](units)
+
+Testing;
+* [`tasty-compare`](tasty-compare)
 
 The command line programs for scoring are in `./flare-timing`.
