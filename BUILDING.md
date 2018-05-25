@@ -1,7 +1,7 @@
 # Building Flare Timing
 
 This mono-repo contains many packages. The subset of these that are generally
-useful are published to hackage and stackage. Others that
+useful are published to hackage and stackage.
 
 ## Building with Nix
 Each library package can be built standalone. For example, the `flight-units`
@@ -56,4 +56,4 @@ The following library packages are included in this repository;
 * [`flight-track`](track)
 * [`flight-units`](units)
 
-the command line programs for scoring are in `./flare-timing`.
+The command line programs for scoring are in `./flare-timing`.
