@@ -14,9 +14,26 @@ setup the [overlay](https://github.com/BlockScope/nix-config).
 
 ## Building with Stack
 
-The project as a whole can be built with [stack](https://docs.haskellstack.org);
+The project as a whole can be built with [`stack
+build`](https://docs.haskellstack.org) or installed with;
 
-    flare-timing> stack build
+    flare-timing> stack install
+    ...
+    Copied executables to /.../flare-timing/__shake-build:
+    - align-time
+    - build-flare-timing
+    - cross-zone
+    - discard-further
+    - extract-input
+    - gap-point
+    - land-out
+    - make-travis-yml
+    - mask-track
+    - tag-zone
+    - task-length
+    - test-fsdb-parser
+    - test-igc-parser
+    - test-kml-parser
 
 Individual packages can be built by specifying either the folder or the package
 name;
@@ -31,7 +48,21 @@ As we're depending on some git packages, draw these down using
 
     flare-timing> stack install stack2cabal
     flare-timing> stack exec stack2cabal -- .
+    ...
     flare-timing> cabal new-build all
+    cabal: Could not resolve dependencies:
+    [__0] trying: aeson-via-sci-0.1.0 (user goal)
+    [__1] trying: template-haskell-2.13.0.0/installed-2.1... (dependency of
+    aeson-via-sci)
+    [__2] next goal: uom-plugin (user goal)
+    [__2] rejecting: uom-plugin-0.2.0.1 (conflict:
+    template-haskell==2.13.0.0/installed-2.1..., uom-plugin =>
+    template-haskell>=2.9 && <2.13)
+    [__2] rejecting: uom-plugin-0.2.0.0, uom-plugin-0.1.1.0, uom-plugin-0.1.0.0
+    (constraint from user target requires ==0.2.0.1)
+    After searching the rest of the dependency tree exhaustively, these were the
+    goals I've had most trouble fulfilling: template-haskell, uom-plugin,
+    aeson-via-sci
     
 ## Library Packages
 
