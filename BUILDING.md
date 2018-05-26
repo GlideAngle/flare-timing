@@ -15,7 +15,7 @@ setup the [overlay](https://github.com/BlockScope/nix-config).
 ## Building with Stack
 
 The project as a whole can be built with [`stack
-build`](https://docs.haskellstack.org) or installed with;
+build`](https://docs.haskellstack.org) and executables installed with;
 
     flare-timing> stack install
     ...
