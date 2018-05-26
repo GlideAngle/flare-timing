@@ -34,4 +34,11 @@ Reading competition from 'Australia Forbes 2012.comp-input.yaml'
 Reading task length from 'Australia Forbes 2012.task-length.yaml'
 Reading zone tags from 'Australia Forbes 2012.tag-zone.yaml'
 Filtering times completed in 1.08 m
+
+> __shake-build/mask-track "--file=forbes-2012/Australia Forbes 2012.comp-input.yaml"
+Reading competition from 'Australia Forbes 2012.comp-input.yaml'
+Reading task length from 'Australia Forbes 2012.task-length.yaml'
+Reading flying time range from 'Australia Forbes 2012.cross-zone.yaml'
+Reading zone tags from 'Australia Forbes 2012.tag-zone.yaml'
+Masking tracks completed in 1.59 m
 ```
