@@ -28,4 +28,10 @@ Reading competition from 'Australia Forbes 2012.comp-input.yaml'
 Reading flying time range from 'Australia Forbes 2012.cross-zone.yaml'
 Reading zone tags from 'Australia Forbes 2012.tag-zone.yaml'
 Aligning times completed in 52.97 m
+
+> __shake-build/discard-further "--file=forbes-2012/Australia Forbes 2012.comp-input.yaml"
+Reading competition from 'Australia Forbes 2012.comp-input.yaml'
+Reading task length from 'Australia Forbes 2012.task-length.yaml'
+Reading zone tags from 'Australia Forbes 2012.tag-zone.yaml'
+Filtering times completed in 1.08 m
 ```
