@@ -45,4 +45,12 @@ Masking tracks completed in 1.59 m
 > __shake-build/land-out "--file=forbes-2012/Australia Forbes 2012.comp-input.yaml"
 Reading land outs from 'Australia Forbes 2012.mask-track.yaml'
 Land outs counted for distance difficulty completed in 179.71 ms
+
+> __shake-build/gap-point "--file=forbes-2012/Australia Forbes 2012.comp-input.yaml"
+Reading pilots absent from task from 'Australia Forbes 2012.comp-input.yaml'
+Reading pilots that did not fly from 'Australia Forbes 2012.cross-zone.yaml'
+Reading start and end zone tagging from 'Australia Forbes 2012.tag-zone.yaml'
+Reading masked tracks from 'Australia Forbes 2012.mask-track.yaml'
+Reading distance difficulty from 'Australia Forbes 2012.land-out.yaml'
+Tallying points completed in 1.41 s
 ```
