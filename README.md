@@ -61,7 +61,8 @@ a zone with [`tag-zone`](flare-timing/prod-apps/tag-zone).
 9. Score the competition with [`gap-point`](flare-timing/prod-apps/gap-point).  
 
 Documentation is available online at
-[flare-timing.readthedocs.io](http://flare-timing.readthedocs.io/).
+[flare-timing.readthedocs.io](http://flare-timing.readthedocs.io/) and there's
+a [worked example](EXAMPLE.md) too.
 
 ## License
 
