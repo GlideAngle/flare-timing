@@ -22,4 +22,10 @@ Tracks crossing zones completed in 1.51 m
 > __shake-build/tag-zone "--file=forbes-2012/Australia Forbes 2012.cross-zone.yaml"
 Reading zone crossings from 'Australia Forbes 2012.cross-zone.yaml'
 Tagging zones completed in 1.07 s
+
+> __shake-build/align-time "--file=forbes-2012/Australia Forbes 2012.comp-input.yaml"
+Reading competition from 'Australia Forbes 2012.comp-input.yaml'
+Reading flying time range from 'Australia Forbes 2012.cross-zone.yaml'
+Reading zone tags from 'Australia Forbes 2012.tag-zone.yaml'
+Aligning times completed in 52.97 m
 ```
