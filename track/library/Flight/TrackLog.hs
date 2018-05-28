@@ -24,6 +24,7 @@ import Data.Time.Clock (UTCTime(..), diffUTCTime, secondsToDiffTime)
 import Data.Time.Calendar
 import Data.Bifunctor (bimap)
 import Data.Maybe (catMaybes, listToMaybe)
+import Data.Char (toLower)
 import Control.Monad.Except (ExceptT(..), runExceptT, lift)
 import System.Directory (doesFileExist, doesDirectoryExist)
 import System.FilePath
@@ -74,7 +75,7 @@ pilotTrack f (PilotTrackLogFile p (Just (TrackLogFile file))) = do
                             contents <- readFile file
 
                             kml :: Either String K.MarkedFixes
-                                <- case takeExtension file of
+                                <- case toLower <$> takeExtension file of
                                       ".kml" ->
                                           K.parse contents
 
