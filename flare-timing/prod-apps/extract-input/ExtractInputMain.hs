@@ -2,8 +2,6 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE NamedFieldPuns #-}
 
-module ExtractInputDriver (driverMain) where
-
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
 import Formatting ((%), fprint)
@@ -37,8 +35,8 @@ import Flight.Comp
 import Flight.Scribe (writeComp)
 import ExtractInputOptions (CmdOptions(..), mkOptions)
 
-driverMain :: IO ()
-driverMain = do
+main :: IO ()
+main = do
     name <- getProgName
     options <- cmdArgs $ mkOptions name
     err <- checkPaths options

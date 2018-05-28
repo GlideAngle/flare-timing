@@ -19,8 +19,6 @@
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module MaskTrackDriver (driverMain) where
-
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
 import Data.Maybe (fromMaybe, catMaybes)
@@ -102,8 +100,8 @@ import Flight.Span.Math (Math(..))
 import MaskTrackOptions (description)
 import Stats (FlightStats(..), DashPathInputs(..), nullStats)
     
-driverMain :: IO ()
-driverMain = do
+main :: IO ()
+main = do
     name <- getProgName
     options <- cmdArgs $ mkOptions (ProgramName name) description Nothing
     err <- checkPaths options

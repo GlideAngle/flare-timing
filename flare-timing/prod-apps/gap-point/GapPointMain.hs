@@ -22,8 +22,6 @@
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module GapPointDriver (driverMain) where
-
 import Data.Ratio ((%))
 import Data.Maybe (fromMaybe)
 import System.Environment (getProgName)
@@ -100,8 +98,8 @@ import GapPointOptions (description)
 
 type StartEndTags = StartEnd (Maybe Fix) Fix
 
-driverMain :: IO ()
-driverMain = do
+main :: IO ()
+main = do
     name <- getProgName
     options <- cmdArgs $ mkOptions (ProgramName name) description Nothing
     err <- checkPaths options

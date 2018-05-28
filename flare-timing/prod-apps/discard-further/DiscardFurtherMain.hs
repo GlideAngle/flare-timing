@@ -17,8 +17,6 @@
 
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module DiscardFurtherDriver (driverMain) where
-
 import Data.List (zipWith4)
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
@@ -75,8 +73,8 @@ import DiscardFurtherOptions (description)
 headers :: [String]
 headers = ["leg", "tickLead", "tickRace", "distance", "area"]
 
-driverMain :: IO ()
-driverMain = do
+main :: IO ()
+main = do
     name <- getProgName
     options <- cmdArgs $ mkOptions (ProgramName name) description Nothing
     err <- checkPaths options

@@ -1,8 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module FsdbDriver (driverMain) where
-
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
 import Control.Monad (mapM_, when)
@@ -27,8 +25,8 @@ import Flight.Comp
     )
 import FsdbOptions (FsdbOptions(..), Detail(..), mkOptions)
 
-driverMain :: IO ()
-driverMain = do
+main :: IO ()
+main = do
     name <- getProgName
     options <- cmdArgs $ mkOptions name
     err <- checkPaths options

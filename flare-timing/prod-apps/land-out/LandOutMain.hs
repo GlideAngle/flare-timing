@@ -16,8 +16,6 @@
 
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
-module LandOutDriver (driverMain) where
-
 import Data.Maybe (fromMaybe)
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
@@ -56,8 +54,8 @@ import qualified Flight.Score as Gap
     (ChunkDifficulty(..), landouts, lookahead, gradeDifficulty)
 import LandOutOptions (description)
 
-driverMain :: IO ()
-driverMain = do
+main :: IO ()
+main = do
     name <- getProgName
     options <- cmdArgs $ mkOptions (ProgramName name) description Nothing
     err <- checkPaths options

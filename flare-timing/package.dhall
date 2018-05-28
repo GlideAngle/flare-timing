@@ -36,7 +36,7 @@
           , ghc-options =
               [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
           , main =
-              "Main.hs"
+              "ExtractInputMain.hs"
           , source-dirs =
               "prod-apps/extract-input"
           }
@@ -73,7 +73,7 @@
               , "-fplugin Data.UnitsOfMeasure.Plugin"
               ]
           , main =
-              "Main.hs"
+              "TaskLengthMain.hs"
           , source-dirs =
               "prod-apps/task-length"
           }
@@ -118,7 +118,7 @@
               , "-fplugin Data.UnitsOfMeasure.Plugin"
               ]
           , main =
-              "Main.hs"
+              "CrossZoneMain.hs"
           , source-dirs =
               "prod-apps/cross-zone"
           }
@@ -160,7 +160,7 @@
               , "-fplugin Data.UnitsOfMeasure.Plugin"
               ]
           , main =
-              "Main.hs"
+              "TagZoneMain.hs"
           , source-dirs =
               "prod-apps/tag-zone"
           }
@@ -208,7 +208,7 @@
               , "-fplugin Data.UnitsOfMeasure.Plugin"
               ]
           , main =
-              "Main.hs"
+              "AlignTimeMain.hs"
           , source-dirs =
               "prod-apps/align-time"
           }
@@ -256,7 +256,7 @@
               , "-fplugin Data.UnitsOfMeasure.Plugin"
               ]
           , main =
-              "Main.hs"
+              "DiscardFurtherMain.hs"
           , source-dirs =
               "prod-apps/discard-further"
           }
@@ -307,7 +307,7 @@
               , "-fplugin Data.UnitsOfMeasure.Plugin"
               ]
           , main =
-              "Main.hs"
+              "MaskTrackMain.hs"
           , source-dirs =
               "prod-apps/mask-track"
           }
@@ -349,7 +349,7 @@
               , "-fplugin Data.UnitsOfMeasure.Plugin"
               ]
           , main =
-              "Main.hs"
+              "LandOutMain.hs"
           , source-dirs =
               "prod-apps/land-out"
           }
@@ -393,7 +393,7 @@
               , "-fplugin Data.UnitsOfMeasure.Plugin"
               ]
           , main =
-              "Main.hs"
+              "GapPointMain.hs"
           , source-dirs =
               "prod-apps/gap-point"
           }
@@ -415,7 +415,7 @@
           , ghc-options =
               [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
           , main =
-              "Main.hs"
+              "FsdbMain.hs"
           , source-dirs =
               "test-apps/fsdb-parser"
           }
@@ -437,7 +437,7 @@
           , ghc-options =
               [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
           , main =
-              "Main.hs"
+              "IgcMain.hs"
           , source-dirs =
               "test-apps/igc-parser"
           }
@@ -459,7 +459,7 @@
           , ghc-options =
               [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
           , main =
-              "Main.hs"
+              "KmlMain.hs"
           , source-dirs =
               "test-apps/kml-parser"
           }

@@ -1,7 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module KmlDriver (driverMain) where
-
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
 import Control.Monad (mapM_)
@@ -12,8 +10,8 @@ import Flight.Kml (parse)
 import Flight.Comp (KmlFile(..), findKml)
 import KmlOptions (KmlOptions(..), mkOptions)
 
-driverMain :: IO ()
-driverMain = do
+main :: IO ()
+main = do
     name <- getProgName
     options <- cmdArgs $ mkOptions name
     err <- checkPaths options

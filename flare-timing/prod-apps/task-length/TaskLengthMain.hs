@@ -1,8 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module TaskLengthDriver (driverMain) where
-
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
 import Formatting ((%), fprint)
@@ -26,8 +24,8 @@ import Flight.TaskTrack.Rational (taskTracks)
 import Flight.Scribe (readComp, writeRoute)
 import TaskLengthOptions (CmdOptions(..), mkOptions)
 
-driverMain :: IO ()
-driverMain = do
+main :: IO ()
+main = do
     name <- getProgName
     options <- cmdArgs $ mkOptions name
     err <- checkPaths options

@@ -1,7 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module IgcDriver (driverMain) where
-
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
 import Control.Monad (mapM_)
@@ -12,8 +10,8 @@ import Flight.Igc (parseFromFile)
 import Flight.Comp (IgcFile(..), findIgc)
 import IgcOptions (IgcOptions(..), mkOptions)
 
-driverMain :: IO ()
-driverMain = do
+main :: IO ()
+main = do
     name <- getProgName
     options <- cmdArgs $ mkOptions name
     err <- checkPaths options

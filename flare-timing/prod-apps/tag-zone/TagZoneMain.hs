@@ -13,8 +13,6 @@
 
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
-module TagZoneDriver (driverMain) where
-
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
 import Formatting ((%), fprint)
@@ -46,8 +44,8 @@ import Flight.Track.Tag
 import Flight.Scribe (readCrossing, writeTagging)
 import TagZoneOptions (description)
 
-driverMain :: IO ()
-driverMain = do
+main :: IO ()
+main = do
     name <- getProgName
     options <- cmdArgs $ mkOptions
                             (ProgramName name)

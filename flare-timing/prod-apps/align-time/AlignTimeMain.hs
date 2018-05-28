@@ -17,8 +17,6 @@
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module AlignTimeDriver (driverMain) where
-
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
 import Prelude hiding (span)
@@ -90,8 +88,8 @@ unTaskDistance (TaskDistance d) =
 headers :: [String]
 headers = ["leg", "time", "lat", "lng", "tickLead", "tickRace", "distance"]
 
-driverMain :: IO ()
-driverMain = do
+main :: IO ()
+main = do
     name <- getProgName
     options <- cmdArgs $ mkOptions (ProgramName name) description Nothing
     err <- checkPaths options

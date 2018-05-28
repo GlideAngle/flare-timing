@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 4295d97aa3735922f14f7c3feefb2c347415377ef21800ec9231976ea6f927be
+-- hash: cfc82622b0bd9c10d07745bbd331d1923e7545c6887275ad8bd92627a9bb78ab
 
 name:           flare-timing
 version:        0.1.0
@@ -31,10 +31,9 @@ source-repository head
   subdir: flare-timing
 
 executable align-time
-  main-is: Main.hs
+  main-is: AlignTimeMain.hs
   other-modules:
-      Driver
-      Options
+      AlignTimeOptions
       Paths_flare_timing
   hs-source-dirs:
       prod-apps/align-time
@@ -76,10 +75,9 @@ executable align-time
   default-language: Haskell2010
 
 executable cross-zone
-  main-is: Main.hs
+  main-is: CrossZoneMain.hs
   other-modules:
-      Driver
-      Options
+      CrossZoneOptions
       Paths_flare_timing
   hs-source-dirs:
       prod-apps/cross-zone
@@ -118,10 +116,9 @@ executable cross-zone
   default-language: Haskell2010
 
 executable discard-further
-  main-is: Main.hs
+  main-is: DiscardFurtherMain.hs
   other-modules:
-      Driver
-      Options
+      DiscardFurtherOptions
       Paths_flare_timing
   hs-source-dirs:
       prod-apps/discard-further
@@ -163,10 +160,9 @@ executable discard-further
   default-language: Haskell2010
 
 executable extract-input
-  main-is: Main.hs
+  main-is: ExtractInputMain.hs
   other-modules:
-      Driver
-      Options
+      ExtractInputOptions
       Paths_flare_timing
   hs-source-dirs:
       prod-apps/extract-input
@@ -195,10 +191,9 @@ executable extract-input
   default-language: Haskell2010
 
 executable gap-point
-  main-is: Main.hs
+  main-is: GapPointMain.hs
   other-modules:
-      Driver
-      Options
+      GapPointOptions
       Paths_flare_timing
   hs-source-dirs:
       prod-apps/gap-point
@@ -236,10 +231,9 @@ executable gap-point
   default-language: Haskell2010
 
 executable land-out
-  main-is: Main.hs
+  main-is: LandOutMain.hs
   other-modules:
-      Driver
-      Options
+      LandOutOptions
       Paths_flare_timing
   hs-source-dirs:
       prod-apps/land-out
@@ -275,10 +269,9 @@ executable land-out
   default-language: Haskell2010
 
 executable mask-track
-  main-is: Main.hs
+  main-is: MaskTrackMain.hs
   other-modules:
-      Driver
-      Options
+      MaskTrackOptions
       Stats
       Paths_flare_timing
   hs-source-dirs:
@@ -324,10 +317,9 @@ executable mask-track
   default-language: Haskell2010
 
 executable tag-zone
-  main-is: Main.hs
+  main-is: TagZoneMain.hs
   other-modules:
-      Driver
-      Options
+      TagZoneOptions
       Paths_flare_timing
   hs-source-dirs:
       prod-apps/tag-zone
@@ -363,10 +355,9 @@ executable tag-zone
   default-language: Haskell2010
 
 executable task-length
-  main-is: Main.hs
+  main-is: TaskLengthMain.hs
   other-modules:
-      Driver
-      Options
+      TaskLengthOptions
       Paths_flare_timing
   hs-source-dirs:
       prod-apps/task-length
@@ -397,10 +388,9 @@ executable task-length
   default-language: Haskell2010
 
 executable test-fsdb-parser
-  main-is: Main.hs
+  main-is: FsdbMain.hs
   other-modules:
-      Driver
-      Options
+      FsdbOptions
       Paths_flare_timing
   hs-source-dirs:
       test-apps/fsdb-parser
@@ -421,10 +411,9 @@ executable test-fsdb-parser
   default-language: Haskell2010
 
 executable test-igc-parser
-  main-is: Main.hs
+  main-is: IgcMain.hs
   other-modules:
-      Driver
-      Options
+      IgcOptions
       Paths_flare_timing
   hs-source-dirs:
       test-apps/igc-parser
@@ -445,10 +434,9 @@ executable test-igc-parser
   default-language: Haskell2010
 
 executable test-kml-parser
-  main-is: Main.hs
+  main-is: KmlMain.hs
   other-modules:
-      Driver
-      Options
+      KmlOptions
       Paths_flare_timing
   hs-source-dirs:
       test-apps/kml-parser
