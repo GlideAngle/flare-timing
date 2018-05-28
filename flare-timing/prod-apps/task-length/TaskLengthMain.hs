@@ -10,14 +10,16 @@ import Control.Monad (mapM_)
 import Control.Monad.Except (runExceptT)
 import System.FilePath (takeFileName)
 
-import Flight.Cmd.Paths (checkPaths)
+import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Units ()
 import Flight.Comp
-    ( CompSettings(tasks)
+    ( FileType(CompInput)
+    , CompSettings(tasks)
     , Task(zones)
     , CompInputFile(..)
     , compToTaskLength
     , findCompInput
+    , ensureExt
     )
 import Flight.Route (TaskRoute(..))
 import Flight.TaskTrack.Rational (taskTracks)
@@ -28,7 +30,10 @@ main :: IO ()
 main = do
     name <- getProgName
     options <- cmdArgs $ mkOptions name
-    err <- checkPaths options
+
+    let lf = LenientFile {coerceFile = ensureExt CompInput}
+    err <- checkPaths lf options
+
     maybe (drive options) putStrLn err
 
 drive :: CmdOptions -> IO ()

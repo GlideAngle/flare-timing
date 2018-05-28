@@ -25,17 +25,19 @@ import Control.Monad (mapM_)
 import Control.Monad.Except (runExceptT)
 import System.FilePath (takeFileName)
 
-import Flight.Cmd.Paths (checkPaths)
+import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options
     (CmdOptions(..), ProgramName(..), Extension(..), mkOptions)
 
 import Flight.Units ()
 import Flight.Mask (tagZones)
 import Flight.Comp
-    ( Pilot(..)
+    ( FileType(CrossZone)
+    , Pilot(..)
     , CrossZoneFile(..)
     , crossToTag
     , findCrossZone
+    , ensureExt
     )
 import Flight.Track.Cross
     (Crossing(..), TrackCross(..), PilotTrackCross(..), Fix(..))
@@ -52,7 +54,9 @@ main = do
                             description
                             (Just $ Extension "*.cross-zone.yaml")
 
-    err <- checkPaths options
+    let lf = LenientFile {coerceFile = ensureExt CrossZone}
+    err <- checkPaths lf options
+
     maybe (drive options) putStrLn err
 
 drive :: CmdOptions -> IO ()

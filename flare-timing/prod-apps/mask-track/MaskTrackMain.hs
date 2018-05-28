@@ -39,7 +39,8 @@ import System.FilePath (takeFileName)
 
 import qualified Flight.Comp as Cmp (Nominal(..))
 import Flight.Comp
-    ( CompInputFile(..)
+    ( FileType(CompInput)
+    , CompInputFile(..)
     , TaskLengthFile(..)
     , CrossZoneFile(..)
     , TagZoneFile(..)
@@ -55,6 +56,7 @@ import Flight.Comp
     , crossToTag
     , findCompInput
     , speedSectionToLeg
+    , ensureExt
     )
 import Flight.Distance (TaskDistance(..), unTaskDistance)
 import Flight.Units ()
@@ -74,7 +76,7 @@ import Flight.Track.Mask (Masking(..))
 import Flight.Track.Speed (TrackSpeed(..))
 import Flight.Kml (MarkedFixes(..))
 import Data.Number.RoundingFunctions (dpRound)
-import Flight.Cmd.Paths (checkPaths)
+import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (CmdOptions(..), ProgramName(..), mkOptions)
 import Flight.Lookup.Cross (FlyingLookup(..), crossFlying)
 import qualified Flight.Lookup as Lookup
@@ -104,7 +106,10 @@ main :: IO ()
 main = do
     name <- getProgName
     options <- cmdArgs $ mkOptions (ProgramName name) description Nothing
-    err <- checkPaths options
+
+    let lf = LenientFile {coerceFile = ensureExt CompInput}
+    err <- checkPaths lf options
+
     maybe (drive options) putStrLn err
 
 unPilotDistance :: (Real a, Fractional b) => Gap.PilotDistance a -> b

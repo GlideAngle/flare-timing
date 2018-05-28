@@ -5,7 +5,7 @@ import System.Console.CmdArgs.Implicit (cmdArgs)
 import Control.Monad (mapM_)
 import System.FilePath (takeFileName)
 
-import Flight.Cmd.Paths (checkPaths)
+import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Kml (parse)
 import Flight.Comp (KmlFile(..), findKml)
 import KmlOptions (KmlOptions(..), mkOptions)
@@ -14,7 +14,10 @@ main :: IO ()
 main = do
     name <- getProgName
     options <- cmdArgs $ mkOptions name
-    err <- checkPaths options
+
+    let lf = LenientFile {coerceFile = id}
+    err <- checkPaths lf options
+
     maybe (drive options) putStrLn err
 
 drive :: KmlOptions -> IO ()

@@ -28,11 +28,12 @@ import Control.Monad.Except (ExceptT, runExceptT)
 import System.Directory (createDirectoryIfMissing)
 import System.FilePath ((</>), takeFileName)
 
-import Flight.Cmd.Paths (checkPaths)
+import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (CmdOptions(..), ProgramName(..), mkOptions)
 import qualified Flight.Comp as Cmp (openClose)
 import Flight.Comp
-    ( DiscardDir(..)
+    ( FileType(CompInput)
+    , DiscardDir(..)
     , AlignDir(..)
     , CompInputFile(..)
     , TagZoneFile(..)
@@ -58,6 +59,7 @@ import Flight.Comp
     , alignPath
     , findCompInput
     , speedSectionToLeg
+    , ensureExt
     )
 import Flight.Track.Time (LeadClose(..), LeadArrival(..), discard)
 import Flight.Track.Mask (RaceTime(..), racing)
@@ -77,7 +79,10 @@ main :: IO ()
 main = do
     name <- getProgName
     options <- cmdArgs $ mkOptions (ProgramName name) description Nothing
-    err <- checkPaths options
+
+    let lf = LenientFile {coerceFile = ensureExt CompInput}
+    err <- checkPaths lf options
+
     maybe (drive options) putStrLn err
 
 drive :: CmdOptions -> IO ()

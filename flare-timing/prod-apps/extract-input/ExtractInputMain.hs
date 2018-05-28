@@ -11,7 +11,7 @@ import Control.Monad (mapM_)
 import Control.Monad.Trans.Except (throwE)
 import Control.Monad.Except (ExceptT(..), runExceptT, lift)
 
-import Flight.Cmd.Paths (checkPaths)
+import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Fsdb
     ( parseComp
     , parseNominal
@@ -20,7 +20,8 @@ import Flight.Fsdb
     , parseTracks
     )
 import Flight.Comp
-    ( FsdbFile(..)
+    ( FileType(CompInput)
+    , FsdbFile(..)
     , FsdbXml(..)
     , CompSettings(..)
     , Comp(..)
@@ -31,6 +32,7 @@ import Flight.Comp
     , defaultNominal
     , fsdbToComp
     , findFsdb
+    , ensureExt
     )
 import Flight.Scribe (writeComp)
 import ExtractInputOptions (CmdOptions(..), mkOptions)
@@ -39,7 +41,10 @@ main :: IO ()
 main = do
     name <- getProgName
     options <- cmdArgs $ mkOptions name
-    err <- checkPaths options
+
+    let lf = LenientFile {coerceFile = ensureExt CompInput}
+    err <- checkPaths lf options
+
     maybe (drive options) putStrLn err
 
 drive :: CmdOptions -> IO ()

@@ -39,10 +39,11 @@ import System.FilePath (takeFileName)
 import Data.UnitsOfMeasure ((/:), u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import Flight.Cmd.Paths (checkPaths)
+import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (CmdOptions(..), ProgramName(..), mkOptions)
 import Flight.Comp
-    ( CompInputFile(..)
+    ( FileType(CompInput)
+    , CompInputFile(..)
     , CompSettings(..)
     , Nominal(..)
     , CrossZoneFile(..)
@@ -59,6 +60,7 @@ import Flight.Comp
     , compToLand
     , compToPoint
     , findCompInput
+    , ensureExt
     )
 import Flight.Units ()
 import Flight.Track.Cross (Crossing(..), Fix(..))
@@ -102,7 +104,10 @@ main :: IO ()
 main = do
     name <- getProgName
     options <- cmdArgs $ mkOptions (ProgramName name) description Nothing
-    err <- checkPaths options
+
+    let lf = LenientFile {coerceFile = ensureExt CompInput}
+    err <- checkPaths lf options
+
     maybe (drive options) putStrLn err
 
 drive :: CmdOptions -> IO ()

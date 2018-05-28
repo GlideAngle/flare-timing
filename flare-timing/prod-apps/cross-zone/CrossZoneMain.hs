@@ -27,16 +27,18 @@ import Control.Monad (mapM_)
 import Control.Monad.Except (ExceptT(..), runExceptT)
 import System.FilePath (takeFileName)
 
-import Flight.Cmd.Paths (checkPaths)
+import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (CmdOptions(..), ProgramName(..), mkOptions)
 import Flight.Comp
-    ( CompInputFile(..)
+    ( FileType(CrossZone)
+    , CompInputFile(..)
     , CompSettings(..)
     , Pilot(..)
     , TrackFileFail(..)
     , IxTask(..)
     , compToCross
     , findCompInput
+    , ensureExt
     )
 import Flight.Units ()
 import Flight.Track.Cross
@@ -72,7 +74,10 @@ main :: IO ()
 main = do
     name <- getProgName
     options <- cmdArgs $ mkOptions (ProgramName name) description Nothing
-    err <- checkPaths options
+
+    let lf = LenientFile {coerceFile = ensureExt CrossZone}
+    err <- checkPaths lf options
+
     maybe (drive options) putStrLn err
 
 drive :: CmdOptions -> IO ()

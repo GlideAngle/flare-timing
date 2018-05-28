@@ -6,7 +6,7 @@ import System.Console.CmdArgs.Implicit (cmdArgs)
 import Control.Monad (mapM_, when)
 import System.FilePath (takeFileName)
 
-import Flight.Cmd.Paths (checkPaths)
+import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Fsdb
     ( parseComp
     , parseNominal
@@ -29,7 +29,10 @@ main :: IO ()
 main = do
     name <- getProgName
     options <- cmdArgs $ mkOptions name
-    err <- checkPaths options
+
+    let lf = LenientFile {coerceFile = id}
+    err <- checkPaths lf options
+
     maybe (drive options) putStrLn err
 
 showTaskPilots :: [ (Int, [ Pilot ]) ] -> [ String ]
