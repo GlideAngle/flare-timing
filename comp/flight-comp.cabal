@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 9db8eaa60a71f280a461c262cc2d3a52e55b52cfaac0e08b7ff2d8e26a2eb5c5
+-- hash: afac2c58c034e1130a4159a6d076daa1c03267635b9235f7b5ad9da4d4d01909
 
 name:           flight-comp
 version:        0.1.0
@@ -70,6 +70,60 @@ library
     , path
     , scientific
     , split
+    , time
+    , unordered-containers
+    , uom-plugin
+    , vector
+  default-language: Haskell2010
+
+test-suite comp
+  type: exitcode-stdio-1.0
+  main-is: TestCompMain.hs
+  other-modules:
+      Flight.Comp
+      Flight.Path
+      Flight.Pilot
+      Flight.Track.Arrival
+      Flight.Track.Cross
+      Flight.Track.Distance
+      Flight.Track.Land
+      Flight.Track.Lead
+      Flight.Track.Mask
+      Flight.Track.Point
+      Flight.Track.Speed
+      Flight.Track.Tag
+      Flight.Track.Time
+      Paths_flight_comp
+  hs-source-dirs:
+      library
+      test-suite-comp
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      aeson
+    , aeson-via-sci
+    , base
+    , bytestring
+    , cassava
+    , containers
+    , directory
+    , filemanip
+    , filepath
+    , flight-gap
+    , flight-latlng
+    , flight-route
+    , flight-units
+    , flight-zone
+    , hlint
+    , lens
+    , mtl
+    , path
+    , scientific
+    , smallcheck
+    , split
+    , tasty
+    , tasty-hunit
+    , tasty-quickcheck
+    , tasty-smallcheck
     , time
     , unordered-containers
     , uom-plugin

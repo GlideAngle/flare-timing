@@ -88,5 +88,44 @@
           , source-dirs =
               [ "library", "test-suite-hlint" ]
           }
+      , comp =
+          { dependencies =
+              [ "base"
+              , "hlint"
+              , "split"
+              , "path"
+              , "aeson"
+              , "scientific"
+              , "containers"
+              , "unordered-containers"
+              , "time"
+              , "cassava"
+              , "bytestring"
+              , "directory"
+              , "filepath"
+              , "filemanip"
+              , "lens"
+              , "mtl"
+              , "uom-plugin"
+              , "vector"
+              , "aeson-via-sci"
+              , "flight-units"
+              , "flight-latlng"
+              , "flight-zone"
+              , "flight-route"
+              , "flight-gap"
+              , "tasty"
+              , "tasty-hunit"
+              , "tasty-quickcheck"
+              , "tasty-smallcheck"
+              , "smallcheck"
+              ]
+          , ghc-options =
+              [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
+          , main =
+              "TestCompMain.hs"
+          , source-dirs =
+              [ "library", "test-suite-comp" ]
+          }
       }
   }
