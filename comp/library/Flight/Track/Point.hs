@@ -46,7 +46,6 @@ import Flight.Score
     , PilotTime, PilotDistance, PilotVelocity
     )
 import Flight.Pilot (Pilot)
-import Flight.Track.Cross (Fix)
 
 data Velocity =
     Velocity

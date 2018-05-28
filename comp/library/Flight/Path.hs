@@ -3,7 +3,8 @@
 {-# LANGUAGE FlexibleContexts #-}
 
 module Flight.Path
-    ( IgcFile(..)
+    ( FileType(..)
+    , IgcFile(..)
     , KmlFile(..)
     , FsdbFile(..)
     , FsdbXml(..)
@@ -36,6 +37,7 @@ module Flight.Path
     , findCrossZone
     , findIgc
     , findKml
+    , ext
     ) where
 
 import GHC.Records
