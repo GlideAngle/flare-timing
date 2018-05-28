@@ -22,7 +22,7 @@
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module Driver (driverMain) where
+module GapPointDriver (driverMain) where
 
 import Data.Ratio ((%))
 import Data.Maybe (fromMaybe)
@@ -96,7 +96,7 @@ import Flight.Score
     , toIxChunk
     )
 import qualified Flight.Score as Gap (Validity(..), Points(..), Weights(..))
-import Options (description)
+import GapPointOptions (description)
 
 type StartEndTags = StartEnd (Maybe Fix) Fix
 

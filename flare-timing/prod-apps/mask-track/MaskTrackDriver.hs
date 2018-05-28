@@ -19,7 +19,7 @@
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module Driver (driverMain) where
+module MaskTrackDriver (driverMain) where
 
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
@@ -99,7 +99,7 @@ import Flight.Score
     , arrivalFraction, speedFraction
     )
 import Flight.Span.Math (Math(..))
-import Options (description)
+import MaskTrackOptions (description)
 import Stats (FlightStats(..), DashPathInputs(..), nullStats)
     
 driverMain :: IO ()

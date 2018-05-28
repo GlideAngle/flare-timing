@@ -1,4 +1,4 @@
-import Driver (driverMain)
+import AlignTimeDriver (driverMain)
 
 main :: IO ()
 main = driverMain

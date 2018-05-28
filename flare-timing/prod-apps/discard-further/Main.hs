@@ -1,4 +1,4 @@
-import Driver (driverMain)
+import DiscardFurtherDriver (driverMain)
 
 main :: IO ()
 main = driverMain

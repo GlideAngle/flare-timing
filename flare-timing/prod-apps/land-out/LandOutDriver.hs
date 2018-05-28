@@ -16,7 +16,7 @@
 
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
-module Driver (driverMain) where
+module LandOutDriver (driverMain) where
 
 import Data.Maybe (fromMaybe)
 import System.Environment (getProgName)
@@ -54,7 +54,7 @@ import Flight.Score
     )
 import qualified Flight.Score as Gap
     (ChunkDifficulty(..), landouts, lookahead, gradeDifficulty)
-import Options (description)
+import LandOutOptions (description)
 
 driverMain :: IO ()
 driverMain = do

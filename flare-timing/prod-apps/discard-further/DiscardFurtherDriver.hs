@@ -17,7 +17,7 @@
 
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module Driver (driverMain) where
+module DiscardFurtherDriver (driverMain) where
 
 import Data.List (zipWith4)
 import System.Environment (getProgName)
@@ -70,7 +70,7 @@ import Flight.Scribe
 import Flight.Lookup.Route (routeLength)
 import Flight.Lookup.Tag (TaskTimeLookup(..), tagTaskTime)
 import Flight.Score (Leg(..))
-import Options (description)
+import DiscardFurtherOptions (description)
 
 headers :: [String]
 headers = ["leg", "tickLead", "tickRace", "distance", "area"]

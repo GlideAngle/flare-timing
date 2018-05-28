@@ -2,7 +2,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE NamedFieldPuns #-}
 
-module Driver (driverMain) where
+module ExtractInputDriver (driverMain) where
 
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
@@ -35,7 +35,7 @@ import Flight.Comp
     , findFsdb
     )
 import Flight.Scribe (writeComp)
-import Options (CmdOptions(..), mkOptions)
+import ExtractInputOptions (CmdOptions(..), mkOptions)
 
 driverMain :: IO ()
 driverMain = do

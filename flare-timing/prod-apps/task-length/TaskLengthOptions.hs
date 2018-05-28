@@ -3,7 +3,7 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
-module Options (CmdOptions(..), mkOptions) where
+module TaskLengthOptions (CmdOptions(..), mkOptions) where
 
 import Text.RawString.QQ (r)
 import System.Console.CmdArgs.Implicit

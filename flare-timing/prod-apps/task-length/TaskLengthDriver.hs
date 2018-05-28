@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module Driver (driverMain) where
+module TaskLengthDriver (driverMain) where
 
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
@@ -24,7 +24,7 @@ import Flight.Comp
 import Flight.Route (TaskRoute(..))
 import Flight.TaskTrack.Rational (taskTracks)
 import Flight.Scribe (readComp, writeRoute)
-import Options (CmdOptions(..), mkOptions)
+import TaskLengthOptions (CmdOptions(..), mkOptions)
 
 driverMain :: IO ()
 driverMain = do

@@ -15,7 +15,7 @@
 
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
-module Driver (driverMain) where
+module CrossZoneDriver (driverMain) where
 
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
@@ -67,7 +67,7 @@ import Flight.Mask
     , nullFlying
     )
 import Flight.Scribe (writeCrossing)
-import Options (description)
+import CrossZoneOptions (description)
 import Flight.Span.Math (Math(..))
 
 driverMain :: IO ()

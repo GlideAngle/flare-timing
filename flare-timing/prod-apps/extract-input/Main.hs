@@ -1,4 +1,4 @@
-import Driver (driverMain)
+import ExtractInputDriver (driverMain)
 
 main :: IO ()
 main = driverMain

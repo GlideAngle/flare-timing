@@ -1,4 +1,4 @@
-import Driver (driverMain)
+import MaskTrackDriver (driverMain)
 
 main :: IO ()
 main = driverMain

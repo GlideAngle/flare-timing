@@ -1,6 +1,6 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 
-module Options (KmlOptions(..), mkOptions) where
+module KmlOptions (KmlOptions(..), mkOptions) where
 
 import System.Console.CmdArgs.Implicit
     ( Data

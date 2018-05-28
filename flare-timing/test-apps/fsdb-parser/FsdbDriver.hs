@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module Driver (driverMain) where
+module FsdbDriver (driverMain) where
 
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
@@ -25,7 +25,7 @@ import Flight.Comp
     , showTask
     , findFsdb
     )
-import Options (FsdbOptions(..), Detail(..), mkOptions)
+import FsdbOptions (FsdbOptions(..), Detail(..), mkOptions)
 
 driverMain :: IO ()
 driverMain = do

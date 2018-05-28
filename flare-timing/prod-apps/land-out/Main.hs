@@ -1,4 +1,4 @@
-import Driver (driverMain)
+import LandOutDriver (driverMain)
 
 main :: IO ()
 main = driverMain

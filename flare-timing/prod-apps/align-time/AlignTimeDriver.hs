@@ -17,7 +17,7 @@
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module Driver (driverMain) where
+module AlignTimeDriver (driverMain) where
 
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
@@ -76,7 +76,7 @@ import Flight.Lookup.Cross
     (FlyingLookup(..), crossFlying)
 import Flight.Lookup.Tag
     (TickLookup(..), TagLookup(..), tagTicked, tagPilotTag)
-import Options (description)
+import AlignTimeOptions (description)
 import Flight.Span.Double (zoneToCylF, spanF, csF, cutF, dppF, csegF)
 
 type Leg = Int

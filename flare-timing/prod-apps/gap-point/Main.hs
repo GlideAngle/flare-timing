@@ -1,4 +1,4 @@
-import Driver (driverMain)
+import GapPointDriver (driverMain)
 
 main :: IO ()
 main = driverMain

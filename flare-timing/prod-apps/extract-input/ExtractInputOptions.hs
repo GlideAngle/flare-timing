@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE QuasiQuotes #-}
 
-module Options (CmdOptions(..), mkOptions) where
+module ExtractInputOptions (CmdOptions(..), mkOptions) where
 
 import Text.RawString.QQ (r)
 import System.Console.CmdArgs.Implicit

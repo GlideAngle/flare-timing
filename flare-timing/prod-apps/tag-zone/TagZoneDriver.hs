@@ -13,7 +13,7 @@
 
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
-module Driver (driverMain) where
+module TagZoneDriver (driverMain) where
 
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
@@ -44,7 +44,7 @@ import Flight.Track.Cross
 import Flight.Track.Tag
     (Tagging(..), TrackTime(..), TrackTag(..), PilotTrackTag(..))
 import Flight.Scribe (readCrossing, writeTagging)
-import Options (description)
+import TagZoneOptions (description)
 
 driverMain :: IO ()
 driverMain = do

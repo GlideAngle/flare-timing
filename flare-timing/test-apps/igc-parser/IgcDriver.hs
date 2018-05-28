@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Driver (driverMain) where
+module IgcDriver (driverMain) where
 
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
@@ -8,9 +8,9 @@ import Control.Monad (mapM_)
 import System.FilePath (takeFileName)
 
 import Flight.Cmd.Paths (checkPaths)
-import Flight.Kml (parse)
-import Flight.Comp (KmlFile(..), findKml)
-import Options (KmlOptions(..), mkOptions)
+import Flight.Igc (parseFromFile)
+import Flight.Comp (IgcFile(..), findIgc)
+import IgcOptions (IgcOptions(..), mkOptions)
 
 driverMain :: IO ()
 driverMain = do
@@ -19,16 +19,14 @@ driverMain = do
     err <- checkPaths options
     maybe (drive options) putStrLn err
 
-drive :: KmlOptions -> IO ()
+drive :: IgcOptions -> IO ()
 drive o = do
-    files <- findKml o
+    files <- findIgc o
     if null files then putStrLn "Couldn't find any input files."
                   else mapM_ go files
 
-go :: KmlFile -> IO ()
-go (KmlFile path) = do
+go :: IgcFile -> IO ()
+go (IgcFile path) = do
     putStrLn $ takeFileName path
-    contents <- readFile path
-    let contents' = dropWhile (/= '<') contents
-    p <- parse contents'
+    p <- parseFromFile path
     either print print p

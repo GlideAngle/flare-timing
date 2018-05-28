@@ -1,4 +1,4 @@
-import Driver (driverMain)
+import TaskLengthDriver (driverMain)
 
 main :: IO ()
 main = driverMain

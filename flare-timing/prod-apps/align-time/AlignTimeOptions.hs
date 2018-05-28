@@ -1,6 +1,6 @@
 {-# LANGUAGE QuasiQuotes #-}
 
-module Options (description) where
+module AlignTimeOptions (description) where
 
 import Text.RawString.QQ (r)
 import Flight.Cmd.Options (Description(..))
