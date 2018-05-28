@@ -38,12 +38,15 @@ module Flight.Path
     , findIgc
     , findKml
     , ext
+    , ensureExt
     ) where
 
 import GHC.Records
 import System.Directory (doesFileExist, doesDirectoryExist)
 import System.FilePath
-    (FilePath, (</>), (<.>), replaceExtension, dropExtension, takeDirectory)
+    ( FilePath, (</>), (<.>)
+    , replaceExtensions, replaceExtension, dropExtension, takeDirectory
+    )
 import System.FilePath.Find
     ((==?), (&&?), find, always, fileType, extension)
 import qualified System.FilePath.Find as Find (FileType(..))
@@ -177,6 +180,20 @@ ext MaskTrack = ".mask-track.yaml"
 ext LandOut = ".land-out.yaml"
 ext GapPoint = ".gap-point.yaml"
 
+ensureExt :: FileType -> FilePath -> FilePath
+ensureExt Fsdb = flip replaceExtensions "fsdb"
+ensureExt Kml = flip replaceExtensions "kml"
+ensureExt Igc = flip replaceExtensions "igc"
+ensureExt CompInput = flip replaceExtensions "comp-input.yaml"
+ensureExt TaskLength = flip replaceExtensions "task-length.yaml"
+ensureExt CrossZone = flip replaceExtensions "cross-zone.yaml"
+ensureExt TagZone = flip replaceExtensions "tag-zone.yaml"
+ensureExt AlignTime = flip replaceExtensions "align-time.yaml"
+ensureExt DiscardFurther = flip replaceExtensions "discard-further.yaml"
+ensureExt MaskTrack = flip replaceExtensions "mask-track.yaml"
+ensureExt LandOut = flip replaceExtensions "land-out.yaml"
+ensureExt GapPoint = flip replaceExtensions "gap-point.yaml"
+
 findFsdb' :: FilePath -> IO [FsdbFile]
 findFsdb' dir = fmap FsdbFile <$> findFiles Fsdb dir
 
@@ -200,43 +217,44 @@ findFsdb
     :: (HasField "dir" o String , HasField "file" o String)
     => o
     -> IO [FsdbFile]
-findFsdb = findFileType findFsdb' FsdbFile
+findFsdb = findFileType Fsdb findFsdb' FsdbFile
 
 findCompInput
     :: (HasField "dir" o String , HasField "file" o String)
     => o
     -> IO [CompInputFile]
-findCompInput = findFileType findCompInput' CompInputFile
+findCompInput = findFileType CompInput findCompInput' CompInputFile
 
 findCrossZone
     :: (HasField "dir" o String , HasField "file" o String)
     => o
     -> IO [CrossZoneFile]
-findCrossZone = findFileType findCrossZone' CrossZoneFile
+findCrossZone = findFileType CrossZone findCrossZone' CrossZoneFile
 
 findIgc
     :: (HasField "dir" o String , HasField "file" o String)
     => o
     -> IO [IgcFile]
-findIgc = findFileType findIgc' IgcFile
+findIgc = findFileType Igc findIgc' IgcFile
 
 findKml
     :: (HasField "dir" o String , HasField "file" o String)
     => o
     -> IO [KmlFile]
-findKml = findFileType findKml' KmlFile
+findKml = findFileType Kml findKml' KmlFile
 
 findFileType
     :: (HasField "dir" o FilePath, HasField "file" o FilePath)
-    => (FilePath -> IO [a])
+    => FileType
+    -> (FilePath -> IO [a])
     -> (FilePath -> a)
     -> o
     -> IO [a]
-findFileType finder ctor o = do
+findFileType typ finder ctor o = do
     dfe <- doesFileExist file
     if dfe then return [ctor file] else do
         dde <- doesDirectoryExist dir
         if dde then finder dir else return []
     where
         dir = getField @"dir" o
-        file = getField @"file" o
+        file = ensureExt typ $ getField @"file" o
