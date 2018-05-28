@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c57d94fb8261cf900bab6383e1be825fb8f5c5be936e97a7e3ca7b39af72e8d4
+-- hash: e1b315ad435633aaf78a73298480b6b15b3ad79b594f6b1fed8cc537a3dfb009
 
 name:           flight-igc
 version:        0.1.0
@@ -40,7 +40,9 @@ library
   ghc-options: -Wall
   build-depends:
       base >=4.5 && <5
+    , bytestring
     , parsec
+    , utf8-string
   default-language: Haskell2010
 
 test-suite hlint
@@ -53,6 +55,8 @@ test-suite hlint
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       base
+    , bytestring
     , flight-igc
     , hlint
+    , utf8-string
   default-language: Haskell2010

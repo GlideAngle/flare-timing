@@ -19,6 +19,8 @@
           , "directory"
           , "filepath"
           , "time"
+          , "bytestring"
+          , "utf8-string"
           , "flight-comp"
           , "flight-kml"
           , "flight-igc"
@@ -39,6 +41,8 @@
               , "directory"
               , "filepath"
               , "time"
+              , "bytestring"
+              , "utf8-string"
               , "flight-comp"
               , "flight-kml"
               ]

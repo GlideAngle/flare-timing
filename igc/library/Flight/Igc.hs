@@ -31,6 +31,9 @@ module Flight.Igc
     , Second
     ) where
 
+import Prelude hiding (readFile)
+import Data.ByteString.UTF8 (toString)
+import Data.ByteString (readFile)
 import Data.List (partition)
 import Text.Parsec.Char (endOfLine, anyChar)
 import Text.ParserCombinators.Parsec
@@ -295,4 +298,6 @@ parseFromFile
     :: FilePath -- ^ An IGC file to parse.
     -> IO (Either ParseError [IgcRecord])
 parseFromFile fname =
-    runParser igcFile () fname <$> readFile fname
+    runParser igcFile () fname
+    <$> toString
+    <$> readFile fname

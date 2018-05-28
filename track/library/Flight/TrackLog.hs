@@ -19,6 +19,9 @@ module Flight.TrackLog
     , makeAbsolute
     ) where
 
+import Prelude hiding (readFile)
+import Data.ByteString.UTF8 (toString)
+import Data.ByteString (readFile)
 import Data.Ratio ((%))
 import Data.Time.Clock (UTCTime(..), diffUTCTime, secondsToDiffTime)
 import Data.Time.Calendar
@@ -72,7 +75,7 @@ pilotTrack f (PilotTrackLogFile p (Just (TrackLogFile file))) = do
                     if not dfe
                         then return . Left $ TrackLogFileExistsNot file
                         else do
-                            contents <- readFile file
+                            contents <- toString <$> readFile file
 
                             kml :: Either String K.MarkedFixes
                                 <- case toLower <$> takeExtension file of

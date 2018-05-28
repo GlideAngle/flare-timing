@@ -11,7 +11,7 @@
       "blockscope/flare-timing/igc"
   , library =
       { dependencies =
-          [ "base >=4.5 && <5", "parsec" ]
+          [ "base >=4.5 && <5", "parsec", "bytestring", "utf8-string" ]
       , source-dirs =
           "library"
       , exposed-modules =
@@ -20,7 +20,7 @@
   , tests =
       { hlint =
           { dependencies =
-              [ "base", "hlint", "flight-igc " ]
+              [ "base", "hlint", "flight-igc", "bytestring", "utf8-string" ]
           , ghc-options =
               [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
           , main =
