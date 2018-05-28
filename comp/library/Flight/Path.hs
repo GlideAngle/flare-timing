@@ -196,36 +196,42 @@ findFiles :: FileType -> FilePath -> IO [FilePath]
 findFiles typ =
     find always (fileType ==? Find.RegularFile &&? extension ==? ext typ)
 
-findFsdb :: (HasField "dir" o String , HasField "file" o String)
-         => o
-         -> IO [FsdbFile]
+findFsdb
+    :: (HasField "dir" o String , HasField "file" o String)
+    => o
+    -> IO [FsdbFile]
 findFsdb = findFileType findFsdb' FsdbFile
 
-findCompInput :: (HasField "dir" o String , HasField "file" o String)
-              => o
-              -> IO [CompInputFile]
+findCompInput
+    :: (HasField "dir" o String , HasField "file" o String)
+    => o
+    -> IO [CompInputFile]
 findCompInput = findFileType findCompInput' CompInputFile
 
-findCrossZone :: (HasField "dir" o String , HasField "file" o String)
-              => o
-              -> IO [CrossZoneFile]
+findCrossZone
+    :: (HasField "dir" o String , HasField "file" o String)
+    => o
+    -> IO [CrossZoneFile]
 findCrossZone = findFileType findCrossZone' CrossZoneFile
 
-findIgc :: (HasField "dir" o String , HasField "file" o String)
-        => o
-        -> IO [IgcFile]
+findIgc
+    :: (HasField "dir" o String , HasField "file" o String)
+    => o
+    -> IO [IgcFile]
 findIgc = findFileType findIgc' IgcFile
 
-findKml :: (HasField "dir" o String , HasField "file" o String)
-        => o
-        -> IO [KmlFile]
+findKml
+    :: (HasField "dir" o String , HasField "file" o String)
+    => o
+    -> IO [KmlFile]
 findKml = findFileType findKml' KmlFile
 
-findFileType :: (HasField "dir" o FilePath, HasField "file" o FilePath)
-             => (FilePath -> IO [a])
-             -> (FilePath -> a)
-             -> o
-             -> IO [a]
+findFileType
+    :: (HasField "dir" o FilePath, HasField "file" o FilePath)
+    => (FilePath -> IO [a])
+    -> (FilePath -> a)
+    -> o
+    -> IO [a]
 findFileType finder ctor o = do
     dfe <- doesFileExist file
     if dfe then return [ctor file] else do
