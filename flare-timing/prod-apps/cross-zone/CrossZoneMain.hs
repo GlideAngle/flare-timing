@@ -30,7 +30,7 @@ import System.FilePath (takeFileName)
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (CmdOptions(..), ProgramName(..), mkOptions)
 import Flight.Comp
-    ( FileType(CrossZone)
+    ( FileType(CompInput)
     , CompInputFile(..)
     , CompSettings(..)
     , Pilot(..)
@@ -75,7 +75,7 @@ main = do
     name <- getProgName
     options <- cmdArgs $ mkOptions (ProgramName name) description Nothing
 
-    let lf = LenientFile {coerceFile = ensureExt CrossZone}
+    let lf = LenientFile {coerceFile = ensureExt CompInput}
     err <- checkPaths lf options
 
     maybe (drive options) putStrLn err
