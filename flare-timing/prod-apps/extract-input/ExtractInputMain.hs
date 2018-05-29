@@ -20,7 +20,7 @@ import Flight.Fsdb
     , parseTracks
     )
 import Flight.Comp
-    ( FileType(CompInput)
+    ( FileType(Fsdb)
     , FsdbFile(..)
     , FsdbXml(..)
     , CompSettings(..)
@@ -42,7 +42,7 @@ main = do
     name <- getProgName
     options <- cmdArgs $ mkOptions name
 
-    let lf = LenientFile {coerceFile = ensureExt CompInput}
+    let lf = LenientFile {coerceFile = ensureExt Fsdb}
     err <- checkPaths lf options
 
     maybe (drive options) putStrLn err

@@ -23,16 +23,23 @@ checkPaths
     => LenientFile
     -> o
     -> IO (Maybe String)
-checkPaths (LenientFile {coerceFile}) o = do
+checkPaths LenientFile{coerceFile} o = do
     x <- runExceptT $ do
         when (dir == "" && file == "") (throwError "No --dir or --file argument")
 
-        dfe <- liftIO $ doesFileExist (coerceFile file)
+        dfe <- liftIO $ doesFileExist file'
         dde <- liftIO $ doesDirectoryExist dir
-        unless (dfe || dde) (throwError
-               "The --dir argument is not a directory or the --file argument is not a file")
+        unless
+            (dfe || dde)
+            (throwError . mconcat $
+                [ "The --dir argument is not a directory or the --file argument is not a file."
+                , if file /= file'
+                     then " The file checked for was '" ++ file' ++ "'."
+                     else ""
+                ])
 
     return $ either Just (const Nothing) x
     where
         dir = getField @"dir" o
         file = getField @"file" o
+        file' = coerceFile file
