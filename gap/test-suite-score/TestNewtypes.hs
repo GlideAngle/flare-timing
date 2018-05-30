@@ -14,7 +14,7 @@ import Data.List (sortBy)
 import Test.SmallCheck.Series as SC
 import Test.Tasty.QuickCheck as QC
 
-import Flight.Gap.Ratio (pattern (:%))
+import Flight.Ratio (pattern (:%))
 import Flight.Score
     ( Lw(..)
     , Aw(..)
