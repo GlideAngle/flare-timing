@@ -125,8 +125,8 @@ separated span xc@(Cylinder (Radius xR) x) yc@(Cylinder (Radius yR) y)
                 span
                 ([Point x, Point y] :: [Zone _])
 
-        (MkQuantity minR) = max xR yR
-        (MkQuantity maxR) = min xR yR
+        (MkQuantity minR) = min xR yR
+        (MkQuantity maxR) = max xR yR
 
 separated span x y =
     clearlySeparated span x y
