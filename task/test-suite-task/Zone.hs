@@ -28,8 +28,9 @@ import Data.UnitsOfMeasure ((/:), u, zero)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import qualified Data.Number.FixedFunctions as F
 
+import Flight.Earth.Sphere (earthRadius)
 import qualified Flight.Task as FS (distanceEdgeToEdge)
-import Flight.LatLng (Lat(..), Lng(..), LatLng(..), earthRadius)
+import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.LatLng.Rational (Epsilon(..), defEps)
 import Flight.Distance (TaskDistance(..), PathDistance(..), SpanLatLng)
 import Flight.Zone
@@ -39,12 +40,13 @@ import Flight.Zone
     , Bearing(..)
     , center
     )
+import Flight.Zone.Path (costSegment, distancePointToPoint)
 import Flight.Zone.Cylinder (Tolerance(..), CircumSample)
-import qualified Flight.Sphere.PointToPoint.Double as Dbl (distanceHaversine)
-import qualified Flight.Sphere.PointToPoint.Rational as Rat
-    (distanceHaversine, distancePointToPoint, costSegment)
-import qualified Flight.Sphere.Cylinder.Rational as Rat (circumSample)
-import Flight.Task (Zs(..), AngleCut(..), separatedZones)
+import qualified Flight.Earth.Sphere.PointToPoint.Double as Dbl (distanceHaversine)
+import qualified Flight.Earth.Sphere.PointToPoint.Rational as Rat (distanceHaversine)
+import qualified Flight.Earth.Sphere.Cylinder.Rational as Rat (circumSample)
+import Flight.Earth.Sphere.Separated (separatedZones)
+import Flight.Task (Zs(..), AngleCut(..))
 
 import TestNewtypes
 
@@ -131,7 +133,7 @@ disjointUnits = testGroup "Disjoint zone separation"
 emptyDistance :: TestTree
 emptyDistance = testGroup "Point-to-point distance"
     [ HU.testCase "No zones = zero point-to-point distance" $
-        edgesSum (Rat.distancePointToPoint span []) @?= (TaskDistance $ MkQuantity 0)
+        edgesSum (distancePointToPoint span []) @?= (TaskDistance $ MkQuantity 0)
     ]
 
 toDistance :: String -> [[Zone Rational]] -> TestTree
@@ -140,7 +142,7 @@ toDistance title xs =
     where
         f x =
             HU.testCase (mconcat [ "distance ", show x, " = earth radius" ]) $
-                edgesSum (Rat.distancePointToPoint span x)
+                edgesSum (distancePointToPoint span x)
                     @?= TaskDistance earthRadius
 
 ptsDistance :: [[Pt]]
@@ -325,7 +327,7 @@ distanceHaversine (HaversineTest (x, y)) =
 distancePoint :: ZonesTest -> Bool
 distancePoint (ZonesTest xs) =
     (\(PathDistance d _) -> correctPoint xs d)
-    $ Rat.distancePointToPoint span xs
+    $ distancePointToPoint span xs
 
 distanceEdge :: ZonesTest -> Bool
 distanceEdge (ZonesTest xs) =
@@ -338,8 +340,8 @@ distanceEdge (ZonesTest xs) =
         dEE =
             FS.distanceEdgeToEdge
                 span
-                Rat.distancePointToPoint
-                (Rat.costSegment span)
+                distancePointToPoint
+                (costSegment span)
                 cs
                 cut
                 mm10
@@ -356,15 +358,15 @@ distanceLess (ZonesTest xs) =
         dEE =
             FS.distanceEdgeToEdge
                 span
-                Rat.distancePointToPoint
-                (Rat.costSegment span)
+                distancePointToPoint
+                (costSegment span)
                 cs
                 cut
                 mm10
                 xs
 
         PathDistance dPoint _ =
-            Rat.distancePointToPoint span xs
+            distancePointToPoint span xs
 
 mm10 :: Tolerance Rational
 mm10 = Tolerance $ 10 % 1000

@@ -30,11 +30,12 @@ import Flight.Distance (TaskDistance(..), PathDistance(..), SpanLatLng, fromKms)
 import Flight.Zone (Bearing(..), Radius(..), Zone(..))
 import Flight.Zone.Cylinder
     (Samples(..), SampleParams(..), Tolerance(..), CircumSample, ZonePoint(..))
-import qualified Flight.Sphere.PointToPoint.Rational as Rat
-    (distanceHaversine, distancePointToPoint, costSegment)
-import qualified Flight.Sphere.Cylinder.Rational as Rat (circumSample)
+import Flight.Zone.Path (costSegment, distancePointToPoint)
+import qualified Flight.Earth.Sphere.PointToPoint.Rational as Rat (distanceHaversine)
+import qualified Flight.Earth.Sphere.Cylinder.Rational as Rat (circumSample)
 import qualified Flight.Task as FS (distanceEdgeToEdge)
-import Flight.Task (Zs(..), AngleCut(..), CostSegment, separatedZones)
+import Flight.Task (Zs(..), AngleCut(..), CostSegment)
+import Flight.Earth.Sphere.Separated (separatedZones)
 import Data.Number.RoundingFunctions (dpRound)
 
 (.>=.) :: (Show a, Show b) => a -> b -> String
@@ -166,7 +167,7 @@ zpDistance origin ZonePoint{point} =
     d
     where
         TaskDistance d =
-            edgesSum $ Rat.distancePointToPoint span [Point origin, Point point]
+            edgesSum $ distancePointToPoint span [Point origin, Point point]
 
 -- | The input pair is in degrees while the output is in radians.
 toLatLngDbl :: (Double, Double) -> LatLng Double [u| rad |]
@@ -229,7 +230,7 @@ mkPartDayUnits title zs (TaskDistance d) = testGroup title
         Flip r = dpRound 3 <$> Flip dKm
         tdR = TaskDistance (convert r :: Quantity Rational [u| m |])
 
-        td'@(TaskDistance d') = edgesSum $ Rat.distancePointToPoint span zs
+        td'@(TaskDistance d') = edgesSum $ distancePointToPoint span zs
         dKm' = convert d' :: Quantity Rational [u| km |]
         Flip r' = dpRound 3 <$> Flip dKm'
         tdR' = TaskDistance (convert r' :: Quantity Rational [u| m |])
@@ -450,7 +451,7 @@ mkDayUnits title pDay dDay' dsDay' = testGroup title
         dsDay = tdRound <$> dsDay'
 
         pp :: [Zone Rational] -> PathDistance Rational
-        pp = Rat.distancePointToPoint span
+        pp = distancePointToPoint span
 
         ee :: [Zone Rational] -> PathDistance Rational
         ee xs =
@@ -1093,10 +1094,10 @@ dsDay8 =
 
 distanceEdgeToEdge' :: [Zone Rational] -> Zs (PathDistance Rational)
 distanceEdgeToEdge' = 
-    FS.distanceEdgeToEdge span Rat.distancePointToPoint segCost cs cut mm30
+    FS.distanceEdgeToEdge span distancePointToPoint segCost cs cut mm30
 
 segCost :: CostSegment Rational
-segCost = Rat.costSegment span
+segCost = costSegment span
 
 span :: SpanLatLng Rational
 span = Rat.distanceHaversine defEps

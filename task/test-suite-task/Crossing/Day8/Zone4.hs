@@ -20,7 +20,7 @@ import Data.UnitsOfMeasure (u, unQuantity)
 
 import Flight.Units ()
 import Flight.Distance (TaskDistance(..))
-import qualified Flight.Sphere.PointToPoint.Double as Dbl (distanceHaversine)
+import qualified Flight.Earth.Sphere.PointToPoint.Double as Dbl (distanceHaversine)
 import EdgeToEdge (toLatLngDbl)
 
 --      zonesCrossNominees:
