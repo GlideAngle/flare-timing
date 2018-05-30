@@ -14,5 +14,5 @@ mkDerivation {
   ];
   homepage = "https://github.com/BlockScope/flare-timing#readme";
   description = "JSON encoding and decoding for rationals via scientific";
-  license = stdenv.lib.licenses.bsd3;
+  license = stdenv.lib.licenses.mpl20;
 }

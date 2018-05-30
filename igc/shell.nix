@@ -13,7 +13,7 @@ let
         testHaskellDepends = [ base hlint ];
         homepage = "https://github.com/BlockScope/haskell-flight-igc#readme";
         description = "A parser for IGC files";
-        license = stdenv.lib.licenses.bsd3;
+        license = stdenv.lib.licenses.mpl20;
       };
 
   haskellPackages = if compiler == "default"

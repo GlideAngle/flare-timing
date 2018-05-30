@@ -12,5 +12,5 @@ mkDerivation {
   ];
   homepage = "https://github.com/BlockScope/haskell-siggy-chardust#readme";
   description = "Rounding keeping decimal places and significant digits";
-  license = stdenv.lib.licenses.bsd3;
+  license = stdenv.lib.licenses.mpl20;
 }

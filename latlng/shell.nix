@@ -22,7 +22,7 @@ let
         ];
         homepage = "https://github.com/BlockScope/flare-timing#readme";
         description = "Latitude and longitude as used in hang gliding and paragliding competitions";
-        license = stdenv.lib.licenses.bsd3;
+        license = stdenv.lib.licenses.mpl20;
       };
 
   haskellPackages = if compiler == "default"

@@ -21,5 +21,5 @@ mkDerivation {
   testHaskellDepends = [ base hlint ];
   homepage = "https://github.com/BlockScope/flare-timing#readme";
   description = "A collection of apps and libraries for scoring hang gliding and paragliding competitions";
-  license = stdenv.lib.licenses.bsd3;
+  license = stdenv.lib.licenses.mpl20;
 }

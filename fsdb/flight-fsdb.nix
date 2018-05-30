@@ -21,5 +21,5 @@ mkDerivation {
   ];
   homepage = "https://github.com/BlockScope/haskell-flight-fsdb#readme";
   description = "A parser for fsdb, the database XML format of FS";
-  license = stdenv.lib.licenses.bsd3;
+  license = stdenv.lib.licenses.mpl20;
 }

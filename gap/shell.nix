@@ -26,7 +26,7 @@ let
         ];
         homepage = "https://github.com/BlockScope/haskell-flight-gap#readme";
         description = "GAP Scoring";
-        license = stdenv.lib.licenses.bsd3;
+        license = stdenv.lib.licenses.mpl20;
       };
 
   haskellPackages = if compiler == "default"

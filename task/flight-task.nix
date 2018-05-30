@@ -21,5 +21,5 @@ mkDerivation {
   ];
   homepage = "https://github.com/BlockScope/haskell-flight-task#readme";
   description = "Tasks to fly";
-  license = stdenv.lib.licenses.bsd3;
+  license = stdenv.lib.licenses.mpl20;
 }

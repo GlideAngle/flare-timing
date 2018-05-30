@@ -24,7 +24,7 @@ let
         ];
         homepage = "https://github.com/BlockScope/haskell-flight-task#readme";
         description = "Distances on the WGS84 ellipsoid";
-        license = stdenv.lib.licenses.bsd3;
+        license = stdenv.lib.licenses.mpl20;
       };
 
   haskellPackages = if compiler == "default"

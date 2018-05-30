@@ -22,5 +22,5 @@ mkDerivation {
   ];
   homepage = "https://github.com/BlockScope/flare-timing#readme";
   description = "Hang gliding and paragliding competition data access";
-  license = stdenv.lib.licenses.bsd3;
+  license = stdenv.lib.licenses.mpl20;
 }

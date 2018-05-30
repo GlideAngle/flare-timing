@@ -19,7 +19,7 @@ let
         ];
         homepage = "https://github.com/BlockScope/haskell-flight-task#readme";
         description = "Units used in hang gliding and paragliding competitions";
-        license = stdenv.lib.licenses.bsd3;
+        license = stdenv.lib.licenses.mpl20;
       };
 
   haskellPackages = if compiler == "default"

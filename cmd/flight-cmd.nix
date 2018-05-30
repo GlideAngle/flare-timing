@@ -16,5 +16,5 @@ mkDerivation {
   ];
   homepage = "https://github.com/BlockScope/flare-timing#readme";
   description = "Command line options";
-  license = stdenv.lib.licenses.bsd3;
+  license = stdenv.lib.licenses.mpl20;
 }

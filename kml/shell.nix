@@ -24,7 +24,7 @@ let
         ];
         homepage = "https://github.com/BlockScope/haskell-flight-kml#readme";
         description = "A parser for KML files";
-        license = stdenv.lib.licenses.bsd3;
+        license = stdenv.lib.licenses.mpl20;
       };
 
   haskellPackages = if compiler == "default"

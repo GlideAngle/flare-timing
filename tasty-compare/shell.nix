@@ -15,7 +15,7 @@ let
         testHaskellDepends = [ base call-stack hlint tasty tasty-hunit ];
         homepage = "https://github.com/BlockScope/tasty-compare#readme";
         description = "Tasty HUnit extensions for comparisons";
-        license = stdenv.lib.licenses.bsd3;
+        license = stdenv.lib.licenses.mpl20;
       };
 
   haskellPackages = if compiler == "default"

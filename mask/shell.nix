@@ -32,7 +32,7 @@ let
         ];
         homepage = "https://github.com/BlockScope/haskell-flight-mask#readme";
         description = "Track logs masked by competition task zones";
-        license = stdenv.lib.licenses.bsd3;
+        license = stdenv.lib.licenses.mpl20;
       };
 
   haskellPackages = if compiler == "default"
