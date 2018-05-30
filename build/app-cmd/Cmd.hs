@@ -68,10 +68,13 @@ pkgs =
 -- | The pairs are names of the pkg and test.
 testPkgs :: [(Pkg, Test)]
 testPkgs =
-    [ ("flight-task", "task")
-    , ("flight-fsdb", "parse")
+    [ ("siggy-chardust", "digits")
+    , ("flight-comp", "comp")
+    , ("flight-earth", "earth")
     , ("flight-gap", "score")
+    , ("flight-fsdb", "parse")
     , ("flight-kml", "parse")
+    , ("flight-task", "task")
     ] 
 
 -- | The names of the test app executables.

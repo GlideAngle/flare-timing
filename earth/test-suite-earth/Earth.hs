@@ -1,5 +1,3 @@
-module Earth (main) where
-
 import Test.Tasty (TestTree, testGroup, defaultMain)
 
 import qualified Flat.Flat as F
