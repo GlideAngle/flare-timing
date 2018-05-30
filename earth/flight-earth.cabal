@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 31e0120c73407d2f85b1331af0e8ae26f3adaff9d0047357b389029848427c79
+-- hash: 52d729d1f2d9cbda6cd0aec8a32f7e58bda8aab844ff8b7ce496e126665558c5
 
 name:           flight-earth
 version:        0.1.0
@@ -141,6 +141,7 @@ test-suite earth
       Sphere.Cylinder.Span
       Sphere.Disjoint
       Sphere.Forbes
+      Sphere.Greda
       Sphere.Meridian
       Sphere.Published
       Sphere.Span
@@ -163,6 +164,7 @@ test-suite earth
     , flight-units
     , flight-zone
     , hcoord
+    , hcoord-utm
     , hlint
     , mtl
     , numbers

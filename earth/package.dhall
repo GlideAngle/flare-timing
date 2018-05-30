@@ -91,6 +91,7 @@
               , "scientific"
               , "mtl"
               , "hcoord"
+              , "hcoord-utm"
               , "aeson-via-sci"
               , "siggy-chardust"
               , "tasty"
