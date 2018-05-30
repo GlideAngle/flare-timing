@@ -205,7 +205,6 @@ buildRule t' project (Just s) = do
     let t = tooling t'
     phony (t ++ "-" ++ project ++ "-" ++ s) $
         cmd
-            (Cwd project)
             Shell
             (cmdBuildFor t' $ project ++ ":" ++ s)
 
@@ -228,7 +227,7 @@ buildWithRules t' = do
     
     where
         t = tooling t'
-        f s = t ++ "-" ++ s
+        f s = t ++ "-flare-timing-" ++ s
 
 buildRules :: Rules ()
 buildRules = do
