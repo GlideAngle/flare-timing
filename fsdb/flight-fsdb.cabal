@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3c77fada738809cb831b1ff23f4f8f4f3b7af2381c6e1131fa49bc89196526d7
+-- hash: 1fedbb89d580a883ead4e303c11e8c714db1e66b0cfee907d37181550c07ddcb
 
 name:           flight-fsdb
 version:        0.1.0
@@ -84,6 +84,7 @@ test-suite hlint
     , base
     , containers
     , flight-comp
+    , flight-gap
     , flight-latlng
     , flight-units
     , flight-zone
@@ -95,6 +96,7 @@ test-suite hlint
     , scientific
     , split
     , time
+    , uom-plugin
   default-language: Haskell2010
 
 test-suite parse
@@ -114,14 +116,18 @@ test-suite parse
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
+    , aeson-via-sci
     , base
     , containers
     , flight-comp
+    , flight-gap
+    , flight-latlng
+    , flight-units
+    , flight-zone
     , hxt
     , hxt-xpath
-    , parsec
+    , megaparsec
     , path
-    , raw-strings-qq
     , scientific
     , smallcheck
     , split
@@ -130,4 +136,5 @@ test-suite parse
     , tasty-quickcheck
     , tasty-smallcheck
     , time
+    , uom-plugin
   default-language: Haskell2010

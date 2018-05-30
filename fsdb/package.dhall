@@ -41,21 +41,24 @@
       { hlint =
           { dependencies =
               [ "base"
+              , "split"
               , "megaparsec"
               , "hxt"
               , "path"
               , "hxt-xpath"
-              , "hlint"
               , "aeson"
               , "scientific"
               , "containers"
               , "split"
               , "time"
+              , "uom-plugin"
               , "aeson-via-sci"
               , "flight-latlng"
               , "flight-units"
               , "flight-zone"
               , "flight-comp"
+              , "flight-gap"
+              , "hlint"
               ]
           , ghc-options =
               [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
@@ -67,22 +70,28 @@
       , parse =
           { dependencies =
               [ "base"
-              , "parsec"
+              , "split"
+              , "megaparsec"
               , "hxt"
               , "path"
               , "hxt-xpath"
-              , "raw-strings-qq"
+              , "aeson"
+              , "scientific"
+              , "containers"
               , "split"
               , "time"
+              , "uom-plugin"
+              , "aeson-via-sci"
+              , "flight-latlng"
+              , "flight-units"
+              , "flight-zone"
+              , "flight-comp"
+              , "flight-gap"
               , "tasty"
               , "tasty-hunit"
               , "tasty-quickcheck"
               , "tasty-smallcheck"
               , "smallcheck"
-              , "aeson"
-              , "scientific"
-              , "containers"
-              , "flight-comp"
               ]
           , ghc-options =
               [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
