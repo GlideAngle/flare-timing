@@ -21,7 +21,7 @@
 {-|
 Module      : Flight.Track.Time
 Copyright   : (c) Block Scope Limited 2017
-License     : BSD3
+License     : MPL-2.0
 Maintainer  : phil.dejoux@blockscope.com
 Stability   : experimental
 

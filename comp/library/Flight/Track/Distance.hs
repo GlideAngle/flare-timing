@@ -3,7 +3,7 @@
 {-|
 Module      : Flight.Track.Distance
 Copyright   : (c) Block Scope Limited 2018
-License     : BSD3
+License     : MPL-2.0
 Maintainer  : phil.dejoux@blockscope.com
 Stability   : experimental
 
