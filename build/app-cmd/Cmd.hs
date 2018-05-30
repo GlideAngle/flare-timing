@@ -32,6 +32,10 @@ cmdBuildFor :: Tooling -> String -> String
 cmdBuildFor CabalTooling x = "cabal new-build " ++ x
 cmdBuildFor StackTooling x = "stack build " ++ x ++ " --copy-bins"
 
+cmdBuildTestFor :: Tooling -> String -> String
+cmdBuildTestFor CabalTooling x = "cabal new-build " ++ x
+cmdBuildTestFor StackTooling x = "stack build " ++ x ++ " --no-run-tests"
+
 type Pkg = String
 type Test = String
 
@@ -64,10 +68,10 @@ pkgs =
 -- | The pairs are names of the pkg and test.
 testPkgs :: [(Pkg, Test)]
 testPkgs =
-    [ ("task", "task")
-    , ("fsdb", "parse")
-    , ("gap", "score")
-    , ("kml", "parse")
+    [ ("flight-task", "task")
+    , ("flight-fsdb", "parse")
+    , ("flight-gap", "score")
+    , ("flight-kml", "parse")
     ] 
 
 -- | The names of the test app executables.
@@ -171,21 +175,25 @@ lintRules = do
     lintWithRules StackTooling
 
 testRule :: Tooling -> (Pkg, Test) -> Rules ()
-testRule t' (pkg, test) = do
+testRule t' x@(pkg, test) = do
     let t = tooling t'
-    phony (t ++ "-test-" ++ pkg) $
+
+    phony (t ++ buildTestName x) $
         cmd
-            (Cwd pkg)
             Shell
-            (cmdTestFor t' $ "flight-" ++ pkg ++":" ++ test)
+            (cmdBuildTestFor t' $ pkg ++ ":" ++ test)
+
+    phony (t ++ testName x) $
+        cmd
+            Shell
+            (cmdTestFor t' $ pkg ++ ":" ++ test)
 
 testWithRules :: Tooling -> Rules ()
 testWithRules t' = do
     let t = tooling t'
     _ <- sequence_ $ testRule t' <$> testPkgs
 
-    phony (t ++ "-test") $
-        need $ prefix (t ++ "-test-") . fst <$> testPkgs
+    phony (t ++ "-test") $ need $ buildTestName <$> testPkgs
 
 testRules :: Rules ()
 testRules = do
@@ -224,10 +232,18 @@ buildWithRules t' = do
     phony (t ++ "-test-apps") $ need $ f <$> testApps
     phony (t ++ "-prod-apps") $ need $ f <$> prodApps
     phony (t ++ "-www-apps") $ need $ f <$> wwwApps
+    phony (t ++ "-test-suites") $ need $ g <$> testPkgs
     
     where
         t = tooling t'
         f s = t ++ "-flare-timing-" ++ s
+        g x = t ++ buildTestName x
+
+buildTestName :: (Pkg, Test) -> String
+buildTestName (pkg, suite) = "-build-test-" ++ pkg ++ ":" ++ suite
+
+testName :: (Pkg, Test) -> String
+testName (pkg, suite) = "-test-" ++ pkg ++ ":" ++ suite
 
 buildRules :: Rules ()
 buildRules = do
