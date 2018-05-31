@@ -156,6 +156,7 @@ data Comp =
     Comp
         { civilId :: String
         , compName :: String 
+        , discipline :: String
         , location :: String 
         , from :: String 
         , to :: String 
@@ -244,7 +245,10 @@ cmp a b =
 
         -- Comp fields
         ("compName", _) -> LT
+        ("discipline", "compName") -> GT
+        ("discipline", _) -> LT
         ("location", "compName") -> GT
+        ("location", "discipline") -> GT
         ("location", _) -> LT
         ("from", "to") -> LT
         ("civilId", "utcOffset") -> LT

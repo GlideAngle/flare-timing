@@ -33,11 +33,12 @@ getComp =
     >>> deep (hasName "FsCompetition")
     >>> getAttrValue "id"
     &&& getAttrValue "name"
+    &&& getAttrValue "discipline"
     &&& getAttrValue "location"
     &&& getAttrValue "from"
     &&& getAttrValue "to"
     &&& getUtcOffset
-    >>> arr (\(i, (n, (l, (f, (t, u))))) -> Comp i n l f t <$> u)
+    >>> arr (\(i, (n, (d, (l, (f, (t, u)))))) -> Comp i n d l f t <$> u)
     where
         getUtcOffset =
             getAttrValue "utc_offset"
