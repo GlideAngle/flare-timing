@@ -63,7 +63,36 @@ As we're depending on some git packages, draw these down using
     After searching the rest of the dependency tree exhaustively, these were the
     goals I've had most trouble fulfilling: template-haskell, uom-plugin,
     aeson-via-sci
-    
+
+If the build is working with `stack` then we might be able to get it to work
+with `cabal`;
+
+    > mv cabal.project __cabal.project
+    > stack2cabal .
+    > mv cabal.project cabal.project.local
+    > mv __cabal.project cabal.project
+
+Edit `cabal.project.local` so that it looks something like;
+
+    with-compiler:
+        /Users/.../.stack/programs/x86_64-osx/ghc-8.2.2/bin/ghc
+    constraints:
+        Cabal == 2.0.1.1
+        , Only == 0.1
+        , QuickCheck == 2.10.1
+        ...
+        , void == 0.7.2
+        , yaml == 0.8.29
+
+Now let's do the build again;
+
+    > cabal new-build all
+    Build profile: -w ghc-8.2.2 -O1
+    In order, the following will be built (use -v for more details):
+    ...
+    > cabal new-build all
+    Up to date
+
 ## Library Packages
 
 For handling decimal places and significant digits;
