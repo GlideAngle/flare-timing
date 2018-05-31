@@ -2,25 +2,21 @@ module Doc (buildRules, cleanRules) where
 
 import Development.Shake
     ( Rules
-    , CmdOption(Shell, Cwd)
+    , CmdOption(Shell)
     , removeFilesAfter
     , phony
     , cmd
     , need
     )
-import Development.Shake.FilePath (FilePath)
 
 docFor :: String -> String
 docFor x =
-    "stack exec -- haddock --html --hyperlinked-source --odir=../__docs/" ++ x
+    "stack exec -- haddock --html --hyperlinked-source --odir=__docs/" ++ x
 
 cleanRules :: Rules ()
 cleanRules =
     phony "clean-docs" $
         removeFilesAfter "__docs" [ "//*" ] 
-
-root :: FilePath
-root = "flare-timing"
 
 -- NOTE: Stack doesn't build docs for executables.
 -- SEE: https://github.com/commercialhaskell/stack/issues/729
@@ -28,52 +24,88 @@ root = "flare-timing"
 buildRules :: Rules ()
 buildRules = do
     phony "docs" $
-        need [ "mask-docs"
-             , "app-serve-docs"
-             , "comp-xml-to-yaml-docs"
-             , "fsdb-docs"
-             , "igc-docs"
-             , "kml-docs"
+        need [ "extract-input-docs"
+             , "task-length-docs"
+             , "cross-zone-docs"
+             , "tag-zone-docs"
+             , "align-time-docs"
+             , "discard-further-docs"
+             , "mask-track-docs"
+             , "land-out-docs"
+             , "gap-point-docs"
+             , "fsdb-parser-docs"
+             , "igc-parser-docs"
+             , "kml-parser-docs"
              ]
 
-    phony "mask-docs" $
+    phony "extract-input-docs" $
         cmd
-            (Cwd root)
             Shell
-            (docFor "mask")
-            [ "yaml/mask/Cmd/Options.hs" ]
+            (docFor "extract-input")
+            [ "flare-timing/prod-apps/extract-input/ExtractInputOptions.hs" ]
 
-    phony "app-serve-docs" $
+    phony "task-length-docs" $
         cmd
-            (Cwd root)
             Shell
-            (docFor "app-serve")
-            [ "yaml/app-serve/Serve/Options.hs" ]
+            (docFor "task-length")
+            [ "flare-timing/prod-apps/task-length/TaskLengthOptions.hs" ]
 
-    phony "comp-xml-to-yaml-docs" $
+    phony "cross-zone-docs" $
         cmd
-            (Cwd root)
             Shell
-            (docFor "comp-xml-to-yaml")
-            [ "yaml/comp-xml-to-yaml/Cmd/Options.hs" ]
+            (docFor "cross-zone")
+            [ "flare-timing/prod-apps/cross-zone/CrossZoneOptions.hs" ]
 
-    phony "fsdb-docs" $
+    phony "tag-zone-docs" $
         cmd
-            (Cwd root)
             Shell
-            (docFor "fsdb-cmd")
-            [ "fsdb/app-cmd/Cmd/Options.hs" ]
+            (docFor "tag-zone")
+            [ "flare-timing/prod-apps/tag-zone/TagZoneOptions.hs" ]
 
-    phony "igc-docs" $
+    phony "align-time-docs" $
         cmd
-            (Cwd root)
             Shell
-            (docFor "igc-cmd")
-            [ "igc/app-cmd/Igc/Options.hs" ]
+            (docFor "align-time")
+            [ "flare-timing/prod-apps/align-time/AlignTimeOptions.hs" ]
 
-    phony "kml-docs" $
+    phony "discard-further-docs" $
         cmd
-            (Cwd root)
             Shell
-            (docFor "kml-cmd")
-            [ "kml/app-cmd/Kml/Options.hs" ]
+            (docFor "discard-further")
+            [ "flare-timing/prod-apps/discard-further/DiscardFurtherOptions.hs" ]
+
+    phony "mask-track-docs" $
+        cmd
+            Shell
+            (docFor "mask-track")
+            [ "flare-timing/prod-apps/mask-track/MaskTrackOptions.hs" ]
+
+    phony "land-out-docs" $
+        cmd
+            Shell
+            (docFor "land-out")
+            [ "flare-timing/prod-apps/land-out/LandOutOptions.hs" ]
+
+    phony "gap-point-docs" $
+        cmd
+            Shell
+            (docFor "gap-point")
+            [ "flare-timing/prod-apps/gap-point/GapPointOptions.hs" ]
+
+    phony "fsdb-parser-docs" $
+        cmd
+            Shell
+            (docFor "fsdb-parser")
+            [ "flare-timing/test-apps/fsdb-parser/FsdbOptions.hs" ]
+
+    phony "igc-parser-docs" $
+        cmd
+            Shell
+            (docFor "igc-parser")
+            [ "flare-timing/test-apps/igc-parser/IgcOptions.hs" ]
+
+    phony "kml-parser-docs" $
+        cmd
+            Shell
+            (docFor "kml-parser")
+            [ "flare-timing/test-apps/kml-parser/KmlOptions.hs" ]
