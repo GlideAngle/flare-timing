@@ -45,6 +45,7 @@ import Flight.Comp
     ( FileType(CompInput)
     , CompInputFile(..)
     , CompSettings(..)
+    , Comp(..)
     , Nominal(..)
     , CrossZoneFile(..)
     , TagZoneFile(..)
@@ -81,6 +82,7 @@ import Flight.Score
     ( MinimumDistance(..), MaximumDistance(..)
     , BestDistance(..), SumOfDistance(..), PilotDistance(..)
     , PilotsAtEss(..), PilotsPresent(..), PilotsFlying(..)
+    , Discipline(..)
     , GoalRatio(..), Lw(..), Aw(..)
     , NominalTime(..), BestTime(..)
     , Validity(..), ValidityWorking(..)
@@ -151,7 +153,8 @@ go CmdOptions{..} compFile@(CompInputFile compPath) = do
 points' :: CompSettings -> Crossing -> Tagging -> Masking -> Cmp.Landing -> Pointing
 points'
     CompSettings
-        { pilots
+        { comp =
+            Comp{discipline}
         , nominal =
             Nominal
                 { launch = lNom
@@ -161,6 +164,7 @@ points'
                 , free
                 }
         , tasks
+        , pilots
         }
     Crossing{dnf}
     Tagging{tagging}
@@ -259,8 +263,15 @@ points'
             ]
 
         dws = distanceWeight <$> grs
-        lws = leadingWeight . LwHg <$> dws
-        aws = arrivalWeight . AwHg <$> dws
+
+        lws =
+            let lw = if discipline == HangGliding then LwHg else LwPg
+            in leadingWeight . lw <$> dws
+
+        aws =
+            if discipline == HangGliding
+               then arrivalWeight . AwHg <$> dws
+               else const (arrivalWeight AwPg) <$> dws
 
         ws =
             [ Gap.Weights dw lw aw (timeWeight dw lw aw)
