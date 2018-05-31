@@ -1,9 +1,11 @@
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE DisambiguateRecordFields #-}
 
 -- WARNING: This extension needs to be enabled at the definition site of a set
@@ -29,7 +31,10 @@ module Flight.Gap.Points
 
 import Data.Ratio ((%))
 import GHC.Generics (Generic)
-import Data.Aeson (ToJSON(..), FromJSON(..))
+import Data.Aeson
+    ( ToJSON(..), FromJSON(..), Options(..)
+    , defaultOptions, genericToJSON, genericParseJSON
+    )
 
 import Flight.Gap.Points.Distance
     (DistancePoints(..), LinearPoints(..), DifficultyPoints(..))
@@ -65,7 +70,22 @@ data Pg = Pg deriving (Show)
 data Discipline
     = HangGliding
     | Paragliding
-    deriving (Eq, Ord, Show, Generic, FromJSON, ToJSON)
+    deriving (Eq, Ord, Show, Generic)
+
+disciplineOptions :: Options
+disciplineOptions =
+    defaultOptions
+        { constructorTagModifier = \case
+            "HangGliding" -> "hg"
+            "Paragliding" -> "pg"
+            x -> x
+        }
+
+instance ToJSON Discipline where
+  toJSON = genericToJSON disciplineOptions
+
+instance FromJSON Discipline where
+  parseJSON = genericParseJSON disciplineOptions
 
 data Penalty a where
     JumpedTooEarly :: MinimumDistancePoints -> Penalty Hg
