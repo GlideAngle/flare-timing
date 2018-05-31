@@ -52,6 +52,7 @@ import Flight.Score
     , Penalty(..)
     , LinearPoints(..)
     , DifficultyPoints(..)
+    , DistancePoints(..)
     , LeadingPoints(..)
     , ArrivalPoints(..)
     , TimePoints(..)
@@ -344,6 +345,7 @@ instance Monad m => SC.Serial m (PtTest Hg) where
                 Points
                     { reach = LinearPoints $ d / 2
                     , effort = DifficultyPoints $ d / 2
+                    , distance = DistancePoints d
                     , leading = LeadingPoints l
                     , time = TimePoints t
                     , arrival = ArrivalPoints a 
@@ -374,6 +376,7 @@ instance Monad m => SC.Serial m (PtTest Pg) where
                 Points
                     { reach = LinearPoints $ d / 2
                     , effort = DifficultyPoints $ d / 2
+                    , distance = DistancePoints d
                     , leading = LeadingPoints l
                     , time = TimePoints t
                     , arrival = ArrivalPoints a 
@@ -394,6 +397,7 @@ instance QC.Arbitrary PointParts where
         return . PointParts $ Points
             { reach = LinearPoints $ d / 2
             , effort = DifficultyPoints $ d / 2
+            , distance = DistancePoints d
             , leading = LeadingPoints l
             , time = TimePoints t
             , arrival = ArrivalPoints a
