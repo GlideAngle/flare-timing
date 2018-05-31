@@ -25,6 +25,7 @@ import Data.Bifunctor (bimap)
 import Text.Megaparsec ((<?>))
 
 import Flight.Comp (Comp(..), UtcOffset(..))
+import Flight.Score (Discipline(..))
 import Flight.Fsdb.Internal (prs, sci, sciToInt)
 
 getComp :: ArrowXml a => a XmlTree (Either String Comp)
@@ -38,7 +39,12 @@ getComp =
     &&& getAttrValue "from"
     &&& getAttrValue "to"
     &&& getUtcOffset
-    >>> arr (\(i, (n, (d, (l, (f, (t, u)))))) -> Comp i n d l f t <$> u)
+    >>> arr (\(i, (n, (d', (l, (f, (t, u)))))) ->
+        let d =
+                case d' of
+                    "pg" -> Paragliding
+                    _ -> HangGliding
+        in Comp i n d l f t <$> u)
     where
         getUtcOffset =
             getAttrValue "utc_offset"

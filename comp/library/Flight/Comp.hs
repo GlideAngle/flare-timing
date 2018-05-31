@@ -71,6 +71,7 @@ import Flight.Score
     , NominalDistance(..)
     , MinimumDistance(..)
     , NominalTime(..)
+    , Discipline(..)
     )
 
 -- | The time of first lead into the speed section. This won't exist if no one
@@ -152,17 +153,18 @@ data CompSettings =
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
+
 data Comp =
     Comp
         { civilId :: String
         , compName :: String 
-        , discipline :: String
+        , discipline :: Discipline
         , location :: String 
         , from :: String 
         , to :: String 
         , utcOffset :: UtcOffset
         }
-     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 data Nominal =
     Nominal

@@ -18,6 +18,7 @@ module Flight.Gap.Points
     , JumpedTheGun(..)
     , Hg
     , Pg
+    , Discipline(..)
     , Penalty(..)
     , Points(..)
     , zeroPoints
@@ -60,6 +61,11 @@ newtype NoGoal = NoGoal Bool deriving (Eq, Show)
 
 data Hg = Hg deriving (Show)
 data Pg = Pg deriving (Show)
+
+data Discipline
+    = HangGliding
+    | Paragliding
+    deriving (Eq, Ord, Show, Generic, FromJSON, ToJSON)
 
 data Penalty a where
     JumpedTooEarly :: MinimumDistancePoints -> Penalty Hg
