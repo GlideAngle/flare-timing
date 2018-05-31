@@ -102,8 +102,8 @@ For handling decimal places and significant digits;
 
 Units, latitudes, longitudes and distances on Earth;
 * [`flight-units`](units)
-* [`flight-earth`](earth)
 * [`flight-latlng`](latlng)
+* [`flight-earth`](earth)
 
 Parsing input file formats;
 * [`flight-fsdb`](fsdb)
