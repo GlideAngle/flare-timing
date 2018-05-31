@@ -9,15 +9,15 @@ import Pkg (buildRules)
 
 allWants :: [ String ]
 allWants =
-    [ "docs"
-    , "view-www"
-    , "nix"
-    , "cabal-prod-apps"
-    , "stack-prod-apps"
-    , "cabal-test-apps"
+    [ "stack-prod-apps"
     , "stack-test-apps"
-    , "dhall-format"
-    , "hpack-dhall"
+    , "stack-test-suites"
+    -- WARNING: The following targets don't currently build.
+    --, "docs"
+    --, "cabal-prod-apps"
+    --, "cabal-test-apps"
+    --, "nix"
+    --, "view-www"
     ]
 
 allRules :: Rules ()
