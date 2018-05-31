@@ -22,3 +22,4 @@ result
 **/_template/**
 **/dist-newstyle/**
 .ghc.*
+*.local
