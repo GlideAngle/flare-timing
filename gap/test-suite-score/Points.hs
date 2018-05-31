@@ -19,6 +19,7 @@ import Flight.Score
     , Penalty(..)
     , LinearPoints(..)
     , DifficultyPoints(..)
+    , DistancePoints(..)
     , LeadingPoints(..)
     , ArrivalPoints(..)
     , TimePoints(..)
@@ -40,6 +41,7 @@ tallyUnits = testGroup "Tally task points, with and without penalties"
             Points
                 { reach = LinearPoints 1
                 , effort = DifficultyPoints 1
+                , distance = DistancePoints 2
                 , leading = LeadingPoints 1
                 , arrival = ArrivalPoints 1
                 , time = TimePoints 1
@@ -52,6 +54,7 @@ tallyUnits = testGroup "Tally task points, with and without penalties"
             Points
                 { reach = LinearPoints 10
                 , effort = DifficultyPoints 10
+                , distance = DistancePoints 20
                 , leading = LeadingPoints 10
                 , arrival = ArrivalPoints 10
                 , time = TimePoints 10
@@ -64,6 +67,7 @@ tallyUnits = testGroup "Tally task points, with and without penalties"
             Points
                 { reach = LinearPoints 10
                 , effort = DifficultyPoints 10
+                , distance = DistancePoints 20
                 , leading = LeadingPoints 10
                 , arrival = ArrivalPoints 10
                 , time = TimePoints 10
@@ -76,6 +80,7 @@ tallyUnits = testGroup "Tally task points, with and without penalties"
             Points
                 { reach = LinearPoints 10
                 , effort = DifficultyPoints 10
+                , distance = DistancePoints 20
                 , leading = LeadingPoints 10
                 , arrival = ArrivalPoints 10
                 , time = TimePoints 10
