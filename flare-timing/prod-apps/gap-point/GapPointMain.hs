@@ -53,7 +53,6 @@ import Flight.Comp
     , LandOutFile(..)
     , Pilot
     , SpeedSection
-    , StartGate(..)
     , StartEnd(..)
     , Task(..)
     , compToCross
@@ -395,7 +394,6 @@ points'
               in (xs' ++ ys')
             | xs <- nigh
             | ys <- speed
-            | gs <- startGates <$> tasks
             ]
 
         speedSections :: [SpeedSection] = speedSection <$> tasks

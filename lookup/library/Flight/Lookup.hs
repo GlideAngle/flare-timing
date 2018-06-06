@@ -28,6 +28,7 @@ import Flight.Comp
     , RouteLookup(..)
     , SpeedSection
     , FlyingSection
+    , StartGate
     , StartEndMark
     , FirstStart(..)
     , FirstLead(..)
@@ -64,12 +65,13 @@ pilotTime
     :: TimeLookup
     -> MarkedFixes
     -> IxTask
+    -> [StartGate]
     -> SpeedSection
     -> Pilot
     -> Maybe (PilotTime (Quantity Double [u| h |]))
-pilotTime (TimeLookup get) mf iTask speedSection p=
+pilotTime (TimeLookup get) mf iTask startGates speedSection p =
     join
-    $ Speed.pilotTime
+    $ Speed.pilotTime startGates
     <$> join ((\f -> f iTask speedSection p mf) <$> get)
 
 ticked

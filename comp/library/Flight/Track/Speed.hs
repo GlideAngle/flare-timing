@@ -19,13 +19,14 @@ module Flight.Track.Speed
     , pilotTime
     ) where
 
+import Data.Time.Clock (UTCTime)
 import Data.Time.Clock (diffUTCTime)
 import Data.UnitsOfMeasure (u, convert, fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 
-import Flight.Comp (StartEnd(..), StartEndMark)
+import Flight.Comp (StartEnd(..), StartEndMark, StartGate(..))
 import Flight.Score (SpeedFraction(..), PilotTime(..))
 import Flight.Units ()
 
@@ -38,14 +39,23 @@ data TrackSpeed =
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 -- | Pilot time over the speed section.
-pilotTime :: StartEndMark -> Maybe (PilotTime (Quantity Double [u| h |]))
-pilotTime StartEnd{unEnd = Nothing} =
+pilotTime
+    :: [StartGate]
+    -> StartEndMark
+    -> Maybe (PilotTime (Quantity Double [u| h |]))
+pilotTime _ StartEnd{unEnd = Nothing} =
     Nothing
-pilotTime StartEnd{unStart, unEnd = Just end} =
-    Just . PilotTime $ hrs
+pilotTime gs x@StartEnd{unStart, unEnd = Just end} =
+    case gs of
+        [] -> Just . PilotTime $ hrs unStart
+        [StartGate g] -> Just . PilotTime $ hrs g
+        (StartGate g) : gs' ->
+            if unStart <= g
+               then Just . PilotTime $ hrs g
+               else pilotTime gs' x
     where
-        secs :: Quantity Double [u| s |]
-        secs = fromRational' . MkQuantity . toRational $ diffUTCTime end unStart
+        secs :: UTCTime -> Quantity Double [u| s |]
+        secs t = fromRational' . MkQuantity . toRational $ diffUTCTime end t
 
-        hrs :: Quantity Double [u| h |]
-        hrs = convert secs
+        hrs :: UTCTime -> Quantity Double [u| h |]
+        hrs = convert . secs
