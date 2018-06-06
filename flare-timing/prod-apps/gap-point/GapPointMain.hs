@@ -53,6 +53,7 @@ import Flight.Comp
     , LandOutFile(..)
     , Pilot
     , SpeedSection
+    , StartGate(..)
     , StartEnd(..)
     , Task(..)
     , compToCross
@@ -394,6 +395,7 @@ points'
               in (xs' ++ ys')
             | xs <- nigh
             | ys <- speed
+            | gs <- startGates <$> tasks
             ]
 
         speedSections :: [SpeedSection] = speedSection <$> tasks
@@ -402,9 +404,9 @@ points'
             [ ( (fmap . fmap) (startEnd . section ss)
               . (\(PilotTrackTag p tag) -> (p, zonesTag <$> tag))
               )
-              <$> gs
+              <$> ts
             | ss <- speedSections
-            | gs <- tagging
+            | ts <- tagging
             ]
 
         score :: [[(Pilot, Breakdown)]] =
