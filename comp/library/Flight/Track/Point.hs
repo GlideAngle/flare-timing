@@ -107,19 +107,21 @@ cmp a b =
         ("ss", _) -> LT
 
         ("gs", "ss") -> GT
+        ("gs", _) -> LT
 
         ("es", "ss") -> GT
         ("es", "gs") -> GT
-        
         ("es", _) -> LT
 
         ("distance", "ss") -> GT
+        ("distance", "gs") -> GT
         ("distance", "es") -> GT
 
         -- NOTE: Duplicate record fields.
         -- ("distance", _) -> LT
 
         ("elapsed", "ss") -> GT
+        ("elapsed", "gs") -> GT
         ("elapsed", "es") -> GT
         ("elapsed", "distance") -> GT
         ("elapsed", _) -> LT
