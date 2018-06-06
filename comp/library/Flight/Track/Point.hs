@@ -43,10 +43,17 @@ import Flight.Score
     , PilotTime, PilotDistance, PilotVelocity
     )
 import Flight.Pilot (Pilot)
+import Flight.Comp (StartGate)
 
 data Velocity =
     Velocity
         { ss :: Maybe UTCTime
+          -- ^ The time the pilot crossed the start and started the speed
+          -- section.
+        , gs :: Maybe StartGate
+          -- ^ The time the pilot was deemed to have started when there are
+          -- start gates. This is the opening time of the start gate that the
+          -- pilot took.
         , es :: Maybe UTCTime
         , elapsed :: Maybe (PilotTime (Quantity Double [u| h |]))
         , distance :: Maybe (PilotDistance (Quantity Double [u| km |]))
@@ -99,7 +106,11 @@ cmp a b =
         -- Velocity fields
         ("ss", _) -> LT
 
+        ("gs", "ss") -> GT
+
         ("es", "ss") -> GT
+        ("es", "gs") -> GT
+        
         ("es", _) -> LT
 
         ("distance", "ss") -> GT

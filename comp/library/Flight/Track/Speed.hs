@@ -17,6 +17,7 @@ The speed of a pilot's track.
 module Flight.Track.Speed
     ( TrackSpeed(..)
     , pilotTime
+    , startGateTaken
     ) where
 
 import Data.Time.Clock (UTCTime)
@@ -59,3 +60,18 @@ pilotTime gs x@StartEnd{unStart, unEnd = Just end} =
 
         hrs :: UTCTime -> Quantity Double [u| h |]
         hrs = convert . secs
+
+-- | The start gate the pilot took.
+startGateTaken
+    :: [StartGate]
+    -> UTCTime
+    -- ^ The time the pilot crossed the start
+    -> Maybe StartGate
+startGateTaken gs t =
+    case gs of
+        [] -> Nothing
+        [g] -> Just g
+        sg@(StartGate g) : gs' ->
+            if t <= g
+               then Just sg
+               else startGateTaken gs' t

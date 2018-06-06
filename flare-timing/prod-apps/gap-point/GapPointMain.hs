@@ -53,6 +53,7 @@ import Flight.Comp
     , LandOutFile(..)
     , Pilot
     , SpeedSection
+    , StartGate(..)
     , StartEnd(..)
     , Task(..)
     , compToCross
@@ -69,7 +70,7 @@ import Flight.Track.Tag (Tagging(..), PilotTrackTag(..), TrackTag(..))
 import Flight.Track.Distance (TrackDistance(..), Nigh)
 import Flight.Track.Lead (TrackLead(..))
 import Flight.Track.Arrival (TrackArrival(..))
-import qualified Flight.Track.Speed as Speed (TrackSpeed(..))
+import qualified Flight.Track.Speed as Speed (TrackSpeed(..), startGateTaken)
 import Flight.Track.Mask (Masking(..))
 import Flight.Track.Land (Landing(..))
 import Flight.Track.Point
@@ -409,7 +410,7 @@ points'
 
         score :: [[(Pilot, Breakdown)]] =
             [ sortOn (total . snd)
-              $ ((fmap . fmap) tally)
+              $ ((fmap . fmap) (tally gates))
               $ collate diffs linears ls as ts ds es gs
             | diffs <- difficultyDistancePoints
             | linears <- linearDistancePoints
@@ -422,6 +423,7 @@ points'
                     linearDistance
             | es <- elapsedTime
             | gs <- tags
+            | gates <- startGates <$> tasks
             ]
 
 zeroPoints :: Gap.Points
@@ -555,6 +557,7 @@ zeroVelocity :: Velocity
 zeroVelocity =
     Velocity
         { ss = Nothing
+        , gs = Nothing
         , es = Nothing
         , elapsed = Nothing
         , distance = Nothing
@@ -562,7 +565,8 @@ zeroVelocity =
         }
 
 tally
-    ::
+    :: [StartGate]
+    ->
         ( Maybe StartEndTags
         ,
             ( Maybe (PilotTime (Quantity Double [u| h |]))
@@ -574,6 +578,7 @@ tally
         )
     -> Breakdown
 tally
+    startGates
     ( g
     ,
         ( t
@@ -592,8 +597,9 @@ tally
     Breakdown
         { velocity =
             zeroVelocity
-                { ss = getTagTime unStart
-                , es = getTagTime unEnd
+                { ss = ss'
+                , gs = join $ Speed.startGateTaken startGates <$> ss'
+                , es = es'
                 , distance = d
                 , elapsed = t
                 , velocity = liftA2 mkVelocity d t
@@ -602,6 +608,8 @@ tally
         , total = TaskPoints $ r + dp + l + a + tp
         }
     where
+        ss' = getTagTime unStart
+        es' = getTagTime unEnd
         getTagTime accessor =
             (time :: Fix -> _)
             <$> (join $ fmap (accessor) g)
