@@ -571,7 +571,8 @@ zeroVelocity =
         , ssElapsed = Nothing
         , gsElapsed = Nothing
         , distance = Nothing
-        , velocity = Nothing
+        , ssVelocity = Nothing
+        , gsVelocity = Nothing
         }
 
 tally
@@ -619,7 +620,8 @@ tally
                 , distance = d
                 , ssElapsed = ssT
                 , gsElapsed = gsT
-                , velocity = liftA2 mkVelocity d gsT
+                , ssVelocity = liftA2 mkVelocity d ssT
+                , gsVelocity = liftA2 mkVelocity d gsT
                 }
         , breakdown = x
         , total = TaskPoints $ r + dp + l + a + tp

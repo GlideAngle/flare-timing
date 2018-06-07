@@ -61,7 +61,11 @@ data Velocity =
           -- ^ The elapsed time from the start gate. Always as long as
           -- @ssElapsed@.
         , distance :: Maybe (PilotDistance (Quantity Double [u| km |]))
-        , velocity :: Maybe (PilotVelocity (Quantity Double [u| km / h |]))
+          -- ^ The distance the pilot made, not exceeding goal.
+        , ssVelocity :: Maybe (PilotVelocity (Quantity Double [u| km / h |]))
+          -- ^ The velocity from the time the started the speed section.
+        , gsVelocity :: Maybe (PilotVelocity (Quantity Double [u| km / h |]))
+          -- ^ The velocity from the start gate time.
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
@@ -104,9 +108,6 @@ cmp a b =
         ("breakdown", "total") -> GT
         ("breakdown", _) -> LT
 
-        -- NOTE: Duplicate record fields.
-        -- ("velocity", _) -> GT
-
         -- Velocity fields
         ("ss", _) -> LT
 
@@ -137,7 +138,10 @@ cmp a b =
         ("gsElapsed", "ssElapsed") -> GT
         ("gsElapsed", _) -> LT
 
-        ("velocity", _) -> GT
+        ("ssVelocity", "gsVelocity") -> LT
+        ("ssVelocity", _) -> GT
+
+        ("gsVelocity", _) -> GT
 
         -- Pointing fields
         ("validityWorking", _) -> LT
