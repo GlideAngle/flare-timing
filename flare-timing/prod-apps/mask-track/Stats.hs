@@ -1,7 +1,12 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE DataKinds #-}
 
-module Stats (FlightStats(..), DashPathInputs(..), nullStats) where
+module Stats
+    ( TimeStats(..)
+    , FlightStats(..)
+    , DashPathInputs(..)
+    , nullStats
+    ) where
 
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
@@ -11,10 +16,18 @@ import Flight.Mask (RaceSections(..))
 import Flight.Comp.Distance (DashPathInputs(..))
 import Flight.Score (PilotTime(..), PositionAtEss(..))
 
+data TimeStats =
+    TimeStats
+        { ssTime :: PilotTime (Quantity Double [u| h |])
+          -- ^ The time taken from the start.
+        , gsTime :: PilotTime (Quantity Double [u| h |])
+          -- ^ The time taken from the start gate.
+        , positionAtEss :: PositionAtEss
+        }
+
 data FlightStats =
     FlightStats
-        { statTimeRank
-            :: Maybe (PilotTime (Quantity Double [u| h |]), PositionAtEss)
+        { statTimeRank :: Maybe TimeStats
         , statLand :: Maybe (TrackDistance Land)
         , statDash :: DashPathInputs
         }

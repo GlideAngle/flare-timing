@@ -173,10 +173,12 @@ points'
         { pilotsAtEss
         , bestDistance
         , sumDistance
-        , bestTime
+        , ssBestTime
+        , gsBestTime
         , lead
         , arrival
-        , speed
+        , ssSpeed
+        , gsSpeed
         , nigh
         }
     Landing
@@ -236,25 +238,26 @@ points'
                 return $ ValidityWorking lv' dv' tv'
             | lv <- snd <$> lvs
             | dv <- snd <$> dvs
-            | tv <- snd <$> tvs
+            | tv <- snd <$> tvs gsBestTime
             ]
 
         tvs =
-            [ timeValidity
-                ((\(NominalTime x) ->
-                    NominalTime (convert x :: Quantity _ [u| s |])) tNom)
-                t
-                dNom
-                d
-            | t <-
-                (fmap . fmap)
-                    (\(BestTime x) -> BestTime (convert x :: Quantity _ [u| s |]))
-                    bestTime
+            \bestTime ->
+                [ timeValidity
+                    ((\(NominalTime x) ->
+                        NominalTime (convert x :: Quantity _ [u| s |])) tNom)
+                    t
+                    dNom
+                    d
+                | t <-
+                    (fmap . fmap)
+                        (\(BestTime x) -> BestTime (convert x :: Quantity _ [u| s |]))
+                        bestTime
 
-            | d <-
-                (\(MaximumDistance x) -> BestDistance x)
-                <$> dBests
-            ]
+                | d <-
+                    (\(MaximumDistance x) -> BestDistance x)
+                    <$> dBests
+                ]
 
         grs =
             [ GoalRatio $ n % toInteger (p - d)
@@ -285,7 +288,7 @@ points'
             [ maybeTask $ Validity (taskValidity lv dv tv) lv dv tv
             | lv <- fst <$> lvs
             | dv <- fst <$> dvs
-            | tv <- fst <$> tvs
+            | tv <- fst <$> tvs gsBestTime
             | maybeTask <- maybeTasks
             ]
 
@@ -372,30 +375,32 @@ points'
             | ys <- arrival
             ]
 
-        timePoints :: [[(Pilot, TimePoints)]] =
-            [ maybe
-                []
-                (\ps' ->
-                    let xs' = (fmap . fmap) (const $ SpeedFraction 0) xs
-                        ys' = (fmap . fmap) speedFraction ys
-                    in
-                        (fmap . fmap)
-                        (applyTime ps')
-                        (xs' ++ ys')
-                )
-                ps
-            | ps <- (fmap . fmap) points allocs
-            | xs <- nigh
-            | ys <- speed
-            ]
+        timePoints :: _ -> [[(Pilot, TimePoints)]] =
+            \speed ->
+                [ maybe
+                    []
+                    (\ps' ->
+                        let xs' = (fmap . fmap) (const $ SpeedFraction 0) xs
+                            ys' = (fmap . fmap) speedFraction ys
+                        in
+                            (fmap . fmap)
+                            (applyTime ps')
+                            (xs' ++ ys')
+                    )
+                    ps
+                | ps <- (fmap . fmap) points allocs
+                | xs <- nigh
+                | ys <- speed
+                ]
 
-        elapsedTime :: [[(Pilot, Maybe (PilotTime (Quantity Double [u| h |])))]] =
-            [ let xs' = (fmap . fmap) (const Nothing) xs
-                  ys' = (fmap . fmap) (Just . Speed.time) ys
-              in (xs' ++ ys')
-            | xs <- nigh
-            | ys <- speed
-            ]
+        elapsedTime :: _ -> [[(Pilot, Maybe (PilotTime (Quantity Double [u| h |])))]] =
+            \speed ->
+                [ let xs' = (fmap . fmap) (const Nothing) xs
+                      ys' = (fmap . fmap) (Just . Speed.time) ys
+                  in (xs' ++ ys')
+                | xs <- nigh
+                | ys <- speed
+                ]
 
         speedSections :: [SpeedSection] = speedSection <$> tasks
 
@@ -416,12 +421,12 @@ points'
             | linears <- linearDistancePoints
             | ls <- leadingPoints
             | as <- arrivalPoints
-            | ts <- timePoints
+            | ts <- timePoints gsSpeed
             | ds <-
                 (fmap . fmap)
                     ((fmap . fmap) (PilotDistance . MkQuantity))
                     linearDistance
-            | es <- elapsedTime
+            | es <- elapsedTime gsSpeed
             | gs <- tags
             | gates <- startGates <$> tasks
             ]
@@ -559,7 +564,8 @@ zeroVelocity =
         { ss = Nothing
         , gs = Nothing
         , es = Nothing
-        , elapsed = Nothing
+        , ssElapsed = Nothing
+        , gsElapsed = Nothing
         , distance = Nothing
         , velocity = Nothing
         }
@@ -601,7 +607,8 @@ tally
                 , gs = join $ Speed.startGateTaken startGates <$> ss'
                 , es = es'
                 , distance = d
-                , elapsed = t
+                , ssElapsed = t
+                , gsElapsed = t
                 , velocity = liftA2 mkVelocity d t
                 }
         , breakdown = x

@@ -49,8 +49,10 @@ data Masking =
         -- ^ For each task, the number of pilots at goal.
         , raceTime :: [Maybe RaceTime]
         -- ^ For each task, the time of the last pilot crossing goal.
-        , bestTime :: [Maybe (BestTime (Quantity Double [u| h |]))]
-        -- ^ For each task, the best time.
+        , ssBestTime :: [Maybe (BestTime (Quantity Double [u| h |]))]
+        -- ^ For each task, the best time ignoring start gates.
+        , gsBestTime :: [Maybe (BestTime (Quantity Double [u| h |]))]
+        -- ^ For each task, the best time from the start gate taken.
         , taskDistance :: [Maybe Double]
         -- ^ For each task, the task distance.
         , bestDistance :: [Maybe Double]
@@ -63,9 +65,12 @@ data Masking =
         -- ^ For each task, the rank order of leading and leading fraction.
         , arrival :: [[(Pilot, TrackArrival)]]
         -- ^ For each task, the rank order of arrival at goal and arrival fraction.
-        , speed :: [[(Pilot, TrackSpeed)]]
+        , ssSpeed :: [[(Pilot, TrackSpeed)]]
         -- ^ For each task, for each pilot making goal, their time for the
-        -- speed section and speed fraction.
+        -- speed section and speed fraction, ignoring any start gates.
+        , gsSpeed :: [[(Pilot, TrackSpeed)]]
+        -- ^ For each task, for each pilot making goal, their time for the
+        -- speed section and speed fraction, taking into account start gates.
         , nigh :: [[(Pilot, TrackDistance Nigh)]]
         -- ^ For each task, the best distance of each pilot landing out.
         , land :: [[(Pilot, TrackDistance Land)]]
@@ -172,17 +177,25 @@ cmp a b =
         ("best", _) -> LT
         ("last", _) -> GT
 
-        ("bestTime", "pilotsAtEss") -> GT
-        ("bestTime", _) -> LT
+        ("ssBestTime", "pilotsAtEss") -> GT
+        ("ssBestTime", "raceTime") -> GT
+        ("ssBestTime", _) -> LT
+
+        ("gsBestTime", "pilotsAtEss") -> GT
+        ("gsBestTime", "raceTime") -> GT
+        ("gsBestTime", "ssBestTime") -> GT
+        ("gsBestTime", _) -> LT
 
         ("taskDistance", "pilotsAtEss") -> GT
         ("taskDistance", "raceTime") -> GT
-        ("taskDistance", "bestTime") -> GT
+        ("taskDistance", "ssBestTime") -> GT
+        ("taskDistance", "gsBestTime") -> GT
         ("taskDistance", _) -> LT
 
         ("bestDistance", "pilotsAtEss") -> GT
         ("bestDistance", "raceTime") -> GT
-        ("bestDistance", "bestTime") -> GT
+        ("bestDistance", "ssBestTime") -> GT
+        ("bestDistance", "gsBestTime") -> GT
         ("bestDistance", "taskDistance") -> GT
         ("bestDistance", _) -> LT
 
@@ -195,7 +208,8 @@ cmp a b =
 
         ("minLead", "pilotsAtEss") -> GT
         ("minLead", "raceTime") -> GT
-        ("minLead", "bestTime") -> GT
+        ("minLead", "ssBestTime") -> GT
+        ("minLead", "gsBestTime") -> GT
         ("minLead", "taskDistance") -> GT
         ("minLead", "bestDistance") -> GT
         ("minLead", "sumDistance") -> GT
@@ -203,7 +217,8 @@ cmp a b =
 
         ("lead", "pilotsAtEss") -> GT
         ("lead", "raceTime") -> GT
-        ("lead", "bestTime") -> GT
+        ("lead", "ssBestTime") -> GT
+        ("lead", "gsBestTime") -> GT
         ("lead", "taskDistance") -> GT
         ("lead", "bestDistance") -> GT
         ("lead", "sumDistance") -> GT
@@ -220,27 +235,43 @@ cmp a b =
         ("arrival", "lead") -> GT
         ("arrival", _) -> LT
 
-        ("speed", "pilotsAtEss") -> GT
-        ("speed", "raceTime") -> GT
-        ("speed", "bestTime") -> GT
-        ("speed", "taskDistance") -> GT
-        ("speed", "bestDistance") -> GT
-        ("speed", "sumDistance") -> GT
-        ("speed", "minLead") -> GT
-        ("speed", "lead") -> GT
-        ("speed", "arrival") -> GT
-        ("speed", _) -> LT
+        ("ssSpeed", "pilotsAtEss") -> GT
+        ("ssSpeed", "raceTime") -> GT
+        ("ssSpeed", "ssBestTime") -> GT
+        ("ssSpeed", "gsBestTime") -> GT
+        ("ssSpeed", "taskDistance") -> GT
+        ("ssSpeed", "bestDistance") -> GT
+        ("ssSpeed", "sumDistance") -> GT
+        ("ssSpeed", "minLead") -> GT
+        ("ssSpeed", "lead") -> GT
+        ("ssSpeed", "arrival") -> GT
+        ("ssSpeed", _) -> LT
+
+        ("gsSpeed", "pilotsAtEss") -> GT
+        ("gsSpeed", "raceTime") -> GT
+        ("gsSpeed", "ssBestTime") -> GT
+        ("gsSpeed", "gsBestTime") -> GT
+        ("gsSpeed", "taskDistance") -> GT
+        ("gsSpeed", "bestDistance") -> GT
+        ("gsSpeed", "sumDistance") -> GT
+        ("gsSpeed", "minLead") -> GT
+        ("gsSpeed", "lead") -> GT
+        ("gsSpeed", "arrival") -> GT
+        ("gsSpeed", "ssSpeed") -> GT
+        ("gsSpeed", _) -> LT
 
         ("nigh", "pilotsAtEss") -> GT
         ("nigh", "raceTime") -> GT
-        ("nigh", "bestTime") -> GT
+        ("nigh", "ssBestTime") -> GT
+        ("nigh", "gsBestTime") -> GT
         ("nigh", "taskDistance") -> GT
         ("nigh", "bestDistance") -> GT
         ("nigh", "sumDistance") -> GT
         ("nigh", "minLead") -> GT
         ("nigh", "lead") -> GT
         ("nigh", "arrival") -> GT
-        ("nigh", "speed") -> GT
+        ("nigh", "ssSpeed") -> GT
+        ("nigh", "gsSpeed") -> GT
         ("nigh", _) -> LT
 
         ("land", _) -> GT

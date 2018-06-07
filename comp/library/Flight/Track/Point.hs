@@ -55,7 +55,11 @@ data Velocity =
           -- start gates. This is the opening time of the start gate that the
           -- pilot took.
         , es :: Maybe UTCTime
-        , elapsed :: Maybe (PilotTime (Quantity Double [u| h |]))
+        , ssElapsed :: Maybe (PilotTime (Quantity Double [u| h |]))
+          -- ^ The elapsed time from the moment the pilot crossed the start.
+        , gsElapsed :: Maybe (PilotTime (Quantity Double [u| h |]))
+          -- ^ The elapsed time from the start gate. Always as long as
+          -- @ssElapsed@.
         , distance :: Maybe (PilotDistance (Quantity Double [u| km |]))
         , velocity :: Maybe (PilotVelocity (Quantity Double [u| km / h |]))
         }
@@ -120,11 +124,18 @@ cmp a b =
         -- NOTE: Duplicate record fields.
         -- ("distance", _) -> LT
 
-        ("elapsed", "ss") -> GT
-        ("elapsed", "gs") -> GT
-        ("elapsed", "es") -> GT
-        ("elapsed", "distance") -> GT
-        ("elapsed", _) -> LT
+        ("ssElapsed", "ss") -> GT
+        ("ssElapsed", "gs") -> GT
+        ("ssElapsed", "es") -> GT
+        ("ssElapsed", "distance") -> GT
+        ("ssElapsed", _) -> LT
+
+        ("gsElapsed", "ss") -> GT
+        ("gsElapsed", "gs") -> GT
+        ("gsElapsed", "es") -> GT
+        ("gsElapsed", "distance") -> GT
+        ("gsElapsed", "ssElapsed") -> GT
+        ("gsElapsed", _) -> LT
 
         ("velocity", _) -> GT
 

@@ -100,7 +100,7 @@ import Flight.Score
     )
 import Flight.Span.Math (Math(..))
 import MaskTrackOptions (description)
-import Stats (FlightStats(..), DashPathInputs(..), nullStats)
+import Stats (TimeStats(..), FlightStats(..), DashPathInputs(..), nullStats)
     
 main :: IO ()
 main = do
@@ -217,11 +217,15 @@ writeMask
             let as :: [[(Pilot, TrackArrival)]] = arrivals <$> ys
 
             -- Velocities (vs).
-            let vs :: [Maybe (BestTime (Quantity Double [u| h |]), [(Pilot, TrackSpeed)])] =
-                    times <$> ys
+            let ssVs :: [Maybe (BestTime (Quantity Double [u| h |]), [(Pilot, TrackSpeed)])] =
+                    times ssTime <$> ys
+
+            let gsVs :: [Maybe (BestTime (Quantity Double [u| h |]), [(Pilot, TrackSpeed)])] =
+                    times gsTime <$> ys
 
             -- Times (ts).
-            let tsBest = (fmap . fmap) fst vs
+            let ssBestTime = (fmap . fmap) fst ssVs
+            let gsBestTime = (fmap . fmap) fst ssVs
 
             -- For each task, for each pilot, the row closest to goal.
             rows :: [[Maybe (Pilot, Time.TickRow)]]
@@ -259,7 +263,7 @@ writeMask
                         lsTask
                         pilotsArriving
                         pilotsLandingOut
-                        tsBest
+                        gsBestTime
                         rows
 
             let dsSum =
@@ -281,14 +285,16 @@ writeMask
                 Masking
                     { pilotsAtEss = (PilotsAtEss . toInteger . length) <$> as
                     , raceTime = raceTime
-                    , bestTime = tsBest
+                    , ssBestTime = ssBestTime
+                    , gsBestTime = gsBestTime
                     , taskDistance = (fmap . fmap) unTaskDistance lsTask
                     , bestDistance = dsBest
                     , sumDistance = dsSum
                     , minLead = minLead
                     , lead = lead
                     , arrival = as
-                    , speed = fromMaybe [] <$> (fmap . fmap) snd vs
+                    , ssSpeed = fromMaybe [] <$> (fmap . fmap) snd ssVs
+                    , gsSpeed = fromMaybe [] <$> (fmap . fmap) snd gsVs 
                     , nigh = dsNigh
                     , land = dsLand
                     }
@@ -314,7 +320,8 @@ arrivals xs =
         ys :: [(Pilot, PositionAtEss)]
         ys =
             catMaybes
-            $ (\(p, FlightStats{..}) -> ((p,) . snd) <$> statTimeRank)
+            $ (\(p, FlightStats{..}) ->
+                ((p,) . positionAtEss) <$> statTimeRank)
             <$> xs
 
         pilots :: PilotsAtEss
@@ -327,22 +334,23 @@ arrivals xs =
                 }
 
 times
-    :: [(Pilot, FlightStats)]
+    :: (TimeStats -> PilotTime (Quantity Double [u| h |]))
+    -> [(Pilot, FlightStats)]
     -> Maybe (BestTime (Quantity Double [u| h |]), [(Pilot, TrackSpeed)])
-times xs =
-    (\ bt -> (bt, sortOn (time . snd) $ second (f bt) <$> ys))
+times f xs =
+    (\ bt -> (bt, sortOn (time . snd) $ second (g bt) <$> ys))
     <$> Gap.bestTime' ts
     where
         ys :: [(Pilot, PilotTime (Quantity Double [u| h |]))]
         ys =
             catMaybes
-            $ (\(p, FlightStats{..}) -> ((p,) . fst) <$> statTimeRank)
+            $ (\(p, FlightStats{..}) -> ((p,) . f) <$> statTimeRank)
             <$> xs
 
         ts :: [PilotTime (Quantity Double [u| h |])]
         ts = snd <$> ys
 
-        f best t =
+        g best t =
             TrackSpeed
                 { time = t
                 , frac = speedFraction best t
@@ -386,20 +394,19 @@ flown' dTaskF flying math tags tasks iTask@(IxTask i) mf@MarkedFixes{mark0} p =
         Nothing -> nullStats
 
         Just task' ->
-            case (pilotTime', arrivalRank) of
-                (Nothing, _) ->
+            case (ssTime, gsTime, arrivalRank) of
+                (Just a, Just b, Just c) ->
+                    tickedStats {statTimeRank = Just $ TimeStats a b c}
+
+                _ ->
                     tickedStats {statLand = Just $ landDistance task' }
 
-                (_, Nothing) ->
-                    tickedStats {statLand = Just $ landDistance task' }
-
-                (Just a, Just b) ->
-                    tickedStats {statTimeRank = Just (a, b)}
     where
         maybeTask = tasks ^? element (i - 1)
 
         ticked = Lookup.ticked (tagTicked tags) mf iTask speedSection' p
-        pilotTime' = Lookup.pilotTime (tagPilotTime tags) mf iTask startGates' speedSection' p
+        ssTime = Lookup.pilotTime (tagPilotTime tags) mf iTask [] speedSection' p
+        gsTime = Lookup.pilotTime (tagPilotTime tags) mf iTask startGates' speedSection' p
         arrivalRank = Lookup.arrivalRank (tagArrivalRank tags) mf iTask speedSection' p
 
         xs =
