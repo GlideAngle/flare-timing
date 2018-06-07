@@ -416,7 +416,7 @@ points'
         score :: [[(Pilot, Breakdown)]] =
             [ sortOn (total . snd)
               $ ((fmap . fmap) (tally gates))
-              $ collate diffs linears ls as ts ds es gs
+              $ collate diffs linears ls as ts ds ssEs gsEs gs
             | diffs <- difficultyDistancePoints
             | linears <- linearDistancePoints
             | ls <- leadingPoints
@@ -426,7 +426,8 @@ points'
                 (fmap . fmap)
                     ((fmap . fmap) (PilotDistance . MkQuantity))
                     linearDistance
-            | es <- elapsedTime gsSpeed
+            | ssEs <- elapsedTime ssSpeed
+            | gsEs <- elapsedTime gsSpeed
             | gs <- tags
             | gates <- startGates <$> tasks
             ]
@@ -520,11 +521,13 @@ collate
     -> [(Pilot, Maybe a)]
     -> [(Pilot, Maybe b)]
     -> [(Pilot, Maybe c)]
-    -> [(Pilot, (Maybe c, (Maybe b, (Maybe a, Gap.Points))))]
-collate diffs linears ls as ts ds es gs =
+    -> [(Pilot, Maybe d)]
+    -> [(Pilot, (Maybe d, (Maybe c, (Maybe b, (Maybe a, Gap.Points)))))]
+collate diffs linears ls as ts ds ssEs gsEs gs =
     Map.toList
     $ Map.intersectionWith (,) mg
-    $ Map.intersectionWith (,) me
+    $ Map.intersectionWith (,) mgsEs
+    $ Map.intersectionWith (,) mssEs
     $ Map.intersectionWith (,) md
     $ Map.intersectionWith glueDiff mDiff
     $ Map.intersectionWith glueLinear mLinear
@@ -537,7 +540,8 @@ collate diffs linears ls as ts ds es gs =
         ma = Map.fromList as
         mt = Map.fromList ts
         md = Map.fromList ds
-        me = Map.fromList es
+        mssEs = Map.fromList ssEs
+        mgsEs = Map.fromList gsEs
         mg = Map.fromList gs
 
 glueDiff :: DifficultyPoints -> Gap.Points -> Gap.Points
@@ -577,8 +581,11 @@ tally
         ,
             ( Maybe (PilotTime (Quantity Double [u| h |]))
             ,
-                ( Maybe (PilotDistance (Quantity Double [u| km |]))
-                , Gap.Points
+                ( Maybe (PilotTime (Quantity Double [u| h |]))
+                ,
+                    ( Maybe (PilotDistance (Quantity Double [u| km |]))
+                    , Gap.Points
+                    )
                 )
             )
         )
@@ -587,16 +594,19 @@ tally
     startGates
     ( g
     ,
-        ( t
+        ( gsT
         ,
-            ( d
-            , x@Gap.Points
-                { reach = LinearPoints r
-                , effort = DifficultyPoints dp
-                , leading = LeadingPoints l
-                , arrival = ArrivalPoints a
-                , time = TimePoints tp
-                }
+            ( ssT
+            ,
+                ( d
+                , x@Gap.Points
+                    { reach = LinearPoints r
+                    , effort = DifficultyPoints dp
+                    , leading = LeadingPoints l
+                    , arrival = ArrivalPoints a
+                    , time = TimePoints tp
+                    }
+                )
             )
         )
     ) =
@@ -607,9 +617,9 @@ tally
                 , gs = join $ Speed.startGateTaken startGates <$> ss'
                 , es = es'
                 , distance = d
-                , ssElapsed = t
-                , gsElapsed = t
-                , velocity = liftA2 mkVelocity d t
+                , ssElapsed = ssT
+                , gsElapsed = gsT
+                , velocity = liftA2 mkVelocity d gsT
                 }
         , breakdown = x
         , total = TaskPoints $ r + dp + l + a + tp
