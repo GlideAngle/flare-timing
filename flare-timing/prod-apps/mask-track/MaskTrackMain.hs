@@ -225,7 +225,7 @@ writeMask
 
             -- Times (ts).
             let ssBestTime = (fmap . fmap) fst ssVs
-            let gsBestTime = (fmap . fmap) fst ssVs
+            let gsBestTime = (fmap . fmap) fst gsVs
 
             -- For each task, for each pilot, the row closest to goal.
             rows :: [[Maybe (Pilot, Time.TickRow)]]
