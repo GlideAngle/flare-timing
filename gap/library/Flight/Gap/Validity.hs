@@ -91,7 +91,10 @@ data LaunchValidityWorking =
 
 data TimeValidityWorking =
     TimeValidityWorking 
-        { bestTime :: Maybe (BestTime (Quantity Double [u| h |]))
+        { ssBestTime :: Maybe (BestTime (Quantity Double [u| h |]))
+        -- ^ For each task, the best time ignoring start gates.
+        , gsBestTime :: Maybe (BestTime (Quantity Double [u| h |]))
+        -- ^ For each task, the best time from the start gate taken.
         , bestDistance :: BestDistance (Quantity Double [u| km |])
         , nominalTime :: NominalTime (Quantity Double [u| h |])
         , nominalDistance :: NominalDistance (Quantity Double [u| km |])
@@ -190,24 +193,44 @@ btHours (BestTime t) =
 timeValidity
     :: NominalTime (Quantity Double [u| s |])
     -> Maybe (BestTime (Quantity Double [u| s |]))
+    -- ^ The best time from the start ignoring start gates
+    -> Maybe (BestTime (Quantity Double [u| s |]))
+    -- ^ The best time from the start gate taken
     -> NominalDistance (Quantity Double [u| km |])
     -> BestDistance (Quantity Double [u| km |])
     -> (TimeValidity, Maybe TimeValidityWorking)
 
-timeValidity tNom Nothing dNom@(NominalDistance nd) dBest@(BestDistance bd)
+timeValidity tNom ssBestTime Nothing dNom@(NominalDistance nd) dBest@(BestDistance bd)
     | nd <= [u| 0 km |] = tvZero
     | bd <= [u| 0 km |] = tvZero
     | otherwise =
         ( tvrValidity $ DistanceRatio dNom dBest
-        , Just $ TimeValidityWorking Nothing dBest (ntHours tNom) dNom
+        , Just
+        $ TimeValidityWorking
+            (btHours <$> ssBestTime)
+            Nothing
+            dBest
+            (ntHours tNom)
+            dNom
         )
 
-timeValidity tNom@(NominalTime nt) (Just tBest@(BestTime bt)) dNom dBest
+timeValidity
+    tNom@(NominalTime nt)
+    ssBestTime
+    (Just gsBestTime@(BestTime bt))
+    dNom
+    dBest
     | nt <= [u| 0 s |] = tvZero
     | bt <= [u| 0 s |] = tvZero
     | otherwise =
-        ( tvrValidity $ TimeRatio tNom tBest
-        , Just $ TimeValidityWorking (Just (btHours tBest)) dBest (ntHours tNom) dNom
+        ( tvrValidity $ TimeRatio tNom gsBestTime
+        , Just
+        $ TimeValidityWorking
+            (btHours <$> ssBestTime)
+            (Just (btHours gsBestTime))
+            dBest
+            (ntHours tNom)
+            dNom
         )
 
 dvr

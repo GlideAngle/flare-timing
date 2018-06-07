@@ -205,13 +205,18 @@ cmp a b =
         ("present", _) -> LT
 
         -- TimeValidityWorking fields
-        ("nominalTime", "_") -> LT
+        ("nominalTime", _) -> LT
 
-        ("bestTime", "nominalTime") -> GT
-        ("bestTime", "_") -> LT
+        ("ssBestTime", "nominalTime") -> GT
+        ("ssBestTime", _) -> LT
+
+        ("gsBestTime", "nominalTime") -> GT
+        ("gsBestTime", "ssBestTime") -> GT
+        ("gsBestTime", _) -> LT
 
         ("nominalDistance", "nominalTime") -> GT
-        ("nominalDistance", "bestTime") -> GT
+        ("nominalDistance", "ssBestTime") -> GT
+        ("nominalDistance", "gsBestTime") -> GT
         ("nominalDistance", _) -> LT
 
         ("bestDistance", _) -> GT

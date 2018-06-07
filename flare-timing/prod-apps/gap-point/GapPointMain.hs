@@ -238,25 +238,25 @@ points'
                 return $ ValidityWorking lv' dv' tv'
             | lv <- snd <$> lvs
             | dv <- snd <$> dvs
-            | tv <- snd <$> tvs gsBestTime
+            | tv <- snd <$> tvs
             ]
 
         tvs =
-            \bestTime ->
+            let f =
+                    (fmap . fmap)
+                        (\(BestTime x) -> BestTime (convert x :: Quantity _ [u| s |]))
+            in
                 [ timeValidity
                     ((\(NominalTime x) ->
                         NominalTime (convert x :: Quantity _ [u| s |])) tNom)
-                    t
+                    ssT 
+                    gsT
                     dNom
                     d
-                | t <-
-                    (fmap . fmap)
-                        (\(BestTime x) -> BestTime (convert x :: Quantity _ [u| s |]))
-                        bestTime
 
-                | d <-
-                    (\(MaximumDistance x) -> BestDistance x)
-                    <$> dBests
+                | ssT <- f ssBestTime
+                | gsT <- f gsBestTime
+                | d <- (\(MaximumDistance x) -> BestDistance x) <$> dBests
                 ]
 
         grs =
@@ -288,7 +288,7 @@ points'
             [ maybeTask $ Validity (taskValidity lv dv tv) lv dv tv
             | lv <- fst <$> lvs
             | dv <- fst <$> dvs
-            | tv <- fst <$> tvs gsBestTime
+            | tv <- fst <$> tvs
             | maybeTask <- maybeTasks
             ]
 
