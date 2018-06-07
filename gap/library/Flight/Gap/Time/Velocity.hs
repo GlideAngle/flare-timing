@@ -21,7 +21,7 @@ newtype PilotVelocity a = PilotVelocity a
 instance
     (q ~ Quantity Double [u| km / h |])
     => DefaultDecimalPlaces (PilotVelocity q) where
-    defdp _ = DecimalPlaces 1
+    defdp _ = DecimalPlaces 2
 
 instance
     (q ~ Quantity Double [u| km / h |])
