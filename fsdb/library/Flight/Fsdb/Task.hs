@@ -38,7 +38,7 @@ import Flight.LatLng.Raw (RawLat(..), RawLng(..))
 import qualified Flight.Zone.Raw as Z (RawZone(..))
 import Flight.Zone.Raw as Z (RawRadius(..))
 import Flight.Comp
-    (Task(..), SpeedSection, StartGate(..), OpenClose(..), Pilot(..))
+    (Task(..), TaskStop(..), SpeedSection, StartGate(..), OpenClose(..), Pilot(..))
 import Flight.Fsdb.Pilot (Key(..), KeyPilot(..), getCompPilot)
 import Flight.Units ()
 import Flight.Fsdb.Internal (prs, sci, sciToInt, sciToFloat, sciToRational)
@@ -54,6 +54,7 @@ getTask kps =
     getChildren
     >>> deep (hasName "FsTask")
     >>> getAttrValue "name"
+    &&& getStopped
     &&& getAbsent
     &&& getDefn
     >>> arr mkTask
@@ -106,8 +107,15 @@ getTask kps =
             >>> getAttrValue "id"
             >>> arr (unKeyPilot (keyMap kps) . Key)
 
-        mkTask (name, (absentees, (section, (zs, (ts, gates))))) =
-            Task name zs section ts'' gates $ sort absentees
+        getStopped =
+            getChildren
+            >>> hasName "FsTaskState"
+            >>> getAttrValue "task_state"
+            &&& getAttrValue "stop_time"
+            >>> arr parseStop
+
+        mkTask (name, (stop, (absentees, (section, (zs, (ts, gates)))))) =
+            Task name zs section ts'' gates (sort absentees) stop
             where
                 -- NOTE: If all time zones are the same then collapse.
                 ts' = nub ts
@@ -124,6 +132,10 @@ parseUtcTime :: String -> UTCTime
 parseUtcTime =
     -- NOTE: %F is %Y-%m-%d, %T is %H:%M:%S and %z is -HHMM or -HH:MM
     parseTimeOrError False defaultTimeLocale "%FT%T%z"
+
+parseStop :: (String, String) -> Maybe TaskStop
+parseStop ("STOPPED", t) = Just . TaskStop $ parseUtcTime t
+parseStop _ = Nothing
 
 parseStartGate :: String -> StartGate
 parseStartGate =

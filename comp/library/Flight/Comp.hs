@@ -25,6 +25,7 @@ module Flight.Comp
     , defaultNominal
     -- * Task
     , Task(..)
+    , TaskStop(..)
     , IxTask(..)
     , SpeedSection
     , StartGate(..)
@@ -187,15 +188,23 @@ defaultNominal =
         , time = NominalTime . MkQuantity $ 1.5
         }
 
+data TaskStop =
+    TaskStop
+        { announced :: UTCTime
+        }
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+
 data Task =
-    Task { taskName :: String
-         , zones :: [RawZone]
-         , speedSection :: SpeedSection
-         , zoneTimes :: [OpenClose]
-         , startGates :: [StartGate]
-         , absent :: [Pilot]
-         -- ^ Pilots absent from this task.
-         }
+    Task
+        { taskName :: String
+        , zones :: [RawZone]
+        , speedSection :: SpeedSection
+        , zoneTimes :: [OpenClose]
+        , startGates :: [StartGate]
+        , absent :: [Pilot]
+        -- ^ Pilots absent from this task.
+        , stopped :: Maybe TaskStop
+        }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 showTask :: Task -> String
