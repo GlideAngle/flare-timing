@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 2438b34a1123c647a84940b45801dd24ccde50bb5f89f710908a99c1566fd7ed
+-- hash: b55243d809127fb7ebffa10f84e5279b89c4fc6a579010e54e9bd54772df02b3
 
 name:           flight-gap
 version:        0.1.0
@@ -64,6 +64,7 @@ library
       Flight.Gap.Time.Best
       Flight.Gap.Time.Nominal
       Flight.Gap.Time.Pilot
+      Flight.Gap.Time.ScoreBack
       Flight.Gap.Time.Velocity
       Flight.Gap.Validity
       Flight.Gap.Validity.Area
@@ -131,6 +132,7 @@ test-suite hlint
       Flight.Gap.Time.Best
       Flight.Gap.Time.Nominal
       Flight.Gap.Time.Pilot
+      Flight.Gap.Time.ScoreBack
       Flight.Gap.Time.Velocity
       Flight.Gap.Validity
       Flight.Gap.Validity.Area
@@ -200,6 +202,7 @@ test-suite score
       Flight.Gap.Time.Best
       Flight.Gap.Time.Nominal
       Flight.Gap.Time.Pilot
+      Flight.Gap.Time.ScoreBack
       Flight.Gap.Time.Velocity
       Flight.Gap.Validity
       Flight.Gap.Validity.Area

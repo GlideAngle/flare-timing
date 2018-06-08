@@ -1,3 +1,13 @@
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE UndecidableInstances #-}
+
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE StandaloneDeriving #-}
@@ -34,19 +44,25 @@ import Control.Arrow (second)
 import Data.List (partition, sortBy)
 import qualified Data.Vector as V
 import qualified Data.Map as Map
+import Data.UnitsOfMeasure (u, convert, toRational')
+import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Gap.Points (Hg, Pg)
 import Flight.Gap.Leading (TaskTime(..))
 import Flight.Gap.Pilots
     (PilotsLaunched(..), PilotsLandedBeforeStop(..), PilotsInGoalAtStop(..))
+import Flight.Gap.Time.ScoreBack (ScoreBackTime(..))
 
 newtype TaskStopTime = TaskStopTime Rational deriving (Eq, Ord, Show)
 newtype AnnouncedTime = AnnouncedTime Rational deriving (Eq, Ord, Show)
-newtype ScoreBackTime = ScoreBackTime Rational deriving (Eq, Ord, Show)
 newtype StartGateInterval = StartGateInterval Rational deriving (Eq, Ord, Show)
 
 data StopTime a where
-    ScoreBackStop :: ScoreBackTime -> AnnouncedTime -> StopTime Pg
+    ScoreBackStop
+        :: ScoreBackTime (Quantity Double [u| s |])
+        -> AnnouncedTime
+        -> StopTime Pg
+
     InterGateStop :: StartGateInterval -> AnnouncedTime -> StopTime Hg
     SingleGateStop :: AnnouncedTime -> StopTime Hg
 
@@ -54,9 +70,14 @@ deriving instance Show (StopTime a)
 
 stopTaskTime :: forall a. StopTime a -> TaskStopTime
 stopTaskTime (ScoreBackStop (ScoreBackTime sb) (AnnouncedTime at)) =
-    TaskStopTime $ at - sb
+    TaskStopTime $ at - sb'
+    where
+        (MkQuantity sb') :: Quantity Rational [u| s |] =
+            convert . toRational' $ sb
+
 stopTaskTime (InterGateStop (StartGateInterval sgi) (AnnouncedTime at)) =
     TaskStopTime $ at - sgi
+
 stopTaskTime (SingleGateStop (AnnouncedTime at)) = 
     TaskStopTime $ at - ((15 * 60) % 1)
 

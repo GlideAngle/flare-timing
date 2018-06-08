@@ -172,6 +172,7 @@ import Flight.Gap.Ratio.Goal
 import Flight.Gap.Time.Nominal
 import Flight.Gap.Time.Best
 import Flight.Gap.Time.Velocity
+import Flight.Gap.Time.ScoreBack
 import Flight.Gap.Distance.Nominal
 import Flight.Gap.Distance.Linear
 import Flight.Gap.Distance.Min
