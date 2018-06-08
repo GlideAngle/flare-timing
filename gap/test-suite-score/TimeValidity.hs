@@ -32,6 +32,7 @@ timeValidityUnits = testGroup "Time validity unit tests"
         (FS.timeValidity
             (NominalTime . MkQuantity $ 0)
             (Just . BestTime . MkQuantity $ 0)
+            (Just . BestTime . MkQuantity $ 0)
             (NominalDistance . MkQuantity $ 0)
             (BestDistance . MkQuantity $ 0))
         @?= TimeValidity 0
@@ -41,6 +42,7 @@ timeValidityUnits = testGroup "Time validity unit tests"
         fst
         (FS.timeValidity
             (NominalTime . MkQuantity $ 1)
+            (Just . BestTime . MkQuantity $ 1)
             (Just . BestTime . MkQuantity $ 1)
             (NominalDistance . MkQuantity $ 0)
             (BestDistance . MkQuantity $ 0))
@@ -52,6 +54,7 @@ timeValidityUnits = testGroup "Time validity unit tests"
         (FS.timeValidity
             (NominalTime . MkQuantity $ 1)
             (Just . BestTime . MkQuantity $ 1)
+            (Just . BestTime . MkQuantity $ 1)
             (NominalDistance . MkQuantity $ 1)
             (BestDistance . MkQuantity $ 1))
         @?= TimeValidity 1
@@ -61,6 +64,7 @@ timeValidityUnits = testGroup "Time validity unit tests"
         fst
         (FS.timeValidity
             (NominalTime . MkQuantity $ 0)
+            Nothing
             Nothing
             (NominalDistance . MkQuantity $ 0)
             (BestDistance . MkQuantity $ 0))
@@ -72,6 +76,7 @@ timeValidityUnits = testGroup "Time validity unit tests"
         (FS.timeValidity
             (NominalTime . MkQuantity $ 0)
             Nothing
+            Nothing
             (NominalDistance . MkQuantity $ 1)
             (BestDistance . MkQuantity $ 1))
         @?= TimeValidity 1
@@ -82,6 +87,7 @@ timeValidityUnits = testGroup "Time validity unit tests"
         (FS.timeValidity
             (NominalTime . MkQuantity $ 1)
             Nothing
+            Nothing
             (NominalDistance . MkQuantity $ 1)
             (BestDistance . MkQuantity $ 1))
         @?= TimeValidity 1
@@ -90,43 +96,50 @@ timeValidityUnits = testGroup "Time validity unit tests"
 timeValidity
     :: NominalTime (Quantity Double [u| s |])
     -> Maybe (BestTime (Quantity Double [u| s |]))
+    -> Maybe (BestTime (Quantity Double [u| s |]))
     -> NominalDistance (Quantity Double [u| km |])
     -> BestDistance (Quantity Double [u| km |])
     -> Bool
-timeValidity nt t nd d =
+timeValidity nt ssT gsT nd d =
     (\(TimeValidity x) -> isNormal x) . fst
-    $ FS.timeValidity nt t nd d
+    $ FS.timeValidity nt ssT gsT nd d
 
 scTimeValidity
     :: SC.NonNegative Double
+    -> Maybe (SC.NonNegative Double)
     -> Maybe (SC.NonNegative Double)
     -> SC.NonNegative Double
     -> SC.NonNegative Double
     -> Bool
 scTimeValidity
     (SC.NonNegative nt)
-    t
+    ssT
+    gsT
     (SC.NonNegative nd)
     (SC.NonNegative d) =
     timeValidity
         (NominalTime . MkQuantity $ nt)
-        ((\(SC.NonNegative x) -> BestTime . MkQuantity $ x) <$> t)
+        ((\(SC.NonNegative x) -> BestTime . MkQuantity $ x) <$> ssT)
+        ((\(SC.NonNegative x) -> BestTime . MkQuantity $ x) <$> gsT)
         (NominalDistance . MkQuantity $ nd)
         (BestDistance . MkQuantity $ d)
 
 qcTimeValidity
     :: QC.NonNegative Double 
     -> Maybe (QC.NonNegative Double)
+    -> Maybe (QC.NonNegative Double)
     -> QC.NonNegative Double
     -> QC.NonNegative Double
     -> Bool
 qcTimeValidity
     (QC.NonNegative nt)
-    t
+    ssT
+    gsT
     (QC.NonNegative nd)
     (QC.NonNegative d) =
     timeValidity
         (NominalTime . MkQuantity $ nt)
-        ((\(QC.NonNegative x) -> BestTime . MkQuantity $ x) <$> t)
+        ((\(QC.NonNegative x) -> BestTime . MkQuantity $ x) <$> ssT)
+        ((\(QC.NonNegative x) -> BestTime . MkQuantity $ x) <$> gsT)
         (NominalDistance . MkQuantity $ nd)
         (BestDistance . MkQuantity $ d)

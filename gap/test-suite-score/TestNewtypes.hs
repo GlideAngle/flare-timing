@@ -465,7 +465,7 @@ instance Monad m => SC.Serial m (StopTimeTest Hg) where
 instance Monad m => SC.Serial m (StopTimeTest Pg) where
     series = StopTimeTest <$>
         cons2 (\(SC.Positive sb) (SC.Positive t) ->
-            (ScoreBackStop (ScoreBackTime sb) (AnnouncedTime t)))
+            (ScoreBackStop (ScoreBackTime (MkQuantity sb)) (AnnouncedTime t)))
 
 instance QC.Arbitrary (StopTimeTest Hg) where
     arbitrary = StopTimeTest <$>
@@ -483,7 +483,7 @@ instance QC.Arbitrary (StopTimeTest Pg) where
     arbitrary = StopTimeTest <$> do
         (QC.Positive sb) <- arbitrary
         (QC.Positive t) <- arbitrary
-        return $ ScoreBackStop (ScoreBackTime sb) (AnnouncedTime t)
+        return $ ScoreBackStop (ScoreBackTime (MkQuantity sb)) (AnnouncedTime t)
 
 -- | Can score a stopped task.
 newtype StopCanScoreTest a = StopCanScoreTest (CanScoreStopped a) deriving Show

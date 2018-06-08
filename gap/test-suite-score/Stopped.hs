@@ -1,3 +1,11 @@
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE UndecidableInstances #-}
+
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE RankNTypes #-}
 module Stopped
@@ -17,6 +25,8 @@ module Stopped
 
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit as HU ((@?=), testCase)
+import Data.UnitsOfMeasure (u, convert, toRational')
+import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import qualified Flight.Score as FS
 import Flight.Score
@@ -50,7 +60,7 @@ import TestNewtypes
 stoppedTimeUnits :: TestTree
 stoppedTimeUnits = testGroup "Effective task stop time"
     [ HU.testCase "Announced stop time minus score back time, Pg = task stop time" $
-        FS.stopTaskTime (ScoreBackStop (ScoreBackTime 1) (AnnouncedTime 3)) @?= TaskStopTime 2
+        FS.stopTaskTime (ScoreBackStop (ScoreBackTime [u| 1s |]) (AnnouncedTime 3)) @?= TaskStopTime 2
 
     , HU.testCase "Announced stop time minus time between start gates, Hg = task stop time" $
         FS.stopTaskTime (InterGateStop (StartGateInterval 1) (AnnouncedTime 3)) @?= TaskStopTime 2
@@ -307,8 +317,13 @@ applyGlideUnits = testGroup "Distance points with altitude bonus"
 
 correctTime :: forall a. StopTime a -> TaskStopTime -> Bool
 
-correctTime (ScoreBackStop (ScoreBackTime sb) (AnnouncedTime at)) (TaskStopTime st) =
-    st + sb == at
+correctTime
+    (ScoreBackStop (ScoreBackTime sb) (AnnouncedTime at))
+    (TaskStopTime st) =
+    st + sb' == at
+    where
+        (MkQuantity sb') :: Quantity Rational [u| s |] =
+            convert . toRational' $ sb
 
 correctTime (InterGateStop (StartGateInterval i) (AnnouncedTime at)) (TaskStopTime st) =
     st + i == at
