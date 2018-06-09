@@ -10,6 +10,7 @@ Provides parsing the fsdb format for competitors, tasks and results.
 module Flight.Fsdb
     ( parseComp
     , parseNominal
+    , parseStopped
     , parseTasks
     , parsePilots
     , parseTracks
@@ -18,5 +19,6 @@ module Flight.Fsdb
 
 import Flight.Fsdb.Comp
 import Flight.Fsdb.Nominal
+import Flight.Fsdb.Stopped
 import Flight.Fsdb.Task
 import Flight.Fsdb.Pilot

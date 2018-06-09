@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1fedbb89d580a883ead4e303c11e8c714db1e66b0cfee907d37181550c07ddcb
+-- hash: b2457965baafa85db9f3af2da5c328531c8da84ea39e014eaf8fa7abb173375e
 
 name:           flight-fsdb
 version:        0.1.0
@@ -38,6 +38,7 @@ library
       Flight.Fsdb.Internal
       Flight.Fsdb.Nominal
       Flight.Fsdb.Pilot
+      Flight.Fsdb.Stopped
       Flight.Fsdb.Task
       Paths_flight_fsdb
   hs-source-dirs:
@@ -72,6 +73,7 @@ test-suite hlint
       Flight.Fsdb.Internal
       Flight.Fsdb.Nominal
       Flight.Fsdb.Pilot
+      Flight.Fsdb.Stopped
       Flight.Fsdb.Task
       Paths_flight_fsdb
   hs-source-dirs:
@@ -108,6 +110,7 @@ test-suite parse
       Flight.Fsdb.Internal
       Flight.Fsdb.Nominal
       Flight.Fsdb.Pilot
+      Flight.Fsdb.Stopped
       Flight.Fsdb.Task
       Paths_flight_fsdb
   hs-source-dirs:

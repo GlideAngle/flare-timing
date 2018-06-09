@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: cfc82622b0bd9c10d07745bbd331d1923e7545c6887275ad8bd92627a9bb78ab
+-- hash: ec910a7930c166fd829152f096093c5f5aa85c6eb26a30ab765c6bf6c6f6b4c5
 
 name:           flare-timing
 version:        0.1.0
@@ -180,6 +180,7 @@ executable extract-input
     , flight-cmd
     , flight-comp
     , flight-fsdb
+    , flight-gap
     , flight-latlng
     , flight-scribe
     , formatting
@@ -187,6 +188,7 @@ executable extract-input
     , raw-strings-qq
     , system-filepath
     , transformers
+    , uom-plugin
     , yaml
   default-language: Haskell2010
 

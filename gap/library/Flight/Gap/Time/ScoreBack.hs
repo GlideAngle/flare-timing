@@ -37,5 +37,3 @@ instance (q ~ Quantity Double [u| s |]) => FromJSON (ScoreBackTime q) where
     parseJSON o = do
         ViaQ x <- parseJSON o
         return x
-
--- newtype ScoreBackTime = ScoreBackTime Rational deriving (Eq, Ord, Show)

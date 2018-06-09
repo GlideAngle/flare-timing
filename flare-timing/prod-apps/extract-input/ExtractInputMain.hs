@@ -1,3 +1,5 @@
+{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE NamedFieldPuns #-}
@@ -10,11 +12,14 @@ import System.Clock (getTime, Clock(Monotonic))
 import Control.Monad (mapM_)
 import Control.Monad.Trans.Except (throwE)
 import Control.Monad.Except (ExceptT(..), runExceptT, lift)
+import Data.UnitsOfMeasure (u)
+import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Fsdb
     ( parseComp
     , parseNominal
+    , parseStopped
     , parseTasks
     , parseTaskFolders
     , parseTracks
@@ -34,6 +39,7 @@ import Flight.Comp
     , findFsdb
     , ensureExt
     )
+import Flight.Score (ScoreBackTime(..))
 import Flight.Scribe (writeComp)
 import ExtractInputOptions (CmdOptions(..), mkOptions)
 
@@ -86,6 +92,20 @@ fsdbNominal (FsdbXml contents) = do
             lift $ print msg
             throwE msg
 
+fsdbStopped
+    :: FsdbXml
+    -> ExceptT String IO (Maybe (ScoreBackTime (Quantity Double [u| s |])))
+fsdbStopped (FsdbXml contents) = do
+    xs <- lift $ parseStopped contents
+    case xs of
+        Left msg -> ExceptT . return $ Left msg
+        Right [] -> ExceptT . return $ Right Nothing
+        Right [x] -> ExceptT . return $ Right (Just x)
+        _ -> do
+            let msg = "Expected one or no score back time for the comp"
+            lift $ print msg
+            throwE msg
+
 fsdbTasks :: FsdbXml -> ExceptT String IO [Task]
 fsdbTasks (FsdbXml contents) = do
     ts <- lift $ parseTasks contents
@@ -105,6 +125,7 @@ fsdbSettings :: FsdbXml -> ExceptT String IO CompSettings
 fsdbSettings fsdbXml = do
     c <- fsdbComp fsdbXml
     n <- fsdbNominal fsdbXml
+    sb <- fsdbStopped fsdbXml
     ts <- fsdbTasks fsdbXml
     fs <- fsdbTaskFolders fsdbXml
     tps <- fsdbTracks fsdbXml
@@ -117,7 +138,7 @@ fsdbSettings fsdbXml = do
             ++ "\""
 
     lift . putStrLn $ msg
-    return CompSettings { comp = c
+    return CompSettings { comp = c { scoreBack = sb }
                         , nominal = n
                         , tasks = ts
                         , taskFolders = fs

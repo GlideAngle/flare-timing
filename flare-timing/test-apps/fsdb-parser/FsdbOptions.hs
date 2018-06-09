@@ -18,15 +18,16 @@ import System.Console.CmdArgs.Implicit
 
 -- | Options passed in on the command line.
 data FsdbOptions
-    = FsdbOptions { dir :: FilePath
-                  -- ^ Picking all competition in this directory.
-                  , file :: FilePath
-                  -- ^ Picking the competition in this file.
-                  , detail :: [Detail]
-                  -- ^ What details to show. If none supplied then all are
-                  -- shown.
-                  }
-                  deriving (Show, Data, Typeable)
+    = FsdbOptions
+        { dir :: FilePath
+        -- ^ Picking all competition in this directory.
+        , file :: FilePath
+        -- ^ Picking the competition in this file.
+        , detail :: [Detail]
+        -- ^ What details to show. If none supplied then all are
+        -- shown.
+        }
+    deriving (Show, Data, Typeable)
 
 -- | Extract these details from the flight database XML file.
 data Detail
@@ -35,6 +36,8 @@ data Detail
     | Nominals
     -- ^ The nominal values that are set before competition begins that help
     -- determine baselines for valid tasks.
+    | ScoreBack 
+    -- ^ The score back time set for the competition.
     | Pilots
     -- ^ The pilots flying in each task.
     | Tasks

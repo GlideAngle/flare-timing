@@ -10,6 +10,7 @@ import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Fsdb
     ( parseComp
     , parseNominal
+    , parseStopped
     , parseTasks
     , parsePilots
     , parseTracks
@@ -69,6 +70,7 @@ go FsdbOptions{..} (FsdbFile path) = do
 
     when (null detail || Comp `elem` detail) $ printComp contents'
     when (null detail || Nominals `elem` detail) $ printNominal contents'
+    when (null detail || ScoreBack `elem` detail) $ printStopped contents'
     when (null detail || Pilots `elem` detail) $ printPilotNames contents'
     when (null detail || Tasks `elem` detail) $ printTasks contents'
     when (null detail || TaskFolders `elem` detail) $ printTaskFolders contents'
@@ -80,6 +82,13 @@ printNominal contents = do
     case nominal of
          Left msg -> print msg
          Right nominal' -> print nominal'
+
+printStopped :: String -> IO ()
+printStopped contents = do
+    stopped <- parseStopped contents
+    case stopped of
+         Left msg -> print msg
+         Right stopped' -> print stopped'
 
 printPilotNames :: String -> IO ()
 printPilotNames contents = do

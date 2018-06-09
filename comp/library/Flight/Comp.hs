@@ -73,6 +73,7 @@ import Flight.Score
     , MinimumDistance(..)
     , NominalTime(..)
     , Discipline(..)
+    , ScoreBackTime(..)
     )
 
 -- | The time of first lead into the speed section. This won't exist if no one
@@ -164,6 +165,7 @@ data Comp =
         , from :: String 
         , to :: String 
         , utcOffset :: UtcOffset
+        , scoreBack :: Maybe (ScoreBackTime (Quantity Double [u| s |]))
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
@@ -262,9 +264,15 @@ cmp a b =
         ("location", "discipline") -> GT
         ("location", _) -> LT
         ("from", "to") -> LT
+
+        ("civilId", "scoreBack") -> LT
         ("civilId", "utcOffset") -> LT
         ("civilId", _) -> GT
+
+        ("utcOffset", "scoreBack") -> LT
         ("utcOffset", _) -> GT
+
+        ("scoreBack", _) -> GT
 
         -- Task fields
         ("taskName", _) -> LT

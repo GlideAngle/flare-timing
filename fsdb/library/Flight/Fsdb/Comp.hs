@@ -44,7 +44,7 @@ getComp =
                 case d' of
                     "pg" -> Paragliding
                     _ -> HangGliding
-        in Comp i n d l f t <$> u)
+        in (\u' -> Comp i n d l f t u' Nothing) <$> u)
     where
         getUtcOffset =
             getAttrValue "utc_offset"
