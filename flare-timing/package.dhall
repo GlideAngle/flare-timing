@@ -25,9 +25,10 @@
               , "aeson"
               , "uom-plugin"
               , "bytestring"
-              , "clock":
+              , "clock"
               , "formatting"
               , "containers"
+              , "uom-plugin"
               , "flight-cmd"
               , "flight-latlng"
               , "flight-gap"
@@ -413,6 +414,7 @@
               , "flight-cmd"
               , "flight-comp"
               , "flight-fsdb"
+              , "flight-units"
               ]
           , ghc-options =
               [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]

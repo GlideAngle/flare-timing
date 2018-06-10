@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ec910a7930c166fd829152f096093c5f5aa85c6eb26a30ab765c6bf6c6f6b4c5
+-- hash: d8a7adc9370b995a83cb3efab6ccf0f192bea3e17f69ede1d76ba7cc7acef115
 
 name:           flare-timing
 version:        0.1.0
@@ -406,6 +406,7 @@ executable test-fsdb-parser
     , flight-cmd
     , flight-comp
     , flight-fsdb
+    , flight-units
     , mtl
     , raw-strings-qq
     , system-filepath
