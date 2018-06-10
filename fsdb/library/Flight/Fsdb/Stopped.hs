@@ -21,6 +21,7 @@ import Text.XML.HXT.Core
     , arr
     )
 import Data.Bifunctor (bimap)
+import Control.Applicative (optional)
 import Text.Megaparsec ((<?>))
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
@@ -30,7 +31,7 @@ import Flight.Fsdb.Internal (prs, sci, sciToInt)
 
 getStopped
     :: ArrowXml a
-    => a XmlTree (Either String (ScoreBackTime (Quantity Double [u| s |])))
+    => a XmlTree (Either String (Maybe (ScoreBackTime (Quantity Double [u| s |]))))
 getStopped =
     getChildren
     >>> deep (hasName "FsCompetition")
@@ -43,16 +44,17 @@ getStopped =
             >>> arr parseScoreBack
 
 parseScoreBack
-    :: String -> Either String (ScoreBackTime (Quantity Double [u| s |]))
+    :: String -> Either String (Maybe (ScoreBackTime (Quantity Double [u| s |])))
 parseScoreBack s =
-    bimap show (ScoreBackTime . MkQuantity . fromIntegral . (* 60)) secs
+    bimap show (fmap f) secs
     where
-        mins = prs (sci <?> "Seconds of score back time") s
-        secs = sciToInt <$> mins
+        f = ScoreBackTime . MkQuantity . fromIntegral . (* 60)
+        mins = prs (optional (sci <?> "Seconds of score back time")) s
+        secs = (fmap. fmap) sciToInt mins
 
 parseStopped
     :: String
-    -> IO (Either String [ScoreBackTime (Quantity Double [u| s |])])
+    -> IO (Either String [Maybe (ScoreBackTime (Quantity Double [u| s |]))])
 parseStopped contents = do
     let doc = readString [ withValidate no, withWarnings no ] contents
     xs <- runX $ doc >>> getStopped

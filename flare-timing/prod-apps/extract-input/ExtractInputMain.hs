@@ -100,7 +100,7 @@ fsdbStopped (FsdbXml contents) = do
     case xs of
         Left msg -> ExceptT . return $ Left msg
         Right [] -> ExceptT . return $ Right Nothing
-        Right [x] -> ExceptT . return $ Right (Just x)
+        Right [x] -> ExceptT . return $ Right x
         _ -> do
             let msg = "Expected one or no score back time for the comp"
             lift $ print msg
