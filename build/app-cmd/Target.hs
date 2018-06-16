@@ -6,6 +6,7 @@ import Cmd (buildRules, cleanRules, testRules, lintRules)
 import Web (buildRules, cleanRules)
 import Nix (buildRules, nixRules, shellRules)
 import Pkg (buildRules)
+import Liquid (liquidRules)
 
 allWants :: [ String ]
 allWants =
@@ -47,3 +48,4 @@ testRules :: Rules ()
 testRules = do
     Cmd.testRules
     Cmd.lintRules
+    Liquid.liquidRules

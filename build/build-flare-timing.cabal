@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 904adde308c841b015be612be4e63807c0770c5148e6859a0ecb5fbafec6af8d
+-- hash: c5a4fc6b23f29917d3eb781582d90c78cb2e1a8d17a09e9aaf9c62153339cb1d
 
 name:           build-flare-timing
 version:        0.1.0
@@ -36,6 +36,7 @@ executable build-flare-timing
       Cmd
       Doc
       Driver
+      Liquid
       Nix
       Pkg
       Target
