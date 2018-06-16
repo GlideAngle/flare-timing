@@ -101,6 +101,7 @@ data TimeValidityWorking =
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
+{-@ launchValidity :: _ -> _ -> _ -> _ @-}
 launchValidity
     :: NominalLaunch
     -> PilotsPresent
