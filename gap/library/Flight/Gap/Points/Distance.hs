@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleInstances #-}
+﻿{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TemplateHaskell #-}
 
@@ -8,7 +8,7 @@ module Flight.Gap.Points.Distance
     , DifficultyPoints(..)
     ) where
 
-import Control.Newtype (Newtype(..))
+import "newtype" Control.Newtype (Newtype(..))
 import Data.Aeson.Via.Scientific (deriveDefDec, deriveViaSci)
 
 newtype DistancePoints = DistancePoints Rational

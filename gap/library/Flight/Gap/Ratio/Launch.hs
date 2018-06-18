@@ -4,7 +4,7 @@
 
 module Flight.Gap.Ratio.Launch (NominalLaunch(..)) where
 
-import Control.Newtype (Newtype(..))
+import "newtype" Control.Newtype (Newtype(..))
 import Data.Aeson.Via.Scientific (deriveDefDec, deriveViaSci)
 
 newtype NominalLaunch = NominalLaunch Rational

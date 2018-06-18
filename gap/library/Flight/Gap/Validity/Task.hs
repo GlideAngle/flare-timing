@@ -4,7 +4,7 @@
 
 module Flight.Gap.Validity.Task (TaskValidity(..)) where
 
-import Control.Newtype (Newtype(..))
+import "newtype" Control.Newtype (Newtype(..))
 import Data.Aeson.Via.Scientific (deriveDefDec, deriveViaSci)
 
 -- | Also called Day Quality.

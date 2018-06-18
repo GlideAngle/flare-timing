@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+﻿{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleInstances #-}
@@ -15,7 +15,7 @@ module Flight.LatLng.Raw
     , showLng
     ) where
 
-import Control.Newtype (Newtype(..))
+import "newtype" Control.Newtype (Newtype(..))
 import Data.Aeson
     (ToJSON(..), FromJSON(..), (.:), (.=), object, withObject)
 import qualified Data.Csv as Csv ((.:))

@@ -16,4 +16,6 @@
     [ "package.dhall", "changelog.md", "README.md" ]
 , ghc-options =
     [ "-Wall" ]
+, default-extensions =
+    [ "PackageImports" ]
 }

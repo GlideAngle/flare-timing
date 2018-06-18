@@ -1,4 +1,4 @@
-{-# LANGUAGE DataKinds #-}
+﻿{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE QuasiQuotes #-}
@@ -33,7 +33,7 @@ module Flight.Gap.Distance.Chunk
 
 import Data.Maybe (catMaybes)
 import Data.List (sort, group)
-import Control.Newtype (Newtype(..))
+import "newtype" Control.Newtype (Newtype(..))
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.UnitsOfMeasure ((*:), (+:), (-:), u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))

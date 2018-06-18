@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleInstances #-}
+﻿{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TemplateHaskell #-}
 
@@ -9,7 +9,7 @@ module Flight.Gap.Ratio.Leading
     , EssTime(..)
     ) where
 
-import Control.Newtype (Newtype(..))
+import "newtype" Control.Newtype (Newtype(..))
 import Data.Aeson.Via.Scientific (deriveDefDec, deriveViaSci, deriveCsvViaSci)
 
 newtype LeadingAreaStep = LeadingAreaStep Rational

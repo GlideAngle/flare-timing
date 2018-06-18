@@ -16,6 +16,8 @@ liquidRules = do
     where
         shell =
             "stack exec liquid -- "
+            ++ "\"--ghc-option=-XPackageImports\""
+            ++ " "
             ++ "\"--ghc-option=-fplugin Data.UnitsOfMeasure.Plugin\""
             ++ " "
             ++ ("gap" </> "library" </> "Flight" </> "Gap" </> "Validity.hs")

@@ -17,7 +17,7 @@
 
 module Data.Aeson.Via.UnitsOfMeasure (ViaQ(..)) where
 
-import Control.Newtype (Newtype(..))
+import "newtype" Control.Newtype (Newtype(..))
 import Data.Scientific (Scientific)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.UnitsOfMeasure (Unpack, KnownUnit, fromRational', toRational')

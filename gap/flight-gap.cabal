@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b55243d809127fb7ebffa10f84e5279b89c4fc6a579010e54e9bd54772df02b3
+-- hash: 94c804c2075cb6b1e9f741f677f17fe3bafe8769816c93d657a22ace982acf51
 
 name:           flight-gap
 version:        0.1.0
@@ -81,6 +81,7 @@ library
       Paths_flight_gap
   hs-source-dirs:
       library
+  default-extensions: PackageImports
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
@@ -151,6 +152,7 @@ test-suite hlint
   hs-source-dirs:
       library
       test-suite-hlint
+  default-extensions: PackageImports
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
@@ -235,6 +237,7 @@ test-suite score
   hs-source-dirs:
       library
       test-suite-score
+  default-extensions: PackageImports
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson

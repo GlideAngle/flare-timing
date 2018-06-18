@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleContexts #-}
+﻿{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE GADTs #-}
@@ -19,7 +19,7 @@ module Data.Aeson.Via.Scientific
     , deriveCsvViaSci
     ) where
 
-import Control.Newtype (Newtype(..))
+import "newtype" Control.Newtype (Newtype(..))
 import Control.Applicative (empty)
 import Data.Aeson (ToJSON(..), FromJSON(..), Value(Number))
 import Data.Csv (ToField(..), FromField(..))

@@ -4,7 +4,7 @@
 
 module Flight.Gap.Ratio.Goal (NominalGoal(..)) where
 
-import Control.Newtype (Newtype(..))
+import "newtype" Control.Newtype (Newtype(..))
 import Data.Aeson.Via.Scientific (deriveDefDec, deriveViaSci)
 
 newtype NominalGoal = NominalGoal Rational

@@ -7,7 +7,7 @@
 
 module Flight.Zone.Raw.Radius (RawRadius(..), showRadius) where
 
-import Control.Newtype (Newtype(..))
+import "newtype" Control.Newtype (Newtype(..))
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.UnitsOfMeasure (KnownUnit, Unpack, u)
 import Data.UnitsOfMeasure.Show (showQuantity)
