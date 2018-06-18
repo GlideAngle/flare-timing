@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ece75a7ee1446a2ffd7fbe1c003b6f934fc0928ccfbbb5c09978603dd67fdc03
+-- hash: ac519ed97601bf78b4b29f18d081777872a71955c2425eb87a5820eb7cecd1a9
 
 name:           flight-lookup
 version:        0.1.0
@@ -40,6 +40,7 @@ library
       Paths_flight_lookup
   hs-source-dirs:
       library
+  default-extensions: PackageImports
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
@@ -80,6 +81,7 @@ test-suite hlint
   hs-source-dirs:
       library
       test-suite-hlint
+  default-extensions: PackageImports
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson

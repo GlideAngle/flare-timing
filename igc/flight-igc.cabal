@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e1b315ad435633aaf78a73298480b6b15b3ad79b594f6b1fed8cc537a3dfb009
+-- hash: bffae32d4f5784be3ced735162b8b632acf82101b4deeb35f8d51668f4d914d8
 
 name:           flight-igc
 version:        0.1.0
@@ -37,6 +37,7 @@ library
       Paths_flight_igc
   hs-source-dirs:
       library
+  default-extensions: PackageImports
   ghc-options: -Wall
   build-depends:
       base >=4.5 && <5
@@ -52,6 +53,7 @@ test-suite hlint
       Paths_flight_igc
   hs-source-dirs:
       test-suite
+  default-extensions: PackageImports
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       base

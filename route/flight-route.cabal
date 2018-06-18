@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a823515f1a71ed452359cc035ea7a3de4173895e5ba2f7e0009c60eade4612d0
+-- hash: 2cfc313389c451559ac5b0485541ecfa0fbd4e1d4200e467a1a325c32e804a7a
 
 name:           flight-route
 version:        0.1.0
@@ -41,6 +41,7 @@ library
       Paths_flight_route
   hs-source-dirs:
       library
+  default-extensions: PackageImports
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
@@ -72,6 +73,7 @@ test-suite hlint
   hs-source-dirs:
       library
       test-suite-hlint
+  default-extensions: PackageImports
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson

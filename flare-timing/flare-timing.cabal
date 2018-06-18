@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f9c45fe80cf657a49804acd1014c7a7f2dc6adfef669600f8cf7437ca768bbbe
+-- hash: 284ad9bd73638163aa40d6a760c24f8c8c51de73dcbcba5278d7491a298ebaaf
 
 name:           flare-timing
 version:        0.1.0
@@ -37,6 +37,7 @@ executable align-time
       Paths_flare_timing
   hs-source-dirs:
       prod-apps/align-time
+  default-extensions: PackageImports
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
@@ -81,6 +82,7 @@ executable cross-zone
       Paths_flare_timing
   hs-source-dirs:
       prod-apps/cross-zone
+  default-extensions: PackageImports
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
@@ -122,6 +124,7 @@ executable discard-further
       Paths_flare_timing
   hs-source-dirs:
       prod-apps/discard-further
+  default-extensions: PackageImports
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
@@ -166,6 +169,7 @@ executable extract-input
       Paths_flare_timing
   hs-source-dirs:
       prod-apps/extract-input
+  default-extensions: PackageImports
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
@@ -199,6 +203,7 @@ executable gap-point
       Paths_flare_timing
   hs-source-dirs:
       prod-apps/gap-point
+  default-extensions: PackageImports
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
@@ -239,6 +244,7 @@ executable land-out
       Paths_flare_timing
   hs-source-dirs:
       prod-apps/land-out
+  default-extensions: PackageImports
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
@@ -278,6 +284,7 @@ executable mask-track
       Paths_flare_timing
   hs-source-dirs:
       prod-apps/mask-track
+  default-extensions: PackageImports
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
@@ -325,6 +332,7 @@ executable tag-zone
       Paths_flare_timing
   hs-source-dirs:
       prod-apps/tag-zone
+  default-extensions: PackageImports
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
@@ -363,6 +371,7 @@ executable task-length
       Paths_flare_timing
   hs-source-dirs:
       prod-apps/task-length
+  default-extensions: PackageImports
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
@@ -396,6 +405,7 @@ executable test-fsdb-parser
       Paths_flare_timing
   hs-source-dirs:
       test-apps/fsdb-parser
+  default-extensions: PackageImports
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       base
@@ -421,6 +431,7 @@ executable test-igc-parser
       Paths_flare_timing
   hs-source-dirs:
       test-apps/igc-parser
+  default-extensions: PackageImports
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       base
@@ -444,6 +455,7 @@ executable test-kml-parser
       Paths_flare_timing
   hs-source-dirs:
       test-apps/kml-parser
+  default-extensions: PackageImports
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       base
@@ -467,6 +479,7 @@ test-suite hlint
       Paths_flare_timing
   hs-source-dirs:
       test-suite-hlint
+  default-extensions: PackageImports
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       base

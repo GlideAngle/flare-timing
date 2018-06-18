@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: afac2c58c034e1130a4159a6d076daa1c03267635b9235f7b5ad9da4d4d01909
+-- hash: 0d300a5f421090c5a1f66f1abd4e3ef8688c7892fd42aeb34d3533100758c8ce
 
 name:           flight-comp
 version:        0.1.0
@@ -49,6 +49,7 @@ library
       Paths_flight_comp
   hs-source-dirs:
       library
+  default-extensions: PackageImports
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
@@ -97,6 +98,7 @@ test-suite comp
   hs-source-dirs:
       library
       test-suite-comp
+  default-extensions: PackageImports
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
@@ -151,6 +153,7 @@ test-suite hlint
   hs-source-dirs:
       library
       test-suite-hlint
+  default-extensions: PackageImports
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson

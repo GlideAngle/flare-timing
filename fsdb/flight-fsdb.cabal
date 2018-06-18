@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b2457965baafa85db9f3af2da5c328531c8da84ea39e014eaf8fa7abb173375e
+-- hash: 10b9995c490fe47faf32f30e0cc7c3af4ce201a7443dc4cb81d20d60dc9130e5
 
 name:           flight-fsdb
 version:        0.1.0
@@ -43,6 +43,7 @@ library
       Paths_flight_fsdb
   hs-source-dirs:
       library
+  default-extensions: PackageImports
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
@@ -79,6 +80,7 @@ test-suite hlint
   hs-source-dirs:
       library
       test-suite-hlint
+  default-extensions: PackageImports
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
@@ -116,6 +118,7 @@ test-suite parse
   hs-source-dirs:
       library
       test-suite-parse
+  default-extensions: PackageImports
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson

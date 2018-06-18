@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: def1197c2ed3ac732a2207a3822da01f613d9dc601f7c821dd46d9a654db626b
+-- hash: 4f3bdcbf2fb2a02655caf7abedc907a1f72b680346c90c6538c8b10242b8cf85
 
 name:           aeson-via-sci
 version:        0.1.0
@@ -37,6 +37,7 @@ library
       Paths_aeson_via_sci
   hs-source-dirs:
       library
+  default-extensions: PackageImports
   ghc-options: -Wall
   build-depends:
       aeson
@@ -56,6 +57,7 @@ test-suite hlint
   hs-source-dirs:
       library
       test-suite-hlint
+  default-extensions: PackageImports
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson

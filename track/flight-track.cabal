@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: df8be7abc9ee4384cf7c38a987e538f2fbe336f9db2708bde1f1bc4b1fa462aa
+-- hash: 1c3e50e3627e23befba1092f3abd4f12b91d1ce04f1d8ad47e2eef8a76bf33e2
 
 name:           flight-track
 version:        0.1.0
@@ -37,6 +37,7 @@ library
       Paths_flight_track
   hs-source-dirs:
       library
+  default-extensions: PackageImports
   ghc-options: -Wall
   build-depends:
       base >=4.5 && <5
@@ -63,6 +64,7 @@ test-suite hlint
   hs-source-dirs:
       library
       test-suite-hlint
+  default-extensions: PackageImports
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       base

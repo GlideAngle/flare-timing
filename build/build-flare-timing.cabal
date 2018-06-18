@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c5a4fc6b23f29917d3eb781582d90c78cb2e1a8d17a09e9aaf9c62153339cb1d
+-- hash: df35db17d2e3d05451e107db82e858ef13bd13a5eb40be6f64714e97cce6bdd9
 
 name:           build-flare-timing
 version:        0.1.0
@@ -44,6 +44,7 @@ executable build-flare-timing
       Paths_build_flare_timing
   hs-source-dirs:
       app-cmd
+  default-extensions: PackageImports
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       ansi-terminal
@@ -59,6 +60,7 @@ test-suite hlint
       Paths_build_flare_timing
   hs-source-dirs:
       test-suite-hlint
+  default-extensions: PackageImports
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       base

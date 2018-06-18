@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e065471d5e75133d57aaaad3b880689f4cef60d0bed4ab66a9021ffb7620ed7c
+-- hash: 8c97c4fa7c33658949bb2efd8d0abc942feee9c7dd490eb745ae7a3246d2bb64
 
 name:           flight-zone
 version:        0.1.0
@@ -45,6 +45,7 @@ library
       Paths_flight_zone
   hs-source-dirs:
       library
+  default-extensions: PackageImports
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
@@ -76,6 +77,7 @@ test-suite hlint
   hs-source-dirs:
       library
       test-suite-hlint
+  default-extensions: PackageImports
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson

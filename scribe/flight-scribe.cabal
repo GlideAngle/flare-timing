@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e7320af6dc107d9b6265328c411b924ceeeafaa16948a66942e441cf95d63da0
+-- hash: 2f7d8cfed4a40af57669f6d27a4baf801cf3cf27d6b05ac906de66bacbbce0a4
 
 name:           flight-scribe
 version:        0.1.0
@@ -39,6 +39,7 @@ library
       Paths_flight_scribe
   hs-source-dirs:
       library
+  default-extensions: PackageImports
   ghc-options: -Wall
   build-depends:
       aeson
@@ -76,6 +77,7 @@ test-suite hlint
   hs-source-dirs:
       library
       test-suite-hlint
+  default-extensions: PackageImports
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson

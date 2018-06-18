@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 02c12e94884d147c959c5562c8fc4f3a23f93775f8c545a80d7102d8a8919041
+-- hash: 7ff3ce11c7ed7ee9cfbc09c48ad37ef84b242423ea201d63bde5c3ee6ad4bbf3
 
 name:           siggy-chardust
 version:        0.1.0
@@ -37,6 +37,7 @@ library
       Paths_siggy_chardust
   hs-source-dirs:
       library
+  default-extensions: PackageImports
   ghc-options: -Wall
   build-depends:
       base >=4.5 && <5
@@ -51,6 +52,7 @@ test-suite digits
   hs-source-dirs:
       library
       test-suite-digits
+  default-extensions: PackageImports
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       base
@@ -70,6 +72,7 @@ test-suite hlint
   hs-source-dirs:
       library
       test-suite-hlint
+  default-extensions: PackageImports
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       base

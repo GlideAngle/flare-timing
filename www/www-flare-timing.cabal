@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 274c60a7d4a6bd1c757349e45f372a8355de09eb016843cd9c9b0058a65834ed
+-- hash: 1f5f70b2c461321244824b8fb0c4c8000fbdcf9d964c3286e90b960139ee17a9
 
 name:           www-flare-timing
 version:        0.1.0
@@ -39,6 +39,7 @@ executable comp-serve
       Paths_www_flare_timing
   hs-source-dirs:
       serve
+  default-extensions: PackageImports
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
@@ -68,6 +69,7 @@ test-suite hlint
       Paths_www_flare_timing
   hs-source-dirs:
       test-suite-hlint
+  default-extensions: PackageImports
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       base

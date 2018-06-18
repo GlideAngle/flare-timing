@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 52d729d1f2d9cbda6cd0aec8a32f7e58bda8aab844ff8b7ce496e126665558c5
+-- hash: 7fbe1162bad5008cded9f50d25b5b1668862ad89360c499ba60499023289e24a
 
 name:           flight-earth
 version:        0.1.0
@@ -58,6 +58,7 @@ library
       Paths_flight_earth
   hs-source-dirs:
       library
+  default-extensions: PackageImports
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
@@ -153,6 +154,7 @@ test-suite earth
   hs-source-dirs:
       library
       test-suite-earth
+  default-extensions: PackageImports
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
@@ -209,6 +211,7 @@ test-suite hlint
   hs-source-dirs:
       library
       test-suite-hlint
+  default-extensions: PackageImports
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson

@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d2173276b2ff574ebd78f16f51deee9cc985f157d39a7f293b96dc5b99893792
+-- hash: 5ed5d07e4315de115bcb31cc7bccfd79afd434406e0a25cee5364792f15a2f1e
 
 name:           flight-kml
 version:        0.1.0
@@ -38,6 +38,7 @@ library
       Paths_flight_kml
   hs-source-dirs:
       library
+  default-extensions: PackageImports
   ghc-options: -Wall
   build-depends:
       aeson
@@ -62,6 +63,7 @@ test-suite hlint
   hs-source-dirs:
       library
       test-suite-hlint
+  default-extensions: PackageImports
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
@@ -88,6 +90,7 @@ test-suite parse
   hs-source-dirs:
       library
       test-suite-parse
+  default-extensions: PackageImports
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson

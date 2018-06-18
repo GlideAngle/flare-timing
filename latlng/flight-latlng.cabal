@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: eb90d86f4a87a355e94a533c3c8626f14b8bb6a67271aa45a993a0151e455be8
+-- hash: 9614a706e44d5dc28dcea0e228329a332be3c80cf17c161d81dd0d7def38d6f3
 
 name:           flight-latlng
 version:        0.1.0
@@ -44,6 +44,7 @@ library
       Paths_flight_latlng
   hs-source-dirs:
       library
+  default-extensions: PackageImports
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
@@ -80,6 +81,7 @@ test-suite hlint
   hs-source-dirs:
       library
       test-suite-hlint
+  default-extensions: PackageImports
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson

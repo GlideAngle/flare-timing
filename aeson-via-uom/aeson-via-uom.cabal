@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ee3782c3d4f84a412022f43305c30b20a7a52d2b3fdf83f90dc8bbc58e672b27
+-- hash: adabfe379aea4446a6a7f3b20a469950ae50682dcd24f214b514265c3644da20
 
 name:           aeson-via-uom
 version:        0.1.0
@@ -37,6 +37,7 @@ library
       Paths_aeson_via_uom
   hs-source-dirs:
       library
+  default-extensions: PackageImports
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
@@ -57,6 +58,7 @@ test-suite hlint
   hs-source-dirs:
       library
       test-suite-hlint
+  default-extensions: PackageImports
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
