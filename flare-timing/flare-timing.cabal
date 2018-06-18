@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d8a7adc9370b995a83cb3efab6ccf0f192bea3e17f69ede1d76ba7cc7acef115
+-- hash: f9c45fe80cf657a49804acd1014c7a7f2dc6adfef669600f8cf7437ca768bbbe
 
 name:           flare-timing
 version:        0.1.0
@@ -411,6 +411,7 @@ executable test-fsdb-parser
     , raw-strings-qq
     , system-filepath
     , transformers
+    , uom-plugin
   default-language: Haskell2010
 
 executable test-igc-parser

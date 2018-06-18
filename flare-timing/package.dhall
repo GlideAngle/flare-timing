@@ -411,6 +411,7 @@
               , "cmdargs"
               , "mtl"
               , "transformers"
+              , "uom-plugin"
               , "flight-cmd"
               , "flight-comp"
               , "flight-fsdb"
