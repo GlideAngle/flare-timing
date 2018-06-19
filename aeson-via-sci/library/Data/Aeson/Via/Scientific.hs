@@ -134,8 +134,8 @@ deriveDefDec dp name =
             defdp _ = DecimalPlaces dp
         |]
 
--- | Derives an instance of @Default__Dec__imalPlaces@ taking a constant number
--- of decimal places from the given 'DecimalPlaces' newtype.
+-- | Taking a __const__ant number of __dec__imal places from the given
+-- 'DecimalPlaces' newtype, derives an instance of @DefaultDecimalPlaces@
 deriveConstDec :: DecimalPlaces -> Name -> Q [Dec]
 deriveConstDec dp name =
     [d|
