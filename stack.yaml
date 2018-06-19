@@ -37,15 +37,10 @@ packages:
     commit: e29503775e474b7a7cd8951b6bebcf1529b888b5
   extra-dep: true
 - location:
-    git: https://github.com/blockscope/uom-plugin.git
-    commit: c170a2df329fe8e40d13aea0b4299758d5079bda
-  subdirs:
-  - uom-plugin
-  extra-dep: true
-- location:
     git: https://github.com/brunjlar/stack2cabal
     commit: a8a4cdcacd697cee648af93856735f15de5987a6
   extra-dep: true
 extra-deps:
 - hxt-xpath-9.1.2.2
+- uom-plugin-0.3.0.0
 local-bin-path: __shake-build
