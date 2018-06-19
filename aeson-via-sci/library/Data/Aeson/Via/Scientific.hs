@@ -12,8 +12,8 @@ License     : MPL-2.0
 Maintainer  : phil.dejoux@blockscope.com
 Stability   : experimental
 
-Aeson for newtype rationals but encoded and decoded as scientific with a fixed
-number of decimal places.
+For encoding and decoding newtype rationals as scientific with a fixed number
+of decimal places.
 -}
 module Data.Aeson.Via.Scientific
     (
@@ -55,9 +55,9 @@ import Language.Haskell.TH.Syntax
 -- a bit more than a mm at the equator and less elsewhere.
 --
 --     * 1.1132 mm at the equator
---     * 1.0247 mm at 23 N/S
---     * 787.1 µm at 45 N/S
---     * 434.96 µm at 67 N/S
+--     * 1.0247 mm at 23° N/S
+--     * 787.1 µm at 45° N/S
+--     * 434.96 µm at 67° N/S
 dpDegree :: DecimalPlaces
 dpDegree = DecimalPlaces 8
 
