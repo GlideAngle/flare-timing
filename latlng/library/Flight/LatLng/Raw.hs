@@ -27,9 +27,11 @@ import Data.Aeson.Via.Scientific
     )
 
 data RawLatLng =
-    RawLatLng { lat :: RawLat
-              , lng :: RawLng
-              } deriving (Eq, Ord, Show)
+    RawLatLng
+        { lat :: RawLat
+        , lng :: RawLng
+        }
+    deriving (Eq, Ord, Show)
 
 instance ToJSON RawLatLng where
     toJSON RawLatLng{..} =

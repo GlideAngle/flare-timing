@@ -5,14 +5,31 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE DeriveLift #-}
 
+{-|
+Module      : Data.Aeson.Via.Scientific
+Copyright   : (c) Block Scope Limited 2018
+License     : MPL-2.0
+Maintainer  : phil.dejoux@blockscope.com
+Stability   : experimental
+
+Aeson for newtype rationals but encoded and decoded as scientific with a fixed
+number of decimal places.
+-}
 module Data.Aeson.Via.Scientific
-    ( ViaSci(..)
+    (
+    -- * How to use this library
+    -- $use
+    -- * Data
+      ViaSci(..)
     , DecimalPlaces(..)
-    , DefaultDecimalPlaces(..)
+    -- * Conversions
     , fromSci
     , toSci
+    -- * Defaults and Display
+    , DefaultDecimalPlaces(..)
     , showSci
     , dpDegree
+    -- * Deriving instances with Template Haskell
     , deriveDefDec
     , deriveConstDec
     , deriveViaSci
@@ -33,18 +50,20 @@ import Data.Scientific
 import Language.Haskell.TH (Q, Name, Dec, conT)
 import Language.Haskell.TH.Syntax
 
--- | Decimal degrees at 8 decimal places is just a bit more than a mm.
+-- | A choice of 8 decimal places for
+-- <https://en.wikipedia.org/wiki/Decimal_degrees decimal degrees> is just
+-- a bit more than a mm at the equator and less elsewhere.
 --
 --     * 1.1132 mm at the equator
 --     * 1.0247 mm at 23 N/S
 --     * 787.1 µm at 45 N/S
 --     * 434.96 µm at 67 N/S
--- SOURCE: <https://en.wikipedia.org/wiki/Decimal_degrees>
 dpDegree :: DecimalPlaces
 dpDegree = DecimalPlaces 8
 
 -- NOTE: For deriving Lift, see https://ghc.haskell.org/trac/ghc/ticket/14296
-newtype DecimalPlaces = DecimalPlaces Int deriving Lift
+-- | A positive number of decimal places.
+newtype DecimalPlaces = DecimalPlaces Int deriving (Show, Lift)
 
 fromSci :: Scientific -> Rational
 fromSci x = toRational (toRealFloat x :: Double)
@@ -59,10 +78,14 @@ showSci :: DecimalPlaces -> Scientific -> String
 showSci (DecimalPlaces dp) =
     formatScientific Fixed (Just dp)
 
+-- | A default number of decimal places for a type.
 class DefaultDecimalPlaces a where
     defdp :: a -> DecimalPlaces
     defdp _ = DecimalPlaces 0
 
+-- | A type used during encoding to JSON with @aeson@ and during encoding to
+-- CSV with @cassava@ so that a rational value can be encoded as if it was
+-- a scientific value with a fixed number of decimal places.
 data ViaSci n where
     ViaSci
         :: (DefaultDecimalPlaces n, Newtype n Rational)
@@ -95,7 +118,11 @@ instance
     parseField x = ViaSci <$> (pack . fromSci <$> parseField x)
 
 -- SEE: https://markkarpov.com/tutorial/th.html
-deriveDefDec :: Int -> Name -> Q [Dec]
+-- | Derives an instance of @__Def__ault__Dec__imalPlaces@ 
+deriveDefDec
+    :: Int -- ^ The number of decimal places
+    -> Name -- ^ The name of the type
+    -> Q [Dec]
 deriveDefDec dp name =
     [d|
         instance DefaultDecimalPlaces $(conT name) where
@@ -109,6 +136,8 @@ deriveConstDec dp name =
             defdp _ = $(lift dp)
         |]
 
+-- | Derives an instance of @ToJSON@ wrapping the value with @ViaSci@ before
+-- encoding. Similarly the value is decoded as @ViaSci@ and then unwrapped.
 deriveViaSci :: Name -> Q [Dec]
 deriveViaSci name =
     [d|
@@ -123,6 +152,8 @@ deriveViaSci name =
     where
         a = conT name
 
+-- | Derives an instance of @ToField@ wrapping the value with @ViaSci@ before
+-- encoding. Similarly the value is decoded as @ViaSci@ and then unwrapped.
 deriveCsvViaSci :: Name -> Q [Dec]
 deriveCsvViaSci name =
     [d|
@@ -136,3 +167,35 @@ deriveCsvViaSci name =
         |]
     where
         a = conT name
+
+-- $use
+-- Let's say we have a latitude that is a @newtype@ 'Rational' number but we
+-- want it to be encoded to JSON with a fixed number of decimal places.
+--
+-- @
+-- newtype Lat = Lat Rational deriving (Eq, Ord, Show)
+-- @
+--
+-- Derive instances of 'DefaultDecimalPlaces' and 'ViaSci'.
+--
+-- @ 
+-- deriveConstDec 8 ''Lat
+-- deriveViaSci ''Lat
+-- @
+--
+-- Types going 'ViaSci' also need to be instances of 'Newtype'.
+-- 
+-- @
+-- instance Newtype Lat Rational where
+--     pack = Lat
+--     unpack (Lat a) = a
+-- @
+-- 
+-- > >>> let angle = 1122334455667788 % 10000000000000000
+-- > >>> fromRational angle
+-- > 0.1122334455667788
+-- > >>> let lat = Lat angle
+-- > >>> encode angle
+-- > "{\"numerator\":280583613916947,\"denominator\":2500000000000000}"
+-- > >>> encode lat
+-- > "0.11223344"
