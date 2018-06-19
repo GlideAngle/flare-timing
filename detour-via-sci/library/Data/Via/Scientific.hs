@@ -17,7 +17,7 @@ of decimal places.
 -}
 module Data.Via.Scientific
     (
-    -- * How to use this library
+    -- * Usage
     -- $use
     
     -- * Decimal Places
@@ -176,6 +176,9 @@ deriveCsvViaSci name =
         a = conT name
 
 -- $use
+-- When having to check numbers by hand, a fixed decimal is more familiar than
+-- a ratio of possibly large integers.
+-- 
 -- Let's say we have a latitude that is a @newtype@ 'Rational' number but we
 -- want it to be encoded to JSON with a fixed number of decimal places.
 --

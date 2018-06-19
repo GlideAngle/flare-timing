@@ -2,7 +2,7 @@
 ⫽ { name =
       "detour-via-sci"
   , synopsis =
-      "JSON encoding and decoding for rationals via scientific."
+      "JSON and CSV encoding and decoding for newtype rationals via scientific with fixed decimal places."
   , description =
       "Lossy JSON encoding for rationals."
   , category =
