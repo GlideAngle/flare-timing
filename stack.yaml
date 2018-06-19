@@ -1,4 +1,4 @@
-resolver: lts-11.8
+resolver: lts-11.14
 tested-with: GHC == 8.2.2
 flags: {}
 packages:
