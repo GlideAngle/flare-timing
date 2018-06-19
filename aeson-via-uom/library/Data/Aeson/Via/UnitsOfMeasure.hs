@@ -1,4 +1,4 @@
-{-# LANGUAGE ScopedTypeVariables #-}
+﻿{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
@@ -26,7 +26,7 @@ import Data.UnitsOfMeasure.Show (showQuantity)
 import Data.UnitsOfMeasure.Read (QuantityWithUnit(..), Some(..), readQuantity)
 
 import Flight.Units ()
-import Data.Aeson.Via.Scientific (DefaultDecimalPlaces(..), fromSci, toSci)
+import Data.Via.Scientific (DefaultDecimalPlaces(..), fromSci, toSci)
 
 data ViaQ n a u where
     ViaQ

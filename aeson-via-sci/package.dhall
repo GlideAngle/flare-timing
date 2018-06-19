@@ -21,7 +21,7 @@
       , source-dirs =
           "library"
       , exposed-modules =
-          [ "Data.Aeson.Via.Scientific" ]
+          [ "Data.Via.Scientific" ]
       }
   , tests =
       { hlint =

@@ -1,11 +1,11 @@
-{-# LANGUAGE FlexibleInstances #-}
+﻿{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TemplateHaskell #-}
 
 module Flight.Gap.Distance.Relative (RelativeDifficulty(..)) where
 
 import Control.Newtype (Newtype(..))
-import Data.Aeson.Via.Scientific (deriveDefDec, deriveViaSci)
+import Data.Via.Scientific (deriveDefDec, deriveViaSci)
 
 -- | The relative difficulty of a chunk.
 newtype RelativeDifficulty = RelativeDifficulty Rational

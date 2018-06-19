@@ -1,4 +1,4 @@
-{-# LANGUAGE DeriveGeneric #-}
+﻿{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
@@ -29,7 +29,7 @@ import Data.Time.Clock (UTCTime, addUTCTime)
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 
-import Data.Aeson.Via.Scientific
+import Data.Via.Scientific
     ( DefaultDecimalPlaces(..)
     , deriveDefDec, toSci, showSci
     )

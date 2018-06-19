@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: def1197c2ed3ac732a2207a3822da01f613d9dc601f7c821dd46d9a654db626b
+-- hash: 3c846e52cce37f5f537c3c94818c3bd4f250daaffc0bee1295e6e3c42d00fdd3
 
 name:           aeson-via-sci
 version:        0.1.0
@@ -32,7 +32,7 @@ source-repository head
 
 library
   exposed-modules:
-      Data.Aeson.Via.Scientific
+      Data.Via.Scientific
   other-modules:
       Paths_aeson_via_sci
   hs-source-dirs:
@@ -51,7 +51,7 @@ test-suite hlint
   type: exitcode-stdio-1.0
   main-is: HLint.hs
   other-modules:
-      Data.Aeson.Via.Scientific
+      Data.Via.Scientific
       Paths_aeson_via_sci
   hs-source-dirs:
       library

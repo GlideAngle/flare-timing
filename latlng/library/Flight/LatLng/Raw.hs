@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+﻿{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleInstances #-}
@@ -21,7 +21,7 @@ import Data.Aeson
 import qualified Data.Csv as Csv ((.:))
 import Data.Csv
     (ToNamedRecord(..), FromNamedRecord(..), namedRecord, namedField)
-import Data.Aeson.Via.Scientific
+import Data.Via.Scientific
     ( dpDegree, fromSci, toSci, showSci
     , deriveConstDec, deriveViaSci, deriveCsvViaSci
     )

@@ -1,4 +1,4 @@
-{-# LANGUAGE DataKinds #-}
+﻿{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE QuasiQuotes #-}
@@ -12,7 +12,7 @@ import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
-import Data.Aeson.Via.Scientific (DefaultDecimalPlaces(..), DecimalPlaces(..))
+import Data.Via.Scientific (DefaultDecimalPlaces(..), DecimalPlaces(..))
 import Data.Aeson.Via.UnitsOfMeasure (ViaQ(..))
 
 -- | Pilot time for the task, units of hours.

@@ -6,7 +6,7 @@
 {-# LANGUAGE DeriveLift #-}
 
 {-|
-Module      : Data.Aeson.Via.Scientific
+Module      : Data.Via.Scientific
 Copyright   : (c) Block Scope Limited 2018
 License     : MPL-2.0
 Maintainer  : phil.dejoux@blockscope.com
@@ -15,7 +15,7 @@ Stability   : experimental
 For encoding and decoding newtype rationals as scientific with a fixed number
 of decimal places.
 -}
-module Data.Aeson.Via.Scientific
+module Data.Via.Scientific
     (
     -- * How to use this library
     -- $use

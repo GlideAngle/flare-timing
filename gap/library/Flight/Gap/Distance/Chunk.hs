@@ -1,4 +1,4 @@
-{-# LANGUAGE DataKinds #-}
+﻿{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE QuasiQuotes #-}
@@ -40,7 +40,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import GHC.Generics (Generic)
 
 import Flight.Units ()
-import Data.Aeson.Via.Scientific (DefaultDecimalPlaces(..), DecimalPlaces(..))
+import Data.Via.Scientific (DefaultDecimalPlaces(..), DecimalPlaces(..))
 import Data.Aeson.Via.UnitsOfMeasure (ViaQ(..))
 import Flight.Gap.Distance.Relative (RelativeDifficulty(..))
 import Flight.Gap.Distance.Fraction (DifficultyFraction(..))

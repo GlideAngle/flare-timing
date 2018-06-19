@@ -1,11 +1,11 @@
-{-# LANGUAGE FlexibleInstances #-}
+﻿{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TemplateHaskell #-}
 
 module Flight.Gap.Weight.GoalRatio (GoalRatio(..)) where
 
 import Control.Newtype (Newtype(..))
-import Data.Aeson.Via.Scientific (deriveDefDec, deriveViaSci)
+import Data.Via.Scientific (deriveDefDec, deriveViaSci)
 
 -- | Pilots in goal versus pilots flying.
 newtype GoalRatio = GoalRatio Rational

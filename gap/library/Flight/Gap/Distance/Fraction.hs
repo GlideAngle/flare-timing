@@ -1,11 +1,11 @@
-{-# LANGUAGE FlexibleInstances #-}
+﻿{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TemplateHaskell #-}
 
 module Flight.Gap.Distance.Fraction (DifficultyFraction(..)) where
 
 import Control.Newtype (Newtype(..))
-import Data.Aeson.Via.Scientific (deriveDefDec, deriveViaSci)
+import Data.Via.Scientific (deriveDefDec, deriveViaSci)
 
 -- | The sum of relative difficulties up until the chunk of landing.
 newtype DifficultyFraction = DifficultyFraction Rational
