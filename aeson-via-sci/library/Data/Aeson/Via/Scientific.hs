@@ -19,16 +19,16 @@ module Data.Aeson.Via.Scientific
     (
     -- * How to use this library
     -- $use
-    -- * Data
-      ViaSci(..)
-    , DecimalPlaces(..)
+    
+    -- * Decimal Places
+      DecimalPlaces(..)
+    , ViaSci(..)
+    , DefaultDecimalPlaces(..)
+    , dpDegree
+    , showSci
     -- * Conversions
     , fromSci
     , toSci
-    -- * Defaults and Display
-    , DefaultDecimalPlaces(..)
-    , showSci
-    , dpDegree
     -- * Deriving instances with Template Haskell
     , deriveDefDec
     , deriveConstDec
@@ -65,15 +65,19 @@ dpDegree = DecimalPlaces 8
 -- | A positive number of decimal places.
 newtype DecimalPlaces = DecimalPlaces Int deriving (Show, Lift)
 
+-- | From 'Scientific' exactly to 'Rational'.
 fromSci :: Scientific -> Rational
 fromSci x = toRational (toRealFloat x :: Double)
 
+-- | To 'Scientific' from 'Rational' as near as possible up to the given number
+-- of 'DecimalPlaces'.
 toSci :: DecimalPlaces -> Rational -> Scientific
 toSci (DecimalPlaces dp) x =
     case fromRationalRepetend (Just $ dp + 1) x of
         Left (s, _) -> s
         Right (s, _) -> s
 
+-- | Shows a 'Scientific' value with a fixed number of decimal places.
 showSci :: DecimalPlaces -> Scientific -> String
 showSci (DecimalPlaces dp) =
     formatScientific Fixed (Just dp)
@@ -83,9 +87,12 @@ class DefaultDecimalPlaces a where
     defdp :: a -> DecimalPlaces
     defdp _ = DecimalPlaces 0
 
--- | A type used during encoding to JSON with @aeson@ and during encoding to
--- CSV with @cassava@ so that a rational value can be encoded as if it was
--- a scientific value with a fixed number of decimal places.
+-- | An intermediate type used during encoding to JSON with @aeson@ and during
+-- encoding to CSV with @cassava@. It's also used during decoding.
+--
+-- The original type, a newtype 'Rational', goes to and fro __via__
+-- __sci__entific so that the rational value can be encoded as a scientific
+-- value with a fixed number of decimal places.
 data ViaSci n where
     ViaSci
         :: (DefaultDecimalPlaces n, Newtype n Rational)
@@ -118,17 +125,17 @@ instance
     parseField x = ViaSci <$> (pack . fromSci <$> parseField x)
 
 -- SEE: https://markkarpov.com/tutorial/th.html
--- | Derives an instance of @__Def__ault__Dec__imalPlaces@ 
-deriveDefDec
-    :: Int -- ^ The number of decimal places
-    -> Name -- ^ The name of the type
-    -> Q [Dec]
+-- | Derives an instance of @__Def__ault__Dec__imalPlaces@ taking the number of
+-- decimal places from the given raw 'Int'.
+deriveDefDec :: Int -> Name -> Q [Dec]
 deriveDefDec dp name =
     [d|
         instance DefaultDecimalPlaces $(conT name) where
             defdp _ = DecimalPlaces dp
         |]
 
+-- | Derives an instance of @Default__Dec__imalPlaces@ taking a constant number
+-- of decimal places from the given 'DecimalPlaces' newtype.
 deriveConstDec :: DecimalPlaces -> Name -> Q [Dec]
 deriveConstDec dp name =
     [d|
@@ -136,8 +143,9 @@ deriveConstDec dp name =
             defdp _ = $(lift dp)
         |]
 
--- | Derives an instance of @ToJSON@ wrapping the value with @ViaSci@ before
--- encoding. Similarly the value is decoded as @ViaSci@ and then unwrapped.
+-- | Derives an instance of 'ToJSON' wrapping the value with 'ViaSci' before
+-- encoding. Similarly the value is decoded as 'ViaSci' and then unwrapped in
+-- the derived instance of 'FromJSON'.
 deriveViaSci :: Name -> Q [Dec]
 deriveViaSci name =
     [d|
@@ -152,8 +160,9 @@ deriveViaSci name =
     where
         a = conT name
 
--- | Derives an instance of @ToField@ wrapping the value with @ViaSci@ before
--- encoding. Similarly the value is decoded as @ViaSci@ and then unwrapped.
+-- | Derives an instance of 'ToField' wrapping the value with 'ViaSci' before
+-- encoding. Similarly the value is decoded as 'ViaSci' and then unwrapped in
+-- the derived instance of 'FromField'.
 deriveCsvViaSci :: Name -> Q [Dec]
 deriveCsvViaSci name =
     [d|
