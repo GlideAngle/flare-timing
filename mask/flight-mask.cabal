@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 9ffc2d0951377bf5f94840418633751972896249411ef6519dfebe537c7499a3
+-- hash: 84b9e74513681d47efe142c4ebbc0228a858d77505f9382eb3fc8a2d1c3a8b99
 
 name:           flight-mask
 version:        0.1.0
@@ -52,11 +52,11 @@ library
   default-extensions: ScopedTypeVariables DataKinds FlexibleContexts FlexibleInstances MultiParamTypeClasses TypeOperators TypeFamilies UndecidableInstances QuasiQuotes DisambiguateRecordFields NamedFieldPuns LambdaCase PartialTypeSignatures RecordWildCards
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
-      aeson-via-sci
-    , base >=4.5 && <5
+      base >=4.5 && <5
     , bytestring
     , cmdargs
     , containers
+    , detour-via-sci
     , directory
     , fgl
     , filepath
@@ -107,11 +107,11 @@ test-suite hlint
   default-extensions: ScopedTypeVariables DataKinds FlexibleContexts FlexibleInstances MultiParamTypeClasses TypeOperators TypeFamilies UndecidableInstances QuasiQuotes DisambiguateRecordFields NamedFieldPuns LambdaCase PartialTypeSignatures RecordWildCards ScopedTypeVariables DataKinds FlexibleContexts FlexibleInstances MultiParamTypeClasses TypeOperators TypeFamilies UndecidableInstances QuasiQuotes DisambiguateRecordFields NamedFieldPuns LambdaCase PartialTypeSignatures RecordWildCards
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
-      aeson-via-sci
-    , base
+      base
     , bytestring
     , cmdargs
     , containers
+    , detour-via-sci
     , directory
     , fgl
     , filepath

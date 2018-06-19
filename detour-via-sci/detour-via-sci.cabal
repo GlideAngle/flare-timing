@@ -2,9 +2,9 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3c846e52cce37f5f537c3c94818c3bd4f250daaffc0bee1295e6e3c42d00fdd3
+-- hash: 887791a88a41c916c7199338fafe3c2b1da2aa614a17a45db6618c3a032d6ec0
 
-name:           aeson-via-sci
+name:           detour-via-sci
 version:        0.1.0
 synopsis:       JSON encoding and decoding for rationals via scientific.
 description:    Lossy JSON encoding for rationals.
@@ -28,13 +28,13 @@ extra-source-files:
 source-repository head
   type: git
   location: https://github.com/blockscope/flare-timing
-  subdir: aeson-via-sci
+  subdir: detour-via-sci
 
 library
   exposed-modules:
       Data.Via.Scientific
   other-modules:
-      Paths_aeson_via_sci
+      Paths_detour_via_sci
   hs-source-dirs:
       library
   ghc-options: -Wall
@@ -52,7 +52,7 @@ test-suite hlint
   main-is: HLint.hs
   other-modules:
       Data.Via.Scientific
-      Paths_aeson_via_sci
+      Paths_detour_via_sci
   hs-source-dirs:
       library
       test-suite-hlint

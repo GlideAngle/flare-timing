@@ -13,7 +13,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
 import Data.Via.Scientific (DefaultDecimalPlaces(..), DecimalPlaces(..))
-import Data.Aeson.Via.UnitsOfMeasure (ViaQ(..))
+import Data.Via.UnitsOfMeasure (ViaQ(..))
 
 newtype PilotDistance a = PilotDistance a
     deriving (Eq, Ord, Show)

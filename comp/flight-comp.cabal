@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: afac2c58c034e1130a4159a6d076daa1c03267635b9235f7b5ad9da4d4d01909
+-- hash: 9d3dfe264034190bffe59fd7921583fd8c76ba0e5fe6d08b5471f8c9778f4c5d
 
 name:           flight-comp
 version:        0.1.0
@@ -52,11 +52,11 @@ library
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
-    , aeson-via-sci
     , base >=4.5 && <5
     , bytestring
     , cassava
     , containers
+    , detour-via-sci
     , directory
     , filemanip
     , filepath
@@ -100,11 +100,11 @@ test-suite comp
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
-    , aeson-via-sci
     , base
     , bytestring
     , cassava
     , containers
+    , detour-via-sci
     , directory
     , filemanip
     , filepath
@@ -154,11 +154,11 @@ test-suite hlint
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
-    , aeson-via-sci
     , base
     , bytestring
     , cassava
     , containers
+    , detour-via-sci
     , directory
     , filemanip
     , filepath

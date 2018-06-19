@@ -19,7 +19,7 @@
           , "hxt-xpath"
           , "aeson"
           , "time"
-          , "aeson-via-sci"
+          , "detour-via-sci"
           , "siggy-chardust"
           ]
       , source-dirs =
@@ -39,7 +39,7 @@
               , "aeson"
               , "time"
               , "hlint"
-              , "aeson-via-sci"
+              , "detour-via-sci"
               , "siggy-chardust"
               ]
           , ghc-options =
@@ -65,7 +65,7 @@
               , "tasty-quickcheck"
               , "tasty-smallcheck"
               , "smallcheck"
-              , "aeson-via-sci"
+              , "detour-via-sci"
               , "siggy-chardust"
               ]
           , ghc-options =

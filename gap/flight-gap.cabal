@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b55243d809127fb7ebffa10f84e5279b89c4fc6a579010e54e9bd54772df02b3
+-- hash: 0248a29ecc1e1655dcfbcf56158845a69d480e162e6121316f034a32442cfcd3
 
 name:           flight-gap
 version:        0.1.0
@@ -84,10 +84,10 @@ library
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
-    , aeson-via-sci
-    , aeson-via-uom
     , base >=4.5 && <5
     , containers
+    , detour-via-sci
+    , detour-via-uom
     , flight-units
     , newtype
     , scientific
@@ -154,10 +154,10 @@ test-suite hlint
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
-    , aeson-via-sci
-    , aeson-via-uom
     , base
     , containers
+    , detour-via-sci
+    , detour-via-uom
     , flight-units
     , hlint
     , newtype
@@ -238,10 +238,10 @@ test-suite score
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
-    , aeson-via-sci
-    , aeson-via-uom
     , base
     , containers
+    , detour-via-sci
+    , detour-via-uom
     , flight-units
     , newtype
     , scientific

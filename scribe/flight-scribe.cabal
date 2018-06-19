@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e7320af6dc107d9b6265328c411b924ceeeafaa16948a66942e441cf95d63da0
+-- hash: eefa25a5ef590b2ca3e7d588a3a2825e2cd1b21156fbf2dd2fdc997eba08e470
 
 name:           flight-scribe
 version:        0.1.0
@@ -42,11 +42,11 @@ library
   ghc-options: -Wall
   build-depends:
       aeson
-    , aeson-via-sci
     , base >=4.5 && <5
     , bytestring
     , cassava
     , containers
+    , detour-via-sci
     , directory
     , filemanip
     , filepath
@@ -79,11 +79,11 @@ test-suite hlint
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
-    , aeson-via-sci
     , base
     , bytestring
     , cassava
     , containers
+    , detour-via-sci
     , directory
     , filemanip
     , filepath

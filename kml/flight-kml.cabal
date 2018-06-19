@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d2173276b2ff574ebd78f16f51deee9cc985f157d39a7f293b96dc5b99893792
+-- hash: 80c816ea47f0d115b7e44a86bda2129607c21898f64720c443d9f5d6635496c0
 
 name:           flight-kml
 version:        0.1.0
@@ -41,8 +41,8 @@ library
   ghc-options: -Wall
   build-depends:
       aeson
-    , aeson-via-sci
     , base >=4.5 && <5
+    , detour-via-sci
     , hxt
     , hxt-xpath
     , parsec
@@ -65,8 +65,8 @@ test-suite hlint
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
-    , aeson-via-sci
     , base
+    , detour-via-sci
     , hlint
     , hxt
     , hxt-xpath
@@ -91,8 +91,8 @@ test-suite parse
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
-    , aeson-via-sci
     , base
+    , detour-via-sci
     , hxt
     , hxt-xpath
     , parsec

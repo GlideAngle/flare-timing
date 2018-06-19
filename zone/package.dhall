@@ -19,8 +19,8 @@
           , "scientific"
           , "newtype"
           , "siggy-chardust"
-          , "aeson-via-sci"
-          , "aeson-via-uom"
+          , "detour-via-sci"
+          , "detour-via-uom"
           , "flight-units"
           , "flight-latlng"
           ]
@@ -43,8 +43,8 @@
               , "scientific"
               , "newtype"
               , "siggy-chardust"
-              , "aeson-via-sci"
-              , "aeson-via-uom"
+              , "detour-via-sci"
+              , "detour-via-uom"
               , "flight-units"
               , "flight-latlng"
               ]

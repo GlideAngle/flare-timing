@@ -15,7 +15,7 @@
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module Data.Aeson.Via.UnitsOfMeasure (ViaQ(..)) where
+module Data.Via.UnitsOfMeasure (ViaQ(..)) where
 
 import Control.Newtype (Newtype(..))
 import Data.Scientific (Scientific)

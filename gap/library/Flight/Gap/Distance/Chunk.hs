@@ -41,7 +41,7 @@ import GHC.Generics (Generic)
 
 import Flight.Units ()
 import Data.Via.Scientific (DefaultDecimalPlaces(..), DecimalPlaces(..))
-import Data.Aeson.Via.UnitsOfMeasure (ViaQ(..))
+import Data.Via.UnitsOfMeasure (ViaQ(..))
 import Flight.Gap.Distance.Relative (RelativeDifficulty(..))
 import Flight.Gap.Distance.Fraction (DifficultyFraction(..))
 import Flight.Gap.Distance.Linear (PilotDistance(..))

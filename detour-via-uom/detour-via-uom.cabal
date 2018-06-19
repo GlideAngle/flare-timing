@@ -2,9 +2,9 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ee3782c3d4f84a412022f43305c30b20a7a52d2b3fdf83f90dc8bbc58e672b27
+-- hash: c617f657f94c88b1232aa7bb7a1e97550657f14a5e81e4788bb4c7312b0b1c85
 
-name:           aeson-via-uom
+name:           detour-via-uom
 version:        0.1.0
 synopsis:       JSON encoding and decoding for rationals via scientific.
 description:    Lossy JSON encoding for rationals.
@@ -28,20 +28,20 @@ extra-source-files:
 source-repository head
   type: git
   location: https://github.com/blockscope/flare-timing
-  subdir: aeson-via-uom
+  subdir: detour-via-uom
 
 library
   exposed-modules:
-      Data.Aeson.Via.UnitsOfMeasure
+      Data.Via.UnitsOfMeasure
   other-modules:
-      Paths_aeson_via_uom
+      Paths_detour_via_uom
   hs-source-dirs:
       library
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
-    , aeson-via-sci
     , base >=4.5 && <5
+    , detour-via-sci
     , flight-units
     , newtype
     , scientific
@@ -52,16 +52,16 @@ test-suite hlint
   type: exitcode-stdio-1.0
   main-is: HLint.hs
   other-modules:
-      Data.Aeson.Via.UnitsOfMeasure
-      Paths_aeson_via_uom
+      Data.Via.UnitsOfMeasure
+      Paths_detour_via_uom
   hs-source-dirs:
       library
       test-suite-hlint
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
-    , aeson-via-sci
     , base
+    , detour-via-sci
     , flight-units
     , hlint
     , newtype

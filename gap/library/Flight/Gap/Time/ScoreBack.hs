@@ -13,7 +13,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
 import Data.Via.Scientific (DefaultDecimalPlaces(..), DecimalPlaces(..))
-import Data.Aeson.Via.UnitsOfMeasure (ViaQ(..))
+import Data.Via.UnitsOfMeasure (ViaQ(..))
 
 -- | ScoreBack time for the task, units of hours.
 newtype ScoreBackTime a = ScoreBackTime a

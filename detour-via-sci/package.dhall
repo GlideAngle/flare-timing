@@ -1,6 +1,6 @@
   ./defaults.dhall 
 ⫽ { name =
-      "aeson-via-uom"
+      "detour-via-sci"
   , synopsis =
       "JSON encoding and decoding for rationals via scientific."
   , description =
@@ -8,23 +8,20 @@
   , category =
       "Flight"
   , github =
-      "blockscope/flare-timing/aeson-via-uom"
-  , ghc-options =
-      [ "-Wall", "-fplugin Data.UnitsOfMeasure.Plugin" ]
+      "blockscope/flare-timing/detour-via-sci"
   , library =
       { dependencies =
           [ "base >=4.5 && <5"
           , "newtype"
           , "scientific"
           , "aeson"
-          , "uom-plugin"
-          , "aeson-via-sci"
-          , "flight-units"
+          , "cassava"
+          , "template-haskell"
           ]
       , source-dirs =
           "library"
       , exposed-modules =
-          [ "Data.Aeson.Via.UnitsOfMeasure" ]
+          [ "Data.Via.Scientific" ]
       }
   , tests =
       { hlint =
@@ -34,9 +31,8 @@
               , "newtype"
               , "scientific"
               , "aeson"
-              , "uom-plugin"
-              , "aeson-via-sci"
-              , "flight-units"
+              , "cassava"
+              , "template-haskell"
               ]
           , ghc-options =
               [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]

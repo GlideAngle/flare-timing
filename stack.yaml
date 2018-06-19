@@ -3,8 +3,8 @@ tested-with: GHC == 8.2.2
 flags: {}
 packages:
 - build
-- aeson-via-sci
-- aeson-via-uom
+- detour-via-sci
+- detour-via-uom
 - cmd
 - comp
 - earth

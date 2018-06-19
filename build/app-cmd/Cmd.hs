@@ -42,8 +42,8 @@ type Test = String
 -- | The names of the library packages.
 pkgs :: [Pkg]
 pkgs =
-    [ "aeson-via-sci"
-    , "aeson-via-uom"
+    [ "detour-via-sci"
+    , "detour-via-uom"
     , "flight-cmd"
     , "flight-comp"
     , "flight-earth"
@@ -129,24 +129,24 @@ lintWithRules t' = do
 
     phony (t ++ "-lint") $ need
         $ (t ++ "-lint-build")
-        : (t ++ "-lint-aeson-via-sci")
-        : (t ++ "-lint-aeson-via-uom")
+        : (t ++ "-lint-detour-via-sci")
+        : (t ++ "-lint-detour-via-uom")
         : (t ++ "-lint-siggy-chardust")
         : (t ++ "-lint-tasty-compare")
         : (t ++ "-lint-flare-timing")
         : (prefix (t ++ "-lint-") <$> flyPkgs)
 
-    phony (t ++ "-lint-aeson-via-sci") $
+    phony (t ++ "-lint-detour-via-sci") $
         cmd
-            (Cwd "aeson-via-sci")
+            (Cwd "detour-via-sci")
             Shell
-            (cmdTestFor t' "aeson-via-sci:hlint")
+            (cmdTestFor t' "detour-via-sci:hlint")
 
-    phony (t ++ "-lint-aeson-via-uom") $
+    phony (t ++ "-lint-detour-via-uom") $
         cmd
-            (Cwd "aeson-via-uom")
+            (Cwd "detour-via-uom")
             Shell
-            (cmdTestFor t' "aeson-via-uom:hlint")
+            (cmdTestFor t' "detour-via-uom:hlint")
 
     phony (t ++ "-lint-siggy-chardust") $
         cmd
