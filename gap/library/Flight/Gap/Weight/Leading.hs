@@ -5,7 +5,7 @@
 module Flight.Gap.Weight.Leading (LeadingWeight(..)) where
 
 import Control.Newtype (Newtype(..))
-import Data.Via.Scientific (deriveDefDec, deriveViaSci)
+import Data.Via.Scientific (DecimalPlaces(..), deriveDecimalPlaces, deriveJsonViaSci)
 
 newtype LeadingWeight = LeadingWeight Rational
     deriving (Eq, Ord, Show)
@@ -14,5 +14,5 @@ instance Newtype LeadingWeight Rational where
     pack = LeadingWeight
     unpack (LeadingWeight a) = a
 
-deriveDefDec 8 ''LeadingWeight
-deriveViaSci ''LeadingWeight
+deriveDecimalPlaces (DecimalPlaces 8) ''LeadingWeight
+deriveJsonViaSci ''LeadingWeight

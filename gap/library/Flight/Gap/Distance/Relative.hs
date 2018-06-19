@@ -5,7 +5,7 @@
 module Flight.Gap.Distance.Relative (RelativeDifficulty(..)) where
 
 import Control.Newtype (Newtype(..))
-import Data.Via.Scientific (deriveDefDec, deriveViaSci)
+import Data.Via.Scientific (DecimalPlaces(..), deriveDecimalPlaces, deriveJsonViaSci)
 
 -- | The relative difficulty of a chunk.
 newtype RelativeDifficulty = RelativeDifficulty Rational
@@ -15,5 +15,5 @@ instance Newtype RelativeDifficulty Rational where
     pack = RelativeDifficulty
     unpack (RelativeDifficulty a) = a
 
-deriveDefDec 8 ''RelativeDifficulty
-deriveViaSci ''RelativeDifficulty
+deriveDecimalPlaces (DecimalPlaces 8) ''RelativeDifficulty
+deriveJsonViaSci ''RelativeDifficulty

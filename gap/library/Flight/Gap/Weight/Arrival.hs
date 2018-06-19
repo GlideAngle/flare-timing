@@ -5,7 +5,7 @@
 module Flight.Gap.Weight.Arrival (ArrivalWeight(..)) where
 
 import Control.Newtype (Newtype(..))
-import Data.Via.Scientific (deriveDefDec, deriveViaSci)
+import Data.Via.Scientific (DecimalPlaces(..), deriveDecimalPlaces, deriveJsonViaSci)
 
 newtype ArrivalWeight = ArrivalWeight Rational
     deriving (Eq, Ord, Show)
@@ -14,5 +14,5 @@ instance Newtype ArrivalWeight Rational where
     pack = ArrivalWeight
     unpack (ArrivalWeight a) = a
 
-deriveDefDec 8 ''ArrivalWeight
-deriveViaSci ''ArrivalWeight
+deriveDecimalPlaces (DecimalPlaces 8) ''ArrivalWeight
+deriveJsonViaSci ''ArrivalWeight

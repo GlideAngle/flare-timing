@@ -5,7 +5,7 @@
 module Flight.Gap.Ratio.Speed (SpeedFraction(..)) where
 
 import Control.Newtype (Newtype(..))
-import Data.Via.Scientific (deriveDefDec, deriveViaSci)
+import Data.Via.Scientific (DecimalPlaces(..), deriveDecimalPlaces, deriveJsonViaSci)
 
 newtype SpeedFraction = SpeedFraction Rational
     deriving (Eq, Ord, Show)
@@ -14,5 +14,5 @@ instance Newtype SpeedFraction Rational where
     pack = SpeedFraction
     unpack (SpeedFraction a) = a
 
-deriveDefDec 8 ''SpeedFraction
-deriveViaSci ''SpeedFraction
+deriveDecimalPlaces (DecimalPlaces 8) ''SpeedFraction
+deriveJsonViaSci ''SpeedFraction

@@ -9,7 +9,7 @@ module Flight.Gap.Points.Distance
     ) where
 
 import Control.Newtype (Newtype(..))
-import Data.Via.Scientific (deriveDefDec, deriveViaSci)
+import Data.Via.Scientific (DecimalPlaces(..), deriveDecimalPlaces, deriveJsonViaSci)
 
 newtype DistancePoints = DistancePoints Rational
     deriving (Eq, Ord, Show)
@@ -18,8 +18,8 @@ instance Newtype DistancePoints Rational where
     pack = DistancePoints
     unpack (DistancePoints a) = a
 
-deriveDefDec 1 ''DistancePoints
-deriveViaSci ''DistancePoints
+deriveDecimalPlaces (DecimalPlaces 1) ''DistancePoints
+deriveJsonViaSci ''DistancePoints
 
 newtype LinearPoints = LinearPoints Rational
     deriving (Eq, Ord, Show)
@@ -28,8 +28,8 @@ instance Newtype LinearPoints Rational where
     pack = LinearPoints
     unpack (LinearPoints a) = a
 
-deriveDefDec 1 ''LinearPoints
-deriveViaSci ''LinearPoints
+deriveDecimalPlaces (DecimalPlaces 1) ''LinearPoints
+deriveJsonViaSci ''LinearPoints
 
 newtype DifficultyPoints = DifficultyPoints Rational
     deriving (Eq, Ord, Show)
@@ -38,5 +38,5 @@ instance Newtype DifficultyPoints Rational where
     pack = DifficultyPoints
     unpack (DifficultyPoints a) = a
 
-deriveDefDec 1 ''DifficultyPoints
-deriveViaSci ''DifficultyPoints
+deriveDecimalPlaces (DecimalPlaces 1) ''DifficultyPoints
+deriveJsonViaSci ''DifficultyPoints

@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleContexts #-}
+﻿{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE GADTs #-}
@@ -30,9 +30,8 @@ module Data.Via.Scientific
     , fromSci
     , toSci
     -- * Deriving instances with Template Haskell
-    , deriveDefDec
-    , deriveConstDec
-    , deriveViaSci
+    , deriveDecimalPlaces
+    , deriveJsonViaSci
     , deriveCsvViaSci
     ) where
 
@@ -125,19 +124,10 @@ instance
     parseField x = ViaSci <$> (pack . fromSci <$> parseField x)
 
 -- SEE: https://markkarpov.com/tutorial/th.html
--- | Derives an instance of @__Def__ault__Dec__imalPlaces@ taking the number of
--- decimal places from the given raw 'Int'.
-deriveDefDec :: Int -> Name -> Q [Dec]
-deriveDefDec dp name =
-    [d|
-        instance DefaultDecimalPlaces $(conT name) where
-            defdp _ = DecimalPlaces dp
-        |]
-
--- | Taking a __const__ant number of __dec__imal places from the given
--- 'DecimalPlaces' newtype, derives an instance of @DefaultDecimalPlaces@
-deriveConstDec :: DecimalPlaces -> Name -> Q [Dec]
-deriveConstDec dp name =
+-- | Taking a number of decimal places from the given 'DecimalPlaces' newtype,
+-- derives an instance of @DefaultDecimalPlaces@
+deriveDecimalPlaces :: DecimalPlaces -> Name -> Q [Dec]
+deriveDecimalPlaces dp name =
     [d|
         instance DefaultDecimalPlaces $(conT name) where
             defdp _ = $(lift dp)
@@ -146,8 +136,8 @@ deriveConstDec dp name =
 -- | Derives an instance of 'ToJSON' wrapping the value with 'ViaSci' before
 -- encoding. Similarly the value is decoded as 'ViaSci' and then unwrapped in
 -- the derived instance of 'FromJSON'.
-deriveViaSci :: Name -> Q [Dec]
-deriveViaSci name =
+deriveJsonViaSci :: Name -> Q [Dec]
+deriveJsonViaSci name =
     [d|
         instance ToJSON $a where
             toJSON x = toJSON $ ViaSci x
@@ -160,7 +150,7 @@ deriveViaSci name =
     where
         a = conT name
 
--- | Similar to 'deriveViaSci' but for instances of 'ToField' and 'FromField'.
+-- | Similar to 'deriveJsonViaSci' but for instances of 'ToField' and 'FromField'.
 deriveCsvViaSci :: Name -> Q [Dec]
 deriveCsvViaSci name =
     [d|
@@ -189,8 +179,8 @@ deriveCsvViaSci name =
 -- Derive instances of 'DefaultDecimalPlaces' and 'ViaSci'.
 --
 -- @ 
--- deriveConstDec 8 ''Lat
--- deriveViaSci ''Lat
+-- deriveDecimalPlaces 8 ''Lat
+-- deriveJsonViaSci ''Lat
 -- @
 --
 -- Types going 'ViaSci' also need to be instances of 'Newtype'.

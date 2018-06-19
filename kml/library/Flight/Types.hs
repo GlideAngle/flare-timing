@@ -31,7 +31,7 @@ import Data.Aeson (ToJSON(..), FromJSON(..))
 
 import Data.Via.Scientific
     ( DefaultDecimalPlaces(..)
-    , deriveDefDec, toSci, showSci
+    , deriveDecimalPlaces, toSci, showSci, dpDegree
     )
 
 newtype Latitude = Latitude Rational
@@ -52,10 +52,10 @@ newtype Seconds = Seconds Integer
     deriving newtype Num
     deriving anyclass (ToJSON, FromJSON)
 
-deriveDefDec 8 ''Latitude
-deriveDefDec 8 ''Longitude
-deriveDefDec 8 ''Altitude
-deriveDefDec 8 ''Seconds
+deriveDecimalPlaces dpDegree ''Latitude
+deriveDecimalPlaces dpDegree ''Longitude
+deriveDecimalPlaces dpDegree ''Altitude
+deriveDecimalPlaces dpDegree ''Seconds
 
 instance Show Latitude where
     show x@(Latitude lat') =

@@ -23,7 +23,7 @@ import Data.Csv
     (ToNamedRecord(..), FromNamedRecord(..), namedRecord, namedField)
 import Data.Via.Scientific
     ( dpDegree, fromSci, toSci, showSci
-    , deriveConstDec, deriveViaSci, deriveCsvViaSci
+    , deriveDecimalPlaces, deriveJsonViaSci, deriveCsvViaSci
     )
 
 data RawLatLng =
@@ -45,11 +45,11 @@ instance FromJSON RawLatLng where
 newtype RawLat = RawLat Rational deriving (Eq, Ord, Show)
 newtype RawLng = RawLng Rational deriving (Eq, Ord, Show)
 
-deriveConstDec dpDegree ''RawLat
-deriveConstDec dpDegree ''RawLng
+deriveDecimalPlaces dpDegree ''RawLat
+deriveDecimalPlaces dpDegree ''RawLng
 
-deriveViaSci ''RawLat
-deriveViaSci ''RawLng
+deriveJsonViaSci ''RawLat
+deriveJsonViaSci ''RawLng
 
 deriveCsvViaSci ''RawLat
 deriveCsvViaSci ''RawLng
