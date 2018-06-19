@@ -160,9 +160,7 @@ deriveViaSci name =
     where
         a = conT name
 
--- | Derives an instance of 'ToField' wrapping the value with 'ViaSci' before
--- encoding. Similarly the value is decoded as 'ViaSci' and then unwrapped in
--- the derived instance of 'FromField'.
+-- | Similar to 'deriveViaSci' but for instances of 'ToField' and 'FromField'.
 deriveCsvViaSci :: Name -> Q [Dec]
 deriveCsvViaSci name =
     [d|
