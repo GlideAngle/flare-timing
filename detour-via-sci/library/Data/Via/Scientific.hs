@@ -209,11 +209,15 @@ deriveCsvViaSci name =
         a = conT name
 
 -- $setup
+-- >>> :set -XOverloadedStrings
 -- >>> :set -XTemplateHaskell
 -- >>> :set -XFlexibleInstances
 -- >>> :set -XMultiParamTypeClasses
 -- >>> import Data.Ratio ((%))
--- >>> import Data.Aeson (encode)
+-- >>> import Data.Aeson (encode, decode)
+-- >>> import Data.Text (Text)
+-- >>> import Data.Vector (Vector, fromList)
+-- >>> import qualified Data.Csv as Csv (HasHeader(..), encode, decode)
 -- >>> import Control.Newtype (Newtype(..))
 -- >>> instance Show (Q [a]) where show _ = "..."
 
@@ -234,6 +238,8 @@ deriveCsvViaSci name =
 --     unpack (Lat a) = a
 -- instance ToJSON Lat where
 --     toJSON x = toJSON $ ViaSci x
+-- instance FromJSON Lat where
+--     parseJSON o = do ViaSci x <- parseJSON o; return x
 -- :}
 --
 -- >>> let x = 1122334455667788 % 10000000000000000
@@ -245,7 +251,32 @@ deriveCsvViaSci name =
 -- When having to check numbers by hand, a fixed decimal is more familiar than
 -- a ratio of possibly large integers.
 -- 
--- >>> encode (Lat x)
--- "0.11223344"
 -- >>> encode x
 -- "{\"numerator\":280583613916947,\"denominator\":2500000000000000}"
+-- >>> encode (Lat x)
+-- "0.11223344"
+-- 
+-- With too few decimal places, the encoding will be lossy.
+-- 
+-- >>> decode (encode x) == Just x
+-- True
+-- >>> decode (encode (Lat x)) == Just (Lat x)
+-- False
+-- >>> let Just (Lat y) = decode (encode (Lat x)) in fromRational y
+-- 0.11223344
+--
+-- Similarly for CSV.
+--
+-- >>> :{
+-- instance ToField Lat where
+--     toField = toField . ViaSci
+-- instance FromField Lat where
+--     parseField c = do ViaSci x <- parseField c; return x
+-- :}
+--
+-- >>> Csv.encode [("A", Lat x)]
+-- "A,0.11223344\r\n"
+-- >>> Csv.decode Csv.NoHeader (Csv.encode [("B", Lat x)]) == Right (fromList [("B", Lat x)])
+-- False
+-- >>> Csv.decode Csv.NoHeader (Csv.encode [("C", Lat x)]) == Right (fromList [("C", Lat . fromSci . toSci (DecimalPlaces 8) $ x)])
+-- True
