@@ -67,11 +67,27 @@ dpDegree = DecimalPlaces 8
 newtype DecimalPlaces = DecimalPlaces Int deriving (Show, Lift)
 
 -- | From 'Scientific' exactly to 'Rational'.
+--
+-- >>> let x = 0.1122334455667788
+-- >>> fromSci x
+-- 4043636029064415 % 36028797018963968
+-- >>> x == fromRational (fromSci x)
+-- True
 fromSci :: Scientific -> Rational
 fromSci x = toRational (toRealFloat x :: Double)
 
 -- | To 'Scientific' from 'Rational' as near as possible up to the given number
 -- of 'DecimalPlaces'.
+--
+-- >>> let x = 1122334455667788 % 10000000000000000
+-- >>> toSci (DecimalPlaces 8) x
+-- 0.11223344
+-- >>> x == toRational (toSci (DecimalPlaces 8) x)
+-- False
+-- >>> x == toRational (toSci (DecimalPlaces 16) x)
+-- True
+-- >>> x == toRational (toSci (DecimalPlaces 32) x)
+-- True
 toSci :: DecimalPlaces -> Rational -> Scientific
 toSci (DecimalPlaces dp) x =
     case fromRationalRepetend (Just $ dp + 1) x of
@@ -79,6 +95,22 @@ toSci (DecimalPlaces dp) x =
         Right (s, _) -> s
 
 -- | Shows a 'Scientific' value with a fixed number of decimal places.
+--
+-- >>> let x = 0.1122334455667788
+-- >>> showSci (DecimalPlaces 16) x
+-- "0.1122334455667788"
+-- >>> showSci (DecimalPlaces 8) x
+-- "0.11223345"
+-- >>> showSci (DecimalPlaces 4) x
+-- "0.1122"
+-- >>> showSci (DecimalPlaces 1) x
+-- "0.1"
+-- >>> showSci (DecimalPlaces 0) x
+-- "0"
+-- >>> showSci (DecimalPlaces (-1)) x
+-- "0"
+-- >>> showSci (DecimalPlaces 32) x
+-- "0.11223344556677880000000000000000"
 showSci :: DecimalPlaces -> Scientific -> String
 showSci (DecimalPlaces dp) =
     formatScientific Fixed (Just dp)
@@ -128,6 +160,9 @@ instance
 -- SEE: https://markkarpov.com/tutorial/th.html
 -- | Taking a number of decimal places from the given 'DecimalPlaces' newtype,
 -- derives an instance of 'DefaultDecimalPlaces'.
+--
+-- >>> deriveDecimalPlaces (DecimalPlaces 8) ''Lat
+-- ...
 deriveDecimalPlaces :: DecimalPlaces -> Name -> Q [Dec]
 deriveDecimalPlaces dp name =
     [d|
@@ -138,6 +173,9 @@ deriveDecimalPlaces dp name =
 -- | Derives an instance of 'ToJSON' wrapping the value with 'ViaSci' before
 -- encoding. Similarly the value is decoded as 'ViaSci' and then unwrapped in
 -- the derived instance of 'FromJSON'.
+-- 
+-- >>> deriveJsonViaSci ''Lat
+-- ...
 deriveJsonViaSci :: Name -> Q [Dec]
 deriveJsonViaSci name =
     [d|
@@ -153,6 +191,9 @@ deriveJsonViaSci name =
         a = conT name
 
 -- | Similar to 'deriveJsonViaSci' but for instances of 'ToField' and 'FromField'.
+--
+-- >>> deriveCsvViaSci ''Lat
+-- ...
 deriveCsvViaSci :: Name -> Q [Dec]
 deriveCsvViaSci name =
     [d|
@@ -174,18 +215,15 @@ deriveCsvViaSci name =
 -- >>> import Data.Ratio ((%))
 -- >>> import Data.Aeson (encode)
 -- >>> import Control.Newtype (Newtype(..))
--- >>> newtype Lat = Lat Rational deriving (Eq, Ord, Show)
+-- 
 -- >>> instance Show (Q [a]) where show _ = "..."
--- >>> deriveDecimalPlaces (DecimalPlaces 8) ''Lat
--- ...
+-- >>> newtype Lat = Lat Rational deriving (Eq, Ord, Show)
 -- >>> :{
 -- instance Newtype Lat Rational where
 --     pack = Lat
 --     unpack (Lat a) = a
 -- :}
 -- 
--- >>> deriveJsonViaSci ''Lat
--- ...
 
 -- $use
 -- When having to check numbers by hand, a fixed decimal is more familiar than
@@ -212,6 +250,10 @@ deriveCsvViaSci name =
 --     pack = Lat
 --     unpack (Lat a) = a
 -- @
+
+-- >>> let angle = 1122334455667788 % 10000000000000000
+-- >>> toSci (DecimalPlaces 8) angle
+-- "0.11223344"
 
 -- >>> let angle = 1122334455667788 % 10000000000000000
 -- >>> fromRational angle
