@@ -167,6 +167,26 @@ deriveCsvViaSci name =
     where
         a = conT name
 
+-- $setup
+-- >>> :set -XTemplateHaskell
+-- >>> :set -XFlexibleInstances
+-- >>> :set -XMultiParamTypeClasses
+-- >>> import Data.Ratio ((%))
+-- >>> import Data.Aeson (encode)
+-- >>> import Control.Newtype (Newtype(..))
+-- >>> newtype Lat = Lat Rational deriving (Eq, Ord, Show)
+-- >>> instance Show (Q [a]) where show _ = "..."
+-- >>> deriveDecimalPlaces (DecimalPlaces 8) ''Lat
+-- ...
+-- >>> :{
+-- instance Newtype Lat Rational where
+--     pack = Lat
+--     unpack (Lat a) = a
+-- :}
+-- 
+-- >>> deriveJsonViaSci ''Lat
+-- ...
+
 -- $use
 -- When having to check numbers by hand, a fixed decimal is more familiar than
 -- a ratio of possibly large integers.
@@ -192,13 +212,12 @@ deriveCsvViaSci name =
 --     pack = Lat
 --     unpack (Lat a) = a
 -- @
--- > >>> import Data.Ratio ((%))
--- > >>> import Data.Aeson (encode)
--- > >>> let angle = 1122334455667788 % 10000000000000000
--- > >>> fromRational angle
--- > 0.1122334455667788
--- > >>> let lat = Lat angle
--- > >>> encode angle
--- > "{\"numerator\":280583613916947,\"denominator\":2500000000000000}"
--- > >>> encode lat
--- > "0.11223344"
+
+-- >>> let angle = 1122334455667788 % 10000000000000000
+-- >>> fromRational angle
+-- 0.1122334455667788
+-- >>> let lat = Lat angle
+-- >>> encode angle
+-- "{\"numerator\":280583613916947,\"denominator\":2500000000000000}"
+-- >>> encode lat
+-- "0.11223344"
