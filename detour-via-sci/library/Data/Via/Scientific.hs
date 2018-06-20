@@ -215,51 +215,37 @@ deriveCsvViaSci name =
 -- >>> import Data.Ratio ((%))
 -- >>> import Data.Aeson (encode)
 -- >>> import Control.Newtype (Newtype(..))
--- 
 -- >>> instance Show (Q [a]) where show _ = "..."
--- >>> newtype Lat = Lat Rational deriving (Eq, Ord, Show)
--- >>> :{
--- instance Newtype Lat Rational where
---     pack = Lat
---     unpack (Lat a) = a
--- :}
--- 
 
 -- $use
--- When having to check numbers by hand, a fixed decimal is more familiar than
--- a ratio of possibly large integers.
--- 
 -- Let's say we have a latitude that is a @newtype@ 'Rational' number but we
 -- want it to be encoded to JSON with a fixed number of decimal places.
 --
--- @
--- newtype Lat = Lat Rational deriving (Eq, Ord, Show)
--- @
+-- >>> newtype Lat = Lat Rational deriving (Eq, Ord, Show)
 --
--- Derive instances of 'DefaultDecimalPlaces' and 'ViaSci'.
+-- Types going 'ViaSci' also need to be instances of 'DefaultDecimalPlaces' and
+-- 'Newtype'.
 --
--- @ 
--- deriveDecimalPlaces (DecimalPlaces 8) ''Lat
--- deriveJsonViaSci ''Lat
--- @
---
--- Types going 'ViaSci' also need to be instances of 'Newtype'.
--- 
--- @
+-- >>> :{
+-- instance DefaultDecimalPlaces Lat where
+--     defdp _ = DecimalPlaces 8
 -- instance Newtype Lat Rational where
 --     pack = Lat
 --     unpack (Lat a) = a
--- @
-
--- >>> let angle = 1122334455667788 % 10000000000000000
--- >>> toSci (DecimalPlaces 8) angle
--- "0.11223344"
-
--- >>> let angle = 1122334455667788 % 10000000000000000
--- >>> fromRational angle
+-- instance ToJSON Lat where
+--     toJSON x = toJSON $ ViaSci x
+-- :}
+--
+-- >>> let x = 1122334455667788 % 10000000000000000
+-- >>> fromRational x
 -- 0.1122334455667788
--- >>> let lat = Lat angle
--- >>> encode angle
--- "{\"numerator\":280583613916947,\"denominator\":2500000000000000}"
--- >>> encode lat
+-- >>> toSci (DecimalPlaces 8) x
+-- 0.11223344
+-- 
+-- When having to check numbers by hand, a fixed decimal is more familiar than
+-- a ratio of possibly large integers.
+-- 
+-- >>> encode (Lat x)
 -- "0.11223344"
+-- >>> encode x
+-- "{\"numerator\":280583613916947,\"denominator\":2500000000000000}"
