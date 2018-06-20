@@ -73,16 +73,11 @@ instance ToNamedRecord RawLng where
     toNamedRecord (RawLng x) =
         namedRecord [ namedField "lng" $ csvSci x ]
 
--- TODO: Get rid of fromDouble when upgrading to cassava-0.5.1.0
-fromDouble :: Double -> Rational
-fromDouble = toRational
-
--- TODO: Use fromSci when upgrading to cassava-0.5.1.0
 instance FromNamedRecord RawLat where
-    parseNamedRecord m = RawLat . fromDouble <$> m Csv..: "lat"
+    parseNamedRecord m = RawLat . fromSci <$> m Csv..: "lat"
 
 instance FromNamedRecord RawLng where
-    parseNamedRecord m = RawLng . fromDouble <$> m Csv..: "lat"
+    parseNamedRecord m = RawLng . fromSci <$> m Csv..: "lat"
 
 showLat :: RawLat -> String
 showLat (RawLat lat') =
