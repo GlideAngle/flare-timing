@@ -125,7 +125,7 @@ instance
 
 -- SEE: https://markkarpov.com/tutorial/th.html
 -- | Taking a number of decimal places from the given 'DecimalPlaces' newtype,
--- derives an instance of @DefaultDecimalPlaces@
+-- derives an instance of 'DefaultDecimalPlaces'.
 deriveDecimalPlaces :: DecimalPlaces -> Name -> Q [Dec]
 deriveDecimalPlaces dp name =
     [d|
@@ -179,7 +179,7 @@ deriveCsvViaSci name =
 -- Derive instances of 'DefaultDecimalPlaces' and 'ViaSci'.
 --
 -- @ 
--- deriveDecimalPlaces 8 ''Lat
+-- deriveDecimalPlaces (DecimalPlaces 8) ''Lat
 -- deriveJsonViaSci ''Lat
 -- @
 --
@@ -190,7 +190,8 @@ deriveCsvViaSci name =
 --     pack = Lat
 --     unpack (Lat a) = a
 -- @
--- 
+-- > >>> import Data.Ratio ((%))
+-- > >>> import Data.Aeson (encode)
 -- > >>> let angle = 1122334455667788 % 10000000000000000
 -- > >>> fromRational angle
 -- > 0.1122334455667788
