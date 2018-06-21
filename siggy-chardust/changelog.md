@@ -1,3 +1,6 @@
-The [latest version](https://github.com/blockscope/haskell-siggy-chardust/blob/master/changelog.md) of this changelog.
+# 1.0.0
 
-WIP: No versions as yet.
+Initial version with;
+
+* `dpRound` for rounding Rational decimal places.
+* `sdRound` for rounding Rational significant digits.
