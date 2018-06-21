@@ -25,7 +25,7 @@ module Data.Ratio.Rounding
     , sdRound
     ) where
 
-import Data.Word (Word8)
+import Numeric.Natural (Natural)
 
 -- | Rounds to a non-negative number of __d__ecimal __p__laces.  After rounding
 -- the result would have the given number of decimal places if converted to
@@ -132,7 +132,7 @@ dpRound n f
 -- 0 % 1
 -- >>> sdRound 0 (0.0000123456789 :: Rational)
 -- 0 % 1
-sdRound :: Word8 -> Rational -> Rational
+sdRound :: Natural -> Rational -> Rational
 sdRound sd' f =
     if m < 0
         then

@@ -11,7 +11,7 @@
       "blockscope/flare-timing/siggy-chardust"
   , library =
       { dependencies =
-          "base >=4.5 && <5"
+          "base >=4.8 && <5"
       , source-dirs =
           "library"
       , exposed-modules =
