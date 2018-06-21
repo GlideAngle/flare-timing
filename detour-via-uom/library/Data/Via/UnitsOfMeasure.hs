@@ -26,7 +26,14 @@ Stability: experimental
 For encoding and decoding newtype quantities as scientific with a fixed number
 of decimal places and with units.
 -}
-module Data.Via.UnitsOfMeasure (ViaQ(..)) where
+module Data.Via.UnitsOfMeasure
+    (
+    -- * Usage
+    -- $use
+    
+    -- * Decimal Places and Units
+      ViaQ(..)
+    ) where
 
 import Control.Newtype (Newtype(..))
 import Data.Scientific (Scientific)
@@ -81,3 +88,6 @@ instance
 
 unSome :: Some (QuantityWithUnit p) -> p
 unSome (Some (QuantityWithUnit (MkQuantity q) _)) = q
+
+-- $use
+-- Let's say we have distance in kilometres and altitude in feet.
