@@ -89,5 +89,24 @@ instance
 unSome :: Some (QuantityWithUnit p) -> p
 unSome (Some (QuantityWithUnit (MkQuantity q) _)) = q
 
+-- $setup
+-- >>> :set -XTemplateHaskell
+-- >>> :set -XQuasiQuotes
+-- >>> :set -XDataKinds
+-- >>> :set -XFlexibleContexts
+-- >>> :set -XFlexibleInstances
+-- >>> :set -XMultiParamTypeClasses
+-- >>> :set -XScopedTypeVariables
+-- >>> :set -XTypeOperators
+-- >>> :set -XTypeFamilies
+-- >>> :set -XUndecidableInstances
+-- >>> import Data.UnitsOfMeasure
+-- >>> import Data.UnitsOfMeasure.Show
+
 -- $use
 -- Let's say we have distance in kilometres and altitude in feet.
+-- 
+-- >>> [u| 123 km |]
+-- [u| 123 km |]
+-- >>> [u| 12345 ft |]
+-- [u| 12345 ft |]

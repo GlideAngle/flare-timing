@@ -28,7 +28,24 @@
           [ "Data.Via.UnitsOfMeasure" ]
       }
   , tests =
-      { hlint =
+      { doctest =
+          { dependencies =
+              [ "base"
+              , "newtype"
+              , "scientific"
+              , "aeson"
+              , "uom-plugin"
+              , "detour-via-sci"
+              , "doctest"
+              ]
+          , ghc-options =
+              [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
+          , main =
+              "DocTest.hs"
+          , source-dirs =
+              [ "library", "test-suite-doctest" ]
+          }
+      , hlint =
           { dependencies =
               [ "base"
               , "hlint"

@@ -24,3 +24,5 @@ result
 **/dist-newstyle/**
 .ghc.*
 *.local
+*.hi
+*.o
