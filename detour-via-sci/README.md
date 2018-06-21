@@ -1,3 +1,4 @@
-[![Build Status](https://travis-ci.org/BlockScope/flare-timing.svg)](https://travis-ci.org/BlockScope/flare-timing/aeson-via)
+# `detour-via-sci`
 
-JSON encoding and decoding for rationals via scientific
+For encoding and decoding newtype rationals as scientific with a fixed number
+of decimal places.
