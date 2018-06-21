@@ -27,10 +27,15 @@ module Data.Number.Rounding
 
 import Data.Word (Word8)
 
--- | Rounds to a number of __d__ecimal __p__laces. After rounding the result
--- would have the given number of decimal places if converted to a floating
--- point number, such as by using 'fromRational'.
+-- | Rounds to a non-number of __d__ecimal __p__laces.
 --
+-- After rounding the result would have the given number of decimal places if
+-- converted to a floating point number, such as by using 'fromRational'.
+--
+-- >>> dpRound 2 (1234.56789 :: Rational)
+-- 123457 % 100
+-- >>> dpRound 2 (123456789 :: Rational)
+-- 123456789 % 1
 -- >>> dpRound 2 (123456789 :: Rational) == (123456789 :: Rational)
 -- True
 -- >>> dpRound 2 (1234.56789 :: Rational) == (1234.57 :: Rational)
@@ -47,16 +52,41 @@ import Data.Word (Word8)
 -- True
 -- >>> dpRound 2 (0.0000123456789 :: Rational) == (0.0 :: Rational)
 -- True
+--
+-- If this required number of decimal places is less than zero it is taken to
+-- be zero.
+--
+-- >>> dpRound 0 (1234.56789 :: Rational)
+-- 1235 % 1
+-- >>> dpRound (-1) (1234.56789 :: Rational)
+-- 1235 % 1
+-- >>> dpRound 0 (123456789 :: Rational)
+-- 123456789 % 1
+-- >>> dpRound (-1) (123456789 :: Rational)
+-- 123456789 % 1
+--
+-- Rounding to more decimal places than there are makes no difference.
+--
+-- >>> 1234.56789 :: Rational
+-- 123456789 % 100000
+-- >>> dpRound 8 (1234.56789 :: Rational)
+-- 123456789 % 100000
 
 -- SEE: https://stackoverflow.com/questions/12450501/round-number-to-specified-number-of-digits
 dpRound :: Integer -> Rational -> Rational
 dpRound n f
-    | n < 0 = f
+    | n < 0 = dpRound 0 f
     | otherwise =
         fromInteger (round $ f * (10^n)) / (10.0^^n)
 
 -- | Rounds to a number of __s__ignificant __d__igits.
 --
+-- >>> sdRound 4 (123456789 :: Rational)
+-- 123500000 % 1
+-- >>> sdRound 1 (123456789 :: Rational)
+-- 100000000 % 1
+-- >>> sdRound 0 (123456789 :: Rational)
+-- 0 % 1
 -- >>> sdRound 4 (123456789 :: Rational) == (123500000 :: Rational)
 -- True
 -- >>> sdRound 4 (1234.56789 :: Rational) == (1235 :: Rational)
@@ -73,6 +103,17 @@ dpRound n f
 -- True
 -- >>> sdRound 4 (0.0000123456789 :: Rational) == (0.00001235 :: Rational)
 -- True
+--
+-- Rounding to more significant digits than there are makes no difference.
+--
+-- >>> 1234.56789 :: Rational
+-- 123456789 % 100000
+-- >>> sdRound 8 (1234.56789 :: Rational)
+-- 12345679 % 10000
+-- >>> sdRound 9 (1234.56789 :: Rational)
+-- 123456789 % 100000
+-- >>> sdRound 10 (1234.56789 :: Rational)
+-- 123456789 % 100000
 sdRound :: Word8 -> Rational -> Rational
 sdRound sd' f =
     if m < 0
