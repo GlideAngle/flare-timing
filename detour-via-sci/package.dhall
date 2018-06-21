@@ -4,11 +4,11 @@
   , version =
       "1.0.0"
   , synopsis =
-      "JSON and CSV encoding and decoding for newtype rationals via scientific with fixed decimal places."
+      "Lossy JSON and CSV encoding for rationals as decimal point numbers."
   , description =
-      "Lossy JSON encoding for rationals."
+      "JSON and CSV encoding and decoding for newtype rationals via scientific with fixed decimal places."
   , category =
-      "Flight"
+      "data, math, numeric, json, csv"
   , github =
       "blockscope/flare-timing/detour-via-sci"
   , library =

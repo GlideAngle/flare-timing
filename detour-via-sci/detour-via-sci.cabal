@@ -2,13 +2,13 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 96c77f53fa6fd38b1229d3cb4821a850e6518242872a41e36bb58bfeff60e774
+-- hash: 75a42cf9f43b5fc047c4e89f6905b6111ee51da60e853aadd14e107ab7aeca1e
 
 name:           detour-via-sci
 version:        1.0.0
-synopsis:       JSON and CSV encoding and decoding for newtype rationals via scientific with fixed decimal places.
-description:    Lossy JSON encoding for rationals.
-category:       Flight
+synopsis:       Lossy JSON and CSV encoding for rationals as decimal point numbers.
+description:    JSON and CSV encoding and decoding for newtype rationals via scientific with fixed decimal places.
+category:       data, math, numeric, json, csv
 homepage:       https://github.com/blockscope/flare-timing#readme
 bug-reports:    https://github.com/blockscope/flare-timing/issues
 author:         Phil de Joux
