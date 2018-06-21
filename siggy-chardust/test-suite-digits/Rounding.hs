@@ -1,10 +1,10 @@
-module Main (main) where
+﻿module Main (main) where
 
 import Test.Tasty (TestTree, testGroup, defaultMain)
 import Test.Tasty.HUnit as HU ((@?=), testCase)
 import Test.Tasty.QuickCheck as QC
 
-import Data.Number.RoundingFunctions (dpRound, sdRound)
+import Data.Number.Rounding (dpRound, sdRound)
 
 main :: IO ()
 main = defaultMain tests

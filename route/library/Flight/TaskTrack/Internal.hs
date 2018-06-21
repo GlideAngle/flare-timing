@@ -1,4 +1,4 @@
-{-# LANGUAGE ScopedTypeVariables #-}
+﻿{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
@@ -35,7 +35,7 @@ import qualified UTMRef as HC (UTMRef(..))
 import Flight.Units ()
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.LatLng.Raw (RawLat(..), RawLng(..), RawLatLng(..))
-import Data.Number.RoundingFunctions (dpRound)
+import Data.Number.Rounding (dpRound)
 import Flight.Zone (Zone(..), Radius(..), fromRationalZone)
 import Flight.Zone.Raw (RawZone(..), RawRadius(..))
 import Flight.Zone.Cylinder (Tolerance(..))

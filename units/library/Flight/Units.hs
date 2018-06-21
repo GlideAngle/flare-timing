@@ -1,4 +1,4 @@
-{-# LANGUAGE DataKinds #-}
+﻿{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -20,7 +20,7 @@ module Flight.Units
 import Data.UnitsOfMeasure (u, convert, fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Data.Bifunctor.Flip (Flip(..))
-import Data.Number.RoundingFunctions (dpRound)
+import Data.Number.Rounding (dpRound)
 
 import Flight.Units.Angle ()
 

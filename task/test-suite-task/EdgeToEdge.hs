@@ -1,4 +1,4 @@
-{-# LANGUAGE ScopedTypeVariables #-}
+﻿{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
@@ -36,7 +36,7 @@ import qualified Flight.Earth.Sphere.Cylinder.Rational as Rat (circumSample)
 import qualified Flight.Task as FS (distanceEdgeToEdge)
 import Flight.Task (Zs(..), AngleCut(..), CostSegment)
 import Flight.Earth.Sphere.Separated (separatedZones)
-import Data.Number.RoundingFunctions (dpRound)
+import Data.Number.Rounding (dpRound)
 
 (.>=.) :: (Show a, Show b) => a -> b -> String
 (.>=.) x y = show x ++ " >= " ++ show y

@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 0dd18fcb8dbec510964db3b1491d2b117b3a1f578b5a691a9acdc5a8993a02ce
+-- hash: a14543ed93dd968c383058a4b70a7287e53bbe6310f0c0d70c318514e179640b
 
 name:           siggy-chardust
 version:        0.1.0
@@ -32,7 +32,7 @@ source-repository head
 
 library
   exposed-modules:
-      Data.Number.RoundingFunctions
+      Data.Number.Rounding
   other-modules:
       Paths_siggy_chardust
   hs-source-dirs:
@@ -46,7 +46,7 @@ test-suite digits
   type: exitcode-stdio-1.0
   main-is: Rounding.hs
   other-modules:
-      Data.Number.RoundingFunctions
+      Data.Number.Rounding
       Paths_siggy_chardust
   hs-source-dirs:
       library
@@ -65,7 +65,7 @@ test-suite hlint
   type: exitcode-stdio-1.0
   main-is: HLint.hs
   other-modules:
-      Data.Number.RoundingFunctions
+      Data.Number.Rounding
       Paths_siggy_chardust
   hs-source-dirs:
       library

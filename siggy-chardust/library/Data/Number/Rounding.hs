@@ -1,5 +1,5 @@
-{-|
-Module: Data.Number.RoundingFunctions 
+﻿{-|
+Module: Data.Number.Rounding
 Copyright:
     © 2018 Phil de Joux
     © 2018 Block Scope Limited
@@ -9,7 +9,7 @@ Stability: experimental
 
 Rounding rationals to significant digits and decimal places.
 -}
-module Data.Number.RoundingFunctions (dpRound, sdRound) where
+module Data.Number.Rounding (dpRound, sdRound) where
 
 import Data.Word (Word8)
 

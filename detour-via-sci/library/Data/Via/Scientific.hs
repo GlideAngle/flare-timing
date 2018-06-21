@@ -50,7 +50,7 @@ import Data.Scientific
     )
 import Language.Haskell.TH (Q, Name, Dec, conT)
 import Language.Haskell.TH.Syntax
-import Data.Number.RoundingFunctions (dpRound)
+import Data.Number.Rounding (dpRound)
 
 -- | A choice of 8 decimal places for
 -- <https://en.wikipedia.org/wiki/Decimal_degrees decimal degrees> is just

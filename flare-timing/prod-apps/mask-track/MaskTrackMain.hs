@@ -1,4 +1,4 @@
-{-# LANGUAGE ScopedTypeVariables #-}
+﻿{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
@@ -75,7 +75,7 @@ import Flight.Track.Lead (compLeading)
 import Flight.Track.Mask (Masking(..))
 import Flight.Track.Speed (TrackSpeed(..))
 import Flight.Kml (MarkedFixes(..))
-import Data.Number.RoundingFunctions (dpRound)
+import Data.Number.Rounding (dpRound)
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (CmdOptions(..), ProgramName(..), mkOptions)
 import Flight.Lookup.Cross (FlyingLookup(..), crossFlying)

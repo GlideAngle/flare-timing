@@ -15,7 +15,7 @@
       , source-dirs =
           "library"
       , exposed-modules =
-          "Data.Number.RoundingFunctions"
+          "Data.Number.Rounding"
       }
   , tests =
       { hlint =

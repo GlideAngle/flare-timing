@@ -1,4 +1,4 @@
-{-# LANGUAGE DataKinds #-}
+﻿{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -23,7 +23,7 @@ import Data.UnitsOfMeasure (KnownUnit, Unpack, u)
 import Data.UnitsOfMeasure.Show (showUnit, showQuantity)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Flight.Units ()
-import Data.Number.RoundingFunctions (dpRound)
+import Data.Number.Rounding (dpRound)
 
 showAngle :: KnownUnit (Unpack u) => Quantity Rational u -> String
 showAngle q@(MkQuantity x) =
