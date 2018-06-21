@@ -134,3 +134,5 @@ unSome (Some (QuantityWithUnit (MkQuantity q) _)) = q
 -- [u| 112233.445566 km |]
 -- >>> encode (Distance [u| 112233.445566 km |])
 -- "\"112233.446 km\""
+-- >>> let Just x :: Maybe (Distance (Quantity Double [u| km |])) = decode (encode (Distance [u| 112233.445566 km |])) in x
+-- Distance [u| 112233.446 km |]
