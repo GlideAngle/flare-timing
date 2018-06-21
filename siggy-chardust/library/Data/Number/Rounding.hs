@@ -16,9 +16,6 @@ significant digits or a number of decimal places.
 -}
 module Data.Number.Rounding
     (
-    -- * Usage
-    -- $use
-    
     -- * About the Name
     -- $name
     
@@ -30,7 +27,9 @@ module Data.Number.Rounding
 
 import Data.Word (Word8)
 
--- | Rounds to a number of __d__ecimal __p__laces.
+-- | Rounds to a number of __d__ecimal __p__laces. After rounding the result
+-- would have the given number of decimal places if converted to a floating
+-- point number, such as by using 'fromRational'.
 --
 -- >>> dpRound 2 (123456789 :: Rational) == (123456789 :: Rational)
 -- True
@@ -99,15 +98,13 @@ sdRound sd' f =
         g = f / 10^p
         gZ = f * 10^pZ
 
--- $use
--- After rounding the result would have a given number of significant digits or
--- decimal places if converted to a floating point number, such as by using
--- 'fromRational'.
-
 -- $name
 -- Rounding to decimal places is a special case of rounding significant digits.
 -- When the number is split into whole and fractional parts, rounding to
 -- decimal places is rounding to significant digits in the fractional part.
+-- 
 -- The digits that are discarded become dust and a digit when written down is
--- a char.  So the name is __siggy__ for significant digits and __chardust__
--- for the digits that are discarded.
+-- a char.
+--
+-- The package name is __siggy__ for significant digits and __chardust__ for
+-- the digits that are discarded.
