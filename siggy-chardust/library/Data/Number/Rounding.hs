@@ -22,7 +22,9 @@ module Data.Number.Rounding
     -- * About the Name
     -- $name
     
+    -- * Rounding to Decimal Places
       dpRound
+    -- * Rounding to Significant Digits
     , sdRound
     ) where
 
