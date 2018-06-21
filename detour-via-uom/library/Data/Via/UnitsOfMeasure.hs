@@ -100,13 +100,30 @@ unSome (Some (QuantityWithUnit (MkQuantity q) _)) = q
 -- >>> :set -XTypeOperators
 -- >>> :set -XTypeFamilies
 -- >>> :set -XUndecidableInstances
+-- >>> import Data.Aeson
+-- >>> import Control.Newtype (Newtype(..))
+-- >>> import Data.Via.Scientific (DefaultDecimalPlaces(..), DecimalPlaces(..))
 -- >>> import Data.UnitsOfMeasure
 -- >>> import Data.UnitsOfMeasure.Show
 
 -- $use
--- Let's say we have distance in kilometres and altitude in feet.
+-- Let's say we have distances in kilometres we'd like encoded with 3 decimal
+-- places.
 -- 
--- >>> [u| 123 km |]
--- [u| 123 km |]
--- >>> [u| 12345 ft |]
--- [u| 12345 ft |]
+-- >>> :{
+-- newtype Distance a = Distance a deriving (Eq, Ord, Show)
+-- instance (q ~ Quantity Double [u| km |]) => DefaultDecimalPlaces (Distance q) where
+--     defdp _ = DecimalPlaces 3
+-- instance (q ~ Quantity Double [u| km |]) => Newtype (Distance q) q where
+--     pack = Distance
+--     unpack (Distance a) = a
+-- instance (q ~ Quantity Double [u| km |]) => ToJSON (Distance q) where
+--     toJSON x = toJSON $ ViaQ x
+-- instance (q ~ Quantity Double [u| km |]) => FromJSON (Distance q) where
+--     parseJSON o = do ViaQ x <- parseJSON o; return x
+-- :}
+-- 
+-- >>> [u| 112233.445566 km |]
+-- [u| 112233.445566 km |]
+-- >>> encode (Distance [u| 112233.445566 km |])
+-- "\"112233.446 km\""
