@@ -107,9 +107,16 @@ unSome (Some (QuantityWithUnit (MkQuantity q) _)) = q
 -- >>> import Data.UnitsOfMeasure.Show
 
 -- $use
+-- With these unit definitons;
+-- 
+-- @
+-- [u| m |]
+-- [u| km = 1000 m |]
+-- @
+-- 
 -- Let's say we have distances in kilometres we'd like encoded with 3 decimal
 -- places.
--- 
+--
 -- >>> :{
 -- newtype Distance a = Distance a deriving (Eq, Ord, Show)
 -- instance (q ~ Quantity Double [u| km |]) => DefaultDecimalPlaces (Distance q) where
