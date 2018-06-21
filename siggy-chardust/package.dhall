@@ -11,6 +11,8 @@
       "data, math, numeric"
   , github =
       "blockscope/flare-timing/siggy-chardust"
+  , homepage =
+      "https://github.com/BlockScope/flare-timing/tree/master/siggy-chardust#readme"
   , library =
       { dependencies =
           "base >=4.8 && <5"

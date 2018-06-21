@@ -11,6 +11,8 @@
       "data, math, numeric, json, csv"
   , github =
       "blockscope/flare-timing/detour-via-sci"
+  , homepage =
+      "https://github.com/BlockScope/flare-timing/tree/master/detour-via-sci#readme"
   , library =
       { dependencies =
           [ "base >=4.5 && <5"

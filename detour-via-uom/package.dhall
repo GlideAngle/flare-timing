@@ -11,6 +11,8 @@
       "data, math, numeric, json, csv, physics"
   , github =
       "blockscope/flare-timing/detour-via-uom"
+  , homepage =
+      "https://github.com/BlockScope/flare-timing/tree/master/detour-via-uom#readme"
   , ghc-options =
       [ "-Wall", "-fplugin Data.UnitsOfMeasure.Plugin" ]
   , library =
