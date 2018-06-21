@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: cc595b37ba1e4d7430a454142ed89d56298b5b0a8cc1d68340f2e6761dfab2e6
+-- hash: f642e921ca4aeeabbd03e00ecebace8053953578f370e4556cdf14a5c91c6b50
 
 name:           flight-units
 version:        0.1.0
@@ -13,7 +13,7 @@ homepage:       https://github.com/blockscope/flare-timing#readme
 bug-reports:    https://github.com/blockscope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
-copyright:      Phil de Joux 2017-2018
+copyright:      © 2017-2018 Phil de Joux, © 2017-2018 Block Scope Limited
 license:        MPL-2.0
 license-file:   LICENSE.md
 tested-with:    GHC == 8.2.2

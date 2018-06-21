@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d393a0d6d2453743f3423499d86f515e437821a183559a35bcc27df9437b1010
+-- hash: a0da2063f4b0bd62ea78299407fe2fbb060c5826d482d0772408855ed8ee1828
 
 name:           flight-lookup
 version:        0.1.0
@@ -13,7 +13,7 @@ homepage:       https://github.com/blockscope/flare-timing#readme
 bug-reports:    https://github.com/blockscope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
-copyright:      Phil de Joux 2017-2018
+copyright:      © 2017-2018 Phil de Joux, © 2017-2018 Block Scope Limited
 license:        MPL-2.0
 license-file:   LICENSE.md
 tested-with:    GHC == 8.2.2

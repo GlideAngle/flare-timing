@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 6944599d35a72dae0f81b8467e6702801516b9ebba4dc31f3d3f1f21a58aee5f
+-- hash: cf17ea2a3a0e638a687d7d3dd795d4d397a55c3eb823dbe82bf27fece007bb2a
 
 name:           flight-task
 version:        0.1.0
@@ -13,7 +13,7 @@ homepage:       https://github.com/blockscope/flare-timing#readme
 bug-reports:    https://github.com/blockscope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
-copyright:      Phil de Joux 2017-2018
+copyright:      © 2017-2018 Phil de Joux, © 2017-2018 Block Scope Limited
 license:        MPL-2.0
 license-file:   LICENSE.md
 tested-with:    GHC == 8.2.2

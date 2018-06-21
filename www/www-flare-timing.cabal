@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 274c60a7d4a6bd1c757349e45f372a8355de09eb016843cd9c9b0058a65834ed
+-- hash: 228c4f637f760c851d5a8e694e9e6345bac995762f9c9a2e484e87a190de8014
 
 name:           www-flare-timing
 version:        0.1.0
@@ -13,7 +13,7 @@ homepage:       https://github.com/blockscope/flare-timing#readme
 bug-reports:    https://github.com/blockscope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
-copyright:      Phil de Joux 2017-2018
+copyright:      © 2017-2018 Phil de Joux, © 2017-2018 Block Scope Limited
 license:        MPL-2.0
 license-file:   LICENSE.md
 tested-with:    GHC == 8.2.2

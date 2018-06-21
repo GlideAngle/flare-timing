@@ -4,9 +4,9 @@
   , version =
       "1.0.0"
   , synopsis =
-      "Lossy JSON and CSV encoding for rationals as decimal point numbers."
+      "JSON and CSV encoding for rationals as decimal point numbers."
   , description =
-      "JSON and CSV encoding and decoding for newtype rationals via scientific with fixed decimal places."
+      "Lossy JSON and CSV encoding and decoding for newtype rationals via scientific with fixed decimal places."
   , category =
       "data, math, numeric, json, csv"
   , github =

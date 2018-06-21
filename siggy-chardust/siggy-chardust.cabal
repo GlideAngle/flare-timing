@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d5dbb2450fc07980407079409cb63c087ca8f9e4ab88cf1a97149de2b58f91f9
+-- hash: e5cf5a53fd863d4d6f6d45b86202c3609f048aa499dd859cd3ad2f846c853260
 
 name:           siggy-chardust
 version:        1.0.0
@@ -13,7 +13,7 @@ homepage:       https://github.com/blockscope/flare-timing#readme
 bug-reports:    https://github.com/blockscope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
-copyright:      Phil de Joux 2017-2018
+copyright:      © 2017-2018 Phil de Joux, © 2017-2018 Block Scope Limited
 license:        MPL-2.0
 license-file:   LICENSE.md
 tested-with:    GHC == 8.2.2
