@@ -100,11 +100,10 @@ unSome (Some (QuantityWithUnit (MkQuantity q) _)) = q
 -- >>> :set -XTypeOperators
 -- >>> :set -XTypeFamilies
 -- >>> :set -XUndecidableInstances
--- >>> import Data.Aeson
+-- >>> import Data.Aeson (encode, decode, ToJSON(..), FromJSON(..))
 -- >>> import Control.Newtype (Newtype(..))
 -- >>> import Data.Via.Scientific (DefaultDecimalPlaces(..), DecimalPlaces(..))
--- >>> import Data.UnitsOfMeasure
--- >>> import Data.UnitsOfMeasure.Show
+-- >>> import Data.UnitsOfMeasure (u, Quantity(..))
 
 -- $use
 -- With these unit definitons;
