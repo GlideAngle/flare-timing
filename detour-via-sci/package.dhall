@@ -17,6 +17,7 @@
           , "aeson"
           , "cassava"
           , "template-haskell"
+          , "siggy-chardust"
           ]
       , source-dirs =
           "library"
@@ -33,6 +34,7 @@
               , "aeson"
               , "cassava"
               , "template-haskell"
+              , "siggy-chardust"
               ]
           , ghc-options =
               [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
@@ -49,6 +51,7 @@
               , "aeson"
               , "cassava"
               , "template-haskell"
+              , "siggy-chardust"
               , "doctest"
               ]
           , ghc-options =

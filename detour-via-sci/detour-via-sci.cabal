@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 0276fc34de6a611ebffc91ced975c28ca7ce3084adbe002ee905d54089e6d261
+-- hash: 3ef8decd7fc7c12f8b4087c898881c0be7a9e4f825069efb7cd53bc6e4f8194b
 
 name:           detour-via-sci
 version:        0.1.0
@@ -44,6 +44,7 @@ library
     , cassava
     , newtype
     , scientific
+    , siggy-chardust
     , template-haskell
   default-language: Haskell2010
 
@@ -64,6 +65,7 @@ test-suite doctest
     , doctest
     , newtype
     , scientific
+    , siggy-chardust
     , template-haskell
   default-language: Haskell2010
 
@@ -84,5 +86,6 @@ test-suite hlint
     , hlint
     , newtype
     , scientific
+    , siggy-chardust
     , template-haskell
   default-language: Haskell2010

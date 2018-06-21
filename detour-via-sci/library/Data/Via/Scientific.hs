@@ -50,6 +50,7 @@ import Data.Scientific
     )
 import Language.Haskell.TH (Q, Name, Dec, conT)
 import Language.Haskell.TH.Syntax
+import Data.Number.RoundingFunctions (dpRound)
 
 -- | A choice of 8 decimal places for
 -- <https://en.wikipedia.org/wiki/Decimal_degrees decimal degrees> is just
@@ -77,11 +78,11 @@ fromSci :: Scientific -> Rational
 fromSci x = toRational (toRealFloat x :: Double)
 
 -- | To 'Scientific' from 'Rational' as near as possible up to the given number
--- of 'DecimalPlaces'.
+-- of 'DecimalPlaces' with rounding.
 --
 -- >>> let x = 1122334455667788 % 10000000000000000
 -- >>> toSci (DecimalPlaces 8) x
--- 0.11223344
+-- 0.11223345
 -- >>> x == toRational (toSci (DecimalPlaces 8) x)
 -- False
 -- >>> x == toRational (toSci (DecimalPlaces 16) x)
@@ -90,7 +91,8 @@ fromSci x = toRational (toRealFloat x :: Double)
 -- True
 toSci :: DecimalPlaces -> Rational -> Scientific
 toSci (DecimalPlaces dp) x =
-    case fromRationalRepetend (Just $ dp + 1) x of
+    let y = dpRound (toInteger dp) x
+    in case fromRationalRepetend (Just $ dp + 1) y of
         Left (s, _) -> s
         Right (s, _) -> s
 
@@ -246,7 +248,7 @@ deriveCsvViaSci name =
 -- >>> fromRational x
 -- 0.1122334455667788
 -- >>> toSci (DecimalPlaces 8) x
--- 0.11223344
+-- 0.11223345
 -- 
 -- When having to check numbers by hand, a fixed decimal is more familiar than
 -- a ratio of possibly large integers.
@@ -254,7 +256,7 @@ deriveCsvViaSci name =
 -- >>> encode x
 -- "{\"numerator\":280583613916947,\"denominator\":2500000000000000}"
 -- >>> encode (Lat x)
--- "0.11223344"
+-- "0.11223345"
 -- 
 -- With too few decimal places, the encoding will be lossy.
 -- 
@@ -263,7 +265,7 @@ deriveCsvViaSci name =
 -- >>> decode (encode (Lat x)) == Just (Lat x)
 -- False
 -- >>> let Just (Lat y) = decode (encode (Lat x)) in fromRational y
--- 0.11223344
+-- 0.11223345
 --
 -- Similarly for CSV.
 --
@@ -275,7 +277,7 @@ deriveCsvViaSci name =
 -- :}
 --
 -- >>> Csv.encode [("A", Lat x)]
--- "A,0.11223344\r\n"
+-- "A,0.11223345\r\n"
 -- >>> Csv.decode Csv.NoHeader (Csv.encode [("B", Lat x)]) == Right (fromList [("B", Lat x)])
 -- False
 -- >>> Csv.decode Csv.NoHeader (Csv.encode [("C", Lat x)]) == Right (fromList [("C", Lat . fromSci . toSci (DecimalPlaces 8) $ x)])
