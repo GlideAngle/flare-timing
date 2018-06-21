@@ -19,6 +19,7 @@
           , "newtype"
           , "scientific"
           , "aeson"
+          , "cassava"
           , "uom-plugin"
           , "detour-via-sci"
           ]
@@ -34,6 +35,7 @@
               , "newtype"
               , "scientific"
               , "aeson"
+              , "cassava"
               , "uom-plugin"
               , "detour-via-sci"
               , "doctest"
@@ -52,6 +54,7 @@
               , "newtype"
               , "scientific"
               , "aeson"
+              , "cassava"
               , "uom-plugin"
               , "detour-via-sci"
               ]

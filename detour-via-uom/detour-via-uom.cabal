@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 882ee1e91ca214ad8ebcd95859fa12643dd35cb399cf55f64d2bdd2c401f5a2b
+-- hash: 5c41d6db1deb273d6a86bea5548d1323d50c9c40808d78e3f4dddd35158abfb8
 
 name:           detour-via-uom
 version:        1.0.0
@@ -41,6 +41,7 @@ library
   build-depends:
       aeson
     , base >=4.5 && <5
+    , cassava
     , detour-via-sci
     , newtype
     , scientific
@@ -60,6 +61,7 @@ test-suite doctest
   build-depends:
       aeson
     , base
+    , cassava
     , detour-via-sci
     , doctest
     , newtype
@@ -80,6 +82,7 @@ test-suite hlint
   build-depends:
       aeson
     , base
+    , cassava
     , detour-via-sci
     , hlint
     , newtype

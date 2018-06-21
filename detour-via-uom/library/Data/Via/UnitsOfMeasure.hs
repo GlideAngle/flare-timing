@@ -38,6 +38,7 @@ module Data.Via.UnitsOfMeasure
 import Control.Newtype (Newtype(..))
 import Data.Scientific (Scientific)
 import Data.Aeson (ToJSON(..), FromJSON(..))
+import Data.Csv (ToField(..), FromField(..))
 import Data.UnitsOfMeasure (Unpack, KnownUnit, fromRational', toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Data.UnitsOfMeasure.Show (showQuantity)
@@ -86,6 +87,35 @@ instance
             (return . ViaQ . pack . fromRational' . MkQuantity . fromSci . unSome)
             (readQuantity s)
 
+instance
+    ( DefaultDecimalPlaces n
+    , Newtype n (Quantity a u)
+    , Real a
+    , KnownUnit (Unpack u)
+    )
+    => ToField (ViaQ n a u) where
+    toField (ViaQ x) = toField . showQuantity $ y
+         where
+             MkQuantity a = toRational' . unpack $ x
+
+             y :: Quantity Scientific u
+             y = MkQuantity . toSci (defdp x) $ a
+
+instance
+    ( DefaultDecimalPlaces n
+    , Newtype n (Quantity a u)
+    , Real a
+    , Fractional a
+    , KnownUnit (Unpack u)
+    )
+    => FromField (ViaQ n a u) where
+    parseField o = do
+        s :: String <- parseField o
+        either
+            fail
+            (return . ViaQ . pack . fromRational' . MkQuantity . fromSci . unSome)
+            (readQuantity s)
+
 unSome :: Some (QuantityWithUnit p) -> p
 unSome (Some (QuantityWithUnit (MkQuantity q) _)) = q
 
@@ -100,7 +130,10 @@ unSome (Some (QuantityWithUnit (MkQuantity q) _)) = q
 -- >>> :set -XTypeOperators
 -- >>> :set -XTypeFamilies
 -- >>> :set -XUndecidableInstances
--- >>> import Data.Aeson (encode, decode, ToJSON(..), FromJSON(..))
+-- >>> import Data.Aeson (ToJSON(..), FromJSON(..), encode, decode)
+-- >>> import Data.Csv as Csv (ToField(..), FromField(..), HasHeader(..))
+-- >>> import qualified Data.Csv as Csv (encode, decode)
+-- >>> import Data.Vector (Vector, fromList)
 -- >>> import Control.Newtype (Newtype(..))
 -- >>> import Data.Via.Scientific (DefaultDecimalPlaces(..), DecimalPlaces(..))
 -- >>> import Data.UnitsOfMeasure (u, Quantity(..))
@@ -123,6 +156,11 @@ unSome (Some (QuantityWithUnit (MkQuantity q) _)) = q
 -- instance (q ~ Quantity Double [u| km |]) => Newtype (Distance q) q where
 --     pack = Distance
 --     unpack (Distance a) = a
+-- :}
+-- 
+-- Encoding and decoding JSON.
+--
+-- >>> :{
 -- instance (q ~ Quantity Double [u| km |]) => ToJSON (Distance q) where
 --     toJSON x = toJSON $ ViaQ x
 -- instance (q ~ Quantity Double [u| km |]) => FromJSON (Distance q) where
@@ -135,3 +173,20 @@ unSome (Some (QuantityWithUnit (MkQuantity q) _)) = q
 -- "\"112233.446 km\""
 -- >>> let Just x :: Maybe (Distance (Quantity Double [u| km |])) = decode (encode (Distance [u| 112233.445566 km |])) in x
 -- Distance [u| 112233.446 km |]
+-- 
+-- Similarly for CSV.
+--
+-- >>> :{
+-- instance (q ~ Quantity Double [u| km |]) => ToField (Distance q) where
+--     toField x = toField $ ViaQ x
+-- instance (q ~ Quantity Double [u| km |]) => FromField (Distance q) where
+--     parseField c = do ViaQ x <- parseField c; return x
+-- :}
+-- 
+-- >>> let d = Distance [u| 112233.445566 km |]
+-- >>> Csv.encode [("A", d)]
+-- "A,112233.446 km\r\n"
+-- >>> Csv.decode NoHeader (Csv.encode [("B", d)]) == Right (fromList [("B", d)])
+-- False
+-- >>> Csv.decode NoHeader (Csv.encode [("C", d)]) == Right (fromList [("C", Distance [u| 112233.446 km |])])
+-- True
