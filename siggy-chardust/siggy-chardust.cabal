@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f785c978f804ce5f9164bfd8eeeb8814031631108499e4fe66fbbcdb685a547a
+-- hash: fcfc148ff1dee466ab5b2f77c17457c69d115450e7a4a36de41489c7ae9c565e
 
 name:           siggy-chardust
 version:        0.1.0
@@ -59,6 +59,21 @@ test-suite digits
     , tasty-hunit
     , tasty-quickcheck
     , tasty-smallcheck
+  default-language: Haskell2010
+
+test-suite doctest
+  type: exitcode-stdio-1.0
+  main-is: DocTest.hs
+  other-modules:
+      Data.Ratio.Rounding
+      Paths_siggy_chardust
+  hs-source-dirs:
+      library
+      test-suite-doctest
+  ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      base
+    , doctest
   default-language: Haskell2010
 
 test-suite hlint

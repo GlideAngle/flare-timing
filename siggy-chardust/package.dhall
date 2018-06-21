@@ -28,6 +28,16 @@
           , source-dirs =
               [ "library", "test-suite-hlint" ]
           }
+      , doctest =
+          { dependencies =
+              [ "base", "doctest" ]
+          , ghc-options =
+              [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
+          , main =
+              "DocTest.hs"
+          , source-dirs =
+              [ "library", "test-suite-doctest" ]
+          }
       , digits =
           { dependencies =
               [ "base"
