@@ -38,6 +38,12 @@ import Data.UnitsOfMeasure.Read (QuantityWithUnit(..), Some(..), readQuantity)
 
 import Data.Via.Scientific (DefaultDecimalPlaces(..), fromSci, toSci)
 
+-- | An intermediate type used during encoding to JSON with @aeson@ and during
+-- encoding to CSV with @cassava@. It's also used during decoding.
+--
+-- The original type, a newtype 'Quantity', goes to and fro __via__ this
+-- __q__uantity so that the rational value can be encoded as a scientific value
+-- with a fixed number of decimal places and with units.
 data ViaQ n a u where
     ViaQ
         :: (DefaultDecimalPlaces n, Newtype n (Quantity a u))
