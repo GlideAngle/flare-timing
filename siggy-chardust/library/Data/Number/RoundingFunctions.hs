@@ -1,9 +1,11 @@
 {-|
-Module      : Data.Number.RoundingFunctions 
-Copyright   : (c) Block Scope Limited 2017
-License     : MPL-2.0
-Maintainer  : phil.dejoux@blockscope.com
-Stability   : experimental
+Module: Data.Number.RoundingFunctions 
+Copyright:
+    © 2018 Phil de Joux
+    © 2018 Block Scope Limited
+License: MPL-2.0
+Maintainer: Phil de Joux <phil.dejoux@blockscope.com>
+Stability: experimental
 
 Rounding rationals to significant digits and decimal places.
 -}
