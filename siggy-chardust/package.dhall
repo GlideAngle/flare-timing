@@ -2,9 +2,9 @@
 ⫽ { name =
       "siggy-chardust"
   , synopsis =
-      "Rounding keeping decimal places and significant digits."
+      "Rounding rationals to significant digits and decimal places."
   , description =
-      "Round to a certain number of decimal places or significant digits."
+      "The round function from the prelude returns an integer. The standard librarys of C and C++ have round functions that return floating point numbers. Rounding in this library takes and returns rationals and can round to a number of significant digits or a number of decimal places."
   , category =
       "Data, Math"
   , github =

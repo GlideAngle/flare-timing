@@ -5,7 +5,7 @@ License     : MPL-2.0
 Maintainer  : phil.dejoux@blockscope.com
 Stability   : experimental
 
-Functions rounding to decimal places and significant digits.
+Rounding rationals to significant digits and decimal places.
 -}
 module Data.Number.RoundingFunctions (dpRound, sdRound) where
 
