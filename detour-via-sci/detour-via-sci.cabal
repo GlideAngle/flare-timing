@@ -2,10 +2,10 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3ef8decd7fc7c12f8b4087c898881c0be7a9e4f825069efb7cd53bc6e4f8194b
+-- hash: 96c77f53fa6fd38b1229d3cb4821a850e6518242872a41e36bb58bfeff60e774
 
 name:           detour-via-sci
-version:        0.1.0
+version:        1.0.0
 synopsis:       JSON and CSV encoding and decoding for newtype rationals via scientific with fixed decimal places.
 description:    Lossy JSON encoding for rationals.
 category:       Flight

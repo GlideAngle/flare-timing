@@ -1,6 +1,8 @@
   ./defaults.dhall 
 ⫽ { name =
       "siggy-chardust"
+  , version =
+      "1.0.0"
   , synopsis =
       "Rounding rationals to significant digits and decimal places."
   , description =

@@ -1,6 +1,8 @@
   ./defaults.dhall 
 ⫽ { name =
       "detour-via-sci"
+  , version =
+      "1.0.0"
   , synopsis =
       "JSON and CSV encoding and decoding for newtype rationals via scientific with fixed decimal places."
   , description =

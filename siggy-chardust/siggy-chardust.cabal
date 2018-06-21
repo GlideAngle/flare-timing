@@ -2,10 +2,10 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: fcfc148ff1dee466ab5b2f77c17457c69d115450e7a4a36de41489c7ae9c565e
+-- hash: 1b0f80829b3e451f45da5acc15a52548ebae0dc962c9ab821330e35d6b46f2f7
 
 name:           siggy-chardust
-version:        0.1.0
+version:        1.0.0
 synopsis:       Rounding rationals to significant digits and decimal places.
 description:    The round function from the prelude returns an integer. The standard librarys of C and C++ have round functions that return floating point numbers. Rounding in this library takes and returns rationals and can round to a number of significant digits or a number of decimal places.
 category:       Data, Math
