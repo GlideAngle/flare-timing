@@ -4,11 +4,11 @@
   , version =
       "1.0.0"
   , synopsis =
-      "JSON encoding and decoding for rationals via scientific."
+      "JSON and CSV encoding for quantities."
   , description =
-      "Lossy JSON encoding for rationals."
+      "Lossy JSON and CSV encoding and decoding for newtype quantities via scientific with fixed decimal places and with units."
   , category =
-      "Flight"
+      "data, math, numeric, json, csv, physics"
   , github =
       "blockscope/flare-timing/detour-via-uom"
   , ghc-options =

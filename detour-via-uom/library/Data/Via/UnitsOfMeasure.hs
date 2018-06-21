@@ -14,6 +14,18 @@
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
+{-|
+Module: Data.Via.UnitsOfMeasure
+Copyright:
+    © 2018 Phil de Joux
+    © 2018 Block Scope Limited
+License: MPL-2.0
+Maintainer: Phil de Joux <phil.dejoux@blockscope.com>
+Stability: experimental
+
+For encoding and decoding newtype quantities as scientific with a fixed number
+of decimal places and with units.
+-}
 module Data.Via.UnitsOfMeasure (ViaQ(..)) where
 
 import Control.Newtype (Newtype(..))
