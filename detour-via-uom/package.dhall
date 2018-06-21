@@ -1,6 +1,8 @@
   ./defaults.dhall 
 ⫽ { name =
       "detour-via-uom"
+  , version =
+      "1.0.0"
   , synopsis =
       "JSON encoding and decoding for rationals via scientific."
   , description =
@@ -19,7 +21,6 @@
           , "aeson"
           , "uom-plugin"
           , "detour-via-sci"
-          , "flight-units"
           ]
       , source-dirs =
           "library"
@@ -36,7 +37,6 @@
               , "aeson"
               , "uom-plugin"
               , "detour-via-sci"
-              , "flight-units"
               ]
           , ghc-options =
               [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]

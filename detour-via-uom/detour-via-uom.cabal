@@ -2,10 +2,10 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 567a8e98484549cff6fc6c6c387e2883ece2c17b5188de39ff836a40a577ec2b
+-- hash: 7769d46661eef745786440828bd430028a0f00a1024729eede1f0bd582f9e7d4
 
 name:           detour-via-uom
-version:        0.1.0
+version:        1.0.0
 synopsis:       JSON encoding and decoding for rationals via scientific.
 description:    Lossy JSON encoding for rationals.
 category:       Flight
@@ -42,7 +42,6 @@ library
       aeson
     , base >=4.5 && <5
     , detour-via-sci
-    , flight-units
     , newtype
     , scientific
     , uom-plugin
@@ -62,7 +61,6 @@ test-suite hlint
       aeson
     , base
     , detour-via-sci
-    , flight-units
     , hlint
     , newtype
     , scientific

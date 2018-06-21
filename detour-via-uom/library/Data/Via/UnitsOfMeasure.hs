@@ -3,7 +3,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
@@ -25,7 +24,6 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Data.UnitsOfMeasure.Show (showQuantity)
 import Data.UnitsOfMeasure.Read (QuantityWithUnit(..), Some(..), readQuantity)
 
-import Flight.Units ()
 import Data.Via.Scientific (DefaultDecimalPlaces(..), fromSci, toSci)
 
 data ViaQ n a u where
