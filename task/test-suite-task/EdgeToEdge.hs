@@ -36,7 +36,7 @@ import qualified Flight.Earth.Sphere.Cylinder.Rational as Rat (circumSample)
 import qualified Flight.Task as FS (distanceEdgeToEdge)
 import Flight.Task (Zs(..), AngleCut(..), CostSegment)
 import Flight.Earth.Sphere.Separated (separatedZones)
-import Data.Number.Rounding (dpRound)
+import Data.Ratio.Rounding (dpRound)
 
 (.>=.) :: (Show a, Show b) => a -> b -> String
 (.>=.) x y = show x ++ " >= " ++ show y

@@ -4,7 +4,7 @@ import Test.Tasty (TestTree, testGroup, defaultMain)
 import Test.Tasty.HUnit as HU ((@?=), testCase)
 import Test.Tasty.QuickCheck as QC
 
-import Data.Number.Rounding (dpRound, sdRound)
+import Data.Ratio.Rounding (dpRound, sdRound)
 
 main :: IO ()
 main = defaultMain tests

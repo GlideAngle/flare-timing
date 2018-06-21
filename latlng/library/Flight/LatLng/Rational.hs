@@ -23,7 +23,7 @@ import Data.UnitsOfMeasure (KnownUnit, Unpack, u)
 import Data.UnitsOfMeasure.Show (showUnit, showQuantity)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Flight.Units ()
-import Data.Number.Rounding (dpRound)
+import Data.Ratio.Rounding (dpRound)
 
 showAngle :: KnownUnit (Unpack u) => Quantity Rational u -> String
 showAngle q@(MkQuantity x) =

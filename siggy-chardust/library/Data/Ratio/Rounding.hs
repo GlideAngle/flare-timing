@@ -1,5 +1,5 @@
 ﻿{-|
-Module: Data.Number.Rounding
+Module: Data.Ratio.Rounding
 Copyright:
     © 2018 Phil de Joux
     © 2018 Block Scope Limited
@@ -14,7 +14,7 @@ of C and C++ have round functions that return floating point numbers. Rounding
 in this library takes and returns 'Rational's and can round to a number of
 significant digits or a number of decimal places.
 -}
-module Data.Number.Rounding
+module Data.Ratio.Rounding
     (
     -- * About the Name
     -- $name

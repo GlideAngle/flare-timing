@@ -25,7 +25,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Data.Bifunctor.Flip (Flip(..))
 
 import Flight.LatLng (LatLng(..))
-import Data.Number.Rounding (dpRound)
+import Data.Ratio.Rounding (dpRound)
 
 -- | A function for measuring the distance between two points given as
 -- latitude longitude pairs in radians.

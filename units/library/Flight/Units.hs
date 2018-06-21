@@ -20,7 +20,7 @@ module Flight.Units
 import Data.UnitsOfMeasure (u, convert, fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Data.Bifunctor.Flip (Flip(..))
-import Data.Number.Rounding (dpRound)
+import Data.Ratio.Rounding (dpRound)
 
 import Flight.Units.Angle ()
 

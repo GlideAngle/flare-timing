@@ -69,7 +69,7 @@ import Flight.Mask
 import Flight.Track.Cross (Fix(..), TrackFlyingSection(..))
 import Flight.Track.Tag (Tagging(..), TrackTime(..), firstLead, firstStart)
 import Flight.Kml (MarkedFixes(..))
-import Data.Number.Rounding (dpRound)
+import Data.Ratio.Rounding (dpRound)
 import Flight.Distance (TaskDistance(..))
 import Flight.Scribe (readCrossing, readTagging, writeAlignTime)
 import Flight.Lookup.Cross
