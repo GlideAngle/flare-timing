@@ -14,31 +14,43 @@ Stability: experimental
 Provides parsing the KML format for waypoint fixes.
 -}
 module Flight.Kml
-    ( Fix(..)
-    , MarkedFixes(..)
-    , LLA(..)
+    (
+    -- * Fix
+      LLA(..)
     , T.LatLngAlt(..)
+    , Fix(..)
     , T.FixMark(..)
+    , MarkedFixes(..)
+
+    --  * Fix newtypes
     , Seconds(..)
     , Latitude(..)
     , Longitude(..)
     , Altitude(..)
     , mkPosition
+
+    -- * Parsing
     , parse
     , parseTimeOffsets
     , parseBaroMarks
     , parseLngLatAlt
-    , showLatLngAlt
-    , showLngLatAlt
-    , showTimeAlt
     , roundTripLatLngAlt
     , formatFloat
+
+    -- * Length and Range
     , fixesLength
     , fixesSecondsRange
     , fixesUTCTimeRange
+
+    -- * Display Fixes
     , showFixesLength
     , showFixesSecondsRange
     , showFixesUTCTimeRange
+
+    -- * Display a Fix
+    , showLatLngAlt
+    , showLngLatAlt
+    , showTimeAlt
     ) where
 
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
