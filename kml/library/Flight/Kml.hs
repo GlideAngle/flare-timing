@@ -3,11 +3,13 @@
 {-# LANGUAGE FlexibleInstances #-}
 
 {-|
-Module      : Flight.Kml
-Copyright   : (c) Block Scope Limited 2017
-License     : MPL-2.0
-Maintainer  : phil.dejoux@blockscope.com
-Stability   : experimental
+Module: Flight.Kml
+Copyright:
+    © 2018 Phil de Joux
+    © 2018 Block Scope Limited
+License: MPL-2.0
+Maintainer: Phil de Joux <phil.dejoux@blockscope.com>
+Stability: experimental
 
 Provides parsing the KML format for waypoint fixes.
 -}
