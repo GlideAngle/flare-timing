@@ -2,14 +2,14 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 6afe498c973832924acd01674c1c2759d62904024f1d287aefeba578f05b8538
+-- hash: 00970c4e5aabd7b9c8136764c37280bde4fa706063fa73a54ab626eb58e07fe8
 
 name:           detour-via-uom
 version:        1.0.0
 synopsis:       JSON and CSV encoding for quantities.
 description:    Lossy JSON and CSV encoding and decoding for newtype quantities via scientific with fixed decimal places and with units.
 category:       data, math, numeric, json, csv, physics
-homepage:       https://github.com/BlockScope/flare-timing/tree/master/detour-via-uom#readme
+homepage:       https://github.com/blockscope/flare-timing/tree/master/detour-via-uom#readme
 bug-reports:    https://github.com/blockscope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com

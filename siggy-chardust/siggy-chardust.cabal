@@ -2,14 +2,14 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 051f7191ed7bcec96dc234bb6e9387e0f315e58181be78e8fce35bcf22cf3b4c
+-- hash: caddbc72be273f0c35678cbd4bf92145658c4269405fbef8b37e9f7b77adabe0
 
 name:           siggy-chardust
 version:        1.0.0
 synopsis:       Rounding rationals to significant digits and decimal places.
 description:    The round function from the prelude returns an integer. The standard librarys of C and C++ have round functions that return floating point numbers. Rounding in this library takes and returns rationals and can round to a number of significant digits or a number of decimal places.
 category:       data, math, numeric
-homepage:       https://github.com/BlockScope/flare-timing/tree/master/siggy-chardust#readme
+homepage:       https://github.com/blockscope/flare-timing/tree/master/siggy-chardust#readme
 bug-reports:    https://github.com/blockscope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com

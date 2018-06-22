@@ -12,7 +12,7 @@
   , github =
       "blockscope/flare-timing/siggy-chardust"
   , homepage =
-      "https://github.com/BlockScope/flare-timing/tree/master/siggy-chardust#readme"
+      "https://github.com/blockscope/flare-timing/tree/master/siggy-chardust#readme"
   , library =
       { dependencies =
           "base >=4.8 && <5"
