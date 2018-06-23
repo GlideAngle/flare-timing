@@ -18,6 +18,9 @@ on the <http://fs.fai.org/trac/wiki/GpsDump/ FS wiki>.
 -}
 module Flight.Kml
     (
+    -- * GPSDump KML
+    -- $kml
+
     -- * Fix
       LLA(..)
     , T.LatLngAlt(..)
@@ -319,3 +322,61 @@ parseLngLatAlt s =
                      (Latitude lat)
                      (Longitude lng)
                      (Altitude alt)) <$> xs
+
+-- $kml
+--
+-- @
+-- \<?xml version="1.0" encoding=\"UTF-8\"?\>
+-- \<Document\>
+-- \<open\>1\</open\>
+--   \<Folder\>
+--     \<Metadata src=\"GpsDump\" v="4.66" type="trip"/\>
+--     \<open\>1\</open\>
+--     \<name\>Trip\</nam\e>
+--     \<description\>\<![CDATA[Tracklog from GpsDump competition mode
+-- \<pre\>
+-- Flight statistics
+-- Date                 2012-01-14
+-- Start/finish         02:12:55 - 05:51:18
+-- Duration             3 : 38 : 23
+-- Max./min. height     2392 / 214 m
+-- Max. mean/top speed  72 km/h / 82 km/h
+-- Max/min climb rate   4.35 / -4.23 m/s over 60s
+-- Total distance       166.89 km
+-- \</pre\>]]\>
+--     \</description\>
+-- ...
+--     \<Placemark\>
+--       \<Metadata src=\"GpsDump\" v="4.66" type="track"\>
+--         \<FsInfo time_of_first_point="2012-01-14T02:12:55Z"
+--                 civl_pilot_id="21437" comp_pilot_id="40"
+--                 instrument="6030 SN06451 SW3.30"
+--                 downloaded="2012-01-14T08:22:21Z"
+--                 hash="61168B84FE0DAC55F3D65EFBA888B08F72834DDF"\>
+--           \<SecondsFromTimeOfFirstPoint\>
+-- 0 2 4 6 8 10 12 14 16 18 20 22 24 26 28 30 32 34 36 38 40 42 44 46 48
+-- ...
+-- 13061 13063 13065 13067 13069 13071 13073 13075 13077 13079 13081 13083 13085 13087 13089 13091 13093 13095 13097 13099 13101 13103
+--           \</SecondsFromTimeOfFirstPoint\>
+--           \<PressureAltitude\>
+-- 239 240 240 239 239 239 239 239 239 240 239 240 239 239 240 239 240 240 240 240 239 239 240 240 240 
+-- ...
+-- 237 237 237 237 237 237 237 238 238 237 238 237 237 238 237 237 238 238 237 238 237 238
+--           \</PressureAltitude\>
+--         \</FsInfo\>
+--       \</Metadata\>
+--       \<name\>Tracklog\</name\>
+--       \<LineString\>
+--         \<altitudeMode\>absolute\</altitudeMode\>
+--         \<coordinates\>
+-- 147.932050,-33.361600,237 147.932050,-33.361600,238 147.932050,-33.361600,238 147.932050,-33.361600,238 147.932067,-33.361600,238 
+-- ...
+-- 147.560367,-33.650733,215 147.560367,-33.650733,215 147.560367,-33.650733,214 147.560367,-33.650733,214 147.560367,-33.650733,214 
+-- 147.560367,-33.650733,214 147.560367,-33.650733,214
+--         \</coordinates\>
+--       \</LineString\>
+--     \</Placemark\>
+--   \</Folder\>
+-- \</Document\>
+-- 
+-- @
