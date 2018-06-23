@@ -420,17 +420,27 @@ parseLngLatAlt s =
 -- >>> Right mf@(MarkedFixes{mark0, fixes}) <- parse kml
 -- >>> mark0
 -- 2012-01-14 02:12:55 UTC
---
--- The number of fixes in the tracklog are;
---
 -- >>> length fixes
 -- 6547
--- >>> fixesLength mf
--- 6547
--- >>> showFixesLength mf
--- "6547"
---
 -- >>> take 1 $ fixes
 -- [Fix {fixMark = sec=0, fix = LLA {llaLat = lat=-33.36160000, llaLng = lng=147.93205000, llaAltGps = alt=237}, fixAltBaro = Just alt=239}]
 -- >>> take 1 . reverse $ fixes
 -- [Fix {fixMark = sec=13103, fix = LLA {llaLat = lat=-33.65073300, llaLng = lng=147.56036700, llaAltGps = alt=214}, fixAltBaro = Just alt=238}]
+--
+-- The length and range of the tracklog.
+--
+-- >>> fixesLength mf
+-- 6547
+-- >>> fixesSecondsRange mf
+-- Just (sec=0,sec=13103)
+-- >>> fixesUTCTimeRange mf
+-- Just (2012-01-14 02:12:55 UTC,2012-01-14 05:51:18 UTC)
+--
+-- Showing the fixes in the tracklog.
+--
+-- >>> showFixesLength mf
+-- "6547"
+-- >>> showFixesSecondsRange mf
+-- "(sec=0,sec=13103)"
+-- >>> showFixesUTCTimeRange mf
+-- "(2012-01-14 02:12:55 UTC,2012-01-14 05:51:18 UTC)"
