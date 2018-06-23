@@ -347,6 +347,9 @@ showLngLatAlt (Latitude lat, Longitude lng, Altitude alt) =
 
 -- | Parse comma-separated triples of lng,lat,alt, each triple separated by
 -- spaces.
+--
+-- >>> parseLngLatAlt "147.932050,-33.361600,237 147.932050,-33.361600,238"
+-- [LLA {llaLat = lat=-33.36160000, llaLng = lng=147.93205000, llaAltGps = alt=237},LLA {llaLat = lat=-33.36160000, llaLng = lng=147.93205000, llaAltGps = alt=238}]
 parseLngLatAlt :: String -> [LLA]
 parseLngLatAlt s =
     case P.parse pFixes "(stdin)" s of
