@@ -288,13 +288,25 @@ pFixes = do
     _ <- eof
     return xs
 
+-- | Avoids __@"0."@__ because ...
+-- 
+-- @
+-- > (read "0." :: Double)
+-- Exception: Prelude.read: no parse
+-- > (read "0.0" :: Double)
+-- 0.0
+-- @
+--
+-- >>> formatFloat "112.2334455"
+-- "112.233446"
+-- >>> formatFloat "0"
+-- "0.000000"
+-- >>> formatFloat "0."
+-- "0.000000"
+-- >>> formatFloat "0.0"
+-- "0.000000"
 formatFloat :: String -> String
 formatFloat s =
-    -- NOTE: Avoid "0." because ...
-    --    *Main Data.Waypoint> (read "0." :: Double)
-    --    *** Exception: Prelude.read: no parse
-    --    *Main Data.Waypoint> (read "0.0" :: Double)
-    --    0.0
     case splitOn "." s of
          [ a, "" ] -> showFFloat (Just 6) (read a :: Double) ""
          _ -> showFFloat (Just 6) (read s :: Double) ""
