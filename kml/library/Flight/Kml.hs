@@ -18,9 +18,6 @@ on the <http://fs.fai.org/trac/wiki/GpsDump/ FS wiki>.
 -}
 module Flight.Kml
     (
-    -- * GPSDump KML
-    -- $kml
-
     -- * Fix
       LLA(..)
     , T.LatLngAlt(..)
@@ -57,6 +54,9 @@ module Flight.Kml
     , showLatLngAlt
     , showLngLatAlt
     , showTimeAlt
+
+    -- * GPSDump KML
+    -- $kml
     ) where
 
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
@@ -324,7 +324,12 @@ parseLngLatAlt s =
                      (Altitude alt)) <$> xs
 
 -- $kml
---
+-- Here's an example of a tracklog dump from the last day of the Hang Gliding
+-- Pre-Worlds Forbes 2012. The flight instrument is
+-- a <http://www.flytec.com/6030.html Flytec 6030>. The pilot with
+-- <http://civlrankings.fai.org/FL.aspx?a=309&person_id=21437 CIVL ID 21437> is
+-- me, the author of this package, Phil de Joux.
+-- 
 -- @
 -- \<?xml version="1.0" encoding=\"UTF-8\"?\>
 -- \<Document\>
