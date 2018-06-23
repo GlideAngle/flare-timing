@@ -41,6 +41,7 @@
               , "hlint"
               , "detour-via-sci"
               , "siggy-chardust"
+              , "template-haskell"
               , "doctest"
               ]
           , ghc-options =

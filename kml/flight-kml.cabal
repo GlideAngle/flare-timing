@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a1f7bb23484d1efc949296410089e63241fb8ceb092e7a56440b9b9224a78e0c
+-- hash: aeb76447c53e68686e41b34d1a301ce03585de558ae6be387a5d77540ed997ba
 
 name:           flight-kml
 version:        0.1.0
@@ -75,6 +75,7 @@ test-suite doctest
     , path
     , siggy-chardust
     , split
+    , template-haskell
     , time
   default-language: Haskell2010
 

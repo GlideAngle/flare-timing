@@ -191,6 +191,14 @@ getFix =
             /> getText
             >>. concatMap parseLngLatAlt
 
+-- | Parse the KML string.
+-- 
+-- >>> :{
+--   do
+--       Right MarkedFixes{mark0} <- parse kml
+--       return $ show mark0 == "2012-01-14 02:12:55 UTC"
+-- :}
+-- True
 parse :: String -> IO (Either String MarkedFixes)
 parse contents = do
     let doc = readString [ withValidate no, withWarnings no ] contents
@@ -322,6 +330,19 @@ parseLngLatAlt s =
                      (Latitude lat)
                      (Longitude lng)
                      (Altitude alt)) <$> xs
+
+-- $setup
+-- >>> :set -XTemplateHaskell
+-- >>> :set -XNamedFieldPuns
+-- >>> import Language.Haskell.TH
+-- >>> import Language.Haskell.TH.Syntax (lift)
+-- :{
+-- embedStr :: IO String -> ExpQ
+-- embedStr readStr = lift =<< runIO readStr
+-- :}
+-- 
+-- >>> kml = $(embedStr (readFile "./test-suite-doctest/Phil de Joux.20120114-082221.21437.40.kml"))
+-- 
 
 -- $kml
 -- Here's an example of a tracklog dump from the last day of the Hang Gliding
