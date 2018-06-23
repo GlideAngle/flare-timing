@@ -417,11 +417,19 @@ parseLngLatAlt s =
 -- $use
 -- Working with the tracklog dump in <#kml KML>, from the tracklog file "__@Phil de Joux.20120114-082221.21437.40.kml@__".
 --
--- >>> Right MarkedFixes{mark0, fixes} <- parse kml
+-- >>> Right mf@(MarkedFixes{mark0, fixes}) <- parse kml
 -- >>> mark0
 -- 2012-01-14 02:12:55 UTC
+--
+-- The number of fixes in the tracklog are;
+--
 -- >>> length fixes
 -- 6547
+-- >>> fixesLength mf
+-- 6547
+-- >>> showFixesLength mf
+-- "6547"
+--
 -- >>> take 1 $ fixes
 -- [Fix {fixMark = sec=0, fix = LLA {llaLat = lat=-33.36160000, llaLng = lng=147.93205000, llaAltGps = alt=237}, fixAltBaro = Just alt=239}]
 -- >>> take 1 . reverse $ fixes
