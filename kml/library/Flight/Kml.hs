@@ -318,6 +318,9 @@ formatFloat s =
          _ -> showFFloat (Just 6) (read s :: Double) ""
 
 -- | Round trip from rational to double and back to rational.
+-- 
+-- >>> roundTripLatLngAlt (Latitude (-33.65073300), Longitude 147.56036700, Altitude 214)
+-- (-33.650733,147.560367,alt=214)
 roundTripLatLngAlt :: (Latitude, Longitude, Altitude)
                    -> (Double, Double, Altitude)
 roundTripLatLngAlt (Latitude lat, Longitude lng, alt) =
