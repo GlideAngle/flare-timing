@@ -11,10 +11,11 @@ License: MPL-2.0
 Maintainer: Phil de Joux <phil.dejoux@blockscope.com>
 Stability: experimental
 
-Provides parsing of the flavour of KML used in hang gliding and paragliding
-competitions. The paired use of <http://fs.fai.org/ FS> with
-<http://www.gpsdump.no GpsDump> in competition mode and is exlained in detail
-on the <http://fs.fai.org/trac/wiki/GpsDump/ FS wiki>.
+Provides parsing of dumped tracklogs. In hang gliding and paragliding
+competitions when <http://fs.fai.org/ FS> and <http://www.gpsdump.no GpsDump>
+are paired in competition mode a pilot's tracklog is dumped as
+<https://developers.google.com/kml/ KML>. This is exlained in detail on the
+<http://fs.fai.org/trac/wiki/GpsDump/ FS wiki>.
 -}
 module Flight.Kml
     (

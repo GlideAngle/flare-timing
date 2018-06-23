@@ -2,9 +2,9 @@
 ⫽ { name =
       "flight-kml"
   , synopsis =
-      "A parser for KML files."
+      "Parsing of pilot tracklogs dumped as KML."
   , description =
-      "KML can be a source of flight waypoints."
+      "Provides parsing of dumped tracklogs. In hang gliding and paragliding competitions when FS and GpsDump are paired in competition mode a pilot's tracklog is dumped as KML. This is exlained in detail on the FS wiki."
   , category =
       "Data, Parsing"
   , github =

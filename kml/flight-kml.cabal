@@ -2,12 +2,12 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: aeb76447c53e68686e41b34d1a301ce03585de558ae6be387a5d77540ed997ba
+-- hash: c51ab6fcbee2f2f3894460b742bc7e487e240c8c6c79e07445c4317b628aa1d6
 
 name:           flight-kml
 version:        0.1.0
-synopsis:       A parser for KML files.
-description:    KML can be a source of flight waypoints.
+synopsis:       Parsing of pilot tracklogs dumped as KML.
+description:    Provides parsing of dumped tracklogs. In hang gliding and paragliding competitions when FS and GpsDump are paired in competition mode a pilot's tracklog is dumped as KML. This is exlained in detail on the FS wiki.
 category:       Data, Parsing
 homepage:       https://github.com/blockscope/flare-timing#readme
 bug-reports:    https://github.com/blockscope/flare-timing/issues
