@@ -438,10 +438,10 @@ parseLngLatAlt s =
 -- 2012-01-14 02:12:55 UTC
 -- >>> length fixes
 -- 6547
--- >>> take 1 $ fixes
--- [Fix {fixMark = sec=0, fix = LLA {llaLat = lat=-33.36160000, llaLng = lng=147.93205000, llaAltGps = alt=237}, fixAltBaro = Just alt=239}]
--- >>> take 1 . reverse $ fixes
--- [Fix {fixMark = sec=13103, fix = LLA {llaLat = lat=-33.65073300, llaLng = lng=147.56036700, llaAltGps = alt=214}, fixAltBaro = Just alt=238}]
+-- >>> head fixes
+-- Fix {fixMark = sec=0, fix = LLA {llaLat = lat=-33.36160000, llaLng = lng=147.93205000, llaAltGps = alt=237}, fixAltBaro = Just alt=239}
+-- >>> last fixes
+-- Fix {fixMark = sec=13103, fix = LLA {llaLat = lat=-33.65073300, llaLng = lng=147.56036700, llaAltGps = alt=214}, fixAltBaro = Just alt=238}
 --
 -- The length and range of the tracklog.
 --
