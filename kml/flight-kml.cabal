@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f457d573339d4f83e08cf4c2e8d96ce89682cd0124ffe34c6bbc55ae509e6840
+-- hash: a1f7bb23484d1efc949296410089e63241fb8ceb092e7a56440b9b9224a78e0c
 
 name:           flight-kml
 version:        0.1.0
@@ -43,6 +43,32 @@ library
       aeson
     , base >=4.5 && <5
     , detour-via-sci
+    , hxt
+    , hxt-xpath
+    , parsec
+    , path
+    , siggy-chardust
+    , split
+    , time
+  default-language: Haskell2010
+
+test-suite doctest
+  type: exitcode-stdio-1.0
+  main-is: DocTest.hs
+  other-modules:
+      Flight.Kml
+      Flight.Types
+      Paths_flight_kml
+  hs-source-dirs:
+      library
+      test-suite-doctest
+  ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base
+    , detour-via-sci
+    , doctest
+    , hlint
     , hxt
     , hxt-xpath
     , parsec

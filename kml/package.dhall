@@ -28,7 +28,29 @@
           "Flight.Kml"
       }
   , tests =
-      { hlint =
+      { doctest =
+          { dependencies =
+              [ "base"
+              , "split"
+              , "parsec"
+              , "hxt"
+              , "path"
+              , "hxt-xpath"
+              , "aeson"
+              , "time"
+              , "hlint"
+              , "detour-via-sci"
+              , "siggy-chardust"
+              , "doctest"
+              ]
+          , ghc-options =
+              [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
+          , main =
+              "DocTest.hs"
+          , source-dirs =
+              [ "library", "test-suite-doctest" ]
+          }
+      , hlint =
           { dependencies =
               [ "base"
               , "split"
