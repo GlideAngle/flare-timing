@@ -342,6 +342,7 @@ parseLngLatAlt s =
 -- >>> :set -XNamedFieldPuns
 -- >>> import Language.Haskell.TH
 -- >>> import Language.Haskell.TH.Syntax (lift)
+-- >>> import Flight.Kml
 -- :{
 -- embedStr :: IO String -> ExpQ
 -- embedStr readStr = lift =<< runIO readStr
@@ -444,3 +445,17 @@ parseLngLatAlt s =
 -- "(sec=0,sec=13103)"
 -- >>> showFixesUTCTimeRange mf
 -- "(2012-01-14 02:12:55 UTC,2012-01-14 05:51:18 UTC)"
+--
+-- Showing a single fix.
+--
+-- >>> let a = head fixes
+-- >>> let z = last fixes
+-- >>> let lla = (lat . fix $ a, lng . fix $ a, altGps . fix $ a)
+-- >>> showLatLngAlt lla
+-- "-33.361600,147.932050,237"
+-- >>> showLngLatAlt lla
+-- "147.932050,-33.361600,237"
+-- >>> showTimeAlt a
+-- "(0s,237m)"
+-- >>> showTimeAlt z
+-- "(13103s,214m)"
