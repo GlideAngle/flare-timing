@@ -431,7 +431,7 @@ parseLngLatAlt s =
 -- @
 
 -- $use
--- Working with the tracklog dump in <#kml KML>, from the tracklog file "__@Phil de Joux.20120114-082221.21437.40.kml@__".
+-- Working with the <#kml KML tracklog dump> from the tracklog file "__@Phil de Joux.20120114-082221.21437.40.kml@__".
 --
 -- >>> Right mf@(MarkedFixes{mark0, fixes}) <- parse kml
 -- >>> mark0
