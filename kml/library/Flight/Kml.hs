@@ -22,21 +22,23 @@ module Flight.Kml
     -- * Usage
     -- $use
     
-    -- * Fix
-      LLA(..)
-    , T.LatLngAlt(..)
-    , Fix(..)
-    , T.FixMark(..)
-    , MarkedFixes(..)
-
-    -- * Fix newtypes
-    , Seconds(..)
+    -- * newtypes
+      Seconds(..)
     , Latitude(..)
     , Longitude(..)
     , Altitude(..)
-    , mkPosition
 
-    -- * Parsing
+    -- * Typeclasses
+    , T.LatLngAlt(..)
+    , T.FixMark(..)
+
+    -- * Tracklog as a list of marked fixes
+    , LLA(..)
+    , mkPosition
+    , Fix(..)
+    , MarkedFixes(..)
+
+    -- ** Parsing
     , parse
     , parseTimeOffsets
     , parseBaroMarks
@@ -44,17 +46,17 @@ module Flight.Kml
     , roundTripLatLngAlt
     , formatFloat
 
-    -- * Length and Range
+    -- ** Length and range
     , fixesLength
     , fixesSecondsRange
     , fixesUTCTimeRange
 
-    -- * Display Fixes
+    -- ** Display of fixes
     , showFixesLength
     , showFixesSecondsRange
     , showFixesUTCTimeRange
 
-    -- * Display a Fix
+    -- ** Display of a fix
     , showLatLngAlt
     , showLngLatAlt
     , showTimeAlt
