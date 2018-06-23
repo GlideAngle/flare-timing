@@ -89,6 +89,10 @@ data LLA =
     deriving (Eq, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
+-- | Constructs a 'LLA' from its parts.
+-- 
+-- >>> mkPosition (Latitude (-33.65073300), Longitude 147.56036700, Altitude 214)
+-- LLA {llaLat = lat=-33.65073300, llaLng = lng=147.56036700, llaAltGps = alt=214}
 mkPosition :: (Latitude, Longitude, Altitude) -> LLA
 mkPosition (lat', lng', alt') = LLA lat' lng' alt'
 
