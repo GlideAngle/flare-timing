@@ -11,7 +11,10 @@ License: MPL-2.0
 Maintainer: Phil de Joux <phil.dejoux@blockscope.com>
 Stability: experimental
 
-Provides parsing the KML format for waypoint fixes.
+Provides parsing of the flavour of KML used in hang gliding and paragliding
+competitions. The paired use of <http://fs.fai.org/ FS> with
+<http://www.gpsdump.no GpsDump> in competition mode and is exlained in detail
+on the <http://fs.fai.org/trac/wiki/GpsDump/ FS wiki>.
 -}
 module Flight.Kml
     (
@@ -22,7 +25,7 @@ module Flight.Kml
     , T.FixMark(..)
     , MarkedFixes(..)
 
-    --  * Fix newtypes
+    -- * Fix newtypes
     , Seconds(..)
     , Latitude(..)
     , Longitude(..)
@@ -229,12 +232,14 @@ pUtcTimeZ = do
         Nothing -> parserZero
         Just t' -> return t'
 
+-- | Parse the list of time offsets.
 parseTimeOffsets :: String -> [Seconds]
 parseTimeOffsets s =
     case P.parse pNats "(stdin)" s of
         Left _ -> []
         Right xs -> Seconds <$> xs
 
+-- | Parse the list of barometric pressure altitudes.
 parseBaroMarks :: String -> [Altitude]
 parseBaroMarks s =
     case P.parse pNats "(stdin)" s of
