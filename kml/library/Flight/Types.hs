@@ -118,6 +118,7 @@ showTimeAlt Fix{fixMark, fix} =
         LLA{llaAltGps} = fix
         Altitude a = llaAltGps
 
+-- | Class for a fix made up of latitude, longitude and GPS altitude.
 class LatLngAlt a where
     lat :: a -> Latitude
     lng :: a -> Longitude
@@ -133,6 +134,8 @@ instance LatLngAlt Fix where
     lng Fix{fix} = lng fix
     altGps Fix{fix} = altGps fix
 
+-- | Class for a tracklog relative fix, offset in seconds, with an optional
+-- barometric pressure altitude.
 class LatLngAlt a => FixMark a where
     -- | Seconds offset from first fix.
     mark :: a -> Seconds
@@ -143,7 +146,7 @@ instance FixMark Fix where
     mark Fix{fixMark} = fixMark
     altBaro Fix{fixAltBaro} = fixAltBaro
 
--- | A tracklog, a list of fixes, along with the UTC time of the first fix.
+-- | A tracklog is a list of fixes along with the UTC time of the first fix.
 data MarkedFixes =
     MarkedFixes
         { mark0 :: UTCTime -- ^ The UTC time of the first fix.

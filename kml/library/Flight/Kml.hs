@@ -22,7 +22,7 @@ module Flight.Kml
     -- * Usage
     -- $use
     
-    -- * newtypes
+    -- * The newtypes
       Seconds(..)
     , Latitude(..)
     , Longitude(..)
