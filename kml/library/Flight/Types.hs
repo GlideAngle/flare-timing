@@ -139,7 +139,7 @@ instance FixMark Fix where
     mark Fix{fixMark} = fixMark
     altBaro Fix{fixAltBaro} = fixAltBaro
 
--- | A traclog, a list of fixes, along with the UTC time of the first fix.
+-- | A tracklog, a list of fixes, along with the UTC time of the first fix.
 data MarkedFixes =
     MarkedFixes
         { mark0 :: UTCTime -- ^ The UTC time of the first fix.
