@@ -253,6 +253,9 @@ pUtcTimeZ = do
         Just t' -> return t'
 
 -- | Parse the list of time offsets.
+-- 
+-- >>> parseTimeOffsets "0 2 4 6 8 10 12 14 16 18 20 22 24 26 28 30"
+-- [sec=0,sec=2,sec=4,sec=6,sec=8,sec=10,sec=12,sec=14,sec=16,sec=18,sec=20,sec=22,sec=24,sec=26,sec=28,sec=30]
 parseTimeOffsets :: String -> [Seconds]
 parseTimeOffsets s =
     case P.parse pNats "(stdin)" s of
@@ -260,6 +263,9 @@ parseTimeOffsets s =
         Right xs -> Seconds <$> xs
 
 -- | Parse the list of barometric pressure altitudes.
+-- 
+-- >>> parseBaroMarks "239 240 240 239 239 239 239 239 239 240 239 240 239 239 240"
+-- [alt=239,alt=240,alt=240,alt=239,alt=239,alt=239,alt=239,alt=239,alt=239,alt=240,alt=239,alt=240,alt=239,alt=239,alt=240]
 parseBaroMarks :: String -> [Altitude]
 parseBaroMarks s =
     case P.parse pNats "(stdin)" s of
