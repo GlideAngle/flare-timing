@@ -18,6 +18,9 @@ on the <http://fs.fai.org/trac/wiki/GpsDump/ FS wiki>.
 -}
 module Flight.Kml
     (
+    -- * Usage
+    -- $use
+    
     -- * Fix
       LLA(..)
     , T.LatLngAlt(..)
@@ -348,6 +351,7 @@ parseLngLatAlt s =
 -- 
 
 -- $kml
+-- #kml#
 -- Here's an example of a tracklog dump from the last day of the Hang Gliding
 -- Pre-Worlds Forbes 2012. The flight instrument is
 -- a <http://www.flytec.com/6030.html Flytec 6030>. The pilot with
@@ -409,3 +413,16 @@ parseLngLatAlt s =
 -- \</Document\>
 -- 
 -- @
+
+-- $use
+-- Working with the tracklog dump in <#kml KML>, from the tracklog file "__@Phil de Joux.20120114-082221.21437.40.kml@__".
+--
+-- >>> Right MarkedFixes{mark0, fixes} <- parse kml
+-- >>> mark0
+-- 2012-01-14 02:12:55 UTC
+-- >>> length fixes
+-- 6547
+-- >>> take 1 $ fixes
+-- [Fix {fixMark = sec=0, fix = LLA {llaLat = lat=-33.36160000, llaLng = lng=147.93205000, llaAltGps = alt=237}, fixAltBaro = Just alt=239}]
+-- >>> take 1 . reverse $ fixes
+-- [Fix {fixMark = sec=13103, fix = LLA {llaLat = lat=-33.65073300, llaLng = lng=147.56036700, llaAltGps = alt=214}, fixAltBaro = Just alt=238}]
