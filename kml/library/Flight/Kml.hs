@@ -205,9 +205,9 @@ getFix =
 -- >>> length fixes
 -- 6547
 -- >>> head fixes
--- Fix {fixMark = 0s, fix = LLA {llaLat = lat=-33.36160000, llaLng = lng=147.93205000, llaAltGps = 237m}, fixAltBaro = Just 239m}
+-- Fix {fixMark = 0s, fix = LLA {llaLat = -33.36160000°, llaLng = 147.93205000°, llaAltGps = 237m}, fixAltBaro = Just 239m}
 -- >>> last fixes
--- Fix {fixMark = 13103s, fix = LLA {llaLat = lat=-33.65073300, llaLng = lng=147.56036700, llaAltGps = 214m}, fixAltBaro = Just 238m}
+-- Fix {fixMark = 13103s, fix = LLA {llaLat = -33.65073300°, llaLng = 147.56036700°, llaAltGps = 214m}, fixAltBaro = Just 238m}
 parse :: String -> IO (Either String MarkedFixes)
 parse contents = do
     let doc = readString [ withValidate no, withWarnings no ] contents
@@ -358,7 +358,7 @@ showLngLatAlt (Latitude lat, Longitude lng, Altitude alt) =
 -- spaces.
 --
 -- >>> parseLngLatAlt "147.932050,-33.361600,237 147.932050,-33.361600,238"
--- [LLA {llaLat = lat=-33.36160000, llaLng = lng=147.93205000, llaAltGps = 237m},LLA {llaLat = lat=-33.36160000, llaLng = lng=147.93205000, llaAltGps = 238m}]
+-- [LLA {llaLat = -33.36160000°, llaLng = 147.93205000°, llaAltGps = 237m},LLA {llaLat = -33.36160000°, llaLng = 147.93205000°, llaAltGps = 238m}]
 parseLngLatAlt :: String -> [LLA]
 parseLngLatAlt s =
     case P.parse pFixes "(stdin)" s of
@@ -457,9 +457,9 @@ parseLngLatAlt s =
 -- >>> length fixes
 -- 6547
 -- >>> head fixes
--- Fix {fixMark = 0s, fix = LLA {llaLat = lat=-33.36160000, llaLng = lng=147.93205000, llaAltGps = 237m}, fixAltBaro = Just 239m}
+-- Fix {fixMark = 0s, fix = LLA {llaLat = -33.36160000°, llaLng = 147.93205000°, llaAltGps = 237m}, fixAltBaro = Just 239m}
 -- >>> last fixes
--- Fix {fixMark = 13103s, fix = LLA {llaLat = lat=-33.65073300, llaLng = lng=147.56036700, llaAltGps = 214m}, fixAltBaro = Just 238m}
+-- Fix {fixMark = 13103s, fix = LLA {llaLat = -33.65073300°, llaLng = 147.56036700°, llaAltGps = 214m}, fixAltBaro = Just 238m}
 --
 -- #range#
 -- The length and range of the tracklog.

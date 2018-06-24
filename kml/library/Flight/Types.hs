@@ -63,13 +63,13 @@ deriveDecimalPlaces dpDegree ''Seconds
 
 instance Show Latitude where
     show x@(Latitude lat') =
-        "lat=" ++ showSci dp (toSci dp lat')
+        showSci dp (toSci dp lat') ++ "°"
             where
                 dp = defdp x
 
 instance Show Longitude where
     show x@(Longitude lng') =
-        "lng=" ++ showSci dp (toSci dp lng')
+        showSci dp (toSci dp lng') ++ "°"
             where
                 dp = defdp x
 
@@ -92,7 +92,7 @@ data LLA =
 -- | Constructs a 'LLA' from its parts.
 -- 
 -- >>> mkPosition (Latitude (-33.65073300), Longitude 147.56036700, Altitude 214)
--- LLA {llaLat = lat=-33.65073300, llaLng = lng=147.56036700, llaAltGps = 214m}
+-- LLA {llaLat = -33.65073300°, llaLng = 147.56036700°, llaAltGps = 214m}
 mkPosition :: (Latitude, Longitude, Altitude) -> LLA
 mkPosition (lat', lng', alt') = LLA lat' lng' alt'
 
