@@ -159,13 +159,15 @@ data MarkedFixes =
         }
     deriving (Eq, Show, Generic, ToJSON, FromJSON)
 
--- | The number of fixes in the track log.
+-- | The number of fixes in the track log.  There is a <#range fixesLength>
+-- example in the usage section.
 fixesLength :: MarkedFixes -> Int
 fixesLength MarkedFixes{fixes} =
     length fixes
 
 -- | In the given list of fixes, the seconds offset of the first and last
--- elements.
+-- elements.  There is a <#range fixesSecondsRange> example in the usage
+-- section.
 fixesSecondsRange :: MarkedFixes -> Maybe (Seconds, Seconds)
 fixesSecondsRange MarkedFixes{fixes} =
     case (fixes, reverse fixes) of
@@ -174,6 +176,7 @@ fixesSecondsRange MarkedFixes{fixes} =
         (x : _, y : _) -> Just (mark x, mark y)
 
 -- | In the given list of fixes, the UTC time of the first and last elements.
+-- There is a <#range fixesUTCTimeRange> example in the usage section.
 fixesUTCTimeRange :: MarkedFixes -> Maybe (UTCTime, UTCTime)
 fixesUTCTimeRange mf@MarkedFixes{mark0} =
     rangeUTCTime mark0 <$> fixesSecondsRange mf

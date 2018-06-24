@@ -470,6 +470,7 @@ parseLngLatAlt s =
 -- >>> fixesUTCTimeRange mf
 -- Just (2012-01-14 02:12:55 UTC,2012-01-14 05:51:18 UTC)
 --
+-- #range#
 -- Showing the fixes in the tracklog.
 --
 -- >>> showFixesLength mf
