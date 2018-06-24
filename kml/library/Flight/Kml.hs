@@ -328,7 +328,7 @@ roundTripLatLngAlt (Latitude lat, Longitude lng, alt) =
         lng' = read $ formatFloat $ show (fromRational lng :: Double)
     in (lat', lng', alt)
 
--- | Comma-separated fields in the order lat,lng,alt.
+-- | Shows lat,lng,alt.
 --
 -- >>> showLatLngAlt (Latitude (-33.65073300), Longitude 147.56036700, Altitude 214)
 -- "-33.650733,147.560367,214"
@@ -341,7 +341,7 @@ showLatLngAlt (Latitude lat, Longitude lng, Altitude alt) =
             , show alt
             ]
 
--- | Comma-separated fields in the order lng,lat,alt.
+-- | Shows lng,lat,alt.
 --
 -- >>> showLngLatAlt (Latitude (-33.65073300), Longitude 147.56036700, Altitude 214)
 -- "147.560367,-33.650733,214"
