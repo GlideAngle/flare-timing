@@ -74,10 +74,10 @@ instance Show Longitude where
                 dp = defdp x
 
 instance Show Altitude where
-    show (Altitude alt) = "alt=" ++ show alt
+    show (Altitude alt) = show alt ++ "m"
 
 instance Show Seconds where
-    show (Seconds sec) = "sec=" ++ show sec
+    show (Seconds sec) = show sec ++ "s"
 
 -- | Latitude, longitude and GPS altitude.  Use 'mkPosition' to construct a 'LLA'.
 data LLA =
@@ -92,7 +92,7 @@ data LLA =
 -- | Constructs a 'LLA' from its parts.
 -- 
 -- >>> mkPosition (Latitude (-33.65073300), Longitude 147.56036700, Altitude 214)
--- LLA {llaLat = lat=-33.65073300, llaLng = lng=147.56036700, llaAltGps = alt=214}
+-- LLA {llaLat = lat=-33.65073300, llaLng = lng=147.56036700, llaAltGps = 214m}
 mkPosition :: (Latitude, Longitude, Altitude) -> LLA
 mkPosition (lat', lng', alt') = LLA lat' lng' alt'
 
@@ -181,16 +181,19 @@ fixesUTCTimeRange :: MarkedFixes -> Maybe (UTCTime, UTCTime)
 fixesUTCTimeRange mf@MarkedFixes{mark0} =
     rangeUTCTime mark0 <$> fixesSecondsRange mf
 
--- | Shows the number of elements in the list of fixes, in the tracklog.
+-- | Shows the number of elements in the list of fixes, in the tracklog.  There
+-- is a <#showfixes showFixesLength> example in the usage section.
 showFixesLength :: MarkedFixes -> String
 showFixesLength = show . fixesLength
 
--- | Shows the relative time range of the tracklog.
+-- | Shows the relative time range of the tracklog.  There is a
+-- <#showfixes showFixesSecondsRange> example in the usage section.
 showFixesSecondsRange :: MarkedFixes -> String
 showFixesSecondsRange mf =
     maybe "[]" show (fixesSecondsRange mf)
 
--- | Shows the absolute time range of the tracklog.
+-- | Shows the absolute time range of the tracklog.  There is a
+-- <#showfixes showFixesUTCTimeRange> example in the usage section.
 showFixesUTCTimeRange :: MarkedFixes -> String
 showFixesUTCTimeRange mf@MarkedFixes{mark0} =
     maybe "" (show . rangeUTCTime mark0) (fixesSecondsRange mf)

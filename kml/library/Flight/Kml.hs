@@ -205,9 +205,9 @@ getFix =
 -- >>> length fixes
 -- 6547
 -- >>> head fixes
--- Fix {fixMark = sec=0, fix = LLA {llaLat = lat=-33.36160000, llaLng = lng=147.93205000, llaAltGps = alt=237}, fixAltBaro = Just alt=239}
+-- Fix {fixMark = 0s, fix = LLA {llaLat = lat=-33.36160000, llaLng = lng=147.93205000, llaAltGps = 237m}, fixAltBaro = Just 239m}
 -- >>> last fixes
--- Fix {fixMark = sec=13103, fix = LLA {llaLat = lat=-33.65073300, llaLng = lng=147.56036700, llaAltGps = alt=214}, fixAltBaro = Just alt=238}
+-- Fix {fixMark = 13103s, fix = LLA {llaLat = lat=-33.65073300, llaLng = lng=147.56036700, llaAltGps = 214m}, fixAltBaro = Just 238m}
 parse :: String -> IO (Either String MarkedFixes)
 parse contents = do
     let doc = readString [ withValidate no, withWarnings no ] contents
@@ -255,7 +255,7 @@ pUtcTimeZ = do
 -- | Parse the list of time offsets.
 -- 
 -- >>> parseTimeOffsets "0 2 4 6 8 10 12 14 16 18 20 22 24 26 28 30"
--- [sec=0,sec=2,sec=4,sec=6,sec=8,sec=10,sec=12,sec=14,sec=16,sec=18,sec=20,sec=22,sec=24,sec=26,sec=28,sec=30]
+-- [0s,2s,4s,6s,8s,10s,12s,14s,16s,18s,20s,22s,24s,26s,28s,30s]
 parseTimeOffsets :: String -> [Seconds]
 parseTimeOffsets s =
     case P.parse pNats "(stdin)" s of
@@ -265,7 +265,7 @@ parseTimeOffsets s =
 -- | Parse the list of barometric pressure altitudes.
 -- 
 -- >>> parseBaroMarks "239 240 240 239 239 239 239 239 239 240 239 240 239 239 240"
--- [alt=239,alt=240,alt=240,alt=239,alt=239,alt=239,alt=239,alt=239,alt=239,alt=240,alt=239,alt=240,alt=239,alt=239,alt=240]
+-- [239m,240m,240m,239m,239m,239m,239m,239m,239m,240m,239m,240m,239m,239m,240m]
 parseBaroMarks :: String -> [Altitude]
 parseBaroMarks s =
     case P.parse pNats "(stdin)" s of
@@ -320,7 +320,7 @@ formatFloat s =
 -- | Round trip from rational to double and back to rational.
 -- 
 -- >>> roundTripLatLngAlt (Latitude (-33.65073300), Longitude 147.56036700, Altitude 214)
--- (-33.650733,147.560367,alt=214)
+-- (-33.650733,147.560367,214m)
 roundTripLatLngAlt :: (Latitude, Longitude, Altitude)
                    -> (Double, Double, Altitude)
 roundTripLatLngAlt (Latitude lat, Longitude lng, alt) =
@@ -358,7 +358,7 @@ showLngLatAlt (Latitude lat, Longitude lng, Altitude alt) =
 -- spaces.
 --
 -- >>> parseLngLatAlt "147.932050,-33.361600,237 147.932050,-33.361600,238"
--- [LLA {llaLat = lat=-33.36160000, llaLng = lng=147.93205000, llaAltGps = alt=237},LLA {llaLat = lat=-33.36160000, llaLng = lng=147.93205000, llaAltGps = alt=238}]
+-- [LLA {llaLat = lat=-33.36160000, llaLng = lng=147.93205000, llaAltGps = 237m},LLA {llaLat = lat=-33.36160000, llaLng = lng=147.93205000, llaAltGps = 238m}]
 parseLngLatAlt :: String -> [LLA]
 parseLngLatAlt s =
     case P.parse pFixes "(stdin)" s of
@@ -457,26 +457,27 @@ parseLngLatAlt s =
 -- >>> length fixes
 -- 6547
 -- >>> head fixes
--- Fix {fixMark = sec=0, fix = LLA {llaLat = lat=-33.36160000, llaLng = lng=147.93205000, llaAltGps = alt=237}, fixAltBaro = Just alt=239}
+-- Fix {fixMark = 0s, fix = LLA {llaLat = lat=-33.36160000, llaLng = lng=147.93205000, llaAltGps = 237m}, fixAltBaro = Just 239m}
 -- >>> last fixes
--- Fix {fixMark = sec=13103, fix = LLA {llaLat = lat=-33.65073300, llaLng = lng=147.56036700, llaAltGps = alt=214}, fixAltBaro = Just alt=238}
+-- Fix {fixMark = 13103s, fix = LLA {llaLat = lat=-33.65073300, llaLng = lng=147.56036700, llaAltGps = 214m}, fixAltBaro = Just 238m}
 --
+-- #range#
 -- The length and range of the tracklog.
 --
 -- >>> fixesLength mf
 -- 6547
 -- >>> fixesSecondsRange mf
--- Just (sec=0,sec=13103)
+-- Just (0s,13103s)
 -- >>> fixesUTCTimeRange mf
 -- Just (2012-01-14 02:12:55 UTC,2012-01-14 05:51:18 UTC)
 --
--- #range#
+-- #showfixes#
 -- Showing the fixes in the tracklog.
 --
 -- >>> showFixesLength mf
 -- "6547"
 -- >>> showFixesSecondsRange mf
--- "(sec=0,sec=13103)"
+-- "(0s,13103s)"
 -- >>> showFixesUTCTimeRange mf
 -- "(2012-01-14 02:12:55 UTC,2012-01-14 05:51:18 UTC)"
 --
