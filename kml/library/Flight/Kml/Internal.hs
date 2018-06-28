@@ -7,19 +7,14 @@
 
 module Flight.Kml.Internal
     (
+    -- * Internal Usage
+    -- $internal-use
+    
     -- ** Display of a fix
       showLatLngAlt
     , showLngLatAlt
     , showTimeAlt
     
-    -- ** Parsing
-    , formatFloat
-    , roundTripLatLngAlt
-    , parseTimeOffsets
-    , parseBaroMarks
-    , parseLngLatAlt
-    , parseUtcTime
-
     -- ** Length and range
     , fixesLength
     , fixesSecondsRange
@@ -29,6 +24,14 @@ module Flight.Kml.Internal
     , showFixesLength
     , showFixesSecondsRange
     , showFixesUTCTimeRange
+
+    -- * Parsing
+    , formatFloat
+    , roundTripLatLngAlt
+    , parseTimeOffsets
+    , parseBaroMarks
+    , parseLngLatAlt
+    , parseUtcTime
 
     ) where
 
@@ -158,7 +161,6 @@ parseLngLatAlt s =
                      (Longitude lng)
                      (Altitude alt)) <$> xs
 
-
 -- | Avoids __@"0."@__ because ...
 -- 
 -- @
@@ -233,15 +235,15 @@ roundTripLatLngAlt (Latitude lat, Longitude lng, alt) =
         lng' = read $ formatFloat $ show (fromRational lng :: Double)
     in (lat', lng', alt)
 
--- | The number of fixes in the track log.  There is a
--- <Flight-Kml.html#range fixesLength> example in the usage section.
+-- | The number of fixes in the track log.  There is a <#range fixesLength>
+-- example in the usage section.
 fixesLength :: MarkedFixes -> Int
 fixesLength MarkedFixes{fixes} =
     length fixes
 
 -- | In the given list of fixes, the seconds offset of the first and last
--- elements.  There is a <Flight-Kml.html#range fixesSecondsRange> example in
--- the usage section.
+-- elements.  There is a <#range fixesSecondsRange> example in the usage
+-- section.
 fixesSecondsRange :: MarkedFixes -> Maybe (Seconds, Seconds)
 fixesSecondsRange MarkedFixes{fixes} =
     case (fixes, reverse fixes) of
@@ -250,28 +252,24 @@ fixesSecondsRange MarkedFixes{fixes} =
         (x : _, y : _) -> Just (mark x, mark y)
 
 -- | In the given list of fixes, the UTC time of the first and last elements.
--- There is a <Flight-Kml.html#range fixesUTCTimeRange> example in the usage
--- section.
+-- There is a <#range fixesUTCTimeRange> example in the usage section.
 fixesUTCTimeRange :: MarkedFixes -> Maybe (UTCTime, UTCTime)
 fixesUTCTimeRange mf@MarkedFixes{mark0} =
     rangeUTCTime mark0 <$> fixesSecondsRange mf
 
 -- | Shows the number of elements in the list of fixes, in the tracklog.  There
--- is a <Flight-Kml.html#showfixes showFixesLength> example in the usage
--- section.
+-- is a <#showfixes showFixesLength> example in the usage section.
 showFixesLength :: MarkedFixes -> String
 showFixesLength = show . fixesLength
 
--- | Shows the relative time range of the tracklog.  There is
--- a <Flight-Kml.html#showfixes showFixesSecondsRange> example in the usage
--- section.
+-- | Shows the relative time range of the tracklog.  There is a
+-- <#showfixes showFixesSecondsRange> example in the usage section.
 showFixesSecondsRange :: MarkedFixes -> String
 showFixesSecondsRange mf =
     maybe "[]" show (fixesSecondsRange mf)
 
--- | Shows the absolute time range of the tracklog.  There is
--- a <Flight-Kml.html#showfixes showFixesUTCTimeRange> example in the usage
--- section.
+-- | Shows the absolute time range of the tracklog.  There is a
+-- <#showfixes showFixesUTCTimeRange> example in the usage section.
 showFixesUTCTimeRange :: MarkedFixes -> String
 showFixesUTCTimeRange mf@MarkedFixes{mark0} =
     maybe "" (show . rangeUTCTime mark0) (fixesSecondsRange mf)
@@ -281,3 +279,65 @@ showFixesUTCTimeRange mf@MarkedFixes{mark0} =
 rangeUTCTime :: UTCTime -> (Seconds, Seconds) -> (UTCTime, UTCTime)
 rangeUTCTime mark0 (Seconds s0, Seconds s1) =
     let f secs = fromInteger secs `addUTCTime` mark0 in (f s0, f s1)
+
+-- $setup
+-- >>> :set -XTemplateHaskell
+-- >>> :set -XNamedFieldPuns
+-- >>> import Language.Haskell.TH
+-- >>> import Language.Haskell.TH.Syntax (lift)
+-- >>> import Flight.Kml
+-- >>> import Flight.Kml.Internal (showLatLngAlt, showLngLatAlt, showTimeAlt)
+-- :{
+-- embedStr :: IO String -> ExpQ
+-- embedStr readStr = lift =<< runIO readStr
+-- :}
+-- 
+-- >>> kml = $(embedStr (readFile "./test-suite-doctest/Phil de Joux.20120114-082221.21437.40.kml"))
+-- 
+
+-- $internal-use
+-- Working with the <Flight-Kml.html#kml KML tracklog dump> from the tracklog file "__@Phil de Joux.20120114-082221.21437.40.kml@__".
+--
+-- >>> Right mf@(MarkedFixes{mark0, fixes}) <- parse kml
+-- >>> mark0
+-- 2012-01-14 02:12:55 UTC
+-- >>> length fixes
+-- 6547
+-- >>> head fixes
+-- Fix {fixMark = 0s, fix = LLA {llaLat = -33.36160000°, llaLng = 147.93205000°, llaAltGps = 237m}, fixAltBaro = Just 239m}
+-- >>> last fixes
+-- Fix {fixMark = 13103s, fix = LLA {llaLat = -33.65073300°, llaLng = 147.56036700°, llaAltGps = 214m}, fixAltBaro = Just 238m}
+--
+-- #range#
+-- The length and range of the tracklog.
+--
+-- >>> fixesLength mf
+-- 6547
+-- >>> fixesSecondsRange mf
+-- Just (0s,13103s)
+-- >>> fixesUTCTimeRange mf
+-- Just (2012-01-14 02:12:55 UTC,2012-01-14 05:51:18 UTC)
+--
+-- #showfixes#
+-- Showing the fixes in the tracklog.
+--
+-- >>> showFixesLength mf
+-- "6547"
+-- >>> showFixesSecondsRange mf
+-- "(0s,13103s)"
+-- >>> showFixesUTCTimeRange mf
+-- "(2012-01-14 02:12:55 UTC,2012-01-14 05:51:18 UTC)"
+--
+-- Showing a single fix.
+--
+-- >>> let a = head fixes
+-- >>> let z = last fixes
+-- >>> let lla = (lat . fix $ a, lng . fix $ a, altGps . fix $ a)
+-- >>> showLatLngAlt lla
+-- "-33.361600,147.932050,237"
+-- >>> showLngLatAlt lla
+-- "147.932050,-33.361600,237"
+-- >>> showTimeAlt a
+-- "(0s,237m)"
+-- >>> showTimeAlt z
+-- "(13103s,214m)"
