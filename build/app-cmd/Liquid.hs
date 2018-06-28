@@ -59,3 +59,25 @@ liquidRules = do
             ++ ("gap" </> "library" </> "Flight" </> "Gap" </> "Distance" </> "Nominal.hs")
             ++ " "
             ++ ("units" </> "library" </> "Flight" </> "Ratio.hs")
+            ++ " "
+            ++ ("aeson-via-sci" </> "library" </> "Data" </> "Aeson" </> "Via" </> "Scientific.hs")
+            ++ " "
+            ++ ("uom-plugin-0.3.0.0" </> "src" </> "Data" </> "UnitsOfMeasure" </> "Convert.hs")
+            ++ " "
+            ++ ("uom-plugin-0.3.0.0" </> "src" </> "Data" </> "UnitsOfMeasure" </> "Singleton.hs")
+            ++ " "
+            ++ ("uom-plugin-0.3.0.0" </> "src" </> "Data" </> "UnitsOfMeasure" </> "Internal.hs")
+            ++ " "
+            ++ ("uom-plugin-0.3.0.0" </> "src" </> "Data" </> "UnitsOfMeasure.hs")
+            ++ " "
+            ++ ("uom-plugin-0.3.0.0" </> "src" </> "Data" </> "UnitsOfMeasure" </> "TH.hs")
+            ++ " "
+            ++ ("uom-plugin-0.3.0.0" </> "src" </> "Data" </> "UnitsOfMeasure" </> "Show.hs")
+            ++ " "
+            ++ ("uom-plugin-0.3.0.0" </> "src" </> "Data" </> "UnitsOfMeasure" </> "Read.hs")
+            ++ " "
+            ++ ("siggy-chardust" </> "library" </> "Data" </> "Number" </> "RoundingFunctions.hs")
+            ++ " "
+            ++ ("uom-plugin-0.3.0.0" </> "src" </> "Data" </> "UnitsOfMeasure" </> "Plugin.hs")
+            ++ " "
+            ++ ("ghc-8.2.2" </> "types" </> "TyCoRep.hs")
