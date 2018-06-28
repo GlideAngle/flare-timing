@@ -233,15 +233,15 @@ roundTripLatLngAlt (Latitude lat, Longitude lng, alt) =
         lng' = read $ formatFloat $ show (fromRational lng :: Double)
     in (lat', lng', alt)
 
--- | The number of fixes in the track log.  There is a <#range fixesLength>
--- example in the usage section.
+-- | The number of fixes in the track log.  There is a
+-- <Flight-Kml.html#range fixesLength> example in the usage section.
 fixesLength :: MarkedFixes -> Int
 fixesLength MarkedFixes{fixes} =
     length fixes
 
 -- | In the given list of fixes, the seconds offset of the first and last
--- elements.  There is a <#range fixesSecondsRange> example in the usage
--- section.
+-- elements.  There is a <Flight-Kml.html#range fixesSecondsRange> example in
+-- the usage section.
 fixesSecondsRange :: MarkedFixes -> Maybe (Seconds, Seconds)
 fixesSecondsRange MarkedFixes{fixes} =
     case (fixes, reverse fixes) of
@@ -250,29 +250,34 @@ fixesSecondsRange MarkedFixes{fixes} =
         (x : _, y : _) -> Just (mark x, mark y)
 
 -- | In the given list of fixes, the UTC time of the first and last elements.
--- There is a <#range fixesUTCTimeRange> example in the usage section.
+-- There is a <Flight-Kml.html#range fixesUTCTimeRange> example in the usage
+-- section.
 fixesUTCTimeRange :: MarkedFixes -> Maybe (UTCTime, UTCTime)
 fixesUTCTimeRange mf@MarkedFixes{mark0} =
     rangeUTCTime mark0 <$> fixesSecondsRange mf
 
 -- | Shows the number of elements in the list of fixes, in the tracklog.  There
--- is a <#showfixes showFixesLength> example in the usage section.
+-- is a <Flight-Kml.html#showfixes showFixesLength> example in the usage
+-- section.
 showFixesLength :: MarkedFixes -> String
 showFixesLength = show . fixesLength
 
--- | Shows the relative time range of the tracklog.  There is a
--- <#showfixes showFixesSecondsRange> example in the usage section.
+-- | Shows the relative time range of the tracklog.  There is
+-- a <Flight-Kml.html#showfixes showFixesSecondsRange> example in the usage
+-- section.
 showFixesSecondsRange :: MarkedFixes -> String
 showFixesSecondsRange mf =
     maybe "[]" show (fixesSecondsRange mf)
 
--- | Shows the absolute time range of the tracklog.  There is a
--- <#showfixes showFixesUTCTimeRange> example in the usage section.
+-- | Shows the absolute time range of the tracklog.  There is
+-- a <Flight-Kml.html#showfixes showFixesUTCTimeRange> example in the usage
+-- section.
 showFixesUTCTimeRange :: MarkedFixes -> String
 showFixesUTCTimeRange mf@MarkedFixes{mark0} =
     maybe "" (show . rangeUTCTime mark0) (fixesSecondsRange mf)
 
--- | By providing the UTC time of the first fix, convert a relative time range of offset seconds into a time absolute time range of UTC times.
+-- | By providing the UTC time of the first fix, convert a relative time range
+-- of offset seconds into a time absolute time range of UTC times.
 rangeUTCTime :: UTCTime -> (Seconds, Seconds) -> (UTCTime, UTCTime)
 rangeUTCTime mark0 (Seconds s0, Seconds s1) =
     let f secs = fromInteger secs `addUTCTime` mark0 in (f s0, f s1)
