@@ -306,6 +306,7 @@ parseLngLatAlt s =
 -- >>> import Language.Haskell.TH
 -- >>> import Language.Haskell.TH.Syntax (lift)
 -- >>> import Flight.Kml
+-- >>> import Flight.Kml.Internal (showLatLngAlt, showLngLatAlt, showTimeAlt)
 -- :{
 -- embedStr :: IO String -> ExpQ
 -- embedStr readStr = lift =<< runIO readStr

@@ -17,16 +17,11 @@ module Flight.Kml.Internal
     , roundTripLatLngAlt
     ) where
 
-import Data.Time.Clock (UTCTime, addUTCTime)
-import GHC.Generics (Generic)
-import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.List.Split (splitOn)
 import Numeric (showFFloat)
 import Flight.Types
-
-import Data.Via.Scientific
-    ( DefaultDecimalPlaces(..)
-    , deriveDecimalPlaces, toSci, showSci, dpDegree
+    ( Latitude(..), Longitude(..), Altitude(..), Seconds(..)
+    , LLA(..), Fix(..)
     )
 
 -- | Avoids __@"0."@__ because ...
@@ -54,6 +49,7 @@ formatFloat s =
 
 -- | Shows relative time offset in seconds and altitude in metres.
 --
+-- >>> import Flight.Kml (mkPosition)
 -- >>> let lla = mkPosition (Latitude (-33.65073300), Longitude 147.56036700, Altitude 214)
 -- >>> showTimeAlt $ Fix (Seconds 0) lla Nothing
 -- "(0s,214m)"
