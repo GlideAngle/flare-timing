@@ -38,7 +38,7 @@ module Flight.Kml
     , Fix(..)
     , MarkedFixes(..)
 
-    -- ** Parsing
+    -- * Parsing
     , parse
 
     -- * GPSDump KML
