@@ -40,19 +40,6 @@ module Flight.Kml
 
     -- ** Parsing
     , parse
-    , parseTimeOffsets
-    , parseBaroMarks
-    , parseLngLatAlt
-
-    -- ** Length and range
-    , fixesLength
-    , fixesSecondsRange
-    , fixesUTCTimeRange
-
-    -- ** Display of fixes
-    , showFixesLength
-    , showFixesSecondsRange
-    , showFixesUTCTimeRange
 
     -- * GPSDump KML
     -- $kml
@@ -81,26 +68,7 @@ import Text.XML.HXT.Core
     , orElse
     , constA
     )
-import Data.Time.Clock (UTCTime)
-import Data.Time.Format (parseTimeM, defaultTimeLocale)
 import Data.List (concatMap)
-import Text.Parsec (string, parserZero)
-import Text.Parsec.Token as P
-import Text.Parsec.Char (spaces, digit, char)
-import Text.ParserCombinators.Parsec
-    ( GenParser
-    , (<?>)
-    , eof
-    , option
-    , sepBy
-    , count
-    , noneOf
-    , many
-    )
-import qualified Text.ParserCombinators.Parsec as P (parse)
-import Text.Parsec.Language (emptyDef)
-import Data.Functor.Identity (Identity)
-import Text.Parsec.Prim (ParsecT, parsecMap)
 import qualified Flight.Types as T (LatLngAlt(..), FixMark(..))
 import Flight.Types
     ( LLA(..)
@@ -111,22 +79,8 @@ import Flight.Types
     , Longitude(..)
     , Altitude(..)
     , mkPosition
-    , fixesLength
-    , fixesSecondsRange
-    , fixesUTCTimeRange
-    , showFixesLength
-    , showFixesSecondsRange
-    , showFixesUTCTimeRange
     )
-
-lexer :: GenTokenParser String u Identity
-lexer = P.makeTokenParser emptyDef
-
-pFloat:: ParsecT String u Identity Rational
-pFloat = parsecMap toRational $ P.float lexer 
-
-pNat :: ParsecT String u Identity Integer
-pNat = P.natural lexer 
+import Flight.Kml.Internal
 
 zipFixes :: [Seconds] -> [LLA] -> [Maybe Altitude] -> [Fix]
 zipFixes = zipWith3 Fix
@@ -210,95 +164,6 @@ parse contents = do
                     "Expected 1 set of marked fixes but got "
                     ++ show (length xs)
                     ++ "."
-
-pNats :: GenParser Char st [Integer]
-pNats = do
-    _ <- spaces
-    xs <- pNat `sepBy` spaces
-    _ <- eof
-    return xs
-
-parseUtcTime :: String -> Maybe UTCTime
-parseUtcTime s =
-    case P.parse pUtcTimeZ "(stdin)" s of
-        Left _ -> Nothing
-        Right t -> Just t
-
-pUtcTimeZ :: GenParser Char st UTCTime
-pUtcTimeZ = do
-    ymd <- many $ noneOf "T"
-    _ <- char 'T'
-    hrs <- count 2 digit
-    _ <- char ':'
-    mins <- count 2 digit
-    _ <- char ':'
-    secs <- count 2 digit
-    zulu <- option "Z" (string "Z")
-
-    let s = mconcat [ymd, "T", hrs, ":", mins, ":", secs, zulu]
-    let t = parseTimeM False defaultTimeLocale "%FT%TZ" s
-
-    case t of
-        Nothing -> parserZero
-        Just t' -> return t'
-
--- | Parse the list of time offsets.
--- 
--- >>> parseTimeOffsets "0 2 4 6 8 10 12 14 16 18 20 22 24 26 28 30"
--- [0s,2s,4s,6s,8s,10s,12s,14s,16s,18s,20s,22s,24s,26s,28s,30s]
-parseTimeOffsets :: String -> [Seconds]
-parseTimeOffsets s =
-    case P.parse pNats "(stdin)" s of
-        Left _ -> []
-        Right xs -> Seconds <$> xs
-
--- | Parse the list of barometric pressure altitudes.
--- 
--- >>> parseBaroMarks "239 240 240 239 239 239 239 239 239 240 239 240 239 239 240"
--- [239m,240m,240m,239m,239m,239m,239m,239m,239m,240m,239m,240m,239m,239m,240m]
-parseBaroMarks :: String -> [Altitude]
-parseBaroMarks s =
-    case P.parse pNats "(stdin)" s of
-         Left _ -> []
-         Right xs -> Altitude <$> xs
-
-pFix :: GenParser Char st (Rational, Rational, Integer)
-pFix = do
-    -- NOTE: KML coordinates have a space between tuples.
-    -- lon,lat[,alt]
-    -- SEE: https://developers.google.com/kml/documentation/kmlreference#linestring
-    lngSign <- option id $ const negate <$> char '-'
-    lng <- pFloat <?> "No longitude"
-    _ <- char ','
-    latSign <- option id $ const negate <$> char '-'
-    lat <- pFloat <?> "No latitude"
-    _ <- char ','
-    altSign <- option id $ const negate <$> char '-'
-    alt <- pNat <?> "No altitude"
-    return (latSign lat, lngSign lng, altSign alt)
-
-pFixes :: GenParser Char st [ (Rational, Rational, Integer) ]
-pFixes = do
-    _ <- spaces
-    xs <- pFix `sepBy` spaces <?> "No fixes"
-    _ <- eof
-    return xs
-
--- | Parse comma-separated triples of lng,lat,alt, each triple separated by
--- spaces.
---
--- >>> parseLngLatAlt "147.932050,-33.361600,237 147.932050,-33.361600,238"
--- [LLA {llaLat = -33.36160000°, llaLng = 147.93205000°, llaAltGps = 237m},LLA {llaLat = -33.36160000°, llaLng = 147.93205000°, llaAltGps = 238m}]
-parseLngLatAlt :: String -> [LLA]
-parseLngLatAlt s =
-    case P.parse pFixes "(stdin)" s of
-         Left _ -> []
-         Right xs ->
-             (\(lat, lng, alt) ->
-                 LLA
-                     (Latitude lat)
-                     (Longitude lng)
-                     (Altitude alt)) <$> xs
 
 -- $setup
 -- >>> :set -XTemplateHaskell

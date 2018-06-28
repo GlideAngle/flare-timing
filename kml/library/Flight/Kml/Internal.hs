@@ -15,14 +15,149 @@ module Flight.Kml.Internal
     -- ** Parsing
     , formatFloat
     , roundTripLatLngAlt
+    , parseTimeOffsets
+    , parseBaroMarks
+    , parseLngLatAlt
+    , parseUtcTime
+
+    -- ** Length and range
+    , fixesLength
+    , fixesSecondsRange
+    , fixesUTCTimeRange
+
+    -- ** Display of fixes
+    , showFixesLength
+    , showFixesSecondsRange
+    , showFixesUTCTimeRange
+
     ) where
 
 import Data.List.Split (splitOn)
 import Numeric (showFFloat)
+import Data.Time.Clock (UTCTime, addUTCTime)
+import Data.Time.Format (parseTimeM, defaultTimeLocale)
+import Text.Parsec (string, parserZero)
+import Text.Parsec.Token as P
+import Text.Parsec.Char (spaces, digit, char)
+import Text.ParserCombinators.Parsec
+    ( GenParser
+    , (<?>)
+    , eof
+    , option
+    , sepBy
+    , count
+    , noneOf
+    , many
+    )
+import qualified Text.ParserCombinators.Parsec as P (parse)
+import Text.Parsec.Language (emptyDef)
+import Data.Functor.Identity (Identity)
+import Text.Parsec.Prim (ParsecT, parsecMap)
 import Flight.Types
     ( Latitude(..), Longitude(..), Altitude(..), Seconds(..)
     , LLA(..), Fix(..)
+    , MarkedFixes(..)
+    , FixMark(..)
     )
+
+lexer :: GenTokenParser String u Identity
+lexer = P.makeTokenParser emptyDef
+
+pFloat:: ParsecT String u Identity Rational
+pFloat = parsecMap toRational $ P.float lexer 
+
+pNat :: ParsecT String u Identity Integer
+pNat = P.natural lexer 
+
+pNats :: GenParser Char st [Integer]
+pNats = do
+    _ <- spaces
+    xs <- pNat `sepBy` spaces
+    _ <- eof
+    return xs
+
+parseUtcTime :: String -> Maybe UTCTime
+parseUtcTime s =
+    case P.parse pUtcTimeZ "(stdin)" s of
+        Left _ -> Nothing
+        Right t -> Just t
+
+pUtcTimeZ :: GenParser Char st UTCTime
+pUtcTimeZ = do
+    ymd <- many $ noneOf "T"
+    _ <- char 'T'
+    hrs <- count 2 digit
+    _ <- char ':'
+    mins <- count 2 digit
+    _ <- char ':'
+    secs <- count 2 digit
+    zulu <- option "Z" (string "Z")
+
+    let s = mconcat [ymd, "T", hrs, ":", mins, ":", secs, zulu]
+    let t = parseTimeM False defaultTimeLocale "%FT%TZ" s
+
+    case t of
+        Nothing -> parserZero
+        Just t' -> return t'
+
+pFix :: GenParser Char st (Rational, Rational, Integer)
+pFix = do
+    -- NOTE: KML coordinates have a space between tuples.
+    -- lon,lat[,alt]
+    -- SEE: https://developers.google.com/kml/documentation/kmlreference#linestring
+    lngSign <- option id $ const negate <$> char '-'
+    lng <- pFloat <?> "No longitude"
+    _ <- char ','
+    latSign <- option id $ const negate <$> char '-'
+    lat <- pFloat <?> "No latitude"
+    _ <- char ','
+    altSign <- option id $ const negate <$> char '-'
+    alt <- pNat <?> "No altitude"
+    return (latSign lat, lngSign lng, altSign alt)
+
+pFixes :: GenParser Char st [ (Rational, Rational, Integer) ]
+pFixes = do
+    _ <- spaces
+    xs <- pFix `sepBy` spaces <?> "No fixes"
+    _ <- eof
+    return xs
+
+-- | Parse the list of time offsets.
+-- 
+-- >>> parseTimeOffsets "0 2 4 6 8 10 12 14 16 18 20 22 24 26 28 30"
+-- [0s,2s,4s,6s,8s,10s,12s,14s,16s,18s,20s,22s,24s,26s,28s,30s]
+parseTimeOffsets :: String -> [Seconds]
+parseTimeOffsets s =
+    case P.parse pNats "(stdin)" s of
+        Left _ -> []
+        Right xs -> Seconds <$> xs
+
+-- | Parse the list of barometric pressure altitudes.
+-- 
+-- >>> parseBaroMarks "239 240 240 239 239 239 239 239 239 240 239 240 239 239 240"
+-- [239m,240m,240m,239m,239m,239m,239m,239m,239m,240m,239m,240m,239m,239m,240m]
+parseBaroMarks :: String -> [Altitude]
+parseBaroMarks s =
+    case P.parse pNats "(stdin)" s of
+         Left _ -> []
+         Right xs -> Altitude <$> xs
+
+-- | Parse comma-separated triples of lng,lat,alt, each triple separated by
+-- spaces.
+--
+-- >>> parseLngLatAlt "147.932050,-33.361600,237 147.932050,-33.361600,238"
+-- [LLA {llaLat = -33.36160000°, llaLng = 147.93205000°, llaAltGps = 237m},LLA {llaLat = -33.36160000°, llaLng = 147.93205000°, llaAltGps = 238m}]
+parseLngLatAlt :: String -> [LLA]
+parseLngLatAlt s =
+    case P.parse pFixes "(stdin)" s of
+         Left _ -> []
+         Right xs ->
+             (\(lat, lng, alt) ->
+                 LLA
+                     (Latitude lat)
+                     (Longitude lng)
+                     (Altitude alt)) <$> xs
+
 
 -- | Avoids __@"0."@__ because ...
 -- 
@@ -98,3 +233,46 @@ roundTripLatLngAlt (Latitude lat, Longitude lng, alt) =
         lng' = read $ formatFloat $ show (fromRational lng :: Double)
     in (lat', lng', alt)
 
+-- | The number of fixes in the track log.  There is a <#range fixesLength>
+-- example in the usage section.
+fixesLength :: MarkedFixes -> Int
+fixesLength MarkedFixes{fixes} =
+    length fixes
+
+-- | In the given list of fixes, the seconds offset of the first and last
+-- elements.  There is a <#range fixesSecondsRange> example in the usage
+-- section.
+fixesSecondsRange :: MarkedFixes -> Maybe (Seconds, Seconds)
+fixesSecondsRange MarkedFixes{fixes} =
+    case (fixes, reverse fixes) of
+        ([], _) -> Nothing
+        (_, []) -> Nothing
+        (x : _, y : _) -> Just (mark x, mark y)
+
+-- | In the given list of fixes, the UTC time of the first and last elements.
+-- There is a <#range fixesUTCTimeRange> example in the usage section.
+fixesUTCTimeRange :: MarkedFixes -> Maybe (UTCTime, UTCTime)
+fixesUTCTimeRange mf@MarkedFixes{mark0} =
+    rangeUTCTime mark0 <$> fixesSecondsRange mf
+
+-- | Shows the number of elements in the list of fixes, in the tracklog.  There
+-- is a <#showfixes showFixesLength> example in the usage section.
+showFixesLength :: MarkedFixes -> String
+showFixesLength = show . fixesLength
+
+-- | Shows the relative time range of the tracklog.  There is a
+-- <#showfixes showFixesSecondsRange> example in the usage section.
+showFixesSecondsRange :: MarkedFixes -> String
+showFixesSecondsRange mf =
+    maybe "[]" show (fixesSecondsRange mf)
+
+-- | Shows the absolute time range of the tracklog.  There is a
+-- <#showfixes showFixesUTCTimeRange> example in the usage section.
+showFixesUTCTimeRange :: MarkedFixes -> String
+showFixesUTCTimeRange mf@MarkedFixes{mark0} =
+    maybe "" (show . rangeUTCTime mark0) (fixesSecondsRange mf)
+
+-- | By providing the UTC time of the first fix, convert a relative time range of offset seconds into a time absolute time range of UTC times.
+rangeUTCTime :: UTCTime -> (Seconds, Seconds) -> (UTCTime, UTCTime)
+rangeUTCTime mark0 (Seconds s0, Seconds s1) =
+    let f secs = fromInteger secs `addUTCTime` mark0 in (f s0, f s1)

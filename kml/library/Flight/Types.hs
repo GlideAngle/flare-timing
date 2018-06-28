@@ -16,15 +16,9 @@ module Flight.Types
     , Altitude(..)
     , MarkedFixes(..)
     , mkPosition
-    , fixesLength
-    , fixesSecondsRange
-    , fixesUTCTimeRange
-    , showFixesLength
-    , showFixesSecondsRange
-    , showFixesUTCTimeRange
     ) where
 
-import Data.Time.Clock (UTCTime, addUTCTime)
+import Data.Time.Clock (UTCTime)
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 
@@ -145,46 +139,3 @@ data MarkedFixes =
         }
     deriving (Eq, Show, Generic, ToJSON, FromJSON)
 
--- | The number of fixes in the track log.  There is a <#range fixesLength>
--- example in the usage section.
-fixesLength :: MarkedFixes -> Int
-fixesLength MarkedFixes{fixes} =
-    length fixes
-
--- | In the given list of fixes, the seconds offset of the first and last
--- elements.  There is a <#range fixesSecondsRange> example in the usage
--- section.
-fixesSecondsRange :: MarkedFixes -> Maybe (Seconds, Seconds)
-fixesSecondsRange MarkedFixes{fixes} =
-    case (fixes, reverse fixes) of
-        ([], _) -> Nothing
-        (_, []) -> Nothing
-        (x : _, y : _) -> Just (mark x, mark y)
-
--- | In the given list of fixes, the UTC time of the first and last elements.
--- There is a <#range fixesUTCTimeRange> example in the usage section.
-fixesUTCTimeRange :: MarkedFixes -> Maybe (UTCTime, UTCTime)
-fixesUTCTimeRange mf@MarkedFixes{mark0} =
-    rangeUTCTime mark0 <$> fixesSecondsRange mf
-
--- | Shows the number of elements in the list of fixes, in the tracklog.  There
--- is a <#showfixes showFixesLength> example in the usage section.
-showFixesLength :: MarkedFixes -> String
-showFixesLength = show . fixesLength
-
--- | Shows the relative time range of the tracklog.  There is a
--- <#showfixes showFixesSecondsRange> example in the usage section.
-showFixesSecondsRange :: MarkedFixes -> String
-showFixesSecondsRange mf =
-    maybe "[]" show (fixesSecondsRange mf)
-
--- | Shows the absolute time range of the tracklog.  There is a
--- <#showfixes showFixesUTCTimeRange> example in the usage section.
-showFixesUTCTimeRange :: MarkedFixes -> String
-showFixesUTCTimeRange mf@MarkedFixes{mark0} =
-    maybe "" (show . rangeUTCTime mark0) (fixesSecondsRange mf)
-
--- | By providing the UTC time of the first fix, convert a relative time range of offset seconds into a time absolute time range of UTC times.
-rangeUTCTime :: UTCTime -> (Seconds, Seconds) -> (UTCTime, UTCTime)
-rangeUTCTime mark0 (Seconds s0, Seconds s1) =
-    let f secs = fromInteger secs `addUTCTime` mark0 in (f s0, f s1)
