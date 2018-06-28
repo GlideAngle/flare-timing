@@ -8,7 +8,7 @@
   , description =
       "Provides parsing of dumped tracklogs. In hang gliding and paragliding competitions when FS and GpsDump are paired in competition mode a pilot's tracklog is dumped as KML. This is exlained in detail on the FS wiki."
   , category =
-      "Data, Parsing"
+      "Data, Parsing, Geography, Gps, Flight, XML, KML"
   , github =
       "blockscope/flare-timing/kml"
   , homepage =
