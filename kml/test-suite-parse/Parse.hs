@@ -138,7 +138,7 @@ parseTriples parser xs =
         extractLatLngAlt x = (K.lat x, K.lng x, K.altGps x)
 
         ys :: [(Double, Double, Altitude)]
-        ys = (roundTripLatLngAlt . extractLatLngAlt) <$> xs
+        ys = roundTripLatLngAlt . extractLatLngAlt <$> xs
 
         zs :: [LLA]
         zs =
