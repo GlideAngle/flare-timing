@@ -24,3 +24,5 @@ result
 **/dist-newstyle/**
 .ghc.*
 *.local
+ghc-*
+uom-plugin-*
