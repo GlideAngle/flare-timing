@@ -11,6 +11,8 @@
       "Data, Parsing"
   , github =
       "blockscope/flare-timing/kml"
+  , homepage =
+      "https://github.com/blockscope/flare-timing/tree/master/kml#readme"
   , library =
       { dependencies =
           [ "base >=4.5 && <5"
