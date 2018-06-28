@@ -1,6 +1,8 @@
   ./defaults.dhall 
 ⫽ { name =
       "flight-kml"
+  , version =
+      "1.0.0"
   , synopsis =
       "Parsing of pilot tracklogs dumped as KML."
   , description =
