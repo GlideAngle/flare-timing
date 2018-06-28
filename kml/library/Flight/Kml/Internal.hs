@@ -79,6 +79,10 @@ pNats = do
     _ <- eof
     return xs
 
+-- | Parses UTC time in the format yyyy-MM-ddThh:mm:ssZ.
+--
+-- >>> parseUtcTime "2012-01-14T08:22:21Z"
+-- Just 2012-01-14 08:22:21 UTC
 parseUtcTime :: String -> Maybe UTCTime
 parseUtcTime s =
     case P.parse pUtcTimeZ "(stdin)" s of
