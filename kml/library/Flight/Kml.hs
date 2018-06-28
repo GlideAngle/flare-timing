@@ -43,8 +43,6 @@ module Flight.Kml
     , parseTimeOffsets
     , parseBaroMarks
     , parseLngLatAlt
-    , roundTripLatLngAlt
-    , formatFloat
 
     -- ** Length and range
     , fixesLength
@@ -55,11 +53,6 @@ module Flight.Kml
     , showFixesLength
     , showFixesSecondsRange
     , showFixesUTCTimeRange
-
-    -- ** Display of a fix
-    , showLatLngAlt
-    , showLngLatAlt
-    , showTimeAlt
 
     -- * GPSDump KML
     -- $kml
@@ -91,7 +84,6 @@ import Text.XML.HXT.Core
 import Data.Time.Clock (UTCTime)
 import Data.Time.Format (parseTimeM, defaultTimeLocale)
 import Data.List (concatMap)
-import Data.List.Split (splitOn)
 import Text.Parsec (string, parserZero)
 import Text.Parsec.Token as P
 import Text.Parsec.Char (spaces, digit, char)
@@ -109,7 +101,6 @@ import qualified Text.ParserCombinators.Parsec as P (parse)
 import Text.Parsec.Language (emptyDef)
 import Data.Functor.Identity (Identity)
 import Text.Parsec.Prim (ParsecT, parsecMap)
-import Numeric (showFFloat)
 import qualified Flight.Types as T (LatLngAlt(..), FixMark(..))
 import Flight.Types
     ( LLA(..)
@@ -120,7 +111,6 @@ import Flight.Types
     , Longitude(..)
     , Altitude(..)
     , mkPosition
-    , showTimeAlt
     , fixesLength
     , fixesSecondsRange
     , fixesUTCTimeRange
@@ -293,66 +283,6 @@ pFixes = do
     xs <- pFix `sepBy` spaces <?> "No fixes"
     _ <- eof
     return xs
-
--- | Avoids __@"0."@__ because ...
--- 
--- @
--- > (read "0." :: Double)
--- Exception: Prelude.read: no parse
--- > (read "0.0" :: Double)
--- 0.0
--- @
---
--- >>> formatFloat "112.2334455"
--- "112.233446"
--- >>> formatFloat "0"
--- "0.000000"
--- >>> formatFloat "0."
--- "0.000000"
--- >>> formatFloat "0.0"
--- "0.000000"
-formatFloat :: String -> String
-formatFloat s =
-    case splitOn "." s of
-         [ a, "" ] -> showFFloat (Just 6) (read a :: Double) ""
-         _ -> showFFloat (Just 6) (read s :: Double) ""
-
--- | Round trip from rational to double and back to rational.
--- 
--- >>> roundTripLatLngAlt (Latitude (-33.65073300), Longitude 147.56036700, Altitude 214)
--- (-33.650733,147.560367,214m)
-roundTripLatLngAlt :: (Latitude, Longitude, Altitude)
-                   -> (Double, Double, Altitude)
-roundTripLatLngAlt (Latitude lat, Longitude lng, alt) =
-    let lat' = read $ formatFloat $ show (fromRational lat :: Double)
-        lng' = read $ formatFloat $ show (fromRational lng :: Double)
-    in (lat', lng', alt)
-
--- | Shows lat,lng,alt.
---
--- >>> showLatLngAlt (Latitude (-33.65073300), Longitude 147.56036700, Altitude 214)
--- "-33.650733,147.560367,214"
-showLatLngAlt :: (Latitude, Longitude, Altitude) -> String
-showLatLngAlt (Latitude lat, Longitude lng, Altitude alt) =
-    mconcat [ formatFloat $ show (fromRational lat :: Double)
-            , ","
-            , formatFloat $ show (fromRational lng :: Double)
-            , ","
-            , show alt
-            ]
-
--- | Shows lng,lat,alt.
---
--- >>> showLngLatAlt (Latitude (-33.65073300), Longitude 147.56036700, Altitude 214)
--- "147.560367,-33.650733,214"
-showLngLatAlt :: (Latitude, Longitude, Altitude) -> String
-showLngLatAlt (Latitude lat, Longitude lng, Altitude alt) =
-    mconcat [ formatFloat $ show (fromRational lng :: Double)
-            , ","
-            , formatFloat $ show (fromRational lat :: Double)
-            , ","
-            , show alt
-            ]
 
 -- | Parse comma-separated triples of lng,lat,alt, each triple separated by
 -- spaces.

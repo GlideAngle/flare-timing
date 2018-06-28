@@ -25,7 +25,7 @@
       , source-dirs =
           "library"
       , exposed-modules =
-          "Flight.Kml"
+          [ "Flight.Kml", "Flight.Kml.Internal" ]
       }
   , tests =
       { doctest =

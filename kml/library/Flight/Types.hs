@@ -16,7 +16,6 @@ module Flight.Types
     , Altitude(..)
     , MarkedFixes(..)
     , mkPosition
-    , showTimeAlt
     , fixesLength
     , fixesSecondsRange
     , fixesUTCTimeRange
@@ -109,19 +108,6 @@ data Fix =
         }
     deriving (Eq, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
-
--- | Shows relative time offset in seconds and altitude in metres.
---
--- >>> let lla = mkPosition (Latitude (-33.65073300), Longitude 147.56036700, Altitude 214)
--- >>> showTimeAlt $ Fix (Seconds 0) lla Nothing
--- "(0s,214m)"
-showTimeAlt :: Fix -> String
-showTimeAlt Fix{fixMark, fix} =
-    "(" ++ show s ++ "s," ++ show a ++ "m)"
-    where
-        Seconds s = fixMark
-        LLA{llaAltGps} = fix
-        Altitude a = llaAltGps
 
 -- | Class for a fix made up of latitude, longitude and GPS altitude.
 class LatLngAlt a where

@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c51ab6fcbee2f2f3894460b742bc7e487e240c8c6c79e07445c4317b628aa1d6
+-- hash: f8cb0882a1251bf2803fff3d35c85e5ca996f5c742edcda832f9ad82134d4ea4
 
 name:           flight-kml
 version:        0.1.0
@@ -33,6 +33,7 @@ source-repository head
 library
   exposed-modules:
       Flight.Kml
+      Flight.Kml.Internal
   other-modules:
       Flight.Types
       Paths_flight_kml
@@ -57,6 +58,7 @@ test-suite doctest
   main-is: DocTest.hs
   other-modules:
       Flight.Kml
+      Flight.Kml.Internal
       Flight.Types
       Paths_flight_kml
   hs-source-dirs:
@@ -84,6 +86,7 @@ test-suite hlint
   main-is: HLint.hs
   other-modules:
       Flight.Kml
+      Flight.Kml.Internal
       Flight.Types
       Paths_flight_kml
   hs-source-dirs:
@@ -109,6 +112,7 @@ test-suite parse
   main-is: Parse.hs
   other-modules:
       Flight.Kml
+      Flight.Kml.Internal
       Flight.Types
       TestNewtypes
       Paths_flight_kml
