@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: afaf0caa2d14835e84270a9538d2923b5265736bb1ee4d1ac309cfff9e1eac24
+-- hash: b147a4cc8ad352ba4d7017cacf321fbb6e8562dff2f08bfd95b4325e21448d6b
 
 name:           flight-gap
 version:        0.1.0
@@ -81,7 +81,7 @@ library
       Paths_flight_gap
   hs-source-dirs:
       library
-  default-extensions: PackageImports
+  default-extensions: PackageImports GeneralizedNewtypeDeriving DeriveGeneric DeriveAnyClass DerivingStrategies
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
@@ -154,7 +154,7 @@ test-suite hlint
   hs-source-dirs:
       library
       test-suite-hlint
-  default-extensions: PackageImports
+  default-extensions: PackageImports GeneralizedNewtypeDeriving DeriveGeneric DeriveAnyClass DerivingStrategies
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
@@ -239,7 +239,7 @@ test-suite score
   hs-source-dirs:
       library
       test-suite-score
-  default-extensions: PackageImports
+  default-extensions: PackageImports GeneralizedNewtypeDeriving DeriveGeneric DeriveAnyClass DerivingStrategies
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson

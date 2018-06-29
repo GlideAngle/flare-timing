@@ -4,8 +4,6 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE ParallelListComp #-}
@@ -51,7 +49,8 @@ import Flight.Gap.Distance.Best (BestDistance(..))
 -- | The index of a 100m chunk. The zeroth chunk is any distance less than or
 -- equal to minimum distance.
 newtype IxChunk = IxChunk Int
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
 
 newtype Chunk a = Chunk a
     deriving (Eq, Ord, Show)
@@ -80,7 +79,8 @@ instance (FromJSON (Chunk a)) => FromJSON (Chunks a)
 
 -- | How far to look ahead, in units of 100m chunks.
 newtype Lookahead = Lookahead Int
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
 
 -- | The relative difficulty for this chunk.
 data ChunkRelativeDifficulty =

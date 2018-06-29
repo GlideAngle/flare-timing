@@ -11,6 +11,13 @@
       "blockscope/flare-timing/gap"
   , ghc-options =
       [ "-Wall", "-fplugin Data.UnitsOfMeasure.Plugin" ]
+  , default-extensions =
+      [ "PackageImports"
+      , "GeneralizedNewtypeDeriving"
+      , "DeriveGeneric"
+      , "DeriveAnyClass"
+      , "DerivingStrategies"
+      ]
   , library =
       { dependencies =
           [ "base >=4.5 && <5"

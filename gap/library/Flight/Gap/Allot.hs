@@ -12,8 +12,6 @@
 {-# LANGUAGE PartialTypeSignatures #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE GADTs #-}
-{-# LANGUAGE DeriveAnyClass #-}
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
@@ -43,7 +41,8 @@ import Flight.Gap.Ratio.Speed (SpeedFraction(..))
 
 -- | A 1-based rank of the pilot arrival at goal, 1st in is 1, 2nd is 2 etc.
 newtype PositionAtEss = PositionAtEss Integer
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
 
 arrivalFraction :: PilotsAtEss -> PositionAtEss -> ArrivalFraction
 arrivalFraction (PilotsAtEss n) (PositionAtEss rank)

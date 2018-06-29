@@ -1,7 +1,5 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE QuasiQuotes #-}
-{-# LANGUAGE DeriveAnyClass #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 module Flight.Gap.Distance.Difficulty
     ( SumOfDifficulty(..)
@@ -38,7 +36,8 @@ import Flight.Gap.Distance.Chunk
 
 -- | The sum of all chunk difficulties.
 newtype SumOfDifficulty = SumOfDifficulty Integer
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
 
 data Difficulty =
     Difficulty

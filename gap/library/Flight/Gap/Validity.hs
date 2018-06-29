@@ -7,8 +7,6 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE NamedFieldPuns #-}
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DisambiguateRecordFields #-}
 
 -- WARNING: This extension needs to be enabled at the definition site of a set
@@ -101,11 +99,6 @@ data TimeValidityWorking =
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
-{-@ embed Ratio * as int @-}
-{-@ launchValidity1 :: _ -> _ @-}
-launchValidity1 :: NominalLaunch -> Bool
-launchValidity1 _ = False
-
 launchValidity
     :: NominalLaunch
     -> PilotsPresent
@@ -128,6 +121,7 @@ launchValidity
         p = toRational present
         f = toRational flying
 
+{-@ lvrPolynomial :: Rational -> LaunchValidity @-}
 lvrPolynomial :: Rational -> LaunchValidity
 lvrPolynomial lvr =
     LaunchValidity $

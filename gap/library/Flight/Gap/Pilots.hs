@@ -1,6 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
-
 module Flight.Gap.Pilots
     ( PilotsAtEss(..)
     , PilotsPresent(..)
@@ -12,24 +9,34 @@ module Flight.Gap.Pilots
 
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import GHC.Generics (Generic)
+import Data.Ratio (Ratio)
+
+{-@ embed Ratio * as Integer @-}
+{-@ newtype PilotsPresent = PilotsPresent {x :: Ratio Nat} @-}
+{-@ newtype PilotsFlying = PilotsFlying {x :: Ratio Nat} @-}
 
 -- | The number of pilots completing the speed section of the task.
 newtype PilotsAtEss = PilotsAtEss Integer
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Show, Generic)
+    deriving newtype (ToJSON, FromJSON)
 
 -- | The number of pilots present for a task.
 newtype PilotsPresent = PilotsPresent Integer
-    deriving (Eq, Ord, Show, ToJSON, FromJSON)
+    deriving (Eq, Ord, Show)
+    deriving newtype (ToJSON, FromJSON)
 
 -- | The number of pilots flying a task.
 newtype PilotsFlying = PilotsFlying Integer
-    deriving (Eq, Ord, Show, ToJSON, FromJSON)
+    deriving (Eq, Ord, Show)
+    deriving newtype (ToJSON, FromJSON)
 
 -- | The number of pilots that launched on a task.
 newtype PilotsLaunched = PilotsLaunched Int deriving (Eq, Show)
 
 -- | The number of pilots having made goal when the task is stopped.
-newtype PilotsInGoalAtStop = PilotsInGoalAtStop Int deriving (Eq, Ord, Show)
+newtype PilotsInGoalAtStop = PilotsInGoalAtStop Int
+    deriving (Eq, Ord, Show)
 
 -- | The number of pilots already having landed out when the task is stopped.
-newtype PilotsLandedBeforeStop = PilotsLandedBeforeStop Int deriving (Eq, Show)
+newtype PilotsLandedBeforeStop = PilotsLandedBeforeStop Int
+    deriving (Eq, Show)
