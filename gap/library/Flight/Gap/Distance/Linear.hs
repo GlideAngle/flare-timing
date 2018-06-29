@@ -1,7 +1,3 @@
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE QuasiQuotes #-}
-{-# LANGUAGE PatternSynonyms #-}
-
 module Flight.Gap.Distance.Linear
     ( PilotDistance(..)
     , LinearFraction(..)

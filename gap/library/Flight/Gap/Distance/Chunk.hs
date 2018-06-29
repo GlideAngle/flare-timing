@@ -1,15 +1,4 @@
-﻿{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE QuasiQuotes #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE DuplicateRecordFields #-}
-{-# LANGUAGE NamedFieldPuns #-}
-{-# LANGUAGE ParallelListComp #-}
-{-# LANGUAGE PartialTypeSignatures #-}
-{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
-
+﻿{-# LANGUAGE DuplicateRecordFields #-}
 module Flight.Gap.Distance.Chunk
     ( Lookahead(..)
     , Chunk(..)

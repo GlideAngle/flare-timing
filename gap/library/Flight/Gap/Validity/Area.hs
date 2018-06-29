@@ -1,7 +1,3 @@
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE TemplateHaskell #-}
-
 module Flight.Gap.Validity.Area (NominalDistanceArea(..)) where
 
 import "newtype" Control.Newtype (Newtype(..))

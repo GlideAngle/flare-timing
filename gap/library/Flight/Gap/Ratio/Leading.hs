@@ -1,8 +1,4 @@
-﻿{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE TemplateHaskell #-}
-
-module Flight.Gap.Ratio.Leading
+﻿module Flight.Gap.Ratio.Leading
     ( LeadingAreaStep(..)
     , LeadingCoefficient(..)
     , LeadingFraction(..)

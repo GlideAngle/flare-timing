@@ -1,10 +1,4 @@
-﻿{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE QuasiQuotes #-}
-{-# LANGUAGE TypeFamilies #-}
-
-module Flight.Gap.Time.Velocity (PilotVelocity(..)) where
+﻿module Flight.Gap.Time.Velocity (PilotVelocity(..)) where
 
 import "newtype" Control.Newtype (Newtype(..))
 import Data.Aeson (ToJSON(..), FromJSON(..))

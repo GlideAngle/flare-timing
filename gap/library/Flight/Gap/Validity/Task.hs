@@ -1,7 +1,3 @@
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE TemplateHaskell #-}
-
 module Flight.Gap.Validity.Task (TaskValidity(..)) where
 
 import "newtype" Control.Newtype (Newtype(..))

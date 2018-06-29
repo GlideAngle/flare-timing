@@ -1,8 +1,4 @@
-﻿{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE TemplateHaskell #-}
-
-module Flight.Gap.Points.Distance
+﻿module Flight.Gap.Points.Distance
     ( DistancePoints(..)
     , LinearPoints(..)
     , DifficultyPoints(..)

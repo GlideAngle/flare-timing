@@ -1,6 +1,3 @@
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-
 module Flight.Gap.Ratio (isNormal, isFoldNormal) where
 
 import Data.Ratio ((%))

@@ -1,9 +1,3 @@
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE QuasiQuotes #-}
-{-# LANGUAGE TypeFamilies #-}
-
 module Flight.Gap.Distance.Sum (SumOfDistance(..)) where
 
 import "newtype" Control.Newtype (Newtype(..))

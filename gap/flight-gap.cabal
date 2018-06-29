@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b147a4cc8ad352ba4d7017cacf321fbb6e8562dff2f08bfd95b4325e21448d6b
+-- hash: 58738549842f41f82aee622229a643e48098115c3068ffc608cbb18ff6c7ece5
 
 name:           flight-gap
 version:        0.1.0
@@ -81,8 +81,8 @@ library
       Paths_flight_gap
   hs-source-dirs:
       library
-  default-extensions: PackageImports GeneralizedNewtypeDeriving DeriveGeneric DeriveAnyClass DerivingStrategies
-  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin
+  default-extensions: DataKinds DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeFamilies TypeOperators TypeSynonymInstances UndecidableInstances
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -fno-warn-partial-type-signatures
   build-depends:
       aeson
     , base >=4.5 && <5
@@ -154,8 +154,8 @@ test-suite hlint
   hs-source-dirs:
       library
       test-suite-hlint
-  default-extensions: PackageImports GeneralizedNewtypeDeriving DeriveGeneric DeriveAnyClass DerivingStrategies
-  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N -fplugin Data.UnitsOfMeasure.Plugin
+  default-extensions: DataKinds DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeFamilies TypeOperators TypeSynonymInstances UndecidableInstances
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -fno-warn-partial-type-signatures -rtsopts -threaded -with-rtsopts=-N -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
     , base
@@ -239,8 +239,8 @@ test-suite score
   hs-source-dirs:
       library
       test-suite-score
-  default-extensions: PackageImports GeneralizedNewtypeDeriving DeriveGeneric DeriveAnyClass DerivingStrategies
-  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N -fplugin Data.UnitsOfMeasure.Plugin
+  default-extensions: DataKinds DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeFamilies TypeOperators TypeSynonymInstances UndecidableInstances
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -fno-warn-partial-type-signatures -rtsopts -threaded -with-rtsopts=-N -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
     , base

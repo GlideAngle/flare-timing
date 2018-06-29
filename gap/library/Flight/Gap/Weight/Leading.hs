@@ -1,8 +1,4 @@
-﻿{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE TemplateHaskell #-}
-
-module Flight.Gap.Weight.Leading (LeadingWeight(..)) where
+﻿module Flight.Gap.Weight.Leading (LeadingWeight(..)) where
 
 import "newtype" Control.Newtype (Newtype(..))
 import Data.Via.Scientific (DecimalPlaces(..), deriveDecimalPlaces, deriveJsonViaSci)

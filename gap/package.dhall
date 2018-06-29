@@ -10,13 +10,38 @@
   , github =
       "blockscope/flare-timing/gap"
   , ghc-options =
-      [ "-Wall", "-fplugin Data.UnitsOfMeasure.Plugin" ]
+      [ "-Wall"
+      , "-fplugin Data.UnitsOfMeasure.Plugin"
+      , "-fno-warn-partial-type-signatures"
+      ]
   , default-extensions =
-      [ "PackageImports"
-      , "GeneralizedNewtypeDeriving"
+      [ "DataKinds"
       , "DeriveGeneric"
       , "DeriveAnyClass"
       , "DerivingStrategies"
+      , "DisambiguateRecordFields"
+      , "FlexibleContexts"
+      , "FlexibleInstances"
+      , "GeneralizedNewtypeDeriving"
+      , "GADTs"
+      , "LambdaCase"
+      , "MultiParamTypeClasses"
+      , "NamedFieldPuns"
+      , "OverloadedStrings"
+      , "PackageImports"
+      , "ParallelListComp"
+      , "PartialTypeSignatures"
+      , "PatternSynonyms"
+      , "QuasiQuotes"
+      , "RankNTypes"
+      , "RecordWildCards"
+      , "ScopedTypeVariables"
+      , "StandaloneDeriving"
+      , "TemplateHaskell"
+      , "TypeFamilies"
+      , "TypeOperators"
+      , "TypeSynonymInstances"
+      , "UndecidableInstances"
       ]
   , library =
       { dependencies =

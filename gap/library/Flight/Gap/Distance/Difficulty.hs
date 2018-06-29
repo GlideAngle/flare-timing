@@ -1,6 +1,3 @@
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE QuasiQuotes #-}
-
 module Flight.Gap.Distance.Difficulty
     ( SumOfDifficulty(..)
     , Difficulty(..)

@@ -1,20 +1,4 @@
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE QuasiQuotes #-}
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE UndecidableInstances #-}
-
-{-# LANGUAGE PatternSynonyms #-}
-{-# LANGUAGE PartialTypeSignatures #-}
-{-# LANGUAGE TypeSynonymInstances #-}
-{-# LANGUAGE GADTs #-}
 {-# LANGUAGE DuplicateRecordFields #-}
-{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
-
 module Flight.Gap.Allot
     ( PositionAtEss(..)
     , ArrivalFraction(..)

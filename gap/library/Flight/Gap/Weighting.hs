@@ -1,8 +1,3 @@
-{-# LANGUAGE PatternSynonyms #-}
-{-# LANGUAGE GADTs #-}
-{-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE StandaloneDeriving #-}
-
 module Flight.Gap.Weighting
     ( Weights(..)
     , Lw(..)

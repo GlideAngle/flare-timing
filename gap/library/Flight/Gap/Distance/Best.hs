@@ -1,10 +1,4 @@
-﻿{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE QuasiQuotes #-}
-{-# LANGUAGE TypeFamilies #-}
-
-module Flight.Gap.Distance.Best (BestDistance(..)) where
+﻿module Flight.Gap.Distance.Best (BestDistance(..)) where
 
 import "newtype" Control.Newtype (Newtype(..))
 import Data.Aeson (ToJSON(..), FromJSON(..))

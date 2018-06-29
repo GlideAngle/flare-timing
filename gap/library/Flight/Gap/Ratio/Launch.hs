@@ -1,7 +1,3 @@
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE TemplateHaskell #-}
-
 module Flight.Gap.Ratio.Launch (NominalLaunch(..)) where
 
 import "newtype" Control.Newtype (Newtype(..))
