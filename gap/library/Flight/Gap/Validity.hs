@@ -16,6 +16,7 @@ module Flight.Gap.Validity
     , taskValidity
     ) where
 
+import LiquidHaskell
 import Data.Ratio (Ratio, (%))
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
@@ -118,6 +119,7 @@ lvrPolynomial lvr =
     + (2917 % 1000) * lvr * lvr
     - (1944 % 1000) * lvr * lvr * lvr
 
+{-@ tvrValidity :: _ -> TimeValidity @-}
 tvrValidity :: TimeValidityRatio -> TimeValidity
 
 tvrValidity
@@ -150,6 +152,19 @@ tvrPolynomial tvr =
 
 -- | Time validity uses the ratio of times or distances depending on whether
 -- any pilots make it to the end of the speed section.
+{-@ type Qs = Quantity Double [u| s |] @-}
+{-@ type Qkm = Quantity Double [u| km |] @-}
+{-@
+data TimeValidityRatio
+    = TimeRatio
+        { nominalTime :: NominalTime Qs
+        , bestTime :: BestTime Qs
+        }
+    | DistanceRatio
+        { nominalDistance :: NominalDistance Qkm
+        , bestDistance :: BestDistance Qkm
+        }
+@-}
 data TimeValidityRatio
     = TimeRatio
         { nominalTime :: NominalTime (Quantity Double [u| s |])

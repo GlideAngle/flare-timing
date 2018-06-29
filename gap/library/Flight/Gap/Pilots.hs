@@ -11,21 +11,19 @@ import Data.Aeson (ToJSON(..), FromJSON(..))
 import GHC.Generics (Generic)
 import Data.Ratio (Ratio)
 
-{-@ embed Ratio * as Integer @-}
-{-@ newtype PilotsPresent = PilotsPresent {x :: Ratio Nat} @-}
-{-@ newtype PilotsFlying = PilotsFlying {x :: Ratio Nat} @-}
-
 -- | The number of pilots completing the speed section of the task.
 newtype PilotsAtEss = PilotsAtEss Integer
     deriving (Eq, Ord, Show, Generic)
     deriving newtype (ToJSON, FromJSON)
 
 -- | The number of pilots present for a task.
+{-@ newtype PilotsPresent = PilotsPresent {x :: Integer } @-}
 newtype PilotsPresent = PilotsPresent Integer
     deriving (Eq, Ord, Show)
     deriving newtype (ToJSON, FromJSON)
 
 -- | The number of pilots flying a task.
+{-@ newtype PilotsFlying = PilotsFlying {x :: Integer } @-}
 newtype PilotsFlying = PilotsFlying Integer
     deriving (Eq, Ord, Show)
     deriving newtype (ToJSON, FromJSON)

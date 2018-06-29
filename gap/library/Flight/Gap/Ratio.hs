@@ -2,6 +2,8 @@ module Flight.Gap.Ratio (isNormal, isFoldNormal) where
 
 import Data.Ratio ((%))
 
+{-@ embed Ratio * as Integer @-}
+
 class Num a => Normal a where
     isNormal :: a -> Bool
 
