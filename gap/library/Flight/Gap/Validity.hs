@@ -29,7 +29,7 @@ module Flight.Gap.Validity
     , taskValidity
     ) where
 
-import Data.Ratio ((%))
+import Data.Ratio (Ratio, (%))
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.UnitsOfMeasure (u, convert, toRational')
@@ -101,6 +101,7 @@ data TimeValidityWorking =
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
+{-@ embed Ratio * as int @-}
 {-@ launchValidity1 :: _ -> _ @-}
 launchValidity1 :: NominalLaunch -> Bool
 launchValidity1 _ = False
