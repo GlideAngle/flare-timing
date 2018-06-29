@@ -8,7 +8,7 @@
   , description =
       "Lossy JSON and CSV encoding and decoding for newtype rationals via scientific with fixed decimal places."
   , category =
-      "data, math, numeric, json, csv"
+      "Data, Math, Numeric, JSON, CSV"
   , github =
       "blockscope/flare-timing/detour-via-sci"
   , homepage =

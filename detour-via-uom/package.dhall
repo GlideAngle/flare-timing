@@ -8,7 +8,7 @@
   , description =
       "Lossy JSON and CSV encoding and decoding for newtype quantities via scientific with fixed decimal places and with units."
   , category =
-      "data, math, numeric, json, csv, physics"
+      "Data, Math, Numeric, JSON, CSV, Physics"
   , github =
       "blockscope/flare-timing/detour-via-uom"
   , homepage =
