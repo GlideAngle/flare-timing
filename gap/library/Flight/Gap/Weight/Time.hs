@@ -1,4 +1,4 @@
-﻿module Flight.Gap.Weight.Time (TimeWeight(..)) where
+module Flight.Gap.Weight.Time (TimeWeight(..)) where
 
 import "newtype" Control.Newtype (Newtype(..))
 import Data.Via.Scientific (DecimalPlaces(..), deriveDecimalPlaces, deriveJsonViaSci)

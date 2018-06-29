@@ -1,4 +1,4 @@
-﻿module Flight.Gap.Distance.Nominal (NominalDistance(..)) where
+module Flight.Gap.Distance.Nominal (NominalDistance(..)) where
 
 import "newtype" Control.Newtype (Newtype(..))
 import Data.Aeson (ToJSON(..), FromJSON(..))

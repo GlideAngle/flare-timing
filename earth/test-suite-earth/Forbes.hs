@@ -1,4 +1,4 @@
-{-# LANGUAGE DataKinds #-}
+﻿{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE QuasiQuotes #-}
 
 {-# LANGUAGE PartialTypeSignatures #-}
@@ -29,7 +29,7 @@ import Flight.Units ()
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.Distance (TaskDistance(..), PathDistance(..), fromKms)
 import Flight.Zone (Radius(..), Zone(..))
-import Data.Number.RoundingFunctions (dpRound)
+import Data.Ratio.Rounding (dpRound)
 
 (.>=.) :: (Show a, Show b) => a -> b -> String
 (.>=.) x y = show x ++ " >= " ++ show y

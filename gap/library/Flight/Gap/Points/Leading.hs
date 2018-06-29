@@ -1,4 +1,4 @@
-﻿module Flight.Gap.Points.Leading (LeadingPoints(..)) where
+module Flight.Gap.Points.Leading (LeadingPoints(..)) where
 
 import "newtype" Control.Newtype (Newtype(..))
 import Data.Via.Scientific (DecimalPlaces(..), deriveDecimalPlaces, deriveJsonViaSci)

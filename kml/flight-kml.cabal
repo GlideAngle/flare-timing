@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 57a9f4b2b29e960db3c30f055efa1eb03c2e6c6a2da4543b9783cf6b14e6ec7a
+-- hash: 6ee6ba9bc4db8568d68abc2b9df7f12101bfaa2aa250bddadc55837d79399b05
 
 name:           flight-kml
 version:        1.0.0
@@ -13,7 +13,7 @@ homepage:       https://github.com/blockscope/flare-timing/tree/master/kml#readm
 bug-reports:    https://github.com/blockscope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
-copyright:      Phil de Joux 2017-2018
+copyright:      © 2017-2018 Phil de Joux, © 2017-2018 Block Scope Limited
 license:        MPL-2.0
 license-file:   LICENSE.md
 tested-with:    GHC == 8.2.2

@@ -1,4 +1,4 @@
-﻿module Flight.Gap.Ratio.Arrival (ArrivalFraction(..)) where
+module Flight.Gap.Ratio.Arrival (ArrivalFraction(..)) where
 
 import "newtype" Control.Newtype (Newtype(..))
 import Data.Via.Scientific (DecimalPlaces(..), deriveDecimalPlaces, deriveJsonViaSci)

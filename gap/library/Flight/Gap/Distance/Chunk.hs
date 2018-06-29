@@ -1,4 +1,4 @@
-﻿{-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE DuplicateRecordFields #-}
 module Flight.Gap.Distance.Chunk
     ( Lookahead(..)
     , Chunk(..)

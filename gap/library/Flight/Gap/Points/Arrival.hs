@@ -1,4 +1,4 @@
-﻿module Flight.Gap.Points.Arrival (ArrivalPoints(..)) where
+module Flight.Gap.Points.Arrival (ArrivalPoints(..)) where
 
 import "newtype" Control.Newtype (Newtype(..))
 import Data.Via.Scientific (DecimalPlaces(..), deriveDecimalPlaces, deriveJsonViaSci)

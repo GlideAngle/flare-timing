@@ -1,4 +1,4 @@
-﻿module Flight.Gap.Distance.Pilot (PilotDistance(..)) where
+module Flight.Gap.Distance.Pilot (PilotDistance(..)) where
 
 import "newtype" Control.Newtype (Newtype(..))
 import Data.Aeson (ToJSON(..), FromJSON(..))

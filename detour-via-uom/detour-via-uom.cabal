@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: feae0dbb34fbb9eb2a9829657adf85ea501f61f4bbc707773c45ac8aa178886a
+-- hash: 44fb65e5534f8e27628b25f549159363dd62a2720c86e03d726ca2438881d832
 
 name:           detour-via-uom
 version:        1.0.0
@@ -13,7 +13,7 @@ homepage:       https://github.com/blockscope/flare-timing/tree/master/detour-vi
 bug-reports:    https://github.com/blockscope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
-copyright:      Phil de Joux 2017-2018
+copyright:      © 2017-2018 Phil de Joux, © 2017-2018 Block Scope Limited
 license:        MPL-2.0
 license-file:   LICENSE.md
 tested-with:    GHC == 8.2.2

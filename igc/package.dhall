@@ -6,7 +6,7 @@
   , description =
       "IGC is a waypoint file format from the International Gliding Commission of FAI. This haskell library can parse B records from these files."
   , category =
-      "Data, Parsing"
+      "data, parsing"
   , github =
       "blockscope/flare-timing/igc"
   , library =

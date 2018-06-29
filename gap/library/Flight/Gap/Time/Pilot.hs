@@ -1,4 +1,4 @@
-﻿module Flight.Gap.Time.Pilot (PilotTime(..)) where
+module Flight.Gap.Time.Pilot (PilotTime(..)) where
 
 import "newtype" Control.Newtype (Newtype(..))
 import Data.Aeson (ToJSON(..), FromJSON(..))

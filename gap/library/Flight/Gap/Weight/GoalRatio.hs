@@ -1,4 +1,4 @@
-﻿module Flight.Gap.Weight.GoalRatio (GoalRatio(..)) where
+module Flight.Gap.Weight.GoalRatio (GoalRatio(..)) where
 
 import "newtype" Control.Newtype (Newtype(..))
 import Data.Via.Scientific (DecimalPlaces(..), deriveDecimalPlaces, deriveJsonViaSci)

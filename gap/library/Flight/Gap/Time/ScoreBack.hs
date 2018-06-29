@@ -1,4 +1,4 @@
-﻿module Flight.Gap.Time.ScoreBack (ScoreBackTime(..)) where
+module Flight.Gap.Time.ScoreBack (ScoreBackTime(..)) where
 
 import "newtype" Control.Newtype (Newtype(..))
 import Data.Aeson (ToJSON(..), FromJSON(..))

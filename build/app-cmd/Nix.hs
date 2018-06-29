@@ -50,8 +50,8 @@ buildFor x =
 buildRules :: Rules ()
 buildRules = do
     phony "nix" $
-        need [ "nix-aeson-via-sci"
-             , "nix-aeson-via-uom"
+        need [ "nix-detour-via-sci"
+             , "nix-detour-via-uom"
              , "nix-siggy-chardust"
              , "nix-tasty-compare"
 
@@ -74,8 +74,8 @@ buildRules = do
              , "nix-flare-timing"
              ]
 
-    phony "nix-aeson-via-sci" $ cmd Shell (buildFor "aeson-via-sci")
-    phony "nix-aeson-via-uom" $ cmd Shell (buildFor "aeson-via-uom")
+    phony "nix-detour-via-sci" $ cmd Shell (buildFor "detour-via-sci")
+    phony "nix-detour-via-uom" $ cmd Shell (buildFor "detour-via-uom")
     phony "nix-siggy-chardust" $ cmd Shell (buildFor "siggy-chardust")
     phony "nix-tasty-compare" $ cmd Shell (buildFor "tasty-compare")
 
@@ -111,23 +111,23 @@ nixRules = do
     _ <- sequence_ $ nixRule <$> flyPkgs
 
     phony "cabal2nix" $ need
-        $ "cabal2nix-aeson-via-sci"
-        : "cabal2nix-aeson-via-uom"
+        $ "cabal2nix-detour-via-sci"
+        : "cabal2nix-detour-via-uom"
         : "cabal2nix-siggy-chardust"
         : "cabal2nix-tasty-compare"
         : (prefix "cabal2nix-" <$> flyPkgs)
 
-    phony "cabal2nix-aeson-via-sci" $
+    phony "cabal2nix-detour-via-sci" $
         cmd
-            (Cwd "aeson-via-sci")
+            (Cwd "detour-via-sci")
             Shell
-            (nixFor "aeson-via-sci")
+            (nixFor "detour-via-sci")
 
-    phony "cabal2nix-aeson-via-uom" $
+    phony "cabal2nix-detour-via-uom" $
         cmd
-            (Cwd "aeson-via-uom")
+            (Cwd "detour-via-uom")
             Shell
-            (nixFor "aeson-via-uom")
+            (nixFor "detour-via-uom")
 
     phony "cabal2nix-siggy-chardust" $
         cmd
@@ -150,17 +150,17 @@ shellRules = do
     _ <- sequence_ $ shellRule <$> flyPkgs
 
     phony "nixshell" $ need
-        $ "nixshell-aeson-via-sci"
-        : "nixshell-aeson-via-uom"
+        $ "nixshell-detour-via-sci"
+        : "nixshell-detour-via-uom"
         : "nixshell-siggy-chardust"
         : "nixshell-tasty-compare"
         : (prefix "nixshell-" <$> flyPkgs)
 
-    phony "nixshell-aeson-via-sci" $
-        cmd (Cwd "aeson-via-sci") Shell shell
+    phony "nixshell-detour-via-sci" $
+        cmd (Cwd "detour-via-sci") Shell shell
 
-    phony "nixshell-aeson-via-uom" $
-        cmd (Cwd "aeson-via-uom") Shell shell
+    phony "nixshell-detour-via-uom" $
+        cmd (Cwd "detour-via-uom") Shell shell
 
     phony "nixshell-siggy-chardust" $
         cmd (Cwd "siggy-chardust") Shell shell

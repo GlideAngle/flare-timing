@@ -1,4 +1,4 @@
-﻿module Flight.Gap.Distance.Min (MinimumDistance(..)) where
+module Flight.Gap.Distance.Min (MinimumDistance(..)) where
 
 import "newtype" Control.Newtype (Newtype(..))
 import Data.Aeson (ToJSON(..), FromJSON(..))
