@@ -19,8 +19,8 @@ dhallPkgs = fst <$> dhallCabal
 -- name.
 dhallCabal :: [(String, String)]
 dhallCabal =
-    [ ("aeson-via-sci", "aeson-via-sci")
-    , ("aeson-via-uom", "aeson-via-uom")
+    [ ("detour-via-sci", "detour-via-sci")
+    , ("detour-via-uom", "detour-via-uom")
     , ("build", "build-flare-timing")
     , ("cmd", "flight-cmd")
     , ("comp", "flight-comp")

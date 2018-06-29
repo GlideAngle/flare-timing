@@ -5,7 +5,7 @@
 module Flight.Gap.Points.Task (TaskPoints(..)) where
 
 import "newtype" Control.Newtype (Newtype(..))
-import Data.Aeson.Via.Scientific (deriveDefDec, deriveViaSci)
+import Data.Via.Scientific (DecimalPlaces(..), deriveDecimalPlaces, deriveJsonViaSci)
 
 newtype TaskPoints = TaskPoints Rational
     deriving (Eq, Ord, Show)
@@ -14,5 +14,5 @@ instance Newtype TaskPoints Rational where
     pack = TaskPoints
     unpack (TaskPoints a) = a
 
-deriveDefDec 0 ''TaskPoints
-deriveViaSci ''TaskPoints
+deriveDecimalPlaces (DecimalPlaces 0) ''TaskPoints
+deriveJsonViaSci ''TaskPoints

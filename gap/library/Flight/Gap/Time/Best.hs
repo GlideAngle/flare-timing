@@ -12,8 +12,8 @@ import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
-import Data.Aeson.Via.Scientific (DefaultDecimalPlaces(..), DecimalPlaces(..))
-import Data.Aeson.Via.UnitsOfMeasure (ViaQ(..))
+import Data.Via.Scientific (DefaultDecimalPlaces(..), DecimalPlaces(..))
+import Data.Via.UnitsOfMeasure (ViaQ(..))
 
 -- | Best time for the task, units of hours.
 newtype BestTime a = BestTime a

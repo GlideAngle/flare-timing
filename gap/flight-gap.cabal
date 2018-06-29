@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 94c804c2075cb6b1e9f741f677f17fe3bafe8769816c93d657a22ace982acf51
+-- hash: afaf0caa2d14835e84270a9538d2923b5265736bb1ee4d1ac309cfff9e1eac24
 
 name:           flight-gap
 version:        0.1.0
@@ -85,11 +85,13 @@ library
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
-    , aeson-via-sci
-    , aeson-via-uom
     , base >=4.5 && <5
     , containers
+    , detour-via-sci
+    , detour-via-uom
     , flight-units
+    , liquid-fixpoint
+    , liquidhaskell
     , newtype
     , scientific
     , siggy-chardust
@@ -156,10 +158,10 @@ test-suite hlint
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
-    , aeson-via-sci
-    , aeson-via-uom
     , base
     , containers
+    , detour-via-sci
+    , detour-via-uom
     , flight-units
     , hlint
     , newtype
@@ -241,10 +243,10 @@ test-suite score
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
-    , aeson-via-sci
-    , aeson-via-uom
     , base
     , containers
+    , detour-via-sci
+    , detour-via-uom
     , flight-units
     , newtype
     , scientific

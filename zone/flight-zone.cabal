@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 8c97c4fa7c33658949bb2efd8d0abc942feee9c7dd490eb745ae7a3246d2bb64
+-- hash: c5c7b9406b1f3a11bdf5829e25e020678b555f4e13bf809610bf9c998ecf480a
 
 name:           flight-zone
 version:        0.1.0
@@ -49,9 +49,9 @@ library
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
-    , aeson-via-sci
-    , aeson-via-uom
     , base >=4.5 && <5
+    , detour-via-sci
+    , detour-via-uom
     , flight-latlng
     , flight-units
     , newtype
@@ -81,9 +81,9 @@ test-suite hlint
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
-    , aeson-via-sci
-    , aeson-via-uom
     , base
+    , detour-via-sci
+    , detour-via-uom
     , flight-latlng
     , flight-units
     , hlint

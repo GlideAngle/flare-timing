@@ -1,14 +1,18 @@
   ./defaults.dhall 
 ⫽ { name =
       "flight-kml"
+  , version =
+      "1.0.0"
   , synopsis =
-      "A parser for KML files."
+      "Parsing of pilot tracklogs dumped as KML."
   , description =
-      "KML can be a source of flight waypoints."
+      "Provides parsing of dumped tracklogs. In hang gliding and paragliding competitions when FS and GpsDump are paired in competition mode a pilot's tracklog is dumped as KML. This is exlained in detail on the FS wiki."
   , category =
-      "Data, Parsing"
+      "Data, Parsing, Geography, Gps, Flight, XML, KML"
   , github =
       "blockscope/flare-timing/kml"
+  , homepage =
+      "https://github.com/blockscope/flare-timing/tree/master/kml#readme"
   , library =
       { dependencies =
           [ "base >=4.5 && <5"
@@ -19,16 +23,16 @@
           , "hxt-xpath"
           , "aeson"
           , "time"
-          , "aeson-via-sci"
+          , "detour-via-sci"
           , "siggy-chardust"
           ]
       , source-dirs =
           "library"
       , exposed-modules =
-          "Flight.Kml"
+          [ "Flight.Kml", "Flight.Kml.Internal" ]
       }
   , tests =
-      { hlint =
+      { doctest =
           { dependencies =
               [ "base"
               , "split"
@@ -39,7 +43,30 @@
               , "aeson"
               , "time"
               , "hlint"
-              , "aeson-via-sci"
+              , "detour-via-sci"
+              , "siggy-chardust"
+              , "template-haskell"
+              , "doctest"
+              ]
+          , ghc-options =
+              [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
+          , main =
+              "DocTest.hs"
+          , source-dirs =
+              [ "library", "test-suite-doctest" ]
+          }
+      , hlint =
+          { dependencies =
+              [ "base"
+              , "split"
+              , "parsec"
+              , "hxt"
+              , "path"
+              , "hxt-xpath"
+              , "aeson"
+              , "time"
+              , "hlint"
+              , "detour-via-sci"
               , "siggy-chardust"
               ]
           , ghc-options =
@@ -65,7 +92,7 @@
               , "tasty-quickcheck"
               , "tasty-smallcheck"
               , "smallcheck"
-              , "aeson-via-sci"
+              , "detour-via-sci"
               , "siggy-chardust"
               ]
           , ghc-options =

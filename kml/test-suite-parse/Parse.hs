@@ -3,22 +3,6 @@
 
 module Main (main) where
 
-import qualified Flight.Kml as K (LatLngAlt(lat, lng, altGps))
-import Flight.Kml
-    ( LLA
-    , Seconds(..)
-    , Latitude(..)
-    , Longitude(..)
-    , Altitude(..)
-    , mkPosition
-    , parseTimeOffsets
-    , parseBaroMarks
-    , parseLngLatAlt
-    , showLngLatAlt
-    , showLatLngAlt
-    , roundTripLatLngAlt
-    )
-
 import Test.Tasty (TestTree, testGroup, defaultMain)
 import Test.Tasty.SmallCheck as SC
 import Test.SmallCheck.Series as SC
@@ -28,6 +12,24 @@ import Test.Tasty.HUnit as HU ((@?=), testCase)
 import Data.List.Split (split, dropBlanks, dropDelims, oneOf, chunksOf)
 import Text.RawString.QQ (r)
 import TestNewtypes ()
+
+import qualified Flight.Kml as K (LatLngAlt(lat, lng, altGps))
+import Flight.Kml
+    ( LLA
+    , Seconds(..)
+    , Latitude(..)
+    , Longitude(..)
+    , Altitude(..)
+    , mkPosition
+    )
+import Flight.Kml.Internal
+    ( parseTimeOffsets
+    , parseBaroMarks
+    , parseLngLatAlt
+    , showLngLatAlt
+    , showLatLngAlt
+    , roundTripLatLngAlt
+    )
 
 main :: IO ()
 main = defaultMain tests
@@ -136,7 +138,7 @@ parseTriples parser xs =
         extractLatLngAlt x = (K.lat x, K.lng x, K.altGps x)
 
         ys :: [(Double, Double, Altitude)]
-        ys = (roundTripLatLngAlt . extractLatLngAlt) <$> xs
+        ys = roundTripLatLngAlt . extractLatLngAlt <$> xs
 
         zs :: [LLA]
         zs =

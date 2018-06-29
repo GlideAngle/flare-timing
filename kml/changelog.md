@@ -1,3 +1,8 @@
-The [latest version](https://github.com/blockscope/haskell-flight-kml/blob/master/changelog.md) of this changelog.
+# 1.0.0
 
-WIP: No versions as yet.
+Initial version with;
+
+* Data types for a single fix. This being made up of a time stamp, latitude,
+  longitude and GPS altitude with an optional barometric pressure altitude.
+* Data types for tracklogs made up of a series of fixes.
+* A `parse` function.

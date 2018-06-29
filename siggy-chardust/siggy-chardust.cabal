@@ -2,14 +2,14 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 7ff3ce11c7ed7ee9cfbc09c48ad37ef84b242423ea201d63bde5c3ee6ad4bbf3
+-- hash: 4046b1629248f3302d960b286d3fc119bb16e776c43efd230bb15134fc8e91e7
 
 name:           siggy-chardust
-version:        0.1.0
-synopsis:       Rounding keeping decimal places and significant digits.
-description:    Round to a certain number of decimal places or significant digits.
-category:       Data, Math
-homepage:       https://github.com/blockscope/flare-timing#readme
+version:        1.0.0
+synopsis:       Rounding rationals to significant digits and decimal places.
+description:    The round function from the prelude returns an integer. The standard librarys of C and C++ have round functions that return floating point numbers. Rounding in this library takes and returns rationals and can round to a number of significant digits or a number of decimal places.
+category:       Data, Math, Numeric
+homepage:       https://github.com/blockscope/flare-timing/tree/master/siggy-chardust#readme
 bug-reports:    https://github.com/blockscope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
@@ -32,7 +32,7 @@ source-repository head
 
 library
   exposed-modules:
-      Data.Number.RoundingFunctions
+      Data.Ratio.Rounding
   other-modules:
       Paths_siggy_chardust
   hs-source-dirs:
@@ -40,14 +40,14 @@ library
   default-extensions: PackageImports
   ghc-options: -Wall
   build-depends:
-      base >=4.5 && <5
+      base >=4.8 && <5
   default-language: Haskell2010
 
 test-suite digits
   type: exitcode-stdio-1.0
   main-is: Rounding.hs
   other-modules:
-      Data.Number.RoundingFunctions
+      Data.Ratio.Rounding
       Paths_siggy_chardust
   hs-source-dirs:
       library
@@ -63,11 +63,27 @@ test-suite digits
     , tasty-smallcheck
   default-language: Haskell2010
 
+test-suite doctest
+  type: exitcode-stdio-1.0
+  main-is: DocTest.hs
+  other-modules:
+      Data.Ratio.Rounding
+      Paths_siggy_chardust
+  hs-source-dirs:
+      library
+      test-suite-doctest
+  default-extensions: PackageImports
+  ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      base
+    , doctest
+  default-language: Haskell2010
+
 test-suite hlint
   type: exitcode-stdio-1.0
   main-is: HLint.hs
   other-modules:
-      Data.Number.RoundingFunctions
+      Data.Ratio.Rounding
       Paths_siggy_chardust
   hs-source-dirs:
       library

@@ -3,8 +3,8 @@ tested-with: GHC == 8.2.2
 flags: {}
 packages:
 - build
-- aeson-via-sci
-- aeson-via-uom
+- detour-via-sci
+- detour-via-uom
 - cmd
 - comp
 - earth
@@ -46,11 +46,17 @@ packages:
     git: https://github.com/brunjlar/stack2cabal
     commit: a8a4cdcacd697cee648af93856735f15de5987a6
   extra-dep: true
+- location:
+    git: https://github.com/ucsd-progsys/liquid-fixpoint.git
+    commit: 9d2694ac82262d135dd7ca0f3b9034b7c556cd48
+  extra-dep: true
+- location:
+    git: https://github.com/ucsd-progsys/liquidhaskell.git
+    commit: ec88f568d101bfd35b6254aa7db034164d9c89dd
+  extra-dep: true
 extra-deps:
 - hxt-xpath-9.1.2.2
-- liquid-fixpoint-0.7.0.7
 - located-base-0.1.1.1
 - dotgen-0.4.2
 - fgl-visualize-0.1.0.1
-- liquidhaskell-0.8.2.4
 local-bin-path: __shake-build

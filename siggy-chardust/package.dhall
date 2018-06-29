@@ -1,21 +1,25 @@
   ./defaults.dhall 
 ⫽ { name =
       "siggy-chardust"
+  , version =
+      "1.0.0"
   , synopsis =
-      "Rounding keeping decimal places and significant digits."
+      "Rounding rationals to significant digits and decimal places."
   , description =
-      "Round to a certain number of decimal places or significant digits."
+      "The round function from the prelude returns an integer. The standard librarys of C and C++ have round functions that return floating point numbers. Rounding in this library takes and returns rationals and can round to a number of significant digits or a number of decimal places."
   , category =
-      "Data, Math"
+      "Data, Math, Numeric"
   , github =
       "blockscope/flare-timing/siggy-chardust"
+  , homepage =
+      "https://github.com/blockscope/flare-timing/tree/master/siggy-chardust#readme"
   , library =
       { dependencies =
-          "base >=4.5 && <5"
+          "base >=4.8 && <5"
       , source-dirs =
           "library"
       , exposed-modules =
-          "Data.Number.RoundingFunctions"
+          "Data.Ratio.Rounding"
       }
   , tests =
       { hlint =
@@ -27,6 +31,16 @@
               "HLint.hs"
           , source-dirs =
               [ "library", "test-suite-hlint" ]
+          }
+      , doctest =
+          { dependencies =
+              [ "base", "doctest" ]
+          , ghc-options =
+              [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
+          , main =
+              "DocTest.hs"
+          , source-dirs =
+              [ "library", "test-suite-doctest" ]
           }
       , digits =
           { dependencies =

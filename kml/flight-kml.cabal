@@ -2,14 +2,14 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 5ed5d07e4315de115bcb31cc7bccfd79afd434406e0a25cee5364792f15a2f1e
+-- hash: 57a9f4b2b29e960db3c30f055efa1eb03c2e6c6a2da4543b9783cf6b14e6ec7a
 
 name:           flight-kml
-version:        0.1.0
-synopsis:       A parser for KML files.
-description:    KML can be a source of flight waypoints.
-category:       Data, Parsing
-homepage:       https://github.com/blockscope/flare-timing#readme
+version:        1.0.0
+synopsis:       Parsing of pilot tracklogs dumped as KML.
+description:    Provides parsing of dumped tracklogs. In hang gliding and paragliding competitions when FS and GpsDump are paired in competition mode a pilot's tracklog is dumped as KML. This is exlained in detail on the FS wiki.
+category:       Data, Parsing, Geography, Gps, Flight, XML, KML
+homepage:       https://github.com/blockscope/flare-timing/tree/master/kml#readme
 bug-reports:    https://github.com/blockscope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
@@ -33,6 +33,7 @@ source-repository head
 library
   exposed-modules:
       Flight.Kml
+      Flight.Kml.Internal
   other-modules:
       Flight.Types
       Paths_flight_kml
@@ -42,8 +43,8 @@ library
   ghc-options: -Wall
   build-depends:
       aeson
-    , aeson-via-sci
     , base >=4.5 && <5
+    , detour-via-sci
     , hxt
     , hxt-xpath
     , parsec
@@ -53,11 +54,41 @@ library
     , time
   default-language: Haskell2010
 
+test-suite doctest
+  type: exitcode-stdio-1.0
+  main-is: DocTest.hs
+  other-modules:
+      Flight.Kml
+      Flight.Kml.Internal
+      Flight.Types
+      Paths_flight_kml
+  hs-source-dirs:
+      library
+      test-suite-doctest
+  default-extensions: PackageImports
+  ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base
+    , detour-via-sci
+    , doctest
+    , hlint
+    , hxt
+    , hxt-xpath
+    , parsec
+    , path
+    , siggy-chardust
+    , split
+    , template-haskell
+    , time
+  default-language: Haskell2010
+
 test-suite hlint
   type: exitcode-stdio-1.0
   main-is: HLint.hs
   other-modules:
       Flight.Kml
+      Flight.Kml.Internal
       Flight.Types
       Paths_flight_kml
   hs-source-dirs:
@@ -67,8 +98,8 @@ test-suite hlint
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
-    , aeson-via-sci
     , base
+    , detour-via-sci
     , hlint
     , hxt
     , hxt-xpath
@@ -84,6 +115,7 @@ test-suite parse
   main-is: Parse.hs
   other-modules:
       Flight.Kml
+      Flight.Kml.Internal
       Flight.Types
       TestNewtypes
       Paths_flight_kml
@@ -94,8 +126,8 @@ test-suite parse
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
-    , aeson-via-sci
     , base
+    , detour-via-sci
     , hxt
     , hxt-xpath
     , parsec

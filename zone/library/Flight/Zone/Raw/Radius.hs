@@ -14,8 +14,8 @@ import Data.UnitsOfMeasure.Show (showQuantity)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
-import Data.Aeson.Via.Scientific (DefaultDecimalPlaces(..), DecimalPlaces(..))
-import Data.Aeson.Via.UnitsOfMeasure (ViaQ(..))
+import Data.Via.Scientific (DefaultDecimalPlaces(..), DecimalPlaces(..))
+import Data.Via.UnitsOfMeasure (ViaQ(..))
 
 newtype RawRadius a = RawRadius a
     deriving (Eq, Ord, Show)

@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ca470ee26bcebb22169f74a7d7865dcedaf3f505b9df6280ca2cfd0df9bd7741
+-- hash: d03e3d79cf29260c84374ed645f0e4a9d8594dd8cb221929074404aa23a4e567
 
 name:           flight-task
 version:        0.1.0
@@ -43,9 +43,9 @@ library
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
-    , aeson-via-sci
     , base >=4.5 && <5
     , bifunctors
+    , detour-via-sci
     , fgl
     , flight-earth
     , flight-latlng
@@ -73,9 +73,9 @@ test-suite hlint
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
-    , aeson-via-sci
     , base
     , bifunctors
+    , detour-via-sci
     , fgl
     , flight-earth
     , flight-latlng

@@ -26,7 +26,7 @@ liquidRules = do
             ++ " "
             ++ ("gap" </> "library" </> "Flight" </> "Gap" </> "Time" </> "Best.hs")
             ++ " "
-            ++ ("aeson-via-uom" </> "library" </> "Data" </> "Aeson" </> "Via" </> "UnitsOfMeasure.hs")
+            ++ ("detour-via-uom" </> "library" </> "Data" </> "Via" </> "UnitsOfMeasure.hs")
             ++ " "
             ++ ("units" </> "library" </> "Flight" </> "Units.hs")
             ++ " "
@@ -60,7 +60,7 @@ liquidRules = do
             ++ " "
             ++ ("units" </> "library" </> "Flight" </> "Ratio.hs")
             ++ " "
-            ++ ("aeson-via-sci" </> "library" </> "Data" </> "Aeson" </> "Via" </> "Scientific.hs")
+            ++ ("detour-via-sci" </> "library" </> "Data" </> "Via" </> "Scientific.hs")
             ++ " "
             ++ ("uom-plugin-0.3.0.0" </> "src" </> "Data" </> "UnitsOfMeasure" </> "Convert.hs")
             ++ " "

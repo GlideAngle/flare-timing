@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 10b9995c490fe47faf32f30e0cc7c3af4ce201a7443dc4cb81d20d60dc9130e5
+-- hash: 2bb55e1fffb35b00229515c17b1852e5dc970cfc99923d9595cb30cc1d1a2d05
 
 name:           flight-fsdb
 version:        0.1.0
@@ -47,9 +47,9 @@ library
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
-    , aeson-via-sci
     , base >=4.5 && <5
     , containers
+    , detour-via-sci
     , flight-comp
     , flight-gap
     , flight-latlng
@@ -84,9 +84,9 @@ test-suite hlint
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
-    , aeson-via-sci
     , base
     , containers
+    , detour-via-sci
     , flight-comp
     , flight-gap
     , flight-latlng
@@ -122,9 +122,9 @@ test-suite parse
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
-    , aeson-via-sci
     , base
     , containers
+    , detour-via-sci
     , flight-comp
     , flight-gap
     , flight-latlng

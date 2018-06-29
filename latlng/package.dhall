@@ -26,7 +26,7 @@
           , "newtype"
           , "tasty-quickcheck"
           , "smallcheck"
-          , "aeson-via-sci"
+          , "detour-via-sci"
           , "siggy-chardust"
           , "flight-units"
           ]
@@ -59,7 +59,7 @@
               , "newtype"
               , "tasty-quickcheck"
               , "smallcheck"
-              , "aeson-via-sci"
+              , "detour-via-sci"
               , "siggy-chardust"
               , "flight-units"
               , "hlint"

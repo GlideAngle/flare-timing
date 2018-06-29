@@ -21,15 +21,17 @@ import Data.Aeson
 import qualified Data.Csv as Csv ((.:))
 import Data.Csv
     (ToNamedRecord(..), FromNamedRecord(..), namedRecord, namedField)
-import Data.Aeson.Via.Scientific
+import Data.Via.Scientific
     ( dpDegree, fromSci, toSci, showSci
-    , deriveConstDec, deriveViaSci, deriveCsvViaSci
+    , deriveDecimalPlaces, deriveJsonViaSci, deriveCsvViaSci
     )
 
 data RawLatLng =
-    RawLatLng { lat :: RawLat
-              , lng :: RawLng
-              } deriving (Eq, Ord, Show)
+    RawLatLng
+        { lat :: RawLat
+        , lng :: RawLng
+        }
+    deriving (Eq, Ord, Show)
 
 instance ToJSON RawLatLng where
     toJSON RawLatLng{..} =
@@ -43,11 +45,11 @@ instance FromJSON RawLatLng where
 newtype RawLat = RawLat Rational deriving (Eq, Ord, Show)
 newtype RawLng = RawLng Rational deriving (Eq, Ord, Show)
 
-deriveConstDec dpDegree ''RawLat
-deriveConstDec dpDegree ''RawLng
+deriveDecimalPlaces dpDegree ''RawLat
+deriveDecimalPlaces dpDegree ''RawLng
 
-deriveViaSci ''RawLat
-deriveViaSci ''RawLng
+deriveJsonViaSci ''RawLat
+deriveJsonViaSci ''RawLng
 
 deriveCsvViaSci ''RawLat
 deriveCsvViaSci ''RawLng
@@ -71,16 +73,11 @@ instance ToNamedRecord RawLng where
     toNamedRecord (RawLng x) =
         namedRecord [ namedField "lng" $ csvSci x ]
 
--- TODO: Get rid of fromDouble when upgrading to cassava-0.5.1.0
-fromDouble :: Double -> Rational
-fromDouble = toRational
-
--- TODO: Use fromSci when upgrading to cassava-0.5.1.0
 instance FromNamedRecord RawLat where
-    parseNamedRecord m = RawLat . fromDouble <$> m Csv..: "lat"
+    parseNamedRecord m = RawLat . fromSci <$> m Csv..: "lat"
 
 instance FromNamedRecord RawLng where
-    parseNamedRecord m = RawLng . fromDouble <$> m Csv..: "lat"
+    parseNamedRecord m = RawLng . fromSci <$> m Csv..: "lat"
 
 showLat :: RawLat -> String
 showLat (RawLat lat') =

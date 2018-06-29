@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ac519ed97601bf78b4b29f18d081777872a71955c2425eb87a5820eb7cecd1a9
+-- hash: 58b4b66d64e28abfd84dc9ad36d2156d96d979ad70cefc105a968bdda5859368
 
 name:           flight-lookup
 version:        0.1.0
@@ -44,11 +44,11 @@ library
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
-    , aeson-via-sci
     , base >=4.5 && <5
     , bytestring
     , cassava
     , containers
+    , detour-via-sci
     , directory
     , filemanip
     , filepath
@@ -85,11 +85,11 @@ test-suite hlint
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
-    , aeson-via-sci
     , base
     , bytestring
     , cassava
     , containers
+    , detour-via-sci
     , directory
     , filemanip
     , filepath

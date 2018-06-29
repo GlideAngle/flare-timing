@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 7fbe1162bad5008cded9f50d25b5b1668862ad89360c499ba60499023289e24a
+-- hash: b6fa7a91ae858c39e6c402395f7dcba6f48030377cc4d5e5e77cc8066ba2ce4e
 
 name:           flight-earth
 version:        0.1.0
@@ -62,9 +62,9 @@ library
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
-    , aeson-via-sci
     , base >=4.5 && <5
     , bifunctors
+    , detour-via-sci
     , fgl
     , flight-latlng
     , flight-units
@@ -158,9 +158,9 @@ test-suite earth
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
-    , aeson-via-sci
     , base
     , bifunctors
+    , detour-via-sci
     , fgl
     , flight-latlng
     , flight-units
@@ -215,9 +215,9 @@ test-suite hlint
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
-    , aeson-via-sci
     , base
     , bifunctors
+    , detour-via-sci
     , fgl
     , flight-latlng
     , flight-units

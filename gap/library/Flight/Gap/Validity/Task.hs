@@ -5,7 +5,7 @@
 module Flight.Gap.Validity.Task (TaskValidity(..)) where
 
 import "newtype" Control.Newtype (Newtype(..))
-import Data.Aeson.Via.Scientific (deriveDefDec, deriveViaSci)
+import Data.Via.Scientific (DecimalPlaces(..), deriveDecimalPlaces, deriveJsonViaSci)
 
 -- | Also called Day Quality.
 newtype TaskValidity = TaskValidity Rational
@@ -15,5 +15,5 @@ instance Newtype TaskValidity Rational where
     pack = TaskValidity
     unpack (TaskValidity a) = a
 
-deriveDefDec 8 ''TaskValidity
-deriveViaSci ''TaskValidity
+deriveDecimalPlaces (DecimalPlaces 8) ''TaskValidity
+deriveJsonViaSci ''TaskValidity
