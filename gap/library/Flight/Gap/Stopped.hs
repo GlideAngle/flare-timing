@@ -87,7 +87,7 @@ canScoreStopped (FromLastStart [] _) =
 canScoreStopped (FromLastStart xs (TaskStopTime t)) =
     (t - lastStart) >= 60 * 60
     where
-        lastStart = minimum $ (\(TaskTime x) -> x) <$> xs
+        lastStart = maximum $ (\(TaskTime x) -> x) <$> xs
 
 newtype StoppedValidity = StoppedValidity Rational deriving (Eq, Show)
 newtype DistanceFlown = DistanceFlown Rational deriving (Eq, Show)
