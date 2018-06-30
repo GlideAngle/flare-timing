@@ -9,7 +9,6 @@ module Flight.Gap.Pilots
 
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import GHC.Generics (Generic)
-import Data.Ratio (Ratio)
 
 -- | The number of pilots completing the speed section of the task.
 newtype PilotsAtEss = PilotsAtEss Integer

@@ -16,8 +16,7 @@ module Flight.Gap.Validity
     , taskValidity
     ) where
 
-import LiquidHaskell
-import Data.Ratio (Ratio, (%))
+import Data.Ratio ((%))
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.UnitsOfMeasure (u, convert, toRational')
