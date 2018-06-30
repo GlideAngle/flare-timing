@@ -86,14 +86,17 @@ tallyUnits = testGroup "Tally task points, with and without penalties"
 
 correct :: forall a. Maybe (Penalty a) -> Points -> TaskPoints -> Bool
 
-correct Nothing Points{..} pts =
+correct
+    Nothing
+    Points
+        { reach = LinearPoints r
+        , effort = DifficultyPoints e
+        , leading = LeadingPoints l
+        , arrival = ArrivalPoints a
+        , time = TimePoints t
+        }
+    pts =
     pts == TaskPoints (r + e + l + t + a)
-    where
-        LinearPoints r = reach
-        DifficultyPoints e = effort
-        LeadingPoints l = leading
-        ArrivalPoints a = arrival
-        TimePoints t = time
 
 correct
     (Just (JumpedTooEarly (MinimumDistancePoints md)))
@@ -103,48 +106,56 @@ correct
 
 correct
     (Just (Jumped (SecondsPerPoint spp) (JumpedTheGun jtg)))
-    Points{..}
+    Points
+        { reach = LinearPoints r
+        , effort = DifficultyPoints e
+        , leading = LeadingPoints l
+        , arrival = ArrivalPoints a
+        , time = TimePoints t
+        }
     pts =
     pts == TaskPoints (max 0 x)
     where
-        LinearPoints r = reach
-        DifficultyPoints e = effort
-        LeadingPoints l = leading
-        ArrivalPoints a = arrival
-        TimePoints t = time
         x = (r + e + l + t + a) - jtg / spp
 
 correct
     (Just (JumpedNoGoal (SecondsPerPoint spp) (JumpedTheGun jtg)))
-    Points{..}
+    Points
+        { reach = LinearPoints r
+        , effort = DifficultyPoints e
+        , leading = LeadingPoints l
+        , arrival = ArrivalPoints a
+        , time = TimePoints t
+        }
     pts =
     pts == TaskPoints (max 0 x)
     where
-        LinearPoints r = reach
-        DifficultyPoints e = effort
-        LeadingPoints l = leading
-        ArrivalPoints a = arrival
-        TimePoints t = time
         x = (r + e + l + (8 % 10) * (t + a)) - jtg / spp
 
-correct (Just NoGoalHg) Points{..} pts =
+correct
+    (Just NoGoalHg)
+    Points
+        { reach = LinearPoints r
+        , effort = DifficultyPoints e
+        , leading = LeadingPoints l
+        , arrival = ArrivalPoints a
+        , time = TimePoints t
+        }
+    pts =
     pts == TaskPoints (r + e + l + (8 % 10) * (t + a))
-    where
-        LinearPoints r = reach
-        DifficultyPoints e = effort
-        LeadingPoints l = leading
-        ArrivalPoints a = arrival
-        TimePoints t = time
 
 correct (Just (Early (LaunchToSssPoints lts))) Points{..} (TaskPoints pts) =
     pts == lts
 
-correct (Just NoGoalPg) Points{..} pts =
+correct
+    (Just NoGoalPg)
+    Points
+        { reach = LinearPoints r
+        , effort = DifficultyPoints e
+        , leading = LeadingPoints l
+        }
+    pts =
     pts == TaskPoints (r + e + l)
-    where
-        LinearPoints r = reach
-        DifficultyPoints e = effort
-        LeadingPoints l = leading
 
 taskPointsHg :: PtTest Hg -> Bool
 taskPointsHg (PtTest (penalty, parts)) =
