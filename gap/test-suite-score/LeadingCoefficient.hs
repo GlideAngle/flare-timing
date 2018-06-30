@@ -4,7 +4,6 @@ module LeadingCoefficient
     , leadingFractions
     ) where
 
-import Prelude hiding (seq)
 import Data.List (sortBy)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit as HU ((@?=), testCase)
