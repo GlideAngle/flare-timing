@@ -22,6 +22,8 @@ cache:
 matrix:
   include:
   - env: PKG=siggy-chardust
+  - env: PKG=detour-via-sci
+  - env: PKG=detour-via-uom
 
 # Ensure necessary system libraries are present
 addons:
