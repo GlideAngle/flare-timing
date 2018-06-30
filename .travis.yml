@@ -19,6 +19,10 @@ cache:
   directories:
   - $HOME/.stack
 
+matrix:
+  include:
+  - env: PKG=siggy-chardust
+
 # Ensure necessary system libraries are present
 addons:
   apt:
@@ -41,8 +45,8 @@ before_install:
 
 install:
 # Build dependencies
-- stack --no-terminal --install-ghc test siggy-chardust --only-dependencies
+- stack --no-terminal --install-ghc test $PKG --only-dependencies
 
 script:
 # Build the package, its tests, and its docs and run the tests
-- stack --no-terminal test siggy-chardust --haddock --no-haddock-deps
+- stack --no-terminal test $PKG --haddock --no-haddock-deps
