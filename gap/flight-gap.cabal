@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 82e369f6bc0fda38de4080afe9ef91ba4c2db84e8a3986ce98e70448e3fc45b2
+-- hash: 0c66412d89a0ecc8951f52658adf4b2bcf6357e6673efca0bc4b415f834535ea
 
 name:           flight-gap
 version:        0.1.0
@@ -90,8 +90,6 @@ library
     , detour-via-sci
     , detour-via-uom
     , flight-units
-    , liquid-fixpoint
-    , liquidhaskell
     , newtype
     , scientific
     , siggy-chardust

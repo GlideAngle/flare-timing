@@ -110,7 +110,6 @@ launchValidity
         p = toRational present
         f = toRational flying
 
-{-@ lvrPolynomial :: Rational -> LaunchValidity @-}
 lvrPolynomial :: Rational -> LaunchValidity
 lvrPolynomial lvr =
     LaunchValidity $
@@ -118,7 +117,6 @@ lvrPolynomial lvr =
     + (2917 % 1000) * lvr * lvr
     - (1944 % 1000) * lvr * lvr * lvr
 
-{-@ tvrValidity :: _ -> TimeValidity @-}
 tvrValidity :: TimeValidityRatio -> TimeValidity
 
 tvrValidity
@@ -151,19 +149,6 @@ tvrPolynomial tvr =
 
 -- | Time validity uses the ratio of times or distances depending on whether
 -- any pilots make it to the end of the speed section.
-{-@ type Qs = Quantity Double [u| s |] @-}
-{-@ type Qkm = Quantity Double [u| km |] @-}
-{-@
-data TimeValidityRatio
-    = TimeRatio
-        { nominalTime :: NominalTime Qs
-        , bestTime :: BestTime Qs
-        }
-    | DistanceRatio
-        { nominalDistance :: NominalDistance Qkm
-        , bestDistance :: BestDistance Qkm
-        }
-@-}
 data TimeValidityRatio
     = TimeRatio
         { nominalTime :: NominalTime (Quantity Double [u| s |])

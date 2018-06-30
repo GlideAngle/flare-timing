@@ -30,8 +30,6 @@
           , "detour-via-uom"
           , "siggy-chardust"
           , "flight-units"
-          , "liquid-fixpoint"
-          , "liquidhaskell"
           ]
       , source-dirs =
           "library"
