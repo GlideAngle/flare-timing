@@ -26,3 +26,5 @@ result
 *.local
 ghc-*
 uom-plugin-*
+*.hi
+*.o

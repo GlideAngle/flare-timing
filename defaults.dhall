@@ -5,7 +5,7 @@
 , maintainer =
     "phil.dejoux@blockscope.com"
 , copyright =
-    "© 2017-2018 Phil de Joux, © 2017-2018 Block Scope Limited"
+    "\u00A9 2017-2018 Phil de Joux, \u00A9 2017-2018 Block Scope Limited"
 , license =
     "MPL-2.0"
 , license-file =

@@ -1,4 +1,5 @@
   ./defaults.dhall 
+⫽ ./default-extensions.dhall 
 ⫽ { name =
       "flight-gap"
   , synopsis =
@@ -13,35 +14,6 @@
       [ "-Wall"
       , "-fplugin Data.UnitsOfMeasure.Plugin"
       , "-fno-warn-partial-type-signatures"
-      ]
-  , default-extensions =
-      [ "DataKinds"
-      , "DeriveGeneric"
-      , "DeriveAnyClass"
-      , "DerivingStrategies"
-      , "DisambiguateRecordFields"
-      , "FlexibleContexts"
-      , "FlexibleInstances"
-      , "GeneralizedNewtypeDeriving"
-      , "GADTs"
-      , "LambdaCase"
-      , "MultiParamTypeClasses"
-      , "NamedFieldPuns"
-      , "OverloadedStrings"
-      , "PackageImports"
-      , "ParallelListComp"
-      , "PartialTypeSignatures"
-      , "PatternSynonyms"
-      , "QuasiQuotes"
-      , "RankNTypes"
-      , "RecordWildCards"
-      , "ScopedTypeVariables"
-      , "StandaloneDeriving"
-      , "TemplateHaskell"
-      , "TypeFamilies"
-      , "TypeOperators"
-      , "TypeSynonymInstances"
-      , "UndecidableInstances"
       ]
   , library =
       { dependencies =
