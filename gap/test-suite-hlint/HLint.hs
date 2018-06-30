@@ -8,6 +8,7 @@ arguments =
     [ "library"
     , "test-suite-hlint"
     , "test-suite-score"
+    , "--ignore=Parse error"
     ]
 
 main :: IO ()
