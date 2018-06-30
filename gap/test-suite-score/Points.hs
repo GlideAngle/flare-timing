@@ -42,7 +42,7 @@ tallyUnits = testGroup "Tally task points, with and without penalties"
                 , arrival = ArrivalPoints 1
                 , time = TimePoints 1
                 }
-            @?= TaskPoints 4
+            @?= TaskPoints 5
 
     , HU.testCase "Early start PG = distance to start points only" $
         FS.taskPoints
