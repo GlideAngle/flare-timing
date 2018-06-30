@@ -1,9 +1,3 @@
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE QuasiQuotes #-}
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# lANGUAGE PatternSynonyms #-}
 module TestNewtypes where
 
 -- NOTE: Avoid orphan instance warnings with these newtypes.

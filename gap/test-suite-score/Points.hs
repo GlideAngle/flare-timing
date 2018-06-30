@@ -1,7 +1,3 @@
-{-# LANGUAGE GADTs #-}
-{-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE ScopedTypeVariables #-}
 module Points (tallyUnits, taskPointsHg, taskPointsPg) where
 
 import Test.Tasty (TestTree, testGroup)

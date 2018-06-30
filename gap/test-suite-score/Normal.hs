@@ -1,5 +1,3 @@
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
 module Normal (Normal(..), NormalProduct(..), NormalSum(..)) where
 
 import Control.Applicative (pure, empty)
