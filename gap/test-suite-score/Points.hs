@@ -81,7 +81,7 @@ tallyUnits = testGroup "Tally task points, with and without penalties"
                 , arrival = ArrivalPoints 10
                 , time = TimePoints 10
                 }
-            @?= TaskPoints 39
+            @?= TaskPoints 49
     ]
 
 correct :: forall a. Maybe (Penalty a) -> Points -> TaskPoints -> Bool
