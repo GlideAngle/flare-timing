@@ -26,10 +26,6 @@ addons:
       - libgmp-dev
 
 before_install:
-# Download and unpack the stack executable
-- mkdir -p ~/.local/bin
-- export PATH=$HOME/.local/bin:$PATH
-- travis_retry curl -L https://get.haskellstack.org/stable/linux-x86_64.tar.gz | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
 # To avoid running out of memory, add a swap file.
 # SEE: https://www.reddit.com/r/haskell/comments/5ov5k1/how_to_stack_build_specifically_lens_on_a_low/
 - sudo mkdir -v /var/cache/swap
@@ -38,6 +34,10 @@ before_install:
 - sudo chmod 600 swapfile
 - sudo mkswap swapfile
 - sudo swapon swapfile
+# Download and unpack the stack executable
+- mkdir -p ~/.local/bin
+- export PATH=$HOME/.local/bin:$PATH
+- travis_retry curl -L https://get.haskellstack.org/stable/linux-x86_64.tar.gz | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
 
 install:
 # Build dependencies
