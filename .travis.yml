@@ -41,8 +41,10 @@ before_install:
 
 install:
 # Build dependencies
-- stack --no-terminal --install-ghc build siggy-chardust detour-via-sci --only-dependencies
+- stack --no-terminal --install-ghc build siggy-chardust --only-dependencies
+- stack --no-terminal --install-ghc build detour-via-sci --only-dependencies
 
 script:
 # Build the package, its tests, and its docs and run the tests
-- stack --no-terminal build siggy-chardust detour-via-sci
+- stack --no-terminal build siggy-chardust
+- stack --no-terminal build detour-via-sci
