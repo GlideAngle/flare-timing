@@ -40,8 +40,8 @@ before_install:
 - travis_retry curl -L https://get.haskellstack.org/stable/linux-x86_64.tar.gz | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
 
 install:
-- stack --no-terminal --install-ghc build siggy-chardust detour-via-sci detour-via-uom --only-dependencies
+- stack --no-terminal --install-ghc build siggy-chardust detour-via-sci detour-via-uom flight-igc flight-kml flare-timing --only-dependencies
 
 script:
 # Build the package, its tests, and its docs and run the tests
-- stack --no-terminal build siggy-chardust detour-via-sci detour-via-uom
+- stack --no-terminal build siggy-chardust detour-via-sci detour-via-uom flight-igc flight-kml flare-timing
