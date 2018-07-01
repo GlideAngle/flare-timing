@@ -107,6 +107,9 @@ wwwApps =
 
 cleanRules :: Rules ()
 cleanRules = do
+    phony "clean-cabal-files" $
+        removeFilesAfter "." ["//*.cabal"]
+
     phony "clean-prod-apps" $
         removeFilesAfter "__shake-build" prodApps
 
