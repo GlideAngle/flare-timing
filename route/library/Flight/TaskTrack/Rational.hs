@@ -16,7 +16,6 @@
 
 module Flight.TaskTrack.Rational (taskTracks) where
 
-import Prelude hiding (span)
 import Data.Ratio ((%))
 import qualified Data.Number.FixedFunctions as F
 import Data.Either (partitionEithers)

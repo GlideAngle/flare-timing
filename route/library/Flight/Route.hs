@@ -29,7 +29,7 @@ data TaskDistanceMeasure
     | TaskDistanceByProjection
     deriving (Eq, Ord, Show)
 
-data TaskRoute =
+newtype TaskRoute =
     TaskRoute
         { taskRoute :: [Maybe TaskTrack]
         }

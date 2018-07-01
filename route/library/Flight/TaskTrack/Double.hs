@@ -16,7 +16,6 @@
 
 module Flight.TaskTrack.Double (taskTracks) where
 
-import Prelude hiding (span)
 import Data.Either (partitionEithers)
 import Data.List (nub)
 import Data.UnitsOfMeasure ((/:), u)
