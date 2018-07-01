@@ -47,13 +47,13 @@ dhallCabal =
 format :: String -> Rules ()
 format x =
     phony ("dhall-format-" ++ x)
-    $ cmd Shell ("dhall-format --inplace " ++ (x </> "package.dhall"))
+    $ cmd Shell ("stack exec dhall-format -- --inplace " ++ (x </> "package.dhall"))
 
 hpack :: String -> Rules ()
 hpack x =
     phony ("hpack-dhall-" ++ x) $ do
         need ["dhall-format-" ++ x]
-        cmd Shell ("hpack-dhall " ++ x)
+        cmd Shell ("stack exec hpack-dhall -- " ++ x)
 
 cabal :: (String, String) -> Rules ()
 cabal (x, y) =
