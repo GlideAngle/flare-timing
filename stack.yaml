@@ -44,4 +44,5 @@ extra-deps:
 - hxt-xpath-9.1.2.2
 - uom-plugin-0.3.0.0
 - doctest-0.15.0
+- dhall-1.15.0
 local-bin-path: __shake-build
