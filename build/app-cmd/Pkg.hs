@@ -38,6 +38,7 @@ dhallCabal =
     , ("siggy-chardust", "siggy-chardust")
     , ("span", "flight-span")
     , ("task", "flight-task")
+    , ("tasty-compare", "tasty-compare")
     , ("track", "flight-track")
     , ("units", "flight-units")
     , ("www", "www-flare-timing")

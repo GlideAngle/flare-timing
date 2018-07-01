@@ -1,8 +1,8 @@
--- This file has been generated from package.dhall by hpack version 0.27.0.
+-- This file has been generated from package.dhall by hpack version 0.25.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 7350e8b6f7322732b421abc028719b4ee1260211eda32b47a563361cc40f0099
+-- hash: 92465b7538740b4eeb44159852da453f4a93172bdac62e2ef5055afb15c4f969
 
 name:           tasty-compare
 version:        0.1.0
@@ -13,7 +13,7 @@ homepage:       https://github.com/blockscope/flare-timing#readme
 bug-reports:    https://github.com/blockscope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
-copyright:      Phil de Joux 2017-2018
+copyright:      © 2017-2018 Phil de Joux, © 2017-2018 Block Scope Limited
 license:        MPL-2.0
 license-file:   LICENSE.md
 tested-with:    GHC == 8.2.2
@@ -37,6 +37,7 @@ library
       Paths_tasty_compare
   hs-source-dirs:
       library
+  default-extensions: PackageImports
   ghc-options: -Wall
   build-depends:
       base
@@ -54,6 +55,7 @@ test-suite hlint
   hs-source-dirs:
       library
       test-suite-hlint
+  default-extensions: PackageImports
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       base
