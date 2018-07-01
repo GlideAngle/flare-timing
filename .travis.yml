@@ -47,3 +47,4 @@ script:
 # Build the package, its tests, and its docs and run the tests
 - stack build build-flare-timing --no-terminal
 - ./stack-shake-build.sh cabal-files
+- ./stack-shake-build.sh shake-prod-apps
