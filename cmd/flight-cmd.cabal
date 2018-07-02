@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 8f69d195587e71879c86ce2bb8e7646495d7b3b56823b56ba892e61341b60a24
+-- hash: 727a9dd295e858ecbd922d172097711822a0ed31c4d081c783b51f83deaf8b6c
 
 name:           flight-cmd
 version:        0.1.0
@@ -41,7 +41,7 @@ library
   default-extensions: PackageImports
   ghc-options: -Wall
   build-depends:
-      base >=4.5 && <5
+      base >=4.9.1.0
     , cmdargs
     , directory
     , filemanip
@@ -66,7 +66,7 @@ test-suite hlint
   default-extensions: PackageImports
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
-      base
+      base >=4.9.1.0
     , cmdargs
     , directory
     , filemanip
