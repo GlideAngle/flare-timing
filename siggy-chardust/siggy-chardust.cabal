@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3aeba6aa00ae5c4cb600a25a484cf210057061c53fe8f7a0fcf95df0bdf7b6c0
+-- hash: 40161b3019d1269363897ff482323a168a21c7a8e7db46f603849a974b3c3eed
 
 name:           siggy-chardust
 version:        1.0.0
@@ -40,7 +40,7 @@ library
   default-extensions: PackageImports
   ghc-options: -Wall
   build-depends:
-      base >=4.8 && <5
+      base >=4.9.1.0
   default-language: Haskell2010
 
 test-suite digits
@@ -55,7 +55,7 @@ test-suite digits
   default-extensions: PackageImports
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
-      base
+      base >=4.9.1.0
     , smallcheck
     , tasty
     , tasty-hunit
@@ -91,6 +91,6 @@ test-suite hlint
   default-extensions: PackageImports
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
-      base
+      base >=4.9.1.0
     , hlint
   default-language: Haskell2010
