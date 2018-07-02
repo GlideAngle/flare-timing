@@ -1,6 +1,6 @@
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
 {-# LANGUAGE DeriveGeneric #-}
@@ -38,6 +38,13 @@ instance FromJSON TrackLine
 class ToTrackLine a b where
     toTrackLine :: SpanLatLng a -> Bool -> b -> TrackLine
 
+pathVertices
+    :: (Fractional a, Real a)
+    => PathDistance a
+    -> ([LatLng a [u| rad |]], [RawLatLng])
+pathVertices ed =
+    let vs = nub $ vertices ed in (vs, convertLatLng <$> vs)
+
 instance ToTrackLine Double (PathDistance Double) where
     toTrackLine span excludeWaypoints ed =
         TrackLine
@@ -57,11 +64,7 @@ instance ToTrackLine Double (PathDistance Double) where
             -- I found that by decreasing defEps, the default epsilon, used for
             -- rational math from 1/10^9 to 1/10^12 these duplicates stopped
             -- occuring.
-            vertices' :: [LatLng Double [u| rad |]]
-            vertices' = nub $ vertices ed
-
-            xs :: [RawLatLng]
-            xs = convertLatLng <$> vertices'
+            (vertices', xs) = pathVertices ed
 
             ds :: [TaskDistance Double]
             ds =
@@ -92,11 +95,7 @@ instance ToTrackLine Rational (PathDistance Rational) where
             -- I found that by decreasing defEps, the default epsilon, used for
             -- rational math from 1/10^9 to 1/10^12 these duplicates stopped
             -- occuring.
-            vertices' :: [LatLng Rational [u| rad |]]
-            vertices' = nub $ vertices ed
-
-            xs :: [RawLatLng]
-            xs = convertLatLng <$> vertices'
+            (vertices', xs) = pathVertices ed
 
             ds :: [TaskDistance Rational]
             ds =
