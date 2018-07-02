@@ -83,7 +83,6 @@ in    defs
                     , "flight-zone"
                     , "flight-earth"
                     , "flight-task"
-                    , "flight-gap"
                     , "flight-mask"
                     ]
               , ghc-options =
@@ -107,7 +106,6 @@ in    defs
                     , "flight-kml"
                     , "flight-track"
                     , "flight-task"
-                    , "flight-gap"
                     , "flight-mask"
                     ]
               , ghc-options =
@@ -135,7 +133,6 @@ in    defs
                     , "flight-track"
                     , "flight-zone"
                     , "flight-task"
-                    , "flight-gap"
                     , "flight-mask"
                     , "flight-lookup"
                     ]
