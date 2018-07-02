@@ -41,7 +41,6 @@ import Flight.Comp
     , findCompInput
     , ensureExt
     )
-import Flight.Units ()
 import Flight.Track.Distance (TrackDistance(..))
 import Flight.Track.Mask (Masking(..))
 import qualified Flight.Track.Land as Cmp (Landing(..))

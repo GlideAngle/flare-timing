@@ -173,16 +173,7 @@ in    defs
               }
           , land-out =
               { dependencies =
-                    deps
-                  # [ "siggy-chardust"
-                    , "flight-units"
-                    , "flight-kml"
-                    , "flight-track"
-                    , "flight-zone"
-                    , "flight-task"
-                    , "flight-gap"
-                    , "flight-mask"
-                    ]
+                  deps # [ "flight-gap" ]
               , ghc-options =
                   [ "-rtsopts"
                   , "-threaded"

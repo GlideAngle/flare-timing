@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 59160a141831ed381ae9235b0dacb5c044633b851e7160584125e948288326d9
+-- hash: fcf9c4a95290c1ebd9bee04c8aa977345dc7dd7aa2d7397f66f87794f72ccd7a
 
 name:           flare-timing
 version:        0.1.0
@@ -233,18 +233,11 @@ executable land-out
     , flight-cmd
     , flight-comp
     , flight-gap
-    , flight-kml
     , flight-latlng
-    , flight-mask
     , flight-scribe
-    , flight-task
-    , flight-track
-    , flight-units
-    , flight-zone
     , formatting
     , mtl
     , raw-strings-qq
-    , siggy-chardust
     , system-filepath
     , transformers
     , uom-plugin
