@@ -109,7 +109,7 @@ taskPilotTracks _ [] =
     return []
 taskPilotTracks f xs =
     sequence $ (\(i, ts) ->
-        sequence $ (runExceptT . pilotTrack (f i)) <$> ts)
+        sequence $ runExceptT . pilotTrack (f i) <$> ts)
         <$> xs
 
 pilotTracks :: (IxTask -> K.MarkedFixes -> a)
@@ -169,12 +169,12 @@ nullMarkedFixes = K.MarkedFixes (UTCTime (ModifiedJulianDay 0) 0) []
 
 igcMarkedFixes :: [Flight.Igc.IgcRecord] -> K.MarkedFixes
 igcMarkedFixes xs =
-    maybe nullMarkedFixes (flip mark ys) date
+    maybe nullMarkedFixes (`mark` ys) date
     where
         date =
             listToMaybe
             . take 1
-            . filter (\case HFDTE _ _ _ -> True; _ -> False)
+            . filter (\case HFDTE{} -> True; _ -> False)
             $ xs
 
         ys = filter (\case B{} -> True; _ -> False) xs
@@ -229,7 +229,7 @@ toFix mark0 (t, (lat, lng, altBaro, altGps)) =
             K.LLA
                 { K.llaLat = readLat lat
                 , K.llaLng = readLng lng
-                , K.llaAltGps = readAltBaro $ altBaro
+                , K.llaAltGps = readAltBaro altBaro
                 }
         -- TODO: Which is Maybe GPS or BARO, KML vs IGC?
         , K.fixAltBaro = readAltGps <$> altGps
@@ -237,7 +237,7 @@ toFix mark0 (t, (lat, lng, altBaro, altGps)) =
 
 readDegMin :: Degree -> Minute -> Rational
 readDegMin d m =
-    d' % 1 + (toRational m') / 60000
+    d' % 1 + toRational m' / 60000
     where
         d' = read d :: Integer
         m' = read m :: Double
