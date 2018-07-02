@@ -115,13 +115,8 @@ in    defs
                   # [ "clock"
                     , "lens"
                     , "time"
-                    , "uom-plugin"
                     , "siggy-chardust"
-                    , "flight-units"
                     , "flight-kml"
-                    , "flight-track"
-                    , "flight-zone"
-                    , "flight-task"
                     , "flight-mask"
                     , "flight-lookup"
                     ]

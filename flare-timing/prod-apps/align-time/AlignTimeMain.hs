@@ -59,7 +59,6 @@ import Flight.Comp
     , openClose
     , ensureExt
     )
-import Flight.Units ()
 import qualified Flight.Mask as Mask (Sliver(..))
 import Flight.Mask
     ( FnIxTask, RaceSections(..), FlyCut(..), Ticked
