@@ -8,8 +8,6 @@ in  let depsTest =
             , "filemanip"
             , "raw-strings-qq"
             , "cmdargs"
-            , "mtl"
-            , "transformers"
             ]
 
 in  let deps =

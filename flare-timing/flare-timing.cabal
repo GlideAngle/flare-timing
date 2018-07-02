@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f198448afc824a79ad58054f5829aadbd0a0634e6047e1ecc34832e3459743ea
+-- hash: 4824ee4be59d20be44491ac9e215d6c131e3ad880b466dc2cb56515ef71c2973
 
 name:           flare-timing
 version:        0.1.0
@@ -404,10 +404,8 @@ executable test-fsdb-parser
     , flight-comp
     , flight-fsdb
     , flight-units
-    , mtl
     , raw-strings-qq
     , system-filepath
-    , transformers
     , uom-plugin
   default-language: Haskell2010
 
@@ -429,10 +427,8 @@ executable test-igc-parser
     , flight-cmd
     , flight-comp
     , flight-igc
-    , mtl
     , raw-strings-qq
     , system-filepath
-    , transformers
   default-language: Haskell2010
 
 executable test-kml-parser
@@ -453,10 +449,8 @@ executable test-kml-parser
     , flight-cmd
     , flight-comp
     , flight-kml
-    , mtl
     , raw-strings-qq
     , system-filepath
-    , transformers
   default-language: Haskell2010
 
 test-suite hlint
