@@ -40,7 +40,7 @@ secToShow :: Double -> String
 secToShow sec =
     if fromIntegral isec == sec
         then show (abs isec)
-        else (unpack $ format Fmt.sf (abs sec))
+        else unpack $ format Fmt.sf (abs sec)
     where
         isec :: Int
         isec = floor sec
@@ -51,19 +51,19 @@ showDMS (DMS (deg, 0, 0)) =
 showDMS (DMS (0, 0, sec)) =
     secToShow sec ++ "''"
 showDMS dms@(DMS (deg, min, 0)) =
-    (signSymbolDMS dms)
+    signSymbolDMS dms
     ++ show (abs deg)
     ++ "°"
     ++ show (abs min)
     ++ "'"
 showDMS dms@(DMS (0, min, sec)) =
-    (signSymbolDMS dms)
+    signSymbolDMS dms
     ++ show (abs min)
     ++ "'"
     ++ secToShow sec
     ++ "''"
 showDMS dms@(DMS (deg, min, sec)) =
-    (signSymbolDMS dms)
+    signSymbolDMS dms
     ++ show (abs deg)
     ++ "°"
     ++ show (abs min)
@@ -84,18 +84,18 @@ signSymbolDMS dms =
 
 signDMS :: DMS -> Double
 signDMS (DMS (deg, min, s)) =
-    if any (== -1) $ signum <$> [d, m, s] then -1 else 1
+    if elem (-1) $ signum <$> [d, m, s] then -1 else 1
     where
         d = fromIntegral deg
         m = fromIntegral min 
 
 toQDeg :: DMS -> Quantity Double [u| deg |]
-toQDeg dms =
-    MkQuantity . toDeg $ dms
+toQDeg =
+    MkQuantity . toDeg
 
 toQRad :: DMS -> Quantity Double [u| rad |]
-toQRad dms =
-    convert . toQDeg $ dms
+toQRad =
+    convert . toQDeg
 
 fromQ :: Convertible u [u| deg |] => Quantity Double u -> DMS
 fromQ q' =
@@ -112,8 +112,8 @@ fromQ q' =
         mm = quot ms 60
 
         ss =
-            ((abs d) - fromIntegral dd) * 3600.0
-            - (fromIntegral $ mm * 60)
+            (abs d - fromIntegral dd) * 3600.0
+            - fromIntegral (mm * 60)
 
 instance Angle DMS where
     normalize dms =
