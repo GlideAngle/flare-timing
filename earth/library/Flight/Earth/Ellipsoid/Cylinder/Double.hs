@@ -6,6 +6,7 @@
 module Flight.Earth.Ellipsoid.Cylinder.Double
     ( circumSample
     , vincentyDirect
+    , cos2
     ) where
 
 import Data.UnitsOfMeasure (u)
@@ -42,11 +43,11 @@ import Flight.Earth.Ellipsoid
     )
 import Flight.Earth.Geodesy (DirectProblem(..), DirectSolution(..))
 
-cos2 :: Floating p => p -> p -> (p, p)
-cos2 σ1 σ = (cos2σm, cos²2σm)
+cos2 :: (Num a, Num p) => (p -> a) -> p -> p -> (a, a)
+cos2 cos' σ1 σ = (cos2σm, cos²2σm)
     where
         _2σm = 2 * σ1 + σ
-        cos2σm = cos _2σm
+        cos2σm = cos' _2σm
         cos²2σm = cos2σm * cos2σm
 
 iterateVincenty
@@ -65,7 +66,7 @@ iterateVincenty
         else
             iterateVincenty accuracy _A _B s b σ1 σ'
     where
-        (cos2σm, cos²2σm) = cos2 σ1 σ
+        (cos2σm, cos²2σm) = cos2 cos σ1 σ
         sinσ = sin σ
         cosσ = cos σ
         sin²σ = sinσ * sinσ
@@ -136,7 +137,7 @@ vincentyDirect
         λ = atan2 (sinσ * sin α1) (cosU1 * cosσ - sinU1 * sinσ * cosα1)
         _C = f / 16 * cos²α * (4 - 3 * cos²α)
 
-        (cos2σm, cos²2σm) = cos2 σ1 σ
+        (cos2σm, cos²2σm) = cos2 cos σ1 σ
         x = σ + _C * sinσ * y
         y = cos (2 * cos2σm + _C * cosσ * (-1 + 2 * cos²2σm))
         _L = λ * (1 - _C) * f * sinα * x
