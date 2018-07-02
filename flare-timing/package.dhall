@@ -78,7 +78,6 @@ in    defs
                     , "siggy-chardust"
                     , "flight-span"
                     , "flight-units"
-                    , "flight-track"
                     , "flight-zone"
                     , "flight-earth"
                     , "flight-task"
