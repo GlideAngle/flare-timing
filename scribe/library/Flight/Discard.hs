@@ -10,7 +10,7 @@ module Flight.Discard
 
 import Data.List (zipWith4)
 import Control.Monad.Except (ExceptT(..), runExceptT, lift)
-import Control.Monad (join, zipWithM)
+import Control.Monad (zipWithM)
 import qualified Data.ByteString.Lazy as BL
 import System.Directory (createDirectoryIfMissing)
 import System.FilePath ((</>))
@@ -154,7 +154,7 @@ readPilotLeading
     where
         dir = compFileToCompDir compFile
         (AlignDir dIn, AlignTimeFile file) = alignPath dir i pilot
-        taskLength = join (($ iTask) <$> lookupTaskLength)
+        taskLength = ($ iTask) =<< lookupTaskLength
 
         close = do
             c <- leadClose raceTime
