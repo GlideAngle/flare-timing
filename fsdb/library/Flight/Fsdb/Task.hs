@@ -1,4 +1,3 @@
-{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE PartialTypeSignatures #-}
@@ -6,7 +5,7 @@
 
 module Flight.Fsdb.Task (parseTasks) where
 
-import Data.List (sort)
+import Data.List (sort, concatMap, nub)
 import Data.Map.Strict (Map, fromList, findWithDefault)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
@@ -31,7 +30,6 @@ import Text.XML.HXT.Core
     )
 import Data.Time.Clock (UTCTime)
 import Data.Time.Format (parseTimeOrError, defaultTimeLocale)
-import Data.List (concatMap, nub)
 import Text.Megaparsec ((<?>))
 
 import Flight.LatLng.Raw (RawLat(..), RawLng(..))

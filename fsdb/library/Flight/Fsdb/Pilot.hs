@@ -50,7 +50,7 @@ getCompPilot =
     /> hasName "FsParticipant"
     >>> getAttrValue "id"
     &&& getAttrValue "name"
-    >>> arr (\(k, p) -> KeyPilot (Key k, (Pilot p)))
+    >>> arr (\(k, p) -> KeyPilot (Key k, Pilot p))
 
 getTaskFolder :: ArrowXml a => a XmlTree TaskFolder
 getTaskFolder =
