@@ -128,7 +128,7 @@ lintWithRule t' s = do
 lintWithRules :: Tooling -> Rules ()
 lintWithRules t' = do
     let t = tooling t'
-    _ <- sequence_ $ lintWithRule t' <$> flyPkgs
+    sequence_ $ lintWithRule t' <$> flyPkgs
 
     phony (t ++ "-lint") $ need
         $ (t ++ "-lint-build")
@@ -197,7 +197,7 @@ testRule t' x@(pkg, test) = do
 testWithRules :: Tooling -> Rules ()
 testWithRules t' = do
     let t = tooling t'
-    _ <- sequence_ $ testRule t' <$> testPkgs
+    sequence_ $ testRule t' <$> testPkgs
 
     phony (t ++ "-test") $ need $ buildTestName <$> testPkgs
 
@@ -224,16 +224,13 @@ buildRule t' project (Just s) = do
 
 buildWithRules :: Tooling -> Rules ()
 buildWithRules t' = do
-    _ <- sequence_
-            $ (\s -> buildRule t' s Nothing) <$> pkgs
+    sequence_ $ (\s -> buildRule t' s Nothing) <$> pkgs
 
-    _ <- sequence_
-            $ buildRule t' "flare-timing"
-            <$> (Just <$> (testApps ++ prodApps))
+    sequence_
+        $ buildRule t' "flare-timing"
+        <$> (Just <$> (testApps ++ prodApps))
 
-    _ <- sequence_
-            $ buildRule t' "www"
-            <$> (Just <$> wwwApps)
+    sequence_ $ buildRule t' "www" <$> (Just <$> wwwApps)
 
     phony (t ++ "-test-apps") $ need $ f <$> testApps
     phony (t ++ "-prod-apps") $ need $ f <$> prodApps

@@ -108,7 +108,7 @@ nixRule s =
 
 nixRules :: Rules ()
 nixRules = do
-    _ <- sequence_ $ nixRule <$> flyPkgs
+    sequence_ $ nixRule <$> flyPkgs
 
     phony "cabal2nix" $ need
         $ "cabal2nix-detour-via-sci"
@@ -147,7 +147,7 @@ shellRule s =
 
 shellRules :: Rules ()
 shellRules = do
-    _ <- sequence_ $ shellRule <$> flyPkgs
+    sequence_ $ shellRule <$> flyPkgs
 
     phony "nixshell" $ need
         $ "nixshell-detour-via-sci"

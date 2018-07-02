@@ -58,8 +58,7 @@ hpack x =
 
 cabal :: (String, String) -> Rules ()
 cabal (x, y) =
-    x </> y <.> "cabal" %> \_ -> do
-        need ["hpack-dhall-" ++ x]
+    x </> y <.> "cabal" %> \_ -> need ["hpack-dhall-" ++ x]
 
 buildRules :: Rules ()
 buildRules = do
