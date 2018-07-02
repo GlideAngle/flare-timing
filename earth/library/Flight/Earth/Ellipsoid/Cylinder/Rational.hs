@@ -50,6 +50,13 @@ import qualified Flight.Earth.Ellipsoid.PointToPoint.Rational as F (atan2')
 import qualified Flight.Earth.Ellipsoid.Cylinder.Double as Dbl (vincentyDirect)
 import Flight.Earth.Geodesy (DirectProblem(..), DirectSolution(..))
 
+cos2 :: Epsilon -> Rational -> Rational -> (Rational, Rational)
+cos2 (Epsilon eps) σ1 σ = (cos2σm, cos²2σm)
+    where
+        _2σm = 2 * σ1 + σ
+        cos2σm = F.cos eps _2σm
+        cos²2σm = cos2σm * cos2σm
+
 iterateVincenty
     :: Epsilon
     -> VincentyAccuracy Rational
@@ -73,9 +80,7 @@ iterateVincenty
        then σ 
        else iterateVincenty epsilon accuracy _A _B s b σ1 σ'
     where
-        _2σm = 2 * σ1 + σ
-        cos2σm = cos' _2σm
-        cos²2σm = cos2σm * cos2σm
+        (cos2σm, cos²2σm) = cos2 epsilon σ1 σ
         sinσ = sin' σ
         cosσ = cos' σ
         sin²σ = sinσ * sinσ
@@ -151,9 +156,7 @@ vincentyDirect'
         λ = atan2' (sinσ * sin' α1) (cosU1 * cosσ - sinU1 * sinσ * cosα1)
         _C = f / 16 * cos²α * (4 - 3 * cos²α)
 
-        _2σm = 2 * σ1 + σ
-        cos2σm = cos' _2σm
-        cos²2σm = cos2σm * cos2σm
+        (cos2σm, cos²2σm) = cos2 epsilon σ1 σ
         x = σ + _C * sinσ * y
         y = cos' (2 * cos2σm + _C * cosσ * (-1 + 2 * cos²2σm))
         _L = λ * (1 - _C) * f * sinα * x
