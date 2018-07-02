@@ -93,15 +93,16 @@ vincentyInverse
         sinU₁sinU₂ = sinU₁ * sinU₂
         cosU₁cosU₂ = cosU₁ * cosU₂
 
-        loop λ =
-            if abs λ > F.pi eps then VincentyInverseAntipodal else
-            if abs (λ - λ') >= tolerance then loop λ' else
-            VincentyInverse $
-            InverseSolution
-                { s = TaskDistance . MkQuantity $ b * _A * (σ - _Δσ)
-                , α₁ = MkQuantity $ i / j
-                , α₂ = Just . MkQuantity $ i' / j'
-                } 
+        loop λ
+            | abs λ > F.pi eps = VincentyInverseAntipodal
+            | abs (λ - λ') >= tolerance = loop λ'
+            | otherwise =
+                VincentyInverse $
+                InverseSolution
+                    { s = TaskDistance . MkQuantity $ b * _A * (σ - _Δσ)
+                    , α₁ = MkQuantity $ i / j
+                    , α₂ = Just . MkQuantity $ i' / j'
+                    } 
             where
                 sinλ = sin' λ
                 cosλ = cos' λ
