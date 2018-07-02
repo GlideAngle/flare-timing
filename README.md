@@ -1,6 +1,6 @@
 # Flare Timing
 
-[![Build Status](https://travis-ci.org/blockscope/flare-timing.svg)](https://travis-ci.org/blockscope/flare-timing)
+[![Build Status](https://travis-ci.org/BlockScope/flare-timing.svg)](https://travis-ci.org/BlockScope/flare-timing)
 
 **Flare Timing** will show a pilot's competition score in detail but is
 currently a work in progress.
