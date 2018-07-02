@@ -8,6 +8,7 @@ in  let depsTest =
             , "filemanip"
             , "raw-strings-qq"
             , "cmdargs"
+            , "flight-cmd"
             ]
 
 in  let deps =
@@ -26,6 +27,7 @@ in  let deps =
             , "bytestring"
             , "clock"
             , "formatting"
+            , "flight-cmd"
             , "flight-scribe"
             ]
 
@@ -44,8 +46,7 @@ in    defs
           { extract-input =
               { dependencies =
                     deps
-                  # [ "flight-cmd"
-                    , "flight-latlng"
+                  # [ "flight-latlng"
                     , "flight-gap"
                     , "flight-comp"
                     , "flight-fsdb"
@@ -60,8 +61,7 @@ in    defs
           , task-length =
               { dependencies =
                     deps
-                  # [ "flight-cmd"
-                    , "flight-units"
+                  # [ "flight-units"
                     , "flight-latlng"
                     , "flight-comp"
                     , "flight-task"
@@ -85,7 +85,6 @@ in    defs
                   # [ "lens"
                     , "siggy-chardust"
                     , "flight-span"
-                    , "flight-cmd"
                     , "flight-units"
                     , "flight-latlng"
                     , "flight-comp"
@@ -114,7 +113,6 @@ in    defs
                     deps
                   # [ "time"
                     , "siggy-chardust"
-                    , "flight-cmd"
                     , "flight-units"
                     , "flight-latlng"
                     , "flight-comp"
@@ -144,7 +142,6 @@ in    defs
                     , "time"
                     , "uom-plugin"
                     , "siggy-chardust"
-                    , "flight-cmd"
                     , "flight-units"
                     , "flight-latlng"
                     , "flight-comp"
@@ -172,7 +169,6 @@ in    defs
               { dependencies =
                     deps
                   # [ "siggy-chardust"
-                    , "flight-cmd"
                     , "flight-units"
                     , "flight-latlng"
                     , "flight-comp"
@@ -204,7 +200,6 @@ in    defs
                     , "lens"
                     , "siggy-chardust"
                     , "flight-span"
-                    , "flight-cmd"
                     , "flight-units"
                     , "flight-latlng"
                     , "flight-comp"
@@ -233,7 +228,6 @@ in    defs
               { dependencies =
                     deps
                   # [ "siggy-chardust"
-                    , "flight-cmd"
                     , "flight-units"
                     , "flight-latlng"
                     , "flight-comp"
@@ -261,7 +255,6 @@ in    defs
                     deps
                   # [ "containers"
                     , "siggy-chardust"
-                    , "flight-cmd"
                     , "flight-units"
                     , "flight-latlng"
                     , "flight-comp"
@@ -288,7 +281,6 @@ in    defs
               { dependencies =
                     depsTest
                   # [ "uom-plugin"
-                    , "flight-cmd"
                     , "flight-comp"
                     , "flight-fsdb"
                     , "flight-units"
@@ -302,7 +294,7 @@ in    defs
               }
           , test-igc-parser =
               { dependencies =
-                  depsTest # [ "flight-cmd", "flight-igc", "flight-comp" ]
+                  depsTest # [ "flight-igc", "flight-comp" ]
               , ghc-options =
                   [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
               , main =
@@ -312,7 +304,7 @@ in    defs
               }
           , test-kml-parser =
               { dependencies =
-                  depsTest # [ "flight-cmd", "flight-kml", "flight-comp" ]
+                  depsTest # [ "flight-kml", "flight-comp" ]
               , ghc-options =
                   [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
               , main =
