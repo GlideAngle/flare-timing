@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 2950237c8fe3067438f8b2a6de26542631234ea196ee38e09934e6b7746381d5
+-- hash: a79c8f7720e9f53658886cb8c7dd7299613e9828c622c1027e4f70c041c050eb
 
 name:           flight-lookup
 version:        0.1.0
@@ -44,7 +44,7 @@ library
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
-    , base >=4.5 && <5
+    , base >=4.9.1.0
     , bytestring
     , cassava
     , containers
@@ -85,7 +85,7 @@ test-suite hlint
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
-    , base
+    , base >=4.9.1.0
     , bytestring
     , cassava
     , containers
