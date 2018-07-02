@@ -9,6 +9,7 @@ in  let depsTest =
             , "raw-strings-qq"
             , "cmdargs"
             , "flight-cmd"
+            , "flight-comp"
             ]
 
 in  let deps =
@@ -28,6 +29,7 @@ in  let deps =
             , "clock"
             , "formatting"
             , "flight-cmd"
+            , "flight-comp"
             , "flight-scribe"
             ]
 
@@ -45,12 +47,7 @@ in    defs
       , executables =
           { extract-input =
               { dependencies =
-                    deps
-                  # [ "flight-latlng"
-                    , "flight-gap"
-                    , "flight-comp"
-                    , "flight-fsdb"
-                    ]
+                  deps # [ "flight-latlng", "flight-gap", "flight-fsdb" ]
               , ghc-options =
                   [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
               , main =
@@ -63,7 +60,6 @@ in    defs
                     deps
                   # [ "flight-units"
                     , "flight-latlng"
-                    , "flight-comp"
                     , "flight-task"
                     , "flight-route"
                     ]
@@ -87,7 +83,6 @@ in    defs
                     , "flight-span"
                     , "flight-units"
                     , "flight-latlng"
-                    , "flight-comp"
                     , "flight-kml"
                     , "flight-track"
                     , "flight-zone"
@@ -115,7 +110,6 @@ in    defs
                     , "siggy-chardust"
                     , "flight-units"
                     , "flight-latlng"
-                    , "flight-comp"
                     , "flight-kml"
                     , "flight-track"
                     , "flight-task"
@@ -144,7 +138,6 @@ in    defs
                     , "siggy-chardust"
                     , "flight-units"
                     , "flight-latlng"
-                    , "flight-comp"
                     , "flight-kml"
                     , "flight-track"
                     , "flight-zone"
@@ -171,7 +164,6 @@ in    defs
                   # [ "siggy-chardust"
                     , "flight-units"
                     , "flight-latlng"
-                    , "flight-comp"
                     , "flight-kml"
                     , "flight-track"
                     , "flight-zone"
@@ -202,7 +194,6 @@ in    defs
                     , "flight-span"
                     , "flight-units"
                     , "flight-latlng"
-                    , "flight-comp"
                     , "flight-kml"
                     , "flight-track"
                     , "flight-zone"
@@ -230,7 +221,6 @@ in    defs
                   # [ "siggy-chardust"
                     , "flight-units"
                     , "flight-latlng"
-                    , "flight-comp"
                     , "flight-kml"
                     , "flight-track"
                     , "flight-zone"
@@ -257,7 +247,6 @@ in    defs
                     , "siggy-chardust"
                     , "flight-units"
                     , "flight-latlng"
-                    , "flight-comp"
                     , "flight-kml"
                     , "flight-track"
                     , "flight-zone"
@@ -279,12 +268,7 @@ in    defs
               }
           , test-fsdb-parser =
               { dependencies =
-                    depsTest
-                  # [ "uom-plugin"
-                    , "flight-comp"
-                    , "flight-fsdb"
-                    , "flight-units"
-                    ]
+                  depsTest # [ "uom-plugin", "flight-fsdb", "flight-units" ]
               , ghc-options =
                   [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
               , main =
@@ -294,7 +278,7 @@ in    defs
               }
           , test-igc-parser =
               { dependencies =
-                  depsTest # [ "flight-igc", "flight-comp" ]
+                  depsTest # [ "flight-igc" ]
               , ghc-options =
                   [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
               , main =
@@ -304,7 +288,7 @@ in    defs
               }
           , test-kml-parser =
               { dependencies =
-                  depsTest # [ "flight-kml", "flight-comp" ]
+                  depsTest # [ "flight-kml" ]
               , ghc-options =
                   [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
               , main =
