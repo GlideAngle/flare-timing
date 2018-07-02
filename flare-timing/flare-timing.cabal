@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1ba37f0031fdfc90ae91527b8ef4831ed798f22516ebfa78215dd6548ec9133c
+-- hash: 81e415864e46e87c0cf22bd56befc070b2eed83fe89a112f51e4a702a4a917ed
 
 name:           flare-timing
 version:        0.1.0
@@ -92,7 +92,6 @@ executable cross-zone
     , flight-cmd
     , flight-comp
     , flight-earth
-    , flight-kml
     , flight-latlng
     , flight-mask
     , flight-scribe
