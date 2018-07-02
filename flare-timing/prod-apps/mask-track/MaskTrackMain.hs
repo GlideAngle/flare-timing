@@ -58,7 +58,6 @@ import Flight.Comp
     , ensureExt
     )
 import Flight.Distance (TaskDistance(..), unTaskDistance)
-import Flight.Units ()
 import Flight.Mask
     ( FnIxTask, FlyCut(..)
     , checkTracks
