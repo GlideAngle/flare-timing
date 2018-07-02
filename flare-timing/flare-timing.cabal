@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 0b0505fe5bc764a41ac5e19a461341576de2cb0ad04169175149b96a658a7140
+-- hash: dd5c9b6ead3e842524a796d98057e604edc8fd9932436558b55ba7b446f55d37
 
 name:           flare-timing
 version:        0.1.0
@@ -41,11 +41,11 @@ executable align-time
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
-    , base
+    , base >=4.9.1.0
     , bytestring
-    , cassava
     , clock
     , cmdargs
+    , containers
     , directory
     , filemanip
     , filepath
@@ -66,12 +66,10 @@ executable align-time
     , mtl
     , raw-strings-qq
     , siggy-chardust
-    , split
     , system-filepath
     , time
     , transformers
     , uom-plugin
-    , vector
     , yaml
   default-language: Haskell2010
 
@@ -86,10 +84,11 @@ executable cross-zone
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
-    , base
+    , base >=4.9.1.0
     , bytestring
     , clock
     , cmdargs
+    , containers
     , directory
     , filemanip
     , filepath
@@ -128,11 +127,11 @@ executable discard-further
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
-    , base
+    , base >=4.9.1.0
     , bytestring
-    , cassava
     , clock
     , cmdargs
+    , containers
     , directory
     , filemanip
     , filepath
@@ -153,12 +152,9 @@ executable discard-further
     , mtl
     , raw-strings-qq
     , siggy-chardust
-    , split
     , system-filepath
-    , time
     , transformers
     , uom-plugin
-    , vector
     , yaml
   default-language: Haskell2010
 
@@ -173,7 +169,7 @@ executable extract-input
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
-    , base
+    , base >=4.9.1.0
     , bytestring
     , clock
     , cmdargs
@@ -207,7 +203,7 @@ executable gap-point
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
-    , base
+    , base >=4.9.1.0
     , bytestring
     , clock
     , cmdargs
@@ -231,7 +227,6 @@ executable gap-point
     , raw-strings-qq
     , siggy-chardust
     , system-filepath
-    , time
     , transformers
     , uom-plugin
     , yaml
@@ -248,10 +243,11 @@ executable land-out
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
-    , base
+    , base >=4.9.1.0
     , bytestring
     , clock
     , cmdargs
+    , containers
     , directory
     , filemanip
     , filepath
@@ -288,7 +284,7 @@ executable mask-track
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
-    , base
+    , base >=4.9.1.0
     , bytestring
     , clock
     , cmdargs
@@ -312,16 +308,12 @@ executable mask-track
     , flight-zone
     , formatting
     , lens
-    , monadplus
     , mtl
-    , numbers
     , raw-strings-qq
     , siggy-chardust
     , system-filepath
-    , time
     , transformers
     , uom-plugin
-    , vector
     , yaml
   default-language: Haskell2010
 
@@ -336,10 +328,11 @@ executable tag-zone
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
-    , base
+    , base >=4.9.1.0
     , bytestring
     , clock
     , cmdargs
+    , containers
     , directory
     , filemanip
     , filepath
@@ -375,10 +368,11 @@ executable task-length
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
-    , base
+    , base >=4.9.1.0
     , bytestring
     , clock
     , cmdargs
+    , containers
     , directory
     , filemanip
     , filepath
@@ -408,7 +402,7 @@ executable test-fsdb-parser
   default-extensions: PackageImports
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
-      base
+      base >=4.9.1.0
     , cmdargs
     , directory
     , filemanip
@@ -434,7 +428,7 @@ executable test-igc-parser
   default-extensions: PackageImports
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
-      base
+      base >=4.9.1.0
     , cmdargs
     , directory
     , filemanip
@@ -458,7 +452,7 @@ executable test-kml-parser
   default-extensions: PackageImports
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
-      base
+      base >=4.9.1.0
     , cmdargs
     , directory
     , filemanip
@@ -482,6 +476,6 @@ test-suite hlint
   default-extensions: PackageImports
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
-      base
+      base >=4.9.1.0
     , hlint
   default-language: Haskell2010
