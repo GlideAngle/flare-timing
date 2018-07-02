@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 91d964f82122d1ab3db040e190c71f26070540e8752274b31bfa85bc6e0f1581
+-- hash: 9f69d317994fc7425f14f87783cff53ab74edba1615a6bba3c20cc4284f9a40c
 
 name:           flight-earth
 version:        0.1.0
@@ -62,7 +62,7 @@ library
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
-    , base >=4.5 && <5
+    , base >=4.9.1.0
     , bifunctors
     , detour-via-sci
     , fgl
@@ -158,7 +158,7 @@ test-suite earth
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
-    , base
+    , base >=4.9.1.0
     , bifunctors
     , detour-via-sci
     , fgl
@@ -167,7 +167,6 @@ test-suite earth
     , flight-zone
     , hcoord
     , hcoord-utm
-    , hlint
     , mtl
     , numbers
     , scientific
@@ -215,7 +214,7 @@ test-suite hlint
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
-    , base
+    , base >=4.9.1.0
     , bifunctors
     , detour-via-sci
     , fgl
@@ -229,6 +228,5 @@ test-suite hlint
     , numbers
     , scientific
     , siggy-chardust
-    , tasty-compare
     , uom-plugin
   default-language: Haskell2010
