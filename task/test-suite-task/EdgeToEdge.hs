@@ -89,14 +89,14 @@ circumSampleUnits = testGroup "Points just within the zone"
     [ testGroup "Outside the zone."
         [ HU.testCase
             "No points > 0mm outside a 40m cylinder when searching within 1mm" $
-            zpFilter (>) ll ([u| 40 m |])
-            (fst $ cs (sampleParams { spTolerance = mm1 }) br Nothing (Cylinder (Radius $ [u| 40 m |]) ll))
+            zpFilter (>) ll [u| 40 m |]
+            (fst $ cs (sampleParams { spTolerance = mm1 }) br Nothing (Cylinder (Radius [u| 40 m |]) ll))
             @?= [] 
 
         , HU.testCase
             "No points > 0mm outside a 400m cylinder when searching within 1mm" $
-            zpFilter (>) ll ([u| 400 m |])
-            (fst $ cs (sampleParams { spTolerance = mm1 }) br Nothing (Cylinder (Radius $ [u| 400 m |]) ll))
+            zpFilter (>) ll [u| 400 m |]
+            (fst $ cs (sampleParams { spTolerance = mm1 }) br Nothing (Cylinder (Radius [u| 400 m |]) ll))
             @?= [] 
 
         , HU.testCase
@@ -121,13 +121,13 @@ circumSampleUnits = testGroup "Points just within the zone"
         [ HU.testCase
             "No points > 1mm inside a 40m cylinder when searching within 1mm" $
             zpFilter (<) ll ([u| 40 m |] -: convert [u| 1 mm |])
-            (fst $ cs (sampleParams { spTolerance = mm1 }) br Nothing (Cylinder (Radius $ [u| 40 m |]) ll))
+            (fst $ cs (sampleParams { spTolerance = mm1 }) br Nothing (Cylinder (Radius [u| 40 m |]) ll))
             @?= [] 
 
         , HU.testCase
             "No points > 1mm inside a 400m cylinder when searching within 1mm" $
             zpFilter (<) ll ([u| 400 m |] -: convert [u| 1 mm |])
-            (fst $ cs (sampleParams { spTolerance = mm1 }) br Nothing (Cylinder (Radius $ [u| 400 m |]) ll))
+            (fst $ cs (sampleParams { spTolerance = mm1 }) br Nothing (Cylinder (Radius [u| 400 m |]) ll))
             @?= [] 
 
         , HU.testCase

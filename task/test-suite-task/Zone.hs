@@ -333,7 +333,7 @@ distanceEdge :: ZonesTest -> Bool
 distanceEdge (ZonesTest xs) =
     case dEE of
         Zs d -> correctCenter xs $ edgesSum d
-        Z0 -> length xs == 0
+        Z0 -> null xs
         Z1 -> length xs == 1
         ZxNotSeparated -> not . separatedZones span $ xs
     where
@@ -351,7 +351,7 @@ distanceLess :: ZonesTest -> Bool
 distanceLess (ZonesTest xs) =
     case dEE of
         Zs (PathDistance dCenter _) -> dCenter <= dPoint
-        Z0 -> length xs == 0
+        Z0 -> null xs
         Z1 -> length xs == 1
         ZxNotSeparated -> not . separatedZones span $ xs
     where
