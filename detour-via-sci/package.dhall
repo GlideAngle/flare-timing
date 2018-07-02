@@ -13,33 +13,21 @@
       "blockscope/flare-timing/detour-via-sci"
   , homepage =
       "https://github.com/blockscope/flare-timing/tree/master/detour-via-sci#readme"
+  , dependencies =
+      [ "base >=4.5 && <5"
+      , "newtype"
+      , "scientific"
+      , "aeson"
+      , "cassava"
+      , "template-haskell"
+      , "siggy-chardust"
+      ]
   , library =
-      { dependencies =
-          [ "base >=4.5 && <5"
-          , "newtype"
-          , "scientific"
-          , "aeson"
-          , "cassava"
-          , "template-haskell"
-          , "siggy-chardust"
-          ]
-      , source-dirs =
-          "library"
-      , exposed-modules =
-          [ "Data.Via.Scientific" ]
-      }
+      { source-dirs = "library", exposed-modules = [ "Data.Via.Scientific" ] }
   , tests =
       { hlint =
           { dependencies =
-              [ "base"
-              , "hlint"
-              , "newtype"
-              , "scientific"
-              , "aeson"
-              , "cassava"
-              , "template-haskell"
-              , "siggy-chardust"
-              ]
+              [ "hlint" ]
           , ghc-options =
               [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
           , main =
@@ -49,15 +37,7 @@
           }
       , doctest =
           { dependencies =
-              [ "base"
-              , "newtype"
-              , "scientific"
-              , "aeson"
-              , "cassava"
-              , "template-haskell"
-              , "siggy-chardust"
-              , "doctest"
-              ]
+              [ "doctest" ]
           , ghc-options =
               [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
           , main =
