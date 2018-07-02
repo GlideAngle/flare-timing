@@ -64,7 +64,6 @@ import Flight.Comp
     , findCompInput
     , ensureExt
     )
-import Flight.Units ()
 import Flight.Track.Cross (Crossing(..), Fix(..))
 import Flight.Track.Tag (Tagging(..), PilotTrackTag(..), TrackTag(..))
 import Flight.Track.Distance (TrackDistance(..), Nigh)
