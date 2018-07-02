@@ -12,7 +12,6 @@ import Data.UnitsOfMeasure.Convert (Convertible)
 
 import Flight.Units ()
 import Flight.Distance (TaskDistance(..))
-import Flight.Zone.Raw.Radius
 
 newtype Radius a u = Radius (Quantity a u)
     deriving (Eq, Ord)
