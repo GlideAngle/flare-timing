@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 62ac808160d0ddae4d8df37295483c97eea4645626e3b207857ea7651a196e69
+-- hash: 742802be95a76a591e1d11120df288340bfc73820800a97db82471c995b98b06
 
 name:           flight-track
 version:        0.1.0
@@ -73,6 +73,7 @@ test-suite hlint
     , directory
     , filepath
     , flight-comp
+    , flight-igc
     , flight-kml
     , hlint
     , mtl

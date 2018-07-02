@@ -45,6 +45,7 @@
               , "utf8-string"
               , "flight-comp"
               , "flight-kml"
+              , "flight-igc"
               ]
           , ghc-options =
               [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
