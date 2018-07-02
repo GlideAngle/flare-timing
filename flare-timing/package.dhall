@@ -26,6 +26,7 @@ in  let deps =
             , "bytestring"
             , "clock"
             , "formatting"
+            , "flight-scribe"
             ]
 
 in    defs
@@ -48,7 +49,6 @@ in    defs
                     , "flight-gap"
                     , "flight-comp"
                     , "flight-fsdb"
-                    , "flight-scribe"
                     ]
               , ghc-options =
                   [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
@@ -66,7 +66,6 @@ in    defs
                     , "flight-comp"
                     , "flight-task"
                     , "flight-route"
-                    , "flight-scribe"
                     ]
               , ghc-options =
                   [ "-rtsopts"
@@ -97,7 +96,6 @@ in    defs
                     , "flight-task"
                     , "flight-gap"
                     , "flight-mask"
-                    , "flight-scribe"
                     ]
               , ghc-options =
                   [ "-rtsopts"
@@ -125,7 +123,6 @@ in    defs
                     , "flight-task"
                     , "flight-gap"
                     , "flight-mask"
-                    , "flight-scribe"
                     ]
               , ghc-options =
                   [ "-rtsopts"
@@ -158,7 +155,6 @@ in    defs
                     , "flight-gap"
                     , "flight-mask"
                     , "flight-lookup"
-                    , "flight-scribe"
                     ]
               , ghc-options =
                   [ "-rtsopts"
@@ -188,7 +184,6 @@ in    defs
                     , "flight-gap"
                     , "flight-mask"
                     , "flight-lookup"
-                    , "flight-scribe"
                     ]
               , ghc-options =
                   [ "-rtsopts"
@@ -221,7 +216,6 @@ in    defs
                     , "flight-gap"
                     , "flight-mask"
                     , "flight-lookup"
-                    , "flight-scribe"
                     ]
               , ghc-options =
                   [ "-rtsopts"
@@ -249,7 +243,6 @@ in    defs
                     , "flight-task"
                     , "flight-gap"
                     , "flight-mask"
-                    , "flight-scribe"
                     ]
               , ghc-options =
                   [ "-rtsopts"
@@ -278,7 +271,6 @@ in    defs
                     , "flight-task"
                     , "flight-gap"
                     , "flight-mask"
-                    , "flight-scribe"
                     ]
               , ghc-options =
                   [ "-rtsopts"
