@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: fd6aab70afae4fe74cb29902d23524218908e6fd19092e5cbb3004e76c30611f
+-- hash: 24ffc48301a4e3d73f203de567240b9446a1ceadf2522da34aa82fb593a6b564
 
 name:           flare-timing
 version:        0.1.0
@@ -96,7 +96,6 @@ executable cross-zone
     , flight-mask
     , flight-scribe
     , flight-span
-    , flight-task
     , flight-units
     , flight-zone
     , formatting

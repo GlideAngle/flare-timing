@@ -80,7 +80,6 @@ in    defs
                     , "flight-units"
                     , "flight-zone"
                     , "flight-earth"
-                    , "flight-task"
                     , "flight-mask"
                     ]
               , ghc-options =
