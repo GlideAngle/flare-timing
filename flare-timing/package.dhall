@@ -30,6 +30,7 @@ in  let deps =
             , "formatting"
             , "flight-cmd"
             , "flight-comp"
+            , "flight-latlng"
             , "flight-scribe"
             ]
 
@@ -47,7 +48,7 @@ in    defs
       , executables =
           { extract-input =
               { dependencies =
-                  deps # [ "flight-latlng", "flight-gap", "flight-fsdb" ]
+                  deps # [ "flight-gap", "flight-fsdb" ]
               , ghc-options =
                   [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
               , main =
@@ -57,12 +58,7 @@ in    defs
               }
           , task-length =
               { dependencies =
-                    deps
-                  # [ "flight-units"
-                    , "flight-latlng"
-                    , "flight-task"
-                    , "flight-route"
-                    ]
+                  deps # [ "flight-units", "flight-task", "flight-route" ]
               , ghc-options =
                   [ "-rtsopts"
                   , "-threaded"
@@ -82,7 +78,6 @@ in    defs
                     , "siggy-chardust"
                     , "flight-span"
                     , "flight-units"
-                    , "flight-latlng"
                     , "flight-kml"
                     , "flight-track"
                     , "flight-zone"
@@ -109,7 +104,6 @@ in    defs
                   # [ "time"
                     , "siggy-chardust"
                     , "flight-units"
-                    , "flight-latlng"
                     , "flight-kml"
                     , "flight-track"
                     , "flight-task"
@@ -137,7 +131,6 @@ in    defs
                     , "uom-plugin"
                     , "siggy-chardust"
                     , "flight-units"
-                    , "flight-latlng"
                     , "flight-kml"
                     , "flight-track"
                     , "flight-zone"
@@ -163,7 +156,6 @@ in    defs
                     deps
                   # [ "siggy-chardust"
                     , "flight-units"
-                    , "flight-latlng"
                     , "flight-kml"
                     , "flight-track"
                     , "flight-zone"
@@ -193,7 +185,6 @@ in    defs
                     , "siggy-chardust"
                     , "flight-span"
                     , "flight-units"
-                    , "flight-latlng"
                     , "flight-kml"
                     , "flight-track"
                     , "flight-zone"
@@ -220,7 +211,6 @@ in    defs
                     deps
                   # [ "siggy-chardust"
                     , "flight-units"
-                    , "flight-latlng"
                     , "flight-kml"
                     , "flight-track"
                     , "flight-zone"
@@ -246,7 +236,6 @@ in    defs
                   # [ "containers"
                     , "siggy-chardust"
                     , "flight-units"
-                    , "flight-latlng"
                     , "flight-kml"
                     , "flight-track"
                     , "flight-zone"
