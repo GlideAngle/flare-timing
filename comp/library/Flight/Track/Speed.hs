@@ -20,8 +20,7 @@ module Flight.Track.Speed
     , startGateTaken
     ) where
 
-import Data.Time.Clock (UTCTime)
-import Data.Time.Clock (diffUTCTime)
+import Data.Time.Clock (UTCTime, diffUTCTime)
 import Data.UnitsOfMeasure (u, convert, fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import GHC.Generics (Generic)
@@ -50,7 +49,7 @@ pilotTime gs x@StartEnd{unStart, unEnd = Just end} =
     case gs of
         [] -> Just . PilotTime $ hrs unStart
         [StartGate g] -> Just . PilotTime $ hrs g
-        (StartGate g) : gs' ->
+        StartGate g : gs' ->
             if unStart <= g
                then Just . PilotTime $ hrs g
                else pilotTime gs' x

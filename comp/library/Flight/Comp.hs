@@ -190,7 +190,7 @@ defaultNominal =
         , time = NominalTime . MkQuantity $ 1.5
         }
 
-data TaskStop =
+newtype TaskStop =
     TaskStop
         { announced :: UTCTime
         }
