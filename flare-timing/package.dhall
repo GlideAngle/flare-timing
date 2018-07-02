@@ -96,15 +96,7 @@ in    defs
               }
           , tag-zone =
               { dependencies =
-                    deps
-                  # [ "time"
-                    , "siggy-chardust"
-                    , "flight-units"
-                    , "flight-kml"
-                    , "flight-track"
-                    , "flight-task"
-                    , "flight-mask"
-                    ]
+                  deps # [ "time", "flight-mask" ]
               , ghc-options =
                   [ "-rtsopts"
                   , "-threaded"

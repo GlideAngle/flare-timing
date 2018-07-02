@@ -29,7 +29,6 @@ import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options
     (CmdOptions(..), ProgramName(..), Extension(..), mkOptions)
 
-import Flight.Units ()
 import Flight.Mask (tagZones)
 import Flight.Comp
     ( FileType(CrossZone)
