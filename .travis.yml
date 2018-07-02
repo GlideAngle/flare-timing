@@ -48,3 +48,4 @@ script:
 - stack build build-flare-timing --no-terminal
 - ./stack-shake-build.sh cabal-files
 - ./stack-shake-build.sh stack-prod-apps stack-test-apps stack-test-suites
+- ./stack-shake-build.sh stack-lint
