@@ -189,6 +189,14 @@ type MkPart
     -> TaskDistance Rational
     -> TestTree
 
+pairs :: [a] -> ([a], [a], [a])
+pairs xs = (s1, s2, s3)
+    where
+        s1 = take 2 xs
+        s2 = take 2 $ drop 1 xs
+        s3 = take 2 $ drop 2 xs
+
+
 p1 :: MkPart -> _ -> _ -> _ -> TestTree
 p1 mk t1 t2 t3 =
     testGroup "Task 1 [...]"
@@ -205,9 +213,7 @@ p1 mk t1 t2 t3 =
                 , (-33.61965, 148.4099)
                 ]
 
-            s1 = take 2 xs
-            s2 = take 2 $ drop 1 xs
-            s3 = take 2 $ drop 2 xs
+            (s1, s2, s3) = pairs xs
 
 p2 :: MkPart -> _ -> _ -> _ -> TestTree
 p2 mk t1 t2 t3 =
@@ -225,9 +231,7 @@ p2 mk t1 t2 t3 =
                 , (-33.12592, 147.91043)
                 ]
 
-            s1 = take 2 xs
-            s2 = take 2 $ drop 1 xs
-            s3 = take 2 $ drop 2 xs
+            (s1, s2, s3) = pairs xs
 
 p3 :: MkPart -> _ -> _ -> _ -> TestTree
 p3 mk t1 t2 t3 =
@@ -245,9 +249,7 @@ p3 mk t1 t2 t3 =
                 , (-34.82197, 148.66543)
                 ]
 
-            s1 = take 2 xs
-            s2 = take 2 $ drop 1 xs
-            s3 = take 2 $ drop 2 xs
+            (s1, s2, s3) = pairs xs
 
 p4 :: MkPart -> _ -> _ -> TestTree
 p4 mk t1 t2 =
@@ -263,8 +265,7 @@ p4 mk t1 t2 =
                 , (-32.46363, 148.989)
                 ]
 
-            s1 = take 2 xs
-            s2 = take 2 $ drop 1 xs
+            (s1, s2, _) = pairs xs
 
 p5 :: MkPart -> _ -> _ -> TestTree
 p5 mk t1 t2 =
@@ -297,8 +298,7 @@ p6 mk t1 t2 =
                 , (-31.69323, 148.29623)
                 ]
 
-            s1 = take 2 xs
-            s2 = take 2 $ drop 1 xs
+            (s1, s2, _) = pairs xs
 
 p7 :: MkPart -> _ -> _ -> _ -> TestTree
 p7 mk t1 t2 t3 =
@@ -316,9 +316,7 @@ p7 mk t1 t2 t3 =
                 , (-32.93585, 148.74947)
                 ]
 
-            s1 = take 2 xs
-            s2 = take 2 $ drop 1 xs
-            s3 = take 2 $ drop 2 xs
+            (s1, s2, s3) = pairs xs
 
 p8 :: MkPart -> _ -> _ -> _ -> TestTree
 p8 mk t1 t2 t3 =
@@ -336,6 +334,4 @@ p8 mk t1 t2 t3 =
                 , (-33.361, 147.9315)
                 ]
 
-            s1 = take 2 xs
-            s2 = take 2 $ drop 1 xs
-            s3 = take 2 $ drop 2 xs
+            (s1, s2, s3) = pairs xs
