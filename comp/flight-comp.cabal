@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a83755186a30e9ba17dad1bd63e9a4d0de70fd7775bbe0219ffad02242c2c826
+-- hash: cc02493af3c5a33590d81cf747888f72e40301c8793f90e2e1f2b813b1f8de45
 
 name:           flight-comp
 version:        0.1.0
@@ -53,7 +53,7 @@ library
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
-    , base >=4.5 && <5
+    , base >=4.9.1.0
     , bytestring
     , cassava
     , containers
@@ -102,7 +102,7 @@ test-suite comp
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
-    , base
+    , base >=4.9.1.0
     , bytestring
     , cassava
     , containers
@@ -115,7 +115,6 @@ test-suite comp
     , flight-route
     , flight-units
     , flight-zone
-    , hlint
     , lens
     , mtl
     , path
@@ -157,7 +156,7 @@ test-suite hlint
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
-    , base
+    , base >=4.9.1.0
     , bytestring
     , cassava
     , containers
