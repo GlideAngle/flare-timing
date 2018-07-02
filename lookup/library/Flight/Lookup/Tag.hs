@@ -20,7 +20,6 @@ module Flight.Lookup.Tag
 
 import Data.List (find, elemIndex)
 import Data.Maybe (catMaybes, listToMaybe, isJust)
-import Control.Monad (join)
 import Control.Lens ((^?), element)
 import qualified Flight.Kml as Kml (MarkedFixes(..))
 import Flight.Comp
@@ -88,9 +87,8 @@ ticked x (IxTask i) speedSection pilot _ =
     case tagging x ^? element (fromIntegral i - 1) of
         Nothing -> Nothing
         Just xs ->
-            join
-            $ tickedPilot speedSection
-            <$> find (\(PilotTrackTag p _) -> p == pilot) xs
+            tickedPilot speedSection
+            =<< find (\(PilotTrackTag p _) -> p == pilot) xs
 
 -- | The time of the first and last fix in the list.
 tickedZones :: SpeedSection -> [Maybe Fix] -> Ticked
@@ -120,9 +118,8 @@ timeElapsed x (IxTask i) speedSection pilot _ =
     case tagging x ^? element (fromIntegral i - 1) of
         Nothing -> Nothing
         Just xs ->
-            join
-            $ timeElapsedPilot speedSection
-            <$> find (\(PilotTrackTag p _) -> p == pilot) xs
+            timeElapsedPilot speedSection
+            =<< find (\(PilotTrackTag p _) -> p == pilot) xs
 
 -- | The time of the first and last fix in the list.
 startEnd :: [Maybe Fix] -> Maybe StartEndMark

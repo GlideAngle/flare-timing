@@ -11,7 +11,6 @@ module Flight.Lookup.Cross
     ) where
 
 import Data.List (find)
-import Control.Monad (join)
 import Control.Lens ((^?), element)
 import Flight.Comp (IxTask(..), Pilot(..))
 import Flight.Track.Cross (TrackFlyingSection(..))
@@ -30,5 +29,4 @@ flyingTask C.Crossing{flying = xs} (IxTask i) pilot =
     case xs ^? element (fromIntegral i - 1) of
         Nothing -> Nothing
         Just ys ->
-            join
-            $ snd <$> find (\(p, _) -> p == pilot) ys
+            snd =<< find (\(p, _) -> p == pilot) ys

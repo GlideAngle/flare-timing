@@ -47,8 +47,9 @@ import Flight.Lookup.Tag
 
 flyingTimeRange :: FlyingLookup -> UTCTime -> IxTask -> Pilot -> FlyingSection UTCTime
 flyingTimeRange (FlyingLookup get) mark0 iTask p =
-    fromMaybe (Just (mark0, mark0))
-    $ join (fmap flyingTimes . (\f -> f iTask p) <$> get)
+    fromMaybe
+        (Just (mark0, mark0))
+        (fmap flyingTimes . (\f -> f iTask p) =<< get)
 
 arrivalRank
     :: ArrivalRankLookup
@@ -59,7 +60,7 @@ arrivalRank
     -> Maybe PositionAtEss
 arrivalRank (ArrivalRankLookup get) mf iTask speedSection p =
     PositionAtEss . toInteger
-    <$> join ((\f -> f iTask speedSection p mf) <$> get)
+    <$> ((\f -> f iTask speedSection p mf) =<< get)
 
 pilotTime
     :: TimeLookup
@@ -70,9 +71,8 @@ pilotTime
     -> Pilot
     -> Maybe (PilotTime (Quantity Double [u| h |]))
 pilotTime (TimeLookup get) mf iTask startGates speedSection p =
-    join
-    $ Speed.pilotTime startGates
-    <$> join ((\f -> f iTask speedSection p mf) <$> get)
+    Speed.pilotTime startGates
+    =<< ((\f -> f iTask speedSection p mf) =<< get)
 
 ticked
     :: TickLookup
@@ -82,12 +82,13 @@ ticked
     -> Pilot
     -> RaceSections ZoneIdx
 ticked (TickLookup get) mf iTask speedSection p =
-    fromMaybe (RaceSections [] [] [])
-    $ join ((\f -> f iTask speedSection p mf) <$> get)
+    fromMaybe
+        (RaceSections [] [] [])
+        ((\f -> f iTask speedSection p mf) =<< get)
 
 compRoutes :: RouteLookup -> [IxTask] -> [Maybe (TaskDistance Double)]
 compRoutes (RouteLookup get) iTasks =
-    (\i -> join ((\g -> g i) <$> get)) <$> iTasks
+    (\i -> ((\g -> g i) =<< get)) <$> iTasks
 
 compTimes :: TaskTimeLookup -> [IxTask] -> [Task] -> [Maybe StartEndMark]
 compTimes (TaskTimeLookup get) iTasks tasks =
