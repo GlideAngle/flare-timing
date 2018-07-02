@@ -19,14 +19,13 @@
 
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
-import Prelude hiding (span)
 import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Data.Time.Clock (UTCTime, diffUTCTime)
 import Control.Lens ((^?), element)
 import Data.Maybe (catMaybes, fromMaybe, listToMaybe)
-import Control.Monad (join, mapM_, when, zipWithM_)
+import Control.Monad (mapM_, when, zipWithM_)
 import Control.Monad.Except (ExceptT, runExceptT)
 import Data.UnitsOfMeasure (u, convert, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
@@ -153,14 +152,12 @@ writeTime selectTasks selectPilots compFile f = do
                             Right (p, g) -> (p, g p))
                         xs
 
-            _ <- zipWithM_
+            zipWithM_
                 (\ n zs ->
                     when (includeTask selectTasks $ IxTask n) $
                         mapM_ (writePilotTimes compFile n) zs)
                 [1 .. ]
                 ys
-
-            return ()
 
 checkAll
     :: Bool -- ^ Exclude zones outside speed section
@@ -262,8 +259,9 @@ group
                 endZoneTag
             where
                 flyingRange :: FlyingSection UTCTime =
-                    fromMaybe (Just (mark0, mark0))
-                    $ join (fmap flyingTimes . (\f -> f iTask p) <$> lookupFlying)
+                    fromMaybe
+                        (Just (mark0, mark0))
+                        (fmap flyingTimes . (\f -> f iTask p) =<< lookupFlying)
 
                 -- NOTE: Ensure we're only considering flying time.
                 flyFixes =
@@ -277,9 +275,8 @@ group
                 firstLead' = firstLead ss firstTimes
 
                 firstStart' =
-                    join
-                    $ (\OpenClose{open} -> firstStart ss open firstTimes)
-                    <$> openClose ss (zoneTimes task)
+                    (\OpenClose{open} -> firstStart ss open firstTimes)
+                    =<< openClose ss (zoneTimes task)
 
                 xs :: [MarkedFixes]
                 xs = groupByLeg spanF zoneToCylF task flyFixes
@@ -288,12 +285,12 @@ group
 
                 ticked =
                     fromMaybe (RaceSections [] [] [])
-                    $ join ((\f -> f iTask ss p mf) <$> lookupTicked)
+                    $ (\f -> f iTask ss p mf) =<< lookupTicked
 
                 endZoneTag :: Maybe Fix
                 endZoneTag = do
                     ts :: [Maybe Fix]
-                        <- join ((\f -> f iTask ss p mf) <$> lookupZoneTags)
+                        <- (\f -> f iTask ss p mf) =<< lookupZoneTags
 
                     us :: [Fix]
                         <- sequence ts
@@ -339,9 +336,8 @@ allLegDistances ticked times task@Task{speedSection, zoneTimes} leg xs =
         lead = firstLead speedSection ts
 
         start =
-            join
-            $ (\OpenClose{open} -> firstStart speedSection open ts)
-            <$> openClose speedSection zoneTimes
+            (\OpenClose{open} -> firstStart speedSection open ts)
+            =<< openClose speedSection zoneTimes
 
 legDistances
     :: Bool -- ^ Exclude zones outside speed section

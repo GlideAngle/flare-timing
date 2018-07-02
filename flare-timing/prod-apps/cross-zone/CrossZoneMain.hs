@@ -20,7 +20,7 @@ import System.Console.CmdArgs.Implicit (cmdArgs)
 import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
-import Data.Maybe (catMaybes, fromMaybe)
+import Data.Maybe (catMaybes, isNothing)
 import Data.List (nub, sort)
 import Control.Lens ((^?), element)
 import Control.Monad (mapM_)
@@ -136,7 +136,7 @@ writeMask compFile task pilot f = do
 
             let notFlys :: [[Pilot]] =
                     [ fmap fst . filter snd
-                      $ (fmap . fmap) (fromMaybe False . (fmap (not . flew))) fs
+                      $ (fmap . fmap) (maybe False (not . flew)) fs
                     | fs <- flying
                     ]
 
@@ -169,8 +169,8 @@ crossings (p, x) =
 
 flew :: TrackFlyingSection -> Bool
 flew TrackFlyingSection{flyingFixes, flyingSeconds}
-    | flyingFixes == Nothing = False
-    | flyingSeconds == Nothing = False
+    | isNothing flyingFixes = False
+    | isNothing flyingSeconds = False
     | otherwise = f flyingFixes || f flyingSeconds
     where
         f :: Ord a => Maybe (a, a) -> Bool

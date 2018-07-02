@@ -195,8 +195,6 @@ filterTime
                 raceTime
                 taskPilots
 
-            return ()
-
 checkAll :: CompInputFile
          -> [IxTask]
          -> [Pilot]
@@ -236,6 +234,6 @@ readFilterWrite
         dir = compFileToCompDir compFile
         (AlignDir dIn, AlignTimeFile file) = alignPath dir i pilot
         (DiscardDir dOut) = discardDir dir i
-        taskLength = join (($ iTask) <$> lookupTaskLength)
+        taskLength = ($ iTask) =<< lookupTaskLength
         close = LeadClose <$> leadClose raceTime
         arrival = LeadArrival <$> leadArrival raceTime

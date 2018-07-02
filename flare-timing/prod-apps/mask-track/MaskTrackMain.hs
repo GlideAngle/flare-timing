@@ -30,7 +30,6 @@ import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Control.Arrow (second)
 import Control.Lens ((^?), element)
-import Control.Monad (join)
 import Control.Applicative (liftA2)
 import Control.Monad.Except (ExceptT, runExceptT)
 import Data.UnitsOfMeasure (u, convert)
@@ -283,7 +282,7 @@ writeMask
             writeMasking
                 (compToMask compFile)
                 Masking
-                    { pilotsAtEss = (PilotsAtEss . toInteger . length) <$> as
+                    { pilotsAtEss = PilotsAtEss . toInteger . length <$> as
                     , raceTime = raceTime
                     , ssBestTime = ssBestTime
                     , gsBestTime = gsBestTime
@@ -320,8 +319,7 @@ arrivals xs =
         ys :: [(Pilot, PositionAtEss)]
         ys =
             catMaybes
-            $ (\(p, FlightStats{..}) ->
-                ((p,) . positionAtEss) <$> statTimeRank)
+            $ (\(p, FlightStats{..}) -> (p,) . positionAtEss <$> statTimeRank)
             <$> xs
 
         pilots :: PilotsAtEss
@@ -344,7 +342,7 @@ times f xs =
         ys :: [(Pilot, PilotTime (Quantity Double [u| h |]))]
         ys =
             catMaybes
-            $ (\(p, FlightStats{..}) -> ((p,) . f) <$> statTimeRank)
+            $ (\(p, FlightStats{..}) -> (p,) . f <$> statTimeRank)
             <$> xs
 
         ts :: [PilotTime (Quantity Double [u| h |])]
@@ -382,7 +380,7 @@ flown math (RouteLookup lookupTaskLength) flying tags tasks iTask fixes =
         (\d -> flown' d flying math tags tasks iTask fixes)
         taskLength
     where
-        taskLength = join ((\f -> f iTask) <$> lookupTaskLength)
+        taskLength = (\f -> f iTask) =<< lookupTaskLength
 
 flown' :: TaskDistance Double
        -> FlyingLookup
