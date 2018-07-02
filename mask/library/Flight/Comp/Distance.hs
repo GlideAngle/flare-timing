@@ -112,7 +112,7 @@ compDistance dMin lsTask pilotsArriving pilotsLandingOut tsBest rows =
         dsSumArriving:: [Maybe Double] =
                 [ if null ps then Nothing else do
                     dt' <- dt
-                    return $ (fromIntegral $ length ps) * dt'
+                    return $ fromIntegral (length ps) * dt'
                 | dt <- dsTaskOverMin
                 | ps <- pilotsArriving
                 ]
@@ -205,7 +205,7 @@ lookupPilotBestDistance
     -> Pilot
     -> Maybe (Pilot, TrackDistance Land)
 lookupPilotBestDistance m td p =
-    ((p,) . madeDistance td) <$> Map.lookup p m
+    (p,) . madeDistance td <$> Map.lookup p m
 
 madeDistance
     :: Maybe (TaskDistance Double)
