@@ -63,7 +63,6 @@ import Flight.Comp
     )
 import Flight.Track.Time (LeadClose(..), LeadArrival(..), discard)
 import Flight.Track.Mask (RaceTime(..), racing)
-import Flight.Units ()
 import Flight.Mask (checkTracks)
 import Flight.Scribe
     (readComp, readRoute, readTagging, readAlignTime, writeDiscardFurther)
