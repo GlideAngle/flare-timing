@@ -300,6 +300,4 @@ parseFromFile
     :: FilePath -- ^ An IGC file to parse.
     -> IO (Either ParseError [IgcRecord])
 parseFromFile fname =
-    runParser igcFile () fname
-    <$> toString
-    <$> readFile fname
+    runParser igcFile () fname . toString <$> readFile fname
