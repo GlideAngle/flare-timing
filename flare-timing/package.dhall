@@ -28,7 +28,6 @@ in  let deps =
             , "bytestring"
             , "clock"
             , "formatting"
-            , "containers"
             ]
 
 in    defs
@@ -208,7 +207,8 @@ in    defs
           , mask-track =
               { dependencies =
                     deps
-                  # [ "lens"
+                  # [ "containers"
+                    , "lens"
                     , "siggy-chardust"
                     , "flight-span"
                     , "flight-cmd"
@@ -268,7 +268,8 @@ in    defs
           , gap-point =
               { dependencies =
                     deps
-                  # [ "siggy-chardust"
+                  # [ "containers"
+                    , "siggy-chardust"
                     , "flight-cmd"
                     , "flight-units"
                     , "flight-latlng"

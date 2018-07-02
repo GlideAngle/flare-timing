@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: dd5c9b6ead3e842524a796d98057e604edc8fd9932436558b55ba7b446f55d37
+-- hash: f198448afc824a79ad58054f5829aadbd0a0634e6047e1ecc34832e3459743ea
 
 name:           flare-timing
 version:        0.1.0
@@ -45,7 +45,6 @@ executable align-time
     , bytestring
     , clock
     , cmdargs
-    , containers
     , directory
     , filemanip
     , filepath
@@ -88,7 +87,6 @@ executable cross-zone
     , bytestring
     , clock
     , cmdargs
-    , containers
     , directory
     , filemanip
     , filepath
@@ -131,7 +129,6 @@ executable discard-further
     , bytestring
     , clock
     , cmdargs
-    , containers
     , directory
     , filemanip
     , filepath
@@ -173,7 +170,6 @@ executable extract-input
     , bytestring
     , clock
     , cmdargs
-    , containers
     , directory
     , filemanip
     , filepath
@@ -247,7 +243,6 @@ executable land-out
     , bytestring
     , clock
     , cmdargs
-    , containers
     , directory
     , filemanip
     , filepath
@@ -332,7 +327,6 @@ executable tag-zone
     , bytestring
     , clock
     , cmdargs
-    , containers
     , directory
     , filemanip
     , filepath
@@ -372,7 +366,6 @@ executable task-length
     , bytestring
     , clock
     , cmdargs
-    , containers
     , directory
     , filemanip
     , filepath
