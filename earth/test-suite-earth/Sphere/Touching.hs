@@ -14,7 +14,6 @@
 
 module Sphere.Touching (Overlay(..), separatedZones, touchingUnits) where
 
-import Prelude hiding (span)
 import Data.Ratio ((%))
 import Data.List (intersperse)
 import Test.Tasty (TestTree, testGroup)
@@ -35,12 +34,12 @@ touchingUnits :: TestTree
 touchingUnits =
     testGroup "Potentially overlapping zones are touching"
     [ testGroup "With doubles"
-        [ testGroup "Zones without area are not touching" ((uncurry fD) <$> dotZones)
-        , testGroup "Zones with area are touching" ((uncurry gD) <$> areaZones)
+        [ testGroup "Zones without area are not touching" (uncurry fD <$> dotZones)
+        , testGroup "Zones with area are touching" (uncurry gD <$> areaZones)
         ]
     , testGroup "With rationals"
-        [ testGroup "Zones without area are not touching" ((uncurry fR) <$> dotZones)
-        , testGroup "Zones with area are touching" ((uncurry gR) <$> areaZones)
+        [ testGroup "Zones without area are not touching" (uncurry fR <$> dotZones)
+        , testGroup "Zones with area are touching" (uncurry gR <$> areaZones)
         ]
     ]
     where
@@ -114,16 +113,16 @@ separatedZones sep expected delta' radius' title xs =
                          (showZoneDMS . fromRationalZone . toRationalZone <$> x)
 
         deltaDMS :: Quantity Double [u| dms |]
-        deltaDMS = convert $ (realToFrac delta') *: [u| 1 rad |]
+        deltaDMS = convert $ realToFrac delta' *: [u| 1 rad |]
 
         deltaRad :: Quantity Double [u| rad |]
-        deltaRad = (realToFrac delta') *: [u| 1 rad |]
+        deltaRad = realToFrac delta' *: [u| 1 rad |]
 
         radiusDMS :: Quantity Double [u| dms |]
-        radiusDMS = convert $ (realToFrac radius') *: [u| 1 rad |]
+        radiusDMS = convert $ realToFrac radius' *: [u| 1 rad |]
 
         radiusRad :: Quantity Double [u| rad |]
-        radiusRad = (realToFrac radius') *: [u| 1 rad |]
+        radiusRad = realToFrac radius' *: [u| 1 rad |]
 
 type Touching a = String -> [[Zone a]] -> TestTree
 

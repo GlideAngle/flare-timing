@@ -8,7 +8,6 @@
 
 module Sphere.Meridian (meridianUnits) where
 
-import Prelude hiding (span)
 import Test.Tasty (TestTree, testGroup)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
@@ -22,8 +21,8 @@ import Sphere.Span (spanD, spanR)
 meridianUnits :: TestTree
 meridianUnits =
     testGroup "Meridian arc distance tests"
-    [ testGroup "With doubles" $ ((uncurry f) <$> describedZones)
-    , testGroup "With rationals" $ ((uncurry g) <$> describedZones)
+    [ testGroup "With doubles" (uncurry f <$> describedZones)
+    , testGroup "With rationals" (uncurry g <$> describedZones)
     ]
     where
         f s  =
@@ -52,11 +51,11 @@ distances =
 
 tolerancesD :: (Real a, Fractional a) => [Quantity a [u| mm |]]
 tolerancesD =
-    repeat $ [u| 0 mm |]
+    repeat [u| 0 mm |]
 
 tolerancesR :: (Real a, Fractional a) => [Quantity a [u| mm |]]
 tolerancesR =
-    repeat $ [u| 0 mm |]
+    repeat [u| 0 mm |]
 
 distanceMeridian
     :: (Enum a, Real a, Fractional a)

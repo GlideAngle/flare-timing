@@ -73,14 +73,14 @@ class GeodesyProblems a α s where
 instance Angle α => GeodesyProblems a α s where
     direct _ InverseSolution{α₂ = Nothing} = Nothing
     direct InverseProblem{x = y, y = x} InverseSolution{s, α₁, α₂ = Just α₂} =
-        Just $
+        Just
             ( DirectProblem{x, α₁ = flip180 α₂, s}
             , DirectSolution{y, α₂ = Just $ flip180 α₁}
             )
 
     inverse _ DirectSolution{α₂ = Nothing} = Nothing
     inverse DirectProblem{x = y, α₁, s} DirectSolution{y = x, α₂ = Just α₂} =
-        Just $
+        Just
             ( InverseProblem{x, y}
             , InverseSolution{s, α₁ = flip180 α₂, α₂ = Just $ flip180 α₁}
             )

@@ -12,7 +12,6 @@ module Flight.Earth.Ellipsoid.PointToPoint.Rational
     , atan2'
     ) where
 
-import Prelude hiding (sum, span)
 import Data.Ratio ((%))
 import qualified Data.Number.FixedFunctions as F
 import Data.UnitsOfMeasure (u, convert, fromRational')
@@ -45,7 +44,7 @@ atan2' e@(Epsilon eps) y x
     | x > 0 = atan' $ y / x
     | x == 0 && y > 0 = pi' / 2
     | x <  0 && y > 0 = pi' + atan' (y / x)
-    | (x <= 0 && y < 0) = negate $ atan2' e (-y) x
+    | x <= 0 && y < 0 = negate $ atan2' e (-y) x
     | y == 0 = pi'
     | x == 0 && y == 0 = y
     | otherwise = atan' $ y / x
@@ -87,7 +86,7 @@ vincentyInverse
         _L =
             case _L₂ - _L₁ of
                 _L' | abs _L' <= F.pi eps -> _L'
-                _ -> (normalizeLng' _L₂) - (normalizeLng' _L₁)
+                _ -> normalizeLng' _L₂ - normalizeLng' _L₁
 
         sinU₁ = sin' _U₁; sinU₂ = sin' _U₂
         cosU₁ = cos' _U₁; cosU₂ = cos' _U₂

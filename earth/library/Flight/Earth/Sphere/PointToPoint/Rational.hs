@@ -7,7 +7,6 @@
 
 module Flight.Earth.Sphere.PointToPoint.Rational (distanceHaversine) where
 
-import Prelude hiding (sum, span)
 import Data.Ratio((%))
 import qualified Data.Number.FixedFunctions as F
 import Data.UnitsOfMeasure (One, (-:), (*:), u, fromRational')

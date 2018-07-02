@@ -22,8 +22,8 @@ import Ellipsoid.Span (spanD, spanR)
 meridianUnits :: TestTree
 meridianUnits =
     testGroup "Meridian arc distance tests"
-    [ testGroup "With doubles" $ ((uncurry f) <$> describedZones)
-    , testGroup "With rationals" $ ((uncurry g) <$> describedZones)
+    [ testGroup "With doubles" (uncurry f <$> describedZones)
+    , testGroup "With rationals" (uncurry g <$> describedZones)
     ]
     where
         f s  =

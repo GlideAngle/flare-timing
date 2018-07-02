@@ -14,7 +14,6 @@
 
 module Sphere.Disjoint (disjointUnits) where
 
-import Prelude hiding (span)
 import Data.Ratio ((%))
 import Test.Tasty (TestTree, testGroup)
 import Data.UnitsOfMeasure ((+:), (*:), u, negate', fromRational')
@@ -30,11 +29,11 @@ disjointUnits :: TestTree
 disjointUnits =
     testGroup "Disjoint zones are separated"
     [ testGroup "With doubles"
-        $ ((uncurry fD) <$> dotZones)
-        ++ ((uncurry gD) <$> areaZones)
+        $ (uncurry fD <$> dotZones)
+        ++ (uncurry gD <$> areaZones)
     , testGroup "With rationals"
-        $ ((uncurry fR) <$> dotZones)
-        ++ ((uncurry gR) <$> areaZones)
+        $ (uncurry fR <$> dotZones)
+        ++ (uncurry gR <$> areaZones)
     ]
     where
         fD s =

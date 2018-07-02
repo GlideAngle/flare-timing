@@ -141,7 +141,7 @@ innerCheck
             span
             (<)
             ll
-            (convert radius -: (convert tolerance'))
+            (convert radius -: convert tolerance')
             (fst $ cs sp br Nothing cyl)
         @?= []
     ]

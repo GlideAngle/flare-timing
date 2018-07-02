@@ -19,7 +19,6 @@ module Zone
     , showQ
     ) where
 
-import Prelude hiding (span)
 import Data.UnitsOfMeasure (u, zero, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 

@@ -136,7 +136,7 @@ directPairs xs =
 
 fwds :: [(DProb, DSoln)]
 fwds =
-    concat $
+    concat
     [ LatN90LngW180S40.fwd
     , LatN45LngW180S40.fwd
     , LatN00LngW180S40.fwd
@@ -146,7 +146,4 @@ fwds =
 
 revs :: [(IProb, ISoln)]
 revs =
-    concat $
-    [ Meridian.rev
-    , Parallel.rev
-    ]
+    Meridian.rev ++ Parallel.rev

@@ -10,14 +10,13 @@ module Flight.Earth.Sphere.PointToPoint.Double
     , azimuthRev
     ) where
 
-import Prelude hiding (flip, sum, span)
+import Prelude hiding (flip)
 import Data.UnitsOfMeasure (One, (-:), (*:), u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..), mk)
 
 import Flight.Units ()
 import Flight.Units.Angle (Angle(..))
-import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
-import Flight.LatLng (AzimuthFwd, AzimuthRev)
+import Flight.LatLng (Lat(..), Lng(..), LatLng(..), AzimuthFwd, AzimuthRev)
 import Flight.Distance (TaskDistance(..), SpanLatLng)
 import Flight.Earth.Sphere (earthRadius)
 

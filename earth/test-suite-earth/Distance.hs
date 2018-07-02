@@ -42,7 +42,7 @@ toDistanceEqual span expected title xy =
         f (x, y) =
             [ testCase
                 (show (TaskDistance expected))
-                $ found @?= (TaskDistance expected)
+                $ found @?= TaskDistance expected
             ]
             where
                 found = edgesSum $ distancePointToPoint span [x, y]
@@ -59,7 +59,7 @@ toDistanceClose span tolerance expected title xy =
                 ++ show (TaskDistance expected)
                 )
                 $ diff found (TaskDistance expected)
-                @?<= (TaskDistance tolerance')
+                @?<= TaskDistance tolerance'
             ]
             where
                 found = edgesSum $ distancePointToPoint span [x, y]

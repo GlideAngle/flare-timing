@@ -1,7 +1,5 @@
 module Flight.Earth.Flat.PointToPoint.Rational (distanceEuclidean) where
 
-import Prelude hiding (sum, span)
-
 import Flight.Zone (Zone(..))
 import Flight.Distance (PathDistance(..), SpanLatLng)
 import Flight.Earth.Flat.Projected.Rational (costEastNorth)

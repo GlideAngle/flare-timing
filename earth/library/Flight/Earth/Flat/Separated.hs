@@ -57,7 +57,7 @@ boxSeparated (MkQuantity r', yLL) xLL =
 
         _ -> error "Cannot project lat/lng to UTM easting/northing"
     where
-        r = realToFrac $ r'
+        r = realToFrac r'
 
 separated :: (Real a, Fractional a)
           => SpanLatLng a

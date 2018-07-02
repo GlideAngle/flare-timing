@@ -14,13 +14,11 @@ module Flight.Earth.Ellipsoid.PointToPoint.Double
     , vincentyInverse
     ) where
 
-import Prelude hiding (sum, span)
 import Data.Fixed (mod')
 import Data.UnitsOfMeasure (KnownUnit, Unpack, u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
-import Flight.LatLng (AzimuthFwd, AzimuthRev)
+import Flight.LatLng (Lat(..), Lng(..), LatLng(..), AzimuthFwd, AzimuthRev)
 import Flight.Distance (TaskDistance(..), SpanLatLng)
 import Flight.Earth.Ellipsoid
     ( Ellipsoid(..), AbnormalLatLng(..), VincentyInverse(..), VincentyAccuracy(..)
@@ -69,7 +67,7 @@ vincentyInverse
         _L =
             case _L₂ - _L₁ of
                 _L' | abs _L' <= pi -> _L'
-                _ -> (normalizeLng _L₂) - (normalizeLng _L₁)
+                _ -> normalizeLng _L₂ - normalizeLng _L₁
 
         sinU₁ = sin _U₁; sinU₂ = sin _U₂
         cosU₁ = cos _U₁; cosU₂ = cos _U₂

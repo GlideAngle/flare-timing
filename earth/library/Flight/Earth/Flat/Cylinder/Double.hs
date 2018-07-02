@@ -53,10 +53,10 @@ fromHcLatLng HCLL.LatLng{latitude, longitude} =
     LatLng (Lat . convert $ lat, Lng . convert $ lng)
     where
         lat :: Quantity Double [u| deg |]
-        lat = MkQuantity $ latitude
+        lat = MkQuantity latitude
 
         lng :: Quantity Double [u| deg |]
-        lng = MkQuantity $ longitude
+        lng = MkQuantity longitude
 
 eastNorthToLatLng :: HCEN.UTMRef -> Either String HCLL.LatLng
 eastNorthToLatLng = runIdentity . runExceptT . HCEN.toLatLng

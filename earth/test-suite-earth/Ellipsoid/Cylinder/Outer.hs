@@ -125,7 +125,7 @@ outerCylinderUnits =
             ]
         ]
 
-    , testGroup "With rationals" $
+    , testGroup "With rationals"
         [ outerCheck spanR csR spR b t s zpFilter d p
         | p <- (\(x, y) -> (LatLng (Lat x, Lng y))) <$> ptsR
         , b <- bearingR
@@ -166,7 +166,7 @@ outerCheck
             span
             (>)
             ll
-            (convert radius +: (convert tolerance'))
+            (convert radius +: convert tolerance')
             (fst $ cs sp br Nothing cyl)
         @?= []
     ]

@@ -38,7 +38,7 @@ mkDay
     :: TestName
     -> [Zone Rational]
     -> Quantity Rational [u| km |]
-    -> [(Quantity Rational [u| km |])]
+    -> [Quantity Rational [u| km |]]
     -> TestTree
 mkDay = F.mkDayUnits (distancePointToPoint span)
 

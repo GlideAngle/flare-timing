@@ -44,7 +44,7 @@ ellipsoids =
 
 directPairs :: [(DProb, DSoln)]
 directPairs =
-    catMaybes $
+    catMaybes
     [ direct ip is
     | ip <- inverseProblems
     | is <- inverseSolutions

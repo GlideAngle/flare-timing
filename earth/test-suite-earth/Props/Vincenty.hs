@@ -56,9 +56,7 @@ instance
 instance
     (Real a, Fractional a, Arbitrary a)
     => QC.Arbitrary (VincentyTest a) where
-    arbitrary = VincentyTest <$> do
-        ll <- arbitrary
-        return ll
+    arbitrary = VincentyTest <$> arbitrary
 
 correctPoint :: [Zone Rational] -> TaskDistance Rational -> Bool
 correctPoint [] (TaskDistance (MkQuantity d)) = d == 0

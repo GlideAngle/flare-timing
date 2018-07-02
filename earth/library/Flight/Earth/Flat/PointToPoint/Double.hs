@@ -1,5 +1,4 @@
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE QuasiQuotes #-}
 
 module Flight.Earth.Flat.PointToPoint.Double
     ( distanceEuclidean

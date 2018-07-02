@@ -14,7 +14,6 @@
 
 module Ellipsoid.Coincident (coincidentUnits) where
 
-import Prelude hiding (span)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit ((@?=), testCase)
 import Data.UnitsOfMeasure (u, convert, fromRational')
@@ -33,8 +32,8 @@ coincidentUnits =
     testGroup "Coincident zones unit tests"
     $ emptyDistance
     :
-    [ testGroup "With doubles" $ ((uncurry f) <$> describedZones)
-    , testGroup "With rationals" $ ((uncurry g) <$> describedZones)
+    [ testGroup "With doubles" (uncurry f <$> describedZones)
+    , testGroup "With rationals" (uncurry g <$> describedZones)
     ]
     where
         f s =

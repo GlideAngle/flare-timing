@@ -181,7 +181,7 @@ dblDirectChecks getTolerance =
             D.DirectProblem{D.x = x, D.α₁ = α₁, D.s = sExpected} =
             HU.testCase (describeDirect x α₁ sExpected y tolerance)
             $ diff (sFoundD span x y) sExpected
-            @?<= (TaskDistance tolerance)
+            @?<= TaskDistance tolerance
             where
                 tolerance =
                     convert . getTolerance
@@ -202,7 +202,7 @@ ratDirectChecks getTolerance =
             D.DirectProblem{D.x = x, D.α₁ = α₁, D.s = (TaskDistance d)} =
             HU.testCase (describeDirect x α₁ sExpected y tolerance)
             $ diff (sFoundR span x y) sExpected
-            @?<= (TaskDistance tolerance)
+            @?<= TaskDistance tolerance
             where
                 sExpected = expectedR d
                 tolerance =
@@ -236,10 +236,10 @@ dblInverseChecks
             I.InverseProblem{I.x, I.y} =
             [ HU.testCase (describeInverseDistance x y s tolerance)
                 $ diff (sFoundD span x y) s
-                @?<= (TaskDistance tolerance)
+                @?<= TaskDistance tolerance
 
             , HU.testCase (describeAzimuthFwd x y α₁ azTolerance)
-                $ (flip diffAz $ α₁) <$> (fromQuantity <$> azFwdFoundD azFwd x y) 
+                $ flip diffAz α₁ <$> (fromQuantity <$> azFwdFoundD azFwd x y) 
                 @?<= Just azTolerance
 
             , HU.testCase (describeAzimuthRev x y α₂ azTolerance)
@@ -266,7 +266,7 @@ ratInverseChecks getTolerance =
             I.InverseProblem{I.x, I.y} =
             HU.testCase (describeInverseDistance x y sExpected tolerance)
             $ diff (sFoundR span x y) sExpected
-            @?<= (TaskDistance tolerance)
+            @?<= TaskDistance tolerance
             where
                 sExpected = expectedR d
                 tolerance =

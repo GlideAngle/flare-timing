@@ -9,7 +9,6 @@
 {-# LANGUAGE QuasiQuotes #-}
 
 {-# LANGUAGE NamedFieldPuns #-}
-{-# LANGUAGE ParallelListComp #-}
 {-# LANGUAGE PartialTypeSignatures #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}

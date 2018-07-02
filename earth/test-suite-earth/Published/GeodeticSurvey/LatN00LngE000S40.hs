@@ -81,4 +81,4 @@ fwd =
     ]
     where
         x = (DMS (0, 0, 0), DMS (0, 0, 0)) 
-        d = TaskDistance $ [u| 40 m |]
+        d = TaskDistance [u| 40 m |]

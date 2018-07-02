@@ -60,7 +60,7 @@ azimuths
 azimuths x@(Point _) y@(Point _) =
     case (zoneToProjectedEastNorth x, zoneToProjectedEastNorth y) of
         (Right xEN, Right yEN) ->
-            Just $ (f . azFwd $ distAz, f . azRev $ distAz)
+            Just (f . azFwd $ distAz, f . azRev $ distAz)
             where
                 distAz :: DistanceAzimuth Double
                 distAz = pythagorean xEN yEN

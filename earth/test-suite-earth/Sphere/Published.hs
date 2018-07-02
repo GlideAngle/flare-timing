@@ -20,7 +20,6 @@ module Sphere.Published
     , bedfordUnits
     ) where
 
-import Prelude hiding (span, min)
 import Test.Tasty (TestTree, testGroup)
 import Data.UnitsOfMeasure (u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))

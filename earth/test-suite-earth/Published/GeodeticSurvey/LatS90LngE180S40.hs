@@ -81,6 +81,6 @@ fwd =
     ]
     where
         x = (DMS (-90, 0, 0), DMS (180, 0, 0)) 
-        d = TaskDistance $ [u| 40 m |]
+        d = TaskDistance [u| 40 m |]
         y = Just $ DMS (180, 0, 0)
         s = 58.71076
