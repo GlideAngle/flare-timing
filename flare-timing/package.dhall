@@ -58,7 +58,7 @@ in    defs
               }
           , task-length =
               { dependencies =
-                  deps # [ "flight-units", "flight-route" ]
+                  deps # [ "flight-route" ]
               , ghc-options =
                   [ "-rtsopts"
                   , "-threaded"

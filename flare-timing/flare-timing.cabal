@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: dd794e3a11e7dd5916dceee2e814906c74dba5ad2c33ecf28b2a30e41f352b95
+-- hash: 1ba37f0031fdfc90ae91527b8ef4831ed798f22516ebfa78215dd6548ec9133c
 
 name:           flare-timing
 version:        0.1.0
@@ -371,7 +371,6 @@ executable task-length
     , flight-latlng
     , flight-route
     , flight-scribe
-    , flight-units
     , formatting
     , mtl
     , raw-strings-qq

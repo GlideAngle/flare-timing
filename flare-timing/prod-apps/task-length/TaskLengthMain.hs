@@ -11,7 +11,6 @@ import Control.Monad.Except (runExceptT)
 import System.FilePath (takeFileName)
 
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
-import Flight.Units ()
 import Flight.Comp
     ( FileType(CompInput)
     , CompSettings(tasks)
