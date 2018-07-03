@@ -1,8 +1,3 @@
-{-# LANGUAGE NamedFieldPuns #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE PartialTypeSignatures #-}
-{-# LANGUAGE DisambiguateRecordFields #-}
-
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
 module Flight.Lookup.Cross
