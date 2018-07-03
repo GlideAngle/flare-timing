@@ -1,11 +1,4 @@
-﻿{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE DeriveAnyClass #-}
-{-# LANGUAGE DerivingStrategies #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE NamedFieldPuns #-}
-{-# LANGUAGE TemplateHaskell #-}
-
-module Flight.Types
+﻿module Flight.Types
     ( Fix(..)
     , LLA(..)
     , LatLngAlt(..)

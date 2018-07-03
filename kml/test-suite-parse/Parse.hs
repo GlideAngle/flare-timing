@@ -1,6 +1,3 @@
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE QuasiQuotes #-}
-
 module Main (main) where
 
 import Test.Tasty (TestTree, testGroup, defaultMain)

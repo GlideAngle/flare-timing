@@ -1,7 +1,4 @@
-﻿{-# LANGUAGE DerivingStrategies #-}
-{-# LANGUAGE NamedFieldPuns #-}
-
-module Flight.Kml.Internal
+﻿module Flight.Kml.Internal
     (
     -- * Internal Usage
     -- $internal-use

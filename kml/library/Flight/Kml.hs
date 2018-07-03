@@ -1,7 +1,3 @@
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE PartialTypeSignatures #-}
-{-# LANGUAGE FlexibleInstances #-}
-
 {-|
 Module: Flight.Kml
 Copyright:
