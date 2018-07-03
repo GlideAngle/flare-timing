@@ -42,6 +42,7 @@ before_install:
 install:
 - stack build build-flare-timing --only-dependencies --install-ghc --no-terminal
 - stack install dhall hpack-dhall --no-terminal
+- stack test flare-timing --only-dependencies --no-terminal
 
 script:
 # Build the package, its tests, and its docs and run the tests
