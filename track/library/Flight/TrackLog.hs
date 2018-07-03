@@ -1,8 +1,3 @@
-{-# LANGUAGE TupleSections #-}
-{-# LANGUAGE PartialTypeSignatures #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE LambdaCase #-}
-
 {-|
 Module      : Flight.TrackLog
 Copyright   : (c) Block Scope Limited 2017

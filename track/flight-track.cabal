@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 681f3decd905186aeda9f22e22ffefa1d2465a917528ae2f2675c21fcf7f1fbd
+-- hash: 9f8ad23155d8be99081b87e079754f5380d28d1878c62bb330a6e7f2ca0f4392
 
 name:           flight-track
 version:        0.1.0
@@ -37,7 +37,7 @@ library
       Paths_flight_track
   hs-source-dirs:
       library
-  default-extensions: PackageImports
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
   ghc-options: -Wall
   build-depends:
       base >=4.9.1.0
@@ -64,7 +64,7 @@ test-suite hlint
   hs-source-dirs:
       library
       test-suite-hlint
-  default-extensions: PackageImports
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       base >=4.9.1.0
