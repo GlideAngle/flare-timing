@@ -1,5 +1,3 @@
-{-# LANGUAGE RankNTypes #-}
-
 module Flight.Zone.Cylinder.Edge (CircumSample, sample) where
 
 import Data.UnitsOfMeasure (zero)

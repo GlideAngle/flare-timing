@@ -1,9 +1,3 @@
-{-# LANGUAGE QuasiQuotes #-}
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE DeriveAnyClass #-}
-{-# LANGUAGE DuplicateRecordFields #-}
-
 module Flight.Zone.Raw.Zone
     ( RawRadius(..)
     , RawZone(..)
