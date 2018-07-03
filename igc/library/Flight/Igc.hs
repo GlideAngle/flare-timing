@@ -1,5 +1,3 @@
-{-# LANGUAGE FlexibleInstances #-}
-
 {-|
 Module: Flight.Igc
 Copyright:
