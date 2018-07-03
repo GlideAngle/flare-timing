@@ -1,7 +1,3 @@
-{-# LANGUAGE PartialTypeSignatures #-}
-{-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE NamedFieldPuns #-}
-
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
 module Flight.EdgeToEdge (distanceEdgeToEdge) where

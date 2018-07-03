@@ -1,5 +1,6 @@
 { default-extensions =
     [ "DataKinds"
+    , "DeriveFunctor"
     , "DeriveGeneric"
     , "DeriveAnyClass"
     , "DerivingStrategies"
