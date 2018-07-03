@@ -1,6 +1,3 @@
-{-# LANGUAGE TupleSections #-}
-{-# LANGUAGE NamedFieldPuns #-}
-
 module Flight.Discard
     ( readDiscardFurther
     , writeDiscardFurther
