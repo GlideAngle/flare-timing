@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 9ef08a29dd1294ba8d3edc655ab50eb5ce1de7bef08445d941b3005b53b831c8
+-- hash: 2c0875580b6c46822f3ff52a69e353cacec451e7a515a5303e67c4127fa4585e
 
 name:           flight-units
 version:        0.1.0
@@ -43,7 +43,7 @@ library
   default-extensions: PackageImports
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
-      base >=4.5 && <5
+      base >=4.9.1.0
     , bifunctors
     , fixed
     , formatting
@@ -68,7 +68,7 @@ test-suite hlint
   default-extensions: PackageImports
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:
-      base
+      base >=4.9.1.0
     , bifunctors
     , fixed
     , formatting
