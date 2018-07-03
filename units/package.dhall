@@ -1,6 +1,7 @@
     let defs = ./defaults.dhall 
 
 in    defs
+    ⫽ ./default-extensions.dhall 
     ⫽ { name =
           "flight-units"
       , synopsis =

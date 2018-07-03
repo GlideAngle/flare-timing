@@ -1,6 +1,4 @@
-{-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE ViewPatterns #-}
-{-# LANGUAGE RankNTypes #-}
 
 module Flight.Ratio (pattern (:%)) where
 
