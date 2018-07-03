@@ -1,6 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE DeriveAnyClass #-}
-
 module Flight.Pilot
     ( Pilot(..)
     , PilotTrackLogFile(..)
@@ -13,13 +10,15 @@ import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 
 newtype Pilot = Pilot String
-    deriving (Eq, Ord, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Generic)
+    deriving anyclass (ToJSON, FromJSON)
 
 instance Show Pilot where
     show (Pilot name) = name
 
 newtype TrackLogFile = TrackLogFile String
-    deriving (Eq, Ord, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Generic)
+    deriving anyclass (ToJSON, FromJSON)
 
 instance Show TrackLogFile where
     show (TrackLogFile name) = name
@@ -27,7 +26,8 @@ instance Show TrackLogFile where
 -- | A task folder is relative. To be cross-platform I store the path
 -- parts, stripping the path separators.
 newtype TaskFolder = TaskFolder [ String ]
-    deriving (Eq, Ord, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Generic)
+    deriving anyclass (ToJSON, FromJSON)
 
 instance Show TaskFolder where
     show (TaskFolder pathParts) = show pathParts

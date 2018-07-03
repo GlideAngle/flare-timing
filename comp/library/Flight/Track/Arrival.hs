@@ -1,6 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE DeriveAnyClass #-}
-
 {-|
 Module      : Flight.Track.Arrival
 Copyright   : (c) Block Scope Limited 2018

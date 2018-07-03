@@ -1,5 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
-
 {-|
 Module      : Flight.Track.Distance
 Copyright   : (c) Block Scope Limited 2018

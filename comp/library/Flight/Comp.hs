@@ -1,12 +1,3 @@
-{-# LANGUAGE QuasiQuotes #-}
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE NamedFieldPuns #-}
-{-# LANGUAGE ConstrainedClassMethods #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE DeriveAnyClass #-}
-{-# LANGUAGE MultiWayIf #-}
-
 {-|
 Module      : Data.Flight.Comp
 Copyright   : (c) Block Scope Limited 2017
@@ -79,17 +70,20 @@ import Flight.Score
 -- | The time of first lead into the speed section. This won't exist if no one
 -- is able to cross the start of the speed section without bombing out.
 newtype FirstLead = FirstLead UTCTime
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
 
 -- | The time of first start of the speed section. This won't exist if everyone
 -- jumps the gun.
 newtype FirstStart = FirstStart UTCTime
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
 
 -- | The time of last crossing of the end of the speed section. This won't
 -- exist if no one makes goal and everyone lands out.
 newtype LastArrival = LastArrival UTCTime
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
 
 -- | A race task can be started and not finished if no one makes goal.
 data StartEnd a b =
@@ -123,10 +117,12 @@ type RoutesLookup a = IxTask -> Maybe a
 newtype RouteLookup = RouteLookup (Maybe (RoutesLookup (TaskDistance Double)))
 
 newtype StartGate = StartGate UTCTime
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
 
 newtype UtcOffset = UtcOffset { timeZoneMinutes :: Int }
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
 
 data OpenClose =
     OpenClose
@@ -194,7 +190,8 @@ newtype TaskStop =
     TaskStop
         { announced :: UTCTime
         }
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
 
 data Task =
     Task

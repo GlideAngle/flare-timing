@@ -1,7 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE DeriveAnyClass #-}
-{-# LANGUAGE OverloadedStrings #-}
-
 {-|
 Module      : Flight.Track.Tag
 Copyright   : (c) Block Scope Limited 2017
@@ -38,7 +34,8 @@ data Tagging =
         , tagging :: [[PilotTrackTag]]
           -- ^ For each made zone, the tag.
         }
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
 
 -- | The timing and tagging for a single task.
 data TrackTime =
@@ -54,7 +51,8 @@ data TrackTime =
         , zonesRankPilot :: [[Pilot]]
         -- ^ For each zone, the ordered pilots of each tag.
         }
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
 
 firstLead :: SpeedSection -> [Maybe UTCTime] -> Maybe FirstLead
 firstLead _ [] = Nothing
@@ -100,7 +98,8 @@ newtype TrackTag =
         { zonesTag :: [Maybe Fix]
         -- ^ The interpolated fix tagging each made zone.
         }
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
 
 -- | Associates a pilot with the zones they tag for a single task.
 data PilotTrackTag =
