@@ -2,7 +2,6 @@ module TestNewtypes where
 
 -- NOTE: Avoid orphan instance warnings with these newtypes.
 
-import Prelude hiding (seq)
 import Data.Ratio ((%))
 import Data.List (sortBy)
 import Test.SmallCheck.Series as SC
