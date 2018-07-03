@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 06dcc0611116b0b07b03b6f5d05147284170678770a3d3838082fa2f0209a9de
+-- hash: 1c32e847ce02418ca400ebb5a42757cf48b53c15027157ad487fc8254de3de4a
 
 name:           flight-mask
 version:        0.1.0
@@ -49,10 +49,10 @@ library
       Paths_flight_mask
   hs-source-dirs:
       library
-  default-extensions: ScopedTypeVariables DataKinds FlexibleContexts FlexibleInstances MultiParamTypeClasses TypeOperators TypeFamilies UndecidableInstances QuasiQuotes DisambiguateRecordFields NamedFieldPuns LambdaCase PartialTypeSignatures RecordWildCards
+  default-extensions: DataKinds DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
-      base >=4.5 && <5
+      base >=4.9.1.0
     , bytestring
     , cmdargs
     , containers
@@ -104,10 +104,10 @@ test-suite hlint
   hs-source-dirs:
       library
       test-suite-hlint
-  default-extensions: ScopedTypeVariables DataKinds FlexibleContexts FlexibleInstances MultiParamTypeClasses TypeOperators TypeFamilies UndecidableInstances QuasiQuotes DisambiguateRecordFields NamedFieldPuns LambdaCase PartialTypeSignatures RecordWildCards ScopedTypeVariables DataKinds FlexibleContexts FlexibleInstances MultiParamTypeClasses TypeOperators TypeFamilies UndecidableInstances QuasiQuotes DisambiguateRecordFields NamedFieldPuns LambdaCase PartialTypeSignatures RecordWildCards
+  default-extensions: DataKinds DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
-      base
+      base >=4.9.1.0
     , bytestring
     , cmdargs
     , containers
@@ -131,6 +131,7 @@ test-suite hlint
     , lens
     , mtl
     , numbers
+    , path
     , siggy-chardust
     , split
     , time

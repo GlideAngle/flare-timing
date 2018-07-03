@@ -1,6 +1,3 @@
-{-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE QuasiQuotes #-}
-
 module Flight.Mask.Internal.Zone
     ( ZoneIdx
     , ZoneEntry(..)

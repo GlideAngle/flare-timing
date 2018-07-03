@@ -1,12 +1,3 @@
-{-# LANGUAGE QuasiQuotes #-}
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE ParallelListComp #-}
-{-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE NamedFieldPuns #-}
-{-# LANGUAGE DisambiguateRecordFields #-}
-{-# LANGUAGE TupleSections #-}
-
 {-|
 Module      : Flight.Comp.Distance
 Copyright   : (c) Block Scope Limited 2018

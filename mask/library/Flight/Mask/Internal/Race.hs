@@ -1,5 +1,3 @@
-{-# LANGUAGE RankNTypes #-}
-
 module Flight.Mask.Internal.Race
     ( FlyClipping(..)
     , FlyClipSection(..)

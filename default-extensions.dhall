@@ -25,6 +25,7 @@
     , "TypeFamilies"
     , "TypeOperators"
     , "TypeSynonymInstances"
+    , "TupleSections"
     , "UndecidableInstances"
     ]
 }

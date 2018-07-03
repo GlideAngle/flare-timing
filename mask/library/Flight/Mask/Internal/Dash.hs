@@ -1,5 +1,3 @@
-{-# LANGUAGE RankNTypes #-}
-
 module Flight.Mask.Internal.Dash
     ( dashToGoal
     , dashPathToGoalR

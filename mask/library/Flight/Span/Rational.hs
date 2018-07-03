@@ -1,5 +1,3 @@
-{-# LANGUAGE NamedFieldPuns #-}
-
 module Flight.Span.Rational
     ( zoneToCylR
     , spanR
