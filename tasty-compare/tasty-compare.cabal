@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 92465b7538740b4eeb44159852da453f4a93172bdac62e2ef5055afb15c4f969
+-- hash: 77a9a98cff3b1d3fb1cf74648b7aa1497999a063454b4008950eb3e9ea485805
 
 name:           tasty-compare
 version:        0.1.0
@@ -40,7 +40,7 @@ library
   default-extensions: PackageImports
   ghc-options: -Wall
   build-depends:
-      base
+      base >=4.9.1.0
     , call-stack
     , tasty
     , tasty-hunit
@@ -58,7 +58,7 @@ test-suite hlint
   default-extensions: PackageImports
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
-      base
+      base >=4.9.1.0
     , call-stack
     , hlint
     , tasty
