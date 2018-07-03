@@ -8,6 +8,10 @@ arguments =
     [ "library"
     , "test-suite-hlint"
     , "test-suite-parse"
+    -- WARNING: HLint turns off QuasiQuotes even if turned on in
+    -- default-extensions in the cabal file.
+    -- SEE: https://github.com/ndmitchell/hlint/issues/223
+    , "-XQuasiQuotes"
     ]
 
 main :: IO ()

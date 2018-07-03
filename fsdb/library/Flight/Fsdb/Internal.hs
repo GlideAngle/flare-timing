@@ -1,7 +1,3 @@
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE PartialTypeSignatures #-}
-{-# LANGUAGE OverloadedStrings #-}
-
 module Flight.Fsdb.Internal (prs, sci, sciToInt, sciToFloat, sciToRational) where
 
 import Control.Monad

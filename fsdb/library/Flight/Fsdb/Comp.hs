@@ -1,7 +1,3 @@
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE PartialTypeSignatures #-}
-{-# LANGUAGE OverloadedStrings #-}
-
 module Flight.Fsdb.Comp (parseComp) where
 
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)

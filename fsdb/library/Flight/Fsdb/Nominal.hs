@@ -1,7 +1,3 @@
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE NamedFieldPuns #-}
-
 module Flight.Fsdb.Nominal (parseNominal) where
 
 import Data.Either (either)

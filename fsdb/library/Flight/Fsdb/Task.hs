@@ -1,8 +1,3 @@
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE PartialTypeSignatures #-}
-{-# LANGUAGE FlexibleInstances #-}
-
 module Flight.Fsdb.Task (parseTasks) where
 
 import Data.List (sort, concatMap, nub)

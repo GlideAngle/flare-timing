@@ -1,8 +1,3 @@
-{-# LANGUAGE QuasiQuotes #-}
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE NamedFieldPuns #-}
-
 module Flight.Fsdb.Stopped (parseStopped) where
 
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
