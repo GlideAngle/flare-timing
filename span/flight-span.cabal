@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a269c94a4d5eaf4c0f7e4146d0c752dc92b02037b750c97f6d3a6dabad94d521
+-- hash: 7c5f30b0444c165e1a6f18a61925c68dd5478d3fb0454db819f89e87b61e0b71
 
 name:           flight-span
 version:        0.1.0
@@ -40,7 +40,7 @@ library
   default-extensions: PackageImports
   ghc-options: -Wall
   build-depends:
-      base >=4.5 && <5
+      base >=4.9.1.0
     , cmdargs
   default-language: Haskell2010
 
@@ -56,7 +56,7 @@ test-suite hlint
   default-extensions: PackageImports
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
-      base
+      base >=4.9.1.0
     , cmdargs
     , hlint
   default-language: Haskell2010
