@@ -16,6 +16,7 @@ arguments =
     , "prod-apps/align-time"
     , "prod-apps/discard-further"
     , "prod-apps/mask-track"
+    , "prod-apps/gap-point"
 
     , "test-suite-hlint"
 

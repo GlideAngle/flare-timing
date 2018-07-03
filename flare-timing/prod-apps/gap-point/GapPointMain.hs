@@ -13,7 +13,8 @@ import Data.Map (Map)
 import qualified Data.Map.Strict as Map
 import Data.List (sortOn)
 import Control.Applicative (liftA2)
-import Control.Monad (mapM_, join)
+import qualified Control.Applicative as A ((<$>))
+import Control.Monad (mapM_)
 import Control.Monad.Except (runExceptT)
 import System.FilePath (takeFileName)
 import Data.UnitsOfMeasure ((/:), u, convert)
@@ -127,7 +128,7 @@ go CmdOptions{..} compFile@(CompInputFile compPath) = do
         (_, _, Left msg, _, _) -> putStrLn msg
         (_, _, _, Left msg, _) -> putStrLn msg
         (_, _, _, _, Left msg) -> putStrLn msg
-        (Right cs, Right cg, Right tg, Right mk, Right lg) -> do
+        (Right cs, Right cg, Right tg, Right mk, Right lg) ->
             writePointing pointFile $ points' cs cg tg mk lg
 
 points' :: CompSettings -> Crossing -> Tagging -> Masking -> Cmp.Landing -> Pointing
@@ -186,12 +187,12 @@ points'
             ]
 
         dBests :: [MaximumDistance (Quantity Double [u| km |])] =
-            [ MaximumDistance . MkQuantity $ maybe 0 id b
+            [ MaximumDistance . MkQuantity $ fromMaybe 0 b
             | b <- bestDistance
             ]
 
         dSums :: [SumOfDistance (Quantity Double [u| km |])] =
-            [ SumOfDistance . MkQuantity $ maybe 0 id s
+            [ SumOfDistance . MkQuantity $ fromMaybe 0 s
             | s <- sumDistance
             ]
 
@@ -213,8 +214,7 @@ points'
             [ do
                 lv' <- lv
                 dv' <- dv
-                tv' <- tv
-                return $ ValidityWorking lv' dv' tv'
+                ValidityWorking lv' dv' <$> tv
             | lv <- snd <$> lvs
             | dv <- snd <$> dvs
             | tv <- snd <$> tvs
@@ -272,7 +272,7 @@ points'
             ]
 
         allocs =
-            [ ((uncurry (Allocation gr w)) . (flip availablePoints w)) <$> v
+            [ uncurry (Allocation gr w) . (`availablePoints` w) <$> v
             | gr <- grs
             | w <- ws
             | v <- (fmap . fmap) Gap.task validities
@@ -384,9 +384,8 @@ points'
         speedSections :: [SpeedSection] = speedSection <$> tasks
 
         tags :: [[(Pilot, Maybe StartEndTags)]] =
-            [ ( (fmap . fmap) (startEnd . section ss)
+            [ (fmap . fmap) (startEnd . section ss)
               . (\(PilotTrackTag p tag) -> (p, zonesTag <$> tag))
-              )
               <$> ts
             | ss <- speedSections
             | ts <- tagging
@@ -394,8 +393,8 @@ points'
 
         score :: [[(Pilot, Breakdown)]] =
             [ sortOn (total . snd)
-              $ ((fmap . fmap) (tally gates))
-              $ collate diffs linears ls as ts ds ssEs gsEs gs
+              $ fmap  (tally gates)
+              A.<$> collate diffs linears ls as ts ds ssEs gsEs gs
             | diffs <- difficultyDistancePoints
             | linears <- linearDistancePoints
             | ls <- leadingPoints
@@ -594,7 +593,7 @@ tally
         { velocity =
             zeroVelocity
                 { ss = ss'
-                , gs = join $ Speed.startGateTaken startGates <$> ss'
+                , gs = Speed.startGateTaken startGates =<< ss'
                 , es = es'
                 , distance = d
                 , ssElapsed = ssT
@@ -610,7 +609,7 @@ tally
         es' = getTagTime unEnd
         getTagTime accessor =
             (time :: Fix -> _)
-            <$> (join $ fmap (accessor) g)
+            <$> (accessor =<< g)
 
 mkVelocity
     :: PilotDistance (Quantity Double [u| km |])
