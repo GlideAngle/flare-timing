@@ -1,5 +1,3 @@
-{-# LANGUAGE QuasiQuotes #-}
-
 module CrossZoneOptions (description) where
 
 import Text.RawString.QQ (r)

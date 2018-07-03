@@ -1,5 +1,4 @@
 {-# LANGUAGE DeriveDataTypeable #-}
-{-# LANGUAGE QuasiQuotes #-}
 
 module IgcOptions (IgcOptions(..), mkOptions) where
 

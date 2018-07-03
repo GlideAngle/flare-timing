@@ -1,5 +1,4 @@
 {-# LANGUAGE DeriveDataTypeable #-}
-{-# LANGUAGE QuasiQuotes #-}
 
 module FsdbOptions (FsdbOptions(..), Detail(..), mkOptions) where
 

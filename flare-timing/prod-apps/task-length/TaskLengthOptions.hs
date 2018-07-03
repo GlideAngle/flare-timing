@@ -1,3 +1,32 @@
+{-- WARNING set -XNoOverloadedStrings to avoid errors with -XDeriveDataTypeable
+/ error:
+    • No instance for (Typeable a0) arising from a use of ‘opt’
+    • In the second argument of ‘(&=)’, namely ‘opt "name"’
+      In the first argument of ‘(&=)’, namely
+        ‘def &= help "Which tasks?" &= typ "TASK NUMBER" &= opt "name"’
+      In the ‘task’ field of a record
+    |
+100 |         &= opt "name"
+    |            ^^^^^^^^^^
+
+/ error:
+    • Ambiguous type variable ‘a0’ arising from the literal ‘"name"’
+      prevents the constraint ‘(Data.String.IsString
+                                  a0)’ from being solved.
+      Probable fix: use a type annotation to specify what ‘a0’ should be.
+      These potential instances exist:
+        instance a ~ Char => Data.String.IsString [a]
+          -- Defined in ‘Data.String’
+        ...plus 9 instances involving out-of-scope types
+        (use -fprint-potential-instances to see them all)
+    • In the first argument of ‘opt’, namely ‘"name"’
+      In the second argument of ‘(&=)’, namely ‘opt "name"’
+      In the first argument of ‘(&=)’, namely
+        ‘def &= help "Which tasks?" &= typ "TASK NUMBER" &= opt "name"’
+    |
+100 |         &= opt "name"
+--}
+{-# LANGUAGE NoOverloadedStrings #-}
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE QuasiQuotes #-}

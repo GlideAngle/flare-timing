@@ -1,5 +1,3 @@
-{-# LANGUAGE QuasiQuotes #-}
-
 module DiscardFurtherOptions (description) where
 
 import Text.RawString.QQ (r)

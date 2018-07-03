@@ -1,5 +1,3 @@
-{-# LANGUAGE QuasiQuotes #-}
-
 module MaskTrackOptions (description) where
 
 import Text.RawString.QQ (r)

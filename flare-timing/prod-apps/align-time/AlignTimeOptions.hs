@@ -1,5 +1,3 @@
-{-# LANGUAGE QuasiQuotes #-}
-
 module AlignTimeOptions (description) where
 
 import Text.RawString.QQ (r)

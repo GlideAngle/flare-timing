@@ -1,6 +1,3 @@
-{-# LANGUAGE QuasiQuotes #-}
-{-# LANGUAGE DataKinds #-}
-
 module Stats
     ( TimeStats(..)
     , FlightStats(..)

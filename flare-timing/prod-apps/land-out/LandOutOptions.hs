@@ -1,5 +1,3 @@
-{-# LANGUAGE QuasiQuotes #-}
-
 module LandOutOptions (description) where
 
 import Text.RawString.QQ (r)

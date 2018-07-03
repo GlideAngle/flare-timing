@@ -1,5 +1,3 @@
-{-# LANGUAGE QuasiQuotes #-}
-
 module TagZoneOptions (description) where
 
 import Text.RawString.QQ (r)

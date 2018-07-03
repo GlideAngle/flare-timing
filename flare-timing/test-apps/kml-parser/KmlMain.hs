@@ -1,5 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
 import Control.Monad (mapM_)

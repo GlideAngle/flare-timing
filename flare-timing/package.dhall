@@ -35,6 +35,7 @@ in  let deps =
             ]
 
 in    defs
+    ⫽ ./default-extensions.dhall 
     ⫽ { name =
           "flare-timing"
       , synopsis =
