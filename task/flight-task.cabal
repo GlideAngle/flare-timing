@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 842e3157179a8a500b2c87fee5b82d4c5f1c296f2f36450e870b19e16ced4128
+-- hash: 316e099bb309736718061ebc557998f5c14e77b3943eb1730bdf1b6e68a1c185
 
 name:           flight-task
 version:        0.1.0
@@ -43,7 +43,7 @@ library
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
-    , base >=4.5 && <5
+    , base >=4.9.1.0
     , bifunctors
     , detour-via-sci
     , fgl
@@ -73,7 +73,7 @@ test-suite hlint
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
-    , base
+    , base >=4.9.1.0
     , bifunctors
     , detour-via-sci
     , fgl
@@ -86,7 +86,6 @@ test-suite hlint
     , numbers
     , scientific
     , siggy-chardust
-    , tasty-compare
     , uom-plugin
   default-language: Haskell2010
 
@@ -114,14 +113,14 @@ test-suite task
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
-    , base
+    , base >=4.9.1.0
     , bifunctors
+    , detour-via-sci
     , fgl
     , flight-earth
     , flight-latlng
     , flight-units
     , flight-zone
-    , hcoord
     , mtl
     , numbers
     , scientific
