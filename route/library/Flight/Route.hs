@@ -1,6 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE DeriveAnyClass #-}
-{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DuplicateRecordFields #-}
 
 module Flight.Route
@@ -33,7 +30,8 @@ newtype TaskRoute =
     TaskRoute
         { taskRoute :: [Maybe TaskTrack]
         }
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
 
 data TaskTrack =
     TaskTrack
