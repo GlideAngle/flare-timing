@@ -1,7 +1,3 @@
-{-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE QuasiQuotes #-}
-
 module Flight.Earth.Sphere.Cylinder.Rational (circumSample) where
 
 import Data.Ratio ((%))

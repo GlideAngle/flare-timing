@@ -1,6 +1,3 @@
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE QuasiQuotes #-}
-
 module Flight.Earth.Flat.Projected.Rational (costEastNorth) where
 
 import Data.UnitsOfMeasure (u)

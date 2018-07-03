@@ -1,7 +1,3 @@
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE QuasiQuotes #-}
-{-# LANGUAGE NamedFieldPuns #-}
-
 -- SEE: https://en.wikipedia.org/wiki/Vincenty%27s_formulae#Inverse_problem
 -- Notation used in the Vincenty formulae
 --

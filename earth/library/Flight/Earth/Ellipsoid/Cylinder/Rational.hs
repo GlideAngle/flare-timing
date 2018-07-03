@@ -1,8 +1,3 @@
-{-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE QuasiQuotes #-}
-{-# LANGUAGE NamedFieldPuns #-}
-
 module Flight.Earth.Ellipsoid.Cylinder.Rational
     ( circumSample
     , vincentyDirect

@@ -1,6 +1,3 @@
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE QuasiQuotes #-}
-
 module Flight.Earth.Sphere (earthRadius) where
 
 import Data.UnitsOfMeasure (u)

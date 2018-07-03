@@ -1,5 +1,3 @@
-{-# LANGUAGE DataKinds #-}
-
 module Flight.Earth.Flat.PointToPoint.Double
     ( distanceEuclidean
     , azimuthFwd

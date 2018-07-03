@@ -1,8 +1,4 @@
-﻿{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE QuasiQuotes #-}
-
-{-# LANGUAGE PartialTypeSignatures #-}
-{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
+﻿{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
 -- | Test data from the Forbes PreWords
 -- 
