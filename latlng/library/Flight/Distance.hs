@@ -1,15 +1,4 @@
-﻿{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE QuasiQuotes #-}
-
-{-# LANGUAGE PartialTypeSignatures #-}
-{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
+﻿{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
 module Flight.Distance
     ( TaskDistance(..)

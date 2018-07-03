@@ -1,15 +1,4 @@
-﻿{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE UnicodeSyntax #-}
-{-# LANGUAGE QuasiQuotes #-}
-
-module Flight.LatLng.Rational
+﻿module Flight.LatLng.Rational
     ( Epsilon(..)
     , defEps
     , showAngle

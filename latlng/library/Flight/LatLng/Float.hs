@@ -1,16 +1,3 @@
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE UnicodeSyntax #-}
-{-# LANGUAGE QuasiQuotes #-}
-
-{-# LANGUAGE OverloadedStrings #-}
-
 module Flight.LatLng.Float (showAngle, degToRad, radToDeg) where
 
 import Data.Text.Lazy (unpack)

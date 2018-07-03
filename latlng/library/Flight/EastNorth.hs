@@ -1,5 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
-
 module Flight.EastNorth (EastingNorthing(..), UtmZone(..)) where
 
 import GHC.Generics (Generic)

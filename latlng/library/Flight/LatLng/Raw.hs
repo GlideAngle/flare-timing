@@ -1,11 +1,4 @@
-﻿{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE TemplateHaskell #-}
-
-module Flight.LatLng.Raw
+﻿module Flight.LatLng.Raw
     ( RawLat(..)
     , RawLng(..)
     , RawLatLng(..)
