@@ -40,6 +40,10 @@ packages:
     git: https://github.com/brunjlar/stack2cabal
     commit: a8a4cdcacd697cee648af93856735f15de5987a6
   extra-dep: true
+- location:
+    git: https://github.com/judah/pier
+    commit: 65f526e242cae3f2255ead9fbaaa13cf85f9022a
+  extra-dep: true
 extra-deps:
 - hxt-xpath-9.1.2.2
 - uom-plugin-0.3.0.0

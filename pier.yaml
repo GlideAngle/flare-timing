@@ -1,0 +1,28 @@
+resolver: lts-11.14
+packages:
+- build
+- detour-via-sci
+- detour-via-uom
+- cmd
+- comp
+- earth
+- fsdb
+- gap
+- igc
+- kml
+- latlng
+- lookup
+- mask
+- route
+- scribe
+- siggy-chardust
+- span
+- task
+- tasty-compare
+- track
+- units
+- zone
+- flare-timing
+extra-deps:
+- hxt-xpath-9.1.2.2
+- uom-plugin-0.3.0.0
