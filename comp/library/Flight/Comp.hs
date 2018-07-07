@@ -31,22 +31,26 @@ module Flight.Comp
     , openClose
     , speedSectionToLeg
     -- * Pilot and their track logs.
+    , PilotId(..)
+    , PilotName(..)
     , Pilot(..)
     , PilotTrackLogFile(..)
     , TrackLogFile(..)
     , TrackFileFail(..)
     , TaskFolder(..)
     , FlyingSection
+    , pilotNamed
     -- * Comp paths
     , module Flight.Path
     ) where
 
 import Data.Ratio ((%))
+import Control.Monad (join)
 import Data.Time.Clock (UTCTime)
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.Maybe (listToMaybe)
-import Data.List (intercalate)
+import Data.List (intercalate, nub, sort)
 import Data.String (IsString())
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
@@ -140,6 +144,14 @@ openClose _ [] = Nothing
 openClose Nothing (x : _) = Just x
 openClose _ [x] = Just x
 openClose (Just (_, e)) xs = listToMaybe . take 1 . drop (e - 1) $ xs
+
+pilotNamed :: CompSettings -> [PilotName] -> [Pilot]
+pilotNamed CompSettings{pilots} [] = sort . nub . join $
+    (fmap . fmap) (\(PilotTrackLogFile p _) -> p) pilots
+pilotNamed CompSettings{pilots} xs = sort . nub . join $
+    [ filter (\(Pilot (_, name)) -> name `elem` xs) ps
+    | ps <- (fmap . fmap) (\(PilotTrackLogFile p _) -> p) pilots
+    ]
 
 data CompSettings =
     CompSettings

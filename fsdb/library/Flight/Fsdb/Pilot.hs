@@ -1,7 +1,5 @@
 module Flight.Fsdb.Pilot
-    ( Key(..)
-    , KeyPilot(..)
-    , parsePilots
+    ( parsePilots
     , parseTracks
     , parseTaskFolders
     , getCompPilot
@@ -30,17 +28,19 @@ import Text.XML.HXT.Core
     )
 
 import Flight.Comp
-    (TaskFolder(..), Pilot(..), TrackLogFile(..), PilotTrackLogFile(..))
+    ( PilotId(..), PilotName(..), Pilot(..)
+    , TaskFolder(..), Pilot(..), TrackLogFile(..), PilotTrackLogFile(..)
+    )
 
-newtype KeyPilot = KeyPilot (Key, Pilot) deriving Show
-newtype KeyTrackLogFile = KeyTrackLogFile (String, String) deriving Show
-newtype Key = Key String deriving (Eq, Ord, Show)
-newtype TaskKey = TaskKey (String, [Key]) deriving Show
+newtype TaskId = TaskId String deriving Show
+
+newtype KeyTrackLogFile = KeyTrackLogFile (PilotId, String) deriving Show
+newtype TaskPilots = TaskPilots (TaskId, [PilotId]) deriving Show
 
 newtype TaskKeyTrackLogFile =
-    TaskKeyTrackLogFile (String, [KeyTrackLogFile]) deriving Show
+    TaskKeyTrackLogFile (TaskId, [KeyTrackLogFile]) deriving Show
 
-getCompPilot :: ArrowXml a => a XmlTree KeyPilot
+getCompPilot :: ArrowXml a => a XmlTree Pilot
 getCompPilot =
     getChildren
     >>> deep (hasName "FsCompetition")
@@ -48,7 +48,7 @@ getCompPilot =
     /> hasName "FsParticipant"
     >>> getAttrValue "id"
     &&& getAttrValue "name"
-    >>> arr (\(k, p) -> KeyPilot (Key k, Pilot p))
+    >>> arr (\(k, p) -> Pilot (PilotId k, PilotName p))
 
 getTaskFolder :: ArrowXml a => a XmlTree TaskFolder
 getTaskFolder =
@@ -58,13 +58,13 @@ getTaskFolder =
     >>> arr (splitOneOf "\\/")
     >>> arr TaskFolder
 
-getTaskPilot :: ArrowXml a => a XmlTree TaskKey
+getTaskPilot :: ArrowXml a => a XmlTree TaskPilots
 getTaskPilot =
     getChildren
     >>> deep (hasName "FsTask")
     >>> getAttrValue "id"
     &&& getPilots
-    >>> arr TaskKey
+    >>> arr (\(k, ps) -> TaskPilots (TaskId k, ps))
     where
         getPilots =
             getChildren
@@ -75,7 +75,7 @@ getTaskPilot =
             getChildren
             >>> hasName "FsParticipant"
             >>> getAttrValue "id"
-            >>> arr Key
+            >>> arr PilotId
 
 getTaskPilotTrackLogFile :: ArrowXml a => a XmlTree TaskKeyTrackLogFile
 getTaskPilotTrackLogFile =
@@ -83,7 +83,7 @@ getTaskPilotTrackLogFile =
     >>> deep (hasName "FsTask")
     >>> getAttrValue "id"
     &&& getPilots
-    >>> arr TaskKeyTrackLogFile
+    >>> arr (\(k, xs) -> TaskKeyTrackLogFile (TaskId k, xs))
     where
         getPilots =
             getChildren
@@ -95,7 +95,7 @@ getTaskPilotTrackLogFile =
             >>> hasName "FsParticipant"
             >>> getAttrValue "id"
             &&& getTrackLog
-            >>> arr KeyTrackLogFile
+            >>> arr (\(k, x) -> KeyTrackLogFile (PilotId k, x))
 
         getTrackLog =
             getChildren
@@ -105,49 +105,44 @@ getTaskPilotTrackLogFile =
 parsePilots :: String -> IO (Either String [[Pilot]])
 parsePilots contents = do
     let doc = readString [withValidate no, withWarnings no] contents
-    xs :: [KeyPilot] <- runX $ doc >>> getCompPilot
-    ys :: [TaskKey] <- runX $ doc >>> getTaskPilot
+    xs :: [Pilot] <- runX $ doc >>> getCompPilot
+    taskPilots :: [TaskPilots] <- runX $ doc >>> getTaskPilot
 
-    let xs' :: [String] =
-            sort $ (\(KeyPilot (_, Pilot p)) -> p) <$> xs
+    let xsMap :: Map PilotId Pilot =
+            fromList $ (\x@(Pilot (k, _)) -> (k, x)) <$> xs
 
-    let compPilots :: [Pilot] = Pilot <$> xs'
-
-    let xsMap :: Map String String =
-            fromList $ (\(KeyPilot (Key k, Pilot p)) -> (k, p)) <$> xs
-
-    let zs :: [[String]] =
-            (\(TaskKey (_, ks)) ->
+    let ys :: [[Pilot]] =
+            (\(TaskPilots (_, ks)) ->
                 sort
-                $ (\(Key y) -> findWithDefault y y xsMap) <$> ks)
-            <$> ys
+                $ (\k@(PilotId s) ->
+                    findWithDefault (Pilot (k, PilotName s)) k xsMap)
+                    <$> ks)
+            <$> taskPilots
 
-    let taskPilots :: [[Pilot]] = (fmap . fmap) Pilot zs
-
-    return $ Right $ compPilots : taskPilots
+    return $ Right $ xs : ys
 
 parseTracks :: String -> IO (Either String [[PilotTrackLogFile]])
 parseTracks contents = do
     let doc = readString [withValidate no, withWarnings no] contents
-    xs :: [KeyPilot] <- runX $ doc >>> getCompPilot
+    xs :: [Pilot] <- runX $ doc >>> getCompPilot
     ys :: [TaskKeyTrackLogFile] <- runX $ doc >>> getTaskPilotTrackLogFile
 
-    let xsMap :: Map String String =
-            fromList $ (\(KeyPilot (Key k, Pilot p)) -> (k, p)) <$> xs
+    let xsMap :: Map PilotId Pilot =
+            fromList $ (\x@(Pilot (k, _)) -> (k, x)) <$> xs
 
-    let taskPilotLogs :: [[ PilotTrackLogFile ]] =
+    let taskPilotLogs :: [[PilotTrackLogFile]] =
             (\(TaskKeyTrackLogFile (_, ks)) ->
                 sort
-                $ (\(KeyTrackLogFile (k, filename)) ->
+                $ (\(KeyTrackLogFile (k@(PilotId s), filename)) ->
                     let pilot =
-                            findWithDefault k k xsMap
+                            findWithDefault (Pilot (k, PilotName s)) k xsMap
 
                         tlf =
                             if null filename
                                 then Nothing
                                 else Just (TrackLogFile filename)
 
-                    in PilotTrackLogFile (Pilot pilot) tlf) <$> ks)
+                    in PilotTrackLogFile pilot tlf) <$> ks)
             <$> ys
 
     return $ Right taskPilotLogs

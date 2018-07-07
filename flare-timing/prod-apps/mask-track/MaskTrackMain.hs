@@ -26,6 +26,7 @@ import Flight.Comp
     , CrossZoneFile(..)
     , TagZoneFile(..)
     , CompSettings(..)
+    , PilotName(..)
     , Pilot(..)
     , Task(..)
     , IxTask(..)
@@ -38,6 +39,7 @@ import Flight.Comp
     , findCompInput
     , speedSectionToLeg
     , ensureExt
+    , pilotNamed
     )
 import Flight.Distance (TaskDistance(..), unTaskDistance)
 import Flight.Mask
@@ -138,7 +140,7 @@ go CmdOptions{..} compFile@(CompInputFile compPath) = do
                 lookupTaskLength
                 (tagTaskTime tagging)
                 (IxTask <$> task)
-                (Pilot <$> pilot)
+                (pilotNamed cs $ PilotName <$> pilot)
                 compFile
                 (check math lookupTaskLength flyingLookup tagging)
 

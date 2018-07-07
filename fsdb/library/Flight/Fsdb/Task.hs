@@ -31,19 +31,24 @@ import Flight.LatLng.Raw (RawLat(..), RawLng(..))
 import qualified Flight.Zone.Raw as Z (RawZone(..))
 import Flight.Zone.Raw as Z (RawRadius(..))
 import Flight.Comp
-    (Task(..), TaskStop(..), SpeedSection, StartGate(..), OpenClose(..), Pilot(..))
-import Flight.Fsdb.Pilot (Key(..), KeyPilot(..), getCompPilot)
+    ( PilotId(..), PilotName(..), Pilot(..)
+    , Task(..), TaskStop(..), SpeedSection, StartGate(..), OpenClose(..)
+    )
+import Flight.Fsdb.Pilot (getCompPilot)
 import Flight.Units ()
 import Flight.Fsdb.Internal (prs, sci, sciToInt, sciToFloat, sciToRational)
 
-keyMap :: [KeyPilot] -> Map Key Pilot
+newtype KeyPilot = KeyPilot (PilotId, Pilot) deriving Show
+
+keyMap :: [KeyPilot] -> Map PilotId Pilot
 keyMap = fromList . fmap (\(KeyPilot x) -> x)
                         
-unKeyPilot :: Map Key Pilot -> Key -> Pilot
-unKeyPilot ps k@(Key ip) = findWithDefault (Pilot ip) k ps
+unKeyPilot :: Map PilotId Pilot -> PilotId -> Pilot
+unKeyPilot ps k@(PilotId ip) =
+    findWithDefault (Pilot (k, PilotName ip)) k ps
 
-getTask :: ArrowXml a => [KeyPilot] -> a XmlTree Task
-getTask kps =
+getTask :: ArrowXml a => [Pilot] -> a XmlTree Task
+getTask ps =
     getChildren
     >>> deep (hasName "FsTask")
     >>> getAttrValue "name"
@@ -52,6 +57,8 @@ getTask kps =
     &&& getDefn
     >>> arr mkTask
     where
+        kps = (\x@(Pilot (k, _)) -> KeyPilot (k, x)) <$> ps
+        
         getDefn =
             getChildren
             >>> hasName "FsTaskDefinition"
@@ -98,7 +105,7 @@ getTask kps =
             >>> hasName "FsParticipant"
                 `notContaining` (getChildren >>> hasName "FsFlightData")
             >>> getAttrValue "id"
-            >>> arr (unKeyPilot (keyMap kps) . Key)
+            >>> arr (unKeyPilot (keyMap kps) . PilotId)
 
         getStopped =
             getChildren
