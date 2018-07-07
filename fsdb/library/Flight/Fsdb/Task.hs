@@ -38,7 +38,7 @@ import Flight.Fsdb.Pilot (getCompPilot)
 import Flight.Units ()
 import Flight.Fsdb.Internal (prs, sci, sciToInt, sciToFloat, sciToRational)
 
-newtype KeyPilot = KeyPilot (PilotId, Pilot) deriving Show
+newtype KeyPilot = KeyPilot (PilotId, Pilot)
 
 keyMap :: [KeyPilot] -> Map PilotId Pilot
 keyMap = fromList . fmap (\(KeyPilot x) -> x)

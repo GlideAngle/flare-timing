@@ -32,13 +32,11 @@ import Flight.Comp
     , TaskFolder(..), Pilot(..), TrackLogFile(..), PilotTrackLogFile(..)
     )
 
-newtype TaskId = TaskId String deriving Show
-
-newtype KeyTrackLogFile = KeyTrackLogFile (PilotId, String) deriving Show
-newtype TaskPilots = TaskPilots (TaskId, [PilotId]) deriving Show
-
+newtype TaskId = TaskId String
+newtype KeyTrackLogFile = KeyTrackLogFile (PilotId, String)
+newtype TaskPilots = TaskPilots (TaskId, [PilotId])
 newtype TaskKeyTrackLogFile =
-    TaskKeyTrackLogFile (TaskId, [KeyTrackLogFile]) deriving Show
+    TaskKeyTrackLogFile (TaskId, [KeyTrackLogFile])
 
 getCompPilot :: ArrowXml a => a XmlTree Pilot
 getCompPilot =
@@ -46,9 +44,9 @@ getCompPilot =
     >>> deep (hasName "FsCompetition")
     /> hasName "FsParticipants"
     /> hasName "FsParticipant"
-    >>> getAttrValue "id"
-    &&& getAttrValue "name"
-    >>> arr (\(k, p) -> Pilot (PilotId k, PilotName p))
+    >>> (getAttrValue "id" >>> arr PilotId)
+    &&& (getAttrValue "name" >>> arr PilotName)
+    >>> arr Pilot
 
 getTaskFolder :: ArrowXml a => a XmlTree TaskFolder
 getTaskFolder =
@@ -62,9 +60,9 @@ getTaskPilot :: ArrowXml a => a XmlTree TaskPilots
 getTaskPilot =
     getChildren
     >>> deep (hasName "FsTask")
-    >>> getAttrValue "id"
+    >>> (getAttrValue "id" >>> arr TaskId)
     &&& getPilots
-    >>> arr (\(k, ps) -> TaskPilots (TaskId k, ps))
+    >>> arr TaskPilots
     where
         getPilots =
             getChildren
@@ -81,9 +79,9 @@ getTaskPilotTrackLogFile :: ArrowXml a => a XmlTree TaskKeyTrackLogFile
 getTaskPilotTrackLogFile =
     getChildren
     >>> deep (hasName "FsTask")
-    >>> getAttrValue "id"
+    >>> (getAttrValue "id" >>> arr TaskId)
     &&& getPilots
-    >>> arr (\(k, xs) -> TaskKeyTrackLogFile (TaskId k, xs))
+    >>> arr TaskKeyTrackLogFile
     where
         getPilots =
             getChildren
@@ -93,9 +91,9 @@ getTaskPilotTrackLogFile =
         getPilot =
             getChildren
             >>> hasName "FsParticipant"
-            >>> getAttrValue "id"
+            >>> (getAttrValue "id" >>> arr PilotId)
             &&& getTrackLog
-            >>> arr (\(k, x) -> KeyTrackLogFile (PilotId k, x))
+            >>> arr KeyTrackLogFile
 
         getTrackLog =
             getChildren
