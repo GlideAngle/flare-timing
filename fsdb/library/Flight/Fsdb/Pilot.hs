@@ -35,8 +35,8 @@ import Flight.Comp
 newtype TaskId = TaskId String
 newtype KeyTrackLogFile = KeyTrackLogFile (PilotId, String)
 newtype TaskPilots = TaskPilots (TaskId, [PilotId])
-newtype TaskKeyTrackLogFile =
-    TaskKeyTrackLogFile (TaskId, [KeyTrackLogFile])
+newtype TaskTracklogs =
+    TaskTracklogs (TaskId, [KeyTrackLogFile])
 
 getCompPilot :: ArrowXml a => a XmlTree Pilot
 getCompPilot =
@@ -75,13 +75,13 @@ getTaskPilot =
             >>> getAttrValue "id"
             >>> arr PilotId
 
-getTaskPilotTrackLogFile :: ArrowXml a => a XmlTree TaskKeyTrackLogFile
-getTaskPilotTrackLogFile =
+getTaskTracklogs :: ArrowXml a => a XmlTree TaskTracklogs
+getTaskTracklogs =
     getChildren
     >>> deep (hasName "FsTask")
     >>> (getAttrValue "id" >>> arr TaskId)
     &&& getPilots
-    >>> arr TaskKeyTrackLogFile
+    >>> arr TaskTracklogs
     where
         getPilots =
             getChildren
@@ -123,13 +123,13 @@ parseTracks :: String -> IO (Either String [[PilotTrackLogFile]])
 parseTracks contents = do
     let doc = readString [withValidate no, withWarnings no] contents
     xs :: [Pilot] <- runX $ doc >>> getCompPilot
-    ys :: [TaskKeyTrackLogFile] <- runX $ doc >>> getTaskPilotTrackLogFile
+    ys :: [TaskTracklogs] <- runX $ doc >>> getTaskTracklogs
 
     let xsMap :: Map PilotId Pilot =
             fromList $ (\x@(Pilot (k, _)) -> (k, x)) <$> xs
 
     let taskPilotLogs :: [[PilotTrackLogFile]] =
-            (\(TaskKeyTrackLogFile (_, ks)) ->
+            (\(TaskTracklogs (_, ks)) ->
                 sort
                 $ (\(KeyTrackLogFile (k@(PilotId s), filename)) ->
                     let pilot =
