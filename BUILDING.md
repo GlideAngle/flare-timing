@@ -96,8 +96,8 @@ Now let's do the build again;
 ## Library Packages
 
 For handling decimal places and significant digits;
-* [`aeson-via-sci`](aeson-via-sci)
-* [`aeson-via-uom`](aeson-via-uom)
+* [`detour-via-sci`](detour-via-sci)
+* [`detour-via-uom`](detour-via-uom)
 * [`siggy-chardust`](siggy-chardust)
 
 Units, latitudes, longitudes and distances on Earth;
