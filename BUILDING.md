@@ -68,7 +68,7 @@ If the build is working with `stack` then we might be able to get it to work
 with `cabal`;
 
     > mv cabal.project __cabal.project
-    > stack2cabal .
+    > stack exec stack2cabal -- .
     > mv cabal.project cabal.project.local
     > mv __cabal.project cabal.project
 
