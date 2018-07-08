@@ -35,7 +35,7 @@ tooling CabalTooling = "cabal"
 tooling StackTooling = "stack"
 
 cmdDocTestFor :: Tooling -> String -> String
-cmdDocTestFor CabalTooling x = "cabal new-test " ++ x ++ " doctest"
+cmdDocTestFor CabalTooling x = "cabal new-test " ++ x ++ ":doctest"
 cmdDocTestFor StackTooling x = "stack test " ++ x ++ ":doctest"
 
 cmdTestFor :: Tooling -> String -> String

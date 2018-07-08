@@ -1,11 +1,7 @@
 packages:
-    .stack2cabal/fgl
-    , .stack2cabal/uom-plugin/uom-plugin
-    , .stack2cabal/hcoord/hcoord
-    , .stack2cabal/hcoord/hcoord-utm
-    , build
-    , aeson-via-sci
-    , aeson-via-uom
+      build
+    , detour-via-sci
+    , detour-via-uom
     , cmd
     , comp
     , earth
@@ -25,3 +21,7 @@ packages:
     , track
     , units
     , zone
+    , flare-timing
+    , .stack2cabal/hcoord/hcoord
+    , .stack2cabal/hcoord/hcoord-utm
+    , .stack2cabal/fgl
