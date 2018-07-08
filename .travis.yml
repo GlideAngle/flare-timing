@@ -28,12 +28,12 @@ addons:
 before_install:
 # To avoid running out of memory, add a swap file.
 # SEE: https://www.reddit.com/r/haskell/comments/5ov5k1/how_to_stack_build_specifically_lens_on_a_low/
-- sudo mkdir -v /var/cache/swap
-- cd /var/cache/swap
-- sudo dd if=/dev/zero of=swapfile bs=1K count=4M
-- sudo chmod 600 swapfile
-- sudo mkswap swapfile
-- sudo swapon swapfile
+# - sudo mkdir -v /var/cache/swap
+# - cd /var/cache/swap
+# - sudo dd if=/dev/zero of=swapfile bs=1K count=4M
+# - sudo chmod 600 swapfile
+# - sudo mkswap swapfile
+# - sudo swapon swapfile
 # Download and unpack the stack executable
 - mkdir -p ~/.local/bin
 - export PATH=$HOME/.local/bin:$PATH
