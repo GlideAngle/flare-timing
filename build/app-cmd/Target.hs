@@ -2,7 +2,7 @@ module Target where
 
 import Development.Shake (Rules)
 import Doc (buildRules, cleanRules)
-import Cmd (buildRules, cleanRules, testRules, lintRules)
+import Cmd (buildRules, cleanRules, testRules, lintRules, docTestRules)
 import Web (buildRules, cleanRules)
 import Nix (buildRules, nixRules, shellRules)
 import Pkg (buildRules)
@@ -12,6 +12,7 @@ allWants =
     [ "stack-prod-apps"
     , "stack-test-apps"
     , "stack-test-suites"
+    , "stack-doctest-suites"
     -- NOTE: The following targets build but I don't want them by default.
     --, "docs"
     --, "cabal-prod-apps"
@@ -45,5 +46,6 @@ buildRules = do
 
 testRules :: Rules ()
 testRules = do
-    Cmd.testRules
     Cmd.lintRules
+    Cmd.testRules
+    Cmd.docTestRules
