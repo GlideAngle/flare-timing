@@ -50,5 +50,7 @@ script:
 - ./stack-shake-build.sh cabal-files
 - ./stack-shake-build.sh stack-test-apps
 - ./stack-shake-build.sh stack-prod-apps
-- ./stack-shake-build.sh stack-test-suites
 - ./stack-shake-build.sh stack-lint
+# NOTE: Building the test suites is timing out on travis-ci.org
+# The job exceeded the maximum time limit for jobs, and has been terminated.
+# - ./stack-shake-build.sh stack-test-suites
