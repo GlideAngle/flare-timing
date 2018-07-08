@@ -93,6 +93,38 @@ Now let's do the build again;
     > cabal new-build all
     Up to date
 
+## Building with Shake
+
+Tasks that are not simple by hand have been added to the shake build project
+[build-flare-timing](build).
+
+### Generating `*.cabal` files
+
+The `*.cabal` files are generated using
+[hpack-dhall](https://github.com/sol/hpack-dhall) and there's a shake build
+target setup for doing this and formatting the `package.dhall` files but first
+both `dhall` and `hpack-dhall` need to be installed.
+
+```
+> stack install dhall hpack-dhall
+> ./stack-shake-build.sh cabal-files
+```
+
+There are two shell scripts for building the shake build using `stack` or
+`cabal`;
+
+* `stack-shake-build.sh`
+* `cabal-shake-build.sh`
+
+Either can be used to call further steps relying on either `stack` or `cabal`;
+
+```
+> ./stack-shake-build.sh stack-lint-kml
+> ./stack-shake-build.sh cabal-lint-kml
+> ./cabal-shake-build.sh stack-lint-kml
+> ./cabal-shake-build.sh cabal-lint-kml
+```
+
 ## Library Packages
 
 For handling decimal places and significant digits;
