@@ -50,7 +50,33 @@ script:
 - ./stack-shake-build.sh cabal-files
 - ./stack-shake-build.sh stack-test-apps
 - ./stack-shake-build.sh stack-prod-apps
-- ./stack-shake-build.sh stack-lint
+# NOTE: The stack-lint target is timing out on travis-ci.org
+# The job exceeded the maximum time limit for jobs, and has been terminated.
+# - ./stack-shake-build.sh stack-lint
+# Let's try them as separate targets.
+ - ./stack-shake-build.sh stack-lint-build
+ - ./stack-shake-build.sh stack-lint-detour-via-sci
+ - ./stack-shake-build.sh stack-lint-detour-via-uom
+ - ./stack-shake-build.sh stack-lint-siggy-chardust
+ - ./stack-shake-build.sh stack-lint-tasty-compare
+ - ./stack-shake-build.sh stack-lint-flare-timing
+ - ./stack-shake-build.sh stack-lint-cmd
+ - ./stack-shake-build.sh stack-lint-comp
+ - ./stack-shake-build.sh stack-lint-earth
+ - ./stack-shake-build.sh stack-lint-fsdb
+ - ./stack-shake-build.sh stack-lint-gap
+ - ./stack-shake-build.sh stack-lint-igc
+ - ./stack-shake-build.sh stack-lint-kml
+ - ./stack-shake-build.sh stack-lint-latlng
+ - ./stack-shake-build.sh stack-lint-lookup
+ - ./stack-shake-build.sh stack-lint-mask
+ - ./stack-shake-build.sh stack-lint-route
+ - ./stack-shake-build.sh stack-lint-span
+ - ./stack-shake-build.sh stack-lint-scribe
+ - ./stack-shake-build.sh stack-lint-task
+ - ./stack-shake-build.sh stack-lint-track
+ - ./stack-shake-build.sh stack-lint-units
+ - ./stack-shake-build.sh stack-lint-zone
 # NOTE: Building the test suites is timing out on travis-ci.org
 # The job exceeded the maximum time limit for jobs, and has been terminated.
 # - ./stack-shake-build.sh stack-test-suites

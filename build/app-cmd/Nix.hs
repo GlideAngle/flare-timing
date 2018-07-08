@@ -15,6 +15,7 @@ flyPkgs :: [String]
 flyPkgs =
     [ "cmd"
     , "comp"
+    , "earth"
     , "fsdb"
     , "gap"
     , "igc"
@@ -22,14 +23,13 @@ flyPkgs =
     , "latlng"
     , "lookup"
     , "mask"
+    , "route"
+    , "span"
     , "scribe"
-    , "earth"
     , "task"
     , "track"
     , "units"
     , "zone"
-    , "route"
-    , "span"
     ] 
 
 prefix :: String -> String -> String
