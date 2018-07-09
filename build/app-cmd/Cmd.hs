@@ -1,4 +1,10 @@
-module Cmd (buildRules, cleanRules, testRules, lintRules) where
+module Cmd
+    ( buildRules
+    , cleanRules
+    , testRules
+    , lintRules
+    , docTestRules
+    ) where
 
 import Development.Shake
     ( Rules
@@ -15,9 +21,22 @@ data Tooling = CabalTooling | StackTooling
 type CabalProject = String
 type CabalTarget = String
 
+buildTestName :: (Pkg, Test) -> String
+buildTestName (pkg, suite) = "-build-test-" ++ pkg ++ ":" ++ suite
+
+testName :: (Pkg, Test) -> String
+testName (pkg, suite) = "-test-" ++ pkg ++ ":" ++ suite
+
+docTestName :: Pkg -> String
+docTestName pkg = "-doctest-" ++ pkg
+
 tooling :: Tooling -> String
 tooling CabalTooling = "cabal"
 tooling StackTooling = "stack"
+
+cmdDocTestFor :: Tooling -> String -> String
+cmdDocTestFor CabalTooling x = "cabal new-test " ++ x ++ ":doctest"
+cmdDocTestFor StackTooling x = "stack test " ++ x ++ ":doctest"
 
 cmdTestFor :: Tooling -> String -> String
 cmdTestFor CabalTooling x = "cabal new-test " ++ x
@@ -75,6 +94,15 @@ testPkgs =
     , ("flight-fsdb", "parse")
     , ("flight-kml", "parse")
     , ("flight-task", "task")
+    ] 
+
+-- | The pairs are names of the pkg and test.
+docTestPkgs :: [Pkg]
+docTestPkgs =
+    [ "detour-via-sci"
+    , "detour-via-uom"
+    , "flight-kml"
+    , "siggy-chardust"
     ] 
 
 -- | The names of the test app executables.
@@ -180,6 +208,32 @@ lintRules = do
     lintWithRules CabalTooling
     lintWithRules StackTooling
 
+docTestRule :: Tooling -> Pkg -> Rules ()
+docTestRule t' pkg = do
+    let t = tooling t'
+
+    phony (t ++ buildTestName (pkg, "doctest")) $
+        cmd
+            Shell
+            (cmdBuildTestFor t' $ pkg ++ ":" ++ "doctest")
+
+    phony (t ++ docTestName pkg) $
+        cmd
+            Shell
+            (cmdDocTestFor t' pkg)
+
+docTestWithRules :: Tooling -> Rules ()
+docTestWithRules t' = do
+    let t = tooling t'
+    sequence_ $ docTestRule t' <$> docTestPkgs
+
+    phony (t ++ "-doctest") $ need $ (t ++) . docTestName <$> docTestPkgs
+
+docTestRules :: Rules ()
+docTestRules = do
+    docTestWithRules CabalTooling
+    docTestWithRules StackTooling
+
 testRule :: Tooling -> (Pkg, Test) -> Rules ()
 testRule t' x@(pkg, test) = do
     let t = tooling t'
@@ -236,17 +290,13 @@ buildWithRules t' = do
     phony (t ++ "-prod-apps") $ need $ f <$> prodApps
     phony (t ++ "-www-apps") $ need $ f <$> wwwApps
     phony (t ++ "-test-suites") $ need $ g <$> testPkgs
+    phony (t ++ "-doctest-suites") $ need $ h <$> docTestPkgs
     
     where
         t = tooling t'
         f s = t ++ "-flare-timing-" ++ s
         g x = t ++ buildTestName x
-
-buildTestName :: (Pkg, Test) -> String
-buildTestName (pkg, suite) = "-build-test-" ++ pkg ++ ":" ++ suite
-
-testName :: (Pkg, Test) -> String
-testName (pkg, suite) = "-test-" ++ pkg ++ ":" ++ suite
+        h x = t ++ docTestName x
 
 buildRules :: Rules ()
 buildRules = do

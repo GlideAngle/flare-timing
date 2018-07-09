@@ -25,6 +25,7 @@ import Flight.Comp
     , DiscardFurtherFile(..)
     , CompSettings(..)
     , Task(..)
+    , PilotName(..)
     , Pilot(..)
     , TrackFileFail
     , IxTask(..)
@@ -43,6 +44,7 @@ import Flight.Comp
     , findCompInput
     , speedSectionToLeg
     , ensureExt
+    , pilotNamed
     )
 import Flight.Track.Time (LeadClose(..), LeadArrival(..), discard)
 import Flight.Track.Mask (RaceTime(..), racing)
@@ -100,7 +102,7 @@ go CmdOptions{..} compFile@(CompInputFile compPath) = do
                 (tagTaskTime tagging)
                 compFile
                 (IxTask <$> task)
-                (Pilot <$> pilot)
+                (pilotNamed cs $ PilotName <$> pilot)
                 checkAll
 
 filterTime
@@ -177,16 +179,16 @@ filterTime
                 raceTime
                 taskPilots
 
-checkAll :: CompInputFile
-         -> [IxTask]
-         -> [Pilot]
-         -> ExceptT
-             String
-             IO
-             [
-                 [Either (Pilot, TrackFileFail) (Pilot, ())
-                 ]
-             ]
+checkAll
+    :: CompInputFile
+    -> [IxTask]
+    -> [Pilot]
+    -> ExceptT
+         String
+         IO
+         [
+             [Either (Pilot, TrackFileFail) (Pilot, ())]
+         ]
 checkAll = checkTracks $ \CompSettings{tasks} -> (\ _ _ _ -> ()) tasks
 
 includeTask :: [IxTask] -> IxTask -> Bool

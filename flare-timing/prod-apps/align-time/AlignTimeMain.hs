@@ -27,6 +27,7 @@ import Flight.Comp
     , TagZoneFile(..)
     , AlignTimeFile(..)
     , CompSettings(..)
+    , PilotName(..)
     , Pilot(..)
     , Task(..)
     , IxTask(..)
@@ -42,6 +43,7 @@ import Flight.Comp
     , findCompInput
     , openClose
     , ensureExt
+    , pilotNamed
     )
 import qualified Flight.Mask as Mask (Sliver(..))
 import Flight.Mask
@@ -53,7 +55,7 @@ import Flight.Track.Tag (Tagging(..), TrackTime(..), firstLead, firstStart)
 import Flight.Kml (MarkedFixes(..))
 import Data.Ratio.Rounding (dpRound)
 import Flight.Distance (TaskDistance(..))
-import Flight.Scribe (readCrossing, readTagging, writeAlignTime)
+import Flight.Scribe (readComp, readCrossing, readTagging, writeAlignTime)
 import Flight.Lookup.Cross
     (FlyingLookup(..), crossFlying)
 import Flight.Lookup.Tag
@@ -100,18 +102,23 @@ go CmdOptions{..} compFile@(CompInputFile compPath) = do
     putStrLn $ "Reading flying time range from '" ++ takeFileName crossPath ++ "'"
     putStrLn $ "Reading zone tags from '" ++ takeFileName tagPath ++ "'"
 
+    compSettings <- runExceptT $ readComp compFile
     crossing <- runExceptT $ readCrossing crossFile
     tagging <- runExceptT $ readTagging tagFile
 
     let flyingLookup = crossFlying crossing
 
-    case (crossing, tagging) of
-        (Left msg, _) -> putStrLn msg
-        (_, Left msg) -> putStrLn msg
-        (Right _, Right t) -> (f . checkAll speedSectionOnly flyingLookup) t
-
-    where
-        f = writeTime (IxTask <$> task) (Pilot <$> pilot) (CompInputFile compPath)
+    case (compSettings, crossing, tagging) of
+        (Left msg, _, _) -> putStrLn msg
+        (_, Left msg, _) -> putStrLn msg
+        (_, _, Left msg) -> putStrLn msg
+        (Right cs, Right _, Right t) ->
+            let f =
+                    writeTime
+                        (IxTask <$> task)
+                        (pilotNamed cs $ PilotName <$> pilot)
+                        (CompInputFile compPath)
+            in (f . checkAll speedSectionOnly flyingLookup) t
 
 writeTime :: [IxTask]
           -> [Pilot]

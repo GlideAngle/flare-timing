@@ -52,7 +52,6 @@ import Data.Via.Scientific (DefaultDecimalPlaces(..), fromSci, toSci)
 --  MkQuantity a = toRational' . unpack $ x
 --  y :: Quantity Scientific u
 --  y = MkQuantity . toSci (defdp x) $ a
-{-# ANN module "HLint: ignore Reduce duplication" #-}
 
 -- | An intermediate type used during encoding to JSON with @aeson@ and during
 -- encoding to CSV with @cassava@. It's also used during decoding.

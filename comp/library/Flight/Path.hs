@@ -46,7 +46,7 @@ import System.FilePath
 import System.FilePath.Find
     ((==?), (&&?), find, always, fileType, extension)
 import qualified System.FilePath.Find as Find (FileType(..))
-import Flight.Pilot (Pilot(..))
+import Flight.Pilot (PilotId(..), PilotName(..), Pilot(..))
 
 -- | The path to a *.igc file.
 newtype IgcFile = IgcFile FilePath
@@ -128,13 +128,17 @@ crossToTag :: CrossZoneFile -> TagZoneFile
 crossToTag (CrossZoneFile p) =
     TagZoneFile $ flip replaceExtension (ext TagZone) $ dropExtension p
 
+pilotPath :: Pilot -> FilePath
+pilotPath (Pilot (PilotId k, PilotName s)) =
+    s ++ " " ++ k
+
 alignPath :: CompDir -> Int -> Pilot -> (AlignDir, AlignTimeFile)
 alignPath dir task pilot =
-    (alignDir dir task, AlignTimeFile $ show pilot <.> "csv")
+    (alignDir dir task, AlignTimeFile $ pilotPath pilot <.> "csv")
 
 discardPath :: CompDir -> Int -> Pilot -> (DiscardDir, DiscardFurtherFile)
 discardPath dir task pilot =
-    (discardDir dir task, DiscardFurtherFile $ show pilot <.> "csv")
+    (discardDir dir task, DiscardFurtherFile $ pilotPath pilot <.> "csv")
 
 alignDir :: CompDir -> Int -> AlignDir
 alignDir comp task =

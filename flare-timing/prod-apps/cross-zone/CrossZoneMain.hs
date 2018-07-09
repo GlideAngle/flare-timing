@@ -18,12 +18,14 @@ import Flight.Comp
     ( FileType(CompInput)
     , CompInputFile(..)
     , CompSettings(..)
+    , PilotName(..)
     , Pilot(..)
     , TrackFileFail(..)
     , IxTask(..)
     , compToCross
     , findCompInput
     , ensureExt
+    , pilotNamed
     )
 import Flight.Units ()
 import Flight.Track.Cross
@@ -51,7 +53,7 @@ import Flight.Mask
     , zoneToCylinder
     , nullFlying
     )
-import Flight.Scribe (writeCrossing)
+import Flight.Scribe (readComp, writeCrossing)
 import CrossZoneOptions (description)
 import Flight.Span.Math (Math(..))
 
@@ -78,23 +80,29 @@ drive o = do
 go :: CmdOptions -> CompInputFile -> IO ()
 go CmdOptions{..} compFile@(CompInputFile compPath) = do
     putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
-    writeMask
-        compFile
-        (IxTask <$> task)
-        (Pilot <$> pilot)
-        (checkAll math)
+    compSettings <- runExceptT $ readComp compFile
+    either
+        putStrLn
+        (\cs ->
+            writeCrossings
+                compFile
+                (IxTask <$> task)
+                (pilotNamed cs $ PilotName <$> pilot)
+                (checkAll math))
+        compSettings
 
-writeMask :: CompInputFile
+writeCrossings
+    :: CompInputFile
+    -> [IxTask]
+    -> [Pilot]
+    -> (CompInputFile
           -> [IxTask]
           -> [Pilot]
-          -> (CompInputFile
-              -> [IxTask]
-              -> [Pilot]
-              -> ExceptT
-                      String
-                      IO [[Either (Pilot, TrackFileFail) (Pilot, MadeZones)]])
-          -> IO ()
-writeMask compFile task pilot f = do
+          -> ExceptT
+                  String
+                  IO [[Either (Pilot, TrackFileFail) (Pilot, MadeZones)]])
+    -> IO ()
+writeCrossings compFile task pilot f = do
     checks <- runExceptT $ f compFile task pilot
 
     case checks of

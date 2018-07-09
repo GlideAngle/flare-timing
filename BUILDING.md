@@ -68,7 +68,7 @@ If the build is working with `stack` then we might be able to get it to work
 with `cabal`;
 
     > mv cabal.project __cabal.project
-    > stack2cabal .
+    > stack exec stack2cabal -- .
     > mv cabal.project cabal.project.local
     > mv __cabal.project cabal.project
 
@@ -93,11 +93,104 @@ Now let's do the build again;
     > cabal new-build all
     Up to date
 
+## Building with Shake
+
+Tasks that are not simple by hand have been added to the shake build project
+[build-flare-timing](build).
+
+### Generating `*.cabal` files
+
+The `*.cabal` files are generated using
+[hpack-dhall](https://github.com/sol/hpack-dhall) and there's a shake build
+target setup for doing this and formatting the `package.dhall` files but first
+both `dhall` and `hpack-dhall` need to be installed.
+
+```
+> stack install dhall hpack-dhall
+> ./stack-shake-build.sh cabal-files
+```
+
+There are two shell scripts for building the shake build using `stack` or
+`cabal`;
+
+* `stack-shake-build.sh`
+* `cabal-shake-build.sh`
+
+Either can be used to call further steps relying on either `stack` or `cabal`;
+
+```
+> ./stack-shake-build.sh stack-lint-kml
+> ./stack-shake-build.sh cabal-lint-kml
+> ./cabal-shake-build.sh stack-lint-kml
+> ./cabal-shake-build.sh cabal-lint-kml
+```
+
+### Running `doctest` Tests
+
+There's a target for building all `doctest` tests;
+
+```
+> ./stack-shake-build.sh stack-doctest
+# stack (for stack-doctest-siggy-chardust)
+siggy-chardust-1.0.0: test (suite: doctest)
+
+Examples: 35  Tried: 35  Errors: 0  Failures: 0
+
+siggy-chardust-1.0.0: Test suite doctest passed
+# stack (for stack-doctest-flight-kml)
+flight-kml-1.0.0: test (suite: doctest)
+
+Examples: 57  Tried: 57  Errors: 0  Failures: 0
+
+flight-kml-1.0.0: Test suite doctest passed
+# stack (for stack-doctest-detour-via-uom)
+detour-via-uom-1.0.0: test (suite: doctest)
+
+Examples: 27  Tried: 27  Errors: 0  Failures: 0
+
+detour-via-uom-1.0.0: Test suite doctest passed
+# stack (for stack-doctest-detour-via-sci)
+detour-via-sci-1.0.0: test (suite: doctest)
+
+Examples: 44  Tried: 44  Errors: 0  Failures: 0
+
+detour-via-sci-1.0.0: Test suite doctest passed
+Build completed in 0:21m
+```
+
+The `doctest` targets can be run individually too;
+
+```
+> ./stack-shake-build.sh stack-doctest-flight-kml
+...
+# stack (for stack-doctest-flight-kml)
+flight-kml-1.0.0: test (suite: doctest)
+
+Examples: 57  Tried: 57  Errors: 0  Failures: 0
+
+flight-kml-1.0.0: Test suite doctest passed
+Build completed in 0:09m
+```
+
+```
+> ./cabal-shake-build.sh cabal-doctest-flight-kml
+...
+# cabal (for cabal-doctest-flight-kml)
+Running 1 test suites...
+Test suite doctest: RUNNING...
+Examples: 57  Tried: 57  Errors: 0  Failures: 0
+Test suite doctest: PASS
+Test suite logged to:
+/.../dist-newstyle/build/x86_64-osx/ghc-8.2.2/flight-kml-1.0.0/t/doctest/test/flight-kml-1.0.0-doctest.log
+1 of 1 test suites (1 of 1 test cases) passed.
+Build completed in 0:22m
+```
+
 ## Library Packages
 
 For handling decimal places and significant digits;
-* [`aeson-via-sci`](aeson-via-sci)
-* [`aeson-via-uom`](aeson-via-uom)
+* [`detour-via-sci`](detour-via-sci)
+* [`detour-via-uom`](detour-via-uom)
 * [`siggy-chardust`](siggy-chardust)
 
 Units, latitudes, longitudes and distances on Earth;
