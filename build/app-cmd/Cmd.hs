@@ -16,7 +16,10 @@ import Development.Shake
     )
 import Nix (flyPkgs, prefix)
 
-data Tooling = CabalTooling | StackTooling
+data Tooling
+    = CabalTooling
+    | StackTooling
+    | PierTooling
 
 type CabalProject = String
 type CabalTarget = String
@@ -33,27 +36,33 @@ docTestName pkg = "-doctest-" ++ pkg
 tooling :: Tooling -> String
 tooling CabalTooling = "cabal"
 tooling StackTooling = "stack"
+tooling PierTooling = "pier"
 
 cmdDocTestFor :: Tooling -> String -> String
 cmdDocTestFor CabalTooling x = "cabal new-test " ++ x ++ ":doctest"
 cmdDocTestFor StackTooling x = "stack test " ++ x ++ ":doctest"
+cmdDocTestFor PierTooling x = "stack exec pier -- test " ++ x ++ ":doctest"
 
-cmdTestFor :: Tooling -> String -> String
-cmdTestFor CabalTooling x = "cabal new-test " ++ x
-cmdTestFor StackTooling x = "stack test " ++ x
+cmdTestFor :: Tooling -> (Pkg, Test) -> String
+cmdTestFor CabalTooling (x, y) = "cabal new-test " ++ x ++ ":" ++ y
+cmdTestFor StackTooling (x, y) = "stack test " ++ x ++ ":" ++ y
+cmdTestFor PierTooling (x, y) = "stack exec pier -- test " ++ x ++ ":" ++ y
 
 -- SEE: https://lexi-lambda.github.io/blog/2018/02/10/an-opinionated-guide-to-haskell-in-2018/
 compilerToolFor :: Tooling -> String -> String
 compilerToolFor CabalTooling _ = ""
 compilerToolFor StackTooling x = "stack build --copy-compiler-tool " ++ x
+compilerToolFor PierTooling _ = ""
 
 cmdBuildFor :: Tooling -> String -> String
 cmdBuildFor CabalTooling x = "cabal new-build " ++ x
 cmdBuildFor StackTooling x = "stack build " ++ x ++ " --copy-bins"
+cmdBuildFor PierTooling x = "stack exec pier -- build " ++ x
 
 cmdBuildTestFor :: Tooling -> String -> String
 cmdBuildTestFor CabalTooling x = "cabal new-build " ++ x
 cmdBuildTestFor StackTooling x = "stack build " ++ x ++ " --no-run-tests"
+cmdBuildTestFor PierTooling x = "stack exec pier -- build " ++ x ++ " --no-run-tests"
 
 type Pkg = String
 type Test = String
@@ -151,7 +160,7 @@ lintWithRule t' s = do
         cmd
             (Cwd s) 
             Shell
-            (cmdTestFor t' $ "flight-" ++ s ++ ":hlint")
+            (cmdTestFor t' ("flight-" ++ s, "hlint"))
 
 lintWithRules :: Tooling -> Rules ()
 lintWithRules t' = do
@@ -171,42 +180,43 @@ lintWithRules t' = do
         cmd
             (Cwd "detour-via-sci")
             Shell
-            (cmdTestFor t' "detour-via-sci:hlint")
+            (cmdTestFor t' ("detour-via-sci", "hlint"))
 
     phony (t ++ "-lint-detour-via-uom") $
         cmd
             (Cwd "detour-via-uom")
             Shell
-            (cmdTestFor t' "detour-via-uom:hlint")
+            (cmdTestFor t' ("detour-via-uom", "hlint"))
 
     phony (t ++ "-lint-siggy-chardust") $
         cmd
             (Cwd "siggy-chardust")
             Shell
-            (cmdTestFor t' "siggy-chardust:hlint")
+            (cmdTestFor t' ("siggy-chardust", "hlint"))
 
     phony (t ++ "-lint-tasty-compare") $
         cmd
             (Cwd "tasty-compare")
             Shell
-            (cmdTestFor t' "tasty-compare:hlint")
+            (cmdTestFor t' ("tasty-compare", "hlint"))
 
     phony (t ++ "-lint-build") $
         cmd
             (Cwd "build")
             Shell
-            (cmdTestFor t' "build-flare-timing:hlint")
+            (cmdTestFor t' ("build-flare-timing", "hlint"))
 
     phony (t ++ "-lint-flare-timing") $
         cmd
             (Cwd "flare-timing")
             Shell
-            (cmdTestFor t' "flare-timing:hlint")
+            (cmdTestFor t' ("flare-timing", "hlint"))
 
 lintRules :: Rules ()
 lintRules = do
     lintWithRules CabalTooling
     lintWithRules StackTooling
+    lintWithRules PierTooling
 
 docTestRule :: Tooling -> Pkg -> Rules ()
 docTestRule t' pkg = do
@@ -233,6 +243,7 @@ docTestRules :: Rules ()
 docTestRules = do
     docTestWithRules CabalTooling
     docTestWithRules StackTooling
+    docTestWithRules PierTooling
 
 testRule :: Tooling -> (Pkg, Test) -> Rules ()
 testRule t' x@(pkg, test) = do
@@ -246,7 +257,7 @@ testRule t' x@(pkg, test) = do
     phony (t ++ testName x) $
         cmd
             Shell
-            (cmdTestFor t' $ pkg ++ ":" ++ test)
+            (cmdTestFor t' (pkg, test))
 
 testWithRules :: Tooling -> Rules ()
 testWithRules t' = do
@@ -259,6 +270,7 @@ testRules :: Rules ()
 testRules = do
     testWithRules CabalTooling
     testWithRules StackTooling
+    testWithRules PierTooling
 
 buildRule :: Tooling -> CabalProject -> Maybe CabalTarget -> Rules ()
 
@@ -302,6 +314,7 @@ buildRules :: Rules ()
 buildRules = do
     buildWithRules CabalTooling
     buildWithRules StackTooling
+    buildWithRules PierTooling
 
     phony "weeder" $
         cmd
