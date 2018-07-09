@@ -181,7 +181,7 @@ Test suite doctest: RUNNING...
 Examples: 57  Tried: 57  Errors: 0  Failures: 0
 Test suite doctest: PASS
 Test suite logged to:
-/.../flare-timing/dist-newstyle/build/x86_64-osx/ghc-8.2.2/flight-kml-1.0.0/t/doctest/test/flight-kml-1.0.0-doctest.log
+/.../dist-newstyle/build/x86_64-osx/ghc-8.2.2/flight-kml-1.0.0/t/doctest/test/flight-kml-1.0.0-doctest.log
 1 of 1 test suites (1 of 1 test cases) passed.
 Build completed in 0:22m
 ```
