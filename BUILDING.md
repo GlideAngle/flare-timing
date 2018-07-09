@@ -125,6 +125,34 @@ Either can be used to call further steps relying on either `stack` or `cabal`;
 > ./cabal-shake-build.sh cabal-lint-kml
 ```
 
+### Running `doctest` Tests
+
+```
+> ./stack-shake-build.sh stack-doctest-flight-kml
+...
+# stack (for stack-doctest-flight-kml)
+flight-kml-1.0.0: test (suite: doctest)
+
+Examples: 57  Tried: 57  Errors: 0  Failures: 0
+
+flight-kml-1.0.0: Test suite doctest passed
+Build completed in 0:09m
+```
+
+```
+> ./cabal-shake-build.sh cabal-doctest-flight-kml
+...
+# cabal (for cabal-doctest-flight-kml)
+Running 1 test suites...
+Test suite doctest: RUNNING...
+Examples: 57  Tried: 57  Errors: 0  Failures: 0
+Test suite doctest: PASS
+Test suite logged to:
+/.../flare-timing/dist-newstyle/build/x86_64-osx/ghc-8.2.2/flight-kml-1.0.0/t/doctest/test/flight-kml-1.0.0-doctest.log
+1 of 1 test suites (1 of 1 test cases) passed.
+Build completed in 0:22m
+```
+
 ## Library Packages
 
 For handling decimal places and significant digits;
