@@ -46,7 +46,7 @@ cmdDocTestFor PierTooling x = "stack exec pier -- test " ++ x ++ ":doctest"
 cmdTestFor :: Tooling -> (Pkg, Test) -> String
 cmdTestFor CabalTooling (x, y) = "cabal new-test " ++ x ++ ":" ++ y
 cmdTestFor StackTooling (x, y) = "stack test " ++ x ++ ":" ++ y
-cmdTestFor PierTooling (x, y) = "stack exec pier -- test " ++ x ++ ":" ++ y
+cmdTestFor PierTooling (x, y) = "stack exec pier -- test " ++ x ++ ":test-suite:" ++ y
 
 -- SEE: https://lexi-lambda.github.io/blog/2018/02/10/an-opinionated-guide-to-haskell-in-2018/
 compilerToolFor :: Tooling -> String -> String
