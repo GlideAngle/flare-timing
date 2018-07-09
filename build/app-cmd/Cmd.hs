@@ -227,7 +227,7 @@ docTestWithRules t' = do
     let t = tooling t'
     sequence_ $ docTestRule t' <$> docTestPkgs
 
-    phony (t ++ "-doctest") $ need $ docTestName <$> docTestPkgs
+    phony (t ++ "-doctest") $ need $ (t ++) . docTestName <$> docTestPkgs
 
 docTestRules :: Rules ()
 docTestRules = do
