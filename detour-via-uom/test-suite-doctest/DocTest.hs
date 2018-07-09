@@ -9,8 +9,7 @@ arguments =
     , "-fobject-code"
     , "../units/library/Flight/Units.hs"
     , "../units/library/Flight/Units/Angle.hs"
-    , "-fplugin"
-    , "Data.UnitsOfMeasure.Plugin"
+    , "-fplugin=Data.UnitsOfMeasure.Plugin"
     , "-XDataKinds"
     , "-XDeriveFunctor"
     , "-XDeriveGeneric"
@@ -42,6 +41,7 @@ arguments =
     , "-XTypeSynonymInstances"
     , "-XTupleSections"
     , "-XUndecidableInstances"
+    , "-package bifunctors"
     ]
 
 main :: IO ()
