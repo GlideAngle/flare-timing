@@ -27,7 +27,7 @@ packages:
 - flare-timing
 - location:
     git: https://github.com/blockscope/hcoord.git
-    commit: b2fb75029f0374e48caf4cbbfcfcc2fd674cb4f3 
+    commit: b2fb75029f0374e48caf4cbbfcfcc2fd674cb4f3
   subdirs:
   - hcoord
   - hcoord-utm
@@ -41,8 +41,8 @@ packages:
     commit: a8a4cdcacd697cee648af93856735f15de5987a6
   extra-dep: true
 - location:
-    git: https://github.com/judah/pier
-    commit: 65f526e242cae3f2255ead9fbaaa13cf85f9022a
+    git: https://github.com/blockscope/pier.git
+    commit: 9ea5b2b689610cc779618bdbf7bb169aae0520c9
   extra-dep: true
 extra-deps:
 - hxt-xpath-9.1.2.2
