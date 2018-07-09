@@ -93,6 +93,13 @@ Now let's do the build again;
     > cabal new-build all
     Up to date
 
+## Building with Pier
+
+```
+> stack install pier
+> stack exec pier -- test flight-fsdb:test-suite:parse
+```
+
 ## Building with Shake
 
 Tasks that are not simple by hand have been added to the shake build project
@@ -110,19 +117,22 @@ both `dhall` and `hpack-dhall` need to be installed.
 > ./stack-shake-build.sh cabal-files
 ```
 
-There are two shell scripts for building the shake build using `stack` or
-`cabal`;
+There are three shell scripts for building the shake build using `stack`,
+`cabal` or `pier`;
 
 * `stack-shake-build.sh`
 * `cabal-shake-build.sh`
+* `pier-shake-build.sh`
 
-Either can be used to call further steps relying on either `stack` or `cabal`;
+Either can be used to call further steps relying on either `stack`, `cabal` or
+`pier`;
 
 ```
 > ./stack-shake-build.sh stack-lint-kml
 > ./stack-shake-build.sh cabal-lint-kml
 > ./cabal-shake-build.sh stack-lint-kml
 > ./cabal-shake-build.sh cabal-lint-kml
+> ./pier-shake-build.sh pier-test-flight-fsdb:parse
 ```
 
 ### Running `doctest` Tests
