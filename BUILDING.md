@@ -127,6 +127,39 @@ Either can be used to call further steps relying on either `stack` or `cabal`;
 
 ### Running `doctest` Tests
 
+There's a target for building all `doctest` tests;
+
+```
+> ./stack-shake-build.sh stack-doctest
+# stack (for stack-doctest-siggy-chardust)
+siggy-chardust-1.0.0: test (suite: doctest)
+
+Examples: 35  Tried: 35  Errors: 0  Failures: 0
+
+siggy-chardust-1.0.0: Test suite doctest passed
+# stack (for stack-doctest-flight-kml)
+flight-kml-1.0.0: test (suite: doctest)
+
+Examples: 57  Tried: 57  Errors: 0  Failures: 0
+
+flight-kml-1.0.0: Test suite doctest passed
+# stack (for stack-doctest-detour-via-uom)
+detour-via-uom-1.0.0: test (suite: doctest)
+
+Examples: 27  Tried: 27  Errors: 0  Failures: 0
+
+detour-via-uom-1.0.0: Test suite doctest passed
+# stack (for stack-doctest-detour-via-sci)
+detour-via-sci-1.0.0: test (suite: doctest)
+
+Examples: 44  Tried: 44  Errors: 0  Failures: 0
+
+detour-via-sci-1.0.0: Test suite doctest passed
+Build completed in 0:21m
+```
+
+The `doctest` targets can be run individually too;
+
 ```
 > ./stack-shake-build.sh stack-doctest-flight-kml
 ...
