@@ -20,6 +20,6 @@
     [ "PackageImports" ]
 -- NOTE: Limit the versions of GHC supported by limiting the base version.
 -- SEE: https://www.snoyman.com/blog/2018/07/stop-supporting-older-ghcs
-  , dependencies =
-      [ "base >=4.9.1.0" ]
+, dependencies =
+    [ "base >=4.9.1.0" ]
 }
