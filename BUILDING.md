@@ -98,6 +98,7 @@ Now let's do the build again;
 ```
 > stack install pier
 > stack exec pier -- test flight-fsdb:test-suite:parse
+> stack exec pier -- build flare-timing:exe
 ```
 
 ## Building with Shake
@@ -124,7 +125,7 @@ There are three shell scripts for building the shake build using `stack`,
 * `cabal-shake-build.sh`
 * `pier-shake-build.sh`
 
-Either can be used to call further steps relying on either `stack`, `cabal` or
+Any of these can be used to call further steps relying on either `stack`, `cabal` or
 `pier`;
 
 ```
@@ -133,6 +134,7 @@ Either can be used to call further steps relying on either `stack`, `cabal` or
 > ./cabal-shake-build.sh stack-lint-kml
 > ./cabal-shake-build.sh cabal-lint-kml
 > ./pier-shake-build.sh pier-test-flight-fsdb:parse
+> ./pier-shake-build.sh pier-prod-apps
 ```
 
 ### Running `doctest` Tests

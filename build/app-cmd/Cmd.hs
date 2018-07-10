@@ -274,12 +274,12 @@ testRules = do
 
 buildRule :: Tooling -> CabalProject -> Maybe CabalTarget -> Rules ()
 
-buildRule t' project Nothing = do
+buildRule t'@PierTooling project (Just s) = do
     let t = tooling t'
-    phony (t ++ "-" ++ project) $
+    phony (t ++ "-" ++ project ++ "-" ++ s) $
         cmd
             Shell
-            (cmdBuildFor t' project)
+            (cmdBuildFor t' $ project ++ ":exe:" ++ s)
 
 buildRule t' project (Just s) = do
     let t = tooling t'
@@ -287,6 +287,13 @@ buildRule t' project (Just s) = do
         cmd
             Shell
             (cmdBuildFor t' $ project ++ ":" ++ s)
+
+buildRule t' project Nothing = do
+    let t = tooling t'
+    phony (t ++ "-" ++ project) $
+        cmd
+            Shell
+            (cmdBuildFor t' project)
 
 buildWithRules :: Tooling -> Rules ()
 buildWithRules t' = do
