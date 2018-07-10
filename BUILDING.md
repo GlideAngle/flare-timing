@@ -133,8 +133,10 @@ Any of these can be used to call further steps relying on either `stack`, `cabal
 > ./stack-shake-build.sh cabal-lint-kml
 > ./cabal-shake-build.sh stack-lint-kml
 > ./cabal-shake-build.sh cabal-lint-kml
-> ./pier-shake-build.sh pier-test-flight-fsdb:parse
 > ./pier-shake-build.sh pier-prod-apps
+> ./pier-shake-build.sh pier-test-flight-fsdb:parse
+> ./stack-shake-build.sh stack-test-flight-fsdb:parse
+> ./cabal-shake-build.sh cabal-test-flight-fsdb:parse
 ```
 
 ### Running `doctest` Tests
