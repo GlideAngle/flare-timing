@@ -13,6 +13,7 @@ import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.LatLng.Rational (Epsilon(..), defEps)
 import Flight.Zone
     ( Zone(..)
+    , QRadius
     , Radius(..)
     , Bearing(..)
     , center
@@ -98,7 +99,7 @@ vincentyDirect'
     -> DirectProblem
         (LatLng Rational [u| rad |])
         (TrueCourse Rational)
-        (Radius Rational [u| m |])
+        (QRadius Rational [u| m |])
     -> VincentyDirect
         (DirectSolution
             (LatLng Rational [u| rad |])
@@ -171,7 +172,7 @@ vincentyDirect
     -> DirectProblem
         (LatLng Rational [u| rad |])
         (TrueCourse Rational)
-        (Radius Rational [u| m |])
+        (QRadius Rational [u| m |])
     -> VincentyDirect
         (DirectSolution
             (LatLng Rational [u| rad |])
@@ -221,7 +222,7 @@ vincentyDirect
             :: DirectProblem
                 (LatLng Double [u| rad |])
                 (TrueCourse Double)
-                (Radius Double [u| m |])
+                (QRadius Double [u| m |])
         prob' =
             DirectProblem
                 { x = fromRationalLatLng x
@@ -258,7 +259,7 @@ toRationalDirectSolution DirectSolution{y, α₂} =
 circum
     :: Epsilon
     -> LatLng Rational [u| rad |]
-    -> Radius Rational [u| m |]
+    -> QRadius Rational [u| m |]
     -> TrueCourse Rational 
     -> LatLng Rational [u| rad |]
 circum e x r tc =
@@ -332,7 +333,7 @@ getClose :: Epsilon
          -> Rational -- ^ The limit radius.
          -> Tolerance Rational
          -> Int -- ^ How many tries.
-         -> Radius Rational [u| m |] -- ^ How far from the center.
+         -> QRadius Rational [u| m |] -- ^ How far from the center.
          -> (TrueCourse Rational -> LatLng Rational [u| rad |]) -- ^ A point from the origin on this radial
          -> TrueCourse Rational -- ^ The true course for this radial.
          -> (ZonePoint Rational, TrueCourse Rational)

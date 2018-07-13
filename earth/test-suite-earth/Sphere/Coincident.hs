@@ -8,7 +8,7 @@ import Data.UnitsOfMeasure (u, convert, fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Distance (TaskDistance(..), PathDistance(..))
-import Flight.Zone (Radius(..))
+import Flight.Zone (QRadius, Radius(..))
 import Flight.Zone.Path (distancePointToPoint)
 import Zone (MkZone, QLL, showQ, describedZones)
 import qualified Distance as D (DistanceEqual, toDistanceEqual)
@@ -51,7 +51,7 @@ pts =
         z = [u| 0 rad |]
         m = convert [u| 45 deg |]
 
-distances :: (Real a, Fractional a) => [Radius a [u| m |]]
+distances :: (Real a, Fractional a) => [QRadius a [u| m |]]
 distances =
     repeat . Radius . fromRational' $ [u| 0 m |]
 

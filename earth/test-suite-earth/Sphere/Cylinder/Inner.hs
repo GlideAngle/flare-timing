@@ -15,7 +15,7 @@ import Flight.Units ()
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.LatLng.Rational (Epsilon(..), defEps)
 import Flight.Distance (SpanLatLng)
-import Flight.Zone (Bearing(..), Radius(..), Zone(..))
+import Flight.Zone (Bearing(..), QRadius, Radius(..), Zone(..))
 import Flight.Zone.Cylinder (SampleParams(..), Tolerance(..), CircumSample)
 import Zone (QLL, showQ)
 import Sphere.Cylinder.Span
@@ -45,7 +45,7 @@ pts =
         f (x, y) =
             (convert x, convert y)
 
-distances :: (Real a, Fractional a) => [Radius a [u| m |]]
+distances :: (Real a, Fractional a) => [QRadius a [u| m |]]
 distances =
     Radius . fromRational'
     <$>
@@ -113,7 +113,7 @@ innerCheck
     -> Tolerance a
     -> Quantity a [u| m |]
     -> ZonePointFilter a
-    -> Radius a [u| m |]
+    -> QRadius a [u| m |]
     -> LatLng a [u| rad |]
     -> TestTree
 innerCheck

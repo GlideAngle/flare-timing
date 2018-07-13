@@ -1,6 +1,7 @@
 module Flight.Zone
     ( HasArea(..)
     , Radius(..)
+    , QRadius
     , Incline(..)
     , Bearing(..)
     , Zone(..)
@@ -29,7 +30,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Flight.Units (showRadian, realToFrac')
 import Flight.Units.DegMinSec (fromQ)
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
-import Flight.Zone.Radius (Radius(..))
+import Flight.Zone.Radius (Radius(..), QRadius)
 
 -- | Does it have area?
 class HasArea a where
@@ -52,48 +53,56 @@ instance Real a => Show (Bearing a) where
 -- cylinders.
 data Zone a where
     -- | Used to mark the exact turnpoints in the optimized task distance.
-    Point :: Eq a => LatLng a [u| rad |] -> Zone a
+    Point
+        :: Eq a
+        => LatLng a [u| rad |]
+        -> Zone a
 
     -- | Used only in open distance tasks these mark the start and direction of
     -- the open distance.
-    Vector :: Eq a
-           => Bearing a
-           -> LatLng a [u| rad |]
-           -> Zone a
+    Vector
+        :: Eq a
+        => Bearing a
+        -> LatLng a [u| rad |]
+        -> Zone a
 
     -- | The turnpoint cylinder.
-    Cylinder :: Eq a
-             => Radius a [u| m |]
-             -> LatLng a [u| rad |]
-             -> Zone a
+    Cylinder
+        :: Eq a
+        => QRadius a [u| m |]
+        -> LatLng a [u| rad |]
+        -> Zone a
 
     -- | Only used in paragliding, this is the conical end of speed section
     -- used to discourage too low an end to final glides.
-    Conical :: Eq a
-            => Incline a
-            -> Radius a [u| m |]
-            -> LatLng a [u| rad |]
-            -> Zone a
+    Conical
+        :: Eq a
+        => Incline a
+        -> QRadius a [u| m |]
+        -> LatLng a [u| rad |]
+        -> Zone a
 
     -- | A goal line perpendicular to the course line.
-    Line :: Eq a
-         => Radius a [u| m |]
-         -> LatLng a [u| rad |]
-         -> Zone a
+    Line 
+        :: Eq a
+        => QRadius a [u| m |]
+        -> LatLng a [u| rad |]
+        -> Zone a
 
     -- | This control zone is only ever used as a goal for paragliding. It is
     -- a goal line perpendicular to the course line followed by half
     -- a cylinder.
-    SemiCircle :: Eq a
-               => Radius a [u| m |]
-               -> LatLng a [u| rad |]
-               -> Zone a
+    SemiCircle
+        :: Eq a
+        => QRadius a [u| m |]
+        -> LatLng a [u| rad |]
+        -> Zone a
 
 deriving instance Eq (Zone a)
 deriving instance
     ( Show (Incline a)
     , Show (Bearing a)
-    , Show (Radius a [u| m |])
+    , Show (QRadius a [u| m |])
     , Show (LatLng a [u| rad |])
     )
     => Show (Zone a)
@@ -130,15 +139,15 @@ showZoneDMS (Line r (LatLng (Lat x, Lng y))) =
 showZoneDMS (SemiCircle r (LatLng (Lat x, Lng y))) =
     "SemiCircle " ++ show r ++ " " ++ show (fromQ x, fromQ y)
 
-fromRationalRadius :: Fractional a => Radius Rational u -> Radius a u
+fromRationalRadius :: Fractional a => QRadius Rational u -> QRadius a u
 fromRationalRadius (Radius r) =
     Radius $ fromRational' r
 
-toRationalRadius :: Real a => Radius a u -> Radius Rational u
+toRationalRadius :: Real a => QRadius a u -> QRadius Rational u
 toRationalRadius (Radius r) =
     Radius $ toRational' r
 
-realToFracRadius :: (Real a, Fractional b) => Radius a u -> Radius b u
+realToFracRadius :: (Real a, Fractional b) => QRadius a u -> QRadius b u
 realToFracRadius (Radius r) =
     Radius $ realToFrac' r
 
@@ -254,7 +263,7 @@ center (Line _ x) = x
 center (SemiCircle _ x) = x
 
 -- | The effective radius of a zone.
-radius :: Num a => Zone a -> Radius a [u| m |]
+radius :: Num a => Zone a -> QRadius a [u| m |]
 radius (Point _) = Radius [u| 0m |]
 radius (Vector _ _) = Radius [u| 0m |]
 radius (Cylinder r _) = r

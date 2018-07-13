@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ae7cd1f79286331be609655d8efe39f9084ece16e8e872f7c789dab8c12f8c82
+-- hash: 5cc16eae41193c95d39df1bc06b660bb2e7efa88b51dcb3cd1dea7d224d04635
 
 name:           flight-zone
 version:        0.1.0
@@ -40,7 +40,6 @@ library
       Flight.Zone.Cylinder.Edge
       Flight.Zone.Cylinder.Sample
       Flight.Zone.Radius
-      Flight.Zone.Raw.Radius
       Flight.Zone.Raw.Zone
       Paths_flight_zone
   hs-source-dirs:
@@ -71,7 +70,6 @@ test-suite hlint
       Flight.Zone.Path
       Flight.Zone.Radius
       Flight.Zone.Raw
-      Flight.Zone.Raw.Radius
       Flight.Zone.Raw.Zone
       Paths_flight_zone
   hs-source-dirs:

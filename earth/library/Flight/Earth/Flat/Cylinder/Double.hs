@@ -11,6 +11,7 @@ import Flight.Units ()
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.Zone
     ( Zone(..)
+    , QRadius
     , Radius(..)
     , Bearing(..)
     , center
@@ -53,7 +54,7 @@ errorHc = error "Cannot convert between lat/lng and easting/northing."
 circum
     :: Real a
     => LatLng a [u| rad |]
-    -> Radius a [u| m |]
+    -> QRadius a [u| m |]
     -> TrueCourse a
     -> LatLng Double [u| rad |]
 circum xLL r tc =
@@ -67,7 +68,7 @@ circum xLL r tc =
 circumEN
     :: Real a
     => LatLng a [u| rad |]
-    -> Radius a [u| m |]
+    -> QRadius a [u| m |]
     -> TrueCourse a
     -> Either String HCEN.UTMRef
 circumEN xLL r tc =
@@ -75,7 +76,7 @@ circumEN xLL r tc =
 
 translate
     :: Real a
-    => Radius a [u| m |]
+    => QRadius a [u| m |]
     -> TrueCourse a
     -> HCEN.UTMRef
     -> HCEN.UTMRef
@@ -147,7 +148,7 @@ circumSample SampleParams{..} (Bearing (MkQuantity bearing)) zp zone =
                     where
                         (Bearing (MkQuantity b)) = radial
 
-        r :: Radius Double [u| m |]
+        r :: QRadius Double [u| m |]
         r@(Radius (MkQuantity limitRadius)) = radius zone'
 
         ptCenter = center zone'
@@ -163,7 +164,7 @@ getClose :: Zone Double
          -> Double -- ^ The limit radius.
          -> Tolerance Double
          -> Int -- ^ How many tries.
-         -> Radius Double [u| m |] -- ^ How far from the center.
+         -> QRadius Double [u| m |] -- ^ How far from the center.
          -> (TrueCourse Double -> LatLng Double [u| rad |]) -- ^ A point from the origin on this radial
          -> TrueCourse Double -- ^ The true course for this radial.
          -> (ZonePoint Double, TrueCourse Double)

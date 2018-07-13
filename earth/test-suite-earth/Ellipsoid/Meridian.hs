@@ -7,7 +7,7 @@ import Data.UnitsOfMeasure ((*:), u, convert, fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
-import Flight.Zone (Radius(..))
+import Flight.Zone (QRadius, Radius(..))
 import Zone (MkZone, QLL, describedZones, showQ)
 import qualified Distance as D (DistanceClose, toDistanceClose)
 import Flight.Earth.Ellipsoid (wgs84)
@@ -40,7 +40,7 @@ pts =
         meridianArc d =
             (([u| 0 rad |], [u| 0 rad |]), (d, [u| 0 rad |]))
 
-distances :: (Real a, Fractional a) => [Radius a [u| m |]]
+distances :: (Real a, Fractional a) => [QRadius a [u| m |]]
 distances =
     Radius . fromRational'
     <$>

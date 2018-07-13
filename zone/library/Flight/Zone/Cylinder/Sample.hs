@@ -13,13 +13,13 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Flight.LatLng (LatLng(..), Lat, Lng)
 import Flight.Zone
     ( Zone(..)
-    , Radius(..)
     , Bearing(..)
     , fromRationalRadius
     , fromRationalZone
     , fromRationalLatLng
     )
 import Flight.Units (showRadian)
+import Flight.Zone.Radius (QRadius)
 
 newtype TrueCourse a =
     TrueCourse (Quantity a [u| rad |])
@@ -65,7 +65,7 @@ data ZonePoint a
         , radial :: Bearing a
         -- ^ A point on the edge of this zone with this bearing from
         -- the origin.
-        , orbit :: Radius a [u| m |]
+        , orbit :: QRadius a [u| m |]
         -- ^ A point on the edge of this zone at this distance from the
         -- origin.
         }

@@ -28,7 +28,7 @@ import qualified Flight.Kml as Kml
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.LatLng.Raw (RawLat(..), RawLng(..))
 import Flight.Zone (Radius(..), Zone(..))
-import qualified Flight.Zone.Raw as Raw (RawZone(..), RawRadius(..))
+import qualified Flight.Zone.Raw as Raw (RawZone(..))
 import Flight.Track.Time (TimeRow(..))
 import Flight.Track.Cross (Fix(..))
 import Flight.Comp (SpeedSection)
@@ -108,10 +108,10 @@ rowToPoint
 
 zoneToCylinder :: (Eq a, Fractional a) => Raw.RawZone -> TaskZone a
 zoneToCylinder z =
-    TaskZone $ Cylinder (Radius r) (toLL(lat, lng))
+    TaskZone $ Cylinder (Radius r') (toLL(lat, lng))
     where
-        r = fromRational' . toRational' $ radius
+        r' = fromRational' . toRational' $ r
 
-        Raw.RawRadius radius = Raw.radius z
+        Radius r = Raw.radius z
         RawLat lat = Raw.lat z
         RawLng lng = Raw.lng z

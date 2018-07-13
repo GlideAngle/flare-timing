@@ -13,6 +13,7 @@ import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.LatLng.Rational (Epsilon(..), defEps)
 import Flight.Zone
     ( Zone(..)
+    , QRadius
     , Radius(..)
     , Bearing(..)
     , center
@@ -53,7 +54,7 @@ eastNorthToLatLng = runIdentity . runExceptT . HCEN.toLatLng
 circum
     :: Epsilon
     -> LatLng Rational [u| rad |]
-    -> Radius Rational [u| m |]
+    -> QRadius Rational [u| m |]
     -> TrueCourse Rational 
     -> LatLng Rational [u| rad |]
 circum e xLL r tc =
@@ -67,7 +68,7 @@ circum e xLL r tc =
 circumEN
     :: Epsilon
     -> LatLng Rational [u| rad |]
-    -> Radius Rational [u| m |]
+    -> QRadius Rational [u| m |]
     -> TrueCourse Rational 
     -> Either String HCEN.UTMRef
 circumEN e xLL r tc =
@@ -75,7 +76,7 @@ circumEN e xLL r tc =
 
 translate
     :: Epsilon
-    -> Radius Rational [u| m |]
+    -> QRadius Rational [u| m |]
     -> TrueCourse Rational
     -> HCEN.UTMRef
     -> HCEN.UTMRef
@@ -157,7 +158,7 @@ getClose :: Epsilon
          -> Rational -- ^ The limit radius.
          -> Tolerance Rational
          -> Int -- ^ How many tries.
-         -> Radius Rational [u| m |] -- ^ How far from the center.
+         -> QRadius Rational [u| m |] -- ^ How far from the center.
          -> (TrueCourse Rational -> LatLng Rational [u| rad |]) -- ^ A point from the origin on this radial
          -> TrueCourse Rational -- ^ The true course for this radial.
          -> (ZonePoint Rational, TrueCourse Rational)

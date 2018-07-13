@@ -14,7 +14,7 @@ import Flight.Units.DegMinSec (fromQ)
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.Zone
     ( Zone(..)
-    , Radius(..)
+    , QRadius
     , Incline (..)
     , Bearing(..)
     , toRationalRadius
@@ -23,7 +23,7 @@ import Flight.Zone
     )
 
 type QLL a = (Quantity a [u| rad |], Quantity a [u| rad |])
-type MkZone a b = Real a => Radius a [u| m |] -> QLL a -> Zone b
+type MkZone a b = Real a => QRadius a [u| m |] -> QLL a -> Zone b
 
 showQ :: Real a => QLL a -> String
 showQ (x, y) =
@@ -73,7 +73,7 @@ describedZones
     =>
         [
             ( String
-            , Radius a [u| m |] -> QLL a -> Zone a
+            , QRadius a [u| m |] -> QLL a -> Zone a
             )
         ]
 describedZones =
@@ -84,7 +84,7 @@ dotZones
     =>
         [
             ( String
-            , Radius a [u| m |] -> QLL a -> Zone a
+            , QRadius a [u| m |] -> QLL a -> Zone a
             )
         ]
 dotZones =
@@ -97,7 +97,7 @@ areaZones
     =>
         [
             ( String
-            , Radius a [u| m |] -> QLL a -> Zone a
+            , QRadius a [u| m |] -> QLL a -> Zone a
             )
         ]
 areaZones =

@@ -22,8 +22,8 @@ import Flight.Units ()
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.LatLng.Raw (RawLat(..), RawLng(..), RawLatLng(..))
 import Data.Ratio.Rounding (dpRound)
-import Flight.Zone (Zone(..), Radius(..), fromRationalZone)
-import Flight.Zone.Raw (RawZone(..), RawRadius(..))
+import Flight.Zone (Zone(..), QRadius, Radius(..), fromRationalZone)
+import Flight.Zone.Raw (RawZone(..))
 import Flight.Zone.Cylinder (Tolerance(..))
 import Flight.Distance (TaskDistance(..), PathDistance(..), SpanLatLng)
 import Flight.EastNorth (UtmZone(..), EastingNorthing(..))
@@ -99,9 +99,9 @@ rawToLatLng (RawLat lat') (RawLng lng') =
 
 rawToRadius
     :: Fractional a
-    => RawRadius (Quantity Double [u| m |])
-    -> Radius a [u| m |]
-rawToRadius (RawRadius r) =
+    => Radius (Quantity Double [u| m |])
+    -> QRadius a [u| m |]
+rawToRadius (Radius r) =
     Radius . fromRational' . toRational' $ r
 
 toPoint :: (Eq a, Fractional a) => RawLatLng -> Zone a

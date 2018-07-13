@@ -6,7 +6,7 @@ import Test.Tasty (TestTree, testGroup)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import Flight.Zone (Radius(..))
+import Flight.Zone (QRadius, Radius(..))
 import Flight.Earth.Sphere (earthRadius)
 import Zone (MkZone, QLL, describedZones, showQ)
 import qualified Distance as D (DistanceClose, toDistanceClose)
@@ -39,7 +39,7 @@ pts =
     where
         z = [u| 0 rad |]
 
-distances :: (Real a, Fractional a) => [Radius a [u| m |]]
+distances :: (Real a, Fractional a) => [QRadius a [u| m |]]
 distances =
     repeat $ Radius earthRadius
 

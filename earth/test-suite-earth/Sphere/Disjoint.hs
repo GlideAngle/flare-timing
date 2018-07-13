@@ -7,7 +7,7 @@ import Test.Tasty (TestTree, testGroup)
 import Data.UnitsOfMeasure ((+:), (*:), u, negate', fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import Flight.Zone (Zone(..), Radius(..))
+import Flight.Zone (Zone(..), QRadius, Radius(..))
 import Flight.Earth.Sphere (earthRadius)
 import Zone (MkZone, QLL, showQ, dotZones, areaZones)
 import Sphere.Touching (Overlay(..), separatedZones)
@@ -63,7 +63,7 @@ pts =
         pos = (radius +: delta) *: [u| 1 rad |]
         neg = negate' (radius +: delta) *: [u| 1 rad |]
 
-distances :: (Real a, Fractional a) => [Radius a [u| m |]]
+distances :: (Real a, Fractional a) => [QRadius a [u| m |]]
 distances =
     repeat $ Radius earthRadius
 

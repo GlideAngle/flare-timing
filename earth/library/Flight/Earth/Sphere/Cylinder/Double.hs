@@ -7,6 +7,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.Zone
     ( Zone(..)
+    , QRadius
     , Radius(..)
     , Bearing(..)
     , center
@@ -36,7 +37,7 @@ import Flight.Earth.Sphere (earthRadius)
 -- radius on the given radial true course 'rtc'.
 circum :: Real a
        => LatLng a [u| rad |]
-       -> Radius a [u| m |]
+       -> QRadius a [u| m |]
        -> TrueCourse a
        -> LatLng Double [u| rad |]
 circum
@@ -119,7 +120,7 @@ circumSample SampleParams{..} (Bearing (MkQuantity bearing)) zp zone =
                     where
                         (Bearing (MkQuantity b)) = radial
 
-        r :: Radius Double [u| m |]
+        r :: QRadius Double [u| m |]
         r@(Radius (MkQuantity limitRadius)) = radius zone'
 
         ptCenter = center zone'
@@ -135,7 +136,7 @@ getClose :: Zone Double
          -> Double -- ^ The limit radius.
          -> Tolerance Double
          -> Int -- ^ How many tries.
-         -> Radius Double [u| m |] -- ^ How far from the center.
+         -> QRadius Double [u| m |] -- ^ How far from the center.
          -> (TrueCourse Double -> LatLng Double [u| rad |]) -- ^ A point from the origin on this radial
          -> TrueCourse Double -- ^ The true course for this radial.
          -> (ZonePoint Double, TrueCourse Double)

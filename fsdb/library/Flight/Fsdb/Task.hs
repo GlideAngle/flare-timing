@@ -28,8 +28,8 @@ import Data.Time.Format (parseTimeOrError, defaultTimeLocale)
 import Text.Megaparsec ((<?>))
 
 import Flight.LatLng.Raw (RawLat(..), RawLng(..))
+import Flight.Zone (Radius(..))
 import qualified Flight.Zone.Raw as Z (RawZone(..))
-import Flight.Zone.Raw as Z (RawRadius(..))
 import Flight.Comp
     ( PilotId(..), PilotName(..), Pilot(..)
     , Task(..), TaskStop(..), SpeedSection, StartGate(..), OpenClose(..)
@@ -172,4 +172,4 @@ parseZone (name, lat', lng', rad') = either (const []) (: []) $ do
             name
             (RawLat $ sciToRational lat)
             (RawLng $ sciToRational lng)
-            (RawRadius (MkQuantity $ sciToFloat rad))
+            (Radius (MkQuantity $ sciToFloat rad))
