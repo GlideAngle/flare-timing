@@ -7,7 +7,7 @@ arguments :: [String]
 arguments =
     [ "library"
     , "test-suite-hlint"
-    , "ignore=Reduce duplication"
+    , "--ignore=Reduce duplication"
     ]
 
 main :: IO ()
