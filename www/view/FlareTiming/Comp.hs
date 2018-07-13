@@ -39,6 +39,8 @@ import Data.Flight.Types (Comp(..), Nominal(..))
 import FlareTiming.NavBar (navbar)
 import FlareTiming.Footer (footer)
 
+{-# ANN module "HLint: ignore" #-}
+
 loading :: MonadWidget t m => m ()
 loading = do
     el "li" $ do
