@@ -54,6 +54,8 @@ import Data.Flight.Types
     , toSci
     )
 
+{-# ANN module "HLint: ignore" #-}
+
 turnpoint :: Turnpoint -> IO (L.Marker, L.Circle)
 turnpoint (Turnpoint name (Latitude lat) (Longitude lng) radius) = do
     xMark <- L.marker latLng

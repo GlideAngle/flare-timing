@@ -29,6 +29,8 @@ import GHCJS.Types (JSVal, JSString)
 import GHCJS.DOM.Element (IsElement(..))
 import GHCJS.DOM.Types (Element(..), toElement, toJSString, toJSVal)
 
+{-# ANN module "HLint: ignore" #-}
+
 -- SEE: https://gist.github.com/ali-abrar/fa2adbbb7ee64a0295cb
 newtype Map = Map { unMap :: JSVal }
 newtype TileLayer = TileLayer { unTileLayer :: JSVal }
