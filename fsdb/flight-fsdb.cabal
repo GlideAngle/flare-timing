@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: cb9021a5a3540c1a4b558cab379df1186c0916817e1059e138795ef71909e9c8
+-- hash: a0270ecdb2b674b81db871656b6c394d08545cfa343643a7bebb6dfec791e3ce
 
 name:           flight-fsdb
 version:        0.1.0
@@ -55,44 +55,6 @@ library
     , flight-latlng
     , flight-units
     , flight-zone
-    , hxt
-    , hxt-xpath
-    , megaparsec
-    , path
-    , scientific
-    , split
-    , time
-    , uom-plugin
-  default-language: Haskell2010
-
-test-suite hlint
-  type: exitcode-stdio-1.0
-  main-is: HLint.hs
-  other-modules:
-      Flight.Fsdb
-      Flight.Fsdb.Comp
-      Flight.Fsdb.Internal
-      Flight.Fsdb.Nominal
-      Flight.Fsdb.Pilot
-      Flight.Fsdb.Stopped
-      Flight.Fsdb.Task
-      Paths_flight_fsdb
-  hs-source-dirs:
-      library
-      test-suite-hlint
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
-  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
-  build-depends:
-      aeson
-    , base >=4.9.1.0
-    , containers
-    , detour-via-sci
-    , flight-comp
-    , flight-gap
-    , flight-latlng
-    , flight-units
-    , flight-zone
-    , hlint
     , hxt
     , hxt-xpath
     , megaparsec

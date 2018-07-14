@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1b75745fc2d441a81799b26b75055f9e88aad0039836ef923e5abe571daf34b8
+-- hash: e2d54f23bfd5ce5ea3fe6a0356df13595a371a979e2411e1925601dc3870ec40
 
 name:           flare-timing
 version:        0.1.0
@@ -409,19 +409,4 @@ executable test-kml-parser
     , flight-kml
     , raw-strings-qq
     , system-filepath
-  default-language: Haskell2010
-
-test-suite hlint
-  type: exitcode-stdio-1.0
-  main-is: HLint.hs
-  other-modules:
-      Paths_flare_timing
-  hs-source-dirs:
-      library
-      test-suite-hlint
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
-  ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
-  build-depends:
-      base >=4.9.1.0
-    , hlint
   default-language: Haskell2010

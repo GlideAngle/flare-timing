@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 77a9a98cff3b1d3fb1cf74648b7aa1497999a063454b4008950eb3e9ea485805
+-- hash: 3b45447dcf4138fa272ca8b2b7d5ad32d676ae47114b4ee19b5c1e2e77607f41
 
 name:           tasty-compare
 version:        0.1.0
@@ -42,25 +42,6 @@ library
   build-depends:
       base >=4.9.1.0
     , call-stack
-    , tasty
-    , tasty-hunit
-  default-language: Haskell2010
-
-test-suite hlint
-  type: exitcode-stdio-1.0
-  main-is: HLint.hs
-  other-modules:
-      Test.Tasty.HUnit.Compare
-      Paths_tasty_compare
-  hs-source-dirs:
-      library
-      test-suite-hlint
-  default-extensions: PackageImports
-  ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
-  build-depends:
-      base >=4.9.1.0
-    , call-stack
-    , hlint
     , tasty
     , tasty-hunit
   default-language: Haskell2010

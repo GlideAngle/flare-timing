@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 273575ad9a2216c8a28cd3f93a2d9e7354981639b21db207b70e82cc03dd6e54
+-- hash: 3652d1fe9cd8fcb4a5b2970b5f01de2dc876c8c986849105b747e1c69a6af6b8
 
 name:           flight-lookup
 version:        0.1.0
@@ -59,48 +59,6 @@ library
     , flight-mask
     , flight-route
     , flight-zone
-    , lens
-    , mtl
-    , path
-    , scientific
-    , split
-    , time
-    , unordered-containers
-    , uom-plugin
-  default-language: Haskell2010
-
-test-suite hlint
-  type: exitcode-stdio-1.0
-  main-is: HLint.hs
-  other-modules:
-      Flight.Lookup
-      Flight.Lookup.Cross
-      Flight.Lookup.Route
-      Flight.Lookup.Tag
-      Paths_flight_lookup
-  hs-source-dirs:
-      library
-      test-suite-hlint
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
-  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
-  build-depends:
-      aeson
-    , base >=4.9.1.0
-    , bytestring
-    , cassava
-    , containers
-    , detour-via-sci
-    , directory
-    , filemanip
-    , filepath
-    , flight-comp
-    , flight-gap
-    , flight-kml
-    , flight-latlng
-    , flight-mask
-    , flight-route
-    , flight-zone
-    , hlint
     , lens
     , mtl
     , path

@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 650c266e72209abb811404d5abf78bd30ea67ccfbcbf9bba5ecef72820cb8b42
+-- hash: d02c233ef9c83ee29944d82a39d789ae6cda40c8f1fd86cb20565ad4553dd6ce
 
 name:           flight-comp
 version:        0.1.0
@@ -125,56 +125,6 @@ test-suite comp
     , tasty-hunit
     , tasty-quickcheck
     , tasty-smallcheck
-    , time
-    , unordered-containers
-    , uom-plugin
-    , vector
-  default-language: Haskell2010
-
-test-suite hlint
-  type: exitcode-stdio-1.0
-  main-is: HLint.hs
-  other-modules:
-      Flight.Comp
-      Flight.Path
-      Flight.Pilot
-      Flight.Track.Arrival
-      Flight.Track.Cross
-      Flight.Track.Distance
-      Flight.Track.Land
-      Flight.Track.Lead
-      Flight.Track.Mask
-      Flight.Track.Point
-      Flight.Track.Speed
-      Flight.Track.Tag
-      Flight.Track.Time
-      Paths_flight_comp
-  hs-source-dirs:
-      library
-      test-suite-hlint
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
-  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
-  build-depends:
-      aeson
-    , base >=4.9.1.0
-    , bytestring
-    , cassava
-    , containers
-    , detour-via-sci
-    , directory
-    , filemanip
-    , filepath
-    , flight-gap
-    , flight-latlng
-    , flight-route
-    , flight-units
-    , flight-zone
-    , hlint
-    , lens
-    , mtl
-    , path
-    , scientific
-    , split
     , time
     , unordered-containers
     , uom-plugin

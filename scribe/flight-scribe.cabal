@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 465d1a4182b582c23cf91b7e1ed11e934247d6eb1450cb1ce8da332e3e38d5a5
+-- hash: 937026b634bea790fd157de500061ecbb3cc1df9df8ca8409903a09ba9a2f41b
 
 name:           flight-scribe
 version:        0.1.0
@@ -56,45 +56,6 @@ library
     , flight-latlng
     , flight-route
     , flight-zone
-    , mtl
-    , path
-    , scientific
-    , split
-    , time
-    , unordered-containers
-    , vector
-    , yaml
-  default-language: Haskell2010
-
-test-suite hlint
-  type: exitcode-stdio-1.0
-  main-is: HLint.hs
-  other-modules:
-      Flight.Align
-      Flight.Discard
-      Flight.Scribe
-      Paths_flight_scribe
-  hs-source-dirs:
-      library
-      test-suite-hlint
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
-  ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
-  build-depends:
-      aeson
-    , base >=4.9.1.0
-    , bytestring
-    , cassava
-    , containers
-    , detour-via-sci
-    , directory
-    , filemanip
-    , filepath
-    , flight-comp
-    , flight-gap
-    , flight-latlng
-    , flight-route
-    , flight-zone
-    , hlint
     , mtl
     , path
     , scientific

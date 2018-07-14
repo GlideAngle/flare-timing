@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 40161b3019d1269363897ff482323a168a21c7a8e7db46f603849a974b3c3eed
+-- hash: f87872ed251bd7e380ec34ae8c1f8d8bc5bac3ce8deebb34c49836ac25cd17db
 
 name:           siggy-chardust
 version:        1.0.0
@@ -77,20 +77,4 @@ test-suite doctest
   build-depends:
       base
     , doctest
-  default-language: Haskell2010
-
-test-suite hlint
-  type: exitcode-stdio-1.0
-  main-is: HLint.hs
-  other-modules:
-      Data.Ratio.Rounding
-      Paths_siggy_chardust
-  hs-source-dirs:
-      library
-      test-suite-hlint
-  default-extensions: PackageImports
-  ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
-  build-depends:
-      base >=4.9.1.0
-    , hlint
   default-language: Haskell2010
