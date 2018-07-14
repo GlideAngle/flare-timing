@@ -55,6 +55,7 @@ import Data.String (IsString())
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
+import Flight.Zone (Zone(..))
 import Flight.Zone.Raw (RawZone, showZone)
 import Flight.Field (FieldOrdering(..))
 import Flight.Pilot
@@ -163,7 +164,6 @@ data CompSettings =
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
-
 data Comp =
     Comp
         { civilId :: String
@@ -209,6 +209,7 @@ data Task =
     Task
         { taskName :: String
         , zones :: [RawZone]
+        , strictZones :: [Zone Double]
         , speedSection :: SpeedSection
         , zoneTimes :: [OpenClose]
         , startGates :: [StartGate]
@@ -288,6 +289,10 @@ cmp a b =
 
         ("zones", "taskName") -> GT
         ("zones", _) -> LT
+
+        ("strictZones", "taskName") -> GT
+        ("strictZones", "zones") -> GT
+        ("strictZones", _) -> LT
 
         ("speedSection", "zoneTimes") -> LT
         ("speedSection", "startGates") -> LT

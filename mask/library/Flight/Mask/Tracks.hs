@@ -17,10 +17,11 @@ import Flight.TrackLog as Log
 import Flight.Units ()
 import Flight.Scribe (readComp)
 
-settingsLogs :: CompInputFile
-             -> [IxTask]
-             -> [Pilot]
-             -> ExceptT String IO (CompSettings, [[PilotTrackLogFile]])
+settingsLogs
+    :: CompInputFile
+    -> [IxTask]
+    -> [Pilot]
+    -> ExceptT String IO (CompSettings, [[PilotTrackLogFile]])
 settingsLogs compFile@(CompInputFile path) tasks selectPilots = do
     settings <- readComp compFile
     ExceptT . return $ go settings
@@ -33,17 +34,18 @@ settingsLogs compFile@(CompInputFile path) tasks selectPilots = do
                 fs = Log.makeAbsolute dir <$> taskFolders
                 zs = zipWith (<$>) fs ys
 
-checkTracks :: forall a. (CompSettings -> (IxTask -> MarkedFixes -> a))
-            -> CompInputFile
-            -> [IxTask]
-            -> [Pilot]
-            -> ExceptT
-                String
-                IO
-                [[ Either
-                   (Pilot, TrackFileFail)
-                   (Pilot, a)
-                ]]
+checkTracks
+    :: (CompSettings -> (IxTask -> MarkedFixes -> a))
+    -> CompInputFile
+    -> [IxTask]
+    -> [Pilot]
+    -> ExceptT
+        String
+        IO
+        [[ Either
+           (Pilot, TrackFileFail)
+           (Pilot, a)
+        ]]
 checkTracks f compFile tasks selectPilots = do
     (settings, xs) <- settingsLogs compFile tasks selectPilots
     lift $ Log.pilotTracks (f settings) xs

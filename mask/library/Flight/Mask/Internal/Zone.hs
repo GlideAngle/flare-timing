@@ -94,19 +94,19 @@ fixFromFix mark0 i x =
         Kml.Latitude lat = Kml.lat x
         Kml.Longitude lng = Kml.lng x
 
-fixToPoint :: (Eq a, Fractional a) => Kml.Fix -> TrackZone a
+fixToPoint :: (Eq a, Ord a, Fractional a) => Kml.Fix -> TrackZone a
 fixToPoint fix =
     TrackZone $ Point (toLL (lat, lng))
     where
         Kml.Latitude lat = Kml.lat fix
         Kml.Longitude lng = Kml.lng fix
 
-rowToPoint :: (Eq a, Fractional a) => TimeRow -> TrackZone a
+rowToPoint :: (Eq a, Ord a, Fractional a) => TimeRow -> TrackZone a
 rowToPoint
     TimeRow{lat = RawLat lat, lng = RawLng lng} =
     TrackZone $ Point (toLL (lat, lng))
 
-zoneToCylinder :: (Eq a, Fractional a) => Raw.RawZone -> TaskZone a
+zoneToCylinder :: (Eq a, Ord a, Fractional a) => Raw.RawZone -> TaskZone a
 zoneToCylinder z =
     TaskZone $ Cylinder (Radius r') (toLL(lat, lng))
     where

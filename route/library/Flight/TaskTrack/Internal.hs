@@ -104,11 +104,11 @@ rawToRadius
 rawToRadius (Radius r) =
     Radius . fromRational' . toRational' $ r
 
-toPoint :: (Eq a, Fractional a) => RawLatLng -> Zone a
+toPoint :: (Eq a, Ord a, Fractional a) => RawLatLng -> Zone a
 toPoint RawLatLng{..} =
     fromRationalZone . Point $ rawToLatLng lat lng
 
-toCylinder :: (Eq a, Num a, Fractional a) => RawZone -> Zone a
+toCylinder :: (Eq a, Ord a, Num a, Fractional a) => RawZone -> Zone a
 toCylinder RawZone{..} =
     Cylinder
         (rawToRadius radius)

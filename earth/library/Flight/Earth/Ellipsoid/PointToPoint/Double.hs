@@ -11,7 +11,8 @@ import Data.Fixed (mod')
 import Data.UnitsOfMeasure (KnownUnit, Unpack, u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import Flight.LatLng (Lat(..), Lng(..), LatLng(..), AzimuthFwd, AzimuthRev)
+import Flight.LatLng
+    (QLat, Lat(..), QLng, Lng(..), LatLng(..), AzimuthFwd, AzimuthRev)
 import Flight.Distance (TaskDistance(..), SpanLatLng)
 import Flight.Earth.Ellipsoid
     ( Ellipsoid(..), AbnormalLatLng(..), VincentyInverse(..), VincentyAccuracy(..)
@@ -120,7 +121,7 @@ tooFar = TaskDistance [u| 20000000 m |]
 -- | Sperical distance using inverse Vincenty and floating point numbers.
 distanceVincenty
     :: ( RealFloat a, Show a
-       , KnownUnit (Unpack u), Show (Lat a u), Show (Lng a u)
+       , KnownUnit (Unpack u), Show (QLat a u), Show (QLng a u)
        , u ~ [u| rad |]
        )
     => Ellipsoid a

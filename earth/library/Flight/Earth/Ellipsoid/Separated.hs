@@ -10,7 +10,7 @@ import Flight.Units ()
 import Flight.Zone (Zone(..), Radius(..), radius)
 import Flight.Zone.Path (distancePointToPoint)
 import Flight.Distance (TaskDistance(..), PathDistance(..), SpanLatLng)
-import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
+import Flight.LatLng (QLat, Lat(..), QLng, Lng(..), LatLng(..))
 import Flight.Earth.Ellipsoid (Ellipsoid(..), polarRadius)
 
 boundingBoxSeparated
@@ -67,14 +67,14 @@ boxSeparated
         yScale :: Quantity _ [u| rad |]
         yScale = (yLng +: rLng) -: (yLng -: rLng)
 
-        xTranslate :: Lat _ [u| rad |] -> Lat _ [u| rad |]
+        xTranslate :: QLat _ [u| rad |] -> QLat _ [u| rad |]
         xTranslate (Lat lat) =
             Lat ((lat -: xZero) *: scale)
             where
                 scale :: Quantity _ [u| 1 1 |]
                 scale = MkQuantity (unQuantity xScale)
 
-        yTranslate :: Lng _ [u| rad |] -> Lng _ [u| rad |]
+        yTranslate :: QLng _ [u| rad |] -> QLng _ [u| rad |]
         yTranslate (Lng lng) =
             Lng ((lng -: yZero) *: scale)
             where

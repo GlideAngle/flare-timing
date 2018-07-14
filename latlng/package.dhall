@@ -29,6 +29,7 @@ in    deps
             , "tasty-quickcheck"
             , "smallcheck"
             , "detour-via-sci"
+            , "detour-via-uom"
             , "siggy-chardust"
             , "flight-units"
             ]

@@ -19,7 +19,7 @@ import Flight.Earth.Flat.Projected.Internal
 -- coordinates, the latitude and longitude of each vertex of the path can be
 -- used to work that out.
 costEastNorth
-    :: (Real a, Eq b, Fractional b)
+    :: (Real a, Eq b, Ord b, Fractional b)
     => Zone a
     -> Zone a
     -> PathDistance b

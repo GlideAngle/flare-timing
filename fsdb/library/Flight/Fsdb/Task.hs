@@ -28,7 +28,7 @@ import Data.Time.Format (parseTimeOrError, defaultTimeLocale)
 import Text.Megaparsec ((<?>))
 
 import Flight.LatLng.Raw (RawLat(..), RawLng(..))
-import Flight.Zone (Radius(..))
+import Flight.Zone (Radius(..), rawZonesToZones)
 import qualified Flight.Zone.Raw as Z (RawZone(..))
 import Flight.Comp
     ( PilotId(..), PilotName(..), Pilot(..)
@@ -115,11 +115,12 @@ getTask ps =
             >>> arr parseStop
 
         mkTask (name, (stop, (absentees, (section, (zs, (ts, gates)))))) =
-            Task name zs section ts'' gates (sort absentees) stop
+            Task name zs zs' section ts'' gates (sort absentees) stop
             where
                 -- NOTE: If all time zones are the same then collapse.
                 ts' = nub ts
                 ts'' = if length ts' == 1 then ts' else ts
+                zs' = rawZonesToZones zs
 
 parseTasks :: String -> IO (Either String [Task])
 parseTasks contents = do

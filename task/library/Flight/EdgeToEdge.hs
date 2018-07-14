@@ -22,15 +22,16 @@ import Flight.ShortestPath
     )
 import Flight.Distance (TaskDistance(..), PathDistance(..), SpanLatLng)
 
-distanceEdgeToEdge :: (Real a, Fractional a)
-                   => SpanLatLng a
-                   -> DistancePointToPoint a
-                   -> CostSegment a
-                   -> CircumSample a
-                   -> AngleCut a
-                   -> Tolerance a
-                   -> [Zone a]
-                   -> Zs (PathDistance a)
+distanceEdgeToEdge
+    :: (Real a, Fractional a)
+    => SpanLatLng a
+    -> DistancePointToPoint a
+    -> CostSegment a
+    -> CircumSample a
+    -> AngleCut a
+    -> Tolerance a
+    -> [Zone a]
+    -> Zs (PathDistance a)
 distanceEdgeToEdge span distancePointToPoint cseg cs =
     shortestPath span distancePointToPoint cs builder
     where
@@ -42,7 +43,7 @@ distanceEdgeToEdge span distancePointToPoint cseg cs =
 
 -- | NOTE: The shortest path may traverse a cylinder so I include
 -- edges within a cylinder as well as edges to the next cylinder.
-connectNodes :: Eq a => CostSegment a -> NodeConnector a
+connectNodes :: (Eq a, Ord a) => CostSegment a -> NodeConnector a
 connectNodes cost xs ys =
     [ f x1 x2 | x1 <- xs, x2 <- xs ]
     ++

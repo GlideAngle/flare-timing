@@ -10,7 +10,7 @@ module Flight.Zone.Cylinder.Sample
 import Data.UnitsOfMeasure (u, fromRational', toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import Flight.LatLng (LatLng(..), Lat, Lng)
+import Flight.LatLng (LatLng(..), QLat, QLng)
 import Flight.Zone
     ( Zone(..)
     , Bearing(..)
@@ -76,13 +76,13 @@ deriving instance
     ( Show a
     , Real a
     , Fractional a
-    , Show (Lat a [u| rad |])
-    , Show (Lng a [u| rad |])
+    , Show (QLat a [u| rad |])
+    , Show (QLng a [u| rad |])
     )
     => Show (ZonePoint a)
 
 fromRationalZonePoint
-    :: (Eq a, Fractional a)
+    :: (Eq a, Ord a, Fractional a)
     => ZonePoint Rational
     -> ZonePoint a
 fromRationalZonePoint ZonePoint{..} =

@@ -24,17 +24,22 @@ module Flight.Zone
     , fromRationalLatLng
     , toRationalLatLng
     , realToFracLatLng
+    , rawZonesToZones
     ) where
 
+import Data.Aeson
+    (ToJSON(..), FromJSON(..), Value(..), (.:), (.=), object, withObject)
 import Data.UnitsOfMeasure (u, toRational', fromRational', zero)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import Flight.Units (showRadian, realToFrac')
+import Flight.Units (realToFrac')
 import Flight.Units.DegMinSec (fromQ)
-import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
+import Flight.LatLng (QLat, Lat(..), QLng, Lng(..), LatLng(..), fromDMS)
 import Flight.Zone.Radius (Radius(..), QRadius)
 import Flight.Zone.Bearing (Bearing(..), QBearing)
 import Flight.Zone.Incline (Incline(..), QIncline)
+import qualified Flight.Zone.Raw.Zone as Raw (RawZone(..))
+import Flight.LatLng.Raw (RawLat(..), RawLng(..))
 
 -- | Does it have area?
 class HasArea a where
@@ -46,21 +51,21 @@ class HasArea a where
 data Zone a where
     -- | Used to mark the exact turnpoints in the optimized task distance.
     Point
-        :: Eq a
+        :: (Eq a, Ord a)
         => LatLng a [u| rad |]
         -> Zone a
 
     -- | Used only in open distance tasks these mark the start and direction of
     -- the open distance.
     Vector
-        :: Eq a
+        :: (Eq a, Ord a)
         => QBearing a [u| rad |]
         -> LatLng a [u| rad |]
         -> Zone a
 
     -- | The turnpoint cylinder.
     Cylinder
-        :: Eq a
+        :: (Eq a, Ord a)
         => QRadius a [u| m |]
         -> LatLng a [u| rad |]
         -> Zone a
@@ -68,7 +73,7 @@ data Zone a where
     -- | Only used in paragliding, this is the conical end of speed section
     -- used to discourage too low an end to final glides.
     Conical
-        :: Eq a
+        :: (Eq a, Ord a)
         => QIncline a [u| rad |]
         -> QRadius a [u| m |]
         -> LatLng a [u| rad |]
@@ -76,7 +81,7 @@ data Zone a where
 
     -- | A goal line perpendicular to the course line.
     Line 
-        :: Eq a
+        :: (Eq a, Ord a)
         => QRadius a [u| m |]
         -> LatLng a [u| rad |]
         -> Zone a
@@ -85,12 +90,13 @@ data Zone a where
     -- a goal line perpendicular to the course line followed by half
     -- a cylinder.
     SemiCircle
-        :: Eq a
+        :: (Eq a, Ord a)
         => QRadius a [u| m |]
         -> LatLng a [u| rad |]
         -> Zone a
 
 deriving instance Eq (Zone a)
+deriving instance Ord (Zone a)
 deriving instance
     ( Show (QIncline a [u| rad |])
     , Show (QBearing a [u| rad |])
@@ -106,6 +112,64 @@ instance (Ord a, Num a) => HasArea (Zone a) where
     hasArea (Conical _ (Radius x) _) = x > zero
     hasArea (Line (Radius x) _) = x > zero
     hasArea (SemiCircle (Radius x) _) = x > zero
+
+instance
+    ( ToJSON (LatLng a [u| rad |])
+    , ToJSON (QBearing a [u| rad |])
+    , ToJSON (QIncline a [u| rad |])
+    , ToJSON (QRadius a [u| m |])
+    )
+    => ToJSON (Zone a) where
+    toJSON (Point x) = object
+        [ "tag" .= String "point"
+        , "x" .= toJSON x
+        ]
+    toJSON (Vector b x) = object
+        ["tag" .= String "vector"
+        , "b" .= toJSON b
+        , "x" .= toJSON x
+        ]
+    toJSON (Cylinder r x) = object
+        ["tag" .= String "cylinder"
+        , "r" .= toJSON r
+        , "x" .= toJSON x
+        ]
+    toJSON (Conical i r x) = object
+        ["tag" .= String "conical"
+        , "r" .= toJSON r
+        , "i" .= toJSON i
+        , "x" .= toJSON x
+        ]
+    toJSON (Line r x) = object
+        [ "tag" .= String "line"
+        , "r" .= toJSON r
+        , "x" .= toJSON x
+        ]
+    toJSON (SemiCircle r x) = object
+        [ "tag" .= String "semicircle"
+        , "r" .= toJSON r
+        , "x" .= toJSON x
+        ]
+
+instance
+    ( Eq a
+    , Ord a
+    , FromJSON (LatLng a [u| rad |])
+    , FromJSON (QBearing a [u| rad |])
+    , FromJSON (QIncline a [u| rad |])
+    , FromJSON (QRadius a [u| m |])
+    )
+    => FromJSON (Zone a) where
+    parseJSON = withObject "Zone" $ \o -> do
+        tag :: String <- o .: "tag"
+        case tag of
+            "point" -> Point <$> o .: "x" 
+            "vector" -> Vector <$> o .: "b" <*> o .: "x"
+            "cylinder" -> Cylinder <$> o .: "r" <*> o .: "x"
+            "conical" -> Conical <$> o .: "r" <*> o .: "i" <*> o .: "x"
+            "line" -> Line <$> o .: "r" <*> o .: "x"
+            "semicircle" -> SemiCircle <$> o .: "r" <*> o .: "x"
+            _ -> fail $ "Unknown type of zone " ++ tag
 
 showZoneDMS :: Zone Double -> String
 showZoneDMS (Point (LatLng (Lat x, Lng y))) =
@@ -143,11 +207,11 @@ realToFracRadius :: (Real a, Fractional b) => QRadius a u -> QRadius b u
 realToFracRadius (Radius r) =
     Radius $ realToFrac' r
 
-fromRationalLat :: Fractional a => Lat Rational u -> Lat a u
+fromRationalLat :: Fractional a => QLat Rational u -> QLat a u
 fromRationalLat (Lat x) =
     Lat $ fromRational' x
 
-fromRationalLng :: Fractional a => Lng Rational u -> Lng a u
+fromRationalLng :: Fractional a => QLng Rational u -> QLng a u
 fromRationalLng (Lng x) =
     Lng $ fromRational' x
 
@@ -155,11 +219,11 @@ fromRationalLatLng :: Fractional a => LatLng Rational u -> LatLng a u
 fromRationalLatLng (LatLng (lat, lng)) =
     LatLng (fromRationalLat lat, fromRationalLng lng)
 
-toRationalLat :: Real a => Lat a u -> Lat Rational u
+toRationalLat :: Real a => QLat a u -> QLat Rational u
 toRationalLat (Lat x) =
     Lat $ toRational' x
 
-toRationalLng :: Real a => Lng a u -> Lng Rational u
+toRationalLng :: Real a => QLng a u -> QLng Rational u
 toRationalLng (Lng x) =
     Lng $ toRational' x
 
@@ -167,11 +231,11 @@ toRationalLatLng :: Real a => LatLng a u -> LatLng Rational u
 toRationalLatLng (LatLng (lat, lng)) =
     LatLng (toRationalLat lat, toRationalLng lng)
 
-realToFracLat :: (Real a, Fractional b) => Lat a u -> Lat b u
+realToFracLat :: (Real a, Fractional b) => QLat a u -> QLat b u
 realToFracLat (Lat x) =
     Lat $ realToFrac' x
 
-realToFracLng :: (Real a, Fractional b) => Lng a u -> Lng b u
+realToFracLng :: (Real a, Fractional b) => QLng a u -> QLng b u
 realToFracLng (Lng x) =
     Lng $ realToFrac' x
 
@@ -179,7 +243,9 @@ realToFracLatLng :: (Real a, Fractional b) => LatLng a u -> LatLng b u
 realToFracLatLng (LatLng (lat, lng)) =
     LatLng (realToFracLat lat, realToFracLng lng)
 
-fromRationalZone :: (Eq a, Fractional a) => Zone Rational -> Zone a
+fromRationalZone
+    :: (Eq a, Ord a, Fractional a)
+    => Zone Rational -> Zone a
 fromRationalZone (Point x) =
     Point $ fromRationalLatLng x
 
@@ -223,7 +289,9 @@ toRationalZone (Line r x) =
 toRationalZone (SemiCircle r x) =
     SemiCircle (toRationalRadius r) (toRationalLatLng x)
 
-realToFracZone :: (Real a, Eq b, Fractional b) => Zone a -> Zone b
+realToFracZone
+    :: (Real a, Eq b, Ord b, Fractional b)
+    => Zone a -> Zone b
 realToFracZone (Point x) =
     Point $ realToFracLatLng x
 
@@ -281,3 +349,19 @@ data Task a
         , startGates :: StartGates
         , deadline :: Maybe Deadline
         }
+
+rawZonesToZones :: [Raw.RawZone] -> [Zone Double]
+rawZonesToZones xs =
+    f <$> xs
+    where
+        f Raw.RawZone{radius = r, lat, lng} =
+            Cylinder r $ fromDMS (fromQ qLat, fromQ qLng)
+                where
+                    RawLat lat' = lat
+                    RawLng lng' = lng
+
+                    qLat :: Quantity Double [u| deg |]
+                    qLat = fromRational' $ MkQuantity lat'
+
+                    qLng :: Quantity Double [u| deg |]
+                    qLng = fromRational' $ MkQuantity lng'

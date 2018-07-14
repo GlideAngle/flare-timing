@@ -16,7 +16,6 @@ data RawZone =
             , lat :: RawLat
             , lng :: RawLng
             , radius :: Radius (Quantity Double [u| m |])
-            -- ^ Radius in metres.
             }
             deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 

@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 54c0fff24ca14963ba28a02198acdae37fac8ef8eb5ebe114bd2e06d3341b527
+-- hash: 1f6ffae268457ed15437382cd0b12d11cc24f7db0075a8078eb42f75e6424e2f
 
 name:           flight-latlng
 version:        0.1.0
@@ -41,6 +41,9 @@ library
       Flight.LatLng.Rational
       Flight.Distance
   other-modules:
+      Flight.LatLng.Family
+      Flight.LatLng.Lat
+      Flight.LatLng.Lng
       Paths_flight_latlng
   hs-source-dirs:
       library
@@ -53,6 +56,7 @@ library
     , bytestring
     , cassava
     , detour-via-sci
+    , detour-via-uom
     , flight-units
     , formatting
     , newtype
