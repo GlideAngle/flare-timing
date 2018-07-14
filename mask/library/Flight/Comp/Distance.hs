@@ -9,7 +9,7 @@ Distances over all pilots.
 -}
 module Flight.Comp.Distance (DashPathInputs(..), compDistance, compNigh) where
 
-import Data.Maybe (catMaybes, isJust)
+import Data.Maybe (mapMaybe, catMaybes, isJust)
 import Data.List (sortOn)
 import Data.Time.Clock (UTCTime)
 import Data.Map.Strict (Map)
@@ -187,8 +187,7 @@ lookupTaskBestDistance
     -> [(Pilot, TrackDistance Land)]
 lookupTaskBestDistance m td =
     sortOn (togo . snd)
-    . catMaybes
-    . fmap (lookupPilotBestDistance m td)
+    . mapMaybe (lookupPilotBestDistance m td)
 
 lookupPilotBestDistance
     :: Map Pilot Time.TickRow
