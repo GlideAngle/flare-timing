@@ -71,8 +71,7 @@ go CmdOptions{..} compFile = do
     case (compSettings, masking) of
         (Left msg, _) -> putStrLn msg
         (_, Left msg) -> putStrLn msg
-        (Right cs, Right mk) -> do
-            writeLanding landFile $ difficulty cs mk
+        (Right cs, Right mk) -> writeLanding landFile $ difficulty cs mk
 
 difficulty :: CompSettings -> Masking -> Cmp.Landing
 difficulty CompSettings{nominal} Masking{bestDistance, land} =
@@ -81,7 +80,7 @@ difficulty CompSettings{nominal} Masking{bestDistance, land} =
         , bestDistance = bests
         , landout = length <$> land
         , lookahead = ahead
-        , sumOfDifficulty = (fmap sumOf) <$> ds
+        , sumOfDifficulty = fmap sumOf <$> ds
         , difficulty = cs
         }
     where
@@ -119,13 +118,12 @@ difficulty CompSettings{nominal} Masking{bestDistance, land} =
                 as' <- as
                 jas' <- jas
                 rs' <- rs
-                fs' <- fs
-                return $ mergeChunks ls ils' jls' as' jas' rs' fs'
+                mergeChunks ls ils' jls' as' jas' rs' <$> fs
             | ls <- Gap.landouts md <$> pss
             | ils <- (fmap . fmap) startChunk ds
             | jls <- (fmap . fmap) endChunk ds
-            | as <- (fmap downward) <$> ds
+            | as <- fmap downward <$> ds
             | jas <- (fmap . fmap) endAhead ds
-            | rs <- (fmap relative) <$> ds
-            | fs <- (fmap fractional) <$> ds
+            | rs <- fmap relative <$> ds
+            | fs <- fmap fractional <$> ds
             ]
