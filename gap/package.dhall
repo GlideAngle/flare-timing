@@ -35,50 +35,37 @@ in    deps
       , library =
           { source-dirs = "library", exposed-modules = "Flight.Score" }
       , tests =
-          { hlint =
-              { dependencies =
-                  [ "hlint" ]
-              , ghc-options =
-                  [ "-rtsopts"
-                  , "-threaded"
-                  , "-with-rtsopts=-N"
-                  , "-fplugin Data.UnitsOfMeasure.Plugin"
-                  ]
-              , main =
-                  "HLint.hs"
-              , source-dirs =
-                  [ "library", "test-suite-hlint" ]
-              }
-          , score =
-              { dependencies =
-                  [ "base"
-                  , "containers"
-                  , "vector"
-                  , "statistics"
-                  , "aeson"
-                  , "newtype"
-                  , "scientific"
-                  , "uom-plugin"
-                  , "detour-via-sci"
-                  , "detour-via-uom"
-                  , "siggy-chardust"
-                  , "flight-units"
-                  , "tasty"
-                  , "tasty-hunit"
-                  , "tasty-quickcheck"
-                  , "tasty-smallcheck"
-                  , "smallcheck"
-                  ]
-              , ghc-options =
-                  [ "-rtsopts"
-                  , "-threaded"
-                  , "-with-rtsopts=-N"
-                  , "-fplugin Data.UnitsOfMeasure.Plugin"
-                  ]
-              , main =
-                  "Score.hs"
-              , source-dirs =
-                  [ "library", "test-suite-score" ]
-              }
-          }
+            ./default-tests.dhall 
+          ⫽ { score =
+                { dependencies =
+                    [ "base"
+                    , "containers"
+                    , "vector"
+                    , "statistics"
+                    , "aeson"
+                    , "newtype"
+                    , "scientific"
+                    , "uom-plugin"
+                    , "detour-via-sci"
+                    , "detour-via-uom"
+                    , "siggy-chardust"
+                    , "flight-units"
+                    , "tasty"
+                    , "tasty-hunit"
+                    , "tasty-quickcheck"
+                    , "tasty-smallcheck"
+                    , "smallcheck"
+                    ]
+                , ghc-options =
+                    [ "-rtsopts"
+                    , "-threaded"
+                    , "-with-rtsopts=-N"
+                    , "-fplugin Data.UnitsOfMeasure.Plugin"
+                    ]
+                , main =
+                    "Score.hs"
+                , source-dirs =
+                    [ "library", "test-suite-score" ]
+                }
+            }
       }

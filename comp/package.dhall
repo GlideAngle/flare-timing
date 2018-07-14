@@ -57,30 +57,21 @@ in    defs
               ]
           }
       , tests =
-          { hlint =
-              { dependencies =
-                  [ "hlint" ]
-              , ghc-options =
-                  [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
-              , main =
-                  "HLint.hs"
-              , source-dirs =
-                  [ "library", "test-suite-hlint" ]
-              }
-          , comp =
-              { dependencies =
-                  [ "tasty"
-                  , "tasty-hunit"
-                  , "tasty-quickcheck"
-                  , "tasty-smallcheck"
-                  , "smallcheck"
-                  ]
-              , ghc-options =
-                  [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
-              , main =
-                  "TestCompMain.hs"
-              , source-dirs =
-                  [ "library", "test-suite-comp" ]
-              }
-          }
+            ./default-tests.dhall 
+          ⫽ { comp =
+                { dependencies =
+                    [ "tasty"
+                    , "tasty-hunit"
+                    , "tasty-quickcheck"
+                    , "tasty-smallcheck"
+                    , "smallcheck"
+                    ]
+                , ghc-options =
+                    [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
+                , main =
+                    "TestCompMain.hs"
+                , source-dirs =
+                    [ "library", "test-suite-comp" ]
+                }
+            }
       }

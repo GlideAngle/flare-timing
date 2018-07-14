@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 9f8ad23155d8be99081b87e079754f5380d28d1878c62bb330a6e7f2ca0f4392
+-- hash: 60d4f5d49a6851f4cc3c1325db3472376e417df5e2e0a7ba095aa163431fdbe7
 
 name:           flight-track
 version:        0.1.0
@@ -48,34 +48,6 @@ library
     , flight-comp
     , flight-igc
     , flight-kml
-    , mtl
-    , path
-    , split
-    , time
-    , utf8-string
-  default-language: Haskell2010
-
-test-suite hlint
-  type: exitcode-stdio-1.0
-  main-is: HLint.hs
-  other-modules:
-      Flight.TrackLog
-      Paths_flight_track
-  hs-source-dirs:
-      library
-      test-suite-hlint
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
-  ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
-  build-depends:
-      base >=4.9.1.0
-    , bytestring
-    , containers
-    , directory
-    , filepath
-    , flight-comp
-    , flight-igc
-    , flight-kml
-    , hlint
     , mtl
     , path
     , split

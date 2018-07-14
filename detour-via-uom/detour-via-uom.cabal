@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e917dd2b7062a7e7248f78726e06b3cf1751177d6dd7825c6c3e0a4e8471f686
+-- hash: 7bf8065e3cc7a4417ccbdff13cba94c167bc031b66b052e424d23b71a8e43b11
 
 name:           detour-via-uom
 version:        1.0.0
@@ -66,28 +66,6 @@ test-suite doctest
     , cassava
     , detour-via-sci
     , doctest
-    , newtype
-    , scientific
-    , uom-plugin
-  default-language: Haskell2010
-
-test-suite hlint
-  type: exitcode-stdio-1.0
-  main-is: HLint.hs
-  other-modules:
-      Data.Via.UnitsOfMeasure
-      Paths_detour_via_uom
-  hs-source-dirs:
-      library
-      test-suite-hlint
-  default-extensions: PackageImports
-  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
-  build-depends:
-      aeson
-    , base >=4.9.1.0
-    , cassava
-    , detour-via-sci
-    , hlint
     , newtype
     , scientific
     , uom-plugin

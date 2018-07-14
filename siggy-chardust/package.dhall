@@ -18,40 +18,31 @@ in    defs
       , library =
           { source-dirs = "library", exposed-modules = "Data.Ratio.Rounding" }
       , tests =
-          { hlint =
-              { dependencies =
-                  [ "hlint" ]
-              , ghc-options =
-                  [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
-              , main =
-                  "HLint.hs"
-              , source-dirs =
-                  [ "library", "test-suite-hlint" ]
-              }
-          , doctest =
-              { dependencies =
-                  [ "base", "doctest" ]
-              , ghc-options =
-                  [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
-              , main =
-                  "DocTest.hs"
-              , source-dirs =
-                  [ "library", "test-suite-doctest" ]
-              }
-          , digits =
-              { dependencies =
-                  [ "tasty"
-                  , "tasty-hunit"
-                  , "tasty-quickcheck"
-                  , "tasty-smallcheck"
-                  , "smallcheck"
-                  ]
-              , ghc-options =
-                  [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
-              , main =
-                  "Rounding.hs"
-              , source-dirs =
-                  [ "library", "test-suite-digits" ]
-              }
-          }
+            ./default-tests.dhall 
+          ⫽ { doctest =
+                { dependencies =
+                    [ "base", "doctest" ]
+                , ghc-options =
+                    [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
+                , main =
+                    "DocTest.hs"
+                , source-dirs =
+                    [ "library", "test-suite-doctest" ]
+                }
+            , digits =
+                { dependencies =
+                    [ "tasty"
+                    , "tasty-hunit"
+                    , "tasty-quickcheck"
+                    , "tasty-smallcheck"
+                    , "smallcheck"
+                    ]
+                , ghc-options =
+                    [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
+                , main =
+                    "Rounding.hs"
+                , source-dirs =
+                    [ "library", "test-suite-digits" ]
+                }
+            }
       }

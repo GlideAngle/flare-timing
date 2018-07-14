@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 4316c1b0b9c240189f184981813fc16c52c518a08ada4ad1ccb3942224543be5
+-- hash: 54c0fff24ca14963ba28a02198acdae37fac8ef8eb5ebe114bd2e06d3341b527
 
 name:           flight-latlng
 version:        0.1.0
@@ -55,44 +55,6 @@ library
     , detour-via-sci
     , flight-units
     , formatting
-    , newtype
-    , numbers
-    , random
-    , siggy-chardust
-    , smallcheck
-    , tasty-quickcheck
-    , text
-    , uom-plugin
-  default-language: Haskell2010
-
-test-suite hlint
-  type: exitcode-stdio-1.0
-  main-is: HLint.hs
-  other-modules:
-      Flight.Distance
-      Flight.EastNorth
-      Flight.Field
-      Flight.LatLng
-      Flight.LatLng.Double
-      Flight.LatLng.Float
-      Flight.LatLng.Rational
-      Flight.LatLng.Raw
-      Paths_flight_latlng
-  hs-source-dirs:
-      library
-      test-suite-hlint
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
-  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
-  build-depends:
-      aeson
-    , base >=4.9.1.0
-    , bifunctors
-    , bytestring
-    , cassava
-    , detour-via-sci
-    , flight-units
-    , formatting
-    , hlint
     , newtype
     , numbers
     , random

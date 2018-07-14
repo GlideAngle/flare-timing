@@ -234,15 +234,5 @@ in    defs
               }
           }
       , tests =
-          { hlint =
-              { dependencies =
-                  [ "hlint" ]
-              , ghc-options =
-                  [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
-              , main =
-                  "HLint.hs"
-              , source-dirs =
-                  "test-suite-hlint"
-              }
-          }
+          ./default-tests.dhall 
       }

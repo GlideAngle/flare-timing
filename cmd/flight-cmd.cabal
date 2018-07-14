@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: bec2fe4719b92f66096c98ca642e8cf6c618eabb24eefb7dfef3bea3cc461604
+-- hash: a2753d1a6d1431518e39b63c1d404b5fe3a208174fa3455d734f2a14178766f4
 
 name:           flight-cmd
 version:        0.1.0
@@ -47,32 +47,6 @@ library
     , filemanip
     , filepath
     , flight-span
-    , mtl
-    , raw-strings-qq
-    , system-filepath
-    , transformers
-  default-language: Haskell2010
-
-test-suite hlint
-  type: exitcode-stdio-1.0
-  main-is: HLint.hs
-  other-modules:
-      Flight.Cmd.Options
-      Flight.Cmd.Paths
-      Paths_flight_cmd
-  hs-source-dirs:
-      library
-      test-suite-hlint
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
-  ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
-  build-depends:
-      base >=4.9.1.0
-    , cmdargs
-    , directory
-    , filemanip
-    , filepath
-    , flight-span
-    , hlint
     , mtl
     , raw-strings-qq
     , system-filepath

@@ -47,6 +47,8 @@ import FlareTiming.NavBar (navbar)
 import FlareTiming.Footer (footer)
 import qualified FlareTiming.Turnpoint as TP (turnpoint, turnpointRadius, getName)
 
+{-# ANN module "HLint: ignore" #-}
+
 loading :: MonadWidget t m => m ()
 loading = do
     el "li" $ do

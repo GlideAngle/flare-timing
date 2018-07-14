@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 58767a8a67b6dad9523f067a7809740bc6376aa95167be58643e6e6f5312f59e
+-- hash: 4683d94ad8fb3ed5f8e2bc4659c1b958ee675946795b890aa566c67d44aea4c9
 
 name:           detour-via-sci
 version:        1.0.0
@@ -65,28 +65,6 @@ test-suite doctest
     , base >=4.9.1.0
     , cassava
     , doctest
-    , newtype
-    , scientific
-    , siggy-chardust
-    , template-haskell
-  default-language: Haskell2010
-
-test-suite hlint
-  type: exitcode-stdio-1.0
-  main-is: HLint.hs
-  other-modules:
-      Data.Via.Scientific
-      Paths_detour_via_sci
-  hs-source-dirs:
-      library
-      test-suite-hlint
-  default-extensions: PackageImports
-  ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
-  build-depends:
-      aeson
-    , base >=4.9.1.0
-    , cassava
-    , hlint
     , newtype
     , scientific
     , siggy-chardust

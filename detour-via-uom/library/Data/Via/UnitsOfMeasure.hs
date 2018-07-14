@@ -12,7 +12,6 @@
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DuplicateRecordFields #-}
-{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
 {-|
 Module: Data.Via.UnitsOfMeasure
@@ -65,6 +64,22 @@ data ViaQ n a u where
         => n
         -> ViaQ n a u
 
+toQ
+    ::
+        ( DefaultDecimalPlaces n
+        , Newtype n (Quantity a u)
+        , Real a
+        , KnownUnit (Unpack u)
+        )
+    => n
+    -> Quantity Scientific u
+toQ x = y
+ where
+     MkQuantity a = toRational' . unpack $ x
+
+     y :: Quantity Scientific u
+     y = MkQuantity . toSci (defdp x) $ a
+
 instance
     ( DefaultDecimalPlaces n
     , Newtype n (Quantity a u)
@@ -72,12 +87,7 @@ instance
     , KnownUnit (Unpack u)
     )
     => ToJSON (ViaQ n a u) where
-    toJSON (ViaQ x) = toJSON . showQuantity $ y
-         where
-             MkQuantity a = toRational' . unpack $ x
-
-             y :: Quantity Scientific u
-             y = MkQuantity . toSci (defdp x) $ a
+    toJSON (ViaQ x) = toJSON . showQuantity $ toQ x
 
 instance
     ( DefaultDecimalPlaces n
@@ -101,12 +111,7 @@ instance
     , KnownUnit (Unpack u)
     )
     => ToField (ViaQ n a u) where
-    toField (ViaQ x) = toField . showQuantity $ y
-         where
-             MkQuantity a = toRational' . unpack $ x
-
-             y :: Quantity Scientific u
-             y = MkQuantity . toSci (defdp x) $ a
+    toField (ViaQ x) = toField . showQuantity $ toQ x
 
 instance
     ( DefaultDecimalPlaces n

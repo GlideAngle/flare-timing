@@ -15,6 +15,8 @@ import qualified Data.Text as T (Text, pack)
 
 import Data.Flight.Types (Turnpoint(..), showRadius)
 
+{-# ANN module "HLint: ignore" #-}
+
 getNameRadius :: Turnpoint -> String
 getNameRadius (Turnpoint name _ _ radius) = name ++ " " ++ showRadius radius
 

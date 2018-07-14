@@ -56,19 +56,5 @@ in    defs
               ]
           }
       , tests =
-          { hlint =
-              { dependencies =
-                  [ "hlint" ]
-              , ghc-options =
-                  [ "-rtsopts"
-                  , "-threaded"
-                  , "-with-rtsopts=-N"
-                  , "-fplugin Data.UnitsOfMeasure.Plugin"
-                  ]
-              , main =
-                  "HLint.hs"
-              , source-dirs =
-                  [ "library", "test-suite-hlint" ]
-              }
-          }
+          ./default-tests.dhall 
       }

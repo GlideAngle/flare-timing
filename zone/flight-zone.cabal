@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 5cc16eae41193c95d39df1bc06b660bb2e7efa88b51dcb3cd1dea7d224d04635
+-- hash: c09535898f9c6fd340a3d4bc45f5cd40a15881cd5f3f80bb664a246e4d18e288
 
 name:           flight-zone
 version:        0.1.0
@@ -53,38 +53,6 @@ library
     , detour-via-uom
     , flight-latlng
     , flight-units
-    , newtype
-    , scientific
-    , siggy-chardust
-    , uom-plugin
-  default-language: Haskell2010
-
-test-suite hlint
-  type: exitcode-stdio-1.0
-  main-is: HLint.hs
-  other-modules:
-      Flight.Zone
-      Flight.Zone.Cylinder
-      Flight.Zone.Cylinder.Edge
-      Flight.Zone.Cylinder.Sample
-      Flight.Zone.Path
-      Flight.Zone.Radius
-      Flight.Zone.Raw
-      Flight.Zone.Raw.Zone
-      Paths_flight_zone
-  hs-source-dirs:
-      library
-      test-suite-hlint
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
-  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
-  build-depends:
-      aeson
-    , base >=4.9.1.0
-    , detour-via-sci
-    , detour-via-uom
-    , flight-latlng
-    , flight-units
-    , hlint
     , newtype
     , scientific
     , siggy-chardust

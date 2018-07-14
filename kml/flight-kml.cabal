@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 33cfc32f6dbb3bdd1839848a38fc2c8718b004e47e177e5cee2db5439c38ec81
+-- hash: c8cb1238712cd4a85247fa1cee4b6155e3b4bc888ceed2ff193cc326dc7d2c57
 
 name:           flight-kml
 version:        1.0.0
@@ -79,33 +79,6 @@ test-suite doctest
     , siggy-chardust
     , split
     , template-haskell
-    , time
-  default-language: Haskell2010
-
-test-suite hlint
-  type: exitcode-stdio-1.0
-  main-is: HLint.hs
-  other-modules:
-      Flight.Kml
-      Flight.Kml.Internal
-      Flight.Types
-      Paths_flight_kml
-  hs-source-dirs:
-      library
-      test-suite-hlint
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
-  ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
-  build-depends:
-      aeson
-    , base >=4.9.1.0
-    , detour-via-sci
-    , hlint
-    , hxt
-    , hxt-xpath
-    , parsec
-    , path
-    , siggy-chardust
-    , split
     , time
   default-language: Haskell2010
 

@@ -33,31 +33,22 @@ in    defs
       , library =
           { source-dirs = "library", exposed-modules = "Flight.Task" }
       , tests =
-          { hlint =
-              { dependencies =
-                  [ "hlint" ]
-              , ghc-options =
-                  [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
-              , main =
-                  "HLint.hs"
-              , source-dirs =
-                  [ "library", "test-suite-hlint" ]
-              }
-          , task =
-              { dependencies =
-                  [ "tasty"
-                  , "tasty-hunit"
-                  , "tasty-quickcheck"
-                  , "tasty-smallcheck"
-                  , "tasty-compare"
-                  , "smallcheck"
-                  ]
-              , ghc-options =
-                  [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
-              , main =
-                  "Task.hs"
-              , source-dirs =
-                  [ "library", "test-suite-task" ]
-              }
-          }
+            ./default-tests.dhall 
+          ⫽ { task =
+                { dependencies =
+                    [ "tasty"
+                    , "tasty-hunit"
+                    , "tasty-quickcheck"
+                    , "tasty-smallcheck"
+                    , "tasty-compare"
+                    , "smallcheck"
+                    ]
+                , ghc-options =
+                    [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
+                , main =
+                    "Task.hs"
+                , source-dirs =
+                    [ "library", "test-suite-task" ]
+                }
+            }
       }

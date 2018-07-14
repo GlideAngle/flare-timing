@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ef0a4bca767e4ad26069532d4ed5b9b756b63ac365203bf179e463cdd8618b7a
+-- hash: 5fb3677fca066d545bb6c757b398c2b185d6d50931183f33502d5003d95aa355
 
 name:           flight-task
 version:        0.1.0
@@ -51,37 +51,6 @@ library
     , flight-latlng
     , flight-units
     , flight-zone
-    , mtl
-    , numbers
-    , scientific
-    , siggy-chardust
-    , uom-plugin
-  default-language: Haskell2010
-
-test-suite hlint
-  type: exitcode-stdio-1.0
-  main-is: HLint.hs
-  other-modules:
-      Flight.EdgeToEdge
-      Flight.ShortestPath
-      Flight.Task
-      Paths_flight_task
-  hs-source-dirs:
-      library
-      test-suite-hlint
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
-  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
-  build-depends:
-      aeson
-    , base >=4.9.1.0
-    , bifunctors
-    , detour-via-sci
-    , fgl
-    , flight-earth
-    , flight-latlng
-    , flight-units
-    , flight-zone
-    , hlint
     , mtl
     , numbers
     , scientific

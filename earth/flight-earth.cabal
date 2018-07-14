@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: fb1d584f86cb484993a68da48340dbbb230da00e6ec1afeef740895afa9939ee
+-- hash: 5fec568b95fae59c06e08a924705763cd4b8c01f62fcf8fff9423b79b399cb20
 
 name:           flight-earth
 version:        0.1.0
@@ -177,56 +177,5 @@ test-suite earth
     , tasty-hunit
     , tasty-quickcheck
     , tasty-smallcheck
-    , uom-plugin
-  default-language: Haskell2010
-
-test-suite hlint
-  type: exitcode-stdio-1.0
-  main-is: HLint.hs
-  other-modules:
-      Flight.Earth.Ellipsoid
-      Flight.Earth.Ellipsoid.Cylinder.Double
-      Flight.Earth.Ellipsoid.Cylinder.Rational
-      Flight.Earth.Ellipsoid.PointToPoint.Double
-      Flight.Earth.Ellipsoid.PointToPoint.Rational
-      Flight.Earth.Ellipsoid.Separated
-      Flight.Earth.Flat
-      Flight.Earth.Flat.Cylinder.Double
-      Flight.Earth.Flat.Cylinder.Rational
-      Flight.Earth.Flat.PointToPoint.Double
-      Flight.Earth.Flat.PointToPoint.Rational
-      Flight.Earth.Flat.Projected.Double
-      Flight.Earth.Flat.Projected.Internal
-      Flight.Earth.Flat.Projected.Rational
-      Flight.Earth.Flat.Separated
-      Flight.Earth.Geodesy
-      Flight.Earth.Sphere
-      Flight.Earth.Sphere.Cylinder.Double
-      Flight.Earth.Sphere.Cylinder.Rational
-      Flight.Earth.Sphere.PointToPoint.Double
-      Flight.Earth.Sphere.PointToPoint.Rational
-      Flight.Earth.Sphere.Separated
-      Paths_flight_earth
-  hs-source-dirs:
-      library
-      test-suite-hlint
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
-  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
-  build-depends:
-      aeson
-    , base >=4.9.1.0
-    , bifunctors
-    , detour-via-sci
-    , fgl
-    , flight-latlng
-    , flight-units
-    , flight-zone
-    , hcoord
-    , hcoord-utm
-    , hlint
-    , mtl
-    , numbers
-    , scientific
-    , siggy-chardust
     , uom-plugin
   default-language: Haskell2010

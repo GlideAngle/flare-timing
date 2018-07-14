@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 74af5f729acd4c82a3fe8f0ff5898fdac00aef65365d9f9a9d743db59399d8fc
+-- hash: 9a9759eca533aea6acadf312f76c0422eb679ca8cc8512556a834cd8b7863f97
 
 name:           flight-mask
 version:        0.1.0
@@ -72,62 +72,6 @@ library
     , flight-track
     , flight-units
     , flight-zone
-    , lens
-    , mtl
-    , numbers
-    , path
-    , siggy-chardust
-    , split
-    , time
-    , uom-plugin
-    , yaml
-  default-language: Haskell2010
-
-test-suite hlint
-  type: exitcode-stdio-1.0
-  main-is: HLint.hs
-  other-modules:
-      Flight.Comp.Distance
-      Flight.Mask
-      Flight.Mask.Distance
-      Flight.Mask.Internal.Cross
-      Flight.Mask.Internal.Dash
-      Flight.Mask.Internal.Dot
-      Flight.Mask.Internal.Race
-      Flight.Mask.Internal.Zone
-      Flight.Mask.Tag
-      Flight.Mask.Time
-      Flight.Mask.Tracks
-      Flight.Span.Double
-      Flight.Span.Rational
-      Paths_flight_mask
-  hs-source-dirs:
-      library
-      test-suite-hlint
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
-  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N -fplugin Data.UnitsOfMeasure.Plugin
-  build-depends:
-      base >=4.9.1.0
-    , bytestring
-    , cmdargs
-    , containers
-    , detour-via-sci
-    , directory
-    , fgl
-    , filepath
-    , flight-comp
-    , flight-earth
-    , flight-gap
-    , flight-kml
-    , flight-latlng
-    , flight-route
-    , flight-scribe
-    , flight-span
-    , flight-task
-    , flight-track
-    , flight-units
-    , flight-zone
-    , hlint
     , lens
     , mtl
     , numbers
