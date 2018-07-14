@@ -1,8 +1,10 @@
 module Flight.Zone
     ( HasArea(..)
-    , Radius(..)
     , QRadius
+    , Radius(..)
+    , QIncline
     , Incline(..)
+    , QBearing
     , Bearing(..)
     , Zone(..)
     , Deadline(..)
@@ -31,22 +33,12 @@ import Flight.Units (showRadian, realToFrac')
 import Flight.Units.DegMinSec (fromQ)
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.Zone.Radius (Radius(..), QRadius)
+import Flight.Zone.Bearing (Bearing(..), QBearing)
+import Flight.Zone.Incline (Incline(..), QIncline)
 
 -- | Does it have area?
 class HasArea a where
     hasArea :: a -> Bool
-
--- | The incline component of a conical zone.
-newtype Incline a = Incline (Quantity a [u| rad |]) deriving (Eq, Ord)
-
--- | The bearing component of a vector zone.
-newtype Bearing a = Bearing (Quantity a [u| rad |]) deriving (Eq, Ord)
-
-instance Real a => Show (Incline a) where
-    show (Incline i) = "i = " ++ showRadian (toRational' i)
-
-instance Real a => Show (Bearing a) where
-    show (Bearing b) = "r = " ++ showRadian (toRational' b)
 
 -- | A control zone of the task. Taken together these make up the course to fly
 -- with start enter and exit cylinders, turnpoint cylinders, goal lines and
@@ -62,7 +54,7 @@ data Zone a where
     -- the open distance.
     Vector
         :: Eq a
-        => Bearing a
+        => QBearing a [u| rad |]
         -> LatLng a [u| rad |]
         -> Zone a
 
@@ -77,7 +69,7 @@ data Zone a where
     -- used to discourage too low an end to final glides.
     Conical
         :: Eq a
-        => Incline a
+        => QIncline a [u| rad |]
         -> QRadius a [u| m |]
         -> LatLng a [u| rad |]
         -> Zone a
@@ -100,8 +92,8 @@ data Zone a where
 
 deriving instance Eq (Zone a)
 deriving instance
-    ( Show (Incline a)
-    , Show (Bearing a)
+    ( Show (QIncline a [u| rad |])
+    , Show (QBearing a [u| rad |])
     , Show (QRadius a [u| m |])
     , Show (LatLng a [u| rad |])
     )

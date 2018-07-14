@@ -1,11 +1,12 @@
 module Flight.Zone.Cylinder.Edge (CircumSample, sample) where
 
-import Data.UnitsOfMeasure (zero)
+import Data.UnitsOfMeasure (u, zero)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Zone
     ( Zone(..)
     , Radius(..)
+    , QBearing
     , Bearing(..)
     )
 import Flight.Zone.Cylinder.Sample (SampleParams, ZonePoint(..), TrueCourse)
@@ -13,7 +14,7 @@ import Flight.Zone.Cylinder.Sample (SampleParams, ZonePoint(..), TrueCourse)
 -- | The type of function that samples points on the circumference of a circle.
 type CircumSample a
     = SampleParams a
-    -> Bearing a
+    -> QBearing a [u| rad |]
     -> Maybe (ZonePoint a)
     -> Zone a
     -> ([ZonePoint a], [TrueCourse a])
@@ -23,7 +24,7 @@ type CircumSample a
 sample :: (Real a, Fractional a)
        => CircumSample a
        -> SampleParams a
-       -> Bearing a
+       -> QBearing a [u| rad |]
        -> Maybe (ZonePoint a)
        -> Zone a
        -> [ZonePoint a]

@@ -20,6 +20,7 @@ import Flight.Zone
     )
 import Flight.Units (showRadian)
 import Flight.Zone.Radius (QRadius)
+import Flight.Zone.Bearing (QBearing)
 
 newtype TrueCourse a =
     TrueCourse (Quantity a [u| rad |])
@@ -62,7 +63,7 @@ data ZonePoint a
         -- ^ This is the zone that generated the point.
         , point :: LatLng a [u| rad |]
         -- ^ A point on the edge of this zone.
-        , radial :: Bearing a
+        , radial :: QBearing a [u| rad |]
         -- ^ A point on the edge of this zone with this bearing from
         -- the origin.
         , orbit :: QRadius a [u| m |]
@@ -80,9 +81,10 @@ deriving instance
     )
     => Show (ZonePoint a)
 
-fromRationalZonePoint :: (Eq a, Fractional a)
-                      => ZonePoint Rational
-                      -> ZonePoint a
+fromRationalZonePoint
+    :: (Eq a, Fractional a)
+    => ZonePoint Rational
+    -> ZonePoint a
 fromRationalZonePoint ZonePoint{..} =
     ZonePoint
         { sourceZone = fromRationalZone sourceZone

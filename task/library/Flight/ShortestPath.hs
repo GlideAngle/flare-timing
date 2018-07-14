@@ -24,7 +24,7 @@ import Data.Graph.Inductive.Graph (Graph(..), Node, Path, LEdge, match)
 import Data.Graph.Inductive.PatriciaTree (Gr)
 
 import Flight.LatLng (LatLng(..))
-import Flight.Zone (Zone(..), Bearing(..), center)
+import Flight.Zone (Zone(..), QBearing, center)
 import Flight.Zone.Cylinder
     ( Tolerance(..)
     , Samples(..)
@@ -45,7 +45,7 @@ type NodeConnector a =
 type GraphBuilder a =
     CircumSample a
     -> SampleParams a
-    -> Bearing a
+    -> QBearing a [u| rad |]
     -> Maybe [ZonePoint a]
     -> [Zone a]
     -> Gr (ZonePoint a) (PathCost a)
@@ -75,7 +75,7 @@ type DistancePointToPoint a = SpanLatLng a -> [Zone a] -> PathDistance a
 -- sweep. During the search the sweep angle is reduced by the next sweep
 -- function.
 data AngleCut a =
-    AngleCut { sweep :: Bearing a
+    AngleCut { sweep :: QBearing a [u| rad |]
              , nextSweep :: AngleCut a -> AngleCut a
              }
 
@@ -140,16 +140,17 @@ distance span distancePointToPoint cs builder cut tolerance xs
             (dist, zs) =
                 loop builder cs sp cut 6 Nothing Nothing xs
 
-loop :: Real a
-     => GraphBuilder a
-     -> CircumSample a
-     -> SampleParams a
-     -> AngleCut a
-     -> Int
-     -> Maybe (PathCost a)
-     -> Maybe [ZonePoint a]
-     -> [Zone a]
-     -> (Maybe (PathCost a), [ZonePoint a])
+loop
+    :: Real a
+    => GraphBuilder a
+    -> CircumSample a
+    -> SampleParams a
+    -> AngleCut a
+    -> Int
+    -> Maybe (PathCost a)
+    -> Maybe [ZonePoint a]
+    -> [Zone a]
+    -> (Maybe (PathCost a), [ZonePoint a])
 loop _ _ _ _ 0 d zs _ =
     case zs of
       Nothing -> (Nothing, [])
@@ -185,14 +186,15 @@ loop builder cs sp cut@AngleCut{sweep, nextSweep} n _ zs xs =
             )
             <$> ps
 
-buildGraph :: (Real a, Fractional a)    
-           => NodeConnector a
-           -> CircumSample a
-           -> SampleParams a
-           -> Bearing a
-           -> Maybe [ZonePoint a]
-           -> [Zone a]
-           -> Gr (ZonePoint a) (PathCost a)
+buildGraph
+    :: (Real a, Fractional a)    
+    => NodeConnector a
+    -> CircumSample a
+    -> SampleParams a
+    -> QBearing a [u| rad |]
+    -> Maybe [ZonePoint a]
+    -> [Zone a]
+    -> Gr (ZonePoint a) (PathCost a)
 buildGraph f cs sp b zs xs =
     mkGraph flatNodes flatEdges
     where
