@@ -36,6 +36,8 @@ import Flight.Comp
     , Pilot(..)
     )
 
+{-# ANN module "HLint: ignore" #-}
+
 type FlareTimingApi = CompApi :<|> TaskApi
 
 type CompApi =
