@@ -20,15 +20,5 @@ in    defs
               "Test.Tasty.HUnit.Compare"
           }
       , tests =
-          { hlint =
-              { dependencies =
-                  [ "hlint" ]
-              , ghc-options =
-                  [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
-              , main =
-                  "HLint.hs"
-              , source-dirs =
-                  [ "library", "test-suite-hlint" ]
-              }
-          }
+          ./default-tests.dhall 
       }

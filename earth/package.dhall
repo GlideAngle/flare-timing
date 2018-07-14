@@ -55,31 +55,22 @@ in    defs
               ]
           }
       , tests =
-          { hlint =
-              { dependencies =
-                  [ "hlint" ]
-              , ghc-options =
-                  [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
-              , main =
-                  "HLint.hs"
-              , source-dirs =
-                  [ "library", "test-suite-hlint" ]
-              }
-          , earth =
-              { dependencies =
-                  [ "tasty"
-                  , "tasty-hunit"
-                  , "tasty-quickcheck"
-                  , "tasty-smallcheck"
-                  , "smallcheck"
-                  , "tasty-compare"
-                  ]
-              , ghc-options =
-                  [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
-              , main =
-                  "Earth.hs"
-              , source-dirs =
-                  [ "library", "test-suite-earth" ]
-              }
-          }
+            ./default-tests.dhall 
+          ⫽ { earth =
+                { dependencies =
+                    [ "tasty"
+                    , "tasty-hunit"
+                    , "tasty-quickcheck"
+                    , "tasty-smallcheck"
+                    , "smallcheck"
+                    , "tasty-compare"
+                    ]
+                , ghc-options =
+                    [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
+                , main =
+                    "Earth.hs"
+                , source-dirs =
+                    [ "library", "test-suite-earth" ]
+                }
+            }
       }

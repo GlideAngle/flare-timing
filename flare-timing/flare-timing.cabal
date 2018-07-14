@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 41dcd6e4f0e5306a061261a7f7cf6950f00717c26019f71fd2934fe91ccc7156
+-- hash: 1b75745fc2d441a81799b26b75055f9e88aad0039836ef923e5abe571daf34b8
 
 name:           flare-timing
 version:        0.1.0
@@ -417,6 +417,7 @@ test-suite hlint
   other-modules:
       Paths_flare_timing
   hs-source-dirs:
+      library
       test-suite-hlint
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N

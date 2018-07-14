@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d12dc448ea8c7e487a107d7d73af1331b6883d4296f6008a8d5fc3665da921ba
+-- hash: 9f9f252c68a459fc8c4ad950bd4d96413659054ded0d0e097eeef9edf8cadd8f
 
 name:           flight-gap
 version:        0.1.0
@@ -153,7 +153,7 @@ test-suite hlint
       library
       test-suite-hlint
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
-  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -fno-warn-partial-type-signatures -rtsopts -threaded -with-rtsopts=-N -fplugin Data.UnitsOfMeasure.Plugin
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -fno-warn-partial-type-signatures -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
     , base >=4.9.1.0

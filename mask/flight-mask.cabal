@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 74af5f729acd4c82a3fe8f0ff5898fdac00aef65365d9f9a9d743db59399d8fc
+-- hash: 612b35e6c008b98fada33350b2ad9a770e26c0bbcebdb2d42fdf1493df2dc4aa
 
 name:           flight-mask
 version:        0.1.0
@@ -105,7 +105,7 @@ test-suite hlint
       library
       test-suite-hlint
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
-  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N -fplugin Data.UnitsOfMeasure.Plugin
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       base >=4.9.1.0
     , bytestring

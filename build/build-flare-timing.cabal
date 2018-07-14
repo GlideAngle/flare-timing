@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d1dfdcc9c1b966f5fcdfc0e5650e5a899a1c79753f47dc6d8eb4cd8fcb910834
+-- hash: ac24d7b5317cb82d324ec926e55df941f424ef0486e27b05dcc621092ac7f9ba
 
 name:           build-flare-timing
 version:        0.1.0
@@ -33,9 +33,9 @@ source-repository head
 executable build-flare-timing
   main-is: Main.hs
   other-modules:
+      Driver
       Cmd
       Doc
-      Driver
       Nix
       Pkg
       Target
@@ -43,6 +43,7 @@ executable build-flare-timing
       Paths_build_flare_timing
   hs-source-dirs:
       app-cmd
+      library
   default-extensions: PackageImports
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
@@ -56,12 +57,19 @@ test-suite hlint
   type: exitcode-stdio-1.0
   main-is: HLint.hs
   other-modules:
+      Cmd
+      Doc
+      Nix
+      Pkg
+      Target
+      Web
       Paths_build_flare_timing
   hs-source-dirs:
+      library
       test-suite-hlint
   default-extensions: PackageImports
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
-      base
+      base >=4.9.1.0
     , hlint
   default-language: Haskell2010

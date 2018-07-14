@@ -18,19 +18,9 @@
           , main =
               "Main.hs"
           , source-dirs =
-              "app-cmd"
+              [ "app-cmd", "library" ]
           }
       }
   , tests =
-      { hlint =
-          { dependencies =
-              [ "base", "hlint" ]
-          , ghc-options =
-              [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
-          , main =
-              "HLint.hs"
-          , source-dirs =
-              [ "test-suite-hlint" ]
-          }
-      }
+      ./default-tests.dhall 
   }

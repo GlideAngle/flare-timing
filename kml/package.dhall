@@ -35,51 +35,42 @@ in    defs
               [ "Flight.Kml", "Flight.Kml.Internal" ]
           }
       , tests =
-          { doctest =
-              { dependencies =
-                  [ "template-haskell", "doctest" ]
-              , ghc-options =
-                  [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
-              , main =
-                  "DocTest.hs"
-              , source-dirs =
-                  [ "library", "test-suite-doctest" ]
-              }
-          , hlint =
-              { dependencies =
-                  [ "hlint" ]
-              , ghc-options =
-                  [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
-              , main =
-                  "HLint.hs"
-              , source-dirs =
-                  [ "library", "test-suite-hlint" ]
-              }
-          , parse =
-              { dependencies =
-                  [ "base"
-                  , "split"
-                  , "parsec"
-                  , "hxt"
-                  , "path"
-                  , "hxt-xpath"
-                  , "aeson"
-                  , "time"
-                  , "raw-strings-qq"
-                  , "tasty"
-                  , "tasty-hunit"
-                  , "tasty-quickcheck"
-                  , "tasty-smallcheck"
-                  , "smallcheck"
-                  , "detour-via-sci"
-                  , "siggy-chardust"
-                  ]
-              , ghc-options =
-                  [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
-              , main =
-                  "Parse.hs"
-              , source-dirs =
-                  [ "library", "test-suite-parse" ]
-              }
-          }
+            ./default-tests.dhall 
+          ⫽ { doctest =
+                { dependencies =
+                    [ "template-haskell", "doctest" ]
+                , ghc-options =
+                    [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
+                , main =
+                    "DocTest.hs"
+                , source-dirs =
+                    [ "library", "test-suite-doctest" ]
+                }
+            , parse =
+                { dependencies =
+                    [ "base"
+                    , "split"
+                    , "parsec"
+                    , "hxt"
+                    , "path"
+                    , "hxt-xpath"
+                    , "aeson"
+                    , "time"
+                    , "raw-strings-qq"
+                    , "tasty"
+                    , "tasty-hunit"
+                    , "tasty-quickcheck"
+                    , "tasty-smallcheck"
+                    , "smallcheck"
+                    , "detour-via-sci"
+                    , "siggy-chardust"
+                    ]
+                , ghc-options =
+                    [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
+                , main =
+                    "Parse.hs"
+                , source-dirs =
+                    [ "library", "test-suite-parse" ]
+                }
+            }
       }

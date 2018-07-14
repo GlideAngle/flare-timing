@@ -37,30 +37,21 @@ in    defs
       , library =
           { source-dirs = "library", exposed-modules = "Flight.Fsdb" }
       , tests =
-          { hlint =
-              { dependencies =
-                  [ "hlint" ]
-              , ghc-options =
-                  [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
-              , main =
-                  "HLint.hs"
-              , source-dirs =
-                  [ "library", "test-suite-hlint" ]
-              }
-          , parse =
-              { dependencies =
-                  [ "tasty"
-                  , "tasty-hunit"
-                  , "tasty-quickcheck"
-                  , "tasty-smallcheck"
-                  , "smallcheck"
-                  ]
-              , ghc-options =
-                  [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
-              , main =
-                  "Parse.hs"
-              , source-dirs =
-                  [ "library", "test-suite-parse" ]
-              }
-          }
+            ./default-tests.dhall 
+          ⫽ { parse =
+                { dependencies =
+                    [ "tasty"
+                    , "tasty-hunit"
+                    , "tasty-quickcheck"
+                    , "tasty-smallcheck"
+                    , "smallcheck"
+                    ]
+                , ghc-options =
+                    [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
+                , main =
+                    "Parse.hs"
+                , source-dirs =
+                    [ "library", "test-suite-parse" ]
+                }
+            }
       }

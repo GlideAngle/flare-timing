@@ -17,15 +17,5 @@ in    defs
       , library =
           { source-dirs = "library", exposed-modules = "Flight.Igc" }
       , tests =
-          { hlint =
-              { dependencies =
-                  [ "hlint" ]
-              , ghc-options =
-                  [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
-              , main =
-                  "HLint.hs"
-              , source-dirs =
-                  "test-suite"
-              }
-          }
+          ./default-tests.dhall 
       }

@@ -31,25 +31,16 @@ in    defs
               [ "Data.Via.Scientific" ]
           }
       , tests =
-          { hlint =
-              { dependencies =
-                  [ "hlint" ]
-              , ghc-options =
-                  [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
-              , main =
-                  "HLint.hs"
-              , source-dirs =
-                  [ "library", "test-suite-hlint" ]
-              }
-          , doctest =
-              { dependencies =
-                  [ "doctest" ]
-              , ghc-options =
-                  [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
-              , main =
-                  "DocTest.hs"
-              , source-dirs =
-                  [ "library", "test-suite-doctest" ]
-              }
-          }
+            ./default-tests.dhall 
+          ⫽ { doctest =
+                { dependencies =
+                    [ "doctest" ]
+                , ghc-options =
+                    [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
+                , main =
+                    "DocTest.hs"
+                , source-dirs =
+                    [ "library", "test-suite-doctest" ]
+                }
+            }
       }

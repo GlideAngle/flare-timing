@@ -33,25 +33,16 @@ in    defs
               [ "Data.Via.UnitsOfMeasure" ]
           }
       , tests =
-          { doctest =
-              { dependencies =
-                  [ "doctest" ]
-              , ghc-options =
-                  [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
-              , main =
-                  "DocTest.hs"
-              , source-dirs =
-                  [ "library", "test-suite-doctest" ]
-              }
-          , hlint =
-              { dependencies =
-                  [ "hlint" ]
-              , ghc-options =
-                  [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
-              , main =
-                  "HLint.hs"
-              , source-dirs =
-                  [ "library", "test-suite-hlint" ]
-              }
-          }
+            ./default-tests.dhall 
+          ⫽ { doctest =
+                { dependencies =
+                    [ "doctest" ]
+                , ghc-options =
+                    [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
+                , main =
+                    "DocTest.hs"
+                , source-dirs =
+                    [ "library", "test-suite-doctest" ]
+                }
+            }
       }

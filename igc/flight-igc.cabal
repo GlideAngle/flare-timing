@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f42b708e002d6802628c28f893d1356a91f557d709718902f1e42cfe18621331
+-- hash: 4c4edb41f361add4583a37b0cef867659e3dea30ef840a5e3d8cb377d1f68672
 
 name:           flight-igc
 version:        0.1.0
@@ -50,9 +50,11 @@ test-suite hlint
   type: exitcode-stdio-1.0
   main-is: HLint.hs
   other-modules:
+      Flight.Igc
       Paths_flight_igc
   hs-source-dirs:
-      test-suite
+      library
+      test-suite-hlint
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
