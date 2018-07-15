@@ -55,11 +55,18 @@ getTask discipline ps =
     >>> getAttrValue "name"
     &&& getStopped
     &&& getAbsent
+    &&& getFormula
     &&& getDefn
     >>> arr mkTask
     where
         kps = (\x@(Pilot (k, _)) -> KeyPilot (k, x)) <$> ps
         
+        getFormula =
+            getChildren
+            >>> hasName "FsScoreFormula"
+            >>> getAttrValue "use_semi_circle_control_zone_for_goal_line"
+            >>> arr (== "1")
+
         getDefn =
             getChildren
             >>> hasName "FsTaskDefinition"
@@ -75,7 +82,6 @@ getTask discipline ps =
 
         getGoal =
             (getAttrValue "goal")
-            >. parseGoal discipline
 
         getOpenClose =
             getChildren
@@ -119,13 +125,13 @@ getTask discipline ps =
             &&& getAttrValue "stop_time"
             >>> arr parseStop
 
-        mkTask (name, (stop, (absentees, ((section, goal), (zs, (ts, gates)))))) =
+        mkTask (name, (stop, (absentees, (useSemi, ((section, goal), (zs, (ts, gates))))))) =
             Task name zs zs' section ts'' gates (sort absentees) stop
             where
                 -- NOTE: If all time zones are the same then collapse.
                 ts' = nub ts
                 ts'' = if length ts' == 1 then ts' else ts
-                zs' = rawZonesToZones goal zs
+                zs' = rawZonesToZones (mkGoal discipline useSemi goal) zs
 
 parseTasks :: Discipline -> String -> IO (Either String [Task])
 parseTasks discipline contents = do
@@ -168,10 +174,10 @@ parseSpeedSection ((ss, es) : _) =
                     return $ sciToInt es''
                 ]
 
-parseGoal :: Discipline -> [String] -> RawZoneToZone
-parseGoal HangGliding ("LINE" : _) = Line
-parseGoal Paragliding ("LINE" : _) = SemiCircle
-parseGoal _ _ = Circle
+mkGoal :: Discipline -> Bool -> String -> RawZoneToZone
+mkGoal Paragliding True "LINE" = SemiCircle
+mkGoal _ _ "LINE" = Line
+mkGoal _ _ _ = Circle
 
 parseZone :: (String, String, String, String) -> [Z.RawZone]
 parseZone (name, lat', lng', rad') = either (const []) (: []) $ do
