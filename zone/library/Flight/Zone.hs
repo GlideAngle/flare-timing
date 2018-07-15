@@ -27,8 +27,9 @@ module Flight.Zone
     , rawZonesToZones
     ) where
 
+import Data.Foldable (asum)
 import Data.Aeson
-    (ToJSON(..), FromJSON(..), Value(..), (.:), (.=), object, withObject)
+    (ToJSON(..), FromJSON(..), (.:), (.=), object, withObject)
 import Data.UnitsOfMeasure (u, toRational', fromRational', zero)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
@@ -121,34 +122,40 @@ instance
     )
     => ToJSON (Zone a) where
     toJSON (Point x) = object
-        [ "tag" .= String "point"
-        , "x" .= toJSON x
+        [ "point" .= object
+            [ "latlng" .= toJSON x
+            ]
         ]
     toJSON (Vector b x) = object
-        ["tag" .= String "vector"
-        , "b" .= toJSON b
-        , "x" .= toJSON x
+        [ "vector" .= object
+            [ "bearing" .= toJSON b
+            , "latlng" .= toJSON x
+            ]
         ]
     toJSON (Cylinder r x) = object
-        ["tag" .= String "cylinder"
-        , "r" .= toJSON r
-        , "x" .= toJSON x
+        ["cylinder" .= object
+            [ "radius" .= toJSON r
+            , "latlng" .= toJSON x
+            ]
         ]
     toJSON (Conical i r x) = object
-        ["tag" .= String "conical"
-        , "r" .= toJSON r
-        , "i" .= toJSON i
-        , "x" .= toJSON x
+        [ "conical" .= object
+            [ "radius" .= toJSON r
+            , "incline" .= toJSON i
+            , "latlng" .= toJSON x
+            ]
         ]
     toJSON (Line r x) = object
-        [ "tag" .= String "line"
-        , "r" .= toJSON r
-        , "x" .= toJSON x
+        [ "line" .= object
+            [ "radius" .= toJSON r
+            , "latlng" .= toJSON x
+            ]
         ]
     toJSON (SemiCircle r x) = object
-        [ "tag" .= String "semicircle"
-        , "r" .= toJSON r
-        , "x" .= toJSON x
+        [ "semicircle" .= object
+            [ "radius" .= toJSON r
+            , "latlng" .= toJSON x
+            ]
         ]
 
 instance
@@ -160,16 +167,35 @@ instance
     , FromJSON (QRadius a [u| m |])
     )
     => FromJSON (Zone a) where
-    parseJSON = withObject "Zone" $ \o -> do
-        tag :: String <- o .: "tag"
-        case tag of
-            "point" -> Point <$> o .: "x" 
-            "vector" -> Vector <$> o .: "b" <*> o .: "x"
-            "cylinder" -> Cylinder <$> o .: "r" <*> o .: "x"
-            "conical" -> Conical <$> o .: "r" <*> o .: "i" <*> o .: "x"
-            "line" -> Line <$> o .: "r" <*> o .: "x"
-            "semicircle" -> SemiCircle <$> o .: "r" <*> o .: "x"
-            _ -> fail $ "Unknown type of zone " ++ tag
+    parseJSON = withObject "Zone" $ \o ->
+        asum
+            [ do
+                pt <- o .: "point"
+                Point <$> pt .: "x" 
+
+            , do
+                vc <- o .: "vector"
+                Vector <$> vc .: "b" <*> vc .: "x"
+
+            , do
+                cy <- o .: "cylinder"
+                Cylinder <$> cy .: "r" <*> cy .: "x"
+
+            , do
+                co <- o .: "conical"
+                Conical <$> co .: "r" <*> co .: "i" <*> co .: "x"
+
+            , do
+                ln <- o .: "line"
+                Line <$> ln .: "r" <*> ln .: "x"
+
+            , do
+                sc <- o .: "semicircle"
+                SemiCircle <$> sc .: "r" <*> sc .: "x"
+
+            , fail $ "Unknown type of zone "
+            ]
+        where
 
 showZoneDMS :: Zone Double -> String
 showZoneDMS (Point (LatLng (Lat x, Lng y))) =
@@ -352,10 +378,12 @@ data Task a
 
 rawZonesToZones :: [Raw.RawZone] -> [Zone Double]
 rawZonesToZones xs =
-    f <$> xs
+    case reverse xs of
+        (x : y : ys) -> reverse $ f Line x : (f Cylinder <$> (y : ys))
+        _ -> f Cylinder <$> xs
     where
-        f Raw.RawZone{radius = r, lat, lng} =
-            Cylinder r $ fromDMS (fromQ qLat, fromQ qLng)
+        f ctor Raw.RawZone{radius = r, lat, lng} =
+            ctor r $ fromDMS (fromQ qLat, fromQ qLng)
                 where
                     RawLat lat' = lat
                     RawLng lng' = lng
