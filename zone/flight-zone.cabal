@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b18047c3d9c378bb7a1a85f6b6726fe6228efa7053a0378e95c1b4ffad5b6272
+-- hash: de5abc9a0dde27ba262c2f0cee1f50e38b83584f1b1d3d45fff66216dfaf1be4
 
 name:           flight-zone
 version:        0.1.0
@@ -43,6 +43,7 @@ library
       Flight.Zone.Incline
       Flight.Zone.Radius
       Flight.Zone.Raw.Zone
+      Flight.Zone.Zone
       Paths_flight_zone
   hs-source-dirs:
       library
