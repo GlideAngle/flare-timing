@@ -36,6 +36,7 @@ import Flight.Comp
     )
 import Flight.Fsdb.Pilot (getCompPilot)
 import Flight.Units ()
+import Flight.Score (Discipline(..))
 import Flight.Fsdb.Internal (prs, sci, sciToInt, sciToFloat, sciToRational)
 
 newtype KeyPilot = KeyPilot (PilotId, Pilot)
@@ -47,8 +48,8 @@ unKeyPilot :: Map PilotId Pilot -> PilotId -> Pilot
 unKeyPilot ps k@(PilotId ip) =
     findWithDefault (Pilot (k, PilotName ip)) k ps
 
-getTask :: ArrowXml a => [Pilot] -> a XmlTree Task
-getTask ps =
+getTask :: ArrowXml a => Discipline -> [Pilot] -> a XmlTree Task
+getTask discipline ps =
     getChildren
     >>> deep (hasName "FsTask")
     >>> getAttrValue "name"
@@ -74,7 +75,7 @@ getTask ps =
 
         getGoal =
             (getAttrValue "goal")
-            >. parseGoal
+            >. parseGoal discipline
 
         getOpenClose =
             getChildren
@@ -126,11 +127,11 @@ getTask ps =
                 ts'' = if length ts' == 1 then ts' else ts
                 zs' = rawZonesToZones goal zs
 
-parseTasks :: String -> IO (Either String [Task])
-parseTasks contents = do
+parseTasks :: Discipline -> String -> IO (Either String [Task])
+parseTasks discipline contents = do
     let doc = readString [ withValidate no, withWarnings no ] contents
     ps <- runX $ doc >>> getCompPilot
-    xs <- runX $ doc >>> getTask ps
+    xs <- runX $ doc >>> getTask discipline ps
     return $ Right xs
 
 parseUtcTime :: String -> UTCTime
@@ -167,9 +168,10 @@ parseSpeedSection ((ss, es) : _) =
                     return $ sciToInt es''
                 ]
 
-parseGoal :: [String] -> RawZoneToZone
-parseGoal ("LINE" : _) = Line
-parseGoal _ = Circle
+parseGoal :: Discipline -> [String] -> RawZoneToZone
+parseGoal HangGliding ("LINE" : _) = Line
+parseGoal Paragliding ("LINE" : _) = SemiCircle
+parseGoal _ _ = Circle
 
 parseZone :: (String, String, String, String) -> [Z.RawZone]
 parseZone (name, lat', lng', rad') = either (const []) (: []) $ do

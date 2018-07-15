@@ -15,6 +15,7 @@ import Flight.Fsdb
     , parseTracks
     , parseTaskFolders
     )
+import qualified Flight.Comp as Comp
 import Flight.Comp
     ( Pilot(..)
     , PilotTrackLogFile(..)
@@ -112,10 +113,11 @@ printTaskFolders contents = do
 
 printTasks :: String -> IO ()
 printTasks contents = do
-    tasks <- parseTasks contents
+    Right (comp : _) <- parseComp contents
+    tasks <- parseTasks (Comp.discipline comp) contents
     case tasks of
-         Left msg -> print msg
-         Right tasks' -> print $ showTask <$> tasks'
+        Left msg -> print msg
+        Right tasks' -> print $ showTask <$> tasks'
 
 printComp :: String -> IO ()
 printComp contents = do

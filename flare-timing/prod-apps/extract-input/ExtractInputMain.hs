@@ -33,7 +33,7 @@ import Flight.Comp
     , findFsdb
     , ensureExt
     )
-import Flight.Score (ScoreBackTime(..))
+import Flight.Score (ScoreBackTime(..), Discipline(..))
 import Flight.Scribe (writeComp)
 import ExtractInputOptions (CmdOptions(..), mkOptions)
 
@@ -100,9 +100,9 @@ fsdbStopped (FsdbXml contents) = do
             lift $ print msg
             throwE msg
 
-fsdbTasks :: FsdbXml -> ExceptT String IO [Task]
-fsdbTasks (FsdbXml contents) = do
-    ts <- lift $ parseTasks contents
+fsdbTasks :: Discipline -> FsdbXml -> ExceptT String IO [Task]
+fsdbTasks discipline (FsdbXml contents) = do
+    ts <- lift $ parseTasks discipline contents
     ExceptT $ return ts
 
 fsdbTaskFolders :: FsdbXml -> ExceptT String IO [TaskFolder]
@@ -120,7 +120,7 @@ fsdbSettings fsdbXml = do
     c <- fsdbComp fsdbXml
     n <- fsdbNominal fsdbXml
     sb <- fsdbStopped fsdbXml
-    ts <- fsdbTasks fsdbXml
+    ts <- fsdbTasks (discipline c) fsdbXml
     fs <- fsdbTaskFolders fsdbXml
     tps <- fsdbTracks fsdbXml
 
