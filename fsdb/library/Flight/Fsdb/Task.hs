@@ -28,7 +28,7 @@ import Data.Time.Format (parseTimeOrError, defaultTimeLocale)
 import Text.Megaparsec ((<?>))
 
 import Flight.LatLng.Raw (RawLat(..), RawLng(..))
-import Flight.Zone (Radius(..), rawZonesToZones)
+import Flight.Zone (Radius(..), Zone(..), RawZoneToZone, rawZonesToZones)
 import qualified Flight.Zone.Raw as Z (RawZone(..))
 import Flight.Comp
     ( PilotId(..), PilotName(..), Pilot(..)
@@ -62,7 +62,7 @@ getTask ps =
         getDefn =
             getChildren
             >>> hasName "FsTaskDefinition"
-            >>> getSpeedSection
+            >>> (getSpeedSection &&& getGoal)
             >>. take 1
             &&& listA getTps
             &&& listA getOpenClose
@@ -71,6 +71,10 @@ getTask ps =
         getSpeedSection =
             (getAttrValue "ss" &&& getAttrValue "es")
             >. parseSpeedSection
+
+        getGoal =
+            (getAttrValue "goal")
+            >. parseGoal
 
         getOpenClose =
             getChildren
@@ -114,13 +118,13 @@ getTask ps =
             &&& getAttrValue "stop_time"
             >>> arr parseStop
 
-        mkTask (name, (stop, (absentees, (section, (zs, (ts, gates)))))) =
+        mkTask (name, (stop, (absentees, ((section, goal), (zs, (ts, gates)))))) =
             Task name zs zs' section ts'' gates (sort absentees) stop
             where
                 -- NOTE: If all time zones are the same then collapse.
                 ts' = nub ts
                 ts'' = if length ts' == 1 then ts' else ts
-                zs' = rawZonesToZones zs
+                zs' = rawZonesToZones goal zs
 
 parseTasks :: String -> IO (Either String [Task])
 parseTasks contents = do
@@ -162,6 +166,10 @@ parseSpeedSection ((ss, es) : _) =
                     es'' <- prs (sci <?> "End of speed section") es
                     return $ sciToInt es''
                 ]
+
+parseGoal :: [String] -> RawZoneToZone
+parseGoal ("LINE" : _) = Line
+parseGoal _ = Circle
 
 parseZone :: (String, String, String, String) -> [Z.RawZone]
 parseZone (name, lat', lng', rad') = either (const []) (: []) $ do

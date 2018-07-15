@@ -24,6 +24,8 @@ module Flight.Zone
     , fromRationalLatLng
     , toRationalLatLng
     , realToFracLatLng
+
+    , RawZoneToZone
     , rawZonesToZones
     ) where
 
@@ -87,6 +89,13 @@ data Zone a where
         -> LatLng a [u| rad |]
         -> Zone a
 
+    -- | This like a cylinder control zone but only used for goal.
+    Circle
+        :: (Eq a, Ord a)
+        => QRadius a [u| m |]
+        -> LatLng a [u| rad |]
+        -> Zone a
+
     -- | This control zone is only ever used as a goal for paragliding. It is
     -- a goal line perpendicular to the course line followed by half
     -- a cylinder.
@@ -112,6 +121,7 @@ instance (Ord a, Num a) => HasArea (Zone a) where
     hasArea (Cylinder (Radius x) _) = x > zero
     hasArea (Conical _ (Radius x) _) = x > zero
     hasArea (Line (Radius x) _) = x > zero
+    hasArea (Circle (Radius x) _) = x > zero
     hasArea (SemiCircle (Radius x) _) = x > zero
 
 instance
@@ -151,6 +161,13 @@ instance
             , "latlng" .= toJSON x
             ]
         ]
+    toJSON (Circle r x) = object
+        [ "circle" .= object
+            [ "radius" .= toJSON r
+            , "latlng" .= toJSON x
+            ]
+        ]
+
     toJSON (SemiCircle r x) = object
         [ "semicircle" .= object
             [ "radius" .= toJSON r
@@ -190,6 +207,10 @@ instance
                 Line <$> ln .: "r" <*> ln .: "x"
 
             , do
+                cc <- o .: "circle"
+                Circle <$> cc .: "r" <*> cc .: "x"
+
+            , do
                 sc <- o .: "semicircle"
                 SemiCircle <$> sc .: "r" <*> sc .: "x"
 
@@ -217,6 +238,9 @@ showZoneDMS (Conical (Incline i) r (LatLng (Lat x, Lng y))) =
 
 showZoneDMS (Line r (LatLng (Lat x, Lng y))) =
     "Line " ++ show r ++ " " ++ show (fromQ x, fromQ y)
+
+showZoneDMS (Circle r (LatLng (Lat x, Lng y))) =
+    "Circle " ++ show r ++ " " ++ show (fromQ x, fromQ y)
 
 showZoneDMS (SemiCircle r (LatLng (Lat x, Lng y))) =
     "SemiCircle " ++ show r ++ " " ++ show (fromQ x, fromQ y)
@@ -290,6 +314,9 @@ fromRationalZone (Conical (Incline i) r x) =
 fromRationalZone (Line r x) =
     Line (fromRationalRadius r) (fromRationalLatLng x)
 
+fromRationalZone (Circle r x) =
+    Circle (fromRationalRadius r) (fromRationalLatLng x)
+
 fromRationalZone (SemiCircle r x) =
     SemiCircle (fromRationalRadius r) (fromRationalLatLng x)
 
@@ -311,6 +338,9 @@ toRationalZone (Conical (Incline i) r x) =
 
 toRationalZone (Line r x) =
     Line (toRationalRadius r) (toRationalLatLng x)
+
+toRationalZone (Circle r x) =
+    Circle (toRationalRadius r) (toRationalLatLng x)
 
 toRationalZone (SemiCircle r x) =
     SemiCircle (toRationalRadius r) (toRationalLatLng x)
@@ -336,6 +366,9 @@ realToFracZone (Conical (Incline (MkQuantity i)) r x) =
 realToFracZone (Line r x) =
     Line (realToFracRadius r) (realToFracLatLng x)
 
+realToFracZone (Circle r x) =
+    Circle (realToFracRadius r) (realToFracLatLng x)
+
 realToFracZone (SemiCircle r x) =
     SemiCircle (realToFracRadius r) (realToFracLatLng x)
 
@@ -346,6 +379,7 @@ center (Vector _ x) = x
 center (Cylinder _ x) = x
 center (Conical _ _ x) = x
 center (Line _ x) = x
+center (Circle _ x) = x
 center (SemiCircle _ x) = x
 
 -- | The effective radius of a zone.
@@ -355,6 +389,7 @@ radius (Vector _ _) = Radius [u| 0m |]
 radius (Cylinder r _) = r
 radius (Conical _ r _) = r
 radius (Line r _) = r
+radius (Circle r _) = r
 radius (SemiCircle r _) = r
 
 newtype Deadline = Deadline Integer deriving (Eq, Ord, Show)
@@ -376,10 +411,16 @@ data Task a
         , deadline :: Maybe Deadline
         }
 
-rawZonesToZones :: [Raw.RawZone] -> [Zone Double]
-rawZonesToZones xs =
+type RawZoneToZone =
+    QRadius Double [u| m |] -> LatLng Double [u| rad |] -> Zone Double
+
+rawZonesToZones
+    :: RawZoneToZone
+    -> [Raw.RawZone]
+    -> [Zone Double]
+rawZonesToZones goal xs =
     case reverse xs of
-        (x : y : ys) -> reverse $ f Line x : (f Cylinder <$> (y : ys))
+        (x : y : ys) -> reverse $ f goal x : (f Cylinder <$> (y : ys))
         _ -> f Cylinder <$> xs
     where
         f ctor Raw.RawZone{radius = r, lat, lng} =

@@ -33,4 +33,5 @@ sample _ _ _ _ px@(Vector _ x) = [ZonePoint px x (Bearing zero) (Radius (MkQuant
 sample circumSample sp b zs z@Cylinder{} = fst $ circumSample sp b zs z
 sample circumSample sp b zs z@Conical{} = fst $ circumSample sp b zs z
 sample circumSample sp b zs z@Line{} = fst $ circumSample sp b zs z
+sample circumSample sp b zs z@Circle{} = fst $ circumSample sp b zs z
 sample circumSample sp b zs z@SemiCircle{} = fst $ circumSample sp b zs z
