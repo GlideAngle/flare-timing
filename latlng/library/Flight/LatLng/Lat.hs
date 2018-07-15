@@ -23,23 +23,26 @@ type QLat a u = Lat (Quantity a u)
 newtype Lat a = Lat a deriving (Eq, Ord)
 
 instance
-    (q ~ Quantity Double [u| rad |])
+    (q ~ Quantity Double [u| deg |])
     => DefaultDecimalPlaces (Lat q) where
     defdp _ = DecimalPlaces 8
 
 instance
-    (q ~ Quantity Double [u| rad |])
+    (q ~ Quantity Double [u| deg |])
     => Newtype (Lat q) q where
     pack = Lat
     unpack (Lat a) = a
 
 instance (q ~ Quantity Double [u| rad |]) => ToJSON (Lat q) where
-    toJSON x = toJSON $ ViaQ x
+    toJSON (Lat x) = toJSON $ ViaQ (Lat y)
+        where
+            y :: Quantity Double [u| deg |]
+            y = convert x
 
 instance (q ~ Quantity Double [u| rad |]) => FromJSON (Lat q) where
     parseJSON o = do
-        ViaQ x <- parseJSON o
-        return x
+        ViaQ (Lat x) <- parseJSON o
+        return (Lat $ convert x)
 
 instance
     (F a ~ flag, ShowLat flag a u, KnownUnit (Unpack u))

@@ -23,23 +23,26 @@ type QLng a u = Lng (Quantity a u)
 newtype Lng a = Lng a deriving (Eq, Ord)
 
 instance
-    (q ~ Quantity Double [u| rad |])
+    (q ~ Quantity Double [u| deg |])
     => DefaultDecimalPlaces (Lng q) where
     defdp _ = DecimalPlaces 8
 
 instance
-    (q ~ Quantity Double [u| rad |])
+    (q ~ Quantity Double [u| deg |])
     => Newtype (Lng q) q where
     pack = Lng
     unpack (Lng a) = a
 
 instance (q ~ Quantity Double [u| rad |]) => ToJSON (Lng q) where
-    toJSON x = toJSON $ ViaQ x
+    toJSON (Lng x) = toJSON $ ViaQ (Lng y)
+        where
+            y :: Quantity Double [u| deg |]
+            y = convert x
 
 instance (q ~ Quantity Double [u| rad |]) => FromJSON (Lng q) where
     parseJSON o = do
-        ViaQ x <- parseJSON o
-        return x
+        ViaQ (Lng x) <- parseJSON o
+        return (Lng $ convert x)
 
 instance
     (F a ~ flag, ShowLng flag a u, KnownUnit (Unpack u))
