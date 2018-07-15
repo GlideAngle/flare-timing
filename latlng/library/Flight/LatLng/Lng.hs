@@ -25,7 +25,7 @@ newtype Lng a = Lng a deriving (Eq, Ord)
 instance
     (q ~ Quantity Double [u| rad |])
     => DefaultDecimalPlaces (Lng q) where
-    defdp _ = DecimalPlaces 2
+    defdp _ = DecimalPlaces 8
 
 instance
     (q ~ Quantity Double [u| rad |])

@@ -25,7 +25,7 @@ newtype Lat a = Lat a deriving (Eq, Ord)
 instance
     (q ~ Quantity Double [u| rad |])
     => DefaultDecimalPlaces (Lat q) where
-    defdp _ = DecimalPlaces 2
+    defdp _ = DecimalPlaces 8
 
 instance
     (q ~ Quantity Double [u| rad |])
