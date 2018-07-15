@@ -17,6 +17,7 @@ import qualified Control.Applicative as A ((<$>))
 import Control.Monad (mapM_)
 import Control.Monad.Except (runExceptT)
 import System.FilePath (takeFileName)
+import Data.Yaml (prettyPrintParseException)
 import Data.UnitsOfMeasure ((/:), u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
@@ -122,12 +123,14 @@ go CmdOptions{..} compFile@(CompInputFile compPath) = do
     masking <- runExceptT $ readMasking maskFile
     landing <- runExceptT $ readLanding landFile
 
+    let ppr = putStrLn . prettyPrintParseException
+
     case (compSettings, crossing, tagging, masking, landing) of
-        (Left msg, _, _, _, _) -> putStrLn msg
-        (_, Left msg, _, _, _) -> putStrLn msg
-        (_, _, Left msg, _, _) -> putStrLn msg
-        (_, _, _, Left msg, _) -> putStrLn msg
-        (_, _, _, _, Left msg) -> putStrLn msg
+        (Left e, _, _, _, _) -> ppr e
+        (_, Left e, _, _, _) -> ppr e
+        (_, _, Left e, _, _) -> ppr e
+        (_, _, _, Left e, _) -> ppr e
+        (_, _, _, _, Left e) -> ppr e
         (Right cs, Right cg, Right tg, Right mk, Right lg) ->
             writePointing pointFile $ points' cs cg tg mk lg
 

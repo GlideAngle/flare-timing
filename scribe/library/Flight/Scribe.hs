@@ -12,7 +12,7 @@ module Flight.Scribe
 
 import Control.Monad.Except (ExceptT(..), lift)
 import qualified Data.ByteString as BS
-import Data.Yaml (decodeEither)
+import Data.Yaml (ParseException, decodeEither')
 import qualified Data.Yaml.Pretty as Y
 
 import Flight.Route (TaskRoute(..))
@@ -35,10 +35,10 @@ import Flight.Comp
 import Flight.Align
 import Flight.Discard
 
-readComp :: CompInputFile -> ExceptT String IO CompSettings
+readComp :: CompInputFile -> ExceptT ParseException IO CompSettings
 readComp (CompInputFile path) = do
     contents <- lift $ BS.readFile path
-    ExceptT . return $ decodeEither contents
+    ExceptT . return $ decodeEither' contents
 
 writeComp :: CompInputFile -> CompSettings -> IO ()
 writeComp (CompInputFile path) compInput = do
@@ -46,10 +46,10 @@ writeComp (CompInputFile path) compInput = do
     let yaml = Y.encodePretty cfg compInput
     BS.writeFile path yaml
 
-readRoute :: TaskLengthFile -> ExceptT String IO TaskRoute
+readRoute :: TaskLengthFile -> ExceptT ParseException IO TaskRoute
 readRoute (TaskLengthFile path) = do
     contents <- lift $ BS.readFile path
-    ExceptT . return $ decodeEither contents
+    ExceptT . return $ decodeEither' contents
 
 writeRoute :: TaskLengthFile -> TaskRoute -> IO ()
 writeRoute (TaskLengthFile lenPath) route = 
@@ -58,10 +58,10 @@ writeRoute (TaskLengthFile lenPath) route =
         cfg = Y.setConfCompare (fieldOrder route) Y.defConfig
         yaml = Y.encodePretty cfg route
 
-readCrossing :: CrossZoneFile -> ExceptT String IO Crossing
+readCrossing :: CrossZoneFile -> ExceptT ParseException IO Crossing
 readCrossing (CrossZoneFile path) = do
     contents <- lift $ BS.readFile path
-    ExceptT . return $ decodeEither contents
+    ExceptT . return $ decodeEither' contents
 
 writeCrossing :: CrossZoneFile -> Crossing -> IO ()
 writeCrossing (CrossZoneFile path) crossZone = do
@@ -69,10 +69,10 @@ writeCrossing (CrossZoneFile path) crossZone = do
     let yaml = Y.encodePretty cfg crossZone
     BS.writeFile path yaml
 
-readTagging :: TagZoneFile -> ExceptT String IO Tagging
+readTagging :: TagZoneFile -> ExceptT ParseException IO Tagging
 readTagging (TagZoneFile path) = do
     contents <- lift $ BS.readFile path
-    ExceptT . return $ decodeEither contents
+    ExceptT . return $ decodeEither' contents
 
 writeTagging :: TagZoneFile -> Tagging -> IO ()
 writeTagging (TagZoneFile path) tagZone = do
@@ -80,10 +80,10 @@ writeTagging (TagZoneFile path) tagZone = do
     let yaml = Y.encodePretty cfg tagZone
     BS.writeFile path yaml
 
-readMasking :: MaskTrackFile -> ExceptT String IO Masking
+readMasking :: MaskTrackFile -> ExceptT ParseException IO Masking
 readMasking (MaskTrackFile path) = do
     contents <- lift $ BS.readFile path
-    ExceptT . return $ decodeEither contents
+    ExceptT . return $ decodeEither' contents
 
 writeMasking :: MaskTrackFile -> Masking -> IO ()
 writeMasking (MaskTrackFile path) maskTrack = do
@@ -91,10 +91,10 @@ writeMasking (MaskTrackFile path) maskTrack = do
     let yaml = Y.encodePretty cfg maskTrack
     BS.writeFile path yaml
 
-readLanding :: LandOutFile -> ExceptT String IO Landing
+readLanding :: LandOutFile -> ExceptT ParseException IO Landing
 readLanding (LandOutFile path) = do
     contents <- lift $ BS.readFile path
-    ExceptT . return $ decodeEither contents
+    ExceptT . return $ decodeEither' contents
 
 writeLanding :: LandOutFile -> Landing -> IO ()
 writeLanding (LandOutFile path) landout = do
@@ -102,10 +102,10 @@ writeLanding (LandOutFile path) landout = do
     let yaml = Y.encodePretty cfg landout
     BS.writeFile path yaml
 
-readPointing :: GapPointFile -> ExceptT String IO Pointing
+readPointing :: GapPointFile -> ExceptT ParseException IO Pointing
 readPointing (GapPointFile path) = do
     contents <- lift $ BS.readFile path
-    ExceptT . return $ decodeEither contents
+    ExceptT . return $ decodeEither' contents
 
 writePointing :: GapPointFile -> Pointing -> IO ()
 writePointing (GapPointFile path) gapPoint = do

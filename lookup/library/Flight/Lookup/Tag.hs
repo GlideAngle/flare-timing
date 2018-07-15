@@ -1,5 +1,3 @@
-{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
-
 module Flight.Lookup.Tag
     ( TaskTimeLookup(..)
     , ArrivalRankLookup(..)
@@ -39,7 +37,7 @@ newtype TaskTimeLookup = TaskTimeLookup (Maybe (TaskTaggingLookup StartEndMark))
 
 type TaggingLookup a = IxTask -> SpeedSection -> Pilot -> Kml.MarkedFixes -> Maybe a
 
-tagTaskTime :: Either String Tagging -> TaskTimeLookup
+tagTaskTime :: Either a Tagging -> TaskTimeLookup
 tagTaskTime = TaskTimeLookup . either (const Nothing) (Just . taskTimeElapsed)
 
 taskTimeElapsed
@@ -59,24 +57,25 @@ newtype TimeLookup = TimeLookup (Maybe (TaggingLookup StartEndMark))
 newtype TagLookup = TagLookup (Maybe (TaggingLookup [Maybe Fix]))
 newtype TickLookup = TickLookup (Maybe (TaggingLookup Ticked))
 
-tagTicked :: Either String Tagging -> TickLookup
+tagTicked :: Either a Tagging -> TickLookup
 tagTicked = TickLookup . either (const Nothing) (Just . ticked)
 
-tagPilotTime :: Either String Tagging -> TimeLookup
+tagPilotTime :: Either a Tagging -> TimeLookup
 tagPilotTime = TimeLookup . either (const Nothing) (Just . timeElapsed)
 
-tagPilotTag :: Either String Tagging -> TagLookup
+tagPilotTag :: Either a Tagging -> TagLookup
 tagPilotTag = TagLookup . either (const Nothing) (Just . tagged)
 
-tagArrivalRank :: Either String Tagging -> ArrivalRankLookup
+tagArrivalRank :: Either a Tagging -> ArrivalRankLookup
 tagArrivalRank = ArrivalRankLookup . either (const Nothing) (Just . arrivalRank)
 
-ticked :: Tagging
-       -> IxTask
-       -> SpeedSection
-       -> Pilot
-       -> Kml.MarkedFixes
-       -> Maybe Ticked
+ticked
+    :: Tagging
+    -> IxTask
+    -> SpeedSection
+    -> Pilot
+    -> Kml.MarkedFixes
+    -> Maybe Ticked
 ticked _ _ Nothing _ _ = Nothing
 ticked x (IxTask i) speedSection pilot _ =
     case tagging x ^? element (fromIntegral i - 1) of
@@ -102,12 +101,13 @@ tickedPilot _ (PilotTrackTag _ Nothing) = Nothing
 tickedPilot speedSection (PilotTrackTag _ (Just TrackTag{zonesTag})) =
     Just $ tickedZones speedSection zonesTag
 
-timeElapsed :: Tagging
-            -> IxTask
-            -> SpeedSection
-            -> Pilot
-            -> Kml.MarkedFixes
-            -> Maybe StartEndMark
+timeElapsed
+    :: Tagging
+    -> IxTask
+    -> SpeedSection
+    -> Pilot
+    -> Kml.MarkedFixes
+    -> Maybe StartEndMark
 timeElapsed _ _ Nothing _ _ = Nothing
 timeElapsed x (IxTask i) speedSection pilot _ =
     case tagging x ^? element (fromIntegral i - 1) of
@@ -130,12 +130,13 @@ timeElapsedPilot Nothing _ = Nothing
 timeElapsedPilot speedSection (PilotTrackTag _ (Just TrackTag{zonesTag})) =
     startEnd $ slice speedSection zonesTag
 
-tagged :: Tagging
-       -> IxTask
-       -> SpeedSection
-       -> Pilot
-       -> Kml.MarkedFixes
-       -> Maybe [Maybe Fix]
+tagged
+    :: Tagging
+    -> IxTask
+    -> SpeedSection
+    -> Pilot
+    -> Kml.MarkedFixes
+    -> Maybe [Maybe Fix]
 tagged _ _ Nothing _ _ = Nothing
 tagged x (IxTask i) speedSection pilot _ =
     case tagging x ^? element (fromIntegral i - 1) of
@@ -150,12 +151,13 @@ taggedPilot Nothing _ = []
 taggedPilot speedSection (PilotTrackTag _ (Just TrackTag{zonesTag})) =
     slice speedSection zonesTag
 
-arrivalRank :: Tagging
-            -> IxTask
-            -> SpeedSection
-            -> Pilot
-            -> Kml.MarkedFixes
-            -> Maybe Int
+arrivalRank
+    :: Tagging
+    -> IxTask
+    -> SpeedSection
+    -> Pilot
+    -> Kml.MarkedFixes
+    -> Maybe Int
 arrivalRank _ _ Nothing _ _ = Nothing
 arrivalRank x (IxTask i) speedSection pilot _ =
     case timing x ^? element (fromIntegral i - 1) of

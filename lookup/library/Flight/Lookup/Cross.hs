@@ -1,5 +1,3 @@
-{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
-
 module Flight.Lookup.Cross
     ( FlyingLookup(..)
     , crossFlying
@@ -16,7 +14,7 @@ type CrossingLookup a = IxTask -> Pilot -> Maybe a
 newtype FlyingLookup =
     FlyingLookup (Maybe (CrossingLookup TrackFlyingSection))
 
-crossFlying :: Either String C.Crossing -> FlyingLookup
+crossFlying :: Either a C.Crossing -> FlyingLookup
 crossFlying = FlyingLookup . either (const Nothing) (Just . flyingTask)
 
 flyingTask :: C.Crossing -> IxTask -> Pilot -> Maybe TrackFlyingSection

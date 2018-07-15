@@ -11,6 +11,7 @@ import Data.List (transpose, sortOn)
 import Control.Monad (mapM_)
 import Control.Monad.Except (runExceptT)
 import System.FilePath (takeFileName)
+import Data.Yaml (prettyPrintParseException)
 
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options
@@ -61,7 +62,7 @@ go crossFile@(CrossZoneFile crossPath) = do
     cs <- runExceptT $ readCrossing crossFile
 
     case cs of
-        Left s -> putStrLn s
+        Left e -> putStrLn . prettyPrintParseException $ e
         Right Crossing{crossing} -> do
             let pss :: [[PilotTrackTag]] =
                     (fmap . fmap)

@@ -20,7 +20,7 @@ fromKm dRawKm =
 
         dm = convert dKm :: Quantity Double [u| m |]
 
-routeLength :: Either String TaskRoute -> RouteLookup
+routeLength :: Either a TaskRoute -> RouteLookup
 routeLength = RouteLookup . either (const Nothing) (Just . length)
 
 length :: TaskRoute -> IxTask -> Maybe (TaskDistance Double)

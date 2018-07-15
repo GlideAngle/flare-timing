@@ -15,6 +15,7 @@ import Data.UnitsOfMeasure (u, convert, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import System.Directory (createDirectoryIfMissing)
 import System.FilePath ((</>), takeFileName)
+import Data.Yaml (ParseException, prettyPrintParseException)
 
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (CmdOptions(..), ProgramName(..), mkOptions)
@@ -107,11 +108,12 @@ go CmdOptions{..} compFile@(CompInputFile compPath) = do
     tagging <- runExceptT $ readTagging tagFile
 
     let flyingLookup = crossFlying crossing
+    let ppr = putStrLn . prettyPrintParseException
 
     case (compSettings, crossing, tagging) of
-        (Left msg, _, _) -> putStrLn msg
-        (_, Left msg, _) -> putStrLn msg
-        (_, _, Left msg) -> putStrLn msg
+        (Left e, _, _) -> ppr e
+        (_, Left e, _) -> ppr e
+        (_, _, Left e) -> ppr e
         (Right cs, Right _, Right t) ->
             let f =
                     writeTime
@@ -127,7 +129,8 @@ writeTime :: [IxTask]
               -> [IxTask]
               -> [Pilot]
               -> ExceptT
-                  String IO [[Either (Pilot, t) (Pilot, Pilot -> [TimeRow])]])
+                  ParseException
+                  IO [[Either (Pilot, t) (Pilot, Pilot -> [TimeRow])]])
           -> IO ()
 writeTime selectTasks selectPilots compFile f = do
     checks <- runExceptT $ f compFile selectTasks selectPilots
@@ -157,7 +160,7 @@ checkAll
     -> [IxTask]
     -> [Pilot]
     -> ExceptT
-         String
+         ParseException
          IO
          [
              [Either

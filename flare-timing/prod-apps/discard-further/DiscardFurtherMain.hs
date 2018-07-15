@@ -10,6 +10,7 @@ import Control.Monad (join, mapM_, when)
 import Control.Monad.Except (ExceptT, runExceptT)
 import System.Directory (createDirectoryIfMissing)
 import System.FilePath ((</>), takeFileName)
+import Data.Yaml (ParseException, prettyPrintParseException)
 
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (CmdOptions(..), ProgramName(..), mkOptions)
@@ -91,10 +92,12 @@ go CmdOptions{..} compFile@(CompInputFile compPath) = do
     tagging <- runExceptT $ readTagging tagFile
     routes <- runExceptT $ readRoute lenFile
 
+    let ppr = putStrLn . prettyPrintParseException
+
     case (compSettings, tagging, routes) of
-        (Left msg, _, _) -> putStrLn msg
-        (_, Left msg, _) -> putStrLn msg
-        (_, _, Left msg) -> putStrLn msg
+        (Left e, _, _) -> ppr e
+        (_, Left e, _) -> ppr e
+        (_, _, Left e) -> ppr e
         (Right cs, Right _, Right _) ->
             filterTime
                 cs
@@ -115,7 +118,9 @@ filterTime
     -> (CompInputFile
         -> [IxTask]
         -> [Pilot]
-        -> ExceptT String IO [[Either (Pilot, _) (Pilot, _)]])
+        -> ExceptT
+            ParseException
+            IO [[Either (Pilot, _) (Pilot, _)]])
     -> IO ()
 filterTime
     CompSettings{tasks}
@@ -184,7 +189,7 @@ checkAll
     -> [IxTask]
     -> [Pilot]
     -> ExceptT
-         String
+         ParseException
          IO
          [
              [Either (Pilot, TrackFileFail) (Pilot, ())]

@@ -11,6 +11,7 @@ import Control.Lens ((^?), element)
 import Control.Monad (mapM_)
 import Control.Monad.Except (ExceptT(..), runExceptT)
 import System.FilePath (takeFileName)
+import Data.Yaml (ParseException, prettyPrintParseException)
 
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (CmdOptions(..), ProgramName(..), mkOptions)
@@ -82,7 +83,7 @@ go CmdOptions{..} compFile@(CompInputFile compPath) = do
     putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
     compSettings <- runExceptT $ readComp compFile
     either
-        putStrLn
+        (putStrLn . prettyPrintParseException)
         (\cs ->
             writeCrossings
                 compFile
@@ -99,7 +100,7 @@ writeCrossings
           -> [IxTask]
           -> [Pilot]
           -> ExceptT
-                  String
+                  ParseException
                   IO [[Either (Pilot, TrackFileFail) (Pilot, MadeZones)]])
     -> IO ()
 writeCrossings compFile task pilot f = do
@@ -178,7 +179,7 @@ checkAll :: Math
          -> [IxTask]
          -> [Pilot]
          -> ExceptT
-             String
+             ParseException
              IO
              [[Either (Pilot, TrackFileFail) (Pilot, MadeZones)]]
 checkAll math =

@@ -9,6 +9,7 @@ import System.Clock (getTime, Clock(Monotonic))
 import Control.Monad (mapM_)
 import Control.Monad.Except (runExceptT)
 import System.FilePath (takeFileName)
+import Data.Yaml (prettyPrintParseException)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
@@ -68,9 +69,11 @@ go CmdOptions{..} compFile = do
     compSettings <- runExceptT $ readComp compFile
     masking <- runExceptT $ readMasking maskFile
 
+    let ppr = putStrLn . prettyPrintParseException
+
     case (compSettings, masking) of
-        (Left msg, _) -> putStrLn msg
-        (_, Left msg) -> putStrLn msg
+        (Left e, _) -> ppr e
+        (_, Left e) -> ppr e
         (Right cs, Right mk) -> writeLanding landFile $ difficulty cs mk
 
 difficulty :: CompSettings -> Masking -> Cmp.Landing

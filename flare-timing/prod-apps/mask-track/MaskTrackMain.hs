@@ -17,6 +17,7 @@ import Control.Monad.Except (ExceptT, runExceptT)
 import Data.UnitsOfMeasure (u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import System.FilePath (takeFileName)
+import Data.Yaml (ParseException, prettyPrintParseException)
 
 import qualified Flight.Comp as Cmp (Nominal(..))
 import Flight.Comp
@@ -128,12 +129,13 @@ go CmdOptions{..} compFile@(CompInputFile compPath) = do
 
     let flyingLookup = crossFlying crossing
     let lookupTaskLength = routeLength routes
+    let ppr = putStrLn . prettyPrintParseException
 
     case (compSettings, crossing, tagging, routes) of
-        (Left msg, _, _, _) -> putStrLn msg
-        (_, Left msg, _, _) -> putStrLn msg
-        (_, _, Left msg, _) -> putStrLn msg
-        (_, _, _, Left msg) -> putStrLn msg
+        (Left e, _, _, _) -> ppr e
+        (_, Left e, _, _) -> ppr e
+        (_, _, Left e, _) -> ppr e
+        (_, _, _, Left e) -> ppr e
         (Right cs, Right _, Right _, Right _) ->
             writeMask
                 cs
@@ -155,7 +157,7 @@ writeMask
         -> [IxTask]
         -> [Pilot]
         -> ExceptT
-            String
+            ParseException
             IO
             [
                 [Either
@@ -341,22 +343,23 @@ check
     :: Math
     -> RouteLookup
     -> FlyingLookup
-    -> Either String Tagging
+    -> Either ParseException Tagging
     -> CompInputFile
     -> [IxTask]
     -> [Pilot]
     -> ExceptT
-        String
+        ParseException
         IO
         [[Either (Pilot, TrackFileFail) (Pilot, Pilot -> FlightStats)]]
 check math lengths flying tags = checkTracks $ \CompSettings{tasks} ->
     flown math lengths flying tags tasks
 
-flown :: Math
-      -> RouteLookup
-      -> FlyingLookup
-      -> Either String Tagging
-      -> FnIxTask (Pilot -> FlightStats)
+flown
+    :: Math
+    -> RouteLookup
+    -> FlyingLookup
+    -> Either ParseException Tagging
+    -> FnIxTask (Pilot -> FlightStats)
 flown math (RouteLookup lookupTaskLength) flying tags tasks iTask fixes =
     maybe
         (const nullStats)
@@ -365,11 +368,12 @@ flown math (RouteLookup lookupTaskLength) flying tags tasks iTask fixes =
     where
         taskLength = (\f -> f iTask) =<< lookupTaskLength
 
-flown' :: TaskDistance Double
-       -> FlyingLookup
-       -> Math
-       -> Either String Tagging
-       -> FnIxTask (Pilot -> FlightStats)
+flown'
+    :: TaskDistance Double
+    -> FlyingLookup
+    -> Math
+    -> Either ParseException Tagging
+    -> FnIxTask (Pilot -> FlightStats)
 flown' dTaskF flying math tags tasks iTask@(IxTask i) mf@MarkedFixes{mark0} p =
     case maybeTask of
         Nothing -> nullStats

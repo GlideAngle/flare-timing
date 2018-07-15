@@ -2,6 +2,7 @@ module Flight.Mask.Tracks (checkTracks) where
 
 import Control.Monad.Except (ExceptT(..), lift)
 import System.FilePath (takeDirectory)
+import Data.Yaml (ParseException)
 
 import Flight.Kml (MarkedFixes)
 import Flight.Comp 
@@ -21,7 +22,7 @@ settingsLogs
     :: CompInputFile
     -> [IxTask]
     -> [Pilot]
-    -> ExceptT String IO (CompSettings, [[PilotTrackLogFile]])
+    -> ExceptT ParseException IO (CompSettings, [[PilotTrackLogFile]])
 settingsLogs compFile@(CompInputFile path) tasks selectPilots = do
     settings <- readComp compFile
     ExceptT . return $ go settings
@@ -40,7 +41,7 @@ checkTracks
     -> [IxTask]
     -> [Pilot]
     -> ExceptT
-        String
+        ParseException
         IO
         [[ Either
            (Pilot, TrackFileFail)
