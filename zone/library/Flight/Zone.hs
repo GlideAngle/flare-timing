@@ -6,12 +6,6 @@ module Flight.Zone
     , Incline(..)
     , QBearing
     , Bearing(..)
-    , Zone(..)
-    , Deadline(..)
-    , TimeOfDay(..)
-    , Interval(..)
-    , StartGates(..)
-    , Task(..)
     , showZoneDMS
     , center
     , radius
@@ -25,6 +19,8 @@ module Flight.Zone
     , toRationalLatLng
     , realToFracLatLng
 
+    -- * Zone
+    , Zone(..)
     , RawZoneToZone
     , rawZonesToZones
     ) where
@@ -43,21 +39,3 @@ import Flight.Zone.Convert
     , realToFracLatLng, realToFracZone, realToFracRadius
     )
 
-newtype Deadline = Deadline Integer deriving (Eq, Ord, Show)
-newtype TimeOfDay = TimeOfDay Rational deriving (Eq, Ord, Show)
-newtype Interval = Interval Rational deriving (Eq, Ord, Show)
-
-data StartGates
-    = StartGates
-        { open :: TimeOfDay
-        , intervals :: [Interval]
-        } deriving Show
-
-data Task a
-    = Task
-        { zones :: [Zone a]
-        , startZone :: Int
-        , endZone :: Int
-        , startGates :: StartGates
-        , deadline :: Maybe Deadline
-        }

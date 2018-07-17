@@ -134,7 +134,13 @@ go CmdOptions{..} compFile@(CompInputFile compPath) = do
         (Right cs, Right cg, Right tg, Right mk, Right lg) ->
             writePointing pointFile $ points' cs cg tg mk lg
 
-points' :: CompSettings -> Crossing -> Tagging -> Masking -> Cmp.Landing -> Pointing
+points'
+    :: CompSettings k
+    -> Crossing
+    -> Tagging
+    -> Masking
+    -> Cmp.Landing
+    -> Pointing
 points'
     CompSettings
         { comp =

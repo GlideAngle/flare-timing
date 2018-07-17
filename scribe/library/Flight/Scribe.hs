@@ -35,12 +35,12 @@ import Flight.Comp
 import Flight.Align
 import Flight.Discard
 
-readComp :: CompInputFile -> ExceptT ParseException IO CompSettings
+readComp :: CompInputFile -> ExceptT ParseException IO (CompSettings k)
 readComp (CompInputFile path) = do
     contents <- lift $ BS.readFile path
     ExceptT . return $ decodeEither' contents
 
-writeComp :: CompInputFile -> CompSettings -> IO ()
+writeComp :: CompInputFile -> CompSettings k -> IO ()
 writeComp (CompInputFile path) compInput = do
     let cfg = Y.setConfCompare (fieldOrder compInput) Y.defConfig
     let yaml = Y.encodePretty cfg compInput

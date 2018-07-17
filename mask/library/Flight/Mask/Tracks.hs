@@ -22,7 +22,7 @@ settingsLogs
     :: CompInputFile
     -> [IxTask]
     -> [Pilot]
-    -> ExceptT ParseException IO (CompSettings, [[PilotTrackLogFile]])
+    -> ExceptT ParseException IO (CompSettings k, [[PilotTrackLogFile]])
 settingsLogs compFile@(CompInputFile path) tasks selectPilots = do
     settings <- readComp compFile
     ExceptT . return $ go settings
@@ -36,7 +36,7 @@ settingsLogs compFile@(CompInputFile path) tasks selectPilots = do
                 zs = zipWith (<$>) fs ys
 
 checkTracks
-    :: (CompSettings -> (IxTask -> MarkedFixes -> a))
+    :: (CompSettings k -> (IxTask -> MarkedFixes -> a))
     -> CompInputFile
     -> [IxTask]
     -> [Pilot]

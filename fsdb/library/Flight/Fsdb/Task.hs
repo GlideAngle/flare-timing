@@ -29,6 +29,8 @@ import Text.Megaparsec ((<?>))
 
 import Flight.LatLng.Raw (RawLat(..), RawLng(..))
 import Flight.Zone (Radius(..), Zone(..), RawZoneToZone, rawZonesToZones)
+import qualified Flight.Zone.ZoneKind as ZK
+    (ZoneKind(..), Goal, RawZoneToZoneKind, rawZonesToZoneKinds)
 import qualified Flight.Zone.Raw as Z (RawZone(..))
 import Flight.Comp
     ( PilotId(..), PilotName(..), Pilot(..)
@@ -48,7 +50,7 @@ unKeyPilot :: Map PilotId Pilot -> PilotId -> Pilot
 unKeyPilot ps k@(PilotId ip) =
     findWithDefault (Pilot (k, PilotName ip)) k ps
 
-getTask :: ArrowXml a => Discipline -> [Pilot] -> a XmlTree Task
+getTask :: ArrowXml a => Discipline -> [Pilot] -> a XmlTree (Task k)
 getTask discipline ps =
     getChildren
     >>> deep (hasName "FsTask")
@@ -126,14 +128,15 @@ getTask discipline ps =
             >>> arr parseStop
 
         mkTask (name, (stop, (absentees, (useSemi, ((section, goal), (zs, (ts, gates))))))) =
-            Task name zs zs' section ts'' gates (sort absentees) stop
+            Task name zs zs' zs'' section ts'' gates (sort absentees) stop
             where
                 -- NOTE: If all time zones are the same then collapse.
                 ts' = nub ts
                 ts'' = if length ts' == 1 then ts' else ts
                 zs' = rawZonesToZones (mkGoal discipline useSemi goal) zs
+                zs'' = ZK.rawZonesToZoneKinds (mkGoalKind discipline useSemi goal) zs
 
-parseTasks :: Discipline -> String -> IO (Either String [Task])
+parseTasks :: Discipline -> String -> IO (Either String [Task k])
 parseTasks discipline contents = do
     let doc = readString [ withValidate no, withWarnings no ] contents
     ps <- runX $ doc >>> getCompPilot
@@ -178,6 +181,11 @@ mkGoal :: Discipline -> Bool -> String -> RawZoneToZone
 mkGoal Paragliding True "LINE" = SemiCircle
 mkGoal _ _ "LINE" = Line
 mkGoal _ _ _ = Circle
+
+mkGoalKind :: Discipline -> Bool -> String -> ZK.RawZoneToZoneKind ZK.Goal
+mkGoalKind Paragliding True "LINE" = ZK.SemiCircle
+mkGoalKind _ _ "LINE" = ZK.Line
+mkGoalKind _ _ _ = ZK.Circle
 
 parseZone :: (String, String, String, String) -> [Z.RawZone]
 parseZone (name, lat', lng', rad') = either (const []) (: []) $ do

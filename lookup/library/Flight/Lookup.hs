@@ -84,7 +84,7 @@ compRoutes :: RouteLookup -> [IxTask] -> [Maybe (TaskDistance Double)]
 compRoutes (RouteLookup get) iTasks =
     (\i -> ((\g -> g i) =<< get)) <$> iTasks
 
-compTimes :: TaskTimeLookup -> [IxTask] -> [Task] -> [Maybe StartEndMark]
+compTimes :: TaskTimeLookup -> [IxTask] -> [Task k] -> [Maybe StartEndMark]
 compTimes (TaskTimeLookup get) iTasks tasks =
     join <$>
     [ ($ s) . ($ i) <$> get
@@ -93,7 +93,7 @@ compTimes (TaskTimeLookup get) iTasks tasks =
     ]
 
 
-compRaceTimes :: TaskTimeLookup -> [IxTask] -> [Task] -> [Maybe RaceTime]
+compRaceTimes :: TaskTimeLookup -> [IxTask] -> [Task k] -> [Maybe RaceTime]
 compRaceTimes getTaskTime iTasks tasks =
     [ racing (Cmp.openClose ss zt) fl fs la
     | ss <- speedSection <$> tasks

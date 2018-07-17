@@ -22,14 +22,14 @@ data TimeStats =
         , positionAtEss :: PositionAtEss
         }
 
-data FlightStats =
+data FlightStats k =
     FlightStats
         { statTimeRank :: Maybe TimeStats
         , statLand :: Maybe (TrackDistance Land)
-        , statDash :: DashPathInputs
+        , statDash :: DashPathInputs k
         }
 
-nullStats :: FlightStats
+nullStats :: FlightStats k
 nullStats =
     FlightStats
         { statTimeRank = Nothing

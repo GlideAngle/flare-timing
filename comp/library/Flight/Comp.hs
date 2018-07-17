@@ -56,6 +56,8 @@ import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Zone (Zone(..))
+import qualified Flight.Zone.ZoneKind as ZK
+    (ZoneKind(..), RaceTask, TaskZones(..))
 import Flight.Zone.Raw (RawZone, showZone)
 import Flight.Field (FieldOrdering(..))
 import Flight.Pilot
@@ -146,7 +148,7 @@ openClose Nothing (x : _) = Just x
 openClose _ [x] = Just x
 openClose (Just (_, e)) xs = listToMaybe . take 1 . drop (e - 1) $ xs
 
-pilotNamed :: CompSettings -> [PilotName] -> [Pilot]
+pilotNamed :: CompSettings k -> [PilotName] -> [Pilot]
 pilotNamed CompSettings{pilots} [] = sort . nub . join $
     (fmap . fmap) (\(PilotTrackLogFile p _) -> p) pilots
 pilotNamed CompSettings{pilots} xs = sort . nub . join $
@@ -154,11 +156,11 @@ pilotNamed CompSettings{pilots} xs = sort . nub . join $
     | ps <- (fmap . fmap) (\(PilotTrackLogFile p _) -> p) pilots
     ]
 
-data CompSettings =
+data CompSettings k =
     CompSettings
         { comp :: Comp
         , nominal :: Nominal
-        , tasks :: [Task]
+        , tasks :: [Task k]
         , taskFolders :: [TaskFolder]
         , pilots :: [[PilotTrackLogFile]]
         }
@@ -205,11 +207,12 @@ newtype TaskStop =
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
-data Task =
+data Task k =
     Task
         { taskName :: String
         , zones :: [RawZone]
         , strictZones :: [Zone Double]
+        , kindZones :: Maybe (ZK.TaskZones ZK.RaceTask Double)
         , speedSection :: SpeedSection
         , zoneTimes :: [OpenClose]
         , startGates :: [StartGate]
@@ -219,7 +222,7 @@ data Task =
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
-showTask :: Task -> String
+showTask :: Task k -> String
 showTask Task {taskName, zones, speedSection, zoneTimes, startGates} =
     unwords [ "Task '" ++ taskName ++ "'"
             , ", zones "
@@ -232,7 +235,7 @@ showTask Task {taskName, zones, speedSection, zoneTimes, startGates} =
             , intercalate ", " $ show <$> startGates 
             ]
 
-instance FieldOrdering CompSettings where
+instance FieldOrdering (CompSettings k) where
     fieldOrder _ = cmp
 
 cmp :: (Ord a, IsString a) => a -> a -> Ordering
@@ -248,6 +251,9 @@ cmp a b =
         ("taskFolders", "pilots") -> LT
         ("taskFolders", _) -> GT
         ("pilots", _) -> GT
+
+        -- TaskZones fields
+        ("turnpoints", _) -> LT
 
         -- Nominal fields
         ("launch", _) -> LT
@@ -293,6 +299,11 @@ cmp a b =
         ("strictZones", "taskName") -> GT
         ("strictZones", "zones") -> GT
         ("strictZones", _) -> LT
+
+        ("kindZones", "taskName") -> GT
+        ("kindZones", "zones") -> GT
+        ("kindZones", "strictZones") -> GT
+        ("kindZones", _) -> LT
 
         ("speedSection", "zoneTimes") -> LT
         ("speedSection", "startGates") -> LT

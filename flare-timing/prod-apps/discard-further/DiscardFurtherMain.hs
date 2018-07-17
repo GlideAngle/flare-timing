@@ -109,7 +109,7 @@ go CmdOptions{..} compFile@(CompInputFile compPath) = do
                 checkAll
 
 filterTime
-    :: CompSettings
+    :: CompSettings k
     -> RouteLookup
     -> TaskTimeLookup
     -> CompInputFile

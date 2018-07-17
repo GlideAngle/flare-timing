@@ -23,12 +23,13 @@ import Flight.Mask.Internal.Cross
     (CrossingPredicate, entersSeq, exitsSeq, isStartExit, crossingPredicates)
 import qualified Flight.Zone.Raw as Raw (RawZone(..))
 
-timeFlown :: (Real a, Fractional a)
-          => SpanLatLng a
-          -> (Raw.RawZone -> TaskZone a)
-          -> Task
-          -> MarkedFixes
-          -> Maybe (PilotTime (Quantity Double [u| h |]))
+timeFlown
+    :: (Real a, Fractional a)
+    => SpanLatLng a
+    -> (Raw.RawZone -> TaskZone a)
+    -> Task k
+    -> MarkedFixes
+    -> Maybe (PilotTime (Quantity Double [u| h |]))
 timeFlown span zoneToCyl task@Task{speedSection, zones, zoneTimes, startGates} xs =
     if null zones || not atGoal then Nothing else
     flownDuration span speedSection fs cs zoneTimes startGates xs

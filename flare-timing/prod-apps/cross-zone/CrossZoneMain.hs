@@ -174,18 +174,19 @@ flew TrackFlyingSection{flyingFixes, flyingSeconds}
 madeZonesToFlying :: MadeZones -> TrackFlyingSection
 madeZonesToFlying MadeZones{flying} = flying
 
-checkAll :: Math
-         -> CompInputFile
-         -> [IxTask]
-         -> [Pilot]
-         -> ExceptT
-             ParseException
-             IO
-             [[Either (Pilot, TrackFileFail) (Pilot, MadeZones)]]
+checkAll
+    :: Math
+    -> CompInputFile
+    -> [IxTask]
+    -> [Pilot]
+    -> ExceptT
+         ParseException
+         IO
+         [[Either (Pilot, TrackFileFail) (Pilot, MadeZones)]]
 checkAll math =
     checkTracks $ \CompSettings{tasks} -> flown math tasks
 
-flown :: Math -> FnIxTask MadeZones
+flown :: Math -> FnIxTask k MadeZones
 flown math tasks (IxTask i) fs =
     case tasks ^? element (i - 1) of
         Nothing ->
@@ -198,7 +199,7 @@ flown math tasks (IxTask i) fs =
         Just task ->
             flownTask math task fs
 
-flownTask :: Math -> FnTask MadeZones
+flownTask :: Math -> FnTask k MadeZones
 flownTask =
     \case
         Rational ->

@@ -30,7 +30,7 @@ data TrackLead =
 compLeading
     :: [[(Pilot, [Time.TickRow])]]
     -> [Maybe (TaskDistance Double)]
-    -> [Task]
+    -> [Task k]
     -> ([Maybe LeadingCoefficient], [[(Pilot, TrackLead)]])
 compLeading rowsLeadingStep lsTask tasks' =
     (minLead, lead)

@@ -147,7 +147,7 @@ go CmdOptions{..} compFile@(CompInputFile compPath) = do
                 (check math lookupTaskLength flyingLookup tagging)
 
 writeMask
-    :: CompSettings
+    :: CompSettings k
     -> RouteLookup
     -> TaskTimeLookup
     -> [IxTask]
@@ -162,7 +162,7 @@ writeMask
             [
                 [Either
                     (Pilot, TrackFileFail)
-                    (Pilot, Pilot -> FlightStats)
+                    (Pilot, Pilot -> FlightStats k)
                 ]
             ]
             )
@@ -181,7 +181,7 @@ writeMask
     case checks of
         Left msg -> print msg
         Right flights -> do
-            let ys :: [[(Pilot, FlightStats)]] =
+            let ys :: [[(Pilot, FlightStats _)]] =
                     (fmap . fmap)
                         (\case
                             Left (p, _) -> (p, nullStats)
@@ -191,7 +191,7 @@ writeMask
             let iTasks = IxTask <$> [1 .. length ys]
 
             -- Zones (zs) of the task and zones ticked.
-            let zsTaskTicked :: [Map Pilot DashPathInputs] =
+            let zsTaskTicked :: [Map Pilot _] =
                     Map.fromList . landTaskTicked <$> ys
 
             -- Distances (ds) of the landout spot.
@@ -287,17 +287,17 @@ includeTask :: [IxTask] -> IxTask -> Bool
 includeTask tasks = if null tasks then const True else (`elem` tasks)
 
 
-landTaskTicked :: [(Pilot, FlightStats)] -> [(Pilot, DashPathInputs)]
+landTaskTicked :: [(Pilot, FlightStats k)] -> [(Pilot, _)]
 landTaskTicked xs =
     (\(p, FlightStats{..}) -> (p, statDash)) <$> xs
 
-landDistances :: [(Pilot, FlightStats)] -> [(Pilot, TrackDistance Land)]
+landDistances :: [(Pilot, FlightStats k)] -> [(Pilot, TrackDistance Land)]
 landDistances xs =
     sortOn (togo . snd)
     . catMaybes
     $ fmap (\(p, FlightStats{..}) -> (p,) <$> statLand) xs
 
-arrivals :: [(Pilot, FlightStats)] -> [(Pilot, TrackArrival)]
+arrivals :: [(Pilot, FlightStats k)] -> [(Pilot, TrackArrival)]
 arrivals xs =
     sortOn (rank . snd) $ (fmap . fmap) f ys
     where
@@ -318,7 +318,7 @@ arrivals xs =
 
 times
     :: (TimeStats -> PilotTime (Quantity Double [u| h |]))
-    -> [(Pilot, FlightStats)]
+    -> [(Pilot, FlightStats k)]
     -> Maybe (BestTime (Quantity Double [u| h |]), [(Pilot, TrackSpeed)])
 times f xs =
     (\ bt -> (bt, sortOn (time . snd) $ second (g bt) <$> ys))
@@ -350,7 +350,7 @@ check
     -> ExceptT
         ParseException
         IO
-        [[Either (Pilot, TrackFileFail) (Pilot, Pilot -> FlightStats)]]
+        [[Either (Pilot, TrackFileFail) (Pilot, Pilot -> FlightStats k)]]
 check math lengths flying tags = checkTracks $ \CompSettings{tasks} ->
     flown math lengths flying tags tasks
 
@@ -359,7 +359,7 @@ flown
     -> RouteLookup
     -> FlyingLookup
     -> Either ParseException Tagging
-    -> FnIxTask (Pilot -> FlightStats)
+    -> FnIxTask k (Pilot -> FlightStats k)
 flown math (RouteLookup lookupTaskLength) flying tags tasks iTask fixes =
     maybe
         (const nullStats)
@@ -373,7 +373,7 @@ flown'
     -> FlyingLookup
     -> Math
     -> Either ParseException Tagging
-    -> FnIxTask (Pilot -> FlightStats)
+    -> FnIxTask k (Pilot -> FlightStats k)
 flown' dTaskF flying math tags tasks iTask@(IxTask i) mf@MarkedFixes{mark0} p =
     case maybeTask of
         Nothing -> nullStats

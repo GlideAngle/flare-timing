@@ -30,9 +30,9 @@ import Flight.Mask (dashPathToGoalTimeRows)
 import Flight.Mask.Internal.Race (Ticked, FlyCut(..), Sliver(..))
 import Flight.Span.Double (zoneToCylF, spanF, csF, cutF, dppF, csegF)
 
-data DashPathInputs =
+data DashPathInputs k =
     DashPathInputs
-        { dashTask :: Maybe Task
+        { dashTask :: Maybe (Task k)
         , dashTicked :: Ticked
         , dashFlyCut :: Maybe (FlyCut UTCTime MarkedFixes)
         }
@@ -117,7 +117,7 @@ compDistance dMin lsTask pilotsArriving pilotsLandingOut tsBest rows =
 -- to goal than the landing spot if the pilot flew away from goal to land.
 compNigh
     :: [Maybe (TaskDistance Double)]
-    -> [Map Pilot DashPathInputs]
+    -> [Map Pilot (DashPathInputs k)]
     -> [[Maybe (Pilot, Time.TimeRow)]]
     -> [[(Pilot, TrackDistance Nigh)]]
 compNigh lsTask zsTaskTicked rows =
@@ -129,7 +129,7 @@ compNigh lsTask zsTaskTicked rows =
 
 nighTrackLine
     :: Maybe (TaskDistance Double)
-    -> Map Pilot DashPathInputs
+    -> Map Pilot (DashPathInputs k)
     -> (Pilot, Time.TimeRow)
     -> (Pilot, TrackDistance Nigh)
 
@@ -164,7 +164,7 @@ distanceOnlyLine d =
         , legsSum = []
         }
 
-pathToGo :: DashPathInputs -> Time.TimeRow -> Double -> TrackLine
+pathToGo :: DashPathInputs k -> Time.TimeRow -> Double -> TrackLine
 pathToGo DashPathInputs{..} x@Time.TimeRow{time} d =
     case dashTask of
         Nothing -> distanceOnlyLine d

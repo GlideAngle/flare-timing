@@ -31,6 +31,7 @@ in    defs
               "library"
           , exposed-modules =
               [ "Flight.Zone"
+              , "Flight.Zone.ZoneKind"
               , "Flight.Zone.Path"
               , "Flight.Zone.Raw"
               , "Flight.Zone.Cylinder"

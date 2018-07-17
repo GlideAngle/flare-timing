@@ -10,11 +10,12 @@ import Flight.LatLng (LatLng(..))
 import Flight.Zone (Zone(..), Radius(..), center)
 import Flight.Distance (TaskDistance(..), PathDistance(..), SpanLatLng)
 
-costSegment :: Real a
-            => SpanLatLng a
-            -> Zone a
-            -> Zone a
-            -> PathDistance a
+costSegment
+    :: Real a
+    => SpanLatLng a
+    -> Zone a
+    -> Zone a
+    -> PathDistance a
 costSegment span x y = distancePointToPoint span [x, y]
 
 -- | One way of measuring task distance is going point-to-point through each
@@ -24,20 +25,22 @@ costSegment span x y = distancePointToPoint span [x, y]
 -- The speed section  usually goes from start exit cylinder to goal cylinder or
 -- to goal line. The optimal way to fly this in a zig-zagging course will avoid
 -- zone centers for a shorter flown distance.
-distancePointToPoint :: Real a
-                     => SpanLatLng a
-                     -> [Zone a]
-                     -> PathDistance a
+distancePointToPoint
+    :: Real a
+    => SpanLatLng a
+    -> [Zone a]
+    -> PathDistance a
 distancePointToPoint span xs =
     PathDistance
         { edgesSum = distanceViaCenters span xs
         , vertices = center <$> xs
         }
 
-distanceViaCenters :: Real a
-                   => SpanLatLng a
-                   -> [Zone a]
-                   -> TaskDistance a
+distanceViaCenters
+    :: Real a
+    => SpanLatLng a
+    -> [Zone a]
+    -> TaskDistance a
 
 distanceViaCenters _ [] = TaskDistance [u| 0 m |]
 
@@ -59,10 +62,11 @@ distanceViaCenters span xs = distance span xs
 sum :: Num a => [Quantity a [u| m |]] -> Quantity a [u| m |]
 sum = foldr (+:) zero
 
-distance :: Num a
-         => SpanLatLng a
-         -> [Zone a]
-         -> TaskDistance a
+distance
+    :: Num a
+    => SpanLatLng a
+    -> [Zone a]
+    -> TaskDistance a
 distance span xs =
     TaskDistance $ sum $ zipWith f ys (tail ys)
     where

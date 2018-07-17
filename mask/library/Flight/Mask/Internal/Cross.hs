@@ -133,12 +133,13 @@ exitsSeq span z xs =
 -- the start zone is entry otherwise it is exit. In one case the start cylinder
 -- contains the next turnpoint and in the other the start cylinder is
 -- completely separate from the next turnpoint.
-isStartExit :: (Real a, Fractional a)
-            => SpanLatLng a
-            -> (Raw.RawZone
-            -> TaskZone a)
-            -> Task
-            -> Bool
+isStartExit
+    :: (Real a, Fractional a)
+    => SpanLatLng a
+    -> (Raw.RawZone
+    -> TaskZone a)
+    -> Task k
+    -> Bool
 isStartExit span zoneToCyl Task{speedSection, zones} =
     case speedSection of
         Nothing ->
@@ -176,16 +177,17 @@ crossingPredicates
     :: (Real a, Fractional a)
     => SpanLatLng a
     -> Bool -- ^ Is the start an exit cylinder?
-    -> Task
+    -> Task k
     -> [CrossingPredicate a Crossing]
 crossingPredicates span _ Task{zones} =
     const (crossSeq span) <$> zones
 
 -- | If the zone is an exit, then take the last crossing otherwise take the
 -- first crossing.
-crossingSelectors :: Bool -- ^ Is the start an exit cylinder?
-                  -> Task
-                  -> [[a] -> Maybe a] -- ^ A crossing selector for each zone.
+crossingSelectors
+    :: Bool -- ^ Is the start an exit cylinder?
+    -> Task k
+    -> [[a] -> Maybe a] -- ^ A crossing selector for each zone.
 crossingSelectors startIsExit Task{speedSection, zones} =
     zipWith
         (\ i _ ->

@@ -100,7 +100,7 @@ fsdbStopped (FsdbXml contents) = do
             lift $ print msg
             throwE msg
 
-fsdbTasks :: Discipline -> FsdbXml -> ExceptT String IO [Task]
+fsdbTasks :: Discipline -> FsdbXml -> ExceptT String IO [Task k]
 fsdbTasks discipline (FsdbXml contents) = do
     ts <- lift $ parseTasks discipline contents
     ExceptT $ return ts
@@ -115,7 +115,7 @@ fsdbTracks (FsdbXml contents) = do
     fs <- lift $ parseTracks contents
     ExceptT $ return fs
 
-fsdbSettings :: FsdbXml -> ExceptT String IO CompSettings
+fsdbSettings :: FsdbXml -> ExceptT String IO (CompSettings k)
 fsdbSettings fsdbXml = do
     c <- fsdbComp fsdbXml
     n <- fsdbNominal fsdbXml

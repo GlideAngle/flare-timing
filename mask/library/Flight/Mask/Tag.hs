@@ -72,8 +72,8 @@ nullFlying =
         }
 
 -- | A masking produces a value from a task and tracklog fixes.
-type FnTask a = Task -> MarkedFixes -> a
-type FnIxTask a = [Task] -> IxTask -> MarkedFixes -> a
+type FnTask k a = Task k -> MarkedFixes -> a
+type FnIxTask k a = [Task k] -> IxTask -> MarkedFixes -> a
 
 newtype PilotTrackFixes = PilotTrackFixes Int deriving Show
 
@@ -82,14 +82,15 @@ countFixes MarkedFixes{fixes} =
     PilotTrackFixes $ length fixes
 
 -- | A pilot has launched if their tracklog has distinct fixes.
-launched :: FnTask Bool
+launched :: FnTask k Bool
 launched _ MarkedFixes{fixes} =
     not . null . nub $ fixes
 
-started :: (Real a, Fractional a)
-        => SpanLatLng a
-        -> (Raw.RawZone -> TaskZone a)
-        -> FnTask Bool
+started
+    :: (Real a, Fractional a)
+    => SpanLatLng a
+    -> (Raw.RawZone -> TaskZone a)
+    -> FnTask k Bool
 started span zoneToCyl Task{speedSection, zones} MarkedFixes{fixes} =
     case slice speedSection zones of
         [] ->
@@ -104,10 +105,11 @@ started span zoneToCyl Task{speedSection, zones} MarkedFixes{fixes} =
                  _ ->
                      False
 
-madeGoal :: (Real a, Fractional a)
-         => SpanLatLng a
-         -> (Raw.RawZone -> TaskZone a)
-         -> FnTask Bool
+madeGoal
+    :: (Real a, Fractional a)
+    => SpanLatLng a
+    -> (Raw.RawZone -> TaskZone a)
+    -> FnTask k Bool
 madeGoal span zoneToCyl Task{zones} MarkedFixes{fixes} =
     case reverse zones of
         [] ->
@@ -585,12 +587,13 @@ jumpGaps xs =
     where
         ys = sum <$> chop jumpGap xs
 
-madeZones :: (Real a, Fractional a)
-          => SpanLatLng a
-          -> (Raw.RawZone -> TaskZone a)
-          -> Task
-          -> MarkedFixes
-          -> MadeZones
+madeZones
+    :: (Real a, Fractional a)
+    => SpanLatLng a
+    -> (Raw.RawZone -> TaskZone a)
+    -> Task k
+    -> MarkedFixes
+    -> MadeZones
 madeZones span zoneToCyl task@Task{zones} MarkedFixes{mark0, fixes} =
     MadeZones
         { flying = flying'
@@ -805,12 +808,13 @@ fixToUtc mark0 x =
     secondsToUtc mark0 $ Kml.mark x
 
 -- | Groups fixes by legs of the task.
-groupByLeg :: (Real a, Fractional a, FlyClipping UTCTime MarkedFixes)
-           => SpanLatLng a
-           -> (Raw.RawZone -> TaskZone a)
-           -> Task
-           -> FlyCut UTCTime MarkedFixes
-           -> [MarkedFixes]
+groupByLeg
+    :: (Real a, Fractional a, FlyClipping UTCTime MarkedFixes)
+    => SpanLatLng a
+    -> (Raw.RawZone -> TaskZone a)
+    -> Task k
+    -> FlyCut UTCTime MarkedFixes
+    -> [MarkedFixes]
 groupByLeg span zoneToCyl task flyCut =
     (\zs -> mf{fixes = zs}) <$> ys
     where

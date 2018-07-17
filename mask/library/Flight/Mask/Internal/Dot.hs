@@ -19,7 +19,7 @@ dotToGoal
     => SpanLatLng b
     -> (Raw.RawZone -> TaskZone b)
     -> Reach _ _ _
-    -> Task
+    -> Task k
     -> MarkedFixes
     -> Maybe (TaskDistance b)
     -- ^ Nothing indicates no such task or a task with no zones.

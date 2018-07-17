@@ -37,7 +37,7 @@ dashDistancesToGoal
     => Ticked
     -> Sliver a
     -> (Raw.RawZone -> TaskZone a)
-    -> Task
+    -> Task k
     -> FlyCut UTCTime MarkedFixes
     -> Maybe [(Maybe Fix, Maybe (TaskDistance a))]
     -- ^ Nothing indicates no such task or a task with no zones.
@@ -70,7 +70,7 @@ dashDistanceToGoal
     => Ticked
     -> Sliver a
     -> (Raw.RawZone -> TaskZone a)
-    -> Task
+    -> Task k
     -> FlyCut UTCTime MarkedFixes
     -> Maybe (TaskDistance a)
 dashDistanceToGoal
@@ -84,7 +84,7 @@ dashPathToGoalTimeRows
     => Ticked
     -> Sliver a
     -> (Raw.RawZone -> TaskZone a)
-    -> Task
+    -> Task k
     -> FlyCut UTCTime [TimeRow]
     -> Zs (PathDistance a)
     -- ^ Nothing indicates no such task or a task with no zones.
@@ -103,7 +103,7 @@ dashPathToGoalMarkedFixes
     => Ticked
     -> Sliver a
     -> (Raw.RawZone -> TaskZone a)
-    -> Task
+    -> Task k
     -> FlyCut UTCTime MarkedFixes
     -> Zs (PathDistance a)
     -- ^ Nothing indicates no such task or a task with no zones.
@@ -122,14 +122,15 @@ revindex = reverse . index
 
 -- | The distance from the last fix to goal passing through the remaining
 -- control zones.
-lastFixToGoal :: (Real a, Fractional a)
-              => Ticked
-              -> Sliver a
-              -> (Raw.RawZone -> TaskZone a)
-              -> Task
-              -> UTCTime
-              -> [(ZoneIdx, Kml.Fix)]
-              -> (Maybe Fix, Maybe (TaskDistance a))
+lastFixToGoal
+    :: (Real a, Fractional a)
+    => Ticked
+    -> Sliver a
+    -> (Raw.RawZone -> TaskZone a)
+    -> Task k
+    -> UTCTime
+    -> [(ZoneIdx, Kml.Fix)]
+    -> (Maybe Fix, Maybe (TaskDistance a))
 lastFixToGoal
     ticked
     sliver
@@ -151,7 +152,7 @@ dashDistanceFlown
     -> Ticked
     -> Sliver a
     -> (Raw.RawZone -> TaskZone a)
-    -> Task
+    -> Task k
     -> FlyCut UTCTime MarkedFixes
     -> Maybe (PilotDistance a)
 dashDistanceFlown
@@ -179,7 +180,7 @@ index = zip [1 .. ]
 togoAtLanding
     :: Math
     -> Ticked
-    -> Task
+    -> Task k
     -> FlyCut UTCTime MarkedFixes
     -> Maybe (TaskDistance Double) 
 togoAtLanding math ticked task xs =
@@ -201,7 +202,7 @@ madeAtLanding
     :: Math
     -> TaskDistance Double
     -> Ticked
-    -> Task
+    -> Task k
     -> FlyCut UTCTime MarkedFixes
     -> Maybe (PilotDistance Double) 
 madeAtLanding math dTaskF@(TaskDistance td) ticked task xs =

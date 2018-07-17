@@ -76,7 +76,7 @@ go CmdOptions{..} compFile = do
         (_, Left e) -> ppr e
         (Right cs, Right mk) -> writeLanding landFile $ difficulty cs mk
 
-difficulty :: CompSettings -> Masking -> Cmp.Landing
+difficulty :: CompSettings k -> Masking -> Cmp.Landing
 difficulty CompSettings{nominal} Masking{bestDistance, land} =
     Cmp.Landing 
         { minDistance = md

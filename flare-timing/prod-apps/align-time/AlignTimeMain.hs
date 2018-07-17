@@ -227,7 +227,7 @@ group
     :: Bool -- ^ Exclude zones outside speed section
     -> FlyingLookup
     -> Tagging
-    -> FnIxTask (Pilot -> [TimeRow])
+    -> FnIxTask k (Pilot -> [TimeRow])
 group
     ssOnly
     (FlyingLookup lookupFlying)
@@ -315,7 +315,7 @@ retick rs@RaceSections{prolog, race} start leg =
 allLegDistances
     :: Ticked
     -> TrackTime
-    -> Task
+    -> Task k
     -> Leg
     -> FlyCut UTCTime MarkedFixes
     -> [TimeRow]
@@ -336,7 +336,7 @@ legDistances
     :: Bool -- ^ Exclude zones outside speed section
     -> Ticked
     -> TrackTime
-    -> Task
+    -> Task k
     -> Leg
     -> FlyCut UTCTime MarkedFixes
     -> [TimeRow]
