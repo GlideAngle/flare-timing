@@ -152,46 +152,44 @@ instance
     )
     => ToJSON (ZoneKind k a) where
     toJSON (Point x) = object
-        [ "point" .= object
-            [ "latlng" .= toJSON x
-            ]
-        ]
+        [ "point" .= toJSON x ]
+
     toJSON (Vector b x) = object
         [ "vector" .= object
             [ "bearing" .= toJSON b
-            , "latlng" .= toJSON x
+            , "center" .= toJSON x
             ]
         ]
     toJSON (Cylinder r x) = object
         ["cylinder" .= object
             [ "radius" .= toJSON r
-            , "latlng" .= toJSON x
+            , "center" .= toJSON x
             ]
         ]
     toJSON (Conical i r x) = object
         [ "conical" .= object
             [ "radius" .= toJSON r
             , "incline" .= toJSON i
-            , "latlng" .= toJSON x
+            , "center" .= toJSON x
             ]
         ]
     toJSON (Line r x) = object
         [ "line" .= object
             [ "radius" .= toJSON r
-            , "latlng" .= toJSON x
+            , "center" .= toJSON x
             ]
         ]
     toJSON (Circle r x) = object
         [ "circle" .= object
             [ "radius" .= toJSON r
-            , "latlng" .= toJSON x
+            , "center" .= toJSON x
             ]
         ]
 
     toJSON (SemiCircle r x) = object
         [ "semicircle" .= object
             [ "radius" .= toJSON r
-            , "latlng" .= toJSON x
+            , "center" .= toJSON x
             ]
         ]
 
@@ -204,22 +202,8 @@ instance
     , FromJSON (QRadius a [u| m |])
     )
     => FromJSON (ZoneKind CourseLine a) where
-    parseJSON = withObject "Zone" $ \o -> do
-        pt <- o .: "point"
-        Point <$> pt .: "x"
-
-instance
-    ( Eq a
-    , Ord a
-    , FromJSON (LatLng a [u| rad |])
-    , FromJSON (QBearing a [u| rad |])
-    , FromJSON (QIncline a [u| rad |])
-    , FromJSON (QRadius a [u| m |])
-    )
-    => FromJSON (ZoneKind Turnpoint a) where
-    parseJSON = withObject "Zone" $ \o -> do
-        cy <- o .: "cylinder"
-        Cylinder <$> cy .: "r" <*> cy .: "x"
+    parseJSON = withObject "ZoneKind" $ \o -> do
+        Point <$> o .: "point"
 
 instance
     ( Eq a
@@ -230,9 +214,26 @@ instance
     , FromJSON (QRadius a [u| m |])
     )
     => FromJSON (ZoneKind OpenDistance a) where
-    parseJSON = withObject "Zone" $ \o -> do
+    parseJSON = withObject "ZoneKind" $ \o -> do
         vc <- o .: "vector"
-        Vector <$> vc .: "b" <*> vc .: "x"
+        Vector
+            <$> vc .: "bearing"
+            <*> vc .: "center"
+
+instance
+    ( Eq a
+    , Ord a
+    , FromJSON (LatLng a [u| rad |])
+    , FromJSON (QBearing a [u| rad |])
+    , FromJSON (QIncline a [u| rad |])
+    , FromJSON (QRadius a [u| m |])
+    )
+    => FromJSON (ZoneKind Turnpoint a) where
+    parseJSON = withObject "ZoneKind" $ \o -> do
+        cy <- o .: "cylinder"
+        Cylinder
+            <$> cy .: "radius"
+            <*> cy .: "center"
 
 instance
     ( Eq a
@@ -243,9 +244,12 @@ instance
     , FromJSON (QRadius a [u| m |])
     )
     => FromJSON (ZoneKind EndOfSpeedSection a) where
-    parseJSON = withObject "Zone" $ \o -> do
+    parseJSON = withObject "ZoneKind" $ \o -> do
         co <- o .: "conical"
-        Conical <$> co .: "r" <*> co .: "i" <*> co .: "x"
+        Conical
+            <$> co .: "radius"
+            <*> co .: "incline"
+            <*> co .: "center"
 
 instance
     ( Eq a
@@ -256,19 +260,25 @@ instance
     , FromJSON (QRadius a [u| m |])
     )
     => FromJSON (ZoneKind Goal a) where
-    parseJSON = withObject "Zone" $ \o ->
+    parseJSON = withObject "ZoneKind" $ \o ->
         asum
             [ do
                 ln <- o .: "line"
-                Line <$> ln .: "r" <*> ln .: "x"
+                Line
+                    <$> ln .: "radius"
+                    <*> ln .: "center"
 
             , do
                 cc <- o .: "circle"
-                Circle <$> cc .: "r" <*> cc .: "x"
+                Circle
+                    <$> cc .: "radius"
+                    <*> cc .: "center"
 
             , do
                 sc <- o .: "semicircle"
-                SemiCircle <$> sc .: "r" <*> sc .: "x"
+                SemiCircle
+                    <$> sc .: "radius"
+                    <*> sc .: "center"
 
             , fail $ "Unknown type of zone "
             ]
@@ -400,8 +410,9 @@ instance FromJSON (TaskZones RaceTask Double) where
                 return $ EssIsNotGoal r e p g
 
             , do
+                t :: [ZoneKind Turnpoint Double] <- o .: "turnpoints"
                 g :: ZoneKind Goal Double <- o .: "goal"
-                flip EssIsGoal g <$> o .: "turpoints"
+                return $ EssIsGoal t g
             ]
 
 type RawZoneToZoneKind k

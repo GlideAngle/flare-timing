@@ -106,46 +106,44 @@ instance
     )
     => ToJSON (Zone a) where
     toJSON (Point x) = object
-        [ "point" .= object
-            [ "latlng" .= toJSON x
-            ]
+        [ "point" .= toJSON x
         ]
     toJSON (Vector b x) = object
         [ "vector" .= object
             [ "bearing" .= toJSON b
-            , "latlng" .= toJSON x
+            , "center" .= toJSON x
             ]
         ]
     toJSON (Cylinder r x) = object
         ["cylinder" .= object
             [ "radius" .= toJSON r
-            , "latlng" .= toJSON x
+            , "center" .= toJSON x
             ]
         ]
     toJSON (Conical i r x) = object
         [ "conical" .= object
             [ "radius" .= toJSON r
             , "incline" .= toJSON i
-            , "latlng" .= toJSON x
+            , "center" .= toJSON x
             ]
         ]
     toJSON (Line r x) = object
         [ "line" .= object
             [ "radius" .= toJSON r
-            , "latlng" .= toJSON x
+            , "center" .= toJSON x
             ]
         ]
     toJSON (Circle r x) = object
         [ "circle" .= object
             [ "radius" .= toJSON r
-            , "latlng" .= toJSON x
+            , "center" .= toJSON x
             ]
         ]
 
     toJSON (SemiCircle r x) = object
         [ "semicircle" .= object
             [ "radius" .= toJSON r
-            , "latlng" .= toJSON x
+            , "center" .= toJSON x
             ]
         ]
 
@@ -161,32 +159,44 @@ instance
     parseJSON = withObject "Zone" $ \o ->
         asum
             [ do
-                pt <- o .: "point"
-                Point <$> pt .: "x" 
+                Point <$> o .: "point"
 
             , do
                 vc <- o .: "vector"
-                Vector <$> vc .: "b" <*> vc .: "x"
+                Vector
+                    <$> vc .: "bearing"
+                    <*> vc .: "center"
 
             , do
                 cy <- o .: "cylinder"
-                Cylinder <$> cy .: "r" <*> cy .: "x"
+                Cylinder
+                    <$> cy .: "radius"
+                    <*> cy .: "center"
 
             , do
                 co <- o .: "conical"
-                Conical <$> co .: "r" <*> co .: "i" <*> co .: "x"
+                Conical
+                    <$> co .: "radius"
+                    <*> co .: "incline"
+                    <*> co .: "center"
 
             , do
                 ln <- o .: "line"
-                Line <$> ln .: "r" <*> ln .: "x"
+                Line
+                    <$> ln .: "radius"
+                    <*> ln .: "center"
 
             , do
                 cc <- o .: "circle"
-                Circle <$> cc .: "r" <*> cc .: "x"
+                Circle
+                    <$> cc .: "radius"
+                    <*> cc .: "center"
 
             , do
                 sc <- o .: "semicircle"
-                SemiCircle <$> sc .: "r" <*> sc .: "x"
+                SemiCircle
+                    <$> sc .: "radius"
+                    <*> sc .: "center"
 
             , fail $ "Unknown type of zone "
             ]
