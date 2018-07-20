@@ -128,7 +128,7 @@ newtype StartGate = StartGate UTCTime
     deriving anyclass (ToJSON, FromJSON)
 
 newtype UtcOffset = UtcOffset { timeZoneMinutes :: Int }
-    deriving (Eq, Ord, Show, Generic)
+    deriving (Eq, Ord, Show, Read, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
 data OpenClose =

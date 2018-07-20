@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a0270ecdb2b674b81db871656b6c394d08545cfa343643a7bebb6dfec791e3ce
+-- hash: 854cc68624c7e95de3ff729f7253b4dcdb2b4b536a3c2768f646679de530c264
 
 name:           flight-fsdb
 version:        0.1.0
@@ -58,6 +58,7 @@ library
     , hxt
     , hxt-xpath
     , megaparsec
+    , newtype
     , path
     , scientific
     , split
@@ -95,6 +96,7 @@ test-suite parse
     , hxt
     , hxt-xpath
     , megaparsec
+    , newtype
     , path
     , scientific
     , smallcheck

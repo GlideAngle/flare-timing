@@ -26,6 +26,7 @@ in    defs
             , "containers"
             , "split"
             , "time"
+            , "newtype"
             , "uom-plugin"
             , "detour-via-sci"
             , "flight-latlng"

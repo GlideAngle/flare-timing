@@ -11,7 +11,7 @@ import Data.Via.UnitsOfMeasure (ViaQ(..))
 
 -- | ScoreBack time for the task, units of hours.
 newtype ScoreBackTime a = ScoreBackTime a
-    deriving (Eq, Ord, Show)
+    deriving (Eq, Ord, Show, Read)
 
 instance
     (q ~ Quantity Double [u| s |])

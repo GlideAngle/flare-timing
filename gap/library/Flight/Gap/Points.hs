@@ -60,7 +60,7 @@ data Pg = Pg deriving (Show)
 data Discipline
     = HangGliding
     | Paragliding
-    deriving (Eq, Ord, Show, Generic)
+    deriving (Eq, Ord, Generic)
 
 disciplineOptions :: Options
 disciplineOptions =
@@ -70,6 +70,15 @@ disciplineOptions =
             "Paragliding" -> "pg"
             x -> x
         }
+
+instance Show Discipline where
+    show HangGliding = "hg"
+    show Paragliding = "pg"
+
+instance Read Discipline where
+    readsPrec _ ('h' : 'g' : s) = [(HangGliding, s)]
+    readsPrec _ ('p' : 'g' : s) = [(Paragliding, s)]
+    readsPrec _ _ = []
 
 instance ToJSON Discipline where
   toJSON = genericToJSON disciplineOptions
