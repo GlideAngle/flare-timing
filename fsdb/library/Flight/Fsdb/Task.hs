@@ -1,12 +1,16 @@
+{-# OPTIONS_GHC -fno-warn-orphans #-}
+
 module Flight.Fsdb.Task (parseTasks) where
 
 import Data.Maybe (catMaybes)
-import Data.List (sort, concatMap, nub)
+import Data.List (sort, nub)
 import Data.Map.Strict (Map, fromList, findWithDefault)
+import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Text.XML.HXT.Arrow.Pickle
-    ( PU(..)
-    , unpickleDoc, xpWrap, xpFilterAttr, xpElem, xpAttr, xpText, xpPair
+    ( XmlPickler(..), PU(..)
+    , xpickle, unpickleDoc, xpWrap, xpFilterAttr, xpElem, xpAttr
+    , xpText, xpPair, xp4Tuple
     )
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
 import Text.XML.HXT.Core
@@ -45,9 +49,13 @@ import Flight.Comp
 import Flight.Fsdb.Pilot (getCompPilot)
 import Flight.Units ()
 import Flight.Score (Discipline(..))
-import Flight.Fsdb.Internal.Parse (prs, sci, sciToInt, sciToFloat, sciToRational)
+import Flight.Fsdb.Internal.Parse (prs, sci, sciToInt)
+import Flight.Fsdb.Internal.XmlPickle (xpNewtypeRational, xpNewtypeQuantity)
 
 newtype KeyPilot = KeyPilot (PilotId, Pilot)
+
+instance (u ~ Quantity Double [u| m |]) => XmlPickler (Radius u) where
+    xpickle = xpNewtypeQuantity
 
 keyMap :: [KeyPilot] -> Map PilotId Pilot
 keyMap = fromList . fmap (\(KeyPilot x) -> x)
@@ -55,6 +63,31 @@ keyMap = fromList . fmap (\(KeyPilot x) -> x)
 unKeyPilot :: Map PilotId Pilot -> PilotId -> Pilot
 unKeyPilot ps k@(PilotId ip) =
     findWithDefault (Pilot (k, PilotName ip)) k ps
+
+instance XmlPickler RawLat where
+    xpickle = xpNewtypeRational
+
+instance XmlPickler RawLng where
+    xpickle = xpNewtypeRational
+
+xpZone :: PU Z.RawZone
+xpZone =
+    xpElem "FsTurnpoint"
+    $ xpFilterAttr
+        ( hasName "id"
+        <+> hasName "lat"
+        <+> hasName "lon"
+        <+> hasName "radius"
+        )
+    $ xpWrap
+        ( \(n, lat, lng, r) -> Z.RawZone n lat lng r
+        , \(Z.RawZone{..}) -> (zoneName, lat, lng, radius)
+        )
+    $ xp4Tuple
+        (xpAttr "id" xpText)
+        (xpAttr "lat" xpickle)
+        (xpAttr "lon" xpickle)
+        (xpAttr "radius" xpickle)
 
 xpOpenClose :: PU OpenClose
 xpOpenClose =
@@ -102,7 +135,7 @@ getTask discipline ps =
             >>> hasName "FsTaskDefinition"
             >>> (getSpeedSection &&& getGoal)
             >>. take 1
-            &&& listA getTps
+            &&& (listA getTps >>> arr catMaybes)
             &&& (listA getOpenClose >>> arr catMaybes)
             &&& (listA getGates >>> arr catMaybes)
 
@@ -121,12 +154,7 @@ getTask discipline ps =
         getTps =
             getChildren
             >>> hasName "FsTurnpoint"
-            >>> getAttrValue "id"
-            &&& getAttrValue "lat"
-            &&& getAttrValue "lon"
-            &&& getAttrValue "radius"
-            >>> arr (\(name, (lat', (lng', rad))) -> (name, lat', lng', rad))
-            >>. concatMap parseZone
+            >>> arr (unpickleDoc xpZone)
 
         getGates =
             getChildren
@@ -203,15 +231,3 @@ mkGoalKind :: Discipline -> Bool -> String -> ZK.RawZoneToZoneKind ZK.Goal
 mkGoalKind Paragliding True "LINE" = ZK.SemiCircle
 mkGoalKind _ _ "LINE" = ZK.Line
 mkGoalKind _ _ _ = ZK.Circle
-
-parseZone :: (String, String, String, String) -> [Z.RawZone]
-parseZone (name, lat', lng', rad') = either (const []) (: []) $ do
-    lat <- prs (sci <?> "No latitude") lat'
-    lng <- prs (sci <?> "No longitude") lng'
-    rad <- prs (sci <?> "No radius") rad'
-    return $
-        Z.RawZone
-            name
-            (RawLat $ sciToRational lat)
-            (RawLng $ sciToRational lng)
-            (Radius (MkQuantity $ sciToFloat rad))
