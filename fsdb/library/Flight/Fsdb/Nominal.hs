@@ -8,7 +8,7 @@ import Data.UnitsOfMeasure (u, unQuantity)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Text.XML.HXT.Arrow.Pickle
     ( XmlPickler(), PU(..)
-    , xpickle, unpickleDoc', xpWrap, xpPair, xp6Tuple, xpFilterAttr, xpDefault
+    , xpickle, unpickleDoc', xpWrap, xp6Tuple, xpFilterAttr, xpDefault
     , xpElem, xpTrees, xpAttr, xpPrim
     )
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
@@ -40,18 +40,18 @@ import Flight.Score
 xpNewtypeRational :: Newtype n Rational => PU n
 xpNewtypeRational =
     xpWrap
-        ( pack . (toRational :: Double -> _) . fst
-        , flip (,) [] . fromRational . unpack
+        ( pack . (toRational :: Double -> _)
+        , fromRational . unpack
         )
-    $ xpPair xpPrim xpTrees
+    $ xpPrim
 
 xpNewtypeQuantity :: Newtype n (Quantity Double u) => PU n
 xpNewtypeQuantity =
     xpWrap
-        ( pack . MkQuantity . fst
-        , flip (,) [] . unQuantity . unpack
+        ( pack . MkQuantity
+        , unQuantity . unpack
         )
-    $ xpPair xpPrim xpTrees
+    $ xpPrim
 
 instance XmlPickler NominalLaunch where
     xpickle = xpNewtypeRational
