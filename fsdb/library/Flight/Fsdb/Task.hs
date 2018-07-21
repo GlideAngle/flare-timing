@@ -1,11 +1,18 @@
 module Flight.Fsdb.Task (parseTasks) where
 
+import Data.Maybe (catMaybes)
 import Data.List (sort, concatMap, nub)
 import Data.Map.Strict (Map, fromList, findWithDefault)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
+import Text.XML.HXT.Arrow.Pickle
+    ( PU(..)
+    , unpickleDoc, xpWrap, xpTriple, xpFilterAttr
+    , xpElem, xpTrees, xpAttr, xpText
+    )
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
 import Text.XML.HXT.Core
     ( ArrowXml
+    , (<+>)
     , (&&&)
     , (>>>)
     , (>>.)
@@ -50,6 +57,19 @@ unKeyPilot :: Map PilotId Pilot -> PilotId -> Pilot
 unKeyPilot ps k@(PilotId ip) =
     findWithDefault (Pilot (k, PilotName ip)) k ps
 
+xpOpenClose :: PU OpenClose
+xpOpenClose =
+    xpElem "FsTurnpoint"
+    $ xpFilterAttr (hasName "open" <+> hasName "close")
+    $ xpWrap
+        ( \(open, close, _) -> OpenClose (parseUtcTime open) (parseUtcTime close)
+        , \(OpenClose{..}) -> (show open, show close, [])
+        )
+    $ xpTriple
+        (xpAttr "open" xpText)
+        (xpAttr "close" xpText)
+        xpTrees
+
 getTask :: ArrowXml a => Discipline -> [Pilot] -> a XmlTree (Task k)
 getTask discipline ps =
     getChildren
@@ -75,7 +95,7 @@ getTask discipline ps =
             >>> (getSpeedSection &&& getGoal)
             >>. take 1
             &&& listA getTps
-            &&& listA getOpenClose
+            &&& (listA getOpenClose >>> arr catMaybes)
             &&& listA getGates
 
         getSpeedSection =
@@ -88,9 +108,7 @@ getTask discipline ps =
         getOpenClose =
             getChildren
             >>> hasName "FsTurnpoint"
-            >>> getAttrValue "open"
-            &&& getAttrValue "close"
-            >>> arr parseOpenClose
+            >>> arr (unpickleDoc xpOpenClose)
 
         getTps =
             getChildren
@@ -155,10 +173,6 @@ parseStop _ = Nothing
 parseStartGate :: String -> StartGate
 parseStartGate =
     StartGate . parseUtcTime
-
-parseOpenClose :: (String, String) -> OpenClose
-parseOpenClose (o, c) =
-    OpenClose (parseUtcTime o) (parseUtcTime c)
 
 parseSpeedSection :: [(String, String)] -> SpeedSection
 parseSpeedSection [] = Nothing
