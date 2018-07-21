@@ -10,7 +10,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Text.XML.HXT.Arrow.Pickle
     ( XmlPickler(..), PU(..)
     , xpickle, unpickleDoc, xpWrap, xpFilterAttr, xpElem, xpAttr
-    , xpText, xpPair, xpTriple, xp4Tuple, xpInt, xpTrees
+    , xpText, xpPair, xpTriple, xp4Tuple, xpInt, xpTrees, xpAttrFixed, xpSeq'
     )
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
 import Text.XML.HXT.Core
@@ -121,6 +121,18 @@ xpSpeedSection =
         (xpAttr "es" xpInt)
         xpTrees
 
+xpStopped :: PU TaskStop
+xpStopped =
+    xpElem "FsTaskState"
+    $ xpFilterAttr (hasName "task_state" <+> hasName "stop_time")
+    $ xpWrap
+        ( TaskStop . parseUtcTime
+        , \(TaskStop t) -> show t
+        )
+    $ xpSeq'
+        (xpAttrFixed "task_state" "STOPPED")
+        (xpAttr "stop_time" xpText)
+
 getTask :: ArrowXml a => Discipline -> [Pilot] -> a XmlTree (Task k)
 getTask discipline ps =
     getChildren
@@ -185,9 +197,7 @@ getTask discipline ps =
         getStopped =
             getChildren
             >>> hasName "FsTaskState"
-            >>> getAttrValue "task_state"
-            &&& getAttrValue "stop_time"
-            >>> arr parseStop
+            >>> arr (unpickleDoc xpStopped)
 
         mkTask (name, (stop, (absentees, (useSemi, ((section, goal), (zs, (ts, gates))))))) =
             Task name zs zs' zs'' section ts'' gates (sort absentees) stop
@@ -209,10 +219,6 @@ parseUtcTime :: String -> UTCTime
 parseUtcTime =
     -- NOTE: %F is %Y-%m-%d, %T is %H:%M:%S and %z is -HHMM or -HH:MM
     parseTimeOrError False defaultTimeLocale "%FT%T%z"
-
-parseStop :: (String, String) -> Maybe TaskStop
-parseStop ("STOPPED", t) = Just . TaskStop $ parseUtcTime t
-parseStop _ = Nothing
 
 mkGoal :: Discipline -> Bool -> String -> RawZoneToZone
 mkGoal Paragliding True "LINE" = SemiCircle
