@@ -10,7 +10,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Text.XML.HXT.Arrow.Pickle
     ( XmlPickler(..), PU(..)
     , xpickle, unpickleDoc, xpWrap, xpFilterAttr, xpElem, xpAttr
-    , xpText, xpPair, xp4Tuple
+    , xpText, xpPair, xpTriple, xp4Tuple, xpInt, xpTrees
     )
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
 import Text.XML.HXT.Core
@@ -19,7 +19,6 @@ import Text.XML.HXT.Core
     , (&&&)
     , (>>>)
     , (>>.)
-    , (>.)
     , runX
     , withValidate
     , withWarnings
@@ -35,7 +34,6 @@ import Text.XML.HXT.Core
     )
 import Data.Time.Clock (UTCTime)
 import Data.Time.Format (parseTimeOrError, defaultTimeLocale)
-import Text.Megaparsec ((<?>))
 
 import Flight.LatLng.Raw (RawLat(..), RawLng(..))
 import Flight.Zone (Radius(..), Zone(..), RawZoneToZone, rawZonesToZones)
@@ -44,12 +42,11 @@ import qualified Flight.Zone.ZoneKind as ZK
 import qualified Flight.Zone.Raw as Z (RawZone(..))
 import Flight.Comp
     ( PilotId(..), PilotName(..), Pilot(..)
-    , Task(..), TaskStop(..), SpeedSection, StartGate(..), OpenClose(..)
+    , Task(..), TaskStop(..), StartGate(..), OpenClose(..)
     )
 import Flight.Fsdb.Pilot (getCompPilot)
 import Flight.Units ()
 import Flight.Score (Discipline(..))
-import Flight.Fsdb.Internal.Parse (prs, sci, sciToInt)
 import Flight.Fsdb.Internal.XmlPickle (xpNewtypeRational, xpNewtypeQuantity)
 
 newtype KeyPilot = KeyPilot (PilotId, Pilot)
@@ -111,6 +108,19 @@ xpStartGate =
         )
     $ xpAttr "open" xpText
 
+xpSpeedSection :: PU (Int, Int)
+xpSpeedSection =
+    xpElem "FsTaskDefinition"
+    $ xpFilterAttr (hasName "ss" <+> hasName "es")
+    $ xpWrap
+        ( (\(a, b, _) -> (a, b))
+        , \(a, b) -> (a, b, [])
+        )
+    $ xpTriple
+        (xpAttr "ss" xpInt)
+        (xpAttr "es" xpInt)
+        xpTrees
+
 getTask :: ArrowXml a => Discipline -> [Pilot] -> a XmlTree (Task k)
 getTask discipline ps =
     getChildren
@@ -140,8 +150,7 @@ getTask discipline ps =
             &&& (listA getGates >>> arr catMaybes)
 
         getSpeedSection =
-            (getAttrValue "ss" &&& getAttrValue "es")
-            >. parseSpeedSection
+            arr (unpickleDoc xpSpeedSection)
 
         getGoal =
             (getAttrValue "goal")
@@ -204,23 +213,6 @@ parseUtcTime =
 parseStop :: (String, String) -> Maybe TaskStop
 parseStop ("STOPPED", t) = Just . TaskStop $ parseUtcTime t
 parseStop _ = Nothing
-
-parseSpeedSection :: [(String, String)] -> SpeedSection
-parseSpeedSection [] = Nothing
-parseSpeedSection ((ss, es) : _) =
-    case section of
-        Right [ ss', es' ] -> Just (fromInteger ss', fromInteger es')
-        _ -> Nothing
-    where
-        section =
-            sequence
-                [ do
-                    ss'' <- prs (sci <?> "Start of speed section") ss
-                    return $ sciToInt ss''
-                , do
-                    es'' <- prs (sci <?> "End of speed section") es
-                    return $ sciToInt es''
-                ]
 
 mkGoal :: Discipline -> Bool -> String -> RawZoneToZone
 mkGoal Paragliding True "LINE" = SemiCircle
