@@ -1,6 +1,11 @@
 module Flight.Fsdb.Stopped (parseStopped) where
 
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
+import Text.XML.HXT.Arrow.Pickle
+    ( PU(..)
+    , xpWrap, xpAttr, xpInt, xpFilterAttr, xpTrees, unpickleDoc'
+    , xpPair, xpElem, xpOption
+    )
 import Text.XML.HXT.Core
     ( ArrowXml
     , (>>>)
@@ -11,18 +16,25 @@ import Text.XML.HXT.Core
     , no
     , hasName
     , getChildren
-    , getAttrValue
     , deep
     , arr
     )
-import Data.Bifunctor (bimap)
-import Control.Applicative (optional)
-import Text.Megaparsec ((<?>))
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Score (ScoreBackTime(..))
-import Flight.Fsdb.Internal.Parse (prs, sci, sciToInt)
+
+xpScoreBack :: PU (Maybe (ScoreBackTime (Quantity Double [u| s |])))
+xpScoreBack =
+    xpElem "FsScoreFormula"
+    $ xpFilterAttr (hasName "score_back_time")
+    $ xpWrap
+        ( (fmap (ScoreBackTime . MkQuantity . fromIntegral . (* 60))) . fst
+        , flip (,) [] . (fmap (\(ScoreBackTime (MkQuantity x)) -> round x `div` 60))
+        )
+    $ xpPair
+        (xpOption $ xpAttr "score_back_time" xpInt)
+        xpTrees
 
 getStopped
     :: ArrowXml a
@@ -35,17 +47,7 @@ getStopped =
         getScoreFormula =
             getChildren
             >>> hasName "FsScoreFormula"
-            >>> getAttrValue "score_back_time"
-            >>> arr parseScoreBack
-
-parseScoreBack
-    :: String -> Either String (Maybe (ScoreBackTime (Quantity Double [u| s |])))
-parseScoreBack s =
-    bimap show (fmap f) secs
-    where
-        f = ScoreBackTime . MkQuantity . fromIntegral . (* 60)
-        mins = prs (optional (sci <?> "Seconds of score back time")) s
-        secs = (fmap. fmap) sciToInt mins
+            >>> arr (unpickleDoc' xpScoreBack)
 
 parseStopped
     :: String
