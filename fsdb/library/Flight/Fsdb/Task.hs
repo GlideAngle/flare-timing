@@ -6,8 +6,7 @@ import Data.Map.Strict (Map, fromList, findWithDefault)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Text.XML.HXT.Arrow.Pickle
     ( PU(..)
-    , unpickleDoc, xpWrap, xpTriple, xpFilterAttr
-    , xpElem, xpTrees, xpAttr, xpText
+    , unpickleDoc, xpWrap, xpFilterAttr, xpElem, xpAttr, xpText, xpPair
     )
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
 import Text.XML.HXT.Core
@@ -62,13 +61,22 @@ xpOpenClose =
     xpElem "FsTurnpoint"
     $ xpFilterAttr (hasName "open" <+> hasName "close")
     $ xpWrap
-        ( \(open, close, _) -> OpenClose (parseUtcTime open) (parseUtcTime close)
-        , \(OpenClose{..}) -> (show open, show close, [])
+        ( \(open, close) -> OpenClose (parseUtcTime open) (parseUtcTime close)
+        , \(OpenClose{..}) -> (show open, show close)
         )
-    $ xpTriple
+    $ xpPair
         (xpAttr "open" xpText)
         (xpAttr "close" xpText)
-        xpTrees
+
+xpStartGate :: PU StartGate
+xpStartGate =
+    xpElem "FsStartGate"
+    $ xpFilterAttr (hasName "open")
+    $ xpWrap
+        ( StartGate . parseUtcTime
+        , \(StartGate open) -> show open
+        )
+    $ xpAttr "open" xpText
 
 getTask :: ArrowXml a => Discipline -> [Pilot] -> a XmlTree (Task k)
 getTask discipline ps =
@@ -96,7 +104,7 @@ getTask discipline ps =
             >>. take 1
             &&& listA getTps
             &&& (listA getOpenClose >>> arr catMaybes)
-            &&& listA getGates
+            &&& (listA getGates >>> arr catMaybes)
 
         getSpeedSection =
             (getAttrValue "ss" &&& getAttrValue "es")
@@ -123,8 +131,7 @@ getTask discipline ps =
         getGates =
             getChildren
             >>> hasName "FsStartGate"
-            >>> getAttrValue "open"
-            >>> arr parseStartGate
+            >>> arr (unpickleDoc xpStartGate)
 
         getAbsent =
             getChildren
@@ -169,10 +176,6 @@ parseUtcTime =
 parseStop :: (String, String) -> Maybe TaskStop
 parseStop ("STOPPED", t) = Just . TaskStop $ parseUtcTime t
 parseStop _ = Nothing
-
-parseStartGate :: String -> StartGate
-parseStartGate =
-    StartGate . parseUtcTime
 
 parseSpeedSection :: [(String, String)] -> SpeedSection
 parseSpeedSection [] = Nothing
