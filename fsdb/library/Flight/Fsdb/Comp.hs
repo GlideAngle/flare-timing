@@ -1,5 +1,6 @@
 module Flight.Fsdb.Comp (parseComp) where
 
+import Control.Newtype
 import Text.XML.HXT.Arrow.Pickle
     ( XmlPickler(), PU(..)
     , xpickle, unpickleDoc', xpWrap, xp9Tuple, xpFilterAttr, xpDefault
@@ -20,7 +21,6 @@ import Text.XML.HXT.Core
     , deep
     , arr
     )
-import Control.Newtype
 
 import Flight.Score (Discipline(..))
 import Flight.Comp (Comp(..), UtcOffset(..))

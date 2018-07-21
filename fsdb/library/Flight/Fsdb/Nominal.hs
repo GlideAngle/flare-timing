@@ -1,11 +1,22 @@
+{-# OPTIONS_GHC -fno-warn-orphans #-}
+{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
+
 module Flight.Fsdb.Nominal (parseNominal) where
 
-import Data.Either (either)
+import Control.Newtype
+import Data.UnitsOfMeasure (u, unQuantity)
+import Data.UnitsOfMeasure.Internal (Quantity(..))
+import Text.XML.HXT.Arrow.Pickle
+    ( XmlPickler(), PU(..)
+    , xpickle, unpickleDoc', xpWrap, xpPair, xp6Tuple, xpFilterAttr, xpDefault
+    , xpElem, xpTrees, xpAttr, xpPrim
+    )
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
 import Text.XML.HXT.Core
     ( ArrowXml
-    , (&&&)
+    , (<+>)
     , (>>>)
+    , (/>)
     , runX
     , withValidate
     , withWarnings
@@ -13,15 +24,11 @@ import Text.XML.HXT.Core
     , no
     , hasName
     , getChildren
-    , getAttrValue
     , deep
     , arr
     )
-import Control.Applicative (optional)
-import Text.Megaparsec ((<?>))
-import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import Flight.Comp (Nominal(..))
+import Flight.Comp (Nominal(..), defaultNominal)
 import Flight.Score
     ( NominalLaunch(..)
     , NominalGoal(..)
@@ -29,54 +36,79 @@ import Flight.Score
     , MinimumDistance(..)
     , NominalTime(..)
     )
-import Flight.Fsdb.Internal (prs, sci, sciToFloat)
 
-getNominal :: ArrowXml a => Nominal -> a XmlTree [Nominal]
-getNominal Nominal{launch = nl, goal = ng, distance = nd, free = nf, time = nt} =
+instance XmlPickler NominalLaunch where
+    xpickle =
+        xpWrap
+            ( pack . (toRational :: Double -> _) . fst
+            , flip (,) [] . fromRational . unpack
+            )
+        $ xpPair xpPrim xpTrees
+
+instance XmlPickler NominalGoal where
+    xpickle =
+        xpWrap
+            ( pack . (toRational :: Double -> _) . fst
+            , flip (,) [] . fromRational . unpack
+            )
+        $ xpPair xpPrim xpTrees
+
+instance (u ~ Quantity Double [u| km |]) => XmlPickler (NominalDistance u) where
+    xpickle =
+        xpWrap
+            ( pack . MkQuantity . fst
+            , flip (,) [] . unQuantity . unpack
+            )
+        $ xpPair xpPrim xpTrees
+
+instance (u ~ Quantity Double [u| km |]) => XmlPickler (MinimumDistance u) where
+    xpickle =
+        xpWrap
+            ( pack . MkQuantity . fst
+            , flip (,) [] . unQuantity . unpack
+            )
+        $ xpPair xpPrim xpTrees
+
+instance (u ~ Quantity Double [u| h |]) => XmlPickler (NominalTime u) where
+    xpickle =
+        xpWrap
+            ( pack . MkQuantity . fst
+            , flip (,) [] . unQuantity . unpack
+            )
+        $ xpPair xpPrim xpTrees
+
+xpNominal :: PU Nominal
+xpNominal =
+    xpElem "FsScoreFormula"
+    $ xpFilterAttr
+        ( hasName "nom_launch"
+        <+> hasName "nom_goal"
+        <+> hasName "nom_dist"
+        <+> hasName "min_dist"
+        <+> hasName "nom_time"
+        )
+    $ xpWrap
+        ( \(nl, ng, nd, md, nt, _) -> Nominal nl ng nd md nt
+        , \(Nominal{..}) -> (launch, goal, distance, free, time, [])
+        )
+    $ xp6Tuple
+        (xpDefault (launch defaultNominal) $ xpAttr "nom_launch" xpickle)
+        (xpDefault (goal defaultNominal) $ xpAttr "nom_goal" xpickle)
+        (xpDefault (distance defaultNominal) $ xpAttr "nom_dist" xpickle)
+        (xpDefault (free defaultNominal) $ xpAttr "min_dist" xpickle)
+        (xpDefault (time defaultNominal) $ xpAttr "nom_time" xpickle)
+        xpTrees
+
+
+getNominal :: ArrowXml a => a XmlTree (Either String Nominal)
+getNominal =
     getChildren
     >>> deep (hasName "FsCompetition")
-    >>> getScoreFormula
-    where
-        getScoreFormula =
-            getChildren
-            >>> hasName "FsScoreFormula"
-            >>> getAttrValue "nom_launch"
-            &&& getAttrValue "nom_goal"
-            &&& getAttrValue "nom_dist"
-            &&& getAttrValue "min_dist"
-            &&& getAttrValue "nom_time"
-            >>> arr (\(l, (g, (d, (m, t)))) ->
-                return $
-                Nominal
-                    { launch =
-                        either
-                            (const nl)
-                            (maybe nl (NominalLaunch . toRational . sciToFloat))
-                            (prs (optional (sci <?> "No nominal launch as float")) l)
-                    , goal =
-                        either
-                            (const ng)
-                            (maybe ng (NominalGoal . toRational . sciToFloat))
-                            (prs (optional (sci <?> "No nominal goal as float")) g)
-                    , distance =
-                        either
-                            (const nd)
-                            (maybe nd (NominalDistance . MkQuantity . sciToFloat))
-                            (prs (optional (sci <?> "No nominal distance")) d)
-                    , free =
-                        either
-                            (const nf)
-                            (maybe nf (MinimumDistance . MkQuantity . sciToFloat))
-                            (prs (optional (sci <?> "No minimum distance")) m)
-                    , time =
-                        either
-                            (const nt)
-                            (maybe nt (NominalTime . MkQuantity . sciToFloat))
-                            (prs (optional (sci <?> "No nominal time as float")) t)
-                    })
+    /> hasName "FsScoreFormula"
+    >>> arr (unpickleDoc' xpNominal)
 
-parseNominal :: Nominal -> String -> IO (Either String [Nominal])
-parseNominal defNominal contents = do
+parseNominal :: String -> IO (Either String [Nominal])
+parseNominal contents = do
     let doc = readString [ withValidate no, withWarnings no ] contents
-    xs <- runX $ doc >>> getNominal defNominal
-    return . Right . concat $ xs
+    xs <- runX $ doc >>> getNominal
+    return $ sequence xs

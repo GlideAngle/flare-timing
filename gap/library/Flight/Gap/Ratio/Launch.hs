@@ -5,7 +5,7 @@ import Data.Via.Scientific (DecimalPlaces(..), deriveDecimalPlaces, deriveJsonVi
 
 {-@ newtype NominalLaunch = NominalLaunch {x :: Rational } @-}
 newtype NominalLaunch = NominalLaunch Rational
-    deriving (Eq, Ord, Show)
+    deriving (Eq, Ord, Read, Show)
 
 instance Newtype NominalLaunch Rational where
     pack = NominalLaunch

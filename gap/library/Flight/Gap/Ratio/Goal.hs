@@ -4,7 +4,7 @@ import "newtype" Control.Newtype (Newtype(..))
 import Data.Via.Scientific (DecimalPlaces(..), deriveDecimalPlaces, deriveJsonViaSci)
 
 newtype NominalGoal = NominalGoal Rational
-    deriving (Eq, Ord, Show)
+    deriving (Eq, Ord, Read, Show)
 
 instance Newtype NominalGoal Rational where
     pack = NominalGoal
