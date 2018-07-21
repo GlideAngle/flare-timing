@@ -37,45 +37,36 @@ import Flight.Score
     , NominalTime(..)
     )
 
+xpNewtypeRational :: Newtype n Rational => PU n
+xpNewtypeRational =
+    xpWrap
+        ( pack . (toRational :: Double -> _) . fst
+        , flip (,) [] . fromRational . unpack
+        )
+    $ xpPair xpPrim xpTrees
+
+xpNewtypeQuantity :: Newtype n (Quantity Double u) => PU n
+xpNewtypeQuantity =
+    xpWrap
+        ( pack . MkQuantity . fst
+        , flip (,) [] . unQuantity . unpack
+        )
+    $ xpPair xpPrim xpTrees
+
 instance XmlPickler NominalLaunch where
-    xpickle =
-        xpWrap
-            ( pack . (toRational :: Double -> _) . fst
-            , flip (,) [] . fromRational . unpack
-            )
-        $ xpPair xpPrim xpTrees
+    xpickle = xpNewtypeRational
 
 instance XmlPickler NominalGoal where
-    xpickle =
-        xpWrap
-            ( pack . (toRational :: Double -> _) . fst
-            , flip (,) [] . fromRational . unpack
-            )
-        $ xpPair xpPrim xpTrees
+    xpickle = xpNewtypeRational
 
 instance (u ~ Quantity Double [u| km |]) => XmlPickler (NominalDistance u) where
-    xpickle =
-        xpWrap
-            ( pack . MkQuantity . fst
-            , flip (,) [] . unQuantity . unpack
-            )
-        $ xpPair xpPrim xpTrees
+    xpickle = xpNewtypeQuantity
 
 instance (u ~ Quantity Double [u| km |]) => XmlPickler (MinimumDistance u) where
-    xpickle =
-        xpWrap
-            ( pack . MkQuantity . fst
-            , flip (,) [] . unQuantity . unpack
-            )
-        $ xpPair xpPrim xpTrees
+    xpickle = xpNewtypeQuantity
 
 instance (u ~ Quantity Double [u| h |]) => XmlPickler (NominalTime u) where
-    xpickle =
-        xpWrap
-            ( pack . MkQuantity . fst
-            , flip (,) [] . unQuantity . unpack
-            )
-        $ xpPair xpPrim xpTrees
+    xpickle = xpNewtypeQuantity
 
 xpNominal :: PU Nominal
 xpNominal =
