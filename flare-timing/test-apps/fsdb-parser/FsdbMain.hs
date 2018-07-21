@@ -20,7 +20,6 @@ import Flight.Comp
     ( Pilot(..)
     , PilotTrackLogFile(..)
     , FsdbFile(..)
-    , defaultNominal
     , showTask
     , findFsdb
     )
@@ -78,7 +77,7 @@ go FsdbOptions{..} (FsdbFile path) = do
 
 printNominal :: String -> IO ()
 printNominal contents = do
-    nominal <- parseNominal defaultNominal contents
+    nominal <- parseNominal contents
     case nominal of
          Left msg -> print msg
          Right nominal' -> print nominal'
