@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 854cc68624c7e95de3ff729f7253b4dcdb2b4b536a3c2768f646679de530c264
+-- hash: dc608d85032c9a765cc281a2820faf44a39b6d6695c816ec32d3b830f53c033b
 
 name:           flight-fsdb
 version:        0.1.0
@@ -35,7 +35,8 @@ library
       Flight.Fsdb
   other-modules:
       Flight.Fsdb.Comp
-      Flight.Fsdb.Internal
+      Flight.Fsdb.Internal.Parse
+      Flight.Fsdb.Internal.XmlPickle
       Flight.Fsdb.Nominal
       Flight.Fsdb.Pilot
       Flight.Fsdb.Stopped
@@ -72,7 +73,8 @@ test-suite parse
   other-modules:
       Flight.Fsdb
       Flight.Fsdb.Comp
-      Flight.Fsdb.Internal
+      Flight.Fsdb.Internal.Parse
+      Flight.Fsdb.Internal.XmlPickle
       Flight.Fsdb.Nominal
       Flight.Fsdb.Pilot
       Flight.Fsdb.Stopped

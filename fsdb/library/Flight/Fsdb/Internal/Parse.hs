@@ -1,4 +1,10 @@
-module Flight.Fsdb.Internal (prs, sci, sciToInt, sciToFloat, sciToRational) where
+module Flight.Fsdb.Internal.Parse
+    ( prs
+    , sci
+    , sciToInt
+    , sciToFloat
+    , sciToRational
+    ) where
 
 import Control.Monad
 import Data.Functor.Identity (Identity)

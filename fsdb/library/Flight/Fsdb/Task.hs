@@ -39,7 +39,7 @@ import Flight.Comp
 import Flight.Fsdb.Pilot (getCompPilot)
 import Flight.Units ()
 import Flight.Score (Discipline(..))
-import Flight.Fsdb.Internal (prs, sci, sciToInt, sciToFloat, sciToRational)
+import Flight.Fsdb.Internal.Parse (prs, sci, sciToInt, sciToFloat, sciToRational)
 
 newtype KeyPilot = KeyPilot (PilotId, Pilot)
 

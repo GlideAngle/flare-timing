@@ -3,13 +3,12 @@
 
 module Flight.Fsdb.Nominal (parseNominal) where
 
-import Control.Newtype
-import Data.UnitsOfMeasure (u, unQuantity)
+import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Text.XML.HXT.Arrow.Pickle
     ( XmlPickler(), PU(..)
     , xpickle, unpickleDoc', xpWrap, xp6Tuple, xpFilterAttr, xpDefault
-    , xpElem, xpTrees, xpAttr, xpPrim
+    , xpElem, xpTrees, xpAttr
     )
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
 import Text.XML.HXT.Core
@@ -36,22 +35,7 @@ import Flight.Score
     , MinimumDistance(..)
     , NominalTime(..)
     )
-
-xpNewtypeRational :: Newtype n Rational => PU n
-xpNewtypeRational =
-    xpWrap
-        ( pack . (toRational :: Double -> _)
-        , fromRational . unpack
-        )
-    $ xpPrim
-
-xpNewtypeQuantity :: Newtype n (Quantity Double u) => PU n
-xpNewtypeQuantity =
-    xpWrap
-        ( pack . MkQuantity
-        , unQuantity . unpack
-        )
-    $ xpPrim
+import Flight.Fsdb.Internal.XmlPickle (xpNewtypeRational, xpNewtypeQuantity)
 
 instance XmlPickler NominalLaunch where
     xpickle = xpNewtypeRational
@@ -89,7 +73,6 @@ xpNominal =
         (xpDefault (free defaultNominal) $ xpAttr "min_dist" xpickle)
         (xpDefault (time defaultNominal) $ xpAttr "nom_time" xpickle)
         xpTrees
-
 
 getNominal :: ArrowXml a => a XmlTree (Either String Nominal)
 getNominal =

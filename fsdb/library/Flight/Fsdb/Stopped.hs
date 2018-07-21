@@ -22,7 +22,7 @@ import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Score (ScoreBackTime(..))
-import Flight.Fsdb.Internal (prs, sci, sciToInt)
+import Flight.Fsdb.Internal.Parse (prs, sci, sciToInt)
 
 getStopped
     :: ArrowXml a
