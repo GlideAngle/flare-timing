@@ -180,12 +180,10 @@ getTask discipline ps =
             getChildren
             >>> hasName "FsTaskDefinition"
             >>> getAttrValue "goal"
-            >>. take 1
 
         getZones =
             getChildren
             >>> hasName "FsTaskDefinition"
-            >>. take 1
             >>> (listA getTps >>> arr catMaybes)
             where
                 getTps =
@@ -193,11 +191,9 @@ getTask discipline ps =
                     >>> hasName "FsTurnpoint"
                     >>> arr (unpickleDoc xpZone)
 
-
         getZoneTimes =
             getChildren
             >>> hasName "FsTaskDefinition"
-            >>. take 1
             >>> (listA getOpenClose >>> arr catMaybes)
             where
                 getOpenClose =
@@ -208,7 +204,6 @@ getTask discipline ps =
         getStartGates =
             getChildren
             >>> hasName "FsTaskDefinition"
-            >>. take 1
             >>> (listA getGates >>> arr catMaybes)
             where
                 getGates =
@@ -219,7 +214,6 @@ getTask discipline ps =
         getSpeedSection =
             getChildren
             >>> hasName "FsTaskDefinition"
-            >>. take 1
             >>> arr (unpickleDoc xpSpeedSection)
 
         getAbsent =
