@@ -138,10 +138,16 @@ getTask discipline ps =
     getChildren
     >>> deep (hasName "FsTask")
     >>> getAttrValue "name"
+    &&& getDefn
     &&& getStopped
     &&& getAbsent
-    &&& getFormula
-    &&& getDefn
+    &&& ( getFormula
+        &&& getGoal
+        >>> arr (\(useSemi, goal) ->
+            ( rawZonesToZones (mkGoal discipline useSemi goal)
+            , ZK.rawZonesToZoneKinds (mkGoalKind discipline useSemi goal)
+            ))
+        )
     >>> arr mkTask
     where
         kps = (\x@(Pilot (k, _)) -> KeyPilot (k, x)) <$> ps
@@ -152,10 +158,16 @@ getTask discipline ps =
             >>> getAttrValue "use_semi_circle_control_zone_for_goal_line"
             >>> arr (== "1")
 
+        getGoal =
+            getChildren
+            >>> hasName "FsTaskDefinition"
+            >>> getAttrValue "goal"
+            >>. take 1
+
         getDefn =
             getChildren
             >>> hasName "FsTaskDefinition"
-            >>> (getSpeedSection &&& getGoal)
+            >>> getSpeedSection
             >>. take 1
             &&& (listA getTps >>> arr catMaybes)
             &&& (listA getOpenClose >>> arr catMaybes)
@@ -163,9 +175,6 @@ getTask discipline ps =
 
         getSpeedSection =
             arr (unpickleDoc xpSpeedSection)
-
-        getGoal =
-            (getAttrValue "goal")
 
         getOpenClose =
             getChildren
@@ -199,14 +208,14 @@ getTask discipline ps =
             >>> hasName "FsTaskState"
             >>> arr (unpickleDoc xpStopped)
 
-        mkTask (name, (stop, (absentees, (useSemi, ((section, goal), (zs, (ts, gates))))))) =
+        mkTask (name, ((section, (zs, (ts, gates))), (stop, (absentees, (f, g))))) =
             Task name zs zs' zs'' section ts'' gates (sort absentees) stop
             where
                 -- NOTE: If all time zones are the same then collapse.
                 ts' = nub ts
                 ts'' = if length ts' == 1 then ts' else ts
-                zs' = rawZonesToZones (mkGoal discipline useSemi goal) zs
-                zs'' = ZK.rawZonesToZoneKinds (mkGoalKind discipline useSemi goal) zs
+                zs' = f zs
+                zs'' = g zs
 
 parseTasks :: Discipline -> String -> IO (Either String [Task k])
 parseTasks discipline contents = do
