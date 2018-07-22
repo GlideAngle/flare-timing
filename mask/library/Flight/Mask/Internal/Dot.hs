@@ -6,7 +6,7 @@ import Prelude hiding (span)
 
 import Flight.Kml (MarkedFixes(..))
 import qualified Flight.Zone.Raw as Raw (RawZone(..))
-import Flight.Comp (Task(..))
+import Flight.Comp (Task(..), Zones(..))
 import Flight.Units ()
 import Flight.Distance (TaskDistance(..), SpanLatLng)
 import Flight.Mask.Internal.Zone (TaskZone(..), fixToPoint)
@@ -24,13 +24,15 @@ dotToGoal
     -> Maybe (TaskDistance b)
     -- ^ Nothing indicates no such task or a task with no zones.
 dotToGoal
-    span zoneToCyl dvz task@Task{speedSection, zones} MarkedFixes{fixes} =
-    if null zones then Nothing else
+    span zoneToCyl dvz
+    task@Task{speedSection, zones = Zones{raw = zs}}
+    MarkedFixes{fixes} =
+    if null zs then Nothing else
     dvz
         fixToPoint
         speedSection
         fs
-        (zoneToCyl <$> zones)
+        (zoneToCyl <$> zs)
         fixes 
     where
         fs =

@@ -11,7 +11,8 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Distance (SpanLatLng)
 import Flight.Kml (Fix, Seconds(..), FixMark(..), MarkedFixes(..))
-import Flight.Comp (Task(..), SpeedSection, OpenClose(..), StartGate(..))
+import Flight.Comp
+    (Task(..), Zones(..), SpeedSection, OpenClose(..), StartGate(..))
 import Flight.Score (PilotTime(..))
 import Flight.Units ()
 import Flight.Mask.Tag (madeGoal)
@@ -31,7 +32,7 @@ timeFlown
     -> MarkedFixes
     -> Maybe (PilotTime (Quantity Double [u| h |]))
 timeFlown span zoneToCyl task@Task{speedSection, zones, zoneTimes, startGates} xs =
-    if null zones || not atGoal then Nothing else
+    if null (raw zones) || not atGoal then Nothing else
     flownDuration span speedSection fs cs zoneTimes startGates xs
     where
         fs =
@@ -39,7 +40,7 @@ timeFlown span zoneToCyl task@Task{speedSection, zones, zoneTimes, startGates} x
                 let b = isStartExit span zoneToCyl x
                 in crossingPredicates span b x) task
 
-        cs = zoneToCyl <$> zones
+        cs = zoneToCyl <$> raw zones
         atGoal = madeGoal span zoneToCyl task xs
 
 flownDuration :: (Real a, Fractional a)

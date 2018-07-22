@@ -29,7 +29,7 @@ import qualified Flight.Kml as Kml
     (LatLngAlt(..), Fix, FixMark(..), Seconds(..))
 import Flight.Track.Cross
     (Fix(..), ZoneCross(..), Seconds(..), TrackFlyingSection(..))
-import Flight.Comp (IxTask(..), FlyingSection, Task(..))
+import Flight.Comp (IxTask(..), FlyingSection, Task(..), Zones(..))
 import Flight.Units ()
 import Flight.Mask.Internal.Race (FlyClipping(..), FlyCut(..))
 import Flight.Mask.Internal.Zone
@@ -92,7 +92,7 @@ started
     -> (Raw.RawZone -> TaskZone a)
     -> FnTask k Bool
 started span zoneToCyl Task{speedSection, zones} MarkedFixes{fixes} =
-    case slice speedSection zones of
+    case slice speedSection (raw zones) of
         [] ->
             False
 
@@ -111,7 +111,7 @@ madeGoal
     -> (Raw.RawZone -> TaskZone a)
     -> FnTask k Bool
 madeGoal span zoneToCyl Task{zones} MarkedFixes{fixes} =
-    case reverse zones of
+    case reverse (raw zones) of
         [] ->
             False
 
@@ -594,7 +594,10 @@ madeZones
     -> Task k
     -> MarkedFixes
     -> MadeZones
-madeZones span zoneToCyl task@Task{zones} MarkedFixes{mark0, fixes} =
+madeZones
+    span zoneToCyl
+    task@Task{zones = Zones{raw = zs}}
+    MarkedFixes{mark0, fixes} =
     MadeZones
         { flying = flying'
         , selectedCrossings = selected
@@ -662,7 +665,7 @@ madeZones span zoneToCyl task@Task{zones} MarkedFixes{mark0, fixes} =
         xs =
             tickedZones
                 fs
-                (zoneToCyl <$> zones)
+                (zoneToCyl <$> zs)
                 (fixToPoint <$> fixesFlown)
 
         f :: [Crossing] -> [Maybe ZoneCross]

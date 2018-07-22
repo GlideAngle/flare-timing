@@ -18,6 +18,7 @@ module Flight.Comp
     , Task(..)
     , TaskStop(..)
     , IxTask(..)
+    , Zones(..)
     , SpeedSection
     , StartGate(..)
     , OpenClose(..)
@@ -56,8 +57,7 @@ import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Zone (Zone(..))
-import qualified Flight.Zone.ZoneKind as ZK
-    (ZoneKind(..), RaceTask, TaskZones(..))
+import qualified Flight.Zone.ZoneKind as ZK (RaceTask, TaskZones(..))
 import Flight.Zone.Raw (RawZone, showZone)
 import Flight.Field (FieldOrdering(..))
 import Flight.Pilot
@@ -207,12 +207,18 @@ newtype TaskStop =
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
+data Zones =
+    Zones
+        { raw :: [RawZone]
+        , strict :: [Zone Double]
+        , kind :: Maybe (ZK.TaskZones ZK.RaceTask Double)
+        }
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+
 data Task k =
     Task
         { taskName :: String
-        , zones :: [RawZone]
-        , strictZones :: [Zone Double]
-        , kindZones :: Maybe (ZK.TaskZones ZK.RaceTask Double)
+        , zones :: Zones
         , speedSection :: SpeedSection
         , zoneTimes :: [OpenClose]
         , startGates :: [StartGate]
@@ -226,7 +232,7 @@ showTask :: Task k -> String
 showTask Task {taskName, zones, speedSection, zoneTimes, startGates} =
     unwords [ "Task '" ++ taskName ++ "'"
             , ", zones "
-            , intercalate ", " $ showZone <$> zones
+            , intercalate ", " $ showZone <$> raw zones
             , ", speed section "
             , show speedSection
             , ", zone times"
@@ -296,14 +302,14 @@ cmp a b =
         ("zones", "taskName") -> GT
         ("zones", _) -> LT
 
-        ("strictZones", "taskName") -> GT
-        ("strictZones", "zones") -> GT
-        ("strictZones", _) -> LT
+        ("raw", _) -> LT
 
-        ("kindZones", "taskName") -> GT
-        ("kindZones", "zones") -> GT
-        ("kindZones", "strictZones") -> GT
-        ("kindZones", _) -> LT
+        ("strict", "raw") -> GT
+        ("strict", _) -> LT
+
+        ("kind", "raw") -> GT
+        ("kind", "strict") -> GT
+        ("kind", _) -> LT
 
         ("speedSection", "zoneTimes") -> LT
         ("speedSection", "startGates") -> LT

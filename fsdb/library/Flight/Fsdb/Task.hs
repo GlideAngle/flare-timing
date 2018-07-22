@@ -35,19 +35,13 @@ import Data.Time.Clock (UTCTime)
 import Data.Time.Format (parseTimeOrError, defaultTimeLocale)
 
 import Flight.LatLng.Raw (RawLat(..), RawLng(..))
-import Flight.Zone
-    ( Radius(..), Zone(..), RawZoneToZone
-    , rawZonesToZones
-    )
-import Flight.Zone.ZoneKind
-    ( TaskZones, RaceTask, RawZoneToZoneKind
-    , rawZonesToZoneKinds
-    )
+import Flight.Zone (Radius(..), Zone(..), RawZoneToZone, rawZonesToZones)
+import Flight.Zone.ZoneKind (RawZoneToZoneKind, rawZonesToZoneKinds)
 import qualified Flight.Zone.ZoneKind as ZK (ZoneKind(..), Goal)
 import qualified Flight.Zone.Raw as Z (RawZone(..))
 import Flight.Comp
     ( PilotId(..), PilotName(..), Pilot(..)
-    , Task(..), TaskStop(..), StartGate(..), OpenClose(..)
+    , Task(..), TaskStop(..), Zones(..), StartGate(..), OpenClose(..)
     )
 import Flight.Fsdb.Pilot (getCompPilot)
 import Flight.Units ()
@@ -141,14 +135,11 @@ xpStopped =
 mkZones
     :: Discipline
     -> (Bool, (FsGoal, [Z.RawZone]))
-    -> ( [Z.RawZone]
-       , [Zone Double]
-       , Maybe (TaskZones RaceTask Double)
-       )
+    -> Zones
 mkZones discipline (useSemi, (goal, zs)) =
     let f = rawZonesToZones $ mkGoal discipline useSemi goal
         g = rawZonesToZoneKinds $ mkGoalKind discipline useSemi goal
-    in (zs, f zs, g zs)
+    in Zones zs (f zs) (g zs)
 
 -- | The attribute //FsTaskDefinition@goal.
 newtype FsGoal = FsGoal String
@@ -236,8 +227,8 @@ getTask discipline ps =
             >>> hasName "FsTaskState"
             >>> arr (unpickleDoc xpStopped)
 
-        mkTask (name, ((zs, zs', zs''), (section, (ts, (gates, (absentees, stop)))))) =
-            Task name zs zs' zs'' section ts'' gates (sort absentees) stop
+        mkTask (name, (zs, (section, (ts, (gates, (absentees, stop)))))) =
+            Task name zs section ts'' gates (sort absentees) stop
             where
                 -- NOTE: If all time zones are the same then collapse.
                 ts' = nub ts

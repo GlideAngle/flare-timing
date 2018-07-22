@@ -12,6 +12,7 @@ import Flight.Comp
     ( FileType(CompInput)
     , CompSettings(tasks)
     , Task(zones)
+    , Zones(..)
     , CompInputFile(..)
     , compToTaskLength
     , findCompInput
@@ -49,7 +50,7 @@ go CmdOptions{..} compFile@(CompInputFile compPath) = do
     either print f settings
     where
         f compInput = do
-            let zs = zones <$> tasks compInput
+            let zs = raw . zones <$> tasks compInput
             let includeTask = if null task then const True else flip elem task
 
             writeRoute

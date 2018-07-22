@@ -17,7 +17,7 @@ import Flight.Kml (MarkedFixes(..))
 import qualified Flight.Kml as Kml (Fix)
 import Flight.Track.Time (TimeRow(..))
 import Flight.Track.Cross (Fix(..))
-import Flight.Comp (Task(..))
+import Flight.Comp (Task(..), Zones(..))
 import Flight.Score (PilotDistance(..))
 import Flight.Units ()
 import Flight.Mask.Internal.Zone
@@ -57,7 +57,7 @@ dashDistancesToGoal
     --
     -- drop 1 $ inits [1 .. 4]
     -- [[1],[1,2],[1,2,3],[1,2,3,4]]
-    if null zones then Nothing else Just
+    if null (raw zones) then Nothing else Just
     $ lfg zoneToCyl task mark0
     <$> drop 1 (inits ixs)
     where
@@ -91,10 +91,10 @@ dashPathToGoalTimeRows
 dashPathToGoalTimeRows
     ticked sliver zoneToCyl Task{speedSection, zones} flyCut =
 
-    if null zones then Z0 else
+    if null (raw zones) then Z0 else
     dashPathToGoalR ticked sliver rowToPoint speedSection zs ixs
     where
-        zs = zoneToCyl <$> zones
+        zs = zoneToCyl <$> raw zones
         ixs = revindex fixes
         FlyCut{uncut = fixes} = clipToFlown flyCut
 
@@ -110,10 +110,10 @@ dashPathToGoalMarkedFixes
 dashPathToGoalMarkedFixes
     ticked sliver zoneToCyl Task{speedSection, zones} flyCut =
 
-    if null zones then Z0 else
+    if null (raw zones) then Z0 else
     dashPathToGoalR ticked sliver fixToPoint speedSection zs ixs
     where
-        zs = zoneToCyl <$> zones
+        zs = zoneToCyl <$> raw zones
         ixs = revindex fixes
         FlyCut{uncut = MarkedFixes{fixes}} = clipToFlown flyCut
 
@@ -143,7 +143,7 @@ lastFixToGoal
         ((i, y) : _) -> (Just $ fixFromFix mark0 i y, d)
     where
         d = dashToGoalR ticked sliver fixToPoint speedSection zs iys
-        zs = zoneToCyl <$> zones
+        zs = zoneToCyl <$> raw zones
         iys = reverse ixs
 
 dashDistanceFlown
@@ -160,17 +160,17 @@ dashDistanceFlown
     ticked
     sliver
     zoneToCyl
-    Task{speedSection, zones}
+    Task{speedSection, zones = Zones{raw = zs}}
     flyCut =
-    if null zones then Nothing else do
+    if null zs then Nothing else do
         TaskDistance dPilot
-            <- dashToGoalR ticked sliver fixToPoint speedSection zs ixs
+            <- dashToGoalR ticked sliver fixToPoint speedSection zs' ixs
 
         let (MkQuantity diff) = dTask -: dPilot
 
         return $ PilotDistance diff
     where
-        zs = zoneToCyl <$> zones
+        zs' = zoneToCyl <$> zs
         ixs = reverse . index $ fixes
         FlyCut{uncut = MarkedFixes{fixes}} = clipToFlown flyCut
 

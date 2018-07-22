@@ -16,7 +16,7 @@ import Control.Lens ((^?), element)
 
 import qualified Flight.Zone.Raw as Raw (RawZone(..))
 import Flight.Distance (SpanLatLng)
-import Flight.Comp (Task(..))
+import Flight.Comp (Task(..), Zones(..))
 import Flight.Units ()
 import Flight.Mask.Internal.Zone
     ( TaskZone(..)
@@ -146,7 +146,8 @@ isStartExit span zoneToCyl Task{speedSection, zones} =
             False
 
         Just (i, _) ->
-            case (zones ^? element (i - 1), zones ^? element i) of
+            let zs = raw zones in
+            case (zs ^? element (i - 1), zs ^? element i) of
                 (Just start, Just tp1) ->
                     separatedZones span
                     $ unTaskZone . zoneToCyl
@@ -180,7 +181,7 @@ crossingPredicates
     -> Task k
     -> [CrossingPredicate a Crossing]
 crossingPredicates span _ Task{zones} =
-    const (crossSeq span) <$> zones
+    const (crossSeq span) <$> raw zones
 
 -- | If the zone is an exit, then take the last crossing otherwise take the
 -- first crossing.
@@ -194,7 +195,7 @@ crossingSelectors startIsExit Task{speedSection, zones} =
             if i == start && startIsExit then selectLast
                                          else selectFirst)
         [1 .. ]
-        zones
+        (raw zones)
     where
         start =
             maybe 0 fst speedSection
