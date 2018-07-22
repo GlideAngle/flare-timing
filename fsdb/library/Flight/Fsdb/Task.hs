@@ -109,9 +109,10 @@ getTask discipline ps =
             >>> arr parseStartGate
 
         getAbsent =
-            getChildren
+            ( getChildren
             >>> hasName "FsParticipants"
             >>> listA getAbsentees
+            )
             -- NOTE: If a task is created when there are no participants
             -- then the FsTask/FsParticipants element is omitted.
             `orElse` (constA [])
