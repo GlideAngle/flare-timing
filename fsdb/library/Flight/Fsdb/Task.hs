@@ -146,9 +146,11 @@ getTask discipline ps =
                 g = ZK.rawZonesToZoneKinds $ mkGoalKind discipline useSemi goal
             in (zs, f zs, g zs))
         )
-    &&& getDefn
-    &&& getStopped
+    &&& getSpeedSection
+    &&& getZoneTimes
+    &&& getStartGates
     &&& getAbsent
+    &&& getStopped
     >>> arr mkTask
     where
         kps = (\x@(Pilot (k, _)) -> KeyPilot (k, x)) <$> ps
@@ -170,32 +172,40 @@ getTask discipline ps =
             >>> hasName "FsTaskDefinition"
             >>. take 1
             >>> (listA getTps >>> arr catMaybes)
+            where
+                getTps =
+                    getChildren
+                    >>> hasName "FsTurnpoint"
+                    >>> arr (unpickleDoc xpZone)
 
-        getDefn =
+
+        getZoneTimes =
             getChildren
             >>> hasName "FsTaskDefinition"
-            >>> getSpeedSection
             >>. take 1
-            &&& (listA getOpenClose >>> arr catMaybes)
-            &&& (listA getGates >>> arr catMaybes)
+            >>> (listA getOpenClose >>> arr catMaybes)
+            where
+                getOpenClose =
+                    getChildren
+                    >>> hasName "FsTurnpoint"
+                    >>> arr (unpickleDoc xpOpenClose)
+
+        getStartGates =
+            getChildren
+            >>> hasName "FsTaskDefinition"
+            >>. take 1
+            >>> (listA getGates >>> arr catMaybes)
+            where
+                getGates =
+                    getChildren
+                    >>> hasName "FsStartGate"
+                    >>> arr (unpickleDoc xpStartGate)
 
         getSpeedSection =
-            arr (unpickleDoc xpSpeedSection)
-
-        getOpenClose =
             getChildren
-            >>> hasName "FsTurnpoint"
-            >>> arr (unpickleDoc xpOpenClose)
-
-        getTps =
-            getChildren
-            >>> hasName "FsTurnpoint"
-            >>> arr (unpickleDoc xpZone)
-
-        getGates =
-            getChildren
-            >>> hasName "FsStartGate"
-            >>> arr (unpickleDoc xpStartGate)
+            >>> hasName "FsTaskDefinition"
+            >>. take 1
+            >>> arr (unpickleDoc xpSpeedSection)
 
         getAbsent =
             getChildren
@@ -214,7 +224,7 @@ getTask discipline ps =
             >>> hasName "FsTaskState"
             >>> arr (unpickleDoc xpStopped)
 
-        mkTask (name, ((zs, zs', zs''), ((section, (ts, gates)), (stop, absentees)))) =
+        mkTask (name, ((zs, zs', zs''), (section, (ts, (gates, (absentees, stop)))))) =
             Task name zs zs' zs'' section ts'' gates (sort absentees) stop
             where
                 -- NOTE: If all time zones are the same then collapse.
