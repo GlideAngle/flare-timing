@@ -36,9 +36,15 @@ import Data.Time.Clock (UTCTime)
 import Data.Time.Format (parseTimeOrError, defaultTimeLocale)
 
 import Flight.LatLng.Raw (RawLat(..), RawLng(..))
-import Flight.Zone (Radius(..), Zone(..), RawZoneToZone, rawZonesToZones)
-import qualified Flight.Zone.ZoneKind as ZK
-    (ZoneKind(..), Goal, RawZoneToZoneKind, rawZonesToZoneKinds)
+import Flight.Zone
+    ( Radius(..), Zone(..), RawZoneToZone
+    , rawZonesToZones
+    )
+import Flight.Zone.ZoneKind
+    ( TaskZones, RaceTask, RawZoneToZoneKind
+    , rawZonesToZoneKinds
+    )
+import qualified Flight.Zone.ZoneKind as ZK (ZoneKind(..), Goal)
 import qualified Flight.Zone.Raw as Z (RawZone(..))
 import Flight.Comp
     ( PilotId(..), PilotName(..), Pilot(..)
@@ -133,6 +139,18 @@ xpStopped =
         (xpAttrFixed "task_state" "STOPPED")
         (xpAttr "stop_time" xpText)
 
+mkZones
+    :: Discipline
+    -> (Bool, (String, [Z.RawZone]))
+    -> ( [Z.RawZone]
+       , [Zone Double]
+       , Maybe (TaskZones RaceTask Double)
+       )
+mkZones discipline (useSemi, (goal, zs)) =
+    let f = rawZonesToZones $ mkGoal discipline useSemi goal
+        g = rawZonesToZoneKinds $ mkGoalKind discipline useSemi goal
+    in (zs, f zs, g zs)
+
 getTask :: ArrowXml a => Discipline -> [Pilot] -> a XmlTree (Task k)
 getTask discipline ps =
     getChildren
@@ -141,10 +159,7 @@ getTask discipline ps =
     &&& ( getFormula
         &&& getGoal
         &&& getZones
-        >>> arr (\(useSemi, (goal, zs)) ->
-            let f = rawZonesToZones $ mkGoal discipline useSemi goal
-                g = ZK.rawZonesToZoneKinds $ mkGoalKind discipline useSemi goal
-            in (zs, f zs, g zs))
+        >>> arr (mkZones discipline)
         )
     &&& getSpeedSection
     &&& getZoneTimes
@@ -248,7 +263,7 @@ mkGoal Paragliding True "LINE" = SemiCircle
 mkGoal _ _ "LINE" = Line
 mkGoal _ _ _ = Circle
 
-mkGoalKind :: Discipline -> Bool -> String -> ZK.RawZoneToZoneKind ZK.Goal
+mkGoalKind :: Discipline -> Bool -> String -> RawZoneToZoneKind ZK.Goal
 mkGoalKind Paragliding True "LINE" = ZK.SemiCircle
 mkGoalKind _ _ "LINE" = ZK.Line
 mkGoalKind _ _ _ = ZK.Circle
