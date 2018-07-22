@@ -149,7 +149,7 @@ parseTasks discipline contents = do
 parseUtcTime :: String -> UTCTime
 parseUtcTime =
     -- NOTE: %F is %Y-%m-%d, %T is %H:%M:%S and %z is -HHMM or -HH:MM
-    parseTimeOrError False defaultTimeLocale "%FT%T%z"
+    parseTimeOrError False defaultTimeLocale "%FT%T%Z"
 
 parseStop :: (String, String) -> Maybe TaskStop
 parseStop ("STOPPED", t) = Just . TaskStop $ parseUtcTime t
