@@ -18,7 +18,6 @@ import Text.XML.HXT.Core
     , (<+>)
     , (&&&)
     , (>>>)
-    , (>>.)
     , runX
     , withValidate
     , withWarnings
@@ -141,7 +140,7 @@ xpStopped =
 
 mkZones
     :: Discipline
-    -> (Bool, (String, [Z.RawZone]))
+    -> (Bool, (FsGoal, [Z.RawZone]))
     -> ( [Z.RawZone]
        , [Zone Double]
        , Maybe (TaskZones RaceTask Double)
@@ -150,6 +149,9 @@ mkZones discipline (useSemi, (goal, zs)) =
     let f = rawZonesToZones $ mkGoal discipline useSemi goal
         g = rawZonesToZoneKinds $ mkGoalKind discipline useSemi goal
     in (zs, f zs, g zs)
+
+-- | The attribute //FsTaskDefinition@goal.
+newtype FsGoal = FsGoal String
 
 getTask :: ArrowXml a => Discipline -> [Pilot] -> a XmlTree (Task k)
 getTask discipline ps =
@@ -180,6 +182,7 @@ getTask discipline ps =
             getChildren
             >>> hasName "FsTaskDefinition"
             >>> getAttrValue "goal"
+            >>> arr FsGoal
 
         getZones =
             getChildren
@@ -252,12 +255,12 @@ parseUtcTime =
     -- NOTE: %F is %Y-%m-%d, %T is %H:%M:%S and %z is -HHMM or -HH:MM
     parseTimeOrError False defaultTimeLocale "%FT%T%z"
 
-mkGoal :: Discipline -> Bool -> String -> RawZoneToZone
-mkGoal Paragliding True "LINE" = SemiCircle
-mkGoal _ _ "LINE" = Line
+mkGoal :: Discipline -> Bool -> FsGoal -> RawZoneToZone
+mkGoal Paragliding True (FsGoal "LINE") = SemiCircle
+mkGoal _ _ (FsGoal "LINE") = Line
 mkGoal _ _ _ = Circle
 
-mkGoalKind :: Discipline -> Bool -> String -> RawZoneToZoneKind ZK.Goal
-mkGoalKind Paragliding True "LINE" = ZK.SemiCircle
-mkGoalKind _ _ "LINE" = ZK.Line
+mkGoalKind :: Discipline -> Bool -> FsGoal -> RawZoneToZoneKind ZK.Goal
+mkGoalKind Paragliding True (FsGoal "LINE") = ZK.SemiCircle
+mkGoalKind _ _ (FsGoal "LINE") = ZK.Line
 mkGoalKind _ _ _ = ZK.Circle
