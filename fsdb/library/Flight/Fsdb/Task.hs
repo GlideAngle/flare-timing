@@ -18,10 +18,12 @@ import Text.XML.HXT.Core
     , hasName
     , getChildren
     , getAttrValue
+    , constA
     , listA
     , arr
     , deep
     , notContaining
+    , orElse
     )
 import Data.Time.Clock (UTCTime)
 import Data.Time.Format (parseTimeOrError, defaultTimeLocale)
@@ -110,6 +112,9 @@ getTask discipline ps =
             getChildren
             >>> hasName "FsParticipants"
             >>> listA getAbsentees
+            -- NOTE: If a task is created when there are no participants
+            -- then the FsTask/FsParticipants element is omitted.
+            `orElse` (constA [])
 
         getAbsentees =
             getChildren
