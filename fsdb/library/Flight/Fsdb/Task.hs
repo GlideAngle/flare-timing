@@ -220,13 +220,13 @@ getTask discipline ps =
             getChildren
             >>> hasName "FsParticipants"
             >>> listA getAbsentees
-
-        getAbsentees =
-            getChildren
-            >>> hasName "FsParticipant"
-                `notContaining` (getChildren >>> hasName "FsFlightData")
-            >>> getAttrValue "id"
-            >>> arr (unKeyPilot (keyMap kps) . PilotId)
+            where
+                getAbsentees =
+                    getChildren
+                    >>> hasName "FsParticipant"
+                        `notContaining` (getChildren >>> hasName "FsFlightData")
+                    >>> getAttrValue "id"
+                    >>> arr (unKeyPilot (keyMap kps) . PilotId)
 
         getStopped =
             getChildren
