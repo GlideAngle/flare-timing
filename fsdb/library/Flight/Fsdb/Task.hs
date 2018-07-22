@@ -138,16 +138,17 @@ getTask discipline ps =
     getChildren
     >>> deep (hasName "FsTask")
     >>> getAttrValue "name"
+    &&& ( getFormula
+        &&& getGoal
+        &&& getZones
+        >>> arr (\(useSemi, (goal, zs)) ->
+            let f = rawZonesToZones $ mkGoal discipline useSemi goal
+                g = ZK.rawZonesToZoneKinds $ mkGoalKind discipline useSemi goal
+            in (zs, f zs, g zs))
+        )
     &&& getDefn
     &&& getStopped
     &&& getAbsent
-    &&& ( getFormula
-        &&& getGoal
-        >>> arr (\(useSemi, goal) ->
-            ( rawZonesToZones (mkGoal discipline useSemi goal)
-            , ZK.rawZonesToZoneKinds (mkGoalKind discipline useSemi goal)
-            ))
-        )
     >>> arr mkTask
     where
         kps = (\x@(Pilot (k, _)) -> KeyPilot (k, x)) <$> ps
@@ -164,12 +165,17 @@ getTask discipline ps =
             >>> getAttrValue "goal"
             >>. take 1
 
+        getZones =
+            getChildren
+            >>> hasName "FsTaskDefinition"
+            >>. take 1
+            >>> (listA getTps >>> arr catMaybes)
+
         getDefn =
             getChildren
             >>> hasName "FsTaskDefinition"
             >>> getSpeedSection
             >>. take 1
-            &&& (listA getTps >>> arr catMaybes)
             &&& (listA getOpenClose >>> arr catMaybes)
             &&& (listA getGates >>> arr catMaybes)
 
@@ -208,14 +214,12 @@ getTask discipline ps =
             >>> hasName "FsTaskState"
             >>> arr (unpickleDoc xpStopped)
 
-        mkTask (name, ((section, (zs, (ts, gates))), (stop, (absentees, (f, g))))) =
+        mkTask (name, ((zs, zs', zs''), ((section, (ts, gates)), (stop, absentees)))) =
             Task name zs zs' zs'' section ts'' gates (sort absentees) stop
             where
                 -- NOTE: If all time zones are the same then collapse.
                 ts' = nub ts
                 ts'' = if length ts' == 1 then ts' else ts
-                zs' = f zs
-                zs'' = g zs
 
 parseTasks :: Discipline -> String -> IO (Either String [Task k])
 parseTasks discipline contents = do
