@@ -26,10 +26,12 @@ import Text.XML.HXT.Core
     , hasName
     , getChildren
     , getAttrValue
+    , constA
     , listA
     , arr
     , deep
     , notContaining
+    , orElse
     )
 import Data.Time.Clock (UTCTime)
 import Data.Time.Format (parseTimeOrError, defaultTimeLocale)
@@ -211,9 +213,13 @@ getTask discipline ps =
             >>> arr (unpickleDoc xpSpeedSection)
 
         getAbsent =
-            getChildren
+            ( getChildren
             >>> hasName "FsParticipants"
             >>> listA getAbsentees
+            )
+            -- NOTE: If a task is created when there are no participants
+            -- then the FsTask/FsParticipants element is omitted.
+            `orElse` (constA [])
             where
                 getAbsentees =
                     getChildren
@@ -244,7 +250,7 @@ parseTasks discipline contents = do
 parseUtcTime :: String -> UTCTime
 parseUtcTime =
     -- NOTE: %F is %Y-%m-%d, %T is %H:%M:%S and %z is -HHMM or -HH:MM
-    parseTimeOrError False defaultTimeLocale "%FT%T%z"
+    parseTimeOrError False defaultTimeLocale "%FT%T%Z"
 
 mkGoal :: Discipline -> Bool -> FsGoal -> RawZoneToZone
 mkGoal Paragliding True (FsGoal "LINE") = SemiCircle
