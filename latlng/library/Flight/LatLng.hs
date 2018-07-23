@@ -1,7 +1,9 @@
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
 module Flight.LatLng
-    ( QLat
+    ( QAlt
+    , Alt(..)
+    , QLat
     , Lat(..)
     , QLng
     , Lng(..)
@@ -25,6 +27,7 @@ import Test.Tasty.QuickCheck as QC (Arbitrary(..), arbitraryBoundedRandom)
 
 import Flight.Units ()
 import Flight.Units.DegMinSec (DMS(..), toDeg)
+import Flight.LatLng.Alt (QAlt, Alt(..))
 import Flight.LatLng.Lat (QLat, Lat(..))
 import Flight.LatLng.Lng (QLng, Lng(..))
 import Flight.LatLng.Family

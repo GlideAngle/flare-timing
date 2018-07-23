@@ -24,7 +24,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
 import Flight.Units.DegMinSec (fromQ)
-import Flight.LatLng (Lat(..), Lng(..), LatLng(..), fromDMS)
+import Flight.LatLng (QAlt, Lat(..), Lng(..), LatLng(..), fromDMS)
 import Flight.Zone.Radius (Radius(..), QRadius)
 import Flight.Zone.Bearing (Bearing(..), QBearing)
 import Flight.Zone.Incline (Incline(..), QIncline)
@@ -93,11 +93,23 @@ data ZoneKind k a where
 
     -- | Only used in paragliding, this is the conical end of speed section
     -- used to discourage too low an end to final glides.
-    Conical
+    CutCone
         :: (Eq a, Ord a)
         => QIncline a [u| rad |]
         -> QRadius a [u| m |]
         -> LatLng a [u| rad |]
+        -> QAlt a [u| m |]
+        -> ZoneKind EndOfSpeedSection a
+
+    -- | Only used in paragliding, this is an end of speed section used to
+    -- discourage too low an end to final glides. This cylinder is cut to form
+    -- a base. A time bonus is awarded proportional to the height of crossing
+    -- above the cylinder's base.
+    CutCylinder
+        :: (Eq a, Ord a)
+        => QRadius a [u| m |]
+        -> LatLng a [u| rad |]
+        -> QAlt a [u| m |]
         -> ZoneKind EndOfSpeedSection a
 
     -- | A goal line perpendicular to the course line.
@@ -129,6 +141,7 @@ deriving instance
     , Show (QBearing a [u| rad |])
     , Show (QRadius a [u| m |])
     , Show (LatLng a [u| rad |])
+    , Show (QAlt a [u| m |])
     )
     => Show (ZoneKind k a)
 
@@ -139,13 +152,15 @@ instance (Ord a, Num a) => HasArea (ZoneKind k a) where
     hasArea (Point _) = False
     hasArea (Vector _ _) = False
     hasArea (Cylinder (Radius x) _) = x > zero
-    hasArea (Conical _ (Radius x) _) = x > zero
+    hasArea (CutCone _ (Radius x) _ _) = x > zero
+    hasArea (CutCylinder (Radius x) _ _) = x > zero
     hasArea (Line (Radius x) _) = x > zero
     hasArea (Circle (Radius x) _) = x > zero
     hasArea (SemiCircle (Radius x) _) = x > zero
 
 instance
-    ( ToJSON (LatLng a [u| rad |])
+    ( ToJSON (QAlt a [u| m |])
+    , ToJSON (LatLng a [u| rad |])
     , ToJSON (QBearing a [u| rad |])
     , ToJSON (QIncline a [u| rad |])
     , ToJSON (QRadius a [u| m |])
@@ -160,25 +175,38 @@ instance
             , "center" .= toJSON x
             ]
         ]
+
     toJSON (Cylinder r x) = object
         ["cylinder" .= object
             [ "radius" .= toJSON r
             , "center" .= toJSON x
             ]
         ]
-    toJSON (Conical i r x) = object
-        [ "conical" .= object
+
+    toJSON (CutCone i r x a) = object
+        [ "cut-cone" .= object
             [ "radius" .= toJSON r
             , "incline" .= toJSON i
             , "center" .= toJSON x
+            , "altitude" .= toJSON a
             ]
         ]
+
+    toJSON (CutCylinder r x a) = object
+        ["cut-cylinder" .= object
+            [ "radius" .= toJSON r
+            , "center" .= toJSON x
+            , "altitude" .= toJSON a
+            ]
+        ]
+
     toJSON (Line r x) = object
         [ "line" .= object
             [ "radius" .= toJSON r
             , "center" .= toJSON x
             ]
         ]
+
     toJSON (Circle r x) = object
         [ "circle" .= object
             [ "radius" .= toJSON r
@@ -238,18 +266,30 @@ instance
 instance
     ( Eq a
     , Ord a
+    , FromJSON (QAlt a [u| m |])
     , FromJSON (LatLng a [u| rad |])
     , FromJSON (QBearing a [u| rad |])
     , FromJSON (QIncline a [u| rad |])
     , FromJSON (QRadius a [u| m |])
     )
     => FromJSON (ZoneKind EndOfSpeedSection a) where
-    parseJSON = withObject "ZoneKind" $ \o -> do
-        co <- o .: "conical"
-        Conical
-            <$> co .: "radius"
-            <*> co .: "incline"
-            <*> co .: "center"
+    parseJSON = withObject "ZoneKind" $ \o ->
+        asum
+            [ do
+                co <- o .: "cut-cone"
+                CutCone
+                    <$> co .: "radius"
+                    <*> co .: "incline"
+                    <*> co .: "center"
+                    <*> co .: "altitude"
+
+            , do
+                cy <- o .: "cut-cylinder"
+                CutCylinder
+                    <$> cy .: "radius"
+                    <*> cy .: "center"
+                    <*> cy .: "altitude"
+            ]
 
 instance
     ( Eq a
@@ -293,13 +333,23 @@ showZoneDMS (Vector (Bearing b) (LatLng (Lat x, Lng y))) =
 showZoneDMS (Cylinder r (LatLng (Lat x, Lng y))) =
     "Cylinder " ++ show r ++ " " ++ show (fromQ x, fromQ y)
 
-showZoneDMS (Conical (Incline i) r (LatLng (Lat x, Lng y))) =
-    "Conical "
+showZoneDMS (CutCone (Incline i) r (LatLng (Lat x, Lng y)) a) =
+    "Cut Cone "
     ++ show (fromQ i)
     ++ " "
     ++ show r
     ++ " "
     ++ show (fromQ x, fromQ y)
+    ++ " "
+    ++ show a
+
+showZoneDMS (CutCylinder r (LatLng (Lat x, Lng y)) a) =
+    "Cut Cylinder "
+    ++ show r
+    ++ " "
+    ++ show (fromQ x, fromQ y)
+    ++ " "
+    ++ show a
 
 showZoneDMS (Line r (LatLng (Lat x, Lng y))) =
     "Line " ++ show r ++ " " ++ show (fromQ x, fromQ y)
@@ -315,7 +365,8 @@ center :: ZoneKind k a -> LatLng a [u| rad |]
 center (Point x) = x
 center (Vector _ x) = x
 center (Cylinder _ x) = x
-center (Conical _ _ x) = x
+center (CutCone _ _ x _) = x
+center (CutCylinder _ x _) = x
 center (Line _ x) = x
 center (Circle _ x) = x
 center (SemiCircle _ x) = x
@@ -325,7 +376,8 @@ radius :: Num a => ZoneKind k a -> QRadius a [u| m |]
 radius (Point _) = Radius [u| 0m |]
 radius (Vector _ _) = Radius [u| 0m |]
 radius (Cylinder r _) = r
-radius (Conical _ r _) = r
+radius (CutCone _ r _ _) = r
+radius (CutCylinder r _ _) = r
 radius (Line r _) = r
 radius (Circle r _) = r
 radius (SemiCircle r _) = r

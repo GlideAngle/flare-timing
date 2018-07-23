@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1f6ffae268457ed15437382cd0b12d11cc24f7db0075a8078eb42f75e6424e2f
+-- hash: b3a2b0467ac5cb5ef1574ffef490e64cbbc4c5f71637e921cf31f7c955973412
 
 name:           flight-latlng
 version:        0.1.0
@@ -41,6 +41,7 @@ library
       Flight.LatLng.Rational
       Flight.Distance
   other-modules:
+      Flight.LatLng.Alt
       Flight.LatLng.Family
       Flight.LatLng.Lat
       Flight.LatLng.Lng
