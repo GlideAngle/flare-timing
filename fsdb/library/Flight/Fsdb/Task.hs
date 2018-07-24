@@ -9,8 +9,9 @@ import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Text.XML.HXT.Arrow.Pickle
     ( XmlPickler(..), PU(..)
-    , xpickle, unpickleDoc, xpWrap, xpFilterAttr, xpElem, xpAttr
+    , xpickle, unpickleDoc, xpWrap, xpFilterAttr, xpElem, xpAttr, xpAlt
     , xpText, xpPair, xpTriple, xp4Tuple, xpInt, xpTrees, xpAttrFixed, xpSeq'
+    , xpPrim
     )
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
 import Text.XML.HXT.Core
@@ -36,10 +37,17 @@ import Text.XML.HXT.Core
 import Data.Time.Clock (UTCTime)
 import Data.Time.Format (parseTimeOrError, defaultTimeLocale)
 
+import Flight.LatLng (Alt(..), QAlt)
 import Flight.LatLng.Raw (RawLat(..), RawLng(..))
-import Flight.Zone (Radius(..), Zone(..), RawZoneToZone, rawZonesToZones)
+import Flight.Zone
+    (Radius(..), Zone(..), AltTime(..), QIncline, Incline(..), RawZoneToZone
+    , rawZonesToZones
+    )
 import Flight.Zone.ZoneKind (RawZoneToZoneKind, rawZonesToZoneKinds)
-import qualified Flight.Zone.ZoneKind as ZK (ZoneKind(..), Goal)
+import qualified Flight.Zone.ZoneKind as ZK
+    ( ZoneKind(..), Turnpoint, EndOfSpeedSection, Goal
+    , EssAllowedZone, GoalAllowedZone
+    )
 import qualified Flight.Zone.Raw as Z (RawZone(..))
 import Flight.Comp
     ( PilotId(..), PilotName(..), Pilot(..)
@@ -68,6 +76,54 @@ instance XmlPickler RawLat where
 instance XmlPickler RawLng where
     xpickle = xpNewtypeRational
 
+instance (u ~ Quantity Double [u| m |]) => XmlPickler (Alt u) where
+    xpickle = xpNewtypeQuantity
+
+data Decelerator
+    = CESS Double
+    | AATB Double
+    | NoDecelerator String
+    deriving Show
+
+xpDecelerator :: PU Decelerator
+xpDecelerator =
+    xpElem "FsScoreFormula" $ xpAlt tag ps
+    where
+        tag (CESS _) = 0
+        tag (AATB _) = 1
+        tag (NoDecelerator _) = 2
+        ps = [c, a, n]
+
+        c =
+            xpFilterAttr
+                ( hasName "final_glide_decelerator"
+                <+> hasName "ess_incline_ratio"
+                )
+            $ xpWrap (CESS, \(CESS r) -> r)
+            $ xpSeq'
+                (xpAttrFixed "final_glide_decelerator" "cess")
+                (xpAttr "ess_incline_ratio" xpPrim)
+
+        a =
+            xpFilterAttr
+                ( hasName "final_glide_decelerator"
+                <+> hasName "aatb_factor"
+                )
+            $ xpWrap (AATB, \(AATB r) -> r)
+            $ xpSeq'
+                (xpAttrFixed "final_glide_decelerator" "aatb")
+                (xpAttr "aatb_factor" xpPrim)
+
+        n =
+            xpFilterAttr
+                ( hasName "final_glide_decelerator"
+                <+> hasName "no_final_glide_decelerator_reason"
+                )
+            $ xpWrap (NoDecelerator, \(NoDecelerator s) -> s)
+            $ xpSeq'
+                (xpAttrFixed "final_glide_decelerator" "none")
+                (xpAttr "no_final_glide_decelerator_reason" xpText)
+
 xpZone :: PU Z.RawZone
 xpZone =
     xpElem "FsTurnpoint"
@@ -86,6 +142,12 @@ xpZone =
         (xpAttr "lat" xpickle)
         (xpAttr "lon" xpickle)
         (xpAttr "radius" xpickle)
+
+xpZoneAltitudes :: PU (QAlt Double [u| m |])
+xpZoneAltitudes =
+    xpElem "FsTurnpoint"
+    $ xpFilterAttr (hasName "altitude")
+    $ xpAttr "altitude" xpickle
 
 xpOpenClose :: PU OpenClose
 xpOpenClose =
@@ -136,12 +198,32 @@ xpStopped =
 
 mkZones
     :: Discipline
-    -> (Bool, (FsGoal, [Z.RawZone]))
+    -> ( Maybe Decelerator
+       ,
+           ( Bool
+           ,
+               ( FsGoal
+               ,
+                   ( [QAlt Double [u| m |]]
+                   , [Z.RawZone]
+                   )
+               )
+           )
+       )
     -> Zones
-mkZones discipline (useSemi, (goal, zs)) =
-    let f = rawZonesToZones $ mkGoal discipline useSemi goal
-        g = rawZonesToZoneKinds $ mkGoalKind discipline useSemi goal
-    in Zones zs (f zs) (g zs)
+mkZones discipline (decel, (useSemi, (goal, (alts, zs)))) =
+    Zones zs (f zs) (g alts zs)
+    where
+        f = rawZonesToZones $ mkGoal discipline useSemi goal
+
+        gk :: RawZoneToZoneKind ZK.Goal
+        gk = mkGoalKind discipline decel useSemi goal
+
+        tk = mkTpKind discipline useSemi goal
+        ek = mkEssKind discipline decel useSemi goal
+        ts = (replicate ((length alts) - 1) tk)
+        es = []
+        g = rawZonesToZoneKinds ts ek es gk
 
 -- | The attribute //FsTaskDefinition@goal.
 newtype FsGoal = FsGoal String
@@ -151,8 +233,10 @@ getTask discipline ps =
     getChildren
     >>> deep (hasName "FsTask")
     >>> getAttrValue "name"
-    &&& ( getFormula
+    &&& ( getDecelerator
+        &&& getFormula
         &&& getGoal
+        &&& getZoneAltitudes
         &&& getZones
         >>> arr (mkZones discipline)
         )
@@ -165,6 +249,12 @@ getTask discipline ps =
     where
         kps = (\x@(Pilot (k, _)) -> KeyPilot (k, x)) <$> ps
         
+        getDecelerator =
+            if discipline == HangGliding then constA Nothing else
+            getChildren
+            >>> hasName "FsScoreFormula"
+            >>> arr (unpickleDoc xpDecelerator)
+
         getFormula =
             getChildren
             >>> hasName "FsScoreFormula"
@@ -176,6 +266,16 @@ getTask discipline ps =
             >>> hasName "FsTaskDefinition"
             >>> getAttrValue "goal"
             >>> arr FsGoal
+
+        getZoneAltitudes =
+            getChildren
+            >>> hasName "FsTaskDefinition"
+            >>> (listA getAlts >>> arr catMaybes)
+            where
+                getAlts =
+                    getChildren
+                    >>> hasName "FsTurnpoint"
+                    >>> arr (unpickleDoc xpZoneAltitudes)
 
         getZones =
             getChildren
@@ -257,7 +357,36 @@ mkGoal Paragliding True (FsGoal "LINE") = SemiCircle
 mkGoal _ _ (FsGoal "LINE") = Line
 mkGoal _ _ _ = Circle
 
-mkGoalKind :: Discipline -> Bool -> FsGoal -> RawZoneToZoneKind ZK.Goal
-mkGoalKind Paragliding True (FsGoal "LINE") = ZK.SemiCircle
-mkGoalKind _ _ (FsGoal "LINE") = ZK.Line
-mkGoalKind _ _ _ = ZK.Circle
+mkGoalKind
+    :: (ZK.EssAllowedZone k, ZK.GoalAllowedZone k)
+    => Discipline
+    -> Maybe Decelerator
+    -> Bool
+    -> FsGoal
+    -> RawZoneToZoneKind k
+mkGoalKind Paragliding (Just (CESS r)) _ _ = ZK.CutCone $ mkIncline r
+mkGoalKind Paragliding (Just (AATB r)) _ _ = ZK.CutCylinder (AltTime $ MkQuantity r)
+mkGoalKind Paragliding _ True (FsGoal "LINE") = \r x _ -> ZK.SemiCircle r x
+mkGoalKind _ _ _ (FsGoal "LINE") = \r x _ -> ZK.Line r x
+mkGoalKind _ _ _ _ = \r x _ -> ZK.Circle r x
+
+mkTpKind
+    :: Discipline
+    -> Bool
+    -> FsGoal
+    -> RawZoneToZoneKind ZK.Turnpoint
+mkTpKind _ _ _ = \r x _ -> ZK.Cylinder r x
+
+mkEssKind
+    :: Discipline
+    -> Maybe Decelerator
+    -> Bool
+    -> FsGoal
+    -> RawZoneToZoneKind ZK.EndOfSpeedSection
+mkEssKind Paragliding (Just (CESS r)) _ _ = ZK.CutCone $ mkIncline r
+mkEssKind Paragliding (Just (AATB r)) _ _ = ZK.CutCylinder (AltTime $ MkQuantity r)
+mkEssKind _ _ _ _ = \r x _ -> ZK.Cylinder r x
+
+mkIncline :: Double -> QIncline Double [u| rad |]
+mkIncline r =
+    Incline $ MkQuantity . atan $ r
