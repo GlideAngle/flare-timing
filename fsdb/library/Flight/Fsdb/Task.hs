@@ -377,6 +377,10 @@ mkGoalKind
     -> Bool
     -> FsGoal
     -> RawZoneToZoneKind k
+mkGoalKind Paragliding (Just (CESS i)) True (FsGoal "LINE") =
+    \r x -> \case
+        (Just alt) -> ZK.CutSemiCone (mkIncline i) r x alt
+        Nothing -> ZK.SemiCircle r x
 mkGoalKind Paragliding (Just (CESS i)) _ _ =
     \r x -> \case
         (Just alt) -> ZK.CutCone (mkIncline i) r x alt
@@ -409,6 +413,10 @@ mkEssKind
     -> Bool
     -> FsGoal
     -> RawZoneToZoneKind ZK.EndOfSpeedSection
+mkEssKind Paragliding (Just (CESS i)) True (FsGoal "LINE") =
+    \r x -> \case
+        (Just alt) -> ZK.CutSemiCone (mkIncline i) r x alt
+        Nothing -> ZK.SemiCircle r x
 mkEssKind Paragliding (Just (CESS i)) _ _ =
     \r x -> \case
         (Just alt) -> ZK.CutCone (mkIncline i) r x alt

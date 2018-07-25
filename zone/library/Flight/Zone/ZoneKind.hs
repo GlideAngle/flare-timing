@@ -106,6 +106,15 @@ data ZoneKind k a where
         -> QAlt a [u| m |]
         -> ZoneKind k a
 
+    -- | A halved cut cone.
+    CutSemiCone
+        :: (Eq a, Ord a, EssAllowedZone k, GoalAllowedZone k)
+        => QIncline a [u| rad |]
+        -> QRadius a [u| m |]
+        -> LatLng a [u| rad |]
+        -> QAlt a [u| m |]
+        -> ZoneKind k a
+
     -- | Only used in paragliding, this is an end of speed section used to
     -- discourage too low an end to final glides. This cylinder is cut to form
     -- a base. A time bonus is awarded proportional to the height of crossing
@@ -169,6 +178,7 @@ instance (Ord a, Num a) => HasArea (ZoneKind k a) where
     hasArea (Vector _ _) = False
     hasArea (Cylinder (Radius x) _) = x > zero
     hasArea (CutCone _ (Radius x) _ _) = x > zero
+    hasArea (CutSemiCone _ (Radius x) _ _) = x > zero
     hasArea (CutCylinder _ (Radius x) _ _) = x > zero
     hasArea (CutSemiCylinder _ (Radius x) _ _) = x > zero
     hasArea (Line (Radius x) _) = x > zero
@@ -203,6 +213,15 @@ instance
 
     toJSON (CutCone i r x a) = object
         [ "cut-cone" .= object
+            [ "incline" .= toJSON i
+            , "radius" .= toJSON r
+            , "center" .= toJSON x
+            , "altitude" .= toJSON a
+            ]
+        ]
+
+    toJSON (CutSemiCone i r x a) = object
+        [ "cut-semi-cone" .= object
             [ "incline" .= toJSON i
             , "radius" .= toJSON r
             , "center" .= toJSON x
@@ -313,6 +332,14 @@ instance
                     <*> co .: "altitude"
 
             , do
+                co <- o .: "cut-semi-cone"
+                CutSemiCone
+                    <$> co .: "incline"
+                    <*> co .: "radius"
+                    <*> co .: "center"
+                    <*> co .: "altitude"
+
+            , do
                 cy <- o .: "cut-cylinder"
                 CutCylinder
                     <$> cy .: "time-bonus"
@@ -381,6 +408,16 @@ showZoneDMS (CutCone (Incline i) r (LatLng (Lat x, Lng y)) a) =
     ++ " "
     ++ show a
 
+showZoneDMS (CutSemiCone (Incline i) r (LatLng (Lat x, Lng y)) a) =
+    "Cut Semicone "
+    ++ show (fromQ i)
+    ++ " "
+    ++ show r
+    ++ " "
+    ++ show (fromQ x, fromQ y)
+    ++ " "
+    ++ show a
+
 showZoneDMS (CutCylinder (AltTime t) r (LatLng (Lat x, Lng y)) a) =
     "Cut Cylinder "
     ++ show t
@@ -416,6 +453,7 @@ center (Point x) = x
 center (Vector _ x) = x
 center (Cylinder _ x) = x
 center (CutCone _ _ x _) = x
+center (CutSemiCone _ _ x _) = x
 center (CutCylinder _ _ x _) = x
 center (CutSemiCylinder _ _ x _) = x
 center (Line _ x) = x
@@ -428,6 +466,7 @@ radius (Point _) = Radius [u| 0m |]
 radius (Vector _ _) = Radius [u| 0m |]
 radius (Cylinder r _) = r
 radius (CutCone _ r _ _) = r
+radius (CutSemiCone _ r _ _) = r
 radius (CutCylinder _ r _ _) = r
 radius (CutSemiCylinder _ r _ _) = r
 radius (Line r _) = r
