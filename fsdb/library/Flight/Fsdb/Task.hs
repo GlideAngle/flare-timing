@@ -381,6 +381,10 @@ mkGoalKind Paragliding (Just (CESS i)) _ _ =
     \r x -> \case
         (Just alt) -> ZK.CutCone (mkIncline i) r x alt
         Nothing -> ZK.Circle r x
+mkGoalKind Paragliding (Just (AATB aatb)) True (FsGoal "LINE") =
+    \r x -> \case
+        (Just alt) -> ZK.CutSemiCylinder aatb r x alt
+        Nothing -> ZK.SemiCircle r x
 mkGoalKind Paragliding (Just (AATB aatb)) _ _ =
     \r x -> \case
         (Just alt) -> ZK.CutCylinder aatb r x alt
@@ -408,6 +412,10 @@ mkEssKind
 mkEssKind Paragliding (Just (CESS i)) _ _ =
     \r x -> \case
         (Just alt) -> ZK.CutCone (mkIncline i) r x alt
+        Nothing -> ZK.Cylinder r x
+mkEssKind Paragliding (Just (AATB aatb)) True (FsGoal "LINE") =
+    \r x -> \case
+        (Just alt) -> ZK.CutSemiCylinder aatb r x alt
         Nothing -> ZK.Cylinder r x
 mkEssKind Paragliding (Just (AATB aatb)) _ _ =
     \r x -> \case

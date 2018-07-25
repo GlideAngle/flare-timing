@@ -118,6 +118,15 @@ data ZoneKind k a where
         -> QAlt a [u| m |]
         -> ZoneKind k a
 
+    -- | A halved cylinder with a base.
+    CutSemiCylinder
+        :: (Eq a, Ord a, EssAllowedZone k, GoalAllowedZone k)
+        => QAltTime a [u| s / m |]
+        -> QRadius a [u| m |]
+        -> LatLng a [u| rad |]
+        -> QAlt a [u| m |]
+        -> ZoneKind k a
+
     -- | A goal line perpendicular to the course line.
     Line 
         :: (Eq a, Ord a, EssAllowedZone k, GoalAllowedZone k)
@@ -161,6 +170,7 @@ instance (Ord a, Num a) => HasArea (ZoneKind k a) where
     hasArea (Cylinder (Radius x) _) = x > zero
     hasArea (CutCone _ (Radius x) _ _) = x > zero
     hasArea (CutCylinder _ (Radius x) _ _) = x > zero
+    hasArea (CutSemiCylinder _ (Radius x) _ _) = x > zero
     hasArea (Line (Radius x) _) = x > zero
     hasArea (Circle (Radius x) _) = x > zero
     hasArea (SemiCircle (Radius x) _) = x > zero
@@ -202,6 +212,15 @@ instance
 
     toJSON (CutCylinder t r x a) = object
         ["cut-cylinder" .= object
+            [ "time-bonus" .= toJSON t
+            , "radius" .= toJSON r
+            , "center" .= toJSON x
+            , "altitude" .= toJSON a
+            ]
+        ]
+
+    toJSON (CutSemiCylinder t r x a) = object
+        ["cut-semi-cylinder" .= object
             [ "time-bonus" .= toJSON t
             , "radius" .= toJSON r
             , "center" .= toJSON x
@@ -300,6 +319,14 @@ instance
                     <*> cy .: "radius"
                     <*> cy .: "center"
                     <*> cy .: "altitude"
+
+            , do
+                cy <- o .: "cut-semi-cylinder"
+                CutSemiCylinder
+                    <$> cy .: "time-bonus"
+                    <*> cy .: "radius"
+                    <*> cy .: "center"
+                    <*> cy .: "altitude"
             ]
 
 instance
@@ -364,6 +391,16 @@ showZoneDMS (CutCylinder (AltTime t) r (LatLng (Lat x, Lng y)) a) =
     ++ " "
     ++ show a
 
+showZoneDMS (CutSemiCylinder (AltTime t) r (LatLng (Lat x, Lng y)) a) =
+    "Cut Semicylinder "
+    ++ show t
+    ++ " "
+    ++ show r
+    ++ " "
+    ++ show (fromQ x, fromQ y)
+    ++ " "
+    ++ show a
+
 showZoneDMS (Line r (LatLng (Lat x, Lng y))) =
     "Line " ++ show r ++ " " ++ show (fromQ x, fromQ y)
 
@@ -371,7 +408,7 @@ showZoneDMS (Circle r (LatLng (Lat x, Lng y))) =
     "Circle " ++ show r ++ " " ++ show (fromQ x, fromQ y)
 
 showZoneDMS (SemiCircle r (LatLng (Lat x, Lng y))) =
-    "SemiCircle " ++ show r ++ " " ++ show (fromQ x, fromQ y)
+    "Semicircle " ++ show r ++ " " ++ show (fromQ x, fromQ y)
 
 -- | The effective center point of a zone.
 center :: ZoneKind k a -> LatLng a [u| rad |]
@@ -380,6 +417,7 @@ center (Vector _ x) = x
 center (Cylinder _ x) = x
 center (CutCone _ _ x _) = x
 center (CutCylinder _ _ x _) = x
+center (CutSemiCylinder _ _ x _) = x
 center (Line _ x) = x
 center (Circle _ x) = x
 center (SemiCircle _ x) = x
@@ -391,6 +429,7 @@ radius (Vector _ _) = Radius [u| 0m |]
 radius (Cylinder r _) = r
 radius (CutCone _ r _ _) = r
 radius (CutCylinder _ r _ _) = r
+radius (CutSemiCylinder _ r _ _) = r
 radius (Line r _) = r
 radius (Circle r _) = r
 radius (SemiCircle r _) = r
