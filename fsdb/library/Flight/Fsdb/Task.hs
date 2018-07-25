@@ -81,13 +81,16 @@ instance (u ~ Quantity Double [u| m |]) => XmlPickler (Alt u) where
 
 -- | How many units of distance for each unit of altitude, expressed like
 -- a glide ratio, the n of an n : 1 glide.
-newtype CessIncline = CessIncline Double deriving Show
+newtype CessIncline =
+    CessIncline Double
+    deriving (Eq, Ord, Show)
+    deriving newtype Num
 
 data Decelerator
     = CESS CessIncline
     | AATB (QAltTime Double [u| s / m |])
     | NoDecelerator String
-    deriving Show
+    deriving (Eq, Ord, Show)
 
 xpDecelerator :: PU Decelerator
 xpDecelerator =
@@ -226,13 +229,26 @@ mkZones
 mkZones discipline (decel, (useSemi, (goal, (alts, zs)))) =
     Zones zs (f zs) (g alts zs)
     where
-        f = rawZonesToZones $ mkGoal discipline useSemi goal
+        tpShape = tpKindShape discipline useSemi goal
+        gShape = goalShape discipline useSemi goal
+
+        dcShape =
+            \case
+                CESS 0 -> DecCyl
+                CESS _ -> DecCone
+                _ -> DecCyl
+            <$> decel
+
+        gkShape = goalKindShape discipline useSemi goal dcShape
+        ekShape = essKindShape discipline useSemi goal dcShape 
+
+        f = rawZonesToZones $ mkGoal gShape
 
         gk :: RawZoneToZoneKind ZK.Goal
-        gk = mkGoalKind discipline decel useSemi goal
+        gk = mkGoalKind gkShape decel
 
-        tk = mkTpKind discipline useSemi goal
-        ek = mkEssKind discipline decel useSemi goal
+        tk = mkTpKind tpShape
+        ek = mkEssKind ekShape decel
         ts = (replicate ((length zs) - 1) tk)
         es = []
         g = rawZonesToZoneKinds ts ek es gk
@@ -365,71 +381,114 @@ parseUtcTime =
     -- NOTE: %F is %Y-%m-%d, %T is %H:%M:%S and %z is -HHMM or -HH:MM
     parseTimeOrError False defaultTimeLocale "%FT%T%Z"
 
-mkGoal :: Discipline -> Bool -> FsGoal -> RawZoneToZone
-mkGoal Paragliding True (FsGoal "LINE") = SemiCircle
-mkGoal _ _ (FsGoal "LINE") = Line
-mkGoal _ _ _ = Circle
+data EndShape
+    = EndLine
+    | EndSemiCircle
+    | EndCircle
+    | EndCylinder
+    | EndCutCylinder
+    | EndCutSemiCylinder
+    | EndCutCone
+    | EndCutSemiCone
+
+type UseSemiCircle = Bool
+data DeceleratorShape = DecCyl | DecCone
+
+goalShape
+    :: Discipline
+    -> UseSemiCircle
+    -> FsGoal
+    -> EndShape
+goalShape Paragliding True (FsGoal "LINE") = EndSemiCircle
+goalShape _ _ (FsGoal "LINE") = EndLine
+goalShape _ _ _ = EndCircle
+
+goalKindShape
+    :: Discipline
+    -> UseSemiCircle
+    -> FsGoal
+    -> Maybe DeceleratorShape
+    -> EndShape
+goalKindShape Paragliding True (FsGoal "LINE") (Just DecCone) = EndCutSemiCone
+goalKindShape Paragliding _ _ (Just DecCone) = EndCutCone
+goalKindShape Paragliding True (FsGoal "LINE") (Just DecCyl) = EndCutSemiCylinder
+goalKindShape Paragliding _ _ (Just DecCyl) = EndCutCylinder
+goalKindShape Paragliding True (FsGoal "LINE") Nothing = EndSemiCircle
+goalKindShape _ _ (FsGoal "LINE") _ = EndLine
+goalKindShape _ _ _ _ = EndCircle
+
+essKindShape
+    :: Discipline
+    -> UseSemiCircle
+    -> FsGoal
+    -> Maybe DeceleratorShape
+    -> EndShape
+essKindShape Paragliding True (FsGoal "LINE") (Just DecCone) = EndCutSemiCone
+essKindShape Paragliding _ _ (Just DecCone) = EndCutCone
+essKindShape Paragliding True (FsGoal "LINE") _ = EndCutSemiCylinder
+essKindShape Paragliding _ _ _ = EndCutCylinder
+essKindShape _ _ _ _ = EndCylinder
+
+tpKindShape :: Discipline -> UseSemiCircle -> FsGoal -> EndShape
+tpKindShape _ _ _ = EndCylinder
+
+mkGoal :: EndShape -> RawZoneToZone
+mkGoal EndSemiCircle = SemiCircle
+mkGoal EndLine = Line
+mkGoal _ = Circle
 
 mkGoalKind
     :: (ZK.EssAllowedZone k, ZK.GoalAllowedZone k)
-    => Discipline
+    => EndShape
     -> Maybe Decelerator
-    -> Bool
-    -> FsGoal
     -> RawZoneToZoneKind k
-mkGoalKind Paragliding (Just (CESS i)) True (FsGoal "LINE") =
+mkGoalKind EndCutSemiCone (Just (CESS i)) =
     \r x -> \case
         (Just alt) -> ZK.CutSemiCone (mkIncline i) r x alt
         Nothing -> ZK.SemiCircle r x
-mkGoalKind Paragliding (Just (CESS i)) _ _ =
+mkGoalKind EndCutCone (Just (CESS i)) =
     \r x -> \case
         (Just alt) -> ZK.CutCone (mkIncline i) r x alt
         Nothing -> ZK.Circle r x
-mkGoalKind Paragliding (Just (AATB aatb)) True (FsGoal "LINE") =
+mkGoalKind EndCutSemiCylinder (Just (AATB aatb)) =
     \r x -> \case
         (Just alt) -> ZK.CutSemiCylinder aatb r x alt
         Nothing -> ZK.SemiCircle r x
-mkGoalKind Paragliding (Just (AATB aatb)) _ _ =
+mkGoalKind EndCutCylinder (Just (AATB aatb)) =
     \r x -> \case
         (Just alt) -> ZK.CutCylinder aatb r x alt
         Nothing -> ZK.Circle r x
-mkGoalKind Paragliding _ True (FsGoal "LINE") =
+mkGoalKind EndSemiCircle _ =
     \r x _ -> ZK.SemiCircle r x
-mkGoalKind _ _ _ (FsGoal "LINE") =
+mkGoalKind EndLine _ =
     \r x _ -> ZK.Line r x
-mkGoalKind _ _ _ _ =
+mkGoalKind _ _ =
     \r x _ -> ZK.Circle r x
 
-mkTpKind
-    :: Discipline
-    -> Bool
-    -> FsGoal
-    -> RawZoneToZoneKind ZK.Turnpoint
-mkTpKind _ _ _ = \r x _ -> ZK.Cylinder r x
+mkTpKind :: EndShape -> RawZoneToZoneKind ZK.Turnpoint
+mkTpKind _ = \r x _ -> ZK.Cylinder r x
 
 mkEssKind
-    :: Discipline
+    :: EndShape
     -> Maybe Decelerator
-    -> Bool
-    -> FsGoal
     -> RawZoneToZoneKind ZK.EndOfSpeedSection
-mkEssKind Paragliding (Just (CESS i)) True (FsGoal "LINE") =
+mkEssKind EndCutSemiCone (Just (CESS i)) =
     \r x -> \case
         (Just alt) -> ZK.CutSemiCone (mkIncline i) r x alt
         Nothing -> ZK.SemiCircle r x
-mkEssKind Paragliding (Just (CESS i)) _ _ =
+mkEssKind EndCutCone (Just (CESS i)) =
     \r x -> \case
         (Just alt) -> ZK.CutCone (mkIncline i) r x alt
         Nothing -> ZK.Cylinder r x
-mkEssKind Paragliding (Just (AATB aatb)) True (FsGoal "LINE") =
+mkEssKind EndCutSemiCylinder (Just (AATB aatb)) =
     \r x -> \case
         (Just alt) -> ZK.CutSemiCylinder aatb r x alt
         Nothing -> ZK.Cylinder r x
-mkEssKind Paragliding (Just (AATB aatb)) _ _ =
+mkEssKind EndCutCylinder (Just (AATB aatb)) =
     \r x -> \case
         (Just alt) -> ZK.CutCylinder aatb r x alt
         Nothing -> ZK.Cylinder r x
-mkEssKind _ _ _ _ =
+mkEssKind _ _ =
     \r x _ -> ZK.Cylinder r x
 
 mkIncline :: CessIncline -> QIncline Double [u| rad |]
