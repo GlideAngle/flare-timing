@@ -143,8 +143,8 @@ xpZone =
         (xpAttr "lon" xpickle)
         (xpAttr "radius" xpickle)
 
-xpZoneAltitudes :: PU (QAlt Double [u| m |])
-xpZoneAltitudes =
+xpZoneAltitude :: PU (QAlt Double [u| m |])
+xpZoneAltitude =
     xpElem "FsTurnpoint"
     $ xpFilterAttr (hasName "altitude")
     $ xpAttr "altitude" xpickle
@@ -204,7 +204,7 @@ mkZones
            ,
                ( FsGoal
                ,
-                   ( [QAlt Double [u| m |]]
+                   ( [Maybe (QAlt Double [u| m |])]
                    , [Z.RawZone]
                    )
                )
@@ -221,7 +221,7 @@ mkZones discipline (decel, (useSemi, (goal, (alts, zs)))) =
 
         tk = mkTpKind discipline useSemi goal
         ek = mkEssKind discipline decel useSemi goal
-        ts = (replicate ((length alts) - 1) tk)
+        ts = (replicate ((length zs) - 1) tk)
         es = []
         g = rawZonesToZoneKinds ts ek es gk
 
@@ -270,12 +270,13 @@ getTask discipline ps =
         getZoneAltitudes =
             getChildren
             >>> hasName "FsTaskDefinition"
-            >>> (listA getAlts >>> arr catMaybes)
+            >>> listA getAlts
             where
                 getAlts =
                     getChildren
                     >>> hasName "FsTurnpoint"
-                    >>> arr (unpickleDoc xpZoneAltitudes)
+                    -- NOTE: Sometimes turnpoints don't have altitudes.
+                    >>> arr (unpickleDoc xpZoneAltitude)
 
         getZones =
             getChildren
@@ -364,11 +365,20 @@ mkGoalKind
     -> Bool
     -> FsGoal
     -> RawZoneToZoneKind k
-mkGoalKind Paragliding (Just (CESS r)) _ _ = ZK.CutCone $ mkIncline r
-mkGoalKind Paragliding (Just (AATB r)) _ _ = ZK.CutCylinder (AltTime $ MkQuantity r)
-mkGoalKind Paragliding _ True (FsGoal "LINE") = \r x _ -> ZK.SemiCircle r x
-mkGoalKind _ _ _ (FsGoal "LINE") = \r x _ -> ZK.Line r x
-mkGoalKind _ _ _ _ = \r x _ -> ZK.Circle r x
+mkGoalKind Paragliding (Just (CESS ratio)) _ _ =
+    \r x -> \case
+        (Just alt) -> ZK.CutCone (mkIncline ratio) r x alt
+        Nothing -> ZK.Circle r x
+mkGoalKind Paragliding (Just (AATB ratio)) _ _ =
+    \r x -> \case
+        (Just alt) -> ZK.CutCylinder (AltTime $ MkQuantity ratio) r x alt
+        Nothing -> ZK.Circle r x
+mkGoalKind Paragliding _ True (FsGoal "LINE") =
+    \r x _ -> ZK.SemiCircle r x
+mkGoalKind _ _ _ (FsGoal "LINE") =
+    \r x _ -> ZK.Line r x
+mkGoalKind _ _ _ _ =
+    \r x _ -> ZK.Circle r x
 
 mkTpKind
     :: Discipline
@@ -383,9 +393,16 @@ mkEssKind
     -> Bool
     -> FsGoal
     -> RawZoneToZoneKind ZK.EndOfSpeedSection
-mkEssKind Paragliding (Just (CESS r)) _ _ = ZK.CutCone $ mkIncline r
-mkEssKind Paragliding (Just (AATB r)) _ _ = ZK.CutCylinder (AltTime $ MkQuantity r)
-mkEssKind _ _ _ _ = \r x _ -> ZK.Cylinder r x
+mkEssKind Paragliding (Just (CESS ratio)) _ _ =
+    \r x -> \case
+        (Just alt) -> ZK.CutCone (mkIncline ratio) r x alt
+        Nothing -> ZK.Cylinder r x
+mkEssKind Paragliding (Just (AATB ratio)) _ _ =
+    \r x -> \case
+        (Just alt) -> ZK.CutCylinder (AltTime $ MkQuantity ratio) r x alt
+        Nothing -> ZK.Cylinder r x
+mkEssKind _ _ _ _ =
+    \r x _ -> ZK.Cylinder r x
 
 mkIncline :: Double -> QIncline Double [u| rad |]
 mkIncline r =

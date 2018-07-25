@@ -483,7 +483,7 @@ instance FromJSON (TaskZones RaceTask Double) where
 type RawZoneToZoneKind k
     = QRadius Double [u| m |]
     -> LatLng Double [u| rad |]
-    -> QAlt Double [u| m |]
+    -> Maybe (QAlt Double [u| m |])
     -> ZoneKind k Double
 
 rawZonesToZoneKinds
@@ -492,7 +492,7 @@ rawZonesToZoneKinds
     -> RawZoneToZoneKind e
     -> [RawZoneToZoneKind Turnpoint]
     -> RawZoneToZoneKind g
-    -> [QAlt Double [u| m |]]
+    -> [Maybe (QAlt Double [u| m |])]
     -> [Raw.RawZone]
     -> Maybe (TaskZones RaceTask Double)
 rawZonesToZoneKinds mkTps mkEss mkEps mkGoal as zs
