@@ -210,7 +210,6 @@ newtype TaskStop =
 data Zones =
     Zones
         { raw :: [RawZone]
-        , strict :: [Zone Double]
         , kind :: Maybe (ZK.TaskZones ZK.RaceTask Double)
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)

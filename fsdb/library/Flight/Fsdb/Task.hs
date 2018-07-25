@@ -39,10 +39,7 @@ import Data.Time.Format (parseTimeOrError, defaultTimeLocale)
 
 import Flight.LatLng (Alt(..), QAlt)
 import Flight.LatLng.Raw (RawLat(..), RawLng(..))
-import Flight.Zone
-    ( Radius(..), Zone(..), QAltTime, AltTime(..), QIncline, Incline(..)
-    , RawZoneToZone, rawZonesToZones
-    )
+import Flight.Zone (Radius(..), QAltTime, AltTime(..), QIncline, Incline(..))
 import Flight.Zone.ZoneKind (RawZoneToZoneKind, rawZonesToZoneKinds)
 import qualified Flight.Zone.ZoneKind as ZK
     ( ZoneKind(..), Turnpoint, EndOfSpeedSection, Goal
@@ -227,10 +224,9 @@ mkZones
        )
     -> Zones
 mkZones discipline (decel, (useSemi, (goal, (alts, zs)))) =
-    Zones zs (f zs) (g alts zs)
+    Zones zs (g alts zs)
     where
         tpShape = tpKindShape discipline useSemi goal
-        gShape = goalShape discipline useSemi goal
 
         dcShape =
             \case
@@ -241,8 +237,6 @@ mkZones discipline (decel, (useSemi, (goal, (alts, zs)))) =
 
         gkShape = goalKindShape discipline useSemi goal dcShape
         ekShape = essKindShape discipline useSemi goal dcShape 
-
-        f = rawZonesToZones $ mkGoal gShape
 
         gk :: RawZoneToZoneKind ZK.Goal
         gk = mkGoalKind gkShape decel
@@ -394,15 +388,6 @@ data EndShape
 type UseSemiCircle = Bool
 data DeceleratorShape = DecCyl | DecCone
 
-goalShape
-    :: Discipline
-    -> UseSemiCircle
-    -> FsGoal
-    -> EndShape
-goalShape Paragliding True (FsGoal "LINE") = EndSemiCircle
-goalShape _ _ (FsGoal "LINE") = EndLine
-goalShape _ _ _ = EndCircle
-
 goalKindShape
     :: Discipline
     -> UseSemiCircle
@@ -431,11 +416,6 @@ essKindShape _ _ _ _ = EndCylinder
 
 tpKindShape :: Discipline -> UseSemiCircle -> FsGoal -> EndShape
 tpKindShape _ _ _ = EndCylinder
-
-mkGoal :: EndShape -> RawZoneToZone
-mkGoal EndSemiCircle = SemiCircle
-mkGoal EndLine = Line
-mkGoal _ = Circle
 
 mkGoalKind
     :: (ZK.EssAllowedZone k, ZK.GoalAllowedZone k)
