@@ -2,7 +2,7 @@ module Flight.Zone.Incline (QIncline, Incline(..)) where
 
 import "newtype" Control.Newtype (Newtype(..))
 import Data.Aeson (ToJSON(..), FromJSON(..))
-import Data.UnitsOfMeasure (u)
+import Data.UnitsOfMeasure (u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
@@ -16,20 +16,23 @@ newtype Incline a = Incline a
     deriving (Eq, Ord, Show)
 
 instance
-    (q ~ Quantity Double [u| rad |])
+    (q ~ Quantity Double [u| deg |])
     => DefaultDecimalPlaces (Incline q) where
-    defdp _ = DecimalPlaces 2
+    defdp _ = DecimalPlaces 3
 
 instance
-    (q ~ Quantity Double [u| rad |])
+    (q ~ Quantity Double [u| deg |])
     => Newtype (Incline q) q where
     pack = Incline
     unpack (Incline a) = a
 
 instance (q ~ Quantity Double [u| rad |]) => ToJSON (Incline q) where
-    toJSON x = toJSON $ ViaQ x
+    toJSON (Incline x) = toJSON $ ViaQ (Incline y)
+        where
+            y :: Quantity Double [u| deg |]
+            y = convert x
 
 instance (q ~ Quantity Double [u| rad |]) => FromJSON (Incline q) where
     parseJSON o = do
-        ViaQ x <- parseJSON o
-        return x
+        ViaQ (Incline x) <- parseJSON o
+        return (Incline $ convert x)

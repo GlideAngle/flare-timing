@@ -40,8 +40,8 @@ import Data.Time.Format (parseTimeOrError, defaultTimeLocale)
 import Flight.LatLng (Alt(..), QAlt)
 import Flight.LatLng.Raw (RawLat(..), RawLng(..))
 import Flight.Zone
-    (Radius(..), Zone(..), AltTime(..), QIncline, Incline(..), RawZoneToZone
-    , rawZonesToZones
+    ( Radius(..), Zone(..), QAltTime, AltTime(..), QIncline, Incline(..)
+    , RawZoneToZone, rawZonesToZones
     )
 import Flight.Zone.ZoneKind (RawZoneToZoneKind, rawZonesToZoneKinds)
 import qualified Flight.Zone.ZoneKind as ZK
@@ -79,9 +79,13 @@ instance XmlPickler RawLng where
 instance (u ~ Quantity Double [u| m |]) => XmlPickler (Alt u) where
     xpickle = xpNewtypeQuantity
 
+-- | How many units of distance for each unit of altitude, expressed like
+-- a glide ratio, the n of an n : 1 glide.
+newtype CessIncline = CessIncline Double deriving Show
+
 data Decelerator
-    = CESS Double
-    | AATB Double
+    = CESS CessIncline
+    | AATB (QAltTime Double [u| s / m |])
     | NoDecelerator String
     deriving Show
 
@@ -99,7 +103,12 @@ xpDecelerator =
                 ( hasName "final_glide_decelerator"
                 <+> hasName "ess_incline_ratio"
                 )
-            $ xpWrap (CESS, \(CESS r) -> r)
+            $ xpWrap
+                ( \x ->
+                    CESS . CessIncline $ abs x
+
+                , \(CESS (CessIncline x)) -> x
+                )
             $ xpSeq'
                 (xpAttrFixed "final_glide_decelerator" "cess")
                 (xpAttr "ess_incline_ratio" xpPrim)
@@ -109,7 +118,10 @@ xpDecelerator =
                 ( hasName "final_glide_decelerator"
                 <+> hasName "aatb_factor"
                 )
-            $ xpWrap (AATB, \(AATB r) -> r)
+            $ xpWrap
+                ( AATB . AltTime . MkQuantity
+                , \(AATB (AltTime (MkQuantity r))) -> r
+                )
             $ xpSeq'
                 (xpAttrFixed "final_glide_decelerator" "aatb")
                 (xpAttr "aatb_factor" xpPrim)
@@ -365,13 +377,13 @@ mkGoalKind
     -> Bool
     -> FsGoal
     -> RawZoneToZoneKind k
-mkGoalKind Paragliding (Just (CESS ratio)) _ _ =
+mkGoalKind Paragliding (Just (CESS i)) _ _ =
     \r x -> \case
-        (Just alt) -> ZK.CutCone (mkIncline ratio) r x alt
+        (Just alt) -> ZK.CutCone (mkIncline i) r x alt
         Nothing -> ZK.Circle r x
-mkGoalKind Paragliding (Just (AATB ratio)) _ _ =
+mkGoalKind Paragliding (Just (AATB aatb)) _ _ =
     \r x -> \case
-        (Just alt) -> ZK.CutCylinder (AltTime $ MkQuantity ratio) r x alt
+        (Just alt) -> ZK.CutCylinder aatb r x alt
         Nothing -> ZK.Circle r x
 mkGoalKind Paragliding _ True (FsGoal "LINE") =
     \r x _ -> ZK.SemiCircle r x
@@ -393,17 +405,17 @@ mkEssKind
     -> Bool
     -> FsGoal
     -> RawZoneToZoneKind ZK.EndOfSpeedSection
-mkEssKind Paragliding (Just (CESS ratio)) _ _ =
+mkEssKind Paragliding (Just (CESS i)) _ _ =
     \r x -> \case
-        (Just alt) -> ZK.CutCone (mkIncline ratio) r x alt
+        (Just alt) -> ZK.CutCone (mkIncline i) r x alt
         Nothing -> ZK.Cylinder r x
-mkEssKind Paragliding (Just (AATB ratio)) _ _ =
+mkEssKind Paragliding (Just (AATB aatb)) _ _ =
     \r x -> \case
-        (Just alt) -> ZK.CutCylinder (AltTime $ MkQuantity ratio) r x alt
+        (Just alt) -> ZK.CutCylinder aatb r x alt
         Nothing -> ZK.Cylinder r x
 mkEssKind _ _ _ _ =
     \r x _ -> ZK.Cylinder r x
 
-mkIncline :: Double -> QIncline Double [u| rad |]
-mkIncline r =
-    Incline $ MkQuantity . atan $ r
+mkIncline :: CessIncline -> QIncline Double [u| rad |]
+mkIncline (CessIncline x) =
+    Incline . MkQuantity $ atan2 1 x

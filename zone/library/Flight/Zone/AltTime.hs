@@ -18,7 +18,7 @@ newtype AltTime a = AltTime a
 instance
     (q ~ Quantity Double [u| s / m |])
     => DefaultDecimalPlaces (AltTime q) where
-    defdp _ = DecimalPlaces 2
+    defdp _ = DecimalPlaces 3
 
 instance
     (q ~ Quantity Double [u| s / m |])
