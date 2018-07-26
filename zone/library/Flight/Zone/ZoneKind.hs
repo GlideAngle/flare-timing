@@ -3,19 +3,22 @@ module Flight.Zone.ZoneKind
     , ZoneKind(..)
     , StartGates(..)
     , Task(..)
-    , RaceTask
-    , OpenDistanceTask
+    , Race
+    , OpenDistance
     , TaskZones(..)
-    , RawZoneToZoneKind
+    , ToZoneKind
+    , ToOpenZoneKind
     , Turnpoint
     , EndOfSpeedSection
     , Goal
     , EssAllowedZone
     , GoalAllowedZone
+    , OpenAllowedZone
     , center
     , radius
     , showZoneDMS
-    , rawZonesToZoneKinds
+    , raceZoneKinds
+    , openZoneKinds
     ) where
 
 import Data.Maybe (isNothing)
@@ -38,25 +41,83 @@ import qualified Flight.Zone.Raw.Zone as Raw (RawZone(..))
 import Flight.LatLng.Raw (RawLat(..), RawLng(..))
 import Flight.Zone.Zone (HasArea(..))
 
+-- | A goal is a kind of a zone that is the very last zone, the end goal of
+-- a race task. Not used in open distance tasks.
 data Goal
     deriving (AnyZone, ZoneMaybeCylindrical, EssAllowedZone, GoalAllowedZone)
 
+-- | A kind of a zone that can end the speed section.
 data EndOfSpeedSection
-    deriving (AnyZone, ZoneMaybeCylindrical, EssAllowedZone, GoalAllowedZone)
+    deriving
+        ( AnyZone
+        , ZoneMaybeCylindrical
+        , EssAllowedZone
+        , GoalAllowedZone
+        , OpenAllowedZone
+-- TODO: Why is OpenAllowedZone is needed for EndOfSpeedSection?
+-- /.../Fsdb/Task.hs:508:20: error:
+--     • No instance for (ZK.OpenAllowedZone ZK.EndOfSpeedSection)
+--         arising from a use of ‘ZK.Cylinder’
+--     • In the expression: ZK.Cylinder r x
+--       In a case alternative: Nothing -> ZK.Cylinder r x
+--       In the expression:
+--         \case
+--           (Just alt) -> ZK.CutCone (mkIncline i) r x alt
+--           Nothing -> ZK.Cylinder r x
+--     |
+-- 508 |         Nothing -> ZK.Cylinder r x
+--     |                    ^^^^^^^^^^^^^^^
+        )
 
+-- | The most general kind of a zone. Used in the prolog, race and epilog of
+-- a race task, basically any zone of a race that is not at the end of the
+-- speed section or goal. Also can be any zone in an open distance task. If
+-- the open distance task has a heading then its last zone is not a regular
+-- turnpoint.
 data Turnpoint
-    deriving (AnyZone, ZoneMaybeCylindrical)
+    deriving
+        ( AnyZone
+        , ZoneMaybeCylindrical
+        , EssAllowedZone
+        , OpenAllowedZone
+        )
 
+-- | A kind of a zone only used in calculating the task length, a point.
 data CourseLine
-    deriving (AnyZone, ZoneMaybeCylindrical)
+    deriving
+        ( AnyZone
+        , ZoneMaybeCylindrical
+        )
 
+-- | A kind of a zone and a kind of a task. For zones, an open distance task
+-- will this kind of zone as its last zone if the open distance section has
+-- a heading along which the final leg is measured for open distance.
 data OpenDistance
-    deriving AnyZone
+    deriving
+        ( AnyZone
+        , ZoneMaybeCylindrical
+        , OpenAllowedZone
+-- TODO: Why is EssAllowedZone needed for Open Distance?
+-- /Fsdb/Task.hs:243:24: error:
+--     • No instance for (ZK.EssAllowedZone ZK.OpenDistance)
+--         arising from a use of ‘ZK.Cylinder’
+--     • In the expression: ZK.Cylinder r x
+--       In the expression: \ r x _ -> ZK.Cylinder r x
+--       In an equation for ‘ok’: ok = \ r x _ -> ZK.Cylinder r x
+--     |
+-- 243 |         ok = \r x _ -> ZK.Cylinder r x
+--     |                        ^^^^^^^^^^^^^^^
+        , EssAllowedZone
+        )
+
+-- | A race is a kind of a task but not a kind of a zone.
+data Race
 
 class AnyZone a where
 class ZoneMaybeCylindrical a where
 class EssAllowedZone a where
 class GoalAllowedZone a where
+class OpenAllowedZone a where
 
 -- TODO: Remove standalone deriving Eq & Ord for empty data after GHC 8.4.1
 -- SEE: https://ghc.haskell.org/trac/ghc/ticket/7401
@@ -85,14 +146,15 @@ data ZoneKind k a where
     -- | Used only in open distance tasks these mark the start and direction of
     -- the open distance.
     Vector
-        :: (Eq a, Ord a)
+        :: (Eq a, Ord a, OpenAllowedZone k)
         => QBearing a [u| rad |]
+        -> QRadius a [u| m |]
         -> LatLng a [u| rad |]
-        -> ZoneKind OpenDistance a
+        -> ZoneKind k a
 
     -- | The turnpoint cylinder.
     Cylinder
-        :: (Eq a, Ord a, ZoneMaybeCylindrical k)
+        :: (Eq a, Ord a, EssAllowedZone k, OpenAllowedZone k)
         => QRadius a [u| m |]
         -> LatLng a [u| rad |]
         -> ZoneKind k a
@@ -176,7 +238,7 @@ instance (Eq a, Ord a) => Ord (ZoneKind k a) where
 
 instance (Ord a, Num a) => HasArea (ZoneKind k a) where
     hasArea (Point _) = False
-    hasArea (Vector _ _) = False
+    hasArea (Vector _ (Radius x) _) = x > zero
     hasArea (Cylinder (Radius x) _) = x > zero
     hasArea (CutCone _ (Radius x) _ _) = x > zero
     hasArea (CutSemiCone _ (Radius x) _ _) = x > zero
@@ -198,9 +260,10 @@ instance
     toJSON (Point x) = object
         [ "point" .= toJSON x ]
 
-    toJSON (Vector b x) = object
+    toJSON (Vector b r x) = object
         [ "vector" .= object
             [ "bearing" .= toJSON b
+            , "radius" .= toJSON r
             , "center" .= toJSON x
             ]
         ]
@@ -290,11 +353,21 @@ instance
     , FromJSON (QRadius a [u| m |])
     )
     => FromJSON (ZoneKind OpenDistance a) where
-    parseJSON = withObject "ZoneKind" $ \o -> do
-        vc <- o .: "vector"
-        Vector
-            <$> vc .: "bearing"
-            <*> vc .: "center"
+    parseJSON = withObject "ZoneKind" $ \o ->
+        asum
+            [ do
+                vc <- o .: "vector"
+                Vector
+                    <$> vc .: "bearing"
+                    <*> vc .: "radius"
+                    <*> vc .: "center"
+
+            , do
+                cy <- o .: "cylinder"
+                Cylinder
+                    <$> cy .: "radius"
+                    <*> cy .: "center"
+            ]
 
 instance
     ( Eq a
@@ -393,8 +466,13 @@ showZoneDMS :: ZoneKind k Double -> String
 showZoneDMS (Point (LatLng (Lat x, Lng y))) =
     "Point " ++ show (fromQ x, fromQ y)
 
-showZoneDMS (Vector (Bearing b) (LatLng (Lat x, Lng y))) =
-    "Vector " ++ show (fromQ b) ++ " " ++ show (fromQ x, fromQ y)
+showZoneDMS (Vector (Bearing b) r (LatLng (Lat x, Lng y))) =
+    "Vector "
+    ++ show (fromQ b)
+    ++ " "
+    ++ show r
+    ++ " "
+    ++ show (fromQ x, fromQ y)
 
 showZoneDMS (Cylinder r (LatLng (Lat x, Lng y))) =
     "Cylinder " ++ show r ++ " " ++ show (fromQ x, fromQ y)
@@ -451,7 +529,7 @@ showZoneDMS (SemiCircle r (LatLng (Lat x, Lng y))) =
 -- | The effective center point of a zone.
 center :: ZoneKind k a -> LatLng a [u| rad |]
 center (Point x) = x
-center (Vector _ x) = x
+center (Vector _ _ x) = x
 center (Cylinder _ x) = x
 center (CutCone _ _ x _) = x
 center (CutSemiCone _ _ x _) = x
@@ -464,7 +542,7 @@ center (SemiCircle _ x) = x
 -- | The effective radius of a zone.
 radius :: Num a => ZoneKind k a -> QRadius a [u| m |]
 radius (Point _) = Radius [u| 0m |]
-radius (Vector _ _) = Radius [u| 0m |]
+radius (Vector _ r _) = r
 radius (Cylinder r _) = r
 radius (CutCone _ r _ _) = r
 radius (CutSemiCone _ r _ _) = r
@@ -474,41 +552,40 @@ radius (Line r _) = r
 radius (Circle r _) = r
 radius (SemiCircle r _) = r
 
-data RaceTask
-data OpenDistanceTask
-
 data TaskZones k a where
 
-    EssIsGoal
+    TzEssIsGoal
         :: GoalAllowedZone g
         => [ZoneKind Turnpoint a] -- ^ prolog
         -> [ZoneKind Turnpoint a] -- ^ race
         -> ZoneKind g a -- ^ goal
-        -> TaskZones RaceTask a
+        -> TaskZones Race a
 
-    EssIsNotGoal
+    TzEssIsNotGoal
         :: (EssAllowedZone e, GoalAllowedZone g)
         => [ZoneKind Turnpoint a] -- ^ prolog
         -> [ZoneKind Turnpoint a] -- ^ race
         -> ZoneKind e a -- ^ race end
         -> [ZoneKind Turnpoint a] -- ^ epilog
         -> ZoneKind g a -- ^ goal
-        -> TaskZones RaceTask a
+        -> TaskZones Race a
 
-    OpenDistanceTaskZones
-        :: [ZoneKind Turnpoint a]
-        -> ZoneKind OpenDistance a
+    TzOpenDistance
+        :: OpenAllowedZone o
+        => [ZoneKind Turnpoint a] -- ^ prolog
+        -> [ZoneKind Turnpoint a] -- ^ mandatory
+        -> ZoneKind o a -- ^ free
         -> TaskZones OpenDistance a
 
 instance Eq a => Eq (TaskZones k a) where
-    (EssIsGoal ap at _) == (EssIsGoal bp bt _) =
+    (TzEssIsGoal ap at _) == (TzEssIsGoal bp bt _) =
         ap == bp && at == bt
 
-    (EssIsNotGoal ap at _ _ _) == (EssIsNotGoal bp bt _ _ _) =
+    (TzEssIsNotGoal ap at _ _ _) == (TzEssIsNotGoal bp bt _ _ _) =
         ap == bp && at == bt
 
-    (OpenDistanceTaskZones a _) == (OpenDistanceTaskZones b _) =
-        a == b
+    (TzOpenDistance ap at _) == (TzOpenDistance bp bt _) =
+        ap == bp && at == bt
 
     _ == _ = False
 
@@ -518,18 +595,18 @@ instance Ord a => Ord (TaskZones k a) where
 deriving instance (Show a, Show (LatLng a [u| rad |])) => Show (TaskZones k a)
 
 turnpoints :: TaskZones k a -> [ZoneKind Turnpoint a]
-turnpoints (EssIsGoal ps ts _) = ps ++ ts
-turnpoints (EssIsNotGoal ps ts _ us _) = ps ++ ts ++ us
-turnpoints (OpenDistanceTaskZones ts _) = ts
+turnpoints (TzEssIsGoal ps ts _) = ps ++ ts
+turnpoints (TzEssIsNotGoal ps ts _ us _) = ps ++ ts ++ us
+turnpoints (TzOpenDistance ps ts _) = ps ++ ts
 
 instance ToJSON (TaskZones k Double) where
-    toJSON (EssIsGoal ps ts g) = object
+    toJSON (TzEssIsGoal ps ts g) = object
         [ "prolog" .= toJSON ps
         , "race" .= toJSON ts
         , "race-ess-is-goal" .= g
         ]
 
-    toJSON (EssIsNotGoal ps ts ess es g) = object
+    toJSON (TzEssIsNotGoal ps ts ess es g) = object
         [ "prolog" .= toJSON ps
         , "race" .= toJSON ts
         , "race-ess" .= ess
@@ -537,19 +614,24 @@ instance ToJSON (TaskZones k Double) where
         , "goal" .= g
         ]
 
-    toJSON (OpenDistanceTaskZones ts o) = object
-        [ "turnpoints" .= toJSON ts
-        , "open" .= o
+    toJSON (TzOpenDistance ps ts o) = object
+        [ "prolog" .= toJSON ps
+        , "open-mandatory" .= toJSON ts
+        , "open-free" .= o
         ]
 
 instance FromJSON (TaskZones OpenDistance Double) where
-    parseJSON = withObject "OpenDistanceTask" $ \o -> do
-        OpenDistanceTaskZones
-        <$> o .: "open"
-        <*> o .: "turnpoints"
+    parseJSON = withObject "OpenDistance" $ \o ->
+        asum
+            [ do
+                p :: [ZoneKind Turnpoint Double] <- o .: "prolog"
+                m :: [ZoneKind Turnpoint Double] <- o .: "open-mandatory"
+                f :: ZoneKind OpenDistance Double <- o .: "open-free"
+                return $ TzOpenDistance p m f
+            ]
 
-instance FromJSON (TaskZones RaceTask Double) where
-    parseJSON = withObject "RaceTask" $ \o ->
+instance FromJSON (TaskZones Race Double) where
+    parseJSON = withObject "Race" $ \o ->
         asum
             [ do
                 p :: [ZoneKind Turnpoint Double] <- o .: "prolog"
@@ -557,32 +639,38 @@ instance FromJSON (TaskZones RaceTask Double) where
                 ess :: ZoneKind EndOfSpeedSection Double <- o .: "race-ess"
                 epilog :: [ZoneKind Turnpoint Double] <- o .: "epilog"
                 g :: ZoneKind Goal Double <- o .: "goal"
-                return $ EssIsNotGoal p r ess epilog g
+                return $ TzEssIsNotGoal p r ess epilog g
 
             , do
                 p :: [ZoneKind Turnpoint Double] <- o .: "prolog"
                 t :: [ZoneKind Turnpoint Double] <- o .: "race"
                 g :: ZoneKind Goal Double <- o .: "race-ess-is-goal"
-                return $ EssIsGoal p t g
+                return $ TzEssIsGoal p t g
             ]
 
-type RawZoneToZoneKind k
+type ToZoneKind k
     = QRadius Double [u| m |]
     -> LatLng Double [u| rad |]
     -> Maybe (QAlt Double [u| m |])
     -> ZoneKind k Double
 
-rawZonesToZoneKinds
+type ToOpenZoneKind k
+    = QRadius Double [u| m |]
+    -> LatLng Double [u| rad |]
+    -> Maybe (QAlt Double [u| m |])
+    -> ZoneKind k Double
+
+raceZoneKinds
     :: (EssAllowedZone e, GoalAllowedZone g)
-    => [RawZoneToZoneKind Turnpoint] -- ^ prolog
-    -> [RawZoneToZoneKind Turnpoint] -- ^ race
-    -> Maybe (RawZoneToZoneKind e) -- ^ race end, if separate from goal
-    -> [RawZoneToZoneKind Turnpoint] -- ^ epilog
-    -> RawZoneToZoneKind g -- ^ goal
+    => [ToZoneKind Turnpoint] -- ^ prolog
+    -> [ToZoneKind Turnpoint] -- ^ race
+    -> Maybe (ToZoneKind e) -- ^ race end, if separate from goal
+    -> [ToZoneKind Turnpoint] -- ^ epilog
+    -> ToZoneKind g -- ^ goal
     -> [Maybe (QAlt Double [u| m |])]
     -> [Raw.RawZone]
-    -> Maybe (TaskZones RaceTask Double)
-rawZonesToZoneKinds mkPps mkTps mkEss mkEps mkGoal as zs
+    -> Maybe (TaskZones Race Double)
+raceZoneKinds mkPps mkTps mkEss mkEps mkGoal as zs
     -- NOTE: Have not consumed all of the raw control zones.
     | not (null zs''''') || not (null as''''') = Nothing
 
@@ -590,7 +678,7 @@ rawZonesToZoneKinds mkPps mkTps mkEss mkEps mkGoal as zs
         case (gZs, gAs) of
             ([gZ], [gA]) ->
                 Just
-                $ EssIsGoal pps tps (f mkGoal gZ gA)
+                $ TzEssIsGoal pps tps (f mkGoal gZ gA)
 
             _ -> Nothing
 
@@ -598,7 +686,7 @@ rawZonesToZoneKinds mkPps mkTps mkEss mkEps mkGoal as zs
         case (mkEss, eZs, eAs, gZs, gAs) of
             (Just mkEss', [eZ], [eA], [gZ], [gA]) ->
                 Just
-                $ EssIsNotGoal
+                $ TzEssIsNotGoal
                     pps
                     tps
                     (f mkEss' eZ eA)
@@ -656,6 +744,71 @@ rawZonesToZoneKinds mkPps mkTps mkEss mkEps mkGoal as zs
             | m <- mkEps
             | z <- epZs
             | a <- epAs 
+            ]
+
+        f ctor Raw.RawZone{radius = r, lat, lng} alt =
+            ctor r (fromDMS (fromQ qLat, fromQ qLng)) alt
+                where
+                    RawLat lat' = lat
+                    RawLng lng' = lng
+
+                    qLat :: Quantity Double [u| deg |]
+                    qLat = fromRational' $ MkQuantity lat'
+
+                    qLng :: Quantity Double [u| deg |]
+                    qLng = fromRational' $ MkQuantity lng'
+
+openZoneKinds
+    :: (OpenAllowedZone o)
+    => [ToOpenZoneKind Turnpoint] -- ^ prolog
+    -> [ToOpenZoneKind Turnpoint] -- ^ mandatory
+    -> ToOpenZoneKind o -- ^ open
+    -> [Maybe (QAlt Double [u| m |])]
+    -> [Raw.RawZone]
+    -> Maybe (TaskZones OpenDistance Double)
+openZoneKinds mkPps mkTps mkOpen as zs
+    -- NOTE: Have not consumed all of the raw control zones.
+    | not (null zs''') || not (null as''') = Nothing
+
+    | otherwise =
+        case (oZs, oAs) of
+            ([oZ], [oA]) ->
+                Just
+                $ TzOpenDistance pps tps (f mkOpen oZ oA)
+
+            _ -> Nothing
+
+    where
+        splitPps :: [a] -> ([a], [a])
+        splitPps = splitAt $ length mkPps
+
+        splitTps :: [a] -> ([a], [a])
+        splitTps = splitAt $ length mkTps
+
+        splitOpen :: [a] -> ([a], [a])
+        splitOpen = splitAt 1
+
+        (ppZs, zs') = splitPps zs
+        (ppAs, as') = splitPps as
+
+        (tpZs, zs'') = splitTps zs'
+        (tpAs, as'') = splitTps as'
+
+        (oZs, zs''') = splitOpen zs''
+        (oAs, as''') = splitOpen as''
+
+        pps =
+            [ f m z a
+            | m <- mkPps
+            | z <- ppZs
+            | a <- ppAs 
+            ]
+
+        tps =
+            [ f m z a
+            | m <- mkTps
+            | z <- tpZs
+            | a <- tpAs 
             ]
 
         f ctor Raw.RawZone{radius = r, lat, lng} alt =

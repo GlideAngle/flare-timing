@@ -56,8 +56,8 @@ import Data.String (IsString())
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import Flight.Zone (Zone(..))
-import qualified Flight.Zone.ZoneKind as ZK (RaceTask, TaskZones(..))
+import qualified Flight.Zone.ZoneKind as ZK
+    (Race, OpenDistance, TaskZones(..))
 import Flight.Zone.Raw (RawZone, showZone)
 import Flight.Field (FieldOrdering(..))
 import Flight.Pilot
@@ -210,7 +210,8 @@ newtype TaskStop =
 data Zones =
     Zones
         { raw :: [RawZone]
-        , kind :: Maybe (ZK.TaskZones ZK.RaceTask Double)
+        , raceKind :: Maybe (ZK.TaskZones ZK.Race Double)
+        , openKind :: Maybe (ZK.TaskZones ZK.OpenDistance Double)
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
@@ -258,13 +259,17 @@ cmp a b =
         ("pilots", _) -> GT
 
         -- TaskZones fields
-        ("turnpoints", _) -> LT
+        ("raw", _) -> LT
 
-        -- EssIsGoal fields
-        ("turnpoints", _) -> LT
+        ("raceKind", "openKind") -> LT
+        ("raceKind", _) -> GT
+
+        ("openKind", _) -> GT
+
+        -- TzEssIsGoal fields
         ("ess-is-goal", _) -> GT
 
-        -- EssIsNotGoal fields
+        -- TzEssIsNotGoal fields
         ("prolog", _) -> LT
 
         ("race", "prolog") -> GT
@@ -284,8 +289,13 @@ cmp a b =
         ("goal", "race") -> GT
         ("goal", "ess") -> GT
         ("goal", "epilog") -> GT
-        ("goal", "ess") -> GT
         ("goal", "race-ess") -> GT
+
+        -- TzOpenDistance fields
+        ("open-mandatory", "open-free") -> LT
+        ("open-mandatory", _) -> GT
+
+        ("open-free", _) -> GT
 
         -- Nominal fields
         ("launch", _) -> LT

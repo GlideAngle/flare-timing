@@ -39,11 +39,16 @@ import Data.Time.Format (parseTimeOrError, defaultTimeLocale)
 
 import Flight.LatLng (Alt(..), QAlt)
 import Flight.LatLng.Raw (RawLat(..), RawLng(..))
-import Flight.Zone (Radius(..), QAltTime, AltTime(..), QIncline, Incline(..))
-import Flight.Zone.ZoneKind (RawZoneToZoneKind, rawZonesToZoneKinds)
+import Flight.Zone
+    ( Radius(..)
+    , QAltTime, AltTime(..)
+    , QIncline, Incline(..)
+    , QBearing, Bearing(..)
+    )
+import Flight.Zone.ZoneKind (ToZoneKind, ToOpenZoneKind, raceZoneKinds, openZoneKinds)
 import qualified Flight.Zone.ZoneKind as ZK
-    ( ZoneKind(..), Turnpoint, EndOfSpeedSection, Goal
-    , EssAllowedZone, GoalAllowedZone
+    ( ZoneKind(..), Turnpoint, EndOfSpeedSection, Goal, OpenDistance
+    , EssAllowedZone, GoalAllowedZone, OpenAllowedZone
     )
 import qualified Flight.Zone.Raw as Z (RawZone(..))
 import Flight.Comp
@@ -226,8 +231,24 @@ mkZones
            )
        )
     -> Zones
-mkZones discipline (decel, (useSemi, (goal, (speed, (alts, zs))))) =
-    Zones zs (g alts zs)
+
+mkZones _ (_, (_, (_, (Nothing, (alts, zs))))) =
+    Zones zs Nothing (g alts zs)
+    where
+        zsLen = length zs
+        psLen = 0
+        tsLen = zsLen - psLen - 1
+
+        ok :: ToZoneKind ZK.OpenDistance
+        ok = \r x _ -> ZK.Cylinder r x
+        tk = \r x _ -> ZK.Cylinder r x
+
+        ps = replicate psLen tk
+        ts = replicate tsLen tk
+        g = openZoneKinds ps ts ok
+
+mkZones discipline (decel, (useSemi, (goal, (speed@(Just _), (alts, zs))))) =
+    Zones zs (g alts zs) Nothing
     where
         tpShape = tpKindShape discipline useSemi goal
 
@@ -258,7 +279,7 @@ mkZones discipline (decel, (useSemi, (goal, (speed, (alts, zs))))) =
         -- (when ssEnd == zsLen) or an ESS zone.
         tsLen = zsLen - psLen - esLen - (if ssEnd == zsLen then 1 else 2)
 
-        gk :: RawZoneToZoneKind ZK.Goal
+        gk :: ToZoneKind ZK.Goal
         gk = mkGoalKind gkShape decel
 
         tk = mkTpKind tpShape
@@ -267,7 +288,7 @@ mkZones discipline (decel, (useSemi, (goal, (speed, (alts, zs))))) =
         ps = replicate psLen tk
         ts = replicate tsLen tk
         es = replicate esLen tk
-        g = rawZonesToZoneKinds ps ts ek es gk
+        g = raceZoneKinds ps ts ek es gk
 
 -- | The attribute //FsTaskDefinition@goal.
 newtype FsGoal = FsGoal String
@@ -408,6 +429,8 @@ data EndShape
     | EndCutCone
     | EndCutSemiCone
 
+data OpenEndShape = OpenEndCylinder | OpenEndVector
+
 type UseSemiCircle = Bool
 data DeceleratorShape = DecCyl | DecCone
 
@@ -444,7 +467,7 @@ mkGoalKind
     :: (ZK.EssAllowedZone k, ZK.GoalAllowedZone k)
     => EndShape
     -> Maybe Decelerator
-    -> RawZoneToZoneKind k
+    -> ToZoneKind k
 mkGoalKind EndCutSemiCone (Just (CESS i)) =
     \r x -> \case
         (Just alt) -> ZK.CutSemiCone (mkIncline i) r x alt
@@ -468,13 +491,13 @@ mkGoalKind EndLine _ =
 mkGoalKind _ _ =
     \r x _ -> ZK.Circle r x
 
-mkTpKind :: EndShape -> RawZoneToZoneKind ZK.Turnpoint
+mkTpKind :: EndShape -> ToZoneKind ZK.Turnpoint
 mkTpKind _ = \r x _ -> ZK.Cylinder r x
 
 mkEssKind
     :: EndShape
     -> Maybe Decelerator
-    -> RawZoneToZoneKind ZK.EndOfSpeedSection
+    -> ToZoneKind ZK.EndOfSpeedSection
 mkEssKind EndCutSemiCone (Just (CESS i)) =
     \r x -> \case
         (Just alt) -> ZK.CutSemiCone (mkIncline i) r x alt
