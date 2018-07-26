@@ -19,6 +19,7 @@ import Text.XML.HXT.Core
     , (<+>)
     , (&&&)
     , (>>>)
+    , (/>)
     , runX
     , withValidate
     , withWarnings
@@ -37,7 +38,7 @@ import Text.XML.HXT.Core
 import Data.Time.Clock (UTCTime)
 import Data.Time.Format (parseTimeOrError, defaultTimeLocale)
 
-import Flight.LatLng (Alt(..), QAlt)
+import Flight.LatLng (LatLng(..), Lat(..), Lng(..), Alt(..), QAlt)
 import Flight.LatLng.Raw (RawLat(..), RawLng(..))
 import Flight.Zone
     ( Radius(..)
@@ -59,6 +60,9 @@ import Flight.Fsdb.Pilot (getCompPilot)
 import Flight.Units ()
 import Flight.Score (Discipline(..))
 import Flight.Fsdb.Internal.XmlPickle (xpNewtypeRational, xpNewtypeQuantity)
+
+bearing :: Z.RawZone -> LatLng Rational [u| deg |] -> QBearing Double [u| rad |]
+bearing _ _ = Bearing [u| 0 rad |]
 
 newtype KeyPilot = KeyPilot (PilotId, Pilot)
 
@@ -160,6 +164,20 @@ xpZone =
         (xpAttr "lon" xpickle)
         (xpAttr "radius" xpickle)
 
+xpHeading :: PU (LatLng Rational [u| deg |])
+xpHeading =
+    xpElem "FsHeadingpoint"
+    $ xpFilterAttr (hasName "lat" <+> hasName "lon")
+    $ xpWrap
+        ( \(RawLat lat, RawLng lng) ->
+            LatLng (Lat . MkQuantity $ lat, Lng . MkQuantity $ lng)
+        , \(LatLng (Lat (MkQuantity lat), Lng (MkQuantity lng))) ->
+            (RawLat lat, RawLng lng)
+        )
+    $ xpPair
+        (xpAttr "lat" xpickle)
+        (xpAttr "lon" xpickle)
+
 xpZoneAltitude :: PU (QAlt Double [u| m |])
 xpZoneAltitude =
     xpElem "FsTurnpoint"
@@ -219,12 +237,15 @@ mkZones
        ,
            ( Bool
            ,
-               ( FsGoal
+               ( Maybe (LatLng Rational [u| deg |])
                ,
-                   ( SpeedSection
+                   ( FsGoal
                    ,
-                       ( [Maybe (QAlt Double [u| m |])]
-                       , [Z.RawZone]
+                       ( SpeedSection
+                       ,
+                           ( [Maybe (QAlt Double [u| m |])]
+                           , [Z.RawZone]
+                           )
                        )
                    )
                )
@@ -232,22 +253,31 @@ mkZones
        )
     -> Zones
 
-mkZones _ (_, (_, (_, (Nothing, (alts, zs))))) =
+mkZones _ (_, (_, (heading, (_, (Nothing, (alts, zs)))))) =
     Zones zs Nothing (g alts zs)
     where
         zsLen = length zs
         psLen = 0
         tsLen = zsLen - psLen - 1
 
-        ok :: ToZoneKind ZK.OpenDistance
-        ok = \r x _ -> ZK.Cylinder r x
         tk = \r x _ -> ZK.Cylinder r x
+
+        okCyl :: ToZoneKind ZK.OpenDistance
+        okCyl r x _ = ZK.Cylinder r x
+
+        okVec :: LatLng Rational [u| deg |] -> ToZoneKind ZK.OpenDistance
+        okVec z' =
+            case (reverse zs) of
+                (z : _) -> let b = bearing z z' in \r x _ -> ZK.Vector b r x
+                _ -> okCyl
+
+        ok = maybe okCyl okVec heading
 
         ps = replicate psLen tk
         ts = replicate tsLen tk
         g = openZoneKinds ps ts ok
 
-mkZones discipline (decel, (useSemi, (goal, (speed@(Just _), (alts, zs))))) =
+mkZones discipline (decel, (useSemi, (_, (goal, (speed@(Just _), (alts, zs)))))) =
     Zones zs (g alts zs) Nothing
     where
         tpShape = tpKindShape discipline useSemi goal
@@ -300,6 +330,7 @@ getTask discipline ps =
     >>> getAttrValue "name"
     &&& ( getDecelerator
         &&& getFormula
+        &&& getHeading
         &&& getGoal
         &&& getSpeedSection
         &&& getZoneAltitudes
@@ -315,6 +346,14 @@ getTask discipline ps =
     where
         kps = (\x@(Pilot (k, _)) -> KeyPilot (k, x)) <$> ps
         
+        getHeading =
+            (getChildren
+            >>> hasName "FsTaskDefinition"
+            /> hasName "FsHeadingpoint"
+            >>> arr (unpickleDoc xpHeading)
+            )
+            `orElse` constA Nothing
+
         getDecelerator =
             if discipline == HangGliding then constA Nothing else
             getChildren
