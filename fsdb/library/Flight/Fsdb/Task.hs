@@ -47,7 +47,7 @@ import qualified Flight.Zone.ZoneKind as ZK
     )
 import qualified Flight.Zone.Raw as Z (RawZone(..))
 import Flight.Comp
-    ( PilotId(..), PilotName(..), Pilot(..)
+    ( PilotId(..), PilotName(..), Pilot(..), SpeedSection
     , Task(..), TaskStop(..), Zones(..), StartGate(..), OpenClose(..)
     )
 import Flight.Fsdb.Pilot (getCompPilot)
@@ -216,14 +216,17 @@ mkZones
            ,
                ( FsGoal
                ,
-                   ( [Maybe (QAlt Double [u| m |])]
-                   , [Z.RawZone]
+                   ( SpeedSection
+                   ,
+                       ( [Maybe (QAlt Double [u| m |])]
+                       , [Z.RawZone]
+                       )
                    )
                )
            )
        )
     -> Zones
-mkZones discipline (decel, (useSemi, (goal, (alts, zs)))) =
+mkZones discipline (decel, (useSemi, (goal, (speed, (alts, zs))))) =
     Zones zs (g alts zs)
     where
         tpShape = tpKindShape discipline useSemi goal
@@ -238,14 +241,33 @@ mkZones discipline (decel, (useSemi, (goal, (alts, zs)))) =
         gkShape = goalKindShape discipline useSemi goal dcShape
         ekShape = essKindShape discipline useSemi goal dcShape 
 
+        -- The number of zones.
+        zsLen = length zs
+
+        -- The number of prolog zones.
+        psLen = maybe 0 ((\x -> x - 1) . fst) speed
+
+        -- The number of epilog zones.
+        esLen = maybe 0 ((\x -> max 0 $ zsLen - x - 1) . snd) speed
+
+        -- The 1-based index of the end of the speed section.
+        ssEnd = maybe zsLen snd speed
+
+        -- The remaining turnpoint zones in the race excluding the zone at the
+        -- end of the speed section. That race end zone might be either goal
+        -- (when ssEnd == zsLen) or an ESS zone.
+        tsLen = zsLen - psLen - esLen - (if ssEnd == zsLen then 1 else 2)
+
         gk :: RawZoneToZoneKind ZK.Goal
         gk = mkGoalKind gkShape decel
 
         tk = mkTpKind tpShape
-        ek = mkEssKind ekShape decel
-        ts = (replicate ((length zs) - 1) tk)
-        es = []
-        g = rawZonesToZoneKinds ts ek es gk
+        ek = if ssEnd < zsLen then Just $ mkEssKind ekShape decel else Nothing
+
+        ps = replicate psLen tk
+        ts = replicate tsLen tk
+        es = replicate esLen tk
+        g = rawZonesToZoneKinds ps ts ek es gk
 
 -- | The attribute //FsTaskDefinition@goal.
 newtype FsGoal = FsGoal String
@@ -258,6 +280,7 @@ getTask discipline ps =
     &&& ( getDecelerator
         &&& getFormula
         &&& getGoal
+        &&& getSpeedSection
         &&& getZoneAltitudes
         &&& getZones
         >>> arr (mkZones discipline)

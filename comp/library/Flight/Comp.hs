@@ -260,6 +260,33 @@ cmp a b =
         -- TaskZones fields
         ("turnpoints", _) -> LT
 
+        -- EssIsGoal fields
+        ("turnpoints", _) -> LT
+        ("ess-is-goal", _) -> GT
+
+        -- EssIsNotGoal fields
+        ("prolog", _) -> LT
+
+        ("race", "prolog") -> GT
+        ("race", _) -> LT
+
+        ("race-ess", "prolog") -> GT
+        ("race-ess", "race") -> GT
+        ("race-ess", _) -> LT
+
+        ("ess", "epilogue") -> LT
+        ("ess", "goal") -> LT
+        ("ess", _) -> GT
+
+        ("epilog", "goal") -> LT
+        ("epilog", _) -> GT
+
+        ("goal", "race") -> GT
+        ("goal", "ess") -> GT
+        ("goal", "epilog") -> GT
+        ("goal", "ess") -> GT
+        ("goal", "race-ess") -> GT
+
         -- Nominal fields
         ("launch", _) -> LT
 

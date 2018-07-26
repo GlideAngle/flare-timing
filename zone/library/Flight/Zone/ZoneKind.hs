@@ -18,6 +18,7 @@ module Flight.Zone.ZoneKind
     , rawZonesToZoneKinds
     ) where
 
+import Data.Maybe (isNothing)
 import Data.Foldable (asum)
 import Data.Aeson
     ( ToJSON(..), FromJSON(..), (.:), (.=)
@@ -480,16 +481,18 @@ data TaskZones k a where
 
     EssIsGoal
         :: GoalAllowedZone g
-        => [ZoneKind Turnpoint a]
-        -> ZoneKind g a
+        => [ZoneKind Turnpoint a] -- ^ prolog
+        -> [ZoneKind Turnpoint a] -- ^ race
+        -> ZoneKind g a -- ^ goal
         -> TaskZones RaceTask a
 
     EssIsNotGoal
         :: (EssAllowedZone e, GoalAllowedZone g)
-        => [ZoneKind Turnpoint a]
-        -> ZoneKind e a
-        -> [ZoneKind Turnpoint a]
-        -> ZoneKind g a
+        => [ZoneKind Turnpoint a] -- ^ prolog
+        -> [ZoneKind Turnpoint a] -- ^ race
+        -> ZoneKind e a -- ^ race end
+        -> [ZoneKind Turnpoint a] -- ^ epilog
+        -> ZoneKind g a -- ^ goal
         -> TaskZones RaceTask a
 
     OpenDistanceTaskZones
@@ -498,14 +501,15 @@ data TaskZones k a where
         -> TaskZones OpenDistance a
 
 instance Eq a => Eq (TaskZones k a) where
-    (EssIsGoal a _) == (EssIsGoal b _) =
-        a == b
+    (EssIsGoal ap at _) == (EssIsGoal bp bt _) =
+        ap == bp && at == bt
 
-    (EssIsNotGoal a _ _ _) == (EssIsNotGoal b _ _ _) =
-        a == b
+    (EssIsNotGoal ap at _ _ _) == (EssIsNotGoal bp bt _ _ _) =
+        ap == bp && at == bt
 
     (OpenDistanceTaskZones a _) == (OpenDistanceTaskZones b _) =
         a == b
+
     _ == _ = False
 
 instance Ord a => Ord (TaskZones k a) where
@@ -514,20 +518,22 @@ instance Ord a => Ord (TaskZones k a) where
 deriving instance (Show a, Show (LatLng a [u| rad |])) => Show (TaskZones k a)
 
 turnpoints :: TaskZones k a -> [ZoneKind Turnpoint a]
-turnpoints (EssIsGoal ts _) = ts
-turnpoints (EssIsNotGoal ts _ us _) = ts ++ us
+turnpoints (EssIsGoal ps ts _) = ps ++ ts
+turnpoints (EssIsNotGoal ps ts _ us _) = ps ++ ts ++ us
 turnpoints (OpenDistanceTaskZones ts _) = ts
 
 instance ToJSON (TaskZones k Double) where
-    toJSON (EssIsGoal ts g) = object
-        [ "turnpoints" .= toJSON ts
-        , "goal" .= g
+    toJSON (EssIsGoal ps ts g) = object
+        [ "prolog" .= toJSON ps
+        , "race" .= toJSON ts
+        , "race-ess-is-goal" .= g
         ]
 
-    toJSON (EssIsNotGoal ts e us g) = object
-        [ "race" .= toJSON ts
-        , "ess" .= e
-        , "epilogue" .= toJSON us
+    toJSON (EssIsNotGoal ps ts ess es g) = object
+        [ "prolog" .= toJSON ps
+        , "race" .= toJSON ts
+        , "race-ess" .= ess
+        , "epilog" .= toJSON es
         , "goal" .= g
         ]
 
@@ -546,16 +552,18 @@ instance FromJSON (TaskZones RaceTask Double) where
     parseJSON = withObject "RaceTask" $ \o ->
         asum
             [ do
+                p :: [ZoneKind Turnpoint Double] <- o .: "prolog"
                 r :: [ZoneKind Turnpoint Double] <- o .: "race"
-                e :: ZoneKind EndOfSpeedSection Double <- o .: "ess"
-                p :: [ZoneKind Turnpoint Double] <- o .: "epilogue"
+                ess :: ZoneKind EndOfSpeedSection Double <- o .: "race-ess"
+                epilog :: [ZoneKind Turnpoint Double] <- o .: "epilog"
                 g :: ZoneKind Goal Double <- o .: "goal"
-                return $ EssIsNotGoal r e p g
+                return $ EssIsNotGoal p r ess epilog g
 
             , do
-                t :: [ZoneKind Turnpoint Double] <- o .: "turnpoints"
-                g :: ZoneKind Goal Double <- o .: "goal"
-                return $ EssIsGoal t g
+                p :: [ZoneKind Turnpoint Double] <- o .: "prolog"
+                t :: [ZoneKind Turnpoint Double] <- o .: "race"
+                g :: ZoneKind Goal Double <- o .: "race-ess-is-goal"
+                return $ EssIsGoal p t g
             ]
 
 type RawZoneToZoneKind k
@@ -566,36 +574,47 @@ type RawZoneToZoneKind k
 
 rawZonesToZoneKinds
     :: (EssAllowedZone e, GoalAllowedZone g)
-    => [RawZoneToZoneKind Turnpoint]
-    -> RawZoneToZoneKind e
-    -> [RawZoneToZoneKind Turnpoint]
-    -> RawZoneToZoneKind g
+    => [RawZoneToZoneKind Turnpoint] -- ^ prolog
+    -> [RawZoneToZoneKind Turnpoint] -- ^ race
+    -> Maybe (RawZoneToZoneKind e) -- ^ race end, if separate from goal
+    -> [RawZoneToZoneKind Turnpoint] -- ^ epilog
+    -> RawZoneToZoneKind g -- ^ goal
     -> [Maybe (QAlt Double [u| m |])]
     -> [Raw.RawZone]
     -> Maybe (TaskZones RaceTask Double)
-rawZonesToZoneKinds mkTps mkEss mkEps mkGoal as zs
+rawZonesToZoneKinds mkPps mkTps mkEss mkEps mkGoal as zs
     -- NOTE: Have not consumed all of the raw control zones.
-    | not (null zs'''') || not (null as'''') = Nothing
+    | not (null zs''''') || not (null as''''') = Nothing
 
-    | null mkEps =
+    | isNothing mkEss && null mkEps =
         case (gZs, gAs) of
             ([gZ], [gA]) ->
-                Just $ EssIsGoal tps (f mkGoal gZ gA)
+                Just
+                $ EssIsGoal pps tps (f mkGoal gZ gA)
 
             _ -> Nothing
 
     | otherwise =
-        case (eZs, eAs, gZs, gAs) of
-            ([eZ], [eA], [gZ], [gA]) ->
-                Just $ EssIsNotGoal tps (f mkEss eZ eA) eps (f mkGoal gZ gA)
+        case (mkEss, eZs, eAs, gZs, gAs) of
+            (Just mkEss', [eZ], [eA], [gZ], [gA]) ->
+                Just
+                $ EssIsNotGoal
+                    pps
+                    tps
+                    (f mkEss' eZ eA)
+                    eps
+                    (f mkGoal gZ gA)
 
             _ -> Nothing
     where
+        splitPps :: [a] -> ([a], [a])
+        splitPps = splitAt $ length mkPps
+
         splitTps :: [a] -> ([a], [a])
         splitTps = splitAt $ length mkTps
 
         splitEss :: [a] -> ([a], [a])
-        splitEss = splitAt $ if null mkEps then 0 else 1
+        splitEss = splitAt $ maybe 0 (const 1) mkEss
 
         splitEps :: [a] -> ([a], [a])
         splitEps = splitAt $ length mkEps
@@ -603,17 +622,27 @@ rawZonesToZoneKinds mkTps mkEss mkEps mkGoal as zs
         splitGoal :: [a] -> ([a], [a])
         splitGoal = splitAt 1
 
-        (tpZs, zs') = splitTps zs
-        (tpAs, as') = splitTps as
+        (ppZs, zs') = splitPps zs
+        (ppAs, as') = splitPps as
 
-        (eZs, zs'') = splitEss zs'
-        (eAs, as'') = splitEss as'
+        (tpZs, zs'') = splitTps zs'
+        (tpAs, as'') = splitTps as'
 
-        (epZs, zs''') = splitEps zs''
-        (epAs, as''') = splitEps as''
+        (eZs, zs''') = splitEss zs''
+        (eAs, as''') = splitEss as''
 
-        (gZs, zs'''') = splitGoal zs'''
-        (gAs, as'''') = splitGoal as'''
+        (epZs, zs'''') = splitEps zs'''
+        (epAs, as'''') = splitEps as'''
+
+        (gZs, zs''''') = splitGoal zs''''
+        (gAs, as''''') = splitGoal as''''
+
+        pps =
+            [ f m z a
+            | m <- mkPps
+            | z <- ppZs
+            | a <- ppAs 
+            ]
 
         tps =
             [ f m z a
