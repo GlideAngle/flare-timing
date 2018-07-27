@@ -147,7 +147,7 @@ data ZoneKind k a where
     -- the open distance.
     Vector
         :: (Eq a, Ord a, OpenAllowedZone k)
-        => QBearing a [u| rad |]
+        => Either (LatLng a [u| rad |]) (QBearing a [u| rad |])
         -> QRadius a [u| m |]
         -> LatLng a [u| rad |]
         -> ZoneKind k a
@@ -260,7 +260,15 @@ instance
     toJSON (Point x) = object
         [ "point" .= toJSON x ]
 
-    toJSON (Vector b r x) = object
+    toJSON (Vector (Left y) r x) = object
+        [ "vector" .= object
+            [ "target" .= toJSON y
+            , "radius" .= toJSON r
+            , "center" .= toJSON x
+            ]
+        ]
+
+    toJSON (Vector (Right b) r x) = object
         [ "vector" .= object
             [ "bearing" .= toJSON b
             , "radius" .= toJSON r
@@ -357,7 +365,14 @@ instance
         asum
             [ do
                 vc <- o .: "vector"
-                Vector
+                Vector . Left
+                    <$> vc .: "target"
+                    <*> vc .: "radius"
+                    <*> vc .: "center"
+
+            , do
+                vc <- o .: "vector"
+                Vector . Right 
                     <$> vc .: "bearing"
                     <*> vc .: "radius"
                     <*> vc .: "center"
@@ -466,7 +481,15 @@ showZoneDMS :: ZoneKind k Double -> String
 showZoneDMS (Point (LatLng (Lat x, Lng y))) =
     "Point " ++ show (fromQ x, fromQ y)
 
-showZoneDMS (Vector (Bearing b) r (LatLng (Lat x, Lng y))) =
+showZoneDMS (Vector (Left (LatLng (Lat bx, Lng by))) r (LatLng (Lat x, Lng y))) =
+    "Vector "
+    ++ show (fromQ bx, fromQ by)
+    ++ " "
+    ++ show r
+    ++ " "
+    ++ show (fromQ x, fromQ y)
+
+showZoneDMS (Vector (Right (Bearing b)) r (LatLng (Lat x, Lng y))) =
     "Vector "
     ++ show (fromQ b)
     ++ " "

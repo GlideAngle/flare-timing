@@ -1,11 +1,12 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
+{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
 module Flight.Fsdb.Task (parseTasks) where
 
 import Data.Maybe (catMaybes)
 import Data.List (sort, nub)
 import Data.Map.Strict (Map, fromList, findWithDefault)
-import Data.UnitsOfMeasure (u)
+import Data.UnitsOfMeasure (u, convert, fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Text.XML.HXT.Arrow.Pickle
     ( XmlPickler(..), PU(..)
@@ -44,12 +45,11 @@ import Flight.Zone
     ( Radius(..)
     , QAltTime, AltTime(..)
     , QIncline, Incline(..)
-    , QBearing, Bearing(..)
     )
-import Flight.Zone.ZoneKind (ToZoneKind, ToOpenZoneKind, raceZoneKinds, openZoneKinds)
+import Flight.Zone.ZoneKind (ToZoneKind, raceZoneKinds, openZoneKinds)
 import qualified Flight.Zone.ZoneKind as ZK
     ( ZoneKind(..), Turnpoint, EndOfSpeedSection, Goal, OpenDistance
-    , EssAllowedZone, GoalAllowedZone, OpenAllowedZone
+    , EssAllowedZone, GoalAllowedZone
     )
 import qualified Flight.Zone.Raw as Z (RawZone(..))
 import Flight.Comp
@@ -60,9 +60,6 @@ import Flight.Fsdb.Pilot (getCompPilot)
 import Flight.Units ()
 import Flight.Score (Discipline(..))
 import Flight.Fsdb.Internal.XmlPickle (xpNewtypeRational, xpNewtypeQuantity)
-
-bearing :: Z.RawZone -> LatLng Rational [u| deg |] -> QBearing Double [u| rad |]
-bearing _ _ = Bearing [u| 0 rad |]
 
 newtype KeyPilot = KeyPilot (PilotId, Pilot)
 
@@ -266,10 +263,16 @@ mkZones _ (_, (_, (heading, (_, (Nothing, (alts, zs)))))) =
         okCyl r x _ = ZK.Cylinder r x
 
         okVec :: LatLng Rational [u| deg |] -> ToZoneKind ZK.OpenDistance
-        okVec z' =
-            case (reverse zs) of
-                (z : _) -> let b = bearing z z' in \r x _ -> ZK.Vector b r x
-                _ -> okCyl
+        okVec (LatLng (Lat dLat, Lng dLng)) =
+            let rLat :: Quantity _ [u| rad |]
+                rLat = fromRational' . convert $ dLat
+
+                rLng :: Quantity _ [u| rad |]
+                rLng = fromRational' . convert $ dLng
+
+                y = LatLng (Lat rLat, Lng rLng)
+
+            in \r x _ -> ZK.Vector (Left y) r x
 
         ok = maybe okCyl okVec heading
 
@@ -467,8 +470,6 @@ data EndShape
     | EndCutSemiCylinder
     | EndCutCone
     | EndCutSemiCone
-
-data OpenEndShape = OpenEndCylinder | OpenEndVector
 
 type UseSemiCircle = Bool
 data DeceleratorShape = DecCyl | DecCone
