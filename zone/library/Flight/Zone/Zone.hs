@@ -158,8 +158,7 @@ instance
     => FromJSON (Zone a) where
     parseJSON = withObject "Zone" $ \o ->
         asum
-            [ do
-                Point <$> o .: "point"
+            [ Point <$> o .: "point"
 
             , do
                 vc <- o .: "vector"
@@ -198,9 +197,8 @@ instance
                     <$> sc .: "radius"
                     <*> sc .: "center"
 
-            , fail $ "Unknown type of zone "
+            , fail "Unknown type of zone "
             ]
-        where
 
 showZoneDMS :: Zone Double -> String
 showZoneDMS (Point (LatLng (Lat x, Lng y))) =

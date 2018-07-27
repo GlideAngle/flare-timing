@@ -110,9 +110,7 @@ xpDecelerator =
                 <+> hasName "ess_incline_ratio"
                 )
             $ xpWrap
-                ( \x ->
-                    CESS . CessIncline $ abs x
-
+                ( CESS . CessIncline . abs
                 , \(CESS (CessIncline x)) -> x
                 )
             $ xpSeq'
@@ -153,7 +151,7 @@ xpZone =
         )
     $ xpWrap
         ( \(n, lat, lng, r) -> Z.RawZone n lat lng r
-        , \(Z.RawZone{..}) -> (zoneName, lat, lng, radius)
+        , \Z.RawZone{..} -> (zoneName, lat, lng, radius)
         )
     $ xp4Tuple
         (xpAttr "id" xpText)
@@ -187,7 +185,7 @@ xpOpenClose =
     $ xpFilterAttr (hasName "open" <+> hasName "close")
     $ xpWrap
         ( \(open, close) -> OpenClose (parseUtcTime open) (parseUtcTime close)
-        , \(OpenClose{..}) -> (show open, show close)
+        , \OpenClose{..} -> (show open, show close)
         )
     $ xpPair
         (xpAttr "open" xpText)
@@ -208,7 +206,7 @@ xpSpeedSection =
     xpElem "FsTaskDefinition"
     $ xpFilterAttr (hasName "ss" <+> hasName "es")
     $ xpWrap
-        ( (\(a, b, _) -> (a, b))
+        ( \(a, b, _) -> (a, b)
         , \(a, b) -> (a, b, [])
         )
     $ xpTriple
@@ -257,7 +255,7 @@ mkZones _ (_, (_, (heading, (_, (Nothing, (alts, zs)))))) =
         psLen = 0
         tsLen = zsLen - psLen - 1
 
-        tk = \r x _ -> ZK.Cylinder r x
+        tk r x _ = ZK.Cylinder r x
 
         okCyl :: ToZoneKind ZK.OpenDistance
         okCyl r x _ = ZK.Cylinder r x
@@ -428,7 +426,7 @@ getTask discipline ps =
             )
             -- NOTE: If a task is created when there are no participants
             -- then the FsTask/FsParticipants element is omitted.
-            `orElse` (constA [])
+            `orElse` constA []
             where
                 getAbsentees =
                     getChildren
@@ -532,7 +530,7 @@ mkGoalKind _ _ =
     \r x _ -> ZK.Circle r x
 
 mkTpKind :: EndShape -> ToZoneKind ZK.Turnpoint
-mkTpKind _ = \r x _ -> ZK.Cylinder r x
+mkTpKind _ r x _ = ZK.Cylinder r x
 
 mkEssKind
     :: EndShape

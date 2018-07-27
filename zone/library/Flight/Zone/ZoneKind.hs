@@ -349,7 +349,7 @@ instance
     , FromJSON (QRadius a [u| m |])
     )
     => FromJSON (ZoneKind CourseLine a) where
-    parseJSON = withObject "ZoneKind" $ \o -> do
+    parseJSON = withObject "ZoneKind" $ \o -> 
         Point <$> o .: "point"
 
 instance
@@ -474,7 +474,7 @@ instance
                     <$> sc .: "radius"
                     <*> sc .: "center"
 
-            , fail $ "Unknown type of zone "
+            , fail "Unknown type of zone "
             ]
 
 showZoneDMS :: ZoneKind k Double -> String
@@ -683,6 +683,27 @@ type ToOpenZoneKind k
     -> Maybe (QAlt Double [u| m |])
     -> ZoneKind k Double
 
+splitToTurnpoints
+    :: [p]
+    -> [t]
+    -> [a]
+    -> [z]
+    -> (([z], [a]), ([z], [a]), ([z], [a]))
+splitToTurnpoints mkPps mkTps as zs =
+    ((ppZs, ppAs), (tpZs, tpAs), (zs'', as''))
+    where
+        splitPps :: [a] -> ([a], [a])
+        splitPps = splitAt $ length mkPps
+
+        splitTps :: [a] -> ([a], [a])
+        splitTps = splitAt $ length mkTps
+
+        (ppZs, zs') = splitPps zs
+        (ppAs, as') = splitPps as
+
+        (tpZs, zs'') = splitTps zs'
+        (tpAs, as'') = splitTps as'
+
 raceZoneKinds
     :: (EssAllowedZone e, GoalAllowedZone g)
     => [ToZoneKind Turnpoint] -- ^ prolog
@@ -695,13 +716,13 @@ raceZoneKinds
     -> Maybe (TaskZones Race Double)
 raceZoneKinds mkPps mkTps mkEss mkEps mkGoal as zs
     -- NOTE: Have not consumed all of the raw control zones.
-    | not (null zs''''') || not (null as''''') = Nothing
+    | not (null zs'''') || not (null as'''') = Nothing
 
     | isNothing mkEss && null mkEps =
         case (gZs, gAs) of
             ([gZ], [gA]) ->
                 Just
-                $ TzEssIsGoal pps tps (f mkGoal gZ gA)
+                $ TzEssIsGoal pps tps (applyZ mkGoal gZ gA)
 
             _ -> Nothing
 
@@ -712,18 +733,12 @@ raceZoneKinds mkPps mkTps mkEss mkEps mkGoal as zs
                 $ TzEssIsNotGoal
                     pps
                     tps
-                    (f mkEss' eZ eA)
+                    (applyZ mkEss' eZ eA)
                     eps
-                    (f mkGoal gZ gA)
+                    (applyZ mkGoal gZ gA)
 
             _ -> Nothing
     where
-        splitPps :: [a] -> ([a], [a])
-        splitPps = splitAt $ length mkPps
-
-        splitTps :: [a] -> ([a], [a])
-        splitTps = splitAt $ length mkTps
-
         splitEss :: [a] -> ([a], [a])
         splitEss = splitAt $ maybe 0 (const 1) mkEss
 
@@ -733,53 +748,38 @@ raceZoneKinds mkPps mkTps mkEss mkEps mkGoal as zs
         splitGoal :: [a] -> ([a], [a])
         splitGoal = splitAt 1
 
-        (ppZs, zs') = splitPps zs
-        (ppAs, as') = splitPps as
+        ((ppZs, ppAs), (tpZs, tpAs), (zs', as')) =
+            splitToTurnpoints mkPps mkTps as zs
 
-        (tpZs, zs'') = splitTps zs'
-        (tpAs, as'') = splitTps as'
+        (eZs, zs'') = splitEss zs'
+        (eAs, as'') = splitEss as'
 
-        (eZs, zs''') = splitEss zs''
-        (eAs, as''') = splitEss as''
+        (epZs, zs''') = splitEps zs''
+        (epAs, as''') = splitEps as''
 
-        (epZs, zs'''') = splitEps zs'''
-        (epAs, as'''') = splitEps as'''
-
-        (gZs, zs''''') = splitGoal zs''''
-        (gAs, as''''') = splitGoal as''''
+        (gZs, zs'''') = splitGoal zs'''
+        (gAs, as'''') = splitGoal as'''
 
         pps =
-            [ f m z a
+            [ applyZ m z a
             | m <- mkPps
             | z <- ppZs
             | a <- ppAs 
             ]
 
         tps =
-            [ f m z a
+            [ applyZ m z a
             | m <- mkTps
             | z <- tpZs
             | a <- tpAs 
             ]
 
         eps =
-            [ f m z a
+            [ applyZ m z a
             | m <- mkEps
             | z <- epZs
             | a <- epAs 
             ]
-
-        f ctor Raw.RawZone{radius = r, lat, lng} alt =
-            ctor r (fromDMS (fromQ qLat, fromQ qLng)) alt
-                where
-                    RawLat lat' = lat
-                    RawLng lng' = lng
-
-                    qLat :: Quantity Double [u| deg |]
-                    qLat = fromRational' $ MkQuantity lat'
-
-                    qLng :: Quantity Double [u| deg |]
-                    qLng = fromRational' $ MkQuantity lng'
 
 openZoneKinds
     :: (OpenAllowedZone o)
@@ -791,60 +791,39 @@ openZoneKinds
     -> Maybe (TaskZones OpenDistance Double)
 openZoneKinds mkPps mkTps mkOpen as zs
     -- NOTE: Have not consumed all of the raw control zones.
-    | not (null zs''') || not (null as''') = Nothing
+    | not (null zs'') || not (null as'') = Nothing
 
     | otherwise =
         case (oZs, oAs) of
             ([oZ], [oA]) ->
                 Just
-                $ TzOpenDistance pps tps (f mkOpen oZ oA)
+                $ TzOpenDistance pps tps (applyZ mkOpen oZ oA)
 
             _ -> Nothing
 
     where
-        splitPps :: [a] -> ([a], [a])
-        splitPps = splitAt $ length mkPps
-
-        splitTps :: [a] -> ([a], [a])
-        splitTps = splitAt $ length mkTps
-
         splitOpen :: [a] -> ([a], [a])
         splitOpen = splitAt 1
 
-        (ppZs, zs') = splitPps zs
-        (ppAs, as') = splitPps as
+        ((ppZs, ppAs), (tpZs, tpAs), (zs', as')) =
+            splitToTurnpoints mkPps mkTps as zs
 
-        (tpZs, zs'') = splitTps zs'
-        (tpAs, as'') = splitTps as'
-
-        (oZs, zs''') = splitOpen zs''
-        (oAs, as''') = splitOpen as''
+        (oZs, zs'') = splitOpen zs'
+        (oAs, as'') = splitOpen as'
 
         pps =
-            [ f m z a
+            [ applyZ m z a
             | m <- mkPps
             | z <- ppZs
             | a <- ppAs 
             ]
 
         tps =
-            [ f m z a
+            [ applyZ m z a
             | m <- mkTps
             | z <- tpZs
             | a <- tpAs 
             ]
-
-        f ctor Raw.RawZone{radius = r, lat, lng} alt =
-            ctor r (fromDMS (fromQ qLat, fromQ qLng)) alt
-                where
-                    RawLat lat' = lat
-                    RawLng lng' = lng
-
-                    qLat :: Quantity Double [u| deg |]
-                    qLat = fromRational' $ MkQuantity lat'
-
-                    qLng :: Quantity Double [u| deg |]
-                    qLng = fromRational' $ MkQuantity lng'
 
 newtype Deadline = Deadline Integer deriving (Eq, Ord, Show)
 newtype TimeOfDay = TimeOfDay Rational deriving (Eq, Ord, Show)
@@ -864,3 +843,23 @@ data Task k a
         , startGates :: StartGates
         , deadline :: Maybe Deadline
         }
+
+-- | Partially apply a function, a zone constructor, that takes radius, latlng
+-- and altitude by extracting the radius and latlng from the raw zone. The
+-- t type parameter here is the partially applied constructor without altitude
+-- applied.
+applyZ
+    :: (QRadius Double [u| m |] -> LatLng Double [u| rad |] -> t)
+    -> Raw.RawZone
+    -> t
+applyZ ctor Raw.RawZone{radius = r, lat, lng} =
+    ctor r (fromDMS (fromQ qLat, fromQ qLng))
+        where
+            RawLat lat' = lat
+            RawLng lng' = lng
+
+            qLat :: Quantity Double [u| deg |]
+            qLat = fromRational' $ MkQuantity lat'
+
+            qLng :: Quantity Double [u| deg |]
+            qLng = fromRational' $ MkQuantity lng'

@@ -64,7 +64,7 @@ xpNominal =
         )
     $ xpWrap
         ( \(nl, ng, nd, md, nt, _) -> Nominal nl ng nd md nt
-        , \(Nominal{..}) -> (launch, goal, distance, free, time, [])
+        , \Nominal{..} -> (launch, goal, distance, free, time, [])
         )
     $ xp6Tuple
         (xpDefault (launch defaultNominal) $ xpAttr "nom_launch" xpickle)

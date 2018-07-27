@@ -29,8 +29,8 @@ xpScoreBack =
     xpElem "FsScoreFormula"
     $ xpFilterAttr (hasName "score_back_time")
     $ xpWrap
-        ( (fmap (ScoreBackTime . MkQuantity . fromIntegral . (* 60))) . fst
-        , flip (,) [] . (fmap (\(ScoreBackTime (MkQuantity x)) -> round x `div` 60))
+        ( fmap (ScoreBackTime . MkQuantity . fromIntegral . (* 60)) . fst
+        , (, []) . fmap (\(ScoreBackTime (MkQuantity x)) -> round x `div` 60)
         )
     $ xpPair
         (xpOption $ xpAttr "score_back_time" xpInt)

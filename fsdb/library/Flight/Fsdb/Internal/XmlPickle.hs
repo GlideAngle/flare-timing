@@ -13,7 +13,7 @@ xpNewtypeRational =
         ( pack . (toRational :: Double -> _)
         , fromRational . unpack
         )
-    $ xpPrim
+        xpPrim
 
 xpNewtypeQuantity :: Newtype n (Quantity Double u) => PU n
 xpNewtypeQuantity =
@@ -21,4 +21,4 @@ xpNewtypeQuantity =
         ( pack . MkQuantity
         , unQuantity . unpack
         )
-    $ xpPrim
+        xpPrim
