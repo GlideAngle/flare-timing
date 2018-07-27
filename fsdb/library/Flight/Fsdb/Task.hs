@@ -258,7 +258,7 @@ mkZones _ (_, (_, (heading, (_, (Nothing, (alts, zs)))))) =
         tk r x _ = ZK.Cylinder r x
 
         okCyl :: ToZoneKind ZK.OpenDistance
-        okCyl r x _ = ZK.Cylinder r x
+        okCyl r x _ = ZK.Star r x
 
         okVec :: LatLng Rational [u| deg |] -> ToZoneKind ZK.OpenDistance
         okVec (LatLng (Lat dLat, Lng dLng)) =

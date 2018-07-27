@@ -54,20 +54,6 @@ data EndOfSpeedSection
     deriving
         ( EssAllowedZone
         , GoalAllowedZone
--- TODO: Why is OpenAllowedZone is needed for EndOfSpeedSection?
--- /.../Fsdb/Task.hs:508:20: error:
---     • No instance for (ZK.OpenAllowedZone ZK.EndOfSpeedSection)
---         arising from a use of ‘ZK.Cylinder’
---     • In the expression: ZK.Cylinder r x
---       In a case alternative: Nothing -> ZK.Cylinder r x
---       In the expression:
---         \case
---           (Just alt) -> ZK.CutCone (mkIncline i) r x alt
---           Nothing -> ZK.Cylinder r x
---     |
--- 508 |         Nothing -> ZK.Cylinder r x
---     |                    ^^^^^^^^^^^^^^^
-        , OpenAllowedZone
         )
 
 -- | The most general kind of a zone. Used in the prolog, race and epilog of
@@ -88,20 +74,7 @@ data CourseLine
 -- will this kind of zone as its last zone if the open distance section has
 -- a heading along which the final leg is measured for open distance.
 data OpenDistance
-    deriving
-        ( OpenAllowedZone
--- TODO: Why is EssAllowedZone needed for Open Distance?
--- /Fsdb/Task.hs:243:24: error:
---     • No instance for (ZK.EssAllowedZone ZK.OpenDistance)
---         arising from a use of ‘ZK.Cylinder’
---     • In the expression: ZK.Cylinder r x
---       In the expression: \ r x _ -> ZK.Cylinder r x
---       In an equation for ‘ok’: ok = \ r x _ -> ZK.Cylinder r x
---     |
--- 243 |         ok = \r x _ -> ZK.Cylinder r x
---     |                        ^^^^^^^^^^^^^^^
-        , EssAllowedZone
-        )
+    deriving OpenAllowedZone
 
 -- | A race is a kind of a task but not a kind of a zone.
 data Race
@@ -143,9 +116,26 @@ data ZoneKind k a where
         -> LatLng a [u| rad |]
         -> ZoneKind k a
 
+    -- | This is a cylinder control zone but only used for open distance. It
+    -- marks the start of the open distance section in any direction.
+    --
+    -- A @Cylinder@ cannot be reused for open distance as it'd lead to these
+    -- problems;
+    --
+    -- No instance for (OpenAllowedZone EndOfSpeedSection)
+    --         arising from a use of ‘Cylinder’
+    --
+    -- No instance for (EssAllowedZone OpenDistance)
+    --         arising from a use of ‘Cylinder’
+    Star
+        :: (Eq a, Ord a, OpenAllowedZone k)
+        => QRadius a [u| m |]
+        -> LatLng a [u| rad |]
+        -> ZoneKind k a
+
     -- | The turnpoint cylinder.
     Cylinder
-        :: (Eq a, Ord a, EssAllowedZone k, OpenAllowedZone k)
+        :: (Eq a, Ord a, EssAllowedZone k)
         => QRadius a [u| m |]
         -> LatLng a [u| rad |]
         -> ZoneKind k a
@@ -197,7 +187,7 @@ data ZoneKind k a where
         -> LatLng a [u| rad |]
         -> ZoneKind k a
 
-    -- | This like a cylinder control zone but only used for goal.
+    -- | This is a cylinder control zone but only used for goal.
     Circle
         :: (Eq a, Ord a, EssAllowedZone k, GoalAllowedZone k)
         => QRadius a [u| m |]
@@ -230,6 +220,7 @@ instance (Eq a, Ord a) => Ord (ZoneKind k a) where
 instance (Ord a, Num a) => HasArea (ZoneKind k a) where
     hasArea (Point _) = False
     hasArea (Vector _ (Radius x) _) = x > zero
+    hasArea (Star (Radius x) _) = x > zero
     hasArea (Cylinder (Radius x) _) = x > zero
     hasArea (CutCone _ (Radius x) _ _) = x > zero
     hasArea (CutSemiCone _ (Radius x) _ _) = x > zero
@@ -263,6 +254,13 @@ instance
         [ "vector" .= object
             [ "bearing" .= toJSON b
             , "radius" .= toJSON r
+            , "center" .= toJSON x
+            ]
+        ]
+
+    toJSON (Star r x) = object
+        ["star" .= object
+            [ "radius" .= toJSON r
             , "center" .= toJSON x
             ]
         ]
@@ -369,8 +367,8 @@ instance
                     <*> vc .: "center"
 
             , do
-                cy <- o .: "cylinder"
-                Cylinder
+                cy <- o .: "star"
+                Star
                     <$> cy .: "radius"
                     <*> cy .: "center"
             ]
@@ -488,6 +486,9 @@ showZoneDMS (Vector (Right (Bearing b)) r (LatLng (Lat x, Lng y))) =
     ++ " "
     ++ show (fromQ x, fromQ y)
 
+showZoneDMS (Star r (LatLng (Lat x, Lng y))) =
+    "Star " ++ show r ++ " " ++ show (fromQ x, fromQ y)
+
 showZoneDMS (Cylinder r (LatLng (Lat x, Lng y))) =
     "Cylinder " ++ show r ++ " " ++ show (fromQ x, fromQ y)
 
@@ -544,6 +545,7 @@ showZoneDMS (SemiCircle r (LatLng (Lat x, Lng y))) =
 center :: ZoneKind k a -> LatLng a [u| rad |]
 center (Point x) = x
 center (Vector _ _ x) = x
+center (Star _ x) = x
 center (Cylinder _ x) = x
 center (CutCone _ _ x _) = x
 center (CutSemiCone _ _ x _) = x
@@ -557,6 +559,7 @@ center (SemiCircle _ x) = x
 radius :: Num a => ZoneKind k a -> QRadius a [u| m |]
 radius (Point _) = Radius [u| 0m |]
 radius (Vector _ r _) = r
+radius (Star r _) = r
 radius (Cylinder r _) = r
 radius (CutCone _ r _ _) = r
 radius (CutSemiCone _ r _ _) = r
