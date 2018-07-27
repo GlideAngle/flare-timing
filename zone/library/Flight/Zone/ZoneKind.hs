@@ -44,16 +44,16 @@ import Flight.Zone.Zone (HasArea(..))
 -- | A goal is a kind of a zone that is the very last zone, the end goal of
 -- a race task. Not used in open distance tasks.
 data Goal
-    deriving (AnyZone, ZoneMaybeCylindrical, EssAllowedZone, GoalAllowedZone)
+    deriving
+        ( EssAllowedZone
+        , GoalAllowedZone
+        )
 
 -- | A kind of a zone that can end the speed section.
 data EndOfSpeedSection
     deriving
-        ( AnyZone
-        , ZoneMaybeCylindrical
-        , EssAllowedZone
+        ( EssAllowedZone
         , GoalAllowedZone
-        , OpenAllowedZone
 -- TODO: Why is OpenAllowedZone is needed for EndOfSpeedSection?
 -- /.../Fsdb/Task.hs:508:20: error:
 --     • No instance for (ZK.OpenAllowedZone ZK.EndOfSpeedSection)
@@ -67,6 +67,7 @@ data EndOfSpeedSection
 --     |
 -- 508 |         Nothing -> ZK.Cylinder r x
 --     |                    ^^^^^^^^^^^^^^^
+        , OpenAllowedZone
         )
 
 -- | The most general kind of a zone. Used in the prolog, race and epilog of
@@ -76,27 +77,19 @@ data EndOfSpeedSection
 -- turnpoint.
 data Turnpoint
     deriving
-        ( AnyZone
-        , ZoneMaybeCylindrical
+        ( OpenAllowedZone
         , EssAllowedZone
-        , OpenAllowedZone
         )
 
 -- | A kind of a zone only used in calculating the task length, a point.
 data CourseLine
-    deriving
-        ( AnyZone
-        , ZoneMaybeCylindrical
-        )
 
 -- | A kind of a zone and a kind of a task. For zones, an open distance task
 -- will this kind of zone as its last zone if the open distance section has
 -- a heading along which the final leg is measured for open distance.
 data OpenDistance
     deriving
-        ( AnyZone
-        , ZoneMaybeCylindrical
-        , OpenAllowedZone
+        ( OpenAllowedZone
 -- TODO: Why is EssAllowedZone needed for Open Distance?
 -- /Fsdb/Task.hs:243:24: error:
 --     • No instance for (ZK.EssAllowedZone ZK.OpenDistance)
@@ -113,11 +106,9 @@ data OpenDistance
 -- | A race is a kind of a task but not a kind of a zone.
 data Race
 
-class AnyZone a where
-class ZoneMaybeCylindrical a where
-class EssAllowedZone a where
-class GoalAllowedZone a where
-class OpenAllowedZone a where
+class EssAllowedZone a
+class GoalAllowedZone a
+class OpenAllowedZone a
 
 -- TODO: Remove standalone deriving Eq & Ord for empty data after GHC 8.4.1
 -- SEE: https://ghc.haskell.org/trac/ghc/ticket/7401
