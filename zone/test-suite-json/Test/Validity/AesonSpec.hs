@@ -86,7 +86,7 @@ spec = do
             `shouldBe` (Just tzEssIsGoalRace)
 
         it "decodes an ESS is not goal race"
-            $ decode "{\"race\":[{\"cylinder\":{\"radius\":\"11.2 m\",\"center\":[\"43.82972999 deg\",\"16.64243 deg\"]}}],\"epilog\":[],\"goal\":{\"circle\":{\"radius\":\"11.2 m\",\"center\":[\"43.82972999 deg\",\"16.64243 deg\"]}},\"race-ess\":{\"circle\":{\"radius\":\"11.2 m\",\"center\":[\"43.82972999 deg\",\"16.64243 deg\"]}},\"prolog\":[]}"
+            $ decode "{\"race\":[{\"cylinder\":{\"radius\":\"11.22 m\",\"center\":[\"43.82972999 deg\",\"16.64243 deg\"]}}],\"epilog\":[],\"goal\":{\"circle\":{\"radius\":\"11.22 m\",\"center\":[\"43.82972999 deg\",\"16.64243 deg\"]}},\"race-ess\":{\"circle\":{\"radius\":\"11.22 m\",\"center\":[\"43.82972999 deg\",\"16.64243 deg\"]}},\"prolog\":[]}"
             `shouldBe` (Just tzEssIsNotGoalRace)
 
     where

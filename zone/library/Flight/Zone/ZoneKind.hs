@@ -402,6 +402,12 @@ instance
     parseJSON = withObject "ZoneKind" $ \o ->
         asum
             [ do
+                cy <- o .: "cylinder"
+                Cylinder
+                    <$> cy .: "radius"
+                    <*> cy .: "center"
+
+            , do
                 co <- o .: "cut-cone"
                 CutCone
                     <$> co .: "incline"
@@ -432,11 +438,30 @@ instance
                     <*> cy .: "radius"
                     <*> cy .: "center"
                     <*> cy .: "altitude"
+            , do
+                ln <- o .: "line"
+                Line
+                    <$> ln .: "radius"
+                    <*> ln .: "center"
+
+            , do
+                cc <- o .: "circle"
+                Circle
+                    <$> cc .: "radius"
+                    <*> cc .: "center"
+
+            , do
+                sc <- o .: "semicircle"
+                SemiCircle
+                    <$> sc .: "radius"
+                    <*> sc .: "center"
             ]
 
 instance
     ( Eq a
     , Ord a
+    , FromJSON (QAltTime a [u| s / m |])
+    , FromJSON (QAlt a [u| m |])
     , FromJSON (LatLng a [u| rad |])
     , FromJSON (QBearing a [u| rad |])
     , FromJSON (QIncline a [u| rad |])
@@ -446,6 +471,37 @@ instance
     parseJSON = withObject "ZoneKind" $ \o ->
         asum
             [ do
+                co <- o .: "cut-cone"
+                CutCone
+                    <$> co .: "incline"
+                    <*> co .: "radius"
+                    <*> co .: "center"
+                    <*> co .: "altitude"
+
+            , do
+                co <- o .: "cut-semi-cone"
+                CutSemiCone
+                    <$> co .: "incline"
+                    <*> co .: "radius"
+                    <*> co .: "center"
+                    <*> co .: "altitude"
+
+            , do
+                cy <- o .: "cut-cylinder"
+                CutCylinder
+                    <$> cy .: "time-bonus"
+                    <*> cy .: "radius"
+                    <*> cy .: "center"
+                    <*> cy .: "altitude"
+
+            , do
+                cy <- o .: "cut-semi-cylinder"
+                CutSemiCylinder
+                    <$> cy .: "time-bonus"
+                    <*> cy .: "radius"
+                    <*> cy .: "center"
+                    <*> cy .: "altitude"
+            , do
                 ln <- o .: "line"
                 Line
                     <$> ln .: "radius"
