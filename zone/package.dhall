@@ -38,5 +38,20 @@ in    defs
               ]
           }
       , tests =
-          ./default-tests.dhall 
+            ./default-tests.dhall 
+          ⫽ { json =
+                { dependencies =
+                    [ "genvalidity"
+                    , "genvalidity-hspec"
+                    , "genvalidity-aeson"
+                    , "hspec"
+                    ]
+                , ghc-options =
+                    [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
+                , main =
+                    "Spec.hs"
+                , source-dirs =
+                    [ "test-suite-json" ]
+                }
+            }
       }
