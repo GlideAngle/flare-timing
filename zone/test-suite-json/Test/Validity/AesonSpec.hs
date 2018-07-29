@@ -9,6 +9,7 @@ import Data.UnitsOfMeasure (u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
+import Flight.Zone.AltTime (QAltTime, AltTime(..))
 import Flight.Zone.Bearing (QBearing, Bearing(..))
 import Flight.Zone.Incline (QIncline, Incline(..))
 import Flight.Zone.Radius (QRadius, Radius(..))
@@ -16,6 +17,9 @@ import Flight.Zone.Radius (QRadius, Radius(..))
 spec :: Spec
 spec = do
     describe "ToJSON" $ do
+        it ("encodes a alt time of " ++ show altTime)
+            $ encode altTime `shouldBe` T.encodeUtf8 "\"3.5 s / m\""
+
         it ("encodes a bearing of " ++ show bearing)
             $ encode bearing `shouldBe` T.encodeUtf8 "\"1.57 rad\""
 
@@ -31,6 +35,9 @@ spec = do
             $ encode radius `shouldBe` T.encodeUtf8 "\"11.2 m\""
 
     describe "FromJSON" $ do
+        it ("decodes an altitude time of 3.5 s / m as " ++ show altTime)
+            $ decode "\"3.5 s / m\"" `shouldBe` (Just altTime)
+
         it ("decodes a bearing of 1.57 rad as " ++ show bearing')
             $ decode "\"1.57 rad\"" `shouldBe` (Just bearing')
 
@@ -55,6 +62,9 @@ spec = do
 
         str90 = "\"90.0 deg\""
         str11_3dp = "\"11.223 deg\""
+
+        altTime :: QAltTime Double [u| s / m |]
+        altTime = AltTime [u| 3.5 s / m |]
 
         bearing :: QBearing Double [u| rad |]
         bearing = Bearing . convert $ deg90
