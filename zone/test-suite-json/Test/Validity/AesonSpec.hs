@@ -42,6 +42,9 @@ spec = do
         it "encodes a cylinder zone kind"
             $ encode zkCyl `shouldBe` T.encodeUtf8 strCyl
 
+        it "encodes a circle zone kind"
+            $ encode zkCircle `shouldBe` T.encodeUtf8 strCircle
+
     describe "FromJSON" $ do
         it ("decodes an altitude time of 3.5 s / m as " ++ show altTime)
             $ decode "\"3.5 s / m\"" `shouldBe` (Just altTime)
@@ -65,6 +68,10 @@ spec = do
         it "decodes a cylinder zone kind"
             $ decode "{\"cylinder\":{\"radius\":\"11.22 m\",\"center\":[\"43.82972999 deg\",\"16.64243 deg\"]}}"
             `shouldBe` (Just zkCyl)
+
+        it "decodes a circle zone kind"
+            $ decode "{\"circle\":{\"radius\":\"11.22 m\",\"center\":[\"43.82972999 deg\",\"16.64243 deg\"]}}"
+            `shouldBe` (Just zkCircle)
 
     where
         deg90 :: Quantity Double [u| deg |]
@@ -106,6 +113,10 @@ spec = do
         zkCyl :: ZoneKind Turnpoint Double
         zkCyl = Cylinder radius gs1
         strCyl = "{\"cylinder\":{\"radius\":\"11.2 m\",\"center\":[\"43.82972999 deg\",\"16.64243 deg\"]}}"
+
+        zkCircle :: ZoneKind Goal Double
+        zkCircle = Circle radius gs1
+        strCircle = "{\"circle\":{\"radius\":\"11.2 m\",\"center\":[\"43.82972999 deg\",\"16.64243 deg\"]}}" 
 
 gs1 :: LatLng Double [u| rad |]
 gs1 = LatLng 
