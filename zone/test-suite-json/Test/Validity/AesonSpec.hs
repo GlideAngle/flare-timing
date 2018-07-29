@@ -39,6 +39,9 @@ spec = do
         it "encodes a point zone kind"
             $ encode zkPt `shouldBe` T.encodeUtf8 strPt
 
+        it "encodes a cylinder zone kind"
+            $ encode zkCyl `shouldBe` T.encodeUtf8 strCyl
+
     describe "FromJSON" $ do
         it ("decodes an altitude time of 3.5 s / m as " ++ show altTime)
             $ decode "\"3.5 s / m\"" `shouldBe` (Just altTime)
@@ -55,9 +58,13 @@ spec = do
         it ("decodes a radius of 11.2 m as " ++ show radius')
             $ decode "\"11.2 m\"" `shouldBe` (Just radius')
 
-        it ("decodes a point zone kind " ++ show radius')
+        it "decodes a point zone kind"
             $ decode "{\"point\":[\"43.82972999 deg\",\"16.64243 deg\"]}"
             `shouldBe` (Just zkPt)
+
+        it "decodes a cylinder zone kind"
+            $ decode "{\"cylinder\":{\"radius\":\"11.22 m\",\"center\":[\"43.82972999 deg\",\"16.64243 deg\"]}}"
+            `shouldBe` (Just zkCyl)
 
     where
         deg90 :: Quantity Double [u| deg |]
@@ -95,6 +102,10 @@ spec = do
 
         zkPt = Point gs1
         strPt = "{\"point\":[\"43.82972999 deg\",\"16.64243 deg\"]}"
+
+        zkCyl :: ZoneKind Turnpoint Double
+        zkCyl = Cylinder radius gs1
+        strCyl = "{\"cylinder\":{\"radius\":\"11.2 m\",\"center\":[\"43.82972999 deg\",\"16.64243 deg\"]}}"
 
 gs1 :: LatLng Double [u| rad |]
 gs1 = LatLng 
