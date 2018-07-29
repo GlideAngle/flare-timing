@@ -48,7 +48,7 @@ spec = do
         deg90 = [u| 90 deg |]
 
         deg11 :: Quantity Double [u| deg |]
-        deg11 = [u| 11.22335566778899 deg |]
+        deg11 = [u| 11.2233445566778899 deg |]
 
         deg11_3dp :: Quantity Double [u| rad |]
         deg11_3dp = convert [u| 11.223 deg |]
