@@ -53,6 +53,10 @@ spec = do
             $ encode tzEssIsNotGoalRace
             `shouldBe` T.encodeUtf8 strEssIsNotGoalRace
 
+        it "encodes an ESS is not goal race with prolog and epilog"
+            $ encode tzEssIsNotGoalRaceProEpi
+            `shouldBe` T.encodeUtf8 strEssIsNotGoalRaceProEpi
+
     describe "FromJSON" $ do
         it ("decodes an altitude time of 3.5 s / m as " ++ show altTime)
             $ decode "\"3.5 s / m\"" `shouldBe` (Just altTime)
@@ -88,6 +92,10 @@ spec = do
         it "decodes an ESS is not goal race"
             $ decode "{\"race\":[{\"cylinder\":{\"radius\":\"11.22 m\",\"center\":[\"43.82972999 deg\",\"16.64243 deg\"]}}],\"epilog\":[],\"goal\":{\"circle\":{\"radius\":\"11.22 m\",\"center\":[\"43.82972999 deg\",\"16.64243 deg\"]}},\"race-ess\":{\"circle\":{\"radius\":\"11.22 m\",\"center\":[\"43.82972999 deg\",\"16.64243 deg\"]}},\"prolog\":[]}"
             `shouldBe` (Just tzEssIsNotGoalRace)
+
+        it "decodes an ESS is not goal race with prolog and epilog"
+            $ decode "{\"race\":[{\"cylinder\":{\"radius\":\"11.22 m\",\"center\":[\"43.82972999 deg\",\"16.64243 deg\"]}}],\"epilog\":[{\"cylinder\":{\"radius\":\"11.22 m\",\"center\":[\"43.82972999 deg\",\"16.64243 deg\"]}}],\"goal\":{\"circle\":{\"radius\":\"11.22 m\",\"center\":[\"43.82972999 deg\",\"16.64243 deg\"]}},\"race-ess\":{\"circle\":{\"radius\":\"11.22 m\",\"center\":[\"43.82972999 deg\",\"16.64243 deg\"]}},\"prolog\":[{\"cylinder\":{\"radius\":\"11.22 m\",\"center\":[\"43.82972999 deg\",\"16.64243 deg\"]}}]}"
+            `shouldBe` (Just tzEssIsNotGoalRaceProEpi)
 
     where
         deg90 :: Quantity Double [u| deg |]
@@ -139,6 +147,9 @@ spec = do
 
         tzEssIsNotGoalRace = TzEssIsNotGoal [] [zkCyl] zkCircle [] zkCircle
         strEssIsNotGoalRace = "{\"race\":[{\"cylinder\":{\"radius\":\"11.2 m\",\"center\":[\"43.82972999 deg\",\"16.64243 deg\"]}}],\"epilog\":[],\"goal\":{\"circle\":{\"radius\":\"11.2 m\",\"center\":[\"43.82972999 deg\",\"16.64243 deg\"]}},\"race-ess\":{\"circle\":{\"radius\":\"11.2 m\",\"center\":[\"43.82972999 deg\",\"16.64243 deg\"]}},\"prolog\":[]}"
+
+        tzEssIsNotGoalRaceProEpi = TzEssIsNotGoal [zkCyl] [zkCyl] zkCircle [zkCyl] zkCircle
+        strEssIsNotGoalRaceProEpi = "{\"race\":[{\"cylinder\":{\"radius\":\"11.2 m\",\"center\":[\"43.82972999 deg\",\"16.64243 deg\"]}}],\"epilog\":[{\"cylinder\":{\"radius\":\"11.2 m\",\"center\":[\"43.82972999 deg\",\"16.64243 deg\"]}}],\"goal\":{\"circle\":{\"radius\":\"11.2 m\",\"center\":[\"43.82972999 deg\",\"16.64243 deg\"]}},\"race-ess\":{\"circle\":{\"radius\":\"11.2 m\",\"center\":[\"43.82972999 deg\",\"16.64243 deg\"]}},\"prolog\":[{\"cylinder\":{\"radius\":\"11.2 m\",\"center\":[\"43.82972999 deg\",\"16.64243 deg\"]}}]}"
 
 gs1 :: LatLng Double [u| rad |]
 gs1 = LatLng 
