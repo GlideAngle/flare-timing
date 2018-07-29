@@ -20,11 +20,11 @@ spec = do
             $ encode bearing `shouldBe` T.encodeUtf8 "\"1.57 rad\""
 
         it ("encodes a incline of " ++ show deg90 ++ "°")
-            $ encode (Incline ((convert deg90) :: Quantity _ [u| rad |]))
+            $ encode (Incline . convert $ deg90)
             `shouldBe` T.encodeUtf8 str90
 
         it ("encodes a incline of " ++ show deg11 ++ "°")
-            $ encode (Incline ((convert deg11) :: Quantity _ [u| rad |]))
+            $ encode (Incline . convert $ deg11)
             `shouldBe` T.encodeUtf8 str11_3dp
 
         it ("encodes a radius of " ++ show radius)
@@ -35,12 +35,12 @@ spec = do
             $ decode "\"1.57 rad\"" `shouldBe` (Just bearing')
 
         it ("decodes an incline of 90° as " ++ show incline)
-            $ decode "\"90.0 deg\"" `shouldBe` (Just $ incline)
+            $ decode "\"90.0 deg\"" `shouldBe` (Just incline)
 
         it ("decodes an incline of 11.223° as " ++ show incline')
             $ decode "\"11.223 deg\"" `shouldBe` (Just incline')
 
-        it ("decodes a radius off 11.2 m as " ++ show radius')
+        it ("decodes a radius of 11.2 m as " ++ show radius')
             $ decode "\"11.2 m\"" `shouldBe` (Just radius')
 
     where
@@ -57,13 +57,13 @@ spec = do
         str11_3dp = "\"11.223 deg\""
 
         bearing :: QBearing Double [u| rad |]
-        bearing = Bearing $ ((convert deg90) :: Quantity _ [u| rad |])
+        bearing = Bearing . convert $ deg90
 
         bearing' :: QBearing Double [u| rad |]
         bearing' = Bearing [u| 1.57 rad |]
 
         incline :: QIncline Double [u| rad |]
-        incline = Incline $ convert deg90
+        incline = Incline . convert $ deg90
 
         incline' :: QIncline Double [u| rad |]
         incline' = Incline deg11_3dp
