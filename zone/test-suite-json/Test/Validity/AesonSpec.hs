@@ -46,7 +46,12 @@ spec = do
             $ encode zkCircle `shouldBe` T.encodeUtf8 strCircle
 
         it "encodes an ESS is goal race"
-            $ encode tzEssIsGoalRace `shouldBe` T.encodeUtf8 strEssIsGoalRace
+            $ encode tzEssIsGoalRace
+            `shouldBe` T.encodeUtf8 strEssIsGoalRace
+
+        it "encodes an ESS is not goal race"
+            $ encode tzEssIsNotGoalRace
+            `shouldBe` T.encodeUtf8 strEssIsNotGoalRace
 
     describe "FromJSON" $ do
         it ("decodes an altitude time of 3.5 s / m as " ++ show altTime)
@@ -79,6 +84,10 @@ spec = do
         it "decodes an ESS is goal race"
             $ decode "{\"race-ess-is-goal\":{\"circle\":{\"radius\":\"11.22 m\",\"center\":[\"43.82972999 deg\",\"16.64243 deg\"]}},\"race\":[{\"cylinder\":{\"radius\":\"11.22 m\",\"center\":[\"43.82972999 deg\",\"16.64243 deg\"]}}],\"prolog\":[]}"
             `shouldBe` (Just tzEssIsGoalRace)
+
+        it "decodes an ESS is not goal race"
+            $ decode "{\"race\":[{\"cylinder\":{\"radius\":\"11.2 m\",\"center\":[\"43.82972999 deg\",\"16.64243 deg\"]}}],\"epilog\":[],\"goal\":{\"circle\":{\"radius\":\"11.2 m\",\"center\":[\"43.82972999 deg\",\"16.64243 deg\"]}},\"race-ess\":{\"circle\":{\"radius\":\"11.2 m\",\"center\":[\"43.82972999 deg\",\"16.64243 deg\"]}},\"prolog\":[]}"
+            `shouldBe` (Just tzEssIsNotGoalRace)
 
     where
         deg90 :: Quantity Double [u| deg |]
@@ -127,6 +136,9 @@ spec = do
 
         tzEssIsGoalRace = TzEssIsGoal [] [zkCyl] zkCircle
         strEssIsGoalRace = "{\"race-ess-is-goal\":{\"circle\":{\"radius\":\"11.2 m\",\"center\":[\"43.82972999 deg\",\"16.64243 deg\"]}},\"race\":[{\"cylinder\":{\"radius\":\"11.2 m\",\"center\":[\"43.82972999 deg\",\"16.64243 deg\"]}}],\"prolog\":[]}"
+
+        tzEssIsNotGoalRace = TzEssIsNotGoal [] [zkCyl] zkCircle [] zkCircle
+        strEssIsNotGoalRace = "{\"race\":[{\"cylinder\":{\"radius\":\"11.2 m\",\"center\":[\"43.82972999 deg\",\"16.64243 deg\"]}}],\"epilog\":[],\"goal\":{\"circle\":{\"radius\":\"11.2 m\",\"center\":[\"43.82972999 deg\",\"16.64243 deg\"]}},\"race-ess\":{\"circle\":{\"radius\":\"11.2 m\",\"center\":[\"43.82972999 deg\",\"16.64243 deg\"]}},\"prolog\":[]}"
 
 gs1 :: LatLng Double [u| rad |]
 gs1 = LatLng 
