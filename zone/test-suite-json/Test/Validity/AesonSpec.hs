@@ -9,10 +9,12 @@ import Data.UnitsOfMeasure (u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
+import Flight.LatLng (LatLng(..), Lat(..), Lng(..))
 import Flight.Zone.AltTime (QAltTime, AltTime(..))
 import Flight.Zone.Bearing (QBearing, Bearing(..))
 import Flight.Zone.Incline (QIncline, Incline(..))
 import Flight.Zone.Radius (QRadius, Radius(..))
+import Flight.Zone.ZoneKind hiding (radius) 
 
 spec :: Spec
 spec = do
@@ -34,6 +36,9 @@ spec = do
         it ("encodes a radius of " ++ show radius)
             $ encode radius `shouldBe` T.encodeUtf8 "\"11.2 m\""
 
+        it "encodes a point zone kind"
+            $ encode zkPt `shouldBe` T.encodeUtf8 strPt
+
     describe "FromJSON" $ do
         it ("decodes an altitude time of 3.5 s / m as " ++ show altTime)
             $ decode "\"3.5 s / m\"" `shouldBe` (Just altTime)
@@ -49,6 +54,10 @@ spec = do
 
         it ("decodes a radius of 11.2 m as " ++ show radius')
             $ decode "\"11.2 m\"" `shouldBe` (Just radius')
+
+        it ("decodes a point zone kind " ++ show radius')
+            $ decode "{\"point\":[\"43.82972999 deg\",\"16.64243 deg\"]}"
+            `shouldBe` (Just zkPt)
 
     where
         deg90 :: Quantity Double [u| deg |]
@@ -83,3 +92,13 @@ spec = do
 
         radius' :: QRadius Double [u| m |]
         radius' = Radius [u| 11.2 m |]
+
+        zkPt = Point gs1
+        strPt = "{\"point\":[\"43.82972999 deg\",\"16.64243 deg\"]}"
+
+gs1 :: LatLng Double [u| rad |]
+gs1 = LatLng 
+    ( Lat $ convert [u| 43.82972999 deg |]
+    , Lng $ convert [u| 16.64243 deg |]
+    )
+
