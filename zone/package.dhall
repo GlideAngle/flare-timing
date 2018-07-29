@@ -41,17 +41,13 @@ in    defs
             ./default-tests.dhall 
           ⫽ { json =
                 { dependencies =
-                    [ "genvalidity"
-                    , "genvalidity-hspec"
-                    , "genvalidity-aeson"
-                    , "hspec"
-                    ]
+                    [ "text", "hspec" ]
                 , ghc-options =
                     [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
                 , main =
                     "Spec.hs"
                 , source-dirs =
-                    [ "test-suite-json" ]
+                    [ "library", "test-suite-json" ]
                 }
             }
       }

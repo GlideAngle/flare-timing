@@ -12,12 +12,13 @@ import Flight.LatLng.Raw (RawLat, RawLng, showLat, showLng)
 import Flight.Zone.Radius (Radius(..))
 
 data RawZone =
-    RawZone { zoneName :: String
-            , lat :: RawLat
-            , lng :: RawLng
-            , radius :: Radius (Quantity Double [u| m |])
-            }
-            deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+    RawZone
+        { zoneName :: String
+        , lat :: RawLat
+        , lng :: RawLng
+        , radius :: Radius (Quantity Double [u| m |])
+        }
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 showZone :: RawZone -> String
 showZone (RawZone name lat' lng' rad) =

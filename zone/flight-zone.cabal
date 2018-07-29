@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 81b7c2b0b0f42a8c9203600fd18bdc1dd40b3589afc1e437cf67b64474c57712
+-- hash: 28f62a91cb214874102a5dfab39997960be781d330497895837754518b25f2be
 
 name:           flight-zone
 version:        0.1.0
@@ -69,9 +69,24 @@ test-suite json
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      Flight.Zone
+      Flight.Zone.AltTime
+      Flight.Zone.Bearing
+      Flight.Zone.Convert
+      Flight.Zone.Cylinder
+      Flight.Zone.Cylinder.Edge
+      Flight.Zone.Cylinder.Sample
+      Flight.Zone.Incline
+      Flight.Zone.Path
+      Flight.Zone.Radius
+      Flight.Zone.Raw
+      Flight.Zone.Raw.Zone
+      Flight.Zone.Zone
+      Flight.Zone.ZoneKind
       Test.Validity.AesonSpec
       Paths_flight_zone
   hs-source-dirs:
+      library
       test-suite-json
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
@@ -82,12 +97,10 @@ test-suite json
     , detour-via-uom
     , flight-latlng
     , flight-units
-    , genvalidity
-    , genvalidity-aeson
-    , genvalidity-hspec
     , hspec
     , newtype
     , scientific
     , siggy-chardust
+    , text
     , uom-plugin
   default-language: Haskell2010
