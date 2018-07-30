@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1da2e4b2969a5ba4d63de03a4ab0c11fb4530d51894eb6615e673c83499d48e0
+-- hash: 69ca993b744cfafe1e6c88915ba484b4c035039e8e18419a781bee0b7b19d17c
 
 name:           flight-zone
 version:        0.1.0
@@ -92,6 +92,7 @@ test-suite json
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
+    , aeson-pretty
     , base >=4.9.1.0
     , bytestring
     , detour-via-sci
