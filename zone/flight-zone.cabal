@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 28f62a91cb214874102a5dfab39997960be781d330497895837754518b25f2be
+-- hash: 1da2e4b2969a5ba4d63de03a4ab0c11fb4530d51894eb6615e673c83499d48e0
 
 name:           flight-zone
 version:        0.1.0
@@ -93,14 +93,17 @@ test-suite json
   build-depends:
       aeson
     , base >=4.9.1.0
+    , bytestring
     , detour-via-sci
     , detour-via-uom
     , flight-latlng
     , flight-units
+    , here
     , hspec
     , newtype
     , scientific
     , siggy-chardust
     , text
     , uom-plugin
+    , yaml
   default-language: Haskell2010

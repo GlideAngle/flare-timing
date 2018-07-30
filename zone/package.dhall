@@ -41,7 +41,7 @@ in    defs
             ./default-tests.dhall 
           ⫽ { json =
                 { dependencies =
-                    [ "text", "hspec" ]
+                    [ "text", "hspec", "yaml", "here", "bytestring" ]
                 , ghc-options =
                     [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
                 , main =
