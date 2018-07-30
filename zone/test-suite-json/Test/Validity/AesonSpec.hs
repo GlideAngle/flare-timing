@@ -221,27 +221,160 @@ spec = do
             $ decode [hereLit|"11.2 m"|] `shouldBe` (Just radius')
 
         it "decodes a point zone kind"
-            $ decode [hereLit|{"point":["43.82972999 deg","16.64243 deg"]}|]
+            $ decode
+            [hereLit|{
+    "point": [
+        "43.82972999 deg",
+        "16.64243 deg"
+    ]
+}|]
             `shouldBe` (Just zkPt)
 
         it "decodes a cylinder zone kind"
-            $ decode [hereLit|{"cylinder":{"radius":"11.22 m","center":["43.82972999 deg","16.64243 deg"]}}|]
+            $ decode
+            [hereLit|{
+    "cylinder": {
+        "radius": "11.22 m",
+        "center": [
+            "43.82972999 deg",
+            "16.64243 deg"
+        ]
+    }
+}|]
             `shouldBe` (Just zkCyl)
 
         it "decodes a circle zone kind"
-            $ decode [hereLit|{"circle":{"radius":"11.22 m","center":["43.82972999 deg","16.64243 deg"]}}|]
+            $ decode 
+            [hereLit|{
+    "circle": {
+        "radius": "11.22 m",
+        "center": [
+            "43.82972999 deg",
+            "16.64243 deg"
+        ]
+    }
+}|]
             `shouldBe` (Just zkCircle)
 
         it "decodes an ESS is goal race"
-            $ decode [hereLit|{"race-ess-is-goal":{"circle":{"radius":"11.22 m","center":["43.82972999 deg","16.64243 deg"]}},"race":[{"cylinder":{"radius":"11.22 m","center":["43.82972999 deg","16.64243 deg"]}}],"prolog":[]}|]
+            $ decode 
+            [hereLit|{
+    "race-ess-is-goal": {
+        "circle": {
+            "radius": "11.22 m",
+            "center": [
+                "43.82972999 deg",
+                "16.64243 deg"
+            ]
+        }
+    },
+    "race": [
+        {
+            "cylinder": {
+                "radius": "11.22 m",
+                "center": [
+                    "43.82972999 deg",
+                    "16.64243 deg"
+                ]
+            }
+        }
+    ],
+    "prolog": []
+}|]
             `shouldBe` (Just tzEssIsGoalRace)
 
         it "decodes an ESS is not goal race"
-            $ decode [hereLit|{"race":[{"cylinder":{"radius":"11.22 m","center":["43.82972999 deg","16.64243 deg"]}}],"epilog":[],"goal":{"circle":{"radius":"11.22 m","center":["43.82972999 deg","16.64243 deg"]}},"race-ess":{"circle":{"radius":"11.22 m","center":["43.82972999 deg","16.64243 deg"]}},"prolog":[]}|]
+            $ decode 
+            [hereLit|{
+    "race": [
+        {
+            "cylinder": {
+                "radius": "11.22 m",
+                "center": [
+                    "43.82972999 deg",
+                    "16.64243 deg"
+                ]
+            }
+        }
+    ],
+    "epilog": [],
+    "goal": {
+        "circle": {
+            "radius": "11.22 m",
+            "center": [
+                "43.82972999 deg",
+                "16.64243 deg"
+            ]
+        }
+    },
+    "race-ess": {
+        "circle": {
+            "radius": "11.22 m",
+            "center": [
+                "43.82972999 deg",
+                "16.64243 deg"
+            ]
+        }
+    },
+    "prolog": []
+}|]
             `shouldBe` (Just tzEssIsNotGoalRace)
 
         it "decodes an ESS is not goal race with prolog and epilog"
-            $ decode [hereLit|{"race":[{"cylinder":{"radius":"11.22 m","center":["43.82972999 deg","16.64243 deg"]}}],"epilog":[{"cylinder":{"radius":"11.22 m","center":["43.82972999 deg","16.64243 deg"]}}],"goal":{"circle":{"radius":"11.22 m","center":["43.82972999 deg","16.64243 deg"]}},"race-ess":{"circle":{"radius":"11.22 m","center":["43.82972999 deg","16.64243 deg"]}},"prolog":[{"cylinder":{"radius":"11.22 m","center":["43.82972999 deg","16.64243 deg"]}}]}|]
+            $ decode 
+            [hereLit|{
+    "race": [
+        {
+            "cylinder": {
+                "radius": "11.22 m",
+                "center": [
+                    "43.82972999 deg",
+                    "16.64243 deg"
+                ]
+            }
+        }
+    ],
+    "epilog": [
+        {
+            "cylinder": {
+                "radius": "11.22 m",
+                "center": [
+                    "43.82972999 deg",
+                    "16.64243 deg"
+                ]
+            }
+        }
+    ],
+    "goal": {
+        "circle": {
+            "radius": "11.22 m",
+            "center": [
+                "43.82972999 deg",
+                "16.64243 deg"
+            ]
+        }
+    },
+    "race-ess": {
+        "circle": {
+            "radius": "11.22 m",
+            "center": [
+                "43.82972999 deg",
+                "16.64243 deg"
+            ]
+        }
+    },
+    "prolog": [
+        {
+            "cylinder": {
+                "radius": "11.22 m",
+                "center": [
+                    "43.82972999 deg",
+                    "16.64243 deg"
+                ]
+            }
+        }
+    ]
+}|]
             `shouldBe` (Just tzEssIsNotGoalRaceProEpi)
 
     where
