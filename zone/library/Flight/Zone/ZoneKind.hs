@@ -960,4 +960,3 @@ cmpTaskZonesOpenDistance a b =
         ("radius", _) -> GT
 
         _ -> compare a b
-

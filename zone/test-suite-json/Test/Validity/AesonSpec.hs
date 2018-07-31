@@ -15,7 +15,7 @@ import Data.String.Here (hereFile)
 
 import Flight.Units ()
 import Flight.Field (FieldOrdering(..))
-import Flight.LatLng (LatLng(..), Lat(..), Lng(..))
+import Flight.LatLng (Alt(..), LatLng(..), Lat(..), Lng(..))
 import Flight.Zone.AltTime (QAltTime, AltTime(..))
 import Flight.Zone.Bearing (QBearing, Bearing(..))
 import Flight.Zone.Incline (QIncline, Incline(..))
@@ -106,15 +106,20 @@ spec = do
             `shouldBe`
             [hereFile|yenc/hg-line.comp-input.yaml|]
 
-        it "encodes hg-open-heading-not race"
+        it "encodes hg-open-heading-not"
             $ yenc' tzHgOpenHeadingNot
             `shouldBe`
             [hereFile|yenc/hg-open-heading-not.comp-input.yaml|]
 
-        it "encodes hg-open-heading race"
+        it "encodes hg-open-heading"
             $ yenc' tzHgOpenHeading
             `shouldBe`
             [hereFile|yenc/hg-open-heading.comp-input.yaml|]
+
+        it "encodes pg-line-not-decelerator-cess race"
+            $ yenc' tzPgLineNotDeceleratorCess
+            `shouldBe`
+            [hereFile|yenc/pg-line-not-decelerator-cess.comp-input.yaml|]
 
     describe "From YAML" $ do
         it ("decodes an altitude time of 3.5 s / m as " ++ show altTime)
@@ -364,6 +369,20 @@ spec = do
                 ]
                 (Vector (Left target) rad400 bmi023 :: ZoneKind OpenDistance _)
 
+        inc35 :: QIncline Double [u| rad |]
+        inc35 = Incline . convert $ [u| 15.945 deg |]
+
+        alt = Alt [u| 340 m |]
+
+        tzPgLineNotDeceleratorCess =
+            TzEssIsNotGoal
+                [Cylinder rad400 ways4]
+                [Cylinder rad400 afarm]
+                (CutCone inc35 rad400 alec alt :: ZoneKind EndOfSpeedSection _)
+                []
+                (Circle rad400 ardle :: ZoneKind Goal _)
+
+
 gs1 :: LatLng Double [u| rad |]
 gs1 = LatLng (Lat $ convert [u| 43.82972999 deg |], Lng $ convert [u| 16.64243 deg |])
 
@@ -378,3 +397,15 @@ trund = LatLng (Lat $ convert [u| - 32.9378 deg |], Lng $ convert [u| 147.7097 d
 
 target :: LatLng Double [u| rad |]
 target = LatLng (Lat $ convert [u| 90 deg |], Lng $ convert [u| 0 deg |])
+
+ways4 :: LatLng Double [u| rad |]
+ways4 = LatLng (Lat $ convert [u| - 32.4916 deg |], Lng $ convert [u| 147.91973 deg |])
+
+afarm :: LatLng Double [u| rad |]
+afarm = LatLng (Lat $ convert [u| - 33.1903 deg |], Lng $ convert [u| 147.9857 deg |])
+
+alec :: LatLng Double [u| rad |]
+alec = LatLng (Lat $ convert [u| - 32.897 deg |], Lng $ convert [u| 148.2638 deg |])
+
+ardle :: LatLng Double [u| rad |]
+ardle = LatLng (Lat $ convert [u| - 34.4125 deg |], Lng $ convert [u| 146.8543 deg |])
