@@ -106,6 +106,16 @@ spec = do
             `shouldBe`
             [hereFile|yenc/hg-line.comp-input.yaml|]
 
+        it "encodes hg-open-heading-not race"
+            $ yenc' tzHgOpenHeadingNot
+            `shouldBe`
+            [hereFile|yenc/hg-open-heading-not.comp-input.yaml|]
+
+        it "encodes hg-open-heading race"
+            $ yenc' tzHgOpenHeading
+            `shouldBe`
+            [hereFile|yenc/hg-open-heading.comp-input.yaml|]
+
     describe "From YAML" $ do
         it ("decodes an altitude time of 3.5 s / m as " ++ show altTime)
             $ ydec
@@ -336,6 +346,24 @@ spec = do
                 []
                 (Line rad400 bmi023 :: ZoneKind Goal _)
 
+        tzHgOpenHeadingNot =
+            TzOpenDistance
+                []
+                [ Cylinder rad400 bmi023
+                , Cylinder rad400 bogan
+                , Cylinder rad400 trund
+                ]
+                (Star rad400 bmi023 :: ZoneKind OpenDistance _)
+
+        tzHgOpenHeading =
+            TzOpenDistance
+                []
+                [ Cylinder rad400 bmi023
+                , Cylinder rad400 bogan
+                , Cylinder rad400 trund
+                ]
+                (Vector (Left target) rad400 bmi023 :: ZoneKind OpenDistance _)
+
 gs1 :: LatLng Double [u| rad |]
 gs1 = LatLng (Lat $ convert [u| 43.82972999 deg |], Lng $ convert [u| 16.64243 deg |])
 
@@ -347,3 +375,6 @@ bogan = LatLng (Lat $ convert [u| - 33.12592 deg |], Lng $ convert [u| 147.91043
 
 trund :: LatLng Double [u| rad |]
 trund = LatLng (Lat $ convert [u| - 32.9378 deg |], Lng $ convert [u| 147.7097 deg |])
+
+target :: LatLng Double [u| rad |]
+target = LatLng (Lat $ convert [u| 90 deg |], Lng $ convert [u| 0 deg |])

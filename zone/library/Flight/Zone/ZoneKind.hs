@@ -935,5 +935,29 @@ cmpTaskZonesRace a b =
         ("epilog", _) -> GT
 
         ("goal", _) -> GT
+        ("race-ess-is-goal", _) -> GT
+
+        _ -> compare a b
+
+instance FieldOrdering (TaskZones OpenDistance a) where
+    fieldOrder _ = cmpTaskZonesOpenDistance
+
+cmpTaskZonesOpenDistance :: (Ord a, IsString a) => a -> a -> Ordering
+cmpTaskZonesOpenDistance a b =
+    case (a, b) of
+        ("prolog", _) -> LT
+
+        ("open-mandatory", "open-free") -> LT
+        ("open-mandatory", _) -> GT
+
+        ("open-free", _) -> GT
+
+        ("center", _) -> LT
+
+        ("target", "radius") -> LT
+        ("target", _) -> GT
+
+        ("radius", _) -> GT
+
         _ -> compare a b
 
