@@ -126,6 +126,16 @@ spec = do
             `shouldBe`
             [hereFile|yenc/pg-line-decelerator-cess.comp-input.yaml|]
 
+        it "encodes pg-line-not-decelerator-none race"
+            $ yenc' tzPgLineNotDeceleratorNone
+            `shouldBe`
+            [hereFile|yenc/pg-line-not-decelerator-none.comp-input.yaml|]
+
+        it "encodes pg-line-decelerator-none race"
+            $ yenc' tzPgLineDeceleratorNone
+            `shouldBe`
+            [hereFile|yenc/pg-line-decelerator-none.comp-input.yaml|]
+
     describe "From YAML" $ do
         it ("decodes an altitude time of 3.5 s / m as " ++ show altTime)
             $ ydec
@@ -392,6 +402,22 @@ spec = do
                 [Cylinder rad400 ways4]
                 [Cylinder rad400 afarm]
                 (CutCone inc35 rad400 alec alt :: ZoneKind EndOfSpeedSection _)
+                []
+                (Line rad400 ardle :: ZoneKind Goal _)
+
+        tzPgLineNotDeceleratorNone =
+            TzEssIsNotGoal
+                [Cylinder rad400 ways4]
+                [Cylinder rad400 afarm]
+                (Cylinder rad400 alec :: ZoneKind EndOfSpeedSection _)
+                []
+                (Circle rad400 ardle :: ZoneKind Goal _)
+
+        tzPgLineDeceleratorNone =
+            TzEssIsNotGoal
+                [Cylinder rad400 ways4]
+                [Cylinder rad400 afarm]
+                (Cylinder rad400 alec :: ZoneKind EndOfSpeedSection _)
                 []
                 (Line rad400 ardle :: ZoneKind Goal _)
 
