@@ -29,8 +29,10 @@ import Data.Aeson
     )
 import Data.UnitsOfMeasure (u, fromRational', zero)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
+import Data.String (IsString())
 
 import Flight.Units ()
+import Flight.Field (FieldOrdering(..))
 import Flight.Units.DegMinSec (fromQ)
 import Flight.LatLng (QAlt, Lat(..), Lng(..), LatLng(..), fromDMS)
 import Flight.Zone.Radius (Radius(..), QRadius)
@@ -913,3 +915,25 @@ applyZ ctor Raw.RawZone{radius = r, lat, lng} =
 
             qLng :: Quantity Double [u| deg |]
             qLng = fromRational' $ MkQuantity lng'
+
+instance FieldOrdering (TaskZones Race a) where
+    fieldOrder _ = cmpTaskZonesRace
+
+cmpTaskZonesRace :: (Ord a, IsString a) => a -> a -> Ordering
+cmpTaskZonesRace a b =
+    case (a, b) of
+        ("prolog", _) -> LT
+
+        ("race", "prolog") -> GT
+        ("race", _) -> LT
+
+        ("race-ess", "prolog") -> GT
+        ("race-ess", "race") -> GT
+        ("race-ess", _) -> LT
+
+        ("epilog", "goal") -> LT
+        ("epilog", _) -> GT
+
+        ("goal", _) -> GT
+        _ -> compare a b
+

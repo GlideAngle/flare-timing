@@ -12,7 +12,6 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import qualified Data.Yaml.Pretty as Y
 import qualified Data.Yaml as Y (decodeEither')
 import Data.String.Here (hereFile)
-import Data.String (IsString())
 
 import Flight.Units ()
 import Flight.Field (FieldOrdering(..))
@@ -22,27 +21,6 @@ import Flight.Zone.Bearing (QBearing, Bearing(..))
 import Flight.Zone.Incline (QIncline, Incline(..))
 import Flight.Zone.Radius (QRadius, Radius(..))
 import Flight.Zone.ZoneKind hiding (radius) 
-
-instance FieldOrdering (TaskZones Race a) where
-    fieldOrder _ = cmpTaskZonesRace
-
-cmpTaskZonesRace :: (Ord a, IsString a) => a -> a -> Ordering
-cmpTaskZonesRace a b =
-    case (a, b) of
-        ("prolog", _) -> LT
-
-        ("race", "prolog") -> GT
-        ("race", _) -> LT
-
-        ("race-ess", "prolog") -> GT
-        ("race-ess", "race") -> GT
-        ("race-ess", _) -> LT
-
-        ("epilog", "goal") -> LT
-        ("epilog", _) -> GT
-
-        ("goal", _) -> GT
-        _ -> compare a b
 
 yenc :: ToJSON a => a -> ByteString
 yenc = Y.encodePretty Y.defConfig
