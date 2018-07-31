@@ -97,9 +97,14 @@ spec = do
             [hereFile|yenc/ess-is-not-goal-race-pro-epi.yaml|]
 
         it "encodes hg-line-not race"
-            $ yenc' tzHgNotLineRace
+            $ yenc' tzHgLineNotRace
             `shouldBe`
             [hereFile|yenc/hg-line-not.comp-input.yaml|]
+
+        it "encodes hg-line race"
+            $ yenc' tzHgLineRace
+            `shouldBe`
+            [hereFile|yenc/hg-line.comp-input.yaml|]
 
     describe "From YAML" $ do
         it ("decodes an altitude time of 3.5 s / m as " ++ show altTime)
@@ -315,13 +320,21 @@ spec = do
         rad400 :: QRadius Double [u| m |]
         rad400  = Radius [u| 400 m |]
 
-        tzHgNotLineRace =
+        tzHgLineNotRace =
             TzEssIsNotGoal
                 [Cylinder rad400 bmi023]
                 [Cylinder rad400 bogan]
                 (Cylinder rad400 trund :: ZoneKind EndOfSpeedSection _)
                 []
                 (Circle rad400 bmi023 :: ZoneKind Goal _)
+
+        tzHgLineRace =
+            TzEssIsNotGoal
+                [Cylinder rad400 bmi023]
+                [Cylinder rad400 bogan]
+                (Cylinder rad400 trund :: ZoneKind EndOfSpeedSection _)
+                []
+                (Line rad400 bmi023 :: ZoneKind Goal _)
 
 gs1 :: LatLng Double [u| rad |]
 gs1 = LatLng (Lat $ convert [u| 43.82972999 deg |], Lng $ convert [u| 16.64243 deg |])
