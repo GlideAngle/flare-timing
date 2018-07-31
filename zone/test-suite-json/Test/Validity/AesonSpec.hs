@@ -30,20 +30,41 @@ spec = do
             `shouldBe`
             [hereFile|yenc/alt-time.yaml|]
 
+        it ("encodes a bearing of " ++ show bearing)
+            $ yenc bearing
+            `shouldBe`
+            [hereFile|yenc/bearing.yaml|]
+
+        it ("encodes a incline of " ++ show deg90 ++ "°")
+            $ yenc (Incline . convert $ deg90)
+            `shouldBe`
+            [hereFile|yenc/incline-90.yaml|]
+
+        it ("encodes a incline of " ++ show deg11 ++ "°")
+            $ yenc (Incline . convert $ deg11)
+            `shouldBe`
+            [hereFile|yenc/incline-11.yaml|]
+
     describe "To JSON" $ do
         it ("encodes an alt time of " ++ show altTime)
-            $ encode altTime `shouldBe` [hereLit|"3.5 s / m"|]
+            $ encode altTime
+            `shouldBe`
+            [hereFile|jenc/alt-time.json|]
 
         it ("encodes a bearing of " ++ show bearing)
-            $ encode bearing `shouldBe` [hereLit|"1.57 rad"|]
+            $ encode bearing
+            `shouldBe`
+            [hereFile|jenc/bearing.json|]
 
         it ("encodes a incline of " ++ show deg90 ++ "°")
             $ encode (Incline . convert $ deg90)
-            `shouldBe` str90
+            `shouldBe`
+            [hereFile|jenc/incline-90.json|]
 
         it ("encodes a incline of " ++ show deg11 ++ "°")
             $ encode (Incline . convert $ deg11)
-            `shouldBe` str11_3dp
+            `shouldBe`
+            [hereFile|jenc/incline-11.json|]
 
         it ("encodes a radius of " ++ show radius)
             $ encode radius `shouldBe` [hereLit|"11.2 m"|]
@@ -260,9 +281,6 @@ spec = do
 
         deg11_3dp :: Quantity Double [u| rad |]
         deg11_3dp = convert [u| 11.223 deg |]
-
-        str90 = [hereLit|"90.0 deg"|]
-        str11_3dp = [hereLit|"11.223 deg"|]
 
         altTime :: QAltTime Double [u| s / m |]
         altTime = AltTime [u| 3.5 s / m |]
