@@ -126,6 +126,16 @@ spec = do
             `shouldBe`
             [hereFile|yenc/pg-line-decelerator-cess.comp-input.yaml|]
 
+        it "encodes pg-line-not-decelerator-aatb race"
+            $ yenc' tzPgLineNotDeceleratorAatb
+            `shouldBe`
+            [hereFile|yenc/pg-line-not-decelerator-aatb.comp-input.yaml|]
+
+        it "encodes pg-line-decelerator-aatb race"
+            $ yenc' tzPgLineDeceleratorAatb
+            `shouldBe`
+            [hereFile|yenc/pg-line-decelerator-aatb.comp-input.yaml|]
+
         it "encodes pg-line-not-decelerator-none race"
             $ yenc' tzPgLineNotDeceleratorNone
             `shouldBe`
@@ -388,6 +398,7 @@ spec = do
         inc35 = Incline . convert $ [u| 15.945 deg |]
 
         alt = Alt [u| 340 m |]
+        tb = AltTime [u| 0.45 s / m |]
 
         tzPgLineNotDeceleratorCess =
             TzEssIsNotGoal
@@ -402,6 +413,22 @@ spec = do
                 [Cylinder rad400 ways4]
                 [Cylinder rad400 afarm]
                 (CutCone inc35 rad400 alec alt :: ZoneKind EndOfSpeedSection _)
+                []
+                (Line rad400 ardle :: ZoneKind Goal _)
+
+        tzPgLineNotDeceleratorAatb =
+            TzEssIsNotGoal
+                [Cylinder rad400 ways4]
+                [Cylinder rad400 afarm]
+                (CutSemiCylinder tb rad400 alec alt :: ZoneKind EndOfSpeedSection _)
+                []
+                (Circle rad400 ardle :: ZoneKind Goal _)
+
+        tzPgLineDeceleratorAatb =
+            TzEssIsNotGoal
+                [Cylinder rad400 ways4]
+                [Cylinder rad400 afarm]
+                (CutSemiCylinder tb rad400 alec alt :: ZoneKind EndOfSpeedSection _)
                 []
                 (Line rad400 ardle :: ZoneKind Goal _)
 

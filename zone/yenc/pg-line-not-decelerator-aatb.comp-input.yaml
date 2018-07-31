@@ -1,0 +1,29 @@
+prolog:
+- cylinder:
+    center:
+    - -32.4916 deg
+    - 147.91973 deg
+    radius: 400.0 m
+race:
+- cylinder:
+    center:
+    - -33.1903 deg
+    - 147.9857 deg
+    radius: 400.0 m
+race-ess:
+  cut-cylinder:
+    altitude: 340.0 m
+    center:
+    - -32.897 deg
+    - 148.2638 deg
+    radius: 400.0 m
+    time-bonus: 0.45 s / m
+epilog: []
+goal:
+  cut-cylinder:
+    altitude: 198.0 m
+    center:
+    - -34.4125 deg
+    - 146.8543 deg
+    radius: 400.0 m
+    time-bonus: 0.45 s / m
