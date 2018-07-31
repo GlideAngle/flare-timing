@@ -26,8 +26,9 @@ spec :: Spec
 spec = do
     describe "To YAML" $ do
         it ("encodes an alt time of " ++ show altTime)
-            $ yenc altTime `shouldBe` [hereLit|3.5 s / m
-|]
+            $ yenc altTime
+            `shouldBe`
+            [hereFile|yenc/alt-time.yaml|]
 
     describe "To JSON" $ do
         it ("encodes an alt time of " ++ show altTime)
