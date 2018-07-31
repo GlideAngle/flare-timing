@@ -12,8 +12,10 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import qualified Data.Yaml.Pretty as Y
 import qualified Data.Yaml as Y (decodeEither')
 import Data.String.Here (hereFile)
+import Data.String (IsString())
 
 import Flight.Units ()
+import Flight.Field (FieldOrdering(..))
 import Flight.LatLng (LatLng(..), Lat(..), Lng(..))
 import Flight.Zone.AltTime (QAltTime, AltTime(..))
 import Flight.Zone.Bearing (QBearing, Bearing(..))
@@ -21,8 +23,33 @@ import Flight.Zone.Incline (QIncline, Incline(..))
 import Flight.Zone.Radius (QRadius, Radius(..))
 import Flight.Zone.ZoneKind hiding (radius) 
 
+instance FieldOrdering (TaskZones Race a) where
+    fieldOrder _ = cmpTaskZonesRace
+
+cmpTaskZonesRace :: (Ord a, IsString a) => a -> a -> Ordering
+cmpTaskZonesRace a b =
+    case (a, b) of
+        ("prolog", _) -> LT
+
+        ("race", "prolog") -> GT
+        ("race", _) -> LT
+
+        ("race-ess", "prolog") -> GT
+        ("race-ess", "race") -> GT
+        ("race-ess", _) -> LT
+
+        ("epilog", "goal") -> LT
+        ("epilog", _) -> GT
+
+        ("goal", _) -> GT
+        _ -> compare a b
+
 yenc :: ToJSON a => a -> ByteString
 yenc = Y.encodePretty Y.defConfig
+
+yenc' :: (ToJSON a, FieldOrdering a) => a -> ByteString
+yenc' x = Y.encodePretty cfg x
+    where cfg = Y.setConfCompare (fieldOrder x) Y.defConfig
 
 ydec :: FromJSON a => ByteString -> Either ByteString a
 ydec =
@@ -90,6 +117,11 @@ spec = do
             $ yenc tzEssIsNotGoalRaceProEpi
             `shouldBe`
             [hereFile|yenc/ess-is-not-goal-race-pro-epi.yaml|]
+
+        it "encodes hg-line-not race"
+            $ yenc' tzHgNotLineRace
+            `shouldBe`
+            [hereFile|yenc/hg-line-not.comp-input.yaml|]
 
     describe "From YAML" $ do
         it ("decodes an altitude time of 3.5 s / m as " ++ show altTime)
@@ -302,9 +334,25 @@ spec = do
         tzEssIsNotGoalRace = TzEssIsNotGoal [] [zkCyl] zkCircle [] zkCircle
         tzEssIsNotGoalRaceProEpi = TzEssIsNotGoal [zkCyl] [zkCyl] zkCircle [zkCyl] zkCircle
 
-gs1 :: LatLng Double [u| rad |]
-gs1 = LatLng 
-    ( Lat $ convert [u| 43.82972999 deg |]
-    , Lng $ convert [u| 16.64243 deg |]
-    )
+        rad400 :: QRadius Double [u| m |]
+        rad400  = Radius [u| 400 m |]
 
+        tzHgNotLineRace =
+            TzEssIsNotGoal
+                [Cylinder rad400 bmi023]
+                [Cylinder rad400 bogan]
+                (Cylinder rad400 trund :: ZoneKind EndOfSpeedSection _)
+                []
+                (Circle rad400 bmi023 :: ZoneKind Goal _)
+
+gs1 :: LatLng Double [u| rad |]
+gs1 = LatLng (Lat $ convert [u| 43.82972999 deg |], Lng $ convert [u| 16.64243 deg |])
+
+bmi023 :: LatLng Double [u| rad |]
+bmi023 = LatLng (Lat $ convert [u| - 33.3562 deg |], Lng $ convert [u| 147.9336 deg |])
+
+bogan :: LatLng Double [u| rad |]
+bogan = LatLng (Lat $ convert [u| - 33.12592 deg |], Lng $ convert [u| 147.91043 deg |])
+
+trund :: LatLng Double [u| rad |]
+trund = LatLng (Lat $ convert [u| - 32.9378 deg |], Lng $ convert [u| 147.7097 deg |])
