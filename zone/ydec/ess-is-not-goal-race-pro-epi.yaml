@@ -1,0 +1,30 @@
+race:
+- cylinder:
+    radius: 11.22 m
+    center:
+    - 43.82972999 deg
+    - 16.64243 deg
+epilog:
+- cylinder:
+    radius: 11.22 m
+    center:
+    - 43.82972999 deg
+    - 16.64243 deg
+goal:
+  circle:
+    radius: 11.22 m
+    center:
+    - 43.82972999 deg
+    - 16.64243 deg
+race-ess:
+  circle:
+    radius: 11.22 m
+    center:
+    - 43.82972999 deg
+    - 16.64243 deg
+prolog:
+- cylinder:
+    radius: 11.22 m
+    center:
+    - 43.82972999 deg
+    - 16.64243 deg

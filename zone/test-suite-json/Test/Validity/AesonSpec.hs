@@ -2,13 +2,15 @@
 
 module Test.Validity.AesonSpec where
 
+import Data.Bifunctor (first)
 import Data.ByteString (ByteString)
 import Test.Hspec (Spec, describe, it, shouldBe)
-import Data.Aeson (ToJSON, encode, decode)
+import Data.Aeson (ToJSON, FromJSON, encode, decode)
 import Data.Aeson.Encode.Pretty (encodePretty)
 import Data.UnitsOfMeasure (u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import qualified Data.Yaml.Pretty as Y
+import qualified Data.Yaml as Y (decodeEither')
 import Data.String.Here (hereFile)
 
 import Flight.Units ()
@@ -21,6 +23,15 @@ import Flight.Zone.ZoneKind hiding (radius)
 
 yenc :: ToJSON a => a -> ByteString
 yenc = Y.encodePretty Y.defConfig
+
+ydec :: FromJSON a => ByteString -> Either ByteString a
+ydec =
+    -- NOTE: Data.Yaml.ParseException has no instance of Eq so map the left of
+    -- the either to a type that does have an Eq instance.
+    --
+    -- • No instance for (Eq Y.ParseException)
+    --    arising from a use of ‘shouldBe’
+    first (const "") . Y.decodeEither'
 
 spec :: Spec
 spec = do
@@ -79,6 +90,62 @@ spec = do
             $ yenc tzEssIsNotGoalRaceProEpi
             `shouldBe`
             [hereFile|yenc/ess-is-not-goal-race-pro-epi.yaml|]
+
+    describe "From YAML" $ do
+        it ("decodes an altitude time of 3.5 s / m as " ++ show altTime)
+            $ ydec
+            [hereFile|ydec/alt-time.yaml|]
+            `shouldBe` (Right altTime)
+
+        it ("decodes a bearing of 1.57 rad as " ++ show bearing')
+            $ ydec
+            [hereFile|ydec/bearing.yaml|]
+            `shouldBe` (Right bearing')
+
+        it ("ydecs an incline of 90° as " ++ show incline)
+            $ ydec
+            [hereFile|ydec/incline-90.yaml|]
+            `shouldBe` (Right incline)
+
+        it ("ydecs an incline of 11.223° as " ++ show incline')
+            $ ydec
+            [hereFile|ydec/incline-11.yaml|]
+            `shouldBe` (Right incline')
+
+        it ("ydecs a radius of 11.2 m as " ++ show radius')
+            $ ydec
+            [hereFile|ydec/radius.yaml|]
+            `shouldBe` (Right radius)
+
+        it "ydecs a point zone kind"
+            $ ydec
+            [hereFile|ydec/point.yaml|]
+            `shouldBe` (Right zkPt)
+
+        it "ydecs a cylinder zone kind"
+            $ ydec
+            [hereFile|ydec/cylinder.yaml|]
+            `shouldBe` (Right zkCyl)
+
+        it "ydecs a circle zone kind"
+            $ ydec 
+            [hereFile|ydec/circle.yaml|]
+            `shouldBe` (Right zkCircle)
+
+        it "ydecs an ESS is goal race"
+            $ ydec 
+            [hereFile|ydec/ess-is-goal-race.yaml|]
+            `shouldBe` (Right tzEssIsGoalRace)
+
+        it "ydecs an ESS is not goal race"
+            $ ydec 
+            [hereFile|ydec/ess-is-not-goal-race.yaml|]
+            `shouldBe` (Right tzEssIsNotGoalRace)
+
+        it "ydecs an ESS is not goal race with prolog and epilog"
+            $ ydec 
+            [hereFile|ydec/ess-is-not-goal-race-pro-epi.yaml|]
+            `shouldBe` (Right tzEssIsNotGoalRaceProEpi)
 
     describe "To JSON" $ do
         it ("encodes an alt time of " ++ show altTime)
