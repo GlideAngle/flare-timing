@@ -45,6 +45,11 @@ spec = do
             `shouldBe`
             [hereFile|yenc/incline-11.yaml|]
 
+        it ("encodes a radius of " ++ show radius)
+            $ encode radius
+            `shouldBe`
+            [hereFile|yenc/radius.yaml|]
+
     describe "To JSON" $ do
         it ("encodes an alt time of " ++ show altTime)
             $ encode altTime
@@ -67,7 +72,9 @@ spec = do
             [hereFile|jenc/incline-11.json|]
 
         it ("encodes a radius of " ++ show radius)
-            $ encode radius `shouldBe` [hereLit|"11.2 m"|]
+            $ encode radius
+            `shouldBe`
+            [hereFile|jenc/radius.json|]
 
         it "encodes a point zone kind"
             $ encodePretty zkPt
