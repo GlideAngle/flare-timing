@@ -11,7 +11,7 @@ race:
     - 147.9857 deg
     radius: 400.0 m
 race-ess:
-  cut-cone:
+  cut-semi-cone:
     altitude: 340.0 m
     center:
     - -32.897 deg
@@ -20,7 +20,7 @@ race-ess:
     radius: 400.0 m
 epilog: []
 goal:
-  cut-cone:
+  cut-semi-cone:
     altitude: 198.0 m
     center:
     - -34.4125 deg
