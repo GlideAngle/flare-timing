@@ -46,9 +46,39 @@ spec = do
             [hereFile|yenc/incline-11.yaml|]
 
         it ("encodes a radius of " ++ show radius)
-            $ encode radius
+            $ yenc radius
             `shouldBe`
             [hereFile|yenc/radius.yaml|]
+
+        it "encodes a point zone kind"
+            $ yenc zkPt
+            `shouldBe`
+            [hereFile|yenc/point.yaml|]
+
+        it "encodes a cylinder zone kind"
+            $ yenc zkCyl
+            `shouldBe`
+            [hereFile|yenc/cylinder.yaml|]
+
+        it "encodes a circle zone kind"
+            $ yenc zkCircle
+            `shouldBe`
+            [hereFile|yenc/circle.yaml|]
+
+        it "encodes an ESS is goal race"
+            $ yenc tzEssIsGoalRace
+            `shouldBe`
+            [hereFile|yenc/ess-is-goal-race.yaml|]
+
+        it "encodes an ESS is not goal race"
+            $ yenc tzEssIsNotGoalRace
+            `shouldBe`
+            [hereFile|yenc/ess-is-not-goal-race.yaml|]
+
+        it "encodes an ESS is not goal race with prolog and epilog"
+            $ yenc tzEssIsNotGoalRaceProEpi
+            `shouldBe`
+            [hereFile|yenc/ess-is-not-goal-race-pro-epi.yaml|]
 
     describe "To JSON" $ do
         it ("encodes an alt time of " ++ show altTime)
