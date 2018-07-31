@@ -55,149 +55,27 @@ spec = do
         it "encodes a cylinder zone kind"
             $ encodePretty zkCyl
             `shouldBe`
-            [hereLit|{
-    "cylinder": {
-        "radius": "11.2 m",
-        "center": [
-            "43.82972999 deg",
-            "16.64243 deg"
-        ]
-    }
-}|]
+            [hereFile|jenc/cylinder.json|]
 
         it "encodes a circle zone kind"
             $ encodePretty zkCircle
             `shouldBe`
-            [hereLit|{
-    "circle": {
-        "radius": "11.2 m",
-        "center": [
-            "43.82972999 deg",
-            "16.64243 deg"
-        ]
-    }
-}|]
+            [hereFile|jenc/circle.json|]
 
         it "encodes an ESS is goal race"
             $ encodePretty tzEssIsGoalRace
             `shouldBe`
-            [hereLit|{
-    "race-ess-is-goal": {
-        "circle": {
-            "radius": "11.2 m",
-            "center": [
-                "43.82972999 deg",
-                "16.64243 deg"
-            ]
-        }
-    },
-    "race": [
-        {
-            "cylinder": {
-                "radius": "11.2 m",
-                "center": [
-                    "43.82972999 deg",
-                    "16.64243 deg"
-                ]
-            }
-        }
-    ],
-    "prolog": []
-}|]
+            [hereFile|jenc/ess-is-goal-race.json|]
 
         it "encodes an ESS is not goal race"
             $ encodePretty tzEssIsNotGoalRace
             `shouldBe`
-            [hereLit|{
-    "race": [
-        {
-            "cylinder": {
-                "radius": "11.2 m",
-                "center": [
-                    "43.82972999 deg",
-                    "16.64243 deg"
-                ]
-            }
-        }
-    ],
-    "epilog": [],
-    "goal": {
-        "circle": {
-            "radius": "11.2 m",
-            "center": [
-                "43.82972999 deg",
-                "16.64243 deg"
-            ]
-        }
-    },
-    "race-ess": {
-        "circle": {
-            "radius": "11.2 m",
-            "center": [
-                "43.82972999 deg",
-                "16.64243 deg"
-            ]
-        }
-    },
-    "prolog": []
-}|]
+            [hereFile|jenc/ess-is-not-goal-race.json|]
 
         it "encodes an ESS is not goal race with prolog and epilog"
             $ encodePretty tzEssIsNotGoalRaceProEpi
             `shouldBe`
-            [hereLit|{
-    "race": [
-        {
-            "cylinder": {
-                "radius": "11.2 m",
-                "center": [
-                    "43.82972999 deg",
-                    "16.64243 deg"
-                ]
-            }
-        }
-    ],
-    "epilog": [
-        {
-            "cylinder": {
-                "radius": "11.2 m",
-                "center": [
-                    "43.82972999 deg",
-                    "16.64243 deg"
-                ]
-            }
-        }
-    ],
-    "goal": {
-        "circle": {
-            "radius": "11.2 m",
-            "center": [
-                "43.82972999 deg",
-                "16.64243 deg"
-            ]
-        }
-    },
-    "race-ess": {
-        "circle": {
-            "radius": "11.2 m",
-            "center": [
-                "43.82972999 deg",
-                "16.64243 deg"
-            ]
-        }
-    },
-    "prolog": [
-        {
-            "cylinder": {
-                "radius": "11.2 m",
-                "center": [
-                    "43.82972999 deg",
-                    "16.64243 deg"
-                ]
-            }
-        }
-    ]
-}|]
+            [hereFile|jenc/ess-is-not-goal-race-pro-epi.json|]
 
     describe "From JSON" $ do
         it ("decodes an altitude time of 3.5 s / m as " ++ show altTime)
