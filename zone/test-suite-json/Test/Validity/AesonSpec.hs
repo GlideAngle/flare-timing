@@ -9,7 +9,7 @@ import Data.Aeson.Encode.Pretty (encodePretty)
 import Data.UnitsOfMeasure (u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import qualified Data.Yaml.Pretty as Y
-import Data.String.Here (hereLit, hereFile)
+import Data.String.Here (hereFile)
 
 import Flight.Units ()
 import Flight.LatLng (LatLng(..), Lat(..), Lng(..))
@@ -138,175 +138,58 @@ spec = do
 
     describe "From JSON" $ do
         it ("decodes an altitude time of 3.5 s / m as " ++ show altTime)
-            $ decode [hereLit|"3.5 s / m"|] `shouldBe` (Just altTime)
+            $ decode
+            [hereFile|jdec/alt-time.json|]
+            `shouldBe` (Just altTime)
 
         it ("decodes a bearing of 1.57 rad as " ++ show bearing')
-            $ decode [hereLit|"1.57 rad"|] `shouldBe` (Just bearing')
+            $ decode
+            [hereFile|jdec/bearing.json|]
+            `shouldBe` (Just bearing')
 
         it ("decodes an incline of 90° as " ++ show incline)
-            $ decode [hereLit|"90.0 deg"|] `shouldBe` (Just incline)
+            $ decode
+            [hereFile|jdec/incline-90.json|]
+            `shouldBe` (Just incline)
 
         it ("decodes an incline of 11.223° as " ++ show incline')
-            $ decode [hereLit|"11.223 deg"|] `shouldBe` (Just incline')
+            $ decode
+            [hereFile|jdec/incline-11.json|]
+            `shouldBe` (Just incline')
 
         it ("decodes a radius of 11.2 m as " ++ show radius')
-            $ decode [hereLit|"11.2 m"|] `shouldBe` (Just radius')
+            $ decode
+            [hereFile|jdec/radius.json|]
+            `shouldBe` (Just radius')
 
         it "decodes a point zone kind"
             $ decode
-            [hereLit|{
-    "point": [
-        "43.82972999 deg",
-        "16.64243 deg"
-    ]
-}|]
+            [hereFile|jdec/point.json|]
             `shouldBe` (Just zkPt)
 
         it "decodes a cylinder zone kind"
             $ decode
-            [hereLit|{
-    "cylinder": {
-        "radius": "11.22 m",
-        "center": [
-            "43.82972999 deg",
-            "16.64243 deg"
-        ]
-    }
-}|]
+            [hereFile|jdec/cylinder.json|]
             `shouldBe` (Just zkCyl)
 
         it "decodes a circle zone kind"
             $ decode 
-            [hereLit|{
-    "circle": {
-        "radius": "11.22 m",
-        "center": [
-            "43.82972999 deg",
-            "16.64243 deg"
-        ]
-    }
-}|]
+            [hereFile|jdec/circle.json|]
             `shouldBe` (Just zkCircle)
 
         it "decodes an ESS is goal race"
             $ decode 
-            [hereLit|{
-    "race-ess-is-goal": {
-        "circle": {
-            "radius": "11.22 m",
-            "center": [
-                "43.82972999 deg",
-                "16.64243 deg"
-            ]
-        }
-    },
-    "race": [
-        {
-            "cylinder": {
-                "radius": "11.22 m",
-                "center": [
-                    "43.82972999 deg",
-                    "16.64243 deg"
-                ]
-            }
-        }
-    ],
-    "prolog": []
-}|]
+            [hereFile|jdec/ess-is-goal-race.json|]
             `shouldBe` (Just tzEssIsGoalRace)
 
         it "decodes an ESS is not goal race"
             $ decode 
-            [hereLit|{
-    "race": [
-        {
-            "cylinder": {
-                "radius": "11.22 m",
-                "center": [
-                    "43.82972999 deg",
-                    "16.64243 deg"
-                ]
-            }
-        }
-    ],
-    "epilog": [],
-    "goal": {
-        "circle": {
-            "radius": "11.22 m",
-            "center": [
-                "43.82972999 deg",
-                "16.64243 deg"
-            ]
-        }
-    },
-    "race-ess": {
-        "circle": {
-            "radius": "11.22 m",
-            "center": [
-                "43.82972999 deg",
-                "16.64243 deg"
-            ]
-        }
-    },
-    "prolog": []
-}|]
+            [hereFile|jdec/ess-is-not-goal-race.json|]
             `shouldBe` (Just tzEssIsNotGoalRace)
 
         it "decodes an ESS is not goal race with prolog and epilog"
             $ decode 
-            [hereLit|{
-    "race": [
-        {
-            "cylinder": {
-                "radius": "11.22 m",
-                "center": [
-                    "43.82972999 deg",
-                    "16.64243 deg"
-                ]
-            }
-        }
-    ],
-    "epilog": [
-        {
-            "cylinder": {
-                "radius": "11.22 m",
-                "center": [
-                    "43.82972999 deg",
-                    "16.64243 deg"
-                ]
-            }
-        }
-    ],
-    "goal": {
-        "circle": {
-            "radius": "11.22 m",
-            "center": [
-                "43.82972999 deg",
-                "16.64243 deg"
-            ]
-        }
-    },
-    "race-ess": {
-        "circle": {
-            "radius": "11.22 m",
-            "center": [
-                "43.82972999 deg",
-                "16.64243 deg"
-            ]
-        }
-    },
-    "prolog": [
-        {
-            "cylinder": {
-                "radius": "11.22 m",
-                "center": [
-                    "43.82972999 deg",
-                    "16.64243 deg"
-                ]
-            }
-        }
-    ]
-}|]
+            [hereFile|jdec/ess-is-not-goal-race-pro-epi.json|]
             `shouldBe` (Just tzEssIsNotGoalRaceProEpi)
 
     where
