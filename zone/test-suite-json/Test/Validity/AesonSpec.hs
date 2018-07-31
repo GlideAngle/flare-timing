@@ -9,7 +9,7 @@ import Data.Aeson.Encode.Pretty (encodePretty)
 import Data.UnitsOfMeasure (u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import qualified Data.Yaml.Pretty as Y
-import Data.String.Here (hereLit)
+import Data.String.Here (hereLit, hereFile)
 
 import Flight.Units ()
 import Flight.LatLng (LatLng(..), Lat(..), Lng(..))
@@ -50,12 +50,7 @@ spec = do
         it "encodes a point zone kind"
             $ encodePretty zkPt
             `shouldBe`
-            [hereLit|{
-    "point": [
-        "43.82972999 deg",
-        "16.64243 deg"
-    ]
-}|]
+            [hereFile|jenc/point.json|]
 
         it "encodes a cylinder zone kind"
             $ encodePretty zkCyl
