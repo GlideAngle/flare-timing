@@ -397,14 +397,15 @@ spec = do
         inc35 :: QIncline Double [u| rad |]
         inc35 = Incline . convert $ [u| 15.945 deg |]
 
-        alt = Alt [u| 340 m |]
+        alt340 = Alt [u| 340 m |]
+        alt198 = Alt [u| 198 m |]
         tb = AltTime [u| 0.45 s / m |]
 
         tzPgLineNotDeceleratorCess =
             TzEssIsNotGoal
                 [Cylinder rad400 ways4]
                 [Cylinder rad400 afarm]
-                (CutCone inc35 rad400 alec alt :: ZoneKind EndOfSpeedSection _)
+                (CutCone inc35 rad400 alec alt340 :: ZoneKind EndOfSpeedSection _)
                 []
                 (Circle rad400 ardle :: ZoneKind Goal _)
 
@@ -412,23 +413,38 @@ spec = do
             TzEssIsNotGoal
                 [Cylinder rad400 ways4]
                 [Cylinder rad400 afarm]
-                (CutCone inc35 rad400 alec alt :: ZoneKind EndOfSpeedSection _)
+                (CutCone inc35 rad400 alec alt340 :: ZoneKind EndOfSpeedSection _)
                 []
                 (Line rad400 ardle :: ZoneKind Goal _)
 
         tzPgLineNotDeceleratorAatb =
-            TzEssIsNotGoal
+            [ TzEssIsNotGoal
                 [Cylinder rad400 ways4]
                 [Cylinder rad400 afarm]
-                (CutCylinder tb rad400 alec alt :: ZoneKind EndOfSpeedSection _)
+                (CutCylinder tb rad400 alec alt340 :: ZoneKind EndOfSpeedSection _)
                 []
                 (Circle rad400 ardle :: ZoneKind Goal _)
+
+            , TzEssIsGoal
+                [Cylinder rad400 ways4]
+                [ Cylinder rad400 afarm
+                , Cylinder rad400 alec
+                ]
+                (CutCylinder tb rad400 ardle alt198 :: ZoneKind Goal _)
+
+            , TzEssIsNotGoal
+                [Cylinder rad400 ways4]
+                [Cylinder rad400 afarm]
+                (CutCylinder tb rad400 alec alt340 :: ZoneKind EndOfSpeedSection _)
+                [Cylinder rad400 afarm]
+                (Circle rad400 ardle :: ZoneKind Goal _)
+            ]
 
         tzPgLineDeceleratorAatb =
             TzEssIsNotGoal
                 [Cylinder rad400 ways4]
                 [Cylinder rad400 afarm]
-                (CutSemiCylinder tb rad400 alec alt :: ZoneKind EndOfSpeedSection _)
+                (CutSemiCylinder tb rad400 alec alt340 :: ZoneKind EndOfSpeedSection _)
                 []
                 (Line rad400 ardle :: ZoneKind Goal _)
 
