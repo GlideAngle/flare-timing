@@ -402,12 +402,27 @@ spec = do
         tb = AltTime [u| 0.45 s / m |]
 
         tzPgLineNotDeceleratorCess =
-            TzEssIsNotGoal
+            [ TzEssIsNotGoal
                 [Cylinder rad400 ways4]
                 [Cylinder rad400 afarm]
                 (CutCone inc35 rad400 alec alt340 :: ZoneKind EndOfSpeedSection _)
                 []
                 (Circle rad400 ardle :: ZoneKind Goal _)
+
+            , TzEssIsGoal
+                [Cylinder rad400 ways4]
+                [ Cylinder rad400 afarm
+                , Cylinder rad400 alec
+                ]
+                (CutCone inc35 rad400 ardle alt198 :: ZoneKind Goal _)
+
+            , TzEssIsNotGoal
+                [Cylinder rad400 ways4]
+                [Cylinder rad400 afarm]
+                (CutCone inc35 rad400 alec alt340 :: ZoneKind EndOfSpeedSection _)
+                [Cylinder rad400 afarm]
+                (Circle rad400 ardle :: ZoneKind Goal _)
+            ]
 
         tzPgLineDeceleratorCess =
             TzEssIsNotGoal
