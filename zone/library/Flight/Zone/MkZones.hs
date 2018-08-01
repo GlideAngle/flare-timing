@@ -23,7 +23,10 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Flight.Units ()
 import Flight.Zone (QAltTime, QIncline, Incline(..))
 import Flight.Zone.ZoneKind
-import Flight.Zone.TaskZones
+    (ZoneKind(..)
+    , Turnpoint, EndOfSpeedSection, EssAllowedZone, GoalAllowedZone
+    )
+import Flight.Zone.TaskZones (ToZoneKind)
 
 data Discipline
     = HangGliding
