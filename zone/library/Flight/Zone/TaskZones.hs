@@ -25,7 +25,7 @@ import Flight.LatLng (QAlt, LatLng(..), fromDMS)
 import Flight.Zone.Radius (QRadius)
 import qualified Flight.Zone.Raw.Zone as Raw (RawZone(..))
 import Flight.LatLng.Raw (RawLat(..), RawLng(..))
-import Flight.Zone.ZoneKind
+import Flight.Zone.Internal.ZoneKind
     ( ZoneKind(..), Turnpoint, Goal, Race, OpenDistance, EndOfSpeedSection
     , OpenAllowedZone, EssAllowedZone, GoalAllowedZone, OpenAllowedZone
     )

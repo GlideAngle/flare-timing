@@ -6,7 +6,7 @@ module Flight.Fsdb.Task (parseTasks) where
 import Data.Maybe (catMaybes)
 import Data.List (sort, nub)
 import Data.Map.Strict (Map, fromList, findWithDefault)
-import Data.UnitsOfMeasure (u, convert, fromRational')
+import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Text.XML.HXT.Arrow.Pickle
     ( XmlPickler(..), PU(..)
@@ -48,9 +48,10 @@ import Flight.Zone.MkZones
     , DeceleratorShape(..), EssVsGoal(..), GoalLine(..)
     , tpKindShape, essKindShape, goalKindShape
     , mkTpKind, mkEssKind, mkGoalKind
+    , raceKindCyl, openKindCyl, openKindVec
     )
 import Flight.Zone.TaskZones (ToZoneKind, raceZoneKinds, openZoneKinds)
-import Flight.Zone.ZoneKind (ZoneKind(..), Goal, OpenDistance)
+import Flight.Zone.ZoneKind (Goal)
 import qualified Flight.Zone.Raw as Z (RawZone(..))
 import Flight.Comp
     ( PilotId(..), PilotName(..), Pilot(..), SpeedSection
@@ -240,27 +241,10 @@ mkZones _ (_, (_, (heading, (Nothing, (alts, zs))))) =
         psLen = 0
         tsLen = zsLen - psLen - 1
 
-        tk r x _ = Cylinder r x
+        ok = maybe openKindCyl openKindVec heading
 
-        okCyl :: ToZoneKind OpenDistance
-        okCyl r x _ = Star r x
-
-        okVec :: LatLng Rational [u| deg |] -> ToZoneKind OpenDistance
-        okVec (LatLng (Lat dLat, Lng dLng)) =
-            let rLat :: Quantity _ [u| rad |]
-                rLat = fromRational' . convert $ dLat
-
-                rLng :: Quantity _ [u| rad |]
-                rLng = fromRational' . convert $ dLng
-
-                y = LatLng (Lat rLat, Lng rLng)
-
-            in \r x _ -> Vector (Left y) r x
-
-        ok = maybe okCyl okVec heading
-
-        ps = replicate psLen tk
-        ts = replicate tsLen tk
+        ps = replicate psLen raceKindCyl
+        ts = replicate tsLen raceKindCyl
         g = openZoneKinds ps ts ok
 
 mkZones discipline (goalLine, (decel, (_, (speed@(Just _), (alts, zs))))) =

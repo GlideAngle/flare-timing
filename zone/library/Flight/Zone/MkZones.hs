@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
+
 module Flight.Zone.MkZones
     ( Discipline(..)
     , Decelerator(..)
@@ -11,6 +13,9 @@ module Flight.Zone.MkZones
     , mkTpKind
     , mkEssKind
     , mkGoalKind
+    , raceKindCyl
+    , openKindCyl
+    , openKindVec
     ) where
 
 import GHC.Generics (Generic)
@@ -18,16 +23,35 @@ import Data.Aeson
     ( ToJSON(..), FromJSON(..), Options(..)
     , defaultOptions, genericToJSON, genericParseJSON
     )
-import Data.UnitsOfMeasure (u)
+import Data.UnitsOfMeasure (u, convert, fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
+import Flight.LatLng (LatLng(..), Lat(..), Lng(..))
 import Flight.Zone (QAltTime, QIncline, Incline(..))
-import Flight.Zone.ZoneKind
-    (ZoneKind(..)
+import Flight.Zone.Internal.ZoneKind
+    ( ZoneKind(..), OpenDistance
     , Turnpoint, EndOfSpeedSection, EssAllowedZone, GoalAllowedZone
     )
 import Flight.Zone.TaskZones (ToZoneKind)
+
+raceKindCyl :: EssAllowedZone k => ToZoneKind k
+raceKindCyl r x _ = Cylinder r x
+
+openKindCyl :: ToZoneKind OpenDistance
+openKindCyl r x _ = Star r x
+
+openKindVec :: LatLng Rational [u| deg |] -> ToZoneKind OpenDistance
+openKindVec (LatLng (Lat dLat, Lng dLng)) =
+    let rLat :: Quantity _ [u| rad |]
+        rLat = fromRational' . convert $ dLat
+
+        rLng :: Quantity _ [u| rad |]
+        rLng = fromRational' . convert $ dLng
+
+        y = LatLng (Lat rLat, Lng rLng)
+
+    in \r x _ -> Vector (Left y) r x
 
 data Discipline
     = HangGliding
