@@ -307,8 +307,9 @@ mkZones discipline (decel, (useSemi, (_, (goal, (speed@(Just _), (alts, zs))))))
                 _ -> DecCyl
             <$> decel
 
-        gkShape = goalKindShape discipline useSemi goal (ssEnd == zsLen) dcShape
-        ekShape = essKindShape discipline useSemi goal dcShape 
+        ssEndIsGoal = ssEnd == zsLen
+        gkShape = goalKindShape discipline useSemi goal ssEndIsGoal dcShape
+        ekShape = essKindShape discipline useSemi goal ssEndIsGoal dcShape 
 
         gk :: ToZoneKind ZK.Goal
         gk = mkGoalKind gkShape decel
@@ -492,13 +493,14 @@ essKindShape
     :: Discipline
     -> UseSemiCircle
     -> FsGoal
+    -> GoalIsEss
     -> Maybe DeceleratorShape
     -> EndShape
-essKindShape Paragliding True (FsGoal "LINE") (Just DecCone) = EndCutSemiCone
-essKindShape Paragliding _ _ (Just DecCone) = EndCutCone
-essKindShape Paragliding True (FsGoal "LINE") _ = EndCutSemiCylinder
-essKindShape Paragliding _ _ _ = EndCutCylinder
-essKindShape _ _ _ _ = EndCylinder
+essKindShape Paragliding True (FsGoal "LINE") True (Just DecCone) = EndCutSemiCone
+essKindShape Paragliding _ _ _ (Just DecCone) = EndCutCone
+essKindShape Paragliding True (FsGoal "LINE") True _ = EndCutSemiCylinder
+essKindShape Paragliding _ _ _ _ = EndCutCylinder
+essKindShape _ _ _ _ _ = EndCylinder
 
 tpKindShape :: Discipline -> UseSemiCircle -> FsGoal -> EndShape
 tpKindShape _ _ _ = EndCylinder
