@@ -485,7 +485,7 @@ goalKindShape Paragliding True (FsGoal "LINE") True (Just DecCone) = EndCutSemiC
 goalKindShape Paragliding _ _ True (Just DecCone) = EndCutCone
 goalKindShape Paragliding True (FsGoal "LINE") True (Just DecCyl) = EndCutSemiCylinder
 goalKindShape Paragliding _ _ True (Just DecCyl) = EndCutCylinder
-goalKindShape Paragliding True (FsGoal "LINE") True Nothing = EndSemiCircle
+goalKindShape Paragliding True (FsGoal "LINE") _ _ = EndSemiCircle
 goalKindShape _ _ (FsGoal "LINE") _ _ = EndLine
 goalKindShape _ _ _ _ _ = EndCircle
 
