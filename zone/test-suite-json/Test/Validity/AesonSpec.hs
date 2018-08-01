@@ -456,12 +456,27 @@ spec = do
             ]
 
         tzPgLineDeceleratorAatb =
-            TzEssIsNotGoal
+            [ TzEssIsNotGoal
                 [Cylinder rad400 ways4]
                 [Cylinder rad400 afarm]
-                (CutSemiCylinder tb rad400 alec alt340 :: ZoneKind EndOfSpeedSection _)
+                (CutCylinder tb rad400 alec alt340 :: ZoneKind EndOfSpeedSection _)
                 []
                 (Line rad400 ardle :: ZoneKind Goal _)
+
+            , TzEssIsGoal
+                [Cylinder rad400 ways4]
+                [ Cylinder rad400 afarm
+                , Cylinder rad400 alec
+                ]
+                (CutSemiCylinder tb rad400 ardle alt198 :: ZoneKind Goal _)
+
+            , TzEssIsNotGoal
+                [Cylinder rad400 ways4]
+                [Cylinder rad400 afarm]
+                (CutCylinder tb rad400 alec alt340 :: ZoneKind EndOfSpeedSection _)
+                [Cylinder rad400 afarm]
+                (Line rad400 ardle :: ZoneKind Goal _)
+            ]
 
         tzPgLineNotDeceleratorNone =
             [ TzEssIsNotGoal
