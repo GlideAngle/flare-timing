@@ -20,7 +20,7 @@
       radius: 400.0 m
   epilog: []
   goal:
-    line:
+    semicircle:
       center:
       - -34.4125 deg
       - 146.8543 deg
@@ -77,7 +77,7 @@
       - 147.9857 deg
       radius: 400.0 m
   goal:
-    line:
+    semicircle:
       center:
       - -34.4125 deg
       - 146.8543 deg

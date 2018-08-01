@@ -430,7 +430,7 @@ spec = do
                 [Cylinder rad400 afarm]
                 (CutCone inc35 rad400 alec alt340 :: ZoneKind EndOfSpeedSection _)
                 []
-                (Line rad400 ardle :: ZoneKind Goal _)
+                (SemiCircle rad400 ardle :: ZoneKind Goal _)
 
             , TzEssIsGoal
                 [Cylinder rad400 ways4]
@@ -444,7 +444,7 @@ spec = do
                 [Cylinder rad400 afarm]
                 (CutCone inc35 rad400 alec alt340 :: ZoneKind EndOfSpeedSection _)
                 [Cylinder rad400 afarm]
-                (Line rad400 ardle :: ZoneKind Goal _)
+                (SemiCircle rad400 ardle :: ZoneKind Goal _)
             ]
 
         tzPgLineNotDeceleratorAatb =
@@ -476,7 +476,7 @@ spec = do
                 [Cylinder rad400 afarm]
                 (CutCylinder tb rad400 alec alt340 :: ZoneKind EndOfSpeedSection _)
                 []
-                (Line rad400 ardle :: ZoneKind Goal _)
+                (SemiCircle rad400 ardle :: ZoneKind Goal _)
 
             , TzEssIsGoal
                 [Cylinder rad400 ways4]
@@ -490,7 +490,7 @@ spec = do
                 [Cylinder rad400 afarm]
                 (CutCylinder tb rad400 alec alt340 :: ZoneKind EndOfSpeedSection _)
                 [Cylinder rad400 afarm]
-                (Line rad400 ardle :: ZoneKind Goal _)
+                (SemiCircle rad400 ardle :: ZoneKind Goal _)
             ]
 
         tzPgLineNotDeceleratorNone =
@@ -517,12 +517,27 @@ spec = do
             ]
 
         tzPgLineDeceleratorNone =
-            TzEssIsNotGoal
+            [ TzEssIsNotGoal
                 [Cylinder rad400 ways4]
                 [Cylinder rad400 afarm]
                 (Cylinder rad400 alec :: ZoneKind EndOfSpeedSection _)
                 []
-                (Line rad400 ardle :: ZoneKind Goal _)
+                (SemiCircle rad400 ardle :: ZoneKind Goal _)
+
+            , TzEssIsGoal
+                [Cylinder rad400 ways4]
+                [ Cylinder rad400 afarm
+                , Cylinder rad400 alec
+                ]
+                (SemiCircle rad400 ardle :: ZoneKind Goal _)
+
+            , TzEssIsNotGoal
+                [Cylinder rad400 ways4]
+                [Cylinder rad400 afarm]
+                (Cylinder rad400 alec :: ZoneKind EndOfSpeedSection _)
+                [Cylinder rad400 afarm]
+                (SemiCircle rad400 ardle :: ZoneKind Goal _)
+            ]
 
 gs1 :: LatLng Double [u| rad |]
 gs1 = LatLng (Lat $ convert [u| 43.82972999 deg |], Lng $ convert [u| 16.64243 deg |])
