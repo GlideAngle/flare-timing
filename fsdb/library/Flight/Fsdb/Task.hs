@@ -44,8 +44,8 @@ import Flight.LatLng (LatLng(..), Lat(..), Lng(..), Alt(..), QAlt)
 import Flight.LatLng.Raw (RawLat(..), RawLng(..))
 import Flight.Zone (Radius(..), AltTime(..))
 import Flight.Zone.MkZones
-    ( Discipline(..), Decelerator(..), CessIncline(..), FsGoal(..)
-    , DeceleratorShape(..)
+    ( Discipline(..), Decelerator(..), CessIncline(..)
+    , DeceleratorShape(..), EssVsGoal(..), GoalLine(..)
     , tpKindShape, essKindShape, goalKindShape
     , mkTpKind, mkEssKind, mkGoalKind
     )
@@ -58,6 +58,9 @@ import Flight.Comp
     )
 import Flight.Fsdb.Pilot (getCompPilot)
 import Flight.Fsdb.Internal.XmlPickle (xpNewtypeRational, xpNewtypeQuantity)
+
+-- | The attribute //FsTaskDefinition@goal.
+newtype FsGoal = FsGoal String
 
 newtype KeyPilot = KeyPilot (PilotId, Pilot)
 
@@ -213,19 +216,16 @@ xpStopped =
 
 mkZones
     :: Discipline
-    -> ( Maybe Decelerator
+    -> ( GoalLine
        ,
-           ( Bool
+           ( Maybe Decelerator
            ,
                ( Maybe (LatLng Rational [u| deg |])
                ,
-                   ( FsGoal
+                   ( SpeedSection
                    ,
-                       ( SpeedSection
-                       ,
-                           ( [Maybe (QAlt Double [u| m |])]
-                           , [Z.RawZone]
-                           )
+                       ( [Maybe (QAlt Double [u| m |])]
+                       , [Z.RawZone]
                        )
                    )
                )
@@ -233,7 +233,7 @@ mkZones
        )
     -> Zones
 
-mkZones _ (_, (_, (heading, (_, (Nothing, (alts, zs)))))) =
+mkZones _ (_, (_, (heading, (Nothing, (alts, zs))))) =
     Zones zs Nothing (g alts zs)
     where
         zsLen = length zs
@@ -263,7 +263,7 @@ mkZones _ (_, (_, (heading, (_, (Nothing, (alts, zs)))))) =
         ts = replicate tsLen tk
         g = openZoneKinds ps ts ok
 
-mkZones discipline (decel, (useSemi, (_, (goal, (speed@(Just _), (alts, zs)))))) =
+mkZones discipline (goalLine, (decel, (_, (speed@(Just _), (alts, zs))))) =
     Zones zs (g alts zs) Nothing
     where
         -- The number of zones.
@@ -283,7 +283,7 @@ mkZones discipline (decel, (useSemi, (_, (goal, (speed@(Just _), (alts, zs))))))
         -- (when ssEnd == zsLen) or an ESS zone.
         tsLen = zsLen - psLen - esLen - (if ssEnd == zsLen then 1 else 2)
 
-        tpShape = tpKindShape discipline useSemi goal
+        tpShape = tpKindShape discipline goalLine
 
         dcShape =
             \case
@@ -292,9 +292,9 @@ mkZones discipline (decel, (useSemi, (_, (goal, (speed@(Just _), (alts, zs))))))
                 _ -> DecCyl
             <$> decel
 
-        ssEndIsGoal = ssEnd == zsLen
-        gkShape = goalKindShape discipline useSemi goal ssEndIsGoal dcShape
-        ekShape = essKindShape discipline useSemi goal ssEndIsGoal dcShape 
+        ssEndIsGoal = if ssEnd == zsLen then EssAtGoal else EssBeforeGoal
+        gkShape = goalKindShape discipline goalLine ssEndIsGoal dcShape
+        ekShape = essKindShape discipline goalLine ssEndIsGoal dcShape 
 
         gk :: ToZoneKind Goal
         gk = mkGoalKind gkShape decel
@@ -307,15 +307,18 @@ mkZones discipline (decel, (useSemi, (_, (goal, (speed@(Just _), (alts, zs))))))
         es = replicate esLen tk
         g = raceZoneKinds ps ts ek es gk
 
+isGoalLine :: FsGoal -> GoalLine
+isGoalLine (FsGoal "LINE") = GoalLine
+isGoalLine _ = GoalNotLine
+
 getTask :: ArrowXml a => Discipline -> [Pilot] -> a XmlTree (Task k)
 getTask discipline ps =
     getChildren
     >>> deep (hasName "FsTask")
     >>> getAttrValue "name"
-    &&& ( getDecelerator
-        &&& getFormula
+    &&& ((getGoal >>> arr isGoalLine)
+        &&& getDecelerator
         &&& getHeading
-        &&& getGoal
         &&& getSpeedSection
         &&& getZoneAltitudes
         &&& getZones
@@ -343,12 +346,6 @@ getTask discipline ps =
             getChildren
             >>> hasName "FsScoreFormula"
             >>> arr (unpickleDoc xpDecelerator)
-
-        getFormula =
-            getChildren
-            >>> hasName "FsScoreFormula"
-            >>> getAttrValue "use_semi_circle_control_zone_for_goal_line"
-            >>> arr (== "1")
 
         getGoal =
             getChildren

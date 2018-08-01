@@ -2,7 +2,8 @@ module Flight.Zone.MkZones
     ( Discipline(..)
     , Decelerator(..)
     , CessIncline(..)
-    , FsGoal(..)
+    , EssVsGoal(..)
+    , GoalLine(..)
     , DeceleratorShape(..)
     , tpKindShape
     , essKindShape
@@ -70,9 +71,6 @@ data Decelerator
     | NoDecelerator String
     deriving (Eq, Ord, Show)
 
--- | The attribute //FsTaskDefinition@goal.
-newtype FsGoal = FsGoal String
-
 data EndShape
     = EndLine
     | EndSemiCircle
@@ -83,40 +81,38 @@ data EndShape
     | EndCutCone
     | EndCutSemiCone
 
-type UseSemiCircle = Bool
-type GoalIsEss = Bool
+data EssVsGoal = EssBeforeGoal | EssAtGoal
+data GoalLine = GoalLine | GoalNotLine
 data DeceleratorShape = DecCyl | DecCone
 
 goalKindShape
     :: Discipline
-    -> UseSemiCircle
-    -> FsGoal
-    -> GoalIsEss
+    -> GoalLine
+    -> EssVsGoal
     -> Maybe DeceleratorShape
     -> EndShape
-goalKindShape Paragliding True (FsGoal "LINE") True (Just DecCone) = EndCutSemiCone
-goalKindShape Paragliding _ _ True (Just DecCone) = EndCutCone
-goalKindShape Paragliding True (FsGoal "LINE") True (Just DecCyl) = EndCutSemiCylinder
-goalKindShape Paragliding _ _ True (Just DecCyl) = EndCutCylinder
-goalKindShape Paragliding True (FsGoal "LINE") _ _ = EndSemiCircle
-goalKindShape _ _ (FsGoal "LINE") _ _ = EndLine
-goalKindShape _ _ _ _ _ = EndCircle
+goalKindShape Paragliding GoalLine EssAtGoal (Just DecCone) = EndCutSemiCone
+goalKindShape Paragliding _ EssAtGoal (Just DecCone) = EndCutCone
+goalKindShape Paragliding GoalLine EssAtGoal (Just DecCyl) = EndCutSemiCylinder
+goalKindShape Paragliding _ EssAtGoal (Just DecCyl) = EndCutCylinder
+goalKindShape Paragliding GoalLine _ _ = EndSemiCircle
+goalKindShape _ GoalLine _ _ = EndLine
+goalKindShape _ _ _ _ = EndCircle
 
 essKindShape
     :: Discipline
-    -> UseSemiCircle
-    -> FsGoal
-    -> GoalIsEss
+    -> GoalLine
+    -> EssVsGoal
     -> Maybe DeceleratorShape
     -> EndShape
-essKindShape Paragliding True (FsGoal "LINE") True (Just DecCone) = EndCutSemiCone
-essKindShape Paragliding _ _ _ (Just DecCone) = EndCutCone
-essKindShape Paragliding True (FsGoal "LINE") True _ = EndCutSemiCylinder
-essKindShape Paragliding _ _ _ _ = EndCutCylinder
-essKindShape _ _ _ _ _ = EndCylinder
+essKindShape Paragliding GoalLine EssAtGoal (Just DecCone) = EndCutSemiCone
+essKindShape Paragliding _ _ (Just DecCone) = EndCutCone
+essKindShape Paragliding GoalLine EssAtGoal _ = EndCutSemiCylinder
+essKindShape Paragliding _ _ _ = EndCutCylinder
+essKindShape _ _ _ _ = EndCylinder
 
-tpKindShape :: Discipline -> UseSemiCircle -> FsGoal -> EndShape
-tpKindShape _ _ _ = EndCylinder
+tpKindShape :: Discipline -> GoalLine -> EndShape
+tpKindShape _ _ = EndCylinder
 
 mkGoalKind
     :: (EssAllowedZone k, GoalAllowedZone k)
