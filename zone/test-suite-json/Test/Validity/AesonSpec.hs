@@ -420,7 +420,7 @@ spec = do
             TzEssIsNotGoal
                 [Cylinder rad400 ways4]
                 [Cylinder rad400 afarm]
-                (CutSemiCylinder tb rad400 alec alt :: ZoneKind EndOfSpeedSection _)
+                (CutCylinder tb rad400 alec alt :: ZoneKind EndOfSpeedSection _)
                 []
                 (Circle rad400 ardle :: ZoneKind Goal _)
 

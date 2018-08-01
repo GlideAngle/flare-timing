@@ -20,10 +20,8 @@ race-ess:
     radius: 400.0 m
 epilog: []
 goal:
-  cut-cone:
-    altitude: 198.0 m
+  circle:
     center:
     - -34.4125 deg
     - 146.8543 deg
-    incline: 15.945 deg
     radius: 400.0 m

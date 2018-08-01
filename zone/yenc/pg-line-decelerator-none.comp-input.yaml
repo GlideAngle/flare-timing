@@ -18,7 +18,7 @@ race-ess:
     radius: 400.0 m
 epilog: []
 goal:
-  circle:
+  line:
     center:
     - -34.4125 deg
     - 146.8543 deg
