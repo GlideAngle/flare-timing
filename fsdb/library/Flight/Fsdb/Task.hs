@@ -46,8 +46,8 @@ import Flight.Zone
     , QAltTime, AltTime(..)
     , QIncline, Incline(..)
     )
-import Flight.Zone.ZoneKind (ToZoneKind, raceZoneKinds, openZoneKinds)
-import qualified Flight.Zone.ZoneKind as ZK
+import Flight.Zone.TaskZones (ToZoneKind, raceZoneKinds, openZoneKinds)
+import Flight.Zone.ZoneKind
     ( ZoneKind(..), Turnpoint, EndOfSpeedSection, Goal, OpenDistance
     , EssAllowedZone, GoalAllowedZone
     )
@@ -255,12 +255,12 @@ mkZones _ (_, (_, (heading, (_, (Nothing, (alts, zs)))))) =
         psLen = 0
         tsLen = zsLen - psLen - 1
 
-        tk r x _ = ZK.Cylinder r x
+        tk r x _ = Cylinder r x
 
-        okCyl :: ToZoneKind ZK.OpenDistance
-        okCyl r x _ = ZK.Star r x
+        okCyl :: ToZoneKind OpenDistance
+        okCyl r x _ = Star r x
 
-        okVec :: LatLng Rational [u| deg |] -> ToZoneKind ZK.OpenDistance
+        okVec :: LatLng Rational [u| deg |] -> ToZoneKind OpenDistance
         okVec (LatLng (Lat dLat, Lng dLng)) =
             let rLat :: Quantity _ [u| rad |]
                 rLat = fromRational' . convert $ dLat
@@ -270,7 +270,7 @@ mkZones _ (_, (_, (heading, (_, (Nothing, (alts, zs)))))) =
 
                 y = LatLng (Lat rLat, Lng rLng)
 
-            in \r x _ -> ZK.Vector (Left y) r x
+            in \r x _ -> Vector (Left y) r x
 
         ok = maybe okCyl okVec heading
 
@@ -311,7 +311,7 @@ mkZones discipline (decel, (useSemi, (_, (goal, (speed@(Just _), (alts, zs))))))
         gkShape = goalKindShape discipline useSemi goal ssEndIsGoal dcShape
         ekShape = essKindShape discipline useSemi goal ssEndIsGoal dcShape 
 
-        gk :: ToZoneKind ZK.Goal
+        gk :: ToZoneKind Goal
         gk = mkGoalKind gkShape decel
 
         tk = mkTpKind tpShape
@@ -506,58 +506,58 @@ tpKindShape :: Discipline -> UseSemiCircle -> FsGoal -> EndShape
 tpKindShape _ _ _ = EndCylinder
 
 mkGoalKind
-    :: (ZK.EssAllowedZone k, ZK.GoalAllowedZone k)
+    :: (EssAllowedZone k, GoalAllowedZone k)
     => EndShape
     -> Maybe Decelerator
     -> ToZoneKind k
 mkGoalKind EndCutSemiCone (Just (CESS i)) =
     \r x -> \case
-        (Just alt) -> ZK.CutSemiCone (mkIncline i) r x alt
-        Nothing -> ZK.SemiCircle r x
+        (Just alt) -> CutSemiCone (mkIncline i) r x alt
+        Nothing -> SemiCircle r x
 mkGoalKind EndCutCone (Just (CESS i)) =
     \r x -> \case
-        (Just alt) -> ZK.CutCone (mkIncline i) r x alt
-        Nothing -> ZK.Circle r x
+        (Just alt) -> CutCone (mkIncline i) r x alt
+        Nothing -> Circle r x
 mkGoalKind EndCutSemiCylinder (Just (AATB aatb)) =
     \r x -> \case
-        (Just alt) -> ZK.CutSemiCylinder aatb r x alt
-        Nothing -> ZK.SemiCircle r x
+        (Just alt) -> CutSemiCylinder aatb r x alt
+        Nothing -> SemiCircle r x
 mkGoalKind EndCutCylinder (Just (AATB aatb)) =
     \r x -> \case
-        (Just alt) -> ZK.CutCylinder aatb r x alt
-        Nothing -> ZK.Circle r x
+        (Just alt) -> CutCylinder aatb r x alt
+        Nothing -> Circle r x
 mkGoalKind EndSemiCircle _ =
-    \r x _ -> ZK.SemiCircle r x
+    \r x _ -> SemiCircle r x
 mkGoalKind EndLine _ =
-    \r x _ -> ZK.Line r x
+    \r x _ -> Line r x
 mkGoalKind _ _ =
-    \r x _ -> ZK.Circle r x
+    \r x _ -> Circle r x
 
-mkTpKind :: EndShape -> ToZoneKind ZK.Turnpoint
-mkTpKind _ r x _ = ZK.Cylinder r x
+mkTpKind :: EndShape -> ToZoneKind Turnpoint
+mkTpKind _ r x _ = Cylinder r x
 
 mkEssKind
     :: EndShape
     -> Maybe Decelerator
-    -> ToZoneKind ZK.EndOfSpeedSection
+    -> ToZoneKind EndOfSpeedSection
 mkEssKind EndCutSemiCone (Just (CESS i)) =
     \r x -> \case
-        (Just alt) -> ZK.CutSemiCone (mkIncline i) r x alt
-        Nothing -> ZK.SemiCircle r x
+        (Just alt) -> CutSemiCone (mkIncline i) r x alt
+        Nothing -> SemiCircle r x
 mkEssKind EndCutCone (Just (CESS i)) =
     \r x -> \case
-        (Just alt) -> ZK.CutCone (mkIncline i) r x alt
-        Nothing -> ZK.Cylinder r x
+        (Just alt) -> CutCone (mkIncline i) r x alt
+        Nothing -> Cylinder r x
 mkEssKind EndCutSemiCylinder (Just (AATB aatb)) =
     \r x -> \case
-        (Just alt) -> ZK.CutSemiCylinder aatb r x alt
-        Nothing -> ZK.Cylinder r x
+        (Just alt) -> CutSemiCylinder aatb r x alt
+        Nothing -> Cylinder r x
 mkEssKind EndCutCylinder (Just (AATB aatb)) =
     \r x -> \case
-        (Just alt) -> ZK.CutCylinder aatb r x alt
-        Nothing -> ZK.Cylinder r x
+        (Just alt) -> CutCylinder aatb r x alt
+        Nothing -> Cylinder r x
 mkEssKind _ _ =
-    \r x _ -> ZK.Cylinder r x
+    \r x _ -> Cylinder r x
 
 mkIncline :: CessIncline -> QIncline Double [u| rad |]
 mkIncline (CessIncline x) =

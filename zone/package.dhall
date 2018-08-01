@@ -32,6 +32,7 @@ in    defs
           , exposed-modules =
               [ "Flight.Zone"
               , "Flight.Zone.ZoneKind"
+              , "Flight.Zone.TaskZones"
               , "Flight.Zone.Path"
               , "Flight.Zone.Raw"
               , "Flight.Zone.Cylinder"

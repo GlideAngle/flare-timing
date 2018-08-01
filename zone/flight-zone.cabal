@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 69ca993b744cfafe1e6c88915ba484b4c035039e8e18419a781bee0b7b19d17c
+-- hash: 64992f1cfa908ea006638c0457cd37d8c74de45c66dbabce212d57c5b2ed5ad0
 
 name:           flight-zone
 version:        0.1.0
@@ -34,6 +34,7 @@ library
   exposed-modules:
       Flight.Zone
       Flight.Zone.ZoneKind
+      Flight.Zone.TaskZones
       Flight.Zone.Path
       Flight.Zone.Raw
       Flight.Zone.Cylinder
@@ -81,6 +82,7 @@ test-suite json
       Flight.Zone.Radius
       Flight.Zone.Raw
       Flight.Zone.Raw.Zone
+      Flight.Zone.TaskZones
       Flight.Zone.Zone
       Flight.Zone.ZoneKind
       Test.Validity.AesonSpec

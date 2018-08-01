@@ -56,8 +56,8 @@ import Data.String (IsString())
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import qualified Flight.Zone.ZoneKind as ZK
-    (Race, OpenDistance, TaskZones(..))
+import Flight.Zone.ZoneKind (Race, OpenDistance)
+import Flight.Zone.TaskZones (TaskZones(..))
 import Flight.Zone.Raw (RawZone, showZone)
 import Flight.Field (FieldOrdering(..))
 import Flight.Pilot
@@ -210,8 +210,8 @@ newtype TaskStop =
 data Zones =
     Zones
         { raw :: [RawZone]
-        , raceKind :: Maybe (ZK.TaskZones ZK.Race Double)
-        , openKind :: Maybe (ZK.TaskZones ZK.OpenDistance Double)
+        , raceKind :: Maybe (TaskZones Race Double)
+        , openKind :: Maybe (TaskZones OpenDistance Double)
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
@@ -337,8 +337,6 @@ cmp a b =
 
         ("zones", "taskName") -> GT
         ("zones", _) -> LT
-
-        ("raw", _) -> LT
 
         ("strict", "raw") -> GT
         ("strict", _) -> LT

@@ -21,7 +21,7 @@ module Flight.Zone
     , toRationalLatLng
     , realToFracLatLng
 
-    -- * Zone
+    -- * Zones
     , Zone(..)
     , RawZoneToZone
     , rawZonesToZones
