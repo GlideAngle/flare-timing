@@ -115,7 +115,6 @@ module Flight.Score
     , JumpedTheGun(..)
     , Hg
     , Pg
-    , Discipline(..)
     , Penalty(..)
     , DistancePoints(..)
     , LinearPoints(..)

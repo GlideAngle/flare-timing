@@ -39,26 +39,24 @@ import Text.XML.HXT.Core
 import Data.Time.Clock (UTCTime)
 import Data.Time.Format (parseTimeOrError, defaultTimeLocale)
 
+import Flight.Units ()
 import Flight.LatLng (LatLng(..), Lat(..), Lng(..), Alt(..), QAlt)
 import Flight.LatLng.Raw (RawLat(..), RawLng(..))
-import Flight.Zone
-    ( Radius(..)
-    , QAltTime, AltTime(..)
-    , QIncline, Incline(..)
+import Flight.Zone (Radius(..), AltTime(..))
+import Flight.Zone.MkZones
+    ( Discipline(..), Decelerator(..), CessIncline(..), FsGoal(..)
+    , DeceleratorShape(..)
+    , tpKindShape, essKindShape, goalKindShape
+    , mkTpKind, mkEssKind, mkGoalKind
     )
 import Flight.Zone.TaskZones (ToZoneKind, raceZoneKinds, openZoneKinds)
-import Flight.Zone.ZoneKind
-    ( ZoneKind(..), Turnpoint, EndOfSpeedSection, Goal, OpenDistance
-    , EssAllowedZone, GoalAllowedZone
-    )
+import Flight.Zone.ZoneKind (ZoneKind(..), Goal, OpenDistance)
 import qualified Flight.Zone.Raw as Z (RawZone(..))
 import Flight.Comp
     ( PilotId(..), PilotName(..), Pilot(..), SpeedSection
     , Task(..), TaskStop(..), Zones(..), StartGate(..), OpenClose(..)
     )
 import Flight.Fsdb.Pilot (getCompPilot)
-import Flight.Units ()
-import Flight.Score (Discipline(..))
 import Flight.Fsdb.Internal.XmlPickle (xpNewtypeRational, xpNewtypeQuantity)
 
 newtype KeyPilot = KeyPilot (PilotId, Pilot)
@@ -81,19 +79,6 @@ instance XmlPickler RawLng where
 
 instance (u ~ Quantity Double [u| m |]) => XmlPickler (Alt u) where
     xpickle = xpNewtypeQuantity
-
--- | How many units of distance for each unit of altitude, expressed like
--- a glide ratio, the n of an n : 1 glide.
-newtype CessIncline =
-    CessIncline Double
-    deriving (Eq, Ord, Show)
-    deriving newtype Num
-
-data Decelerator
-    = CESS CessIncline
-    | AATB (QAltTime Double [u| s / m |])
-    | NoDecelerator String
-    deriving (Eq, Ord, Show)
 
 xpDecelerator :: PU Decelerator
 xpDecelerator =
@@ -322,9 +307,6 @@ mkZones discipline (decel, (useSemi, (_, (goal, (speed@(Just _), (alts, zs))))))
         es = replicate esLen tk
         g = raceZoneKinds ps ts ek es gk
 
--- | The attribute //FsTaskDefinition@goal.
-newtype FsGoal = FsGoal String
-
 getTask :: ArrowXml a => Discipline -> [Pilot] -> a XmlTree (Task k)
 getTask discipline ps =
     getChildren
@@ -460,105 +442,3 @@ parseUtcTime =
     -- NOTE: %F is %Y-%m-%d, %T is %H:%M:%S and %z is -HHMM or -HH:MM
     parseTimeOrError False defaultTimeLocale "%FT%T%Z"
 
-data EndShape
-    = EndLine
-    | EndSemiCircle
-    | EndCircle
-    | EndCylinder
-    | EndCutCylinder
-    | EndCutSemiCylinder
-    | EndCutCone
-    | EndCutSemiCone
-
-type UseSemiCircle = Bool
-type GoalIsEss = Bool
-data DeceleratorShape = DecCyl | DecCone
-
-goalKindShape
-    :: Discipline
-    -> UseSemiCircle
-    -> FsGoal
-    -> GoalIsEss
-    -> Maybe DeceleratorShape
-    -> EndShape
-goalKindShape Paragliding True (FsGoal "LINE") True (Just DecCone) = EndCutSemiCone
-goalKindShape Paragliding _ _ True (Just DecCone) = EndCutCone
-goalKindShape Paragliding True (FsGoal "LINE") True (Just DecCyl) = EndCutSemiCylinder
-goalKindShape Paragliding _ _ True (Just DecCyl) = EndCutCylinder
-goalKindShape Paragliding True (FsGoal "LINE") _ _ = EndSemiCircle
-goalKindShape _ _ (FsGoal "LINE") _ _ = EndLine
-goalKindShape _ _ _ _ _ = EndCircle
-
-essKindShape
-    :: Discipline
-    -> UseSemiCircle
-    -> FsGoal
-    -> GoalIsEss
-    -> Maybe DeceleratorShape
-    -> EndShape
-essKindShape Paragliding True (FsGoal "LINE") True (Just DecCone) = EndCutSemiCone
-essKindShape Paragliding _ _ _ (Just DecCone) = EndCutCone
-essKindShape Paragliding True (FsGoal "LINE") True _ = EndCutSemiCylinder
-essKindShape Paragliding _ _ _ _ = EndCutCylinder
-essKindShape _ _ _ _ _ = EndCylinder
-
-tpKindShape :: Discipline -> UseSemiCircle -> FsGoal -> EndShape
-tpKindShape _ _ _ = EndCylinder
-
-mkGoalKind
-    :: (EssAllowedZone k, GoalAllowedZone k)
-    => EndShape
-    -> Maybe Decelerator
-    -> ToZoneKind k
-mkGoalKind EndCutSemiCone (Just (CESS i)) =
-    \r x -> \case
-        (Just alt) -> CutSemiCone (mkIncline i) r x alt
-        Nothing -> SemiCircle r x
-mkGoalKind EndCutCone (Just (CESS i)) =
-    \r x -> \case
-        (Just alt) -> CutCone (mkIncline i) r x alt
-        Nothing -> Circle r x
-mkGoalKind EndCutSemiCylinder (Just (AATB aatb)) =
-    \r x -> \case
-        (Just alt) -> CutSemiCylinder aatb r x alt
-        Nothing -> SemiCircle r x
-mkGoalKind EndCutCylinder (Just (AATB aatb)) =
-    \r x -> \case
-        (Just alt) -> CutCylinder aatb r x alt
-        Nothing -> Circle r x
-mkGoalKind EndSemiCircle _ =
-    \r x _ -> SemiCircle r x
-mkGoalKind EndLine _ =
-    \r x _ -> Line r x
-mkGoalKind _ _ =
-    \r x _ -> Circle r x
-
-mkTpKind :: EndShape -> ToZoneKind Turnpoint
-mkTpKind _ r x _ = Cylinder r x
-
-mkEssKind
-    :: EndShape
-    -> Maybe Decelerator
-    -> ToZoneKind EndOfSpeedSection
-mkEssKind EndCutSemiCone (Just (CESS i)) =
-    \r x -> \case
-        (Just alt) -> CutSemiCone (mkIncline i) r x alt
-        Nothing -> SemiCircle r x
-mkEssKind EndCutCone (Just (CESS i)) =
-    \r x -> \case
-        (Just alt) -> CutCone (mkIncline i) r x alt
-        Nothing -> Cylinder r x
-mkEssKind EndCutSemiCylinder (Just (AATB aatb)) =
-    \r x -> \case
-        (Just alt) -> CutSemiCylinder aatb r x alt
-        Nothing -> Cylinder r x
-mkEssKind EndCutCylinder (Just (AATB aatb)) =
-    \r x -> \case
-        (Just alt) -> CutCylinder aatb r x alt
-        Nothing -> Cylinder r x
-mkEssKind _ _ =
-    \r x _ -> Cylinder r x
-
-mkIncline :: CessIncline -> QIncline Double [u| rad |]
-mkIncline (CessIncline x) =
-    Incline . MkQuantity $ atan2 1 x

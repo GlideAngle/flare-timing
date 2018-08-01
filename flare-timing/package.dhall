@@ -49,7 +49,7 @@ in    defs
       , executables =
           { extract-input =
               { dependencies =
-                  deps # [ "flight-gap", "flight-fsdb" ]
+                  deps # [ "flight-zone", "flight-gap", "flight-fsdb" ]
               , ghc-options =
                   [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
               , main =
@@ -189,7 +189,8 @@ in    defs
               }
           , gap-point =
               { dependencies =
-                  deps # [ "containers", "flight-gap", "flight-mask" ]
+                    deps
+                  # [ "containers", "flight-zone", "flight-gap", "flight-mask" ]
               , ghc-options =
                   [ "-rtsopts"
                   , "-threaded"

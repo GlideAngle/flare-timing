@@ -10,7 +10,6 @@ module Flight.Gap.Points
     , JumpedTheGun(..)
     , Hg
     , Pg
-    , Discipline(..)
     , Penalty(..)
     , Points(..)
     , zeroPoints
@@ -21,10 +20,7 @@ module Flight.Gap.Points
 
 import Data.Ratio ((%))
 import GHC.Generics (Generic)
-import Data.Aeson
-    ( ToJSON(..), FromJSON(..), Options(..)
-    , defaultOptions, genericToJSON, genericParseJSON
-    )
+import Data.Aeson (ToJSON(..), FromJSON(..))
 
 import Flight.Gap.Points.Distance
     (DistancePoints(..), LinearPoints(..), DifficultyPoints(..))
@@ -56,35 +52,6 @@ newtype NoGoal = NoGoal Bool deriving (Eq, Show)
 
 data Hg = Hg deriving (Show)
 data Pg = Pg deriving (Show)
-
-data Discipline
-    = HangGliding
-    | Paragliding
-    deriving (Eq, Ord, Generic)
-
-disciplineOptions :: Options
-disciplineOptions =
-    defaultOptions
-        { constructorTagModifier = \case
-            "HangGliding" -> "hg"
-            "Paragliding" -> "pg"
-            x -> x
-        }
-
-instance Show Discipline where
-    show HangGliding = "hg"
-    show Paragliding = "pg"
-
-instance Read Discipline where
-    readsPrec _ ('h' : 'g' : s) = [(HangGliding, s)]
-    readsPrec _ ('p' : 'g' : s) = [(Paragliding, s)]
-    readsPrec _ _ = []
-
-instance ToJSON Discipline where
-  toJSON = genericToJSON disciplineOptions
-
-instance FromJSON Discipline where
-  parseJSON = genericParseJSON disciplineOptions
 
 data Penalty a where
     JumpedTooEarly :: MinimumDistancePoints -> Penalty Hg

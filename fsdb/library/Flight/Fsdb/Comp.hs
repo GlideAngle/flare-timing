@@ -21,7 +21,7 @@ import Text.XML.HXT.Core
     , arr
     )
 
-import Flight.Score (Discipline(..))
+import Flight.Zone.MkZones (Discipline(..))
 import Flight.Comp (Comp(..), UtcOffset(..))
 
 xpComp :: PU Comp

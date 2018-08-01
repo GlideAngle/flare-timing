@@ -60,11 +60,11 @@ import qualified Flight.Track.Land as Cmp (Landing(..))
 import Flight.Scribe
     (readComp, readCrossing, readTagging, readMasking, readLanding, writePointing)
 import Flight.Mask (RaceSections(..), section)
+import Flight.Zone.MkZones (Discipline(..))
 import Flight.Score
     ( MinimumDistance(..), MaximumDistance(..)
     , BestDistance(..), SumOfDistance(..), PilotDistance(..)
     , PilotsAtEss(..), PilotsPresent(..), PilotsFlying(..)
-    , Discipline(..)
     , GoalRatio(..), Lw(..), Aw(..)
     , NominalTime(..), BestTime(..)
     , Validity(..), ValidityWorking(..)

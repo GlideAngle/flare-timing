@@ -58,6 +58,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Zone.ZoneKind (Race, OpenDistance)
 import Flight.Zone.TaskZones (TaskZones(..))
+import Flight.Zone.MkZones (Discipline(..))
 import Flight.Zone.Raw (RawZone, showZone)
 import Flight.Field (FieldOrdering(..))
 import Flight.Pilot
@@ -70,7 +71,6 @@ import Flight.Score
     , NominalDistance(..)
     , MinimumDistance(..)
     , NominalTime(..)
-    , Discipline(..)
     , ScoreBackTime(..)
     )
 

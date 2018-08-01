@@ -32,7 +32,8 @@ import Flight.Comp
     , findFsdb
     , ensureExt
     )
-import Flight.Score (ScoreBackTime(..), Discipline(..))
+import Flight.Zone.MkZones (Discipline(..))
+import Flight.Score (ScoreBackTime(..))
 import Flight.Scribe (writeComp)
 import ExtractInputOptions (CmdOptions(..), mkOptions)
 

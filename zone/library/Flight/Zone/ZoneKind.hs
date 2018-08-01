@@ -613,4 +613,3 @@ radius (CutSemiCylinder _ r _ _) = r
 radius (Line r _) = r
 radius (Circle r _) = r
 radius (SemiCircle r _) = r
-

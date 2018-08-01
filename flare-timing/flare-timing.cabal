@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e2d54f23bfd5ce5ea3fe6a0356df13595a371a979e2411e1925601dc3870ec40
+-- hash: 0d76227c1d5111e4abe04fc43656a9cc3c77107509662c3e1a11a2d2adeae9dd
 
 name:           flare-timing
 version:        0.1.0
@@ -163,6 +163,7 @@ executable extract-input
     , flight-gap
     , flight-latlng
     , flight-scribe
+    , flight-zone
     , formatting
     , mtl
     , raw-strings-qq
@@ -197,6 +198,7 @@ executable gap-point
     , flight-latlng
     , flight-mask
     , flight-scribe
+    , flight-zone
     , formatting
     , mtl
     , raw-strings-qq
