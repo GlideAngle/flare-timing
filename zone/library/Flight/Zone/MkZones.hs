@@ -6,17 +6,9 @@ module Flight.Zone.MkZones
     , CessIncline(..)
     , EssVsGoal(..)
     , GoalLine(..)
-    , DeceleratorShape(..)
     , Zones(..)
-    , tpKindShape
-    , essKindShape
-    , goalKindShape
-    , mkTpKind
-    , mkEssKind
-    , mkGoalKind
-    , raceKindCyl
-    , openKindCyl
-    , openKindVec
+    , SpeedSection
+    , mkZones
     ) where
 
 import GHC.Generics (Generic)
@@ -28,40 +20,19 @@ import Data.UnitsOfMeasure (u, convert, fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
-import Flight.LatLng (LatLng(..), Lat(..), Lng(..))
+import Flight.LatLng (LatLng(..), Lat(..), Lng(..), QAlt)
 import Flight.Zone.Raw (RawZone)
 import Flight.Zone (QAltTime, QIncline, Incline(..))
 import Flight.Zone.Internal.ZoneKind
     ( ZoneKind(..), Race, OpenDistance
-    , Turnpoint, EndOfSpeedSection, EssAllowedZone, GoalAllowedZone
+    , Turnpoint, EndOfSpeedSection, Goal
+    , EssAllowedZone, GoalAllowedZone
     )
-import Flight.Zone.TaskZones (TaskZones, ToZoneKind)
+import Flight.Zone.TaskZones
+    (TaskZones, ToZoneKind, raceZoneKinds, openZoneKinds)
 
-data Zones =
-    Zones
-        { raw :: [RawZone]
-        , raceKind :: Maybe (TaskZones Race Double)
-        , openKind :: Maybe (TaskZones OpenDistance Double)
-        }
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
-
-raceKindCyl :: EssAllowedZone k => ToZoneKind k
-raceKindCyl r x _ = Cylinder r x
-
-openKindCyl :: ToZoneKind OpenDistance
-openKindCyl r x _ = Star r x
-
-openKindVec :: LatLng Rational [u| deg |] -> ToZoneKind OpenDistance
-openKindVec (LatLng (Lat dLat, Lng dLng)) =
-    let rLat :: Quantity _ [u| rad |]
-        rLat = fromRational' . convert $ dLat
-
-        rLng :: Quantity _ [u| rad |]
-        rLng = fromRational' . convert $ dLng
-
-        y = LatLng (Lat rLat, Lng rLng)
-
-    in \r x _ -> Vector (Left y) r x
+-- | A 1-based index into the list of control zones marking the speed section.
+type SpeedSection = Maybe (Int, Int)
 
 data Discipline
     = HangGliding
@@ -205,3 +176,105 @@ mkEssKind _ _ =
 mkIncline :: CessIncline -> QIncline Double [u| rad |]
 mkIncline (CessIncline x) =
     Incline . MkQuantity $ atan2 1 x
+
+data Zones =
+    Zones
+        { raw :: [RawZone]
+        , raceKind :: Maybe (TaskZones Race Double)
+        , openKind :: Maybe (TaskZones OpenDistance Double)
+        }
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+
+raceKindCyl :: EssAllowedZone k => ToZoneKind k
+raceKindCyl r x _ = Cylinder r x
+
+openKindCyl :: ToZoneKind OpenDistance
+openKindCyl r x _ = Star r x
+
+openKindVec :: LatLng Rational [u| deg |] -> ToZoneKind OpenDistance
+openKindVec (LatLng (Lat dLat, Lng dLng)) =
+    let rLat :: Quantity _ [u| rad |]
+        rLat = fromRational' . convert $ dLat
+
+        rLng :: Quantity _ [u| rad |]
+        rLng = fromRational' . convert $ dLng
+
+        y = LatLng (Lat rLat, Lng rLng)
+
+    in \r x _ -> Vector (Left y) r x
+
+mkZones
+    :: Discipline
+    -> ( GoalLine
+       ,
+           ( Maybe Decelerator
+           ,
+               ( Maybe (LatLng Rational [u| deg |])
+               ,
+                   ( SpeedSection
+                   ,
+                       ( [Maybe (QAlt Double [u| m |])]
+                       , [RawZone]
+                       )
+                   )
+               )
+           )
+       )
+    -> Zones
+
+mkZones _ (_, (_, (heading, (Nothing, (alts, zs))))) =
+    Zones zs Nothing (g alts zs)
+    where
+        zsLen = length zs
+        psLen = 0
+        tsLen = zsLen - psLen - 1
+
+        ok = maybe openKindCyl openKindVec heading
+
+        ps = replicate psLen raceKindCyl
+        ts = replicate tsLen raceKindCyl
+        g = openZoneKinds ps ts ok
+
+mkZones discipline (goalLine, (decel, (_, (speed@(Just _), (alts, zs))))) =
+    Zones zs (g alts zs) Nothing
+    where
+        -- The number of zones.
+        zsLen = length zs
+
+        -- The number of prolog zones.
+        psLen = maybe 0 ((\x -> x - 1) . fst) speed
+
+        -- The number of epilog zones.
+        esLen = maybe 0 ((\x -> max 0 $ zsLen - x - 1) . snd) speed
+
+        -- The 1-based index of the end of the speed section.
+        ssEnd = maybe zsLen snd speed
+
+        -- The remaining turnpoint zones in the race excluding the zone at the
+        -- end of the speed section. That race end zone might be either goal
+        -- (when ssEnd == zsLen) or an ESS zone.
+        tsLen = zsLen - psLen - esLen - (if ssEnd == zsLen then 1 else 2)
+
+        tpShape = tpKindShape discipline goalLine
+
+        dcShape =
+            \case
+                CESS 0 -> DecCyl
+                CESS _ -> DecCone
+                _ -> DecCyl
+            <$> decel
+
+        ssEndIsGoal = if ssEnd == zsLen then EssAtGoal else EssBeforeGoal
+        gkShape = goalKindShape discipline goalLine ssEndIsGoal dcShape
+        ekShape = essKindShape discipline goalLine ssEndIsGoal dcShape 
+
+        gk :: ToZoneKind Goal
+        gk = mkGoalKind gkShape decel
+
+        tk = mkTpKind tpShape
+        ek = if ssEnd < zsLen then Just $ mkEssKind ekShape decel else Nothing
+
+        ps = replicate psLen tk
+        ts = replicate tsLen tk
+        es = replicate esLen tk
+        g = raceZoneKinds ps ts ek es gk

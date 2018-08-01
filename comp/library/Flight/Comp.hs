@@ -56,7 +56,7 @@ import Data.String (IsString())
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import Flight.Zone.MkZones (Zones(..), Discipline(..))
+import Flight.Zone.MkZones (Zones(..), Discipline(..), SpeedSection)
 import Flight.Zone.Raw (showZone)
 import Flight.Field (FieldOrdering(..))
 import Flight.Pilot
@@ -102,9 +102,6 @@ type StartEndMark = StartEnd UTCTime UTCTime
 
 -- | 1-based indices of a task in a competition.
 newtype IxTask = IxTask Int deriving (Eq, Show)
-
--- | A 1-based index into the list of control zones marking the speed section.
-type SpeedSection = Maybe (Int, Int)
 
 speedSectionToLeg :: SpeedSection -> Int -> Leg
 speedSectionToLeg Nothing i = RaceLeg i

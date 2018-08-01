@@ -44,18 +44,13 @@ import Flight.LatLng (LatLng(..), Lat(..), Lng(..), Alt(..), QAlt)
 import Flight.LatLng.Raw (RawLat(..), RawLng(..))
 import Flight.Zone (Radius(..), AltTime(..))
 import Flight.Zone.MkZones
-    ( Discipline(..), Decelerator(..), CessIncline(..)
-    , DeceleratorShape(..), EssVsGoal(..), GoalLine(..)
-    , tpKindShape, essKindShape, goalKindShape
-    , mkTpKind, mkEssKind, mkGoalKind
-    , raceKindCyl, openKindCyl, openKindVec
+    ( Discipline(..), Decelerator(..), CessIncline(..) , GoalLine(..)
+    , mkZones
     )
-import Flight.Zone.TaskZones (ToZoneKind, raceZoneKinds, openZoneKinds)
-import Flight.Zone.ZoneKind (Goal)
 import qualified Flight.Zone.Raw as Z (RawZone(..))
 import Flight.Comp
-    ( PilotId(..), PilotName(..), Pilot(..), SpeedSection
-    , Task(..), TaskStop(..), Zones(..), StartGate(..), OpenClose(..)
+    ( PilotId(..), PilotName(..), Pilot(..)
+    , Task(..), TaskStop(..), StartGate(..), OpenClose(..)
     )
 import Flight.Fsdb.Pilot (getCompPilot)
 import Flight.Fsdb.Internal.XmlPickle (xpNewtypeRational, xpNewtypeQuantity)
@@ -215,81 +210,6 @@ xpStopped =
         (xpAttrFixed "task_state" "STOPPED")
         (xpAttr "stop_time" xpText)
 
-mkZones
-    :: Discipline
-    -> ( GoalLine
-       ,
-           ( Maybe Decelerator
-           ,
-               ( Maybe (LatLng Rational [u| deg |])
-               ,
-                   ( SpeedSection
-                   ,
-                       ( [Maybe (QAlt Double [u| m |])]
-                       , [Z.RawZone]
-                       )
-                   )
-               )
-           )
-       )
-    -> Zones
-
-mkZones _ (_, (_, (heading, (Nothing, (alts, zs))))) =
-    Zones zs Nothing (g alts zs)
-    where
-        zsLen = length zs
-        psLen = 0
-        tsLen = zsLen - psLen - 1
-
-        ok = maybe openKindCyl openKindVec heading
-
-        ps = replicate psLen raceKindCyl
-        ts = replicate tsLen raceKindCyl
-        g = openZoneKinds ps ts ok
-
-mkZones discipline (goalLine, (decel, (_, (speed@(Just _), (alts, zs))))) =
-    Zones zs (g alts zs) Nothing
-    where
-        -- The number of zones.
-        zsLen = length zs
-
-        -- The number of prolog zones.
-        psLen = maybe 0 ((\x -> x - 1) . fst) speed
-
-        -- The number of epilog zones.
-        esLen = maybe 0 ((\x -> max 0 $ zsLen - x - 1) . snd) speed
-
-        -- The 1-based index of the end of the speed section.
-        ssEnd = maybe zsLen snd speed
-
-        -- The remaining turnpoint zones in the race excluding the zone at the
-        -- end of the speed section. That race end zone might be either goal
-        -- (when ssEnd == zsLen) or an ESS zone.
-        tsLen = zsLen - psLen - esLen - (if ssEnd == zsLen then 1 else 2)
-
-        tpShape = tpKindShape discipline goalLine
-
-        dcShape =
-            \case
-                CESS 0 -> DecCyl
-                CESS _ -> DecCone
-                _ -> DecCyl
-            <$> decel
-
-        ssEndIsGoal = if ssEnd == zsLen then EssAtGoal else EssBeforeGoal
-        gkShape = goalKindShape discipline goalLine ssEndIsGoal dcShape
-        ekShape = essKindShape discipline goalLine ssEndIsGoal dcShape 
-
-        gk :: ToZoneKind Goal
-        gk = mkGoalKind gkShape decel
-
-        tk = mkTpKind tpShape
-        ek = if ssEnd < zsLen then Just $ mkEssKind ekShape decel else Nothing
-
-        ps = replicate psLen tk
-        ts = replicate tsLen tk
-        es = replicate esLen tk
-        g = raceZoneKinds ps ts ek es gk
 
 isGoalLine :: FsGoal -> GoalLine
 isGoalLine (FsGoal "LINE") = GoalLine
