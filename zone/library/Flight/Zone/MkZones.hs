@@ -7,6 +7,7 @@ module Flight.Zone.MkZones
     , EssVsGoal(..)
     , GoalLine(..)
     , DeceleratorShape(..)
+    , Zones(..)
     , tpKindShape
     , essKindShape
     , goalKindShape
@@ -28,12 +29,21 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
 import Flight.LatLng (LatLng(..), Lat(..), Lng(..))
+import Flight.Zone.Raw (RawZone)
 import Flight.Zone (QAltTime, QIncline, Incline(..))
 import Flight.Zone.Internal.ZoneKind
-    ( ZoneKind(..), OpenDistance
+    ( ZoneKind(..), Race, OpenDistance
     , Turnpoint, EndOfSpeedSection, EssAllowedZone, GoalAllowedZone
     )
-import Flight.Zone.TaskZones (ToZoneKind)
+import Flight.Zone.TaskZones (TaskZones, ToZoneKind)
+
+data Zones =
+    Zones
+        { raw :: [RawZone]
+        , raceKind :: Maybe (TaskZones Race Double)
+        , openKind :: Maybe (TaskZones OpenDistance Double)
+        }
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 raceKindCyl :: EssAllowedZone k => ToZoneKind k
 raceKindCyl r x _ = Cylinder r x

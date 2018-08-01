@@ -56,10 +56,8 @@ import Data.String (IsString())
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import Flight.Zone.ZoneKind (Race, OpenDistance)
-import Flight.Zone.TaskZones (TaskZones(..))
-import Flight.Zone.MkZones (Discipline(..))
-import Flight.Zone.Raw (RawZone, showZone)
+import Flight.Zone.MkZones (Zones(..), Discipline(..))
+import Flight.Zone.Raw (showZone)
 import Flight.Field (FieldOrdering(..))
 import Flight.Pilot
 import Flight.Path
@@ -206,14 +204,6 @@ newtype TaskStop =
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
-
-data Zones =
-    Zones
-        { raw :: [RawZone]
-        , raceKind :: Maybe (TaskZones Race Double)
-        , openKind :: Maybe (TaskZones OpenDistance Double)
-        }
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 data Task k =
     Task
