@@ -226,7 +226,7 @@ getTask discipline ps =
         &&& getSpeedSection
         &&& getZoneAltitudes
         &&& getZones
-        >>> arr (mkZones discipline)
+        >>> arr (\(a, (b, (c, (d, (e, f))))) -> mkZones discipline a b c d e f)
         )
     &&& getSpeedSection
     &&& getZoneTimes

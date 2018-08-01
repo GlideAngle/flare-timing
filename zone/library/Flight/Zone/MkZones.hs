@@ -205,24 +205,15 @@ openKindVec (LatLng (Lat dLat, Lng dLng)) =
 
 mkZones
     :: Discipline
-    -> ( GoalLine
-       ,
-           ( Maybe Decelerator
-           ,
-               ( Maybe (LatLng Rational [u| deg |])
-               ,
-                   ( SpeedSection
-                   ,
-                       ( [Maybe (QAlt Double [u| m |])]
-                       , [RawZone]
-                       )
-                   )
-               )
-           )
-       )
+    -> GoalLine
+    -> Maybe Decelerator
+    -> Maybe (LatLng Rational [u| deg |])
+    -> SpeedSection
+    -> [Maybe (QAlt Double [u| m |])]
+    -> [RawZone]
     -> Zones
 
-mkZones _ (_, (_, (heading, (Nothing, (alts, zs))))) =
+mkZones _ _ _ heading Nothing alts zs =
     Zones zs Nothing (g alts zs)
     where
         zsLen = length zs
@@ -235,7 +226,7 @@ mkZones _ (_, (_, (heading, (Nothing, (alts, zs))))) =
         ts = replicate tsLen raceKindCyl
         g = openZoneKinds ps ts ok
 
-mkZones discipline (goalLine, (decel, (_, (speed@(Just _), (alts, zs))))) =
+mkZones discipline goalLine decel _ speed@(Just _) alts zs =
     Zones zs (g alts zs) Nothing
     where
         -- The number of zones.
