@@ -159,47 +159,47 @@ spec_ = do
             [hereFile|ydec/bearing.yaml|]
             `shouldBe` (Right bearing')
 
-        it ("ydecs an incline of 90° as " ++ show incline)
+        it ("decodes an incline of 90° as " ++ show incline)
             $ ydec
             [hereFile|ydec/incline-90.yaml|]
             `shouldBe` (Right incline)
 
-        it ("ydecs an incline of 11.223° as " ++ show incline')
+        it ("decodes an incline of 11.223° as " ++ show incline')
             $ ydec
             [hereFile|ydec/incline-11.yaml|]
             `shouldBe` (Right incline')
 
-        it ("ydecs a radius of 11.2 m as " ++ show radius')
+        it ("decodes a radius of 11.2 m as " ++ show radius')
             $ ydec
             [hereFile|ydec/radius.yaml|]
             `shouldBe` (Right radius)
 
-        it "ydecs a point zone kind"
+        it "decodes a point zone kind"
             $ ydec
             [hereFile|ydec/point.yaml|]
             `shouldBe` (Right zkPt)
 
-        it "ydecs a cylinder zone kind"
+        it "decodes a cylinder zone kind"
             $ ydec
             [hereFile|ydec/cylinder.yaml|]
             `shouldBe` (Right zkCyl)
 
-        it "ydecs a circle zone kind"
+        it "decodes a circle zone kind"
             $ ydec 
             [hereFile|ydec/circle.yaml|]
             `shouldBe` (Right zkCircle)
 
-        it "ydecs an ESS is goal race"
+        it "decodes an ESS is goal race"
             $ ydec 
             [hereFile|ydec/ess-is-goal-race.yaml|]
             `shouldBe` (Right tzEssIsGoalRace)
 
-        it "ydecs an ESS is not goal race"
+        it "decodes an ESS is not goal race"
             $ ydec 
             [hereFile|ydec/ess-is-not-goal-race.yaml|]
             `shouldBe` (Right tzEssIsNotGoalRace)
 
-        it "ydecs an ESS is not goal race with prolog and epilog"
+        it "decodes an ESS is not goal race with prolog and epilog"
             $ ydec 
             [hereFile|ydec/ess-is-not-goal-race-pro-epi.yaml|]
             `shouldBe` (Right tzEssIsNotGoalRaceProEpi)
