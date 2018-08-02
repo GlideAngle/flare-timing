@@ -386,12 +386,27 @@ spec = do
             ]
 
         tzHgLineRace =
-            TzEssIsNotGoal
+            [ TzEssIsNotGoal
                 [Cylinder rad400 bmi023]
                 [Cylinder rad400 bogan]
                 (Cylinder rad400 trund :: ZoneKind EndOfSpeedSection _)
                 []
                 (Line rad400 bmi023 :: ZoneKind Goal _)
+
+            , TzEssIsGoal
+                [Cylinder rad400 bmi023]
+                [ Cylinder rad400 bogan
+                , Cylinder rad400 trund
+                ]
+                (Line rad400 bmi023 :: ZoneKind Goal _)
+
+            , TzEssIsNotGoal
+                [Cylinder rad400 bmi023]
+                [Cylinder rad400 bogan]
+                (Cylinder rad400 trund :: ZoneKind EndOfSpeedSection _)
+                [Cylinder rad400 bogan]
+                (Line rad400 bmi023 :: ZoneKind Goal _)
+            ]
 
         tzHgOpenHeadingNot =
             TzOpenDistance
