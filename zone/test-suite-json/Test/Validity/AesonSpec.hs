@@ -30,8 +30,8 @@ import Flight.Zone.TaskZones (TaskZones(..))
 yenc :: ToJSON a => a -> BL.ByteString
 yenc = BL.fromStrict . Y.encodePretty Y.defConfig
 
-yenc' :: (ToJSON a, FieldOrdering a) => a -> ByteString
-yenc' x = Y.encodePretty cfg x
+yenc' :: (ToJSON a, FieldOrdering a) => a -> BL.ByteString
+yenc' x = BL.fromStrict . Y.encodePretty cfg $ x
     where cfg = Y.setConfCompare (fieldOrder x) Y.defConfig
 
 ydec :: FromJSON a => ByteString -> Either ByteString a
@@ -50,6 +50,16 @@ test_encodeYaml =
             "encodes an ESS is goal race"
             "yenc/ess-is-goal-race.yaml.golden"
             (return $ yenc tzEssIsGoalRace)
+
+        , goldenVsString
+            "encodes HG open distance, no heading"
+            "yenc/hg-open-heading-not.comp-input.yaml.golden"
+            (return $ yenc' tzHgOpenHeadingNot)
+
+        , goldenVsString
+            "encodes HG open distance, heading"
+            "yenc/hg-open-heading.comp-input.yaml.golden"
+            (return $ yenc' tzHgOpenHeading)
         ]
 
 spec_To_YAML :: Spec
@@ -110,16 +120,6 @@ spec_To_YAML_Task = do
         $ yenc tzEssIsNotGoalRaceProEpi
         `shouldBe`
         [hereFile|yenc/ess-is-not-goal-race-pro-epi.yaml|]
-
-    it "encodes HG open distance, no heading"
-        $ yenc' tzHgOpenHeadingNot
-        `shouldBe`
-        [hereFile|yenc/hg-open-heading-not.comp-input.yaml|]
-
-    it "encodes HG open distance, heading"
-        $ yenc' tzHgOpenHeading
-        `shouldBe`
-        [hereFile|yenc/hg-open-heading.comp-input.yaml|]
 
     it "encodes HG race, goal /= line"
         $ yenc' tzHgLineNotRace
