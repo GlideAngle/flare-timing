@@ -48,7 +48,7 @@ test_encodeYaml =
     testGroup "Tasks to YAML"
         [ goldenVsString
             "encodes an ESS is goal race"
-            "yenc/ess-is-goal-race.yaml"
+            "yenc/ess-is-goal-race.yaml.golden"
             (return $ yenc tzEssIsGoalRace)
         ]
 
