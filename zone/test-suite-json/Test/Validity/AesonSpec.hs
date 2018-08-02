@@ -363,12 +363,27 @@ spec = do
         rad400  = Radius [u| 400 m |]
 
         tzHgLineNotRace =
-            TzEssIsNotGoal
+            [ TzEssIsNotGoal
                 [Cylinder rad400 bmi023]
                 [Cylinder rad400 bogan]
                 (Cylinder rad400 trund :: ZoneKind EndOfSpeedSection _)
                 []
                 (Circle rad400 bmi023 :: ZoneKind Goal _)
+
+            , TzEssIsGoal
+                [Cylinder rad400 bmi023]
+                [ Cylinder rad400 bogan
+                , Cylinder rad400 trund
+                ]
+                (Circle rad400 bmi023 :: ZoneKind Goal _)
+
+            , TzEssIsNotGoal
+                [Cylinder rad400 bmi023]
+                [Cylinder rad400 bogan]
+                (Cylinder rad400 trund :: ZoneKind EndOfSpeedSection _)
+                [Cylinder rad400 bogan]
+                (Circle rad400 bmi023 :: ZoneKind Goal _)
+            ]
 
         tzHgLineRace =
             TzEssIsNotGoal
