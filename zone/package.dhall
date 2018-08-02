@@ -44,11 +44,13 @@ in    defs
           ⫽ { json =
                 { dependencies =
                     [ "text"
-                    , "hspec"
                     , "yaml"
                     , "here"
                     , "bytestring"
                     , "aeson-pretty"
+                    , "tasty"
+                    , "tasty-hspec"
+                    , "tasty-discover"
                     ]
                 , ghc-options =
                     [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]

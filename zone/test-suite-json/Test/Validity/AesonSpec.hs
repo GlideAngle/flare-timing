@@ -4,7 +4,7 @@ module Test.Validity.AesonSpec where
 
 import Data.Bifunctor (first)
 import Data.ByteString (ByteString)
-import Test.Hspec (Spec, describe, it, shouldBe)
+import Test.Tasty.Hspec (Spec, describe, it, shouldBe)
 import Data.Aeson (ToJSON, FromJSON, encode, decode)
 import Data.Aeson.Encode.Pretty (encodePretty)
 import Data.UnitsOfMeasure (u, convert)
@@ -40,8 +40,8 @@ ydec =
     --    arising from a use of ‘shouldBe’
     first (const "") . Y.decodeEither'
 
-spec :: Spec
-spec = do
+spec_ :: Spec
+spec_ = do
     describe "To YAML" $ do
         it ("encodes an alt time of " ++ show altTime)
             $ yenc altTime
