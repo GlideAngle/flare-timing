@@ -46,20 +46,76 @@ ydec =
 test_encodeYaml :: TestTree
 test_encodeYaml =
     testGroup "Tasks to YAML"
-        [ goldenVsString
-            "encodes an ESS is goal race"
-            "yenc/ess-is-goal-race.yaml.golden"
-            (return $ yenc tzEssIsGoalRace)
+        [ testGroup "Single Race Tasks"
+            [ goldenVsString
+                "encodes an ESS is goal race"
+                "yenc/ess-is-goal-race.yaml.golden"
+                (return $ yenc tzEssIsGoalRace)
 
-        , goldenVsString
-            "encodes HG open distance, no heading"
-            "yenc/hg-open-heading-not.comp-input.yaml.golden"
-            (return $ yenc' tzHgOpenHeadingNot)
+            , goldenVsString
+                "encodes an ESS is not goal race"
+                "yenc/ess-is-not-goal-race.yaml.golden"
+                (return $ yenc tzEssIsNotGoalRace)
 
-        , goldenVsString
-            "encodes HG open distance, heading"
-            "yenc/hg-open-heading.comp-input.yaml.golden"
-            (return $ yenc' tzHgOpenHeading)
+            , goldenVsString
+                "encodes an ESS is not goal race with prolog and epilog"
+                "yenc/ess-is-not-goal-race-pro-epi.yaml.golden"
+                (return $ yenc tzEssIsNotGoalRaceProEpi)
+            ]
+
+        , testGroup "Single Open Distance Tasks"
+            [ goldenVsString
+                "encodes HG open distance, no heading"
+                "yenc/hg-open-heading-not.comp-input.yaml.golden"
+                (return $ yenc' tzHgOpenHeadingNot)
+
+            , goldenVsString
+                "encodes HG open distance, heading"
+                "yenc/hg-open-heading.comp-input.yaml.golden"
+                (return $ yenc' tzHgOpenHeading)
+            ]
+
+        , testGroup "Multiple Race Tasks"
+            [ goldenVsString
+                "encodes HG race, goal /= line"
+                "yenc/hg-line-not.comp-input.yaml.golden"
+                (return $ yenc' tzHgLineNotRace)
+
+            , goldenVsString
+                "encodes HG race, goal == line"
+                "yenc/hg-line.comp-input.yaml.golden"
+                (return $ yenc' tzHgLineRace)
+
+            , goldenVsString
+                "encodes PG race, goal /= line, decelerator == CESS"
+                "yenc/pg-line-not-decelerator-cess.comp-input.yaml.golden"
+                (return $ yenc' tzPgLineNotDeceleratorCess)
+
+            , goldenVsString
+                "encodes PG race, goal == line, decelerator == CESS"
+                "yenc/pg-line-decelerator-cess.comp-input.yaml.golden"
+                (return $ yenc' tzPgLineDeceleratorCess)
+
+            , goldenVsString
+                "encodes PG race, goal /= line, decelerator == AATB"
+                "yenc/pg-line-not-decelerator-aatb.comp-input.yaml.golden"
+                (return $ yenc' tzPgLineNotDeceleratorAatb)
+
+            , goldenVsString
+                "encodes PG race, goal == line, decelerator == AATB"
+                "yenc/pg-line-decelerator-aatb.comp-input.yaml.golden"
+                (return $ yenc' tzPgLineDeceleratorAatb)
+
+            , goldenVsString
+                "encodes PG race, goal /= line, no decelerator"
+                "yenc/pg-line-not-decelerator-none.comp-input.yaml.golden"
+                (return $ yenc' tzPgLineNotDeceleratorNone)
+
+            , goldenVsString
+                "encodes PG race, goal == line, no decelerator"
+                "yenc/pg-line-decelerator-none.comp-input.yaml.golden"
+                (return $ yenc' tzPgLineDeceleratorNone)
+            ]
         ]
 
 spec_To_YAML :: Spec
@@ -103,63 +159,6 @@ spec_To_YAML = do
         $ yenc zkCircle
         `shouldBe`
         [hereFile|yenc/circle.yaml|]
-
-spec_To_YAML_Task :: Spec
-spec_To_YAML_Task = do
-    it "encodes an ESS is goal race"
-        $ yenc tzEssIsGoalRace
-        `shouldBe`
-        [hereFile|yenc/ess-is-goal-race.yaml|]
-
-    it "encodes an ESS is not goal race"
-        $ yenc tzEssIsNotGoalRace
-        `shouldBe`
-        [hereFile|yenc/ess-is-not-goal-race.yaml|]
-
-    it "encodes an ESS is not goal race with prolog and epilog"
-        $ yenc tzEssIsNotGoalRaceProEpi
-        `shouldBe`
-        [hereFile|yenc/ess-is-not-goal-race-pro-epi.yaml|]
-
-    it "encodes HG race, goal /= line"
-        $ yenc' tzHgLineNotRace
-        `shouldBe`
-        [hereFile|yenc/hg-line-not.comp-input.yaml|]
-
-    it "encodes HG race, goal == line"
-        $ yenc' tzHgLineRace
-        `shouldBe`
-        [hereFile|yenc/hg-line.comp-input.yaml|]
-
-    it "encodes PG race, goal /= line, decelerator == CESS"
-        $ yenc' tzPgLineNotDeceleratorCess
-        `shouldBe`
-        [hereFile|yenc/pg-line-not-decelerator-cess.comp-input.yaml|]
-
-    it "encodes PG race, goal == line, decelerator == CESS"
-        $ yenc' tzPgLineDeceleratorCess
-        `shouldBe`
-        [hereFile|yenc/pg-line-decelerator-cess.comp-input.yaml|]
-
-    it "encodes PG race, goal /= line, decelerator == AATB"
-        $ yenc' tzPgLineNotDeceleratorAatb
-        `shouldBe`
-        [hereFile|yenc/pg-line-not-decelerator-aatb.comp-input.yaml|]
-
-    it "encodes PG race, goal == line, decelerator == AATB"
-        $ yenc' tzPgLineDeceleratorAatb
-        `shouldBe`
-        [hereFile|yenc/pg-line-decelerator-aatb.comp-input.yaml|]
-
-    it "encodes PG race, goal /= line, no decelerator"
-        $ yenc' tzPgLineNotDeceleratorNone
-        `shouldBe`
-        [hereFile|yenc/pg-line-not-decelerator-none.comp-input.yaml|]
-
-    it "encodes PG race, goal == line, no decelerator"
-        $ yenc' tzPgLineDeceleratorNone
-        `shouldBe`
-        [hereFile|yenc/pg-line-decelerator-none.comp-input.yaml|]
 
 spec_From_YAML :: Spec
 spec_From_YAML = do
