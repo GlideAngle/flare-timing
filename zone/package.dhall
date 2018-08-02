@@ -51,6 +51,7 @@ in    defs
                     , "tasty"
                     , "tasty-hspec"
                     , "tasty-discover"
+                    , "tasty-golden"
                     ]
                 , ghc-options =
                     [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]

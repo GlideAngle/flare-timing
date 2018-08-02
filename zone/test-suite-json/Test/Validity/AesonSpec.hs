@@ -4,7 +4,10 @@ module Test.Validity.AesonSpec where
 
 import Data.Bifunctor (first)
 import Data.ByteString (ByteString)
+import qualified Data.ByteString.Lazy as BL (ByteString, fromStrict)
+import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.Hspec (Spec, it, shouldBe)
+import Test.Tasty.Golden
 import Data.Aeson (ToJSON, FromJSON, encode, decode)
 import Data.Aeson.Encode.Pretty (encodePretty)
 import Data.UnitsOfMeasure (u, convert)
@@ -24,8 +27,8 @@ import Flight.Zone.Internal.ZoneKind
     (ZoneKind(..), CourseLine, Turnpoint, EndOfSpeedSection, Goal, Race, OpenDistance)
 import Flight.Zone.TaskZones (TaskZones(..))
 
-yenc :: ToJSON a => a -> ByteString
-yenc = Y.encodePretty Y.defConfig
+yenc :: ToJSON a => a -> BL.ByteString
+yenc = BL.fromStrict . Y.encodePretty Y.defConfig
 
 yenc' :: (ToJSON a, FieldOrdering a) => a -> ByteString
 yenc' x = Y.encodePretty cfg x
@@ -39,6 +42,15 @@ ydec =
     -- • No instance for (Eq Y.ParseException)
     --    arising from a use of ‘shouldBe’
     first (const "") . Y.decodeEither'
+
+test_encodeYaml :: TestTree
+test_encodeYaml =
+    testGroup "Tasks to YAML"
+        [ goldenVsString
+            "encodes an ESS is goal race"
+            "yenc/ess-is-goal-race.yaml"
+            (return $ yenc tzEssIsGoalRace)
+        ]
 
 spec_To_YAML :: Spec
 spec_To_YAML = do
@@ -82,6 +94,8 @@ spec_To_YAML = do
         `shouldBe`
         [hereFile|yenc/circle.yaml|]
 
+spec_To_YAML_Task :: Spec
+spec_To_YAML_Task = do
     it "encodes an ESS is goal race"
         $ yenc tzEssIsGoalRace
         `shouldBe`

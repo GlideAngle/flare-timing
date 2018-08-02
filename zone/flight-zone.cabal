@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 12931340f3a747421460f17054b8b5d719f132b7825a326d0fdf00c995180da2
+-- hash: 7b52d5461539ba16adc538feb33880dba05cbeaa4fe406659e11a0690c8f5eab
 
 name:           flight-zone
 version:        0.1.0
@@ -111,6 +111,7 @@ test-suite json
     , siggy-chardust
     , tasty
     , tasty-discover
+    , tasty-golden
     , tasty-hspec
     , text
     , uom-plugin
