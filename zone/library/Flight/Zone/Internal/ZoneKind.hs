@@ -3,6 +3,7 @@ module Flight.Zone.Internal.ZoneKind
     , ZoneKind(..)
     , Race
     , OpenDistance
+    , CourseLine
     , Turnpoint
     , EndOfSpeedSection
     , Goal
