@@ -20,7 +20,7 @@ import Flight.Zone.AltTime (QAltTime, AltTime(..))
 import Flight.Zone.Bearing (QBearing, Bearing(..))
 import Flight.Zone.Incline (QIncline, Incline(..))
 import Flight.Zone.Radius (QRadius, Radius(..))
-import Flight.Zone.ZoneKind
+import Flight.Zone.Internal.ZoneKind
     (ZoneKind(..), Turnpoint, EndOfSpeedSection, Goal, OpenDistance)
 import Flight.Zone.TaskZones (TaskZones(..))
 
