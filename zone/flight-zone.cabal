@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 7b52d5461539ba16adc538feb33880dba05cbeaa4fe406659e11a0690c8f5eab
+-- hash: ab8e56a9496de9967fa42dcb272b766f90b7b9eec184c739a995d3168aeae1b7
 
 name:           flight-zone
 version:        0.1.0
@@ -68,7 +68,7 @@ library
     , uom-plugin
   default-language: Haskell2010
 
-test-suite json
+test-suite serial
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
@@ -93,7 +93,7 @@ test-suite json
       Paths_flight_zone
   hs-source-dirs:
       library
-      test-suite-json
+      test-suite-serial
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:

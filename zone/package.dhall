@@ -41,7 +41,7 @@ in    defs
           }
       , tests =
             ./default-tests.dhall 
-          ⫽ { json =
+          ⫽ { serial =
                 { dependencies =
                     [ "text"
                     , "yaml"
@@ -58,7 +58,7 @@ in    defs
                 , main =
                     "Spec.hs"
                 , source-dirs =
-                    [ "library", "test-suite-json" ]
+                    [ "library", "test-suite-serial" ]
                 }
             }
       }
