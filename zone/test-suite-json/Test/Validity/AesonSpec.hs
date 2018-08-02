@@ -98,52 +98,52 @@ spec_ = do
             `shouldBe`
             [hereFile|yenc/ess-is-not-goal-race-pro-epi.yaml|]
 
-        it "encodes hg-line-not race"
-            $ yenc' tzHgLineNotRace
-            `shouldBe`
-            [hereFile|yenc/hg-line-not.comp-input.yaml|]
-
-        it "encodes hg-line race"
-            $ yenc' tzHgLineRace
-            `shouldBe`
-            [hereFile|yenc/hg-line.comp-input.yaml|]
-
-        it "encodes hg-open-heading-not"
+        it "encodes HG open distance, no heading"
             $ yenc' tzHgOpenHeadingNot
             `shouldBe`
             [hereFile|yenc/hg-open-heading-not.comp-input.yaml|]
 
-        it "encodes hg-open-heading"
+        it "encodes HG open distance, heading"
             $ yenc' tzHgOpenHeading
             `shouldBe`
             [hereFile|yenc/hg-open-heading.comp-input.yaml|]
 
-        it "encodes pg-line-not-decelerator-cess race"
+        it "encodes HG race, goal /= line"
+            $ yenc' tzHgLineNotRace
+            `shouldBe`
+            [hereFile|yenc/hg-line-not.comp-input.yaml|]
+
+        it "encodes HG race, goal == line"
+            $ yenc' tzHgLineRace
+            `shouldBe`
+            [hereFile|yenc/hg-line.comp-input.yaml|]
+
+        it "encodes PG race, goal /= line, decelerator == CESS"
             $ yenc' tzPgLineNotDeceleratorCess
             `shouldBe`
             [hereFile|yenc/pg-line-not-decelerator-cess.comp-input.yaml|]
 
-        it "encodes pg-line-decelerator-cess race"
+        it "encodes PG race, goal == line, decelerator == CESS"
             $ yenc' tzPgLineDeceleratorCess
             `shouldBe`
             [hereFile|yenc/pg-line-decelerator-cess.comp-input.yaml|]
 
-        it "encodes pg-line-not-decelerator-aatb race"
+        it "encodes PG race, goal /= line, decelerator == AATB"
             $ yenc' tzPgLineNotDeceleratorAatb
             `shouldBe`
             [hereFile|yenc/pg-line-not-decelerator-aatb.comp-input.yaml|]
 
-        it "encodes pg-line-decelerator-aatb race"
+        it "encodes PG race, goal == line, decelerator == AATB"
             $ yenc' tzPgLineDeceleratorAatb
             `shouldBe`
             [hereFile|yenc/pg-line-decelerator-aatb.comp-input.yaml|]
 
-        it "encodes pg-line-not-decelerator-none race"
+        it "encodes PG race, goal /= line, no decelerator"
             $ yenc' tzPgLineNotDeceleratorNone
             `shouldBe`
             [hereFile|yenc/pg-line-not-decelerator-none.comp-input.yaml|]
 
-        it "encodes pg-line-decelerator-none race"
+        it "encodes PG race, goal == line, no decelerator"
             $ yenc' tzPgLineDeceleratorNone
             `shouldBe`
             [hereFile|yenc/pg-line-decelerator-none.comp-input.yaml|]
