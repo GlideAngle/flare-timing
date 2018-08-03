@@ -16,7 +16,7 @@ import Flight.Units ()
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.LatLng.Rational (Epsilon(..), defEps)
 import Flight.Distance (TaskDistance(..), PathDistance(..), SpanLatLng, fromKms)
-import Flight.Zone (Bearing(..), Radius(..), Zone(..))
+import Flight.Zone (QBearing, Bearing(..), Radius(..), Zone(..))
 import Flight.Zone.Cylinder
     (Samples(..), SampleParams(..), Tolerance(..), CircumSample, ZonePoint(..))
 import Flight.Zone.Path (costSegment, distancePointToPoint)
@@ -70,7 +70,7 @@ ll =
         lat = Lat oneRadian
         lng = Lng oneRadian
 
-br :: Bearing Rational
+br :: QBearing Rational [u| rad |]
 br = let (Epsilon e) = defEps in (Bearing . MkQuantity $ F.pi e)
 
 circumSampleUnits :: TestTree
