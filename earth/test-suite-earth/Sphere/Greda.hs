@@ -7,13 +7,15 @@ import Test.Tasty.HUnit as HU ((@?=), testCase)
 import Data.UnitsOfMeasure (u, convert)
 
 import Flight.Units ()
-import Flight.LatLng (LatLng(..), Lat(..), Lng(..))
+import Flight.LatLng (LatLng(..), QLat, Lat(..), QLng, Lng(..))
 import Flight.Zone (Zone(..), Radius(..), toRationalLatLng)
 import Flight.Earth.Sphere.Separated (separatedZones)
 
 import Sphere.Cylinder.Span (spanR)
 
-llr :: (Lat Double [u| rad |], Lng Double [u| rad |]) -> LatLng Rational [u| rad |]
+llr
+    :: (QLat Double [u| rad |], QLng Double [u| rad |])
+    -> LatLng Rational [u| rad |]
 llr = toRationalLatLng . LatLng
 
 gs1 :: LatLng Rational [u| rad |]

@@ -11,9 +11,9 @@ import Data.UnitsOfMeasure
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
-import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
+import Flight.LatLng (QLat, Lat(..), QLng, Lng(..), LatLng(..))
 import Flight.Distance (SpanLatLng)
-import Flight.Zone (Bearing(..), QRadius, Radius(..), Zone(..))
+import Flight.Zone (QBearing, Bearing(..), QRadius, Radius(..), Zone(..))
 import Flight.Zone.Cylinder (SampleParams(..), Tolerance(..), CircumSample)
 import Zone (QLL, showQ)
 import Ellipsoid.Cylinder.Span
@@ -23,7 +23,7 @@ import Ellipsoid.Cylinder.Span
     , zpFilter
     )
 
-bearingD :: [Bearing Double]
+bearingD :: [QBearing Double [u| rad |]]
 bearingD =
     Bearing <$>
     [ f $ x *: [u| 1 deg |]
@@ -33,7 +33,7 @@ bearingD =
         f :: Quantity Double [u| deg |] -> Quantity Double [u| rad |]
         f = convert
 
-bearingR :: [Bearing Rational]
+bearingR :: [QBearing Rational [u| rad |]]
 bearingR =
     Bearing . toRational' <$>
     [ f $ x *: [u| 1 deg |]
@@ -128,13 +128,13 @@ outerCylinderUnits =
 outerCheck
     ::
         ( Eq a, Show a, Real a, Fractional a
-        , Show (Lat a [u| rad |])
-        , Show (Lng a [u| rad |])
+        , Show (QLat a [u| rad |])
+        , Show (QLng a [u| rad |])
         )
     => SpanLatLng a
     -> CircumSample a
     -> SampleParams a
-    -> Bearing a
+    -> QBearing a [u| rad |]
     -> Tolerance a
     -> Quantity a [u| m |]
     -> ZonePointFilter a

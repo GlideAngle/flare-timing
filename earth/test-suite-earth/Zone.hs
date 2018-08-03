@@ -38,32 +38,32 @@ toLL (lat, lng) =
         lat' = toRational' lat
         lng' = toRational' lng
 
-point :: (Eq b, Fractional b) => MkZone a b
+point :: (Eq b, Ord b, Fractional b) => MkZone a b
 point _ x =
     fromRationalZone
     $ Point (toLL x)
 
-vector :: (Eq b, Fractional b) => MkZone a b
+vector :: (Eq b, Ord b, Fractional b) => MkZone a b
 vector _ x =
     fromRationalZone
     $ Vector (Bearing zero) (toLL x) 
 
-cylinder :: (Eq b, Fractional b) => MkZone a b
+cylinder :: (Eq b, Ord b, Fractional b) => MkZone a b
 cylinder r x =
     fromRationalZone
     $ Cylinder (toRationalRadius r) (toLL x)
 
-conical :: (Eq b, Fractional b) => MkZone a b
+conical :: (Eq b, Ord b, Fractional b) => MkZone a b
 conical r x =
     fromRationalZone
     $ Conical (Incline $ MkQuantity 1) (toRationalRadius r) (toLL x)
 
-line :: (Eq b, Fractional b) => MkZone a b
+line :: (Eq b, Ord b, Fractional b) => MkZone a b
 line r x =
     fromRationalZone
     $ Line (toRationalRadius r) (toLL x) 
 
-semicircle :: (Eq b, Fractional b) => MkZone a b
+semicircle :: (Eq b, Ord b, Fractional b) => MkZone a b
 semicircle r x =
     fromRationalZone
     $ SemiCircle (toRationalRadius r) (toLL x)
