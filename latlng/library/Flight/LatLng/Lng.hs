@@ -69,8 +69,8 @@ instance (KnownUnit (Unpack u), Show a) => ShowLng 'False a u where
     showLng _ (Lng lng) = show lng
 
 instance (Fractional a, Convertible u [u| deg |]) => Bounded (QLng a u) where
-    minBound = Lng $ convert [u| - 90 deg |]
-    maxBound = Lng $ convert [u| 90 deg |]
+    minBound = Lng $ convert [u| - 180 deg |]
+    maxBound = Lng $ convert [u| 180 deg |]
 
 instance
     ( Real a
