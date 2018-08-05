@@ -25,6 +25,7 @@ packages:
 - units
 - zone
 - flare-timing
+- www
 - location:
     git: https://github.com/blockscope/hcoord.git
     commit: b2fb75029f0374e48caf4cbbfcfcc2fd674cb4f3
