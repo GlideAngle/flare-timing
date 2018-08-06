@@ -32,16 +32,6 @@ import Flight.Comp
     , Pilot(..)
     )
 
-type FlareTimingApi = CompApi :<|> TaskApi
-
-type CompApi =
-    "comps" :> Get '[JSON] [Comp]
-    :<|> "nominals" :> Get '[JSON] [Nominal]
-
-type TaskApi =
-    "tasks" :> Get '[JSON] [Task Double]
-    :<|> "pilots" :> Get '[JSON] [[Pilot]]
-
 newtype Config = Config { path :: FilePath }
 
 newtype AppT m a =
@@ -57,18 +47,17 @@ newtype AppT m a =
         , MonadIO
         )
 
-compApi :: Proxy CompApi
-compApi = Proxy
+type Api =
+    "comps" :> Get '[JSON] [Comp]
+    :<|> "nominals" :> Get '[JSON] [Nominal]
+    :<|> "tasks" :> Get '[JSON] [Task Double]
+    :<|> "pilots" :> Get '[JSON] [[Pilot]]
 
-taskApi :: Proxy TaskApi
-taskApi = Proxy
-
-flareTimingApi :: Proxy FlareTimingApi
-flareTimingApi = Proxy
+api :: Proxy Api
+api = Proxy
 
 convertApp :: Config -> AppT IO a -> Handler a
-convertApp cfg appt =
-    Handler $ runReaderT (unApp appt) cfg
+convertApp cfg appt = Handler $ runReaderT (unApp appt) cfg
 
 driverRun :: IO ()
 driverRun = withCmdArgs drive
@@ -93,26 +82,25 @@ drive ServeOptions{..} = do
 
 -- SEE: https://stackoverflow.com/questions/42143155/acess-a-servant-server-with-a-reflex-dom-client
 mkApp :: Config -> IO Application
-mkApp cfg = do
-    let sc = serverComp cfg
-    let st = serverTask cfg
-    return . simpleCors . serve flareTimingApi $ sc :<|> st
+mkApp cfg = return . simpleCors . serve api $ serverApi cfg
 
-serverComp :: Config -> Server CompApi
-serverComp cfg =
-    hoistServer compApi (convertApp cfg) (queryComps :<|> queryNominals)
-
-serverTask :: Config -> Server TaskApi
-serverTask cfg =
-    hoistServer taskApi (convertApp cfg) (queryTasks :<|> queryPilots)
-
-queryWith :: (FilePath -> IO (Either String a)) -> AppT IO a
-queryWith f = do
-    path' <- path <$> ask
-    xs <- liftIO $ f path'
-    case xs of
-      Left msg -> throwError $ err400 { errBody = LBS.pack msg }
-      Right xs' -> return xs'
+serverApi :: Config -> Server Api
+serverApi cfg =
+    hoistServer
+        api
+        (convertApp cfg)
+        ( query yamlComps
+        :<|> query yamlNominals
+        :<|> query yamlTasks
+        :<|> query yamlPilots
+        )
+    where
+        query f = do
+            path' <- path <$> ask
+            xs <- liftIO . runExceptT . f $ path'
+            case xs of
+              Left msg -> throwError $ err400 { errBody = LBS.pack msg }
+              Right xs' -> return xs'
 
 yamlComps :: FilePath -> ExceptT String IO [Comp]
 yamlComps yamlPath = do
@@ -144,14 +132,3 @@ yamlPilots yamlPath = do
     where
         pilot (PilotTrackLogFile p _) = p
 
-queryComps :: AppT IO [Comp]
-queryComps = queryWith (runExceptT . yamlComps)
-
-queryNominals :: AppT IO [Nominal]
-queryNominals = queryWith (runExceptT . yamlNominals)
-
-queryTasks :: AppT IO [Task Double]
-queryTasks = queryWith (runExceptT . yamlTasks)
-
-queryPilots :: AppT IO [[Pilot]]
-queryPilots = queryWith (runExceptT . yamlPilots)
