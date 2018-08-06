@@ -89,10 +89,10 @@ serverApi cfg =
     hoistServer
         api
         (convertApp cfg)
-        ( query yamlComps
-        :<|> query yamlNominals
-        :<|> query yamlTasks
-        :<|> query yamlPilots
+        ( query (yaml ((:[]) . comp))
+        :<|> query (yaml ((:[]) . nominal))
+        :<|> query (yaml tasks)
+        :<|> query (yaml ((fmap . fmap) pilot . pilots))
         )
     where
         query f = do
@@ -102,33 +102,11 @@ serverApi cfg =
               Left msg -> throwError $ err400 { errBody = LBS.pack msg }
               Right xs' -> return xs'
 
-yamlComps :: FilePath -> ExceptT String IO [Comp]
-yamlComps yamlPath = do
-    contents <- lift $ BS.readFile yamlPath
-    case decodeEither' contents of
-        Left msg -> throwE . prettyPrintParseException $ msg
-        Right CompSettings{..} -> ExceptT . return $ Right [comp]
-
-yamlNominals :: FilePath -> ExceptT String IO [Nominal]
-yamlNominals yamlPath = do
-    contents <- lift $ BS.readFile yamlPath
-    case decodeEither' contents of
-        Left msg -> throwE . prettyPrintParseException $ msg
-        Right CompSettings{..} -> ExceptT . return $ Right [nominal]
-
-yamlTasks :: FilePath -> ExceptT String IO [Task Double]
-yamlTasks yamlPath = do
-    contents <- lift $ BS.readFile yamlPath
-    case decodeEither' contents of
-        Left msg -> throwE . prettyPrintParseException $ msg
-        Right CompSettings{..} -> ExceptT . return $ Right tasks
-
-yamlPilots :: FilePath -> ExceptT String IO [[Pilot]]
-yamlPilots yamlPath = do
-    contents <- lift $ BS.readFile yamlPath
-    case decodeEither' contents of
-        Left msg -> throwE . prettyPrintParseException $ msg
-        Right CompSettings{..} -> ExceptT . return $ Right $ (fmap . fmap) pilot pilots
-    where
         pilot (PilotTrackLogFile p _) = p
 
+yaml :: (CompSettings Double -> a) -> FilePath -> ExceptT String IO a
+yaml f yamlPath = do
+    contents <- lift $ BS.readFile yamlPath
+    case decodeEither' contents of
+        Left msg -> throwE . prettyPrintParseException $ msg
+        Right x@CompSettings{..} -> ExceptT . return $ Right (f x)
