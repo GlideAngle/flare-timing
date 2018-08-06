@@ -96,7 +96,7 @@ mkApp :: Config -> IO Application
 mkApp cfg = do
     let sc = serverComp cfg
     let st = serverTask cfg
-    return $ simpleCors $ serve flareTimingApi $ sc :<|> st
+    return . simpleCors . serve flareTimingApi $ sc :<|> st
 
 serverComp :: Config -> Server CompApi
 serverComp cfg =
