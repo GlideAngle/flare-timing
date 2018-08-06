@@ -1,25 +1,26 @@
 module Serve.Driver (driverRun) where
 
-import Network.Wai
-import Network.Wai.Middleware.Cors
+import Network.Wai (Application)
+import Network.Wai.Middleware.Cors (simpleCors)
 import Network.Wai.Handler.Warp
+    (runSettings, defaultSettings, setPort, setBeforeMainLoop)
 import Servant
     ( (:<|>)(..)
     , Get, JSON, Server, Handler(..), Proxy(..), ServantErr
     , (:>)
     , err400, errBody, hoistServer, serve, throwError
     )
-import System.IO
-import Control.Monad.IO.Class
+import System.IO (hPutStrLn, stderr)
+import Control.Monad.IO.Class (MonadIO)
 import Control.Monad.Reader (ReaderT, MonadReader, ask, liftIO, runReaderT)
 import Control.Monad.Trans.Except (throwE)
 import Control.Monad.Except (ExceptT(..), MonadError, runExceptT, lift)
-import qualified Data.ByteString.Lazy.Char8 as LBS
+import qualified Data.ByteString.Lazy.Char8 as LBS (pack)
 
 import System.Directory (doesFileExist)
 import System.FilePath (FilePath)
 import Data.Yaml (prettyPrintParseException, decodeEither')
-import qualified Data.ByteString as BS
+import qualified Data.ByteString as BS (readFile)
 
 import Serve.Args (withCmdArgs)
 import Serve.Options (ServeOptions(..))
