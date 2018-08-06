@@ -110,4 +110,4 @@ yaml f yamlPath = do
     contents <- lift $ BS.readFile yamlPath
     case decodeEither' contents of
         Left msg -> throwE . prettyPrintParseException $ msg
-        Right x@CompSettings{..} -> ExceptT . return $ Right (f x)
+        Right x -> ExceptT . return $ Right (f x)
