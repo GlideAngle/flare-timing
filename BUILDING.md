@@ -9,7 +9,7 @@ package can be built with
 [nix-build](https://nixos.org/nix/manual/#sec-building-simple) after having
 setup the [overlay](https://github.com/BlockScope/nix-config).
 
-    ln -s overlay.nix ~/.config/nixpkgs/overlay
+    ln -s -f ~/dev/blockscope/nix-config/overlays.nix ~/.config/nixpkgs/overlays/flare-timing-overlay.nix
     nix-build "<nixpkgs>" -A haskellPackages.flight-units
 
 ## Building with Stack
