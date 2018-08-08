@@ -41,7 +41,7 @@ cleanRules =
         removeFilesAfter tmp [ "//*" ]
 
 root :: FilePath
-root = "flare-timing"
+root = "www"
 
 out :: FilePath
 out = "__www-dist"
