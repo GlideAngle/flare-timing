@@ -6,8 +6,6 @@ import Prelude hiding (map)
 import Reflex.Dom (MonadWidget, (=:), elAttr, elClass, el, text)
 import Data.Map (union)
 
-{-# ANN module "HLint: ignore" #-}
-
 attribution :: MonadWidget t m => m () 
 attribution = do
     el "p" $ do
