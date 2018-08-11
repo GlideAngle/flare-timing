@@ -48,7 +48,7 @@ dhallCabal =
 format :: String -> Rules ()
 format x =
     phony ("dhall-format-" ++ x)
-    $ cmd Shell ("stack exec dhall-format -- --inplace " ++ (x </> "package.dhall"))
+    $ cmd Shell ("__shake-build/dhall format --inplace " ++ (x </> "package.dhall"))
 
 hpack :: String -> Rules ()
 hpack x =
