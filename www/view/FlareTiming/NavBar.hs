@@ -4,8 +4,6 @@ module FlareTiming.NavBar(navbar) where
 
 import Reflex.Dom (MonadWidget, elClass, el, text)
 
-{-# ANN module "HLint: ignore" #-}
-
 navbar :: MonadWidget t m => m ()
 navbar =
     elClass "nav" "nav has-shadow" $ do
