@@ -1,0 +1,10 @@
+resolver: lts-11.20
+tested-with: GHC == 8.2.2
+flags: {}
+packages: []
+extra-deps:
+- dhall-1.12.0
+- hpack-dhall-0.1.0
+- hpack-0.25.0
+local-bin-path: __shake-build
+work-dir: .stack-work-dhall
