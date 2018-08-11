@@ -29,3 +29,5 @@ ghc-*
 uom-plugin-*
 *.hi
 *.o
+*.swp
+*.un~
