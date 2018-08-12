@@ -4,27 +4,21 @@ let
 
   inherit (nixpkgs) pkgs;
 
-  f = { mkDerivation, aeson, aeson-via-sci, base, bifunctors
-      , flight-earth-flat, flight-earth-sphere, flight-latlng
-      , flight-task, flight-units, flight-zone, hcoord, hlint, numbers
-      , scientific, siggy-chardust, stdenv, uom-plugin
+  f = { mkDerivation, aeson, base, bifunctors, detour-via-sci
+      , flight-earth, flight-latlng, flight-task, flight-units
+      , flight-zone, hcoord-utm, numbers, scientific, siggy-chardust
+      , stdenv, uom-plugin
       }:
       mkDerivation {
         pname = "flight-route";
         version = "0.1.0";
         src = ./.;
         libraryHaskellDepends = [
-          aeson aeson-via-sci base bifunctors flight-earth-flat
-          flight-earth-sphere flight-latlng flight-task flight-units
-          flight-zone hcoord numbers scientific siggy-chardust uom-plugin
+          aeson base bifunctors detour-via-sci flight-earth flight-latlng
+          flight-task flight-units flight-zone hcoord-utm numbers scientific
+          siggy-chardust uom-plugin
         ];
-        testHaskellDepends = [
-          aeson aeson-via-sci base bifunctors flight-earth-flat
-          flight-earth-sphere flight-latlng flight-task flight-units
-          flight-zone hcoord hlint numbers scientific siggy-chardust
-          uom-plugin
-        ];
-        homepage = "https://github.com/BlockScope/flare-timing#readme";
+        homepage = "https://github.com/blockscope/flare-timing#readme";
         description = "Control zones to fly";
         license = stdenv.lib.licenses.mpl20;
       };
