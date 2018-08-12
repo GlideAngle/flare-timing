@@ -1,17 +1,15 @@
-{ mkDerivation, base, bifunctors, hlint, numbers, siggy-chardust
-, stdenv, uom-plugin
+{ mkDerivation, base, bifunctors, fixed, formatting, numbers
+, siggy-chardust, stdenv, text, uom-plugin
 }:
 mkDerivation {
   pname = "flight-units";
   version = "0.1.0";
   src = ./.;
   libraryHaskellDepends = [
-    base bifunctors numbers siggy-chardust uom-plugin
+    base bifunctors fixed formatting numbers siggy-chardust text
+    uom-plugin
   ];
-  testHaskellDepends = [
-    base bifunctors hlint numbers siggy-chardust uom-plugin
-  ];
-  homepage = "https://github.com/BlockScope/haskell-flight-task#readme";
+  homepage = "https://github.com/blockscope/flare-timing#readme";
   description = "Units used in hang gliding and paragliding competitions";
   license = stdenv.lib.licenses.mpl20;
 }

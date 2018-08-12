@@ -1,19 +1,16 @@
-{ mkDerivation, base, containers, directory, filepath, flight-comp
-, flight-igc, flight-kml, hlint, mtl, path, split, stdenv, time
+{ mkDerivation, base, bytestring, containers, directory, filepath
+, flight-comp, flight-igc, flight-kml, mtl, path, split, stdenv
+, time, utf8-string
 }:
 mkDerivation {
   pname = "flight-track";
-  version = "0.0.0";
+  version = "0.1.0";
   src = ./.;
   libraryHaskellDepends = [
-    base containers directory filepath flight-comp flight-igc
-    flight-kml mtl path split time
+    base bytestring containers directory filepath flight-comp
+    flight-igc flight-kml mtl path split time utf8-string
   ];
-  testHaskellDepends = [
-    base containers directory filepath flight-comp flight-kml hlint mtl
-    split time
-  ];
-  homepage = "https://github.com/BlockScope/haskell-flight-track#readme";
+  homepage = "https://github.com/blockscope/flare-timing#readme";
   description = "Hang gliding and paragliding competition track logs";
   license = stdenv.lib.licenses.mpl20;
 }
