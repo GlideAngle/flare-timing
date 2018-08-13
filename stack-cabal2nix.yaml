@@ -1,5 +1,4 @@
-resolver: lts-11.20
-tested-with: GHC == 8.2.2
+resolver: lts-12.5
 flags: {}
 packages: []
 # SEE: https://github.com/depressed-pho/HsOpenSSL/issues/41
