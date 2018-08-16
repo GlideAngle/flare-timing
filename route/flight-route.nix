@@ -12,6 +12,7 @@ mkDerivation {
     flight-task flight-units flight-zone hcoord-utm numbers scientific
     siggy-chardust uom-plugin
   ];
+  doHaddock = false;
   homepage = "https://github.com/blockscope/flare-timing#readme";
   description = "Control zones to fly";
   license = stdenv.lib.licenses.mpl20;
