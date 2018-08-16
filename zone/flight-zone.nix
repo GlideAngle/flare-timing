@@ -17,6 +17,7 @@ mkDerivation {
     tasty tasty-discover tasty-golden tasty-hspec text uom-plugin yaml
   ];
   testToolDepends = [ tasty-discover ];
+  doHaddock = false;
   homepage = "https://github.com/blockscope/flare-timing#readme";
   description = "Control zones to fly";
   license = stdenv.lib.licenses.mpl20;
