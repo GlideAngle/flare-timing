@@ -12,6 +12,7 @@ mkDerivation {
     aeson base cassava detour-via-sci doctest newtype scientific
     uom-plugin
   ];
+  doCheck = false;
   homepage = "https://github.com/blockscope/flare-timing/tree/master/detour-via-uom#readme";
   description = "JSON and CSV encoding for quantities";
   license = stdenv.lib.licenses.mpl20;
