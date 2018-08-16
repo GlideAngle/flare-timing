@@ -22,6 +22,8 @@ mkDerivation {
     tasty tasty-hunit tasty-quickcheck tasty-smallcheck time
     unordered-containers uom-plugin vector
   ];
+  doCheck = false;
+  doHaddock = false;
   homepage = "https://github.com/blockscope/flare-timing#readme";
   description = "Hang gliding and paragliding competition scoring inputs";
   license = stdenv.lib.licenses.mpl20;
