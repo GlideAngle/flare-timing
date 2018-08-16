@@ -12,6 +12,8 @@ mkDerivation {
     detour-via-uom flight-units formatting newtype numbers random
     siggy-chardust smallcheck tasty-quickcheck text uom-plugin
   ];
+  doCheck = false;
+  doHaddock = false;
   homepage = "https://github.com/blockscope/flare-timing#readme";
   description = "Latitude and longitude as used in hang gliding and paragliding competitions";
   license = stdenv.lib.licenses.mpl20;
