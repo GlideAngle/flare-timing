@@ -1,8 +1,8 @@
--- This file has been generated from package.dhall by hpack version 0.25.0.
+-- This file has been generated from package.dhall by hpack version 0.28.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 6b41f6c16874702932bd6977abbf204e3545a75f74b9f8ede1ccb9163e7a51ad
+-- hash: 697243b2f670380c5f23021cc2cc1a715e0da000fdcf433c53a0345b655f3c08
 
 name:           flight-units
 version:        0.1.0
@@ -19,7 +19,6 @@ license-file:   LICENSE.md
 tested-with:    GHC == 8.2.2
 build-type:     Simple
 cabal-version:  >= 1.10
-
 extra-source-files:
     changelog.md
     package.dhall

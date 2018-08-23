@@ -1,8 +1,8 @@
--- This file has been generated from package.dhall by hpack version 0.25.0.
+-- This file has been generated from package.dhall by hpack version 0.28.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 60d4f5d49a6851f4cc3c1325db3472376e417df5e2e0a7ba095aa163431fdbe7
+-- hash: 190c59b488dff0c1e24aa430011038d0090ff17c0f00f81be1f27d23adabfa87
 
 name:           flight-track
 version:        0.1.0
@@ -19,7 +19,6 @@ license-file:   LICENSE.md
 tested-with:    GHC == 8.2.2
 build-type:     Simple
 cabal-version:  >= 1.10
-
 extra-source-files:
     changelog.md
     package.dhall

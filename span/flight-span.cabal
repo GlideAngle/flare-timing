@@ -1,8 +1,8 @@
--- This file has been generated from package.dhall by hpack version 0.25.0.
+-- This file has been generated from package.dhall by hpack version 0.28.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 7ddb945e84235e759887747abf2d4765f733cf5edbc51f5cfd7c8db1cdb56790
+-- hash: 2f1386ecc5eb348e31230ce4a2c2e43075b49aa564525edf4daabcab04a9460c
 
 name:           flight-span
 version:        0.1.0
@@ -19,7 +19,6 @@ license-file:   LICENSE.md
 tested-with:    GHC == 8.2.2
 build-type:     Simple
 cabal-version:  >= 1.10
-
 extra-source-files:
     changelog.md
     package.dhall

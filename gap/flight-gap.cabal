@@ -1,8 +1,8 @@
--- This file has been generated from package.dhall by hpack version 0.25.0.
+-- This file has been generated from package.dhall by hpack version 0.28.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 35ec228e2614a2d051881bc10920ef1acaa9ac1ff3682fe43c867b2db5e47cf7
+-- hash: 7791c1e69a08a9560d7b251dd3b29c633601a2d89581150cf22f91469aa628c8
 
 name:           flight-gap
 version:        0.1.0
@@ -19,7 +19,6 @@ license-file:   LICENSE.md
 tested-with:    GHC == 8.2.2
 build-type:     Simple
 cabal-version:  >= 1.10
-
 extra-source-files:
     changelog.md
     package.dhall

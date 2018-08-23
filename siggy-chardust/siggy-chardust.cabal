@@ -1,8 +1,8 @@
--- This file has been generated from package.dhall by hpack version 0.25.0.
+-- This file has been generated from package.dhall by hpack version 0.28.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f87872ed251bd7e380ec34ae8c1f8d8bc5bac3ce8deebb34c49836ac25cd17db
+-- hash: 2bb27b107456027ee663f5d6509b59d9a8d74ba5b03d8fc81bab2c989e4d0dbc
 
 name:           siggy-chardust
 version:        1.0.0
@@ -19,7 +19,6 @@ license-file:   LICENSE.md
 tested-with:    GHC == 8.2.2
 build-type:     Simple
 cabal-version:  >= 1.10
-
 extra-source-files:
     changelog.md
     package.dhall
