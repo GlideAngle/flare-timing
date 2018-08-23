@@ -54,7 +54,7 @@ hpack :: String -> Rules ()
 hpack x =
     phony ("hpack-dhall-" ++ x) $ do
         need ["dhall-format-" ++ x]
-        cmd Shell ("stack exec hpack-dhall -- " ++ x)
+        cmd Shell ("__shake-build/hpack-dhall " ++ x)
 
 cabal :: (String, String) -> Rules ()
 cabal (x, y) =
