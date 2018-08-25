@@ -1,0 +1,10 @@
+resolver: nightly-2018-08-21
+packages:
+- location:
+    git: https://github.com/input-output-hk/stack2nix
+    commit: 030d161861c6452046a9af9b2855f6a764ee11f5
+  extra-dep: true
+extra-deps:
+- cabal2nix-2.11
+allow-newer: true
+local-bin-path: __shake-build
