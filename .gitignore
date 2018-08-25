@@ -31,3 +31,4 @@ uom-plugin-*
 *.o
 *.swp
 *.un~
+bazel-*
