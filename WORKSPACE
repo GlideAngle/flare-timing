@@ -1,10 +1,10 @@
 workspace(name = "flare_timing")
 
+RULES_HASKELL_VERSION = "18a37091a23806ad3dd42867b3ec62b9b4b4eaea"
 http_archive(
     name = "io_tweag_rules_haskell",
-    strip_prefix = "rules_haskell-0.6",
-    urls = ["https://github.com/tweag/rules_haskell/archive/v0.6.tar.gz"],
-    sha256 = "ab0411a7907074e15bc959914eb0642fd44016b89cf1b92e7e6bc9719398e725",
+    strip_prefix = "rules_haskell-{}".format(RULES_HASKELL_VERSION),
+    urls = ["https://github.com/tweag/rules_haskell/archive/{}.tar.gz".format(RULES_HASKELL_VERSION)],
 )
 
 load("@io_tweag_rules_haskell//haskell:repositories.bzl", "haskell_repositories")
@@ -32,14 +32,14 @@ nixpkgs_git_repository(
 
 nixpkgs_package(
     name = "ghc",
-    attribute_path = "haskell.compiler.ghc822",
+    build_file = "@io_tweag_rules_haskell//haskell:ghc.BUILD",
+    nix_file_content = """
+  let pkgs = import <nixpkgs> {}; in
+  pkgs.haskell.packages.ghc822.ghcWithPackages (p: with p;
+    [newtype scientific aeson cassava template-haskell]
+  )
+  """,
     repository = "@nixpkgs",
-)
-
-nixpkgs_package(
-    name = "newtype",
-    attribute_path = "haskellPackages.newtype",
-    repository = "@nixpkgs"
 )
 
 register_toolchains("//:ghc")
