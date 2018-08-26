@@ -17,4 +17,5 @@ haskell_library(
     src_strip_prefix = "library",
     compiler_flags = ["-threaded"],
     deps = [":base"],
+    visibility = ["//visibility:public"],
 )
