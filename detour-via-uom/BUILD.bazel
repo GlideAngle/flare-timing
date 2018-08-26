@@ -14,10 +14,10 @@ haskell_import(name = "newtype")
 haskell_import(name = "scientific")
 haskell_import(name = "aeson")
 haskell_import(name = "cassava")
-haskell_import(name = "template-haskell")
+haskell_import(name = "uom-plugin")
 
 haskell_library(
-    name = "detour-via-sci",
+    name = "detour-via-uom",
     srcs = glob(["library/**/*.hs"]),
     src_strip_prefix = "library",
     compiler_flags = ["-threaded"],
@@ -27,8 +27,7 @@ haskell_library(
         ":scientific",
         ":aeson",
         ":cassava",
-        ":template-haskell",
-        "//siggy-chardust:siggy-chardust",
+        ":uom-plugin",
+        "//detour-via-sci:detour-via-sci",
         ],
-    visibility = ["//visibility:public"],
 )

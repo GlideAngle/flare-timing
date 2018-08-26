@@ -34,7 +34,9 @@ nixpkgs_package(
     name = "ghc",
     build_file = "@io_tweag_rules_haskell//haskell:ghc.BUILD",
     nix_file_content = """
-  let pkgs = import <nixpkgs> {}; in
+  let pkgs = import <nixpkgs> {
+          overlays = [ (import ./nix/overlays.nix) ];
+      }; in
   pkgs.haskell.packages.ghc822.ghcWithPackages (p: with p;
     [newtype scientific aeson cassava template-haskell]
   )
