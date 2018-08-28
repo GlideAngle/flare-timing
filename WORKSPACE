@@ -26,19 +26,17 @@ load(
 
 nixpkgs_git_repository(
     name = "nixpkgs",
-    revision = "18.03",
-    sha256 = "954724605f72b9800207f28dd247b04a4b7cc5c923f33e38426f0a4ba60d6444",
+    remote = "https://github.com/BlockScope/nixpkgs",
+    revision = "4c0f61251769032b28102396483db63f72d4c2b1",
 )
 
 nixpkgs_package(
     name = "ghc",
     build_file = "@io_tweag_rules_haskell//haskell:ghc.BUILD",
     nix_file_content = """
-  let pkgs = import <nixpkgs> {
-          overlays = [ (import ./nix/overlays.nix) ];
-      }; in
+  let pkgs = import <nixpkgs> { }; in
   pkgs.haskell.packages.ghc822.ghcWithPackages (p: with p;
-    [newtype scientific aeson cassava template-haskell]
+    [newtype scientific aeson cassava template-haskell uom-plugin]
   )
   """,
     repository = "@nixpkgs",
