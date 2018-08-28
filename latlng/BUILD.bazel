@@ -11,14 +11,20 @@ haskell_toolchain(
 
 haskell_import(name = "base")
 haskell_import(name = "numbers")
-haskell_import(name = "fixed")
+haskell_import(name = "random")
+haskell_import(name = "aeson")
+haskell_import(name = "cassava")
+haskell_import(name = "bytestring")
 haskell_import(name = "bifunctors")
-haskell_import(name = "text")
-haskell_import(name = "formatting")
 haskell_import(name = "uom-plugin")
+haskell_import(name = "formatting")
+haskell_import(name = "text")
+haskell_import(name = "newtype")
+haskell_import(name = "tasty-quickcheck")
+haskell_import(name = "smallcheck")
 
 haskell_library(
-    name = "flight-units",
+    name = "flight-latlng",
     srcs = glob(["library/**/*.hs"]),
     src_strip_prefix = "library",
     compiler_flags = [
@@ -62,12 +68,21 @@ haskell_library(
     deps = [
         ":base",
         ":numbers",
-        ":fixed",
+        ":random",
+        ":aeson",
+        ":cassava",
+        ":bytestring",
         ":bifunctors",
-        ":text",
-        ":formatting",
         ":uom-plugin",
+        ":formatting",
+        ":text",
+        ":newtype",
+        ":tasty-quickcheck",
+        ":smallcheck",
         "//siggy-chardust:siggy-chardust",
+        "//detour-via-sci:detour-via-sci",
+        "//detour-via-uom:detour-via-uom",
+        "//units:flight-units",
         ],
     visibility = ["//visibility:public"],
 )

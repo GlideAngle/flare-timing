@@ -30,4 +30,5 @@ haskell_library(
         ":uom-plugin",
         "//detour-via-sci:detour-via-sci",
         ],
+    visibility = ["//visibility:public"],
 )

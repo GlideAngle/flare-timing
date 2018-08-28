@@ -37,7 +37,7 @@ nixpkgs_package(
   let pkgs = import <nixpkgs> { }; in
   pkgs.haskell.packages.ghc822.ghcWithPackages (p: with p;
     [ aeson bifunctors cassava fixed formatting newtype numbers scientific
-      template-haskell uom-plugin
+      smallcheck tasty-quickcheck template-haskell uom-plugin
     ]
   )
   """,
