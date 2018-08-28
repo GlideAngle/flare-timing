@@ -36,7 +36,9 @@ nixpkgs_package(
     nix_file_content = """
   let pkgs = import <nixpkgs> { }; in
   pkgs.haskell.packages.ghc822.ghcWithPackages (p: with p;
-    [newtype scientific aeson cassava template-haskell uom-plugin]
+    [ aeson bifunctors cassava fixed formatting newtype numbers scientific
+      template-haskell uom-plugin
+    ]
   )
   """,
     repository = "@nixpkgs",
