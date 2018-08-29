@@ -27,22 +27,42 @@ load(
 nixpkgs_git_repository(
     name = "nixpkgs",
     remote = "https://github.com/BlockScope/nixpkgs",
-    revision = "4c0f61251769032b28102396483db63f72d4c2b1",
+    revision = "5e65e5486bd71062e3eecf35f212018bfd621863",
 )
 
 nixpkgs_package(
     name = "ghc",
     build_file = "@io_tweag_rules_haskell//haskell:ghc.BUILD",
     nix_file_content = """
-  let pkgs = import <nixpkgs> { }; in
-  pkgs.haskell.packages.ghc822.ghcWithPackages (p: with p;
-    [ aeson bifunctors cassava fixed formatting
-      hxt hxt-xpath
-      newtype numbers path
-      scientific smallcheck split statistics
-      tasty-quickcheck template-haskell time uom-plugin utf8-string
-    ]
-  )
+  let pkgs = import <nixpkgs> {};
+      hlib = pkgs.haskell.lib;
+
+      fgl-src = pkgs.fetchgit {
+              url = "http://github.com/haskell/fgl.git";
+              sha256 = "0biwsaj6s24l8ix95hkw4syl87ywxy363pr413kazzbhi0csf20s";
+              rev = "e29503775e474b7a7cd8951b6bebcf1529b888b5";
+            };
+
+      hcoord-src = pkgs.fetchgit {
+              url = "http://github.com/BlockScope/hcoord.git";
+              rev = "bb17ddba271829f3902d9ae3af97f2723eb0ab47";
+            };
+
+      hp = pkgs.haskell.packages.ghc822.override {
+            overrides = self: super: {
+              fgl = super.callCabal2nix fgl-src {};
+              hcoord = super.callCabal2nix (hcoord-src + "/hcoord") {};
+              hcoord-utm = super.callCabal2nix (hcoord-src + "/hcoord-utm") {};
+            };
+        };
+
+  in hp.ghcWithPackages (p: with p;
+        [ aeson bifunctors cassava doctest fgl fixed formatting
+          hcoord hxt hxt-xpath
+          newtype numbers path
+          scientific smallcheck split statistics
+          tasty-quickcheck template-haskell time uom-plugin utf8-string
+        ])
   """,
     repository = "@nixpkgs",
 )
