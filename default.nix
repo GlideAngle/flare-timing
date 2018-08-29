@@ -24,7 +24,34 @@ let
     };
   };
 
+  siggy-chardust =
+    hp.callPackage ./siggy-chardust/siggy-chardust.nix
+      {};
+
+  detour-via-sci =
+    hp.callPackage ./detour-via-sci/detour-via-sci.nix
+      { siggy-chardust = siggy-chardust; };
+
+  detour-via-uom =
+    hp.callPackage ./detour-via-uom/detour-via-uom.nix
+      { detour-via-sci = detour-via-sci; };
+
+  flight-units =
+    hp.callPackage ./units/flight-units.nix
+      { siggy-chardust = siggy-chardust; };
+
+  flight-latlng =
+    hp.callPackage ./latlng/flight-latlng.nix
+      { siggy-chardust = siggy-chardust;
+        detour-via-sci = detour-via-sci;
+        detour-via-uom = detour-via-uom;
+        flight-units = flight-units;
+      };
+
 in
-  { siggy-chardust = hp.callPackage ./siggy-chardust/siggy-chardust.nix {};
-    detour-via-sci = hp.callPackage ./detour-via-sci/detour-via-sci.nix {};
+  { siggy-chardust = siggy-chardust;
+    detour-via-sci = detour-via-sci;
+    detour-via-uom = detour-via-uom;
+    flight-units = flight-units;
+    flight-latlng = flight-latlng;
   }
