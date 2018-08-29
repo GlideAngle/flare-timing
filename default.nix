@@ -1,4 +1,4 @@
-{ nixpkgs ? import ../nix/nixpkgs.nix {}
+{ nixpkgs ? import ./nix/nixpkgs.nix {}
 , compiler ? "ghc822"
 }:
 
@@ -24,4 +24,7 @@ let
     };
   };
 
-in hp.callPackage ./siggy-chardust.nix {}
+in
+  { siggy-chardust = hp.callPackage ./siggy-chardust/siggy-chardust.nix {};
+    detour-via-sci = hp.callPackage ./detour-via-sci/detour-via-sci.nix {};
+  }

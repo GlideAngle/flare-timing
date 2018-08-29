@@ -9,4 +9,9 @@ let
    };
 
 in
-  import pinnedPkgs {config = { allowUnsupportedSystem = true; allowUnfree = true; }; }
+  import pinnedPkgs {
+    config =
+      { allowUnsupportedSystem = true;
+        allowUnfree = true;
+      };
+  }
