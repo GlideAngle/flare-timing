@@ -39,7 +39,7 @@ nixpkgs_package(
     [ aeson bifunctors cassava fixed formatting
       hxt hxt-xpath
       newtype numbers path
-      scientific smallcheck split
+      scientific smallcheck split statistics
       tasty-quickcheck template-haskell time uom-plugin utf8-string
     ]
   )
