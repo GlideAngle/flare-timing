@@ -28,6 +28,10 @@ let
     hp.callPackage ./siggy-chardust/siggy-chardust.nix
       {};
 
+  igc =
+    hp.callPackage ./igc/flight-igc.nix
+      {};
+
   detour-via-sci =
     hp.callPackage ./detour-via-sci/detour-via-sci.nix
       { siggy-chardust = siggy-chardust; };
@@ -36,22 +40,30 @@ let
     hp.callPackage ./detour-via-uom/detour-via-uom.nix
       { detour-via-sci = detour-via-sci; };
 
-  flight-units =
+  kml =
+    hp.callPackage ./kml/flight-kml.nix
+      { siggy-chardust = siggy-chardust;
+        detour-via-sci = detour-via-sci;
+      };
+
+  units =
     hp.callPackage ./units/flight-units.nix
       { siggy-chardust = siggy-chardust; };
 
-  flight-latlng =
+  latlng =
     hp.callPackage ./latlng/flight-latlng.nix
       { siggy-chardust = siggy-chardust;
         detour-via-sci = detour-via-sci;
         detour-via-uom = detour-via-uom;
-        flight-units = flight-units;
+        flight-units = units;
       };
 
 in
-  { siggy-chardust = siggy-chardust;
-    detour-via-sci = detour-via-sci;
+  { detour-via-sci = detour-via-sci;
     detour-via-uom = detour-via-uom;
-    flight-units = flight-units;
-    flight-latlng = flight-latlng;
+    flight-igc = igc;
+    flight-kml = kml;
+    flight-latlng = latlng;
+    flight-units = units;
+    siggy-chardust = siggy-chardust;
   }
