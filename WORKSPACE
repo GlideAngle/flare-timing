@@ -36,8 +36,11 @@ nixpkgs_package(
     nix_file_content = """
   let pkgs = import <nixpkgs> { }; in
   pkgs.haskell.packages.ghc822.ghcWithPackages (p: with p;
-    [ aeson bifunctors cassava fixed formatting newtype numbers scientific
-      smallcheck tasty-quickcheck template-haskell uom-plugin utf8-string
+    [ aeson bifunctors cassava fixed formatting
+      hxt hxt-xpath
+      newtype numbers path
+      scientific smallcheck split
+      tasty-quickcheck template-haskell time uom-plugin utf8-string
     ]
   )
   """,
