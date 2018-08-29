@@ -58,6 +58,15 @@ let
         flight-units = units;
       };
 
+  zone =
+    hp.callPackage ./zone/flight-zone.nix
+      { siggy-chardust = siggy-chardust;
+        detour-via-sci = detour-via-sci;
+        detour-via-uom = detour-via-uom;
+        flight-units = units;
+        flight-latlng = latlng;
+      };
+
 in
   { detour-via-sci = detour-via-sci;
     detour-via-uom = detour-via-uom;
@@ -65,5 +74,6 @@ in
     flight-kml = kml;
     flight-latlng = latlng;
     flight-units = units;
+    flight-zone = zone;
     siggy-chardust = siggy-chardust;
   }
