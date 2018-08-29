@@ -34,3 +34,4 @@ uom-plugin-*
 *.o
 *.swp
 *.un~
+result*
