@@ -1,0 +1,7 @@
+{
+  "url": "https://github.com/blockscope/nixpkgs.git",
+  "rev": "5e65e5486bd71062e3eecf35f212018bfd621863",
+  "date": "2018-08-29T13:24:07-04:00",
+  "sha256": "0ns5cl092y0ampz882q1lpli1iki8vfw2yydcp8qhj3crqkr8n4y",
+  "fetchSubmodules": false
+}
