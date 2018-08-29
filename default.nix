@@ -28,6 +28,10 @@ let
     hp.callPackage ./siggy-chardust/siggy-chardust.nix
       {};
 
+  tasty-compare =
+    hp.callPackage ./tasty-compare/tasty-compare.nix
+      {};
+
   igc =
     hp.callPackage ./igc/flight-igc.nix
       {};
@@ -76,4 +80,5 @@ in
     flight-units = units;
     flight-zone = zone;
     siggy-chardust = siggy-chardust;
+    tasty-compare = tasty-compare;
   }
