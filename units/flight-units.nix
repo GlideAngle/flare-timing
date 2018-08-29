@@ -10,6 +10,7 @@ mkDerivation {
     uom-plugin
   ];
   doHaddock = false;
+  doCheck = false;
   homepage = "https://github.com/blockscope/flare-timing#readme";
   description = "Units used in hang gliding and paragliding competitions";
   license = stdenv.lib.licenses.mpl20;

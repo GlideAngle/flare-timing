@@ -19,8 +19,8 @@ mkDerivation {
     tasty-hunit tasty-quickcheck tasty-smallcheck template-haskell
     uom-plugin vector
   ];
-  doCheck = false;
   doHaddock = false;
+  doCheck = false;
   homepage = "https://github.com/blockscope/flare-timing#readme";
   description = "GAP Scoring";
   license = stdenv.lib.licenses.mpl20;

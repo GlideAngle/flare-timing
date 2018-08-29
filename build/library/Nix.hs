@@ -37,7 +37,7 @@ prefix prefix' s = prefix' ++ s
 
 nixFor :: String -> String
 nixFor x =
-    "cabal2nix . > " ++ (x <.> ".nix")
+    "cabal2nix --no-haddock --no-check . > " ++ (x <.> ".nix")
 
 shell :: String
 shell =

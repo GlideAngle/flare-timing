@@ -10,6 +10,8 @@ mkDerivation {
     base cmdargs directory filemanip filepath flight-span mtl
     raw-strings-qq system-filepath transformers
   ];
+  doHaddock = false;
+  doCheck = false;
   homepage = "https://github.com/blockscope/flare-timing#readme";
   description = "Command line options";
   license = stdenv.lib.licenses.mpl20;

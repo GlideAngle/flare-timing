@@ -19,6 +19,8 @@ mkDerivation {
     smallcheck tasty tasty-compare tasty-hunit tasty-quickcheck
     tasty-smallcheck uom-plugin
   ];
+  doHaddock = false;
+  doCheck = false;
   homepage = "https://github.com/blockscope/flare-timing#readme";
   description = "Tasks to fly";
   license = stdenv.lib.licenses.mpl20;
