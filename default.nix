@@ -9,9 +9,6 @@ let
   hp = nixpkgs.haskell.packages.${compiler}.override (old: {
     # SEE: https://github.com/NixOS/nixpkgs/issues/26561
     overrides = lib.composeExtensions (old.overrides or (_: _: {})) (self: super: {
-      Cabal = super.callPackage ./nix/Cabal.nix {};
-      hpack = super.callPackage ./nix/hpack.nix {};
-      infer-license = super.callPackage ./nix/infer-license.nix {};
       fgl = super.callPackage ./nix/fgl.nix {};
       hcoord = super.callPackage ./nix/hcoord.nix {};
     });
@@ -208,7 +205,7 @@ let
 in
   { detour-via-sci = detour-via-sci;
     detour-via-uom = detour-via-uom;
-    # flare-timing = flare-timing;
+    flare-timing = flare-timing;
     flight-cmd = cmd;
     flight-comp = comp;
     flight-earth = earth;

@@ -28,7 +28,7 @@ packages:
 - www
 - location:
     git: https://github.com/blockscope/hcoord.git
-    commit: b2fb75029f0374e48caf4cbbfcfcc2fd674cb4f3
+    commit: 3c3859dac5da111e57a6de09764ffdb127197c4a
   subdirs:
   - hcoord
   - hcoord-utm

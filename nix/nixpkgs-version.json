@@ -1,7 +1,7 @@
 {
-  "url": "https://github.com/blockscope/nixpkgs.git",
-  "rev": "5e65e5486bd71062e3eecf35f212018bfd621863",
-  "date": "2018-08-29T13:24:07-04:00",
-  "sha256": "0ns5cl092y0ampz882q1lpli1iki8vfw2yydcp8qhj3crqkr8n4y",
+  "url": "https://github.com/BlockScope/nixpkgs",
+  "rev": "167aa8ae3e58a545864ba7e23591ead65ab793fd",
+  "date": "2018-08-30T15:16:02-04:00",
+  "sha256": "1s27zh7k36vlidy61wrlp3ck6s872qwyk1v4p12c15r1bn6lirhq",
   "fetchSubmodules": false
 }
