@@ -110,9 +110,20 @@ let
         hcoord-utm = hcoord-utm;
       };
 
+  comp =
+    hp.callPackage ./comp/flight-comp.nix
+      { detour-via-sci = detour-via-sci;
+        flight-latlng = latlng;
+        flight-gap = gap;
+        flight-route = route;
+        flight-units = units;
+        flight-zone = zone;
+      };
+
 in
   { detour-via-sci = detour-via-sci;
     detour-via-uom = detour-via-uom;
+    flight-comp = comp;
     flight-earth = earth;
     flight-gap = gap;
     flight-igc = igc;
