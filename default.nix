@@ -138,6 +138,23 @@ let
         flight-zone = zone;
       };
 
+  scribe =
+    hp.callPackage ./scribe/flight-scribe.nix
+      { detour-via-sci = detour-via-sci;
+        flight-comp = comp;
+        flight-latlng = latlng;
+        flight-gap = gap;
+        flight-route = route;
+        flight-zone = zone;
+      };
+
+  track =
+    hp.callPackage ./track/flight-track.nix
+      { flight-comp = comp;
+        flight-kml = kml;
+        flight-igc = igc;
+      };
+
 in
   { detour-via-sci = detour-via-sci;
     detour-via-uom = detour-via-uom;
@@ -150,8 +167,10 @@ in
     flight-kml = kml;
     flight-latlng = latlng;
     flight-route = route;
+    flight-scribe = scribe;
     flight-span = span;
     flight-task = task;
+    flight-track = track;
     flight-units = units;
     flight-zone = zone;
     siggy-chardust = siggy-chardust;
