@@ -33,6 +33,14 @@ let
     hp.callPackage ./igc/flight-igc.nix
       {};
 
+  span =
+    hp.callPackage ./span/flight-span.nix
+      {};
+
+  cmd =
+    hp.callPackage ./cmd/flight-cmd.nix
+      { flight-span = span; };
+
   detour-via-sci =
     hp.callPackage ./detour-via-sci/detour-via-sci.nix
       { siggy-chardust = siggy-chardust; };
@@ -133,6 +141,7 @@ let
 in
   { detour-via-sci = detour-via-sci;
     detour-via-uom = detour-via-uom;
+    flight-cmd = cmd;
     flight-comp = comp;
     flight-earth = earth;
     flight-fsdb = fsdb;
@@ -141,6 +150,7 @@ in
     flight-kml = kml;
     flight-latlng = latlng;
     flight-route = route;
+    flight-span = span;
     flight-task = task;
     flight-units = units;
     flight-zone = zone;
