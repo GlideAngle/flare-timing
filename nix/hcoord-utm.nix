@@ -4,7 +4,8 @@
 mkDerivation {
   pname = "hcoord-utm";
   version = "2.0.0";
-  src = ../.stack2cabal/hcoord/hcoord-utm;
+  src = ../.stack2cabal/hcoord;
+  postUnpack = "sourceRoot+=/hcoord-utm; echo source root reset to $sourceRoot";
   libraryHaskellDepends = [ base hcoord mtl ];
   libraryToolDepends = [ hpack ];
   testHaskellDepends = [

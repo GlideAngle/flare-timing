@@ -4,7 +4,8 @@
 mkDerivation {
   pname = "hcoord";
   version = "2.0.0";
-  src = ../.stack2cabal/hcoord/hcoord;
+  src = ../.stack2cabal/hcoord;
+  postUnpack = "sourceRoot+=/hcoord; echo source root reset to $sourceRoot";
   libraryHaskellDepends = [ base mtl ];
   libraryToolDepends = [ hpack ];
   testHaskellDepends = [ base data-default hlint HUnit ieee754 mtl ];

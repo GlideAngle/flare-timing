@@ -4,25 +4,22 @@
 
 let
   hlib = nixpkgs.haskell.lib;
+  lib = nixpkgs.lib;
 
-  fgl-src = nixpkgs.fetchgit {
-          url = "http://github.com/haskell/fgl.git";
-          sha256 = "0biwsaj6s24l8ix95hkw4syl87ywxy363pr413kazzbhi0csf20s";
-          rev = "e29503775e474b7a7cd8951b6bebcf1529b888b5";
-        };
+  hp = nixpkgs.haskell.packages.${compiler}.override (old: {
+    # SEE: https://github.com/NixOS/nixpkgs/issues/26561
+    overrides = lib.composeExtensions (old.overrides or (_: _: {})) (self: super: {
+      Cabal = super.callPackage ./nix/Cabal.nix {};
+      hpack = super.callPackage ./nix/hpack.nix {};
+      infer-license = super.callPackage ./nix/infer-license.nix {};
+      fgl = super.callPackage ./nix/fgl.nix {};
+      hcoord = super.callPackage ./nix/hcoord.nix {};
+    });
+  });
 
-  hcoord-src = nixpkgs.fetchgit {
-          url = "http://github.com/BlockScope/hcoord.git";
-          rev = "bb17ddba271829f3902d9ae3af97f2723eb0ab47";
-        };
-
-  hp = nixpkgs.haskell.packages.${compiler}.override {
-    overrides = self: super: {
-      fgl = super.callCabal2nix fgl-src {};
-      hcoord = super.callCabal2nix (hcoord-src + "/hcoord") {};
-      hcoord-utm = super.callCabal2nix (hcoord-src + "/hcoord-utm") {};
-    };
-  };
+  fgl = hp.callPackage ./nix/fgl.nix {};
+  hcoord = hp.callPackage ./nix/hcoord.nix {};
+  hcoord-utm = hp.callPackage ./nix/hcoord-utm.nix {};
 
   siggy-chardust =
     hp.callPackage ./siggy-chardust/siggy-chardust.nix
@@ -71,9 +68,21 @@ let
         flight-latlng = latlng;
       };
 
+  earth =
+    hp.callPackage ./earth/flight-earth.nix
+      { siggy-chardust = siggy-chardust;
+        detour-via-sci = detour-via-sci;
+        flight-units = units;
+        flight-latlng = latlng;
+        flight-zone = zone;
+        tasty-compare = tasty-compare;
+        hcoord-utm = hcoord-utm;
+      };
+
 in
   { detour-via-sci = detour-via-sci;
     detour-via-uom = detour-via-uom;
+    flight-earth = earth;
     flight-igc = igc;
     flight-kml = kml;
     flight-latlng = latlng;
