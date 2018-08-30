@@ -79,10 +79,19 @@ let
         hcoord-utm = hcoord-utm;
       };
 
+  gap =
+    hp.callPackage ./gap/flight-gap.nix
+      { siggy-chardust = siggy-chardust;
+        detour-via-sci = detour-via-sci;
+        detour-via-uom = detour-via-uom;
+        flight-units = units;
+      };
+
 in
   { detour-via-sci = detour-via-sci;
     detour-via-uom = detour-via-uom;
     flight-earth = earth;
+    flight-gap = gap;
     flight-igc = igc;
     flight-kml = kml;
     flight-latlng = latlng;
