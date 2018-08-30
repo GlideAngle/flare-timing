@@ -17,7 +17,9 @@ let
     });
   });
 
-  hcoord-utm = hp.callPackage ./nix/hcoord-utm.nix {};
+  hcoord-utm =
+    hp.callPackage ./nix/hcoord-utm.nix
+      {};
 
   siggy-chardust =
     hp.callPackage ./siggy-chardust/siggy-chardust.nix
@@ -171,15 +173,36 @@ let
         flight-zone = zone;
       };
 
+  lookup =
+    hp.callPackage ./lookup/flight-lookup.nix
+      { detour-via-sci = detour-via-sci;
+        flight-comp = comp;
+        flight-gap = gap;
+        flight-kml = kml;
+        flight-latlng = latlng;
+        flight-mask = mask;
+        flight-route = route;
+        flight-zone = zone;
+      };
+
+
   flare-timing =
     hp.callPackage ./flare-timing/flare-timing.nix
-      { flight-comp = comp;
+      { flight-cmd = cmd;
+        flight-comp = comp;
+        flight-earth = earth;
         flight-fsdb = fsdb;
         flight-gap = gap;
+        flight-igc = igc;
+        flight-kml = kml;
+        flight-latlng = latlng;
+        flight-lookup = lookup;
         flight-mask = mask;
-        flight-task = task;
-        flight-track = track;
+        flight-route = route;
+        flight-span = span;
+        flight-scribe = scribe;
         flight-units = units;
+        flight-zone = zone;
       };
 
 in
@@ -194,6 +217,7 @@ in
     flight-igc = igc;
     flight-kml = kml;
     flight-latlng = latlng;
+    flight-lookup = lookup;
     flight-mask = mask;
     flight-route = route;
     flight-scribe = scribe;
