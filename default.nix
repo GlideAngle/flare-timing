@@ -87,6 +87,17 @@ let
         flight-units = units;
       };
 
+  task =
+    hp.callPackage ./task/flight-task.nix
+      { siggy-chardust = siggy-chardust;
+        detour-via-sci = detour-via-sci;
+        flight-earth = earth;
+        flight-latlng = latlng;
+        flight-units = units;
+        flight-zone = zone;
+        tasty-compare = tasty-compare;
+      };
+
 in
   { detour-via-sci = detour-via-sci;
     detour-via-uom = detour-via-uom;
@@ -95,6 +106,7 @@ in
     flight-igc = igc;
     flight-kml = kml;
     flight-latlng = latlng;
+    flight-task = task;
     flight-units = units;
     flight-zone = zone;
     siggy-chardust = siggy-chardust;
