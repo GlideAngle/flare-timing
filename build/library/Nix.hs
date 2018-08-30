@@ -141,6 +141,12 @@ nixRules = do
             Shell
             (nixFor "tasty-compare")
 
+    phony "cabal2nix-flare-timing" $
+        cmd
+            (Cwd "flare-timing")
+            Shell
+            (nixFor "flare-timing")
+
 shellRule :: String -> Rules ()
 shellRule s =
     phony ("nixshell-" ++ s) $ cmd (Cwd s) Shell shell
