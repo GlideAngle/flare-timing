@@ -120,11 +120,22 @@ let
         flight-zone = zone;
       };
 
+  fsdb =
+    hp.callPackage ./fsdb/flight-fsdb.nix
+      { detour-via-sci = detour-via-sci;
+        flight-comp = comp;
+        flight-latlng = latlng;
+        flight-gap = gap;
+        flight-units = units;
+        flight-zone = zone;
+      };
+
 in
   { detour-via-sci = detour-via-sci;
     detour-via-uom = detour-via-uom;
     flight-comp = comp;
     flight-earth = earth;
+    flight-fsdb = fsdb;
     flight-gap = gap;
     flight-igc = igc;
     flight-kml = kml;
