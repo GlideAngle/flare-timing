@@ -155,6 +155,24 @@ let
         flight-igc = igc;
       };
 
+  mask =
+    hp.callPackage ./mask/flight-mask.nix
+      { siggy-chardust = siggy-chardust;
+        detour-via-sci = detour-via-sci;
+        flight-span = span;
+        flight-comp = comp;
+        flight-earth = earth;
+        flight-gap = gap;
+        flight-kml = kml;
+        flight-latlng = latlng;
+        flight-route = route;
+        flight-scribe = scribe;
+        flight-task = task;
+        flight-track = track;
+        flight-units = units;
+        flight-zone = zone;
+      };
+
 in
   { detour-via-sci = detour-via-sci;
     detour-via-uom = detour-via-uom;
@@ -166,6 +184,7 @@ in
     flight-igc = igc;
     flight-kml = kml;
     flight-latlng = latlng;
+    flight-mask = mask;
     flight-route = route;
     flight-scribe = scribe;
     flight-span = span;
