@@ -6,7 +6,7 @@ import System.Exit (exitFailure, exitSuccess)
 arguments :: [String]
 arguments =
     [ "library"
-    , "test-suite"
+    , "test-suite-hlint"
     ]
 
 main :: IO ()
