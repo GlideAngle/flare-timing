@@ -17,8 +17,6 @@ let
     });
   });
 
-  fgl = hp.callPackage ./nix/fgl.nix {};
-  hcoord = hp.callPackage ./nix/hcoord.nix {};
   hcoord-utm = hp.callPackage ./nix/hcoord-utm.nix {};
 
   siggy-chardust =
@@ -173,9 +171,21 @@ let
         flight-zone = zone;
       };
 
+  flare-timing =
+    hp.callPackage ./flare-timing/flare-timing.nix
+      { flight-comp = comp;
+        flight-fsdb = fsdb;
+        flight-gap = gap;
+        flight-mask = mask;
+        flight-task = task;
+        flight-track = track;
+        flight-units = units;
+      };
+
 in
   { detour-via-sci = detour-via-sci;
     detour-via-uom = detour-via-uom;
+    # flare-timing = flare-timing;
     flight-cmd = cmd;
     flight-comp = comp;
     flight-earth = earth;

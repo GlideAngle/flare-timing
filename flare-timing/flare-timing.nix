@@ -19,6 +19,8 @@ mkDerivation {
     system-filepath transformers uom-plugin wai wai-cors warp yaml
   ];
   testHaskellDepends = [ base hlint ];
+  doHaddock = false;
+  doCheck = false;
   homepage = "https://github.com/BlockScope/flare-timing#readme";
   description = "A collection of apps and libraries for scoring hang gliding and paragliding competitions";
   license = stdenv.lib.licenses.mpl20;
