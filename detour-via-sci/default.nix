@@ -1,6 +1,5 @@
-{ nixpkgs ? import <nixpkgs> {}
-, compiler ? "ghc822"
-}:
-nixpkgs.pkgs.haskell.packages.${compiler}.callPackage
-./detour-via-sci.nix
-{ }
+let
+  config = import ../nix/config.nix {};
+  pkgs = import ../nix/nixpkgs.nix { inherit config; };
+in
+  { detour-via-sci = pkgs.haskellPackages.detour-via-sci; }
