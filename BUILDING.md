@@ -7,7 +7,7 @@ useful are published to hackage and stackage.
 Wherever there's a `.cabal` file, there's a matching `default.nix` that enables
 a [nix build](https://nixos.org/nix/manual/#sec-building-simple).
 
-Building the [`flight-units`](flight-units) library, the command line apps and web server with nix;
+Building the [`flight-units`](units) library, the command line apps and web server with nix;
 
     > cd units
     units> nix build
