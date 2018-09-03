@@ -1,4 +1,6 @@
-{ compiler ? "ghc822" }:
+{ compiler ? "ghc822"
+, config
+}:
 
 # SEE: https://nixos.wiki/wiki/FAQ/Pinning_Nixpkgs
 let
@@ -9,9 +11,4 @@ let
    };
 
 in
-  import pinnedPkgs {
-    config =
-      { allowUnsupportedSystem = true;
-        allowUnfree = true;
-      };
-  }
+  import pinnedPkgs { inherit config; }
