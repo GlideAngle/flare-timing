@@ -193,6 +193,11 @@
         hcoord-utm = super.callPackage ./hcoord-utm.nix {};
         siggy-chardust = super.callPackage ../siggy-chardust/siggy-chardust.nix {};
         tasty-compare = super.callPackage ../tasty-compare/tasty-compare.nix {};
+
+        www-flare-timing =
+          super.callPackage ../www/www-flare-timing.nix
+            { flight-comp = self.flight-comp; };
+
       });
     };
   };

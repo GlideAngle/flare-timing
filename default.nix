@@ -29,4 +29,5 @@ in
     flight-zone = hp.flight-zone;
     siggy-chardust = hp.siggy-chardust;
     tasty-compare = hp.tasty-compare;
+    www-flare-timing = hp.www-flare-timing;
   }

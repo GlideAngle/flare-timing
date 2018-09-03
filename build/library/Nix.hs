@@ -115,6 +115,8 @@ nixRules = do
         : "cabal2nix-detour-via-uom"
         : "cabal2nix-siggy-chardust"
         : "cabal2nix-tasty-compare"
+        : "cabal2nix-flare-timing"
+        : "cabal2nix-www-flare-timing"
         : (prefix "cabal2nix-" <$> flyPkgs)
 
     phony "cabal2nix-detour-via-sci" $
@@ -147,6 +149,12 @@ nixRules = do
             Shell
             (nixFor "flare-timing")
 
+    phony "cabal2nix-www-flare-timing" $
+        cmd
+            (Cwd "www")
+            Shell
+            (nixFor "www-flare-timing")
+
 shellRule :: String -> Rules ()
 shellRule s =
     phony ("nixshell-" ++ s) $ cmd (Cwd s) Shell shell
@@ -160,6 +168,8 @@ shellRules = do
         : "nixshell-detour-via-uom"
         : "nixshell-siggy-chardust"
         : "nixshell-tasty-compare"
+        : "nixshell-flare-timing"
+        : "nixshell-www-flare-timing"
         : (prefix "nixshell-" <$> flyPkgs)
 
     phony "nixshell-detour-via-sci" $
@@ -173,3 +183,9 @@ shellRules = do
 
     phony "nixshell-tasty-compare" $
         cmd (Cwd "tasty-compare") Shell shell
+
+    phony "nixshell-flare-timing" $
+        cmd (Cwd "flare-timing") Shell shell
+
+    phony "nixshell-www-flare-timing" $
+        cmd (Cwd "www") Shell shell
