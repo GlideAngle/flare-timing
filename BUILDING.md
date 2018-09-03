@@ -4,13 +4,28 @@ This mono-repo contains many packages. The subset of these that are generally
 useful are published to hackage and stackage.
 
 ## Building with Nix
-Each library package can be built standalone. For example, the `flight-units`
-package can be built with
-[nix-build](https://nixos.org/nix/manual/#sec-building-simple) after having
-setup the [overlay](https://github.com/BlockScope/nix-config).
+Wherever there's a `.cabal` file, there's a matching `default.nix` that enables
+a [nix build](https://nixos.org/nix/manual/#sec-building-simple).
 
-    ln -s -f ~/dev/blockscope/nix-config/overlays.nix ~/.config/nixpkgs/overlays/flare-timing-overlay.nix
-    nix-build "<nixpkgs>" -A haskellPackages.flight-units
+Building the flight-units library with nix;
+    > cd units
+    units> nix build
+    [2 built, 0.0 MiB DL]
+
+Building the command line apps and web server;
+    > cd flare-timing
+    flare-timing> nix build
+    [17 built, 0.0 MiB DL]
+    cd ../www
+    www> nix build
+    [1 built, 0.0 MiB DL] 
+    www> cd ..
+    > ls flare-timing/result/bin
+    align-time       extract-input    mask-track       test-fsdb-parser
+    cross-zone       gap-point        tag-zone         test-igc-parser
+    discard-further  land-out         task-length      test-kml-parser
+    > ls www/result/bin
+    comp-serve
 
 ## Building with Stack
 
