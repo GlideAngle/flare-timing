@@ -7,19 +7,22 @@ useful are published to hackage and stackage.
 Wherever there's a `.cabal` file, there's a matching `default.nix` that enables
 a [nix build](https://nixos.org/nix/manual/#sec-building-simple).
 
-Building the flight-units library with nix;
+Building the flight-units library, the command line apps and web server with nix;
+
     > cd units
     units> nix build
     [2 built, 0.0 MiB DL]
-
-Building the command line apps and web server;
-    > cd flare-timing
+    > cd ../flare-timing
     flare-timing> nix build
     [17 built, 0.0 MiB DL]
     cd ../www
     www> nix build
-    [1 built, 0.0 MiB DL] 
-    www> cd ..
+    [1 built, 0.0 MiB DL]
+    
+The results of those builds;
+
+    > ls units/result/lib/ghc-8.2.2/
+    flight-units-0.1.0   package.conf.d       x86_64-osx-ghc-8.2.2
     > ls flare-timing/result/bin
     align-time       extract-input    mask-track       test-fsdb-parser
     cross-zone       gap-point        tag-zone         test-igc-parser
