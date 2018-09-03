@@ -7,40 +7,46 @@ let
   lib = nixpkgs.lib;
 
   hp = nixpkgs.haskell.packages.${compiler}.override (old: {
+    # NOTE: For adding overrides without nuking previous overrides with
+    # overrides = lib.composeExtensions (old.overrides or (_: _: {})) (self: super:
     # SEE: https://github.com/NixOS/nixpkgs/issues/26561
+    # NOTE: Use super for super.callPackage but self for self.package.
+    # self: Fix-point result.
+    # super: Result of the composition beforehand.
+    # SEE: https://nbp.github.io/slides/NixCon/2017.NixpkgsOverlays/
     overrides = lib.composeExtensions (old.overrides or (_: _: {})) (self: super:
     {
       detour-via-sci =
-        self.callPackage ./detour-via-sci/detour-via-sci.nix
+        super.callPackage ./detour-via-sci/detour-via-sci.nix
           { siggy-chardust = self.siggy-chardust; };
 
       detour-via-uom =
-        self.callPackage ./detour-via-uom/detour-via-uom.nix
+        super.callPackage ./detour-via-uom/detour-via-uom.nix
           { detour-via-sci = self.detour-via-sci; };
 
-      fgl = self.callPackage ./nix/fgl.nix {};
-      hcoord = self.callPackage ./nix/hcoord.nix {};
-      hcoord-utm = self.callPackage ./nix/hcoord-utm.nix {};
+      fgl = super.callPackage ./nix/fgl.nix {};
+      hcoord = super.callPackage ./nix/hcoord.nix {};
+      hcoord-utm = super.callPackage ./nix/hcoord-utm.nix {};
 
-      flight-span = self.callPackage ./span/flight-span.nix {};
+      flight-span = super.callPackage ./span/flight-span.nix {};
 
-      flight-cmd = self.callPackage ./cmd/flight-cmd.nix
+      flight-cmd = super.callPackage ./cmd/flight-cmd.nix
             { flight-span = self.flight-span; };
 
-      flight-igc = self.callPackage ./igc/flight-igc.nix {};
+      flight-igc = super.callPackage ./igc/flight-igc.nix {};
 
       flight-kml =
-        self.callPackage ./kml/flight-kml.nix
+        super.callPackage ./kml/flight-kml.nix
           { siggy-chardust = self.siggy-chardust;
             detour-via-sci = self.detour-via-sci;
           };
 
       flight-units =
-        self.callPackage ./units/flight-units.nix
+        super.callPackage ./units/flight-units.nix
           { siggy-chardust = self.siggy-chardust; };
 
       flight-latlng =
-        self.callPackage ./latlng/flight-latlng.nix
+        super.callPackage ./latlng/flight-latlng.nix
           { siggy-chardust = self.siggy-chardust;
             detour-via-sci = self.detour-via-sci;
             detour-via-uom = self.detour-via-uom;
@@ -48,7 +54,7 @@ let
           };
 
       flight-zone =
-        self.callPackage ./zone/flight-zone.nix
+        super.callPackage ./zone/flight-zone.nix
           { siggy-chardust = self.siggy-chardust;
             detour-via-sci = self.detour-via-sci;
             detour-via-uom = self.detour-via-uom;
@@ -57,7 +63,7 @@ let
           };
 
       flight-earth =
-        self.callPackage ./earth/flight-earth.nix
+        super.callPackage ./earth/flight-earth.nix
           { siggy-chardust = self.siggy-chardust;
             detour-via-sci = self.detour-via-sci;
             flight-units = self.flight-units;
@@ -68,7 +74,7 @@ let
           };
 
       flight-gap =
-        self.callPackage ./gap/flight-gap.nix
+        super.callPackage ./gap/flight-gap.nix
           { siggy-chardust = self.siggy-chardust;
             detour-via-sci = self.detour-via-sci;
             detour-via-uom = self.detour-via-uom;
@@ -76,7 +82,7 @@ let
           };
 
       flight-task =
-        self.callPackage ./task/flight-task.nix
+        super.callPackage ./task/flight-task.nix
           { siggy-chardust = self.siggy-chardust;
             detour-via-sci = self.detour-via-sci;
             flight-earth = self.flight-earth;
@@ -87,7 +93,7 @@ let
           };
 
       flight-route =
-        self.callPackage ./route/flight-route.nix
+        super.callPackage ./route/flight-route.nix
           { siggy-chardust = self.siggy-chardust;
             detour-via-sci = self.detour-via-sci;
             flight-earth = self.flight-earth;
@@ -99,7 +105,7 @@ let
           };
 
       flight-comp =
-        self.callPackage ./comp/flight-comp.nix
+        super.callPackage ./comp/flight-comp.nix
           { detour-via-sci = self.detour-via-sci;
             flight-latlng = self.flight-latlng;
             flight-gap = self.flight-gap;
@@ -109,7 +115,7 @@ let
           };
 
       flight-fsdb =
-        self.callPackage ./fsdb/flight-fsdb.nix
+        super.callPackage ./fsdb/flight-fsdb.nix
           { detour-via-sci = self.detour-via-sci;
             flight-comp = self.flight-comp;
             flight-latlng = self.flight-latlng;
@@ -119,7 +125,7 @@ let
           };
 
       flight-scribe =
-        self.callPackage ./scribe/flight-scribe.nix
+        super.callPackage ./scribe/flight-scribe.nix
           { detour-via-sci = self.detour-via-sci;
             flight-comp = self.flight-comp;
             flight-latlng = self.flight-latlng;
@@ -129,14 +135,14 @@ let
           };
 
       flight-track =
-        self.callPackage ./track/flight-track.nix
+        super.callPackage ./track/flight-track.nix
           { flight-comp = self.flight-comp;
             flight-kml = self.flight-kml;
             flight-igc = self.flight-igc;
           };
 
       flight-mask =
-        self.callPackage ./mask/flight-mask.nix
+        super.callPackage ./mask/flight-mask.nix
           { siggy-chardust = self.siggy-chardust;
             detour-via-sci = self.detour-via-sci;
             flight-span = self.flight-span;
@@ -154,7 +160,7 @@ let
           };
 
       flight-lookup =
-        self.callPackage ./lookup/flight-lookup.nix
+        super.callPackage ./lookup/flight-lookup.nix
           { detour-via-sci = self.detour-via-sci;
             flight-comp = self.flight-comp;
             flight-gap = self.flight-gap;
@@ -167,7 +173,7 @@ let
 
 
       flare-timing =
-        self.callPackage ./flare-timing/flare-timing.nix
+        super.callPackage ./flare-timing/flare-timing.nix
           { flight-cmd = self.flight-cmd;
             flight-comp = self.flight-comp;
             flight-earth = self.flight-earth;
@@ -185,8 +191,8 @@ let
             flight-zone = self.flight-zone;
           };
 
-      siggy-chardust = self.callPackage ./siggy-chardust/siggy-chardust.nix {};
-      tasty-compare = self.callPackage ./tasty-compare/tasty-compare.nix {};
+      siggy-chardust = super.callPackage ./siggy-chardust/siggy-chardust.nix {};
+      tasty-compare = super.callPackage ./tasty-compare/tasty-compare.nix {};
     });
   });
 
