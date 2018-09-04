@@ -43,13 +43,9 @@ shell :: String
 shell =
     "cabal2nix --shell . > shell.nix"
 
-buildFor :: String -> String
-buildFor x =
-    "nix-build \"<nixpkgs>\" -A haskellPackages." ++ x
-
 buildRules :: Rules ()
 buildRules = do
-    phony "nix" $
+    phony "nix-build" $
         need [ "nix-detour-via-sci"
              , "nix-detour-via-uom"
              , "nix-siggy-chardust"
@@ -72,31 +68,33 @@ buildRules = do
              , "nix-flight-span"
 
              , "nix-flare-timing"
+             , "nix-www-flare-timing"
              ]
 
-    phony "nix-detour-via-sci" $ cmd Shell (buildFor "detour-via-sci")
-    phony "nix-detour-via-uom" $ cmd Shell (buildFor "detour-via-uom")
-    phony "nix-siggy-chardust" $ cmd Shell (buildFor "siggy-chardust")
-    phony "nix-tasty-compare" $ cmd Shell (buildFor "tasty-compare")
+    phony "nix-detour-via-sci" $ cmd (Cwd "detour-via-sci") Shell "nix build"
+    phony "nix-detour-via-uom" $ cmd (Cwd "detour-via-uom") Shell "nix build"
+    phony "nix-siggy-chardust" $ cmd (Cwd "siggy-chardust") Shell "nix build"
+    phony "nix-tasty-compare" $ cmd (Cwd "tasty-compare") Shell "nix build"
 
-    phony "nix-flight-cmd" $ cmd Shell (buildFor "flight-cmd")
-    phony "nix-flight-comp" $ cmd Shell (buildFor "flight-comp")
-    phony "nix-flight-fsdb" $ cmd Shell (buildFor "flight-fsdb")
-    phony "nix-flight-gap" $ cmd Shell (buildFor "flight-gap")
-    phony "nix-flight-igc" $ cmd Shell (buildFor "flight-igc")
-    phony "nix-flight-kml" $ cmd Shell (buildFor "flight-kml")
-    phony "nix-flight-latlng" $ cmd Shell (buildFor "flight-latlng")
-    phony "nix-flight-lookup" $ cmd Shell (buildFor "flight-lookup")
-    phony "nix-flight-mask" $ cmd Shell (buildFor "flight-mask")
-    phony "nix-flight-scribe" $ cmd Shell (buildFor "flight-scribe")
-    phony "nix-flight-task" $ cmd Shell (buildFor "flight-task")
-    phony "nix-flight-track" $ cmd Shell (buildFor "flight-track")
-    phony "nix-flight-units" $ cmd Shell (buildFor "flight-units")
-    phony "nix-flight-zone" $ cmd Shell (buildFor "flight-zone")
-    phony "nix-flight-route" $ cmd Shell (buildFor "flight-route")
-    phony "nix-flight-span" $ cmd Shell (buildFor "flight-span")
+    phony "nix-flight-cmd" $ cmd (Cwd "cmd") Shell "nix build"
+    phony "nix-flight-comp" $ cmd (Cwd "comp") Shell "nix build"
+    phony "nix-flight-fsdb" $ cmd (Cwd "fsdb") Shell "nix build"
+    phony "nix-flight-gap" $ cmd (Cwd "gap") Shell "nix build"
+    phony "nix-flight-igc" $ cmd (Cwd "igc") Shell "nix build"
+    phony "nix-flight-kml" $ cmd (Cwd "kml") Shell "nix build"
+    phony "nix-flight-latlng" $ cmd (Cwd "latlng") Shell "nix build"
+    phony "nix-flight-lookup" $ cmd (Cwd "lookup") Shell "nix build"
+    phony "nix-flight-mask" $ cmd (Cwd "mask") Shell "nix build"
+    phony "nix-flight-route" $ cmd (Cwd "route") Shell "nix build"
+    phony "nix-flight-scribe" $ cmd (Cwd "scribe") Shell "nix build"
+    phony "nix-flight-span" $ cmd (Cwd "span") Shell "nix build"
+    phony "nix-flight-task" $ cmd (Cwd "task") Shell "nix build"
+    phony "nix-flight-track" $ cmd (Cwd "track") Shell "nix build"
+    phony "nix-flight-units" $ cmd (Cwd "units") Shell "nix build"
+    phony "nix-flight-zone" $ cmd (Cwd "zone") Shell "nix build"
 
-    phony "nix-flare-timing" $ cmd Shell (buildFor "flare-timing")
+    phony "nix-flare-timing" $ cmd (Cwd "flare-timing") Shell "nix build"
+    phony "nix-www-flare-timing" $ cmd (Cwd "www-flare-timing") Shell "nix build"
 
 nixRule :: String -> Rules ()
 nixRule s =

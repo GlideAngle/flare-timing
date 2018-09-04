@@ -13,12 +13,12 @@ allWants =
     , "stack-test-apps"
     , "stack-test-suites"
     , "stack-doctest-suites"
-    -- NOTE: The following targets build but I don't want them by default.
+    -- NOTE: The following targets build but I don't want them built by default.
     --, "docs"
     --, "cabal-prod-apps"
     --, "cabal-test-apps"
+    --, "nix-build"
     -- WARNING: The following targets don't currently build.
-    --, "nix"
     --, "view-www"
     ]
 
