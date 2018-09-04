@@ -35,14 +35,6 @@ flyPkgs =
 prefix :: String -> String -> String
 prefix prefix' s = prefix' ++ s
 
-nixFor :: String -> String
-nixFor x =
-    "cabal2nix --no-haddock --no-check . > " ++ (x <.> ".nix")
-
-shell :: String
-shell =
-    "cabal2nix --shell . > shell.nix"
-
 buildRules :: Rules ()
 buildRules = do
     sequence_ $ buildRule <$> flyPkgs
@@ -92,37 +84,37 @@ fromCabalRules = do
         cmd
             (Cwd "detour-via-sci")
             Shell
-            (nixFor "detour-via-sci")
+            (cabal2nix "detour-via-sci")
 
     phony "cabal2nix-detour-via-uom" $
         cmd
             (Cwd "detour-via-uom")
             Shell
-            (nixFor "detour-via-uom")
+            (cabal2nix "detour-via-uom")
 
     phony "cabal2nix-siggy-chardust" $
         cmd
             (Cwd "siggy-chardust")
             Shell
-            (nixFor "siggy-chardust")
+            (cabal2nix "siggy-chardust")
 
     phony "cabal2nix-tasty-compare" $
         cmd
             (Cwd "tasty-compare")
             Shell
-            (nixFor "tasty-compare")
+            (cabal2nix "tasty-compare")
 
     phony "cabal2nix-flare-timing" $
         cmd
             (Cwd "flare-timing")
             Shell
-            (nixFor "flare-timing")
+            (cabal2nix "flare-timing")
 
     phony "cabal2nix-www-flare-timing" $
         cmd
             (Cwd "www")
             Shell
-            (nixFor "www-flare-timing")
+            (cabal2nix "www-flare-timing")
 
     where
         fromCabalRule :: String -> Rules ()
@@ -131,7 +123,11 @@ fromCabalRules = do
                 cmd
                     (Cwd s) 
                     Shell
-                    (nixFor $ "flight-" ++ s)
+                    (cabal2nix $ "flight-" ++ s)
+
+        cabal2nix :: String -> String
+        cabal2nix x =
+            "cabal2nix --no-haddock --no-check . > " ++ (x <.> ".nix")
 
 shellRules :: Rules ()
 shellRules = do
@@ -159,4 +155,7 @@ shellRules = do
 
         shellRule :: String -> Rules ()
         shellRule s =
-            phony ("nix-shell-flight-" ++ s) $ cmd (Cwd s) Shell shell
+            phony ("nix-shell-flight-" ++ s) $
+                cmd (Cwd s) Shell shell
+
+        shell = "cabal2nix --shell . > shell.nix"
