@@ -58,14 +58,16 @@ buildRules = do
              ++
              (prefix "nix-flight-" <$> flyPkgs))
 
-    phony "nix-build-detour-via-sci" $ cmd (Cwd "detour-via-sci") Shell "nix build"
-    phony "nix-build-detour-via-uom" $ cmd (Cwd "detour-via-uom") Shell "nix build"
-    phony "nix-build-siggy-chardust" $ cmd (Cwd "siggy-chardust") Shell "nix build"
-    phony "nix-build-tasty-compare" $ cmd (Cwd "tasty-compare") Shell "nix build"
-    phony "nix-build-flare-timing" $ cmd (Cwd "flare-timing") Shell "nix build"
-    phony "nix-build-www-flare-timing" $ cmd (Cwd "www-flare-timing") Shell "nix build"
+    phony' "detour-via-sci"
+    phony' "detour-via-uom"
+    phony' "siggy-chardust"
+    phony' "tasty-compare"
+    phony' "flare-timing"
+    phony "nix-build-www-flare-timing" $ cmd (Cwd "www") Shell "nix build"
 
     where
+        phony' s = do phony (prefix "nix-build-" s) $ cmd (Cwd s) Shell "nix build"
+
         buildRule :: String -> Rules ()
         buildRule s =
             phony ("nix-build-flight-" ++ s) $
