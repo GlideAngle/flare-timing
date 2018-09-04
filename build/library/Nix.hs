@@ -1,4 +1,4 @@
-module Nix (flyPkgs, prefix, buildRules, nixRules, shellRules) where
+module Nix (flyPkgs, prefix, buildRules, fromCabalRules, shellRules) where
 
 import Development.Shake
     ( Rules
@@ -45,68 +45,37 @@ shell =
 
 buildRules :: Rules ()
 buildRules = do
+    sequence_ $ buildRule <$> flyPkgs
+
     phony "nix-build" $
-        need [ "nix-detour-via-sci"
-             , "nix-detour-via-uom"
-             , "nix-siggy-chardust"
-             , "nix-tasty-compare"
-
-             , "nix-flight-cmd"
-             , "nix-flight-comp"
-             , "nix-flight-fsdb"
-             , "nix-flight-gap"
-             , "nix-flight-igc"
-             , "nix-flight-kml"
-             , "nix-flight-latlng"
-             , "nix-flight-lookup"
-             , "nix-flight-mask"
-             , "nix-flight-scribe"
-             , "nix-flight-task"
-             , "nix-flight-track"
-             , "nix-flight-units"
-             , "nix-flight-zone"
-             , "nix-flight-span"
-
-             , "nix-flare-timing"
-             , "nix-www-flare-timing"
+        need ([ "nix-build-detour-via-sci"
+             , "nix-build-detour-via-uom"
+             , "nix-build-siggy-chardust"
+             , "nix-build-tasty-compare"
+             , "nix-build-flare-timing"
+             , "nix-build-www-flare-timing"
              ]
+             ++
+             (prefix "nix-flight-" <$> flyPkgs))
 
-    phony "nix-detour-via-sci" $ cmd (Cwd "detour-via-sci") Shell "nix build"
-    phony "nix-detour-via-uom" $ cmd (Cwd "detour-via-uom") Shell "nix build"
-    phony "nix-siggy-chardust" $ cmd (Cwd "siggy-chardust") Shell "nix build"
-    phony "nix-tasty-compare" $ cmd (Cwd "tasty-compare") Shell "nix build"
+    phony "nix-build-detour-via-sci" $ cmd (Cwd "detour-via-sci") Shell "nix build"
+    phony "nix-build-detour-via-uom" $ cmd (Cwd "detour-via-uom") Shell "nix build"
+    phony "nix-build-siggy-chardust" $ cmd (Cwd "siggy-chardust") Shell "nix build"
+    phony "nix-build-tasty-compare" $ cmd (Cwd "tasty-compare") Shell "nix build"
+    phony "nix-build-flare-timing" $ cmd (Cwd "flare-timing") Shell "nix build"
+    phony "nix-build-www-flare-timing" $ cmd (Cwd "www-flare-timing") Shell "nix build"
 
-    phony "nix-flight-cmd" $ cmd (Cwd "cmd") Shell "nix build"
-    phony "nix-flight-comp" $ cmd (Cwd "comp") Shell "nix build"
-    phony "nix-flight-fsdb" $ cmd (Cwd "fsdb") Shell "nix build"
-    phony "nix-flight-gap" $ cmd (Cwd "gap") Shell "nix build"
-    phony "nix-flight-igc" $ cmd (Cwd "igc") Shell "nix build"
-    phony "nix-flight-kml" $ cmd (Cwd "kml") Shell "nix build"
-    phony "nix-flight-latlng" $ cmd (Cwd "latlng") Shell "nix build"
-    phony "nix-flight-lookup" $ cmd (Cwd "lookup") Shell "nix build"
-    phony "nix-flight-mask" $ cmd (Cwd "mask") Shell "nix build"
-    phony "nix-flight-route" $ cmd (Cwd "route") Shell "nix build"
-    phony "nix-flight-scribe" $ cmd (Cwd "scribe") Shell "nix build"
-    phony "nix-flight-span" $ cmd (Cwd "span") Shell "nix build"
-    phony "nix-flight-task" $ cmd (Cwd "task") Shell "nix build"
-    phony "nix-flight-track" $ cmd (Cwd "track") Shell "nix build"
-    phony "nix-flight-units" $ cmd (Cwd "units") Shell "nix build"
-    phony "nix-flight-zone" $ cmd (Cwd "zone") Shell "nix build"
+    where
+        buildRule :: String -> Rules ()
+        buildRule s =
+            phony ("nix-build-flight-" ++ s) $
+                cmd
+                    (Cwd s) 
+                    Shell "nix build"
 
-    phony "nix-flare-timing" $ cmd (Cwd "flare-timing") Shell "nix build"
-    phony "nix-www-flare-timing" $ cmd (Cwd "www-flare-timing") Shell "nix build"
-
-nixRule :: String -> Rules ()
-nixRule s =
-    phony ("cabal2nix-" ++ s) $
-        cmd
-            (Cwd s) 
-            Shell
-            (nixFor $ "flight-" ++ s)
-
-nixRules :: Rules ()
-nixRules = do
-    sequence_ $ nixRule <$> flyPkgs
+fromCabalRules :: Rules ()
+fromCabalRules = do
+    sequence_ $ fromCabalRule <$> flyPkgs
 
     phony "cabal2nix" $ need
         $ "cabal2nix-detour-via-sci"
@@ -153,37 +122,47 @@ nixRules = do
             Shell
             (nixFor "www-flare-timing")
 
-shellRule :: String -> Rules ()
-shellRule s =
-    phony ("nixshell-" ++ s) $ cmd (Cwd s) Shell shell
+    where
+        fromCabalRule :: String -> Rules ()
+        fromCabalRule s =
+            phony ("cabal2nix-" ++ s) $
+                cmd
+                    (Cwd s) 
+                    Shell
+                    (nixFor $ "flight-" ++ s)
 
 shellRules :: Rules ()
 shellRules = do
     sequence_ $ shellRule <$> flyPkgs
 
-    phony "nixshell" $ need
-        $ "nixshell-detour-via-sci"
-        : "nixshell-detour-via-uom"
-        : "nixshell-siggy-chardust"
-        : "nixshell-tasty-compare"
-        : "nixshell-flare-timing"
-        : "nixshell-www-flare-timing"
+    phony "nix-shell" $ need
+        $ "nix-shell-detour-via-sci"
+        : "nix-shell-detour-via-uom"
+        : "nix-shell-siggy-chardust"
+        : "nix-shell-tasty-compare"
+        : "nix-shell-flare-timing"
+        : "nix-shell-www-flare-timing"
         : (prefix "nixshell-" <$> flyPkgs)
 
-    phony "nixshell-detour-via-sci" $
+    phony "nix-shell-detour-via-sci" $
         cmd (Cwd "detour-via-sci") Shell shell
 
-    phony "nixshell-detour-via-uom" $
+    phony "nix-shell-detour-via-uom" $
         cmd (Cwd "detour-via-uom") Shell shell
 
-    phony "nixshell-siggy-chardust" $
+    phony "nix-shell-siggy-chardust" $
         cmd (Cwd "siggy-chardust") Shell shell
 
-    phony "nixshell-tasty-compare" $
+    phony "nix-shell-tasty-compare" $
         cmd (Cwd "tasty-compare") Shell shell
 
-    phony "nixshell-flare-timing" $
+    phony "nix-shell-flare-timing" $
         cmd (Cwd "flare-timing") Shell shell
 
-    phony "nixshell-www-flare-timing" $
+    phony "nix-shell-www-flare-timing" $
         cmd (Cwd "www") Shell shell
+
+    where
+        shellRule :: String -> Rules ()
+        shellRule s =
+            phony ("nix-shell-" ++ s) $ cmd (Cwd s) Shell shell
