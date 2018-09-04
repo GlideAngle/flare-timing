@@ -18,7 +18,7 @@ Building the [`flight-units`](units) library, the command line apps and web serv
     cd ../www
     www> nix build
     [1 built, 0.0 MiB DL]
-    
+
 The results of those builds;
 
     > ls units/result/lib/ghc-8.2.2/
