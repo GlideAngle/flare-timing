@@ -144,27 +144,19 @@ shellRules = do
         : "nix-shell-tasty-compare"
         : "nix-shell-flare-timing"
         : "nix-shell-www-flare-timing"
-        : (prefix "nixshell-" <$> flyPkgs)
+        : (prefix "nix-shell-flight-" <$> flyPkgs)
 
-    phony "nix-shell-detour-via-sci" $
-        cmd (Cwd "detour-via-sci") Shell shell
+    phony' "detour-via-sci"
+    phony' "detour-via-uom"
+    phony' "siggy-chardust"
+    phony' "tasty-compare"
+    phony' "flare-timing"
 
-    phony "nix-shell-detour-via-uom" $
-        cmd (Cwd "detour-via-uom") Shell shell
-
-    phony "nix-shell-siggy-chardust" $
-        cmd (Cwd "siggy-chardust") Shell shell
-
-    phony "nix-shell-tasty-compare" $
-        cmd (Cwd "tasty-compare") Shell shell
-
-    phony "nix-shell-flare-timing" $
-        cmd (Cwd "flare-timing") Shell shell
-
-    phony "nix-shell-www-flare-timing" $
-        cmd (Cwd "www") Shell shell
+    phony "nix-shell-www-flare-timing" $ cmd (Cwd "www") Shell shell
 
     where
+        phony' s = phony (prefix "nix-shell-" s) $ cmd (Cwd s) Shell shell
+
         shellRule :: String -> Rules ()
         shellRule s =
-            phony ("nix-shell-" ++ s) $ cmd (Cwd s) Shell shell
+            phony ("nix-shell-flight-" ++ s) $ cmd (Cwd s) Shell shell
