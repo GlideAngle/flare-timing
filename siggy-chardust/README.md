@@ -1,6 +1,7 @@
 # `siggy-chardust`
 
 [![hackage release](https://img.shields.io/hackage/v/siggy-chardust.svg?label=hackage)](http://hackage.haskell.org/package/siggy-chardust)
+[![Dependencies of latest version on Hackage](https://img.shields.io/hackage-deps/v/siggy-chardust.svg)](https://hackage.haskell.org/package/siggy-chardust)
 [![stackage LTS package](http://stackage.org/package/siggy-chardust/badge/lts)](http://stackage.org/lts/package/siggy-chardust)
 [![stackage Nightly package](http://stackage.org/package/siggy-chardust/badge/nightly)](http://stackage.org/nightly/package/siggy-chardust)
 
