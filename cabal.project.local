@@ -1,4 +1,3 @@
-with-compiler: /Users/pdejoux/.stack/programs/x86_64-osx/ghc-8.2.2/bin/ghc
 constraints:   Cabal == 2.0.1.1
              , Only == 0.1
              , QuickCheck == 2.10.1
