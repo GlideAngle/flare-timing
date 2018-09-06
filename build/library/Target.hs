@@ -4,7 +4,7 @@ import Development.Shake (Rules)
 import Doc (buildRules, cleanRules)
 import Cmd (buildRules, cleanRules, testRules, lintRules, docTestRules)
 import Web (buildRules, cleanRules)
-import Nix (buildRules, shellRules)
+import Nix (buildRules, cleanRules, shellRules)
 import Pkg (buildRules)
 
 allWants :: [ String ]
@@ -33,6 +33,7 @@ cleanRules = do
     Doc.cleanRules
     Cmd.cleanRules
     Web.cleanRules
+    Nix.cleanRules
 
 buildRules :: Rules ()
 buildRules = do

@@ -1,14 +1,26 @@
-module Nix (flyPkgs, prefix, buildRules, fromCabalRules, shellRules) where
+{-# LANGUAGE QuasiQuotes #-}
+module Nix
+    ( flyPkgs
+    , prefix
+    , buildRules
+    , fromCabalRules
+    , shellRules
+    , cleanRules
+    ) where
 
 import Development.Shake
     ( Rules
     , CmdOption(Shell, Cwd)
+    , (%>)
     , phony
     , cmd
     , need
+    , removeFilesAfter
+    , writeFile'
     )
 
-import Development.Shake.FilePath ((<.>))
+import Development.Shake.FilePath ((<.>), (</>), dropFileName)
+import Text.RawString.QQ
 
 -- | The names of the hlint tests
 flyPkgs :: [String]
@@ -30,7 +42,18 @@ flyPkgs =
     , "track"
     , "units"
     , "zone"
-    ] 
+    ]
+
+shellPkgs :: [String]
+shellPkgs =
+    [ "detour-via-sci"
+    , "detour-via-uom"
+    , "siggy-chardust"
+    , "tasty-compare"
+    , "flare-timing"
+    , "www"
+    ]
+    ++ flyPkgs
 
 prefix :: String -> String -> String
 prefix prefix' s = prefix' ++ s
@@ -129,33 +152,30 @@ fromCabalRules = do
         cabal2nix x =
             "cabal2nix --no-haddock --no-check . > " ++ (x <.> ".nix")
 
+cleanRules :: Rules ()
+cleanRules = do
+    phony "clean-nix-shell-files" $
+        removeFilesAfter "." ["//shell.nix", "//drv.nix" ]
+
 shellRules :: Rules ()
 shellRules = do
-    sequence_ $ shellRule <$> flyPkgs
+    phony "nix-shell" $ need ((\s -> s </> "drv.nix") <$> shellPkgs)
 
-    phony "nix-shell" $ need
-        $ "nix-shell-detour-via-sci"
-        : "nix-shell-detour-via-uom"
-        : "nix-shell-siggy-chardust"
-        : "nix-shell-tasty-compare"
-        : "nix-shell-flare-timing"
-        : "nix-shell-www-flare-timing"
-        : (prefix "nix-shell-flight-" <$> flyPkgs)
+    "*/shell.nix" %> \out -> writeFile' out shellContent
+            -- Shell "ln -sfv" [ ".." </> "nix" </> "hard-shell.nix", takeFileName out ]
 
-    phony' "detour-via-sci"
-    phony' "detour-via-uom"
-    phony' "siggy-chardust"
-    phony' "tasty-compare"
-    phony' "flare-timing"
+    "*/drv.nix" %> \out -> do
+        let dir = dropFileName out
+        need [ dir </> "shell.nix" ]
+        cmd
+            (Cwd dir)
+            Shell "cabal2nix --shell . > drv.nix"
 
-    phony "nix-shell-www-flare-timing" $ cmd (Cwd "www") Shell shell
-
-    where
-        phony' s = phony (prefix "nix-shell-" s) $ cmd (Cwd s) Shell shell
-
-        shellRule :: String -> Rules ()
-        shellRule s =
-            phony ("nix-shell-flight-" ++ s) $
-                cmd (Cwd s) Shell shell
-
-        shell = "cabal2nix --shell . > shell.nix"
+shellContent :: String
+shellContent = [r|
+let
+  config = import ../nix/config.nix {};
+  pkgs = import ../nix/nixpkgs.nix { inherit config; };
+in
+  import ./drv.nix { nixpkgs = pkgs; }
+|]

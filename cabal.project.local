@@ -72,8 +72,8 @@ constraints:   Cabal == 2.0.1.1
              , ghc-tcplugins-extra == 0.2.5
              , ghci == 8.2.2
              , hashable == 1.2.7.0
-             , hcoord == 2.0.0
-             , hcoord-utm == 2.0.0
+             , hcoord == 2.1.0
+             , hcoord-utm == 2.1.0
              , hoopl == 3.10.2.2
              , hpc == 0.6.0.3
              , hxt == 9.3.1.16
