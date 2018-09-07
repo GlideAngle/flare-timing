@@ -1,0 +1,65 @@
+load(
+    "@io_tweag_rules_haskell//haskell:haskell.bzl",
+    "haskell_toolchain",
+)
+
+haskell_toolchain(
+    name = "ghc",
+    tools = "@ghc//:bin",
+    version = "8.2.2",
+)
+
+haskell_import(name = "base")
+haskell_import(name = "tasty")
+haskell_import(name = "tasty-hunit")
+haskell_import(name = "call-stack")
+
+haskell_library(
+    name = "tasty-compare",
+    srcs = glob(["library/**/*.hs"]),
+    src_strip_prefix = "library",
+    compiler_flags = [
+        "-threaded",
+
+        "-Wall",
+
+        "-XDataKinds",
+        "-XDeriveFunctor",
+        "-XDeriveGeneric",
+        "-XDeriveAnyClass",
+        "-XDerivingStrategies",
+        "-XDisambiguateRecordFields",
+        "-XFlexibleContexts",
+        "-XFlexibleInstances",
+        "-XGeneralizedNewtypeDeriving",
+        "-XGADTs",
+        "-XLambdaCase",
+        "-XMultiParamTypeClasses",
+        "-XMultiWayIf",
+        "-XNamedFieldPuns",
+        "-XOverloadedStrings",
+        "-XPackageImports",
+        "-XParallelListComp",
+        "-XPartialTypeSignatures",
+        "-XPatternSynonyms",
+        "-XQuasiQuotes",
+        "-XRankNTypes",
+        "-XRecordWildCards",
+        "-XScopedTypeVariables",
+        "-XStandaloneDeriving",
+        "-XTemplateHaskell",
+        "-XTypeApplications",
+        "-XTypeFamilies",
+        "-XTypeOperators",
+        "-XTypeSynonymInstances",
+        "-XTupleSections",
+        "-XUndecidableInstances",
+        ],
+    deps = [
+        ":base",
+        ":tasty",
+        ":tasty-hunit",
+        ":call-stack",
+        ],
+    visibility = ["//visibility:public"],
+)

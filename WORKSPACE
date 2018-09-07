@@ -61,7 +61,8 @@ nixpkgs_package(
           hcoord hxt hxt-xpath
           newtype numbers path
           scientific smallcheck split statistics
-          tasty-quickcheck template-haskell time uom-plugin utf8-string
+          tasty-hunit tasty-quickcheck template-haskell time
+          uom-plugin utf8-string
         ])
   """,
     repository = "@nixpkgs",
