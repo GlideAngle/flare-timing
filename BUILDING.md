@@ -7,7 +7,8 @@ useful are published to hackage and stackage.
 Wherever there's a `.cabal` file, there's a matching `default.nix` that enables
 a [nix build](https://nixos.org/nix/manual/#sec-building-simple).
 
-Building the [`flight-units`](units) library, the command line apps and web server with nix;
+Building the [`flight-units`](units) library, the command line apps and web
+server with nix;
 
     > cd units
     units> nix build
@@ -29,6 +30,31 @@ The results of those builds;
     discard-further  land-out         task-length      test-kml-parser
     > ls www/result/bin
     comp-serve
+
+## Building within Nix with Cabal
+Each package has a `shell.nix` that picks up the pinned nixpkgs and package
+overrides before opening a nix shell from which we can build with
+`cabal new-build`;
+
+    > cd units
+    > nix-shell
+    [nix-shell:~/.../units]$ cabal new-build
+    Resolving dependencies...
+    Build profile: -w ghc-8.2.2 -O1
+    In order, the following will be built (use -v for more details):
+     - StateVar-1.1.1.0 (lib) (requires build)
+     - distributive-0.5.3 (lib:distributive) (requires build)
+     - uom-plugin-0.3.0.0 (lib) (requires build)
+     - scientific-0.3.6.2 (lib) (requires build)
+     - siggy-chardust-1.0.0 (lib) (configuration changed)
+     - contravariant-1.4.1 (lib:contravariant) (requires build)
+     - formatting-6.3.6 (lib) (requires build)
+     - comonad-5.0.4 (lib:comonad) (requires build)
+     - bifunctors-5.5.3 (lib) (requires build)
+     - flight-units-0.1.0 (lib) (first run)
+     ...
+     [nix-shell:~/.../units]$ cabal new-build
+     Up to date
 
 ## Building with Stack
 
