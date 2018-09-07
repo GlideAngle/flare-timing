@@ -1,6 +1,5 @@
-{ nixpkgs ? import <nixpkgs> {}
-, compiler ? "ghc822"
-}:
-nixpkgs.pkgs.haskell.packages.${compiler}.callPackage
-./tasty-compare.nix
-{ }
+let
+  config = import ../nix/config.nix {};
+  pkgs = import ../nix/nixpkgs.nix { inherit config; };
+in
+  { tasty-compare = pkgs.haskellPackages.tasty-compare; }

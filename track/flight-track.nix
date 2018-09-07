@@ -10,6 +10,8 @@ mkDerivation {
     base bytestring containers directory filepath flight-comp
     flight-igc flight-kml mtl path split time utf8-string
   ];
+  doHaddock = false;
+  doCheck = false;
   homepage = "https://github.com/blockscope/flare-timing#readme";
   description = "Hang gliding and paragliding competition track logs";
   license = stdenv.lib.licenses.mpl20;

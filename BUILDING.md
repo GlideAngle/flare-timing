@@ -4,13 +4,57 @@ This mono-repo contains many packages. The subset of these that are generally
 useful are published to hackage and stackage.
 
 ## Building with Nix
-Each library package can be built standalone. For example, the `flight-units`
-package can be built with
-[nix-build](https://nixos.org/nix/manual/#sec-building-simple) after having
-setup the [overlay](https://github.com/BlockScope/nix-config).
+Wherever there's a `.cabal` file, there's a matching `default.nix` that enables
+a [nix build](https://nixos.org/nix/manual/#sec-building-simple).
 
-    ln -s -f ~/dev/blockscope/nix-config/overlays.nix ~/.config/nixpkgs/overlays/flare-timing-overlay.nix
-    nix-build "<nixpkgs>" -A haskellPackages.flight-units
+Building the [`flight-units`](units) library, the command line apps and web
+server with nix;
+
+    > cd units
+    units> nix build
+    [2 built, 0.0 MiB DL]
+    > cd ../flare-timing
+    flare-timing> nix build
+    [17 built, 0.0 MiB DL]
+    cd ../www
+    www> nix build
+    [1 built, 0.0 MiB DL]
+
+The results of those builds;
+
+    > ls units/result/lib/ghc-8.2.2/
+    flight-units-0.1.0   package.conf.d       x86_64-osx-ghc-8.2.2
+    > ls flare-timing/result/bin
+    align-time       extract-input    mask-track       test-fsdb-parser
+    cross-zone       gap-point        tag-zone         test-igc-parser
+    discard-further  land-out         task-length      test-kml-parser
+    > ls www/result/bin
+    comp-serve
+
+## Building within Nix with Cabal
+Each package has a `shell.nix` that picks up the pinned nixpkgs and package
+overrides before opening a nix shell from which we can build with
+`cabal new-build`;
+
+    > cd units
+    > nix-shell
+    [nix-shell:~/.../units]$ cabal new-build
+    Resolving dependencies...
+    Build profile: -w ghc-8.2.2 -O1
+    In order, the following will be built (use -v for more details):
+     - StateVar-1.1.1.0 (lib) (requires build)
+     - distributive-0.5.3 (lib:distributive) (requires build)
+     - uom-plugin-0.3.0.0 (lib) (requires build)
+     - scientific-0.3.6.2 (lib) (requires build)
+     - siggy-chardust-1.0.0 (lib) (configuration changed)
+     - contravariant-1.4.1 (lib:contravariant) (requires build)
+     - formatting-6.3.6 (lib) (requires build)
+     - comonad-5.0.4 (lib:comonad) (requires build)
+     - bifunctors-5.5.3 (lib) (requires build)
+     - flight-units-0.1.0 (lib) (first run)
+     ...
+     [nix-shell:~/.../units]$ cabal new-build
+     Up to date
 
 ## Building with Stack
 
@@ -105,6 +149,50 @@ Now let's do the build again;
 
 Tasks that are not simple by hand have been added to the shake build project
 [build-flare-timing](build).
+
+### Generating `shell.nix` and `drv.nix` files
+The `nix-shell` shake build rule ensures for each package that there's
+a `shell.nix` and `drv.nix` with a nix derivation created with
+[cabal2nix](https://github.com/NixOS/cabal2nix).
+
+```
+> ./stack-shake-build.sh nix-shell
+
+# cabal2nix (for zone/drv.nix)
+# cabal2nix (for units/drv.nix)
+# cabal2nix (for track/drv.nix)
+# cabal2nix (for task/drv.nix)
+# cabal2nix (for span/drv.nix)
+# cabal2nix (for scribe/drv.nix)
+# cabal2nix (for route/drv.nix)
+# cabal2nix (for mask/drv.nix)
+# cabal2nix (for lookup/drv.nix)
+# cabal2nix (for latlng/drv.nix)
+# cabal2nix (for kml/drv.nix)
+# cabal2nix (for igc/drv.nix)
+# cabal2nix (for gap/drv.nix)
+# cabal2nix (for fsdb/drv.nix)
+# cabal2nix (for earth/drv.nix)
+# cabal2nix (for comp/drv.nix)
+# cabal2nix (for cmd/drv.nix)
+# cabal2nix (for www/drv.nix)
+# cabal2nix (for flare-timing/drv.nix)
+# cabal2nix (for tasty-compare/drv.nix)
+# cabal2nix (for siggy-chardust/drv.nix)
+# cabal2nix (for detour-via-uom/drv.nix)
+# cabal2nix (for detour-via-sci/drv.nix)
+Build completed in 0:01m
+```
+
+The `shell.nix` files are copied from `nix/hard-shell.nix`;
+
+```
+let
+  config = import ../nix/config.nix {};
+  pkgs = import ../nix/nixpkgs.nix { inherit config; };
+in
+  import ./drv.nix { nixpkgs = pkgs; }
+```
 
 ### Generating `*.cabal` files
 

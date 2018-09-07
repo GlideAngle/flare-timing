@@ -1,9 +1,10 @@
-{ mkDerivation, aeson, base, bytestring, cmdargs, directory
-, filemanip, filepath, flight-comp, flight-fsdb, flight-gap
-, flight-igc, flight-kml, flight-mask, flight-task, flight-track
-, flight-units, hlint, mtl, raw-strings-qq, servant, servant-server
-, siggy-chardust, stdenv, system-filepath, transformers, uom-plugin
-, wai, wai-cors, warp, yaml
+{ mkDerivation, aeson, base, bytestring, clock, cmdargs, containers
+, directory, filemanip, filepath, flight-cmd, flight-comp
+, flight-earth, flight-fsdb, flight-gap, flight-igc, flight-kml
+, flight-latlng, flight-lookup, flight-mask, flight-route
+, flight-scribe, flight-span, flight-units, flight-zone, formatting
+, lens, mtl, raw-strings-qq, siggy-chardust, stdenv
+, system-filepath, time, transformers, uom-plugin, yaml
 }:
 mkDerivation {
   pname = "flare-timing";
@@ -12,14 +13,16 @@ mkDerivation {
   isLibrary = false;
   isExecutable = true;
   executableHaskellDepends = [
-    aeson base bytestring cmdargs directory filemanip filepath
-    flight-comp flight-fsdb flight-gap flight-igc flight-kml
-    flight-mask flight-task flight-track flight-units mtl
-    raw-strings-qq servant servant-server siggy-chardust
-    system-filepath transformers uom-plugin wai wai-cors warp yaml
+    aeson base bytestring clock cmdargs containers directory filemanip
+    filepath flight-cmd flight-comp flight-earth flight-fsdb flight-gap
+    flight-igc flight-kml flight-latlng flight-lookup flight-mask
+    flight-route flight-scribe flight-span flight-units flight-zone
+    formatting lens mtl raw-strings-qq siggy-chardust system-filepath
+    time transformers uom-plugin yaml
   ];
-  testHaskellDepends = [ base hlint ];
-  homepage = "https://github.com/BlockScope/flare-timing#readme";
+  doHaddock = false;
+  doCheck = false;
+  homepage = "https://github.com/blockscope/flare-timing#readme";
   description = "A collection of apps and libraries for scoring hang gliding and paragliding competitions";
   license = stdenv.lib.licenses.mpl20;
 }

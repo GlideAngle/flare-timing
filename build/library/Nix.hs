@@ -1,14 +1,25 @@
-module Nix (flyPkgs, prefix, buildRules, nixRules, shellRules) where
+module Nix
+    ( flyPkgs
+    , prefix
+    , buildRules
+    , fromCabalRules
+    , shellRules
+    , cleanRules
+    ) where
 
 import Development.Shake
     ( Rules
     , CmdOption(Shell, Cwd)
+    , (%>)
     , phony
     , cmd
     , need
+    , removeFilesAfter
+    , copyFile'
+    , putNormal
     )
 
-import Development.Shake.FilePath ((<.>))
+import Development.Shake.FilePath ((<.>), (</>), dropFileName)
 
 -- | The names of the hlint tests
 flyPkgs :: [String]
@@ -30,140 +41,137 @@ flyPkgs =
     , "track"
     , "units"
     , "zone"
-    ] 
+    ]
+
+shellPkgs :: [String]
+shellPkgs =
+    [ "detour-via-sci"
+    , "detour-via-uom"
+    , "siggy-chardust"
+    , "tasty-compare"
+    , "flare-timing"
+    , "www"
+    ]
+    ++ flyPkgs
 
 prefix :: String -> String -> String
 prefix prefix' s = prefix' ++ s
 
-nixFor :: String -> String
-nixFor x =
-    "cabal2nix . > " ++ (x <.> ".nix")
-
-shell :: String
-shell =
-    "cabal2nix --shell . > shell.nix"
-
-buildFor :: String -> String
-buildFor x =
-    "nix-build \"<nixpkgs>\" -A haskellPackages." ++ x
-
 buildRules :: Rules ()
 buildRules = do
-    phony "nix" $
-        need [ "nix-detour-via-sci"
-             , "nix-detour-via-uom"
-             , "nix-siggy-chardust"
-             , "nix-tasty-compare"
+    sequence_ $ buildRule <$> flyPkgs
 
-             , "nix-flight-cmd"
-             , "nix-flight-comp"
-             , "nix-flight-fsdb"
-             , "nix-flight-gap"
-             , "nix-flight-igc"
-             , "nix-flight-kml"
-             , "nix-flight-latlng"
-             , "nix-flight-lookup"
-             , "nix-flight-mask"
-             , "nix-flight-scribe"
-             , "nix-flight-task"
-             , "nix-flight-track"
-             , "nix-flight-units"
-             , "nix-flight-zone"
-             , "nix-flight-span"
-
-             , "nix-flare-timing"
+    phony "nix-build" $
+        need ([ "nix-build-detour-via-sci"
+             , "nix-build-detour-via-uom"
+             , "nix-build-siggy-chardust"
+             , "nix-build-tasty-compare"
+             , "nix-build-flare-timing"
+             , "nix-build-www-flare-timing"
              ]
+             ++
+             (prefix "nix-flight-" <$> flyPkgs))
 
-    phony "nix-detour-via-sci" $ cmd Shell (buildFor "detour-via-sci")
-    phony "nix-detour-via-uom" $ cmd Shell (buildFor "detour-via-uom")
-    phony "nix-siggy-chardust" $ cmd Shell (buildFor "siggy-chardust")
-    phony "nix-tasty-compare" $ cmd Shell (buildFor "tasty-compare")
+    phony' "detour-via-sci"
+    phony' "detour-via-uom"
+    phony' "siggy-chardust"
+    phony' "tasty-compare"
+    phony' "flare-timing"
+    phony "nix-build-www-flare-timing" $ cmd (Cwd "www") Shell "nix build"
 
-    phony "nix-flight-cmd" $ cmd Shell (buildFor "flight-cmd")
-    phony "nix-flight-comp" $ cmd Shell (buildFor "flight-comp")
-    phony "nix-flight-fsdb" $ cmd Shell (buildFor "flight-fsdb")
-    phony "nix-flight-gap" $ cmd Shell (buildFor "flight-gap")
-    phony "nix-flight-igc" $ cmd Shell (buildFor "flight-igc")
-    phony "nix-flight-kml" $ cmd Shell (buildFor "flight-kml")
-    phony "nix-flight-latlng" $ cmd Shell (buildFor "flight-latlng")
-    phony "nix-flight-lookup" $ cmd Shell (buildFor "flight-lookup")
-    phony "nix-flight-mask" $ cmd Shell (buildFor "flight-mask")
-    phony "nix-flight-scribe" $ cmd Shell (buildFor "flight-scribe")
-    phony "nix-flight-task" $ cmd Shell (buildFor "flight-task")
-    phony "nix-flight-track" $ cmd Shell (buildFor "flight-track")
-    phony "nix-flight-units" $ cmd Shell (buildFor "flight-units")
-    phony "nix-flight-zone" $ cmd Shell (buildFor "flight-zone")
-    phony "nix-flight-route" $ cmd Shell (buildFor "flight-route")
-    phony "nix-flight-span" $ cmd Shell (buildFor "flight-span")
+    where
+        phony' s = do phony (prefix "nix-build-" s) $ cmd (Cwd s) Shell "nix build"
 
-    phony "nix-flare-timing" $ cmd Shell (buildFor "flare-timing")
+        buildRule :: String -> Rules ()
+        buildRule s =
+            phony ("nix-build-flight-" ++ s) $
+                cmd
+                    (Cwd s) 
+                    Shell "nix build"
 
-nixRule :: String -> Rules ()
-nixRule s =
-    phony ("cabal2nix-" ++ s) $
-        cmd
-            (Cwd s) 
-            Shell
-            (nixFor $ "flight-" ++ s)
-
-nixRules :: Rules ()
-nixRules = do
-    sequence_ $ nixRule <$> flyPkgs
+fromCabalRules :: Rules ()
+fromCabalRules = do
+    sequence_ $ fromCabalRule <$> flyPkgs
 
     phony "cabal2nix" $ need
         $ "cabal2nix-detour-via-sci"
         : "cabal2nix-detour-via-uom"
         : "cabal2nix-siggy-chardust"
         : "cabal2nix-tasty-compare"
+        : "cabal2nix-flare-timing"
+        : "cabal2nix-www-flare-timing"
         : (prefix "cabal2nix-" <$> flyPkgs)
 
     phony "cabal2nix-detour-via-sci" $
         cmd
             (Cwd "detour-via-sci")
             Shell
-            (nixFor "detour-via-sci")
+            (cabal2nix "detour-via-sci")
 
     phony "cabal2nix-detour-via-uom" $
         cmd
             (Cwd "detour-via-uom")
             Shell
-            (nixFor "detour-via-uom")
+            (cabal2nix "detour-via-uom")
 
     phony "cabal2nix-siggy-chardust" $
         cmd
             (Cwd "siggy-chardust")
             Shell
-            (nixFor "siggy-chardust")
+            (cabal2nix "siggy-chardust")
 
     phony "cabal2nix-tasty-compare" $
         cmd
             (Cwd "tasty-compare")
             Shell
-            (nixFor "tasty-compare")
+            (cabal2nix "tasty-compare")
 
-shellRule :: String -> Rules ()
-shellRule s =
-    phony ("nixshell-" ++ s) $ cmd (Cwd s) Shell shell
+    phony "cabal2nix-flare-timing" $
+        cmd
+            (Cwd "flare-timing")
+            Shell
+            (cabal2nix "flare-timing")
+
+    phony "cabal2nix-www-flare-timing" $
+        cmd
+            (Cwd "www")
+            Shell
+            (cabal2nix "www-flare-timing")
+
+    where
+        fromCabalRule :: String -> Rules ()
+        fromCabalRule s =
+            phony ("cabal2nix-" ++ s) $
+                cmd
+                    (Cwd s) 
+                    Shell
+                    (cabal2nix $ "flight-" ++ s)
+
+        cabal2nix :: String -> String
+        cabal2nix x =
+            "cabal2nix --no-haddock --no-check . > " ++ (x <.> ".nix")
+
+cleanRules :: Rules ()
+cleanRules = do
+    phony "clean-nix-shell-files" $
+        removeFilesAfter "." ["//shell.nix", "//drv.nix"]
 
 shellRules :: Rules ()
 shellRules = do
-    sequence_ $ shellRule <$> flyPkgs
+    phony "nix-shell" $ need (drvs ++ shells)
 
-    phony "nixshell" $ need
-        $ "nixshell-detour-via-sci"
-        : "nixshell-detour-via-uom"
-        : "nixshell-siggy-chardust"
-        : "nixshell-tasty-compare"
-        : (prefix "nixshell-" <$> flyPkgs)
+    "*/shell.nix" %> \out -> do
+        need ["nix/hard-shell.nix"]
+        putNormal $ "# copyfile (for " ++ out ++ ")"
+        copyFile' "nix/hard-shell.nix" out
 
-    phony "nixshell-detour-via-sci" $
-        cmd (Cwd "detour-via-sci") Shell shell
+    "*/drv.nix" %> \out -> do
+        let dir = dropFileName out
+        need [dir </> "shell.nix"]
+        cmd
+            (Cwd dir)
+            Shell "cabal2nix --shell . > drv.nix"
 
-    phony "nixshell-detour-via-uom" $
-        cmd (Cwd "detour-via-uom") Shell shell
-
-    phony "nixshell-siggy-chardust" $
-        cmd (Cwd "siggy-chardust") Shell shell
-
-    phony "nixshell-tasty-compare" $
-        cmd (Cwd "tasty-compare") Shell shell
+    where
+        drvs = (\s -> s </> "drv.nix") <$> shellPkgs
+        shells = (\s -> s </> "shell.nix") <$> shellPkgs

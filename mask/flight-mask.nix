@@ -16,6 +16,8 @@ mkDerivation {
     flight-track flight-units flight-zone lens mtl numbers path
     siggy-chardust split time uom-plugin yaml
   ];
+  doHaddock = false;
+  doCheck = false;
   homepage = "https://github.com/blockscope/flare-timing#readme";
   description = "Track logs masked by competition task zones";
   license = stdenv.lib.licenses.mpl20;

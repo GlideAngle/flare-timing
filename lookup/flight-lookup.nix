@@ -14,6 +14,8 @@ mkDerivation {
     flight-mask flight-route flight-zone lens mtl path scientific split
     time unordered-containers uom-plugin
   ];
+  doHaddock = false;
+  doCheck = false;
   homepage = "https://github.com/blockscope/flare-timing#readme";
   description = "Hang gliding and paragliding competition data access";
   license = stdenv.lib.licenses.mpl20;
