@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 6f6af437742b734de3ddf4ae38d3f4efc7bc35159cec7ec0f67c97dc878f9fd2
+-- hash: c1f97d873c508f45a933e4efcbe0da1007fd06880d6f5b2054beaf302853c329
 
 name:           build-flare-timing
 version:        0.1.0
@@ -48,6 +48,7 @@ executable build-flare-timing
   build-depends:
       ansi-terminal
     , base
+    , raw-strings-qq
     , shake
     , time
   default-language: Haskell2010
