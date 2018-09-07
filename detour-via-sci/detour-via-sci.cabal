@@ -1,8 +1,8 @@
--- This file has been generated from package.dhall by hpack version 0.25.0.
+-- This file has been generated from package.dhall by hpack version 0.28.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 4683d94ad8fb3ed5f8e2bc4659c1b958ee675946795b890aa566c67d44aea4c9
+-- hash: 6a4a88d2829b92ddc2463059cd896fbe131741e3c95873342ce82acf7de1d700
 
 name:           detour-via-sci
 version:        1.0.0
@@ -19,7 +19,6 @@ license-file:   LICENSE.md
 tested-with:    GHC == 8.2.2
 build-type:     Simple
 cabal-version:  >= 1.10
-
 extra-source-files:
     changelog.md
     package.dhall

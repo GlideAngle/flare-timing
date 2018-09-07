@@ -1,7 +1,7 @@
-    let defs = ./defaults.dhall 
+    let defs = ./defaults.dhall
 
 in    defs
-    ⫽ ./default-extensions.dhall 
+    ⫽ ./default-extensions.dhall
     ⫽ { name =
           "flight-mask"
       , synopsis =
@@ -56,5 +56,5 @@ in    defs
               ]
           }
       , tests =
-          ./default-tests.dhall 
+          ./default-tests.dhall
       }

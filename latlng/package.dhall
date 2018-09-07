@@ -1,7 +1,7 @@
-    let deps = ./defaults.dhall 
+    let deps = ./defaults.dhall
 
 in    deps
-    ⫽ ./default-extensions.dhall 
+    ⫽ ./default-extensions.dhall
     ⫽ { name =
           "flight-latlng"
       , synopsis =
@@ -48,5 +48,5 @@ in    deps
               ]
           }
       , tests =
-          ./default-tests.dhall 
+          ./default-tests.dhall
       }

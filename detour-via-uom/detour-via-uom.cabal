@@ -1,8 +1,8 @@
--- This file has been generated from package.dhall by hpack version 0.25.0.
+-- This file has been generated from package.dhall by hpack version 0.28.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 7bf8065e3cc7a4417ccbdff13cba94c167bc031b66b052e424d23b71a8e43b11
+-- hash: 57496236c259c0cca3b4869fe9a1af6709736f95379f0321c48376ff635ccd7c
 
 name:           detour-via-uom
 version:        1.0.0
@@ -19,7 +19,6 @@ license-file:   LICENSE.md
 tested-with:    GHC == 8.2.2
 build-type:     Simple
 cabal-version:  >= 1.10
-
 extra-source-files:
     changelog.md
     package.dhall

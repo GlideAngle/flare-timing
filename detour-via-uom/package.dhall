@@ -1,4 +1,4 @@
-    let defs = ./defaults.dhall 
+    let defs = ./defaults.dhall
 
 in    defs
     ⫽ { name =
@@ -33,7 +33,7 @@ in    defs
               [ "Data.Via.UnitsOfMeasure" ]
           }
       , tests =
-            ./default-tests.dhall 
+            ./default-tests.dhall
           ⫽ { doctest =
                 { dependencies =
                     [ "doctest" ]

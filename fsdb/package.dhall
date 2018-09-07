@@ -1,7 +1,7 @@
-    let defs = ./defaults.dhall 
+    let defs = ./defaults.dhall
 
 in    defs
-    ⫽ ./default-extensions.dhall 
+    ⫽ ./default-extensions.dhall
     ⫽ { name =
           "flight-fsdb"
       , synopsis =
@@ -38,7 +38,7 @@ in    defs
       , library =
           { source-dirs = "library", exposed-modules = "Flight.Fsdb" }
       , tests =
-            ./default-tests.dhall 
+            ./default-tests.dhall
           ⫽ { parse =
                 { dependencies =
                     [ "tasty"

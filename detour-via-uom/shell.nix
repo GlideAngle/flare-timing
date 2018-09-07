@@ -4,22 +4,22 @@ let
 
   inherit (nixpkgs) pkgs;
 
-  f = { mkDerivation, aeson, aeson-via-sci, base, flight-units
-      , hlint, newtype, scientific, stdenv, uom-plugin
+  f = { mkDerivation, aeson, base, cassava, detour-via-sci, doctest
+      , newtype, scientific, stdenv, uom-plugin
       }:
       mkDerivation {
-        pname = "aeson-via-uom";
-        version = "0.1.0";
+        pname = "detour-via-uom";
+        version = "1.0.0";
         src = ./.;
         libraryHaskellDepends = [
-          aeson aeson-via-sci base flight-units newtype scientific uom-plugin
+          aeson base cassava detour-via-sci newtype scientific uom-plugin
         ];
         testHaskellDepends = [
-          aeson aeson-via-sci base flight-units hlint newtype scientific
+          aeson base cassava detour-via-sci doctest newtype scientific
           uom-plugin
         ];
-        homepage = "https://github.com/BlockScope/flare-timing#readme";
-        description = "JSON encoding and decoding for rationals via scientific";
+        homepage = "https://github.com/blockscope/flare-timing/tree/master/detour-via-uom#readme";
+        description = "JSON and CSV encoding for quantities";
         license = stdenv.lib.licenses.mpl20;
       };
 

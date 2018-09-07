@@ -1,8 +1,8 @@
--- This file has been generated from package.dhall by hpack version 0.25.0.
+-- This file has been generated from package.dhall by hpack version 0.28.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3652d1fe9cd8fcb4a5b2970b5f01de2dc876c8c986849105b747e1c69a6af6b8
+-- hash: 15b1fb6c36c0e990b64279a8ad5d8f01df925a1b6aad8ef42d2be996dfe27717
 
 name:           flight-lookup
 version:        0.1.0
@@ -19,7 +19,6 @@ license-file:   LICENSE.md
 tested-with:    GHC == 8.2.2
 build-type:     Simple
 cabal-version:  >= 1.10
-
 extra-source-files:
     changelog.md
     package.dhall

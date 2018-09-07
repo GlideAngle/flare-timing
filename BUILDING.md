@@ -96,7 +96,7 @@ Now let's do the build again;
 ## Building with Pier
 
 ```
-> stack install pier
+> stack install pier --stack-yaml=stack-pier.yaml
 > stack exec pier -- test flight-fsdb:test-suite:parse
 > stack exec pier -- build flare-timing:exe
 ```
@@ -114,7 +114,7 @@ target setup for doing this and formatting the `package.dhall` files but first
 both `dhall` and `hpack-dhall` need to be installed.
 
 ```
-> stack install dhall hpack-dhall
+> stack install dhall hpack-dhall --stack-yaml=stack-dhall.yaml
 > ./stack-shake-build.sh cabal-files
 ```
 

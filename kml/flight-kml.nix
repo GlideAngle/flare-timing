@@ -1,22 +1,22 @@
-{ mkDerivation, aeson, aeson-via-sci, base, hlint, hxt, hxt-xpath
-, parsec, path, raw-strings-qq, siggy-chardust, smallcheck, split
-, stdenv, tasty, tasty-hunit, tasty-quickcheck, tasty-smallcheck
-, time
+{ mkDerivation, aeson, base, detour-via-sci, doctest, hxt
+, hxt-xpath, parsec, path, raw-strings-qq, siggy-chardust
+, smallcheck, split, stdenv, tasty, tasty-hunit, tasty-quickcheck
+, tasty-smallcheck, template-haskell, time
 }:
 mkDerivation {
   pname = "flight-kml";
-  version = "0.1.0";
+  version = "1.0.0";
   src = ./.;
   libraryHaskellDepends = [
-    aeson aeson-via-sci base hxt hxt-xpath parsec path siggy-chardust
+    aeson base detour-via-sci hxt hxt-xpath parsec path siggy-chardust
     split time
   ];
   testHaskellDepends = [
-    aeson aeson-via-sci base hlint hxt hxt-xpath parsec path
+    aeson base detour-via-sci doctest hxt hxt-xpath parsec path
     raw-strings-qq siggy-chardust smallcheck split tasty tasty-hunit
-    tasty-quickcheck tasty-smallcheck time
+    tasty-quickcheck tasty-smallcheck template-haskell time
   ];
-  homepage = "https://github.com/BlockScope/haskell-flight-kml#readme";
-  description = "A parser for KML files";
+  homepage = "https://github.com/blockscope/flare-timing/tree/master/kml#readme";
+  description = "Parsing of pilot tracklogs dumped as KML";
   license = stdenv.lib.licenses.mpl20;
 }

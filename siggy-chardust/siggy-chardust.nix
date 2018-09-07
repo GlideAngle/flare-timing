@@ -1,16 +1,16 @@
-{ mkDerivation, base, hlint, smallcheck, stdenv, tasty, tasty-hunit
-, tasty-quickcheck, tasty-smallcheck
+{ mkDerivation, base, doctest, smallcheck, stdenv, tasty
+, tasty-hunit, tasty-quickcheck, tasty-smallcheck
 }:
 mkDerivation {
   pname = "siggy-chardust";
-  version = "0.1.0";
+  version = "1.0.0";
   src = ./.;
   libraryHaskellDepends = [ base ];
   testHaskellDepends = [
-    base hlint smallcheck tasty tasty-hunit tasty-quickcheck
+    base doctest smallcheck tasty tasty-hunit tasty-quickcheck
     tasty-smallcheck
   ];
-  homepage = "https://github.com/BlockScope/haskell-siggy-chardust#readme";
-  description = "Rounding keeping decimal places and significant digits";
+  homepage = "https://github.com/blockscope/flare-timing/tree/master/siggy-chardust#readme";
+  description = "Rounding rationals to significant digits and decimal places";
   license = stdenv.lib.licenses.mpl20;
 }

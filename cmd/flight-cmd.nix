@@ -1,5 +1,5 @@
 { mkDerivation, base, cmdargs, directory, filemanip, filepath
-, flight-span, hlint, mtl, raw-strings-qq, stdenv, system-filepath
+, flight-span, mtl, raw-strings-qq, stdenv, system-filepath
 , transformers
 }:
 mkDerivation {
@@ -10,11 +10,7 @@ mkDerivation {
     base cmdargs directory filemanip filepath flight-span mtl
     raw-strings-qq system-filepath transformers
   ];
-  testHaskellDepends = [
-    base cmdargs directory filemanip filepath flight-span hlint mtl
-    raw-strings-qq system-filepath transformers
-  ];
-  homepage = "https://github.com/BlockScope/flare-timing#readme";
+  homepage = "https://github.com/blockscope/flare-timing#readme";
   description = "Command line options";
   license = stdenv.lib.licenses.mpl20;
 }

@@ -4,26 +4,29 @@ let
 
   inherit (nixpkgs) pkgs;
 
-  f = { mkDerivation, aeson, aeson-via-sci, base, bifunctors, fgl
-      , flight-latlng, flight-units, flight-zone, hcoord, hlint, mtl
-      , numbers, scientific, siggy-chardust, stdenv, tasty-compare
+  f = { mkDerivation, aeson, base, bifunctors, detour-via-sci, fgl
+      , flight-latlng, flight-units, flight-zone, hcoord, hcoord-utm, mtl
+      , numbers, scientific, siggy-chardust, smallcheck, stdenv, tasty
+      , tasty-compare, tasty-hunit, tasty-quickcheck, tasty-smallcheck
       , uom-plugin
       }:
       mkDerivation {
-        pname = "flight-earth-ellipsoid";
+        pname = "flight-earth";
         version = "0.1.0";
         src = ./.;
         libraryHaskellDepends = [
-          aeson aeson-via-sci base bifunctors fgl flight-latlng flight-units
-          flight-zone hcoord mtl numbers scientific siggy-chardust uom-plugin
+          aeson base bifunctors detour-via-sci fgl flight-latlng flight-units
+          flight-zone hcoord hcoord-utm mtl numbers scientific siggy-chardust
+          uom-plugin
         ];
         testHaskellDepends = [
-          aeson aeson-via-sci base bifunctors fgl flight-latlng flight-units
-          flight-zone hcoord hlint mtl numbers scientific siggy-chardust
-          tasty-compare uom-plugin
+          aeson base bifunctors detour-via-sci fgl flight-latlng flight-units
+          flight-zone hcoord hcoord-utm mtl numbers scientific siggy-chardust
+          smallcheck tasty tasty-compare tasty-hunit tasty-quickcheck
+          tasty-smallcheck uom-plugin
         ];
-        homepage = "https://github.com/BlockScope/haskell-flight-task#readme";
-        description = "Distances on the WGS84 ellipsoid";
+        homepage = "https://github.com/blockscope/flare-timing#readme";
+        description = "Distances on the WGS84 ellipsoid, the FAI sphere and the UTM projection";
         license = stdenv.lib.licenses.mpl20;
       };
 

@@ -1,8 +1,8 @@
--- This file has been generated from package.dhall by hpack version 0.25.0.
+-- This file has been generated from package.dhall by hpack version 0.28.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c8cb1238712cd4a85247fa1cee4b6155e3b4bc888ceed2ff193cc326dc7d2c57
+-- hash: d1b5618067195e1038bd23b44a65e7d9ef638996d0623a97c2c93c36bb97f820
 
 name:           flight-kml
 version:        1.0.0
@@ -19,7 +19,6 @@ license-file:   LICENSE.md
 tested-with:    GHC == 8.2.2
 build-type:     Simple
 cabal-version:  >= 1.10
-
 extra-source-files:
     changelog.md
     package.dhall

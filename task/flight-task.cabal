@@ -1,8 +1,8 @@
--- This file has been generated from package.dhall by hpack version 0.25.0.
+-- This file has been generated from package.dhall by hpack version 0.28.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 5fb3677fca066d545bb6c757b398c2b185d6d50931183f33502d5003d95aa355
+-- hash: 0f9c54183095eaa158b3d47b70b54807d9db05f3f1dd466f60c91f74fb55725b
 
 name:           flight-task
 version:        0.1.0
@@ -19,7 +19,6 @@ license-file:   LICENSE.md
 tested-with:    GHC == 8.2.2
 build-type:     Simple
 cabal-version:  >= 1.10
-
 extra-source-files:
     changelog.md
     package.dhall
