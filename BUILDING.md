@@ -184,6 +184,16 @@ a `shell.nix` and `drv.nix` with a nix derivation created with
 Build completed in 0:01m
 ```
 
+The `shell.nix` files are copied from `nix/hard-shell.nix`;
+
+```
+let
+  config = import ../nix/config.nix {};
+  pkgs = import ../nix/nixpkgs.nix { inherit config; };
+in
+  import ./drv.nix { nixpkgs = pkgs; }
+```
+
 ### Generating `*.cabal` files
 
 The `*.cabal` files are generated using
