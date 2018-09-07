@@ -150,6 +150,40 @@ Now let's do the build again;
 Tasks that are not simple by hand have been added to the shake build project
 [build-flare-timing](build).
 
+### Generating `shell.nix` and `drv.nix` files
+The `nix-shell` shake build rule ensures for each package that there's
+a `shell.nix` and `drv.nix` with a nix derivation created with
+[cabal2nix](https://github.com/NixOS/cabal2nix).
+
+```
+> ./stack-shake-build.sh nix-shell
+
+# cabal2nix (for zone/drv.nix)
+# cabal2nix (for units/drv.nix)
+# cabal2nix (for track/drv.nix)
+# cabal2nix (for task/drv.nix)
+# cabal2nix (for span/drv.nix)
+# cabal2nix (for scribe/drv.nix)
+# cabal2nix (for route/drv.nix)
+# cabal2nix (for mask/drv.nix)
+# cabal2nix (for lookup/drv.nix)
+# cabal2nix (for latlng/drv.nix)
+# cabal2nix (for kml/drv.nix)
+# cabal2nix (for igc/drv.nix)
+# cabal2nix (for gap/drv.nix)
+# cabal2nix (for fsdb/drv.nix)
+# cabal2nix (for earth/drv.nix)
+# cabal2nix (for comp/drv.nix)
+# cabal2nix (for cmd/drv.nix)
+# cabal2nix (for www/drv.nix)
+# cabal2nix (for flare-timing/drv.nix)
+# cabal2nix (for tasty-compare/drv.nix)
+# cabal2nix (for siggy-chardust/drv.nix)
+# cabal2nix (for detour-via-uom/drv.nix)
+# cabal2nix (for detour-via-sci/drv.nix)
+Build completed in 0:01m
+```
+
 ### Generating `*.cabal` files
 
 The `*.cabal` files are generated using
