@@ -12,7 +12,7 @@
   , executables =
       { build-flare-timing =
           { dependencies =
-              [ "base", "ansi-terminal", "shake", "raw-strings-qq", "time" ]
+              [ "base", "ansi-terminal", "shake", "time" ]
           , ghc-options =
               [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
           , main =

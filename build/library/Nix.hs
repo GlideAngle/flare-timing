@@ -1,4 +1,3 @@
-{-# LANGUAGE QuasiQuotes #-}
 module Nix
     ( flyPkgs
     , prefix
@@ -16,11 +15,11 @@ import Development.Shake
     , cmd
     , need
     , removeFilesAfter
-    , writeFile'
+    , copyFile'
+    , putNormal
     )
 
 import Development.Shake.FilePath ((<.>), (</>), dropFileName)
-import Text.RawString.QQ
 
 -- | The names of the hlint tests
 flyPkgs :: [String]
@@ -155,27 +154,24 @@ fromCabalRules = do
 cleanRules :: Rules ()
 cleanRules = do
     phony "clean-nix-shell-files" $
-        removeFilesAfter "." ["//shell.nix", "//drv.nix" ]
+        removeFilesAfter "." ["//shell.nix", "//drv.nix"]
 
 shellRules :: Rules ()
 shellRules = do
-    phony "nix-shell" $ need ((\s -> s </> "drv.nix") <$> shellPkgs)
+    phony "nix-shell" $ need (drvs ++ shells)
 
-    "*/shell.nix" %> \out -> writeFile' out shellContent
-            -- Shell "ln -sfv" [ ".." </> "nix" </> "hard-shell.nix", takeFileName out ]
+    "*/shell.nix" %> \out -> do
+        need ["nix/hard-shell.nix"]
+        putNormal $ "# copyfile (for " ++ out ++ ")"
+        copyFile' "nix/hard-shell.nix" out
 
     "*/drv.nix" %> \out -> do
         let dir = dropFileName out
-        need [ dir </> "shell.nix" ]
+        need [dir </> "shell.nix"]
         cmd
             (Cwd dir)
             Shell "cabal2nix --shell . > drv.nix"
 
-shellContent :: String
-shellContent = [r|
-let
-  config = import ../nix/config.nix {};
-  pkgs = import ../nix/nixpkgs.nix { inherit config; };
-in
-  import ./drv.nix { nixpkgs = pkgs; }
-|]
+    where
+        drvs = (\s -> s </> "drv.nix") <$> shellPkgs
+        shells = (\s -> s </> "shell.nix") <$> shellPkgs
