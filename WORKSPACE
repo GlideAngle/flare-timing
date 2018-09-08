@@ -27,40 +27,105 @@ load(
 nixpkgs_git_repository(
     name = "nixpkgs",
     remote = "https://github.com/BlockScope/nixpkgs",
-    revision = "5e65e5486bd71062e3eecf35f212018bfd621863",
+    revision = "167aa8ae3e58a545864ba7e23591ead65ab793fd",
 )
 
 nixpkgs_package(
     name = "ghc",
     build_file = "@io_tweag_rules_haskell//haskell:ghc.BUILD",
     nix_file_content = """
-  let pkgs = import <nixpkgs> {};
-      hlib = pkgs.haskell.lib;
+  let compiler = "ghc822";
 
-      fgl-src = pkgs.fetchgit {
-              url = "http://github.com/haskell/fgl.git";
-              sha256 = "0biwsaj6s24l8ix95hkw4syl87ywxy363pr413kazzbhi0csf20s";
-              rev = "e29503775e474b7a7cd8951b6bebcf1529b888b5";
-            };
+      hostPkgs = import <nixpkgs> {};
 
-      hcoord-src = pkgs.fetchgit {
-              url = "http://github.com/BlockScope/hcoord.git";
-              rev = "bb17ddba271829f3902d9ae3af97f2723eb0ab47";
-            };
-
-      hp = pkgs.haskell.packages.ghc822.override {
-            overrides = self: super: {
-              fgl = super.callCabal2nix fgl-src {};
-              hcoord = super.callCabal2nix (hcoord-src + "/hcoord") {};
-              hcoord-utm = super.callCabal2nix (hcoord-src + "/hcoord-utm") {};
-            };
+      pinnedVersion = 
+        {
+          url = "https://github.com/BlockScope/nixpkgs";
+          rev = "167aa8ae3e58a545864ba7e23591ead65ab793fd";
+          sha256 = "1s27zh7k36vlidy61wrlp3ck6s872qwyk1v4p12c15r1bn6lirhq";
         };
 
-  in hp.ghcWithPackages (p: with p;
-        [ aeson bifunctors cassava doctest fgl fixed formatting
-          hcoord hxt hxt-xpath
+      pinnedPkgs = hostPkgs.fetchgit {
+        inherit (pinnedVersion) url rev sha256;
+      };
+
+      hcoord-drv =
+        { mkDerivation, base, data-default, fetchgit, hlint, HUnit, ieee754
+        , mtl, stdenv
+        }:
+        mkDerivation {
+          pname = "hcoord";
+          version = "2.1.0";
+          src = fetchgit {
+            url = "http://github.com/BlockScope/hcoord.git";
+            sha256 = "0267n694m08bv73ld7f5flb66h3dxc7xgrbmkr757q0g87l8ndzq";
+            rev = "3c3859dac5da111e57a6de09764ffdb127197c4a";
+          };
+          postUnpack = "sourceRoot+=/hcoord; echo source root reset to $sourceRoot";
+          libraryHaskellDepends = [ base mtl ];
+          testHaskellDepends = [ base data-default hlint HUnit ieee754 mtl ];
+          doHaddock = false;
+          doCheck = false;
+          homepage = "https://github.com/danfran/hcoord#readme";
+          description = "Short synopsis";
+          license = stdenv.lib.licenses.bsd3;
+        };
+
+    hcoord-utm-drv =
+        { mkDerivation, base, data-default, fetchgit, hcoord, hlint, HUnit
+        , ieee754, mtl, stdenv
+        }:
+        mkDerivation {
+          pname = "hcoord-utm";
+          version = "2.1.0";
+          src = fetchgit {
+            url = "http://github.com/BlockScope/hcoord.git";
+            sha256 = "0267n694m08bv73ld7f5flb66h3dxc7xgrbmkr757q0g87l8ndzq";
+            rev = "3c3859dac5da111e57a6de09764ffdb127197c4a";
+          };
+          postUnpack = "sourceRoot+=/hcoord-utm; echo source root reset to $sourceRoot";
+          libraryHaskellDepends = [ base hcoord mtl ];
+          testHaskellDepends = [
+            base data-default hcoord hlint HUnit ieee754 mtl
+          ];
+          doHaddock = false;
+          doCheck = false;
+          homepage = "https://github.com/danfran/hcoord#readme";
+          description = "Short synopsis";
+          license = stdenv.lib.licenses.bsd3;
+        };
+
+      hcoord = pkgs.haskellPackages.callPackage hcoord-drv {};
+      hcoord-utm = pkgs.haskellPackages.callPackage hcoord-utm-drv {};
+
+      config =
+        { 
+          allowUnsupportedSystem = true;
+          allowUnfree = true;
+
+          packageOverrides = pkgs:
+            let old = pkgs.haskell.packages.${compiler}; in rec {
+            haskellPackages = pkgs.haskell.packages.${compiler}.override {
+              overrides = pkgs.lib.composeExtensions (old.overrides or (_: _: {})) (self: super:
+              {
+
+                hcoord = super.callPackage hcoord-drv {};
+                hcoord-utm = super.callPackage hcoord-utm-drv {};
+              });
+            };
+          };
+        };
+
+      pkgs = import pinnedPkgs { inherit config; };
+
+  in pkgs.haskell.packages.ghc822.ghcWithPackages (p: with p;
+        [ aeson bifunctors cassava
+          detour-via-sci doctest
+          fgl fixed formatting
+          hcoord hcoord-utm hxt hxt-xpath
+          mtl
           newtype numbers path
-          scientific smallcheck split statistics
+          scientific siggy-chardust smallcheck split statistics
           tasty-hunit tasty-quickcheck template-haskell time
           uom-plugin utf8-string
         ])
