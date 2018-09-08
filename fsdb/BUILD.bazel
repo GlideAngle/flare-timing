@@ -1,0 +1,88 @@
+load(
+    "@io_tweag_rules_haskell//haskell:haskell.bzl",
+    "haskell_toolchain",
+)
+
+haskell_toolchain(
+    name = "ghc",
+    tools = "@ghc//:bin",
+    version = "8.2.2",
+)
+
+haskell_import(name = "base")
+haskell_import(name = "split")
+haskell_import(name = "megaparsec")
+haskell_import(name = "hxt")
+haskell_import(name = "path")
+haskell_import(name = "hxt-xpath")
+haskell_import(name = "aeson")
+haskell_import(name = "scientific")
+haskell_import(name = "containers")
+haskell_import(name = "time")
+haskell_import(name = "newtype")
+haskell_import(name = "uom-plugin")
+
+haskell_library(
+    name = "flight-fsdb",
+    srcs = glob(["library/**/*.hs"]),
+    src_strip_prefix = "library",
+    compiler_flags = [
+        "-threaded",
+
+        "-Wall",
+        "-fplugin Data.UnitsOfMeasure.Plugin",
+
+        "-XDataKinds",
+        "-XDeriveFunctor",
+        "-XDeriveGeneric",
+        "-XDeriveAnyClass",
+        "-XDerivingStrategies",
+        "-XDisambiguateRecordFields",
+        "-XFlexibleContexts",
+        "-XFlexibleInstances",
+        "-XGeneralizedNewtypeDeriving",
+        "-XGADTs",
+        "-XLambdaCase",
+        "-XMultiParamTypeClasses",
+        "-XMultiWayIf",
+        "-XNamedFieldPuns",
+        "-XOverloadedStrings",
+        "-XPackageImports",
+        "-XParallelListComp",
+        "-XPartialTypeSignatures",
+        "-XPatternSynonyms",
+        "-XQuasiQuotes",
+        "-XRankNTypes",
+        "-XRecordWildCards",
+        "-XScopedTypeVariables",
+        "-XStandaloneDeriving",
+        "-XTemplateHaskell",
+        "-XTypeApplications",
+        "-XTypeFamilies",
+        "-XTypeOperators",
+        "-XTypeSynonymInstances",
+        "-XTupleSections",
+        "-XUndecidableInstances",
+        ],
+    deps = [
+        ":base",
+        ":split",
+        ":megaparsec",
+        ":hxt",
+        ":path",
+        ":hxt-xpath",
+        ":aeson",
+        ":scientific",
+        ":containers",
+        ":time",
+        ":newtype",
+        ":uom-plugin",
+        "//detour-via-sci:detour-via-sci",
+        "//latlng:flight-latlng",
+        "//units:flight-units",
+        "//zone:flight-zone",
+        "//comp:flight-comp",
+        "//gap:flight-gap",
+        ],
+    visibility = ["//visibility:public"],
+)

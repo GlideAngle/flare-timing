@@ -126,7 +126,7 @@ nixpkgs_package(
           fgl filemanip fixed formatting
           hcoord hcoord-utm hxt hxt-xpath
           lens
-          mtl
+          megaparsec mtl
           newtype numbers
           path
           raw-strings-qq
