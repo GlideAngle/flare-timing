@@ -28,6 +28,8 @@ haskell_import(name = "lens")
 haskell_import(name = "time")
 haskell_import(name = "containers")
 
+load("@flare_timing//:default-extensions.bzl", "DEFAULT_EXTENSIONS")
+
 COMPILER_FLAGS = [
     "-rtsopts",
     "-threaded",
@@ -35,39 +37,7 @@ COMPILER_FLAGS = [
 
     "-Wall",
     "-fplugin Data.UnitsOfMeasure.Plugin",
-
-    "-XDataKinds",
-    "-XDeriveFunctor",
-    "-XDeriveGeneric",
-    "-XDeriveAnyClass",
-    "-XDerivingStrategies",
-    "-XDisambiguateRecordFields",
-    "-XFlexibleContexts",
-    "-XFlexibleInstances",
-    "-XGeneralizedNewtypeDeriving",
-    "-XGADTs",
-    "-XLambdaCase",
-    "-XMultiParamTypeClasses",
-    "-XMultiWayIf",
-    "-XNamedFieldPuns",
-    "-XOverloadedStrings",
-    "-XPackageImports",
-    "-XParallelListComp",
-    "-XPartialTypeSignatures",
-    "-XPatternSynonyms",
-    "-XQuasiQuotes",
-    "-XRankNTypes",
-    "-XRecordWildCards",
-    "-XScopedTypeVariables",
-    "-XStandaloneDeriving",
-    "-XTemplateHaskell",
-    "-XTypeApplications",
-    "-XTypeFamilies",
-    "-XTypeOperators",
-    "-XTypeSynonymInstances",
-    "-XTupleSections",
-    "-XUndecidableInstances",
-    ]
+    ] + DEFAULT_EXTENSIONS
 
 DEPS = [
     ":base",
