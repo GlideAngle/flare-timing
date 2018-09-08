@@ -24,7 +24,6 @@ in    defs
             , "aeson"
             , "scientific"
             , "containers"
-            , "split"
             , "time"
             , "newtype"
             , "uom-plugin"
