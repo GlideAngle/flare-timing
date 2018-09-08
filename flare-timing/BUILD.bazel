@@ -26,6 +26,7 @@ haskell_import(name = "clock")
 haskell_import(name = "formatting")
 haskell_import(name = "lens")
 haskell_import(name = "time")
+haskell_import(name = "containers")
 
 COMPILER_FLAGS = [
     "-rtsopts",
@@ -161,6 +162,46 @@ haskell_binary(
         "//gap:flight-gap",
         "//mask:flight-mask",
         "//lookup:flight-lookup",
+        ],
+    visibility = ["//visibility:public"],
+)
+
+haskell_binary(
+    name = "mask-track",
+    srcs = glob(["prod-apps/mask-track/**/*.hs"]),
+    compiler_flags = COMPILER_FLAGS,
+    deps = DEPS + [
+        ":containers",
+        ":lens",
+        "//siggy-chardust:siggy-chardust",
+        "//span:flight-span",
+        "//kml:flight-kml",
+        "//gap:flight-gap",
+        "//mask:flight-mask",
+        "//lookup:flight-lookup",
+        ],
+    visibility = ["//visibility:public"],
+)
+
+haskell_binary(
+    name = "land-out",
+    srcs = glob(["prod-apps/land-out/**/*.hs"]),
+    compiler_flags = COMPILER_FLAGS,
+    deps = DEPS + [
+        "//gap:flight-gap",
+        ],
+    visibility = ["//visibility:public"],
+)
+
+haskell_binary(
+    name = "gap-point",
+    srcs = glob(["prod-apps/gap-point/**/*.hs"]),
+    compiler_flags = COMPILER_FLAGS,
+    deps = DEPS + [
+        ":containers",
+        "//zone:flight-zone",
+        "//gap:flight-gap",
+        "//mask:flight-mask",
         ],
     visibility = ["//visibility:public"],
 )
