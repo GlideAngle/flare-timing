@@ -122,11 +122,12 @@ nixpkgs_package(
         [ aeson bifunctors
           cassava cmdargs
           detour-via-sci doctest
-          fgl fixed formatting
+          fgl filemanip fixed formatting
           hcoord hcoord-utm hxt hxt-xpath
           mtl
           newtype numbers path
-          scientific siggy-chardust smallcheck split statistics
+          raw-strings-qq
+          scientific siggy-chardust smallcheck split statistics system-filepath
           tasty-hunit tasty-quickcheck template-haskell time
           uom-plugin utf8-string
         ])
