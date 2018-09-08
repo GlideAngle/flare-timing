@@ -28,14 +28,10 @@ packages:
 - www
 - location:
     git: https://github.com/blockscope/hcoord.git
-    commit: efee5918967a4b5309924bb6ac62c2daa56983a1
+    commit: 3c3859dac5da111e57a6de09764ffdb127197c4a
   subdirs:
   - hcoord
   - hcoord-utm
-  extra-dep: true
-- location:
-    git: https://github.com/haskell/fgl.git
-    commit: e29503775e474b7a7cd8951b6bebcf1529b888b5
   extra-dep: true
 - location:
     git: https://github.com/brunjlar/stack2cabal

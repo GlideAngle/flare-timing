@@ -25,8 +25,6 @@
           super.callPackage ../detour-via-uom/detour-via-uom.nix
             { detour-via-sci = self.detour-via-sci; };
 
-        fgl = super.callPackage ./fgl.nix {};
-
         flare-timing =
           super.callPackage ../flare-timing/flare-timing.nix
             { flight-cmd = self.flight-cmd;
