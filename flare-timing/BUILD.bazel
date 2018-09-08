@@ -137,3 +137,30 @@ haskell_binary(
         ],
     visibility = ["//visibility:public"],
 )
+
+haskell_binary(
+    name = "align-time",
+    srcs = glob(["prod-apps/align-time/**/*.hs"]),
+    compiler_flags = COMPILER_FLAGS,
+    deps = DEPS + [
+        ":lens",
+        ":time",
+        "//siggy-chardust:siggy-chardust",
+        "//kml:flight-kml",
+        "//mask:flight-mask",
+        "//lookup:flight-lookup",
+        ],
+    visibility = ["//visibility:public"],
+)
+
+haskell_binary(
+    name = "discard-further",
+    srcs = glob(["prod-apps/discard-further/**/*.hs"]),
+    compiler_flags = COMPILER_FLAGS,
+    deps = DEPS + [
+        "//gap:flight-gap",
+        "//mask:flight-mask",
+        "//lookup:flight-lookup",
+        ],
+    visibility = ["//visibility:public"],
+)
