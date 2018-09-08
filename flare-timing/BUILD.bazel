@@ -1,0 +1,95 @@
+load(
+    "@io_tweag_rules_haskell//haskell:haskell.bzl",
+    "haskell_toolchain",
+)
+
+haskell_toolchain(
+    name = "ghc",
+    tools = "@ghc//:bin",
+    version = "8.2.2",
+)
+
+haskell_import(name = "base")
+haskell_import(name = "directory")
+haskell_import(name = "filepath")
+haskell_import(name = "system-filepath")
+haskell_import(name = "filemanip")
+haskell_import(name = "raw-strings-qq")
+haskell_import(name = "cmdargs")
+haskell_import(name = "mtl")
+haskell_import(name = "transformers")
+haskell_import(name = "yaml")
+haskell_import(name = "aeson")
+haskell_import(name = "uom-plugin")
+haskell_import(name = "bytestring")
+haskell_import(name = "clock")
+haskell_import(name = "formatting")
+
+haskell_binary(
+    name = "task-length",
+    srcs = glob(["prod-apps/task-length/**/*.hs"]),
+    src_strip_prefix = "library",
+    compiler_flags = [
+        "-rtsopts",
+        "-threaded",
+        "-with-rtsopts=-N",
+
+        "-Wall",
+        "-fplugin Data.UnitsOfMeasure.Plugin",
+
+        "-XDataKinds",
+        "-XDeriveFunctor",
+        "-XDeriveGeneric",
+        "-XDeriveAnyClass",
+        "-XDerivingStrategies",
+        "-XDisambiguateRecordFields",
+        "-XFlexibleContexts",
+        "-XFlexibleInstances",
+        "-XGeneralizedNewtypeDeriving",
+        "-XGADTs",
+        "-XLambdaCase",
+        "-XMultiParamTypeClasses",
+        "-XMultiWayIf",
+        "-XNamedFieldPuns",
+        "-XOverloadedStrings",
+        "-XPackageImports",
+        "-XParallelListComp",
+        "-XPartialTypeSignatures",
+        "-XPatternSynonyms",
+        "-XQuasiQuotes",
+        "-XRankNTypes",
+        "-XRecordWildCards",
+        "-XScopedTypeVariables",
+        "-XStandaloneDeriving",
+        "-XTemplateHaskell",
+        "-XTypeApplications",
+        "-XTypeFamilies",
+        "-XTypeOperators",
+        "-XTypeSynonymInstances",
+        "-XTupleSections",
+        "-XUndecidableInstances",
+        ],
+    deps = [
+        ":base",
+        ":directory",
+        ":filepath",
+        ":system-filepath",
+        ":filemanip",
+        ":raw-strings-qq",
+        ":cmdargs",
+        ":mtl",
+        ":transformers",
+        ":yaml",
+        ":aeson",
+        ":uom-plugin",
+        ":bytestring",
+        ":clock",
+        ":formatting",
+        "//cmd:flight-cmd",
+        "//comp:flight-comp",
+        "//latlng:flight-latlng",
+        "//scribe:flight-scribe",
+        "//route:flight-route",
+        ],
+    visibility = ["//visibility:public"],
+)
