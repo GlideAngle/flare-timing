@@ -113,8 +113,7 @@ in    defs
           , align-time =
               { dependencies =
                     deps
-                  # [ "clock"
-                    , "lens"
+                  # [ "lens"
                     , "time"
                     , "siggy-chardust"
                     , "flight-kml"
