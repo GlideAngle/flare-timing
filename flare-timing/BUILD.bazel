@@ -174,3 +174,55 @@ haskell_binary(
         ],
     visibility = ["//visibility:public"],
 )
+
+COMPILER_FLAGS_TEST = [
+    "-rtsopts",
+    "-threaded",
+    "-with-rtsopts=-N",
+    "-Wall",
+    ] + DEFAULT_EXTENSIONS
+
+DEPS_TEST = [
+    ":base",
+    ":filepath",
+    ":system-filepath",
+    ":filemanip",
+    ":raw-strings-qq",
+    ":cmdargs",
+    "//cmd:flight-cmd",
+    "//comp:flight-comp",
+    ]
+
+haskell_binary(
+    name = "test-fsdb-parser",
+    srcs = glob(["test-apps/fsdb-parser/**/*.hs"]),
+    compiler_flags = [
+        "-fplugin Data.UnitsOfMeasure.Plugin",
+        ] + COMPILER_FLAGS_TEST,
+    deps = DEPS_TEST + [
+        ":uom-plugin",
+        "//fsdb:flight-fsdb",
+        "//units:flight-units",
+        ],
+    visibility = ["//visibility:public"],
+)
+
+haskell_binary(
+    name = "test-igc-parser",
+    srcs = glob(["test-apps/igc-parser/**/*.hs"]),
+    compiler_flags = COMPILER_FLAGS_TEST,
+    deps = DEPS_TEST + [
+        "//igc:flight-igc",
+        ],
+    visibility = ["//visibility:public"],
+)
+
+haskell_binary(
+    name = "test-kml-parser",
+    srcs = glob(["test-apps/kml-parser/**/*.hs"]),
+    compiler_flags = COMPILER_FLAGS_TEST,
+    deps = DEPS_TEST + [
+        "//kml:flight-kml",
+        ],
+    visibility = ["//visibility:public"],
+)
