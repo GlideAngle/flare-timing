@@ -31,7 +31,6 @@ in    defs
                   , "raw-strings-qq"
                   , "cmdargs"
                   , "mtl"
-                  , "transformers"
                   , "yaml"
                   , "bytestring"
                   , "flight-comp"
