@@ -130,9 +130,11 @@ nixpkgs_package(
           newtype numbers
           path
           raw-strings-qq
-          scientific siggy-chardust smallcheck split statistics system-filepath
-          tasty-hunit tasty-quickcheck template-haskell time
+          scientific servant servant-server
+          siggy-chardust smallcheck split statistics system-filepath
+          tasty-hunit tasty-quickcheck template-haskell time transformers
           uom-plugin utf8-string
+          wai wai-cors
           yaml
         ])
   """,
