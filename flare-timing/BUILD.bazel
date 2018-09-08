@@ -24,6 +24,8 @@ haskell_import(name = "uom-plugin")
 haskell_import(name = "bytestring")
 haskell_import(name = "clock")
 haskell_import(name = "formatting")
+haskell_import(name = "lens")
+haskell_import(name = "time")
 
 COMPILER_FLAGS = [
     "-rtsopts",
@@ -106,6 +108,32 @@ haskell_binary(
     compiler_flags = COMPILER_FLAGS,
     deps = DEPS + [
         "//route:flight-route",
+        ],
+    visibility = ["//visibility:public"],
+)
+
+haskell_binary(
+    name = "cross-zone",
+    srcs = glob(["prod-apps/cross-zone/**/*.hs"]),
+    compiler_flags = COMPILER_FLAGS,
+    deps = DEPS + [
+        ":lens",
+        "//span:flight-span",
+        "//units:flight-units",
+        "//zone:flight-zone",
+        "//earth:flight-earth",
+        "//mask:flight-mask",
+        ],
+    visibility = ["//visibility:public"],
+)
+
+haskell_binary(
+    name = "tag-zone",
+    srcs = glob(["prod-apps/tag-zone/**/*.hs"]),
+    compiler_flags = COMPILER_FLAGS,
+    deps = DEPS + [
+        ":time",
+        "//mask:flight-mask",
         ],
     visibility = ["//visibility:public"],
 )
