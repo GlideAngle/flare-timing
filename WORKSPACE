@@ -119,7 +119,8 @@ nixpkgs_package(
       pkgs = import pinnedPkgs { inherit config; };
 
   in pkgs.haskell.packages.ghc822.ghcWithPackages (p: with p;
-        [ aeson bifunctors cassava
+        [ aeson bifunctors
+          cassava cmdargs
           detour-via-sci doctest
           fgl fixed formatting
           hcoord hcoord-utm hxt hxt-xpath
