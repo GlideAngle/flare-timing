@@ -133,6 +133,7 @@ nixpkgs_package(
           scientific siggy-chardust smallcheck split statistics system-filepath
           tasty-hunit tasty-quickcheck template-haskell time
           uom-plugin utf8-string
+          yaml
         ])
   """,
     repository = "@nixpkgs",
