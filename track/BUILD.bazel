@@ -1,0 +1,80 @@
+load(
+    "@io_tweag_rules_haskell//haskell:haskell.bzl",
+    "haskell_toolchain",
+)
+
+haskell_toolchain(
+    name = "ghc",
+    tools = "@ghc//:bin",
+    version = "8.2.2",
+)
+
+haskell_import(name = "base")
+haskell_import(name = "split")
+haskell_import(name = "path")
+haskell_import(name = "containers")
+haskell_import(name = "mtl")
+haskell_import(name = "directory")
+haskell_import(name = "filepath")
+haskell_import(name = "time")
+haskell_import(name = "bytestring")
+haskell_import(name = "utf8-string")
+
+haskell_library(
+    name = "flight-track",
+    srcs = glob(["library/**/*.hs"]),
+    src_strip_prefix = "library",
+    compiler_flags = [
+        "-threaded",
+
+        "-Wall",
+
+        "-XDataKinds",
+        "-XDeriveFunctor",
+        "-XDeriveGeneric",
+        "-XDeriveAnyClass",
+        "-XDerivingStrategies",
+        "-XDisambiguateRecordFields",
+        "-XFlexibleContexts",
+        "-XFlexibleInstances",
+        "-XGeneralizedNewtypeDeriving",
+        "-XGADTs",
+        "-XLambdaCase",
+        "-XMultiParamTypeClasses",
+        "-XMultiWayIf",
+        "-XNamedFieldPuns",
+        "-XOverloadedStrings",
+        "-XPackageImports",
+        "-XParallelListComp",
+        "-XPartialTypeSignatures",
+        "-XPatternSynonyms",
+        "-XQuasiQuotes",
+        "-XRankNTypes",
+        "-XRecordWildCards",
+        "-XScopedTypeVariables",
+        "-XStandaloneDeriving",
+        "-XTemplateHaskell",
+        "-XTypeApplications",
+        "-XTypeFamilies",
+        "-XTypeOperators",
+        "-XTypeSynonymInstances",
+        "-XTupleSections",
+        "-XUndecidableInstances",
+        ],
+    deps = [
+        ":base",
+        ":split",
+        ":path",
+        ":containers",
+        ":mtl",
+        ":directory",
+        ":filepath",
+        ":time",
+        ":bytestring",
+        ":utf8-string",
+        "//comp:flight-comp",
+        "//kml:flight-kml",
+        "//igc:flight-igc",
+        ],
+    visibility = ["//visibility:public"],
+)
