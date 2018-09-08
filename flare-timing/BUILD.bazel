@@ -1,3 +1,5 @@
+load("@flare_timing//:default-extensions.bzl", "DEFAULT_EXTENSIONS")
+
 load(
     "@io_tweag_rules_haskell//haskell:haskell.bzl",
     "haskell_toolchain",
@@ -28,13 +30,10 @@ haskell_import(name = "lens")
 haskell_import(name = "time")
 haskell_import(name = "containers")
 
-load("@flare_timing//:default-extensions.bzl", "DEFAULT_EXTENSIONS")
-
 COMPILER_FLAGS = [
     "-rtsopts",
     "-threaded",
     "-with-rtsopts=-N",
-
     "-Wall",
     "-fplugin Data.UnitsOfMeasure.Plugin",
     ] + DEFAULT_EXTENSIONS
