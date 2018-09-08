@@ -1,0 +1,98 @@
+load(
+    "@io_tweag_rules_haskell//haskell:haskell.bzl",
+    "haskell_toolchain",
+)
+
+haskell_toolchain(
+    name = "ghc",
+    tools = "@ghc//:bin",
+    version = "8.2.2",
+)
+
+haskell_import(name = "base")
+haskell_import(name = "split")
+haskell_import(name = "path")
+haskell_import(name = "aeson")
+haskell_import(name = "scientific")
+haskell_import(name = "containers")
+haskell_import(name = "unordered-containers")
+haskell_import(name = "time")
+haskell_import(name = "cassava")
+haskell_import(name = "bytestring")
+haskell_import(name = "directory")
+haskell_import(name = "filepath")
+haskell_import(name = "filemanip")
+haskell_import(name = "lens")
+haskell_import(name = "mtl")
+haskell_import(name = "uom-plugin")
+
+haskell_library(
+    name = "flight-lookup",
+    srcs = glob(["library/**/*.hs"]),
+    src_strip_prefix = "library",
+    compiler_flags = [
+        "-threaded",
+
+        "-Wall",
+        "-fplugin Data.UnitsOfMeasure.Plugin",
+
+        "-XDataKinds",
+        "-XDeriveFunctor",
+        "-XDeriveGeneric",
+        "-XDeriveAnyClass",
+        "-XDerivingStrategies",
+        "-XDisambiguateRecordFields",
+        "-XFlexibleContexts",
+        "-XFlexibleInstances",
+        "-XGeneralizedNewtypeDeriving",
+        "-XGADTs",
+        "-XLambdaCase",
+        "-XMultiParamTypeClasses",
+        "-XMultiWayIf",
+        "-XNamedFieldPuns",
+        "-XOverloadedStrings",
+        "-XPackageImports",
+        "-XParallelListComp",
+        "-XPartialTypeSignatures",
+        "-XPatternSynonyms",
+        "-XQuasiQuotes",
+        "-XRankNTypes",
+        "-XRecordWildCards",
+        "-XScopedTypeVariables",
+        "-XStandaloneDeriving",
+        "-XTemplateHaskell",
+        "-XTypeApplications",
+        "-XTypeFamilies",
+        "-XTypeOperators",
+        "-XTypeSynonymInstances",
+        "-XTupleSections",
+        "-XUndecidableInstances",
+        ],
+    deps = [
+        ":base",
+        ":split",
+        ":path",
+        ":aeson",
+        ":scientific",
+        ":containers",
+        ":unordered-containers",
+        ":time",
+        ":cassava",
+        ":bytestring",
+        ":directory",
+        ":filepath",
+        ":filemanip",
+        ":lens",
+        ":mtl",
+        ":uom-plugin",
+        "//detour-via-sci:detour-via-sci",
+        "//latlng:flight-latlng",
+        "//zone:flight-zone",
+        "//route:flight-route",
+        "//gap:flight-gap",
+        "//comp:flight-comp",
+        "//kml:flight-kml",
+        "//mask:flight-mask",
+        ],
+    visibility = ["//visibility:public"],
+)
