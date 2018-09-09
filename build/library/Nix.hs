@@ -143,13 +143,13 @@ fromCabalRules = do
         fromCabalRule s =
             phony ("cabal2nix-" ++ s) $
                 cmd
-                    (Cwd s) 
+                    (Cwd s)
                     Shell
                     (cabal2nix $ "flight-" ++ s)
 
         cabal2nix :: String -> String
         cabal2nix x =
-            "cabal2nix --no-haddock --no-check . > " ++ (x <.> ".nix")
+            "../__shake-build/cabal2nix --no-haddock --no-check . > " ++ (x <.> ".nix")
 
 cleanRules :: Rules ()
 cleanRules = do
