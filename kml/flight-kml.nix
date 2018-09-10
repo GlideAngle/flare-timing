@@ -17,7 +17,7 @@ mkDerivation {
     tasty-quickcheck tasty-smallcheck template-haskell time
   ];
   doHaddock = false;
-  doCheck = false;
+  doCheck = true;
   homepage = "https://github.com/blockscope/flare-timing/tree/master/kml#readme";
   description = "Parsing of pilot tracklogs dumped as KML";
   license = stdenv.lib.licenses.mpl20;
