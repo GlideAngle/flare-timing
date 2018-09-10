@@ -25,7 +25,6 @@ packages:
 - flare-timing
 - .stack2cabal/hcoord/hcoord
 - .stack2cabal/hcoord/hcoord-utm
-- .stack2cabal/fgl
 extra-deps:
 - hxt-xpath-9.1.2.2
 - uom-plugin-0.3.0.0
