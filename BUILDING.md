@@ -138,6 +138,12 @@ Now let's do the build again;
     Up to date
 
 ## Building with Pier
+As pier doesn't yet support git dependencies, let's bring those down first;
+
+```
+> stack install stack2cabal
+> __shake-build/stack2cabal .
+```
 
 ```
 > stack install pier --stack-yaml=stack-pier.yaml
