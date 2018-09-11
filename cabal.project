@@ -1,3 +1,8 @@
+repository ghcjs-overlay
+    url: http://hackage-ghcjs-overlay.nomeata.de/
+    secure: True
+    root-keys:
+    key-threshold: 0
 packages:
       build
     , detour-via-sci
