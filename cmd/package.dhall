@@ -16,7 +16,6 @@ in    defs
             defs.dependencies
           # [ "directory"
             , "filepath"
-            , "system-filepath"
             , "filemanip"
             , "raw-strings-qq"
             , "cmdargs"

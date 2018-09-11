@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 58528960c058b07ed270c2d644ce9d1d4433b12e220aecd6339fc62818738cb8
+-- hash: a79bcad3bc9523d9aa9dffa3bc8c336024984a5e840e256da6202c0cc56883f3
 
 name:           flight-cmd
 version:        0.1.0
@@ -48,6 +48,5 @@ library
     , flight-span
     , mtl
     , raw-strings-qq
-    , system-filepath
     , transformers
   default-language: Haskell2010

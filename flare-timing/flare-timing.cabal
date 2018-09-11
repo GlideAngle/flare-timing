@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 676a67c2b644e5fe42e73f67702f8c572ac3f3a2f0d844b44233fbad29f85c4e
+-- hash: ad95292e19aefe4bfb5d5f6f3388aebe86ae8b2f675f0ddc497ad7497d8d8d36
 
 name:           flare-timing
 version:        0.1.0
@@ -59,7 +59,6 @@ executable align-time
     , mtl
     , raw-strings-qq
     , siggy-chardust
-    , system-filepath
     , time
     , transformers
     , uom-plugin
@@ -98,7 +97,6 @@ executable cross-zone
     , mtl
     , raw-strings-qq
     , siggy-chardust
-    , system-filepath
     , transformers
     , uom-plugin
     , yaml
@@ -132,7 +130,6 @@ executable discard-further
     , formatting
     , mtl
     , raw-strings-qq
-    , system-filepath
     , transformers
     , uom-plugin
     , yaml
@@ -166,7 +163,6 @@ executable extract-input
     , formatting
     , mtl
     , raw-strings-qq
-    , system-filepath
     , transformers
     , uom-plugin
     , yaml
@@ -201,7 +197,6 @@ executable gap-point
     , formatting
     , mtl
     , raw-strings-qq
-    , system-filepath
     , transformers
     , uom-plugin
     , yaml
@@ -233,7 +228,6 @@ executable land-out
     , formatting
     , mtl
     , raw-strings-qq
-    , system-filepath
     , transformers
     , uom-plugin
     , yaml
@@ -273,7 +267,6 @@ executable mask-track
     , mtl
     , raw-strings-qq
     , siggy-chardust
-    , system-filepath
     , transformers
     , uom-plugin
     , yaml
@@ -305,7 +298,6 @@ executable tag-zone
     , formatting
     , mtl
     , raw-strings-qq
-    , system-filepath
     , time
     , transformers
     , uom-plugin
@@ -338,7 +330,6 @@ executable task-length
     , formatting
     , mtl
     , raw-strings-qq
-    , system-filepath
     , transformers
     , uom-plugin
     , yaml
@@ -364,7 +355,6 @@ executable test-fsdb-parser
     , flight-fsdb
     , flight-units
     , raw-strings-qq
-    , system-filepath
     , uom-plugin
   default-language: Haskell2010
 
@@ -387,7 +377,6 @@ executable test-igc-parser
     , flight-comp
     , flight-igc
     , raw-strings-qq
-    , system-filepath
   default-language: Haskell2010
 
 executable test-kml-parser
@@ -409,5 +398,4 @@ executable test-kml-parser
     , flight-comp
     , flight-kml
     , raw-strings-qq
-    , system-filepath
   default-language: Haskell2010

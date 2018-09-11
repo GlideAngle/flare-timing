@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: dc748f0ee18d9f5ed21b6b8ca80ca53642ddcc25e833b3ac7455cab04d3ccf2f
+-- hash: 7d051b705f20d6082bc51e7caf0c52f3a44045fce8ed21b36f04265b3a9b2e68
 
 name:           www-flare-timing
 version:        0.1.0
@@ -53,7 +53,6 @@ executable comp-serve
     , raw-strings-qq
     , servant
     , servant-server
-    , system-filepath
     , transformers
     , wai
     , wai-cors
