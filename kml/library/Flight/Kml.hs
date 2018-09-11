@@ -173,7 +173,7 @@ parse contents = do
 -- embedStr readStr = lift =<< runIO readStr
 -- :}
 -- 
--- >>> kml = $(embedStr (readFile "./test-suite-doctest/Phil de Joux.20120114-082221.21437.40.kml"))
+-- >>> kml = $(embedStr (readFile "./test-suite-doctest/Phil-de-Joux.20120114-082221.21437.40.kml"))
 -- 
 
 -- $kml
@@ -241,7 +241,7 @@ parse contents = do
 -- @
 
 -- $use
--- Working with the <#kml KML tracklog dump> from the tracklog file "__@Phil de Joux.20120114-082221.21437.40.kml@__".
+-- Working with the <#kml KML tracklog dump> from the tracklog file "__@Phil-de-Joux.20120114-082221.21437.40.kml@__".
 --
 -- >>> Right mf@(MarkedFixes{mark0, fixes}) <- parse kml
 -- >>> mark0

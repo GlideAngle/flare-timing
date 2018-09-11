@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 190c59b488dff0c1e24aa430011038d0090ff17c0f00f81be1f27d23adabfa87
+-- hash: 8823917461474f8978776de28ba9e5b2ff0c120e757ea5aa33f6d526158b5355
 
 name:           flight-track
 version:        0.1.0
@@ -39,7 +39,7 @@ library
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
   ghc-options: -Wall
   build-depends:
-      base >=4.9.1.0
+      base >=4.9.1.0 && <5
     , bytestring
     , containers
     , directory

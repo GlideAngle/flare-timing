@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 2922c0711fe5c9c6981812cb0d10608bec21911af36c2ec5558a0ad8f19ed4e4
+-- hash: b908e95f4c92e70ec17d8b119cca7ff958c235f96616e5e1cd792fbf47b97d1f
 
 name:           flight-kml
 version:        1.0.1
@@ -23,7 +23,7 @@ extra-source-files:
     changelog.md
     package.dhall
     README.md
-    test-suite-doctest/Phil de Joux.20120114-082221.21437.40.kml
+    test-suite-doctest/Phil-de-Joux.20120114-082221.21437.40.kml
 
 source-repository head
   type: git
@@ -43,7 +43,7 @@ library
   ghc-options: -Wall
   build-depends:
       aeson
-    , base >=4.9.1.0
+    , base >=4.9.1.0 && <5
     , detour-via-sci
     , hxt
     , hxt-xpath
@@ -69,7 +69,7 @@ test-suite doctest
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
-    , base >=4.9.1.0
+    , base >=4.9.1.0 && <5
     , detour-via-sci
     , doctest
     , hxt

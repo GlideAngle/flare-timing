@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 7791c1e69a08a9560d7b251dd3b29c633601a2d89581150cf22f91469aa628c8
+-- hash: 93aa537c08d5e1b65102f951adf9daf0c5e8df3889a9aadb2d45299063cc3452
 
 name:           flight-gap
 version:        0.1.0
@@ -84,7 +84,7 @@ library
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -fno-warn-partial-type-signatures
   build-depends:
       aeson
-    , base >=4.9.1.0
+    , base >=4.9.1.0 && <5
     , containers
     , detour-via-sci
     , detour-via-uom

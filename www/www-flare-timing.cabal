@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a6e0815d38cb2de34fd50bd7013e6fc32352850e51228a72fa1e7b5458a1acdc
+-- hash: dc748f0ee18d9f5ed21b6b8ca80ca53642ddcc25e833b3ac7455cab04d3ccf2f
 
 name:           www-flare-timing
 version:        0.1.0
@@ -42,7 +42,7 @@ executable comp-serve
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
-    , base >=4.9.1.0
+    , base >=4.9.1.0 && <5
     , bytestring
     , cmdargs
     , directory

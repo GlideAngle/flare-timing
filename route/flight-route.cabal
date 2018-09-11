@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: accd6fc3a8e1ed577c05e99f77b28c30f2df23a4410555c70ec31728399ab886
+-- hash: c20317e7225cf8f58a621ced8c5af85e1fcc838600c7a0e4524cac55e923fa97
 
 name:           flight-route
 version:        0.1.0
@@ -44,7 +44,7 @@ library
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
-    , base >=4.9.1.0
+    , base >=4.9.1.0 && <5
     , bifunctors
     , detour-via-sci
     , flight-earth

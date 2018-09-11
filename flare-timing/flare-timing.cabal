@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 803cbb686612c392765f03e020e53a4fc7fca5803d3aff7714e63dfefe259fff
+-- hash: 676a67c2b644e5fe42e73f67702f8c572ac3f3a2f0d844b44233fbad29f85c4e
 
 name:           flare-timing
 version:        0.1.0
@@ -40,7 +40,7 @@ executable align-time
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
-    , base >=4.9.1.0
+    , base >=4.9.1.0 && <5
     , bytestring
     , clock
     , cmdargs
@@ -77,7 +77,7 @@ executable cross-zone
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
-    , base >=4.9.1.0
+    , base >=4.9.1.0 && <5
     , bytestring
     , clock
     , cmdargs
@@ -115,7 +115,7 @@ executable discard-further
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
-    , base >=4.9.1.0
+    , base >=4.9.1.0 && <5
     , bytestring
     , clock
     , cmdargs
@@ -149,7 +149,7 @@ executable extract-input
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
-    , base >=4.9.1.0
+    , base >=4.9.1.0 && <5
     , bytestring
     , clock
     , cmdargs
@@ -183,7 +183,7 @@ executable gap-point
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
-    , base >=4.9.1.0
+    , base >=4.9.1.0 && <5
     , bytestring
     , clock
     , cmdargs
@@ -218,7 +218,7 @@ executable land-out
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
-    , base >=4.9.1.0
+    , base >=4.9.1.0 && <5
     , bytestring
     , clock
     , cmdargs
@@ -251,7 +251,7 @@ executable mask-track
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
-    , base >=4.9.1.0
+    , base >=4.9.1.0 && <5
     , bytestring
     , clock
     , cmdargs
@@ -290,7 +290,7 @@ executable tag-zone
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
-    , base >=4.9.1.0
+    , base >=4.9.1.0 && <5
     , bytestring
     , clock
     , cmdargs
@@ -323,7 +323,7 @@ executable task-length
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
-    , base >=4.9.1.0
+    , base >=4.9.1.0 && <5
     , bytestring
     , clock
     , cmdargs
@@ -354,7 +354,7 @@ executable test-fsdb-parser
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
-      base >=4.9.1.0
+      base >=4.9.1.0 && <5
     , cmdargs
     , directory
     , filemanip
@@ -378,7 +378,7 @@ executable test-igc-parser
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
-      base >=4.9.1.0
+      base >=4.9.1.0 && <5
     , cmdargs
     , directory
     , filemanip
@@ -400,7 +400,7 @@ executable test-kml-parser
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
-      base >=4.9.1.0
+      base >=4.9.1.0 && <5
     , cmdargs
     , directory
     , filemanip
