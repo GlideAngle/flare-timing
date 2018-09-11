@@ -2,10 +2,10 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d1b5618067195e1038bd23b44a65e7d9ef638996d0623a97c2c93c36bb97f820
+-- hash: 2922c0711fe5c9c6981812cb0d10608bec21911af36c2ec5558a0ad8f19ed4e4
 
 name:           flight-kml
-version:        1.0.0
+version:        1.0.1
 synopsis:       Parsing of pilot tracklogs dumped as KML.
 description:    Provides parsing of dumped tracklogs. In hang gliding and paragliding competitions when FS and GpsDump are paired in competition mode a pilot's tracklog is dumped as KML. This is exlained in detail on the FS wiki.
 category:       Data, Parsing, Geography, Gps, Flight, XML, KML
@@ -23,6 +23,7 @@ extra-source-files:
     changelog.md
     package.dhall
     README.md
+    test-suite-doctest/Phil de Joux.20120114-082221.21437.40.kml
 
 source-repository head
   type: git

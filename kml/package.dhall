@@ -5,7 +5,7 @@ in    defs
     ⫽ { name =
           "flight-kml"
       , version =
-          "1.0.0"
+          "1.0.1"
       , synopsis =
           "Parsing of pilot tracklogs dumped as KML."
       , description =
@@ -16,6 +16,8 @@ in    defs
           "blockscope/flare-timing/kml"
       , homepage =
           "https://github.com/blockscope/flare-timing/tree/master/kml#readme"
+      , extra-source-files =
+          defs.extra-source-files # [ "**/*.kml" ]
       , dependencies =
             defs.dependencies
           # [ "split"
