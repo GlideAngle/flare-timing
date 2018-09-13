@@ -1,10 +1,7 @@
 .liquid
 .shake
 _pier
-.stack-work
-.stack-work-cabal2nix
-.stack-work-dhall
-.stack-work-stack2nix
+.stack-work*
 .stack2cabal
 __*
 node_modules

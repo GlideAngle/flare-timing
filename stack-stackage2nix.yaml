@@ -1,0 +1,19 @@
+resolver: lts-12.2
+flags: {}
+packages: []
+extra-include-dirs:
+- /usr/local/opt/openssl/include
+extra-lib-dirs:
+- /usr/local/opt/openssl/lib
+extra-deps:
+- stackage2nix-0.7.2
+- yaml-0.8.31.1
+- git: https://github.com/fpco/stackage-curator.git
+  commit: 73c5ed06602990c33d3fec1711e27875f283b6bf
+- git: https://github.com/jwiegley/gitlib.git
+  commit: 70c99759b8b9377f67492fe29afb32f05882409d
+  subdirs:
+  - gitlib
+  - gitlib-libgit2
+local-bin-path: __shake-build
+work-dir: .stack-work-stackage2nix
