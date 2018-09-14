@@ -18,7 +18,7 @@ node_modules
 *.swm
 *.prof
 *.dump-splices
-result
+result*
 **/_build/**
 **/_static/**
 **/_template/**
