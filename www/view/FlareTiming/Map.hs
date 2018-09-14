@@ -15,7 +15,7 @@ import Reflex.Dom
     , el
     , text
     )
-import Reflex.Dom.Time (delay)
+import Reflex.Time (delay)
 import Data.Monoid (mconcat)
 import Control.Monad (join, sequence)
 import Control.Monad.IO.Class (liftIO)
