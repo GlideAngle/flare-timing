@@ -37,10 +37,6 @@ packages:
     git: https://github.com/brunjlar/stack2cabal
     commit: a8a4cdcacd697cee648af93856735f15de5987a6
   extra-dep: true
-- location:
-    git: https://github.com/blockscope/pier.git
-    commit: 9ea5b2b689610cc779618bdbf7bb169aae0520c9
-  extra-dep: true
 extra-deps:
 - hxt-xpath-9.1.2.2
 - uom-plugin-0.3.0.0
