@@ -62,6 +62,7 @@ let
            homepage = "https://github.com/blockscope/flare-timing/tree/master/detour-via-uom#readme";
            description = "JSON and CSV encoding for quantities";
            license = stdenv.lib.licenses.mpl20;
+           doCheck = false;
          }) {};
       "flight-cmd" = callPackage
         ({ mkDerivation, base, cmdargs, directory, filemanip, filepath
@@ -107,6 +108,7 @@ let
            homepage = "https://github.com/blockscope/flare-timing#readme";
            description = "Hang gliding and paragliding competition scoring inputs";
            license = stdenv.lib.licenses.mpl20;
+           doHaddock = false;
          }) {};
       "flight-earth" = callPackage
         ({ mkDerivation, aeson, base, bifunctors, detour-via-sci, fgl
@@ -133,6 +135,8 @@ let
            homepage = "https://github.com/blockscope/flare-timing#readme";
            description = "Distances on the WGS84 ellipsoid, the FAI sphere and the UTM projection";
            license = stdenv.lib.licenses.mpl20;
+           doHaddock = false;
+           doCheck = false;
          }) {};
       "flight-fsdb" = callPackage
         ({ mkDerivation, aeson, base, containers, detour-via-sci
@@ -159,6 +163,7 @@ let
            homepage = "https://github.com/blockscope/flare-timing#readme";
            description = "A parser for fsdb, the database XML format of FS";
            license = stdenv.lib.licenses.mpl20;
+           doHaddock = false;
          }) {};
       "flight-gap" = callPackage
         ({ mkDerivation, aeson, base, containers, detour-via-sci
@@ -184,6 +189,8 @@ let
            homepage = "https://github.com/blockscope/flare-timing#readme";
            description = "GAP Scoring";
            license = stdenv.lib.licenses.mpl20;
+           doHaddock = false;
+           doCheck = false;
          }) {};
       "flight-igc" = callPackage
         ({ mkDerivation, base, bytestring, parsec, utf8-string }:
@@ -237,6 +244,7 @@ let
            homepage = "https://github.com/blockscope/flare-timing#readme";
            description = "Latitude and longitude as used in hang gliding and paragliding competitions";
            license = stdenv.lib.licenses.mpl20;
+           doHaddock = false;
          }) {};
       "flight-lookup" = callPackage
         ({ mkDerivation, aeson, base, bytestring, cassava, containers
@@ -258,6 +266,7 @@ let
            homepage = "https://github.com/blockscope/flare-timing#readme";
            description = "Hang gliding and paragliding competition data access";
            license = stdenv.lib.licenses.mpl20;
+           doHaddock = false;
          }) {};
       "flight-mask" = callPackage
         ({ mkDerivation, base, bytestring, cmdargs, containers
@@ -281,6 +290,7 @@ let
            homepage = "https://github.com/blockscope/flare-timing#readme";
            description = "Track logs masked by competition task zones";
            license = stdenv.lib.licenses.mpl20;
+           doHaddock = false;
          }) {};
       "flight-route" = callPackage
         ({ mkDerivation, aeson, base, bifunctors, detour-via-sci
@@ -300,6 +310,8 @@ let
            homepage = "https://github.com/blockscope/flare-timing#readme";
            description = "Control zones to fly";
            license = stdenv.lib.licenses.mpl20;
+           doHaddock = false;
+           doCheck = false;
          }) {};
       "flight-scribe" = callPackage
         ({ mkDerivation, aeson, base, bytestring, cassava, containers
@@ -374,6 +386,8 @@ let
            homepage = "https://github.com/blockscope/flare-timing#readme";
            description = "Tasks to fly";
            license = stdenv.lib.licenses.mpl20;
+           doHaddock = false;
+           doCheck = false;
          }) {};
       "tasty-compare" = callPackage
         ({ mkDerivation, base, call-stack, tasty, tasty-hunit }:
@@ -418,6 +432,7 @@ let
            homepage = "https://github.com/blockscope/flare-timing#readme";
            description = "Units used in hang gliding and paragliding competitions";
            license = stdenv.lib.licenses.mpl20;
+           doHaddock = false;
          }) {};
       "flight-zone" = callPackage
         ({ mkDerivation, aeson, aeson-pretty, base, bytestring
@@ -441,6 +456,7 @@ let
            homepage = "https://github.com/blockscope/flare-timing#readme";
            description = "Control zones to fly";
            license = stdenv.lib.licenses.mpl20;
+           doHaddock = false;
          }) {};
       "flare-timing" = callPackage
         ({ mkDerivation, aeson, base, bytestring, clock, cmdargs
@@ -548,39 +564,6 @@ let
            doCheck = false;
            homepage = "https://github.com/githubuser/stack2cabal#readme";
            license = stdenv.lib.licenses.mit;
-         }) {};
-      "pier" = callPackage
-        ({ mkDerivation, aeson, base, base64-bytestring, binary
-         , binary-orphans, bytestring, Cabal, containers, cryptohash-sha256
-         , directory, fetchgit, hashable, http-client, http-client-tls
-         , http-types, optparse-applicative, process, shake, split
-         , temporary, text, transformers, unix, unordered-containers, yaml
-         }:
-         mkDerivation {
-           pname = "pier";
-           version = "0.1.0.0";
-           src = fetchgit {
-             url = "https://github.com/blockscope/pier.git";
-             sha256 = "1k7m1gbql3z0g8bhx0irw89v9nym3js2h8dgkkdlzf4qsyr98c6g";
-             rev = "9ea5b2b689610cc779618bdbf7bb169aae0520c9";
-           };
-           isLibrary = true;
-           isExecutable = true;
-           libraryHaskellDepends = [
-             aeson base base64-bytestring binary binary-orphans bytestring Cabal
-             containers cryptohash-sha256 directory hashable http-client
-             http-client-tls http-types process shake temporary text
-             transformers unix unordered-containers yaml
-           ];
-           executableHaskellDepends = [
-             base Cabal directory optparse-applicative shake split
-             unordered-containers
-           ];
-           doHaddock = false;
-           doCheck = false;
-           homepage = "https://github.com/judah/pier#readme";
-           description = "Yet another Haskell build system";
-           license = stdenv.lib.licenses.bsd3;
          }) {};
       "hxt-xpath" = callPackage
         ({ mkDerivation, base, containers, directory, filepath, hxt, parsec

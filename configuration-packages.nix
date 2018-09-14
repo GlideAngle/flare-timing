@@ -38,5 +38,6 @@ with haskellLib; self: super: {
   "silently" = dontCheck super.silently;
   "async" = dontCheck super.async;
   "nanospec" = dontCheck super.nanospec;
+  "tasty-discover" = dontCheck super.tasty-discover;
 
 }
