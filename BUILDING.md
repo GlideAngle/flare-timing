@@ -77,6 +77,7 @@ stackage2nix>../__shake-build/stackage2nix ../stack.yaml \
 --all-cabal-hashes=../../all-cabal-hashes \
 --lts-haskell=../../lts-haskell \
 --with-stackage-closure
+> nix build
 ```
 
 This produces a lot of `result` links;
