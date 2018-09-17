@@ -82,7 +82,13 @@ stackage2nix>../__shake-build/stackage2nix ../stack.yaml \
 This produces a lot of `result` links;
 
 ```
-stackage2nix> tree
+stackage2nix> ls -1 | sort --version-sort
+...
+result
+result-1
+...
+result-289
+result-290
 
 stackage2nix> tree --sort=version
 .
@@ -382,22 +388,6 @@ stackage2nix> tree --sort=version
 └── result-290 -> /nix/store/sb7lqx8qnh8484y4g7n3p9qns9limm2x-zlib-0.6.2
 
 291 directories, 3 files
-```
-
-```
-stackage2nix> ls -1 | sort --version-sort
-...
-result
-result-1
-result-2
-result-3
-result-4
-...
-result-286
-result-287
-result-288
-result-289
-result-290
 ```
 
 We can use naming to find the links with executable outputs;
