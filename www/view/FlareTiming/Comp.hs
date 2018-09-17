@@ -72,7 +72,7 @@ comp ns cs = do
                         dynText subtitle
                 elClass "div" "example" $ do
                     nominal n
-                
+
 nominal :: forall t (m :: * -> *).
         MonadWidget t m =>
         Dynamic t (Maybe (Int, Nominal)) -> m ()
@@ -100,7 +100,7 @@ nominal n = do
                             elClass "span" "tag is-primary" $ text $ T.pack goal)
 
     return ()
-                
+
 comps :: MonadWidget t m => m ()
 comps = do
     pb :: Event t () <- getPostBuild
@@ -119,7 +119,7 @@ getComps () = do
     let defReq = "http://localhost:3000/comps"
     let req md = XhrRequest "GET" (maybe defReq id md) def
     rsp <- performRequestAsync $ fmap req $ leftmost [ Nothing <$ pb ]
-        
+
     let es :: Event t [Comp] = fmapMaybe decodeXhrResponse rsp
     xs :: Dynamic t [Comp] <- holdDyn [] es
     let ys :: Dynamic t [(Int, Comp)] = fmap (zip [1 .. ]) xs
@@ -130,7 +130,7 @@ getNominals () = do
     let defReq = "http://localhost:3000/nominals"
     let req md = XhrRequest "GET" (maybe defReq id md) def
     rsp <- performRequestAsync $ fmap req $ leftmost [ Nothing <$ pb ]
-        
+
     let es :: Event t [Nominal] = fmapMaybe decodeXhrResponse rsp
     xs :: Dynamic t [Nominal] <- holdDyn [] es
     let ys :: Dynamic t [(Int, Nominal)] = fmap (zip [1 .. ]) xs
@@ -146,4 +146,3 @@ viewComps () = do
     simpleList cs (comp ns)
 
     return ()
-

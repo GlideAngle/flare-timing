@@ -91,7 +91,7 @@ task ix = do
                 elClass "p" "" $ do
                     el "a" $ do
                         dynText subtitle
-                
+
 tasks :: MonadWidget t m => m ()
 tasks = do
     pb :: Event t () <- getPostBuild
@@ -110,7 +110,7 @@ getTasks () = do
     let defReq = "http://localhost:3000/tasks"
     let req md = XhrRequest "GET" (maybe defReq id md) def
     rsp <- performRequestAsync $ fmap req $ leftmost [ Nothing <$ pb ]
-        
+
     let es :: Event t [Task] = fmapMaybe decodeXhrResponse rsp
     xs :: Dynamic t [Task] <- holdDyn [] es
     let ys :: Dynamic t [(Int, Task)] = fmap (zip [1 .. ]) xs
@@ -120,4 +120,3 @@ getTasks () = do
         simpleList ys task
 
     return ()
-
