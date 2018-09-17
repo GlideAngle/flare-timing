@@ -12,7 +12,7 @@ import Servant
     )
 import System.IO (hPutStrLn, stderr)
 import Control.Monad.IO.Class (MonadIO)
-import Control.Monad.Reader (ReaderT, MonadReader, ask, liftIO, runReaderT)
+import Control.Monad.Reader (ReaderT, MonadReader, asks, liftIO, runReaderT)
 import Control.Monad.Trans.Except (throwE)
 import Control.Monad.Except (ExceptT(..), MonadError, runExceptT, lift)
 import qualified Data.ByteString.Lazy.Char8 as LBS (pack)
@@ -97,7 +97,7 @@ serverApi cfg =
         )
     where
         query f = do
-            path' <- path <$> ask
+            path' <- asks path
             xs <- liftIO . runExceptT . f $ path'
             case xs of
               Left msg -> throwError $ err400 { errBody = LBS.pack msg }
