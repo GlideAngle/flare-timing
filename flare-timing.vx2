@@ -11,7 +11,6 @@ package_spec  =  [
     HaskellPackage("flight-cmd", ft(subpath = "cmd"), Local("./cmd"),),
     HaskellPackage("flight-comp", ft(subpath = "comp"), Local("./comp"),),
     HaskellPackage("flight-earth", ft(subpath = "earth"), Local("./earth"),),
-    HaskellPackage("flight-earth", ft(subpath = "earth"), Local("./earth"),),
     HaskellPackage("flight-fsdb", ft(subpath = "fsdb"), Local("./fsdb"),),
     HaskellPackage("flight-gap", ft(subpath = "gap"), Local("./gap"),),
     HaskellPackage("flight-igc", ft(subpath = "igc"), Local("./igc"),),

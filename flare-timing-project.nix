@@ -173,87 +173,6 @@ let
                    license = stdenv.lib.licenses.mpl20;
                  }
                  ) {};
-               flight-earth = super.callPackage (
-                 { mkDerivation, aeson, base, bifunctors, detour-via-sci, fgl
-                 , flight-latlng, flight-units, flight-zone, hcoord, hcoord-utm, mtl
-                 , numbers, scientific, siggy-chardust, smallcheck, stdenv, tasty
-                 , tasty-compare, tasty-hunit, tasty-quickcheck, tasty-smallcheck
-                 , uom-plugin
-                 }:
-                 mkDerivation {
-                   pname = "flight-earth";
-                   version = "0.1.0";
-                   src = ./earth;
-                   libraryHaskellDepends = [
-                     aeson base bifunctors detour-via-sci fgl flight-latlng flight-units
-                     flight-zone hcoord hcoord-utm mtl numbers scientific siggy-chardust
-                     uom-plugin
-                   ];
-                   testHaskellDepends = [
-                     aeson base bifunctors detour-via-sci fgl flight-latlng flight-units
-                     flight-zone hcoord hcoord-utm mtl numbers scientific siggy-chardust
-                     smallcheck tasty tasty-compare tasty-hunit tasty-quickcheck
-                     tasty-smallcheck uom-plugin
-                   ];
-                   homepage = "https://github.com/blockscope/flare-timing#readme";
-                   description = "Distances on the WGS84 ellipsoid, the FAI sphere and the UTM projection";
-                   license = stdenv.lib.licenses.mpl20;
-                 }
-                 ) {};
-               flight-earth = super.callPackage (
-                 { mkDerivation, aeson, base, bifunctors, detour-via-sci, fgl
-                 , flight-latlng, flight-units, flight-zone, hcoord, hcoord-utm, mtl
-                 , numbers, scientific, siggy-chardust, smallcheck, stdenv, tasty
-                 , tasty-compare, tasty-hunit, tasty-quickcheck, tasty-smallcheck
-                 , uom-plugin
-                 }:
-                 mkDerivation {
-                   pname = "flight-earth";
-                   version = "0.1.0";
-                   src = ./earth;
-                   libraryHaskellDepends = [
-                     aeson base bifunctors detour-via-sci fgl flight-latlng flight-units
-                     flight-zone hcoord hcoord-utm mtl numbers scientific siggy-chardust
-                     uom-plugin
-                   ];
-                   testHaskellDepends = [
-                     aeson base bifunctors detour-via-sci fgl flight-latlng flight-units
-                     flight-zone hcoord hcoord-utm mtl numbers scientific siggy-chardust
-                     smallcheck tasty tasty-compare tasty-hunit tasty-quickcheck
-                     tasty-smallcheck uom-plugin
-                   ];
-                   homepage = "https://github.com/blockscope/flare-timing#readme";
-                   description = "Distances on the WGS84 ellipsoid, the FAI sphere and the UTM projection";
-                   license = stdenv.lib.licenses.mpl20;
-                 }
-                 ) {};
-               flight-earth = super.callPackage (
-                 { mkDerivation, aeson, base, bifunctors, detour-via-sci, fgl
-                 , flight-latlng, flight-units, flight-zone, hcoord, hcoord-utm, mtl
-                 , numbers, scientific, siggy-chardust, smallcheck, stdenv, tasty
-                 , tasty-compare, tasty-hunit, tasty-quickcheck, tasty-smallcheck
-                 , uom-plugin
-                 }:
-                 mkDerivation {
-                   pname = "flight-earth";
-                   version = "0.1.0";
-                   src = ./earth;
-                   libraryHaskellDepends = [
-                     aeson base bifunctors detour-via-sci fgl flight-latlng flight-units
-                     flight-zone hcoord hcoord-utm mtl numbers scientific siggy-chardust
-                     uom-plugin
-                   ];
-                   testHaskellDepends = [
-                     aeson base bifunctors detour-via-sci fgl flight-latlng flight-units
-                     flight-zone hcoord hcoord-utm mtl numbers scientific siggy-chardust
-                     smallcheck tasty tasty-compare tasty-hunit tasty-quickcheck
-                     tasty-smallcheck uom-plugin
-                   ];
-                   homepage = "https://github.com/blockscope/flare-timing#readme";
-                   description = "Distances on the WGS84 ellipsoid, the FAI sphere and the UTM projection";
-                   license = stdenv.lib.licenses.mpl20;
-                 }
-                 ) {};
                flight-fsdb = super.callPackage (
                  { mkDerivation, aeson, base, containers, detour-via-sci
                  , flight-comp, flight-gap, flight-latlng, flight-units, flight-zone
@@ -640,9 +559,6 @@ let
     flare-timing = pkgs.haskell.packages.${ghcver}.flare-timing;
     flight-cmd = pkgs.haskell.packages.${ghcver}.flight-cmd;
     flight-comp = pkgs.haskell.packages.${ghcver}.flight-comp;
-    flight-earth = pkgs.haskell.packages.${ghcver}.flight-earth;
-    flight-earth = pkgs.haskell.packages.${ghcver}.flight-earth;
-    flight-earth = pkgs.haskell.packages.${ghcver}.flight-earth;
     flight-earth = pkgs.haskell.packages.${ghcver}.flight-earth;
     flight-fsdb = pkgs.haskell.packages.${ghcver}.flight-fsdb;
     flight-gap = pkgs.haskell.packages.${ghcver}.flight-gap;
