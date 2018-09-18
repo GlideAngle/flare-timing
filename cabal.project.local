@@ -1,7 +1,8 @@
+with-compiler: /Users/pdejoux/.stack/programs/x86_64-osx/ghc-8.2.2/bin/ghc
 constraints:   Cabal == 2.0.1.1
              , Only == 0.1
              , QuickCheck == 2.10.1
-             , StateVar == 1.1.1.0
+             , StateVar == 1.1.1.1
              , abstract-deque == 0.3
              , abstract-par == 0.3.3
              , adjunctions == 4.4
@@ -34,7 +35,7 @@ constraints:   Cabal == 2.0.1.1
              , call-stack == 0.1.0
              , case-insensitive == 1.2.0.11
              , cassava == 0.5.1.0
-             , cereal == 0.5.5.0
+             , cereal == 0.5.7.0
              , clock == 0.7.2
              , cmdargs == 0.10.20
              , colour == 2.3.4
