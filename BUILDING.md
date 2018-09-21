@@ -34,48 +34,84 @@ The results of those builds;
 ## Building with Vernix
 To regenerate `flare-timing-project.nix`;
 
+```
+> cd vernix
 > nix-shell
-[nix-shell:~/.../flare-timing]$ ./vernix
+[nix-shell:~/.../flare-timing/vernix]$ ./vernix
 Generating nix specifications from flare-timing.vx2 ...
 Using here: .
-..pkg stack-yaml-packages.nix as stack-yaml-packages from ./stack-yaml-packages.nix
 ..pkg flare-timing-project.nix as flare-timing-project from ./flare-timing-project.nix
-.........................
+.............................
 
-Package     siggy-chardust: ./siggy-chardust
-Package     detour-via-sci: ./detour-via-sci
-Package     detour-via-uom: ./detour-via-uom
-Package      tasty-compare: ./tasty-compare
-Package         flight-cmd: ./cmd
-Package        flight-comp: ./comp
-Package       flight-earth: ./earth
-Package        flight-fsdb: ./fsdb
-Package         flight-gap: ./gap
-Package         flight-igc: ./igc
-Package         flight-kml: ./kml
-Package      flight-latlng: ./latlng
-Package      flight-lookup: ./lookup
-Package        flight-mask: ./mask
-Package       flight-route: ./route
-Package      flight-scribe: ./scribe
-Package        flight-span: ./span
-Package        flight-task: ./task
-Package       flight-track: ./track
-Package       flight-units: ./units
-Package        flight-zone: ./zone
-Package build-flare-timing: ./build
-Package       flare-timing: ./flare-timing
-Package   www-flare-timing: ./www
+Package     siggy-chardust: ../siggy-chardust
+Package     detour-via-sci: ../detour-via-sci
+Package     detour-via-uom: ../detour-via-uom
+Package      tasty-compare: ../tasty-compare
+Package         flight-cmd: ../cmd
+Package        flight-comp: ../comp
+Package       flight-earth: ../earth
+Package        flight-fsdb: ../fsdb
+Package         flight-gap: ../gap
+Package         flight-igc: ../igc
+Package         flight-kml: ../kml
+Package      flight-latlng: ../latlng
+Package      flight-lookup: ../lookup
+Package        flight-mask: ../mask
+Package       flight-route: ../route
+Package      flight-scribe: ../scribe
+Package        flight-span: ../span
+Package        flight-task: ../task
+Package       flight-track: ../track
+Package       flight-units: ../units
+Package        flight-zone: ../zone
+Package build-flare-timing: ../build
+Package       flare-timing: ../flare-timing
+Package   www-flare-timing: ../www
+Package             hcoord: 3c3859dac5da111e57a6de09764ffdb127197c4a https://github.com/blockscope/hcoord.git 3c3859dac5da111e57a6de09764ffdb127197c4a
+Package         hcoord-utm: 3c3859dac5da111e57a6de09764ffdb127197c4a https://github.com/blockscope/hcoord.git 3c3859dac5da111e57a6de09764ffdb127197c4a
 Package         summarygen: ./flare-timing-project.nix
 
 [nix-shell:~/.../flare-timing]$ exit
 >
+```
 
 To build a single package;
 
 ```
 > nix-build -A siggy-chardust flare-timing-project.nix
 /nix/store/rcynlrd58dwq758gxkcb517p5hmryiqp-siggy-chardust-1.0.0
+```
+
+To build them all;
+
+```
+vernix> nix-build flare-timing-project.nix
+/nix/store/1jmxp02pilgv75m97jbwqbjr45ygrx64-build-flare-timing-0.1.0
+/nix/store/af50w303188zgcfqpb5fs58gi4i8l5lz-detour-via-sci-1.0.0
+/nix/store/r257q05zgqxhkkv9adh3if84dsyzgzp2-detour-via-uom-1.0.0
+/nix/store/mlz7g0wp1w5n655d2iyy0wb3xaw6yhiq-flare-timing-0.1.0
+/nix/store/pprpyxr3m3l2f627zh88i8zbxzkhgl8g-flight-cmd-0.1.0
+/nix/store/jibhjmp5n3qmz6kpv96zbqnp7vch8jgv-flight-comp-0.1.0
+/nix/store/7gq31vxkqkfxx6930aq4gnydga54y8bz-flight-earth-0.1.0
+/nix/store/6kwlpdjchj2n3y4y1hq10g9sgnwgh4w2-flight-fsdb-0.1.0
+/nix/store/x13lr5yp8ypqb7gj2brpxxlmj2ih1b0d-flight-gap-0.1.0
+/nix/store/g8cx487wwasvjz37sgvs85xi8k0s5kl4-flight-igc-1.0.0
+/nix/store/bmh3br716la4pqmkakynd1bpgv3fjhs4-flight-kml-1.0.1
+/nix/store/y9gm6lc89v1cqbmggg670as5bbb2xci1-flight-latlng-0.1.0
+/nix/store/z9lfcc8srlqp84r2lj356kb2nc2fskvq-flight-lookup-0.1.0
+/nix/store/yss2gvakr90g6a8785j9qnj2gcy5vyia-flight-mask-0.1.0
+/nix/store/yi89z0msqnj9c77rlsb8gq4jima1n9xv-flight-route-0.1.0
+/nix/store/7dzj6amz52b2x02r7yv7ir2g0l71sy9p-flight-scribe-0.1.0
+/nix/store/bx08r12zpmm2rm34r26gi0808yv6p0q3-flight-span-0.1.0
+/nix/store/31dpda9zh9rlb2nq3ayrc869hxr8r7mc-flight-task-0.1.0
+/nix/store/98h8jj4ywqdgm3fvv6gmfrxgcl84hq3y-flight-track-0.1.0
+/nix/store/wn64njmi1vkalh496sp86c4a0ynqg28b-flight-units-0.1.0
+/nix/store/w9j6wh5iinn3rri8wbx7l52xk566y6l5-flight-zone-0.1.0
+/nix/store/n0w4g1d2ipmsq1qwspnlp8ji8anmpcbl-hcoord-3c3859dac5da111e57a6de09764ffdb127197c4a
+/nix/store/9v8h9imr3sndd90z86mp9wj73s6vwf73-hcoord-utm-3c3859dac5da111e57a6de09764ffdb127197c4a
+/nix/store/qfpjz0xj9f2dkpdrflwfjwhnixwlaivh-siggy-chardust-1.0.0
+/nix/store/7jlrh9kb8s7pvj0pzakd3pqk31d69sb4-tasty-compare-0.1.0
+/nix/store/1cgyqwfjqc3sv9jnv2pwri1r8ac1nar1-www-flare-timing-0.1.0
 ```
 
 ## Building within Nix with Cabal
