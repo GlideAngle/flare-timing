@@ -71,6 +71,13 @@ Package         summarygen: ./flare-timing-project.nix
 [nix-shell:~/.../flare-timing]$ exit
 >
 
+To build a single package;
+
+```
+> nix-build -A siggy-chardust flare-timing-project.nix
+/nix/store/rcynlrd58dwq758gxkcb517p5hmryiqp-siggy-chardust-1.0.0
+```
+
 ## Building within Nix with Cabal
 Each package has a `shell.nix` that picks up the pinned nixpkgs and package
 overrides before opening a nix shell from which we can build with
