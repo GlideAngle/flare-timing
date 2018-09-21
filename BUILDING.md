@@ -32,6 +32,13 @@ The results of those builds;
     comp-serve
 
 ## Building with Vernix
+With vernix I can pinning versions, jail break and skip docs and testing in the
+`.vx2` setup, shown here with for `uom-plugin`.
+
+```
+HaskellPackage("uom-plugin", version = "0.3.0.0", dontCheck = True, jailBreak = True),
+```
+
 To regenerate `flare-timing-project.nix`;
 
 ```
