@@ -33,4 +33,5 @@ package_spec  =  [
 
     HaskellPackage("hcoord", hc(subpath = "hcoord"), version = "3c3859dac5da111e57a6de09764ffdb127197c4a", dontCheck = True),
     HaskellPackage("hcoord-utm", hc(subpath = "hcoord-utm"), version = "3c3859dac5da111e57a6de09764ffdb127197c4a", dontCheck = True),
+    HaskellPackage("uom-plugin", version = "0.3.0.0", dontCheck = True, jailBreak = True),
 ]
