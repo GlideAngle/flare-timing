@@ -32,3 +32,4 @@ uom-plugin-*
 *.swp
 *.un~
 bazel-*
+*.orig
