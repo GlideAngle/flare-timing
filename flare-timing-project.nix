@@ -4,7 +4,7 @@
 
 let
 
-  pkgs = import nixpkgs { inherit config; };
+  pkgs = import ./nix/nixpkgs.nix { inherit config; };
 
   config = {
 
@@ -69,6 +69,7 @@ let
                    homepage = "https://github.com/blockscope/flare-timing/tree/master/detour-via-uom#readme";
                    description = "JSON and CSV encoding for quantities";
                    license = stdenv.lib.licenses.mpl20;
+                   doCheck = false;
                  }
                  ) {};
                flare-timing = super.callPackage (
@@ -144,6 +145,7 @@ let
                    homepage = "https://github.com/blockscope/flare-timing#readme";
                    description = "Hang gliding and paragliding competition scoring inputs";
                    license = stdenv.lib.licenses.mpl20;
+                   doHaddock = false;
                  }
                  ) {};
                flight-earth = super.callPackage (
@@ -171,6 +173,8 @@ let
                    homepage = "https://github.com/blockscope/flare-timing#readme";
                    description = "Distances on the WGS84 ellipsoid, the FAI sphere and the UTM projection";
                    license = stdenv.lib.licenses.mpl20;
+                   doHaddock = false;
+                   doCheck = false;
                  }
                  ) {};
                flight-fsdb = super.callPackage (
@@ -198,6 +202,7 @@ let
                    homepage = "https://github.com/blockscope/flare-timing#readme";
                    description = "A parser for fsdb, the database XML format of FS";
                    license = stdenv.lib.licenses.mpl20;
+                   doHaddock = false;
                  }
                  ) {};
                flight-gap = super.callPackage (
@@ -225,6 +230,8 @@ let
                    homepage = "https://github.com/blockscope/flare-timing#readme";
                    description = "GAP Scoring";
                    license = stdenv.lib.licenses.mpl20;
+                   doHaddock = false;
+                   doCheck = false;
                  }
                  ) {};
                flight-igc = super.callPackage (
@@ -281,6 +288,7 @@ let
                    homepage = "https://github.com/blockscope/flare-timing#readme";
                    description = "Latitude and longitude as used in hang gliding and paragliding competitions";
                    license = stdenv.lib.licenses.mpl20;
+                   doHaddock = false;
                  }
                  ) {};
                flight-lookup = super.callPackage (
@@ -303,6 +311,7 @@ let
                    homepage = "https://github.com/blockscope/flare-timing#readme";
                    description = "Hang gliding and paragliding competition data access";
                    license = stdenv.lib.licenses.mpl20;
+                   doHaddock = false;
                  }
                  ) {};
                flight-mask = super.callPackage (
@@ -327,6 +336,7 @@ let
                    homepage = "https://github.com/blockscope/flare-timing#readme";
                    description = "Track logs masked by competition task zones";
                    license = stdenv.lib.licenses.mpl20;
+                   doHaddock = false;
                  }
                  ) {};
                flight-route = super.callPackage (
@@ -347,6 +357,8 @@ let
                    homepage = "https://github.com/blockscope/flare-timing#readme";
                    description = "Control zones to fly";
                    license = stdenv.lib.licenses.mpl20;
+                   doHaddock = false;
+                   doCheck = false;
                  }
                  ) {};
                flight-scribe = super.callPackage (
@@ -408,6 +420,8 @@ let
                    homepage = "https://github.com/blockscope/flare-timing#readme";
                    description = "Tasks to fly";
                    license = stdenv.lib.licenses.mpl20;
+                   doHaddock = false;
+                   doCheck = false;
                  }
                  ) {};
                flight-track = super.callPackage (
@@ -443,6 +457,7 @@ let
                    homepage = "https://github.com/blockscope/flare-timing#readme";
                    description = "Units used in hang gliding and paragliding competitions";
                    license = stdenv.lib.licenses.mpl20;
+                   doHaddock = false;
                  }
                  ) {};
                flight-zone = super.callPackage (
@@ -468,6 +483,7 @@ let
                    homepage = "https://github.com/blockscope/flare-timing#readme";
                    description = "Control zones to fly";
                    license = stdenv.lib.licenses.mpl20;
+                   doHaddock = false;
                  }
                  ) {};
                siggy-chardust = super.callPackage (
