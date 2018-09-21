@@ -31,6 +31,46 @@ The results of those builds;
     > ls www/result/bin
     comp-serve
 
+## Building with Vernix
+To regenerate `flare-timing-project.nix`;
+
+> nix-shell
+[nix-shell:~/.../flare-timing]$ ./vernix
+Generating nix specifications from flare-timing.vx2 ...
+Using here: .
+..pkg stack-yaml-packages.nix as stack-yaml-packages from ./stack-yaml-packages.nix
+..pkg flare-timing-project.nix as flare-timing-project from ./flare-timing-project.nix
+.........................
+
+Package     siggy-chardust: ./siggy-chardust
+Package     detour-via-sci: ./detour-via-sci
+Package     detour-via-uom: ./detour-via-uom
+Package      tasty-compare: ./tasty-compare
+Package         flight-cmd: ./cmd
+Package        flight-comp: ./comp
+Package       flight-earth: ./earth
+Package        flight-fsdb: ./fsdb
+Package         flight-gap: ./gap
+Package         flight-igc: ./igc
+Package         flight-kml: ./kml
+Package      flight-latlng: ./latlng
+Package      flight-lookup: ./lookup
+Package        flight-mask: ./mask
+Package       flight-route: ./route
+Package      flight-scribe: ./scribe
+Package        flight-span: ./span
+Package        flight-task: ./task
+Package       flight-track: ./track
+Package       flight-units: ./units
+Package        flight-zone: ./zone
+Package build-flare-timing: ./build
+Package       flare-timing: ./flare-timing
+Package   www-flare-timing: ./www
+Package         summarygen: ./flare-timing-project.nix
+
+[nix-shell:~/.../flare-timing]$ exit
+>
+
 ## Building within Nix with Cabal
 Each package has a `shell.nix` that picks up the pinned nixpkgs and package
 overrides before opening a nix shell from which we can build with
