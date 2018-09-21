@@ -51,7 +51,7 @@ let
                    license = stdenv.lib.licenses.mpl20;
                  }
                  ) {};
-               detour-via-uom = super.callPackage (
+               detour-via-uom = dontCheck (super.callPackage (
                  { mkDerivation, aeson, base, cassava, detour-via-sci, doctest
                  , newtype, scientific, stdenv, uom-plugin
                  }:
@@ -69,10 +69,9 @@ let
                    homepage = "https://github.com/blockscope/flare-timing/tree/master/detour-via-uom#readme";
                    description = "JSON and CSV encoding for quantities";
                    license = stdenv.lib.licenses.mpl20;
-                   doCheck = false;
                  }
-                 ) {};
-               flare-timing = super.callPackage (
+                 ) {});
+               flare-timing = dontHaddock (super.callPackage (
                  { mkDerivation, aeson, base, bytestring, clock, cmdargs, containers
                  , directory, filemanip, filepath, flight-cmd, flight-comp
                  , flight-earth, flight-fsdb, flight-gap, flight-igc, flight-kml
@@ -99,7 +98,7 @@ let
                    description = "A collection of apps and libraries for scoring hang gliding and paragliding competitions";
                    license = stdenv.lib.licenses.mpl20;
                  }
-                 ) {};
+                 ) {});
                flight-cmd = super.callPackage (
                  { mkDerivation, base, cmdargs, directory, filemanip, filepath
                  , flight-span, mtl, raw-strings-qq, stdenv, transformers
@@ -117,7 +116,7 @@ let
                    license = stdenv.lib.licenses.mpl20;
                  }
                  ) {};
-               flight-comp = super.callPackage (
+               flight-comp = dontHaddock (super.callPackage (
                  { mkDerivation, aeson, base, bytestring, cassava, containers
                  , detour-via-sci, directory, filemanip, filepath, flight-gap
                  , flight-latlng, flight-route, flight-units, flight-zone, lens, mtl
@@ -145,10 +144,9 @@ let
                    homepage = "https://github.com/blockscope/flare-timing#readme";
                    description = "Hang gliding and paragliding competition scoring inputs";
                    license = stdenv.lib.licenses.mpl20;
-                   doHaddock = false;
                  }
-                 ) {};
-               flight-earth = super.callPackage (
+                 ) {});
+               flight-earth = dontCheck (dontHaddock (super.callPackage (
                  { mkDerivation, aeson, base, bifunctors, detour-via-sci, fgl
                  , flight-latlng, flight-units, flight-zone, hcoord, hcoord-utm, mtl
                  , numbers, scientific, siggy-chardust, smallcheck, stdenv, tasty
@@ -173,11 +171,9 @@ let
                    homepage = "https://github.com/blockscope/flare-timing#readme";
                    description = "Distances on the WGS84 ellipsoid, the FAI sphere and the UTM projection";
                    license = stdenv.lib.licenses.mpl20;
-                   doHaddock = false;
-                   doCheck = false;
                  }
-                 ) {};
-               flight-fsdb = super.callPackage (
+                 ) {}));
+               flight-fsdb = dontHaddock (super.callPackage (
                  { mkDerivation, aeson, base, containers, detour-via-sci
                  , flight-comp, flight-gap, flight-latlng, flight-units, flight-zone
                  , hxt, hxt-xpath, megaparsec, newtype, path, scientific, smallcheck
@@ -202,10 +198,9 @@ let
                    homepage = "https://github.com/blockscope/flare-timing#readme";
                    description = "A parser for fsdb, the database XML format of FS";
                    license = stdenv.lib.licenses.mpl20;
-                   doHaddock = false;
                  }
-                 ) {};
-               flight-gap = super.callPackage (
+                 ) {});
+               flight-gap = dontCheck (dontHaddock (super.callPackage (
                  { mkDerivation, aeson, base, containers, detour-via-sci
                  , detour-via-uom, flight-units, newtype, scientific, siggy-chardust
                  , smallcheck, statistics, stdenv, tasty, tasty-hunit
@@ -230,10 +225,8 @@ let
                    homepage = "https://github.com/blockscope/flare-timing#readme";
                    description = "GAP Scoring";
                    license = stdenv.lib.licenses.mpl20;
-                   doHaddock = false;
-                   doCheck = false;
                  }
-                 ) {};
+                 ) {}));
                flight-igc = super.callPackage (
                  { mkDerivation, base, bytestring, parsec, stdenv, utf8-string }:
                  mkDerivation {
@@ -270,7 +263,7 @@ let
                    license = stdenv.lib.licenses.mpl20;
                  }
                  ) {};
-               flight-latlng = super.callPackage (
+               flight-latlng = dontHaddock (super.callPackage (
                  { mkDerivation, aeson, base, bifunctors, bytestring, cassava
                  , detour-via-sci, detour-via-uom, flight-units, formatting, newtype
                  , numbers, random, siggy-chardust, smallcheck, stdenv
@@ -288,10 +281,9 @@ let
                    homepage = "https://github.com/blockscope/flare-timing#readme";
                    description = "Latitude and longitude as used in hang gliding and paragliding competitions";
                    license = stdenv.lib.licenses.mpl20;
-                   doHaddock = false;
                  }
-                 ) {};
-               flight-lookup = super.callPackage (
+                 ) {});
+               flight-lookup = dontHaddock (super.callPackage (
                  { mkDerivation, aeson, base, bytestring, cassava, containers
                  , detour-via-sci, directory, filemanip, filepath, flight-comp
                  , flight-gap, flight-kml, flight-latlng, flight-mask, flight-route
@@ -311,10 +303,9 @@ let
                    homepage = "https://github.com/blockscope/flare-timing#readme";
                    description = "Hang gliding and paragliding competition data access";
                    license = stdenv.lib.licenses.mpl20;
-                   doHaddock = false;
                  }
-                 ) {};
-               flight-mask = super.callPackage (
+                 ) {});
+               flight-mask = dontHaddock (super.callPackage (
                  { mkDerivation, base, bytestring, cmdargs, containers
                  , detour-via-sci, directory, fgl, filepath, flight-comp
                  , flight-earth, flight-gap, flight-kml, flight-latlng, flight-route
@@ -336,10 +327,9 @@ let
                    homepage = "https://github.com/blockscope/flare-timing#readme";
                    description = "Track logs masked by competition task zones";
                    license = stdenv.lib.licenses.mpl20;
-                   doHaddock = false;
                  }
-                 ) {};
-               flight-route = super.callPackage (
+                 ) {});
+               flight-route = dontCheck (dontHaddock (super.callPackage (
                  { mkDerivation, aeson, base, bifunctors, detour-via-sci
                  , flight-earth, flight-latlng, flight-task, flight-units
                  , flight-zone, hcoord-utm, numbers, scientific, siggy-chardust
@@ -357,10 +347,8 @@ let
                    homepage = "https://github.com/blockscope/flare-timing#readme";
                    description = "Control zones to fly";
                    license = stdenv.lib.licenses.mpl20;
-                   doHaddock = false;
-                   doCheck = false;
                  }
-                 ) {};
+                 ) {}));
                flight-scribe = super.callPackage (
                  { mkDerivation, aeson, base, bytestring, cassava, containers
                  , detour-via-sci, directory, filemanip, filepath, flight-comp
@@ -395,7 +383,7 @@ let
                    license = stdenv.lib.licenses.mpl20;
                  }
                  ) {};
-               flight-task = super.callPackage (
+               flight-task = dontCheck (dontHaddock (super.callPackage (
                  { mkDerivation, aeson, base, bifunctors, detour-via-sci, fgl
                  , flight-earth, flight-latlng, flight-units, flight-zone, mtl
                  , numbers, scientific, siggy-chardust, smallcheck, stdenv, tasty
@@ -420,10 +408,8 @@ let
                    homepage = "https://github.com/blockscope/flare-timing#readme";
                    description = "Tasks to fly";
                    license = stdenv.lib.licenses.mpl20;
-                   doHaddock = false;
-                   doCheck = false;
                  }
-                 ) {};
+                 ) {}));
                flight-track = super.callPackage (
                  { mkDerivation, base, bytestring, containers, directory, filepath
                  , flight-comp, flight-igc, flight-kml, mtl, path, split, stdenv
@@ -442,7 +428,7 @@ let
                    license = stdenv.lib.licenses.mpl20;
                  }
                  ) {};
-               flight-units = super.callPackage (
+               flight-units = dontHaddock (super.callPackage (
                  { mkDerivation, base, bifunctors, fixed, formatting, numbers
                  , siggy-chardust, stdenv, text, uom-plugin
                  }:
@@ -457,10 +443,9 @@ let
                    homepage = "https://github.com/blockscope/flare-timing#readme";
                    description = "Units used in hang gliding and paragliding competitions";
                    license = stdenv.lib.licenses.mpl20;
-                   doHaddock = false;
                  }
-                 ) {};
-               flight-zone = super.callPackage (
+                 ) {});
+               flight-zone = dontHaddock (super.callPackage (
                  { mkDerivation, aeson, aeson-pretty, base, bytestring
                  , detour-via-sci, detour-via-uom, flight-latlng, flight-units, here
                  , newtype, scientific, siggy-chardust, stdenv, tasty
@@ -483,9 +468,52 @@ let
                    homepage = "https://github.com/blockscope/flare-timing#readme";
                    description = "Control zones to fly";
                    license = stdenv.lib.licenses.mpl20;
-                   doHaddock = false;
                  }
-                 ) {};
+                 ) {});
+               hcoord = dontCheck (super.callPackage (
+                 { mkDerivation, base, data-default, fetchgit, hlint, HUnit, ieee754
+                 , mtl, stdenv
+                 }:
+                 mkDerivation {
+                   pname = "hcoord";
+                   version = "3c3859dac5da111e57a6de09764ffdb127197c4a";
+                   src = fetchgit {
+                     url = "https://github.com/blockscope/hcoord.git";
+                     sha256 = "0267n694m08bv73ld7f5flb66h3dxc7xgrbmkr757q0g87l8ndzq";
+                     rev = "3c3859dac5da111e57a6de09764ffdb127197c4a";
+                     fetchSubmodules = false;
+                   };
+                   postUnpack = "sourceRoot+=/hcoord; echo source root reset to $sourceRoot";
+                   libraryHaskellDepends = [ base mtl ];
+                   testHaskellDepends = [ base data-default hlint HUnit ieee754 mtl ];
+                   homepage = "https://github.com/danfran/hcoord#readme";
+                   description = "Short synopsis";
+                   license = stdenv.lib.licenses.bsd3;
+                 }
+                 ) {});
+               hcoord-utm = dontCheck (super.callPackage (
+                 { mkDerivation, base, data-default, fetchgit, hcoord, hlint, HUnit
+                 , ieee754, mtl, stdenv
+                 }:
+                 mkDerivation {
+                   pname = "hcoord-utm";
+                   version = "3c3859dac5da111e57a6de09764ffdb127197c4a";
+                   src = fetchgit {
+                     url = "https://github.com/blockscope/hcoord.git";
+                     sha256 = "0267n694m08bv73ld7f5flb66h3dxc7xgrbmkr757q0g87l8ndzq";
+                     rev = "3c3859dac5da111e57a6de09764ffdb127197c4a";
+                     fetchSubmodules = false;
+                   };
+                   postUnpack = "sourceRoot+=/hcoord-utm; echo source root reset to $sourceRoot";
+                   libraryHaskellDepends = [ base hcoord mtl ];
+                   testHaskellDepends = [
+                     base data-default hcoord hlint HUnit ieee754 mtl
+                   ];
+                   homepage = "https://github.com/danfran/hcoord#readme";
+                   description = "Short synopsis";
+                   license = stdenv.lib.licenses.bsd3;
+                 }
+                 ) {});
                siggy-chardust = super.callPackage (
                  { mkDerivation, base, doctest, smallcheck, stdenv, tasty
                  , tasty-hunit, tasty-quickcheck, tasty-smallcheck
@@ -516,7 +544,7 @@ let
                    license = stdenv.lib.licenses.mpl20;
                  }
                  ) {};
-               www-flare-timing = super.callPackage (
+               www-flare-timing = dontHaddock (super.callPackage (
                  { mkDerivation, aeson, base, bytestring, cmdargs, directory
                  , filemanip, filepath, flight-comp, hlint, mtl, raw-strings-qq
                  , servant, servant-server, stdenv, transformers, wai, wai-cors
@@ -538,7 +566,7 @@ let
                    description = "A collection of apps and libraries for scoring hang gliding and paragliding competitions";
                    license = stdenv.lib.licenses.mpl20;
                  }
-                 ) {};
+                 ) {});
             };
           };
         };
@@ -590,6 +618,8 @@ let
     flight-track = pkgs.haskell.packages.${ghcver}.flight-track;
     flight-units = pkgs.haskell.packages.${ghcver}.flight-units;
     flight-zone = pkgs.haskell.packages.${ghcver}.flight-zone;
+    hcoord = pkgs.haskell.packages.${ghcver}.hcoord;
+    hcoord-utm = pkgs.haskell.packages.${ghcver}.hcoord-utm;
     siggy-chardust = pkgs.haskell.packages.${ghcver}.siggy-chardust;
     stack-yaml-packages = pkgs.stack-yaml-packages;
     tasty-compare = pkgs.haskell.packages.${ghcver}.tasty-compare;
