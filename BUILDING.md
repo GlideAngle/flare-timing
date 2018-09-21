@@ -36,7 +36,7 @@ To regenerate `flare-timing-project.nix`;
 
 ```
 > cd vernix
-> nix-shell
+vernix> nix-shell
 [nix-shell:~/.../flare-timing/vernix]$ ./vernix
 Generating nix specifications from flare-timing.vx2 ...
 Using here: .
@@ -72,13 +72,13 @@ Package         hcoord-utm: 3c3859dac5da111e57a6de09764ffdb127197c4a https://git
 Package         summarygen: ./flare-timing-project.nix
 
 [nix-shell:~/.../flare-timing]$ exit
->
+vernix>
 ```
 
 To build a single package;
 
 ```
-> nix-build -A siggy-chardust flare-timing-project.nix
+vernix> nix-build -A siggy-chardust flare-timing-project.nix
 /nix/store/rcynlrd58dwq758gxkcb517p5hmryiqp-siggy-chardust-1.0.0
 ```
 
