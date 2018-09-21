@@ -32,7 +32,7 @@ The results of those builds;
     comp-serve
 
 ## Building with Vernix
-With vernix I can pinning versions, jail break and skip docs and testing in the
+With vernix I can pin versions, jail break and skip docs and testing in the
 `.vx2` setup, shown here with for `uom-plugin`.
 
 ```
