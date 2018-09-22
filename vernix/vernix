@@ -1,0 +1,2774 @@
+#! /usr/bin/env nix-shell
+# -*- mode: python; -*-
+#! nix-shell -i "python3.6 -u" -p nix-prefetch-scripts haskell.compiler.ghc822 git "python36.withPackages(pp: with pp; [ thespian setproctitle ])" "haskell.lib.overrideCabal haskellPackages.cabal2nix (drv: { version=\"2.10.1-nosub\"; src = fetchgit { url=\"https://github.com/kquick/cabal2nix\"; rev=\"e4b3b46\"; sha256=\"0wx2s5l5gaxaz075gw3d21x8pkfmvz4jav00xwiga7d9kih5gh7c\"; }; })"
+
+# n.b. to add fancy progress bars, add both blessings and progressive
+# to the packages list above, but note that progressive is not
+# currently part of the standard nix specifications and so an overlay
+# will probably be needed.
+
+from thespian.actors import *
+from thespian.runcommand import *
+from thespian.troupe import troupe
+from collections import OrderedDict
+import subprocess
+import os
+import sys
+import functools
+import logging
+import json
+import copy
+import glob
+from datetime import datetime
+import urllib.parse
+import tempfile
+
+EMAILRESPONSIBLE = False
+
+class Settable(object):
+    def __call__(self, **kw):
+        newobj = self.__class__()
+        for each in self.__dict__:
+            newobj.__dict__[each] = self.__dict__[each]
+        for each in kw:
+            if hasattr(newobj, each):
+                setattr(newobj, each, kw[each])
+            else:
+                raise NameError('Attribute %s cannot be set on %s'
+                                ': it is not already present' % (self, each))
+        return newobj
+
+# ----------------------------------------------------------------------
+# ----------------------------------------------------------------------
+# Objects that can be declared in the input package specification  [INPUT]
+
+class Project(object):
+    "Specifies the name of the project being declared"
+    def __init__(self, name, allowUnfree=None):
+        self.name = name
+        self.allowUnfree = allowUnfree
+
+class Base_Location(object): pass
+
+class RepoIdent(Base_Location, Settable):
+    "Specifies the Source Code Repository coordinates for this package"
+    def __init__(self, reposerver='https://github.com',
+                 team=None, reponame=None, subpath=None, cbi_reposerver=None):
+        super(RepoIdent, self).__init__()
+        self.reposerver = reposerver
+        self.team = team
+        self.reponame = reponame
+        self.subpath = subpath
+        self.sep1 = ':' if self.reposerver.startswith('git@') else '/'
+        self.cbi_reposerver = cbi_reposerver or reposerver
+    @property
+    def source_loc(self):
+        return '%(reposerver)s%(sep1)s%(team)s/%(reponame)s.git' % self.__dict__
+    @property
+    def cbi_source_loc(self):
+        repl = {'sep': ':' if self.cbi_reposerver.startswith('git@') else '/'}
+        repl.update(self.__dict__)
+        return '%(cbi_reposerver)s%(sep)s%(team)s/%(reponame)s.git' % repl
+
+class Local(Base_Location):
+    "Specifies a local directory for this package's source"
+    def __init__(self, localpath):
+        self._localpath = localpath
+    @property
+    def source_loc(self):
+        return os.path.expandvars(os.path.expanduser(self._localpath))
+    def __str__(self):
+        return self.source_loc + ' directory'
+
+
+class Base_PackageIdent(object):
+    def __init__(self, name, version=None):
+        self.name = name
+        self.version = version
+
+class StandardPackage(Base_PackageIdent):
+    def __init__(self, name, version=None, *args, **kw):
+        super(StandardPackage, self).__init__(name, version)
+        self.repo_location = None
+        self.local_location = None
+        self.email_responsible = kw.get('email_responsible', EMAILRESPONSIBLE)
+        self._process_args(*args)
+    def _process_args(self, *args):
+        for arg in args:
+            if isinstance(arg, RepoIdent):
+                self.repo_location = arg if arg.reponame else arg(reponame = self.name)
+            elif isinstance(arg, Local):
+                self.local_location = arg
+            elif callable(arg):
+                self._process_args(arg(self.name))
+            elif isinstance(arg, str) and not self.version:
+                self.version = arg
+            else:
+                raise ValueError('Unrecognized Package argument: %s %s'
+                                 % (arg, str(type(arg))))
+    def __call__(self, *args):
+        self._process_args(*args)
+        return self
+    def origin_info(self):
+        return str(self.local_location or self.repo_location or self.package_suppliers())
+
+
+class HaskellPackage(StandardPackage):
+    "Specify a Haskell package"
+    def __init__(self, name, *args, version=None, dontCheck=False,
+                 jailBreak=False, dontHaddock=False,
+                 dontProfile=False,
+                 extraLibraries=None, **kw):
+        super(HaskellPackage, self).__init__(name, version, *args, **kw)
+        self.dontCheck = dontCheck
+        self.jailBreak = jailBreak
+        self.dontHaddock = dontHaddock
+        self.dontProfile = dontProfile
+        self.extraLibraries = extraLibraries or []
+
+    @staticmethod
+    def _wrapif(test, wrap, onstr):
+        return (wrap + ' (' + onstr + ')') if test else onstr
+
+    def _jbwrap(self, callstr):
+        return self._wrapif(self.jailBreak, 'doJailbreak', callstr)
+
+    def _dcwrap(self, callstr):
+        return self._wrapif(self.dontCheck, 'dontCheck', callstr)
+
+    def _profwrap(self, callstr):
+        return self._wrapif(self.dontProfile, 'disableExecutableProfiling',
+                            self._wrapif(self.dontProfile, 'disableLibraryProfiling', callstr))
+
+    def _haddockwrap(self, callstr):
+        return self._wrapif(self.dontHaddock, 'dontHaddock', callstr)
+
+    def _extralibwrap(self, callstr):
+        if not self.extraLibraries:
+            return callstr
+        return 'addExtraLibraries (' + callstr + ') [' + \
+            ' '.join(['p.pkgs.' + l for l in self.extraLibraries]) + \
+    ']';
+
+    def with_wrappers(self, callstr):
+        return self._profwrap(self._extralibwrap(self._jbwrap(self._dcwrap(self._haddockwrap(callstr)))))
+
+    def package_suppliers(self):
+        if self.version:
+            return 'cabal://%s-%s' % (self.name, self.version)
+        return 'cabal://%s' % (self.name, self.version)
+
+
+class CBI_Variants(object):
+    def __init__(self, **kw):
+        self.variants = kw
+    def __call__(self, **kw):
+        self.variants.update(kw)
+        return self
+
+# Which classes are made available to the evaluation of the input
+# project specification:
+Specification_Classes = [ '__builtins__', 'Project',
+                          'RepoIdent', 'Local',
+                          'StandardPackage',
+                          'HaskellPackage',
+                          'CBI_Variants',
+]
+
+
+# ----------------------------------------------------------------------
+# ----------------------------------------------------------------------
+# Messages that can be passed
+
+class Error(object):
+    def __init__(self, msg, attempting):
+        self.msg = msg
+        self.attempting = attempting
+    def __repr__(self):
+        return 'Error(' + repr(self.msg) + ' << attempting ' + repr(self.attempting) + ')'
+
+class Success(object):
+    def __init__(self, data):
+        self.data = data
+    def __repr__(self):
+        return 'Success(' + repr(self.data) + ')'
+
+# --------------------
+
+class ProgressStatus(object):
+    """This message is sent periodically by the main coordination actor to
+       the user to indicate the general progress.  Progress is
+       maintained in the status dictionary where the keys are the
+       areas of effort and the values are a tuple of (current, total)
+       for that area.  Note that the total may rise over time.
+    """
+    def __init__(self, num_packages=1):
+        # Steps: get_info, setup_local_nix, write_file, get_compilers, write_project_file
+        self.status = { 'get_info': (0, 0),
+                        'setup_local_nix': (0, 0),
+                        'write_file': (0, 0),
+                        #'get_compilers': (0, 1),
+                        'pending': (0, 0),
+                        'write_result': (0, 1),
+        }
+    def _add_to_max(self, key):
+        old = self.status[key]
+        self.status[key] = (old[0], old[1] + 1)
+    def _add_to_count(self, key):
+        old = self.status[key]
+        self.status[key] = (old[0] + 1, max(old[0] + 1, old[1]))
+    def add_get_info(self):
+        self._add_to_max('get_info')
+    def add_setup_local(self):
+        self._add_to_max('setup_local_nix')
+    def add_write_file(self):
+        self._add_to_max('write_file')
+    def add_pending(self):
+        self._add_to_max('pending')
+    def done_get_info(self):
+        self._add_to_count('get_info')
+    def done_setup_local(self):
+        self._add_to_count('setup_local_nix')
+    def done_write_file(self):
+        self._add_to_count('write_file')
+    def done_pending(self):
+        self._add_to_count('pending')
+    def done_write_result(self):
+        self._add_to_count('write_result')
+
+
+# ----------------------------------------------------------------------
+# ----------------------------------------------------------------------
+# Thespian helpers
+
+class AutoCreate(object):  # KWQ: could be in Thespian
+    """Thespian helper base object: if there is a reference to self.NAME
+       and there exists a create_NAME attribute on self, call the
+       function specified by that attribute and use the return value
+       as self.NAME.  If a subsequent ChildActorExited is received
+       with that name, destroy the self.NAME reference (it will be
+       created anew on the next reference).
+    """
+    def __getattr__(self, name):
+        creator = None if name.startswith('create_') else getattr(self, 'create_' + name, None)
+        if not creator:
+            raise AttributeError(name)
+        val = creator()
+        setattr(self, name, val)
+        if not hasattr(self, '_ac_names'):
+            self._ac_names = set()
+        self._ac_names.add(name)
+        return val
+
+    def receiveMsg_ChildActorExited(self, childexitmsg, sender):
+        if hasattr(self, '_ac_names'):
+            for each in self._ac_names:
+                if self.__dict__.get(each, None) == childexitmsg.childAddress:
+                    delattr(self, each)
+                    return
+
+# --------------------
+
+class WriteFile(ActorTypeDispatcher):
+    """When passed a tuple message containing a tag, filename, and list of
+       lines, this will write the lines to the named file and then
+       send back a Success message with the tag and filename.
+    """
+    def receiveMsg_tuple(self, writemsg, sender):
+        tag, fname, flines = writemsg
+        with open(os.path.expandvars(
+                os.path.expanduser(fname)), 'w') as cabalfile:
+            cabalfile.writelines([l + '\n' for l in flines])
+        self.send(sender, Success( (tag, fname) ))
+
+
+# ----------------------------------------------------------------------
+# ----------------------------------------------------------------------
+# Querying git repos
+
+class GitRef(object):
+    """Reference to a specific git patch."""
+    def __init__(self, name, branch, ref, reporef, subpath=None, cbi_reporef=None):
+        self.name = name        # The name from the input RepoIdent
+        self.reporef = reporef  # The repository reference (url + team + reponame)
+        self.cbi_reporef = cbi_reporef or reporef  # Repository reference that CBI system should use (e.g. if private)
+        self.branch = branch    # The input version from the RepoIdent
+        self.ref = ref          # The patch reference obtained from the repository
+        self.subpath = subpath  # the subpath in the repo where this package lives (from RepoIdent)
+
+
+@troupe()
+class GitBranchRef(ActorTypeDispatcher):
+    """Given a StandardPackage message with a repo_location, which has a
+       git reference (a branch name, a tag, or a revision hash),
+       determine the specific git patch being referenced and return a
+       GitRef object which describes that specific git patch.
+    """
+    # n.b. if the current process does not have a gpg-agent,
+    # ssh-agent, or git-credential helper running, this has the
+    # potential to prompt for a username and password.  This will
+    # generally only be successful if not run with "--fast" (i.e. it
+    # is only successful for a simpleSystemBase where Actors are
+    # single-threaded and still maintain TTY access via stdin/stdout);
+    # even an X-windows DISPLAY variable is usually ineffective
+    # because only one x-getpass can be run at any time.
+    def receiveMsg_StandardPackage(self, pkgmsg, sender):
+        run = self.createActor(RunCommand)
+        if not pkgmsg.repo_location:
+            self.send(sender, Error((pkgmsg.name, "no repo location specified"),
+                                    'GitBranchRef pkg request'))
+            return
+        cmd = Command('git', ['ls-remote', pkgmsg.repo_location.source_loc],
+                      logger=None if getattr(pkgmsg, 'noisily', False) else False,
+                      logtag='git:ls-remote',
+                      error_ok=not getattr(pkgmsg, 'noisily', False))
+        cmd.reqmsg = pkgmsg
+        self.send(run, cmd)
+        self.requestor = sender
+        self.troupe_work_in_progress = True
+    def receiveMsg_CommandResult(self, cmdres, sender):
+        self.troupe_work_in_progress = False
+        self.send(sender, ActorExitRequest())
+        if not cmdres:
+            self.send(self.requestor, Error((cmdres.command.reqmsg.name, cmdres.errorstr),
+                                            'GitBranchRef cmdresult'))
+            return
+        lines = cmdres.stdout.split('\n')
+        name = cmdres.command.reqmsg.name
+        branch = cmdres.command.reqmsg.version or 'master'
+        match = list(filter(lambda l: l and l[-(len(branch)+1):] == '/' + branch, lines))
+        reporef = cmdres.command.reqmsg.repo_location.source_loc
+        cbi_reporef = cmdres.command.reqmsg.repo_location.cbi_source_loc
+        if len(match) == 0:
+            # This does not match a branch name.  If all characters
+            # are hex chars, it may simply be a sha reference which
+            # cannot be verified locally but will just be used.
+            # Otherwise fail.
+            if set(branch) - set('0123456789abcdef'):
+                self.send(self.requestor, Error((name,
+                                                 'No match for branch %s in repo %s' %
+                                                 (branch, reporef)),
+                                                'GitBranchRef no matches'))
+            else:
+                self.send(self.requestor, GitRef(name=name, branch=branch, ref=branch,
+                                                 reporef=reporef,
+                                                 cbi_reporef=cbi_reporef,
+                                                 subpath=cmdres.command.reqmsg.repo_location.subpath))
+        elif len(match) > 1:
+            m = list(filter(lambda x: x.strip().endswith(' refs/heads/' + branch), match)) + \
+                list(filter(lambda x: x.strip().endswith('\trefs/heads/' + branch), match))
+            if len(m) == 1:
+                self.send(self.requestor, GitRef(name=name, branch=branch, ref=m[0].split('\t')[0],
+                                                 reporef=reporef, cbi_reporef=cbi_reporef,
+                                                 subpath=cmdres.command.reqmsg.repo_location.subpath))
+            else:
+                self.send(self.requestor,
+                          Error((name,
+                                 'Multiple matches for branch %s in repo %s: %s' %
+                                 (branch, reporef, match)),
+                                'GitBranchRef multiple matches'))
+        else:
+            self.send(self.requestor, GitRef(name=name, branch=branch, ref=match[0].split('\t')[0],
+                                             reporef=reporef, cbi_reporef=cbi_reporef,
+                                             subpath=cmdres.command.reqmsg.repo_location.subpath))
+
+    # def receiveUnrecognizedMessage(self, msg, sender):
+    #     logging.critical('GBR: GOT UNREC FROM %s: %s', sender, msg)
+
+class GitRemoteURL(object):
+    def __init__(self, inputpath, localroot, root_rel_path, remote_url):
+        self.localpath = inputpath
+        self.localroot = localroot  # The top of the git repository
+        self.local_subpath = root_rel_path
+        self.remote_url = remote_url
+    def proj_url_update(self, proj_reposerver):
+        if proj_reposerver:
+            orig = urllib.parse.urlparse(self.remote_url)
+            repl = urllib.parse.urlparse(proj_reposerver)
+            if orig[0] in ('http', 'https'):
+                if repl[0] in ('http', 'https'):
+                    # Replace url parts with the corresponding replacement
+                    parts = [ repl[part] or orig[part] for part in range(6) ]
+                    self.remote_url = urllib.parse.urlunparse(parts)
+                else:
+                    # Replace http orig with ssh replacement.  Assumes
+                    # replacement is just the host or user@host portion.
+                    self.remote_url = (proj_reposerver + ':' +
+                                       path[(1 if path[0] == '/' else 0):] +
+                                       ('' if path.endswith('.git') else '.git'))
+
+            else:
+                if repl[0] in ('http', 'https'):
+                    # Replace ssh orig with http replacement
+                    orig_colonpos = self.remote_url.find(':')
+                    endpos = -4 if self.remote_url.endswith('.git') else len(self.remote_url)
+                    self.remote_url = ( proj_reposerver + '/' + self.remote_url[orig_colonpos+1:endpos])
+                else:
+                    # Replace ssh orig with ssh replacement. Orig or
+                    # replacement may contain user portion.
+                    orig_atpos = self.remote_url.find('@')
+                    orig_name = '' if orig_atpos == -1 else self.remote_url[:orig_atpos+1]
+                    orig_colonpos = self.remote_url.find(':')
+                    repl_atpos = proj_reposerver.find('@')
+                    self.remote_url = ( (orig_name if orig_name and repl_atpos == -1 else '') +
+                                        proj_reposerver +
+                                        self.remote_url[orig_colonpos:] )
+
+
+class GetGitRemote(ActorTypeDispatcher):
+    """Given an input path string, returns a GitRemoteURL to identify the
+       remote Git repo associated with the input path."""
+    def receiveMsg_str(self, localpath, sender):
+        run = self.createActor(RunCommand)
+        input_path = localpath or os.getcwd()
+        tgtdir, relpath = self.find_gitroot(input_path)
+        if not tgtdir:
+            self.send(sender, Error((localpath or os.getcwd(),
+                                     ' could not find .git repository'),
+                                    'GetGitRemote input prep'))
+            return
+        cmd = Command('git', ['-C', tgtdir, 'remote', 'get-url', 'origin'],
+                      logger=False,
+                      error_ok=True)
+        cmd.requester = sender
+        cmd.input_path = input_path
+        cmd.root_path = tgtdir
+        cmd.root_relpath = relpath
+        self.send(run, cmd)
+    @staticmethod
+    def find_gitroot(dname):
+        relpath = []
+        while dname and dname != '/':
+            if os.path.exists(os.path.join(dname, '.git')):
+                return (dname, os.path.join(*tuple(relpath)) if relpath else '')
+            dname,h = os.path.split(dname)
+            relpath.append(h)
+        return (None, None)
+    def receiveMsg_CommandResult(self, cmdres, sender):
+        self.send(sender, ActorExitRequest())
+        self.send(cmdres.command.requester,
+                  GitRemoteURL(cmdres.command.input_path, cmdres.command.root_path, cmdres.command.root_relpath,
+                               cmdres.stdout.split('\n')[0])
+                  if cmdres else
+                  Error((cmdres.command.input_path,
+                         cmdres.errorstr + " for " + ' '.join(cmdres.command.args)),
+                        'GetGitRemote cmdresult'))
+
+
+class CloneReq(object):
+    def __init__(self, git_ref, refmsg, requestor, noisily=False):
+        self.refmsg = refmsg
+        self.requestor = requestor
+        self.noisily = noisily
+        self.local_dir = None
+
+class GitTempClone(ActorTypeDispatcher):
+    """Temporarily clones a git repo (specified by CloneReq) into local
+       storage to handle subsequent queries; the storage is removed
+       when this Actor is killed.  Returns Success with the CloneReq
+       or Error
+    """
+
+    def receiveMsg_CloneReq(self, gitspec, sender):
+        if getattr(self, 'clonedir', None):
+            self.send(sender, Error(('error cloning',
+                                     'already cloned a github repo'),
+                                    'git clone of %s' % gitspec.git_ref))
+            return
+        self.clonedir = tempfile.TemporaryDirectory()
+        cmd = Command('git', ['clone', gitspec.refmsg.reporef, self.clonedir.name],
+                      logger=None if getattr(gitspec, 'noisily', False) else False,
+                      logtag='git-temp-clone',
+                      error_ok=not getattr(gitspec, 'noisily', False))
+        cmd.tag = gitspec
+        cmd.requestor = sender
+        self.send(self.createActor(RunCommand), cmd)
+
+    def receiveMsg_CommandResult(self, cmdres, sender):
+        if cmdres:
+            if cmdres.command.args[0] == 'clone':
+                gitspec = cmdres.command.tag
+                refmsg = gitspec.refmsg
+                cmd = Command('git', ['-C', self.clonedir.name, 'checkout', refmsg.branch],
+                              logger=None if getattr(gitspec, 'noisily', False) else False,
+                              logtag='git-temp-checkout',
+                              error_ok=not getattr(gitspec, 'noisily', False))
+                cmd.tag = gitspec
+                cmd.requestor = cmdres.command.requestor
+                self.send(sender, cmd)
+                return
+            cmdres.command.tag.local_dir = self.clonedir.name
+            self.send(cmdres.command.requestor, Success(cmdres.command.tag))
+        else:
+            errmsg = Error(('error cloning', cmdres.errorstr),
+                           'git clone of %s' % cmdres.command.args[1])
+            errmsg.requestor = cmdres.command.tag.requestor
+            self.send(cmdres.command.requestor, errmsg)
+
+    def receiveMsg_ActorExitRequest(self, exitreq, sender):
+        self.clonedir.cleanup()
+
+
+# ----------------------------------------------------------------------
+# ----------------------------------------------------------------------
+# Haskell package handling and Cabal information
+
+
+class CabalSpec(object):
+    """The nix specification for a specific cabal package as obtained from
+       cabal2nix
+    """
+    def __init__(self, name, version, lines, src_loc):
+        self.name = name
+        self.version = version
+        self.spec_lines = lines
+        self.src_loc = src_loc
+
+    def origin_info(self):
+        return ' '.join(filter(None, [self.version, self.src_loc]))
+
+
+class HackageRef(object):
+    "Reference to a Haskell package on the Hackage server."
+    def __init__(self, name, ver, noisily=False):
+        self.pkgname = name
+        self.pkgver = ver
+        self.noisily = noisily
+
+isversionline = lambda l: l and (l.strip().startswith('version =') or
+                                 l.strip().startswith('version='))
+issrcline = lambda l: l and (l.strip().startswith('src =') or
+                             l.strip().startswith('src='))
+
+# Enable parallel access, but only a very limited amount: running too
+# many cabal2nix in parallel will cause them to busywait/deadlock and
+# the operations will time out.  This seems to be a limitation of
+# cabal2nix and/or nix itself.
+@troupe(max_count=4)
+class Cabal2Nix(ActorTypeDispatcher, AutoCreate):
+    """Upon receipt of a GitRef, HackageRef, or Local message, this actor
+       will run cabal2nix for that package to generate a nix
+       specification, sending back a CabalSpec describing the nix
+       result or an Error on failure.
+    """
+    def __init__(self, *args, **kw):
+        super(Cabal2Nix, self).__init__(*args, **kw)
+        self.pending_c2n = []
+        self.reqnum = 0
+
+    create_run = lambda self: self.createActor(RunCommand)
+    create_nix_hash = lambda self: self.createActor(NixHash)
+
+
+    def receiveMsg_Local(self, localmsg, sender):
+        cmd = Command('cabal2nix', ['--dont-fetch-submodules',
+                                    localmsg.source_loc],
+                      logger=None if getattr(localmsg, 'noisily', False) else False,
+                      logtag='cabal2nix:local',
+                      error_ok=not getattr(localmsg, 'noisily', False))
+        cmd.tag = localmsg
+        cmd.src = localmsg.source_loc
+        self.do_run(cmd, sender)
+    def local_receiveMsg_GitRef(self, refmsg, sender):
+        # This version will locally fetch the repo without any
+        # submodule fetches and then perform the cabal2nix on the
+        # locally-fetched version to avoid submodule fetching.  The
+        # downside is that the result is often not recognized as the
+        # same input source needed for a nix-shell or nix-build unless
+        # this is a source override for the -project file generation.
+        self.send(self.createActor(NixPrefetchGitLocal),
+                  CloneReq(refmsg.ref, refmsg, sender,
+                           getattr(refmsg, 'noisily', False)))
+        self.troupe_work_in_progress = True
+    def receiveMsg_GitRef(self, refmsg, sender):
+        args = ['--revision', refmsg.ref,
+                '--dont-fetch-submodules',
+        ]
+        if refmsg.subpath:
+            args.extend(['--subpath', refmsg.subpath])
+        cmd = Command('cabal2nix', args + [refmsg.reporef],
+                      logger=None if getattr(refmsg, 'noisily', False) else False,
+                      logtag='cabal2nix:git',
+                      error_ok=not getattr(refmsg, 'noisily', False))
+        cmd.tag = refmsg
+        cmd.src = refmsg.reporef + ' ' + refmsg.ref
+        self.do_run(cmd, sender)
+    def receiveMsg_GitRefWithLclSrc(self, refmsg, sender):
+        cmd = Command('cabal2nix',
+                      [os.path.join(refmsg.lclref, refmsg.gitref.subpath)
+                       if refmsg.gitref.subpath else refmsg.lclref,
+                       '--dont-fetch-submodules'
+                      ],
+                      logger=None if getattr(refmsg, 'noisily', False) else False,
+                      logtag='cabal2nix:git+local',
+                      error_ok=not getattr(refmsg, 'noisily', False))
+        cmd.tag = refmsg
+        cmd.src = refmsg.lclref + " (S)"
+        self.do_run(cmd, sender)
+    def receiveMsg_HackageRef(self, hackagemsg, sender):
+        localdb = 'hackage/01-index.tar'
+        if os.path.exists(localdb):
+            args = ['--hackage-db', localdb]
+        else:
+            args = []
+        args = args + [ 'cabal://' + hackagemsg.pkgname +
+                        ('-' + hackagemsg.pkgver if hackagemsg.pkgver else '')]
+        cmd = Command('cabal2nix', args,
+                      logger=None if hackagemsg.noisily else False,
+                      logtag='cabal2nix:hackage',
+                      error_ok=not hackagemsg.noisily)
+        cmd.tag = hackagemsg
+        cmd.src = 'hackage '
+        self.do_run(cmd, sender)
+    def do_run(self, cmd, sender):
+        cmd.requestor = sender
+        cmd.reqnum = self.reqnum
+        self.reqnum = self.reqnum + 1
+        if not self.pending_c2n:
+            self.send(self.run, cmd)
+        self.pending_c2n.append(cmd)
+        self.troupe_work_in_progress = True
+    def do_next(self, cmdres):
+        self.pending_c2n = [ e for e in self.pending_c2n
+                             if e.reqnum != cmdres.command.reqnum ]
+        if self.pending_c2n:
+            self.send(self.run, self.pending_c2n[0])
+    def receiveMsg_CommandResult(self, cmdres, sender):
+        self.do_next(cmdres)
+        origmsg = cmdres.command.tag
+        if isinstance(origmsg, Local):
+            self._postproc(origmsg.pkgname, None, cmdres,
+                           cmdres.command.src,
+                           cmdres.command.requestor)
+        elif isinstance(origmsg, GitRefWithLclSrc):
+            if not cmdres:
+                self._postproc(origmsg.gitref.name, origmsg.gitref.branch, cmdres,
+                               cmdres.command.src, cmdres.command.requestor)
+                return
+            hashmsg = Local(origmsg.lclref)
+            hashmsg.grwls = cmdres
+            self.send(self.createActor(NixHash), hashmsg)  # KWQ: self.nix_hash # returns via Success message
+        elif isinstance(origmsg, CloneReq):
+            hashmsg = Local(origmsg.local_dir)
+            hashmsg.clonereq = cmdres
+            self.send(self.createActor(NixHash), hashmsg)  # KWQ: self.nix_hash # returns via Success message
+        elif isinstance(origmsg, GitRef):
+            # Change the version reference in the nix output to the
+            # git branch name.
+            self._postproc(origmsg.name, origmsg.branch, cmdres,
+                           cmdres.command.src,
+                           cmdres.command.requestor,
+                           lambda l: '  version = "%s";' % origmsg.branch
+                           if isversionline(l) else l)
+        else:
+            self._postproc(origmsg.pkgname, origmsg.pkgver, cmdres,
+                           cmdres.command.src,
+                           cmdres.command.requestor)
+    def receiveMsg_Success(self, msg, sender):
+        if hasattr(msg, 'grwls'):
+            cmdres = msg.grwls
+            origmsg = cmdres.command.tag
+            origmsg.gitref.sha256 = msg.data
+            self._postproc(origmsg.gitref.name, origmsg.gitref.branch,
+                           cmdres, cmdres.command.src,
+                           cmdres.command.requestor,
+                           lambda l: (('  version = "%s";' % origmsg.gitref.branch)
+                                      if isversionline(l) else
+                                      (('  src = %s;' %
+                                       'fetchgit { url="%(reporef)s"; rev="%(ref)s"; sha256="%(sha256)s"; fetchSubmodules=false; }' %
+                                        origmsg.gitref.__dict__)
+                                       if issrcline(l) else l)))
+        elif hasattr(msg, 'clonereq'):
+            cmdres = msg.clonereq
+            refmsg = cmdres.command.tag.refmsg
+            refmsg.sha256 = msg.data
+            self.send(cmdres.command.tag.cloner, ActorExitRequest())
+            src = 'fetchgit { url="%(reporef)s"; rev="%(ref)s"; fetchSubmodules=false; sha256="%(sha256)s"; }'
+            srcrepl = (('  src = %s;\n'
+                        '  postUnpack = "sourceRoot+=/%%(subpath)s; echo source root reset to $sourceRoot";'
+                        % src)
+                       if refmsg.subpath else
+                       ('  src = %s;' % src)) % refmsg.__dict__
+            self._postproc(refmsg.name, refmsg.branch,
+                           cmdres, cmdres.command.src,
+                           cmdres.command.tag.requestor,
+                           lambda l: (('  version = "%s";' % refmsg.branch)
+                                      if isversionline(l) else
+                                      (srcrepl if issrcline(l) else l)))
+
+        elif isinstance(msg.data, CloneReq):
+            cmd = Command('cabal2nix', [os.path.join(msg.data.local_dir, msg.data.refmsg.subpath)
+                                        if msg.data.refmsg.subpath else
+                                        msg.data.local_dir,
+                                        '--dont-fetch-submodules'
+                                       ],
+                          logger=None if getattr(msg.data, 'noisily', False) else False,
+                          logtag='cabal2nix:git+local',
+                          error_ok=not getattr(msg.data, 'noisily', False))
+            cmd.tag = msg.data
+            cmd.tag.cloner = sender
+            refmsg = msg.data.refmsg
+            cmd.src = refmsg.reporef + ' ' + refmsg.ref
+            self.do_run(cmd, sender)
+    def receiveMsg_Error(self, msg, sender):
+        self.send(sender, ActorExitRequest())
+        self.troupe_work_in_progress = False
+        if hasattr(msg, 'grwls'):
+            cmdres = msg.grwls
+            origmsg = cmdres.command.tag
+            self.send(cmdres.command.requestor,
+                      Error((origmsg.gitref.name, str(msg)), 'Cabal2Nix'))
+        elif hasattr(msg, 'requestor'):
+            self.send(msg.requestor, msg)
+        elif hasattr(msg, 'clonereq'):
+            self.send(msg.clonereq.command.tag.requestor, msg)
+    def _postproc(self, name, version, cmdres, src_info, sender, line_op=None):
+        self.troupe_work_in_progress = False
+        if cmdres.exitcode:
+            self.send(sender, Error((name, cmdres.errorstr), 'Cabal2Nix'))
+            return
+        lines = [line_op(l) if line_op else
+                 l for l in cmdres.stdout.split('\n')]
+        self.send(sender, CabalSpec(name, version, lines, src_info))
+
+
+class CabalPrefetched(object):
+    """The response message from a successful CabalPrefetch operation."""
+    def __init__(self, name, reference, sha256, fetchspec=None):
+        self.name = name
+        self.reference = reference
+        self.sha256 = sha256
+        self.fetchspec = fetchspec
+    def origin_info(self):
+        self.shamsg = "sha256=" + self.sha256 if self.sha256 else ""
+        return '[nix-prefetch]%(name)s-%(reference)s' % self.__dict__
+
+
+@troupe()
+class CabalPrefetch(ActorTypeDispatcher, AutoCreate):
+    """Upon receipt of a GitRef or HackageRef message, this actor will
+       prefetch the referenced package into the local nix store and
+       return a CabalPrefetched message with the result information
+       (including the hash for the fetched source) or an Error
+       message.
+    """
+
+    create_run = lambda self: self.createActor(RunCommand)
+
+    def receiveMsg_GitRef(self, refmsg, sender):
+        cmd = Command('nix-prefetch-git', [refmsg.reporef, refmsg.ref],
+                      logger=None if getattr(refmsg, 'noisily', False) else False,
+                      logtag='prefetch:git',
+                      error_ok=not getattr(refmsg, 'noisily', False))
+        cmd.tag = refmsg
+        self.do_run(cmd, sender)
+
+    def receiveMsg_HackageRef(self, hackagemsg, sender):
+        cmd = Command('nix-prefetch-url',
+                      ['mirror://hackage/%s%s.tar.gz' % (
+                          hackagemsg.pkgname,
+                          '-' + hackagemsg.pkgver if hackagemsg.pkgver else '')],
+                      logger=None if hackagemsg.noisily else False,
+                      logtag='prefetch:hackage',
+                      error_ok=not hackagemsg.noisily)
+        cmd.tag = hackagemsg
+        self.do_run(cmd, sender)
+
+    def do_run(self, cmd, sender):
+        if not getattr(cmd, 'requestor', None):
+            cmd.requestor = sender
+        self.send(self.createActor(RunCommand), cmd)  # KWQ: self.run
+        self.troupe_work_in_progress = True
+
+    def receiveMsg_CommandResult(self, cmdres, sender):
+        self.send(sender, ActorExitRequest())
+        self.troupe_work_in_progress = False
+        if cmdres.exitcode:
+            errmsg = Error((cmdres.command.tag.name
+                            if isinstance(cmdres.command.tag, GitRef) else
+                            cmdres.command.tag.pkgname,
+                            cmdres.errorstr),
+                           'CabalPrefetch')
+            errmsg.tag = cmdres.command.tag
+            self.send(cmdres.command.requestor, errmsg)
+            return
+        output = cmdres.stdout.strip()
+        if isinstance(cmdres.command.tag, GitRef):
+            refmsg = cmdres.command.tag
+            fdata = json.loads(output)
+            fspec = 'fetchgit {' + '; '.join(['%s="%s"'%(str(K), str(fdata[K]))
+                                              for K in fdata
+                                              if K not in ['date', 'fetchSubmodules']]
+                                             + ['fetchSubmodules=false']
+            ) + ';}'
+            respmsg = CabalPrefetched(refmsg.name, refmsg.ref,
+                                      sha256=None,
+                                      fetchspec=fspec)
+        else:
+            hackagemsg = cmdres.command.tag
+            respmsg = CabalPrefetched(hackagemsg.pkgname,
+                                      hackagemsg.pkgver,
+                                      output)
+        respmsg.tag = cmdres.command.tag
+        self.send(cmdres.command.requestor, respmsg)
+
+
+# ----------------------------------------------------------------------
+# ----------------------------------------------------------------------
+# Nix expression evaluation
+
+class NixExprEval(ActorTypeDispatcher, AutoCreate):
+    """Evaluates an arbitrary nix expression passed as an input string
+       message, responding with a Success message containing the
+       stdout, or an Error message.
+    """
+
+    create_run = lambda self: self.createActor(RunCommand)
+
+    def receiveMsg_str(self, exprmsg, sender):
+        cmd = Command('nix-instantiate', ['--eval', '-E', exprmsg],
+                      logger=None if getattr(exprmsg, 'noisily', False) else False,
+                      logtag='nix-eval')
+        cmd._nee_requestor = sender
+        self.send(self.createActor(RunCommand), cmd)  # KWQ: self.run
+
+    def receiveMsg_CommandResult(self, res, sender):
+        self.send(sender, ActorExitRequest())
+        self.send(res.command._nee_requestor,
+                  Error(('Evaluating nix: ' + res.command.args[2], res.exitcode, res.errorstr),
+                        'NixExprEval')
+                  if res.exitcode else Success(res.stdout))
+
+
+class NixPrefetchGitLocal(ActorTypeDispatcher):
+    """Uses nix-prefetch-git to obtain a git repo from the remote in the
+       same manner that it will be retrieved during the build, so that
+       the nix-hash and cabal2nix operations can be performed on this
+       local version.  This avoids updating the store which cannot be
+       done in restricted mode during evaluation.
+    """
+
+    def receiveMsg_CloneReq(self, gitspec, sender):
+        if getattr(self, 'clonedir', None):
+            self.send(sender, Error(('error cloning',
+                                     'already cloned a github repo'),
+                                    'git clone of %s' % gitspec.git_ref))
+            return
+        self.clonedir = tempfile.TemporaryDirectory()
+        cmd = Command('nix-prefetch-git', ['--builder',
+                                           '--url', gitspec.refmsg.reporef,
+                                           '--out', self.clonedir.name,
+                                           '--rev', gitspec.refmsg.ref],
+                      logger=None if getattr(gitspec, 'noisily', False) else False,
+                      logtag='local:nix-prefetch-git',
+                      error_ok=not getattr(gitspec, 'noisily', False))
+        cmd.tag = gitspec
+        cmd.requestor = sender
+        self.send(self.createActor(RunCommand), cmd)
+
+    def receiveMsg_CommandResult(self, cmdres, sender):
+        if cmdres:
+            cmdres.command.tag.local_dir = self.clonedir.name
+            self.send(cmdres.command.requestor, Success(cmdres.command.tag))
+        else:
+            errmsg = Error(('error on nix-prefetch-git', cmdres.errorstr),
+                           'prefetch of %s' % cmdres.command.args[1])
+            errmsg.requestor = cmdres.command.tag.requestor
+            self.send(cmdres.command.requestor, errmsg)
+
+    def receiveMsg_ActorExitRequest(self, exitreq, sender):
+        self.clonedir.cleanup()
+
+
+class NixHash(ActorTypeDispatcher, AutoCreate):
+    """Computes the store hash of the specified local location, returning
+       it as the Success payload.
+    """
+
+    create_run = lambda self: self.createActor(RunCommand)
+
+    def receiveMsg_Local(self, localmsg, sender):
+        cmd = Command('/run/current-system/sw/bin/nix-hash',
+                      ['--type', 'sha256', '--base32', localmsg.source_loc],
+                      logger=None if getattr(localmsg, 'noisily', False) else False,
+                      logtag='nix-hash')
+        cmd._nh_requestor = sender
+        cmd._nh_origmsg = localmsg
+        self.send(self.createActor(RunCommand), cmd)  # KWQ: self.run
+
+    def receiveMsg_CommandResult(self, res, sender):
+        self.send(sender, ActorExitRequest())
+        msg = (Error(('Generating nix hash: ' + str(res.command.args), res.exitcode, res.errorstr),
+                     'NixHash')
+               if res.exitcode else Success(res.stdout.strip()))
+        for each in ('grwls', 'clonereq'):
+            if hasattr(res.command._nh_origmsg, each):
+                setattr(msg, each, getattr(res.command._nh_origmsg, each))
+        self.send(res.command._nh_requestor, msg)
+
+
+
+# --------------------
+
+class NixGHCCompilers(ActorTypeDispatcher):
+    """When a string message "get" is received, this will return a list of
+       strings, where each string is a valid compiler name in the
+       nixpkgs.haskell.compiler namespace.
+    """
+    def receiveMsg_str(self, reqmsg, sender):
+        if reqmsg != "get":
+            self.send(sender, Error('Unknown request: ' + reqmsg, 'NixGHCCompilers'))
+            return
+        nixeval = self.createActor(NixExprEval)
+        self.send(nixeval, 'with import <nixpkgs> {}; builtins.attrNames pkgs.haskell.compiler')
+        self.requestor = sender
+    def receiveMsg_Success(self, respmsg, sender):
+        if hasattr(respmsg.data, 'decode'):
+            try:
+                plainstr = respmsg.data.decode('utf-8')
+            except AttributError:
+                plainstr = respmsg.data
+        else:
+            plainstr = respmsg.data
+        self.send(self.requestor, eval(plainstr.replace('" "', '", "')))
+        self.send(sender, ActorExitRequest())
+    def receiveMsg_Error(self, errmsg, sender):
+        self.send(self.requestor, errmsg)
+        self.send(sender, ActorExitRequest())
+    def receiveMsg_PoisonMessage(self, poisonmsg, sender):
+        self.send(self.requestor, Error(('Unable to obtain compiler list', poisonmsg),
+                                        'NixGHCCompilers'))
+
+# --------------------
+
+# KWQ:  could it be trained to read .gitmodules as well?
+
+# @troupe
+# class NixHaskellPackageVer(ActorTypeDispatcher):
+#     """Determines the version of the specified package currently available
+#        in nixpkgs."""
+#     def receiveMsg_str(self, reqmsg, sender):  # name of package
+#         if not getattr(self, 'nixeval', None):
+#             nixeval = self.createActor(NixExprEval)
+#         self.send(nixeval, '(import <nixpkgs> {}).pkgs.haskellPackages.%s.version')
+#         self.requestor = sender
+#         self.troupe_work_in_progress = True
+#     def receiveMsg_Success(self, respmsg, sender):
+#         self.troupe_work_in_progress = False
+#         self.send(self.requestor, respmsg.data.decode('utf-8').replace('"',''))
+#     def receiveMsg_Error(self, errmsg, sender):
+#         self.send(self.requestor, errmsg)
+#         self.send(sender, ActorExitRequest())
+
+# --------------------
+
+# class GetDepVers(ActorTypeDispatcher):
+#     # Reads the cabal.config output by "$ cabal freeze" to get the
+#     # dependendies and constraints
+#     def receiveMsg_str(self, reqmsg, sender):  # directory for cabal.config file
+#         with open(os.path.join(reqmsg, 'cabal.config'), 'r') as ccf:
+#             deps = ccf.read()
+#         deplist = [d.strip()
+#                    for d in deps.replace('constraints:', ' ').split('\n')]
+#         self.send(sender,
+#                   [ HaskellPackage(dep.split()[0], dep.split()[1][2:-1])
+#                     for dep in deplist  # each: "package ==v.e.r,"
+#                   ])
+
+# --------------------
+
+
+# ----------------------------------------------------------------------
+# ----------------------------------------------------------------------
+# Nix file output generation
+
+class NixPackageSpec(object):
+    """Each nix package that should be included in the output will be
+       described by one of these messages.
+    """
+    def __init__(self, package, nix_filename_or_prefetch_sha256):
+        self.package = package  # StandardPackage
+        self.package_name = package.name
+        self.nix_source = nix_filename_or_prefetch_sha256
+    def __lt__(self, o):
+        return self.package_name < o.package_name
+
+
+class SummaryBase(ActorTypeDispatcher):
+    """Base class for the output generation.  This provides the common
+       functionality for collecting all of the NixPackageSpec messages
+       and driving the final output generation.
+    """
+
+    def __init__(self, *args, **kw):
+        super(SummaryBase, self).__init__(*args, **kw)
+        self.nixpackage_list = []
+        self.allowUnfree = False
+        self.static = False
+        self.frequency = '%Y-w%W'
+        self.systems = None
+        self.output_for_hydra = False
+        self.mixins = {}
+
+    def receiveMsg_NixPackageSpec(self, pkgmsg, sender):
+        # Gets called for each nix file written.  Keep a list of the
+        # packages, and also get the list of compilers if it hasn't
+        # been requested yet.
+        self.nixpackage_list.append(pkgmsg)
+        self.call_mixin("extra_prep", pkgmsg.__class__.__name__, (pkgmsg,))
+
+    def call_mixin(self, mixin_op, mixin_kind, args=None):
+        mixin_method = mixin_op + "_" + mixin_kind
+        mixin = self.mixins.get(mixin_kind, None)
+        if mixin and hasattr(mixin, mixin_method):
+            return getattr(mixin, mixin_method)(*((args or tuple())))
+            # getattr(mixin, mixin_method)(*((mixin,) + (args or tuple())))
+
+    def mixin_kinds(self):
+        return self.mixins.keys()
+
+    def receiveMsg_list(self, listmsg, sender):
+        # Response from the NixGHCCompilers Actor request
+        if sender == getattr(self, '_haskell_compilers', None):
+            self.send(sender, ActorExitRequest())
+            self._haskell_compilers = listmsg
+            self._generate_summary_file_if_ready()
+
+    def receiveMsg_Error(self, errormsg, sender):
+        self.summary_error = errormsg
+        self._generate_summary_file_if_ready()
+
+    def receiveMsg_str(self, strmsg, sender):
+        if strmsg == 'allowUnfree':
+            self.allowUnfree = True
+            return
+        if strmsg.startswith('update:'):
+            if strmsg == 'update:hourly':
+                self.frequency = '%Y-w%W-d%u-h%H'
+            elif strmsg == 'update:daily':
+                self.frequency = '%Y-w%W-d%u'
+            return
+        if strmsg == 'static':
+            self.static = True
+            return
+        if strmsg == 'output-for-hydra':
+            self.output_for_hydra = True
+            print('output_for_hydra')
+        # This is the filename to write, and is sent after all the
+        # (Success) messages about individual packages.  Write out the
+        # overlay file now.
+        self.summary_fname = strmsg
+        self.requestor = sender
+        self._generate_summary_file_if_ready()
+
+    def receiveMsg_tuple(self, tmsg, sender):
+        if tmsg[0] == 'systems':
+            self.systems = tmsg[1]
+            print('systems',self.systems)
+
+    def _generate_summary_file_if_ready(self):
+        # Determine if it is time to generate the summary file:
+        #
+        #   1. The summary output filename is known
+        #
+        #   2. No errors have been received (if so, pass this to the
+        #      original requestor).
+        #
+        #   3. The set of compilers is known
+        #
+        # Once the conditions above are met, an output file will be
+        # generated describing the nix packages for which a
+        # NixPackageSpec has been received; the assumption is that the
+        # summary filename will be sent only after all of the
+        # NixPackageSpecs have been sent.
+
+        if not getattr(self, 'summary_fname', None):
+            return # Don't know top-level requestor yet
+
+        err = getattr(self, 'summary_error', None)
+        if err:
+            self.send(self.requestor, err)
+            return
+
+        if getattr(self, 'compilers', None) and \
+           not isinstance(self.compilers, ActorAddress):
+            self._generate_summary_file()
+
+
+    def receiveMsg_Success(self, smsg, sender):
+        # Gets called by the WriteFile Actor when writing our overlay
+        # file.  This is the final success point and the original
+        # requestor will be notified of completion.
+        if isinstance(getattr(self, 'requestor', None), ActorAddress):
+            self.send(self.requestor, smsg)        # -> file written to requestor
+            self.send(sender, ActorExitRequest())  # -> WriteFile Actor
+
+
+# --------------------
+
+class OverlaySpec(SummaryBase):
+    """Creates ~/config/nixpkgs/overlay output files."""
+    # These are problematic because they are either global, or if they
+    # are scoped, don't seem to properly exclude native versions, and
+    # cannot pass overrides as arguments. This output style is
+    # currently deprecated.
+
+    def _generate_summary_file(self):
+        wf = self.createActor(WriteFile)
+        overlay_name = os.path.splitext(os.path.basename(self.summary_fname))[0]
+        package_refs = [self._package_ref(pkg)
+                        for pkg in self.nixpackage_list
+                        if isinstance(pkg.package, HaskellPackage)]
+        group_overrides = \
+            [ '      %(group)s = super.%(group)s.override { overrides = specific_packages; };' %
+              { 'group': g }
+              for g in [ 'haskellPackages', ] + ['haskell.packages.' + cmp for cmp in self.compilers]
+            ]
+        contents = (
+            [ 'self: super:',
+              'let',
+              '  specific_packages = oself: osuper: with super.haskell.lib; {'
+            ] + package_refs +
+            [ '  };',
+              '',
+              '  hOverrides = {',
+            ] + group_overrides +
+            [ '    haskell.compiler = super.haskell.compiler;',
+              '    haskell.lib = super.haskell.lib;',
+              '  };',
+              '',
+              'in { %s = hOverrides;' % overlay_name,
+              ] +
+            [ '     %s = super.callPackage %s {};' % (each.package.name, each.nix_source)
+              for each in self.nixpackage_list
+              if not isinstance(pkg.package, HaskellPackage) ] +
+            [ '   }'
+            ])
+        self.send(wf, ('summarygen', self.summary_fname, contents))
+        #self.send(self.requestor, self.summary_fname)
+
+    def _call_package_spec(self, pkg):
+        if pkg.nix_source:
+            return 'oself.callPackage %s/%%s {}' % os.getcwd() % pkg.nix_source
+        return 'osuper.%s' % pkg.package.name
+
+    def _package_ref(self, pkg):
+        fmt = '     %s = %%s;' % pkg.package.name
+        callpkg = self._call_package_spec(pkg)
+        return fmt % pkg.package.with_wrappers(callpkg)
+
+
+# --------------------
+
+nixstrlist = lambda l: '[ ' + ' '.join(['"'+S+'"' for S in l]) + ' ]'
+
+class StandardPackage_MixIn(object):
+
+    def package_overrides_StandardPackage(self, package_list, project_file):
+        pkgdef = lambda p: ('      %(name)s = p.callPackage %(source)s\n'
+                            '%(indent)s{ inherit ghcver;\n'
+                            '%(indent)s  projpkgs=%(projpkgs)s;\n'
+                            '%(indent)s  pkgs=p;\n%(indent)s};'
+                            % {'name': p.package.name,
+                               'source': p.nix_source,
+                               'indent':' '*16,
+                               'projpkgs': '(attrMap (drvForSystem p.system) projpkgs)'})
+        return map(pkgdef, sorted(package_list))
+
+    def package_ref_StandardPackage(self, package, systems=None):
+        if systems:
+            return ('    %(package_name)s = rlslib.forAllSystems (system:\n'
+                    '                           let pkgs = rlslib.pkgsFor system; in\n'
+                    '                           pkgs.%(package_name)s);'
+                    % package.__dict__ % { 'systems': nixstrlist(systems) })
+        return '    %(package_name)s = pkgs.%(package_name)s;' % package.__dict__
+
+    def kind_definitions_StandardPackage(self, is_static, frequency, systems=None):
+        for each in [
+                '  cleanupSource =',
+                '    builtins.filterSource (path: type:',
+                '      let nm = baseNameOf path;',
+                '        in type != "directory" ||',
+                '           !(builtins.elem nm ["dist" "dist-newstyle" ".git" "_darcs"]));',
+                '',
+                '  attrMap = f: s: builtins.listToAttrs',
+                '                    (builtins.map',
+                '                       (n: { "name"= n; "value"=f n (builtins.getAttr n s); })',
+                '                       (builtins.attrNames s));',
+                '',
+                '  drvForSystem = s: n: v: if builtins.hasAttr s v then builtins.getAttr s v else v;',
+        ]:
+            yield each
+
+        if systems:
+            for each in [
+                    '',
+                    '  rlslib = import <nixpkgs/pkgs/top-level/release-lib.nix> {',
+                    '               supportedSystems = ' + nixstrlist(systems) + ';',
+                    '               packageSet = import nixpkgs;',
+                    '               nixpkgsArgs = { config = config; };',
+                    '           };',
+            ]:
+                yield each
+
+
+class HaskellPackage_MixIn(object):
+
+    def extra_prep_HaskellPackage(self, pkgmsg):
+        if not hasattr(self, '_haskell_compilers'):
+            self._haskell_compilers = self.createActor(NixGHCCompilers)
+            self.send(self._haskell_compilers, 'get')
+
+    def package_ref_HaskellPackage(self, package, systems=None):
+        if systems:
+            return ('    %(package_name)s = rlslib.forAllSystems (system:\n'
+                    '                           let pkgs = rlslib.pkgsFor system; in\n'
+                    '                           pkgs.haskell.packages.${ghcver}.%(package_name)s);'
+                    % package.__dict__ % { 'systems': nixstrlist(systems) })
+        return '    %(package_name)s = pkgs.haskell.packages.${ghcver}.%(package_name)s;' \
+            % package.__dict__
+
+    def package_overrides_HaskellPackage(self, package_list, project_file):
+        package_defs = [ self._package_def_HaskellPackage_(pkg)
+                         for pkg in sorted(package_list) ]
+        return (
+            [ '      haskell = p.haskell // {',
+              '        packages = p.haskell.packages // {',
+              '          ${ghcver} = p.haskell.packages.${ghcver}.override {',
+              '            overrides = self: super: with p.haskell.lib; rec {',
+              '              fetchgit = p.fetchgit;',
+            ] + package_defs + [
+                '            };',
+                '          };',
+                '        };',
+                '      };',
+            ])
+
+    def _package_def_HaskellPackage_(self, pkg):
+        fmt = '               %s = %%s;' % pkg.package.name
+        if not pkg.nix_source:
+            callpkg = 'super.%s' % pkg.package.name
+        elif isinstance(pkg.nix_source, CabalSpec):
+            # CabalSpec ( .name, .version, .spec_lines )
+            callpkg = ('super.callPackage (\n' +
+                       '\n'.join([ '                 ' + l for l in pkg.nix_source.spec_lines ]) +
+                       ') {}')
+
+        else:
+            # CabalPrefetched ( .name, .reference, .sha256, .fetchspec )
+            srcspec, shaspec = self._package_srcspec(pkg)
+            subpath = ('"' + pkg.package.repo_location.subpath + '"') \
+                      if not getattr(pkg.package, 'local_location', False) and \
+                         getattr(pkg.package, 'repo_location', None) and \
+                         getattr(pkg.package.repo_location, 'subpath', None) else 'null'
+            callpkg = 'callCabal2nixSubdir "%(package_name)s" %(source_loc)s %(subpath)s %(sha256)s {}' % \
+                      { 'hpath': 'pkgs.haskell.packages.${ghcver}',
+                        'package_name': pkg.package.name,
+                        'source_loc': srcspec,
+                        'subpath': subpath,
+                        'sha256': shaspec,
+                      }
+
+        return fmt % pkg.package.with_wrappers(callpkg)
+
+    def _package_srcspec(self, pkg):
+        if getattr(pkg.nix_source, 'sha256', None):
+            # This is a non-repo, non-local, standard package reference
+            return (pkg.package.package_suppliers(), '"' + pkg.nix_source.sha256 + '"')
+        if getattr(pkg.nix_source, 'fetchspec', None):
+            return ('(p.%s)' % pkg.nix_source.fetchspec, 'null')
+        # This is a local directory.  Exclude build output paths to ensure a clean build.
+        clean_local_source = lambda s: '(cleanupSource %s)' % s
+        return (clean_local_source(pkg.nix_source), 'null')
+
+    def kind_definitions_HaskellPackage(self, is_static, frequency, systems=None):
+        if not is_static:
+            for each in [
+                 '''
+  # The following are slight modifications to the contents of
+  # nixpkgs/pkgs/development/haskell-modules/make-package-set.nix to
+  # allow explicit passing of sha256 and subdir.  The sha256 must be
+  # pre-generated because nix-prefetch-url cannot be run within a nix
+  # build (security), and therefore the prefetch is done by this
+  # vernix utility beforehand and cabal2nix only gets paths (either
+  # local development directories or nix store locations).
+
+  hackageIndex = version:
+    pkgs.stdenv.mkDerivation {
+      name="hackageIndex-${version}";
+      buildInputs = [ pkgs.curl pkgs.cacert pkgs.gzip ]; #pkgs.cabal-install ];
+      preferLocalBuild = true;
+      phases = ["installPhase"];
+      #indexfile = "${out}/01-index.tar";
+      LANG = "en_US.UTF-8";
+      LOCALE_ARCHIVE = pkgs.lib.optionalString pkgs.stdenv.isLinux "${pkgs.glibcLocales}/lib/locale/locale-archive";
+      installPhase = ''
+        mkdir -p "$out/hackage.haskell.org/"
+        #cabal --remote-repo-cache="$out" update
+        curl --cacert ${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt \\
+             --compressed \\
+             -o $out/hackage.haskell.org/01-index.tar.gz \\
+             https://hackage.haskell.org/01-index.tar.gz
+        gunzip  $out/hackage.haskell.org/01-index.tar.gz
+      '';
+    };
+
+  haskellSrc2nix = { name, src, sha256 ? null, subdir ? null }:
+    let
+      sha256Arg = if isNull sha256 then "" else ''--sha256="${sha256}"'';
+      subdirArg = if isNull subdir then "" else ''--subpath="${subdir}"'';
+      hackagedb = hackageIndex "current-%(dateStamp)s";
+      self = pkgs.haskell.packages.${ghcver};
+    in pkgs.stdenv.mkDerivation {
+      name = "cabal2nix-${name}";
+      buildInputs = [ pkgs.haskellPackages.cabal2nix
+                      #pkgs.cabal-install
+                      pkgs.nix
+                      #pkgs.haskellPackages.Cabal
+                    ];
+      preferLocalBuild = true;
+      phases = ["installPhase"];
+      LANG = "en_US.UTF-8";
+      LOCALE_ARCHIVE = pkgs.lib.optionalString pkgs.stdenv.isLinux "${pkgs.glibcLocales}/lib/locale/locale-archive";
+      installPhase = ''
+        export HOME="$TMP"
+        mkdir -p "$out"
+        cabal2nix --hackage-db ${hackagedb}/hackage.haskell.org/01-index.tar \\
+                  --compiler=${self.ghc.name} \\
+                  --system=${pkgs.stdenv.system} \\
+                  --dont-fetch-submodules \\
+                  ${sha256Arg} ${subdirArg} "${src}" > "$out/default.nix"
+      '';
+  };
+
+  # Creates a Haskell package from a source package by calling cabal2nix on the source.
+  callCabal2nixSubdir = name: src: subdir: sha256: args:
+      let self = pkgs.haskell.packages.${ghcver}; in
+      if builtins.typeOf src != "path"
+      then self.callPackage (haskellSrc2nix { inherit name src subdir sha256; }) args
+      else
+        # When `src` is a Nix path literal, only use `cabal2nix` on
+        # the cabal file, so that the "import-from-derivation" is only
+        # recomputed when the cabal file changes, and so your source
+        # code isn't duplicated into the nix store on every change.
+        # This can only be done when `src` is a Nix path literal
+        # because that is the only kind of source that
+        # `builtins.filterSource` works on. But this filtering isn't
+        # usually important on other kinds of sources, like
+        # `fetchFromGitHub`.
+        pkgs.haskell.lib.overrideCabal (self.callPackage (haskellSrc2nix {
+          inherit name subdir sha256;
+          src = builtins.filterSource (path: type: pkgs.lib.hasSuffix ".cabal" path) src;
+        }) args) (_: { inherit src; });
+                 ''' % { 'dateStamp' : datetime.now().strftime(frequency) }
+            ]:
+                yield each
+
+
+
+class ProjectConfig(SummaryBase):
+    """Creates a nix project-level configuration file that can
+       completely describe all of the packages in that particular
+       project in the locations and versions specified in the vernix
+       input specification.
+    """
+
+    def __init__(self, *args, **kw):
+        super(ProjectConfig, self).__init__(*args, **kw)
+        self.compilers = 'not needed'
+        self.mixins = { 'HaskellPackage': HaskellPackage_MixIn(),
+                        'StandardPackage': StandardPackage_MixIn(),
+        }
+
+    def _generate_summary_data(self, project_fname, sample_pkgname, pkg_dict):
+        for each in [ '{ nixpkgs ? <nixpkgs>',
+                      ', ghcver ? "ghc822"',
+                      '}:',
+                      '',
+                      'let',
+                      '',
+                      '  pkgs = import nixpkgs { inherit config; };',
+                      '',
+                      '  config = {',
+                      '    allowUnfree = true;' if self.allowUnfree else '',
+                      '    packageOverrides = p: {',
+        ]:
+            yield each
+        for kind in pkg_dict:
+            yield ''
+            yield '      # %s packages' % kind
+            for line in self.call_mixin('package_overrides', kind,
+                                        (pkg_dict[kind], os.path.join(os.getcwd(), project_fname))):
+                yield line
+        for each in [ '    };',
+                      '  };',
+                      '',
+                      # '  pkgs = import nixpkgs { inherit config; };',
+                      # '',
+                      # '  inherit (pkgs.haskell.lib) dontCheck doJailbreak overrideCabal;',
+                      # '',
+                      ]:
+            yield each
+
+        for kind in pkg_dict:
+            yield ''
+            for line in self.call_mixin('kind_definitions', kind,
+                                        (self.static,
+                                         self.frequency,
+                                         self.systems if self.output_for_hydra else None)):
+                yield line
+
+        yield ''
+        yield '  projpkgs = {'
+
+        for pkg in sorted(self.nixpackage_list, key=lambda p: p.package_name):
+            yield self.call_mixin('package_ref', pkg.package.__class__.__name__,
+                                  (pkg,
+                                   self.systems if self.output_for_hydra else None))
+
+        yield '  };'
+        yield ''
+        yield 'in projpkgs'
+
+        for line in [
+                '',
+                '# Usage:',
+                '#',
+                '#   For any of the primary packages defined above (e.g. %s),' % sample_pkgname,
+                '#   one of the following can be done:',
+                '#',
+                '#   $ nix-build -A %s %s' % (sample_pkgname, project_fname),
+                '#     <generates "result" link in local directory>',
+                '#',
+                '#   $ nix-build -A %s.env %s' % (sample_pkgname, project_fname),
+                '#   nix-shell$ <dev environment for "cabal build">',
+                '#',
+                '#   $ git clone %s' % sample_pkgname,
+                '#   $ cd %s' % sample_pkgname,
+                '#   $ cat > shell.nix << EOF',
+                '#   { ghcver ? "ghc822" }:',
+                '#   (import %s { inherit ghcver; }).%s.env' % (
+                    os.path.join(os.getcwd(), project_fname), sample_pkgname),
+                '#   EOF',
+                '#   $',
+                '#          ... and then simply:',
+                '#   $ nix-shell',
+                '#   nix-shell$ ',
+                '#          ... or:',
+                '#   $ nix-shell --run "cabal build"',
+                '#',
+                '#   Note that any package specified will create an environment that',
+                '#   references that package and all of its dependencies.',
+                '#',
+        ]:
+            yield line
+
+    def _generate_summary_file(self):
+        wf = self.createActor(WriteFile)
+        project_fname = os.path.basename(self.summary_fname)
+        project_name = os.path.splitext(project_fname)[0]
+
+        pkg_dict = { kind: [ pkg
+                             for pkg in self.nixpackage_list
+                             if pkg.package.__class__.__name__ == kind ]
+                     for kind in self.mixin_kinds() }
+
+        sample_pkgname = sorted([p.package.name
+                                 for p in self.nixpackage_list
+                                 if p.package.name != project_name]
+                                + [ '{PACKAGE}' ])[0]
+
+        contents = [ line
+                     for line in self._generate_summary_data(project_fname,
+                                                             sample_pkgname,
+                                                             pkg_dict) ]
+
+        self.send(wf, ('summarygen', self.summary_fname, contents))
+
+
+# ----------------------------------------------------------------------
+# ----------------------------------------------------------------------
+# Nix file output generation
+
+class InputFrom(object):
+    def __init__(self, filename, location_overrides=None):
+        self.filename = filename
+        self.location_overrides = location_overrides
+
+
+class SrcOverrides(dict): pass
+class SrcReferences(dict): pass
+
+
+class GitRefWithLclSrc(GitRef):
+    def __init__(self, gitref, lclref):
+        self.gitref = gitref
+        self.lclref = lclref
+
+
+class ReadPackageSpec(ActorTypeDispatcher):
+    """When sent an InputFrom message containing the name of a package
+    file, and an optional dictionary of location overrides this reads
+    the vernix input specification and sends it back to the requestor
+    as an array of package specifications (StandardPackage
+    derivations).
+
+    Also sends a NixPackageSpec for each .nix file found in the
+    current directory.  This allows the repository containing the
+    vernix input package file to also contain .nix specifications for
+    packages that cannot be otherwise determined.
+
+    """
+    def receiveMsg_InputFrom(self, inpfrom, sender):
+        package_file = inpfrom.filename
+        input_context = { key: globals()[key]
+                          for key in globals()
+                          if key in Specification_Classes }
+        input_context.update({'VERNIX_INPUT_FILE': inpfrom.filename})
+
+        try:
+            package_spec = eval(open(package_file, 'r').read())
+        except SyntaxError:
+            package_spec = None
+
+        if not package_spec:
+            exec(open(package_file, 'r').read(), input_context)
+            package_spec = input_context['package_spec']
+
+        # Apply any location overrides
+        if inpfrom.location_overrides:
+            for pkgname in inpfrom.location_overrides:
+                for i in range(len(package_spec)):
+                    if isinstance(package_spec[i], StandardPackage) and \
+                       package_spec[i].name == pkgname:
+                        package_spec[i] = package_spec[i](Local(inpfrom.location_overrides[pkgname]))
+                        break
+
+        self.send(sender, package_spec)
+
+        here = inpfrom.location_overrides.get('here', '.') if inpfrom.location_overrides else '.'
+        print('Using here:',here)
+        apply_loc_override = lambda d, r: (os.path.join(inpfrom.location_overrides.get(d, d), r)
+                                           if not d or d == '/' or d in inpfrom.location_overrides else
+                                           apply_loc_override(os.path.split(d)[0],
+                                                              os.path.join(os.path.split(d)[1],r)))
+        for each in glob.glob(
+                os.path.join(os.path.dirname(package_file), '*.nix')):
+            name = os.path.splitext(os.path.basename(each))[0].replace(".", "_")
+            # Include in the output any local nix files, except for
+            # those generated by this script
+            if name not in [ 'release', 'default', 'shell', 'vernix-run' ]:
+                nixfile = os.path.join(here, each) if os.path.basename(each) == each else each
+                if inpfrom.location_overrides:
+                    nixfile = apply_loc_override(*os.path.split(nixfile))
+                print('..pkg',each,'as',name,'from',nixfile)
+                self.send(sender,
+                          NixPackageSpec(StandardPackage(name), nixfile))
+
+
+class GenerateNixInfo(ActorTypeDispatcher):
+    """The main actor coordinating the activities of all the other actors
+       in generating the desired vernix output from the input
+       specification.
+    """
+
+    def receiveMsg_ActorAddress(self, addrmsg, sender):
+        self.to_status_reporter = addrmsg
+
+    def receiveMsg_SrcOverrides(self, location_overrides, sender):
+        self.location_overrides = location_overrides
+        self.send(sender, 'location overrides noted')
+
+    def receiveMsg_SrcReferences(self, location_references, sender):
+        self.location_references = location_references
+        self.send(sender, 'location references noted')
+
+    def receiveMsg_str(self, strmsg, sender):
+        if 'generate' in strmsg:
+            input_fname = ([ w for w in strmsg.split() if w.startswith('filename:') ]
+                           + [ 'filename:package_spec'])[0].split(':')[1]
+            self.send(self.createActor(ReadPackageSpec),
+                      InputFrom(input_fname, getattr(self, 'location_overrides', None)))
+
+            self.noisy = 'noisily' in strmsg
+            self.requestor = sender
+            if not hasattr(self, 'to_status_reporter'):
+                self.to_status_reporter = sender
+            self.status = ProgressStatus()
+
+            # nixfiles is a dictionary where the key is the package
+            # name and the value is None if package information lookup
+            # is pending, Error if there was an error fetching
+            # information for this package, or a package information
+            # object: StandardPackage, nix filename, CabalPrefetched
+            # object
+            self.nixfiles = {}
+
+            static = 'static' in strmsg or 'hydra' in strmsg
+            hydra = 'hydra' in strmsg
+            self.nolocal = 'nolocal' in strmsg
+
+            if static:
+                # Use this to create local .nix definitions from cabal
+                # entries for placing in local files or embedding
+                # inline into the project file.  Easy and direct, but
+                # they live outside of the nix store and are not
+                # dynamically generated.
+                self.c2nr = self.createActor(Cabal2Nix)
+                self.gencabal = True
+            else:
+                # Use this to prefetch packages and get the hash, and
+                # then construct a nix specification that performs the
+                # cabal2nix into a store location at nix evaluation
+                # time (providing common, referenced storage and
+                # avoids re-downloading each time).
+                self.c2nr = self.createActor(CabalPrefetch)
+                self.gencabal = False
+
+            self.wf = self.createActor(WriteFile)
+
+            if False:
+                # To generate an overlay specification
+                self.summarygen = self.createActor(OverlaySpec)
+                self.summary_fname = '$HOME/.config/nixpkgs/overlays/%s-overlay.nix'
+            else:
+                # To generate a ProjectConfig specification
+                self.summarygen = self.createActor(ProjectConfig)
+                self.summary_fname = './%s-project.nix'
+                if 'allowUnfree' in strmsg:
+                    self.send(self.summarygen, 'allowUnfree')
+                if 'hourly' in strmsg:
+                    self.send(self.summarygen, 'update:hourly')
+                elif 'daily' in strmsg:
+                    self.send(self.summarygen, 'update:daily')
+                if static:
+                    self.send(self.summarygen, 'static')
+                if self.nolocal:
+                    self.send(self.summarygen, 'output-for-hydra')
+
+            if hydra:
+                self.cipkg = self.createActor(GenerateHydraJobsetDecl)
+                self.ciproj = self.createActor(GenerateHydraProjectDecl)
+                self.send(self.cipkg, self.ciproj)
+                self.send(self.cipkg, input_fname)
+                self.send(self.ciproj, input_fname)
+                self.status.done_pending()
+            else:
+                self.cipkg = None
+                self.ciproj = None
+
+    def receiveMsg_list(self, package_spec, sender):
+        self.package_spec = package_spec   # <-------------
+        gbr = self.createActor(GitBranchRef)
+        num_gbr_reqs = 0
+
+        should_use_local = lambda p: (not self.nolocal or
+                                      p.name in getattr(self, 'location_overrides', []) or
+                                      p.name in getattr(self, 'location_references', []))
+
+        for each in package_spec:
+            each.noisily = self.noisy
+            if isinstance(each, Project):
+                each.project_file = self.summary_fname % each.name
+                if self.cipkg:
+                    self.send(self.cipkg, each)
+                if self.ciproj:
+                    self.send(self.ciproj, each)
+                if each.allowUnfree:
+                    self.send(self.summarygen, 'allowUnfree')
+                continue
+            elif isinstance(each, StandardPackage):
+                # Each package can come from the standard packaging tool
+                # (e.g. cabal for haskell packages), a repository, or a
+                # local directory.  A local directory takes preference for
+                # the local project file, but the CI builder cannot
+                # reference a directory on the user's local machine, so
+                # the --nolocal is used to suppress that.  However, on the
+                # CI builder, the package may have already been fetched by
+                # other portions of the CI process, so it will be
+                # specified as a location_override ("name= loc" on the
+                # cmdline) or a location_reference ("name: loc" on the
+                # cmdline), and these local references should be preferred
+                # to repo references (especially in the case where the
+                # repo may be private).
+                #
+                # Also note that if the local location does not exist, it
+                # will fallback to the repo source (or to cabal), which
+                # allows the input specifications to contain local
+                # references to default git submodule locations which may
+                # or may not be populated.
+                if each.local_location and should_use_local(each) and \
+                   (not os.path.exists(each.local_location.source_loc) or
+                    not glob.glob(os.path.join(each.local_location.source_loc, '*'))):
+                    print('**Warning: Local %s does not exist; falling back to %s' %
+                          (each.local_location.source_loc,
+                           'repository location'
+                           if each.repo_location else 'default package source'))
+                    each.local_location = None
+
+                if each.local_location and should_use_local(each):
+                    # Local is the priority for dev
+                    # But if there is a repo, get that info in case
+                    # hydra output is being generated, unless there is
+                    # a source override
+                    if each.repo_location and self.cipkg and \
+                       each.name not in getattr(self, 'location_overrides', []):
+                        self.send(gbr, each)
+                        num_gbr_reqs += 1
+                    if self.gencabal:
+                        reqmsg = each.local_location
+                        reqmsg.pkgname = each.name
+                        reqmsg.noisily = self.noisy
+                        self.send(self.c2nr, reqmsg)
+                        self.status.add_setup_local()
+                        self.status.add_write_file()
+                        self.status.add_pending()
+                    else:
+                        self.nixfiles[each.name] = each
+                        pkgspec = NixPackageSpec(each, each.local_location.source_loc)
+                        self.send(self.summarygen, pkgspec)
+                        self.status.add_write_file()
+                        self.status.done_write_file()
+                        continue
+                elif each.repo_location:
+                    self.send(gbr, each)
+                    num_gbr_reqs += 1
+                    self.status.add_get_info()
+                    self.status.add_setup_local()
+                    self.status.add_write_file()
+                    self.status.add_pending()
+                else:
+                    if each.version:
+                        # KWQ: this is haskell specific; should use .package_suppliers
+                        self.send(self.c2nr, HackageRef(each.name, each.version, noisily=self.noisy))
+                        self.status.add_setup_local()
+                        self.status.add_write_file()
+                        self.status.add_pending()
+                    else:
+                        self.send(self.summarygen, NixPackageSpec(each, None))
+                        self.status.add_write_file()
+                        self.status.done_write_file()
+                        continue
+            elif isinstance(each, CBI_Variants):
+                if self.cipkg:
+                    self.send(self.cipkg, each)
+                    self.send(self.ciproj, each)
+                if 'systems' in each.variants:
+                    self.send(self.summarygen, ('systems', each.variants['systems']))
+                continue
+            else:
+                raise RuntimeError("Unknown package type: %s %s"
+                                   % (str(each), str(each.__class__)))
+            self.nixfiles[each.name] = None
+
+        if self.cipkg:
+            self.send(self.cipkg, num_gbr_reqs)
+        self._check_done()
+
+    def receiveMsg_NixPackageSpec(self, pkgspec, sender):
+        # Additional package files that should be written to the overlay/project file
+        outputs = [ os.path.basename(self.summary_fname % each.name)
+                    for each in self.package_spec
+                    if isinstance(each, Project)
+        ]
+        if os.path.basename(pkgspec.nix_source) not in outputs:
+            self.send(self.summarygen, pkgspec)
+            self.status.add_write_file()
+            self.status.done_write_file()
+
+    def receiveMsg_Error(self, errormsg, sender):
+        try:
+            repo, errstr = errormsg.msg
+            if repo in self.nixfiles:
+                self.nixfiles[repo] = Error(errstr, errormsg.attempting)
+                self._check_done()
+                return
+        except Exception as ex:
+            pass
+        self.send(self.requestor, errormsg)
+
+    def _check_done(self):
+        self.send(self.to_status_reporter, copy.deepcopy(self.status))
+        errors = []
+        for r in self.nixfiles:
+            if self.nixfiles[r] is None:
+                return
+            if isinstance(self.nixfiles[r], Error):
+                errors.append('%s ERROR:: %s' % (r, repr(self.nixfiles[r])))
+        # All the files were written, now fail or write the
+        # overlay/project file
+        if errors:
+            self.send(self.requestor, errors)
+            return
+        for each in filter(lambda p: isinstance(p, Project), self.package_spec):
+            # Really only expect one Project specification, but if
+            # there are multiple it's fine to write multiple output
+            # files.
+            self.send(self.summarygen, self.summary_fname % each.name)
+            self.status.add_pending()
+        self.send(self.to_status_reporter, copy.deepcopy(self.status))
+
+    def receiveMsg_GitRef(self, gitrefmsg, sender):
+        self.status.done_pending()
+        self.status.done_get_info()
+        name = gitrefmsg.name
+        if gitrefmsg.name in getattr(self, 'location_references', {}):
+            gitrefmsg = GitRefWithLclSrc(gitrefmsg,
+                                         self.location_references[gitrefmsg.name])
+        gitrefmsg.noisily = self.noisy
+        # If local was allowed, then use that location and this gitref
+        # is just for the cipkg Hydra output, otherwise this is the
+        # location to use for the local project as well.
+        pkgsforref = list(filter(lambda p:
+                                 isinstance(p, StandardPackage) and p.name == name,
+                                 self.package_spec))
+        if pkgsforref:
+            for each in pkgsforref:
+                if self.cipkg:
+                    gitrefmsg.email_responsible = each.email_responsible
+                    self.send(self.cipkg, gitrefmsg)
+                if self.nolocal or not each.local_location:
+                    self.send(self.c2nr, gitrefmsg)
+        else:
+            if self.cipkg:
+                gitrefmsg.email_responsible = EMAILRESPONSIBLE
+                self.send(self.cipkg, gitrefmsg)
+        self.status.add_pending()
+        self._check_done()
+
+    def receiveMsg_CabalSpec(self, cabalmsg, sender):
+        self.status.done_pending()
+        self.status.done_setup_local()
+        self.status.add_write_file()
+        if False:
+            # OLD method where nix files were generated locally; this
+            # was originally used for the deprecated overlay
+            # specification, but it also conflicts with the addition
+            # of local .nix files (which are supposed to be
+            # manually-created additions).
+            self.send(self.wf, (cabalmsg.name,
+                                cabalmsg.name +
+                                ('-' + cabalmsg.version if cabalmsg.version else '') + '.nix',
+                                cabalmsg.spec_lines))
+            self.status.add_pending()
+        else:
+            # NEW method where the cabal2nix output is reproduced
+            # directly inline into the output (project) file.  There
+            # is no resulting sharing of cabal2nix information between
+            # project files, but that was problematic if the projects
+            # used different versions of the package anyhow.
+            self.nixfiles[cabalmsg.name] = cabalmsg
+            for each in filter(lambda p:
+                               isinstance(p, StandardPackage) and p.name == cabalmsg.name,
+                               self.package_spec):
+                pspec = NixPackageSpec(each, cabalmsg)
+                self.send(self.summarygen, pspec)
+                self.status.done_write_file()
+            self._check_done()
+
+    def receiveMsg_Success(self, smsg, sender):
+        # Success response from either the Cabal2Nix (c2nr) or the
+        # OverlaySpec (overlay) actors completion of writing their
+        # corresponding files.
+        self.status.done_pending()
+        self.status.done_write_file()
+        self.nixfiles[smsg.data[0]] = smsg.data[1]  # module name : nix filename
+        if smsg.data[0] == 'summarygen':
+            # Everything is done, tell the requestor
+            self.status.done_write_result()
+            self.send(self.to_status_reporter, self.status)
+            if self.ciproj:
+                # Project file generation is finished, but need to
+                # wait for Hydra configuration output.
+                self.project_done = True
+            else:
+                self.send(self.requestor, self.nixfiles)
+        else:
+            # For the file just written, tell the overlay about it as
+            # well, along with any additional package information.
+            for each in filter(lambda p:
+                               isinstance(p, StandardPackage) and p.name == smsg.data[0],
+                               self.package_spec):
+                pspec = NixPackageSpec(each, smsg.data[1])
+                self.send(self.summarygen, pspec)
+                self.send(cipkg, pspec)
+                self.status.done_write_file()
+                break
+            else:
+                raise RuntimeError('wha??')
+                #self.send(self.summarygen, NixPackageSpec(smsg.data[0], smsg.data[1]))
+            self._check_done()
+
+    def receiveMsg_HydraDecl(self, hdecl, sender):
+        self.status.done_write_file()
+        self.send(self.to_status_reporter, self.status)
+        self.nixfiles['Hydra Config'] = hdecl
+        self.send(self.cipkg, ActorExitRequest())
+        self.send(self.ciproj, ActorExitRequest())
+        self.cipkg = None
+        self.ciproj = None
+        if getattr(self, 'project_done', None):
+            self.send(self.requestor, self.nixfiles)
+
+    def receiveMsg_CabalPrefetched(self, fetchmsg, sender):
+        self.status.done_pending()
+        self.status.done_setup_local()
+        self.nixfiles[fetchmsg.name] = fetchmsg  # module name : CabalPrefetched
+        for each in filter(lambda p:
+                           isinstance(p, StandardPackage) and
+                           p.name == fetchmsg.name,
+                           self.package_spec):
+            pspec = NixPackageSpec(each, fetchmsg)
+            self.send(self.summarygen, pspec)
+            self.status.done_write_file()
+        self._check_done()
+
+
+# ----------------------------------------------------------------------
+# ----------------------------------------------------------------------
+# ----------------------------------------------------------------------
+# Hydra Continuous Build and Integration support
+
+class HydraDecl(object):
+    "Output message from GenerateHydraProjectDecl actor"
+    def __init__(self, projname, jsondecl_fname, instructions=[]):
+        self.projname = projname
+        self.jsondecl_fname = jsondecl_fname
+        self.instructions = instructions
+    def origin_info(self):
+        return '\n        '.join(self.instructions)
+
+class HydraJobsetDecl(object):
+    "Output message from GenerateHydraJobsetDecl actor"
+    def __init__(self, exprpath, input_spec, instructions=[]):
+        self.exprpath = exprpath
+        self.input_spec = input_spec
+        self.instructions = instructions
+
+class HydraVernixRun(object):
+    "Output message from GenerateHydraVernixRun actor"
+    def __init__(self, jobname, exprpath, instructions=[]):
+        self.jobname = jobname
+        self.exprpath = exprpath
+        self.instructions = instructions
+
+def normalized_jobname(inpname):
+    return inpname.replace('/', '~')
+
+def jobset_defaults(inputs={}, **kw):
+    rval = { 'checkinterval': 300,
+             'schedulingshares': 1,
+             'emailoverride': '',
+             'keepnr': 3,
+    }
+    rval.update(kw)
+    inps = inputs.copy()
+    if 'nixpkgs_version' in kw:
+        npv = kw['nixpkgs_version']
+        del rval['nixpkgs_version']
+    else:
+        npv = 'nixos-unstable'
+    nixpkgs_val = ('https://github.com/NixOS/nixpkgs'
+                   if npv == 'master' else
+                   'https://github.com/NixOS/nixpkgs-channels ' + npv)
+    rval.update(
+        { "enabled": 1,
+          "hidden": False,
+          # "description": "NOTSET",
+          # "nixexprinput": "NOTSET",
+          # "nixexprpath": "NOTSET",
+          "enableemail": True,
+          "inputs": join_dicts(inps,
+                               { "nixpkgs": { "type": "git",
+                                              "value": nixpkgs_val,
+                                              "emailresponsible": False,
+                               },
+                               })
+        })
+    return rval
+
+# ActorHelper: MessageCollector, with a list of messages to be collected (and optionally a count for each) and invokes something when the collection is complete?  What about the original requester?  Pattern for most of the GenerateHydra, as well as the Project itself.  Also what about running it in pull mode?  That way if it restarts it can send a pull requests to the creator to grab all of the info it might be missing?  Be careful of recreate bombs though...  Would also be nice if it reported what it was waiting on in response to a status request
+
+def join_dicts(*dicts):
+    ret = dicts[0].copy()
+    for d in dicts[1:]:
+        ret.update(d)
+    return ret
+
+class GenerateHydraVernixRun(ActorTypeDispatcher):
+    """"Generates the vernix-run.nix, which is the expression for the
+        projectbld job, and which runs vernix to generate the project
+        nix specification that is used as input for the rest of the
+        jobs.  Sends the HydraVernixRun response.
+    """
+    def receiveMsg_Project(self, project, sender):
+        self.project = project
+        self.requester = sender
+        self.check_done()
+
+    def receiveMsg_int(self, num_gitrefs, sender):
+        self.num_gitrefs = num_gitrefs
+
+    def receiveMsg_str(self, input_path, sender):
+        self.input_path = input_path
+
+    def receiveMsg_GitRefWithLclSrc(self, lclgitref, sender):
+        if not hasattr(self, 'packages'):
+            self.packages = {}
+        self.packages[lclgitref.gitref.name] = lclgitref
+        self.check_done()
+
+    def receiveMsg_GitRef(self, gitref, sender):
+        if not hasattr(self, 'packages'):
+            self.packages = {}
+        self.packages[gitref.name] = gitref
+        self.check_done()
+
+    def receiveMsg_GitRemoteURL(self, gitremote, sender):
+        self.gitremote = gitremote
+
+    def check_done(self):
+        if getattr(self, 'project', None) and \
+           hasattr(self, 'input_path') and \
+           hasattr(self, 'gitremote') and \
+           hasattr(self, 'num_gitrefs') and \
+           getattr(self, 'packages', None) and \
+           len(self.packages) == self.num_gitrefs:
+            self.generate_vernix_run()
+
+    def projdef_filepath(self, fname=None):
+        if fname is None:
+            # Path to root
+            return os.path.join(*tuple(['..']*(len(os.path.split(self.gitremote.local_subpath))-1) + ['.']))
+        # Root path to file
+        return os.path.join(self.gitremote.local_subpath, fname)
+
+    def output_filepath(self, root_relative=False):
+        if root_relative:
+            return self.projdef_filepath('vernix-run.nix')
+        return 'vernix-run.nix'
+
+    def jobname(self):
+        return 'vernix_output'
+
+    def generate_vernix_run(self):
+        inputs = sorted([k for k in self.packages])
+        subpath = lambda r: ('/' + r.gitref.subpath
+                             if getattr(r, 'gitref', None)
+                             else ('/' + r.subpath
+                                   if getattr(r, 'subpath', None) else ''))
+        output = [ '{ ' + '\n, '.join([i + '-src' for i in inputs]),
+                   ', vernix-src',  # This is built locally, and must be an input; it is not (yet) part of nixpkgs.
+                   ', hackage-index', # Provided as an explicit path input
+                   ', projectdef',
+                   '}:',
+                   'with (import <nixpkgs> {});',
+                   'let',
+                   '  pybuilder = pkgs.python36.withPackages (pp: with pp; [ thespian setproctitle ]);',
+                   '  cabal2nix = pkgs.haskell.lib.overrideCabal pkgs.haskellPackages.cabal2nix (drv: { version=\"2.10.1-nosub\"; src = pkgs.fetchgit { url=\"https://github.com/kquick/cabal2nix\"; rev=\"e4b3b46\"; sha256=\"0wx2s5l5gaxaz075gw3d21x8pkfmvz4jav00xwiga7d9kih5gh7c\"; }; });',
+                   'in rec {',
+                   '  %s = stdenv.mkDerivation rec {' % self.jobname(),
+                   '    name = "' + self.project.name + '-master";',
+                   '    description = "Package build specification for the ${name} project";',
+                   '    system = builtins.currentSystem;',
+                   '    phases = [ "installPhase" ];',
+                   '    installPhase =',
+                   "      ''",
+                   '        set -xe',
+                   '        mkdir $out',
+                   '        cd $out',
+                   '        mkdir hackage',
+                   '        cp ${hackage-index} hackage/01-index.tar.gz',
+                   '        gunzip  hackage/01-index.tar.gz || mv hackage/01-index.tar.gz hackage/01-index.tar',
+                   '        python3 $vernix/bin/vernix $src/%s --noisy \\' %
+                            self.projdef_filepath(os.path.basename(self.input_path)),
+                   # Provide local sources for inputs for cabal2nix
+                   # generation of nix specifications; if cabal2nix is
+                   # provided with the Repository address, it will try
+                   # to load these into the local store, which is an
+                   # invalid change during the build.  Only use the
+                   # local inputs for cabal2nix however and not the
+                   # actual nix specification (: and not =) because
+                   # otherwise the input specification doesn't match
+                   # the native project file and therefore this isn't
+                   # seen as a valid build substitute.
+                   "          " + "\n          ".join([ "%s= ${%s-src}%s \\"
+                                                        % (k, k, subpath(self.packages[k]))
+                                                        for k in inputs]),
+                   # Specify --nolocal and --static so that vernix
+                   # knows this *is* hydra running and that any Local
+                   # source references should be ignored, and
+                   # cabal2nix should be performed directly instead of
+                   # embedded into the output nix expression for
+                   # dynamic evaluation.  Also translate relative and
+                   # input references to the output location (crucial
+                   # for tagalong nix files).
+                   "          here= $out \\",
+                   "          $src= $out \\",
+                   "          --static --nolocal",
+                   "        (cd $src; find . -name '*.nix' -exec cp --reflink=auto --parents --no-preserve=mode {} $out/ \;)",
+                   # '        cp --reflink=auto --remove-destination *.nix $out/;',
+                   "      '';",
+                   "    buildInputs = [ vernix pybuilder git cacert nix-prefetch-git cabal2nix cacert curl gzip ];",
+                   '    src = %s;' % (self.projdef_filepath() or './.'),
+                   '    inherit vernix ' + ' '.join([i + '-src' for i in inputs]) + ';',
+                   '  };',
+                   '',
+                   '  # Get the latest version.  The src override is not strictly.',
+                   '  # necessary if the default.nix specifies the local path',
+                   '  # as the source location, but it does not hurt to be',
+                   '  # explicit in this situation.',
+                   '  vernix = lib.overrideDerivation (callPackage vernix-src {}) (attrs: { src = vernix-src; });',
+                   '}'
+        ]
+        self.send(self.createActor(WriteFile),
+                  ('vernix run', self.output_filepath(), output))
+
+    def receiveMsg_Success(self, successmsg, sender):
+        self.send(self.requester,
+                  HydraVernixRun(self.jobname(),
+                                 self.output_filepath(True),
+                                 [ '* Ensure that %s is added to the repository and pushed' % self.output_filepath(True),
+                                   '  to %s before creating the Hydra project.' % self.gitremote.remote_url,
+                                 ]))
+        self.send(self.myAddress, ActorExitRequest())
+        self.send(sender, ActorExitRequest())
+
+
+class GenerateHydraJobsetDecl(ActorTypeDispatcher, AutoCreate):
+    """Passed a Project, and the GenerateHydraProjectDecl address, and
+       package information, outputs a HydraJobsetDecl.  The package
+       information is initially the package name, and subsequently the
+       GitRef for that package.  When all GitRef messages have been
+       received, along with the Project and the
+       GenerateHydraProjectDecl address, the HydraJobsetDecl is sent
+       to the latter.
+
+    """
+
+    create_vernix_run = lambda self: self.createActor(GenerateHydraVernixRun)
+    create_get_git_remote = lambda self: self.createActor(GetGitRemote)
+
+    def __init__(self, *args, **kw):
+        super(GenerateHydraJobsetDecl, self).__init__(*args, **kw)
+        self.variants = { 'ghcver': ['ghc822'],
+        }
+
+    def receiveMsg_ActorAddress(self, addr, sender):
+        self.project_decl_actor = addr
+        self.check_done()
+
+    def receiveMsg_Project(self, project, sender):
+        self.project = project
+        self.project_file = project.project_file
+        self.send(self.vernix_run, project)
+        self.check_done()
+
+    def receiveMsg_int(self, num_gitrefs, sender):
+        self.num_gitrefs = num_gitrefs
+        self.send(self.vernix_run, num_gitrefs)
+
+    def receiveMsg_str(self, input_path, sender):
+        self.send(self.vernix_run, input_path)
+        self.output_path = os.path.dirname(input_path)
+        self.send(self.get_git_remote, self.output_path)
+
+    def receiveMsg_HydraVernixRun(self, vrun, sender):
+        self.vernix_run_file = vrun
+        self.check_done()
+
+    def receiveMsg_GitRemoteURL(self, gitremote, sender):
+        self.gitremote = gitremote
+        self.gitremote.proj_url_update(self.variants.get('proj_reposerver', None))
+        self.send(sender, ActorExitRequest())
+        self.send(self.vernix_run, gitremote)
+
+    def receiveMsg_GitRefWithLclSrc(self, lclgitref, sender):
+        # Initially supplied by the main coordinator, but
+        # supplementally provided by GitBranchRef for cbi_variant
+        # repo_branch lookups.
+        self._add_gitref(lclgitref.gitref.name, lclgitref)
+
+    def _add_gitref(self, name, gitref):
+        if not hasattr(self, 'packages'):
+            self.packages = {}
+        self.packages[name] = gitref
+        self.send(self.vernix_run, gitref)
+        self.check_done()
+
+    def receiveMsg_GitRef(self, gitref, sender):
+        # Initially supplied by the main coordinator, but
+        # supplementally provided by GitBranchRef for cbi_variant
+        # repo_branch lookups.
+        self._add_gitref(gitref.name, gitref)
+
+    def receiveMsg_Error(self, errmsg, sender):
+        if hasattr(self, 'project_decl_actor'):
+            self.send(self.project_decl_actor, errmsg)
+        print('no requester to report this error to: %s' % str(errmsg))
+
+    def receiveMsg_CBI_Variants(self, variants, sender):
+        self.variants.update(variants.variants)
+        if hasattr(self, 'gitremote'):
+            self.gitremote.proj_url_update(self.variants.get('proj_reposerver', None))
+
+    def check_done(self):
+        if getattr(self, 'project', None) and \
+           getattr(self, 'project_decl_actor', None) and \
+           getattr(self, 'gitremote', None) and \
+           hasattr(self, 'vernix_run_file') and \
+           hasattr(self, 'num_gitrefs') and \
+           getattr(self, 'packages', None) and \
+           len(self.packages) == self.num_gitrefs:
+            self.generate_jobspec()
+
+    def vernix_run_jobname(self, repo_branch=None):
+        if repo_branch:
+            return normalized_jobname('projectbld-' + repo_branch)
+        return 'projectbld'
+
+    def generate_jobspec(self):
+        gitval_val = lambda ref, revbr, brlist: (
+            ref.cbi_reporef,
+            # If input was just "master", use the revbr override
+            # (defaulting to master).  If input was on a branch and
+            # that branch is NOT one of the CBI_Variant repo_branch
+            # members, assume it does not exist and use the input
+            # branch. Otherwise, use the input override (defaulting to
+            # master).
+            (revbr or "master")
+            if ref.branch == 'master' else
+            (ref.branch
+             if ref.branch and ref.branch not in (brlist or []) else
+             (revbr or "master")))
+        gitval = lambda p, revbr, brlist: (
+            gitval_val(self.packages[p].gitref, revbr, brlist)
+            if isinstance(self.packages[p], GitRefWithLclSrc) else
+            gitval_val(self.packages[p], revbr, brlist))
+        project_inputs = lambda revbr, brlist: OrderedDict(sorted(
+            { p + '-src' : { "type": "git",
+                             "value": "%s %s" % gitval(p, revbr, brlist),
+                             "emailresponsible": self.packages[p].email_responsible,
+              } for p in self.packages
+            }.items(), key=lambda e:e[0]))
+        projbld = lambda revbr, brlist: jobset_defaults(
+            description = ("Build project %s %s nix description" %
+                           (self.project.name, revbr or '')),
+            nixexprinput = "projectdef",
+            nixexprpath = self.vernix_run_file.exprpath,
+            inputs = join_dicts(
+                # KWQ: recursive embed of projectdef?  Yes, from other Actor
+                # KWQ: inline instead of requiring it from a repo?
+                # KWQ:   - requires vernix output to be committed to a repo
+                # KWQ:   + vernix re-runs can just be committed to update the build
+                # KWQ:   A: no inline, need user to commit this.
+                { "projectdef": {
+                    "type": "git",
+                    "value": self.gitremote.remote_url,
+                    "emailresponsible": True,
+                },
+                  "vernix-src": {
+                      "type": "git",
+                      "value": "https://github.com/kquick/vernix.git",
+                      "emailresponsible": True,
+                  },
+                  "hackage-index" : {
+                      "type": "path",
+                      "value": "https://hackage.haskell.org/01-index.tar.gz 86400",
+                      "emailresponsible": False,
+                  },
+                },
+                project_inputs(revbr, brlist))
+        )
+        branchlist = self.variants.get('repo_branch', [None])
+        decl = OrderedDict({
+            self.vernix_run_jobname(revbr): projbld(revbr, branchlist)
+            for revbr in branchlist
+        })
+        for revbr in branchlist:
+            decl.update(sorted(self.job_variants(project_inputs,
+                                                 repo_branch=revbr,
+                                                 branch_list=branchlist,
+                                                 email_override=self.variants.get('email_override', '')),
+                               key=lambda e:e[0]))
+        jspfx = "        "
+        jobset = '\n'.join(
+            [ '{',
+              '  jobsets = (import <nixpkgs> {}).stdenv.mkDerivation {',
+              '    name = "%s-jobsets";' % self.project.name,
+              '    version = "1";',
+              '    src = ./.;',
+              '    phases = [ "installPhase" ];',
+              '    installPhase = "cp $jsonfile $out";',
+              '    jsonfile = builtins.toFile "%s_jobsets.json"' % self.project.name,
+              "      ''",
+              jspfx + (("\n" + jspfx).join(json.dumps(decl, indent=2).split('\n'))),
+              "      '';",
+              '   };',
+              '}',
+            ])
+        self.send(self.createActor(WriteFile),
+                  ('project jobset nix expr', self.exprpath(False), [jobset]))
+
+
+    def job_variants(self, project_inputs, repo_branch=None, branch_list=None,
+                     email_override=None):
+        def jobvar_rec(jspec, rem_vnames):
+            if not rem_vnames:
+                vassoclist = sorted(jspec.items(), key=lambda e:e[0])
+                jobname = normalized_jobname('-'.join(filter(None,
+                                                             [v[1] for v in vassoclist] +
+                                                             [repo_branch])))
+                yield ( jobname,
+                        jobset_defaults(
+                            description = ("Build%s with " %
+                                           (" from " + repo_branch if repo_branch else "")
+                                           + ', '.join(['%s %s' % e for e in vassoclist])),
+                            nixexprinput = "projectbld",
+                            nixexprpath = self.project_file,
+                            nixpkgs_version = jspec.get('nixpkgs_version', 'nixos-unstable'),
+                            emailoverride=email_override,
+                            inputs = join_dicts(
+                                { "projectbld": {   # careful reference to the "projectbld" job decl
+                                    "type": "build",
+                                    "value": "%s:%s:%s" % (self.project.name,
+                                                           self.vernix_run_jobname(repo_branch),
+                                                           self.vernix_run_file.jobname),
+                                    "emailresponsible": True },
+                                  "projectdef": {
+                                      "type": "git",
+                                      "value": self.gitremote.remote_url,
+                                      "emailresponsible": True },
+                                  # "centos7_rpm_closure": {
+                                  #     "type": "build",
+                                  #     "value": "vm_disk_images:rpmclosures:centos7_x86-64_rpm_closure",
+                                  #     "emailresponsible": False,
+                                  # },
+                                },
+                                OrderedDict([
+                                    (v[0], OrderedDict({ "type": "string", "value": str(v[1]),
+                                                         "emailresponsible": False }))
+                                    for v in vassoclist
+                                ]),
+                                project_inputs(repo_branch, branch_list),
+                            ),
+                        )
+                )
+                return
+            vname = rem_vnames[0]
+            for vval in self.variants[vname]:
+                yield from jobvar_rec(join_dicts(jspec, {vname: vval}), rem_vnames[1:])
+
+        special_variants = ['proj_reposerver', 'repo_branch', 'distributions',
+                            'email_override', 'systems']
+        # The repo_branch specifies the various source branches that
+        # should be built as part of the CI build process.  These
+        # branches may or may not be the same as the primary project
+        # file build, but the difference is that the vernix-run for
+        # the CI build will specify source location overrides
+        # corresponding to the inputs, so it isn't necessary to
+        # perform the GitRev lookups, simply to specify the proper
+        # location for the CI build input.
+
+        yield from jobvar_rec({},
+                              list(filter(lambda k: k not in special_variants,
+                                          self.variants.keys())))
+
+
+    def receiveMsg_Success(self, successmsg, sender):
+        self.send(sender, ActorExitRequest())
+        self.send(self.project_decl_actor,
+                  HydraJobsetDecl(
+                      self.exprpath(True),
+                      { 'type': 'git',
+                        'value': self.gitremote.remote_url,
+                        'emailresponsible': EMAILRESPONSIBLE,
+                      },
+                      [ '',
+                        '* Ensure that %s is added to the repository and pushed' % self.exprpath(True),
+                        '  to %s before creating the Hydra project.' % self.gitremote.remote_url,
+                      ] + self.vernix_run_file.instructions))
+
+    def exprpath(self, root_relative=True):
+        if root_relative:
+            return os.path.join(self.gitremote.local_subpath, 'release.nix')
+        return 'release.nix'
+
+class GenerateHydraProjectDecl(ActorTypeDispatcher, AutoCreate):
+    """Passed a Project and a HydraJobsetDecl, writes the Hydra Project
+       JSON declaration file and sends back a HydraDecl response when
+       written.
+    """
+    create_get_git_remote = lambda self: self.createActor(GetGitRemote)
+
+    def __init__(self, *args, **kw):
+        super(GenerateHydraProjectDecl, self).__init__(*args, **kw)
+        self.proj_reposerver = None
+
+    def receiveMsg_Project(self, project, sender):
+        self.requester = sender
+        self.project = project
+        self.try_generate_output(sender)
+
+    def receiveMsg_HydraJobsetDecl(self, jobset, sender):
+        self.jobset_nix = jobset
+        self.try_generate_output(sender)
+
+    def receiveMsg_str(self, input_path, sender):
+        self.output_path = os.path.dirname(input_path)
+        self.send(self.get_git_remote, self.output_path)
+
+    def receiveMsg_GitRemoteURL(self, gitremote, sender):
+        self.gitremote = gitremote
+        self.gitremote.proj_url_update(getattr(self, 'proj_reposerver', None))
+        self.send(sender, ActorExitRequest())
+
+    def receiveMsg_Error(self, errmsg, sender):
+        if hasattr(self, 'requester'):
+            self.send(self.requester, errmsg)
+        print('no requester to report this error to: %s' % str(errmsg))
+
+    def receiveMsg_CBI_Variants(self, variants, sender):
+        self.proj_reposerver = variants.variants.get('proj_reposerver', None)
+        if hasattr(self, 'gitremote'):
+            self.gitremote.proj_url_update(self.proj_reposerver)
+
+    def try_generate_output(self, sender):
+        if getattr(self, 'project', None) and \
+           getattr(self, 'requester', None) and \
+           getattr(self, 'gitremote', None) and \
+           getattr(self, 'jobset_nix', None):
+            self.write_output(sender)
+
+    def write_output(self, sender):
+        decl = jobset_defaults(
+                 inputs = { "project_jobset": self.jobset_nix.input_spec, },
+                 description = "Hydra %s Project declaration" % self.project.name,
+                 nixexprinput = "project_jobset",
+                 nixexprpath = self.jobset_nix.exprpath,
+        )
+        self.send(self.createActor(WriteFile),
+                  ('project json spec', self.output_fname(), [json.dumps(decl, indent=2)]))
+
+    def output_fname(self, rootrel=False):
+        if rootrel:
+            return os.path.join(self.gitremote.local_subpath, '%s-decl.json' % self.project.name)
+        return '%s-decl.json' % self.project.name
+
+    def receiveMsg_Success(self, successmsg, sender):
+        self.send(self.requester,
+                  HydraDecl(self.project.name, self.output_fname(),
+                            self.jobset_nix.instructions +
+                            [ '* Create a new Hydra project:',
+                              '    Project name = ' + self.project.name,
+                              '    Declarative spec file = ' + self.output_fname(True),
+                              '    Declarative input = ' + self.gitremote.remote_url,
+                            ]))
+
+
+# ----------------------------------------------------------------------
+# ----------------------------------------------------------------------
+# Status Reporting
+
+try:
+    from blessings import Terminal
+    from progressive.bar import Bar
+    from progressive.tree import ProgressTree, Value, BarDescriptor
+
+    class StatusReporter(object):
+        """Uses the blessings library to generate graphical progress bars for
+           each status area."""
+        def __init__(self):
+            self.t = Terminal()
+            self.s = ProgressTree(term=self.t)
+            self.state0 = True
+            self.status = {}
+
+        def update(self, update):
+            lbl_len = max(map(len, update.status.keys()))
+            for each in update.status:
+                self.status['%%%ds' % lbl_len % each] = \
+                    BarDescriptor(value=Value(update.status[each][0]),
+                                  type=Bar,
+                                  kwargs = {'max_value':update.status[each][1],
+                                            'title_pos':'left'})
+
+        def report(self):
+            if self.state0:
+                self.state0 = False
+                self.s.make_room(self.status)
+            self.s.cursor.restore()
+            self.s.draw(self.status, BarDescriptor(type=Bar, max_value=1))
+
+        def finished(self): pass
+
+except ImportError:
+    # blessings or progressive is not available
+
+    class StatusReporter(object):
+        """This is a dummy status report object that prints simple output on
+           updates."""
+        def __init__(self):
+            self.status = {}
+            self.total = 0
+        def update(self, update):
+            self.status.update(update.status)
+        def report(self):
+            total = sum(self.status[each][0] for each in self.status)
+            if total > self.total:
+                self.total = total
+                sys.stdout.write('.')
+                sys.stdout.flush()
+        def finished(self):
+            sys.stdout.write('\n')
+            sys.stdout.flush()
+
+class SRep(ActorTypeDispatcher):
+    """An actor that receives ProgressStatus updates and displays them.
+    Used for the simple system base since the main application is
+    blocked while any actors are running.
+    """
+    def receiveMsg_ProgressStatus(self, statusmsg, sender):
+        if not hasattr(self, 'status'):
+            self.status = StatusReporter()
+        self.status.update(statusmsg)
+        self.status.report()
+    def receiveMsg_ActorExitRequest(self, exitmsg, sender):
+        if hasattr(self, 'status'):
+            self.status.finished()
+
+# ----------------------------------------------------------------------
+# ----------------------------------------------------------------------
+# Main (non-actor) functionality
+
+def gen_nix(filename=None, static=False, hydra=False, nolocal=False,
+            overrides=None, references=None,
+            noisy=False, allowUnfree=False, frequency=None,
+            extern_reporter=False):
+    """Starts the actor processing for the input file and waits for the
+       final result, displaying any ProgressStatus messages received
+       in the interim.
+    """
+    fname = filename or ('package_spec.vx2'
+                         if os.path.exists('package_spec.vx2') else
+                         (glob.glob('*.vx2') + ['package_spec'])[0])
+    if not os.path.exists(fname):
+        sys.stderr.write('Cannot open input file: %s\n' % fname)
+        return 5
+
+    print('Generating nix specifications from',fname,'...')
+    gni = asys.createActor(GenerateNixInfo)
+    reporter = asys.createActor(SRep) if extern_reporter else None
+    if extern_reporter:
+        # Use for the simple system base because the running context
+        # of the simple base is the current process/thread, so no
+        # messages are sent back to this process until all Actor
+        # processing is finished, which means that no interim status
+        # reports will be delivered.  Using a separate actor for these
+        # allows them to be received and printed.  However, if a
+        # multiproc base, do not use a separate reporter because it no
+        # longer has print access to this tty.
+        asys.tell(gni, reporter)
+    status = StatusReporter()
+    if overrides:
+        r = asys.ask(gni, overrides, 3)
+        assert 'location overrides noted' == r
+    if references:
+        r = asys.ask(gni, references, 3)
+        assert 'location references noted' == r
+    resp = asys.tell(gni, ' '.join(['generate',
+                                    'filename:' + fname,
+                                    'noisily' if noisy else '',
+                                    'allowUnfree' if allowUnfree else '',
+                                    frequency if frequency else '',
+                                    'static' if static or hydra else '',
+                                    'hydra' if hydra else '',
+                                    'nolocal' if nolocal else '',
+    ]))
+    while True:
+        resp = asys.listen(125)
+        if isinstance(resp, ProgressStatus):
+            status.update(resp)
+            status.report()
+            continue
+        break
+    status.finished()
+    if reporter:
+        asys.tell(reporter, ActorExitRequest())
+
+    if resp is None:
+        sys.stderr.write('ERROR: Timed out without completion\n')
+        return 1
+    if isinstance(resp, Error):
+        sys.stderr.write('ERROR Response: %s\n' % repr(resp))
+        return 2
+    rval = 0
+    if isinstance(resp, dict):
+        l = max(map(len, resp.keys()))
+        for t in resp:
+            print('Package %%%ds: %%s' % l % (t, getattr(resp[t], 'origin_info',
+                                                         lambda: str(resp[t]))()))
+            if isinstance(resp[t], Error):
+                rval = rval + 1
+    else:
+        if isinstance(resp, list):
+            for each in resp:
+                sys.stderr.write('Unexpected resp: %s\n' % str(each))
+        else:
+            sys.stderr.write('Unexpected resp: %s\n' % str(resp))
+    return rval
+
+
+if __name__ == "__main__":
+    if '-h' in sys.argv or '--help' in sys.argv:
+        print('''Usage: %s [--help] [--fast] [--noisy] [--allowUnfree]
+                           [--daily] [--hourly] [--static|--dynamic] [input-file]
+                           [name: path]
+
+Tool to read the package_spec file and generate a nix specification.
+The default input file is the first existing file in
+"package_spec.vx2", the first alphabetical file with the ".vx2"
+extension, or "package_spec".
+
+The input package spec specifies a list of the following to describe
+the various packages (+ versions, etc.) that should be put into the
+nix specification:
+
+        Project("project-name")
+        HaskellPackage("name", version="version",
+                       dontCheck=True, jailBreak=True,
+                       dontHaddock=True, dontProfile=True,
+                       extraLibraries=[...])
+        HaskellPackage("name", version="branch-or-hash",
+                       RepoIdent(reposerver="https://github.com",
+                                 team="github-team",
+                                 reponame='packagerepo',
+                                 [subpath="subpath"]),
+                       Local('/path/to/local/source'),
+                       <all other Package arguments>)
+
+There should only be one Project, which helps specify the output file.
+A package is obtained from Hackage, a RepoPackage is obtained from a
+github (or similar) repo, and a LocalPackage is obtained from a local
+directory.  For more details, see the "[INPUT]" section in the source
+above.
+
+The input package spec file should either be a Python list of the
+above elements, or a regular Python file which has a global
+"package_spec" variable specifying the list.
+
+    Note: to avoid repeated queries for git credentials, use either
+          the git credential helper cache (with http repo
+          specifications) and/or the ssh-agent (with git SSH repo
+          specifications).  To setup the git credential helper cache:
+
+        $ mkdir $HOME/.cache/git
+        $ export XDG_CACHE_HOME=$HOME/.cache
+        $ echo !! >> .bashrc
+        $ mkdir $HOME/.config/git
+        $ export XDG_CONFIG_HOME=$HOME/.config
+        $ echo !! >> .bashrc
+        $ if [ -f $HOME/.gitconfig ] ; then mv $HOME/.gitconfig $XDG_CONFIG_HOME/git/
+        $ git config credential.helper 'cache --timeout=300'
+
+The --fast parameter uses multiple processes to perform the operations
+in parallel.  As long as the above credential helper is configured,
+this will work well if the credentials have been previously fetched.
+Unfortunately, credential queries (x11-askpass) do *not* handle
+simultaneous requests, so providing multiple credentials will
+frequently fail in the --fast mode. If so, just re-run without --fast,
+provide the credentials, and thereafter the fast mode can be used
+until the credentials time out (5 minutes for the configuration
+above... feel free to change to fit your comfort level.
+
+Normal runs will attempt to suppress various chatter by subcommands
+(in particular, git tends to write lots of stuff to stderr).  The
+--noisy argument disables the suppression and allows the chatter to be
+logged/displayed.
+
+The --allowUnfree will allow corresponding sources in the generated
+project configuration.
+
+The --static flag will run cabal2nix as part of vernix and embed the
+build output into the resulting package file.  This is useful for
+subsequent use in a "restricted" environment (e.g. hydra) where
+running cabal2nix is not valid during a nix build.  By default, this
+flag is not expressed, and therefore the output project nix
+specification contains dynamic cabal2nix invocations.  The advantage
+to this is that any changes in the available input cabal files
+(e.g. local sources) will cause a re-evaluation of the corresponding
+nix requirements and therefore the build configuration is kept more
+current for a local development environment (although it is also
+slower to enter a nix-shell or nix-build since each cabal2nix is
+re-evaluated at that time).  The --static mode is the default, and
+--dynamic specifies the opposite mode; if both are specified, the
+--static mode is used.
+
+Source location references and overrides can be supplied on the
+command-line.  An override specifies a location to use *instead* of
+the contents of the package specification file and is specified as
+"package-name= local-path".  A location reference is similar, but it
+only affects the cabal2nix invocation; the cabal2nix uses the local
+source reference as input but the output is modified back to the
+(repository) reference contained in the package specification input.
+This latter functionality is used for Hydra builds and other
+"restricted" or "pure" modes (cabal2nix will attempt to read from the
+remote repository and write the retrieved information into the store,
+which is an invalid store modification during a nix build).
+
+The --nolocal flag will instruct vernix to ignore any Local
+references; this is commonly used by Hydra or other remote build
+environments.
+
+Additionally, any .nix files found in the same directory as the
+package_spec will automatically be added as package override
+specifications.
+
+The current set of Haskell packages will be cached in the nix store as
+well.  The packages are normally versioned with "year-weeknum", which
+causes the package description to be updated at most weekly, dpending
+on how often this command is run.  Specifying "--daily" or "--hourly"
+causes the corresponding values to be used in the package version
+hash, which allows more recent packages to be used at the cost of
+additional package set downloads and storage in the nix store.
+
+''' % sys.argv[0])
+        sys.exit(1)
+
+    os.environ['NIX_PREFETCH_GIT_DEEP_CLONE'] = '0'
+
+    is_src_spec_arg = lambda m: lambda v: lambda i: v[i][0] != '-' and v[i][-1] == m and i+1 < len(v)
+    is_src_override_arg = is_src_spec_arg('=')
+    is_src_reference_arg = is_src_spec_arg(':')
+    nexti = lambda n: n+1
+    src_argdict = lambda v, s: { v[i][:-1]: v[i+1] for i in s }
+    remove_srcargs = lambda v, s: [ v[i] for i in range(0, len(v))
+                                    if i not in s and
+                                    i not in list(map(nexti, s)) ]
+
+    inpargs = sys.argv[1:]
+    src_override_argi = list(filter(is_src_override_arg(inpargs), range(0, len(inpargs))))
+    overrides = SrcOverrides(src_argdict(inpargs, src_override_argi))
+    argv_noov = remove_srcargs(inpargs, src_override_argi)
+
+    src_reference_argi = list(filter(is_src_reference_arg(argv_noov), range(0, len(argv_noov))))
+    references = SrcReferences(src_argdict(argv_noov, src_reference_argi))
+    argv = remove_srcargs(argv_noov, src_reference_argi)
+
+    asys = ActorSystem(systemBase='multiprocTCPBase' if '--fast' in sys.argv else 'simpleSystemBase')
+    try:
+        sys.exit(gen_nix(filename=([arg for arg in argv if arg[0] != '-']
+                                   + [None])[0],
+                         noisy='--noisy' in argv,
+                         allowUnfree='--allowUnfree' in argv,
+                         static='--static' in argv or '--dynamic' not in argv,
+                         hydra='--hydra' in argv,
+                         nolocal='--nolocal' in argv,
+                         overrides=overrides,
+                         references=references,
+                         frequency=('hourly' if '--hourly' in argv
+                                    else ('daily' if '--daily' in argv
+                                          else 'weekly')),
+                         extern_reporter='--fast' not in argv))
+    finally:
+        asys.shutdown()

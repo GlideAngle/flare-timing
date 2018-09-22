@@ -1,0 +1,37 @@
+ft = RepoIdent(team = "blockscope", reponame = "flare-timing")
+hc = RepoIdent(team = "blockscope", reponame = "hcoord")
+
+package_spec  =  [
+    Project("flare-timing"),
+
+    HaskellPackage("siggy-chardust", ft(subpath = "siggy-chardust"), Local("../siggy-chardust")),
+    HaskellPackage("detour-via-sci", ft(subpath = "detour-via-sci"), Local("../detour-via-sci")),
+    HaskellPackage("detour-via-uom", ft(subpath = "detour-via-uom"), Local("../detour-via-uom"), dontCheck = True),
+    HaskellPackage("tasty-compare", ft(subpath = "tasty-compare"), Local("../tasty-compare")),
+
+    HaskellPackage("flight-cmd", ft(subpath = "cmd"), Local("../cmd")),
+    HaskellPackage("flight-comp", ft(subpath = "comp"), Local("../comp"), dontHaddock = True),
+    HaskellPackage("flight-earth", ft(subpath = "earth"), Local("../earth"), dontCheck = True, dontHaddock = True),
+    HaskellPackage("flight-fsdb", ft(subpath = "fsdb"), Local("../fsdb"), dontHaddock = True),
+    HaskellPackage("flight-gap", ft(subpath = "gap"), Local("../gap"), dontCheck = True, dontHaddock = True),
+    HaskellPackage("flight-igc", ft(subpath = "igc"), Local("../igc")),
+    HaskellPackage("flight-kml", ft(subpath = "kml"), Local("../kml")),
+    HaskellPackage("flight-latlng", ft(subpath = "latlng"), Local("../latlng"), dontHaddock = True),
+    HaskellPackage("flight-lookup", ft(subpath = "lookup"), Local("../lookup"), dontHaddock = True),
+    HaskellPackage("flight-mask", ft(subpath = "mask"), Local("../mask"), dontHaddock = True),
+    HaskellPackage("flight-route", ft(subpath = "route"), Local("../route"), dontCheck = True, dontHaddock = True),
+    HaskellPackage("flight-scribe", ft(subpath = "scribe"), Local("../scribe")),
+    HaskellPackage("flight-span", ft(subpath = "span"), Local("../span")),
+    HaskellPackage("flight-task", ft(subpath = "task"), Local("../task"), dontCheck = True, dontHaddock = True),
+    HaskellPackage("flight-track", ft(subpath = "track"), Local("../track")),
+    HaskellPackage("flight-units", ft(subpath = "units"), Local("../units"), dontHaddock = True),
+    HaskellPackage("flight-zone", ft(subpath = "zone"), Local("../zone"), dontHaddock = True),
+
+    HaskellPackage("build-flare-timing", ft(subpath = "build"), Local("../build"),),
+    HaskellPackage("flare-timing", ft(subpath = "flare-timing"), Local("../flare-timing"), dontHaddock = True),
+    HaskellPackage("www-flare-timing", ft(subpath = "www"), Local("../www"), dontHaddock = True),
+
+    HaskellPackage("hcoord", hc(subpath = "hcoord"), version = "3c3859dac5da111e57a6de09764ffdb127197c4a", dontCheck = True),
+    HaskellPackage("hcoord-utm", hc(subpath = "hcoord-utm"), version = "3c3859dac5da111e57a6de09764ffdb127197c4a", dontCheck = True),
+    HaskellPackage("uom-plugin", version = "0.3.0.0", dontCheck = True, jailBreak = True),
+]
