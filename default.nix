@@ -2,29 +2,32 @@
 
 reflex-platform.project ({ pkgs, ... }: with pkgs.lib; {
   packages = {
-    detour-via-sci = ./detour-via-sci;
-    detour-via-uom = ./detour-via-uom;
-    cmd = ./cmd;
-    comp = ./comp;
-    earth = ./earth;
-    fsdb = ./fsdb;
-    gap = ./gap;
-    igc = ./igc;
-    kml = ./kml;
-    latlng = ./latlng;
-    lookup = ./lookup;
-    mask = ./mask;
-    route = ./route;
-    scribe = ./scribe;
-    siggy-chardust = ./siggy-chardust;
-    span = ./span;
-    task = ./task;
-    tasty-compare = ./tasty-compare;
-    track = ./track;
-    units = ./units;
-    zone = ./zone;
-    hcoord = .stack2cabal/hcoord/hcoord;
-    hcoord-utm = .stack2cabal/hcoord/hcoord-utm;
+    # WARNING: Until I get to choose a version of ghc later than the default of
+    # ghc-8.0.2, comment out the packages I might need with ghc.
+    # 
+    # detour-via-sci = ./detour-via-sci;
+    # detour-via-uom = ./detour-via-uom;
+    # cmd = ./cmd;
+    # comp = ./comp;
+    # earth = ./earth;
+    # fsdb = ./fsdb;
+    # gap = ./gap;
+    # igc = ./igc;
+    # kml = ./kml;
+    # latlng = ./latlng;
+    # lookup = ./lookup;
+    # mask = ./mask;
+    # route = ./route;
+    # scribe = ./scribe;
+    # siggy-chardust = ./siggy-chardust;
+    # span = ./span;
+    # task = ./task;
+    # tasty-compare = ./tasty-compare;
+    # track = ./track;
+    # units = ./units;
+    # zone = ./zone;
+    # hcoord = .stack2cabal/hcoord/hcoord;
+    # hcoord-utm = .stack2cabal/hcoord/hcoord-utm;
     app-view = ./app-view;
   };
 
@@ -208,31 +211,30 @@ reflex-platform.project ({ pkgs, ... }: with pkgs.lib; {
 
   shells = {
     ghc = [
-      "detour-via-sci"
-      "detour-via-uom"
-      "cmd"
-      "comp"
-      "earth"
-      "fsdb"
-      "gap"
-      "igc"
-      "kml"
-      "latlng"
-      "lookup"
-      "mask"
-      "route"
-      "scribe"
-      "siggy-chardust"
-      "span"
-      "task"
-      "tasty-compare"
-      "track"
-      "units"
-      "zone"
-      "hcoord"
-      "hcoord-utm"
-      "app-view"
-      "text"
+      # "detour-via-sci"
+      # "detour-via-uom"
+      # "cmd"
+      # "comp"
+      # "earth"
+      # "fsdb"
+      # "gap"
+      # "igc"
+      # "kml"
+      # "latlng"
+      # "lookup"
+      # "mask"
+      # "route"
+      # "scribe"
+      # "siggy-chardust"
+      # "span"
+      # "task"
+      # "tasty-compare"
+      # "track"
+      # "units"
+      # "zone"
+      # "hcoord"
+      # "hcoord-utm"
+      # "text"
     ];
     ghcjs = ["app-view"];
   };
