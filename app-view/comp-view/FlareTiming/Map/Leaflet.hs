@@ -26,7 +26,7 @@ module FlareTiming.Map.Leaflet
 
 import Prelude hiding (map, log)
 import GHCJS.Types (JSVal, JSString)
-import GHCJS.DOM.Element (IsElement(..))
+import GHCJS.DOM.Element (IsElement)
 import GHCJS.DOM.Types (Element(..), toElement, toJSString, toJSVal)
 
 -- SEE: https://gist.github.com/ali-abrar/fa2adbbb7ee64a0295cb

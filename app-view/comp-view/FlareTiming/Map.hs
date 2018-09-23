@@ -16,14 +16,11 @@ import Reflex.Dom
     , text
     )
 import Reflex.Time (delay)
-import Data.Monoid (mconcat)
-import Control.Monad (join, sequence)
+import Control.Monad (sequence)
 import Control.Monad.IO.Class (liftIO)
 
 import qualified FlareTiming.Map.Leaflet as L
-    ( Map(..)
-    , TileLayer(..)
-    , Marker(..)
+    ( Marker(..)
     , Circle(..)
     , map
     , mapSetView
@@ -37,9 +34,7 @@ import qualified FlareTiming.Map.Leaflet as L
     , circleAddToMap
     , polyline 
     , polylineAddToMap
-    , circleBounds
     , polylineBounds
-    , extendBounds
     , fitBounds
     )
 import Data.Flight.Types
@@ -47,11 +42,6 @@ import Data.Flight.Types
     , Turnpoint(..)
     , Latitude(..)
     , Longitude(..)
-    , Name
-    , Radius
-    , SpeedSection
-    , fromSci
-    , toSci
     )
 
 turnpoint :: Turnpoint -> IO (L.Marker, L.Circle)

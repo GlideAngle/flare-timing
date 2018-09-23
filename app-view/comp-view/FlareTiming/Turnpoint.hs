@@ -10,8 +10,8 @@ module FlareTiming.Turnpoint
     , getNameRadius
     ) where
 
-import Reflex.Dom (MonadWidget , Dynamic , el , dynText)
-import qualified Data.Text as T (Text, pack)
+import Reflex.Dom (MonadWidget, Dynamic, dynText)
+import qualified Data.Text as T (pack)
 
 import Data.Flight.Types (Turnpoint(..), showRadius)
 

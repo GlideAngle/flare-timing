@@ -5,7 +5,6 @@
 module FlareTiming.Task (tasks) where
 
 import Prelude hiding (map)
-import Data.Maybe (isJust)
 import Reflex.Dom
     ( MonadWidget, Event, Dynamic, XhrRequest(..)
     , (=:)
@@ -26,26 +25,15 @@ import Reflex.Dom
     , decodeXhrResponse
     , leftmost
     )
-import qualified Data.Text as T (Text, pack)
+import qualified Data.Text as T (pack)
 import Data.Map (union)
 import Data.List (intercalate)
 
-import Data.Flight.Types
-    ( Task(..)
-    , Turnpoint(..)
-    , Latitude(..)
-    , Longitude(..)
-    , Name
-    , Radius
-    , SpeedSection
-    , fromSci
-    , toSci
-    , showRadius
-    )
+import Data.Flight.Types (Task(..), Turnpoint(..), SpeedSection)
 import FlareTiming.Map (map)
 import FlareTiming.NavBar (navbar)
 import FlareTiming.Footer (footer)
-import qualified FlareTiming.Turnpoint as TP (turnpoint, turnpointRadius, getName)
+import qualified FlareTiming.Turnpoint as TP (getName)
 
 loading :: MonadWidget t m => m ()
 loading = do
