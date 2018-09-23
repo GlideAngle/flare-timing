@@ -45,7 +45,7 @@ import Data.Flight.Types
     )
 
 turnpoint :: Turnpoint -> IO (L.Marker, L.Circle)
-turnpoint (Turnpoint name (Latitude lat) (Longitude lng) radius) = do
+turnpoint (Turnpoint _ (Latitude lat) (Longitude lng) radius) = do
     xMark <- L.marker latLng
     xCyl <- L.circle latLng $ fromInteger radius
     return (xMark, xCyl)
@@ -62,7 +62,7 @@ map (Task _ _ []) = do
     el "p" $ text "The task has no turnpoints."
     return ()
 
-map (Task name _ xs)= do
+map (Task _ _ xs)= do
     let tpNames = fmap (\ (Turnpoint name _ _ _) -> name) xs
     postBuild <- delay 1 =<< getPostBuild
     (e, _) <- elAttr' "div" ("style" =: "height: 240px;width: 320px") $ return ()
