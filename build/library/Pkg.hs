@@ -41,8 +41,9 @@ dhallCabal =
     , ("tasty-compare", "tasty-compare")
     , ("track", "flight-track")
     , ("units", "flight-units")
-    , ("www", "www-flare-timing")
     , ("zone", "flight-zone")
+    , ("app-serve", "app-serve")
+    , ("app-view", "app-view")
     ] 
 
 format :: String -> Rules ()

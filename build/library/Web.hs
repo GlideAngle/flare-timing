@@ -37,11 +37,8 @@ ghcjsIntermediates =
 cleanRules :: Rules ()
 cleanRules =
     phony "clean-www" $ do
-        removeFilesAfter out [ "//*" ] 
+        removeFilesAfter out [ "//*" ]
         removeFilesAfter tmp [ "//*" ]
-
-root :: FilePath
-root = "www"
 
 out :: FilePath
 out = "__www-dist"
@@ -50,7 +47,7 @@ tmp :: FilePath
 tmp = "__www-build"
 
 view :: FilePath
-view = root </> "view"
+view = "app-view" </> "comp-view"
 
 buildRules :: Rules ()
 buildRules = do
@@ -66,20 +63,20 @@ buildRules = do
         liftIO $ putStrLn "#phony view-reflex" 
         need [ out </> "task.jsexe" </> "all.js" ]
 
-    root </> "view" </> "node_modules" </> "webpack" </> "package.json" %> \ _ -> do
+    view </> "node_modules" </> "webpack" </> "package.json" %> \ _ -> do
         liftIO $ putStrLn "#install node_modules" 
         cmd (Cwd view) Shell "yarn install"
 
     out </> "task-view" </> "app.html" %> \ _ -> do
         liftIO $ putStrLn "#pack app.html" 
-        need [ root </> "view" </> "node_modules" </> "webpack" </> "package.json" ]
+        need [ view </> "node_modules" </> "webpack" </> "package.json" ]
         cmd (Cwd view) Shell "yarn run pack"
 
     mconcat $ (\ s ->
         tmp </> "app.jsexe" </> s %> \ _ -> do
-            need [ root </> "view" </> "App.hs"
-                 , root </> "view" </> "FlareTiming" </> "Task.hs"
-                 , root </> "view" </> "FlareTiming" </> "Map.hs"
+            need [ view </> "App.hs"
+                 , view </> "FlareTiming" </> "Task.hs"
+                 , view </> "FlareTiming" </> "Map.hs"
                  ]
 
             liftIO $ putStrLn $ "#compile " ++ s

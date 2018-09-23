@@ -50,7 +50,8 @@ shellPkgs =
     , "siggy-chardust"
     , "tasty-compare"
     , "flare-timing"
-    , "www"
+    , "app-serve"
+    , "app-view"
     ]
     ++ flyPkgs
 
@@ -67,7 +68,8 @@ buildRules = do
              , "nix-build-siggy-chardust"
              , "nix-build-tasty-compare"
              , "nix-build-flare-timing"
-             , "nix-build-www-flare-timing"
+             , "nix-build-app-serve"
+             , "nix-build-app-view"
              ]
              ++
              (prefix "nix-flight-" <$> flyPkgs))
@@ -77,7 +79,8 @@ buildRules = do
     phony' "siggy-chardust"
     phony' "tasty-compare"
     phony' "flare-timing"
-    phony "nix-build-www-flare-timing" $ cmd (Cwd "www") Shell "nix build"
+    phony "nix-build-app-serve" $ cmd (Cwd "app-serve") Shell "nix build"
+    phony "nix-build-app-view" $ cmd (Cwd "app-view") Shell "nix build"
 
     where
         phony' s = do phony (prefix "nix-build-" s) $ cmd (Cwd s) Shell "nix build"
@@ -99,7 +102,8 @@ fromCabalRules = do
         : "cabal2nix-siggy-chardust"
         : "cabal2nix-tasty-compare"
         : "cabal2nix-flare-timing"
-        : "cabal2nix-www-flare-timing"
+        : "cabal2nix-app-serve"
+        : "cabal2nix-app-view"
         : (prefix "cabal2nix-" <$> flyPkgs)
 
     phony "cabal2nix-detour-via-sci" $
@@ -132,11 +136,17 @@ fromCabalRules = do
             Shell
             (cabal2nix "flare-timing")
 
-    phony "cabal2nix-www-flare-timing" $
+    phony "cabal2nix-app-serve" $
         cmd
-            (Cwd "www")
+            (Cwd "app-serve")
             Shell
-            (cabal2nix "www-flare-timing")
+            (cabal2nix "app-serve")
+
+    phony "cabal2nix-app-view" $
+        cmd
+            (Cwd "app-view")
+            Shell
+            (cabal2nix "app-view")
 
     where
         fromCabalRule :: String -> Rules ()
