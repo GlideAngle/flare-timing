@@ -37,8 +37,8 @@ COMPILER_FLAGS = [
     ] + DEFAULT_EXTENSIONS
 
 haskell_binary(
-    name = "www-flare-timing",
-    srcs = glob(["serve/**/*.hs"]),
+    name = "app-serve",
+    srcs = glob(["comp-serve/**/*.hs"]),
     compiler_flags = COMPILER_FLAGS,
     deps = [
         ":base",
