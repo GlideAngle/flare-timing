@@ -98,66 +98,65 @@ foreign import javascript unsafe
     fitBounds_ :: JSVal -> JSVal -> IO ()
 
 map :: IsElement e => e -> IO Map
-map e = do
-    lmap <- map_ $ unElement $ toElement e
-    return $ Map lmap
+map e =
+    Map <$> (map_ . unElement . toElement $ e)
 
 mapSetView :: Map -> (Double, Double) -> Int -> IO ()
-mapSetView lm (lat, lng) zoom = mapSetView_ (unMap lm) lat lng zoom
+mapSetView lm (lat, lng) zoom =
+    mapSetView_ (unMap lm) lat lng zoom
 
 mapInvalidateSize :: Map -> IO ()
-mapInvalidateSize lmap = mapInvalidateSize_ (unMap lmap)
+mapInvalidateSize lmap =
+    mapInvalidateSize_ (unMap lmap)
 
 tileLayer :: String -> Int -> IO TileLayer
-tileLayer src maxZoom = do
-    layer <- tileLayer_ (toJSString src) maxZoom
-    return $ TileLayer layer
+tileLayer src maxZoom =
+    TileLayer <$> tileLayer_ (toJSString src) maxZoom
 
 tileLayerAddToMap :: TileLayer -> Map -> IO ()
-tileLayerAddToMap x lmap = tileLayerAddToMap_ (unTileLayer x) (unMap lmap)
+tileLayerAddToMap x lmap =
+    tileLayerAddToMap_ (unTileLayer x) (unMap lmap)
 
 marker :: (Double, Double) -> IO Marker
-marker (lat, lng) = do
-    marker <- marker_ lat lng
-    return $ Marker marker
+marker (lat, lng) =
+    Marker <$> marker_ lat lng
 
 markerAddToMap :: Marker -> Map -> IO ()
-markerAddToMap x lmap = markerAddToMap_ (unMarker x) (unMap lmap)
+markerAddToMap x lmap =
+    markerAddToMap_ (unMarker x) (unMap lmap)
 
 markerPopup :: Marker -> String -> IO ()
-markerPopup x msg = markerPopup_ (unMarker x) (toJSString msg)
+markerPopup x msg =
+    markerPopup_ (unMarker x) (toJSString msg)
 
 circle :: (Double, Double) -> Double -> IO Circle
-circle (lat, lng) radius = do
-    circle <- circle_ lat lng radius
-    return $ Circle circle
+circle (lat, lng) radius =
+    Circle <$> circle_ lat lng radius
 
 circleAddToMap :: Circle -> Map -> IO ()
-circleAddToMap x lmap = circleAddToMap_ (unCircle x) (unMap lmap)
+circleAddToMap x lmap =
+    circleAddToMap_ (unCircle x) (unMap lmap)
 
 polyline :: [(Double, Double)] -> IO Polyline
 polyline xs = do
     ys <- toJSVal $ (\ (lat, lng) -> [ lat, lng ]) <$> xs
-    polyline <- polyline_ ys
-    return $ Polyline polyline
+    Polyline <$> polyline_ ys
 
 polylineAddToMap :: Polyline -> Map -> IO ()
-polylineAddToMap x lmap = polylineAddToMap_ (unPolyline x) (unMap lmap)
+polylineAddToMap x lmap =
+    polylineAddToMap_ (unPolyline x) (unMap lmap)
 
 circleBounds :: Circle -> IO LatLngBounds
-circleBounds x = do
-    bounds <- getBounds_ (unCircle x)
-    return $ LatLngBounds bounds
+circleBounds x =
+    LatLngBounds <$> getBounds_ (unCircle x)
 
 polylineBounds :: Polyline -> IO LatLngBounds
-polylineBounds x = do
-    bounds <- getBounds_ (unPolyline x)
-    return $ LatLngBounds bounds
+polylineBounds x =
+    LatLngBounds <$> getBounds_ (unPolyline x)
 
 extendBounds :: LatLngBounds -> LatLngBounds -> IO LatLngBounds
-extendBounds x y = do
-    bounds <- extendBounds_ (unLatLngBounds x) (unLatLngBounds y)
-    return $ LatLngBounds bounds
+extendBounds x y =
+    LatLngBounds <$> extendBounds_ (unLatLngBounds x) (unLatLngBounds y)
 
 fitBounds :: Map -> LatLngBounds -> IO ()
 fitBounds lm bounds = fitBounds_ (unMap lm) (unLatLngBounds bounds)
