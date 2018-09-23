@@ -3,7 +3,7 @@
 in    defs
     ⫽ ./default-extensions.dhall
     ⫽ { name =
-          "www-flare-timing"
+          "app-serve"
       , synopsis =
           "A collection of apps and libraries for scoring hang gliding and paragliding competitions."
       , description =
@@ -11,7 +11,7 @@ in    defs
       , category =
           "Data, Parsing"
       , github =
-          "blockscope/flare-timing/www"
+          "blockscope/flare-timing/app-serve"
       , dependencies =
           defs.dependencies
       , executables =
@@ -39,7 +39,7 @@ in    defs
               , main =
                   "Main.hs"
               , source-dirs =
-                  "serve"
+                  "comp-serve"
               }
           }
       , tests =

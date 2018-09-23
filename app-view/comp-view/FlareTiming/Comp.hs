@@ -141,8 +141,9 @@ viewComps () = do
     cs <- getComps ()
     ns <- getNominals ()
 
-    elAttr "div" (union ("class" =: "tile is-ancestor")
-                        ("style" =: "flex-wrap: wrap;")) $ do
-    simpleList cs (comp ns)
+    elAttr
+        "div"
+        (union ("class" =: "tile is-ancestor") ("style" =: "flex-wrap: wrap;"))
+        $ do simpleList cs (comp ns)
 
     return ()
