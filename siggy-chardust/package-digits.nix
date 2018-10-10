@@ -1,10 +1,5 @@
-
 let
-  lib =
-    { src = ./library;
-      dependencies = [ "base" ];
-      extensions = [ "PackageImports"];
-    };
+  lib = import ./package.nix;
 in
   { main = "Rounding";
     src = ./test-suite-digits;

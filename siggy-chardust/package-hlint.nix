@@ -1,9 +1,5 @@
 let
-  lib =
-    { src = ./library;
-      dependencies = [ "base" ];
-      extensions = [ "PackageImports"];
-    };
+  lib = import ./package.nix;
 in
   { main = "HLint";
     src = ./test-suite-hlint;
