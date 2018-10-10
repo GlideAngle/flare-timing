@@ -5,7 +5,6 @@ in
     src = ./test-suite-digits;
     packages = [ lib ];
     dependencies = [
-      "base"
       "tasty"
       "tasty-hunit"
       "tasty-quickcheck"

@@ -1,4 +1,4 @@
 { src = ./library;
-  dependencies = [ "base" ];
+  dependencies = [];
   extensions = [ "PackageImports" ];
 }

@@ -4,6 +4,6 @@ in
   { main = "DocTest";
     src = ./test-suite-doctest;
     packages = [ lib ];
-    dependencies = [ "base" "doctest" ];
+    dependencies = [ "doctest" ];
     extensions = [ "PackageImports"];
   }
