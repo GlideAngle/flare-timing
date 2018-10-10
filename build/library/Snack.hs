@@ -1,12 +1,19 @@
-module Snack (buildRules, testRules) where
+module Snack
+    ( buildRules
+    , testRules
+    , rulesSiggyChardust
+    ) where
 
 import Development.Shake
     ( Rules
+    , Action
     , CmdOption(Shell, Cwd)
     , phony
     , cmd
     , need
     )
+
+import Development.Shake.FilePath ((<.>))
 
 buildRules :: Rules ()
 buildRules = do
@@ -19,25 +26,31 @@ buildRules = do
             (Cwd "siggy-chardust")
             Shell "snack build"
 
+testRule :: FilePath -> FilePath -> Action ()
+testRule pkg testName =
+    cmd
+        (Cwd pkg)
+        Shell [ "snack run --package-nix"
+              , "test-suite-" ++ testName <.> ".nix"
+              ]
+
 testRules :: Rules ()
 testRules = do
     phony "snack-test" $
-        need [ "snack-siggy-chardust-test-hlint"
-             , "snack-siggy-chardust-test-doctest"
-             , "snack-siggy-chardust-test-digits"
+        need [ "snack-test-siggy-chardust"
              ]
 
-    phony "snack-siggy-chardust-test-hlint" $
-        cmd
-            (Cwd "siggy-chardust")
-            Shell "snack run --package-nix=test-suite-hlint.nix"
+rulesSiggyChardust :: Rules ()
+rulesSiggyChardust = do
+    phony "snack-test-siggy-chardust" $
+        need [ "snack-test-siggy-chardust-hlint"
+             , "snack-test-siggy-chardust-doctest"
+             , "snack-test-siggy-chardust-digits"
+             ]
 
-    phony "snack-siggy-chardust-test-doctest" $
-        cmd
-            (Cwd "siggy-chardust")
-            Shell "snack run --package-nix=test-suite-doctest.nix"
+    phony "snack-test-siggy-chardust-hlint" $ testRule' "hlint"
+    phony "snack-test-siggy-chardust-doctest" $ testRule' "doctest"
+    phony "snack-test-siggy-chardust-digits" $ testRule' "digits"
 
-    phony "snack-siggy-chardust-test-digits" $
-        cmd
-            (Cwd "siggy-chardust")
-            Shell "snack run --package-nix=test-suite-digits.nix"
+    where
+        testRule' = testRule "siggy-chardust"
