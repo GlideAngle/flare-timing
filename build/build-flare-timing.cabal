@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 6f6af437742b734de3ddf4ae38d3f4efc7bc35159cec7ec0f67c97dc878f9fd2
+-- hash: f076453e57fc0a233709cc3ba4c5ebc47f4308a82f90d4408d92cdf0dda8d65c
 
 name:           build-flare-timing
 version:        0.1.0
@@ -37,6 +37,7 @@ executable build-flare-timing
       Doc
       Nix
       Pkg
+      Snack
       Target
       Web
       Paths_build_flare_timing
