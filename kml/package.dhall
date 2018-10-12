@@ -1,7 +1,7 @@
-    let defs = ./defaults.dhall
+    let defs = ./../defaults.dhall
 
 in    defs
-    ⫽ ./default-extensions.dhall
+    ⫽ ./../default-extensions.dhall
     ⫽ { name =
           "flight-kml"
       , version =
@@ -35,7 +35,7 @@ in    defs
               [ "Flight.Kml", "Flight.Kml.Internal" ]
           }
       , tests =
-            ./default-tests.dhall
+            ./../default-tests.dhall
           ⫽ { doctest =
                 { dependencies =
                     [ "template-haskell", "doctest" ]

@@ -1,7 +1,7 @@
-    let defs = ./defaults.dhall
+    let defs = ./../defaults.dhall
 
 in    defs
-    ⫽ ./default-extensions.dhall
+    ⫽ ./../default-extensions.dhall
     ⫽ { name =
           "flight-igc"
       , synopsis =
@@ -17,5 +17,5 @@ in    defs
       , library =
           { source-dirs = "library", exposed-modules = "Flight.Igc" }
       , tests =
-          ./default-tests.dhall
+          ./../default-tests.dhall
       }

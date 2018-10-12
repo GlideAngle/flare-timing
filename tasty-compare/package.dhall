@@ -1,4 +1,4 @@
-    let defs = ./defaults.dhall
+    let defs = ./../defaults.dhall
 
 in    defs
     ⫽ { name =
@@ -20,5 +20,5 @@ in    defs
               "Test.Tasty.HUnit.Compare"
           }
       , tests =
-          ./default-tests.dhall
+          ./../default-tests.dhall
       }
