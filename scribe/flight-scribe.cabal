@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 6f84e18f27c50f255027ee3d290932c43edbef3a6a56e3bb5421b7e11a206dad
+-- hash: 03b3d92883f8d64b0241002d333746c4e67217203d9f93e13189314f9624cdf7
 
 name:           flight-scribe
 version:        0.1.0
@@ -42,7 +42,7 @@ library
   ghc-options: -Wall
   build-depends:
       aeson
-    , base >=4.9.1.0
+    , base >=4.9.1.0 && <5
     , bytestring
     , cassava
     , containers

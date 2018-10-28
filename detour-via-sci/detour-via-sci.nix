@@ -13,6 +13,8 @@ mkDerivation {
     aeson base cassava doctest newtype scientific siggy-chardust
     template-haskell
   ];
+  doHaddock = false;
+  doCheck = false;
   homepage = "https://github.com/blockscope/flare-timing/tree/master/detour-via-sci#readme";
   description = "JSON and CSV encoding for rationals as decimal point numbers";
   license = stdenv.lib.licenses.mpl20;

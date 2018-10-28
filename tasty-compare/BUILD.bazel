@@ -1,0 +1,34 @@
+load("@flare_timing//:default-extensions.bzl", "DEFAULT_EXTENSIONS")
+
+load(
+    "@io_tweag_rules_haskell//haskell:haskell.bzl",
+    "haskell_toolchain",
+)
+
+haskell_toolchain(
+    name = "ghc",
+    tools = "@ghc//:bin",
+    version = "8.2.2",
+)
+
+haskell_import(name = "base")
+haskell_import(name = "tasty")
+haskell_import(name = "tasty-hunit")
+haskell_import(name = "call-stack")
+
+haskell_library(
+    name = "tasty-compare",
+    srcs = glob(["library/**/*.hs"]),
+    src_strip_prefix = "library",
+    compiler_flags = [
+        "-threaded",
+        "-Wall",
+        ] + DEFAULT_EXTENSIONS,
+    deps = [
+        ":base",
+        ":tasty",
+        ":tasty-hunit",
+        ":call-stack",
+        ],
+    visibility = ["//visibility:public"],
+)

@@ -4,6 +4,8 @@ in    defs
     ⫽ ./../default-extensions.dhall
     ⫽ { name =
           "flight-igc"
+      , version =
+          "1.0.0"
       , synopsis =
           "A parser for IGC files."
       , description =

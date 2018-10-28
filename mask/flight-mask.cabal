@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 0fb5978d6566123936d7a2c04e392ff94bcbba6e4dc2c76d4d0e7e5f7dd384aa
+-- hash: 9f9eb9ff8917a89d8be34fe3016e3195ad97bd8f178997278dcb18b634fbc070
 
 name:           flight-mask
 version:        0.1.0
@@ -51,7 +51,7 @@ library
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
-      base >=4.9.1.0
+      base >=4.9.1.0 && <5
     , bytestring
     , cmdargs
     , containers

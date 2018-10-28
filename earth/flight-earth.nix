@@ -19,8 +19,8 @@ mkDerivation {
     smallcheck tasty tasty-compare tasty-hunit tasty-quickcheck
     tasty-smallcheck uom-plugin
   ];
-  doCheck = false;
   doHaddock = false;
+  doCheck = false;
   homepage = "https://github.com/blockscope/flare-timing#readme";
   description = "Distances on the WGS84 ellipsoid, the FAI sphere and the UTM projection";
   license = stdenv.lib.licenses.mpl20;

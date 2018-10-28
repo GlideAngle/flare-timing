@@ -1,0 +1,34 @@
+load(
+    "@io_tweag_rules_haskell//haskell:haskell.bzl",
+    "haskell_toolchain",
+)
+
+haskell_toolchain(
+    name = "ghc",
+    tools = "@ghc//:bin",
+    version = "8.2.2",
+)
+
+haskell_import(name = "base")
+haskell_import(name = "newtype")
+haskell_import(name = "scientific")
+haskell_import(name = "aeson")
+haskell_import(name = "cassava")
+haskell_import(name = "template-haskell")
+
+haskell_library(
+    name = "detour-via-sci",
+    srcs = glob(["library/**/*.hs"]),
+    src_strip_prefix = "library",
+    compiler_flags = ["-threaded"],
+    deps = [
+        ":base",
+        ":newtype",
+        ":scientific",
+        ":aeson",
+        ":cassava",
+        ":template-haskell",
+        "//siggy-chardust:siggy-chardust",
+        ],
+    visibility = ["//visibility:public"],
+)

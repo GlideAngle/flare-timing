@@ -28,22 +28,14 @@ packages:
 - www
 - location:
     git: https://github.com/blockscope/hcoord.git
-    commit: b2fb75029f0374e48caf4cbbfcfcc2fd674cb4f3
+    commit: 3c3859dac5da111e57a6de09764ffdb127197c4a
   subdirs:
   - hcoord
   - hcoord-utm
   extra-dep: true
 - location:
-    git: https://github.com/haskell/fgl.git
-    commit: e29503775e474b7a7cd8951b6bebcf1529b888b5
-  extra-dep: true
-- location:
     git: https://github.com/brunjlar/stack2cabal
     commit: a8a4cdcacd697cee648af93856735f15de5987a6
-  extra-dep: true
-- location:
-    git: https://github.com/blockscope/pier.git
-    commit: 9ea5b2b689610cc779618bdbf7bb169aae0520c9
   extra-dep: true
 extra-deps:
 - hxt-xpath-9.1.2.2

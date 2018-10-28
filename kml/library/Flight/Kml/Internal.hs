@@ -289,11 +289,11 @@ rangeUTCTime mark0 (Seconds s0, Seconds s1) =
 -- embedStr readStr = lift =<< runIO readStr
 -- :}
 -- 
--- >>> kml = $(embedStr (readFile "./test-suite-doctest/Phil de Joux.20120114-082221.21437.40.kml"))
+-- >>> kml = $(embedStr (readFile "./test-suite-doctest/Phil-de-Joux.20120114-082221.21437.40.kml"))
 -- 
 
 -- $internal-use
--- Working with the <Flight-Kml.html#kml KML tracklog dump> from the tracklog file "__@Phil de Joux.20120114-082221.21437.40.kml@__".
+-- Working with the <Flight-Kml.html#kml KML tracklog dump> from the tracklog file "__@Phil-de-Joux.20120114-082221.21437.40.kml@__".
 --
 -- >>> Right mf@(MarkedFixes{mark0, fixes}) <- parse kml
 -- >>> mark0

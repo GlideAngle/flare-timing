@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 697243b2f670380c5f23021cc2cc1a715e0da000fdcf433c53a0345b655f3c08
+-- hash: 88e923bfbe1b71401fa13a168972257b80b49eef3ad06023a92bb0b19a42a267
 
 name:           flight-units
 version:        0.1.0
@@ -42,7 +42,7 @@ library
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
-      base >=4.9.1.0
+      base >=4.9.1.0 && <5
     , bifunctors
     , fixed
     , formatting

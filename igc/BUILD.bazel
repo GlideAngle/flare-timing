@@ -1,0 +1,34 @@
+load("@flare_timing//:default-extensions.bzl", "DEFAULT_EXTENSIONS")
+
+load(
+    "@io_tweag_rules_haskell//haskell:haskell.bzl",
+    "haskell_toolchain",
+)
+
+haskell_toolchain(
+    name = "ghc",
+    tools = "@ghc//:bin",
+    version = "8.2.2",
+)
+
+haskell_import(name = "base")
+haskell_import(name = "parsec")
+haskell_import(name = "bytestring")
+haskell_import(name = "utf8-string")
+
+haskell_library(
+    name = "flight-igc",
+    srcs = glob(["library/**/*.hs"]),
+    src_strip_prefix = "library",
+    compiler_flags = [
+        "-threaded",
+        "-Wall",
+        ] + DEFAULT_EXTENSIONS,
+    deps = [
+        ":base",
+        ":parsec",
+        ":bytestring",
+        ":utf8-string",
+        ],
+    visibility = ["//visibility:public"],
+)

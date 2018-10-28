@@ -1,20 +1,5 @@
 let
-  config = {
-    packageOverrides = super: let self = super.pkgs; in
-    {
-      haskell = super.haskell // {
-        packageOverrides = self: super: {
-          flight-span = self.callPackage ../span/default.nix { };
-        };
-      };
-    };
-  };
-
-  pkgs = import <nixpkgs> { inherit config; };
-
+  config = import ../nix/config.nix {};
+  pkgs = import ../nix/nixpkgs.nix { inherit config; };
 in
-  { compiler ? "ghc822"
-  }:
-  pkgs.haskell.packages.${compiler}.callPackage
-  ./flight-cmd.nix
-  { }
+  { flight-cmd = pkgs.haskellPackages.flight-cmd; }

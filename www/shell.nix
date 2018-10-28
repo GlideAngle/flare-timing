@@ -1,2 +1,5 @@
-{ nixpkgs ? import <nixpkgs> {}, compiler ? "ghc802" }:
-(import ./default.nix { inherit nixpkgs compiler; }).env
+let
+  config = import ../nix/config.nix {};
+  pkgs = import ../nix/nixpkgs.nix { inherit config; };
+in
+  import ./drv.nix { nixpkgs = pkgs; }

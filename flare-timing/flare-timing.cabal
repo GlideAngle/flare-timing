@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 803cbb686612c392765f03e020e53a4fc7fca5803d3aff7714e63dfefe259fff
+-- hash: ad95292e19aefe4bfb5d5f6f3388aebe86ae8b2f675f0ddc497ad7497d8d8d36
 
 name:           flare-timing
 version:        0.1.0
@@ -40,7 +40,7 @@ executable align-time
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
-    , base >=4.9.1.0
+    , base >=4.9.1.0 && <5
     , bytestring
     , clock
     , cmdargs
@@ -59,7 +59,6 @@ executable align-time
     , mtl
     , raw-strings-qq
     , siggy-chardust
-    , system-filepath
     , time
     , transformers
     , uom-plugin
@@ -77,7 +76,7 @@ executable cross-zone
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
-    , base >=4.9.1.0
+    , base >=4.9.1.0 && <5
     , bytestring
     , clock
     , cmdargs
@@ -98,7 +97,6 @@ executable cross-zone
     , mtl
     , raw-strings-qq
     , siggy-chardust
-    , system-filepath
     , transformers
     , uom-plugin
     , yaml
@@ -115,7 +113,7 @@ executable discard-further
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
-    , base >=4.9.1.0
+    , base >=4.9.1.0 && <5
     , bytestring
     , clock
     , cmdargs
@@ -132,7 +130,6 @@ executable discard-further
     , formatting
     , mtl
     , raw-strings-qq
-    , system-filepath
     , transformers
     , uom-plugin
     , yaml
@@ -149,7 +146,7 @@ executable extract-input
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
-    , base >=4.9.1.0
+    , base >=4.9.1.0 && <5
     , bytestring
     , clock
     , cmdargs
@@ -166,7 +163,6 @@ executable extract-input
     , formatting
     , mtl
     , raw-strings-qq
-    , system-filepath
     , transformers
     , uom-plugin
     , yaml
@@ -183,7 +179,7 @@ executable gap-point
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
-    , base >=4.9.1.0
+    , base >=4.9.1.0 && <5
     , bytestring
     , clock
     , cmdargs
@@ -201,7 +197,6 @@ executable gap-point
     , formatting
     , mtl
     , raw-strings-qq
-    , system-filepath
     , transformers
     , uom-plugin
     , yaml
@@ -218,7 +213,7 @@ executable land-out
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
-    , base >=4.9.1.0
+    , base >=4.9.1.0 && <5
     , bytestring
     , clock
     , cmdargs
@@ -233,7 +228,6 @@ executable land-out
     , formatting
     , mtl
     , raw-strings-qq
-    , system-filepath
     , transformers
     , uom-plugin
     , yaml
@@ -251,7 +245,7 @@ executable mask-track
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
-    , base >=4.9.1.0
+    , base >=4.9.1.0 && <5
     , bytestring
     , clock
     , cmdargs
@@ -273,7 +267,6 @@ executable mask-track
     , mtl
     , raw-strings-qq
     , siggy-chardust
-    , system-filepath
     , transformers
     , uom-plugin
     , yaml
@@ -290,7 +283,7 @@ executable tag-zone
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
-    , base >=4.9.1.0
+    , base >=4.9.1.0 && <5
     , bytestring
     , clock
     , cmdargs
@@ -305,7 +298,6 @@ executable tag-zone
     , formatting
     , mtl
     , raw-strings-qq
-    , system-filepath
     , time
     , transformers
     , uom-plugin
@@ -323,7 +315,7 @@ executable task-length
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
-    , base >=4.9.1.0
+    , base >=4.9.1.0 && <5
     , bytestring
     , clock
     , cmdargs
@@ -338,7 +330,6 @@ executable task-length
     , formatting
     , mtl
     , raw-strings-qq
-    , system-filepath
     , transformers
     , uom-plugin
     , yaml
@@ -354,7 +345,7 @@ executable test-fsdb-parser
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
-      base >=4.9.1.0
+      base >=4.9.1.0 && <5
     , cmdargs
     , directory
     , filemanip
@@ -364,7 +355,6 @@ executable test-fsdb-parser
     , flight-fsdb
     , flight-units
     , raw-strings-qq
-    , system-filepath
     , uom-plugin
   default-language: Haskell2010
 
@@ -378,7 +368,7 @@ executable test-igc-parser
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
-      base >=4.9.1.0
+      base >=4.9.1.0 && <5
     , cmdargs
     , directory
     , filemanip
@@ -387,7 +377,6 @@ executable test-igc-parser
     , flight-comp
     , flight-igc
     , raw-strings-qq
-    , system-filepath
   default-language: Haskell2010
 
 executable test-kml-parser
@@ -400,7 +389,7 @@ executable test-kml-parser
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
-      base >=4.9.1.0
+      base >=4.9.1.0 && <5
     , cmdargs
     , directory
     , filemanip
@@ -409,5 +398,4 @@ executable test-kml-parser
     , flight-comp
     , flight-kml
     , raw-strings-qq
-    , system-filepath
   default-language: Haskell2010

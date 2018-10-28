@@ -1,0 +1,48 @@
+load("@flare_timing//:default-extensions.bzl", "DEFAULT_EXTENSIONS")
+
+load(
+    "@io_tweag_rules_haskell//haskell:haskell.bzl",
+    "haskell_toolchain",
+)
+
+haskell_toolchain(
+    name = "ghc",
+    tools = "@ghc//:bin",
+    version = "8.2.2",
+)
+
+haskell_import(name = "base")
+haskell_import(name = "numbers")
+haskell_import(name = "uom-plugin")
+haskell_import(name = "bifunctors")
+haskell_import(name = "aeson")
+haskell_import(name = "scientific")
+haskell_import(name = "hcoord-utm")
+
+haskell_library(
+    name = "flight-route",
+    srcs = glob(["library/**/*.hs"]),
+    src_strip_prefix = "library",
+    compiler_flags = [
+        "-threaded",
+        "-Wall",
+        "-fplugin Data.UnitsOfMeasure.Plugin",
+        ] + DEFAULT_EXTENSIONS,
+    deps = [
+        ":base",
+        ":numbers",
+        ":uom-plugin",
+        ":bifunctors",
+        ":aeson",
+        ":scientific",
+        ":hcoord-utm",
+        "//detour-via-sci:detour-via-sci",
+        "//siggy-chardust:siggy-chardust",
+        "//units:flight-units",
+        "//latlng:flight-latlng",
+        "//zone:flight-zone",
+        "//earth:flight-earth",
+        "//task:flight-task",
+        ],
+    visibility = ["//visibility:public"],
+)

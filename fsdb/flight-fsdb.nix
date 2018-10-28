@@ -20,6 +20,7 @@ mkDerivation {
     tasty-quickcheck tasty-smallcheck time uom-plugin
   ];
   doHaddock = false;
+  doCheck = false;
   homepage = "https://github.com/blockscope/flare-timing#readme";
   description = "A parser for fsdb, the database XML format of FS";
   license = stdenv.lib.licenses.mpl20;

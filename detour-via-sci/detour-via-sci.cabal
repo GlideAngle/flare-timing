@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 6a4a88d2829b92ddc2463059cd896fbe131741e3c95873342ce82acf7de1d700
+-- hash: a4153f91637dad312b6457a45b0a21088de23d3e2276eaffc4625b7621f6d17e
 
 name:           detour-via-sci
 version:        1.0.0
@@ -40,7 +40,7 @@ library
   ghc-options: -Wall
   build-depends:
       aeson
-    , base >=4.9.1.0
+    , base >=4.9.1.0 && <5
     , cassava
     , newtype
     , scientific
@@ -61,7 +61,7 @@ test-suite doctest
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
-    , base >=4.9.1.0
+    , base >=4.9.1.0 && <5
     , cassava
     , doctest
     , newtype

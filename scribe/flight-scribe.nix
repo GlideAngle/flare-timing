@@ -14,6 +14,8 @@ mkDerivation {
     flight-route flight-zone mtl path scientific split time
     unordered-containers vector yaml
   ];
+  doHaddock = false;
+  doCheck = false;
   homepage = "https://github.com/blockscope/flare-timing#readme";
   description = "Hang gliding and paragliding competition scoring files";
   license = stdenv.lib.licenses.mpl20;

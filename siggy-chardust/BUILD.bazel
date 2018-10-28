@@ -1,0 +1,21 @@
+load(
+    "@io_tweag_rules_haskell//haskell:haskell.bzl",
+    "haskell_toolchain",
+)
+
+haskell_toolchain(
+    name = "ghc",
+    tools = "@ghc//:bin",
+    version = "8.2.2",
+)
+
+haskell_import(name = "base")
+
+haskell_library(
+    name = "siggy-chardust",
+    srcs = glob(["library/**/*.hs"]),
+    src_strip_prefix = "library",
+    compiler_flags = ["-threaded"],
+    deps = [":base"],
+    visibility = ["//visibility:public"],
+)

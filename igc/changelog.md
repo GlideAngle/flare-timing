@@ -1,4 +1,7 @@
-The [latest version](https://github.com/blockscope/haskell-flight-igc/blob/master/changelog.md) of this changelog.
+## 1.0.0
+
+* Change the top-level module to Flight.Igc.
+* Don't publish with hlint tests.
 
 ## 0.1.0
 

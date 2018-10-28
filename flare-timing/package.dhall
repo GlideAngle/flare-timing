@@ -4,7 +4,6 @@ in  let depsTest =
             defs.dependencies
           # [ "directory"
             , "filepath"
-            , "system-filepath"
             , "filemanip"
             , "raw-strings-qq"
             , "cmdargs"
@@ -16,7 +15,6 @@ in  let deps =
             defs.dependencies
           # [ "directory"
             , "filepath"
-            , "system-filepath"
             , "filemanip"
             , "raw-strings-qq"
             , "cmdargs"
@@ -113,8 +111,7 @@ in    defs
           , align-time =
               { dependencies =
                     deps
-                  # [ "clock"
-                    , "lens"
+                  # [ "lens"
                     , "time"
                     , "siggy-chardust"
                     , "flight-kml"

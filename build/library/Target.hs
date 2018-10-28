@@ -4,7 +4,7 @@ import Development.Shake (Rules)
 import Doc (buildRules, cleanRules)
 import Cmd (buildRules, cleanRules, testRules, lintRules, docTestRules)
 import Web (buildRules, cleanRules)
-import Nix (buildRules, nixRules, shellRules)
+import Nix (buildRules, cleanRules, shellRules, fromCabalRules)
 import Snack (buildRules, testRules, rulesSiggyChardust)
 import Pkg (buildRules)
 
@@ -14,12 +14,12 @@ allWants =
     , "stack-test-apps"
     , "stack-test-suites"
     , "stack-doctest-suites"
-    -- NOTE: The following targets build but I don't want them by default.
+    -- NOTE: The following targets build but I don't want them built by default.
     --, "docs"
     --, "cabal-prod-apps"
     --, "cabal-test-apps"
+    --, "nix-build"
     -- WARNING: The following targets don't currently build.
-    --, "nix"
     --, "view-www"
     ]
 
@@ -34,6 +34,7 @@ cleanRules = do
     Doc.cleanRules
     Cmd.cleanRules
     Web.cleanRules
+    Nix.cleanRules
 
 buildRules :: Rules ()
 buildRules = do
@@ -42,8 +43,8 @@ buildRules = do
     Cmd.buildRules
     Web.buildRules
     Nix.buildRules
-    Nix.nixRules
     Nix.shellRules
+    Nix.fromCabalRules
     Snack.buildRules
 
 testRules :: Rules ()

@@ -19,5 +19,5 @@
 , default-extensions =
     [ "PackageImports" ]
 , dependencies =
-    [ "base >=4.9.1.0" ]
+    [ "base >=4.9.1.0 && <5" ]
 }
