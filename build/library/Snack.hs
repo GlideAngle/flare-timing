@@ -19,11 +19,17 @@ buildRules :: Rules ()
 buildRules = do
     phony "snack" $
         need [ "snack-siggy-chardust"
+             , "snack-detour-via-sci"
              ]
 
     phony "snack-siggy-chardust" $
         cmd
             (Cwd "siggy-chardust")
+            Shell "snack build"
+
+    phony "snack-detour-via-sci" $
+        cmd
+            (Cwd "detour-via-sci")
             Shell "snack build"
 
 testRule :: FilePath -> FilePath -> Action ()
