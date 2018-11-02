@@ -1,0 +1,8 @@
+resolver: lts-12.5
+packages:
+- location:
+    git: https://github.com/brunjlar/stack2cabal
+    commit: a8a4cdcacd697cee648af93856735f15de5987a6
+  extra-dep: true
+local-bin-path: __shake-build
+work-dir: .stack-work-stack2nix

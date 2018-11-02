@@ -24,4 +24,3 @@ packages:
     , flare-timing
     , .stack2cabal/hcoord/hcoord
     , .stack2cabal/hcoord/hcoord-utm
-    , .stack2cabal/fgl
