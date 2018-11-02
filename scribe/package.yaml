@@ -1,0 +1,78 @@
+library:
+  source-dirs: library
+  exposed-modules: Flight.Scribe
+tests: {}
+copyright: © 2017-2018 Phil de Joux, © 2017-2018 Block Scope Limited
+category: Data
+license-file: LICENSE.md
+maintainer: phil.dejoux@blockscope.com
+ghc-options:
+- -Wall
+dependencies:
+- base >=4.9.1.0 && <5
+- split
+- path
+- aeson
+- scientific
+- containers
+- unordered-containers
+- time
+- cassava
+- bytestring
+- directory
+- filepath
+- filemanip
+- mtl
+- yaml
+- vector
+- detour-via-sci
+- flight-latlng
+- flight-zone
+- flight-route
+- flight-gap
+- flight-comp
+default-extensions:
+- DataKinds
+- DeriveFunctor
+- DeriveGeneric
+- DeriveAnyClass
+- DerivingStrategies
+- DisambiguateRecordFields
+- FlexibleContexts
+- FlexibleInstances
+- GeneralizedNewtypeDeriving
+- GADTs
+- LambdaCase
+- MultiParamTypeClasses
+- MultiWayIf
+- NamedFieldPuns
+- OverloadedStrings
+- PackageImports
+- ParallelListComp
+- PartialTypeSignatures
+- PatternSynonyms
+- QuasiQuotes
+- RankNTypes
+- RecordWildCards
+- ScopedTypeVariables
+- StandaloneDeriving
+- TemplateHaskell
+- TypeApplications
+- TypeFamilies
+- TypeOperators
+- TypeSynonymInstances
+- TupleSections
+- UndecidableInstances
+name: flight-scribe
+version: 0.1.0
+extra-source-files:
+- package.dhall
+- changelog.md
+- README.md
+synopsis: Hang gliding and paragliding competition scoring files.
+author: Phil de Joux
+github: blockscope/flare-timing/scribe
+tested-with: GHC == 8.2.2
+license: MPL-2.0
+description: Reading and writing competition scoring files.
+

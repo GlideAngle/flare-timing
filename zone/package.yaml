@@ -1,0 +1,93 @@
+library:
+  source-dirs: library
+  exposed-modules:
+  - Flight.Zone
+  - Flight.Zone.ZoneKind
+  - Flight.Zone.MkZones
+  - Flight.Zone.TaskZones
+  - Flight.Zone.Path
+  - Flight.Zone.Raw
+  - Flight.Zone.Cylinder
+tests:
+  serial:
+    source-dirs:
+    - library
+    - test-suite-serial
+    main: Spec.hs
+    ghc-options:
+    - -rtsopts
+    - -threaded
+    - -with-rtsopts=-N
+    dependencies:
+    - text
+    - yaml
+    - here
+    - bytestring
+    - aeson-pretty
+    - tasty
+    - tasty-hspec
+    - tasty-discover
+    - tasty-golden
+copyright: © 2017-2018 Phil de Joux, © 2017-2018 Block Scope Limited
+category: Flight
+license-file: LICENSE.md
+maintainer: phil.dejoux@blockscope.com
+ghc-options:
+- -Wall
+- -fplugin Data.UnitsOfMeasure.Plugin
+dependencies:
+- base >=4.9.1.0 && <5
+- uom-plugin
+- aeson
+- scientific
+- newtype
+- siggy-chardust
+- detour-via-sci
+- detour-via-uom
+- flight-units
+- flight-latlng
+default-extensions:
+- DataKinds
+- DeriveFunctor
+- DeriveGeneric
+- DeriveAnyClass
+- DerivingStrategies
+- DisambiguateRecordFields
+- FlexibleContexts
+- FlexibleInstances
+- GeneralizedNewtypeDeriving
+- GADTs
+- LambdaCase
+- MultiParamTypeClasses
+- MultiWayIf
+- NamedFieldPuns
+- OverloadedStrings
+- PackageImports
+- ParallelListComp
+- PartialTypeSignatures
+- PatternSynonyms
+- QuasiQuotes
+- RankNTypes
+- RecordWildCards
+- ScopedTypeVariables
+- StandaloneDeriving
+- TemplateHaskell
+- TypeApplications
+- TypeFamilies
+- TypeOperators
+- TypeSynonymInstances
+- TupleSections
+- UndecidableInstances
+name: flight-zone
+version: 0.1.0
+extra-source-files:
+- package.dhall
+- changelog.md
+- README.md
+synopsis: Control zones to fly.
+author: Phil de Joux
+github: blockscope/flare-timing/zone
+tested-with: GHC == 8.2.2
+license: MPL-2.0
+description: Control zones for hang gliding and paragliding competitons.
+

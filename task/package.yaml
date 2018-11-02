@@ -1,0 +1,87 @@
+library:
+  source-dirs: library
+  exposed-modules: Flight.Task
+tests:
+  task:
+    source-dirs:
+    - library
+    - test-suite-task
+    main: Task.hs
+    ghc-options:
+    - -rtsopts
+    - -threaded
+    - -with-rtsopts=-N
+    dependencies:
+    - tasty
+    - tasty-hunit
+    - tasty-quickcheck
+    - tasty-smallcheck
+    - tasty-compare
+    - smallcheck
+copyright: © 2017-2018 Phil de Joux, © 2017-2018 Block Scope Limited
+category: Flight
+license-file: LICENSE.md
+maintainer: phil.dejoux@blockscope.com
+ghc-options:
+- -Wall
+- -fplugin Data.UnitsOfMeasure.Plugin
+dependencies:
+- base >=4.9.1.0 && <5
+- numbers
+- fgl
+- uom-plugin
+- bifunctors
+- aeson
+- scientific
+- mtl
+- detour-via-sci
+- siggy-chardust
+- flight-units
+- flight-latlng
+- flight-zone
+- flight-earth
+default-extensions:
+- DataKinds
+- DeriveFunctor
+- DeriveGeneric
+- DeriveAnyClass
+- DerivingStrategies
+- DisambiguateRecordFields
+- FlexibleContexts
+- FlexibleInstances
+- GeneralizedNewtypeDeriving
+- GADTs
+- LambdaCase
+- MultiParamTypeClasses
+- MultiWayIf
+- NamedFieldPuns
+- OverloadedStrings
+- PackageImports
+- ParallelListComp
+- PartialTypeSignatures
+- PatternSynonyms
+- QuasiQuotes
+- RankNTypes
+- RecordWildCards
+- ScopedTypeVariables
+- StandaloneDeriving
+- TemplateHaskell
+- TypeApplications
+- TypeFamilies
+- TypeOperators
+- TypeSynonymInstances
+- TupleSections
+- UndecidableInstances
+name: flight-task
+version: 0.1.0
+extra-source-files:
+- package.dhall
+- changelog.md
+- README.md
+synopsis: Tasks to fly.
+author: Phil de Joux
+github: blockscope/flare-timing/task
+tested-with: GHC == 8.2.2
+license: MPL-2.0
+description: Tasks for hang gliding and paragliding competitons.
+

@@ -1,0 +1,394 @@
+tests: {}
+copyright: © 2017-2018 Phil de Joux, © 2017-2018 Block Scope Limited
+category: Data, Parsing
+license-file: LICENSE.md
+maintainer: phil.dejoux@blockscope.com
+ghc-options:
+- -Wall
+dependencies:
+- base >=4.9.1.0 && <5
+default-extensions:
+- DataKinds
+- DeriveFunctor
+- DeriveGeneric
+- DeriveAnyClass
+- DerivingStrategies
+- DisambiguateRecordFields
+- FlexibleContexts
+- FlexibleInstances
+- GeneralizedNewtypeDeriving
+- GADTs
+- LambdaCase
+- MultiParamTypeClasses
+- MultiWayIf
+- NamedFieldPuns
+- OverloadedStrings
+- PackageImports
+- ParallelListComp
+- PartialTypeSignatures
+- PatternSynonyms
+- QuasiQuotes
+- RankNTypes
+- RecordWildCards
+- ScopedTypeVariables
+- StandaloneDeriving
+- TemplateHaskell
+- TypeApplications
+- TypeFamilies
+- TypeOperators
+- TypeSynonymInstances
+- TupleSections
+- UndecidableInstances
+name: flare-timing
+version: 0.1.0
+extra-source-files:
+- package.dhall
+- changelog.md
+- README.md
+synopsis: A collection of apps and libraries for scoring hang gliding and paragliding
+  competitions.
+author: Phil de Joux
+github: blockscope/flare-timing/flare-timing
+tested-with: GHC == 8.2.2
+license: MPL-2.0
+executables:
+  test-igc-parser:
+    source-dirs: test-apps/igc-parser
+    main: IgcMain.hs
+    ghc-options:
+    - -rtsopts
+    - -threaded
+    - -with-rtsopts=-N
+    dependencies:
+    - base >=4.9.1.0 && <5
+    - directory
+    - filepath
+    - filemanip
+    - raw-strings-qq
+    - cmdargs
+    - flight-cmd
+    - flight-comp
+    - flight-igc
+  task-length:
+    source-dirs: prod-apps/task-length
+    main: TaskLengthMain.hs
+    ghc-options:
+    - -rtsopts
+    - -threaded
+    - -with-rtsopts=-N
+    - -Wall
+    - -fplugin Data.UnitsOfMeasure.Plugin
+    dependencies:
+    - base >=4.9.1.0 && <5
+    - directory
+    - filepath
+    - filemanip
+    - raw-strings-qq
+    - cmdargs
+    - mtl
+    - transformers
+    - yaml
+    - aeson
+    - uom-plugin
+    - bytestring
+    - clock
+    - formatting
+    - flight-cmd
+    - flight-comp
+    - flight-latlng
+    - flight-scribe
+    - flight-route
+  align-time:
+    source-dirs: prod-apps/align-time
+    main: AlignTimeMain.hs
+    ghc-options:
+    - -rtsopts
+    - -threaded
+    - -with-rtsopts=-N
+    - -Wall
+    - -fplugin Data.UnitsOfMeasure.Plugin
+    dependencies:
+    - base >=4.9.1.0 && <5
+    - directory
+    - filepath
+    - filemanip
+    - raw-strings-qq
+    - cmdargs
+    - mtl
+    - transformers
+    - yaml
+    - aeson
+    - uom-plugin
+    - bytestring
+    - clock
+    - formatting
+    - flight-cmd
+    - flight-comp
+    - flight-latlng
+    - flight-scribe
+    - lens
+    - time
+    - siggy-chardust
+    - flight-kml
+    - flight-mask
+    - flight-lookup
+  extract-input:
+    source-dirs: prod-apps/extract-input
+    main: ExtractInputMain.hs
+    ghc-options:
+    - -rtsopts
+    - -threaded
+    - -with-rtsopts=-N
+    dependencies:
+    - base >=4.9.1.0 && <5
+    - directory
+    - filepath
+    - filemanip
+    - raw-strings-qq
+    - cmdargs
+    - mtl
+    - transformers
+    - yaml
+    - aeson
+    - uom-plugin
+    - bytestring
+    - clock
+    - formatting
+    - flight-cmd
+    - flight-comp
+    - flight-latlng
+    - flight-scribe
+    - flight-zone
+    - flight-gap
+    - flight-fsdb
+  land-out:
+    source-dirs: prod-apps/land-out
+    main: LandOutMain.hs
+    ghc-options:
+    - -rtsopts
+    - -threaded
+    - -with-rtsopts=-N
+    - -Wall
+    - -fplugin Data.UnitsOfMeasure.Plugin
+    dependencies:
+    - base >=4.9.1.0 && <5
+    - directory
+    - filepath
+    - filemanip
+    - raw-strings-qq
+    - cmdargs
+    - mtl
+    - transformers
+    - yaml
+    - aeson
+    - uom-plugin
+    - bytestring
+    - clock
+    - formatting
+    - flight-cmd
+    - flight-comp
+    - flight-latlng
+    - flight-scribe
+    - flight-gap
+  gap-point:
+    source-dirs: prod-apps/gap-point
+    main: GapPointMain.hs
+    ghc-options:
+    - -rtsopts
+    - -threaded
+    - -with-rtsopts=-N
+    - -Wall
+    - -fplugin Data.UnitsOfMeasure.Plugin
+    dependencies:
+    - base >=4.9.1.0 && <5
+    - directory
+    - filepath
+    - filemanip
+    - raw-strings-qq
+    - cmdargs
+    - mtl
+    - transformers
+    - yaml
+    - aeson
+    - uom-plugin
+    - bytestring
+    - clock
+    - formatting
+    - flight-cmd
+    - flight-comp
+    - flight-latlng
+    - flight-scribe
+    - containers
+    - flight-zone
+    - flight-gap
+    - flight-mask
+  test-fsdb-parser:
+    source-dirs: test-apps/fsdb-parser
+    main: FsdbMain.hs
+    ghc-options:
+    - -rtsopts
+    - -threaded
+    - -with-rtsopts=-N
+    dependencies:
+    - base >=4.9.1.0 && <5
+    - directory
+    - filepath
+    - filemanip
+    - raw-strings-qq
+    - cmdargs
+    - flight-cmd
+    - flight-comp
+    - uom-plugin
+    - flight-fsdb
+    - flight-units
+  discard-further:
+    source-dirs: prod-apps/discard-further
+    main: DiscardFurtherMain.hs
+    ghc-options:
+    - -rtsopts
+    - -threaded
+    - -with-rtsopts=-N
+    - -Wall
+    - -fplugin Data.UnitsOfMeasure.Plugin
+    dependencies:
+    - base >=4.9.1.0 && <5
+    - directory
+    - filepath
+    - filemanip
+    - raw-strings-qq
+    - cmdargs
+    - mtl
+    - transformers
+    - yaml
+    - aeson
+    - uom-plugin
+    - bytestring
+    - clock
+    - formatting
+    - flight-cmd
+    - flight-comp
+    - flight-latlng
+    - flight-scribe
+    - flight-gap
+    - flight-mask
+    - flight-lookup
+  cross-zone:
+    source-dirs: prod-apps/cross-zone
+    main: CrossZoneMain.hs
+    ghc-options:
+    - -rtsopts
+    - -threaded
+    - -with-rtsopts=-N
+    - -Wall
+    - -fplugin Data.UnitsOfMeasure.Plugin
+    dependencies:
+    - base >=4.9.1.0 && <5
+    - directory
+    - filepath
+    - filemanip
+    - raw-strings-qq
+    - cmdargs
+    - mtl
+    - transformers
+    - yaml
+    - aeson
+    - uom-plugin
+    - bytestring
+    - clock
+    - formatting
+    - flight-cmd
+    - flight-comp
+    - flight-latlng
+    - flight-scribe
+    - lens
+    - siggy-chardust
+    - flight-span
+    - flight-units
+    - flight-zone
+    - flight-earth
+    - flight-mask
+  test-kml-parser:
+    source-dirs: test-apps/kml-parser
+    main: KmlMain.hs
+    ghc-options:
+    - -rtsopts
+    - -threaded
+    - -with-rtsopts=-N
+    dependencies:
+    - base >=4.9.1.0 && <5
+    - directory
+    - filepath
+    - filemanip
+    - raw-strings-qq
+    - cmdargs
+    - flight-cmd
+    - flight-comp
+    - flight-kml
+  mask-track:
+    source-dirs: prod-apps/mask-track
+    main: MaskTrackMain.hs
+    ghc-options:
+    - -rtsopts
+    - -threaded
+    - -with-rtsopts=-N
+    - -Wall
+    - -fplugin Data.UnitsOfMeasure.Plugin
+    dependencies:
+    - base >=4.9.1.0 && <5
+    - directory
+    - filepath
+    - filemanip
+    - raw-strings-qq
+    - cmdargs
+    - mtl
+    - transformers
+    - yaml
+    - aeson
+    - uom-plugin
+    - bytestring
+    - clock
+    - formatting
+    - flight-cmd
+    - flight-comp
+    - flight-latlng
+    - flight-scribe
+    - containers
+    - lens
+    - siggy-chardust
+    - flight-span
+    - flight-kml
+    - flight-gap
+    - flight-mask
+    - flight-lookup
+  tag-zone:
+    source-dirs: prod-apps/tag-zone
+    main: TagZoneMain.hs
+    ghc-options:
+    - -rtsopts
+    - -threaded
+    - -with-rtsopts=-N
+    - -Wall
+    - -fplugin Data.UnitsOfMeasure.Plugin
+    dependencies:
+    - base >=4.9.1.0 && <5
+    - directory
+    - filepath
+    - filemanip
+    - raw-strings-qq
+    - cmdargs
+    - mtl
+    - transformers
+    - yaml
+    - aeson
+    - uom-plugin
+    - bytestring
+    - clock
+    - formatting
+    - flight-cmd
+    - flight-comp
+    - flight-latlng
+    - flight-scribe
+    - time
+    - flight-mask
+description: Scoring and viewing hang gliding and paragliding competitions.
+

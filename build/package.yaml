@@ -1,0 +1,39 @@
+tests: {}
+copyright: © 2017-2018 Phil de Joux, © 2017-2018 Block Scope Limited
+category: Data, Parsing
+license-file: LICENSE.md
+maintainer: phil.dejoux@blockscope.com
+ghc-options:
+- -Wall
+dependencies:
+- base >=4.9.1.0 && <5
+default-extensions:
+- PackageImports
+name: build-flare-timing
+version: 0.1.0
+extra-source-files:
+- package.dhall
+- changelog.md
+- README.md
+synopsis: A shake build of flare-timing.
+author: Phil de Joux
+github: blockscope/flare-timing/build
+tested-with: GHC == 8.2.2
+license: MPL-2.0
+executables:
+  build-flare-timing:
+    source-dirs:
+    - app-cmd
+    - library
+    main: Main.hs
+    ghc-options:
+    - -rtsopts
+    - -threaded
+    - -with-rtsopts=-N
+    dependencies:
+    - base
+    - ansi-terminal
+    - shake
+    - time
+description: Builds the packages making up flare-timing.
+

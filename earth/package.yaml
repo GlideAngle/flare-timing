@@ -1,0 +1,105 @@
+library:
+  source-dirs: library
+  exposed-modules:
+  - Flight.Earth.Flat.Projected.Double
+  - Flight.Earth.Flat.Projected.Rational
+  - Flight.Earth.Flat.Separated
+  - Flight.Earth.Flat
+  - Flight.Earth.Sphere.Cylinder.Double
+  - Flight.Earth.Sphere.Cylinder.Rational
+  - Flight.Earth.Sphere.PointToPoint.Double
+  - Flight.Earth.Sphere.PointToPoint.Rational
+  - Flight.Earth.Sphere.Separated
+  - Flight.Earth.Sphere
+  - Flight.Earth.Ellipsoid.Cylinder.Double
+  - Flight.Earth.Ellipsoid.Cylinder.Rational
+  - Flight.Earth.Ellipsoid.PointToPoint.Double
+  - Flight.Earth.Ellipsoid.PointToPoint.Rational
+  - Flight.Earth.Ellipsoid.Separated
+  - Flight.Earth.Ellipsoid
+  - Flight.Earth.Geodesy
+tests:
+  earth:
+    source-dirs:
+    - library
+    - test-suite-earth
+    main: Earth.hs
+    ghc-options:
+    - -rtsopts
+    - -threaded
+    - -with-rtsopts=-N
+    dependencies:
+    - tasty
+    - tasty-hunit
+    - tasty-quickcheck
+    - tasty-smallcheck
+    - smallcheck
+    - tasty-compare
+copyright: © 2017-2018 Phil de Joux, © 2017-2018 Block Scope Limited
+category: Flight
+license-file: LICENSE.md
+maintainer: phil.dejoux@blockscope.com
+ghc-options:
+- -Wall
+- -fplugin Data.UnitsOfMeasure.Plugin
+dependencies:
+- base >=4.9.1.0 && <5
+- numbers
+- fgl
+- uom-plugin
+- bifunctors
+- aeson
+- scientific
+- mtl
+- hcoord
+- hcoord-utm
+- detour-via-sci
+- siggy-chardust
+- flight-units
+- flight-latlng
+- flight-zone
+default-extensions:
+- DataKinds
+- DeriveFunctor
+- DeriveGeneric
+- DeriveAnyClass
+- DerivingStrategies
+- DisambiguateRecordFields
+- FlexibleContexts
+- FlexibleInstances
+- GeneralizedNewtypeDeriving
+- GADTs
+- LambdaCase
+- MultiParamTypeClasses
+- MultiWayIf
+- NamedFieldPuns
+- OverloadedStrings
+- PackageImports
+- ParallelListComp
+- PartialTypeSignatures
+- PatternSynonyms
+- QuasiQuotes
+- RankNTypes
+- RecordWildCards
+- ScopedTypeVariables
+- StandaloneDeriving
+- TemplateHaskell
+- TypeApplications
+- TypeFamilies
+- TypeOperators
+- TypeSynonymInstances
+- TupleSections
+- UndecidableInstances
+name: flight-earth
+version: 0.1.0
+extra-source-files:
+- package.dhall
+- changelog.md
+- README.md
+synopsis: Distances on the WGS84 ellipsoid, the FAI sphere and the UTM projection.
+author: Phil de Joux
+github: blockscope/flare-timing/earth
+tested-with: GHC == 8.2.2
+license: MPL-2.0
+description: Distances on the Earth for hang gliding and paragliding competitons.
+

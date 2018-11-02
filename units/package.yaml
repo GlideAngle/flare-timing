@@ -1,0 +1,69 @@
+library:
+  source-dirs: library
+  exposed-modules:
+  - Flight.Ratio
+  - Flight.Units
+  - Flight.Units.Angle
+  - Flight.Units.DegMinSec
+tests: {}
+copyright: © 2017-2018 Phil de Joux, © 2017-2018 Block Scope Limited
+category: Flight
+license-file: LICENSE.md
+maintainer: phil.dejoux@blockscope.com
+ghc-options:
+- -Wall
+- -fplugin Data.UnitsOfMeasure.Plugin
+dependencies:
+- base >=4.9.1.0 && <5
+- numbers
+- fixed
+- bifunctors
+- text
+- formatting
+- uom-plugin
+- siggy-chardust
+default-extensions:
+- DataKinds
+- DeriveFunctor
+- DeriveGeneric
+- DeriveAnyClass
+- DerivingStrategies
+- DisambiguateRecordFields
+- FlexibleContexts
+- FlexibleInstances
+- GeneralizedNewtypeDeriving
+- GADTs
+- LambdaCase
+- MultiParamTypeClasses
+- MultiWayIf
+- NamedFieldPuns
+- OverloadedStrings
+- PackageImports
+- ParallelListComp
+- PartialTypeSignatures
+- PatternSynonyms
+- QuasiQuotes
+- RankNTypes
+- RecordWildCards
+- ScopedTypeVariables
+- StandaloneDeriving
+- TemplateHaskell
+- TypeApplications
+- TypeFamilies
+- TypeOperators
+- TypeSynonymInstances
+- TupleSections
+- UndecidableInstances
+name: flight-units
+version: 0.1.0
+extra-source-files:
+- package.dhall
+- changelog.md
+- README.md
+synopsis: Units used in hang gliding and paragliding competitions.
+author: Phil de Joux
+github: blockscope/flare-timing/units
+tested-with: GHC == 8.2.2
+license: MPL-2.0
+description: Unit definitions such as m, km, rad and deg.
+

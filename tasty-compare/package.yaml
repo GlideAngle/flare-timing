@@ -1,0 +1,30 @@
+library:
+  source-dirs: library
+  exposed-modules: Test.Tasty.HUnit.Compare
+tests: {}
+copyright: © 2017-2018 Phil de Joux, © 2017-2018 Block Scope Limited
+category: Test
+license-file: LICENSE.md
+maintainer: phil.dejoux@blockscope.com
+ghc-options:
+- -Wall
+dependencies:
+- base >=4.9.1.0 && <5
+- tasty
+- tasty-hunit
+- call-stack
+default-extensions:
+- PackageImports
+name: tasty-compare
+version: 0.1.0
+extra-source-files:
+- package.dhall
+- changelog.md
+- README.md
+synopsis: Tasty HUnit extensions for comparisons.
+author: Phil de Joux
+github: blockscope/flare-timing/tasty-compare
+tested-with: GHC == 8.2.2
+license: MPL-2.0
+description: Adds assertCompare and operators for the same.
+

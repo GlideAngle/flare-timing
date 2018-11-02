@@ -1,0 +1,58 @@
+homepage: https://github.com/blockscope/flare-timing/tree/master/siggy-chardust#readme
+library:
+  source-dirs: library
+  exposed-modules: Data.Ratio.Rounding
+tests:
+  digits:
+    source-dirs:
+    - library
+    - test-suite-digits
+    main: Rounding.hs
+    ghc-options:
+    - -rtsopts
+    - -threaded
+    - -with-rtsopts=-N
+    dependencies:
+    - tasty
+    - tasty-hunit
+    - tasty-quickcheck
+    - tasty-smallcheck
+    - smallcheck
+  doctest:
+    source-dirs:
+    - library
+    - test-suite-doctest
+    main: DocTest.hs
+    ghc-options:
+    - -rtsopts
+    - -threaded
+    - -with-rtsopts=-N
+    dependencies:
+    - base
+    - doctest
+copyright: © 2017-2018 Phil de Joux, © 2017-2018 Block Scope Limited
+category: Data, Math, Numeric
+license-file: LICENSE.md
+maintainer: phil.dejoux@blockscope.com
+ghc-options:
+- -Wall
+dependencies:
+- base >=4.9.1.0 && <5
+default-extensions:
+- PackageImports
+name: siggy-chardust
+version: 1.0.0
+extra-source-files:
+- package.dhall
+- changelog.md
+- README.md
+synopsis: Rounding rationals to significant digits and decimal places.
+author: Phil de Joux
+github: blockscope/flare-timing/siggy-chardust
+tested-with: GHC == 8.2.2
+license: MPL-2.0
+description: The round function from the prelude returns an integer. The standard
+  librarys of C and C++ have round functions that return floating point numbers. Rounding
+  in this library takes and returns rationals and can round to a number of significant
+  digits or a number of decimal places.
+

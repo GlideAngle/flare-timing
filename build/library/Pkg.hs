@@ -48,11 +48,16 @@ format (folder, _) =
     phony ("dhall-format-" ++ folder)
     $ cmd Shell ("__shake-build/dhall format --inplace " ++ (folder </> "package.dhall"))
 
-hpack :: (Folder, Pkg) -> Rules ()
-hpack (folder, _) =
+hpackDhall :: (Folder, Pkg) -> Rules ()
+hpackDhall (folder, _) =
     phony ("hpack-dhall-" ++ folder) $ do
         need ["dhall-format-" ++ folder]
         cmd (Cwd folder) Shell ("../__shake-build/dhall-hpack-cabal --package-dhall=package.dhall")
+
+hpackYaml :: (Folder, Pkg) -> Rules ()
+hpackYaml (folder, _) =
+    phony ("hpack-yaml-" ++ folder) $ do
+        cmd (Cwd folder) Shell ("../__shake-build/dhall-hpack-yaml --package-dhall=package.dhall > package.yaml")
 
 cabal :: (Folder, Pkg) -> Rules ()
 cabal (folder, pkg) =
@@ -61,8 +66,10 @@ cabal (folder, pkg) =
 buildRules :: Rules ()
 buildRules = do
     sequence_ $ format <$> pkgs
-    sequence_ $ hpack <$> pkgs
+    sequence_ $ hpackDhall <$> pkgs
+    sequence_ $ hpackYaml <$> pkgs
     sequence_ $ cabal <$> pkgs
     phony "dhall-format" $ need $ (\(x, _) -> "dhall-format-" ++ x) <$> pkgs
     phony "hpack-dhall" $ need $ (\(x, _) -> "hpack-dhall-" ++ x) <$> pkgs
+    phony "hpack-yaml" $ need $ (\(x, _) -> "hpack-yaml-" ++ x) <$> pkgs
     phony "cabal-files" $ need $ (\(x, y) -> x </> y <.> "cabal") <$> pkgs

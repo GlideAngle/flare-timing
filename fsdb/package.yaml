@@ -1,0 +1,90 @@
+library:
+  source-dirs: library
+  exposed-modules: Flight.Fsdb
+tests:
+  parse:
+    source-dirs:
+    - library
+    - test-suite-parse
+    main: Parse.hs
+    ghc-options:
+    - -rtsopts
+    - -threaded
+    - -with-rtsopts=-N
+    dependencies:
+    - tasty
+    - tasty-hunit
+    - tasty-quickcheck
+    - tasty-smallcheck
+    - smallcheck
+copyright: © 2017-2018 Phil de Joux, © 2017-2018 Block Scope Limited
+category: Data, Parsing
+license-file: LICENSE.md
+maintainer: phil.dejoux@blockscope.com
+ghc-options:
+- -Wall
+- -fplugin Data.UnitsOfMeasure.Plugin
+dependencies:
+- base >=4.9.1.0 && <5
+- split
+- megaparsec
+- hxt
+- path
+- hxt-xpath
+- aeson
+- scientific
+- containers
+- time
+- newtype
+- uom-plugin
+- detour-via-sci
+- flight-latlng
+- flight-units
+- flight-zone
+- flight-comp
+- flight-gap
+default-extensions:
+- DataKinds
+- DeriveFunctor
+- DeriveGeneric
+- DeriveAnyClass
+- DerivingStrategies
+- DisambiguateRecordFields
+- FlexibleContexts
+- FlexibleInstances
+- GeneralizedNewtypeDeriving
+- GADTs
+- LambdaCase
+- MultiParamTypeClasses
+- MultiWayIf
+- NamedFieldPuns
+- OverloadedStrings
+- PackageImports
+- ParallelListComp
+- PartialTypeSignatures
+- PatternSynonyms
+- QuasiQuotes
+- RankNTypes
+- RecordWildCards
+- ScopedTypeVariables
+- StandaloneDeriving
+- TemplateHaskell
+- TypeApplications
+- TypeFamilies
+- TypeOperators
+- TypeSynonymInstances
+- TupleSections
+- UndecidableInstances
+name: flight-fsdb
+version: 0.1.0
+extra-source-files:
+- package.dhall
+- changelog.md
+- README.md
+synopsis: A parser for fsdb, the database XML format of FS.
+author: Phil de Joux
+github: blockscope/flare-timing/fsdb
+tested-with: GHC == 8.2.2
+license: MPL-2.0
+description: Hang gliding and paragliding competitors, tasks and results as XML.
+
