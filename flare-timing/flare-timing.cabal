@@ -1,8 +1,10 @@
--- This file has been generated from package.dhall by hpack version 0.28.2.
+cabal-version: 1.12
+
+-- This file has been generated from package.dhall by hpack version 0.31.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ad95292e19aefe4bfb5d5f6f3388aebe86ae8b2f675f0ddc497ad7497d8d8d36
+-- hash: ceb12d56e6933ba17c0e321e326fe7b0528b4d3c679eeab3a9ecd183111e71c6
 
 name:           flare-timing
 version:        0.1.0
@@ -18,10 +20,9 @@ license:        MPL-2.0
 license-file:   LICENSE.md
 tested-with:    GHC == 8.2.2
 build-type:     Simple
-cabal-version:  >= 1.10
 extra-source-files:
-    changelog.md
     package.dhall
+    changelog.md
     README.md
 
 source-repository head
