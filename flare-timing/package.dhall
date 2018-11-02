@@ -1,4 +1,4 @@
-    let defs = ./defaults.dhall
+    let defs = ./../defaults.dhall
 
 in  let depsTest =
             defs.dependencies
@@ -33,7 +33,7 @@ in  let deps =
             ]
 
 in    defs
-    ⫽ ./default-extensions.dhall
+    ⫽ ./../default-extensions.dhall
     ⫽ { name =
           "flare-timing"
       , synopsis =
@@ -232,5 +232,5 @@ in    defs
               }
           }
       , tests =
-          ./default-tests.dhall
+          ./../default-tests.dhall
       }

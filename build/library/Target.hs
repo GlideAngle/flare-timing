@@ -5,6 +5,7 @@ import Doc (buildRules, cleanRules)
 import Cmd (buildRules, cleanRules, testRules, lintRules, docTestRules)
 import Web (buildRules, cleanRules)
 import Nix (buildRules, cleanRules, shellRules, fromCabalRules)
+import Snack (buildRules, testRules, rulesSiggyChardust)
 import Pkg (buildRules)
 
 allWants :: [ String ]
@@ -44,9 +45,12 @@ buildRules = do
     Nix.buildRules
     Nix.shellRules
     Nix.fromCabalRules
+    Snack.buildRules
 
 testRules :: Rules ()
 testRules = do
     Cmd.lintRules
     Cmd.testRules
     Cmd.docTestRules
+    Snack.testRules
+    Snack.rulesSiggyChardust
