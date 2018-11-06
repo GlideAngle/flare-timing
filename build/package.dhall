@@ -1,4 +1,4 @@
-  ./defaults.dhall
+  ./../defaults.dhall
 ⫽ { name =
       "build-flare-timing"
   , synopsis =
@@ -22,5 +22,5 @@
           }
       }
   , tests =
-      ./default-tests.dhall
+      ./../default-tests.dhall
   }

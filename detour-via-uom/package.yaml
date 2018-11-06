@@ -1,0 +1,48 @@
+name: detour-via-uom
+version: 1.0.0
+synopsis: JSON and CSV encoding for quantities.
+description: Lossy JSON and CSV encoding and decoding for newtype quantities via scientific
+  with fixed decimal places and with units.
+category: Data, Math, Numeric, JSON, CSV, Physics
+homepage: https://github.com/blockscope/flare-timing/tree/master/detour-via-uom#readme
+author: Phil de Joux
+maintainer: phil.dejoux@blockscope.com
+copyright: © 2017-2018 Phil de Joux, © 2017-2018 Block Scope Limited
+license: MPL-2.0
+license-file: LICENSE.md
+tested-with: GHC == 8.2.2
+github: blockscope/flare-timing/detour-via-uom
+extra-source-files:
+- package.dhall
+- changelog.md
+- README.md
+default-extensions:
+- PackageImports
+ghc-options:
+- -Wall
+- -fplugin Data.UnitsOfMeasure.Plugin
+dependencies:
+- base >=4.9.1.0 && <5
+- newtype
+- scientific
+- aeson
+- cassava
+- uom-plugin
+- detour-via-sci
+library:
+  exposed-modules:
+  - Data.Via.UnitsOfMeasure
+  source-dirs: library
+tests:
+  doctest:
+    main: DocTest.hs
+    source-dirs:
+    - library
+    - test-suite-doctest
+    ghc-options:
+    - -rtsopts
+    - -threaded
+    - -with-rtsopts=-N
+    dependencies:
+    - doctest
+

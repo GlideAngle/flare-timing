@@ -1,0 +1,82 @@
+name: flight-latlng
+version: 0.1.0
+synopsis: Latitude and longitude as used in hang gliding and paragliding competitions.
+description: Latitude and longitude.
+category: Flight
+author: Phil de Joux
+maintainer: phil.dejoux@blockscope.com
+copyright: © 2017-2018 Phil de Joux, © 2017-2018 Block Scope Limited
+license: MPL-2.0
+license-file: LICENSE.md
+tested-with: GHC == 8.2.2
+github: blockscope/flare-timing/latlng
+extra-source-files:
+- package.dhall
+- changelog.md
+- README.md
+default-extensions:
+- DataKinds
+- DeriveFunctor
+- DeriveGeneric
+- DeriveAnyClass
+- DerivingStrategies
+- DisambiguateRecordFields
+- FlexibleContexts
+- FlexibleInstances
+- GeneralizedNewtypeDeriving
+- GADTs
+- LambdaCase
+- MultiParamTypeClasses
+- MultiWayIf
+- NamedFieldPuns
+- OverloadedStrings
+- PackageImports
+- ParallelListComp
+- PartialTypeSignatures
+- PatternSynonyms
+- QuasiQuotes
+- RankNTypes
+- RecordWildCards
+- ScopedTypeVariables
+- StandaloneDeriving
+- TemplateHaskell
+- TypeApplications
+- TypeFamilies
+- TypeOperators
+- TypeSynonymInstances
+- TupleSections
+- UndecidableInstances
+ghc-options:
+- -Wall
+- -fplugin Data.UnitsOfMeasure.Plugin
+dependencies:
+- base >=4.9.1.0 && <5
+- numbers
+- random
+- aeson
+- cassava
+- bytestring
+- bifunctors
+- uom-plugin
+- formatting
+- text
+- newtype
+- tasty-quickcheck
+- smallcheck
+- detour-via-sci
+- detour-via-uom
+- siggy-chardust
+- flight-units
+library:
+  exposed-modules:
+  - Flight.Field
+  - Flight.EastNorth
+  - Flight.LatLng
+  - Flight.LatLng.Raw
+  - Flight.LatLng.Double
+  - Flight.LatLng.Float
+  - Flight.LatLng.Rational
+  - Flight.Distance
+  source-dirs: library
+tests: {}
+

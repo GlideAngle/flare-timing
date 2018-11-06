@@ -1,0 +1,47 @@
+name: detour-via-sci
+version: 1.0.0
+synopsis: JSON and CSV encoding for rationals as decimal point numbers.
+description: Lossy JSON and CSV encoding and decoding for newtype rationals via scientific
+  with fixed decimal places.
+category: Data, Math, Numeric, JSON, CSV
+homepage: https://github.com/blockscope/flare-timing/tree/master/detour-via-sci#readme
+author: Phil de Joux
+maintainer: phil.dejoux@blockscope.com
+copyright: © 2017-2018 Phil de Joux, © 2017-2018 Block Scope Limited
+license: MPL-2.0
+license-file: LICENSE.md
+tested-with: GHC == 8.2.2
+github: blockscope/flare-timing/detour-via-sci
+extra-source-files:
+- package.dhall
+- changelog.md
+- README.md
+default-extensions:
+- PackageImports
+ghc-options:
+- -Wall
+dependencies:
+- base >=4.9.1.0 && <5
+- newtype
+- scientific
+- aeson
+- cassava
+- template-haskell
+- siggy-chardust
+library:
+  exposed-modules:
+  - Data.Via.Scientific
+  source-dirs: library
+tests:
+  doctest:
+    main: DocTest.hs
+    source-dirs:
+    - library
+    - test-suite-doctest
+    ghc-options:
+    - -rtsopts
+    - -threaded
+    - -with-rtsopts=-N
+    dependencies:
+    - doctest
+

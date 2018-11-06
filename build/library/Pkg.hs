@@ -2,7 +2,7 @@ module Pkg (buildRules) where
 
 import Development.Shake
     ( Rules
-    , CmdOption(Shell)
+    , CmdOption(Cwd, Shell)
     , (%>)
     , phony
     , cmd
@@ -11,14 +11,12 @@ import Development.Shake
 
 import Development.Shake.FilePath ((<.>), (</>))
 
--- | The names of the packages for dhall-format and hpack-dhall.
-dhallPkgs :: [String]
-dhallPkgs = fst <$> dhallCabal
+type Folder = String
+type Pkg = String
 
--- | Pairs of package folder name used by dhall and the produced cabal file
--- name.
-dhallCabal :: [(String, String)]
-dhallCabal =
+-- | Pairs of folder and package name.
+pkgs :: [(Folder, Pkg)]
+pkgs =
     [ ("detour-via-sci", "detour-via-sci")
     , ("detour-via-uom", "detour-via-uom")
     , ("build", "build-flare-timing")
@@ -45,26 +43,33 @@ dhallCabal =
     , ("zone", "flight-zone")
     ] 
 
-format :: String -> Rules ()
-format x =
-    phony ("dhall-format-" ++ x)
-    $ cmd Shell ("__shake-build/dhall format --inplace " ++ (x </> "package.dhall"))
+format :: (Folder, Pkg) -> Rules ()
+format (folder, _) =
+    phony ("dhall-format-" ++ folder)
+    $ cmd Shell ("__shake-build/dhall format --inplace " ++ (folder </> "package.dhall"))
 
-hpack :: String -> Rules ()
-hpack x =
-    phony ("hpack-dhall-" ++ x) $ do
-        need ["dhall-format-" ++ x]
-        cmd Shell ("__shake-build/hpack-dhall " ++ x)
+hpackDhall :: (Folder, Pkg) -> Rules ()
+hpackDhall (folder, _) =
+    phony ("hpack-dhall-" ++ folder) $ do
+        need ["dhall-format-" ++ folder]
+        cmd (Cwd folder) Shell ("../__shake-build/dhall-hpack-cabal --package-dhall=package.dhall")
 
-cabal :: (String, String) -> Rules ()
-cabal (x, y) =
-    x </> y <.> "cabal" %> \_ -> need ["hpack-dhall-" ++ x]
+hpackYaml :: (Folder, Pkg) -> Rules ()
+hpackYaml (folder, _) =
+    phony ("hpack-yaml-" ++ folder) $ do
+        cmd (Cwd folder) Shell ("../__shake-build/dhall-hpack-yaml --package-dhall=package.dhall > package.yaml")
+
+cabal :: (Folder, Pkg) -> Rules ()
+cabal (folder, pkg) =
+    folder </> pkg <.> "cabal" %> \_ -> need ["hpack-dhall-" ++ folder]
 
 buildRules :: Rules ()
 buildRules = do
-    sequence_ $ format <$> dhallPkgs
-    sequence_ $ hpack <$> dhallPkgs
-    sequence_ $ cabal <$> dhallCabal
-    phony "dhall-format" $ need $ (\x -> "dhall-format-" ++ x) <$> dhallPkgs
-    phony "hpack-dhall" $ need $ (\x -> "hpack-dhall-" ++ x) <$> dhallPkgs
-    phony "cabal-files" $ need $ (\(x, y) -> x </> y <.> "cabal") <$> dhallCabal
+    sequence_ $ format <$> pkgs
+    sequence_ $ hpackDhall <$> pkgs
+    sequence_ $ hpackYaml <$> pkgs
+    sequence_ $ cabal <$> pkgs
+    phony "dhall-format" $ need $ (\(x, _) -> "dhall-format-" ++ x) <$> pkgs
+    phony "hpack-dhall" $ need $ (\(x, _) -> "hpack-dhall-" ++ x) <$> pkgs
+    phony "hpack-yaml" $ need $ (\(x, _) -> "hpack-yaml-" ++ x) <$> pkgs
+    phony "cabal-files" $ need $ (\(x, y) -> x </> y <.> "cabal") <$> pkgs

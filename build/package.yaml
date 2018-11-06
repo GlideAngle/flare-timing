@@ -1,0 +1,39 @@
+name: build-flare-timing
+version: 0.1.0
+synopsis: A shake build of flare-timing.
+description: Builds the packages making up flare-timing.
+category: Data, Parsing
+author: Phil de Joux
+maintainer: phil.dejoux@blockscope.com
+copyright: © 2017-2018 Phil de Joux, © 2017-2018 Block Scope Limited
+license: MPL-2.0
+license-file: LICENSE.md
+tested-with: GHC == 8.2.2
+github: blockscope/flare-timing/build
+extra-source-files:
+- package.dhall
+- changelog.md
+- README.md
+default-extensions:
+- PackageImports
+ghc-options:
+- -Wall
+dependencies:
+- base >=4.9.1.0 && <5
+executables:
+  build-flare-timing:
+    main: Main.hs
+    source-dirs:
+    - app-cmd
+    - library
+    ghc-options:
+    - -rtsopts
+    - -threaded
+    - -with-rtsopts=-N
+    dependencies:
+    - base
+    - ansi-terminal
+    - shake
+    - time
+tests: {}
+

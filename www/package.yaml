@@ -1,0 +1,91 @@
+name: www-flare-timing
+version: 0.1.0
+synopsis: A collection of apps and libraries for scoring hang gliding and paragliding
+  competitions.
+description: Scoring and viewing hang gliding and paragliding competitions.
+category: Data, Parsing
+author: Phil de Joux
+maintainer: phil.dejoux@blockscope.com
+copyright: © 2017-2018 Phil de Joux, © 2017-2018 Block Scope Limited
+license: MPL-2.0
+license-file: LICENSE.md
+tested-with: GHC == 8.2.2
+github: blockscope/flare-timing/www
+extra-source-files:
+- package.dhall
+- changelog.md
+- README.md
+default-extensions:
+- DataKinds
+- DeriveFunctor
+- DeriveGeneric
+- DeriveAnyClass
+- DerivingStrategies
+- DisambiguateRecordFields
+- FlexibleContexts
+- FlexibleInstances
+- GeneralizedNewtypeDeriving
+- GADTs
+- LambdaCase
+- MultiParamTypeClasses
+- MultiWayIf
+- NamedFieldPuns
+- OverloadedStrings
+- PackageImports
+- ParallelListComp
+- PartialTypeSignatures
+- PatternSynonyms
+- QuasiQuotes
+- RankNTypes
+- RecordWildCards
+- ScopedTypeVariables
+- StandaloneDeriving
+- TemplateHaskell
+- TypeApplications
+- TypeFamilies
+- TypeOperators
+- TypeSynonymInstances
+- TupleSections
+- UndecidableInstances
+ghc-options:
+- -Wall
+dependencies:
+- base >=4.9.1.0 && <5
+executables:
+  comp-serve:
+    main: Main.hs
+    source-dirs: serve
+    ghc-options:
+    - -rtsopts
+    - -threaded
+    - -with-rtsopts=-N
+    dependencies:
+    - servant
+    - servant-server
+    - transformers
+    - aeson
+    - wai
+    - wai-cors
+    - warp
+    - directory
+    - filepath
+    - filemanip
+    - raw-strings-qq
+    - cmdargs
+    - mtl
+    - yaml
+    - bytestring
+    - flight-comp
+tests:
+  hlint:
+    main: HLint.hs
+    source-dirs: test-suite-hlint
+    ghc-options:
+    - -rtsopts
+    - -threaded
+    - -with-rtsopts=-N
+    dependencies:
+    - base
+    - hlint
+    - flight-comp
+

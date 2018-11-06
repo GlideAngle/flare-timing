@@ -1,7 +1,7 @@
-    let defs = ./defaults.dhall
+    let defs = ./../defaults.dhall
 
 in    defs
-    ⫽ ./default-extensions.dhall
+    ⫽ ./../default-extensions.dhall
     ⫽ { name =
           "flight-track"
       , synopsis =
@@ -30,5 +30,5 @@ in    defs
       , library =
           { source-dirs = "library", exposed-modules = "Flight.TrackLog" }
       , tests =
-          ./default-tests.dhall
+          ./../default-tests.dhall
       }
