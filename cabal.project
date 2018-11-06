@@ -22,5 +22,15 @@ packages:
     , units
     , zone
     , flare-timing
-    , .stack2cabal/hcoord/hcoord
-    , .stack2cabal/hcoord/hcoord-utm
+
+source-repository-package
+    type: git
+    location: https://github.com/blockscope/hcoord.git
+    tag: 3c3859dac5da111e57a6de09764ffdb127197c4a
+    subdir: hcoord
+
+source-repository-package
+    type: git
+    location: https://github.com/blockscope/hcoord.git
+    tag: 3c3859dac5da111e57a6de09764ffdb127197c4a
+    subdir: hcoord-utm
