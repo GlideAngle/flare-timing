@@ -56,6 +56,16 @@ install:
   - rm -fv cabal.project cabal.project.local
   - grep -Ev -- '^\s*--' ${HOME}/.cabal/config | grep -Ev '^\s*$'
   - "printf 'packages: \"build\" \"detour-via-sci\" \"detour-via-uom\" \"cmd\" \"comp\" \"earth\" \"fsdb\" \"gap\" \"igc\" \"kml\" \"latlng\" \"lookup\" \"mask\" \"route\" \"scribe\" \"siggy-chardust\" \"span\" \"task\" \"tasty-compare\" \"track\" \"units\" \"zone\" \"flare-timing\"\\n' > cabal.project"
+  - "echo 'source-repository-package' >> cabal.project"
+  - "echo '  type: git' >> cabal.project"
+  - "echo '  location: https://github.com/blockscope/hcoord.git' >> cabal.project"
+  - "echo '  tag: 3c3859dac5da111e57a6de09764ffdb127197c4a' >> cabal.project"
+  - "echo '  subdir: hcoord' >> cabal.project"
+  - "echo 'source-repository-package' >> cabal.project"
+  - "echo '  type: git' >> cabal.project"
+  - "echo '  location: https://github.com/blockscope/hcoord.git' >> cabal.project"
+  - "echo '  tag: 3c3859dac5da111e57a6de09764ffdb127197c4a' >> cabal.project"
+  - "echo '  subdir: hcoord-utm' >> cabal.project"
   - touch cabal.project.local
   - "if ! $NOINSTALLEDCONSTRAINTS; then for pkg in $($HCPKG list --simple-output); do echo $pkg  | grep -vw -- build-flare-timing | grep -vw -- detour-via-sci | grep -vw -- detour-via-uom | grep -vw -- flight-cmd | grep -vw -- flight-comp | grep -vw -- flight-earth | grep -vw -- flight-fsdb | grep -vw -- flight-gap | grep -vw -- flight-igc | grep -vw -- flight-kml | grep -vw -- flight-latlng | grep -vw -- flight-lookup | grep -vw -- flight-mask | grep -vw -- flight-route | grep -vw -- flight-scribe | grep -vw -- siggy-chardust | grep -vw -- flight-span | grep -vw -- flight-task | grep -vw -- tasty-compare | grep -vw -- flight-track | grep -vw -- flight-units | grep -vw -- flight-zone | grep -vw -- flare-timing | sed 's/^/constraints: /' | sed 's/-[^-]*$/ installed/' >> cabal.project.local; done; fi"
   - cat cabal.project || true
@@ -144,6 +154,16 @@ script:
   - cd ${DISTDIR} || false
   - find . -maxdepth 1 -name '*.tar.gz' -exec tar -xvf '{}' \;
   - "printf 'packages: build-flare-timing-*/*.cabal detour-via-sci-*/*.cabal detour-via-uom-*/*.cabal flight-cmd-*/*.cabal flight-comp-*/*.cabal flight-earth-*/*.cabal flight-fsdb-*/*.cabal flight-gap-*/*.cabal flight-igc-*/*.cabal flight-kml-*/*.cabal flight-latlng-*/*.cabal flight-lookup-*/*.cabal flight-mask-*/*.cabal flight-route-*/*.cabal flight-scribe-*/*.cabal siggy-chardust-*/*.cabal flight-span-*/*.cabal flight-task-*/*.cabal tasty-compare-*/*.cabal flight-track-*/*.cabal flight-units-*/*.cabal flight-zone-*/*.cabal flare-timing-*/*.cabal\\n' > cabal.project"
+  - "echo 'source-repository-package' >> cabal.project"
+  - "echo '  type: git' >> cabal.project"
+  - "echo '  location: https://github.com/blockscope/hcoord.git' >> cabal.project"
+  - "echo '  tag: 3c3859dac5da111e57a6de09764ffdb127197c4a' >> cabal.project"
+  - "echo '  subdir: hcoord' >> cabal.project"
+  - "echo 'source-repository-package' >> cabal.project"
+  - "echo '  type: git' >> cabal.project"
+  - "echo '  location: https://github.com/blockscope/hcoord.git' >> cabal.project"
+  - "echo '  tag: 3c3859dac5da111e57a6de09764ffdb127197c4a' >> cabal.project"
+  - "echo '  subdir: hcoord-utm' >> cabal.project"
   - touch cabal.project.local
   - "if ! $NOINSTALLEDCONSTRAINTS; then for pkg in $($HCPKG list --simple-output); do echo $pkg  | grep -vw -- build-flare-timing | grep -vw -- detour-via-sci | grep -vw -- detour-via-uom | grep -vw -- flight-cmd | grep -vw -- flight-comp | grep -vw -- flight-earth | grep -vw -- flight-fsdb | grep -vw -- flight-gap | grep -vw -- flight-igc | grep -vw -- flight-kml | grep -vw -- flight-latlng | grep -vw -- flight-lookup | grep -vw -- flight-mask | grep -vw -- flight-route | grep -vw -- flight-scribe | grep -vw -- siggy-chardust | grep -vw -- flight-span | grep -vw -- flight-task | grep -vw -- tasty-compare | grep -vw -- flight-track | grep -vw -- flight-units | grep -vw -- flight-zone | grep -vw -- flare-timing | sed 's/^/constraints: /' | sed 's/-[^-]*$/ installed/' >> cabal.project.local; done; fi"
   - cat cabal.project || true
