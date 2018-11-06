@@ -1,32 +1,19 @@
-library:
-  source-dirs: library
-  exposed-modules:
-  - Flight.Route
-  - Flight.TaskTrack.Double
-  - Flight.TaskTrack.Rational
-tests: {}
-copyright: © 2017-2018 Phil de Joux, © 2017-2018 Block Scope Limited
+name: flight-route
+version: 0.1.0
+synopsis: Control zones to fly.
+description: Control zones for hang gliding and paragliding competitons.
 category: Flight
-license-file: LICENSE.md
+author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
-ghc-options:
-- -Wall
-- -fplugin Data.UnitsOfMeasure.Plugin
-dependencies:
-- base >=4.9.1.0 && <5
-- numbers
-- uom-plugin
-- bifunctors
-- aeson
-- scientific
-- hcoord-utm
-- detour-via-sci
-- siggy-chardust
-- flight-units
-- flight-latlng
-- flight-zone
-- flight-earth
-- flight-task
+copyright: © 2017-2018 Phil de Joux, © 2017-2018 Block Scope Limited
+license: MPL-2.0
+license-file: LICENSE.md
+tested-with: GHC == 8.2.2
+github: blockscope/flare-timing/route
+extra-source-files:
+- package.dhall
+- changelog.md
+- README.md
 default-extensions:
 - DataKinds
 - DeriveFunctor
@@ -59,16 +46,29 @@ default-extensions:
 - TypeSynonymInstances
 - TupleSections
 - UndecidableInstances
-name: flight-route
-version: 0.1.0
-extra-source-files:
-- package.dhall
-- changelog.md
-- README.md
-synopsis: Control zones to fly.
-author: Phil de Joux
-github: blockscope/flare-timing/route
-tested-with: GHC == 8.2.2
-license: MPL-2.0
-description: Control zones for hang gliding and paragliding competitons.
+ghc-options:
+- -Wall
+- -fplugin Data.UnitsOfMeasure.Plugin
+dependencies:
+- base >=4.9.1.0 && <5
+- numbers
+- uom-plugin
+- bifunctors
+- aeson
+- scientific
+- hcoord-utm
+- detour-via-sci
+- siggy-chardust
+- flight-units
+- flight-latlng
+- flight-zone
+- flight-earth
+- flight-task
+library:
+  exposed-modules:
+  - Flight.Route
+  - Flight.TaskTrack.Double
+  - Flight.TaskTrack.Rational
+  source-dirs: library
+tests: {}
 

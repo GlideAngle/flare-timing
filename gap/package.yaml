@@ -1,57 +1,19 @@
-library:
-  source-dirs: library
-  exposed-modules: Flight.Score
-tests:
-  score:
-    source-dirs:
-    - library
-    - test-suite-score
-    main: Score.hs
-    ghc-options:
-    - -rtsopts
-    - -threaded
-    - -with-rtsopts=-N
-    - -fplugin Data.UnitsOfMeasure.Plugin
-    dependencies:
-    - base
-    - containers
-    - vector
-    - statistics
-    - aeson
-    - newtype
-    - scientific
-    - uom-plugin
-    - detour-via-sci
-    - detour-via-uom
-    - siggy-chardust
-    - flight-units
-    - tasty
-    - tasty-hunit
-    - tasty-quickcheck
-    - tasty-smallcheck
-    - smallcheck
-copyright: © 2017-2018 Phil de Joux, © 2017-2018 Block Scope Limited
+name: flight-gap
+version: 0.1.0
+synopsis: GAP Scoring.
+description: GAP scoring for hang gliding and paragliding competitons.
 category: Flight
-license-file: LICENSE.md
+author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
-ghc-options:
-- -Wall
-- -fplugin Data.UnitsOfMeasure.Plugin
-- -fno-warn-partial-type-signatures
-dependencies:
-- base >=4.9.1.0 && <5
-- containers
-- vector
-- statistics
-- aeson
-- newtype
-- scientific
-- uom-plugin
-- template-haskell
-- detour-via-sci
-- detour-via-uom
-- siggy-chardust
-- flight-units
+copyright: © 2017-2018 Phil de Joux, © 2017-2018 Block Scope Limited
+license: MPL-2.0
+license-file: LICENSE.md
+tested-with: GHC == 8.2.2
+github: blockscope/flare-timing/gap
+extra-source-files:
+- package.dhall
+- changelog.md
+- README.md
 default-extensions:
 - DataKinds
 - DeriveFunctor
@@ -84,16 +46,54 @@ default-extensions:
 - TypeSynonymInstances
 - TupleSections
 - UndecidableInstances
-name: flight-gap
-version: 0.1.0
-extra-source-files:
-- package.dhall
-- changelog.md
-- README.md
-synopsis: GAP Scoring.
-author: Phil de Joux
-github: blockscope/flare-timing/gap
-tested-with: GHC == 8.2.2
-license: MPL-2.0
-description: GAP scoring for hang gliding and paragliding competitons.
+ghc-options:
+- -Wall
+- -fplugin Data.UnitsOfMeasure.Plugin
+- -fno-warn-partial-type-signatures
+dependencies:
+- base >=4.9.1.0 && <5
+- containers
+- vector
+- statistics
+- aeson
+- newtype
+- scientific
+- uom-plugin
+- template-haskell
+- detour-via-sci
+- detour-via-uom
+- siggy-chardust
+- flight-units
+library:
+  exposed-modules: Flight.Score
+  source-dirs: library
+tests:
+  score:
+    main: Score.hs
+    source-dirs:
+    - library
+    - test-suite-score
+    ghc-options:
+    - -rtsopts
+    - -threaded
+    - -with-rtsopts=-N
+    - -fplugin Data.UnitsOfMeasure.Plugin
+    dependencies:
+    - base
+    - containers
+    - vector
+    - statistics
+    - aeson
+    - newtype
+    - scientific
+    - uom-plugin
+    - detour-via-sci
+    - detour-via-uom
+    - siggy-chardust
+    - flight-units
+    - tasty
+    - tasty-hunit
+    - tasty-quickcheck
+    - tasty-smallcheck
+    - smallcheck
 

@@ -1,48 +1,19 @@
-library:
-  source-dirs: library
-  exposed-modules: Flight.Fsdb
-tests:
-  parse:
-    source-dirs:
-    - library
-    - test-suite-parse
-    main: Parse.hs
-    ghc-options:
-    - -rtsopts
-    - -threaded
-    - -with-rtsopts=-N
-    dependencies:
-    - tasty
-    - tasty-hunit
-    - tasty-quickcheck
-    - tasty-smallcheck
-    - smallcheck
-copyright: © 2017-2018 Phil de Joux, © 2017-2018 Block Scope Limited
+name: flight-fsdb
+version: 0.1.0
+synopsis: A parser for fsdb, the database XML format of FS.
+description: Hang gliding and paragliding competitors, tasks and results as XML.
 category: Data, Parsing
-license-file: LICENSE.md
+author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
-ghc-options:
-- -Wall
-- -fplugin Data.UnitsOfMeasure.Plugin
-dependencies:
-- base >=4.9.1.0 && <5
-- split
-- megaparsec
-- hxt
-- path
-- hxt-xpath
-- aeson
-- scientific
-- containers
-- time
-- newtype
-- uom-plugin
-- detour-via-sci
-- flight-latlng
-- flight-units
-- flight-zone
-- flight-comp
-- flight-gap
+copyright: © 2017-2018 Phil de Joux, © 2017-2018 Block Scope Limited
+license: MPL-2.0
+license-file: LICENSE.md
+tested-with: GHC == 8.2.2
+github: blockscope/flare-timing/fsdb
+extra-source-files:
+- package.dhall
+- changelog.md
+- README.md
 default-extensions:
 - DataKinds
 - DeriveFunctor
@@ -75,16 +46,45 @@ default-extensions:
 - TypeSynonymInstances
 - TupleSections
 - UndecidableInstances
-name: flight-fsdb
-version: 0.1.0
-extra-source-files:
-- package.dhall
-- changelog.md
-- README.md
-synopsis: A parser for fsdb, the database XML format of FS.
-author: Phil de Joux
-github: blockscope/flare-timing/fsdb
-tested-with: GHC == 8.2.2
-license: MPL-2.0
-description: Hang gliding and paragliding competitors, tasks and results as XML.
+ghc-options:
+- -Wall
+- -fplugin Data.UnitsOfMeasure.Plugin
+dependencies:
+- base >=4.9.1.0 && <5
+- split
+- megaparsec
+- hxt
+- path
+- hxt-xpath
+- aeson
+- scientific
+- containers
+- time
+- newtype
+- uom-plugin
+- detour-via-sci
+- flight-latlng
+- flight-units
+- flight-zone
+- flight-comp
+- flight-gap
+library:
+  exposed-modules: Flight.Fsdb
+  source-dirs: library
+tests:
+  parse:
+    main: Parse.hs
+    source-dirs:
+    - library
+    - test-suite-parse
+    ghc-options:
+    - -rtsopts
+    - -threaded
+    - -with-rtsopts=-N
+    dependencies:
+    - tasty
+    - tasty-hunit
+    - tasty-quickcheck
+    - tasty-smallcheck
+    - smallcheck
 

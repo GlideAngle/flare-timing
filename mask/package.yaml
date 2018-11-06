@@ -1,15 +1,52 @@
-library:
-  source-dirs: library
-  exposed-modules:
-  - Flight.Mask
-  - Flight.Comp.Distance
-  - Flight.Span.Double
-  - Flight.Span.Rational
-tests: {}
-copyright: © 2017-2018 Phil de Joux, © 2017-2018 Block Scope Limited
+name: flight-mask
+version: 0.1.0
+synopsis: Track logs masked by competition task zones.
+description: Masking tracks with zones, work out; did the pilot launch, did they make
+  goal and how long did that take? What was distance to goal?
 category: Data
-license-file: LICENSE.md
+author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
+copyright: © 2017-2018 Phil de Joux, © 2017-2018 Block Scope Limited
+license: MPL-2.0
+license-file: LICENSE.md
+tested-with: GHC == 8.2.2
+github: blockscope/flare-timing/mask
+extra-source-files:
+- package.dhall
+- changelog.md
+- README.md
+default-extensions:
+- DataKinds
+- DeriveFunctor
+- DeriveGeneric
+- DeriveAnyClass
+- DerivingStrategies
+- DisambiguateRecordFields
+- FlexibleContexts
+- FlexibleInstances
+- GeneralizedNewtypeDeriving
+- GADTs
+- LambdaCase
+- MultiParamTypeClasses
+- MultiWayIf
+- NamedFieldPuns
+- OverloadedStrings
+- PackageImports
+- ParallelListComp
+- PartialTypeSignatures
+- PatternSynonyms
+- QuasiQuotes
+- RankNTypes
+- RecordWildCards
+- ScopedTypeVariables
+- StandaloneDeriving
+- TemplateHaskell
+- TypeApplications
+- TypeFamilies
+- TypeOperators
+- TypeSynonymInstances
+- TupleSections
+- UndecidableInstances
 ghc-options:
 - -Wall
 - -fplugin Data.UnitsOfMeasure.Plugin
@@ -43,49 +80,12 @@ dependencies:
 - flight-gap
 - flight-scribe
 - siggy-chardust
-default-extensions:
-- DataKinds
-- DeriveFunctor
-- DeriveGeneric
-- DeriveAnyClass
-- DerivingStrategies
-- DisambiguateRecordFields
-- FlexibleContexts
-- FlexibleInstances
-- GeneralizedNewtypeDeriving
-- GADTs
-- LambdaCase
-- MultiParamTypeClasses
-- MultiWayIf
-- NamedFieldPuns
-- OverloadedStrings
-- PackageImports
-- ParallelListComp
-- PartialTypeSignatures
-- PatternSynonyms
-- QuasiQuotes
-- RankNTypes
-- RecordWildCards
-- ScopedTypeVariables
-- StandaloneDeriving
-- TemplateHaskell
-- TypeApplications
-- TypeFamilies
-- TypeOperators
-- TypeSynonymInstances
-- TupleSections
-- UndecidableInstances
-name: flight-mask
-version: 0.1.0
-extra-source-files:
-- package.dhall
-- changelog.md
-- README.md
-synopsis: Track logs masked by competition task zones.
-author: Phil de Joux
-github: blockscope/flare-timing/mask
-tested-with: GHC == 8.2.2
-license: MPL-2.0
-description: Masking tracks with zones, work out; did the pilot launch, did they make
-  goal and how long did that take? What was distance to goal?
+library:
+  exposed-modules:
+  - Flight.Mask
+  - Flight.Comp.Distance
+  - Flight.Span.Double
+  - Flight.Span.Rational
+  source-dirs: library
+tests: {}
 

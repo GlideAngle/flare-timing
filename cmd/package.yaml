@@ -1,25 +1,19 @@
-library:
-  source-dirs: library
-  exposed-modules:
-  - Flight.Cmd.Options
-  - Flight.Cmd.Paths
-tests: {}
-copyright: © 2017-2018 Phil de Joux, © 2017-2018 Block Scope Limited
+name: flight-cmd
+version: 0.1.0
+synopsis: Command line options.
+description: Command line options such as file or directory, task or pilot.
 category: Flight
-license-file: LICENSE.md
+author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
-ghc-options:
-- -Wall
-dependencies:
-- base >=4.9.1.0 && <5
-- directory
-- filepath
-- filemanip
-- raw-strings-qq
-- cmdargs
-- mtl
-- transformers
-- flight-span
+copyright: © 2017-2018 Phil de Joux, © 2017-2018 Block Scope Limited
+license: MPL-2.0
+license-file: LICENSE.md
+tested-with: GHC == 8.2.2
+github: blockscope/flare-timing/cmd
+extra-source-files:
+- package.dhall
+- changelog.md
+- README.md
 default-extensions:
 - DataKinds
 - DeriveFunctor
@@ -52,16 +46,22 @@ default-extensions:
 - TypeSynonymInstances
 - TupleSections
 - UndecidableInstances
-name: flight-cmd
-version: 0.1.0
-extra-source-files:
-- package.dhall
-- changelog.md
-- README.md
-synopsis: Command line options.
-author: Phil de Joux
-github: blockscope/flare-timing/cmd
-tested-with: GHC == 8.2.2
-license: MPL-2.0
-description: Command line options such as file or directory, task or pilot.
+ghc-options:
+- -Wall
+dependencies:
+- base >=4.9.1.0 && <5
+- directory
+- filepath
+- filemanip
+- raw-strings-qq
+- cmdargs
+- mtl
+- transformers
+- flight-span
+library:
+  exposed-modules:
+  - Flight.Cmd.Options
+  - Flight.Cmd.Paths
+  source-dirs: library
+tests: {}
 

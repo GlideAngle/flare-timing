@@ -1,43 +1,19 @@
-library:
-  source-dirs: library
-  exposed-modules:
-  - Flight.Lookup.Route
-  - Flight.Lookup.Cross
-  - Flight.Lookup.Tag
-  - Flight.Lookup
-tests: {}
-copyright: © 2017-2018 Phil de Joux, © 2017-2018 Block Scope Limited
+name: flight-lookup
+version: 0.1.0
+synopsis: Hang gliding and paragliding competition data access.
+description: Lookup items for a task, for a pilot, etc.
 category: Data
-license-file: LICENSE.md
+author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
-ghc-options:
-- -Wall
-- -fplugin Data.UnitsOfMeasure.Plugin
-dependencies:
-- base >=4.9.1.0 && <5
-- split
-- path
-- aeson
-- scientific
-- containers
-- unordered-containers
-- time
-- cassava
-- bytestring
-- directory
-- filepath
-- filemanip
-- lens
-- mtl
-- uom-plugin
-- detour-via-sci
-- flight-latlng
-- flight-zone
-- flight-route
-- flight-gap
-- flight-comp
-- flight-kml
-- flight-mask
+copyright: © 2017-2018 Phil de Joux, © 2017-2018 Block Scope Limited
+license: MPL-2.0
+license-file: LICENSE.md
+tested-with: GHC == 8.2.2
+github: blockscope/flare-timing/lookup
+extra-source-files:
+- package.dhall
+- changelog.md
+- README.md
 default-extensions:
 - DataKinds
 - DeriveFunctor
@@ -70,16 +46,40 @@ default-extensions:
 - TypeSynonymInstances
 - TupleSections
 - UndecidableInstances
-name: flight-lookup
-version: 0.1.0
-extra-source-files:
-- package.dhall
-- changelog.md
-- README.md
-synopsis: Hang gliding and paragliding competition data access.
-author: Phil de Joux
-github: blockscope/flare-timing/lookup
-tested-with: GHC == 8.2.2
-license: MPL-2.0
-description: Lookup items for a task, for a pilot, etc.
+ghc-options:
+- -Wall
+- -fplugin Data.UnitsOfMeasure.Plugin
+dependencies:
+- base >=4.9.1.0 && <5
+- split
+- path
+- aeson
+- scientific
+- containers
+- unordered-containers
+- time
+- cassava
+- bytestring
+- directory
+- filepath
+- filemanip
+- lens
+- mtl
+- uom-plugin
+- detour-via-sci
+- flight-latlng
+- flight-zone
+- flight-route
+- flight-gap
+- flight-comp
+- flight-kml
+- flight-mask
+library:
+  exposed-modules:
+  - Flight.Lookup.Route
+  - Flight.Lookup.Cross
+  - Flight.Lookup.Tag
+  - Flight.Lookup
+  source-dirs: library
+tests: {}
 

@@ -1,16 +1,19 @@
-library:
-  source-dirs: library
-  exposed-modules: Flight.Span.Math
-tests: {}
-copyright: © 2017-2018 Phil de Joux, © 2017-2018 Block Scope Limited
+name: flight-span
+version: 0.1.0
+synopsis: How to measure a distance that spans two points.
+description: How to measure a distance that spans tow points.
 category: Data
-license-file: LICENSE.md
+author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
-ghc-options:
-- -Wall
-dependencies:
-- base >=4.9.1.0 && <5
-- cmdargs
+copyright: © 2017-2018 Phil de Joux, © 2017-2018 Block Scope Limited
+license: MPL-2.0
+license-file: LICENSE.md
+tested-with: GHC == 8.2.2
+github: blockscope/flare-timing/span
+extra-source-files:
+- package.dhall
+- changelog.md
+- README.md
 default-extensions:
 - DataKinds
 - DeriveFunctor
@@ -43,16 +46,13 @@ default-extensions:
 - TypeSynonymInstances
 - TupleSections
 - UndecidableInstances
-name: flight-span
-version: 0.1.0
-extra-source-files:
-- package.dhall
-- changelog.md
-- README.md
-synopsis: How to measure a distance that spans two points.
-author: Phil de Joux
-github: blockscope/flare-timing/span
-tested-with: GHC == 8.2.2
-license: MPL-2.0
-description: How to measure a distance that spans tow points.
+ghc-options:
+- -Wall
+dependencies:
+- base >=4.9.1.0 && <5
+- cmdargs
+library:
+  exposed-modules: Flight.Span.Math
+  source-dirs: library
+tests: {}
 

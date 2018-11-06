@@ -1,64 +1,19 @@
-library:
-  source-dirs: library
-  exposed-modules:
-  - Flight.Comp
-  - Flight.Track.Cross
-  - Flight.Track.Tag
-  - Flight.Track.Time
-  - Flight.Track.Mask
-  - Flight.Track.Land
-  - Flight.Track.Point
-  - Flight.Track.Speed
-  - Flight.Track.Arrival
-  - Flight.Track.Lead
-  - Flight.Track.Distance
-tests:
-  comp:
-    source-dirs:
-    - library
-    - test-suite-comp
-    main: TestCompMain.hs
-    ghc-options:
-    - -rtsopts
-    - -threaded
-    - -with-rtsopts=-N
-    dependencies:
-    - tasty
-    - tasty-hunit
-    - tasty-quickcheck
-    - tasty-smallcheck
-    - smallcheck
-copyright: © 2017-2018 Phil de Joux, © 2017-2018 Block Scope Limited
+name: flight-comp
+version: 0.1.0
+synopsis: Hang gliding and paragliding competition scoring inputs.
+description: Hang gliding and paragliding competitors and tasks.
 category: Data
-license-file: LICENSE.md
+author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
-ghc-options:
-- -Wall
-- -fplugin Data.UnitsOfMeasure.Plugin
-dependencies:
-- base >=4.9.1.0 && <5
-- split
-- path
-- aeson
-- scientific
-- containers
-- unordered-containers
-- time
-- cassava
-- bytestring
-- directory
-- filepath
-- filemanip
-- lens
-- mtl
-- uom-plugin
-- vector
-- detour-via-sci
-- flight-units
-- flight-latlng
-- flight-zone
-- flight-route
-- flight-gap
+copyright: © 2017-2018 Phil de Joux, © 2017-2018 Block Scope Limited
+license: MPL-2.0
+license-file: LICENSE.md
+tested-with: GHC == 8.2.2
+github: blockscope/flare-timing/comp
+extra-source-files:
+- package.dhall
+- changelog.md
+- README.md
 default-extensions:
 - DataKinds
 - DeriveFunctor
@@ -91,16 +46,61 @@ default-extensions:
 - TypeSynonymInstances
 - TupleSections
 - UndecidableInstances
-name: flight-comp
-version: 0.1.0
-extra-source-files:
-- package.dhall
-- changelog.md
-- README.md
-synopsis: Hang gliding and paragliding competition scoring inputs.
-author: Phil de Joux
-github: blockscope/flare-timing/comp
-tested-with: GHC == 8.2.2
-license: MPL-2.0
-description: Hang gliding and paragliding competitors and tasks.
+ghc-options:
+- -Wall
+- -fplugin Data.UnitsOfMeasure.Plugin
+dependencies:
+- base >=4.9.1.0 && <5
+- split
+- path
+- aeson
+- scientific
+- containers
+- unordered-containers
+- time
+- cassava
+- bytestring
+- directory
+- filepath
+- filemanip
+- lens
+- mtl
+- uom-plugin
+- vector
+- detour-via-sci
+- flight-units
+- flight-latlng
+- flight-zone
+- flight-route
+- flight-gap
+library:
+  exposed-modules:
+  - Flight.Comp
+  - Flight.Track.Cross
+  - Flight.Track.Tag
+  - Flight.Track.Time
+  - Flight.Track.Mask
+  - Flight.Track.Land
+  - Flight.Track.Point
+  - Flight.Track.Speed
+  - Flight.Track.Arrival
+  - Flight.Track.Lead
+  - Flight.Track.Distance
+  source-dirs: library
+tests:
+  comp:
+    main: TestCompMain.hs
+    source-dirs:
+    - library
+    - test-suite-comp
+    ghc-options:
+    - -rtsopts
+    - -threaded
+    - -with-rtsopts=-N
+    dependencies:
+    - tasty
+    - tasty-hunit
+    - tasty-quickcheck
+    - tasty-smallcheck
+    - smallcheck
 

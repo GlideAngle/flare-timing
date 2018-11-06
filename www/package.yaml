@@ -1,23 +1,20 @@
-tests:
-  hlint:
-    source-dirs: test-suite-hlint
-    main: HLint.hs
-    ghc-options:
-    - -rtsopts
-    - -threaded
-    - -with-rtsopts=-N
-    dependencies:
-    - base
-    - hlint
-    - flight-comp
-copyright: © 2017-2018 Phil de Joux, © 2017-2018 Block Scope Limited
+name: www-flare-timing
+version: 0.1.0
+synopsis: A collection of apps and libraries for scoring hang gliding and paragliding
+  competitions.
+description: Scoring and viewing hang gliding and paragliding competitions.
 category: Data, Parsing
-license-file: LICENSE.md
+author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
-ghc-options:
-- -Wall
-dependencies:
-- base >=4.9.1.0 && <5
+copyright: © 2017-2018 Phil de Joux, © 2017-2018 Block Scope Limited
+license: MPL-2.0
+license-file: LICENSE.md
+tested-with: GHC == 8.2.2
+github: blockscope/flare-timing/www
+extra-source-files:
+- package.dhall
+- changelog.md
+- README.md
 default-extensions:
 - DataKinds
 - DeriveFunctor
@@ -50,22 +47,14 @@ default-extensions:
 - TypeSynonymInstances
 - TupleSections
 - UndecidableInstances
-name: www-flare-timing
-version: 0.1.0
-extra-source-files:
-- package.dhall
-- changelog.md
-- README.md
-synopsis: A collection of apps and libraries for scoring hang gliding and paragliding
-  competitions.
-author: Phil de Joux
-github: blockscope/flare-timing/www
-tested-with: GHC == 8.2.2
-license: MPL-2.0
+ghc-options:
+- -Wall
+dependencies:
+- base >=4.9.1.0 && <5
 executables:
   comp-serve:
-    source-dirs: serve
     main: Main.hs
+    source-dirs: serve
     ghc-options:
     - -rtsopts
     - -threaded
@@ -87,5 +76,16 @@ executables:
     - yaml
     - bytestring
     - flight-comp
-description: Scoring and viewing hang gliding and paragliding competitions.
+tests:
+  hlint:
+    main: HLint.hs
+    source-dirs: test-suite-hlint
+    ghc-options:
+    - -rtsopts
+    - -threaded
+    - -with-rtsopts=-N
+    dependencies:
+    - base
+    - hlint
+    - flight-comp
 

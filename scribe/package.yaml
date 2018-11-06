@@ -1,36 +1,19 @@
-library:
-  source-dirs: library
-  exposed-modules: Flight.Scribe
-tests: {}
-copyright: © 2017-2018 Phil de Joux, © 2017-2018 Block Scope Limited
+name: flight-scribe
+version: 0.1.0
+synopsis: Hang gliding and paragliding competition scoring files.
+description: Reading and writing competition scoring files.
 category: Data
-license-file: LICENSE.md
+author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
-ghc-options:
-- -Wall
-dependencies:
-- base >=4.9.1.0 && <5
-- split
-- path
-- aeson
-- scientific
-- containers
-- unordered-containers
-- time
-- cassava
-- bytestring
-- directory
-- filepath
-- filemanip
-- mtl
-- yaml
-- vector
-- detour-via-sci
-- flight-latlng
-- flight-zone
-- flight-route
-- flight-gap
-- flight-comp
+copyright: © 2017-2018 Phil de Joux, © 2017-2018 Block Scope Limited
+license: MPL-2.0
+license-file: LICENSE.md
+tested-with: GHC == 8.2.2
+github: blockscope/flare-timing/scribe
+extra-source-files:
+- package.dhall
+- changelog.md
+- README.md
 default-extensions:
 - DataKinds
 - DeriveFunctor
@@ -63,16 +46,33 @@ default-extensions:
 - TypeSynonymInstances
 - TupleSections
 - UndecidableInstances
-name: flight-scribe
-version: 0.1.0
-extra-source-files:
-- package.dhall
-- changelog.md
-- README.md
-synopsis: Hang gliding and paragliding competition scoring files.
-author: Phil de Joux
-github: blockscope/flare-timing/scribe
-tested-with: GHC == 8.2.2
-license: MPL-2.0
-description: Reading and writing competition scoring files.
+ghc-options:
+- -Wall
+dependencies:
+- base >=4.9.1.0 && <5
+- split
+- path
+- aeson
+- scientific
+- containers
+- unordered-containers
+- time
+- cassava
+- bytestring
+- directory
+- filepath
+- filemanip
+- mtl
+- yaml
+- vector
+- detour-via-sci
+- flight-latlng
+- flight-zone
+- flight-route
+- flight-gap
+- flight-comp
+library:
+  exposed-modules: Flight.Scribe
+  source-dirs: library
+tests: {}
 

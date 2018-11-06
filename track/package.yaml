@@ -1,27 +1,19 @@
-library:
-  source-dirs: library
-  exposed-modules: Flight.TrackLog
-tests: {}
-copyright: © 2017-2018 Phil de Joux, © 2017-2018 Block Scope Limited
+name: flight-track
+version: 0.1.0
+synopsis: Hang gliding and paragliding competition track logs.
+description: Reading track logs for each pilot in each task of a competition.
 category: Data
-license-file: LICENSE.md
+author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
-ghc-options:
-- -Wall
-dependencies:
-- base >=4.9.1.0 && <5
-- split
-- path
-- containers
-- mtl
-- directory
-- filepath
-- time
-- bytestring
-- utf8-string
-- flight-comp
-- flight-kml
-- flight-igc
+copyright: © 2017-2018 Phil de Joux, © 2017-2018 Block Scope Limited
+license: MPL-2.0
+license-file: LICENSE.md
+tested-with: GHC == 8.2.2
+github: blockscope/flare-timing/track
+extra-source-files:
+- package.dhall
+- changelog.md
+- README.md
 default-extensions:
 - DataKinds
 - DeriveFunctor
@@ -54,16 +46,24 @@ default-extensions:
 - TypeSynonymInstances
 - TupleSections
 - UndecidableInstances
-name: flight-track
-version: 0.1.0
-extra-source-files:
-- package.dhall
-- changelog.md
-- README.md
-synopsis: Hang gliding and paragliding competition track logs.
-author: Phil de Joux
-github: blockscope/flare-timing/track
-tested-with: GHC == 8.2.2
-license: MPL-2.0
-description: Reading track logs for each pilot in each task of a competition.
+ghc-options:
+- -Wall
+dependencies:
+- base >=4.9.1.0 && <5
+- split
+- path
+- containers
+- mtl
+- directory
+- filepath
+- time
+- bytestring
+- utf8-string
+- flight-comp
+- flight-kml
+- flight-igc
+library:
+  exposed-modules: Flight.TrackLog
+  source-dirs: library
+tests: {}
 

@@ -1,24 +1,23 @@
-homepage: https://github.com/blockscope/flare-timing/tree/master/detour-via-sci#readme
-library:
-  source-dirs: library
-  exposed-modules:
-  - Data.Via.Scientific
-tests:
-  doctest:
-    source-dirs:
-    - library
-    - test-suite-doctest
-    main: DocTest.hs
-    ghc-options:
-    - -rtsopts
-    - -threaded
-    - -with-rtsopts=-N
-    dependencies:
-    - doctest
-copyright: © 2017-2018 Phil de Joux, © 2017-2018 Block Scope Limited
+name: detour-via-sci
+version: 1.0.0
+synopsis: JSON and CSV encoding for rationals as decimal point numbers.
+description: Lossy JSON and CSV encoding and decoding for newtype rationals via scientific
+  with fixed decimal places.
 category: Data, Math, Numeric, JSON, CSV
-license-file: LICENSE.md
+homepage: https://github.com/blockscope/flare-timing/tree/master/detour-via-sci#readme
+author: Phil de Joux
 maintainer: phil.dejoux@blockscope.com
+copyright: © 2017-2018 Phil de Joux, © 2017-2018 Block Scope Limited
+license: MPL-2.0
+license-file: LICENSE.md
+tested-with: GHC == 8.2.2
+github: blockscope/flare-timing/detour-via-sci
+extra-source-files:
+- package.dhall
+- changelog.md
+- README.md
+default-extensions:
+- PackageImports
 ghc-options:
 - -Wall
 dependencies:
@@ -29,19 +28,20 @@ dependencies:
 - cassava
 - template-haskell
 - siggy-chardust
-default-extensions:
-- PackageImports
-name: detour-via-sci
-version: 1.0.0
-extra-source-files:
-- package.dhall
-- changelog.md
-- README.md
-synopsis: JSON and CSV encoding for rationals as decimal point numbers.
-author: Phil de Joux
-github: blockscope/flare-timing/detour-via-sci
-tested-with: GHC == 8.2.2
-license: MPL-2.0
-description: Lossy JSON and CSV encoding and decoding for newtype rationals via scientific
-  with fixed decimal places.
+library:
+  exposed-modules:
+  - Data.Via.Scientific
+  source-dirs: library
+tests:
+  doctest:
+    main: DocTest.hs
+    source-dirs:
+    - library
+    - test-suite-doctest
+    ghc-options:
+    - -rtsopts
+    - -threaded
+    - -with-rtsopts=-N
+    dependencies:
+    - doctest
 
