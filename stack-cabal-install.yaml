@@ -1,0 +1,11 @@
+resolver: nightly-2018-11-06
+packages: []
+extra-deps:
+- cabal-install-2.4.0.0
+- cryptohash-sha256-0.11.101.0
+- hackage-security-0.5.3.0
+- network-2.7.0.2
+- resolv-0.1.1.2
+- ed25519-0.0.5.0
+local-bin-path: __shake-build
+work-dir: .stack-work-cabal-install
