@@ -26,7 +26,6 @@ packages:
 - zone
 - flare-timing
 - app-serve
-- app-view
 - location:
     git: https://github.com/blockscope/hcoord.git
     commit: 3c3859dac5da111e57a6de09764ffdb127197c4a
