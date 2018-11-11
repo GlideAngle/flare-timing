@@ -3,4 +3,9 @@
 
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
-nix-shell -Q $DIR/default.nix -A shells.ghc --add-root $DIR/dist-newstyle/gc-roots/gc-root --indirect --run "cabal $(printf "%q " "$@")"
+nix-shell \
+    -Q $DIR/default.nix \
+    -A shells.ghc \
+    --add-root $DIR/dist-newstyle/gc-roots/gc-root \
+    --indirect \
+    --run "cabal --project-file=$DIR/cabal.project --builddir=dist $(printf "%q " "$@")"
