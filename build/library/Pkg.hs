@@ -46,10 +46,25 @@ dhallCabal =
     , ("app-view", "app-view")
     ] 
 
-format :: String -> Rules ()
-format x =
+dhallRootImports :: [String]
+dhallRootImports =
+    [ "defaults"
+    -- NOTE: Don't include default-tests.dhall as it wipes the embedded comments.
+    -- , "default-tests"
+    , "default-extensions"
+    , "default-extensions-ghcjs"
+    , "hlint"
+    ]
+
+formatPkg :: String -> Rules ()
+formatPkg x =
     phony ("dhall-format-" ++ x)
     $ cmd Shell ("__shake-build/dhall format --inplace " ++ (x </> "package.dhall"))
+
+formatRoot :: String -> Rules ()
+formatRoot x =
+    phony ("dhall-format-" ++ x)
+    $ cmd Shell ("__shake-build/dhall format --inplace " ++ (x <.> ".dhall"))
 
 hpack :: String -> Rules ()
 hpack x =
@@ -63,9 +78,10 @@ cabal (x, y) =
 
 buildRules :: Rules ()
 buildRules = do
-    sequence_ $ format <$> dhallPkgs
+    sequence_ $ formatRoot <$> dhallRootImports
+    sequence_ $ formatPkg <$> dhallPkgs
     sequence_ $ hpack <$> dhallPkgs
     sequence_ $ cabal <$> dhallCabal
-    phony "dhall-format" $ need $ (\x -> "dhall-format-" ++ x) <$> dhallPkgs
+    phony "dhall-format" $ need $ (\x -> "dhall-format-" ++ x) <$> dhallPkgs ++ dhallRootImports
     phony "hpack-dhall" $ need $ (\x -> "hpack-dhall-" ++ x) <$> dhallPkgs
     phony "cabal-files" $ need $ (\(x, y) -> x </> y <.> "cabal") <$> dhallCabal
