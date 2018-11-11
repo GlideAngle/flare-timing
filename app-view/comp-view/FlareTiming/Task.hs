@@ -95,7 +95,7 @@ tasks = do
 getTasks :: MonadWidget t m => () -> m ()
 getTasks () = do
     pb :: Event t () <- getPostBuild
-    let defReq = "http://localhost:3000/tasks"
+    let defReq = "http://localhost:9000/tasks"
     let req md = XhrRequest "GET" (maybe defReq id md) def
     rsp <- performRequestAsync $ fmap req $ leftmost [ Nothing <$ pb ]
 
