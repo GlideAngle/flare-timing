@@ -1,31 +1,32 @@
+with-compiler: ghc-8.2.2
 repository ghcjs-overlay
     url: http://hackage-ghcjs-overlay.nomeata.de/
     secure: True
     root-keys:
     key-threshold: 0
 packages:
-      build
-    , detour-via-sci
-    , detour-via-uom
-    , cmd
-    , comp
-    , earth
-    , fsdb
-    , gap
-    , igc
-    , kml
-    , latlng
-    , lookup
-    , mask
-    , route
-    , scribe
-    , siggy-chardust
-    , span
-    , task
-    , tasty-compare
-    , track
-    , units
-    , zone
-    , flare-timing
-    , .stack2cabal/hcoord/hcoord
-    , .stack2cabal/hcoord/hcoord-utm
+    build\
+    detour-via-sci\
+    detour-via-uom\
+    cmd\
+    comp\
+    earth\
+    fsdb\
+    gap\
+    igc\
+    kml\
+    latlng\
+    lookup\
+    mask\
+    route\
+    scribe\
+    siggy-chardust\
+    span\
+    task\
+    tasty-compare\
+    track\
+    units\
+    zone\
+    flare-timing\
+    .stack2cabal/hcoord/hcoord\
+    .stack2cabal/hcoord/hcoord-utm\
