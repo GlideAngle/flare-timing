@@ -17,13 +17,13 @@ in    defs
       , executables =
           { comp-view =
               { dependencies =
-                  [ "base >=4.9 && <4.12"
+                  [ "base >4.9 && <5"
                   , "aeson"
                   , "containers"
                   , "reflex"
                   , "reflex-dom"
                   , "ghcjs-base"
-                  , "ghcjs-dom-jsffi"
+                  , "ghcjs-dom"
                   , "scientific"
                   , "text"
                   ]

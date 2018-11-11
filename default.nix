@@ -235,6 +235,7 @@ reflex-platform.project ({ pkgs, ... }: with pkgs.lib; {
       # "hcoord"
       # "hcoord-utm"
       # "text"
+      "app-view"
     ];
     ghcjs = ["app-view"];
   };

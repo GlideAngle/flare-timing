@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 4c93ec760349e207860c63a371a5b13e564abe153c5d868456b6f632315e9461
+-- hash: 7560ebb858695ea6c938787dd66af4938c803b09bc976438c6acf0068fb66303
 
 name:           app-view
 version:        0.1.0
@@ -48,10 +48,10 @@ executable comp-view
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
-    , base >=4.9 && <4.12
+    , base >4.9 && <5
     , containers
     , ghcjs-base
-    , ghcjs-dom-jsffi
+    , ghcjs-dom
     , reflex
     , reflex-dom
     , scientific
