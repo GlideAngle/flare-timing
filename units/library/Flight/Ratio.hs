@@ -8,4 +8,4 @@ import Data.Ratio (Ratio, numerator, denominator)
 pattern (:%) :: forall a. a -> a -> Ratio a
 pattern n :% d <- (\x -> (numerator x, denominator x) -> (n, d))
 
--- {-# COMPLETE (:%) #-}
+{-# COMPLETE (:%) #-}
