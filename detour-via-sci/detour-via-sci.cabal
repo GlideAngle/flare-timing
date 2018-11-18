@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a4153f91637dad312b6457a45b0a21088de23d3e2276eaffc4625b7621f6d17e
+-- hash: 14009c156a1aa246d231f43f19f978a617c786e2a0e9e93313028c632fee6b27
 
 name:           detour-via-sci
 version:        1.0.0
@@ -37,7 +37,7 @@ library
   hs-source-dirs:
       library
   default-extensions: PackageImports
-  ghc-options: -Wall
+  ghc-options: -Wall -Werror
   build-depends:
       aeson
     , base >=4.9.1.0 && <5
@@ -58,7 +58,7 @@ test-suite doctest
       library
       test-suite-doctest
   default-extensions: PackageImports
-  ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
+  ghc-options: -Wall -Werror -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
     , base >=4.9.1.0 && <5

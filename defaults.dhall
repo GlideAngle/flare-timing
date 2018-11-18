@@ -15,7 +15,7 @@
 , extra-source-files =
     [ "package.dhall", "changelog.md", "README.md" ]
 , ghc-options =
-    [ "-Wall" ]
+    [ "-Wall", "-Werror" ]
 , default-extensions =
     [ "PackageImports" ]
 , dependencies =

@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 03b3d92883f8d64b0241002d333746c4e67217203d9f93e13189314f9624cdf7
+-- hash: f640d26bd36034a4532351ffef67ee6d0cf1c1956adc12a82e86a9dc149dd9cd
 
 name:           flight-scribe
 version:        0.1.0
@@ -39,7 +39,7 @@ library
   hs-source-dirs:
       library
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
-  ghc-options: -Wall
+  ghc-options: -Wall -Werror
   build-depends:
       aeson
     , base >=4.9.1.0 && <5

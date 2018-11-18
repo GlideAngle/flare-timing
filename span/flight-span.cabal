@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: aa0ef4e50d9bee3c9da3a7888aa2f26f04090a9d7fa933548bbad74eeaa6b635
+-- hash: 2aa577332d145e4eb6dbce2c138cc9edafd0913e8e651813f2af75b8a9d2178a
 
 name:           flight-span
 version:        0.1.0
@@ -37,7 +37,7 @@ library
   hs-source-dirs:
       library
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
-  ghc-options: -Wall
+  ghc-options: -Wall -Werror
   build-depends:
       base >=4.9.1.0 && <5
     , cmdargs
