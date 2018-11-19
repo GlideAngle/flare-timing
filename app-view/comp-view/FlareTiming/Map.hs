@@ -87,7 +87,7 @@ map (Task _ _ xs)= do
 
             zs :: [(L.Marker, L.Circle)] <- sequence $ fmap turnpoint xs
 
-            sequence $ fmap
+            _ <- sequence $ fmap
                 (\ (tpName, (xMark, xCyl)) -> do
                     L.markerAddToMap xMark lmap
                     L.markerPopup xMark tpName

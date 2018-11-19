@@ -40,9 +40,6 @@ loading = do
     el "li" $ do
         text "Tasks will be shown here"
 
-getName :: Task -> String
-getName (Task name _ _) = name
-
 getSpeedSection :: Task -> [Turnpoint]
 getSpeedSection (Task _ ss tps) =
     speedSectionOnly ss tps
@@ -66,7 +63,6 @@ task :: forall t (m :: * -> *).
 task ix = do
     i :: String <- sample $ current $ fmap (show . fst) ix 
     let x :: Dynamic t Task = fmap snd ix
-    let title = fmap (T.pack . getName) x
     let xs = fmap getSpeedSection x
     let subtitle = fmap (T.pack . (\s -> "#" ++ i ++ " - " ++ s) . hyphenate) xs
 
@@ -86,7 +82,7 @@ tasks = do
     navbar
     elClass "div" "spacer" $ return ()
     elClass "div" "container" $ do
-        el "ul" $ do widgetHold loading $ fmap getTasks pb
+        _ <- el "ul" $ do widgetHold loading $ fmap getTasks pb
         elClass "div" "spacer" $ return ()
         footer
 
@@ -103,8 +99,13 @@ getTasks () = do
     xs :: Dynamic t [Task] <- holdDyn [] es
     let ys :: Dynamic t [(Int, Task)] = fmap (zip [1 .. ]) xs
 
-    elAttr "div" (union ("class" =: "tile is-ancestor")
-                        ("style" =: "flex-wrap: wrap;")) $ do
+    _ <-
+        elAttr
+            "div"
+            (union
+                ("class" =: "tile is-ancestor")
+                ("style" =: "flex-wrap: wrap;")
+            ) $ do
         simpleList ys task
 
     return ()
