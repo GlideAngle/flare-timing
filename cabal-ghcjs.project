@@ -1,3 +1,4 @@
 compiler: ghcjs
 packages:
-  app-view/
+  detour-via-sci/
+  siggy-chardust/

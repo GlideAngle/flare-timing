@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 4fa4f40a4377decab3c9854f0e33f0dd7d1008839f44a3465b1af2abddacd628
+-- hash: 7269ba1ce20d1a768c1d94e0e60f2b275c5139a21546dad01e810347bb86d6cd
 
 name:           flight-igc
 version:        1.0.0
@@ -39,7 +39,7 @@ library
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
   ghc-options: -Wall
   build-depends:
-      base >=4.9.1.0 && <5
+      base >=4.10.1.0 && <5
     , bytestring
     , parsec
     , utf8-string

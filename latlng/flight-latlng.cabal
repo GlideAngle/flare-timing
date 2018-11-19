@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 316a80746f601ba37ce8622e6315aa955e51b575793a1fdaba9c70902d6b70ce
+-- hash: decb3174ba403d3324970ad40910574282fb3f13b5031a7be2ec8406e65062b4
 
 name:           flight-latlng
 version:        0.1.0
@@ -51,7 +51,7 @@ library
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
-    , base >=4.9.1.0 && <5
+    , base >=4.10.1.0 && <5
     , bifunctors
     , bytestring
     , cassava

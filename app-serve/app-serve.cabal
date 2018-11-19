@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d259971226ac9a97e7efbc9911856a9a4ab8133614aee2982683656697b03a4a
+-- hash: 5c31f8ce106a7af47a5d1379c9288e3185b458eec7c76e4fab944742514dbc69
 
 name:           app-serve
 version:        0.1.0
@@ -42,7 +42,7 @@ executable comp-serve
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
-    , base >=4.9.1.0 && <5
+    , base >=4.10.1.0 && <5
     , bytestring
     , cmdargs
     , directory

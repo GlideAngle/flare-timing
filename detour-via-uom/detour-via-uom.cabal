@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 155e3c61ddf6ca50d4ad2fbfefafe17e55153d827736c976cbc86776401882d0
+-- hash: 632fba967dc9184e413118fda8445c005d677cec4b58877ffeeb6ea2197cf721
 
 name:           detour-via-uom
 version:        1.0.0
@@ -40,7 +40,7 @@ library
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
       aeson
-    , base >=4.9.1.0 && <5
+    , base >=4.10.1.0 && <5
     , cassava
     , detour-via-sci
     , newtype
@@ -61,7 +61,7 @@ test-suite doctest
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
-    , base >=4.9.1.0 && <5
+    , base >=4.10.1.0 && <5
     , cassava
     , detour-via-sci
     , doctest

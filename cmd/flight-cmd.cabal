@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a79bcad3bc9523d9aa9dffa3bc8c336024984a5e840e256da6202c0cc56883f3
+-- hash: ba34e7aec01c1f50bd79d72ab22aab6e10312109c5aabe0ff1815721e53fbe45
 
 name:           flight-cmd
 version:        0.1.0
@@ -40,7 +40,7 @@ library
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
   ghc-options: -Wall
   build-depends:
-      base >=4.9.1.0 && <5
+      base >=4.10.1.0 && <5
     , cmdargs
     , directory
     , filemanip
