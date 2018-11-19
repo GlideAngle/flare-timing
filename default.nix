@@ -1,36 +1,6 @@
 { reflex-platform ? import ./reflex-platform {} }:
 
 reflex-platform.project ({ pkgs, ... }: with pkgs.lib; {
-  packages = {
-    # WARNING: Until I get to choose a version of ghc later than the default of
-    # ghc-8.0.2, comment out the packages I might need with ghc.
-    # 
-    # detour-via-sci = ./detour-via-sci;
-    # detour-via-uom = ./detour-via-uom;
-    # cmd = ./cmd;
-    # comp = ./comp;
-    # earth = ./earth;
-    # fsdb = ./fsdb;
-    # gap = ./gap;
-    # igc = ./igc;
-    # kml = ./kml;
-    # latlng = ./latlng;
-    # lookup = ./lookup;
-    # mask = ./mask;
-    # route = ./route;
-    # scribe = ./scribe;
-    # siggy-chardust = ./siggy-chardust;
-    # span = ./span;
-    # task = ./task;
-    # tasty-compare = ./tasty-compare;
-    # track = ./track;
-    # units = ./units;
-    # zone = ./zone;
-    # hcoord = .stack2cabal/hcoord/hcoord;
-    # hcoord-utm = .stack2cabal/hcoord/hcoord-utm;
-    app-view = ./app-view;
-  };
-
   overrides = self: super:
     {
       detour-via-sci =
@@ -209,34 +179,18 @@ reflex-platform.project ({ pkgs, ... }: with pkgs.lib; {
       tasty-compare = super.callPackage ./tasty-compare/tasty-compare.nix {};
     };
 
+  # WARNING: Reflex platform is building with GHC == 8.4.3. That's not going
+  # to work with anything depending on uom-plugin needing GHC <= 8.2.2.
+  packages = {
+    app-view = ./app-view;
+  };
+
   shells = {
     ghc = [
-      # "detour-via-sci"
-      # "detour-via-uom"
-      # "cmd"
-      # "comp"
-      # "earth"
-      # "fsdb"
-      # "gap"
-      # "igc"
-      # "kml"
-      # "latlng"
-      # "lookup"
-      # "mask"
-      # "route"
-      # "scribe"
-      # "siggy-chardust"
-      # "span"
-      # "task"
-      # "tasty-compare"
-      # "track"
-      # "units"
-      # "zone"
-      # "hcoord"
-      # "hcoord-utm"
-      # "text"
       "app-view"
     ];
-    ghcjs = ["app-view"];
+    ghcjs = [
+      "app-view"
+    ];
   };
 })
