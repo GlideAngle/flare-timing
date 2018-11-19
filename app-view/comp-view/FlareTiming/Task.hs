@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE MonoLocalBinds #-}
 
 module FlareTiming.Task (tasks) where
 
@@ -29,7 +30,7 @@ import qualified Data.Text as T (pack)
 import Data.Map (union)
 import Data.List (intercalate)
 
-import Data.Flight.Types (Task(..), Turnpoint(..), SpeedSection)
+import Data.Flight.Types (Task(..), Zones(..), RawZone(..), SpeedSection)
 import FlareTiming.Map (map)
 import FlareTiming.NavBar (navbar)
 import FlareTiming.Footer (footer)
@@ -40,11 +41,11 @@ loading = do
     el "li" $ do
         text "Tasks will be shown here"
 
-getSpeedSection :: Task -> [Turnpoint]
-getSpeedSection (Task _ ss tps) =
+getSpeedSection :: Task -> [RawZone]
+getSpeedSection (Task _ Zones{raw = tps} ss) =
     speedSectionOnly ss tps
     where
-        speedSectionOnly :: SpeedSection -> [Turnpoint] -> [Turnpoint]
+        speedSectionOnly :: SpeedSection -> [RawZone] -> [RawZone]
         speedSectionOnly Nothing xs =
             xs
         speedSectionOnly (Just (start, end)) xs =
@@ -53,7 +54,7 @@ getSpeedSection (Task _ ss tps) =
                 start' = fromInteger start
                 end' = fromInteger end
 
-hyphenate :: [Turnpoint] -> String
+hyphenate :: [RawZone] -> String
 hyphenate xs =
     intercalate " - " $ fmap TP.getName xs
 
@@ -91,7 +92,7 @@ tasks = do
 getTasks :: MonadWidget t m => () -> m ()
 getTasks () = do
     pb :: Event t () <- getPostBuild
-    let defReq = "http://localhost:9000/tasks"
+    let defReq = "http://localhost:3000/tasks"
     let req md = XhrRequest "GET" (maybe defReq id md) def
     rsp <- performRequestAsync $ fmap req $ leftmost [ Nothing <$ pb ]
 

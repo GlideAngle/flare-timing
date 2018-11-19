@@ -13,18 +13,18 @@ module FlareTiming.Turnpoint
 import Reflex.Dom (MonadWidget, Dynamic, dynText)
 import qualified Data.Text as T (pack)
 
-import Data.Flight.Types (Turnpoint(..), showRadius)
+import Data.Flight.Types (RawZone(..), showRadius)
 
-getNameRadius :: Turnpoint -> String
-getNameRadius (Turnpoint name _ _ radius) = name ++ " " ++ showRadius radius
+getNameRadius :: RawZone -> String
+getNameRadius (RawZone name _ _ radius) = name ++ " " ++ showRadius radius
 
-getName :: Turnpoint -> String
-getName (Turnpoint name _ _ _) = name
+getName :: RawZone -> String
+getName (RawZone name _ _ _) = name
 
-turnpointRadius :: forall t (m :: * -> *). MonadWidget t m => Dynamic t Turnpoint -> m ()
+turnpointRadius :: forall t (m :: * -> *). MonadWidget t m => Dynamic t RawZone -> m ()
 turnpointRadius x = do
     dynText $ fmap (T.pack . getNameRadius) x
 
-turnpoint :: forall t (m :: * -> *). MonadWidget t m => Dynamic t Turnpoint -> m ()
+turnpoint :: forall t (m :: * -> *). MonadWidget t m => Dynamic t RawZone -> m ()
 turnpoint x = do
     dynText $ fmap (T.pack . getName) x

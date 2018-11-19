@@ -1,6 +1,7 @@
 {-# LANGUAGE RecursiveDo #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE NamedFieldPuns #-}
 
 module FlareTiming.Map (map) where
 
@@ -39,31 +40,33 @@ import qualified FlareTiming.Map.Leaflet as L
     )
 import Data.Flight.Types
     ( Task(..)
-    , Turnpoint(..)
-    , Latitude(..)
-    , Longitude(..)
+    , Zones(..)
+    , RawZone(..)
+    , RawLat(..)
+    , RawLng(..)
+    , Radius(..)
     )
 
-turnpoint :: Turnpoint -> IO (L.Marker, L.Circle)
-turnpoint (Turnpoint _ (Latitude lat) (Longitude lng) radius) = do
+turnpoint :: RawZone -> IO (L.Marker, L.Circle)
+turnpoint (RawZone _ (RawLat lat) (RawLng lng) (Radius radius)) = do
     xMark <- L.marker latLng
-    xCyl <- L.circle latLng $ fromInteger radius
+    xCyl <- L.circle latLng radius
     return (xMark, xCyl)
     where
         latLng = (fromRational lat, fromRational lng)
 
-toLatLng :: Turnpoint -> (Double, Double)
-toLatLng (Turnpoint _ (Latitude lat) (Longitude lng) _) =
+toLatLng :: RawZone -> (Double, Double)
+toLatLng (RawZone _ (RawLat lat) (RawLng lng) _) =
     (fromRational lat, fromRational lng)
 
 map :: MonadWidget t m => Task -> m ()
 
-map (Task _ _ []) = do
+map (Task _ Zones{raw = []} _) = do
     el "p" $ text "The task has no turnpoints."
     return ()
 
-map (Task _ _ xs)= do
-    let tpNames = fmap (\ (Turnpoint name _ _ _) -> name) xs
+map (Task _ Zones{raw = xs} _)= do
+    let tpNames = fmap (\ (RawZone name _ _ _) -> name) xs
     postBuild <- delay 1 =<< getPostBuild
     (e, _) <- elAttr' "div" ("style" =: "height: 240px;width: 320px") $ return ()
     rec performEvent_ $ fmap
