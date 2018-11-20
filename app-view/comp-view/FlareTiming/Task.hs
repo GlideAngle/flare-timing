@@ -2,12 +2,13 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE RecursiveDo #-}
 
 module FlareTiming.Task (tasks) where
 
 import Prelude hiding (map)
 import Reflex.Dom
-    ( MonadWidget, Event, Dynamic, XhrRequest(..)
+    ( MonadWidget, Event, Dynamic, XhrRequest(..), EventName(Click)
     , (=:)
     , def
     , holdDyn
@@ -16,6 +17,7 @@ import Reflex.Dom
     , widgetHold
     , elAttr
     , elClass
+    , elDynClass'
     , el
     , text
     , dynText
@@ -25,6 +27,7 @@ import Reflex.Dom
     , performRequestAsync
     , decodeXhrResponse
     , leftmost
+    , domEvent
     )
 import qualified Data.Text as T (pack)
 import Data.Map (union)
@@ -58,11 +61,12 @@ hyphenate :: [RawZone] -> String
 hyphenate xs =
     intercalate " - " $ fmap TP.getName xs
 
-task :: forall t (m :: * -> *).
-        MonadWidget t m =>
-        Dynamic t (Int, Task) -> m ()
+task
+    :: forall t (m :: * -> *). MonadWidget t m
+    => Dynamic t (Int, Task)
+    -> m (Event t ())
 task ix = do
-    i :: String <- sample $ current $ fmap (show . fst) ix 
+    i :: String <- sample $ current $ fmap (show . fst) ix
     let x :: Dynamic t Task = fmap snd ix
     let xs = fmap getSpeedSection x
     let subtitle = fmap (T.pack . (\s -> "#" ++ i ++ " - " ++ s) . hyphenate) xs
@@ -73,9 +77,12 @@ task ix = do
         elClass "div" "tile is-parent" $ do
             elClass "div" "tile is-child box" $ do
                 map y
-                elClass "p" "" $ do
-                    el "a" $ do
+                elClass "p" "" $ mdo
+                    (a, _) <- elDynClass' "a" c $ do
                         dynText subtitle
+                    let e = domEvent Click a
+                    c <- holdDyn "button" $ "button is-danger" <$ e
+                    return e
 
 tasks :: MonadWidget t m => m ()
 tasks = do
