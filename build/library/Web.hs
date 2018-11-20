@@ -1,5 +1,8 @@
+{-# LANGUAGE QuasiQuotes #-}
+
 module Web (buildRules, cleanRules) where
 
+import Text.RawString.QQ
 import Development.Shake
     ( Rules
     , CmdOption(Cwd, Shell)
@@ -9,7 +12,7 @@ import Development.Shake
     , cmd
     , need
     , copyFileChanged
-    , liftIO
+    , putNormal
     )
 import Development.Shake.FilePath (FilePath, (</>))
 
@@ -47,20 +50,18 @@ buildRules = do
         cmd (Cwd view) Shell "yarn run start"
 
     phony "view-www" $ do
-        liftIO $ putStrLn "#phony view-www" 
         need $ (\ s -> out </> "task-view" </> s)
              <$> [ "all.js", "app.html" ]
 
     phony "view-reflex" $ do
-        liftIO $ putStrLn "#phony view-reflex" 
         need [ out </> "task.jsexe" </> "all.js" ]
 
     view </> "node_modules" </> "webpack" </> "package.json" %> \ _ -> do
-        liftIO $ putStrLn "#install node_modules" 
+        putNormal "# install node_modules" 
         cmd (Cwd view) Shell "yarn install"
 
     out </> "task-view" </> "app.html" %> \ _ -> do
-        liftIO $ putStrLn "#pack app.html" 
+        putNormal "# pack app.html" 
         need [ view </> "node_modules" </> "webpack" </> "package.json" ]
         cmd (Cwd view) Shell "yarn run pack"
 
@@ -71,15 +72,25 @@ buildRules = do
                  , view </> "FlareTiming" </> "Map.hs"
                  ]
 
-            liftIO $ putStrLn $ "#compile " ++ s
-            cmd (Cwd view) "ghcjs -DGHCJS_BROWSER -outputdir ../../__www-build/app.jsout -o ../../__www-build/app.jsexe App.hs")
+            putNormal ghcjsCmd
+            cmd (Cwd view) ghcjsCmd)
+
         <$> ghcjsOutputs
 
     mconcat $ (\ s ->
         out </> "task-view" </> s %> \ _ -> do
             need [ tmp </> "app.jsexe" </> s ]
-            liftIO $ putStrLn $ "#copy " ++ s
+            putNormal $ "# copy " ++ s
             copyFileChanged
                 (tmp </> "app.jsexe" </> s)
                 (out </> "task-view" </> s))
         <$> ghcjsOutputs
+
+ghcjsCmd :: String
+ghcjsCmd =
+    [r|ghcjs 
+    -DGHCJS_BROWSER 
+    -XMonoLocalBinds
+    -outputdir ../../__www-build/app.jsout 
+    -o ../../__www-build/app.jsexe 
+    App.hs|]

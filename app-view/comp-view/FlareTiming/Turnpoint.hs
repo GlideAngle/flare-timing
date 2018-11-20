@@ -2,7 +2,6 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE KindSignatures #-}
-{-# LANGUAGE MonoLocalBinds #-}
 
 module FlareTiming.Turnpoint
     ( turnpoint

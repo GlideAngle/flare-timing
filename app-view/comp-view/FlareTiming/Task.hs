@@ -1,7 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE KindSignatures #-}
-{-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE RecursiveDo #-}
 {-# LANGUAGE LambdaCase #-}
 

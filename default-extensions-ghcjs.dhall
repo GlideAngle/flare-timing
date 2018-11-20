@@ -21,6 +21,7 @@
     , "GeneralizedNewtypeDeriving"
     , "GADTs"
     , "LambdaCase"
+    , "MonoLocalBinds"
     , "MultiParamTypeClasses"
     , "MultiWayIf"
     , "NamedFieldPuns"

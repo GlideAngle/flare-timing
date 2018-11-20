@@ -1,5 +1,4 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE MonoLocalBinds #-}
 
 module FlareTiming.Footer (footer) where
 

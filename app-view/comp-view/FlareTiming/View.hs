@@ -1,5 +1,3 @@
-{-# LANGUAGE MonoLocalBinds #-}
-
 module FlareTiming.View (view) where
 
 import FlareTiming.NavBar (navbar)

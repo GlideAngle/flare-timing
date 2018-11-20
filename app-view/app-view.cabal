@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ad366c6916c0d6ef11848515d8f2e3aed919c4d81c10a9aead6d42f396536ef6
+-- hash: 983d0369caf0170b94bc752db940c300ef87149a1db604651210295bd0e3aea4
 
 name:           app-view
 version:        0.1.0
@@ -45,7 +45,7 @@ executable comp-view
       Paths_app_view
   hs-source-dirs:
       comp-view
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MonoLocalBinds MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
   ghc-options: -Wall -Werror -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
