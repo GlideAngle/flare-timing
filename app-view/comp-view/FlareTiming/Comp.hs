@@ -13,8 +13,6 @@ import Reflex.Dom
     , (=:)
     , def
     , holdDyn
-    , sample
-    , current
     , widgetHold
     , elAttr
     , elClass
@@ -32,7 +30,8 @@ import Reflex.Dom
     )
 import qualified Data.Text as T (pack)
 import Data.Map (union)
-import Data.List (find)
+import Data.Maybe (listToMaybe)
+import Control.Applicative (pure)
 
 import Data.Flight.Types (Comp(..), Nominal(..))
 
@@ -43,14 +42,11 @@ loading = do
 
 comp
     :: forall t (m :: * -> *). MonadWidget t m
-    => Dynamic t [(Int, Nominal)]
-    -> Dynamic t (Int, Comp)
+    => Dynamic t [Nominal]
+    -> Dynamic t Comp
     -> m ()
-comp ns cs = do
-    let i :: Dynamic t Int = fmap fst cs 
-    ii :: Int <- sample $ current i
-    let c :: Dynamic t Comp = fmap snd cs 
-    let n :: Dynamic t (Maybe (Int, Nominal)) = fmap (find (\(iN, _) -> iN == ii)) ns
+comp ns c = do
+    let n :: Dynamic t (Maybe Nominal) = listToMaybe <$> ns
     let title = fmap (T.pack . (\Comp{..} -> compName)) c
     let subtitle =
             fmap (T.pack . (\Comp{..} ->
@@ -73,13 +69,13 @@ comp ns cs = do
 
 nominal
     :: forall t (m :: * -> *).  MonadWidget t m
-    => Dynamic t (Maybe (Int, Nominal))
+    => Dynamic t (Maybe Nominal)
     -> m ()
 nominal n = do
     _ <- dyn $ ffor n (\x ->
         case x of
             Nothing -> text "Loading nominals ..."
-            (Just (_, Nominal{..})) -> do
+            (Just Nominal{..}) -> do
                 elClass "div" "field is-grouped is-grouped-multiline" $ do
                     elClass "div" "control" $ do
                         elClass "div" "tags has-addons" $ do
@@ -113,32 +109,30 @@ comps = do
 getComps
     :: MonadWidget t m
     => ()
-    -> m (Dynamic t [(Int, Comp)])
+    -> m (Dynamic t [Comp])
 getComps () = do
     pb :: Event t () <- getPostBuild
     let defReq = "http://localhost:3000/comps"
     let req md = XhrRequest "GET" (maybe defReq id md) def
     rsp <- performRequestAsync $ fmap req $ leftmost [ Nothing <$ pb ]
 
-    let es :: Event t [Comp] = fmapMaybe decodeXhrResponse rsp
-    xs :: Dynamic t [Comp] <- holdDyn [] es
-    let ys :: Dynamic t [(Int, Comp)] = fmap (zip [1 .. ]) xs
-    return ys
+    let es :: Event t Comp = fmapMaybe decodeXhrResponse rsp
+    xs :: Dynamic t [Comp] <- holdDyn [] (pure <$> es)
+    return xs
 
 getNominals
     :: MonadWidget t m
     => ()
-    -> m (Dynamic t [(Int, Nominal)])
+    -> m (Dynamic t [Nominal])
 getNominals () = do
     pb :: Event t () <- getPostBuild
     let defReq = "http://localhost:3000/nominals"
     let req md = XhrRequest "GET" (maybe defReq id md) def
     rsp <- performRequestAsync $ fmap req $ leftmost [ Nothing <$ pb ]
 
-    let es :: Event t [Nominal] = fmapMaybe decodeXhrResponse rsp
-    xs :: Dynamic t [Nominal] <- holdDyn [] es
-    let ys :: Dynamic t [(Int, Nominal)] = fmap (zip [1 .. ]) xs
-    return ys
+    let es :: Event t Nominal = fmapMaybe decodeXhrResponse rsp
+    xs :: Dynamic t [Nominal] <- holdDyn [] (pure <$> es)
+    return xs
 
 viewComps :: MonadWidget t m => () -> m ()
 viewComps () = do

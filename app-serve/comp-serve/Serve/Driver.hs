@@ -49,8 +49,8 @@ newtype AppT m a =
         )
 
 type Api =
-    "comps" :> Get '[JSON] [Comp]
-    :<|> "nominals" :> Get '[JSON] [Nominal]
+    "comps" :> Get '[JSON] Comp
+    :<|> "nominals" :> Get '[JSON] Nominal
     :<|> "tasks" :> Get '[JSON] [Task Double]
     :<|> "pilots" :> Get '[JSON] [[Pilot]]
 
@@ -90,8 +90,8 @@ serverApi cfg =
     hoistServer
         api
         (convertApp cfg)
-        ( query (yaml ((:[]) . comp))
-        :<|> query (yaml ((:[]) . nominal))
+        ( query (yaml comp)
+        :<|> query (yaml nominal)
         :<|> query (yaml tasks)
         :<|> query (yaml ((fmap . fmap) pilot . pilots))
         )
