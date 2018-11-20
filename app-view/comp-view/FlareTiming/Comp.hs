@@ -35,8 +35,6 @@ import Data.Map (union)
 import Data.List (find)
 
 import Data.Flight.Types (Comp(..), Nominal(..))
-import FlareTiming.NavBar (navbar)
-import FlareTiming.Footer (footer)
 
 loading :: MonadWidget t m => m ()
 loading = do
@@ -104,13 +102,11 @@ nominal n = do
 comps :: MonadWidget t m => m ()
 comps = do
     pb :: Event t () <- getPostBuild
-    navbar
     elClass "div" "spacer" $ return ()
     elClass "div" "container" $ do
         _ <- el "ul" $ do
             widgetHold loading $ fmap viewComps pb
         elClass "div" "spacer" $ return ()
-        footer
 
     return ()
 
