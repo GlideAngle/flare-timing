@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 6f6af437742b734de3ddf4ae38d3f4efc7bc35159cec7ec0f67c97dc878f9fd2
+-- hash: 697177ddac29b0ced0a9dc970b777d53ae4a9eb85d556390c2717f6df7870d77
 
 name:           build-flare-timing
 version:        0.1.0
@@ -37,6 +37,7 @@ executable build-flare-timing
       Doc
       Nix
       Pkg
+      Snack
       Target
       Web
       Paths_build_flare_timing
@@ -44,7 +45,7 @@ executable build-flare-timing
       app-cmd
       library
   default-extensions: PackageImports
-  ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
+  ghc-options: -Wall -Werror -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       ansi-terminal
     , base

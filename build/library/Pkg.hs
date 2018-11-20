@@ -2,7 +2,7 @@ module Pkg (buildRules) where
 
 import Development.Shake
     ( Rules
-    , CmdOption(Shell)
+    , CmdOption(Cwd, Shell)
     , (%>)
     , phony
     , cmd
@@ -11,14 +11,18 @@ import Development.Shake
 
 import Development.Shake.FilePath ((<.>), (</>))
 
--- | The names of the packages for dhall-format and hpack-dhall.
-dhallPkgs :: [String]
+type Folder = String
+type Pkg = String
+
+-- | The names of the folders for dhall-format and hpack-dhall.
+dhallPkgs :: [Folder]
 dhallPkgs = fst <$> dhallCabal
 
 -- | Pairs of package folder name used by dhall and the produced cabal file
 -- name.
-dhallCabal :: [(String, String)]
+dhallCabal :: [(Folder, Pkg)]
 dhallCabal =
+
     [ ("detour-via-sci", "detour-via-sci")
     , ("detour-via-uom", "detour-via-uom")
     , ("build", "build-flare-timing")
@@ -56,25 +60,25 @@ dhallRootImports =
     , "hlint"
     ]
 
-formatPkg :: String -> Rules ()
-formatPkg x =
-    phony ("dhall-format-" ++ x)
-    $ cmd Shell ("__shake-build/dhall format --inplace " ++ (x </> "package.dhall"))
+formatPkg :: Folder -> Rules ()
+formatPkg folder =
+    phony ("dhall-format-" ++ folder)
+    $ cmd Shell ("__shake-build/dhall format --inplace " ++ (folder </> "package.dhall"))
 
 formatRoot :: String -> Rules ()
 formatRoot x =
     phony ("dhall-format-" ++ x)
     $ cmd Shell ("__shake-build/dhall format --inplace " ++ (x <.> ".dhall"))
 
-hpack :: String -> Rules ()
-hpack x =
-    phony ("hpack-dhall-" ++ x) $ do
-        need ["dhall-format-" ++ x]
-        cmd Shell ("__shake-build/hpack-dhall " ++ x)
+hpack :: Folder -> Rules ()
+hpack folder =
+    phony ("hpack-dhall-" ++ folder) $ do
+        need ["dhall-format-" ++ folder]
+        cmd (Cwd folder) Shell ("../__shake-build/hpack-dhall package.dhall")
 
-cabal :: (String, String) -> Rules ()
-cabal (x, y) =
-    x </> y <.> "cabal" %> \_ -> need ["hpack-dhall-" ++ x]
+cabal :: (Folder, Pkg) -> Rules ()
+cabal (folder, pkg) =
+    folder </> pkg <.> "cabal" %> \_ -> need ["hpack-dhall-" ++ folder]
 
 buildRules :: Rules ()
 buildRules = do

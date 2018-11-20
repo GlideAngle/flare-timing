@@ -1,7 +1,7 @@
-    let deps = ./defaults.dhall
+    let deps = ./../defaults.dhall
 
 in    deps
-    ⫽ ./default-extensions.dhall
+    ⫽ ./../default-extensions.dhall
     ⫽ { name =
           "flight-gap"
       , synopsis =
@@ -35,7 +35,7 @@ in    deps
       , library =
           { source-dirs = "library", exposed-modules = "Flight.Score" }
       , tests =
-            ./default-tests.dhall
+            ./../default-tests.dhall
           ⫽ { score =
                 { dependencies =
                     [ "base"

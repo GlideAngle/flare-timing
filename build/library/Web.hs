@@ -26,14 +26,6 @@ ghcjsOutputs =
     , "runmain.js"
     ]
 
-ghcjsIntermediates :: [ String ]
-ghcjsIntermediates =
-    [ "//*.js_hi"
-    , "//*.js_o"
-    , "//*.js_dyn_hi"
-    , "//*.js_dyn_o"
-    ]
-
 cleanRules :: Rules ()
 cleanRules =
     phony "clean-www" $ do

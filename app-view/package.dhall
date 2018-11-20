@@ -1,7 +1,7 @@
-    let defs = ./defaults.dhall
+    let defs = ./../defaults.dhall
 
 in    defs
-    ⫽ ./default-extensions-ghcjs.dhall
+    ⫽ ./../default-extensions-ghcjs.dhall
     ⫽ { name =
           "app-view"
       , synopsis =

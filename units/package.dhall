@@ -1,7 +1,7 @@
-    let defs = ./defaults.dhall
+    let defs = ./../defaults.dhall
 
 in    defs
-    ⫽ ./default-extensions.dhall
+    ⫽ ./../default-extensions.dhall
     ⫽ { name =
           "flight-units"
       , synopsis =
@@ -35,5 +35,5 @@ in    defs
               ]
           }
       , tests =
-          ./default-tests.dhall
+          ./../default-tests.dhall
       }

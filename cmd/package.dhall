@@ -1,7 +1,7 @@
-    let defs = ./defaults.dhall
+    let defs = ./../defaults.dhall
 
 in    defs
-    ⫽ ./default-extensions.dhall
+    ⫽ ./../default-extensions.dhall
     ⫽ { name =
           "flight-cmd"
       , synopsis =
@@ -30,5 +30,5 @@ in    defs
               [ "Flight.Cmd.Options", "Flight.Cmd.Paths" ]
           }
       , tests =
-          ./default-tests.dhall
+          ./../default-tests.dhall
       }
