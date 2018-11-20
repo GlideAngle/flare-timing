@@ -180,7 +180,7 @@ shellRules = do
         need [dir </> "shell.nix"]
         cmd
             (Cwd dir)
-            Shell "cabal2nix --shell . > drv.nix"
+            Shell "../__shake-build/cabal2nix --shell . > drv.nix"
 
     where
         drvs = (\s -> s </> "drv.nix") <$> shellPkgs
