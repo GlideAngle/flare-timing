@@ -3,6 +3,7 @@
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE RecursiveDo #-}
+{-# LANGUAGE LambdaCase #-}
 
 module FlareTiming.Task (tasks) where
 
@@ -28,6 +29,7 @@ import Reflex.Dom
     , decodeXhrResponse
     , leftmost
     , domEvent
+    , toggle
     )
 import qualified Data.Text as T (pack)
 import Data.Map (union)
@@ -64,7 +66,7 @@ hyphenate xs =
 task
     :: forall t (m :: * -> *). MonadWidget t m
     => Dynamic t (Int, Task)
-    -> m (Event t ())
+    -> m (Dynamic t Bool)
 task ix = do
     i :: String <- sample $ current $ fmap (show . fst) ix
     let x :: Dynamic t Task = fmap snd ix
@@ -80,8 +82,8 @@ task ix = do
                 elClass "p" "" $ mdo
                     (a, _) <- elDynClass' "a" c $ do
                         dynText subtitle
-                    let e = domEvent Click a
-                    c <- holdDyn "button" $ "button is-danger" <$ e
+                    e <- toggle False $ domEvent Click a
+                    c <- return $ (\case False -> "button"; True -> "button is-danger") <$> e
                     return e
 
 tasks :: MonadWidget t m => m ()
