@@ -40,9 +40,7 @@ import FlareTiming.Map (map)
 import qualified FlareTiming.Turnpoint as TP (getName)
 
 loading :: MonadWidget t m => m ()
-loading = do
-    el "li" $ do
-        text "Tasks will be shown here"
+loading = el "li" $ text "Tasks will be shown here"
 
 getSpeedSection :: Task -> [RawZone]
 getSpeedSection (Task _ Zones{raw = tps} ss) =

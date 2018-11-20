@@ -36,9 +36,7 @@ import Control.Applicative (pure)
 import Data.Flight.Types (Comp(..), Nominal(..))
 
 loading :: MonadWidget t m => m ()
-loading = do
-    el "li" $ do
-        text "Comps will be shown here"
+loading = el "li" $ text "Comps will be shown here"
 
 comp
     :: forall t (m :: * -> *). MonadWidget t m
