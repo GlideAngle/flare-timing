@@ -2,6 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE MonoLocalBinds #-}
 
 module FlareTiming.Map (map) where
 

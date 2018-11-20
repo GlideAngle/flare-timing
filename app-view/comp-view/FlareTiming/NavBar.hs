@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE MonoLocalBinds #-}
 
 module FlareTiming.NavBar(navbar) where
 
