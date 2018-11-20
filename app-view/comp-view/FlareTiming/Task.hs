@@ -38,6 +38,7 @@ import Data.List (intercalate)
 import Data.Flight.Types (Task(..), Zones(..), RawZone(..), SpeedSection)
 import FlareTiming.Map (map)
 import FlareTiming.NavBar (navbar)
+import FlareTiming.Breadcrumb (breadcrumb)
 import FlareTiming.Footer (footer)
 import qualified FlareTiming.Turnpoint as TP (getName)
 
@@ -89,6 +90,7 @@ tasks :: MonadWidget t m => m ()
 tasks = do
     pb :: Event t () <- getPostBuild
     navbar
+    breadcrumb
     elClass "div" "spacer" $ return ()
     elClass "div" "container" $ do
         _ <- el "ul" $ do widgetHold loading $ fmap getTasks pb

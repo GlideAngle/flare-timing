@@ -40,19 +40,20 @@ type SpeedSection = Maybe (Integer, Integer)
 data Comp =
     Comp
         { civilId :: String
-        , compName :: String 
-        , location :: String 
-        , from :: String 
-        , to :: String 
-        , utcOffset :: String 
+        , compName :: String
+        , location :: String
+        , from :: String
+        , to :: String
         }
     deriving (Show, Generic, ToJSON, FromJSON)
 
 data Nominal =
     Nominal
         { distance :: String
-        , time :: String 
-        , goal :: String 
+        , free :: String
+        , time :: String
+        , goal :: Double
+        , launch :: Double
         }
     deriving (Show, Generic, ToJSON, FromJSON)
 

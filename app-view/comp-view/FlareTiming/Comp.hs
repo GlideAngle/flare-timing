@@ -8,9 +8,8 @@
 module FlareTiming.Comp (comps) where
 
 import Prelude hiding (map)
-import Data.Maybe (isJust)
 import Reflex.Dom
-    ( MonadWidget, Event, Behavior, Dynamic, XhrRequest(..)
+    ( MonadWidget, Event, Dynamic, XhrRequest(..)
     , (=:)
     , def
     , holdDyn
@@ -31,9 +30,9 @@ import Reflex.Dom
     , ffor
     , dyn
     )
-import qualified Data.Text as T (Text, pack)
+import qualified Data.Text as T (pack)
 import Data.Map (union)
-import Data.List (find, intercalate)
+import Data.List (find)
 
 import Data.Flight.Types (Comp(..), Nominal(..))
 import FlareTiming.NavBar (navbar)
@@ -44,10 +43,11 @@ loading = do
     el "li" $ do
         text "Comps will be shown here"
 
-comp :: forall t (m :: * -> *). MonadWidget t m
-     => Dynamic t [(Int, Nominal)]
-     -> Dynamic t (Int, Comp)
-     -> m ()
+comp
+    :: forall t (m :: * -> *). MonadWidget t m
+    => Dynamic t [(Int, Nominal)]
+    -> Dynamic t (Int, Comp)
+    -> m ()
 comp ns cs = do
     let i :: Dynamic t Int = fmap fst cs 
     ii :: Int <- sample $ current i
@@ -73,11 +73,12 @@ comp ns cs = do
                 elClass "div" "example" $ do
                     nominal n
 
-nominal :: forall t (m :: * -> *).
-        MonadWidget t m =>
-        Dynamic t (Maybe (Int, Nominal)) -> m ()
+nominal
+    :: forall t (m :: * -> *).  MonadWidget t m
+    => Dynamic t (Maybe (Int, Nominal))
+    -> m ()
 nominal n = do
-    dyn $ ffor n (\x ->
+    _ <- dyn $ ffor n (\x ->
         case x of
             Nothing -> text "Loading nominals ..."
             (Just (_, Nominal{..})) -> do
@@ -87,17 +88,16 @@ nominal n = do
                             elClass "span" "tag" $ do text "nominal distance"
                             elClass "span" "tag is-info" $ do
                                 text $ T.pack distance
-                                text " kms"
                     elClass "div" "control" $ do
                         elClass "div" "tags has-addons" $ do
                             elClass "span" "tag" $ do text "nominal time"
                             elClass "span" "tag is-success" $ do
                                 text $ T.pack time
-                                text " hrs"
                     elClass "div" "control" $ do
                         elClass "div" "tags has-addons" $ do
                             elClass "span" "tag" $ do text "nominal goal"
-                            elClass "span" "tag is-primary" $ text $ T.pack goal)
+                            elClass "span" "tag is-primary"
+                                $ text (T.pack . show $ goal))
 
     return ()
 
@@ -107,13 +107,17 @@ comps = do
     navbar
     elClass "div" "spacer" $ return ()
     elClass "div" "container" $ do
-        el "ul" $ do
+        _ <- el "ul" $ do
             widgetHold loading $ fmap viewComps pb
         elClass "div" "spacer" $ return ()
         footer
 
     return ()
 
+getComps
+    :: MonadWidget t m
+    => ()
+    -> m (Dynamic t [(Int, Comp)])
 getComps () = do
     pb :: Event t () <- getPostBuild
     let defReq = "http://localhost:3000/comps"
@@ -125,6 +129,10 @@ getComps () = do
     let ys :: Dynamic t [(Int, Comp)] = fmap (zip [1 .. ]) xs
     return ys
 
+getNominals
+    :: MonadWidget t m
+    => ()
+    -> m (Dynamic t [(Int, Nominal)])
 getNominals () = do
     pb :: Event t () <- getPostBuild
     let defReq = "http://localhost:3000/nominals"
@@ -141,9 +149,13 @@ viewComps () = do
     cs <- getComps ()
     ns <- getNominals ()
 
-    elAttr
-        "div"
-        (union ("class" =: "tile is-ancestor") ("style" =: "flex-wrap: wrap;"))
-        $ do simpleList cs (comp ns)
+    _ <-
+        elAttr
+            "div"
+            (union
+                ("class" =: "tile is-ancestor")
+                ("style" =: "flex-wrap: wrap;")
+            ) $ do
+        simpleList cs (comp ns)
 
     return ()
