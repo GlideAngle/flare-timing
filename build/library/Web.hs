@@ -1,4 +1,5 @@
 {-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE DeriveGeneric #-}
 
 module Web (buildRules, cleanRules) where
 
@@ -13,8 +14,22 @@ import Development.Shake
     , need
     , copyFileChanged
     , putNormal
+    , liftIO
     )
 import Development.Shake.FilePath (FilePath, (</>))
+import GHC.Generics (Generic)
+import Dhall
+    ( Interpret, InterpretOptions(..)
+    , defaultInterpretOptions, input, autoWith
+    )
+import qualified Data.Text.Lazy as T (Text, pack, unpack)
+
+data DefaultExtensions =
+    DefaultExtentions
+        { defaultExtensions :: [T.Text] }
+    deriving (Generic, Show)
+
+instance Interpret DefaultExtensions
 
 ghcjsOutputs :: [ String ]
 ghcjsOutputs =
@@ -72,8 +87,9 @@ buildRules = do
                  , view </> "FlareTiming" </> "Map.hs"
                  ]
 
-            putNormal ghcjsCmd
-            cmd (Cwd view) ghcjsCmd)
+            ghcjsCmd' <- liftIO ghcjsCmd
+            putNormal ghcjsCmd'
+            cmd (Cwd view) ghcjsCmd')
 
         <$> ghcjsOutputs
 
@@ -86,11 +102,29 @@ buildRules = do
                 (out </> "task-view" </> s))
         <$> ghcjsOutputs
 
-ghcjsCmd :: String
-ghcjsCmd =
-    [r|ghcjs 
+ghcjsCmd :: IO String
+ghcjsCmd = do
+    let prolog =
+            [r|ghcjs 
     -DGHCJS_BROWSER 
-    -XMonoLocalBinds
+    |]
+
+    let epilog =
+            [r|
     -outputdir ../../__www-build/app.jsout 
     -o ../../__www-build/app.jsexe 
     App.hs|]
+
+    exts <-
+        input (autoWith interpretOpts)
+        $ T.pack "./default-extensions-ghcjs.dhall"
+
+    print (exts :: DefaultExtensions)
+    let exts' = unwords $ ("-X" ++) . T.unpack <$> defaultExtensions exts
+
+    return $ prolog ++ exts' ++ epilog
+
+interpretOpts :: InterpretOptions
+interpretOpts =
+    defaultInterpretOptions
+        { fieldModifier = const $ T.pack "default-extensions" }

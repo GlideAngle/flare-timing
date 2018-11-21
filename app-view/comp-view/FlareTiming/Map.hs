@@ -1,8 +1,3 @@
-{-# LANGUAGE RecursiveDo #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE NamedFieldPuns #-}
-
 module FlareTiming.Map (map) where
 
 import Prelude hiding (map)

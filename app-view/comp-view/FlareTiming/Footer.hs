@@ -1,5 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 module FlareTiming.Footer (footer) where
 
 import Prelude hiding (map)

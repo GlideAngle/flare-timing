@@ -1,5 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 module FlareTiming.NavBar(navbar) where
 
 import Reflex.Dom (MonadWidget, elClass, el, text)

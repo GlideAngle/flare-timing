@@ -1,9 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE KindSignatures #-}
-{-# LANGUAGE RecursiveDo #-}
-{-# LANGUAGE LambdaCase #-}
-
 module FlareTiming.Task (tasks) where
 
 import Prelude hiding (map)
