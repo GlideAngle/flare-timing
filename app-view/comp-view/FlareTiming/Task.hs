@@ -78,17 +78,16 @@ task ix = do
 
     y :: Task <- sample $ current x
 
-    elClass "div" "tile" $
-        elClass "div" "tile is-parent" $
-            elClass "div" (T.pack $ "tile is-child notification " ++ color ii) $ do
-                elClass "p" "title" $ text (T.pack $ "Task " ++ jj)
-                elDynClass "p" "subtitle" $ dynText subtitle
-                elClass "div" "has-text-black" $ map y
-                elClass "p" "" $ mdo
-                    (a, _) <- elDynClass' "a" c $ dynText subtitle
-                    e <- toggle False $ domEvent Click a
-                    c <- return $ (\case False -> "button"; True -> "button is-success") <$> e
-                    return e
+    mdo
+        (a, _) <- elDynClass' "div" c $ do
+            elClass "div" "tile is-parent" $
+                elClass "div" (T.pack $ "tile is-child notification " ++ color ii) $ do
+                    elClass "p" "title" $ text (T.pack $ "Task " ++ jj)
+                    elDynClass "p" "subtitle" $ dynText subtitle
+                    elClass "div" "has-text-black" $ map y
+        e <- toggle False $ domEvent Click a
+        c <- return $ (\case False -> "tile is-1"; True -> "tile is-12") <$> e
+        return e
 
 tasks :: MonadWidget t m => m ()
 tasks = do
