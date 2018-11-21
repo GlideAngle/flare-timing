@@ -11,6 +11,7 @@ import Reflex.Dom
     , widgetHold
     , elAttr
     , elClass
+    , elDynClass
     , elDynClass'
     , el
     , text
@@ -52,21 +53,36 @@ hyphenate :: [RawZone] -> String
 hyphenate xs =
     intercalate " - " $ fmap TP.getName xs
 
+rainbow :: [String]
+rainbow =
+    [ "is-primary"
+    , "is-warning"
+    , "is-info"
+    , "is-danger"
+    , "is-success"
+    ]
+
+color :: Int -> String
+color ii = rainbow !! (ii `mod` length rainbow)
+
 task
     :: forall t (m :: * -> *). MonadWidget t m
     => Dynamic t (Int, Task)
     -> m (Dynamic t Bool)
 task ix = do
-    i :: String <- sample $ current $ fmap (show . fst) ix
+    ii :: Int <- sample $ current $ fmap fst ix
+    let jj = show ii
     let x :: Dynamic t Task = fmap snd ix
     let xs = fmap getSpeedSection x
-    let subtitle = fmap (T.pack . (\s -> "#" ++ i ++ " - " ++ s) . hyphenate) xs
+    let subtitle = fmap (T.pack . hyphenate) xs
 
     y :: Task <- sample $ current x
 
     elClass "div" "tile" $
         elClass "div" "tile is-parent" $
-            elClass "div" "tile is-child box" $ do
+            elClass "div" (T.pack $ "tile is-child notification " ++ color ii) $ do
+                elClass "p" "title" $ text (T.pack $ "Task " ++ jj)
+                elDynClass "p" "subtitle" $ dynText subtitle
                 map y
                 elClass "p" "" $ mdo
                     (a, _) <- elDynClass' "a" c $ dynText subtitle
