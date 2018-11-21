@@ -11,7 +11,6 @@ import Reflex.Dom
     , widgetHold
     , elAttr
     , elClass
-    , elDynClass
     , elDynClass'
     , el
     , text
@@ -27,10 +26,8 @@ import Reflex.Dom
     )
 import qualified Data.Text as T (pack)
 import Data.Map (union)
-import Data.List (intercalate)
 
 import Data.Flight.Types (Task(..), Zones(..), RawZone(..), SpeedSection)
-import FlareTiming.Map (map)
 import qualified FlareTiming.Turnpoint as TP (getName)
 
 loading :: MonadWidget t m => m ()
@@ -49,10 +46,6 @@ getSpeedSection (Task _ Zones{raw = tps} ss) =
                 start' = fromInteger start
                 end' = fromInteger end
 
-hyphenate :: [RawZone] -> String
-hyphenate xs =
-    intercalate " - " $ fmap TP.getName xs
-
 rainbow :: [String]
 rainbow =
     [ "is-primary"
@@ -70,23 +63,22 @@ task
     => Dynamic t (Int, Task)
     -> m (Dynamic t Bool)
 task ix = do
-    ii :: Int <- sample $ current $ fmap fst ix
+    ii :: Int <- sample . current $ fst <$> ix
     let jj = show ii
-    let x :: Dynamic t Task = fmap snd ix
-    let xs = fmap getSpeedSection x
-    let subtitle = fmap (T.pack . hyphenate) xs
-
-    y :: Task <- sample $ current x
+    let x :: Dynamic t Task = snd <$> ix
+    let xs = getSpeedSection <$> x
+    let tps = (fmap . fmap) (T.pack . TP.getName) xs
 
     mdo
         (a, _) <- elDynClass' "div" c $ do
-            elClass "div" "tile is-parent" $
+            elClass "div" "tile is-parent is-vertical" $
                 elClass "div" (T.pack $ "tile is-child notification " ++ color ii) $ do
-                    elClass "p" "title" $ text (T.pack $ "Task " ++ jj)
-                    elDynClass "p" "subtitle" $ dynText subtitle
-                    elClass "div" "has-text-black" $ map y
+                    elClass "p" "subtitle" $ text (T.pack $ "Task " ++ jj) 
+                    el "ul" $ do
+                        _ <- simpleList tps (el "li" . dynText)
+                        return ()
         e <- toggle False $ domEvent Click a
-        c <- return $ (\case False -> "tile is-1"; True -> "tile is-12") <$> e
+        c <- return $ const "tile" <$> e
         return e
 
 tasks :: MonadWidget t m => m ()
