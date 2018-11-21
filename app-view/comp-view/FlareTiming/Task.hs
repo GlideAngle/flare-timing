@@ -83,7 +83,7 @@ task ix = do
             elClass "div" (T.pack $ "tile is-child notification " ++ color ii) $ do
                 elClass "p" "title" $ text (T.pack $ "Task " ++ jj)
                 elDynClass "p" "subtitle" $ dynText subtitle
-                map y
+                elClass "div" "has-text-black" $ map y
                 elClass "p" "" $ mdo
                     (a, _) <- elDynClass' "a" c $ dynText subtitle
                     e <- toggle False $ domEvent Click a
