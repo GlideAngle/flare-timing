@@ -24,7 +24,7 @@ import Reflex.Dom
     , domEvent
     , toggle
     )
-import qualified Data.Text as T (pack)
+import qualified Data.Text as T (Text, pack)
 import Data.Map (union)
 
 import Data.Flight.Types (Task(..), Zones(..), RawZone(..), SpeedSection)
@@ -70,16 +70,26 @@ task ix = do
     let tps = (fmap . fmap) (T.pack . TP.getName) xs
 
     mdo
-        (a, _) <- elDynClass' "div" c $ do
+        (aa, _) <- elDynClass' "div" cc $ do
             elClass "div" "tile is-parent is-vertical" $
                 elClass "div" (T.pack $ "tile is-child notification " ++ color ii) $ do
-                    elClass "p" "subtitle" $ text (T.pack $ "Task " ++ jj) 
+                    elClass "p" "subtitle" $ dynText dd
                     el "ul" $ do
                         _ <- simpleList tps (el "li" . dynText)
                         return ()
-        e <- toggle False $ domEvent Click a
-        c <- return $ const "tile" <$> e
-        return e
+        ee
+            :: Dynamic t Bool
+            <- toggle False $ domEvent Click aa
+
+        cc
+            :: Dynamic t T.Text
+            <- return $ (\case False -> "tile is-1"; True -> "tile is-12") <$> ee
+
+        dd
+            :: Dynamic t T.Text
+            <- return $ T.pack . (\case False -> jj; True -> "Task " ++ jj) <$> ee
+
+        return ee
 
 tasks :: MonadWidget t m => m ()
 tasks = do
