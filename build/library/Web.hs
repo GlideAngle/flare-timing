@@ -104,25 +104,18 @@ buildRules = do
 
 ghcjsCmd :: IO String
 ghcjsCmd = do
-    let prolog =
-            [r|ghcjs 
-    -DGHCJS_BROWSER 
-    |]
-
-    let epilog =
-            [r|
-    -outputdir ../../__www-build/app.jsout 
-    -o ../../__www-build/app.jsexe 
-    App.hs|]
-
     exts <-
         input (autoWith interpretOpts)
         $ T.pack "./default-extensions-ghcjs.dhall"
 
-    print (exts :: DefaultExtensions)
-    let exts' = unwords $ ("-X" ++) . T.unpack <$> defaultExtensions exts
+    let xs = unwords $ ("-X" ++) . T.unpack <$> defaultExtensions exts
 
-    return $ prolog ++ exts' ++ epilog
+    return $ [r|ghcjs 
+    -DGHCJS_BROWSER 
+    |] ++ xs ++ [r|
+    -outputdir ../../__www-build/app.jsout 
+    -o ../../__www-build/app.jsexe 
+    App.hs|]
 
 interpretOpts :: InterpretOptions
 interpretOpts =
