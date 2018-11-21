@@ -62,7 +62,7 @@ task ix = do
     zs <- sample . current $ tps
 
     el "li" $ do
-        el "a" . text $ T.intercalate " - " zs
+        el "a" . text $ "Task " <> jj <> ": " <> T.intercalate " - " zs
 
 tasks :: MonadWidget t m => m ()
 tasks = do
@@ -86,6 +86,6 @@ getTasks () = do
     let ys :: Dynamic t [(Int, Task)] = fmap (zip [1 .. ]) xs
 
     elClass "h3" "subtitle is-3" $ text "Tasks"
-    elAttr "ol" ("type" =: "1") $ simpleList ys task
+    el "ul" $ simpleList ys task
 
     return ()
