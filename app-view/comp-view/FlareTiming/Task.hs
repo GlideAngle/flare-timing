@@ -6,9 +6,12 @@ import Reflex.Dom
     , (=:)
     , def
     , holdDyn
+    , foldDyn
     , sample
     , current
+    , updated
     , widgetHold
+    , widgetHold_
     , elAttr
     , elClass
     , elDynClass'
@@ -24,7 +27,7 @@ import Reflex.Dom
     , domEvent
     , toggle
     )
-import qualified Data.Text as T (Text, pack)
+import qualified Data.Text as T (Text, pack, intercalate)
 import Data.Map (union)
 
 import Data.Flight.Types (Task(..), Zones(..), RawZone(..), SpeedSection)
@@ -58,6 +61,34 @@ rainbow =
 color :: Int -> String
 color ii = rainbow !! (ii `mod` length rainbow)
 
+taskTpNames
+    :: forall t (m :: * -> *). MonadWidget t m
+    => Dynamic t Bool
+    -> Dynamic t [T.Text]
+    -> m ()
+taskTpNames detailed tps = do
+    let e :: Event t Bool = updated detailed
+    widgetHold_ (listTpNames tps)
+        $ fmap (\case
+            False -> listTpNames tps
+            True -> labelTpNames tps) e
+
+listTpNames
+    :: MonadWidget t m
+    => Dynamic t [T.Text]
+    -> m ()
+listTpNames tps =
+    el "ul" $ do
+        _ <- simpleList tps (el "li" . dynText)
+        return ()
+
+labelTpNames
+    :: MonadWidget t m
+    => Dynamic t [T.Text]
+    -> m ()
+labelTpNames =
+    dynText . fmap (T.intercalate " - ")
+
 task
     :: forall t (m :: * -> *). MonadWidget t m
     => Dynamic t (Int, Task)
@@ -74,9 +105,8 @@ task ix = do
             elClass "div" "tile is-parent is-vertical" $
                 elClass "div" (T.pack $ "tile is-child notification " ++ color ii) $ do
                     elClass "p" "subtitle" $ dynText dd
-                    el "ul" $ do
-                        _ <- simpleList tps (el "li" . dynText)
-                        return ()
+                    taskTpNames ee tps
+
         ee
             :: Dynamic t Bool
             <- toggle False $ domEvent Click aa
