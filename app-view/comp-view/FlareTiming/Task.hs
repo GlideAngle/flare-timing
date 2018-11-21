@@ -64,30 +64,38 @@ color ii = rainbow !! (ii `mod` length rainbow)
 taskTpNames
     :: forall t (m :: * -> *). MonadWidget t m
     => Dynamic t Bool
+    -> Dynamic t T.Text
     -> Dynamic t [T.Text]
     -> m ()
-taskTpNames detailed tps = do
+taskTpNames detailed ii tps = do
     let e :: Event t Bool = updated detailed
-    widgetHold_ (listTpNames tps)
+    let f = do elClass "p" "subtitle" $ dynText ii; listTpNames tps
+
+    widgetHold_ f
         $ fmap (\case
-            False -> listTpNames tps
-            True -> labelTpNames tps) e
+            False -> f
+            True -> labelTpNames ii tps) e
 
 listTpNames
     :: MonadWidget t m
     => Dynamic t [T.Text]
     -> m ()
-listTpNames tps =
+listTpNames tps = do
     el "ul" $ do
         _ <- simpleList tps (el "li" . dynText)
         return ()
+    return ()
 
 labelTpNames
     :: MonadWidget t m
-    => Dynamic t [T.Text]
+    => Dynamic t T.Text
+    -> Dynamic t [T.Text]
     -> m ()
-labelTpNames =
-    dynText . fmap (T.intercalate " - ")
+labelTpNames ii tps = do
+    xs <- sample . current $ tps
+    jj <- sample . current $ ii
+    text $ jj <> ": " <> T.intercalate " - " xs
+    return ()
 
 task
     :: forall t (m :: * -> *). MonadWidget t m
@@ -104,8 +112,7 @@ task ix = do
         (aa, _) <- elDynClass' "div" cc $ do
             elClass "div" "tile is-parent is-vertical" $
                 elClass "div" (T.pack $ "tile is-child notification " ++ color ii) $ do
-                    elClass "p" "subtitle" $ dynText dd
-                    taskTpNames ee tps
+                    taskTpNames ee dd tps
 
         ee
             :: Dynamic t Bool
