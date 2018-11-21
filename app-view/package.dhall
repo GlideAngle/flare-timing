@@ -12,6 +12,8 @@ in    defs
           "Data, Parsing"
       , github =
           "blockscope/flare-timing/app-view"
+      , ghc-options =
+          [ "-Wall" ]
       , dependencies =
           defs.dependencies
       , executables =
