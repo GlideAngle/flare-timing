@@ -2,7 +2,6 @@ module FlareTiming.Task (tasks) where
 
 import Prelude hiding (map)
 import qualified Data.Text as T (pack, intercalate)
-import Data.List (filter)
 import Reflex
 import Reflex.Dom
 
@@ -69,17 +68,12 @@ taskList xs = do
 
 taskDetail
     :: MonadWidget t m
-    => Dynamic t [Task]
-    -> IxTask
+    => Dynamic t Task
     -> m (Event t IxTask)
-taskDetail xs ix = do
-    let xs' = case ix of
-                IxTaskNone -> xs
-                IxTask ii -> take 1 . drop (ii - 1) <$> xs
-
+taskDetail x = do
     elClass "h3" "subtitle is-3" $ text "Task"
-    ys <- el "ul" $ simpleList xs' task
-    return . fmap (const IxTaskNone) $ switchDyn (listToIxTask <$> ys)
+    y <- el "ul" $ task x
+    return $ fmap (const IxTaskNone) y
 
 getTasks :: MonadWidget t m => () -> m ()
 getTasks () = do
@@ -99,7 +93,7 @@ getTasks () = do
                 ,
                     (\ix -> case ix of
                         IxTaskNone -> taskList xs
-                        IxTask ii -> taskDetail xs ix)
+                        IxTask ii -> taskDetail $ (!! (ii - 1)) <$> xs)
                     <$> eIx
                 ]
 
