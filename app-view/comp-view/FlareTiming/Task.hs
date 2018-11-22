@@ -16,9 +16,11 @@ import Reflex.Dom
     , elClass
     , elDynClass'
     , el
+    , el'
     , text
     , dynText
     , simpleList
+    , listWithKey
     , getPostBuild
     , fmapMaybe
     , performRequestAsync
@@ -28,7 +30,7 @@ import Reflex.Dom
     , toggle
     )
 import qualified Data.Text as T (Text, pack, intercalate)
-import Data.Map (union)
+import Data.Map (Map, union, fromList)
 
 import Data.Flight.Types (Task(..), Zones(..), RawZone(..), SpeedSection)
 import qualified FlareTiming.Turnpoint as TP (getName)
@@ -51,28 +53,27 @@ getSpeedSection (Task _ Zones{raw = tps} ss) =
 
 task
     :: forall t (m :: * -> *). MonadWidget t m
-    => Dynamic t (Int, Task)
-    -> m ()
-task ix = do
-    ii :: Int <- sample . current $ fst <$> ix
+    => Int
+    -> Dynamic t Task
+    -> m (Event t Int)
+task ii x = do
     let jj = T.pack $ show ii
-    let x :: Dynamic t Task = snd <$> ix
     let xs = getSpeedSection <$> x
     let tps = (fmap . fmap) (T.pack . TP.getName) xs
     zs <- sample . current $ tps
 
-    el "li" $ do
-        el "a" . text $ "Task " <> jj <> ": " <> T.intercalate " - " zs
+    (e, _) <-
+            el' "li" $ do
+                el "a" . text $ "Task " <> jj <> ": " <> T.intercalate " - " zs
+    return $ const ii <$> domEvent Click e
 
-tasks :: MonadWidget t m => m ()
-tasks = do
+tasks :: MonadWidget t m => Maybe Int -> m ()
+tasks iTask = do
     pb :: Event t () <- getPostBuild
     elClass "div" "spacer" $ return ()
     elClass "div" "container" $ do
-        widgetHold loading $ fmap getTasks pb
+        iTask <- widgetHold loading $ fmap getTasks pb
         elClass "div" "spacer" $ return ()
-
-    return ()
 
 getTasks :: MonadWidget t m => () -> m ()
 getTasks () = do
@@ -82,10 +83,12 @@ getTasks () = do
     rsp <- performRequestAsync $ fmap req $ leftmost [ Nothing <$ pb ]
 
     let es :: Event t [Task] = fmapMaybe decodeXhrResponse rsp
-    xs :: Dynamic t [Task] <- holdDyn [] es
-    let ys :: Dynamic t [(Int, Task)] = fmap (zip [1 .. ]) xs
+
+    xs
+        :: Dynamic t (Map Int Task)
+        <- holdDyn (fromList []) $ (fromList . (zip [1..])) <$> es
 
     elClass "h3" "subtitle is-3" $ text "Tasks"
-    el "ul" $ simpleList ys task
+    el "ul" $ listWithKey xs task
 
     return ()
