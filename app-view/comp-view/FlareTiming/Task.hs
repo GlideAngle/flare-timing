@@ -1,42 +1,20 @@
 module FlareTiming.Task (tasks) where
 
 import Prelude hiding (map)
+import qualified Data.Text as T (pack, intercalate)
+import Reflex
 import Reflex.Dom
-    ( MonadWidget, Event, Dynamic, XhrRequest(..), EventName(Click)
-    , (=:)
-    , def
-    , holdDyn
-    , foldDyn
-    , sample
-    , current
-    , updated
-    , widgetHold
-    , widgetHold_
-    , elAttr
-    , elClass
-    , elDynClass'
-    , el
-    , el'
-    , text
-    , dynText
-    , simpleList
-    , listWithKey
-    , getPostBuild
-    , fmapMaybe
-    , performRequestAsync
-    , decodeXhrResponse
-    , leftmost
-    , domEvent
-    , toggle
-    )
-import qualified Data.Text as T (Text, pack, intercalate)
-import Data.Map (Map, union, fromList)
+import Reflex.Dom.Contrib.Utils
 
 import Data.Flight.Types (Task(..), Zones(..), RawZone(..), SpeedSection)
 import qualified FlareTiming.Turnpoint as TP (getName)
 
 loading :: MonadWidget t m => m ()
 loading = el "li" $ text "Tasks will be shown here"
+
+data IxTask
+    = IxTask Int
+    | IxTaskNone
 
 getSpeedSection :: Task -> [RawZone]
 getSpeedSection (Task _ Zones{raw = tps} ss) =
@@ -53,19 +31,23 @@ getSpeedSection (Task _ Zones{raw = tps} ss) =
 
 task
     :: forall t (m :: * -> *). MonadWidget t m
-    => Int
-    -> Dynamic t Task
-    -> m (Event t Int)
-task ii x = do
-    let jj = T.pack $ show ii
-    let xs = getSpeedSection <$> x
-    let tps = (fmap . fmap) (T.pack . TP.getName) xs
-    zs <- sample . current $ tps
+    => Dynamic t Task
+    -> m (Event t ())
+task x = do
+    y :: Task <- sample . current $ x
+    let jj  = T.pack . taskName $ y
+    let xs = getSpeedSection y
+    let zs = T.pack . TP.getName <$> xs
 
     (e, _) <-
             el' "li" $ do
-                el "a" . text $ "Task " <> jj <> ": " <> T.intercalate " - " zs
-    return $ const ii <$> domEvent Click e
+                el "a" . text $ jj <> ": " <> T.intercalate " - " zs
+
+    let ev = domEvent Click e
+    putDebugLnE ev (const $ taskName y)
+    alertEvent (const $ taskName y) ev
+
+    return ev
 
 tasks :: MonadWidget t m => Maybe Int -> m ()
 tasks iTask = do
@@ -75,6 +57,34 @@ tasks iTask = do
         iTask <- widgetHold loading $ fmap getTasks pb
         elClass "div" "spacer" $ return ()
 
+w1
+    :: MonadWidget t m
+    => Dynamic t [Task]
+    -> m(Event t IxTask)
+w1 xs = do
+    ys
+        :: Dynamic t [Event t ()]
+        <- do
+            elClass "h3" "subtitle is-3" $ text "Tasks"
+            el "ul" $ simpleList xs task
+
+    zs
+        :: [Event t ()]
+        <- sample . current $ ys
+
+    let zs' :: [Event t IxTask]
+        zs' = zipWith (\i x -> (const $ IxTask i) <$> x) [1..] zs
+
+    return $ leftmost zs'
+
+w2
+    :: MonadWidget t m
+    => Dynamic t [Task]
+    -> m(Event t IxTask)
+w2 _ = do
+    elClass "h3" "subtitle is-3" $ text "Task"
+    return never
+
 getTasks :: MonadWidget t m => () -> m ()
 getTasks () = do
     pb :: Event t () <- getPostBuild
@@ -83,12 +93,31 @@ getTasks () = do
     rsp <- performRequestAsync $ fmap req $ leftmost [ Nothing <$ pb ]
 
     let es :: Event t [Task] = fmapMaybe decodeXhrResponse rsp
+    xs :: Dynamic t [Task] <- holdDyn [] es
 
-    xs
-        :: Dynamic t (Map Int Task)
-        <- holdDyn (fromList []) $ (fromList . (zip [1..])) <$> es
+    el "div" $ do
+        eSwitch <- el "div" $ button "Switch"
+        dToggle <- toggle True eSwitch
 
-    elClass "h3" "subtitle is-3" $ text "Tasks"
-    el "ul" $ listWithKey xs task
+        let eShow1 = ffilter id . updated $ dToggle
+        let eShow2 = ffilter not . updated $ dToggle
+
+        deText <- widgetHold (w1 xs) . leftmost $
+            [ w1 xs <$ eShow1
+            , w2 xs <$ eShow2
+            ]
+
+        let eText = switchDyn deText
+
+        dIx <- holdDyn IxTaskNone . leftmost $
+            [ eText
+            , IxTaskNone <$ eSwitch
+            ]
+
+        let dText =
+                (\case IxTask ii -> T.pack . show $ ii; IxTaskNone -> "None")
+                <$> dIx
+
+        el "div" $ dynText dText
 
     return ()
