@@ -32,12 +32,12 @@ loading :: MonadWidget t m => m ()
 loading = el "li" $ text "Comps will be shown here"
 
 comp
-    :: forall t (m :: * -> *). MonadWidget t m
+    :: MonadWidget t m
     => Dynamic t [Nominal]
     -> Dynamic t Comp
     -> m ()
 comp ns c = do
-    let n :: Dynamic t (Maybe Nominal) = listToMaybe <$> ns
+    let n = listToMaybe <$> ns
     let title = fmap (T.pack . (\Comp{..} -> compName)) c
     let subtitle =
             fmap (T.pack . (\Comp{..} ->
@@ -59,7 +59,7 @@ comp ns c = do
                     nominal n
 
 nominal
-    :: forall t (m :: * -> *).  MonadWidget t m
+    :: MonadWidget t m
     => Dynamic t (Maybe Nominal)
     -> m ()
 nominal n = do

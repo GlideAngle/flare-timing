@@ -17,14 +17,14 @@ getName :: RawZone -> String
 getName (RawZone name _ _ _) = name
 
 turnpointRadius
-    :: forall t (m :: * -> *). MonadWidget t m
+    :: MonadWidget t m
     => Dynamic t RawZone
     -> m ()
 turnpointRadius x = do
     dynText $ fmap (T.pack . getNameRadius) x
 
 turnpoint
-    :: forall t (m :: * -> *). MonadWidget t m
+    :: MonadWidget t m
     => Dynamic t RawZone
     -> m ()
 turnpoint x = do
