@@ -43,11 +43,7 @@ task x = do
             el' "li" $ do
                 el "a" . text $ jj <> ": " <> T.intercalate " - " zs
 
-    let ev = domEvent Click e
-    putDebugLnE ev (const $ taskName y)
-    alertEvent (const $ taskName y) ev
-
-    return ev
+    return $ domEvent Click e
 
 tasks :: MonadWidget t m => Maybe Int -> m ()
 tasks iTask = do
@@ -57,31 +53,27 @@ tasks iTask = do
         iTask <- widgetHold loading $ fmap getTasks pb
         elClass "div" "spacer" $ return ()
 
-w1
+listToIxTask :: Reflex t => [Event t ()] -> Event t IxTask
+listToIxTask =
+    leftmost
+    . zipWith (\i x -> (const $ IxTask i) <$> x) [1..]
+
+taskList
     :: MonadWidget t m
     => Dynamic t [Task]
     -> m(Event t IxTask)
-w1 xs = do
-    ys
-        :: Dynamic t [Event t ()]
-        <- do
+taskList xs = do
+    ys <- do
             elClass "h3" "subtitle is-3" $ text "Tasks"
             el "ul" $ simpleList xs task
 
-    zs
-        :: [Event t ()]
-        <- sample . current $ ys
+    return $ switchDyn (listToIxTask <$> ys)
 
-    let zs' :: [Event t IxTask]
-        zs' = zipWith (\i x -> (const $ IxTask i) <$> x) [1..] zs
-
-    return $ leftmost zs'
-
-w2
+taskDetail
     :: MonadWidget t m
     => Dynamic t [Task]
     -> m(Event t IxTask)
-w2 _ = do
+taskDetail _ = do
     elClass "h3" "subtitle is-3" $ text "Task"
     return never
 
@@ -102,9 +94,9 @@ getTasks () = do
         let eShow1 = ffilter id . updated $ dToggle
         let eShow2 = ffilter not . updated $ dToggle
 
-        deText <- widgetHold (w1 xs) . leftmost $
-            [ w1 xs <$ eShow1
-            , w2 xs <$ eShow2
+        deText <- widgetHold (taskList xs) . leftmost $
+            [ taskList xs <$ eShow1
+            , taskDetail xs <$ eShow2
             ]
 
         let eText = switchDyn deText
