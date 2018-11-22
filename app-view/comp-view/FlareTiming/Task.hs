@@ -30,7 +30,7 @@ getSpeedSection (Task _ Zones{raw = tps} ss) =
                 end' = fromInteger end
 
 task
-    :: forall t (m :: * -> *). MonadWidget t m
+    :: MonadWidget t m
     => Dynamic t Task
     -> m (Event t ())
 task x = do
@@ -61,7 +61,7 @@ listToIxTask =
 taskList
     :: MonadWidget t m
     => Dynamic t [Task]
-    -> m(Event t IxTask)
+    -> m (Event t IxTask)
 taskList xs = do
     ys <- do
             elClass "h3" "subtitle is-3" $ text "Tasks"
@@ -72,7 +72,7 @@ taskList xs = do
 taskDetail
     :: MonadWidget t m
     => Dynamic t [Task]
-    -> m(Event t IxTask)
+    -> m (Event t IxTask)
 taskDetail _ = do
     elClass "h3" "subtitle is-3" $ text "Task"
     return never
