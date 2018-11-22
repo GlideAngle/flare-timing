@@ -1,13 +1,9 @@
 module Reflex.Dom.Contrib.Utils where
 
-import Control.Monad
-import Control.Concurrent
 import Control.Monad.Reader
 import Reflex
 import Reflex.Dom
 import GHCJS.DOM as DOM
-import GHCJS.DOM.History as DOM
-import GHCJS.DOM.Location as DOM
 import GHCJS.DOM.Types hiding (Text, Event)
 import qualified GHCJS.DOM.Window as DOM
 
