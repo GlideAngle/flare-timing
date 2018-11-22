@@ -13,6 +13,6 @@ view = do
     navbar
     comps
     breadcrumb
-    tasks Nothing
+    tasks
     footer
     return ()

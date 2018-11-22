@@ -2,9 +2,9 @@ module FlareTiming.Task (tasks) where
 
 import Prelude hiding (map)
 import qualified Data.Text as T (pack, intercalate)
+import Data.List (filter)
 import Reflex
 import Reflex.Dom
-import Reflex.Dom.Contrib.Utils
 
 import Data.Flight.Types (Task(..), Zones(..), RawZone(..), SpeedSection)
 import qualified FlareTiming.Turnpoint as TP (getName)
@@ -45,12 +45,12 @@ task x = do
 
     return $ domEvent Click e
 
-tasks :: MonadWidget t m => Maybe Int -> m ()
-tasks iTask = do
+tasks :: MonadWidget t m => m ()
+tasks = do
     pb :: Event t () <- getPostBuild
     elClass "div" "spacer" $ return ()
     elClass "div" "container" $ do
-        iTask <- widgetHold loading $ fmap getTasks pb
+        _ <- widgetHold loading $ fmap getTasks pb
         elClass "div" "spacer" $ return ()
 
 listToIxTask :: Reflex t => [Event t ()] -> Event t IxTask
@@ -63,19 +63,23 @@ taskList
     => Dynamic t [Task]
     -> m (Event t IxTask)
 taskList xs = do
-    ys <- do
-            elClass "h3" "subtitle is-3" $ text "Tasks"
-            el "ul" $ simpleList xs task
-
+    elClass "h3" "subtitle is-3" $ text "Tasks"
+    ys <- el "ul" $ simpleList xs task
     return $ switchDyn (listToIxTask <$> ys)
 
 taskDetail
     :: MonadWidget t m
     => Dynamic t [Task]
+    -> IxTask
     -> m (Event t IxTask)
-taskDetail _ = do
+taskDetail xs ix = do
+    let xs' = case ix of
+                IxTaskNone -> xs
+                IxTask ii -> take 1 . drop (ii - 1) <$> xs
+
     elClass "h3" "subtitle is-3" $ text "Task"
-    return never
+    ys <- el "ul" $ simpleList xs' task
+    return . fmap (const IxTaskNone) $ switchDyn (listToIxTask <$> ys)
 
 getTasks :: MonadWidget t m => () -> m ()
 getTasks () = do
@@ -87,29 +91,29 @@ getTasks () = do
     let es :: Event t [Task] = fmapMaybe decodeXhrResponse rsp
     xs :: Dynamic t [Task] <- holdDyn [] es
 
-    el "div" $ do
-        eSwitch <- el "div" $ button "Switch"
-        dToggle <- toggle True eSwitch
+    el "div" $ mdo
+            eShowAll <- el "div" $ button "Show All Tasks"
 
-        let eShow1 = ffilter id . updated $ dToggle
-        let eShow2 = ffilter not . updated $ dToggle
+            deIx <- widgetHold (taskList xs) . leftmost $
+                [ taskList xs <$ eShowAll
+                ,
+                    (\ix -> case ix of
+                        IxTaskNone -> taskList xs
+                        IxTask ii -> taskDetail xs ix)
+                    <$> eIx
+                ]
 
-        deText <- widgetHold (taskList xs) . leftmost $
-            [ taskList xs <$ eShow1
-            , taskDetail xs <$ eShow2
-            ]
+            let eIx = switchDyn deIx
 
-        let eText = switchDyn deText
+            dIx <- holdDyn IxTaskNone . leftmost $
+                [ eIx
+                , IxTaskNone <$ eShowAll
+                ]
 
-        dIx <- holdDyn IxTaskNone . leftmost $
-            [ eText
-            , IxTaskNone <$ eSwitch
-            ]
+            let dText =
+                    (\case IxTask ii -> T.pack . show $ ii; IxTaskNone -> "None")
+                    <$> dIx
 
-        let dText =
-                (\case IxTask ii -> T.pack . show $ ii; IxTaskNone -> "None")
-                <$> dIx
-
-        el "div" $ dynText dText
+            el "div" $ dynText dText
 
     return ()
