@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 64abb0dbc5424c8cff29d3e83a5392674bd4951ce4a4205d42e57163d14896e6
+-- hash: 8a90bb06f9370028d7fda88876803676f5b7e6410d14412a5ca37223da045755
 
 name:           app-view
 version:        0.1.0
@@ -42,6 +42,7 @@ executable comp-view
       FlareTiming.Task
       FlareTiming.Turnpoint
       FlareTiming.View
+      Reflex.Dom.Contrib.Utils
       Paths_app_view
   hs-source-dirs:
       comp-view
@@ -53,6 +54,7 @@ executable comp-view
     , containers
     , ghcjs-base
     , ghcjs-dom
+    , mtl
     , reflex
     , reflex-dom
     , scientific

@@ -22,6 +22,7 @@ in    defs
                   [ "base >4.9 && <5"
                   , "aeson"
                   , "containers"
+                  , "mtl"
                   , "reflex"
                   , "reflex-dom"
                   , "ghcjs-base"
