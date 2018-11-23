@@ -12,6 +12,7 @@ import FlareTiming.Events (IxTask(..))
 import FlareTiming.Comms (getTasks, getComps)
 import FlareTiming.Task.ListItem (liTask)
 import FlareTiming.Task.Tab (TaskTab(..), tabsTask)
+import FlareTiming.Task.Turnpoints (tableTurnpoints)
 
 loading :: MonadWidget t m => m ()
 loading = el "li" $ text "Tasks will be shown here"
@@ -53,7 +54,7 @@ taskDetail cs x = do
     _ <- widgetHold (text "score") $
             (\case
                 TaskTabScore -> text "score"
-                TaskTabTask -> text "task"
+                TaskTabTask -> tableTurnpoints
                 TaskTabMap -> text "map")
             <$> tab
 

@@ -15,7 +15,7 @@ tabsTask =
     elClass "div" "tabs" $
         el "ul" $ mdo
             (s, _) <- elDynClass' "li" sClass $ el "a" (text "Scores")
-            (t, _) <- elDynClass' "li" tClass $ el "a" (text "Task")
+            (t, _) <- elDynClass' "li" tClass $ el "a" (text "Turnpoints")
             (m, _) <- elDynClass' "li" mClass $ el "a" (text "Map")
 
             let es = (const TaskTabScore) <$> domEvent Click s
