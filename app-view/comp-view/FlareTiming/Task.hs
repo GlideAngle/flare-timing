@@ -14,6 +14,7 @@ import FlareTiming.Map (map)
 import FlareTiming.Task.ListItem (liTask)
 import FlareTiming.Task.Tab (TaskTab(..), tabsTask)
 import FlareTiming.Task.Turnpoints (tableTurnpoints)
+import FlareTiming.Task.Absent (tableAbsent)
 
 loading :: MonadWidget t m => m ()
 loading = el "li" $ text "Tasks will be shown here"
@@ -57,7 +58,7 @@ taskDetail cs x = do
                 TaskTabScore -> text "score"
                 TaskTabTask -> tableTurnpoints x
                 TaskTabMap -> do y <- sample . current $ x; map y
-                TaskTabAbsent -> text "absent")
+                TaskTabAbsent -> tableAbsent x)
             <$> tab
 
     return $ switchDyn (leftmost <$> es)

@@ -1,6 +1,9 @@
 module Data.Flight.Types
     ( Comp(..)
     , Nominal(..)
+    , Pilot(..)
+    , PilotId(..)
+    , PilotName(..)
     , Task(..)
     , Zones(..)
     , RawZone(..)
@@ -12,6 +15,7 @@ module Data.Flight.Types
     , getAllRawZones
     , getRaceRawZones
     , getSpeedSection
+    , getAbsent
     , fromSci
     , toSci
     , showRadius
@@ -26,6 +30,25 @@ import Data.Aeson (Value(..), ToJSON(..), FromJSON(..))
 import Data.Scientific (Scientific, toRealFloat, fromRationalRepetend)
 
 type Name = String
+
+newtype PilotId =
+    PilotId String 
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
+
+newtype PilotName =
+    PilotName String
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
+
+newtype Pilot = Pilot (PilotId, PilotName)
+    deriving (Eq, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
+
+-- | Order by name then by id.
+instance Ord Pilot where
+    (Pilot (k0, s0)) `compare` (Pilot (k1, s1)) =
+        (s0, k0) `compare` (s1, k1)
 
 newtype RawLat = RawLat Rational
     deriving (Eq, Ord, Show)
@@ -63,6 +86,7 @@ data Task =
         { taskName :: Name
         , zones :: Zones
         , speedSection :: SpeedSection
+        , absent :: [Pilot]
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
@@ -126,14 +150,17 @@ showLat (RawLat x) = (show . toSci $ x) ++ " °"
 showLng :: RawLng -> String
 showLng (RawLng x) = (show . toSci $ x) ++ " °"
 
+getAbsent :: Task -> [Pilot]
+getAbsent Task{absent} = absent
+
 getSpeedSection :: Task -> SpeedSection
-getSpeedSection (Task _ _ ss) = ss
+getSpeedSection Task{speedSection = ss} = ss
 
 getAllRawZones :: Task -> [RawZone]
-getAllRawZones (Task _ Zones{raw} _) = raw
+getAllRawZones Task{zones = Zones{raw}} = raw
 
 getRaceRawZones :: Task -> [RawZone]
-getRaceRawZones (Task _ Zones{raw = tps} ss) =
+getRaceRawZones Task{zones = Zones{raw = tps}, speedSection = ss} =
     speedSectionOnly ss tps
     where
         speedSectionOnly :: SpeedSection -> [RawZone] -> [RawZone]

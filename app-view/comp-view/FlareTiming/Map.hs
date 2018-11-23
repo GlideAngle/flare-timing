@@ -43,25 +43,30 @@ import Data.Flight.Types
     )
 
 turnpoint :: RawZone -> IO (L.Marker, L.Circle)
-turnpoint (RawZone _ (RawLat lat) (RawLng lng) (Radius radius)) = do
+turnpoint
+    RawZone
+        { lat = RawLat lat'
+        , lng = RawLng lng'
+        , radius = Radius r
+        } = do
     xMark <- L.marker latLng
-    xCyl <- L.circle latLng radius
+    xCyl <- L.circle latLng r
     return (xMark, xCyl)
     where
-        latLng = (fromRational lat, fromRational lng)
+        latLng = (fromRational lat', fromRational lng')
 
 toLatLng :: RawZone -> (Double, Double)
-toLatLng (RawZone _ (RawLat lat) (RawLng lng) _) =
-    (fromRational lat, fromRational lng)
+toLatLng RawZone{lat = RawLat lat', lng = RawLng lng'} =
+    (fromRational lat', fromRational lng')
 
 map :: MonadWidget t m => Task -> m ()
 
-map (Task _ Zones{raw = []} _) = do
+map Task{zones = Zones{raw = []}} = do
     el "p" $ text "The task has no turnpoints."
     return ()
 
-map (Task _ Zones{raw = xs} _)= do
-    let tpNames = fmap (\ (RawZone name _ _ _) -> name) xs
+map Task{zones = Zones{raw = xs}}= do
+    let tpNames = fmap (\RawZone{..} -> zoneName) xs
     postBuild <- delay 1 =<< getPostBuild
     (e, _) <- elAttr' "div" ("style" =: "height: 680px;width: 100%") $ return ()
     rec performEvent_ $ fmap
