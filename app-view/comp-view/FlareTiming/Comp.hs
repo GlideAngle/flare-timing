@@ -23,7 +23,7 @@ compTask
     -> m ()
 compTask t _ = do
     let xs = getSpeedSection <$> t
-    let zs = (fmap . fmap) (T.pack . TP.getName) xs
+    let zs = (fmap . fmap) TP.getName xs
     let title = T.intercalate " - " <$> zs
 
     elClass "div" "tile" $ do

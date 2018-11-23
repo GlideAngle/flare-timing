@@ -13,6 +13,8 @@ module Data.Flight.Types
     , fromSci
     , toSci
     , showRadius
+    , showLat
+    , showLng
     ) where
 
 import Control.Applicative (empty)
@@ -113,8 +115,14 @@ instance FromJSON RawLng where
 
 showRadius :: Radius -> String
 showRadius (Radius r)
-    | r < 1000 = show r ++ " m"
+    | r < 1000 = show (truncate r :: Integer) ++ " m"
     | otherwise = show (truncate (r / 1000) :: Integer) ++ " km"
+
+showLat :: RawLat -> String
+showLat (RawLat x) = (show . toSci $ x) ++ " °"
+
+showLng :: RawLng -> String
+showLng (RawLng x) = (show . toSci $ x) ++ " °"
 
 getSpeedSection :: Task -> [RawZone]
 getSpeedSection (Task _ Zones{raw = tps} ss) =

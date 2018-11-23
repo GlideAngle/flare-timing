@@ -18,7 +18,7 @@ liTask x = do
     y :: Task <- sample . current $ x
     let jj  = T.pack . taskName $ y
     let xs = getSpeedSection y
-    let zs = T.pack . TP.getName <$> xs
+    let zs = TP.getName <$> xs
 
     (e, _) <-
             el' "li" $ do

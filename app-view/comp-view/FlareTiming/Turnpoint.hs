@@ -2,30 +2,42 @@ module FlareTiming.Turnpoint
     ( turnpoint
     , turnpointRadius
     , getName
-    , getNameRadius
+    , getLat
+    , getLng
+    , getRadius
     ) where
 
 import Reflex.Dom (MonadWidget, Dynamic, dynText)
-import qualified Data.Text as T (pack)
+import qualified Data.Text as T (Text, pack)
 
-import Data.Flight.Types (RawZone(..), showRadius)
+import Data.Flight.Types (RawZone(..), showRadius, showLat, showLng)
 
-getNameRadius :: RawZone -> String
-getNameRadius (RawZone name _ _ radius) = name ++ " " ++ showRadius radius
+getNameRadius :: RawZone -> T.Text
+getNameRadius RawZone{zoneName,radius} =
+    T.pack $ zoneName ++ " " ++ showRadius radius
 
-getName :: RawZone -> String
-getName (RawZone name _ _ _) = name
+getName :: RawZone -> T.Text
+getName RawZone{zoneName} = T.pack zoneName
+
+getLat :: RawZone -> T.Text
+getLat RawZone{lat} = T.pack . showLat $ lat
+
+getLng :: RawZone -> T.Text
+getLng RawZone{lng} = T.pack . showLng $ lng
+
+getRadius :: RawZone -> T.Text
+getRadius RawZone{radius} = T.pack . showRadius $ radius
 
 turnpointRadius
     :: MonadWidget t m
     => Dynamic t RawZone
     -> m ()
 turnpointRadius x = do
-    dynText $ fmap (T.pack . getNameRadius) x
+    dynText $ fmap getNameRadius x
 
 turnpoint
     :: MonadWidget t m
     => Dynamic t RawZone
     -> m ()
 turnpoint x = do
-    dynText $ fmap (T.pack . getName) x
+    dynText $ fmap getName x
