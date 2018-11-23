@@ -9,6 +9,8 @@ module Data.Flight.Types
     , Name
     , Radius(..)
     , SpeedSection
+    , getAllRawZones
+    , getRaceRawZones
     , getSpeedSection
     , fromSci
     , toSci
@@ -124,8 +126,14 @@ showLat (RawLat x) = (show . toSci $ x) ++ " °"
 showLng :: RawLng -> String
 showLng (RawLng x) = (show . toSci $ x) ++ " °"
 
-getSpeedSection :: Task -> [RawZone]
-getSpeedSection (Task _ Zones{raw = tps} ss) =
+getSpeedSection :: Task -> SpeedSection
+getSpeedSection (Task _ _ ss) = ss
+
+getAllRawZones :: Task -> [RawZone]
+getAllRawZones (Task _ Zones{raw} _) = raw
+
+getRaceRawZones :: Task -> [RawZone]
+getRaceRawZones (Task _ Zones{raw = tps} ss) =
     speedSectionOnly ss tps
     where
         speedSectionOnly :: SpeedSection -> [RawZone] -> [RawZone]

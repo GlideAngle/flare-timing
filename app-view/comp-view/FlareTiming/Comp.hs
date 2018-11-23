@@ -9,7 +9,7 @@ import Data.Maybe (listToMaybe)
 import Control.Applicative (pure)
 
 import Data.Flight.Types
-    (Comp(..), Nominal(..), Task(..), getSpeedSection)
+    (Comp(..), Nominal(..), Task(..), getRaceRawZones)
 import qualified FlareTiming.Turnpoint as TP (getName)
 import FlareTiming.Comms (getNominals)
 
@@ -22,7 +22,7 @@ compTask
     -> Dynamic t Comp
     -> m ()
 compTask t _ = do
-    let xs = getSpeedSection <$> t
+    let xs = getRaceRawZones <$> t
     let zs = (fmap . fmap) TP.getName xs
     let title = T.intercalate " - " <$> zs
 

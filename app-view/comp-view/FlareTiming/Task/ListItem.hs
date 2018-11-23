@@ -7,7 +7,7 @@ import qualified Data.Text as T (pack, intercalate)
 import Reflex
 import Reflex.Dom
 
-import Data.Flight.Types (Task(..), getSpeedSection)
+import Data.Flight.Types (Task(..), getRaceRawZones)
 import qualified FlareTiming.Turnpoint as TP (getName)
 
 liTask
@@ -17,7 +17,7 @@ liTask
 liTask x = do
     y :: Task <- sample . current $ x
     let jj  = T.pack . taskName $ y
-    let xs = getSpeedSection y
+    let xs = getRaceRawZones y
     let zs = TP.getName <$> xs
 
     (e, _) <-

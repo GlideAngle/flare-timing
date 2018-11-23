@@ -1,9 +1,10 @@
 module FlareTiming.Task.Turnpoints (tableTurnpoints) where
 
 import Reflex.Dom
-import qualified Data.Text as T (pack)
+import qualified Data.Text as T (Text, pack)
 
-import Data.Flight.Types (Task(..), Zones(..), RawZone(..))
+import Data.Flight.Types
+    (Task(..), RawZone(..), SpeedSection, getAllRawZones, getSpeedSection)
 import qualified FlareTiming.Turnpoint as TP
 
 tableTurnpoints
@@ -11,7 +12,8 @@ tableTurnpoints
     => Dynamic t Task
     -> m ()
 tableTurnpoints x = do
-    let zs = fmap (zip [1..]) $ getZones <$> x
+    let ss = getSpeedSection <$> x
+    let zs = fmap (zip [1..]) $ getAllRawZones <$> x
 
     _ <- elClass "table" "table" $
             el "thead" $ do
@@ -22,21 +24,28 @@ tableTurnpoints x = do
                     el "th" $ text "Latitude"
                     el "th" $ text "Longitude"
 
-                simpleList zs row
+                simpleList zs (row ss)
     return ()
-
-getZones :: Task -> [RawZone]
-getZones (Task _ Zones{raw} _) = raw
 
 row
     :: MonadWidget t m
-    => Dynamic t (Integer, RawZone)
+    => Dynamic t SpeedSection
+    -> Dynamic t (Integer, RawZone)
     -> m ()
-row iz = do
+row ss iz = do
+    let c = zipDynWith rowColor ss $ fst <$> iz
     let z = snd <$> iz
-    el "tr" $ do
+
+    elDynClass "tr" c $ do
         el "td" $ dynText $ T.pack . show . fst <$> iz
         el "td" . dynText $ TP.getName <$> z
         el "td" . dynText $ TP.getRadius <$> z
         el "td" . dynText $ TP.getLat <$> z
         el "td" . dynText $ TP.getLng <$> z
+
+rowColor :: SpeedSection -> Integer -> T.Text
+rowColor Nothing _ = ""
+rowColor (Just (ss, es)) ii =
+    if | ss == ii -> "has-background-success"
+       | es == ii -> "has-background-danger"
+       | otherwise -> ""
