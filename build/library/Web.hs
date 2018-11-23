@@ -113,6 +113,7 @@ ghcjsCmd = do
     return $ [r|ghcjs 
     -DGHCJS_BROWSER 
     |] ++ xs ++ [r|
+    -Wall
     -outputdir ../../__www-build/app.jsout 
     -o ../../__www-build/app.jsexe 
     App.hs|]
