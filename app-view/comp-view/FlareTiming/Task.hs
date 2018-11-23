@@ -12,13 +12,10 @@ import Data.Flight.Types
 import qualified FlareTiming.Turnpoint as TP (getName)
 import FlareTiming.Comp (comps, getComps, compTask)
 import FlareTiming.Breadcrumb (crumbTask)
+import FlareTiming.Events (IxTask(..))
 
 loading :: MonadWidget t m => m ()
 loading = el "li" $ text "Tasks will be shown here"
-
-data IxTask
-    = IxTask Int
-    | IxTaskNone
 
 task
     :: MonadWidget t m
@@ -77,12 +74,13 @@ taskDetail
     -> m (Event t IxTask)
 taskDetail cs x = do
     simpleList cs (compTask x)
-    simpleList cs (crumbTask x)
+    es <- simpleList cs (crumbTask x)
     eShowAll <- el "div" $ button "Show All Tasks"
     y <- el "ul" $ task x
     return . leftmost $
         [ fmap (const IxTaskNone) y
         , IxTaskNone <$ eShowAll
+        , switchDyn (leftmost <$> es)
         ]
 
 view :: MonadWidget t m => () -> m ()

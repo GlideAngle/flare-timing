@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 8a90bb06f9370028d7fda88876803676f5b7e6410d14412a5ca37223da045755
+-- hash: 0105970ca9751697121ccc4334a49a719efc48e0dd1baf73208c3c1af995d881
 
 name:           app-view
 version:        0.1.0
@@ -35,6 +35,7 @@ executable comp-view
       Data.Flight.Types
       FlareTiming.Breadcrumb
       FlareTiming.Comp
+      FlareTiming.Events
       FlareTiming.Footer
       FlareTiming.Map
       FlareTiming.Map.Leaflet
