@@ -27,7 +27,11 @@ in    defs
           { source-dirs =
               "library"
           , exposed-modules =
-              [ "Flight.Cmd.Options", "Flight.Cmd.Paths" ]
+              [ "Flight.Cmd.Options"
+              , "Flight.Cmd.BatchOptions"
+              , "Flight.Cmd.ServeOptions"
+              , "Flight.Cmd.Paths"
+              ]
           }
       , tests =
           ./../default-tests.dhall

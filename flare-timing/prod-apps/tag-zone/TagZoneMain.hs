@@ -14,8 +14,8 @@ import System.FilePath (takeFileName)
 import Data.Yaml (prettyPrintParseException)
 
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
-import Flight.Cmd.Options
-    (CmdOptions(..), ProgramName(..), Extension(..), mkOptions)
+import Flight.Cmd.Options (ProgramName(..), Extension(..))
+import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
 
 import Flight.Mask (tagZones)
 import Flight.Comp
@@ -46,7 +46,7 @@ main = do
 
     maybe (drive options) putStrLn err
 
-drive :: CmdOptions -> IO ()
+drive :: CmdBatchOptions -> IO ()
 drive o = do
     -- SEE: http://chrisdone.com/posts/measuring-duration-in-haskell
     start <- getTime Monotonic

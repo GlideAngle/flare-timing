@@ -14,7 +14,8 @@ import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
-import Flight.Cmd.Options (CmdOptions(..), ProgramName(..), mkOptions)
+import Flight.Cmd.Options (ProgramName(..))
+import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
 import Flight.Comp
     ( FileType(CompInput)
     , CompInputFile(..)
@@ -50,7 +51,7 @@ main = do
 
     maybe (drive options) putStrLn err
 
-drive :: CmdOptions -> IO ()
+drive :: CmdBatchOptions -> IO ()
 drive o = do
     -- SEE: http://chrisdone.com/posts/measuring-duration-in-haskell
     start <- getTime Monotonic
@@ -60,8 +61,8 @@ drive o = do
     end <- getTime Monotonic
     fprint ("Land outs counted for distance difficulty completed in " % timeSpecs % "\n") start end
 
-go :: CmdOptions -> CompInputFile -> IO ()
-go CmdOptions{..} compFile = do
+go :: CmdBatchOptions -> CompInputFile -> IO ()
+go CmdBatchOptions{..} compFile = do
     let maskFile@(MaskTrackFile maskPath) = compToMask compFile
     let landFile = compToLand compFile
     putStrLn $ "Reading land outs from '" ++ takeFileName maskPath ++ "'"

@@ -1,5 +1,5 @@
-module Serve.Driver (driverRun) where
-
+import System.Environment (getProgName)
+import System.Console.CmdArgs.Implicit (cmdArgs)
 import Network.Wai (Application)
 import Network.Wai.Middleware.Cors (simpleCors)
 import Network.Wai.Handler.Warp
@@ -17,23 +17,28 @@ import Control.Monad.Trans.Except (throwE)
 import Control.Monad.Except (ExceptT(..), MonadError, runExceptT, lift)
 import qualified Data.ByteString.Lazy.Char8 as LBS (pack)
 
-import System.Directory (doesFileExist)
-import System.FilePath (FilePath)
+import System.FilePath (FilePath, takeFileName)
 import Data.Yaml (prettyPrintParseException, decodeEither')
 import qualified Data.ByteString as BS (readFile)
 
-import Serve.Args (withCmdArgs)
-import Serve.Options (ServeOptions(..))
+import Flight.Cmd.Paths (LenientFile(..), checkPaths)
+import Flight.Cmd.Options (ProgramName(..))
+import Flight.Cmd.ServeOptions (CmdServeOptions(..), mkOptions)
 import Flight.Comp
-    ( CompSettings(..)
+    ( FileType(CompInput)
+    , CompSettings(..)
     , Comp
     , Task
     , Nominal
     , PilotTrackLogFile(..)
     , Pilot(..)
+    , CompInputFile(..)
+    , findCompInput
+    , ensureExt
     )
+import ServeOptions (description)
 
-newtype Config = Config { path :: FilePath }
+newtype Config = Config {path :: FilePath}
 
 newtype AppT m a =
     AppT
@@ -60,15 +65,25 @@ api = Proxy
 convertApp :: Config -> AppT IO a -> Handler a
 convertApp cfg appt = Handler $ runReaderT (unApp appt) cfg
 
-driverRun :: IO ()
-driverRun = withCmdArgs drive
+main :: IO ()
+main = do
+    name <- getProgName
+    options <- cmdArgs $ mkOptions (ProgramName name) description Nothing
 
-drive :: ServeOptions -> IO ()
-drive ServeOptions{..} = do
-    dfe <- doesFileExist file
-    if dfe
-        then go file
-        else putStrLn "Couldn't find the flight score competition yaml input file."
+    let lf = LenientFile {coerceFile = ensureExt CompInput}
+    err <- checkPaths lf options
+
+    maybe (drive options) putStrLn err
+
+drive :: CmdServeOptions -> IO ()
+drive o = do
+    files <- findCompInput o
+    if null files then putStrLn "Couldn't find any input files."
+                  else mapM_ (go o) files
+go :: CmdServeOptions -> CompInputFile -> IO ()
+go CmdServeOptions{..} (CompInputFile compPath) = do
+    putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
+    runSettings settings =<< mkApp (Config compPath)
     where
         port = 3000
 
@@ -77,9 +92,6 @@ drive ServeOptions{..} = do
             setBeforeMainLoop
                 (hPutStrLn stderr ("listening on port " ++ show port))
                 defaultSettings
-
-        go path =
-            runSettings settings =<< mkApp (Config path)
 
 -- SEE: https://stackoverflow.com/questions/42143155/acess-a-servant-server-with-a-reflex-dom-client
 mkApp :: Config -> IO Application

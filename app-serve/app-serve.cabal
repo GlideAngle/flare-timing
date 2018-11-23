@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 08c46d3001a48ce8028db6351a790c8d470bfb59c2eefdd529a53f624baaa709
+-- hash: eaff5f8ea10c3050d21e48a1a96ec1b37701d5ebca0301a9469fae05a794b650
 
 name:           app-serve
 version:        0.1.0
@@ -30,11 +30,9 @@ source-repository head
   subdir: app-serve
 
 executable comp-serve
-  main-is: Main.hs
+  main-is: ServeMain.hs
   other-modules:
-      Serve.Args
-      Serve.Driver
-      Serve.Options
+      ServeOptions
       Paths_app_serve
   hs-source-dirs:
       comp-serve
@@ -48,6 +46,7 @@ executable comp-serve
     , directory
     , filemanip
     , filepath
+    , flight-cmd
     , flight-comp
     , mtl
     , raw-strings-qq

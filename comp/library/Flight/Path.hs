@@ -214,31 +214,31 @@ findFiles typ =
     find always (fileType ==? Find.RegularFile &&? extension ==? ext typ)
 
 findFsdb
-    :: (HasField "dir" o String , HasField "file" o String)
+    :: (HasField "dir" o String, HasField "file" o String)
     => o
     -> IO [FsdbFile]
 findFsdb = findFileType Fsdb findFsdb' FsdbFile
 
 findCompInput
-    :: (HasField "dir" o String , HasField "file" o String)
+    :: (HasField "dir" o String, HasField "file" o String)
     => o
     -> IO [CompInputFile]
 findCompInput = findFileType CompInput findCompInput' CompInputFile
 
 findCrossZone
-    :: (HasField "dir" o String , HasField "file" o String)
+    :: (HasField "dir" o String, HasField "file" o String)
     => o
     -> IO [CrossZoneFile]
 findCrossZone = findFileType CrossZone findCrossZone' CrossZoneFile
 
 findIgc
-    :: (HasField "dir" o String , HasField "file" o String)
+    :: (HasField "dir" o String, HasField "file" o String)
     => o
     -> IO [IgcFile]
 findIgc = findFileType Igc findIgc' IgcFile
 
 findKml
-    :: (HasField "dir" o String , HasField "file" o String)
+    :: (HasField "dir" o String, HasField "file" o String)
     => o
     -> IO [KmlFile]
 findKml = findFileType Kml findKml' KmlFile

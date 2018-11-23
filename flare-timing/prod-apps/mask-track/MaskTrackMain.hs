@@ -60,7 +60,8 @@ import Flight.Track.Speed (TrackSpeed(..))
 import Flight.Kml (MarkedFixes(..))
 import Data.Ratio.Rounding (dpRound)
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
-import Flight.Cmd.Options (CmdOptions(..), ProgramName(..), mkOptions)
+import Flight.Cmd.Options (ProgramName(..))
+import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
 import Flight.Lookup.Cross (FlyingLookup(..), crossFlying)
 import qualified Flight.Lookup as Lookup
     (flyingTimeRange, arrivalRank, pilotTime, ticked, compRoutes, compRaceTimes)
@@ -102,7 +103,7 @@ unPilotDistance (Gap.PilotDistance d) =
         d' :: Quantity Rational [u| m |] = MkQuantity $ toRational d
         MkQuantity dKm = convert d' :: Quantity Rational [u| km |]
 
-drive :: CmdOptions -> IO ()
+drive :: CmdBatchOptions -> IO ()
 drive o = do
     -- SEE: http://chrisdone.com/posts/measuring-duration-in-haskell
     start <- getTime Monotonic
@@ -112,8 +113,8 @@ drive o = do
     end <- getTime Monotonic
     fprint ("Masking tracks completed in " % timeSpecs % "\n") start end
 
-go :: CmdOptions -> CompInputFile -> IO ()
-go CmdOptions{..} compFile@(CompInputFile compPath) = do
+go :: CmdBatchOptions -> CompInputFile -> IO ()
+go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
     let lenFile@(TaskLengthFile lenPath) = compToTaskLength compFile
     let crossFile@(CrossZoneFile crossPath) = compToCross compFile
     let tagFile@(TagZoneFile tagPath) = crossToTag . compToCross $ compFile

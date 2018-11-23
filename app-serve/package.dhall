@@ -32,12 +32,13 @@ in    defs
                   , "mtl"
                   , "yaml"
                   , "bytestring"
+                  , "flight-cmd"
                   , "flight-comp"
                   ]
               , ghc-options =
                   [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
               , main =
-                  "Main.hs"
+                  "ServeMain.hs"
               , source-dirs =
                   "comp-serve"
               }

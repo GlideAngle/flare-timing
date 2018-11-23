@@ -18,7 +18,8 @@ import System.FilePath ((</>), takeFileName)
 import Data.Yaml (ParseException, prettyPrintParseException)
 
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
-import Flight.Cmd.Options (CmdOptions(..), ProgramName(..), mkOptions)
+import Flight.Cmd.Options (ProgramName(..))
+import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
 import Flight.Track.Time (LeadTick(..), RaceTick(..), TimeRow(..))
 import Flight.Comp
     ( FileType(CompInput)
@@ -85,7 +86,7 @@ main = do
 
     maybe (drive options) putStrLn err
 
-drive :: CmdOptions -> IO ()
+drive :: CmdBatchOptions -> IO ()
 drive o = do
     -- SEE: http://chrisdone.com/posts/measuring-duration-in-haskell
     start <- getTime Monotonic
@@ -95,8 +96,8 @@ drive o = do
     end <- getTime Monotonic
     fprint ("Aligning times completed in " % timeSpecs % "\n") start end
 
-go :: CmdOptions -> CompInputFile -> IO ()
-go CmdOptions{..} compFile@(CompInputFile compPath) = do
+go :: CmdBatchOptions -> CompInputFile -> IO ()
+go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
     let crossFile@(CrossZoneFile crossPath) = compToCross compFile
     let tagFile@(TagZoneFile tagPath) = crossToTag . compToCross $ compFile
     putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
