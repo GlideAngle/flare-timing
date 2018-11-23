@@ -75,13 +75,7 @@ taskDetail
 taskDetail cs x = do
     simpleList cs (compTask x)
     es <- simpleList cs (crumbTask x)
-    eShowAll <- el "div" $ button "Show All Tasks"
-    y <- el "ul" $ task x
-    return . leftmost $
-        [ fmap (const IxTaskNone) y
-        , IxTaskNone <$ eShowAll
-        , switchDyn (leftmost <$> es)
-        ]
+    return $ switchDyn (leftmost <$> es)
 
 view :: MonadWidget t m => () -> m ()
 view () = do

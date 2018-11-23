@@ -20,21 +20,17 @@ compTask
     => Dynamic t Task
     -> Dynamic t Comp
     -> m ()
-compTask t c = do
-    let title = fmap (T.pack . (\Comp{..} -> compName)) c
+compTask t _ = do
     let tName = fmap (T.pack . (\Task{..} -> taskName)) t
     let xs = getSpeedSection <$> t
     let zs = (fmap . fmap) (T.pack . TP.getName) xs
-    let zNames = T.intercalate " - " <$> zs
-    let subtitle = zipDynWith (\a b -> a <> ": " <> b) tName zNames
+    let title = T.intercalate " - " <$> zs
 
     elClass "div" "tile" $ do
         elClass "div" "tile is-parent" $ do
             elClass "div" "tile is-child box" $ do
                 elClass "p" "title is-3" $ do
                     dynText title
-                    elClass "p" "title is-5" $ do
-                        dynText subtitle
 
 comp
     :: MonadWidget t m
