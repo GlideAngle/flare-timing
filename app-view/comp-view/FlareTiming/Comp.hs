@@ -1,4 +1,4 @@
-module FlareTiming.Comp (comps) where
+module FlareTiming.Comp (getComps, comps, compTask) where
 
 import Prelude hiding (map)
 import Reflex.Dom
@@ -26,10 +26,27 @@ import Data.Map (union)
 import Data.Maybe (listToMaybe)
 import Control.Applicative (pure)
 
-import Data.Flight.Types (Comp(..), Nominal(..))
+import Data.Flight.Types (Comp(..), Nominal(..), Task(..))
 
 loading :: MonadWidget t m => m ()
 loading = el "li" $ text "Comps will be shown here"
+
+compTask
+    :: MonadWidget t m
+    => Dynamic t Task
+    -> Dynamic t Comp
+    -> m ()
+compTask t c = do
+    let title = fmap (T.pack . (\Comp{..} -> compName)) c
+    let subtitle = fmap (T.pack . (\Task{..} -> taskName)) t
+
+    elClass "div" "tile" $ do
+        elClass "div" "tile is-parent" $ do
+            elClass "div" "tile is-child box" $ do
+                elClass "p" "title is-3" $ do
+                    dynText title
+                    elClass "p" "title is-5" $ do
+                        dynText subtitle
 
 comp
     :: MonadWidget t m
@@ -86,13 +103,13 @@ nominal n = do
 
     return ()
 
-comps :: MonadWidget t m => m ()
-comps = do
+comps :: MonadWidget t m => Dynamic t [Comp] -> m ()
+comps cs = do
     pb :: Event t () <- getPostBuild
     elClass "div" "spacer" $ return ()
     elClass "div" "container" $ do
         _ <- el "ul" $ do
-            widgetHold loading $ fmap viewComps pb
+            widgetHold loading $ fmap (pure $ viewComps cs) pb
         elClass "div" "spacer" $ return ()
 
     return ()
@@ -125,9 +142,8 @@ getNominals () = do
     xs :: Dynamic t [Nominal] <- holdDyn [] (pure <$> es)
     return xs
 
-viewComps :: MonadWidget t m => () -> m ()
-viewComps () = do
-    cs <- getComps ()
+viewComps :: MonadWidget t m => Dynamic t [Comp] -> m ()
+viewComps cs = do
     ns <- getNominals ()
 
     _ <-

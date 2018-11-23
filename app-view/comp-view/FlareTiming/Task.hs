@@ -5,8 +5,11 @@ import qualified Data.Text as T (pack, intercalate)
 import Reflex
 import Reflex.Dom
 
-import Data.Flight.Types (Task(..), Zones(..), RawZone(..), SpeedSection)
+import Data.Flight.Types
+    (Comp(..), Task(..), Zones(..), RawZone(..), SpeedSection)
 import qualified FlareTiming.Turnpoint as TP (getName)
+import FlareTiming.Comp (comps, getComps, compTask)
+import FlareTiming.Breadcrumb (crumbTask)
 
 loading :: MonadWidget t m => m ()
 loading = el "li" $ text "Tasks will be shown here"
@@ -49,8 +52,18 @@ tasks = do
     pb :: Event t () <- getPostBuild
     elClass "div" "spacer" $ return ()
     elClass "div" "container" $ do
-        _ <- widgetHold loading $ fmap getTasks pb
+        _ <- widgetHold loading $ fmap view pb
         elClass "div" "spacer" $ return ()
+
+getTasks :: MonadWidget t m => () -> m (Dynamic t [Task])
+getTasks () = do
+    pb :: Event t () <- getPostBuild
+    let defReq = "http://localhost:3000/tasks"
+    let req md = XhrRequest "GET" (maybe defReq id md) def
+    rsp <- performRequestAsync $ fmap req $ leftmost [ Nothing <$ pb ]
+
+    let es :: Event t [Task] = fmapMaybe decodeXhrResponse rsp
+    holdDyn [] es
 
 listToIxTask :: Reflex t => [Event t ()] -> Event t IxTask
 listToIxTask =
@@ -59,41 +72,42 @@ listToIxTask =
 
 taskList
     :: MonadWidget t m
-    => Dynamic t [Task]
+    => Dynamic t [Comp]
+    -> Dynamic t [Task]
     -> m (Event t IxTask)
-taskList xs = do
+taskList cs xs = do
+    comps cs
     elClass "h3" "subtitle is-3" $ text "Tasks"
     ys <- el "ul" $ simpleList xs task
     return $ switchDyn (listToIxTask <$> ys)
 
 taskDetail
     :: MonadWidget t m
-    => Dynamic t Task
+    => Dynamic t [Comp]
+    -> Dynamic t Task
     -> m (Event t IxTask)
-taskDetail x = do
-    elClass "h3" "subtitle is-3" $ text "Task"
+taskDetail cs x = do
+    simpleList cs (crumbTask x)
+    simpleList cs (compTask x)
+    eShowAll <- el "div" $ button "Show All Tasks"
     y <- el "ul" $ task x
-    return $ fmap (const IxTaskNone) y
+    return . leftmost $
+        [ fmap (const IxTaskNone) y
+        , IxTaskNone <$ eShowAll
+        ]
 
-getTasks :: MonadWidget t m => () -> m ()
-getTasks () = do
-    pb :: Event t () <- getPostBuild
-    let defReq = "http://localhost:3000/tasks"
-    let req md = XhrRequest "GET" (maybe defReq id md) def
-    rsp <- performRequestAsync $ fmap req $ leftmost [ Nothing <$ pb ]
-
-    let es :: Event t [Task] = fmapMaybe decodeXhrResponse rsp
-    xs :: Dynamic t [Task] <- holdDyn [] es
+view :: MonadWidget t m => () -> m ()
+view () = do
+    cs <- getComps ()
+    xs <- getTasks ()
 
     el "div" $ mdo
-            eShowAll <- el "div" $ button "Show All Tasks"
 
-            deIx <- widgetHold (taskList xs) . leftmost $
-                [ taskList xs <$ eShowAll
-                ,
+            deIx <- widgetHold (taskList cs xs) . leftmost $
+                [
                     (\ix -> case ix of
-                        IxTaskNone -> taskList xs
-                        IxTask ii -> taskDetail $ (!! (ii - 1)) <$> xs)
+                        IxTaskNone -> taskList cs xs
+                        IxTask ii -> taskDetail cs $ (!! (ii - 1)) <$> xs)
                     <$> eIx
                 ]
 
@@ -101,7 +115,6 @@ getTasks () = do
 
             dIx <- holdDyn IxTaskNone . leftmost $
                 [ eIx
-                , IxTaskNone <$ eShowAll
                 ]
 
             let dText =
