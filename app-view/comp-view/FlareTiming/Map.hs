@@ -63,7 +63,7 @@ map (Task _ Zones{raw = []} _) = do
 map (Task _ Zones{raw = xs} _)= do
     let tpNames = fmap (\ (RawZone name _ _ _) -> name) xs
     postBuild <- delay 1 =<< getPostBuild
-    (e, _) <- elAttr' "div" ("style" =: "height: 240px;width: 320px") $ return ()
+    (e, _) <- elAttr' "div" ("style" =: "height: 680px;width: 100%") $ return ()
     rec performEvent_ $ fmap
                             (\_ -> liftIO $ do
                                 L.mapInvalidateSize lmap'

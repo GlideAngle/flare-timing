@@ -13,6 +13,7 @@ import qualified FlareTiming.Turnpoint as TP (getName)
 import FlareTiming.Comp (comps, getComps, compTask)
 import FlareTiming.Breadcrumb (crumbTask)
 import FlareTiming.Events (IxTask(..))
+import FlareTiming.Map (map)
 
 loading :: MonadWidget t m => m ()
 loading = el "li" $ text "Tasks will be shown here"
@@ -67,6 +68,15 @@ taskList cs xs = do
     ys <- el "ul" $ simpleList xs task
     return $ switchDyn (listToIxTask <$> ys)
 
+tabs
+    :: MonadWidget t m
+    => m ()
+tabs = do
+    elClass "div" "tabs" $
+        el "ul" $ do
+            elClass "li" "is-active" $ el "a" (text "Task")
+            el "li" $ el "a" (text "Scores")
+
 taskDetail
     :: MonadWidget t m
     => Dynamic t [Comp]
@@ -75,6 +85,9 @@ taskDetail
 taskDetail cs x = do
     simpleList cs (compTask x)
     es <- simpleList cs (crumbTask x)
+    tabs
+    x' <- sample . current $ x
+    map x'
     return $ switchDyn (leftmost <$> es)
 
 view :: MonadWidget t m => () -> m ()
