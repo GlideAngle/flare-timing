@@ -10,6 +10,7 @@ import FlareTiming.Comp (comps, compTask)
 import FlareTiming.Breadcrumb (crumbTask)
 import FlareTiming.Events (IxTask(..))
 import FlareTiming.Comms (getTasks, getComps)
+import FlareTiming.Map (map)
 import FlareTiming.Task.ListItem (liTask)
 import FlareTiming.Task.Tab (TaskTab(..), tabsTask)
 import FlareTiming.Task.Turnpoints (tableTurnpoints)
@@ -55,7 +56,7 @@ taskDetail cs x = do
             (\case
                 TaskTabScore -> text "score"
                 TaskTabTask -> tableTurnpoints x
-                TaskTabMap -> text "map")
+                TaskTabMap -> do y <- sample . current $ x; map y)
             <$> tab
 
     return $ switchDyn (leftmost <$> es)
