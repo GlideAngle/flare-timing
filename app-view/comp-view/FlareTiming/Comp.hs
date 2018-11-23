@@ -1,4 +1,4 @@
-module FlareTiming.Comp (getComps, comps, compTask) where
+module FlareTiming.Comp (comps, compTask) where
 
 import Prelude hiding (map)
 import Reflex
@@ -11,6 +11,7 @@ import Control.Applicative (pure)
 import Data.Flight.Types
     (Comp(..), Nominal(..), Task(..), getSpeedSection)
 import qualified FlareTiming.Turnpoint as TP (getName)
+import FlareTiming.Comms (getNominals)
 
 loading :: MonadWidget t m => m ()
 loading = el "li" $ text "Comps will be shown here"
@@ -21,7 +22,6 @@ compTask
     -> Dynamic t Comp
     -> m ()
 compTask t _ = do
-    let tName = fmap (T.pack . (\Task{..} -> taskName)) t
     let xs = getSpeedSection <$> t
     let zs = (fmap . fmap) (T.pack . TP.getName) xs
     let title = T.intercalate " - " <$> zs
@@ -97,34 +97,6 @@ comps cs = do
         elClass "div" "spacer" $ return ()
 
     return ()
-
-getComps
-    :: MonadWidget t m
-    => ()
-    -> m (Dynamic t [Comp])
-getComps () = do
-    pb :: Event t () <- getPostBuild
-    let defReq = "http://localhost:3000/comps"
-    let req md = XhrRequest "GET" (maybe defReq id md) def
-    rsp <- performRequestAsync $ fmap req $ leftmost [ Nothing <$ pb ]
-
-    let es :: Event t Comp = fmapMaybe decodeXhrResponse rsp
-    xs :: Dynamic t [Comp] <- holdDyn [] (pure <$> es)
-    return xs
-
-getNominals
-    :: MonadWidget t m
-    => ()
-    -> m (Dynamic t [Nominal])
-getNominals () = do
-    pb :: Event t () <- getPostBuild
-    let defReq = "http://localhost:3000/nominals"
-    let req md = XhrRequest "GET" (maybe defReq id md) def
-    rsp <- performRequestAsync $ fmap req $ leftmost [ Nothing <$ pb ]
-
-    let es :: Event t Nominal = fmapMaybe decodeXhrResponse rsp
-    xs :: Dynamic t [Nominal] <- holdDyn [] (pure <$> es)
-    return xs
 
 viewComps :: MonadWidget t m => Dynamic t [Comp] -> m ()
 viewComps cs = do

@@ -5,15 +5,12 @@ import qualified Data.Text as T (pack, intercalate)
 import Reflex
 import Reflex.Dom
 
-import Data.Flight.Types
-    ( Comp(..), Task(..), Zones(..), RawZone(..), SpeedSection
-    , getSpeedSection
-    )
+import Data.Flight.Types (Comp(..), Task(..), getSpeedSection)
 import qualified FlareTiming.Turnpoint as TP (getName)
-import FlareTiming.Comp (comps, getComps, compTask)
+import FlareTiming.Comp (comps, compTask)
 import FlareTiming.Breadcrumb (crumbTask)
 import FlareTiming.Events (IxTask(..))
-import FlareTiming.Map (map)
+import FlareTiming.Comms (getTasks, getComps)
 
 loading :: MonadWidget t m => m ()
 loading = el "li" $ text "Tasks will be shown here"
@@ -41,16 +38,6 @@ tasks = do
     elClass "div" "container" $ do
         _ <- widgetHold loading $ fmap view pb
         elClass "div" "spacer" $ return ()
-
-getTasks :: MonadWidget t m => () -> m (Dynamic t [Task])
-getTasks () = do
-    pb :: Event t () <- getPostBuild
-    let defReq = "http://localhost:3000/tasks"
-    let req md = XhrRequest "GET" (maybe defReq id md) def
-    rsp <- performRequestAsync $ fmap req $ leftmost [ Nothing <$ pb ]
-
-    let es :: Event t [Task] = fmapMaybe decodeXhrResponse rsp
-    holdDyn [] es
 
 listToIxTask :: Reflex t => [Event t ()] -> Event t IxTask
 listToIxTask =
@@ -113,7 +100,7 @@ taskDetail
     -> Dynamic t Task
     -> m (Event t IxTask)
 taskDetail cs x = do
-    simpleList cs (compTask x)
+    _ <- simpleList cs (compTask x)
     es <- simpleList cs (crumbTask x)
     tab <- tabs
 
