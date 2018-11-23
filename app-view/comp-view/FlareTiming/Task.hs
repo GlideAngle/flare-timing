@@ -117,12 +117,12 @@ taskDetail cs x = do
     es <- simpleList cs (crumbTask x)
     tab <- tabs
 
-    let label TaskTabScore = "score"
-        label TaskTabTask = "task"
-        label TaskTabMap = "map"
-
-    tabLabel <- holdDyn "score" $ label <$> tab
-    dynText tabLabel
+    _ <- widgetHold (text "score") $
+            (\case
+                TaskTabScore -> text "score"
+                TaskTabTask -> text "task"
+                TaskTabMap -> text "map")
+            <$> tab
 
     return $ switchDyn (leftmost <$> es)
 
@@ -133,24 +133,22 @@ view () = do
 
     el "div" $ mdo
 
-            deIx <- widgetHold (taskList cs xs) . leftmost $
-                [
+        deIx <- widgetHold (taskList cs xs) $
                     (\ix -> case ix of
                         IxTaskNone -> taskList cs xs
                         IxTask ii -> taskDetail cs $ (!! (ii - 1)) <$> xs)
                     <$> eIx
-                ]
 
-            let eIx = switchDyn deIx
+        let eIx = switchDyn deIx
 
-            dIx <- holdDyn IxTaskNone . leftmost $
-                [ eIx
-                ]
+        dIx <- holdDyn IxTaskNone . leftmost $
+            [ eIx
+            ]
 
-            let dText =
-                    (\case IxTask ii -> T.pack . show $ ii; IxTaskNone -> "None")
-                    <$> dIx
+        let dText =
+                (\case IxTask ii -> T.pack . show $ ii; IxTaskNone -> "None")
+                <$> dIx
 
-            el "div" $ dynText dText
+        el "div" $ dynText dText
 
     return ()
