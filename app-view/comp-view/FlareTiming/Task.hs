@@ -12,6 +12,7 @@ import FlareTiming.Events (IxTask(..))
 import FlareTiming.Comms (getTasks, getComps)
 import FlareTiming.Map (map)
 import FlareTiming.Task.ListItem (liTask)
+import FlareTiming.Comp.Tab (CompTab(..), tabsComp)
 import FlareTiming.Task.Tab (TaskTab(..), tabsTask)
 import FlareTiming.Task.Turnpoints (tableTurnpoints)
 import FlareTiming.Task.Absent (tableAbsent)
@@ -34,14 +35,30 @@ listToIxTask =
 
 taskList
     :: MonadWidget t m
+    => Dynamic t [Task]
+    -> m (Event t IxTask)
+taskList xs = do
+    ys <- el "ul" $ simpleList xs liTask
+    return $ switchDyn (listToIxTask <$> ys)
+
+compDetail
+    :: MonadWidget t m
     => Dynamic t [Comp]
     -> Dynamic t [Task]
     -> m (Event t IxTask)
-taskList cs xs = do
+compDetail cs xs = do
     comps cs
-    elClass "h3" "subtitle is-3" $ text "Tasks"
-    ys <- el "ul" $ simpleList xs liTask
-    return $ switchDyn (listToIxTask <$> ys)
+    tab <- tabsComp
+
+    e <- widgetHold (taskList xs) $
+            (\case
+                CompTabTask -> taskList xs
+                CompTabPilot -> do
+                    text "pilots"
+                    return never)
+            <$> tab
+
+    return $ switchDyn e
 
 taskDetail
     :: MonadWidget t m
@@ -70,9 +87,9 @@ view () = do
 
     el "div" $ mdo
 
-        deIx <- widgetHold (taskList cs xs) $
+        deIx <- widgetHold (compDetail cs xs) $
                     (\ix -> case ix of
-                        IxTaskNone -> taskList cs xs
+                        IxTaskNone -> compDetail cs xs
                         IxTask ii -> taskDetail cs $ (!! (ii - 1)) <$> xs)
                     <$> eIx
 

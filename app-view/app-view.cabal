@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 294b6926aa707103eae178ab2386c5b5a978f4a3f5363aa81851d21339403360
+-- hash: b8192ffb1baeffb746e88ba11569b70027ab92176c31d8583a1bbb38665b917a
 
 name:           app-view
 version:        0.1.0
@@ -36,12 +36,14 @@ executable comp-view
       FlareTiming.Breadcrumb
       FlareTiming.Comms
       FlareTiming.Comp
+      FlareTiming.Comp.Tab
       FlareTiming.Events
       FlareTiming.Footer
       FlareTiming.Map
       FlareTiming.Map.Leaflet
       FlareTiming.NavBar
       FlareTiming.Task
+      FlareTiming.Task.Absent
       FlareTiming.Task.ListItem
       FlareTiming.Task.Tab
       FlareTiming.Task.Turnpoints
