@@ -6,7 +6,9 @@ import Reflex
 import Reflex.Dom
 
 import Data.Flight.Types
-    (Comp(..), Task(..), Zones(..), RawZone(..), SpeedSection)
+    ( Comp(..), Task(..), Zones(..), RawZone(..), SpeedSection
+    , getSpeedSection
+    )
 import qualified FlareTiming.Turnpoint as TP (getName)
 import FlareTiming.Comp (comps, getComps, compTask)
 import FlareTiming.Breadcrumb (crumbTask)
@@ -17,19 +19,6 @@ loading = el "li" $ text "Tasks will be shown here"
 data IxTask
     = IxTask Int
     | IxTaskNone
-
-getSpeedSection :: Task -> [RawZone]
-getSpeedSection (Task _ Zones{raw = tps} ss) =
-    speedSectionOnly ss tps
-    where
-        speedSectionOnly :: SpeedSection -> [RawZone] -> [RawZone]
-        speedSectionOnly Nothing xs =
-            xs
-        speedSectionOnly (Just (start, end)) xs =
-            take (end' - start' + 1) $ drop (start' - 1) xs
-            where
-                start' = fromInteger start
-                end' = fromInteger end
 
 task
     :: MonadWidget t m
@@ -87,8 +76,8 @@ taskDetail
     -> Dynamic t Task
     -> m (Event t IxTask)
 taskDetail cs x = do
-    simpleList cs (crumbTask x)
     simpleList cs (compTask x)
+    simpleList cs (crumbTask x)
     eShowAll <- el "div" $ button "Show All Tasks"
     y <- el "ul" $ task x
     return . leftmost $

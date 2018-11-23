@@ -9,6 +9,7 @@ module Data.Flight.Types
     , Name
     , Radius(..)
     , SpeedSection
+    , getSpeedSection
     , fromSci
     , toSci
     , showRadius
@@ -114,3 +115,16 @@ showRadius :: Radius -> String
 showRadius (Radius r)
     | r < 1000 = show r ++ " m"
     | otherwise = show (truncate (r / 1000) :: Integer) ++ " km"
+
+getSpeedSection :: Task -> [RawZone]
+getSpeedSection (Task _ Zones{raw = tps} ss) =
+    speedSectionOnly ss tps
+    where
+        speedSectionOnly :: SpeedSection -> [RawZone] -> [RawZone]
+        speedSectionOnly Nothing xs =
+            xs
+        speedSectionOnly (Just (start, end)) xs =
+            take (end' - start' + 1) $ drop (start' - 1) xs
+            where
+                start' = fromInteger start
+                end' = fromInteger end

@@ -1,32 +1,16 @@
 module FlareTiming.Comp (getComps, comps, compTask) where
 
 import Prelude hiding (map)
+import Reflex
 import Reflex.Dom
-    ( MonadWidget, Event, Dynamic, XhrRequest(..)
-    , (=:)
-    , def
-    , holdDyn
-    , widgetHold
-    , elAttr
-    , elClass
-    , el
-    , text
-    , dynText
-    , simpleList
-    , getPostBuild
-    , fmapMaybe
-    , performRequestAsync
-    , decodeXhrResponse
-    , leftmost
-    , ffor
-    , dyn
-    )
-import qualified Data.Text as T (pack)
+import qualified Data.Text as T (pack, intercalate)
 import Data.Map (union)
 import Data.Maybe (listToMaybe)
 import Control.Applicative (pure)
 
-import Data.Flight.Types (Comp(..), Nominal(..), Task(..))
+import Data.Flight.Types
+    (Comp(..), Nominal(..), Task(..), getSpeedSection)
+import qualified FlareTiming.Turnpoint as TP (getName)
 
 loading :: MonadWidget t m => m ()
 loading = el "li" $ text "Comps will be shown here"
@@ -38,7 +22,11 @@ compTask
     -> m ()
 compTask t c = do
     let title = fmap (T.pack . (\Comp{..} -> compName)) c
-    let subtitle = fmap (T.pack . (\Task{..} -> taskName)) t
+    let tName = fmap (T.pack . (\Task{..} -> taskName)) t
+    let xs = getSpeedSection <$> t
+    let zs = (fmap . fmap) (T.pack . TP.getName) xs
+    let zNames = T.intercalate " - " <$> zs
+    let subtitle = zipDynWith (\a b -> a <> ": " <> b) tName zNames
 
     elClass "div" "tile" $ do
         elClass "div" "tile is-parent" $ do
