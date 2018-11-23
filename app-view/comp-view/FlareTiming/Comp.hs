@@ -1,6 +1,5 @@
 module FlareTiming.Comp (comps, compTask) where
 
-import Prelude hiding (map)
 import Reflex
 import Reflex.Dom
 import qualified Data.Text as T (pack, intercalate)

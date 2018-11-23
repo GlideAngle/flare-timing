@@ -1,7 +1,6 @@
 module FlareTiming.Footer (footer) where
 
-import Prelude hiding (map)
-import Reflex.Dom (MonadWidget, (=:), elAttr, elClass, el, text)
+import Reflex.Dom
 import Data.Map (union)
 
 attribution :: MonadWidget t m => m () 

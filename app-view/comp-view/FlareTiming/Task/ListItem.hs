@@ -2,7 +2,6 @@ module FlareTiming.Task.ListItem
     ( liTask
     ) where
 
-import Prelude hiding (map)
 import qualified Data.Text as T (pack, intercalate)
 import Reflex
 import Reflex.Dom
