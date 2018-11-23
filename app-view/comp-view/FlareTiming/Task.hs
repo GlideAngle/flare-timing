@@ -54,7 +54,7 @@ taskDetail cs x = do
     _ <- widgetHold (text "score") $
             (\case
                 TaskTabScore -> text "score"
-                TaskTabTask -> tableTurnpoints
+                TaskTabTask -> tableTurnpoints x
                 TaskTabMap -> text "map")
             <$> tab
 
