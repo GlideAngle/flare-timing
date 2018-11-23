@@ -1,35 +1,20 @@
 module FlareTiming.Task (tasks) where
 
 import Prelude hiding (map)
-import qualified Data.Text as T (pack, intercalate)
+import qualified Data.Text as T (pack)
 import Reflex
 import Reflex.Dom
 
-import Data.Flight.Types (Comp(..), Task(..), getSpeedSection)
-import qualified FlareTiming.Turnpoint as TP (getName)
+import Data.Flight.Types (Comp(..), Task(..))
 import FlareTiming.Comp (comps, compTask)
 import FlareTiming.Breadcrumb (crumbTask)
 import FlareTiming.Events (IxTask(..))
 import FlareTiming.Comms (getTasks, getComps)
+import FlareTiming.Task.ListItem (liTask)
+import FlareTiming.Task.Tab (TaskTab(..), tabsTask)
 
 loading :: MonadWidget t m => m ()
 loading = el "li" $ text "Tasks will be shown here"
-
-task
-    :: MonadWidget t m
-    => Dynamic t Task
-    -> m (Event t ())
-task x = do
-    y :: Task <- sample . current $ x
-    let jj  = T.pack . taskName $ y
-    let xs = getSpeedSection y
-    let zs = T.pack . TP.getName <$> xs
-
-    (e, _) <-
-            el' "li" $ do
-                el "a" . text $ jj <> ": " <> T.intercalate " - " zs
-
-    return $ domEvent Click e
 
 tasks :: MonadWidget t m => m ()
 tasks = do
@@ -52,47 +37,8 @@ taskList
 taskList cs xs = do
     comps cs
     elClass "h3" "subtitle is-3" $ text "Tasks"
-    ys <- el "ul" $ simpleList xs task
+    ys <- el "ul" $ simpleList xs liTask
     return $ switchDyn (listToIxTask <$> ys)
-
-data TaskTab
-    = TaskTabScore
-    | TaskTabTask
-    | TaskTabMap
-
-tabs
-    :: MonadWidget t m
-    => m (Event t TaskTab)
-tabs =
-    elClass "div" "tabs" $
-        el "ul" $ mdo
-            (s, _) <- elDynClass' "li" sClass $ el "a" (text "Scores")
-            (t, _) <- elDynClass' "li" tClass $ el "a" (text "Task")
-            (m, _) <- elDynClass' "li" mClass $ el "a" (text "Map")
-
-            let es = (const TaskTabScore) <$> domEvent Click s
-            let et = (const TaskTabTask) <$> domEvent Click t
-            let em = (const TaskTabMap) <$> domEvent Click m
-
-            sClass <- holdDyn "is-active" . leftmost $
-                            [ "is-active" <$ es
-                            , "" <$ et
-                            , "" <$ em
-                            ]
-
-            tClass <- holdDyn "" . leftmost $
-                            [ "" <$ es
-                            , "is-active" <$ et
-                            , "" <$ em
-                            ]
-
-            mClass <- holdDyn "" . leftmost $
-                            [ "" <$ es
-                            , "" <$ et
-                            , "is-active" <$ em
-                            ]
-
-            return . leftmost $ [es, et, em]
 
 taskDetail
     :: MonadWidget t m
@@ -102,7 +48,7 @@ taskDetail
 taskDetail cs x = do
     _ <- simpleList cs (compTask x)
     es <- simpleList cs (crumbTask x)
-    tab <- tabs
+    tab <- tabsTask
 
     _ <- widgetHold (text "score") $
             (\case
