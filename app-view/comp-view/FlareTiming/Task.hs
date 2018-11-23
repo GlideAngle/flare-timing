@@ -56,7 +56,8 @@ taskDetail cs x = do
             (\case
                 TaskTabScore -> text "score"
                 TaskTabTask -> tableTurnpoints x
-                TaskTabMap -> do y <- sample . current $ x; map y)
+                TaskTabMap -> do y <- sample . current $ x; map y
+                TaskTabAbsent -> text "absent")
             <$> tab
 
     return $ switchDyn (leftmost <$> es)
