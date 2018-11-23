@@ -2,12 +2,13 @@ module FlareTiming.Comms
     ( getComps
     , getNominals
     , getTasks
+    , getPilots
     ) where
 
 import Reflex
 import Reflex.Dom
 
-import Data.Flight.Types (Comp(..), Nominal(..), Task(..))
+import Data.Flight.Types (Comp(..), Nominal(..), Pilot(..), Task(..))
 
 getTasks :: MonadWidget t m => () -> m (Dynamic t [Task])
 getTasks () = do
@@ -46,3 +47,16 @@ getNominals () = do
     let es :: Event t Nominal = fmapMaybe decodeXhrResponse rsp
     xs :: Dynamic t [Nominal] <- holdDyn [] (pure <$> es)
     return xs
+
+getPilots
+    :: MonadWidget t m
+    => ()
+    -> m (Dynamic t [[Pilot]])
+getPilots () = do
+    pb :: Event t () <- getPostBuild
+    let defReq = "http://localhost:3000/pilots"
+    let req md = XhrRequest "GET" (maybe defReq id md) def
+    rsp <- performRequestAsync $ fmap req $ leftmost [ Nothing <$ pb ]
+
+    let es :: Event t [[Pilot]] = fmapMaybe decodeXhrResponse rsp
+    holdDyn [] es

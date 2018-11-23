@@ -1,11 +1,12 @@
 module FlareTiming.Task (tasks) where
 
 import qualified Data.Text as T (pack)
+import Data.List (nub, sort)
 import Reflex
 import Reflex.Dom
 
 import FlareTiming.Events (IxTask(..))
-import FlareTiming.Comms (getTasks, getComps)
+import FlareTiming.Comms (getTasks, getComps, getPilots)
 import FlareTiming.Comp.Detail (compDetail)
 import FlareTiming.Task.Detail (taskDetail)
 
@@ -24,12 +25,14 @@ view :: MonadWidget t m => () -> m ()
 view () = do
     cs <- getComps ()
     xs <- getTasks ()
+    pss <- getPilots ()
+    let ps = sort . nub . concat <$> pss
 
     el "div" $ mdo
 
-        deIx <- widgetHold (compDetail cs xs) $
+        deIx <- widgetHold (compDetail cs ps xs) $
                     (\ix -> case ix of
-                        IxTaskNone -> compDetail cs xs
+                        IxTaskNone -> compDetail cs ps xs
                         IxTask ii -> taskDetail cs $ (!! (ii - 1)) <$> xs)
                     <$> eIx
 

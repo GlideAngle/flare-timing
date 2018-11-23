@@ -1,18 +1,16 @@
-module FlareTiming.Task.Absent (tableAbsent) where
+module FlareTiming.Comp.Pilot (tablePilot) where
 
 import Reflex.Dom
-import qualified Data.Text as T (pack)
+import qualified Data.Text as T (Text, pack)
 
-import Data.Flight.Types (Task(..), getAbsent)
+import Data.Flight.Types (Pilot(..), PilotId(..), PilotName(..))
 import FlareTiming.Pilot.Row (row)
 
-tableAbsent
+tablePilot
     :: MonadWidget t m
-    => Dynamic t Task
+    => Dynamic t [Pilot]
     -> m ()
-tableAbsent x = do
-    let xs = getAbsent <$> x
-
+tablePilot xs = do
     _ <- elClass "table" "table" $
             el "thead" $ do
                 el "tr" $ do
