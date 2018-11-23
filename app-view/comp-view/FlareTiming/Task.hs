@@ -68,14 +68,44 @@ taskList cs xs = do
     ys <- el "ul" $ simpleList xs task
     return $ switchDyn (listToIxTask <$> ys)
 
+data TaskTab
+    = TaskTabScore
+    | TaskTabTask
+    | TaskTabMap
+
 tabs
     :: MonadWidget t m
-    => m ()
-tabs = do
+    => m (Event t TaskTab)
+tabs =
     elClass "div" "tabs" $
-        el "ul" $ do
-            elClass "li" "is-active" $ el "a" (text "Task")
-            el "li" $ el "a" (text "Scores")
+        el "ul" $ mdo
+            (s, _) <- elDynClass' "li" sClass $ el "a" (text "Scores")
+            (t, _) <- elDynClass' "li" tClass $ el "a" (text "Task")
+            (m, _) <- elDynClass' "li" mClass $ el "a" (text "Map")
+
+            let es = (const TaskTabScore) <$> domEvent Click s
+            let et = (const TaskTabTask) <$> domEvent Click t
+            let em = (const TaskTabMap) <$> domEvent Click m
+
+            sClass <- holdDyn "is-active" . leftmost $
+                            [ "is-active" <$ es
+                            , "" <$ et
+                            , "" <$ em
+                            ]
+
+            tClass <- holdDyn "" . leftmost $
+                            [ "" <$ es
+                            , "is-active" <$ et
+                            , "" <$ em
+                            ]
+
+            mClass <- holdDyn "" . leftmost $
+                            [ "" <$ es
+                            , "" <$ et
+                            , "is-active" <$ em
+                            ]
+
+            return . leftmost $ [es, et, em]
 
 taskDetail
     :: MonadWidget t m
@@ -85,9 +115,15 @@ taskDetail
 taskDetail cs x = do
     simpleList cs (compTask x)
     es <- simpleList cs (crumbTask x)
-    tabs
-    x' <- sample . current $ x
-    map x'
+    tab <- tabs
+
+    let label TaskTabScore = "score"
+        label TaskTabTask = "task"
+        label TaskTabMap = "map"
+
+    tabLabel <- holdDyn "score" $ label <$> tab
+    dynText tabLabel
+
     return $ switchDyn (leftmost <$> es)
 
 view :: MonadWidget t m => () -> m ()
