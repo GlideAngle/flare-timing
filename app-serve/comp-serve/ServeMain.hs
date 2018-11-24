@@ -46,7 +46,7 @@ data Config k
     = Config
         { compSettings :: CompSettings k
         , crossing :: Crossing
-        , points :: Pointing
+        , pointing :: Pointing
         }
 
 newtype AppT k m a =
@@ -67,6 +67,7 @@ type Api k =
     :<|> "nominals" :> Get '[JSON] Nominal
     :<|> "tasks" :> Get '[JSON] [Task k]
     :<|> "pilots" :> Get '[JSON] [[Pilot]]
+    :<|> "gap-points" :> Get '[JSON] Pointing
 
 api :: Proxy (Api k)
 api = Proxy
@@ -127,14 +128,11 @@ serverApi cfg =
     hoistServer
         api
         (convertApp cfg)
-        ( (query comp)
-        :<|> (query nominal)
-        :<|> (query tasks)
-        :<|> (query ((fmap . fmap) pilot . pilots))
+        ( (comp <$> asks compSettings)
+        :<|> (nominal <$> asks compSettings)
+        :<|> (tasks <$> asks compSettings)
+        :<|> ((fmap . fmap) pilot . pilots <$> asks compSettings)
+        :<|> (asks pointing)
         )
     where
-        query f = do
-            cs <- asks compSettings
-            return $ f cs
-
         pilot (PilotTrackLogFile p _) = p
