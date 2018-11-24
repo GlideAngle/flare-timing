@@ -37,7 +37,7 @@ taskDetail cs x v a = do
                 TaskTabQuality -> do
                     tableValidity v
                     tableAllocation a
-                    tableWeight a
+                    tableWeight $ (fmap . fmap) weight a
 
                 TaskTabTask -> tableTurnpoints x
                 TaskTabMap -> do y <- sample . current $ x; map y

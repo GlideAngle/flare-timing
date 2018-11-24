@@ -14,7 +14,7 @@ import WireTypes.Track.Point
 
 tableWeight
     :: MonadWidget t m
-    => Dynamic t (Maybe Allocation)
+    => Dynamic t (Maybe Weights)
     -> m ()
 tableWeight x = do
 
@@ -50,18 +50,14 @@ showArrival (ArrivalWeight p) = T.pack . show $ p
 showTime :: TimeWeight -> T.Text
 showTime (TimeWeight p) = T.pack . show $ p
 
-getDistance :: Maybe Allocation -> T.Text
-getDistance =
-    maybe "" (showDistance . distance) . (fmap weight)
+getDistance :: Maybe Weights -> T.Text
+getDistance = maybe "" (showDistance . distance)
 
-getLeading :: Maybe Allocation -> T.Text
-getLeading =
-    maybe "" (showLeading . leading) . (fmap weight)
+getLeading :: Maybe Weights -> T.Text
+getLeading = maybe "" (showLeading . leading)
 
-getArrival :: Maybe Allocation -> T.Text
-getArrival =
-    maybe "" (showArrival . arrival) . (fmap weight)
+getArrival :: Maybe Weights -> T.Text
+getArrival = maybe "" (showArrival . arrival)
 
-getTime :: Maybe Allocation -> T.Text
-getTime =
-    maybe "" (showTime . time) . (fmap weight)
+getTime :: Maybe Weights -> T.Text
+getTime = maybe "" (showTime . time)
