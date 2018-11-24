@@ -9,6 +9,14 @@ module WireTypes.Track.Point
     , LaunchValidity(..)
     , DistanceValidity(..)
     , TimeValidity(..)
+    , GoalRatio(..)
+    , DistancePoints(..)
+    , LinearPoints(..)
+    , DifficultyPoints(..)
+    , ArrivalPoints(..)
+    , TimePoints(..)
+    , TaskPoints(..)
+    , Points(..)
     ) where
 
 import Data.Time.Clock (UTCTime)
@@ -19,7 +27,7 @@ newtype StartGate = StartGate UTCTime
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
-newtype GoalRatio = GoalRatio Rational
+newtype GoalRatio = GoalRatio Double
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
@@ -35,7 +43,7 @@ newtype PilotVelocity a = PilotVelocity a
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
-newtype NominalGoal = NominalGoal Rational
+newtype NominalGoal = NominalGoal Double
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
@@ -64,31 +72,31 @@ data Validity =
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
-newtype ArrivalPoints = ArrivalPoints Rational
+newtype ArrivalPoints = ArrivalPoints Double
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
-newtype DistancePoints = DistancePoints Rational
+newtype DistancePoints = DistancePoints Double
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
-newtype LinearPoints = LinearPoints Rational
+newtype LinearPoints = LinearPoints Double
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
-newtype DifficultyPoints = DifficultyPoints Rational
+newtype DifficultyPoints = DifficultyPoints Double
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
-newtype LeadingPoints = LeadingPoints Rational
+newtype LeadingPoints = LeadingPoints Double
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
-newtype TimePoints = TimePoints Rational
+newtype TimePoints = TimePoints Double
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
-newtype TaskPoints = TaskPoints Rational
+newtype TaskPoints = TaskPoints Double
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
@@ -103,19 +111,19 @@ data Points =
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
-newtype ArrivalWeight = ArrivalWeight Rational
+newtype ArrivalWeight = ArrivalWeight Double
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
-newtype DistanceWeight = DistanceWeight Rational
+newtype DistanceWeight = DistanceWeight Double
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
-newtype LeadingWeight = LeadingWeight Rational
+newtype LeadingWeight = LeadingWeight Double
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
-newtype TimeWeight = TimeWeight Rational
+newtype TimeWeight = TimeWeight Double
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
 

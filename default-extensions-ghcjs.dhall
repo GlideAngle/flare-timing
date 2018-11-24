@@ -5,6 +5,7 @@
     , "DeriveAnyClass"
     , "DerivingStrategies"
     , "DisambiguateRecordFields"
+    , "DuplicateRecordFields"
     , "FlexibleContexts"
     , "FlexibleInstances"
     , "GeneralizedNewtypeDeriving"

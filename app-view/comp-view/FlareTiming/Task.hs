@@ -6,7 +6,10 @@ import Reflex.Dom
 import Control.Monad (join)
 
 import FlareTiming.Events (IxTask(..))
-import FlareTiming.Comms (getTasks, getComps, getPilots, getValidity)
+import FlareTiming.Comms
+    ( getTasks, getComps, getPilots
+    , getValidity, getAllocation
+    )
 import FlareTiming.Comp.Detail (compDetail)
 import FlareTiming.Task.Detail (taskDetail)
 
@@ -27,6 +30,7 @@ view () = do
     xs <- getTasks ()
     ps <- getPilots ()
     vs <- getValidity ()
+    as <- getAllocation ()
 
     el "div" $ mdo
 
@@ -37,7 +41,8 @@ view () = do
                             taskDetail
                                 cs
                                 ((!! (ii - 1)) <$> xs)
-                                (join . nth (ii - 1) <$> vs))
+                                (join . nth (ii - 1) <$> vs)
+                                (join . nth (ii - 1) <$> as))
                     <$> eIx
 
         let eIx = switchDyn deIx

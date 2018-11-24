@@ -20,8 +20,8 @@ import System.FilePath (takeFileName)
 import Data.Yaml (prettyPrintParseException)
 
 import Flight.Track.Cross (Crossing(..))
-import Flight.Track.Point (Pointing(..))
-import Flight.Score (Validity(..))
+import Flight.Track.Point (Pointing(..), Allocation)
+import Flight.Score (Validity)
 import Flight.Scribe (readComp, readCrossing, readPointing)
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
@@ -70,6 +70,7 @@ type Api k =
     :<|> "tasks" :> Get '[JSON] [Task k]
     :<|> "pilots" :> Get '[JSON] [Pilot]
     :<|> "gap-point" :> "validity" :> Get '[JSON] [Maybe Validity]
+    :<|> "gap-point" :> "allocation" :> Get '[JSON] [Maybe Allocation]
 
 api :: Proxy (Api k)
 api = Proxy
@@ -135,6 +136,7 @@ serverApi cfg =
         :<|> (tasks <$> asks compSettings)
         :<|> (distinctPilots . pilots <$> asks compSettings)
         :<|> (validity <$> asks pointing)
+        :<|> (allocation <$> asks pointing)
         )
 
 distinctPilots :: [[PilotTrackLogFile]] -> [Pilot]

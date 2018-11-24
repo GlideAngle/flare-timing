@@ -5,7 +5,7 @@ import Reflex.Dom
 
 data TaskTab
     = TaskTabScore
-    | TaskTabValidity
+    | TaskTabQuality
     | TaskTabTask
     | TaskTabMap
     | TaskTabAbsent
@@ -17,28 +17,28 @@ tabsTask =
     elClass "div" "tabs" $
         el "ul" $ mdo
             (s, _) <- elDynClass' "li" sClass $ el "a" (text "Scores")
-            (v, _) <- elDynClass' "li" vClass $ el "a" (text "Validity")
+            (q, _) <- elDynClass' "li" qClass $ el "a" (text "Quality")
             (t, _) <- elDynClass' "li" tClass $ el "a" (text "Turnpoints")
             (m, _) <- elDynClass' "li" mClass $ el "a" (text "Map")
             (a, _) <- elDynClass' "li" aClass $ el "a" (text "Absentees")
 
             let es = (const TaskTabScore) <$> domEvent Click s
-            let ev = (const TaskTabValidity) <$> domEvent Click v
+            let eq = (const TaskTabQuality) <$> domEvent Click q
             let et = (const TaskTabTask) <$> domEvent Click t
             let em = (const TaskTabMap) <$> domEvent Click m
             let ea = (const TaskTabAbsent) <$> domEvent Click a
 
             sClass <- holdDyn "is-active" . leftmost $
                             [ "is-active" <$ es
-                            , "" <$ ev
+                            , "" <$ eq
                             , "" <$ et
                             , "" <$ em
                             , "" <$ ea
                             ]
 
-            vClass <- holdDyn "" . leftmost $
+            qClass <- holdDyn "" . leftmost $
                             [ "" <$ es
-                            , "is-active" <$ ev
+                            , "is-active" <$ eq
                             , "" <$ et
                             , "" <$ em
                             , "" <$ ea
@@ -46,7 +46,7 @@ tabsTask =
 
             tClass <- holdDyn "" . leftmost $
                             [ "" <$ es
-                            , "" <$ ev
+                            , "" <$ eq
                             , "is-active" <$ et
                             , "" <$ em
                             , "" <$ ea
@@ -54,7 +54,7 @@ tabsTask =
 
             mClass <- holdDyn "" . leftmost $
                             [ "" <$ es
-                            , "" <$ ev
+                            , "" <$ eq
                             , "" <$ et
                             , "is-active" <$ em
                             , "" <$ ea
@@ -62,10 +62,10 @@ tabsTask =
 
             aClass <- holdDyn "" . leftmost $
                             [ "" <$ es
-                            , "" <$ ev
+                            , "" <$ eq
                             , "" <$ et
                             , "" <$ em
                             , "is-active" <$ ea
                             ]
 
-            return . leftmost $ [es, ev, et, em, ea]
+            return . leftmost $ [es, eq, et, em, ea]

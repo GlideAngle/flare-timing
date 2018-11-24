@@ -4,6 +4,7 @@ module FlareTiming.Comms
     , getTasks
     , getPilots
     , getValidity
+    , getAllocation
     ) where
 
 import Reflex
@@ -75,4 +76,17 @@ getValidity () = do
     rsp <- performRequestAsync $ fmap req $ leftmost [ Nothing <$ pb ]
 
     let es :: Event t [Maybe Validity] = fmapMaybe decodeXhrResponse rsp
+    holdDyn [] es
+
+getAllocation
+    :: MonadWidget t m
+    => ()
+    -> m (Dynamic t [Maybe Allocation])
+getAllocation () = do
+    pb :: Event t () <- getPostBuild
+    let defReq = "http://localhost:3000/gap-point/allocation"
+    let req md = XhrRequest "GET" (maybe defReq id md) def
+    rsp <- performRequestAsync $ fmap req $ leftmost [ Nothing <$ pb ]
+
+    let es :: Event t [Maybe Allocation] = fmapMaybe decodeXhrResponse rsp
     holdDyn [] es

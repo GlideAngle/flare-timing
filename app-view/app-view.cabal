@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 6fe7751be5a93ab285b33e7f72e773817accc0ab653bea6ce0155846beaa650e
+-- hash: d8a77fc83bee1b580ebb03a9216e29190d367f954e10a09b54a7503777b0f3de
 
 name:           app-view
 version:        0.1.0
@@ -62,7 +62,7 @@ executable comp-view
       Paths_app_view
   hs-source-dirs:
       comp-view
-  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs KindSignatures LambdaCase MonoLocalBinds MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecursiveDo RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields DuplicateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs KindSignatures LambdaCase MonoLocalBinds MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecursiveDo RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
   ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
