@@ -37,6 +37,7 @@ in    defs
                   , "flight-cmd"
                   , "flight-comp"
                   , "flight-scribe"
+                  , "flight-gap"
                   ]
               , ghc-options =
                   [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]

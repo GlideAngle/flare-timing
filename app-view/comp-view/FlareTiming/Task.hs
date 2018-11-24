@@ -3,9 +3,10 @@ module FlareTiming.Task (tasks) where
 import qualified Data.Text as T (pack)
 import Reflex
 import Reflex.Dom
+import Control.Monad (join)
 
 import FlareTiming.Events (IxTask(..))
-import FlareTiming.Comms (getTasks, getComps, getPilots)
+import FlareTiming.Comms (getTasks, getComps, getPilots, getValidity)
 import FlareTiming.Comp.Detail (compDetail)
 import FlareTiming.Task.Detail (taskDetail)
 
@@ -25,13 +26,18 @@ view () = do
     cs <- getComps ()
     xs <- getTasks ()
     ps <- getPilots ()
+    vs <- getValidity ()
 
     el "div" $ mdo
 
         deIx <- widgetHold (compDetail cs ps xs) $
                     (\ix -> case ix of
                         IxTaskNone -> compDetail cs ps xs
-                        IxTask ii -> taskDetail cs $ (!! (ii - 1)) <$> xs)
+                        IxTask ii -> do
+                            taskDetail
+                                cs
+                                ((!! (ii - 1)) <$> xs)
+                                (join . nth (ii - 1) <$> vs))
                     <$> eIx
 
         let eIx = switchDyn deIx
@@ -47,3 +53,9 @@ view () = do
         el "div" $ dynText dText
 
     return ()
+
+nth :: Int -> [a] -> Maybe a
+nth ii xs =
+    case drop ii xs of
+        [] -> Nothing
+        x : _ -> Just x

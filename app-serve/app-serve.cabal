@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 804a0ced3ff4abc6e969638cb700317c4e1dbca3f99d0e8d64ff3d607b8b6faf
+-- hash: a5f2175506bc64b83355a41a4a168c79850ce276cf4eecf30b1187b7027d850c
 
 name:           app-serve
 version:        0.1.0
@@ -48,6 +48,7 @@ executable comp-serve
     , filepath
     , flight-cmd
     , flight-comp
+    , flight-gap
     , flight-scribe
     , mtl
     , raw-strings-qq

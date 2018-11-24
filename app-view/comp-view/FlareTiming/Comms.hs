@@ -3,6 +3,7 @@ module FlareTiming.Comms
     , getNominals
     , getTasks
     , getPilots
+    , getValidity
     ) where
 
 import Reflex
@@ -10,6 +11,7 @@ import Reflex.Dom
 
 import WireTypes.Comp (Comp(..), Nominal(..), Task(..))
 import WireTypes.Pilot (Pilot(..))
+import WireTypes.Track.Point
 
 getTasks :: MonadWidget t m => () -> m (Dynamic t [Task])
 getTasks () = do
@@ -60,4 +62,17 @@ getPilots () = do
     rsp <- performRequestAsync $ fmap req $ leftmost [ Nothing <$ pb ]
 
     let es :: Event t [Pilot] = fmapMaybe decodeXhrResponse rsp
+    holdDyn [] es
+
+getValidity
+    :: MonadWidget t m
+    => ()
+    -> m (Dynamic t [Maybe Validity])
+getValidity () = do
+    pb :: Event t () <- getPostBuild
+    let defReq = "http://localhost:3000/gap-point/validity"
+    let req md = XhrRequest "GET" (maybe defReq id md) def
+    rsp <- performRequestAsync $ fmap req $ leftmost [ Nothing <$ pb ]
+
+    let es :: Event t [Maybe Validity] = fmapMaybe decodeXhrResponse rsp
     holdDyn [] es
