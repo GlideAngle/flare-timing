@@ -31,7 +31,7 @@ tableValidity x = do
                 el "tr" $ do
                     el "td" $ text "Time"
                     el "td" . dynText $ getTime <$> x
-                el "tr" $ do
+                elClass "tr" "has-background-light" $ do
                     el "td" $ text "Task"
                     el "td" . dynText $ getTask <$> x
     return ()
