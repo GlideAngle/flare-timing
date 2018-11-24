@@ -2,7 +2,7 @@ module FlareTiming.Task.Absent (tableAbsent) where
 
 import Reflex.Dom
 
-import Data.Flight.Types (Task(..), getAbsent)
+import WireTypes.Comp (Task(..), getAbsent)
 import FlareTiming.Pilot.Row (row)
 
 tableAbsent

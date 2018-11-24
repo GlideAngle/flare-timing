@@ -4,7 +4,7 @@ import Reflex
 import Reflex.Dom
 import qualified Data.Text as T (pack)
 
-import Data.Flight.Types (Comp(..), Task(..))
+import WireTypes.Comp (Comp(..), Task(..))
 import FlareTiming.Events (IxTask(..))
 
 crumbTask

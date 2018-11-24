@@ -3,7 +3,7 @@ module FlareTiming.Task.List (taskList) where
 import Reflex
 import Reflex.Dom
 
-import Data.Flight.Types (Task(..))
+import WireTypes.Comp (Task(..))
 import FlareTiming.Events (IxTask(..))
 import FlareTiming.Task.ListItem (liTask)
 

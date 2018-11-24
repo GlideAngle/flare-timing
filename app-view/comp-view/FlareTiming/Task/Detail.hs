@@ -4,7 +4,7 @@ import Prelude hiding (map)
 import Reflex
 import Reflex.Dom
 
-import Data.Flight.Types (Comp(..), Task(..))
+import WireTypes.Comp (Comp(..), Task(..))
 import FlareTiming.Comp (compTask)
 import FlareTiming.Breadcrumb (crumbTask)
 import FlareTiming.Events (IxTask(..))

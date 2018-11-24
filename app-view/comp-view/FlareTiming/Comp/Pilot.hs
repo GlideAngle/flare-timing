@@ -2,7 +2,7 @@ module FlareTiming.Comp.Pilot (tablePilot) where
 
 import Reflex.Dom
 
-import Data.Flight.Types (Pilot)
+import WireTypes.Comp (Pilot)
 import FlareTiming.Pilot.Row (row)
 
 tablePilot

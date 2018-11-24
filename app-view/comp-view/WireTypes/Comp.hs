@@ -1,4 +1,4 @@
-module Data.Flight.Types
+module WireTypes.Comp
     ( Comp(..)
     , Nominal(..)
     , Pilot(..)

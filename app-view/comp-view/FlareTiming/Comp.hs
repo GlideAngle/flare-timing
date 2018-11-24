@@ -7,7 +7,7 @@ import Data.Map (union)
 import Data.Maybe (listToMaybe)
 import Control.Applicative (pure)
 
-import Data.Flight.Types
+import WireTypes.Comp
     (Comp(..), Nominal(..), Task(..), getRaceRawZones)
 import qualified FlareTiming.Turnpoint as TP (getName)
 import FlareTiming.Comms (getNominals)

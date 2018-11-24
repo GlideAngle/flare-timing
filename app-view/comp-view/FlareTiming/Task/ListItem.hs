@@ -6,7 +6,7 @@ import qualified Data.Text as T (pack, intercalate)
 import Reflex
 import Reflex.Dom
 
-import Data.Flight.Types (Task(..), getRaceRawZones)
+import WireTypes.Comp (Task(..), getRaceRawZones)
 import qualified FlareTiming.Turnpoint as TP (getName)
 
 liTask

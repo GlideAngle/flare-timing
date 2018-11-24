@@ -3,7 +3,7 @@ module FlareTiming.Task.Turnpoints (tableTurnpoints) where
 import Reflex.Dom
 import qualified Data.Text as T (Text, pack)
 
-import Data.Flight.Types
+import WireTypes.Comp
     (Task(..), RawZone(..), SpeedSection, getAllRawZones, getSpeedSection)
 import qualified FlareTiming.Turnpoint as TP
 

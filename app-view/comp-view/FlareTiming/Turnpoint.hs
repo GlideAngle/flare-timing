@@ -10,7 +10,7 @@ module FlareTiming.Turnpoint
 import Reflex.Dom (MonadWidget, Dynamic, dynText)
 import qualified Data.Text as T (Text, pack)
 
-import Data.Flight.Types (RawZone(..), showRadius, showLat, showLng)
+import WireTypes.Comp (RawZone(..), showRadius, showLat, showLng)
 
 getNameRadius :: RawZone -> T.Text
 getNameRadius RawZone{zoneName,radius} =
