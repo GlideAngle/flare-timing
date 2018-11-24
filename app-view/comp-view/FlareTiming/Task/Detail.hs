@@ -26,6 +26,7 @@ taskDetail cs x = do
     _ <- widgetHold (text "score") $
             (\case
                 TaskTabScore -> text "score"
+                TaskTabValidity -> text "validity"
                 TaskTabTask -> tableTurnpoints x
                 TaskTabMap -> do y <- sample . current $ x; map y
                 TaskTabAbsent -> tableAbsent x)

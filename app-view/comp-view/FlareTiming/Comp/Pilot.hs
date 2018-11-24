@@ -1,9 +1,8 @@
 module FlareTiming.Comp.Pilot (tablePilot) where
 
 import Reflex.Dom
-import qualified Data.Text as T (Text, pack)
 
-import Data.Flight.Types (Pilot(..), PilotId(..), PilotName(..))
+import Data.Flight.Types (Pilot)
 import FlareTiming.Pilot.Row (row)
 
 tablePilot

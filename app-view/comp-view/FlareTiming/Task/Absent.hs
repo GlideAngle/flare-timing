@@ -1,7 +1,6 @@
 module FlareTiming.Task.Absent (tableAbsent) where
 
 import Reflex.Dom
-import qualified Data.Text as T (pack)
 
 import Data.Flight.Types (Task(..), getAbsent)
 import FlareTiming.Pilot.Row (row)
