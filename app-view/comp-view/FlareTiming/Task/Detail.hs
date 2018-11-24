@@ -13,6 +13,7 @@ import FlareTiming.Map (map)
 import FlareTiming.Task.Tab (TaskTab(..), tabsTask)
 import FlareTiming.Task.Quality.Validity (tableValidity)
 import FlareTiming.Task.Quality.Allocation (tableAllocation)
+import FlareTiming.Task.Quality.Weight (tableWeight)
 import FlareTiming.Task.Turnpoints (tableTurnpoints)
 import FlareTiming.Task.Absent (tableAbsent)
 
@@ -36,6 +37,7 @@ taskDetail cs x v a = do
                 TaskTabQuality -> do
                     tableValidity v
                     tableAllocation a
+                    tableWeight a
 
                 TaskTabTask -> tableTurnpoints x
                 TaskTabMap -> do y <- sample . current $ x; map y

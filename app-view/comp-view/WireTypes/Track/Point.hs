@@ -17,6 +17,11 @@ module WireTypes.Track.Point
     , TimePoints(..)
     , TaskPoints(..)
     , Points(..)
+    , DistanceWeight(..)
+    , LeadingWeight(..)
+    , ArrivalWeight(..)
+    , TimeWeight(..)
+    , Weights(..)
     ) where
 
 import Data.Time.Clock (UTCTime)
