@@ -9,7 +9,6 @@ import WireTypes.Track.Point
     , LeadingWeight(..)
     , ArrivalWeight(..)
     , TimeWeight(..)
-    , Allocation(..)
     )
 
 tableWeight

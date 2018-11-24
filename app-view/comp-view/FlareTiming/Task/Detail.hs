@@ -35,8 +35,11 @@ taskDetail cs x v a = do
                 TaskTabScore -> text "score"
 
                 TaskTabQuality -> do
+                    let ps = (fmap . fmap) points a
+                    let tp = (fmap . fmap) taskPoints a
+
                     tableValidity v
-                    tableAllocation a
+                    tableAllocation ps tp
                     tableWeight $ (fmap . fmap) weight a
 
                 TaskTabTask -> tableTurnpoints x
