@@ -1,5 +1,6 @@
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
+import Data.List (nub, sort)
 import Network.Wai (Application)
 import Network.Wai.Middleware.Cors (simpleCors)
 import Network.Wai.Handler.Warp
@@ -66,7 +67,7 @@ type Api k =
     "comps" :> Get '[JSON] Comp
     :<|> "nominals" :> Get '[JSON] Nominal
     :<|> "tasks" :> Get '[JSON] [Task k]
-    :<|> "pilots" :> Get '[JSON] [[Pilot]]
+    :<|> "pilots" :> Get '[JSON] [Pilot]
     :<|> "gap-points" :> Get '[JSON] Pointing
 
 api :: Proxy (Api k)
@@ -131,8 +132,11 @@ serverApi cfg =
         ( (comp <$> asks compSettings)
         :<|> (nominal <$> asks compSettings)
         :<|> (tasks <$> asks compSettings)
-        :<|> ((fmap . fmap) pilot . pilots <$> asks compSettings)
+        :<|> (distinctPilots . pilots <$> asks compSettings)
         :<|> (asks pointing)
         )
-    where
-        pilot (PilotTrackLogFile p _) = p
+
+distinctPilots :: [[PilotTrackLogFile]] -> [Pilot]
+distinctPilots pss =
+    let pilot (PilotTrackLogFile p _) = p
+    in sort . nub .concat $ (fmap . fmap) pilot pss

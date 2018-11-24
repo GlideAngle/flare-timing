@@ -51,12 +51,12 @@ getNominals () = do
 getPilots
     :: MonadWidget t m
     => ()
-    -> m (Dynamic t [[Pilot]])
+    -> m (Dynamic t [Pilot])
 getPilots () = do
     pb :: Event t () <- getPostBuild
     let defReq = "http://localhost:3000/pilots"
     let req md = XhrRequest "GET" (maybe defReq id md) def
     rsp <- performRequestAsync $ fmap req $ leftmost [ Nothing <$ pb ]
 
-    let es :: Event t [[Pilot]] = fmapMaybe decodeXhrResponse rsp
+    let es :: Event t [Pilot] = fmapMaybe decodeXhrResponse rsp
     holdDyn [] es

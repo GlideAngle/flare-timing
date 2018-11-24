@@ -1,7 +1,6 @@
 module FlareTiming.Task (tasks) where
 
 import qualified Data.Text as T (pack)
-import Data.List (nub, sort)
 import Reflex
 import Reflex.Dom
 
@@ -25,8 +24,7 @@ view :: MonadWidget t m => () -> m ()
 view () = do
     cs <- getComps ()
     xs <- getTasks ()
-    pss <- getPilots ()
-    let ps = sort . nub . concat <$> pss
+    ps <- getPilots ()
 
     el "div" $ mdo
 
