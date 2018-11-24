@@ -14,6 +14,8 @@ in    defs
           "blockscope/flare-timing/app-serve"
       , dependencies =
           defs.dependencies
+      , ghc-options =
+          [ "-Wall" ]
       , executables =
           { comp-serve =
               { dependencies =
@@ -34,6 +36,7 @@ in    defs
                   , "bytestring"
                   , "flight-cmd"
                   , "flight-comp"
+                  , "flight-scribe"
                   ]
               , ghc-options =
                   [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]

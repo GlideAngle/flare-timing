@@ -8,19 +8,19 @@ import Servant
     ( (:<|>)(..)
     , Get, JSON, Server, Handler(..), Proxy(..), ServantErr
     , (:>)
-    , err400, errBody, hoistServer, serve, throwError
+    , hoistServer, serve
     )
 import System.IO (hPutStrLn, stderr)
 import Control.Monad.IO.Class (MonadIO)
-import Control.Monad.Reader (ReaderT, MonadReader, asks, liftIO, runReaderT)
-import Control.Monad.Trans.Except (throwE)
-import Control.Monad.Except (ExceptT(..), MonadError, runExceptT, lift)
-import qualified Data.ByteString.Lazy.Char8 as LBS (pack)
+import Control.Monad.Reader (ReaderT, MonadReader, asks, runReaderT)
+import Control.Monad.Except (ExceptT(..), MonadError, runExceptT)
 
-import System.FilePath (FilePath, takeFileName)
-import Data.Yaml (prettyPrintParseException, decodeEither')
-import qualified Data.ByteString as BS (readFile)
+import System.FilePath (takeFileName)
+import Data.Yaml (prettyPrintParseException)
 
+import Flight.Track.Cross (Crossing(..))
+import Flight.Track.Point (Pointing(..))
+import Flight.Scribe (readComp, readCrossing, readPointing)
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.ServeOptions (CmdServeOptions(..), mkOptions)
@@ -29,40 +29,49 @@ import Flight.Comp
     , CompSettings(..)
     , Comp
     , Task
-    , Nominal
+    , Nominal(..)
     , PilotTrackLogFile(..)
     , Pilot(..)
     , CompInputFile(..)
+    , CrossZoneFile(..)
+    , GapPointFile(..)
     , findCompInput
+    , compToCross
+    , compToPoint
     , ensureExt
     )
 import ServeOptions (description)
 
-newtype Config = Config {path :: FilePath}
+data Config k
+    = Config
+        { compSettings :: CompSettings k
+        , crossing :: Crossing
+        , points :: Pointing
+        }
 
-newtype AppT m a =
+newtype AppT k m a =
     AppT
-        { unApp :: ReaderT Config (ExceptT ServantErr m) a
+        { unApp :: ReaderT (Config k) (ExceptT ServantErr m) a
         }
     deriving newtype
         ( Functor
         , Applicative
         , Monad
-        , MonadReader Config
+        , MonadReader (Config k)
         , MonadError ServantErr
         , MonadIO
         )
 
-type Api =
+type Api k =
     "comps" :> Get '[JSON] Comp
     :<|> "nominals" :> Get '[JSON] Nominal
-    :<|> "tasks" :> Get '[JSON] [Task Double]
+    :<|> "tasks" :> Get '[JSON] [Task k]
     :<|> "pilots" :> Get '[JSON] [[Pilot]]
 
-api :: Proxy Api
+api :: Proxy (Api k)
 api = Proxy
 
-convertApp :: Config -> AppT IO a -> Handler a
+convertApp :: Config k -> AppT k IO a -> Handler a
 convertApp cfg appt = Handler $ runReaderT (unApp appt) cfg
 
 main :: IO ()
@@ -81,9 +90,25 @@ drive o = do
     if null files then putStrLn "Couldn't find any input files."
                   else mapM_ (go o) files
 go :: CmdServeOptions -> CompInputFile -> IO ()
-go CmdServeOptions{..} (CompInputFile compPath) = do
+go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
+    let crossFile@(CrossZoneFile crossPath) = compToCross compFile
+    let pointFile@(GapPointFile pointPath) = compToPoint compFile
     putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
-    runSettings settings =<< mkApp (Config compPath)
+    putStrLn $ "Reading pilots that did not fly from '" ++ takeFileName crossPath ++ "'"
+    putStrLn $ "Reading scores from '" ++ takeFileName pointPath ++ "'"
+
+    compSettings <- runExceptT $ readComp compFile
+    crossing <- runExceptT $ readCrossing crossFile
+    pointing <- runExceptT $ readPointing pointFile
+
+    let ppr = putStrLn . prettyPrintParseException
+
+    case (compSettings, crossing, pointing) of
+        (Left e, _, _) -> ppr e
+        (_, Left e, _) -> ppr e
+        (_, _, Left e) -> ppr e
+        (Right cs, Right cz, Right gp) ->
+            runSettings settings =<< mkApp (Config cs cz gp)
     where
         port = 3000
 
@@ -94,32 +119,22 @@ go CmdServeOptions{..} (CompInputFile compPath) = do
                 defaultSettings
 
 -- SEE: https://stackoverflow.com/questions/42143155/acess-a-servant-server-with-a-reflex-dom-client
-mkApp :: Config -> IO Application
+mkApp :: Config k -> IO Application
 mkApp cfg = return . simpleCors . serve api $ serverApi cfg
 
-serverApi :: Config -> Server Api
+serverApi :: Config k -> Server (Api k)
 serverApi cfg =
     hoistServer
         api
         (convertApp cfg)
-        ( query (yaml comp)
-        :<|> query (yaml nominal)
-        :<|> query (yaml tasks)
-        :<|> query (yaml ((fmap . fmap) pilot . pilots))
+        ( (query comp)
+        :<|> (query nominal)
+        :<|> (query tasks)
+        :<|> (query ((fmap . fmap) pilot . pilots))
         )
     where
         query f = do
-            path' <- asks path
-            xs <- liftIO . runExceptT . f $ path'
-            case xs of
-              Left msg -> throwError $ err400 { errBody = LBS.pack msg }
-              Right xs' -> return xs'
+            cs <- asks compSettings
+            return $ f cs
 
         pilot (PilotTrackLogFile p _) = p
-
-yaml :: (CompSettings Double -> a) -> FilePath -> ExceptT String IO a
-yaml f yamlPath = do
-    contents <- lift $ BS.readFile yamlPath
-    case decodeEither' contents of
-        Left msg -> throwE . prettyPrintParseException $ msg
-        Right x -> ExceptT . return $ Right (f x)

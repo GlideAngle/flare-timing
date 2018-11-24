@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: eaff5f8ea10c3050d21e48a1a96ec1b37701d5ebca0301a9469fae05a794b650
+-- hash: 804a0ced3ff4abc6e969638cb700317c4e1dbca3f99d0e8d64ff3d607b8b6faf
 
 name:           app-serve
 version:        0.1.0
@@ -37,7 +37,7 @@ executable comp-serve
   hs-source-dirs:
       comp-serve
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
-  ghc-options: -Wall -Werror -rtsopts -threaded -with-rtsopts=-N
+  ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
     , base >=4.10.1.0 && <5
@@ -48,6 +48,7 @@ executable comp-serve
     , filepath
     , flight-cmd
     , flight-comp
+    , flight-scribe
     , mtl
     , raw-strings-qq
     , servant
@@ -67,7 +68,7 @@ test-suite hlint
   hs-source-dirs:
       test-suite-hlint
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
-  ghc-options: -Wall -Werror -rtsopts -threaded -with-rtsopts=-N
+  ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       base
     , flight-comp
