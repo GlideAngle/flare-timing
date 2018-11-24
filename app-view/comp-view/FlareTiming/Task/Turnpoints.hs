@@ -4,7 +4,8 @@ import Reflex.Dom
 import qualified Data.Text as T (Text, pack)
 
 import WireTypes.Comp
-    (Task(..), RawZone(..), SpeedSection, getAllRawZones, getSpeedSection)
+    (Task(..), SpeedSection, getSpeedSection, getAllRawZones)
+import WireTypes.Zone (RawZone(..))
 import qualified FlareTiming.Turnpoint as TP
 
 tableTurnpoints

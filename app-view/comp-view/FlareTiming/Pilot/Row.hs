@@ -3,7 +3,7 @@ module FlareTiming.Pilot.Row (row) where
 import Reflex.Dom
 import qualified Data.Text as T (Text, pack)
 
-import WireTypes.Comp (Pilot(..), PilotId(..), PilotName(..))
+import WireTypes.Pilot (Pilot(..), PilotId(..), PilotName(..))
 
 row
     :: MonadWidget t m

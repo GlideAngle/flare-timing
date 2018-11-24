@@ -8,7 +8,8 @@ module FlareTiming.Comms
 import Reflex
 import Reflex.Dom
 
-import WireTypes.Comp (Comp(..), Nominal(..), Pilot(..), Task(..))
+import WireTypes.Comp (Comp(..), Nominal(..), Task(..))
+import WireTypes.Pilot (Pilot(..))
 
 getTasks :: MonadWidget t m => () -> m (Dynamic t [Task])
 getTasks () = do

@@ -33,8 +33,9 @@ import qualified FlareTiming.Map.Leaflet as L
     , polylineBounds
     , fitBounds
     )
-import WireTypes.Comp
-    (Task(..), Zones(..), RawZone(..), RawLat(..), RawLng(..), Radius(..))
+import WireTypes.Comp (Task(..))
+import WireTypes.Zone
+    (Zones(..), RawZone(..), RawLat(..), RawLng(..), Radius(..))
 
 turnpoint :: RawZone -> IO (L.Marker, L.Circle)
 turnpoint

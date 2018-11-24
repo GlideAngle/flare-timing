@@ -3,7 +3,8 @@ module FlareTiming.Comp.Detail (compDetail) where
 import Reflex
 import Reflex.Dom
 
-import WireTypes.Comp (Comp, Task, Pilot)
+import WireTypes.Comp (Comp, Task)
+import WireTypes.Pilot (Pilot)
 import FlareTiming.Comp (comps)
 import FlareTiming.Events (IxTask(..))
 import FlareTiming.Comp.Tab (CompTab(..), tabsComp)
