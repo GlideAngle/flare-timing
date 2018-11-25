@@ -47,9 +47,14 @@ ghcjsOutputs =
 cleanRules :: Rules ()
 cleanRules =
     phony "clean-www" $ do
-        removeFilesAfter outCabal [ "//*" ]
-        removeFilesAfter outGhcjs [ "//*" ]
-        removeFilesAfter tmpGhcjs [ "//*" ]
+        removeFilesAfter "__www-build-ghcjs" [ "//*" ]
+        removeFilesAfter "__www-dist-ghcjs" [ "//*" ]
+        removeFilesAfter "__www-dist-cabal" [ "//*" ]
+
+        removeFilesAfter
+            "dist-ghcjs/build/x86_64-linux/ghcjs-8.4.0.1/app-view-0.1.0"
+            [ "//*" ]
+
 
 buildCabal :: FilePath
 buildCabal = "dist-ghcjs/build/x86_64-linux/ghcjs-8.4.0.1/app-view-0.1.0/x/comp-view/build/comp-view"
