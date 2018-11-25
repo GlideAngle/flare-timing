@@ -20,7 +20,7 @@
     "webpack-dev-server": "^2.5.0"
   },
   "scripts": {
-    "pack": "webpack",
-    "start": "webpack-dev-server"
+    "pack": "webpack --config=webpack.config.js",
+    "start": "webpack-dev-server --config=webpack.config.js"
   }
 }
