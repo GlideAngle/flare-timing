@@ -55,18 +55,16 @@ cleanRules =
             "dist-ghcjs/build/x86_64-linux/ghcjs-8.4.0.1/app-view-0.1.0"
             [ "//*" ]
 
-
-buildCabal :: FilePath
-buildCabal = "dist-ghcjs/build/x86_64-linux/ghcjs-8.4.0.1/app-view-0.1.0/x/comp-view/build/comp-view"
-
-outCabalWorking :: FilePath
-outCabalWorking = buildCabal </> "comp-view.jsexe"
-
 outCabal :: FilePath
 outCabal = "__www-dist-cabal" </> "task-view"
 
 outGhcjs :: FilePath
 outGhcjs = "__www-dist-ghcjs" </> "task-view"
+
+tmpCabal :: FilePath
+tmpCabal =
+    "dist-ghcjs/build/x86_64-linux/ghcjs-8.4.0.1/app-view-0.1.0/x/comp-view/build/comp-view"
+    </> "comp-view.jsexe"
 
 tmpGhcjs :: FilePath
 tmpGhcjs = "__www-build-ghcjs" </> "app.jsexe"
@@ -77,24 +75,32 @@ view = "app-view" </> "comp-view"
 webpackPackageJson :: FilePath
 webpackPackageJson = view </> "node_modules" </> "webpack" </> "package.json"
 
+type Suffix = String
+type TmpDir = FilePath
+type OutDir = FilePath
+
+buildWith :: Suffix -> TmpDir -> OutDir -> Rules ()
+buildWith suffix tmpdir outdir = do
+    phony ("view-start-" ++ suffix) $ do
+        need [ outdir </> "app.html" ]
+        cmd (Cwd view) Shell $ "yarn run start-" ++ suffix
+
+    phony ("view-www-" ++ "suffix") $ need [ outdir </> "all.js" ]
+
+    outdir </> "app.html" %> \ _ -> do
+        putNormal "# pack app.html" 
+        need [ webpackPackageJson, outdir </> "all.js" ]
+        cmd (Cwd view) Shell $ "yarn run pack-" ++ suffix
+
+    mconcat $ (\s -> outdir </> s %> \ _ -> do
+        need [ tmpdir </> s ]
+        putNormal $ "# copy " ++ s
+        copyFileChanged (tmpdir </> s) (outdir </> s))
+        <$> ghcjsOutputs
+
 buildWithGhcjsRules :: Rules ()
 buildWithGhcjsRules = do
-    phony "view-start-ghcjs" $ do
-        need [ outGhcjs </> "app.html" ]
-        cmd (Cwd view) Shell "yarn run start-ghcjs"
-
-    phony "view-www-ghcjs" $ need [ outGhcjs </> "all.js" ]
-
-    outGhcjs </> "app.html" %> \ _ -> do
-        putNormal "# pack app.html" 
-        need [ webpackPackageJson, outGhcjs </> "all.js" ]
-        cmd (Cwd view) Shell "yarn run pack-ghcjs"
-
-    mconcat $ (\ s -> outGhcjs </> s %> \ _ -> do
-        need [ tmpGhcjs </> s ]
-        putNormal $ "# copy " ++ s
-        copyFileChanged (tmpGhcjs </> s) (outGhcjs </> s))
-        <$> ghcjsOutputs
+    buildWith "ghcjs" tmpGhcjs outGhcjs
 
     mconcat $ (\s -> tmpGhcjs </> s %> \ _ -> do
         ghcjsCmd' <- liftIO ghcjsCmd
@@ -126,24 +132,9 @@ buildWithGhcjsRules = do
 
 buildWithCabalRules :: Rules ()
 buildWithCabalRules = do
-    phony "view-start-cabal" $ do
-        need [ outCabal </> "app.html" ]
-        cmd (Cwd view) Shell "yarn run start-cabal"
+    buildWith "cabal" tmpCabal outCabal
 
-    phony "view-www-cabal" $ need [ outCabalWorking </> "all.js" ]
-
-    outCabal </> "app.html" %> \ _ -> do
-        putNormal "# pack app.html" 
-        need [ webpackPackageJson, outCabal </> "all.js" ]
-        cmd (Cwd view) Shell "yarn run pack-cabal"
-
-    mconcat $ (\s -> outCabal </> s %> \ _ -> do
-        need [ outCabalWorking </> s ]
-        putNormal $ "# copy " ++ s
-        copyFileChanged (outCabalWorking </> s) (outCabal </> s))
-        <$> ghcjsOutputs
-
-    mconcat $ (\s -> outCabalWorking </> s %> \ _ -> do
+    mconcat $ (\s -> tmpCabal </> s %> \ _ -> do
         cmd Shell "./cabal-ghcjs new-build app-view")
         <$> ghcjsOutputs
 
