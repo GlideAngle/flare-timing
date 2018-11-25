@@ -14,11 +14,11 @@ module.exports = {
     },
     devtool: 'source-map',
     output: {
-        path: path.resolve(__dirname, '../../__www-dist/task-view'),
+        path: path.resolve(__dirname, '../../__www-dist-cabal/task-view'),
         filename: '[name].js'
     },
     devServer: {
-        contentBase: path.resolve(__dirname, "../../__www-dist/task-view"),
+        contentBase: path.resolve(__dirname, "../../__www-dist-cabal/task-view"),
         compress: true,
         port: 9000
     },

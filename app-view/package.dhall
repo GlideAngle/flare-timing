@@ -29,6 +29,7 @@ in    defs
                   , "ghcjs-dom"
                   , "scientific"
                   , "text"
+                  , "time"
                   ]
               , ghc-options =
                   [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]

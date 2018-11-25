@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: fcaaea3e1b0b953865d87747eeb3cdf4925e219016db36febc6a48d78c336db5
+-- hash: e75768996ff8febd1878cd4427b6b9cc7f096610fc987a0bce353f38eb62da8e
 
 name:           app-view
 version:        0.1.0
@@ -77,4 +77,5 @@ executable comp-view
     , reflex-dom
     , scientific
     , text
+    , time
   default-language: Haskell2010

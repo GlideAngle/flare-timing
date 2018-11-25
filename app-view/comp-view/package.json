@@ -20,7 +20,9 @@
     "webpack-dev-server": "^2.5.0"
   },
   "scripts": {
-    "pack": "webpack --config=webpack.config.js",
-    "start": "webpack-dev-server --config=webpack.config.js"
+    "pack-cabal": "webpack --config=webpack-cabal.config.js",
+    "start-cabal": "webpack-dev-server --config=webpack-cabal.config.js",
+    "pack-ghcjs": "webpack --config=webpack-ghcjs.config.js",
+    "start-ghcjs": "webpack-dev-server --config=webpack-ghcjs.config.js"
   }
 }

@@ -47,78 +47,106 @@ ghcjsOutputs =
 cleanRules :: Rules ()
 cleanRules =
     phony "clean-www" $ do
-        removeFilesAfter out [ "//*" ]
-        removeFilesAfter tmp [ "//*" ]
+        removeFilesAfter outCabal [ "//*" ]
+        removeFilesAfter outGhcjs [ "//*" ]
+        removeFilesAfter tmpGhcjs [ "//*" ]
 
-out :: FilePath
-out = "__www-dist"
+buildCabal :: FilePath
+buildCabal = "dist-ghcjs/build/x86_64-linux/ghcjs-8.4.0.1/app-view-0.1.0/x/comp-view/build/comp-view"
 
-tmp :: FilePath
-tmp = "__www-build"
+outCabalWorking :: FilePath
+outCabalWorking = buildCabal </> "comp-view.jsexe"
+
+outCabal :: FilePath
+outCabal = "__www-dist-cabal" </> "task-view"
+
+outGhcjs :: FilePath
+outGhcjs = "__www-dist-ghcjs" </> "task-view"
+
+tmpGhcjs :: FilePath
+tmpGhcjs = "__www-build-ghcjs" </> "app.jsexe"
 
 view :: FilePath
 view = "app-view" </> "comp-view"
 
+webpackPackageJson :: FilePath
+webpackPackageJson = view </> "node_modules" </> "webpack" </> "package.json"
+
+buildWithGhcjsRules :: Rules ()
+buildWithGhcjsRules = do
+    phony "view-start-ghcjs" $ do
+        need [ outGhcjs </> "app.html" ]
+        cmd (Cwd view) Shell "yarn run start-ghcjs"
+
+    phony "view-www-ghcjs" $ need [ outGhcjs </> "all.js" ]
+
+    outGhcjs </> "app.html" %> \ _ -> do
+        putNormal "# pack app.html" 
+        need [ webpackPackageJson, outGhcjs </> "all.js" ]
+        cmd (Cwd view) Shell "yarn run pack-ghcjs"
+
+    mconcat $ (\ s -> outGhcjs </> s %> \ _ -> do
+        need [ tmpGhcjs </> s ]
+        putNormal $ "# copy " ++ s
+        copyFileChanged (tmpGhcjs </> s) (outGhcjs </> s))
+        <$> ghcjsOutputs
+
+    mconcat $ (\s -> tmpGhcjs </> s %> \ _ -> do
+        ghcjsCmd' <- liftIO ghcjsCmd
+        putNormal ghcjsCmd'
+        cmd (Cwd view) ghcjsCmd')
+        <$> ghcjsOutputs
+    where
+        ghcjsCmd :: IO String
+        ghcjsCmd = do
+            exts <-
+                input (autoWith interpretOpts)
+                $ T.pack "./default-extensions-ghcjs.dhall"
+
+            let xs = unwords $ ("-X" ++) . T.unpack <$> defaultExtensions exts
+
+            return $ [r|ghcjs 
+            -DGHCJS_BROWSER 
+            |] ++ xs ++ [r|
+            -Wall
+            -outputdir ../../__www-build-ghcjs/app.jsout 
+            -o ../../__www-build-ghcjs/app.jsexe 
+            App.hs|]
+
+        interpretOpts :: InterpretOptions
+        interpretOpts =
+            defaultInterpretOptions
+                { fieldModifier = const $ T.pack "default-extensions" }
+
+
+buildWithCabalRules :: Rules ()
+buildWithCabalRules = do
+    phony "view-start-cabal" $ do
+        need [ outCabal </> "app.html" ]
+        cmd (Cwd view) Shell "yarn run start-cabal"
+
+    phony "view-www-cabal" $ need [ outCabalWorking </> "all.js" ]
+
+    outCabal </> "app.html" %> \ _ -> do
+        putNormal "# pack app.html" 
+        need [ webpackPackageJson, outCabal </> "all.js" ]
+        cmd (Cwd view) Shell "yarn run pack-cabal"
+
+    mconcat $ (\s -> outCabal </> s %> \ _ -> do
+        need [ outCabalWorking </> s ]
+        putNormal $ "# copy " ++ s
+        copyFileChanged (outCabalWorking </> s) (outCabal </> s))
+        <$> ghcjsOutputs
+
+    mconcat $ (\s -> outCabalWorking </> s %> \ _ -> do
+        cmd Shell "./cabal-ghcjs new-build app-view")
+        <$> ghcjsOutputs
+
 buildRules :: Rules ()
 buildRules = do
-    phony "view-start" $
-        cmd (Cwd view) Shell "yarn run start"
-
-    phony "view-www" $ do
-        need $ (\ s -> out </> "task-view" </> s)
-             <$> [ "all.js", "app.html" ]
-
-    phony "view-reflex" $ do
-        need [ out </> "task.jsexe" </> "all.js" ]
-
-    view </> "node_modules" </> "webpack" </> "package.json" %> \ _ -> do
+    webpackPackageJson %> \ _ -> do
         putNormal "# install node_modules" 
         cmd (Cwd view) Shell "yarn install"
 
-    out </> "task-view" </> "app.html" %> \ _ -> do
-        putNormal "# pack app.html" 
-        need [ view </> "node_modules" </> "webpack" </> "package.json" ]
-        cmd (Cwd view) Shell "yarn run pack"
-
-    mconcat $ (\ s ->
-        tmp </> "app.jsexe" </> s %> \ _ -> do
-            need [ view </> "App.hs"
-                 , view </> "FlareTiming" </> "Task.hs"
-                 , view </> "FlareTiming" </> "Map.hs"
-                 ]
-
-            ghcjsCmd' <- liftIO ghcjsCmd
-            putNormal ghcjsCmd'
-            cmd (Cwd view) ghcjsCmd')
-
-        <$> ghcjsOutputs
-
-    mconcat $ (\ s ->
-        out </> "task-view" </> s %> \ _ -> do
-            need [ tmp </> "app.jsexe" </> s ]
-            putNormal $ "# copy " ++ s
-            copyFileChanged
-                (tmp </> "app.jsexe" </> s)
-                (out </> "task-view" </> s))
-        <$> ghcjsOutputs
-
-ghcjsCmd :: IO String
-ghcjsCmd = do
-    exts <-
-        input (autoWith interpretOpts)
-        $ T.pack "./default-extensions-ghcjs.dhall"
-
-    let xs = unwords $ ("-X" ++) . T.unpack <$> defaultExtensions exts
-
-    return $ [r|ghcjs 
-    -DGHCJS_BROWSER 
-    |] ++ xs ++ [r|
-    -Wall
-    -outputdir ../../__www-build/app.jsout 
-    -o ../../__www-build/app.jsexe 
-    App.hs|]
-
-interpretOpts :: InterpretOptions
-interpretOpts =
-    defaultInterpretOptions
-        { fieldModifier = const $ T.pack "default-extensions" }
+    buildWithGhcjsRules
+    buildWithCabalRules
