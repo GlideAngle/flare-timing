@@ -49,17 +49,13 @@ showTask :: TaskValidity -> T.Text
 showTask (TaskValidity v) = T.pack . show $ v
 
 getLaunch :: Maybe Validity -> T.Text
-getLaunch =
-    maybe "" showLaunch . (fmap launch)
+getLaunch = maybe "" showLaunch . (fmap launch)
 
 getDistance :: Maybe Validity -> T.Text
-getDistance =
-    maybe "" showDistance . (fmap (\Validity{distance = x} -> x))
+getDistance = maybe "" showDistance . (fmap distance)
 
 getTime :: Maybe Validity -> T.Text
-getTime =
-    maybe "" showTime . (fmap (\Validity{time = x} -> x))
+getTime = maybe "" showTime . (fmap time)
 
 getTask :: Maybe Validity -> T.Text
-getTask =
-    maybe "" showTask . (fmap task)
+getTask = maybe "" showTask . (fmap task)

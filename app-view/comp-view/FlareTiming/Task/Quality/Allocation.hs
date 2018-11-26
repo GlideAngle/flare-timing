@@ -66,24 +66,19 @@ showTask :: TaskPoints -> T.Text
 showTask (TaskPoints p) = T.pack . show $ p
 
 getDistance :: Maybe Points -> T.Text
-getDistance =
-    maybe "" (showDistance . distance)
+getDistance = maybe "" (showDistance . distance)
 
 getLinear :: Maybe Points -> T.Text
-getLinear =
-    maybe "" (showLinear . reach)
+getLinear = maybe "" (showLinear . reach)
 
 getDifficulty :: Maybe Points -> T.Text
-getDifficulty =
-    maybe "" (showDifficulty . effort)
+getDifficulty = maybe "" (showDifficulty . effort)
 
 getArrival :: Maybe Points -> T.Text
-getArrival =
-    maybe "" (showArrival . arrival)
+getArrival = maybe "" (showArrival . arrival)
 
 getTime :: Maybe Points -> T.Text
-getTime =
-    maybe "" (showTime . time)
+getTime = maybe "" (showTime . time)
 
 getTask :: Maybe TaskPoints -> T.Text
 getTask = maybe "" showTask
