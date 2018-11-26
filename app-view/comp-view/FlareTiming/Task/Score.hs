@@ -26,6 +26,7 @@ tableScore
 tableScore xs = do
     let classR = "class" =: "has-text-right"
     let thR = elClass "th" "has-text-right" . text
+    let thU = elClass "th" "has-text-right has-text-grey-light" . text
     let th = el "th" . text
 
     _ <- elClass "table" "table is-narrow is-fullwidth" $
@@ -48,9 +49,9 @@ tableScore xs = do
                     thR "Total"
                 el "tr" $ do
                     elAttr "th" ("colspan" =: "2") $ text ""
-                    thR "HH:MM:SS"
-                    thR "km / h"
-                    thR "km"
+                    thU "HH:MM:SS"
+                    thU "km / h"
+                    thU "km"
                     elAttr "th" ("colspan" =: "5") $ text ""
                 simpleList xs row
 
@@ -81,7 +82,8 @@ row x = do
         tdR $ showLeadingPoints . leading <$> points
         tdR $ showTimePoints . time <$> points
         tdR $ showArrivalPoints . arrival <$> points
-        tdR $ showTotal . total <$> b
+        elClass "td" "has-text-right has-text-weight-bold" . dynText $
+            showTotal . total <$> b
 
 showTotal :: TaskPoints -> T.Text
 showTotal (TaskPoints p) = T.pack . show $ (truncate p :: Integer)
