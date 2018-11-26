@@ -33,10 +33,11 @@ taskDetail cs x v a s = do
     _ <- simpleList cs (compTask x)
     es <- simpleList cs (crumbTask x)
     tab <- tabsTask
+    let utc = utcOffset . head <$> cs
 
-    _ <- widgetHold (tableScore s) $
+    _ <- widgetHold (tableScore utc s) $
             (\case
-                TaskTabScore -> tableScore s
+                TaskTabScore -> tableScore utc s
 
                 TaskTabQuality -> do
                     let ps = (fmap . fmap) points a

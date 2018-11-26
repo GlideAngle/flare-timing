@@ -4,6 +4,9 @@ import Prelude hiding (min)
 import Reflex.Dom
 import qualified Data.Text as T (Text, pack, unpack, breakOn)
 import Text.Printf (printf)
+import Data.Time.Clock
+import Data.Time.Format
+import Data.Time.LocalTime
 
 import WireTypes.Track.Point
     ( Points(..)
@@ -18,14 +21,16 @@ import WireTypes.Track.Point
     , showLeadingPoints
     , showTimePoints
     )
+import WireTypes.Comp (UtcOffset(..))
 import WireTypes.Pilot (Pilot(..))
 import FlareTiming.Pilot (showPilotId, showPilotName)
 
 tableScore
     :: MonadWidget t m
-    => Dynamic t [(Pilot, Breakdown)]
+    => Dynamic t UtcOffset
+    -> Dynamic t [(Pilot, Breakdown)]
     -> m ()
-tableScore xs = do
+tableScore utcOffset xs = do
     let classR = "class" =: "has-text-right"
     let thR = elClass "th" "has-text-right" . text
     let thU = elClass "th" "has-text-right has-text-grey-light" . text
@@ -55,15 +60,16 @@ tableScore xs = do
                     thU "km / h"
                     thU "km"
                     elAttr "th" ("colspan" =: "5") $ text ""
-                simpleList xs row
+                simpleList xs (row utcOffset)
 
     return ()
 
 row
     :: MonadWidget t m
-    => Dynamic t (Pilot, Breakdown)
+    => Dynamic t UtcOffset
+    -> Dynamic t (Pilot, Breakdown)
     -> m ()
-row x = do
+row utcOffset x = do
     let pilot = fst <$> x
     let b = snd <$> x
     let points = breakdown . snd <$> x
@@ -75,8 +81,8 @@ row x = do
     el "tr" $ do
         tdR $ showPilotId <$> pilot
         td $ showPilotName <$> pilot
-        tdR $ showSs <$> v
-        tdR $ showEs <$> v
+        tdR $ zipDynWith showSs utcOffset v
+        tdR $ zipDynWith showEs utcOffset v
         tdR $ showVelocityTime <$> v
         tdR $ showVelocityVelocity <$> v
         tdR $ showVelocityDistance <$> v
@@ -90,13 +96,13 @@ row x = do
 showTotal :: TaskPoints -> T.Text
 showTotal (TaskPoints p) = T.pack . show $ (truncate p :: Integer)
 
-showSs :: Velocity -> T.Text
-showSs Velocity{ss = Just t} = T.pack . show $ t
-showSs _ = ""
+showSs :: UtcOffset -> Velocity -> T.Text
+showSs utcOffset Velocity{ss = Just t} = showT utcOffset t
+showSs _ _ = ""
 
-showEs :: Velocity -> T.Text
-showEs Velocity{es = Just t} = T.pack . show $ t
-showEs _ = ""
+showEs :: UtcOffset -> Velocity -> T.Text
+showEs utcOffset Velocity{es = Just t} = showT utcOffset t
+showEs _ _ = ""
 
 showVelocityTime :: Velocity -> T.Text
 showVelocityTime Velocity{gsElapsed = Just (PilotTime t)} =
@@ -122,3 +128,9 @@ showVelocityDistance _ = ""
 
 show2i :: Integer -> String
 show2i = printf "%02d"
+
+showT :: UtcOffset -> UTCTime -> T.Text
+showT UtcOffset{timeZoneMinutes = tzMins} = 
+    T.pack
+    . formatTime defaultTimeLocale "%T"
+    . utcToLocalTime (minutesToTimeZone tzMins)
