@@ -28,62 +28,62 @@ tableAllocation x tp = do
                     el "th" $ text "Points"
                 el "tr" $ do
                     el "td" $ text "Distance Points"
-                    td . dynText $ getPtDistance <$> x
+                    td . dynText $ getDistance <$> x
                 el "tr" $ do
                     el "td" $ text "Reach (Linear Distance) Points"
-                    td . dynText $ getPtLinear <$> x
+                    td . dynText $ getLinear <$> x
                 el "tr" $ do
                     el "td" $ text "Effort (Difficulty) Points"
-                    td . dynText $ getPtDifficulty <$> x
+                    td . dynText $ getDifficulty <$> x
                 el "tr" $ do
                     el "td" $ text "Arrival Points"
-                    td . dynText $ getPtArrival <$> x
+                    td . dynText $ getArrival <$> x
                 el "tr" $ do
                     el "td" $ text "Time Points"
-                    td . dynText $ getPtTime <$> x
+                    td . dynText $ getTime <$> x
                 elClass "tr" "has-background-light" $ do
                     el "td" $ text "Task Points"
-                    td . dynText $ getPtTask <$> tp
+                    td . dynText $ getTask <$> tp
 
     return ()
 
-showPtDistance :: DistancePoints -> T.Text
-showPtDistance (DistancePoints p) = T.pack . show $ p
+showDistance :: DistancePoints -> T.Text
+showDistance (DistancePoints p) = T.pack . show $ p
 
-showPtLinear :: LinearPoints -> T.Text
-showPtLinear (LinearPoints p) = T.pack . show $ p
+showLinear :: LinearPoints -> T.Text
+showLinear (LinearPoints p) = T.pack . show $ p
 
-showPtDifficulty :: DifficultyPoints -> T.Text
-showPtDifficulty (DifficultyPoints p) = T.pack . show $ p
+showDifficulty :: DifficultyPoints -> T.Text
+showDifficulty (DifficultyPoints p) = T.pack . show $ p
 
-showPtArrival :: ArrivalPoints -> T.Text
-showPtArrival (ArrivalPoints p) = T.pack . show $ p
+showArrival :: ArrivalPoints -> T.Text
+showArrival (ArrivalPoints p) = T.pack . show $ p
 
-showPtTime :: TimePoints -> T.Text
-showPtTime (TimePoints p) = T.pack . show $ p
+showTime :: TimePoints -> T.Text
+showTime (TimePoints p) = T.pack . show $ p
 
-showPtTask :: TaskPoints -> T.Text
-showPtTask (TaskPoints p) = T.pack . show $ p
+showTask :: TaskPoints -> T.Text
+showTask (TaskPoints p) = T.pack . show $ p
 
-getPtDistance :: Maybe Points -> T.Text
-getPtDistance =
-    maybe "" (showPtDistance . distance)
+getDistance :: Maybe Points -> T.Text
+getDistance =
+    maybe "" (showDistance . distance)
 
-getPtLinear :: Maybe Points -> T.Text
-getPtLinear =
-    maybe "" (showPtLinear . reach)
+getLinear :: Maybe Points -> T.Text
+getLinear =
+    maybe "" (showLinear . reach)
 
-getPtDifficulty :: Maybe Points -> T.Text
-getPtDifficulty =
-    maybe "" (showPtDifficulty . effort)
+getDifficulty :: Maybe Points -> T.Text
+getDifficulty =
+    maybe "" (showDifficulty . effort)
 
-getPtArrival :: Maybe Points -> T.Text
-getPtArrival =
-    maybe "" (showPtArrival . arrival)
+getArrival :: Maybe Points -> T.Text
+getArrival =
+    maybe "" (showArrival . arrival)
 
-getPtTime :: Maybe Points -> T.Text
-getPtTime =
-    maybe "" (showPtTime . time)
+getTime :: Maybe Points -> T.Text
+getTime =
+    maybe "" (showTime . time)
 
-getPtTask :: Maybe TaskPoints -> T.Text
-getPtTask = maybe "" showPtTask
+getTask :: Maybe TaskPoints -> T.Text
+getTask = maybe "" showTask

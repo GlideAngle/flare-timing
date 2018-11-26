@@ -24,42 +24,42 @@ tableValidity x = do
                     el "th" $ text "Validity"
                 el "tr" $ do
                     el "td" $ text "Launch"
-                    el "td" . dynText $ getVyLaunch <$> x
+                    el "td" . dynText $ getLaunch <$> x
                 el "tr" $ do
                     el "td" $ text "Distance"
-                    el "td" . dynText $ getVyDistance <$> x
+                    el "td" . dynText $ getDistance <$> x
                 el "tr" $ do
                     el "td" $ text "Time"
-                    el "td" . dynText $ getVyTime <$> x
+                    el "td" . dynText $ getTime <$> x
                 elClass "tr" "has-background-light" $ do
                     el "td" $ text "Task"
-                    el "td" . dynText $ getVyTask <$> x
+                    el "td" . dynText $ getTask <$> x
     return ()
 
-showVyLaunch :: LaunchValidity -> T.Text
-showVyLaunch (LaunchValidity v) = T.pack . show $ v
+showLaunch :: LaunchValidity -> T.Text
+showLaunch (LaunchValidity v) = T.pack . show $ v
 
-showVyDistance :: DistanceValidity -> T.Text
-showVyDistance (DistanceValidity v) = T.pack . show $ v
+showDistance :: DistanceValidity -> T.Text
+showDistance (DistanceValidity v) = T.pack . show $ v
 
-showVyTime :: TimeValidity -> T.Text
-showVyTime (TimeValidity v) = T.pack . show $ v
+showTime :: TimeValidity -> T.Text
+showTime (TimeValidity v) = T.pack . show $ v
 
-showVyTask :: TaskValidity -> T.Text
-showVyTask (TaskValidity v) = T.pack . show $ v
+showTask :: TaskValidity -> T.Text
+showTask (TaskValidity v) = T.pack . show $ v
 
-getVyLaunch :: Maybe Validity -> T.Text
-getVyLaunch =
-    maybe "" showVyLaunch . (fmap launch)
+getLaunch :: Maybe Validity -> T.Text
+getLaunch =
+    maybe "" showLaunch . (fmap launch)
 
-getVyDistance :: Maybe Validity -> T.Text
-getVyDistance =
-    maybe "" showVyDistance . (fmap (\Validity{distance = x} -> x))
+getDistance :: Maybe Validity -> T.Text
+getDistance =
+    maybe "" showDistance . (fmap (\Validity{distance = x} -> x))
 
-getVyTime :: Maybe Validity -> T.Text
-getVyTime =
-    maybe "" showVyTime . (fmap (\Validity{time = x} -> x))
+getTime :: Maybe Validity -> T.Text
+getTime =
+    maybe "" showTime . (fmap (\Validity{time = x} -> x))
 
-getVyTask :: Maybe Validity -> T.Text
-getVyTask =
-    maybe "" showVyTask . (fmap task)
+getTask :: Maybe Validity -> T.Text
+getTask =
+    maybe "" showTask . (fmap task)
