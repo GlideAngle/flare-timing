@@ -80,7 +80,7 @@ row utcOffset x = do
 
     el "tr" $ do
         tdR $ showPilotId <$> pilot
-        tdC $ showPilotName <$> pilot
+        el "td" . dynText $ showPilotName <$> pilot
         tdC $ zipDynWith showSs tz v
         tdC $ zipDynWith showEs tz v
         tdR $ showVelocityTime <$> v
