@@ -25,18 +25,26 @@ tableScore xs = do
     _ <- elClass "table" "table" $
             el "thead" $ do
                 el "tr" $ do
-                    el "th" $ text ""
-                    el "th" $ text "Points"
-                simpleList ((fmap . fmap) fst xs) row
+                    el "th" $ text "Id"
+                    el "th" $ text "Pilot"
+                    el "th" $ text "Total"
+                simpleList xs row
 
     return ()
 
 row
     :: MonadWidget t m
-    => Dynamic t Pilot
+    => Dynamic t (Pilot, Breakdown)
     -> m ()
 row x = do
+    let p = fst <$> x
+    let b = snd <$> x
+
     let td = el "td" . dynText
     el "tr" $ do
-        td $ showPilotId <$> x
-        td $ showPilotName <$> x
+        td $ showPilotId <$> p
+        td $ showPilotName <$> p
+        td $ showTotal . total <$> b
+
+showTotal :: TaskPoints -> T.Text
+showTotal (TaskPoints p) = T.pack . show $ p
