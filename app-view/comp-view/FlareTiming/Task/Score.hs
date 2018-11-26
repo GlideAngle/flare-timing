@@ -41,10 +41,12 @@ row x = do
     let b = snd <$> x
 
     let td = el "td" . dynText
+    let tdR = elClass "td" "has-text-right" . dynText
+
     el "tr" $ do
-        td $ showPilotId <$> p
+        tdR $ showPilotId <$> p
         td $ showPilotName <$> p
-        td $ showTotal . total <$> b
+        tdR $ showTotal . total <$> b
 
 showTotal :: TaskPoints -> T.Text
-showTotal (TaskPoints p) = T.pack . show $ p
+showTotal (TaskPoints p) = T.pack . show $ truncate p

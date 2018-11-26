@@ -1,6 +1,6 @@
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
-import Data.List (nub, sort)
+import Data.List (nub, sort, sortBy)
 import Network.Wai (Application)
 import Network.Wai.Middleware.Cors (simpleCors)
 import Network.Wai.Handler.Warp
@@ -20,7 +20,7 @@ import System.FilePath (takeFileName)
 import Data.Yaml (prettyPrintParseException)
 
 import Flight.Track.Cross (Crossing(..))
-import Flight.Track.Point (Pointing(..), Allocation, Breakdown)
+import Flight.Track.Point (Pointing(..), Allocation, Breakdown(..))
 import Flight.Score (Validity)
 import Flight.Scribe (readComp, readCrossing, readPointing)
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
@@ -138,10 +138,16 @@ serverApi cfg =
         :<|> (distinctPilots . pilots <$> asks compSettings)
         :<|> (validity <$> asks pointing)
         :<|> (allocation <$> asks pointing)
-        :<|> (score <$> asks pointing)
+        :<|> ((fmap sortScores) . score <$> asks pointing)
         )
 
 distinctPilots :: [[PilotTrackLogFile]] -> [Pilot]
 distinctPilots pss =
     let pilot (PilotTrackLogFile p _) = p
     in sort . nub .concat $ (fmap . fmap) pilot pss
+
+sortScores :: [(Pilot, Breakdown)] -> [(Pilot, Breakdown)]
+sortScores =
+    sortBy
+        (\(_, Breakdown{total = a}) (_, Breakdown{total = b}) ->
+            b `compare` a)
