@@ -22,11 +22,19 @@ module WireTypes.Track.Point
     , ArrivalWeight(..)
     , TimeWeight(..)
     , Weights(..)
+    , showDistancePoints
+    , showLinearPoints
+    , showDifficultyPoints
+    , showArrivalPoints
+    , showTimePoints
+    , showLeadingPoints
+    , showTaskPoints
     ) where
 
 import Data.Time.Clock (UTCTime)
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
+import qualified Data.Text as T (Text, pack)
 
 newtype StartGate = StartGate UTCTime
     deriving (Eq, Ord, Show, Generic)
@@ -104,6 +112,27 @@ newtype TimePoints = TimePoints Double
 newtype TaskPoints = TaskPoints Double
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
+
+showDistancePoints :: DistancePoints -> T.Text
+showDistancePoints (DistancePoints p) = T.pack . show $ p
+
+showLinearPoints :: LinearPoints -> T.Text
+showLinearPoints (LinearPoints p) = T.pack . show $ p
+
+showDifficultyPoints :: DifficultyPoints -> T.Text
+showDifficultyPoints (DifficultyPoints p) = T.pack . show $ p
+
+showArrivalPoints :: ArrivalPoints -> T.Text
+showArrivalPoints (ArrivalPoints p) = T.pack . show $ p
+
+showTimePoints :: TimePoints -> T.Text
+showTimePoints (TimePoints p) = T.pack . show $ p
+
+showLeadingPoints :: LeadingPoints -> T.Text
+showLeadingPoints (LeadingPoints p) = T.pack . show $ p
+
+showTaskPoints :: TaskPoints -> T.Text
+showTaskPoints (TaskPoints p) = T.pack . show $ p
 
 data Points =
     Points 

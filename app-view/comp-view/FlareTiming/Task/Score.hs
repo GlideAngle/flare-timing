@@ -4,16 +4,15 @@ import Reflex.Dom
 import qualified Data.Text as T (Text, pack)
 
 import WireTypes.Track.Point
-    ( DistancePoints(..)
-    , LinearPoints(..)
-    , DifficultyPoints(..)
-    , ArrivalPoints(..)
-    , TimePoints(..)
+    ( Points(..)
     , TaskPoints(..)
-    , Points(..)
     , Breakdown(..)
+    , showDistancePoints
+    , showArrivalPoints
+    , showLeadingPoints
+    , showTimePoints
     )
-import WireTypes.Pilot (Pilot(..), PilotName(..))
+import WireTypes.Pilot (Pilot(..))
 import FlareTiming.Pilot (showPilotId, showPilotName)
 
 tableScore
@@ -27,6 +26,10 @@ tableScore xs = do
                 el "tr" $ do
                     el "th" $ text "Id"
                     el "th" $ text "Pilot"
+                    el "th" $ text "Distance"
+                    el "th" $ text "Lead"
+                    el "th" $ text "Time"
+                    el "th" $ text "Arrival"
                     el "th" $ text "Total"
                 simpleList xs row
 
@@ -37,16 +40,21 @@ row
     => Dynamic t (Pilot, Breakdown)
     -> m ()
 row x = do
-    let p = fst <$> x
+    let pilot = fst <$> x
     let b = snd <$> x
+    let points = breakdown . snd <$> x
 
     let td = el "td" . dynText
     let tdR = elClass "td" "has-text-right" . dynText
 
     el "tr" $ do
-        tdR $ showPilotId <$> p
-        td $ showPilotName <$> p
+        tdR $ showPilotId <$> pilot
+        td $ showPilotName <$> pilot
+        tdR $ showDistancePoints . distance <$> points
+        tdR $ showLeadingPoints . leading <$> points
+        tdR $ showTimePoints . time <$> points
+        tdR $ showArrivalPoints . arrival <$> points
         tdR $ showTotal . total <$> b
 
 showTotal :: TaskPoints -> T.Text
-showTotal (TaskPoints p) = T.pack . show $ truncate p
+showTotal (TaskPoints p) = T.pack . show $ (truncate p :: Integer)

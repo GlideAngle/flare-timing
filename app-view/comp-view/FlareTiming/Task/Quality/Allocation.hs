@@ -1,16 +1,17 @@
 module FlareTiming.Task.Quality.Allocation (tableAllocation) where
 
 import Reflex.Dom
-import qualified Data.Text as T (Text, pack)
+import qualified Data.Text as T (Text)
 
 import WireTypes.Track.Point
-    ( DistancePoints(..)
-    , LinearPoints(..)
-    , DifficultyPoints(..)
-    , ArrivalPoints(..)
-    , TimePoints(..)
+    ( Points(..)
     , TaskPoints(..)
-    , Points(..)
+    , showDistancePoints
+    , showLinearPoints
+    , showDifficultyPoints
+    , showArrivalPoints
+    , showTimePoints
+    , showTaskPoints
     )
 
 tableAllocation
@@ -47,38 +48,20 @@ tableAllocation x tp = do
 
     return ()
 
-showDistance :: DistancePoints -> T.Text
-showDistance (DistancePoints p) = T.pack . show $ p
-
-showLinear :: LinearPoints -> T.Text
-showLinear (LinearPoints p) = T.pack . show $ p
-
-showDifficulty :: DifficultyPoints -> T.Text
-showDifficulty (DifficultyPoints p) = T.pack . show $ p
-
-showArrival :: ArrivalPoints -> T.Text
-showArrival (ArrivalPoints p) = T.pack . show $ p
-
-showTime :: TimePoints -> T.Text
-showTime (TimePoints p) = T.pack . show $ p
-
-showTask :: TaskPoints -> T.Text
-showTask (TaskPoints p) = T.pack . show $ p
-
 getDistance :: Maybe Points -> T.Text
-getDistance = maybe "" (showDistance . distance)
+getDistance = maybe "" (showDistancePoints . distance)
 
 getLinear :: Maybe Points -> T.Text
-getLinear = maybe "" (showLinear . reach)
+getLinear = maybe "" (showLinearPoints . reach)
 
 getDifficulty :: Maybe Points -> T.Text
-getDifficulty = maybe "" (showDifficulty . effort)
+getDifficulty = maybe "" (showDifficultyPoints . effort)
 
 getArrival :: Maybe Points -> T.Text
-getArrival = maybe "" (showArrival . arrival)
+getArrival = maybe "" (showArrivalPoints . arrival)
 
 getTime :: Maybe Points -> T.Text
-getTime = maybe "" (showTime . time)
+getTime = maybe "" (showTimePoints . time)
 
 getTask :: Maybe TaskPoints -> T.Text
-getTask = maybe "" showTask
+getTask = maybe "" showTaskPoints
