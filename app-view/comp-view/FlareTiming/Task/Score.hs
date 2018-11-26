@@ -10,6 +10,7 @@ import WireTypes.Track.Point
     , Velocity(..)
     , PilotDistance(..)
     , PilotTime(..)
+    , PilotVelocity(..)
     , showDistancePoints
     , showArrivalPoints
     , showLeadingPoints
@@ -32,6 +33,7 @@ tableScore xs = do
                     el "th" $ text "SS"
                     el "th" $ text "ES"
                     el "th" $ text "Time"
+                    el "th" $ text "Velocity"
                     el "th" $ text "Distance"
                     el "th" $ text "Distance"
                     el "th" $ text "Lead"
@@ -61,6 +63,7 @@ row x = do
         tdR $ showSs <$> v
         tdR $ showEs <$> v
         tdR $ showVelocityTime <$> v
+        tdR $ showVelocityVelocity <$> v
         tdR $ showVelocityDistance <$> v
         tdR $ showDistancePoints . (\Points{distance = d} -> d) <$> points
         tdR $ showLeadingPoints . leading <$> points
@@ -82,6 +85,10 @@ showEs _ = ""
 showVelocityTime :: Velocity -> T.Text
 showVelocityTime Velocity{gsElapsed = Just (PilotTime t)} = T.pack t
 showVelocityTime _ = ""
+
+showVelocityVelocity :: Velocity -> T.Text
+showVelocityVelocity Velocity{gsVelocity = Just (PilotVelocity v)} = T.pack v
+showVelocityVelocity _ = ""
 
 showVelocityDistance :: Velocity -> T.Text
 showVelocityDistance Velocity{distance = Just (PilotDistance d)} = T.pack d

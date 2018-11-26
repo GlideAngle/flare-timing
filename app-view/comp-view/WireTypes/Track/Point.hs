@@ -12,6 +12,7 @@ module WireTypes.Track.Point
     , GoalRatio(..)
     , PilotDistance(..)
     , PilotTime(..)
+    , PilotVelocity(..)
     , DistancePoints(..)
     , LinearPoints(..)
     , DifficultyPoints(..)
