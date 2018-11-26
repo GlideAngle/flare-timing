@@ -37,6 +37,8 @@ tableScore utcOffset xs = do
     let classC = "class" =: "has-text-centered"
     let thR = elClass "th" "has-text-right" . text
     let thBg = elClass "th" "has-text-right has-background-white-bis" . text
+    let thStart = elClass "th" "has-text-centered has-text-success" . text
+    let thEnd = elClass "th" "has-text-centered has-text-danger" . text
     let thC = elClass "th" "has-text-centered" . text
     let thU = elClass "th" "has-text-right has-text-grey-light" . text
 
@@ -48,8 +50,8 @@ tableScore utcOffset xs = do
                     elAttr "th" (classC <> "colspan" =: "5" ) $ text "Speed Section"
                     elAttr "th" (classBg <> "colspan" =: "5") $ text "Points"
                 el "tr" $ do
-                    thC "Start"
-                    thC "End"
+                    thStart "Start"
+                    thEnd "End"
                     thC "Time"
                     thR "Speed"
                     thR "Distance"
@@ -81,24 +83,35 @@ row utcOffset x = do
 
     let tdR = elClass "td" "has-text-right" . dynText
     let tdR' = elClass "td" "has-text-right has-background-white-bis" . dynText
-    let tdC = elClass "td" "has-text-centered" . dynText
-    let tdBold =
+    let tdStart =
+            elClass
+                "td"
+                "has-text-centered has-text-success"
+            . dynText
+
+    let tdEnd =
+            elClass
+                "td"
+                "has-text-centered has-text-danger"
+            . dynText
+
+    let tdPlace =
             elClass
                 "td"
                 "has-text-right has-text-weight-bold"
             . dynText
 
-    let tdBoldBg =
+    let tdTotal =
             elClass
                 "td"
                 "has-text-right has-text-weight-bold has-background-white-bis"
             . dynText
 
     el "tr" $ do
-        tdBold $ showRank . place <$> b
+        tdPlace $ showRank . place <$> b
         el "td" . dynText $ showPilotName <$> pilot
-        tdC $ zipDynWith showSs tz v
-        tdC $ zipDynWith showEs tz v
+        tdStart $ zipDynWith showSs tz v
+        tdEnd $ zipDynWith showEs tz v
         tdR $ showVelocityTime <$> v
         tdR $ showVelocityVelocity <$> v
         tdR $ showVelocityDistance <$> v
@@ -106,7 +119,7 @@ row utcOffset x = do
         tdR' $ showLeadingPoints . leading <$> points
         tdR' $ showTimePoints . time <$> points
         tdR' $ showArrivalPoints . arrival <$> points
-        tdBoldBg $ showTotal . total <$> b
+        tdTotal $ showTotal . total <$> b
 
 showRank :: TaskPlacing -> T.Text
 showRank (TaskPlacing p) = T.pack . show $ p
