@@ -3,7 +3,7 @@ module FlareTiming.Comp.Pilot (tablePilot) where
 import Reflex.Dom
 
 import WireTypes.Pilot (Pilot)
-import FlareTiming.Pilot.Row (row)
+import FlareTiming.Pilot (rowPilot)
 
 tablePilot
     :: MonadWidget t m
@@ -16,5 +16,5 @@ tablePilot xs = do
                     el "th" $ text "Id"
                     el "th" $ text "Name"
 
-                simpleList xs row
+                simpleList xs rowPilot
     return ()

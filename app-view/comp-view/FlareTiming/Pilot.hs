@@ -1,7 +1,7 @@
-module FlareTiming.Pilot.Row
+module FlareTiming.Pilot
     ( showPilotId
     , showPilotName
-    , row
+    , rowPilot
     ) where
 
 import Reflex.Dom
@@ -9,11 +9,11 @@ import qualified Data.Text as T (Text, pack)
 
 import WireTypes.Pilot (Pilot(..), PilotId(..), PilotName(..))
 
-row
+rowPilot
     :: MonadWidget t m
     => Dynamic t Pilot
     -> m ()
-row x = do
+rowPilot x = do
     let td = el "td" . dynText
     el "tr" $ do
         td $ showPilotId <$> x

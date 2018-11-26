@@ -14,7 +14,7 @@ import WireTypes.Track.Point
     , Breakdown(..)
     )
 import WireTypes.Pilot (Pilot(..), PilotName(..))
-import FlareTiming.Pilot.Row (showPilotId, showPilotName)
+import FlareTiming.Pilot (showPilotId, showPilotName)
 
 tableScore
     :: MonadWidget t m

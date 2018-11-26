@@ -3,7 +3,7 @@ module FlareTiming.Task.Absent (tableAbsent) where
 import Reflex.Dom
 
 import WireTypes.Comp (Task(..), getAbsent)
-import FlareTiming.Pilot.Row (row)
+import FlareTiming.Pilot (rowPilot)
 
 tableAbsent
     :: MonadWidget t m
@@ -18,5 +18,5 @@ tableAbsent x = do
                     el "th" $ text "Id"
                     el "th" $ text "Name"
 
-                simpleList xs row
+                simpleList xs rowPilot
     return ()
