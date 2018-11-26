@@ -20,7 +20,7 @@ tasks :: MonadWidget t m => m ()
 tasks = do
     pb :: Event t () <- getPostBuild
     elClass "div" "spacer" $ return ()
-    elClass "div" "container" $ do
+    elClass "div" "container is-size-7" $ do
         _ <- widgetHold loading $ fmap view pb
         elClass "div" "spacer" $ return ()
 
