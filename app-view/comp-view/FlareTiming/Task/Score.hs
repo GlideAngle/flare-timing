@@ -1,7 +1,9 @@
 module FlareTiming.Task.Score (tableScore) where
 
+import Prelude hiding (min)
 import Reflex.Dom
-import qualified Data.Text as T (Text, pack, breakOn)
+import qualified Data.Text as T (Text, pack, unpack, breakOn)
+import Text.Printf (printf)
 
 import WireTypes.Track.Point
     ( Points(..)
@@ -98,7 +100,14 @@ showEs _ = ""
 
 showVelocityTime :: Velocity -> T.Text
 showVelocityTime Velocity{gsElapsed = Just (PilotTime t)} =
-    fst . T.breakOn " h" . T.pack $ t
+    T.pack $ show2i hr' ++ ":" ++ show2i min' ++ ":" ++ show2i sec'
+    where
+        hrStr = T.unpack . fst . T.breakOn " h" . T.pack $ t
+        hr = read hrStr :: Double
+        sec = round $ 3600 * hr
+        (hr', min) = sec `divMod` 3600
+        (min', sec') = min `divMod` 60
+
 showVelocityTime _ = ""
 
 showVelocityVelocity :: Velocity -> T.Text
@@ -110,3 +119,6 @@ showVelocityDistance :: Velocity -> T.Text
 showVelocityDistance Velocity{distance = Just (PilotDistance d)} =
     fst . T.breakOn " km" . T.pack $ d
 showVelocityDistance _ = ""
+
+show2i :: Integer -> String
+show2i = printf "%02d"
