@@ -4,6 +4,7 @@ module WireTypes.Comp
     , Task(..)
     , Name
     , SpeedSection
+    , UtcOffset(..)
     , getAllRawZones
     , getRaceRawZones
     , getSpeedSection
@@ -22,6 +23,10 @@ type Name = String
 
 type SpeedSection = Maybe (Integer, Integer)
 
+newtype UtcOffset = UtcOffset { timeZoneMinutes :: Int }
+    deriving (Eq, Ord, Show, Read, Generic)
+    deriving anyclass (ToJSON, FromJSON)
+
 data Comp =
     Comp
         { civilId :: String
@@ -29,6 +34,7 @@ data Comp =
         , location :: String
         , from :: String
         , to :: String
+        , utcOffset :: UtcOffset
         }
     deriving (Show, Generic, ToJSON, FromJSON)
 

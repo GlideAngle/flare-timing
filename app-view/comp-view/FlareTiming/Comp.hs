@@ -2,13 +2,13 @@ module FlareTiming.Comp (comps, compTask) where
 
 import Reflex
 import Reflex.Dom
-import qualified Data.Text as T (pack, intercalate)
+import qualified Data.Text as T (Text, pack, intercalate)
 import Data.Map (union)
 import Data.Maybe (listToMaybe)
 import Control.Applicative (pure)
 
 import WireTypes.Comp
-    (Comp(..), Nominal(..), Task(..), getRaceRawZones)
+    (Comp(..), Nominal(..), Task(..), UtcOffset(..), getRaceRawZones)
 import qualified FlareTiming.Turnpoint as TP (getName)
 import FlareTiming.Comms (getNominals)
 
@@ -56,18 +56,24 @@ comp ns c = do
                     elClass "p" "title is-5" $ do
                         dynText subtitle
                 elClass "div" "example" $ do
-                    nominal n
+                    nominal n $ utcOffset <$> c
 
 nominal
     :: MonadWidget t m
     => Dynamic t (Maybe Nominal)
+    -> Dynamic t UtcOffset
     -> m ()
-nominal n = do
+nominal n u = do
     _ <- dyn $ ffor n (\x ->
         case x of
             Nothing -> text "Loading nominals ..."
             (Just Nominal{..}) -> do
                 elClass "div" "field is-grouped is-grouped-multiline" $ do
+                    elClass "div" "control" $ do
+                        elClass "div" "tags has-addons" $ do
+                            elClass "span" "tag" $ do text "UTC offset"
+                            elClass "span" "tag is-warning" $ do
+                                dynText $ showUtcOffset <$> u
                     elClass "div" "control" $ do
                         elClass "div" "tags has-addons" $ do
                             elClass "span" "tag" $ do text "nominal distance"
@@ -85,6 +91,10 @@ nominal n = do
                                 $ text (T.pack . show $ goal))
 
     return ()
+
+showUtcOffset :: UtcOffset -> T.Text
+showUtcOffset UtcOffset{timeZoneMinutes = mins} =
+    T.pack $ show mins ++ " mins"
 
 comps :: MonadWidget t m => Dynamic t [Comp] -> m ()
 comps cs = do
