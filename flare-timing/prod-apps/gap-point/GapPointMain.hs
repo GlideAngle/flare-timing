@@ -426,11 +426,12 @@ points'
 -- SEE: https://stackoverflow.com/questions/15412027/haskell-equivalent-to-scalas-groupby
 rankByTotal :: [(Pilot, Breakdown)] -> [(Pilot, Breakdown)]
 rankByTotal xs =
-    [ (rankScore ii) <$> y
+    [ (rankScore f ii) <$> y
     | (ii, ys) <-
                 zip [1..]
                 . groupBy ((==) `on` truncateTaskPoints . total . snd)
                 $ xs
+    , let f = if length ys == 1 then TaskPlacing else TaskPlacingEqual
     , y <- ys
     ]
 
@@ -443,8 +444,8 @@ sortScores =
 truncateTaskPoints :: TaskPoints -> Integer
 truncateTaskPoints (TaskPoints x) = truncate . dpRound 0 $ x
 
-rankScore :: Integer -> Breakdown -> Breakdown
-rankScore ii b = b{place = TaskPlacing ii}
+rankScore :: (Integer -> TaskPlacing) -> Integer -> Breakdown -> Breakdown
+rankScore f ii b = b{place = f ii}
 
 zeroPoints :: Gap.Points
 zeroPoints =

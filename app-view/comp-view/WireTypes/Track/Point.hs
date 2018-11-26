@@ -35,10 +35,11 @@ module WireTypes.Track.Point
     , showTaskPoints
     ) where
 
+import Control.Applicative (empty)
 import Data.Time.Clock (UTCTime)
 import GHC.Generics (Generic)
-import Data.Aeson (ToJSON(..), FromJSON(..))
-import qualified Data.Text as T (Text, pack)
+import Data.Aeson (Value(..), ToJSON(..), FromJSON(..))
+import qualified Data.Text as T (Text, pack, unpack)
 
 newtype StartGate = StartGate UTCTime
     deriving (Eq, Ord, Show, Generic)
@@ -113,9 +114,26 @@ newtype TimePoints = TimePoints Double
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
-newtype TaskPlacing = TaskPlacing Integer
-    deriving (Eq, Ord, Show, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+data TaskPlacing
+    = TaskPlacing Integer
+    | TaskPlacingEqual Integer
+    deriving (Eq, Ord, Show)
+
+instance ToJSON TaskPlacing where
+    toJSON (TaskPlacing x) = String . T.pack $ show x
+    toJSON (TaskPlacingEqual x) = String . T.pack $ show x ++ "="
+
+instance FromJSON TaskPlacing where
+    parseJSON x@(String _) = do
+        s <- T.unpack <$> parseJSON x
+        case reverse s of
+            '=' : digits ->
+                return . TaskPlacingEqual . read . reverse $ digits
+
+            _ ->
+                return . TaskPlacing . read $ s
+
+    parseJSON _ = empty
 
 newtype TaskPoints = TaskPoints Double
     deriving (Eq, Ord, Show, Generic)

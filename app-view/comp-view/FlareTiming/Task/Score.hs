@@ -98,6 +98,7 @@ row utcOffset x = do
 
 showRank :: TaskPlacing -> T.Text
 showRank (TaskPlacing p) = T.pack . show $ p
+showRank (TaskPlacingEqual p) = T.pack $ show p ++ "="
 
 showTotal :: TaskPoints -> T.Text
 showTotal (TaskPoints p) = T.pack . show $ (truncate p :: Integer)

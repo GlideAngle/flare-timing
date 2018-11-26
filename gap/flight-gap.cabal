@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 9a83010535e7fb0508c933c5836057a2293d2ec4e2f15adff0f55361deaa89be
+-- hash: d9e67144c7c535b26807842772135d197de3911b47bdba2167cdd8e0b04cfda8
 
 name:           flight-gap
 version:        0.1.0
@@ -94,6 +94,7 @@ library
     , siggy-chardust
     , statistics
     , template-haskell
+    , text
     , uom-plugin
     , vector
   default-language: Haskell2010
@@ -184,6 +185,7 @@ test-suite score
     , tasty-quickcheck
     , tasty-smallcheck
     , template-haskell
+    , text
     , uom-plugin
     , vector
   default-language: Haskell2010

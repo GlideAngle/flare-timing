@@ -27,6 +27,7 @@ in    deps
             , "scientific"
             , "uom-plugin"
             , "template-haskell"
+            , "text"
             , "detour-via-sci"
             , "detour-via-uom"
             , "siggy-chardust"
