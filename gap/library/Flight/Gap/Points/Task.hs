@@ -1,7 +1,12 @@
-module Flight.Gap.Points.Task (TaskPoints(..)) where
+module Flight.Gap.Points.Task (TaskPlacing(..), TaskPoints(..)) where
 
+import GHC.Generics (Generic)
+import Data.Aeson (ToJSON(..), FromJSON(..))
 import "newtype" Control.Newtype (Newtype(..))
 import Data.Via.Scientific (DecimalPlaces(..), deriveDecimalPlaces, deriveJsonViaSci)
+
+newtype TaskPlacing = TaskPlacing Integer
+    deriving (Eq, Ord, Show, Generic, FromJSON, ToJSON)
 
 newtype TaskPoints = TaskPoints Rational
     deriving (Eq, Ord, Show)

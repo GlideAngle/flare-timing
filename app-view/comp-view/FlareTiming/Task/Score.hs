@@ -10,6 +10,7 @@ import Data.Time.LocalTime (TimeZone, minutesToTimeZone, utcToLocalTime)
 
 import WireTypes.Track.Point
     ( Points(..)
+    , TaskPlacing(..)
     , TaskPoints(..)
     , Breakdown(..)
     , Velocity(..)
@@ -39,6 +40,7 @@ tableScore utcOffset xs = do
     _ <- elClass "table" "table is-narrow is-fullwidth" $
             el "thead" $ do
                 el "tr" $ do
+                    elAttr "th" (classR <> "rowspan" =: "3") $ text "#"
                     elAttr "th" (classR <> "rowspan" =: "3") $ text "Id"
                     elAttr "th" ("rowspan" =: "3") $ text "Pilot"
                     elAttr "th" ("colspan" =: "5" ) $ text "Velocity"
@@ -77,8 +79,10 @@ row utcOffset x = do
 
     let tdR = elClass "td" "has-text-right" . dynText
     let tdC = elClass "td" "has-text-centered" . dynText
+    let tdBold = elClass "td" "has-text-right has-text-weight-bold" . dynText
 
     el "tr" $ do
+        tdBold $ showRank . place <$> b
         tdR $ showPilotId <$> pilot
         el "td" . dynText $ showPilotName <$> pilot
         tdC $ zipDynWith showSs tz v
@@ -90,8 +94,10 @@ row utcOffset x = do
         tdR $ showLeadingPoints . leading <$> points
         tdR $ showTimePoints . time <$> points
         tdR $ showArrivalPoints . arrival <$> points
-        elClass "td" "has-text-right has-text-weight-bold" . dynText $
-            showTotal . total <$> b
+        tdBold $ showTotal . total <$> b
+
+showRank :: TaskPlacing -> T.Text
+showRank (TaskPlacing p) = T.pack . show $ p
 
 showTotal :: TaskPoints -> T.Text
 showTotal (TaskPoints p) = T.pack . show $ (truncate p :: Integer)

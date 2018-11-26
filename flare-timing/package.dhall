@@ -187,7 +187,12 @@ in    defs
           , gap-point =
               { dependencies =
                     deps
-                  # [ "containers", "flight-zone", "flight-gap", "flight-mask" ]
+                  # [ "containers"
+                    , "flight-zone"
+                    , "flight-gap"
+                    , "flight-mask"
+                    , "siggy-chardust"
+                    ]
               , ghc-options =
                   [ "-rtsopts"
                   , "-threaded"

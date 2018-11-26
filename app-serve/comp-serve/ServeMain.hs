@@ -1,6 +1,6 @@
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
-import Data.List (nub, sort, sortBy)
+import Data.List (nub, sort)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Network.Wai (Application)
@@ -142,25 +142,13 @@ serverApi cfg =
         :<|> (distinctPilots . pilots <$> asks compSettings)
         :<|> (validity <$> asks pointing)
         :<|> (allocation <$> asks pointing)
-        :<|>
-            (
-                ((fmap . fmap . fmap) roundVelocity')
-                . (fmap sortScores)
-                . score
-                <$> asks pointing
-            )
+        :<|> (((fmap . fmap . fmap) roundVelocity') . score <$> asks pointing)
         )
 
 distinctPilots :: [[PilotTrackLogFile]] -> [Pilot]
 distinctPilots pss =
     let pilot (PilotTrackLogFile p _) = p
     in sort . nub .concat $ (fmap . fmap) pilot pss
-
-sortScores :: [(Pilot, Breakdown)] -> [(Pilot, Breakdown)]
-sortScores =
-    sortBy
-        (\(_, Breakdown{total = a}) (_, Breakdown{total = b}) ->
-            b `compare` a)
 
 roundVelocity
     :: PilotVelocity (Quantity Double [u| km / h |])

@@ -18,6 +18,7 @@ module WireTypes.Track.Point
     , DifficultyPoints(..)
     , ArrivalPoints(..)
     , TimePoints(..)
+    , TaskPlacing(..)
     , TaskPoints(..)
     , Points(..)
     , DistanceWeight(..)
@@ -112,6 +113,10 @@ newtype TimePoints = TimePoints Double
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
+newtype TaskPlacing = TaskPlacing Integer
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
+
 newtype TaskPoints = TaskPoints Double
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
@@ -199,7 +204,8 @@ data Velocity =
 
 data Breakdown =
     Breakdown
-        { total :: TaskPoints
+        { place :: TaskPlacing
+        , total :: TaskPoints
         , breakdown :: Points
         , velocity :: Velocity
         }

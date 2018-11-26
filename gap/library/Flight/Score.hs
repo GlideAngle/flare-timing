@@ -122,6 +122,7 @@ module Flight.Score
     , LeadingPoints(..)
     , ArrivalPoints(..)
     , TimePoints(..)
+    , TaskPlacing(..)
     , TaskPoints(..)
     , Points(..)
     , zeroPoints

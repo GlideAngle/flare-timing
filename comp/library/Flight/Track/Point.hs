@@ -24,7 +24,8 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Flight.Units ()
 import Flight.Field (FieldOrdering(..))
 import Flight.Score
-    ( GoalRatio, TaskPoints, Points, Validity, ValidityWorking, Weights
+    ( GoalRatio, TaskPlacing, TaskPoints, Points
+    , Validity, ValidityWorking, Weights
     , PilotTime, PilotDistance, PilotVelocity
     )
 import Flight.Pilot (Pilot)
@@ -56,7 +57,8 @@ data Velocity =
 
 data Breakdown =
     Breakdown
-        { total :: TaskPoints
+        { place :: TaskPlacing
+        , total :: TaskPoints
         , breakdown :: Points
         , velocity :: Velocity
         }
@@ -88,6 +90,9 @@ cmp :: (Ord a, IsString a) => a -> a -> Ordering
 cmp a b =
     case (a, b) of
         -- Breakdown fields
+        ("place", _) -> LT
+
+        ("total", "place") -> GT
         ("total", _) -> LT
 
         ("breakdown", "total") -> GT

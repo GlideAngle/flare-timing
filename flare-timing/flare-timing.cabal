@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c394c7f9d6049a827c1d33395d265cd45376a93763f357a5e5b27c83a7ed0275
+-- hash: 2cee3ba608058165e7dfddbae3fae3c131177b0cb62b3cba134b2b8931c98a04
 
 name:           flare-timing
 version:        0.1.0
@@ -197,6 +197,7 @@ executable gap-point
     , formatting
     , mtl
     , raw-strings-qq
+    , siggy-chardust
     , transformers
     , uom-plugin
     , yaml
