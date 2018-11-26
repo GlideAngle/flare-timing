@@ -1,7 +1,7 @@
 module FlareTiming.Task.Score (tableScore) where
 
 import Reflex.Dom
-import qualified Data.Text as T (Text, pack)
+import qualified Data.Text as T (Text, pack, breakOn)
 
 import WireTypes.Track.Point
     ( Points(..)
@@ -24,25 +24,34 @@ tableScore
     => Dynamic t [(Pilot, Breakdown)]
     -> m ()
 tableScore xs = do
+    let classR = "class" =: "has-text-right"
+    let thR = elClass "th" "has-text-right" . text
+    let th = el "th" . text
 
     _ <- elClass "table" "table" $
             el "thead" $ do
                 el "tr" $ do
-                    elAttr "th" ("class" =: "has-text-right" <> "rowspan" =: "2") $ text "Id"
-                    elAttr "th" ("rowspan" =: "2") $ text "Pilot"
+                    elAttr "th" (classR <> "rowspan" =: "3") $ text "Id"
+                    elAttr "th" ("rowspan" =: "3") $ text "Pilot"
                     elAttr "th" ("colspan" =: "5" ) $ text "Velocity"
                     elAttr "th" ("colspan" =: "5") $ text "Points"
                 el "tr" $ do
-                    el "th" $ text "SS"
-                    el "th" $ text "ES"
-                    el "th" $ text "Time"
-                    el "th" $ text "Velocity"
-                    el "th" $ text "Distance"
-                    el "th" $ text "Distance"
-                    el "th" $ text "Lead"
-                    el "th" $ text "Time"
-                    el "th" $ text "Arrival"
-                    el "th" $ text "Total"
+                    th "SS"
+                    th "ES"
+                    thR "Time"
+                    thR "Velocity"
+                    thR "Distance"
+                    thR "Distance"
+                    thR "Lead"
+                    thR "Time"
+                    thR "Arrival"
+                    thR "Total"
+                el "tr" $ do
+                    elAttr "th" ("colspan" =: "2") $ text ""
+                    thR "HH:MM:SS"
+                    thR "km / h"
+                    thR "km"
+                    elAttr "th" ("colspan" =: "5") $ text ""
                 simpleList xs row
 
     return ()
@@ -86,13 +95,16 @@ showEs Velocity{es = Just t} = T.pack . show $ t
 showEs _ = ""
 
 showVelocityTime :: Velocity -> T.Text
-showVelocityTime Velocity{gsElapsed = Just (PilotTime t)} = T.pack t
+showVelocityTime Velocity{gsElapsed = Just (PilotTime t)} =
+    fst . T.breakOn " h" . T.pack $ t
 showVelocityTime _ = ""
 
 showVelocityVelocity :: Velocity -> T.Text
-showVelocityVelocity Velocity{gsVelocity = Just (PilotVelocity v)} = T.pack v
+showVelocityVelocity Velocity{gsVelocity = Just (PilotVelocity v)} =
+    fst . T.breakOn " km / h" . T.pack $ v
 showVelocityVelocity _ = ""
 
 showVelocityDistance :: Velocity -> T.Text
-showVelocityDistance Velocity{distance = Just (PilotDistance d)} = T.pack d
+showVelocityDistance Velocity{distance = Just (PilotDistance d)} =
+    fst . T.breakOn " km" . T.pack $ d
 showVelocityDistance _ = ""
