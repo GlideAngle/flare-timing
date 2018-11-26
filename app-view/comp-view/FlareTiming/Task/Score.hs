@@ -4,9 +4,9 @@ import Prelude hiding (min)
 import Reflex.Dom
 import qualified Data.Text as T (Text, pack, unpack, breakOn)
 import Text.Printf (printf)
-import Data.Time.Clock
-import Data.Time.Format
-import Data.Time.LocalTime
+import Data.Time.Clock (UTCTime)
+import Data.Time.Format (formatTime, defaultTimeLocale)
+import Data.Time.LocalTime (TimeZone, minutesToTimeZone, utcToLocalTime)
 
 import WireTypes.Track.Point
     ( Points(..)
@@ -70,6 +70,7 @@ row
     -> Dynamic t (Pilot, Breakdown)
     -> m ()
 row utcOffset x = do
+    let tz = timeZone <$> utcOffset
     let pilot = fst <$> x
     let b = snd <$> x
     let points = breakdown . snd <$> x
@@ -81,8 +82,8 @@ row utcOffset x = do
     el "tr" $ do
         tdR $ showPilotId <$> pilot
         td $ showPilotName <$> pilot
-        tdR $ zipDynWith showSs utcOffset v
-        tdR $ zipDynWith showEs utcOffset v
+        tdR $ zipDynWith showSs tz v
+        tdR $ zipDynWith showEs tz v
         tdR $ showVelocityTime <$> v
         tdR $ showVelocityVelocity <$> v
         tdR $ showVelocityDistance <$> v
@@ -96,12 +97,12 @@ row utcOffset x = do
 showTotal :: TaskPoints -> T.Text
 showTotal (TaskPoints p) = T.pack . show $ (truncate p :: Integer)
 
-showSs :: UtcOffset -> Velocity -> T.Text
-showSs utcOffset Velocity{ss = Just t} = showT utcOffset t
+showSs :: TimeZone -> Velocity -> T.Text
+showSs tz Velocity{ss = Just t} = showT tz t
 showSs _ _ = ""
 
-showEs :: UtcOffset -> Velocity -> T.Text
-showEs utcOffset Velocity{es = Just t} = showT utcOffset t
+showEs :: TimeZone -> Velocity -> T.Text
+showEs tz Velocity{es = Just t} = showT tz t
 showEs _ _ = ""
 
 showVelocityTime :: Velocity -> T.Text
@@ -129,8 +130,11 @@ showVelocityDistance _ = ""
 show2i :: Integer -> String
 show2i = printf "%02d"
 
-showT :: UtcOffset -> UTCTime -> T.Text
-showT UtcOffset{timeZoneMinutes = tzMins} = 
+showT :: TimeZone -> UTCTime -> T.Text
+showT tz = 
     T.pack
     . formatTime defaultTimeLocale "%T"
-    . utcToLocalTime (minutesToTimeZone tzMins)
+    . utcToLocalTime tz
+
+timeZone :: UtcOffset -> TimeZone
+timeZone UtcOffset{timeZoneMinutes = tzMins} = minutesToTimeZone tzMins
