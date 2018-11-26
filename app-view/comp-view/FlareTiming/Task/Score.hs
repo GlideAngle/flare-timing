@@ -24,7 +24,7 @@ import WireTypes.Track.Point
     )
 import WireTypes.Comp (UtcOffset(..))
 import WireTypes.Pilot (Pilot(..))
-import FlareTiming.Pilot (showPilotId, showPilotName)
+import FlareTiming.Pilot (showPilotName)
 
 tableScore
     :: MonadWidget t m
@@ -41,7 +41,6 @@ tableScore utcOffset xs = do
             el "thead" $ do
                 el "tr" $ do
                     elAttr "th" (classR <> "rowspan" =: "3") $ text "#"
-                    elAttr "th" (classR <> "rowspan" =: "3") $ text "Id"
                     elAttr "th" ("rowspan" =: "3") $ text "Pilot"
                     elAttr "th" ("colspan" =: "5" ) $ text "Velocity"
                     elAttr "th" ("colspan" =: "5") $ text "Points"
@@ -83,7 +82,6 @@ row utcOffset x = do
 
     el "tr" $ do
         tdBold $ showRank . place <$> b
-        tdR $ showPilotId <$> pilot
         el "td" . dynText $ showPilotName <$> pilot
         tdC $ zipDynWith showSs tz v
         tdC $ zipDynWith showEs tz v
