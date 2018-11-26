@@ -33,7 +33,10 @@ tableScore
     -> m ()
 tableScore utcOffset xs = do
     let classR = "class" =: "has-text-right"
+    let classBg = "class" =: "has-text-centered has-background-white-bis"
+    let classC = "class" =: "has-text-centered"
     let thR = elClass "th" "has-text-right" . text
+    let thBg = elClass "th" "has-text-right has-background-white-bis" . text
     let thC = elClass "th" "has-text-centered" . text
     let thU = elClass "th" "has-text-right has-text-grey-light" . text
 
@@ -42,24 +45,24 @@ tableScore utcOffset xs = do
                 el "tr" $ do
                     elAttr "th" (classR <> "rowspan" =: "3") $ text "#"
                     elAttr "th" ("rowspan" =: "3") $ text "Pilot"
-                    elAttr "th" ("colspan" =: "5" ) $ text "Velocity"
-                    elAttr "th" ("colspan" =: "5") $ text "Points"
+                    elAttr "th" (classC <> "colspan" =: "5" ) $ text "Speed Section"
+                    elAttr "th" (classBg <> "colspan" =: "5") $ text "Points"
                 el "tr" $ do
-                    thC "SS"
-                    thC "ES"
+                    thC "Start"
+                    thC "End"
                     thC "Time"
-                    thR "Velocity"
+                    thR "Speed"
                     thR "Distance"
-                    thR "Distance"
-                    thR "Lead"
-                    thR "Time"
-                    thR "Arrival"
-                    thR "Total"
+                    thBg "Distance"
+                    thBg "Lead"
+                    thBg "Time"
+                    thBg "Arrival"
+                    thBg "Total"
                 el "tr" $ do
                     elAttr "th" ("colspan" =: "3") $ text ""
                     thU "km / h"
                     thU "km"
-                    elAttr "th" ("colspan" =: "5") $ text ""
+                    elAttr "th" (classBg <> "colspan" =: "5") $ text ""
                 simpleList xs (row utcOffset)
 
     return ()
@@ -77,8 +80,19 @@ row utcOffset x = do
     let v = velocity . snd <$> x
 
     let tdR = elClass "td" "has-text-right" . dynText
+    let tdR' = elClass "td" "has-text-right has-background-white-bis" . dynText
     let tdC = elClass "td" "has-text-centered" . dynText
-    let tdBold = elClass "td" "has-text-right has-text-weight-bold" . dynText
+    let tdBold =
+            elClass
+                "td"
+                "has-text-right has-text-weight-bold"
+            . dynText
+
+    let tdBoldBg =
+            elClass
+                "td"
+                "has-text-right has-text-weight-bold has-background-white-bis"
+            . dynText
 
     el "tr" $ do
         tdBold $ showRank . place <$> b
@@ -88,11 +102,11 @@ row utcOffset x = do
         tdR $ showVelocityTime <$> v
         tdR $ showVelocityVelocity <$> v
         tdR $ showVelocityDistance <$> v
-        tdR $ showDistancePoints . (\Points{distance = d} -> d) <$> points
-        tdR $ showLeadingPoints . leading <$> points
-        tdR $ showTimePoints . time <$> points
-        tdR $ showArrivalPoints . arrival <$> points
-        tdBold $ showTotal . total <$> b
+        tdR' $ showDistancePoints . (\Points{distance = d} -> d) <$> points
+        tdR' $ showLeadingPoints . leading <$> points
+        tdR' $ showTimePoints . time <$> points
+        tdR' $ showArrivalPoints . arrival <$> points
+        tdBoldBg $ showTotal . total <$> b
 
 showRank :: TaskPlacing -> T.Text
 showRank (TaskPlacing p) = T.pack . show $ p
