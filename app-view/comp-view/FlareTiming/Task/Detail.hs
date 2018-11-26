@@ -5,7 +5,9 @@ import Reflex
 import Reflex.Dom
 
 import WireTypes.Comp (Comp(..), Task(..))
-import WireTypes.Track.Point (Validity(..), Allocation(..))
+import WireTypes.Pilot (Pilot(..))
+import WireTypes.Track.Point
+    (Validity(..), Allocation(..), Breakdown(..))
 import FlareTiming.Comp (compTask)
 import FlareTiming.Breadcrumb (crumbTask)
 import FlareTiming.Events (IxTask(..))
@@ -13,6 +15,7 @@ import FlareTiming.Map (map)
 import FlareTiming.Task.Tab (TaskTab(..), tabsTask)
 import FlareTiming.Task.Quality.Validity (tableValidity)
 import FlareTiming.Task.Quality.Allocation (tableAllocation)
+import FlareTiming.Task.Score (tableScore)
 import FlareTiming.Task.Quality.Weight (tableWeight)
 import FlareTiming.Task.Turnpoints (tableTurnpoints)
 import FlareTiming.Task.Absent (tableAbsent)
@@ -23,16 +26,17 @@ taskDetail
     -> Dynamic t Task
     -> Dynamic t (Maybe Validity)
     -> Dynamic t (Maybe Allocation)
+    -> Dynamic t [(Pilot, Breakdown)]
     -> m (Event t IxTask)
 
-taskDetail cs x v a = do
+taskDetail cs x v a s = do
     _ <- simpleList cs (compTask x)
     es <- simpleList cs (crumbTask x)
     tab <- tabsTask
 
-    _ <- widgetHold (text "score") $
+    _ <- widgetHold (tableScore s) $
             (\case
-                TaskTabScore -> text "score"
+                TaskTabScore -> tableScore s
 
                 TaskTabQuality -> do
                     let ps = (fmap . fmap) points a

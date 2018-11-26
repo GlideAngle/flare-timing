@@ -1,4 +1,8 @@
-module FlareTiming.Pilot.Row (row) where
+module FlareTiming.Pilot.Row
+    ( showPilotId
+    , showPilotName
+    , row
+    ) where
 
 import Reflex.Dom
 import qualified Data.Text as T (Text, pack)
@@ -10,9 +14,10 @@ row
     => Dynamic t Pilot
     -> m ()
 row x = do
+    let td = el "td" . dynText
     el "tr" $ do
-        el "td" . dynText $ showPilotId <$> x
-        el "td" . dynText $ showPilotName <$> x
+        td $ showPilotId <$> x
+        td $ showPilotName <$> x
 
 showPilotId :: Pilot -> T.Text
 showPilotId (Pilot (PilotId x, _)) = T.pack x

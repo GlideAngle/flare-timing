@@ -8,7 +8,7 @@ import Control.Monad (join)
 import FlareTiming.Events (IxTask(..))
 import FlareTiming.Comms
     ( getTasks, getComps, getPilots
-    , getValidity, getAllocation
+    , getValidity, getAllocation, getScore
     )
 import FlareTiming.Comp.Detail (compDetail)
 import FlareTiming.Task.Detail (taskDetail)
@@ -31,6 +31,7 @@ view () = do
     ps <- getPilots ()
     vs <- getValidity ()
     as <- getAllocation ()
+    ss <- getScore ()
 
     el "div" $ mdo
 
@@ -42,7 +43,8 @@ view () = do
                                 cs
                                 ((!! (ii - 1)) <$> xs)
                                 (join . nth (ii - 1) <$> vs)
-                                (join . nth (ii - 1) <$> as))
+                                (join . nth (ii - 1) <$> as)
+                                ((!! (ii - 1)) <$> ss))
                     <$> eIx
 
         let eIx = switchDyn deIx

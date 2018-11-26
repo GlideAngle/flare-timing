@@ -5,6 +5,7 @@ module FlareTiming.Comms
     , getPilots
     , getValidity
     , getAllocation
+    , getScore
     ) where
 
 import Reflex
@@ -89,4 +90,17 @@ getAllocation () = do
     rsp <- performRequestAsync $ fmap req $ leftmost [ Nothing <$ pb ]
 
     let es :: Event t [Maybe Allocation] = fmapMaybe decodeXhrResponse rsp
+    holdDyn [] es
+
+getScore
+    :: MonadWidget t m
+    => ()
+    -> m (Dynamic t [[(Pilot, Breakdown)]])
+getScore () = do
+    pb :: Event t () <- getPostBuild
+    let defReq = "http://localhost:3000/gap-point/score"
+    let req md = XhrRequest "GET" (maybe defReq id md) def
+    rsp <- performRequestAsync $ fmap req $ leftmost [ Nothing <$ pb ]
+
+    let es :: Event t [[(Pilot, Breakdown)]] = fmapMaybe decodeXhrResponse rsp
     holdDyn [] es
