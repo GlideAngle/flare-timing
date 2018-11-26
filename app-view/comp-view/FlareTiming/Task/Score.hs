@@ -28,7 +28,7 @@ tableScore xs = do
     let thR = elClass "th" "has-text-right" . text
     let th = el "th" . text
 
-    _ <- elClass "table" "table" $
+    _ <- elClass "table" "table is-narrow is-fullwidth" $
             el "thead" $ do
                 el "tr" $ do
                     elAttr "th" (classR <> "rowspan" =: "3") $ text "Id"
