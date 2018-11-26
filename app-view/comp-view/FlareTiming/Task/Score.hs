@@ -28,8 +28,11 @@ tableScore xs = do
     _ <- elClass "table" "table" $
             el "thead" $ do
                 el "tr" $ do
-                    el "th" $ text "Id"
-                    el "th" $ text "Pilot"
+                    elAttr "th" ("class" =: "has-text-right" <> "rowspan" =: "2") $ text "Id"
+                    elAttr "th" ("rowspan" =: "2") $ text "Pilot"
+                    elAttr "th" ("colspan" =: "5" ) $ text "Velocity"
+                    elAttr "th" ("colspan" =: "5") $ text "Points"
+                el "tr" $ do
                     el "th" $ text "SS"
                     el "th" $ text "ES"
                     el "th" $ text "Time"
