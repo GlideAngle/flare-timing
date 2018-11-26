@@ -33,8 +33,8 @@ tableScore
 tableScore utcOffset xs = do
     let classR = "class" =: "has-text-right"
     let thR = elClass "th" "has-text-right" . text
+    let thC = elClass "th" "has-text-centered" . text
     let thU = elClass "th" "has-text-right has-text-grey-light" . text
-    let th = el "th" . text
 
     _ <- elClass "table" "table is-narrow is-fullwidth" $
             el "thead" $ do
@@ -44,9 +44,9 @@ tableScore utcOffset xs = do
                     elAttr "th" ("colspan" =: "5" ) $ text "Velocity"
                     elAttr "th" ("colspan" =: "5") $ text "Points"
                 el "tr" $ do
-                    th "SS"
-                    th "ES"
-                    thR "Time"
+                    thC "SS"
+                    thC "ES"
+                    thC "Time"
                     thR "Velocity"
                     thR "Distance"
                     thR "Distance"
@@ -55,8 +55,7 @@ tableScore utcOffset xs = do
                     thR "Arrival"
                     thR "Total"
                 el "tr" $ do
-                    elAttr "th" ("colspan" =: "2") $ text ""
-                    thU "HH:MM:SS"
+                    elAttr "th" ("colspan" =: "3") $ text ""
                     thU "km / h"
                     thU "km"
                     elAttr "th" ("colspan" =: "5") $ text ""
@@ -76,14 +75,14 @@ row utcOffset x = do
     let points = breakdown . snd <$> x
     let v = velocity . snd <$> x
 
-    let td = el "td" . dynText
     let tdR = elClass "td" "has-text-right" . dynText
+    let tdC = elClass "td" "has-text-centered" . dynText
 
     el "tr" $ do
         tdR $ showPilotId <$> pilot
-        td $ showPilotName <$> pilot
-        tdR $ zipDynWith showSs tz v
-        tdR $ zipDynWith showEs tz v
+        tdC $ showPilotName <$> pilot
+        tdC $ zipDynWith showSs tz v
+        tdC $ zipDynWith showEs tz v
         tdR $ showVelocityTime <$> v
         tdR $ showVelocityVelocity <$> v
         tdR $ showVelocityDistance <$> v
