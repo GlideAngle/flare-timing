@@ -29,6 +29,8 @@ tableScore xs = do
                 el "tr" $ do
                     el "th" $ text "Id"
                     el "th" $ text "Pilot"
+                    el "th" $ text "SS"
+                    el "th" $ text "ES"
                     el "th" $ text "Time"
                     el "th" $ text "Distance"
                     el "th" $ text "Distance"
@@ -56,6 +58,8 @@ row x = do
     el "tr" $ do
         tdR $ showPilotId <$> pilot
         td $ showPilotName <$> pilot
+        tdR $ showSs <$> v
+        tdR $ showEs <$> v
         tdR $ showVelocityTime <$> v
         tdR $ showVelocityDistance <$> v
         tdR $ showDistancePoints . (\Points{distance = d} -> d) <$> points
@@ -66,6 +70,14 @@ row x = do
 
 showTotal :: TaskPoints -> T.Text
 showTotal (TaskPoints p) = T.pack . show $ (truncate p :: Integer)
+
+showSs :: Velocity -> T.Text
+showSs Velocity{ss = Just t} = T.pack . show $ t
+showSs _ = ""
+
+showEs :: Velocity -> T.Text
+showEs Velocity{es = Just t} = T.pack . show $ t
+showEs _ = ""
 
 showVelocityTime :: Velocity -> T.Text
 showVelocityTime Velocity{gsElapsed = Just (PilotTime t)} = T.pack t
