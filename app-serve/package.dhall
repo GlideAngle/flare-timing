@@ -15,7 +15,7 @@ in    defs
       , dependencies =
           defs.dependencies
       , ghc-options =
-          [ "-Wall" ]
+          [ "-Wall", "-fplugin Data.UnitsOfMeasure.Plugin" ]
       , executables =
           { comp-serve =
               { dependencies =
@@ -38,6 +38,8 @@ in    defs
                   , "flight-comp"
                   , "flight-scribe"
                   , "flight-gap"
+                  , "siggy-chardust"
+                  , "uom-plugin"
                   ]
               , ghc-options =
                   [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]

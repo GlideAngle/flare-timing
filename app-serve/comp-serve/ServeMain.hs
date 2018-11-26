@@ -1,6 +1,8 @@
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
 import Data.List (nub, sort, sortBy)
+import Data.UnitsOfMeasure (u)
+import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Network.Wai (Application)
 import Network.Wai.Middleware.Cors (simpleCors)
 import Network.Wai.Handler.Warp
@@ -20,8 +22,9 @@ import System.FilePath (takeFileName)
 import Data.Yaml (prettyPrintParseException)
 
 import Flight.Track.Cross (Crossing(..))
-import Flight.Track.Point (Pointing(..), Allocation, Breakdown(..))
-import Flight.Score (Validity)
+import Flight.Track.Point
+    (Pointing(..), Velocity(..), Allocation, Breakdown(..))
+import Flight.Score (Validity, PilotVelocity(..))
 import Flight.Scribe (readComp, readCrossing, readPointing)
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
@@ -43,6 +46,7 @@ import Flight.Comp
     , ensureExt
     )
 import ServeOptions (description)
+import Data.Ratio.Rounding (dpRound)
 
 data Config k
     = Config
@@ -138,7 +142,13 @@ serverApi cfg =
         :<|> (distinctPilots . pilots <$> asks compSettings)
         :<|> (validity <$> asks pointing)
         :<|> (allocation <$> asks pointing)
-        :<|> ((fmap sortScores) . score <$> asks pointing)
+        :<|>
+            (
+                ((fmap . fmap . fmap) roundVelocity')
+                . (fmap sortScores)
+                . score
+                <$> asks pointing
+            )
         )
 
 distinctPilots :: [[PilotTrackLogFile]] -> [Pilot]
@@ -151,3 +161,14 @@ sortScores =
     sortBy
         (\(_, Breakdown{total = a}) (_, Breakdown{total = b}) ->
             b `compare` a)
+
+roundVelocity
+    :: PilotVelocity (Quantity Double [u| km / h |])
+    -> PilotVelocity (Quantity Double [u| km / h |])
+roundVelocity (PilotVelocity (MkQuantity d)) =
+    PilotVelocity . MkQuantity . fromRational . (dpRound 1) . toRational $ d
+
+roundVelocity' :: Breakdown -> Breakdown
+roundVelocity' b@Breakdown{velocity = v@Velocity{gsVelocity = (Just x)}} =
+    b{velocity = v{gsVelocity = Just . roundVelocity $ x}}
+roundVelocity' b = b

@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a5f2175506bc64b83355a41a4a168c79850ce276cf4eecf30b1187b7027d850c
+-- hash: a86ffa30b58d174f1b5aca00dd86f306d491669b8a22aeb38e33467c012793a4
 
 name:           app-serve
 version:        0.1.0
@@ -37,7 +37,7 @@ executable comp-serve
   hs-source-dirs:
       comp-serve
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
-  ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       aeson
     , base >=4.10.1.0 && <5
@@ -54,7 +54,9 @@ executable comp-serve
     , raw-strings-qq
     , servant
     , servant-server
+    , siggy-chardust
     , transformers
+    , uom-plugin
     , wai
     , wai-cors
     , warp
@@ -69,7 +71,7 @@ test-suite hlint
   hs-source-dirs:
       test-suite-hlint
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
-  ghc-options: -Wall -rtsopts -threaded -with-rtsopts=-N
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:
       base
     , flight-comp
