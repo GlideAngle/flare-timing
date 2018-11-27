@@ -21,6 +21,7 @@ import WireTypes.Track.Point
     , showArrivalPoints
     , showLeadingPoints
     , showTimePoints
+    , showTaskPoints
     )
 import WireTypes.Comp (UtcOffset(..))
 import WireTypes.Pilot (Pilot(..))
@@ -29,9 +30,12 @@ import FlareTiming.Pilot (showPilotName)
 tableScore
     :: MonadWidget t m
     => Dynamic t UtcOffset
+    -> Dynamic t (Maybe Points)
+    -> Dynamic t (Maybe TaskPoints)
     -> Dynamic t [(Pilot, Breakdown)]
     -> m ()
-tableScore utcOffset xs = do
+tableScore utcOffset pt tp xs = do
+    let classIR = "class" =: "has-text-right has-text-light"
     let classR = "class" =: "has-text-right"
     let classBg = "class" =: "has-text-centered has-background-white-bis"
     let classC = "class" =: "has-text-centered"
@@ -40,15 +44,16 @@ tableScore utcOffset xs = do
     let thStart = elClass "th" "has-text-centered has-text-success" . text
     let thEnd = elClass "th" "has-text-centered has-text-danger" . text
     let thC = elClass "th" "has-text-centered" . text
-    let thU = elClass "th" "has-text-right has-text-grey-light" . text
+    let thU = elClass "th" "has-text-right has-text-light" . text
+    let thPt = elClass "th" "has-text-right has-text-light" . dynText
 
     _ <- elClass "table" "table is-narrow is-fullwidth" $
             el "thead" $ do
                 el "tr" $ do
-                    elAttr "th" (classR <> "rowspan" =: "3") $ text "#"
-                    elAttr "th" ("rowspan" =: "3") $ text "Pilot"
-                    elAttr "th" (classC <> "colspan" =: "5" ) $ text "Speed Section"
-                    elAttr "th" (classBg <> "colspan" =: "5") $ text "Points"
+                    elAttr "th" ("rowspan" =: "2" <> classR) $ text "#"
+                    elAttr "th" ("rowspan" =: "2") $ text "Pilot"
+                    elAttr "th" ("colspan" =: "5" <> classC) $ text "Speed Section"
+                    elAttr "th" ("colspan" =: "5" <> classBg) $ text "Points"
                 el "tr" $ do
                     thStart "Start"
                     thEnd "End"
@@ -60,11 +65,16 @@ tableScore utcOffset xs = do
                     thBg "Time"
                     thBg "Arrival"
                     thBg "Total"
-                el "tr" $ do
+                elClass "tr" "is-italic has-background-info" $ do
+                    elAttr "th" ("colspan" =: "2" <> classIR) $ text "Available Points (Units)"
                     elAttr "th" ("colspan" =: "3") $ text ""
-                    thU "km / h"
-                    thU "km"
-                    elAttr "th" (classBg <> "colspan" =: "5") $ text ""
+                    thU "(km/h)"
+                    thU "(km)"
+                    thPt $ maybe "" (showDistancePoints . (\Points{distance = d} -> d)) <$> pt
+                    thPt $ maybe "" (showLeadingPoints . leading) <$> pt
+                    thPt $ maybe "" (showTimePoints . time) <$> pt
+                    thPt $ maybe "" (showArrivalPoints . arrival) <$> pt
+                    thPt $ maybe "" showTaskPoints <$> tp
                 simpleList xs (row utcOffset)
 
     return ()

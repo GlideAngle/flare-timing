@@ -158,7 +158,7 @@ showLeadingPoints :: LeadingPoints -> T.Text
 showLeadingPoints (LeadingPoints p) = T.pack . show $ p
 
 showTaskPoints :: TaskPoints -> T.Text
-showTaskPoints (TaskPoints p) = T.pack . show $ p
+showTaskPoints (TaskPoints p) = T.pack . show $ (truncate p :: Integer)
 
 data Points =
     Points 
