@@ -139,14 +139,18 @@ newtype TaskPoints = TaskPoints Double
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
-showDistancePoints :: Maybe DistancePoints -> DistancePoints -> T.Text
-showDistancePoints task (DistancePoints p) =
-    T.pack . maybe id f task $ x
+showMax :: (Show a, RealFrac a) => (b -> a) -> Maybe b -> a -> T.Text
+showMax unwrap task p =
+    T.pack . maybe id (f . unwrap) task $ x
     where
         x = show (truncate p :: Integer)
-        f (DistancePoints task')
+        f task'
             | task' == p = \s -> "*" ++ s
             | otherwise = id
+
+showDistancePoints :: Maybe DistancePoints -> DistancePoints -> T.Text
+showDistancePoints task (DistancePoints p) =
+    showMax (\(DistancePoints x) -> x) task p
 
 showLinearPoints :: LinearPoints -> T.Text
 showLinearPoints (LinearPoints p) = T.pack . show $ p
@@ -156,39 +160,19 @@ showDifficultyPoints (DifficultyPoints p) = T.pack . show $ p
 
 showArrivalPoints :: Maybe ArrivalPoints -> ArrivalPoints -> T.Text
 showArrivalPoints task (ArrivalPoints p) =
-    T.pack . maybe id f task $ x
-    where
-        x = show (truncate p :: Integer)
-        f (ArrivalPoints task')
-            | task' == p = \s -> "*" ++ s
-            | otherwise = id
+    showMax (\(ArrivalPoints x) -> x) task p
 
 showTimePoints :: Maybe TimePoints -> TimePoints -> T.Text
 showTimePoints task (TimePoints p) =
-    T.pack . maybe id f task $ x
-    where
-        x = show (truncate p :: Integer)
-        f (TimePoints task')
-            | task' == p = \s -> "*" ++ s
-            | otherwise = id
+    showMax (\(TimePoints x) -> x) task p
 
 showLeadingPoints :: Maybe LeadingPoints -> LeadingPoints -> T.Text
 showLeadingPoints task (LeadingPoints p) =
-    T.pack . maybe id f task $ x
-    where
-        x = show (truncate p :: Integer)
-        f (LeadingPoints task')
-            | task' == p = \s -> "*" ++ s
-            | otherwise = id
+    showMax (\(LeadingPoints x) -> x) task p
 
 showTaskPoints :: Maybe TaskPoints -> TaskPoints -> T.Text
 showTaskPoints task (TaskPoints p) =
-    T.pack . maybe id f task $ x
-    where
-        x = show (truncate p :: Integer)
-        f (TaskPoints task')
-            | task' == p = \s -> "*" ++ s
-            | otherwise = id
+    showMax (\(TaskPoints x) -> x) task p
 
 data Points =
     Points 
