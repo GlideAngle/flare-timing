@@ -8,9 +8,10 @@ import Data.Time.Clock (UTCTime)
 import Data.Time.Format (formatTime, defaultTimeLocale)
 import Data.Time.LocalTime (TimeZone, minutesToTimeZone, utcToLocalTime)
 
+import qualified WireTypes.Track.Point as Pt (Points(..))
+import qualified WireTypes.Track.Point as Wg (Weights(..))
 import WireTypes.Track.Point
-    ( Points(..)
-    , TaskPlacing(..)
+    ( TaskPlacing(..)
     , TaskPoints(..)
     , Breakdown(..)
     , Velocity(..)
@@ -22,6 +23,10 @@ import WireTypes.Track.Point
     , showLeadingPoints
     , showTimePoints
     , showTaskPoints
+    , showDistanceWeight
+    , showArrivalWeight
+    , showLeadingWeight
+    , showTimeWeight
     )
 import WireTypes.Comp (UtcOffset(..))
 import WireTypes.Pilot (Pilot(..))
@@ -30,11 +35,12 @@ import FlareTiming.Pilot (showPilotName)
 tableScore
     :: MonadWidget t m
     => Dynamic t UtcOffset
-    -> Dynamic t (Maybe Points)
+    -> Dynamic t (Maybe Wg.Weights)
+    -> Dynamic t (Maybe Pt.Points)
     -> Dynamic t (Maybe TaskPoints)
     -> Dynamic t [(Pilot, Breakdown)]
     -> m ()
-tableScore utcOffset pt tp xs = do
+tableScore utcOffset wg pt tp xs = do
     let classIR = "class" =: "has-text-right has-text-light"
     let classR = "class" =: "has-text-right"
     let classBg = "class" =: "has-text-centered has-background-white-bis"
@@ -49,6 +55,7 @@ tableScore utcOffset pt tp xs = do
 
     _ <- elClass "table" "table is-narrow is-fullwidth" $
             el "thead" $ do
+
                 el "tr" $ do
                     elAttr "th" ("rowspan" =: "2" <> classR) $ text "#"
                     elAttr "th" ("rowspan" =: "2") $ text "Pilot"
@@ -65,6 +72,45 @@ tableScore utcOffset pt tp xs = do
                     thBg "Time"
                     thBg "Arrival"
                     thBg "Total"
+
+                elClass "tr" "is-italic has-background-primary" $ do
+                    elAttr "th" ("colspan" =: "2" <> classIR) $ text "Weights"
+                    elAttr "th" ("colspan" =: "5") $ text ""
+
+                    thPt $
+                        maybe
+                            ""
+                            ( showDistanceWeight
+                            . Wg.distance
+                            )
+                        <$> wg
+
+                    thPt $
+                        maybe
+                            ""
+                            ( showLeadingWeight
+                            . Wg.leading
+                            )
+                        <$> wg
+
+                    thPt $
+                        maybe
+                            ""
+                            ( showTimeWeight
+                            . Wg.time
+                            )
+                        <$> wg
+
+                    thPt $
+                        maybe
+                            ""
+                            ( showArrivalWeight
+                            . Wg.arrival
+                            )
+                        <$> wg
+
+                    el "th" $ text ""
+
                 elClass "tr" "is-italic has-background-info" $ do
                     elAttr "th" ("colspan" =: "2" <> classIR) $ text "Available Points (Units)"
                     elAttr "th" ("colspan" =: "3") $ text ""
@@ -75,26 +121,32 @@ tableScore utcOffset pt tp xs = do
                         maybe
                             ""
                             ( (\x -> showDistancePoints (Just x) x)
-                            . (\Points{distance = d} -> d)
+                            . Pt.distance
                             )
                         <$> pt
 
                     thPt $
                         maybe
                             ""
-                            ((\x -> showLeadingPoints (Just x) x) . leading)
+                            ( (\x -> showLeadingPoints (Just x) x)
+                            . Pt.leading
+                            )
                         <$> pt
 
                     thPt $
                         maybe
                             ""
-                            ((\x -> showTimePoints (Just x) x) . time)
+                            ( (\x -> showTimePoints (Just x) x)
+                            . Pt.time
+                            )
                         <$> pt
 
                     thPt $
                         maybe
                             ""
-                            ((\x -> showArrivalPoints (Just x) x) . arrival)
+                            ( (\x -> showArrivalPoints (Just x) x)
+                            . Pt.arrival
+                            )
                         <$> pt
 
                     thPt $
@@ -110,7 +162,7 @@ tableScore utcOffset pt tp xs = do
 row
     :: MonadWidget t m
     => Dynamic t UtcOffset
-    -> Dynamic t (Maybe Points)
+    -> Dynamic t (Maybe Pt.Points)
     -> Dynamic t (Maybe TaskPoints)
     -> Dynamic t (Pilot, Breakdown)
     -> m ()
@@ -156,10 +208,10 @@ row utcOffset pt tp x = do
         tdR $ showVelocityVelocity <$> v
         tdR $ showVelocityDistance <$> v
 
-        tdR' $ showMax (\Points{distance = d} -> d) showDistancePoints pt points
-        tdR' $ showMax leading showLeadingPoints pt points
-        tdR' $ showMax time showTimePoints pt points
-        tdR' $ showMax arrival showArrivalPoints pt points
+        tdR' $ showMax Pt.distance showDistancePoints pt points
+        tdR' $ showMax Pt.leading showLeadingPoints pt points
+        tdR' $ showMax Pt.time showTimePoints pt points
+        tdR' $ showMax Pt.arrival showArrivalPoints pt points
 
         tdTotal $
             zipDynWith

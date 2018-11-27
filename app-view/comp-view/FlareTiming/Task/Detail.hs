@@ -35,14 +35,15 @@ taskDetail cs x v a s = do
     let utc = utcOffset . head <$> cs
     let ps = (fmap . fmap) points a
     let tp = (fmap . fmap) taskPoints a
+    let wg = (fmap . fmap) weight a
 
-    _ <- widgetHold (tableScore utc ps tp s) $
+    _ <- widgetHold (tableScore utc wg ps tp s) $
             (\case
-                TaskTabScore -> tableScore utc ps tp s
+                TaskTabScore -> tableScore utc wg ps tp s
 
                 TaskTabQuality -> do
                     tableValidity v
-                    tableWeight $ (fmap . fmap) weight a
+                    tableWeight wg
 
                 TaskTabTask -> tableTurnpoints x
                 TaskTabMap -> do y <- sample . current $ x; map y

@@ -33,8 +33,13 @@ module WireTypes.Track.Point
     , showTimePoints
     , showLeadingPoints
     , showTaskPoints
+    , showDistanceWeight
+    , showArrivalWeight
+    , showTimeWeight
+    , showLeadingWeight
     ) where
 
+import Text.Printf (printf)
 import Control.Applicative (empty)
 import Data.Time.Clock (UTCTime)
 import GHC.Generics (Generic)
@@ -200,6 +205,20 @@ newtype LeadingWeight = LeadingWeight Double
 newtype TimeWeight = TimeWeight Double
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
+
+ppr = printf "%.4f"
+
+showDistanceWeight :: DistanceWeight -> T.Text
+showDistanceWeight (DistanceWeight p) = T.pack . ppr $ p
+
+showLeadingWeight :: LeadingWeight -> T.Text
+showLeadingWeight (LeadingWeight p) = T.pack . ppr $ p
+
+showArrivalWeight :: ArrivalWeight -> T.Text
+showArrivalWeight (ArrivalWeight p) = T.pack . ppr $ p
+
+showTimeWeight :: TimeWeight -> T.Text
+showTimeWeight (TimeWeight p) = T.pack . ppr $ p
 
 data Weights =
     Weights

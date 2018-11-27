@@ -1,15 +1,14 @@
 module FlareTiming.Task.Quality.Weight (tableWeight) where
 
 import Reflex.Dom
-import qualified Data.Text as T (Text, pack)
-import Text.Printf
+import qualified Data.Text as T (Text)
 
 import WireTypes.Track.Point
     ( Weights(..)
-    , DistanceWeight(..)
-    , LeadingWeight(..)
-    , ArrivalWeight(..)
-    , TimeWeight(..)
+    , showDistanceWeight
+    , showArrivalWeight
+    , showTimeWeight
+    , showLeadingWeight
     )
 
 tableWeight
@@ -25,41 +24,27 @@ tableWeight x = do
                     el "th" $ text "Weight"
                 el "tr" $ do
                     el "td" $ text "Distance Weight"
-                    el "td" . dynText $ getDistance <$> x
+                    el "td" . dynText $ showMaybeDistanceWeight <$> x
                 el "tr" $ do
                     el "td" $ text "Leading Weight"
-                    el "td" . dynText $ getLeading <$> x
+                    el "td" . dynText $ showMaybeLeadingWeight <$> x
                 el "tr" $ do
                     el "td" $ text "Arrival Weight"
-                    el "td" . dynText $ getArrival <$> x
+                    el "td" . dynText $ showMaybeArrivalWeight <$> x
                 el "tr" $ do
                     el "td" $ text "Time Weight"
-                    el "td" . dynText $ getTime <$> x
+                    el "td" . dynText $ showMaybeTimeWeight <$> x
 
     return ()
 
-ppr = printf "%.4f"
+showMaybeDistanceWeight :: Maybe Weights -> T.Text
+showMaybeDistanceWeight = maybe "" (showDistanceWeight . distance)
 
-showDistance :: DistanceWeight -> T.Text
-showDistance (DistanceWeight p) = T.pack . ppr $ p
+showMaybeLeadingWeight :: Maybe Weights -> T.Text
+showMaybeLeadingWeight = maybe "" (showLeadingWeight . leading)
 
-showLeading :: LeadingWeight -> T.Text
-showLeading (LeadingWeight p) = T.pack . ppr $ p
+showMaybeArrivalWeight :: Maybe Weights -> T.Text
+showMaybeArrivalWeight = maybe "" (showArrivalWeight . arrival)
 
-showArrival :: ArrivalWeight -> T.Text
-showArrival (ArrivalWeight p) = T.pack . ppr $ p
-
-showTime :: TimeWeight -> T.Text
-showTime (TimeWeight p) = T.pack . ppr $ p
-
-getDistance :: Maybe Weights -> T.Text
-getDistance = maybe "" (showDistance . distance)
-
-getLeading :: Maybe Weights -> T.Text
-getLeading = maybe "" (showLeading . leading)
-
-getArrival :: Maybe Weights -> T.Text
-getArrival = maybe "" (showArrival . arrival)
-
-getTime :: Maybe Weights -> T.Text
-getTime = maybe "" (showTime . time)
+showMaybeTimeWeight :: Maybe Weights -> T.Text
+showMaybeTimeWeight = maybe "" (showTimeWeight . time)
