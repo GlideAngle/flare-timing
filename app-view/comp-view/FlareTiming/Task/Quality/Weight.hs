@@ -2,6 +2,7 @@ module FlareTiming.Task.Quality.Weight (tableWeight) where
 
 import Reflex.Dom
 import qualified Data.Text as T (Text, pack)
+import Text.Printf
 
 import WireTypes.Track.Point
     ( Weights(..)
@@ -37,17 +38,19 @@ tableWeight x = do
 
     return ()
 
+ppr = printf "%.4f"
+
 showDistance :: DistanceWeight -> T.Text
-showDistance (DistanceWeight p) = T.pack . show $ p
+showDistance (DistanceWeight p) = T.pack . ppr $ p
 
 showLeading :: LeadingWeight -> T.Text
-showLeading (LeadingWeight p) = T.pack . show $ p
+showLeading (LeadingWeight p) = T.pack . ppr $ p
 
 showArrival :: ArrivalWeight -> T.Text
-showArrival (ArrivalWeight p) = T.pack . show $ p
+showArrival (ArrivalWeight p) = T.pack . ppr $ p
 
 showTime :: TimeWeight -> T.Text
-showTime (TimeWeight p) = T.pack . show $ p
+showTime (TimeWeight p) = T.pack . ppr $ p
 
 getDistance :: Maybe Weights -> T.Text
 getDistance = maybe "" (showDistance . distance)

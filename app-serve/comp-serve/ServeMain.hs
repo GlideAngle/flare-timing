@@ -23,8 +23,11 @@ import Data.Yaml (prettyPrintParseException)
 
 import Flight.Track.Cross (Crossing(..))
 import Flight.Track.Point
-    (Pointing(..), Velocity(..), Allocation, Breakdown(..))
-import Flight.Score (Validity, PilotVelocity(..))
+    (Pointing(..), Velocity(..), Allocation(..), Breakdown(..))
+import Flight.Score
+    ( Validity, PilotVelocity(..), Weights(..)
+    , DistanceWeight(..), LeadingWeight(..), ArrivalWeight(..), TimeWeight(..)
+    )
 import Flight.Scribe (readComp, readCrossing, readPointing)
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
@@ -141,7 +144,7 @@ serverApi cfg =
         :<|> (tasks <$> asks compSettings)
         :<|> (distinctPilots . pilots <$> asks compSettings)
         :<|> (validity <$> asks pointing)
-        :<|> (allocation <$> asks pointing)
+        :<|> (((fmap . fmap) roundAllocation) . allocation <$> asks pointing)
         :<|> (((fmap . fmap . fmap) roundVelocity') . score <$> asks pointing)
         )
 
@@ -160,3 +163,22 @@ roundVelocity' :: Breakdown -> Breakdown
 roundVelocity' b@Breakdown{velocity = v@Velocity{gsVelocity = (Just x)}} =
     b{velocity = v{gsVelocity = Just . roundVelocity $ x}}
 roundVelocity' b = b
+
+roundWeights :: Weights -> Weights
+roundWeights
+    Weights
+        { distance = DistanceWeight dw
+        , leading = LeadingWeight lw
+        , arrival = ArrivalWeight aw
+        , time = TimeWeight tw
+        } =
+    Weights
+        { distance = DistanceWeight $ dpRound 4 dw
+        , leading = LeadingWeight $ dpRound 4 lw
+        , arrival = ArrivalWeight $ dpRound 4 aw
+        , time = TimeWeight $ dpRound 4 tw
+        }
+
+roundAllocation:: Allocation -> Allocation
+roundAllocation x@Allocation{..} =
+    x{ weight = roundWeights weight }
