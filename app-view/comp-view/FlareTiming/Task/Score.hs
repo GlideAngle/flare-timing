@@ -75,16 +75,18 @@ tableScore utcOffset pt tp xs = do
                     thPt $ maybe "" (showTimePoints . time) <$> pt
                     thPt $ maybe "" (showArrivalPoints . arrival) <$> pt
                     thPt $ maybe "" showTaskPoints <$> tp
-                simpleList xs (row utcOffset)
+                simpleList xs (row utcOffset pt tp)
 
     return ()
 
 row
     :: MonadWidget t m
     => Dynamic t UtcOffset
+    -> Dynamic t (Maybe Points)
+    -> Dynamic t (Maybe TaskPoints)
     -> Dynamic t (Pilot, Breakdown)
     -> m ()
-row utcOffset x = do
+row utcOffset _ tp x = do
     let tz = timeZone <$> utcOffset
     let pilot = fst <$> x
     let b = snd <$> x
@@ -129,14 +131,20 @@ row utcOffset x = do
         tdR' $ showLeadingPoints . leading <$> points
         tdR' $ showTimePoints . time <$> points
         tdR' $ showArrivalPoints . arrival <$> points
-        tdTotal $ showTotal . total <$> b
+        tdTotal $ zipDynWith showTotal tp (total <$> b)
 
 showRank :: TaskPlacing -> T.Text
 showRank (TaskPlacing p) = T.pack . show $ p
 showRank (TaskPlacingEqual p) = T.pack $ show p ++ "="
 
-showTotal :: TaskPoints -> T.Text
-showTotal (TaskPoints p) = T.pack . show $ (truncate p :: Integer)
+showTotal :: Maybe TaskPoints -> TaskPoints -> T.Text
+showTotal task (TaskPoints p) =
+    T.pack . maybe id f task $ x
+    where
+        x = show (truncate p :: Integer)
+        f (TaskPoints task')
+            | task' == p = \s -> "*" ++ s
+            | otherwise = id
 
 showSs :: TimeZone -> Velocity -> T.Text
 showSs tz Velocity{ss = Just t} = showT tz t
