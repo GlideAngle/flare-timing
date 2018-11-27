@@ -156,35 +156,30 @@ row utcOffset pt tp x = do
         tdR $ showVelocityVelocity <$> v
         tdR $ showVelocityDistance <$> v
 
-        tdR' $
-            zipDynWith
-                showDistancePoints
-                ((fmap . fmap) (\Points{distance = d} -> d) pt)
-                ((\Points{distance = d} -> d) <$> points)
-
-        tdR' $
-            zipDynWith
-                showLeadingPoints
-                ((fmap . fmap) leading pt)
-                (leading <$> points)
-
-        tdR' $
-            zipDynWith
-                showTimePoints
-                ((fmap . fmap) time pt)
-                (time <$> points)
-
-        tdR' $
-            zipDynWith
-                showArrivalPoints
-                ((fmap . fmap) arrival pt)
-                (arrival <$> points)
+        tdR' $ showMax (\Points{distance = d} -> d) showDistancePoints pt points
+        tdR' $ showMax leading showLeadingPoints pt points
+        tdR' $ showMax time showTimePoints pt points
+        tdR' $ showMax arrival showArrivalPoints pt points
 
         tdTotal $
             zipDynWith
                 showTaskPoints
                 tp
                 (total <$> b)
+
+
+showMax
+    :: (Reflex t, Functor f)
+    => (a -> b)
+    -> (f b -> b -> c)
+    -> Dynamic t (f a)
+    -> Dynamic t a
+    -> Dynamic t c
+showMax getField f pt points =
+    zipDynWith
+        f
+        ((fmap . fmap) getField pt)
+        (getField <$> points)
 
 showRank :: TaskPlacing -> T.Text
 showRank (TaskPlacing p) = T.pack . show $ p
