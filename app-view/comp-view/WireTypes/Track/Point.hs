@@ -139,8 +139,14 @@ newtype TaskPoints = TaskPoints Double
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
-showDistancePoints :: DistancePoints -> T.Text
-showDistancePoints (DistancePoints p) = T.pack . show $ p
+showDistancePoints :: Maybe DistancePoints -> DistancePoints -> T.Text
+showDistancePoints task (DistancePoints p) =
+    T.pack . maybe id f task $ x
+    where
+        x = show (truncate p :: Integer)
+        f (DistancePoints task')
+            | task' == p = \s -> "*" ++ s
+            | otherwise = id
 
 showLinearPoints :: LinearPoints -> T.Text
 showLinearPoints (LinearPoints p) = T.pack . show $ p
@@ -148,17 +154,41 @@ showLinearPoints (LinearPoints p) = T.pack . show $ p
 showDifficultyPoints :: DifficultyPoints -> T.Text
 showDifficultyPoints (DifficultyPoints p) = T.pack . show $ p
 
-showArrivalPoints :: ArrivalPoints -> T.Text
-showArrivalPoints (ArrivalPoints p) = T.pack . show $ p
+showArrivalPoints :: Maybe ArrivalPoints -> ArrivalPoints -> T.Text
+showArrivalPoints task (ArrivalPoints p) =
+    T.pack . maybe id f task $ x
+    where
+        x = show (truncate p :: Integer)
+        f (ArrivalPoints task')
+            | task' == p = \s -> "*" ++ s
+            | otherwise = id
 
-showTimePoints :: TimePoints -> T.Text
-showTimePoints (TimePoints p) = T.pack . show $ p
+showTimePoints :: Maybe TimePoints -> TimePoints -> T.Text
+showTimePoints task (TimePoints p) =
+    T.pack . maybe id f task $ x
+    where
+        x = show (truncate p :: Integer)
+        f (TimePoints task')
+            | task' == p = \s -> "*" ++ s
+            | otherwise = id
 
-showLeadingPoints :: LeadingPoints -> T.Text
-showLeadingPoints (LeadingPoints p) = T.pack . show $ p
+showLeadingPoints :: Maybe LeadingPoints -> LeadingPoints -> T.Text
+showLeadingPoints task (LeadingPoints p) =
+    T.pack . maybe id f task $ x
+    where
+        x = show (truncate p :: Integer)
+        f (LeadingPoints task')
+            | task' == p = \s -> "*" ++ s
+            | otherwise = id
 
-showTaskPoints :: TaskPoints -> T.Text
-showTaskPoints (TaskPoints p) = T.pack . show $ (truncate p :: Integer)
+showTaskPoints :: Maybe TaskPoints -> TaskPoints -> T.Text
+showTaskPoints task (TaskPoints p) =
+    T.pack . maybe id f task $ x
+    where
+        x = show (truncate p :: Integer)
+        f (TaskPoints task')
+            | task' == p = \s -> "*" ++ s
+            | otherwise = id
 
 data Points =
     Points 

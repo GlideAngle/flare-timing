@@ -70,11 +70,39 @@ tableScore utcOffset pt tp xs = do
                     elAttr "th" ("colspan" =: "3") $ text ""
                     thU "(km/h)"
                     thU "(km)"
-                    thPt $ maybe "" (showDistancePoints . (\Points{distance = d} -> d)) <$> pt
-                    thPt $ maybe "" (showLeadingPoints . leading) <$> pt
-                    thPt $ maybe "" (showTimePoints . time) <$> pt
-                    thPt $ maybe "" (showArrivalPoints . arrival) <$> pt
-                    thPt $ maybe "" showTaskPoints <$> tp
+
+                    thPt $
+                        maybe
+                            ""
+                            ( (\x -> showDistancePoints (Just x) x)
+                            . (\Points{distance = d} -> d)
+                            )
+                        <$> pt
+
+                    thPt $
+                        maybe
+                            ""
+                            ((\x -> showLeadingPoints (Just x) x) . leading)
+                        <$> pt
+
+                    thPt $
+                        maybe
+                            ""
+                            ((\x -> showTimePoints (Just x) x) . time)
+                        <$> pt
+
+                    thPt $
+                        maybe
+                            ""
+                            ((\x -> showArrivalPoints (Just x) x) . arrival)
+                        <$> pt
+
+                    thPt $
+                        maybe
+                            ""
+                            (\x -> showTaskPoints (Just x) x)
+                        <$> tp
+
                 simpleList xs (row utcOffset pt tp)
 
     return ()
@@ -86,7 +114,7 @@ row
     -> Dynamic t (Maybe TaskPoints)
     -> Dynamic t (Pilot, Breakdown)
     -> m ()
-row utcOffset _ tp x = do
+row utcOffset pt tp x = do
     let tz = timeZone <$> utcOffset
     let pilot = fst <$> x
     let b = snd <$> x
@@ -127,24 +155,40 @@ row utcOffset _ tp x = do
         tdR $ showVelocityTime <$> v
         tdR $ showVelocityVelocity <$> v
         tdR $ showVelocityDistance <$> v
-        tdR' $ showDistancePoints . (\Points{distance = d} -> d) <$> points
-        tdR' $ showLeadingPoints . leading <$> points
-        tdR' $ showTimePoints . time <$> points
-        tdR' $ showArrivalPoints . arrival <$> points
-        tdTotal $ zipDynWith showTotal tp (total <$> b)
+
+        tdR' $
+            zipDynWith
+                showDistancePoints
+                ((fmap . fmap) (\Points{distance = d} -> d) pt)
+                ((\Points{distance = d} -> d) <$> points)
+
+        tdR' $
+            zipDynWith
+                showLeadingPoints
+                ((fmap . fmap) leading pt)
+                (leading <$> points)
+
+        tdR' $
+            zipDynWith
+                showTimePoints
+                ((fmap . fmap) time pt)
+                (time <$> points)
+
+        tdR' $
+            zipDynWith
+                showArrivalPoints
+                ((fmap . fmap) arrival pt)
+                (arrival <$> points)
+
+        tdTotal $
+            zipDynWith
+                showTaskPoints
+                tp
+                (total <$> b)
 
 showRank :: TaskPlacing -> T.Text
 showRank (TaskPlacing p) = T.pack . show $ p
 showRank (TaskPlacingEqual p) = T.pack $ show p ++ "="
-
-showTotal :: Maybe TaskPoints -> TaskPoints -> T.Text
-showTotal task (TaskPoints p) =
-    T.pack . maybe id f task $ x
-    where
-        x = show (truncate p :: Integer)
-        f (TaskPoints task')
-            | task' == p = \s -> "*" ++ s
-            | otherwise = id
 
 showSs :: TimeZone -> Velocity -> T.Text
 showSs tz Velocity{ss = Just t} = showT tz t
