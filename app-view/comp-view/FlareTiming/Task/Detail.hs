@@ -13,7 +13,6 @@ import FlareTiming.Breadcrumb (crumbTask)
 import FlareTiming.Events (IxTask(..))
 import FlareTiming.Map (map)
 import FlareTiming.Task.Tab (TaskTab(..), tabsTask)
-import FlareTiming.Task.Quality.Validity (tableValidity)
 import FlareTiming.Task.Score (tableScore)
 import FlareTiming.Task.Turnpoints (tableTurnpoints)
 import FlareTiming.Task.Absent (tableAbsent)
@@ -39,10 +38,6 @@ taskDetail cs x vy a s = do
     _ <- widgetHold (tableScore utc vy wg ps tp s) $
             (\case
                 TaskTabScore -> tableScore utc vy wg ps tp s
-
-                TaskTabQuality -> do
-                    tableValidity vy
-
                 TaskTabTask -> tableTurnpoints x
                 TaskTabMap -> do y <- sample . current $ x; map y
                 TaskTabAbsent -> tableAbsent x)

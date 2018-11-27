@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a231e88227c8a46353fb041f926dcd0543d46613595d6f4a1c957c57ac93242b
+-- hash: 0c23ba551386b4d17dd366bd3aaa852aff186e5d56049bb6c08a6a85a8aaf5a2
 
 name:           app-view
 version:        0.1.0
@@ -49,7 +49,6 @@ executable comp-view
       FlareTiming.Task.Detail
       FlareTiming.Task.List
       FlareTiming.Task.ListItem
-      FlareTiming.Task.Quality.Validity
       FlareTiming.Task.Score
       FlareTiming.Task.Tab
       FlareTiming.Task.Turnpoints
