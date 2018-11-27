@@ -1,6 +1,5 @@
 module FlareTiming.Task (tasks) where
 
-import qualified Data.Text as T (pack)
 import Reflex
 import Reflex.Dom
 import Control.Monad (join)
@@ -35,6 +34,8 @@ view () = do
 
     el "div" $ mdo
 
+        let eIx = switchDyn deIx
+
         deIx <- widgetHold (compDetail cs ps xs) $
                     (\ix -> case ix of
                         IxTaskNone -> compDetail cs ps xs
@@ -47,17 +48,7 @@ view () = do
                                 ((!! (ii - 1)) <$> ss))
                     <$> eIx
 
-        let eIx = switchDyn deIx
-
-        dIx <- holdDyn IxTaskNone . leftmost $
-            [ eIx
-            ]
-
-        let dText =
-                (\case IxTask ii -> T.pack . show $ ii; IxTaskNone -> "None")
-                <$> dIx
-
-        el "div" $ dynText dText
+        return ()
 
     return ()
 
