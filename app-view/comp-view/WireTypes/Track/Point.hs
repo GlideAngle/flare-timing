@@ -26,6 +26,7 @@ module WireTypes.Track.Point
     , ArrivalWeight(..)
     , TimeWeight(..)
     , Weights(..)
+    -- * Showing Points
     , showDistancePoints
     , showLinearPoints
     , showDifficultyPoints
@@ -33,10 +34,16 @@ module WireTypes.Track.Point
     , showTimePoints
     , showLeadingPoints
     , showTaskPoints
+    -- * Showing Weights
     , showDistanceWeight
     , showArrivalWeight
     , showTimeWeight
     , showLeadingWeight
+    -- * Showing Validities
+    , showLaunchValidity
+    , showDistanceValidity
+    , showTimeValidity
+    , showTaskValidity
     ) where
 
 import Text.Printf (printf)
@@ -85,6 +92,21 @@ newtype DistanceValidity = DistanceValidity Double
 newtype TimeValidity = TimeValidity Double
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
+
+pprVy :: Double -> String
+pprVy = printf "%.3f"
+
+showLaunchValidity :: LaunchValidity -> T.Text
+showLaunchValidity (LaunchValidity v) = T.pack . pprVy $ v
+
+showDistanceValidity :: DistanceValidity -> T.Text
+showDistanceValidity (DistanceValidity v) = T.pack . pprVy $ v
+
+showTimeValidity :: TimeValidity -> T.Text
+showTimeValidity (TimeValidity v) = T.pack . pprVy $ v
+
+showTaskValidity :: TaskValidity -> T.Text
+showTaskValidity (TaskValidity v) = T.pack . pprVy $ v
 
 data Validity =
     Validity 
@@ -206,19 +228,20 @@ newtype TimeWeight = TimeWeight Double
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
-ppr = printf "%.4f"
+pprWg :: Double -> String
+pprWg = printf "%.3f"
 
 showDistanceWeight :: DistanceWeight -> T.Text
-showDistanceWeight (DistanceWeight p) = T.pack . ppr $ p
+showDistanceWeight (DistanceWeight p) = T.pack . pprWg $ p
 
 showLeadingWeight :: LeadingWeight -> T.Text
-showLeadingWeight (LeadingWeight p) = T.pack . ppr $ p
+showLeadingWeight (LeadingWeight p) = T.pack . pprWg $ p
 
 showArrivalWeight :: ArrivalWeight -> T.Text
-showArrivalWeight (ArrivalWeight p) = T.pack . ppr $ p
+showArrivalWeight (ArrivalWeight p) = T.pack . pprWg $ p
 
 showTimeWeight :: TimeWeight -> T.Text
-showTimeWeight (TimeWeight p) = T.pack . ppr $ p
+showTimeWeight (TimeWeight p) = T.pack . pprWg $ p
 
 data Weights =
     Weights

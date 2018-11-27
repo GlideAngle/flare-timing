@@ -15,7 +15,6 @@ import FlareTiming.Map (map)
 import FlareTiming.Task.Tab (TaskTab(..), tabsTask)
 import FlareTiming.Task.Quality.Validity (tableValidity)
 import FlareTiming.Task.Score (tableScore)
-import FlareTiming.Task.Quality.Weight (tableWeight)
 import FlareTiming.Task.Turnpoints (tableTurnpoints)
 import FlareTiming.Task.Absent (tableAbsent)
 
@@ -28,7 +27,7 @@ taskDetail
     -> Dynamic t [(Pilot, Breakdown)]
     -> m (Event t IxTask)
 
-taskDetail cs x v a s = do
+taskDetail cs x vy a s = do
     _ <- simpleList cs (compTask x)
     es <- simpleList cs (crumbTask x)
     tab <- tabsTask
@@ -37,13 +36,12 @@ taskDetail cs x v a s = do
     let tp = (fmap . fmap) taskPoints a
     let wg = (fmap . fmap) weight a
 
-    _ <- widgetHold (tableScore utc wg ps tp s) $
+    _ <- widgetHold (tableScore utc vy wg ps tp s) $
             (\case
-                TaskTabScore -> tableScore utc wg ps tp s
+                TaskTabScore -> tableScore utc vy wg ps tp s
 
                 TaskTabQuality -> do
-                    tableValidity v
-                    tableWeight wg
+                    tableValidity vy
 
                 TaskTabTask -> tableTurnpoints x
                 TaskTabMap -> do y <- sample . current $ x; map y

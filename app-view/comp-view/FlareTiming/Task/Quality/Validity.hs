@@ -1,14 +1,14 @@
 module FlareTiming.Task.Quality.Validity (tableValidity) where
 
 import Reflex.Dom
-import qualified Data.Text as T (Text, pack)
+import qualified Data.Text as T (Text)
 
 import WireTypes.Track.Point
     ( Validity(..)
-    , TaskValidity(..)
-    , LaunchValidity(..)
-    , DistanceValidity(..)
-    , TimeValidity(..)
+    , showLaunchValidity
+    , showDistanceValidity
+    , showTimeValidity
+    , showTaskValidity
     )
 
 tableValidity
@@ -36,26 +36,14 @@ tableValidity x = do
                     el "td" . dynText $ getTask <$> x
     return ()
 
-showLaunch :: LaunchValidity -> T.Text
-showLaunch (LaunchValidity v) = T.pack . show $ v
-
-showDistance :: DistanceValidity -> T.Text
-showDistance (DistanceValidity v) = T.pack . show $ v
-
-showTime :: TimeValidity -> T.Text
-showTime (TimeValidity v) = T.pack . show $ v
-
-showTask :: TaskValidity -> T.Text
-showTask (TaskValidity v) = T.pack . show $ v
-
 getLaunch :: Maybe Validity -> T.Text
-getLaunch = maybe "" showLaunch . (fmap launch)
+getLaunch = maybe "" showLaunchValidity . (fmap launch)
 
 getDistance :: Maybe Validity -> T.Text
-getDistance = maybe "" showDistance . (fmap distance)
+getDistance = maybe "" showDistanceValidity. (fmap distance)
 
 getTime :: Maybe Validity -> T.Text
-getTime = maybe "" showTime . (fmap time)
+getTime = maybe "" showTimeValidity . (fmap time)
 
 getTask :: Maybe Validity -> T.Text
-getTask = maybe "" showTask . (fmap task)
+getTask = maybe "" showTaskValidity . (fmap task)

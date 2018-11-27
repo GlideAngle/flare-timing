@@ -10,6 +10,7 @@ import Data.Time.LocalTime (TimeZone, minutesToTimeZone, utcToLocalTime)
 
 import qualified WireTypes.Track.Point as Pt (Points(..))
 import qualified WireTypes.Track.Point as Wg (Weights(..))
+import qualified WireTypes.Track.Point as Vy (Validity(..))
 import WireTypes.Track.Point
     ( TaskPlacing(..)
     , TaskPoints(..)
@@ -18,15 +19,22 @@ import WireTypes.Track.Point
     , PilotDistance(..)
     , PilotTime(..)
     , PilotVelocity(..)
+
     , showDistancePoints
     , showArrivalPoints
     , showLeadingPoints
     , showTimePoints
     , showTaskPoints
+
     , showDistanceWeight
     , showArrivalWeight
     , showLeadingWeight
     , showTimeWeight
+
+    , showLaunchValidity
+    , showDistanceValidity
+    , showTimeValidity
+    , showTaskValidity
     )
 import WireTypes.Comp (UtcOffset(..))
 import WireTypes.Pilot (Pilot(..))
@@ -35,12 +43,13 @@ import FlareTiming.Pilot (showPilotName)
 tableScore
     :: MonadWidget t m
     => Dynamic t UtcOffset
+    -> Dynamic t (Maybe Vy.Validity)
     -> Dynamic t (Maybe Wg.Weights)
     -> Dynamic t (Maybe Pt.Points)
     -> Dynamic t (Maybe TaskPoints)
     -> Dynamic t [(Pilot, Breakdown)]
     -> m ()
-tableScore utcOffset wg pt tp xs = do
+tableScore utcOffset vy wg pt tp xs = do
     let classIR = "class" =: "has-text-right has-text-light"
     let classR = "class" =: "has-text-right"
     let classBg = "class" =: "has-text-centered has-background-white-bis"
@@ -52,6 +61,7 @@ tableScore utcOffset wg pt tp xs = do
     let thC = elClass "th" "has-text-centered" . text
     let thU = elClass "th" "has-text-right has-text-light" . text
     let thPt = elClass "th" "has-text-right has-text-light" . dynText
+    let thVy = elClass "th" "has-text-right" . dynText
 
     _ <- elClass "table" "table is-narrow is-fullwidth" $
             el "thead" $ do
@@ -72,6 +82,49 @@ tableScore utcOffset wg pt tp xs = do
                     thBg "Time"
                     thBg "Arrival"
                     thBg "Total"
+
+                elClass "tr" "is-italic has-background-warning" $ do
+                    el "th" $ text ""
+                    thVy $
+                        maybe
+                            ""
+                            ( (\v ->
+                                "Validity (Launch = "
+                                <> showLaunchValidity v
+                                <> ")")
+                            . Vy.launch
+                            )
+                        <$> vy
+
+                    elAttr "th" ("colspan" =: "5") $ text ""
+
+                    thVy $
+                        maybe
+                            ""
+                            ( showDistanceValidity
+                            . Vy.distance
+                            )
+                        <$> vy
+
+                    el "th" $ text ""
+
+                    thVy $
+                        maybe
+                            ""
+                            ( showTimeValidity
+                            . Vy.time
+                            )
+                        <$> vy
+
+                    el "th" $ text ""
+
+                    thVy $
+                        maybe
+                            ""
+                            ( showTaskValidity
+                            . Vy.task
+                            )
+                        <$> vy
 
                 elClass "tr" "is-italic has-background-primary" $ do
                     elAttr "th" ("colspan" =: "2" <> classIR) $ text "Weights"
