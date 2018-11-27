@@ -24,9 +24,12 @@ import Data.Yaml (prettyPrintParseException)
 import Flight.Track.Cross (Crossing(..))
 import Flight.Track.Point
     (Pointing(..), Velocity(..), Allocation(..), Breakdown(..))
+import qualified Flight.Score as Wg (Weights(..))
+import qualified Flight.Score as Vy (Validity(..))
 import Flight.Score
-    ( Validity, PilotVelocity(..), Weights(..)
+    ( PilotVelocity(..)
     , DistanceWeight(..), LeadingWeight(..), ArrivalWeight(..), TimeWeight(..)
+    , DistanceValidity(..), LaunchValidity(..), TaskValidity(..), TimeValidity(..)
     )
 import Flight.Scribe (readComp, readCrossing, readPointing)
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
@@ -76,7 +79,7 @@ type Api k =
     :<|> "nominals" :> Get '[JSON] Nominal
     :<|> "tasks" :> Get '[JSON] [Task k]
     :<|> "pilots" :> Get '[JSON] [Pilot]
-    :<|> "gap-point" :> "validity" :> Get '[JSON] [Maybe Validity]
+    :<|> "gap-point" :> "validity" :> Get '[JSON] [Maybe Vy.Validity]
     :<|> "gap-point" :> "allocation" :> Get '[JSON] [Maybe Allocation]
     :<|> "gap-point" :> "score" :> Get '[JSON] [[(Pilot, Breakdown)]]
 
@@ -143,7 +146,7 @@ serverApi cfg =
         :<|> (nominal <$> asks compSettings)
         :<|> (tasks <$> asks compSettings)
         :<|> (distinctPilots . pilots <$> asks compSettings)
-        :<|> (validity <$> asks pointing)
+        :<|> (((fmap . fmap) roundValidity) . validity <$> asks pointing)
         :<|> (((fmap . fmap) roundAllocation) . allocation <$> asks pointing)
         :<|> (((fmap . fmap . fmap) roundVelocity') . score <$> asks pointing)
         )
@@ -164,19 +167,34 @@ roundVelocity' b@Breakdown{velocity = v@Velocity{gsVelocity = (Just x)}} =
     b{velocity = v{gsVelocity = Just . roundVelocity $ x}}
 roundVelocity' b = b
 
-roundWeights :: Weights -> Weights
+roundWeights :: Wg.Weights -> Wg.Weights
 roundWeights
-    Weights
+    Wg.Weights
         { distance = DistanceWeight dw
         , leading = LeadingWeight lw
         , arrival = ArrivalWeight aw
         , time = TimeWeight tw
         } =
-    Weights
-        { distance = DistanceWeight $ dpRound 4 dw
-        , leading = LeadingWeight $ dpRound 4 lw
-        , arrival = ArrivalWeight $ dpRound 4 aw
-        , time = TimeWeight $ dpRound 4 tw
+    Wg.Weights
+        { distance = DistanceWeight $ dpRound 3 dw
+        , leading = LeadingWeight $ dpRound 3 lw
+        , arrival = ArrivalWeight $ dpRound 3 aw
+        , time = TimeWeight $ dpRound 3 tw
+        }
+
+roundValidity :: Vy.Validity -> Vy.Validity
+roundValidity
+    Vy.Validity
+        { launch = LaunchValidity ly
+        , distance = DistanceValidity dy
+        , time = TimeValidity ty
+        , task = TaskValidity ky
+        } =
+    Vy.Validity
+        { launch = LaunchValidity $ dpRound 3 ly
+        , distance = DistanceValidity $ dpRound 3 dy
+        , time = TimeValidity $ dpRound 3 ty
+        , task = TaskValidity $ dpRound 3 ky
         }
 
 roundAllocation:: Allocation -> Allocation
