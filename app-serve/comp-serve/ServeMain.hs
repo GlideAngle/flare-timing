@@ -140,13 +140,16 @@ mkApp cfg = return . simpleCors . serve api $ serverApi cfg
 serverApi :: Config k -> Server (Api k)
 serverApi cfg =
     hoistServer api (convertApp cfg) $
-        comp <$> asks compSettings
-        :<|> nominal <$> asks compSettings
-        :<|> tasks <$> asks compSettings
-        :<|> getPilots <$> asks compSettings
-        :<|> getValidity <$> asks pointing
-        :<|> getAllocation <$> asks pointing
-        :<|> getScore <$> asks pointing
+        comp <$> c
+        :<|> nominal <$> c
+        :<|> tasks <$> c
+        :<|> getPilots <$> c
+        :<|> getValidity <$> p
+        :<|> getAllocation <$> p
+        :<|> getScore <$> p
+    where
+        c = asks compSettings
+        p = asks pointing
 
 distinctPilots :: [[PilotTrackLogFile]] -> [Pilot]
 distinctPilots pss =
