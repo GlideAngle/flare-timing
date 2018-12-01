@@ -11,6 +11,9 @@ import FlareTiming.Events (IxTask(..))
 hrefParent :: Map.Map T.Text T.Text
 hrefParent = "href" =: "http://flaretiming.com"
 
+liParent :: MonadWidget t m => m ()
+liParent = el "li" . elAttr "a" hrefParent $ text "Flare Timing"
+
 crumbComp
     :: MonadWidget t m
     => Dynamic t Comp
@@ -20,7 +23,7 @@ crumbComp c = do
 
     elClass "nav" "breadcrumb" $ do
         el "ul" $ mdo
-            el "li" $ elAttr "a" hrefParent $ text "Flare Timing"
+            liParent
             elClass "li" "is-active" $ elAttr "a" ("href" =: "#")$ dynText c'
             return ()
 
@@ -35,7 +38,7 @@ crumbTask t c = do
 
     elClass "nav" "breadcrumb" $ do
         el "ul" $ mdo
-            el "li" $ elAttr "a" hrefParent $ text "Flare Timing"
+            liParent
             (root, _) <- el' "li" $ el "a" $ dynText c'
             elClass "li" "is-active" $ elAttr "a" ("href" =: "#")$ dynText t'
             return $ (const IxTaskNone) <$> domEvent Click root
