@@ -9,14 +9,15 @@ import Network.Wai.Handler.Warp
     (runSettings, defaultSettings, setPort, setBeforeMainLoop)
 import Servant
     ( (:<|>)(..)
-    , Get, JSON, Server, Handler(..), Proxy(..), ServantErr
+    , Capture, Get, JSON, Server, Handler(..), Proxy(..), ServantErr
     , (:>)
-    , hoistServer, serve
+    , errBody, err400, hoistServer, serve, throwError
     )
 import System.IO (hPutStrLn, stderr)
 import Control.Monad.IO.Class (MonadIO)
 import Control.Monad.Reader (ReaderT, MonadReader, asks, runReaderT)
 import Control.Monad.Except (ExceptT(..), MonadError, runExceptT)
+import qualified Data.ByteString.Lazy.Char8 as LBS (pack)
 
 import System.FilePath (takeFileName)
 import Data.Yaml (prettyPrintParseException)
@@ -81,7 +82,7 @@ type Api k =
     :<|> "pilots" :> Get '[JSON] [Pilot]
     :<|> "gap-point" :> "validity" :> Get '[JSON] [Maybe Vy.Validity]
     :<|> "gap-point" :> "allocation" :> Get '[JSON] [Maybe Allocation]
-    :<|> "gap-point" :> "score" :> Get '[JSON] [[(Pilot, Breakdown)]]
+    :<|> "gap-point" :> Capture "task" Int :> "score" :> Get '[JSON] [(Pilot, Breakdown)]
 
 api :: Proxy (Api k)
 api = Proxy
@@ -146,7 +147,7 @@ serverApi cfg =
         :<|> getPilots <$> c
         :<|> getValidity <$> p
         :<|> getAllocation <$> p
-        :<|> getScore <$> p
+        :<|> getTaskScore
     where
         c = asks compSettings
         p = asks pointing
@@ -210,5 +211,16 @@ getValidity = ((fmap . fmap) roundValidity) . validity
 getAllocation :: Pointing -> [Maybe Allocation]
 getAllocation = ((fmap . fmap) roundAllocation) . allocation
 
-getScore :: Pointing -> [[(Pilot, Breakdown)]]
-getScore = ((fmap . fmap . fmap) roundVelocity') . score
+getScores :: Pointing -> [[(Pilot, Breakdown)]]
+getScores = ((fmap . fmap . fmap) roundVelocity') . score
+
+getTaskScore :: Int -> AppT k IO [(Pilot, Breakdown)]
+getTaskScore ii = do
+    xs <- getScores <$> asks pointing
+    case drop (ii - 1) xs of
+        x : _ -> return x
+        _ -> throwError $
+            err400
+                { errBody = LBS.pack
+                $ "Out of bounds task: #" ++ show ii
+                }

@@ -5,15 +5,17 @@ module FlareTiming.Comms
     , getPilots
     , getValidity
     , getAllocation
-    , getScore
+    , getTaskScore
     ) where
 
 import Reflex
 import Reflex.Dom
+import qualified Data.Text as T (Text, pack)
 
 import WireTypes.Comp (Comp(..), Nominal(..), Task(..))
 import WireTypes.Pilot (Pilot(..))
 import WireTypes.Track.Point
+import FlareTiming.Events (IxTask(..))
 
 getTasks :: MonadWidget t m => () -> m (Dynamic t [Task])
 getTasks () = do
@@ -92,15 +94,24 @@ getAllocation () = do
     let es :: Event t [Maybe Allocation] = fmapMaybe decodeXhrResponse rsp
     holdDyn [] es
 
-getScore
+getTaskScore
     :: MonadWidget t m
-    => ()
-    -> m (Dynamic t [[(Pilot, Breakdown)]])
-getScore () = do
+    => IxTask
+    -> m (Dynamic t [(Pilot, Breakdown)])
+
+getTaskScore (IxTask ii) = do
     pb :: Event t () <- getPostBuild
-    let defReq = "http://localhost:3000/gap-point/score"
+
+    let defReq :: T.Text
+        defReq =
+            "http://localhost:3000/gap-point/"
+            <> (T.pack . show $ ii)
+            <> "/score"
+
     let req md = XhrRequest "GET" (maybe defReq id md) def
     rsp <- performRequestAsync $ fmap req $ leftmost [ Nothing <$ pb ]
 
-    let es :: Event t [[(Pilot, Breakdown)]] = fmapMaybe decodeXhrResponse rsp
+    let es :: Event t [(Pilot, Breakdown)] = fmapMaybe decodeXhrResponse rsp
     holdDyn [] es
+
+getTaskScore IxTaskNone = return $ constDyn []

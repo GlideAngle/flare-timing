@@ -5,9 +5,8 @@ import Reflex
 import Reflex.Dom
 
 import WireTypes.Comp (Comp(..), Task(..))
-import WireTypes.Pilot (Pilot(..))
-import WireTypes.Track.Point
-    (Validity(..), Allocation(..), Breakdown(..))
+import WireTypes.Track.Point (Validity(..), Allocation(..))
+import FlareTiming.Comms (getTaskScore)
 import FlareTiming.Comp (compTask)
 import FlareTiming.Breadcrumb (crumbTask)
 import FlareTiming.Events (IxTask(..))
@@ -19,14 +18,15 @@ import FlareTiming.Task.Absent (tableAbsent)
 
 taskDetail
     :: MonadWidget t m
-    => Dynamic t [Comp]
+    => IxTask
+    -> Dynamic t [Comp]
     -> Dynamic t Task
     -> Dynamic t (Maybe Validity)
     -> Dynamic t (Maybe Allocation)
-    -> Dynamic t [(Pilot, Breakdown)]
     -> m (Event t IxTask)
 
-taskDetail cs x vy a s = do
+taskDetail t@(IxTask _) cs x vy a = do
+    s <- getTaskScore t
     _ <- simpleList cs (compTask x)
     es <- simpleList cs (crumbTask x)
     tab <- tabsTask
@@ -44,3 +44,5 @@ taskDetail cs x vy a s = do
             <$> tab
 
     return $ switchDyn (leftmost <$> es)
+
+taskDetail IxTaskNone _ _ _ _ = return never

@@ -7,7 +7,7 @@ import Control.Monad (join)
 import FlareTiming.Events (IxTask(..))
 import FlareTiming.Comms
     ( getTasks, getComps, getPilots
-    , getValidity, getAllocation, getScore
+    , getValidity, getAllocation
     )
 import FlareTiming.Comp.Detail (compDetail)
 import FlareTiming.Task.Detail (taskDetail)
@@ -30,7 +30,6 @@ view () = do
     ps <- getPilots ()
     vs <- getValidity ()
     as <- getAllocation ()
-    ss <- getScore ()
 
     el "div" $ mdo
 
@@ -39,13 +38,13 @@ view () = do
         deIx <- widgetHold (compDetail cs ps xs) $
                     (\ix -> case ix of
                         IxTaskNone -> compDetail cs ps xs
-                        IxTask ii -> do
+                        (IxTask ii) -> do
                             taskDetail
+                                ix
                                 cs
                                 ((!! (ii - 1)) <$> xs)
                                 (join . nth (ii - 1) <$> vs)
-                                (join . nth (ii - 1) <$> as)
-                                ((!! (ii - 1)) <$> ss))
+                                (join . nth (ii - 1) <$> as))
                     <$> eIx
 
         return ()
