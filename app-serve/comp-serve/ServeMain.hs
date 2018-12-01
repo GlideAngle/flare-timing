@@ -139,17 +139,14 @@ mkApp cfg = return . simpleCors . serve api $ serverApi cfg
 
 serverApi :: Config k -> Server (Api k)
 serverApi cfg =
-    hoistServer
-        api
-        (convertApp cfg)
-        ( (comp <$> asks compSettings)
-        :<|> (nominal <$> asks compSettings)
-        :<|> (tasks <$> asks compSettings)
-        :<|> (distinctPilots . pilots <$> asks compSettings)
-        :<|> (((fmap . fmap) roundValidity) . validity <$> asks pointing)
-        :<|> (((fmap . fmap) roundAllocation) . allocation <$> asks pointing)
-        :<|> (((fmap . fmap . fmap) roundVelocity') . score <$> asks pointing)
-        )
+    hoistServer api (convertApp cfg) $
+        comp <$> asks compSettings
+        :<|> nominal <$> asks compSettings
+        :<|> tasks <$> asks compSettings
+        :<|> getPilots <$> asks compSettings
+        :<|> getValidity <$> asks pointing
+        :<|> getAllocation <$> asks pointing
+        :<|> getScore <$> asks pointing
 
 distinctPilots :: [[PilotTrackLogFile]] -> [Pilot]
 distinctPilots pss =
@@ -200,3 +197,15 @@ roundValidity
 roundAllocation:: Allocation -> Allocation
 roundAllocation x@Allocation{..} =
     x{ weight = roundWeights weight }
+
+getPilots :: CompSettings k -> [Pilot]
+getPilots = distinctPilots . pilots
+
+getValidity :: Pointing -> [Maybe Vy.Validity]
+getValidity = ((fmap . fmap) roundValidity) . validity
+
+getAllocation :: Pointing -> [Maybe Allocation]
+getAllocation = ((fmap . fmap) roundAllocation) . allocation
+
+getScore :: Pointing -> [[(Pilot, Breakdown)]]
+getScore = ((fmap . fmap . fmap) roundVelocity') . score
