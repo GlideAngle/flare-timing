@@ -1,11 +1,28 @@
-module FlareTiming.Breadcrumb (crumbTask) where
+module FlareTiming.Breadcrumb (crumbComp, crumbTask) where
 
 import Reflex
 import Reflex.Dom
-import qualified Data.Text as T (pack)
+import qualified Data.Text as T (Text, pack)
+import qualified Data.Map as Map
 
 import WireTypes.Comp (Comp(..), Task(..))
 import FlareTiming.Events (IxTask(..))
+
+hrefParent :: Map.Map T.Text T.Text
+hrefParent = "href" =: "http://flaretiming.com"
+
+crumbComp
+    :: MonadWidget t m
+    => Dynamic t Comp
+    -> m ()
+crumbComp c = do
+    let c' = fmap (T.pack . (\Comp{..} -> compName)) c
+
+    elClass "nav" "breadcrumb" $ do
+        el "ul" $ mdo
+            el "li" $ elAttr "a" hrefParent $ text "Flare Timing"
+            elClass "li" "is-active" $ elAttr "a" ("href" =: "#")$ dynText c'
+            return ()
 
 crumbTask
     :: MonadWidget t m
@@ -18,6 +35,7 @@ crumbTask t c = do
 
     elClass "nav" "breadcrumb" $ do
         el "ul" $ mdo
+            el "li" $ elAttr "a" hrefParent $ text "Flare Timing"
             (root, _) <- el' "li" $ el "a" $ dynText c'
             elClass "li" "is-active" $ elAttr "a" ("href" =: "#")$ dynText t'
             return $ (const IxTaskNone) <$> domEvent Click root

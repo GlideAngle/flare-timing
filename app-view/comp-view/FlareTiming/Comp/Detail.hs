@@ -6,6 +6,7 @@ import Reflex.Dom
 import WireTypes.Comp (Comp, Task)
 import WireTypes.Pilot (Pilot)
 import FlareTiming.Comp (comps)
+import FlareTiming.Breadcrumb (crumbComp)
 import FlareTiming.Events (IxTask(..))
 import FlareTiming.Comp.Tab (CompTab(..), tabsComp)
 import FlareTiming.Task.List (taskList)
@@ -19,6 +20,7 @@ compDetail
     -> m (Event t IxTask)
 compDetail cs ps xs = do
     comps cs
+    _ <- simpleList cs crumbComp
     tab <- tabsComp
 
     e <- widgetHold (taskList xs) $
