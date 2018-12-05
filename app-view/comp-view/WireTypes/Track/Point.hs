@@ -166,37 +166,39 @@ newtype TaskPoints = TaskPoints Double
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
-showMaxRounded
+showMax'
     :: (Show a, RealFrac a)
-    => (b -> a)
-    -> Maybe b
+    => (a -> String)
     -> a
+    -> (b -> a)
+    -> Maybe b
     -> T.Text
-showMaxRounded unwrap task p =
-    T.pack . maybe id (f . unwrap) task $ x
+showMax' ppr p unwrap task =
+    T.pack . maybe id (f . unwrap) task $ ppr p
     where
-        x = show (round p :: Integer)
         f task'
             | task' == p = \s -> "*" ++ s
             | otherwise = id
+
+showMaxRounded
+    :: (Show a, RealFrac a)
+    => a
+    -> (b -> a)
+    -> Maybe b
+    -> T.Text
+showMaxRounded = showMax' (show . (\x -> round x :: Integer))
 
 showMax
     :: (Show a, RealFrac a)
-    => (b -> a)
+    => a
+    -> (b -> a)
     -> Maybe b
-    -> a
     -> T.Text
-showMax unwrap task p =
-    T.pack . maybe id (f . unwrap) task $ x
-    where
-        x = show p
-        f task'
-            | task' == p = \s -> "*" ++ s
-            | otherwise = id
+showMax = showMax' show
 
 showDistancePoints :: Maybe DistancePoints -> DistancePoints -> T.Text
 showDistancePoints task (DistancePoints p) =
-    showMax (\(DistancePoints x) -> x) task p
+    showMax p (\(DistancePoints x) -> x) task
 
 showLinearPoints :: LinearPoints -> T.Text
 showLinearPoints (LinearPoints p) = T.pack . show $ p
@@ -206,19 +208,19 @@ showDifficultyPoints (DifficultyPoints p) = T.pack . show $ p
 
 showArrivalPoints :: Maybe ArrivalPoints -> ArrivalPoints -> T.Text
 showArrivalPoints task (ArrivalPoints p) =
-    showMax (\(ArrivalPoints x) -> x) task p
+    showMax p (\(ArrivalPoints x) -> x) task
 
 showTimePoints :: Maybe TimePoints -> TimePoints -> T.Text
 showTimePoints task (TimePoints p) =
-    showMax (\(TimePoints x) -> x) task p
+    showMax p (\(TimePoints x) -> x) task
 
 showLeadingPoints :: Maybe LeadingPoints -> LeadingPoints -> T.Text
 showLeadingPoints task (LeadingPoints p) =
-    showMax (\(LeadingPoints x) -> x) task p
+    showMax p (\(LeadingPoints x) -> x) task
 
 showTaskPoints :: Maybe TaskPoints -> TaskPoints -> T.Text
 showTaskPoints task (TaskPoints p) =
-    showMaxRounded (\(TaskPoints x) -> x) task p
+    showMaxRounded p (\(TaskPoints x) -> x) task
 
 data Points =
     Points 
