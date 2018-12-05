@@ -166,11 +166,30 @@ newtype TaskPoints = TaskPoints Double
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
-showMax :: (Show a, RealFrac a) => (b -> a) -> Maybe b -> a -> T.Text
+showMaxRounded
+    :: (Show a, RealFrac a)
+    => (b -> a)
+    -> Maybe b
+    -> a
+    -> T.Text
+showMaxRounded unwrap task p =
+    T.pack . maybe id (f . unwrap) task $ x
+    where
+        x = show (round p :: Integer)
+        f task'
+            | task' == p = \s -> "*" ++ s
+            | otherwise = id
+
+showMax
+    :: (Show a, RealFrac a)
+    => (b -> a)
+    -> Maybe b
+    -> a
+    -> T.Text
 showMax unwrap task p =
     T.pack . maybe id (f . unwrap) task $ x
     where
-        x = show (truncate p :: Integer)
+        x = show p
         f task'
             | task' == p = \s -> "*" ++ s
             | otherwise = id
@@ -199,7 +218,7 @@ showLeadingPoints task (LeadingPoints p) =
 
 showTaskPoints :: Maybe TaskPoints -> TaskPoints -> T.Text
 showTaskPoints task (TaskPoints p) =
-    showMax (\(TaskPoints x) -> x) task p
+    showMaxRounded (\(TaskPoints x) -> x) task p
 
 data Points =
     Points 
