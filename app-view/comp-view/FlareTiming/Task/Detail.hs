@@ -5,7 +5,7 @@ import Reflex
 import Reflex.Dom
 
 import WireTypes.Comp (Comp(..), Task(..))
-import WireTypes.Track.Point (Validity(..), Allocation(..))
+import WireTypes.Point (Validity(..), Allocation(..))
 import FlareTiming.Comms (getTaskScore)
 import FlareTiming.Comp (compTask)
 import FlareTiming.Breadcrumb (crumbTask)

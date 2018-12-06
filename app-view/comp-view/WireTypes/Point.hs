@@ -1,6 +1,6 @@
 {-# LANGUAGE DuplicateRecordFields #-}
 
-module WireTypes.Track.Point
+module WireTypes.Point
     ( Velocity(..)
     , Breakdown(..)
     , Allocation(..)

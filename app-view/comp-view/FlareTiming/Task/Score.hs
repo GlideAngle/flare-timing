@@ -8,10 +8,10 @@ import Data.Time.Clock (UTCTime)
 import Data.Time.Format (formatTime, defaultTimeLocale)
 import Data.Time.LocalTime (TimeZone, minutesToTimeZone, utcToLocalTime)
 
-import qualified WireTypes.Track.Point as Pt (Points(..))
-import qualified WireTypes.Track.Point as Wg (Weights(..))
-import qualified WireTypes.Track.Point as Vy (Validity(..))
-import WireTypes.Track.Point
+import qualified WireTypes.Point as Pt (Points(..))
+import qualified WireTypes.Point as Wg (Weights(..))
+import qualified WireTypes.Point as Vy (Validity(..))
+import WireTypes.Point
     ( TaskPlacing(..)
     , TaskPoints(..)
     , Breakdown(..)
