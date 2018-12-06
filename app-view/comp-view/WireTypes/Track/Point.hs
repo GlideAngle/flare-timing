@@ -250,7 +250,7 @@ newtype TimeWeight = TimeWeight Double
     deriving anyclass (ToJSON, FromJSON)
 
 pprWg :: Double -> String
-pprWg = printf "%.3f"
+pprWg = printf "%.4f"
 
 showDistanceWeight :: DistanceWeight -> T.Text
 showDistanceWeight (DistanceWeight p) = T.pack . pprWg $ p

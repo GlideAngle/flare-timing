@@ -168,6 +168,12 @@ roundVelocity' b@Breakdown{velocity = v@Velocity{gsVelocity = (Just x)}} =
     b{velocity = v{gsVelocity = Just . roundVelocity $ x}}
 roundVelocity' b = b
 
+dpWg :: Rational -> Rational
+dpWg = dpRound 4
+
+dpVy :: Rational -> Rational
+dpVy = dpRound 3
+
 roundWeights :: Wg.Weights -> Wg.Weights
 roundWeights
     Wg.Weights
@@ -177,10 +183,10 @@ roundWeights
         , time = TimeWeight tw
         } =
     Wg.Weights
-        { distance = DistanceWeight $ dpRound 3 dw
-        , leading = LeadingWeight $ dpRound 3 lw
-        , arrival = ArrivalWeight $ dpRound 3 aw
-        , time = TimeWeight $ dpRound 3 tw
+        { distance = DistanceWeight $ dpWg dw
+        , leading = LeadingWeight $ dpWg lw
+        , arrival = ArrivalWeight $ dpWg aw
+        , time = TimeWeight $ dpWg tw
         }
 
 roundValidity :: Vy.Validity -> Vy.Validity
@@ -192,10 +198,10 @@ roundValidity
         , task = TaskValidity ky
         } =
     Vy.Validity
-        { launch = LaunchValidity $ dpRound 3 ly
-        , distance = DistanceValidity $ dpRound 3 dy
-        , time = TimeValidity $ dpRound 3 ty
-        , task = TaskValidity $ dpRound 3 ky
+        { launch = LaunchValidity $ dpVy ly
+        , distance = DistanceValidity $ dpVy dy
+        , time = TimeValidity $ dpVy ty
+        , task = TaskValidity $ dpVy ky
         }
 
 roundAllocation:: Allocation -> Allocation
