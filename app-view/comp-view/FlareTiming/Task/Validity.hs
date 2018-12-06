@@ -2,12 +2,19 @@ module FlareTiming.Task.Validity (viewValidity) where
 
 import Reflex
 import Reflex.Dom
-import qualified Data.Text as T (pack)
+import qualified Data.Text as T (Text, pack)
 
 import WireTypes.ValidityWorking
     ( ValidityWorking(..)
     , LaunchValidityWorking(..)
     )
+
+launchWorking :: T.Text
+launchWorking =
+    "katex.render("
+    <> "\"\\\\begin{aligned} x &= \\\\min(1, \\\\frac{flying}{present * nominal}) \\\\\\\\ launch &= 0.027 * x + 2.917 * x^2 - 1.944 * x^3 \\\\end{aligned}\""
+    <> ", getElementById('launch-working')"
+    <> ", {throwOnError: false});"
 
 viewValidity
     :: MonadWidget t m
@@ -33,6 +40,18 @@ viewValidity v = do
                         elClass "div" "tags has-addons" $ do
                             elClass "span" "tag" $ do text "nominal launch"
                             elClass "span" "tag is-primary"
-                                $ text (T.pack . show $ nominalLaunch))
+                                $ text (T.pack . show $ nominalLaunch)
+
+                elAttr
+                    "a"
+                    (("class" =: "button") <> ("onclick" =: launchWorking))
+                    (text "Show Working")
+
+                elAttr
+                    "div"
+                    ("id" =: "launch-working")
+                    (text "")
+
+                return ())
 
     return ()
