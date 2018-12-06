@@ -26,7 +26,7 @@ import Flight.Track.Cross (Crossing(..))
 import Flight.Track.Point
     (Pointing(..), Velocity(..), Allocation(..), Breakdown(..))
 import qualified Flight.Score as Wg (Weights(..))
-import qualified Flight.Score as Vy (Validity(..))
+import qualified Flight.Score as Vy (Validity(..), ValidityWorking(..))
 import Flight.Score
     ( PilotVelocity(..)
     , DistanceWeight(..), LeadingWeight(..), ArrivalWeight(..), TimeWeight(..)
@@ -80,6 +80,7 @@ type Api k =
     :<|> "nominals" :> Get '[JSON] Nominal
     :<|> "tasks" :> Get '[JSON] [Task k]
     :<|> "pilots" :> Get '[JSON] [Pilot]
+    :<|> "gap-point" :> "validity-working" :> Get '[JSON] [Maybe Vy.ValidityWorking]
     :<|> "gap-point" :> "validity" :> Get '[JSON] [Maybe Vy.Validity]
     :<|> "gap-point" :> "allocation" :> Get '[JSON] [Maybe Allocation]
     :<|> "gap-point" :> Capture "task" Int :> "score" :> Get '[JSON] [(Pilot, Breakdown)]
@@ -145,6 +146,7 @@ serverApi cfg =
         :<|> nominal <$> c
         :<|> tasks <$> c
         :<|> getPilots <$> c
+        :<|> getValidityWorking <$> p
         :<|> getValidity <$> p
         :<|> getAllocation <$> p
         :<|> getTaskScore
@@ -210,6 +212,9 @@ roundAllocation x@Allocation{..} =
 
 getPilots :: CompSettings k -> [Pilot]
 getPilots = distinctPilots . pilots
+
+getValidityWorking :: Pointing -> [Maybe Vy.ValidityWorking]
+getValidityWorking = validityWorking
 
 getValidity :: Pointing -> [Maybe Vy.Validity]
 getValidity = ((fmap . fmap) roundValidity) . validity
