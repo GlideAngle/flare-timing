@@ -4,11 +4,6 @@ module WireTypes.Point
     ( Velocity(..)
     , Breakdown(..)
     , Allocation(..)
-    , Validity(..)
-    , TaskValidity(..)
-    , LaunchValidity(..)
-    , DistanceValidity(..)
-    , TimeValidity(..)
     , GoalRatio(..)
     , PilotDistance(..)
     , PilotTime(..)
@@ -39,11 +34,6 @@ module WireTypes.Point
     , showArrivalWeight
     , showTimeWeight
     , showLeadingWeight
-    -- * Showing Validities
-    , showLaunchValidity
-    , showDistanceValidity
-    , showTimeValidity
-    , showTaskValidity
     ) where
 
 import Text.Printf (printf)
@@ -76,46 +66,6 @@ newtype PilotVelocity a = PilotVelocity a
 newtype NominalGoal = NominalGoal Double
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
-
-newtype TaskValidity = TaskValidity Double
-    deriving (Eq, Ord, Show, Generic)
-    deriving anyclass (ToJSON, FromJSON)
-
-newtype LaunchValidity = LaunchValidity Double
-    deriving (Eq, Ord, Show, Generic)
-    deriving anyclass (ToJSON, FromJSON)
-
-newtype DistanceValidity = DistanceValidity Double
-    deriving (Eq, Ord, Show, Generic)
-    deriving anyclass (ToJSON, FromJSON)
-
-newtype TimeValidity = TimeValidity Double
-    deriving (Eq, Ord, Show, Generic)
-    deriving anyclass (ToJSON, FromJSON)
-
-pprVy :: Double -> String
-pprVy = printf "%.3f"
-
-showLaunchValidity :: LaunchValidity -> T.Text
-showLaunchValidity (LaunchValidity v) = T.pack . pprVy $ v
-
-showDistanceValidity :: DistanceValidity -> T.Text
-showDistanceValidity (DistanceValidity v) = T.pack . pprVy $ v
-
-showTimeValidity :: TimeValidity -> T.Text
-showTimeValidity (TimeValidity v) = T.pack . pprVy $ v
-
-showTaskValidity :: TaskValidity -> T.Text
-showTaskValidity (TaskValidity v) = T.pack . pprVy $ v
-
-data Validity =
-    Validity 
-        { task :: TaskValidity
-        , launch :: LaunchValidity
-        , distance :: DistanceValidity
-        , time :: TimeValidity
-        }
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 newtype ArrivalPoints = ArrivalPoints Double
     deriving (Eq, Ord, Show, Generic)

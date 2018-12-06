@@ -10,7 +10,7 @@ import Data.Time.LocalTime (TimeZone, minutesToTimeZone, utcToLocalTime)
 
 import qualified WireTypes.Point as Pt (Points(..))
 import qualified WireTypes.Point as Wg (Weights(..))
-import qualified WireTypes.Point as Vy (Validity(..))
+import qualified WireTypes.Validity as Vy (Validity(..))
 import WireTypes.Point
     ( TaskPlacing(..)
     , TaskPoints(..)
@@ -30,8 +30,9 @@ import WireTypes.Point
     , showArrivalWeight
     , showLeadingWeight
     , showTimeWeight
-
-    , showLaunchValidity
+    )
+import WireTypes.Validity
+    ( showLaunchValidity
     , showDistanceValidity
     , showTimeValidity
     , showTaskValidity
