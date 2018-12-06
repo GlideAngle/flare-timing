@@ -50,7 +50,6 @@ tableScore
     -> Dynamic t [(Pilot, Breakdown)]
     -> m ()
 tableScore utcOffset vy wg pt tp xs = do
-    let classIR = "class" =: "has-text-right has-text-light"
     let classR = "class" =: "has-text-right"
     let classBg = "class" =: "has-text-centered has-background-white-bis"
     let classC = "class" =: "has-text-centered"
@@ -59,9 +58,10 @@ tableScore utcOffset vy wg pt tp xs = do
     let thStart = elClass "th" "has-text-centered has-text-success" . text
     let thEnd = elClass "th" "has-text-centered has-text-danger" . text
     let thC = elClass "th" "has-text-centered" . text
-    let thU = elClass "th" "has-text-right has-text-light" . text
-    let thPt = elClass "th" "has-text-right has-text-light" . dynText
-    let thVy = elClass "th" "has-text-right" . dynText
+    let thU = elClass "th" "has-text-right" . text
+    let thPt = elClass "th" "has-text-right has-background-white" . dynText
+    let thVy = elClass "th" "has-text-right has-background-white" . dynText
+    let thSpace = elClass "th" "has-text-right has-background-white" $ text ""
 
     _ <- elClass "table" "table is-narrow is-fullwidth" $
             el "thead" $ do
@@ -83,9 +83,10 @@ tableScore utcOffset vy wg pt tp xs = do
                     thBg "Arrival"
                     thBg "Total"
 
-                elClass "tr" "is-italic has-background-warning" $ do
+                elClass "tr" "is-italic has-background-white-bis" $ do
                     el "th" $ text ""
-                    thVy $
+
+                    elAttr "th" classR . dynText $
                         maybe
                             ""
                             ( (\v ->
@@ -106,7 +107,7 @@ tableScore utcOffset vy wg pt tp xs = do
                             )
                         <$> vy
 
-                    el "th" $ text ""
+                    thSpace
 
                     thVy $
                         maybe
@@ -116,7 +117,7 @@ tableScore utcOffset vy wg pt tp xs = do
                             )
                         <$> vy
 
-                    el "th" $ text ""
+                    thSpace
 
                     thVy $
                         maybe
@@ -126,8 +127,8 @@ tableScore utcOffset vy wg pt tp xs = do
                             )
                         <$> vy
 
-                elClass "tr" "is-italic has-background-primary" $ do
-                    elAttr "th" ("colspan" =: "2" <> classIR) $ text "Weights"
+                elClass "tr" "is-italic has-background-white-bis" $ do
+                    elAttr "th" ("colspan" =: "2" <> classR) $ text "Weights"
                     elAttr "th" ("colspan" =: "5") $ text ""
 
                     thPt $
@@ -162,10 +163,10 @@ tableScore utcOffset vy wg pt tp xs = do
                             )
                         <$> wg
 
-                    el "th" $ text ""
+                    thSpace
 
-                elClass "tr" "is-italic has-background-info" $ do
-                    elAttr "th" ("colspan" =: "2" <> classIR) $ text "Available Points (Units)"
+                elClass "tr" "is-italic has-background-white-bis" $ do
+                    elAttr "th" ("colspan" =: "2" <> classR) $ text "Available Points (Units)"
                     elAttr "th" ("colspan" =: "3") $ text ""
                     thU "(km/h)"
                     thU "(km)"
