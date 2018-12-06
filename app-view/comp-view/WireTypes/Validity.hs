@@ -14,11 +14,9 @@ module WireTypes.Validity
     ) where
 
 import Text.Printf (printf)
-import Control.Applicative (empty)
-import Data.Time.Clock (UTCTime)
 import GHC.Generics (Generic)
-import Data.Aeson (Value(..), ToJSON(..), FromJSON(..))
-import qualified Data.Text as T (Text, pack, unpack)
+import Data.Aeson (ToJSON(..), FromJSON(..))
+import qualified Data.Text as T (Text, pack)
 
 newtype TaskValidity = TaskValidity Double
     deriving (Eq, Ord, Show, Generic)

@@ -76,14 +76,22 @@ newtype AppT k m a =
         )
 
 type Api k =
-    "comps" :> Get '[JSON] Comp
-    :<|> "nominals" :> Get '[JSON] Nominal
-    :<|> "tasks" :> Get '[JSON] [Task k]
-    :<|> "pilots" :> Get '[JSON] [Pilot]
-    :<|> "gap-point" :> "validity-working" :> Get '[JSON] [Maybe Vy.ValidityWorking]
-    :<|> "gap-point" :> "validity" :> Get '[JSON] [Maybe Vy.Validity]
-    :<|> "gap-point" :> "allocation" :> Get '[JSON] [Maybe Allocation]
-    :<|> "gap-point" :> Capture "task" Int :> "score" :> Get '[JSON] [(Pilot, Breakdown)]
+    "comps"
+        :> Get '[JSON] Comp
+    :<|> "nominals"
+        :> Get '[JSON] Nominal
+    :<|> "tasks"
+        :> Get '[JSON] [Task k]
+    :<|> "pilots"
+        :> Get '[JSON] [Pilot]
+    :<|> "gap-point" :> "validity"
+        :> Get '[JSON] [Maybe Vy.Validity]
+    :<|> "gap-point" :> "allocation"
+        :> Get '[JSON] [Maybe Allocation]
+    :<|> "gap-point" :> Capture "task" Int :> "score"
+        :> Get '[JSON] [(Pilot, Breakdown)]
+    :<|> "gap-point" :> Capture "task" Int :> "validity-working"
+        :> Get '[JSON] (Maybe Vy.ValidityWorking)
 
 api :: Proxy (Api k)
 api = Proxy
@@ -146,10 +154,10 @@ serverApi cfg =
         :<|> nominal <$> c
         :<|> tasks <$> c
         :<|> getPilots <$> c
-        :<|> getValidityWorking <$> p
         :<|> getValidity <$> p
         :<|> getAllocation <$> p
         :<|> getTaskScore
+        :<|> getTaskValidityWorking
     where
         c = asks compSettings
         p = asks pointing
@@ -213,9 +221,6 @@ roundAllocation x@Allocation{..} =
 getPilots :: CompSettings k -> [Pilot]
 getPilots = distinctPilots . pilots
 
-getValidityWorking :: Pointing -> [Maybe Vy.ValidityWorking]
-getValidityWorking = validityWorking
-
 getValidity :: Pointing -> [Maybe Vy.Validity]
 getValidity = ((fmap . fmap) roundValidity) . validity
 
@@ -228,6 +233,17 @@ getScores = ((fmap . fmap . fmap) roundVelocity') . score
 getTaskScore :: Int -> AppT k IO [(Pilot, Breakdown)]
 getTaskScore ii = do
     xs <- getScores <$> asks pointing
+    case drop (ii - 1) xs of
+        x : _ -> return x
+        _ -> throwError $
+            err400
+                { errBody = LBS.pack
+                $ "Out of bounds task: #" ++ show ii
+                }
+
+getTaskValidityWorking :: Int -> AppT k IO (Maybe Vy.ValidityWorking)
+getTaskValidityWorking ii = do
+    xs <- validityWorking <$> asks pointing
     case drop (ii - 1) xs of
         x : _ -> return x
         _ -> throwError $

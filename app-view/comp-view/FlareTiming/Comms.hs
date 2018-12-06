@@ -6,6 +6,7 @@ module FlareTiming.Comms
     , getValidity
     , getAllocation
     , getTaskScore
+    , getTaskValidityWorking
     ) where
 
 import Reflex
@@ -14,7 +15,9 @@ import qualified Data.Text as T (Text, pack)
 
 import WireTypes.Comp (Comp(..), Nominal(..), Task(..))
 import WireTypes.Pilot (Pilot(..))
-import WireTypes.Track.Point
+import WireTypes.Point
+import WireTypes.Validity
+import WireTypes.ValidityWorking
 import FlareTiming.Events (IxTask(..))
 
 -- NOTE: Possible alternatives for mapUri ...
@@ -22,7 +25,7 @@ import FlareTiming.Events (IxTask(..))
 -- mapUri s = "http://2012-forbes.flaretiming.com/json" <> s <> ".json"
 -- mapUri s = "/json" <> s <> ".json"
 mapUri :: T.Text -> T.Text
-mapUri s = "/json" <> s <> ".json"
+mapUri s = "http://localhost:3000" <> s
 
 getTasks :: MonadWidget t m => () -> m (Dynamic t [Task])
 getTasks () = do
@@ -123,3 +126,25 @@ getTaskScore (IxTask ii) = do
     holdDyn [] es
 
 getTaskScore IxTaskNone = return $ constDyn []
+
+getTaskValidityWorking
+    :: MonadWidget t m
+    => IxTask
+    -> m (Dynamic t (Maybe ValidityWorking))
+getTaskValidityWorking (IxTask ii) = do
+    pb :: Event t () <- getPostBuild
+
+    let defReq :: T.Text
+        defReq =
+            mapUri
+            $ "/gap-point/"
+            <> (T.pack . show $ ii)
+            <> "/validity-working"
+
+    let req md = XhrRequest "GET" (maybe defReq id md) def
+    rsp <- performRequestAsync $ fmap req $ leftmost [ Nothing <$ pb ]
+
+    let es :: Event t (Maybe ValidityWorking) = fmapMaybe decodeXhrResponse rsp
+    holdDyn Nothing es
+
+getTaskValidityWorking IxTaskNone = return $ constDyn Nothing
