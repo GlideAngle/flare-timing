@@ -4,27 +4,34 @@ import Reflex
 import Reflex.Dom
 import qualified Data.Text as T (Text, pack)
 
-import WireTypes.ValidityWorking
-    ( ValidityWorking(..)
-    , LaunchValidityWorking(..)
-    )
+import qualified WireTypes.Validity as Vy (Validity(..), showLaunchValidity)
+import WireTypes.ValidityWorking (ValidityWorking(..), LaunchValidityWorking(..))
 
-launchWorking :: T.Text
-launchWorking =
+launchWorking :: Vy.Validity -> T.Text
+launchWorking vy =
     "katex.render("
-    <> "\"\\\\begin{aligned} x &= \\\\min(1, \\\\frac{flying}{present * nominal}) \\\\\\\\ launch &= 0.027 * x + 2.917 * x^2 - 1.944 * x^3 \\\\end{aligned}\""
+    <> "\"\\\\begin{aligned} "
+    <> "x &= \\\\min(1, \\\\frac{flying}{present * nominal})"
+    <> " \\\\\\\\ "
+    <> "launch &= 0.027 * x + 2.917 * x^2 - 1.944 * x^3"
+    <> " \\\\\\\\ "
+    <> "&= "
+    <> (Vy.showLaunchValidity . Vy.launch $ vy)
+    <> " \\\\end{aligned}\""
     <> ", getElementById('launch-working')"
     <> ", {throwOnError: false});"
 
 viewValidity
     :: MonadWidget t m
-    => Dynamic t (Maybe ValidityWorking)
+    => Dynamic t (Maybe Vy.Validity)
+    -> Dynamic t (Maybe ValidityWorking)
     -> m ()
-viewValidity v = do
-    _ <- dyn $ ffor v (\x ->
-        case x of
-            Nothing -> text "Loading nominals ..."
-            (Just ValidityWorking{launch = LaunchValidityWorking{..}}) -> do
+viewValidity vy vw = do
+    _ <- dyn $ ffor2 vy vw (\x y ->
+        case (x, y) of
+            (Nothing, _) -> text "Loading validity ..."
+            (_, Nothing) -> text "Loading validity workings ..."
+            (Just vy', Just ValidityWorking{launch = LaunchValidityWorking{..}}) -> do
                 elClass "div" "field is-grouped is-grouped-multiline" $ do
                     elClass "div" "control" $ do
                         elClass "div" "tags has-addons" $ do
@@ -44,7 +51,7 @@ viewValidity v = do
 
                 elAttr
                     "a"
-                    (("class" =: "button") <> ("onclick" =: launchWorking))
+                    (("class" =: "button") <> ("onclick" =: launchWorking vy'))
                     (text "Show Working")
 
                 elAttr
