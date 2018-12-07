@@ -4,6 +4,7 @@ import Prelude hiding (sum)
 import Reflex
 import Reflex.Dom
 import Data.String (IsString)
+import Text.Printf (printf)
 import qualified Data.Text as T (Text, pack)
 
 import qualified WireTypes.Validity as Vy
@@ -13,6 +14,7 @@ import WireTypes.ValidityWorking
     , LaunchValidityWorking(..)
     , DistanceValidityWorking(..)
     , TimeValidityWorking(..)
+    , BestTime(..)
     )
 
 katexNewLine :: T.Text
@@ -84,11 +86,38 @@ distanceWorking v w =
     <> ", {throwOnError: false});"
 
 timeWorkingCase :: (Semigroup p, IsString p) => Maybe a -> p
-timeWorkingCase (Just _) = " \\\\dfrac{bt}{nt}"
-timeWorkingCase Nothing = " \\\\dfrac{bd}{nd}"
+timeWorkingCase (Just _) = " &= \\\\dfrac{bt}{nt}"
+timeWorkingCase Nothing = " &= \\\\dfrac{bd}{nd}"
+
+timeWorkingSub :: TimeValidityWorking -> T.Text
+
+timeWorkingSub
+    TimeValidityWorking{gsBestTime = Just bt@(BestTime b), nominalTime = nt} =
+    " &="
+    <> " \\\\dfrac{"
+    <> (T.pack . show $ bt)
+    <> "}{"
+    <> (T.pack . show $ nt)
+    <> "}"
+    <> katexNewLine
+    <> " &="
+    <> " \\\\dfrac{"
+    <> (T.pack . printf "%f h" $ b)
+    <> "}{"
+    <> (T.pack . show $ nt)
+    <> "}"
+
+timeWorkingSub
+    TimeValidityWorking{bestDistance = bd, nominalDistance = nd} =
+    " &="
+    <> " \\\\dfrac{"
+    <> (T.pack . show $ bd)
+    <> "}{"
+    <> (T.pack . show $ nd)
+    <> "}"
 
 timeWorking :: Vy.Validity -> TimeValidityWorking -> T.Text
-timeWorking v TimeValidityWorking{gsBestTime = bt} =
+timeWorking v w@TimeValidityWorking{gsBestTime = bt} =
     "katex.render("
     <> "\"\\\\begin{aligned} "
     <> " x &="
@@ -101,9 +130,9 @@ timeWorking v TimeValidityWorking{gsBestTime = bt} =
     <> " &\\\\text{if no pilots reached ESS}"
     <> " \\\\end{cases}"
     <> katexNewLine
-    <> katexNewLine
-    <> " &="
     <> timeWorkingCase bt
+    <> katexNewLine
+    <> timeWorkingSub w
     <> katexNewLine
     <> katexNewLine
     <> " y &= \\\\min(1, x)"
@@ -254,7 +283,7 @@ viewTime
     elClass "div" "card" $ do
         elClass "div" "card-content" $ do
             elClass "h2" "title is-4" . text
-                $ "Time Validity =" <> Vy.showTimeValidity v
+                $ "Time Validity = " <> Vy.showTimeValidity v
             elClass "div" "field is-grouped is-grouped-multiline" $ do
                 elClass "div" "control" $ do
                     elClass "div" "tags has-addons" $ do
