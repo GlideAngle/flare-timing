@@ -47,6 +47,37 @@ launchWorking v w@LaunchValidityWorking{flying = f} =
     <> ", getElementById('launch-working')"
     <> ", {throwOnError: false});"
 
+distanceWorkingSubA :: DistanceValidityWorking -> T.Text
+distanceWorkingSubA
+    DistanceValidityWorking
+        { nominalGoal = ng
+        , nominalDistance = nd
+        , minimumDistance = md
+        } =
+    " &= ("
+    <> (T.pack . show $ ng)
+    <> " + 1) * ("
+    <> (T.pack . show $ nd)
+    <> " - "
+    <> (T.pack . show $ md)
+    <> ")"
+
+distanceWorkingSubB :: DistanceValidityWorking -> T.Text
+distanceWorkingSubB
+    DistanceValidityWorking
+        { nominalGoal = ng
+        , bestDistance = bd
+        , nominalDistance = nd
+        } =
+    " &="
+    <> " \\\\max(0, "
+    <> (T.pack . show $ ng)
+    <> " * ("
+    <> (T.pack . show $ bd)
+    <> " - "
+    <> (T.pack . show $ nd)
+    <> ")"
+
 distanceWorking :: Vy.Validity -> DistanceValidityWorking -> T.Text
 distanceWorking v w =
     "katex.render("
@@ -63,9 +94,13 @@ distanceWorking v w =
     <> katexNewLine
     <> " a &= (ng + 1) * (nd - md)"
     <> katexNewLine
+    <> distanceWorkingSubA w
+    <> katexNewLine
     <> katexNewLine
     <> " b &="
-    <> " \\\\max(0, ng * (bd- nd)"
+    <> " \\\\max(0, ng * (bd - nd)"
+    <> katexNewLine
+    <> distanceWorkingSubB w
     <> katexNewLine
     <> katexNewLine
     <> "area"
