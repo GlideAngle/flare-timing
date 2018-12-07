@@ -31,34 +31,41 @@ viewValidity vy vw = do
         case (x, y) of
             (Nothing, _) -> text "Loading validity ..."
             (_, Nothing) -> text "Loading validity workings ..."
-            (Just vy', Just ValidityWorking{launch = LaunchValidityWorking{..}}) -> do
-                elClass "div" "field is-grouped is-grouped-multiline" $ do
-                    elClass "div" "control" $ do
-                        elClass "div" "tags has-addons" $ do
-                            elClass "span" "tag" $ do text "pilots flying"
-                            elClass "span" "tag is-info"
-                                $ text (T.pack . show $ flying)
-                    elClass "div" "control" $ do
-                        elClass "div" "tags has-addons" $ do
-                            elClass "span" "tag" $ do text "pilots present"
-                            elClass "span" "tag is-success"
-                                $ text (T.pack . show $ present)
-                    elClass "div" "control" $ do
-                        elClass "div" "tags has-addons" $ do
-                            elClass "span" "tag" $ do text "nominal launch"
-                            elClass "span" "tag is-primary"
-                                $ text (T.pack . show $ nominalLaunch)
+            (Just vy', Just vw') -> viewLaunch vy' vw')
 
-                elAttr
-                    "a"
-                    (("class" =: "button") <> ("onclick" =: launchWorking vy'))
-                    (text "Show Working")
+    return ()
 
-                elAttr
-                    "div"
-                    ("id" =: "launch-working")
-                    (text "")
+viewLaunch
+    :: DomBuilder t m
+    => Vy.Validity
+    -> ValidityWorking
+    -> m ()
+viewLaunch vy ValidityWorking{launch = LaunchValidityWorking{..}} = do
+    elClass "div" "field is-grouped is-grouped-multiline" $ do
+        elClass "div" "control" $ do
+            elClass "div" "tags has-addons" $ do
+                elClass "span" "tag" $ do text "pilots flying"
+                elClass "span" "tag is-info"
+                    $ text (T.pack . show $ flying)
+        elClass "div" "control" $ do
+            elClass "div" "tags has-addons" $ do
+                elClass "span" "tag" $ do text "pilots present"
+                elClass "span" "tag is-success"
+                    $ text (T.pack . show $ present)
+        elClass "div" "control" $ do
+            elClass "div" "tags has-addons" $ do
+                elClass "span" "tag" $ do text "nominal launch"
+                elClass "span" "tag is-primary"
+                    $ text (T.pack . show $ nominalLaunch)
 
-                return ())
+    elAttr
+        "a"
+        (("class" =: "button") <> ("onclick" =: launchWorking vy))
+        (text "Show Working")
+
+    elAttr
+        "div"
+        ("id" =: "launch-working")
+        (text "")
 
     return ()
