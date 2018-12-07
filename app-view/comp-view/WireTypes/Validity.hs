@@ -57,4 +57,3 @@ data Validity =
         , time :: TimeValidity
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
-

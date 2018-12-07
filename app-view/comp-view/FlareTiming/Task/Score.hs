@@ -2,8 +2,7 @@ module FlareTiming.Task.Score (tableScore) where
 
 import Prelude hiding (min)
 import Reflex.Dom
-import qualified Data.Text as T (Text, pack, unpack, breakOn)
-import Text.Printf (printf)
+import qualified Data.Text as T (Text, pack, breakOn)
 import Data.Time.Clock (UTCTime)
 import Data.Time.Format (formatTime, defaultTimeLocale)
 import Data.Time.LocalTime (TimeZone, minutesToTimeZone, utcToLocalTime)
@@ -40,6 +39,7 @@ import WireTypes.Validity
 import WireTypes.Comp (UtcOffset(..))
 import WireTypes.Pilot (Pilot(..))
 import FlareTiming.Pilot (showPilotName)
+import FlareTiming.Time (showHmsForHours)
 
 tableScore
     :: MonadWidget t m
@@ -302,13 +302,7 @@ showEs _ _ = ""
 
 showVelocityTime :: Velocity -> T.Text
 showVelocityTime Velocity{gsElapsed = Just (PilotTime t)} =
-    T.pack $ show2i hr' ++ ":" ++ show2i min' ++ ":" ++ show2i sec'
-    where
-        hrStr = T.unpack . fst . T.breakOn " h" . T.pack $ t
-        hr = read hrStr :: Double
-        sec = round $ 3600 * hr
-        (hr', min) = sec `divMod` 3600
-        (min', sec') = min `divMod` 60
+    showHmsForHours . T.pack $ t
 
 showVelocityTime _ = ""
 
@@ -321,9 +315,6 @@ showVelocityDistance :: Velocity -> T.Text
 showVelocityDistance Velocity{distance = Just (PilotDistance d)} =
     fst . T.breakOn " km" . T.pack $ d
 showVelocityDistance _ = ""
-
-show2i :: Integer -> String
-show2i = printf "%02d"
 
 showT :: TimeZone -> UTCTime -> T.Text
 showT tz = 
