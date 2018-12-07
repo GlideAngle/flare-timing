@@ -52,8 +52,10 @@ distanceWorking v w =
     <> katexNewLine
     <> " a &= (ng + 1) * (nd - md)"
     <> katexNewLine
+    <> katexNewLine
     <> " b &="
     <> " \\\\max(0, ng * (bd- nd)"
+    <> katexNewLine
     <> katexNewLine
     <> "area"
     <> " &="
@@ -86,10 +88,14 @@ timeWorking vy =
     <> " &\\\\text{if no pilot reached ESS}"
     <> " \\\\end{cases}"
     <> katexNewLine
+    <> katexNewLine
     <> " y &= \\\\min(1, x)"
     <> katexNewLine
     <> katexNewLine
-    <> "validity &= \\\\max(0, \\\\min(1, -0.271 + 2.912 * y - 2.098 * y^2 + 0.457 * y^3))"
+    <> " z &= -0.271 + 2.912 * y - 2.098 * y^2 + 0.457 * y^3"
+    <> katexNewLine
+    <> katexNewLine
+    <> "validity &= \\\\max(0, \\\\min(1, z))"
     <> katexNewLine
     <> " &= "
     <> (Vy.showTimeValidity . Vy.time $ vy)
