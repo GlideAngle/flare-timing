@@ -17,8 +17,9 @@ import WireTypes.ValidityWorking
 katexNewLine :: T.Text
 katexNewLine = " \\\\\\\\ "
 
-hookWorking :: Vy.Validity -> T.Text
-hookWorking v = launchWorking v <> distanceWorking v <> timeWorking v
+hookWorking :: Vy.Validity -> ValidityWorking -> T.Text
+hookWorking v ValidityWorking{distance = w} =
+    launchWorking v <> distanceWorking v w <> timeWorking v
 
 launchWorking :: Vy.Validity -> T.Text
 launchWorking vy =
@@ -34,13 +35,16 @@ launchWorking vy =
     <> ", getElementById('launch-working')"
     <> ", {throwOnError: false});"
 
-distanceWorking :: Vy.Validity -> T.Text
-distanceWorking vy =
+distanceWorking :: Vy.Validity -> DistanceValidityWorking -> T.Text
+distanceWorking v w =
     "katex.render("
     <> "\"\\\\begin{aligned} "
     <> " sum"
     <> " &="
     <> " \\\\sum_p \\\\max(0, FlownDist_p - md)"
+    <> katexNewLine
+    <> " &= "
+    <> (T.pack . show $ sum w)
     <> katexNewLine
     <> " a &= (ng + 1) * (nd - md)"
     <> katexNewLine
@@ -51,11 +55,14 @@ distanceWorking vy =
     <> " &="
     <> "\\\\frac{(a + b)}{2}"
     <> katexNewLine
+    <> " &= "
+    <> (T.pack . show $ area w)
+    <> katexNewLine
     <> " validity &="
     <> " \\\\min(1, \\\\frac{sum}{f * area})"
     <> katexNewLine
     <> " &= "
-    <> (Vy.showDistanceValidity . Vy.distance $ vy)
+    <> (Vy.showDistanceValidity . Vy.distance $ v)
     <> " \\\\end{aligned}\""
     <> ", getElementById('distance-working')"
     <> ", {throwOnError: false});"
@@ -97,18 +104,18 @@ viewValidity vy vw = do
         case (x, y) of
             (Nothing, _) -> text "Loading validity ..."
             (_, Nothing) -> text "Loading validity workings ..."
-            (Just vy', Just vw') -> do
+            (Just v, Just w) -> do
                 elAttr
                     "a"
-                    (("class" =: "button") <> ("onclick" =: hookWorking vy'))
+                    (("class" =: "button") <> ("onclick" =: hookWorking v w))
                     (text "Show Working")
 
                 spacer
-                viewLaunch vw'
+                viewLaunch w
                 spacer
-                viewDistance vw'
+                viewDistance w
                 spacer
-                viewTime vw'
+                viewTime w
                 spacer
                 return ())
 
