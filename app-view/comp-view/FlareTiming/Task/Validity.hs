@@ -17,9 +17,9 @@ launchWorking :: Vy.Validity -> T.Text
 launchWorking vy =
     "katex.render("
     <> "\"\\\\begin{aligned} "
-    <> "x &= \\\\min(1, \\\\frac{flying}{present * nominal})"
+    <> "x &= \\\\min(1, \\\\frac{f}{p * n})"
     <> " \\\\\\\\ "
-    <> "launch &= 0.027 * x + 2.917 * x^2 - 1.944 * x^3"
+    <> "validity &= 0.027 * x + 2.917 * x^2 - 1.944 * x^3"
     <> " \\\\\\\\ "
     <> "&= "
     <> (Vy.showLaunchValidity . Vy.launch $ vy)
@@ -46,11 +46,6 @@ viewValidity vy vw = do
                     (("class" =: "button") <> ("onclick" =: launchWorking vy'))
                     (text "Show Working")
 
-                elAttr
-                    "div"
-                    ("id" =: "launch-working")
-                    (text "")
-
                 spacer
                 viewLaunch vw'
                 spacer
@@ -73,19 +68,24 @@ viewLaunch ValidityWorking{launch = LaunchValidityWorking{..}} = do
             elClass "div" "field is-grouped is-grouped-multiline" $ do
                 elClass "div" "control" $ do
                     elClass "div" "tags has-addons" $ do
-                        elClass "span" "tag" $ do text "pilots flying"
+                        elClass "span" "tag" $ do text "f = pilots flying"
                         elClass "span" "tag is-info"
                             $ text (T.pack . show $ flying)
                 elClass "div" "control" $ do
                     elClass "div" "tags has-addons" $ do
-                        elClass "span" "tag" $ do text "pilots present"
+                        elClass "span" "tag" $ do text "p = pilots present"
                         elClass "span" "tag is-success"
                             $ text (T.pack . show $ present)
                 elClass "div" "control" $ do
                     elClass "div" "tags has-addons" $ do
-                        elClass "span" "tag" $ do text "nominal launch"
+                        elClass "span" "tag" $ do text "n = nominal launch"
                         elClass "span" "tag is-primary"
                             $ text (T.pack . show $ nominalLaunch)
+
+            elAttr
+                "div"
+                ("id" =: "launch-working")
+                (text "")
 
     return ()
 
