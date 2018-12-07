@@ -3,6 +3,7 @@ module FlareTiming.Task.Validity (viewValidity) where
 import Prelude hiding (sum)
 import Reflex
 import Reflex.Dom
+import Data.String (IsString)
 import qualified Data.Text as T (Text, pack)
 
 import qualified WireTypes.Validity as Vy
@@ -18,8 +19,8 @@ katexNewLine :: T.Text
 katexNewLine = " \\\\\\\\ "
 
 hookWorking :: Vy.Validity -> ValidityWorking -> T.Text
-hookWorking v ValidityWorking{launch = l, distance = d} =
-    launchWorking v l <> distanceWorking v d <> timeWorking v
+hookWorking v ValidityWorking{launch = l, distance = d, time = t} =
+    launchWorking v l <> distanceWorking v d <> timeWorking v t
 
 launchWorking :: Vy.Validity -> LaunchValidityWorking -> T.Text
 launchWorking v w@LaunchValidityWorking{flying = f} =
@@ -82,19 +83,27 @@ distanceWorking v w =
     <> ", getElementById('distance-working')"
     <> ", {throwOnError: false});"
 
-timeWorking :: Vy.Validity -> T.Text
-timeWorking vy =
+timeWorkingCase :: (Semigroup p, IsString p) => Maybe a -> p
+timeWorkingCase (Just _) = " \\\\dfrac{bt}{nt}"
+timeWorkingCase Nothing = " \\\\dfrac{bd}{nd}"
+
+timeWorking :: Vy.Validity -> TimeValidityWorking -> T.Text
+timeWorking v TimeValidityWorking{gsBestTime = bt} =
     "katex.render("
     <> "\"\\\\begin{aligned} "
     <> " x &="
     <> " \\\\begin{cases}"
     <> " \\\\dfrac{bt}{nt}"
-    <> " &\\\\text{if one pilot reached ESS}"
+    <> " &\\\\text{if at least one pilot reached ESS}"
     <> katexNewLine
     <> katexNewLine
     <> " \\\\dfrac{bd}{nd}"
-    <> " &\\\\text{if no pilot reached ESS}"
+    <> " &\\\\text{if no pilots reached ESS}"
     <> " \\\\end{cases}"
+    <> katexNewLine
+    <> katexNewLine
+    <> " &="
+    <> timeWorkingCase bt
     <> katexNewLine
     <> katexNewLine
     <> " y &= \\\\min(1, x)"
@@ -106,7 +115,7 @@ timeWorking vy =
     <> "validity &= \\\\max(0, \\\\min(1, z))"
     <> katexNewLine
     <> " &= "
-    <> (Vy.showTimeValidity . Vy.time $ vy)
+    <> (Vy.showTimeValidity . Vy.time $ v)
     <> " \\\\end{aligned}\""
     <> ", getElementById('time-working')"
     <> ", {throwOnError: false});"
