@@ -18,20 +18,28 @@ katexNewLine :: T.Text
 katexNewLine = " \\\\\\\\ "
 
 hookWorking :: Vy.Validity -> ValidityWorking -> T.Text
-hookWorking v ValidityWorking{distance = w} =
-    launchWorking v <> distanceWorking v w <> timeWorking v
+hookWorking v ValidityWorking{launch = l, distance = d} =
+    launchWorking v l <> distanceWorking v d <> timeWorking v
 
-launchWorking :: Vy.Validity -> T.Text
-launchWorking vy =
+launchWorking :: Vy.Validity -> LaunchValidityWorking -> T.Text
+launchWorking v w@LaunchValidityWorking{flying = f} =
     "katex.render("
     <> "\"\\\\begin{aligned} "
     <> "x &= \\\\min(1, \\\\frac{f}{p * n})"
+    <> katexNewLine
+    <> " &= \\\\min(1, \\\\frac{"
+    <> (T.pack . show $ f)
+    <> "}{"
+    <> (T.pack . show $ present w)
+    <> " * "
+    <> (T.pack . show $ nominalLaunch w)
+    <> "})"
     <> katexNewLine
     <> katexNewLine
     <> "validity &= 0.027 * x + 2.917 * x^2 - 1.944 * x^3"
     <> katexNewLine
     <> " &= "
-    <> (Vy.showLaunchValidity . Vy.launch $ vy)
+    <> (Vy.showLaunchValidity . Vy.launch $ v)
     <> " \\\\end{aligned}\""
     <> ", getElementById('launch-working')"
     <> ", {throwOnError: false});"
