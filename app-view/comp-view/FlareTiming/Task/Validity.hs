@@ -42,20 +42,17 @@ distanceWorking vy =
     <> " &="
     <> " \\\\sum_p \\\\max(0, FlownDist_p - md)"
     <> katexNewLine
-    <> "area"
-    <> " &="
-    <> "\\\\frac{(a + b)}{2}"
-    <> katexNewLine
     <> " a &= (ng + 1) * (nd - md)"
     <> katexNewLine
     <> " b &="
     <> " \\\\max(0, ng * (bd- nd)"
     <> katexNewLine
-    <> " x &="
-    <> " \\\\frac{sum}{f * area}"
+    <> "area"
+    <> " &="
+    <> "\\\\frac{(a + b)}{2}"
     <> katexNewLine
     <> " validity &="
-    <> " \\\\min(1, x)"
+    <> " \\\\min(1, \\\\frac{sum}{f * area})"
     <> katexNewLine
     <> " &= "
     <> (Vy.showDistanceValidity . Vy.distance $ vy)
