@@ -5,7 +5,8 @@ import Reflex
 import Reflex.Dom
 import qualified Data.Text as T (Text, pack)
 
-import qualified WireTypes.Validity as Vy (Validity(..), showLaunchValidity)
+import qualified WireTypes.Validity as Vy
+    (Validity(..), showLaunchValidity, showDistanceValidity, showTimeValidity)
 import WireTypes.ValidityWorking
     ( ValidityWorking(..)
     , LaunchValidityWorking(..)
@@ -17,7 +18,7 @@ katexNewLine :: T.Text
 katexNewLine = " \\\\\\\\ "
 
 hookWorking :: Vy.Validity -> T.Text
-hookWorking v = launchWorking v <> timeWorking v
+hookWorking v = launchWorking v <> distanceWorking v <> timeWorking v
 
 launchWorking :: Vy.Validity -> T.Text
 launchWorking vy =
@@ -27,10 +28,39 @@ launchWorking vy =
     <> katexNewLine
     <> "validity &= 0.027 * x + 2.917 * x^2 - 1.944 * x^3"
     <> katexNewLine
-    <> "&= "
+    <> " &= "
     <> (Vy.showLaunchValidity . Vy.launch $ vy)
     <> " \\\\end{aligned}\""
     <> ", getElementById('launch-working')"
+    <> ", {throwOnError: false});"
+
+distanceWorking :: Vy.Validity -> T.Text
+distanceWorking vy =
+    "katex.render("
+    <> "\"\\\\begin{aligned} "
+    <> " SumOfFlownDistancesOverMinDist"
+    <> " &="
+    <> " \\\\sum_p \\\\max(0, FlownDist_p - MinDist)"
+    <> katexNewLine
+    <> "NominalDistanceArea"
+    <> " &="
+    <> "\\\\frac{(a + b)}{2}"
+    <> katexNewLine
+    <> " a &= (NomGoal + 1) * (NomDist - MinDist)"
+    <> katexNewLine
+    <> " b &="
+    <> " \\\\max(0, NomGoal * (BestDist - NomDist)"
+    <> katexNewLine
+    <> " DVR &="
+    <> " \\\\frac{SumOfFlownDistancesOverMinDist}{NumberOfPilotsFlying * NominalDistanceArea}"
+    <> katexNewLine
+    <> " DistanceValidity &="
+    <> " \\\\min(1, DVR)"
+    <> katexNewLine
+    <> " &= "
+    <> (Vy.showDistanceValidity . Vy.distance $ vy)
+    <> " \\\\end{aligned}\""
+    <> ", getElementById('distance-working')"
     <> ", {throwOnError: false});"
 
 timeWorking :: Vy.Validity -> T.Text
@@ -51,8 +81,8 @@ timeWorking vy =
     <> katexNewLine
     <> "validity &= \\\\max(0, \\\\min(1, -0.271 + 2.912 * y - 2.098 * y^2 + 0.457 * y^3))"
     <> katexNewLine
-    <> "&= "
-    <> (Vy.showLaunchValidity . Vy.launch $ vy)
+    <> " &= "
+    <> (Vy.showTimeValidity . Vy.time $ vy)
     <> " \\\\end{aligned}\""
     <> ", getElementById('time-working')"
     <> ", {throwOnError: false});"
@@ -164,6 +194,11 @@ viewDistance ValidityWorking{distance = DistanceValidityWorking{..}} = do
                         elClass "span" "tag" $ do text "best distance"
                         elClass "span" "tag is-dark"
                             $ text (T.pack . show $ bestDistance)
+
+            elAttr
+                "div"
+                ("id" =: "distance-working")
+                (text "")
 
     return ()
 
