@@ -38,24 +38,24 @@ distanceWorking :: Vy.Validity -> T.Text
 distanceWorking vy =
     "katex.render("
     <> "\"\\\\begin{aligned} "
-    <> " SumOfFlownDistancesOverMinDist"
+    <> " sum"
     <> " &="
-    <> " \\\\sum_p \\\\max(0, FlownDist_p - MinDist)"
+    <> " \\\\sum_p \\\\max(0, FlownDist_p - md)"
     <> katexNewLine
-    <> "NominalDistanceArea"
+    <> "area"
     <> " &="
     <> "\\\\frac{(a + b)}{2}"
     <> katexNewLine
-    <> " a &= (NomGoal + 1) * (NomDist - MinDist)"
+    <> " a &= (ng + 1) * (nd - md)"
     <> katexNewLine
     <> " b &="
-    <> " \\\\max(0, NomGoal * (BestDist - NomDist)"
+    <> " \\\\max(0, ng * (bd- nd)"
     <> katexNewLine
-    <> " DVR &="
-    <> " \\\\frac{SumOfFlownDistancesOverMinDist}{NumberOfPilotsFlying * NominalDistanceArea}"
+    <> " x &="
+    <> " \\\\frac{sum}{f * area}"
     <> katexNewLine
-    <> " DistanceValidity &="
-    <> " \\\\min(1, DVR)"
+    <> " validity &="
+    <> " \\\\min(1, x)"
     <> katexNewLine
     <> " &= "
     <> (Vy.showDistanceValidity . Vy.distance $ vy)
@@ -160,7 +160,7 @@ viewDistance ValidityWorking{distance = DistanceValidityWorking{..}} = do
             elClass "div" "field is-grouped is-grouped-multiline" $ do
                 elClass "div" "control" $ do
                     elClass "div" "tags has-addons" $ do
-                        elClass "span" "tag" $ do text "pilots flying"
+                        elClass "span" "tag" $ do text "f = pilots flying"
                         elClass "span" "tag is-info"
                             $ text (T.pack . show $ flying)
                 elClass "div" "control" $ do
@@ -170,28 +170,28 @@ viewDistance ValidityWorking{distance = DistanceValidityWorking{..}} = do
                             $ text (T.pack . show $ area)
                 elClass "div" "control" $ do
                     elClass "div" "tags has-addons" $ do
-                        elClass "span" "tag" $ do text "nominal goal"
+                        elClass "span" "tag" $ do text "ng = nominal goal"
                         elClass "span" "tag is-primary"
                             $ text (T.pack . show $ nominalGoal)
             elClass "div" "field is-grouped is-grouped-multiline" $ do
                 elClass "div" "control" $ do
                     elClass "div" "tags has-addons" $ do
-                        elClass "span" "tag" $ do text "sum of distance"
+                        elClass "span" "tag" $ do text "sum = sum of distance"
                         elClass "span" "tag is-dark"
                             $ text (T.pack . show $ sum)
                 elClass "div" "control" $ do
                     elClass "div" "tags has-addons" $ do
-                        elClass "span" "tag" $ do text "nominal distance"
+                        elClass "span" "tag" $ do text "nd = nominal distance"
                         elClass "span" "tag is-dark"
                             $ text (T.pack . show $ nominalDistance)
                 elClass "div" "control" $ do
                     elClass "div" "tags has-addons" $ do
-                        elClass "span" "tag" $ do text "minimum distance"
+                        elClass "span" "tag" $ do text "md = minimum distance"
                         elClass "span" "tag is-dark"
                             $ text (T.pack . show $ minimumDistance)
                 elClass "div" "control" $ do
                     elClass "div" "tags has-addons" $ do
-                        elClass "span" "tag" $ do text "best distance"
+                        elClass "span" "tag" $ do text "bd = best distance"
                         elClass "span" "tag is-dark"
                             $ text (T.pack . show $ bestDistance)
 
