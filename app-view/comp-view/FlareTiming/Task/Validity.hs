@@ -13,18 +13,48 @@ import WireTypes.ValidityWorking
     , TimeValidityWorking(..)
     )
 
+katexNewLine :: T.Text
+katexNewLine = " \\\\\\\\ "
+
+hookWorking :: Vy.Validity -> T.Text
+hookWorking v = launchWorking v <> timeWorking v
+
 launchWorking :: Vy.Validity -> T.Text
 launchWorking vy =
     "katex.render("
     <> "\"\\\\begin{aligned} "
     <> "x &= \\\\min(1, \\\\frac{f}{p * n})"
-    <> " \\\\\\\\ "
+    <> katexNewLine
     <> "validity &= 0.027 * x + 2.917 * x^2 - 1.944 * x^3"
-    <> " \\\\\\\\ "
+    <> katexNewLine
     <> "&= "
     <> (Vy.showLaunchValidity . Vy.launch $ vy)
     <> " \\\\end{aligned}\""
     <> ", getElementById('launch-working')"
+    <> ", {throwOnError: false});"
+
+timeWorking :: Vy.Validity -> T.Text
+timeWorking vy =
+    "katex.render("
+    <> "\"\\\\begin{aligned} "
+    <> " x &="
+    <> " \\\\begin{cases}"
+    <> " \\\\dfrac{bt}{nt}"
+    <> " &\\\\text{if one pilot reached ESS}"
+    <> katexNewLine
+    <> katexNewLine
+    <> " \\\\dfrac{bd}{nd}"
+    <> " &\\\\text{if no pilot reached ESS}"
+    <> " \\\\end{cases}"
+    <> katexNewLine
+    <> " y &= \\\\min(1, x)"
+    <> katexNewLine
+    <> "validity &= \\\\max(0, \\\\min(1, -0.271 + 2.912 * y - 2.098 * y^2 + 0.457 * y^3))"
+    <> katexNewLine
+    <> "&= "
+    <> (Vy.showLaunchValidity . Vy.launch $ vy)
+    <> " \\\\end{aligned}\""
+    <> ", getElementById('time-working')"
     <> ", {throwOnError: false});"
 
 spacer :: DomBuilder t m => m ()
@@ -43,7 +73,7 @@ viewValidity vy vw = do
             (Just vy', Just vw') -> do
                 elAttr
                     "a"
-                    (("class" =: "button") <> ("onclick" =: launchWorking vy'))
+                    (("class" =: "button") <> ("onclick" =: hookWorking vy'))
                     (text "Show Working")
 
                 spacer
@@ -153,24 +183,29 @@ viewTime ValidityWorking{time = TimeValidityWorking{..}} = do
                             $ text (T.pack . show $ ssBestTime)
                 elClass "div" "control" $ do
                     elClass "div" "tags has-addons" $ do
-                        elClass "span" "tag" $ do text "gs best time"
+                        elClass "span" "tag" $ do text "bt = gs best time"
                         elClass "span" "tag is-success"
                             $ text (T.pack . show $ gsBestTime)
                 elClass "div" "control" $ do
                     elClass "div" "tags has-addons" $ do
-                        elClass "span" "tag" $ do text "nominal time"
+                        elClass "span" "tag" $ do text "nt = nominal time"
                         elClass "span" "tag is-primary"
                             $ text (T.pack . show $ nominalTime)
             elClass "div" "field is-grouped is-grouped-multiline" $ do
                 elClass "div" "control" $ do
                     elClass "div" "tags has-addons" $ do
-                        elClass "span" "tag" $ do text "best distance"
+                        elClass "span" "tag" $ do text "bd = best distance"
                         elClass "span" "tag is-dark"
                             $ text (T.pack . show $ bestDistance)
                 elClass "div" "control" $ do
                     elClass "div" "tags has-addons" $ do
-                        elClass "span" "tag" $ do text "nominal distance"
+                        elClass "span" "tag" $ do text "nd = nominal distance"
                         elClass "span" "tag is-dark"
                             $ text (T.pack . show $ nominalDistance)
+
+            elAttr
+                "div"
+                ("id" =: "time-working")
+                (text "")
 
     return ()
