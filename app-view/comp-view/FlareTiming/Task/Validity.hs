@@ -42,7 +42,9 @@ distanceWorking v w =
     <> "\"\\\\begin{aligned} "
     <> " sum"
     <> " &="
-    <> " \\\\sum_p \\\\max(0, FlownDist_p - md)"
+    <> " \\\\sum_p \\\\max(0, d_p - md)"
+    <> " &\\\\"
+    <> " d_p = \\\\text{distance flown by pilot \\\\textit{p}}"
     <> katexNewLine
     <> " &= "
     <> (T.pack . show $ sum w)
