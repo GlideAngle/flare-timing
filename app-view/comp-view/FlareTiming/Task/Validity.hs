@@ -27,6 +27,7 @@ launchWorking vy =
     <> "\"\\\\begin{aligned} "
     <> "x &= \\\\min(1, \\\\frac{f}{p * n})"
     <> katexNewLine
+    <> katexNewLine
     <> "validity &= 0.027 * x + 2.917 * x^2 - 1.944 * x^3"
     <> katexNewLine
     <> " &= "
@@ -46,6 +47,7 @@ distanceWorking v w =
     <> " &= "
     <> (T.pack . show $ sum w)
     <> katexNewLine
+    <> katexNewLine
     <> " a &= (ng + 1) * (nd - md)"
     <> katexNewLine
     <> " b &="
@@ -57,6 +59,7 @@ distanceWorking v w =
     <> katexNewLine
     <> " &= "
     <> (T.pack . show $ area w)
+    <> katexNewLine
     <> katexNewLine
     <> " validity &="
     <> " \\\\min(1, \\\\frac{sum}{f * area})"
@@ -82,6 +85,7 @@ timeWorking vy =
     <> " \\\\end{cases}"
     <> katexNewLine
     <> " y &= \\\\min(1, x)"
+    <> katexNewLine
     <> katexNewLine
     <> "validity &= \\\\max(0, \\\\min(1, -0.271 + 2.912 * y - 2.098 * y^2 + 0.457 * y^3))"
     <> katexNewLine
