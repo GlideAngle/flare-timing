@@ -14,6 +14,11 @@ module WireTypes.ValidityWorking
     , NominalDistance(..)
     , MinimumDistance(..)
     , MaximumDistance(..)
+    -- * Time Validity Working
+    , TimeValidityWorking(..)
+    , BestTime(..)
+    , BestDistance(..)
+    , NominalTime(..)
     ) where
 
 import Control.Applicative (empty)
@@ -25,6 +30,7 @@ data ValidityWorking =
     ValidityWorking 
         { launch :: LaunchValidityWorking
         , distance :: DistanceValidityWorking
+        , time :: TimeValidityWorking
         }
     deriving (Eq, Ord, Show, Generic, FromJSON)
 
@@ -123,5 +129,57 @@ instance FromJSON MaximumDistance where
         s <- reverse . T.unpack <$> parseJSON x
         case s of
             'm' : 'k' : ' ' : xs -> return . MaximumDistance . read . reverse $ xs
+            _ -> empty
+    parseJSON _ = empty
+
+data TimeValidityWorking =
+    TimeValidityWorking 
+        { ssBestTime :: Maybe BestTime
+        , gsBestTime :: Maybe BestTime
+        , bestDistance :: BestDistance
+        , nominalTime :: NominalTime
+        , nominalDistance :: NominalDistance
+        }
+    deriving (Eq, Ord, Show, Generic, FromJSON)
+
+newtype BestTime = BestTime Double
+    deriving (Eq, Ord)
+
+newtype BestDistance = BestDistance Double
+    deriving (Eq, Ord)
+
+newtype NominalTime = NominalTime Double
+    deriving (Eq, Ord)
+
+instance Show BestTime where
+    show (BestTime x) = show x ++ " h"
+
+instance Show BestDistance where
+    show (BestDistance x) = show x ++ " km"
+
+instance Show NominalTime where
+    show (NominalTime x) = show x ++ " h"
+
+instance FromJSON BestTime where
+    parseJSON x@(String _) = do
+        s <- reverse . T.unpack <$> parseJSON x
+        case s of
+            'h' : ' ' : xs -> return . BestTime . read . reverse $ xs
+            _ -> empty
+    parseJSON _ = empty
+
+instance FromJSON BestDistance where
+    parseJSON x@(String _) = do
+        s <- reverse . T.unpack <$> parseJSON x
+        case s of
+            'm' : 'k' : ' ' : xs -> return . BestDistance . read . reverse $ xs
+            _ -> empty
+    parseJSON _ = empty
+
+instance FromJSON NominalTime where
+    parseJSON x@(String _) = do
+        s <- reverse . T.unpack <$> parseJSON x
+        case s of
+            'h' : ' ' : xs -> return . NominalTime . read . reverse $ xs
             _ -> empty
     parseJSON _ = empty

@@ -10,6 +10,7 @@ import WireTypes.ValidityWorking
     ( ValidityWorking(..)
     , LaunchValidityWorking(..)
     , DistanceValidityWorking(..)
+    , TimeValidityWorking(..)
     )
 
 launchWorking :: Vy.Validity -> T.Text
@@ -54,6 +55,8 @@ viewValidity vy vw = do
                 viewLaunch vw'
                 spacer
                 viewDistance vw'
+                spacer
+                viewTime vw'
                 spacer
                 return ())
 
@@ -131,5 +134,43 @@ viewDistance ValidityWorking{distance = DistanceValidityWorking{..}} = do
                         elClass "span" "tag" $ do text "best distance"
                         elClass "span" "tag is-dark"
                             $ text (T.pack . show $ bestDistance)
+
+    return ()
+
+viewTime
+    :: DomBuilder t m
+    => ValidityWorking
+    -> m ()
+viewTime ValidityWorking{time = TimeValidityWorking{..}} = do
+    elClass "div" "card" $ do
+        elClass "div" "card-content" $ do
+            elClass "h2" "title is-4" $ text "Time Validity"
+            elClass "div" "field is-grouped is-grouped-multiline" $ do
+                elClass "div" "control" $ do
+                    elClass "div" "tags has-addons" $ do
+                        elClass "span" "tag" $ do text "ss best time"
+                        elClass "span" "tag is-info"
+                            $ text (T.pack . show $ ssBestTime)
+                elClass "div" "control" $ do
+                    elClass "div" "tags has-addons" $ do
+                        elClass "span" "tag" $ do text "gs best time"
+                        elClass "span" "tag is-success"
+                            $ text (T.pack . show $ gsBestTime)
+                elClass "div" "control" $ do
+                    elClass "div" "tags has-addons" $ do
+                        elClass "span" "tag" $ do text "nominal time"
+                        elClass "span" "tag is-primary"
+                            $ text (T.pack . show $ nominalTime)
+            elClass "div" "field is-grouped is-grouped-multiline" $ do
+                elClass "div" "control" $ do
+                    elClass "div" "tags has-addons" $ do
+                        elClass "span" "tag" $ do text "best distance"
+                        elClass "span" "tag is-dark"
+                            $ text (T.pack . show $ bestDistance)
+                elClass "div" "control" $ do
+                    elClass "div" "tags has-addons" $ do
+                        elClass "span" "tag" $ do text "nominal distance"
+                        elClass "span" "tag is-dark"
+                            $ text (T.pack . show $ nominalDistance)
 
     return ()
