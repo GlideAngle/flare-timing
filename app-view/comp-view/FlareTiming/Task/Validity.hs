@@ -140,11 +140,11 @@ viewValidity vy vw = do
                     (text "Show Working")
 
                 spacer
-                viewLaunch w
+                viewLaunch v w
                 spacer
-                viewDistance w
+                viewDistance v w
                 spacer
-                viewTime w
+                viewTime v w
                 spacer
                 return ())
 
@@ -152,12 +152,16 @@ viewValidity vy vw = do
 
 viewLaunch
     :: DomBuilder t m
-    => ValidityWorking
+    => Vy.Validity
+    -> ValidityWorking
     -> m ()
-viewLaunch ValidityWorking{launch = LaunchValidityWorking{..}} = do
+viewLaunch
+    Vy.Validity{launch = v}
+    ValidityWorking{launch = LaunchValidityWorking{..}} = do
     elClass "div" "card" $ do
         elClass "div" "card-content" $ do
-            elClass "h2" "title is-4" $ text "Launch Validity"
+            elClass "h2" "title is-4" . text
+                $ "Launch Validity = " <> Vy.showLaunchValidity v
             elClass "div" "field is-grouped is-grouped-multiline" $ do
                 elClass "div" "control" $ do
                     elClass "div" "tags has-addons" $ do
@@ -184,12 +188,16 @@ viewLaunch ValidityWorking{launch = LaunchValidityWorking{..}} = do
 
 viewDistance
     :: DomBuilder t m
-    => ValidityWorking
+    => Vy.Validity
+    -> ValidityWorking
     -> m ()
-viewDistance ValidityWorking{distance = DistanceValidityWorking{..}} = do
+viewDistance
+    Vy.Validity{distance = v}
+    ValidityWorking{distance = DistanceValidityWorking{..}} = do
     elClass "div" "card" $ do
         elClass "div" "card-content" $ do
-            elClass "h2" "title is-4" $ text "Distance Validity"
+            elClass "h2" "title is-4" . text
+                $ "Distance Validity = " <> Vy.showDistanceValidity v
             elClass "div" "field is-grouped is-grouped-multiline" $ do
                 elClass "div" "control" $ do
                     elClass "div" "tags has-addons" $ do
@@ -237,12 +245,16 @@ viewDistance ValidityWorking{distance = DistanceValidityWorking{..}} = do
 
 viewTime
     :: DomBuilder t m
-    => ValidityWorking
+    => Vy.Validity
+    -> ValidityWorking
     -> m ()
-viewTime ValidityWorking{time = TimeValidityWorking{..}} = do
+viewTime
+    Vy.Validity{time = v}
+    ValidityWorking{time = TimeValidityWorking{..}} = do
     elClass "div" "card" $ do
         elClass "div" "card-content" $ do
-            elClass "h2" "title is-4" $ text "Time Validity"
+            elClass "h2" "title is-4" . text
+                $ "Time Validity =" <> Vy.showTimeValidity v
             elClass "div" "field is-grouped is-grouped-multiline" $ do
                 elClass "div" "control" $ do
                     elClass "div" "tags has-addons" $ do
@@ -275,5 +287,9 @@ viewTime ValidityWorking{time = TimeValidityWorking{..}} = do
                 "div"
                 ("id" =: "time-working")
                 (text "")
+
+            elClass "div" "notification" $ do
+                el "p" $ text "ss best time = the best time ignoring start gates"
+                el "p" $ text "gs best time = the best time from the start gate taken"
 
     return ()
