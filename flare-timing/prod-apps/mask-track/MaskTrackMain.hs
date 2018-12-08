@@ -222,7 +222,7 @@ writeMask
             -- Task lengths (ls).
             let lsTask = Lookup.compRoutes routes iTasks
 
-            let pilotsArriving = (fmap . fmap) fst as 
+            let pilotsArriving = (fmap . fmap) fst as
             let pilotsLandingOut = (fmap . fmap) fst dsLand
             let pilots =
                     [ pAs ++ pLs
