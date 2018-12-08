@@ -21,6 +21,8 @@ module WireTypes.Point
     , ArrivalWeight(..)
     , TimeWeight(..)
     , Weights(..)
+    -- * Showing Breakdown
+    , showPilotDistance
     -- * Showing Points
     , showDistancePoints
     , showLinearPoints
@@ -40,65 +42,72 @@ import Text.Printf (printf)
 import Control.Applicative (empty)
 import Data.Time.Clock (UTCTime)
 import GHC.Generics (Generic)
-import Data.Aeson (Value(..), ToJSON(..), FromJSON(..))
+import Data.Aeson (Value(..), FromJSON(..))
 import qualified Data.Text as T (Text, pack, unpack)
 
 newtype StartGate = StartGate UTCTime
     deriving (Eq, Ord, Show, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass (FromJSON)
 
 newtype GoalRatio = GoalRatio Double
     deriving (Eq, Ord, Show, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass (FromJSON)
 
 newtype PilotTime a = PilotTime a
     deriving (Eq, Ord, Show, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass (FromJSON)
 
-newtype PilotDistance a = PilotDistance a
+newtype PilotDistance = PilotDistance Double
     deriving (Eq, Ord, Show, Generic)
-    deriving anyclass (ToJSON, FromJSON)
 
 newtype PilotVelocity a = PilotVelocity a
     deriving (Eq, Ord, Show, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass (FromJSON)
 
 newtype NominalGoal = NominalGoal Double
     deriving (Eq, Ord, Show, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass (FromJSON)
 
 newtype ArrivalPoints = ArrivalPoints Double
     deriving (Eq, Ord, Show, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass (FromJSON)
 
 newtype DistancePoints = DistancePoints Double
     deriving (Eq, Ord, Show, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass (FromJSON)
 
 newtype LinearPoints = LinearPoints Double
     deriving (Eq, Ord, Show, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass (FromJSON)
 
 newtype DifficultyPoints = DifficultyPoints Double
     deriving (Eq, Ord, Show, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass (FromJSON)
 
 newtype LeadingPoints = LeadingPoints Double
     deriving (Eq, Ord, Show, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass (FromJSON)
 
 newtype TimePoints = TimePoints Double
     deriving (Eq, Ord, Show, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass (FromJSON)
+
+instance FromJSON PilotDistance where
+    parseJSON x@(String _) = do
+        s <- reverse . T.unpack <$> parseJSON x
+        case s of
+            'm' : 'k' : ' ' : xs -> return . PilotDistance . read . reverse $ xs
+            _ -> empty
+    parseJSON _ = empty
+
+showPilotDistance :: PilotDistance -> T.Text
+showPilotDistance (PilotDistance d) =
+    T.pack . printf "%.2f" $ d
 
 data TaskPlacing
     = TaskPlacing Integer
     | TaskPlacingEqual Integer
     deriving (Eq, Ord, Show)
-
-instance ToJSON TaskPlacing where
-    toJSON (TaskPlacing x) = String . T.pack $ show x
-    toJSON (TaskPlacingEqual x) = String . T.pack $ show x ++ "="
 
 instance FromJSON TaskPlacing where
     parseJSON x@(String _) = do
@@ -114,7 +123,7 @@ instance FromJSON TaskPlacing where
 
 newtype TaskPoints = TaskPoints Double
     deriving (Eq, Ord, Show, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass (FromJSON)
 
 showMax'
     :: (Show a, RealFrac a)
@@ -186,23 +195,23 @@ data Points =
         , arrival :: ArrivalPoints
         , time :: TimePoints
         }
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Show, Generic, FromJSON)
 
 newtype ArrivalWeight = ArrivalWeight Double
     deriving (Eq, Ord, Show, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass (FromJSON)
 
 newtype DistanceWeight = DistanceWeight Double
     deriving (Eq, Ord, Show, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass (FromJSON)
 
 newtype LeadingWeight = LeadingWeight Double
     deriving (Eq, Ord, Show, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass (FromJSON)
 
 newtype TimeWeight = TimeWeight Double
     deriving (Eq, Ord, Show, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass (FromJSON)
 
 pprWg :: Double -> String
 pprWg = printf "%.2f%%" . (* 100.0)
@@ -226,7 +235,7 @@ data Weights =
         , arrival :: ArrivalWeight
         , time :: TimeWeight
         }
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Show, Generic, FromJSON)
 
 data Velocity =
     Velocity
@@ -243,14 +252,14 @@ data Velocity =
         , gsElapsed :: Maybe (PilotTime String)
           -- ^ The elapsed time from the start gate. Always as long as
           -- @ssElapsed@.
-        , distance :: Maybe (PilotDistance String)
+        , distance :: Maybe PilotDistance
           -- ^ The distance the pilot made, not exceeding goal.
         , ssVelocity :: Maybe (PilotVelocity String)
           -- ^ The velocity from the time the started the speed section.
         , gsVelocity :: Maybe (PilotVelocity String)
           -- ^ The velocity from the start gate time.
         }
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Show, Generic, FromJSON)
 
 data Breakdown =
     Breakdown
@@ -259,7 +268,7 @@ data Breakdown =
         , breakdown :: Points
         , velocity :: Velocity
         }
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Show, Generic, FromJSON)
 
 data Allocation =
     Allocation 
@@ -268,4 +277,4 @@ data Allocation =
         , points :: Points
         , taskPoints :: TaskPoints
         }
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Show, Generic, FromJSON)

@@ -14,7 +14,7 @@ module WireTypes.Comp
     ) where
 
 import GHC.Generics (Generic)
-import Data.Aeson (ToJSON(..), FromJSON(..))
+import Data.Aeson (FromJSON(..))
 import Data.Scientific (Scientific, toRealFloat, fromRationalRepetend)
 import WireTypes.Zone (RawZone, Zones(..))
 import WireTypes.Pilot (Pilot)
@@ -25,7 +25,7 @@ type SpeedSection = Maybe (Integer, Integer)
 
 newtype UtcOffset = UtcOffset { timeZoneMinutes :: Int }
     deriving (Eq, Ord, Show, Read, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass (FromJSON)
 
 data Comp =
     Comp
@@ -36,7 +36,7 @@ data Comp =
         , to :: String
         , utcOffset :: UtcOffset
         }
-    deriving (Show, Generic, ToJSON, FromJSON)
+    deriving (Show, Generic, FromJSON)
 
 data Nominal =
     Nominal
@@ -46,7 +46,7 @@ data Nominal =
         , goal :: Double
         , launch :: Double
         }
-    deriving (Show, Generic, ToJSON, FromJSON)
+    deriving (Show, Generic, FromJSON)
 
 data Task =
     Task
@@ -55,7 +55,7 @@ data Task =
         , speedSection :: SpeedSection
         , absent :: [Pilot]
         }
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Show, Generic, FromJSON)
 
 fromSci :: Scientific -> Rational
 fromSci x = toRational (toRealFloat x :: Double)

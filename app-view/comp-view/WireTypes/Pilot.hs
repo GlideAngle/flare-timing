@@ -5,21 +5,21 @@ module WireTypes.Pilot
     ) where
 
 import GHC.Generics (Generic)
-import Data.Aeson (ToJSON(..), FromJSON(..))
+import Data.Aeson (FromJSON(..))
 
 newtype PilotId =
     PilotId String 
     deriving (Eq, Ord, Show, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass (FromJSON)
 
 newtype PilotName =
     PilotName String
     deriving (Eq, Ord, Show, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass (FromJSON)
 
 newtype Pilot = Pilot (PilotId, PilotName)
     deriving (Eq, Show, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass (FromJSON)
 
 -- | Order by name then by id.
 instance Ord Pilot where

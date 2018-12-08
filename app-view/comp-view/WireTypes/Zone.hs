@@ -12,7 +12,7 @@ module WireTypes.Zone
 import Control.Applicative (empty)
 import GHC.Generics (Generic)
 import qualified Data.Text as T
-import Data.Aeson (Value(..), ToJSON(..), FromJSON(..))
+import Data.Aeson (Value(..), FromJSON(..))
 import Data.Scientific (Scientific, toRealFloat, fromRationalRepetend)
 
 newtype RawLat = RawLat Rational
@@ -31,13 +31,13 @@ data RawZone =
         , lng :: RawLng
         , radius :: Radius
         }
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Show, Generic, FromJSON)
 
 data Zones =
     Zones
         { raw :: [RawZone]
         }
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Show, Generic, FromJSON)
 
 fromSci :: Scientific -> Rational
 fromSci x = toRational (toRealFloat x :: Double)
@@ -48,9 +48,6 @@ toSci x =
         Left (s, _) -> s
         Right (s, _) -> s
 
-instance ToJSON Radius where
-    toJSON (Radius x) = String . T.pack $ show x ++ " m"
-
 instance FromJSON Radius where
     parseJSON x@(String _) = do
         s <- reverse . T.unpack <$> parseJSON x
@@ -59,15 +56,9 @@ instance FromJSON Radius where
             _ -> empty
     parseJSON _ = empty
 
-instance ToJSON RawLat where
-    toJSON (RawLat x) = Number $ toSci x
-
 instance FromJSON RawLat where
     parseJSON x@(Number _) = RawLat . fromSci <$> parseJSON x
     parseJSON _ = empty
-
-instance ToJSON RawLng where
-    toJSON (RawLng x) = Number $ toSci x
 
 instance FromJSON RawLng where
     parseJSON x@(Number _) = RawLng . fromSci <$> parseJSON x

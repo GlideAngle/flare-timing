@@ -15,9 +15,10 @@ import WireTypes.Point
     , TaskPoints(..)
     , Breakdown(..)
     , Velocity(..)
-    , PilotDistance(..)
     , PilotTime(..)
     , PilotVelocity(..)
+
+    , showPilotDistance
 
     , showLinearPoints
     , showDifficultyPoints
@@ -342,8 +343,7 @@ showVelocityVelocity Velocity{gsVelocity = Just (PilotVelocity v)} =
 showVelocityVelocity _ = ""
 
 showVelocityDistance :: Velocity -> T.Text
-showVelocityDistance Velocity{distance = Just (PilotDistance d)} =
-    fst . T.breakOn " km" . T.pack $ d
+showVelocityDistance Velocity{distance = Just d} = showPilotDistance d
 showVelocityDistance _ = ""
 
 showT :: TimeZone -> UTCTime -> T.Text

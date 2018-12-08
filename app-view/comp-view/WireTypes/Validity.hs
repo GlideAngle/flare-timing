@@ -15,24 +15,24 @@ module WireTypes.Validity
 
 import Text.Printf (printf)
 import GHC.Generics (Generic)
-import Data.Aeson (ToJSON(..), FromJSON(..))
+import Data.Aeson (FromJSON(..))
 import qualified Data.Text as T (Text, pack)
 
 newtype TaskValidity = TaskValidity Double
     deriving (Eq, Ord, Show, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass (FromJSON)
 
 newtype LaunchValidity = LaunchValidity Double
     deriving (Eq, Ord, Show, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass (FromJSON)
 
 newtype DistanceValidity = DistanceValidity Double
     deriving (Eq, Ord, Show, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass (FromJSON)
 
 newtype TimeValidity = TimeValidity Double
     deriving (Eq, Ord, Show, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+    deriving anyclass (FromJSON)
 
 pprVy :: Double -> String
 pprVy = printf "%.3f"
@@ -56,4 +56,4 @@ data Validity =
         , distance :: DistanceValidity
         , time :: TimeValidity
         }
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Show, Generic, FromJSON)
