@@ -150,11 +150,13 @@ showDistancePoints :: Maybe DistancePoints -> DistancePoints -> T.Text
 showDistancePoints task (DistancePoints p) =
     showMax p (\(DistancePoints x) -> x) task
 
-showLinearPoints :: LinearPoints -> T.Text
-showLinearPoints (LinearPoints p) = T.pack . show $ p
+showLinearPoints :: Maybe LinearPoints -> LinearPoints -> T.Text
+showLinearPoints task (LinearPoints p) =
+    showMax p (\(LinearPoints x) -> x) task
 
-showDifficultyPoints :: DifficultyPoints -> T.Text
-showDifficultyPoints (DifficultyPoints p) = T.pack . show $ p
+showDifficultyPoints :: Maybe DifficultyPoints -> DifficultyPoints -> T.Text
+showDifficultyPoints task (DifficultyPoints p) =
+    showMax p (\(DifficultyPoints x) -> x) task
 
 showArrivalPoints :: Maybe ArrivalPoints -> ArrivalPoints -> T.Text
 showArrivalPoints task (ArrivalPoints p) =

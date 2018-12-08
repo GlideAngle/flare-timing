@@ -19,6 +19,8 @@ import WireTypes.Point
     , PilotTime(..)
     , PilotVelocity(..)
 
+    , showLinearPoints
+    , showDifficultyPoints
     , showDistancePoints
     , showArrivalPoints
     , showLeadingPoints
@@ -71,13 +73,16 @@ tableScore utcOffset vy wg pt tp xs = do
                     elAttr "th" ("rowspan" =: "2" <> classR) $ text "#"
                     elAttr "th" ("rowspan" =: "2") $ text "Pilot"
                     elAttr "th" ("colspan" =: "5" <> classC) $ text "Speed Section"
-                    elAttr "th" ("colspan" =: "5" <> classBg) $ text "Points"
+                    elAttr "th" ("colspan" =: "7" <> classBg) $ text "Points"
+
                 el "tr" $ do
                     thStart "Start"
                     thEnd "End"
                     thC "Time"
                     thR "Speed"
                     thR "Distance"
+                    thBg "Reach"
+                    thBg "Effort"
                     thBg "Distance"
                     thBg "Lead"
                     thBg "Time"
@@ -99,6 +104,9 @@ tableScore utcOffset vy wg pt tp xs = do
                         <$> vy
 
                     elAttr "th" ("colspan" =: "5") $ text ""
+
+                    thSpace
+                    thSpace
 
                     thVy $
                         maybe
@@ -131,6 +139,9 @@ tableScore utcOffset vy wg pt tp xs = do
                 elClass "tr" "is-italic has-background-white-bis" $ do
                     elAttr "th" ("colspan" =: "2" <> classR) $ text "Weights"
                     elAttr "th" ("colspan" =: "5") $ text ""
+
+                    thSpace
+                    thSpace
 
                     thPt $
                         maybe
@@ -171,6 +182,22 @@ tableScore utcOffset vy wg pt tp xs = do
                     elAttr "th" ("colspan" =: "3") $ text ""
                     thU "(km/h)"
                     thU "(km)"
+
+                    thPt $
+                        maybe
+                            ""
+                            ( (\x -> showLinearPoints (Just x) x)
+                            . Pt.reach
+                            )
+                        <$> pt
+
+                    thPt $
+                        maybe
+                            ""
+                            ( (\x -> showDifficultyPoints (Just x) x)
+                            . Pt.effort
+                            )
+                        <$> pt
 
                     thPt $
                         maybe
@@ -263,6 +290,8 @@ row utcOffset pt tp x = do
         tdR $ showVelocityVelocity <$> v
         tdR $ showVelocityDistance <$> v
 
+        tdR' $ showMax Pt.reach showLinearPoints pt points
+        tdR' $ showMax Pt.effort showDifficultyPoints pt points
         tdR' $ showMax Pt.distance showDistancePoints pt points
         tdR' $ showMax Pt.leading showLeadingPoints pt points
         tdR' $ showMax Pt.time showTimePoints pt points
