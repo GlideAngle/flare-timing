@@ -12,7 +12,6 @@ import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Control.Arrow (second)
 import Control.Lens ((^?), element)
-import Control.Applicative (liftA2)
 import Control.Monad.Except (ExceptT, runExceptT)
 import Data.UnitsOfMeasure (u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
@@ -252,7 +251,11 @@ writeMask
                         rows
 
             let dsSum =
-                    [ liftA2 (+) aSum lSum
+                    [
+                        (\case 0 -> Nothing; x -> Just x)
+                        . sum
+                        . catMaybes
+                        $ [aSum, lSum]
                     | aSum <- dsSumArriving
                     | lSum <- dsSumLandingOut
                     ]
