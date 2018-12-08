@@ -15,7 +15,7 @@ newtype PilotDistance a = PilotDistance a
 instance
     (q ~ Quantity Double [u| km |])
     => DefaultDecimalPlaces (PilotDistance q) where
-    defdp _ = DecimalPlaces 1
+    defdp _ = DecimalPlaces 2
 
 instance
     (q ~ Quantity Double [u| km |])
