@@ -29,6 +29,7 @@ import Flight.Gap.Distance.Chunk
     , lookahead
     , chunkLandouts
     , sumLandouts
+    , collectDowns
     )
 
 -- | The sum of all chunk difficulties.
@@ -72,7 +73,7 @@ gradeDifficulty md best xs =
         , startChunk = zip ys starts
         , endChunk = zip ys ends
         , endAhead = zip ys ends'
-        , downward = uncurry ChunkLandings <$> downs
+        , downward = collectDowns md xs $ downs
         , relative =
             uncurry ChunkRelativeDifficulty . fmap RelativeDifficulty
             <$> rels
