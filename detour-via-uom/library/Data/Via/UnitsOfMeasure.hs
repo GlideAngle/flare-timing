@@ -29,7 +29,7 @@ module Data.Via.UnitsOfMeasure
     (
     -- * Usage
     -- $use
-    
+
     -- * Decimal Places and Units
       ViaQ(..)
     ) where

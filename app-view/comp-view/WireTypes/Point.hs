@@ -155,20 +155,20 @@ showMax
     -> T.Text
 showMax = showMax' show
 
-showMax2dp :: Double -> (b -> Double) -> Maybe b -> T.Text
-showMax2dp = showMax' $ printf "%.2f"
+showMaxDistance :: Double -> (b -> Double) -> Maybe b -> T.Text
+showMaxDistance = showMax' $ printf "%.3f"
 
 showDistancePoints :: Maybe DistancePoints -> DistancePoints -> T.Text
 showDistancePoints task (DistancePoints p) =
-    showMax2dp p (\(DistancePoints x) -> x) task
+    showMaxDistance p (\(DistancePoints x) -> x) task
 
 showLinearPoints :: Maybe LinearPoints -> LinearPoints -> T.Text
 showLinearPoints task (LinearPoints p) =
-    showMax2dp p (\(LinearPoints x) -> x) task
+    showMaxDistance p (\(LinearPoints x) -> x) task
 
 showDifficultyPoints :: Maybe DifficultyPoints -> DifficultyPoints -> T.Text
 showDifficultyPoints task (DifficultyPoints p) =
-    showMax2dp p (\(DifficultyPoints x) -> x) task
+    showMaxDistance p (\(DifficultyPoints x) -> x) task
 
 showArrivalPoints :: Maybe ArrivalPoints -> ArrivalPoints -> T.Text
 showArrivalPoints task (ArrivalPoints p) =
