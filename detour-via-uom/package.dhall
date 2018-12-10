@@ -4,7 +4,7 @@ in    defs
     ⫽ { name =
           "detour-via-uom"
       , version =
-          "1.0.0"
+          "1.0.1"
       , synopsis =
           "JSON and CSV encoding for quantities."
       , description =

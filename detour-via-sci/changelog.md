@@ -1,3 +1,7 @@
+# 1.0.1
+
+No code changes, added doctests of fromSci and showSci for -0.038.
+
 # 1.0.0
 
 Initial version with;
