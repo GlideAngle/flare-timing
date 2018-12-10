@@ -43,7 +43,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Data.UnitsOfMeasure.Show (showUnit)
 import Data.UnitsOfMeasure.Read (QuantityWithUnit(..), Some(..), readQuantity)
 
-import Data.Via.Scientific (DefaultDecimalPlaces(..), fromSci, toSci)
+import Data.Via.Scientific (DefaultDecimalPlaces(..), fromSci, toSci, showSci)
 
 -- TODO: Reduce duplication in Data.Via.UnitsOfMeasure
 -- Suggestion: Reduce duplication
@@ -64,14 +64,20 @@ data ViaQ n a u where
         => n
         -> ViaQ n a u
 
-showQuantitySci
-    :: forall u. (KnownUnit (Unpack u))
-    => Quantity Scientific u
+showQ
+    :: forall n a u.
+        ( DefaultDecimalPlaces n
+        , Newtype n (Quantity a u)
+        , Real a
+        , KnownUnit (Unpack u)
+        )
+    => n
     -> String
-showQuantitySci (MkQuantity x) =
-    show x ++ if s == "1" then "" else ' ' : s
+showQ x =
+    showSci (defdp x) y ++ if s == "1" then "" else ' ' : s
     where
         s = showUnit (undefined :: proxy u)
+        MkQuantity y = toQ x
 
 toQ
     ::
@@ -96,7 +102,7 @@ instance
     , KnownUnit (Unpack u)
     )
     => ToJSON (ViaQ n a u) where
-    toJSON (ViaQ x) = toJSON . showQuantitySci $ toQ x
+    toJSON (ViaQ x) = toJSON . showQ $ x
 
 instance
     ( DefaultDecimalPlaces n
@@ -120,7 +126,7 @@ instance
     , KnownUnit (Unpack u)
     )
     => ToField (ViaQ n a u) where
-    toField (ViaQ x) = toField . showQuantitySci $ toQ x
+    toField (ViaQ x) = toField . showQ $ x
 
 instance
     ( DefaultDecimalPlaces n
@@ -196,12 +202,11 @@ unSome (Some (QuantityWithUnit (MkQuantity q) _)) = q
 -- Distance [u| 112233.446 km |]
 -- 
 -- >>> [u| -0.038 km |]
--- [u| -0.038 km |]
+-- [u| -3.8e-2 km |]
 -- >>> encode (Distance [u| -0.038 km |])
 -- "\"-0.038 km\""
 -- >>> let Just x :: Maybe (Distance (Quantity Double [u| km |])) = decode (encode (Distance [u| -0.038 km |])) in x
--- >>> let Just x :: Maybe (Distance (Quantity Double [u| km |])) = decode (encode (Distance [u| -0.038 km |])) in x
--- Distance [u| -0.038 km |]
+-- Distance [u| -3.8e-2 km |]
 -- 
 -- Similarly for CSV.
 --
