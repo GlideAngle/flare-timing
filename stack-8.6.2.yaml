@@ -1,0 +1,8 @@
+resolver: nightly-2018-12-10
+tested-with: GHC == 8.6.2
+flags: {}
+packages:
+- detour-via-sci
+- siggy-chardust
+- tasty-compare
+local-bin-path: __shake-build
