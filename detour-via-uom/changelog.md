@@ -1,4 +1,4 @@
-# 1.1.0
+# 1.0.1
 
 Add a failing doctest roundtripping encoding and decoding with -0.038 km and
 fix this by reimplementing `showQuantity` from the `uom-plugin` using `showSci`
