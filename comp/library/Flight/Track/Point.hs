@@ -26,9 +26,8 @@ import Flight.Field (FieldOrdering(..))
 import Flight.Score
     ( GoalRatio, TaskPlacing, TaskPoints, Points
     , Validity, ValidityWorking, Weights
-    , PilotTime, PilotDistance, PilotVelocity
+    , Pilot, PilotTime, PilotDistance, PilotVelocity
     )
-import Flight.Pilot (Pilot)
 import Flight.Comp (StartGate)
 
 data Velocity =

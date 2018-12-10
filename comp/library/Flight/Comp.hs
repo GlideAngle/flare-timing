@@ -70,6 +70,9 @@ import Flight.Score
     , MinimumDistance(..)
     , NominalTime(..)
     , ScoreBackTime(..)
+    , PilotId(..)
+    , PilotName(..)
+    , Pilot(..)
     )
 
 -- | The time of first lead into the speed section. This won't exist if no one

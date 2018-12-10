@@ -1,5 +1,8 @@
 module Flight.Gap.Pilots
-    ( PilotsAtEss(..)
+    ( PilotId(..)
+    , PilotName(..)
+    , Pilot(..)
+    , PilotsAtEss(..)
     , PilotsPresent(..)
     , PilotsFlying(..)
     , PilotsInGoalAtStop(..)
@@ -9,6 +12,25 @@ module Flight.Gap.Pilots
 
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import GHC.Generics (Generic)
+
+newtype PilotId =
+    PilotId String 
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
+
+newtype PilotName =
+    PilotName String
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
+
+newtype Pilot = Pilot (PilotId, PilotName)
+    deriving (Eq, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
+
+-- | Order by name then by id.
+instance Ord Pilot where
+    (Pilot (k0, s0)) `compare` (Pilot (k1, s1)) =
+        (s0, k0) `compare` (s1, k1)
 
 -- | The number of pilots completing the speed section of the task.
 newtype PilotsAtEss = PilotsAtEss Integer

@@ -154,6 +154,10 @@ module Flight.Score
     , StoppedTrack(..)
     , applyGlide
     , applyGlides
+    -- * Pilots
+    , PilotId(..)
+    , PilotName(..)
+    , Pilot(..)
     -- * Pilot counts
     , PilotsAtEss(..)
     , PilotsLaunched(..)

@@ -31,6 +31,7 @@ import Flight.Gap.Distance.Chunk
     , sumLandouts
     , collectDowns
     )
+import Flight.Gap.Pilots (Pilot)
 
 -- | The sum of all chunk difficulties.
 newtype SumOfDifficulty = SumOfDifficulty Integer
@@ -65,15 +66,16 @@ data Difficulty =
 gradeDifficulty
     :: MinimumDistance (Quantity Double [u| km |])
     -> BestDistance (Quantity Double [u| km |])
+    -> [Pilot]
     -> [PilotDistance (Quantity Double [u| km |])]
     -> Difficulty
-gradeDifficulty md best xs =
+gradeDifficulty md best ps xs =
     Difficulty
         { sumOf = SumOfDifficulty sumOfDiff
         , startChunk = zip ys starts
         , endChunk = zip ys ends
         , endAhead = zip ys ends'
-        , downward = collectDowns md xs $ downs
+        , downward = collectDowns md ps xs downs
         , relative =
             uncurry ChunkRelativeDifficulty . fmap RelativeDifficulty
             <$> rels

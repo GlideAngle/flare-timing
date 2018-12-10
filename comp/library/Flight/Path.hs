@@ -46,7 +46,7 @@ import System.FilePath
 import System.FilePath.Find
     ((==?), (&&?), find, always, fileType, extension)
 import qualified System.FilePath.Find as Find (FileType(..))
-import Flight.Pilot (PilotId(..), PilotName(..), Pilot(..))
+import Flight.Score (PilotId(..), PilotName(..), Pilot(..))
 
 -- | The path to a *.igc file.
 newtype IgcFile = IgcFile FilePath

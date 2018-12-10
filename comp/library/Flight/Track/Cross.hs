@@ -23,10 +23,11 @@ import Data.String (IsString())
 import Data.Time.Clock (UTCTime)
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
-import Flight.Pilot (Pilot(..), TrackFileFail(..))
+import Flight.Pilot (TrackFileFail(..))
 import Flight.LatLng.Raw (RawLat, RawLng)
 import Flight.Field (FieldOrdering(..))
 import Flight.Comp (FlyingSection)
+import Flight.Score (Pilot(..))
 
 -- | For each task, the crossing for that task.
 data Crossing =

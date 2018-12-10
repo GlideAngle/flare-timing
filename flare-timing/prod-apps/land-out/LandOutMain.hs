@@ -35,6 +35,7 @@ import Flight.Score
     ( BestDistance(..)
     , PilotDistance(..)
     , Difficulty(..)
+    , Pilot
     , mergeChunks
     )
 import qualified Flight.Score as Gap
@@ -84,14 +85,17 @@ difficulty CompSettings{nominal} Masking{bestDistance, land} =
         , bestDistance = bests
         , landout = length <$> land
         , lookahead = ahead
-        , sumOfDifficulty = fmap sumOf <$> ds
+        , sumOfDifficulty = fmap sumOf <$> es
         , difficulty = cs
         }
     where
         md = free nominal
 
-        pss :: [[PilotDistance (Quantity Double [u| km |])]]
-        pss =
+        pss :: [[Pilot]]
+        pss = (fmap . fmap) fst land
+
+        dss :: [[PilotDistance (Quantity Double [u| km |])]]
+        dss =
             (fmap . fmap)
             (PilotDistance
             . MkQuantity
@@ -104,15 +108,16 @@ difficulty CompSettings{nominal} Masking{bestDistance, land} =
             (fmap . fmap) (BestDistance . MkQuantity) bestDistance
 
         ahead =
-            [ flip Gap.lookahead ps <$> b
+            [ flip Gap.lookahead ds <$> b
             | b <- bests
-            | ps <- pss
+            | ds <- dss
             ]
 
-        ds :: [Maybe Difficulty] =
-            [ (\bd -> Gap.gradeDifficulty md bd ps) <$> b
+        es :: [Maybe Difficulty] =
+            [ (\bd -> Gap.gradeDifficulty md bd ps ds) <$> b
             | b <- bests
             | ps <- pss
+            | ds <- dss
             ]
 
         cs :: [Maybe [Gap.ChunkDifficulty]] =
@@ -123,11 +128,11 @@ difficulty CompSettings{nominal} Masking{bestDistance, land} =
                 jas' <- jas
                 rs' <- rs
                 mergeChunks ls ils' jls' as' jas' rs' <$> fs
-            | ls <- Gap.landouts md <$> pss
-            | ils <- (fmap . fmap) startChunk ds
-            | jls <- (fmap . fmap) endChunk ds
-            | as <- fmap downward <$> ds
-            | jas <- (fmap . fmap) endAhead ds
-            | rs <- fmap relative <$> ds
-            | fs <- fmap fractional <$> ds
+            | ls <- Gap.landouts md <$> pss <*> dss
+            | ils <- (fmap . fmap) startChunk es
+            | jls <- (fmap . fmap) endChunk es
+            | as <- fmap downward <$> es
+            | jas <- (fmap . fmap) endAhead es
+            | rs <- fmap relative <$> es
+            | fs <- fmap fractional <$> es
             ]

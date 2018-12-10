@@ -21,9 +21,9 @@ import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 
 import Flight.Comp (OpenClose(..), FirstLead(..), FirstStart(..), LastArrival(..))
-import Flight.Pilot (Pilot(..))
 import Flight.Score
-    ( PilotsAtEss(..)
+    ( Pilot(..)
+    , PilotsAtEss(..)
     , BestTime(..)
     , LeadingCoefficient(..)
     , EssTime(..)
