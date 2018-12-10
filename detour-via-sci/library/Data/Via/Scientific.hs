@@ -74,6 +74,11 @@ newtype DecimalPlaces = DecimalPlaces Int deriving (Show, Lift)
 -- 4043636029064415 % 36028797018963968
 -- >>> x == fromRational (fromSci x)
 -- True
+-- >>> let y = -0.038
+-- >>> fromSci y
+-- (-5476377146882523) % 144115188075855872
+-- >>> y == fromRational (fromSci y)
+-- True
 fromSci :: Scientific -> Rational
 fromSci x = toRational (toRealFloat x :: Double)
 
@@ -113,6 +118,8 @@ toSci (DecimalPlaces dp) x =
 -- "0"
 -- >>> showSci (DecimalPlaces 32) x
 -- "0.11223344556677880000000000000000"
+-- >>> showSci (DecimalPlaces 3) $ -0.038
+-- "-0.038"
 showSci :: DecimalPlaces -> Scientific -> String
 showSci (DecimalPlaces dp) =
     formatScientific Fixed (Just dp)

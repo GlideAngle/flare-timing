@@ -40,7 +40,7 @@ import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.Csv (ToField(..), FromField(..))
 import Data.UnitsOfMeasure (Unpack, KnownUnit, fromRational', toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
-import Data.UnitsOfMeasure.Show (showQuantity)
+import Data.UnitsOfMeasure.Show (showUnit)
 import Data.UnitsOfMeasure.Read (QuantityWithUnit(..), Some(..), readQuantity)
 
 import Data.Via.Scientific (DefaultDecimalPlaces(..), fromSci, toSci)
@@ -63,6 +63,15 @@ data ViaQ n a u where
         :: (DefaultDecimalPlaces n, Newtype n (Quantity a u))
         => n
         -> ViaQ n a u
+
+showQuantitySci
+    :: forall u. (KnownUnit (Unpack u))
+    => Quantity Scientific u
+    -> String
+showQuantitySci (MkQuantity x) =
+    show x ++ if s == "1" then "" else ' ' : s
+    where
+        s = showUnit (undefined :: proxy u)
 
 toQ
     ::
@@ -87,7 +96,7 @@ instance
     , KnownUnit (Unpack u)
     )
     => ToJSON (ViaQ n a u) where
-    toJSON (ViaQ x) = toJSON . showQuantity $ toQ x
+    toJSON (ViaQ x) = toJSON . showQuantitySci $ toQ x
 
 instance
     ( DefaultDecimalPlaces n
@@ -111,7 +120,7 @@ instance
     , KnownUnit (Unpack u)
     )
     => ToField (ViaQ n a u) where
-    toField (ViaQ x) = toField . showQuantity $ toQ x
+    toField (ViaQ x) = toField . showQuantitySci $ toQ x
 
 instance
     ( DefaultDecimalPlaces n
@@ -185,6 +194,14 @@ unSome (Some (QuantityWithUnit (MkQuantity q) _)) = q
 -- "\"112233.446 km\""
 -- >>> let Just x :: Maybe (Distance (Quantity Double [u| km |])) = decode (encode (Distance [u| 112233.445566 km |])) in x
 -- Distance [u| 112233.446 km |]
+-- 
+-- >>> [u| -0.038 km |]
+-- [u| -0.038 km |]
+-- >>> encode (Distance [u| -0.038 km |])
+-- "\"-0.038 km\""
+-- >>> let Just x :: Maybe (Distance (Quantity Double [u| km |])) = decode (encode (Distance [u| -0.038 km |])) in x
+-- >>> let Just x :: Maybe (Distance (Quantity Double [u| km |])) = decode (encode (Distance [u| -0.038 km |])) in x
+-- Distance [u| -0.038 km |]
 -- 
 -- Similarly for CSV.
 --
