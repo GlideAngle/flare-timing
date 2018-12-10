@@ -1,9 +1,9 @@
-resolver: nightly-2018-12-10
-tested-with: GHC == 8.6.2
+resolver: lts-12.22
+tested-with: GHC == 8.4.4
 flags: {}
 packages:
 - detour-via-sci
 - siggy-chardust
 - tasty-compare
 local-bin-path: __shake-build
-work-dir: .stack-work-862
+work-dir: .stack-work-844
