@@ -40,10 +40,10 @@ import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.Csv (ToField(..), FromField(..))
 import Data.UnitsOfMeasure (Unpack, KnownUnit, fromRational', toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
-import Data.UnitsOfMeasure.Show (showQuantity)
+import Data.UnitsOfMeasure.Show (showUnit)
 import Data.UnitsOfMeasure.Read (QuantityWithUnit(..), Some(..), readQuantity)
 
-import Data.Via.Scientific (DefaultDecimalPlaces(..), fromSci, toSci)
+import Data.Via.Scientific (DefaultDecimalPlaces(..), fromSci, toSci, showSci)
 
 -- TODO: Reduce duplication in Data.Via.UnitsOfMeasure
 -- Suggestion: Reduce duplication
@@ -63,6 +63,21 @@ data ViaQ n a u where
         :: (DefaultDecimalPlaces n, Newtype n (Quantity a u))
         => n
         -> ViaQ n a u
+
+showQ
+    :: forall n a u.
+        ( DefaultDecimalPlaces n
+        , Newtype n (Quantity a u)
+        , Real a
+        , KnownUnit (Unpack u)
+        )
+    => n
+    -> String
+showQ x =
+    showSci (defdp x) y ++ if s == "1" then "" else ' ' : s
+    where
+        s = showUnit (undefined :: proxy u)
+        MkQuantity y = toQ x
 
 toQ
     ::
@@ -87,7 +102,7 @@ instance
     , KnownUnit (Unpack u)
     )
     => ToJSON (ViaQ n a u) where
-    toJSON (ViaQ x) = toJSON . showQuantity $ toQ x
+    toJSON (ViaQ x) = toJSON . showQ $ x
 
 instance
     ( DefaultDecimalPlaces n
@@ -111,7 +126,7 @@ instance
     , KnownUnit (Unpack u)
     )
     => ToField (ViaQ n a u) where
-    toField (ViaQ x) = toField . showQuantity $ toQ x
+    toField (ViaQ x) = toField . showQ $ x
 
 instance
     ( DefaultDecimalPlaces n
@@ -185,6 +200,13 @@ unSome (Some (QuantityWithUnit (MkQuantity q) _)) = q
 -- "\"112233.446 km\""
 -- >>> let Just x :: Maybe (Distance (Quantity Double [u| km |])) = decode (encode (Distance [u| 112233.445566 km |])) in x
 -- Distance [u| 112233.446 km |]
+-- 
+-- >>> [u| -0.038 km |]
+-- [u| -3.8e-2 km |]
+-- >>> encode (Distance [u| -0.038 km |])
+-- "\"-0.038 km\""
+-- >>> let Just x :: Maybe (Distance (Quantity Double [u| km |])) = decode (encode (Distance [u| -0.038 km |])) in x
+-- Distance [u| -3.8e-2 km |]
 -- 
 -- Similarly for CSV.
 --
