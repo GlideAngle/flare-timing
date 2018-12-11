@@ -54,24 +54,18 @@ tableScore
     -> Dynamic t [(Pilot, Breakdown)]
     -> m ()
 tableScore utcOffset vy wg pt tp xs = do
-    let classR = "class" =: "has-text-right"
-    let classBg = "class" =: "has-text-centered has-background-white-bis"
-    let classC = "class" =: "has-text-centered"
-    let thU = elClass "th" "has-text-right" . text
-    let thPt = elClass "th" "has-text-right has-background-white" . dynText
-    let thVy = elClass "th" "has-text-right has-background-white" . dynText
-    let thSpace = elClass "th" "has-text-right has-background-white" $ text ""
+    let thSpace = elClass "th" "th-space" $ text ""
 
     _ <- elClass "table" "table is-narrow is-fullwidth" $
             el "thead" $ do
 
                 el "tr" $ do
                     elAttr "th" ("rowspan" =: "2" <> "class" =: "th-placing") $ text "#"
-                    elAttr "th" ("rowspan" =: "2") $ text "Pilot"
-                    elAttr "th" ("colspan" =: "4" <> classC) $ text "Speed Section"
-                    elAttr "th" classC $ text "Best"
-                    elAttr "th" ("colspan" =: "3" <> classBg) $ text "Distance Point Breakdown"
-                    elAttr "th" ("colspan" =: "4" <> classBg) $ text "Other Points"
+                    elAttr "th" ("rowspan" =: "2" <> "class" =: "th-pilot") $ text "Pilot"
+                    elAttr "th" ("colspan" =: "4" <> "class" =: "th-speed-section") $ text "Speed Section"
+                    elClass "th" "th-best-distance-best" $ text "Best"
+                    elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance-points") $ text "Distance Point Breakdown"
+                    elAttr "th" ("colspan" =: "4" <> "class" =: "th-other-points") $ text "Other Points"
 
                 el "tr" $ do
                     elClass "th" "th-start" $ text "Start"
@@ -87,10 +81,9 @@ tableScore utcOffset vy wg pt tp xs = do
                     elClass "th" "th-arrival-points" $ text "Arrival"
                     elClass "th" "th-total-points" $ text "Total"
 
-                elClass "tr" "is-italic has-background-white-bis" $ do
-                    el "th" $ text ""
+                elClass "tr" "tr-validity" $ do
 
-                    elAttr "th" classR . dynText $
+                    elAttr "th" ("colspan" =: "2" <> "class" =: "th-launch-validity") . dynText $
                         maybe
                             ""
                             ( (\v ->
@@ -106,7 +99,7 @@ tableScore utcOffset vy wg pt tp xs = do
                     thSpace
                     thSpace
 
-                    thVy $
+                    elClass "th" "th-distance-validity" . dynText $
                         maybe
                             ""
                             ( showDistanceValidity
@@ -116,7 +109,7 @@ tableScore utcOffset vy wg pt tp xs = do
 
                     thSpace
 
-                    thVy $
+                    elClass "th" "th-time-validity" . dynText $
                         maybe
                             ""
                             ( showTimeValidity
@@ -126,7 +119,7 @@ tableScore utcOffset vy wg pt tp xs = do
 
                     thSpace
 
-                    thVy $
+                    elClass "th" "th-task-validity" . dynText $
                         maybe
                             ""
                             ( showTaskValidity
@@ -134,14 +127,14 @@ tableScore utcOffset vy wg pt tp xs = do
                             )
                         <$> vy
 
-                elClass "tr" "is-italic has-background-white-bis" $ do
-                    elAttr "th" ("colspan" =: "2" <> classR) $ text "Weights"
+                elClass "tr" "tr-weight" $ do
+                    elAttr "th" ("colspan" =: "2" <> "class" =: "th-weight") $ text "Weights"
                     elAttr "th" ("colspan" =: "5") $ text ""
 
                     thSpace
                     thSpace
 
-                    thPt $
+                    elClass "th" "th-distance-weight" . dynText $
                         maybe
                             ""
                             ( showDistanceWeight
@@ -149,7 +142,7 @@ tableScore utcOffset vy wg pt tp xs = do
                             )
                         <$> wg
 
-                    thPt $
+                    elClass "th" "th-leading-weight" . dynText$
                         maybe
                             ""
                             ( showLeadingWeight
@@ -157,7 +150,7 @@ tableScore utcOffset vy wg pt tp xs = do
                             )
                         <$> wg
 
-                    thPt $
+                    elClass "th" "th-time-weight" . dynText$
                         maybe
                             ""
                             ( showTimeWeight
@@ -165,7 +158,7 @@ tableScore utcOffset vy wg pt tp xs = do
                             )
                         <$> wg
 
-                    thPt $
+                    elClass "th" "th-arrival-weight" . dynText$
                         maybe
                             ""
                             ( showArrivalWeight
@@ -175,13 +168,13 @@ tableScore utcOffset vy wg pt tp xs = do
 
                     thSpace
 
-                elClass "tr" "is-italic has-background-white-bis" $ do
-                    elAttr "th" ("colspan" =: "2" <> classR) $ text "Available Points (Units)"
+                elClass "tr" "tr-allocation" $ do
+                    elAttr "th" ("colspan" =: "2" <> "class" =: "th-allocation") $ text "Available Points (Units)"
                     elAttr "th" ("colspan" =: "3") $ text ""
-                    thU "(km/h)"
-                    thU "(km)"
+                    elClass "th" "th-speed-units" $ text "(km/h)"
+                    elClass "th" "th-best-distance-units" $ text "(km)"
 
-                    thPt $
+                    elClass "th" "th-reach-alloc" . dynText $
                         maybe
                             ""
                             ( (\x -> showLinearPoints (Just x) x)
@@ -189,7 +182,7 @@ tableScore utcOffset vy wg pt tp xs = do
                             )
                         <$> pt
 
-                    thPt $
+                    elClass "th" "th-effort-alloc" . dynText $
                         maybe
                             ""
                             ( (\x -> showDifficultyPoints (Just x) x)
@@ -197,7 +190,7 @@ tableScore utcOffset vy wg pt tp xs = do
                             )
                         <$> pt
 
-                    thPt $
+                    elClass "th" "th-distance-alloc" . dynText $
                         maybe
                             ""
                             ( (\x -> showDistancePoints (Just x) x)
@@ -205,7 +198,7 @@ tableScore utcOffset vy wg pt tp xs = do
                             )
                         <$> pt
 
-                    thPt $
+                    elClass "th" "th-leading-alloc" . dynText $
                         maybe
                             ""
                             ( (\x -> showLeadingPoints (Just x) x)
@@ -213,7 +206,7 @@ tableScore utcOffset vy wg pt tp xs = do
                             )
                         <$> pt
 
-                    thPt $
+                    elClass "th" "th-time-alloc" . dynText $
                         maybe
                             ""
                             ( (\x -> showTimePoints (Just x) x)
@@ -221,7 +214,7 @@ tableScore utcOffset vy wg pt tp xs = do
                             )
                         <$> pt
 
-                    thPt $
+                    elClass "th" "th-arrival-alloc" . dynText $
                         maybe
                             ""
                             ( (\x -> showArrivalPoints (Just x) x)
@@ -229,7 +222,7 @@ tableScore utcOffset vy wg pt tp xs = do
                             )
                         <$> pt
 
-                    thPt $
+                    elClass "th" "th-task-alloc" . dynText $
                         maybe
                             ""
                             (\x -> showTaskPoints (Just x) x)
@@ -259,7 +252,7 @@ row utcOffset pt tp x = do
         elClass "td" "td-start" . dynText $ zipDynWith showSs tz v
         elClass "td" "td-end" . dynText $ zipDynWith showEs tz v
         elClass "td" "td-time" . dynText $ showVelocityTime <$> v
-        elClass "td" "td-velocity" . dynText $ showVelocityVelocity <$> v
+        elClass "td" "td-speed" . dynText $ showVelocityVelocity <$> v
         elClass "td" "td-best-distance" . dynText $ showVelocityDistance <$> v
 
         elClass "td" "td-reach" . dynText $ showMax Pt.reach showLinearPoints pt points
