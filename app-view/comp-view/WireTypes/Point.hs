@@ -102,7 +102,7 @@ instance FromJSON PilotDistance where
 
 showPilotDistance :: PilotDistance -> T.Text
 showPilotDistance (PilotDistance d) =
-    T.pack . printf "%.2f" $ d
+    T.pack . printf "%.3f" $ d
 
 data TaskPlacing
     = TaskPlacing Integer
