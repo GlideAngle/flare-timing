@@ -73,16 +73,17 @@ tableScore utcOffset vy wg pt tp xs = do
                 el "tr" $ do
                     elAttr "th" ("rowspan" =: "2" <> classR) $ text "#"
                     elAttr "th" ("rowspan" =: "2") $ text "Pilot"
-                    elAttr "th" ("colspan" =: "5" <> classC) $ text "Speed Section"
-                    elAttr "th" ("colspan" =: "2" <> classBg) $ text "Distance"
-                    elAttr "th" ("colspan" =: "5" <> classBg) $ text "Points"
+                    elAttr "th" ("colspan" =: "4" <> classC) $ text "Speed Section"
+                    elAttr "th" classC $ text "Best"
+                    elAttr "th" ("colspan" =: "3" <> classBg) $ text "Distance Point Breakdown"
+                    elAttr "th" ("colspan" =: "4" <> classBg) $ text "Other Points"
 
                 el "tr" $ do
                     thStart "Start"
                     thEnd "End"
                     thC "Time"
                     thR "Speed"
-                    thR "Distance"
+                    thC "Distance"
                     thBg "Reach"
                     thBg "Effort"
                     thBg "Distance"
