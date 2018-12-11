@@ -71,7 +71,7 @@ tableScore utcOffset vy wg pt tp xs = do
             el "thead" $ do
 
                 el "tr" $ do
-                    elAttr "th" ("rowspan" =: "2" <> classR) $ text "#"
+                    elAttr "th" ("rowspan" =: "2" <> "class" =: "th-placing") $ text "#"
                     elAttr "th" ("rowspan" =: "2") $ text "Pilot"
                     elAttr "th" ("colspan" =: "4" <> classC) $ text "Speed Section"
                     elAttr "th" classC $ text "Best"
@@ -272,11 +272,7 @@ row utcOffset pt tp x = do
                 "has-text-centered has-text-danger"
             . dynText
 
-    let tdPlace =
-            elClass
-                "td"
-                "has-text-right has-text-weight-bold"
-            . dynText
+    let tdPlacing = elClass "td" "td-placing" . dynText
 
     let tdTotal =
             elClass
@@ -285,7 +281,7 @@ row utcOffset pt tp x = do
             . dynText
 
     el "tr" $ do
-        tdPlace $ showRank . place <$> b
+        tdPlacing $ showRank . place <$> b
         el "td" . dynText $ showPilotName <$> pilot
         tdStart $ zipDynWith showSs tz v
         tdEnd $ zipDynWith showEs tz v
