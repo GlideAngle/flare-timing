@@ -292,6 +292,7 @@ points'
             | v <- (fmap . fmap) Gap.task validities
             ]
 
+        -- NOTE: Pilots either get to goal or have a nigh distance.
         nighDistance :: [[(Pilot, Maybe Double)]] =
             [ let xs' = (fmap . fmap) madeNigh xs
                   ys' = (fmap . fmap) (const bd) ys
@@ -303,9 +304,14 @@ points'
 
         speedDistance = nighDistance
 
+        -- NOTE: Pilots either get to goal or have a landing distance.
         landDistance :: [[(Pilot, Maybe Double)]] =
-            [ (fmap . fmap) madeLand xs
+            [ let xs' = (fmap . fmap) madeLand xs
+                  ys' = (fmap . fmap) (const bd) ys
+              in (xs' ++ ys')
+            | bd <- bestDistance
             | xs <- land
+            | ys <- arrival
             ]
 
         difficultyDistancePoints :: [[(Pilot, DifficultyPoints)]] =
@@ -646,7 +652,7 @@ tally
         ,
             ( ssT
             ,
-                ( (dS, dR, dL)
+                ( (dS, dN, dL)
                 , x@Gap.Points
                     { reach = LinearPoints r
                     , effort = DifficultyPoints dp
@@ -667,13 +673,13 @@ tally
                 , ssDistance = dS
                 , ssElapsed = ssT
                 , gsElapsed = gsT
-                , ssVelocity = liftA2 mkVelocity dS ssT
-                , gsVelocity = liftA2 mkVelocity dS gsT
+                , ssVelocity = liftA2 mkVelocity dN ssT
+                , gsVelocity = liftA2 mkVelocity dN gsT
                 }
         , breakdown = x
         , total = TaskPoints $ r + dp + l + a + tp
         , place = TaskPlacing 0
-        , reachDistance = dR
+        , reachDistance = dN
         , landedDistance = dL
         }
     where
