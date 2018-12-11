@@ -63,7 +63,7 @@ tableScore utcOffset vy wg pt tp xs = do
                     elAttr "th" ("rowspan" =: "2" <> "class" =: "th-placing") $ text "#"
                     elAttr "th" ("rowspan" =: "2" <> "class" =: "th-pilot") $ text "Pilot"
                     elAttr "th" ("colspan" =: "4" <> "class" =: "th-speed-section") $ text "Speed Section"
-                    elClass "th" "th-best-distance-best" $ text "Best"
+                    elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance") $ text "Distance"
                     elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance-points") $ text "Distance Point Breakdown"
                     elAttr "th" ("colspan" =: "4" <> "class" =: "th-other-points") $ text "Other Points"
 
@@ -72,9 +72,11 @@ tableScore utcOffset vy wg pt tp xs = do
                     elClass "th" "th-end" $ text "End"
                     elClass "th" "th-time" $ text "Time"
                     elClass "th" "th-speed" $ text "Speed"
-                    elClass "th" "th-best-distance" $ text "Distance"
-                    elClass "th" "th-reach" $ text "Reach"
-                    elClass "th" "th-effort" $ text "Effort"
+                    elClass "th" "th-speed-distance" $ text "Speed"
+                    elClass "th" "th-best-distance" $ text "Best"
+                    elClass "th" "th-landed-distance" $ text "Landed"
+                    elClass "th" "th-reach-points" $ text "Reach"
+                    elClass "th" "th-effort-points" $ text "Effort"
                     elClass "th" "th-distance-points" $ text "Distance"
                     elClass "th" "th-lead-points" $ text "Lead"
                     elClass "th" "th-time-points" $ text "Time"
@@ -94,7 +96,7 @@ tableScore utcOffset vy wg pt tp xs = do
                             )
                         <$> vy
 
-                    elAttr "th" ("colspan" =: "5") $ text ""
+                    elAttr "th" ("colspan" =: "6") $ text ""
 
                     thSpace
                     thSpace
@@ -129,7 +131,7 @@ tableScore utcOffset vy wg pt tp xs = do
 
                 elClass "tr" "tr-weight" $ do
                     elAttr "th" ("colspan" =: "2" <> "class" =: "th-weight") $ text "Weights"
-                    elAttr "th" ("colspan" =: "5") $ text ""
+                    elAttr "th" ("colspan" =: "7") $ text ""
 
                     thSpace
                     thSpace
@@ -172,7 +174,9 @@ tableScore utcOffset vy wg pt tp xs = do
                     elAttr "th" ("colspan" =: "2" <> "class" =: "th-allocation") $ text "Available Points (Units)"
                     elAttr "th" ("colspan" =: "3") $ text ""
                     elClass "th" "th-speed-units" $ text "(km/h)"
+                    elClass "th" "th-speed-distance-units" $ text "(km)"
                     elClass "th" "th-best-distance-units" $ text "(km)"
+                    elClass "th" "th-landed-distance-units" $ text "(km)"
 
                     elClass "th" "th-reach-alloc" . dynText $
                         maybe
@@ -253,10 +257,12 @@ row utcOffset pt tp x = do
         elClass "td" "td-end" . dynText $ zipDynWith showEs tz v
         elClass "td" "td-time" . dynText $ showVelocityTime <$> v
         elClass "td" "td-speed" . dynText $ showVelocityVelocity <$> v
+        elClass "td" "td-speed-distance" . dynText $ showVelocityDistance <$> v
         elClass "td" "td-best-distance" . dynText $ showVelocityDistance <$> v
+        elClass "td" "td-landed-distance" . dynText $ showVelocityDistance <$> v
 
-        elClass "td" "td-reach" . dynText $ showMax Pt.reach showLinearPoints pt points
-        elClass "td" "td-effort" . dynText $ showMax Pt.effort showDifficultyPoints pt points
+        elClass "td" "td-reach-points" . dynText $ showMax Pt.reach showLinearPoints pt points
+        elClass "td" "td-effort-points" . dynText $ showMax Pt.effort showDifficultyPoints pt points
         elClass "td" "td-distance-points" . dynText $ showMax Pt.distance showDistancePoints pt points
         elClass "td" "td-leading-points" . dynText $ showMax Pt.leading showLeadingPoints pt points
         elClass "td" "td-time-points" . dynText $ showMax Pt.time showTimePoints pt points
