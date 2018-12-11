@@ -320,7 +320,7 @@ points'
                 (\ps' ->
                     let ld' = mapOfDifficulty ld
                         xs' = (fmap . fmap) (madeDifficulty free ld') xs
-                        ys' = (fmap . fmap) (const $ DifficultyFraction 1) ys
+                        ys' = (fmap . fmap) (const $ DifficultyFraction 0.5) ys
                     in
                         (fmap . fmap)
                         (applyDifficulty ps')
@@ -328,7 +328,7 @@ points'
                 )
                 ps
             | ps <- (fmap . fmap) points allocs
-            | xs <- nigh
+            | xs <- land
             | ys <- arrival
             | ld <- landoutDifficulty
             ]
@@ -498,22 +498,19 @@ applyDifficulty
     :: Gap.Points
     -> DifficultyFraction
     -> DifficultyPoints
-applyDifficulty Gap.Points{effort = DifficultyPoints y} (DifficultyFraction frac) =
+applyDifficulty Gap.Points{distance = DistancePoints y} (DifficultyFraction frac) =
+    -- NOTE: A fraction of distance points, not a fraction of effort points.
     DifficultyPoints $ frac * y
-
-madeDistance :: TrackDistance Nigh -> PilotDistance (Quantity Double [u| km |])
-madeDistance TrackDistance{made = Nothing} = PilotDistance . MkQuantity $ 0
-madeDistance TrackDistance{made = Just d} = PilotDistance . MkQuantity $ d
 
 madeDifficulty
     :: MinimumDistance (Quantity Double [u| km |])
     -> Map IxChunk DifficultyFraction
-    -> TrackDistance Nigh
+    -> TrackDistance Land
     -> DifficultyFraction
 madeDifficulty md mapIxToFrac td =
     fromMaybe (DifficultyFraction 0) $ Map.lookup ix mapIxToFrac
     where
-        pd = madeDistance td
+        pd = PilotDistance . MkQuantity . fromMaybe 0.0 $ madeLand td
         ix = toIxChunk md pd
 
 madeNigh :: TrackDistance Nigh -> Maybe Double
