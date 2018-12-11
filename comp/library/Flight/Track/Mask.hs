@@ -113,7 +113,7 @@ racing oc firstLead firstStart lastArrival = do
                 FirstLead lead <- firstLead
                 LastArrival end <- lastArrival
                 return $ end `diffUTCTime` lead
-                
+
             , leadClose = EssTime . toRational <$> do
                 FirstLead lead <- firstLead
                 return $ close `diffUTCTime` lead

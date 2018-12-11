@@ -45,8 +45,10 @@ data Velocity =
         , gsElapsed :: Maybe (PilotTime (Quantity Double [u| h |]))
           -- ^ The elapsed time from the start gate. Always as long as
           -- @ssElapsed@.
-        , distance :: Maybe (PilotDistance (Quantity Double [u| km |]))
-          -- ^ The distance the pilot made, not exceeding goal.
+        , ssDistance :: Maybe (PilotDistance (Quantity Double [u| km |]))
+          -- ^ The best distance the pilot made over the speed section, not
+          -- exceeding goal and may be further than where the pilot landed. The
+          -- velocities over the speed section use this distance.
         , ssVelocity :: Maybe (PilotVelocity (Quantity Double [u| km / h |]))
           -- ^ The velocity from the time the started the speed section.
         , gsVelocity :: Maybe (PilotVelocity (Quantity Double [u| km / h |]))
@@ -60,6 +62,12 @@ data Breakdown =
         , total :: TaskPoints
         , breakdown :: Points
         , velocity :: Velocity
+        , reachDistance :: Maybe (PilotDistance (Quantity Double [u| km |]))
+          -- ^ The best distance the pilot made, not exceeding goal and may be
+          -- further than where the pilot landed. The linear distance points
+          -- are awarded from this distance.
+        , landedDistance :: Maybe (PilotDistance (Quantity Double [u| km |]))
+          -- ^ The distance along the course to where the pilot landed.
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
@@ -94,8 +102,22 @@ cmp a b =
         ("total", "place") -> GT
         ("total", _) -> LT
 
+        ("breakdown", "place") -> GT
         ("breakdown", "total") -> GT
         ("breakdown", _) -> LT
+
+        ("velocity", "place") -> GT
+        ("velocity", "total") -> GT
+        ("velocity", "breakdown") -> GT
+        ("velocity", _) -> LT
+
+        ("reachDistance", "place") -> GT
+        ("reachDistance", "total") -> GT
+        ("reachDistance", "breakdown") -> GT
+        ("reachDistance", "velocity") -> GT
+        ("reachDistance", _) -> LT
+
+        ("landedDistance", _) -> GT
 
         -- Velocity fields
         ("ss", _) -> LT
@@ -107,9 +129,10 @@ cmp a b =
         ("es", "gs") -> GT
         ("es", _) -> LT
 
-        ("distance", "ss") -> GT
-        ("distance", "gs") -> GT
-        ("distance", "es") -> GT
+        ("ssDistance", "ss") -> GT
+        ("ssDistance", "gs") -> GT
+        ("ssDistance", "es") -> GT
+        ("ssDistance", _) -> LT
 
         -- NOTE: Duplicate record fields.
         -- ("distance", _) -> LT
@@ -117,13 +140,13 @@ cmp a b =
         ("ssElapsed", "ss") -> GT
         ("ssElapsed", "gs") -> GT
         ("ssElapsed", "es") -> GT
-        ("ssElapsed", "distance") -> GT
+        ("ssElapsed", "ssDistance") -> GT
         ("ssElapsed", _) -> LT
 
         ("gsElapsed", "ss") -> GT
         ("gsElapsed", "gs") -> GT
         ("gsElapsed", "es") -> GT
-        ("gsElapsed", "distance") -> GT
+        ("gsElapsed", "ssDistance") -> GT
         ("gsElapsed", "ssElapsed") -> GT
         ("gsElapsed", _) -> LT
 
