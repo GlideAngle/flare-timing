@@ -50,7 +50,7 @@ import Flight.Comp
     )
 import Flight.Track.Cross (Crossing(..), Fix(..))
 import Flight.Track.Tag (Tagging(..), PilotTrackTag(..), TrackTag(..))
-import Flight.Track.Distance (TrackDistance(..), Nigh)
+import Flight.Track.Distance (TrackDistance(..), Nigh, Land)
 import Flight.Track.Lead (TrackLead(..))
 import Flight.Track.Arrival (TrackArrival(..))
 import qualified Flight.Track.Speed as Speed (TrackSpeed(..), startGateTaken)
@@ -172,6 +172,7 @@ points'
         , ssSpeed
         , gsSpeed
         , nigh
+        , land
         }
     Landing
         { difficulty = landoutDifficulty
@@ -291,13 +292,20 @@ points'
             | v <- (fmap . fmap) Gap.task validities
             ]
 
-        linearDistance :: [[(Pilot, Maybe Double)]] =
-            [ let xs' = (fmap . fmap) madeLinear xs
+        nighDistance :: [[(Pilot, Maybe Double)]] =
+            [ let xs' = (fmap . fmap) madeNigh xs
                   ys' = (fmap . fmap) (const bd) ys
               in (xs' ++ ys')
             | bd <- bestDistance
             | xs <- nigh
             | ys <- arrival
+            ]
+
+        speedDistance = nighDistance
+
+        landDistance :: [[(Pilot, Maybe Double)]] =
+            [ (fmap . fmap) madeLand xs
+            | xs <- land
             ]
 
         difficultyDistancePoints :: [[(Pilot, DifficultyPoints)]] =
@@ -319,7 +327,7 @@ points'
             | ld <- landoutDifficulty
             ]
 
-        linearDistancePoints :: [[(Pilot, LinearPoints)]] =
+        nighDistancePoints :: [[(Pilot, LinearPoints)]] =
             [ maybe
                 []
                 (\ps' ->
@@ -330,7 +338,7 @@ points'
                 ps
             | bd <- bestDistance
             | ps <- (fmap . fmap) points allocs
-            | ds <- linearDistance
+            | ds <- nighDistance
             ]
 
         leadingPoints :: [[(Pilot, LeadingPoints)]] =
@@ -405,24 +413,34 @@ points'
             ]
 
         score :: [[(Pilot, Breakdown)]] =
-            [ let dsR' = Map.fromList dsR
-                  dsR'' =
+            [ let dsL = Map.fromList dsLand
+                  dsN = Map.fromList dsNigh
+                  dsS = Map.fromList dsSpeed
+                  ds =
                       Map.toList
-                      $ Map.intersectionWith (\a (b, c) -> (a, b, c)) dsR'
-                      $ Map.intersectionWith (,) dsR' dsR'
+                      $ Map.intersectionWith (\a (b, c) -> (a, b, c)) dsS
+                      $ Map.intersectionWith (,) dsN dsL
               in
                   rankByTotal . sortScores
                   $ fmap  (tally gates)
-                  A.<$> collate diffs linears ls as ts dsR'' ssEs gsEs gs
+                  A.<$> collate diffs linears ls as ts ds ssEs gsEs gs
             | diffs <- difficultyDistancePoints
-            | linears <- linearDistancePoints
+            | linears <- nighDistancePoints
             | ls <- leadingPoints
             | as <- arrivalPoints
             | ts <- timePoints gsSpeed
-            | dsR <-
+            | dsSpeed <-
                 (fmap . fmap)
                     ((fmap . fmap) (PilotDistance . MkQuantity))
-                    linearDistance
+                    speedDistance
+            | dsNigh <-
+                (fmap . fmap)
+                    ((fmap . fmap) (PilotDistance . MkQuantity))
+                    nighDistance
+            | dsLand <-
+                (fmap . fmap)
+                    ((fmap . fmap) (PilotDistance . MkQuantity))
+                    landDistance
             | ssEs <- elapsedTime ssSpeed
             | gsEs <- elapsedTime gsSpeed
             | gs <- tags
@@ -492,8 +510,11 @@ madeDifficulty md mapIxToFrac td =
         pd = madeDistance td
         ix = toIxChunk md pd
 
-madeLinear :: TrackDistance Nigh -> Maybe Double
-madeLinear TrackDistance{made} = made
+madeNigh :: TrackDistance Nigh -> Maybe Double
+madeNigh TrackDistance{made} = made
+
+madeLand :: TrackDistance Land -> Maybe Double
+madeLand TrackDistance{made} = made
 
 -- TODO: If made < minimum distance, use minimum distance.
 applyLinear
