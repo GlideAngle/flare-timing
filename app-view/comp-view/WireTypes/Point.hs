@@ -252,7 +252,7 @@ data Velocity =
         , gsElapsed :: Maybe (PilotTime String)
           -- ^ The elapsed time from the start gate. Always as long as
           -- @ssElapsed@.
-        , distance :: Maybe PilotDistance
+        , ssDistance :: Maybe PilotDistance
           -- ^ The distance the pilot made, not exceeding goal.
         , ssVelocity :: Maybe (PilotVelocity String)
           -- ^ The velocity from the time the started the speed section.
@@ -267,6 +267,8 @@ data Breakdown =
         , total :: TaskPoints
         , breakdown :: Points
         , velocity :: Velocity
+        , reachDistance :: Maybe PilotDistance
+        , landedDistance :: Maybe PilotDistance
         }
     deriving (Eq, Ord, Show, Generic, FromJSON)
 

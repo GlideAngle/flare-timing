@@ -257,9 +257,12 @@ row utcOffset pt tp x = do
         elClass "td" "td-end" . dynText $ zipDynWith showEs tz v
         elClass "td" "td-time" . dynText $ showVelocityTime <$> v
         elClass "td" "td-speed" . dynText $ showVelocityVelocity <$> v
+
         elClass "td" "td-speed-distance" . dynText $ showVelocityDistance <$> v
-        elClass "td" "td-best-distance" . dynText $ showVelocityDistance <$> v
-        elClass "td" "td-landed-distance" . dynText $ showVelocityDistance <$> v
+        elClass "td" "td-best-distance" . dynText
+            $ maybe "" showPilotDistance . reachDistance <$> b
+        elClass "td" "td-landed-distance" . dynText
+            $ maybe "" showPilotDistance . landedDistance <$> b
 
         elClass "td" "td-reach-points" . dynText $ showMax Pt.reach showLinearPoints pt points
         elClass "td" "td-effort-points" . dynText $ showMax Pt.effort showDifficultyPoints pt points
@@ -308,7 +311,7 @@ showVelocityVelocity Velocity{gsVelocity = Just (PilotVelocity v)} =
 showVelocityVelocity _ = ""
 
 showVelocityDistance :: Velocity -> T.Text
-showVelocityDistance Velocity{distance = Just d} = showPilotDistance d
+showVelocityDistance Velocity{ssDistance = Just d} = showPilotDistance d
 showVelocityDistance _ = ""
 
 showT :: TimeZone -> UTCTime -> T.Text
