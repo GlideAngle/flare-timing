@@ -57,11 +57,6 @@ tableScore utcOffset vy wg pt tp xs = do
     let classR = "class" =: "has-text-right"
     let classBg = "class" =: "has-text-centered has-background-white-bis"
     let classC = "class" =: "has-text-centered"
-    let thR = elClass "th" "has-text-right" . text
-    let thBg = elClass "th" "has-text-right has-background-white-bis" . text
-    let thStart = elClass "th" "has-text-centered has-text-success" . text
-    let thEnd = elClass "th" "has-text-centered has-text-danger" . text
-    let thC = elClass "th" "has-text-centered" . text
     let thU = elClass "th" "has-text-right" . text
     let thPt = elClass "th" "has-text-right has-background-white" . dynText
     let thVy = elClass "th" "has-text-right has-background-white" . dynText
@@ -79,18 +74,18 @@ tableScore utcOffset vy wg pt tp xs = do
                     elAttr "th" ("colspan" =: "4" <> classBg) $ text "Other Points"
 
                 el "tr" $ do
-                    thStart "Start"
-                    thEnd "End"
-                    thC "Time"
-                    thR "Speed"
-                    thC "Distance"
-                    thBg "Reach"
-                    thBg "Effort"
-                    thBg "Distance"
-                    thBg "Lead"
-                    thBg "Time"
-                    thBg "Arrival"
-                    thBg "Total"
+                    elClass "th" "th-start" $ text "Start"
+                    elClass "th" "th-end" $ text "End"
+                    elClass "th" "th-time" $ text "Time"
+                    elClass "th" "th-speed" $ text "Speed"
+                    elClass "th" "th-best-distance" $ text "Distance"
+                    elClass "th" "th-reach" $ text "Reach"
+                    elClass "th" "th-effort" $ text "Effort"
+                    elClass "th" "th-distance-points" $ text "Distance"
+                    elClass "th" "th-lead-points" $ text "Lead"
+                    elClass "th" "th-time-points" $ text "Time"
+                    elClass "th" "th-arrival-points" $ text "Arrival"
+                    elClass "th" "th-total-points" $ text "Total"
 
                 elClass "tr" "is-italic has-background-white-bis" $ do
                     el "th" $ text ""
@@ -258,49 +253,23 @@ row utcOffset pt tp x = do
     let points = breakdown . snd <$> x
     let v = velocity . snd <$> x
 
-    let tdR = elClass "td" "has-text-right" . dynText
-    let tdR' = elClass "td" "has-text-right has-background-white-bis" . dynText
-    let tdStart =
-            elClass
-                "td"
-                "has-text-centered has-text-success"
-            . dynText
-
-    let tdEnd =
-            elClass
-                "td"
-                "has-text-centered has-text-danger"
-            . dynText
-
-    let tdPlacing = elClass "td" "td-placing" . dynText
-
-    let tdTotal =
-            elClass
-                "td"
-                "has-text-right has-text-weight-bold has-background-white-bis"
-            . dynText
-
     el "tr" $ do
-        tdPlacing $ showRank . place <$> b
-        el "td" . dynText $ showPilotName <$> pilot
-        tdStart $ zipDynWith showSs tz v
-        tdEnd $ zipDynWith showEs tz v
-        tdR $ showVelocityTime <$> v
-        tdR $ showVelocityVelocity <$> v
-        tdR $ showVelocityDistance <$> v
+        elClass "td" "td-placing" . dynText $ showRank . place <$> b
+        elClass "td" "td-pilot" . dynText $ showPilotName <$> pilot
+        elClass "td" "td-start" . dynText $ zipDynWith showSs tz v
+        elClass "td" "td-end" . dynText $ zipDynWith showEs tz v
+        elClass "td" "td-time" . dynText $ showVelocityTime <$> v
+        elClass "td" "td-velocity" . dynText $ showVelocityVelocity <$> v
+        elClass "td" "td-best-distance" . dynText $ showVelocityDistance <$> v
 
-        tdR' $ showMax Pt.reach showLinearPoints pt points
-        tdR' $ showMax Pt.effort showDifficultyPoints pt points
-        tdR' $ showMax Pt.distance showDistancePoints pt points
-        tdR' $ showMax Pt.leading showLeadingPoints pt points
-        tdR' $ showMax Pt.time showTimePoints pt points
-        tdR' $ showMax Pt.arrival showArrivalPoints pt points
+        elClass "td" "td-reach" . dynText $ showMax Pt.reach showLinearPoints pt points
+        elClass "td" "td-effort" . dynText $ showMax Pt.effort showDifficultyPoints pt points
+        elClass "td" "td-distance-points" . dynText $ showMax Pt.distance showDistancePoints pt points
+        elClass "td" "td-leading-points" . dynText $ showMax Pt.leading showLeadingPoints pt points
+        elClass "td" "td-time-points" . dynText $ showMax Pt.time showTimePoints pt points
+        elClass "td" "td-arrival-points" . dynText $ showMax Pt.arrival showArrivalPoints pt points
 
-        tdTotal $
-            zipDynWith
-                showTaskPoints
-                tp
-                (total <$> b)
+        elClass "td" "td-total-points" . dynText $ zipDynWith showTaskPoints tp (total <$> b)
 
 
 showMax
