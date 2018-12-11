@@ -28,7 +28,7 @@ tabsTask =
             let em = (const TaskTabMap) <$> domEvent Click m
             let ea = (const TaskTabAbsent) <$> domEvent Click a
 
-            vClass <- holdDyn "is-active" . leftmost $
+            vClass <- holdDyn "" . leftmost $
                             [ "is-active" <$ ev
                             , "" <$ es
                             , "" <$ et
@@ -36,7 +36,7 @@ tabsTask =
                             , "" <$ ea
                             ]
 
-            sClass <- holdDyn "" . leftmost $
+            sClass <- holdDyn "is-active" . leftmost $
                             [ "" <$ ev
                             , "is-active" <$ es
                             , "" <$ et
