@@ -31,7 +31,7 @@ import Flight.Comp
     , DiscardDir(..)
     , AlignTimeFile(..)
     , DiscardFurtherFile(..)
-    , RouteLookup(..)
+    , RoutesLookupTaskDistance(..)
     , discardDir
     , alignPath
     , compFileToCompDir
@@ -94,7 +94,7 @@ readPilotBestDistance compFile (IxTask iTask) pilot = do
         (DiscardDir dOut) = discardDir dir iTask
 
 readCompLeading
-    :: RouteLookup
+    :: RoutesLookupTaskDistance
     -> CompInputFile
     -> (IxTask -> Bool)
     -> [IxTask]
@@ -111,7 +111,7 @@ readCompLeading lengths compFile select tasks toLeg raceTimes pilots =
         pilots
 
 readTaskLeading
-    :: RouteLookup
+    :: RoutesLookupTaskDistance
     -> CompInputFile
     -> (IxTask -> Bool)
     -> IxTask
@@ -129,7 +129,7 @@ readTaskLeading lengths compFile select iTask@(IxTask i) toLeg raceTime ps =
         (DiscardDir dOut) = discardDir dir i
 
 readPilotLeading
-    :: RouteLookup
+    :: RoutesLookupTaskDistance
     -> CompInputFile
     -> IxTask
     -> (Int -> Leg)
@@ -138,7 +138,7 @@ readPilotLeading
     -> IO [TickRow]
 readPilotLeading _ _ _ _ Nothing _ = return []
 readPilotLeading
-    (RouteLookup lookupTaskLength)
+    (RoutesLookupTaskDistance lookupTaskLength)
     compFile iTask@(IxTask i) toLeg
     (Just raceTime)
     pilot = do

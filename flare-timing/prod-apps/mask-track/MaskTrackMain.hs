@@ -31,7 +31,7 @@ import Flight.Comp
     , Task(..)
     , IxTask(..)
     , TrackFileFail(..)
-    , RouteLookup(..)
+    , RoutesLookupTaskDistance(..)
     , compToTaskLength
     , compToCross
     , compToMask
@@ -148,7 +148,7 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
 
 writeMask
     :: CompSettings k
-    -> RouteLookup
+    -> RoutesLookupTaskDistance
     -> TaskTimeLookup
     -> [IxTask]
     -> [Pilot]
@@ -345,7 +345,7 @@ times f xs =
 
 check
     :: Math
-    -> RouteLookup
+    -> RoutesLookupTaskDistance
     -> FlyingLookup
     -> Either ParseException Tagging
     -> CompInputFile
@@ -360,11 +360,11 @@ check math lengths flying tags = checkTracks $ \CompSettings{tasks} ->
 
 flown
     :: Math
-    -> RouteLookup
+    -> RoutesLookupTaskDistance
     -> FlyingLookup
     -> Either ParseException Tagging
     -> FnIxTask k (Pilot -> FlightStats k)
-flown math (RouteLookup lookupTaskLength) flying tags tasks iTask fixes =
+flown math (RoutesLookupTaskDistance lookupTaskLength) flying tags tasks iTask fixes =
     maybe
         (const nullStats)
         (\d -> flown' d flying math tags tasks iTask fixes)

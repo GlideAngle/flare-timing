@@ -8,7 +8,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Route (TaskRoute(..), TaskTrack(..), TrackLine(..))
 import Flight.Distance (TaskDistance(..))
-import Flight.Comp (IxTask(..), RouteLookup(..))
+import Flight.Comp (IxTask(..), RoutesLookupTaskDistance(..))
 
 -- | Convert from double with kilometres implied to metres.
 fromKm :: Double -> TaskDistance Double
@@ -20,8 +20,8 @@ fromKm dRawKm =
 
         dm = convert dKm :: Quantity Double [u| m |]
 
-routeLength :: Either a TaskRoute -> RouteLookup
-routeLength = RouteLookup . either (const Nothing) (Just . length)
+routeLength :: Either a TaskRoute -> RoutesLookupTaskDistance
+routeLength = RoutesLookupTaskDistance . either (const Nothing) (Just . length)
 
 length :: TaskRoute -> IxTask -> Maybe (TaskDistance Double)
 length TaskRoute{taskRoute} (IxTask i) = do

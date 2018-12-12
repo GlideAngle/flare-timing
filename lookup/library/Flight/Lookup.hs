@@ -19,7 +19,7 @@ import Flight.Comp
     ( IxTask(..)
     , Task(..)
     , Pilot(..)
-    , RouteLookup(..)
+    , RoutesLookupTaskDistance(..)
     , SpeedSection
     , FlyingSection
     , StartGate
@@ -80,8 +80,8 @@ ticked (TickLookup get) mf iTask speedSection p =
         (RaceSections [] [] [])
         ((\f -> f iTask speedSection p mf) =<< get)
 
-compRoutes :: RouteLookup -> [IxTask] -> [Maybe (TaskDistance Double)]
-compRoutes (RouteLookup get) iTasks =
+compRoutes :: RoutesLookupTaskDistance -> [IxTask] -> [Maybe (TaskDistance Double)]
+compRoutes (RoutesLookupTaskDistance get) iTasks =
     (\i -> ((\g -> g i) =<< get)) <$> iTasks
 
 compTimes :: TaskTimeLookup -> [IxTask] -> [Task k] -> [Maybe StartEndMark]

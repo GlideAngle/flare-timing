@@ -33,7 +33,7 @@ import Flight.Comp
     , IxTask(..)
     , StartEnd(..)
     , StartEndMark
-    , RouteLookup(..)
+    , RoutesLookupTaskDistance(..)
     , FirstLead(..)
     , FirstStart(..)
     , LastArrival(..)
@@ -111,7 +111,7 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
 
 filterTime
     :: CompSettings k
-    -> RouteLookup
+    -> RoutesLookupTaskDistance
     -> TaskTimeLookup
     -> CompInputFile
     -> [IxTask]
@@ -201,7 +201,7 @@ includeTask :: [IxTask] -> IxTask -> Bool
 includeTask tasks = if null tasks then const True else (`elem` tasks)
 
 readFilterWrite
-    :: RouteLookup
+    :: RoutesLookupTaskDistance
     -> CompInputFile
     -> (IxTask -> Bool)
     -> IxTask
@@ -211,7 +211,7 @@ readFilterWrite
     -> IO ()
 readFilterWrite _ _ _ _ _ Nothing _ = return ()
 readFilterWrite
-    (RouteLookup lookupTaskLength)
+    (RoutesLookupTaskDistance lookupTaskLength)
     compFile
     selectTask
     iTask@(IxTask i) toLeg (Just raceTime) pilot =

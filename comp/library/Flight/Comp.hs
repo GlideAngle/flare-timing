@@ -27,7 +27,7 @@ module Flight.Comp
     , LastArrival(..)
     , StartEnd(..)
     , StartEndMark
-    , RouteLookup(..)
+    , RoutesLookupTaskDistance(..)
     , showTask
     , openClose
     , speedSectionToLeg
@@ -119,7 +119,8 @@ type FlyingSection a = Maybe (a, a)
 
 type RoutesLookup a = IxTask -> Maybe a
 
-newtype RouteLookup = RouteLookup (Maybe (RoutesLookup (TaskDistance Double)))
+newtype RoutesLookupTaskDistance =
+    RoutesLookupTaskDistance (Maybe (RoutesLookup (TaskDistance Double)))
 
 newtype StartGate = StartGate UTCTime
     deriving (Eq, Ord, Show, Generic)
