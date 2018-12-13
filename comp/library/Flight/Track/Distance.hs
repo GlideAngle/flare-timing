@@ -11,7 +11,9 @@ module Flight.Track.Distance (TrackDistance(..), Nigh, Land) where
 
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
+import Data.UnitsOfMeasure (u)
 
+import Flight.Distance (QTaskDistance)
 import Flight.Route (TrackLine(..))
 
 type Nigh = TrackLine
@@ -21,10 +23,8 @@ data TrackDistance a =
     TrackDistance
         { togo :: Maybe a
         -- ^ The distance to goal.
-        , made :: Maybe Double
+        , made :: Maybe (QTaskDistance Double [u| m |])
         -- ^ The task distance minus the distance to goal.
         }
     deriving (Eq, Ord, Show, Generic)
-
-instance (ToJSON a) => ToJSON (TrackDistance a)
-instance (FromJSON a) => FromJSON (TrackDistance a)
+    deriving anyclass (FromJSON, ToJSON)

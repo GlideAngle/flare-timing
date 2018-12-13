@@ -13,7 +13,7 @@ import System.Clock (getTime, Clock(Monotonic))
 import Control.Arrow (second)
 import Control.Lens ((^?), element)
 import Control.Monad.Except (ExceptT, runExceptT)
-import Data.UnitsOfMeasure (u, convert)
+import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import System.FilePath (takeFileName)
 import Data.Yaml (ParseException, prettyPrintParseException)
@@ -41,7 +41,8 @@ import Flight.Comp
     , ensureExt
     , pilotNamed
     )
-import Flight.Distance (TaskDistance(..), unTaskDistance)
+import Flight.Distance
+    (QTaskDistance, TaskDistance(..), unTaskDistanceAsKm)
 import Flight.Mask
     ( FnIxTask, FlyCut(..)
     , checkTracks
@@ -76,7 +77,7 @@ import Flight.Scribe
     , readCompLeading, readCompBestDistances, readCompTimeRows
     )
 import Flight.Lookup.Route (routeLength)
-import qualified Flight.Score as Gap (PilotDistance(..), bestTime')
+import qualified Flight.Score as Gap (bestTime')
 import Flight.Score
     ( PilotsAtEss(..), PositionAtEss(..), BestTime(..), PilotTime(..)
     , arrivalFraction, speedFraction
@@ -84,7 +85,7 @@ import Flight.Score
 import Flight.Span.Math (Math(..))
 import MaskTrackOptions (description)
 import Stats (TimeStats(..), FlightStats(..), DashPathInputs(..), nullStats)
-    
+
 main :: IO ()
 main = do
     name <- getProgName
@@ -94,13 +95,6 @@ main = do
     err <- checkPaths lf options
 
     maybe (drive options) putStrLn err
-
-unPilotDistance :: (Real a, Fractional b) => Gap.PilotDistance a -> b
-unPilotDistance (Gap.PilotDistance d) =
-    fromRational $ dpRound 3 dKm
-    where 
-        d' :: Quantity Rational [u| m |] = MkQuantity $ toRational d
-        MkQuantity dKm = convert d' :: Quantity Rational [u| km |]
 
 drive :: CmdBatchOptions -> IO ()
 drive o = do
@@ -252,8 +246,10 @@ writeMask
 
             let dsSum =
                     [
-                        (\case 0 -> Nothing; x -> Just x)
+                        (fmap $ TaskDistance . MkQuantity)
+                        . (\case 0 -> Nothing; x -> Just x)
                         . sum
+                        . fmap unTaskDistanceAsKm
                         . catMaybes
                         $ [aSum, lSum]
                     | aSum <- dsSumArriving
@@ -275,7 +271,7 @@ writeMask
                     , raceTime = raceTime
                     , ssBestTime = ssBestTime
                     , gsBestTime = gsBestTime
-                    , taskDistance = (fmap . fmap) unTaskDistance lsTask
+                    , taskDistance = lsTask
                     , bestDistance = dsBest
                     , sumDistance = dsSum
                     , minLead = minLead
@@ -373,7 +369,7 @@ flown math (RoutesLookupTaskDistance lookupTaskLength) flying tags tasks iTask f
         taskLength = (\f -> f iTask) =<< lookupTaskLength
 
 flown'
-    :: TaskDistance Double
+    :: QTaskDistance Double [u| m |]
     -> FlyingLookup
     -> Math
     -> Either ParseException Tagging
@@ -415,12 +411,21 @@ flown' dTaskF flying math tags tasks iTask@(IxTask i) mf@MarkedFixes{mark0} p =
                 }
 
         landDistance task =
-                TrackDistance
-                    { togo = unTaskDistance <$> togoAtLanding math ticked task xs
-                    , made =
-                        fromRational . unPilotDistance
-                        <$> madeAtLanding math dTaskF ticked task xs
-                    }
+            TrackDistance
+                { togo = togo''
+                , made =
+                    madeAtLanding math dTaskF ticked task xs
+                }
+            where
+                togo' :: Maybe (QTaskDistance Double [u| km |])
+                togo' = togoAtLanding math ticked task xs
+
+                togo'' :: Maybe Double
+                togo'' =
+                    (\(TaskDistance (MkQuantity q)) ->
+                        fromRational . dpRound 6 . toRational $ q)
+                    <$> togo'
+
 
         startGates' =
             case tasks ^? element (fromIntegral i - 1) of

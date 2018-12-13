@@ -11,7 +11,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Flight.Units ()
 import Flight.LatLng (LatLng(..))
 import Flight.LatLng.Raw (RawLatLng(..))
-import Flight.Distance (TaskDistance(..), PathDistance(..), SpanLatLng, toKm)
+import Flight.Distance (QTaskDistance, PathDistance(..), SpanLatLng, toKm)
 import Flight.Zone (Zone(..), Bearing(..), center)
 import Flight.Zone.Path (distancePointToPoint, costSegment)
 import Flight.Zone.Raw (RawZone(..))
@@ -120,7 +120,7 @@ goByProj excludeWaypoints zs = do
     let (_, es) = partitionEithers $ zoneToProjectedEastNorth <$> ps
 
     -- NOTE: Workout the distance for each leg projected.
-    let legs'' :: [Zs (TaskDistance Double)] =
+    let legs'' :: [Zs (QTaskDistance Double [u| m |])] =
             zipWith
                 (\ a b ->
                     edgesSum
@@ -128,7 +128,7 @@ goByProj excludeWaypoints zs = do
                 ps
                 (tail ps)
 
-    legs' :: [TaskDistance Double] <- sequence $ fromZs <$> legs''
+    legs' :: [QTaskDistance Double [u| m |]] <- sequence $ fromZs <$> legs''
 
     let spherical =
             projected
@@ -167,7 +167,7 @@ goByPoint excludeWaypoints zs =
         , legsSum = toKm <$> dsSum
         }
     where
-        d :: TaskDistance Double
+        d :: QTaskDistance Double [u| m |]
         d = edgesSum $ distancePointToPoint spanS zs
 
         -- NOTE: Concentric zones of different radii can be defined that
@@ -178,14 +178,14 @@ goByPoint excludeWaypoints zs =
         xs :: [RawLatLng]
         xs = convertLatLng <$> edgesSum'
 
-        ds :: [TaskDistance Double]
+        ds :: [QTaskDistance Double [u| m |]]
         ds =
             legDistances
                 distancePointToPoint
                 spanS
                 (Point <$> edgesSum' :: [Zone Double])
 
-        dsSum :: [TaskDistance Double]
+        dsSum :: [QTaskDistance Double [u| m |]]
         dsSum = scanl1 addTaskDistance ds
 
 distanceEdgeSphere

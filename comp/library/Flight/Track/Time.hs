@@ -59,7 +59,7 @@ import Flight.Score
     , areaSteps
     , showSecs
     )
-import Flight.Distance (TaskDistance(..))
+import Flight.Distance (QTaskDistance, TaskDistance(..))
 import Flight.Comp (SpeedSection)
 
 -- | Seconds from first speed zone crossing irrespective of start time.
@@ -211,7 +211,7 @@ leadingSum (Just _) (Just (start, _)) xs =
 
 leadingArea
     :: (Int -> Leg)
-    -> Maybe (TaskDistance Double)
+    -> Maybe (QTaskDistance Double [u| m |])
     -> Maybe LeadClose
     -> Maybe LeadArrival
     -> [TickRow]
@@ -336,7 +336,7 @@ landOutRow :: EssTime -> DistanceToEss -> LcPoint
 landOutRow (EssTime t) d =
     LcPoint{leg = LandoutLeg 0, mark = TaskTime t, togo = d}
 
-taskToLeading :: TaskDistance Double -> LeadingDistance
+taskToLeading :: QTaskDistance Double [u| m |] -> LeadingDistance
 taskToLeading (TaskDistance d) =
     LeadingDistance (convert d :: Quantity Double [u| km |])
 
@@ -352,7 +352,7 @@ timeToTick TimeRow{leg, tickLead, tickRace, distance} =
 
 discard
     :: (Int -> Leg)
-    -> Maybe (TaskDistance Double)
+    -> Maybe (QTaskDistance Double [u| m |])
     -> Maybe LeadClose
     -> Maybe LeadArrival
     -> Vector TimeRow

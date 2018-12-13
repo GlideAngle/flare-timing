@@ -56,7 +56,7 @@ import Flight.Track.Cross (Fix(..), TrackFlyingSection(..))
 import Flight.Track.Tag (Tagging(..), TrackTime(..), firstLead, firstStart)
 import Flight.Kml (MarkedFixes(..))
 import Data.Ratio.Rounding (dpRound)
-import Flight.Distance (TaskDistance(..))
+import Flight.Distance (QTaskDistance, TaskDistance(..))
 import Flight.Scribe (readComp, readCrossing, readTagging, writeAlignTime)
 import Flight.Lookup.Cross
     (FlyingLookup(..), crossFlying)
@@ -67,7 +67,7 @@ import Flight.Span.Double (zoneToCylF, spanF, csF, cutF, dppF, csegF)
 
 type Leg = Int
 
-unTaskDistance :: (Real a, Fractional a) => TaskDistance a -> a
+unTaskDistance :: QTaskDistance Double [u| m |] -> Double
 unTaskDistance (TaskDistance d) =
     fromRational $ dpRound 3 dKm
     where 
@@ -187,7 +187,7 @@ writePilotTimes compFile iTask (pilot, rows) = do
 mkTimeRows :: Maybe FirstLead
            -> Maybe FirstStart
            -> Leg
-           -> Maybe [(Maybe Fix, Maybe (TaskDistance Double))]
+           -> Maybe [(Maybe Fix, Maybe (QTaskDistance Double [u| m |]))]
            -> [TimeRow]
 mkTimeRows _ _ _ Nothing = []
 mkTimeRows lead start leg (Just xs) =
@@ -196,7 +196,7 @@ mkTimeRows lead start leg (Just xs) =
 mkTimeRow :: Maybe FirstLead
           -> Maybe FirstStart
           -> Int
-          -> (Maybe Fix, Maybe (TaskDistance Double))
+          -> (Maybe Fix, Maybe (QTaskDistance Double [u| m |]))
           -> Maybe TimeRow
 mkTimeRow Nothing _ _ _ = Nothing
 mkTimeRow _ _ _ (Nothing, _) = Nothing
@@ -323,8 +323,10 @@ allLegDistances
 allLegDistances ticked times task@Task{speedSection, zoneTimes} leg xs =
     mkTimeRows lead start leg xs'
     where
-        sliver = Mask.Sliver spanF dppF csegF csF cutF
+        xs' :: Maybe [(Maybe Fix, Maybe (QTaskDistance Double [u| m |]))]
         xs' = dashDistancesToGoal ticked sliver zoneToCylF task xs
+
+        sliver = Mask.Sliver spanF dppF csegF csF cutF
         ts = zonesFirst times
 
         lead = firstLead speedSection ts

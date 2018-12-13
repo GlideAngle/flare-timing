@@ -13,8 +13,9 @@ import Data.Maybe (catMaybes)
 import Data.List (sortOn)
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
+import Data.UnitsOfMeasure (u)
 
-import Flight.Distance (TaskDistance(..))
+import Flight.Distance (QTaskDistance)
 import Flight.Comp (Pilot, Task(..))
 import Flight.Score (LeadingCoefficient(..), LeadingFraction(..), leadingFraction)
 import Flight.Track.Time (taskToLeading, leadingSum, minLeading)
@@ -29,7 +30,7 @@ data TrackLead =
 
 compLeading
     :: [[(Pilot, [Time.TickRow])]]
-    -> [Maybe (TaskDistance Double)]
+    -> [Maybe (QTaskDistance Double [u| m |])]
     -> [Task k]
     -> ([Maybe LeadingCoefficient], [[(Pilot, TrackLead)]])
 compLeading rowsLeadingStep lsTask tasks' =

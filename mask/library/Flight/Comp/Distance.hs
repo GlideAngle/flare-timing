@@ -18,7 +18,7 @@ import Data.UnitsOfMeasure ((-:), u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Kml (MarkedFixes(..))
-import Flight.Distance (TaskDistance(..), unTaskDistance)
+import Flight.Distance (QTaskDistance, TaskDistance(..), toKm, unTaskDistanceAsKm)
 import Flight.Comp (Pilot, Task(..))
 import Flight.Route (TrackLine(..), toTrackLine)
 import Flight.Score (BestTime(..), MinimumDistance(..))
@@ -41,7 +41,7 @@ compDistance
     -- | The minimum distance for the comp, the same for each task.
     :: MinimumDistance (Quantity Double [u| km |])
     -- | The distance of each task.
-    -> [Maybe (TaskDistance Double)]
+    -> [Maybe (QTaskDistance Double [u| m |])]
     -- | The pilots arriving at goal for each task.
     -> [[Pilot]]
     -- | The pilots landing out for each task.
@@ -51,13 +51,22 @@ compDistance
     -- | For each task, for each pilot excluding those having made goal, the
     -- row closest to goal.
     -> [[Maybe (Pilot, Time.TickRow)]]
-    -> ( [Maybe Double] -- ^ The sum of distance over min of those arriving at goal.
-       , [Maybe Double] -- ^ The sum of distance over min of those landing out.
-       , [Maybe Double] -- ^ The best distance
-       , [[Maybe (Pilot, Maybe LeadTick)]] -- ^ The lead time of the point closest to goal.
-       )
+    ->
+        ( [Maybe (QTaskDistance Double [u| m |])]
+        -- ^ The sum of distance over min of those arriving at goal.
+        , [Maybe (QTaskDistance Double [u| m |])]
+        -- ^ The sum of distance over min of those landing out.
+        , [Maybe (QTaskDistance Double [u| m |])]
+        -- ^ The best distance
+        , [[Maybe (Pilot, Maybe LeadTick)]]
+        -- ^ The lead time of the point closest to goal.
+        )
 compDistance dMin lsTask pilotsArriving pilotsLandingOut tsBest rows =
-    (dsSumArriving, dsSumLandingOut, dsBest, rowTicks)
+    ( (fmap . fmap) (TaskDistance . MkQuantity . ((*) 1000000)) dsSumArriving
+    , (fmap . fmap) (TaskDistance . MkQuantity . ((*) 1000000)) dsSumLandingOut
+    , (fmap . fmap) (TaskDistance . MkQuantity . ((*) 1000)) dsBest
+    , rowTicks
+    )
     where
         MinimumDistance (MkQuantity dMin') = dMin
 
@@ -73,13 +82,13 @@ compDistance dMin lsTask pilotsArriving pilotsLandingOut tsBest rows =
         dsMade :: [Maybe Double] =
                 (\xs -> if null xs then Nothing else Just . maximum $ xs)
                 . catMaybes
-                <$> (fmap . fmap) (made . snd) dsNigh
+                <$> (fmap . fmap) (fmap toKm . made . snd) dsNigh
 
         -- If even a single pilot makes goal then the best distance is the task
         -- distance.
         dsBest :: [Maybe Double] =
                 zipWith3
-                    (\l t d -> if isJust t then unTaskDistance <$> l else d)
+                    (\l t d -> if isJust t then unTaskDistanceAsKm <$> l else d)
                     lsTask
                     tsBest
                     dsMade
@@ -90,14 +99,14 @@ compDistance dMin lsTask pilotsArriving pilotsLandingOut tsBest rows =
                 [ \case [] -> Nothing; xs -> Just . sum $ xs
                   $ (\d -> max 0 (d - dMin'))
                   <$> ds
-                | ds <- catMaybes <$> (fmap . fmap) (made . snd) dsNigh
+                | ds <- catMaybes <$> (fmap . fmap) (fmap toKm . made . snd) dsNigh
                 ]
 
         dsTaskOverMin = 
                 [ do
                     l' <- l
                     return . max 0 $ l' - dMin'
-                | l <- (fmap . fmap) unTaskDistance lsTask
+                | l <- (fmap . fmap) unTaskDistanceAsKm lsTask
                 ]
 
         dsSumArriving:: [Maybe Double] =
@@ -116,7 +125,7 @@ compDistance dMin lsTask pilotsArriving pilotsLandingOut tsBest rows =
 -- | How near did a pilot get to goal during the flight. This can be closer
 -- to goal than the landing spot if the pilot flew away from goal to land.
 compNigh
-    :: [Maybe (TaskDistance Double)]
+    :: [Maybe (QTaskDistance Double [u| m |])]
     -> [Map Pilot (DashPathInputs k)]
     -> [[Maybe (Pilot, Time.TimeRow)]]
     -> [[(Pilot, TrackDistance Nigh)]]
@@ -128,7 +137,7 @@ compNigh lsTask zsTaskTicked rows =
         ]
 
 nighTrackLine
-    :: Maybe (TaskDistance Double)
+    :: Maybe (QTaskDistance Double [u| m |])
     -> Map Pilot (DashPathInputs k)
     -> (Pilot, Time.TimeRow)
     -> (Pilot, TrackDistance Nigh)
@@ -139,16 +148,19 @@ nighTrackLine Nothing _ (p, Time.TimeRow{distance}) =
         , made = Nothing
         }
 
-nighTrackLine (Just (TaskDistance td)) zsTaskTicked (p, row@Time.TimeRow{distance}) =
+nighTrackLine
+    (Just (TaskDistance td))
+    zsTaskTicked
+    (p, row@Time.TimeRow{distance}) =
     (p,) TrackDistance
         { togo = Just line
-        , made = Just . unTaskDistance . TaskDistance $ td -: mTogo
+        , made = Just . TaskDistance $ td -: togo'
         }
     where
-        kmTogo :: Quantity Double [u| km |]
-        kmTogo = MkQuantity distance
+        togo :: Quantity Double [u| km |]
+        togo = MkQuantity distance
 
-        mTogo = convert kmTogo :: Quantity Double [u| m |]
+        togo' = convert togo :: Quantity Double [u| m |]
 
         line =
             case Map.lookup p zsTaskTicked of
@@ -182,7 +194,7 @@ pathToGo DashPathInputs{..} x@Time.TimeRow{time} d =
 
 lookupTaskBestDistance
     :: Map Pilot Time.TickRow
-    -> Maybe (TaskDistance Double)
+    -> Maybe (QTaskDistance Double [u| m |])
     -> [Pilot]
     -> [(Pilot, TrackDistance Land)]
 lookupTaskBestDistance m td =
@@ -191,14 +203,14 @@ lookupTaskBestDistance m td =
 
 lookupPilotBestDistance
     :: Map Pilot Time.TickRow
-    -> Maybe (TaskDistance Double)
+    -> Maybe (QTaskDistance Double [u| m |])
     -> Pilot
     -> Maybe (Pilot, TrackDistance Land)
 lookupPilotBestDistance m td p =
     (p,) . madeDistance td <$> Map.lookup p m
 
 madeDistance
-    :: Maybe (TaskDistance Double)
+    :: Maybe (QTaskDistance Double [u| m |])
     -> Time.TickRow
     -> TrackDistance Land
 
@@ -211,7 +223,7 @@ madeDistance Nothing Time.TickRow{distance} =
 madeDistance (Just (TaskDistance td)) Time.TickRow{distance} =
     TrackDistance
         { togo = Just distance
-        , made = Just . unTaskDistance . TaskDistance $ td -: togo'
+        , made = Just . TaskDistance $ td -: togo'
         }
     where
         togo :: Quantity Double [u| km |]

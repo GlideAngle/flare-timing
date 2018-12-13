@@ -21,7 +21,7 @@ import Flight.Units.Angle (Angle(..))
 import Flight.LatLng (LatLng(..), Lat(..), Lng(..), radToDegLL)
 import Flight.LatLng.Double (radToDeg)
 import Flight.Zone (Zone(..), center, realToFracZone)
-import Flight.Distance (TaskDistance(..))
+import Flight.Distance (QTaskDistance, TaskDistance(..))
 
 data DistanceAzimuth a =
     DistanceAzimuth
@@ -30,7 +30,7 @@ data DistanceAzimuth a =
         , azRev :: Quantity a [u| rad |]
         }
 
-tooFar :: Num a => TaskDistance a
+tooFar :: Num a => QTaskDistance a [u| m |]
 tooFar = TaskDistance [u| 20000000 m |]
 
 zoneToProjectedEastNorth :: Real a => Zone a -> Either String HC.UTMRef

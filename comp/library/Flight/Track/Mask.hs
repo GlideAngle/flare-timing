@@ -20,6 +20,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 
+import Flight.Distance (QTaskDistance)
 import Flight.Comp (OpenClose(..), FirstLead(..), FirstStart(..), LastArrival(..))
 import Flight.Score
     ( Pilot(..)
@@ -46,11 +47,11 @@ data Masking =
         -- ^ For each task, the best time ignoring start gates.
         , gsBestTime :: [Maybe (BestTime (Quantity Double [u| h |]))]
         -- ^ For each task, the best time from the start gate taken.
-        , taskDistance :: [Maybe Double]
+        , taskDistance :: [Maybe (QTaskDistance Double [u| m |])]
         -- ^ For each task, the task distance.
-        , bestDistance :: [Maybe Double]
+        , bestDistance :: [Maybe (QTaskDistance Double [u| m |])]
         -- ^ For each task, the best distance made.
-        , sumDistance :: [Maybe Double]
+        , sumDistance :: [Maybe (QTaskDistance Double [u| m |])]
         -- ^ For each task, the sum of all distance flown over minimum distance.
         , minLead :: [Maybe LeadingCoefficient]
         -- ^ For each task, the minimum of all pilot's leading coefficient.

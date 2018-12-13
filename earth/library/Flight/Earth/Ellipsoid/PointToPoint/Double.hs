@@ -13,7 +13,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.LatLng
     (QLat, Lat(..), QLng, Lng(..), LatLng(..), AzimuthFwd, AzimuthRev)
-import Flight.Distance (TaskDistance(..), SpanLatLng)
+import Flight.Distance (QTaskDistance, TaskDistance(..), SpanLatLng)
 import Flight.Earth.Ellipsoid
     ( Ellipsoid(..), AbnormalLatLng(..), VincentyInverse(..), VincentyAccuracy(..)
     , defaultVincentyAccuracy, flattening, polarRadius
@@ -41,7 +41,7 @@ vincentyInverse
     -> InverseProblem (LatLng a [u| rad |])
     -> VincentyInverse
         (InverseSolution
-            (TaskDistance a)
+            (QTaskDistance a [u| m |])
             (Quantity a [u| rad |])
         )
 vincentyInverse
@@ -115,7 +115,7 @@ vincentyInverse
                 x = cos2σm + _C * cosσ * (-1 + 2 * cos²2σm)
 
 
-tooFar :: Num a => TaskDistance a
+tooFar :: Num a => QTaskDistance a [u| m |]
 tooFar = TaskDistance [u| 20000000 m |]
 
 -- | Sperical distance using inverse Vincenty and floating point numbers.
@@ -151,7 +151,7 @@ distanceVincenty'
     => Ellipsoid a
     -> InverseProblem (LatLng a [u| rad |])
     -> VincentyInverse
-        (InverseSolution (TaskDistance a) (Quantity a [u| rad |]))
+        (InverseSolution (QTaskDistance a [u| m |]) (Quantity a [u| rad |]))
 distanceVincenty'
     ellipsoid
     prob@InverseProblem

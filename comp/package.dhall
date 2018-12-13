@@ -33,6 +33,7 @@ in    defs
             , "uom-plugin"
             , "vector"
             , "detour-via-sci"
+            , "detour-via-uom"
             , "flight-units"
             , "flight-latlng"
             , "flight-zone"

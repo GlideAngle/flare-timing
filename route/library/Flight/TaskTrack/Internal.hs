@@ -25,7 +25,8 @@ import Data.Ratio.Rounding (dpRound)
 import Flight.Zone (Zone(..), QRadius, Radius(..), fromRationalZone)
 import Flight.Zone.Raw (RawZone(..))
 import Flight.Zone.Cylinder (Tolerance(..))
-import Flight.Distance (TaskDistance(..), PathDistance(..), SpanLatLng)
+import Flight.Distance
+    (QTaskDistance, TaskDistance(..), PathDistance(..), SpanLatLng)
 import Flight.EastNorth (UtmZone(..), EastingNorthing(..))
 import Flight.Task (DistancePointToPoint)
 
@@ -59,15 +60,19 @@ legDistances :: Real a
              => DistancePointToPoint a
              -> SpanLatLng a
              -> [Zone a]
-             -> [TaskDistance a]
+             -> [QTaskDistance a [u| m |]]
 legDistances dpp span xs =
     zipWith
         (\x y -> edgesSum $ dpp span [x, y])
         xs
         (tail xs)
 
-addTaskDistance :: Num a => TaskDistance a -> TaskDistance a -> TaskDistance a
-addTaskDistance (TaskDistance a) (TaskDistance b) = TaskDistance $ a +: b
+addTaskDistance
+    :: Num a
+    => QTaskDistance a [u| m |]
+    -> QTaskDistance a [u| m |]
+    -> QTaskDistance a [u| m |]
+addTaskDistance (TaskDistance a) (TaskDistance b) =TaskDistance $ a +: b
 
 convertLatLng :: (Real a, Fractional a) => LatLng a [u| rad |] -> RawLatLng
 convertLatLng (LatLng (Lat eLat, Lng eLng)) =

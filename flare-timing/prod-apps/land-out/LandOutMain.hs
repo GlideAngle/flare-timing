@@ -1,6 +1,5 @@
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
-import Data.Maybe (fromMaybe)
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
 import Formatting ((%), fprint)
@@ -27,6 +26,7 @@ import Flight.Comp
     , findCompInput
     , ensureExt
     )
+import Flight.Distance (unTaskDistanceAsKm)
 import Flight.Track.Distance (TrackDistance(..))
 import Flight.Track.Mask (Masking(..))
 import qualified Flight.Track.Land as Cmp (Landing(..))
@@ -99,13 +99,13 @@ difficulty CompSettings{nominal} Masking{bestDistance, land} =
             (fmap . fmap)
             (PilotDistance
             . MkQuantity
-            . (\TrackDistance{made} -> fromMaybe 0 made)
+            . (\TrackDistance{made} -> maybe 0 unTaskDistanceAsKm made)
             . snd)
             land
 
         bests :: [Maybe (BestDistance (Quantity Double [u| km |]))]
         bests =
-            (fmap . fmap) (BestDistance . MkQuantity) bestDistance
+            (fmap . fmap) (BestDistance . MkQuantity . unTaskDistanceAsKm) bestDistance
 
         ahead =
             [ flip Gap.lookahead ds <$> b

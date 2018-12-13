@@ -13,7 +13,7 @@ import Control.Monad (join)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import Flight.Distance (TaskDistance(..))
+import Flight.Distance (QTaskDistance)
 import Flight.Kml (MarkedFixes(..))
 import Flight.Comp
     ( IxTask(..)
@@ -80,7 +80,10 @@ ticked (TickLookup get) mf iTask speedSection p =
         (RaceSections [] [] [])
         ((\f -> f iTask speedSection p mf) =<< get)
 
-compRoutes :: RoutesLookupTaskDistance -> [IxTask] -> [Maybe (TaskDistance Double)]
+compRoutes
+    :: RoutesLookupTaskDistance
+    -> [IxTask]
+    -> [Maybe (QTaskDistance Double [u| m |])]
 compRoutes (RoutesLookupTaskDistance get) iTasks =
     (\i -> ((\g -> g i) =<< get)) <$> iTasks
 

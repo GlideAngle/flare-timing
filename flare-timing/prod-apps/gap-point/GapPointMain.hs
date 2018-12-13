@@ -25,6 +25,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
+import Flight.Distance (QTaskDistance, TaskDistance(..), unTaskDistanceAsKm)
 import Flight.Comp
     ( FileType(CompInput)
     , CompInputFile(..)
@@ -201,12 +202,12 @@ points'
 
         dBests :: [MaximumDistance (Quantity Double [u| km |])] =
             [ MaximumDistance . MkQuantity $ fromMaybe 0 b
-            | b <- bestDistance
+            | b <- (fmap . fmap) unTaskDistanceAsKm bestDistance
             ]
 
         dSums :: [SumOfDistance (Quantity Double [u| km |])] =
             [ SumOfDistance . MkQuantity $ fromMaybe 0 s
-            | s <- sumDistance
+            | s <- (fmap . fmap) unTaskDistanceAsKm sumDistance
             ]
 
         dvs =
@@ -297,7 +298,7 @@ points'
             [ let xs' = (fmap . fmap) madeNigh xs
                   ys' = (fmap . fmap) (const bd) ys
               in (xs' ++ ys')
-            | bd <- bestDistance
+            | bd <- (fmap . fmap) unTaskDistanceAsKm bestDistance
             | xs <- nigh
             | ys <- arrival
             ]
@@ -309,7 +310,7 @@ points'
             [ let xs' = (fmap . fmap) madeLand xs
                   ys' = (fmap . fmap) (const bd) ys
               in (xs' ++ ys')
-            | bd <- bestDistance
+            | bd <- (fmap . fmap) unTaskDistanceAsKm bestDistance
             | xs <- land
             | ys <- arrival
             ]
@@ -514,28 +515,30 @@ madeDifficulty md mapIxToFrac td =
         ix = toIxChunk md pd
 
 madeNigh :: TrackDistance Nigh -> Maybe Double
-madeNigh TrackDistance{made} = made
+madeNigh TrackDistance{made} = unTaskDistanceAsKm <$> made
 
 madeLand :: TrackDistance Land -> Maybe Double
-madeLand TrackDistance{made} = made
+madeLand TrackDistance{made} = unTaskDistanceAsKm <$> made
 
 -- TODO: If made < minimum distance, use minimum distance.
 applyLinear
-    :: Maybe Double -- ^ The best distance
+    :: Maybe (QTaskDistance Double [u| m |])-- ^ The best distance
     -> Gap.Points
     -> Maybe Double -- ^ The distance made
     -> LinearPoints
 applyLinear Nothing _ _ = LinearPoints 0
 applyLinear _ _ Nothing = LinearPoints 0
 applyLinear
-    (Just best)
+    (Just (TaskDistance best))
     Gap.Points{reach = LinearPoints y}
     (Just made) =
-        if | best <= 0 -> LinearPoints 0
+        if | best' <= 0 -> LinearPoints 0
            | otherwise -> LinearPoints $ frac * y
     where
         frac :: Rational
-        frac = toRational made / toRational best
+        frac = toRational made / toRational best'
+
+        MkQuantity best' = convert best :: Quantity Double [u| km |]
 
 leadingFraction :: TrackLead -> LeadingFraction
 leadingFraction TrackLead{frac} = frac
@@ -670,8 +673,8 @@ tally
                 , ssDistance = dS
                 , ssElapsed = ssT
                 , gsElapsed = gsT
-                , ssVelocity = liftA2 mkVelocity dN ssT
-                , gsVelocity = liftA2 mkVelocity dN gsT
+                , ssVelocity = liftA2 mkVelocity dS ssT
+                , gsVelocity = liftA2 mkVelocity dS gsT
                 }
         , breakdown = x
         , total = TaskPoints $ r + dp + l + a + tp

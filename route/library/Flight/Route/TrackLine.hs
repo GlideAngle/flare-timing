@@ -11,18 +11,19 @@ import Data.UnitsOfMeasure (u)
 
 import Flight.LatLng (LatLng(..))
 import Flight.LatLng.Raw (RawLatLng(..))
-import Flight.Distance (TaskDistance(..), PathDistance(..), SpanLatLng, toKm)
+import Flight.Distance (QTaskDistance, PathDistance(..), SpanLatLng, toKm)
 import Flight.Zone (Zone(..))
 import Flight.Zone.Path (distancePointToPoint)
 import Flight.TaskTrack.Internal (convertLatLng, legDistances, addTaskDistance)
 
 data TrackLine =
-    TrackLine { distance :: Double
-              , waypoints :: [RawLatLng]
-              , legs :: [Double]
-              , legsSum :: [Double]
-              }
-              deriving (Eq, Ord, Show, Generic)
+    TrackLine
+        { distance :: Double
+        , waypoints :: [RawLatLng]
+        , legs :: [Double]
+        , legsSum :: [Double]
+        }
+    deriving (Eq, Ord, Show, Generic)
 
 instance ToJSON TrackLine
 instance FromJSON TrackLine
@@ -42,11 +43,11 @@ instance ToTrackLine Double (PathDistance Double) where
         TrackLine
             { distance = toKm d
             , waypoints = if excludeWaypoints then [] else xs
-            , legs = toKm <$> ds 
+            , legs = toKm <$> ds
             , legsSum = toKm <$> dsSum
             }
         where
-            d :: TaskDistance Double
+            d :: QTaskDistance Double [u| m |]
             d = edgesSum ed
 
             -- NOTE: The graph of points created for determining the shortest
@@ -58,14 +59,14 @@ instance ToTrackLine Double (PathDistance Double) where
             -- occuring.
             (vertices', xs) = pathVertices ed
 
-            ds :: [TaskDistance Double]
+            ds :: [QTaskDistance Double [u| m |]]
             ds =
                 legDistances
                     distancePointToPoint
                     span
                     (Point <$> vertices' :: [Zone Double])
 
-            dsSum :: [TaskDistance Double]
+            dsSum :: [QTaskDistance Double [u| m |]]
             dsSum = scanl1 addTaskDistance ds
 
 instance ToTrackLine Rational (PathDistance Rational) where
@@ -77,7 +78,7 @@ instance ToTrackLine Rational (PathDistance Rational) where
             , legsSum = toKm <$> dsSum
             }
         where
-            d :: TaskDistance Rational
+            d :: QTaskDistance Rational [u| m |]
             d = edgesSum ed
 
             -- NOTE: The graph of points created for determining the shortest
@@ -89,12 +90,12 @@ instance ToTrackLine Rational (PathDistance Rational) where
             -- occuring.
             (vertices', xs) = pathVertices ed
 
-            ds :: [TaskDistance Rational]
+            ds :: [QTaskDistance Rational [u| m |]]
             ds =
                 legDistances
                     distancePointToPoint
                     span
                     (Point <$> vertices' :: [Zone Rational])
 
-            dsSum :: [TaskDistance Rational]
+            dsSum :: [QTaskDistance Rational [u| m |]]
             dsSum = scanl1 addTaskDistance ds

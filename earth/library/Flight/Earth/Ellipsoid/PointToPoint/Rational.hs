@@ -15,7 +15,7 @@ import Flight.Ratio (pattern (:%))
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.LatLng.Rational (Epsilon(..))
 import Flight.Zone (toRationalLatLng)
-import Flight.Distance (TaskDistance(..), SpanLatLng)
+import Flight.Distance (QTaskDistance, TaskDistance(..), SpanLatLng)
 import Flight.Earth.Ellipsoid
     ( Ellipsoid(..), AbnormalLatLng(..), VincentyInverse(..), VincentyAccuracy(..)
     , defaultVincentyAccuracy, flattening, polarRadius, toRationalEllipsoid
@@ -53,7 +53,7 @@ vincentyInverse
     -> InverseProblem (LatLng Rational [u| rad |])
     -> VincentyInverse
         (InverseSolution
-            (TaskDistance Rational)
+            (QTaskDistance Rational [u| m |])
             (Quantity Rational [u| rad |])
         )
 vincentyInverse
@@ -133,7 +133,7 @@ vincentyInverse
                 λ' = _L + (1 - _C) * f * sinα * (σ + _C * sinσ * x)
                 x = cos2σm + _C * cosσ * (-1 + 2 * cos²2σm)
 
-tooFar :: Num a => TaskDistance a
+tooFar :: Num a => QTaskDistance a [u| m |]
 tooFar = TaskDistance [u| 20000000 m |]
 
 -- | Sperical distance using inverse Vincenty and rational numbers.
@@ -154,7 +154,7 @@ distanceVincenty'
     -> Ellipsoid a
     -> InverseProblem (LatLng a [u| rad |])
     -> VincentyInverse
-        (InverseSolution (TaskDistance a) (Quantity a [u| rad |]))
+        (InverseSolution (QTaskDistance a [u| m |]) (Quantity a [u| rad |]))
 distanceVincenty' e ellipsoid
     InverseProblem
         { x = x@(LatLng (xLat, xLng))

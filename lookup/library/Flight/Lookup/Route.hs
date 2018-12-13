@@ -7,11 +7,11 @@ import Data.UnitsOfMeasure (u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Route (TaskRoute(..), TaskTrack(..), TrackLine(..))
-import Flight.Distance (TaskDistance(..))
+import Flight.Distance (QTaskDistance, TaskDistance(..))
 import Flight.Comp (IxTask(..), RoutesLookupTaskDistance(..))
 
 -- | Convert from double with kilometres implied to metres.
-fromKm :: Double -> TaskDistance Double
+fromKm :: Double -> QTaskDistance Double [u| m |]
 fromKm dRawKm =
     TaskDistance dm
     where 
@@ -23,7 +23,7 @@ fromKm dRawKm =
 routeLength :: Either a TaskRoute -> RoutesLookupTaskDistance
 routeLength = RoutesLookupTaskDistance . either (const Nothing) (Just . length)
 
-length :: TaskRoute -> IxTask -> Maybe (TaskDistance Double)
+length :: TaskRoute -> IxTask -> Maybe (QTaskDistance Double [u| m |])
 length TaskRoute{taskRoute} (IxTask i) = do
     x <- join $ taskRoute ^? element (fromIntegral i - 1)
     d <- sphericalEdgeToEdge x

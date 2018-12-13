@@ -15,7 +15,7 @@ import Data.UnitsOfMeasure (u)
 import Flight.Units ()
 import Flight.Units.Angle (Angle(..))
 import Flight.Units.DegMinSec (DMS(..))
-import Flight.Distance (TaskDistance(..))
+import Flight.Distance (QTaskDistance, TaskDistance(..))
 
 -- | The inputs for the direct or forward problem in geodesy.
 data DirectProblem a α s =
@@ -47,11 +47,11 @@ data InverseSolution s α =
         , α₂ :: Maybe α -- ^ The azimuth at the arrival point.
         }
 
-type DProb = DirectProblem (DMS, DMS) DMS (TaskDistance Double)
+type DProb = DirectProblem (DMS, DMS) DMS (QTaskDistance Double [u| m |])
 type DSoln = DirectSolution (DMS, DMS) DMS
 
 type IProb = InverseProblem (DMS, DMS)
-type ISoln = InverseSolution (TaskDistance Double) DMS
+type ISoln = InverseSolution (QTaskDistance Double [u| m |]) DMS
 
 class GeodesyProblems a α s where
     direct

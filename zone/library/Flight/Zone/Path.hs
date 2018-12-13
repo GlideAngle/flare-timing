@@ -8,7 +8,8 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.LatLng (LatLng(..))
 import Flight.Zone (Zone(..), Radius(..), center)
-import Flight.Distance (TaskDistance(..), PathDistance(..), SpanLatLng)
+import Flight.Distance
+    (QTaskDistance, TaskDistance(..), PathDistance(..), SpanLatLng)
 
 costSegment
     :: Real a
@@ -40,7 +41,7 @@ distanceViaCenters
     :: Real a
     => SpanLatLng a
     -> [Zone a]
-    -> TaskDistance a
+    -> QTaskDistance a [u| m |]
 
 distanceViaCenters _ [] = TaskDistance [u| 0 m |]
 
@@ -66,7 +67,7 @@ distance
     :: Num a
     => SpanLatLng a
     -> [Zone a]
-    -> TaskDistance a
+    -> QTaskDistance a [u| m |]
 distance span xs =
     TaskDistance $ sum $ zipWith f ys (tail ys)
     where

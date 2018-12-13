@@ -61,7 +61,7 @@ import Flight.Zone.Raw (showZone)
 import Flight.Field (FieldOrdering(..))
 import Flight.Pilot
 import Flight.Path
-import Flight.Distance (TaskDistance(..))
+import Flight.Distance (QTaskDistance)
 import Flight.Score
     ( Leg(..)
     , NominalLaunch(..)
@@ -120,7 +120,8 @@ type FlyingSection a = Maybe (a, a)
 type RoutesLookup a = IxTask -> Maybe a
 
 newtype RoutesLookupTaskDistance =
-    RoutesLookupTaskDistance (Maybe (RoutesLookup (TaskDistance Double)))
+    RoutesLookupTaskDistance
+        (Maybe (RoutesLookup (QTaskDistance Double [u| m |])))
 
 newtype StartGate = StartGate UTCTime
     deriving (Eq, Ord, Show, Generic)

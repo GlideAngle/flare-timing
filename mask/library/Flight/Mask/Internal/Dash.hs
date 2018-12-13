@@ -5,10 +5,11 @@ module Flight.Mask.Internal.Dash
     ) where
 
 import Prelude hiding (span)
+import Data.UnitsOfMeasure (u)
 
 import Flight.Comp (SpeedSection)
 import Flight.Units ()
-import Flight.Distance (TaskDistance(..), PathDistance(..))
+import Flight.Distance (QTaskDistance, PathDistance(..))
 import Flight.Task (Zs(..), distanceEdgeToEdge, fromZs)
 import Flight.Mask.Internal.Zone (ZoneIdx, TaskZone(..), TrackZone(..), slice)
 import Flight.Mask.Internal.Race (Sliver(..), RaceSections(..), Ticked, cons, mm30)
@@ -22,7 +23,7 @@ dashToGoal
     -> SpeedSection
     -> [TaskZone b]
     -> [(ZoneIdx, a)]
-    -> Maybe (TaskDistance b)
+    -> Maybe (QTaskDistance b [u| m |])
 dashToGoal ticked sliver mkZone speedSection zs xs =
     dashToGoalR ticked sliver mkZone speedSection zs (reverse xs)
 
@@ -35,7 +36,7 @@ dashToGoalR
     -> SpeedSection
     -> [TaskZone b]
     -> [(ZoneIdx, a)]
-    -> Maybe (TaskDistance b)
+    -> Maybe (QTaskDistance b [u| m |])
 dashToGoalR ticked sliver mkZone speedSection zs xs =
     fromZs
     $ edgesSum
