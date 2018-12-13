@@ -133,7 +133,7 @@ goByProj excludeWaypoints zs = do
     let spherical =
             projected
                 { distance =
-                    toKm . edgesSum <$> distancePointToPoint spanS $ ps
+                    edgesSum <$> distancePointToPoint spanS $ ps
                 } :: TrackLine
 
     let planar =
@@ -147,8 +147,8 @@ goByProj excludeWaypoints zs = do
                     -- NOTE: Round to millimetres when easting and
                     -- northing are in units of metres.
                     roundEastNorth 3 . fromUTMRefEastNorth <$> es
-                , legs = toKm <$> legs'
-                , legsSum = toKm <$> scanl1 addTaskDistance legs'
+                , legs = legs'
+                , legsSum = scanl1 addTaskDistance legs'
                 } :: PlanarTrackLine
 
     return
@@ -161,10 +161,10 @@ goByProj excludeWaypoints zs = do
 goByPoint :: Bool -> [Zone Double] -> TrackLine
 goByPoint excludeWaypoints zs =
     TrackLine
-        { distance = toKm d
+        { distance = d
         , waypoints = if excludeWaypoints then [] else xs
-        , legs = toKm <$> ds
-        , legsSum = toKm <$> dsSum
+        , legs = ds
+        , legsSum = dsSum
         }
     where
         d :: QTaskDistance Double [u| m |]

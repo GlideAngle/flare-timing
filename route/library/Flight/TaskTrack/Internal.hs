@@ -11,6 +11,7 @@ module Flight.TaskTrack.Internal
     , rawToLatLng
     , toPoint
     , toCylinder
+    , fromR
     ) where
 
 import Prelude hiding (span)
@@ -29,6 +30,9 @@ import Flight.Distance
     (QTaskDistance, TaskDistance(..), PathDistance(..), SpanLatLng)
 import Flight.EastNorth (UtmZone(..), EastingNorthing(..))
 import Flight.Task (DistancePointToPoint)
+
+fromR :: QTaskDistance Rational [u| m |] -> QTaskDistance Double [u| m |]
+fromR (TaskDistance d) = TaskDistance . fromRational' $ d
 
 mm30 :: Num a => Tolerance a 
 mm30 = Tolerance 30

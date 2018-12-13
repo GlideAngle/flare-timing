@@ -14,7 +14,7 @@ import Flight.Units ()
 import Flight.LatLng (LatLng(..))
 import Flight.LatLng.Raw (RawLatLng(..))
 import Flight.LatLng.Rational (Epsilon(..), defEps)
-import Flight.Distance (QTaskDistance, PathDistance(..), SpanLatLng, toKm)
+import Flight.Distance (QTaskDistance, PathDistance(..), SpanLatLng)
 import Flight.Zone (Zone(..), Bearing(..), center)
 import Flight.Zone.Path (distancePointToPoint, costSegment)
 import Flight.Zone.Raw (RawZone(..))
@@ -41,6 +41,7 @@ import Flight.TaskTrack.Internal
     , convertLatLng
     , toPoint
     , toCylinder
+    , fromR
     )
 import Flight.Task (Zs(..), CostSegment, AngleCut(..), fromZs, distanceEdgeToEdge)
 import Flight.Route.TrackLine (ToTrackLine(..))
@@ -136,7 +137,7 @@ goByProj excludeWaypoints zs = do
     let spherical =
             projected
                 { distance =
-                    toKm . edgesSum <$> distancePointToPoint spanS $ ps
+                    fromR . edgesSum <$> distancePointToPoint spanS $ ps
                 } :: TrackLine
 
     let planar =
@@ -150,8 +151,8 @@ goByProj excludeWaypoints zs = do
                     -- NOTE: Round to millimetres when easting and
                     -- northing are in units of metres.
                     roundEastNorth 3 . fromUTMRefEastNorth <$> es
-                , legs = toKm <$> legs'
-                , legsSum = toKm <$> scanl1 addTaskDistance legs'
+                , legs = fromR <$> legs'
+                , legsSum = fromR <$> scanl1 addTaskDistance legs'
                 } :: PlanarTrackLine
 
     return
@@ -164,10 +165,10 @@ goByProj excludeWaypoints zs = do
 goByPoint :: Bool -> [Zone Rational] -> TrackLine
 goByPoint excludeWaypoints zs =
     TrackLine
-        { distance = toKm d
+        { distance = fromR d
         , waypoints = if excludeWaypoints then [] else xs
-        , legs = toKm <$> ds
-        , legsSum = toKm <$> dsSum
+        , legs = fromR <$> ds
+        , legsSum = fromR <$> dsSum
         }
     where
         d :: QTaskDistance Rational [u| m |]

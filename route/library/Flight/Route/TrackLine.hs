@@ -7,26 +7,25 @@ import Prelude hiding (span)
 import Data.List (nub)
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
-import Data.UnitsOfMeasure (u)
+import Data.UnitsOfMeasure (u, fromRational')
 
 import Flight.LatLng (LatLng(..))
 import Flight.LatLng.Raw (RawLatLng(..))
-import Flight.Distance (QTaskDistance, PathDistance(..), SpanLatLng, toKm)
+import Flight.Distance
+    (QTaskDistance, TaskDistance(..), PathDistance(..), SpanLatLng, toKm)
 import Flight.Zone (Zone(..))
 import Flight.Zone.Path (distancePointToPoint)
-import Flight.TaskTrack.Internal (convertLatLng, legDistances, addTaskDistance)
+import Flight.TaskTrack.Internal (convertLatLng, legDistances, addTaskDistance, fromR)
 
 data TrackLine =
     TrackLine
-        { distance :: Double
+        { distance :: QTaskDistance Double [u| m |]
         , waypoints :: [RawLatLng]
-        , legs :: [Double]
-        , legsSum :: [Double]
+        , legs :: [QTaskDistance Double [u| m |]]
+        , legsSum :: [QTaskDistance Double [u| m |]]
         }
     deriving (Eq, Ord, Show, Generic)
-
-instance ToJSON TrackLine
-instance FromJSON TrackLine
+    deriving anyclass (ToJSON, FromJSON)
 
 class ToTrackLine a b where
     toTrackLine :: SpanLatLng a -> Bool -> b -> TrackLine
@@ -41,10 +40,10 @@ pathVertices ed =
 instance ToTrackLine Double (PathDistance Double) where
     toTrackLine span excludeWaypoints ed =
         TrackLine
-            { distance = toKm d
+            { distance = d
             , waypoints = if excludeWaypoints then [] else xs
-            , legs = toKm <$> ds
-            , legsSum = toKm <$> dsSum
+            , legs = ds
+            , legsSum = dsSum
             }
         where
             d :: QTaskDistance Double [u| m |]
@@ -72,10 +71,10 @@ instance ToTrackLine Double (PathDistance Double) where
 instance ToTrackLine Rational (PathDistance Rational) where
     toTrackLine span excludeWaypoints ed =
         TrackLine
-            { distance = toKm d
+            { distance = fromR d
             , waypoints = if excludeWaypoints then [] else xs
-            , legs = toKm <$> ds 
-            , legsSum = toKm <$> dsSum
+            , legs = fromR <$> ds
+            , legsSum = fromR <$> dsSum
             }
         where
             d :: QTaskDistance Rational [u| m |]

@@ -136,6 +136,13 @@ compNigh lsTask zsTaskTicked rows =
         | xs <- (catMaybes <$> rows)
         ]
 
+fromKm :: Double -> Quantity Double [u| m |]
+fromKm d =
+    convert d'
+    where
+        d' :: Quantity Double [u| km |]
+        d' = MkQuantity d
+
 nighTrackLine
     :: Maybe (QTaskDistance Double [u| m |])
     -> Map Pilot (DashPathInputs k)
@@ -144,7 +151,7 @@ nighTrackLine
 
 nighTrackLine Nothing _ (p, Time.TimeRow{distance}) =
     (p,) TrackDistance
-        { togo = Just $ distanceOnlyLine distance
+        { togo = Just . distanceOnlyLine . fromKm $ distance
         , made = Nothing
         }
 
@@ -154,29 +161,30 @@ nighTrackLine
     (p, row@Time.TimeRow{distance}) =
     (p,) TrackDistance
         { togo = Just line
-        , made = Just . TaskDistance $ td -: togo'
+        , made = Just . TaskDistance $ td -: togo
         }
     where
-        togo :: Quantity Double [u| km |]
-        togo = MkQuantity distance
-
-        togo' = convert togo :: Quantity Double [u| m |]
+        togo = fromKm distance
 
         line =
             case Map.lookup p zsTaskTicked of
-                Nothing -> distanceOnlyLine distance
-                Just dpi -> pathToGo dpi row distance
+                Nothing -> distanceOnlyLine togo
+                Just dpi -> pathToGo dpi row togo
 
-distanceOnlyLine :: Double -> TrackLine
+distanceOnlyLine :: Quantity Double [u| m |] -> TrackLine
 distanceOnlyLine d =
     TrackLine
-        { distance = d
+        { distance = TaskDistance d
         , waypoints = []
         , legs = []
         , legsSum = []
         }
 
-pathToGo :: DashPathInputs k -> Time.TimeRow -> Double -> TrackLine
+pathToGo
+    :: DashPathInputs k
+    -> Time.TimeRow
+    -> Quantity Double [u| m |]
+    -> TrackLine
 pathToGo DashPathInputs{..} x@Time.TimeRow{time} d =
     case dashTask of
         Nothing -> distanceOnlyLine d

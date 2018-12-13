@@ -13,7 +13,9 @@ module Flight.Route
 import Data.String (IsString())
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
+import Data.UnitsOfMeasure (u)
 
+import Flight.Distance (QTaskDistance)
 import Flight.EastNorth (EastingNorthing(..), UtmZone(..))
 import Flight.Field (FieldOrdering(..))
 import Flight.Route.TrackLine (ToTrackLine(..), TrackLine(..))
@@ -53,11 +55,11 @@ data ProjectedTrackLine =
 
 data PlanarTrackLine =
     PlanarTrackLine
-        { distance :: Double
+        { distance :: QTaskDistance Double [u| m |]
         , mappedZones :: [UtmZone]
         , mappedPoints :: [EastingNorthing]
-        , legs :: [Double]
-        , legsSum :: [Double]
+        , legs :: [QTaskDistance Double [u| m |]]
+        , legsSum :: [QTaskDistance Double [u| m |]]
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
