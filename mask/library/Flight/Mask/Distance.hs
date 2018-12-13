@@ -9,7 +9,7 @@ module Flight.Mask.Distance
 
 import Data.Time.Clock (UTCTime)
 import Data.List (inits)
-import Data.UnitsOfMeasure ((-:), u, convert, fromRational', toRational')
+import Data.UnitsOfMeasure ((-:), u, fromRational', toRational')
 
 import Flight.Kml (MarkedFixes(..))
 import qualified Flight.Kml as Kml (Fix)
@@ -171,34 +171,29 @@ dashDistanceFlown
 index :: [a] -> [(ZoneIdx, a)]
 index = zip [1 .. ]
 
-ddToKm :: QTaskDistance Double [u| m |] -> QTaskDistance Double [u| km |]
-ddToKm (TaskDistance d) = TaskDistance . convert $ d
-
-drToKm :: QTaskDistance Rational [u| m |] -> QTaskDistance Double [u| km |]
-drToKm (TaskDistance d) =
-    TaskDistance . convert . fromRational' $ d
-
 togoAtLanding
     :: Math
     -> Ticked
     -> Task k
     -> FlyCut UTCTime MarkedFixes
-    -> Maybe (QTaskDistance Double [u| km |])
+    -> Maybe (QTaskDistance Double [u| m |])
 togoAtLanding math ticked task xs =
     case math of
         Floating ->
-            ddToKm <$>
             dashDistanceToGoal
                 ticked
                 (Sliver spanF dppF csegF csF cutF)
                 zoneToCylF task xs
 
         Rational ->
-            drToKm <$>
+            fromR <$>
             dashDistanceToGoal
                 ticked
                 (Sliver spanR dppR csegR csR cutR)
                 zoneToCylR task xs
+    where
+        fromR :: QTaskDistance Rational [u| m |] -> QTaskDistance Double [u| m |]
+        fromR (TaskDistance d) = TaskDistance . fromRational' $ d
 
 madeAtLanding
     :: Math

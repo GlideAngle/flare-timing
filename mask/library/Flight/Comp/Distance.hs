@@ -224,17 +224,21 @@ madeDistance
 
 madeDistance Nothing Time.TickRow{distance} =
     TrackDistance
-        { togo = Just distance
+        { togo = Just . TaskDistance . togoFromKms $ distance
         , made = Nothing
         }
 
 madeDistance (Just (TaskDistance td)) Time.TickRow{distance} =
     TrackDistance
-        { togo = Just distance
+        { togo = Just . TaskDistance $ togo'
         , made = Just . TaskDistance $ td -: togo'
         }
     where
-        togo :: Quantity Double [u| km |]
-        togo = MkQuantity distance
+        togo' = togoFromKms distance
 
-        togo' = convert togo :: Quantity Double [u| m |]
+togoFromKms :: Double -> Quantity Double [u| m |]
+togoFromKms d =
+    convert d' :: Quantity Double [u| m |]
+    where
+        d' :: Quantity Double [u| km |]
+        d' = MkQuantity d

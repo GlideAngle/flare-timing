@@ -17,7 +17,7 @@ import Flight.Distance (QTaskDistance)
 import Flight.Route (TrackLine(..))
 
 type Nigh = TrackLine
-type Land = Double
+type Land = QTaskDistance Double [u| m |]
 
 data TrackDistance a =
     TrackDistance

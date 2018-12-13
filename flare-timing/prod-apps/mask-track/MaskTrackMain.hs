@@ -58,7 +58,6 @@ import Flight.Track.Lead (compLeading)
 import Flight.Track.Mask (Masking(..))
 import Flight.Track.Speed (TrackSpeed(..))
 import Flight.Kml (MarkedFixes(..))
-import Data.Ratio.Rounding (dpRound)
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
@@ -412,20 +411,9 @@ flown' dTaskF flying math tags tasks iTask@(IxTask i) mf@MarkedFixes{mark0} p =
 
         landDistance task =
             TrackDistance
-                { togo = togo''
-                , made =
-                    madeAtLanding math dTaskF ticked task xs
+                { togo = togoAtLanding math ticked task xs
+                , made = madeAtLanding math dTaskF ticked task xs
                 }
-            where
-                togo' :: Maybe (QTaskDistance Double [u| km |])
-                togo' = togoAtLanding math ticked task xs
-
-                togo'' :: Maybe Double
-                togo'' =
-                    (\(TaskDistance (MkQuantity q)) ->
-                        fromRational . dpRound 6 . toRational $ q)
-                    <$> togo'
-
 
         startGates' =
             case tasks ^? element (fromIntegral i - 1) of
