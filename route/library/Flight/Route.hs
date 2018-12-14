@@ -3,11 +3,11 @@
 module Flight.Route
     ( ToTrackLine(..)
     , TaskDistanceMeasure(..)
-    , TaskRoute(..)
     , TaskTrack(..)
     , TrackLine(..)
     , ProjectedTrackLine(..)
     , PlanarTrackLine(..)
+    , cmpFields
     ) where
 
 import Data.String (IsString())
@@ -27,13 +27,6 @@ data TaskDistanceMeasure
     | TaskDistanceByEdges
     | TaskDistanceByProjection
     deriving (Eq, Ord, Show)
-
-newtype TaskRoute =
-    TaskRoute
-        { taskRoute :: [Maybe TaskTrack]
-        }
-    deriving (Eq, Ord, Show, Generic)
-    deriving anyclass (ToJSON, FromJSON)
 
 data TaskTrack =
     TaskTrack
@@ -63,11 +56,11 @@ data PlanarTrackLine =
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
-instance FieldOrdering TaskRoute where
-    fieldOrder _ = cmp
+instance FieldOrdering TaskTrack where
+    fieldOrder _ = cmpFields
 
-cmp :: (Ord a, IsString a) => a -> a -> Ordering
-cmp a b =
+cmpFields :: (Ord a, IsString a) => a -> a -> Ordering
+cmpFields a b =
     case (a, b) of
         -- EastingNorthing fields
         ("easting", _) -> LT

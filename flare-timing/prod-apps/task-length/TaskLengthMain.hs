@@ -18,7 +18,6 @@ import Flight.Comp
     , findCompInput
     , ensureExt
     )
-import Flight.Route (TaskRoute(..))
 import Flight.TaskTrack.Rational (taskTracks)
 import Flight.Scribe (readComp, writeRoute)
 import TaskLengthOptions (CmdOptions(..), mkOptions)
@@ -55,4 +54,4 @@ go CmdOptions{..} compFile@(CompInputFile compPath) = do
 
             writeRoute
                 (compToTaskLength compFile)
-                (TaskRoute $ taskTracks noTaskWaypoints includeTask measure zs)
+                (taskTracks noTaskWaypoints includeTask measure zs)
