@@ -9,8 +9,8 @@ import Flight.Units ()
 import Flight.Earth.Flat.Projected.Internal
     (DistanceAzimuth(..), pythagorean, zoneToProjectedEastNorth, tooFar)
 
--- | The task distance returned is for the projected UTM plane with
--- eastings and northings. If you need to calculate the distance in sperical
+-- | The task distance returned is for the projected UTM plane with eastings
+-- and northings. If you need to calculate the distance in spherical
 -- coordinates, the latitude and longitude of each vertex of the path can be
 -- used to work that out.
 costEastNorth :: Real a

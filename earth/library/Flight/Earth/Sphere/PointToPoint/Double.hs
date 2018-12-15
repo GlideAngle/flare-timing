@@ -41,7 +41,7 @@ aOfHaversine (LatLng (Lat xLatF, Lng xLngF)) (LatLng (Lat yLatF, Lng yLngF)) =
         (MkQuantity hLngF) = haversine dLngF
         (dLatF, dLngF) = (yLatF -: xLatF, yLngF -: xLngF)
 
--- | Sperical distance using haversines and floating point numbers.
+-- | Spherical distance using haversines and floating point numbers.
 distanceHaversine :: Floating a => SpanLatLng a
 distanceHaversine x y =
     TaskDistance $ radDist *: earthRadius

@@ -118,7 +118,7 @@ vincentyInverse
 tooFar :: Num a => QTaskDistance a [u| m |]
 tooFar = TaskDistance [u| 20000000 m |]
 
--- | Sperical distance using inverse Vincenty and floating point numbers.
+-- | Spherical distance using inverse Vincenty and floating point numbers.
 distanceVincenty
     :: ( RealFloat a, Show a
        , KnownUnit (Unpack u), Show (QLat a u), Show (QLng a u)

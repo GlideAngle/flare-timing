@@ -41,7 +41,7 @@ aOfHaversine
         (MkQuantity hLat) = haversine e dLat
         (MkQuantity hLng) = haversine e dLng
 
--- | Sperical distance using haversines and rational numbers.
+-- | Spherical distance using haversines and rational numbers.
 distanceHaversine :: (Real a, Fractional a) => Epsilon -> SpanLatLng a
 distanceHaversine e@(Epsilon eps) x y =
     TaskDistance . fromRational' $ radDist *: earthRadius

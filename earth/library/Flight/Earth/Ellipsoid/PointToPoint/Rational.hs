@@ -136,7 +136,7 @@ vincentyInverse
 tooFar :: Num a => QTaskDistance a [u| m |]
 tooFar = TaskDistance [u| 20000000 m |]
 
--- | Sperical distance using inverse Vincenty and rational numbers.
+-- | Spherical distance using inverse Vincenty and rational numbers.
 distanceVincenty
     :: (Real a, Fractional a, Show a)
     => Epsilon
