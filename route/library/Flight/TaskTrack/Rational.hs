@@ -45,6 +45,7 @@ import Flight.Task (Zs(..), CostSegment, AngleCut(..), fromZs, distanceEdgeToEdg
 import Flight.Route.TrackLine
     ( ToTrackLine(..), GeoLines(..)
     , TrackLine(..), ProjectedTrackLine(..), PlanarTrackLine(..)
+    , speedSubset
     )
 import Flight.Route.Optimal (emptyOptimal)
 import Flight.Earth.Ellipsoid (wgs84)
@@ -90,27 +91,34 @@ taskTrack excludeWaypoints tdm ss zsRaw =
                 { ellipsoidPointToPoint =
                     OptimalRoute
                         { taskRoute = Just . point $ taskLines
-                        , ssRoute = Just . point $ ssLines
+                        , taskRouteSpeedSubset = Nothing
+                        , speedRoute = Just . point $ ssLines
                         }
                 , ellipsoidEdgeToEdge =
+                    let x = ellipse taskLines in
                     OptimalRoute
-                        { taskRoute = ellipse taskLines
-                        , ssRoute = ellipse ssLines
+                        { taskRoute = x
+                        , taskRouteSpeedSubset = speedSubset ss <$> x
+                        , speedRoute = ellipse ssLines
                         }
                 , sphericalPointToPoint =
                     OptimalRoute
                         { taskRoute = Just . point $ taskLines
-                        , ssRoute = Just . point $ ssLines
+                        , taskRouteSpeedSubset = Nothing
+                        , speedRoute = Just . point $ ssLines
                         }
                 , sphericalEdgeToEdge =
+                    let x = sphere taskLines in
                     OptimalRoute
-                        { taskRoute = sphere taskLines
-                        , ssRoute = sphere ssLines
+                        { taskRoute = x
+                        , taskRouteSpeedSubset = speedSubset ss <$> x
+                        , speedRoute = sphere ssLines
                         }
                 , projection =
                     OptimalRoute
                         { taskRoute = projected taskLines
-                        , ssRoute = projected ssLines
+                        , taskRouteSpeedSubset = Nothing
+                        , speedRoute = projected ssLines
                         }
                 }
         TaskDistanceByPoints ->
@@ -118,13 +126,15 @@ taskTrack excludeWaypoints tdm ss zsRaw =
                 { ellipsoidPointToPoint =
                     OptimalRoute
                         { taskRoute = Just . point $ taskLines
-                        , ssRoute = Just . point $ ssLines
+                        , taskRouteSpeedSubset = Nothing
+                        , speedRoute = Just . point $ ssLines
                         }
                 , ellipsoidEdgeToEdge = emptyOptimal
                 , sphericalPointToPoint =
                     OptimalRoute
                         { taskRoute = Just . point $ taskLines
-                        , ssRoute = Just . point $ ssLines
+                        , taskRouteSpeedSubset = Nothing
+                        , speedRoute = Just . point $ ssLines
                         }
                 , sphericalEdgeToEdge = emptyOptimal
                 , projection = emptyOptimal
@@ -133,15 +143,19 @@ taskTrack excludeWaypoints tdm ss zsRaw =
             TaskTrack
                 { ellipsoidPointToPoint = emptyOptimal
                 , ellipsoidEdgeToEdge =
+                    let x = ellipse taskLines in
                     OptimalRoute
-                        { taskRoute = ellipse taskLines
-                        , ssRoute = ellipse ssLines
+                        { taskRoute = x
+                        , taskRouteSpeedSubset = speedSubset ss <$> x
+                        , speedRoute = ellipse ssLines
                         }
                 , sphericalPointToPoint = emptyOptimal
                 , sphericalEdgeToEdge =
+                    let x = sphere taskLines in
                     OptimalRoute
-                        { taskRoute = sphere taskLines
-                        , ssRoute = sphere ssLines
+                        { taskRoute = x
+                        , taskRouteSpeedSubset = speedSubset ss <$> x
+                        , speedRoute = sphere ssLines
                         }
                 , projection = emptyOptimal
                 }
@@ -154,7 +168,8 @@ taskTrack excludeWaypoints tdm ss zsRaw =
                 , projection =
                     OptimalRoute
                         { taskRoute = projected taskLines
-                        , ssRoute = projected ssLines
+                        , taskRouteSpeedSubset = Nothing
+                        , speedRoute = projected ssLines
                         }
 
                 }

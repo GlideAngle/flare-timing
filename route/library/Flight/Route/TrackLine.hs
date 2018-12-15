@@ -6,21 +6,23 @@ module Flight.Route.TrackLine
     , ProjectedTrackLine(..)
     , PlanarTrackLine(..)
     , GeoLines(..)
+    , speedSubset
     ) where
 
 import Prelude hiding (span)
-import Data.List (nub)
+import Data.List (nub, foldl')
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
-import Data.UnitsOfMeasure (u)
+import Data.UnitsOfMeasure (u, zero)
 
 import Flight.EastNorth (EastingNorthing(..), UtmZone(..))
 import Flight.LatLng (LatLng(..))
 import Flight.LatLng.Raw (RawLatLng(..))
 import Flight.Distance
-    (QTaskDistance, PathDistance(..), SpanLatLng)
+    (QTaskDistance, TaskDistance(..), PathDistance(..), SpanLatLng)
 import Flight.Zone (Zone(..))
 import Flight.Zone.Path (distancePointToPoint)
+import Flight.Zone.MkZones (SpeedSection, sliceZones)
 import Flight.TaskTrack.Internal (convertLatLng, legDistances, addTaskDistance, fromR)
 
 data GeoLines =
@@ -63,6 +65,17 @@ data TrackLine =
 
 class ToTrackLine a b where
     toTrackLine :: SpanLatLng a -> Bool -> b -> TrackLine
+
+speedSubset :: SpeedSection -> TrackLine -> TrackLine
+speedSubset Nothing x = x
+speedSubset ss TrackLine{..} =
+    let legs' = sliceZones ss legs in
+    TrackLine
+        { distance = foldl' addTaskDistance (TaskDistance zero) legs'
+        , waypoints = sliceZones ss waypoints
+        , legs = legs'
+        , legsSum = scanl1 addTaskDistance legs'
+        }
 
 pathVertices
     :: (Fractional a, Real a)

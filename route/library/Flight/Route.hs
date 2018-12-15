@@ -98,6 +98,8 @@ cmpFields a b =
 
         -- OptimalRoute fields
         ("taskRoute", _) -> LT
-        ("ssRoute", _) -> GT
+        ("taskRouteSpeedSubset", "taskRoute") -> LT
+        ("taskRouteSpeedSubset", _) -> LT
+        ("speedRoute", _) -> GT
 
         _ -> compare a b
