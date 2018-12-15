@@ -207,6 +207,7 @@ cmp a b =
         ("sumDistance", "raceTime") -> GT
         ("sumDistance", "sumTime") -> GT
         ("sumDistance", "taskDistance") -> GT
+        ("sumDistance", "taskSpeedDistance") -> GT
         ("sumDistance", "bestDistance") -> GT
         ("sumDistance", _) -> LT
 
