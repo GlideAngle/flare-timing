@@ -33,6 +33,7 @@ import Flight.Comp
     , IxTask(..)
     , TrackFileFail(..)
     , RoutesLookupTaskDistance(..)
+    , TaskRouteDistance(..)
     , compToTaskLength
     , compToCross
     , compToMask
@@ -122,7 +123,7 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
     routes <- runExceptT $ readRoute lenFile
 
     let flyingLookup = crossFlying crossing
-    let lookupTaskLength = routeLength taskRoute routes
+    let lookupTaskLength = routeLength taskRoute taskRouteSpeedSubset routes
     let ppr = putStrLn . prettyPrintParseException
 
     case (compSettings, crossing, tagging, routes) of
@@ -213,7 +214,9 @@ writeMask
                     ((fmap . fmap) fst dsLand)
 
             -- Task lengths (ls).
-            let lsTask = Lookup.compRoutes routes iTasks
+            let lsTask' = Lookup.compRoutes routes iTasks
+            let lsWholeTask = (fmap . fmap) wholeTaskDistance lsTask'
+            let lsSpeedSubset = (fmap . fmap) speedSubsetDistance lsTask'
 
             let pilotsArriving = (fmap . fmap) fst as
             let pilotsLandingOut = (fmap . fmap) fst dsLand
@@ -233,12 +236,12 @@ writeMask
                         raceTime
                         pilots
 
-            let (minLead, lead) = compLeading rowsLeadingStep lsTask tasks
+            let (minLead, lead) = compLeading rowsLeadingStep lsWholeTask tasks
 
             let (dsSumArriving, dsSumLandingOut, dsBest, rowTicks) =
                     compDistance
                         free
-                        lsTask
+                        lsWholeTask
                         pilotsArriving
                         pilotsLandingOut
                         gsBestTime
@@ -262,7 +265,7 @@ writeMask
                         (includeTask selectTasks)
                         (catMaybes <$> rowTicks)
 
-            let dsNigh = compNigh lsTask zsTaskTicked dsNighRows
+            let dsNigh = compNigh lsWholeTask zsTaskTicked dsNighRows
 
             writeMasking
                 (compToMask compFile)
@@ -271,7 +274,8 @@ writeMask
                     , raceTime = raceTime
                     , ssBestTime = ssBestTime
                     , gsBestTime = gsBestTime
-                    , taskDistance = lsTask
+                    , taskDistance = lsWholeTask
+                    , taskSpeedDistance = lsSpeedSubset
                     , bestDistance = dsBest
                     , sumDistance = dsSum
                     , minLead = minLead
@@ -366,7 +370,7 @@ flown math (RoutesLookupTaskDistance lookupTaskLength) flying tags tasks iTask f
         (\d -> flown' d flying math tags tasks iTask fixes)
         taskLength
     where
-        taskLength = (\f -> f iTask) =<< lookupTaskLength
+        taskLength = (fmap wholeTaskDistance . ($ iTask)) =<< lookupTaskLength
 
 flown'
     :: QTaskDistance Double [u| m |]

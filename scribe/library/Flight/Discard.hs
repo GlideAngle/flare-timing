@@ -32,6 +32,7 @@ import Flight.Comp
     , AlignTimeFile(..)
     , DiscardFurtherFile(..)
     , RoutesLookupTaskDistance(..)
+    , TaskRouteDistance(..)
     , discardDir
     , alignPath
     , compFileToCompDir
@@ -151,7 +152,7 @@ readPilotLeading
     where
         dir = compFileToCompDir compFile
         (AlignDir dIn, AlignTimeFile file) = alignPath dir i pilot
-        taskLength = ($ iTask) =<< lookupTaskLength
+        taskLength = (fmap wholeTaskDistance . ($ iTask)) =<< lookupTaskLength
 
         close = do
             c <- leadClose raceTime

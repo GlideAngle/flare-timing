@@ -164,6 +164,7 @@ points'
     Tagging{tagging}
     Masking
         { pilotsAtEss
+        , taskSpeedDistance
         , bestDistance
         , sumDistance
         , ssBestTime
@@ -303,7 +304,16 @@ points'
             | ys <- arrival
             ]
 
-        speedDistance = nighDistance
+        -- NOTE: Pilots either get to the end of the speed section or
+        -- they don't and will not get a speed over that section.
+        speedDistance :: [[(Pilot, Maybe Double)]] =
+            [ let xs' = (fmap . fmap) (const Nothing) xs
+                  ys' = (fmap . fmap) (const sd) ys
+              in (xs' ++ ys')
+            | sd <- (fmap . fmap) unTaskDistanceAsKm taskSpeedDistance
+            | xs <- nigh
+            | ys <- arrival
+            ]
 
         -- NOTE: Pilots either get to goal or have a landing distance.
         landDistance :: [[(Pilot, Maybe Double)]] =

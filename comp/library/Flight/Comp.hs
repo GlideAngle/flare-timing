@@ -28,6 +28,7 @@ module Flight.Comp
     , StartEnd(..)
     , StartEndMark
     , RoutesLookupTaskDistance(..)
+    , TaskRouteDistance(..)
     , showTask
     , openClose
     , speedSectionToLeg
@@ -119,9 +120,15 @@ type FlyingSection a = Maybe (a, a)
 
 type RoutesLookup a = IxTask -> Maybe a
 
+data TaskRouteDistance =
+    TaskRouteDistance
+        { wholeTaskDistance :: QTaskDistance Double [u| m |]
+        , speedSubsetDistance :: QTaskDistance Double [u| m |]
+        }
+
 newtype RoutesLookupTaskDistance =
     RoutesLookupTaskDistance
-        (Maybe (RoutesLookup (QTaskDistance Double [u| m |])))
+        (Maybe (RoutesLookup TaskRouteDistance))
 
 newtype StartGate = StartGate UTCTime
     deriving (Eq, Ord, Show, Generic)

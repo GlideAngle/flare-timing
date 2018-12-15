@@ -49,6 +49,8 @@ data Masking =
         -- ^ For each task, the best time from the start gate taken.
         , taskDistance :: [Maybe (QTaskDistance Double [u| m |])]
         -- ^ For each task, the task distance.
+        , taskSpeedDistance :: [Maybe (QTaskDistance Double [u| m |])]
+        -- ^ For each task, the speed section subset of the task distance.
         , bestDistance :: [Maybe (QTaskDistance Double [u| m |])]
         -- ^ For each task, the best distance made.
         , sumDistance :: [Maybe (QTaskDistance Double [u| m |])]
@@ -186,11 +188,19 @@ cmp a b =
         ("taskDistance", "gsBestTime") -> GT
         ("taskDistance", _) -> LT
 
+        ("taskSpeedDistance", "pilotsAtEss") -> GT
+        ("taskSpeedDistance", "raceTime") -> GT
+        ("taskSpeedDistance", "ssBestTime") -> GT
+        ("taskSpeedDistance", "gsBestTime") -> GT
+        ("taskSpeedDistance", "taskDistance") -> GT
+        ("taskSpeedDistance", _) -> LT
+
         ("bestDistance", "pilotsAtEss") -> GT
         ("bestDistance", "raceTime") -> GT
         ("bestDistance", "ssBestTime") -> GT
         ("bestDistance", "gsBestTime") -> GT
         ("bestDistance", "taskDistance") -> GT
+        ("bestDistance", "taskSpeedDistance") -> GT
         ("bestDistance", _) -> LT
 
         ("sumDistance", "pilotsAtEss") -> GT

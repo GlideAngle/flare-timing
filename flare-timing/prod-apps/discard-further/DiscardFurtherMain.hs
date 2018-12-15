@@ -35,6 +35,7 @@ import Flight.Comp
     , StartEnd(..)
     , StartEndMark
     , RoutesLookupTaskDistance(..)
+    , TaskRouteDistance(..)
     , FirstLead(..)
     , FirstStart(..)
     , LastArrival(..)
@@ -103,7 +104,7 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
         (Right cs, Right _, Right _) ->
             filterTime
                 cs
-                (routeLength taskRoute routes)
+                (routeLength taskRoute taskRouteSpeedSubset routes)
                 (tagTaskTime tagging)
                 compFile
                 (IxTask <$> task)
@@ -225,6 +226,6 @@ readFilterWrite
         dir = compFileToCompDir compFile
         (AlignDir dIn, AlignTimeFile file) = alignPath dir i pilot
         (DiscardDir dOut) = discardDir dir i
-        taskLength = ($ iTask) =<< lookupTaskLength
+        taskLength = (fmap wholeTaskDistance . ($ iTask)) =<< lookupTaskLength
         close = LeadClose <$> leadClose raceTime
         arrival = LeadArrival <$> leadArrival raceTime
