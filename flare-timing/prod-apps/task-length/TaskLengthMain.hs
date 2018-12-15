@@ -11,14 +11,14 @@ import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Comp
     ( FileType(CompInput)
     , CompSettings(tasks)
-    , Task(zones)
+    , Task(zones, speedSection)
     , Zones(..)
     , CompInputFile(..)
     , compToTaskLength
     , findCompInput
     , ensureExt
     )
-import Flight.TaskTrack.Rational (taskTracks)
+import Flight.TaskTrack.Double (taskTracks)
 import Flight.Scribe (readComp, writeRoute)
 import TaskLengthOptions (CmdOptions(..), mkOptions)
 
@@ -49,9 +49,10 @@ go CmdOptions{..} compFile@(CompInputFile compPath) = do
     either print f settings
     where
         f compInput = do
-            let zs = raw . zones <$> tasks compInput
+            let ixs = speedSection <$> tasks compInput
+            let zss = raw . zones <$> tasks compInput
             let includeTask = if null task then const True else flip elem task
 
             writeRoute
                 (compToTaskLength compFile)
-                (taskTracks noTaskWaypoints includeTask measure zs)
+                (taskTracks noTaskWaypoints includeTask measure ixs zss)

@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 583638b2f71ffc3c95e1876121c90b5962ca938660deb3fb655db7ec9146e086
+-- hash: 5fd602913028dbcd6416484c6517535de0e0cc18358007290aaef74ef80cfb04
 
 name:           flight-route
 version:        0.1.0
@@ -35,6 +35,7 @@ library
       Flight.TaskTrack.Double
       Flight.TaskTrack.Rational
   other-modules:
+      Flight.Route.Optimal
       Flight.Route.TrackLine
       Flight.TaskTrack.Internal
       Paths_flight_route

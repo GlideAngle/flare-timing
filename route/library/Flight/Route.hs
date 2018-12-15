@@ -1,8 +1,7 @@
-{-# LANGUAGE DuplicateRecordFields #-}
-
 module Flight.Route
     ( ToTrackLine(..)
     , TaskDistanceMeasure(..)
+    , OptimalRoute(..)
     , TaskTrack(..)
     , TrackLine(..)
     , ProjectedTrackLine(..)
@@ -13,12 +12,13 @@ module Flight.Route
 import Data.String (IsString())
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
-import Data.UnitsOfMeasure (u)
 
-import Flight.Distance (QTaskDistance)
-import Flight.EastNorth (EastingNorthing(..), UtmZone(..))
 import Flight.Field (FieldOrdering(..))
-import Flight.Route.TrackLine (ToTrackLine(..), TrackLine(..))
+import Flight.Route.TrackLine
+    ( ToTrackLine(..), TrackLine(..)
+    , ProjectedTrackLine(..), PlanarTrackLine(..)
+    )
+import Flight.Route.Optimal (OptimalRoute(..))
 
 -- | The way to measure the task distance.
 data TaskDistanceMeasure
@@ -30,31 +30,14 @@ data TaskDistanceMeasure
 
 data TaskTrack =
     TaskTrack
-        { sphericalPointToPoint :: Maybe TrackLine
-        , ellipsoidPointToPoint :: Maybe TrackLine
-        , sphericalEdgeToEdge :: Maybe TrackLine
-        , ellipsoidEdgeToEdge :: Maybe TrackLine
-        , projection :: Maybe ProjectedTrackLine
+        { sphericalPointToPoint :: OptimalRoute (Maybe TrackLine)
+        , ellipsoidPointToPoint :: OptimalRoute (Maybe TrackLine)
+        , sphericalEdgeToEdge :: OptimalRoute (Maybe TrackLine)
+        , ellipsoidEdgeToEdge :: OptimalRoute (Maybe TrackLine)
+        , projection :: OptimalRoute (Maybe ProjectedTrackLine)
         }
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
-
-data ProjectedTrackLine =
-    ProjectedTrackLine
-        { spherical :: TrackLine
-        , ellipsoid :: TrackLine
-        , planar :: PlanarTrackLine
-        }
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
-
-data PlanarTrackLine =
-    PlanarTrackLine
-        { distance :: QTaskDistance Double [u| m |]
-        , mappedZones :: [UtmZone]
-        , mappedPoints :: [EastingNorthing]
-        , legs :: [QTaskDistance Double [u| m |]]
-        , legsSum :: [QTaskDistance Double [u| m |]]
-        }
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
 
 instance FieldOrdering TaskTrack where
     fieldOrder _ = cmpFields
@@ -112,4 +95,9 @@ cmpFields a b =
         ("mappedPoints", "legsSum") -> GT
         ("mappedPoints", _) -> LT
         ("mappedZones", _) -> GT
+
+        -- OptimalRoute fields
+        ("taskRoute", _) -> LT
+        ("ssRoute", _) -> GT
+
         _ -> compare a b

@@ -1,6 +1,11 @@
+{-# LANGUAGE DuplicateRecordFields #-}
+
 module Flight.Route.TrackLine
     ( ToTrackLine(..)
     , TrackLine(..)
+    , ProjectedTrackLine(..)
+    , PlanarTrackLine(..)
+    , GeoLines(..)
     ) where
 
 import Prelude hiding (span)
@@ -9,6 +14,7 @@ import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.UnitsOfMeasure (u)
 
+import Flight.EastNorth (EastingNorthing(..), UtmZone(..))
 import Flight.LatLng (LatLng(..))
 import Flight.LatLng.Raw (RawLatLng(..))
 import Flight.Distance
@@ -16,6 +22,34 @@ import Flight.Distance
 import Flight.Zone (Zone(..))
 import Flight.Zone.Path (distancePointToPoint)
 import Flight.TaskTrack.Internal (convertLatLng, legDistances, addTaskDistance, fromR)
+
+data GeoLines =
+    GeoLines
+        { point :: TrackLine
+        , sphere :: Maybe TrackLine
+        , ellipse :: Maybe TrackLine
+        , projected :: Maybe ProjectedTrackLine
+        }
+
+data ProjectedTrackLine =
+    ProjectedTrackLine
+        { spherical :: TrackLine
+        , ellipsoid :: TrackLine
+        , planar :: PlanarTrackLine
+        }
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
+
+data PlanarTrackLine =
+    PlanarTrackLine
+        { distance :: QTaskDistance Double [u| m |]
+        , mappedZones :: [UtmZone]
+        , mappedPoints :: [EastingNorthing]
+        , legs :: [QTaskDistance Double [u| m |]]
+        , legsSum :: [QTaskDistance Double [u| m |]]
+        }
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
 
 data TrackLine =
     TrackLine

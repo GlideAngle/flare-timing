@@ -28,6 +28,7 @@ import qualified Flight.Kml as Kml
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.LatLng.Raw (RawLat(..), RawLng(..))
 import Flight.Zone (Radius(..), Zone(..))
+import Flight.Zone.MkZones (sliceZones)
 import qualified Flight.Zone.Raw as Raw (RawZone(..))
 import Flight.Track.Time (TimeRow(..))
 import Flight.Track.Cross (Fix(..))
@@ -61,11 +62,8 @@ newtype TaskZone a = TaskZone { unTaskZone :: Zone a }
 -- | A fix in a flight track converted to a point zone.
 newtype TrackZone a = TrackZone { unTrackZone :: Zone a }
 
--- | Slice the speed section from a list.
 slice :: SpeedSection -> [a] -> [a]
-slice = \case
-    Nothing -> id
-    Just (s', e') -> let (s, e) = (s' - 1, e' - 1) in take (e - s + 1) . drop s
+slice = sliceZones
 
 -- | The input pair is in degrees while the output is in radians.
 toLL :: Fractional a => (Rational, Rational) -> LatLng a [u| rad |]

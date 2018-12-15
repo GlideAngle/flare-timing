@@ -18,6 +18,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import System.FilePath (takeFileName)
 import Data.Yaml (ParseException, prettyPrintParseException)
 
+import Flight.Route (OptimalRoute(..))
 import qualified Flight.Comp as Cmp (Nominal(..))
 import Flight.Comp
     ( FileType(CompInput)
@@ -121,7 +122,7 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
     routes <- runExceptT $ readRoute lenFile
 
     let flyingLookup = crossFlying crossing
-    let lookupTaskLength = routeLength routes
+    let lookupTaskLength = routeLength taskRoute routes
     let ppr = putStrLn . prettyPrintParseException
 
     case (compSettings, crossing, tagging, routes) of

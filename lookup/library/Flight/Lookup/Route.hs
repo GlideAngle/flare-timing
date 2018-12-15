@@ -5,18 +5,23 @@ import Control.Monad (join)
 import Control.Lens ((^?), element)
 import Data.UnitsOfMeasure (u)
 
-import Flight.Route (TaskTrack(..), TrackLine(..))
+import Flight.Route (OptimalRoute(..), TaskTrack(..), TrackLine(..))
 import Flight.Distance (QTaskDistance)
 import Flight.Comp (IxTask(..), RoutesLookupTaskDistance(..))
 
-routeLength :: Either a [Maybe TaskTrack] -> RoutesLookupTaskDistance
-routeLength = RoutesLookupTaskDistance . either (const Nothing) (Just . length)
+routeLength
+    :: (OptimalRoute (Maybe TrackLine) -> Maybe TrackLine)
+    -> Either a [Maybe TaskTrack] -> RoutesLookupTaskDistance
+routeLength f =
+    RoutesLookupTaskDistance
+    . either (const Nothing) (Just . length f)
 
 length
-    :: [Maybe TaskTrack]
+    :: (OptimalRoute (Maybe TrackLine) -> Maybe TrackLine)
+    -> [Maybe TaskTrack]
     -> IxTask
     -> Maybe (QTaskDistance Double [u| m |])
-length taskRoutes (IxTask i) = do
+length f taskRoutes (IxTask i) = do
     x <- join $ taskRoutes ^? element (fromIntegral i - 1)
-    d <- sphericalEdgeToEdge x
+    d <- f . sphericalEdgeToEdge $ x
     return . distance $ d

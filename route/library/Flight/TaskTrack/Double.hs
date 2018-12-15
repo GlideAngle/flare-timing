@@ -23,10 +23,8 @@ import Flight.Earth.Sphere.PointToPoint.Double (distanceHaversine)
 import Flight.Earth.Ellipsoid.PointToPoint.Double (distanceVincenty)
 import Flight.Route
     ( TaskDistanceMeasure(..)
+    , OptimalRoute(..)
     , TaskTrack(..)
-    , TrackLine(..)
-    , ProjectedTrackLine(..)
-    , PlanarTrackLine(..)
     )
 import Flight.TaskTrack.Internal
     ( mm30
@@ -40,74 +38,130 @@ import Flight.TaskTrack.Internal
     , toCylinder
     )
 import Flight.Task (Zs(..), CostSegment, AngleCut(..) , fromZs, distanceEdgeToEdge)
-import Flight.Route.TrackLine (ToTrackLine(..))
+import Flight.Route.TrackLine
+    ( ToTrackLine(..), GeoLines(..)
+    , TrackLine(..), ProjectedTrackLine(..), PlanarTrackLine(..)
+    )
+import Flight.Route.Optimal (emptyOptimal)
 import Flight.Earth.Ellipsoid (wgs84)
+import Flight.Zone.MkZones (SpeedSection, sliceZones)
 
-taskTracks :: Bool
-           -> (Int -> Bool)
-           -> TaskDistanceMeasure
-           -> [[RawZone]] -- ^ Zones of each task.
-           -> [Maybe TaskTrack]
-taskTracks excludeWaypoints b tdm =
-    zipWith
-        (\ i t -> if b i then Just $ taskTrack excludeWaypoints tdm t else Nothing)
-        [1 .. ]
-
-taskTrack :: Bool
-          -> TaskDistanceMeasure
-          -> [RawZone] -- ^ A single task is a sequence of control zones.
-          -> TaskTrack
-taskTrack excludeWaypoints tdm zsRaw =
-    case tdm of
-        TaskDistanceByAllMethods ->
-            TaskTrack
-                { ellipsoidPointToPoint = Just pointTrackline
-                , ellipsoidEdgeToEdge = ellipsoidTrackline
-                , sphericalPointToPoint = Just pointTrackline
-                , sphericalEdgeToEdge = sphereTrackline
-                , projection = projTrackline
-                }
-        TaskDistanceByPoints ->
-            TaskTrack
-                { ellipsoidPointToPoint = Just pointTrackline
-                , ellipsoidEdgeToEdge = Nothing
-                , sphericalPointToPoint = Just pointTrackline
-                , sphericalEdgeToEdge = Nothing
-                , projection = Nothing
-                }
-        TaskDistanceByEdges ->
-            TaskTrack
-                { ellipsoidPointToPoint = Nothing
-                , ellipsoidEdgeToEdge = ellipsoidTrackline
-                , sphericalPointToPoint = Nothing
-                , sphericalEdgeToEdge = sphereTrackline
-                , projection = Nothing
-                }
-        TaskDistanceByProjection ->
-            TaskTrack
-                { ellipsoidPointToPoint = Nothing
-                , ellipsoidEdgeToEdge = Nothing
-                , sphericalPointToPoint = Nothing
-                , sphericalEdgeToEdge = Nothing
-                , projection = projTrackline
-                }
-    where
-        zs :: [Zone Double]
-        zs = toCylinder <$> zsRaw
-
-        pointTrackline = goByPoint excludeWaypoints zs
-
-        sphereTrackline =
+trackLines :: Bool -> [Zone Double] -> GeoLines
+trackLines excludeWaypoints zs =
+    GeoLines
+        { point = goByPoint excludeWaypoints zs
+        , sphere =
             fromZs
             $ toTrackLine spanS excludeWaypoints
             <$> distanceEdgeSphere (costSegment spanS) zs
-
-        ellipsoidTrackline =
+        , ellipse =
             fromZs
             $ toTrackLine spanE excludeWaypoints
             <$> distanceEdgeEllipsoid (costSegment spanE) zs
+        , projected = goByProj excludeWaypoints zs
+        }
 
-        projTrackline = goByProj excludeWaypoints zs
+taskTracks
+    :: Bool
+    -> (Int -> Bool) -- ^ Process the nth task?
+    -> TaskDistanceMeasure
+    -> [SpeedSection] -- ^ Speed section of each task.
+    -> [[RawZone]] -- ^ Zones of each task.
+    -> [Maybe TaskTrack]
+taskTracks excludeWaypoints b tdm =
+    zipWith3
+        (\ i ss zs -> if b i then Just $ taskTrack excludeWaypoints tdm ss zs else Nothing)
+        [1 .. ]
+
+taskTrack
+    :: Bool
+    -> TaskDistanceMeasure
+    -> SpeedSection
+    -> [RawZone] -- ^ A single task is a sequence of control zones.
+    -> TaskTrack
+taskTrack excludeWaypoints tdm ss zsRaw =
+    case tdm of
+        TaskDistanceByAllMethods ->
+            TaskTrack
+                { ellipsoidPointToPoint =
+                    OptimalRoute
+                        { taskRoute = Just . point $ taskLines
+                        , ssRoute = Just . point $ ssLines
+                        }
+                , ellipsoidEdgeToEdge =
+                    OptimalRoute
+                        { taskRoute = ellipse taskLines
+                        , ssRoute = Nothing
+                        }
+                , sphericalPointToPoint =
+                    OptimalRoute
+                        { taskRoute = Just . point $ taskLines
+                        , ssRoute = Just . point $ ssLines
+                        }
+                , sphericalEdgeToEdge =
+                    OptimalRoute
+                        { taskRoute = sphere taskLines
+                        , ssRoute = sphere ssLines
+                        }
+                , projection =
+                    OptimalRoute
+                        { taskRoute = projected taskLines
+                        , ssRoute = projected ssLines
+                        }
+                }
+        TaskDistanceByPoints ->
+            TaskTrack
+                { ellipsoidPointToPoint =
+                    OptimalRoute
+                        { taskRoute = Just . point $ taskLines
+                        , ssRoute = Just . point $ ssLines
+                        }
+                , ellipsoidEdgeToEdge = emptyOptimal
+                , sphericalPointToPoint =
+                    OptimalRoute
+                        { taskRoute = Just . point $ taskLines
+                        , ssRoute = Just . point $ ssLines
+                        }
+                , sphericalEdgeToEdge = emptyOptimal
+                , projection = emptyOptimal
+                }
+        TaskDistanceByEdges ->
+            TaskTrack
+                { ellipsoidPointToPoint = emptyOptimal
+                , ellipsoidEdgeToEdge =
+                    OptimalRoute
+                        { taskRoute = ellipse taskLines
+                        , ssRoute = ellipse ssLines
+                        }
+                , sphericalPointToPoint = emptyOptimal
+                , sphericalEdgeToEdge =
+                    OptimalRoute
+                        { taskRoute = sphere taskLines
+                        , ssRoute = sphere ssLines
+                        }
+                , projection = emptyOptimal
+                }
+        TaskDistanceByProjection ->
+            TaskTrack
+                { ellipsoidPointToPoint = emptyOptimal
+                , ellipsoidEdgeToEdge = emptyOptimal
+                , sphericalPointToPoint = emptyOptimal
+                , sphericalEdgeToEdge = emptyOptimal
+                , projection =
+                    OptimalRoute
+                        { taskRoute = projected taskLines
+                        , ssRoute = projected ssLines
+                        }
+                }
+    where
+        zsTask :: [Zone Double]
+        zsTask = toCylinder <$> zsRaw
+
+        zsSpeedSection :: [Zone Double]
+        zsSpeedSection = sliceZones ss zsTask
+
+        taskLines = trackLines excludeWaypoints zsTask
+        ssLines = trackLines excludeWaypoints zsSpeedSection
 
 -- NOTE: The projected distance is worked out from easting and northing, in the
 -- projected plane but he distance for each leg is measured on the sphere.

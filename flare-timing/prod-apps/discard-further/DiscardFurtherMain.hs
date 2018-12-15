@@ -16,6 +16,7 @@ import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
 import qualified Flight.Comp as Cmp (openClose)
+import Flight.Route (OptimalRoute(..))
 import Flight.Comp
     ( FileType(CompInput)
     , DiscardDir(..)
@@ -102,7 +103,7 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
         (Right cs, Right _, Right _) ->
             filterTime
                 cs
-                (routeLength routes)
+                (routeLength taskRoute routes)
                 (tagTaskTime tagging)
                 compFile
                 (IxTask <$> task)

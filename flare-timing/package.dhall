@@ -132,7 +132,12 @@ in    defs
               }
           , discard-further =
               { dependencies =
-                  deps # [ "flight-gap", "flight-mask", "flight-lookup" ]
+                    deps
+                  # [ "flight-route"
+                    , "flight-gap"
+                    , "flight-mask"
+                    , "flight-lookup"
+                    ]
               , ghc-options =
                   [ "-rtsopts"
                   , "-threaded"
@@ -153,6 +158,7 @@ in    defs
                     , "siggy-chardust"
                     , "flight-span"
                     , "flight-kml"
+                    , "flight-route"
                     , "flight-gap"
                     , "flight-mask"
                     , "flight-lookup"
