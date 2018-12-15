@@ -96,7 +96,7 @@ tableScore utcOffset vy wg pt tp xs = do
                         )
                     <$> vy
 
-                elAttr "th" ("colspan" =: "6") $ text ""
+                elAttr "th" ("colspan" =: "7") $ text ""
 
                 thSpace
                 thSpace
