@@ -95,7 +95,7 @@ taskTrack excludeWaypoints tdm ss zsRaw =
                 , ellipsoidEdgeToEdge =
                     OptimalRoute
                         { taskRoute = ellipse taskLines
-                        , ssRoute = Nothing
+                        , ssRoute = ellipse ssLines
                         }
                 , sphericalPointToPoint =
                     OptimalRoute
