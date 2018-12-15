@@ -56,183 +56,184 @@ tableScore
 tableScore utcOffset vy wg pt tp xs = do
     let thSpace = elClass "th" "th-space" $ text ""
 
-    _ <- elClass "table" "table is-narrow is-fullwidth" $
-            el "thead" $ do
+    _ <- elClass "table" "table is-striped is-narrow is-fullwidth" $ do
+        el "thead" $ do
 
-                el "tr" $ do
-                    elAttr "th" ("rowspan" =: "2" <> "class" =: "th-placing") $ text "#"
-                    elAttr "th" ("rowspan" =: "2" <> "class" =: "th-pilot") $ text "Pilot"
-                    elAttr "th" ("colspan" =: "4" <> "class" =: "th-speed-section") $ text "Speed Section"
-                    elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance") $ text "Distance"
-                    elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance-points") $ text "Distance Point Breakdown"
-                    elAttr "th" ("colspan" =: "4" <> "class" =: "th-other-points") $ text "Other Points"
+            el "tr" $ do
+                elAttr "th" ("rowspan" =: "2" <> "class" =: "th-placing") $ text "#"
+                elAttr "th" ("rowspan" =: "2" <> "class" =: "th-pilot") $ text "Pilot"
+                elAttr "th" ("colspan" =: "4" <> "class" =: "th-speed-section") $ text "Speed Section"
+                elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance") $ text "Distance"
+                elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance-points") $ text "Distance Point Breakdown"
+                elAttr "th" ("colspan" =: "4" <> "class" =: "th-other-points") $ text "Other Points"
 
-                el "tr" $ do
-                    elClass "th" "th-start" $ text "Start"
-                    elClass "th" "th-end" $ text "End"
-                    elClass "th" "th-time" $ text "Time"
-                    elClass "th" "th-speed" $ text "Speed"
-                    elClass "th" "th-speed-distance" $ text "Speed"
-                    elClass "th" "th-best-distance" $ text "Best"
-                    elClass "th" "th-landed-distance" $ text "Landed"
-                    elClass "th" "th-reach-points" $ text "Reach"
-                    elClass "th" "th-effort-points" $ text "Effort"
-                    elClass "th" "th-distance-points" $ text "Distance"
-                    elClass "th" "th-lead-points" $ text "Lead"
-                    elClass "th" "th-time-points" $ text "Time"
-                    elClass "th" "th-arrival-points" $ text "Arrival"
-                    elClass "th" "th-total-points" $ text "Total"
+            el "tr" $ do
+                elClass "th" "th-start" $ text "Start"
+                elClass "th" "th-end" $ text "End"
+                elClass "th" "th-time" $ text "Time"
+                elClass "th" "th-speed" $ text "Speed"
+                elClass "th" "th-speed-distance" $ text "Speed"
+                elClass "th" "th-best-distance" $ text "Best"
+                elClass "th" "th-landed-distance" $ text "Landed"
+                elClass "th" "th-reach-points" $ text "Reach"
+                elClass "th" "th-effort-points" $ text "Effort"
+                elClass "th" "th-distance-points" $ text "Distance"
+                elClass "th" "th-lead-points" $ text "Lead"
+                elClass "th" "th-time-points" $ text "Time"
+                elClass "th" "th-arrival-points" $ text "Arrival"
+                elClass "th" "th-total-points" $ text "Total"
 
-                elClass "tr" "tr-validity" $ do
+            elClass "tr" "tr-validity" $ do
 
-                    elAttr "th" ("colspan" =: "2" <> "class" =: "th-launch-validity") . dynText $
-                        maybe
-                            ""
-                            ( (\v ->
-                                "Validity (Launch = "
-                                <> showLaunchValidity v
-                                <> ")")
-                            . Vy.launch
-                            )
-                        <$> vy
+                elAttr "th" ("colspan" =: "2" <> "class" =: "th-launch-validity") . dynText $
+                    maybe
+                        ""
+                        ( (\v ->
+                            "Validity (Launch = "
+                            <> showLaunchValidity v
+                            <> ")")
+                        . Vy.launch
+                        )
+                    <$> vy
 
-                    elAttr "th" ("colspan" =: "6") $ text ""
+                elAttr "th" ("colspan" =: "6") $ text ""
 
-                    thSpace
-                    thSpace
+                thSpace
+                thSpace
 
-                    elClass "th" "th-distance-validity" . dynText $
-                        maybe
-                            ""
-                            ( showDistanceValidity
-                            . Vy.distance
-                            )
-                        <$> vy
+                elClass "th" "th-distance-validity" . dynText $
+                    maybe
+                        ""
+                        ( showDistanceValidity
+                        . Vy.distance
+                        )
+                    <$> vy
 
-                    thSpace
+                thSpace
 
-                    elClass "th" "th-time-validity" . dynText $
-                        maybe
-                            ""
-                            ( showTimeValidity
-                            . Vy.time
-                            )
-                        <$> vy
+                elClass "th" "th-time-validity" . dynText $
+                    maybe
+                        ""
+                        ( showTimeValidity
+                        . Vy.time
+                        )
+                    <$> vy
 
-                    thSpace
+                thSpace
 
-                    elClass "th" "th-task-validity" . dynText $
-                        maybe
-                            ""
-                            ( showTaskValidity
-                            . Vy.task
-                            )
-                        <$> vy
+                elClass "th" "th-task-validity" . dynText $
+                    maybe
+                        ""
+                        ( showTaskValidity
+                        . Vy.task
+                        )
+                    <$> vy
 
-                elClass "tr" "tr-weight" $ do
-                    elAttr "th" ("colspan" =: "2" <> "class" =: "th-weight") $ text "Weights"
-                    elAttr "th" ("colspan" =: "7") $ text ""
+            elClass "tr" "tr-weight" $ do
+                elAttr "th" ("colspan" =: "2" <> "class" =: "th-weight") $ text "Weights"
+                elAttr "th" ("colspan" =: "7") $ text ""
 
-                    thSpace
-                    thSpace
+                thSpace
+                thSpace
 
-                    elClass "th" "th-distance-weight" . dynText $
-                        maybe
-                            ""
-                            ( showDistanceWeight
-                            . Wg.distance
-                            )
-                        <$> wg
+                elClass "th" "th-distance-weight" . dynText $
+                    maybe
+                        ""
+                        ( showDistanceWeight
+                        . Wg.distance
+                        )
+                    <$> wg
 
-                    elClass "th" "th-leading-weight" . dynText$
-                        maybe
-                            ""
-                            ( showLeadingWeight
-                            . Wg.leading
-                            )
-                        <$> wg
+                elClass "th" "th-leading-weight" . dynText$
+                    maybe
+                        ""
+                        ( showLeadingWeight
+                        . Wg.leading
+                        )
+                    <$> wg
 
-                    elClass "th" "th-time-weight" . dynText$
-                        maybe
-                            ""
-                            ( showTimeWeight
-                            . Wg.time
-                            )
-                        <$> wg
+                elClass "th" "th-time-weight" . dynText$
+                    maybe
+                        ""
+                        ( showTimeWeight
+                        . Wg.time
+                        )
+                    <$> wg
 
-                    elClass "th" "th-arrival-weight" . dynText$
-                        maybe
-                            ""
-                            ( showArrivalWeight
-                            . Wg.arrival
-                            )
-                        <$> wg
+                elClass "th" "th-arrival-weight" . dynText$
+                    maybe
+                        ""
+                        ( showArrivalWeight
+                        . Wg.arrival
+                        )
+                    <$> wg
 
-                    thSpace
+                thSpace
 
-                elClass "tr" "tr-allocation" $ do
-                    elAttr "th" ("colspan" =: "2" <> "class" =: "th-allocation") $ text "Available Points (Units)"
-                    elAttr "th" ("colspan" =: "3") $ text ""
-                    elClass "th" "th-speed-units" $ text "(km/h)"
-                    elClass "th" "th-speed-distance-units" $ text "(km)"
-                    elClass "th" "th-best-distance-units" $ text "(km)"
-                    elClass "th" "th-landed-distance-units" $ text "(km)"
+            elClass "tr" "tr-allocation" $ do
+                elAttr "th" ("colspan" =: "2" <> "class" =: "th-allocation") $ text "Available Points (Units)"
+                elAttr "th" ("colspan" =: "3") $ text ""
+                elClass "th" "th-speed-units" $ text "(km/h)"
+                elClass "th" "th-speed-distance-units" $ text "(km)"
+                elClass "th" "th-best-distance-units" $ text "(km)"
+                elClass "th" "th-landed-distance-units" $ text "(km)"
 
-                    elClass "th" "th-reach-alloc" . dynText $
-                        maybe
-                            ""
-                            ( (\x -> showLinearPoints (Just x) x)
-                            . Pt.reach
-                            )
-                        <$> pt
+                elClass "th" "th-reach-alloc" . dynText $
+                    maybe
+                        ""
+                        ( (\x -> showLinearPoints (Just x) x)
+                        . Pt.reach
+                        )
+                    <$> pt
 
-                    elClass "th" "th-effort-alloc" . dynText $
-                        maybe
-                            ""
-                            ( (\x -> showDifficultyPoints (Just x) x)
-                            . Pt.effort
-                            )
-                        <$> pt
+                elClass "th" "th-effort-alloc" . dynText $
+                    maybe
+                        ""
+                        ( (\x -> showDifficultyPoints (Just x) x)
+                        . Pt.effort
+                        )
+                    <$> pt
 
-                    elClass "th" "th-distance-alloc" . dynText $
-                        maybe
-                            ""
-                            ( (\x -> showDistancePoints (Just x) x)
-                            . Pt.distance
-                            )
-                        <$> pt
+                elClass "th" "th-distance-alloc" . dynText $
+                    maybe
+                        ""
+                        ( (\x -> showDistancePoints (Just x) x)
+                        . Pt.distance
+                        )
+                    <$> pt
 
-                    elClass "th" "th-leading-alloc" . dynText $
-                        maybe
-                            ""
-                            ( (\x -> showLeadingPoints (Just x) x)
-                            . Pt.leading
-                            )
-                        <$> pt
+                elClass "th" "th-leading-alloc" . dynText $
+                    maybe
+                        ""
+                        ( (\x -> showLeadingPoints (Just x) x)
+                        . Pt.leading
+                        )
+                    <$> pt
 
-                    elClass "th" "th-time-alloc" . dynText $
-                        maybe
-                            ""
-                            ( (\x -> showTimePoints (Just x) x)
-                            . Pt.time
-                            )
-                        <$> pt
+                elClass "th" "th-time-alloc" . dynText $
+                    maybe
+                        ""
+                        ( (\x -> showTimePoints (Just x) x)
+                        . Pt.time
+                        )
+                    <$> pt
 
-                    elClass "th" "th-arrival-alloc" . dynText $
-                        maybe
-                            ""
-                            ( (\x -> showArrivalPoints (Just x) x)
-                            . Pt.arrival
-                            )
-                        <$> pt
+                elClass "th" "th-arrival-alloc" . dynText $
+                    maybe
+                        ""
+                        ( (\x -> showArrivalPoints (Just x) x)
+                        . Pt.arrival
+                        )
+                    <$> pt
 
-                    elClass "th" "th-task-alloc" . dynText $
-                        maybe
-                            ""
-                            (\x -> showTaskPoints (Just x) x)
-                        <$> tp
+                elClass "th" "th-task-alloc" . dynText $
+                    maybe
+                        ""
+                        (\x -> showTaskPoints (Just x) x)
+                    <$> tp
 
-                simpleList xs (row utcOffset pt tp)
+        el "tbody" $ do
+            simpleList xs (row utcOffset pt tp)
 
     return ()
 
