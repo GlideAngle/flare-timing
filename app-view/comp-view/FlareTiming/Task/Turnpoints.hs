@@ -50,8 +50,13 @@ row
     -> Dynamic t (Integer, (TaskDistance, TaskDistance, RawZone))
     -> m ()
 row ss iz = do
-    let color = zipDynWith rowColor ss $ fst <$> iz
     let i = fst <$> iz
+    let rowTextColor = zipDynWith rowColor ss i
+    let rowIntro = zipDynWith rowText ss i
+    let x = snd <$> iz
+    let l = (\(a, _, _) -> a) <$> x
+    let s = (\(_, b, _) -> b) <$> x
+    let z = (\(_, _, c) -> c) <$> x
     let x = snd <$> iz
     let l = (\(a, _, _) -> a) <$> x
     let s = (\(_, b, _) -> b) <$> x
@@ -65,9 +70,9 @@ row ss iz = do
                 el "td" . dynText $ showTaskDistance <$> l
                 elAttr "td" ("colspan" =: "5") $ text "")
 
-    elDynClass "tr" color $ do
-        el "td" $ dynText $ T.pack . show . fst <$> iz
-        el "td" $ text ""
+    elDynClass "tr" rowTextColor $ do
+        el "td" $ dynText $ T.pack . show <$> i
+        el "td" $ dynText rowIntro
         el "td" . dynText $ showTaskDistance <$> s
         el "td" . dynText $ TP.getName <$> z
         el "td" . dynText $ TP.getRadius <$> z
@@ -79,4 +84,11 @@ rowColor Nothing _ = ""
 rowColor (Just (ss, es)) ii =
     if | ss == ii -> "has-text-success"
        | es == ii -> "has-text-danger"
+       | otherwise -> ""
+
+rowText :: SpeedSection -> Integer -> T.Text
+rowText Nothing _ = ""
+rowText (Just (ss, es)) ii =
+    if | ss == ii -> "Start of Speed Section"
+       | es == ii -> "End of Speed Section"
        | otherwise -> ""
