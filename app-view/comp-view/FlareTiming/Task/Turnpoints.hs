@@ -32,10 +32,10 @@ tableTurnpoints x taskLegs = do
             el "thead" $
                 el "tr" $ do
                     el "th" $ text "#"
-                    el "th" $ text "Leg"
-                    el "th" $ text "Distance"
-                    el "th" $ text "Name"
-                    el "th" $ text "Radius"
+                    el "th" $ text ""
+                    elClass "th" "th-tp-distance" $ text "Distance"
+                    elClass "th" "th-tp-name" $ text "Name"
+                    elClass "th" "th-tp-radius" $ text "Radius"
                     el "th" $ text "Latitude"
                     el "th" $ text "Longitude"
 
@@ -57,25 +57,21 @@ row ss iz = do
     let l = (\(a, _, _) -> a) <$> x
     let s = (\(_, b, _) -> b) <$> x
     let z = (\(_, _, c) -> c) <$> x
-    let x = snd <$> iz
-    let l = (\(a, _, _) -> a) <$> x
-    let s = (\(_, b, _) -> b) <$> x
-    let z = (\(_, _, c) -> c) <$> x
 
     _ <- dyn $ ffor i (\case
         1 -> return ()
         _ ->
             el "tr" $ do
                 el "td" $ text ""
-                el "td" . dynText $ showTaskDistance <$> l
+                elClass "td" "td-tp-distance" . dynText $ showTaskDistance <$> l
                 elAttr "td" ("colspan" =: "5") $ text "")
 
     elDynClass "tr" rowTextColor $ do
         el "td" $ dynText $ T.pack . show <$> i
         el "td" $ dynText rowIntro
-        el "td" . dynText $ showTaskDistance <$> s
-        el "td" . dynText $ TP.getName <$> z
-        el "td" . dynText $ TP.getRadius <$> z
+        elClass "td" "td-tp-distance" . dynText $ showTaskDistance <$> s
+        elClass "td" "td-tp-name" . dynText $ TP.getName <$> z
+        elClass "td" "td-tp-radius" . dynText $ TP.getRadius <$> z
         el "td" . dynText $ TP.getLat <$> z
         el "td" . dynText $ TP.getLng <$> z
 
