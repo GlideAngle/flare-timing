@@ -36,7 +36,7 @@ tabsTask =
                             , "" <$ ea
                             ]
 
-            sClass <- holdDyn "is-active" . leftmost $
+            sClass <- holdDyn "" . leftmost $
                             [ "" <$ ev
                             , "is-active" <$ es
                             , "" <$ et
@@ -44,7 +44,7 @@ tabsTask =
                             , "" <$ ea
                             ]
 
-            tClass <- holdDyn "" . leftmost $
+            tClass <- holdDyn "is-active" . leftmost $
                             [ "" <$ ev
                             , "" <$ es
                             , "is-active" <$ et

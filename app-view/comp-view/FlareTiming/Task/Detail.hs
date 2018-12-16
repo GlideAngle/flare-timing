@@ -41,7 +41,7 @@ taskDetail t@(IxTask _) cs x vy a = do
     let tp = (fmap . fmap) taskPoints a
     let wg = (fmap . fmap) weight a
 
-    _ <- widgetHold (tableScore utc ln vy wg ps tp s) $
+    _ <- widgetHold (tableTurnpoints x) $
             (\case
                 TaskTabValidity -> viewValidity vy vw
                 TaskTabScore -> tableScore utc ln vy wg ps tp s
