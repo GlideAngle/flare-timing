@@ -7,6 +7,7 @@ module FlareTiming.Comms
     , getAllocation
     , getTaskScore
     , getTaskValidityWorking
+    , getTaskLengthSphericalEdge
     ) where
 
 import Reflex
@@ -14,6 +15,7 @@ import Reflex.Dom
 import qualified Data.Text as T (Text, pack)
 
 import WireTypes.Comp (Comp(..), Nominal(..), Task(..))
+import WireTypes.Route
 import WireTypes.Pilot (Pilot(..))
 import WireTypes.Point
 import WireTypes.Validity
@@ -148,3 +150,33 @@ getTaskValidityWorking (IxTask ii) = do
     holdDyn Nothing es
 
 getTaskValidityWorking IxTaskNone = return $ constDyn Nothing
+
+emptyRoute :: OptimalRoute (Maybe a)
+emptyRoute =
+    OptimalRoute
+        { taskRoute = Nothing
+        , taskRouteSpeedSubset = Nothing
+        , speedRoute = Nothing
+        }
+
+getTaskLengthSphericalEdge
+    :: MonadWidget t m
+    => IxTask
+    -> m (Dynamic t (OptimalRoute (Maybe TrackLine)))
+getTaskLengthSphericalEdge (IxTask ii) = do
+    pb :: Event t () <- getPostBuild
+
+    let defReq :: T.Text
+        defReq =
+            mapUri
+            $ "/task-length/"
+            <> (T.pack . show $ ii)
+            <> "/spherical-edge"
+
+    let req md = XhrRequest "GET" (maybe defReq id md) def
+    rsp <- performRequestAsync $ fmap req $ leftmost [ Nothing <$ pb ]
+
+    let es :: Event t (OptimalRoute (Maybe TrackLine)) = fmapMaybe decodeXhrResponse rsp
+    holdDyn emptyRoute es
+
+getTaskLengthSphericalEdge IxTaskNone = return $ constDyn emptyRoute

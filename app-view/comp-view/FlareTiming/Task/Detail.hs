@@ -5,9 +5,11 @@ import Reflex
 import Reflex.Dom
 
 import WireTypes.Comp (Comp(..), Task(..))
+import WireTypes.Route (taskLength)
 import WireTypes.Point (Allocation(..))
 import WireTypes.Validity (Validity(..))
-import FlareTiming.Comms (getTaskScore, getTaskValidityWorking)
+import FlareTiming.Comms
+    (getTaskScore, getTaskValidityWorking, getTaskLengthSphericalEdge)
 import FlareTiming.Comp (compTask)
 import FlareTiming.Breadcrumb (crumbTask)
 import FlareTiming.Events (IxTask(..))
@@ -30,6 +32,7 @@ taskDetail
 taskDetail t@(IxTask _) cs x vy a = do
     s <- getTaskScore t
     vw <- getTaskValidityWorking t
+    ln <- (fmap . fmap) taskLength $ getTaskLengthSphericalEdge t
     _ <- simpleList cs (compTask x)
     es <- simpleList cs (crumbTask x)
     tab <- tabsTask
@@ -38,10 +41,10 @@ taskDetail t@(IxTask _) cs x vy a = do
     let tp = (fmap . fmap) taskPoints a
     let wg = (fmap . fmap) weight a
 
-    _ <- widgetHold (tableScore utc vy wg ps tp s) $
+    _ <- widgetHold (tableScore utc ln vy wg ps tp s) $
             (\case
                 TaskTabValidity -> viewValidity vy vw
-                TaskTabScore -> tableScore utc vy wg ps tp s
+                TaskTabScore -> tableScore utc ln vy wg ps tp s
                 TaskTabTask -> tableTurnpoints x
                 TaskTabMap -> do y <- sample . current $ x; map y
                 TaskTabAbsent -> tableAbsent x)

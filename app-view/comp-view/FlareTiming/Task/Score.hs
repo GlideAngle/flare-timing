@@ -1,12 +1,14 @@
 module FlareTiming.Task.Score (tableScore) where
 
 import Prelude hiding (min)
+import Text.Printf (printf)
 import Reflex.Dom
 import qualified Data.Text as T (Text, pack, breakOn)
 import Data.Time.Clock (UTCTime)
 import Data.Time.Format (formatTime, defaultTimeLocale)
 import Data.Time.LocalTime (TimeZone, minutesToTimeZone, utcToLocalTime)
 
+import WireTypes.Route (TaskLength(..), showTaskDistance)
 import qualified WireTypes.Point as Pt (Points(..))
 import qualified WireTypes.Point as Wg (Weights(..))
 import qualified WireTypes.Validity as Vy (Validity(..))
@@ -44,16 +46,27 @@ import WireTypes.Pilot (Pilot(..))
 import FlareTiming.Pilot (showPilotName)
 import FlareTiming.Time (showHmsForHours)
 
+speedSection :: Maybe TaskLength -> T.Text
+speedSection =
+    T.pack
+    . maybe
+        "Speed Section"
+        (\TaskLength{..} ->
+            let tr = showTaskDistance taskRoute
+                ss = showTaskDistance taskRouteSpeedSubset
+            in printf "Speed Section (%s of %s)" ss tr)
+
 tableScore
     :: MonadWidget t m
     => Dynamic t UtcOffset
+    -> Dynamic t (Maybe TaskLength)
     -> Dynamic t (Maybe Vy.Validity)
     -> Dynamic t (Maybe Wg.Weights)
     -> Dynamic t (Maybe Pt.Points)
     -> Dynamic t (Maybe TaskPoints)
     -> Dynamic t [(Pilot, Breakdown)]
     -> m ()
-tableScore utcOffset vy wg pt tp xs = do
+tableScore utcOffset ln vy wg pt tp xs = do
     let thSpace = elClass "th" "th-space" $ text ""
 
     _ <- elClass "table" "table is-striped is-narrow is-fullwidth" $ do
@@ -62,7 +75,8 @@ tableScore utcOffset vy wg pt tp xs = do
             el "tr" $ do
                 elAttr "th" ("rowspan" =: "2" <> "class" =: "th-placing") $ text "#"
                 elAttr "th" ("rowspan" =: "2" <> "class" =: "th-pilot") $ text "Pilot"
-                elAttr "th" ("colspan" =: "4" <> "class" =: "th-speed-section") $ text "Speed Section"
+                elAttr "th" ("colspan" =: "4" <> "class" =: "th-speed-section") . dynText
+                    $ speedSection <$> ln
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance") $ text "Distance"
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance-points") $ text "Distance Point Breakdown"
                 elAttr "th" ("colspan" =: "4" <> "class" =: "th-other-points") $ text "Other Points"

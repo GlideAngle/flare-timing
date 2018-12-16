@@ -3,6 +3,7 @@ module WireTypes.Zone
     , Zones(..)
     , RawLat(..)
     , RawLng(..)
+    , RawLatLng(..)
     , Radius(..)
     , showRadius
     , showLat
@@ -20,6 +21,14 @@ newtype RawLat = RawLat Rational
 
 newtype RawLng = RawLng Rational
     deriving (Eq, Ord, Show)
+
+data RawLatLng =
+    RawLatLng
+        { lat :: RawLat
+        , lng :: RawLng
+        }
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass FromJSON
 
 newtype Radius = Radius Double
     deriving (Eq, Ord, Show)
