@@ -73,24 +73,29 @@ tableScore utcOffset ln vy wg pt tp xs = do
         el "thead" $ do
 
             el "tr" $ do
+                elAttr "th" ("colspan" =: "8") $ text ""
+                elAttr "th" ("colspan" =: "7" <> "class" =: "th-points") $ text "Points"
+
+            el "tr" $ do
                 elAttr "th" ("rowspan" =: "2" <> "class" =: "th-placing") $ text "#"
                 elAttr "th" ("rowspan" =: "2" <> "class" =: "th-pilot") $ text "Pilot"
                 elAttr "th" ("colspan" =: "4" <> "class" =: "th-speed-section") . dynText
                     $ speedSection <$> ln
                 elAttr "th" ("colspan" =: "2" <> "class" =: "th-distance") $ text "Distance"
-                elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance-points") $ text "Distance Point Breakdown"
-                elAttr "th" ("colspan" =: "4" <> "class" =: "th-other-points") $ text "Other Points"
+                elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance-points-breakdown") $ text "Distance"
+                elAttr "th" ("colspan" =: "3" <> "class" =: "th-other-points") $ text ""
+                elClass "th" "th-total-points" $ text ""
 
             el "tr" $ do
                 elClass "th" "th-start" $ text "Start"
                 elClass "th" "th-end" $ text "End"
                 elClass "th" "th-time" $ text "Time"
-                elClass "th" "th-speed" $ text "Speed"
+                elClass "th" "th-speed" $ text "Velocity"
                 elClass "th" "th-best-distance" $ text "Best"
                 elClass "th" "th-landed-distance" $ text "Landed"
                 elClass "th" "th-reach-points" $ text "Reach"
                 elClass "th" "th-effort-points" $ text "Effort"
-                elClass "th" "th-distance-points" $ text "Distance"
+                elClass "th" "th-distance-points" $ text ""
                 elClass "th" "th-lead-points" $ text "Lead"
                 elClass "th" "th-time-points" $ text "Time"
                 elClass "th" "th-arrival-points" $ text "Arrival"

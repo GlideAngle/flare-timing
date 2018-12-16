@@ -16,8 +16,32 @@ body, input, button, select, textarea
     border-radius: 0;
 
 .th-speed-section
+    @extend .is-primary;
+
+.th-speed
+    @extend .is-primary;
+    @extend .has-text-right;
+
+.th-distance
+    @extend .is-info;
+
+.th-distance-points-breakdown
+    @extend .is-primary;
+
 .th-distance-points
+    @extend .is-primary;
+    @extend .has-text-right;
+
 .th-other-points
+    @extend .is-info;
+
+.th-points
+    @extend .is-warning;
+
+.th-total-points
+    @extend .is-warning;
+    @extend .has-text-right;
+
 .th-weight
 
 .tr-weight
@@ -106,11 +130,6 @@ body, input, button, select, textarea
 .th-time
     @extend .has-text-centered;
 
-.th-speed
-    @extend .has-text-right;
-
-.th-distance
-
 .th-best-distance
     @extend .has-text-right;
 
@@ -120,9 +139,7 @@ body, input, button, select, textarea
 .th-effort-points
     @extend .has-text-right;
 
-.th-distance-points
-
-.th-leading-points
+.th-lead-points
     @extend .has-text-right;
 
 .th-time-points
@@ -130,12 +147,6 @@ body, input, button, select, textarea
 
 .th-arrival-points
     @extend .has-text-right;
-
-.th-total-points
-    @extend .has-text-right;
-
-.th-speed-section
-.th-distance-points
 
 .td-placing
     @extend .has-text-right;
@@ -190,6 +201,13 @@ body, input, button, select, textarea
     @extend .has-text-weight-bold;
 
 .th-tp-distance
+    @extend .has-text-centered;
+    @extend .is-primary;
+
+.th-tp-distance-leg
+    @extend .has-text-right;
+
+.th-tp-distance-task
     @extend .has-text-right;
 
 .th-tp-radius
