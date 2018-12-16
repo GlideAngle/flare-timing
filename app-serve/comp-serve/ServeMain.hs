@@ -32,7 +32,7 @@ import Flight.Score
     , DistanceWeight(..), LeadingWeight(..), ArrivalWeight(..), TimeWeight(..)
     , DistanceValidity(..), LaunchValidity(..), TaskValidity(..), TimeValidity(..)
     )
-import Flight.Scribe (readComp, readCrossing, readPointing)
+import Flight.Scribe (readComp, readRoute, readCrossing, readPointing)
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.ServeOptions (CmdServeOptions(..), mkOptions)
@@ -45,13 +45,16 @@ import Flight.Comp
     , PilotTrackLogFile(..)
     , Pilot(..)
     , CompInputFile(..)
+    , TaskLengthFile(..)
     , CrossZoneFile(..)
     , GapPointFile(..)
     , findCompInput
+    , compToTaskLength
     , compToCross
     , compToPoint
     , ensureExt
     )
+import Flight.Route
 import ServeOptions (description)
 import Data.Ratio.Rounding (dpRound)
 
@@ -59,6 +62,7 @@ data Config k
     = Config
         { compSettings :: CompSettings k
         , crossing :: Crossing
+        , routing :: [Maybe TaskTrack]
         , pointing :: Pointing
         }
 
@@ -92,6 +96,8 @@ type Api k =
         :> Get '[JSON] [(Pilot, Breakdown)]
     :<|> "gap-point" :> Capture "task" Int :> "validity-working"
         :> Get '[JSON] (Maybe Vy.ValidityWorking)
+    :<|> "task-length" :> Capture "task" Int :> "spherical-edge"
+        :> Get '[JSON] (OptimalRoute (Maybe TrackLine))
 
 api :: Proxy (Api k)
 api = Proxy
@@ -116,24 +122,28 @@ drive o = do
                   else mapM_ (go o) files
 go :: CmdServeOptions -> CompInputFile -> IO ()
 go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
+    let lenFile@(TaskLengthFile lenPath) = compToTaskLength compFile
     let crossFile@(CrossZoneFile crossPath) = compToCross compFile
     let pointFile@(GapPointFile pointPath) = compToPoint compFile
     putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
+    putStrLn $ "Reading task length from '" ++ takeFileName lenPath ++ "'"
     putStrLn $ "Reading pilots that did not fly from '" ++ takeFileName crossPath ++ "'"
     putStrLn $ "Reading scores from '" ++ takeFileName pointPath ++ "'"
 
     compSettings <- runExceptT $ readComp compFile
     crossing <- runExceptT $ readCrossing crossFile
+    routes <- runExceptT $ readRoute lenFile
     pointing <- runExceptT $ readPointing pointFile
 
     let ppr = putStrLn . prettyPrintParseException
 
-    case (compSettings, crossing, pointing) of
-        (Left e, _, _) -> ppr e
-        (_, Left e, _) -> ppr e
-        (_, _, Left e) -> ppr e
-        (Right cs, Right cz, Right gp) ->
-            runSettings settings =<< mkApp (Config cs cz gp)
+    case (compSettings, crossing, routes, pointing) of
+        (Left e, _, _, _) -> ppr e
+        (_, Left e, _, _) -> ppr e
+        (_, _, Left e, _) -> ppr e
+        (_, _, _, Left e) -> ppr e
+        (Right cs, Right cz, Right rt, Right gp) ->
+            runSettings settings =<< mkApp (Config cs cz rt gp)
     where
         port = 3000
 
@@ -158,6 +168,7 @@ serverApi cfg =
         :<|> getAllocation <$> p
         :<|> getTaskScore
         :<|> getTaskValidityWorking
+        :<|> getTaskRouteSphericalEdge
     where
         c = asks compSettings
         p = asks pointing
@@ -235,6 +246,7 @@ getTaskScore ii = do
     xs <- getScores <$> asks pointing
     case drop (ii - 1) xs of
         x : _ -> return x
+
         _ -> throwError $
             err400
                 { errBody = LBS.pack
@@ -246,6 +258,25 @@ getTaskValidityWorking ii = do
     xs <- validityWorking <$> asks pointing
     case drop (ii - 1) xs of
         x : _ -> return x
+
+        _ -> throwError $
+            err400
+                { errBody = LBS.pack
+                $ "Out of bounds task: #" ++ show ii
+                }
+
+getTaskRouteSphericalEdge :: Int -> AppT k IO (OptimalRoute (Maybe TrackLine))
+getTaskRouteSphericalEdge ii = do
+    xs <- asks routing
+    case drop (ii - 1) xs of
+        Just TaskTrack{sphericalEdgeToEdge = x} : _ -> return x
+
+        Nothing : _ -> throwError $
+            err400
+                { errBody = LBS.pack
+                $ "No routing for task: #" ++ show ii
+                }
+
         _ -> throwError $
             err400
                 { errBody = LBS.pack

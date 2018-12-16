@@ -35,6 +35,7 @@ in    defs
                   , "yaml"
                   , "bytestring"
                   , "flight-cmd"
+                  , "flight-route"
                   , "flight-comp"
                   , "flight-scribe"
                   , "flight-gap"
