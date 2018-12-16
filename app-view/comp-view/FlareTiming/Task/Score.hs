@@ -81,8 +81,8 @@ tableScore utcOffset ln vy wg pt tp xs = do
                 elAttr "th" ("rowspan" =: "2" <> "class" =: "th-pilot") $ text "Pilot"
                 elAttr "th" ("colspan" =: "4" <> "class" =: "th-speed-section") . dynText
                     $ speedSection <$> ln
-                elAttr "th" ("colspan" =: "2" <> "class" =: "th-distance") $ text "Distance"
-                elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance-points-breakdown") $ text "Distance"
+                elAttr "th" ("colspan" =: "2" <> "class" =: "th-distance") $ text "Distance Flown"
+                elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance-points-breakdown") $ text "Points for Distance"
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-other-points") $ text ""
                 elClass "th" "th-total-points" $ text ""
 
@@ -91,11 +91,11 @@ tableScore utcOffset ln vy wg pt tp xs = do
                 elClass "th" "th-end" $ text "End"
                 elClass "th" "th-time" $ text "Time"
                 elClass "th" "th-speed" $ text "Velocity"
-                elClass "th" "th-best-distance" $ text "Best"
+                elClass "th" "th-best-distance" $ text "Reach"
                 elClass "th" "th-landed-distance" $ text "Landed"
                 elClass "th" "th-reach-points" $ text "Reach"
                 elClass "th" "th-effort-points" $ text "Effort"
-                elClass "th" "th-distance-points" $ text ""
+                elClass "th" "th-distance-points" $ text "Subtotal"
                 elClass "th" "th-lead-points" $ text "Lead"
                 elClass "th" "th-time-points" $ text "Time"
                 elClass "th" "th-arrival-points" $ text "Arrival"
