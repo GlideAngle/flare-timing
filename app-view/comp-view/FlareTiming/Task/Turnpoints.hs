@@ -24,14 +24,9 @@ tableTurnpoints x taskLegs = do
     let ss = getSpeedSection <$> x
     let zs = getAllRawZones <$> x
 
-    let legs' :: Dynamic _ [TaskDistance]
-        legs' = (maybe unknownLegs ((:) zero . legs)) <$> taskLegs
-
-    let legsSum' :: Dynamic _ [TaskDistance]
-        legsSum' = (maybe unknownLegs ((:) zero . legsSum)) <$> taskLegs
-
-    let ys :: Dynamic _ [(TaskDistance, TaskDistance, RawZone)]
-        ys = ffor3 legs' legsSum' zs $ zipWith3 (\a b c -> (a, b, c))
+    let legs' = (maybe unknownLegs ((:) zero . legs)) <$> taskLegs
+    let legsSum' = (maybe unknownLegs ((:) zero . legsSum)) <$> taskLegs
+    let ys = ffor3 legs' legsSum' zs $ zipWith3 (\a b c -> (a, b, c))
 
     _ <- elClass "table" "table" $
             el "thead" $ do
