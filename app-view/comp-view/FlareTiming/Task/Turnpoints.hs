@@ -29,15 +29,19 @@ tableTurnpoints x taskLegs = do
     let ys = ffor3 legs' legsSum' zs $ zipWith3 (\a b c -> (a, b, c))
 
     _ <- elClass "table" "table is-striped" $ do
-            el "thead" $
+            el "thead" $ do
+                el "tr" $ do
+                    elAttr "th" ("colspan" =: "5") $ text ""
+                    elAttr "th" ("colspan" =: "2" <> "class" =: "th-tp-distance")
+                        $ text "Distance"
                 el "tr" $ do
                     el "th" $ text "#"
-                    el "th" $ text ""
-                    elClass "th" "th-tp-distance" $ text "Distance"
                     elClass "th" "th-tp-name" $ text "Name"
                     elClass "th" "th-tp-radius" $ text "Radius"
                     el "th" $ text "Latitude"
                     el "th" $ text "Longitude"
+                    elClass "th" "th-tp-distance-leg" $ text "Leg"
+                    elClass "th" "th-tp-distance-task" $ text "Task"
 
             el "tbody" $ do
                 simpleList (fmap (zip [1..]) ys) (row ss)
@@ -62,18 +66,18 @@ row ss iz = do
         1 -> return ()
         _ ->
             el "tr" $ do
-                el "td" $ text ""
+                elAttr "td" ("colspan" =: "5") $ text ""
                 elClass "td" "td-tp-distance" . dynText $ showTaskDistance <$> l
-                elAttr "td" ("colspan" =: "5") $ text "")
+                el "td" $ text "")
 
     elDynClass "tr" rowTextColor $ do
         el "td" $ dynText $ T.pack . show <$> i
-        el "td" $ dynText rowIntro
-        elClass "td" "td-tp-distance" . dynText $ showTaskDistance <$> s
         elClass "td" "td-tp-name" . dynText $ TP.getName <$> z
         elClass "td" "td-tp-radius" . dynText $ TP.getRadius <$> z
         el "td" . dynText $ TP.getLat <$> z
         el "td" . dynText $ TP.getLng <$> z
+        el "td" $ dynText rowIntro
+        elClass "td" "td-tp-distance" . dynText $ showTaskDistance <$> s
 
 rowColor :: SpeedSection -> Integer -> T.Text
 rowColor Nothing _ = ""
