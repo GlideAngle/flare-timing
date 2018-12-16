@@ -28,8 +28,8 @@ tableTurnpoints x taskLegs = do
     let legsSum' = (maybe unknownLegs ((:) zero . legsSum)) <$> taskLegs
     let ys = ffor3 legs' legsSum' zs $ zipWith3 (\a b c -> (a, b, c))
 
-    _ <- elClass "table" "table" $
-            el "thead" $ do
+    _ <- elClass "table" "table is-striped" $ do
+            el "thead" $
                 el "tr" $ do
                     el "th" $ text "#"
                     el "th" $ text "Leg"
@@ -39,7 +39,9 @@ tableTurnpoints x taskLegs = do
                     el "th" $ text "Latitude"
                     el "th" $ text "Longitude"
 
+            el "tbody" $ do
                 simpleList (fmap (zip [1..]) ys) (row ss)
+
     return ()
 
 row
@@ -75,6 +77,6 @@ row ss iz = do
 rowColor :: SpeedSection -> Integer -> T.Text
 rowColor Nothing _ = ""
 rowColor (Just (ss, es)) ii =
-    if | ss == ii -> "has-background-success"
-       | es == ii -> "has-background-danger"
+    if | ss == ii -> "has-text-success"
+       | es == ii -> "has-text-danger"
        | otherwise -> ""
