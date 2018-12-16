@@ -265,6 +265,9 @@ tableScore utcOffset ln vy wg pt tp xs = do
         el "tfoot" $ do
             el "tr" $
                 elAttr "td" ("colspan" =: "15")
+                    $ text "* Any points so annotated, are the maximum attainable."
+            el "tr" $
+                elAttr "td" ("colspan" =: "15")
                     $ text "† How far along the course, reaching goal or elsewhere. The distance reached in the air can be further than the distance at landing."
             el "tr" $
                 elAttr "td" ("colspan" =: "15")
