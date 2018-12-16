@@ -50,6 +50,12 @@ data TaskLength =
         , taskRouteSpeedSubset :: TaskDistance
         }
 
+data TaskLegs =
+    TaskLegs
+        { legs :: [TaskDistance]
+        , legsSum :: [TaskDistance]
+        }
+
 taskLength :: OptimalRoute (Maybe TrackLine) -> Maybe TaskLength
 taskLength OptimalRoute{..} =
     case (taskRoute, taskRouteSpeedSubset) of
@@ -61,3 +67,12 @@ taskLength OptimalRoute{..} =
                     }
 
         _ -> Nothing
+
+taskLegs :: OptimalRoute (Maybe TrackLine) -> Maybe TaskLegs
+taskLegs OptimalRoute{..} =
+    (\TrackLine{..} ->
+        TaskLegs
+            { legs = legs
+            , legsSum = legsSum
+            })
+    <$> taskRoute
