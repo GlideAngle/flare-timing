@@ -1,7 +1,6 @@
 module FlareTiming.Task.Turnpoints (tableTurnpoints) where
 
 import Reflex.Dom
-import Control.Monad (join)
 import qualified Data.Text as T (Text, pack)
 
 import WireTypes.Comp
@@ -10,6 +9,7 @@ import WireTypes.Route (TaskDistance(..), TaskLegs(..), showTaskDistance)
 import WireTypes.Zone (RawZone(..))
 import qualified FlareTiming.Turnpoint as TP
 
+zero :: TaskDistance
 zero = TaskDistance 0
 
 unknownLegs :: [TaskDistance]
@@ -31,10 +31,10 @@ tableTurnpoints x taskLegs = do
     _ <- elClass "table" "table" $
             el "thead" $ do
                 el "tr" $ do
-                    el "th" $ text "No"
+                    el "th" $ text "#"
                     el "th" $ text "Leg"
                     el "th" $ text "Distance"
-                    el "th" $ text "Id"
+                    el "th" $ text "Name"
                     el "th" $ text "Radius"
                     el "th" $ text "Latitude"
                     el "th" $ text "Longitude"
@@ -49,14 +49,23 @@ row
     -> m ()
 row ss iz = do
     let color = zipDynWith rowColor ss $ fst <$> iz
+    let i = fst <$> iz
     let x = snd <$> iz
     let l = (\(a, _, _) -> a) <$> x
     let s = (\(_, b, _) -> b) <$> x
     let z = (\(_, _, c) -> c) <$> x
 
+    _ <- dyn $ ffor i (\case
+        1 -> return ()
+        _ ->
+            el "tr" $ do
+                el "td" $ text ""
+                el "td" . dynText $ showTaskDistance <$> l
+                elAttr "td" ("colspan" =: "5") $ text "")
+
     elDynClass "tr" color $ do
         el "td" $ dynText $ T.pack . show . fst <$> iz
-        el "td" . dynText $ showTaskDistance <$> l
+        el "td" $ text ""
         el "td" . dynText $ showTaskDistance <$> s
         el "td" . dynText $ TP.getName <$> z
         el "td" . dynText $ TP.getRadius <$> z
