@@ -22,6 +22,7 @@ module FlareTiming.Map.Leaflet
     , polylineBounds
     , extendBounds
     , fitBounds
+    , layersControl
     ) where
 
 import Prelude hiding (map, log)
@@ -47,15 +48,19 @@ foreign import javascript unsafe
 
 foreign import javascript unsafe
     "$1['invalidateSize']()"
-    mapInvalidateSize_ :: JSVal -> IO () 
+    mapInvalidateSize_ :: JSVal -> IO ()
 
 foreign import javascript unsafe
     "L['tileLayer']($1, {maxZoom: $2, opacity: 0.6})"
-    tileLayer_ :: JSString -> Int -> IO JSVal 
+    tileLayer_ :: JSString -> Int -> IO JSVal
 
 foreign import javascript unsafe
     "$1['addTo']($2)"
     tileLayerAddToMap_ :: JSVal -> JSVal -> IO ()
+
+foreign import javascript unsafe
+    "L.control.layers(null, {'Map' : $1}).addTo($2)"
+    layersControl_ :: JSVal -> JSVal -> IO ()
 
 foreign import javascript unsafe
     "L['marker']([$1, $2])"
@@ -109,10 +114,14 @@ mapInvalidateSize :: Map -> IO ()
 mapInvalidateSize lmap =
     mapInvalidateSize_ (unMap lmap)
 
+layersControl :: TileLayer -> Map -> IO ()
+layersControl x lmap = layersControl_ (unTileLayer x) (unMap lmap)
+
 tileLayer :: String -> Int -> IO TileLayer
 tileLayer src maxZoom =
     TileLayer <$> tileLayer_ (toJSString src) maxZoom
 
+-- | Adds the tile layer to the map. The layers control does this too.
 tileLayerAddToMap :: TileLayer -> Map -> IO ()
 tileLayerAddToMap x lmap =
     tileLayerAddToMap_ (unTileLayer x) (unMap lmap)

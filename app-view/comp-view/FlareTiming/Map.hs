@@ -12,7 +12,6 @@ import qualified FlareTiming.Map.Leaflet as L
     , map
     , mapSetView
     , tileLayer
-    , tileLayerAddToMap
     , marker
     , markerAddToMap
     , markerPopup
@@ -23,6 +22,7 @@ import qualified FlareTiming.Map.Leaflet as L
     , polylineAddToMap
     , polylineBounds
     , fitBounds
+    , layersControl
     )
 import WireTypes.Comp (Task(..), SpeedSection)
 import WireTypes.Zone
@@ -79,13 +79,13 @@ map Task{zones = Zones{raw = xs}, speedSection} ys = do
             lmap <- L.map (_element_raw e)
             L.mapSetView lmap (zoneToLatLng $ head xs) 11
 
-            layer <-
+            mapLayer <-
                 -- SEE: http://leaflet-extras.github.io/leaflet-providers/preview/
                 L.tileLayer
                     "http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
                     17
 
-            L.tileLayerAddToMap layer lmap
+            L.layersControl mapLayer lmap
 
             let len = length xs
             let cs = zoneColors len speedSection
