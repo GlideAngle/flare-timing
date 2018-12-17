@@ -7,7 +7,7 @@ attribution :: MonadWidget t m => m ()
 attribution = do
     el "p" $ do
         el "small" $ do
-            text "Map data: (c) "
+            text "Map data: © "
             elAttr "a" (union ("href" =: "http://www.openstreetmap.org/copyright")
                               ("target" =: "_blank")) $ do
                 text "OpenStreetMap"
@@ -17,7 +17,7 @@ attribution = do
                               ("target" =: "_blank")) $ do
                 text "SRTM"
 
-            text " | Map style: (c) "
+            text " | Map style: © "
             elAttr "a" (union ("href" =: "https://opentopomap.org")
                               ("target" =: "_blank")) $ do
                 text "OpenTopoMap"
