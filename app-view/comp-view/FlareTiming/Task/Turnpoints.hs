@@ -15,6 +15,14 @@ zero = TaskDistance 0
 unknownLegs :: [TaskDistance]
 unknownLegs = repeat zero
 
+padLegs :: Int -> SpeedSection -> [TaskDistance] -> [TaskDistance]
+padLegs _ Nothing xs = xs
+padLegs len (Just (start, end)) xs =
+    prolog <> xs <> epilog
+    where
+        prolog = take (fromIntegral start) $ repeat zero
+        epilog = take (len - (fromIntegral end)) $ repeat zero
+
 tableTurnpoints
     :: MonadWidget t m
     => Dynamic t Task
@@ -24,8 +32,12 @@ tableTurnpoints x taskLegs = do
     let ss = getSpeedSection <$> x
     let zs = getAllRawZones <$> x
 
-    let legs' = (maybe unknownLegs ((:) zero . legs)) <$> taskLegs
-    let legsSum' = (maybe unknownLegs ((:) zero . legsSum)) <$> taskLegs
+    len :: Int <- sample . current $ length <$> zs
+    ss' :: SpeedSection <- sample . current $ ss
+    let pad = padLegs len ss'
+
+    let legs' = (maybe unknownLegs (pad . legs)) <$> taskLegs
+    let legsSum' = (maybe unknownLegs (pad . legsSum)) <$> taskLegs
     let ys = ffor3 legs' legsSum' zs $ zipWith3 (\a b c -> (a, b, c))
 
     _ <- elClass "table" "table is-striped" $ do
