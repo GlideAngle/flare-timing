@@ -59,7 +59,7 @@ foreign import javascript unsafe
     tileLayerAddToMap_ :: JSVal -> JSVal -> IO ()
 
 foreign import javascript unsafe
-    "L.control.layers(null, {'Map': $1, 'Course line (point to point)': $3, 'Course line (shortest route),': $4}).addTo($2)"
+    "L.control.layers({'Course line (point to point)': $3, 'Course line (shortest route)': $4}, {'Map': $1}).addTo($2)"
     layersControl_ :: JSVal -> JSVal -> JSVal -> JSVal -> IO ()
 
 foreign import javascript unsafe
