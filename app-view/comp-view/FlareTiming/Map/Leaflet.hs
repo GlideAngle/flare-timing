@@ -78,7 +78,7 @@ foreign import javascript unsafe
     circleAddToMap_ :: JSVal -> JSVal -> IO ()
 
 foreign import javascript unsafe
-    "L['polyline']($1, {color: $2})"
+    "L['polyline']($1, {color: $2, opacity: 0.6, dashArray: '20,15', lineJoin: 'round'})"
     polyline_ :: JSVal -> JSString -> IO JSVal
 
 foreign import javascript unsafe
