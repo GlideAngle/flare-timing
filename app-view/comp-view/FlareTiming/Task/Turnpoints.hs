@@ -17,11 +17,12 @@ unknownLegs = repeat zero
 
 padLegs :: Int -> SpeedSection -> [TaskDistance] -> [TaskDistance]
 padLegs _ Nothing xs = xs
-padLegs len (Just (start, end)) xs =
-    prolog <> xs <> epilog
+padLegs len (Just (start, _)) xs =
+    prolog <> xs <> unknownLegs
     where
-        prolog = take (fromIntegral start) $ repeat zero
-        epilog = take (len - (fromIntegral end)) $ repeat zero
+        -- NOTE: The speed section uses 1-based indexing.
+        start' = fromIntegral start
+        prolog = take (start' - 1) $ repeat zero
 
 tableTurnpoints
     :: MonadWidget t m

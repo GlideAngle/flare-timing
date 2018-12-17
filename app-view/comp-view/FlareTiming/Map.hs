@@ -126,11 +126,11 @@ zoneColors :: Int -> SpeedSection -> [String]
 zoneColors _ Nothing = blues
 zoneColors len (Just (start, end)) =
     if len < 2 then blues else
-    prolog <> ["green"] <> xs' <> ["red"] <> epilog
+    prolog <> ["green"] <> xs' <> ["red"] <> yellows
     where
-        start' = fromIntegral start - 1
-        end' = fromIntegral end - 1
+        -- NOTE: The speed section uses 1-based indexing.
+        start' = fromIntegral start
+        end' = fromIntegral end
 
-        prolog = take start' $ yellows
-        epilog = take (len - end') $ yellows
+        prolog = take (start' - 1) $ yellows
         xs' = take ((end' - start' + 1) - 2) blues
