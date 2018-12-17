@@ -23,7 +23,7 @@ padLegs (Just (start, _)) xs =
         -- NOTE: The speed section uses 1-based indexing and the legs are
         -- between turnpoints 1-2, 2-3, etc.
         start' = fromIntegral start
-        prolog = take start' $ repeat zero
+        prolog = take (start' - 1) $ repeat zero
 
 tableTurnpoints
     :: MonadWidget t m
