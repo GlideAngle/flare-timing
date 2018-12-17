@@ -11,10 +11,14 @@ module WireTypes.Comp
     , getAbsent
     , fromSci
     , toSci
+    , showNominalTime
     ) where
 
+import Text.Printf (printf)
+import Control.Applicative (empty)
 import GHC.Generics (Generic)
-import Data.Aeson (FromJSON(..))
+import Data.Aeson (Value(..), FromJSON(..))
+import qualified Data.Text as T (unpack)
 import Data.Scientific (Scientific, toRealFloat, fromRationalRepetend)
 import WireTypes.Zone (RawZone, Zones(..))
 import WireTypes.Pilot (Pilot)
@@ -26,6 +30,37 @@ type SpeedSection = Maybe (Integer, Integer)
 newtype UtcOffset = UtcOffset { timeZoneMinutes :: Int }
     deriving (Eq, Ord, Show, Read, Generic)
     deriving anyclass (FromJSON)
+
+newtype NominalTime = NominalTime Double
+    deriving (Eq, Ord)
+
+instance FromJSON NominalTime where
+    parseJSON x@(String _) = do
+        s <- reverse . T.unpack <$> parseJSON x
+        case s of
+            'h' : ' ' : xs -> return . NominalTime . read . reverse $ xs
+            _ -> empty
+    parseJSON _ = empty
+
+instance Show NominalTime where
+    show = showNominalTime
+
+showNominalTime :: NominalTime -> String
+showNominalTime (NominalTime h) =
+    if ms == 0 then printf "%d h" hh else printf "%d:%02d:%02d" hh mm ss'
+    where
+        totalSecs :: Int
+        totalSecs = round $ 3600.0 * h
+
+        (hh, ms) = quotRem (abs totalSecs) 3600
+        mm = quot ms 60
+
+        ss =
+            (abs h - fromIntegral hh) * 3600.0
+            - fromIntegral (mm * 60)
+
+        ss' :: Int
+        ss' = truncate ss
 
 data Comp =
     Comp
@@ -42,7 +77,7 @@ data Nominal =
     Nominal
         { distance :: String
         , free :: String
-        , time :: String
+        , time :: NominalTime
         , goal :: Double
         , launch :: Double
         }

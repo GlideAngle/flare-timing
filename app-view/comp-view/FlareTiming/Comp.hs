@@ -83,7 +83,7 @@ nominal n u = do
                         elClass "div" "tags has-addons" $ do
                             elClass "span" "tag" $ do text "nominal time"
                             elClass "span" "tag is-success" $ do
-                                text $ T.pack time
+                                text . T.pack . show $ time
                     elClass "div" "control" $ do
                         elClass "div" "tags has-addons" $ do
                             elClass "span" "tag" $ do text "nominal goal"
