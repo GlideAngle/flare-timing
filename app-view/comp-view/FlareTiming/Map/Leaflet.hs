@@ -50,7 +50,7 @@ foreign import javascript unsafe
     mapInvalidateSize_ :: JSVal -> IO () 
 
 foreign import javascript unsafe
-    "L['tileLayer']($1, { maxZoom: $2, opacity: 0.6})"
+    "L['tileLayer']($1, {maxZoom: $2, opacity: 0.6})"
     tileLayer_ :: JSString -> Int -> IO JSVal 
 
 foreign import javascript unsafe
@@ -70,7 +70,7 @@ foreign import javascript unsafe
     markerPopup_ :: JSVal -> JSString -> IO ()
 
 foreign import javascript unsafe
-    "L['circle']([$1, $2], {radius: $3, color: $4})"
+    "L['circle']([$1, $2], {radius: $3, color: $4, opacity: 0.6, weight: 1})"
     circle_ :: Double -> Double -> Double -> JSString -> IO JSVal
 
 foreign import javascript unsafe

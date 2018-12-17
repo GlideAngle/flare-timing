@@ -119,6 +119,9 @@ map Task{zones = Zones{raw = xs}, speedSection} ys = do
 blues :: [String]
 blues = repeat "blue"
 
+yellows :: [String]
+yellows = repeat "yellow"
+
 zoneColors :: Int -> SpeedSection -> [String]
 zoneColors _ Nothing = blues
 zoneColors len (Just (start, end)) =
@@ -128,6 +131,6 @@ zoneColors len (Just (start, end)) =
         start' = fromIntegral start - 1
         end' = fromIntegral end - 1
 
-        prolog = take start' $ blues
-        epilog = take (len - end') $ blues
-        xs' = take ((end' - start') - 2) blues
+        prolog = take start' $ yellows
+        epilog = take (len - end') $ yellows
+        xs' = take ((end' - start' + 1) - 2) blues
