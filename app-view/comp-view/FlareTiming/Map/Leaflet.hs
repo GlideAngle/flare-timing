@@ -78,8 +78,8 @@ foreign import javascript unsafe
     circleAddToMap_ :: JSVal -> JSVal -> IO ()
 
 foreign import javascript unsafe
-    "L['polyline']($1, {color: 'red'})"
-    polyline_ :: JSVal -> IO JSVal
+    "L['polyline']($1, {color: $2})"
+    polyline_ :: JSVal -> JSString -> IO JSVal
 
 foreign import javascript unsafe
     "$1['addTo']($2)"
@@ -137,10 +137,10 @@ circleAddToMap :: Circle -> Map -> IO ()
 circleAddToMap x lmap =
     circleAddToMap_ (unCircle x) (unMap lmap)
 
-polyline :: [(Double, Double)] -> IO Polyline
-polyline xs = do
+polyline :: [(Double, Double)] -> String -> IO Polyline
+polyline xs color = do
     ys <- toJSVal $ (\ (lat, lng) -> [ lat, lng ]) <$> xs
-    Polyline <$> polyline_ ys
+    Polyline <$> polyline_ ys (toJSString color)
 
 polylineAddToMap :: Polyline -> Map -> IO ()
 polylineAddToMap x lmap =

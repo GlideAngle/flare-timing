@@ -99,10 +99,10 @@ map Task{zones = Zones{raw = xs}} ys = do
             let xPts :: [(Double, Double)] = fmap zoneToLatLng xs
             let yPts :: [(Double, Double)] = fmap rawToLatLng ys
 
-            courseLine <- L.polyline xPts
+            courseLine <- L.polyline xPts "gray"
             L.polylineAddToMap courseLine lmap
 
-            routeLine <- L.polyline yPts
+            routeLine <- L.polyline yPts "red"
             L.polylineAddToMap routeLine lmap
 
             bounds <- L.polylineBounds courseLine
