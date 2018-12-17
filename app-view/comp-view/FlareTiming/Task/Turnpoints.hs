@@ -20,9 +20,10 @@ padLegs Nothing xs = xs
 padLegs (Just (start, _)) xs =
     prolog <> xs <> unknownLegs
     where
-        -- NOTE: The speed section uses 1-based indexing.
+        -- NOTE: The speed section uses 1-based indexing and the legs are
+        -- between turnpoints 1-2, 2-3, etc.
         start' = fromIntegral start
-        prolog = take (start' - 1) $ repeat zero
+        prolog = take start' $ repeat zero
 
 tableTurnpoints
     :: MonadWidget t m
@@ -73,13 +74,15 @@ row ss iz = do
     let s = (\(_, b, _) -> b) <$> x
     let z = (\(_, _, c) -> c) <$> x
 
-    _ <- dyn $ ffor i (\case
-        1 -> return ()
-        _ ->
-            el "tr" $ do
-                elAttr "td" ("colspan" =: "5") $ text ""
-                elClass "td" "td-tp-distance" . dynText $ showTaskDistance <$> l
-                el "td" $ text "")
+    _ <- dyn $ ffor2 i l (\ix leg ->
+        case (ix, leg) of
+            (1, _) -> return ()
+            (_, TaskDistance 0) -> return ()
+            (_, leg') ->
+                el "tr" $ do
+                    elAttr "td" ("colspan" =: "5") $ text ""
+                    elClass "td" "td-tp-distance" . text $ showTaskDistance leg'
+                    el "td" $ text "")
 
     elDynClass "tr" rowTextColor $ do
         el "td" $ dynText $ T.pack . show <$> i
