@@ -1,6 +1,15 @@
 {-# LANGUAGE DuplicateRecordFields #-}
 
-module WireTypes.Route where
+module WireTypes.Route
+    ( TaskDistance(..)
+    , TrackLine(..)
+    , OptimalRoute(..)
+    , TaskLength(..)
+    , TaskLegs(..)
+    , taskLength
+    , taskLegs
+    , showTaskDistance
+    ) where
 
 import Text.Printf (printf)
 import Control.Applicative (empty)
