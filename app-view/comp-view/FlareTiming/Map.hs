@@ -24,19 +24,20 @@ import qualified FlareTiming.Map.Leaflet as L
     , polylineBounds
     , fitBounds
     )
-import WireTypes.Comp (Task(..))
+import WireTypes.Comp (Task(..), SpeedSection)
 import WireTypes.Zone
     (Zones(..), RawZone(..), RawLatLng(..), RawLat(..), RawLng(..), Radius(..))
 
-turnpoint :: RawZone -> IO (L.Marker, L.Circle)
+turnpoint :: String -> RawZone -> IO (L.Marker, L.Circle)
 turnpoint
+    color
     RawZone
         { lat = RawLat lat'
         , lng = RawLng lng'
         , radius = Radius r
         } = do
     xMark <- L.marker latLng
-    xCyl <- L.circle latLng r
+    xCyl <- L.circle latLng r color
     return (xMark, xCyl)
     where
         latLng = (fromRational lat', fromRational lng')
@@ -63,7 +64,7 @@ map _ [] = do
     el "p" $ text "The task optimal route has no turnpoints."
     return ()
 
-map Task{zones = Zones{raw = xs}} ys = do
+map Task{zones = Zones{raw = xs}, speedSection} ys = do
     let tpNames = fmap (\RawZone{..} -> zoneName) xs
     postBuild <- delay 1 =<< getPostBuild
     (e, _) <- elAttr' "div" ("style" =: "height: 680px;width: 100%") $ return ()
@@ -86,7 +87,11 @@ map Task{zones = Zones{raw = xs}} ys = do
 
             L.tileLayerAddToMap layer lmap
 
-            xMarks :: [(L.Marker, L.Circle)] <- sequence $ fmap turnpoint xs
+            let len = length xs
+            let cs = zoneColors len speedSection
+
+            xMarks :: [(L.Marker, L.Circle)]
+                <- sequence $ zipWith turnpoint cs xs
 
             _ <- sequence $ fmap
                 (\ (tpName, (xMark, xCyl)) -> do
@@ -110,3 +115,19 @@ map Task{zones = Zones{raw = xs}} ys = do
             return (lmap, bounds)
 
     return ()
+
+blues :: [String]
+blues = repeat "blue"
+
+zoneColors :: Int -> SpeedSection -> [String]
+zoneColors _ Nothing = blues
+zoneColors len (Just (start, end)) =
+    if len < 2 then blues else
+    prolog <> ["green"] <> xs' <> ["red"] <> epilog
+    where
+        start' = fromIntegral start - 1
+        end' = fromIntegral end - 1
+
+        prolog = take start' $ blues
+        epilog = take (len - end') $ blues
+        xs' = take ((end' - start') - 2) blues

@@ -70,8 +70,8 @@ foreign import javascript unsafe
     markerPopup_ :: JSVal -> JSString -> IO ()
 
 foreign import javascript unsafe
-    "L['circle']([$1, $2], {radius: $3})"
-    circle_ :: Double -> Double -> Double -> IO JSVal
+    "L['circle']([$1, $2], {radius: $3, color: $4})"
+    circle_ :: Double -> Double -> Double -> JSString -> IO JSVal
 
 foreign import javascript unsafe
     "$1['addTo']($2)"
@@ -129,9 +129,9 @@ markerPopup :: Marker -> String -> IO ()
 markerPopup x msg =
     markerPopup_ (unMarker x) (toJSString msg)
 
-circle :: (Double, Double) -> Double -> IO Circle
-circle (lat, lng) radius =
-    Circle <$> circle_ lat lng radius
+circle :: (Double, Double) -> Double -> String -> IO Circle
+circle (lat, lng) radius color =
+    Circle <$> circle_ lat lng radius (toJSString color)
 
 circleAddToMap :: Circle -> Map -> IO ()
 circleAddToMap x lmap =
