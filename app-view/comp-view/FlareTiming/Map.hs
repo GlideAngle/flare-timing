@@ -85,8 +85,6 @@ map Task{zones = Zones{raw = xs}, speedSection} ys = do
                     "http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
                     17
 
-            L.layersControl mapLayer lmap
-
             let len = length xs
             let cs = zoneColors len speedSection
 
@@ -105,10 +103,13 @@ map Task{zones = Zones{raw = xs}, speedSection} ys = do
             let yPts :: [(Double, Double)] = fmap rawToLatLng ys
 
             courseLine <- L.polyline xPts "gray"
-            L.polylineAddToMap courseLine lmap
-
             routeLine <- L.polyline yPts "red"
+
+            -- NOTE: Adding the route now so that it displays by default but
+            -- can also be hidden via the layers control. The course line is
+            -- not added by default but can be shown via the layers control.
             L.polylineAddToMap routeLine lmap
+            L.layersControl mapLayer lmap courseLine routeLine
 
             bounds <- L.polylineBounds courseLine
 

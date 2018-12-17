@@ -59,8 +59,8 @@ foreign import javascript unsafe
     tileLayerAddToMap_ :: JSVal -> JSVal -> IO ()
 
 foreign import javascript unsafe
-    "L.control.layers(null, {'Map' : $1}).addTo($2)"
-    layersControl_ :: JSVal -> JSVal -> IO ()
+    "L.control.layers(null, {'Map': $1, 'Course line (point to point)': $3, 'Course line (shortest route),': $4}).addTo($2)"
+    layersControl_ :: JSVal -> JSVal -> JSVal -> JSVal -> IO ()
 
 foreign import javascript unsafe
     "L['marker']([$1, $2])"
@@ -114,8 +114,13 @@ mapInvalidateSize :: Map -> IO ()
 mapInvalidateSize lmap =
     mapInvalidateSize_ (unMap lmap)
 
-layersControl :: TileLayer -> Map -> IO ()
-layersControl x lmap = layersControl_ (unTileLayer x) (unMap lmap)
+layersControl :: TileLayer -> Map -> Polyline -> Polyline -> IO ()
+layersControl x lmap course route =
+    layersControl_
+        (unTileLayer x)
+        (unMap lmap)
+        (unPolyline course)
+        (unPolyline route)
 
 tileLayer :: String -> Int -> IO TileLayer
 tileLayer src maxZoom =
