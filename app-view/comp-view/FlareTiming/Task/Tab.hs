@@ -16,33 +16,17 @@ tabsTask
 tabsTask =
     elClass "div" "tabs" $
         el "ul" $ mdo
-            (v, _) <- elDynClass' "li" vClass $ el "a" (text "Validity")
-            (s, _) <- elDynClass' "li" sClass $ el "a" (text "Scores")
             (t, _) <- elDynClass' "li" tClass $ el "a" (text "Turnpoints")
             (m, _) <- elDynClass' "li" mClass $ el "a" (text "Map")
             (a, _) <- elDynClass' "li" aClass $ el "a" (text "Absentees")
+            (v, _) <- elDynClass' "li" vClass $ el "a" (text "Validity")
+            (s, _) <- elDynClass' "li" sClass $ el "a" (text "Scores")
 
-            let ev = (const TaskTabValidity) <$> domEvent Click v
-            let es = (const TaskTabScore) <$> domEvent Click s
             let et = (const TaskTabTask) <$> domEvent Click t
             let em = (const TaskTabMap) <$> domEvent Click m
             let ea = (const TaskTabAbsent) <$> domEvent Click a
-
-            vClass <- holdDyn "" . leftmost $
-                            [ "is-active" <$ ev
-                            , "" <$ es
-                            , "" <$ et
-                            , "" <$ em
-                            , "" <$ ea
-                            ]
-
-            sClass <- holdDyn "" . leftmost $
-                            [ "" <$ ev
-                            , "is-active" <$ es
-                            , "" <$ et
-                            , "" <$ em
-                            , "" <$ ea
-                            ]
+            let ev = (const TaskTabValidity) <$> domEvent Click v
+            let es = (const TaskTabScore) <$> domEvent Click s
 
             tClass <- holdDyn "is-active" . leftmost $
                             [ "" <$ ev
@@ -68,4 +52,20 @@ tabsTask =
                             , "is-active" <$ ea
                             ]
 
-            return . leftmost $ [ev, es, et, em, ea]
+            vClass <- holdDyn "" . leftmost $
+                            [ "is-active" <$ ev
+                            , "" <$ es
+                            , "" <$ et
+                            , "" <$ em
+                            , "" <$ ea
+                            ]
+
+            sClass <- holdDyn "" . leftmost $
+                            [ "" <$ ev
+                            , "is-active" <$ es
+                            , "" <$ et
+                            , "" <$ em
+                            , "" <$ ea
+                            ]
+
+            return . leftmost $ [et, em, ea, ev, es]
