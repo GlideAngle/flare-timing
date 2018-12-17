@@ -15,9 +15,9 @@ zero = TaskDistance 0
 unknownLegs :: [TaskDistance]
 unknownLegs = repeat zero
 
-padLegs :: Int -> SpeedSection -> [TaskDistance] -> [TaskDistance]
-padLegs _ Nothing xs = xs
-padLegs len (Just (start, _)) xs =
+padLegs :: SpeedSection -> [TaskDistance] -> [TaskDistance]
+padLegs Nothing xs = xs
+padLegs (Just (start, _)) xs =
     prolog <> xs <> unknownLegs
     where
         -- NOTE: The speed section uses 1-based indexing.
@@ -33,9 +33,7 @@ tableTurnpoints x taskLegs = do
     let ss = getSpeedSection <$> x
     let zs = getAllRawZones <$> x
 
-    len :: Int <- sample . current $ length <$> zs
-    ss' :: SpeedSection <- sample . current $ ss
-    let pad = padLegs len ss'
+    pad <- sample . current $ padLegs <$> ss
 
     let legs' = (maybe unknownLegs (pad . legs)) <$> taskLegs
     let legsSum' = (maybe unknownLegs (pad . legsSum)) <$> taskLegs
