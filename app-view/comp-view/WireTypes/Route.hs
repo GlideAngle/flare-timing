@@ -8,6 +8,7 @@ module WireTypes.Route
     , TaskLegs(..)
     , taskLength
     , taskLegs
+    , taskOptimalRoute
     , showTaskDistance
     ) where
 
@@ -85,3 +86,6 @@ taskLegs OptimalRoute{..} =
             , legsSum = legsSum
             })
     <$> taskRoute
+
+taskOptimalRoute :: OptimalRoute (Maybe TrackLine) -> [RawLatLng]
+taskOptimalRoute OptimalRoute{..} = maybe [] waypoints taskRoute

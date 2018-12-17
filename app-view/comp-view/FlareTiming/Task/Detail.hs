@@ -5,7 +5,7 @@ import Reflex
 import Reflex.Dom
 
 import WireTypes.Comp (Comp(..), Task(..))
-import WireTypes.Route (taskLength, taskLegs)
+import WireTypes.Route (taskLength, taskLegs, taskOptimalRoute)
 import WireTypes.Point (Allocation(..))
 import WireTypes.Validity (Validity(..))
 import FlareTiming.Comms
@@ -29,14 +29,15 @@ taskDetail
     -> Dynamic t (Maybe Allocation)
     -> m (Event t IxTask)
 
-taskDetail t@(IxTask _) cs x vy a = do
+taskDetail t@(IxTask _) cs task vy a = do
     s <- getTaskScore t
     vw <- getTaskValidityWorking t
     let lnTask = getTaskLengthSphericalEdge t
+    route <- (fmap . fmap) taskOptimalRoute lnTask
     ln <- (fmap . fmap) taskLength lnTask
     legs <- (fmap . fmap) taskLegs lnTask
-    _ <- simpleList cs (compTask x)
-    es <- simpleList cs (crumbTask x)
+    _ <- simpleList cs (compTask task)
+    es <- simpleList cs (crumbTask task)
     tab <- tabsTask
     let utc = utcOffset . head <$> cs
     let ps = (fmap . fmap) points a
@@ -47,9 +48,14 @@ taskDetail t@(IxTask _) cs x vy a = do
             (\case
                 TaskTabValidity -> viewValidity vy vw
                 TaskTabScore -> tableScore utc ln vy wg ps tp s
-                TaskTabTask -> tableTurnpoints x legs
-                TaskTabMap -> do y <- sample . current $ x; map y
-                TaskTabAbsent -> tableAbsent x)
+                TaskTabTask -> tableTurnpoints task legs
+
+                TaskTabMap -> do
+                    task' <- sample . current $ task
+                    route' <- sample . current $ route
+                    map task' route'
+
+                TaskTabAbsent -> tableAbsent task)
             <$> tab
 
     return $ switchDyn (leftmost <$> es)
