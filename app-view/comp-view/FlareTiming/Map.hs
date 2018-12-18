@@ -3,8 +3,10 @@ module FlareTiming.Map (map) where
 import Prelude hiding (map)
 import Reflex.Dom
 import Reflex.Time (delay)
+import qualified Data.Text as T (pack)
 import Control.Monad (sequence)
 import Control.Monad.IO.Class (liftIO)
+import qualified Data.Text as T (Text, intercalate)
 
 import qualified FlareTiming.Map.Leaflet as L
     ( Marker(..)
@@ -24,9 +26,31 @@ import qualified FlareTiming.Map.Leaflet as L
     , fitBounds
     , layersControl
     )
-import WireTypes.Comp (Task(..), SpeedSection)
+import WireTypes.Comp (Task(..), SpeedSection, getRaceRawZones)
 import WireTypes.Zone
     (Zones(..), RawZone(..), RawLatLng(..), RawLat(..), RawLng(..), Radius(..))
+import qualified FlareTiming.Turnpoint as TP (getName)
+
+zoomButton
+    :: MonadWidget t m
+    => T.Text
+    -> m (Event t ())
+zoomButton s = do
+    (e, _) <- elAttr' "a" ("class" =: "button") $ text s
+    return $ domEvent Click e
+
+taskTileZones
+    :: MonadWidget t m
+    => Task
+    -> m ([Event t ()])
+taskTileZones t = do
+    let xs = getRaceRawZones t
+    let zs = TP.getName <$> xs
+    elClass "div" "buttons has-addons" $ do
+        (e, _) <- elAttr' "a" ("class" =: "button") $ text "Zoom to Extents"
+        let v = domEvent Click e
+        vs <- sequence $ zoomButton <$> zs
+        return $ v : vs
 
 turnpoint :: String -> RawZone -> IO (L.Marker, L.Circle)
 turnpoint
@@ -64,14 +88,12 @@ map _ [] = do
     el "p" $ text "The task optimal route has no turnpoints."
     return ()
 
-map Task{zones = Zones{raw = xs}, speedSection} ys = do
+map task@Task{zones = Zones{raw = xs}, speedSection} ys = do
     let tpNames = fmap (\RawZone{..} -> zoneName) xs
     postBuild <- delay 1 =<< getPostBuild
 
-    (eZoom, _) <- elAttr' "a" ("class" =: "button") $ text "Zoom to Extents"
-    let evZoom = domEvent Click eZoom
+    evZoom : _ <- taskTileZones task
 
-    elClass "div" "spacer" $ return ()
     (eCanvas, _) <- elAttr' "div" ("style" =: "height: 680px;width: 100%") $ return ()
 
     rec performEvent_ $ leftmost
