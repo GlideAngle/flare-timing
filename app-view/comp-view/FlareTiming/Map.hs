@@ -76,12 +76,13 @@ map Task{zones = Zones{raw = xs}, speedSection} ys = do
 
     rec performEvent_ $ leftmost
             [ ffor postBuild (\_ -> liftIO $ do
-                                L.mapInvalidateSize lmap'
-                                L.fitBounds lmap' bounds'
-                                return ())
+                L.mapInvalidateSize lmap'
+                L.fitBounds lmap' bounds'
+                return ())
+
             , ffor evZoom (\_ -> liftIO $ do
-                                L.fitBounds lmap' bounds'
-                                return ())
+                L.fitBounds lmap' bounds'
+                return ())
             ]
 
         (lmap', bounds') <- liftIO $ do
