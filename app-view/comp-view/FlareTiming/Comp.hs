@@ -7,8 +7,7 @@ import Data.Map (union)
 import Data.Maybe (listToMaybe)
 import Control.Applicative (pure)
 
-import WireTypes.Comp
-    (Comp(..), Nominal(..), Task(..), UtcOffset(..), getRaceRawZones)
+import WireTypes.Comp (Comp(..), Nominal(..), UtcOffset(..))
 import FlareTiming.Comms (getNominals)
 
 loading :: MonadWidget t m => m ()

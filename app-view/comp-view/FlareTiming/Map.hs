@@ -3,10 +3,9 @@ module FlareTiming.Map (map) where
 import Prelude hiding (map)
 import Reflex.Dom
 import Reflex.Time (delay)
-import qualified Data.Text as T (pack)
+import qualified Data.Text as T (Text, pack)
 import Control.Monad (sequence)
 import Control.Monad.IO.Class (liftIO)
-import qualified Data.Text as T (Text, intercalate)
 
 import qualified FlareTiming.Map.Leaflet as L
     ( Marker(..)
@@ -24,6 +23,7 @@ import qualified FlareTiming.Map.Leaflet as L
     , polylineAddToMap
     , polylineBounds
     , fitBounds
+    , latLngBounds
     , layersControl
     )
 import WireTypes.Comp (Task(..), SpeedSection, getRaceRawZones)
@@ -143,7 +143,7 @@ map task@Task{zones = Zones{raw = xs}, speedSection} ys = do
             L.polylineAddToMap routeLine lmap
             L.layersControl mapLayer lmap courseLine routeLine
 
-            bounds <- L.polylineBounds courseLine
+            bounds <- L.latLngBounds $ zoneToLatLng <$> xs
 
             return (lmap, bounds)
 
