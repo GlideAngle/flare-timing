@@ -6,6 +6,7 @@ module FlareTiming.Map.Leaflet
     , TileLayer(..)
     , Marker(..)
     , Circle(..)
+    , LatLngBounds
     , map
     , mapSetView
     , mapInvalidateSize
@@ -27,7 +28,6 @@ module FlareTiming.Map.Leaflet
     ) where
 
 import Prelude hiding (map, log)
-import GHCJS.Prim (toJSArray)
 import GHCJS.Types (JSVal, JSString)
 import GHCJS.DOM.Element (IsElement)
 import GHCJS.DOM.Types (Element(..), toElement, toJSString, toJSVal)
@@ -101,8 +101,8 @@ foreign import javascript unsafe
     latLng_ :: Double -> Double -> IO JSVal
 
 foreign import javascript unsafe
-    "L['latLngBounds']($1)"
-    latLngBounds_ :: JSVal -> IO JSVal
+    "$1['toBounds']($2)"
+    latLngRadiusBounds_ :: JSVal -> Double -> IO JSVal
 
 foreign import javascript unsafe
     "$1['extend']($2)"
@@ -185,9 +185,16 @@ extendBounds x y =
 fitBounds :: Map -> LatLngBounds -> IO ()
 fitBounds lm bounds = fitBounds_ (unMap lm) (unLatLngBounds bounds)
 
-latLngBounds :: [(Double, Double)] -> IO LatLngBounds
+latLngBounds :: [(Double, Double, Double)] -> IO LatLngBounds
 latLngBounds xs = do
-    latLngs <- sequence [latLng_ lat lng | (lat, lng) <- xs]
-    ys <- toJSArray latLngs
-    bounds <- latLngBounds_ ys
+    (y : ys) :: [JSVal] <- sequence $ f <$> xs
+    bounds :: JSVal <- foldr g (pure y) ys
     return $ LatLngBounds bounds
+    where
+        f (lat, lng, radius) = do
+            ll <- latLng_ lat lng
+            latLngRadiusBounds_ ll (2 * radius)
+
+        g x y = do
+            y' <- y
+            extendBounds_ x y'

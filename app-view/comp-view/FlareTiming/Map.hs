@@ -3,7 +3,6 @@ module FlareTiming.Map (map) where
 import Prelude hiding (map)
 import Reflex.Dom
 import Reflex.Time (delay)
-import qualified Data.Text as T (Text, pack)
 import Control.Monad (sequence)
 import Control.Monad.IO.Class (liftIO)
 
@@ -33,22 +32,22 @@ import qualified FlareTiming.Turnpoint as TP (getName)
 
 zoomButton
     :: MonadWidget t m
-    => T.Text
-    -> m (Event t ())
-zoomButton s = do
+    => RawZone
+    -> m (Event t [RawZone])
+zoomButton z = do
+    let s = TP.getName z
     (e, _) <- elAttr' "a" ("class" =: "button") $ text s
-    return $ domEvent Click e
+    return $ [z] <$ domEvent Click e
 
 taskTileZones
     :: MonadWidget t m
     => Task
-    -> m ([Event t ()])
+    -> m ([Event t [RawZone]])
 taskTileZones t = do
-    let xs = getRaceRawZones t
-    let zs = TP.getName <$> xs
+    let zs = getRaceRawZones t
     elClass "div" "buttons has-addons" $ do
         (e, _) <- elAttr' "a" ("class" =: "button") $ text "Zoom to Extents"
-        let v = domEvent Click e
+        let v = zs <$ domEvent Click e
         vs <- sequence $ zoomButton <$> zs
         return $ v : vs
 
@@ -66,12 +65,16 @@ turnpoint
     where
         latLng = (fromRational lat', fromRational lng')
 
-zoneToLatLng :: RawZone -> (Double, Double)
-zoneToLatLng RawZone{lat = RawLat lat', lng = RawLng lng'} =
+zoneToLL :: RawZone -> (Double, Double)
+zoneToLL RawZone{lat = RawLat lat', lng = RawLng lng'} =
     (fromRational lat', fromRational lng')
 
-rawToLatLng :: RawLatLng -> (Double, Double)
-rawToLatLng RawLatLng{lat = RawLat lat', lng = RawLng lng'} =
+zoneToLLR :: RawZone -> (Double, Double, Double)
+zoneToLLR RawZone{lat = RawLat lat', lng = RawLng lng', radius = Radius r} =
+    (fromRational lat', fromRational lng', r)
+
+rawToLL :: RawLatLng -> (Double, Double)
+rawToLL RawLatLng{lat = RawLat lat', lng = RawLng lng'} =
     (fromRational lat', fromRational lng')
 
 map
@@ -92,24 +95,30 @@ map task@Task{zones = Zones{raw = xs}, speedSection} ys = do
     let tpNames = fmap (\RawZone{..} -> zoneName) xs
     postBuild <- delay 1 =<< getPostBuild
 
-    evZoom : _ <- taskTileZones task
+    evZoomToExtent : evZooms <- taskTileZones task
 
     (eCanvas, _) <- elAttr' "div" ("style" =: "height: 680px;width: 100%") $ return ()
 
     rec performEvent_ $ leftmost
-            [ ffor postBuild (\_ -> liftIO $ do
+            ([ ffor postBuild (\_ -> liftIO $ do
                 L.mapInvalidateSize lmap'
                 L.fitBounds lmap' bounds'
                 return ())
 
-            , ffor evZoom (\_ -> liftIO $ do
+            , ffor evZoomToExtent (\_ -> liftIO $ do
                 L.fitBounds lmap' bounds'
                 return ())
             ]
+            <>
+            (fmap (\zs -> liftIO $ do
+                zBounds <- L.latLngBounds $ zoneToLLR <$> zs
+                L.fitBounds lmap' zBounds
+                return ())
+            <$> evZooms))
 
         (lmap', bounds') <- liftIO $ do
             lmap <- L.map (_element_raw eCanvas)
-            L.mapSetView lmap (zoneToLatLng $ head xs) 11
+            L.mapSetView lmap (zoneToLL $ head xs) 11
 
             mapLayer <-
                 -- SEE: http://leaflet-extras.github.io/leaflet-providers/preview/
@@ -131,8 +140,8 @@ map task@Task{zones = Zones{raw = xs}, speedSection} ys = do
                     return ())
                 (zip tpNames xMarks)
 
-            let xPts :: [(Double, Double)] = fmap zoneToLatLng xs
-            let yPts :: [(Double, Double)] = fmap rawToLatLng ys
+            let xPts :: [(Double, Double)] = fmap zoneToLL xs
+            let yPts :: [(Double, Double)] = fmap rawToLL ys
 
             courseLine <- L.polyline xPts "gray"
             routeLine <- L.polyline yPts "red"
@@ -143,7 +152,7 @@ map task@Task{zones = Zones{raw = xs}, speedSection} ys = do
             L.polylineAddToMap routeLine lmap
             L.layersControl mapLayer lmap courseLine routeLine
 
-            bounds <- L.latLngBounds $ zoneToLatLng <$> xs
+            bounds <- L.polylineBounds courseLine
 
             return (lmap, bounds)
 
