@@ -1,35 +1,18 @@
-module FlareTiming.Comp (comps, compTask) where
+module FlareTiming.Comp (comps) where
 
 import Reflex
 import Reflex.Dom
-import qualified Data.Text as T (Text, pack, intercalate)
+import qualified Data.Text as T (Text, pack)
 import Data.Map (union)
 import Data.Maybe (listToMaybe)
 import Control.Applicative (pure)
 
 import WireTypes.Comp
     (Comp(..), Nominal(..), Task(..), UtcOffset(..), getRaceRawZones)
-import qualified FlareTiming.Turnpoint as TP (getName)
 import FlareTiming.Comms (getNominals)
 
 loading :: MonadWidget t m => m ()
 loading = el "li" $ text "Comps will be shown here"
-
-compTask
-    :: MonadWidget t m
-    => Dynamic t Task
-    -> Dynamic t Comp
-    -> m ()
-compTask t _ = do
-    let xs = getRaceRawZones <$> t
-    let zs = (fmap . fmap) TP.getName xs
-    let title = T.intercalate " - " <$> zs
-
-    elClass "div" "tile" $ do
-        elClass "div" "tile is-parent" $ do
-            elClass "div" "tile is-child box" $ do
-                elClass "p" "title is-3" $ do
-                    dynText title
 
 comp
     :: MonadWidget t m
