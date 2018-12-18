@@ -20,7 +20,6 @@ import qualified FlareTiming.Map.Leaflet as L
     , circleAddToMap
     , polyline 
     , polylineAddToMap
-    , polylineBounds
     , fitBounds
     , latLngBounds
     , layersControl
@@ -152,7 +151,7 @@ map task@Task{zones = Zones{raw = xs}, speedSection} ys = do
             L.polylineAddToMap routeLine lmap
             L.layersControl mapLayer lmap courseLine routeLine
 
-            bounds <- L.polylineBounds courseLine
+            bounds <- L.latLngBounds $ zoneToLLR <$> xs
 
             return (lmap, bounds)
 
