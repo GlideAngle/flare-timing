@@ -67,16 +67,25 @@ map _ [] = do
 map Task{zones = Zones{raw = xs}, speedSection} ys = do
     let tpNames = fmap (\RawZone{..} -> zoneName) xs
     postBuild <- delay 1 =<< getPostBuild
-    (e, _) <- elAttr' "div" ("style" =: "height: 680px;width: 100%") $ return ()
-    rec performEvent_ $ fmap
-                            (\_ -> liftIO $ do
+
+    (eZoom, _) <- elAttr' "a" ("class" =: "button") $ text "Zoom to Extents"
+    let evZoom = domEvent Click eZoom
+
+    elClass "div" "spacer" $ return ()
+    (eCanvas, _) <- elAttr' "div" ("style" =: "height: 680px;width: 100%") $ return ()
+
+    rec performEvent_ $ leftmost
+            [ ffor postBuild (\_ -> liftIO $ do
                                 L.mapInvalidateSize lmap'
                                 L.fitBounds lmap' bounds'
-                                return ()
-                            )
-                            postBuild
+                                return ())
+            , ffor evZoom (\_ -> liftIO $ do
+                                L.fitBounds lmap' bounds'
+                                return ())
+            ]
+
         (lmap', bounds') <- liftIO $ do
-            lmap <- L.map (_element_raw e)
+            lmap <- L.map (_element_raw eCanvas)
             L.mapSetView lmap (zoneToLatLng $ head xs) 11
 
             mapLayer <-
