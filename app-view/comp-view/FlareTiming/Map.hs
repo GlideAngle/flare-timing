@@ -35,11 +35,11 @@ data ZoomOrPan = Zoom | Pan deriving Show
 
 zoomButton
     :: MonadWidget t m
-    => RawZone
+    => (RawZone, T.Text)
     -> m (Event t [RawZone])
-zoomButton z = do
+zoomButton (z, btnClass) = do
     let s = TP.getName z
-    (e, _) <- elAttr' "a" ("class" =: "button") $ text s
+    (e, _) <- elAttr' "a" ("class" =: btnClass) $ text s
     return $ [z] <$ domEvent Click e
 
 zoomOrPanIcon :: ZoomOrPan -> T.Text
@@ -50,8 +50,25 @@ taskZoneButtons
     :: MonadWidget t m
     => Task
     -> m ((Dynamic t ZoomOrPan, Dynamic t [RawZone]))
-taskZoneButtons t = do
+taskZoneButtons t@Task{speedSection} = do
     let zones = getAllRawZones t
+    let btn :: T.Text = "button"
+    let btnStart :: T.Text = "button is-success"
+    let btnEnd :: T.Text = "button is-danger"
+
+    let zoneClasses =
+            maybe
+                (zip zones $ repeat btn)
+                (\(start, end) ->
+                    zipWith
+                        (\z i ->
+                            let c = if | i == start -> btnStart
+                                       | i == end -> btnEnd
+                                       | otherwise -> btn
+                            in (z, c))
+                        zones
+                        [1..])
+
     elClass "div" "buttons has-addons" $ do
         rec (zoom, _) <-
                 elAttr' "a" ("class" =: "button") $ do
@@ -69,7 +86,8 @@ taskZoneButtons t = do
 
         (extents, _) <- elAttr' "a" ("class" =: "button") $ text "Extents"
         let allZones = zones <$ domEvent Click extents
-        eachZone <- sequence $ zoomButton <$> zones
+
+        eachZone <- sequence $ zoomButton <$> zoneClasses speedSection
         zs <- holdDyn zones . leftmost $ allZones : eachZone
         return $ (zoomOrPan, zs)
 
