@@ -52,9 +52,9 @@ taskZoneButtons
     -> m ((Dynamic t ZoomOrPan, Dynamic t [RawZone]))
 taskZoneButtons t@Task{speedSection} = do
     let zones = getAllRawZones t
-    let btn :: T.Text = "button"
-    let btnStart :: T.Text = "button is-success"
-    let btnEnd :: T.Text = "button is-danger"
+    let btn = "button"
+    let btnStart = "button is-success"
+    let btnEnd = "button is-danger"
 
     let zoneClasses =
             maybe
