@@ -2,7 +2,7 @@ module FlareTiming.Map (map) where
 
 import Prelude hiding (map)
 import Reflex.Dom
-import qualified Data.Text as T (pack)
+import qualified Data.Text as T (Text, pack)
 import Reflex.Time (delay)
 import Control.Monad (sequence)
 import Control.Monad.IO.Class (liftIO)
@@ -42,6 +42,10 @@ zoomButton z = do
     (e, _) <- elAttr' "a" ("class" =: "button") $ text s
     return $ [z] <$ domEvent Click e
 
+zoomOrPanIcon :: ZoomOrPan -> T.Text
+zoomOrPanIcon Zoom = "fa fa-search-plus"
+zoomOrPanIcon Pan = "fa fa-arrows"
+
 taskZoneButtons
     :: MonadWidget t m
     => Task
@@ -49,12 +53,19 @@ taskZoneButtons
 taskZoneButtons t = do
     let zones = getRaceRawZones t
     elClass "div" "buttons has-addons" $ do
-        rec (zoom, _) <- elAttr' "a" ("class" =: "button") $ dynText zp
+        rec (zoom, _) <-
+                elAttr' "a" ("class" =: "button") $ do
+                    elClass "span" "icon is-small" $
+                        elDynClass "i" zpClass $ return ()
+                    el "span" $ dynText zpText
+
             zoomOrPan <-
                 (fmap . fmap)
                 (\case True -> Pan; False -> Zoom)
                 (toggle True $ domEvent Click zoom)
-            let zp = ffor zoomOrPan $ T.pack . (++ " to ...") . show
+
+            let zpText = ffor zoomOrPan $ T.pack . (++ " to ...") . show
+            let zpClass = ffor zoomOrPan zoomOrPanIcon
 
         (extents, _) <- elAttr' "a" ("class" =: "button") $ text "Extents"
         let allZones = zones <$ domEvent Click extents
