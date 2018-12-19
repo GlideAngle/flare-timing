@@ -23,6 +23,7 @@ module FlareTiming.Map.Leaflet
     , polylineBounds
     , extendBounds
     , fitBounds
+    , panToBounds
     , latLngBounds
     , layersControl
     ) where
@@ -112,6 +113,10 @@ foreign import javascript unsafe
     "$1['fitBounds']($2)"
     fitBounds_ :: JSVal -> JSVal -> IO ()
 
+foreign import javascript unsafe
+    "$1['setView']($2.getCenter())"
+    panToBounds_ :: JSVal -> JSVal -> IO ()
+
 map :: IsElement e => e -> IO Map
 map e =
     Map <$> (map_ . unElement . toElement $ e)
@@ -184,6 +189,9 @@ extendBounds x y =
 
 fitBounds :: Map -> LatLngBounds -> IO ()
 fitBounds lm bounds = fitBounds_ (unMap lm) (unLatLngBounds bounds)
+
+panToBounds :: Map -> LatLngBounds -> IO ()
+panToBounds lm bounds = panToBounds_ (unMap lm) (unLatLngBounds bounds)
 
 latLngBounds :: [(Double, Double, Double)] -> IO LatLngBounds
 latLngBounds xs = do

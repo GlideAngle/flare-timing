@@ -22,6 +22,7 @@ import qualified FlareTiming.Map.Leaflet as L
     , polyline 
     , polylineAddToMap
     , fitBounds
+    , panToBounds
     , latLngBounds
     , layersControl
     )
@@ -44,7 +45,7 @@ zoomButton z = do
 taskZoneButtons
     :: MonadWidget t m
     => Task
-    -> m ((Dynamic t ZoomOrPan, Event t [RawZone]))
+    -> m ((Dynamic t ZoomOrPan, Dynamic t [RawZone]))
 taskZoneButtons t = do
     let zs = getRaceRawZones t
     elClass "div" "buttons has-addons" $ do
@@ -58,7 +59,7 @@ taskZoneButtons t = do
         (extents, _) <- elAttr' "a" ("class" =: "button") $ text "Extents"
         let v = zs <$ domEvent Click extents
         vs <- sequence $ zoomButton <$> zs
-        let ys = leftmost $ v : vs
+        ys <- holdDyn [] . leftmost $ v : vs
         return $ (zoomOrPan, ys)
 
 turnpoint :: String -> RawZone -> IO (L.Marker, L.Circle)
@@ -105,7 +106,7 @@ map task@Task{zones = Zones{raw = xs}, speedSection} ys = do
     let tpNames = fmap (\RawZone{..} -> zoneName) xs
     postBuild <- delay 1 =<< getPostBuild
 
-    (_, evZoom) <- taskZoneButtons task
+    (zoomOrPan, evZoom) <- taskZoneButtons task
 
     (eCanvas, _) <- elAttr' "div" ("style" =: "height: 680px;width: 100%") $ return ()
 
@@ -115,9 +116,13 @@ map task@Task{zones = Zones{raw = xs}, speedSection} ys = do
                 L.fitBounds lmap' bounds'
                 return ())
 
-            , ffor evZoom (\zs -> liftIO $ do
+            , updated $ ffor2 zoomOrPan evZoom (\zp zs -> liftIO $ do
                 bs <- L.latLngBounds $ zoneToLLR <$> zs
-                L.fitBounds lmap' bs
+
+                case zp of
+                    Zoom -> L.fitBounds lmap' bs
+                    Pan -> L.panToBounds lmap' bs
+
                 return ())
             ]
 
