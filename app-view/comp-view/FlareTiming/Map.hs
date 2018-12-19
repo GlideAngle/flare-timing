@@ -2,6 +2,7 @@ module FlareTiming.Map (map) where
 
 import Prelude hiding (map)
 import Reflex.Dom
+import qualified Data.Text as T (pack)
 import Reflex.Time (delay)
 import Control.Monad (sequence)
 import Control.Monad.IO.Class (liftIO)
@@ -29,6 +30,8 @@ import WireTypes.Zone
     (Zones(..), RawZone(..), RawLatLng(..), RawLat(..), RawLng(..), Radius(..))
 import qualified FlareTiming.Turnpoint as TP (getName)
 
+data ZoomOrPan = Zoom | Pan deriving Show
+
 zoomButton
     :: MonadWidget t m
     => RawZone
@@ -41,14 +44,21 @@ zoomButton z = do
 taskZoneButtons
     :: MonadWidget t m
     => Task
-    -> m ([Event t [RawZone]])
+    -> m ((Dynamic t ZoomOrPan, [Event t [RawZone]]))
 taskZoneButtons t = do
     let zs = getRaceRawZones t
     elClass "div" "buttons has-addons" $ do
-        (e, _) <- elAttr' "a" ("class" =: "button") $ text "Zoom to Extents"
-        let v = zs <$ domEvent Click e
+        rec (zoom, _) <- elAttr' "a" ("class" =: "button") $ dynText zp
+            zoomOrPan <-
+                (fmap . fmap)
+                (\case True -> Zoom; False -> Pan)
+                (toggle True $ domEvent Click zoom)
+            let zp = ffor zoomOrPan $ (T.pack . (++ " to ...") . show)
+
+        (extents, _) <- elAttr' "a" ("class" =: "button") $ text "Extents"
+        let v = zs <$ domEvent Click extents
         vs <- sequence $ zoomButton <$> zs
-        return $ v : vs
+        return $ (zoomOrPan, v : vs)
 
 turnpoint :: String -> RawZone -> IO (L.Marker, L.Circle)
 turnpoint
@@ -94,7 +104,7 @@ map task@Task{zones = Zones{raw = xs}, speedSection} ys = do
     let tpNames = fmap (\RawZone{..} -> zoneName) xs
     postBuild <- delay 1 =<< getPostBuild
 
-    evZoomToExtent : evZooms <- taskZoneButtons task
+    (_, evZoomToExtent : evZooms) <- taskZoneButtons task
 
     (eCanvas, _) <- elAttr' "div" ("style" =: "height: 680px;width: 100%") $ return ()
 
