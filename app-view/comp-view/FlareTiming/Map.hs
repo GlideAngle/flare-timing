@@ -52,7 +52,7 @@ taskZoneButtons t = do
         rec (zoom, _) <- elAttr' "a" ("class" =: "button") $ dynText zp
             zoomOrPan <-
                 (fmap . fmap)
-                (\case True -> Zoom; False -> Pan)
+                (\case True -> Pan; False -> Zoom)
                 (toggle True $ domEvent Click zoom)
             let zp = ffor zoomOrPan $ T.pack . (++ " to ...") . show
 
