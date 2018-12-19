@@ -47,20 +47,20 @@ taskZoneButtons
     => Task
     -> m ((Dynamic t ZoomOrPan, Dynamic t [RawZone]))
 taskZoneButtons t = do
-    let zs = getRaceRawZones t
+    let zones = getRaceRawZones t
     elClass "div" "buttons has-addons" $ do
         rec (zoom, _) <- elAttr' "a" ("class" =: "button") $ dynText zp
             zoomOrPan <-
                 (fmap . fmap)
                 (\case True -> Zoom; False -> Pan)
                 (toggle True $ domEvent Click zoom)
-            let zp = ffor zoomOrPan $ (T.pack . (++ " to ...") . show)
+            let zp = ffor zoomOrPan $ T.pack . (++ " to ...") . show
 
         (extents, _) <- elAttr' "a" ("class" =: "button") $ text "Extents"
-        let v = zs <$ domEvent Click extents
-        vs <- sequence $ zoomButton <$> zs
-        ys <- holdDyn [] . leftmost $ v : vs
-        return $ (zoomOrPan, ys)
+        let allZones = zones <$ domEvent Click extents
+        eachZone <- sequence $ zoomButton <$> zones
+        zs <- holdDyn zones . leftmost $ allZones : eachZone
+        return $ (zoomOrPan, zs)
 
 turnpoint :: String -> RawZone -> IO (L.Marker, L.Circle)
 turnpoint

@@ -194,6 +194,7 @@ panToBounds :: Map -> LatLngBounds -> IO ()
 panToBounds lm bounds = panToBounds_ (unMap lm) (unLatLngBounds bounds)
 
 latLngBounds :: [(Double, Double, Double)] -> IO LatLngBounds
+latLngBounds [] = fail "Empty list passed to latLngBounds"
 latLngBounds xs = do
     (y : ys) :: [JSVal] <- sequence $ f <$> xs
     bounds :: JSVal <- foldr g (pure y) ys
