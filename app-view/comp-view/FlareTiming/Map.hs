@@ -26,7 +26,7 @@ import qualified FlareTiming.Map.Leaflet as L
     , latLngBounds
     , layersControl
     )
-import WireTypes.Comp (Task(..), SpeedSection, getRaceRawZones)
+import WireTypes.Comp (Task(..), SpeedSection, getAllRawZones)
 import WireTypes.Zone
     (Zones(..), RawZone(..), RawLatLng(..), RawLat(..), RawLng(..), Radius(..))
 import qualified FlareTiming.Turnpoint as TP (getName)
@@ -51,7 +51,7 @@ taskZoneButtons
     => Task
     -> m ((Dynamic t ZoomOrPan, Dynamic t [RawZone]))
 taskZoneButtons t = do
-    let zones = getRaceRawZones t
+    let zones = getAllRawZones t
     elClass "div" "buttons has-addons" $ do
         rec (zoom, _) <-
                 elAttr' "a" ("class" =: "button") $ do
