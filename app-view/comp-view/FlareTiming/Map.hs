@@ -38,11 +38,11 @@ zoomButton z = do
     (e, _) <- elAttr' "a" ("class" =: "button") $ text s
     return $ [z] <$ domEvent Click e
 
-taskTileZones
+taskZoneButtons
     :: MonadWidget t m
     => Task
     -> m ([Event t [RawZone]])
-taskTileZones t = do
+taskZoneButtons t = do
     let zs = getRaceRawZones t
     elClass "div" "buttons has-addons" $ do
         (e, _) <- elAttr' "a" ("class" =: "button") $ text "Zoom to Extents"
@@ -94,7 +94,7 @@ map task@Task{zones = Zones{raw = xs}, speedSection} ys = do
     let tpNames = fmap (\RawZone{..} -> zoneName) xs
     postBuild <- delay 1 =<< getPostBuild
 
-    evZoomToExtent : evZooms <- taskTileZones task
+    evZoomToExtent : evZooms <- taskZoneButtons task
 
     (eCanvas, _) <- elAttr' "div" ("style" =: "height: 680px;width: 100%") $ return ()
 
