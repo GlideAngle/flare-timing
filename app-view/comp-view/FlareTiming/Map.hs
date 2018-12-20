@@ -4,7 +4,7 @@ import Prelude hiding (map)
 import Reflex.Dom
 import qualified Data.Text as T (Text, pack)
 import Reflex.Time (delay)
-import Control.Monad (sequence)
+import Control.Monad (sequence, join)
 import Control.Monad.IO.Class (liftIO)
 
 import qualified FlareTiming.Map.Leaflet as L
@@ -33,41 +33,63 @@ import qualified FlareTiming.Turnpoint as TP (getName)
 
 data ZoomOrPan = Zoom | Pan deriving Show
 
+newtype Active = Active Integer
+
 zoomButton
     :: MonadWidget t m
-    => (RawZone, T.Text)
-    -> m (Event t [RawZone])
-zoomButton (z, btnClass) = do
+    => Active
+    -> T.Text
+    -> RawZone
+    -> m (Event t (Maybe Active, [RawZone]))
+zoomButton i btnClass z = do
     let s = TP.getName z
     (e, _) <- elClass' "a" btnClass $ text s
-    return $ [z] <$ domEvent Click e
+    return $ (Just i, [z]) <$ domEvent Click e
 
 zoomOrPanIcon :: ZoomOrPan -> T.Text
 zoomOrPanIcon Zoom = "fa fa-search-plus"
 zoomOrPanIcon Pan = "fa fa-arrows"
+
+btn = "button"
+btnStart = "button has-text-success"
+btnEnd = "button has-text-danger"
+active x = x <> " is-active"
+
+zoneClasses :: Maybe Active -> SpeedSection -> [RawZone] -> [T.Text]
+zoneClasses (Just (Active j)) ss zones =
+    maybe
+        (const btn <$> zones)
+        (\(start, end) ->
+            zipWith
+                (\_ i ->
+                    if | i == j && i == start -> active btnStart
+                       | i == j && i == end -> active btnEnd
+                       | i == j -> active btn
+                       | i == start -> btnStart
+                       | i == end -> btnEnd
+                       | otherwise -> btn)
+                zones
+                [1..])
+        ss
+zoneClasses Nothing ss zones =
+    maybe
+        (const btn <$> zones)
+        (\(start, end) ->
+            zipWith
+                (\_ i ->
+                    if | i == start -> btnStart
+                       | i == end -> btnEnd
+                       | otherwise -> btn)
+                zones
+                [1..])
+        ss
 
 taskZoneButtons
     :: MonadWidget t m
     => Task
     -> m ((Dynamic t ZoomOrPan, Dynamic t [RawZone]))
 taskZoneButtons t@Task{speedSection} = do
-    let zones = getAllRawZones t
-    let btn = "button"
-    let btnStart = "button has-text-success"
-    let btnEnd = "button has-text-danger"
-
-    let zoneClasses =
-            maybe
-                (zip zones $ repeat btn)
-                (\(start, end) ->
-                    zipWith
-                        (\z i ->
-                            let c = if | i == start -> btnStart
-                                       | i == end -> btnEnd
-                                       | otherwise -> btn
-                            in (z, c))
-                        zones
-                        [1..])
+    let zs :: [RawZone] = getAllRawZones t
 
     elClass "div" "buttons has-addons" $ do
         rec (zoom, _) <-
@@ -85,11 +107,21 @@ taskZoneButtons t@Task{speedSection} = do
             let zpClass = ffor zoomOrPan zoomOrPanIcon
 
         (extents, _) <- elAttr' "a" ("class" =: "button") $ text "Extents"
-        let allZones = zones <$ domEvent Click extents
+        y <- mkEachZone speedSection zs
+        zs' <- holdDyn zs . leftmost $ [zs <$ domEvent Click extents, y]
+        return $ (zoomOrPan, zs')
 
-        eachZone <- sequence $ zoomButton <$> zoneClasses speedSection
-        zs <- holdDyn zones . leftmost $ allZones : eachZone
-        return $ (zoomOrPan, zs)
+mkEachZone
+    :: MonadWidget t m
+    => SpeedSection
+    -> [RawZone]
+    -> m (Event t [RawZone])
+mkEachZone ss zs = mdo
+    zcs <- ffor x (\a -> zoneClasses a ss zs)
+    xs <- sequence $ zipWith3 zoomButton (Active <$> [1..]) zcs zs
+    xy <- holdDyn (Nothing, zs) $ leftmost xs
+    let (x, y) = splitDynPure xy
+    return $ updated y
 
 turnpoint :: String -> RawZone -> IO (L.Marker, L.Circle)
 turnpoint
