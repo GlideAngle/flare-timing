@@ -125,7 +125,7 @@ writeCrossings compFile task pilot f = do
             let ps = fst <$> ys
             let errs = catMaybes . snd <$> ys
 
-            let pErrs :: [[Pilot]] = (fmap. fmap) fst errs 
+            let pErrs :: [[Pilot]] = (fmap. fmap) fst errs
 
             let flying = (fmap . fmap . fmap . fmap) madeZonesToFlying ps
 

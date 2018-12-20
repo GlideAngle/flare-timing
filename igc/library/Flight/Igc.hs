@@ -207,14 +207,14 @@ hms = do
     mm <- count 2 digit
     ss <- count 2 digit
     return $ HMS hh mm ss
-       
+
 lat :: GenParser Char st Lat
 lat = do
     degs <- count 2 digit
     mins <- count 5 digit
     f <- const LatN <$> char 'N' <|> const LatS <$> char 'S'
     return $ f degs mins
-       
+
 lng :: GenParser Char st Lng
 lng = do
     degs <- count 3 digit
@@ -224,10 +224,10 @@ lng = do
 
 altBaro :: GenParser Char st AltBaro
 altBaro = AltBaro <$> count 5 digit
-       
+
 altGps :: GenParser Char st AltGps
 altGps = AltGps <$> count 5 digit
-       
+
 alt :: GenParser Char st (AltBaro, Maybe AltGps)
 alt = do
     _ <- oneOf "AV"
