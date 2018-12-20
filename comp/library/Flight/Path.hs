@@ -182,8 +182,8 @@ ext GapPoint = ".gap-point.yaml"
 
 ensureExt :: FileType -> FilePath -> FilePath
 ensureExt Fsdb = flip replaceExtensions "fsdb"
-ensureExt Kml = flip replaceExtensions "kml"
-ensureExt Igc = flip replaceExtensions "igc"
+ensureExt Kml = id
+ensureExt Igc = id
 ensureExt CompInput = flip replaceExtensions "comp-input.yaml"
 ensureExt TaskLength = flip replaceExtensions "task-length.yaml"
 ensureExt CrossZone = flip replaceExtensions "cross-zone.yaml"
