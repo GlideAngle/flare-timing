@@ -53,8 +53,8 @@ taskZoneButtons
 taskZoneButtons t@Task{speedSection} = do
     let zones = getAllRawZones t
     let btn = "button"
-    let btnStart = "button is-success"
-    let btnEnd = "button is-danger"
+    let btnStart = "button has-text-success"
+    let btnEnd = "button has-text-danger"
 
     let zoneClasses =
             maybe
