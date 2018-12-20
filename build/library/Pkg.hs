@@ -74,7 +74,7 @@ hpack :: Folder -> Rules ()
 hpack folder =
     phony ("hpack-dhall-" ++ folder) $ do
         need ["dhall-format-" ++ folder]
-        cmd (Cwd folder) Shell ("../__shake-build/hpack-dhall package.dhall")
+        cmd (Cwd folder) Shell ("../__shake-build/dhall-hpack-cabal --package-dhall=package.dhall")
 
 cabal :: (Folder, Pkg) -> Rules ()
 cabal (folder, pkg) =
