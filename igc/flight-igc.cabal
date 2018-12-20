@@ -1,8 +1,10 @@
--- This file has been generated from package.dhall by hpack version 0.28.2.
+cabal-version: 1.12
+
+-- This file has been generated from package.dhall by hpack version 0.31.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 876dfc18696035721db20b6a87e4a73fae5cd50ec1c44333b517bddc6a7566b5
+-- hash: 22a0a3c8210138662db82b39275ecbabfcda34b29ff5b504f19ff321e38bc896
 
 name:           flight-igc
 version:        1.0.0
@@ -18,10 +20,9 @@ license:        MPL-2.0
 license-file:   LICENSE.md
 tested-with:    GHC == 8.2.2
 build-type:     Simple
-cabal-version:  >= 1.10
 extra-source-files:
-    changelog.md
     package.dhall
+    changelog.md
     README.md
 
 source-repository head

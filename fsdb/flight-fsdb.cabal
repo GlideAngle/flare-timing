@@ -1,8 +1,10 @@
--- This file has been generated from package.dhall by hpack version 0.28.2.
+cabal-version: 1.12
+
+-- This file has been generated from package.dhall by hpack version 0.31.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c65f1c230a71021f142798824c5bbd09842f19a8f9b52aed4c3a7f2262681f0b
+-- hash: 6097bca7467326dfd1bea77bc4b8462ce6dd655bff3e27c725b47e4b85906baa
 
 name:           flight-fsdb
 version:        0.1.0
@@ -18,10 +20,9 @@ license:        MPL-2.0
 license-file:   LICENSE.md
 tested-with:    GHC == 8.2.2
 build-type:     Simple
-cabal-version:  >= 1.10
 extra-source-files:
-    changelog.md
     package.dhall
+    changelog.md
     README.md
 
 source-repository head

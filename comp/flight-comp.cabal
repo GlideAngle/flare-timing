@@ -1,8 +1,10 @@
--- This file has been generated from package.dhall by hpack version 0.28.2.
+cabal-version: 1.12
+
+-- This file has been generated from package.dhall by hpack version 0.31.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d6368b1bb3abad7923178da20b86702328d507c86ddcfe50a4b4a5c087629f90
+-- hash: 1260e436bdd936f120bf520c42ce6879bb778d766e743a881710ed1e16aba67d
 
 name:           flight-comp
 version:        0.1.0
@@ -18,10 +20,9 @@ license:        MPL-2.0
 license-file:   LICENSE.md
 tested-with:    GHC == 8.2.2
 build-type:     Simple
-cabal-version:  >= 1.10
 extra-source-files:
-    changelog.md
     package.dhall
+    changelog.md
     README.md
 
 source-repository head

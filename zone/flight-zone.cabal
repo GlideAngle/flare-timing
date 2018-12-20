@@ -1,8 +1,10 @@
--- This file has been generated from package.dhall by hpack version 0.28.2.
+cabal-version: 1.12
+
+-- This file has been generated from package.dhall by hpack version 0.31.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d611212618db7ecf70babc44ec818c5ca900eb3b762f3ab5dfbaa935a15215f0
+-- hash: 197994d76f7dab098713dff4a9d155ea259d91027dd1e730cdc29ee111d3fd29
 
 name:           flight-zone
 version:        0.1.0
@@ -18,10 +20,9 @@ license:        MPL-2.0
 license-file:   LICENSE.md
 tested-with:    GHC == 8.2.2
 build-type:     Simple
-cabal-version:  >= 1.10
 extra-source-files:
-    changelog.md
     package.dhall
+    changelog.md
     README.md
 
 source-repository head

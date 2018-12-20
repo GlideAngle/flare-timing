@@ -1,8 +1,10 @@
--- This file has been generated from package.dhall by hpack version 0.28.2.
+cabal-version: 1.12
+
+-- This file has been generated from package.dhall by hpack version 0.31.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 121a769a05e15141a8166b6f05cd63cbdb3bdbbda012d54b8472f45d995cc1ec
+-- hash: 17fff3351bee66e61b24c7964bd06b306eb33188d609499c4f323a0ae149022a
 
 name:           tasty-compare
 version:        0.1.0
@@ -18,10 +20,9 @@ license:        MPL-2.0
 license-file:   LICENSE.md
 tested-with:    GHC == 8.2.2
 build-type:     Simple
-cabal-version:  >= 1.10
 extra-source-files:
-    changelog.md
     package.dhall
+    changelog.md
     README.md
 
 source-repository head

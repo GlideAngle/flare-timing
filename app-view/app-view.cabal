@@ -1,8 +1,10 @@
--- This file has been generated from package.dhall by hpack version 0.28.2.
+cabal-version: 1.12
+
+-- This file has been generated from package.dhall by hpack version 0.31.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b3400c1933344fb40aac5f0f2623c7b6adbeb30d5c8fcd8b95bf852aae5c0c4f
+-- hash: a60c1abf8fab7fe01b4a1622f9af807808dca282a19eb28938d854e0ce5e954d
 
 name:           app-view
 version:        0.1.0
@@ -18,10 +20,9 @@ license:        MPL-2.0
 license-file:   LICENSE.md
 tested-with:    GHC == 8.2.2
 build-type:     Simple
-cabal-version:  >= 1.10
 extra-source-files:
-    changelog.md
     package.dhall
+    changelog.md
     README.md
 
 source-repository head
@@ -59,6 +60,7 @@ executable comp-view
       WireTypes.Comp
       WireTypes.Pilot
       WireTypes.Point
+      WireTypes.Route
       WireTypes.Validity
       WireTypes.ValidityWorking
       WireTypes.Zone
