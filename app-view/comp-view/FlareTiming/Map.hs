@@ -39,7 +39,7 @@ zoomButton
     -> m (Event t [RawZone])
 zoomButton (z, btnClass) = do
     let s = TP.getName z
-    (e, _) <- elAttr' "a" ("class" =: btnClass) $ text s
+    (e, _) <- elClass' "a" btnClass $ text s
     return $ [z] <$ domEvent Click e
 
 zoomOrPanIcon :: ZoomOrPan -> T.Text
@@ -71,7 +71,7 @@ taskZoneButtons t@Task{speedSection} = do
 
     elClass "div" "buttons has-addons" $ do
         rec (zoom, _) <-
-                elAttr' "a" ("class" =: "button") $ do
+                elClass' "a" "button" $ do
                     elClass "span" "icon is-small" $
                         elDynClass "i" zpClass $ return ()
                     el "span" $ dynText zpText
