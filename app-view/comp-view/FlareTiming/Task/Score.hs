@@ -330,7 +330,7 @@ dnfRow
     -> Dynamic t Pilot
     -> m ()
 dnfRow place pilot = do
-    el "tr" $ do
+    elClass "tr" "tr-dnf" $ do
         elClass "td" "td-placing" . text $ showRank place
         elClass "td" "td-pilot" . dynText $ showPilotName <$> pilot
         elAttr "td" ("colspan" =: "12") $ return ()
