@@ -10,7 +10,9 @@ import WireTypes.Route (taskLength, taskLegs, taskOptimalRoute)
 import WireTypes.Point (Allocation(..))
 import WireTypes.Validity (Validity(..))
 import FlareTiming.Comms
-    (getTaskScore, getTaskValidityWorking, getTaskLengthSphericalEdge)
+    ( getTaskScore, getTaskValidityWorking, getTaskLengthSphericalEdge
+    , getTaskPilotDnf
+    )
 import FlareTiming.Breadcrumb (crumbTask)
 import FlareTiming.Events (IxTask(..))
 import FlareTiming.Map (map)
@@ -45,12 +47,13 @@ taskDetail
     -> Dynamic t (Maybe Allocation)
     -> m (Event t IxTask)
 
-taskDetail t@(IxTask _) cs task vy a = do
+taskDetail ix@(IxTask _) cs task vy a = do
     let utc = utcOffset . head <$> cs
-    s <- getTaskScore t
-    vw <- getTaskValidityWorking t
+    s <- getTaskScore ix
+    vw <- getTaskValidityWorking ix
+    dnf <- getTaskPilotDnf ix
 
-    let lnTask = getTaskLengthSphericalEdge t
+    let lnTask = getTaskLengthSphericalEdge ix
     route <- (fmap . fmap) taskOptimalRoute lnTask
     ln <- (fmap . fmap) taskLength lnTask
     legs <- (fmap . fmap) taskLegs lnTask
@@ -66,13 +69,13 @@ taskDetail t@(IxTask _) cs task vy a = do
     _ <- widgetHold (tableTurnpoints task legs) $
             (\case
                 TaskTabValidity -> viewValidity vy vw
-                TaskTabScore -> tableScore utc ln vy wg ps tp s
+                TaskTabScore -> tableScore utc ln dnf vy wg ps tp s
                 TaskTabTask -> tableTurnpoints task legs
                 TaskTabMap -> do
                     task' <- sample . current $ task
                     route' <- sample . current $ route
                     map task' route'
-                TaskTabAbsent -> tableAbsent t task)
+                TaskTabAbsent -> tableAbsent dnf task)
             <$> tab
 
     return $ switchDyn (leftmost <$> es)

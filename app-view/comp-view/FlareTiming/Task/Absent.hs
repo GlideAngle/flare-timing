@@ -3,18 +3,16 @@ module FlareTiming.Task.Absent (tableAbsent) where
 import Reflex.Dom
 
 import WireTypes.Comp (Task(..), getAbsent)
-import FlareTiming.Comms (getTaskPilotDnf)
+import WireTypes.Pilot (Pilot(..))
 import FlareTiming.Pilot (rowPilot)
-import FlareTiming.Events (IxTask(..))
 
 tableAbsent
     :: MonadWidget t m
-    => IxTask
+    => Dynamic t [Pilot]
     -> Dynamic t Task
     -> m ()
-tableAbsent ix task = do
+tableAbsent dnf task = do
     let xs = getAbsent <$> task
-    ys <- getTaskPilotDnf ix
 
     elClass "div" "tile is-ancestor" $ do
         elClass "div" "tile is-parent" $ do
@@ -46,7 +44,7 @@ tableAbsent ix task = do
                                     el "th" $ text "Id"
                                     el "th" $ text "Name"
 
-                                simpleList ys rowPilot
+                                simpleList dnf rowPilot
 
                     el "p" . text
                         $ "Both launch validity and task validity are reduced when pilots elect not to fly. The reduction is made by taking the fraction of those not flying over those present at launch."

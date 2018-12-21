@@ -60,13 +60,21 @@ tableScore
     :: MonadWidget t m
     => Dynamic t UtcOffset
     -> Dynamic t (Maybe TaskLength)
+    -> Dynamic t [Pilot]
     -> Dynamic t (Maybe Vy.Validity)
     -> Dynamic t (Maybe Wg.Weights)
     -> Dynamic t (Maybe Pt.Points)
     -> Dynamic t (Maybe TaskPoints)
     -> Dynamic t [(Pilot, Breakdown)]
     -> m ()
-tableScore utcOffset ln vy wg pt tp xs = do
+tableScore utcOffset ln dnf vy wg pt tp xs = do
+    lenDnf :: Int <- sample . current $ length <$> dnf
+    lenPlaces :: Int <- sample . current $ length <$> xs
+    let dnfPlacing =
+            (if lenDnf == 1 then TaskPlacing else TaskPlacingEqual)
+            . fromIntegral
+            $ lenPlaces + 1
+
     let thSpace = elClass "th" "th-space" $ text ""
 
     _ <- elClass "table" "table is-striped is-narrow is-fullwidth" $ do
@@ -260,7 +268,10 @@ tableScore utcOffset ln vy wg pt tp xs = do
                         (\x -> showTaskPoints (Just x) x)
                     <$> tp
 
-        _ <- el "tbody" $ simpleList xs (row utcOffset pt tp)
+        _ <- el "tbody" $ do
+            _ <- simpleList xs (pointRow utcOffset pt tp)
+            _ <- simpleList dnf (dnfRow dnfPlacing)
+            return ()
 
         el "tfoot" $ do
             el "tr" $
@@ -277,14 +288,14 @@ tableScore utcOffset ln vy wg pt tp xs = do
                     $ text "◊ Points award for effort are also called distance difficulty points."
     return ()
 
-row
+pointRow
     :: MonadWidget t m
     => Dynamic t UtcOffset
     -> Dynamic t (Maybe Pt.Points)
     -> Dynamic t (Maybe TaskPoints)
     -> Dynamic t (Pilot, Breakdown)
     -> m ()
-row utcOffset pt tp x = do
+pointRow utcOffset pt tp x = do
     let tz = timeZone <$> utcOffset
     let pilot = fst <$> x
     let b = snd <$> x
@@ -313,6 +324,18 @@ row utcOffset pt tp x = do
 
         elClass "td" "td-total-points" . dynText $ zipDynWith showTaskPoints tp (total <$> b)
 
+dnfRow
+    :: MonadWidget t m
+    => TaskPlacing
+    -> Dynamic t Pilot
+    -> m ()
+dnfRow place pilot = do
+    el "tr" $ do
+        elClass "td" "td-placing" . text $ showRank place
+        elClass "td" "td-pilot" . dynText $ showPilotName <$> pilot
+        elAttr "td" ("colspan" =: "12") $ return ()
+        elClass "td" "td-total-points" $ text "0"
+        return ()
 
 showMax
     :: (Reflex t, Functor f)
