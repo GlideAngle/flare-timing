@@ -78,23 +78,22 @@ newtype AltBaro = AltBaro Altitude
 newtype AltGps = AltGps Altitude
 
 -- |
--- The record types:
+-- The record types are:
 --
--- * A FR manufacturer and identification
--- * B Fix
--- * C Task/declaration
+-- * A <http://www.gliding.ch/images/news/lx20/fichiers_igc.htm#Arec Manufacturer and identification>
+-- * B <http://www.gliding.ch/images/news/lx20/fichiers_igc.htm#Brec Fix>
+-- * C Task declaration
 -- * D Differential GPS
 -- * E Event
 -- * F Constellation
 -- * G Security
--- * H File header
+-- * H <http://www.gliding.ch/images/news/lx20/fichiers_igc.htm#Hrec File header>
 -- * I List of extension data included at end of each fix B record
 -- * J List of data included in each extension (K) Record
 -- * K Extension data
--- * L Logbook/comments
--- * M, N, etc. - Spare
+-- * L Logbook comments
 --
--- SOURCE: <http://carrier.csi.cam.ac.uk/forsterlewis/soaring/igc_file_format/igc_format_2008.html>
+-- Other letters are spare for future record types.
 data IgcRecord
     -- | A location fix.
     = B HMS Lat Lng AltBaro (Maybe AltGps)
