@@ -270,7 +270,7 @@ tableScore utcOffset ln dnf vy wg pt tp xs = do
 
         _ <- el "tbody" $ do
             _ <- simpleList xs (pointRow utcOffset pt tp)
-            _ <- simpleList dnf (dnfRow dnfPlacing)
+            dnfRows dnfPlacing dnf
             return ()
 
         el "tfoot" $ do
@@ -324,16 +324,51 @@ pointRow utcOffset pt tp x = do
 
         elClass "td" "td-total-points" . dynText $ zipDynWith showTaskPoints tp (total <$> b)
 
+dnfRows
+    :: MonadWidget t m
+    => TaskPlacing
+    -> Dynamic t [Pilot]
+    -> m ()
+dnfRows place ps = do
+    len <- sample . current $ length <$> ps
+    let p1 = take 1 <$> ps
+    let pN = drop 1 <$> ps
+
+    case len of
+        0 -> do
+            return ()
+        1 -> do
+            _ <- simpleList ps (dnfRow place (Just 1))
+            return ()
+        n -> do
+            _ <- simpleList p1 (dnfRow place (Just n))
+            _ <- simpleList pN (dnfRow place Nothing)
+            return ()
+
 dnfRow
     :: MonadWidget t m
     => TaskPlacing
+    -> Maybe Int
     -> Dynamic t Pilot
     -> m ()
-dnfRow place pilot = do
+dnfRow place rows pilot = do
+    let dnfMega =
+            case rows of
+                Nothing -> return ()
+                Just n -> do
+                    elAttr
+                        "td"
+                        ( "rowspan" =: (T.pack $ show n)
+                        <> "colspan" =: "12"
+                        <> "class" =: "td-dnf"
+                        )
+                        $ text "DNF"
+                    return ()
+
     elClass "tr" "tr-dnf" $ do
         elClass "td" "td-placing" . text $ showRank place
         elClass "td" "td-pilot" . dynText $ showPilotName <$> pilot
-        elAttr "td" ("colspan" =: "12") $ return ()
+        dnfMega
         elClass "td" "td-total-points" $ text "0"
         return ()
 
