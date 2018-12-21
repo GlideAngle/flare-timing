@@ -21,7 +21,7 @@ in    defs
       , dependencies =
             defs.dependencies
           # [ "split"
-            , "parsec"
+            , "megaparsec"
             , "hxt"
             , "path"
             , "hxt-xpath"
@@ -52,7 +52,7 @@ in    defs
                 { dependencies =
                     [ "base"
                     , "split"
-                    , "parsec"
+                    , "megaparsec"
                     , "hxt"
                     , "path"
                     , "hxt-xpath"

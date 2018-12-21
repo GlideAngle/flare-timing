@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 81ba04e6164e4ed4e4ee091d774283a6d81e4dc1f8e61ab3e89bfb94ca0dbfcb
+-- hash: 03acc6c5a1671c7110bcfdd3e8002aa201807fdcfd50e0f4ded00e445217c16e
 
 name:           flight-kml
 version:        1.0.1
@@ -48,7 +48,7 @@ library
     , detour-via-sci
     , hxt
     , hxt-xpath
-    , parsec
+    , megaparsec
     , path
     , siggy-chardust
     , split
@@ -75,7 +75,7 @@ test-suite doctest
     , doctest
     , hxt
     , hxt-xpath
-    , parsec
+    , megaparsec
     , path
     , siggy-chardust
     , split
@@ -103,7 +103,7 @@ test-suite parse
     , detour-via-sci
     , hxt
     , hxt-xpath
-    , parsec
+    , megaparsec
     , path
     , raw-strings-qq
     , siggy-chardust

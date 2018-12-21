@@ -32,23 +32,12 @@ import Data.List.Split (splitOn)
 import Numeric (showFFloat)
 import Data.Time.Clock (UTCTime, addUTCTime)
 import Data.Time.Format (parseTimeM, defaultTimeLocale)
-import Text.Parsec (string, parserZero)
-import Text.Parsec.Token as P
-import Text.Parsec.Char (spaces, digit, char)
-import Text.ParserCombinators.Parsec
-    ( GenParser
-    , (<?>)
-    , eof
-    , option
-    , sepBy
-    , count
-    , noneOf
-    , many
-    )
-import qualified Text.ParserCombinators.Parsec as P (parse)
-import Text.Parsec.Language (emptyDef)
-import Data.Functor.Identity (Identity)
-import Text.Parsec.Prim (ParsecT, parsecMap)
+import Text.Megaparsec hiding (parse)
+import Text.Megaparsec.Char
+import qualified Text.Megaparsec.Char.Lexer as L
+import qualified Text.Megaparsec as P
+import Data.Functor.Identity
+import Data.Void
 import Flight.Types
     ( Latitude(..), Longitude(..), Altitude(..), Seconds(..)
     , LLA(..), Fix(..)
@@ -56,19 +45,47 @@ import Flight.Types
     , FixMark(..)
     )
 
-lexer :: GenTokenParser String u Identity
-lexer = P.makeTokenParser emptyDef
+type Parser = Parsec String String
 
-pFloat:: ParsecT String u Identity Rational
-pFloat = parsecMap toRational $ P.float lexer 
+sc :: Parser ()
+sc = L.space space1 lineComment blockComment
+  where
+    lineComment  = L.skipLineComment "//"
+    blockComment = L.skipBlockComment "/*" "*/"
 
-pNat :: ParsecT String u Identity Integer
-pNat = P.natural lexer 
+lexeme :: Parser a -> Parser a
+lexeme = L.lexeme sc
 
-pNats :: GenParser Char st [Integer]
+pFloat :: ParsecT String String Identity Rational
+pFloat = (toRational :: Double -> Rational) <$> float_
+
+pNat :: ParsecT String String Identity Integer
+pNat = decimal_
+
+float_
+    ::
+        ( m ~ ParsecT String String Identity
+        , MonadParsec e s m
+        , Token s ~ Char
+        , RealFloat a
+        )
+    => m a
+float_ = lexeme L.float
+
+decimal_
+    ::
+        ( m ~ ParsecT String String Identity
+        , MonadParsec e s m
+        , Token s ~ Char
+        , Integral a
+        )
+    => m a
+decimal_ = lexeme L.decimal
+
+pNats :: Parsec String String [Integer]
 pNats = do
-    _ <- spaces
-    xs <- pNat `sepBy` spaces
+    _ <- space
+    xs <- pNat `sepBy` space
     _ <- eof
     return xs
 
@@ -82,25 +99,25 @@ parseUtcTime s =
         Left _ -> Nothing
         Right t -> Just t
 
-pUtcTimeZ :: GenParser Char st UTCTime
+pUtcTimeZ :: ParsecT Void String Identity UTCTime
 pUtcTimeZ = do
-    ymd <- many $ noneOf "T"
+    ymd <- many $ noneOf ("T" :: String)
     _ <- char 'T'
-    hrs <- count 2 digit
+    hrs <- count 2 digitChar
     _ <- char ':'
-    mins <- count 2 digit
+    mins <- count 2 digitChar
     _ <- char ':'
-    secs <- count 2 digit
+    secs <- count 2 digitChar
     zulu <- option "Z" (string "Z")
 
     let s = mconcat [ymd, "T", hrs, ":", mins, ":", secs, zulu]
     let t = parseTimeM False defaultTimeLocale "%FT%TZ" s
 
     case t of
-        Nothing -> parserZero
+        Nothing -> empty
         Just t' -> return t'
 
-pFix :: GenParser Char st (Rational, Rational, Integer)
+pFix :: ParsecT String String Identity (Rational, Rational, Integer)
 pFix = do
     -- NOTE: KML coordinates have a space between tuples.
     -- lon,lat[,alt]
@@ -115,10 +132,10 @@ pFix = do
     alt <- pNat <?> "No altitude"
     return (latSign lat, lngSign lng, altSign alt)
 
-pFixes :: GenParser Char st [ (Rational, Rational, Integer) ]
+pFixes :: ParsecT String String Identity [ (Rational, Rational, Integer) ]
 pFixes = do
-    _ <- spaces
-    xs <- pFix `sepBy` spaces <?> "No fixes"
+    _ <- space
+    xs <- pFix `sepBy` space <?> "No fixes"
     _ <- eof
     return xs
 
