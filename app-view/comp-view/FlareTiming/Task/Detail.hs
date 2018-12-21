@@ -72,7 +72,7 @@ taskDetail t@(IxTask _) cs task vy a = do
                     task' <- sample . current $ task
                     route' <- sample . current $ route
                     map task' route'
-                TaskTabAbsent -> tableAbsent task)
+                TaskTabAbsent -> tableAbsent t task)
             <$> tab
 
     return $ switchDyn (leftmost <$> es)

@@ -22,7 +22,7 @@ import qualified Data.ByteString.Lazy.Char8 as LBS (pack)
 import System.FilePath (takeFileName)
 import Data.Yaml (prettyPrintParseException)
 
-import Flight.Track.Cross (Crossing(..))
+import qualified Flight.Track.Cross as Cg (Crossing(..))
 import Flight.Track.Point
     (Pointing(..), Velocity(..), Allocation(..), Breakdown(..))
 import qualified Flight.Score as Wg (Weights(..))
@@ -61,7 +61,7 @@ import Data.Ratio.Rounding (dpRound)
 data Config k
     = Config
         { compSettings :: CompSettings k
-        , crossing :: Crossing
+        , crossing :: Cg.Crossing
         , routing :: [Maybe TaskTrack]
         , pointing :: Pointing
         }
@@ -98,6 +98,8 @@ type Api k =
         :> Get '[JSON] (Maybe Vy.ValidityWorking)
     :<|> "task-length" :> Capture "task" Int :> "spherical-edge"
         :> Get '[JSON] (OptimalRoute (Maybe TrackLine))
+    :<|> "cross-zone" :> Capture "task" Int :> "pilot-dnf"
+        :> Get '[JSON] [Pilot]
 
 api :: Proxy (Api k)
 api = Proxy
@@ -169,6 +171,7 @@ serverApi cfg =
         :<|> getTaskScore
         :<|> getTaskValidityWorking
         :<|> getTaskRouteSphericalEdge
+        :<|> getTaskPilotDnf
     where
         c = asks compSettings
         p = asks pointing
@@ -276,6 +279,18 @@ getTaskRouteSphericalEdge ii = do
                 { errBody = LBS.pack
                 $ "No routing for task: #" ++ show ii
                 }
+
+        _ -> throwError $
+            err400
+                { errBody = LBS.pack
+                $ "Out of bounds task: #" ++ show ii
+                }
+
+getTaskPilotDnf :: Int -> AppT k IO [Pilot]
+getTaskPilotDnf ii = do
+    xs <- (\Cg.Crossing{dnf} -> dnf) <$> asks crossing
+    case drop (ii - 1) xs of
+        x : _ -> return x
 
         _ -> throwError $
             err400

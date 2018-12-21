@@ -8,6 +8,7 @@ module FlareTiming.Comms
     , getTaskScore
     , getTaskValidityWorking
     , getTaskLengthSphericalEdge
+    , getTaskPilotDnf
     ) where
 
 import Reflex
@@ -180,3 +181,27 @@ getTaskLengthSphericalEdge (IxTask ii) = do
     holdDyn emptyRoute es
 
 getTaskLengthSphericalEdge IxTaskNone = return $ constDyn emptyRoute
+
+getTaskPilotDnf
+    :: MonadWidget t m
+    => ()
+    => IxTask
+    -> m (Dynamic t [Pilot])
+getTaskPilotDnf (IxTask ii) = do
+    pb :: Event t () <- getPostBuild
+
+    let defReq :: T.Text
+        defReq =
+            mapUri
+            $ "/cross-zone/"
+            <> (T.pack . show $ ii)
+            <> "/pilot-dnf"
+
+
+    let req md = XhrRequest "GET" (maybe defReq id md) def
+    rsp <- performRequestAsync $ fmap req $ leftmost [ Nothing <$ pb ]
+
+    let es :: Event t [Pilot] = fmapMaybe decodeXhrResponse rsp
+    holdDyn [] es
+
+getTaskPilotDnf IxTaskNone = return $ constDyn []
