@@ -4,10 +4,10 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 2326d2827445848a7db56b241e8b4fd4c32612d26a3bd45afeb5145feab8ef34
+-- hash: 414193f804ecc4821e89d2261f864d5c98792fe6e7d4eb93730c4e06b1bb5b62
 
 name:           flight-igc
-version:        1.0.0
+version:        1.1.0
 synopsis:       A parser for IGC files.
 description:    IGC is a waypoint file format from the International Gliding Commission of FAI. This haskell library can parse B records from these files.
 category:       data, parsing

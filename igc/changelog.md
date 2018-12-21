@@ -1,3 +1,7 @@
+## 1.1.0
+
+* Switch over from Parsec to Megaparsec.
+
 ## 1.0.0
 
 * Change the top-level module to Flight.Igc.
