@@ -467,9 +467,10 @@ points'
 reIndex :: [(Integer, [a])] -> [(Integer, [a])]
 reIndex xs =
     zipWith3
-        (\i y o ->
+        (\i zs o ->
             -- NOTE: Use j so that we get; 1,2=,2=,4 and not 1,3=,3=,4.
-            let j = fromIntegral $ length y - 1 in (i + (fromIntegral o) - j, y))
+            let j = fromIntegral $ length zs - 1
+            in (i + (fromIntegral o) - j, zs))
         ixs
         ys
         offsets
