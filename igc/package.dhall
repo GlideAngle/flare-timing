@@ -15,7 +15,7 @@ in    defs
       , github =
           "blockscope/flare-timing/igc"
       , dependencies =
-          defs.dependencies # [ "parsec", "bytestring", "utf8-string" ]
+          defs.dependencies # [ "megaparsec", "bytestring", "utf8-string" ]
       , library =
           { source-dirs = "library", exposed-modules = "Flight.Igc" }
       , tests =

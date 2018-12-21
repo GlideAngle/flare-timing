@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 22a0a3c8210138662db82b39275ecbabfcda34b29ff5b504f19ff321e38bc896
+-- hash: 2326d2827445848a7db56b241e8b4fd4c32612d26a3bd45afeb5145feab8ef34
 
 name:           flight-igc
 version:        1.0.0
@@ -42,6 +42,6 @@ library
   build-depends:
       base >=4.10.1.0 && <5
     , bytestring
-    , parsec
+    , megaparsec
     , utf8-string
   default-language: Haskell2010
