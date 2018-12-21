@@ -1,3 +1,7 @@
+## 1.1.0
+
+* Switch over from Parsec to Megaparsec.
+
 # 1.0.1
 
 * The doctest was unable to find `test-suite-doctest/*.kml` files needed for

@@ -5,7 +5,7 @@ in    defs
     ⫽ { name =
           "flight-kml"
       , version =
-          "1.0.1"
+          "1.1.0"
       , synopsis =
           "Parsing of pilot tracklogs dumped as KML."
       , description =
