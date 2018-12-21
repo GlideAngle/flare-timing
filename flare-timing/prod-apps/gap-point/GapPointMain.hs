@@ -464,13 +464,28 @@ points'
             | gates <- startGates <$> tasks
             ]
 
+reIndex :: [(Integer, [a])] -> [(Integer, [a])]
+reIndex xs =
+    zipWith3
+        (\i y o ->
+            -- NOTE: Use j so that we get; 1,2=,2=,4 and not 1,3=,3=,4.
+            let j = fromIntegral $ length y - 1 in (i + (fromIntegral o) - j, y))
+        ixs
+        ys
+        offsets
+    where
+        (ixs, ys) = unzip xs
+        lens = (\y -> (length y) - 1) <$> ys
+        offsets = scanl1 (+) lens
+
 -- SEE: https://stackoverflow.com/questions/51572782/how-to-create-a-ranking-based-on-a-list-of-scores-in-haskell
 -- SEE: https://stackoverflow.com/questions/15412027/haskell-equivalent-to-scalas-groupby
 rankByTotal :: [(Pilot, Breakdown)] -> [(Pilot, Breakdown)]
 rankByTotal xs =
     [ (rankScore f ii) <$> y
     | (ii, ys) <-
-                zip [1..]
+                reIndex
+                . zip [1..]
                 . groupBy ((==) `on` truncateTaskPoints . total . snd)
                 $ xs
     , let f = if length ys == 1 then TaskPlacing else TaskPlacingEqual
