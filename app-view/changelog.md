@@ -5,9 +5,9 @@ of this changelog.
 # Equal Placings and DNF
 ## app-view-0.4
 
-* [#123] Switch over to using megaparsec when parsing `*.igc` and `*.kml` files.
-* [#125] Show pilots that did not fly (DNF) with absentees and scores.
-* [#126] Fix an off-by-one error in equal placings.
+* Switch over to using megaparsec when parsing `*.igc` and `*.kml` files.
+* Show pilots that did not fly (DNF) with absentees and scores.
+* Fix an off-by-one error in equal placings.
 
 ```
 -- 1,2=,2=,3
@@ -17,14 +17,14 @@ of this changelog.
 # Pan to Zone
 ## app-view-0.3
 
-[#122] Add a toggle button switching between zoom and pan. The map's button
-group now has buttons for all zones, not just the speed section zones. The
-speed section is indicated with color; green for start and red for stop.
+Add a toggle button switching between zoom and pan. The map's button group now
+has buttons for all zones, not just the speed section zones. The speed section
+is indicated with color; green for start and red for stop.
 
 # Zoom to Extent and Zoom to Zone
 ## app-view-0.2
 
-[#121] Only one new feature in this release; a group of buttons above the map for
+Only one new feature in this release; a group of buttons above the map for
 zooming in on each zone and for zooming to the extents of the task.
 
 # Speed Section Velocity
