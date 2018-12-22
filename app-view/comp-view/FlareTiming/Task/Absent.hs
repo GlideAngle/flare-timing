@@ -51,4 +51,22 @@ tableAbsent dnf task = do
 
                     return ()
 
+        elClass "div" "tile is-parent" $ do
+            elClass "article" "tile is-child box" $ do
+                elClass "p" "title" $ text "NYP"
+                elClass "p" "subtitle is-6" $ text "Pilots not yet processed"
+                elClass "div" "content" $ do
+                    _ <- elClass "table" "table" $ do
+                            el "thead" $ do
+                                el "tr" $ do
+                                    el "th" $ text "Id"
+                                    el "th" $ text "Name"
+
+                                simpleList dnf rowPilot
+
+                    el "p" . text
+                        $ "Unlike DNF pilots, these pilots do not decrease launch validity. When a task is not at full distance validity, if any one of the NYP pilots flew further then the task validity will increase when they are processed. Likewise for time validity and the fastest pilots being NYP."
+
+                    return ()
+
     return ()
