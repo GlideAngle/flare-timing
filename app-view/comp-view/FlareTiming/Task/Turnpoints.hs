@@ -38,8 +38,21 @@ tableTask
 tableTask utcOffset x taskLegs = do
     let tz = timeZone <$> utcOffset
     let gs = getStartGates <$> x
-    tableTurnpoints x taskLegs
-    tableStartGates tz gs
+
+    elClass "div" "tile is-ancestor" $ do
+        elClass "div" "tile is-parent" $ do
+            elClass "article" "tile is-child box" $ do
+                elClass "p" "title" $ text "Turnpoints"
+                elClass "div" "content" $ do
+                    tableTurnpoints x taskLegs
+                    return ()
+
+        elClass "div" "tile is-parent is-3" $ do
+            elClass "article" "tile is-child box" $ do
+                elClass "p" "title" $ text "Start Gates"
+                elClass "div" "content" $ do
+                    tableStartGates tz gs
+                    return ()
 
 tableTurnpoints
     :: MonadWidget t m
@@ -86,7 +99,7 @@ tableStartGates tz gs = do
             el "thead" $ do
                 el "tr" $ do
                     el "th" $ text "#"
-                    el "th" $ text "Local Time"
+                    el "th" $ text "Time"
             el "tbody" $ do
                 simpleList gs (rowStartGate tz)
 
