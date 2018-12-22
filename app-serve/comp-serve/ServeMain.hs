@@ -275,6 +275,16 @@ getTaskPilotDnf ii = do
         xs : _ -> return xs
         _ -> throwError $ errTaskBounds ii
 
+nyp
+    :: Monad m
+    => [Pilot]
+    -> Task a
+    -> [Pilot]
+    -> [(Pilot, b)]
+    -> m [Pilot]
+nyp ps Task{absent = ys} xs cs =
+    let (cs', _) = unzip cs in return $ ps \\ (xs ++ ys ++ cs')
+
 getTaskPilotNyp :: Int -> AppT k IO [Pilot]
 getTaskPilotNyp ii = do
     ps <- getPilots <$> asks compSettings
@@ -283,9 +293,7 @@ getTaskPilotNyp ii = do
     css <- getScores <$> asks pointing
     let jj = ii - 1
     case (drop jj ts, drop jj xss, drop jj css) of
-        ( Task{absent = ys} : _, xs : _, cs : _) ->
-            let (cs', _) = unzip cs in return $ ps \\ (xs ++ ys ++ cs')
-
+        (t : _, xs : _, cs : _) -> nyp ps t xs cs
         _ -> throwError $ errTaskBounds ii
 
 errTaskBounds :: Int -> ServantErr
