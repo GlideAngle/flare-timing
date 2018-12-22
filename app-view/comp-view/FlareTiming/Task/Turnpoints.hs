@@ -11,7 +11,7 @@ import WireTypes.Comp
 import WireTypes.Route (TaskDistance(..), TaskLegs(..), showTaskDistance)
 import WireTypes.Zone (RawZone(..))
 import qualified FlareTiming.Turnpoint as TP
-import FlareTiming.Time (showHmsForHours, showT, timeZone)
+import FlareTiming.Time (showT, timeZone)
 
 zero :: TaskDistance
 zero = TaskDistance 0
@@ -38,16 +38,15 @@ tableTask
 tableTask utcOffset x taskLegs = do
     let tz = timeZone <$> utcOffset
     let gs = getStartGates <$> x
-    tableTurnpoints utcOffset x taskLegs
+    tableTurnpoints x taskLegs
     tableStartGates tz gs
 
 tableTurnpoints
     :: MonadWidget t m
-    => Dynamic t UtcOffset
-    -> Dynamic t Task
+    => Dynamic t Task
     -> Dynamic t (Maybe TaskLegs)
     -> m ()
-tableTurnpoints utcOffset x taskLegs = do
+tableTurnpoints x taskLegs = do
     let zs = getAllRawZones <$> x
     let ss = getSpeedSection <$> x
 
@@ -152,4 +151,3 @@ rowText (Just (ss, es)) ii =
 
 showStartGate :: TimeZone -> StartGate -> T.Text
 showStartGate tz (StartGate t) = showT tz t
-showStartGate _ _ = ""
