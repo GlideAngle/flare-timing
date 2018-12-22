@@ -1,13 +1,17 @@
-module FlareTiming.Task.Turnpoints (tableTurnpoints) where
+module FlareTiming.Task.Turnpoints (tableTask) where
 
 import Reflex.Dom
 import qualified Data.Text as T (Text, pack)
+import Data.Time.LocalTime (TimeZone)
 
 import WireTypes.Comp
-    (Task(..), SpeedSection, getSpeedSection, getAllRawZones)
+    (Task(..), SpeedSection, StartGate(..), UtcOffset(..)
+    , getAllRawZones, getSpeedSection, getStartGates
+    )
 import WireTypes.Route (TaskDistance(..), TaskLegs(..), showTaskDistance)
 import WireTypes.Zone (RawZone(..))
 import qualified FlareTiming.Turnpoint as TP
+import FlareTiming.Time (showHmsForHours, showT, timeZone)
 
 zero :: TaskDistance
 zero = TaskDistance 0
@@ -25,14 +29,27 @@ padLegs (Just (start, _)) xs =
         start' = fromIntegral start
         prolog = take (start' - 1) $ repeat zero
 
-tableTurnpoints
+tableTask
     :: MonadWidget t m
-    => Dynamic t Task
+    => Dynamic t UtcOffset
+    -> Dynamic t Task
     -> Dynamic t (Maybe TaskLegs)
     -> m ()
-tableTurnpoints x taskLegs = do
-    let ss = getSpeedSection <$> x
+tableTask utcOffset x taskLegs = do
+    let tz = timeZone <$> utcOffset
+    let gs = getStartGates <$> x
+    tableTurnpoints utcOffset x taskLegs
+    tableStartGates tz gs
+
+tableTurnpoints
+    :: MonadWidget t m
+    => Dynamic t UtcOffset
+    -> Dynamic t Task
+    -> Dynamic t (Maybe TaskLegs)
+    -> m ()
+tableTurnpoints utcOffset x taskLegs = do
     let zs = getAllRawZones <$> x
+    let ss = getSpeedSection <$> x
 
     pad <- sample . current $ padLegs <$> ss
 
@@ -59,6 +76,32 @@ tableTurnpoints x taskLegs = do
                 simpleList (fmap (zip [1..]) ys) (row ss)
 
     return ()
+
+tableStartGates
+    :: MonadWidget t m
+    => Dynamic t TimeZone
+    -> Dynamic t [StartGate]
+    -> m ()
+tableStartGates tz gs = do
+    _ <- elClass "table" "table is-striped" $ do
+            el "thead" $ do
+                el "tr" $ do
+                    el "th" $ text "#"
+                    el "th" $ text "Local Time"
+            el "tbody" $ do
+                simpleList gs (rowStartGate tz)
+
+    return ()
+
+rowStartGate
+    :: MonadWidget t m
+    => Dynamic t TimeZone
+    -> Dynamic t StartGate
+    -> m ()
+rowStartGate tz sg = do
+    el "tr" $ do
+        el "td" $ text "1"
+        el "td" . dynText $ zipDynWith showStartGate tz sg
 
 row
     :: MonadWidget t m
@@ -106,3 +149,7 @@ rowText (Just (ss, es)) ii =
     if | ss == ii -> "Start of Speed Section"
        | es == ii -> "End of Speed Section"
        | otherwise -> ""
+
+showStartGate :: TimeZone -> StartGate -> T.Text
+showStartGate tz (StartGate t) = showT tz t
+showStartGate _ _ = ""

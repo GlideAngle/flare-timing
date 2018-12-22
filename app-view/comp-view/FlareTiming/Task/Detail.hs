@@ -19,7 +19,7 @@ import FlareTiming.Map (map)
 import qualified FlareTiming.Turnpoint as TP (getName)
 import FlareTiming.Task.Tab (TaskTab(..), tabsTask)
 import FlareTiming.Task.Score (tableScore)
-import FlareTiming.Task.Turnpoints (tableTurnpoints)
+import FlareTiming.Task.Turnpoints (tableTask)
 import FlareTiming.Task.Absent (tableAbsent)
 import FlareTiming.Task.Validity (viewValidity)
 
@@ -66,16 +66,16 @@ taskDetail ix@(IxTask _) cs task vy a = do
     es <- simpleList cs (crumbTask task)
     tab <- tabsTask
 
-    _ <- widgetHold (tableTurnpoints task legs) $
+    _ <- widgetHold (tableTask utc task legs) $
             (\case
-                TaskTabValidity -> viewValidity vy vw
-                TaskTabScore -> tableScore utc ln dnf vy wg ps tp s
-                TaskTabTask -> tableTurnpoints task legs
+                TaskTabTask -> tableTask utc task legs
                 TaskTabMap -> do
                     task' <- sample . current $ task
                     route' <- sample . current $ route
                     map task' route'
-                TaskTabAbsent -> tableAbsent dnf task)
+                TaskTabAbsent -> tableAbsent dnf task
+                TaskTabValidity -> viewValidity vy vw
+                TaskTabScore -> tableScore utc ln dnf vy wg ps tp s)
             <$> tab
 
     return $ switchDyn (leftmost <$> es)

@@ -16,7 +16,7 @@ tabsTask
 tabsTask =
     elClass "div" "tabs" $
         el "ul" $ mdo
-            (t, _) <- elDynClass' "li" tClass $ el "a" (text "Turnpoints")
+            (t, _) <- elDynClass' "li" tClass $ el "a" (text "Task")
             (m, _) <- elDynClass' "li" mClass $ el "a" (text "Map")
             (a, _) <- elDynClass' "li" aClass $ el "a" (text "Absentees")
             (v, _) <- elDynClass' "li" vClass $ el "a" (text "Validity")

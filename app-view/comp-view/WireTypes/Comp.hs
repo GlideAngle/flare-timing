@@ -4,10 +4,12 @@ module WireTypes.Comp
     , Task(..)
     , Name
     , SpeedSection
+    , StartGate(..)
     , UtcOffset(..)
     , getAllRawZones
     , getRaceRawZones
     , getSpeedSection
+    , getStartGates
     , getAbsent
     , fromSci
     , toSci
@@ -15,6 +17,7 @@ module WireTypes.Comp
     ) where
 
 import Text.Printf (printf)
+import Data.Time.Clock (UTCTime)
 import Control.Applicative (empty)
 import GHC.Generics (Generic)
 import Data.Aeson (Value(..), FromJSON(..))
@@ -26,6 +29,10 @@ import WireTypes.Pilot (Pilot)
 type Name = String
 
 type SpeedSection = Maybe (Integer, Integer)
+
+newtype StartGate = StartGate UTCTime
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (FromJSON)
 
 newtype UtcOffset = UtcOffset { timeZoneMinutes :: Int }
     deriving (Eq, Ord, Show, Read, Generic)
@@ -88,6 +95,7 @@ data Task =
         { taskName :: Name
         , zones :: Zones
         , speedSection :: SpeedSection
+        , startGates :: [StartGate]
         , absent :: [Pilot]
         }
     deriving (Eq, Ord, Show, Generic, FromJSON)
@@ -106,6 +114,9 @@ getAbsent Task{absent} = absent
 
 getSpeedSection :: Task -> SpeedSection
 getSpeedSection Task{speedSection = ss} = ss
+
+getStartGates :: Task -> [StartGate]
+getStartGates Task{startGates = gs} = gs
 
 getAllRawZones :: Task -> [RawZone]
 getAllRawZones Task{zones = Zones{raw}} = raw

@@ -4,9 +4,7 @@ import Prelude hiding (min)
 import Text.Printf (printf)
 import Reflex.Dom
 import qualified Data.Text as T (Text, pack, breakOn)
-import Data.Time.Clock (UTCTime)
-import Data.Time.Format (formatTime, defaultTimeLocale)
-import Data.Time.LocalTime (TimeZone, minutesToTimeZone, utcToLocalTime)
+import Data.Time.LocalTime (TimeZone)
 
 import WireTypes.Route (TaskLength(..), showTaskDistance)
 import qualified WireTypes.Point as Pt (Points(..))
@@ -44,7 +42,7 @@ import WireTypes.Validity
 import WireTypes.Comp (UtcOffset(..))
 import WireTypes.Pilot (Pilot(..))
 import FlareTiming.Pilot (showPilotName)
-import FlareTiming.Time (showHmsForHours)
+import FlareTiming.Time (showHmsForHours, showT, timeZone)
 
 speedSection :: Maybe TaskLength -> T.Text
 speedSection =
@@ -407,12 +405,3 @@ showVelocityVelocity :: Velocity -> T.Text
 showVelocityVelocity Velocity{gsVelocity = Just (PilotVelocity v)} =
     fst . T.breakOn " km / h" . T.pack $ v
 showVelocityVelocity _ = ""
-
-showT :: TimeZone -> UTCTime -> T.Text
-showT tz = 
-    T.pack
-    . formatTime defaultTimeLocale "%T"
-    . utcToLocalTime tz
-
-timeZone :: UtcOffset -> TimeZone
-timeZone UtcOffset{timeZoneMinutes = tzMins} = minutesToTimeZone tzMins
