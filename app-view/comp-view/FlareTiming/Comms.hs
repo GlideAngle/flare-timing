@@ -28,7 +28,7 @@ import FlareTiming.Events (IxTask(..))
 -- mapUri s = "http://2012-forbes.flaretiming.com/json" <> s <> ".json"
 -- mapUri s = "/json" <> s <> ".json"
 mapUri :: T.Text -> T.Text
-mapUri s = "/json" <> s <> ".json"
+mapUri s = "http://localhost:3000" <> s
 
 getTasks :: MonadWidget t m => () -> m (Dynamic t [Task])
 getTasks () = do
