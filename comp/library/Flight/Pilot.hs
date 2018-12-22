@@ -1,5 +1,6 @@
 module Flight.Pilot
-    ( PilotTrackLogFile(..)
+    ( PilotTaskStatus(..)
+    , PilotTrackLogFile(..)
     , TrackLogFile(..)
     , TaskFolder(..)
     , TrackFileFail(..)
@@ -8,6 +9,10 @@ module Flight.Pilot
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import Flight.Score (Pilot)
+
+data PilotTaskStatus
+    = ABS | DF | DNF | NYP
+    deriving (Eq, Ord, Show, Generic, FromJSON, ToJSON)
 
 newtype TrackLogFile = TrackLogFile String
     deriving (Eq, Ord, Generic)

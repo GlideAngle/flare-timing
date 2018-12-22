@@ -36,6 +36,7 @@ module Flight.Comp
     , PilotId(..)
     , PilotName(..)
     , Pilot(..)
+    , PilotTaskStatus(..)
     , PilotTrackLogFile(..)
     , TrackLogFile(..)
     , TrackFileFail(..)
