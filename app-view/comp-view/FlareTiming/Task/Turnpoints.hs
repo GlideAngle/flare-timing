@@ -36,8 +36,8 @@ tableTask
     -> Dynamic t (Maybe TaskLegs)
     -> m ()
 tableTask utcOffset x taskLegs = do
-    let tz = timeZone <$> utcOffset
-    let gs = getStartGates <$> x
+    tz <- sample . current $ timeZone <$> utcOffset
+    gs <- sample . current $ getStartGates <$> x
 
     elClass "div" "tile is-ancestor" $ do
         elClass "div" "tile is-parent" $ do
@@ -91,29 +91,32 @@ tableTurnpoints x taskLegs = do
 
 tableStartGates
     :: MonadWidget t m
-    => Dynamic t TimeZone
-    -> Dynamic t [StartGate]
+    => TimeZone
+    -> [StartGate]
     -> m ()
 tableStartGates tz gs = do
+    let rowNumbers = T.pack . show <$> ([1..] :: [Int])
+
     _ <- elClass "table" "table is-striped" $ do
             el "thead" $ do
                 el "tr" $ do
                     el "th" $ text "#"
                     el "th" $ text "Time"
             el "tbody" $ do
-                simpleList gs (rowStartGate tz)
+                sequence $ zipWith (rowStartGate tz) gs rowNumbers
 
     return ()
 
 rowStartGate
     :: MonadWidget t m
-    => Dynamic t TimeZone
-    -> Dynamic t StartGate
+    => TimeZone
+    -> StartGate
+    -> T.Text
     -> m ()
-rowStartGate tz sg = do
+rowStartGate tz sg ix = do
     el "tr" $ do
-        el "td" $ text "1"
-        el "td" . dynText $ zipDynWith showStartGate tz sg
+        el "td" $ text ix
+        el "td" . text $ showStartGate tz sg
 
 row
     :: MonadWidget t m
