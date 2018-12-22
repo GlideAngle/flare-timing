@@ -44,6 +44,7 @@ import Flight.Comp
     , Nominal(..)
     , PilotTrackLogFile(..)
     , Pilot(..)
+    , PilotTaskStatus(..)
     , CompInputFile(..)
     , TaskLengthFile(..)
     , CrossZoneFile(..)
@@ -88,6 +89,8 @@ type Api k =
         :> Get '[JSON] [Task k]
     :<|> "pilots"
         :> Get '[JSON] [Pilot]
+    :<|> "pilots-status"
+        :> Get '[JSON] [(Pilot, [PilotTaskStatus])]
     :<|> "gap-point" :> "validity"
         :> Get '[JSON] [Maybe Vy.Validity]
     :<|> "gap-point" :> "allocation"
@@ -168,6 +171,7 @@ serverApi cfg =
         :<|> nominal <$> c
         :<|> tasks <$> c
         :<|> getPilots <$> c
+        :<|> getPilotsStatus
         :<|> getValidity <$> p
         :<|> getAllocation <$> p
         :<|> getTaskScore
@@ -276,14 +280,25 @@ getTaskPilotDnf ii = do
         _ -> throwError $ errTaskBounds ii
 
 nyp
-    :: Monad m
-    => [Pilot]
+    :: [Pilot]
     -> Task a
     -> [Pilot]
     -> [(Pilot, b)]
-    -> m [Pilot]
+    -> [Pilot]
 nyp ps Task{absent = ys} xs cs =
-    let (cs', _) = unzip cs in return $ ps \\ (xs ++ ys ++ cs')
+    let (cs', _) = unzip cs in ps \\ (xs ++ ys ++ cs')
+
+status
+    :: Task a -- ^ The tasks for which we're getting the status
+    -> [Pilot] -- ^ Pilots that DNF this task
+    -> [Pilot] -- ^ Pilots that DF this task
+    -> Pilot -- ^ Get the status for this pilot
+    -> PilotTaskStatus
+status Task{absent = ys} xs cs p =
+    if | p `elem` ys -> ABS
+       | p `elem` xs -> DNF
+       | p `elem` cs -> DF
+       | otherwise -> NYP
 
 getTaskPilotNyp :: Int -> AppT k IO [Pilot]
 getTaskPilotNyp ii = do
@@ -293,8 +308,24 @@ getTaskPilotNyp ii = do
     css <- getScores <$> asks pointing
     let jj = ii - 1
     case (drop jj ts, drop jj xss, drop jj css) of
-        (t : _, xs : _, cs : _) -> nyp ps t xs cs
+        (t : _, xs : _, cs : _) -> return $ nyp ps t xs cs
         _ -> throwError $ errTaskBounds ii
+
+getPilotsStatus :: AppT k IO [(Pilot, [PilotTaskStatus])]
+getPilotsStatus = do
+    ps <- getPilots <$> asks compSettings
+    ts <- tasks <$> asks compSettings
+    xss <- (\Cg.Crossing{dnf} -> dnf) <$> asks crossing
+    css <- getScores <$> asks pointing
+
+    let fs =
+            [ status t xs $ fst <$> cs
+            | t <- ts
+            | xs <- xss
+            | cs <- css
+            ]
+
+    return $ [(p,) $ ($ p) <$> fs | p <- ps]
 
 errTaskBounds :: Int -> ServantErr
 errTaskBounds ii =
