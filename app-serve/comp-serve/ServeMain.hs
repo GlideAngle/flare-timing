@@ -252,54 +252,28 @@ getTaskScore ii = do
     xs <- getScores <$> asks pointing
     case drop (ii - 1) xs of
         x : _ -> return x
-
-        _ -> throwError $
-            err400
-                { errBody = LBS.pack
-                $ "Out of bounds task: #" ++ show ii
-                }
+        _ -> throwError $ errTaskBounds ii
 
 getTaskValidityWorking :: Int -> AppT k IO (Maybe Vy.ValidityWorking)
 getTaskValidityWorking ii = do
     xs <- validityWorking <$> asks pointing
     case drop (ii - 1) xs of
         x : _ -> return x
-
-        _ -> throwError $
-            err400
-                { errBody = LBS.pack
-                $ "Out of bounds task: #" ++ show ii
-                }
+        _ -> throwError $ errTaskBounds ii
 
 getTaskRouteSphericalEdge :: Int -> AppT k IO (OptimalRoute (Maybe TrackLine))
 getTaskRouteSphericalEdge ii = do
     xs <- asks routing
     case drop (ii - 1) xs of
         Just TaskTrack{sphericalEdgeToEdge = x} : _ -> return x
-
-        Nothing : _ -> throwError $
-            err400
-                { errBody = LBS.pack
-                $ "No routing for task: #" ++ show ii
-                }
-
-        _ -> throwError $
-            err400
-                { errBody = LBS.pack
-                $ "Out of bounds task: #" ++ show ii
-                }
+        _ -> throwError $ errTaskBounds ii
 
 getTaskPilotDnf :: Int -> AppT k IO [Pilot]
 getTaskPilotDnf ii = do
     xss <- (\Cg.Crossing{dnf} -> dnf) <$> asks crossing
     case drop (ii - 1) xss of
         xs : _ -> return xs
-
-        _ -> throwError $
-            err400
-                { errBody = LBS.pack
-                $ "Out of bounds task: #" ++ show ii
-                }
+        _ -> throwError $ errTaskBounds ii
 
 getTaskPilotNyp :: Int -> AppT k IO [Pilot]
 getTaskPilotNyp ii = do
@@ -312,8 +286,11 @@ getTaskPilotNyp ii = do
         ( Task{absent = ys} : _, xs : _, cs : _) ->
             let (cs', _) = unzip cs in return $ ps \\ (xs ++ ys ++ cs')
 
-        _ -> throwError $
-            err400
-                { errBody = LBS.pack
-                $ "Out of bounds task: #" ++ show ii
-                }
+        _ -> throwError $ errTaskBounds ii
+
+errTaskBounds :: Int -> ServantErr
+errTaskBounds ii =
+    err400
+        { errBody = LBS.pack
+        $ "Out of bounds task: #" ++ show ii
+        }
