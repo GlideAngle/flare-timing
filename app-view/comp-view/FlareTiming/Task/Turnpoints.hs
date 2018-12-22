@@ -79,8 +79,16 @@ tableTurnpoints x taskLegs = do
                     el "th" $ text "Latitude"
                     el "th" $ text "Longitude"
 
-            el "tbody" $ do
+            _ <- el "tbody" $ do
                 simpleList (fmap (zip [1..]) ys) (row ss)
+
+            el "tfoot" $ do
+                el "tr" $
+                    elAttr "td" ("colspan" =: "6")
+                        $ text "† Start of the speed section"
+                el "tr" $
+                    elAttr "td" ("colspan" =: "6")
+                        $ text "‡ End of the speed section"
 
     return ()
 
@@ -155,8 +163,8 @@ rowColor (Just (ss, es)) ii =
 rowText :: SpeedSection -> Integer -> T.Text
 rowText Nothing _ = ""
 rowText (Just (ss, es)) ii =
-    if | ss == ii -> " (SS)"
-       | es == ii -> " (ES)"
+    if | ss == ii -> " †"
+       | es == ii -> " ‡"
        | otherwise -> ""
 
 showStartGate :: TimeZone -> StartGate -> T.Text
