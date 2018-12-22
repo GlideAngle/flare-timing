@@ -79,8 +79,8 @@ tableTurnpoints tz x taskLegs = do
                     elClass "th" "th-tp-distance-task" $ text "Task"
                     elClass "th" "th-tp-name" $ text "Name"
                     elClass "th" "th-tp-radius" $ text "Radius"
-                    el "th" $ text "Latitude"
-                    el "th" $ text "Longitude"
+                    elClass "th" "th-tp-lat" $ text "Latitude"
+                    elClass "th" "th-tp-lng" $ text "Longitude"
                     el "th" $ text "Open"
                     el "th" $ text "Close"
 
@@ -157,8 +157,8 @@ row tz ss iz = do
         elClass "td" "td-tp-distance-task" . dynText $ showTaskDistance <$> s
         elClass "td" "td-tp-name" . dynText $ TP.getName <$> z
         elClass "td" "td-tp-radius" . dynText $ TP.getRadius <$> z
-        el "td" . dynText $ TP.getLat <$> z
-        el "td" . dynText $ TP.getLng <$> z
+        elClass "td" "td-tp-lat" . dynText $ TP.getLat <$> z
+        elClass "td" "td-tp-lng" . dynText $ TP.getLng <$> z
         elClass "td" "td-tp-open" . dynText $ showOpen tz <$> oc
         elClass "td" "td-tp-close" . dynText $ showClose tz <$> oc
 
