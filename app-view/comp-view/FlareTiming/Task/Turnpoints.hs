@@ -148,8 +148,8 @@ row ss iz = do
 rowColor :: SpeedSection -> Integer -> T.Text
 rowColor Nothing _ = ""
 rowColor (Just (ss, es)) ii =
-    if | ss == ii -> "has-text-success"
-       | es == ii -> "has-text-danger"
+    if | ss == ii -> "start-speed"
+       | es == ii -> "end-speed"
        | otherwise -> ""
 
 rowText :: SpeedSection -> Integer -> T.Text

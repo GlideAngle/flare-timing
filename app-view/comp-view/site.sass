@@ -222,6 +222,14 @@ body, input, button, select, textarea
 .td-tp-name
     @extend .has-text-weight-bold;
 
+tr.start-speed > .td-tp-name
+    @extend .td-tp-name;
+    @extend .has-text-success;
+
+tr.end-speed > .td-tp-name
+    @extend .td-tp-name;
+    @extend .has-text-danger;
+
 .tr-dnf td.td-dnf
     @extend .has-text-centered;
     @extend .has-text-weight-bold;
