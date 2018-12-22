@@ -72,17 +72,12 @@ tableTurnpoints x taskLegs = do
     _ <- elClass "table" "table is-striped" $ do
             el "thead" $ do
                 el "tr" $ do
-                    elAttr "th" ("colspan" =: "5") $ text ""
-                    elAttr "th" ("colspan" =: "2" <> "class" =: "th-tp-distance")
-                        $ text "Distance"
-                el "tr" $ do
                     el "th" $ text "#"
+                    elClass "th" "th-tp-distance-task" $ text "Task"
                     elClass "th" "th-tp-name" $ text "Name"
                     elClass "th" "th-tp-radius" $ text "Radius"
                     el "th" $ text "Latitude"
                     el "th" $ text "Longitude"
-                    elClass "th" "th-tp-distance-leg" $ text "Leg"
-                    elClass "th" "th-tp-distance-task" $ text "Task"
 
             el "tbody" $ do
                 simpleList (fmap (zip [1..]) ys) (row ss)
@@ -126,7 +121,7 @@ row
 row ss iz = do
     let i = fst <$> iz
     let rowTextColor = zipDynWith rowColor ss i
-    let rowIntro = zipDynWith rowText ss i
+    rowIntro <- sample . current $ zipDynWith rowText ss i
     let x = snd <$> iz
     let l = (\(a, _, _) -> a) <$> x
     let s = (\(_, b, _) -> b) <$> x
@@ -138,18 +133,17 @@ row ss iz = do
             (_, TaskDistance 0) -> return ()
             (_, leg') ->
                 el "tr" $ do
-                    elAttr "td" ("colspan" =: "5") $ text ""
-                    elClass "td" "td-tp-distance" . text $ showTaskDistance leg'
-                    el "td" $ text "")
+                    el "td" $ text ""
+                    elClass "td" "td-tp-distance-leg" . text $ showTaskDistance leg'
+                    elAttr "td" ("colspan" =: "4") $ text "")
 
     elDynClass "tr" rowTextColor $ do
-        el "td" $ dynText $ T.pack . show <$> i
+        el "td" $ dynText $ (\ix -> (T.pack . show $ ix) <> rowIntro) <$> i
+        elClass "td" "td-tp-distance-task" . dynText $ showTaskDistance <$> s
         elClass "td" "td-tp-name" . dynText $ TP.getName <$> z
         elClass "td" "td-tp-radius" . dynText $ TP.getRadius <$> z
         el "td" . dynText $ TP.getLat <$> z
         el "td" . dynText $ TP.getLng <$> z
-        el "td" $ dynText rowIntro
-        elClass "td" "td-tp-distance" . dynText $ showTaskDistance <$> s
 
 rowColor :: SpeedSection -> Integer -> T.Text
 rowColor Nothing _ = ""
@@ -161,8 +155,8 @@ rowColor (Just (ss, es)) ii =
 rowText :: SpeedSection -> Integer -> T.Text
 rowText Nothing _ = ""
 rowText (Just (ss, es)) ii =
-    if | ss == ii -> "Start of Speed Section"
-       | es == ii -> "End of Speed Section"
+    if | ss == ii -> " (SS)"
+       | es == ii -> " (ES)"
        | otherwise -> ""
 
 showStartGate :: TimeZone -> StartGate -> T.Text
