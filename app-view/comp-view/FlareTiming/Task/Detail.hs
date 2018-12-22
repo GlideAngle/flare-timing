@@ -11,7 +11,7 @@ import WireTypes.Point (Allocation(..))
 import WireTypes.Validity (Validity(..))
 import FlareTiming.Comms
     ( getTaskScore, getTaskValidityWorking, getTaskLengthSphericalEdge
-    , getTaskPilotDnf
+    , getTaskPilotDnf, getTaskPilotNyp
     )
 import FlareTiming.Breadcrumb (crumbTask)
 import FlareTiming.Events (IxTask(..))
@@ -51,6 +51,7 @@ taskDetail ix@(IxTask _) cs task vy a = do
     let utc = utcOffset . head <$> cs
     s <- getTaskScore ix
     vw <- getTaskValidityWorking ix
+    nyp <- getTaskPilotNyp ix
     dnf <- getTaskPilotDnf ix
 
     let lnTask = getTaskLengthSphericalEdge ix
@@ -73,7 +74,7 @@ taskDetail ix@(IxTask _) cs task vy a = do
                     task' <- sample . current $ task
                     route' <- sample . current $ route
                     map task' route'
-                TaskTabAbsent -> tableAbsent dnf task
+                TaskTabAbsent -> tableAbsent nyp dnf task
                 TaskTabValidity -> viewValidity vy vw
                 TaskTabScore -> tableScore utc ln dnf vy wg ps tp s)
             <$> tab

@@ -9,9 +9,10 @@ import FlareTiming.Pilot (rowPilot)
 tableAbsent
     :: MonadWidget t m
     => Dynamic t [Pilot]
+    -> Dynamic t [Pilot]
     -> Dynamic t Task
     -> m ()
-tableAbsent dnf task = do
+tableAbsent nyp dnf task = do
     let xs = getAbsent <$> task
 
     elClass "div" "tile is-ancestor" $ do
@@ -62,7 +63,7 @@ tableAbsent dnf task = do
                                     el "th" $ text "Id"
                                     el "th" $ text "Name"
 
-                                simpleList dnf rowPilot
+                                simpleList nyp rowPilot
 
                     el "p" . text
                         $ "Unlike DNF pilots, these pilots do not decrease launch validity. When a task is not at full distance validity, if any one of the NYP pilots flew further then the task validity will increase when they are processed. Likewise for time validity and the fastest pilots being NYP."

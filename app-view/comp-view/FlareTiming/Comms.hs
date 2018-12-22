@@ -9,6 +9,7 @@ module FlareTiming.Comms
     , getTaskValidityWorking
     , getTaskLengthSphericalEdge
     , getTaskPilotDnf
+    , getTaskPilotNyp
     ) where
 
 import Reflex
@@ -182,12 +183,12 @@ getTaskLengthSphericalEdge (IxTask ii) = do
 
 getTaskLengthSphericalEdge IxTaskNone = return $ constDyn emptyRoute
 
-getTaskPilotDnf
+getTaskPilot
     :: MonadWidget t m
-    => ()
-    => IxTask
+    => T.Text
+    -> IxTask
     -> m (Dynamic t [Pilot])
-getTaskPilotDnf (IxTask ii) = do
+getTaskPilot path (IxTask ii) = do
     pb :: Event t () <- getPostBuild
 
     let defReq :: T.Text
@@ -195,7 +196,7 @@ getTaskPilotDnf (IxTask ii) = do
             mapUri
             $ "/cross-zone/"
             <> (T.pack . show $ ii)
-            <> "/pilot-dnf"
+            <> path
 
 
     let req md = XhrRequest "GET" (maybe defReq id md) def
@@ -204,4 +205,11 @@ getTaskPilotDnf (IxTask ii) = do
     let es :: Event t [Pilot] = fmapMaybe decodeXhrResponse rsp
     holdDyn [] es
 
-getTaskPilotDnf IxTaskNone = return $ constDyn []
+getTaskPilot _ IxTaskNone = return $ constDyn []
+
+getTaskPilotDnf, getTaskPilotNyp
+    :: MonadWidget t m
+    => IxTask
+    -> m (Dynamic t [Pilot])
+getTaskPilotDnf = getTaskPilot "/pilot-dnf"
+getTaskPilotNyp = getTaskPilot "/pilot-nyp"

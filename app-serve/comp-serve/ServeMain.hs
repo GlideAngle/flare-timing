@@ -1,6 +1,6 @@
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
-import Data.List (nub, sort)
+import Data.List ((\\), nub, sort)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Network.Wai (Application)
@@ -40,7 +40,7 @@ import Flight.Comp
     ( FileType(CompInput)
     , CompSettings(..)
     , Comp
-    , Task
+    , Task(..)
     , Nominal(..)
     , PilotTrackLogFile(..)
     , Pilot(..)
@@ -99,6 +99,8 @@ type Api k =
     :<|> "task-length" :> Capture "task" Int :> "spherical-edge"
         :> Get '[JSON] (OptimalRoute (Maybe TrackLine))
     :<|> "cross-zone" :> Capture "task" Int :> "pilot-dnf"
+        :> Get '[JSON] [Pilot]
+    :<|> "cross-zone" :> Capture "task" Int :> "pilot-nyp"
         :> Get '[JSON] [Pilot]
 
 api :: Proxy (Api k)
@@ -172,6 +174,7 @@ serverApi cfg =
         :<|> getTaskValidityWorking
         :<|> getTaskRouteSphericalEdge
         :<|> getTaskPilotDnf
+        :<|> getTaskPilotNyp
     where
         c = asks compSettings
         p = asks pointing
@@ -288,9 +291,26 @@ getTaskRouteSphericalEdge ii = do
 
 getTaskPilotDnf :: Int -> AppT k IO [Pilot]
 getTaskPilotDnf ii = do
-    xs <- (\Cg.Crossing{dnf} -> dnf) <$> asks crossing
-    case drop (ii - 1) xs of
-        x : _ -> return x
+    xss <- (\Cg.Crossing{dnf} -> dnf) <$> asks crossing
+    case drop (ii - 1) xss of
+        xs : _ -> return xs
+
+        _ -> throwError $
+            err400
+                { errBody = LBS.pack
+                $ "Out of bounds task: #" ++ show ii
+                }
+
+getTaskPilotNyp :: Int -> AppT k IO [Pilot]
+getTaskPilotNyp ii = do
+    ps <- getPilots <$> asks compSettings
+    ts <- tasks <$> asks compSettings
+    xss <- (\Cg.Crossing{dnf} -> dnf) <$> asks crossing
+    css <- getScores <$> asks pointing
+    let jj = ii - 1
+    case (drop jj ts, drop jj xss, drop jj css) of
+        ( Task{absent = ys} : _, xs : _, cs : _) ->
+            let (cs', _) = unzip cs in return $ ps \\ (xs ++ ys ++ cs')
 
         _ -> throwError $
             err400
