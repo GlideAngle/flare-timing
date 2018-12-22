@@ -109,7 +109,7 @@ tableStartGates tz gs = do
             el "thead" $ do
                 el "tr" $ do
                     el "th" $ text "#"
-                    el "th" $ text "Time"
+                    el "th" $ text "Open"
             el "tbody" $ do
                 sequence $ zipWith (rowStartGate tz) gs rowNumbers
 
