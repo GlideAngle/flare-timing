@@ -5,8 +5,8 @@ import qualified Data.Text as T (Text, pack)
 import Data.Time.LocalTime (TimeZone)
 
 import WireTypes.Comp
-    (Task(..), SpeedSection, StartGate(..), UtcOffset(..)
-    , getAllRawZones, getSpeedSection, getStartGates
+    (Task(..), SpeedSection, StartGate(..), UtcOffset(..), OpenClose(..)
+    , getAllRawZones, getSpeedSection, getOpenClose, getStartGates
     )
 import WireTypes.Route (TaskDistance(..), TaskLegs(..), showTaskDistance)
 import WireTypes.Zone (RawZone(..))
@@ -44,7 +44,7 @@ tableTask utcOffset x taskLegs = do
             elClass "article" "tile is-child box" $ do
                 elClass "p" "title" $ text "Turnpoints"
                 elClass "div" "content" $ do
-                    tableTurnpoints x taskLegs
+                    tableTurnpoints tz x taskLegs
                     return ()
 
         elClass "div" "tile is-parent is-3" $ do
@@ -56,18 +56,21 @@ tableTask utcOffset x taskLegs = do
 
 tableTurnpoints
     :: MonadWidget t m
-    => Dynamic t Task
+    => TimeZone
+    -> Dynamic t Task
     -> Dynamic t (Maybe TaskLegs)
     -> m ()
-tableTurnpoints x taskLegs = do
+tableTurnpoints tz x taskLegs = do
     let zs = getAllRawZones <$> x
     let ss = getSpeedSection <$> x
+    let oc = (\case [t] -> repeat t; ts -> ts) . getOpenClose <$> x
 
     pad <- sample . current $ padLegs <$> ss
 
     let legs' = (maybe unknownLegs (pad . legs)) <$> taskLegs
     let legsSum' = (maybe unknownLegs (pad . legsSum)) <$> taskLegs
-    let ys = ffor3 legs' legsSum' zs $ zipWith3 (\a b c -> (a, b, c))
+    let dd = zipDynWith zip legs' legsSum'
+    let ys = ffor3 oc dd zs $ zipWith3 (\a b c -> (a, b, c))
 
     _ <- elClass "table" "table is-striped" $ do
             el "thead" $ do
@@ -82,7 +85,7 @@ tableTurnpoints x taskLegs = do
                     el "th" $ text "Close"
 
             _ <- el "tbody" $ do
-                simpleList (fmap (zip [1..]) ys) (row ss)
+                simpleList (fmap (zip [1..]) ys) (row tz ss)
 
             el "tfoot" $ do
                 el "tr" $
@@ -125,16 +128,18 @@ rowStartGate tz sg ix = do
 
 row
     :: MonadWidget t m
-    => Dynamic t SpeedSection
-    -> Dynamic t (Integer, (TaskDistance, TaskDistance, RawZone))
+    => TimeZone
+    -> Dynamic t SpeedSection
+    -> Dynamic t (Integer, (OpenClose, (TaskDistance, TaskDistance), RawZone))
     -> m ()
-row ss iz = do
+row tz ss iz = do
     let i = fst <$> iz
     let rowTextColor = zipDynWith rowColor ss i
     rowIntro <- sample . current $ zipDynWith rowText ss i
     let x = snd <$> iz
-    let l = (\(a, _, _) -> a) <$> x
-    let s = (\(_, b, _) -> b) <$> x
+    let oc = (\(a, _, _) -> a) <$> x
+    let l = (\(_, (b1, _), _) -> b1) <$> x
+    let s = (\(_, (_, b2), _) -> b2) <$> x
     let z = (\(_, _, c) -> c) <$> x
 
     _ <- dyn $ ffor2 i l (\ix leg ->
@@ -154,8 +159,8 @@ row ss iz = do
         elClass "td" "td-tp-radius" . dynText $ TP.getRadius <$> z
         el "td" . dynText $ TP.getLat <$> z
         el "td" . dynText $ TP.getLng <$> z
-        elClass "td" "td-tp-open" $ text "00:00:00"
-        elClass "td" "td-tp-close" $ text "00:00:00"
+        elClass "td" "td-tp-open" . dynText $ showOpen tz <$> oc
+        elClass "td" "td-tp-close" . dynText $ showClose tz <$> oc
 
 rowColor :: SpeedSection -> Integer -> T.Text
 rowColor Nothing _ = ""
@@ -173,3 +178,9 @@ rowText (Just (ss, es)) ii =
 
 showStartGate :: TimeZone -> StartGate -> T.Text
 showStartGate tz (StartGate t) = showT tz t
+
+showOpen :: TimeZone -> OpenClose -> T.Text
+showOpen tz OpenClose{open} = showT tz open
+
+showClose :: TimeZone -> OpenClose -> T.Text
+showClose tz OpenClose{close} = showT tz close

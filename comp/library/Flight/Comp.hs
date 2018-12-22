@@ -143,7 +143,8 @@ data OpenClose =
         { open :: UTCTime 
         , close :: UTCTime
         }
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
 
 -- | If all the zone open and close times are the same then we may only be
 -- given a singleton list. This function retrieves the open close time

@@ -4,11 +4,13 @@ module WireTypes.Comp
     , Task(..)
     , Name
     , SpeedSection
+    , OpenClose(..)
     , StartGate(..)
     , UtcOffset(..)
     , getAllRawZones
     , getRaceRawZones
     , getSpeedSection
+    , getOpenClose
     , getStartGates
     , getAbsent
     , fromSci
@@ -29,6 +31,14 @@ import WireTypes.Pilot (Pilot)
 type Name = String
 
 type SpeedSection = Maybe (Integer, Integer)
+
+data OpenClose =
+    OpenClose
+        { open :: UTCTime 
+        , close :: UTCTime
+        }
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (FromJSON)
 
 newtype StartGate = StartGate UTCTime
     deriving (Eq, Ord, Show, Generic)
@@ -95,6 +105,7 @@ data Task =
         { taskName :: Name
         , zones :: Zones
         , speedSection :: SpeedSection
+        , zoneTimes :: [OpenClose]
         , startGates :: [StartGate]
         , absent :: [Pilot]
         }
@@ -114,6 +125,9 @@ getAbsent Task{absent} = absent
 
 getSpeedSection :: Task -> SpeedSection
 getSpeedSection Task{speedSection = ss} = ss
+
+getOpenClose :: Task -> [OpenClose]
+getOpenClose Task{zoneTimes = ts} = ts
 
 getStartGates :: Task -> [StartGate]
 getStartGates Task{startGates = gs} = gs
