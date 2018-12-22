@@ -81,8 +81,8 @@ tableTurnpoints tz x taskLegs = do
                     elClass "th" "th-tp-radius" $ text "Radius"
                     elClass "th" "th-tp-lat" $ text "Latitude"
                     elClass "th" "th-tp-lng" $ text "Longitude"
-                    el "th" $ text "Open"
-                    el "th" $ text "Close"
+                    elClass "th" "th-tp-open" $ text "Open"
+                    elClass "th" "th-tp-close" $ text "Close"
 
             _ <- el "tbody" $ do
                 simpleList (fmap (zip [1..]) ys) (row tz ss)
