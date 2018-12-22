@@ -78,16 +78,18 @@ tableTurnpoints x taskLegs = do
                     elClass "th" "th-tp-radius" $ text "Radius"
                     el "th" $ text "Latitude"
                     el "th" $ text "Longitude"
+                    el "th" $ text "Open"
+                    el "th" $ text "Close"
 
             _ <- el "tbody" $ do
                 simpleList (fmap (zip [1..]) ys) (row ss)
 
             el "tfoot" $ do
                 el "tr" $
-                    elAttr "td" ("colspan" =: "6")
+                    elAttr "td" ("colspan" =: "8")
                         $ text "† Start of the speed section"
                 el "tr" $
-                    elAttr "td" ("colspan" =: "6")
+                    elAttr "td" ("colspan" =: "8")
                         $ text "‡ End of the speed section"
 
     return ()
@@ -143,7 +145,7 @@ row ss iz = do
                 el "tr" $ do
                     el "td" $ text ""
                     elClass "td" "td-tp-distance-leg" . text $ showTaskDistance leg'
-                    elAttr "td" ("colspan" =: "4") $ text "")
+                    elAttr "td" ("colspan" =: "6") $ text "")
 
     elDynClass "tr" rowTextColor $ do
         el "td" $ dynText $ (\ix -> (T.pack . show $ ix) <> rowIntro) <$> i
@@ -152,6 +154,8 @@ row ss iz = do
         elClass "td" "td-tp-radius" . dynText $ TP.getRadius <$> z
         el "td" . dynText $ TP.getLat <$> z
         el "td" . dynText $ TP.getLng <$> z
+        elClass "td" "td-tp-open" $ text "00:00:00"
+        elClass "td" "td-tp-close" $ text "00:00:00"
 
 rowColor :: SpeedSection -> Integer -> T.Text
 rowColor Nothing _ = ""
