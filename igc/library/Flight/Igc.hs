@@ -407,11 +407,6 @@ parseFromFile fname =
 
 -- $setup
 -- >>> :set -XTemplateHaskell
--- >>> :set -XNamedFieldPuns
--- >>> :set -XOverloadedStrings
--- >>> :set -XFlexibleInstances
--- >>> :set -XGADTs
--- >>> :set -XScopedTypeVariables
 -- >>> import Language.Haskell.TH
 -- >>> import Language.Haskell.TH.Syntax (lift)
 -- >>> import Flight.Igc
