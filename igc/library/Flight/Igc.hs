@@ -24,11 +24,15 @@ module Flight.Igc
     , parse
     , parseFromFile
     -- * Types
-    , Altitude
-    , Degree
-    , Hour
-    , Minute
-    , Second
+    , Altitude(..)
+    , Degree(..)
+    , Hour(..)
+    , Minute(..)
+    , Second(..)
+    , Year(..)
+    , Month(..)
+    , Day(..)
+    , Nth(..)
     -- * Record classification
     , isMark
     , isFix
@@ -45,21 +49,26 @@ import Data.Void
 import Data.Functor.Identity
 
 -- | An altitude in metres
-type Altitude = String
+newtype Altitude = Altitude String
+    deriving (Eq, Ord)
 
 -- | An hour of time.
-type Hour = String
+newtype Hour = Hour String
+    deriving (Eq, Ord)
 
 -- | A minute of time or a minute of a degree. If a minute of a degree, the
 -- first two chars are whole minutes and the following chars are the decimal
 -- part. No decimal point character is included.
-type Minute = String
+newtype Minute = Minute String
+    deriving (Eq, Ord)
 
 -- | A second of time.
-type Second = String
+newtype Second = Second String
+    deriving (Eq, Ord)
 
 -- | A whole degree of angle. May have leading zeros. Has no decimal part.
-type Degree = String
+newtype Degree = Degree String
+    deriving (Eq, Ord)
 
 -- | A time with hours, minutes and seconds.
 data HMS = HMS Hour Minute Second
@@ -85,6 +94,22 @@ newtype AltBaro = AltBaro Altitude
 newtype AltGps = AltGps Altitude
     deriving (Eq, Ord)
 
+-- | A two digit character year
+newtype Year = Year String
+    deriving (Eq, Ord)
+
+-- | A two digit character month
+newtype Month = Month String
+    deriving (Eq, Ord)
+
+-- | A two digit character year
+newtype Day = Day String
+    deriving (Eq, Ord)
+
+-- | A two digit character item index
+newtype Nth = Nth String
+    deriving (Eq, Ord)
+
 -- |
 -- The record types are:
 --
@@ -106,9 +131,9 @@ data IgcRecord
     -- | A location fix
     = B HMS Lat Lng AltBaro (Maybe AltGps)
     -- | The newer date header record
-    | HFDTEDATE String String String String
+    | HFDTEDATE Day Month Year Nth
     -- | The older date header record
-    | HFDTE String String String
+    | HFDTE Day Month Year
     -- | Any other record type is ignored
     | Ignore
     deriving (Eq, Ord)
@@ -122,8 +147,10 @@ instance Show IgcRecord where
          , show altB
          , "(" ++ show altG ++ ")"
          ]
-    show (HFDTEDATE d m y n) = concat ["20", y, "-", m, "-", d, ", ", n]
-    show (HFDTE d m y) = concat ["20", y, "-", m, "-", d]
+    show (HFDTEDATE (Day d) (Month m) (Year y) (Nth n)) =
+        concat ["20", y, "-", m, "-", d, ", ", n]
+    show (HFDTE (Day d) (Month m) (Year y)) =
+        concat ["20", y, "-", m, "-", d]
     show Ignore = ""
 
 showDegree :: String -> String
@@ -134,15 +161,20 @@ showMinute (m0 : m1 : m) = [m0, m1] ++ "." ++ m ++ "'"
 showMinute m = m 
 
 showHMS :: HMS -> String
-showHMS (HMS hh mm ss) = hh ++ ":" ++ mm ++ ":" ++ ss
+showHMS (HMS (Hour hh) (Minute mm) (Second ss)) =
+    hh ++ ":" ++ mm ++ ":" ++ ss
 
 showLat :: Lat -> String
-showLat (LatN d m) = showDegree d ++ " " ++ showMinute m ++ " N"
-showLat (LatS d m) = showDegree d ++ " " ++ showMinute m ++ " S"
+showLat (LatN (Degree d) (Minute m)) =
+    showDegree d ++ " " ++ showMinute m ++ " N"
+showLat (LatS (Degree d) (Minute  m)) =
+    showDegree d ++ " " ++ showMinute m ++ " S"
 
 showLng :: Lng -> String
-showLng (LngW d m) = showDegree d ++ " " ++ showMinute m ++ " W"
-showLng (LngE d m) = showDegree d ++ " " ++ showMinute m ++ " E"
+showLng (LngW (Degree d) (Minute  m)) =
+    showDegree d ++ " " ++ showMinute m ++ " W"
+showLng (LngE (Degree d) (Minute  m)) =
+    showDegree d ++ " " ++ showMinute m ++ " E"
 
 ltrimZero :: String -> String
 ltrimZero = dropWhile ('0' ==)
@@ -157,10 +189,10 @@ instance Show Lng where
     show = showLng
 
 instance Show AltBaro where
-    show (AltBaro x) = ltrimZero x ++ "m"
+    show (AltBaro (Altitude x)) = ltrimZero x ++ "m"
 
 instance Show AltGps where
-    show (AltGps x) = ltrimZero x ++ "m"
+    show (AltGps (Altitude x)) = ltrimZero x ++ "m"
 
 showIgc :: [ IgcRecord ] -> String
 showIgc xs =
@@ -226,9 +258,9 @@ line = do
 -- 02:00:22
 hms :: ParsecT Void String Identity HMS
 hms = do
-    hh <- count 2 digitChar
-    mm <- count 2 digitChar
-    ss <- count 2 digitChar
+    hh <- Hour <$> count 2 digitChar
+    mm <- Minute <$> count 2 digitChar
+    ss <- Second <$> count 2 digitChar
     return $ HMS hh mm ss
 
 -- |
@@ -236,8 +268,8 @@ hms = do
 -- 33° 21.354' S
 lat :: ParsecT Void String Identity Lat
 lat = do
-    degs <- count 2 digitChar
-    mins <- count 5 digitChar
+    degs <- Degree <$> count 2 digitChar
+    mins <- Minute <$> count 5 digitChar
     f <- const LatN <$> char 'N' <|> const LatS <$> char 'S'
     return $ f degs mins
 
@@ -246,8 +278,8 @@ lat = do
 -- 147° 56.057' E
 lng :: ParsecT Void String Identity Lng
 lng = do
-    degs <- count 3 digitChar
-    mins <- count 5 digitChar
+    degs <- Degree <$> count 3 digitChar
+    mins <- Minute <$> count 5 digitChar
     f <- const LngW <$> char 'W' <|> const LngE <$> char 'E'
     return $ f degs mins
 
@@ -255,13 +287,13 @@ lng = do
 -- >>> parseTest altBaro "00244"
 -- 244m
 altBaro :: ParsecT Void String Identity AltBaro
-altBaro = AltBaro <$> count 5 digitChar
+altBaro = AltBaro . Altitude <$> count 5 digitChar
 
 -- |
 -- >>> parseTest altGps "00244"
 -- 244m
 altGps :: ParsecT Void String Identity AltGps
-altGps = AltGps <$> count 5 digitChar
+altGps = AltGps . Altitude <$> count 5 digitChar
 
 -- |
 -- >>> parseTest alt "A0024400241000"
@@ -306,11 +338,11 @@ fix = do
 dateHFDTEDATE :: ParsecT Void String Identity IgcRecord
 dateHFDTEDATE = do
     _ <- string "HFDTEDATE:"
-    dd <- count 2 digitChar
-    mm <- count 2 digitChar
-    yy <- count 2 digitChar
+    dd <- Day <$> count 2 digitChar
+    mm <- Month <$> count 2 digitChar
+    yy <- Year <$> count 2 digitChar
     _ <- string ","
-    nn <- count 2 digitChar
+    nn <- Nth <$> count 2 digitChar
     return $ HFDTEDATE dd mm yy nn
 
 -- |
@@ -319,9 +351,9 @@ dateHFDTEDATE = do
 dateHFDTE :: ParsecT Void String Identity IgcRecord
 dateHFDTE = do
     _ <- string "HFDTE"
-    dd <- count 2 digitChar
-    mm <- count 2 digitChar
-    yy <- count 2 digitChar
+    dd <- Day <$> count 2 digitChar
+    mm <- Month <$> count 2 digitChar
+    yy <- Year <$> count 2 digitChar
     return $ HFDTE dd mm yy
 
 ignore :: ParsecT Void String Identity IgcRecord
