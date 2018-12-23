@@ -329,18 +329,31 @@ ignore = do
     _ <- many (noneOf ("\n" :: String))
     return Ignore
 
-parse
-   :: String -- ^ A string to parse.
-   -> Either (ParseError Char Void) [IgcRecord]
-parse = P.parse igcFile "(stdin)"
-
 -- |
+-- >>> line 1 igcHFDTE
+-- "HFDTE030118\r\n"
+-- >>> line 9 igcHFDTE
+-- "B0405473321383S14756040EA0024800227\r\n"
+-- >>> line 3527 igcHFDTE
+-- "B0613553236449S14817636EA0036500338\r\n"
+-- >>> line 3529 igcHFDTE
+-- "LXGD Downloaded 2018-01-03  21:30:14\r\n"
+--
 -- >>> parse igcHFDTE
 -- Right 2018-01-03
 -- 04:05:47 33° 21.383' S 147° 56.040' E 248m (Just 227m)
 -- 04:05:48 33° 21.388' S 147° 56.036' E 249m (Just 227m)
 -- ... plus 3530 other B records
 -- <BLANKLINE>
+--
+-- >>> line 1 igcHFDTEDATE
+-- "HFDTEDATE:030118,01\r\n"
+-- >>> line 9 igcHFDTEDATE
+-- "B0312593321375S14755988EA0027700235\r\n"
+-- >>> line 13179 igcHFDTEDATE
+-- "B0657503228681S14842328EA0034500302\r\n"
+-- >>> line 13181 igcHFDTEDATE
+-- "LXGD Downloaded 2018-01-03  12:12:46\r\n"
 --
 -- >>> parse igcHFDTEDATE
 -- Right 2018-01-03, 01
@@ -349,6 +362,11 @@ parse = P.parse igcFile "(stdin)"
 -- ... plus 13175 other B records
 -- <BLANKLINE>
 --
+parse
+   :: String -- ^ A string to parse
+   -> Either (ParseError Char Void) [IgcRecord]
+parse = P.parse igcFile "(stdin)"
+
 parseFromFile
     :: FilePath -- ^ An IGC file to parse.
     -> IO (Either (ParseError Char Void) [IgcRecord])
@@ -369,6 +387,8 @@ parseFromFile fname =
 -- embedStr :: IO String -> ExpQ
 -- embedStr readStr = lift =<< runIO readStr
 -- :}
+--
+-- >>> line n = unlines . take 1 . drop n . lines
 -- 
 -- >>> fileHFDTEDATE  = "./test-suite-doctest/Sasha-Serebrennikova.20180103-121306.30169.72.igc"
 -- >>> fileHFDTE  = "./test-suite-doctest/Brad-Porter.20180104-095852.36822.34.igc"
