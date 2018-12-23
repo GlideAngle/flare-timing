@@ -163,7 +163,6 @@ showIgcSummarize xs =
 instance {-# OVERLAPPING #-} Show [ IgcRecord ] where
     show = showIgcSummarize
 
-
 isB :: IgcRecord -> Bool
 isB B{} = True
 isB HFDTEDATE{} = False
@@ -172,14 +171,13 @@ isB Ignore = False
 
 igcFile :: ParsecT Void String Identity [IgcRecord]
 igcFile = do
-    hfdte <-
-        manyTill anyChar (lookAhead (string "HFDTEDATE:")) *> headerLine dateHFDTEDATE
-        <|> manyTill anyChar (lookAhead (string "HFDTE")) *> headerLine dateHFDTE
+    hfdte <- try p1 <|> try p2
     lines' <- manyTill anyChar (char 'B') *> many line
     _ <- eof
     return $ hfdte : lines'
-
     where
+        p1 = manyTill anyChar (lookAhead (string "HFDTEDATE:")) *> headerLine dateHFDTEDATE
+        p2 = manyTill anyChar (lookAhead (string "HFDTE")) *> headerLine dateHFDTE
         headerLine date = do
             line' <- date
             _ <- eol
