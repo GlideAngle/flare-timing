@@ -97,7 +97,9 @@ newtype AltGps = AltGps Altitude
 data IgcRecord
     -- | A location fix.
     = B HMS Lat Lng AltBaro (Maybe AltGps)
-    -- | The date header record.
+    -- | The newer date header record.
+    | HFDTEDATE String String String String
+    -- | The older date header record.
     | HFDTE String String String
     -- | Any other record type is ignored.
     | Ignore
@@ -164,21 +166,24 @@ instance {-# OVERLAPPING #-} Show [ IgcRecord ] where
 
 isB :: IgcRecord -> Bool
 isB B{} = True
+isB HFDTEDATE{} = False
 isB HFDTE{} = False
 isB Ignore = False
 
 igcFile :: ParsecT Void String Identity [IgcRecord]
 igcFile = do
-    hfdte <- manyTill anyChar (lookAhead (string "HFDTE")) *> headerLine
+    hfdte <-
+        manyTill anyChar (lookAhead (string "HFDTEDATE:")) *> headerLine dateHFDTEDATE
+        <|> manyTill anyChar (lookAhead (string "HFDTE")) *> headerLine dateHFDTE
     lines' <- manyTill anyChar (char 'B') *> many line
     _ <- eof
     return $ hfdte : lines'
 
-headerLine :: ParsecT Void String Identity IgcRecord
-headerLine = do
-    line' <- date
-    _ <- eol
-    return line'
+    where
+        headerLine date = do
+            line' <- date
+            _ <- eol
+            return line'
 
 line :: ParsecT Void String Identity IgcRecord
 line = do
@@ -240,8 +245,18 @@ fix = do
     _ <- many (noneOf ("\n" :: String))
     return $ B hms' lat' lng' altBaro' altGps'
 
-date :: ParsecT Void String Identity IgcRecord
-date = do
+dateHFDTEDATE :: ParsecT Void String Identity IgcRecord
+dateHFDTEDATE = do
+    _ <- string "HFDTEDATE:"
+    dd <- count 2 digitChar
+    mm <- count 2 digitChar
+    yy <- count 2 digitChar
+    _ <- string ","
+    nn <- count 2 digitChar
+    return $ HFDTEDATE dd mm yy nn
+
+dateHFDTE :: ParsecT Void String Identity IgcRecord
+dateHFDTE = do
     _ <- string "HFDTE"
     dd <- count 2 digitChar
     mm <- count 2 digitChar

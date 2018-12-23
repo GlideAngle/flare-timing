@@ -177,6 +177,11 @@ igcMarkedFixes xs =
 mark :: IgcRecord -> [IgcRecord] -> K.MarkedFixes
 mark Ignore _ = nullMarkedFixes
 mark B{} _ = nullMarkedFixes
+mark (HFDTEDATE dd mm yy _) xs =
+    unStamp Nothing ts
+    where
+        ys = catMaybes $ extract <$> xs
+        ts = stamp (dd, mm, yy) <$> ys
 mark (HFDTE dd mm yy) xs =
     unStamp Nothing ts
     where
@@ -185,6 +190,7 @@ mark (HFDTE dd mm yy) xs =
 
 extract :: IgcRecord -> Maybe (HMS, (Lat, Lng, AltBaro, Maybe AltGps))
 extract Ignore = Nothing
+extract HFDTEDATE{} = Nothing
 extract HFDTE{} = Nothing
 extract (B hms lat lng alt altGps) = Just (hms, (lat, lng, alt, altGps))
 
