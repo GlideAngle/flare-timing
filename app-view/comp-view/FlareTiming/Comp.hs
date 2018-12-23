@@ -58,6 +58,11 @@ nominal n u = do
                                 dynText $ showUtcOffset <$> u
                     elClass "div" "control" $ do
                         elClass "div" "tags has-addons" $ do
+                            elClass "span" "tag" $ do text "minimum distance"
+                            elClass "span" "tag is-black" $ do
+                                text . T.pack $ free
+                    elClass "div" "control" $ do
+                        elClass "div" "tags has-addons" $ do
                             elClass "span" "tag" $ do text "nominal distance"
                             elClass "span" "tag is-info" $ do
                                 text $ T.pack distance
@@ -69,8 +74,8 @@ nominal n u = do
                     elClass "div" "control" $ do
                         elClass "div" "tags has-addons" $ do
                             elClass "span" "tag" $ do text "nominal goal"
-                            elClass "span" "tag is-primary"
-                                $ text (T.pack . show $ goal))
+                            elClass "span" "tag is-primary" $ do
+                                text . T.pack . show $ goal)
 
     return ()
 

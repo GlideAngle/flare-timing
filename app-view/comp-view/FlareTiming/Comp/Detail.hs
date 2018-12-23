@@ -4,7 +4,6 @@ import Reflex
 import Reflex.Dom
 
 import WireTypes.Comp (Comp, Task)
-import WireTypes.Pilot (Pilot)
 import FlareTiming.Comp (comps)
 import FlareTiming.Breadcrumb (crumbComp)
 import FlareTiming.Events (IxTask(..))
