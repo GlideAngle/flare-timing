@@ -38,8 +38,10 @@ import System.FilePath
 import qualified Flight.Kml as K
 import qualified Flight.Igc as I (parse)
 import Flight.Igc
-    ( Degree, Minute, HMS(..)
-    , Lat(..), Lng(..), AltGps(..), AltBaro(..), IgcRecord(..)
+    ( Degree(..), Minute(..), Second(..)
+    , Year(..), Month(..), Day(..), Hour(..), HMS(..)
+    , Lat(..), Lng(..), Altitude(..), AltGps(..), AltBaro(..)
+    , IgcRecord(..)
     , isMark, isFix
     )
 import Flight.Comp
@@ -181,12 +183,12 @@ igcMarkedFixes xs =
 mark :: IgcRecord -> [IgcRecord] -> K.MarkedFixes
 mark Ignore _ = nullMarkedFixes
 mark B{} _ = nullMarkedFixes
-mark (HFDTEDATE dd mm yy _) xs =
+mark (HFDTEDATE (Day dd) (Month mm) (Year yy) _) xs =
     unStamp Nothing ts
     where
         ys = catMaybes $ extract <$> xs
         ts = stamp (dd, mm, yy) <$> ys
-mark (HFDTE dd mm yy) xs =
+mark (HFDTE (Day dd) (Month mm) (Year yy)) xs =
     unStamp Nothing ts
     where
         ys = catMaybes $ extract <$> xs
@@ -199,7 +201,7 @@ extract HFDTE{} = Nothing
 extract (B hms lat lng alt altGps) = Just (hms, (lat, lng, alt, altGps))
 
 stamp :: (String, String, String) -> (HMS, a) -> (UTCTime, a)
-stamp (dd, mm, yy) (HMS hr minute sec, a) =
+stamp (dd, mm, yy) (HMS (Hour hr) (Minute minute) (Second sec), a) =
     (utc, a)
     where
         -- TODO: Test with an IGC file from the 20th Century.
@@ -241,7 +243,7 @@ toFix mark0 (t, (lat, lng, altBaro, altGps)) =
         }
 
 readDegMin :: Degree -> Minute -> Rational
-readDegMin d m =
+readDegMin (Degree d) (Minute m) =
     d' % 1 + toRational m' / 60000
     where
         d' = read d :: Integer
@@ -256,9 +258,7 @@ readLng (LngE d m) = K.Longitude $ readDegMin d m
 readLng (LngW d m) = K.Longitude . negate $ readDegMin d m
 
 readAltBaro :: AltBaro -> K.Altitude
-readAltBaro (AltBaro alt) =
-    K.Altitude (read alt :: Integer)
+readAltBaro (AltBaro (Altitude alt)) = K.Altitude (read alt :: Integer)
 
 readAltGps :: AltGps -> K.Altitude
-readAltGps (AltGps alt) =
-    K.Altitude (read alt :: Integer)
+readAltGps (AltGps (Altitude alt)) = K.Altitude (read alt :: Integer)
