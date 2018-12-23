@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d38bc07744bf599f7d89572116fbc5b1d4c3c6a94c946878ab3a1043a2826672
+-- hash: a103cd0e75af02a8d4f3dc335d6fa9b559b53fc5fff4bbac8a2ee8aadfcaa1a1
 
 name:           flight-igc
 version:        2.0.0
@@ -24,6 +24,8 @@ extra-source-files:
     package.dhall
     changelog.md
     README.md
+    test-suite-doctest/Brad-Porter.20180104-095852.36822.34.igc
+    test-suite-doctest/Sasha-Serebrennikova.20180103-121306.30169.72.igc
 
 source-repository head
   type: git

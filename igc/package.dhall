@@ -14,6 +14,8 @@ in    defs
           "data, parsing"
       , github =
           "blockscope/flare-timing/igc"
+      , extra-source-files =
+          defs.extra-source-files # [ "**/*.igc" ]
       , dependencies =
           defs.dependencies # [ "megaparsec", "bytestring", "utf8-string" ]
       , library =
