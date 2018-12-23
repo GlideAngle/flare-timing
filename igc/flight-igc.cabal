@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 414193f804ecc4821e89d2261f864d5c98792fe6e7d4eb93730c4e06b1bb5b62
+-- hash: 6ea89e0619586da2aaed6def79ce331963330ead895437988dafa865ccc4b0c9
 
 name:           flight-igc
 version:        1.1.0
@@ -42,6 +42,25 @@ library
   build-depends:
       base >=4.10.1.0 && <5
     , bytestring
+    , megaparsec
+    , utf8-string
+  default-language: Haskell2010
+
+test-suite doctest
+  type: exitcode-stdio-1.0
+  main-is: DocTest.hs
+  other-modules:
+      Flight.Igc
+      Paths_flight_igc
+  hs-source-dirs:
+      library
+      test-suite-doctest
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  ghc-options: -Wall -Werror -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      base >=4.10.1.0 && <5
+    , bytestring
+    , doctest
     , megaparsec
     , utf8-string
   default-language: Haskell2010

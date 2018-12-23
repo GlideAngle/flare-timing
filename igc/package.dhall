@@ -19,5 +19,16 @@ in    defs
       , library =
           { source-dirs = "library", exposed-modules = "Flight.Igc" }
       , tests =
-          ./../default-tests.dhall
+            ./../default-tests.dhall
+          ⫽ { doctest =
+                { dependencies =
+                    defs.dependencies # [ "doctest" ]
+                , ghc-options =
+                    [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
+                , main =
+                    "DocTest.hs"
+                , source-dirs =
+                    [ "library", "test-suite-doctest" ]
+                }
+            }
       }
