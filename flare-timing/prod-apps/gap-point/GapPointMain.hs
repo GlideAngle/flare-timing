@@ -216,8 +216,7 @@ points'
                 gNom
                 dNom
                 (PilotsFlying $ p - d)
-                -- TODO: Read minimum distance from the comp.
-                (MinimumDistance [u| 5 km |])
+                free
                 b
                 s
             | p <- toInteger . length <$> pilots
