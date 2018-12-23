@@ -14,7 +14,7 @@ tablePilot
     -> m ()
 tablePilot ts = do
     xs <- getPilotsStatus ()
-    _ <- elClass "table" "table" $
+    _ <- elClass "table" "table is-bordered" $
             el "thead" $ do
                 el "tr" $ do
                     el "th" $ text "Id"
