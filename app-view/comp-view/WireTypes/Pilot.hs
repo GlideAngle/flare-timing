@@ -1,11 +1,16 @@
 module WireTypes.Pilot
-    ( Pilot(..)
+    ( PilotTaskStatus(..)
+    , Pilot(..)
     , PilotId(..)
     , PilotName(..)
     ) where
 
 import GHC.Generics (Generic)
 import Data.Aeson (FromJSON(..))
+
+data PilotTaskStatus
+    = ABS | DF | DNF | NYP
+    deriving (Eq, Ord, Show, Generic, FromJSON)
 
 newtype PilotId =
     PilotId String 

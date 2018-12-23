@@ -5,10 +5,7 @@ import Reflex.Dom
 import Control.Monad (join)
 
 import FlareTiming.Events (IxTask(..))
-import FlareTiming.Comms
-    ( getTasks, getComps, getPilots
-    , getValidity, getAllocation
-    )
+import FlareTiming.Comms (getTasks, getComps, getValidity, getAllocation)
 import FlareTiming.Comp.Detail (compDetail)
 import FlareTiming.Task.Detail (taskDetail)
 
@@ -27,7 +24,6 @@ view :: MonadWidget t m => () -> m ()
 view () = do
     cs <- getComps ()
     xs <- getTasks ()
-    ps <- getPilots ()
     vs <- getValidity ()
     as <- getAllocation ()
 
@@ -35,9 +31,9 @@ view () = do
 
         let eIx = switchDyn deIx
 
-        deIx <- widgetHold (compDetail cs ps xs) $
+        deIx <- widgetHold (compDetail cs xs) $
                     (\ix -> case ix of
-                        IxTaskNone -> compDetail cs ps xs
+                        IxTaskNone -> compDetail cs xs
                         (IxTask ii) -> do
                             taskDetail
                                 ix

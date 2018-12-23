@@ -15,18 +15,17 @@ import FlareTiming.Comp.Pilot (tablePilot)
 compDetail
     :: MonadWidget t m
     => Dynamic t [Comp]
-    -> Dynamic t [Pilot]
     -> Dynamic t [Task]
     -> m (Event t IxTask)
-compDetail cs ps xs = do
+compDetail cs ts = do
     comps cs
     _ <- simpleList cs crumbComp
     tab <- tabsComp
 
-    e <- widgetHold (taskList xs) $
+    e <- widgetHold (taskList ts) $
             (\case
-                CompTabTask -> taskList xs
-                CompTabPilot -> do tablePilot ps; return never)
+                CompTabTask -> taskList ts
+                CompTabPilot -> do tablePilot ts; return never)
             <$> tab
 
     return $ switchDyn e

@@ -3,6 +3,7 @@ module FlareTiming.Comms
     , getNominals
     , getTasks
     , getPilots
+    , getPilotsStatus
     , getValidity
     , getAllocation
     , getTaskScore
@@ -18,7 +19,7 @@ import qualified Data.Text as T (Text, pack)
 
 import WireTypes.Comp (Comp(..), Nominal(..), Task(..))
 import WireTypes.Route
-import WireTypes.Pilot (Pilot(..))
+import WireTypes.Pilot (PilotTaskStatus(..), Pilot(..))
 import WireTypes.Point
 import WireTypes.Validity
 import WireTypes.ValidityWorking
@@ -80,6 +81,19 @@ getPilots () = do
     rsp <- performRequestAsync $ fmap req $ leftmost [ Nothing <$ pb ]
 
     let es :: Event t [Pilot] = fmapMaybe decodeXhrResponse rsp
+    holdDyn [] es
+
+getPilotsStatus
+    :: MonadWidget t m
+    => ()
+    -> m (Dynamic t [(Pilot, [PilotTaskStatus])])
+getPilotsStatus () = do
+    pb :: Event t () <- getPostBuild
+    let defReq = mapUri "/pilots-status"
+    let req md = XhrRequest "GET" (maybe defReq id md) def
+    rsp <- performRequestAsync $ fmap req $ leftmost [ Nothing <$ pb ]
+
+    let es :: Event t [(Pilot, [PilotTaskStatus])] = fmapMaybe decodeXhrResponse rsp
     holdDyn [] es
 
 getValidity
