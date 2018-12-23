@@ -38,6 +38,10 @@ import System.FilePath
 import qualified Flight.Kml as K
 import qualified Flight.Igc as I (parse)
 import Flight.Igc
+    ( Degree, Minute, HMS(..)
+    , Lat(..), Lng(..), AltGps(..), AltBaro(..), IgcRecord(..)
+    , isMark, isFix
+    )
 import Flight.Comp
     ( Pilot(..)
     , PilotTrackLogFile(..)
@@ -169,10 +173,10 @@ igcMarkedFixes xs =
         date =
             listToMaybe
             . take 1
-            . filter (\case HFDTE{} -> True; _ -> False)
+            . filter isMark
             $ xs
 
-        ys = filter (\case B{} -> True; _ -> False) xs
+        ys = filter isFix xs
 
 mark :: IgcRecord -> [IgcRecord] -> K.MarkedFixes
 mark Ignore _ = nullMarkedFixes

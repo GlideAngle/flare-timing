@@ -20,7 +20,7 @@ module Flight.Igc
     , Lng(..)
     , AltBaro(..)
     , AltGps(..)
-    -- * Parsing Functions
+    -- * Parsing
     , parse
     , parseFromFile
     -- * Types
@@ -29,6 +29,9 @@ module Flight.Igc
     , Hour
     , Minute
     , Second
+    -- * Record classification
+    , isMark
+    , isFix
     ) where
 
 import Prelude hiding (readFile)
@@ -151,7 +154,7 @@ showIgc xs =
 
 showIgcSummarize :: [ IgcRecord ] -> String
 showIgcSummarize xs =
-    (\(bs, ys) -> showIgc ys ++ summarize bs) $ partition isB xs
+    (\(bs, ys) -> showIgc ys ++ summarize bs) $ partition isFix xs
     where
         summarize [] = "no B records"
         summarize [ x ] = unlines [ show x, "... and no other B records" ]
@@ -163,11 +166,20 @@ showIgcSummarize xs =
 instance {-# OVERLAPPING #-} Show [ IgcRecord ] where
     show = showIgcSummarize
 
-isB :: IgcRecord -> Bool
-isB B{} = True
-isB HFDTEDATE{} = False
-isB HFDTE{} = False
-isB Ignore = False
+-- | HFDTEDATE and HFDTE are dates in UTC. They mark time zero from which the
+-- hour minute and second of each B record is offset.
+isMark :: IgcRecord -> Bool
+isMark B{} = False
+isMark HFDTEDATE{} = True
+isMark HFDTE{} = True
+isMark Ignore = False
+
+-- | Is the record a B record?
+isFix :: IgcRecord -> Bool
+isFix B{} = True
+isFix HFDTEDATE{} = False
+isFix HFDTE{} = False
+isFix Ignore = False
 
 igcFile :: ParsecT Void String Identity [IgcRecord]
 igcFile = do
