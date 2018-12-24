@@ -25,6 +25,8 @@ module FlareTiming.Map.Leaflet
     , fitBounds
     , panToBounds
     , latLngBounds
+    , layerGroup
+    , layerGroupAddToMap
     , layersControl
     ) where
 
@@ -35,6 +37,7 @@ import GHCJS.DOM.Types (Element(..), toElement, toJSString, toJSVal)
 
 -- SEE: https://gist.github.com/ali-abrar/fa2adbbb7ee64a0295cb
 newtype Map = Map { unMap :: JSVal }
+newtype LayerGroup = LayerGroup { unLayerGroup :: JSVal }
 newtype TileLayer = TileLayer { unTileLayer :: JSVal }
 newtype Marker = Marker { unMarker :: JSVal }
 newtype Circle = Circle { unCircle :: JSVal }
@@ -60,6 +63,14 @@ foreign import javascript unsafe
 foreign import javascript unsafe
     "$1['addTo']($2)"
     tileLayerAddToMap_ :: JSVal -> JSVal -> IO ()
+
+foreign import javascript unsafe
+    "L.layerGroup($2).addLayer($1)"
+    layerGroup_ :: JSVal -> JSVal -> IO JSVal
+
+foreign import javascript unsafe
+    "$1['addTo']($2)"
+    layerGroupAddToMap_ :: JSVal -> JSVal -> IO ()
 
 foreign import javascript unsafe
     "L.control.layers(\
@@ -135,22 +146,32 @@ mapInvalidateSize :: Map -> IO ()
 mapInvalidateSize lmap =
     mapInvalidateSize_ (unMap lmap)
 
+layerGroup :: Polyline -> [Marker] -> IO LayerGroup
+layerGroup line xs = do
+    ys <- toJSVal $ unMarker <$> xs
+    fg <- layerGroup_ (unPolyline line) ys
+    return $ LayerGroup fg
+
+layerGroupAddToMap :: LayerGroup -> Map -> IO ()
+layerGroupAddToMap x lmap =
+    layerGroupAddToMap_ (unLayerGroup x) (unMap lmap)
+
 layersControl
     :: TileLayer
     -> Map
-    -> Polyline -- ^ Point to point course line
-    -> Polyline -- ^ Optimal route of the course
-    -> Polyline -- ^ Subset of the optimal route's course line
-    -> Polyline -- ^ Optimal route through the waypoints of the speed section
+    -> LayerGroup -- ^ Point to point course line
+    -> LayerGroup -- ^ Optimal route of the course
+    -> LayerGroup -- ^ Subset of the optimal route's course line
+    -> LayerGroup -- ^ Optimal route through the waypoints of the speed section
     -> IO ()
 layersControl x lmap course taskRoute taskRouteSubset speedRoute =
     layersControl_
         (unTileLayer x)
         (unMap lmap)
-        (unPolyline course)
-        (unPolyline taskRoute)
-        (unPolyline taskRouteSubset)
-        (unPolyline speedRoute)
+        (unLayerGroup course)
+        (unLayerGroup taskRoute)
+        (unLayerGroup taskRouteSubset)
+        (unLayerGroup speedRoute)
 
 tileLayer :: String -> Int -> IO TileLayer
 tileLayer src maxZoom =

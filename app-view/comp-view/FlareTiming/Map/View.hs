@@ -12,6 +12,8 @@ import qualified FlareTiming.Map.Leaflet as L
     , Circle(..)
     , map
     , mapSetView
+    , layerGroup
+    , layerGroupAddToMap
     , tileLayer
     , marker
     , markerAddToMap
@@ -204,13 +206,14 @@ map
             xMarks :: [(L.Marker, L.Circle)]
                 <- sequence $ zipWith turnpoint cs xs
 
+            let namedMarks = zip tpNames xMarks
             _ <- sequence $ fmap
                 (\ (tpName, (xMark, xCyl)) -> do
                     L.markerAddToMap xMark lmap
                     L.markerPopup xMark tpName
                     L.circleAddToMap xCyl lmap
                     return ())
-                (zip tpNames xMarks)
+                namedMarks
 
             let xPts :: [(Double, Double)] = fmap zoneToLL xs
             let ptsTaskRoute :: [(Double, Double)] = fmap rawToLL taskRoute
@@ -222,17 +225,22 @@ map
             taskRouteSubsetLine <- L.polyline ptsTaskRouteSubset "green"
             speedRouteLine <- L.polyline ptsSpeedRoute "magenta"
 
+            courseGroup <- L.layerGroup courseLine []
+            taskRouteGroup <- L.layerGroup taskRouteLine []
+            taskRouteSubsetGroup <- L.layerGroup taskRouteSubsetLine []
+            speedRouteGroup <- L.layerGroup speedRouteLine []
+
             -- NOTE: Adding the route now so that it displays by default but
             -- can also be hidden via the layers control. The course line is
             -- not added by default but can be shown via the layers control.
-            L.polylineAddToMap taskRouteLine lmap
+            L.layerGroupAddToMap taskRouteGroup lmap
             L.layersControl
                 mapLayer
                 lmap
-                courseLine
-                taskRouteLine
-                taskRouteSubsetLine
-                speedRouteLine
+                courseGroup
+                taskRouteGroup
+                taskRouteSubsetGroup
+                speedRouteGroup
 
             bounds <- L.latLngBounds $ zoneToLLR <$> xs
 
