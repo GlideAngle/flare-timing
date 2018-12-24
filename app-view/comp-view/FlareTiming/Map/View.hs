@@ -98,7 +98,14 @@ taskZoneButtons t@Task{speedSection} = do
         return $ (zoomOrPan, zs)
 
 showLatLng :: (Double, Double) -> String
-showLatLng (lat, lng) = printf "%f °, %f °" lat lng
+showLatLng (lat, lng) =
+    printf fmt (abs lat) (abs lng)
+    where
+        fmt = case (lat < 0, lng < 0) of
+                  (True, True) -> "%f °S, %f °W"
+                  (False, True) -> "%f °N, %f °W"
+                  (True, False) -> "%f °S, %f °E"
+                  (False, False) -> "%f °N, %f °E"
 
 marker :: String -> (Double, Double) -> IO L.Marker
 marker _ latLng = do
