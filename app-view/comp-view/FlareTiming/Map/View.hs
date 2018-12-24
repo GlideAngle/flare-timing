@@ -209,7 +209,6 @@ map
             let namedMarks = zip tpNames xMarks
             _ <- sequence $ fmap
                 (\ (tpName, (xMark, xCyl)) -> do
-                    L.markerAddToMap xMark lmap
                     L.markerPopup xMark tpName
                     L.circleAddToMap xCyl lmap
                     return ())
@@ -225,7 +224,7 @@ map
             taskRouteSubsetLine <- L.polyline ptsTaskRouteSubset "green"
             speedRouteLine <- L.polyline ptsSpeedRoute "magenta"
 
-            courseGroup <- L.layerGroup courseLine []
+            courseGroup <- L.layerGroup courseLine $ fst <$> xMarks
             taskRouteGroup <- L.layerGroup taskRouteLine []
             taskRouteSubsetGroup <- L.layerGroup taskRouteSubsetLine []
             speedRouteGroup <- L.layerGroup speedRouteLine []
