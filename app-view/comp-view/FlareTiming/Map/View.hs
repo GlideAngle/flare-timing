@@ -107,16 +107,19 @@ showLatLng (lat, lng) =
                   (True, False) -> "%f °S, %f °E"
                   (False, False) -> "%f °N, %f °E"
 
-marker :: String -> (Double, Double) -> IO L.Marker
+newtype TurnpointName = TurnpointName String
+newtype Color = Color String
+
+marker :: Color -> (Double, Double) -> IO L.Marker
 marker _ latLng = do
     mark <- L.marker latLng
     L.markerPopup mark $ showLatLng latLng
     return mark
 
-turnpoint :: String -> String -> RawZone -> IO (L.Marker, L.Circle)
+turnpoint :: TurnpointName -> Color -> RawZone -> IO (L.Marker, L.Circle)
 turnpoint
-    tpName
-    color
+    (TurnpointName tpName)
+    (Color color)
     RawZone
         { lat = RawLat lat'
         , lng = RawLng lng'
@@ -184,7 +187,7 @@ map
     (TaskRoute taskRoute)
     (TaskRouteSubset taskRouteSubset)
     (SpeedRoute speedRoute) = do
-    let tpNames = fmap (\RawZone{..} -> zoneName) xs
+    let tpNames = fmap (\RawZone{..} -> TurnpointName zoneName) xs
     postBuild <- delay 1 =<< getPostBuild
 
     (zoomOrPan, evZoom) <- taskZoneButtons task
@@ -260,17 +263,17 @@ map
 
     return ()
 
-blues :: [String]
-blues = repeat "blue"
+blues :: [Color]
+blues = repeat $ Color "blue"
 
-yellows :: [String]
-yellows = repeat "yellow"
+yellows :: [Color]
+yellows = repeat $ Color "yellow"
 
-zoneColors :: Int -> SpeedSection -> [String]
+zoneColors :: Int -> SpeedSection -> [Color]
 zoneColors _ Nothing = blues
 zoneColors len (Just (start, end)) =
     if len < 2 then blues else
-    prolog <> ["green"] <> xs' <> ["red"] <> yellows
+    prolog <> [Color "green"] <> xs' <> [Color "red"] <> yellows
     where
         -- NOTE: The speed section uses 1-based indexing.
         start' = fromIntegral start
