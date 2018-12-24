@@ -7,7 +7,10 @@ import Data.Map (union)
 import Data.Maybe (listToMaybe)
 import Control.Applicative (pure)
 
-import WireTypes.Comp (Comp(..), Nominal(..), UtcOffset(..))
+import WireTypes.Comp
+    ( Comp(..), Nominal(..), UtcOffset(..), ScoreBackTime
+    , showScoreBackTime
+    )
 import FlareTiming.Comms (getNominals)
 
 loading :: MonadWidget t m => m ()
@@ -38,18 +41,19 @@ comp ns c = do
                     elClass "p" "title is-5" $ do
                         dynText subtitle
                 elClass "div" "example" $ do
-                    nominal n $ utcOffset <$> c
+                    nominal n (utcOffset <$> c) (scoreBack <$> c)
 
 nominal
     :: MonadWidget t m
     => Dynamic t (Maybe Nominal)
     -> Dynamic t UtcOffset
+    -> Dynamic t (Maybe ScoreBackTime)
     -> m ()
-nominal n u = do
-    _ <- dyn $ ffor n (\x ->
+nominal n u sb = do
+    _ <- dyn $ ffor2 n sb (\x y ->
         case x of
             Nothing -> text "Loading nominals ..."
-            (Just Nominal{..}) -> do
+            Just Nominal{..} -> do
                 elClass "div" "field is-grouped is-grouped-multiline" $ do
                     elClass "div" "control" $ do
                         elClass "div" "tags has-addons" $ do
@@ -75,7 +79,15 @@ nominal n u = do
                         elClass "div" "tags has-addons" $ do
                             elClass "span" "tag" $ do text "nominal goal"
                             elClass "span" "tag is-primary" $ do
-                                text . T.pack . show $ goal)
+                                text . T.pack . show $ goal
+                    case y of
+                        Nothing -> return ()
+                        Just y' ->
+                            elClass "div" "control" $ do
+                                elClass "div" "tags has-addons" $ do
+                                    elClass "span" "tag" $ do text "score-back time"
+                                    elClass "span" "tag is-danger" $ do
+                                        text . T.pack . showScoreBackTime $ y')
 
     return ()
 

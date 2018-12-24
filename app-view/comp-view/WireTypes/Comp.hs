@@ -7,6 +7,7 @@ module WireTypes.Comp
     , OpenClose(..)
     , StartGate(..)
     , UtcOffset(..)
+    , ScoreBackTime
     , getAllRawZones
     , getRaceRawZones
     , getSpeedSection
@@ -16,6 +17,7 @@ module WireTypes.Comp
     , fromSci
     , toSci
     , showNominalTime
+    , showScoreBackTime
     ) where
 
 import Text.Printf (printf)
@@ -79,6 +81,41 @@ showNominalTime (NominalTime h) =
         ss' :: Int
         ss' = truncate ss
 
+newtype ScoreBackTime = ScoreBackTime Double
+    deriving (Eq, Ord)
+
+instance FromJSON ScoreBackTime where
+    parseJSON x@(String _) = do
+        s <- reverse . T.unpack <$> parseJSON x
+        case s of
+            's' : ' ' : xs -> return . ScoreBackTime . read . reverse $ xs
+            _ -> empty
+    parseJSON _ = empty
+
+instance Show ScoreBackTime where
+    show = showScoreBackTime
+
+showScoreBackTime :: ScoreBackTime -> String
+showScoreBackTime (ScoreBackTime s) =
+    if hh == 0 && ss' == 0
+        then printf "%d mins" mm
+        else printf "%d:%02d:%02d" hh mm ss'
+    where
+        totalSecs :: Int
+        totalSecs = round s
+
+        h = s / 3600.0
+
+        (hh, ms) = quotRem (abs totalSecs) 3600
+        mm = quot ms 60
+
+        ss =
+            (abs h - fromIntegral hh) * 3600.0
+            - fromIntegral (mm * 60)
+
+        ss' :: Int
+        ss' = truncate ss
+
 data Comp =
     Comp
         { civilId :: String
@@ -87,6 +124,7 @@ data Comp =
         , from :: String
         , to :: String
         , utcOffset :: UtcOffset
+        , scoreBack :: Maybe ScoreBackTime
         }
     deriving (Show, Generic, FromJSON)
 
