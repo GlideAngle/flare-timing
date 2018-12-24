@@ -1,4 +1,4 @@
-module FlareTiming.Map (viewMap) where
+module FlareTiming.Map.View (viewMap) where
 
 import Prelude hiding (map)
 import Reflex.Dom

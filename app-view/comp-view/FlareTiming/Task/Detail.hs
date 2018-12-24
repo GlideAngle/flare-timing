@@ -6,7 +6,7 @@ import Reflex.Dom
 import qualified Data.Text as T (intercalate)
 
 import WireTypes.Comp (Comp(..), Task(..), getRaceRawZones)
-import WireTypes.Route (taskLength, taskLegs, taskOptimalRoute)
+import WireTypes.Route (taskLength, taskLegs)
 import WireTypes.Point (Allocation(..))
 import WireTypes.Validity (Validity(..))
 import FlareTiming.Comms
@@ -15,7 +15,7 @@ import FlareTiming.Comms
     )
 import FlareTiming.Breadcrumb (crumbTask)
 import FlareTiming.Events (IxTask(..))
-import FlareTiming.Map (viewMap)
+import FlareTiming.Map.View (viewMap)
 import qualified FlareTiming.Turnpoint as TP (getName)
 import FlareTiming.Task.Tab (TaskTab(..), tabsTask)
 import FlareTiming.Task.Score (tableScore)
