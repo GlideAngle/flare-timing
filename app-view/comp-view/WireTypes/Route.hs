@@ -6,9 +6,14 @@ module WireTypes.Route
     , OptimalRoute(..)
     , TaskLength(..)
     , TaskLegs(..)
+    , TaskRoute(..)
+    , TaskRouteSubset(..)
+    , SpeedRoute(..)
     , taskLength
     , taskLegs
-    , taskOptimalRoute
+    , optimalTaskRoute
+    , optimalTaskRouteSubset
+    , optimalSpeedRoute
     , showTaskDistance
     ) where
 
@@ -87,5 +92,15 @@ taskLegs OptimalRoute{..} =
             })
     <$> taskRoute
 
-taskOptimalRoute :: OptimalRoute (Maybe TrackLine) -> [RawLatLng]
-taskOptimalRoute OptimalRoute{..} = maybe [] waypoints taskRoute
+newtype TaskRoute = TaskRoute [RawLatLng]
+newtype TaskRouteSubset = TaskRouteSubset [RawLatLng]
+newtype SpeedRoute = SpeedRoute [RawLatLng]
+
+optimalTaskRoute :: OptimalRoute (Maybe TrackLine) -> TaskRoute
+optimalTaskRoute OptimalRoute{..} = TaskRoute $ maybe [] waypoints taskRoute
+
+optimalTaskRouteSubset :: OptimalRoute (Maybe TrackLine) -> TaskRouteSubset
+optimalTaskRouteSubset OptimalRoute{..} = TaskRouteSubset $ maybe [] waypoints taskRoute
+
+optimalSpeedRoute :: OptimalRoute (Maybe TrackLine) -> SpeedRoute
+optimalSpeedRoute OptimalRoute{..} = SpeedRoute $ maybe [] waypoints taskRoute

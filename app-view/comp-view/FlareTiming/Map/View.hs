@@ -29,7 +29,11 @@ import qualified FlareTiming.Map.Leaflet as L
 import WireTypes.Comp (Task(..), SpeedSection, getAllRawZones)
 import WireTypes.Zone
     (Zones(..), RawZone(..), RawLatLng(..), RawLat(..), RawLng(..), Radius(..))
-import WireTypes.Route (OptimalRoute, TrackLine, taskOptimalRoute)
+import WireTypes.Route
+    ( OptimalRoute, TrackLine
+    , TaskRoute(..), TaskRouteSubset(..), SpeedRoute(..)
+    , optimalTaskRoute, optimalTaskRouteSubset, optimalSpeedRoute
+    )
 import qualified FlareTiming.Turnpoint as TP (getName)
 
 data ZoomOrPan = Zoom | Pan deriving Show
@@ -126,24 +130,41 @@ viewMap
 viewMap task route = do
     task' <- sample . current $ task
     route' <- sample . current $ route
-    let optimal = taskOptimalRoute route'
-    map task' optimal
+    map
+        task'
+        (optimalTaskRoute route')
+        (optimalTaskRouteSubset route')
+        (optimalSpeedRoute route')
 
 map
     :: MonadWidget t m
     => Task
-    -> [RawLatLng]
+    -> TaskRoute
+    -> TaskRouteSubset
+    -> SpeedRoute
     -> m ()
 
-map Task{zones = Zones{raw = []}} _ = do
+map Task{zones = Zones{raw = []}} _ _ _ = do
     el "p" $ text "The task has no turnpoints."
     return ()
 
-map _ [] = do
-    el "p" $ text "The task optimal route has no turnpoints."
+map _ (TaskRoute []) _ _= do
+    el "p" $ text "The optimal task route has no turnpoints."
     return ()
 
-map task@Task{zones = Zones{raw = xs}, speedSection} ys = do
+map _ _ (TaskRouteSubset []) _= do
+    el "p" $ text "The optimal task route speed section has no turnpoints."
+    return ()
+
+map _ _ _ (SpeedRoute []) = do
+    el "p" $ text "The optimal route through only the speed section has no turnpoints."
+    return ()
+
+map
+    task@Task{zones = Zones{raw = xs}, speedSection}
+    (TaskRoute taskRoute)
+    _
+    _ = do
     let tpNames = fmap (\RawZone{..} -> zoneName) xs
     postBuild <- delay 1 =<< getPostBuild
 
@@ -192,7 +213,7 @@ map task@Task{zones = Zones{raw = xs}, speedSection} ys = do
                 (zip tpNames xMarks)
 
             let xPts :: [(Double, Double)] = fmap zoneToLL xs
-            let yPts :: [(Double, Double)] = fmap rawToLL ys
+            let yPts :: [(Double, Double)] = fmap rawToLL taskRoute
 
             courseLine <- L.polyline xPts "gray"
             routeLine <- L.polyline yPts "red"
