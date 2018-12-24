@@ -163,8 +163,8 @@ map _ _ _ (SpeedRoute []) = do
 map
     task@Task{zones = Zones{raw = xs}, speedSection}
     (TaskRoute taskRoute)
-    _
-    _ = do
+    (TaskRouteSubset taskRouteSubset)
+    (SpeedRoute speedRoute) = do
     let tpNames = fmap (\RawZone{..} -> zoneName) xs
     postBuild <- delay 1 =<< getPostBuild
 
@@ -213,16 +213,26 @@ map
                 (zip tpNames xMarks)
 
             let xPts :: [(Double, Double)] = fmap zoneToLL xs
-            let yPts :: [(Double, Double)] = fmap rawToLL taskRoute
+            let ptsTaskRoute :: [(Double, Double)] = fmap rawToLL taskRoute
+            let ptsTaskRouteSubset :: [(Double, Double)] = fmap rawToLL taskRouteSubset
+            let ptsSpeedRoute :: [(Double, Double)] = fmap rawToLL speedRoute
 
             courseLine <- L.polyline xPts "gray"
-            routeLine <- L.polyline yPts "red"
+            taskRouteLine <- L.polyline ptsTaskRoute "red"
+            taskRouteSubsetLine <- L.polyline ptsTaskRouteSubset "green"
+            speedRouteLine <- L.polyline ptsSpeedRoute "magenta"
 
             -- NOTE: Adding the route now so that it displays by default but
             -- can also be hidden via the layers control. The course line is
             -- not added by default but can be shown via the layers control.
-            L.polylineAddToMap routeLine lmap
-            L.layersControl mapLayer lmap courseLine routeLine
+            L.polylineAddToMap taskRouteLine lmap
+            L.layersControl
+                mapLayer
+                lmap
+                courseLine
+                taskRouteLine
+                taskRouteSubsetLine
+                speedRouteLine
 
             bounds <- L.latLngBounds $ zoneToLLR <$> xs
 

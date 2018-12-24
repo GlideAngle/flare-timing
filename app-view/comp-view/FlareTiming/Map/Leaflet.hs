@@ -62,8 +62,8 @@ foreign import javascript unsafe
     tileLayerAddToMap_ :: JSVal -> JSVal -> IO ()
 
 foreign import javascript unsafe
-    "L.control.layers({'Course line (point to point)': $3, 'Course line (shortest route)': $4}, {'Map': $1}).addTo($2)"
-    layersControl_ :: JSVal -> JSVal -> JSVal -> JSVal -> IO ()
+    "L.control.layers({'Course line (point to point)': $3, 'Course line (shortest route)': $4, 'Speed section line (course line subset)': $5, 'Speed section line (task waypoints subset)': $6}, {'Map': $1}).addTo($2)"
+    layersControl_ :: JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> IO ()
 
 foreign import javascript unsafe
     "L['marker']([$1, $2])"
@@ -129,13 +129,22 @@ mapInvalidateSize :: Map -> IO ()
 mapInvalidateSize lmap =
     mapInvalidateSize_ (unMap lmap)
 
-layersControl :: TileLayer -> Map -> Polyline -> Polyline -> IO ()
-layersControl x lmap course route =
+layersControl
+    :: TileLayer
+    -> Map
+    -> Polyline -- ^ Point to point course line
+    -> Polyline -- ^ Optimal route of the course
+    -> Polyline -- ^ Subset of the optimal route's course line
+    -> Polyline -- ^ Optimal route through the waypoints of the speed section
+    -> IO ()
+layersControl x lmap course taskRoute taskRouteSubset speedRoute =
     layersControl_
         (unTileLayer x)
         (unMap lmap)
         (unPolyline course)
-        (unPolyline route)
+        (unPolyline taskRoute)
+        (unPolyline taskRouteSubset)
+        (unPolyline speedRoute)
 
 tileLayer :: String -> Int -> IO TileLayer
 tileLayer src maxZoom =
