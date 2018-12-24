@@ -178,11 +178,11 @@ data CompSettings k =
 data Comp =
     Comp
         { civilId :: String
-        , compName :: String 
+        , compName :: String
         , discipline :: Discipline
-        , location :: String 
-        , from :: String 
-        , to :: String 
+        , location :: String
+        , from :: String
+        , to :: String
         , utcOffset :: UtcOffset
         , scoreBack :: Maybe (ScoreBackTime (Quantity Double [u| s |]))
         }
