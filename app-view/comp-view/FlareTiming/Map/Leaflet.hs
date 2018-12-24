@@ -62,15 +62,11 @@ foreign import javascript unsafe
 
 foreign import javascript unsafe
     "$1['addTo']($2)"
-    tileLayerAddToMap_ :: JSVal -> JSVal -> IO ()
+    addToMap_ :: JSVal -> JSVal -> IO ()
 
 foreign import javascript unsafe
     "L.layerGroup($2).addLayer($1)"
     layerGroup_ :: JSVal -> JSVal -> IO JSVal
-
-foreign import javascript unsafe
-    "$1['addTo']($2)"
-    layerGroupAddToMap_ :: JSVal -> JSVal -> IO ()
 
 foreign import javascript unsafe
     "L.control.layers(\
@@ -87,10 +83,6 @@ foreign import javascript unsafe
     marker_ :: Double -> Double -> IO JSVal
 
 foreign import javascript unsafe
-    "$1['addTo']($2)"
-    markerAddToMap_ :: JSVal -> JSVal -> IO ()
-
-foreign import javascript unsafe
     "$1['bindPopup']($2)"
     markerPopup_ :: JSVal -> JSString -> IO ()
 
@@ -99,16 +91,8 @@ foreign import javascript unsafe
     circle_ :: Double -> Double -> Double -> JSString -> IO JSVal
 
 foreign import javascript unsafe
-    "$1['addTo']($2)"
-    circleAddToMap_ :: JSVal -> JSVal -> IO ()
-
-foreign import javascript unsafe
     "L['polyline']($1, {color: $2, opacity: 0.6, dashArray: '20,15', lineJoin: 'round'})"
     polyline_ :: JSVal -> JSString -> IO JSVal
-
-foreign import javascript unsafe
-    "$1['addTo']($2)"
-    polylineAddToMap_ :: JSVal -> JSVal -> IO ()
 
 foreign import javascript unsafe
     "$1['getBounds']()"
@@ -153,8 +137,7 @@ layerGroup line xs = do
     return $ LayerGroup fg
 
 layerGroupAddToMap :: LayerGroup -> Map -> IO ()
-layerGroupAddToMap x lmap =
-    layerGroupAddToMap_ (unLayerGroup x) (unMap lmap)
+layerGroupAddToMap x lmap = addToMap_ (unLayerGroup x) (unMap lmap)
 
 layersControl
     :: TileLayer
@@ -179,16 +162,14 @@ tileLayer src maxZoom =
 
 -- | Adds the tile layer to the map. The layers control does this too.
 tileLayerAddToMap :: TileLayer -> Map -> IO ()
-tileLayerAddToMap x lmap =
-    tileLayerAddToMap_ (unTileLayer x) (unMap lmap)
+tileLayerAddToMap x lmap = addToMap_ (unTileLayer x) (unMap lmap)
 
 marker :: (Double, Double) -> IO Marker
 marker (lat, lng) =
     Marker <$> marker_ lat lng
 
 markerAddToMap :: Marker -> Map -> IO ()
-markerAddToMap x lmap =
-    markerAddToMap_ (unMarker x) (unMap lmap)
+markerAddToMap x lmap = addToMap_ (unMarker x) (unMap lmap)
 
 markerPopup :: Marker -> String -> IO ()
 markerPopup x msg =
@@ -199,8 +180,7 @@ circle (lat, lng) radius color =
     Circle <$> circle_ lat lng radius (toJSString color)
 
 circleAddToMap :: Circle -> Map -> IO ()
-circleAddToMap x lmap =
-    circleAddToMap_ (unCircle x) (unMap lmap)
+circleAddToMap x lmap = addToMap_ (unCircle x) (unMap lmap)
 
 polyline :: [(Double, Double)] -> String -> IO Polyline
 polyline xs color = do
@@ -208,8 +188,7 @@ polyline xs color = do
     Polyline <$> polyline_ ys (toJSString color)
 
 polylineAddToMap :: Polyline -> Map -> IO ()
-polylineAddToMap x lmap =
-    polylineAddToMap_ (unPolyline x) (unMap lmap)
+polylineAddToMap x lmap = addToMap_ (unPolyline x) (unMap lmap)
 
 circleBounds :: Circle -> IO LatLngBounds
 circleBounds x =
