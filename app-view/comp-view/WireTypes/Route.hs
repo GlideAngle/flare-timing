@@ -100,7 +100,7 @@ optimalTaskRoute :: OptimalRoute (Maybe TrackLine) -> TaskRoute
 optimalTaskRoute OptimalRoute{..} = TaskRoute $ maybe [] waypoints taskRoute
 
 optimalTaskRouteSubset :: OptimalRoute (Maybe TrackLine) -> TaskRouteSubset
-optimalTaskRouteSubset OptimalRoute{..} = TaskRouteSubset $ maybe [] waypoints taskRoute
+optimalTaskRouteSubset OptimalRoute{..} = TaskRouteSubset $ maybe [] waypoints taskRouteSpeedSubset
 
 optimalSpeedRoute :: OptimalRoute (Maybe TrackLine) -> SpeedRoute
-optimalSpeedRoute OptimalRoute{..} = SpeedRoute $ maybe [] waypoints taskRoute
+optimalSpeedRoute OptimalRoute{..} = SpeedRoute $ maybe [] waypoints speedRoute
