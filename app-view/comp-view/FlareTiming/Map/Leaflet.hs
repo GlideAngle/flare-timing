@@ -72,8 +72,8 @@ foreign import javascript unsafe
     "L.control.layers(\
     \{ 'Course line (point to point)': $3\
     \, 'Course line (shortest route)': $4\
-    \, 'Speed section line (course line subset)': $5\
-    \, 'Speed section line (task waypoints subset)': $6\
+    \, 'Speed section (course line subset)': $5\
+    \, 'Speed section (task waypoints subset)': $6\
     \}\
     \, {'Map': $1}).addTo($2)"
     layersControl_ :: JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> IO ()
