@@ -1,4 +1,4 @@
-module FlareTiming.Map (map) where
+module FlareTiming.Map (viewMap) where
 
 import Prelude hiding (map)
 import Reflex.Dom
@@ -29,6 +29,7 @@ import qualified FlareTiming.Map.Leaflet as L
 import WireTypes.Comp (Task(..), SpeedSection, getAllRawZones)
 import WireTypes.Zone
     (Zones(..), RawZone(..), RawLatLng(..), RawLat(..), RawLng(..), Radius(..))
+import WireTypes.Route (OptimalRoute, TrackLine, taskOptimalRoute)
 import qualified FlareTiming.Turnpoint as TP (getName)
 
 data ZoomOrPan = Zoom | Pan deriving Show
@@ -116,6 +117,17 @@ zoneToLLR RawZone{lat = RawLat lat', lng = RawLng lng', radius = Radius r} =
 rawToLL :: RawLatLng -> (Double, Double)
 rawToLL RawLatLng{lat = RawLat lat', lng = RawLng lng'} =
     (fromRational lat', fromRational lng')
+
+viewMap
+    :: MonadWidget t m
+    => Dynamic t Task
+    -> Dynamic t (OptimalRoute (Maybe TrackLine))
+    -> m ()
+viewMap task route = do
+    task' <- sample . current $ task
+    route' <- sample . current $ route
+    let optimal = taskOptimalRoute route'
+    map task' optimal
 
 map
     :: MonadWidget t m

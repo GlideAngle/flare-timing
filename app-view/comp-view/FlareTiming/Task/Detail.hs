@@ -15,7 +15,7 @@ import FlareTiming.Comms
     )
 import FlareTiming.Breadcrumb (crumbTask)
 import FlareTiming.Events (IxTask(..))
-import FlareTiming.Map (map)
+import FlareTiming.Map (viewMap)
 import qualified FlareTiming.Turnpoint as TP (getName)
 import FlareTiming.Task.Tab (TaskTab(..), tabsTask)
 import FlareTiming.Task.Score (tableScore)
@@ -53,11 +53,10 @@ taskDetail ix@(IxTask _) cs task vy a = do
     vw <- getTaskValidityWorking ix
     nyp <- getTaskPilotNyp ix
     dnf <- getTaskPilotDnf ix
-
     let lnTask = getTaskLengthSphericalEdge ix
-    route <- (fmap . fmap) taskOptimalRoute lnTask
     ln <- (fmap . fmap) taskLength lnTask
     legs <- (fmap . fmap) taskLegs lnTask
+    routes <- getTaskLengthSphericalEdge ix
 
     let ps = (fmap . fmap) points a
     let tp = (fmap . fmap) taskPoints a
@@ -70,10 +69,7 @@ taskDetail ix@(IxTask _) cs task vy a = do
     _ <- widgetHold (tableTask utc task legs) $
             (\case
                 TaskTabTask -> tableTask utc task legs
-                TaskTabMap -> do
-                    task' <- sample . current $ task
-                    route' <- sample . current $ route
-                    map task' route'
+                TaskTabMap -> viewMap task routes
                 TaskTabAbsent -> tableAbsent nyp dnf task
                 TaskTabValidity -> viewValidity vy vw
                 TaskTabScore -> tableScore utc ln dnf vy wg ps tp s)
