@@ -113,8 +113,9 @@ marker _ latLng = do
     L.markerPopup mark $ showLatLng latLng
     return mark
 
-turnpoint :: String -> RawZone -> IO (L.Marker, L.Circle)
+turnpoint :: String -> String -> RawZone -> IO (L.Marker, L.Circle)
 turnpoint
+    tpName
     color
     RawZone
         { lat = RawLat lat'
@@ -122,6 +123,7 @@ turnpoint
         , radius = Radius r
         } = do
     xMark <- L.marker latLng
+    L.markerPopup xMark tpName
     xCyl <- L.circle latLng r color
     return (xMark, xCyl)
     where
@@ -218,15 +220,8 @@ map
             let len = length xs
             let cs = zoneColors len speedSection
 
-            xMarks <- sequence $ zipWith turnpoint cs xs
-
-            let namedMarks = zip tpNames xMarks
-            _ <- sequence $ fmap
-                (\ (tpName, (xMark, xCyl)) -> do
-                    L.markerPopup xMark tpName
-                    L.circleAddToMap xCyl lmap
-                    return ())
-                namedMarks
+            xMarks <- sequence $ zipWith3 turnpoint tpNames cs xs
+            _ <- sequence $ ((flip L.circleAddToMap) lmap . snd) <$> xMarks
 
             let xPts :: [(Double, Double)] = fmap zoneToLL xs
             let ptsTaskRoute :: [(Double, Double)] = fmap rawToLL taskRoute
