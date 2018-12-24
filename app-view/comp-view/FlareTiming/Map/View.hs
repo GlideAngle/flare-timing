@@ -16,13 +16,11 @@ import qualified FlareTiming.Map.Leaflet as L
     , layerGroupAddToMap
     , tileLayer
     , marker
-    , markerAddToMap
     , markerPopup
     , mapInvalidateSize
     , circle
     , circleAddToMap
     , polyline 
-    , polylineAddToMap
     , fitBounds
     , panToBounds
     , latLngBounds
@@ -97,6 +95,11 @@ taskZoneButtons t@Task{speedSection} = do
         eachZone <- sequence $ zoomButton <$> zoneClasses speedSection
         zs <- holdDyn zones . leftmost $ allZones : eachZone
         return $ (zoomOrPan, zs)
+
+marker :: String -> (Double, Double) -> IO L.Marker
+marker _ latLng = do
+    xMark <- L.marker latLng
+    return xMark
 
 turnpoint :: String -> RawZone -> IO (L.Marker, L.Circle)
 turnpoint
@@ -203,8 +206,7 @@ map
             let len = length xs
             let cs = zoneColors len speedSection
 
-            xMarks :: [(L.Marker, L.Circle)]
-                <- sequence $ zipWith turnpoint cs xs
+            xMarks <- sequence $ zipWith turnpoint cs xs
 
             let namedMarks = zip tpNames xMarks
             _ <- sequence $ fmap
@@ -224,10 +226,14 @@ map
             taskRouteSubsetLine <- L.polyline ptsTaskRouteSubset "green"
             speedRouteLine <- L.polyline ptsSpeedRoute "magenta"
 
+            taskRouteMarks <- sequence $ zipWith marker cs ptsTaskRoute
+            taskRouteSubsetMarks <- sequence $ zipWith marker cs ptsTaskRouteSubset
+            speedRouteMarks <- sequence $ zipWith marker cs ptsSpeedRoute
+
             courseGroup <- L.layerGroup courseLine $ fst <$> xMarks
-            taskRouteGroup <- L.layerGroup taskRouteLine []
-            taskRouteSubsetGroup <- L.layerGroup taskRouteSubsetLine []
-            speedRouteGroup <- L.layerGroup speedRouteLine []
+            taskRouteGroup <- L.layerGroup taskRouteLine taskRouteMarks
+            taskRouteSubsetGroup <- L.layerGroup taskRouteSubsetLine taskRouteSubsetMarks
+            speedRouteGroup <- L.layerGroup speedRouteLine speedRouteMarks
 
             -- NOTE: Adding the route now so that it displays by default but
             -- can also be hidden via the layers control. The course line is
