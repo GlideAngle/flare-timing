@@ -1,6 +1,7 @@
 module FlareTiming.Map.View (viewMap) where
 
 import Prelude hiding (map)
+import Text.Printf (printf)
 import Reflex.Dom
 import qualified Data.Text as T (Text, pack)
 import Reflex.Time (delay)
@@ -96,10 +97,14 @@ taskZoneButtons t@Task{speedSection} = do
         zs <- holdDyn zones . leftmost $ allZones : eachZone
         return $ (zoomOrPan, zs)
 
+showLatLng :: (Double, Double) -> String
+showLatLng (lat, lng) = printf "%f °, %f °" lat lng
+
 marker :: String -> (Double, Double) -> IO L.Marker
 marker _ latLng = do
-    xMark <- L.marker latLng
-    return xMark
+    mark <- L.marker latLng
+    L.markerPopup mark $ showLatLng latLng
+    return mark
 
 turnpoint :: String -> RawZone -> IO (L.Marker, L.Circle)
 turnpoint
