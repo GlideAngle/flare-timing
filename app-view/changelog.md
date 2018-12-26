@@ -5,15 +5,15 @@ of this changelog.
 # IGC Parsing, Start Gates and Pilot Status
 ## app-view-0.
 
-* Pars the newer `*.igc` **HFDTEDATE:** date header.
+* Parse the newer `*.igc` **HFDTEDATE:** date header.
 * Show pilots that are not yet processed (NYP).
-* Show the task start gates.
+* Show task start gates.
 * Show turnpoint open and close times.
-* Show the competition's minimum distance and use this in scoring.
-* Show the competition's score back time.
+* Show competition minimum distance and use this in scoring.
+* Show competition score back time.
 * Show alternative speed section routes on the map.
-* For alternative routes that aren't the point-to-point course line, show the
-  lat/lng of each waypoint in the marker popup.
+* For the point-to-point course line show the turnpoint name but for
+  alternative routes show the lat/lng of each waypoint in the marker popup.
 * When scoring is incomplete, show the tasks anyway.
 
 # Equal Placings and DNF
