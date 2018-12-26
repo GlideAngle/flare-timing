@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: da79aea11a337de15f4fdccb5f51c76a25de9d39e8443b29f033f36ce54f8e5f
+-- hash: bb9b2796d67dbef83636559c0bdec6895f3116e0b5bb4e6ba3b9cf1f2b9e82c6
 
 name:           app-serve
 version:        0.1.0
@@ -54,6 +54,7 @@ executable comp-serve
     , flight-scribe
     , mtl
     , raw-strings-qq
+    , safe-exceptions
     , servant
     , servant-server
     , siggy-chardust

@@ -14,9 +14,10 @@ import Servant
     , errBody, err400, hoistServer, serve, throwError
     )
 import System.IO (hPutStrLn, stderr)
-import Control.Monad.IO.Class (MonadIO)
+import Control.Exception.Safe (catch, catchIO)
+import Control.Monad.IO.Class (MonadIO, liftIO)
 import Control.Monad.Reader (ReaderT, MonadReader, asks, runReaderT)
-import Control.Monad.Except (ExceptT(..), MonadError, runExceptT)
+import Control.Monad.Except (ExceptT(..), MonadError, runExceptT, lift)
 import qualified Data.ByteString.Lazy.Char8 as LBS (pack)
 
 import System.FilePath (takeFileName)
@@ -62,9 +63,9 @@ import Data.Ratio.Rounding (dpRound)
 data Config k
     = Config
         { compSettings :: CompSettings k
-        , crossing :: Cg.Crossing
-        , routing :: [Maybe TaskTrack]
-        , pointing :: Pointing
+        , routing :: Maybe [Maybe TaskTrack]
+        , crossing :: Maybe Cg.Crossing
+        , pointing :: Maybe Pointing
         }
 
 newtype AppT k m a =
@@ -80,16 +81,43 @@ newtype AppT k m a =
         , MonadIO
         )
 
-type Api k =
-    "comps"
+type CompInputApi k =
+    "comp-input" :> "comps"
         :> Get '[JSON] Comp
-    :<|> "nominals"
+    :<|> "comp-input" :> "nominals"
         :> Get '[JSON] Nominal
-    :<|> "tasks"
+    :<|> "comp-input" :> "tasks"
         :> Get '[JSON] [Task k]
-    :<|> "pilots"
+    :<|> "comp-input" :> "pilots"
         :> Get '[JSON] [Pilot]
-    :<|> "pilots-status"
+
+type TaskLengthApi k =
+    "comp-input" :> "comps"
+        :> Get '[JSON] Comp
+    :<|> "comp-input" :> "nominals"
+        :> Get '[JSON] Nominal
+    :<|> "comp-input" :> "tasks"
+        :> Get '[JSON] [Task k]
+    :<|> "comp-input" :> "pilots"
+        :> Get '[JSON] [Pilot]
+
+    :<|> "task-length" :> Capture "task" Int :> "spherical-edge"
+        :> Get '[JSON] (OptimalRoute (Maybe TrackLine))
+
+type GapPointApi k =
+    "comp-input" :> "comps"
+        :> Get '[JSON] Comp
+    :<|> "comp-input" :> "nominals"
+        :> Get '[JSON] Nominal
+    :<|> "comp-input" :> "tasks"
+        :> Get '[JSON] [Task k]
+    :<|> "comp-input" :> "pilots"
+        :> Get '[JSON] [Pilot]
+
+    :<|> "task-length" :> Capture "task" Int :> "spherical-edge"
+        :> Get '[JSON] (OptimalRoute (Maybe TrackLine))
+
+    :<|> "gap-point" :> "pilots-status"
         :> Get '[JSON] [(Pilot, [PilotTaskStatus])]
     :<|> "gap-point" :> "validity"
         :> Get '[JSON] [Maybe Vy.Validity]
@@ -99,15 +127,19 @@ type Api k =
         :> Get '[JSON] [(Pilot, Breakdown)]
     :<|> "gap-point" :> Capture "task" Int :> "validity-working"
         :> Get '[JSON] (Maybe Vy.ValidityWorking)
-    :<|> "task-length" :> Capture "task" Int :> "spherical-edge"
-        :> Get '[JSON] (OptimalRoute (Maybe TrackLine))
     :<|> "cross-zone" :> Capture "task" Int :> "pilot-dnf"
         :> Get '[JSON] [Pilot]
     :<|> "cross-zone" :> Capture "task" Int :> "pilot-nyp"
         :> Get '[JSON] [Pilot]
 
-api :: Proxy (Api k)
-api = Proxy
+compInputApi :: Proxy (CompInputApi k)
+compInputApi = Proxy
+
+taskLengthApi :: Proxy (TaskLengthApi k)
+taskLengthApi = Proxy
+
+gapPointApi :: Proxy (GapPointApi k)
+gapPointApi = Proxy
 
 convertApp :: Config k -> AppT k IO a -> Handler a
 convertApp cfg appt = Handler $ runReaderT (unApp appt) cfg
@@ -137,20 +169,36 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
     putStrLn $ "Reading pilots that did not fly from '" ++ takeFileName crossPath ++ "'"
     putStrLn $ "Reading scores from '" ++ takeFileName pointPath ++ "'"
 
-    compSettings <- runExceptT $ readComp compFile
-    crossing <- runExceptT $ readCrossing crossFile
-    routes <- runExceptT $ readRoute lenFile
-    pointing <- runExceptT $ readPointing pointFile
+    compSettings <-
+        catchIO
+            (Just <$> readComp compFile)
+            (const $ return Nothing)
 
-    let ppr = putStrLn . prettyPrintParseException
+    crossing <-
+        catchIO
+            (Just <$> readCrossing crossFile)
+            (const $ return Nothing)
 
-    case (compSettings, crossing, routes, pointing) of
-        (Left e, _, _, _) -> ppr e
-        (_, Left e, _, _) -> ppr e
-        (_, _, Left e, _) -> ppr e
-        (_, _, _, Left e) -> ppr e
-        (Right cs, Right cz, Right rt, Right gp) ->
-            runSettings settings =<< mkApp (Config cs cz rt gp)
+    routes <-
+        catchIO
+            (Just <$> readRoute lenFile)
+            (const $ return Nothing)
+
+    pointing <-
+        catchIO
+            (Just <$> readPointing pointFile)
+            (const $ return Nothing)
+
+    case (compSettings, routes, crossing, pointing) of
+        (Nothing, _, _, _) -> putStrLn "Couldn't read the comp settings"
+        (Just cs, Nothing, _, _) ->
+            runSettings settings =<< mkCompInputApp (Config cs Nothing Nothing Nothing)
+        (Just cs, Just rt, Nothing, _) ->
+            runSettings settings =<< mkTaskLengthApp (Config cs (Just rt) Nothing Nothing)
+        (Just cs, Just rt, _, Nothing) ->
+            runSettings settings =<< mkTaskLengthApp (Config cs (Just rt) Nothing Nothing)
+        (Just cs, Just rt, Just cz, Just gp) ->
+            runSettings settings =<< mkGapPointApp (Config cs (Just rt) (Just cz) (Just gp))
     where
         port = 3000
 
@@ -161,22 +209,49 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
                 defaultSettings
 
 -- SEE: https://stackoverflow.com/questions/42143155/acess-a-servant-server-with-a-reflex-dom-client
-mkApp :: Config k -> IO Application
-mkApp cfg = return . simpleCors . serve api $ serverApi cfg
+mkCompInputApp :: Config k -> IO Application
+mkCompInputApp cfg = return . simpleCors . serve compInputApi $ serverCompInputApi cfg
 
-serverApi :: Config k -> Server (Api k)
-serverApi cfg =
-    hoistServer api (convertApp cfg) $
+mkTaskLengthApp :: Config k -> IO Application
+mkTaskLengthApp cfg = return . simpleCors . serve taskLengthApi $ serverTaskLengthApi cfg
+
+mkGapPointApp :: Config k -> IO Application
+mkGapPointApp cfg = return . simpleCors . serve gapPointApi $ serverGapPointApi cfg
+
+serverCompInputApi :: Config k -> Server (CompInputApi k)
+serverCompInputApi cfg =
+    hoistServer compInputApi (convertApp cfg) $
         comp <$> c
         :<|> nominal <$> c
         :<|> tasks <$> c
         :<|> getPilots <$> c
+    where
+        c = asks compSettings
+
+serverTaskLengthApi :: Config k -> Server (TaskLengthApi k)
+serverTaskLengthApi cfg =
+    hoistServer taskLengthApi (convertApp cfg) $
+        comp <$> c
+        :<|> nominal <$> c
+        :<|> tasks <$> c
+        :<|> getPilots <$> c
+        :<|> getTaskRouteSphericalEdge
+    where
+        c = asks compSettings
+
+serverGapPointApi :: Config k -> Server (GapPointApi k)
+serverGapPointApi cfg =
+    hoistServer gapPointApi (convertApp cfg) $
+        comp <$> c
+        :<|> nominal <$> c
+        :<|> tasks <$> c
+        :<|> getPilots <$> c
+        :<|> getTaskRouteSphericalEdge
         :<|> getPilotsStatus
         :<|> getValidity <$> p
         :<|> getAllocation <$> p
         :<|> getTaskScore
         :<|> getTaskValidityWorking
-        :<|> getTaskRouteSphericalEdge
         :<|> getTaskPilotDnf
         :<|> getTaskPilotNyp
     where
@@ -242,42 +317,52 @@ roundAllocation x@Allocation{..} =
 getPilots :: CompSettings k -> [Pilot]
 getPilots = distinctPilots . pilots
 
-getValidity :: Pointing -> [Maybe Vy.Validity]
-getValidity = ((fmap . fmap) roundValidity) . validity
+getValidity :: Maybe Pointing -> [Maybe Vy.Validity]
+getValidity Nothing = []
+getValidity (Just p) = ((fmap . fmap) roundValidity) . validity $ p
 
-getAllocation :: Pointing -> [Maybe Allocation]
-getAllocation = ((fmap . fmap) roundAllocation) . allocation
+getAllocation :: Maybe Pointing -> [Maybe Allocation]
+getAllocation Nothing = []
+getAllocation (Just p) = ((fmap . fmap) roundAllocation) . allocation $ p
 
 getScores :: Pointing -> [[(Pilot, Breakdown)]]
 getScores = ((fmap . fmap . fmap) roundVelocity') . score
 
 getTaskScore :: Int -> AppT k IO [(Pilot, Breakdown)]
 getTaskScore ii = do
-    xs <- getScores <$> asks pointing
-    case drop (ii - 1) xs of
-        x : _ -> return x
-        _ -> throwError $ errTaskBounds ii
+    xs' <- fmap getScores <$> asks pointing
+    case xs' of
+        Just xs ->
+            case drop (ii - 1) xs of
+                x : _ -> return x
+                _ -> throwError $ errTaskBounds ii
 
 getTaskValidityWorking :: Int -> AppT k IO (Maybe Vy.ValidityWorking)
 getTaskValidityWorking ii = do
-    xs <- validityWorking <$> asks pointing
-    case drop (ii - 1) xs of
-        x : _ -> return x
-        _ -> throwError $ errTaskBounds ii
+    xs' <- fmap validityWorking <$> asks pointing
+    case xs' of
+        Just xs ->
+            case drop (ii - 1) xs of
+                x : _ -> return x
+                _ -> throwError $ errTaskBounds ii
 
 getTaskRouteSphericalEdge :: Int -> AppT k IO (OptimalRoute (Maybe TrackLine))
 getTaskRouteSphericalEdge ii = do
-    xs <- asks routing
-    case drop (ii - 1) xs of
-        Just TaskTrack{sphericalEdgeToEdge = x} : _ -> return x
-        _ -> throwError $ errTaskBounds ii
+    xs' <- asks routing
+    case xs' of
+        Just xs ->
+            case drop (ii - 1) xs of
+                Just TaskTrack{sphericalEdgeToEdge = x} : _ -> return x
+                _ -> throwError $ errTaskBounds ii
 
 getTaskPilotDnf :: Int -> AppT k IO [Pilot]
 getTaskPilotDnf ii = do
-    xss <- (\Cg.Crossing{dnf} -> dnf) <$> asks crossing
-    case drop (ii - 1) xss of
-        xs : _ -> return xs
-        _ -> throwError $ errTaskBounds ii
+    xss' <- fmap (\Cg.Crossing{dnf} -> dnf) <$> asks crossing
+    case xss' of
+        Just xss ->
+            case drop (ii - 1) xss of
+                xs : _ -> return xs
+                _ -> throwError $ errTaskBounds ii
 
 nyp
     :: [Pilot]
@@ -302,28 +387,32 @@ status Task{absent = ys} xs cs p =
 
 getTaskPilotNyp :: Int -> AppT k IO [Pilot]
 getTaskPilotNyp ii = do
+    let jj = ii - 1
     ps <- getPilots <$> asks compSettings
     ts <- tasks <$> asks compSettings
-    xss <- (\Cg.Crossing{dnf} -> dnf) <$> asks crossing
-    css <- getScores <$> asks pointing
-    let jj = ii - 1
-    case (drop jj ts, drop jj xss, drop jj css) of
-        (t : _, xs : _, cs : _) -> return $ nyp ps t xs cs
-        _ -> throwError $ errTaskBounds ii
+    xss' <- fmap (\Cg.Crossing{dnf} -> dnf) <$> asks crossing
+    css' <- fmap getScores <$> asks pointing
+    case (xss', css') of
+        (Just xss, Just css) ->
+            case (drop jj ts, drop jj xss, drop jj css) of
+                (t : _, xs : _, cs : _) -> return $ nyp ps t xs cs
+                _ -> throwError $ errTaskBounds ii
 
 getPilotsStatus :: AppT k IO [(Pilot, [PilotTaskStatus])]
 getPilotsStatus = do
     ps <- getPilots <$> asks compSettings
     ts <- tasks <$> asks compSettings
-    xss <- (\Cg.Crossing{dnf} -> dnf) <$> asks crossing
-    css <- getScores <$> asks pointing
+    xss' <- fmap (\Cg.Crossing{dnf} -> dnf) <$> asks crossing
+    css' <- fmap getScores <$> asks pointing
 
     let fs =
-            [ status t xs $ fst <$> cs
-            | t <- ts
-            | xs <- xss
-            | cs <- css
-            ]
+            case (xss', css') of
+              (Just xss, Just css) ->
+                    [ status t xs $ fst <$> cs
+                    | t <- ts
+                    | xs <- xss
+                    | cs <- css
+                    ]
 
     return $ [(p,) $ ($ p) <$> fs | p <- ps]
 

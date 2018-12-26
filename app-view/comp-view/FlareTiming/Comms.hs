@@ -35,7 +35,7 @@ mapUri s = "http://localhost:3000" <> s
 getTasks :: MonadWidget t m => () -> m (Dynamic t [Task])
 getTasks () = do
     pb :: Event t () <- getPostBuild
-    let defReq = mapUri "/tasks"
+    let defReq = mapUri "/comp-input/tasks"
     let req md = XhrRequest "GET" (maybe defReq id md) def
     rsp <- performRequestAsync $ fmap req $ leftmost [ Nothing <$ pb ]
 
@@ -48,7 +48,7 @@ getComps
     -> m (Dynamic t [Comp])
 getComps () = do
     pb :: Event t () <- getPostBuild
-    let defReq = mapUri "/comps"
+    let defReq = mapUri "/comp-input/comps"
     let req md = XhrRequest "GET" (maybe defReq id md) def
     rsp <- performRequestAsync $ fmap req $ leftmost [ Nothing <$ pb ]
 
@@ -62,7 +62,7 @@ getNominals
     -> m (Dynamic t [Nominal])
 getNominals () = do
     pb :: Event t () <- getPostBuild
-    let defReq = mapUri "/nominals"
+    let defReq = mapUri "/comp-input/nominals"
     let req md = XhrRequest "GET" (maybe defReq id md) def
     rsp <- performRequestAsync $ fmap req $ leftmost [ Nothing <$ pb ]
 
@@ -76,7 +76,7 @@ getPilots
     -> m (Dynamic t [Pilot])
 getPilots () = do
     pb :: Event t () <- getPostBuild
-    let defReq = mapUri "/pilots"
+    let defReq = mapUri "/comp-input/pilots"
     let req md = XhrRequest "GET" (maybe defReq id md) def
     rsp <- performRequestAsync $ fmap req $ leftmost [ Nothing <$ pb ]
 
@@ -89,7 +89,7 @@ getPilotsStatus
     -> m (Dynamic t [(Pilot, [PilotTaskStatus])])
 getPilotsStatus () = do
     pb :: Event t () <- getPostBuild
-    let defReq = mapUri "/pilots-status"
+    let defReq = mapUri "/gap-point/pilots-status"
     let req md = XhrRequest "GET" (maybe defReq id md) def
     rsp <- performRequestAsync $ fmap req $ leftmost [ Nothing <$ pb ]
 

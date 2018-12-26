@@ -34,6 +34,7 @@ in    defs
                   , "mtl"
                   , "yaml"
                   , "bytestring"
+                  , "safe-exceptions"
                   , "flight-cmd"
                   , "flight-route"
                   , "flight-comp"

@@ -4,7 +4,6 @@ import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Control.Monad (mapM_)
-import Control.Monad.Except (runExceptT)
 import System.FilePath (takeFileName)
 
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
@@ -45,8 +44,9 @@ drive o = do
 go :: CmdOptions -> CompInputFile -> IO ()
 go CmdOptions{..} compFile@(CompInputFile compPath) = do
     putStrLn $ takeFileName compPath
-    settings <- runExceptT $ readComp compFile
-    either print f settings
+
+    settings <- readComp compFile
+    f settings
     where
         f compInput = do
             let ixs = speedSection <$> tasks compInput
