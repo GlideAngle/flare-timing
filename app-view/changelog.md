@@ -3,7 +3,7 @@ version](https://github.com/BlockScope/flare-timing/blob/master/app-view/changel
 of this changelog.
 
 # IGC Parsing, Start Gates and Pilot Status
-## app-view-0.
+## app-view-0.5
 
 * Parse the newer `*.igc` **HFDTEDATE:** date header.
 * Show pilots that are not yet processed (NYP).
