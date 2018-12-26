@@ -10,12 +10,11 @@ import Data.Time.Clock (UTCTime, diffUTCTime)
 import Control.Lens ((^?), element)
 import Data.Maybe (catMaybes, fromMaybe, listToMaybe)
 import Control.Monad (mapM_, when, zipWithM_)
-import Control.Monad.Except (ExceptT, runExceptT)
+import Control.Exception.Safe (catchIO)
 import Data.UnitsOfMeasure (u, convert, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import System.Directory (createDirectoryIfMissing)
 import System.FilePath ((</>), takeFileName)
-import Data.Yaml (ParseException, prettyPrintParseException)
 
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
@@ -104,18 +103,28 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
     putStrLn $ "Reading flying time range from '" ++ takeFileName crossPath ++ "'"
     putStrLn $ "Reading zone tags from '" ++ takeFileName tagPath ++ "'"
 
-    compSettings <- runExceptT $ readComp compFile
-    crossing <- runExceptT $ readCrossing crossFile
-    tagging <- runExceptT $ readTagging tagFile
+    compSettings <-
+        catchIO
+            (Just <$> readComp compFile)
+            (const $ return Nothing)
+
+    crossing <-
+        catchIO
+            (Just <$> readCrossing crossFile)
+            (const $ return Nothing)
+
+    tagging <-
+        catchIO
+            (Just <$> readTagging tagFile)
+            (const $ return Nothing)
 
     let flyingLookup = crossFlying crossing
-    let ppr = putStrLn . prettyPrintParseException
 
     case (compSettings, crossing, tagging) of
-        (Left e, _, _) -> ppr e
-        (_, Left e, _) -> ppr e
-        (_, _, Left e) -> ppr e
-        (Right cs, Right _, Right t) ->
+        (Nothing, _, _) -> putStrLn "Couldn't read the comp settings."
+        (_, Nothing, _) -> putStrLn "Couldn't read the crossings."
+        (_, _, Nothing) -> putStrLn "Couldn't read the taggings."
+        (Just cs, Just _, Just t) ->
             let f =
                     writeTime
                         (IxTask <$> task)
@@ -123,22 +132,24 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
                         (CompInputFile compPath)
             in (f . checkAll speedSectionOnly flyingLookup) t
 
-writeTime :: [IxTask]
-          -> [Pilot]
-          -> CompInputFile
-          -> (CompInputFile
-              -> [IxTask]
-              -> [Pilot]
-              -> ExceptT
-                  ParseException
-                  IO [[Either (Pilot, t) (Pilot, Pilot -> [TimeRow])]])
-          -> IO ()
+writeTime
+    :: [IxTask]
+    -> [Pilot]
+    -> CompInputFile
+    -> (CompInputFile
+      -> [IxTask]
+      -> [Pilot]
+      -> IO [[Either (Pilot, t) (Pilot, Pilot -> [TimeRow])]])
+    -> IO ()
 writeTime selectTasks selectPilots compFile f = do
-    checks <- runExceptT $ f compFile selectTasks selectPilots
+    checks <-
+        catchIO
+            (Just <$> f compFile selectTasks selectPilots)
+            (const $ return Nothing)
 
     case checks of
-        Left msg -> print msg
-        Right xs -> do
+        Nothing -> putStrLn "Unable to read tracks for pilots."
+        Just xs -> do
             let ys :: [[(Pilot, [TimeRow])]] =
                     (fmap . fmap)
                         (\case
@@ -160,9 +171,7 @@ checkAll
     -> CompInputFile
     -> [IxTask]
     -> [Pilot]
-    -> ExceptT
-         ParseException
-         IO
+    -> IO
          [
              [Either
                  (Pilot, TrackFileFail)
@@ -184,20 +193,22 @@ writePilotTimes compFile iTask (pilot, rows) = do
         dir = compFileToCompDir compFile
         (AlignDir dOut, AlignTimeFile f) = alignPath dir iTask pilot
 
-mkTimeRows :: Maybe FirstLead
-           -> Maybe FirstStart
-           -> Leg
-           -> Maybe [(Maybe Fix, Maybe (QTaskDistance Double [u| m |]))]
-           -> [TimeRow]
+mkTimeRows
+    :: Maybe FirstLead
+    -> Maybe FirstStart
+    -> Leg
+    -> Maybe [(Maybe Fix, Maybe (QTaskDistance Double [u| m |]))]
+    -> [TimeRow]
 mkTimeRows _ _ _ Nothing = []
 mkTimeRows lead start leg (Just xs) =
     catMaybes $ mkTimeRow lead start leg <$> xs
 
-mkTimeRow :: Maybe FirstLead
-          -> Maybe FirstStart
-          -> Int
-          -> (Maybe Fix, Maybe (QTaskDistance Double [u| m |]))
-          -> Maybe TimeRow
+mkTimeRow
+    :: Maybe FirstLead
+    -> Maybe FirstStart
+    -> Int
+    -> (Maybe Fix, Maybe (QTaskDistance Double [u| m |]))
+    -> Maybe TimeRow
 mkTimeRow Nothing _ _ _ = Nothing
 mkTimeRow _ _ _ (Nothing, _) = Nothing
 mkTimeRow _ _ _ (_, Nothing) = Nothing
@@ -300,8 +311,8 @@ group
                         [0 .. ]
                         ys
     where
-        (TickLookup lookupTicked) = tagTicked (Right tags)
-        (TagLookup lookupZoneTags) = tagPilotTag (Right tags)
+        (TickLookup lookupTicked) = tagTicked (Just tags)
+        (TagLookup lookupZoneTags) = tagPilotTag (Just tags)
 
 -- | For a given leg, only so many race zones can be ticked.
 retick :: Ticked -> Int -> Int -> (Int, Ticked)

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f3b8621c189201216f8e02a33121f782e91ed14b54888e1b592df4e754a83baa
+-- hash: e82cc42b4e453c7201e668ba26348fe56e8403133430fb73a9659b7c3cb70d50
 
 name:           flare-timing
 version:        0.1.0
@@ -59,6 +59,7 @@ executable align-time
     , lens
     , mtl
     , raw-strings-qq
+    , safe-exceptions
     , siggy-chardust
     , time
     , transformers
@@ -97,6 +98,7 @@ executable cross-zone
     , lens
     , mtl
     , raw-strings-qq
+    , safe-exceptions
     , siggy-chardust
     , transformers
     , uom-plugin
@@ -132,6 +134,7 @@ executable discard-further
     , formatting
     , mtl
     , raw-strings-qq
+    , safe-exceptions
     , transformers
     , uom-plugin
     , yaml
@@ -199,6 +202,7 @@ executable gap-point
     , formatting
     , mtl
     , raw-strings-qq
+    , safe-exceptions
     , siggy-chardust
     , transformers
     , uom-plugin
@@ -231,6 +235,7 @@ executable land-out
     , formatting
     , mtl
     , raw-strings-qq
+    , safe-exceptions
     , transformers
     , uom-plugin
     , yaml
@@ -270,6 +275,7 @@ executable mask-track
     , lens
     , mtl
     , raw-strings-qq
+    , safe-exceptions
     , siggy-chardust
     , transformers
     , uom-plugin
@@ -302,6 +308,7 @@ executable tag-zone
     , formatting
     , mtl
     , raw-strings-qq
+    , safe-exceptions
     , time
     , transformers
     , uom-plugin

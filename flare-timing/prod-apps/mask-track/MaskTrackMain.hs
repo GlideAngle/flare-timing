@@ -12,11 +12,11 @@ import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Control.Arrow (second)
 import Control.Lens ((^?), element)
-import Control.Monad.Except (ExceptT, runExceptT)
+import Control.Exception.Safe (MonadThrow, catchIO)
+import Control.Monad.Except (MonadIO)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import System.FilePath (takeFileName)
-import Data.Yaml (ParseException, prettyPrintParseException)
 
 import Flight.Route (OptimalRoute(..))
 import qualified Flight.Comp as Cmp (Nominal(..))
@@ -117,21 +117,35 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
     putStrLn $ "Reading flying time range from '" ++ takeFileName crossPath ++ "'"
     putStrLn $ "Reading zone tags from '" ++ takeFileName tagPath ++ "'"
 
-    compSettings <- runExceptT $ readComp compFile
-    crossing <- runExceptT $ readCrossing crossFile
-    tagging <- runExceptT $ readTagging tagFile
-    routes <- runExceptT $ readRoute lenFile
+    compSettings <-
+        catchIO
+            (Just <$> readComp compFile)
+            (const $ return Nothing)
+
+    crossing <-
+        catchIO
+            (Just <$> readCrossing crossFile)
+            (const $ return Nothing)
+
+    tagging <-
+        catchIO
+            (Just <$> readTagging tagFile)
+            (const $ return Nothing)
+
+    routes <-
+        catchIO
+            (Just <$> readRoute lenFile)
+            (const $ return Nothing)
 
     let flyingLookup = crossFlying crossing
     let lookupTaskLength = routeLength taskRoute taskRouteSpeedSubset routes
-    let ppr = putStrLn . prettyPrintParseException
 
     case (compSettings, crossing, tagging, routes) of
-        (Left e, _, _, _) -> ppr e
-        (_, Left e, _, _) -> ppr e
-        (_, _, Left e, _) -> ppr e
-        (_, _, _, Left e) -> ppr e
-        (Right cs, Right _, Right _, Right _) ->
+        (Nothing, _, _, _) -> putStrLn "Couldn't read the comp settings."
+        (_, Nothing, _, _) -> putStrLn "Couldn't read the crossings."
+        (_, _, Nothing, _) -> putStrLn "Couldn't read the taggings."
+        (_, _, _, Nothing) -> putStrLn "Couldn't read the routes."
+        (Just cs, Just _, Just _, Just _) ->
             writeMask
                 cs
                 lookupTaskLength
@@ -151,16 +165,13 @@ writeMask
     -> (CompInputFile
         -> [IxTask]
         -> [Pilot]
-        -> ExceptT
-            ParseException
-            IO
+        -> IO
             [
                 [Either
                     (Pilot, TrackFileFail)
                     (Pilot, Pilot -> FlightStats k)
                 ]
-            ]
-            )
+            ])
     -> IO ()
 writeMask
     CompSettings
@@ -171,11 +182,14 @@ writeMask
     lookupTaskTime
     selectTasks selectPilots compFile f = do
 
-    checks <- runExceptT $ f compFile selectTasks selectPilots
+    checks <-
+        catchIO
+            (Just <$> f compFile selectTasks selectPilots)
+            (const $ return Nothing)
 
     case checks of
-        Left msg -> print msg
-        Right flights -> do
+        Nothing -> putStrLn "Unable to read tracks for pilots."
+        Just flights -> do
             let ys :: [[(Pilot, FlightStats _)]] =
                     (fmap . fmap)
                         (\case
@@ -344,16 +358,15 @@ times f xs =
                 }
 
 check
-    :: Math
+    :: (MonadThrow m, MonadIO m)
+    => Math
     -> RoutesLookupTaskDistance
     -> FlyingLookup
-    -> Either ParseException Tagging
+    -> Maybe Tagging
     -> CompInputFile
     -> [IxTask]
     -> [Pilot]
-    -> ExceptT
-        ParseException
-        IO
+    -> m
         [[Either (Pilot, TrackFileFail) (Pilot, Pilot -> FlightStats k)]]
 check math lengths flying tags = checkTracks $ \CompSettings{tasks} ->
     flown math lengths flying tags tasks
@@ -362,7 +375,7 @@ flown
     :: Math
     -> RoutesLookupTaskDistance
     -> FlyingLookup
-    -> Either ParseException Tagging
+    -> Maybe Tagging
     -> FnIxTask k (Pilot -> FlightStats k)
 flown math (RoutesLookupTaskDistance lookupTaskLength) flying tags tasks iTask fixes =
     maybe
@@ -376,7 +389,7 @@ flown'
     :: QTaskDistance Double [u| m |]
     -> FlyingLookup
     -> Math
-    -> Either ParseException Tagging
+    -> Maybe Tagging
     -> FnIxTask k (Pilot -> FlightStats k)
 flown' dTaskF flying math tags tasks iTask@(IxTask i) mf@MarkedFixes{mark0} p =
     case maybeTask of

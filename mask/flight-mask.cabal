@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 09da33763f679d08a961c5b9789207881d1fe0989d0bf022a9112bdca6bf7baf
+-- hash: d7cb21f399cff8523c6defc25eab4c0b46da2fe5d70ed9c188ed6e175b326d4b
 
 name:           flight-mask
 version:        0.1.0
@@ -76,6 +76,7 @@ library
     , mtl
     , numbers
     , path
+    , safe-exceptions
     , siggy-chardust
     , split
     , time

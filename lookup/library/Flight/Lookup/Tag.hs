@@ -37,8 +37,8 @@ newtype TaskTimeLookup = TaskTimeLookup (Maybe (TaskTaggingLookup StartEndMark))
 
 type TaggingLookup a = IxTask -> SpeedSection -> Pilot -> Kml.MarkedFixes -> Maybe a
 
-tagTaskTime :: Either a Tagging -> TaskTimeLookup
-tagTaskTime = TaskTimeLookup . either (const Nothing) (Just . taskTimeElapsed)
+tagTaskTime :: Maybe Tagging -> TaskTimeLookup
+tagTaskTime = TaskTimeLookup . (fmap taskTimeElapsed)
 
 taskTimeElapsed
     :: Tagging
@@ -57,17 +57,17 @@ newtype TimeLookup = TimeLookup (Maybe (TaggingLookup StartEndMark))
 newtype TagLookup = TagLookup (Maybe (TaggingLookup [Maybe Fix]))
 newtype TickLookup = TickLookup (Maybe (TaggingLookup Ticked))
 
-tagTicked :: Either a Tagging -> TickLookup
-tagTicked = TickLookup . either (const Nothing) (Just . ticked)
+tagTicked :: Maybe Tagging -> TickLookup
+tagTicked = TickLookup . (fmap ticked)
 
-tagPilotTime :: Either a Tagging -> TimeLookup
-tagPilotTime = TimeLookup . either (const Nothing) (Just . timeElapsed)
+tagPilotTime :: Maybe Tagging -> TimeLookup
+tagPilotTime = TimeLookup . (fmap timeElapsed)
 
-tagPilotTag :: Either a Tagging -> TagLookup
-tagPilotTag = TagLookup . either (const Nothing) (Just . tagged)
+tagPilotTag :: Maybe Tagging -> TagLookup
+tagPilotTag = TagLookup . (fmap tagged)
 
-tagArrivalRank :: Either a Tagging -> ArrivalRankLookup
-tagArrivalRank = ArrivalRankLookup . either (const Nothing) (Just . arrivalRank)
+tagArrivalRank :: Maybe Tagging -> ArrivalRankLookup
+tagArrivalRank = ArrivalRankLookup . (fmap arrivalRank)
 
 ticked
     :: Tagging

@@ -4,7 +4,8 @@ module Flight.Align
     , readCompTimeRows
     ) where
 
-import Control.Monad.Except (ExceptT(..), runExceptT, lift)
+import Control.Exception.Safe (MonadThrow, throwString)
+import Control.Monad.Except (MonadIO, liftIO)
 import Control.Monad (zipWithM)
 import qualified Data.ByteString.Lazy as BL
 import Data.Csv
@@ -32,10 +33,13 @@ import Flight.Comp
     , compFileToCompDir
     )
 
-readAlignTime :: AlignTimeFile -> ExceptT String IO (Header, Vector TimeRow)
+readAlignTime
+    :: (MonadThrow m, MonadIO m)
+    => AlignTimeFile
+    -> m (Header, Vector TimeRow)
 readAlignTime (AlignTimeFile csvPath) = do
-    contents <- lift $ BL.readFile csvPath
-    ExceptT . return $ decodeByName contents
+    contents <- liftIO $ BL.readFile csvPath
+    either throwString return $ decodeByName contents
 
 writeAlignTime :: AlignTimeFile -> [String] -> [TimeRow] -> IO ()
 writeAlignTime (AlignTimeFile path) headers xs =
@@ -73,15 +77,12 @@ readPilotTimeRow
     -> Maybe LeadTick
     -> IO (Maybe (Pilot, TimeRow))
 readPilotTimeRow compFile (IxTask iTask) pilot mark = do
-    rows <-
-        runExceptT
-        $ readAlignTime (AlignTimeFile (dirIn </> file))
+    (_, rows) <- readAlignTime (AlignTimeFile (dirIn </> file))
 
-    return $ either
-        (const Nothing) 
+    return $
         ((fmap . fmap)
             (pilot,)
-            (V.find (\TimeRow{tickLead} -> mark == tickLead) . snd))
+            (V.find (\TimeRow{tickLead} -> mark == tickLead)))
         rows
     where
         dir = compFileToCompDir compFile

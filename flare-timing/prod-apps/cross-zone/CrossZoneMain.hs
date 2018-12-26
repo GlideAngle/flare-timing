@@ -9,9 +9,8 @@ import Data.Maybe (catMaybes, isNothing)
 import Data.List (nub, sort)
 import Control.Lens ((^?), element)
 import Control.Monad (mapM_)
-import Control.Monad.Except (ExceptT(..), runExceptT)
+import Control.Exception.Safe (catchIO)
 import System.FilePath (takeFileName)
-import Data.Yaml (ParseException, prettyPrintParseException)
 
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
@@ -82,9 +81,14 @@ drive o = do
 go :: CmdBatchOptions -> CompInputFile -> IO ()
 go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
     putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
-    compSettings <- runExceptT $ readComp compFile
-    either
-        (putStrLn . prettyPrintParseException)
+
+    compSettings <-
+        catchIO
+            (Just <$> readComp compFile)
+            (const $ return Nothing)
+
+    maybe
+        (putStrLn "Couldn't read the comp settings.")
         (\cs ->
             writeCrossings
                 compFile
@@ -100,16 +104,17 @@ writeCrossings
     -> (CompInputFile
           -> [IxTask]
           -> [Pilot]
-          -> ExceptT
-                  ParseException
-                  IO [[Either (Pilot, TrackFileFail) (Pilot, MadeZones)]])
+          -> IO [[Either (Pilot, TrackFileFail) (Pilot, MadeZones)]])
     -> IO ()
 writeCrossings compFile task pilot f = do
-    checks <- runExceptT $ f compFile task pilot
+    checks <-
+        catchIO
+            (Just <$> f compFile task pilot)
+            (const $ return Nothing)
 
     case checks of
-        Left msg -> print msg
-        Right xs -> do
+        Nothing -> putStrLn "Unable to read tracks for pilots."
+        Just xs -> do
 
             let ys :: [([(Pilot, Maybe MadeZones)], [Maybe (Pilot, TrackFileFail)])] =
                     unzip <$>
@@ -180,10 +185,7 @@ checkAll
     -> CompInputFile
     -> [IxTask]
     -> [Pilot]
-    -> ExceptT
-         ParseException
-         IO
-         [[Either (Pilot, TrackFileFail) (Pilot, MadeZones)]]
+    -> IO [[Either (Pilot, TrackFileFail) (Pilot, MadeZones)]]
 checkAll math =
     checkTracks $ \CompSettings{tasks} -> flown math tasks
 

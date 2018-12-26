@@ -75,6 +75,7 @@ in    defs
                     deps
                   # [ "lens"
                     , "siggy-chardust"
+                    , "safe-exceptions"
                     , "flight-span"
                     , "flight-units"
                     , "flight-zone"
@@ -95,7 +96,7 @@ in    defs
               }
           , tag-zone =
               { dependencies =
-                  deps # [ "time", "flight-mask" ]
+                  deps # [ "time", "safe-exceptions", "flight-mask" ]
               , ghc-options =
                   [ "-rtsopts"
                   , "-threaded"
@@ -114,6 +115,7 @@ in    defs
                   # [ "lens"
                     , "time"
                     , "siggy-chardust"
+                    , "safe-exceptions"
                     , "flight-kml"
                     , "flight-mask"
                     , "flight-lookup"
@@ -133,7 +135,8 @@ in    defs
           , discard-further =
               { dependencies =
                     deps
-                  # [ "flight-route"
+                  # [ "safe-exceptions"
+                    , "flight-route"
                     , "flight-gap"
                     , "flight-mask"
                     , "flight-lookup"
@@ -156,6 +159,7 @@ in    defs
                   # [ "containers"
                     , "lens"
                     , "siggy-chardust"
+                    , "safe-exceptions"
                     , "flight-span"
                     , "flight-kml"
                     , "flight-route"
@@ -177,7 +181,7 @@ in    defs
               }
           , land-out =
               { dependencies =
-                  deps # [ "flight-gap" ]
+                  deps # [ "safe-exceptions", "flight-gap" ]
               , ghc-options =
                   [ "-rtsopts"
                   , "-threaded"
@@ -194,6 +198,7 @@ in    defs
               { dependencies =
                     deps
                   # [ "containers"
+                    , "safe-exceptions"
                     , "flight-zone"
                     , "flight-gap"
                     , "flight-mask"

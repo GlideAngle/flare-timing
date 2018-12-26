@@ -11,9 +11,9 @@ module Flight.Scribe
     ) where
 
 import Control.Exception.Safe (MonadThrow)
-import Control.Monad.Except (MonadIO, ExceptT(..), lift, liftIO)
+import Control.Monad.Except (MonadIO, liftIO)
 import qualified Data.ByteString as BS
-import Data.Yaml (ParseException, decodeEither', decodeThrow)
+import Data.Yaml (decodeThrow)
 import qualified Data.Yaml.Pretty as Y
 
 import Flight.Route (TaskTrack(..), cmpFields)
@@ -79,10 +79,13 @@ writeCrossing (CrossZoneFile path) crossZone = do
     let yaml = Y.encodePretty cfg crossZone
     BS.writeFile path yaml
 
-readTagging :: TagZoneFile -> ExceptT ParseException IO Tagging
+readTagging
+    :: (MonadThrow m, MonadIO m)
+    => TagZoneFile
+    -> m Tagging
 readTagging (TagZoneFile path) = do
-    contents <- lift $ BS.readFile path
-    ExceptT . return $ decodeEither' contents
+    contents <- liftIO $ BS.readFile path
+    decodeThrow contents
 
 writeTagging :: TagZoneFile -> Tagging -> IO ()
 writeTagging (TagZoneFile path) tagZone = do
@@ -90,10 +93,13 @@ writeTagging (TagZoneFile path) tagZone = do
     let yaml = Y.encodePretty cfg tagZone
     BS.writeFile path yaml
 
-readMasking :: MaskTrackFile -> ExceptT ParseException IO Masking
+readMasking
+    :: (MonadThrow m, MonadIO m)
+    => MaskTrackFile
+    -> m Masking
 readMasking (MaskTrackFile path) = do
-    contents <- lift $ BS.readFile path
-    ExceptT . return $ decodeEither' contents
+    contents <- liftIO $ BS.readFile path
+    decodeThrow contents
 
 writeMasking :: MaskTrackFile -> Masking -> IO ()
 writeMasking (MaskTrackFile path) maskTrack = do
@@ -101,10 +107,13 @@ writeMasking (MaskTrackFile path) maskTrack = do
     let yaml = Y.encodePretty cfg maskTrack
     BS.writeFile path yaml
 
-readLanding :: LandOutFile -> ExceptT ParseException IO Landing
+readLanding
+    :: (MonadThrow m, MonadIO m)
+    => LandOutFile
+    -> m Landing
 readLanding (LandOutFile path) = do
-    contents <- lift $ BS.readFile path
-    ExceptT . return $ decodeEither' contents
+    contents <- liftIO $ BS.readFile path
+    decodeThrow contents
 
 writeLanding :: LandOutFile -> Landing -> IO ()
 writeLanding (LandOutFile path) landout = do

@@ -13,10 +13,9 @@ routeLength
     -- ^ Gets the task optimal route to use.
     -> (OptimalRoute (Maybe TrackLine) -> Maybe TrackLine)
     -- ^ Gets the speed section subset of the task optimal route to use.
-    -> Either a [Maybe TaskTrack] -> RoutesLookupTaskDistance
+    -> Maybe [Maybe TaskTrack] -> RoutesLookupTaskDistance
 routeLength f g =
-    RoutesLookupTaskDistance
-    . either (const Nothing) (Just . length f g)
+    RoutesLookupTaskDistance . (fmap $ length f g)
 
 length
     :: (OptimalRoute (Maybe TrackLine) -> Maybe TrackLine)

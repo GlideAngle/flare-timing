@@ -1,8 +1,8 @@
 module Flight.Mask.Tracks (checkTracks) where
 
-import Control.Monad.Except (ExceptT(..), lift)
+import Control.Exception.Safe (MonadThrow)
+import Control.Monad.Except (MonadIO, liftIO)
 import System.FilePath (takeDirectory)
-import Data.Yaml (ParseException)
 
 import Flight.Kml (MarkedFixes)
 import Flight.Comp 
@@ -19,16 +19,17 @@ import Flight.Units ()
 import Flight.Scribe (readComp)
 
 settingsLogs
-    :: CompInputFile
+    :: (MonadThrow m, MonadIO m)
+    => CompInputFile
     -> [IxTask]
     -> [Pilot]
-    -> ExceptT ParseException IO (CompSettings k, [[PilotTrackLogFile]])
+    -> m (CompSettings k, [[PilotTrackLogFile]])
 settingsLogs compFile@(CompInputFile path) tasks selectPilots = do
     settings <- readComp compFile
-    ExceptT . return $ go settings
+    go settings
     where
-        go s@CompSettings{pilots, taskFolders} =
-            Right (s, zs)
+        go s@CompSettings{pilots, taskFolders} = do
+            return (s, zs)
             where
                 dir = takeDirectory path
                 ys = Log.filterPilots selectPilots $ Log.filterTasks tasks pilots
@@ -36,17 +37,16 @@ settingsLogs compFile@(CompInputFile path) tasks selectPilots = do
                 zs = zipWith (<$>) fs ys
 
 checkTracks
-    :: (CompSettings k -> (IxTask -> MarkedFixes -> a))
+    :: (MonadThrow m, MonadIO m)
+    => (CompSettings k -> (IxTask -> MarkedFixes -> a))
     -> CompInputFile
     -> [IxTask]
     -> [Pilot]
-    -> ExceptT
-        ParseException
-        IO
+    -> m
         [[ Either
            (Pilot, TrackFileFail)
            (Pilot, a)
         ]]
 checkTracks f compFile tasks selectPilots = do
     (settings, xs) <- settingsLogs compFile tasks selectPilots
-    lift $ Log.pilotTracks (f settings) xs
+    liftIO $ Log.pilotTracks (f settings) xs

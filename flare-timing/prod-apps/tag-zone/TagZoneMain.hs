@@ -9,9 +9,8 @@ import System.Clock (getTime, Clock(Monotonic))
 import Data.Maybe (catMaybes, fromMaybe)
 import Data.List (transpose, sortOn)
 import Control.Monad (mapM_)
-import Control.Monad.Except (runExceptT)
+import Control.Exception.Safe (catchIO)
 import System.FilePath (takeFileName)
-import Data.Yaml (prettyPrintParseException)
 
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..), Extension(..))
@@ -59,11 +58,15 @@ drive o = do
 go :: CrossZoneFile -> IO ()
 go crossFile@(CrossZoneFile crossPath) = do
     putStrLn $ "Reading zone crossings from '" ++ takeFileName crossPath ++ "'"
-    cs <- runExceptT $ readCrossing crossFile
+
+    cs <-
+        catchIO
+            (Just <$> readCrossing crossFile)
+            (const $ return Nothing)
 
     case cs of
-        Left e -> putStrLn . prettyPrintParseException $ e
-        Right Crossing{crossing} -> do
+        Nothing -> putStrLn "Couldn't read the crossings."
+        Just Crossing{crossing} -> do
             let pss :: [[PilotTrackTag]] =
                     (fmap . fmap)
                         (\case

@@ -6,9 +6,8 @@ import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Control.Monad (mapM_)
-import Control.Monad.Except (runExceptT)
+import Control.Exception.Safe (catchIO)
 import System.FilePath (takeFileName)
-import Data.Yaml (prettyPrintParseException)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
@@ -68,15 +67,20 @@ go CmdBatchOptions{..} compFile = do
     let landFile = compToLand compFile
     putStrLn $ "Reading land outs from '" ++ takeFileName maskPath ++ "'"
 
-    compSettings <- runExceptT $ readComp compFile
-    masking <- runExceptT $ readMasking maskFile
+    compSettings <-
+        catchIO
+            (Just <$> readComp compFile)
+            (const $ return Nothing)
 
-    let ppr = putStrLn . prettyPrintParseException
+    masking <-
+        catchIO
+            (Just <$> readMasking maskFile)
+            (const $ return Nothing)
 
     case (compSettings, masking) of
-        (Left e, _) -> ppr e
-        (_, Left e) -> ppr e
-        (Right cs, Right mk) -> writeLanding landFile $ difficulty cs mk
+        (Nothing, _) -> putStrLn "Couldn't read the comp settings."
+        (_, Nothing) -> putStrLn "Couldn't read teh maskings."
+        (Just cs, Just mk) -> writeLanding landFile $ difficulty cs mk
 
 difficulty :: CompSettings k -> Masking -> Cmp.Landing
 difficulty CompSettings{nominal} Masking{bestDistance, land} =

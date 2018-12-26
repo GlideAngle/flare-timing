@@ -6,7 +6,8 @@ module Flight.Discard
     ) where
 
 import Data.List (zipWith4)
-import Control.Monad.Except (ExceptT(..), runExceptT, lift)
+import Control.Exception.Safe (MonadThrow, throwString)
+import Control.Monad.Except (MonadIO, liftIO)
 import Control.Monad (zipWithM)
 import qualified Data.ByteString.Lazy as BL
 import System.Directory (createDirectoryIfMissing)
@@ -40,10 +41,13 @@ import Flight.Comp
 import Flight.Align (readAlignTime)
 import Flight.Score (Leg)
 
-readDiscardFurther :: DiscardFurtherFile -> ExceptT String IO (Header, Vector TickRow)
+readDiscardFurther
+    :: (MonadThrow m, MonadIO m)
+    => DiscardFurtherFile
+    -> m (Header, Vector TickRow)
 readDiscardFurther (DiscardFurtherFile csvPath) = do
-    contents <- lift $ BL.readFile csvPath
-    ExceptT . return $ decodeByName contents
+    contents <- liftIO $ BL.readFile csvPath
+    either throwString return $ decodeByName contents
 
 writeDiscardFurther :: DiscardFurtherFile -> [String] -> Vector TickRow -> IO ()
 writeDiscardFurther (DiscardFurtherFile path) headers xs =
@@ -84,11 +88,9 @@ readPilotBestDistance
     -> Pilot
     -> IO (Maybe (Pilot, TickRow))
 readPilotBestDistance compFile (IxTask iTask) pilot = do
-    rows <-
-        runExceptT
-        $ readDiscardFurther (DiscardFurtherFile (dOut </> file))
+    (_, rows) <- readDiscardFurther (DiscardFurtherFile (dOut </> file))
 
-    return $ (pilot,) <$> either (const Nothing) (lastRow . snd) rows
+    return $ (pilot,) <$> lastRow rows
     where
         dir = compFileToCompDir compFile
         (_, AlignTimeFile file) = alignPath dir iTask pilot
@@ -144,11 +146,9 @@ readPilotLeading
     (Just raceTime)
     pilot = do
 
-    rows <- runExceptT $ readAlignTime (AlignTimeFile (dIn </> file))
-    return $ either
-        (const [])
-        (V.toList . discard toLeg taskLength close arrival . snd)
-        rows
+    (_, rows) <- readAlignTime (AlignTimeFile (dIn </> file))
+
+    return $ (V.toList . discard toLeg taskLength close arrival) rows
     where
         dir = compFileToCompDir compFile
         (AlignDir dIn, AlignTimeFile file) = alignPath dir i pilot

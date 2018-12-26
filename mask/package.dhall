@@ -30,6 +30,7 @@ in    defs
             , "fgl"
             , "cmdargs"
             , "numbers"
+            , "safe-exceptions"
             , "detour-via-sci"
             , "flight-span"
             , "flight-units"

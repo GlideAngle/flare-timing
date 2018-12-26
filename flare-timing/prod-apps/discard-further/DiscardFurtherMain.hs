@@ -7,10 +7,9 @@ import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Control.Monad (join, mapM_, when)
-import Control.Monad.Except (ExceptT, runExceptT)
+import Control.Exception.Safe (catchIO)
 import System.Directory (createDirectoryIfMissing)
 import System.FilePath ((</>), takeFileName)
-import Data.Yaml (ParseException, prettyPrintParseException)
 
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
@@ -91,17 +90,26 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
     putStrLn $ "Reading task length from '" ++ takeFileName lenPath ++ "'"
     putStrLn $ "Reading zone tags from '" ++ takeFileName tagPath ++ "'"
 
-    compSettings <- runExceptT $ readComp compFile
-    tagging <- runExceptT $ readTagging tagFile
-    routes <- runExceptT $ readRoute lenFile
+    compSettings <-
+        catchIO
+            (Just <$> readComp compFile)
+            (const $ return Nothing)
 
-    let ppr = putStrLn . prettyPrintParseException
+    tagging <-
+        catchIO
+            (Just <$> readTagging tagFile)
+            (const $ return Nothing)
+
+    routes <-
+        catchIO
+            (Just <$> readRoute lenFile)
+            (const $ return Nothing)
 
     case (compSettings, tagging, routes) of
-        (Left e, _, _) -> ppr e
-        (_, Left e, _) -> ppr e
-        (_, _, Left e) -> ppr e
-        (Right cs, Right _, Right _) ->
+        (Nothing, _, _) -> putStrLn "Couldn't read the comp settings."
+        (_, Nothing, _) -> putStrLn "Couldn't read the taggings."
+        (_, _, Nothing) -> putStrLn "Couldn't read the routes."
+        (Just cs, Just _, Just _) ->
             filterTime
                 cs
                 (routeLength taskRoute taskRouteSpeedSubset routes)
@@ -121,9 +129,7 @@ filterTime
     -> (CompInputFile
         -> [IxTask]
         -> [Pilot]
-        -> ExceptT
-            ParseException
-            IO [[Either (Pilot, _) (Pilot, _)]])
+        -> IO [[Either (Pilot, _) (Pilot, _)]])
     -> IO ()
 filterTime
     CompSettings{tasks}
@@ -131,11 +137,14 @@ filterTime
     (TaskTimeLookup lookupTaskTime)
     compFile selectTasks selectPilots f = do
 
-    checks <- runExceptT $ f compFile selectTasks selectPilots
+    checks <-
+        catchIO
+            (Just <$> f compFile selectTasks selectPilots)
+            (const $ return Nothing)
 
     case checks of
-        Left msg -> print msg
-        Right xs -> do
+        Nothing -> putStrLn "Unable to read tracks for pilots."
+        Just xs -> do
             let taskPilots :: [[Pilot]] =
                     (fmap . fmap)
                         (\case
@@ -191,9 +200,7 @@ checkAll
     :: CompInputFile
     -> [IxTask]
     -> [Pilot]
-    -> ExceptT
-         ParseException
-         IO
+    -> IO
          [
              [Either (Pilot, TrackFileFail) (Pilot, ())]
          ]
@@ -219,8 +226,8 @@ readFilterWrite
     iTask@(IxTask i) toLeg (Just raceTime) pilot =
     when (selectTask iTask) $ do
     _ <- createDirectoryIfMissing True dOut
-    rows <- runExceptT $ readAlignTime (AlignTimeFile (dIn </> file))
-    either print (f . discard toLeg taskLength close arrival . snd) rows
+    rows <- readAlignTime (AlignTimeFile (dIn </> file))
+    f . discard toLeg taskLength close arrival . snd $ rows
     where
         f = writeDiscardFurther (DiscardFurtherFile $ dOut </> file) headers
         dir = compFileToCompDir compFile

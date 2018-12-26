@@ -14,8 +14,8 @@ type CrossingLookup a = IxTask -> Pilot -> Maybe a
 newtype FlyingLookup =
     FlyingLookup (Maybe (CrossingLookup TrackFlyingSection))
 
-crossFlying :: Either a C.Crossing -> FlyingLookup
-crossFlying = FlyingLookup . either (const Nothing) (Just . flyingTask)
+crossFlying :: Maybe C.Crossing -> FlyingLookup
+crossFlying = FlyingLookup . (fmap flyingTask)
 
 flyingTask :: C.Crossing -> IxTask -> Pilot -> Maybe TrackFlyingSection
 flyingTask C.Crossing{flying = xs} (IxTask i) pilot =

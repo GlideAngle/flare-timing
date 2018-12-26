@@ -16,9 +16,8 @@ import Data.List (sortBy, groupBy)
 import Control.Applicative (liftA2)
 import qualified Control.Applicative as A ((<$>))
 import Control.Monad (mapM_)
-import Control.Monad.Except (runExceptT)
+import Control.Exception.Safe (catchIO)
 import System.FilePath (takeFileName)
-import Data.Yaml (prettyPrintParseException)
 import Data.UnitsOfMeasure ((/:), u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
@@ -121,21 +120,38 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
     putStrLn $ "Reading masked tracks from '" ++ takeFileName maskPath ++ "'"
     putStrLn $ "Reading distance difficulty from '" ++ takeFileName landPath ++ "'"
 
-    compSettings <- runExceptT $ readComp compFile
-    crossing <- runExceptT $ readCrossing crossFile
-    tagging <- runExceptT $ readTagging tagFile
-    masking <- runExceptT $ readMasking maskFile
-    landing <- runExceptT $ readLanding landFile
+    compSettings <-
+        catchIO
+            (Just <$> readComp compFile)
+            (const $ return Nothing)
 
-    let ppr = putStrLn . prettyPrintParseException
+    crossing <-
+        catchIO
+            (Just <$> readCrossing crossFile)
+            (const $ return Nothing)
+
+    tagging <-
+        catchIO
+            (Just <$> readTagging tagFile)
+            (const $ return Nothing)
+
+    masking <-
+        catchIO
+            (Just <$> readMasking maskFile)
+            (const $ return Nothing)
+
+    landing <-
+        catchIO
+            (Just <$> readLanding landFile)
+            (const $ return Nothing)
 
     case (compSettings, crossing, tagging, masking, landing) of
-        (Left e, _, _, _, _) -> ppr e
-        (_, Left e, _, _, _) -> ppr e
-        (_, _, Left e, _, _) -> ppr e
-        (_, _, _, Left e, _) -> ppr e
-        (_, _, _, _, Left e) -> ppr e
-        (Right cs, Right cg, Right tg, Right mk, Right lg) ->
+        (Nothing, _, _, _, _) -> putStrLn "Couldn't read the comp settings."
+        (_, Nothing, _, _, _) -> putStrLn "Couldn't read the crossings."
+        (_, _, Nothing, _, _) -> putStrLn "Couldn't read the taggings."
+        (_, _, _, Nothing, _) -> putStrLn "Couldn't read the maskings."
+        (_, _, _, _, Nothing) -> putStrLn "Couldn't read the land outs."
+        (Just cs, Just cg, Just tg, Just mk, Just lg) ->
             writePointing pointFile $ points' cs cg tg mk lg
 
 points'
