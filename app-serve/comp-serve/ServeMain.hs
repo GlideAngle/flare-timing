@@ -14,14 +14,13 @@ import Servant
     , errBody, err400, hoistServer, serve, throwError
     )
 import System.IO (hPutStrLn, stderr)
-import Control.Exception.Safe (catch, catchIO)
-import Control.Monad.IO.Class (MonadIO, liftIO)
+import Control.Exception.Safe (catchIO)
+import Control.Monad.IO.Class (MonadIO)
 import Control.Monad.Reader (ReaderT, MonadReader, asks, runReaderT)
-import Control.Monad.Except (ExceptT(..), MonadError, runExceptT, lift)
+import Control.Monad.Except (ExceptT(..), MonadError)
 import qualified Data.ByteString.Lazy.Char8 as LBS (pack)
 
 import System.FilePath (takeFileName)
-import Data.Yaml (prettyPrintParseException)
 
 import qualified Flight.Track.Cross as Cg (Crossing(..))
 import Flight.Track.Point
@@ -337,6 +336,8 @@ getTaskScore ii = do
                 x : _ -> return x
                 _ -> throwError $ errTaskBounds ii
 
+        _ -> throwError $ errTaskStep "gap-point" ii
+
 getTaskValidityWorking :: Int -> AppT k IO (Maybe Vy.ValidityWorking)
 getTaskValidityWorking ii = do
     xs' <- fmap validityWorking <$> asks pointing
@@ -345,6 +346,8 @@ getTaskValidityWorking ii = do
             case drop (ii - 1) xs of
                 x : _ -> return x
                 _ -> throwError $ errTaskBounds ii
+
+        _ -> throwError $ errTaskStep "gap-point" ii
 
 getTaskRouteSphericalEdge :: Int -> AppT k IO (OptimalRoute (Maybe TrackLine))
 getTaskRouteSphericalEdge ii = do
@@ -355,6 +358,8 @@ getTaskRouteSphericalEdge ii = do
                 Just TaskTrack{sphericalEdgeToEdge = x} : _ -> return x
                 _ -> throwError $ errTaskBounds ii
 
+        _ -> throwError $ errTaskStep "task-length" ii
+
 getTaskPilotDnf :: Int -> AppT k IO [Pilot]
 getTaskPilotDnf ii = do
     xss' <- fmap (\Cg.Crossing{dnf} -> dnf) <$> asks crossing
@@ -363,6 +368,8 @@ getTaskPilotDnf ii = do
             case drop (ii - 1) xss of
                 xs : _ -> return xs
                 _ -> throwError $ errTaskBounds ii
+
+        _ -> return []
 
 nyp
     :: [Pilot]
@@ -398,6 +405,8 @@ getTaskPilotNyp ii = do
                 (t : _, xs : _, cs : _) -> return $ nyp ps t xs cs
                 _ -> throwError $ errTaskBounds ii
 
+        _ -> return ps
+
 getPilotsStatus :: AppT k IO [(Pilot, [PilotTaskStatus])]
 getPilotsStatus = do
     ps <- getPilots <$> asks compSettings
@@ -414,11 +423,24 @@ getPilotsStatus = do
                     | cs <- css
                     ]
 
+              _ -> repeat $ const NYP
+
     return $ [(p,) $ ($ p) <$> fs | p <- ps]
 
 errTaskBounds :: Int -> ServantErr
 errTaskBounds ii =
     err400
         { errBody = LBS.pack
-        $ "Out of bounds task: #" ++ show ii
+        $ "Out of bounds task: #"
+        ++ show ii
+        }
+
+errTaskStep :: String -> Int -> ServantErr
+errTaskStep step ii =
+    err400
+        { errBody = LBS.pack
+        $ "I need to have access to data from "
+        ++ step
+        ++ " for task: #"
+        ++ show ii
         }
