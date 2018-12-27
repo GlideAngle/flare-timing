@@ -15,6 +15,7 @@ import GHC.Generics (Generic)
 import qualified Data.Text as T
 import Data.Aeson (Value(..), FromJSON(..))
 import Data.Scientific (Scientific, toRealFloat, fromRationalRepetend)
+import WireTypes.ZoneKind (TaskZones(..))
 
 newtype RawLat = RawLat Rational
     deriving (Eq, Ord, Show)
@@ -45,6 +46,7 @@ data RawZone =
 data Zones =
     Zones
         { raw :: [RawZone]
+        , raceKind :: Maybe TaskZones
         }
     deriving (Eq, Ord, Show, Generic, FromJSON)
 

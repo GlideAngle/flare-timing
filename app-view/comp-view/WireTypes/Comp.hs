@@ -10,6 +10,7 @@ module WireTypes.Comp
     , ScoreBackTime
     , getAllRawZones
     , getRaceRawZones
+    , getGoalShape
     , getSpeedSection
     , getOpenClose
     , getStartGates
@@ -28,6 +29,7 @@ import Data.Aeson (Value(..), FromJSON(..))
 import qualified Data.Text as T (unpack)
 import Data.Scientific (Scientific, toRealFloat, fromRationalRepetend)
 import WireTypes.Zone (RawZone, Zones(..))
+import WireTypes.ZoneKind
 import WireTypes.Pilot (Pilot)
 
 type Name = String
@@ -172,6 +174,15 @@ getStartGates Task{startGates = gs} = gs
 
 getAllRawZones :: Task -> [RawZone]
 getAllRawZones Task{zones = Zones{raw}} = raw
+
+getGoalShape :: Task -> Shape
+getGoalShape Task{zones = Zones{raceKind}} =
+    maybe
+        Circle
+        (\case
+            TzEssIsGoal ZoneKind{..} -> goalShape
+            TzEssIsNotGoal ZoneKind{..} -> goalShape)
+        raceKind
 
 getRaceRawZones :: Task -> [RawZone]
 getRaceRawZones Task{zones = Zones{raw = tps}, speedSection = ss} =

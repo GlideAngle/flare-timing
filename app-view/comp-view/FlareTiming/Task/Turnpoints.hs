@@ -7,6 +7,7 @@ import Data.Time.LocalTime (TimeZone)
 import WireTypes.Comp
     (Task(..), SpeedSection, StartGate(..), UtcOffset(..), OpenClose(..)
     , getAllRawZones, getSpeedSection, getOpenClose, getStartGates
+    , getGoalShape
     )
 import WireTypes.Route (TaskDistance(..), TaskLegs(..), showTaskDistance)
 import WireTypes.Zone (RawZone(..))
@@ -62,6 +63,7 @@ tableTurnpoints
     -> m ()
 tableTurnpoints tz x taskLegs = do
     let zs = getAllRawZones <$> x
+    let goal = getGoalShape <$> x
     let ss = getSpeedSection <$> x
     let oc = (\case [t] -> repeat t; ts -> ts) . getOpenClose <$> x
 
@@ -94,6 +96,9 @@ tableTurnpoints tz x taskLegs = do
                 el "tr" $
                     elAttr "td" ("colspan" =: "8")
                         $ text "‡ End of the speed section"
+                el "tr" $
+                    elAttr "td" ("colspan" =: "8") . dynText
+                        $ (\s -> "Goal is a " <> s) . T.pack . show <$> goal
 
     return ()
 
