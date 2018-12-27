@@ -7,7 +7,15 @@ module WireTypes.ZoneKind
 import Data.Foldable (asum)
 import Data.Aeson (Value(..), FromJSON(..), (.:), withObject)
 
-data Shape = Circle | Line
+data Shape
+    = Line
+    | Circle
+    | SemiCircle
+    | Cylinder
+    | CutCylinder
+    | CutCone
+    | CutSemiCylinder
+    | CutSemiCone
     deriving (Eq, Ord, Show)
 
 data ZoneKind = ZoneKind { goalShape :: Shape }
@@ -22,6 +30,24 @@ instance FromJSON ZoneKind where
             , do
                 Object _ <- o .: "circle"
                 return $ ZoneKind { goalShape = Circle }
+            , do
+                Object _ <- o .: "semicircle"
+                return $ ZoneKind { goalShape = SemiCircle }
+            , do
+                Object _ <- o .: "cylinder"
+                return $ ZoneKind { goalShape = Cylinder }
+            , do
+                Object _ <- o .: "cut-cylinder"
+                return $ ZoneKind { goalShape = CutCylinder }
+            , do
+                Object _ <- o .: "cut-cone"
+                return $ ZoneKind { goalShape = CutCone }
+            , do
+                Object _ <- o .: "cut-semi-cylinder"
+                return $ ZoneKind { goalShape = CutSemiCylinder }
+            , do
+                Object _ <- o .: "cut-semi-cone"
+                return $ ZoneKind { goalShape = CutSemiCone }
             ]
 
 data TaskZones
