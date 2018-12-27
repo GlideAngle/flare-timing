@@ -1,5 +1,6 @@
 module FlareTiming.Task.Turnpoints (tableTask) where
 
+import Debug.Trace
 import Reflex.Dom
 import qualified Data.Text as T (Text, pack)
 import Data.Time.LocalTime (TimeZone)
@@ -68,6 +69,7 @@ tableTurnpoints tz x taskLegs = do
     let oc = (\case [t] -> repeat t; ts -> ts) . getOpenClose <$> x
 
     pad <- sample . current $ padLegs <$> ss
+    len <- sample . current $ fromIntegral . length <$> zs
 
     let legs' = (maybe unknownLegs (pad . legs)) <$> taskLegs
     let legsSum' = (maybe unknownLegs (pad . legsSum)) <$> taskLegs
@@ -87,7 +89,7 @@ tableTurnpoints tz x taskLegs = do
                     elClass "th" "th-tp-close" $ text "Close"
 
             _ <- el "tbody" $ do
-                simpleList (fmap (zip [1..]) ys) (row tz ss)
+                simpleList (fmap (zip [1..]) ys) (row tz (traceShow len len) ss)
 
             el "tfoot" $ do
                 el "tr" $
@@ -98,7 +100,7 @@ tableTurnpoints tz x taskLegs = do
                         $ text "‡ End of the speed section"
                 el "tr" $
                     elAttr "td" ("colspan" =: "8") . dynText
-                        $ (\s -> "Goal is a " <> s) . T.pack . show <$> goal
+                        $ (\s -> "* Goal is a " <> s) . T.pack . show <$> goal
 
     return ()
 
@@ -134,13 +136,14 @@ rowStartGate tz sg ix = do
 row
     :: MonadWidget t m
     => TimeZone
+    -> Integer
     -> Dynamic t SpeedSection
     -> Dynamic t (Integer, (OpenClose, (TaskDistance, TaskDistance), RawZone))
     -> m ()
-row tz ss iz = do
+row tz len ss iz = do
     let i = fst <$> iz
     let rowTextColor = zipDynWith rowColor ss i
-    rowIntro <- sample . current $ zipDynWith rowText ss i
+    rowIntro <- sample . current $ zipDynWith (rowText len) ss i
     let x = snd <$> iz
     let oc = (\(a, _, _) -> a) <$> x
     let l = (\(_, (b1, _), _) -> b1) <$> x
@@ -174,12 +177,12 @@ rowColor (Just (ss, es)) ii =
        | es == ii -> "end-speed"
        | otherwise -> ""
 
-rowText :: SpeedSection -> Integer -> T.Text
-rowText Nothing _ = ""
-rowText (Just (ss, es)) ii =
+rowText :: Integer -> SpeedSection -> Integer -> T.Text
+rowText len Nothing ii = if len == ii then " *" else ""
+rowText len (Just (ss, es)) ii =
     if | ss == ii -> " †"
-       | es == ii -> " ‡"
-       | otherwise -> ""
+       | es == ii -> if len == ii then " ‡*" else " ‡"
+       | otherwise -> if len == ii then " *" else ""
 
 showStartGate :: TimeZone -> StartGate -> T.Text
 showStartGate tz (StartGate t) = showT tz t
