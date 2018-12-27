@@ -1,4 +1,8 @@
-module Flight.Zone.Bearing (QBearing, Bearing(..)) where
+module Flight.Zone.Bearing
+    ( QBearing
+    , Bearing(..)
+    , ArcSweep(..)
+    ) where
 
 import "newtype" Control.Newtype (Newtype(..))
 import Data.Aeson (ToJSON(..), FromJSON(..))
@@ -8,6 +12,9 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Flight.Units ()
 import Data.Via.Scientific (DefaultDecimalPlaces(..), DecimalPlaces(..))
 import Data.Via.UnitsOfMeasure (ViaQ(..))
+
+-- | The angle of the sweep of the arc.
+newtype ArcSweep a u = ArcSweep (QBearing a u)
 
 type QBearing a u = Bearing (Quantity a u)
 

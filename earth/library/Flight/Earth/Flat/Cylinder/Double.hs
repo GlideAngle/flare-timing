@@ -14,6 +14,7 @@ import Flight.Zone
     , QRadius
     , Radius(..)
     , Bearing(..)
+    , ArcSweep(..)
     , center
     , radius
     , realToFracZone
@@ -113,12 +114,13 @@ translate (Radius (MkQuantity rRadius)) (TrueCourse (MkQuantity rtc)) x =
 --
 -- The points of the compass are divided by the number of samples requested.
 circumSample :: CircumSample Double
-circumSample SampleParams{..} (Bearing (MkQuantity bearing)) zp zone =
+circumSample SampleParams{..} (ArcSweep (Bearing (MkQuantity bearing))) zp zone =
     ys
     where
         nNum = unSamples spSamples
         half = nNum `div` 2
-        halfRange = pi / bearing
+        step = bearing / (fromInteger nNum)
+        mid = maybe 0 (\ZonePoint{radial = Bearing (MkQuantity b)} -> b) zp
 
         zone' :: Zone Double
         zone' =
@@ -129,24 +131,9 @@ circumSample SampleParams{..} (Bearing (MkQuantity bearing)) zp zone =
         xs :: [TrueCourse Double]
         xs =
             TrueCourse . MkQuantity <$>
-            case zp of
-                Nothing ->
-                    [ 2.0 * fromInteger n / fromInteger nNum * pi
-                    | n <- [0 .. nNum]
-                    ]
-
-                Just ZonePoint{..} ->
-                    [b]
-                    ++ 
-                    [ b - fromInteger n / fromInteger half * halfRange
-                    | n <- [1 .. half]
-                    ]
-                    ++
-                    [ b + fromInteger n / fromInteger half * halfRange
-                    | n <- [1 .. half]
-                    ]
-                    where
-                        (Bearing (MkQuantity b)) = radial
+                let lhs = [mid - (fromInteger n) * step | n <- [1 .. half]]
+                    rhs = [mid + (fromInteger n) * step | n <- [1 .. half]]
+                in lhs ++ (mid : rhs)
 
         r :: QRadius Double [u| m |]
         r@(Radius (MkQuantity limitRadius)) = radius zone'

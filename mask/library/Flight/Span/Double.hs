@@ -12,7 +12,7 @@ import Data.UnitsOfMeasure ((/:))
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Distance (PathDistance, SpanLatLng)
-import Flight.Zone (Zone, Bearing(..))
+import Flight.Zone (Zone, Bearing(..), ArcSweep(..))
 import Flight.Zone.Path (distancePointToPoint, costSegment)
 import Flight.Zone.Raw (RawZone)
 import Flight.Zone.Cylinder (CircumSample)
@@ -33,13 +33,13 @@ csF = Dbl.circumSample
 cutF :: AngleCut Double
 cutF =
     AngleCut
-        { sweep = Bearing $ MkQuantity pi
+        { sweep = ArcSweep . Bearing . MkQuantity $ 2 * pi
         , nextSweep = nextCutF
         }
 
 nextCutF :: AngleCut Double -> AngleCut Double
-nextCutF x@AngleCut{sweep} =
-    let (Bearing b) = sweep in x{sweep = Bearing $ b /: 2}
+nextCutF x@AngleCut{sweep = ArcSweep (Bearing b)} =
+    x{sweep = ArcSweep . Bearing $ b /: 2}
 
 dppF :: SpanLatLng Double -> [Zone Double] -> PathDistance Double
 dppF = distancePointToPoint

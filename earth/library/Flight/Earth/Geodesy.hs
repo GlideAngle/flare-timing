@@ -15,7 +15,7 @@ import Data.UnitsOfMeasure (u)
 import Flight.Units ()
 import Flight.Units.Angle (Angle(..))
 import Flight.Units.DegMinSec (DMS(..))
-import Flight.Distance (QTaskDistance, TaskDistance(..))
+import Flight.Distance (QTaskDistance)
 
 -- | The inputs for the direct or forward problem in geodesy.
 data DirectProblem a α s =

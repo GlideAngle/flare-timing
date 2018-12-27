@@ -15,7 +15,7 @@ import Flight.LatLng (LatLng(..))
 import Flight.LatLng.Raw (RawLatLng(..))
 import Flight.LatLng.Rational (Epsilon(..), defEps)
 import Flight.Distance (QTaskDistance, PathDistance(..), SpanLatLng)
-import Flight.Zone (Zone(..), Bearing(..), center)
+import Flight.Zone (Zone(..), Bearing(..), ArcSweep(..), center)
 import Flight.Zone.Path (distancePointToPoint, costSegment)
 import Flight.Zone.Raw (RawZone(..))
 import Flight.Zone.Cylinder (CircumSample)
@@ -300,10 +300,10 @@ cut =
     AngleCut
         { sweep =
             let (Epsilon eps) = defEps
-            in Bearing . MkQuantity $ F.pi eps
+            in ArcSweep . Bearing . MkQuantity $ 2 * F.pi eps
         , nextSweep = nextCut
         }
 
 nextCut :: AngleCut Rational -> AngleCut Rational
-nextCut x@AngleCut{sweep} =
-    let (Bearing b) = sweep in x{sweep = Bearing $ b /: 2}
+nextCut x@AngleCut{sweep = ArcSweep (Bearing b)} =
+    x{sweep = ArcSweep . Bearing $ b /: 2}

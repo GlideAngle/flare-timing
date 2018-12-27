@@ -20,11 +20,12 @@ import Data.Maybe (catMaybes)
 import Control.Arrow (first)
 import Data.Graph.Inductive.Query.SP (LRTree, spTree) 
 import Data.Graph.Inductive.Internal.RootPath (getDistance, getLPathNodes)
-import Data.Graph.Inductive.Graph (Graph(..), Node, Path, LEdge, match)
+import Data.Graph.Inductive.Graph
+    (Graph(nodeRange, mkGraph), Node, Path, LEdge, match)
 import Data.Graph.Inductive.PatriciaTree (Gr)
 
 import Flight.LatLng (LatLng(..))
-import Flight.Zone (Zone(..), QBearing, center)
+import Flight.Zone (Zone(..), ArcSweep(..), center)
 import Flight.Zone.Cylinder
     ( Tolerance(..)
     , Samples(..)
@@ -45,7 +46,7 @@ type NodeConnector a =
 type GraphBuilder a =
     CircumSample a
     -> SampleParams a
-    -> QBearing a [u| rad |]
+    -> ArcSweep a [u| rad |]
     -> Maybe [ZonePoint a]
     -> [Zone a]
     -> Gr (ZonePoint a) (PathCost a)
@@ -75,19 +76,21 @@ type DistancePointToPoint a = SpanLatLng a -> [Zone a] -> PathDistance a
 -- sweep. During the search the sweep angle is reduced by the next sweep
 -- function.
 data AngleCut a =
-    AngleCut { sweep :: QBearing a [u| rad |]
-             , nextSweep :: AngleCut a -> AngleCut a
-             }
+    AngleCut
+        { sweep :: ArcSweep a [u| rad |]
+        , nextSweep :: AngleCut a -> AngleCut a
+        }
 
-shortestPath :: (Real a, Fractional a)
-             => SpanLatLng a
-             -> DistancePointToPoint a
-             -> CircumSample a
-             -> GraphBuilder a
-             -> AngleCut a
-             -> Tolerance a
-             -> [Zone a]
-             -> Zs (PathDistance a)
+shortestPath
+    :: (Real a, Fractional a)
+    => SpanLatLng a
+    -> DistancePointToPoint a
+    -> CircumSample a
+    -> GraphBuilder a
+    -> AngleCut a
+    -> Tolerance a
+    -> [Zone a]
+    -> Zs (PathDistance a)
 shortestPath _ _ _ _ _ _ [] = Z0
 shortestPath _ _ _ _ _ _ [_] = Z1
 shortestPath span distancePointToPoint cs builder angleCut tolerance xs =
@@ -110,15 +113,16 @@ shortestPath span distancePointToPoint cs builder angleCut tolerance xs =
                 span distancePointToPoint cs builder angleCut tolerance xs
 
 
-distance :: (Real a, Fractional a)
-         => SpanLatLng a
-         -> DistancePointToPoint a
-         -> CircumSample a
-         -> GraphBuilder a
-         -> AngleCut a
-         -> Tolerance a
-         -> [Zone a]
-         -> (Zs (PathCost a), [ LatLng a [u| rad |] ])
+distance
+    :: (Real a, Fractional a)
+    => SpanLatLng a
+    -> DistancePointToPoint a
+    -> CircumSample a
+    -> GraphBuilder a
+    -> AngleCut a
+    -> Tolerance a
+    -> [Zone a]
+    -> (Zs (PathCost a), [LatLng a [u| rad |]])
 distance _ _ _ _ _ _ [] = (Z0, [])
 distance _ _ _ _ _ _ [_] = (Z1, [])
 distance span distancePointToPoint cs builder cut tolerance xs
@@ -137,8 +141,38 @@ distance span distancePointToPoint cs builder cut tolerance xs
 
             edgesSum' = center <$> xs
             sp = SampleParams { spSamples = Samples 5, spTolerance = tolerance }
-            (dist, zs) =
-                loop builder cs sp cut 6 Nothing Nothing xs
+
+            -- NOTE: I need to add a zone at each end to define the start and
+            -- end for the shortest path. Once the shortest path is found
+            -- I then need to undo the padding.
+            (_, ys) = loop builder cs sp cut 6 Nothing Nothing $ pad xs
+            (dist, zs) = unpad span distancePointToPoint ys
+
+pad :: Ord a => [Zone a] -> [Zone a]
+pad xs =
+    z0 : (xs ++ [zN])
+    where
+        -- TODO: This is a guarded function. Use liquid haskell to prove
+        -- this is safe.
+        x0 : _ = xs
+        xN : _ = reverse xs
+
+        z0 = Point $ center x0
+        zN = Point $ center xN
+
+unpad
+    :: (Real a, Fractional a)
+    => SpanLatLng a
+    -> DistancePointToPoint a
+    -> [ZonePoint a]
+    -> (Maybe (PathCost a), [ZonePoint a])
+unpad span distancePointToPoint xs =
+    (Just . PathCost $ d, ys)
+    where
+        ys = reverse . drop 1 . reverse . drop 1 $ xs
+        zs = Point . point <$> ys
+
+        TaskDistance (MkQuantity d) = edgesSum $ distancePointToPoint span zs
 
 loop
     :: Real a
@@ -187,11 +221,11 @@ loop builder cs sp cut@AngleCut{sweep, nextSweep} n _ zs xs =
             <$> ps
 
 buildGraph
-    :: (Real a, Fractional a)    
+    :: (Real a, Fractional a)
     => NodeConnector a
     -> CircumSample a
     -> SampleParams a
-    -> QBearing a [u| rad |]
+    -> ArcSweep a [u| rad |]
     -> Maybe [ZonePoint a]
     -> [Zone a]
     -> Gr (ZonePoint a) (PathCost a)

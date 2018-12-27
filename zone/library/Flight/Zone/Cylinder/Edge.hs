@@ -6,7 +6,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Flight.Zone
     ( Zone(..)
     , Radius(..)
-    , QBearing
+    , ArcSweep(..)
     , Bearing(..)
     )
 import Flight.Zone.Cylinder.Sample (SampleParams, ZonePoint(..), TrueCourse)
@@ -14,20 +14,27 @@ import Flight.Zone.Cylinder.Sample (SampleParams, ZonePoint(..), TrueCourse)
 -- | The type of function that samples points on the circumference of a circle.
 type CircumSample a
     = SampleParams a
-    -> QBearing a [u| rad |]
+    -- ^ Control of the iterations and tolerance.
+    -> ArcSweep a [u| rad |]
+    -- ^ The angle either side of the point's angle defining an arc of the
+    -- circle's circumference from which to sample points.
     -> Maybe (ZonePoint a)
+    -- ^ This point will be in the middle of the arc of the sample.
     -> Zone a
+    -- ^ The zone from which we're trying to find points on an arc.
     -> ([ZonePoint a], [TrueCourse a])
+    -- ^ The points found and the angle of each.
 
 -- | Generate sample points for a zone. These get added to the graph to work out
 -- the shortest path.
-sample :: (Real a, Fractional a)
-       => CircumSample a
-       -> SampleParams a
-       -> QBearing a [u| rad |]
-       -> Maybe (ZonePoint a)
-       -> Zone a
-       -> [ZonePoint a]
+sample
+    :: (Real a, Fractional a)
+    => CircumSample a
+    -> SampleParams a
+    -> ArcSweep a [u| rad |]
+    -> Maybe (ZonePoint a)
+    -> Zone a
+    -> [ZonePoint a]
 sample _ _ _ _ px@(Point x) = [ZonePoint px x (Bearing zero) (Radius (MkQuantity 0))]
 sample _ _ _ _ px@(Vector _ x) = [ZonePoint px x (Bearing zero) (Radius (MkQuantity 0))]
 sample circumSample sp b zs z@Cylinder{} = fst $ circumSample sp b zs z

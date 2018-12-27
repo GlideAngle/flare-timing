@@ -7,6 +7,7 @@ module Flight.Zone
     , QIncline
     , Incline(..)
     , QBearing
+    , ArcSweep(..)
     , Bearing(..)
     , showZoneDMS
     , center
@@ -28,7 +29,7 @@ module Flight.Zone
     ) where
 
 import Flight.Zone.Radius (Radius(..), QRadius)
-import Flight.Zone.Bearing (Bearing(..), QBearing)
+import Flight.Zone.Bearing (Bearing(..), QBearing, ArcSweep(..))
 import Flight.Zone.AltTime (AltTime(..), QAltTime)
 import Flight.Zone.Incline (Incline(..), QIncline)
 import Flight.Zone.Zone

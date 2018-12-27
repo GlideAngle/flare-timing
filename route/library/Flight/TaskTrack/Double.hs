@@ -12,7 +12,7 @@ import Flight.Units ()
 import Flight.LatLng (LatLng(..))
 import Flight.LatLng.Raw (RawLatLng(..))
 import Flight.Distance (QTaskDistance, PathDistance(..), SpanLatLng)
-import Flight.Zone (Zone(..), Bearing(..), center)
+import Flight.Zone (Zone(..), Bearing(..), ArcSweep(..), center)
 import Flight.Zone.Path (distancePointToPoint, costSegment)
 import Flight.Zone.Raw (RawZone(..))
 import Flight.Zone.Cylinder (CircumSample)
@@ -290,10 +290,10 @@ spanE = distanceVincenty wgs84
 cut :: AngleCut Double
 cut =
     AngleCut
-        { sweep = Bearing $ MkQuantity pi
+        { sweep = ArcSweep . Bearing . MkQuantity $ 2 * pi
         , nextSweep = nextCut
         }
 
 nextCut :: AngleCut Double -> AngleCut Double
-nextCut x@AngleCut{sweep} =
-    let (Bearing b) = sweep in x{sweep = Bearing $ b /: 2}
+nextCut x@AngleCut{sweep = ArcSweep (Bearing b)} =
+    x{sweep = ArcSweep . Bearing $ b /: 2}

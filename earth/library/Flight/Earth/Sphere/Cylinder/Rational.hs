@@ -1,7 +1,5 @@
 module Flight.Earth.Sphere.Cylinder.Rational (circumSample) where
 
-import Data.Ratio ((%))
-import qualified Data.Number.FixedFunctions as F
 import Data.Fixed (mod')
 import Data.UnitsOfMeasure (u, unQuantity, fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
@@ -13,6 +11,7 @@ import Flight.Zone
     , QRadius
     , Radius(..)
     , Bearing(..)
+    , ArcSweep(..)
     , center
     , radius
     , toRationalZone
@@ -90,15 +89,13 @@ circum
 --
 -- The points of the compass are divided by the number of samples requested.
 circumSample :: CircumSample Rational
-circumSample SampleParams{..} (Bearing (MkQuantity bearing)) zp zone =
+circumSample SampleParams{..} (ArcSweep (Bearing (MkQuantity bearing))) zp zone =
     (fromRationalZonePoint <$> fst ys, snd ys)
     where
-        (Epsilon eps) = defEps
-
         nNum = unSamples spSamples
         half = nNum `div` 2
-        pi' = F.pi eps
-        halfRange = pi' / bearing
+        step = bearing / (fromInteger nNum)
+        mid = maybe 0 (\ZonePoint{radial = Bearing (MkQuantity b)} -> b) zp
 
         zone' :: Zone Rational
         zone' =
@@ -109,18 +106,9 @@ circumSample SampleParams{..} (Bearing (MkQuantity bearing)) zp zone =
         xs :: [TrueCourse Rational]
         xs =
             TrueCourse . MkQuantity <$>
-            case zp of
-                Nothing ->
-                    [ (2 * n % nNum) * pi' | n <- [0 .. nNum]]
-
-                Just ZonePoint{..} ->
-                    [b]
-                    ++ 
-                    [ b - (n % half) * halfRange | n <- [1 .. half] ]
-                    ++
-                    [ b + (n % half) * halfRange | n <- [1 .. half]]
-                    where
-                        (Bearing (MkQuantity b)) = radial
+                let lhs = [mid - (fromInteger n) * step | n <- [1 .. half]]
+                    rhs = [mid + (fromInteger n) * step | n <- [1 .. half]]
+                in lhs ++ (mid : rhs)
 
         (Radius (MkQuantity limitRadius)) = radius zone'
         limitRadius' = toRational limitRadius
@@ -171,7 +159,7 @@ getClose epsilon zone' ptCenter limitRadius spTolerance trys yr@(Radius (MkQuant
                          (Radius (MkQuantity offset'))
                          f'
                          x
-                 
+
              LT ->
                  if d > toRational (limitRadius - unTolerance spTolerance)
                  then (zp', x)
@@ -201,7 +189,7 @@ getClose epsilon zone' ptCenter limitRadius spTolerance trys yr@(Radius (MkQuant
                         , radial = Bearing tc
                         , orbit = yr
                         } :: ZonePoint Rational
-                       
+
         (TaskDistance (MkQuantity d)) =
             edgesSum
             $ distancePointToPoint

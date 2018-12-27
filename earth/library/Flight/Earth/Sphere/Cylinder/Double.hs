@@ -10,6 +10,7 @@ import Flight.Zone
     , QRadius
     , Radius(..)
     , Bearing(..)
+    , ArcSweep(..)
     , center
     , radius
     , realToFracZone
@@ -85,12 +86,14 @@ circum
 --
 -- The points of the compass are divided by the number of samples requested.
 circumSample :: CircumSample Double
-circumSample SampleParams{..} (Bearing (MkQuantity bearing)) zp zone =
-    ys
+circumSample SampleParams{..} (ArcSweep (Bearing (MkQuantity bearing))) zp zone
+    | bearing < 0 || bearing > 2 * pi = fail "Arc sweep must be in the range 0..2π radians."
+    | otherwise = ys
     where
         nNum = unSamples spSamples
         half = nNum `div` 2
-        halfRange = pi / bearing
+        step = bearing / (fromInteger nNum)
+        mid = maybe 0 (\ZonePoint{radial = Bearing (MkQuantity b)} -> b) zp
 
         zone' :: Zone Double
         zone' =
@@ -101,24 +104,9 @@ circumSample SampleParams{..} (Bearing (MkQuantity bearing)) zp zone =
         xs :: [TrueCourse Double]
         xs =
             TrueCourse . MkQuantity <$>
-            case zp of
-                Nothing ->
-                    [ 2.0 * fromInteger n / fromInteger nNum * pi
-                    | n <- [0 .. nNum]
-                    ]
-
-                Just ZonePoint{..} ->
-                    [b]
-                    ++ 
-                    [ b - fromInteger n / fromInteger half * halfRange
-                    | n <- [1 .. half]
-                    ]
-                    ++
-                    [ b + fromInteger n / fromInteger half * halfRange
-                    | n <- [1 .. half]
-                    ]
-                    where
-                        (Bearing (MkQuantity b)) = radial
+                let lhs = [mid - (fromInteger n) * step | n <- [1 .. half]]
+                    rhs = [mid + (fromInteger n) * step | n <- [1 .. half]]
+                in lhs ++ (mid : rhs)
 
         r :: QRadius Double [u| m |]
         r@(Radius (MkQuantity limitRadius)) = radius zone'
@@ -131,15 +119,16 @@ circumSample SampleParams{..} (Bearing (MkQuantity bearing)) zp zone =
         ys :: ([ZonePoint Double], [TrueCourse Double])
         ys = unzip $ getClose' 10 (Radius (MkQuantity 0)) (circumR r) <$> xs
 
-getClose :: Zone Double
-         -> LatLng Double [u| rad |] -- ^ The center point.
-         -> Double -- ^ The limit radius.
-         -> Tolerance Double
-         -> Int -- ^ How many tries.
-         -> QRadius Double [u| m |] -- ^ How far from the center.
-         -> (TrueCourse Double -> LatLng Double [u| rad |]) -- ^ A point from the origin on this radial
-         -> TrueCourse Double -- ^ The true course for this radial.
-         -> (ZonePoint Double, TrueCourse Double)
+getClose
+    :: Zone Double
+    -> LatLng Double [u| rad |] -- ^ The center point.
+    -> Double -- ^ The limit radius.
+    -> Tolerance Double
+    -> Int -- ^ How many tries.
+    -> QRadius Double [u| m |] -- ^ How far from the center.
+    -> (TrueCourse Double -> LatLng Double [u| rad |]) -- ^ A point from the origin on this radial
+    -> TrueCourse Double -- ^ The true course for this radial.
+    -> (ZonePoint Double, TrueCourse Double)
 getClose zone' ptCenter limitRadius spTolerance trys yr@(Radius (MkQuantity offset)) f x@(TrueCourse tc)
     | trys <= 0 = (zp', x)
     | unTolerance spTolerance <= 0 = (zp', x)
@@ -166,7 +155,7 @@ getClose zone' ptCenter limitRadius spTolerance trys yr@(Radius (MkQuantity offs
                          (Radius (MkQuantity offset'))
                          f'
                          x
-                 
+
              LT ->
                  if d > (limitRadius - unTolerance spTolerance)
                  then (zp', x)
@@ -196,7 +185,7 @@ getClose zone' ptCenter limitRadius spTolerance trys yr@(Radius (MkQuantity offs
                         , radial = Bearing tc
                         , orbit = yr
                         } :: ZonePoint Double
-                       
+
         (TaskDistance (MkQuantity d)) =
             edgesSum
             $ distancePointToPoint

@@ -96,5 +96,7 @@ fromRationalZonePoint ZonePoint{..} =
 data SampleParams a
     = SampleParams
         { spSamples :: Samples
+        -- ^ How many iterations of taking samples?
         , spTolerance :: Tolerance a
+        -- ^ What is the acceptable tolerance?
         }
