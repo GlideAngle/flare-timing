@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 0d224d48d837a59505dfcc60df6f5be619bde888ccdedafc9e98b3d8853c499e
+-- hash: 63b3a977f35122fefa7117e53b1c2e2aebf388a4df5a3a243d63cfe1287f94bd
 
 name:           app-view
 version:        0.1.0
@@ -64,6 +64,7 @@ executable comp-view
       WireTypes.Validity
       WireTypes.ValidityWorking
       WireTypes.Zone
+      WireTypes.ZoneKind
       Paths_app_view
   hs-source-dirs:
       comp-view

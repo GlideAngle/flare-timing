@@ -135,7 +135,7 @@ xpZone =
         <+> hasName "altitude"
         )
     $ xpWrap
-        ( \(n, lat, lng, r, alt) -> Z.RawZone n lat lng r alt
+        ( \(n, lat, lng, r, alt) -> Z.RawZone n lat lng r Nothing alt
         , \Z.RawZone{..} -> (zoneName, lat, lng, radius, alt)
         )
     $ xp5Tuple

@@ -1,3 +1,4 @@
+import Text.Printf (printf)
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
 import Formatting ((%), fprint)
@@ -9,6 +10,7 @@ import Control.Monad.Except (ExceptT(..), runExceptT, lift)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
+import Flight.Units ()
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Fsdb
     ( parseComp
@@ -32,7 +34,9 @@ import Flight.Comp
     , findFsdb
     , ensureExt
     )
-import Flight.Zone.MkZones (Discipline(..))
+import Flight.Zone (Radius(..))
+import Flight.Zone.Raw (Give(..), zoneGive)
+import Flight.Zone.MkZones (Discipline(..), Zones(..))
 import Flight.Score (ScoreBackTime(..))
 import Flight.Scribe (writeComp)
 import ExtractInputOptions (CmdOptions(..), mkOptions)
@@ -48,20 +52,39 @@ main = do
     maybe (drive options) putStrLn err
 
 drive :: CmdOptions -> IO ()
-drive o = do
+drive CmdOptions{giveFraction = Nothing} =
+    fail
+    $ "Please supply give for the tolerance around control zones."
+    ++ " Flag --give-fraction is required and"
+    ++ " flag --give-distance is optional."
+drive o@CmdOptions{giveFraction = Just gf, giveDistance = gd} = do
     -- SEE: http://chrisdone.com/posts/measuring-duration-in-haskell
     start <- getTime Monotonic
     files <- findFsdb o
+
+    putStrLn $ "Using a give fraction of " ++ printf "%.5f" gf
+    case gd of
+        Nothing -> 
+            putStrLn "The give distance was not supplied"
+        Just gd' ->
+            putStrLn $ "Using a give distance of " ++ printf "%.3f" gd' ++ " m"
+
+    let give =
+            Give
+                { giveFraction = gf
+                , giveDistance = Radius . MkQuantity <$> gd
+                }
+
     if null files then putStrLn "Couldn't find any input files."
-                  else mapM_ go files
+                  else mapM_ (go give) files
     end <- getTime Monotonic
     fprint ("Extracting tasks completed in " % timeSpecs % "\n") start end
 
-go :: FsdbFile -> IO ()
-go fsdbFile@(FsdbFile fsdbPath) = do
+go :: Give -> FsdbFile -> IO ()
+go zg fsdbFile@(FsdbFile fsdbPath) = do
     contents <- readFile fsdbPath
     let contents' = dropWhile (/= '<') contents
-    settings <- runExceptT $ fsdbSettings (FsdbXml contents')
+    settings <- runExceptT $ fsdbSettings zg (FsdbXml contents')
     either print (writeComp (fsdbToComp fsdbFile)) settings
 
 fsdbComp :: FsdbXml -> ExceptT String IO Comp
@@ -115,14 +138,19 @@ fsdbTracks (FsdbXml contents) = do
     fs <- lift $ parseTracks contents
     ExceptT $ return fs
 
-fsdbSettings :: FsdbXml -> ExceptT String IO (CompSettings k)
-fsdbSettings fsdbXml = do
+fsdbSettings :: Give -> FsdbXml -> ExceptT String IO (CompSettings k)
+fsdbSettings zg fsdbXml = do
     c <- fsdbComp fsdbXml
     n <- fsdbNominal fsdbXml
     sb <- fsdbStopped fsdbXml
     ts <- fsdbTasks (discipline c) fsdbXml
     fs <- fsdbTaskFolders fsdbXml
     tps <- fsdbTracks fsdbXml
+
+    let ts' =
+            [ t{zones = z{raw = zoneGive zg rz}}
+            | t@Task{zones = z@Zones{raw = rz}} <- ts
+            ]
 
     let msg =
             "Extracted "
@@ -132,9 +160,11 @@ fsdbSettings fsdbXml = do
             ++ "\""
 
     lift . putStrLn $ msg
-    return CompSettings { comp = c { scoreBack = sb }
-                        , nominal = n
-                        , tasks = ts
-                        , taskFolders = fs
-                        , pilots = tps
-                        }
+    return
+        CompSettings
+            { comp = c { scoreBack = sb }
+            , nominal = n
+            , tasks = ts'
+            , taskFolders = fs
+            , pilots = tps
+            }

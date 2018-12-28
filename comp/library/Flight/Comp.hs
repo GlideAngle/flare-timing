@@ -173,7 +173,8 @@ data CompSettings k =
         , taskFolders :: [TaskFolder]
         , pilots :: [[PilotTrackLogFile]]
         }
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
 
 data Comp =
     Comp
@@ -186,7 +187,8 @@ data Comp =
         , utcOffset :: UtcOffset
         , scoreBack :: Maybe (ScoreBackTime (Quantity Double [u| s |]))
         }
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
 
 data Nominal =
     Nominal
@@ -197,7 +199,8 @@ data Nominal =
         -- ^ A mimimum distance awarded to pilots that bomb out for 'free'.
         , time :: NominalTime (Quantity Double [u| h |])
         }
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
 
 defaultNominal :: Nominal
 defaultNominal =
@@ -227,7 +230,8 @@ data Task k =
         -- ^ Pilots absent from this task.
         , stopped :: Maybe TaskStop
         }
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
 
 showTask :: Task k -> String
 showTask Task {taskName, zones, speedSection, zoneTimes, startGates} =
@@ -363,13 +367,28 @@ cmp a b =
         ("open", _) -> LT
         ("close", _) -> GT
 
-        -- Turnpoint fields
+        -- Turnpoint and ZoneKind fields
         ("zoneName", _) -> LT
+
         ("lat", "zoneName") -> GT
         ("lat", _) -> LT
+
         ("lng", "zoneName") -> GT
         ("lng", "lat") -> GT
         ("lng", _) -> LT
-        ("radius", _) -> GT
+
+        ("radius", "zoneName") -> GT
+        ("radius", "lat") -> GT
+        ("radius", "lng") -> GT
+        ("radius", "center") -> GT
+        ("radius", _) -> LT
+
+        ("give", "zoneName") -> GT
+        ("give", "lat") -> GT
+        ("give", "lng") -> GT
+        ("give", "radius") -> GT
+        ("give", _) -> LT
+
+        ("alt", _) -> GT
 
         _ -> compare a b
