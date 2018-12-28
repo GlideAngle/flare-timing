@@ -8,17 +8,10 @@ module WireTypes.Zone
     , showLng
     ) where
 
-import Control.Applicative (empty)
 import GHC.Generics (Generic)
-import Data.Aeson (Value(..), FromJSON(..))
-import Data.Scientific (Scientific, toRealFloat, fromRationalRepetend)
-import WireTypes.ZoneKind (TaskZones(..), Radius(..))
-
-newtype RawLat = RawLat Rational
-    deriving (Eq, Ord, Show)
-
-newtype RawLng = RawLng Rational
-    deriving (Eq, Ord, Show)
+import Data.Aeson (FromJSON(..))
+import WireTypes.ZoneKind
+    (TaskZones(..), Radius(..), RawLat(..), RawLng(..), showLat, showLng)
 
 data RawLatLng =
     RawLatLng
@@ -41,28 +34,6 @@ data Zones =
     Zones
         { raw :: [RawZone]
         , raceKind :: Maybe TaskZones
+        , openKind :: Maybe TaskZones
         }
     deriving (Eq, Ord, Show, Generic, FromJSON)
-
-fromSci :: Scientific -> Rational
-fromSci x = toRational (toRealFloat x :: Double)
-
-toSci :: Rational -> Scientific
-toSci x =
-    case fromRationalRepetend (Just 7) x of
-        Left (s, _) -> s
-        Right (s, _) -> s
-
-instance FromJSON RawLat where
-    parseJSON x@(Number _) = RawLat . fromSci <$> parseJSON x
-    parseJSON _ = empty
-
-instance FromJSON RawLng where
-    parseJSON x@(Number _) = RawLng . fromSci <$> parseJSON x
-    parseJSON _ = empty
-
-showLat :: RawLat -> String
-showLat (RawLat x) = (show . toSci $ x) ++ " °"
-
-showLng :: RawLng -> String
-showLng (RawLng x) = (show . toSci $ x) ++ " °"

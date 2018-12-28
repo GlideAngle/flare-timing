@@ -5,6 +5,10 @@ module WireTypes.ZoneKind
     , Incline(..)
     , Altitude(..)
     , Radius(..)
+    , RawLat(..)
+    , RawLng(..)
+    , showLat
+    , showLng
     , showRadius
     , showShape
     ) where
@@ -14,6 +18,39 @@ import Control.Applicative (empty)
 import Data.Foldable (asum)
 import Data.Aeson (Value(..), FromJSON(..), (.:), withObject)
 import qualified Data.Text as T
+import Data.Scientific (Scientific, toRealFloat, fromRationalRepetend)
+
+newtype RawLat = RawLat Rational
+    deriving (Eq, Ord, Show)
+
+newtype RawLng = RawLng Rational
+    deriving (Eq, Ord, Show)
+
+fromSci :: Scientific -> Rational
+fromSci x = toRational (toRealFloat x :: Double)
+
+toSci :: Rational -> Scientific
+toSci x =
+    case fromRationalRepetend (Just 7) x of
+        Left (s, _) -> s
+        Right (s, _) -> s
+
+instance FromJSON RawLat where
+    parseJSON x@(Number _) = RawLat . fromSci <$> parseJSON x
+    parseJSON _ = empty
+
+instance FromJSON RawLng where
+    parseJSON x@(Number _) = RawLng . fromSci <$> parseJSON x
+    parseJSON _ = empty
+
+showLat :: RawLat -> String
+showLat (RawLat x) = (show . toSci $ x) ++ " °"
+
+showLng :: RawLng -> String
+showLng (RawLng x) = (show . toSci $ x) ++ " °"
+
+newtype Target = Target (RawLat, RawLng)
+    deriving (Eq, Ord, Show)
 
 newtype TimeBonus = TimeBonus Double
     deriving (Eq, Ord, Show)
@@ -27,6 +64,22 @@ newtype Altitude = Altitude Double
 newtype Radius = Radius Double
     deriving (Eq, Ord, Show)
 
+instance FromJSON Target where
+    parseJSON x@(Array _) = do
+        xys <- parseJSON x
+        case xys of
+            [sLat, sLng] ->
+                case (reverse sLat, reverse sLng) of
+                    ( 'g' : 'e' : 'd' : ' ' : xs, 'g' : 'e' : 'd' : ' ' : ys) ->
+                        let lat = RawLat . fromSci . read . reverse $ xs
+                            lng = RawLng . fromSci . read . reverse $ ys
+                        in return $ Target (lat, lng)
+
+                    _ -> empty
+
+            _ -> empty
+    parseJSON _ = empty
+
 instance FromJSON TimeBonus where
     parseJSON x@(String _) = do
         s <- reverse . T.unpack <$> parseJSON x
@@ -39,7 +92,7 @@ instance FromJSON Incline where
     parseJSON x@(String _) = do
         s <- reverse . T.unpack <$> parseJSON x
         case s of
-            'g' :'e' :  'd' : ' ' : xs -> return . Incline . read . reverse $ xs
+            'g' : 'e' :  'd' : ' ' : xs -> return . Incline . read . reverse $ xs
             _ -> empty
     parseJSON _ = empty
 
@@ -58,6 +111,10 @@ instance FromJSON Radius where
             'm' : ' ' : xs -> return . Radius . read . reverse $ xs
             _ -> empty
     parseJSON _ = empty
+
+showTarget :: Target -> String
+showTarget (Target (lat, lng)) =
+    "(" ++ showLat lat ++ ", " ++ showLng lng ++ ")"
 
 showTimeBonus :: TimeBonus -> String
 showTimeBonus (TimeBonus r) =
@@ -85,6 +142,8 @@ data Shape
     | CutCone Incline Radius Altitude
     | CutSemiCylinder TimeBonus Radius Altitude
     | CutSemiCone Incline Radius Altitude
+    | Vector Target
+    | Star
     deriving (Eq, Ord, Show)
 
 data ZoneKind = ZoneKind Shape
@@ -123,6 +182,10 @@ showShape (CutSemiCone i r a) =
     ++ showRadius r
     ++ " at an altitude of "
     ++ showAltitude a
+showShape (Vector t) =
+    "vector targeting "
+    ++ showTarget t
+showShape Star = "star"
 
 instance FromJSON ZoneKind where
     parseJSON = withObject "ZoneKind" $ \o ->
@@ -170,11 +233,21 @@ instance FromJSON ZoneKind where
                 r <- sc .: "radius"
                 a <- sc .: "altitude"
                 return $ ZoneKind (CutSemiCone i r a)
+
+            , do
+                vc <- o .: "vector"
+                t <- vc .: "target"
+                return $ ZoneKind (Vector t)
+
+            , do
+                Object _ <- o .: "star"
+                return $ ZoneKind Star
             ]
 
 data TaskZones
     = TzEssIsGoal ZoneKind
     | TzEssIsNotGoal ZoneKind ZoneKind
+    | TzOpenDistance ZoneKind
     deriving (Eq, Ord, Show)
 
 instance FromJSON TaskZones where
@@ -188,4 +261,8 @@ instance FromJSON TaskZones where
             , do
                 g :: ZoneKind <- o .: "race-ess-is-goal"
                 return $ TzEssIsGoal g
+
+            , do
+                f :: ZoneKind <- o .: "open-free"
+                return $ TzOpenDistance f
             ]

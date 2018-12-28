@@ -12,6 +12,7 @@ module WireTypes.Comp
     , getRaceRawZones
     , getGoalShape
     , getEssShape
+    , getOpenShape
     , getSpeedSection
     , getOpenClose
     , getStartGates
@@ -177,23 +178,35 @@ getStartGates Task{startGates = gs} = gs
 getAllRawZones :: Task -> [RawZone]
 getAllRawZones Task{zones = Zones{raw}} = raw
 
-getGoalShape :: Task -> Shape
+getGoalShape :: Task -> Maybe Shape
 getGoalShape Task{zones = Zones{raceKind}} =
-    maybe
-        Circle
-        (\case
-            TzEssIsGoal (ZoneKind g) -> g
-            TzEssIsNotGoal _ (ZoneKind g) -> g)
-        raceKind
+    join $
+    (\case
+        TzEssIsGoal (ZoneKind g) -> Just g
+        TzEssIsNotGoal _ (ZoneKind g) -> Just g
+        TzOpenDistance _ -> Nothing)
+    <$> raceKind
 
 getEssShape :: Task -> Maybe Shape
 getEssShape Task{zones = Zones{raceKind}} =
     join $
     (\case
         TzEssIsGoal _ -> Nothing
-        TzEssIsNotGoal (ZoneKind e) _ -> Just e)
+        TzEssIsNotGoal (ZoneKind e) _ -> Just e
+        TzOpenDistance _ -> Nothing)
     <$>
     raceKind
+
+
+getOpenShape :: Task -> Maybe Shape
+getOpenShape Task{zones = Zones{openKind}} =
+    join $
+    (\case
+        TzEssIsGoal _ -> Nothing
+        TzEssIsNotGoal _ _ -> Nothing
+        TzOpenDistance (ZoneKind o) -> Just o)
+    <$>
+    openKind
 
 getRaceRawZones :: Task -> [RawZone]
 getRaceRawZones Task{zones = Zones{raw = tps}, speedSection = ss} =
