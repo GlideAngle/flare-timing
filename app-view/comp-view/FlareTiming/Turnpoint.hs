@@ -5,6 +5,7 @@ module FlareTiming.Turnpoint
     , getLat
     , getLng
     , getRadius
+    , getGive
     , getAlt
     ) where
 
@@ -29,6 +30,9 @@ getLng RawZone{lng} = T.pack . showLng $ lng
 
 getRadius :: RawZone -> T.Text
 getRadius RawZone{radius} = T.pack . showRadius $ radius
+
+getGive :: RawZone -> T.Text
+getGive RawZone{give} = maybe "" (T.pack . showRadius) give
 
 getAlt :: RawZone -> T.Text
 getAlt RawZone{alt} = maybe "" (T.pack . showAlt) alt

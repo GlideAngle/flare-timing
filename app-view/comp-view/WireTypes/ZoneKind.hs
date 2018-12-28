@@ -130,9 +130,8 @@ showAlt (Alt r) =
     show (truncate r :: Integer) ++ " m"
 
 showRadius :: Radius -> String
-showRadius (Radius r)
-    | r < 1000 = show (truncate r :: Integer) ++ " m"
-    | otherwise = show (truncate (r / 1000) :: Integer) ++ " km"
+showRadius (Radius r) =
+    show (truncate r :: Integer) ++ " m"
 
 data Shape
     = Line

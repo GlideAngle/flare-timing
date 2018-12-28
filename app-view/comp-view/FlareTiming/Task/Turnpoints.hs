@@ -91,6 +91,7 @@ tableTurnpoints tz x taskLegs = do
                     elClass "th" "th-tp-distance-task" $ text "Task"
                     elClass "th" "th-tp-name" $ text "Name"
                     elClass "th" "th-tp-radius" $ text "Radius"
+                    elClass "th" "th-tp-give" $ text "Give"
                     elClass "th" "th-tp-lat" $ text "Latitude"
                     elClass "th" "th-tp-lng" $ text "Longitude"
                     elClass "th" "th-tp-open" $ text "Open"
@@ -101,7 +102,7 @@ tableTurnpoints tz x taskLegs = do
                 simpleList (fmap (zip [1..]) ys) (row tz len ss)
 
             el "tfoot" . dyn . ffor2 goal open $ (\g o ->
-                let tr = el "tr" . elAttr "td" ("colspan" =: "9") in
+                let tr = el "tr" . elAttr "td" ("colspan" =: "10") in
                 case (g, o) of
                     (Just _, Nothing) -> do
                         tr $ text "† Start of the speed section"
@@ -180,13 +181,14 @@ row tz len ss iz = do
                 el "tr" $ do
                     el "td" $ text ""
                     elClass "td" "td-tp-distance-leg" . text $ showTaskDistance leg'
-                    elAttr "td" ("colspan" =: "7") $ text "")
+                    elAttr "td" ("colspan" =: "8") $ text "")
 
     elDynClass "tr" rowTextColor $ do
         el "td" $ dynText $ (\ix -> (T.pack . show $ ix) <> rowIntro) <$> i
         elClass "td" "td-tp-distance-task" . dynText $ showTaskDistance <$> s
         elClass "td" "td-tp-name" . dynText $ TP.getName <$> z
         elClass "td" "td-tp-radius" . dynText $ TP.getRadius <$> z
+        elClass "td" "td-tp-give" . dynText $ TP.getGive <$> z
         elClass "td" "td-tp-lat" . dynText $ TP.getLat <$> z
         elClass "td" "td-tp-lng" . dynText $ TP.getLng <$> z
         elClass "td" "td-tp-open" . dynText $ showOpen tz <$> oc
