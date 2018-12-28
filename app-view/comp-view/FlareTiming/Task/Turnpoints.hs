@@ -21,9 +21,12 @@ zero = TaskDistance 0
 unknownLegs :: [TaskDistance]
 unknownLegs = repeat zero
 
-padLegs :: SpeedSection -> [TaskDistance] -> [TaskDistance]
-padLegs Nothing xs = xs
-padLegs (Just (start, _)) xs =
+openPad :: [TaskDistance] -> [TaskDistance]
+openPad xs = TaskDistance 0 : xs
+
+speedPad :: SpeedSection -> [TaskDistance] -> [TaskDistance]
+speedPad Nothing xs = xs
+speedPad (Just (start, _)) xs =
     prolog <> xs <> unknownLegs
     where
         -- NOTE: The speed section uses 1-based indexing and the legs are
@@ -70,11 +73,14 @@ tableTurnpoints tz x taskLegs = do
     let ss = getSpeedSection <$> x
     let oc = (\case [t] -> repeat t; ts -> ts) . getOpenClose <$> x
 
-    pad <- sample . current $ padLegs <$> ss
     len <- sample . current $ fromIntegral . length <$> zs
 
-    let legs' = (maybe unknownLegs (pad . legs)) <$> taskLegs
-    let legsSum' = (maybe unknownLegs (pad . legsSum)) <$> taskLegs
+    (legs', legsSum') <- sample . current $ ffor ss (\ss' ->
+            let pad = case ss' of Just _ -> speedPad ss'; _ -> openPad
+                pl = (maybe unknownLegs (pad . legs)) <$> taskLegs
+                ps = (maybe unknownLegs (pad . legsSum)) <$> taskLegs
+            in (pl, ps))
+
     let dd = zipDynWith zip legs' legsSum'
     let ys = ffor3 oc dd zs $ zipWith3 (\a b c -> (a, b, c))
 
