@@ -98,19 +98,10 @@ tableScore utcOffset ln dnf vy wg pt tp xs = do
                 elClass "th" "th-time" $ text "Time"
                 elClass "th" "th-speed" $ text "Velocity"
 
-                elClass "th" "th-best-distance" $ do
-                    text "Reach"
-                    el "sub" $ text "†"
-
+                elClass "th" "th-best-distance" $ text "Reach †"
                 elClass "th" "th-landed-distance" $ text "Landed"
-
-                elClass "th" "th-reach-points" $ do
-                    text "Reach"
-                    el "sub" $ text "‡"
-
-                elClass "th" "th-effort-points" $ do
-                    text "Effort"
-                    el "sub" $ text "◊"
+                elClass "th" "th-reach-points" $ text "Reach ‡"
+                elClass "th" "th-effort-points" $ text "Effort §"
 
                 elClass "th" "th-distance-points" $ text "Subtotal"
                 elClass "th" "th-lead-points" $ text "Lead"
@@ -274,7 +265,7 @@ tableScore utcOffset ln dnf vy wg pt tp xs = do
         el "tfoot" $ do
             el "tr" $
                 elAttr "td" ("colspan" =: "15")
-                    $ text "* Any points so annotated, are the maximum attainable."
+                    $ text "* Any points so annotated are the maximum attainable."
             el "tr" $
                 elAttr "td" ("colspan" =: "15")
                     $ text "† How far along the course, reaching goal or elsewhere. The distance reached in the air can be further than the distance at landing."
@@ -283,7 +274,7 @@ tableScore utcOffset ln dnf vy wg pt tp xs = do
                     $ text "‡ Points award for reach are also called linear distance points."
             el "tr" $
                 elAttr "td" ("colspan" =: "15")
-                    $ text "◊ Points award for effort are also called distance difficulty points."
+                    $ text "§ Points award for effort are also called distance difficulty points."
     return ()
 
 pointRow
