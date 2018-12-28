@@ -91,7 +91,7 @@ tableTurnpoints tz x taskLegs = do
                     elClass "th" "th-tp-distance-task" $ text "Task"
                     elClass "th" "th-tp-name" $ text "Name"
                     elClass "th" "th-tp-radius" $ text "Radius"
-                    elClass "th" "th-tp-give" $ text "Give"
+                    elClass "th" "th-tp-give" $ text "Give §"
                     elClass "th" "th-tp-lat" $ text "Latitude"
                     elClass "th" "th-tp-lng" $ text "Longitude"
                     elClass "th" "th-tp-open" $ text "Open"
@@ -101,16 +101,18 @@ tableTurnpoints tz x taskLegs = do
             _ <- el "tbody" $ do
                 simpleList (fmap (zip [1..]) ys) (row tz len ss)
 
-            el "tfoot" . dyn . ffor2 goal open $ (\g o ->
-                let tr = el "tr" . elAttr "td" ("colspan" =: "10") in
-                case (g, o) of
-                    (Just _, Nothing) -> do
-                        tr $ text "† Start of the speed section"
-                        tr . dynText $ essFootnote <$> ess
-                        tr . dynText $ goalFootnote <$> goal
-                    (Nothing, Just _) -> tr . dynText $ openFootnote <$> open
-                    (Just _, Just _) -> return ()
-                    (Nothing, Nothing) -> return ())
+            let tr = el "tr" . elAttr "td" ("colspan" =: "10")
+            el "tfoot" $ do
+                dyn_ . ffor2 goal open $ (\g o ->
+                    case (g, o) of
+                        (Just _, Nothing) -> do
+                            tr . dynText $ goalFootnote <$> goal
+                            tr $ text "† Start of the speed section"
+                            tr . dynText $ essFootnote <$> ess
+                        (Nothing, Just _) -> tr . dynText $ openFootnote <$> open
+                        (Just _, Just _) -> return ()
+                        (Nothing, Nothing) -> return ())
+                tr $ text " § Give in the radius once the tolerance has been applied"
 
     return ()
 
