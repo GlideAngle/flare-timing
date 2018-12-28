@@ -15,6 +15,9 @@ import Data.Foldable (asum)
 import Data.Aeson (Value(..), FromJSON(..), (.:), withObject)
 import qualified Data.Text as T
 
+newtype TimeBonus = TimeBonus Double
+    deriving (Eq, Ord, Show)
+
 newtype Incline = Incline Double
     deriving (Eq, Ord, Show)
 
@@ -23,6 +26,14 @@ newtype Altitude = Altitude Double
 
 newtype Radius = Radius Double
     deriving (Eq, Ord, Show)
+
+instance FromJSON TimeBonus where
+    parseJSON x@(String _) = do
+        s <- reverse . T.unpack <$> parseJSON x
+        case s of
+            'm' : ' ' : '/' : ' ' : 's' : ' ' : xs -> return . TimeBonus . read . reverse $ xs
+            _ -> empty
+    parseJSON _ = empty
 
 instance FromJSON Incline where
     parseJSON x@(String _) = do
@@ -48,6 +59,10 @@ instance FromJSON Radius where
             _ -> empty
     parseJSON _ = empty
 
+showTimeBonus :: TimeBonus -> String
+showTimeBonus (TimeBonus r) =
+    printf "%.3f s/m" r
+
 showIncline :: Incline -> String
 showIncline (Incline r) =
     printf "%.3f °" r
@@ -66,9 +81,9 @@ data Shape
     | Circle
     | SemiCircle
     | Cylinder
-    | CutCylinder
-    | CutCone
-    | CutSemiCylinder
+    | CutCylinder TimeBonus Radius Altitude
+    | CutCone Incline Radius Altitude
+    | CutSemiCylinder TimeBonus Radius Altitude
     | CutSemiCone Incline Radius Altitude
     deriving (Eq, Ord, Show)
 
@@ -80,11 +95,29 @@ showShape Line = "line"
 showShape Circle = "circle"
 showShape SemiCircle = "semicircle"
 showShape Cylinder = "cylinder"
-showShape CutCylinder = "cut cylinder"
-showShape CutCone = "cut cone"
-showShape CutSemiCylinder = "cut semi-cylinder"
+showShape (CutCylinder t r a) =
+    "cut cylinder with a time bonus of "
+    ++ showTimeBonus t
+    ++ " and a radius of "
+    ++ showRadius r
+    ++ " at an altitude of "
+    ++ showAltitude a
+showShape (CutCone i r a) =
+    "cut cone with an incline of "
+    ++ showIncline i
+    ++ " and a radius of "
+    ++ showRadius r
+    ++ " at an altitude of "
+    ++ showAltitude a
+showShape (CutSemiCylinder t r a) =
+    "cut semi-cylinder with a time bonus of "
+    ++ showTimeBonus t
+    ++ " and a radius of "
+    ++ showRadius r
+    ++ " at an altitude of "
+    ++ showAltitude a
 showShape (CutSemiCone i r a) =
-    "semi-cone with an incline of "
+    "cut semi-cone with an incline of "
     ++ showIncline i
     ++ " and a radius of "
     ++ showRadius r
@@ -97,24 +130,40 @@ instance FromJSON ZoneKind where
             [ do
                 Object _ <- o .: "line"
                 return $ ZoneKind { goalShape = Line }
+
             , do
                 Object _ <- o .: "circle"
                 return $ ZoneKind { goalShape = Circle }
+
             , do
                 Object _ <- o .: "semicircle"
                 return $ ZoneKind { goalShape = SemiCircle }
+
             , do
                 Object _ <- o .: "cylinder"
                 return $ ZoneKind { goalShape = Cylinder }
+
             , do
-                Object _ <- o .: "cut-cylinder"
-                return $ ZoneKind { goalShape = CutCylinder }
+                cy <- o .: "cut-cylinder"
+                t <- cy .: "time-bonus"
+                r <- cy .: "radius"
+                a <- cy .: "altitude"
+                return $ ZoneKind { goalShape = CutCylinder t r a }
+
             , do
-                Object _ <- o .: "cut-cone"
-                return $ ZoneKind { goalShape = CutCone }
+                cc <- o .: "cut-cone"
+                i <- cc .: "incline"
+                r <- cc .: "radius"
+                a <- cc .: "altitude"
+                return $ ZoneKind { goalShape = CutCone i r a }
+
             , do
-                Object _ <- o .: "cut-semi-cylinder"
-                return $ ZoneKind { goalShape = CutSemiCylinder }
+                cs <- o .: "cut-semi-cylinder"
+                t <- cs .: "time-bonus"
+                r <- cs .: "radius"
+                a <- cs .: "altitude"
+                return $ ZoneKind { goalShape = CutSemiCylinder t r a }
+
             , do
                 sc <- o .: "cut-semi-cone"
                 i <- sc .: "incline"
