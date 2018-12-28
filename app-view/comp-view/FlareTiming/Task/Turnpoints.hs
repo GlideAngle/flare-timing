@@ -94,12 +94,23 @@ tableTurnpoints tz x taskLegs = do
                 simpleList (fmap (zip [1..]) ys) (row tz len ss)
 
             el "tfoot" $ do
-                el "tr" . elAttr "td" ("colspan" =: "8")
-                    $ text "† Start of the speed section"
-                el "tr" .  elAttr "td" ("colspan" =: "8") . dynText
-                    $ essFootnote <$> ess
-                el "tr" .  elAttr "td" ("colspan" =: "8") . dynText
-                    $ zipDynWith goalOrOpenFootnote goal open
+                dyn $ ffor2 goal open (\g o ->
+                    case (g, o) of
+                        (Just _, Nothing) -> do
+                            el "tr" . elAttr "td" ("colspan" =: "8")
+                                $ text "† Start of the speed section"
+                            el "tr" .  elAttr "td" ("colspan" =: "8") . dynText
+                                $ essFootnote <$> ess
+                            el "tr" .  elAttr "td" ("colspan" =: "8") . dynText
+                                $ goalFootnote <$> goal
+
+                        (Nothing, Just _) -> do
+                            el "tr" .  elAttr "td" ("colspan" =: "8") . dynText
+                                $ openFootnote <$> open
+
+                        (Just _, Just _) -> return ()
+
+                        (Nothing, Nothing) -> return ())
 
     return ()
 
@@ -107,11 +118,14 @@ essFootnote :: Maybe Shape -> T.Text
 essFootnote Nothing = "‡ End of the speed section"
 essFootnote (Just s) = "‡ End of the speed section is a " <> (T.pack . showShape $ s)
 
-goalOrOpenFootnote :: Maybe Shape -> Maybe Shape -> T.Text
-goalOrOpenFootnote Nothing (Just s@Vector{}) = "* Open distance on a heading " <> (T.pack . showShape $ s)
-goalOrOpenFootnote Nothing (Just Star{}) = "* Open distance in any direction"
-goalOrOpenFootnote (Just s) _ = "* Goal is a " <> (T.pack . showShape $ s)
-goalOrOpenFootnote Nothing _ = ""
+goalFootnote :: Maybe Shape -> T.Text
+goalFootnote (Just s) = "* Goal is a " <> (T.pack . showShape $ s)
+goalFootnote Nothing = ""
+
+openFootnote :: Maybe Shape -> T.Text
+openFootnote (Just s@Vector{}) = "* Open distance on a heading " <> (T.pack . showShape $ s)
+openFootnote (Just Star{}) = "* Open distance in any direction"
+openFootnote _ = ""
 
 tableStartGates
     :: MonadWidget t m
