@@ -95,12 +95,13 @@ tableTurnpoints tz x taskLegs = do
                     elClass "th" "th-tp-lng" $ text "Longitude"
                     elClass "th" "th-tp-open" $ text "Open"
                     elClass "th" "th-tp-close" $ text "Close"
+                    elClass "th" "th-tp-altitude" $ text "Altitude"
 
             _ <- el "tbody" $ do
                 simpleList (fmap (zip [1..]) ys) (row tz len ss)
 
             el "tfoot" . dyn . ffor2 goal open $ (\g o ->
-                let tr = el "tr" . elAttr "td" ("colspan" =: "8") in
+                let tr = el "tr" . elAttr "td" ("colspan" =: "9") in
                 case (g, o) of
                     (Just _, Nothing) -> do
                         tr $ text "† Start of the speed section"
@@ -179,7 +180,7 @@ row tz len ss iz = do
                 el "tr" $ do
                     el "td" $ text ""
                     elClass "td" "td-tp-distance-leg" . text $ showTaskDistance leg'
-                    elAttr "td" ("colspan" =: "6") $ text "")
+                    elAttr "td" ("colspan" =: "7") $ text "")
 
     elDynClass "tr" rowTextColor $ do
         el "td" $ dynText $ (\ix -> (T.pack . show $ ix) <> rowIntro) <$> i
@@ -190,6 +191,7 @@ row tz len ss iz = do
         elClass "td" "td-tp-lng" . dynText $ TP.getLng <$> z
         elClass "td" "td-tp-open" . dynText $ showOpen tz <$> oc
         elClass "td" "td-tp-close" . dynText $ showClose tz <$> oc
+        elClass "td" "td-tp-altitude" . dynText $ TP.getAlt <$> z
 
 rowColor :: SpeedSection -> Integer -> T.Text
 rowColor Nothing _ = ""

@@ -4,14 +4,11 @@ module WireTypes.Zone
     , RawLat(..)
     , RawLng(..)
     , RawLatLng(..)
-    , showLat
-    , showLng
     ) where
 
 import GHC.Generics (Generic)
 import Data.Aeson (FromJSON(..))
-import WireTypes.ZoneKind
-    (TaskZones(..), Radius(..), RawLat(..), RawLng(..), showLat, showLng)
+import WireTypes.ZoneKind (TaskZones(..), Radius(..), RawLat(..), RawLng(..), Alt(..))
 
 data RawLatLng =
     RawLatLng
@@ -27,6 +24,7 @@ data RawZone =
         , lat :: RawLat
         , lng :: RawLng
         , radius :: Radius
+        , alt :: Maybe Alt
         }
     deriving (Eq, Ord, Show, Generic, FromJSON)
 

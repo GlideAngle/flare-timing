@@ -3,7 +3,7 @@ module WireTypes.ZoneKind
     , ZoneKind(..)
     , TaskZones(..)
     , Incline(..)
-    , Altitude(..)
+    , Alt(..)
     , Radius(..)
     , RawLat(..)
     , RawLng(..)
@@ -11,6 +11,7 @@ module WireTypes.ZoneKind
     , showLng
     , showRadius
     , showShape
+    , showAlt
     ) where
 
 import Text.Printf (printf)
@@ -58,7 +59,7 @@ newtype TimeBonus = TimeBonus Double
 newtype Incline = Incline Double
     deriving (Eq, Ord, Show)
 
-newtype Altitude = Altitude Double
+newtype Alt = Alt Double
     deriving (Eq, Ord, Show)
 
 newtype Radius = Radius Double
@@ -96,11 +97,11 @@ instance FromJSON Incline where
             _ -> empty
     parseJSON _ = empty
 
-instance FromJSON Altitude where
+instance FromJSON Alt where
     parseJSON x@(String _) = do
         s <- reverse . T.unpack <$> parseJSON x
         case s of
-            'm' : ' ' : xs -> return . Altitude . read . reverse $ xs
+            'm' : ' ' : xs -> return . Alt . read . reverse $ xs
             _ -> empty
     parseJSON _ = empty
 
@@ -124,8 +125,8 @@ showIncline :: Incline -> String
 showIncline (Incline r) =
     printf "%.3f °" r
 
-showAltitude :: Altitude -> String
-showAltitude (Altitude r) =
+showAlt :: Alt -> String
+showAlt (Alt r) =
     show (truncate r :: Integer) ++ " m"
 
 showRadius :: Radius -> String
@@ -138,10 +139,10 @@ data Shape
     | Circle
     | SemiCircle
     | Cylinder
-    | CutCylinder TimeBonus Radius Altitude
-    | CutCone Incline Radius Altitude
-    | CutSemiCylinder TimeBonus Radius Altitude
-    | CutSemiCone Incline Radius Altitude
+    | CutCylinder TimeBonus Radius Alt
+    | CutCone Incline Radius Alt
+    | CutSemiCylinder TimeBonus Radius Alt
+    | CutSemiCone Incline Radius Alt
     | Vector Target
     | Star
     deriving (Eq, Ord, Show)
@@ -160,28 +161,28 @@ showShape (CutCylinder t r a) =
     ++ " and a radius of "
     ++ showRadius r
     ++ " at an altitude of "
-    ++ showAltitude a
+    ++ showAlt a
 showShape (CutCone i r a) =
     "cut cone with an incline of "
     ++ showIncline i
     ++ " and a radius of "
     ++ showRadius r
     ++ " at an altitude of "
-    ++ showAltitude a
+    ++ showAlt a
 showShape (CutSemiCylinder t r a) =
     "cut semi-cylinder with a time bonus of "
     ++ showTimeBonus t
     ++ " and a radius of "
     ++ showRadius r
     ++ " at an altitude of "
-    ++ showAltitude a
+    ++ showAlt a
 showShape (CutSemiCone i r a) =
     "cut semi-cone with an incline of "
     ++ showIncline i
     ++ " and a radius of "
     ++ showRadius r
     ++ " at an altitude of "
-    ++ showAltitude a
+    ++ showAlt a
 showShape (Vector t) =
     "vector targeting "
     ++ showTarget t
