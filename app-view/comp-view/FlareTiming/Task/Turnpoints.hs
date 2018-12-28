@@ -1,6 +1,5 @@
 module FlareTiming.Task.Turnpoints (tableTask) where
 
-import Debug.Trace
 import Reflex.Dom
 import qualified Data.Text as T (Text, pack)
 import Data.Time.LocalTime (TimeZone)
@@ -92,7 +91,7 @@ tableTurnpoints tz x taskLegs = do
                     elClass "th" "th-tp-close" $ text "Close"
 
             _ <- el "tbody" $ do
-                simpleList (fmap (zip [1..]) ys) (row tz (traceShow len len) ss)
+                simpleList (fmap (zip [1..]) ys) (row tz len ss)
 
             el "tfoot" $ do
                 el "tr" . elAttr "td" ("colspan" =: "8")
