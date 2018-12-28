@@ -12,6 +12,7 @@ import WireTypes.Comp
     )
 import WireTypes.Route (TaskDistance(..), TaskLegs(..), showTaskDistance)
 import WireTypes.Zone (RawZone(..))
+import WireTypes.ZoneKind (showShape)
 import qualified FlareTiming.Turnpoint as TP
 import FlareTiming.Time (showT, timeZone)
 
@@ -100,7 +101,7 @@ tableTurnpoints tz x taskLegs = do
                         $ text "‡ End of the speed section"
                 el "tr" $
                     elAttr "td" ("colspan" =: "8") . dynText
-                        $ (\s -> "* Goal is a " <> s) . T.pack . show <$> goal
+                        $ (\s -> "* Goal is a " <> s) . T.pack . showShape <$> goal
 
     return ()
 

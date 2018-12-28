@@ -30,7 +30,8 @@ import qualified FlareTiming.Map.Leaflet as L
     )
 import WireTypes.Comp (Task(..), SpeedSection, getAllRawZones)
 import WireTypes.Zone
-    (Zones(..), RawZone(..), RawLatLng(..), RawLat(..), RawLng(..), Radius(..))
+    (Zones(..), RawZone(..), RawLatLng(..), RawLat(..), RawLng(..))
+import WireTypes.ZoneKind (Radius(..))
 import WireTypes.Route
     ( OptimalRoute, TrackLine
     , TaskRoute(..), TaskRouteSubset(..), SpeedRoute(..)

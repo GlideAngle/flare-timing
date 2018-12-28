@@ -2,10 +2,64 @@ module WireTypes.ZoneKind
     ( Shape(..)
     , ZoneKind(..)
     , TaskZones(..)
+    , Incline(..)
+    , Altitude(..)
+    , Radius(..)
+    , showRadius
+    , showShape
     ) where
 
+import Text.Printf (printf)
+import Control.Applicative (empty)
 import Data.Foldable (asum)
 import Data.Aeson (Value(..), FromJSON(..), (.:), withObject)
+import qualified Data.Text as T
+
+newtype Incline = Incline Double
+    deriving (Eq, Ord, Show)
+
+newtype Altitude = Altitude Double
+    deriving (Eq, Ord, Show)
+
+newtype Radius = Radius Double
+    deriving (Eq, Ord, Show)
+
+instance FromJSON Incline where
+    parseJSON x@(String _) = do
+        s <- reverse . T.unpack <$> parseJSON x
+        case s of
+            'g' :'e' :  'd' : ' ' : xs -> return . Incline . read . reverse $ xs
+            _ -> empty
+    parseJSON _ = empty
+
+instance FromJSON Altitude where
+    parseJSON x@(String _) = do
+        s <- reverse . T.unpack <$> parseJSON x
+        case s of
+            'm' : ' ' : xs -> return . Altitude . read . reverse $ xs
+            _ -> empty
+    parseJSON _ = empty
+
+instance FromJSON Radius where
+    parseJSON x@(String _) = do
+        s <- reverse . T.unpack <$> parseJSON x
+        case s of
+            'm' : ' ' : xs -> return . Radius . read . reverse $ xs
+            _ -> empty
+    parseJSON _ = empty
+
+showIncline :: Incline -> String
+showIncline (Incline r) =
+    printf "%.3f °" r
+
+showAltitude :: Altitude -> String
+showAltitude (Altitude r) =
+    show (truncate r :: Integer) ++ " m"
+
+showRadius :: Radius -> String
+showRadius (Radius r)
+    | r < 1000 = show (truncate r :: Integer) ++ " m"
+    | otherwise = show (truncate (r / 1000) :: Integer) ++ " km"
 
 data Shape
     = Line
@@ -15,11 +69,27 @@ data Shape
     | CutCylinder
     | CutCone
     | CutSemiCylinder
-    | CutSemiCone
+    | CutSemiCone Incline Radius Altitude
     deriving (Eq, Ord, Show)
 
 data ZoneKind = ZoneKind { goalShape :: Shape }
     deriving (Eq, Ord, Show)
+
+showShape :: Shape -> String
+showShape Line = "line"
+showShape Circle = "circle"
+showShape SemiCircle = "semicircle"
+showShape Cylinder = "cylinder"
+showShape CutCylinder = "cut cylinder"
+showShape CutCone = "cut cone"
+showShape CutSemiCylinder = "cut semi-cylinder"
+showShape (CutSemiCone i r a) =
+    "semi-cone with an incline of "
+    ++ showIncline i
+    ++ " and a radius of "
+    ++ showRadius r
+    ++ " at an altitude of "
+    ++ showAltitude a
 
 instance FromJSON ZoneKind where
     parseJSON = withObject "ZoneKind" $ \o ->
@@ -46,8 +116,11 @@ instance FromJSON ZoneKind where
                 Object _ <- o .: "cut-semi-cylinder"
                 return $ ZoneKind { goalShape = CutSemiCylinder }
             , do
-                Object _ <- o .: "cut-semi-cone"
-                return $ ZoneKind { goalShape = CutSemiCone }
+                sc <- o .: "cut-semi-cone"
+                i <- sc .: "incline"
+                r <- sc .: "radius"
+                a <- sc .: "altitude"
+                return ZoneKind {goalShape = CutSemiCone i r a}
             ]
 
 data TaskZones

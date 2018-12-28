@@ -4,18 +4,15 @@ module WireTypes.Zone
     , RawLat(..)
     , RawLng(..)
     , RawLatLng(..)
-    , Radius(..)
-    , showRadius
     , showLat
     , showLng
     ) where
 
 import Control.Applicative (empty)
 import GHC.Generics (Generic)
-import qualified Data.Text as T
 import Data.Aeson (Value(..), FromJSON(..))
 import Data.Scientific (Scientific, toRealFloat, fromRationalRepetend)
-import WireTypes.ZoneKind (TaskZones(..))
+import WireTypes.ZoneKind (TaskZones(..), Radius(..))
 
 newtype RawLat = RawLat Rational
     deriving (Eq, Ord, Show)
@@ -30,9 +27,6 @@ data RawLatLng =
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass FromJSON
-
-newtype Radius = Radius Double
-    deriving (Eq, Ord, Show)
 
 data RawZone =
     RawZone
@@ -59,14 +53,6 @@ toSci x =
         Left (s, _) -> s
         Right (s, _) -> s
 
-instance FromJSON Radius where
-    parseJSON x@(String _) = do
-        s <- reverse . T.unpack <$> parseJSON x
-        case s of
-            'm' : ' ' : xs -> return . Radius . read . reverse $ xs
-            _ -> empty
-    parseJSON _ = empty
-
 instance FromJSON RawLat where
     parseJSON x@(Number _) = RawLat . fromSci <$> parseJSON x
     parseJSON _ = empty
@@ -74,11 +60,6 @@ instance FromJSON RawLat where
 instance FromJSON RawLng where
     parseJSON x@(Number _) = RawLng . fromSci <$> parseJSON x
     parseJSON _ = empty
-
-showRadius :: Radius -> String
-showRadius (Radius r)
-    | r < 1000 = show (truncate r :: Integer) ++ " m"
-    | otherwise = show (truncate (r / 1000) :: Integer) ++ " km"
 
 showLat :: RawLat -> String
 showLat (RawLat x) = (show . toSci $ x) ++ " °"
