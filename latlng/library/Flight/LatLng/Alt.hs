@@ -15,7 +15,7 @@ newtype Alt a = Alt a deriving (Eq, Ord, Show)
 instance
     (q ~ Quantity Double [u| m |])
     => DefaultDecimalPlaces (Alt q) where
-    defdp _ = DecimalPlaces 8
+    defdp _ = DecimalPlaces 3
 
 instance
     (q ~ Quantity Double [u| m |])

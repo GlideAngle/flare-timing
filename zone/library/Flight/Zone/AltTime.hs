@@ -11,7 +11,7 @@ import Data.Via.UnitsOfMeasure (ViaQ(..))
 
 type QAltTime a u = AltTime (Quantity a u)
 
--- | An incline such as the incline component of a conical zone.
+-- | A time bonus for altitude.
 newtype AltTime a = AltTime a
     deriving (Eq, Ord, Show)
 

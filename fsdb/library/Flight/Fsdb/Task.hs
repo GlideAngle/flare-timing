@@ -11,8 +11,8 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Text.XML.HXT.Arrow.Pickle
     ( XmlPickler(..), PU(..)
     , xpickle, unpickleDoc, xpWrap, xpFilterAttr, xpElem, xpAttr, xpAlt
-    , xpText, xpPair, xpTriple, xp4Tuple, xpInt, xpTrees, xpAttrFixed, xpSeq'
-    , xpPrim
+    , xpText, xpPair, xpTriple, xp5Tuple, xpInt, xpTrees, xpAttrFixed, xpSeq'
+    , xpPrim, xpAttrImplied
     )
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
 import Text.XML.HXT.Core
@@ -65,7 +65,7 @@ instance (u ~ Quantity Double [u| m |]) => XmlPickler (Radius u) where
 
 keyMap :: [KeyPilot] -> Map PilotId Pilot
 keyMap = fromList . fmap (\(KeyPilot x) -> x)
-                        
+
 unKeyPilot :: Map PilotId Pilot -> PilotId -> Pilot
 unKeyPilot ps k@(PilotId ip) =
     findWithDefault (Pilot (k, PilotName ip)) k ps
@@ -132,16 +132,18 @@ xpZone =
         <+> hasName "lat"
         <+> hasName "lon"
         <+> hasName "radius"
+        <+> hasName "altitude"
         )
     $ xpWrap
-        ( \(n, lat, lng, r) -> Z.RawZone n lat lng r
-        , \Z.RawZone{..} -> (zoneName, lat, lng, radius)
+        ( \(n, lat, lng, r, alt) -> Z.RawZone n lat lng r alt
+        , \Z.RawZone{..} -> (zoneName, lat, lng, radius, alt)
         )
-    $ xp4Tuple
+    $ xp5Tuple
         (xpAttr "id" xpText)
         (xpAttr "lat" xpickle)
         (xpAttr "lon" xpickle)
         (xpAttr "radius" xpickle)
+        (xpAttrImplied "altitude" xpickle)
 
 xpHeading :: PU (LatLng Rational [u| deg |])
 xpHeading =
