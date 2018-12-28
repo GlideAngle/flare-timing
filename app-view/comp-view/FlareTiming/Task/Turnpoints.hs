@@ -8,11 +8,11 @@ import Data.Time.LocalTime (TimeZone)
 import WireTypes.Comp
     (Task(..), SpeedSection, StartGate(..), UtcOffset(..), OpenClose(..)
     , getAllRawZones, getSpeedSection, getOpenClose, getStartGates
-    , getGoalShape
+    , getGoalShape, getEssShape
     )
 import WireTypes.Route (TaskDistance(..), TaskLegs(..), showTaskDistance)
 import WireTypes.Zone (RawZone(..))
-import WireTypes.ZoneKind (showShape)
+import WireTypes.ZoneKind (Shape(..), showShape)
 import qualified FlareTiming.Turnpoint as TP
 import FlareTiming.Time (showT, timeZone)
 
@@ -65,6 +65,7 @@ tableTurnpoints
     -> m ()
 tableTurnpoints tz x taskLegs = do
     let zs = getAllRawZones <$> x
+    let ess = getEssShape <$> x
     let goal = getGoalShape <$> x
     let ss = getSpeedSection <$> x
     let oc = (\case [t] -> repeat t; ts -> ts) . getOpenClose <$> x
@@ -97,13 +98,16 @@ tableTurnpoints tz x taskLegs = do
                     elAttr "td" ("colspan" =: "8")
                         $ text "† Start of the speed section"
                 el "tr" $
-                    elAttr "td" ("colspan" =: "8")
-                        $ text "‡ End of the speed section"
+                    elAttr "td" ("colspan" =: "8") . dynText $ essFootnote <$> ess
                 el "tr" $
                     elAttr "td" ("colspan" =: "8") . dynText
                         $ (\s -> "* Goal is a " <> s) . T.pack . showShape <$> goal
 
     return ()
+
+essFootnote :: Maybe Shape -> T.Text
+essFootnote Nothing = "‡ End of the speed section"
+essFootnote (Just s) = "‡ End of the speed section is a " <> (T.pack . showShape $ s)
 
 tableStartGates
     :: MonadWidget t m

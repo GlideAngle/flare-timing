@@ -87,7 +87,7 @@ data Shape
     | CutSemiCone Incline Radius Altitude
     deriving (Eq, Ord, Show)
 
-data ZoneKind = ZoneKind { goalShape :: Shape }
+data ZoneKind = ZoneKind Shape
     deriving (Eq, Ord, Show)
 
 showShape :: Shape -> String
@@ -129,60 +129,61 @@ instance FromJSON ZoneKind where
         asum
             [ do
                 Object _ <- o .: "line"
-                return $ ZoneKind { goalShape = Line }
+                return $ ZoneKind Line
 
             , do
                 Object _ <- o .: "circle"
-                return $ ZoneKind { goalShape = Circle }
+                return $ ZoneKind Circle
 
             , do
                 Object _ <- o .: "semicircle"
-                return $ ZoneKind { goalShape = SemiCircle }
+                return $ ZoneKind SemiCircle
 
             , do
                 Object _ <- o .: "cylinder"
-                return $ ZoneKind { goalShape = Cylinder }
+                return $ ZoneKind Cylinder
 
             , do
                 cy <- o .: "cut-cylinder"
                 t <- cy .: "time-bonus"
                 r <- cy .: "radius"
                 a <- cy .: "altitude"
-                return $ ZoneKind { goalShape = CutCylinder t r a }
+                return $ ZoneKind (CutCylinder t r a)
 
             , do
                 cc <- o .: "cut-cone"
                 i <- cc .: "incline"
                 r <- cc .: "radius"
                 a <- cc .: "altitude"
-                return $ ZoneKind { goalShape = CutCone i r a }
+                return $ ZoneKind (CutCone i r a)
 
             , do
                 cs <- o .: "cut-semi-cylinder"
                 t <- cs .: "time-bonus"
                 r <- cs .: "radius"
                 a <- cs .: "altitude"
-                return $ ZoneKind { goalShape = CutSemiCylinder t r a }
+                return $ ZoneKind (CutSemiCylinder t r a)
 
             , do
                 sc <- o .: "cut-semi-cone"
                 i <- sc .: "incline"
                 r <- sc .: "radius"
                 a <- sc .: "altitude"
-                return ZoneKind {goalShape = CutSemiCone i r a}
+                return $ ZoneKind (CutSemiCone i r a)
             ]
 
 data TaskZones
     = TzEssIsGoal ZoneKind
-    | TzEssIsNotGoal ZoneKind
+    | TzEssIsNotGoal ZoneKind ZoneKind
     deriving (Eq, Ord, Show)
 
 instance FromJSON TaskZones where
     parseJSON = withObject "Race" $ \o ->
         asum
             [ do
+                e :: ZoneKind <- o .: "race-ess"
                 g :: ZoneKind <- o .: "goal"
-                return $ TzEssIsNotGoal g
+                return $ TzEssIsNotGoal e g
 
             , do
                 g :: ZoneKind <- o .: "race-ess-is-goal"

@@ -11,6 +11,7 @@ module WireTypes.Comp
     , getAllRawZones
     , getRaceRawZones
     , getGoalShape
+    , getEssShape
     , getSpeedSection
     , getOpenClose
     , getStartGates
@@ -24,6 +25,7 @@ module WireTypes.Comp
 import Text.Printf (printf)
 import Data.Time.Clock (UTCTime)
 import Control.Applicative (empty)
+import Control.Monad (join)
 import GHC.Generics (Generic)
 import Data.Aeson (Value(..), FromJSON(..))
 import qualified Data.Text as T (unpack)
@@ -180,9 +182,18 @@ getGoalShape Task{zones = Zones{raceKind}} =
     maybe
         Circle
         (\case
-            TzEssIsGoal ZoneKind{..} -> goalShape
-            TzEssIsNotGoal ZoneKind{..} -> goalShape)
+            TzEssIsGoal (ZoneKind g) -> g
+            TzEssIsNotGoal _ (ZoneKind g) -> g)
         raceKind
+
+getEssShape :: Task -> Maybe Shape
+getEssShape Task{zones = Zones{raceKind}} =
+    join $
+    (\case
+        TzEssIsGoal _ -> Nothing
+        TzEssIsNotGoal (ZoneKind e) _ -> Just e)
+    <$>
+    raceKind
 
 getRaceRawZones :: Task -> [RawZone]
 getRaceRawZones Task{zones = Zones{raw = tps}, speedSection = ss} =
