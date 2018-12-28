@@ -93,24 +93,23 @@ tableTurnpoints tz x taskLegs = do
             _ <- el "tbody" $ do
                 simpleList (fmap (zip [1..]) ys) (row tz len ss)
 
-            el "tfoot" $ do
-                dyn $ ffor2 goal open (\g o ->
-                    case (g, o) of
-                        (Just _, Nothing) -> do
-                            el "tr" . elAttr "td" ("colspan" =: "8")
-                                $ text "† Start of the speed section"
-                            el "tr" .  elAttr "td" ("colspan" =: "8") . dynText
-                                $ essFootnote <$> ess
-                            el "tr" .  elAttr "td" ("colspan" =: "8") . dynText
-                                $ goalFootnote <$> goal
+            el "tfoot" . dyn . ffor2 goal open $ (\g o ->
+                case (g, o) of
+                    (Just _, Nothing) -> do
+                        el "tr" . elAttr "td" ("colspan" =: "8")
+                            $ text "† Start of the speed section"
+                        el "tr" .  elAttr "td" ("colspan" =: "8") . dynText
+                            $ essFootnote <$> ess
+                        el "tr" .  elAttr "td" ("colspan" =: "8") . dynText
+                            $ goalFootnote <$> goal
 
-                        (Nothing, Just _) -> do
-                            el "tr" .  elAttr "td" ("colspan" =: "8") . dynText
-                                $ openFootnote <$> open
+                    (Nothing, Just _) -> do
+                        el "tr" .  elAttr "td" ("colspan" =: "8") . dynText
+                            $ openFootnote <$> open
 
-                        (Just _, Just _) -> return ()
+                    (Just _, Just _) -> return ()
 
-                        (Nothing, Nothing) -> return ())
+                    (Nothing, Nothing) -> return ())
 
     return ()
 
