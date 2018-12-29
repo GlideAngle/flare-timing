@@ -59,7 +59,7 @@ import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Zone.MkZones (Zones(..), Discipline(..), SpeedSection)
-import Flight.Zone.Raw (showZone)
+import Flight.Zone.Raw (Give, showZone)
 import Flight.Field (FieldOrdering(..))
 import Flight.Pilot
 import Flight.Path
@@ -186,6 +186,7 @@ data Comp =
         , to :: String
         , utcOffset :: UtcOffset
         , scoreBack :: Maybe (ScoreBackTime (Quantity Double [u| s |]))
+        , give :: Maybe Give
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
@@ -329,13 +330,18 @@ cmp a b =
         ("from", "to") -> LT
 
         ("civilId", "scoreBack") -> LT
+        ("civilId", "give") -> LT
         ("civilId", "utcOffset") -> LT
         ("civilId", _) -> GT
 
         ("utcOffset", "scoreBack") -> LT
+        ("utcOffset", "give") -> LT
         ("utcOffset", _) -> GT
 
+        ("scoreBack", "give") -> LT
         ("scoreBack", _) -> GT
+
+        ("give", _) -> GT
 
         -- Task fields
         ("taskName", _) -> LT
@@ -390,5 +396,9 @@ cmp a b =
         ("give", _) -> LT
 
         ("alt", _) -> GT
+
+        -- Give fields
+        ("giveFraction", _) -> LT
+        ("giveDistance", _) -> GT
 
         _ -> compare a b

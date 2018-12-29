@@ -35,7 +35,7 @@ import Flight.Comp
     )
 import Flight.Distance (SpanLatLng)
 import Flight.Zone (Zone(..), Radius(..), center)
-import Flight.Zone.Raw (RawZone(..), Give(..), zoneGive)
+import qualified Flight.Zone.Raw as Raw (RawZone(..), Give(..), zoneGive)
 import Flight.Zone.MkZones (Discipline(..), Zones(..))
 import Flight.Score (ScoreBackTime(..))
 import Flight.Scribe (writeComp)
@@ -51,7 +51,7 @@ spanD = Dbl.distanceHaversine
 sepD :: [Zone Double] -> Bool
 sepD = S.separatedZones spanD
 
-separated :: RawZone -> RawZone -> Bool
+separated :: Raw.RawZone -> Raw.RawZone -> Bool
 separated =
     separatedRawZones f
     where
@@ -86,7 +86,7 @@ drive o@CmdOptions{giveFraction = Just gf, giveDistance = gd} = do
             putStrLn $ "Using a give distance of " ++ printf "%.3f" gd' ++ " m"
 
     let give =
-            Give
+            Raw.Give
                 { giveFraction = gf
                 , giveDistance = Radius . MkQuantity <$> gd
                 }
@@ -96,7 +96,7 @@ drive o@CmdOptions{giveFraction = Just gf, giveDistance = gd} = do
     end <- getTime Monotonic
     fprint ("Extracting tasks completed in " % timeSpecs % "\n") start end
 
-go :: Give -> FsdbFile -> IO ()
+go :: Raw.Give -> FsdbFile -> IO ()
 go zg fsdbFile@(FsdbFile fsdbPath) = do
     contents <- readFile fsdbPath
     let contents' = dropWhile (/= '<') contents
@@ -154,7 +154,7 @@ fsdbTracks (FsdbXml contents) = do
     fs <- lift $ parseTracks contents
     ExceptT $ return fs
 
-fsdbSettings :: Give -> FsdbXml -> ExceptT String IO (CompSettings k)
+fsdbSettings :: Raw.Give -> FsdbXml -> ExceptT String IO (CompSettings k)
 fsdbSettings zg fsdbXml = do
     c <- fsdbComp fsdbXml
     n <- fsdbNominal fsdbXml
@@ -164,7 +164,7 @@ fsdbSettings zg fsdbXml = do
     tps <- fsdbTracks fsdbXml
 
     let ts' =
-            [ t{zones = z{raw = zoneGive separated zg rz}}
+            [ t{zones = z{raw = Raw.zoneGive separated zg rz}}
             | t@Task{zones = z@Zones{raw = rz}} <- ts
             ]
 
@@ -178,7 +178,7 @@ fsdbSettings zg fsdbXml = do
     lift . putStrLn $ msg
     return
         CompSettings
-            { comp = c { scoreBack = sb }
+            { comp = c{scoreBack = sb, give = Just zg}
             , nominal = n
             , tasks = ts'
             , taskFolders = fs

@@ -39,7 +39,7 @@ xpComp =
         )
     $ xpWrap
         ( \(i, n, d, l, f, t, utc, s, _) ->
-            Comp i n d l f t (UtcOffset $ 60 * utc) s
+            Comp i n d l f t (UtcOffset $ 60 * utc) s Nothing
         , \Comp{..} ->
             ( civilId
             , compName
