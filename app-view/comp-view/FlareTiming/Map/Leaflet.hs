@@ -87,8 +87,8 @@ foreign import javascript unsafe
     markerPopup_ :: JSVal -> JSString -> IO ()
 
 foreign import javascript unsafe
-    "L['circle']([$1, $2], {radius: $3, color: $4, opacity: 0.6, weight: 1, fill: $5})"
-    circle_ :: Double -> Double -> Double -> JSString -> Bool -> IO JSVal
+    "L['circle']([$1, $2], {radius: $3, color: $4, opacity: 0.6, weight: 1, stroke: $5, fill: $6})"
+    circle_ :: Double -> Double -> Double -> JSString -> Bool -> Bool -> IO JSVal
 
 foreign import javascript unsafe
     "L['polyline']($1, {color: $2, opacity: 0.6, dashArray: '20,15', lineJoin: 'round'})"
@@ -175,9 +175,9 @@ markerPopup :: Marker -> String -> IO ()
 markerPopup x msg =
     markerPopup_ (unMarker x) (toJSString msg)
 
-circle :: (Double, Double) -> Double -> String -> Bool -> IO Circle
-circle (lat, lng) radius color fill =
-    Circle <$> circle_ lat lng radius (toJSString color) fill
+circle :: (Double, Double) -> Double -> String -> Bool -> Bool -> IO Circle
+circle (lat, lng) radius color stroke fill =
+    Circle <$> circle_ lat lng radius (toJSString color) stroke fill
 
 circleAddToMap :: Circle -> Map -> IO ()
 circleAddToMap x lmap = addToMap_ (unCircle x) (unMap lmap)

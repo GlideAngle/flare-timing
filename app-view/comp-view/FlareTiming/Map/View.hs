@@ -128,8 +128,8 @@ turnpoint
 turnpoint (TurnpointName tpName) (Color color) latLng (Radius r, g) = do
     xMark <- L.marker latLng
     L.markerPopup xMark tpName
-    xCyl <- L.circle latLng r color True
-    yCyl <- sequence $ (\(Radius y) -> L.circle latLng y "white" False) <$> g
+    xCyl <- L.circle latLng r color False True
+    yCyl <- sequence $ (\(Radius y) -> L.circle latLng y color True False) <$> g
     return (xMark, (xCyl, yCyl))
 
 zoneToLL :: RawZone -> (Double, Double)
