@@ -5,6 +5,7 @@ import Text.Printf (printf)
 import Reflex.Dom
 import qualified Data.Text as T (Text, pack)
 import Reflex.Time (delay)
+import Data.Maybe (catMaybes)
 import Data.List (zipWith4)
 import Control.Monad (sequence)
 import Control.Monad.IO.Class (liftIO)
@@ -122,13 +123,13 @@ turnpoint
     :: TurnpointName
     -> Color
     -> (Double, Double)
-    -> Radius
-    -> IO (L.Marker, (L.Circle, L.Circle))
-turnpoint (TurnpointName tpName) (Color color) latLng (Radius r) = do
+    -> (Radius, Maybe Radius)
+    -> IO (L.Marker, (L.Circle, Maybe L.Circle))
+turnpoint (TurnpointName tpName) (Color color) latLng (Radius r, g) = do
     xMark <- L.marker latLng
     L.markerPopup xMark tpName
-    xCyl <- L.circle latLng r color
-    yCyl <- L.circle latLng (r * 1.0005) color
+    xCyl <- L.circle latLng r color True
+    yCyl <- sequence $ (\(Radius y) -> L.circle latLng y "white" False) <$> g
     return (xMark, (xCyl, yCyl))
 
 zoneToLL :: RawZone -> (Double, Double)
@@ -227,9 +228,19 @@ map
             let ptsTaskRouteSubset :: [(Double, Double)] = fmap rawToLL taskRouteSubset
             let ptsSpeedRoute :: [(Double, Double)] = fmap rawToLL speedRoute
 
-            xMarks <- sequence $ zipWith4 turnpoint tpNames cs xPts (radius <$> xs)
-            _ <- sequence $ ((flip L.circleAddToMap) lmap . snd . snd) <$> xMarks
+            xMarks <-
+                sequence $
+                    zipWith4
+                        turnpoint
+                        tpNames
+                        cs
+                        xPts
+                        ((\x -> (radius x, give x)) <$> xs)
+
             _ <- sequence $ ((flip L.circleAddToMap) lmap . fst . snd) <$> xMarks
+
+            let giveCyls = catMaybes $ snd . snd <$> xMarks
+            _ <- sequence $ (flip L.circleAddToMap) lmap <$> giveCyls
 
             courseLine <- L.polyline xPts "gray"
             taskRouteLine <- L.polyline ptsTaskRoute "red"

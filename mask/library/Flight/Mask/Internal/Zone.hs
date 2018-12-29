@@ -11,6 +11,7 @@ module Flight.Mask.Internal.Zone
     , rowToPoint
     , fixFromFix
     , zoneToCylinder
+    , separatedRawZones
     ) where
 
 import Data.Time.Clock (UTCTime, addUTCTime)
@@ -113,3 +114,15 @@ zoneToCylinder z =
         Radius r = Raw.radius z
         RawLat lat = Raw.lat z
         RawLng lng = Raw.lng z
+
+separatedRawZones
+    :: (Ord a, Fractional a)
+    => (Zone a -> Zone a -> Bool)
+    -> Raw.RawZone
+    -> Raw.RawZone
+    -> Bool
+separatedRawZones f x y =
+    f x' y'
+    where
+        x' = unTaskZone . zoneToCylinder $ x
+        y' = unTaskZone . zoneToCylinder $ y

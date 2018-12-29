@@ -10,7 +10,6 @@ import Control.Monad.Except (ExceptT(..), runExceptT, lift)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import Flight.Units ()
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Fsdb
     ( parseComp
@@ -34,12 +33,29 @@ import Flight.Comp
     , findFsdb
     , ensureExt
     )
-import Flight.Zone (Radius(..))
-import Flight.Zone.Raw (Give(..), zoneGive)
+import Flight.Distance (SpanLatLng)
+import Flight.Zone (Zone(..), Radius(..), center)
+import Flight.Zone.Raw (RawZone(..), Give(..), zoneGive)
 import Flight.Zone.MkZones (Discipline(..), Zones(..))
 import Flight.Score (ScoreBackTime(..))
 import Flight.Scribe (writeComp)
+import Flight.Mask (separatedRawZones)
 import ExtractInputOptions (CmdOptions(..), mkOptions)
+
+import qualified Flight.Earth.Sphere.PointToPoint.Double as Dbl (distanceHaversine)
+import qualified Flight.Earth.Sphere.Separated as S (separatedZones)
+
+spanD :: SpanLatLng Double
+spanD = Dbl.distanceHaversine
+
+sepD :: [Zone Double] -> Bool
+sepD = S.separatedZones spanD
+
+separated :: RawZone -> RawZone -> Bool
+separated =
+    separatedRawZones f
+    where
+        f x y = sepD [x, y] && sepD [Point $ center x, y]
 
 main :: IO ()
 main = do
@@ -148,7 +164,7 @@ fsdbSettings zg fsdbXml = do
     tps <- fsdbTracks fsdbXml
 
     let ts' =
-            [ t{zones = z{raw = zoneGive zg rz}}
+            [ t{zones = z{raw = zoneGive separated zg rz}}
             | t@Task{zones = z@Zones{raw = rz}} <- ts
             ]
 

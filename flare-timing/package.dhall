@@ -47,7 +47,13 @@ in    defs
       , executables =
           { extract-input =
               { dependencies =
-                  deps # [ "flight-zone", "flight-gap", "flight-fsdb" ]
+                    deps
+                  # [ "flight-earth"
+                    , "flight-fsdb"
+                    , "flight-gap"
+                    , "flight-mask"
+                    , "flight-zone"
+                    ]
               , ghc-options =
                   [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
               , main =

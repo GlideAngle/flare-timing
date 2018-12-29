@@ -179,7 +179,7 @@ stationary x y =
     where
         ax = Kml.altGps x
         ay = Kml.altGps y
-        
+
         Latitude xLat = Kml.lat x
         Latitude yLat = Kml.lat y
         Longitude xLng = Kml.lng x
