@@ -1,5 +1,6 @@
 module WireTypes.Comp
     ( Comp(..)
+    , Give(..)
     , Nominal(..)
     , Task(..)
     , Name
