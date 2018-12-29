@@ -10,6 +10,7 @@ import FlareTiming.Events (IxTask(..))
 import FlareTiming.Comp.Tab (CompTab(..), tabsComp)
 import FlareTiming.Task.List (taskList)
 import FlareTiming.Comp.Pilot (tablePilot)
+import FlareTiming.Comp.Settings (tableComp)
 
 compDetail
     :: MonadWidget t m
@@ -23,8 +24,16 @@ compDetail cs ts = do
 
     e <- widgetHold (taskList ts) $
             (\case
-                CompTabTask -> taskList ts
-                CompTabPilot -> do tablePilot ts; return never)
+                CompTabSettings -> do
+                    _ <- simpleList cs tableComp
+                    return never
+
+                CompTabTask ->
+                    taskList ts
+
+                CompTabPilot -> do
+                    tablePilot ts
+                    return never)
             <$> tab
 
     return $ switchDyn e

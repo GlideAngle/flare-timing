@@ -121,6 +121,13 @@ showScoreBackTime (ScoreBackTime s) =
         ss' :: Int
         ss' = truncate ss
 
+data Give =
+    Give
+        { giveFraction :: Double
+        , giveDistance :: Maybe Radius
+        }
+    deriving (Eq, Ord, Show, Generic, FromJSON)
+
 data Comp =
     Comp
         { civilId :: String
@@ -130,6 +137,7 @@ data Comp =
         , to :: String
         , utcOffset :: UtcOffset
         , scoreBack :: Maybe ScoreBackTime
+        , give :: Maybe Give
         }
     deriving (Show, Generic, FromJSON)
 
