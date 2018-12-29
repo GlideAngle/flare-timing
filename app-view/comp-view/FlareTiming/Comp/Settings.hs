@@ -49,7 +49,8 @@ compRows Comp{..} = do
                 el "td" . text . T.pack . printf "%.3f m" $ gd
 
         Nothing ->
-            el "tr" $ do
-                elAttr "td" ("colspan" =: "3") $ text "* Give is missing"
+            elClass "tr" "tr-give" $ do
+                elAttr "td" ("colspan" =: "3" <> "class" =: "td-missing")
+                    $ text "Scoring without any give * in zone radii"
 
     return ()
