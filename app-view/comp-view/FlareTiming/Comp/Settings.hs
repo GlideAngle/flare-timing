@@ -18,7 +18,11 @@ tableComp c = do
                     elAttr "th" ("colspan" =: "2") $ text "Setting"
                     el "th" $ text "Value"
 
-            el "tbody" . dyn $ ffor c compRows
+            _ <- el "tbody" . dyn $ ffor c compRows
+            el "tfoot" $
+                el "tr" $
+                    elAttr "td" ("colspan" =: "3") $
+                        text " * Adjusting the turnpoint radius with some give for pilots just short of the control zone"
 
     return ()
 
@@ -27,29 +31,25 @@ compRows
     => Comp
     -> m ()
 compRows Comp{..} = do
-    case give of
+    _ <- case give of
         Just Give{giveFraction = gf, giveDistance = Nothing} -> do
             el "tr" $ do
                 elAttr "td" ("colspan" =: "2")
-                    $ text "Give fraction only, no give distance"
+                    $ text "* Give fraction only, no give distance"
                 el "td" . text . T.pack . printf "%.5f" $ gf
-                return ()
 
         Just Give{giveFraction = gf, giveDistance = Just (Radius gd)} -> do
             el "tr" $ do
-                elAttr "td" ("rowspan" =: "2") $ text "Give"
+                elAttr "td" ("rowspan" =: "2") $ text "* Give"
                 el "td" $ text "Fraction"
                 el "td" . text . T.pack . printf "%.5f" $ gf
-                return ()
 
             el "tr" $ do
                 el "td" $ text "Distance"
                 el "td" . text . T.pack . printf "%.3f m" $ gd
-                return ()
 
         Nothing ->
             el "tr" $ do
-                elAttr "td" ("colspan" =: "3") $ text "Give is missing"
-                return ()
+                elAttr "td" ("colspan" =: "3") $ text "* Give is missing"
 
     return ()
