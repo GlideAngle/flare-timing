@@ -1,6 +1,7 @@
 import System.Environment (getProgName)
+import Text.Printf (printf)
 import System.Console.CmdArgs.Implicit (cmdArgs)
-import Data.List ((\\), nub, sort)
+import Data.List ((\\), nub, sort, find)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Network.Wai (Application)
@@ -14,7 +15,7 @@ import Servant
     , errBody, err400, hoistServer, serve, throwError
     )
 import System.IO (hPutStrLn, stderr)
-import Control.Exception.Safe (catchIO)
+import Control.Exception.Safe (MonadThrow, catchIO)
 import Control.Monad.IO.Class (MonadIO)
 import Control.Monad.Reader (ReaderT, MonadReader, asks, runReaderT)
 import Control.Monad.Except (ExceptT(..), MonadError)
@@ -43,6 +44,8 @@ import Flight.Comp
     , Task(..)
     , Nominal(..)
     , PilotTrackLogFile(..)
+    , IxTask(..)
+    , PilotId(..)
     , Pilot(..)
     , PilotTaskStatus(..)
     , CompInputFile(..)
@@ -56,12 +59,15 @@ import Flight.Comp
     , ensureExt
     )
 import Flight.Route
+import Flight.Kml
+import Flight.Mask
 import ServeOptions (description)
 import Data.Ratio.Rounding (dpRound)
 
 data Config k
     = Config
-        { compSettings :: CompSettings k
+        { compFile :: CompInputFile
+        , compSettings :: CompSettings k
         , routing :: Maybe [Maybe TaskTrack]
         , crossing :: Maybe Cg.Crossing
         , pointing :: Maybe Pointing
@@ -78,6 +84,7 @@ newtype AppT k m a =
         , MonadReader (Config k)
         , MonadError ServantErr
         , MonadIO
+        , MonadThrow
         )
 
 type CompInputApi k =
@@ -130,6 +137,9 @@ type GapPointApi k =
         :> Get '[JSON] [Pilot]
     :<|> "cross-zone" :> Capture "task" Int :> "pilot-nyp"
         :> Get '[JSON] [Pilot]
+
+    :<|> "pilot-track" :> (Capture "task" Int) :> (Capture "pilot" String)
+        :> Get '[JSON] MarkedFixes
 
 compInputApi :: Proxy (CompInputApi k)
 compInputApi = Proxy
@@ -191,13 +201,13 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
     case (compSettings, routes, crossing, pointing) of
         (Nothing, _, _, _) -> putStrLn "Couldn't read the comp settings"
         (Just cs, Nothing, _, _) ->
-            runSettings settings =<< mkCompInputApp (Config cs Nothing Nothing Nothing)
+            runSettings settings =<< mkCompInputApp (Config compFile cs Nothing Nothing Nothing)
         (Just cs, Just rt, Nothing, _) ->
-            runSettings settings =<< mkTaskLengthApp (Config cs (Just rt) Nothing Nothing)
+            runSettings settings =<< mkTaskLengthApp (Config compFile cs (Just rt) Nothing Nothing)
         (Just cs, Just rt, _, Nothing) ->
-            runSettings settings =<< mkTaskLengthApp (Config cs (Just rt) Nothing Nothing)
-        (Just cs, Just rt, Just cz, Just gp) ->
-            runSettings settings =<< mkGapPointApp (Config cs (Just rt) (Just cz) (Just gp))
+            runSettings settings =<< mkTaskLengthApp (Config compFile cs (Just rt) Nothing Nothing)
+        (Just cs, Just rt, Just cz, Just gp) -> do
+            runSettings settings =<< mkGapPointApp (Config compFile cs (Just rt) (Just cz) (Just gp))
     where
         port = 3000
 
@@ -253,6 +263,7 @@ serverGapPointApi cfg =
         :<|> getTaskValidityWorking
         :<|> getTaskPilotDnf
         :<|> getTaskPilotNyp
+        :<|> getTaskPilotTrack
     where
         c = asks compSettings
         p = asks pointing
@@ -427,13 +438,40 @@ getPilotsStatus = do
 
     return $ [(p,) $ ($ p) <$> fs | p <- ps]
 
-errTaskBounds :: Int -> ServantErr
-errTaskBounds ii =
+getTaskPilotTrack :: Int -> String -> AppT k IO MarkedFixes
+getTaskPilotTrack ii pilotId = do
+    let jj = ii - 1
+    let ix = IxTask ii
+    let pilot = PilotId pilotId
+    cf <- asks compFile
+    ps <- getPilots <$> asks compSettings
+    let p = find (\(Pilot (pid, _)) -> pid == pilot) ps
+
+    case p of
+        Nothing -> throwError $ errPilotNotFound pilot
+        Just p' -> do
+            t <- checkTracks (const $ const id) cf [ix] [p']
+            case take 1 $ drop jj t of
+                [t' : _] ->
+                    case t' of
+                        Right (_, mf) -> return mf
+                        _ -> throwError $ errPilotTrackNotFound ix pilot
+                _ -> throwError $ errPilotTrackNotFound ix pilot
+
+errPilotTrackNotFound :: IxTask -> PilotId -> ServantErr
+errPilotTrackNotFound (IxTask ix) (PilotId p) =
     err400
         { errBody = LBS.pack
-        $ "Out of bounds task: #"
-        ++ show ii
+        $ printf "For task %d, the tracklog for pilot %s was not found" ix p
         }
+
+errPilotNotFound :: PilotId -> ServantErr
+errPilotNotFound (PilotId p) =
+    err400 {errBody = LBS.pack $ printf "Pilot %s not found" p}
+
+errTaskBounds :: Int -> ServantErr
+errTaskBounds ii =
+    err400 {errBody = LBS.pack $ printf "Out of bounds task %d" ii}
 
 errTaskStep :: String -> Int -> ServantErr
 errTaskStep step ii =
