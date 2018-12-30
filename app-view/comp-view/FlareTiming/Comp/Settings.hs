@@ -4,8 +4,8 @@ import Reflex.Dom
 import Text.Printf (printf)
 import qualified Data.Text as T (pack)
 
-import WireTypes.Comp (Comp(..), Give(..))
-import WireTypes.ZoneKind (Radius(..))
+import WireTypes.Comp (EarthModel(..), Ellipsoid(..), Comp(..), Give(..))
+import WireTypes.ZoneKind (Radius(..), showRadius)
 
 tableComp
     :: MonadWidget t m
@@ -30,7 +30,43 @@ compRows
     :: MonadWidget t m
     => Comp
     -> m ()
-compRows Comp{..} = do
+compRows c = do
+    giveRows c
+    earthRows c
+
+earthRows
+    :: MonadWidget t m
+    => Comp
+    -> m ()
+earthRows Comp{..} = do
+    _ <- case earth of
+        EarthAsSphere r -> do
+            el "tr" $ do
+                elAttr "td" ("colspan" =: "2")
+                    $ text "Sphere with radius"
+                el "td" . text . T.pack . showRadius $ r
+
+        EarthAsEllipsoid Ellipsoid{..} -> do
+            el "tr" $ do
+                elAttr "td" ("rowspan" =: "2") $ text "Ellipsoid"
+                el "td" $ text "semi-major radius"
+                el "td" . text . T.pack . showRadius $ equatorialR 
+
+            el "tr" $ do
+                el "td" $ text "1/f"
+                el "td" . text . T.pack . printf "%f" $ recipF
+
+        EarthAsFlat p ->
+            el "tr" $ do
+                elAttr "td" ("colspan" =: "2") $ text "Flat with projection"
+                el "td" . text . T.pack . show $ p
+
+    return ()
+giveRows
+    :: MonadWidget t m
+    => Comp
+    -> m ()
+giveRows Comp{..} = do
     _ <- case give of
         Just Give{giveFraction = gf, giveDistance = Nothing} -> do
             el "tr" $ do

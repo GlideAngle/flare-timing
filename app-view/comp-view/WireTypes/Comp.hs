@@ -9,6 +9,9 @@ module WireTypes.Comp
     , StartGate(..)
     , UtcOffset(..)
     , ScoreBackTime
+    , Projection(..)
+    , Ellipsoid(..)
+    , EarthModel(..)
     , getAllRawZones
     , getRaceRawZones
     , getGoalShape
@@ -29,7 +32,10 @@ import Data.Time.Clock (UTCTime)
 import Control.Applicative (empty)
 import Control.Monad (join)
 import GHC.Generics (Generic)
-import Data.Aeson (Value(..), FromJSON(..))
+import Data.Aeson
+    ( Value(..), FromJSON(..), Options(..), SumEncoding(..)
+    , genericParseJSON, defaultOptions
+    )
 import qualified Data.Text as T (unpack)
 import Data.Scientific (Scientific, toRealFloat, fromRationalRepetend)
 import WireTypes.Zone (RawZone, Zones(..))
@@ -122,6 +128,39 @@ showScoreBackTime (ScoreBackTime s) =
         ss' :: Int
         ss' = truncate ss
 
+data Projection = UTM
+    deriving (Eq, Ord, Show, Generic)
+
+instance FromJSON Projection where
+    parseJSON _ = return UTM
+
+data Ellipsoid =
+    Ellipsoid
+        { equatorialR :: Radius
+        , recipF :: Double
+        }
+    deriving (Eq, Ord, Show, Generic, FromJSON)
+
+data EarthModel
+    = EarthAsSphere Radius
+    | EarthAsEllipsoid Ellipsoid
+    | EarthAsFlat {projection :: Projection}
+    deriving (Eq, Ord, Show, Generic)
+
+earthModelCtorTag :: String -> String
+earthModelCtorTag s
+    | s == "EarthAsSphere" = "sphere"
+    | s == "EarthAsEllipsoid" = "ellipsoid"
+    | s == "EarthAsFlat" = "flat"
+    | otherwise = s
+
+instance FromJSON EarthModel where
+    parseJSON = genericParseJSON $
+        defaultOptions
+            { sumEncoding = ObjectWithSingleField
+            , constructorTagModifier = earthModelCtorTag
+            }
+
 data Give =
     Give
         { giveFraction :: Double
@@ -139,6 +178,7 @@ data Comp =
         , utcOffset :: UtcOffset
         , scoreBack :: Maybe ScoreBackTime
         , give :: Maybe Give
+        , earth :: EarthModel
         }
     deriving (Show, Generic, FromJSON)
 
