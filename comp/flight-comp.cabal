@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 376015690064a32734d2e61f16e69968fec98911f661c50926747cb171d2f765
+-- hash: 3926ba89a86e0b3572b966cf19544344c0077dedd527c2de8f44f19b34fe36dd
 
 name:           flight-comp
 version:        0.1.0
@@ -73,6 +73,7 @@ library
     , path
     , scientific
     , split
+    , text
     , time
     , unordered-containers
     , uom-plugin
@@ -129,6 +130,7 @@ test-suite comp
     , tasty-hunit
     , tasty-quickcheck
     , tasty-smallcheck
+    , text
     , time
     , unordered-containers
     , uom-plugin

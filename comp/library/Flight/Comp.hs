@@ -12,6 +12,7 @@ module Flight.Comp
       CompSettings(..)
     , Projection(..)
     , EarthModel(..)
+    , DistanceMath(..)
     , Comp(..)
     , Nominal(..)
     , UtcOffset(..)
@@ -50,6 +51,7 @@ module Flight.Comp
     ) where
 
 import Data.Ratio ((%))
+import Control.Applicative (empty)
 import Control.Monad (join)
 import Data.Time.Clock (UTCTime)
 import GHC.Generics (Generic)
@@ -60,6 +62,7 @@ import Data.Aeson
 import Data.Maybe (listToMaybe)
 import Data.List (intercalate, nub, sort)
 import Data.String (IsString())
+import qualified Data.Text as T (pack)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
@@ -184,13 +187,35 @@ data CompSettings k =
     deriving anyclass (ToJSON, FromJSON)
 
 data Projection = UTM
-    deriving (Eq, Ord, Show, Generic)
+    deriving (Eq, Ord, Show)
 
 instance ToJSON Projection where
     toJSON = const $ String "UTM"
 
 instance FromJSON Projection where
     parseJSON _ = return UTM
+
+data DistanceMath
+    = Pythagorus
+    | Haversines
+    | Vincenty
+    | Andoyer
+    deriving (Eq, Ord, Show)
+
+instance ToJSON DistanceMath where
+    toJSON = toJSON . String . T.pack . show
+
+instance FromJSON DistanceMath where
+    parseJSON o@(String _) = do
+        s :: String <- parseJSON o
+        case s of
+            "Pyathagorus" -> return Pythagorus
+            "Haversines" -> return Haversines
+            "Vincenty" -> return Vincenty
+            "Andoyer" -> return Andoyer
+            _ -> empty
+
+    parseJSON _ = empty
 
 data EarthModel
     = EarthAsSphere {radius :: QRadius Double [u| m |]}
@@ -231,6 +256,7 @@ data Comp =
         , scoreBack :: Maybe (ScoreBackTime (Quantity Double [u| s |]))
         , give :: Maybe Give
         , earth :: EarthModel
+        , distanceMath :: DistanceMath
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)

@@ -22,7 +22,8 @@ import Text.XML.HXT.Core
     )
 
 import Flight.Zone.MkZones (Discipline(..))
-import Flight.Comp (Projection(..), EarthModel(..), Comp(..), UtcOffset(..))
+import Flight.Comp
+    (Projection(..), DistanceMath(..), EarthModel(..), Comp(..), UtcOffset(..))
 
 xpComp :: PU Comp
 xpComp =
@@ -39,8 +40,8 @@ xpComp =
         )
     $ xpWrap
         ( \(i, n, d, l, f, t, utc, s, _) ->
-            let e = EarthAsFlat UTM in
-            Comp i n d l f t (UtcOffset $ 60 * utc) s Nothing e
+            let e = EarthAsFlat UTM; dm = Pythagorus in
+            Comp i n d l f t (UtcOffset $ 60 * utc) s Nothing e dm
         , \Comp{..} ->
             ( civilId
             , compName

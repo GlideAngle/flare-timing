@@ -24,7 +24,7 @@ import Flight.Comp
     , FsdbFile(..)
     , FsdbXml(..)
     , CompSettings(..)
-    , EarthModel(..)
+    , DistanceMath(..)
     , Comp(..)
     , Nominal(..)
     , Task(..)
@@ -70,8 +70,6 @@ main = do
     maybe (drive options) putStrLn err
 
 drive :: CmdOptions -> IO ()
-drive CmdOptions{earth = Nothing} =
-    fail "Please supply an Earth model."
 drive CmdOptions{giveFraction = Nothing} =
     fail
     $ "Please supply give for the tolerance around control zones."
@@ -81,9 +79,9 @@ drive
     o@CmdOptions
         { giveFraction = Just gf
         , giveDistance = gd
-        , earth = Just earth'
+        , earthMath = dm
         }
-      = do
+    = do
     -- SEE: http://chrisdone.com/posts/measuring-duration-in-haskell
     start <- getTime Monotonic
     files <- findFsdb o
@@ -102,15 +100,15 @@ drive
                 }
 
     if null files then putStrLn "Couldn't find any input files."
-                  else mapM_ (go (mkEarthModel earth') give) files
+                  else mapM_ (go dm give) files
     end <- getTime Monotonic
     fprint ("Extracting tasks completed in " % timeSpecs % "\n") start end
 
-go :: EarthModel -> Raw.Give -> FsdbFile -> IO ()
-go earth zg fsdbFile@(FsdbFile fsdbPath) = do
+go :: DistanceMath -> Raw.Give -> FsdbFile -> IO ()
+go dm zg fsdbFile@(FsdbFile fsdbPath) = do
     contents <- readFile fsdbPath
     let contents' = dropWhile (/= '<') contents
-    settings <- runExceptT $ fsdbSettings earth zg (FsdbXml contents')
+    settings <- runExceptT $ fsdbSettings dm zg (FsdbXml contents')
     either print (writeComp (fsdbToComp fsdbFile)) settings
 
 fsdbComp :: FsdbXml -> ExceptT String IO Comp
@@ -165,11 +163,11 @@ fsdbTracks (FsdbXml contents) = do
     ExceptT $ return fs
 
 fsdbSettings
-    :: EarthModel
+    :: DistanceMath
     -> Raw.Give
     -> FsdbXml
     -> ExceptT String IO (CompSettings k)
-fsdbSettings earthModel zg fsdbXml = do
+fsdbSettings dm zg fsdbXml = do
     c <- fsdbComp fsdbXml
     n <- fsdbNominal fsdbXml
     sb <- fsdbStopped fsdbXml
@@ -196,7 +194,9 @@ fsdbSettings earthModel zg fsdbXml = do
                 c
                     { scoreBack = sb
                     , give = Just zg
-                    , C.earth = earthModel
+                    , C.earth = mkEarthModel dm
+                    , distanceMath = dm
+
                     }
             , nominal = n
             , tasks = ts'

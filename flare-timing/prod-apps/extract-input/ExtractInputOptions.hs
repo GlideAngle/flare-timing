@@ -1,5 +1,6 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# OPTIONS_GHC -fno-cse #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module ExtractInputOptions
     ( CmdOptions(..)
@@ -19,18 +20,15 @@ import System.Console.CmdArgs.Implicit
     , help
     , (&=)
     , explicit
-    , typ
+    , enum
     )
 
-import Flight.Comp (Projection(..), EarthModel(..))
+import Flight.Comp (Projection(..), DistanceMath(..), EarthModel(..))
 import Flight.Earth.Ellipsoid (wgs84)
 import Flight.Earth.Sphere (earthRadius)
 
-data Earth
-    = Sphere
-    | Ellipsoid
-    | Flat
-    deriving (Show, Data, Typeable)
+deriving instance Data DistanceMath
+deriving instance Typeable DistanceMath
 
 -- | Options passed in on the command line.
 data CmdOptions
@@ -43,7 +41,7 @@ data CmdOptions
         -- ^ How much give (as a fraction) is there when crossing zones?
         , giveDistance :: Maybe Double
         -- ^ How much give (in metres) is there when crossing zones?
-        , earth :: Maybe Earth
+        , earthMath :: DistanceMath
         }
     deriving (Show, Data, Typeable)
 
@@ -70,9 +68,18 @@ mkOptions programName =
         &= help "With this one competition FSDB file"
         &= groupname "Source"
 
-        , earth = def
-        &= typ "sphere|ellipsoid|flat"
-        &= help "Which Earth model?"
+        , earthMath =
+            enum
+                [ Pythagorus
+                &= help "Pythagorus' method on a plane"
+                , Haversines
+                &= help "Haversines on a sphere"
+                , Vincenty
+                &= help "Vincenty's method on an ellipsoid"
+                , Andoyer
+                &= help "Andoyer's method on an ellipsoid"
+                ]
+        &= groupname "Earth math"
 
         , giveFraction = def
         &= explicit
@@ -89,8 +96,8 @@ mkOptions programName =
         &= summary description
         &= program programName
 
-mkEarthModel :: Earth -> EarthModel
-mkEarthModel = \case
-    Sphere -> EarthAsSphere earthRadius
-    Ellipsoid -> EarthAsEllipsoid wgs84
-    Flat -> EarthAsFlat UTM
+mkEarthModel :: DistanceMath -> EarthModel
+mkEarthModel Pythagorus = EarthAsFlat UTM
+mkEarthModel Haversines = EarthAsSphere earthRadius
+mkEarthModel Vincenty = EarthAsEllipsoid wgs84
+mkEarthModel Andoyer= EarthAsEllipsoid wgs84

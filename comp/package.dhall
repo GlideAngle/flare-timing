@@ -31,6 +31,7 @@ in    defs
             , "lens"
             , "mtl"
             , "uom-plugin"
+            , "text"
             , "vector"
             , "detour-via-sci"
             , "detour-via-uom"
