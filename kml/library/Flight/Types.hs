@@ -22,12 +22,12 @@ import Data.Via.Scientific
 
 -- | Latitude in degress.
 newtype Latitude = Latitude Rational
-    deriving (Eq, Generic)
+    deriving (Eq, Ord, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
 -- | Longitude in degress.
 newtype Longitude = Longitude Rational
-    deriving (Eq, Generic)
+    deriving (Eq, Ord, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
 -- | Altitude in metres.
@@ -72,7 +72,7 @@ data LLA =
         , llaLng :: Longitude
         , llaAltGps :: Altitude
         }
-    deriving (Eq, Show, Generic)
+    deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
 -- | Constructs a 'LLA' from its parts.
@@ -93,7 +93,7 @@ data Fix =
         , fixAltBaro :: Maybe Altitude
         -- ^ The barometric pressure altitude of the fix.
         }
-    deriving (Eq, Show, Generic)
+    deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
 -- | Class for a fix made up of latitude, longitude and GPS altitude.
@@ -130,5 +130,5 @@ data MarkedFixes =
         { mark0 :: UTCTime -- ^ The UTC time of the first fix.
         , fixes :: [Fix] -- ^ The fixes of the track log.
         }
-    deriving (Eq, Show, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 

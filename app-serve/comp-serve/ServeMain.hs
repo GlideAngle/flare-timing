@@ -58,10 +58,10 @@ import Flight.Comp
     , compToPoint
     , ensureExt
     )
-import Flight.Route
-import Flight.Kml
-import Flight.Mask
+import Flight.Route (OptimalRoute(..), TrackLine(..), TaskTrack(..))
+import Flight.Mask (checkTracks)
 import ServeOptions (description)
+import ServeTrack (RawLatLngTrack(..))
 import Data.Ratio.Rounding (dpRound)
 
 data Config k
@@ -139,7 +139,7 @@ type GapPointApi k =
         :> Get '[JSON] [Pilot]
 
     :<|> "pilot-track" :> (Capture "task" Int) :> (Capture "pilot" String)
-        :> Get '[JSON] MarkedFixes
+        :> Get '[JSON] RawLatLngTrack
 
 compInputApi :: Proxy (CompInputApi k)
 compInputApi = Proxy
@@ -438,7 +438,7 @@ getPilotsStatus = do
 
     return $ [(p,) $ ($ p) <$> fs | p <- ps]
 
-getTaskPilotTrack :: Int -> String -> AppT k IO MarkedFixes
+getTaskPilotTrack :: Int -> String -> AppT k IO RawLatLngTrack
 getTaskPilotTrack ii pilotId = do
     let jj = ii - 1
     let ix = IxTask ii
@@ -454,7 +454,7 @@ getTaskPilotTrack ii pilotId = do
             case take 1 $ drop jj t of
                 [t' : _] ->
                     case t' of
-                        Right (_, mf) -> return mf
+                        Right (_, mf) -> return $ RawLatLngTrack mf
                         _ -> throwError $ errPilotTrackNotFound ix pilot
                 _ -> throwError $ errPilotTrackNotFound ix pilot
 
