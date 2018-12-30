@@ -26,6 +26,7 @@ in    defs
             , "hcoord"
             , "hcoord-utm"
             , "detour-via-sci"
+            , "detour-via-uom"
             , "siggy-chardust"
             , "flight-units"
             , "flight-latlng"

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d622570e13c40fdb3f36732712e3ff4f695aed815ac6698ed75504ba96b17acf
+-- hash: 1d61776b249048db33e7bf2acfbcd7be74677042847d92510a7d13aed8507dd7
 
 name:           flight-earth
 version:        0.1.0
@@ -65,6 +65,7 @@ library
     , base >=4.10.1.0 && <5
     , bifunctors
     , detour-via-sci
+    , detour-via-uom
     , fgl
     , flight-latlng
     , flight-units
@@ -161,6 +162,7 @@ test-suite earth
     , base >=4.10.1.0 && <5
     , bifunctors
     , detour-via-sci
+    , detour-via-uom
     , fgl
     , flight-latlng
     , flight-units

@@ -61,7 +61,8 @@ circum
         radius' :: Double
         radius' = fromRational . toRational $ rRadius
 
-        bigR = fromRational $ unQuantity earthRadius
+        Radius rEarth = earthRadius
+        bigR = fromRational $ unQuantity rEarth
 
         lat' :: Double
         lat' = asin (sin lat * cos d + cos lat * sin d * cos tc)

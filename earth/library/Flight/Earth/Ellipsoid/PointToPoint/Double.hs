@@ -14,6 +14,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Flight.LatLng
     (QLat, Lat(..), QLng, Lng(..), LatLng(..), AzimuthFwd, AzimuthRev)
 import Flight.Distance (QTaskDistance, TaskDistance(..), SpanLatLng)
+import Flight.Zone (Radius(..))
 import Flight.Earth.Ellipsoid
     ( Ellipsoid(..), AbnormalLatLng(..), VincentyInverse(..), VincentyAccuracy(..)
     , defaultVincentyAccuracy, flattening, polarRadius
@@ -45,7 +46,7 @@ vincentyInverse
             (Quantity a [u| rad |])
         )
 vincentyInverse
-    ellipsoid@Ellipsoid{equatorialR = MkQuantity a}
+    ellipsoid@Ellipsoid{equatorialR = Radius (MkQuantity a)}
     (VincentyAccuracy tolerance)
     InverseProblem
         { x = LatLng (Lat (MkQuantity _Φ₁), Lng (MkQuantity _L₁))

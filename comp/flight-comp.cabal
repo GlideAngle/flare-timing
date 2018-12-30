@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1260e436bdd936f120bf520c42ce6879bb778d766e743a881710ed1e16aba67d
+-- hash: 376015690064a32734d2e61f16e69968fec98911f661c50926747cb171d2f765
 
 name:           flight-comp
 version:        0.1.0
@@ -62,6 +62,7 @@ library
     , directory
     , filemanip
     , filepath
+    , flight-earth
     , flight-gap
     , flight-latlng
     , flight-route
@@ -112,6 +113,7 @@ test-suite comp
     , directory
     , filemanip
     , filepath
+    , flight-earth
     , flight-gap
     , flight-latlng
     , flight-route

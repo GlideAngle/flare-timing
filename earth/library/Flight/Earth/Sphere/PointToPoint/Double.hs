@@ -14,6 +14,7 @@ import Flight.Units ()
 import Flight.Units.Angle (Angle(..))
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..), AzimuthFwd, AzimuthRev)
 import Flight.Distance (TaskDistance(..), SpanLatLng)
+import Flight.Zone (Radius(..))
 import Flight.Earth.Sphere (earthRadius)
 
 haversine :: Floating a
@@ -44,8 +45,9 @@ aOfHaversine (LatLng (Lat xLatF, Lng xLngF)) (LatLng (Lat yLatF, Lng yLngF)) =
 -- | Spherical distance using haversines and floating point numbers.
 distanceHaversine :: Floating a => SpanLatLng a
 distanceHaversine x y =
-    TaskDistance $ radDist *: earthRadius
+    TaskDistance $ radDist *: rEarth
     where
+        Radius rEarth = earthRadius
         radDist :: Quantity _ One
         radDist = mk $ 2 * asin (sqrt $ aOfHaversine x y)
 

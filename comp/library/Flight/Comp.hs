@@ -10,6 +10,7 @@ Data for competitions, competitors and tasks.
 module Flight.Comp
     ( -- * Competition
       CompSettings(..)
+    , EarthModel(..)
     , Comp(..)
     , Nominal(..)
     , UtcOffset(..)
@@ -58,6 +59,7 @@ import Data.String (IsString())
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
+import Flight.Zone (QRadius)
 import Flight.Zone.MkZones (Zones(..), Discipline(..), SpeedSection)
 import Flight.Zone.Raw (Give, showZone)
 import Flight.Field (FieldOrdering(..))
@@ -76,6 +78,7 @@ import Flight.Score
     , PilotName(..)
     , Pilot(..)
     )
+import Flight.Earth.Ellipsoid (Ellipsoid(..))
 
 -- | The time of first lead into the speed section. This won't exist if no one
 -- is able to cross the start of the speed section without bombing out.
@@ -176,6 +179,13 @@ data CompSettings k =
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
+data EarthModel
+    = EarthAsSphere (QRadius Double [u| m |])
+    | EarthAsEllipsoid (Ellipsoid Double)
+    | EarthAsFlat 
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
+
 data Comp =
     Comp
         { civilId :: String
@@ -187,6 +197,7 @@ data Comp =
         , utcOffset :: UtcOffset
         , scoreBack :: Maybe (ScoreBackTime (Quantity Double [u| s |]))
         , give :: Maybe Give
+        , earthModel :: EarthModel
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
@@ -341,7 +352,7 @@ cmp a b =
         ("scoreBack", "give") -> LT
         ("scoreBack", _) -> GT
 
-        ("give", _) -> GT
+        ("give", "scoreBack") -> GT
 
         -- Task fields
         ("taskName", _) -> LT

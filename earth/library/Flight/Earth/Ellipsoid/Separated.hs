@@ -40,8 +40,9 @@ boxSeparated
         rLat :: Quantity _ [u| rad |]
         rLat = (r' *: recip' polarR) *: [u| 1 rad |]
 
+        Radius rEquatorial = equatorialR
         rLng :: Quantity _ [u| rad |]
-        rLng = (r' *: recip' equatorialR) *: [u| 1 rad |]
+        rLng = (r' *: recip' rEquatorial) *: [u| 1 rad |]
 
         xLo :: Bool
         xLo = xLat' < MkQuantity (negate 1) 

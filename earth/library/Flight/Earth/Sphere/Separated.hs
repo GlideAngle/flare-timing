@@ -32,10 +32,12 @@ boxSeparated
     (LatLng (xLLx, xLLy)) =
         xLo || xHi || yLo || yHi
     where
+        Radius rEarth = earthRadius
+
         -- NOTE: Use *: recip' instead of /: to avoid needing a
         -- Floating constraint that is not available for Rational.
         r :: Quantity _ [u| rad |]
-        r = (r' *: recip' earthRadius) *: [u| 1 rad |]
+        r = (r' *: recip' rEarth) *: [u| 1 rad |]
 
         xLo :: Bool
         xLo = xLat' < MkQuantity (negate 1) 

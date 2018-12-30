@@ -36,6 +36,7 @@ in    defs
             , "detour-via-uom"
             , "flight-units"
             , "flight-latlng"
+            , "flight-earth"
             , "flight-zone"
             , "flight-route"
             , "flight-gap"

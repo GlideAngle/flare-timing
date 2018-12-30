@@ -58,7 +58,8 @@ circum
         radius' :: Double
         radius' = realToFrac rRadius
 
-        bigR = unQuantity earthRadius
+        Radius rEarth = earthRadius
+        bigR = unQuantity rEarth
 
         lat' :: Double
         lat' = asin (sin lat * cos d + cos lat * sin d * cos tc)

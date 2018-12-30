@@ -95,7 +95,7 @@ vincentyDirect
             (TrueCourse a)
         )
 vincentyDirect
-    ellipsoid@Ellipsoid{equatorialR = MkQuantity a}
+    ellipsoid@Ellipsoid{equatorialR = Radius (MkQuantity a)}
     accuracy
     DirectProblem
         { x = (LatLng (Lat (MkQuantity _Φ1), Lng (MkQuantity _L1)))

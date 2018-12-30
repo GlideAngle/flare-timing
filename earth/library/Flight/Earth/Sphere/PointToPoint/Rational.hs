@@ -11,6 +11,7 @@ import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.LatLng.Rational (Epsilon(..))
 import Flight.Zone (toRationalLatLng)
 import Flight.Distance (TaskDistance(..), SpanLatLng)
+import Flight.Zone (Radius(..))
 import Flight.Earth.Sphere (earthRadius)
 
 haversine :: Epsilon
@@ -44,8 +45,9 @@ aOfHaversine
 -- | Spherical distance using haversines and rational numbers.
 distanceHaversine :: (Real a, Fractional a) => Epsilon -> SpanLatLng a
 distanceHaversine e@(Epsilon eps) x y =
-    TaskDistance . fromRational' $ radDist *: earthRadius
+    TaskDistance . fromRational' $ radDist *: rEarth
     where
+        Radius rEarth = earthRadius
         x' = toRationalLatLng x
         y' = toRationalLatLng y
         radDist :: Quantity Rational One

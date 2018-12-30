@@ -54,18 +54,26 @@ module Flight.Earth.Ellipsoid
     ) where
 
 import Data.Ratio ((%))
+import GHC.Generics (Generic)
+import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.UnitsOfMeasure (u, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
+import Flight.Zone (Radius(..), QRadius)
 
 data Ellipsoid a =
     Ellipsoid
-        { equatorialR :: Quantity a [u| m |]
+        { equatorialR :: QRadius a [u| m |]
         -- ^ Equatorial radius or semi-major axis of the ellipsoid.
         , recipF :: a
         -- ^ Reciprocal of the flattening of the ellipsoid or 1/ƒ.
         }
+    deriving (Eq, Ord, Show, Generic)
+
+-- NOTE: QRadius ToJSON and FromJSON instances only where a = Double
+deriving instance ToJSON (Ellipsoid Double)
+deriving instance FromJSON (Ellipsoid Double)
 
 data AbnormalLatLng
     = LatUnder
@@ -99,9 +107,9 @@ data VincentyInverse a
     -- ^ Vincenty's solution to the inverse problem.
 
 toRationalEllipsoid :: Real a => Ellipsoid a -> Ellipsoid Rational
-toRationalEllipsoid Ellipsoid{equatorialR, recipF} =
+toRationalEllipsoid Ellipsoid{equatorialR = Radius r, recipF} =
     Ellipsoid
-        { equatorialR = toRational' equatorialR
+        { equatorialR = Radius $ toRational' r
         , recipF = toRational recipF
         }
 
@@ -110,7 +118,7 @@ toRationalEllipsoid Ellipsoid{equatorialR, recipF} =
 wgs84 :: Fractional a => Ellipsoid a
 wgs84 =
     Ellipsoid
-        { equatorialR = [u| 6378137 m |]
+        { equatorialR = Radius [u| 6378137 m |]
         , recipF = 298.257223563
         }
 
@@ -120,7 +128,7 @@ wgs84 =
 bessel :: Fractional a => Ellipsoid a
 bessel =
     Ellipsoid
-        { equatorialR = [u| 6377397.155 m |]
+        { equatorialR = Radius [u| 6377397.155 m |]
         , recipF = 299.1528128
 
         }
@@ -131,7 +139,7 @@ bessel =
 hayford :: Fractional a => Ellipsoid a
 hayford =
     Ellipsoid
-        { equatorialR = [u| 6378388 m |]
+        { equatorialR = Radius [u| 6378388 m |]
         , recipF = 297
         }
 
@@ -143,7 +151,7 @@ hayford =
 clarke :: Fractional a => Ellipsoid a
 clarke =
     Ellipsoid
-        { equatorialR = [u| 6378206.4 m |]
+        { equatorialR = Radius [u| 6378206.4 m |]
         , recipF = 294.978698214
         }
 
@@ -154,7 +162,7 @@ flattening Ellipsoid{recipF} =
 
 -- | The polar radius or semi-minor axis of the ellipsoid.
 polarRadius :: Fractional a => Ellipsoid a -> Quantity a [u| m |]
-polarRadius e@Ellipsoid{equatorialR = MkQuantity r} =
+polarRadius e@Ellipsoid{equatorialR = Radius (MkQuantity r)} =
     MkQuantity $ r * (1 - flattening e)
 
 newtype VincentyAccuracy a = VincentyAccuracy a
