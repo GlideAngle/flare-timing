@@ -51,11 +51,11 @@ earthRows Comp{..} = do
             el "tr" $ do
                 elAttr "th" ("rowspan" =: "2") $ text "Earth model"
                 elAttr "td" ("rowspan" =: "2") $ text "Ellipsoid"
-                el "td" $ text "semi-major radius"
+                el "td" $ text "semi-major axis"
                 el "td" . text . T.pack . showRadius $ equatorialR 
 
             el "tr" $ do
-                el "td" $ text "1/f"
+                el "td" $ text "reciprocal of flattening"
                 el "td" . text . T.pack . printf "%f" $ recipF
 
         EarthAsFlat p ->
