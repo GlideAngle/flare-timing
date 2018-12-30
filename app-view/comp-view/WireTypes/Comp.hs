@@ -142,7 +142,7 @@ data Ellipsoid =
     deriving (Eq, Ord, Show, Generic, FromJSON)
 
 data EarthModel
-    = EarthAsSphere Radius
+    = EarthAsSphere {radius :: Radius}
     | EarthAsEllipsoid Ellipsoid
     | EarthAsFlat {projection :: Projection}
     deriving (Eq, Ord, Show, Generic)
