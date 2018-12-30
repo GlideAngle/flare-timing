@@ -4,13 +4,11 @@ import Reflex.Dom
 import Text.Printf (printf)
 import qualified Data.Text as T (pack)
 
-import WireTypes.Comp (EarthModel(..), Ellipsoid(..), Comp(..), Give(..))
+import WireTypes.Comp
+    (EarthMath, EarthModel(..), Ellipsoid(..), Comp(..), Give(..))
 import WireTypes.ZoneKind (Radius(..), showRadius)
 
-tableComp
-    :: MonadWidget t m
-    => Dynamic t Comp
-    -> m ()
+tableComp :: MonadWidget t m => Dynamic t Comp -> m ()
 tableComp c = do
     _ <- elClass "table" "table is-bordered" $ do
             el "thead" $
@@ -26,60 +24,42 @@ tableComp c = do
 
     return ()
 
-compRows
-    :: MonadWidget t m
-    => Comp
-    -> m ()
-compRows c = do
+compRows :: MonadWidget t m => Comp -> m ()
+compRows c@Comp{..} = do
     giveRows c
-    earthModelRows c
-    earthMathRows c
+    earthModelRows earth
+    earthMathRows earthMath
 
-earthModelRows
-    :: MonadWidget t m
-    => Comp
-    -> m ()
-earthModelRows Comp{..} = do
-    _ <- case earth of
-        EarthAsSphere r -> do
-            el "tr" $ do
-                el "th" $ text "Earth model"
-                elAttr "td" ("colspan" =: "2")
-                    $ text "Sphere with radius"
-                el "td" . text . T.pack . showRadius $ r
+earthModelRows :: MonadWidget t m => EarthModel -> m ()
 
-        EarthAsEllipsoid Ellipsoid{..} -> do
-            el "tr" $ do
-                elAttr "th" ("rowspan" =: "2") $ text "Earth model"
-                elAttr "td" ("rowspan" =: "2") $ text "Ellipsoid"
-                el "td" $ text "semi-major axis"
-                el "td" . text . T.pack . showRadius $ equatorialR 
+earthModelRows (EarthAsSphere r) = el "tr" $ do
+    el "th" $ text "Earth model"
+    elAttr "td" ("colspan" =: "2")
+        $ text "Sphere with radius"
+    el "td" . text . T.pack . showRadius $ r
 
-            el "tr" $ do
-                el "td" $ text "reciprocal of flattening"
-                el "td" . text . T.pack . printf "%f" $ recipF
-
-        EarthAsFlat p ->
-            el "tr" $ do
-                el "th" $ text "Earth model"
-                elAttr "td" ("colspan" =: "2") $ text "Flat with projection"
-                el "td" . text . T.pack . show $ p
-
-    return ()
-
-earthMathRows
-    :: MonadWidget t m
-    => Comp
-    -> m ()
-earthMathRows Comp{earthMath = em} = do
+earthModelRows (EarthAsEllipsoid Ellipsoid{..}) = do
     el "tr" $ do
-        elAttr "th" ("colspan" =: "3") $ text "Earth math"
-        el "td" . text . T.pack . show $ em
+        elAttr "th" ("rowspan" =: "2") $ text "Earth model"
+        elAttr "td" ("rowspan" =: "2") $ text "Ellipsoid"
+        el "td" $ text "semi-major axis"
+        el "td" . text . T.pack . showRadius $ equatorialR 
 
-giveRows
-    :: MonadWidget t m
-    => Comp
-    -> m ()
+    el "tr" $ do
+        el "td" $ text "reciprocal of flattening"
+        el "td" . text . T.pack . printf "%f" $ recipF
+
+earthModelRows (EarthAsFlat p) = el "tr" $ do
+    el "th" $ text "Earth model"
+    elAttr "td" ("colspan" =: "2") $ text "Flat with projection"
+    el "td" . text . T.pack . show $ p
+
+earthMathRows :: MonadWidget t m => EarthMath -> m ()
+earthMathRows em = el "tr" $ do
+    elAttr "th" ("colspan" =: "3") $ text "Earth math"
+    el "td" . text . T.pack . show $ em
+
+giveRows :: MonadWidget t m => Comp -> m ()
 giveRows Comp{..} = do
     _ <- case give of
         Just Give{giveFraction = gf, giveDistance = Nothing} -> do
