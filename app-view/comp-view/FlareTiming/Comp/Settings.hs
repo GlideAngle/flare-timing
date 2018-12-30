@@ -75,7 +75,7 @@ giveRows Comp{..} = do
             el "tr" $ do
                 el "th" $ text "* Give"
                 elAttr "td" ("colspan" =: "2")
-                    $ text "* give fraction only, no give distance"
+                    $ text "give fraction only, no give distance"
                 el "td" . text . T.pack . printf "%.5f" $ gf
 
         Just Give{giveFraction = gf, giveDistance = Just (Radius gd)} -> do
