@@ -10,6 +10,7 @@ Data for competitions, competitors and tasks.
 module Flight.Comp
     ( -- * Competition
       CompSettings(..)
+    , Projection(..)
     , EarthModel(..)
     , Comp(..)
     , Nominal(..)
@@ -52,7 +53,10 @@ import Data.Ratio ((%))
 import Control.Monad (join)
 import Data.Time.Clock (UTCTime)
 import GHC.Generics (Generic)
-import Data.Aeson (ToJSON(..), FromJSON(..))
+import Data.Aeson
+    ( Value(..), ToJSON(..), FromJSON(..), Options(..), SumEncoding(..)
+    , genericToJSON, genericParseJSON, defaultOptions
+    )
 import Data.Maybe (listToMaybe)
 import Data.List (intercalate, nub, sort)
 import Data.String (IsString())
@@ -179,12 +183,41 @@ data CompSettings k =
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
-data EarthModel
-    = EarthAsSphere (QRadius Double [u| m |])
-    | EarthAsEllipsoid (Ellipsoid Double)
-    | EarthAsFlat 
+data Projection = UTM
     deriving (Eq, Ord, Show, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+
+instance ToJSON Projection where
+    toJSON = const $ String "UTM"
+
+instance FromJSON Projection where
+    parseJSON _ = return UTM
+
+data EarthModel
+    = EarthAsSphere {radius :: QRadius Double [u| m |]}
+    | EarthAsEllipsoid (Ellipsoid Double)
+    | EarthAsFlat {projection :: Projection}
+    deriving (Eq, Ord, Show, Generic)
+
+earthModelCtorTag :: String -> String
+earthModelCtorTag s
+    | s == "EarthAsSphere" = "sphere"
+    | s == "EarthAsEllipsoid" = "ellipsoid"
+    | s == "EarthAsFlat" = "flat"
+    | otherwise = s
+
+instance ToJSON EarthModel where
+    toJSON = genericToJSON $
+        defaultOptions
+            { sumEncoding = ObjectWithSingleField
+            , constructorTagModifier = earthModelCtorTag
+            }
+
+instance FromJSON EarthModel where
+    parseJSON = genericParseJSON $
+        defaultOptions
+            { sumEncoding = ObjectWithSingleField
+            , constructorTagModifier = earthModelCtorTag
+            }
 
 data Comp =
     Comp
@@ -197,7 +230,7 @@ data Comp =
         , utcOffset :: UtcOffset
         , scoreBack :: Maybe (ScoreBackTime (Quantity Double [u| s |]))
         , give :: Maybe Give
-        , earthModel :: EarthModel
+        , earth :: EarthModel
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
@@ -333,26 +366,34 @@ cmp a b =
 
         -- Comp fields
         ("compName", _) -> LT
+
         ("discipline", "compName") -> GT
         ("discipline", _) -> LT
+
         ("location", "compName") -> GT
         ("location", "discipline") -> GT
         ("location", _) -> LT
+
         ("from", "to") -> LT
 
+        ("civilId", "utcOffset") -> LT
         ("civilId", "scoreBack") -> LT
         ("civilId", "give") -> LT
-        ("civilId", "utcOffset") -> LT
+        ("civilId", "earth") -> LT
         ("civilId", _) -> GT
 
         ("utcOffset", "scoreBack") -> LT
         ("utcOffset", "give") -> LT
+        ("utcOffset", "earth") -> LT
         ("utcOffset", _) -> GT
 
         ("scoreBack", "give") -> LT
+        ("scoreBack", "earth") -> LT
         ("scoreBack", _) -> GT
 
         ("give", "scoreBack") -> GT
+
+        ("earth", _) -> GT
 
         -- Task fields
         ("taskName", _) -> LT

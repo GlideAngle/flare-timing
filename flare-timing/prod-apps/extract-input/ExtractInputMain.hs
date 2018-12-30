@@ -178,7 +178,11 @@ fsdbSettings zg fsdbXml = do
     lift . putStrLn $ msg
     return
         CompSettings
-            { comp = c{scoreBack = sb, give = Just zg}
+            { comp =
+                c
+                    { scoreBack = sb
+                    , give = Just zg
+                    }
             , nominal = n
             , tasks = ts'
             , taskFolders = fs
