@@ -12,7 +12,7 @@ module Flight.Comp
       CompSettings(..)
     , Projection(..)
     , EarthModel(..)
-    , DistanceMath(..)
+    , EarthMath(..)
     , Comp(..)
     , Nominal(..)
     , UtcOffset(..)
@@ -195,21 +195,21 @@ instance ToJSON Projection where
 instance FromJSON Projection where
     parseJSON _ = return UTM
 
-data DistanceMath
+data EarthMath
     = Pythagorus
     | Haversines
     | Vincenty
     | Andoyer
     deriving (Eq, Ord, Show)
 
-instance ToJSON DistanceMath where
+instance ToJSON EarthMath where
     toJSON = toJSON . String . T.pack . show
 
-instance FromJSON DistanceMath where
+instance FromJSON EarthMath where
     parseJSON o@(String _) = do
         s :: String <- parseJSON o
         case s of
-            "Pyathagorus" -> return Pythagorus
+            "Pythagorus" -> return Pythagorus
             "Haversines" -> return Haversines
             "Vincenty" -> return Vincenty
             "Andoyer" -> return Andoyer
@@ -256,7 +256,7 @@ data Comp =
         , scoreBack :: Maybe (ScoreBackTime (Quantity Double [u| s |]))
         , give :: Maybe Give
         , earth :: EarthModel
-        , distanceMath :: DistanceMath
+        , earthMath :: EarthMath
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)

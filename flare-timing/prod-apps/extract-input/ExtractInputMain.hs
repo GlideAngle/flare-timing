@@ -24,7 +24,7 @@ import Flight.Comp
     , FsdbFile(..)
     , FsdbXml(..)
     , CompSettings(..)
-    , DistanceMath(..)
+    , EarthMath(..)
     , Comp(..)
     , Nominal(..)
     , Task(..)
@@ -34,7 +34,7 @@ import Flight.Comp
     , findFsdb
     , ensureExt
     )
-import qualified Flight.Comp as C (Comp(earth))
+import qualified Flight.Comp as C (Comp(earth, earthMath))
 import Flight.Distance (SpanLatLng)
 import Flight.Zone (Zone(..), Radius(..), center)
 import qualified Flight.Zone.Raw as Raw (RawZone(..), Give(..), zoneGive)
@@ -104,7 +104,7 @@ drive
     end <- getTime Monotonic
     fprint ("Extracting tasks completed in " % timeSpecs % "\n") start end
 
-go :: DistanceMath -> Raw.Give -> FsdbFile -> IO ()
+go :: EarthMath -> Raw.Give -> FsdbFile -> IO ()
 go dm zg fsdbFile@(FsdbFile fsdbPath) = do
     contents <- readFile fsdbPath
     let contents' = dropWhile (/= '<') contents
@@ -163,7 +163,7 @@ fsdbTracks (FsdbXml contents) = do
     ExceptT $ return fs
 
 fsdbSettings
-    :: DistanceMath
+    :: EarthMath
     -> Raw.Give
     -> FsdbXml
     -> ExceptT String IO (CompSettings k)
@@ -195,7 +195,7 @@ fsdbSettings dm zg fsdbXml = do
                     { scoreBack = sb
                     , give = Just zg
                     , C.earth = mkEarthModel dm
-                    , distanceMath = dm
+                    , C.earthMath = dm
 
                     }
             , nominal = n

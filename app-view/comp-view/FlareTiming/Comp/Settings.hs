@@ -32,13 +32,14 @@ compRows
     -> m ()
 compRows c = do
     giveRows c
-    earthRows c
+    earthModelRows c
+    earthMathRows c
 
-earthRows
+earthModelRows
     :: MonadWidget t m
     => Comp
     -> m ()
-earthRows Comp{..} = do
+earthModelRows Comp{..} = do
     _ <- case earth of
         EarthAsSphere r -> do
             el "tr" $ do
@@ -65,6 +66,16 @@ earthRows Comp{..} = do
                 el "td" . text . T.pack . show $ p
 
     return ()
+
+earthMathRows
+    :: MonadWidget t m
+    => Comp
+    -> m ()
+earthMathRows Comp{earthMath = em} = do
+    el "tr" $ do
+        elAttr "th" ("colspan" =: "3") $ text "Earth math"
+        el "td" . text . T.pack . show $ em
+
 giveRows
     :: MonadWidget t m
     => Comp

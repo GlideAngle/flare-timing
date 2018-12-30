@@ -23,12 +23,12 @@ import System.Console.CmdArgs.Implicit
     , enum
     )
 
-import Flight.Comp (Projection(..), DistanceMath(..), EarthModel(..))
+import Flight.Comp (Projection(..), EarthMath(..), EarthModel(..))
 import Flight.Earth.Ellipsoid (wgs84)
 import Flight.Earth.Sphere (earthRadius)
 
-deriving instance Data DistanceMath
-deriving instance Typeable DistanceMath
+deriving instance Data EarthMath
+deriving instance Typeable EarthMath
 
 -- | Options passed in on the command line.
 data CmdOptions
@@ -41,7 +41,7 @@ data CmdOptions
         -- ^ How much give (as a fraction) is there when crossing zones?
         , giveDistance :: Maybe Double
         -- ^ How much give (in metres) is there when crossing zones?
-        , earthMath :: DistanceMath
+        , earthMath :: EarthMath
         }
     deriving (Show, Data, Typeable)
 
@@ -96,7 +96,7 @@ mkOptions programName =
         &= summary description
         &= program programName
 
-mkEarthModel :: DistanceMath -> EarthModel
+mkEarthModel :: EarthMath -> EarthModel
 mkEarthModel Pythagorus = EarthAsFlat UTM
 mkEarthModel Haversines = EarthAsSphere earthRadius
 mkEarthModel Vincenty = EarthAsEllipsoid wgs84

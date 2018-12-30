@@ -10,6 +10,7 @@ module WireTypes.Comp
     , UtcOffset(..)
     , ScoreBackTime
     , Projection(..)
+    , EarthMath(..)
     , Ellipsoid(..)
     , EarthModel(..)
     , getAllRawZones
@@ -134,6 +135,25 @@ data Projection = UTM
 instance FromJSON Projection where
     parseJSON _ = return UTM
 
+data EarthMath
+    = Pythagorus
+    | Haversines
+    | Vincenty
+    | Andoyer
+    deriving (Eq, Ord, Show)
+
+instance FromJSON EarthMath where
+    parseJSON o@(String _) = do
+        s :: String <- parseJSON o
+        case s of
+            "Pythagorus" -> return Pythagorus
+            "Haversines" -> return Haversines
+            "Vincenty" -> return Vincenty
+            "Andoyer" -> return Andoyer
+            _ -> empty
+
+    parseJSON _ = empty
+
 data Ellipsoid =
     Ellipsoid
         { equatorialR :: Radius
@@ -179,6 +199,7 @@ data Comp =
         , scoreBack :: Maybe ScoreBackTime
         , give :: Maybe Give
         , earth :: EarthModel
+        , earthMath :: EarthMath
         }
     deriving (Show, Generic, FromJSON)
 
