@@ -24,6 +24,7 @@ import Flight.Comp
     , FsdbFile(..)
     , FsdbXml(..)
     , CompSettings(..)
+    , EarthModel(..)
     , Comp(..)
     , Nominal(..)
     , Task(..)
@@ -33,6 +34,7 @@ import Flight.Comp
     , findFsdb
     , ensureExt
     )
+import qualified Flight.Comp as C (Comp(earth))
 import Flight.Distance (SpanLatLng)
 import Flight.Zone (Zone(..), Radius(..), center)
 import qualified Flight.Zone.Raw as Raw (RawZone(..), Give(..), zoneGive)
@@ -40,7 +42,7 @@ import Flight.Zone.MkZones (Discipline(..), Zones(..))
 import Flight.Score (ScoreBackTime(..))
 import Flight.Scribe (writeComp)
 import Flight.Mask (separatedRawZones)
-import ExtractInputOptions (CmdOptions(..), mkOptions)
+import ExtractInputOptions (CmdOptions(..), mkOptions, mkEarthModel)
 
 import qualified Flight.Earth.Sphere.PointToPoint.Double as Dbl (distanceHaversine)
 import qualified Flight.Earth.Sphere.Separated as S (separatedZones)
@@ -68,12 +70,20 @@ main = do
     maybe (drive options) putStrLn err
 
 drive :: CmdOptions -> IO ()
+drive CmdOptions{earth = Nothing} =
+    fail "Please supply an Earth model."
 drive CmdOptions{giveFraction = Nothing} =
     fail
     $ "Please supply give for the tolerance around control zones."
     ++ " Flag --give-fraction is required and"
     ++ " flag --give-distance is optional."
-drive o@CmdOptions{giveFraction = Just gf, giveDistance = gd} = do
+drive
+    o@CmdOptions
+        { giveFraction = Just gf
+        , giveDistance = gd
+        , earth = Just earth'
+        }
+      = do
     -- SEE: http://chrisdone.com/posts/measuring-duration-in-haskell
     start <- getTime Monotonic
     files <- findFsdb o
@@ -92,15 +102,15 @@ drive o@CmdOptions{giveFraction = Just gf, giveDistance = gd} = do
                 }
 
     if null files then putStrLn "Couldn't find any input files."
-                  else mapM_ (go give) files
+                  else mapM_ (go (mkEarthModel earth') give) files
     end <- getTime Monotonic
     fprint ("Extracting tasks completed in " % timeSpecs % "\n") start end
 
-go :: Raw.Give -> FsdbFile -> IO ()
-go zg fsdbFile@(FsdbFile fsdbPath) = do
+go :: EarthModel -> Raw.Give -> FsdbFile -> IO ()
+go earth zg fsdbFile@(FsdbFile fsdbPath) = do
     contents <- readFile fsdbPath
     let contents' = dropWhile (/= '<') contents
-    settings <- runExceptT $ fsdbSettings zg (FsdbXml contents')
+    settings <- runExceptT $ fsdbSettings earth zg (FsdbXml contents')
     either print (writeComp (fsdbToComp fsdbFile)) settings
 
 fsdbComp :: FsdbXml -> ExceptT String IO Comp
@@ -154,8 +164,12 @@ fsdbTracks (FsdbXml contents) = do
     fs <- lift $ parseTracks contents
     ExceptT $ return fs
 
-fsdbSettings :: Raw.Give -> FsdbXml -> ExceptT String IO (CompSettings k)
-fsdbSettings zg fsdbXml = do
+fsdbSettings
+    :: EarthModel
+    -> Raw.Give
+    -> FsdbXml
+    -> ExceptT String IO (CompSettings k)
+fsdbSettings earthModel zg fsdbXml = do
     c <- fsdbComp fsdbXml
     n <- fsdbNominal fsdbXml
     sb <- fsdbStopped fsdbXml
@@ -182,6 +196,7 @@ fsdbSettings zg fsdbXml = do
                 c
                     { scoreBack = sb
                     , give = Just zg
+                    , C.earth = earthModel
                     }
             , nominal = n
             , tasks = ts'

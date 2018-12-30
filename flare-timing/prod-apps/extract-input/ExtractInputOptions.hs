@@ -1,7 +1,11 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# OPTIONS_GHC -fno-cse #-}
 
-module ExtractInputOptions (CmdOptions(..), mkOptions) where
+module ExtractInputOptions
+    ( CmdOptions(..)
+    , mkOptions
+    , mkEarthModel
+    ) where
 
 import Text.RawString.QQ (r)
 import System.Console.CmdArgs.Implicit
@@ -15,20 +19,33 @@ import System.Console.CmdArgs.Implicit
     , help
     , (&=)
     , explicit
+    , typ
     )
+
+import Flight.Comp (Projection(..), EarthModel(..))
+import Flight.Earth.Ellipsoid (wgs84)
+import Flight.Earth.Sphere (earthRadius)
+
+data Earth
+    = Sphere
+    | Ellipsoid
+    | Flat
+    deriving (Show, Data, Typeable)
 
 -- | Options passed in on the command line.
 data CmdOptions
-    = CmdOptions { dir :: FilePath
-                 -- ^ Picking all competition in this directory.
-                 , file :: FilePath
-                 -- ^ Picking the competition in this file.
-                 , giveFraction :: Maybe Double
-                 -- ^ How much give (as a fraction) is there when crossing zones?
-                 , giveDistance :: Maybe Double
-                 -- ^ How much give (in metres) is there when crossing zones?
-                 }
-                 deriving (Show, Data, Typeable)
+    = CmdOptions
+        { dir :: FilePath
+        -- ^ Picking all competition in this directory.
+        , file :: FilePath
+        -- ^ Picking the competition in this file.
+        , giveFraction :: Maybe Double
+        -- ^ How much give (as a fraction) is there when crossing zones?
+        , giveDistance :: Maybe Double
+        -- ^ How much give (in metres) is there when crossing zones?
+        , earth :: Maybe Earth
+        }
+    deriving (Show, Data, Typeable)
 
 description :: String
 description = [r|
@@ -53,6 +70,10 @@ mkOptions programName =
         &= help "With this one competition FSDB file"
         &= groupname "Source"
 
+        , earth = def
+        &= typ "sphere|ellipsoid|flat"
+        &= help "Which Earth model?"
+
         , giveFraction = def
         &= explicit
         &= name "give-fraction"
@@ -67,3 +88,9 @@ mkOptions programName =
         }
         &= summary description
         &= program programName
+
+mkEarthModel :: Earth -> EarthModel
+mkEarthModel = \case
+    Sphere -> EarthAsSphere earthRadius
+    Ellipsoid -> EarthAsEllipsoid wgs84
+    Flat -> EarthAsFlat UTM
