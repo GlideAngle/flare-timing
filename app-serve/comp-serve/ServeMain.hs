@@ -137,6 +137,8 @@ type GapPointApi k =
         :> Get '[JSON] [Pilot]
     :<|> "cross-zone" :> Capture "task" Int :> "pilot-nyp"
         :> Get '[JSON] [Pilot]
+    :<|> "gap-point" :> Capture "task" Int :> "pilot-df"
+        :> Get '[JSON] [Pilot]
 
     :<|> "pilot-track" :> (Capture "task" Int) :> (Capture "pilot" String)
         :> Get '[JSON] RawLatLngTrack
@@ -263,6 +265,7 @@ serverGapPointApi cfg =
         :<|> getTaskValidityWorking
         :<|> getTaskPilotDnf
         :<|> getTaskPilotNyp
+        :<|> getTaskPilotDf
         :<|> getTaskPilotTrack
     where
         c = asks compSettings
@@ -414,6 +417,19 @@ getTaskPilotNyp ii = do
         (Just xss, Just css) ->
             case (drop jj ts, drop jj xss, drop jj css) of
                 (t : _, xs : _, cs : _) -> return $ nyp ps t xs cs
+                _ -> throwError $ errTaskBounds ii
+
+        _ -> return ps
+
+getTaskPilotDf :: Int -> AppT k IO [Pilot]
+getTaskPilotDf ii = do
+    let jj = ii - 1
+    ps <- getPilots <$> asks compSettings
+    css' <- fmap getScores <$> asks pointing
+    case css' of
+        Just css ->
+            case drop jj css of
+                cs : _ -> return . fst . unzip $ cs
                 _ -> throwError $ errTaskBounds ii
 
         _ -> return ps
