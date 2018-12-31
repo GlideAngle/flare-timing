@@ -1,5 +1,6 @@
 { default-extensions =
-    [ "DataKinds"
+    [ "ConstraintKinds"
+    , "DataKinds"
     , "DeriveFunctor"
     , "DeriveGeneric"
     , "DeriveAnyClass"

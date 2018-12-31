@@ -1,5 +1,6 @@
 module FlareTiming.Comms
-    ( getComps
+    ( GetConstraint
+    , getComps
     , getNominals
     , getTasks
     , getPilots
@@ -17,6 +18,7 @@ module FlareTiming.Comms
 import Reflex
 import Reflex.Dom
 import qualified Data.Text as T (Text, pack)
+import Control.Monad.IO.Class (MonadIO)
 
 import WireTypes.Comp (Comp(..), Nominal(..), Task(..))
 import WireTypes.Route
@@ -37,7 +39,16 @@ import FlareTiming.Events (IxTask(..))
 mapUri :: T.Text -> T.Text
 mapUri s = "http://localhost:3000" <> s
 
-getTasks :: MonadWidget t m => () -> m (Dynamic t [Task])
+type GetConstraint t m =
+    ( PostBuild t m
+    , MonadIO (Performable m)
+    , HasJSContext (Performable m)
+    , PerformEvent t m
+    , TriggerEvent t m
+    , MonadHold t m
+    )
+
+getTasks :: GetConstraint t m => () -> m (Dynamic t [Task])
 getTasks () = do
     pb :: Event t () <- getPostBuild
     let defReq = mapUri "/comp-input/tasks"
@@ -48,7 +59,7 @@ getTasks () = do
     holdDyn [] es
 
 getComps
-    :: MonadWidget t m
+    :: GetConstraint t m
     => ()
     -> m (Dynamic t [Comp])
 getComps () = do
@@ -62,7 +73,7 @@ getComps () = do
     return xs
 
 getNominals
-    :: MonadWidget t m
+    :: GetConstraint t m
     => ()
     -> m (Dynamic t [Nominal])
 getNominals () = do
@@ -76,7 +87,7 @@ getNominals () = do
     return xs
 
 getPilots
-    :: MonadWidget t m
+    :: GetConstraint t m
     => ()
     -> m (Dynamic t [Pilot])
 getPilots () = do
@@ -89,7 +100,7 @@ getPilots () = do
     holdDyn [] es
 
 getPilotsStatus
-    :: MonadWidget t m
+    :: GetConstraint t m
     => ()
     -> m (Dynamic t [(Pilot, [PilotTaskStatus])])
 getPilotsStatus () = do
@@ -102,7 +113,7 @@ getPilotsStatus () = do
     holdDyn [] es
 
 getValidity
-    :: MonadWidget t m
+    :: GetConstraint t m
     => ()
     -> m (Dynamic t [Maybe Validity])
 getValidity () = do
@@ -115,7 +126,7 @@ getValidity () = do
     holdDyn [] es
 
 getAllocation
-    :: MonadWidget t m
+    :: GetConstraint t m
     => ()
     -> m (Dynamic t [Maybe Allocation])
 getAllocation () = do
@@ -128,7 +139,7 @@ getAllocation () = do
     holdDyn [] es
 
 getTaskScore
-    :: MonadWidget t m
+    :: GetConstraint t m
     => IxTask
     -> m (Dynamic t [(Pilot, Breakdown)])
 
@@ -151,7 +162,7 @@ getTaskScore (IxTask ii) = do
 getTaskScore IxTaskNone = return $ constDyn []
 
 getTaskValidityWorking
-    :: MonadWidget t m
+    :: GetConstraint t m
     => IxTask
     -> m (Dynamic t (Maybe ValidityWorking))
 getTaskValidityWorking (IxTask ii) = do
@@ -181,7 +192,7 @@ emptyRoute =
         }
 
 getTaskLengthSphericalEdge
-    :: MonadWidget t m
+    :: GetConstraint t m
     => IxTask
     -> m (Dynamic t (OptimalRoute (Maybe TrackLine)))
 getTaskLengthSphericalEdge (IxTask ii) = do
@@ -203,7 +214,7 @@ getTaskLengthSphericalEdge (IxTask ii) = do
 getTaskLengthSphericalEdge IxTaskNone = return $ constDyn emptyRoute
 
 getTaskPilot
-    :: MonadWidget t m
+    :: GetConstraint t m
     => T.Text
     -> IxTask
     -> m (Dynamic t [Pilot])
@@ -227,14 +238,14 @@ getTaskPilot path (IxTask ii) = do
 getTaskPilot _ IxTaskNone = return $ constDyn []
 
 getTaskPilotDnf, getTaskPilotNyp
-    :: MonadWidget t m
+    :: GetConstraint t m
     => IxTask
     -> m (Dynamic t [Pilot])
 getTaskPilotDnf = getTaskPilot "/pilot-dnf"
 getTaskPilotNyp = getTaskPilot "/pilot-nyp"
 
 getTaskPilotTrack
-    :: MonadWidget t m
+    :: GetConstraint t m
     => IxTask
     -> PilotId
     -> m (Dynamic t [[Double]])
