@@ -29,7 +29,9 @@ import qualified FlareTiming.Map.Leaflet as L
     , panToBounds
     , latLngBounds
     , layersControl
+    , addOverlay
     )
+import WireTypes.Pilot (Pilot(..), PilotId(..), PilotName(..))
 import WireTypes.Comp (Task(..), SpeedSection, getAllRawZones)
 import WireTypes.Zone
     (Zones(..), RawZone(..), RawLatLng(..), RawLat(..), RawLng(..))
@@ -149,7 +151,7 @@ viewMap
     :: MonadWidget t m
     => Dynamic t Task
     -> Dynamic t (OptimalRoute (Maybe TrackLine))
-    -> Dynamic t [[Double]]
+    -> Dynamic t (Pilot, [[Double]])
     -> m ()
 viewMap task route track = do
     task' <- sample . current $ task
@@ -168,7 +170,7 @@ map
     -> TaskRoute
     -> TaskRouteSubset
     -> SpeedRoute
-    -> [[Double]]
+    -> (Pilot, [[Double]])
     -> m ()
 
 map Task{zones = Zones{raw = []}} _ _ _ _ = do
@@ -192,7 +194,7 @@ map
     (TaskRoute taskRoute)
     (TaskRouteSubset taskRouteSubset)
     (SpeedRoute speedRoute)
-    track = do
+    (Pilot (_, pilotName), track) = do
 
     let tpNames = fmap (\RawZone{..} -> TurnpointName zoneName) xs
     postBuild <- delay 1 =<< getPostBuild
@@ -269,14 +271,17 @@ map
             -- can also be hidden via the layers control. The course line is
             -- not added by default but can be shown via the layers control.
             L.layerGroupAddToMap taskRouteGroup lmap
-            L.layersControl
-                mapLayer
-                lmap
-                courseGroup
-                taskRouteGroup
-                taskRouteSubsetGroup
-                speedRouteGroup
-                pilotGroup
+
+            layers <-
+                L.layersControl
+                    mapLayer
+                    lmap
+                    courseGroup
+                    taskRouteGroup
+                    taskRouteSubsetGroup
+                    speedRouteGroup
+
+            L.addOverlay layers (pilotName, pilotGroup)
 
             bounds <- L.latLngBounds $ zoneToLLR <$> xs
 

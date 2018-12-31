@@ -29,12 +29,15 @@ module FlareTiming.Map.Leaflet
     , layerGroup
     , layerGroupAddToMap
     , layersControl
+    , addOverlay
     ) where
 
 import Prelude hiding (map, log)
 import GHCJS.Types (JSVal, JSString)
 import GHCJS.DOM.Element (IsElement)
 import GHCJS.DOM.Types (Element(..), toElement, toJSString, toJSVal)
+
+import WireTypes.Pilot (PilotName(..))
 
 -- SEE: https://gist.github.com/ali-abrar/fa2adbbb7ee64a0295cb
 newtype Map = Map { unMap :: JSVal }
@@ -44,6 +47,7 @@ newtype Marker = Marker { unMarker :: JSVal }
 newtype Circle = Circle { unCircle :: JSVal }
 newtype Polyline = Polyline { unPolyline :: JSVal }
 newtype LatLngBounds = LatLngBounds { unLatLngBounds :: JSVal }
+newtype Layers = Layers { unLayers :: JSVal }
 
 foreign import javascript unsafe
     "L['map']($1)"
@@ -77,9 +81,12 @@ foreign import javascript unsafe
     \, 'Speed section (task waypoints subset)': $6\
     \}\
     \, { 'Map': $1\
-    \, 'Tracklog': $7\
     \}).addTo($2)"
-    layersControl_ :: JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> IO ()
+    layersControl_ :: JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> IO JSVal
+
+foreign import javascript unsafe
+    "$1.addOverlay($2, $3)"
+    addBaseLayer_ :: JSVal -> JSVal -> JSString -> IO ()
 
 foreign import javascript unsafe
     "L['marker']([$1, $2])"
@@ -153,17 +160,28 @@ layersControl
     -> LayerGroup -- ^ Optimal route of the course
     -> LayerGroup -- ^ Subset of the optimal route's course line
     -> LayerGroup -- ^ Optimal route through the waypoints of the speed section
-    -> LayerGroup -- ^ Pilot's track
+    -> IO Layers
+layersControl x lmap course taskRoute taskRouteSubset speedRoute = do
+    layers <-
+        layersControl_
+            (unTileLayer x)
+            (unMap lmap)
+            (unLayerGroup course)
+            (unLayerGroup taskRoute)
+            (unLayerGroup taskRouteSubset)
+            (unLayerGroup speedRoute)
+
+    return $ Layers layers
+
+addOverlay
+    :: Layers
+    -> (PilotName, LayerGroup) -- ^ Pilot's track
     -> IO ()
-layersControl x lmap course taskRoute taskRouteSubset speedRoute pilotLine =
-    layersControl_
-        (unTileLayer x)
-        (unMap lmap)
-        (unLayerGroup course)
-        (unLayerGroup taskRoute)
-        (unLayerGroup taskRouteSubset)
-        (unLayerGroup speedRoute)
+addOverlay layers (PilotName pilotName, pilotLine) = do
+    addBaseLayer_
+        (unLayers layers)
         (unLayerGroup pilotLine)
+        (toJSString pilotName)
 
 tileLayer :: String -> Int -> IO TileLayer
 tileLayer src maxZoom =
