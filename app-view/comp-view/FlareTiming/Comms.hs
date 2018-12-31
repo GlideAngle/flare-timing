@@ -12,6 +12,7 @@ module FlareTiming.Comms
     , getTaskLengthSphericalEdge
     , getTaskPilotDnf
     , getTaskPilotNyp
+    , getTaskPilotDf
     , getTaskPilotTrack
     ) where
 
@@ -213,19 +214,23 @@ getTaskLengthSphericalEdge (IxTask ii) = do
 
 getTaskLengthSphericalEdge IxTaskNone = return $ constDyn emptyRoute
 
-getTaskPilot
+getTaskPilot_
     :: GetConstraint t m
     => T.Text
+    -> T.Text
     -> IxTask
     -> m (Dynamic t [Pilot])
-getTaskPilot path (IxTask ii) = do
+getTaskPilot_ stage path (IxTask ii) = do
     pb :: Event t () <- getPostBuild
 
     let defReq :: T.Text
         defReq =
             mapUri
-            $ "/cross-zone/"
+            $ "/"
+            <> stage
+            <> "/"
             <> (T.pack . show $ ii)
+            <> "/"
             <> path
 
 
@@ -235,14 +240,15 @@ getTaskPilot path (IxTask ii) = do
     let es :: Event t [Pilot] = fmapMaybe decodeXhrResponse rsp
     holdDyn [] es
 
-getTaskPilot _ IxTaskNone = return $ constDyn []
+getTaskPilot_ _ _ IxTaskNone = return $ constDyn []
 
-getTaskPilotDnf, getTaskPilotNyp
+getTaskPilotDnf, getTaskPilotNyp, getTaskPilotDf
     :: GetConstraint t m
     => IxTask
     -> m (Dynamic t [Pilot])
-getTaskPilotDnf = getTaskPilot "/pilot-dnf"
-getTaskPilotNyp = getTaskPilot "/pilot-nyp"
+getTaskPilotDnf = getTaskPilot_ "cross-zone" "pilot-dnf"
+getTaskPilotNyp = getTaskPilot_ "cross-zone" "pilot-nyp"
+getTaskPilotDf = getTaskPilot_ "gap-point" "pilot-df"
 
 getTaskPilotTrack
     :: GetConstraint t m

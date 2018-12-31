@@ -42,6 +42,8 @@ import WireTypes.Route
     , optimalTaskRoute, optimalTaskRouteSubset, optimalSpeedRoute
     )
 import qualified FlareTiming.Turnpoint as TP (getName)
+import FlareTiming.Comms (getTaskPilotDf)
+import FlareTiming.Events (IxTask(..))
 
 data ZoomOrPan = Zoom | Pan deriving Show
 
@@ -61,8 +63,9 @@ zoomOrPanIcon Pan = "fa fa-arrows"
 taskZoneButtons
     :: MonadWidget t m
     => Task
+    -> Dynamic t [Pilot]
     -> m ((Dynamic t ZoomOrPan, Dynamic t [RawZone]))
-taskZoneButtons t@Task{speedSection} = do
+taskZoneButtons t@Task{speedSection} ps = do
     let zones = getAllRawZones t
     let btn = "button"
     let btnStart = "button has-text-success"
@@ -81,27 +84,50 @@ taskZoneButtons t@Task{speedSection} = do
                         zones
                         [1..])
 
-    elClass "div" "buttons has-addons" $ do
-        rec (zoom, _) <-
-                elClass' "a" "button" $ do
-                    elClass "span" "icon is-small" $
-                        elDynClass "i" zpClass $ return ()
-                    el "span" $ dynText zpText
+    elClass "div" "field is-grouped" $ do
+        x <- elClass "p" "control" $ do
+                elClass "div" "buttons has-addons" $ do
+                    rec (zoom, _) <-
+                            elClass' "a" "button" $ do
+                                elClass "span" "icon is-small" $
+                                    elDynClass "i" zpClass $ return ()
+                                el "span" $ dynText zpText
 
-            zoomOrPan <-
-                (fmap . fmap)
-                (\case True -> Pan; False -> Zoom)
-                (toggle True $ domEvent Click zoom)
+                        zoomOrPan <-
+                            (fmap . fmap)
+                            (\case True -> Pan; False -> Zoom)
+                            (toggle True $ domEvent Click zoom)
 
-            let zpText = ffor zoomOrPan $ T.pack . (++ " to ...") . show
-            let zpClass = ffor zoomOrPan zoomOrPanIcon
+                        let zpText = ffor zoomOrPan $ T.pack . (++ " to ...") . show
+                        let zpClass = ffor zoomOrPan zoomOrPanIcon
 
-        (extents, _) <- elAttr' "a" ("class" =: "button") $ text "Extents"
-        let allZones = zones <$ domEvent Click extents
+                    (extents, _) <- elAttr' "a" ("class" =: "button") $ text "Extents"
+                    let allZones = zones <$ domEvent Click extents
 
-        eachZone <- sequence $ zoomButton <$> zoneClasses speedSection
-        zs <- holdDyn zones . leftmost $ allZones : eachZone
-        return $ (zoomOrPan, zs)
+                    eachZone <- sequence $ zoomButton <$> zoneClasses speedSection
+                    zs <- holdDyn zones . leftmost $ allZones : eachZone
+                    return $ (zoomOrPan, zs)
+
+        _ <- elClass "p" "control" $ do
+            elClass "span" "select" $ do
+                el "select" $ do
+                    elAttr "option" ("selected" =: "") $ text "Select pilot"
+                    -- NOTE: Use a simpleList as the pilots are already sorted
+                    -- in the order that I want to see them listed, in the rank
+                    -- order from first to last for the task. The alternative
+                    -- would have been to use the builtin dropdown.
+                    simpleList ps pilotOption
+
+        return x
+
+pilotOption
+    :: MonadWidget t m
+    => Dynamic t Pilot
+    -> m ()
+pilotOption p = do
+    pid <- sample . current $ (\(Pilot (PilotId i, _)) -> T.pack i) <$> p
+    let name = (\(Pilot (_, PilotName n)) -> T.pack n) <$> p
+    elAttr "option" ("value" =: pid) $ dynText name
 
 showLatLng :: (Double, Double) -> String
 showLatLng (lat, lng) =
@@ -149,15 +175,17 @@ rawToLL RawLatLng{lat = RawLat lat', lng = RawLng lng'} =
 
 viewMap
     :: MonadWidget t m
-    => Dynamic t Task
+    => IxTask
+    -> Dynamic t Task
     -> Dynamic t (OptimalRoute (Maybe TrackLine))
     -> Dynamic t (Pilot, [[Double]])
     -> m ()
-viewMap task route track = do
+viewMap ix task route track = do
     task' <- sample . current $ task
     route' <- sample . current $ route
     track' <- sample . current $ track
     map
+        ix
         task'
         (optimalTaskRoute route')
         (optimalTaskRouteSubset route')
@@ -166,30 +194,32 @@ viewMap task route track = do
 
 map
     :: MonadWidget t m
-    => Task
+    => IxTask
+    -> Task
     -> TaskRoute
     -> TaskRouteSubset
     -> SpeedRoute
     -> (Pilot, [[Double]])
     -> m ()
 
-map Task{zones = Zones{raw = []}} _ _ _ _ = do
+map _ Task{zones = Zones{raw = []}} _ _ _ _ = do
     el "p" $ text "The task has no turnpoints."
     return ()
 
-map _ (TaskRoute []) _ _ _ = do
+map _ _ (TaskRoute []) _ _ _ = do
     el "p" $ text "The optimal task route has no turnpoints."
     return ()
 
-map _ _ (TaskRouteSubset []) _ _ = do
+map _ _ _ (TaskRouteSubset []) _ _ = do
     el "p" $ text "The optimal task route speed section has no turnpoints."
     return ()
 
-map _ _ _ (SpeedRoute []) _ = do
+map _ _ _ _ (SpeedRoute []) _ = do
     el "p" $ text "The optimal route through only the speed section has no turnpoints."
     return ()
 
 map
+    ix
     task@Task{zones = Zones{raw = xs}, speedSection}
     (TaskRoute taskRoute)
     (TaskRouteSubset taskRouteSubset)
@@ -199,7 +229,8 @@ map
     let tpNames = fmap (\RawZone{..} -> TurnpointName zoneName) xs
     postBuild <- delay 1 =<< getPostBuild
 
-    (zoomOrPan, evZoom) <- taskZoneButtons task
+    pilots <- getTaskPilotDf ix
+    (zoomOrPan, evZoom) <- taskZoneButtons task pilots
 
     (eCanvas, _) <- elAttr' "div" ("style" =: "height: 680px;width: 100%") $ return ()
 
