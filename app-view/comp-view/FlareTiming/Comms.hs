@@ -11,6 +11,7 @@ module FlareTiming.Comms
     , getTaskLengthSphericalEdge
     , getTaskPilotDnf
     , getTaskPilotNyp
+    , getTaskPilotTrack
     ) where
 
 import Reflex
@@ -19,7 +20,7 @@ import qualified Data.Text as T (Text, pack)
 
 import WireTypes.Comp (Comp(..), Nominal(..), Task(..))
 import WireTypes.Route
-import WireTypes.Pilot (PilotTaskStatus(..), Pilot(..))
+import WireTypes.Pilot (PilotTaskStatus(..), Pilot(..), PilotId(..))
 import WireTypes.Point
 import WireTypes.Validity
 import WireTypes.ValidityWorking
@@ -231,3 +232,27 @@ getTaskPilotDnf, getTaskPilotNyp
     -> m (Dynamic t [Pilot])
 getTaskPilotDnf = getTaskPilot "/pilot-dnf"
 getTaskPilotNyp = getTaskPilot "/pilot-nyp"
+
+getTaskPilotTrack
+    :: MonadWidget t m
+    => IxTask
+    -> PilotId
+    -> m (Dynamic t [[Double]])
+getTaskPilotTrack (IxTask ii) (PilotId pid) = do
+    pb :: Event t () <- getPostBuild
+
+    let defReq :: T.Text
+        defReq =
+            mapUri
+            $ "/pilot-track/"
+            <> (T.pack . show $ ii)
+            <> "/"
+            <> (T.pack pid)
+
+    let req md = XhrRequest "GET" (maybe defReq id md) def
+    rsp <- performRequestAsync $ fmap req $ leftmost [ Nothing <$ pb ]
+
+    let es :: Event t [[Double]] = fmapMaybe decodeXhrResponse rsp
+    holdDyn [] es
+
+getTaskPilotTrack IxTaskNone _ = return $ constDyn []

@@ -17,7 +17,8 @@ module FlareTiming.Map.Leaflet
     , markerPopup
     , circle
     , circleAddToMap
-    , polyline 
+    , trackline
+    , polyline
     , polylineAddToMap
     , circleBounds
     , polylineBounds
@@ -75,8 +76,10 @@ foreign import javascript unsafe
     \, 'Speed section (course line subset)': $5\
     \, 'Speed section (task waypoints subset)': $6\
     \}\
-    \, {'Map': $1}).addTo($2)"
-    layersControl_ :: JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> IO ()
+    \, { 'Map': $1\
+    \, 'Tracklog': $7\
+    \}).addTo($2)"
+    layersControl_ :: JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> IO ()
 
 foreign import javascript unsafe
     "L['marker']([$1, $2])"
@@ -93,6 +96,10 @@ foreign import javascript unsafe
 foreign import javascript unsafe
     "L['polyline']($1, {color: $2, opacity: 0.6, dashArray: '20,15', lineJoin: 'round'})"
     polyline_ :: JSVal -> JSString -> IO JSVal
+
+foreign import javascript unsafe
+    "L['polyline']($1, {color: $2, weight: 1})"
+    trackline_ :: JSVal -> JSString -> IO JSVal
 
 foreign import javascript unsafe
     "$1['getBounds']()"
@@ -146,8 +153,9 @@ layersControl
     -> LayerGroup -- ^ Optimal route of the course
     -> LayerGroup -- ^ Subset of the optimal route's course line
     -> LayerGroup -- ^ Optimal route through the waypoints of the speed section
+    -> LayerGroup -- ^ Pilot's track
     -> IO ()
-layersControl x lmap course taskRoute taskRouteSubset speedRoute =
+layersControl x lmap course taskRoute taskRouteSubset speedRoute pilotLine =
     layersControl_
         (unTileLayer x)
         (unMap lmap)
@@ -155,6 +163,7 @@ layersControl x lmap course taskRoute taskRouteSubset speedRoute =
         (unLayerGroup taskRoute)
         (unLayerGroup taskRouteSubset)
         (unLayerGroup speedRoute)
+        (unLayerGroup pilotLine)
 
 tileLayer :: String -> Int -> IO TileLayer
 tileLayer src maxZoom =
@@ -186,6 +195,11 @@ polyline :: [(Double, Double)] -> String -> IO Polyline
 polyline xs color = do
     ys <- toJSVal $ (\ (lat, lng) -> [ lat, lng ]) <$> xs
     Polyline <$> polyline_ ys (toJSString color)
+
+trackline :: [[Double]] -> String -> IO Polyline
+trackline xs color = do
+    ys <- toJSVal xs
+    Polyline <$> trackline_ ys (toJSString color)
 
 polylineAddToMap :: Polyline -> Map -> IO ()
 polylineAddToMap x lmap = addToMap_ (unPolyline x) (unMap lmap)

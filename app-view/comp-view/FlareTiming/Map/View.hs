@@ -1,5 +1,6 @@
 module FlareTiming.Map.View (viewMap) where
 
+import Debug.Trace
 import Prelude hiding (map)
 import Text.Printf (printf)
 import Reflex.Dom
@@ -23,7 +24,8 @@ import qualified FlareTiming.Map.Leaflet as L
     , mapInvalidateSize
     , circle
     , circleAddToMap
-    , polyline 
+    , trackline
+    , polyline
     , fitBounds
     , panToBounds
     , latLngBounds
@@ -148,15 +150,18 @@ viewMap
     :: MonadWidget t m
     => Dynamic t Task
     -> Dynamic t (OptimalRoute (Maybe TrackLine))
+    -> Dynamic t [[Double]]
     -> m ()
-viewMap task route = do
+viewMap task route track = do
     task' <- sample . current $ task
     route' <- sample . current $ route
+    track' <- sample . current $ track
     map
         task'
         (optimalTaskRoute route')
         (optimalTaskRouteSubset route')
         (optimalSpeedRoute route')
+        track'
 
 map
     :: MonadWidget t m
@@ -164,21 +169,22 @@ map
     -> TaskRoute
     -> TaskRouteSubset
     -> SpeedRoute
+    -> [[Double]]
     -> m ()
 
-map Task{zones = Zones{raw = []}} _ _ _ = do
+map Task{zones = Zones{raw = []}} _ _ _ _ = do
     el "p" $ text "The task has no turnpoints."
     return ()
 
-map _ (TaskRoute []) _ _= do
+map _ (TaskRoute []) _ _ _ = do
     el "p" $ text "The optimal task route has no turnpoints."
     return ()
 
-map _ _ (TaskRouteSubset []) _= do
+map _ _ (TaskRouteSubset []) _ _ = do
     el "p" $ text "The optimal task route speed section has no turnpoints."
     return ()
 
-map _ _ _ (SpeedRoute []) = do
+map _ _ _ (SpeedRoute []) _ = do
     el "p" $ text "The optimal route through only the speed section has no turnpoints."
     return ()
 
@@ -186,7 +192,9 @@ map
     task@Task{zones = Zones{raw = xs}, speedSection}
     (TaskRoute taskRoute)
     (TaskRouteSubset taskRouteSubset)
-    (SpeedRoute speedRoute) = do
+    (SpeedRoute speedRoute)
+    track = do
+
     let tpNames = fmap (\RawZone{..} -> TurnpointName zoneName) xs
     postBuild <- delay 1 =<< getPostBuild
 
@@ -246,6 +254,7 @@ map
             taskRouteLine <- L.polyline ptsTaskRoute "red"
             taskRouteSubsetLine <- L.polyline ptsTaskRouteSubset "green"
             speedRouteLine <- L.polyline ptsSpeedRoute "magenta"
+            pilotLine <- L.trackline (traceShow track track) "black"
 
             taskRouteMarks <- sequence $ zipWith marker cs ptsTaskRoute
             taskRouteSubsetMarks <- sequence $ zipWith marker cs ptsTaskRouteSubset
@@ -255,6 +264,7 @@ map
             taskRouteGroup <- L.layerGroup taskRouteLine taskRouteMarks
             taskRouteSubsetGroup <- L.layerGroup taskRouteSubsetLine taskRouteSubsetMarks
             speedRouteGroup <- L.layerGroup speedRouteLine speedRouteMarks
+            pilotGroup <- L.layerGroup pilotLine []
 
             -- NOTE: Adding the route now so that it displays by default but
             -- can also be hidden via the layers control. The course line is
@@ -267,6 +277,7 @@ map
                 taskRouteGroup
                 taskRouteSubsetGroup
                 speedRouteGroup
+                pilotGroup
 
             bounds <- L.latLngBounds $ zoneToLLR <$> xs
 

@@ -5,13 +5,14 @@ import Reflex
 import Reflex.Dom
 import qualified Data.Text as T (intercalate)
 
+import WireTypes.Pilot (PilotId(..))
 import WireTypes.Comp (Comp(..), Task(..), getRaceRawZones)
 import WireTypes.Route (taskLength, taskLegs)
 import WireTypes.Point (Allocation(..))
 import WireTypes.Validity (Validity(..))
 import FlareTiming.Comms
     ( getTaskScore, getTaskValidityWorking, getTaskLengthSphericalEdge
-    , getTaskPilotDnf, getTaskPilotNyp
+    , getTaskPilotDnf, getTaskPilotNyp, getTaskPilotTrack
     )
 import FlareTiming.Breadcrumb (crumbTask)
 import FlareTiming.Events (IxTask(..))
@@ -53,6 +54,7 @@ taskDetail ix@(IxTask _) cs task vy a = do
     vw <- getTaskValidityWorking ix
     nyp <- getTaskPilotNyp ix
     dnf <- getTaskPilotDnf ix
+    track <- getTaskPilotTrack ix (PilotId "100")
     let lnTask = getTaskLengthSphericalEdge ix
     ln <- (fmap . fmap) taskLength lnTask
     legs <- (fmap . fmap) taskLegs lnTask
@@ -69,7 +71,7 @@ taskDetail ix@(IxTask _) cs task vy a = do
     _ <- widgetHold (tableTask utc task legs) $
             (\case
                 TaskTabTask -> tableTask utc task legs
-                TaskTabMap -> viewMap task routes
+                TaskTabMap -> viewMap task routes track
                 TaskTabAbsent -> tableAbsent nyp dnf task
                 TaskTabValidity -> viewValidity vy vw
                 TaskTabScore -> tableScore utc ln dnf vy wg ps tp s)
