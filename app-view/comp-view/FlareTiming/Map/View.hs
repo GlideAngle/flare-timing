@@ -1,6 +1,5 @@
 module FlareTiming.Map.View (viewMap) where
 
-import Debug.Trace
 import Prelude hiding (map)
 import Text.Printf (printf)
 import Reflex.Dom
@@ -254,7 +253,7 @@ map
             taskRouteLine <- L.polyline ptsTaskRoute "red"
             taskRouteSubsetLine <- L.polyline ptsTaskRouteSubset "green"
             speedRouteLine <- L.polyline ptsSpeedRoute "magenta"
-            pilotLine <- L.trackline (traceShow track track) "black"
+            pilotLine <- L.trackline track "black"
 
             taskRouteMarks <- sequence $ zipWith marker cs ptsTaskRoute
             taskRouteSubsetMarks <- sequence $ zipWith marker cs ptsTaskRouteSubset
