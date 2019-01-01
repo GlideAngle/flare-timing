@@ -1,5 +1,6 @@
 module FlareTiming.Map.View (viewMap) where
 
+import Debug.Trace
 import Prelude hiding (map)
 import Text.Printf (printf)
 import Reflex.Dom
@@ -67,7 +68,9 @@ pilotToSelectMap ps =
     : zipWith (\i (Pilot (_, PilotName n)) -> (i, T.pack n)) [1..] ps
 
 pilotAtIdx :: Int -> [Pilot] -> Maybe Pilot
-pilotAtIdx ii ps = listToMaybe . take 1 . drop ii $ ps
+pilotAtIdx ii ps =
+    -- WARNING: The zeroth item is the prompt in the select.
+    listToMaybe . take 1 . drop (ii - 1) $ ps
 
 taskZoneButtons
     :: MonadWidget t m
@@ -226,7 +229,7 @@ map
     postBuild <- delay 1 =<< getPostBuild
 
     pilots <- getTaskPilotDf ix
-    (zoomOrPan, evZoom, _) <- taskZoneButtons task pilots
+    (zoomOrPan, evZoom, activePilot) <- taskZoneButtons task pilots
 
     (eCanvas, _) <- elAttr' "div" ("style" =: "height: 680px;width: 100%") $ return ()
 
@@ -244,6 +247,9 @@ map
                     Pan -> L.panToBounds lmap' bs
 
                 return ())
+
+            , ffor activePilot (\p ->
+                return $ traceShow p ())
             ]
 
         (lmap', bounds', _) <- liftIO $ do
