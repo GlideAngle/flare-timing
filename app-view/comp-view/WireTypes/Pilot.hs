@@ -3,6 +3,9 @@ module WireTypes.Pilot
     , Pilot(..)
     , PilotId(..)
     , PilotName(..)
+    , getPilotId
+    , getPilotName
+    , nullPilot
     ) where
 
 import GHC.Generics (Generic)
@@ -30,3 +33,12 @@ newtype Pilot = Pilot (PilotId, PilotName)
 instance Ord Pilot where
     (Pilot (k0, s0)) `compare` (Pilot (k1, s1)) =
         (s0, k0) `compare` (s1, k1)
+
+getPilotId :: Pilot -> PilotId
+getPilotId (Pilot (pid, _)) = pid
+
+getPilotName :: Pilot -> PilotName
+getPilotName (Pilot (_, name)) = name
+
+nullPilot :: Pilot
+nullPilot = Pilot (PilotId "", PilotName "")

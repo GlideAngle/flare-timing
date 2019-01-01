@@ -3,9 +3,11 @@ module FlareTiming.Map.View (viewMap) where
 import Prelude hiding (map)
 import Text.Printf (printf)
 import Reflex.Dom
+
 import qualified Data.Text as T (Text, pack)
 import Reflex.Time (delay)
-import Data.Maybe (catMaybes)
+import Data.Maybe (catMaybes, listToMaybe, isJust, fromMaybe)
+import qualified Data.Map as Map
 import Data.List (zipWith4)
 import Control.Monad (sequence)
 import Control.Monad.IO.Class (liftIO)
@@ -23,15 +25,13 @@ import qualified FlareTiming.Map.Leaflet as L
     , mapInvalidateSize
     , circle
     , circleAddToMap
-    , trackline
     , polyline
     , fitBounds
     , panToBounds
     , latLngBounds
     , layersControl
-    , addOverlay
     )
-import WireTypes.Pilot (Pilot(..), PilotId(..), PilotName(..))
+import WireTypes.Pilot (Pilot(..), PilotName(..), nullPilot)
 import WireTypes.Comp (Task(..), SpeedSection, getAllRawZones)
 import WireTypes.Zone
     (Zones(..), RawZone(..), RawLatLng(..), RawLat(..), RawLng(..))
@@ -60,12 +60,22 @@ zoomOrPanIcon :: ZoomOrPan -> T.Text
 zoomOrPanIcon Zoom = "fa fa-search-plus"
 zoomOrPanIcon Pan = "fa fa-arrows"
 
+pilotToSelectMap :: [Pilot] -> Map.Map Int T.Text
+pilotToSelectMap ps =
+    Map.fromList
+    $ (0, "Select a pilot's track")
+    : zipWith (\i (Pilot (_, PilotName n)) -> (i, T.pack n)) [1..] ps
+
+pilotAtIdx :: Int -> [Pilot] -> Maybe Pilot
+pilotAtIdx ii ps = listToMaybe . take 1 . drop ii $ ps
+
 taskZoneButtons
     :: MonadWidget t m
     => Task
     -> Dynamic t [Pilot]
-    -> m ((Dynamic t ZoomOrPan, Dynamic t [RawZone]))
+    -> m (Dynamic t ZoomOrPan, Dynamic t [RawZone], Event t Pilot)
 taskZoneButtons t@Task{speedSection} ps = do
+    let ps' = pilotToSelectMap <$> ps
     let zones = getAllRawZones t
     let btn = "button"
     let btnStart = "button has-text-success"
@@ -108,26 +118,16 @@ taskZoneButtons t@Task{speedSection} ps = do
                     zs <- holdDyn zones . leftmost $ allZones : eachZone
                     return $ (zoomOrPan, zs)
 
-        _ <- elClass "p" "control" $ do
+        y <- elClass "p" "control" $ do
             elClass "span" "select" $ do
-                el "select" $ do
-                    elAttr "option" ("selected" =: "") $ text "Select pilot"
-                    -- NOTE: Use a simpleList as the pilots are already sorted
-                    -- in the order that I want to see them listed, in the rank
-                    -- order from first to last for the task. The alternative
-                    -- would have been to use the builtin dropdown.
-                    simpleList ps pilotOption
+                dd <- dropdown 0 ps' def
+                let p = tagPromptlyDyn (ffor2 (value dd) ps pilotAtIdx) $ _dropdown_change dd
+                p' <- holdDyn Nothing p
+                let p'' = fromMaybe nullPilot <$> p
 
-        return x
+                return $ gate (isJust <$> current p') p''
 
-pilotOption
-    :: MonadWidget t m
-    => Dynamic t Pilot
-    -> m ()
-pilotOption p = do
-    pid <- sample . current $ (\(Pilot (PilotId i, _)) -> T.pack i) <$> p
-    let name = (\(Pilot (_, PilotName n)) -> T.pack n) <$> p
-    elAttr "option" ("value" =: pid) $ dynText name
+        return (fst x, snd x, y)
 
 showLatLng :: (Double, Double) -> String
 showLatLng (lat, lng) =
@@ -178,19 +178,17 @@ viewMap
     => IxTask
     -> Dynamic t Task
     -> Dynamic t (OptimalRoute (Maybe TrackLine))
-    -> Dynamic t (Pilot, [[Double]])
     -> m ()
-viewMap ix task route track = do
+viewMap ix task route = do
     task' <- sample . current $ task
     route' <- sample . current $ route
-    track' <- sample . current $ track
+
     map
         ix
         task'
         (optimalTaskRoute route')
         (optimalTaskRouteSubset route')
         (optimalSpeedRoute route')
-        track'
 
 map
     :: MonadWidget t m
@@ -199,22 +197,21 @@ map
     -> TaskRoute
     -> TaskRouteSubset
     -> SpeedRoute
-    -> (Pilot, [[Double]])
     -> m ()
 
-map _ Task{zones = Zones{raw = []}} _ _ _ _ = do
+map _ Task{zones = Zones{raw = []}} _ _ _ = do
     el "p" $ text "The task has no turnpoints."
     return ()
 
-map _ _ (TaskRoute []) _ _ _ = do
+map _ _ (TaskRoute []) _ _ = do
     el "p" $ text "The optimal task route has no turnpoints."
     return ()
 
-map _ _ _ (TaskRouteSubset []) _ _ = do
+map _ _ _ (TaskRouteSubset []) _ = do
     el "p" $ text "The optimal task route speed section has no turnpoints."
     return ()
 
-map _ _ _ _ (SpeedRoute []) _ = do
+map _ _ _ _ (SpeedRoute []) = do
     el "p" $ text "The optimal route through only the speed section has no turnpoints."
     return ()
 
@@ -223,14 +220,13 @@ map
     task@Task{zones = Zones{raw = xs}, speedSection}
     (TaskRoute taskRoute)
     (TaskRouteSubset taskRouteSubset)
-    (SpeedRoute speedRoute)
-    (Pilot (_, pilotName), track) = do
+    (SpeedRoute speedRoute) = do
 
     let tpNames = fmap (\RawZone{..} -> TurnpointName zoneName) xs
     postBuild <- delay 1 =<< getPostBuild
 
     pilots <- getTaskPilotDf ix
-    (zoomOrPan, evZoom) <- taskZoneButtons task pilots
+    (zoomOrPan, evZoom, _) <- taskZoneButtons task pilots
 
     (eCanvas, _) <- elAttr' "div" ("style" =: "height: 680px;width: 100%") $ return ()
 
@@ -250,7 +246,7 @@ map
                 return ())
             ]
 
-        (lmap', bounds') <- liftIO $ do
+        (lmap', bounds', _) <- liftIO $ do
             lmap <- L.map (_element_raw eCanvas)
             L.mapSetView lmap (zoneToLL $ head xs) 11
 
@@ -286,7 +282,6 @@ map
             taskRouteLine <- L.polyline ptsTaskRoute "red"
             taskRouteSubsetLine <- L.polyline ptsTaskRouteSubset "green"
             speedRouteLine <- L.polyline ptsSpeedRoute "magenta"
-            pilotLine <- L.trackline track "black"
 
             taskRouteMarks <- sequence $ zipWith marker cs ptsTaskRoute
             taskRouteSubsetMarks <- sequence $ zipWith marker cs ptsTaskRouteSubset
@@ -296,7 +291,6 @@ map
             taskRouteGroup <- L.layerGroup taskRouteLine taskRouteMarks
             taskRouteSubsetGroup <- L.layerGroup taskRouteSubsetLine taskRouteSubsetMarks
             speedRouteGroup <- L.layerGroup speedRouteLine speedRouteMarks
-            pilotGroup <- L.layerGroup pilotLine []
 
             -- NOTE: Adding the route now so that it displays by default but
             -- can also be hidden via the layers control. The course line is
@@ -312,11 +306,10 @@ map
                     taskRouteSubsetGroup
                     speedRouteGroup
 
-            L.addOverlay layers (pilotName, pilotGroup)
 
             bounds <- L.latLngBounds $ zoneToLLR <$> xs
 
-            return (lmap, bounds)
+            return (lmap, bounds, layers)
 
     return ()
 
