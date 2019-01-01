@@ -124,11 +124,8 @@ taskZoneButtons t@Task{speedSection} ps = do
         y <- elClass "p" "control" $ do
             elClass "span" "select" $ do
                 dd <- dropdown 0 ps' def
-                let p = tagPromptlyDyn (ffor2 (value dd) ps pilotAtIdx) $ _dropdown_change dd
-                p' <- holdDyn Nothing p
-                let p'' = fromMaybe nullPilot <$> p
-
-                return $ gate (isJust <$> current p') p''
+                let e = tagPromptlyDyn (ffor2 (value dd) ps pilotAtIdx) $ _dropdown_change dd
+                return $ fforMaybe e id
 
         return (fst x, snd x, y)
 
