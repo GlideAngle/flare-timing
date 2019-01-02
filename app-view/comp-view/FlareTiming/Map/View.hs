@@ -142,17 +142,22 @@ taskZoneButtons _ t@Task{speedSection} ps _ = do
             elClass "span" "select" $
                 dropdown 0 ps' def
 
-        (download, _) <- elClass "p" "control" $ do
-            elClass' "a" "button is-link" $ do
-                elClass "span" "icon is-small" $
-                    elClass "i" "fa fa-download" $ return ()
-                el "span" $ text "Fetch Track"
+        let isSelected = ffor (value dd) (/= 0)
+        let attrs = ffor isSelected (\case
+                False -> "class" =: "button is-link" <> "disabled" =: ""
+                True -> "class" =: "button is-link")
+
+        (download, _)
+                <- elClass "p" "control" $ do
+                    elDynAttr' "a" attrs  $ do
+                        elClass "span" "icon is-small" $
+                            elClass "i" "fa fa-download" $ return ()
+                        el "span" $ text "Fetch Track"
 
         let p = ffor2 (value dd) ps pilotAtIdx
-        let y = fforMaybe (tagPromptlyDyn p $ _dropdown_change dd) id
-        let z = fforMaybe (tagPromptlyDyn p $ domEvent Click download) id
+        let y = fforMaybe (tagPromptlyDyn p $ domEvent Click download) id
 
-        return (fst x, snd x, leftmost [y, z])
+        return (fst x, snd x, y)
 
 showLatLng :: (Double, Double) -> String
 showLatLng (lat, lng) =
