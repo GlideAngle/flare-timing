@@ -23,7 +23,7 @@ import Control.Monad.IO.Class (MonadIO)
 
 import WireTypes.Comp (Comp(..), Nominal(..), Task(..))
 import WireTypes.Route
-import WireTypes.Pilot (PilotTaskStatus(..), Pilot(..), PilotId(..))
+import WireTypes.Pilot (PilotTaskStatus(..), Pilot(..), PilotId(..), getPilotId)
 import WireTypes.Point
 import WireTypes.Validity
 import WireTypes.ValidityWorking
@@ -253,23 +253,21 @@ getTaskPilotDf = getTaskPilot_ "gap-point" "pilot-df"
 getTaskPilotTrack
     :: GetConstraint t m
     => IxTask
-    -> PilotId
-    -> m (Dynamic t [[Double]])
-getTaskPilotTrack (IxTask ii) (PilotId pid) = do
-    pb :: Event t () <- getPostBuild
+    -> Event t Pilot
+    -> m (Event t [[Double]])
+getTaskPilotTrack (IxTask ii) ep = do
 
-    let defReq :: T.Text
-        defReq =
+    let defReq :: PilotId -> T.Text
+        defReq (PilotId pid) =
             mapUri
             $ "/pilot-track/"
             <> (T.pack . show $ ii)
             <> "/"
             <> (T.pack pid)
 
-    let req md = XhrRequest "GET" (maybe defReq id md) def
-    rsp <- performRequestAsync $ fmap req $ leftmost [ Nothing <$ pb ]
+    let req md = XhrRequest "GET" (defReq md) def
+    rsp <- performRequestAsync $ fmap req $ getPilotId <$> ep
 
-    let es :: Event t [[Double]] = fmapMaybe decodeXhrResponse rsp
-    holdDyn [] es
+    return $ fmapMaybe decodeXhrResponse rsp
 
-getTaskPilotTrack IxTaskNone _ = return $ constDyn []
+getTaskPilotTrack IxTaskNone _ = return never

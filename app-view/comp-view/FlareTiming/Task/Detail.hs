@@ -5,13 +5,14 @@ import Reflex
 import Reflex.Dom
 import qualified Data.Text as T (intercalate)
 
+import WireTypes.Pilot (nullPilot)
 import WireTypes.Comp (Comp(..), Task(..), getRaceRawZones)
 import WireTypes.Route (taskLength, taskLegs)
 import WireTypes.Point (Allocation(..))
 import WireTypes.Validity (Validity(..))
 import FlareTiming.Comms
     ( getTaskScore, getTaskValidityWorking, getTaskLengthSphericalEdge
-    , getTaskPilotDnf, getTaskPilotNyp
+    , getTaskPilotDnf, getTaskPilotNyp, getTaskPilotTrack
     )
 import FlareTiming.Breadcrumb (crumbTask)
 import FlareTiming.Events (IxTask(..))
@@ -70,8 +71,12 @@ taskDetail ix@(IxTask _) cs task vy a = do
             (\case
                 TaskTabTask -> tableTask utc task legs
 
-                TaskTabMap -> do
-                    _ <- viewMap ix task routes
+                TaskTabMap -> mdo
+                    p <- viewMap ix task routes pt
+                    p' <- holdDyn nullPilot p
+                    t <- getTaskPilotTrack ix p
+                    let pt = attachPromptlyDyn p' t
+
                     return ()
 
                 TaskTabAbsent -> tableAbsent nyp dnf task

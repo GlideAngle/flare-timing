@@ -18,7 +18,7 @@ import qualified Data.Text as T (Text, pack)
 import Reflex.Time (delay)
 import Data.Maybe (catMaybes, listToMaybe)
 import qualified Data.Map as Map
-import Data.List (zipWith4, findIndex)
+import Data.List (zipWith4)
 import Control.Monad (sequence)
 import Control.Monad.IO.Class (liftIO)
 
@@ -35,13 +35,15 @@ import qualified FlareTiming.Map.Leaflet as L
     , mapInvalidateSize
     , circle
     , circleAddToMap
+    , trackline
     , polyline
     , fitBounds
     , panToBounds
     , latLngBounds
     , layersControl
+    , addOverlay
     )
-import WireTypes.Pilot (Pilot(..), PilotName(..))
+import WireTypes.Pilot (Pilot(..), PilotName(..), getPilotName)
 import WireTypes.Comp (Task(..), SpeedSection, getAllRawZones)
 import WireTypes.Zone
     (Zones(..), RawZone(..), RawLatLng(..), RawLat(..), RawLng(..))
@@ -82,19 +84,12 @@ pilotAtIdx ii ps =
     -- WARNING: The zeroth item is the prompt in the select.
     listToMaybe . take 1 . drop (ii - 1) $ ps
 
-idxOfPilot :: Pilot -> [Pilot] -> Int
-idxOfPilot p ps =
-    -- NOTE: 1-based indexing with zero reserved for the select prompt.
-    maybe 0 ((+) 1) $ findIndex (== p) ps
-
 taskZoneButtons
     :: MonadWidget t m
-    => IxTask
-    -> Task
+    => Task
     -> Dynamic t [Pilot]
-    -> Dynamic t (Maybe Pilot)
     -> m (Dynamic t ZoomOrPan, Dynamic t [RawZone], Event t Pilot)
-taskZoneButtons _ t@Task{speedSection} ps _ = do
+taskZoneButtons t@Task{speedSection} ps = do
     let ps' = pilotToSelectMap <$> ps
     let zones = getAllRawZones t
     let btn = "button"
@@ -208,24 +203,19 @@ viewMap
     => IxTask
     -> Dynamic t Task
     -> Dynamic t (OptimalRoute (Maybe TrackLine))
+    -> Event t (Pilot, [[Double]])
     -> m (Event t Pilot)
-viewMap ix task route = do
+viewMap ix task route pilotTrack = do
     task' <- sample . current $ task
     route' <- sample . current $ route
 
-    rec p <- map
-                ix
-                task'
-                (optimalTaskRoute route')
-                (optimalTaskRouteSubset route')
-                (optimalSpeedRoute route')
-                p'
-                (constDyn [])
-
-        p' :: Dynamic t (Maybe Pilot) <- holdDyn Nothing $ Just <$> p
-        performEvent_ $ ffor (traceEvent "Bubble" p) (const $ return ())
-
-    return p
+    map
+        ix
+        task'
+        (optimalTaskRoute route')
+        (optimalTaskRouteSubset route')
+        (optimalSpeedRoute route')
+        pilotTrack
 
 map
     :: MonadWidget t m
@@ -234,22 +224,21 @@ map
     -> TaskRoute
     -> TaskRouteSubset
     -> SpeedRoute
-    -> Dynamic t (Maybe Pilot)
-    -> Dynamic t [[Double]]
+    -> Event t (Pilot, [[Double]])
     -> m (Event t Pilot)
 
-map _ Task{zones = Zones{raw = []}} _ _ _ _ _ = do
+map _ Task{zones = Zones{raw = []}} _ _ _ _ = do
     el "p" $ text "The task has no turnpoints."
     return never
 
-map _ _ (TaskRoute []) _ _ _ _ = do
+map _ _ (TaskRoute []) _ _ _ = do
     return never
 
-map _ _ _ (TaskRouteSubset []) _ _ _ = do
+map _ _ _ (TaskRouteSubset []) _ _ = do
     el "p" $ text "The optimal task route speed section has no turnpoints."
     return never
 
-map _ _ _ _ (SpeedRoute []) _ _ = do
+map _ _ _ _ (SpeedRoute []) _ = do
     el "p" $ text "The optimal route through only the speed section has no turnpoints."
     return never
 
@@ -259,14 +248,13 @@ map
     (TaskRoute taskRoute)
     (TaskRouteSubset taskRouteSubset)
     (SpeedRoute speedRoute)
-    maybePilot
-    _ = do
+    pilotTrack = do
 
     let tpNames = fmap (\RawZone{..} -> TurnpointName zoneName) xs
     postBuild <- delay 1 =<< getPostBuild
 
     pilots <- getTaskPilotDf ix
-    (zoomOrPan, evZoom, activePilot) <- taskZoneButtons ix task pilots maybePilot
+    (zoomOrPan, evZoom, activePilot) <- taskZoneButtons task pilots
 
     (eCanvas, _) <- elAttr' "div" ("style" =: "height: 680px;width: 100%") $ return ()
 
@@ -286,9 +274,15 @@ map
                 return ())
 
             , ffor (traceEvent "Active pilot" activePilot) (const $ return ())
+
+            , ffor pilotTrack (\(p, t) -> liftIO $ do
+                pilotLine <- L.trackline t "black"
+                pilotGroup <- L.layerGroup pilotLine []
+                L.addOverlay layers' (getPilotName p, pilotGroup)
+                return ())
             ]
 
-        (lmap', bounds', _) <- liftIO $ do
+        (lmap', bounds', layers') <- liftIO $ do
             lmap <- L.map (_element_raw eCanvas)
             L.mapSetView lmap (zoneToLL $ head xs) 11
 
