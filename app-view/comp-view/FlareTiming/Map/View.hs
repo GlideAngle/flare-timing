@@ -41,6 +41,7 @@ import qualified FlareTiming.Map.Leaflet as L
     , panToBounds
     , latLngBounds
     , layersControl
+    , layersExpand
     , addOverlay
     )
 import WireTypes.Pilot (Pilot(..), PilotName(..), getPilotName)
@@ -279,6 +280,7 @@ map
                 pilotLine <- L.trackline t "black"
                 pilotGroup <- L.layerGroup pilotLine []
                 L.addOverlay layers' (getPilotName p, pilotGroup)
+                L.layersExpand layers'
                 return ())
             ]
 

@@ -29,6 +29,7 @@ module FlareTiming.Map.Leaflet
     , layerGroup
     , layerGroupAddToMap
     , layersControl
+    , layersExpand
     , addOverlay
     ) where
 
@@ -87,6 +88,10 @@ foreign import javascript unsafe
 foreign import javascript unsafe
     "$1.addOverlay($2, $3)"
     addBaseLayer_ :: JSVal -> JSVal -> JSString -> IO ()
+
+foreign import javascript unsafe
+    "$1.expand()"
+    layersExpand_ :: JSVal -> IO ()
 
 foreign import javascript unsafe
     "L['marker']([$1, $2])"
@@ -182,6 +187,9 @@ addOverlay layers (PilotName pilotName, pilotLine) = do
         (unLayers layers)
         (unLayerGroup pilotLine)
         (toJSString pilotName)
+
+layersExpand :: Layers -> IO ()
+layersExpand layers = layersExpand_ $ unLayers layers
 
 tileLayer :: String -> Int -> IO TileLayer
 tileLayer src maxZoom =
