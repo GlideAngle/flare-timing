@@ -274,8 +274,6 @@ map
 
                 return ())
 
-            , ffor (traceEvent "Active pilot" activePilot) (const $ return ())
-
             , ffor pilotTrack (\(p, t) -> liftIO $ do
                 pilotLine <- L.trackline t "black"
                 pilotGroup <- L.layerGroup pilotLine []
