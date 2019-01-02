@@ -69,7 +69,11 @@ taskDetail ix@(IxTask _) cs task vy a = do
     _ <- widgetHold (tableTask utc task legs) $
             (\case
                 TaskTabTask -> tableTask utc task legs
-                TaskTabMap -> viewMap ix task routes
+
+                TaskTabMap -> do
+                    _ <- viewMap ix task routes
+                    return ()
+
                 TaskTabAbsent -> tableAbsent nyp dnf task
                 TaskTabValidity -> viewValidity vy vw
                 TaskTabScore -> tableScore utc ln dnf vy wg ps tp s)

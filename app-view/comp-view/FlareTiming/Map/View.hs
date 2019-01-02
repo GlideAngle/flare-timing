@@ -1,15 +1,24 @@
 module FlareTiming.Map.View (viewMap) where
 
-import Debug.Trace
+-- TODO: Find out why hiding Debug.Trace.debugEvent doesn't work.
+-- Ambiguous occurrence ‘traceEvent’
+-- It could refer to either ‘Debug.Trace.traceEvent’,
+--                           imported from ‘Debug.Trace’ at ...
+--                           or ‘Reflex.Dom.traceEvent’,
+--                           imported from ‘Reflex.Dom’ at ...
+--                           (and originally defined in ‘Reflex.Class’)
+-- import Debug.Trace hiding (debugEvent)
+-- import Reflex.Dom
+-- import qualified Debug.Trace as DT
 import Prelude hiding (map)
 import Text.Printf (printf)
 import Reflex.Dom
 
 import qualified Data.Text as T (Text, pack)
 import Reflex.Time (delay)
-import Data.Maybe (catMaybes, listToMaybe, isJust, fromMaybe)
+import Data.Maybe (catMaybes, listToMaybe)
 import qualified Data.Map as Map
-import Data.List (zipWith4)
+import Data.List (zipWith4, findIndex)
 import Control.Monad (sequence)
 import Control.Monad.IO.Class (liftIO)
 
@@ -32,7 +41,7 @@ import qualified FlareTiming.Map.Leaflet as L
     , latLngBounds
     , layersControl
     )
-import WireTypes.Pilot (Pilot(..), PilotName(..), nullPilot)
+import WireTypes.Pilot (Pilot(..), PilotName(..))
 import WireTypes.Comp (Task(..), SpeedSection, getAllRawZones)
 import WireTypes.Zone
     (Zones(..), RawZone(..), RawLatLng(..), RawLat(..), RawLng(..))
@@ -64,7 +73,7 @@ zoomOrPanIcon Pan = "fa fa-arrows"
 pilotToSelectMap :: [Pilot] -> Map.Map Int T.Text
 pilotToSelectMap ps =
     Map.fromList
-    $ (0, "Select a pilot's track")
+    $ (0, "Select a pilot")
     : zipWith (\i (Pilot (_, PilotName n)) -> (i, T.pack n)) [1..] ps
 
 pilotAtIdx :: Int -> [Pilot] -> Maybe Pilot
@@ -72,12 +81,19 @@ pilotAtIdx ii ps =
     -- WARNING: The zeroth item is the prompt in the select.
     listToMaybe . take 1 . drop (ii - 1) $ ps
 
+idxOfPilot :: Pilot -> [Pilot] -> Int
+idxOfPilot p ps =
+    -- NOTE: 1-based indexing with zero reserved for the select prompt.
+    maybe 0 ((+) 1) $ findIndex (== p) ps
+
 taskZoneButtons
     :: MonadWidget t m
-    => Task
+    => IxTask
+    -> Task
     -> Dynamic t [Pilot]
-    -> m (Dynamic t ZoomOrPan, Dynamic t [RawZone], Event t Pilot)
-taskZoneButtons t@Task{speedSection} ps = do
+    -> Dynamic t (Maybe Pilot)
+    -> m (Dynamic t ZoomOrPan, Dynamic t [RawZone], Event t Pilot, Event t ())
+taskZoneButtons _ t@Task{speedSection} ps _ = do
     let ps' = pilotToSelectMap <$> ps
     let zones = getAllRawZones t
     let btn = "button"
@@ -124,10 +140,16 @@ taskZoneButtons t@Task{speedSection} ps = do
         y <- elClass "p" "control" $ do
             elClass "span" "select" $ do
                 dd <- dropdown 0 ps' def
-                let e = tagPromptlyDyn (ffor2 (value dd) ps pilotAtIdx) $ _dropdown_change dd
-                return $ fforMaybe e id
+                let ei = tagPromptlyDyn (ffor2 (value dd) ps pilotAtIdx) $ _dropdown_change dd
+                return $ fforMaybe ei id
 
-        return (fst x, snd x, y)
+        (download, _) <- elClass "p" "control" $ do
+            elClass' "a" "button is-link" $ do
+                elClass "span" "icon is-small" $
+                    elClass "i" "fa fa-download" $ return ()
+                el "span" $ text "Fetch Track"
+
+        return (fst x, snd x, y, domEvent Click download)
 
 showLatLng :: (Double, Double) -> String
 showLatLng (lat, lng) =
@@ -178,17 +200,24 @@ viewMap
     => IxTask
     -> Dynamic t Task
     -> Dynamic t (OptimalRoute (Maybe TrackLine))
-    -> m ()
+    -> m ((Event t Pilot, Event t ()))
 viewMap ix task route = do
     task' <- sample . current $ task
     route' <- sample . current $ route
 
-    map
-        ix
-        task'
-        (optimalTaskRoute route')
-        (optimalTaskRouteSubset route')
-        (optimalSpeedRoute route')
+    rec x@(p, _) <- map
+                ix
+                task'
+                (optimalTaskRoute route')
+                (optimalTaskRouteSubset route')
+                (optimalSpeedRoute route')
+                p'
+                (constDyn [])
+
+        p' :: Dynamic t (Maybe Pilot) <- holdDyn Nothing $ Just <$> p
+        performEvent_ $ ffor (traceEvent "Bubble" p) (const $ return ())
+
+    return x
 
 map
     :: MonadWidget t m
@@ -197,36 +226,39 @@ map
     -> TaskRoute
     -> TaskRouteSubset
     -> SpeedRoute
-    -> m ()
+    -> Dynamic t (Maybe Pilot)
+    -> Dynamic t [[Double]]
+    -> m ((Event t Pilot, Event t ()))
 
-map _ Task{zones = Zones{raw = []}} _ _ _ = do
+map _ Task{zones = Zones{raw = []}} _ _ _ _ _ = do
     el "p" $ text "The task has no turnpoints."
-    return ()
+    return (never, never)
 
-map _ _ (TaskRoute []) _ _ = do
-    el "p" $ text "The optimal task route has no turnpoints."
-    return ()
+map _ _ (TaskRoute []) _ _ _ _ = do
+    return (never, never)
 
-map _ _ _ (TaskRouteSubset []) _ = do
+map _ _ _ (TaskRouteSubset []) _ _ _ = do
     el "p" $ text "The optimal task route speed section has no turnpoints."
-    return ()
+    return (never, never)
 
-map _ _ _ _ (SpeedRoute []) = do
+map _ _ _ _ (SpeedRoute []) _ _ = do
     el "p" $ text "The optimal route through only the speed section has no turnpoints."
-    return ()
+    return (never, never)
 
 map
     ix
     task@Task{zones = Zones{raw = xs}, speedSection}
     (TaskRoute taskRoute)
     (TaskRouteSubset taskRouteSubset)
-    (SpeedRoute speedRoute) = do
+    (SpeedRoute speedRoute)
+    maybePilot
+    _ = do
 
     let tpNames = fmap (\RawZone{..} -> TurnpointName zoneName) xs
     postBuild <- delay 1 =<< getPostBuild
 
     pilots <- getTaskPilotDf ix
-    (zoomOrPan, evZoom, activePilot) <- taskZoneButtons task pilots
+    (zoomOrPan, evZoom, activePilot, download) <- taskZoneButtons ix task pilots maybePilot
 
     (eCanvas, _) <- elAttr' "div" ("style" =: "height: 680px;width: 100%") $ return ()
 
@@ -245,8 +277,7 @@ map
 
                 return ())
 
-            , ffor activePilot (\p ->
-                return $ traceShow p ())
+            , ffor (traceEvent "Active pilot" activePilot) (const $ return ())
             ]
 
         (lmap', bounds', _) <- liftIO $ do
@@ -314,7 +345,7 @@ map
 
             return (lmap, bounds, layers)
 
-    return ()
+    return (activePilot, download)
 
 blues :: [Color]
 blues = repeat $ Color "blue"
