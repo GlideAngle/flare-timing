@@ -54,7 +54,7 @@ getTasks () = do
     pb :: Event t () <- getPostBuild
     let defReq = mapUri "/comp-input/tasks"
     let req md = XhrRequest "GET" (maybe defReq id md) def
-    rsp <- performRequestAsync $ fmap req $ leftmost [ Nothing <$ pb ]
+    rsp <- performRequestAsync . fmap req $ Nothing <$ pb
 
     let es :: Event t [Task] = fmapMaybe decodeXhrResponse rsp
     holdDyn [] es
@@ -67,7 +67,7 @@ getComps () = do
     pb :: Event t () <- getPostBuild
     let defReq = mapUri "/comp-input/comps"
     let req md = XhrRequest "GET" (maybe defReq id md) def
-    rsp <- performRequestAsync $ fmap req $ leftmost [ Nothing <$ pb ]
+    rsp <- performRequestAsync . fmap req $ Nothing <$ pb
 
     let es :: Event t Comp = fmapMaybe decodeXhrResponse rsp
     xs :: Dynamic t [Comp] <- holdDyn [] (pure <$> es)
@@ -81,7 +81,7 @@ getNominals () = do
     pb :: Event t () <- getPostBuild
     let defReq = mapUri "/comp-input/nominals"
     let req md = XhrRequest "GET" (maybe defReq id md) def
-    rsp <- performRequestAsync $ fmap req $ leftmost [ Nothing <$ pb ]
+    rsp <- performRequestAsync . fmap req $ Nothing <$ pb
 
     let es :: Event t Nominal = fmapMaybe decodeXhrResponse rsp
     xs :: Dynamic t [Nominal] <- holdDyn [] (pure <$> es)
@@ -95,7 +95,7 @@ getPilots () = do
     pb :: Event t () <- getPostBuild
     let defReq = mapUri "/comp-input/pilots"
     let req md = XhrRequest "GET" (maybe defReq id md) def
-    rsp <- performRequestAsync $ fmap req $ leftmost [ Nothing <$ pb ]
+    rsp <- performRequestAsync . fmap req $ Nothing <$ pb
 
     let es :: Event t [Pilot] = fmapMaybe decodeXhrResponse rsp
     holdDyn [] es
@@ -108,7 +108,7 @@ getPilotsStatus () = do
     pb :: Event t () <- getPostBuild
     let defReq = mapUri "/gap-point/pilots-status"
     let req md = XhrRequest "GET" (maybe defReq id md) def
-    rsp <- performRequestAsync $ fmap req $ leftmost [ Nothing <$ pb ]
+    rsp <- performRequestAsync . fmap req $ Nothing <$ pb
 
     let es :: Event t [(Pilot, [PilotTaskStatus])] = fmapMaybe decodeXhrResponse rsp
     holdDyn [] es
@@ -121,7 +121,7 @@ getValidity () = do
     pb :: Event t () <- getPostBuild
     let defReq = mapUri "/gap-point/validity"
     let req md = XhrRequest "GET" (maybe defReq id md) def
-    rsp <- performRequestAsync $ fmap req $ leftmost [ Nothing <$ pb ]
+    rsp <- performRequestAsync . fmap req $ Nothing <$ pb
 
     let es :: Event t [Maybe Validity] = fmapMaybe decodeXhrResponse rsp
     holdDyn [] es
@@ -134,7 +134,7 @@ getAllocation () = do
     pb :: Event t () <- getPostBuild
     let defReq = mapUri "/gap-point/allocation"
     let req md = XhrRequest "GET" (maybe defReq id md) def
-    rsp <- performRequestAsync $ fmap req $ leftmost [ Nothing <$ pb ]
+    rsp <- performRequestAsync . fmap req $ Nothing <$ pb
 
     let es :: Event t [Maybe Allocation] = fmapMaybe decodeXhrResponse rsp
     holdDyn [] es
@@ -155,7 +155,7 @@ getTaskScore (IxTask ii) = do
             <> "/score"
 
     let req md = XhrRequest "GET" (maybe defReq id md) def
-    rsp <- performRequestAsync $ fmap req $ leftmost [ Nothing <$ pb ]
+    rsp <- performRequestAsync . fmap req $ Nothing <$ pb
 
     let es :: Event t [(Pilot, Breakdown)] = fmapMaybe decodeXhrResponse rsp
     holdDyn [] es
@@ -177,7 +177,7 @@ getTaskValidityWorking (IxTask ii) = do
             <> "/validity-working"
 
     let req md = XhrRequest "GET" (maybe defReq id md) def
-    rsp <- performRequestAsync $ fmap req $ leftmost [ Nothing <$ pb ]
+    rsp <- performRequestAsync . fmap req $ Nothing <$ pb
 
     let es :: Event t (Maybe ValidityWorking) = fmapMaybe decodeXhrResponse rsp
     holdDyn Nothing es
@@ -207,7 +207,7 @@ getTaskLengthSphericalEdge (IxTask ii) = do
             <> "/spherical-edge"
 
     let req md = XhrRequest "GET" (maybe defReq id md) def
-    rsp <- performRequestAsync $ fmap req $ leftmost [ Nothing <$ pb ]
+    rsp <- performRequestAsync . fmap req $ Nothing <$ pb
 
     let es :: Event t (OptimalRoute (Maybe TrackLine)) = fmapMaybe decodeXhrResponse rsp
     holdDyn emptyRoute es
@@ -235,7 +235,7 @@ getTaskPilot_ stage path (IxTask ii) = do
 
 
     let req md = XhrRequest "GET" (maybe defReq id md) def
-    rsp <- performRequestAsync $ fmap req $ leftmost [ Nothing <$ pb ]
+    rsp <- performRequestAsync . fmap req $ Nothing <$ pb
 
     let es :: Event t [Pilot] = fmapMaybe decodeXhrResponse rsp
     holdDyn [] es
@@ -266,7 +266,7 @@ getTaskPilotTrack (IxTask ii) ep = do
             <> (T.pack pid)
 
     let req md = XhrRequest "GET" (defReq md) def
-    rsp <- performRequestAsync $ fmap req $ getPilotId <$> ep
+    rsp <- performRequestAsync . fmap req $ getPilotId <$> ep
 
     return $ fmapMaybe decodeXhrResponse rsp
 
