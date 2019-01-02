@@ -77,6 +77,7 @@ pilotToSelectMap ps =
     : zipWith (\i (Pilot (_, PilotName n)) -> (i, T.pack n)) [1..] ps
 
 pilotAtIdx :: Int -> [Pilot] -> Maybe Pilot
+pilotAtIdx 0 _ = Nothing
 pilotAtIdx ii ps =
     -- WARNING: The zeroth item is the prompt in the select.
     listToMaybe . take 1 . drop (ii - 1) $ ps
@@ -92,7 +93,7 @@ taskZoneButtons
     -> Task
     -> Dynamic t [Pilot]
     -> Dynamic t (Maybe Pilot)
-    -> m (Dynamic t ZoomOrPan, Dynamic t [RawZone], Event t Pilot, Event t ())
+    -> m (Dynamic t ZoomOrPan, Dynamic t [RawZone], Event t Pilot)
 taskZoneButtons _ t@Task{speedSection} ps _ = do
     let ps' = pilotToSelectMap <$> ps
     let zones = getAllRawZones t
@@ -137,11 +138,9 @@ taskZoneButtons _ t@Task{speedSection} ps _ = do
                     zs <- holdDyn zones . leftmost $ allZones : eachZone
                     return $ (zoomOrPan, zs)
 
-        y <- elClass "p" "control" $ do
-            elClass "span" "select" $ do
-                dd <- dropdown 0 ps' def
-                let ei = tagPromptlyDyn (ffor2 (value dd) ps pilotAtIdx) $ _dropdown_change dd
-                return $ fforMaybe ei id
+        dd <- elClass "p" "control" $ do
+            elClass "span" "select" $
+                dropdown 0 ps' def
 
         (download, _) <- elClass "p" "control" $ do
             elClass' "a" "button is-link" $ do
@@ -149,7 +148,11 @@ taskZoneButtons _ t@Task{speedSection} ps _ = do
                     elClass "i" "fa fa-download" $ return ()
                 el "span" $ text "Fetch Track"
 
-        return (fst x, snd x, y, domEvent Click download)
+        let p = ffor2 (value dd) ps pilotAtIdx
+        let y = fforMaybe (tagPromptlyDyn p $ _dropdown_change dd) id
+        let z = fforMaybe (tagPromptlyDyn p $ domEvent Click download) id
+
+        return (fst x, snd x, leftmost [y, z])
 
 showLatLng :: (Double, Double) -> String
 showLatLng (lat, lng) =
@@ -200,12 +203,12 @@ viewMap
     => IxTask
     -> Dynamic t Task
     -> Dynamic t (OptimalRoute (Maybe TrackLine))
-    -> m ((Event t Pilot, Event t ()))
+    -> m (Event t Pilot)
 viewMap ix task route = do
     task' <- sample . current $ task
     route' <- sample . current $ route
 
-    rec x@(p, _) <- map
+    rec p <- map
                 ix
                 task'
                 (optimalTaskRoute route')
@@ -217,7 +220,7 @@ viewMap ix task route = do
         p' :: Dynamic t (Maybe Pilot) <- holdDyn Nothing $ Just <$> p
         performEvent_ $ ffor (traceEvent "Bubble" p) (const $ return ())
 
-    return x
+    return p
 
 map
     :: MonadWidget t m
@@ -228,22 +231,22 @@ map
     -> SpeedRoute
     -> Dynamic t (Maybe Pilot)
     -> Dynamic t [[Double]]
-    -> m ((Event t Pilot, Event t ()))
+    -> m (Event t Pilot)
 
 map _ Task{zones = Zones{raw = []}} _ _ _ _ _ = do
     el "p" $ text "The task has no turnpoints."
-    return (never, never)
+    return never
 
 map _ _ (TaskRoute []) _ _ _ _ = do
-    return (never, never)
+    return never
 
 map _ _ _ (TaskRouteSubset []) _ _ _ = do
     el "p" $ text "The optimal task route speed section has no turnpoints."
-    return (never, never)
+    return never
 
 map _ _ _ _ (SpeedRoute []) _ _ = do
     el "p" $ text "The optimal route through only the speed section has no turnpoints."
-    return (never, never)
+    return never
 
 map
     ix
@@ -258,7 +261,7 @@ map
     postBuild <- delay 1 =<< getPostBuild
 
     pilots <- getTaskPilotDf ix
-    (zoomOrPan, evZoom, activePilot, download) <- taskZoneButtons ix task pilots maybePilot
+    (zoomOrPan, evZoom, activePilot) <- taskZoneButtons ix task pilots maybePilot
 
     (eCanvas, _) <- elAttr' "div" ("style" =: "height: 680px;width: 100%") $ return ()
 
@@ -345,7 +348,7 @@ map
 
             return (lmap, bounds, layers)
 
-    return (activePilot, download)
+    return activePilot
 
 blues :: [Color]
 blues = repeat $ Color "blue"
