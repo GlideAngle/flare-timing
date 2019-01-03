@@ -19,22 +19,24 @@ in    defs
       , executables =
           { comp-serve =
               { dependencies =
-                  [ "servant"
-                  , "servant-server"
-                  , "transformers"
-                  , "aeson"
-                  , "wai"
-                  , "wai-cors"
-                  , "warp"
+                  [ "aeson"
+                  , "bytestring"
+                  , "cmdargs"
                   , "directory"
                   , "filepath"
                   , "filemanip"
-                  , "raw-strings-qq"
-                  , "cmdargs"
                   , "mtl"
-                  , "yaml"
-                  , "bytestring"
+                  , "raw-strings-qq"
                   , "safe-exceptions"
+                  , "servant"
+                  , "servant-server"
+                  , "transformers"
+                  , "wai"
+                  , "wai-cors"
+                  , "wai-extra"
+                  , "warp"
+                  , "yaml"
+                  , "uom-plugin"
                   , "flight-comp"
                   , "flight-cmd"
                   , "flight-gap"
@@ -43,7 +45,6 @@ in    defs
                   , "flight-route"
                   , "flight-scribe"
                   , "siggy-chardust"
-                  , "uom-plugin"
                   ]
               , ghc-options =
                   [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]

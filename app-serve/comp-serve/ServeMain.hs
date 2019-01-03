@@ -14,6 +14,7 @@ import Servant
     , (:>)
     , errBody, err400, hoistServer, serve, throwError
     )
+import  Network.Wai.Middleware.Gzip (gzip, def)
 import System.IO (hPutStrLn, stderr)
 import Control.Exception.Safe (MonadThrow, catchIO)
 import Control.Monad.IO.Class (MonadIO)
@@ -203,14 +204,18 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
     case (compSettings, routes, crossing, pointing) of
         (Nothing, _, _, _) -> putStrLn "Couldn't read the comp settings"
         (Just cs, Nothing, _, _) ->
-            runSettings settings =<< mkCompInputApp (Config compFile cs Nothing Nothing Nothing)
+            f =<< mkCompInputApp (Config compFile cs Nothing Nothing Nothing)
         (Just cs, Just rt, Nothing, _) ->
-            runSettings settings =<< mkTaskLengthApp (Config compFile cs (Just rt) Nothing Nothing)
+            f =<< mkTaskLengthApp (Config compFile cs (Just rt) Nothing Nothing)
         (Just cs, Just rt, _, Nothing) ->
-            runSettings settings =<< mkTaskLengthApp (Config compFile cs (Just rt) Nothing Nothing)
+            f =<< mkTaskLengthApp (Config compFile cs (Just rt) Nothing Nothing)
         (Just cs, Just rt, Just cz, Just gp) -> do
-            runSettings settings =<< mkGapPointApp (Config compFile cs (Just rt) (Just cz) (Just gp))
+            f =<< mkGapPointApp (Config compFile cs (Just rt) (Just cz) (Just gp))
     where
+        -- NOTE: Add gzip with wai gzip middleware.
+        -- SEE: https://github.com/haskell-servant/servant/issues/786
+        f = runSettings settings . gzip def
+
         port = 3000
 
         settings =
