@@ -89,8 +89,9 @@ taskZoneButtons
     :: MonadWidget t m
     => Task
     -> Dynamic t [Pilot]
+    -> Event t ()
     -> m (Dynamic t ZoomOrPan, Dynamic t [RawZone], Event t Pilot)
-taskZoneButtons t@Task{speedSection} ps = do
+taskZoneButtons t@Task{speedSection} ps eDownloaded = do
     let ps' = pilotToSelectMap <$> ps
     let zones = getAllRawZones t
     let btn = "button"
@@ -143,15 +144,22 @@ taskZoneButtons t@Task{speedSection} ps = do
                 False -> "class" =: "button is-link" <> "disabled" =: ""
                 True -> "class" =: "button is-link")
 
-        (download, _)
-                <- elClass "p" "control" $ do
-                    elDynAttr' "a" attrs  $ do
-                        elClass "span" "icon is-small" $
-                            elClass "i" "fa fa-download" $ return ()
-                        el "span" $ text "Fetch Track"
+        rec (download, _)
+                    <- elClass "p" "control" $ do
+                        elDynAttr' "a" attrs  $ do
+                            elClass "span" "icon is-small" $
+                                elDynClass "i" downloadClass $ return ()
+                            el "span" $ text "Fetch Track"
+
+            let eDownload = domEvent Click download
+
+            downloadClass <- holdDyn "fa fa-download" $ leftmost
+                                [ "fa fa-spinner" <$ eDownload
+                                , "fa fa-download" <$ eDownloaded
+                                ]
 
         let p = ffor2 (value dd) ps pilotAtIdx
-        let y = fforMaybe (tagPromptlyDyn p $ domEvent Click download) id
+        let y = fforMaybe (tagPromptlyDyn p $ eDownload) id
 
         return (fst x, snd x, y)
 
@@ -255,7 +263,8 @@ map
     postBuild <- delay 1 =<< getPostBuild
 
     pilots <- getTaskPilotDf ix
-    (zoomOrPan, evZoom, activePilot) <- taskZoneButtons task pilots
+    (zoomOrPan, evZoom, activePilot)
+        <- taskZoneButtons task pilots $ () <$ pilotTrack
 
     (eCanvas, _) <- elAttr' "div" ("style" =: "height: 680px;width: 100%") $ return ()
 
