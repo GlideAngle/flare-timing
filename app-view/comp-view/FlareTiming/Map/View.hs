@@ -155,7 +155,7 @@ taskZoneButtons t@Task{speedSection} ps eDownloaded = do
                                 , "fa fa-download" <$ eDownloaded
                                 ]
             downloadAttrs <- holdDyn ("class" =: "button is-link") $ leftmost
-                                [ "class" =: "button is-warning" <$ eDownload
+                                [ "class" =: "button is-link" <$ eDownload
                                 , "class" =: "button is-link" <$ eDownloaded
                                 , ffor (updated isSelected) (\case
                 False -> "class" =: "button is-link" <> "disabled" =: ""
