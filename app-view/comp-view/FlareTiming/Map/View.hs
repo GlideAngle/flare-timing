@@ -140,13 +140,10 @@ taskZoneButtons t@Task{speedSection} ps eDownloaded = do
                 dropdown 0 ps' def
 
         let isSelected = ffor (value dd) (/= 0)
-        let attrs = ffor isSelected (\case
-                False -> "class" =: "button is-link" <> "disabled" =: ""
-                True -> "class" =: "button is-link")
 
         rec (download, _)
                     <- elClass "p" "control" $ do
-                        elDynAttr' "a" attrs  $ do
+                        elDynAttr' "a" downloadAttrs  $ do
                             elClass "span" "icon is-small" $
                                 elDynClass "i" downloadClass $ return ()
                             el "span" $ text "Fetch Track"
@@ -156,6 +153,13 @@ taskZoneButtons t@Task{speedSection} ps eDownloaded = do
             downloadClass <- holdDyn "fa fa-download" $ leftmost
                                 [ "fa fa-spinner" <$ eDownload
                                 , "fa fa-download" <$ eDownloaded
+                                ]
+            downloadAttrs <- holdDyn ("class" =: "button is-link") $ leftmost
+                                [ "class" =: "button is-warning" <$ eDownload
+                                , "class" =: "button is-link" <$ eDownloaded
+                                , ffor (updated isSelected) (\case
+                False -> "class" =: "button is-link" <> "disabled" =: ""
+                True -> "class" =: "button is-link")
                                 ]
 
         let p = ffor2 (value dd) ps pilotAtIdx
