@@ -18,6 +18,7 @@ module FlareTiming.Comms
 
 import Reflex
 import Reflex.Dom
+import Data.Aeson (FromJSON)
 import qualified Data.Text as T (Text, pack)
 import Control.Monad.IO.Class (MonadIO)
 
@@ -243,10 +244,16 @@ getTaskPilotNyp = getTaskPilot_ "cross-zone" "pilot-nyp"
 getTaskPilotDf = getTaskPilot_ "gap-point" "pilot-df"
 
 getTaskPilotTrack
-    :: GetConstraint t m
-    => IxTask
-    -> Event t Pilot
-    -> m (Event t [[Double]])
+    ::
+        ( MonadIO (Performable m)
+        , HasJSContext (Performable m)
+        , PerformEvent t m
+        , TriggerEvent t m
+        , FromJSON a
+        )
+   => IxTask
+   -> Event t Pilot
+   -> m (Event t a)
 getTaskPilotTrack (IxTask ii) ep = do
 
     let u :: PilotId -> T.Text
