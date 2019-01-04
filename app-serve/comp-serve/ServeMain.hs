@@ -111,6 +111,9 @@ type TaskLengthApi k =
     :<|> "task-length" :> Capture "task" Int :> "spherical-edge"
         :> Get '[JSON] (OptimalRoute (Maybe TrackLine))
 
+    :<|> "task-length" :> Capture "task" Int :> "ellipsoid-edge"
+        :> Get '[JSON] (OptimalRoute (Maybe TrackLine))
+
 type GapPointApi k =
     "comp-input" :> "comps"
         :> Get '[JSON] Comp
@@ -122,6 +125,9 @@ type GapPointApi k =
         :> Get '[JSON] [Pilot]
 
     :<|> "task-length" :> Capture "task" Int :> "spherical-edge"
+        :> Get '[JSON] (OptimalRoute (Maybe TrackLine))
+
+    :<|> "task-length" :> Capture "task" Int :> "ellipsoid-edge"
         :> Get '[JSON] (OptimalRoute (Maybe TrackLine))
 
     :<|> "gap-point" :> "pilots-status"
@@ -252,6 +258,7 @@ serverTaskLengthApi cfg =
         :<|> tasks <$> c
         :<|> getPilots <$> c
         :<|> getTaskRouteSphericalEdge
+        :<|> getTaskRouteEllipsoidEdge
     where
         c = asks compSettings
 
@@ -263,6 +270,7 @@ serverGapPointApi cfg =
         :<|> tasks <$> c
         :<|> getPilots <$> c
         :<|> getTaskRouteSphericalEdge
+        :<|> getTaskRouteEllipsoidEdge
         :<|> getPilotsStatus
         :<|> getValidity <$> p
         :<|> getAllocation <$> p
@@ -375,6 +383,17 @@ getTaskRouteSphericalEdge ii = do
         Just xs ->
             case drop (ii - 1) xs of
                 Just TaskTrack{sphericalEdgeToEdge = x} : _ -> return x
+                _ -> throwError $ errTaskBounds ii
+
+        _ -> throwError $ errTaskStep "task-length" ii
+
+getTaskRouteEllipsoidEdge :: Int -> AppT k IO (OptimalRoute (Maybe TrackLine))
+getTaskRouteEllipsoidEdge ii = do
+    xs' <- asks routing
+    case xs' of
+        Just xs ->
+            case drop (ii - 1) xs of
+                Just TaskTrack{ellipsoidEdgeToEdge = x} : _ -> return x
                 _ -> throwError $ errTaskBounds ii
 
         _ -> throwError $ errTaskStep "task-length" ii
