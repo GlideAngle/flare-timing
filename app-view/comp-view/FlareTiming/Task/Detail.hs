@@ -29,10 +29,10 @@ import FlareTiming.Task.Absent (tableAbsent)
 import FlareTiming.Task.Validity (viewValidity)
 
 raceNote :: T.Text
-raceNote = "* The clock starts ticking for this race at the start gate opening time"
+raceNote = "* A clock for each start gate"
 
 elapsedNote :: T.Text
-elapsedNote = "* The clock starts ticking for this race when each pilot crosses the start"
+elapsedNote = "* Each pilot on their own clock"
 
 openNote :: Maybe Shape -> T.Text
 openNote (Just _) = " Open distance"
