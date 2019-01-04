@@ -11,7 +11,10 @@ import Data.Aeson (ToJSON(..), FromJSON(..))
 import Flight.Score (Pilot)
 
 data PilotTaskStatus
-    = ABS | DF | DNF | NYP
+    = ABS -- ^ Absent
+    | DF -- ^ Did fly
+    | DNF -- ^ Did not fly
+    | NYP -- ^ Not yet processed
     deriving (Eq, Ord, Show, Generic, FromJSON, ToJSON)
 
 newtype TrackLogFile = TrackLogFile String
