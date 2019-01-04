@@ -5,7 +5,7 @@ import Reflex
 import Reflex.Dom
 import qualified Data.Text as T (Text, intercalate, pack)
 
-import WireTypes.ZoneKind (Shape(..), showShape)
+import WireTypes.ZoneKind (Shape(..))
 import WireTypes.Pilot (nullPilot)
 import WireTypes.Comp
     ( Comp(..), Task(..)
@@ -35,7 +35,8 @@ elapsedNote :: T.Text
 elapsedNote = "* Each pilot on their own clock"
 
 openNote :: Maybe Shape -> T.Text
-openNote (Just _) = " Open distance"
+openNote (Just Vector{}) = " open distance on a heading"
+openNote (Just Star{}) = " open distance"
 openNote _ = ""
 
 taskTileZones
