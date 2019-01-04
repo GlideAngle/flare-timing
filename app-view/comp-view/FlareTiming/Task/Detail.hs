@@ -113,7 +113,7 @@ taskDetail ix@(IxTask _) cs task vy a = do
 
     _ <- widgetHold (tableTask utc task legs) $
             (\case
-                TaskTabGeo -> tableGeo
+                TaskTabGeo -> tableGeo ix
 
                 TaskTabTask -> tableTask utc task legs
 

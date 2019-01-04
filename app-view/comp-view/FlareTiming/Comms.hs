@@ -10,6 +10,10 @@ module FlareTiming.Comms
     , getTaskScore
     , getTaskValidityWorking
     , getTaskLengthSphericalEdge
+    , getTaskLengthEllipsoidEdge
+    , getTaskLengthProjectedEdgeSpherical
+    , getTaskLengthProjectedEdgeEllipsoid
+    , getTaskLengthProjectedEdgePlanar
     , getTaskPilotDnf
     , getTaskPilotNyp
     , getTaskPilotDf
@@ -187,11 +191,12 @@ emptyRoute =
         , speedRoute = Nothing
         }
 
-getTaskLengthSphericalEdge
+getTaskLength_
     :: GetConstraint t m
-    => IxTask
+    => T.Text
+    -> IxTask
     -> m (Dynamic t (OptimalRoute (Maybe TrackLine)))
-getTaskLengthSphericalEdge (IxTask ii) = do
+getTaskLength_ path (IxTask ii) = do
     pb :: Event t () <- getPostBuild
 
     let u :: T.Text
@@ -199,14 +204,73 @@ getTaskLengthSphericalEdge (IxTask ii) = do
             mapUri
             $ "/task-length/"
             <> (T.pack . show $ ii)
-            <> "/spherical-edge"
+            <> "/"
+            <> path
 
     rsp <- performRequestAsync . fmap (req u) $ Nothing <$ pb
 
     let es :: Event t (OptimalRoute (Maybe TrackLine)) = fmapMaybe decodeXhrResponse rsp
     holdDyn emptyRoute es
 
-getTaskLengthSphericalEdge IxTaskNone = return $ constDyn emptyRoute
+getTaskLength_ _ IxTaskNone = return $ constDyn emptyRoute
+
+getTaskLengthSphericalEdge, getTaskLengthEllipsoidEdge
+    :: GetConstraint t m
+    => IxTask
+    -> m (Dynamic t (OptimalRoute (Maybe TrackLine)))
+getTaskLengthSphericalEdge = getTaskLength_ "spherical-edge"
+getTaskLengthEllipsoidEdge = getTaskLength_ "ellipsoid-edge"
+
+getTaskLengthProjected_
+    :: GetConstraint t m
+    => T.Text
+    -> IxTask
+    -> m (Dynamic t (Maybe TrackLine))
+getTaskLengthProjected_ path (IxTask ii) = do
+    pb :: Event t () <- getPostBuild
+
+    let u :: T.Text
+        u =
+            mapUri
+            $ "/task-length/"
+            <> (T.pack . show $ ii)
+            <> "/"
+            <> path
+
+    rsp <- performRequestAsync . fmap (req u) $ Nothing <$ pb
+
+    let es :: Event t TrackLine = fmapMaybe decodeXhrResponse rsp
+    holdDyn Nothing $ Just <$> es
+
+getTaskLengthProjected_ _ IxTaskNone = return $ constDyn Nothing
+
+getTaskLengthProjectedEdgeSpherical, getTaskLengthProjectedEdgeEllipsoid
+    :: GetConstraint t m
+    => IxTask
+    -> m (Dynamic t (Maybe TrackLine))
+getTaskLengthProjectedEdgeSpherical = getTaskLengthProjected_ "projected-edge-spherical"
+getTaskLengthProjectedEdgeEllipsoid = getTaskLengthProjected_ "projected-edge-ellipsoid"
+
+getTaskLengthProjectedEdgePlanar
+    :: GetConstraint t m
+    => IxTask
+    -> m (Dynamic t (Maybe PlanarTrackLine))
+getTaskLengthProjectedEdgePlanar (IxTask ii) = do
+    pb :: Event t () <- getPostBuild
+
+    let u :: T.Text
+        u =
+            mapUri
+            $ "/task-length/"
+            <> (T.pack . show $ ii)
+            <> "/projected-edge-planar"
+
+    rsp <- performRequestAsync . fmap (req u) $ Nothing <$ pb
+
+    let es :: Event t PlanarTrackLine = fmapMaybe decodeXhrResponse rsp
+    holdDyn Nothing $ Just <$> es
+
+getTaskLengthProjectedEdgePlanar IxTaskNone = return $ constDyn Nothing
 
 getTaskPilot_
     :: GetConstraint t m

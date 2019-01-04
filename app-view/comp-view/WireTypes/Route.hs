@@ -3,6 +3,7 @@
 module WireTypes.Route
     ( TaskDistance(..)
     , TrackLine(..)
+    , PlanarTrackLine(..)
     , OptimalRoute(..)
     , TaskLength(..)
     , TaskLegs(..)
@@ -50,6 +51,15 @@ data TrackLine =
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass FromJSON
 
+data PlanarTrackLine =
+    PlanarTrackLine
+        { distance :: TaskDistance
+        , legs :: [TaskDistance]
+        , legsSum :: [TaskDistance]
+        }
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass FromJSON
+
 data OptimalRoute a =
     OptimalRoute
         { taskRoute :: a
@@ -74,11 +84,11 @@ data TaskLegs =
 taskLength :: OptimalRoute (Maybe TrackLine) -> Maybe TaskLength
 taskLength OptimalRoute{..} =
     case (taskRoute, taskRouteSpeedSubset) of
-        (Just x, Just y) ->
+        (Just TrackLine{distance = x}, Just TrackLine{distance = y}) ->
             Just $
                 TaskLength
-                    { taskRoute = distance x
-                    , taskRouteSpeedSubset = distance y
+                    { taskRoute = x
+                    , taskRouteSpeedSubset = y
                     }
 
         _ -> Nothing
