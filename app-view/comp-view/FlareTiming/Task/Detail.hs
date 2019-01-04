@@ -112,6 +112,8 @@ taskDetail ix@(IxTask _) cs task vy a = do
 
     _ <- widgetHold (tableTask utc task legs) $
             (\case
+                TaskTabGeo -> text "TODO: Geo tab"
+
                 TaskTabTask -> tableTask utc task legs
 
                 TaskTabMap -> mdo

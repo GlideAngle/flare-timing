@@ -4,11 +4,12 @@ import Reflex
 import Reflex.Dom
 
 data TaskTab
-    = TaskTabValidity
-    | TaskTabScore
+    = TaskTabGeo
     | TaskTabTask
     | TaskTabMap
     | TaskTabAbsent
+    | TaskTabValidity
+    | TaskTabScore
 
 tabsTask
     :: MonadWidget t m
@@ -16,20 +17,32 @@ tabsTask
 tabsTask =
     elClass "div" "tabs" $
         el "ul" $ mdo
+            (g, _) <- elDynClass' "li" gClass $ el "a" (text "Geo")
             (t, _) <- elDynClass' "li" tClass $ el "a" (text "Task")
             (m, _) <- elDynClass' "li" mClass $ el "a" (text "Map")
-            (a, _) <- elDynClass' "li" aClass $ el "a" (text "Absentees")
-            (v, _) <- elDynClass' "li" vClass $ el "a" (text "Validity")
-            (s, _) <- elDynClass' "li" sClass $ el "a" (text "Scores")
+            (a, _) <- elDynClass' "li" aClass $ el "a" (text "Absent")
+            (v, _) <- elDynClass' "li" vClass $ el "a" (text "Valid")
+            (s, _) <- elDynClass' "li" sClass $ el "a" (text "Score")
 
+            let eg = (const TaskTabGeo) <$> domEvent Click g
             let et = (const TaskTabTask) <$> domEvent Click t
             let em = (const TaskTabMap) <$> domEvent Click m
             let ea = (const TaskTabAbsent) <$> domEvent Click a
             let ev = (const TaskTabValidity) <$> domEvent Click v
             let es = (const TaskTabScore) <$> domEvent Click s
 
+            gClass <- holdDyn "" . leftmost $
+                            [ "is-active" <$ eg
+                            , "" <$ ev
+                            , "" <$ es
+                            , "" <$ et
+                            , "" <$ em
+                            , "" <$ ea
+                            ]
+
             tClass <- holdDyn "is-active" . leftmost $
-                            [ "" <$ ev
+                            [ "" <$ eg
+                            , "" <$ ev
                             , "" <$ es
                             , "is-active" <$ et
                             , "" <$ em
@@ -37,7 +50,8 @@ tabsTask =
                             ]
 
             mClass <- holdDyn "" . leftmost $
-                            [ "" <$ ev
+                            [ "" <$ eg
+                            , "" <$ ev
                             , "" <$ es
                             , "" <$ et
                             , "is-active" <$ em
@@ -45,7 +59,8 @@ tabsTask =
                             ]
 
             aClass <- holdDyn "" . leftmost $
-                            [ "" <$ ev
+                            [ "" <$ eg
+                            , "" <$ ev
                             , "" <$ es
                             , "" <$ et
                             , "" <$ em
@@ -53,7 +68,8 @@ tabsTask =
                             ]
 
             vClass <- holdDyn "" . leftmost $
-                            [ "is-active" <$ ev
+                            [ "" <$ eg
+                            , "is-active" <$ ev
                             , "" <$ es
                             , "" <$ et
                             , "" <$ em
@@ -61,11 +77,12 @@ tabsTask =
                             ]
 
             sClass <- holdDyn "" . leftmost $
-                            [ "" <$ ev
+                            [ "" <$ eg
+                            , "" <$ ev
                             , "is-active" <$ es
                             , "" <$ et
                             , "" <$ em
                             , "" <$ ea
                             ]
 
-            return . leftmost $ [et, em, ea, ev, es]
+            return . leftmost $ [eg, et, em, ea, ev, es]
