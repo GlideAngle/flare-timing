@@ -24,6 +24,7 @@ import FlareTiming.Map.View (viewMap)
 import qualified FlareTiming.Turnpoint as TP (getName)
 import FlareTiming.Task.Tab (TaskTab(..), tabsTask)
 import FlareTiming.Task.Score (tableScore)
+import FlareTiming.Task.Geo (tableGeo)
 import FlareTiming.Task.Turnpoints (tableTask)
 import FlareTiming.Task.Absent (tableAbsent)
 import FlareTiming.Task.Validity (viewValidity)
@@ -112,7 +113,7 @@ taskDetail ix@(IxTask _) cs task vy a = do
 
     _ <- widgetHold (tableTask utc task legs) $
             (\case
-                TaskTabGeo -> text "TODO: Geo tab"
+                TaskTabGeo -> tableGeo
 
                 TaskTabTask -> tableTask utc task legs
 
