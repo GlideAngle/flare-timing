@@ -3,10 +3,14 @@ module FlareTiming.Task.Detail (taskDetail) where
 import Prelude hiding (map)
 import Reflex
 import Reflex.Dom
-import qualified Data.Text as T (intercalate, pack)
+import qualified Data.Text as T (Text, intercalate, pack)
 
+import WireTypes.ZoneKind (Shape(..), showShape)
 import WireTypes.Pilot (nullPilot)
-import WireTypes.Comp (Comp(..), Task(..), getRaceRawZones, getStartGates)
+import WireTypes.Comp
+    ( Comp(..), Task(..)
+    , getRaceRawZones, getStartGates, getOpenShape, getSpeedSection
+    )
 import WireTypes.Route (TaskLength(..), taskLength, taskLegs, showTaskDistance)
 import WireTypes.Point (Allocation(..))
 import WireTypes.Validity (Validity(..))
@@ -24,6 +28,16 @@ import FlareTiming.Task.Turnpoints (tableTask)
 import FlareTiming.Task.Absent (tableAbsent)
 import FlareTiming.Task.Validity (viewValidity)
 
+raceNote :: T.Text
+raceNote = "* The clock starts ticking for this race at the start gate opening time"
+
+elapsedNote :: T.Text
+elapsedNote = "* The clock starts ticking for this race when each pilot crosses the start"
+
+openNote :: Maybe Shape -> T.Text
+openNote (Just _) = " Open distance"
+openNote _ = ""
+
 taskTileZones
     :: MonadWidget t m
     => Dynamic t Task
@@ -33,22 +47,39 @@ taskTileZones t len = do
     let xs = getRaceRawZones <$> t
     let zs = (fmap . fmap) TP.getName xs
     let title = T.intercalate " - " <$> zs
+    let ss = getSpeedSection <$> t
     let gs = length . getStartGates <$> t
     let d = ffor len (maybe "" $ \TaskLength{..} ->
                 showTaskDistance taskRoute)
-    let kind = ffor gs (\case
-                0 -> " elapsed time"
-                1 -> " race to goal with a single start gate"
-                n -> " race to goal with " <> (T.pack . show $ n) <> " start gates")
 
     elClass "div" "tile" $ do
         elClass "div" "tile is-parent" $ do
             elClass "div" "tile is-child box" $ do
                 elClass "p" "title is-3" $ do
                     dynText title
-                elClass "p" "subtitle is-6" $ do
-                    dynText d
-                    dynText kind
+                dyn_ $ ffor ss (\case
+                    Just _ -> do
+                        let kind = ffor gs (\case
+                                    0 -> " elapsed time*"
+                                    1 -> " race to goal* with a single start gate"
+                                    n -> " race to goal* with " <> (T.pack . show $ n) <> " start gates")
+
+                        let sideNote = ffor gs (\case 0 -> elapsedNote; _ -> raceNote)
+
+                        elClass "p" "level subtitle is-6" $ do
+                            elClass "span" "level-item level-left" $ do
+                                dynText d
+                                dynText $ kind
+                            elClass "span" "level-item level-right is-7" $
+                                dynText $ sideNote
+
+                    Nothing -> do
+                        let openKind = openNote . getOpenShape <$> t
+
+                        elClass "p" "level subtitle is-6" $ do
+                            elClass "span" "level-item level-left" $ do
+                                dynText d
+                                dynText $ openKind)
 
 taskDetail
     :: MonadWidget t m
