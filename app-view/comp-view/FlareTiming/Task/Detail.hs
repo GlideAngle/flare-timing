@@ -3,10 +3,10 @@ module FlareTiming.Task.Detail (taskDetail) where
 import Prelude hiding (map)
 import Reflex
 import Reflex.Dom
-import qualified Data.Text as T (intercalate)
+import qualified Data.Text as T (intercalate, pack)
 
 import WireTypes.Pilot (nullPilot)
-import WireTypes.Comp (Comp(..), Task(..), getRaceRawZones)
+import WireTypes.Comp (Comp(..), Task(..), getRaceRawZones, getStartGates)
 import WireTypes.Route (TaskLength(..), taskLength, taskLegs, showTaskDistance)
 import WireTypes.Point (Allocation(..))
 import WireTypes.Validity (Validity(..))
@@ -33,8 +33,13 @@ taskTileZones t len = do
     let xs = getRaceRawZones <$> t
     let zs = (fmap . fmap) TP.getName xs
     let title = T.intercalate " - " <$> zs
+    let gs = length . getStartGates <$> t
     let d = ffor len (maybe "" $ \TaskLength{..} ->
                 showTaskDistance taskRoute)
+    let kind = ffor gs (\case
+                0 -> " elapsed time"
+                1 -> " race to goal with a single start gate"
+                n -> " race to goal with " <> (T.pack . show $ n) <> " start gates")
 
     elClass "div" "tile" $ do
         elClass "div" "tile is-parent" $ do
@@ -43,6 +48,7 @@ taskTileZones t len = do
                     dynText title
                 elClass "p" "subtitle is-6" $ do
                     dynText d
+                    dynText kind
 
 taskDetail
     :: MonadWidget t m
