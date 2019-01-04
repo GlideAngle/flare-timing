@@ -7,7 +7,7 @@ import qualified Data.Text as T (intercalate)
 
 import WireTypes.Pilot (nullPilot)
 import WireTypes.Comp (Comp(..), Task(..), getRaceRawZones)
-import WireTypes.Route (taskLength, taskLegs)
+import WireTypes.Route (TaskLength(..), taskLength, taskLegs, showTaskDistance)
 import WireTypes.Point (Allocation(..))
 import WireTypes.Validity (Validity(..))
 import FlareTiming.Comms
@@ -27,17 +27,22 @@ import FlareTiming.Task.Validity (viewValidity)
 taskTileZones
     :: MonadWidget t m
     => Dynamic t Task
+    -> Dynamic t (Maybe TaskLength)
     -> m ()
-taskTileZones t = do
+taskTileZones t len = do
     let xs = getRaceRawZones <$> t
     let zs = (fmap . fmap) TP.getName xs
     let title = T.intercalate " - " <$> zs
+    let d = ffor len (maybe "" $ \TaskLength{..} ->
+                showTaskDistance taskRoute)
 
     elClass "div" "tile" $ do
         elClass "div" "tile is-parent" $ do
             elClass "div" "tile is-child box" $ do
                 elClass "p" "title is-3" $ do
                     dynText title
+                elClass "p" "subtitle is-6" $ do
+                    dynText d
 
 taskDetail
     :: MonadWidget t m
@@ -63,7 +68,7 @@ taskDetail ix@(IxTask _) cs task vy a = do
     let tp = (fmap . fmap) taskPoints a
     let wg = (fmap . fmap) weight a
 
-    taskTileZones task
+    taskTileZones task ln
     es <- simpleList cs (crumbTask task)
     tab <- tabsTask
 
