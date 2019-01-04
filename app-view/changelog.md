@@ -2,6 +2,22 @@ The [latest
 version](https://github.com/BlockScope/flare-timing/blob/master/app-view/changelog.md)
 of this changelog.
 
+# Pilot Tracks and Zone Give
+## app-view-0.6
+
+* Download and show pilot tracks on the map.
+* Show the give or tolerance around turnpoints both in the table an on the map.
+* Read and display zone altitude when available.
+* Show the shape of the end of the speed section and the shape of goal in the
+  turnpoint table.
+* Add a settings tab for the competition showing configurations such as the
+  Earth model and distance calculation method. Some of these settings are not
+  available for extraction from the `*.fsdb` and instead are provided as
+  command line options when doing the `extract-input` scoring step.
+* Fix a bug in the sampling of zone shapes when setting up the path graph for
+  working out the optimal route, #111.
+* Fix a bug in showing the legs of the task, #145.
+
 # IGC Parsing, Start Gates and Pilot Status
 ## app-view-0.5
 
