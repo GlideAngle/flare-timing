@@ -59,7 +59,10 @@ import Flight.Comp
     , compToPoint
     , ensureExt
     )
-import Flight.Route (OptimalRoute(..), TrackLine(..), TaskTrack(..))
+import Flight.Route
+    ( OptimalRoute(..), TaskTrack(..)
+    , TrackLine(..), ProjectedTrackLine(..), PlanarTrackLine(..)
+    )
 import Flight.Mask (checkTracks)
 import ServeOptions (description)
 import ServeTrack (RawLatLngTrack(..))
@@ -114,6 +117,15 @@ type TaskLengthApi k =
     :<|> "task-length" :> Capture "task" Int :> "ellipsoid-edge"
         :> Get '[JSON] (OptimalRoute (Maybe TrackLine))
 
+    :<|> "task-length" :> Capture "task" Int :> "projected-edge-spherical"
+        :> Get '[JSON] TrackLine
+
+    :<|> "task-length" :> Capture "task" Int :> "projected-edge-ellipsoid"
+        :> Get '[JSON] TrackLine
+
+    :<|> "task-length" :> Capture "task" Int :> "projected-edge-planar"
+        :> Get '[JSON] PlanarTrackLine
+
 type GapPointApi k =
     "comp-input" :> "comps"
         :> Get '[JSON] Comp
@@ -129,6 +141,15 @@ type GapPointApi k =
 
     :<|> "task-length" :> Capture "task" Int :> "ellipsoid-edge"
         :> Get '[JSON] (OptimalRoute (Maybe TrackLine))
+
+    :<|> "task-length" :> Capture "task" Int :> "projected-edge-spherical"
+        :> Get '[JSON] TrackLine
+
+    :<|> "task-length" :> Capture "task" Int :> "projected-edge-ellipsoid"
+        :> Get '[JSON] TrackLine
+
+    :<|> "task-length" :> Capture "task" Int :> "projected-edge-planar"
+        :> Get '[JSON] PlanarTrackLine
 
     :<|> "gap-point" :> "pilots-status"
         :> Get '[JSON] [(Pilot, [PilotTaskStatus])]
@@ -259,6 +280,9 @@ serverTaskLengthApi cfg =
         :<|> getPilots <$> c
         :<|> getTaskRouteSphericalEdge
         :<|> getTaskRouteEllipsoidEdge
+        :<|> getTaskRouteProjectedSphericalEdge
+        :<|> getTaskRouteProjectedEllipsoidEdge
+        :<|> getTaskRouteProjectedPlanarEdge
     where
         c = asks compSettings
 
@@ -271,6 +295,9 @@ serverGapPointApi cfg =
         :<|> getPilots <$> c
         :<|> getTaskRouteSphericalEdge
         :<|> getTaskRouteEllipsoidEdge
+        :<|> getTaskRouteProjectedSphericalEdge
+        :<|> getTaskRouteProjectedEllipsoidEdge
+        :<|> getTaskRouteProjectedPlanarEdge
         :<|> getPilotsStatus
         :<|> getValidity <$> p
         :<|> getAllocation <$> p
@@ -394,6 +421,63 @@ getTaskRouteEllipsoidEdge ii = do
         Just xs ->
             case drop (ii - 1) xs of
                 Just TaskTrack{ellipsoidEdgeToEdge = x} : _ -> return x
+                _ -> throwError $ errTaskBounds ii
+
+        _ -> throwError $ errTaskStep "task-length" ii
+
+getTaskRouteProjectedSphericalEdge :: Int -> AppT k IO TrackLine
+getTaskRouteProjectedSphericalEdge ii = do
+    xs' <- asks routing
+    case xs' of
+        Just xs ->
+            case drop (ii - 1) xs of
+                Just
+                   TaskTrack
+                       { projection =
+                           OptimalRoute
+                               { taskRoute =
+                                   Just
+                                       ProjectedTrackLine
+                                           { spherical = x }}} : _ -> return x
+
+                _ -> throwError $ errTaskBounds ii
+
+        _ -> throwError $ errTaskStep "task-length" ii
+
+getTaskRouteProjectedEllipsoidEdge :: Int -> AppT k IO TrackLine
+getTaskRouteProjectedEllipsoidEdge ii = do
+    xs' <- asks routing
+    case xs' of
+        Just xs ->
+            case drop (ii - 1) xs of
+                Just
+                   TaskTrack
+                       { projection =
+                           OptimalRoute
+                               { taskRoute =
+                                   Just
+                                       ProjectedTrackLine
+                                           { ellipsoid = x }}} : _ -> return x
+
+                _ -> throwError $ errTaskBounds ii
+
+        _ -> throwError $ errTaskStep "task-length" ii
+
+getTaskRouteProjectedPlanarEdge :: Int -> AppT k IO PlanarTrackLine
+getTaskRouteProjectedPlanarEdge ii = do
+    xs' <- asks routing
+    case xs' of
+        Just xs ->
+            case drop (ii - 1) xs of
+                Just
+                   TaskTrack
+                       { projection =
+                           OptimalRoute
+                               { taskRoute =
+                                   Just
+                                       ProjectedTrackLine
+                                           { planar = x }}} : _ -> return x
+
                 _ -> throwError $ errTaskBounds ii
 
         _ -> throwError $ errTaskStep "task-length" ii
