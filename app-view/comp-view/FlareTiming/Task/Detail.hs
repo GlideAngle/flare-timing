@@ -70,7 +70,7 @@ taskTileZones t len = do
                             elClass "span" "level-item level-left" $ do
                                 dynText d
                                 dynText $ kind
-                            elClass "span" "level-item level-right is-7" $
+                            elClass "span" "level-item level-right has-text-info" $
                                 dynText $ sideNote
 
                     Nothing -> do
