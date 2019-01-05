@@ -46,21 +46,29 @@ rowSpherical = rowOptimal "Spherical" . getTaskLengthSphericalEdge
 rowEllipsoid :: MonadWidget t m => IxTask -> m ()
 rowEllipsoid = rowOptimal "Ellipsoid" . getTaskLengthEllipsoidEdge
 
-rowProjectedSphere
+rowTrackLine
     :: MonadWidget t m
-    => IxTask
+    => T.Text
+    -> Dynamic t (Maybe TrackLine)
     -> m ()
-rowProjectedSphere ix = do
-    ln <- getTaskLengthProjectedEdgeSpherical ix
+rowTrackLine rowHeader ln = do
     let d = ffor ln (maybe "" $ \TrackLine{distance = x} -> showTaskDistance x)
 
     let legs =
             ffor ln (maybe "" $ T.pack . show . length . (\TrackLine{legs = xs} -> xs))
 
     el "tr" $ do
-        el "th" $ text "Projected sphere"
-        elClass "th" "td-geo-distance" $ dynText d
-        elClass "th" "td-geo-legs" $ dynText legs
+        el "th" $ text rowHeader
+        elClass "td" "td-geo-distance" $ dynText d
+        elClass "td" "td-geo-legs" $ dynText legs
+
+rowProjectedSphere
+    :: MonadWidget t m
+    => IxTask
+    -> m ()
+rowProjectedSphere ix = do
+    ln  <- getTaskLengthProjectedEdgeSpherical ix
+    rowTrackLine "Projected sphere" ln
 
 rowProjectedEllipsoid
     :: MonadWidget t m
@@ -68,15 +76,7 @@ rowProjectedEllipsoid
     -> m ()
 rowProjectedEllipsoid ix = do
     ln <- getTaskLengthProjectedEdgeEllipsoid ix
-    let d = ffor ln (maybe "" $ \TrackLine{distance = x} -> showTaskDistance x)
-
-    let legs =
-            ffor ln (maybe "" $ T.pack . show . length . (\TrackLine{legs = xs} -> xs))
-
-    el "tr" $ do
-        el "th" $ text "Projected ellipsoid"
-        elClass "th" "td-geo-distance" $ dynText d
-        elClass "th" "td-geo-legs" $ dynText legs
+    rowTrackLine "Projected ellipsoid" ln
 
 rowProjectedPlanar
     :: MonadWidget t m
