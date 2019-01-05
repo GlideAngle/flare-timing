@@ -54,19 +54,15 @@ rowTrackLine
     :: MonadWidget t m
     => T.Text
     -> T.Text
-    -> T.Text
-    -> T.Text
     -> Dynamic t (Maybe TrackLine)
     -> m ()
-rowTrackLine earthIn algoIn earthOut algoOut ln = do
+rowTrackLine earthOut algoOut ln = do
     let d = ffor ln (maybe "" $ \TrackLine{distance = x} -> showTaskDistance x)
 
     let legs =
             ffor ln (maybe "" $ T.pack . show . length . (\TrackLine{legs = xs} -> xs))
 
     el "tr" $ do
-        el "td" $ text earthIn
-        el "td" $ text algoIn
         el "td" $ text earthOut
         el "td" $ text algoOut
         elClass "td" "td-geo-distance" $ dynText d
@@ -78,7 +74,7 @@ rowProjectedSphere
     -> m ()
 rowProjectedSphere ix = do
     ln  <- getTaskLengthProjectedEdgeSpherical ix
-    rowTrackLine "Plane" "Pythagorus" "Sphere" "Haversines" ln
+    rowTrackLine "Sphere" "Haversines" ln
 
 rowProjectedEllipsoid
     :: MonadWidget t m
@@ -86,7 +82,7 @@ rowProjectedEllipsoid
     -> m ()
 rowProjectedEllipsoid ix = do
     ln <- getTaskLengthProjectedEdgeEllipsoid ix
-    rowTrackLine "Plane" "Pythagorus" "Ellipsoid" "Vincenty" ln
+    rowTrackLine "Ellipsoid" "Vincenty" ln
 
 rowProjectedPlanar
     :: MonadWidget t m
@@ -100,8 +96,8 @@ rowProjectedPlanar ix = do
             ffor ln (maybe "" $ T.pack . show . length . (\PlanarTrackLine{legs = xs} -> xs))
 
     el "tr" $ do
-        el "td" $ text "Plane"
-        el "td" $ text "Pythagorus"
+        elAttr "td" ("rowspan" =: "3" <> "class" =: "td-geo-plane" ) $ text "Plane"
+        elAttr "td" ("rowspan" =: "3" <> "class" =: "td-geo-pythagorus" ) $ text "Pythagorus"
         el "td" $ text "Plane"
         el "td" $ text "Pythagorus"
         elClass "td" "td-geo-distance" $ dynText d
