@@ -1,4 +1,4 @@
-module FlareTiming.Task.ListItem (liTask) where
+module FlareTiming.Comp.Tasks (taskList) where
 
 import Reflex
 import Reflex.Dom
@@ -8,6 +8,21 @@ import FlareTiming.Events (IxTask(..))
 import WireTypes.Comp (Task(..), getRaceRawZones)
 import WireTypes.Route (TaskDistance, showTaskDistance)
 import qualified FlareTiming.Turnpoint as TP (getName)
+
+listToIxTask :: Reflex t => [Event t ()] -> Event t IxTask
+listToIxTask =
+    leftmost
+    . zipWith (\i x -> (const $ IxTask i) <$> x) [1..]
+
+taskList
+    :: MonadWidget t m
+    => Dynamic t [TaskDistance]
+    -> Dynamic t [Task]
+    -> m (Event t IxTask)
+taskList lens xs = do
+    let ixs = zip (IxTask <$> [1..]) <$> xs
+    ys <- el "ul" $ simpleList ixs (liTask lens)
+    return $ switchDyn (listToIxTask <$> ys)
 
 liTask
     :: MonadWidget t m

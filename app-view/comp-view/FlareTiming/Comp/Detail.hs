@@ -9,7 +9,7 @@ import FlareTiming.Comp (comps)
 import FlareTiming.Breadcrumb (crumbComp)
 import FlareTiming.Events (IxTask(..))
 import FlareTiming.Comp.Tab (CompTab(..), tabsComp)
-import FlareTiming.Task.List (taskList)
+import FlareTiming.Comp.Tasks (taskList)
 import FlareTiming.Comp.Pilot (tablePilot)
 import FlareTiming.Comp.Settings (tableComp)
 
