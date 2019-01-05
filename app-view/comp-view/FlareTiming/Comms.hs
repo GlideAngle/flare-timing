@@ -3,6 +3,7 @@ module FlareTiming.Comms
     , getComps
     , getNominals
     , getTasks
+    , getTaskLengths
     , getPilots
     , getPilotsStatus
     , getValidity
@@ -54,17 +55,33 @@ type GetConstraint t m =
     , MonadHold t m
     )
 
+type GetTasksConstraints t m =
+    ( MonadIO (Performable m)
+    , HasJSContext (Performable m)
+    , PerformEvent t m
+    , TriggerEvent t m
+    )
+
 req :: T.Text -> Maybe T.Text -> XhrRequest ()
 req uri md = XhrRequest "GET" (maybe uri id md) def
 
-getTasks :: GetConstraint t m => () -> m (Dynamic t [Task])
-getTasks () = do
-    pb :: Event t () <- getPostBuild
+getTasks
+    :: GetTasksConstraints t m
+    => Event t a
+    -> m (Event t [Task])
+getTasks ev = do
     let u = mapUri "/comp-input/tasks"
-    rsp <- performRequestAsync . fmap (req u) $ Nothing <$ pb
+    rsp <- performRequestAsync . fmap (req u) $ Nothing <$ ev
+    return $ fmapMaybe decodeXhrResponse rsp
 
-    let es :: Event t [Task] = fmapMaybe decodeXhrResponse rsp
-    holdDyn [] es
+getTaskLengths
+    :: GetTasksConstraints t m
+    => Event t a
+    -> m (Event t [TaskDistance])
+getTaskLengths ev = do
+    let u = mapUri "/task-length"
+    rsp <- performRequestAsync . fmap (req u) $ Nothing <$ ev
+    return $ fmapMaybe decodeXhrResponse rsp
 
 getComps
     :: GetConstraint t m

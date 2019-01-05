@@ -4,6 +4,7 @@ import Reflex
 import Reflex.Dom
 
 import WireTypes.Comp (Task(..))
+import WireTypes.Route (TaskDistance)
 import FlareTiming.Events (IxTask(..))
 import FlareTiming.Task.ListItem (liTask)
 
@@ -14,8 +15,10 @@ listToIxTask =
 
 taskList
     :: MonadWidget t m
-    => Dynamic t [Task]
+    => Dynamic t [TaskDistance]
+    -> Dynamic t [Task]
     -> m (Event t IxTask)
-taskList xs = do
-    ys <- el "ul" $ simpleList xs liTask
+taskList lens xs = do
+    let ixs = zip (IxTask <$> [1..]) <$> xs
+    ys <- el "ul" $ simpleList ixs (liTask lens)
     return $ switchDyn (listToIxTask <$> ys)
