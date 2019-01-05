@@ -128,12 +128,12 @@ tableCmp ix = do
                     elClass "th" "th-geo-legs" $ text "Legs"
 
             _ <- el "tbody" $ do
-                rowSpherical ix
-                rowEllipsoid ix
-
+                rowProjectedPlanar ix
                 rowProjectedSphere ix
                 rowProjectedEllipsoid ix
-                rowProjectedPlanar ix
+
+                rowSpherical ix
+                rowEllipsoid ix
 
             let tr = el "tr" . elAttr "td" ("colspan" =: "6")
             _ <- el "tfoot" $ do
