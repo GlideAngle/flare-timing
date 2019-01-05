@@ -1,6 +1,7 @@
 import System.Environment (getProgName)
 import Text.Printf (printf)
 import System.Console.CmdArgs.Implicit (cmdArgs)
+import Data.Maybe (isNothing, catMaybes)
 import Data.List ((\\), nub, sort, find)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
@@ -67,6 +68,7 @@ import Flight.Mask (checkTracks)
 import ServeOptions (description)
 import ServeTrack (RawLatLngTrack(..))
 import Data.Ratio.Rounding (dpRound)
+import Flight.Distance (QTaskDistance)
 
 data Config k
     = Config
@@ -126,6 +128,9 @@ type TaskLengthApi k =
     :<|> "task-length" :> Capture "task" Int :> "projected-edge-planar"
         :> Get '[JSON] PlanarTrackLine
 
+    :<|> "task-length"
+        :> Get '[JSON] [QTaskDistance Double [u| m |]]
+
 type GapPointApi k =
     "comp-input" :> "comps"
         :> Get '[JSON] Comp
@@ -150,6 +155,9 @@ type GapPointApi k =
 
     :<|> "task-length" :> Capture "task" Int :> "projected-edge-planar"
         :> Get '[JSON] PlanarTrackLine
+
+    :<|> "task-length"
+        :> Get '[JSON] [QTaskDistance Double [u| m |]]
 
     :<|> "gap-point" :> "pilots-status"
         :> Get '[JSON] [(Pilot, [PilotTaskStatus])]
@@ -283,6 +291,7 @@ serverTaskLengthApi cfg =
         :<|> getTaskRouteProjectedSphericalEdge
         :<|> getTaskRouteProjectedEllipsoidEdge
         :<|> getTaskRouteProjectedPlanarEdge
+        :<|> getTaskRouteLengths
     where
         c = asks compSettings
 
@@ -298,6 +307,7 @@ serverGapPointApi cfg =
         :<|> getTaskRouteProjectedSphericalEdge
         :<|> getTaskRouteProjectedEllipsoidEdge
         :<|> getTaskRouteProjectedPlanarEdge
+        :<|> getTaskRouteLengths
         :<|> getPilotsStatus
         :<|> getValidity <$> p
         :<|> getAllocation <$> p
@@ -482,6 +492,29 @@ getTaskRouteProjectedPlanarEdge ii = do
 
         _ -> throwError $ errTaskStep "task-length" ii
 
+getTaskRouteLengths :: AppT k IO [QTaskDistance Double [u| m |]]
+getTaskRouteLengths = do
+    -- TODO: Inpect the comp to see what Earth model and algo to pick.
+    xs' <- asks routing
+    case xs' of
+        Just xs -> do
+            let ds =
+                    (\case
+                        (Just
+                            TaskTrack
+                                { sphericalEdgeToEdge =
+                                    OptimalRoute
+                                        { taskRoute =
+                                            Just TrackLine{distance = d}}}) -> Just d
+                        _ -> Nothing)
+                    <$> xs
+
+            if any isNothing ds
+               then throwError errTaskLengths
+               else return $ catMaybes ds
+
+        _ -> throwError errTaskLengths
+
 getTaskPilotDnf :: Int -> AppT k IO [Pilot]
 getTaskPilotDnf ii = do
     xss' <- fmap (\Cg.Crossing{dnf} -> dnf) <$> asks crossing
@@ -596,6 +629,11 @@ errPilotNotFound (PilotId p) =
 errTaskBounds :: Int -> ServantErr
 errTaskBounds ii =
     err400 {errBody = LBS.pack $ printf "Out of bounds task %d" ii}
+
+errTaskLengths :: ServantErr
+errTaskLengths =
+    err400 {errBody = LBS.pack "I need the lengths of each task" }
+
 
 errTaskStep :: String -> Int -> ServantErr
 errTaskStep step ii =

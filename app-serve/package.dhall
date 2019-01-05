@@ -41,6 +41,7 @@ in    defs
                   , "flight-cmd"
                   , "flight-gap"
                   , "flight-kml"
+                  , "flight-latlng"
                   , "flight-mask"
                   , "flight-route"
                   , "flight-scribe"
