@@ -2,11 +2,12 @@ module FlareTiming.Task.Geo (tableGeo) where
 
 import Reflex
 import Reflex.Dom
-import qualified Data.Text as T (pack)
+import qualified Data.Text as T (Text, pack)
 
 import FlareTiming.Comms
 import WireTypes.Route
-    ( TaskLength(..), TrackLine(..), PlanarTrackLine(..), TaskLegs(..)
+    ( OptimalRoute(..), TaskLength(..)
+    , TrackLine(..), PlanarTrackLine(..), TaskLegs(..)
     , taskLength, taskLegs, showTaskDistance
     )
 import FlareTiming.Events (IxTask(..))
@@ -22,12 +23,12 @@ tableGeo ix = do
             elClass "div" "content" $
                 tableCmp ix
 
-rowSpherical
+rowOptimal
     :: MonadWidget t m
-    => IxTask
+    => T.Text
+    -> m (Dynamic t (OptimalRoute (Maybe TrackLine)))
     -> m ()
-rowSpherical ix = do
-    let lnTask = getTaskLengthSphericalEdge ix
+rowOptimal rowHeader lnTask = do
     ln <- (fmap . fmap) taskLength lnTask
     let d = ffor ln (maybe "" $ \TaskLength{..} ->
                 showTaskDistance taskRoute)
@@ -35,26 +36,15 @@ rowSpherical ix = do
     legs <- (fmap . fmap) ((maybe "" $ T.pack . show . length . (\TaskLegs{legs} -> legs)) . taskLegs) lnTask
 
     el "tr" $ do
-        el "th" $ text "Spherical"
-        elClass "th" "td-geo-distance" $ dynText d
-        elClass "th" "td-geo-legs" $ dynText legs
+        el "th" $ text rowHeader
+        elClass "td" "td-geo-distance" $ dynText d
+        elClass "td" "td-geo-legs" $ dynText legs
 
-rowEllipsoid
-    :: MonadWidget t m
-    => IxTask
-    -> m ()
-rowEllipsoid ix = do
-    let lnTask = getTaskLengthEllipsoidEdge ix
-    ln <- (fmap . fmap) taskLength lnTask
-    let d = ffor ln (maybe "" $ \TaskLength{..} ->
-                showTaskDistance taskRoute)
+rowSpherical :: MonadWidget t m => IxTask -> m ()
+rowSpherical = rowOptimal "Spherical" . getTaskLengthSphericalEdge
 
-    legs <- (fmap . fmap) ((maybe "" $ T.pack . show . length . (\TaskLegs{legs} -> legs)) . taskLegs) lnTask
-
-    el "tr" $ do
-        el "th" $ text "Ellipsoid"
-        elClass "th" "td-geo-distance" $ dynText d
-        elClass "th" "td-geo-legs" $ dynText legs
+rowEllipsoid :: MonadWidget t m => IxTask -> m ()
+rowEllipsoid = rowOptimal "Ellipsoid" . getTaskLengthEllipsoidEdge
 
 rowProjectedSphere
     :: MonadWidget t m
