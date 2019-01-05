@@ -24,10 +24,8 @@ tasks = do
 view :: MonadWidget t m => () -> m ()
 view () = do
     pb :: Event t () <- getPostBuild
-    els <- getTaskLengths pb
-    exs <- getTasks els
-    ls <- holdDyn [] els
-    xs <- holdDyn [] exs
+    ls <- holdDyn [] =<< getTaskLengths pb
+    xs <- holdDyn [] =<< delay 1 =<< getTasks pb
     cs <- getComps ()
     vs <- getValidity ()
     as <- getAllocation ()
