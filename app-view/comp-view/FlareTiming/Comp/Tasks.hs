@@ -2,11 +2,12 @@ module FlareTiming.Comp.Tasks (taskList) where
 
 import Reflex
 import Reflex.Dom
-import qualified Data.Text as T (intercalate)
+import qualified Data.Text as T (Text, pack, intercalate)
+import Text.Printf (printf)
 
 import FlareTiming.Events (IxTask(..))
 import WireTypes.Comp (Task(..), getRaceRawZones)
-import WireTypes.Route (TaskDistance, showTaskDistance)
+import WireTypes.Route (TaskDistance(..))
 import qualified FlareTiming.Turnpoint as TP (getName)
 
 listToIxTask :: Reflex t => [Event t ()] -> Event t IxTask
@@ -21,7 +22,7 @@ taskList
     -> m (Event t IxTask)
 taskList lens xs = do
     let ixs = zip (IxTask <$> [1..]) <$> xs
-    ys <- el "ul" $ simpleList ixs (liTask lens)
+    ys <- elClass "ol" "ol-tasks" $ simpleList ixs (liTask lens)
     return $ switchDyn (listToIxTask <$> ys)
 
 liTask
@@ -43,8 +44,13 @@ liTask ds' x' = do
 
             (e, _) <-
                     el' "li" $ do
-                        text $ d <> " "
                         el "a" . text
                             $ T.intercalate " - " ns
+                        text " "
+                        text $ d
 
             return $ domEvent Click e
+
+showTaskDistance :: TaskDistance -> T.Text
+showTaskDistance (TaskDistance d) =
+    T.pack . printf "%.0f km" $ d
