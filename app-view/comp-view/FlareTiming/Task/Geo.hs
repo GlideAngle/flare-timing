@@ -91,8 +91,8 @@ rowProjectedPlanar ix = do
 
     el "tr" $ do
         el "th" $ text "Projected planar"
-        elClass "th" "td-geo-distance" $ dynText d
-        elClass "th" "td-geo-legs" $ dynText legs
+        elClass "td" "td-geo-distance" $ dynText d
+        elClass "td" "td-geo-legs" $ dynText legs
 
 tableCmp
     :: MonadWidget t m
