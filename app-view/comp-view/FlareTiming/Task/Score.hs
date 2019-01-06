@@ -96,8 +96,8 @@ tableScore utcOffset ln dnf vy wg pt tp xs = do
                 elClass "th" "th-start-start" $ text "Start"
                 elClass "th" "th-start-gate" $ text "Gate"
                 elClass "th" "th-end" $ text "End"
-                elClass "th" "th-pace" $ text "Pace"
                 elClass "th" "th-time" $ text "Time"
+                elClass "th" "th-pace" $ text "Pace"
                 elClass "th" "th-speed" $ text "Velocity"
 
                 elClass "th" "th-best-distance" $ text "Reach †"
@@ -299,8 +299,8 @@ pointRow utcOffset pt tp x = do
         elClass "td" "td-start-start" . dynText $ zipDynWith showSs tz v
         elClass "td" "td-start-gate" . dynText $ zipDynWith showGs tz v
         elClass "td" "td-end" . dynText $ zipDynWith showEs tz v
-        elClass "td" "td-pace" . dynText $ showGsVelocityTime <$> v
-        elClass "td" "td-time" . dynText $ showSsVelocityTime <$> v
+        elClass "td" "td-time" . dynText $ showGsVelocityTime <$> v
+        elClass "td" "td-pace" . dynText $ showSsVelocityTime <$> v
         elClass "td" "td-speed" . dynText $ showVelocityVelocity <$> v
 
         elClass "td" "td-best-distance" . dynText
