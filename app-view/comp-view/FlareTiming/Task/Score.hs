@@ -96,8 +96,8 @@ tableScore utcOffset ln dnf vy wg pt tp xs = do
                 elClass "th" "th-start-start" $ text "Start"
                 elClass "th" "th-start-gate" $ text "Gate"
                 elClass "th" "th-end" $ text "End"
-                elClass "th" "th-time" $ text "Time"
-                elClass "th" "th-pace" $ text "Pace"
+                elClass "th" "th-time" $ text "Time ‖"
+                elClass "th" "th-pace" $ text "Pace ¶"
                 elClass "th" "th-speed" $ text "Velocity"
 
                 elClass "th" "th-best-distance" $ text "Reach †"
@@ -277,6 +277,12 @@ tableScore utcOffset ln dnf vy wg pt tp xs = do
             el "tr" $
                 elAttr "td" ("colspan" =: "17")
                     $ text "§ Points award for effort are also called distance difficulty points."
+            el "tr" $
+                elAttr "td" ("colspan" =: "17")
+                    $ text "‖ \"Time\" is the time across the speed section from time zero of the start gate taken."
+            el "tr" $
+                elAttr "td" ("colspan" =: "17")
+                    $ text "¶ \"Pace\" is the time across the speed section from the time of crossing the start for the last time."
     return ()
 
 pointRow
