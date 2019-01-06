@@ -63,7 +63,7 @@ startGateTaken gs t =
     case gs of
         [] -> Nothing
         [g] -> Just g
-        sg@(StartGate g) : gs' ->
-            if t <= g
-               then Just sg
-               else startGateTaken gs' t
+        sg0@(StartGate g0) : sg1@(StartGate g1) : gs' ->
+            if | t < g0 -> Just sg0 -- TODO: Flag as jump-the-gun.
+               | t < g1 -> Just sg0
+               | otherwise -> startGateTaken (sg1 : gs') t
