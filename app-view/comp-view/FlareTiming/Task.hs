@@ -25,7 +25,22 @@ view :: MonadWidget t m => () -> m ()
 view () = do
     pb :: Event t () <- getPostBuild
     ls <- holdDyn [] =<< getTaskLengths pb
-    xs <- holdDyn [] =<< delay 1 =<< getTasks pb
+    xs <- holdDyn [] =<< getTasks pb
+
+    let bothLists = zipDynWith (,) ls xs
+    let bothNotNull = ffor2 ls xs (\ls' xs' -> not $ null ls' || null xs')
+
+    lxs <-
+            holdDyn ([], [])
+            $ tag (current bothLists)
+            $ gate (current bothNotNull)
+            $ leftmost
+                [ () <$ updated ls
+                , () <$ updated xs
+                ]
+
+    let (ls', xs') = splitDynPure lxs
+
     cs <- getComps ()
     vs <- getValidity ()
     as <- getAllocation ()
@@ -34,9 +49,9 @@ view () = do
 
         let eIx = switchDyn deIx
 
-        deIx <- widgetHold (compDetail ls cs xs) $
+        deIx <- widgetHold (compDetail ls' cs xs') $
                     (\ix -> case ix of
-                        IxTaskNone -> compDetail ls cs xs
+                        IxTaskNone -> compDetail ls' cs xs'
                         (IxTask ii) -> do
                             taskDetail
                                 ix
