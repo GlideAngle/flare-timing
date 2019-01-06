@@ -33,6 +33,8 @@ data GeoLines =
         , projected :: Maybe ProjectedTrackLine
         }
 
+-- | Once a track line is found on a plane, what are its equivalent latitudes
+-- and longitudes on the sphere and ellipsoid?
 data ProjectedTrackLine =
     ProjectedTrackLine
         { spherical :: TrackLine
@@ -42,6 +44,7 @@ data ProjectedTrackLine =
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
+-- | A track line on the projected plane with eastings and northings.
 data PlanarTrackLine =
     PlanarTrackLine
         { distance :: QTaskDistance Double [u| m |]
@@ -53,6 +56,7 @@ data PlanarTrackLine =
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
+-- | A track line on a sphere or ellipsoid with latitudes and longitudes.
 data TrackLine =
     TrackLine
         { distance :: QTaskDistance Double [u| m |]
