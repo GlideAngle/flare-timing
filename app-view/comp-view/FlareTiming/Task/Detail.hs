@@ -51,8 +51,7 @@ taskTileZones t len = do
     let title = T.intercalate " - " <$> zs
     let ss = getSpeedSection <$> t
     let gs = length . getStartGates <$> t
-    let d = ffor len (maybe "" $ \TaskLength{..} ->
-                showTaskDistance taskRoute)
+    let d = ffor len (maybe "" $ \TaskLength{..} -> showTaskDistance taskRoute)
 
     elClass "div" "tile" $ do
         elClass "div" "tile is-parent" $ do
@@ -99,10 +98,9 @@ taskDetail ix@(IxTask _) cs task vy a = do
     vw <- holdDyn Nothing =<< getTaskValidityWorking ix pb
     nyp <- holdDyn [] =<< getTaskPilotNyp ix pb
     dnf <- holdDyn [] =<< getTaskPilotDnf ix pb
-    let lnTask = holdDyn emptyRoute =<< getTaskLengthSphericalEdge ix pb
-    ln <- (fmap . fmap) taskLength lnTask
-    legs <- (fmap . fmap) taskLegs lnTask
     routes <- holdDyn emptyRoute =<< getTaskLengthSphericalEdge ix pb
+    let ln = taskLength <$> routes
+    let legs = taskLegs <$> routes
 
     let ps = (fmap . fmap) points a
     let tp = (fmap . fmap) taskPoints a
