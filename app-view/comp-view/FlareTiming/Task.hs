@@ -15,7 +15,7 @@ loading = el "li" $ text "Tasks will be shown here"
 
 tasks :: MonadWidget t m => m ()
 tasks = do
-    pb :: Event t () <- getPostBuild
+    pb <- getPostBuild
     elClass "div" "spacer" $ return ()
     elClass "div" "container is-size-7" $ do
         _ <- widgetHold loading $ fmap view pb
@@ -23,7 +23,7 @@ tasks = do
 
 view :: MonadWidget t m => () -> m ()
 view () = do
-    pb :: Event t () <- getPostBuild
+    pb <- getPostBuild
     ls <- holdDyn [] =<< getTaskLengths pb
     xs <- holdDyn [] =<< getTasks pb
 
@@ -41,9 +41,9 @@ view () = do
 
     let (ls', xs') = splitDynPure lxs
 
-    cs <- getComps ()
-    vs <- getValidity ()
-    as <- getAllocation ()
+    cs <- holdDyn [] . fmap pure =<< getComps pb
+    vs <- holdDyn [] =<< getValidity pb
+    as <- holdDyn [] =<< getAllocation pb
 
     el "div" $ mdo
 

@@ -16,7 +16,7 @@ import WireTypes.Point (Allocation(..))
 import WireTypes.Validity (Validity(..))
 import FlareTiming.Comms
     ( getTaskScore, getTaskValidityWorking, getTaskLengthSphericalEdge
-    , getTaskPilotDnf, getTaskPilotNyp, getTaskPilotTrack
+    , getTaskPilotDnf, getTaskPilotNyp, getTaskPilotTrack, emptyRoute
     )
 import FlareTiming.Breadcrumb (crumbTask)
 import FlareTiming.Events (IxTask(..))
@@ -94,14 +94,15 @@ taskDetail
 
 taskDetail ix@(IxTask _) cs task vy a = do
     let utc = utcOffset . head <$> cs
-    s <- getTaskScore ix
-    vw <- getTaskValidityWorking ix
-    nyp <- getTaskPilotNyp ix
-    dnf <- getTaskPilotDnf ix
-    let lnTask = getTaskLengthSphericalEdge ix
+    pb <- getPostBuild
+    s <- holdDyn [] =<< getTaskScore ix pb
+    vw <- holdDyn Nothing =<< getTaskValidityWorking ix pb
+    nyp <- holdDyn [] =<< getTaskPilotNyp ix pb
+    dnf <- holdDyn [] =<< getTaskPilotDnf ix pb
+    let lnTask = holdDyn emptyRoute =<< getTaskLengthSphericalEdge ix pb
     ln <- (fmap . fmap) taskLength lnTask
     legs <- (fmap . fmap) taskLegs lnTask
-    routes <- getTaskLengthSphericalEdge ix
+    routes <- holdDyn emptyRoute =<< getTaskLengthSphericalEdge ix pb
 
     let ps = (fmap . fmap) points a
     let tp = (fmap . fmap) taskPoints a

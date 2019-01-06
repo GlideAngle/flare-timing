@@ -264,16 +264,16 @@ map
     pilotTrack = do
 
     let tpNames = fmap (\RawZone{..} -> TurnpointName zoneName) xs
-    postBuild <- delay 1 =<< getPostBuild
+    pb <- delay 1 =<< getPostBuild
 
-    pilots <- getTaskPilotDf ix
+    pilots <- holdDyn [] =<< getTaskPilotDf ix pb
     (zoomOrPan, evZoom, activePilot)
         <- taskZoneButtons task pilots $ () <$ pilotTrack
 
     (eCanvas, _) <- elAttr' "div" ("style" =: "height: 680px;width: 100%") $ return ()
 
     rec performEvent_ $ leftmost
-            [ ffor postBuild (\_ -> liftIO $ do
+            [ ffor pb (\_ -> liftIO $ do
                 L.mapInvalidateSize lmap'
                 L.fitBounds lmap' bounds'
                 return ())

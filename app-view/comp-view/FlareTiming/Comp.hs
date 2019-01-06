@@ -97,7 +97,7 @@ showUtcOffset UtcOffset{timeZoneMinutes = mins} =
 
 comps :: MonadWidget t m => Dynamic t [Comp] -> m ()
 comps cs = do
-    pb :: Event t () <- getPostBuild
+    pb <- getPostBuild
     elClass "div" "spacer" $ return ()
     elClass "div" "container" $ do
         _ <- el "ul" $ do
@@ -108,7 +108,8 @@ comps cs = do
 
 viewComps :: MonadWidget t m => Dynamic t [Comp] -> m ()
 viewComps cs = do
-    ns <- getNominals ()
+    pb <- getPostBuild
+    ns <- holdDyn [] . fmap pure =<< getNominals pb
 
     _ <-
         elAttr

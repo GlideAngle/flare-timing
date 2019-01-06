@@ -45,10 +45,16 @@ rowOptimal earth algo  lnTask = do
         elClass "td" "td-geo-legs" $ dynText legs
 
 rowSpherical :: MonadWidget t m => IxTask -> m ()
-rowSpherical = rowOptimal "Sphere" "Haversines" . getTaskLengthSphericalEdge
+rowSpherical ix = do
+    pb <- getPostBuild
+    let x = holdDyn emptyRoute =<< getTaskLengthSphericalEdge ix pb
+    rowOptimal "Sphere" "Haversines" x
 
 rowEllipsoid :: MonadWidget t m => IxTask -> m ()
-rowEllipsoid = rowOptimal "Ellipsoid" "Vincenty" . getTaskLengthEllipsoidEdge
+rowEllipsoid ix = do
+    pb <- getPostBuild
+    let x = holdDyn emptyRoute =<< getTaskLengthEllipsoidEdge ix pb
+    rowOptimal "Ellipsoid" "Vincenty" x
 
 rowTrackLine
     :: MonadWidget t m
@@ -73,7 +79,8 @@ rowProjectedSphere
     => IxTask
     -> m ()
 rowProjectedSphere ix = do
-    ln  <- getTaskLengthProjectedEdgeSpherical ix
+    pb <- getPostBuild
+    ln <- holdDyn Nothing =<< getTaskLengthProjectedEdgeSpherical ix pb
     rowTrackLine "Sphere" "Haversines" ln
 
 rowProjectedEllipsoid
@@ -81,7 +88,8 @@ rowProjectedEllipsoid
     => IxTask
     -> m ()
 rowProjectedEllipsoid ix = do
-    ln <- getTaskLengthProjectedEdgeEllipsoid ix
+    pb <- getPostBuild
+    ln <- holdDyn Nothing =<< getTaskLengthProjectedEdgeEllipsoid ix pb
     rowTrackLine "Ellipsoid" "Vincenty" ln
 
 rowProjectedPlanar
@@ -89,7 +97,8 @@ rowProjectedPlanar
     => IxTask
     -> m ()
 rowProjectedPlanar ix = do
-    ln <- getTaskLengthProjectedEdgePlanar ix
+    pb <- getPostBuild
+    ln <- holdDyn Nothing =<< getTaskLengthProjectedEdgePlanar ix pb
     let d = ffor ln (maybe "" $ \PlanarTrackLine{distance = x} -> showTaskDistance x)
 
     let legs =

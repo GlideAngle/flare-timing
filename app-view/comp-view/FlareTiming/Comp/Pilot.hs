@@ -13,7 +13,8 @@ tablePilot
     => Dynamic t [Task]
     -> m ()
 tablePilot ts = do
-    xs <- getPilotsStatus ()
+    pb <- getPostBuild
+    xs <- holdDyn [] =<< getPilotsStatus pb
     _ <- elClass "table" "table is-bordered" $
             el "thead" $ do
                 el "tr" $ do

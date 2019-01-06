@@ -19,6 +19,7 @@ module FlareTiming.Comms
     , getTaskPilotNyp
     , getTaskPilotDf
     , getTaskPilotTrack
+    , emptyRoute
     ) where
 
 import Reflex
@@ -46,16 +47,15 @@ import FlareTiming.Events (IxTask(..))
 mapUri :: T.Text -> T.Text
 mapUri s = "http://localhost:3000" <> s
 
-type GetConstraint t m =
-    ( PostBuild t m
-    , MonadIO (Performable m)
-    , HasJSContext (Performable m)
-    , PerformEvent t m
-    , TriggerEvent t m
-    , MonadHold t m
-    )
+emptyRoute :: OptimalRoute (Maybe a)
+emptyRoute =
+    OptimalRoute
+        { taskRoute = Nothing
+        , taskRouteSpeedSubset = Nothing
+        , speedRoute = Nothing
+        }
 
-type GetTasksConstraints t m =
+type GetConstraint t m =
     ( MonadIO (Performable m)
     , HasJSContext (Performable m)
     , PerformEvent t m
@@ -66,7 +66,7 @@ req :: T.Text -> Maybe T.Text -> XhrRequest ()
 req uri md = XhrRequest "GET" (maybe uri id md) def
 
 getTasks
-    :: GetTasksConstraints t m
+    :: GetConstraint t m
     => Event t a
     -> m (Event t [Task])
 getTasks ev = do
@@ -75,7 +75,7 @@ getTasks ev = do
     return $ fmapMaybe decodeXhrResponse rsp
 
 getTaskLengths
-    :: GetTasksConstraints t m
+    :: GetConstraint t m
     => Event t a
     -> m (Event t [TaskDistance])
 getTaskLengths ev = do
@@ -85,86 +85,65 @@ getTaskLengths ev = do
 
 getComps
     :: GetConstraint t m
-    => ()
-    -> m (Dynamic t [Comp])
-getComps () = do
-    pb :: Event t () <- getPostBuild
+    => Event t a
+    -> m (Event t Comp)
+getComps ev = do
     let u = mapUri "/comp-input/comps"
-    rsp <- performRequestAsync . fmap (req u) $ Nothing <$ pb
-
-    let es :: Event t Comp = fmapMaybe decodeXhrResponse rsp
-    xs :: Dynamic t [Comp] <- holdDyn [] (pure <$> es)
-    return xs
+    rsp <- performRequestAsync . fmap (req u) $ Nothing <$ ev
+    return $ fmapMaybe decodeXhrResponse rsp
 
 getNominals
     :: GetConstraint t m
-    => ()
-    -> m (Dynamic t [Nominal])
-getNominals () = do
-    pb :: Event t () <- getPostBuild
+    => Event t a
+    -> m (Event t Nominal)
+getNominals ev = do
     let u = mapUri "/comp-input/nominals"
-    rsp <- performRequestAsync . fmap (req u) $ Nothing <$ pb
-
-    let es :: Event t Nominal = fmapMaybe decodeXhrResponse rsp
-    xs :: Dynamic t [Nominal] <- holdDyn [] (pure <$> es)
-    return xs
+    rsp <- performRequestAsync . fmap (req u) $ Nothing <$ ev
+    return $ fmapMaybe decodeXhrResponse rsp
 
 getPilots
     :: GetConstraint t m
-    => ()
-    -> m (Dynamic t [Pilot])
-getPilots () = do
-    pb :: Event t () <- getPostBuild
+    => Event t a
+    -> m (Event t [Pilot])
+getPilots ev = do
     let u = mapUri "/comp-input/pilots"
-    rsp <- performRequestAsync . fmap (req u) $ Nothing <$ pb
-
-    let es :: Event t [Pilot] = fmapMaybe decodeXhrResponse rsp
-    holdDyn [] es
+    rsp <- performRequestAsync . fmap (req u) $ Nothing <$ ev
+    return $ fmapMaybe decodeXhrResponse rsp
 
 getPilotsStatus
     :: GetConstraint t m
-    => ()
-    -> m (Dynamic t [(Pilot, [PilotTaskStatus])])
-getPilotsStatus () = do
-    pb :: Event t () <- getPostBuild
+    => Event t a
+    -> m (Event t [(Pilot, [PilotTaskStatus])])
+getPilotsStatus ev = do
     let u = mapUri "/gap-point/pilots-status"
-    rsp <- performRequestAsync . fmap (req u) $ Nothing <$ pb
-
-    let es :: Event t [(Pilot, [PilotTaskStatus])] = fmapMaybe decodeXhrResponse rsp
-    holdDyn [] es
+    rsp <- performRequestAsync . fmap (req u) $ Nothing <$ ev
+    return $ fmapMaybe decodeXhrResponse rsp
 
 getValidity
     :: GetConstraint t m
-    => ()
-    -> m (Dynamic t [Maybe Validity])
-getValidity () = do
-    pb :: Event t () <- getPostBuild
+    => Event t a
+    -> m (Event t [Maybe Validity])
+getValidity ev = do
     let u = mapUri "/gap-point/validity"
-    rsp <- performRequestAsync . fmap (req u) $ Nothing <$ pb
-
-    let es :: Event t [Maybe Validity] = fmapMaybe decodeXhrResponse rsp
-    holdDyn [] es
+    rsp <- performRequestAsync . fmap (req u) $ Nothing <$ ev
+    return $ fmapMaybe decodeXhrResponse rsp
 
 getAllocation
     :: GetConstraint t m
-    => ()
-    -> m (Dynamic t [Maybe Allocation])
-getAllocation () = do
-    pb :: Event t () <- getPostBuild
+    => Event t a
+    -> m (Event t [Maybe Allocation])
+getAllocation ev = do
     let u = mapUri "/gap-point/allocation"
-    rsp <- performRequestAsync . fmap (req u) $ Nothing <$ pb
-
-    let es :: Event t [Maybe Allocation] = fmapMaybe decodeXhrResponse rsp
-    holdDyn [] es
+    rsp <- performRequestAsync . fmap (req u) $ Nothing <$ ev
+    return $ fmapMaybe decodeXhrResponse rsp
 
 getTaskScore
     :: GetConstraint t m
     => IxTask
-    -> m (Dynamic t [(Pilot, Breakdown)])
-
-getTaskScore (IxTask ii) = do
-    pb :: Event t () <- getPostBuild
-
+    -> Event t a
+    -> m (Event t [(Pilot, Breakdown)])
+getTaskScore IxTaskNone _ = return never
+getTaskScore (IxTask ii) ev = do
     let u :: T.Text
         u =
             mapUri
@@ -172,20 +151,16 @@ getTaskScore (IxTask ii) = do
             <> (T.pack . show $ ii)
             <> "/score"
 
-    rsp <- performRequestAsync . fmap (req u) $ Nothing <$ pb
-
-    let es :: Event t [(Pilot, Breakdown)] = fmapMaybe decodeXhrResponse rsp
-    holdDyn [] es
-
-getTaskScore IxTaskNone = return $ constDyn []
+    rsp <- performRequestAsync . fmap (req u) $ Nothing <$ ev
+    return $ fmapMaybe decodeXhrResponse rsp
 
 getTaskValidityWorking
     :: GetConstraint t m
     => IxTask
-    -> m (Dynamic t (Maybe ValidityWorking))
-getTaskValidityWorking (IxTask ii) = do
-    pb :: Event t () <- getPostBuild
-
+    -> Event t a
+    -> m (Event t (Maybe ValidityWorking))
+getTaskValidityWorking IxTaskNone _ = return never
+getTaskValidityWorking (IxTask ii) ev = do
     let u :: T.Text
         u =
             mapUri
@@ -193,29 +168,17 @@ getTaskValidityWorking (IxTask ii) = do
             <> (T.pack . show $ ii)
             <> "/validity-working"
 
-    rsp <- performRequestAsync . fmap (req u) $ Nothing <$ pb
-
-    let es :: Event t (Maybe ValidityWorking) = fmapMaybe decodeXhrResponse rsp
-    holdDyn Nothing es
-
-getTaskValidityWorking IxTaskNone = return $ constDyn Nothing
-
-emptyRoute :: OptimalRoute (Maybe a)
-emptyRoute =
-    OptimalRoute
-        { taskRoute = Nothing
-        , taskRouteSpeedSubset = Nothing
-        , speedRoute = Nothing
-        }
+    rsp <- performRequestAsync . fmap (req u) $ Nothing <$ ev
+    return $ fmapMaybe decodeXhrResponse rsp
 
 getTaskLength_
     :: GetConstraint t m
     => T.Text
     -> IxTask
-    -> m (Dynamic t (OptimalRoute (Maybe TrackLine)))
-getTaskLength_ path (IxTask ii) = do
-    pb :: Event t () <- getPostBuild
-
+    -> Event t a
+    -> m (Event t (OptimalRoute (Maybe TrackLine)))
+getTaskLength_ _ IxTaskNone _ = return never
+getTaskLength_ path (IxTask ii) ev = do
     let u :: T.Text
         u =
             mapUri
@@ -224,17 +187,14 @@ getTaskLength_ path (IxTask ii) = do
             <> "/"
             <> path
 
-    rsp <- performRequestAsync . fmap (req u) $ Nothing <$ pb
-
-    let es :: Event t (OptimalRoute (Maybe TrackLine)) = fmapMaybe decodeXhrResponse rsp
-    holdDyn emptyRoute es
-
-getTaskLength_ _ IxTaskNone = return $ constDyn emptyRoute
+    rsp <- performRequestAsync . fmap (req u) $ Nothing <$ ev
+    return $ fmapMaybe decodeXhrResponse rsp
 
 getTaskLengthSphericalEdge, getTaskLengthEllipsoidEdge
     :: GetConstraint t m
     => IxTask
-    -> m (Dynamic t (OptimalRoute (Maybe TrackLine)))
+    -> Event t a
+    -> m (Event t (OptimalRoute (Maybe TrackLine)))
 getTaskLengthSphericalEdge = getTaskLength_ "spherical-edge"
 getTaskLengthEllipsoidEdge = getTaskLength_ "ellipsoid-edge"
 
@@ -242,10 +202,10 @@ getTaskLengthProjected_
     :: GetConstraint t m
     => T.Text
     -> IxTask
-    -> m (Dynamic t (Maybe TrackLine))
-getTaskLengthProjected_ path (IxTask ii) = do
-    pb :: Event t () <- getPostBuild
-
+    -> Event t a
+    -> m (Event t (Maybe TrackLine))
+getTaskLengthProjected_ _ IxTaskNone _ = return never 
+getTaskLengthProjected_ path (IxTask ii) ev = do
     let u :: T.Text
         u =
             mapUri
@@ -254,27 +214,24 @@ getTaskLengthProjected_ path (IxTask ii) = do
             <> "/"
             <> path
 
-    rsp <- performRequestAsync . fmap (req u) $ Nothing <$ pb
-
-    let es :: Event t TrackLine = fmapMaybe decodeXhrResponse rsp
-    holdDyn Nothing $ Just <$> es
-
-getTaskLengthProjected_ _ IxTaskNone = return $ constDyn Nothing
+    rsp <- performRequestAsync . fmap (req u) $ Nothing <$ ev
+    return $ fmapMaybe decodeXhrResponse rsp
 
 getTaskLengthProjectedEdgeSpherical, getTaskLengthProjectedEdgeEllipsoid
     :: GetConstraint t m
     => IxTask
-    -> m (Dynamic t (Maybe TrackLine))
+    -> Event t a
+    -> m (Event t (Maybe TrackLine))
 getTaskLengthProjectedEdgeSpherical = getTaskLengthProjected_ "projected-edge-spherical"
 getTaskLengthProjectedEdgeEllipsoid = getTaskLengthProjected_ "projected-edge-ellipsoid"
 
 getTaskLengthProjectedEdgePlanar
     :: GetConstraint t m
     => IxTask
-    -> m (Dynamic t (Maybe PlanarTrackLine))
-getTaskLengthProjectedEdgePlanar (IxTask ii) = do
-    pb :: Event t () <- getPostBuild
-
+    -> Event t a
+    -> m (Event t (Maybe PlanarTrackLine))
+getTaskLengthProjectedEdgePlanar IxTaskNone _ = return never
+getTaskLengthProjectedEdgePlanar (IxTask ii) ev = do
     let u :: T.Text
         u =
             mapUri
@@ -282,22 +239,18 @@ getTaskLengthProjectedEdgePlanar (IxTask ii) = do
             <> (T.pack . show $ ii)
             <> "/projected-edge-planar"
 
-    rsp <- performRequestAsync . fmap (req u) $ Nothing <$ pb
-
-    let es :: Event t PlanarTrackLine = fmapMaybe decodeXhrResponse rsp
-    holdDyn Nothing $ Just <$> es
-
-getTaskLengthProjectedEdgePlanar IxTaskNone = return $ constDyn Nothing
+    rsp <- performRequestAsync . fmap (req u) $ Nothing <$ ev
+    return $ fmapMaybe decodeXhrResponse rsp
 
 getTaskPilot_
     :: GetConstraint t m
     => T.Text
     -> T.Text
     -> IxTask
-    -> m (Dynamic t [Pilot])
-getTaskPilot_ stage path (IxTask ii) = do
-    pb :: Event t () <- getPostBuild
-
+    -> Event t a
+    -> m (Event t [Pilot])
+getTaskPilot_ _ _ IxTaskNone _ = return never
+getTaskPilot_ stage path (IxTask ii) ev = do
     let u :: T.Text
         u =
             mapUri
@@ -308,18 +261,14 @@ getTaskPilot_ stage path (IxTask ii) = do
             <> "/"
             <> path
 
-
-    rsp <- performRequestAsync . fmap (req u) $ Nothing <$ pb
-
-    let es :: Event t [Pilot] = fmapMaybe decodeXhrResponse rsp
-    holdDyn [] es
-
-getTaskPilot_ _ _ IxTaskNone = return $ constDyn []
+    rsp <- performRequestAsync . fmap (req u) $ Nothing <$ ev
+    return $ fmapMaybe decodeXhrResponse rsp
 
 getTaskPilotDnf, getTaskPilotNyp, getTaskPilotDf
     :: GetConstraint t m
     => IxTask
-    -> m (Dynamic t [Pilot])
+    -> Event t a
+    -> m (Event t [Pilot])
 getTaskPilotDnf = getTaskPilot_ "cross-zone" "pilot-dnf"
 getTaskPilotNyp = getTaskPilot_ "cross-zone" "pilot-nyp"
 getTaskPilotDf = getTaskPilot_ "gap-point" "pilot-df"
@@ -335,8 +284,8 @@ getTaskPilotTrack
    => IxTask
    -> Event t Pilot
    -> m (Event t a)
-getTaskPilotTrack (IxTask ii) ep = do
-
+getTaskPilotTrack IxTaskNone _ = return never
+getTaskPilotTrack (IxTask ii) ev = do
     let u :: PilotId -> T.Text
         u (PilotId pid) =
             mapUri
@@ -346,8 +295,5 @@ getTaskPilotTrack (IxTask ii) ep = do
             <> (T.pack pid)
 
     let req' md = XhrRequest "GET" (u md) def
-    rsp <- performRequestAsync . fmap req' $ getPilotId <$> ep
-
+    rsp <- performRequestAsync . fmap req' $ getPilotId <$> ev
     return $ fmapMaybe decodeXhrResponse rsp
-
-getTaskPilotTrack IxTaskNone _ = return never
