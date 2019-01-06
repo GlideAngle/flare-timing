@@ -290,11 +290,15 @@ tableScore utcOffset hgOrPg ln dnf vy wg pt tp xs = do
                     $ text "¶ \"Pace\" is the time across the speed section from the time of crossing the start for the last time."
             dyn_ . ffor hgOrPg $ (\case
                 HangGliding -> return ()
-                Paragliding ->
+                Paragliding -> do
                     el "tr" $
                         elAttr "td" ("colspan" =: "17") $ do
                             elClass "span" "pg not" $ text "Arrival"
-                            text " points are not scored for paragliding.")
+                            text " points are not scored for paragliding."
+                    el "tr" $
+                        elAttr "td" ("colspan" =: "17") $ do
+                            elClass "span" "pg not" $ text "Effort"
+                            text " or distance difficulty is not scored for paragliding.")
 
     return ()
 
