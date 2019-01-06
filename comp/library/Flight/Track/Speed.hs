@@ -38,14 +38,10 @@ pilotTime
     -> Maybe (PilotTime (Quantity Double [u| h |]))
 pilotTime _ StartEnd{unEnd = Nothing} =
     Nothing
-pilotTime gs x@StartEnd{unStart, unEnd = Just end} =
-    case gs of
-        [] -> Just . PilotTime $ hrs unStart
-        [StartGate g] -> Just . PilotTime $ hrs g
-        StartGate g : gs' ->
-            if unStart <= g
-               then Just . PilotTime $ hrs g
-               else pilotTime gs' x
+pilotTime gs StartEnd{unStart, unEnd = Just end} =
+    case startGateTaken gs unStart of
+        Nothing -> Just . PilotTime $ hrs unStart
+        Just (StartGate g) -> Just . PilotTime $ hrs g
     where
         secs :: UTCTime -> Quantity Double [u| s |]
         secs t = fromRational' . MkQuantity . toRational $ diffUTCTime end t
