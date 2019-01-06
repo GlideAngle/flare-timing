@@ -1,6 +1,7 @@
 module WireTypes.Comp
     ( Comp(..)
     , Give(..)
+    , Discipline(..)
     , Nominal(..)
     , Task(..)
     , Name
@@ -184,10 +185,37 @@ data Give =
         }
     deriving (Eq, Ord, Show, Generic, FromJSON)
 
+data Discipline
+    = HangGliding
+    | Paragliding
+    deriving (Eq, Ord, Generic)
+
+disciplineOptions :: Options
+disciplineOptions =
+    defaultOptions
+        { constructorTagModifier = \case
+            "HangGliding" -> "hg"
+            "Paragliding" -> "pg"
+            x -> x
+        }
+
+instance Show Discipline where
+    show HangGliding = "hg"
+    show Paragliding = "pg"
+
+instance Read Discipline where
+    readsPrec _ ('h' : 'g' : s) = [(HangGliding, s)]
+    readsPrec _ ('p' : 'g' : s) = [(Paragliding, s)]
+    readsPrec _ _ = []
+
+instance FromJSON Discipline where
+  parseJSON = genericParseJSON disciplineOptions
+
 data Comp =
     Comp
         { civilId :: String
         , compName :: String
+        , discipline :: Discipline
         , location :: String
         , from :: String
         , to :: String

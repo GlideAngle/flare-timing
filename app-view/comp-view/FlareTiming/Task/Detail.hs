@@ -93,6 +93,7 @@ taskDetail
 
 taskDetail ix@(IxTask _) cs task vy a = do
     let utc = utcOffset . head <$> cs
+    let hgOrPg = discipline . head <$> cs
     pb <- getPostBuild
     s <- holdDyn [] =<< getTaskScore ix pb
     vw <- holdDyn Nothing =<< getTaskValidityWorking ix pb
@@ -126,7 +127,7 @@ taskDetail ix@(IxTask _) cs task vy a = do
 
                 TaskTabAbsent -> tableAbsent nyp dnf task
                 TaskTabValidity -> viewValidity vy vw
-                TaskTabScore -> tableScore utc ln dnf vy wg ps tp s)
+                TaskTabScore -> tableScore utc hgOrPg ln dnf vy wg ps tp s)
             <$> tab
 
     return $ switchDyn (leftmost <$> es)

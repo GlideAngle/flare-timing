@@ -39,7 +39,7 @@ import WireTypes.Validity
     , showTimeValidity
     , showTaskValidity
     )
-import WireTypes.Comp (UtcOffset(..))
+import WireTypes.Comp (UtcOffset(..), Discipline(..))
 import WireTypes.Pilot (Pilot(..))
 import FlareTiming.Pilot (showPilotName)
 import FlareTiming.Time (showHmsForHours, showT, timeZone)
@@ -57,6 +57,7 @@ speedSection =
 tableScore
     :: MonadWidget t m
     => Dynamic t UtcOffset
+    -> Dynamic t Discipline
     -> Dynamic t (Maybe TaskLength)
     -> Dynamic t [Pilot]
     -> Dynamic t (Maybe Vy.Validity)
@@ -65,7 +66,7 @@ tableScore
     -> Dynamic t (Maybe TaskPoints)
     -> Dynamic t [(Pilot, Breakdown)]
     -> m ()
-tableScore utcOffset ln dnf vy wg pt tp xs = do
+tableScore utcOffset hgOrPg ln dnf vy wg pt tp xs = do
     lenDnf :: Int <- sample . current $ length <$> dnf
     lenPlaces :: Int <- sample . current $ length <$> xs
     let dnfPlacing =
@@ -75,7 +76,11 @@ tableScore utcOffset ln dnf vy wg pt tp xs = do
 
     let thSpace = elClass "th" "th-space" $ text ""
 
-    _ <- elClass "table" "table is-striped is-narrow is-fullwidth" $ do
+    let tableClass =
+            let tc = " table is-striped is-narrow is-fullwidth" in
+            ffor hgOrPg ((<> tc) . T.pack . show)
+
+    _ <- elDynClass "table" tableClass $ do
         el "thead" $ do
 
             el "tr" $ do
