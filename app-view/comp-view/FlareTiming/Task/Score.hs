@@ -7,7 +7,7 @@ import qualified Data.Text as T (Text, pack, breakOn)
 import Data.Time.LocalTime (TimeZone)
 
 import WireTypes.Route (TaskLength(..), showTaskDistance)
-import qualified WireTypes.Point as Pt (Points(..))
+import qualified WireTypes.Point as Pt (Points(..), StartGate(..))
 import qualified WireTypes.Point as Wg (Weights(..))
 import qualified WireTypes.Validity as Vy (Validity(..))
 import WireTypes.Point
@@ -296,9 +296,9 @@ pointRow utcOffset pt tp x = do
         elClass "td" "td-placing" . dynText $ showRank . place <$> b
         elClass "td" "td-pilot" . dynText $ showPilotName <$> pilot
         elClass "td" "td-start-start" . dynText $ zipDynWith showSs tz v
-        elClass "td" "td-start-gate" $ text "13:00:00"
+        elClass "td" "td-start-gate" . dynText $ zipDynWith showGs tz v
         elClass "td" "td-end" . dynText $ zipDynWith showEs tz v
-        elClass "td" "td-time" . dynText $ showVelocityTime <$> v
+        elClass "td" "td-time" . dynText $ showGsVelocityTime <$> v
         elClass "td" "td-speed" . dynText $ showVelocityVelocity <$> v
 
         elClass "td" "td-best-distance" . dynText
@@ -384,15 +384,19 @@ showSs :: TimeZone -> Velocity -> T.Text
 showSs tz Velocity{ss = Just t} = showT tz t
 showSs _ _ = ""
 
+showGs :: TimeZone -> Velocity -> T.Text
+showGs tz Velocity{gs = Just (Pt.StartGate t)} = showT tz t
+showGs _ _ = ""
+
 showEs :: TimeZone -> Velocity -> T.Text
 showEs tz Velocity{es = Just t} = showT tz t
 showEs _ _ = ""
 
-showVelocityTime :: Velocity -> T.Text
-showVelocityTime Velocity{gsElapsed = Just (PilotTime t)} =
+showGsVelocityTime :: Velocity -> T.Text
+showGsVelocityTime Velocity{gsElapsed = Just (PilotTime t)} =
     showHmsForHours . T.pack $ t
 
-showVelocityTime _ = ""
+showGsVelocityTime _ = ""
 
 showVelocityVelocity :: Velocity -> T.Text
 showVelocityVelocity Velocity{gsVelocity = Just (PilotVelocity v)} =

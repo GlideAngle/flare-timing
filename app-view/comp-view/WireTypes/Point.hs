@@ -1,7 +1,8 @@
 {-# LANGUAGE DuplicateRecordFields #-}
 
 module WireTypes.Point
-    ( Velocity(..)
+    ( StartGate(..)
+    , Velocity(..)
     , Breakdown(..)
     , Allocation(..)
     , GoalRatio(..)

@@ -6,7 +6,6 @@ module WireTypes.Comp
     , Name
     , SpeedSection
     , OpenClose(..)
-    , StartGate(..)
     , UtcOffset(..)
     , ScoreBackTime
     , Projection(..)
@@ -42,6 +41,7 @@ import Data.Scientific (Scientific, toRealFloat, fromRationalRepetend)
 import WireTypes.Zone (RawZone, Zones(..))
 import WireTypes.ZoneKind
 import WireTypes.Pilot (Pilot)
+import WireTypes.Point (StartGate(..))
 
 type Name = String
 
@@ -52,10 +52,6 @@ data OpenClose =
         { open :: UTCTime 
         , close :: UTCTime
         }
-    deriving (Eq, Ord, Show, Generic)
-    deriving anyclass (FromJSON)
-
-newtype StartGate = StartGate UTCTime
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (FromJSON)
 

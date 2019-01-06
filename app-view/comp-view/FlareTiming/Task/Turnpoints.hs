@@ -4,8 +4,9 @@ import Reflex.Dom
 import qualified Data.Text as T (Text, pack)
 import Data.Time.LocalTime (TimeZone)
 
+import WireTypes.Point (StartGate(..))
 import WireTypes.Comp
-    (Task(..), SpeedSection, StartGate(..), UtcOffset(..), OpenClose(..)
+    (Task(..), SpeedSection, UtcOffset(..), OpenClose(..)
     , getAllRawZones, getSpeedSection, getOpenClose, getStartGates
     , getGoalShape, getEssShape, getOpenShape
     )
