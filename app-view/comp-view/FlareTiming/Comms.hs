@@ -55,6 +55,14 @@ emptyRoute =
         , speedRoute = Nothing
         }
 
+type GetOnConstraint t m a =
+    ( MonadIO (Performable m)
+    , HasJSContext (Performable m)
+    , PerformEvent t m
+    , TriggerEvent t m
+    , FromJSON a
+    )
+
 type GetConstraint t m =
     ( MonadIO (Performable m)
     , HasJSContext (Performable m)
@@ -65,77 +73,37 @@ type GetConstraint t m =
 req :: T.Text -> Maybe T.Text -> XhrRequest ()
 req uri md = XhrRequest "GET" (maybe uri id md) def
 
-getTasks
-    :: GetConstraint t m
-    => Event t a
-    -> m (Event t [Task])
-getTasks ev = do
-    let u = mapUri "/comp-input/tasks"
+get :: GetOnConstraint t m b => T.Text -> Event t a -> m (Event t b)
+get path ev = do
+    let u = mapUri path
     rsp <- performRequestAsync . fmap (req u) $ Nothing <$ ev
     return $ fmapMaybe decodeXhrResponse rsp
 
-getTaskLengths
-    :: GetConstraint t m
-    => Event t a
-    -> m (Event t [TaskDistance])
-getTaskLengths ev = do
-    let u = mapUri "/task-length"
-    rsp <- performRequestAsync . fmap (req u) $ Nothing <$ ev
-    return $ fmapMaybe decodeXhrResponse rsp
+type Get t m b = forall a. GetOnConstraint t m b => Event t a -> m (Event t b)
 
-getComps
-    :: GetConstraint t m
-    => Event t a
-    -> m (Event t Comp)
-getComps ev = do
-    let u = mapUri "/comp-input/comps"
-    rsp <- performRequestAsync . fmap (req u) $ Nothing <$ ev
-    return $ fmapMaybe decodeXhrResponse rsp
+getTasks :: Get t m [Task]
+getTasks = get "/comp-input/tasks"
 
-getNominals
-    :: GetConstraint t m
-    => Event t a
-    -> m (Event t Nominal)
-getNominals ev = do
-    let u = mapUri "/comp-input/nominals"
-    rsp <- performRequestAsync . fmap (req u) $ Nothing <$ ev
-    return $ fmapMaybe decodeXhrResponse rsp
+getTaskLengths :: Get t m [TaskDistance]
+getTaskLengths = get "/task-length"
 
-getPilots
-    :: GetConstraint t m
-    => Event t a
-    -> m (Event t [Pilot])
-getPilots ev = do
-    let u = mapUri "/comp-input/pilots"
-    rsp <- performRequestAsync . fmap (req u) $ Nothing <$ ev
-    return $ fmapMaybe decodeXhrResponse rsp
+getComps :: Get t m Comp
+getComps = get "/comp-input/comps"
 
-getPilotsStatus
-    :: GetConstraint t m
-    => Event t a
-    -> m (Event t [(Pilot, [PilotTaskStatus])])
-getPilotsStatus ev = do
-    let u = mapUri "/gap-point/pilots-status"
-    rsp <- performRequestAsync . fmap (req u) $ Nothing <$ ev
-    return $ fmapMaybe decodeXhrResponse rsp
+getNominals :: Get t m Nominal
+getNominals = get "/comp-input/nominals"
 
-getValidity
-    :: GetConstraint t m
-    => Event t a
-    -> m (Event t [Maybe Validity])
-getValidity ev = do
-    let u = mapUri "/gap-point/validity"
-    rsp <- performRequestAsync . fmap (req u) $ Nothing <$ ev
-    return $ fmapMaybe decodeXhrResponse rsp
+getPilots :: Get t m [Pilot]
+getPilots = get "/comp-input/pilots"
 
-getAllocation
-    :: GetConstraint t m
-    => Event t a
-    -> m (Event t [Maybe Allocation])
-getAllocation ev = do
-    let u = mapUri "/gap-point/allocation"
-    rsp <- performRequestAsync . fmap (req u) $ Nothing <$ ev
-    return $ fmapMaybe decodeXhrResponse rsp
+getPilotsStatus :: Get t m [(Pilot, [PilotTaskStatus])]
+getPilotsStatus = get "/gap-point/pilots-status"
+
+getValidity :: Get t m [Maybe Validity]
+getValidity = get "/gap-point/validity"
+
+getAllocation :: Get t m [Maybe Allocation]
+getAllocation = get "/gap-point/allocation"
 
 getTaskScore
     :: GetConstraint t m
