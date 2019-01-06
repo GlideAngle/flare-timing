@@ -4,7 +4,7 @@
 
 import Data.Ratio ((%))
 import Data.Maybe (fromMaybe)
-import Data.Function (on)
+import Data.Function ((&), on)
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
 import qualified Formatting as Fmt ((%), fprint)
@@ -340,13 +340,22 @@ points'
             | ys <- arrival
             ]
 
+
+
         difficultyDistancePoints :: [[(Pilot, DifficultyPoints)]] =
             [ maybe
                 []
                 (\ps' ->
                     let ld' = mapOfDifficulty ld
-                        xs' = (fmap . fmap) (madeDifficulty free ld') xs
-                        ys' = (fmap . fmap) (const $ DifficultyFraction 0.5) ys
+
+                        (f, g) = discipline & \case
+                               HangGliding ->
+                                    (madeDifficulty free ld', const $ DifficultyFraction 0.5)
+                               Paragliding ->
+                                    (const $ DifficultyFraction 0.0, const $ DifficultyFraction 0.0)
+
+                        xs' = (fmap . fmap) f xs
+                        ys' = (fmap . fmap) g ys
                     in
                         (fmap . fmap)
                         (applyDifficulty ps')
@@ -363,9 +372,14 @@ points'
             [ maybe
                 []
                 (\ps' ->
-                    (fmap . fmap)
-                    (applyLinear bd ps')
-                    ds
+                    let f = discipline & \case
+                                HangGliding ->
+                                    applyLinear bd ps'
+                                Paragliding ->
+                                    (\(LinearPoints p) -> LinearPoints $ 2 * p)
+                                    . applyLinear bd ps'
+
+                    in (fmap . fmap) f ds
                 )
                 ps
             | bd <- bestDistance
