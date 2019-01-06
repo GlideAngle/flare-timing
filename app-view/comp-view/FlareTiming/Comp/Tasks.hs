@@ -7,7 +7,7 @@ import Text.Printf (printf)
 
 import FlareTiming.Events (IxTask(..))
 import WireTypes.Comp (Task(..), getRaceRawZones)
-import WireTypes.Route (TaskDistance(..))
+import WireTypes.Route (TaskDistance(..), showTaskDistance)
 import qualified FlareTiming.Turnpoint as TP (getName)
 
 listToIxTask :: Reflex t => [Event t ()] -> Event t IxTask
@@ -50,7 +50,3 @@ liTask ds' x' = do
                         text $ d
 
             return $ domEvent Click e
-
-showTaskDistance :: TaskDistance -> T.Text
-showTaskDistance (TaskDistance d) =
-    T.pack . printf "%.0f km" $ d

@@ -18,6 +18,7 @@ import Servant
 import  Network.Wai.Middleware.Gzip (gzip, def)
 import System.IO (hPutStrLn, stderr)
 import Control.Exception.Safe (MonadThrow, catchIO)
+import Control.Monad (join)
 import Control.Monad.IO.Class (MonadIO)
 import Control.Monad.Reader (ReaderT, MonadReader, asks, runReaderT)
 import Control.Monad.Except (ExceptT(..), MonadError)
@@ -42,7 +43,9 @@ import Flight.Cmd.ServeOptions (CmdServeOptions(..), mkOptions)
 import Flight.Comp
     ( FileType(CompInput)
     , CompSettings(..)
-    , Comp
+    , EarthModel(..)
+    , EarthMath(..)
+    , Comp(..)
     , Task(..)
     , Nominal(..)
     , PilotTrackLogFile(..)
@@ -494,26 +497,55 @@ getTaskRouteProjectedPlanarEdge ii = do
 
 getTaskRouteLengths :: AppT k IO [QTaskDistance Double [u| m |]]
 getTaskRouteLengths = do
-    -- TODO: Inpect the comp to see what Earth model and algo to pick.
+    Comp{earth = e, earthMath = m} <- comp <$> asks compSettings
     xs' <- asks routing
     case xs' of
         Just xs -> do
-            let ds =
-                    (\case
-                        (Just
-                            TaskTrack
-                                { sphericalEdgeToEdge =
-                                    OptimalRoute
-                                        { taskRoute =
-                                            Just TrackLine{distance = d}}}) -> Just d
-                        _ -> Nothing)
-                    <$> xs
+            let ds = [join $ fmap (getRouteLength e m) x | x <- xs]
 
             if any isNothing ds
                then throwError errTaskLengths
                else return $ catMaybes ds
 
         _ -> throwError errTaskLengths
+
+getRouteLength
+    :: EarthModel
+    -> EarthMath
+    -> TaskTrack
+    -> Maybe (QTaskDistance Double [u| m |])
+getRouteLength (EarthAsSphere _) Haversines
+    TaskTrack
+        { sphericalEdgeToEdge =
+            OptimalRoute
+                { taskRoute =
+                    Just
+                        TrackLine
+                            {distance = d}}} = Just d
+getRouteLength (EarthAsSphere _) _ _ = Nothing
+getRouteLength _ Haversines _ = Nothing
+getRouteLength (EarthAsEllipsoid _) Vincenty
+    TaskTrack
+        { ellipsoidEdgeToEdge =
+            OptimalRoute
+                { taskRoute =
+                    Just
+                        TrackLine
+                            {distance = d}}} = Just d
+getRouteLength (EarthAsEllipsoid _) _ _ = Nothing
+getRouteLength _ Vincenty _ = Nothing
+getRouteLength _ Andoyer _ = Nothing -- TODO: Implement Andoyer algorithm for the ellipsoid
+getRouteLength (EarthAsFlat _) Pythagorus
+    TaskTrack
+        { projection =
+            OptimalRoute
+                { taskRoute =
+                    Just
+                        ProjectedTrackLine
+                            {spherical =
+                                TrackLine
+                                    {distance = d}}}} = Just d
+getRouteLength (EarthAsFlat _) _ _ = Nothing
 
 getTaskPilotDnf :: Int -> AppT k IO [Pilot]
 getTaskPilotDnf ii = do
