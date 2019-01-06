@@ -340,8 +340,6 @@ points'
             | ys <- arrival
             ]
 
-
-
         difficultyDistancePoints :: [[(Pilot, DifficultyPoints)]] =
             [ maybe
                 []
