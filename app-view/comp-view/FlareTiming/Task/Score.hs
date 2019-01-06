@@ -85,7 +85,7 @@ tableScore utcOffset ln dnf vy wg pt tp xs = do
             el "tr" $ do
                 elAttr "th" ("rowspan" =: "2" <> "class" =: "th-placing") $ text "#"
                 elAttr "th" ("rowspan" =: "2" <> "class" =: "th-pilot") $ text "Pilot"
-                elAttr "th" ("colspan" =: "4" <> "class" =: "th-speed-section") . dynText
+                elAttr "th" ("colspan" =: "5" <> "class" =: "th-speed-section") . dynText
                     $ speedSection <$> ln
                 elAttr "th" ("colspan" =: "2" <> "class" =: "th-distance") $ text "Distance Flown"
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance-points-breakdown") $ text "Points for Distance"
@@ -93,7 +93,8 @@ tableScore utcOffset ln dnf vy wg pt tp xs = do
                 elClass "th" "th-total-points" $ text ""
 
             el "tr" $ do
-                elClass "th" "th-start" $ text "Start"
+                elClass "th" "th-start-start" $ text "Start"
+                elClass "th" "th-start-gate" $ text "Gate"
                 elClass "th" "th-end" $ text "End"
                 elClass "th" "th-time" $ text "Time"
                 elClass "th" "th-speed" $ text "Velocity"
@@ -294,7 +295,8 @@ pointRow utcOffset pt tp x = do
     el "tr" $ do
         elClass "td" "td-placing" . dynText $ showRank . place <$> b
         elClass "td" "td-pilot" . dynText $ showPilotName <$> pilot
-        elClass "td" "td-start" . dynText $ zipDynWith showSs tz v
+        elClass "td" "td-start-start" . dynText $ zipDynWith showSs tz v
+        elClass "td" "td-start-gate" $ text "13:00:00"
         elClass "td" "td-end" . dynText $ zipDynWith showEs tz v
         elClass "td" "td-time" . dynText $ showVelocityTime <$> v
         elClass "td" "td-speed" . dynText $ showVelocityVelocity <$> v

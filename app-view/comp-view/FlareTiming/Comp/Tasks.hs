@@ -2,8 +2,7 @@ module FlareTiming.Comp.Tasks (taskList) where
 
 import Reflex
 import Reflex.Dom
-import qualified Data.Text as T (Text, pack, intercalate)
-import Text.Printf (printf)
+import qualified Data.Text as T (intercalate)
 
 import FlareTiming.Events (IxTask(..))
 import WireTypes.Comp (Task(..), getRaceRawZones)
