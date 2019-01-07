@@ -302,6 +302,16 @@ tableScore utcOffset hgOrPg sgs ln dnf vy wg pt tp xs = do
                         elAttr "td" ("colspan" =: "17") $ do
                             elClass "span" "pg not" $ text "Effort"
                             text " or distance difficulty is not scored for paragliding.")
+            dyn_ . ffor sgs $ (\gs ->
+                if null gs then do
+                    el "tr" $
+                        elAttr "td" ("colspan" =: "17") $ do
+                            text "With no "
+                            elClass "span" "sg not" $ text "gate"
+                            text " to start "
+                            elClass "span" "sg not" $ text "time"
+                            text ", the pace clock starts ticking whenever the pilot starts."
+                else return ())
 
     return ()
 
