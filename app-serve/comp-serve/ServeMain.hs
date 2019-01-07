@@ -33,7 +33,8 @@ import qualified Flight.Score as Wg (Weights(..))
 import qualified Flight.Score as Vy (Validity(..), ValidityWorking(..))
 import Flight.Score
     ( PilotVelocity(..)
-    , DistanceWeight(..), LeadingWeight(..), ArrivalWeight(..), TimeWeight(..)
+    , DistanceWeight(..), ReachWeight(..), EffortWeight(..)
+    , LeadingWeight(..), ArrivalWeight(..), TimeWeight(..)
     , DistanceValidity(..), LaunchValidity(..), TaskValidity(..), TimeValidity(..)
     )
 import Flight.Scribe (readComp, readRoute, readCrossing, readPointing)
@@ -350,12 +351,16 @@ roundWeights :: Wg.Weights -> Wg.Weights
 roundWeights
     Wg.Weights
         { distance = DistanceWeight dw
+        , reach = ReachWeight rw
+        , effort = EffortWeight ew
         , leading = LeadingWeight lw
         , arrival = ArrivalWeight aw
         , time = TimeWeight tw
         } =
     Wg.Weights
         { distance = DistanceWeight $ dpWg dw
+        , reach = ReachWeight $ dpWg rw
+        , effort = EffortWeight $ dpWg ew
         , leading = LeadingWeight $ dpWg lw
         , arrival = ArrivalWeight $ dpWg aw
         , time = TimeWeight $ dpWg tw
