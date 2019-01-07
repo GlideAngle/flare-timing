@@ -236,12 +236,12 @@ isFix Ignore = False
 igcFile :: ParsecT Void String Identity [IgcRecord]
 igcFile = do
     hfdte <- try p1 <|> try p2
-    lines' <- manyTill anyChar (char 'B') *> many line
+    lines' <- manyTill anySingle (char 'B') *> many line
     _ <- eof
     return $ hfdte : lines'
     where
-        p1 = manyTill anyChar (lookAhead (string "HFDTEDATE:")) *> headerLine dateHFDTEDATE
-        p2 = manyTill anyChar (lookAhead (string "HFDTE")) *> headerLine dateHFDTE
+        p1 = manyTill anySingle (lookAhead (string "HFDTEDATE:")) *> headerLine dateHFDTEDATE
+        p2 = manyTill anySingle (lookAhead (string "HFDTE")) *> headerLine dateHFDTE
         headerLine date = do
             line' <- date
             _ <- eol
@@ -396,12 +396,12 @@ ignore = do
 --
 parse
    :: String -- ^ A string to parse
-   -> Either (ParseError Char Void) [IgcRecord]
+   -> Either (ParseErrorBundle String Void) [IgcRecord]
 parse = P.parse igcFile "(stdin)"
 
 parseFromFile
     :: FilePath -- ^ An IGC file to parse.
-    -> IO (Either (ParseError Char Void) [IgcRecord])
+    -> IO (Either (ParseErrorBundle String Void) [IgcRecord])
 parseFromFile fname =
     runParser igcFile fname . toString <$> readFile fname
 
