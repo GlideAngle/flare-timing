@@ -2,8 +2,12 @@ module Flight.Gap.Weighting
     ( Weights(..)
     , Lw(..)
     , Aw(..)
+    , Rw(..)
+    , Ew(..)
     , DistanceRatio(..)
     , distanceWeight
+    , reachWeight
+    , effortWeight
     , leadingWeight
     , arrivalWeight
     , timeWeight
@@ -15,7 +19,8 @@ import Data.Aeson (ToJSON(..), FromJSON(..))
 
 import Flight.Ratio (pattern (:%))
 import Flight.Gap.Weight.GoalRatio (GoalRatio(..))
-import Flight.Gap.Weight.Distance (DistanceWeight(..))
+import Flight.Gap.Weight.Distance
+    (DistanceWeight(..), ReachWeight(..), EffortWeight(..))
 import Flight.Gap.Weight.Leading (LeadingWeight(..))
 import Flight.Gap.Weight.Arrival (ArrivalWeight(..))
 import Flight.Gap.Weight.Time (TimeWeight(..))
@@ -23,6 +28,8 @@ import Flight.Gap.Weight.Time (TimeWeight(..))
 data Weights =
     Weights
         { distance :: DistanceWeight
+        , reach :: ReachWeight
+        , effort :: EffortWeight
         , leading :: LeadingWeight
         , arrival :: ArrivalWeight
         , time :: TimeWeight
@@ -44,6 +51,24 @@ data Aw a where
     AwHg :: DistanceWeight -> Aw Rational
     AwPg :: Aw ()
 deriving instance Show (Aw a)
+
+data Rw a where
+    RwHg :: DistanceWeight -> Rw Rational
+    RwPg :: DistanceWeight -> Rw Rational
+deriving instance Show (Rw a)
+
+data Ew a where
+    EwHg :: DistanceWeight -> Ew Rational
+    EwPg :: Ew ()
+deriving instance Show (Ew a)
+
+reachWeight :: forall a. Rw a -> ReachWeight
+reachWeight (RwHg (DistanceWeight (n :% d))) = ReachWeight $ n % (d * 2)
+reachWeight (RwPg (DistanceWeight w)) = ReachWeight w
+
+effortWeight :: forall a. Ew a -> EffortWeight
+effortWeight (EwHg (DistanceWeight (n :% d))) = EffortWeight $ n % (d * 2)
+effortWeight EwPg = EffortWeight 0
 
 distanceWeight :: GoalRatio -> DistanceWeight
 distanceWeight (GoalRatio gr) =

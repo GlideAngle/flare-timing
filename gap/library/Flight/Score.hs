@@ -37,13 +37,19 @@ module Flight.Score
     , GoalRatio(..)
     , DistanceRatio(..)
     , DistanceWeight(..)
+    , ReachWeight(..)
+    , EffortWeight(..)
     , LeadingWeight(..)
     , ArrivalWeight(..)
     , TimeWeight(..)
     , Lw(..)
     , Aw(..)
+    , Rw(..)
+    , Ew(..)
     , Weights(..)
     , distanceWeight
+    , reachWeight
+    , effortWeight
     , leadingWeight
     , arrivalWeight
     , timeWeight

@@ -30,7 +30,8 @@ import Flight.Gap.Points.Arrival (ArrivalPoints(..))
 import Flight.Gap.Points.Task (TaskPoints(..))
 import Flight.Gap.Validity.Task (TaskValidity(..))
 import Flight.Gap.Weighting (Weights(..))
-import Flight.Gap.Weight.Distance (DistanceWeight(..))
+import Flight.Gap.Weight.Distance
+    (DistanceWeight(..), ReachWeight(..), EffortWeight(..))
 import Flight.Gap.Weight.Leading (LeadingWeight(..))
 import Flight.Gap.Weight.Arrival (ArrivalWeight(..))
 import Flight.Gap.Weight.Time (TimeWeight(..))
@@ -172,8 +173,8 @@ availablePoints (TaskValidity tv) Weights{..} =
     (pts, tallyPoints Nothing pts)
     where
         DistanceWeight dw = distance
-        linear = dw / 2
-        diff = dw / 2
+        ReachWeight rw = reach
+        EffortWeight ew = effort
         LeadingWeight lw = leading
         ArrivalWeight aw = arrival
         TimeWeight tw = time
@@ -181,9 +182,9 @@ availablePoints (TaskValidity tv) Weights{..} =
 
         pts =
             Points
-                { reach = LinearPoints . k $ linear
-                , effort = DifficultyPoints . k $ diff
-                , distance = DistancePoints . k $ linear + diff
+                { reach = LinearPoints . k $ rw
+                , effort = DifficultyPoints . k $ ew
+                , distance = DistancePoints . k $ dw
                 , leading = LeadingPoints . k $ lw
                 , arrival = ArrivalPoints . k $ aw
                 , time = TimePoints . k $ tw

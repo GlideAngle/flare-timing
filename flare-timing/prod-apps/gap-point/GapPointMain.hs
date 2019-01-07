@@ -67,7 +67,7 @@ import Flight.Score
     ( MinimumDistance(..), MaximumDistance(..)
     , BestDistance(..), SumOfDistance(..), PilotDistance(..)
     , PilotsAtEss(..), PilotsPresent(..), PilotsFlying(..)
-    , GoalRatio(..), Lw(..), Aw(..)
+    , GoalRatio(..), Lw(..), Aw(..), Rw(..), Ew(..)
     , NominalTime(..), BestTime(..)
     , Validity(..), ValidityWorking(..)
     , DifficultyFraction(..), LeadingFraction(..)
@@ -76,7 +76,8 @@ import Flight.Score
     , LeadingPoints(..), ArrivalPoints(..), TimePoints(..)
     , TaskPlacing(..), TaskPoints(..), PilotVelocity(..), PilotTime(..)
     , IxChunk(..), ChunkDifficulty(..)
-    , distanceWeight, leadingWeight, arrivalWeight, timeWeight
+    , distanceWeight, reachWeight, effortWeight
+    , leadingWeight, arrivalWeight, timeWeight
     , taskValidity, launchValidity, distanceValidity, timeValidity
     , availablePoints
     , toIxChunk
@@ -278,6 +279,15 @@ points'
 
         dws = distanceWeight <$> grs
 
+        rws =
+            let rw = if discipline == HangGliding then RwHg else RwPg
+            in reachWeight . rw <$> dws
+
+        ews =
+            if discipline == HangGliding
+               then effortWeight . EwHg <$> dws
+               else const (effortWeight EwPg) <$> dws
+
         lws =
             let lw = if discipline == HangGliding then LwHg else LwPg
             in leadingWeight . lw <$> dws
@@ -288,8 +298,10 @@ points'
                else const (arrivalWeight AwPg) <$> dws
 
         ws =
-            [ Gap.Weights dw lw aw (timeWeight dw lw aw)
+            [ Gap.Weights dw rw ew lw aw (timeWeight dw lw aw)
             | dw <- dws
+            | rw <- rws
+            | ew <- ews
             | lw <- lws
             | aw <- aws
             ]
