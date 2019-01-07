@@ -58,6 +58,7 @@ tableScore
     :: MonadWidget t m
     => Dynamic t UtcOffset
     -> Dynamic t Discipline
+    -> Dynamic t [Pt.StartGate]
     -> Dynamic t (Maybe TaskLength)
     -> Dynamic t [Pilot]
     -> Dynamic t (Maybe Vy.Validity)
@@ -66,7 +67,7 @@ tableScore
     -> Dynamic t (Maybe TaskPoints)
     -> Dynamic t [(Pilot, Breakdown)]
     -> m ()
-tableScore utcOffset hgOrPg ln dnf vy wg pt tp xs = do
+tableScore utcOffset hgOrPg sgs ln dnf vy wg pt tp xs = do
     lenDnf :: Int <- sample . current $ length <$> dnf
     lenPlaces :: Int <- sample . current $ length <$> xs
     let dnfPlacing =
@@ -77,8 +78,10 @@ tableScore utcOffset hgOrPg ln dnf vy wg pt tp xs = do
     let thSpace = elClass "th" "th-space" $ text ""
 
     let tableClass =
-            let tc = " table is-striped is-narrow is-fullwidth" in
-            ffor hgOrPg ((<> tc) . T.pack . show)
+            let tc = "table is-striped is-narrow is-fullwidth" in
+            ffor2 hgOrPg sgs (\x gs ->
+                let y = T.pack . show $ x in
+                y <> (if null gs then " " else " sg ") <> tc)
 
     _ <- elDynClass "table" tableClass $ do
         el "thead" $ do

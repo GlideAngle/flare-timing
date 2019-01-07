@@ -129,6 +129,13 @@ body, input, button, select, textarea
 .th-pace
     @extend .has-text-centered;
 
+table:not(.sg) .th-start-gate, table:not(.sg) .th-time
+    text-decoration: line-through;
+    @extend .has-text-danger;
+
+.th-pace
+    @extend .has-text-centered;
+
 .th-time
     @extend .has-text-centered;
 
@@ -168,8 +175,13 @@ table.pg .th-arrival-points
 .td-start-start
     @extend .has-text-centered;
 
+table:not(.sg) .td-start-start
+    @extend .has-text-success;
+
 .td-start-gate
     @extend .has-text-centered;
+
+table.sg .td-start-gate
     @extend .has-text-success;
 
 .td-end
@@ -179,9 +191,17 @@ table.pg .th-arrival-points
 .td-pace
     @extend .has-text-centered;
 
+table:not(.sg) .td-pace
+    @extend .has-text-info;
+
 .td-time
     @extend .has-text-centered;
+
+table.sg .td-time
     @extend .has-text-info;
+
+table:not(.sg) .td-time
+    color: transparent;
 
 .td-speed
     @extend .has-text-right;
