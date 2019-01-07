@@ -39,34 +39,37 @@ data Weights =
 -- | Best distance versus task distance.
 newtype DistanceRatio = DistanceRatio Rational deriving (Eq, Show)
 
-data Lw a where
-    LwHg  :: DistanceWeight -> Lw Rational
-    LwPgZ :: DistanceRatio -> Lw Rational
-    LwPg  :: DistanceWeight -> Lw Rational
+-- | Leading weight varies between disciplines and in paragliding its
+-- calculation inputs change depending on whether any pilots make goal or not.
+data Lw
+    = LwHg DistanceWeight
+    | LwPgZ DistanceRatio
+    | LwPg DistanceWeight
+    deriving Show
 
--- SEE: http://stackoverflow.com/questions/21505975/write-gadt-record-with-constrained-type
-deriving instance Show (Lw a)
+-- | Arrival weight is only for hang gliding.
+data Aw
+    = AwHg DistanceWeight
+    | AwPg
+    deriving Show
 
-data Aw a where
-    AwHg :: DistanceWeight -> Aw Rational
-    AwPg :: Aw ()
-deriving instance Show (Aw a)
+-- | Reach weight varies between disciplines.
+data Rw
+    = RwHg DistanceWeight
+    | RwPg DistanceWeight
+    deriving Show
 
-data Rw a where
-    RwHg :: DistanceWeight -> Rw Rational
-    RwPg :: DistanceWeight -> Rw Rational
-deriving instance Show (Rw a)
+-- | Effort weight is only for hang gliding.
+data Ew
+    = EwHg DistanceWeight
+    | EwPg
+    deriving Show
 
-data Ew a where
-    EwHg :: DistanceWeight -> Ew Rational
-    EwPg :: Ew ()
-deriving instance Show (Ew a)
-
-reachWeight :: forall a. Rw a -> ReachWeight
+reachWeight :: Rw -> ReachWeight
 reachWeight (RwHg (DistanceWeight (n :% d))) = ReachWeight $ n % (d * 2)
 reachWeight (RwPg (DistanceWeight w)) = ReachWeight w
 
-effortWeight :: forall a. Ew a -> EffortWeight
+effortWeight :: Ew -> EffortWeight
 effortWeight (EwHg (DistanceWeight (n :% d))) = EffortWeight $ n % (d * 2)
 effortWeight EwPg = EffortWeight 0
 
@@ -78,7 +81,7 @@ distanceWeight (GoalRatio gr) =
     + (1713 % 1000) * gr * gr
     - (587 % 1000) * gr * gr * gr
 
-leadingWeight :: forall a. Lw a -> LeadingWeight
+leadingWeight :: Lw -> LeadingWeight
 leadingWeight (LwHg (DistanceWeight (n :% d))) =
     LeadingWeight $ ((d - n) % (8 * d)) * (14 % 10)
 leadingWeight (LwPgZ (DistanceRatio dr)) =
@@ -86,7 +89,7 @@ leadingWeight (LwPgZ (DistanceRatio dr)) =
 leadingWeight (LwPg (DistanceWeight (n :% d))) =
     LeadingWeight $ ((d - n) % (8 * d)) * (14 % 10) * (2 % 1)
 
-arrivalWeight :: forall a. Aw a -> ArrivalWeight
+arrivalWeight :: Aw -> ArrivalWeight
 arrivalWeight AwPg =
     ArrivalWeight 0
 arrivalWeight (AwHg (DistanceWeight (n :% d))) =
