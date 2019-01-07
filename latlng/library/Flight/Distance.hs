@@ -10,6 +10,7 @@ module Flight.Distance
     , toKm
     ) where
 
+import GHC.Generics (Generic)
 import "newtype" Control.Newtype (Newtype(..))
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.UnitsOfMeasure (u, convert, fromRational', toRational')
@@ -68,7 +69,7 @@ unTaskDistanceAsKm (TaskDistance d) =
         MkQuantity dKm = toRational' $ convert d :: Quantity _ [u| km |]
 
 type QTaskDistance a u = TaskDistance (Quantity a u)
-newtype TaskDistance a = TaskDistance a deriving (Eq, Ord)
+newtype TaskDistance a = TaskDistance a deriving (Eq, Ord, Generic)
 
 instance
     (q ~ Quantity Double [u| km |])

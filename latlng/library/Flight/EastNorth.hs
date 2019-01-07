@@ -14,7 +14,7 @@ instance FromJSON EastingNorthing
 
 data UtmZone =
     UtmZone { latZone :: Char
-            , lngZone :: Int
+            , lngZone :: Integer
             }
             deriving (Eq, Ord, Show, Generic)
 

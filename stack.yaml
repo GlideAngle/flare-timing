@@ -37,4 +37,13 @@ extra-deps:
 - hxt-xpath-9.1.2.2
 - uom-plugin-0.3.0.0
 - doctest-0.15.0
+- dhall-1.20.0
+- dhall-json-1.2.6
+- cborg-0.2.1.0
+- cborg-json-0.2.1.0
+- dotgen-0.4.2
+- megaparsec-7.0.4
+- repline-0.2.0.0
+- serialise-0.2.1.0
+- parser-combinators-1.0.0
 local-bin-path: __shake-build

@@ -9,6 +9,7 @@
     ) where
 
 import "newtype" Control.Newtype (Newtype(..))
+import GHC.Generics (Generic)
 import Data.Aeson
     (ToJSON(..), FromJSON(..), (.:), (.=), object, withObject)
 import qualified Data.Csv as Csv ((.:))
@@ -24,7 +25,7 @@ data RawLatLng =
         { lat :: RawLat
         , lng :: RawLng
         }
-    deriving (Eq, Ord, Show)
+    deriving (Eq, Ord, Show, Generic)
 
 instance ToJSON RawLatLng where
     toJSON RawLatLng{..} =
@@ -35,8 +36,8 @@ instance FromJSON RawLatLng where
         <$> v .: "lat"
         <*> v .: "lng"
 
-newtype RawLat = RawLat Rational deriving (Eq, Ord, Show)
-newtype RawLng = RawLng Rational deriving (Eq, Ord, Show)
+newtype RawLat = RawLat Rational deriving (Eq, Ord, Show, Generic)
+newtype RawLng = RawLng Rational deriving (Eq, Ord, Show, Generic)
 
 deriveDecimalPlaces dpDegree ''RawLat
 deriveDecimalPlaces dpDegree ''RawLng

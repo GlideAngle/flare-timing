@@ -18,7 +18,7 @@ import Flight.Comp
     , ensureExt
     )
 import Flight.TaskTrack.Double (taskTracks)
-import Flight.Scribe (readComp, writeRoute)
+import Flight.Scribe (FileType(..), readComp, writeRoute)
 import TaskLengthOptions (CmdOptions(..), mkOptions)
 
 main :: IO ()
@@ -53,6 +53,6 @@ go CmdOptions{..} compFile@(CompInputFile compPath) = do
             let zss = raw . zones <$> tasks compInput
             let includeTask = if null task then const True else flip elem task
 
-            writeRoute
+            writeRoute Yaml
                 (compToTaskLength compFile)
                 (taskTracks noTaskWaypoints includeTask measure ixs zss)

@@ -1,5 +1,6 @@
 module Flight.Scribe
-    ( readComp, writeComp
+    ( FileType(..)
+    , readComp, writeComp
     , readRoute, writeRoute
     , readCrossing , writeCrossing
     , readTagging, writeTagging
@@ -15,6 +16,8 @@ import Control.Monad.Except (MonadIO, liftIO)
 import qualified Data.ByteString as BS
 import Data.Yaml (decodeThrow)
 import qualified Data.Yaml.Pretty as Y
+import Dhall
+import Data.Text.Encoding
 
 import Flight.Route (TaskTrack(..), cmpFields)
 import Flight.Track.Tag (Tagging(..))
@@ -35,6 +38,10 @@ import Flight.Comp
     )
 import Flight.Align
 import Flight.Discard
+import Flight.Dhall
+import Flight.Orphans ()
+
+data FileType = Dhall | Yaml
 
 readComp
     :: (MonadThrow m, MonadIO m)
@@ -58,12 +65,16 @@ readRoute (TaskLengthFile path) = do
     contents <- liftIO $ BS.readFile path
     decodeThrow contents
 
-writeRoute :: TaskLengthFile -> [Maybe TaskTrack] -> IO ()
-writeRoute (TaskLengthFile lenPath) route =
+writeRoute :: FileType -> TaskLengthFile -> [Maybe TaskTrack] -> IO ()
+writeRoute Yaml (TaskLengthFile lenPath) route =
     BS.writeFile lenPath yaml
     where
         cfg = Y.setConfCompare cmpFields Y.defConfig
         yaml = Y.encodePretty cfg route
+writeRoute Dhall (TaskLengthFile lenPath) route = do
+    let e = embed inject route
+    let s = renderDhall e
+    BS.writeFile lenPath $ encodeUtf8 s
 
 readCrossing
     :: (MonadThrow m, MonadIO m)

@@ -57,7 +57,7 @@ fromUTMRefZone :: HC.UTMRef -> UtmZone
 fromUTMRefZone HC.UTMRef{..} =
     UtmZone
         { latZone = latZone
-        , lngZone = lngZone
+        , lngZone = fromIntegral lngZone
         }
 
 legDistances :: Real a
