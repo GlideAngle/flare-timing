@@ -1,8 +1,9 @@
 module FlareTiming.Task.Absent (tableAbsent) where
 
+import Prelude hiding (abs)
 import Reflex.Dom
 
-import WireTypes.Comp (Task(..), getAbsent)
+import WireTypes.Comp (Task(..), getAbsent, getDidFlyNoTrack)
 import WireTypes.Pilot (Pilot(..))
 import FlareTiming.Pilot (rowPilot)
 
@@ -13,13 +14,13 @@ tableAbsent
     -> Dynamic t Task
     -> m ()
 tableAbsent nyp dnf task = do
-    let xs = getAbsent <$> task
+    let abs = getAbsent <$> task
+    let dfNoTrack = getDidFlyNoTrack <$> task
 
     elClass "div" "tile is-ancestor" $ do
         elClass "div" "tile is-parent" $ do
             elClass "article" "tile is-child box" $ do
                 elClass "p" "title" $ text "ABS"
-                elClass "p" "subtitle is-6" $ text "Pilots absent from this task"
                 elClass "div" "content" $ do
                     _ <- elClass "table" "table" $ do
                             el "thead" $ do
@@ -27,7 +28,7 @@ tableAbsent nyp dnf task = do
                                     el "th" $ text "Id"
                                     el "th" $ text "Name"
 
-                                simpleList xs rowPilot
+                                simpleList abs rowPilot
 
                     el "p" . text
                         $ "A pilot's absence does not reduce the task validity."
@@ -37,7 +38,6 @@ tableAbsent nyp dnf task = do
         elClass "div" "tile is-parent" $ do
             elClass "article" "tile is-child box" $ do
                 elClass "p" "title" $ text "DNF"
-                elClass "p" "subtitle is-6" $ text "Pilots not flying this task"
                 elClass "div" "content" $ do
                     _ <- elClass "table" "table" $ do
                             el "thead" $ do
@@ -54,8 +54,24 @@ tableAbsent nyp dnf task = do
 
         elClass "div" "tile is-parent" $ do
             elClass "article" "tile is-child box" $ do
+                elClass "p" "title" $ text "DF no track"
+                elClass "div" "content" $ do
+                    _ <- elClass "table" "table" $ do
+                            el "thead" $ do
+                                el "tr" $ do
+                                    el "th" $ text "Id"
+                                    el "th" $ text "Name"
+
+                                simpleList dfNoTrack rowPilot
+
+                    el "p" . text
+                        $ "These pilots get awarded minimum distance."
+
+                    return ()
+
+        elClass "div" "tile is-parent" $ do
+            elClass "article" "tile is-child box" $ do
                 elClass "p" "title" $ text "NYP"
-                elClass "p" "subtitle is-6" $ text "Pilots not yet processed"
                 elClass "div" "content" $ do
                     _ <- elClass "table" "table" $ do
                             el "thead" $ do

@@ -22,6 +22,7 @@ module WireTypes.Comp
     , getOpenClose
     , getStartGates
     , getAbsent
+    , getDidFlyNoTrack
     , fromSci
     , toSci
     , showNominalTime
@@ -245,6 +246,7 @@ data Task =
         , zoneTimes :: [OpenClose]
         , startGates :: [StartGate]
         , absent :: [Pilot]
+        , didFlyNoTracklog :: [Pilot]
         }
     deriving (Eq, Ord, Show, Generic, FromJSON)
 
@@ -258,7 +260,10 @@ toSci x =
         Right (s, _) -> s
 
 getAbsent :: Task -> [Pilot]
-getAbsent Task{absent} = absent
+getAbsent Task{..} = absent
+
+getDidFlyNoTrack :: Task -> [Pilot]
+getDidFlyNoTrack Task{..} = didFlyNoTracklog
 
 getSpeedSection :: Task -> SpeedSection
 getSpeedSection Task{speedSection = ss} = ss

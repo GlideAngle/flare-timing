@@ -13,6 +13,7 @@ import Flight.Score (Pilot)
 data PilotTaskStatus
     = ABS -- ^ Absent
     | DF -- ^ Did fly
+    | DFNoTrack -- ^ Did fly, no tracklog and will get minimum distance.
     | DNF -- ^ Did not fly
     | NYP -- ^ Not yet processed
     deriving (Eq, Ord, Show, Generic, FromJSON, ToJSON)

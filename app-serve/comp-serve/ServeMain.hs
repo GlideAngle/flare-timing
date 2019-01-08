@@ -569,8 +569,8 @@ nyp
     -> [Pilot]
     -> [(Pilot, b)]
     -> [Pilot]
-nyp ps Task{absent = ys} xs cs =
-    let (cs', _) = unzip cs in ps \\ (xs ++ ys ++ cs')
+nyp ps Task{absent = ys, didFlyNoTracklog = zs} xs cs =
+    let (cs', _) = unzip cs in ps \\ (xs ++ ys ++ zs ++ cs')
 
 status
     :: Task a -- ^ The tasks for which we're getting the status
@@ -578,10 +578,11 @@ status
     -> [Pilot] -- ^ Pilots that DF this task
     -> Pilot -- ^ Get the status for this pilot
     -> PilotTaskStatus
-status Task{absent = ys} xs cs p =
+status Task{absent = ys, didFlyNoTracklog = zs} xs cs p =
     if | p `elem` ys -> ABS
        | p `elem` xs -> DNF
        | p `elem` cs -> DF
+       | p `elem` zs -> DFNoTrack
        | otherwise -> NYP
 
 getTaskPilotNyp :: Int -> AppT k IO [Pilot]

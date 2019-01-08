@@ -20,7 +20,7 @@ tabsTask =
             (g, _) <- elDynClass' "li" gClass $ el "a" (text "Geo")
             (t, _) <- elDynClass' "li" tClass $ el "a" (text "Task")
             (m, _) <- elDynClass' "li" mClass $ el "a" (text "Map")
-            (a, _) <- elDynClass' "li" aClass $ el "a" (text "Absent")
+            (a, _) <- elDynClass' "li" aClass $ el "a" (text "Pilots")
             (v, _) <- elDynClass' "li" vClass $ el "a" (text "Valid")
             (s, _) <- elDynClass' "li" sClass $ el "a" (text "Score")
 
