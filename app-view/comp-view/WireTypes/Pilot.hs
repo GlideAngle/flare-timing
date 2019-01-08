@@ -12,7 +12,7 @@ import GHC.Generics (Generic)
 import Data.Aeson (FromJSON(..))
 
 data PilotTaskStatus
-    = ABS | DF | DNF | NYP
+    = ABS | DF | DFNoTrack | DNF | NYP
     deriving (Eq, Ord, Show, Generic, FromJSON)
 
 newtype PilotId =

@@ -39,7 +39,10 @@ data Crossing =
         , crossing :: [[PilotTrackCross]]
         -- ^ For each task, for each made zone, the pair of fixes cross it.
         , trackLogError :: [TrackLogError]
-        -- ^ For each task, the pilots with track log problems.
+        -- ^ For each task, the pilots with track log problems. Note that
+        -- pilots that flew but have no track appear here with
+        -- @TrackLogFileNotSet@ as the error and will be awarded minimum
+        -- distance.
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
