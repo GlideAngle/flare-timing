@@ -299,6 +299,8 @@ data Task k =
         , startGates :: [StartGate]
         , absent :: [Pilot]
         -- ^ Pilots absent from this task.
+        , didFlyNoTracklog :: [Pilot]
+        -- ^ Pilots that did fly but have no tracklog.
         , stopped :: Maybe TaskStop
         }
     deriving (Eq, Ord, Show, Generic)
@@ -445,7 +447,9 @@ cmp a b =
 
         ("startGates", "absent") -> LT
         ("startGates", _) -> GT
+        ("absent", "didFlyNoTracklog") -> LT
         ("absent", _) -> GT
+        ("didFlyNoTracklog", _) -> GT
 
         -- StartGates fields
         ("open", _) -> LT

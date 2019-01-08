@@ -29,11 +29,13 @@ import Text.XML.HXT.Core
     , hasName
     , getChildren
     , getAttrValue
+    , hasAttrValue
     , constA
     , listA
     , arr
     , deep
     , notContaining
+    , containing
     , orElse
     )
 import Data.Time.Clock (UTCTime)
@@ -234,11 +236,12 @@ getTask discipline ps =
     &&& getZoneTimes
     &&& getStartGates
     &&& getAbsent
+    &&& getDidFlyNoTracklog
     &&& getStopped
     >>> arr mkTask
     where
         kps = (\x@(Pilot (k, _)) -> KeyPilot (k, x)) <$> ps
-        
+
         getHeading =
             (getChildren
             >>> hasName "FsTaskDefinition"
@@ -321,13 +324,32 @@ getTask discipline ps =
                     >>> getAttrValue "id"
                     >>> arr (unKeyPilot (keyMap kps) . PilotId)
 
+        getDidFlyNoTracklog =
+            ( getChildren
+            >>> hasName "FsParticipants"
+            >>> listA getDidFlyers
+            )
+            -- NOTE: If a task is created when there are no participants
+            -- then the FsTask/FsParticipants element is omitted.
+            `orElse` constA []
+            where
+                getDidFlyers =
+                    getChildren
+                    >>> hasName "FsParticipant"
+                        `containing`
+                        ( getChildren
+                        >>> hasName "FsFlightData"
+                        >>> hasAttrValue "tracklog_filename" (== ""))
+                    >>> getAttrValue "id"
+                    >>> arr (unKeyPilot (keyMap kps) . PilotId)
+
         getStopped =
             getChildren
             >>> hasName "FsTaskState"
             >>> arr (unpickleDoc xpStopped)
 
-        mkTask (name, (zs, (section, (ts, (gates, (absentees, stop)))))) =
-            Task name zs section ts'' gates (sort absentees) stop
+        mkTask (name, (zs, (section, (ts, (gates, (absentees, (df, stop))))))) =
+            Task name zs section ts'' gates (sort absentees) (sort df) stop
             where
                 -- NOTE: If all time zones are the same then collapse.
                 ts' = nub ts
