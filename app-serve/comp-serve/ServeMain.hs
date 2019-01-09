@@ -54,6 +54,8 @@ import Flight.Comp
     , PilotId(..)
     , Pilot(..)
     , PilotTaskStatus(..)
+    , Dnf(..)
+    , Nyp(..)
     , CompInputFile(..)
     , TaskLengthFile(..)
     , CrossZoneFile(..)
@@ -566,19 +568,19 @@ getTaskPilotDnf ii = do
 nyp
     :: [Pilot]
     -> Task a
-    -> [Pilot]
+    -> Dnf
     -> [(Pilot, b)]
-    -> [Pilot]
-nyp ps Task{absent = ys, didFlyNoTracklog = zs} xs cs =
-    let (cs', _) = unzip cs in ps \\ (xs ++ ys ++ zs ++ cs')
+    -> Nyp
+nyp ps Task{absent = ys, didFlyNoTracklog = zs} (Dnf xs) cs =
+    let (cs', _) = unzip cs in Nyp $ ps \\ (xs ++ ys ++ zs ++ cs')
 
 status
     :: Task a -- ^ The tasks for which we're getting the status
-    -> [Pilot] -- ^ Pilots that DNF this task
+    -> Dnf -- ^ Pilots that DNF this task
     -> [Pilot] -- ^ Pilots that DF this task
     -> Pilot -- ^ Get the status for this pilot
     -> PilotTaskStatus
-status Task{absent = ys, didFlyNoTracklog = zs} xs cs p =
+status Task{absent = ys, didFlyNoTracklog = zs} (Dnf xs) cs p =
     if | p `elem` ys -> ABS
        | p `elem` xs -> DNF
        | p `elem` cs -> DF
@@ -595,7 +597,8 @@ getTaskPilotNyp ii = do
     case (xss', css') of
         (Just xss, Just css) ->
             case (drop jj ts, drop jj xss, drop jj css) of
-                (t : _, xs : _, cs : _) -> return $ nyp ps t xs cs
+                (t : _, xs : _, cs : _) ->
+                    let Nyp ps' = nyp ps t (Dnf xs) cs in return ps'
                 _ -> throwError $ errTaskBounds ii
 
         _ -> return ps
@@ -623,7 +626,7 @@ getPilotsStatus = do
     let fs =
             case (xss', css') of
               (Just xss, Just css) ->
-                    [ status t xs $ fst <$> cs
+                    [ status t (Dnf xs) $ fst <$> cs
                     | t <- ts
                     | xs <- xss
                     | cs <- css

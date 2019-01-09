@@ -9,9 +9,6 @@ Distances over all pilots.
 -}
 module Flight.Comp.Distance
     ( DashPathInputs(..)
-    , DfNoTrack(..)
-    , LandedOut(..)
-    , MadeGoal(..)
     , compDistance
     , compNigh
     ) where
@@ -26,7 +23,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Kml (MarkedFixes(..))
 import Flight.Distance (QTaskDistance, TaskDistance(..), toKm, unTaskDistanceAsKm)
-import Flight.Comp (Pilot, Task(..))
+import Flight.Comp (Pilot, Task(..), MadeGoal(..), LandedOut(..))
 import Flight.Route (TrackLine(..), toTrackLine)
 import Flight.Score (BestTime(..), MinimumDistance(..))
 import Flight.Track.Time (LeadTick(..))
@@ -36,10 +33,6 @@ import Flight.Task (fromZs)
 import Flight.Mask (dashPathToGoalTimeRows)
 import Flight.Mask.Internal.Race (Ticked, FlyCut(..), Sliver(..))
 import Flight.Span.Double (zoneToCylF, spanF, csF, cutF, dppF, csegF)
-
-newtype DfNoTrack = DfNoTrack {unDfNoTrack :: [Pilot]}
-newtype LandedOut = LandedOut {unLandedOut :: [Pilot]}
-newtype MadeGoal = MadeGoal {unMadeGoal :: [Pilot]}
 
 data DashPathInputs k =
     DashPathInputs

@@ -4,11 +4,31 @@ module Flight.Pilot
     , TrackLogFile(..)
     , TaskFolder(..)
     , TrackFileFail(..)
+    , Dnf(..)
+    , Nyp(..)
+    , DfNoTrack(..)
+    , LandedOut(..)
+    , MadeGoal(..)
     ) where
 
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import Flight.Score (Pilot)
+
+-- | The group of pilots that did not fly a task.
+newtype Dnf = Dnf {unDnf :: [Pilot]}
+
+-- | The group of pilots not yet processed.
+newtype Nyp = Nyp {unNyp :: [Pilot]}
+
+-- | The group of pilots that flew but did not submit a tracklog.
+newtype DfNoTrack = DfNoTrack {unDfNoTrack :: [Pilot]}
+
+-- | The group of pilots that landed out on course.
+newtype LandedOut = LandedOut {unLandedOut :: [Pilot]}
+
+-- | The group of pilots that made goal.
+newtype MadeGoal = MadeGoal {unMadeGoal :: [Pilot]}
 
 data PilotTaskStatus
     = ABS -- ^ Absent

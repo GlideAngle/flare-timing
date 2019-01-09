@@ -45,6 +45,11 @@ module Flight.Comp
     , TrackFileFail(..)
     , TaskFolder(..)
     , FlyingSection
+    , Dnf(..)
+    , Nyp(..)
+    , DfNoTrack(..)
+    , LandedOut(..)
+    , MadeGoal(..)
     , pilotNamed
     -- * Comp paths
     , module Flight.Path
