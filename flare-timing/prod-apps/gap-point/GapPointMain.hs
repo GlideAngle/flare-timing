@@ -384,10 +384,10 @@ points'
                 (\ps' ->
                     let f = discipline & \case
                                 HangGliding ->
-                                    applyLinear bd ps'
+                                    applyLinear free bd ps'
                                 Paragliding ->
                                     (\(LinearPoints p) -> LinearPoints $ 2 * p)
-                                    . applyLinear bd ps'
+                                    . applyLinear free bd ps'
 
                     in (fmap . fmap) f ds
                 )
@@ -585,15 +585,16 @@ madeNigh TrackDistance{made} = unTaskDistanceAsKm <$> made
 madeLand :: TrackDistance Land -> Maybe Double
 madeLand TrackDistance{made} = unTaskDistanceAsKm <$> made
 
--- TODO: If made < minimum distance, use minimum distance.
 applyLinear
-    :: Maybe (QTaskDistance Double [u| m |])-- ^ The best distance
+    :: MinimumDistance (Quantity Double [u| km |])
+    -> Maybe (QTaskDistance Double [u| m |]) -- ^ The best distance
     -> Gap.Points
     -> Maybe Double -- ^ The distance made
     -> LinearPoints
-applyLinear Nothing _ _ = LinearPoints 0
-applyLinear _ _ Nothing = LinearPoints 0
+applyLinear _ Nothing _ _ = LinearPoints 0
+applyLinear _ _ _ Nothing = LinearPoints 0
 applyLinear
+    (MinimumDistance (MkQuantity dMin))
     (Just (TaskDistance best))
     Gap.Points{reach = LinearPoints y}
     (Just made) =
@@ -601,7 +602,7 @@ applyLinear
            | otherwise -> LinearPoints $ frac * y
     where
         frac :: Rational
-        frac = toRational made / toRational best'
+        frac = toRational (max dMin made) / toRational best'
 
         MkQuantity best' = convert best :: Quantity Double [u| km |]
 
