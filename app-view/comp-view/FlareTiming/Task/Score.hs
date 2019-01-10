@@ -335,12 +335,12 @@ pointRow utcOffset free pt tp x = do
     elDynClass "tr" (fst <$> awardFree) $ do
         elClass "td" "td-placing" . dynText $ showRank . place <$> b
         elClass "td" "td-pilot" . dynText $ showPilotName <$> pilot
-        elClass "td" "td-start-start" . dynText $ zipDynWith showSs tz v
-        elClass "td" "td-start-gate" . dynText $ zipDynWith showGs tz v
-        elClass "td" "td-end" . dynText $ zipDynWith showEs tz v
-        elClass "td" "td-time" . dynText $ showGsVelocityTime <$> v
-        elClass "td" "td-pace" . dynText $ showSsVelocityTime <$> v
-        elClass "td" "td-speed" . dynText $ showVelocityVelocity <$> v
+        elClass "td" "td-start-start" . dynText $ (maybe "" . showSs) <$> tz <*> v
+        elClass "td" "td-start-gate" . dynText $ (maybe "" . showGs) <$> tz <*> v
+        elClass "td" "td-end" . dynText $ (maybe "" . showEs) <$> tz <*> v
+        elClass "td" "td-time" . dynText $ maybe "" showGsVelocityTime <$> v
+        elClass "td" "td-pace" . dynText $ maybe "" showSsVelocityTime <$> v
+        elClass "td" "td-speed" . dynText $ maybe "" showVelocityVelocity <$> v
 
         elClass "td" "td-min-distance" . dynText $ snd <$> awardFree
         elClass "td" "td-best-distance" . dynText

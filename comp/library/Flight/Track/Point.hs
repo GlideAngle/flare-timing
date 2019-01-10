@@ -61,7 +61,7 @@ data Breakdown =
         { place :: TaskPlacing
         , total :: TaskPoints
         , breakdown :: Points
-        , velocity :: Velocity
+        , velocity :: Maybe Velocity
         , reachDistance :: Maybe (PilotDistance (Quantity Double [u| km |]))
           -- ^ The best distance the pilot made, not exceeding goal and may be
           -- further than where the pilot landed. The linear distance points

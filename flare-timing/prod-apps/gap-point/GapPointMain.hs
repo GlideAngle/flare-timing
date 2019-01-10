@@ -723,7 +723,8 @@ tally
     ) =
     Breakdown
         { velocity =
-            zeroVelocity
+            Just
+            $ zeroVelocity
                 { ss = ss'
                 , gs = Speed.startGateTaken startGates =<< ss'
                 , es = es'
