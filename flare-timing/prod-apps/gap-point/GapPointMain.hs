@@ -381,16 +381,7 @@ points'
         nighDistancePoints :: [[(Pilot, LinearPoints)]] =
             [ maybe
                 []
-                (\ps' ->
-                    let f = discipline & \case
-                                HangGliding ->
-                                    applyLinear free bd ps'
-                                Paragliding ->
-                                    (\(LinearPoints p) -> LinearPoints $ 2 * p)
-                                    . applyLinear free bd ps'
-
-                    in (fmap . fmap) f ds
-                )
+                (\ps' -> (fmap . fmap) (applyLinear free bd ps') ds)
                 ps
             | bd <- bestDistance
             | ps <- (fmap . fmap) points allocs
