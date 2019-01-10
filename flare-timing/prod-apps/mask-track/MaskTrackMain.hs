@@ -34,6 +34,8 @@ import Flight.Comp
     , TrackFileFail(..)
     , RoutesLookupTaskDistance(..)
     , TaskRouteDistance(..)
+    , MadeGoal(..)
+    , LandedOut(..)
     , compToTaskLength
     , compToCross
     , compToMask
@@ -51,7 +53,7 @@ import Flight.Mask
     , togoAtLanding
     , madeAtLanding
     )
-import Flight.Comp.Distance (MadeGoal(..), LandedOut(..), compDistance, compNigh)
+import Flight.Comp.Distance (compDistance, compNigh)
 import Flight.Track.Tag (Tagging)
 import qualified Flight.Track.Time as Time (TimeRow(..), TickRow(..))
 import Flight.Track.Arrival (TrackArrival(..))

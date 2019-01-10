@@ -3,19 +3,23 @@ module FlareTiming.Task.Absent (tableAbsent) where
 import Prelude hiding (abs)
 import Reflex.Dom
 
-import WireTypes.Comp (Task(..), getAbsent, getDidFlyNoTrack)
-import WireTypes.Pilot (Pilot(..))
+import WireTypes.Pilot (Nyp(..), Dnf(..))
+import FlareTiming.Events (IxTask(..))
+import FlareTiming.Comms (getTaskPilotAbs, getTaskPilotDfNoTrack)
 import FlareTiming.Pilot (rowPilot)
 
 tableAbsent
     :: MonadWidget t m
-    => Dynamic t [Pilot]
-    -> Dynamic t [Pilot]
-    -> Dynamic t Task
+    => IxTask
+    -> Dynamic t Nyp
+    -> Dynamic t Dnf
     -> m ()
-tableAbsent nyp dnf task = do
-    let abs = getAbsent <$> task
-    let dfNoTrack = getDidFlyNoTrack <$> task
+tableAbsent ix nyp' dnf' = do
+    pb <- getPostBuild
+    let nyp = unNyp <$> nyp'
+    let dnf = unDnf <$> dnf'
+    abs <- holdDyn [] =<< getTaskPilotAbs ix pb
+    dfNoTrack <- holdDyn [] =<< getTaskPilotDfNoTrack ix pb
 
     elClass "div" "tile is-ancestor" $ do
         elClass "div" "tile is-parent" $ do

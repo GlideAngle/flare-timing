@@ -32,8 +32,9 @@ import Flight.Score (Pilot(..))
 -- | For each task, the crossing for that task.
 data Crossing =
     Crossing
-        { dnf :: [[Pilot]]
-        -- ^ For each task, the pilots that did not fly.
+        { suspectDnf :: [[Pilot]]
+        -- ^ For each task, the pilots whose tracklogs suggest they did not fly
+        -- such as by having no fixes.
         , flying :: [[(Pilot, Maybe TrackFlyingSection)]]
         -- ^ For each task, the pilots' flying sections.
         , crossing :: [[PilotTrackCross]]

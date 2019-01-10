@@ -31,11 +31,11 @@ import Flight.Comp
     , CompSettings(..)
     , Comp(..)
     , Nominal(..)
-    , CrossZoneFile(..)
     , TagZoneFile(..)
     , MaskTrackFile(..)
     , LandOutFile(..)
     , Pilot
+    , PilotGroup(dnf)
     , SpeedSection
     , StartGate(..)
     , StartEnd(..)
@@ -48,7 +48,7 @@ import Flight.Comp
     , findCompInput
     , ensureExt
     )
-import Flight.Track.Cross (Crossing(..), Fix(..))
+import Flight.Track.Cross (Fix(..))
 import Flight.Track.Tag (Tagging(..), PilotTrackTag(..), TrackTag(..))
 import Flight.Track.Distance (TrackDistance(..), Nigh, Land)
 import Flight.Track.Lead (TrackLead(..))
@@ -60,7 +60,7 @@ import Flight.Track.Point
     (Velocity(..), Breakdown(..), Pointing(..), Allocation(..))
 import qualified Flight.Track.Land as Cmp (Landing(..))
 import Flight.Scribe
-    (readComp, readCrossing, readTagging, readMasking, readLanding, writePointing)
+    (readComp, readTagging, readMasking, readLanding, writePointing)
 import Flight.Mask (RaceSections(..), section)
 import Flight.Zone.MkZones (Discipline(..))
 import Flight.Score
@@ -110,13 +110,11 @@ drive o = do
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
 go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
-    let crossFile@(CrossZoneFile crossPath) = compToCross compFile
-    let tagFile@(TagZoneFile tagPath) = crossToTag crossFile
+    let tagFile@(TagZoneFile tagPath) = crossToTag . compToCross $ compFile
     let maskFile@(MaskTrackFile maskPath) = compToMask compFile
     let landFile@(LandOutFile landPath) = compToLand compFile
     let pointFile = compToPoint compFile
-    putStrLn $ "Reading pilots absent from task from '" ++ takeFileName compPath ++ "'"
-    putStrLn $ "Reading pilots that did not fly from '" ++ takeFileName crossPath ++ "'"
+    putStrLn $ "Reading pilots absent and pilots who did not fly from task from '" ++ takeFileName compPath ++ "'"
     putStrLn $ "Reading start and end zone tagging from '" ++ takeFileName tagPath ++ "'"
     putStrLn $ "Reading masked tracks from '" ++ takeFileName maskPath ++ "'"
     putStrLn $ "Reading distance difficulty from '" ++ takeFileName landPath ++ "'"
@@ -124,11 +122,6 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
     compSettings <-
         catchIO
             (Just <$> readComp compFile)
-            (const $ return Nothing)
-
-    crossing <-
-        catchIO
-            (Just <$> readCrossing crossFile)
             (const $ return Nothing)
 
     tagging <-
@@ -146,18 +139,16 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
             (Just <$> readLanding landFile)
             (const $ return Nothing)
 
-    case (compSettings, crossing, tagging, masking, landing) of
-        (Nothing, _, _, _, _) -> putStrLn "Couldn't read the comp settings."
-        (_, Nothing, _, _, _) -> putStrLn "Couldn't read the crossings."
-        (_, _, Nothing, _, _) -> putStrLn "Couldn't read the taggings."
-        (_, _, _, Nothing, _) -> putStrLn "Couldn't read the maskings."
-        (_, _, _, _, Nothing) -> putStrLn "Couldn't read the land outs."
-        (Just cs, Just cg, Just tg, Just mk, Just lg) ->
-            writePointing pointFile $ points' cs cg tg mk lg
+    case (compSettings, tagging, masking, landing) of
+        (Nothing, _, _, _) -> putStrLn "Couldn't read the comp settings."
+        (_, Nothing, _, _) -> putStrLn "Couldn't read the taggings."
+        (_, _, Nothing, _) -> putStrLn "Couldn't read the maskings."
+        (_, _, _, Nothing) -> putStrLn "Couldn't read the land outs."
+        (Just cs, Just tg, Just mk, Just lg) ->
+            writePointing pointFile $ points' cs tg mk lg
 
 points'
     :: CompSettings k
-    -> Crossing
     -> Tagging
     -> Masking
     -> Cmp.Landing
@@ -176,8 +167,8 @@ points'
                 }
         , tasks
         , pilots
+        , pilotGroups
         }
-    Crossing{dnf}
     Tagging{tagging}
     Masking
         { pilotsAtEss
@@ -196,13 +187,16 @@ points'
     Landing
         { difficulty = landoutDifficulty
         } =
-    Pointing 
+    Pointing
         { validityWorking = workings
         , validity = validities
         , allocation = allocs
         , score = score
         }
     where
+        dnfs :: [[Pilot]]
+        dnfs = dnf <$> pilotGroups
+
         -- NOTE: If there is no best distance, then either the task wasn't run
         -- or it has not been scored yet.
         maybeTasks :: [a -> Maybe a]
@@ -215,7 +209,7 @@ points'
                 (PilotsPresent . fromInteger $ p)
                 (PilotsFlying . fromInteger $ p - d)
             | p <- toInteger . length <$> pilots
-            | d <- toInteger . length <$> dnf
+            | d <- toInteger . length <$> dnfs
             ]
 
         dBests :: [MaximumDistance (Quantity Double [u| km |])] =
@@ -237,7 +231,7 @@ points'
                 b
                 s
             | p <- toInteger . length <$> pilots
-            | d <- toInteger . length <$> dnf
+            | d <- toInteger . length <$> dnfs
             | b <- dBests
             | s <- dSums
             ]
@@ -274,7 +268,7 @@ points'
             [ GoalRatio $ n % toInteger (p - d)
             | n <- (\(PilotsAtEss x) -> x) <$> pilotsAtEss
             | p <- length <$> pilots
-            | d <- length <$> dnf
+            | d <- length <$> dnfs
             ]
 
         dws = distanceWeight <$> grs

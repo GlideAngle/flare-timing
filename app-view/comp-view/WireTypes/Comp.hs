@@ -21,8 +21,6 @@ module WireTypes.Comp
     , getSpeedSection
     , getOpenClose
     , getStartGates
-    , getAbsent
-    , getDidFlyNoTrack
     , fromSci
     , toSci
     , showNominalTime
@@ -42,7 +40,6 @@ import qualified Data.Text as T (unpack)
 import Data.Scientific (Scientific, toRealFloat, fromRationalRepetend)
 import WireTypes.Zone (RawZone, Zones(..))
 import WireTypes.ZoneKind
-import WireTypes.Pilot (Pilot)
 import WireTypes.Point (StartGate(..))
 
 type Name = String
@@ -245,8 +242,6 @@ data Task =
         , speedSection :: SpeedSection
         , zoneTimes :: [OpenClose]
         , startGates :: [StartGate]
-        , absent :: [Pilot]
-        , didFlyNoTracklog :: [Pilot]
         }
     deriving (Eq, Ord, Show, Generic, FromJSON)
 
@@ -258,12 +253,6 @@ toSci x =
     case fromRationalRepetend (Just 7) x of
         Left (s, _) -> s
         Right (s, _) -> s
-
-getAbsent :: Task -> [Pilot]
-getAbsent Task{..} = absent
-
-getDidFlyNoTrack :: Task -> [Pilot]
-getDidFlyNoTrack Task{..} = didFlyNoTracklog
 
 getSpeedSection :: Task -> SpeedSection
 getSpeedSection Task{speedSection = ss} = ss

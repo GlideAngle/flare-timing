@@ -16,6 +16,7 @@ module Flight.Comp
     , Comp(..)
     , Nominal(..)
     , UtcOffset(..)
+    , PilotGroup(..)
     , defaultNominal
     -- * Task
     , Task(..)
@@ -187,6 +188,7 @@ data CompSettings k =
         , tasks :: [Task k]
         , taskFolders :: [TaskFolder]
         , pilots :: [[PilotTrackLogFile]]
+        , pilotGroups :: [PilotGroup]
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
@@ -249,6 +251,19 @@ instance FromJSON EarthModel where
             , constructorTagModifier = earthModelCtorTag
             }
 
+-- | Groups of pilots for a task.
+data PilotGroup =
+    PilotGroup
+        { absent :: [Pilot]
+        -- ^ Pilots absent from a task.
+        , dnf :: [Pilot]
+        -- ^ Pilots that did not fly.
+        , didFlyNoTracklog :: [Pilot]
+        -- ^ Pilots that did fly but have no tracklog.
+        }
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
+
 data Comp =
     Comp
         { civilId :: String
@@ -302,10 +317,6 @@ data Task k =
         , speedSection :: SpeedSection
         , zoneTimes :: [OpenClose]
         , startGates :: [StartGate]
-        , absent :: [Pilot]
-        -- ^ Pilots absent from this task.
-        , didFlyNoTracklog :: [Pilot]
-        -- ^ Pilots that did fly but have no tracklog.
         , stopped :: Maybe TaskStop
         }
     deriving (Eq, Ord, Show, Generic)

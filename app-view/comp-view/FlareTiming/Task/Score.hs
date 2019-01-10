@@ -40,7 +40,7 @@ import WireTypes.Validity
     , showTaskValidity
     )
 import WireTypes.Comp (UtcOffset(..), Discipline(..))
-import WireTypes.Pilot (Pilot(..))
+import WireTypes.Pilot (Pilot(..), Dnf(..))
 import FlareTiming.Pilot (showPilotName)
 import FlareTiming.Time (showHmsForHours, showT, timeZone)
 
@@ -60,14 +60,15 @@ tableScore
     -> Dynamic t Discipline
     -> Dynamic t [Pt.StartGate]
     -> Dynamic t (Maybe TaskLength)
-    -> Dynamic t [Pilot]
+    -> Dynamic t Dnf
     -> Dynamic t (Maybe Vy.Validity)
     -> Dynamic t (Maybe Wg.Weights)
     -> Dynamic t (Maybe Pt.Points)
     -> Dynamic t (Maybe TaskPoints)
     -> Dynamic t [(Pilot, Breakdown)]
     -> m ()
-tableScore utcOffset hgOrPg sgs ln dnf vy wg pt tp xs = do
+tableScore utcOffset hgOrPg sgs ln dnf' vy wg pt tp xs = do
+    let dnf = unDnf <$> dnf'
     lenDnf :: Int <- sample . current $ length <$> dnf
     lenPlaces :: Int <- sample . current $ length <$> xs
     let dnfPlacing =
@@ -269,7 +270,7 @@ tableScore utcOffset hgOrPg sgs ln dnf vy wg pt tp xs = do
 
         _ <- el "tbody" $ do
             _ <- simpleList xs (pointRow utcOffset pt tp)
-            dnfRows dnfPlacing dnf
+            dnfRows dnfPlacing dnf'
             return ()
 
         el "tfoot" $ do
@@ -356,9 +357,10 @@ pointRow utcOffset pt tp x = do
 dnfRows
     :: MonadWidget t m
     => TaskPlacing
-    -> Dynamic t [Pilot]
+    -> Dynamic t Dnf
     -> m ()
-dnfRows place ps = do
+dnfRows place ps' = do
+    let ps = unDnf <$> ps'
     len <- sample . current $ length <$> ps
     let p1 = take 1 <$> ps
     let pN = drop 1 <$> ps

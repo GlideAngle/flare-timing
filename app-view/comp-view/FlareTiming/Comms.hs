@@ -17,7 +17,9 @@ module FlareTiming.Comms
     , getTaskLengthProjectedEdgePlanar
     , getTaskPilotDnf
     , getTaskPilotNyp
+    , getTaskPilotAbs
     , getTaskPilotDf
+    , getTaskPilotDfNoTrack
     , getTaskPilotTrack
     , emptyRoute
     ) where
@@ -30,7 +32,8 @@ import Control.Monad.IO.Class (MonadIO)
 
 import WireTypes.Comp (Comp(..), Nominal(..), Task(..))
 import WireTypes.Route
-import WireTypes.Pilot (PilotTaskStatus(..), Pilot(..), PilotId(..), getPilotId)
+import WireTypes.Pilot
+    (PilotTaskStatus(..), Pilot(..), PilotId(..), Dnf(..), Nyp(..), getPilotId)
 import WireTypes.Point
 import WireTypes.Validity
 import WireTypes.ValidityWorking
@@ -55,7 +58,7 @@ emptyRoute =
         , speedRoute = Nothing
         }
 
-type GetConstraint t m a =
+type GetConstraint t m a b =
     ( MonadIO (Performable m)
     , HasJSContext (Performable m)
     , PerformEvent t m
@@ -67,9 +70,9 @@ req :: T.Text -> Maybe T.Text -> XhrRequest ()
 req uri md = XhrRequest "GET" (maybe uri id md) def
 
 get
-    :: GetConstraint t m b
+    :: GetConstraint t m b b
     => T.Text -- ^ the path
-    -> Event t a 
+    -> Event t a
     -> m (Event t b)
 get path ev = do
     let u = mapUri path
@@ -77,7 +80,7 @@ get path ev = do
     return $ fmapMaybe decodeXhrResponse rsp
 
 getIxTask
-    :: GetConstraint t m b
+    :: GetConstraint t m b b
     => T.Text -- ^ the scoring step
     -> T.Text -- ^ the path fragment after the task part of the path
     -> IxTask -- ^ the task
@@ -99,10 +102,12 @@ getIxTask step path (IxTask ii) ev = do
     return $ fmapMaybe decodeXhrResponse rsp
 
 type Get t m b =
-    forall a. GetConstraint t m b => Event t a -> m (Event t b)
+    forall a. GetConstraint t m b b => Event t a -> m (Event t b)
 
-type GetIxTask t m b =
-    forall a. GetConstraint t m b => IxTask -> Event t a -> m (Event t b)
+type GetIxTask' t m b = GetIxTask t m b b
+
+type GetIxTask t m b c =
+    forall a. GetConstraint t m b c => IxTask -> Event t a -> m (Event t c)
 
 getTasks :: Get t m [Task]
 getTasks = get "/comp-input/tasks"
@@ -128,34 +133,44 @@ getValidity = get "/gap-point/validity"
 getAllocation :: Get t m [Maybe Allocation]
 getAllocation = get "/gap-point/allocation"
 
-getTaskScore :: GetIxTask t m [(Pilot, Breakdown)]
+getTaskScore :: GetIxTask' t m [(Pilot, Breakdown)]
 getTaskScore = getIxTask "gap-point" "score"
 
-getTaskValidityWorking :: GetIxTask t m (Maybe ValidityWorking)
+getTaskValidityWorking :: GetIxTask' t m (Maybe ValidityWorking)
 getTaskValidityWorking = getIxTask "gap-point" "validity-working"
 
 getTaskLength_ :: T.Text -> IxTask -> Get t m b
 getTaskLength_ = getIxTask "task-length"
 
 getTaskLengthSphericalEdge, getTaskLengthEllipsoidEdge
-    :: GetIxTask t m (OptimalRoute (Maybe TrackLine))
+    :: GetIxTask' t m (OptimalRoute (Maybe TrackLine))
 getTaskLengthSphericalEdge = getTaskLength_ "spherical-edge"
 getTaskLengthEllipsoidEdge = getTaskLength_ "ellipsoid-edge"
 
 getTaskLengthProjectedEdgeSpherical, getTaskLengthProjectedEdgeEllipsoid
-    :: GetIxTask t m (Maybe TrackLine)
+    :: GetIxTask' t m (Maybe TrackLine)
 getTaskLengthProjectedEdgeSpherical = getTaskLength_ "projected-edge-spherical"
 getTaskLengthProjectedEdgeEllipsoid = getTaskLength_ "projected-edge-ellipsoid"
 
 getTaskLengthProjectedEdgePlanar
-    :: GetIxTask t m (Maybe PlanarTrackLine)
+    :: GetIxTask' t m (Maybe PlanarTrackLine)
 getTaskLengthProjectedEdgePlanar = getTaskLength_ "projected-edge-planar"
 
-getTaskPilotDnf, getTaskPilotNyp, getTaskPilotDf
-    :: GetIxTask t m [Pilot]
-getTaskPilotDnf = getIxTask "cross-zone" "pilot-dnf"
-getTaskPilotNyp = getIxTask "cross-zone" "pilot-nyp"
+getTaskPilotDf, getTaskPilotAbs, getTaskPilotDfNoTrack
+    :: GetIxTask' t m [Pilot]
 getTaskPilotDf = getIxTask "gap-point" "pilot-df"
+getTaskPilotDfNoTrack = getIxTask "comp-input" "pilot-dfnt"
+getTaskPilotAbs = getIxTask "comp-input" "pilot-abs"
+
+getTaskPilotDnf :: GetIxTask t m [Pilot] Dnf
+getTaskPilotDnf ix ev = do
+    e <- getIxTask "comp-input" "pilot-dnf" ix ev
+    return $ Dnf <$> e
+
+getTaskPilotNyp :: GetIxTask t m [Pilot] Nyp
+getTaskPilotNyp ix ev = do
+    e <- getIxTask "cross-zone" "pilot-nyp" ix ev
+    return $ Nyp <$> e
 
 getTaskPilotTrack
     ::

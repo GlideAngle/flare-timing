@@ -6,7 +6,7 @@ import Reflex.Dom
 import qualified Data.Text as T (Text, intercalate, pack)
 
 import WireTypes.ZoneKind (Shape(..))
-import WireTypes.Pilot (nullPilot)
+import WireTypes.Pilot (Nyp(..), Dnf(..), nullPilot)
 import WireTypes.Comp
     ( Comp(..), Task(..)
     , getRaceRawZones, getStartGates, getOpenShape, getSpeedSection
@@ -98,8 +98,8 @@ taskDetail ix@(IxTask _) cs task vy a = do
     pb <- getPostBuild
     s <- holdDyn [] =<< getTaskScore ix pb
     vw <- holdDyn Nothing =<< getTaskValidityWorking ix pb
-    nyp <- holdDyn [] =<< getTaskPilotNyp ix pb
-    dnf <- holdDyn [] =<< getTaskPilotDnf ix pb
+    nyp <- holdDyn (Nyp []) =<< getTaskPilotNyp ix pb
+    dnf <- holdDyn (Dnf []) =<< getTaskPilotDnf ix pb
     routes <- holdDyn emptyRoute =<< getTaskLengthSphericalEdge ix pb
     let ln = taskLength <$> routes
     let legs = taskLegs <$> routes
@@ -126,7 +126,7 @@ taskDetail ix@(IxTask _) cs task vy a = do
 
                     return ()
 
-                TaskTabAbsent -> tableAbsent nyp dnf task
+                TaskTabAbsent -> tableAbsent ix nyp dnf
                 TaskTabValidity -> viewValidity vy vw
                 TaskTabScore -> tableScore utc hgOrPg sgs ln dnf vy wg ps tp s)
             <$> tab

@@ -1,7 +1,7 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module Flight.Fsdb.Task (parseTasks) where
+module Flight.Fsdb.Task (parseTasks, parseTaskPilotGroups) where
 
 import Data.Maybe (catMaybes)
 import Data.List (sort, nub)
@@ -37,6 +37,8 @@ import Text.XML.HXT.Core
     , notContaining
     , containing
     , orElse
+    , hasAttr
+    , neg
     )
 import Data.Time.Clock (UTCTime)
 import Data.Time.Format (parseTimeOrError, defaultTimeLocale)
@@ -51,7 +53,7 @@ import Flight.Zone.MkZones
     )
 import qualified Flight.Zone.Raw as Z (RawZone(..))
 import Flight.Comp
-    ( PilotId(..), PilotName(..), Pilot(..)
+    ( PilotId(..), PilotName(..), Pilot(..), PilotGroup(..)
     , Task(..), TaskStop(..), StartGate(..), OpenClose(..)
     )
 import Flight.Fsdb.Pilot (getCompPilot)
@@ -214,13 +216,97 @@ xpStopped =
         (xpAttrFixed "task_state" "STOPPED")
         (xpAttr "stop_time" xpText)
 
-
 isGoalLine :: FsGoal -> GoalLine
 isGoalLine (FsGoal "LINE") = GoalLine
 isGoalLine _ = GoalNotLine
 
-getTask :: ArrowXml a => Discipline -> [Pilot] -> a XmlTree (Task k)
-getTask discipline ps =
+keyPilots :: Functor f => f Pilot -> f KeyPilot
+keyPilots ps = (\x@(Pilot (k, _)) -> KeyPilot (k, x)) <$> ps
+
+-- empty = (getAttrl >>> xshow getChildren >>> isA null)  `guards` this
+
+-- never = (getName >>> isA (const False)) `guards` this
+
+getTaskPilotGroup :: ArrowXml a => [Pilot] -> a XmlTree (PilotGroup)
+getTaskPilotGroup ps =
+    getChildren
+    >>> deep (hasName "FsTask")
+    >>> getAbsent
+    &&& getDidNotFly
+    &&& getDidFlyNoTracklog
+    >>> arr mkGroup
+    where
+        mkGroup (absentees, (dnf, noTrack)) =
+            PilotGroup
+                { absent = sort absentees
+                , dnf = sort dnf
+                , didFlyNoTracklog = sort noTrack
+                }
+
+        kps = keyPilots ps
+
+        -- <FsParticipant id="82" />
+        getAbsent =
+            ( getChildren
+            >>> hasName "FsParticipants"
+            >>> listA getAbsentees
+            )
+            -- NOTE: If a task is created when there are no participants
+            -- then the FsTask/FsParticipants element is omitted.
+            `orElse` constA []
+            where
+                getAbsentees =
+                    getChildren
+                    >>> hasName "FsParticipant"
+                        `notContaining` (getChildren >>> hasName "FsFlightData")
+                    >>> getAttrValue "id"
+                    >>> arr (unKeyPilot (keyMap kps) . PilotId)
+
+        -- <FsParticipant id="80">
+        --    <FsFlightData />
+        getDidNotFly =
+            ( getChildren
+            >>> hasName "FsParticipants"
+            >>> listA getDidNotFlyers
+            )
+            -- NOTE: If a task is created when there are no participants
+            -- then the FsTask/FsParticipants element is omitted.
+            `orElse` constA []
+            where
+                getDidNotFlyers =
+                    getChildren
+                    >>> hasName "FsParticipant"
+                        `containing`
+                        ( getChildren
+                        >>> hasName "FsFlightData"
+                        >>> neg (hasAttr "tracklog_filename"))
+                    >>> getAttrValue "id"
+                    >>> arr (unKeyPilot (keyMap kps) . PilotId)
+
+        -- <FsParticipant id="91">
+        --    <FsFlightData tracklog_filename="" />
+        getDidFlyNoTracklog =
+            ( getChildren
+            >>> hasName "FsParticipants"
+            >>> listA getDidFlyers
+            )
+            -- NOTE: If a task is created when there are no participants
+            -- then the FsTask/FsParticipants element is omitted.
+            `orElse` constA []
+            where
+                getDidFlyers =
+                    getChildren
+                    >>> hasName "FsParticipant"
+                        `containing`
+                        ( getChildren
+                        >>> hasName "FsFlightData"
+                        >>> hasAttrValue "tracklog_filename" (== ""))
+                    >>> getAttrValue "id"
+                    >>> arr (unKeyPilot (keyMap kps) . PilotId)
+
+
+getTask :: ArrowXml a => Discipline -> a XmlTree (Task k)
+getTask discipline =
     getChildren
     >>> deep (hasName "FsTask")
     >>> getAttrValue "name"
@@ -235,12 +321,22 @@ getTask discipline ps =
     &&& getSpeedSection
     &&& getZoneTimes
     &&& getStartGates
-    &&& getAbsent
-    &&& getDidFlyNoTracklog
     &&& getStopped
     >>> arr mkTask
     where
-        kps = (\x@(Pilot (k, _)) -> KeyPilot (k, x)) <$> ps
+        mkTask (name, (zs, (section, (ts, (gates, stop))))) =
+            Task
+                { taskName = name
+                , zones = zs
+                , speedSection = section
+                , zoneTimes = ts''
+                , startGates = gates
+                , stopped = stop
+                }
+            where
+                -- NOTE: If all time zones are the same then collapse.
+                ts' = nub ts
+                ts'' = if length ts' == 1 then ts' else ts
 
         getHeading =
             (getChildren
@@ -308,58 +404,22 @@ getTask discipline ps =
             >>> hasName "FsTaskDefinition"
             >>> arr (unpickleDoc xpSpeedSection)
 
-        getAbsent =
-            ( getChildren
-            >>> hasName "FsParticipants"
-            >>> listA getAbsentees
-            )
-            -- NOTE: If a task is created when there are no participants
-            -- then the FsTask/FsParticipants element is omitted.
-            `orElse` constA []
-            where
-                getAbsentees =
-                    getChildren
-                    >>> hasName "FsParticipant"
-                        `notContaining` (getChildren >>> hasName "FsFlightData")
-                    >>> getAttrValue "id"
-                    >>> arr (unKeyPilot (keyMap kps) . PilotId)
-
-        getDidFlyNoTracklog =
-            ( getChildren
-            >>> hasName "FsParticipants"
-            >>> listA getDidFlyers
-            )
-            -- NOTE: If a task is created when there are no participants
-            -- then the FsTask/FsParticipants element is omitted.
-            `orElse` constA []
-            where
-                getDidFlyers =
-                    getChildren
-                    >>> hasName "FsParticipant"
-                        `containing`
-                        ( getChildren
-                        >>> hasName "FsFlightData"
-                        >>> hasAttrValue "tracklog_filename" (== ""))
-                    >>> getAttrValue "id"
-                    >>> arr (unKeyPilot (keyMap kps) . PilotId)
-
         getStopped =
             getChildren
             >>> hasName "FsTaskState"
             >>> arr (unpickleDoc xpStopped)
 
-        mkTask (name, (zs, (section, (ts, (gates, (absentees, (df, stop))))))) =
-            Task name zs section ts'' gates (sort absentees) (sort df) stop
-            where
-                -- NOTE: If all time zones are the same then collapse.
-                ts' = nub ts
-                ts'' = if length ts' == 1 then ts' else ts
-
 parseTasks :: Discipline -> String -> IO (Either String [Task k])
 parseTasks discipline contents = do
     let doc = readString [ withValidate no, withWarnings no ] contents
+    xs <- runX $ doc >>> getTask discipline
+    return $ Right xs
+
+parseTaskPilotGroups :: String -> IO (Either String [PilotGroup])
+parseTaskPilotGroups contents = do
+    let doc = readString [ withValidate no, withWarnings no ] contents
     ps <- runX $ doc >>> getCompPilot
-    xs <- runX $ doc >>> getTask discipline ps
+    xs <- runX $ doc >>> getTaskPilotGroup ps
     return $ Right xs
 
 parseUtcTime :: String -> UTCTime

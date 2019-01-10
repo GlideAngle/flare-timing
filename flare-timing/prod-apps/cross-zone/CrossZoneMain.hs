@@ -151,7 +151,7 @@ writeCrossings compFile task pilot f = do
 
             let crossZone =
                     Crossing
-                        { dnf = dnfs
+                        { suspectDnf = dnfs
                         , flying = flying
                         , crossing = (fmap . fmap) crossings pss
                         , trackLogError = trackLogErrors <$> ess
