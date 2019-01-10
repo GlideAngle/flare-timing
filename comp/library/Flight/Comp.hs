@@ -347,10 +347,14 @@ cmp a b =
         ("nominal", _) -> LT
         ("tasks", "taskFolders") -> LT
         ("tasks", "pilots") -> LT
+        ("tasks", "pilotGroups") -> LT
         ("tasks", _) -> GT
         ("taskFolders", "pilots") -> LT
+        ("taskFolders", "pilotGroups") -> LT
         ("taskFolders", _) -> GT
+        ("pilots", "pilotGroups") -> LT
         ("pilots", _) -> GT
+        ("pilotGroups", _) -> GT
 
         -- TaskZones fields
         ("raw", _) -> LT
