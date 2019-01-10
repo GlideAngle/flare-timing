@@ -35,7 +35,7 @@ import Flight.Comp
     , MaskTrackFile(..)
     , LandOutFile(..)
     , Pilot
-    , PilotGroup(dnf)
+    , PilotGroup(dnf, didFlyNoTracklog)
     , SpeedSection
     , StartGate(..)
     , StartEnd(..)
@@ -114,7 +114,7 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
     let maskFile@(MaskTrackFile maskPath) = compToMask compFile
     let landFile@(LandOutFile landPath) = compToLand compFile
     let pointFile = compToPoint compFile
-    putStrLn $ "Reading pilots absent and pilots who did not fly from task from '" ++ takeFileName compPath ++ "'"
+    putStrLn $ "Reading pilots ABS & DNF from task from '" ++ takeFileName compPath ++ "'"
     putStrLn $ "Reading start and end zone tagging from '" ++ takeFileName tagPath ++ "'"
     putStrLn $ "Reading masked tracks from '" ++ takeFileName maskPath ++ "'"
     putStrLn $ "Reading distance difficulty from '" ++ takeFileName landPath ++ "'"
@@ -194,8 +194,16 @@ points'
         , score = score
         }
     where
-        dnfs :: [[Pilot]]
-        dnfs = dnf <$> pilotGroups
+        -- NOTE: t = track, nt = no track, dnf = did not fly, df = did fly
+        -- s suffix is a list, ss suffix is a list of lists.
+        tss = toInteger . length <$> pilots
+        ntss = toInteger . length . didFlyNoTracklog <$> pilotGroups
+        dnfss = toInteger . length . dnf <$> pilotGroups
+        dfss =
+            [ ts + nts
+            | ts <- tss
+            | nts <- ntss
+            ]
 
         -- NOTE: If there is no best distance, then either the task wasn't run
         -- or it has not been scored yet.
@@ -206,10 +214,10 @@ points'
         lvs =
             [ launchValidity
                 lNom
-                (PilotsPresent . fromInteger $ p)
-                (PilotsFlying . fromInteger $ p - d)
-            | p <- toInteger . length <$> pilots
-            | d <- toInteger . length <$> dnfs
+                (PilotsPresent . fromInteger $ dfs + dnfs)
+                (PilotsFlying . fromInteger $ dfs)
+            | dfs <- dfss
+            | dnfs <- dnfss
             ]
 
         dBests :: [MaximumDistance (Quantity Double [u| km |])] =
@@ -226,12 +234,11 @@ points'
             [ distanceValidity
                 gNom
                 dNom
-                (PilotsFlying $ p - d)
+                (PilotsFlying dfs)
                 free
                 b
                 s
-            | p <- toInteger . length <$> pilots
-            | d <- toInteger . length <$> dnfs
+            | dfs <- dfss
             | b <- dBests
             | s <- dSums
             ]
@@ -265,10 +272,9 @@ points'
                 ]
 
         grs =
-            [ GoalRatio $ n % toInteger (p - d)
+            [ GoalRatio $ n % dfs
             | n <- (\(PilotsAtEss x) -> x) <$> pilotsAtEss
-            | p <- length <$> pilots
-            | d <- length <$> dnfs
+            | dfs <- dfss
             ]
 
         dws = distanceWeight <$> grs
