@@ -275,40 +275,28 @@ tableScore utcOffset hgOrPg sgs ln dnf' vy wg pt tp xs = do
             dnfRows dnfPlacing dnf'
             return ()
 
+        let tdFoot = elAttr "td" ("colspan" =: "18")
+        let foot = el "tr" . tdFoot . text
+
         el "tfoot" $ do
-            el "tr" $
-                elAttr "td" ("colspan" =: "18")
-                    $ text "* Any points so annotated are the maximum attainable."
-            el "tr" $
-                elAttr "td" ("colspan" =: "18")
-                    $ text "† How far along the course, reaching goal or elsewhere. The distance reached in the air can be further than the distance at landing."
-            el "tr" $
-                elAttr "td" ("colspan" =: "18")
-                    $ text "‡ Points award for reach are also called linear distance points."
-            el "tr" $
-                elAttr "td" ("colspan" =: "18")
-                    $ text "§ Points award for effort are also called distance difficulty points."
-            el "tr" $
-                elAttr "td" ("colspan" =: "18")
-                    $ text "‖ \"Time\" is the time across the speed section from time zero of the start gate taken."
-            el "tr" $
-                elAttr "td" ("colspan" =: "18")
-                    $ text "¶ \"Pace\" is the time across the speed section from the time of crossing the start for the last time."
+            foot "* Any points so annotated are the maximum attainable."
+            foot "† How far along the course, reaching goal or elsewhere. The distance reached in the air can be further than the distance at landing."
+            foot "‡ Points award for reach are also called linear distance points."
+            foot "§ Points award for effort are also called distance difficulty points."
+            foot "‖ \"Time\" is the time across the speed section from time zero of the start gate taken."
+            foot "¶ \"Pace\" is the time across the speed section from the time of crossing the start for the last time."
             dyn_ . ffor hgOrPg $ (\case
                 HangGliding -> return ()
                 Paragliding -> do
-                    el "tr" $
-                        elAttr "td" ("colspan" =: "18") $ do
+                    el "tr" . tdFoot $ do
                             elClass "span" "pg not" $ text "Arrival"
                             text " points are not scored for paragliding."
-                    el "tr" $
-                        elAttr "td" ("colspan" =: "18") $ do
+                    el "tr" . tdFoot $ do
                             elClass "span" "pg not" $ text "Effort"
                             text " or distance difficulty is not scored for paragliding.")
             dyn_ . ffor sgs $ (\gs ->
                 if null gs then do
-                    el "tr" $
-                        elAttr "td" ("colspan" =: "18") $ do
+                    el "tr" . tdFoot $ do
                             text "With no "
                             elClass "span" "sg not" $ text "gate"
                             text " to start "
