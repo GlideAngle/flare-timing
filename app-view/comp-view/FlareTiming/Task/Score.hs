@@ -325,12 +325,14 @@ pointRow utcOffset free pt tp x = do
     let v = velocity . snd <$> x
     let awardFree = ffor2 free reach (\(MinimumDistance f) pd ->
             maybe
-                ""
+                ("", "")
                 (\(PilotDistance r) ->
-                    if r < f then T.pack $ printf "%.1f" f else "")
+                    if r < f
+                       then ("award-free", T.pack $ printf "%.1f" f)
+                       else ("", ""))
                 pd)
 
-    el "tr" $ do
+    elDynClass "tr" (fst <$> awardFree) $ do
         elClass "td" "td-placing" . dynText $ showRank . place <$> b
         elClass "td" "td-pilot" . dynText $ showPilotName <$> pilot
         elClass "td" "td-start-start" . dynText $ zipDynWith showSs tz v
@@ -340,7 +342,7 @@ pointRow utcOffset free pt tp x = do
         elClass "td" "td-pace" . dynText $ showSsVelocityTime <$> v
         elClass "td" "td-speed" . dynText $ showVelocityVelocity <$> v
 
-        elClass "td" "td-min-distance" . dynText $ awardFree
+        elClass "td" "td-min-distance" . dynText $ snd <$> awardFree
         elClass "td" "td-best-distance" . dynText
             $ maybe "" showPilotDistance <$> reach
         elClass "td" "td-landed-distance" . dynText

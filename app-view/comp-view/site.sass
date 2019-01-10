@@ -224,6 +224,10 @@ table:not(.sg) .td-time
 .td-landed-distance
     @extend .has-text-right;
 
+tr.award-free .td-best-distance, tr.award-free .td-landed-distance
+    text-decoration: line-through;
+    @extend .has-text-danger;
+
 .td-reach-points
     @extend .has-text-right;
 
