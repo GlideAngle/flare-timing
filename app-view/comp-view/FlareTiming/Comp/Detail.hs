@@ -3,9 +3,9 @@ module FlareTiming.Comp.Detail (compDetail) where
 import Reflex
 import Reflex.Dom
 
-import WireTypes.Comp (Comp, Task)
+import WireTypes.Comp (Comp, Nominal, Task)
 import WireTypes.Route (TaskDistance)
-import FlareTiming.Comp (comps)
+import FlareTiming.Comp.Header (compHeader)
 import FlareTiming.Breadcrumb (crumbComp)
 import FlareTiming.Events (IxTask(..))
 import FlareTiming.Comp.Tab (CompTab(..), tabsComp)
@@ -17,10 +17,11 @@ compDetail
     :: MonadWidget t m
     => Dynamic t [TaskDistance]
     -> Dynamic t [Comp]
+    -> Dynamic t [Nominal]
     -> Dynamic t [Task]
     -> m (Event t IxTask)
-compDetail ls cs ts = do
-    comps cs
+compDetail ls cs ns ts = do
+    compHeader cs ns
     _ <- simpleList cs crumbComp
     tab <- tabsComp
 

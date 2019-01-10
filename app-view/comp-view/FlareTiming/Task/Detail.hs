@@ -8,7 +8,7 @@ import qualified Data.Text as T (Text, intercalate, pack)
 import WireTypes.ZoneKind (Shape(..))
 import WireTypes.Pilot (Nyp(..), Dnf(..), nullPilot)
 import WireTypes.Comp
-    ( Comp(..), Task(..)
+    ( Nominal(..), Comp(..), Task(..)
     , getRaceRawZones, getStartGates, getOpenShape, getSpeedSection
     )
 import WireTypes.Route (TaskLength(..), taskLength, taskLegs, showTaskDistance)
@@ -86,14 +86,16 @@ taskDetail
     :: MonadWidget t m
     => IxTask
     -> Dynamic t [Comp]
+    -> Dynamic t [Nominal]
     -> Dynamic t Task
     -> Dynamic t (Maybe Validity)
     -> Dynamic t (Maybe Allocation)
     -> m (Event t IxTask)
 
-taskDetail ix@(IxTask _) cs task vy a = do
+taskDetail ix@(IxTask _) cs ns task vy a = do
     let utc = utcOffset . head <$> cs
     let hgOrPg = discipline . head <$> cs
+    let free' = free . head <$> ns
     let sgs = startGates <$> task
     pb <- getPostBuild
     s <- holdDyn [] =<< getTaskScore ix pb
@@ -128,9 +130,9 @@ taskDetail ix@(IxTask _) cs task vy a = do
 
                 TaskTabAbsent -> tableAbsent ix nyp dnf
                 TaskTabValidity -> viewValidity vy vw
-                TaskTabScore -> tableScore utc hgOrPg sgs ln dnf vy wg ps tp s)
+                TaskTabScore -> tableScore utc hgOrPg free' sgs ln dnf vy wg ps tp s)
             <$> tab
 
     return $ switchDyn (leftmost <$> es)
 
-taskDetail IxTaskNone _ _ _ _ = return never
+taskDetail IxTaskNone _ _ _ _ _ = return never
