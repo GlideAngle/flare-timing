@@ -127,12 +127,15 @@ writeCrossings compFile task pilot f = do
                                 ((p, Just x), Nothing))
                         xs
 
-            let ps = fst <$> ys
-            let errs = catMaybes . snd <$> ys
+            let pss = fst <$> ys
+            let ess = catMaybes . snd <$> ys
 
-            let pErrs :: [[Pilot]] = (fmap. fmap) fst errs
+            let pErrs :: [[Pilot]] =
+                    [ fst <$> filter ((/= TrackLogFileNotSet) . snd) es
+                    | es <- ess
+                    ]
 
-            let flying = (fmap . fmap . fmap . fmap) madeZonesToFlying ps
+            let flying = (fmap . fmap . fmap . fmap) madeZonesToFlying pss
 
             let notFlys :: [[Pilot]] =
                     [ fmap fst . filter snd
@@ -148,10 +151,10 @@ writeCrossings compFile task pilot f = do
 
             let crossZone =
                     Crossing
-                        { trackLogError = trackLogErrors <$> errs
-                        , dnf = dnfs
+                        { suspectDnf = dnfs
                         , flying = flying
-                        , crossing = (fmap . fmap) crossings ps
+                        , crossing = (fmap . fmap) crossings pss
+                        , trackLogError = trackLogErrors <$> ess
                         }
 
             writeCrossing (compToCross compFile) crossZone

@@ -57,10 +57,16 @@ body, input, button, select, textarea
 .th-speed-units
     @extend .has-text-right;
 
+.th-min-distance
+    @extend .has-text-right;
+
 .th-best-distance
     @extend .has-text-right;
 
 .th-landed-distance
+    @extend .has-text-right;
+
+.th-min-distance-units
     @extend .has-text-right;
 
 .th-best-distance-units
@@ -209,11 +215,18 @@ table:not(.sg) .td-time
 .td-speed-distance
     @extend .has-text-right;
 
+.td-min-distance
+    @extend .has-text-right;
+
 .td-best-distance
     @extend .has-text-right;
 
 .td-landed-distance
     @extend .has-text-right;
+
+tr.award-free .td-best-distance, tr.award-free .td-landed-distance
+    text-decoration: line-through;
+    @extend .has-text-danger;
 
 .td-reach-points
     @extend .has-text-right;

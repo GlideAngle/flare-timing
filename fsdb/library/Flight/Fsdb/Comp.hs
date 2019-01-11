@@ -40,8 +40,20 @@ xpComp =
         )
     $ xpWrap
         ( \(i, n, d, l, f, t, utc, s, _) ->
-            let e = EarthAsFlat UTM; dm = Pythagorus in
-            Comp i n d l f t (UtcOffset $ 60 * utc) s Nothing e dm
+            let e = EarthAsFlat UTM; em = Pythagorus in
+            Comp
+                { civilId = i
+                , compName = n
+                , discipline = d
+                , location = l
+                , from = f
+                , to = t
+                , utcOffset = UtcOffset $ 60 * utc
+                , scoreBack = s
+                , give = Nothing
+                , earth = e
+                , earthMath = em
+                }
         , \Comp{..} ->
             ( civilId
             , compName

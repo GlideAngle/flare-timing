@@ -12,6 +12,7 @@ module Flight.Fsdb
     , parseNominal
     , parseStopped
     , parseTasks
+    , parseTaskPilotGroups
     , parsePilots
     , parseTracks
     , parseTaskFolders

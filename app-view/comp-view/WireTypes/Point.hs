@@ -267,7 +267,7 @@ data Breakdown =
         { place :: TaskPlacing
         , total :: TaskPoints
         , breakdown :: Points
-        , velocity :: Velocity
+        , velocity :: Maybe Velocity
         , reachDistance :: Maybe PilotDistance
         , landedDistance :: Maybe PilotDistance
         }

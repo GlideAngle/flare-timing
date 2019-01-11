@@ -61,7 +61,7 @@ data Breakdown =
         { place :: TaskPlacing
         , total :: TaskPoints
         , breakdown :: Points
-        , velocity :: Velocity
+        , velocity :: Maybe Velocity
         , reachDistance :: Maybe (PilotDistance (Quantity Double [u| km |]))
           -- ^ The best distance the pilot made, not exceeding goal and may be
           -- further than where the pilot landed. The linear distance points
@@ -78,6 +78,8 @@ data Pointing =
         , validity :: [Maybe Validity]
         , allocation :: [Maybe Allocation]
         , score :: [[(Pilot, Breakdown)]]
+        , scoreDf :: [[(Pilot, Breakdown)]]
+        , scoreDfNoTrack :: [[(Pilot, Breakdown)]]
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
@@ -178,7 +180,14 @@ cmp a b =
         ("taskPoints", "points") -> GT
         ("taskPoints", _) -> LT
 
+        ("score", "scoreDf") -> LT
+        ("score", "scoreDfNoTrack") -> LT
         ("score", _) -> GT
+
+        ("scoreDf", "DfNoTrack") -> LT
+        ("scoreDf", _) -> GT
+
+        ("scoreDfNoTrack", _) -> GT
 
         -- DistanceValidityWorking fields
         ("sum", _) -> LT

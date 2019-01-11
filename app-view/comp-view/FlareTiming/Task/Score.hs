@@ -17,6 +17,7 @@ import WireTypes.Point
     , Velocity(..)
     , PilotTime(..)
     , PilotVelocity(..)
+    , PilotDistance(..)
 
     , showPilotDistance
 
@@ -39,8 +40,8 @@ import WireTypes.Validity
     , showTimeValidity
     , showTaskValidity
     )
-import WireTypes.Comp (UtcOffset(..), Discipline(..))
-import WireTypes.Pilot (Pilot(..))
+import WireTypes.Comp (UtcOffset(..), Discipline(..), MinimumDistance(..))
+import WireTypes.Pilot (Pilot(..), Dnf(..))
 import FlareTiming.Pilot (showPilotName)
 import FlareTiming.Time (showHmsForHours, showT, timeZone)
 
@@ -58,22 +59,24 @@ tableScore
     :: MonadWidget t m
     => Dynamic t UtcOffset
     -> Dynamic t Discipline
+    -> Dynamic t MinimumDistance
     -> Dynamic t [Pt.StartGate]
     -> Dynamic t (Maybe TaskLength)
-    -> Dynamic t [Pilot]
+    -> Dynamic t Dnf
     -> Dynamic t (Maybe Vy.Validity)
     -> Dynamic t (Maybe Wg.Weights)
     -> Dynamic t (Maybe Pt.Points)
     -> Dynamic t (Maybe TaskPoints)
     -> Dynamic t [(Pilot, Breakdown)]
     -> m ()
-tableScore utcOffset hgOrPg sgs ln dnf vy wg pt tp xs = do
+tableScore utcOffset hgOrPg free sgs ln dnf' vy wg pt tp sDfs = do
+    let dnf = unDnf <$> dnf'
     lenDnf :: Int <- sample . current $ length <$> dnf
-    lenPlaces :: Int <- sample . current $ length <$> xs
+    lenDfs :: Int <- sample . current $ length <$> sDfs
     let dnfPlacing =
             (if lenDnf == 1 then TaskPlacing else TaskPlacingEqual)
             . fromIntegral
-            $ lenPlaces + 1
+            $ lenDfs + 1
 
     let thSpace = elClass "th" "th-space" $ text ""
 
@@ -87,7 +90,7 @@ tableScore utcOffset hgOrPg sgs ln dnf vy wg pt tp xs = do
         el "thead" $ do
 
             el "tr" $ do
-                elAttr "th" ("colspan" =: "10") $ text ""
+                elAttr "th" ("colspan" =: "11") $ text ""
                 elAttr "th" ("colspan" =: "7" <> "class" =: "th-points") $ text "Points"
 
             el "tr" $ do
@@ -95,7 +98,7 @@ tableScore utcOffset hgOrPg sgs ln dnf vy wg pt tp xs = do
                 elAttr "th" ("rowspan" =: "2" <> "class" =: "th-pilot") $ text "Pilot"
                 elAttr "th" ("colspan" =: "6" <> "class" =: "th-speed-section") . dynText
                     $ speedSection <$> ln
-                elAttr "th" ("colspan" =: "2" <> "class" =: "th-distance") $ text "Distance Flown"
+                elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance") $ text "Distance Flown"
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance-points-breakdown") $ text "Points for Distance"
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-other-points") $ text ""
                 elClass "th" "th-total-points" $ text ""
@@ -108,6 +111,7 @@ tableScore utcOffset hgOrPg sgs ln dnf vy wg pt tp xs = do
                 elClass "th" "th-pace" $ text "Pace ¶"
                 elClass "th" "th-speed" $ text "Velocity"
 
+                elClass "th" "th-min-distance" $ text "Min"
                 elClass "th" "th-best-distance" $ text "Reach †"
                 elClass "th" "th-landed-distance" $ text "Landed"
                 elClass "th" "th-reach-points" $ text "Reach ‡"
@@ -132,7 +136,7 @@ tableScore utcOffset hgOrPg sgs ln dnf vy wg pt tp xs = do
                         )
                     <$> vy
 
-                elAttr "th" ("colspan" =: "8") $ text ""
+                elAttr "th" ("colspan" =: "9") $ text ""
 
                 thSpace
                 thSpace
@@ -167,7 +171,7 @@ tableScore utcOffset hgOrPg sgs ln dnf vy wg pt tp xs = do
 
             elClass "tr" "tr-weight" $ do
                 elAttr "th" ("colspan" =: "2" <> "class" =: "th-weight") $ text "Weights"
-                elAttr "th" ("colspan" =: "8") $ text ""
+                elAttr "th" ("colspan" =: "9") $ text ""
 
                 thSpace
                 thSpace
@@ -210,6 +214,7 @@ tableScore utcOffset hgOrPg sgs ln dnf vy wg pt tp xs = do
                 elAttr "th" ("colspan" =: "2" <> "class" =: "th-allocation") $ text "Available Points (Units)"
                 elAttr "th" ("colspan" =: "5") $ text ""
                 elClass "th" "th-speed-units" $ text "(km/h)"
+                elClass "th" "th-min-distance-units" $ text "(km)"
                 elClass "th" "th-best-distance-units" $ text "(km)"
                 elClass "th" "th-landed-distance-units" $ text "(km)"
 
@@ -268,44 +273,32 @@ tableScore utcOffset hgOrPg sgs ln dnf vy wg pt tp xs = do
                     <$> tp
 
         _ <- el "tbody" $ do
-            _ <- simpleList xs (pointRow utcOffset pt tp)
-            dnfRows dnfPlacing dnf
+            _ <- simpleList sDfs (pointRow utcOffset free pt tp)
+            dnfRows dnfPlacing dnf'
             return ()
 
+        let tdFoot = elAttr "td" ("colspan" =: "18")
+        let foot = el "tr" . tdFoot . text
+
         el "tfoot" $ do
-            el "tr" $
-                elAttr "td" ("colspan" =: "17")
-                    $ text "* Any points so annotated are the maximum attainable."
-            el "tr" $
-                elAttr "td" ("colspan" =: "17")
-                    $ text "† How far along the course, reaching goal or elsewhere. The distance reached in the air can be further than the distance at landing."
-            el "tr" $
-                elAttr "td" ("colspan" =: "17")
-                    $ text "‡ Points award for reach are also called linear distance points."
-            el "tr" $
-                elAttr "td" ("colspan" =: "17")
-                    $ text "§ Points award for effort are also called distance difficulty points."
-            el "tr" $
-                elAttr "td" ("colspan" =: "17")
-                    $ text "‖ \"Time\" is the time across the speed section from time zero of the start gate taken."
-            el "tr" $
-                elAttr "td" ("colspan" =: "17")
-                    $ text "¶ \"Pace\" is the time across the speed section from the time of crossing the start for the last time."
+            foot "* Any points so annotated are the maximum attainable."
+            foot "† How far along the course, reaching goal or elsewhere. The distance reached in the air can be further than the distance at landing."
+            foot "‡ Points award for reach are also called linear distance points."
+            foot "§ Points award for effort are also called distance difficulty points."
+            foot "‖ \"Time\" is the time across the speed section from time zero of the start gate taken."
+            foot "¶ \"Pace\" is the time across the speed section from the time of crossing the start for the last time."
             dyn_ . ffor hgOrPg $ (\case
                 HangGliding -> return ()
                 Paragliding -> do
-                    el "tr" $
-                        elAttr "td" ("colspan" =: "17") $ do
+                    el "tr" . tdFoot $ do
                             elClass "span" "pg not" $ text "Arrival"
                             text " points are not scored for paragliding."
-                    el "tr" $
-                        elAttr "td" ("colspan" =: "17") $ do
+                    el "tr" . tdFoot $ do
                             elClass "span" "pg not" $ text "Effort"
                             text " or distance difficulty is not scored for paragliding.")
             dyn_ . ffor sgs $ (\gs ->
                 if null gs then do
-                    el "tr" $
-                        elAttr "td" ("colspan" =: "17") $ do
+                    el "tr" . tdFoot $ do
                             text "With no "
                             elClass "span" "sg not" $ text "gate"
                             text " to start "
@@ -318,29 +311,40 @@ tableScore utcOffset hgOrPg sgs ln dnf vy wg pt tp xs = do
 pointRow
     :: MonadWidget t m
     => Dynamic t UtcOffset
+    -> Dynamic t MinimumDistance
     -> Dynamic t (Maybe Pt.Points)
     -> Dynamic t (Maybe TaskPoints)
     -> Dynamic t (Pilot, Breakdown)
     -> m ()
-pointRow utcOffset pt tp x = do
+pointRow utcOffset free pt tp x = do
     let tz = timeZone <$> utcOffset
     let pilot = fst <$> x
     let b = snd <$> x
+    let reach = reachDistance <$> b
     let points = breakdown . snd <$> x
     let v = velocity . snd <$> x
+    let awardFree = ffor2 free reach (\(MinimumDistance f) pd ->
+            maybe
+                ("", "")
+                (\(PilotDistance r) ->
+                    if r < f
+                       then ("award-free", T.pack $ printf "%.1f" f)
+                       else ("", ""))
+                pd)
 
-    el "tr" $ do
+    elDynClass "tr" (fst <$> awardFree) $ do
         elClass "td" "td-placing" . dynText $ showRank . place <$> b
         elClass "td" "td-pilot" . dynText $ showPilotName <$> pilot
-        elClass "td" "td-start-start" . dynText $ zipDynWith showSs tz v
-        elClass "td" "td-start-gate" . dynText $ zipDynWith showGs tz v
-        elClass "td" "td-end" . dynText $ zipDynWith showEs tz v
-        elClass "td" "td-time" . dynText $ showGsVelocityTime <$> v
-        elClass "td" "td-pace" . dynText $ showSsVelocityTime <$> v
-        elClass "td" "td-speed" . dynText $ showVelocityVelocity <$> v
+        elClass "td" "td-start-start" . dynText $ (maybe "" . showSs) <$> tz <*> v
+        elClass "td" "td-start-gate" . dynText $ (maybe "" . showGs) <$> tz <*> v
+        elClass "td" "td-end" . dynText $ (maybe "" . showEs) <$> tz <*> v
+        elClass "td" "td-time" . dynText $ maybe "" showGsVelocityTime <$> v
+        elClass "td" "td-pace" . dynText $ maybe "" showSsVelocityTime <$> v
+        elClass "td" "td-speed" . dynText $ maybe "" showVelocityVelocity <$> v
 
+        elClass "td" "td-min-distance" . dynText $ snd <$> awardFree
         elClass "td" "td-best-distance" . dynText
-            $ maybe "" showPilotDistance . reachDistance <$> b
+            $ maybe "" showPilotDistance <$> reach
         elClass "td" "td-landed-distance" . dynText
             $ maybe "" showPilotDistance . landedDistance <$> b
 
@@ -356,9 +360,10 @@ pointRow utcOffset pt tp x = do
 dnfRows
     :: MonadWidget t m
     => TaskPlacing
-    -> Dynamic t [Pilot]
+    -> Dynamic t Dnf
     -> m ()
-dnfRows place ps = do
+dnfRows place ps' = do
+    let ps = unDnf <$> ps'
     len <- sample . current $ length <$> ps
     let p1 = take 1 <$> ps
     let pN = drop 1 <$> ps
@@ -388,7 +393,7 @@ dnfRow place rows pilot = do
                     elAttr
                         "td"
                         ( "rowspan" =: (T.pack $ show n)
-                        <> "colspan" =: "14"
+                        <> "colspan" =: "15"
                         <> "class" =: "td-dnf"
                         )
                         $ text "DNF"

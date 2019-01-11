@@ -3,6 +3,8 @@ module WireTypes.Pilot
     , Pilot(..)
     , PilotId(..)
     , PilotName(..)
+    , Dnf(..)
+    , Nyp(..)
     , getPilotId
     , getPilotName
     , nullPilot
@@ -11,8 +13,14 @@ module WireTypes.Pilot
 import GHC.Generics (Generic)
 import Data.Aeson (FromJSON(..))
 
+-- | The group of pilots that did not fly a task.
+newtype Dnf = Dnf {unDnf :: [Pilot]}
+
+-- | The group of pilots not yet processed.
+newtype Nyp = Nyp {unNyp :: [Pilot]}
+
 data PilotTaskStatus
-    = ABS | DF | DNF | NYP
+    = ABS | DF | DFNoTrack | DNF | NYP
     deriving (Eq, Ord, Show, Generic, FromJSON)
 
 newtype PilotId =

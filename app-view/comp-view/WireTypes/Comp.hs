@@ -8,6 +8,7 @@ module WireTypes.Comp
     , SpeedSection
     , OpenClose(..)
     , UtcOffset(..)
+    , MinimumDistance(..)
     , ScoreBackTime
     , Projection(..)
     , EarthMath(..)
@@ -21,9 +22,9 @@ module WireTypes.Comp
     , getSpeedSection
     , getOpenClose
     , getStartGates
-    , getAbsent
     , fromSci
     , toSci
+    , showMinimumDistance
     , showNominalTime
     , showScoreBackTime
     ) where
@@ -37,11 +38,10 @@ import Data.Aeson
     ( Value(..), FromJSON(..), Options(..), SumEncoding(..)
     , genericParseJSON, defaultOptions
     )
-import qualified Data.Text as T (unpack)
+import qualified Data.Text as T (Text, pack, unpack)
 import Data.Scientific (Scientific, toRealFloat, fromRationalRepetend)
 import WireTypes.Zone (RawZone, Zones(..))
 import WireTypes.ZoneKind
-import WireTypes.Pilot (Pilot)
 import WireTypes.Point (StartGate(..))
 
 type Name = String
@@ -59,6 +59,21 @@ data OpenClose =
 newtype UtcOffset = UtcOffset { timeZoneMinutes :: Int }
     deriving (Eq, Ord, Show, Read, Generic)
     deriving anyclass (FromJSON)
+
+newtype MinimumDistance = MinimumDistance Double
+    deriving (Eq, Ord)
+
+instance FromJSON MinimumDistance where
+    parseJSON x@(String _) = do
+        s <- reverse . T.unpack <$> parseJSON x
+        case s of
+            'm' : 'k' : ' ' : xs -> return . MinimumDistance . read . reverse $ xs
+            _ -> empty
+    parseJSON _ = empty
+
+showMinimumDistance :: MinimumDistance -> T.Text
+showMinimumDistance (MinimumDistance d) =
+    T.pack . printf "%.1f km" $ d
 
 newtype NominalTime = NominalTime Double
     deriving (Eq, Ord)
@@ -225,17 +240,17 @@ data Comp =
         , earth :: EarthModel
         , earthMath :: EarthMath
         }
-    deriving (Show, Generic, FromJSON)
+    deriving (Generic, FromJSON)
 
 data Nominal =
     Nominal
         { distance :: String
-        , free :: String
+        , free :: MinimumDistance
         , time :: NominalTime
         , goal :: Double
         , launch :: Double
         }
-    deriving (Show, Generic, FromJSON)
+    deriving (Generic, FromJSON)
 
 data Task =
     Task
@@ -244,9 +259,8 @@ data Task =
         , speedSection :: SpeedSection
         , zoneTimes :: [OpenClose]
         , startGates :: [StartGate]
-        , absent :: [Pilot]
         }
-    deriving (Eq, Ord, Show, Generic, FromJSON)
+    deriving (Eq, Ord, Generic, FromJSON)
 
 fromSci :: Scientific -> Rational
 fromSci x = toRational (toRealFloat x :: Double)
@@ -256,9 +270,6 @@ toSci x =
     case fromRationalRepetend (Just 7) x of
         Left (s, _) -> s
         Right (s, _) -> s
-
-getAbsent :: Task -> [Pilot]
-getAbsent Task{absent} = absent
 
 getSpeedSection :: Task -> SpeedSection
 getSpeedSection Task{speedSection = ss} = ss

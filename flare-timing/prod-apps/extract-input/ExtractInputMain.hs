@@ -16,6 +16,7 @@ import Flight.Fsdb
     , parseNominal
     , parseStopped
     , parseTasks
+    , parseTaskPilotGroups
     , parseTaskFolders
     , parseTracks
     )
@@ -29,6 +30,7 @@ import Flight.Comp
     , Nominal(..)
     , Task(..)
     , TaskFolder(..)
+    , PilotGroup(..)
     , PilotTrackLogFile(..)
     , fsdbToComp
     , findFsdb
@@ -152,6 +154,11 @@ fsdbTasks discipline (FsdbXml contents) = do
     ts <- lift $ parseTasks discipline contents
     ExceptT $ return ts
 
+fsdbTaskPilotGroups :: FsdbXml -> ExceptT String IO [PilotGroup]
+fsdbTaskPilotGroups (FsdbXml contents) = do
+    ts <- lift $ parseTaskPilotGroups contents
+    ExceptT $ return ts
+
 fsdbTaskFolders :: FsdbXml -> ExceptT String IO [TaskFolder]
 fsdbTaskFolders (FsdbXml contents) = do
     fs <- lift $ parseTaskFolders contents
@@ -172,6 +179,7 @@ fsdbSettings dm zg fsdbXml = do
     n <- fsdbNominal fsdbXml
     sb <- fsdbStopped fsdbXml
     ts <- fsdbTasks (discipline c) fsdbXml
+    pgs <- fsdbTaskPilotGroups fsdbXml
     fs <- fsdbTaskFolders fsdbXml
     tps <- fsdbTracks fsdbXml
 
@@ -202,4 +210,5 @@ fsdbSettings dm zg fsdbXml = do
             , tasks = ts'
             , taskFolders = fs
             , pilots = tps
+            , pilotGroups = pgs
             }

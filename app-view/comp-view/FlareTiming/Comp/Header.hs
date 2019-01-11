@@ -1,4 +1,4 @@
-module FlareTiming.Comp (comps) where
+module FlareTiming.Comp.Header (compHeader) where
 
 import Reflex
 import Reflex.Dom
@@ -9,9 +9,8 @@ import Control.Applicative (pure)
 
 import WireTypes.Comp
     ( Comp(..), Nominal(..), UtcOffset(..), ScoreBackTime
-    , showScoreBackTime
+    , showMinimumDistance, showScoreBackTime
     )
-import FlareTiming.Comms (getNominals)
 
 loading :: MonadWidget t m => m ()
 loading = el "li" $ text "Comps will be shown here"
@@ -64,7 +63,7 @@ nominal n u sb = do
                         elClass "div" "tags has-addons" $ do
                             elClass "span" "tag" $ do text "minimum distance"
                             elClass "span" "tag is-black" $ do
-                                text . T.pack $ free
+                                text . showMinimumDistance $ free
                     elClass "div" "control" $ do
                         elClass "div" "tags has-addons" $ do
                             elClass "span" "tag" $ do text "nominal distance"
@@ -95,22 +94,27 @@ showUtcOffset :: UtcOffset -> T.Text
 showUtcOffset UtcOffset{timeZoneMinutes = mins} =
     T.pack $ show mins ++ " mins"
 
-comps :: MonadWidget t m => Dynamic t [Comp] -> m ()
-comps cs = do
+compHeader
+    :: MonadWidget t m
+    => Dynamic t [Comp]
+    -> Dynamic t [Nominal]
+    -> m ()
+compHeader cs ns = do
     pb <- getPostBuild
     elClass "div" "spacer" $ return ()
     elClass "div" "container" $ do
         _ <- el "ul" $ do
-            widgetHold loading $ fmap (pure $ viewComps cs) pb
+            widgetHold loading $ fmap (pure $ viewComps cs ns) pb
         elClass "div" "spacer" $ return ()
 
     return ()
 
-viewComps :: MonadWidget t m => Dynamic t [Comp] -> m ()
-viewComps cs = do
-    pb <- getPostBuild
-    ns <- holdDyn [] . fmap pure =<< getNominals pb
-
+viewComps
+    :: MonadWidget t m
+    => Dynamic t [Comp]
+    -> Dynamic t [Nominal]
+    -> m ()
+viewComps cs ns = do
     _ <-
         elAttr
             "div"

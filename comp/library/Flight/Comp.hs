@@ -16,6 +16,7 @@ module Flight.Comp
     , Comp(..)
     , Nominal(..)
     , UtcOffset(..)
+    , PilotGroup(..)
     , defaultNominal
     -- * Task
     , Task(..)
@@ -45,6 +46,11 @@ module Flight.Comp
     , TrackFileFail(..)
     , TaskFolder(..)
     , FlyingSection
+    , Dnf(..)
+    , Nyp(..)
+    , DfNoTrack(..)
+    , LandedOut(..)
+    , MadeGoal(..)
     , pilotNamed
     -- * Comp paths
     , module Flight.Path
@@ -182,6 +188,7 @@ data CompSettings k =
         , tasks :: [Task k]
         , taskFolders :: [TaskFolder]
         , pilots :: [[PilotTrackLogFile]]
+        , pilotGroups :: [PilotGroup]
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
@@ -244,6 +251,20 @@ instance FromJSON EarthModel where
             , constructorTagModifier = earthModelCtorTag
             }
 
+-- | Groups of pilots for a task.
+data PilotGroup =
+    PilotGroup
+        { absent :: [Pilot]
+        -- ^ Pilots absent from a task.
+        , dnf :: [Pilot]
+        -- ^ Pilots that did not fly.
+        , didFlyNoTracklog :: DfNoTrack
+        -- ^ Pilots that did fly but have no tracklog. They may have been
+        -- awarded a distance by the scorer.
+        }
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
+
 data Comp =
     Comp
         { civilId :: String
@@ -297,8 +318,6 @@ data Task k =
         , speedSection :: SpeedSection
         , zoneTimes :: [OpenClose]
         , startGates :: [StartGate]
-        , absent :: [Pilot]
-        -- ^ Pilots absent from this task.
         , stopped :: Maybe TaskStop
         }
     deriving (Eq, Ord, Show, Generic)
@@ -329,10 +348,14 @@ cmp a b =
         ("nominal", _) -> LT
         ("tasks", "taskFolders") -> LT
         ("tasks", "pilots") -> LT
+        ("tasks", "pilotGroups") -> LT
         ("tasks", _) -> GT
         ("taskFolders", "pilots") -> LT
+        ("taskFolders", "pilotGroups") -> LT
         ("taskFolders", _) -> GT
+        ("pilots", "pilotGroups") -> LT
         ("pilots", _) -> GT
+        ("pilotGroups", _) -> GT
 
         -- TaskZones fields
         ("raw", _) -> LT
@@ -445,7 +468,9 @@ cmp a b =
 
         ("startGates", "absent") -> LT
         ("startGates", _) -> GT
+        ("absent", "didFlyNoTracklog") -> LT
         ("absent", _) -> GT
+        ("didFlyNoTracklog", _) -> GT
 
         -- StartGates fields
         ("open", _) -> LT

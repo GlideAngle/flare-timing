@@ -1,12 +1,12 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module Flight.Fsdb.Task (parseTasks) where
+module Flight.Fsdb.Task (parseTasks, parseTaskPilotGroups) where
 
 import Data.Maybe (catMaybes)
-import Data.List (sort, nub)
+import Data.List (sort, sortOn, nub)
 import Data.Map.Strict (Map, fromList, findWithDefault)
-import Data.UnitsOfMeasure (u)
+import Data.UnitsOfMeasure (u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Text.XML.HXT.Arrow.Pickle
     ( XmlPickler(..), PU(..)
@@ -29,17 +29,22 @@ import Text.XML.HXT.Core
     , hasName
     , getChildren
     , getAttrValue
+    , hasAttrValue
     , constA
     , listA
     , arr
     , deep
     , notContaining
+    , containing
     , orElse
+    , hasAttr
+    , neg
     )
 import Data.Time.Clock (UTCTime)
 import Data.Time.Format (parseTimeOrError, defaultTimeLocale)
 
 import Flight.Units ()
+import Flight.Distance (TaskDistance(..), QTaskDistance)
 import Flight.LatLng (LatLng(..), Lat(..), Lng(..), Alt(..), QAlt)
 import Flight.LatLng.Raw (RawLat(..), RawLng(..))
 import Flight.Zone (Radius(..), AltTime(..))
@@ -48,8 +53,10 @@ import Flight.Zone.MkZones
     , mkZones
     )
 import qualified Flight.Zone.Raw as Z (RawZone(..))
+import Flight.Track.Distance (AwardedDistance(..))
 import Flight.Comp
     ( PilotId(..), PilotName(..), Pilot(..)
+    , PilotGroup(..), DfNoTrack(..)
     , Task(..), TaskStop(..), StartGate(..), OpenClose(..)
     )
 import Flight.Fsdb.Pilot (getCompPilot)
@@ -77,6 +84,9 @@ instance XmlPickler RawLng where
     xpickle = xpNewtypeRational
 
 instance (u ~ Quantity Double [u| m |]) => XmlPickler (Alt u) where
+    xpickle = xpNewtypeQuantity
+
+instance (u ~ Quantity Double [u| km |]) => XmlPickler (TaskDistance u) where
     xpickle = xpNewtypeQuantity
 
 xpDecelerator :: PU Decelerator
@@ -212,13 +222,117 @@ xpStopped =
         (xpAttrFixed "task_state" "STOPPED")
         (xpAttr "stop_time" xpText)
 
+xpAwardedDistance :: PU (QTaskDistance Double [u| km |])
+xpAwardedDistance =
+    xpElem "FsFlightData"
+    $ xpFilterAttr (hasName "distance")
+    $ xpAttr "distance" xpickle
 
 isGoalLine :: FsGoal -> GoalLine
 isGoalLine (FsGoal "LINE") = GoalLine
 isGoalLine _ = GoalNotLine
 
-getTask :: ArrowXml a => Discipline -> [Pilot] -> a XmlTree (Task k)
-getTask discipline ps =
+keyPilots :: Functor f => f Pilot -> f KeyPilot
+keyPilots ps = (\x@(Pilot (k, _)) -> KeyPilot (k, x)) <$> ps
+
+getTaskPilotGroup :: ArrowXml a => [Pilot] -> a XmlTree (PilotGroup)
+getTaskPilotGroup ps =
+    getChildren
+    >>> deep (hasName "FsTask")
+    >>> getAbsent
+    &&& getDidNotFly
+    &&& getDidFlyNoTracklog
+    >>> arr mkGroup
+    where
+        mkGroup (absentees, (dnf, noTrack)) =
+            PilotGroup
+                { absent = sort absentees
+                , dnf = sort dnf
+                , didFlyNoTracklog = DfNoTrack $ sortOn fst noTrack
+                }
+
+        kps = keyPilots ps
+
+        -- <FsParticipant id="82" />
+        getAbsent =
+            ( getChildren
+            >>> hasName "FsParticipants"
+            >>> listA getAbsentees
+            )
+            -- NOTE: If a task is created when there are no participants
+            -- then the FsTask/FsParticipants element is omitted.
+            `orElse` constA []
+            where
+                getAbsentees =
+                    getChildren
+                    >>> hasName "FsParticipant"
+                        `notContaining` (getChildren >>> hasName "FsFlightData")
+                    >>> getAttrValue "id"
+                    >>> arr (unKeyPilot (keyMap kps) . PilotId)
+
+        -- <FsParticipant id="80">
+        --    <FsFlightData />
+        getDidNotFly =
+            ( getChildren
+            >>> hasName "FsParticipants"
+            >>> listA getDidNotFlyers
+            )
+            -- NOTE: If a task is created when there are no participants
+            -- then the FsTask/FsParticipants element is omitted.
+            `orElse` constA []
+            where
+                getDidNotFlyers =
+                    getChildren
+                    >>> hasName "FsParticipant"
+                        `containing`
+                        ( getChildren
+                        >>> hasName "FsFlightData"
+                        >>> neg (hasAttr "tracklog_filename"))
+                    >>> getAttrValue "id"
+                    >>> arr (unKeyPilot (keyMap kps) . PilotId)
+
+        -- <FsParticipant id="91">
+        --    <FsFlightData tracklog_filename="" />
+        -- <FsParticipant id="85">
+        --    <FsFlightData distance="95.030" tracklog_filename="" />
+        getDidFlyNoTracklog =
+            ( getChildren
+            >>> hasName "FsParticipants"
+            >>> listA getDidFlyers
+            )
+            -- NOTE: If a task is created when there are no participants
+            -- then the FsTask/FsParticipants element is omitted.
+            `orElse` constA []
+            where
+                getDidFlyers =
+                    getChildren
+                    >>> hasName "FsParticipant"
+                        `containing`
+                        ( getChildren
+                        >>> hasName "FsFlightData"
+                        -- TODO: Grab awarded distance.
+                        >>> hasAttrValue "tracklog_filename" (== ""))
+                    >>> getAttrValue "id"
+                    &&& getAwardedDistance
+                    >>> arr (\(pid, td) ->
+                            let p = unKeyPilot (keyMap kps) . PilotId $ pid
+
+                                d' =
+                                    (\(TaskDistance d) ->
+                                        AwardedDistance . TaskDistance . convert $ d)
+                                    <$> td
+
+                            in (p, d'))
+
+        getAwardedDistance =
+            (getChildren
+            >>> hasName "FsFlightData"
+            >>> arr (unpickleDoc xpAwardedDistance)
+            )
+            `orElse` constA Nothing
+
+getTask :: ArrowXml a => Discipline -> a XmlTree (Task k)
+getTask discipline =
     getChildren
     >>> deep (hasName "FsTask")
     >>> getAttrValue "name"
@@ -233,12 +347,23 @@ getTask discipline ps =
     &&& getSpeedSection
     &&& getZoneTimes
     &&& getStartGates
-    &&& getAbsent
     &&& getStopped
     >>> arr mkTask
     where
-        kps = (\x@(Pilot (k, _)) -> KeyPilot (k, x)) <$> ps
-        
+        mkTask (name, (zs, (section, (ts, (gates, stop))))) =
+            Task
+                { taskName = name
+                , zones = zs
+                , speedSection = section
+                , zoneTimes = ts''
+                , startGates = gates
+                , stopped = stop
+                }
+            where
+                -- NOTE: If all time zones are the same then collapse.
+                ts' = nub ts
+                ts'' = if length ts' == 1 then ts' else ts
+
         getHeading =
             (getChildren
             >>> hasName "FsTaskDefinition"
@@ -305,39 +430,22 @@ getTask discipline ps =
             >>> hasName "FsTaskDefinition"
             >>> arr (unpickleDoc xpSpeedSection)
 
-        getAbsent =
-            ( getChildren
-            >>> hasName "FsParticipants"
-            >>> listA getAbsentees
-            )
-            -- NOTE: If a task is created when there are no participants
-            -- then the FsTask/FsParticipants element is omitted.
-            `orElse` constA []
-            where
-                getAbsentees =
-                    getChildren
-                    >>> hasName "FsParticipant"
-                        `notContaining` (getChildren >>> hasName "FsFlightData")
-                    >>> getAttrValue "id"
-                    >>> arr (unKeyPilot (keyMap kps) . PilotId)
-
         getStopped =
             getChildren
             >>> hasName "FsTaskState"
             >>> arr (unpickleDoc xpStopped)
 
-        mkTask (name, (zs, (section, (ts, (gates, (absentees, stop)))))) =
-            Task name zs section ts'' gates (sort absentees) stop
-            where
-                -- NOTE: If all time zones are the same then collapse.
-                ts' = nub ts
-                ts'' = if length ts' == 1 then ts' else ts
-
 parseTasks :: Discipline -> String -> IO (Either String [Task k])
 parseTasks discipline contents = do
     let doc = readString [ withValidate no, withWarnings no ] contents
+    xs <- runX $ doc >>> getTask discipline
+    return $ Right xs
+
+parseTaskPilotGroups :: String -> IO (Either String [PilotGroup])
+parseTaskPilotGroups contents = do
+    let doc = readString [ withValidate no, withWarnings no ] contents
     ps <- runX $ doc >>> getCompPilot
-    xs <- runX $ doc >>> getTask discipline ps
+    xs <- runX $ doc >>> getTaskPilotGroup ps
     return $ Right xs
 
 parseUtcTime :: String -> UTCTime
