@@ -14,7 +14,7 @@ import Control.Arrow (second)
 import Control.Lens ((^?), element)
 import Control.Exception.Safe (MonadThrow, catchIO)
 import Control.Monad.Except (MonadIO)
-import Data.UnitsOfMeasure ((-:), u, convert)
+import Data.UnitsOfMeasure ((-:), u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import System.FilePath (takeFileName)
 
@@ -29,6 +29,7 @@ import Flight.Comp
     , CompSettings(..)
     , PilotName(..)
     , Pilot(..)
+    , PilotGroup(didFlyNoTracklog)
     , Task(..)
     , IxTask(..)
     , TrackFileFail(..)
@@ -36,6 +37,7 @@ import Flight.Comp
     , TaskRouteDistance(..)
     , MadeGoal(..)
     , LandedOut(..)
+    , DfNoTrack(..)
     , compToTaskLength
     , compToCross
     , compToMask
@@ -57,7 +59,7 @@ import Flight.Comp.Distance (compDistance, compNigh)
 import Flight.Track.Tag (Tagging)
 import qualified Flight.Track.Time as Time (TimeRow(..), TickRow(..))
 import Flight.Track.Arrival (TrackArrival(..))
-import Flight.Track.Distance (TrackDistance(..), Land)
+import Flight.Track.Distance (TrackDistance(..), Land, AwardedDistance(..))
 import Flight.Track.Lead (compLeading)
 import Flight.Track.Mask (Masking(..))
 import Flight.Track.Speed (TrackSpeed(..))
@@ -84,7 +86,6 @@ import qualified Flight.Score as Gap (bestTime')
 import Flight.Score
     ( PilotsAtEss(..), PositionAtEss(..)
     , BestTime(..), PilotTime(..)
-    , MinimumDistance(..)
     , arrivalFraction, speedFraction
     )
 import Flight.Span.Math (Math(..))
@@ -181,6 +182,7 @@ writeMask
     CompSettings
         { nominal = Cmp.Nominal{free}
         , tasks
+        , pilotGroups
         }
     routes
     lookupTaskTime
@@ -196,6 +198,19 @@ writeMask
 
         Just fss -> do
 
+            let dfNtss = didFlyNoTracklog <$> pilotGroups
+
+            let fssDf =
+                    [ let ps = fst <$> dfNts in
+                      filter
+                          ( not
+                          . (`elem` ps)
+                          . (\case Left (p, _) -> p; Right (p, _) -> p))
+                          flights
+                    | flights <- fss
+                    | DfNoTrack dfNts <- dfNtss
+                    ]
+
             let iTasks = IxTask <$> [1 .. length fss]
 
             -- Task lengths (ls).
@@ -203,42 +218,50 @@ writeMask
             let lsWholeTask = (fmap . fmap) wholeTaskDistance lsTask'
             let lsSpeedSubset = (fmap . fmap) speedSubsetDistance lsTask'
 
-            let ys :: [[(Pilot, FlightStats _)]] =
-                    [ let td = madeMinimum free <$> lTask
-                          statNoTrack =
-                              case td of
-                                  Just _ -> nullStats{statLand = td}
-                                  Nothing -> nullStats
-                      in
-                          fmap
-                            (\case
-                                Left (p, tff) ->
-                                    case tff of
-                                        TrackLogFileNotSet -> (p, statNoTrack)
-                                        _ -> (p, nullStats)
-
-                                Right (p, g) -> (p, g p))
-                            flights
-                    | flights <- fss
-                    | lTask <- lsTask'
+            let yssDf :: [[(Pilot, FlightStats _)]] =
+                    [ fmap
+                        (\case
+                            Left (p, _) -> (p, nullStats)
+                            Right (p, g) -> (p, g p))
+                        flights
+                    | flights <- fssDf
                     ]
+
+            let yssDfNt :: [[(Pilot, FlightStats _)]] =
+                    [
+                        fmap
+                        (\(p, dA) ->
+                            ( p
+                            ,
+                                maybe
+                                    nullStats
+                                    (\(AwardedDistance dA') ->
+                                        nullStats{statLand = flip madeAwarded dA' <$> lTask})
+                                    dA
+                            ))
+                        dfNts
+                    | DfNoTrack dfNts <- dfNtss
+                    | lTask <- (fmap. fmap) wholeTaskDistance lsTask'
+                    ]
+
+            let yss = zipWith (++) yssDf yssDfNt
 
             -- Zones (zs) of the task and zones ticked.
             let zsTaskTicked :: [Map Pilot _] =
-                    Map.fromList . landTaskTicked <$> ys
+                    Map.fromList . landTaskTicked <$> yss
 
             -- Distances (ds) of the landout spot.
-            let dsLand :: [[(Pilot, TrackDistance Land)]] = landDistances <$> ys
+            let dsLand :: [[(Pilot, TrackDistance Land)]] = landDistances <$> yss
 
             -- Arrivals (as).
-            let as :: [[(Pilot, TrackArrival)]] = arrivals <$> ys
+            let as :: [[(Pilot, TrackArrival)]] = arrivals <$> yss
 
             -- Velocities (vs).
             let ssVs :: [Maybe (BestTime (Quantity Double [u| h |]), [(Pilot, TrackSpeed)])] =
-                    times ssTime <$> ys
+                    times ssTime <$> yss
 
             let gsVs :: [Maybe (BestTime (Quantity Double [u| h |]), [(Pilot, TrackSpeed)])] =
-                    times gsTime <$> ys
+                    times gsTime <$> yss
 
             -- Times (ts).
             let ssBestTime = (fmap . fmap) fst ssVs
@@ -321,20 +344,12 @@ writeMask
                     , land = dsLand
                     }
 
-madeMinimum
-    :: MinimumDistance (Quantity Double [u| km |])
-    -> TaskRouteDistance
-    -> TrackDistance Land
-madeMinimum
-    (MinimumDistance dKm)
-    TaskRouteDistance{wholeTaskDistance = TaskDistance wtd} =
-    TrackDistance {made = Just made, togo = Just togo}
-    where
-        made :: Land
-        made@(TaskDistance dm) = TaskDistance . convert $ dKm
-
-        togo :: Land
-        togo = TaskDistance $ wtd -: dm
+madeAwarded :: QTaskDistance Double [u| m |] -> Land -> TrackDistance Land
+madeAwarded (TaskDistance td) d@(TaskDistance d') =
+    TrackDistance
+        { togo = Just . TaskDistance $ td -: d'
+        , made = Just d
+        }
 
 includeTask :: [IxTask] -> IxTask -> Bool
 includeTask tasks = if null tasks then const True else (`elem` tasks)
@@ -436,7 +451,7 @@ flown' dTaskF flying math tags tasks iTask@(IxTask i) mf@MarkedFixes{mark0} p =
                     tickedStats {statTimeRank = Just $ TimeStats a b c}
 
                 _ ->
-                    tickedStats {statLand = Just $ landDistance task' }
+                    tickedStats {statLand = Just $ landDistance task'}
 
     where
         maybeTask = tasks ^? element (i - 1)
