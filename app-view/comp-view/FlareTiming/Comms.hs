@@ -8,8 +8,7 @@ module FlareTiming.Comms
     , getPilotsStatus
     , getValidity
     , getAllocation
-    , getTaskScoreDf
-    , getTaskScoreDfNoTrack
+    , getTaskScore
     , getTaskValidityWorking
     , getTaskLengthSphericalEdge
     , getTaskLengthEllipsoidEdge
@@ -134,11 +133,8 @@ getValidity = get "/gap-point/validity"
 getAllocation :: Get t m [Maybe Allocation]
 getAllocation = get "/gap-point/allocation"
 
-getTaskScoreDf :: GetIxTask' t m [(Pilot, Breakdown)]
-getTaskScoreDf = getIxTask "gap-point" "score-df"
-
-getTaskScoreDfNoTrack :: GetIxTask' t m [(Pilot, Breakdown)]
-getTaskScoreDfNoTrack = getIxTask "gap-point" "score-dfnt"
+getTaskScore :: GetIxTask' t m [(Pilot, Breakdown)]
+getTaskScore = getIxTask "gap-point" "score"
 
 getTaskValidityWorking :: GetIxTask' t m (Maybe ValidityWorking)
 getTaskValidityWorking = getIxTask "gap-point" "validity-working"

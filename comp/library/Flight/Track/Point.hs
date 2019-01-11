@@ -77,6 +77,7 @@ data Pointing =
         { validityWorking :: [Maybe ValidityWorking]
         , validity :: [Maybe Validity]
         , allocation :: [Maybe Allocation]
+        , score :: [[(Pilot, Breakdown)]]
         , scoreDf :: [[(Pilot, Breakdown)]]
         , scoreDfNoTrack :: [[(Pilot, Breakdown)]]
         }
@@ -179,7 +180,14 @@ cmp a b =
         ("taskPoints", "points") -> GT
         ("taskPoints", _) -> LT
 
+        ("score", "scoreDf") -> LT
+        ("score", "scoreDfNoTrack") -> LT
         ("score", _) -> GT
+
+        ("scoreDf", "DfNoTrack") -> LT
+        ("scoreDf", _) -> GT
+
+        ("scoreDfNoTrack", _) -> GT
 
         -- DistanceValidityWorking fields
         ("sum", _) -> LT

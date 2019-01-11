@@ -193,6 +193,7 @@ points'
         { validityWorking = workings
         , validity = validities
         , allocation = allocs
+        , score = score
         , scoreDf = scoreDf
         , scoreDfNoTrack = scoreDfNoTrack
         }
@@ -545,6 +546,12 @@ points'
             | dsAward <- dfNtss
             ]
 
+        score :: [[(Pilot, Breakdown)]] =
+            [ rankByTotal . sortScores $ xs ++ ys
+            | xs <- scoreDf
+            | ys <- scoreDfNoTrack
+            ]
+
 reIndex :: [(Integer, [a])] -> [(Integer, [a])]
 reIndex xs =
     zipWith3
@@ -879,4 +886,3 @@ tallyDfNoTrack
                 (\(AwardedDistance (TaskDistance d)) ->
                     PilotDistance . convert $ d)
             dA
-

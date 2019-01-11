@@ -173,6 +173,8 @@ type GapPointApi k =
         :> Get '[JSON] [Maybe Vy.Validity]
     :<|> "gap-point" :> "allocation"
         :> Get '[JSON] [Maybe Allocation]
+    :<|> "gap-point" :> Capture "task" Int :> "score"
+        :> Get '[JSON] [(Pilot, Breakdown)]
     :<|> "gap-point" :> Capture "task" Int :> "score-df"
         :> Get '[JSON] [(Pilot, Breakdown)]
     :<|> "gap-point" :> Capture "task" Int :> "score-dfnt"
@@ -326,6 +328,7 @@ serverGapPointApi cfg =
         :<|> getPilotsStatus
         :<|> getValidity <$> p
         :<|> getAllocation <$> p
+        :<|> getTaskScore
         :<|> getTaskScoreDf
         :<|> getTaskScoreDfNoTrack
         :<|> getTaskValidityWorking
@@ -410,11 +413,25 @@ getAllocation :: Maybe Pointing -> [Maybe Allocation]
 getAllocation Nothing = []
 getAllocation (Just p) = ((fmap . fmap) roundAllocation) . allocation $ p
 
+getScores :: Pointing -> [[(Pilot, Breakdown)]]
+getScores = ((fmap . fmap . fmap) roundVelocity') . score
+
 getScoresDf :: Pointing -> [[(Pilot, Breakdown)]]
 getScoresDf = ((fmap . fmap . fmap) roundVelocity') . scoreDf
 
 getScoresDfNoTrack :: Pointing -> [[(Pilot, Breakdown)]]
 getScoresDfNoTrack = ((fmap . fmap . fmap) roundVelocity') . scoreDfNoTrack
+
+getTaskScore :: Int -> AppT k IO [(Pilot, Breakdown)]
+getTaskScore ii = do
+    xs' <- fmap getScores <$> asks pointing
+    case xs' of
+        Just xs ->
+            case drop (ii - 1) xs of
+                x : _ -> return x
+                _ -> throwError $ errTaskBounds ii
+
+        _ -> throwError $ errTaskStep "gap-point" ii
 
 getTaskScoreDf :: Int -> AppT k IO [(Pilot, Breakdown)]
 getTaskScoreDf ii = do
