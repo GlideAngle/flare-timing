@@ -56,6 +56,7 @@ import Flight.Comp
     , Pilot(..)
     , PilotTaskStatus(..)
     , PilotGroup(..)
+    , DfNoTrack(..)
     , Nyp(..)
     , CompInputFile(..)
     , TaskLengthFile(..)
@@ -172,7 +173,9 @@ type GapPointApi k =
         :> Get '[JSON] [Maybe Vy.Validity]
     :<|> "gap-point" :> "allocation"
         :> Get '[JSON] [Maybe Allocation]
-    :<|> "gap-point" :> Capture "task" Int :> "score"
+    :<|> "gap-point" :> Capture "task" Int :> "score-df"
+        :> Get '[JSON] [(Pilot, Breakdown)]
+    :<|> "gap-point" :> Capture "task" Int :> "score-dfnt"
         :> Get '[JSON] [(Pilot, Breakdown)]
     :<|> "gap-point" :> Capture "task" Int :> "validity-working"
         :> Get '[JSON] (Maybe Vy.ValidityWorking)
@@ -323,7 +326,8 @@ serverGapPointApi cfg =
         :<|> getPilotsStatus
         :<|> getValidity <$> p
         :<|> getAllocation <$> p
-        :<|> getTaskScore
+        :<|> getTaskScoreDf
+        :<|> getTaskScoreDfNoTrack
         :<|> getTaskValidityWorking
         :<|> getTaskPilotAbs
         :<|> getTaskPilotDnf
@@ -347,8 +351,8 @@ roundVelocity (PilotVelocity (MkQuantity d)) =
     PilotVelocity . MkQuantity . fromRational . (dpRound 1) . toRational $ d
 
 roundVelocity' :: Breakdown -> Breakdown
-roundVelocity' b@Breakdown{velocity = v@Velocity{gsVelocity = (Just x)}} =
-    b{velocity = v{gsVelocity = Just . roundVelocity $ x}}
+roundVelocity' b@Breakdown{velocity = Just v@Velocity{gsVelocity = (Just x)}} =
+    b{velocity = Just v{gsVelocity = Just . roundVelocity $ x}}
 roundVelocity' b = b
 
 dpWg :: Rational -> Rational
@@ -406,12 +410,26 @@ getAllocation :: Maybe Pointing -> [Maybe Allocation]
 getAllocation Nothing = []
 getAllocation (Just p) = ((fmap . fmap) roundAllocation) . allocation $ p
 
-getScores :: Pointing -> [[(Pilot, Breakdown)]]
-getScores = ((fmap . fmap . fmap) roundVelocity') . score
+getScoresDf :: Pointing -> [[(Pilot, Breakdown)]]
+getScoresDf = ((fmap . fmap . fmap) roundVelocity') . scoreDf
 
-getTaskScore :: Int -> AppT k IO [(Pilot, Breakdown)]
-getTaskScore ii = do
-    xs' <- fmap getScores <$> asks pointing
+getScoresDfNoTrack :: Pointing -> [[(Pilot, Breakdown)]]
+getScoresDfNoTrack = ((fmap . fmap . fmap) roundVelocity') . scoreDfNoTrack
+
+getTaskScoreDf :: Int -> AppT k IO [(Pilot, Breakdown)]
+getTaskScoreDf ii = do
+    xs' <- fmap getScoresDf <$> asks pointing
+    case xs' of
+        Just xs ->
+            case drop (ii - 1) xs of
+                x : _ -> return x
+                _ -> throwError $ errTaskBounds ii
+
+        _ -> throwError $ errTaskStep "gap-point" ii
+
+getTaskScoreDfNoTrack :: Int -> AppT k IO [(Pilot, Breakdown)]
+getTaskScoreDfNoTrack ii = do
+    xs' <- fmap getScoresDfNoTrack <$> asks pointing
     case xs' of
         Just xs ->
             case drop (ii - 1) xs of
@@ -580,7 +598,7 @@ getTaskPilotDfNoTrack :: Int -> AppT k IO [Pilot]
 getTaskPilotDfNoTrack ii = do
     pgs <- pilotGroups <$> asks compSettings
     case drop (ii - 1) pgs of
-        PilotGroup{..} : _ -> return didFlyNoTracklog
+        PilotGroup{didFlyNoTracklog = DfNoTrack zs} : _ -> return $ fst <$> zs
         _ -> throwError $ errTaskBounds ii
 
 nyp
@@ -588,19 +606,19 @@ nyp
     -> PilotGroup
     -> [(Pilot, b)]
     -> Nyp
-nyp ps PilotGroup{absent = xs, dnf = ys, didFlyNoTracklog = zs} cs =
-    let (cs', _) = unzip cs in Nyp $ ps \\ (xs ++ ys ++ zs ++ cs')
+nyp ps PilotGroup{absent = xs, dnf = ys, didFlyNoTracklog = DfNoTrack zs} cs =
+    let (cs', _) = unzip cs in Nyp $ ps \\ (xs ++ ys ++ (fst <$> zs) ++ cs')
 
 status
     :: PilotGroup
     -> [Pilot] -- ^ Pilots that DF this task
     -> Pilot -- ^ Get the status for this pilot
     -> PilotTaskStatus
-status PilotGroup{absent = xs, dnf = ys, didFlyNoTracklog = zs} cs p =
+status PilotGroup{absent = xs, dnf = ys, didFlyNoTracklog = DfNoTrack zs} cs p =
     if | p `elem` xs -> ABS
        | p `elem` ys -> DNF
        | p `elem` cs -> DF
-       | p `elem` zs -> DFNoTrack
+       | p `elem` (fst <$> zs) -> DFNoTrack
        | otherwise -> NYP
 
 getTaskPilotNyp :: Int -> AppT k IO [Pilot]
@@ -608,7 +626,7 @@ getTaskPilotNyp ii = do
     let jj = ii - 1
     ps <- getPilots <$> asks compSettings
     pgs <- pilotGroups <$> asks compSettings
-    css' <- fmap getScores <$> asks pointing
+    css' <- fmap getScoresDf <$> asks pointing
     case css' of
         Just css ->
             case (drop jj pgs, drop jj css) of
@@ -622,7 +640,7 @@ getTaskPilotDf :: Int -> AppT k IO [Pilot]
 getTaskPilotDf ii = do
     let jj = ii - 1
     ps <- getPilots <$> asks compSettings
-    css' <- fmap getScores <$> asks pointing
+    css' <- fmap getScoresDf <$> asks pointing
     case css' of
         Just css ->
             case drop jj css of
@@ -635,7 +653,7 @@ getPilotsStatus :: AppT k IO [(Pilot, [PilotTaskStatus])]
 getPilotsStatus = do
     ps <- getPilots <$> asks compSettings
     pgs <- pilotGroups <$> asks compSettings
-    css' <- fmap getScores <$> asks pointing
+    css' <- fmap getScoresDf <$> asks pointing
 
     let fs =
             case css' of

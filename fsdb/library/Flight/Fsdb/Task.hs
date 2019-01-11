@@ -4,7 +4,7 @@
 module Flight.Fsdb.Task (parseTasks, parseTaskPilotGroups) where
 
 import Data.Maybe (catMaybes)
-import Data.List (sort, nub)
+import Data.List (sort, sortOn, nub)
 import Data.Map.Strict (Map, fromList, findWithDefault)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
@@ -53,7 +53,7 @@ import Flight.Zone.MkZones
     )
 import qualified Flight.Zone.Raw as Z (RawZone(..))
 import Flight.Comp
-    ( PilotId(..), PilotName(..), Pilot(..), PilotGroup(..)
+    ( PilotId(..), PilotName(..), Pilot(..), PilotGroup(..), DfNoTrack(..)
     , Task(..), TaskStop(..), StartGate(..), OpenClose(..)
     )
 import Flight.Fsdb.Pilot (getCompPilot)
@@ -240,7 +240,7 @@ getTaskPilotGroup ps =
             PilotGroup
                 { absent = sort absentees
                 , dnf = sort dnf
-                , didFlyNoTracklog = sort noTrack
+                , didFlyNoTracklog = DfNoTrack $ sortOn fst noTrack
                 }
 
         kps = keyPilots ps
@@ -285,6 +285,8 @@ getTaskPilotGroup ps =
 
         -- <FsParticipant id="91">
         --    <FsFlightData tracklog_filename="" />
+        -- <FsParticipant id="85">
+        --    <FsFlightData distance="95.030" tracklog_filename="" />
         getDidFlyNoTracklog =
             ( getChildren
             >>> hasName "FsParticipants"
@@ -300,9 +302,12 @@ getTaskPilotGroup ps =
                         `containing`
                         ( getChildren
                         >>> hasName "FsFlightData"
+                        -- TODO: Grab awarded distance.
                         >>> hasAttrValue "tracklog_filename" (== ""))
                     >>> getAttrValue "id"
-                    >>> arr (unKeyPilot (keyMap kps) . PilotId)
+                    >>> arr (\pid ->
+                            let p = unKeyPilot (keyMap kps) . PilotId $ pid in
+                            (p, Nothing))
 
 
 getTask :: ArrowXml a => Discipline -> a XmlTree (Task k)

@@ -14,6 +14,7 @@ module Flight.Pilot
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import Flight.Score (Pilot)
+import Flight.Track.Distance (AwardedDistance)
 
 -- | The group of pilots that did not fly a task.
 newtype Dnf = Dnf {unDnf :: [Pilot]}
@@ -22,7 +23,11 @@ newtype Dnf = Dnf {unDnf :: [Pilot]}
 newtype Nyp = Nyp {unNyp :: [Pilot]}
 
 -- | The group of pilots that flew but did not submit a tracklog.
-newtype DfNoTrack = DfNoTrack {unDfNoTrack :: [Pilot]}
+newtype DfNoTrack =
+    DfNoTrack
+        {unDfNoTrack :: [(Pilot, Maybe AwardedDistance)]}
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
 
 -- | The group of pilots that landed out on course.
 newtype LandedOut = LandedOut {unLandedOut :: [Pilot]}

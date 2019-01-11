@@ -77,7 +77,8 @@ data Pointing =
         { validityWorking :: [Maybe ValidityWorking]
         , validity :: [Maybe Validity]
         , allocation :: [Maybe Allocation]
-        , score :: [[(Pilot, Breakdown)]]
+        , scoreDf :: [[(Pilot, Breakdown)]]
+        , scoreDfNoTrack :: [[(Pilot, Breakdown)]]
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 

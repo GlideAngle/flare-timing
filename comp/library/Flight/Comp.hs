@@ -258,8 +258,9 @@ data PilotGroup =
         -- ^ Pilots absent from a task.
         , dnf :: [Pilot]
         -- ^ Pilots that did not fly.
-        , didFlyNoTracklog :: [Pilot]
-        -- ^ Pilots that did fly but have no tracklog.
+        , didFlyNoTracklog :: DfNoTrack
+        -- ^ Pilots that did fly but have no tracklog. They may have been
+        -- awarded a distance by the scorer.
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)

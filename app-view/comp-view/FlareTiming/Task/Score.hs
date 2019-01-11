@@ -68,15 +68,17 @@ tableScore
     -> Dynamic t (Maybe Pt.Points)
     -> Dynamic t (Maybe TaskPoints)
     -> Dynamic t [(Pilot, Breakdown)]
+    -> Dynamic t [(Pilot, Breakdown)]
     -> m ()
-tableScore utcOffset hgOrPg free sgs ln dnf' vy wg pt tp xs = do
+tableScore utcOffset hgOrPg free sgs ln dnf' vy wg pt tp sDfs sDfNts = do
     let dnf = unDnf <$> dnf'
     lenDnf :: Int <- sample . current $ length <$> dnf
-    lenPlaces :: Int <- sample . current $ length <$> xs
+    lenDfs :: Int <- sample . current $ length <$> sDfs
+    lenDfNts :: Int <- sample . current $ length <$> sDfNts
     let dnfPlacing =
             (if lenDnf == 1 then TaskPlacing else TaskPlacingEqual)
             . fromIntegral
-            $ lenPlaces + 1
+            $ lenDfs + lenDfNts + 1
 
     let thSpace = elClass "th" "th-space" $ text ""
 
@@ -273,7 +275,8 @@ tableScore utcOffset hgOrPg free sgs ln dnf' vy wg pt tp xs = do
                     <$> tp
 
         _ <- el "tbody" $ do
-            _ <- simpleList xs (pointRow utcOffset free pt tp)
+            _ <- simpleList sDfs (pointRow utcOffset free pt tp)
+            _ <- simpleList sDfNts (pointRow utcOffset free pt tp)
             dnfRows dnfPlacing dnf'
             return ()
 

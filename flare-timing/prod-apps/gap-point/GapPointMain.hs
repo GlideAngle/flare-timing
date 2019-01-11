@@ -18,7 +18,7 @@ import qualified Control.Applicative as A ((<$>))
 import Control.Monad (mapM_)
 import Control.Exception.Safe (catchIO)
 import System.FilePath (takeFileName)
-import Data.UnitsOfMeasure ((/:), u, convert)
+import Data.UnitsOfMeasure ((/:), u, convert, zero)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
@@ -40,6 +40,7 @@ import Flight.Comp
     , StartGate(..)
     , StartEnd(..)
     , Task(..)
+    , DfNoTrack(..)
     , compToCross
     , crossToTag
     , compToMask
@@ -50,7 +51,8 @@ import Flight.Comp
     )
 import Flight.Track.Cross (Fix(..))
 import Flight.Track.Tag (Tagging(..), PilotTrackTag(..), TrackTag(..))
-import Flight.Track.Distance (TrackDistance(..), Nigh, Land)
+import Flight.Track.Distance
+    (TrackDistance(..), AwardedDistance(..), Nigh, Land)
 import Flight.Track.Lead (TrackLead(..))
 import Flight.Track.Arrival (TrackArrival(..))
 import qualified Flight.Track.Speed as Speed (TrackSpeed(..), startGateTaken)
@@ -191,19 +193,22 @@ points'
         { validityWorking = workings
         , validity = validities
         , allocation = allocs
-        , score = score
+        , scoreDf = scoreDf
+        , scoreDfNoTrack = scoreDfNoTrack
         }
     where
         -- NOTE: t = track, nt = no track, dnf = did not fly, df = did fly
         -- s suffix is a list, ss suffix is a list of lists.
         tss = toInteger . length <$> pilots
-        ntss = toInteger . length . didFlyNoTracklog <$> pilotGroups
+        ntss = toInteger . length . unDfNoTrack . didFlyNoTracklog <$> pilotGroups
         dnfss = toInteger . length . dnf <$> pilotGroups
         dfss =
             [ ts + nts
             | ts <- tss
             | nts <- ntss
             ]
+
+        dfNtss = didFlyNoTracklog <$> pilotGroups
 
         -- NOTE: If there is no best distance, then either the task wasn't run
         -- or it has not been scored yet.
@@ -322,13 +327,18 @@ points'
             ]
 
         -- NOTE: Pilots either get to goal or have a nigh distance.
-        nighDistance :: [[(Pilot, Maybe Double)]] =
+        nighDistanceDf :: [[(Pilot, Maybe Double)]] =
             [ let xs' = (fmap . fmap) madeNigh xs
                   ys' = (fmap . fmap) (const bd) ys
               in (xs' ++ ys')
             | bd <- (fmap . fmap) unTaskDistanceAsKm bestDistance
             | xs <- nigh
             | ys <- arrival
+            ]
+
+        nighDistanceDfNoTrack :: [[(Pilot, Maybe Double)]] =
+            [ (fmap . fmap) (madeAwarded free) xs
+            | DfNoTrack xs <- dfNtss
             ]
 
         -- NOTE: Pilots either get to the end of the speed section or
@@ -352,7 +362,7 @@ points'
             | ys <- arrival
             ]
 
-        difficultyDistancePoints :: [[(Pilot, DifficultyPoints)]] =
+        difficultyDistancePointsDf :: [[(Pilot, DifficultyPoints)]] =
             [ maybe
                 []
                 (\ps' ->
@@ -360,7 +370,7 @@ points'
 
                         (f, g) = discipline & \case
                                HangGliding ->
-                                    (madeDifficulty free ld', const $ DifficultyFraction 0.5)
+                                    (madeDifficultyDf free ld', const $ DifficultyFraction 0.5)
                                Paragliding ->
                                     (const $ DifficultyFraction 0.0, const $ DifficultyFraction 0.0)
 
@@ -378,14 +388,46 @@ points'
             | ld <- landoutDifficulty
             ]
 
-        nighDistancePoints :: [[(Pilot, LinearPoints)]] =
+        difficultyDistancePointsDfNoTrack :: [[(Pilot, DifficultyPoints)]] =
+            [ maybe
+                []
+                (\ps' ->
+                    let ld' = mapOfDifficulty ld
+
+                        f = discipline & \case
+                               HangGliding -> madeDifficultyDfNoTrack free ld'
+                               Paragliding -> const $ DifficultyFraction 0.0
+
+                        xs' = (fmap . fmap) f xs
+                    in
+                        (fmap . fmap)
+                        (applyDifficulty ps')
+                        xs'
+                )
+                ps
+            | ps <- (fmap . fmap) points allocs
+            | DfNoTrack xs <- dfNtss
+            | ld <- landoutDifficulty
+            ]
+
+        nighDistancePointsDf :: [[(Pilot, LinearPoints)]] =
             [ maybe
                 []
                 (\ps' -> (fmap . fmap) (applyLinear free bd ps') ds)
                 ps
             | bd <- bestDistance
             | ps <- (fmap . fmap) points allocs
-            | ds <- nighDistance
+            | ds <- nighDistanceDf
+            ]
+
+        nighDistancePointsDfNoTrack :: [[(Pilot, LinearPoints)]] =
+            [ maybe
+                []
+                (\ps' -> (fmap . fmap) (applyLinear free bd ps') ds)
+                ps
+            | bd <- bestDistance
+            | ps <- (fmap . fmap) points allocs
+            | ds <- nighDistanceDfNoTrack
             ]
 
         leadingPoints :: [[(Pilot, LeadingPoints)]] =
@@ -459,7 +501,7 @@ points'
             | ts <- tagging
             ]
 
-        score :: [[(Pilot, Breakdown)]] =
+        scoreDf :: [[(Pilot, Breakdown)]] =
             [ let dsL = Map.fromList dsLand
                   dsN = Map.fromList dsNigh
                   dsS = Map.fromList dsSpeed
@@ -469,10 +511,10 @@ points'
                       $ Map.intersectionWith (,) dsN dsL
               in
                   rankByTotal . sortScores
-                  $ fmap  (tally gates)
-                  A.<$> collate diffs linears ls as ts ds ssEs gsEs gs
-            | diffs <- difficultyDistancePoints
-            | linears <- nighDistancePoints
+                  $ fmap (tallyDf gates)
+                  A.<$> collateDf diffs linears ls as ts ds ssEs gsEs gs
+            | diffs <- difficultyDistancePointsDf
+            | linears <- nighDistancePointsDf
             | ls <- leadingPoints
             | as <- arrivalPoints
             | ts <- timePoints gsSpeed
@@ -483,7 +525,7 @@ points'
             | dsNigh <-
                 (fmap . fmap)
                     ((fmap . fmap) (PilotDistance . MkQuantity))
-                    nighDistance
+                    nighDistanceDf
             | dsLand <-
                 (fmap . fmap)
                     ((fmap . fmap) (PilotDistance . MkQuantity))
@@ -492,6 +534,15 @@ points'
             | gsEs <- elapsedTime gsSpeed
             | gs <- tags
             | gates <- startGates <$> tasks
+            ]
+
+        scoreDfNoTrack :: [[(Pilot, Breakdown)]] =
+            [ rankByTotal . sortScores
+              $ fmap tallyDfNoTrack
+              A.<$> collateDfNoTrack diffs linears dsAward
+            | diffs <- difficultyDistancePointsDfNoTrack
+            | linears <- nighDistancePointsDfNoTrack
+            | dsAward <- dfNtss
             ]
 
 reIndex :: [(Integer, [a])] -> [(Integer, [a])]
@@ -559,16 +610,39 @@ applyDifficulty Gap.Points{distance = DistancePoints y} (DifficultyFraction frac
     -- NOTE: A fraction of distance points, not a fraction of effort points.
     DifficultyPoints $ frac * y
 
-madeDifficulty
+madeDifficultyDf
     :: MinimumDistance (Quantity Double [u| km |])
     -> Map IxChunk DifficultyFraction
     -> TrackDistance Land
     -> DifficultyFraction
-madeDifficulty md mapIxToFrac td =
+madeDifficultyDf md mapIxToFrac td =
     fromMaybe (DifficultyFraction 0) $ Map.lookup ix mapIxToFrac
     where
         pd = PilotDistance . MkQuantity . fromMaybe 0.0 $ madeLand td
         ix = toIxChunk md pd
+
+madeDifficultyDfNoTrack
+    :: MinimumDistance (Quantity Double [u| km |])
+    -> Map IxChunk DifficultyFraction
+    -> Maybe AwardedDistance
+    -> DifficultyFraction
+madeDifficultyDfNoTrack md@(MinimumDistance dMin) mapIxToFrac dAward =
+    fromMaybe (DifficultyFraction 0) $ Map.lookup ix mapIxToFrac
+    where
+        pd =
+            PilotDistance $
+            case dAward of
+                Just (AwardedDistance (TaskDistance d)) -> convert d
+                Nothing -> dMin
+
+        ix = toIxChunk md pd
+
+madeAwarded
+    :: MinimumDistance (Quantity Double [u| km |])
+    -> Maybe AwardedDistance
+    -> Maybe Double
+madeAwarded _ (Just (AwardedDistance d)) = Just . unTaskDistanceAsKm $ d
+madeAwarded (MinimumDistance (MkQuantity d)) _ = Just d
 
 madeNigh :: TrackDistance Nigh -> Maybe Double
 madeNigh TrackDistance{made} = unTaskDistanceAsKm <$> made
@@ -618,7 +692,7 @@ applyTime :: Gap.Points -> SpeedFraction -> TimePoints
 applyTime Gap.Points{time = TimePoints y} (SpeedFraction x) =
     TimePoints $ x * y
 
-collate
+collateDf
     :: [(Pilot, DifficultyPoints)]
     -> [(Pilot, LinearPoints)]
     -> [(Pilot, LeadingPoints)]
@@ -629,7 +703,7 @@ collate
     -> [(Pilot, Maybe c)]
     -> [(Pilot, Maybe d)]
     -> [(Pilot, (Maybe d, (Maybe c, (Maybe b, ((Maybe a, Maybe a, Maybe a), Gap.Points)))))]
-collate diffs linears ls as ts ds ssEs gsEs gs =
+collateDf diffs linears ls as ts ds ssEs gsEs gs =
     Map.toList
     $ Map.intersectionWith (,) mg
     $ Map.intersectionWith (,) mgsEs
@@ -650,6 +724,21 @@ collate diffs linears ls as ts ds ssEs gsEs gs =
         mgsEs = Map.fromList gsEs
         mg = Map.fromList gs
 
+collateDfNoTrack
+    :: [(Pilot, DifficultyPoints)]
+    -> [(Pilot, LinearPoints)]
+    -> DfNoTrack
+    -> [(Pilot, (Maybe AwardedDistance, Gap.Points))]
+collateDfNoTrack diffs linears (DfNoTrack ds) =
+    Map.toList
+    $ Map.intersectionWith (,) md
+    $ Map.intersectionWith glueDiff mDiff
+    $ zeroLinear <$> mLinear
+    where
+        mDiff = Map.fromList diffs
+        mLinear = Map.fromList linears
+        md = Map.fromList ds
+
 glueDiff :: DifficultyPoints -> Gap.Points -> Gap.Points
 glueDiff
     effort@(DifficultyPoints diff)
@@ -661,6 +750,9 @@ glueDiff
 
 glueLinear :: LinearPoints -> Gap.Points -> Gap.Points
 glueLinear r p = p {Gap.reach = r}
+
+zeroLinear :: LinearPoints -> Gap.Points
+zeroLinear r = zeroPoints {Gap.reach = r}
 
 glueLA :: LeadingPoints -> ArrivalPoints -> Gap.Points
 glueLA l a = zeroPoints {Gap.leading = l, Gap.arrival = a}
@@ -681,7 +773,21 @@ zeroVelocity =
         , gsVelocity = Nothing
         }
 
-tally
+mkVelocity
+    :: PilotDistance (Quantity Double [u| km |])
+    -> PilotTime (Quantity Double [u| h |])
+    -> PilotVelocity (Quantity Double [u| km / h |])
+mkVelocity (PilotDistance d) (PilotTime t) =
+    PilotVelocity $ d /: t
+
+startEnd :: RaceSections (Maybe Fix) -> StartEndTags
+startEnd RaceSections{race} =
+    case (race, reverse race) of
+        ([], _) -> StartEnd Nothing Nothing
+        (_, []) -> StartEnd Nothing Nothing
+        (x : _, y : _) -> StartEnd x y
+
+tallyDf
     :: [StartGate]
     ->
         ( Maybe StartEndTags
@@ -701,7 +807,7 @@ tally
             )
         )
     -> Breakdown
-tally
+tallyDf
     startGates
     ( g
     ,
@@ -747,16 +853,30 @@ tally
             (time :: Fix -> _)
             <$> (accessor =<< g)
 
-mkVelocity
-    :: PilotDistance (Quantity Double [u| km |])
-    -> PilotTime (Quantity Double [u| h |])
-    -> PilotVelocity (Quantity Double [u| km / h |])
-mkVelocity (PilotDistance d) (PilotTime t) =
-    PilotVelocity $ d /: t
+tallyDfNoTrack :: (Maybe AwardedDistance, Gap.Points) -> Breakdown
+tallyDfNoTrack
+    ( dA
+    , x@Gap.Points
+        { reach = LinearPoints r
+        , effort = DifficultyPoints dp
+        , leading = LeadingPoints l
+        , arrival = ArrivalPoints a
+        , time = TimePoints tp
+        }
+    ) =
+    Breakdown
+        { velocity = Nothing
+        , breakdown = x
+        , total = TaskPoints $ r + dp + l + a + tp
+        , place = TaskPlacing 0
+        , reachDistance = Just dP
+        , landedDistance = Just dP
+        }
+    where
+        dP =
+            maybe
+                (PilotDistance zero)
+                (\(AwardedDistance (TaskDistance d)) ->
+                    PilotDistance . convert $ d)
+            dA
 
-startEnd :: RaceSections (Maybe Fix) -> StartEndTags
-startEnd RaceSections{race} =
-    case (race, reverse race) of
-        ([], _) -> StartEnd Nothing Nothing
-        (_, []) -> StartEnd Nothing Nothing
-        (x : _, y : _) -> StartEnd x y

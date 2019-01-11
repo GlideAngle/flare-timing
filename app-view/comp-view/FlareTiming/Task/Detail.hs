@@ -15,7 +15,8 @@ import WireTypes.Route (TaskLength(..), taskLength, taskLegs, showTaskDistance)
 import WireTypes.Point (Allocation(..))
 import WireTypes.Validity (Validity(..))
 import FlareTiming.Comms
-    ( getTaskScore, getTaskValidityWorking, getTaskLengthSphericalEdge
+    ( getTaskScoreDf, getTaskScoreDfNoTrack
+    , getTaskValidityWorking, getTaskLengthSphericalEdge
     , getTaskPilotDnf, getTaskPilotNyp, getTaskPilotTrack, emptyRoute
     )
 import FlareTiming.Breadcrumb (crumbTask)
@@ -98,7 +99,8 @@ taskDetail ix@(IxTask _) cs ns task vy a = do
     let free' = free . head <$> ns
     let sgs = startGates <$> task
     pb <- getPostBuild
-    s <- holdDyn [] =<< getTaskScore ix pb
+    sDf <- holdDyn [] =<< getTaskScoreDf ix pb
+    sDfNt <- holdDyn [] =<< getTaskScoreDfNoTrack ix pb
     vw <- holdDyn Nothing =<< getTaskValidityWorking ix pb
     nyp <- holdDyn (Nyp []) =<< getTaskPilotNyp ix pb
     dnf <- holdDyn (Dnf []) =<< getTaskPilotDnf ix pb
@@ -130,7 +132,9 @@ taskDetail ix@(IxTask _) cs ns task vy a = do
 
                 TaskTabAbsent -> tableAbsent ix nyp dnf
                 TaskTabValidity -> viewValidity vy vw
-                TaskTabScore -> tableScore utc hgOrPg free' sgs ln dnf vy wg ps tp s)
+
+                TaskTabScore ->
+                    tableScore utc hgOrPg free' sgs ln dnf vy wg ps tp sDf sDfNt)
             <$> tab
 
     return $ switchDyn (leftmost <$> es)
