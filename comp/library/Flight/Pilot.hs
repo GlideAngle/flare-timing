@@ -12,7 +12,10 @@ module Flight.Pilot
     ) where
 
 import GHC.Generics (Generic)
-import Data.Aeson (ToJSON(..), FromJSON(..))
+import Data.Aeson
+    ( ToJSON(..), FromJSON(..), Options(..)
+    , defaultOptions, genericToJSON, genericParseJSON
+    )
 import Flight.Score (Pilot)
 import Flight.Track.Distance (AwardedDistance)
 
@@ -27,7 +30,12 @@ newtype DfNoTrack =
     DfNoTrack
         {unDfNoTrack :: [(Pilot, Maybe AwardedDistance)]}
     deriving (Eq, Ord, Show, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+
+instance ToJSON DfNoTrack where
+    toJSON = genericToJSON defaultOptions{unwrapUnaryRecords = True}
+
+instance FromJSON DfNoTrack where
+    parseJSON = genericParseJSON defaultOptions{unwrapUnaryRecords = True}
 
 -- | The group of pilots that landed out on course.
 newtype LandedOut = LandedOut {unLandedOut :: [Pilot]}
