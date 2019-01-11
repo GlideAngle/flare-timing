@@ -6,7 +6,7 @@ module Flight.Fsdb.Task (parseTasks, parseTaskPilotGroups) where
 import Data.Maybe (catMaybes)
 import Data.List (sort, sortOn, nub)
 import Data.Map.Strict (Map, fromList, findWithDefault)
-import Data.UnitsOfMeasure (u)
+import Data.UnitsOfMeasure (u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Text.XML.HXT.Arrow.Pickle
     ( XmlPickler(..), PU(..)
@@ -44,6 +44,7 @@ import Data.Time.Clock (UTCTime)
 import Data.Time.Format (parseTimeOrError, defaultTimeLocale)
 
 import Flight.Units ()
+import Flight.Distance (TaskDistance(..), QTaskDistance)
 import Flight.LatLng (LatLng(..), Lat(..), Lng(..), Alt(..), QAlt)
 import Flight.LatLng.Raw (RawLat(..), RawLng(..))
 import Flight.Zone (Radius(..), AltTime(..))
@@ -52,8 +53,10 @@ import Flight.Zone.MkZones
     , mkZones
     )
 import qualified Flight.Zone.Raw as Z (RawZone(..))
+import Flight.Track.Distance (AwardedDistance(..))
 import Flight.Comp
-    ( PilotId(..), PilotName(..), Pilot(..), PilotGroup(..), DfNoTrack(..)
+    ( PilotId(..), PilotName(..), Pilot(..)
+    , PilotGroup(..), DfNoTrack(..)
     , Task(..), TaskStop(..), StartGate(..), OpenClose(..)
     )
 import Flight.Fsdb.Pilot (getCompPilot)
@@ -81,6 +84,9 @@ instance XmlPickler RawLng where
     xpickle = xpNewtypeRational
 
 instance (u ~ Quantity Double [u| m |]) => XmlPickler (Alt u) where
+    xpickle = xpNewtypeQuantity
+
+instance (u ~ Quantity Double [u| km |]) => XmlPickler (TaskDistance u) where
     xpickle = xpNewtypeQuantity
 
 xpDecelerator :: PU Decelerator
@@ -216,16 +222,18 @@ xpStopped =
         (xpAttrFixed "task_state" "STOPPED")
         (xpAttr "stop_time" xpText)
 
+xpAwardedDistance :: PU (QTaskDistance Double [u| km |])
+xpAwardedDistance =
+    xpElem "FsFlightData"
+    $ xpFilterAttr (hasName "distance")
+    $ xpAttr "distance" xpickle
+
 isGoalLine :: FsGoal -> GoalLine
 isGoalLine (FsGoal "LINE") = GoalLine
 isGoalLine _ = GoalNotLine
 
 keyPilots :: Functor f => f Pilot -> f KeyPilot
 keyPilots ps = (\x@(Pilot (k, _)) -> KeyPilot (k, x)) <$> ps
-
--- empty = (getAttrl >>> xshow getChildren >>> isA null)  `guards` this
-
--- never = (getName >>> isA (const False)) `guards` this
 
 getTaskPilotGroup :: ArrowXml a => [Pilot] -> a XmlTree (PilotGroup)
 getTaskPilotGroup ps =
@@ -305,10 +313,23 @@ getTaskPilotGroup ps =
                         -- TODO: Grab awarded distance.
                         >>> hasAttrValue "tracklog_filename" (== ""))
                     >>> getAttrValue "id"
-                    >>> arr (\pid ->
-                            let p = unKeyPilot (keyMap kps) . PilotId $ pid in
-                            (p, Nothing))
+                    &&& getAwardedDistance
+                    >>> arr (\(pid, td) ->
+                            let p = unKeyPilot (keyMap kps) . PilotId $ pid
 
+                                d' =
+                                    (\(TaskDistance d) ->
+                                        AwardedDistance . TaskDistance . convert $ d)
+                                    <$> td
+
+                            in (p, d'))
+
+        getAwardedDistance =
+            (getChildren
+            >>> hasName "FsFlightData"
+            >>> arr (unpickleDoc xpAwardedDistance)
+            )
+            `orElse` constA Nothing
 
 getTask :: ArrowXml a => Discipline -> a XmlTree (Task k)
 getTask discipline =
