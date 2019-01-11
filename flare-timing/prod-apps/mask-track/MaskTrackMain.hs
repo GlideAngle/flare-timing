@@ -14,7 +14,7 @@ import Control.Arrow (second)
 import Control.Lens ((^?), element)
 import Control.Exception.Safe (MonadThrow, catchIO)
 import Control.Monad.Except (MonadIO)
-import Data.UnitsOfMeasure ((-:), u)
+import Data.UnitsOfMeasure ((-:), u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import System.FilePath (takeFileName)
 
@@ -86,6 +86,7 @@ import qualified Flight.Score as Gap (bestTime')
 import Flight.Score
     ( PilotsAtEss(..), PositionAtEss(..)
     , BestTime(..), PilotTime(..)
+    , MinimumDistance(..)
     , arrivalFraction, speedFraction
     )
 import Flight.Span.Math (Math(..))
@@ -180,7 +181,7 @@ writeMask
     -> IO ()
 writeMask
     CompSettings
-        { nominal = Cmp.Nominal{free}
+        { nominal = Cmp.Nominal{free = free@(MinimumDistance dMin)}
         , tasks
         , pilotGroups
         }
@@ -231,14 +232,16 @@ writeMask
                     [
                         fmap
                         (\(p, dA) ->
-                            ( p
-                            ,
-                                maybe
-                                    nullStats
-                                    (\(AwardedDistance dA') ->
-                                        nullStats{statLand = flip madeAwarded dA' <$> lTask})
-                                    dA
-                            ))
+                            let dm :: Quantity Double [u| m |] = convert dMin
+
+                                d = TaskDistance
+                                    $ maybe
+                                        dm
+                                        (\(AwardedDistance (TaskDistance a)) ->
+                                            if a < dm then dm else a)
+                                        dA
+
+                            in (p, nullStats{statLand = flip madeAwarded d <$> lTask}))
                         dfNts
                     | DfNoTrack dfNts <- dfNtss
                     | lTask <- (fmap. fmap) wholeTaskDistance lsTask'
