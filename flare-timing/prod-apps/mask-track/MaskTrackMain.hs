@@ -237,8 +237,7 @@ writeMask
                                 d = TaskDistance
                                     $ maybe
                                         dm
-                                        (\(AwardedDistance (TaskDistance a)) ->
-                                            if a < dm then dm else a)
+                                        (\(AwardedDistance (TaskDistance a)) -> max a dm)
                                         dA
 
                             in (p, nullStats{statLand = flip madeAwarded d <$> lTask}))
