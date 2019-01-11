@@ -15,7 +15,10 @@ module Flight.Track.Distance
     ) where
 
 import GHC.Generics (Generic)
-import Data.Aeson (ToJSON(..), FromJSON(..))
+import Data.Aeson
+    ( ToJSON(..), FromJSON(..), Options(..)
+    , defaultOptions, genericToJSON, genericParseJSON
+    )
 import Data.UnitsOfMeasure (u)
 
 import Flight.Distance (QTaskDistance)
@@ -30,7 +33,12 @@ type Land = QTaskDistance Double [u| m |]
 -- and nullify the tracklog.
 newtype AwardedDistance = AwardedDistance {unawarded :: Land}
     deriving (Eq, Ord, Show, Generic)
-    deriving anyclass (ToJSON, FromJSON)
+
+instance ToJSON AwardedDistance where
+    toJSON = genericToJSON defaultOptions{unwrapUnaryRecords = True}
+
+instance FromJSON AwardedDistance where
+    parseJSON = genericParseJSON defaultOptions{unwrapUnaryRecords = True}
 
 data TrackDistance a =
     TrackDistance
