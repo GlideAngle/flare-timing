@@ -68,7 +68,7 @@ When parsing the ``*.fsdb`` file there are various groups of pilots.
 
       <FsParticipant id="106" />
 
-* DNF: With an empty ``FsParticipant/FsFlightData`` this pilot **did not fly**.
+* DNF: With an empty ``FsFlightData`` this pilot **did not fly**.
   ::
 
       <FsParticipant id="80">
