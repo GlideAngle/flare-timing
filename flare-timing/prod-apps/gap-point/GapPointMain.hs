@@ -680,9 +680,9 @@ madeAwarded
     :: MinimumDistance (Quantity Double [u| km |])
     -> Maybe (QTaskDistance Double [u| m |])
     -> Maybe AwardedDistance
-    -> Maybe Double
+    -> Maybe Double -- ^ The distance made in km
 madeAwarded _ (Just (TaskDistance td)) (Just (AwardedDistance{awardedFrac = frac})) =
-    Just $ frac * unQuantity td
+    Just $ frac * unQuantity (convert td :: Quantity Double [u| km |])
 madeAwarded (MinimumDistance (MkQuantity d)) _ _ = Just d
 
 madeNigh :: TrackDistance Nigh -> Maybe Double
@@ -695,7 +695,7 @@ applyLinear
     :: MinimumDistance (Quantity Double [u| km |])
     -> Maybe (QTaskDistance Double [u| m |]) -- ^ The best distance
     -> Gap.Points
-    -> Maybe Double -- ^ The distance made
+    -> Maybe Double -- ^ The distance made in km
     -> LinearPoints
 applyLinear _ Nothing _ _ = LinearPoints 0
 applyLinear _ _ _ Nothing = LinearPoints 0
