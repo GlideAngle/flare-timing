@@ -26,7 +26,7 @@ defaults used by FS. This is done by looking at the source code of FS as
 there is no schema for the ``XML`` that could also be used to set
 default values.
 
-.. code::
+.. code-block:: xml
 
     <Fs>
       <FsCompetition id="7592" name="2012 Hang Gliding Pre-World Forbes" location="Forbes, Australia"
@@ -87,7 +87,7 @@ When parsing the ``*.fsdb`` file there are various groups of pilots.
       </FsParticipant>
 
 * DF: A pilot without tracklog awarded a specified distance.
-  ::
+  .. code-block:: xml
 
       <FsParticipant id="85">
         <FsFlightData distance="95.030" tracklog_filename="" />
