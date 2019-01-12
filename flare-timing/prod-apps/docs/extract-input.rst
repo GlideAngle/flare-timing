@@ -79,7 +79,7 @@ When parsing the ``*.fsdb`` file there are various groups of pilots.
         <FsFlightData tracklog_filename="Gerolf_Heinrichs.20120114-100859.6405.23.kml" />
       </FsParticipant>
 
-* DF: A pilot without tracklog **did fly** but they will be awarded minimum distance.
+* DF: A pilot without tracklog **did fly** and will be awarded minimum distance.
   ::
 
       <FsParticipant id="91">
