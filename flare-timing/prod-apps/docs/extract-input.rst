@@ -86,12 +86,19 @@ When parsing the ``*.fsdb`` file there are various groups of pilots.
         <FsFlightData tracklog_filename="" />
       </FsParticipant>
 
-* DF: A pilot without tracklog awarded a specified distance.
+* DF: A pilot without tracklog awarded a specified distance. Distance
+  calculations can vary depending on the Earth model and algorithm used. For
+  this reason we also need to grab the task distance too. When it comes time to
+  score this pilot we'll award them a distance relative to the task distance
+  and not the exact distances saved in the ``*.fsdb`` calculated by FS.
   ::
 
-      <FsParticipant id="85">
-        <FsFlightData distance="95.030" tracklog_filename="" />
-      </FsParticipant>
+      <FsParticipants>
+        <FsParticipant id="85">
+          <FsFlightData distance="95.030" tracklog_filename="" />
+        </FsParticipant>
+      </FsParticipants>
+      <FsTaskScoreParams task_distance="158.847" />
 
 
 .. [#]
