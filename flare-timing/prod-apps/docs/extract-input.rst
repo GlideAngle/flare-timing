@@ -51,10 +51,23 @@ default values.
             </FsTaskDefinition>
             <FsTaskState stop_time="2012-01-14T17:22:00+11:00" />
             <FsParticipants>
-              <!-- An empty element is an absent pilot who did not fly (DNF) the task. -->
+              <!-- An empty FsParticipant element is an absent pilot (ABS). -->
               <FsParticipant id="106" />
+              <!-- With an empty FsFlightData element this is a pilot that did not fly (DNF). -->
+              <FsParticipant id="80">
+                <FsFlightData />
+              </FsParticipant>
+              <!-- A pilot with a tracklog (DF). -->
               <FsParticipant id="23">
                 <FsFlightData tracklog_filename="Gerolf_Heinrichs.20120114-100859.6405.23.kml" />
+              </FsParticipant>
+              <!-- A pilot without tracklog to be awarded minimum distance (DF). -->
+              <FsParticipant id="91">
+                <FsFlightData tracklog_filename="" />
+              </FsParticipant>
+              <!-- A pilot without tracklog awarded a specified distance (DF). -->
+              <FsParticipant id="85">
+                <FsFlightData distance="95.030" tracklog_filename="" />
               </FsParticipant>
             </FsParticipants>
           </FsTask>
@@ -65,5 +78,4 @@ default values.
 .. [#]
    As ``flare-timing`` is a work in progress, some further inputs will
    be needed as different kinds of task are tested, such as those with
-   start gates, stopped tasks and those with penalties
-
+   stopped tasks and those with penalties
