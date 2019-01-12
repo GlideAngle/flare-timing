@@ -26,7 +26,7 @@ defaults used by FS. This is done by looking at the source code of FS as
 there is no schema for the ``XML`` that could also be used to set
 default values.
 
-.. code:: xml
+.. code::
 
     <Fs>
       <FsCompetition id="7592" name="2012 Hang Gliding Pre-World Forbes" location="Forbes, Australia"
@@ -51,29 +51,48 @@ default values.
             </FsTaskDefinition>
             <FsTaskState stop_time="2012-01-14T17:22:00+11:00" />
             <FsParticipants>
-              <!-- An empty FsParticipant element is an absent pilot (ABS). -->
-              <FsParticipant id="106" />
-              <!-- With an empty FsFlightData element this is a pilot that did not fly (DNF). -->
-              <FsParticipant id="80">
-                <FsFlightData />
-              </FsParticipant>
-              <!-- A pilot with a tracklog (DF). -->
-              <FsParticipant id="23">
-                <FsFlightData tracklog_filename="Gerolf_Heinrichs.20120114-100859.6405.23.kml" />
-              </FsParticipant>
-              <!-- A pilot without tracklog to be awarded minimum distance (DF). -->
-              <FsParticipant id="91">
-                <FsFlightData tracklog_filename="" />
-              </FsParticipant>
-              <!-- A pilot without tracklog awarded a specified distance (DF). -->
-              <FsParticipant id="85">
-                <FsFlightData distance="95.030" tracklog_filename="" />
-              </FsParticipant>
+            <!-- See a description of FsParticipant below. -->
             </FsParticipants>
           </FsTask>
         </FsTasks>
       </FsCompetition>
     </Fs>
+
+When parsing the ``*.fsdb`` file there are various groups of pilots.
+
+* ABS: An empty ``FsParticipant`` element is an absent pilot.
+  ::
+
+      <FsParticipant id="106" />
+
+* DNF: With an empty ``FsParticipant/FsFlightData`` this pilot did not fly.
+  ::
+
+      <FsParticipant id="80">
+        <FsFlightData />
+      </FsParticipant>
+
+* DF: A pilot with a tracklog.
+  ::
+
+      <FsParticipant id="23">
+        <FsFlightData tracklog_filename="Gerolf_Heinrichs.20120114-100859.6405.23.kml" />
+      </FsParticipant>
+
+* DF: A pilot without tracklog to be awarded minimum distance.
+  ::
+
+      <FsParticipant id="91">
+        <FsFlightData tracklog_filename="" />
+      </FsParticipant>
+
+* DF: A pilot without tracklog awarded a specified distance.
+  ::
+
+      <FsParticipant id="85">
+        <FsFlightData distance="95.030" tracklog_filename="" />
+      </FsParticipant>
+
 
 .. [#]
    As ``flare-timing`` is a work in progress, some further inputs will
