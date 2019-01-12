@@ -10,15 +10,18 @@ The distance standing of a pilot's track in comparison to other pilots landing o
 module Flight.Track.Distance
     ( TrackDistance(..)
     , AwardedDistance(..)
+    , Clamp(..)
     , Nigh
     , Land
+    , awardByFrac
     ) where
 
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
-import Data.UnitsOfMeasure (u)
+import Data.UnitsOfMeasure (u, convert, unQuantity)
+import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import Flight.Distance (QTaskDistance)
+import Flight.Distance (TaskDistance(..), QTaskDistance)
 import Flight.Route (TrackLine(..))
 
 type Nigh = TrackLine
@@ -48,3 +51,16 @@ data TrackDistance a =
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (FromJSON, ToJSON)
+
+-- | Whether to clamp the awarded fraction to be <= 1.
+newtype Clamp = Clamp Bool deriving Eq
+
+awardByFrac
+    :: Clamp
+    -> QTaskDistance Double [u| m |]
+    -> AwardedDistance
+    -> Quantity Double [u| km |]
+awardByFrac c (TaskDistance td') AwardedDistance{awardedFrac = frac} =
+    MkQuantity $ frac' * unQuantity (convert td' :: Quantity Double [u| km |])
+    where
+        frac' = if c == Clamp True then min 1 frac else frac

@@ -14,7 +14,7 @@ import Control.Arrow (second)
 import Control.Lens ((^?), element)
 import Control.Exception.Safe (MonadThrow, catchIO)
 import Control.Monad.Except (MonadIO)
-import Data.UnitsOfMeasure ((-:), u, convert, unQuantity)
+import Data.UnitsOfMeasure ((-:), u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import System.FilePath (takeFileName)
 
@@ -59,7 +59,9 @@ import Flight.Comp.Distance (compDistance, compNigh)
 import Flight.Track.Tag (Tagging)
 import qualified Flight.Track.Time as Time (TimeRow(..), TickRow(..))
 import Flight.Track.Arrival (TrackArrival(..))
-import Flight.Track.Distance (TrackDistance(..), Land, AwardedDistance(..))
+import Flight.Track.Distance
+    (TrackDistance(..), AwardedDistance(..), Clamp(..), Land)
+import qualified Flight.Track.Distance as Track (awardByFrac)
 import Flight.Track.Lead (compLeading)
 import Flight.Track.Mask (Masking(..))
 import Flight.Track.Speed (TrackSpeed(..))
@@ -350,18 +352,12 @@ writeMask
                     , land = dsLand
                     }
 
--- | Whether to clamp the awarded fraction to be <= 1.
-newtype Clamp = Clamp Bool deriving Eq
-
 awardByFrac
     :: Clamp
     -> QTaskDistance Double [u| m |]
     -> AwardedDistance
     -> Quantity Double [u| m |]
-awardByFrac c (TaskDistance td) AwardedDistance{awardedFrac = frac} =
-    MkQuantity $ frac' * unQuantity td
-    where
-        frac' = if c == Clamp True then min 1 frac else frac
+awardByFrac c td a = convert $ Track.awardByFrac c td a
 
 madeAwarded :: QTaskDistance Double [u| m |] -> Land -> TrackDistance Land
 madeAwarded (TaskDistance td) d@(TaskDistance d') =

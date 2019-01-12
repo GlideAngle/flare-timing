@@ -58,7 +58,7 @@ import Flight.Comp
 import Flight.Track.Cross (Fix(..))
 import Flight.Track.Tag (Tagging(..), PilotTrackTag(..), TrackTag(..))
 import Flight.Track.Distance
-    (TrackDistance(..), AwardedDistance(..), Nigh, Land)
+    (TrackDistance(..), AwardedDistance(..), Clamp(..), Nigh, Land, awardByFrac)
 import Flight.Track.Lead (TrackLead(..))
 import Flight.Track.Arrival (TrackArrival(..))
 import qualified Flight.Track.Speed as Speed (TrackSpeed(..), startGateTaken)
@@ -656,19 +656,6 @@ madeDifficultyDf md mapIxToFrac td =
     where
         pd = PilotDistance . MkQuantity . fromMaybe 0.0 $ madeLand td
         ix = toIxChunk md pd
-
--- | Whether to clamp the awarded fraction to be <= 1.
-newtype Clamp = Clamp Bool deriving Eq
-
-awardByFrac
-    :: Clamp
-    -> QTaskDistance Double [u| m |]
-    -> AwardedDistance
-    -> Quantity Double [u| km |]
-awardByFrac c (TaskDistance td') AwardedDistance{awardedFrac = frac} =
-    MkQuantity $ frac' * unQuantity (convert td' :: Quantity _ [u| km |])
-    where
-        frac' = if c == Clamp True then min 1 frac else frac
 
 madeDifficultyDfNoTrack
     :: MinimumDistance (Quantity Double [u| km |])
