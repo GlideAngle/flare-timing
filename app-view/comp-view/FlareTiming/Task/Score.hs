@@ -288,6 +288,7 @@ tableScore utcOffset hgOrPg free sgs ln dnf' dfNt vy wg pt tp sDfs = do
             foot "§ Points award for effort are also called distance difficulty points."
             foot "‖ \"Time\" is the time across the speed section from time zero of the start gate taken."
             foot "¶ \"Pace\" is the time across the speed section from the time of crossing the start for the last time."
+            foot "☞ Pilots without a tracklog but given a distance by the scorer."
             dyn_ . ffor hgOrPg $ (\case
                 HangGliding -> return ()
                 Paragliding -> do
@@ -325,8 +326,12 @@ pointRow utcOffset free dfNt pt tp x = do
     let reach = reachDistance <$> b
     let points = breakdown . snd <$> x
     let v = velocity . snd <$> x
-    let classDfNt = ffor2 pilot dfNt (\p (DfNoTrack ps) ->
-                        if p `elem` ps then "pilot-dfnt" else "")
+
+    let classPilot = ffor2 pilot dfNt (\p (DfNoTrack ps) ->
+                        let n = showPilotName p in
+                        if p `elem` ps
+                           then ("pilot-dfnt", n <> " ☞ ")
+                           else ("", n))
 
     let awardFree = ffor2 free reach (\(MinimumDistance f) pd ->
             let c = ("td-best-distance", "td-landed-distance") in
@@ -342,9 +347,9 @@ pointRow utcOffset free dfNt pt tp x = do
                        in (c', T.pack $ printf "%.1f" f))
                 pd)
 
-    elDynClass "tr" classDfNt $ do
+    elDynClass "tr" (fst <$> classPilot) $ do
         elClass "td" "td-placing" . dynText $ showRank . place <$> b
-        elClass "td" "td-pilot" . dynText $ showPilotName <$> pilot
+        elClass "td" "td-pilot" . dynText $ snd <$> classPilot
         elClass "td" "td-start-start" . dynText $ (maybe "" . showSs) <$> tz <*> v
         elClass "td" "td-start-gate" . dynText $ (maybe "" . showGs) <$> tz <*> v
         elClass "td" "td-end" . dynText $ (maybe "" . showEs) <$> tz <*> v
