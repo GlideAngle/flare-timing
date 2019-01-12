@@ -672,7 +672,7 @@ madeDifficultyDfNoTrack md@(MinimumDistance dMin) td mapIxToFrac dAward =
                 (_, Nothing) -> dMin
                 (Nothing, _) -> dMin
                 (Just (TaskDistance td'), Just AwardedDistance{awardedFrac = frac}) ->
-                    MkQuantity $ frac * unQuantity td'
+                    MkQuantity $ frac * unQuantity (convert td' :: Quantity _ [u| km |])
 
         ix = toIxChunk md (PilotDistance pd)
 
