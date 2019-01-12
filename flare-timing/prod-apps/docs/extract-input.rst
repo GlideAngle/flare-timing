@@ -72,21 +72,21 @@ When parsing the ``*.fsdb`` file there are various groups of pilots.
         <FsFlightData />
       </FsParticipant>
 
-* DF: A pilot with a tracklog **did fly**.
+* DF: A pilot with a tracklog who **did fly**.
   ::
 
       <FsParticipant id="23">
         <FsFlightData tracklog_filename="Gerolf_Heinrichs.20120114-100859.6405.23.kml" />
       </FsParticipant>
 
-* DF: A pilot without tracklog **did fly** and will be awarded minimum distance.
+* DF: A pilot without tracklog who **did fly** and will be awarded minimum distance.
   ::
 
       <FsParticipant id="91">
         <FsFlightData tracklog_filename="" />
       </FsParticipant>
 
-* DF: A pilot without tracklog **did fly** and awarded a specified distance by the scorer.
+* DF: A pilot without tracklog who **did fly** and was awarded a distance by the scorer.
   Distance calculations can vary depending on the Earth model and algorithm used. For
   this reason we also need to grab the task distance too. When it comes time to
   score this pilot we'll award them a distance relative to the task distance
