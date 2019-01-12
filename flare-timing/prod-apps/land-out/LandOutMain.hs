@@ -79,7 +79,7 @@ go CmdBatchOptions{..} compFile = do
 
     case (compSettings, masking) of
         (Nothing, _) -> putStrLn "Couldn't read the comp settings."
-        (_, Nothing) -> putStrLn "Couldn't read teh maskings."
+        (_, Nothing) -> putStrLn "Couldn't read the maskings."
         (Just cs, Just mk) -> writeLanding landFile $ difficulty cs mk
 
 difficulty :: CompSettings k -> Masking -> Cmp.Landing
