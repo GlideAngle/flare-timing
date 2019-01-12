@@ -920,5 +920,5 @@ tallyDfNoTrack
     where
         dP = PilotDistance <$> do
                 TaskDistance td <- td'
-                AwardedDistance{awardedFrac = frac} <- dA
-                return . MkQuantity $ frac * unQuantity td
+                AwardedDistance{awardedFrac = frac'} <- dA
+                return . MkQuantity $ frac' * unQuantity (convert td :: Quantity _ [u| km |])
