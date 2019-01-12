@@ -58,6 +58,7 @@ default values.
       </FsCompetition>
     </Fs>
 
+.. _pilot-groups:
 When parsing the ``*.fsdb`` file there are various groups of pilots.
 
 * ABS: An ``FsParticipant`` without child elements is an **absent** pilot.
