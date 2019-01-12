@@ -3,7 +3,6 @@
 
 module Flight.Fsdb.Task (parseTasks, parseTaskPilotGroups) where
 
-import Debug.Trace
 import Data.Maybe (catMaybes)
 import Data.List (sort, sortOn, nub)
 import Data.Map.Strict (Map, fromList, findWithDefault)
@@ -249,6 +248,7 @@ asAward t' (p, m') =
     (p, awarded)
     where
         awarded = do
+            -- TODO: Use unpickling for FsTaskScoreParams/@task_distance.
             -- WARNING: Having some trouble with unpickling task distance.
             -- Going with simple read for now.
             let td :: Double = read t'
