@@ -60,34 +60,34 @@ default values.
 
 When parsing the ``*.fsdb`` file there are various groups of pilots.
 
-* ABS: An empty ``FsParticipant`` element is an absent pilot.
+* ABS: An empty ``FsParticipant`` element is an **absent** pilot.
   ::
 
       <FsParticipant id="106" />
 
-* DNF: With an empty ``FsParticipant/FsFlightData`` this pilot did not fly.
+* DNF: With an empty ``FsParticipant/FsFlightData`` this pilot **did not fly**.
   ::
 
       <FsParticipant id="80">
         <FsFlightData />
       </FsParticipant>
 
-* DF: A pilot with a tracklog.
+* DF: A pilot with a tracklog **did fly**.
   ::
 
       <FsParticipant id="23">
         <FsFlightData tracklog_filename="Gerolf_Heinrichs.20120114-100859.6405.23.kml" />
       </FsParticipant>
 
-* DF: A pilot without tracklog to be awarded minimum distance.
+* DF: A pilot without tracklog **did fly** but they will be awarded minimum distance.
   ::
 
       <FsParticipant id="91">
         <FsFlightData tracklog_filename="" />
       </FsParticipant>
 
-* DF: A pilot without tracklog awarded a specified distance. Distance
-  calculations can vary depending on the Earth model and algorithm used. For
+* DF: A pilot without tracklog **did fly** and awarded a specified distance by the scorer.
+  Distance calculations can vary depending on the Earth model and algorithm used. For
   this reason we also need to grab the task distance too. When it comes time to
   score this pilot we'll award them a distance relative to the task distance
   and not the exact distances saved in the ``*.fsdb`` calculated by FS.
