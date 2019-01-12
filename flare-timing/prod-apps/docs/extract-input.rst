@@ -60,7 +60,7 @@ default values.
 
 When parsing the ``*.fsdb`` file there are various groups of pilots.
 
-* ABS: An empty ``FsParticipant`` element is an **absent** pilot.
+* ABS: An ``FsParticipant`` without child elements is an **absent** pilot.
   ::
 
       <FsParticipant id="106" />
