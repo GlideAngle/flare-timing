@@ -1,5 +1,5 @@
 Extracting Inputs
------------------
+=================
 
 In the ``*.fsdb`` FS keeps both inputs and outputs. We’re only
 interested in a subset of the input data, just enough to do the
@@ -58,7 +58,9 @@ default values.
       </FsCompetition>
     </Fs>
 
-.. _pilot-groups:
+Pilot Groups
+------------
+
 When parsing the ``*.fsdb`` file there are various groups of pilots.
 
 * ABS: An ``FsParticipant`` without child elements is an **absent** pilot.
