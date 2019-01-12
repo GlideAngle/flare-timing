@@ -33,7 +33,10 @@ import Control.Monad.IO.Class (MonadIO)
 import WireTypes.Comp (Comp(..), Nominal(..), Task(..))
 import WireTypes.Route
 import WireTypes.Pilot
-    (PilotTaskStatus(..), Pilot(..), PilotId(..), Dnf(..), Nyp(..), getPilotId)
+    ( PilotTaskStatus(..), Pilot(..), PilotId(..)
+    , Dnf(..), DfNoTrack(..), Nyp(..)
+    , getPilotId
+    )
 import WireTypes.Point
 import WireTypes.Validity
 import WireTypes.ValidityWorking
@@ -156,10 +159,8 @@ getTaskLengthProjectedEdgePlanar
     :: GetIxTask' t m (Maybe PlanarTrackLine)
 getTaskLengthProjectedEdgePlanar = getTaskLength_ "projected-edge-planar"
 
-getTaskPilotDf, getTaskPilotAbs, getTaskPilotDfNoTrack
-    :: GetIxTask' t m [Pilot]
+getTaskPilotDf, getTaskPilotAbs :: GetIxTask' t m [Pilot]
 getTaskPilotDf = getIxTask "gap-point" "pilot-df"
-getTaskPilotDfNoTrack = getIxTask "comp-input" "pilot-dfnt"
 getTaskPilotAbs = getIxTask "comp-input" "pilot-abs"
 
 getTaskPilotDnf :: GetIxTask t m [Pilot] Dnf
@@ -167,9 +168,14 @@ getTaskPilotDnf ix ev = do
     e <- getIxTask "comp-input" "pilot-dnf" ix ev
     return $ Dnf <$> e
 
+getTaskPilotDfNoTrack :: GetIxTask t m [Pilot] DfNoTrack
+getTaskPilotDfNoTrack ix ev = do
+    e <- getIxTask "comp-input" "pilot-dfnt" ix ev
+    return $ DfNoTrack <$> e
+
 getTaskPilotNyp :: GetIxTask t m [Pilot] Nyp
 getTaskPilotNyp ix ev = do
-    e <- getIxTask "cross-zone" "pilot-nyp" ix ev
+    e <- getIxTask "gap-point" "pilot-nyp" ix ev
     return $ Nyp <$> e
 
 getTaskPilotTrack

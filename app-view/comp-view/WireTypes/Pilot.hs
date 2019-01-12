@@ -4,6 +4,7 @@ module WireTypes.Pilot
     , PilotId(..)
     , PilotName(..)
     , Dnf(..)
+    , DfNoTrack(..)
     , Nyp(..)
     , getPilotId
     , getPilotName
@@ -15,6 +16,9 @@ import Data.Aeson (FromJSON(..))
 
 -- | The group of pilots that did not fly a task.
 newtype Dnf = Dnf {unDnf :: [Pilot]}
+
+-- | The group of pilots that did fly but do not have a track log.
+newtype DfNoTrack = DfNoTrack {unDfNoTrack :: [Pilot]}
 
 -- | The group of pilots not yet processed.
 newtype Nyp = Nyp {unNyp :: [Pilot]}

@@ -175,6 +175,9 @@ table.pg .th-arrival-points
     @extend .has-text-right;
     @extend .has-text-weight-bold;
 
+tr.pilot-dfnt .td-pilot
+    @extend .has-text-info;
+
 .td-pilot
     width: 10vw;
 
@@ -224,7 +227,7 @@ table:not(.sg) .td-time
 .td-landed-distance
     @extend .has-text-right;
 
-tr.award-free .td-best-distance, tr.award-free .td-landed-distance
+tr.pilot-dfnt .td-best-distance.award-free, tr.pilot-dfnt .td-landed-distance.award-free
     text-decoration: line-through;
     @extend .has-text-danger;
 

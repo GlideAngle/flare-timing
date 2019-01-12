@@ -41,7 +41,7 @@ import WireTypes.Validity
     , showTaskValidity
     )
 import WireTypes.Comp (UtcOffset(..), Discipline(..), MinimumDistance(..))
-import WireTypes.Pilot (Pilot(..), Dnf(..))
+import WireTypes.Pilot (Pilot(..), Dnf(..), DfNoTrack(..))
 import FlareTiming.Pilot (showPilotName)
 import FlareTiming.Time (showHmsForHours, showT, timeZone)
 
@@ -63,13 +63,14 @@ tableScore
     -> Dynamic t [Pt.StartGate]
     -> Dynamic t (Maybe TaskLength)
     -> Dynamic t Dnf
+    -> Dynamic t DfNoTrack
     -> Dynamic t (Maybe Vy.Validity)
     -> Dynamic t (Maybe Wg.Weights)
     -> Dynamic t (Maybe Pt.Points)
     -> Dynamic t (Maybe TaskPoints)
     -> Dynamic t [(Pilot, Breakdown)]
     -> m ()
-tableScore utcOffset hgOrPg free sgs ln dnf' vy wg pt tp sDfs = do
+tableScore utcOffset hgOrPg free sgs ln dnf' dfNt vy wg pt tp sDfs = do
     let dnf = unDnf <$> dnf'
     lenDnf :: Int <- sample . current $ length <$> dnf
     lenDfs :: Int <- sample . current $ length <$> sDfs
@@ -273,7 +274,7 @@ tableScore utcOffset hgOrPg free sgs ln dnf' vy wg pt tp sDfs = do
                     <$> tp
 
         _ <- el "tbody" $ do
-            _ <- simpleList sDfs (pointRow utcOffset free pt tp)
+            _ <- simpleList sDfs (pointRow utcOffset free dfNt pt tp)
             dnfRows dnfPlacing dnf'
             return ()
 
@@ -312,27 +313,36 @@ pointRow
     :: MonadWidget t m
     => Dynamic t UtcOffset
     -> Dynamic t MinimumDistance
+    -> Dynamic t DfNoTrack
     -> Dynamic t (Maybe Pt.Points)
     -> Dynamic t (Maybe TaskPoints)
     -> Dynamic t (Pilot, Breakdown)
     -> m ()
-pointRow utcOffset free pt tp x = do
+pointRow utcOffset free dfNt pt tp x = do
     let tz = timeZone <$> utcOffset
     let pilot = fst <$> x
     let b = snd <$> x
     let reach = reachDistance <$> b
     let points = breakdown . snd <$> x
     let v = velocity . snd <$> x
+    let classDfNt = ffor2 pilot dfNt (\p (DfNoTrack ps) ->
+                        if p `elem` ps then "pilot-dfnt" else "")
+
     let awardFree = ffor2 free reach (\(MinimumDistance f) pd ->
+            let c = ("td-best-distance", "td-landed-distance") in
             maybe
-                ("", "")
+                (c, "")
                 (\(PilotDistance r) ->
-                    if r < f
-                       then ("award-free", T.pack $ printf "%.1f" f)
-                       else ("", ""))
+                    if r >= f then (c, "") else
+                       let c' =
+                               ( fst c <> " award-free"
+                               , snd c <> " award-free"
+                               )
+
+                       in (c', T.pack $ printf "%.1f" f))
                 pd)
 
-    elDynClass "tr" (fst <$> awardFree) $ do
+    elDynClass "tr" classDfNt $ do
         elClass "td" "td-placing" . dynText $ showRank . place <$> b
         elClass "td" "td-pilot" . dynText $ showPilotName <$> pilot
         elClass "td" "td-start-start" . dynText $ (maybe "" . showSs) <$> tz <*> v
@@ -343,9 +353,9 @@ pointRow utcOffset free pt tp x = do
         elClass "td" "td-speed" . dynText $ maybe "" showVelocityVelocity <$> v
 
         elClass "td" "td-min-distance" . dynText $ snd <$> awardFree
-        elClass "td" "td-best-distance" . dynText
+        elDynClass "td" (fst . fst <$> awardFree) . dynText
             $ maybe "" showPilotDistance <$> reach
-        elClass "td" "td-landed-distance" . dynText
+        elDynClass "td" (snd . fst <$> awardFree) . dynText
             $ maybe "" showPilotDistance . landedDistance <$> b
 
         elClass "td" "td-reach-points" . dynText $ showMax Pt.reach showLinearPoints pt points

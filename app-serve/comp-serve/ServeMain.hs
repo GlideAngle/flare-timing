@@ -27,7 +27,6 @@ import qualified Data.ByteString.Lazy.Char8 as LBS (pack)
 
 import System.FilePath (takeFileName)
 
-import qualified Flight.Track.Cross as Cg (Crossing(..))
 import Flight.Track.Point
     (Pointing(..), Velocity(..), Allocation(..), Breakdown(..))
 import qualified Flight.Score as Wg (Weights(..))
@@ -38,7 +37,7 @@ import Flight.Score
     , LeadingWeight(..), ArrivalWeight(..), TimeWeight(..)
     , DistanceValidity(..), LaunchValidity(..), TaskValidity(..), TimeValidity(..)
     )
-import Flight.Scribe (readComp, readRoute, readCrossing, readPointing)
+import Flight.Scribe (readComp, readRoute, readPointing)
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.ServeOptions (CmdServeOptions(..), mkOptions)
@@ -60,11 +59,9 @@ import Flight.Comp
     , Nyp(..)
     , CompInputFile(..)
     , TaskLengthFile(..)
-    , CrossZoneFile(..)
     , GapPointFile(..)
     , findCompInput
     , compToTaskLength
-    , compToCross
     , compToPoint
     , ensureExt
     )
@@ -83,7 +80,6 @@ data Config k
         { compFile :: CompInputFile
         , compSettings :: CompSettings k
         , routing :: Maybe [Maybe TaskTrack]
-        , crossing :: Maybe Cg.Crossing
         , pointing :: Maybe Pointing
         }
 
@@ -175,10 +171,6 @@ type GapPointApi k =
         :> Get '[JSON] [Maybe Allocation]
     :<|> "gap-point" :> Capture "task" Int :> "score"
         :> Get '[JSON] [(Pilot, Breakdown)]
-    :<|> "gap-point" :> Capture "task" Int :> "score-df"
-        :> Get '[JSON] [(Pilot, Breakdown)]
-    :<|> "gap-point" :> Capture "task" Int :> "score-dfnt"
-        :> Get '[JSON] [(Pilot, Breakdown)]
     :<|> "gap-point" :> Capture "task" Int :> "validity-working"
         :> Get '[JSON] (Maybe Vy.ValidityWorking)
 
@@ -188,7 +180,7 @@ type GapPointApi k =
         :> Get '[JSON] [Pilot]
     :<|> "comp-input" :> Capture "task" Int :> "pilot-dfnt"
         :> Get '[JSON] [Pilot]
-    :<|> "cross-zone" :> Capture "task" Int :> "pilot-nyp"
+    :<|> "gap-point" :> Capture "task" Int :> "pilot-nyp"
         :> Get '[JSON] [Pilot]
     :<|> "gap-point" :> Capture "task" Int :> "pilot-df"
         :> Get '[JSON] [Pilot]
@@ -226,21 +218,14 @@ drive o = do
 go :: CmdServeOptions -> CompInputFile -> IO ()
 go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
     let lenFile@(TaskLengthFile lenPath) = compToTaskLength compFile
-    let crossFile@(CrossZoneFile crossPath) = compToCross compFile
     let pointFile@(GapPointFile pointPath) = compToPoint compFile
-    putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
+    putStrLn $ "Reading competition & pilots DNF from '" ++ takeFileName compPath ++ "'"
     putStrLn $ "Reading task length from '" ++ takeFileName lenPath ++ "'"
-    putStrLn $ "Reading pilots that did not fly from '" ++ takeFileName crossPath ++ "'"
     putStrLn $ "Reading scores from '" ++ takeFileName pointPath ++ "'"
 
     compSettings <-
         catchIO
             (Just <$> readComp compFile)
-            (const $ return Nothing)
-
-    crossing <-
-        catchIO
-            (Just <$> readCrossing crossFile)
             (const $ return Nothing)
 
     routes <-
@@ -253,16 +238,14 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
             (Just <$> readPointing pointFile)
             (const $ return Nothing)
 
-    case (compSettings, routes, crossing, pointing) of
-        (Nothing, _, _, _) -> putStrLn "Couldn't read the comp settings"
-        (Just cs, Nothing, _, _) ->
-            f =<< mkCompInputApp (Config compFile cs Nothing Nothing Nothing)
-        (Just cs, Just rt, Nothing, _) ->
-            f =<< mkTaskLengthApp (Config compFile cs (Just rt) Nothing Nothing)
-        (Just cs, Just rt, _, Nothing) ->
-            f =<< mkTaskLengthApp (Config compFile cs (Just rt) Nothing Nothing)
-        (Just cs, Just rt, Just cz, Just gp) -> do
-            f =<< mkGapPointApp (Config compFile cs (Just rt) (Just cz) (Just gp))
+    case (compSettings, routes, pointing) of
+        (Nothing, _, _) -> putStrLn "Couldn't read the comp settings"
+        (Just cs, Nothing, _) ->
+            f =<< mkCompInputApp (Config compFile cs Nothing Nothing)
+        (Just cs, Just rt, Nothing) ->
+            f =<< mkTaskLengthApp (Config compFile cs (Just rt) Nothing)
+        (Just cs, Just rt, Just gp) -> do
+            f =<< mkGapPointApp (Config compFile cs (Just rt) (Just gp))
     where
         -- NOTE: Add gzip with wai gzip middleware.
         -- SEE: https://github.com/haskell-servant/servant/issues/786
@@ -329,8 +312,6 @@ serverGapPointApi cfg =
         :<|> getValidity <$> p
         :<|> getAllocation <$> p
         :<|> getTaskScore
-        :<|> getTaskScoreDf
-        :<|> getTaskScoreDfNoTrack
         :<|> getTaskValidityWorking
         :<|> getTaskPilotAbs
         :<|> getTaskPilotDnf
@@ -419,34 +400,9 @@ getScores = ((fmap . fmap . fmap) roundVelocity') . score
 getScoresDf :: Pointing -> [[(Pilot, Breakdown)]]
 getScoresDf = ((fmap . fmap . fmap) roundVelocity') . scoreDf
 
-getScoresDfNoTrack :: Pointing -> [[(Pilot, Breakdown)]]
-getScoresDfNoTrack = ((fmap . fmap . fmap) roundVelocity') . scoreDfNoTrack
-
 getTaskScore :: Int -> AppT k IO [(Pilot, Breakdown)]
 getTaskScore ii = do
     xs' <- fmap getScores <$> asks pointing
-    case xs' of
-        Just xs ->
-            case drop (ii - 1) xs of
-                x : _ -> return x
-                _ -> throwError $ errTaskBounds ii
-
-        _ -> throwError $ errTaskStep "gap-point" ii
-
-getTaskScoreDf :: Int -> AppT k IO [(Pilot, Breakdown)]
-getTaskScoreDf ii = do
-    xs' <- fmap getScoresDf <$> asks pointing
-    case xs' of
-        Just xs ->
-            case drop (ii - 1) xs of
-                x : _ -> return x
-                _ -> throwError $ errTaskBounds ii
-
-        _ -> throwError $ errTaskStep "gap-point" ii
-
-getTaskScoreDfNoTrack :: Int -> AppT k IO [(Pilot, Breakdown)]
-getTaskScoreDfNoTrack ii = do
-    xs' <- fmap getScoresDfNoTrack <$> asks pointing
     case xs' of
         Just xs ->
             case drop (ii - 1) xs of

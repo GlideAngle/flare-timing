@@ -6,7 +6,7 @@ import Reflex.Dom
 import qualified Data.Text as T (Text, intercalate, pack)
 
 import WireTypes.ZoneKind (Shape(..))
-import WireTypes.Pilot (Nyp(..), Dnf(..), nullPilot)
+import WireTypes.Pilot (Nyp(..), Dnf(..), DfNoTrack(..), nullPilot)
 import WireTypes.Comp
     ( Nominal(..), Comp(..), Task(..)
     , getRaceRawZones, getStartGates, getOpenShape, getSpeedSection
@@ -16,7 +16,8 @@ import WireTypes.Point (Allocation(..))
 import WireTypes.Validity (Validity(..))
 import FlareTiming.Comms
     ( getTaskScore, getTaskValidityWorking, getTaskLengthSphericalEdge
-    , getTaskPilotDnf, getTaskPilotNyp, getTaskPilotTrack, emptyRoute
+    , getTaskPilotDnf, getTaskPilotNyp, getTaskPilotDfNoTrack
+    , getTaskPilotTrack, emptyRoute
     )
 import FlareTiming.Breadcrumb (crumbTask)
 import FlareTiming.Events (IxTask(..))
@@ -102,6 +103,7 @@ taskDetail ix@(IxTask _) cs ns task vy a = do
     vw <- holdDyn Nothing =<< getTaskValidityWorking ix pb
     nyp <- holdDyn (Nyp []) =<< getTaskPilotNyp ix pb
     dnf <- holdDyn (Dnf []) =<< getTaskPilotDnf ix pb
+    dfNt <- holdDyn (DfNoTrack []) =<< getTaskPilotDfNoTrack ix pb
     routes <- holdDyn emptyRoute =<< getTaskLengthSphericalEdge ix pb
     let ln = taskLength <$> routes
     let legs = taskLegs <$> routes
@@ -128,10 +130,10 @@ taskDetail ix@(IxTask _) cs ns task vy a = do
 
                     return ()
 
-                TaskTabAbsent -> tableAbsent ix nyp dnf
+                TaskTabAbsent -> tableAbsent ix nyp dnf dfNt
                 TaskTabValidity -> viewValidity vy vw
 
-                TaskTabScore -> tableScore utc hgOrPg free' sgs ln dnf vy wg ps tp sDf)
+                TaskTabScore -> tableScore utc hgOrPg free' sgs ln dnf dfNt vy wg ps tp sDf)
             <$> tab
 
     return $ switchDyn (leftmost <$> es)

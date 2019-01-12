@@ -3,9 +3,9 @@ module FlareTiming.Task.Absent (tableAbsent) where
 import Prelude hiding (abs)
 import Reflex.Dom
 
-import WireTypes.Pilot (Nyp(..), Dnf(..))
+import WireTypes.Pilot (Nyp(..), Dnf(..), DfNoTrack(..))
 import FlareTiming.Events (IxTask(..))
-import FlareTiming.Comms (getTaskPilotAbs, getTaskPilotDfNoTrack)
+import FlareTiming.Comms (getTaskPilotAbs)
 import FlareTiming.Pilot (rowPilot)
 
 tableAbsent
@@ -13,13 +13,14 @@ tableAbsent
     => IxTask
     -> Dynamic t Nyp
     -> Dynamic t Dnf
+    -> Dynamic t DfNoTrack
     -> m ()
-tableAbsent ix nyp' dnf' = do
+tableAbsent ix nyp' dnf' dfNt' = do
     pb <- getPostBuild
     let nyp = unNyp <$> nyp'
     let dnf = unDnf <$> dnf'
+    let dfNt = unDfNoTrack <$> dfNt'
     abs <- holdDyn [] =<< getTaskPilotAbs ix pb
-    dfNoTrack <- holdDyn [] =<< getTaskPilotDfNoTrack ix pb
 
     elClass "div" "tile is-ancestor" $ do
         elClass "div" "tile is-parent" $ do
@@ -66,7 +67,7 @@ tableAbsent ix nyp' dnf' = do
                                     el "th" $ text "Id"
                                     el "th" $ text "Name"
 
-                                simpleList dfNoTrack rowPilot
+                                simpleList dfNt rowPilot
 
                     el "p" . text
                         $ "These pilots get awarded minimum distance."
