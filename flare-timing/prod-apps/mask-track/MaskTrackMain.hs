@@ -14,7 +14,7 @@ import Control.Arrow (second)
 import Control.Lens ((^?), element)
 import Control.Exception.Safe (MonadThrow, catchIO)
 import Control.Monad.Except (MonadIO)
-import Data.UnitsOfMeasure ((-:), u, convert)
+import Data.UnitsOfMeasure ((-:), u, convert, unQuantity)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import System.FilePath (takeFileName)
 
@@ -237,11 +237,9 @@ writeMask
                                 d = TaskDistance
                                     <$> maybe
                                         (Just dm)
-                                        (\AwardedDistance{awardedFrac = frac} -> do
-                                            TaskDistance (MkQuantity qt) <- lTask
-
-                                            let a :: Quantity Double [u| m |]
-                                                a = MkQuantity $ frac * qt
+                                        (\dAward -> do
+                                            td <- lTask
+                                            let a = awardByFrac (Clamp True) td dAward
 
                                             return $ max a dm)
                                         dA
@@ -351,6 +349,19 @@ writeMask
                     , nigh = dsNigh
                     , land = dsLand
                     }
+
+-- | Whether to clamp the awarded fraction to be <= 1.
+newtype Clamp = Clamp Bool deriving Eq
+
+awardByFrac
+    :: Clamp
+    -> QTaskDistance Double [u| m |]
+    -> AwardedDistance
+    -> Quantity Double [u| m |]
+awardByFrac c (TaskDistance td) AwardedDistance{awardedFrac = frac} =
+    MkQuantity $ frac' * unQuantity td
+    where
+        frac' = if c == Clamp True then min 1 frac else frac
 
 madeAwarded :: QTaskDistance Double [u| m |] -> Land -> TrackDistance Land
 madeAwarded (TaskDistance td) d@(TaskDistance d') =

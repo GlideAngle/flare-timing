@@ -657,12 +657,18 @@ madeDifficultyDf md mapIxToFrac td =
         pd = PilotDistance . MkQuantity . fromMaybe 0.0 $ madeLand td
         ix = toIxChunk md pd
 
+-- | Whether to clamp the awarded fraction to be <= 1.
+newtype Clamp = Clamp Bool deriving Eq
+
 awardByFrac
-    :: QTaskDistance Double [u| m |]
+    :: Clamp
+    -> QTaskDistance Double [u| m |]
     -> AwardedDistance
     -> Quantity Double [u| km |]
-awardByFrac (TaskDistance td') AwardedDistance{awardedFrac = frac} =
-    MkQuantity $ frac * unQuantity (convert td' :: Quantity _ [u| km |])
+awardByFrac c (TaskDistance td') AwardedDistance{awardedFrac = frac} =
+    MkQuantity $ frac' * unQuantity (convert td' :: Quantity _ [u| km |])
+    where
+        frac' = if c == Clamp True then min 1 frac else frac
 
 madeDifficultyDfNoTrack
     :: MinimumDistance (Quantity Double [u| km |])
@@ -678,7 +684,7 @@ madeDifficultyDfNoTrack md@(MinimumDistance dMin) td mapIxToFrac dAward =
             case (td, dAward) of
                 (_, Nothing) -> dMin
                 (Nothing, _) -> dMin
-                (Just td', Just dAward') -> awardByFrac td' dAward'
+                (Just td', Just dAward') -> awardByFrac (Clamp True) td' dAward'
 
         ix = toIxChunk md (PilotDistance pd)
 
@@ -687,7 +693,7 @@ madeAwarded
     -> Maybe (QTaskDistance Double [u| m |])
     -> Maybe AwardedDistance
     -> Maybe Double -- ^ The distance made in km
-madeAwarded _ (Just td) (Just dAward) = Just . unQuantity $ awardByFrac td dAward
+madeAwarded _ (Just td) (Just dAward) = Just . unQuantity $ awardByFrac (Clamp True) td dAward
 madeAwarded (MinimumDistance (MkQuantity d)) _ _ = Just d
 
 madeNigh :: TrackDistance Nigh -> Maybe Double
@@ -926,4 +932,4 @@ tallyDfNoTrack
         dP = PilotDistance <$> do
                 td <- td'
                 dAward <- dAward'
-                return $ awardByFrac td dAward
+                return $ awardByFrac (Clamp False) td dAward
