@@ -15,10 +15,7 @@ module Flight.Track.Distance
     ) where
 
 import GHC.Generics (Generic)
-import Data.Aeson
-    ( ToJSON(..), FromJSON(..), Options(..)
-    , defaultOptions, genericToJSON, genericParseJSON
-    )
+import Data.Aeson (ToJSON(..), FromJSON(..))
 import Data.UnitsOfMeasure (u)
 
 import Flight.Distance (QTaskDistance)
@@ -31,14 +28,16 @@ type Land = QTaskDistance Double [u| m |]
 -- the pilot that does not submit their tracklog but it can also arise where
 -- a scorer has needed to apply a penalty and so has had to freeze the distance
 -- and nullify the tracklog.
-newtype AwardedDistance = AwardedDistance {unawarded :: Land}
-    deriving (Eq, Ord, Show, Generic)
-
-instance ToJSON AwardedDistance where
-    toJSON = genericToJSON defaultOptions{unwrapUnaryRecords = True}
-
-instance FromJSON AwardedDistance where
-    parseJSON = genericParseJSON defaultOptions{unwrapUnaryRecords = True}
+data AwardedDistance =
+    AwardedDistance
+        { awardedMade :: Land
+        -- ^ The distance awarded by the scorer to the pilot as-is.
+        , awardedTask :: Land
+        -- ^ The task distance as read.
+        , awardedFrac :: Double
+        -- ^ The fraction of the task distance awarded to the pilot.
+        }
+    deriving (Eq, Ord, Show, Generic, FromJSON, ToJSON)
 
 data TrackDistance a =
     TrackDistance

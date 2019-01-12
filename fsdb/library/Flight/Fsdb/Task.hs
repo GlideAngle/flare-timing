@@ -3,10 +3,11 @@
 
 module Flight.Fsdb.Task (parseTasks, parseTaskPilotGroups) where
 
+import Debug.Trace
 import Data.Maybe (catMaybes)
 import Data.List (sort, sortOn, nub)
 import Data.Map.Strict (Map, fromList, findWithDefault)
-import Data.UnitsOfMeasure (u, convert)
+import Data.UnitsOfMeasure ((/:), u, convert, unQuantity)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Text.XML.HXT.Arrow.Pickle
     ( XmlPickler(..), PU(..)
@@ -235,20 +236,49 @@ isGoalLine _ = GoalNotLine
 keyPilots :: Functor f => f Pilot -> f KeyPilot
 keyPilots ps = (\x@(Pilot (k, _)) -> KeyPilot (k, x)) <$> ps
 
+taskKmToMetres
+    :: QTaskDistance Double [u| km |]
+    -> QTaskDistance Double [u| m |]
+taskKmToMetres (TaskDistance d) = TaskDistance . convert $ d
+
+asAward
+    :: String
+    -> (Pilot, Maybe (QTaskDistance Double [u| km |]))
+    -> (Pilot, Maybe AwardedDistance)
+asAward t' (p, m') =
+    (p, awarded)
+    where
+        awarded = do
+            -- WARNING: Having some trouble with unpickling task distance.
+            -- Going with simple read for now.
+            let td :: Double = read t'
+            let t@(TaskDistance qt) = taskKmToMetres . TaskDistance . MkQuantity $ td
+            m@(TaskDistance qm) <- taskKmToMetres <$> m'
+
+            return $ AwardedDistance
+                { awardedMade = m
+                , awardedTask = t
+                , awardedFrac = unQuantity $ qm /: qt
+                }
+
 getTaskPilotGroup :: ArrowXml a => [Pilot] -> a XmlTree (PilotGroup)
 getTaskPilotGroup ps =
     getChildren
     >>> deep (hasName "FsTask")
-    >>> getAbsent
+    >>> getTaskDistance
+    &&& getAbsent
     &&& getDidNotFly
     &&& getDidFlyNoTracklog
     >>> arr mkGroup
     where
-        mkGroup (absentees, (dnf, noTrack)) =
+        mkGroup (t, (absentees, (dnf, nt))) =
             PilotGroup
                 { absent = sort absentees
                 , dnf = sort dnf
-                , didFlyNoTracklog = DfNoTrack $ sortOn fst noTrack
+                , didFlyNoTracklog =
+                    DfNoTrack
+                    $ sortOn fst
+                    $ asAward t <$> nt
                 }
 
         kps = keyPilots ps
@@ -310,19 +340,10 @@ getTaskPilotGroup ps =
                         `containing`
                         ( getChildren
                         >>> hasName "FsFlightData"
-                        -- TODO: Grab awarded distance.
                         >>> hasAttrValue "tracklog_filename" (== ""))
                     >>> getAttrValue "id"
                     &&& getAwardedDistance
-                    >>> arr (\(pid, td) ->
-                            let p = unKeyPilot (keyMap kps) . PilotId $ pid
-
-                                d' =
-                                    (\(TaskDistance d) ->
-                                        AwardedDistance . TaskDistance . convert $ d)
-                                    <$> td
-
-                            in (p, d'))
+                    >>> arr (\(pid, m) -> (unKeyPilot (keyMap kps) . PilotId $ pid, m))
 
         getAwardedDistance =
             (getChildren
@@ -330,6 +351,12 @@ getTaskPilotGroup ps =
             >>> arr (unpickleDoc xpAwardedDistance)
             )
             `orElse` constA Nothing
+
+        getTaskDistance =
+            (getChildren
+            >>> hasName "FsTaskScoreParams"
+            >>> getAttrValue "task_distance"
+            )
 
 getTask :: ArrowXml a => Discipline -> a XmlTree (Task k)
 getTask discipline =

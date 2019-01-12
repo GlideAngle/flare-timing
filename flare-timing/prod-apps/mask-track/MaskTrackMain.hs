@@ -235,12 +235,18 @@ writeMask
                             let dm :: Quantity Double [u| m |] = convert dMin
 
                                 d = TaskDistance
-                                    $ maybe
-                                        dm
-                                        (\(AwardedDistance (TaskDistance a)) -> max a dm)
+                                    <$> maybe
+                                        (Just dm)
+                                        (\AwardedDistance{awardedFrac = frac} -> do
+                                            TaskDistance (MkQuantity qt) <- lTask
+
+                                            let a :: Quantity Double [u| m |]
+                                                a = MkQuantity $ frac * qt
+
+                                            return $ max a dm)
                                         dA
 
-                            in (p, nullStats{statLand = flip madeAwarded d <$> lTask}))
+                            in (p, nullStats{statLand = madeAwarded <$> lTask <*> d}))
                         dfNts
                     | DfNoTrack dfNts <- dfNtss
                     | lTask <- (fmap. fmap) wholeTaskDistance lsTask'

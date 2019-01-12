@@ -207,7 +207,9 @@ in    defs
                     , "safe-exceptions"
                     , "flight-zone"
                     , "flight-gap"
+                    , "flight-lookup"
                     , "flight-mask"
+                    , "flight-route"
                     , "siggy-chardust"
                     ]
               , ghc-options =
