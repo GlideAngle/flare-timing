@@ -84,7 +84,7 @@ go CmdBatchOptions{..} compFile = do
 
 difficulty :: CompSettings k -> Masking -> Cmp.Landing
 difficulty CompSettings{nominal} Masking{bestDistance, land} =
-    Cmp.Landing 
+    Cmp.Landing
         { minDistance = md
         , bestDistance = bests
         , landout = length <$> land
@@ -132,7 +132,7 @@ difficulty CompSettings{nominal} Masking{bestDistance, land} =
                 jas' <- jas
                 rs' <- rs
                 mergeChunks ls ils' jls' as' jas' rs' <$> fs
-            | ls <- Gap.landouts md <$> pss <*> dss
+            | ls <- [Gap.landouts md ps ds | ps <- pss| ds <- dss]
             | ils <- (fmap . fmap) startChunk es
             | jls <- (fmap . fmap) endChunk es
             | as <- fmap downward <$> es
