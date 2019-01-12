@@ -657,6 +657,13 @@ madeDifficultyDf md mapIxToFrac td =
         pd = PilotDistance . MkQuantity . fromMaybe 0.0 $ madeLand td
         ix = toIxChunk md pd
 
+awardByFrac
+    :: QTaskDistance Double [u| m |]
+    -> AwardedDistance
+    -> Quantity Double [u| km |]
+awardByFrac (TaskDistance td') AwardedDistance{awardedFrac = frac} =
+    MkQuantity $ frac * unQuantity (convert td' :: Quantity _ [u| km |])
+
 madeDifficultyDfNoTrack
     :: MinimumDistance (Quantity Double [u| km |])
     -> Maybe (QTaskDistance Double [u| m |])
@@ -671,8 +678,7 @@ madeDifficultyDfNoTrack md@(MinimumDistance dMin) td mapIxToFrac dAward =
             case (td, dAward) of
                 (_, Nothing) -> dMin
                 (Nothing, _) -> dMin
-                (Just (TaskDistance td'), Just AwardedDistance{awardedFrac = frac}) ->
-                    MkQuantity $ frac * unQuantity (convert td' :: Quantity _ [u| km |])
+                (Just td', Just dAward') -> awardByFrac td' dAward'
 
         ix = toIxChunk md (PilotDistance pd)
 
@@ -681,8 +687,7 @@ madeAwarded
     -> Maybe (QTaskDistance Double [u| m |])
     -> Maybe AwardedDistance
     -> Maybe Double -- ^ The distance made in km
-madeAwarded _ (Just (TaskDistance td)) (Just (AwardedDistance{awardedFrac = frac})) =
-    Just $ frac * unQuantity (convert td :: Quantity Double [u| km |])
+madeAwarded _ (Just td) (Just dAward) = Just . unQuantity $ awardByFrac td dAward
 madeAwarded (MinimumDistance (MkQuantity d)) _ _ = Just d
 
 madeNigh :: TrackDistance Nigh -> Maybe Double
@@ -900,7 +905,7 @@ tallyDfNoTrack
     -> Breakdown
 tallyDfNoTrack
     td'
-    ( dA
+    ( dAward'
     , x@Gap.Points
         { reach = LinearPoints r
         , effort = DifficultyPoints dp
@@ -919,6 +924,6 @@ tallyDfNoTrack
         }
     where
         dP = PilotDistance <$> do
-                TaskDistance td <- td'
-                AwardedDistance{awardedFrac = frac'} <- dA
-                return . MkQuantity $ frac' * unQuantity (convert td :: Quantity _ [u| km |])
+                td <- td'
+                dAward <- dAward'
+                return $ awardByFrac td dAward
