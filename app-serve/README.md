@@ -7,7 +7,7 @@ To install it run `stack install app-serve` from the root of this repository.
 Note the `local-bin-path: __shake-build` setting in stack's `stack.yaml`
 configuration. The installed app is named `comp-serve`.
 
-To serve a competition that has already been scored. Go to the root folder of
+To serve a competition that has already been scored, go to the root folder of
 the competition passing in the common base name as the `--file` option. These
 are the set of the files with the inputs, workings and outputs of scoring:
 
