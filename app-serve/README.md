@@ -5,7 +5,7 @@ a [servant](https://haskell-servant.readthedocs.io) web app.
 
 To install it run `stack install app-serve` from the root of this repository.
 Note the `local-bin-path: __shake-build` setting in stack's `stack.yaml`
-configuration. The install app is named `comp-serve`.
+configuration. The installed app is named `comp-serve`.
 
 To serve a competition that has already been scored. Go to the root folder of
 the competition passing in the common base name as the `--file` option. These
