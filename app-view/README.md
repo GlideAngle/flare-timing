@@ -1,10 +1,17 @@
 # Flare Timing's View App
 
-This is a web app written in [ghcjs](https://github.com/ghcjs/ghcjs) and
+This internally named `app-view` project is a web app written in
+[ghcjs](https://github.com/ghcjs/ghcjs) and
 [reflex-frp](https://reflex-frp.org/) to show the task, the map and the scores
 of a competition.
 
-To run it locally, starting from the root directory of this repository:
+Fire up the [`app-serve`](flare-timing/app-serve) internal project first. We'll
+need that to supply data for the viewer. The `FlareTiming.Comms` module fetches
+this data.
+
+To host it locally with webpack's [dev
+server](https://webpack.js.org/configuration/dev-server/), follow the following
+command sequence starting from the root directory of this repository:
 
 ```
 > reflex-platform/try-reflex
