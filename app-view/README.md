@@ -1,3 +1,4 @@
-# Flare Timing
+# Flare Timing's View App
 
-A collection of apps and libraries for scoring hang gliding and paragliding competitions.
+This is a web app written in [ghcjs](https://github.com/ghcjs/ghcjs) and
+[reflex-frp](https://reflex-frp.org/).
