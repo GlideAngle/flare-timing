@@ -116,7 +116,7 @@ getTasks :: Get t m [Task]
 getTasks = get "/comp-input/tasks"
 
 getTaskLengths :: Get t m [TaskDistance]
-getTaskLengths = get "/task-length"
+getTaskLengths = get "/task-length/task-lengths"
 
 getComps :: Get t m Comp
 getComps = get "/comp-input/comps"

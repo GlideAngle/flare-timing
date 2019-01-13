@@ -132,7 +132,7 @@ type TaskLengthApi k =
     :<|> "task-length" :> Capture "task" Int :> "projected-edge-planar"
         :> Get '[JSON] PlanarTrackLine
 
-    :<|> "task-length"
+    :<|> "task-length" :> "task-lengths"
         :> Get '[JSON] [QTaskDistance Double [u| m |]]
 
 type GapPointApi k =
@@ -160,7 +160,7 @@ type GapPointApi k =
     :<|> "task-length" :> Capture "task" Int :> "projected-edge-planar"
         :> Get '[JSON] PlanarTrackLine
 
-    :<|> "task-length"
+    :<|> "task-length" :> "task-lengths"
         :> Get '[JSON] [QTaskDistance Double [u| m |]]
 
     :<|> "gap-point" :> "pilots-status"
