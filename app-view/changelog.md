@@ -16,7 +16,7 @@ of this changelog.
 * Show when there are no start gates.
 * Show as much as can be shown about tasks that not been flown or scored.
 * Show various speed section routes on the map, each calculated differently.
-* Add a **Geo* tab showing task distances calculated by various Earth models
+* Add a **Geo** tab showing task distances calculated by various Earth models
   and algorithms.
 
 # Pilot Tracks and Zone Give
