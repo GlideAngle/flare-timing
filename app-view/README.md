@@ -3,7 +3,8 @@
 This internally named `app-view` project is a web app written in
 [ghcjs](https://github.com/ghcjs/ghcjs) and
 [reflex-frp](https://reflex-frp.org/) to show the task, the map and the scores
-of a competition.
+of a competition as can be seen for [Forbes Flatlands
+2018](http://2018-forbes.flaretiming.com).
 
 Fire up the [`app-serve`](flare-timing/app-serve) internal project first. We'll
 need that to supply data for the viewer. The `FlareTiming.Comms` module fetches
