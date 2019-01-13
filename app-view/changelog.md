@@ -2,6 +2,23 @@ The [latest
 version](https://github.com/BlockScope/flare-timing/blob/master/app-view/changelog.md)
 of this changelog.
 
+# Trackless Pilots
+## app-view-0.7
+
+* Parsing `*.fsdb` files for pilots that do not have an associated tracklog
+  file that did fly. These pilots will be awarded either the competition
+  minimum distance or a another distance decided by the scorer.
+* Show when minimum distance was awarded over a lesser flown distance.
+* Show which pilots were scored without tracklogs.
+* Show that arrival points and difficulty points are not awarded in
+  paragliding.
+* Pick the most adjacent start gate that opened before the pilot started.
+* Show when there are no start gates.
+* Show as much as can be shown about tasks that not been flown or scored.
+* Show various speed section routes on the map, each calculated differently.
+* Add a **Geo* tab showing task distances calculated by various Earth models
+  and algorithms.
+
 # Pilot Tracks and Zone Give
 ## app-view-0.6
 
