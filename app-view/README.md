@@ -13,8 +13,6 @@ To run it locally, starting from the root directory of this repository:
 Copied executables to .../__shake-build:
 - build-flare-timing
 
-Warning: Installation path .../__shake-build
-         not found on the PATH environment variable.
 ghcjs
             -DGHCJS_BROWSER
             -XConstraintKinds ... -XUndecidableInstances
