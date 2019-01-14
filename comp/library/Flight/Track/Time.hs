@@ -226,7 +226,7 @@ leadingArea _ Nothing _ _ xs = xs
 
 leadingArea
     toLeg
-    (Just (TaskDistance (MkQuantity d)))
+    (Just (TaskDistance td))
     close@(Just (LeadClose (EssTime tt))) arrival rows =
     [ r{area = step}
     | r <- rows
@@ -234,6 +234,8 @@ leadingArea
     ]
     ++ extraRow
     where
+        MkQuantity d = convert td :: Quantity Double [u| km |]
+
         lastRow = listToMaybe . take 1 . reverse $ rows
 
         LcSeq{seq, extra} =
