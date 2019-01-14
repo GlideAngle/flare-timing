@@ -2,6 +2,12 @@ The [latest
 version](https://github.com/BlockScope/flare-timing/blob/master/app-view/changelog.md)
 of this changelog.
 
+# Leading Points
+## app-view-0.8
+
+* Pilots landing out get their leading points scaled in the same way as pilots
+  making goal.
+
 # Trackless Pilots
 ## app-view-0.7
 
