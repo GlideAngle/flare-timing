@@ -47,8 +47,7 @@ showSecs t =
         i :: Int
         i = truncate d
 
--- | Time in seconds for the close of the task. 
--- section.
+-- | Time in seconds for the close of the task, the task deadline.
 newtype TaskDeadline = TaskDeadline Rational deriving (Eq, Ord, Show)
 
 -- | The distance in km to the end of the speed section.
@@ -160,7 +159,7 @@ areaSteps
     | otherwise =
         LcSeq
             { seq = LeadingAreaStep . (* areaScaling len) <$> steps
-            , extra = LeadingAreaStep . g <$> extra 
+            , extra = LeadingAreaStep . (* areaScaling len) . g <$> extra
             }
         where
             withinDeadline :: LcTrack
