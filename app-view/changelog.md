@@ -7,6 +7,8 @@ of this changelog.
 
 * Pilots landing out get their leading points scaled in the same way as pilots
   making goal.
+* Fix a bug counting some pilots twice resulting in too large a denominator in
+  the goal ratio fraction.
 
 # Trackless Pilots
 ## app-view-0.7
