@@ -22,6 +22,7 @@ import Data.Time.Clock (UTCTime(..), diffUTCTime, secondsToDiffTime)
 import Data.Time.Calendar
 import Data.Bifunctor (bimap)
 import Data.Maybe (catMaybes, listToMaybe)
+import Data.List (nubBy)
 import Data.Char (toLower)
 import Control.Monad.Except (ExceptT(..), runExceptT, lift)
 import System.Directory (doesFileExist, doesDirectoryExist)
@@ -168,9 +169,13 @@ makeAbsolute
 nullMarkedFixes :: K.MarkedFixes
 nullMarkedFixes = K.MarkedFixes (UTCTime (ModifiedJulianDay 0) 0) []
 
+igcEqOrEqOnTime :: IgcRecord -> IgcRecord -> Bool
+igcEqOrEqOnTime (B t0 _ _ _ _) (B t1 _ _ _ _) = t0 == t1
+igcEqOrEqOnTime a b = a == b
+
 igcMarkedFixes :: [Flight.Igc.IgcRecord] -> K.MarkedFixes
 igcMarkedFixes xs =
-    maybe nullMarkedFixes (`mark` ys) date
+    maybe nullMarkedFixes (`mark` zs) date
     where
         date =
             listToMaybe
@@ -179,6 +184,13 @@ igcMarkedFixes xs =
             $ xs
 
         ys = filter isFix xs
+
+        -- NOTE: Some loggers will be using sub-second logging. The columns in
+        -- the B record holding the s or ss, tenths or hundredths of a second,
+        -- are specified in the I record. Whether parsing IGC files at the
+        -- second or sub-second granularity, we need to avoid having fixes with
+        -- identical time stamps hence the nubBy here.
+        zs = nubBy igcEqOrEqOnTime ys
 
 mark :: IgcRecord -> [IgcRecord] -> K.MarkedFixes
 mark Ignore _ = nullMarkedFixes
