@@ -218,11 +218,19 @@ points'
         , scoreDfNoTrack = scoreDfNoTrack
         }
     where
-        -- NOTE: t = track, nt = no track, dnf = did not fly, df = did fly
+        -- NOTE: p = pilot, t = track, nt = no track, dnf = did not fly, df = did fly
         -- s suffix is a list, ss suffix is a list of lists.
-        tss = toInteger . length <$> pilots
+        pss = toInteger . length <$> pilots
         ntss = toInteger . length . unDfNoTrack . didFlyNoTracklog <$> pilotGroups
         dnfss = toInteger . length . dnf <$> pilotGroups
+
+        tss =
+            [ ps - (dnfs + nts)
+            | ps <- pss
+            | dnfs <- dnfss
+            | nts <- ntss
+            ]
+
         dfss =
             [ ts + nts
             | ts <- tss
