@@ -557,10 +557,11 @@ jumpGap (x : 1 : y : xs)
 jumpGap (x : xs) = ([x], xs)
 jumpGap [] = ([], [])
  
-secondsRange :: Kml.FixMark a
-             => [a]
-             -> FlyingSection Int
-             -> FlyingSection Seconds
+secondsRange
+    :: Kml.FixMark a
+    => [a]
+    -> FlyingSection Int
+    -> FlyingSection Seconds
 secondsRange xs section = do
     (i, j) <- section
     x <- listToMaybe $ take 1 $ drop i xs
@@ -681,10 +682,11 @@ madeZones
             where
                 p = prove fixes mark0 m n [False, True]
 
-selectZoneCross :: (Crossing -> Maybe ZoneCross)
-                -> ([Crossing] -> Maybe Crossing)
-                -> [Crossing]
-                -> Maybe ZoneCross
+selectZoneCross
+    :: (Crossing -> Maybe ZoneCross)
+    -> ([Crossing] -> Maybe Crossing)
+    -> [Crossing]
+    -> Maybe ZoneCross
 selectZoneCross prover selectCrossing xs = do
     x <- selectCrossing xs
     prover x

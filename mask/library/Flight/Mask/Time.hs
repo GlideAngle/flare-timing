@@ -58,18 +58,19 @@ flownDuration span speedSection fs zs os gs MarkedFixes{mark0, fixes}
     | otherwise =
         durationViaZones span fixToPoint mark speedSection fs zs os gs mark0 fixes
 
-durationViaZones :: (Real a, Fractional a)
-                 => SpanLatLng a
-                 -> (Fix -> TrackZone a)
-                 -> (Fix -> Seconds)
-                 -> SpeedSection
-                 -> [CrossingPredicate a Crossing]
-                 -> [TaskZone a]
-                 -> [OpenClose]
-                 -> [StartGate]
-                 -> UTCTime
-                 -> [Fix]
-                 -> Maybe (PilotTime (Quantity Double [u| h |]))
+durationViaZones
+    :: (Real a, Fractional a)
+    => SpanLatLng a
+    -> (Fix -> TrackZone a)
+    -> (Fix -> Seconds)
+    -> SpeedSection
+    -> [CrossingPredicate a Crossing]
+    -> [TaskZone a]
+    -> [OpenClose]
+    -> [StartGate]
+    -> UTCTime
+    -> [Fix]
+    -> Maybe (PilotTime (Quantity Double [u| h |]))
 durationViaZones span mkZone atTime speedSection _ zs os gs t0 xs =
     if null xs then Nothing else
     case (osSpeed, zsSpeed, reverse zsSpeed) of

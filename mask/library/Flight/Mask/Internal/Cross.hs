@@ -37,29 +37,32 @@ type CrossingPredicate a b
     -- ^ The flight track represented as a series of point zones.
     -> [b]
 
-insideZone :: (Real a, Fractional a)
-           => SpanLatLng a
-           -> TaskZone a
-           -> [TrackZone a]
-           -> Maybe Int
+insideZone
+    :: (Real a, Fractional a)
+    => SpanLatLng a
+    -> TaskZone a
+    -> [TrackZone a]
+    -> Maybe Int
 insideZone span (TaskZone z) =
     findIndex (\(TrackZone x) -> not $ separatedZones span [x, z])
 
-outsideZone :: (Real a, Fractional a)
-            => SpanLatLng a
-            -> TaskZone a
-            -> [TrackZone a]
-            -> Maybe Int
+outsideZone
+    :: (Real a, Fractional a)
+    => SpanLatLng a
+    -> TaskZone a
+    -> [TrackZone a]
+    -> Maybe Int
 outsideZone span (TaskZone z) =
     findIndex (\(TrackZone x) -> separatedZones span [x, z])
 
-zoneSingle :: (span -> zone -> [x] -> Maybe Int)
-           -> (span -> zone -> [x] -> Maybe Int)
-           -> (Int -> Int -> crossing)
-           -> span
-           -> zone
-           -> [x]
-           -> [crossing]
+zoneSingle
+    :: (span -> zone -> [x] -> Maybe Int)
+    -> (span -> zone -> [x] -> Maybe Int)
+    -> (Int -> Int -> crossing)
+    -> span
+    -> zone
+    -> [x]
+    -> [crossing]
 zoneSingle f g ctor span z xs =
     case g span z xs of
         Nothing -> []
@@ -72,32 +75,36 @@ zoneSingle f g ctor span z xs =
 
 -- | Finds the first pair of points, one outside the zone and the next inside.
 -- Searches the fixes in order.
-entersSingle :: (Real a, Fractional a)
-             => SpanLatLng a
-             -> CrossingPredicate a ZoneEntry
+entersSingle
+    :: (Real a, Fractional a)
+    => SpanLatLng a
+    -> CrossingPredicate a ZoneEntry
 entersSingle =
     zoneSingle outsideZone insideZone ZoneEntry
 
 -- | Finds the first pair of points, one inside the zone and the next outside.
 -- Searches the fixes in order.
-exitsSingle :: (Real a, Fractional a)
-            => SpanLatLng a
-            -> CrossingPredicate a ZoneExit
+exitsSingle
+    :: (Real a, Fractional a)
+    => SpanLatLng a
+    -> CrossingPredicate a ZoneExit
 exitsSingle  =
     zoneSingle insideZone outsideZone ZoneExit
 
-reindex :: Int -- ^ The length of the track, the number of fixes
-        -> Either ZoneEntry ZoneExit
-        -> Either ZoneEntry ZoneExit
+reindex
+    :: Int -- ^ The length of the track, the number of fixes
+    -> Either ZoneEntry ZoneExit
+    -> Either ZoneEntry ZoneExit
 reindex n (Right (ZoneExit i j)) =
     Right $ ZoneExit (i + n) (j + n)
 
 reindex n (Left (ZoneEntry i j)) =
     Left $ ZoneEntry (i + n) (j + n)
 
-crossSeq :: (Real a, Fractional a)
-         => SpanLatLng a
-         -> CrossingPredicate a Crossing
+crossSeq
+    :: (Real a, Fractional a)
+    => SpanLatLng a
+    -> CrossingPredicate a Crossing
 crossSeq span z xs =
     unOrdCrossing <$> (nub . sort $ enters ++ exits)
     where
@@ -105,9 +112,10 @@ crossSeq span z xs =
         exits = OrdCrossing <$> exitsSeq span z xs
 
 -- | Find the sequence of @take _ [entry, exit, .., entry, exit]@ going forward.
-entersSeq :: (Real a, Fractional a)
-          => SpanLatLng a
-          -> CrossingPredicate a Crossing
+entersSeq
+    :: (Real a, Fractional a)
+    => SpanLatLng a
+    -> CrossingPredicate a Crossing
 entersSeq span z xs =
     case entersSingle span z xs of
         [] ->
@@ -117,9 +125,10 @@ entersSeq span z xs =
             Left hit : (reindex j <$> exitsSeq span z (drop j xs))
 
 -- | Find the sequence of @take _ [exit, entry.., exit, entry]@ going forward.
-exitsSeq :: (Real a, Fractional a)
-         => SpanLatLng a
-         -> CrossingPredicate a Crossing
+exitsSeq
+    :: (Real a, Fractional a)
+    => SpanLatLng a
+    -> CrossingPredicate a Crossing
 exitsSeq span z xs =
     case exitsSingle span z xs of
         [] ->
@@ -206,9 +215,10 @@ selectFirst = listToMaybe . take 1
 selectLast :: [a] -> Maybe a
 selectLast xs = listToMaybe . take 1 $ reverse xs
 
-tickedZones :: [CrossingPredicate a b]
-            -> [TaskZone a] -- ^ The control zones of the task.
-            -> [TrackZone a] -- ^ The flown track.
-            -> [[b]]
+tickedZones
+    :: [CrossingPredicate a b]
+    -> [TaskZone a] -- ^ The control zones of the task.
+    -> [TrackZone a] -- ^ The flown track.
+    -> [[b]]
 tickedZones fs zones xs =
     zipWith (\f z -> f z xs) fs zones
