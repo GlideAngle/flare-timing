@@ -9,6 +9,8 @@ of this changelog.
   making goal.
 * Fix a bug counting some pilots twice resulting in too large a denominator in
   the goal ratio fraction.
+* Parse `FsScoreFormula/@double_leading_weight` as a scaling for leading
+  weight, ignoring it if it matches the default for the discipline.
 
 # Trackless Pilots
 ## app-view-0.7
