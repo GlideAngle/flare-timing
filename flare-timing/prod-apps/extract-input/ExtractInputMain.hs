@@ -50,6 +50,7 @@ import ExtractInputOptions (CmdOptions(..), mkOptions, mkEarthModel)
 
 import qualified Flight.Earth.Sphere.PointToPoint.Double as Dbl (distanceHaversine)
 import qualified Flight.Earth.Sphere.Separated as S (separatedZones)
+import Flight.Track.Lead (lwScalingDefault)
 
 spanD :: SpanLatLng Double
 spanD = Dbl.distanceHaversine
@@ -188,9 +189,8 @@ fsdbSettings
     -> FsdbXml
     -> ExceptT String IO (CompSettings k)
 fsdbSettings dm zg fsdbXml = do
-    c <- fsdbComp fsdbXml
+    c@Comp{discipline = hgOrPg} <- fsdbComp fsdbXml
     n <- fsdbNominal fsdbXml
-    tw <- fsdbTweak fsdbXml
     sb <- fsdbStopped fsdbXml
     ts <- fsdbTasks (discipline c) fsdbXml
     pgs <- fsdbTaskPilotGroups fsdbXml
@@ -201,6 +201,9 @@ fsdbSettings dm zg fsdbXml = do
             [ t{zones = z{raw = Raw.zoneGive separated zg rz}}
             | t@Task{zones = z@Zones{raw = rz}} <- ts
             ]
+
+    Tweak{leadingWeightScaling = lw} <- fsdbTweak fsdbXml
+    let lw' = if Just (lwScalingDefault hgOrPg) == lw then Nothing else lw
 
     let msg =
             "Extracted "
@@ -221,7 +224,7 @@ fsdbSettings dm zg fsdbXml = do
 
                     }
             , nominal = n
-            , tweak = tw
+            , tweak = Tweak{ leadingWeightScaling = lw' }
             , tasks = ts'
             , taskFolders = fs
             , pilots = tps

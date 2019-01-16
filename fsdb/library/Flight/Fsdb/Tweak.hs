@@ -5,8 +5,7 @@ module Flight.Fsdb.Tweak (parseTweak) where
 
 import Text.XML.HXT.Arrow.Pickle
     ( PU(..)
-    , unpickleDoc', xpWrap, xpFilterAttr
-    , xpElem, xpAttr
+    , unpickleDoc', xpWrap, xpElem, xpAttr, xpOption, xpFilterAttr
     )
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
 import Text.XML.HXT.Core
@@ -22,6 +21,8 @@ import Text.XML.HXT.Core
     , getChildren
     , deep
     , arr
+    , constA
+    , orElse
     )
 
 import Flight.Comp (Tweak(..))
@@ -34,24 +35,26 @@ xpTweak =
     $ xpFilterAttr (hasName "double_leading_weight")
     $ xpWrap
         ( Tweak . \case
-            False -> Just $ LwScaling 1
-            True -> Nothing
+            Just False -> Just $ LwScaling 1
+            Just True -> Nothing
+            Nothing -> Nothing
         , \Tweak{..} ->
             maybe
-                True
+                (Just True)
                 (\case
-                    LwScaling 1 -> False
-                    _ -> True)
+                    LwScaling 1 -> Just False
+                    _ -> Just True)
                 leadingWeightScaling
         )
-    $ (xpAttr "double_leading_weight" xpBool)
+    $ (xpOption $ xpAttr "double_leading_weight" xpBool)
 
 getTweak :: ArrowXml a => a XmlTree (Either String Tweak)
 getTweak =
-    getChildren
+    (getChildren
     >>> deep (hasName "FsCompetition")
     /> hasName "FsScoreFormula"
-    >>> arr (unpickleDoc' xpTweak)
+    >>> arr (unpickleDoc' xpTweak))
+    `orElse` (constA . Right $ Tweak Nothing)
 
 parseTweak :: String -> IO (Either String [Tweak])
 parseTweak contents = do

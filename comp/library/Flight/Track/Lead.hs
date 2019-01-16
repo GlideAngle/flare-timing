@@ -7,7 +7,11 @@ Stability   : experimental
 
 The lead standing of a pilot's track in comparison to other pilots.
 -}
-module Flight.Track.Lead (TrackLead(..), compLeading) where
+module Flight.Track.Lead
+    ( TrackLead(..)
+    , compLeading
+    , lwScalingDefault
+    ) where
 
 import Data.Maybe (catMaybes)
 import Data.List (sortOn)
@@ -17,9 +21,13 @@ import Data.UnitsOfMeasure (u)
 
 import Flight.Distance (QTaskDistance)
 import Flight.Comp (Pilot, Task(..))
-import Flight.Score (LeadingCoefficient(..), LeadingFraction(..), leadingFraction)
+import Flight.Score
+    ( LeadingCoefficient(..), LeadingFraction(..), LwScaling(..)
+    , leadingFraction
+    )
 import Flight.Track.Time (taskToLeading, leadingSum, minLeading)
 import qualified Flight.Track.Time as Time (TickRow(..))
+import Flight.Zone.MkZones (Discipline(..))
 
 data TrackLead =
     TrackLead
@@ -73,3 +81,8 @@ compLeading rowsLeadingStep lsTask tasks' =
 floatMaybe :: (a, Maybe b) -> Maybe (a, b)
 floatMaybe (_, Nothing) = Nothing
 floatMaybe (a, Just b) = Just (a, b)
+
+-- | The default explicit leading weight scaling for each discipline?
+lwScalingDefault :: Discipline -> LwScaling
+lwScalingDefault HangGliding = LwScaling 1
+lwScalingDefault Paragliding = LwScaling 2
