@@ -15,6 +15,7 @@ module Flight.Comp
     , EarthMath(..)
     , Comp(..)
     , Nominal(..)
+    , Tweak(..)
     , UtcOffset(..)
     , PilotGroup(..)
     , defaultNominal
@@ -90,6 +91,7 @@ import Flight.Score
     , PilotId(..)
     , PilotName(..)
     , Pilot(..)
+    , LwScaling(..)
     )
 import Flight.Earth.Ellipsoid (Ellipsoid(..))
 
@@ -185,6 +187,7 @@ data CompSettings k =
     CompSettings
         { comp :: Comp
         , nominal :: Nominal
+        , tweak :: Tweak
         , tasks :: [Task k]
         , taskFolders :: [TaskFolder]
         , pilots :: [[PilotTrackLogFile]]
@@ -294,6 +297,12 @@ data Nominal =
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
+-- | Tweaks that move the scoring away from the default formulae for either
+-- discipline.
+data Tweak = Tweak { leadingWeightScaling :: Maybe LwScaling }
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
+
 defaultNominal :: Nominal
 defaultNominal =
     Nominal
@@ -346,6 +355,9 @@ cmp a b =
         ("comp", _) -> LT
         ("nominal", "comp") -> GT
         ("nominal", _) -> LT
+        ("tweak", "comp") -> GT
+        ("tweak", "nominal") -> GT
+        ("tweak", _) -> LT
         ("tasks", "taskFolders") -> LT
         ("tasks", "pilots") -> LT
         ("tasks", "pilotGroups") -> LT

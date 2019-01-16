@@ -1,6 +1,10 @@
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module Flight.Fsdb.Internal.XmlPickle (xpNewtypeRational, xpNewtypeQuantity) where
+module Flight.Fsdb.Internal.XmlPickle
+    ( xpNewtypeRational
+    , xpNewtypeQuantity
+    , xpBool
+    ) where
 
 import Control.Newtype (Newtype(..))
 import Data.UnitsOfMeasure (unQuantity)
@@ -20,5 +24,13 @@ xpNewtypeQuantity =
     xpWrap
         ( pack . MkQuantity
         , unQuantity . unpack
+        )
+        xpPrim
+
+xpBool :: PU Bool
+xpBool =
+    xpWrap
+        ( toEnum
+        , fromEnum
         )
         xpPrim

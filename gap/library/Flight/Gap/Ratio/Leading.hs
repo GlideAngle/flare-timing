@@ -3,6 +3,7 @@ module Flight.Gap.Ratio.Leading
     , LeadingCoefficient(..)
     , LeadingFraction(..)
     , EssTime(..)
+    , LwScaling(..)
     ) where
 
 import "newtype" Control.Newtype (Newtype(..))
@@ -52,3 +53,14 @@ instance Newtype EssTime Rational where
 deriveDecimalPlaces (DecimalPlaces 3) ''EssTime
 deriveJsonViaSci ''EssTime
 deriveCsvViaSci ''EssTime
+
+newtype LwScaling = LwScaling Rational
+    deriving (Eq, Ord, Show)
+
+instance Newtype LwScaling Rational where
+    pack = LwScaling
+    unpack (LwScaling a) = a
+
+deriveDecimalPlaces (DecimalPlaces 0) ''LwScaling
+deriveJsonViaSci ''LwScaling
+deriveCsvViaSci ''LwScaling

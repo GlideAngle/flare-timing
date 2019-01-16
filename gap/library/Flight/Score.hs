@@ -43,6 +43,7 @@ module Flight.Score
     , ArrivalWeight(..)
     , TimeWeight(..)
     , Lw(..)
+    , LwScaling(..)
     , Aw(..)
     , Rw(..)
     , Ew(..)

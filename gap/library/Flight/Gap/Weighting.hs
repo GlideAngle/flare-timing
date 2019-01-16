@@ -24,6 +24,7 @@ import Flight.Gap.Weight.Distance
 import Flight.Gap.Weight.Leading (LeadingWeight(..))
 import Flight.Gap.Weight.Arrival (ArrivalWeight(..))
 import Flight.Gap.Weight.Time (TimeWeight(..))
+import Flight.Gap.Ratio.Leading (LwScaling(..))
 
 data Weights =
     Weights
@@ -45,6 +46,7 @@ data Lw
     = LwHg DistanceWeight
     | LwPgZ DistanceRatio
     | LwPg DistanceWeight
+    | LwScaled LwScaling DistanceWeight
     deriving Show
 
 -- | Arrival weight is only for hang gliding.
@@ -81,13 +83,19 @@ distanceWeight (GoalRatio gr) =
     + (1713 % 1000) * gr * gr
     - (587 % 1000) * gr * gr * gr
 
+lwDistanceWeight :: DistanceWeight -> Rational
+lwDistanceWeight (DistanceWeight (n :% d)) =
+    ((d - n) % (8 * d)) * (14 % 10)
+
 leadingWeight :: Lw -> LeadingWeight
-leadingWeight (LwHg (DistanceWeight (n :% d))) =
-    LeadingWeight $ ((d - n) % (8 * d)) * (14 % 10)
+leadingWeight (LwHg dw) =
+    LeadingWeight $ lwDistanceWeight dw
 leadingWeight (LwPgZ (DistanceRatio dr)) =
     LeadingWeight $ dr * (1 % 10)
-leadingWeight (LwPg (DistanceWeight (n :% d))) =
-    LeadingWeight $ ((d - n) % (8 * d)) * (14 % 10) * (2 % 1)
+leadingWeight (LwPg dw) =
+    LeadingWeight $ lwDistanceWeight dw * (2 % 1)
+leadingWeight (LwScaled (LwScaling k) dw) =
+    LeadingWeight $ lwDistanceWeight dw * k
 
 arrivalWeight :: Aw -> ArrivalWeight
 arrivalWeight AwPg =

@@ -14,6 +14,7 @@ import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Fsdb
     ( parseComp
     , parseNominal
+    , parseTweak
     , parseStopped
     , parseTasks
     , parseTaskPilotGroups
@@ -28,6 +29,7 @@ import Flight.Comp
     , EarthMath(..)
     , Comp(..)
     , Nominal(..)
+    , Tweak(..)
     , Task(..)
     , TaskFolder(..)
     , PilotGroup(..)
@@ -135,6 +137,17 @@ fsdbNominal (FsdbXml contents) = do
             lift $ print msg
             throwE msg
 
+fsdbTweak :: FsdbXml -> ExceptT String IO Tweak
+fsdbTweak (FsdbXml contents) = do
+    ns <- lift $ parseTweak contents
+    case ns of
+        Left msg -> ExceptT . return $ Left msg
+        Right [n] -> ExceptT . return $ Right n
+        _ -> do
+            let msg = "Expected only one set of tweaks for the comp"
+            lift $ print msg
+            throwE msg
+
 fsdbStopped
     :: FsdbXml
     -> ExceptT String IO (Maybe (ScoreBackTime (Quantity Double [u| s |])))
@@ -177,6 +190,7 @@ fsdbSettings
 fsdbSettings dm zg fsdbXml = do
     c <- fsdbComp fsdbXml
     n <- fsdbNominal fsdbXml
+    tw <- fsdbTweak fsdbXml
     sb <- fsdbStopped fsdbXml
     ts <- fsdbTasks (discipline c) fsdbXml
     pgs <- fsdbTaskPilotGroups fsdbXml
@@ -207,6 +221,7 @@ fsdbSettings dm zg fsdbXml = do
 
                     }
             , nominal = n
+            , tweak = tw
             , tasks = ts'
             , taskFolders = fs
             , pilots = tps
