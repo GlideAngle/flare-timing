@@ -34,13 +34,13 @@ xpTweak =
     $ xpFilterAttr (hasName "double_leading_weight")
     $ xpWrap
         ( Tweak . \case
-            False -> Just $ LwScaling 2
+            False -> Just $ LwScaling 1
             True -> Nothing
         , \Tweak{..} ->
             maybe
                 True
                 (\case
-                    LwScaling 2 -> False
+                    LwScaling 1 -> False
                     _ -> True)
                 leadingWeightScaling
         )

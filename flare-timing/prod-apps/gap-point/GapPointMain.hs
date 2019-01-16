@@ -33,6 +33,7 @@ import Flight.Comp
     , CompSettings(..)
     , Comp(..)
     , Nominal(..)
+    , Tweak(..)
     , TagZoneFile(..)
     , MaskTrackFile(..)
     , LandOutFile(..)
@@ -186,6 +187,9 @@ points'
                 , time = tNom
                 , free
                 }
+        , tweak =
+            Tweak
+                { leadingWeightScaling = lwScaling }
         , tasks
         , pilots
         , pilotGroups
@@ -329,7 +333,11 @@ points'
                else const (effortWeight EwPg) <$> dws
 
         lws =
-            let lw = if discipline == HangGliding then LwHg else LwPg
+            let lw =
+                    maybe
+                        (if discipline == HangGliding then LwHg else LwPg)
+                        LwScaled
+                    lwScaling
             in leadingWeight . lw <$> dws
 
         aws =
