@@ -4,6 +4,7 @@ module WireTypes.Comp
     , Discipline(..)
     , Nominal(..)
     , Task(..)
+    , TaskStop(..)
     , Name
     , SpeedSection
     , OpenClose(..)
@@ -50,7 +51,7 @@ type SpeedSection = Maybe (Integer, Integer)
 
 data OpenClose =
     OpenClose
-        { open :: UTCTime 
+        { open :: UTCTime
         , close :: UTCTime
         }
     deriving (Eq, Ord, Show, Generic)
@@ -252,6 +253,13 @@ data Nominal =
         }
     deriving (Generic, FromJSON)
 
+newtype TaskStop =
+    TaskStop
+        { announced :: UTCTime
+        }
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (FromJSON)
+
 data Task =
     Task
         { taskName :: Name
@@ -259,6 +267,7 @@ data Task =
         , speedSection :: SpeedSection
         , zoneTimes :: [OpenClose]
         , startGates :: [StartGate]
+        , stopped :: Maybe TaskStop
         }
     deriving (Eq, Ord, Generic, FromJSON)
 

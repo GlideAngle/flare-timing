@@ -4,11 +4,12 @@ import Prelude hiding (map)
 import Reflex
 import Reflex.Dom
 import qualified Data.Text as T (Text, intercalate, pack)
+import Data.Time.LocalTime (TimeZone)
 
 import WireTypes.ZoneKind (Shape(..))
 import WireTypes.Pilot (Nyp(..), Dnf(..), DfNoTrack(..), nullPilot)
 import WireTypes.Comp
-    ( Nominal(..), Comp(..), Task(..)
+    ( UtcOffset(..), Nominal(..), Comp(..), Task(..), TaskStop(..)
     , getRaceRawZones, getStartGates, getOpenShape, getSpeedSection
     )
 import WireTypes.Route (TaskLength(..), taskLength, taskLegs, showTaskDistance)
@@ -29,6 +30,7 @@ import FlareTiming.Task.Geo (tableGeo)
 import FlareTiming.Task.Turnpoints (tableTask)
 import FlareTiming.Task.Absent (tableAbsent)
 import FlareTiming.Task.Validity (viewValidity)
+import FlareTiming.Time (showT, timeZone)
 
 raceNote :: T.Text
 raceNote = "* A clock for each start gate"
@@ -41,24 +43,36 @@ openNote (Just Vector{}) = " open distance on a heading"
 openNote (Just Star{}) = " open distance"
 openNote _ = ""
 
+showStop :: TimeZone -> TaskStop -> T.Text
+showStop tz TaskStop{..} = showT tz announced
+
 taskTileZones
     :: MonadWidget t m
-    => Dynamic t Task
+    => Dynamic t UtcOffset
+    -> Dynamic t Task
     -> Dynamic t (Maybe TaskLength)
     -> m ()
-taskTileZones t len = do
+taskTileZones utcOffset t len = do
+    tz <- sample . current $ timeZone <$> utcOffset
     let xs = getRaceRawZones <$> t
     let zs = (fmap . fmap) TP.getName xs
     let title = T.intercalate " - " <$> zs
     let ss = getSpeedSection <$> t
     let gs = length . getStartGates <$> t
     let d = ffor len (maybe "" $ \TaskLength{..} -> showTaskDistance taskRoute)
+    let stp = stopped <$> t
+
+    let boxClass =
+            ffor stp (\x ->
+                let c = "tile is-child box" in
+                c <> maybe "" (const " notification is-danger") x)
 
     elClass "div" "tile" $ do
         elClass "div" "tile is-parent" $ do
-            elClass "div" "tile is-child box" $ do
+            elDynClass "div" boxClass $ do
                 elClass "p" "title is-3" $ do
                     dynText title
+
                 dyn_ $ ffor ss (\case
                     Just _ -> do
                         let kind = ffor gs (\case
@@ -72,7 +86,14 @@ taskTileZones t len = do
                             elClass "span" "level-item level-left" $ do
                                 dynText d
                                 dynText $ kind
-                            elClass "span" "level-item level-right has-text-info" $
+
+                                dyn_ $ ffor stp (\case
+                                    Nothing -> return ()
+                                    Just x -> do
+                                        text ", stopped at "
+                                        text $ showStop tz x)
+
+                            elClass "span" "level-item level-right" $
                                 dynText $ sideNote
 
                     Nothing -> do
@@ -112,7 +133,7 @@ taskDetail ix@(IxTask _) cs ns task vy a = do
     let tp = (fmap . fmap) taskPoints a
     let wg = (fmap . fmap) weight a
 
-    taskTileZones task ln
+    taskTileZones utc task ln
     es <- simpleList cs (crumbTask task)
     tab <- tabsTask
 

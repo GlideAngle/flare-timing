@@ -159,7 +159,7 @@ newtype UtcOffset = UtcOffset { timeZoneMinutes :: Int }
 
 data OpenClose =
     OpenClose
-        { open :: UTCTime 
+        { open :: UTCTime
         , close :: UTCTime
         }
     deriving (Eq, Ord, Show, Generic)
