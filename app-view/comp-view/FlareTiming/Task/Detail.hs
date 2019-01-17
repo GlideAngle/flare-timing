@@ -9,8 +9,9 @@ import Data.Time.LocalTime (TimeZone)
 import WireTypes.ZoneKind (Shape(..))
 import WireTypes.Pilot (Nyp(..), Dnf(..), DfNoTrack(..), nullPilot)
 import WireTypes.Comp
-    ( UtcOffset(..), Nominal(..), Comp(..), Task(..), TaskStop(..)
+    ( UtcOffset(..), Nominal(..), Comp(..), Task(..), TaskStop(..), ScoreBackTime
     , getRaceRawZones, getStartGates, getOpenShape, getSpeedSection
+    , showScoreBackTime
     )
 import WireTypes.Route (TaskLength(..), taskLength, taskLegs, showTaskDistance)
 import WireTypes.Point (Allocation(..))
@@ -49,10 +50,11 @@ showStop tz TaskStop{..} = showT tz announced
 taskTileZones
     :: MonadWidget t m
     => Dynamic t UtcOffset
+    -> Dynamic t (Maybe ScoreBackTime)
     -> Dynamic t Task
     -> Dynamic t (Maybe TaskLength)
     -> m ()
-taskTileZones utcOffset t len = do
+taskTileZones utcOffset sb t len = do
     tz <- sample . current $ timeZone <$> utcOffset
     let xs = getRaceRawZones <$> t
     let zs = (fmap . fmap) TP.getName xs
@@ -99,16 +101,22 @@ taskTileZones utcOffset t len = do
                                 dynText d
                                 dynText $ openKind)
 
-                elClass "p" "level subtitle is-6" $ do
-                    elClass "span" "level-item level-left" $ do
-                        dyn_ $ ffor stp (\case
-                            Nothing -> return ()
-                            Just x -> do
-                                elClass "span" "level-item level-right" $
-                                    el "strong" $ text $ "Stop " <> showStop tz x)
+                dyn_ $ ffor2 stp sb (\x y ->
+                    case x of
+                        Nothing -> return ()
+                        Just x' ->
+                            elClass "p" "level subtitle is-6" $ do
+                                elClass "span" "level-item level-left" $ do
+                                            elClass "span" "level-item level-right" $
+                                                el "strong" $ text $ "Stopped at " <> showStop tz x'
 
-                    elClass "span" "level-item level-right" $
-                        el "strong" $ text "scored back by 5 mins"
+                                case y of
+                                    Nothing -> return ()
+                                    Just y' ->
+                                        elClass "span" "level-item level-right" $
+                                            el "strong" . text
+                                                $ "scored back by "
+                                                <> (T.pack . showScoreBackTime $ y'))
 
 taskDetail
     :: MonadWidget t m
@@ -122,6 +130,7 @@ taskDetail
 
 taskDetail ix@(IxTask _) cs ns task vy a = do
     let utc = utcOffset . head <$> cs
+    let sb = scoreBack . head <$> cs
     let hgOrPg = discipline . head <$> cs
     let free' = free . head <$> ns
     let sgs = startGates <$> task
@@ -139,7 +148,7 @@ taskDetail ix@(IxTask _) cs ns task vy a = do
     let tp = (fmap . fmap) taskPoints a
     let wg = (fmap . fmap) weight a
 
-    taskTileZones utc task ln
+    taskTileZones utc sb task ln
     es <- simpleList cs (crumbTask task)
     tab <- tabsTask
 
