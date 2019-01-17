@@ -104,19 +104,23 @@ taskTileZones utcOffset sb t len = do
                 dyn_ $ ffor2 stp sb (\x y ->
                     case x of
                         Nothing -> return ()
-                        Just x' ->
+                        Just x' -> do
+                            let stop = "Stopped at " <> showStop tz x' <> "†"
+
                             elClass "p" "level subtitle is-6" $ do
                                 elClass "span" "level-item level-left" $ do
                                             elClass "span" "level-item level-right" $
-                                                el "strong" $ text $ "Stopped at " <> showStop tz x'
+                                                el "strong" $ text stop
 
                                 case y of
                                     Nothing -> return ()
-                                    Just y' ->
+                                    Just y' -> do
+                                        let back =
+                                                "† Scored back by "
+                                                <> (T.pack . showScoreBackTime $ y')
+
                                         elClass "span" "level-item level-right" $
-                                            el "strong" . text
-                                                $ "scored back by "
-                                                <> (T.pack . showScoreBackTime $ y'))
+                                            el "strong" $ text back)
 
 taskDetail
     :: MonadWidget t m
