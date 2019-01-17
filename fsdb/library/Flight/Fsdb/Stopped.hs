@@ -1,4 +1,4 @@
-module Flight.Fsdb.Stopped (parseStopped) where
+module Flight.Fsdb.Stopped (parseScoreBack) where
 
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
 import Text.XML.HXT.Arrow.Pickle
@@ -36,10 +36,10 @@ xpScoreBack =
         (xpOption $ xpAttr "score_back_time" xpInt)
         xpTrees
 
-getStopped
+getScoreBack
     :: ArrowXml a
     => a XmlTree (Either String (Maybe (ScoreBackTime (Quantity Double [u| s |]))))
-getStopped =
+getScoreBack =
     getChildren
     >>> deep (hasName "FsCompetition")
     >>> getScoreFormula
@@ -49,10 +49,10 @@ getStopped =
             >>> hasName "FsScoreFormula"
             >>> arr (unpickleDoc' xpScoreBack)
 
-parseStopped
+parseScoreBack
     :: String
     -> IO (Either String [Maybe (ScoreBackTime (Quantity Double [u| s |]))])
-parseStopped contents = do
+parseScoreBack contents = do
     let doc = readString [ withValidate no, withWarnings no ] contents
-    xs <- runX $ doc >>> getStopped
+    xs <- runX $ doc >>> getScoreBack
     return $ sequence xs

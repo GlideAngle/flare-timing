@@ -15,7 +15,7 @@ import Flight.Fsdb
     ( parseComp
     , parseNominal
     , parseTweak
-    , parseStopped
+    , parseScoreBack
     , parseTasks
     , parseTaskPilotGroups
     , parseTaskFolders
@@ -149,11 +149,11 @@ fsdbTweak (FsdbXml contents) = do
             lift $ print msg
             throwE msg
 
-fsdbStopped
+fsdbScoreBack
     :: FsdbXml
     -> ExceptT String IO (Maybe (ScoreBackTime (Quantity Double [u| s |])))
-fsdbStopped (FsdbXml contents) = do
-    xs <- lift $ parseStopped contents
+fsdbScoreBack (FsdbXml contents) = do
+    xs <- lift $ parseScoreBack contents
     case xs of
         Left msg -> ExceptT . return $ Left msg
         Right [] -> ExceptT . return $ Right Nothing
@@ -163,9 +163,13 @@ fsdbStopped (FsdbXml contents) = do
             lift $ print msg
             throwE msg
 
-fsdbTasks :: Discipline -> FsdbXml -> ExceptT String IO [Task k]
-fsdbTasks discipline (FsdbXml contents) = do
-    ts <- lift $ parseTasks discipline contents
+fsdbTasks
+    :: Discipline
+    -> Maybe (ScoreBackTime (Quantity Double [u| s |]))
+    -> FsdbXml
+    -> ExceptT String IO [Task k]
+fsdbTasks discipline sb (FsdbXml contents) = do
+    ts <- lift $ parseTasks discipline sb contents
     ExceptT $ return ts
 
 fsdbTaskPilotGroups :: FsdbXml -> ExceptT String IO [PilotGroup]
@@ -191,8 +195,8 @@ fsdbSettings
 fsdbSettings dm zg fsdbXml = do
     c@Comp{discipline = hgOrPg} <- fsdbComp fsdbXml
     n <- fsdbNominal fsdbXml
-    sb <- fsdbStopped fsdbXml
-    ts <- fsdbTasks (discipline c) fsdbXml
+    sb <- fsdbScoreBack fsdbXml
+    ts <- fsdbTasks (discipline c) sb fsdbXml
     pgs <- fsdbTaskPilotGroups fsdbXml
     fs <- fsdbTaskFolders fsdbXml
     tps <- fsdbTracks fsdbXml

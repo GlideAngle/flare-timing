@@ -313,9 +313,12 @@ defaultNominal =
         , time = NominalTime . MkQuantity $ 1.5
         }
 
-newtype TaskStop =
+data TaskStop =
     TaskStop
         { announced :: UTCTime
+        -- ^ The time at which the task was stopped.
+        , retroactive :: UTCTime
+        -- ^ The time at which the task will be scored until.
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)

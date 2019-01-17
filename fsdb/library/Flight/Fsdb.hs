@@ -11,7 +11,7 @@ module Flight.Fsdb
     ( parseComp
     , parseNominal
     , parseTweak
-    , parseStopped
+    , parseScoreBack
     , parseTasks
     , parseTaskPilotGroups
     , parsePilots

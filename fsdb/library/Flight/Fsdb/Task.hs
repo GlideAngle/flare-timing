@@ -3,6 +3,7 @@
 
 module Flight.Fsdb.Task (parseTasks, parseTaskPilotGroups) where
 
+import Data.Time.Clock (addUTCTime)
 import Data.Maybe (catMaybes)
 import Data.List (sort, sortOn, nub)
 import Data.Map.Strict (Map, fromList, findWithDefault)
@@ -61,6 +62,7 @@ import Flight.Comp
     )
 import Flight.Fsdb.Pilot (getCompPilot)
 import Flight.Fsdb.Internal.XmlPickle (xpNewtypeRational, xpNewtypeQuantity)
+import Flight.Score (ScoreBackTime(..))
 
 -- | The attribute //FsTaskDefinition@goal.
 newtype FsGoal = FsGoal String
@@ -210,17 +212,49 @@ xpSpeedSection =
         (xpAttr "es" xpInt)
         xpTrees
 
-xpStopped :: PU TaskStop
+data TaskState
+    = TaskStateRegular UTCTime
+    | TaskStateCancel UTCTime
+    | TaskStateStop UTCTime
+
+xpStopped :: PU TaskState
 xpStopped =
-    xpElem "FsTaskState"
-    $ xpFilterAttr (hasName "task_state" <+> hasName "stop_time")
-    $ xpWrap
-        ( TaskStop . parseUtcTime
-        , \(TaskStop t) -> show t
-        )
-    $ xpSeq'
-        (xpAttrFixed "task_state" "STOPPED")
-        (xpAttr "stop_time" xpText)
+    xpElem "FsTaskState" $ xpAlt tag ps
+    where
+        tag (TaskStateRegular _) = 0
+        tag (TaskStateCancel _) = 1
+        tag (TaskStateStop _) = 2
+        ps = [r, c, s]
+
+        r =
+            xpFilterAttr (hasName "task_state" <+> hasName "stop_time")
+            $ xpWrap
+                ( TaskStateRegular . parseUtcTime
+                , \(TaskStateRegular t) -> show t
+                )
+            $ xpSeq'
+                (xpAttrFixed "task_state" "REGULAR")
+                (xpAttr "stop_time" xpText)
+
+        c =
+            xpFilterAttr (hasName "task_state" <+> hasName "stop_time")
+            $ xpWrap
+                ( TaskStateCancel . parseUtcTime
+                , \(TaskStateCancel t) -> show t
+                )
+            $ xpSeq'
+                (xpAttrFixed "task_state" "CANCELLED")
+                (xpAttr "stop_time" xpText)
+
+        s =
+            xpFilterAttr (hasName "task_state" <+> hasName "stop_time")
+            $ xpWrap
+                ( TaskStateStop . parseUtcTime
+                , \(TaskStateStop t) -> show t
+                )
+            $ xpSeq'
+                (xpAttrFixed "task_state" "STOPPED")
+                (xpAttr "stop_time" xpText)
 
 xpAwardedDistance :: PU (QTaskDistance Double [u| km |])
 xpAwardedDistance =
@@ -358,8 +392,12 @@ getTaskPilotGroup ps =
             >>> getAttrValue "task_distance"
             )
 
-getTask :: ArrowXml a => Discipline -> a XmlTree (Task k)
-getTask discipline =
+getTask
+    :: ArrowXml a
+    => Discipline
+    -> Maybe (ScoreBackTime (Quantity Double [u| s |]))
+    -> a XmlTree (Task k)
+getTask discipline sb =
     getChildren
     >>> deep (hasName "FsTask")
     >>> getAttrValue "name"
@@ -374,17 +412,34 @@ getTask discipline =
     &&& getSpeedSection
     &&& getZoneTimes
     &&& getStartGates
-    &&& getStopped
+    &&& getTaskState
     >>> arr mkTask
     where
-        mkTask (name, (zs, (section, (ts, (gates, stop))))) =
+        mkTask (name, (zs, (section, (ts, (gates, taskState))))) =
             Task
                 { taskName = name
                 , zones = zs
                 , speedSection = section
                 , zoneTimes = ts''
                 , startGates = gates
-                , stopped = stop
+                , stopped =
+                    maybe
+                        Nothing
+                        (\case
+                            TaskStateStop t ->
+                                Just $ TaskStop
+                                    { announced = t
+                                    , retroactive =
+                                        maybe
+                                            t
+                                            (\(ScoreBackTime (MkQuantity secs)) ->
+                                                realToFrac (negate secs) `addUTCTime` t)
+                                            sb
+                                    }
+
+                            TaskStateRegular _ -> Nothing
+                            TaskStateCancel _ -> Nothing)
+                        taskState
                 }
             where
                 -- NOTE: If all time zones are the same then collapse.
@@ -457,15 +512,19 @@ getTask discipline =
             >>> hasName "FsTaskDefinition"
             >>> arr (unpickleDoc xpSpeedSection)
 
-        getStopped =
+        getTaskState =
             getChildren
             >>> hasName "FsTaskState"
             >>> arr (unpickleDoc xpStopped)
 
-parseTasks :: Discipline -> String -> IO (Either String [Task k])
-parseTasks discipline contents = do
+parseTasks
+    :: Discipline
+    -> Maybe (ScoreBackTime (Quantity Double [u| s |]))
+    -> String
+    -> IO (Either String [Task k])
+parseTasks discipline sb contents = do
     let doc = readString [ withValidate no, withWarnings no ] contents
-    xs <- runX $ doc >>> getTask discipline
+    xs <- runX $ doc >>> getTask discipline sb
     return $ Right xs
 
 parseTaskPilotGroups :: String -> IO (Either String [PilotGroup])
