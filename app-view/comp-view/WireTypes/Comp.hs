@@ -253,9 +253,10 @@ data Nominal =
         }
     deriving (Generic, FromJSON)
 
-newtype TaskStop =
+data TaskStop =
     TaskStop
         { announced :: UTCTime
+        , retroactive :: UTCTime
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (FromJSON)

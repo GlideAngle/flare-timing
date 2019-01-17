@@ -47,6 +47,9 @@ openNote _ = ""
 showStop :: TimeZone -> TaskStop -> T.Text
 showStop tz TaskStop{..} = showT tz announced
 
+showRetro :: TimeZone -> TaskStop -> T.Text
+showRetro tz TaskStop{..} = showT tz retroactive
+
 taskTileZones
     :: MonadWidget t m
     => Dynamic t UtcOffset
@@ -118,6 +121,8 @@ taskTileZones utcOffset sb t len = do
                                         let back =
                                                 "† Scored back by "
                                                 <> (T.pack . showScoreBackTime $ y')
+                                                <> " to "
+                                                <> showRetro tz x'
 
                                         elClass "span" "level-item level-right" $
                                             el "strong" $ text back)
