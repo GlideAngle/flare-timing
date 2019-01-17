@@ -70,8 +70,17 @@ taskTileZones utcOffset t len = do
     elClass "div" "tile" $ do
         elClass "div" "tile is-parent" $ do
             elDynClass "div" boxClass $ do
-                elClass "p" "title is-3" $ do
-                    dynText title
+                elClass "p" "level title is-3" $ do
+                    elClass "span" "level-item level-left" $ do
+                        dynText title
+
+                    dyn_ $ ffor stp (\case
+                        Nothing -> return ()
+                        Just x -> do
+                            elClass "span" "level-item level-right" $
+                                el "strong" $ do
+                                    text "Stop "
+                                    text $ showStop tz x)
 
                 dyn_ $ ffor ss (\case
                     Just _ -> do
@@ -86,16 +95,6 @@ taskTileZones utcOffset t len = do
                             elClass "span" "level-item level-left" $ do
                                 dynText d
                                 dynText $ kind
-
-                                dyn_ $ ffor stp (\case
-                                    Nothing -> return ()
-                                    Just x -> do
-                                        -- TODO: Find out how to output html entities such as
-                                        -- &nbsp;
-                                        -- SEE: https://stackoverflow.com/questions/44863993/how-to-add-an-html-entity-with-reflex-dom
-                                        el "strong" $ do
-                                            text ", stopped at "
-                                            text $ showStop tz x)
 
                             elClass "span" "level-item level-right" $
                                 dynText $ sideNote
