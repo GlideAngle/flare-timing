@@ -74,14 +74,6 @@ taskTileZones utcOffset t len = do
                     elClass "span" "level-item level-left" $ do
                         dynText title
 
-                    dyn_ $ ffor stp (\case
-                        Nothing -> return ()
-                        Just x -> do
-                            elClass "span" "level-item level-right" $
-                                el "strong" $ do
-                                    text "Stop "
-                                    text $ showStop tz x)
-
                 dyn_ $ ffor ss (\case
                     Just _ -> do
                         let kind = ffor gs (\case
@@ -106,6 +98,17 @@ taskTileZones utcOffset t len = do
                             elClass "span" "level-item level-left" $ do
                                 dynText d
                                 dynText $ openKind)
+
+                elClass "p" "level subtitle is-6" $ do
+                    elClass "span" "level-item level-left" $ do
+                        dyn_ $ ffor stp (\case
+                            Nothing -> return ()
+                            Just x -> do
+                                elClass "span" "level-item level-right" $
+                                    el "strong" $ text $ "Stop " <> showStop tz x)
+
+                    elClass "span" "level-item level-right" $
+                        el "strong" $ text "scored back by 5 mins"
 
 taskDetail
     :: MonadWidget t m
