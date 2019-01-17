@@ -90,8 +90,12 @@ taskTileZones utcOffset t len = do
                                 dyn_ $ ffor stp (\case
                                     Nothing -> return ()
                                     Just x -> do
-                                        text ", stopped at "
-                                        text $ showStop tz x)
+                                        -- TODO: Find out how to output html entities such as
+                                        -- &nbsp;
+                                        -- SEE: https://stackoverflow.com/questions/44863993/how-to-add-an-html-entity-with-reflex-dom
+                                        el "strong" $ do
+                                            text ", stopped at "
+                                            text $ showStop tz x)
 
                             elClass "span" "level-item level-right" $
                                 dynText $ sideNote
