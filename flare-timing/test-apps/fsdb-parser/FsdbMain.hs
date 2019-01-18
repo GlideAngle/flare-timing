@@ -9,7 +9,7 @@ import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Fsdb
     ( parseComp
     , parseNominal
-    , parseStopped
+    , parseScoreBack
     , parseTasks
     , parsePilots
     , parseTracks
@@ -69,7 +69,7 @@ go FsdbOptions{..} (FsdbFile path) = do
 
     when (null detail || Comp `elem` detail) $ printComp contents'
     when (null detail || Nominals `elem` detail) $ printNominal contents'
-    when (null detail || ScoreBack `elem` detail) $ printStopped contents'
+    when (null detail || ScoreBack `elem` detail) $ printScoreBack contents'
     when (null detail || Pilots `elem` detail) $ printPilotNames contents'
     when (null detail || Tasks `elem` detail) $ printTasks contents'
     when (null detail || TaskFolders `elem` detail) $ printTaskFolders contents'
@@ -82,12 +82,12 @@ printNominal contents = do
          Left msg -> print msg
          Right nominal' -> print nominal'
 
-printStopped :: String -> IO ()
-printStopped contents = do
-    stopped <- parseStopped contents
-    case stopped of
+printScoreBack :: String -> IO ()
+printScoreBack contents = do
+    sb <- parseScoreBack contents
+    case sb of
          Left msg -> print msg
-         Right stopped' -> print stopped'
+         Right sb' -> print sb'
 
 printPilotNames :: String -> IO ()
 printPilotNames contents = do
@@ -112,8 +112,9 @@ printTaskFolders contents = do
 
 printTasks :: String -> IO ()
 printTasks contents = do
+    Right (sb : _) <- parseScoreBack contents
     Right (comp : _) <- parseComp contents
-    tasks <- parseTasks (Comp.discipline comp) contents
+    tasks <- parseTasks (Comp.discipline comp) sb contents
     case tasks of
         Left msg -> print msg
         Right tasks' -> print $ showTask <$> tasks'
