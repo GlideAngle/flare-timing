@@ -66,7 +66,6 @@ stopTaskTime (InterGateStop (StartGateInterval sgi) (AnnouncedTime at)) =
 stopTaskTime (SingleGateStop (AnnouncedTime at)) = 
     TaskStopTime $ at - ((15 * 60) % 1)
 
-    
 data CanScoreStopped a where
     Womens :: PilotsInGoalAtStop -> TaskStopTime -> CanScoreStopped Hg
     GoalOrDuration :: PilotsInGoalAtStop -> TaskStopTime -> CanScoreStopped Hg
@@ -154,10 +153,12 @@ newtype StartGates = StartGates Int deriving (Eq, Ord, Show)
 data TaskType = RaceToGoal | ElapsedTime deriving (Eq, Ord, Show)
 newtype ScoreTimeWindow = ScoreTimeWindow Rational deriving (Eq, Ord, Show)
 
-scoreTimeWindow :: TaskType
-                   -> StartGates
-                   -> TaskStopTime
-                   -> [TaskTime] -> ScoreTimeWindow
+scoreTimeWindow
+    :: TaskType
+    -> StartGates
+    -> TaskStopTime
+    -> [TaskTime] -> ScoreTimeWindow
+
 scoreTimeWindow RaceToGoal (StartGates 1) (TaskStopTime stopTime) _ = 
     ScoreTimeWindow stopTime
 scoreTimeWindow _ _ _ [] = 
@@ -221,7 +222,7 @@ applyGlides gr@(GlideRatio glideRatio) alts xs
                      Just alt -> (i, applyGlide gr alt track)
 
             ysLandedOut = glides <$> xsLandedOut
-            
+
             ysMerged :: [(Int, StoppedTrack)]
             ysMerged = mconcat [ xsMadeGoal, ysLandedOut ]
 
