@@ -65,10 +65,13 @@ nullFlying =
     TrackFlyingSection
         { loggedFixes = Nothing
         , flyingFixes = Nothing
+        , scoredFixes = Nothing
         , loggedSeconds = Nothing
         , flyingSeconds = Nothing
+        , scoredSeconds = Nothing
         , loggedTimes = Nothing
         , flyingTimes = Nothing
+        , scoredTimes = Nothing
         }
 
 -- | A masking produces a value from a task and tracklog fixes.
@@ -609,10 +612,13 @@ madeZones
             TrackFlyingSection
                 { loggedFixes = Just len
                 , flyingFixes = flyingIndices
+                , scoredFixes = flyingIndices
                 , loggedSeconds = snd <$> loggedSeconds
                 , flyingSeconds = flyingSeconds
+                , scoredSeconds = flyingSeconds
                 , loggedTimes = loggedTimes
                 , flyingTimes = flyingTimes
+                , scoredTimes = flyingTimes
                 }
 
         len = length fixes
