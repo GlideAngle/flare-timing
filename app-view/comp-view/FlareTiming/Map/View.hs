@@ -46,7 +46,7 @@ import qualified FlareTiming.Map.Leaflet as L
     , addOverlay
     )
 import WireTypes.Cross (TrackFlyingSection(..))
-import WireTypes.Pilot (Pilot(..), PilotName(..), getPilotName)
+import WireTypes.Pilot (Pilot(..), PilotName(..), getPilotName, nullPilot)
 import WireTypes.Comp (Task(..), SpeedSection, getAllRawZones)
 import WireTypes.Zone
     (Zones(..), RawZone(..), RawLatLng(..), RawLat(..), RawLng(..))
@@ -289,18 +289,19 @@ map
 
                 return ())
 
-            , ffor pilotFlyingTrack (\((p, sections), t) ->
+            , ffor pilotFlyingTrack (\((p, sections), pts) ->
+                if p == nullPilot || null pts then return () else
                 case sections of
-                    Just
-                        TrackFlyingSection
+                    Nothing -> return ()
+                    Just TrackFlyingSection
                             { flyingFixes = Just (i, _)
                             , scoredFixes = Just (j0, jN)
                             } -> liftIO $ do
 
                         let PilotName pn = getPilotName p
                         let n = jN - (j0 - i)
-                        let t0 = take n t
-                        let t1 = drop n t
+                        let t0 = take n pts
+                        let t1 = drop n pts
 
                         l0 <- L.trackLine t0 "black"
                         g0 <- L.layerGroup l0 []
@@ -312,13 +313,6 @@ map
                         L.addOverlay layers' (PilotName (pn <> " not scored"), g1)
                         L.layersExpand layers'
 
-                        return ()
-
-                    _ -> liftIO $ do
-                        pilotLine <- L.trackLine t "black"
-                        pilotGroup <- L.layerGroup pilotLine []
-                        L.addOverlay layers' (getPilotName p, pilotGroup)
-                        L.layersExpand layers'
                         return ())
             ]
 
