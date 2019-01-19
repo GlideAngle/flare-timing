@@ -44,6 +44,7 @@ import qualified FlareTiming.Map.Leaflet as L
     , layersExpand
     , addOverlay
     )
+import WireTypes.Cross (TrackFlyingSection(..))
 import WireTypes.Pilot (Pilot(..), PilotName(..), getPilotName)
 import WireTypes.Comp (Task(..), SpeedSection, getAllRawZones)
 import WireTypes.Zone
@@ -216,9 +217,9 @@ viewMap
     => IxTask
     -> Dynamic t Task
     -> Dynamic t (OptimalRoute (Maybe TrackLine))
-    -> Event t (Pilot, [[Double]])
+    -> Event t ((Pilot, Maybe TrackFlyingSection), [[Double]])
     -> m (Event t Pilot)
-viewMap ix task route pilotTrack = do
+viewMap ix task route pilotFlyingTrack = do
     task' <- sample . current $ task
     route' <- sample . current $ route
 
@@ -228,7 +229,7 @@ viewMap ix task route pilotTrack = do
         (optimalTaskRoute route')
         (optimalTaskRouteSubset route')
         (optimalSpeedRoute route')
-        pilotTrack
+        pilotFlyingTrack
 
 map
     :: MonadWidget t m
@@ -237,7 +238,7 @@ map
     -> TaskRoute
     -> TaskRouteSubset
     -> SpeedRoute
-    -> Event t (Pilot, [[Double]])
+    -> Event t ((Pilot, Maybe TrackFlyingSection), [[Double]])
     -> m (Event t Pilot)
 
 map _ Task{zones = Zones{raw = []}} _ _ _ _ = do
@@ -261,14 +262,14 @@ map
     (TaskRoute taskRoute)
     (TaskRouteSubset taskRouteSubset)
     (SpeedRoute speedRoute)
-    pilotTrack = do
+    pilotFlyingTrack = do
 
     let tpNames = fmap (\RawZone{..} -> TurnpointName zoneName) xs
     pb <- delay 1 =<< getPostBuild
 
     pilots <- holdDyn [] =<< getTaskPilotDf ix pb
     (zoomOrPan, evZoom, activePilot)
-        <- taskZoneButtons task pilots $ () <$ pilotTrack
+        <- taskZoneButtons task pilots $ () <$ pilotFlyingTrack
 
     (eCanvas, _) <- elAttr' "div" ("style" =: "height: 680px;width: 100%") $ return ()
 
@@ -287,7 +288,7 @@ map
 
                 return ())
 
-            , ffor pilotTrack (\(p, t) -> liftIO $ do
+            , ffor pilotFlyingTrack (\((p, _), t) -> liftIO $ do
                 pilotLine <- L.trackline t "black"
                 pilotGroup <- L.layerGroup pilotLine []
                 L.addOverlay layers' (getPilotName p, pilotGroup)

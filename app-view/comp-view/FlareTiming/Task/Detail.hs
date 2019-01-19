@@ -19,7 +19,7 @@ import WireTypes.Validity (Validity(..))
 import FlareTiming.Comms
     ( getTaskScore, getTaskValidityWorking, getTaskLengthSphericalEdge
     , getTaskPilotDnf, getTaskPilotNyp, getTaskPilotDfNoTrack
-    , getTaskPilotTrack, emptyRoute
+    , getTaskPilotTrack, getTaskPilotTrackFlyingSection, emptyRoute
     )
 import FlareTiming.Breadcrumb (crumbTask)
 import FlareTiming.Events (IxTask(..))
@@ -170,8 +170,13 @@ taskDetail ix@(IxTask _) cs ns task vy a = do
                 TaskTabMap -> mdo
                     p <- viewMap ix task routes pt
                     p' <- holdDyn nullPilot p
-                    t <- getTaskPilotTrack ix p
-                    let pt = attachPromptlyDyn p' t
+
+                    tfs <- getTaskPilotTrackFlyingSection ix p
+                    tfs' <- holdDyn Nothing tfs
+
+                    trk <- getTaskPilotTrack ix p
+
+                    let pt = attachPromptlyDyn (zipDynWith (,) p' tfs') trk
 
                     return ()
 
