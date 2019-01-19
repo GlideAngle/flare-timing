@@ -161,7 +161,7 @@ scoreTimeWindow
 
 scoreTimeWindow RaceToGoal (StartGates 1) (TaskStopTime stopTime) _ = 
     ScoreTimeWindow stopTime
-scoreTimeWindow _ _ _ [] = 
+scoreTimeWindow _ _ _ [] =
     ScoreTimeWindow 0
 scoreTimeWindow _ _ (TaskStopTime stopTime) xs
     | any (> stopTime) ys =

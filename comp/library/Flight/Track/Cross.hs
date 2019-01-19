@@ -16,6 +16,7 @@ module Flight.Track.Cross
     , ZoneCross(..)
     , TrackLogError(..)
     , Fix(..)
+    , RetroActive(..)
     , trackLogErrors
     ) where
 
@@ -28,6 +29,12 @@ import Flight.LatLng.Raw (RawLat, RawLng)
 import Flight.Field (FieldOrdering(..))
 import Flight.Comp (FlyingSection)
 import Flight.Score (Pilot(..))
+
+-- | For a stopped task, this is the time the task is scored until, the
+-- announced stop time wound back by the score back time.
+newtype RetroActive = RetroActive UTCTime
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
 
 -- | For each task, the crossing for that task.
 data Crossing =
@@ -45,7 +52,8 @@ data Crossing =
         -- @TrackLogFileNotSet@ as the error and will be awarded minimum
         -- distance.
         }
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
 
 -- NOTE: There's a similar Seconds newtype in the flight-kml package.  I don't
 -- want a dependency between these packages so I'm duplicating the newtype
@@ -77,7 +85,8 @@ data TrackFlyingSection =
         , scoredTimes :: FlyingSection UTCTime
         -- ^ The scored section as a time range.
         }
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
 
 -- | For a single track, the zones crossed.
 data TrackCross =
@@ -87,7 +96,8 @@ data TrackCross =
         , zonesCrossNominees :: [[Maybe ZoneCross]]
         -- ^ Every crossing of every zone.
         }
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
 
 -- | For a single task, which pilots have error detected with their track logs.
 data TrackLogError =
@@ -101,7 +111,8 @@ data TrackLogError =
         , fileUnread :: [Pilot]
         -- ^ The log file could not be read.
         }
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
 
 trackLogErrors :: [(Pilot, TrackFileFail)] -> TrackLogError
 trackLogErrors xs =
@@ -129,7 +140,8 @@ data Fix =
         , lng :: RawLng
         -- ^ The longitude in decimal degrees, +ve is E and -ve is W.
         }
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
 
 -- | A pair of fixes that cross a zone.
 data ZoneCross =
@@ -139,7 +151,8 @@ data ZoneCross =
         , inZone :: [Bool]
         -- ^ Mark each fix as inside or outside the zone.
         }
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
 
 -- | Associates a pilot with the zones they cross for a single task.
 data PilotTrackCross =
@@ -147,7 +160,8 @@ data PilotTrackCross =
         Pilot
         (Maybe TrackCross)
         -- ^ The cross should be Just if the pilot launched.
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
 
 instance FieldOrdering Crossing where
     fieldOrder _ = cmp

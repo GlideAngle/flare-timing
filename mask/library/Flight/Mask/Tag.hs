@@ -28,8 +28,8 @@ import Flight.Kml (Latitude(..), Longitude(..), MarkedFixes(..))
 import qualified Flight.Kml as Kml
     (LatLngAlt(..), Fix, FixMark(..), Seconds(..))
 import Flight.Track.Cross
-    (Fix(..), ZoneCross(..), Seconds(..), TrackFlyingSection(..))
-import Flight.Comp (IxTask(..), FlyingSection, Task(..), Zones(..))
+    (Fix(..), ZoneCross(..), Seconds(..), TrackFlyingSection(..), RetroActive(..))
+import Flight.Comp (IxTask(..), FlyingSection, Task(..), TaskStop(..), Zones(..))
 import Flight.Units ()
 import Flight.Mask.Internal.Race (FlyClipping(..), FlyCut(..))
 import Flight.Mask.Internal.Zone
@@ -601,7 +601,7 @@ madeZones
 madeZones
     span zoneToCyl
     task@Task{zones = Zones{raw = zs}}
-    MarkedFixes{mark0, fixes} =
+    mf@MarkedFixes{mark0, fixes} =
     MadeZones
         { flying = flying'
         , selectedCrossings = selected
@@ -609,17 +609,39 @@ madeZones
         }
     where
         flying' =
-            TrackFlyingSection
-                { loggedFixes = Just len
-                , flyingFixes = flyingIndices
-                , scoredFixes = flyingIndices
-                , loggedSeconds = snd <$> loggedSeconds
-                , flyingSeconds = flyingSeconds
-                , scoredSeconds = flyingSeconds
-                , loggedTimes = loggedTimes
-                , flyingTimes = flyingTimes
-                , scoredTimes = flyingTimes
-                }
+            maybe
+                TrackFlyingSection
+                    { loggedFixes = Just len
+                    , flyingFixes = flyingIndices
+                    , scoredFixes = flyingIndices
+                    , loggedSeconds = snd <$> loggedSeconds
+                    , flyingSeconds = flyingSeconds
+                    , scoredSeconds = flyingSeconds
+                    , loggedTimes = loggedTimes
+                    , flyingTimes = flyingTimes
+                    , scoredTimes = flyingTimes
+                    }
+                (\(RetroActive t) ->
+                    let fc = FlyCut{cut =Just(mark0, t), uncut = mf}
+                        FlyCut{uncut = MarkedFixes{fixes = fixes'}} = clipToFlown fc
+                        indices' = fly fixes'
+                        seconds' = secondsRange fixes' indices'
+                        times' = timeRange mark0 seconds'
+                    in
+                        TrackFlyingSection
+                            { loggedFixes = Just len
+                            , flyingFixes = flyingIndices
+                            , scoredFixes = indices'
+                            , loggedSeconds = snd <$> loggedSeconds
+                            , flyingSeconds = flyingSeconds
+                            , scoredSeconds = seconds'
+                            , loggedTimes = loggedTimes
+                            , flyingTimes = flyingTimes
+                            , scoredTimes = times'
+                            })
+                retro
+
+        retro = RetroActive . retroactive <$> stopped task
 
         len = length fixes
 
