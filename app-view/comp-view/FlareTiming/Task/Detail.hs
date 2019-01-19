@@ -3,11 +3,13 @@ module FlareTiming.Task.Detail (taskDetail) where
 import Prelude hiding (map)
 import Reflex
 import Reflex.Dom
+import Data.Maybe (isNothing)
 import qualified Data.Text as T (Text, intercalate, pack)
 import Data.Time.LocalTime (TimeZone)
 
 import WireTypes.ZoneKind (Shape(..))
-import WireTypes.Pilot (Nyp(..), Dnf(..), DfNoTrack(..), nullPilot)
+import WireTypes.Pilot
+    (Pilot(..), Nyp(..), Dnf(..), DfNoTrack(..), nullPilot)
 import WireTypes.Comp
     ( UtcOffset(..), Nominal(..), Comp(..), Task(..), TaskStop(..), ScoreBackTime
     , getRaceRawZones, getStartGates, getOpenShape, getSpeedSection
@@ -176,7 +178,9 @@ taskDetail ix@(IxTask _) cs ns task vy a = do
 
                     trk <- getTaskPilotTrack ix p
 
-                    let pt = attachPromptlyDyn (zipDynWith (,) p' tfs') trk
+                    let pt =
+                            push readyTrack
+                            $ attachPromptlyDyn (zipDynWith (,) p' tfs') trk
 
                     return ()
 
@@ -189,3 +193,13 @@ taskDetail ix@(IxTask _) cs ns task vy a = do
     return $ switchDyn (leftmost <$> es)
 
 taskDetail IxTaskNone _ _ _ _ _ = return never
+
+readyTrack
+    :: (Monad m, Foldable t)
+    => ((Pilot, Maybe a), t b)
+    -> m (Maybe ((Pilot, Maybe a), t b))
+readyTrack x@((p, t), xs)
+    | p == nullPilot = return Nothing
+    | isNothing t = return Nothing
+    | null xs = return Nothing
+    | otherwise = return $ Just x
