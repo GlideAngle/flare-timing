@@ -288,12 +288,37 @@ map
 
                 return ())
 
-            , ffor pilotFlyingTrack (\((p, _), t) -> liftIO $ do
-                pilotLine <- L.trackline t "black"
-                pilotGroup <- L.layerGroup pilotLine []
-                L.addOverlay layers' (getPilotName p, pilotGroup)
-                L.layersExpand layers'
-                return ())
+            , ffor pilotFlyingTrack (\((p, sections), t) ->
+                case sections of
+                    Just
+                        TrackFlyingSection
+                            { flyingFixes = Just (i, _)
+                            , scoredFixes = Just (j0, jN)
+                            } -> liftIO $ do
+
+                        let PilotName pn = getPilotName p
+                        let n = jN - (j0 - i)
+                        let t0 = take n t
+                        let t1 = drop n t
+
+                        l0 <- L.trackline t0 "black"
+                        g0 <- L.layerGroup l0 []
+                        L.addOverlay layers' (PilotName (pn <> " scored"), g0)
+                        L.layersExpand layers'
+
+                        l1 <- L.trackline t1 "blue"
+                        g1 <- L.layerGroup l1 []
+                        L.addOverlay layers' (PilotName (pn <> " not scored"), g1)
+                        L.layersExpand layers'
+
+                        return ()
+
+                    _ -> liftIO $ do
+                        pilotLine <- L.trackline t "black"
+                        pilotGroup <- L.layerGroup pilotLine []
+                        L.addOverlay layers' (getPilotName p, pilotGroup)
+                        L.layersExpand layers'
+                        return ())
             ]
 
         (lmap', bounds', layers') <- liftIO $ do
