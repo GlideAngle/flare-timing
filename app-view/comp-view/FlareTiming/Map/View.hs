@@ -35,8 +35,9 @@ import qualified FlareTiming.Map.Leaflet as L
     , mapInvalidateSize
     , circle
     , circleAddToMap
-    , trackline
-    , polyline
+    , trackLine
+    , discardLine
+    , routeLine
     , fitBounds
     , panToBounds
     , latLngBounds
@@ -301,12 +302,12 @@ map
                         let t0 = take n t
                         let t1 = drop n t
 
-                        l0 <- L.trackline t0 "black"
+                        l0 <- L.trackLine t0 "black"
                         g0 <- L.layerGroup l0 []
                         L.addOverlay layers' (PilotName (pn <> " scored"), g0)
                         L.layersExpand layers'
 
-                        l1 <- L.trackline t1 "blue"
+                        l1 <- L.discardLine t1 "black"
                         g1 <- L.layerGroup l1 []
                         L.addOverlay layers' (PilotName (pn <> " not scored"), g1)
                         L.layersExpand layers'
@@ -314,7 +315,7 @@ map
                         return ()
 
                     _ -> liftIO $ do
-                        pilotLine <- L.trackline t "black"
+                        pilotLine <- L.trackLine t "black"
                         pilotGroup <- L.layerGroup pilotLine []
                         L.addOverlay layers' (getPilotName p, pilotGroup)
                         L.layersExpand layers'
@@ -353,10 +354,10 @@ map
             let giveCyls = catMaybes $ snd . snd <$> xMarks
             _ <- sequence $ (flip L.circleAddToMap) lmap <$> giveCyls
 
-            courseLine <- L.polyline xPts "gray"
-            taskRouteLine <- L.polyline ptsTaskRoute "red"
-            taskRouteSubsetLine <- L.polyline ptsTaskRouteSubset "green"
-            speedRouteLine <- L.polyline ptsSpeedRoute "magenta"
+            courseLine <- L.routeLine xPts "gray"
+            taskRouteLine <- L.routeLine ptsTaskRoute "red"
+            taskRouteSubsetLine <- L.routeLine ptsTaskRouteSubset "green"
+            speedRouteLine <- L.routeLine ptsSpeedRoute "magenta"
 
             taskRouteMarks <- sequence $ zipWith marker cs ptsTaskRoute
             taskRouteSubsetMarks <- sequence $ zipWith marker cs ptsTaskRouteSubset

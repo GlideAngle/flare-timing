@@ -17,8 +17,9 @@ module FlareTiming.Map.Leaflet
     , markerPopup
     , circle
     , circleAddToMap
-    , trackline
-    , polyline
+    , trackLine
+    , discardLine
+    , routeLine
     , polylineAddToMap
     , circleBounds
     , polylineBounds
@@ -107,11 +108,15 @@ foreign import javascript unsafe
 
 foreign import javascript unsafe
     "L['polyline']($1, {color: $2, opacity: 0.6, dashArray: '20,15', lineJoin: 'round'})"
-    polyline_ :: JSVal -> JSString -> IO JSVal
+    routeLine_ :: JSVal -> JSString -> IO JSVal
 
 foreign import javascript unsafe
     "L['polyline']($1, {color: $2, weight: 1})"
-    trackline_ :: JSVal -> JSString -> IO JSVal
+    trackLine_ :: JSVal -> JSString -> IO JSVal
+
+foreign import javascript unsafe
+    "L['polyline']($1, {color: $2, weight: 1, opacity: 1.0, dashArray: '5,5,1,5'})"
+    discardLine_ :: JSVal -> JSString -> IO JSVal
 
 foreign import javascript unsafe
     "$1['getBounds']()"
@@ -217,15 +222,20 @@ circle (lat, lng) radius color stroke fill =
 circleAddToMap :: Circle -> Map -> IO ()
 circleAddToMap x lmap = addToMap_ (unCircle x) (unMap lmap)
 
-polyline :: [(Double, Double)] -> String -> IO Polyline
-polyline xs color = do
+routeLine :: [(Double, Double)] -> String -> IO Polyline
+routeLine xs color = do
     ys <- toJSVal $ (\ (lat, lng) -> [ lat, lng ]) <$> xs
-    Polyline <$> polyline_ ys (toJSString color)
+    Polyline <$> routeLine_ ys (toJSString color)
 
-trackline :: [[Double]] -> String -> IO Polyline
-trackline xs color = do
+trackLine :: [[Double]] -> String -> IO Polyline
+trackLine xs color = do
     ys <- toJSVal xs
-    Polyline <$> trackline_ ys (toJSString color)
+    Polyline <$> trackLine_ ys (toJSString color)
+
+discardLine :: [[Double]] -> String -> IO Polyline
+discardLine xs color = do
+    ys <- toJSVal xs
+    Polyline <$> discardLine_ ys (toJSString color)
 
 polylineAddToMap :: Polyline -> Map -> IO ()
 polylineAddToMap x lmap = addToMap_ (unPolyline x) (unMap lmap)
