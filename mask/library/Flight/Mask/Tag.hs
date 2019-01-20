@@ -598,10 +598,7 @@ madeZones
     -> Task k
     -> MarkedFixes
     -> MadeZones
-madeZones
-    span zoneToCyl
-    task@Task{zones = Zones{raw = zs}}
-    mf@MarkedFixes{mark0, fixes} =
+madeZones span zoneToCyl task mf@MarkedFixes{mark0, fixes} =
     MadeZones
         { flying = flying'
         , selectedCrossings = selected
@@ -654,17 +651,42 @@ madeZones
         loggedTimes = timeRange mark0 loggedSeconds
         flyingTimes = timeRange mark0 flyingSeconds
 
-        fixesFlown =
+        (selected, nominees) =
+            scoredCrossings
+                span
+                zoneToCyl
+                task
+                mf
+                (scoredFixes flying')
+
+-- | Finds the crossings in the scored flying section.
+scoredCrossings
+    :: (Real a, Fractional a)
+    => SpanLatLng a
+    -> (Raw.RawZone -> TaskZone a)
+    -> Task k
+    -> MarkedFixes
+    -> FlyingSection Int -- ^ The flying section to score
+    -> (SelectedCrossings, NomineeCrossings)
+scoredCrossings
+    span
+    zoneToCyl
+    task@Task{zones = Zones{raw = zs}}
+    MarkedFixes{mark0, fixes}
+    scoredIndices =
+    (selected, nominees)
+    where
+        fixesScored =
             maybe
                 fixes
                 (\(m, n) -> take (n - m) $ drop m fixes)
-                flyingIndices
+                scoredIndices
 
         xs' =
             maybe
                 xs
                 (\(ii, _) -> (fmap . fmap) (reindex ii) xs)
-                flyingIndices
+                scoredIndices
 
         nominees = NomineeCrossings $ f <$> xs'
 
@@ -695,7 +717,7 @@ madeZones
             tickedZones
                 fs
                 (zoneToCyl <$> zs)
-                (fixToPoint <$> fixesFlown)
+                (fixToPoint <$> fixesScored)
 
         f :: [Crossing] -> [Maybe ZoneCross]
         f [] = []
