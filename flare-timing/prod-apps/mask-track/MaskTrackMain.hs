@@ -294,12 +294,16 @@ writeMask
             let raceTime =
                     [ do
                         rt@RaceTime{..} <- crt
-                        stp <- retroactive <$> stopped task
-                        return . uncut . clipToFlown $
-                            FlyCut
-                                { cut = Just (openTask, min stp closeTask)
-                                , uncut = rt
-                                }
+                        return $
+                            maybe
+                                rt
+                                (\stp ->
+                                    uncut . clipToFlown $
+                                        FlyCut
+                                            { cut = Just (openTask, min stp closeTask)
+                                            , uncut = rt
+                                            })
+                                (retroactive <$> stopped task)
 
                     | crt <- Lookup.compRaceTimes lookupTaskTime iTasks tasks
                     | task <- tasks
