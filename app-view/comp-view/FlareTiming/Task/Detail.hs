@@ -177,10 +177,14 @@ taskDetail ix@(IxTask _) cs ns task vy a = do
                     tfs' <- holdDyn Nothing tfs
 
                     trk <- getTaskPilotTrack ix p
+                    trk' <- holdDyn [] trk
+                    trk'' <- holdUniqDyn trk'
+
+                    ptfs <- holdUniqDyn $ zipDynWith (,) p' tfs'
 
                     let pt =
                             push readyTrack
-                            $ attachPromptlyDyn (zipDynWith (,) p' tfs') trk
+                            $ attachPromptlyDyn ptfs (updated trk'')
 
                     return ()
 
