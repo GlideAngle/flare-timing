@@ -16,6 +16,7 @@ import WireTypes.Comp
     , showScoreBackTime
     )
 import WireTypes.Route (TaskLength(..), taskLength, taskLegs, showTaskDistance)
+import WireTypes.Cross (TrackFlyingSection(..))
 import WireTypes.Point (Allocation(..))
 import WireTypes.Validity (Validity(..))
 import FlareTiming.Comms
@@ -195,11 +196,17 @@ taskDetail ix@(IxTask _) cs ns task vy a = do
 taskDetail IxTaskNone _ _ _ _ _ = return never
 
 readyTrack
-    :: (Monad m, Foldable t)
-    => ((Pilot, Maybe a), t b)
-    -> m (Maybe ((Pilot, Maybe a), t b))
+    :: Monad m
+    => ((Pilot, Maybe TrackFlyingSection), [a])
+    -> m (Maybe ((Pilot, Maybe TrackFlyingSection), [a]))
 readyTrack x@((p, t), xs)
     | p == nullPilot = return Nothing
-    | isNothing t = return Nothing
     | null xs = return Nothing
-    | otherwise = return $ Just x
+    | isNothing t = return Nothing
+    | otherwise =
+        case t of
+            Just
+                TrackFlyingSection
+                    {flyingFixes = Just _, scoredFixes = Just _} -> return $ Just x
+
+            _ -> return Nothing
