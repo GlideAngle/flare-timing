@@ -202,7 +202,6 @@ readyTrack
 readyTrack x@((p, t), xs)
     | p == nullPilot = return Nothing
     | null xs = return Nothing
-    | isNothing t = return Nothing
     | otherwise =
         case t of
             Just
