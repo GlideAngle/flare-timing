@@ -3,7 +3,6 @@ module FlareTiming.Task.Detail (taskDetail) where
 import Prelude hiding (map)
 import Reflex
 import Reflex.Dom
-import Data.Maybe (isNothing)
 import qualified Data.Text as T (Text, intercalate, pack)
 import Data.Time.LocalTime (TimeZone)
 
@@ -202,10 +201,9 @@ readyTrack
 readyTrack x@((p, t), xs)
     | p == nullPilot = return Nothing
     | null xs = return Nothing
-    | otherwise =
+    | otherwise = return $
         case t of
-            Just
-                TrackFlyingSection
-                    {flyingFixes = Just _, scoredFixes = Just _} -> return $ Just x
-
-            _ -> return Nothing
+            Nothing -> Nothing
+            Just TrackFlyingSection{flyingFixes = Nothing} -> Nothing
+            Just TrackFlyingSection{scoredFixes = Nothing} -> Nothing
+            Just _ -> Just x
