@@ -263,15 +263,15 @@ group
                 )
                 endZoneTag
             where
-                flyingRange :: FlyingSection UTCTime =
+                scoredRange :: FlyingSection UTCTime =
                     fromMaybe
                         (Just (mark0, mark0))
-                        (fmap flyingTimes . (\f -> f iTask p) =<< lookupFlying)
+                        (fmap scoredTimes . (\f -> f iTask p) =<< lookupFlying)
 
-                -- NOTE: Ensure we're only considering flying time.
-                flyFixes =
+                -- NOTE: Ensure we're only considering scored subset of flying time.
+                scoredFixes =
                     FlyCut
-                        { cut = flyingRange
+                        { cut = scoredRange
                         , uncut = mf
                         }
 
@@ -284,9 +284,9 @@ group
                     =<< openClose ss (zoneTimes task)
 
                 xs :: [MarkedFixes]
-                xs = groupByLeg spanF zoneToCylF task flyFixes
+                xs = groupByLeg spanF zoneToCylF task scoredFixes
 
-                ys = FlyCut flyingRange <$> xs
+                ys = FlyCut scoredRange <$> xs
 
                 ticked =
                     fromMaybe (RaceSections [] [] [])
