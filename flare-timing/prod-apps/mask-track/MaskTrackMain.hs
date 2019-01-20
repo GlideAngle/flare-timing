@@ -71,7 +71,7 @@ import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
 import Flight.Lookup.Cross (FlyingLookup(..), crossFlying)
 import qualified Flight.Lookup as Lookup
-    (flyingTimeRange, arrivalRank, pilotTime, ticked, compRoutes, compRaceTimes)
+    (scoredTimeRange, arrivalRank, pilotTime, ticked, compRoutes, compRaceTimes)
 import Flight.Lookup.Tag
     ( TaskTimeLookup(..)
     , tagTaskTime
@@ -478,7 +478,7 @@ flown' dTaskF flying math tags tasks iTask@(IxTask i) mf@MarkedFixes{mark0} p =
 
         xs =
             FlyCut
-                { cut = Lookup.flyingTimeRange flying mark0 iTask p
+                { cut = Lookup.scoredTimeRange flying mark0 iTask p
                 , uncut = mf
                 }
 

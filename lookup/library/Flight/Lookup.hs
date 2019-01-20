@@ -1,5 +1,6 @@
 module Flight.Lookup
     ( flyingTimeRange
+    , scoredTimeRange
     , arrivalRank
     , pilotTime
     , ticked
@@ -44,6 +45,12 @@ flyingTimeRange (FlyingLookup get) mark0 iTask p =
     fromMaybe
         (Just (mark0, mark0))
         (fmap flyingTimes . (\f -> f iTask p) =<< get)
+
+scoredTimeRange :: FlyingLookup -> UTCTime -> IxTask -> Pilot -> FlyingSection UTCTime
+scoredTimeRange (FlyingLookup get) mark0 iTask p =
+    fromMaybe
+        (Just (mark0, mark0))
+        (fmap scoredTimes . (\f -> f iTask p) =<< get)
 
 arrivalRank
     :: ArrivalRankLookup
