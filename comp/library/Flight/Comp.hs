@@ -46,7 +46,6 @@ module Flight.Comp
     , TrackLogFile(..)
     , TrackFileFail(..)
     , TaskFolder(..)
-    , FlyingSection
     , Dnf(..)
     , Nyp(..)
     , DfNoTrack(..)
@@ -132,10 +131,6 @@ speedSectionToLeg (Just (s, e)) i =
     if | i < s -> PrologLeg i
        | i > e -> EpilogLeg i
        | True -> RaceLeg i
-
--- | A pair into the list of fixes marking those deemed logged while flying.
--- These could be indices, seconds offsets or UTC times.
-type FlyingSection a = Maybe (a, a)
 
 type RoutesLookup a = IxTask -> Maybe a
 

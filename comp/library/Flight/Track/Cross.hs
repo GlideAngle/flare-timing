@@ -17,6 +17,7 @@ module Flight.Track.Cross
     , TrackLogError(..)
     , Fix(..)
     , RetroActive(..)
+    , FlyingSection
     , trackLogErrors
     ) where
 
@@ -27,8 +28,11 @@ import Data.Aeson (ToJSON(..), FromJSON(..))
 import Flight.Pilot (TrackFileFail(..))
 import Flight.LatLng.Raw (RawLat, RawLng)
 import Flight.Field (FieldOrdering(..))
-import Flight.Comp (FlyingSection)
 import Flight.Score (Pilot(..))
+
+-- | A pair into the list of fixes marking those deemed logged while flying.
+-- These could be indices, seconds offsets or UTC times.
+type FlyingSection a = Maybe (a, a)
 
 -- | For a stopped task, this is the time the task is scored until, the
 -- announced stop time wound back by the score back time.

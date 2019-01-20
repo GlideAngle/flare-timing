@@ -30,6 +30,7 @@ import Flight.Comp
     , PilotName(..)
     , Pilot(..)
     , PilotGroup(didFlyNoTracklog)
+    , TaskStop(..)
     , Task(..)
     , IxTask(..)
     , TrackFileFail(..)
@@ -50,7 +51,7 @@ import Flight.Comp
 import Flight.Distance
     (QTaskDistance, TaskDistance(..), unTaskDistanceAsKm)
 import Flight.Mask
-    ( FnIxTask, FlyCut(..)
+    ( FnIxTask
     , checkTracks
     , togoAtLanding
     , madeAtLanding
@@ -63,7 +64,7 @@ import Flight.Track.Distance
     (TrackDistance(..), AwardedDistance(..), Clamp(..), Land)
 import qualified Flight.Track.Distance as Track (awardByFrac)
 import Flight.Track.Lead (compLeading)
-import Flight.Track.Mask (Masking(..))
+import Flight.Track.Mask (FlyCut(..), FlyClipping(..), Masking(..), RaceTime(..))
 import Flight.Track.Speed (TrackSpeed(..))
 import Flight.Kml (MarkedFixes(..))
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
@@ -290,7 +291,19 @@ writeMask
                     | pLs <- psLandingOut
                     ]
 
-            let raceTime = Lookup.compRaceTimes lookupTaskTime iTasks tasks
+            let raceTime =
+                    [ do
+                        rt@RaceTime{..} <- crt
+                        stp <- retroactive <$> stopped task
+                        return . uncut . clipToFlown $
+                            FlyCut
+                                { cut = Just (openTask, min stp closeTask)
+                                , uncut = rt
+                                }
+
+                    | crt <- Lookup.compRaceTimes lookupTaskTime iTasks tasks
+                    | task <- tasks
+                    ]
 
             rowsLeadingStep :: [[(Pilot, [Time.TickRow])]]
                 <- readCompLeading
@@ -347,7 +360,7 @@ writeMask
                     , lead = lead
                     , arrival = as
                     , ssSpeed = fromMaybe [] <$> (fmap . fmap) snd ssVs
-                    , gsSpeed = fromMaybe [] <$> (fmap . fmap) snd gsVs 
+                    , gsSpeed = fromMaybe [] <$> (fmap . fmap) snd gsVs
                     , nigh = dsNigh
                     , land = dsLand
                     }

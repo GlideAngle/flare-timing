@@ -1,6 +1,5 @@
 module Flight.Mask.Internal.Race
-    ( FlyClipping(..)
-    , FlyClipSection(..)
+    ( FlyClipSection(..)
     , Sliver(..)
     , Ticked
     , RaceSections(..)
@@ -21,7 +20,9 @@ import Flight.Kml (FixMark(mark), MarkedFixes(..), Seconds(..))
 import Flight.Zone (Zone(..))
 import Flight.Zone.Cylinder (CircumSample, Tolerance(..))
 import Flight.Track.Time (TimeRow(..))
-import Flight.Comp (SpeedSection, FlyingSection)
+import Flight.Track.Cross (FlyingSection)
+import Flight.Track.Mask (FlyCut(..), FlyClipping(..))
+import Flight.Comp (SpeedSection)
 import Flight.Units ()
 import Flight.Task (CostSegment, DistancePointToPoint, AngleCut(..))
 import Flight.Mask.Internal.Zone (ZoneIdx, TaskZone(..), TrackZone(..))
@@ -87,21 +88,6 @@ section (Just (s', e')) xs =
 cons :: (a -> TrackZone b) -> a -> [Zone b] -> [Zone b]
 cons mkZone x zs = unTrackZone (mkZone x) : zs
 
--- | The subset of the fixes that can be considered flown.
-data FlyCut a b =
-    FlyCut
-        { cut :: FlyingSection a
-        , uncut :: b
-        }
-        deriving Show
-
-class FlyClipping a b where
-    clipToFlown :: FlyCut a b -> FlyCut a b
-    clipIndices :: FlyCut a b -> [Int]
-
-class (FlyClipping a b) => FlyClipSection a b c where
-    clipSection :: FlyCut a b -> FlyingSection c
-
 instance FlyClipping UTCTime [TimeRow] where
     clipToFlown x@FlyCut{cut = Nothing} =
         x{uncut = []}
@@ -131,6 +117,9 @@ instance FlyClipping UTCTime MarkedFixes where
         where
             s0 = Seconds . round $ t0 `diffUTCTime` mark0
             s1 = Seconds . round $ t1 `diffUTCTime` mark0
+
+class (FlyClipping a b) => FlyClipSection a b c where
+    clipSection :: FlyCut a b -> FlyingSection c
 
 instance FlyClipSection UTCTime MarkedFixes Int where
     clipSection x =

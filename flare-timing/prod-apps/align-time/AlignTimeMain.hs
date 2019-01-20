@@ -33,7 +33,6 @@ import Flight.Comp
     , Task(..)
     , IxTask(..)
     , TrackFileFail
-    , FlyingSection
     , FirstLead(..)
     , FirstStart(..)
     , OpenClose(..)
@@ -48,10 +47,11 @@ import Flight.Comp
     )
 import qualified Flight.Mask as Mask (Sliver(..))
 import Flight.Mask
-    ( FnIxTask, RaceSections(..), FlyCut(..), Ticked
+    ( FnIxTask, RaceSections(..), Ticked
     , checkTracks, groupByLeg, dashDistancesToGoal
     )
-import Flight.Track.Cross (Fix(..), TrackFlyingSection(..))
+import Flight.Track.Cross (FlyingSection, Fix(..), TrackFlyingSection(..))
+import Flight.Track.Mask (FlyCut(..))
 import Flight.Track.Tag (Tagging(..), TrackTime(..), firstLead, firstStart)
 import Flight.Kml (MarkedFixes(..))
 import Data.Ratio.Rounding (dpRound)

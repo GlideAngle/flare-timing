@@ -10,9 +10,12 @@ Tracks masked with task control zones.
 module Flight.Track.Mask
     ( Masking(..)
     , RaceTime(..)
+    , FlyCut(..)
+    , FlyClipping(..)
     , racing
     ) where
 
+import Data.Maybe (fromMaybe)
 import Data.Time.Clock (UTCTime, diffUTCTime)
 import Data.String (IsString())
 import Data.UnitsOfMeasure (u)
@@ -31,10 +34,37 @@ import Flight.Score
     )
 import Flight.Field (FieldOrdering(..))
 import Flight.Units ()
+import Flight.Track.Cross (FlyingSection)
 import Flight.Track.Speed (TrackSpeed(..))
 import Flight.Track.Arrival (TrackArrival(..))
 import Flight.Track.Lead (TrackLead(..))
 import Flight.Track.Distance (TrackDistance(..), Nigh, Land)
+
+-- | The subset of the fixes that can be considered flown or scored.
+data FlyCut a b =
+    FlyCut
+        { cut :: FlyingSection a
+        , uncut :: b
+        }
+    deriving Show
+
+class FlyClipping a b where
+    clipToFlown :: FlyCut a b -> FlyCut a b
+    clipIndices :: FlyCut a b -> [Int]
+
+instance FlyClipping UTCTime RaceTime where
+    clipIndices _ = []
+    clipToFlown x@FlyCut{cut = Nothing} = x
+    clipToFlown x@FlyCut{cut = Just (_, t1), uncut = y@RaceTime{..}} =
+        x{uncut = fromMaybe y uc}
+        where
+            oc =
+                OpenClose
+                    { open = openTask
+                    , close = min t1 closeTask
+                    }
+
+            uc = racing (Just oc) firstLead firstStart lastArrival
 
 -- | For each task, the masking for that task.
 data Masking =

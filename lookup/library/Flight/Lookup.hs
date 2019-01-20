@@ -15,6 +15,7 @@ import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Kml (MarkedFixes(..))
+import Flight.Track.Cross (FlyingSection)
 import Flight.Comp
     ( IxTask(..)
     , Task(..)
@@ -22,7 +23,6 @@ import Flight.Comp
     , RoutesLookupTaskDistance(..)
     , TaskRouteDistance
     , SpeedSection
-    , FlyingSection
     , StartGate
     , StartEndMark
     , FirstStart(..)

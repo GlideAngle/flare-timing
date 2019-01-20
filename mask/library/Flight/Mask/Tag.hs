@@ -28,10 +28,13 @@ import Flight.Kml (Latitude(..), Longitude(..), MarkedFixes(..))
 import qualified Flight.Kml as Kml
     (LatLngAlt(..), Fix, FixMark(..), Seconds(..))
 import Flight.Track.Cross
-    (Fix(..), ZoneCross(..), Seconds(..), TrackFlyingSection(..), RetroActive(..))
-import Flight.Comp (IxTask(..), FlyingSection, Task(..), TaskStop(..), Zones(..))
+    ( Fix(..), ZoneCross(..), Seconds(..)
+    , FlyingSection, TrackFlyingSection(..), RetroActive(..)
+    )
+import Flight.Track.Mask (FlyClipping(..), FlyCut(..))
+import Flight.Comp (IxTask(..), Task(..), TaskStop(..), Zones(..))
 import Flight.Units ()
-import Flight.Mask.Internal.Race (FlyClipping(..), FlyCut(..))
+import Flight.Mask.Internal.Race ()
 import Flight.Mask.Internal.Zone
     ( ZoneEntry(..)
     , ZoneExit(..)

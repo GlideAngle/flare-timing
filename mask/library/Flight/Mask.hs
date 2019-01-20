@@ -19,9 +19,7 @@ module Flight.Mask
     , NomineeCrossings(..)
     , MadeZones(..)
     , Sliver(..)
-    , FlyClipping(..)
     , FlyClipSection(..)
-    , FlyCut(..)
     , ZoneIdx
     , countFixes
     , checkTracks
@@ -52,9 +50,7 @@ import Flight.Mask.Tracks
 import Flight.Mask.Internal.Zone
     (ZoneIdx, TaskZone, zoneToCylinder, slice, separatedRawZones)
 import Flight.Mask.Internal.Race
-    ( FlyClipping(..)
-    , FlyClipSection(..)
-    , FlyCut(..)
+    ( FlyClipSection(..)
     , Sliver(..)
     , Ticked
     , RaceSections(..)
