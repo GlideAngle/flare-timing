@@ -292,6 +292,9 @@ map
             , ffor pilotFlyingTrack (\((p, sections), pts) ->
                 if p == nullPilot || null pts then return () else
                 case sections of
+                    Nothing -> return ()
+                    Just TrackFlyingSection{flyingFixes = Nothing} -> return ()
+                    Just TrackFlyingSection{scoredFixes = Nothing} -> return ()
                     Just TrackFlyingSection
                             { flyingFixes = Just (i, _)
                             , scoredFixes = Just (j0, jN)
@@ -312,9 +315,7 @@ map
                         L.addOverlay layers' (PilotName (pn <> " not scored"), g1)
                         L.layersExpand layers'
 
-                        return ()
-
-                    _ -> return ())
+                        return ())
             ]
 
         (lmap', bounds', layers') <- liftIO $ do
