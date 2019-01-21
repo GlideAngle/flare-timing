@@ -65,7 +65,7 @@ instance FlyClipping UTCTime RaceTime where
                     , close = min t1 closeTask
                     }
 
-            -- TODO: Review whether there is not a better and more explicity
+            -- TODO: Review whether there is not a better and more explicit
             -- way to cut short the task deadline when calculating leading
             -- area.
             last' = Just . LastArrival $
