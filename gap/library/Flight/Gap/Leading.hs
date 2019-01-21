@@ -21,21 +21,28 @@ module Flight.Gap.Leading
     ) where
 
 import Prelude hiding (seq)
+import "newtype" Control.Newtype (Newtype(..))
 import Control.Arrow (second)
 import Data.Ratio ((%))
 import Data.List (partition, sortBy)
 import Data.Maybe (catMaybes)
+import Data.UnitsOfMeasure ((-:), u)
+import Data.UnitsOfMeasure.Internal (Quantity(..))
 
+import Flight.Units ()
 import Flight.Ratio (pattern (:%))
 import Flight.Gap.Ratio.Leading
-    (LeadingAreaStep(..), LeadingCoefficient(..), LeadingFraction(..))
+    ( LeadingAreaScaling(..), LeadingAreaStep(..)
+    , LeadingCoefficient(..), LeadingFraction(..)
+    )
 
 -- | Time in seconds from the moment the first pilot crossed the start of the speed
 -- section.
-newtype TaskTime = TaskTime Rational deriving (Eq, Ord)
+newtype TaskTime = TaskTime (Quantity Rational [u| s |])
+    deriving (Eq, Ord)
 
 instance Show TaskTime where
-    show (TaskTime t) = showSecs t
+    show (TaskTime (MkQuantity t)) = showSecs t
 
 showSecs :: Rational -> String
 showSecs t =
@@ -48,16 +55,16 @@ showSecs t =
         i = truncate d
 
 -- | Time in seconds for the close of the task, the task deadline.
-newtype TaskDeadline = TaskDeadline Rational deriving (Eq, Ord, Show)
+newtype TaskDeadline = TaskDeadline (Quantity Rational [u| s |])
+    deriving (Eq, Ord, Show)
 
 -- | The distance in km to the end of the speed section.
-newtype DistanceToEss = DistanceToEss Rational deriving (Eq, Ord)
-
-instance Show DistanceToEss where
-    show (DistanceToEss d) = show (fromRational d :: Double) ++ "km"
+newtype DistanceToEss = DistanceToEss (Quantity Rational [u| km |])
+    deriving (Eq, Ord, Show)
 
 -- | The length of the speed section in km.
-newtype LengthOfSs = LengthOfSs Rational deriving (Eq, Ord, Show)
+newtype LengthOfSs = LengthOfSs (Quantity Rational [u| km |])
+    deriving (Eq, Ord, Show)
 
 data Leg
     = PrologLeg Int
@@ -73,14 +80,14 @@ data LcPoint =
         , mark :: TaskTime
         , togo :: DistanceToEss
         }
-        deriving (Eq, Ord, Show)
+    deriving (Eq, Ord, Show)
 
 data LcSeq a =
     LcSeq
         { seq :: [a]
         , extra :: Maybe a
         }
-        deriving (Eq, Ord, Show)
+    deriving (Eq, Ord, Show)
 
 -- | A pilot's track where points are task time paired with distance to the end
 -- of the speed section.
@@ -90,12 +97,12 @@ type LcArea = LcSeq LeadingAreaStep
 
 madeGoal :: LcTrack -> Bool
 madeGoal LcSeq{seq = xs} =
-    any (\LcPoint{togo = DistanceToEss d} -> d <= 0) xs
+    any (\LcPoint{togo = DistanceToEss d} -> d <= [u| 0 km |]) xs
 
 -- | Removes points where the task time < 0.
 positiveTime :: LcTrack -> LcTrack
 positiveTime x@LcSeq{seq = xs} =
-    x{seq = filter (\LcPoint{mark = TaskTime t} -> t > 0) xs}
+    x{seq = filter (\LcPoint{mark = TaskTime t} -> t > [u| 0 s |]) xs}
 
 -- | Removes points where the distance to ESS increases.
 towardsGoal :: LcTrack -> LcTrack
@@ -108,7 +115,7 @@ towardsGoal x@LcSeq{seq = xs}
             zero =
                 LcPoint
                     { leg = PrologLeg 0
-                    , mark = TaskTime $ tN - (1 % 1)
+                    , mark = TaskTime $ tN -: [u| 1 s |]
                     , togo = dist
                     }
 
@@ -122,12 +129,28 @@ initialOffside :: LengthOfSs -> LcTrack -> LcTrack
 initialOffside (LengthOfSs len) x@LcSeq{seq = xs} =
     x{seq = 
         dropWhile
-            (\LcPoint{togo = DistanceToEss d} -> d > len || d < 0)
+            (\LcPoint{togo = DistanceToEss d} -> d > len || d < [u| 0 km |])
             xs
      }
 
 cleanTrack :: LengthOfSs -> LcTrack -> LcTrack
 cleanTrack len = towardsGoal . positiveTime . initialOffside len 
+
+-- TODO: Log a case with uom-plugin
+-- areaSteps _ (LengthOfSs [u| 0 km |]) LcSeq{seq = xs} =
+--    • Couldn't match type ‘GHC.Real.Ratio Integer’ with ‘Integer’
+--      Expected type: Quantity
+--                       Rational (Data.UnitsOfMeasure.Internal.MkUnit "km")
+--        Actual type: Quantity
+--                       Integer (Data.UnitsOfMeasure.Internal.MkUnit "km")
+--    • When checking that the pattern signature:
+--          Quantity Integer (Data.UnitsOfMeasure.Internal.MkUnit "km")
+--        fits the type of its context:
+--          Quantity Rational (Data.UnitsOfMeasure.Internal.MkUnit "km")
+--      In the pattern:
+--        MkQuantity 0 :: Quantity Integer (Data.UnitsOfMeasure.Internal.MkUnit "km")
+--      In the pattern:
+--        LengthOfSs (MkQuantity 0 :: Quantity Integer (Data.UnitsOfMeasure.Internal.MkUnit "km"))
 
 -- | Calculate the leading coefficient for a single track.
 areaSteps
@@ -135,7 +158,7 @@ areaSteps
     -> LengthOfSs
     -> LcTrack
     -> LcArea
-areaSteps _ (LengthOfSs (0 :% _)) LcSeq{seq = xs} =
+areaSteps _ (LengthOfSs [u| 0 % 1 km |]) LcSeq{seq = xs} =
     LcSeq
         { seq = const (LeadingAreaStep $ 0 % 1) <$> xs
         , extra = Nothing
@@ -151,15 +174,15 @@ areaSteps
     deadline@(TaskDeadline dl)
     len
     track@LcSeq{seq = xs', extra}
-    | dl <= 1 =
+    | dl <= [u| 1s |] =
         LcSeq
             { seq = const (LeadingAreaStep $ 0 % 1) <$> xs'
             , extra = Nothing
             }
     | otherwise =
         LcSeq
-            { seq = LeadingAreaStep . (* areaScaling len) <$> steps
-            , extra = LeadingAreaStep . (* areaScaling len) . g <$> extra
+            { seq = LeadingAreaStep . (* (unpack $ areaScaling len)) <$> steps
+            , extra = LeadingAreaStep . (* (unpack $ areaScaling len)) . g <$> extra
             }
         where
             withinDeadline :: LcTrack
@@ -175,16 +198,25 @@ areaSteps
 
             f :: LcPoint -> LcPoint -> Rational
             f
-                LcPoint{mark = TaskTime tM, togo = DistanceToEss dM}
-                LcPoint{leg, mark = TaskTime tN, togo = DistanceToEss dN}
+                LcPoint
+                    { mark = TaskTime (MkQuantity tM)
+                    , togo = DistanceToEss (MkQuantity dM)
+                    }
+                LcPoint
+                    { leg
+                    , mark = TaskTime (MkQuantity tN)
+                    , togo = DistanceToEss (MkQuantity dN)
+                    }
                 | tM == tN = 0
                 | tN < 0 = 0
                 | not (isRaceLeg leg) = 0
                 | otherwise = tN * (dM * dM - dN * dN)
 
             g :: LcPoint -> Rational
-            g LcPoint{mark = TaskTime t, togo = DistanceToEss d} =
-                t * d * d
+            g LcPoint
+                { mark = TaskTime (MkQuantity t)
+                , togo = DistanceToEss (MkQuantity d)
+                } = t * d * d
 
             steps :: [Rational]
             steps = zipWith f ys' ys
@@ -205,11 +237,11 @@ clampToEss x@LcSeq{seq} =
     x{seq = clamp <$> seq}
     where
         clamp p@LcPoint{togo = DistanceToEss dist} =
-            p{togo = DistanceToEss $ max 0 dist}
+            p{togo = DistanceToEss $ max [u| 0 km |] dist}
 
-areaScaling :: LengthOfSs -> Rational
-areaScaling (LengthOfSs len) =
-    let (n :% d) = len * len in (1 % 1800) * (d % n)
+areaScaling :: LengthOfSs -> LeadingAreaScaling
+areaScaling (LengthOfSs (MkQuantity len)) =
+    let (n :% d) = len * len in LeadingAreaScaling $ (1 % 1800) * (d % n)
 
 -- | Calculate the leading coefficient for a single track.
 leadingCoefficient
@@ -249,13 +281,13 @@ leadingCoefficients deadline@(TaskDeadline maxTaskTime) len tracks =
                 safeLast (_, LcSeq{seq = xs}) =
                     if null xs then Nothing else Just (mark $ last xs)
 
-        (TaskTime essTime) =
+        (TaskTime tEss@(MkQuantity essTime)) =
             if null essTimes then TaskTime maxTaskTime else maximum essTimes
 
         (xsEarly :: [(Int, LcTrack)], xsLate :: [(Int, LcTrack)]) =
             partition
                 (\(_, LcSeq{seq = xs}) ->
-                    all (\LcPoint{mark = TaskTime t} -> t < essTime) xs)
+                    all (\LcPoint{mark = TaskTime t} -> t < tEss) xs)
                 xsLandedOut
 
         lc :: LcTrack -> LeadingCoefficient
@@ -271,7 +303,8 @@ leadingCoefficients deadline@(TaskDeadline maxTaskTime) len tracks =
             where
                 (LeadingCoefficient a) = lc track
                 b =
-                    (\LcPoint{togo = DistanceToEss d} -> essTime * d * d)
+                    (\LcPoint{togo = DistanceToEss (MkQuantity d)} ->
+                        essTime * d * d)
                     $ last xs
 
         csEarly :: [(Int, LeadingCoefficient)]
@@ -284,8 +317,8 @@ leadingCoefficients deadline@(TaskDeadline maxTaskTime) len tracks =
             where
                 (LeadingCoefficient a) = lc track
                 b =
-                    (\LcPoint{ mark = TaskTime t
-                             , togo = DistanceToEss d
+                    (\LcPoint{ mark = TaskTime (MkQuantity t)
+                             , togo = DistanceToEss (MkQuantity d)
                              } -> t * d * d)
                     $ last xs
 
@@ -319,9 +352,9 @@ allZero tracks = const (LeadingFraction $ 0 % 1) <$> tracks
 
 -- | Calculate the leading factor for all tracks.
 leadingFractions :: TaskDeadline -> LengthOfSs -> [LcTrack] -> [LeadingFraction]
-leadingFractions (TaskDeadline 0) _ tracks =
+leadingFractions (TaskDeadline (MkQuantity 0)) _ tracks =
     allZero tracks
-leadingFractions _ (LengthOfSs 0) tracks =
+leadingFractions _ (LengthOfSs (MkQuantity 0)) tracks =
     allZero tracks
 leadingFractions deadlines lens tracks =
     if cMin == 0 || leadingDenominator cMin == 0

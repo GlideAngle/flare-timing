@@ -14,7 +14,7 @@ import Control.Arrow (second)
 import Control.Lens ((^?), element)
 import Control.Exception.Safe (MonadThrow, catchIO)
 import Control.Monad.Except (MonadIO)
-import Data.UnitsOfMeasure ((-:), u, convert)
+import Data.UnitsOfMeasure ((-:), u, convert, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import System.FilePath (takeFileName)
 
@@ -90,7 +90,8 @@ import Flight.Score
     ( PilotsAtEss(..), PositionAtEss(..)
     , BestTime(..), PilotTime(..)
     , MinimumDistance(..)
-    , arrivalFraction, speedFraction
+    , LengthOfSs(..)
+    , arrivalFraction, speedFraction, areaScaling
     )
 import Flight.Span.Math (Math(..))
 import MaskTrackOptions (description)
@@ -317,7 +318,15 @@ writeMask
                         raceTime
                         pilots
 
-            let (minLead, lead) = compLeading rowsLeadingStep lsWholeTask tasks
+            let (lcMin, lead) = compLeading rowsLeadingStep lsWholeTask tasks
+            let lcScaling =
+                    [
+                        areaScaling
+                        . LengthOfSs
+                        . (\(TaskDistance d) -> convert . toRational' $ d)
+                        <$> ssLen
+                    | ssLen <- lsSpeedSubset
+                    ]
 
             let (dsSumArriving, dsSumLandingOut, dsBest, rowTicks) =
                     compDistance
@@ -360,7 +369,8 @@ writeMask
                     , taskSpeedDistance = lsSpeedSubset
                     , bestDistance = dsBest
                     , sumDistance = dsSum
-                    , minLead = minLead
+                    , leadScaling = lcScaling
+                    , leadCoefMin = lcMin
                     , lead = lead
                     , arrival = as
                     , ssSpeed = fromMaybe [] <$> (fmap . fmap) snd ssVs

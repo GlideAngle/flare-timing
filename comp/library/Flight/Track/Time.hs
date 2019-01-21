@@ -240,8 +240,8 @@ leadingArea
 
         LcSeq{seq, extra} =
             areaSteps
-                (TaskDeadline tt)
-                (LengthOfSs $ toRational d)
+                (TaskDeadline $ MkQuantity tt)
+                (LengthOfSs . MkQuantity . toRational $ d)
                 (toLcTrack toLeg close arrival rows)
 
         extraRow = maybeToList $ do
@@ -254,8 +254,8 @@ toLcPoint _ TickRow{tickLead = Nothing} = Nothing
 toLcPoint toLeg TickRow{leg, tickLead = Just (LeadTick t), distance} =
     Just LcPoint
         { leg = toLeg leg
-        , mark = TaskTime $ toRational t
-        , togo = DistanceToEss $ toRational distance
+        , mark = TaskTime . MkQuantity . toRational $ t
+        , togo = DistanceToEss . MkQuantity . toRational $ distance
         }
 
 -- | The time of last arrival at goal, in seconds from first lead.
@@ -311,7 +311,7 @@ toLcTrackRev
 
         y = landOutRow
                 (min close t')
-                (DistanceToEss $ toRational distance)
+                (DistanceToEss . MkQuantity . toRational $ distance)
 
 toLcTrackRev
     toLeg
@@ -332,11 +332,15 @@ toLcTrackRev
 
         y = landOutRow
                 (min close . max arrive $ t')
-                (DistanceToEss $ toRational distance)
+                (DistanceToEss . MkQuantity . toRational $ distance)
 
 landOutRow :: EssTime -> DistanceToEss -> LcPoint
 landOutRow (EssTime t) d =
-    LcPoint{leg = LandoutLeg 0, mark = TaskTime t, togo = d}
+    LcPoint
+        { leg = LandoutLeg 0
+        , mark = TaskTime $ MkQuantity t
+        , togo = d
+        }
 
 taskToLeading :: QTaskDistance Double [u| m |] -> LeadingDistance
 taskToLeading (TaskDistance d) =

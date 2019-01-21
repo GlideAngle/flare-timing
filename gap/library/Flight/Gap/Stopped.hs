@@ -86,7 +86,7 @@ canScoreStopped (FromLastStart [] _) =
 canScoreStopped (FromLastStart xs (TaskStopTime t)) =
     (t - lastStart) >= 60 * 60
     where
-        lastStart = maximum $ (\(TaskTime x) -> x) <$> xs
+        lastStart = maximum $ (\(TaskTime (MkQuantity x)) -> x) <$> xs
 
 newtype StoppedValidity = StoppedValidity Rational deriving (Eq, Show)
 newtype DistanceFlown = DistanceFlown Rational deriving (Eq, Show)
@@ -151,6 +151,7 @@ stoppedValidity
 
 newtype StartGates = StartGates Int deriving (Eq, Ord, Show)
 data TaskType = RaceToGoal | ElapsedTime deriving (Eq, Ord, Show)
+
 newtype ScoreTimeWindow = ScoreTimeWindow Rational deriving (Eq, Ord, Show)
 
 scoreTimeWindow
@@ -169,7 +170,7 @@ scoreTimeWindow _ _ (TaskStopTime stopTime) xs
     | otherwise =
         ScoreTimeWindow $ stopTime - maximum ys
     where
-        ys = (\(TaskTime t) -> t) <$> xs
+        ys = (\(TaskTime (MkQuantity t)) -> t) <$> xs
 
 -- | GPS altitude. TODO: State the units for altitude. Is it feet or metres?
 newtype AltitudeAboveGoal = AltitudeAboveGoal Rational deriving (Eq, Ord, Show)

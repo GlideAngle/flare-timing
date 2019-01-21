@@ -101,6 +101,7 @@ module Flight.Score
     , LcArea
     , TaskDeadline(..)
     , LengthOfSs(..)
+    , LeadingAreaScaling(..)
     , LeadingAreaStep(..)
     , LeadingCoefficient(..)
     , LeadingFraction(..)

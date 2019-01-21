@@ -42,7 +42,7 @@ compLeading
     -> [Task k]
     -> ([Maybe LeadingCoefficient], [[(Pilot, TrackLead)]])
 compLeading rowsLeadingStep lsTask tasks' =
-    (minLead, lead)
+    (lcMins, lead)
     where
         rowsLeadingSum' :: [[(Pilot, Maybe LeadingCoefficient)]] =
                     [ (fmap . fmap) (leadingSum l s) xs
@@ -55,7 +55,7 @@ compLeading rowsLeadingStep lsTask tasks' =
                 catMaybes
                 <$> (fmap . fmap) floatMaybe rowsLeadingSum'
 
-        minLead =
+        lcMins =
                 minLeading
                 <$> (fmap . fmap) snd rowsLeadingSum
 
@@ -71,10 +71,10 @@ compLeading rowsLeadingStep lsTask tasks' =
                                 maybe
                                     (LeadingFraction 0)
                                     (`leadingFraction` lc)
-                                    minL
+                                    lcMin
                             })
                     xs
-                | minL <- minLead
+                | lcMin <- lcMins
                 | xs <- rowsLeadingSum
                 ]
 
