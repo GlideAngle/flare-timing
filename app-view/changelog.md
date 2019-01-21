@@ -11,6 +11,10 @@ of this changelog.
   the goal ratio fraction.
 * Parse `FsScoreFormula/@double_leading_weight` as a scaling for leading
   weight, ignoring it if it matches the default for the discipline.
+* Score a stopped task.
+* Fix a bug adding pilot tracks to the layers control more than once each.
+* Show the unscored part of a pilot's track on the map for a stopped task.
+* Show when a task was stopped and when it will be scored back to.
 
 # Trackless Pilots
 ## app-view-0.7
