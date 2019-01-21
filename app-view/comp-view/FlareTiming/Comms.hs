@@ -220,11 +220,10 @@ getTaskPilotTrackFlyingSection (IxTask ii) ev = do
     let u :: PilotId -> T.Text
         u (PilotId pid) =
             mapUri
-            $ "/cross-zone/"
+            $ "/cross-zone/track-flying-section/"
             <> (T.pack . show $ ii)
             <> "/"
             <> (T.pack pid)
-            <> "/track-flying-section"
 
     let req' md = XhrRequest "GET" (u md) def
     rsp <- performRequestAsync . fmap req' $ getPilotId <$> ev

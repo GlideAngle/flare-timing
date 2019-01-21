@@ -193,7 +193,7 @@ type GapPointApi k =
     :<|> "pilot-track" :> (Capture "task" Int) :> (Capture "pilot" String)
         :> Get '[JSON] RawLatLngTrack
 
-    :<|> "cross-zone" :> (Capture "task" Int) :> (Capture "pilot" String) :> "track-flying-section"
+    :<|> "cross-zone" :> "track-flying-section" :> (Capture "task" Int) :> (Capture "pilot" String)
         :> Get '[JSON] TrackFlyingSection
 
 compInputApi :: Proxy (CompInputApi k)
