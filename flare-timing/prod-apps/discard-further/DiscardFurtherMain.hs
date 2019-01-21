@@ -26,6 +26,7 @@ import Flight.Comp
     , AlignTimeFile(..)
     , DiscardFurtherFile(..)
     , CompSettings(..)
+    , TaskStop(..)
     , Task(..)
     , PilotName(..)
     , Pilot(..)
@@ -50,7 +51,7 @@ import Flight.Comp
     , pilotNamed
     )
 import Flight.Track.Time (LeadClose(..), LeadArrival(..), discard)
-import Flight.Track.Mask (RaceTime(..), racing)
+import Flight.Track.Mask (FlyCut(..), FlyClipping(..), RaceTime(..), racing)
 import Flight.Mask (checkTracks)
 import Flight.Scribe
     (readComp, readRoute, readTagging, readAlignTime, writeDiscardFurther)
@@ -171,13 +172,31 @@ filterTime
                     join
                     <$> (fmap . fmap) (fmap LastArrival . unEnd) raceStartEnd
 
-            let raceTime :: [Maybe RaceTime] =
+            let compRaceTimes :: [Maybe RaceTime] =
                     [ racing (Cmp.openClose ss zt) fl fs la
                     | ss <- speedSection <$> tasks
                     | zt <- zoneTimes <$> tasks
                     | fl <- raceFirstLead
                     | fs <- raceFirstStart
                     | la <- raceLastArrival
+                    ]
+
+            let raceTime =
+                    [ do
+                        rt@RaceTime{..} <- crt
+                        return $
+                            maybe
+                                rt
+                                (\stp ->
+                                    uncut . clipToFlown $
+                                        FlyCut
+                                            { cut = Just (openTask, min stp closeTask)
+                                            , uncut = rt
+                                            })
+                                (retroactive <$> stopped task)
+
+                    | crt <- compRaceTimes
+                    | task <- tasks
                     ]
 
             sequence_ $ zipWith4
