@@ -187,7 +187,6 @@ points'
                 , time = tNom
                 , free
                 }
-        , compTweak
         , tasks
         , pilots
         , pilotGroups
@@ -331,19 +330,30 @@ points'
                else const (effortWeight EwPg) <$> dws
 
         lws =
-            let lw =
-                    maybe
-                        (if discipline == HangGliding then LwHg else LwPg)
-                        LwScaled
-                        -- TODO: Check for taskTweak beforehand.
-                        (join $ leadingWeightScaling <$> compTweak)
+            [
+                maybe
+                    (if discipline == HangGliding
+                        then leadingWeight (LwHg dw)
+                        else leadingWeight (LwPg dw))
+                    (\k -> leadingWeight (LwScaled k dw))
+                    (join $ leadingWeightScaling <$> tw)
 
-            in leadingWeight . lw <$> dws
+            | dw <- dws
+            | tw <- taskTweak <$> tasks
+            ]
 
         aws =
-            if discipline == HangGliding
-               then arrivalWeight . AwHg <$> dws
-               else const (arrivalWeight AwPg) <$> dws
+            [
+                maybe
+                    (if discipline == HangGliding
+                        then arrivalWeight (AwHg dw)
+                        else arrivalWeight AwPg)
+                    (\k -> arrivalWeight (AwScaled k dw))
+                    (join $ arrivalWeightScaling <$> tw)
+
+            | dw <- dws
+            | tw <- taskTweak <$> tasks
+            ]
 
         ws =
             [ Gap.Weights dw rw ew lw aw (timeWeight dw lw aw)

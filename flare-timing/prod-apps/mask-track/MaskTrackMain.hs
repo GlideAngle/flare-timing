@@ -319,6 +319,7 @@ writeMask
                         pilots
 
             let (lcMin, lead) = compLeading rowsLeadingStep lsWholeTask tasks
+
             let lcScaling =
                     [
                         areaScaling
