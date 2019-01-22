@@ -45,6 +45,7 @@ module Flight.Score
     , Lw(..)
     , LwScaling(..)
     , Aw(..)
+    , AwScaling(..)
     , Rw(..)
     , Ew(..)
     , Weights(..)
@@ -179,6 +180,7 @@ import Flight.Gap.Ratio
 import Flight.Gap.Allot
 import Flight.Gap.Pilots
 import Flight.Gap.Ratio.Launch
+import Flight.Gap.Ratio.Arrival
 import Flight.Gap.Ratio.Leading
 import Flight.Gap.Ratio.Goal
 import Flight.Gap.Time.Nominal

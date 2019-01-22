@@ -24,6 +24,7 @@ import Flight.Gap.Weight.Distance
 import Flight.Gap.Weight.Leading (LeadingWeight(..))
 import Flight.Gap.Weight.Arrival (ArrivalWeight(..))
 import Flight.Gap.Weight.Time (TimeWeight(..))
+import Flight.Gap.Ratio.Arrival (AwScaling(..))
 import Flight.Gap.Ratio.Leading (LwScaling(..))
 
 data Weights =
@@ -53,6 +54,7 @@ data Lw
 data Aw
     = AwHg DistanceWeight
     | AwPg
+    | AwScaled AwScaling DistanceWeight
     deriving Show
 
 -- | Reach weight varies between disciplines.
@@ -97,11 +99,17 @@ leadingWeight (LwPg dw) =
 leadingWeight (LwScaled (LwScaling k) dw) =
     LeadingWeight $ lwDistanceWeight dw * k
 
+awDistanceWeight :: DistanceWeight -> Rational
+awDistanceWeight (DistanceWeight (n :% d)) =
+    (d - n) % (8 * d)
+
 arrivalWeight :: Aw -> ArrivalWeight
 arrivalWeight AwPg =
     ArrivalWeight 0
-arrivalWeight (AwHg (DistanceWeight (n :% d))) =
-    ArrivalWeight $ (d - n) % (8 * d)
+arrivalWeight (AwHg dw) =
+    ArrivalWeight $ awDistanceWeight dw
+arrivalWeight (AwScaled (AwScaling k) dw) =
+    ArrivalWeight $ awDistanceWeight dw * k
 
 timeWeight :: DistanceWeight -> LeadingWeight -> ArrivalWeight -> TimeWeight
 timeWeight (DistanceWeight d) (LeadingWeight l) (ArrivalWeight a) =

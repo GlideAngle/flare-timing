@@ -206,7 +206,7 @@ fsdbSettings dm zg fsdbXml = do
             | t@Task{zones = z@Zones{raw = rz}} <- ts
             ]
 
-    Tweak{leadingWeightScaling = lw} <- fsdbTweak fsdbXml
+    tw@Tweak{leadingWeightScaling = lw} <- fsdbTweak fsdbXml
     let lw' = if Just (lwScalingDefault hgOrPg) == lw then Nothing else lw
 
     let msg =
@@ -228,7 +228,7 @@ fsdbSettings dm zg fsdbXml = do
 
                     }
             , nominal = n
-            , tweak = Tweak{ leadingWeightScaling = lw' }
+            , tweak = tw{ leadingWeightScaling = lw' }
             , tasks = ts'
             , taskFolders = fs
             , pilots = tps

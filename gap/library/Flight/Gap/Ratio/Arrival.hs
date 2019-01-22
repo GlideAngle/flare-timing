@@ -1,4 +1,7 @@
-module Flight.Gap.Ratio.Arrival (ArrivalFraction(..)) where
+module Flight.Gap.Ratio.Arrival
+    ( ArrivalFraction(..)
+    , AwScaling(..)
+    ) where
 
 import "newtype" Control.Newtype (Newtype(..))
 import Data.Via.Scientific (DecimalPlaces(..), deriveDecimalPlaces, deriveJsonViaSci)
@@ -12,3 +15,13 @@ instance Newtype ArrivalFraction Rational where
 
 deriveDecimalPlaces (DecimalPlaces 8) ''ArrivalFraction
 deriveJsonViaSci ''ArrivalFraction
+
+newtype AwScaling = AwScaling Rational
+    deriving (Eq, Ord, Show)
+
+instance Newtype AwScaling Rational where
+    pack = AwScaling
+    unpack (AwScaling a) = a
+
+deriveDecimalPlaces (DecimalPlaces 0) ''AwScaling
+deriveJsonViaSci ''AwScaling

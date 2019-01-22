@@ -91,6 +91,7 @@ import Flight.Score
     , PilotName(..)
     , Pilot(..)
     , LwScaling(..)
+    , AwScaling(..)
     )
 import Flight.Earth.Ellipsoid (Ellipsoid(..))
 
@@ -294,7 +295,11 @@ data Nominal =
 
 -- | Tweaks that move the scoring away from the default formulae for either
 -- discipline.
-data Tweak = Tweak { leadingWeightScaling :: Maybe LwScaling }
+data Tweak =
+    Tweak
+        { leadingWeightScaling :: Maybe LwScaling
+        , arrivalWeightScaling :: Maybe AwScaling
+        }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
