@@ -58,11 +58,12 @@ import Flight.Track.Distance (AwardedDistance(..))
 import Flight.Comp
     ( PilotId(..), PilotName(..), Pilot(..)
     , PilotGroup(..), DfNoTrack(..)
-    , Task(..), TaskStop(..), StartGate(..), OpenClose(..)
+    , Task(..), TaskStop(..), StartGate(..), OpenClose(..), Tweak(..)
     )
+import Flight.Score (ScoreBackTime(..))
 import Flight.Fsdb.Pilot (getCompPilot)
 import Flight.Fsdb.Internal.XmlPickle (xpNewtypeRational, xpNewtypeQuantity)
-import Flight.Score (ScoreBackTime(..))
+import Flight.Fsdb.Tweak (xpTweak)
 
 -- | The attribute //FsTaskDefinition@goal.
 newtype FsGoal = FsGoal String
@@ -387,17 +388,17 @@ getTaskPilotGroup ps =
             `orElse` constA Nothing
 
         getTaskDistance =
-            (getChildren
+            getChildren
             >>> hasName "FsTaskScoreParams"
             >>> getAttrValue "task_distance"
-            )
 
 getTask
     :: ArrowXml a
     => Discipline
+    -> Maybe Tweak
     -> Maybe (ScoreBackTime (Quantity Double [u| s |]))
     -> a XmlTree (Task k)
-getTask discipline sb =
+getTask discipline compTweak sb =
     getChildren
     >>> deep (hasName "FsTask")
     >>> getAttrValue "name"
@@ -413,9 +414,10 @@ getTask discipline sb =
     &&& getZoneTimes
     &&& getStartGates
     &&& getTaskState
+    &&& getTaskTweak
     >>> arr mkTask
     where
-        mkTask (name, (zs, (section, (ts, (gates, taskState))))) =
+        mkTask (name, (zs, (section, (ts, (gates, (taskState, tw)))))) =
             Task
                 { taskName = name
                 , zones = zs
@@ -440,6 +442,7 @@ getTask discipline sb =
                             TaskStateRegular _ -> Nothing
                             TaskStateCancel _ -> Nothing)
                         taskState
+                , taskTweak = if tw == compTweak then compTweak else tw
                 }
             where
                 -- NOTE: If all time zones are the same then collapse.
@@ -517,14 +520,20 @@ getTask discipline sb =
             >>> hasName "FsTaskState"
             >>> arr (unpickleDoc xpStopped)
 
+        getTaskTweak =
+            (getChildren
+            >>> hasName "FsScoreFormula"
+            >>> arr (unpickleDoc $ xpTweak discipline))
+
 parseTasks
     :: Discipline
+    -> Maybe Tweak
     -> Maybe (ScoreBackTime (Quantity Double [u| s |]))
     -> String
     -> IO (Either String [Task k])
-parseTasks discipline sb contents = do
+parseTasks discipline compTweak sb contents = do
     let doc = readString [ withValidate no, withWarnings no ] contents
-    xs <- runX $ doc >>> getTask discipline sb
+    xs <- runX $ doc >>> getTask discipline compTweak sb
     return $ Right xs
 
 parseTaskPilotGroups :: String -> IO (Either String [PilotGroup])

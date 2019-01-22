@@ -15,7 +15,7 @@ import qualified Data.Map.Strict as Map
 import Data.List (sortBy, groupBy)
 import Control.Applicative (liftA2)
 import qualified Control.Applicative as A ((<$>))
-import Control.Monad (mapM_)
+import Control.Monad (mapM_, join)
 import Control.Exception.Safe (catchIO)
 import System.FilePath (takeFileName)
 import Data.UnitsOfMeasure ((/:), u, convert, unQuantity)
@@ -187,9 +187,7 @@ points'
                 , time = tNom
                 , free
                 }
-        , tweak =
-            Tweak
-                { leadingWeightScaling = lwScaling }
+        , compTweak
         , tasks
         , pilots
         , pilotGroups
@@ -337,7 +335,9 @@ points'
                     maybe
                         (if discipline == HangGliding then LwHg else LwPg)
                         LwScaled
-                    lwScaling
+                        -- TODO: Check for taskTweak beforehand.
+                        (join $ leadingWeightScaling <$> compTweak)
+
             in leadingWeight . lw <$> dws
 
         aws =

@@ -183,7 +183,7 @@ data CompSettings k =
     CompSettings
         { comp :: Comp
         , nominal :: Nominal
-        , tweak :: Tweak
+        , compTweak :: Maybe Tweak
         , tasks :: [Task k]
         , taskFolders :: [TaskFolder]
         , pilots :: [[PilotTrackLogFile]]
@@ -331,6 +331,7 @@ data Task k =
         , zoneTimes :: [OpenClose]
         , startGates :: [StartGate]
         , stopped :: Maybe TaskStop
+        , taskTweak :: Maybe Tweak
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
@@ -358,9 +359,9 @@ cmp a b =
         ("comp", _) -> LT
         ("nominal", "comp") -> GT
         ("nominal", _) -> LT
-        ("tweak", "comp") -> GT
-        ("tweak", "nominal") -> GT
-        ("tweak", _) -> LT
+        ("compTweak", "comp") -> GT
+        ("compTweak", "nominal") -> GT
+        ("compTweak", _) -> LT
         ("tasks", "taskFolders") -> LT
         ("tasks", "pilots") -> LT
         ("tasks", "pilotGroups") -> LT
@@ -474,6 +475,8 @@ cmp a b =
 
         ("speedSection", "zoneTimes") -> LT
         ("speedSection", "startGates") -> LT
+        ("speedSection", "stopped") -> LT
+        ("speedSection", "taskTweak") -> LT
         ("speedSection", "absent") -> LT
         ("speedSection", _) -> GT
 
@@ -482,7 +485,14 @@ cmp a b =
         ("zoneTimes", _) -> GT
 
         ("startGates", "absent") -> LT
+        ("startGates", "taskTweak") -> LT
         ("startGates", _) -> GT
+
+        ("stopped", "taskTweak") -> LT
+        ("stopped", _) -> GT
+
+        ("taskTweak", _) -> GT
+
         ("absent", "didFlyNoTracklog") -> LT
         ("absent", _) -> GT
         ("didFlyNoTracklog", _) -> GT

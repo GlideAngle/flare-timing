@@ -1,7 +1,7 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module Flight.Fsdb.Tweak (parseTweak) where
+module Flight.Fsdb.Tweak (parseTweak, xpTweak) where
 
 import Control.Arrow ((***))
 import Control.Monad (join)
@@ -31,6 +31,7 @@ import Text.XML.HXT.Core
 import Flight.Zone.MkZones (Discipline(..))
 import Flight.Comp (Tweak(..))
 import Flight.Score (LwScaling(..), AwScaling(..))
+import Flight.Track.Lead (lwScalingDefault)
 import Flight.Fsdb.Internal.XmlPickle (xpBool)
 
 xpTweak :: Discipline -> PU Tweak
@@ -56,9 +57,12 @@ xpTweak discipline =
                         Just False -> Just $ AwScaling 0
                         Just True -> Nothing
                         Nothing -> Nothing
+
+                ls' = if Just (lwScalingDefault discipline) == ls then Nothing else ls
+
             in
                 Tweak
-                    { leadingWeightScaling = ls
+                    { leadingWeightScaling = ls'
                     , arrivalWeightScaling = as
                     }
         , \Tweak{leadingWeightScaling = ls, arrivalWeightScaling = as} ->
@@ -85,11 +89,11 @@ xpTweak discipline =
         (xpOption $ xpAttr "double_leading_weight" xpBool)
         (xpOption $ xpAttr "use_arrival_position_points" xpBool)
 
-getTweak
+getCompTweak
     :: ArrowXml a
     => Discipline
     -> a XmlTree (Either String Tweak)
-getTweak discipline =
+getCompTweak discipline =
     (getChildren
     >>> deep (hasName "FsCompetition")
     /> hasName "FsScoreFormula"
@@ -99,5 +103,5 @@ getTweak discipline =
 parseTweak :: Discipline -> String -> IO (Either String [Tweak])
 parseTweak discipline contents = do
     let doc = readString [ withValidate no, withWarnings no ] contents
-    xs <- runX $ doc >>> getTweak discipline
+    xs <- runX $ doc >>> getCompTweak discipline
     return $ sequence xs

@@ -9,6 +9,7 @@ import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Fsdb
     ( parseComp
     , parseNominal
+    , parseTweak
     , parseScoreBack
     , parseTasks
     , parsePilots
@@ -114,7 +115,11 @@ printTasks :: String -> IO ()
 printTasks contents = do
     Right (sb : _) <- parseScoreBack contents
     Right (comp : _) <- parseComp contents
-    tasks <- parseTasks (Comp.discipline comp) sb contents
+    let hgOrPg = Comp.discipline comp
+
+    Right (tw : _) <- parseTweak hgOrPg contents
+
+    tasks <- parseTasks hgOrPg (Just tw) sb contents
     case tasks of
         Left msg -> print msg
         Right tasks' -> print $ showTask <$> tasks'

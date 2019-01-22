@@ -50,7 +50,6 @@ import ExtractInputOptions (CmdOptions(..), mkOptions, mkEarthModel)
 
 import qualified Flight.Earth.Sphere.PointToPoint.Double as Dbl (distanceHaversine)
 import qualified Flight.Earth.Sphere.Separated as S (separatedZones)
-import Flight.Track.Lead (lwScalingDefault)
 
 spanD :: SpanLatLng Double
 spanD = Dbl.distanceHaversine
@@ -148,7 +147,7 @@ fsdbTweak discipline (FsdbXml contents) = do
             let msg = "Expected only one set of tweaks for the comp"
             lift $ print msg
             throwE msg
-
+            
 fsdbScoreBack
     :: FsdbXml
     -> ExceptT String IO (Maybe (ScoreBackTime (Quantity Double [u| s |])))
@@ -165,11 +164,12 @@ fsdbScoreBack (FsdbXml contents) = do
 
 fsdbTasks
     :: Discipline
+    -> Maybe Tweak
     -> Maybe (ScoreBackTime (Quantity Double [u| s |]))
     -> FsdbXml
     -> ExceptT String IO [Task k]
-fsdbTasks discipline sb (FsdbXml contents) = do
-    ts <- lift $ parseTasks discipline sb contents
+fsdbTasks discipline tw sb (FsdbXml contents) = do
+    ts <- lift $ parseTasks discipline tw sb contents
     ExceptT $ return ts
 
 fsdbTaskPilotGroups :: FsdbXml -> ExceptT String IO [PilotGroup]
@@ -195,8 +195,9 @@ fsdbSettings
 fsdbSettings dm zg fsdbXml = do
     c@Comp{discipline = hgOrPg} <- fsdbComp fsdbXml
     n <- fsdbNominal fsdbXml
+    tw <- Just <$> fsdbTweak hgOrPg fsdbXml
     sb <- fsdbScoreBack fsdbXml
-    ts <- fsdbTasks hgOrPg sb fsdbXml
+    ts <- fsdbTasks hgOrPg tw sb fsdbXml
     pgs <- fsdbTaskPilotGroups fsdbXml
     fs <- fsdbTaskFolders fsdbXml
     tps <- fsdbTracks fsdbXml
@@ -205,9 +206,6 @@ fsdbSettings dm zg fsdbXml = do
             [ t{zones = z{raw = Raw.zoneGive separated zg rz}}
             | t@Task{zones = z@Zones{raw = rz}} <- ts
             ]
-
-    tw@Tweak{leadingWeightScaling = lw} <- fsdbTweak hgOrPg fsdbXml
-    let lw' = if Just (lwScalingDefault hgOrPg) == lw then Nothing else lw
 
     let msg =
             "Extracted "
@@ -228,7 +226,7 @@ fsdbSettings dm zg fsdbXml = do
 
                     }
             , nominal = n
-            , tweak = tw{ leadingWeightScaling = lw' }
+            , compTweak = tw
             , tasks = ts'
             , taskFolders = fs
             , pilots = tps
