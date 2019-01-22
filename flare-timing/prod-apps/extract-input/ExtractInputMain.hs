@@ -138,9 +138,9 @@ fsdbNominal (FsdbXml contents) = do
             lift $ print msg
             throwE msg
 
-fsdbTweak :: FsdbXml -> ExceptT String IO Tweak
-fsdbTweak (FsdbXml contents) = do
-    ns <- lift $ parseTweak contents
+fsdbTweak :: Discipline -> FsdbXml -> ExceptT String IO Tweak
+fsdbTweak discipline (FsdbXml contents) = do
+    ns <- lift $ parseTweak discipline contents
     case ns of
         Left msg -> ExceptT . return $ Left msg
         Right [n] -> ExceptT . return $ Right n
@@ -196,7 +196,7 @@ fsdbSettings dm zg fsdbXml = do
     c@Comp{discipline = hgOrPg} <- fsdbComp fsdbXml
     n <- fsdbNominal fsdbXml
     sb <- fsdbScoreBack fsdbXml
-    ts <- fsdbTasks (discipline c) sb fsdbXml
+    ts <- fsdbTasks hgOrPg sb fsdbXml
     pgs <- fsdbTaskPilotGroups fsdbXml
     fs <- fsdbTaskFolders fsdbXml
     tps <- fsdbTracks fsdbXml
@@ -206,7 +206,7 @@ fsdbSettings dm zg fsdbXml = do
             | t@Task{zones = z@Zones{raw = rz}} <- ts
             ]
 
-    tw@Tweak{leadingWeightScaling = lw} <- fsdbTweak fsdbXml
+    tw@Tweak{leadingWeightScaling = lw} <- fsdbTweak hgOrPg fsdbXml
     let lw' = if Just (lwScalingDefault hgOrPg) == lw then Nothing else lw
 
     let msg =
