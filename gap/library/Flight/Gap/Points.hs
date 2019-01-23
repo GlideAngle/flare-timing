@@ -21,7 +21,10 @@ module Flight.Gap.Points
 
 import Data.Ratio ((%))
 import GHC.Generics (Generic)
-import Data.Aeson (ToJSON(..), FromJSON(..))
+import Data.Aeson
+    ( ToJSON(..), FromJSON(..), Options(..), SumEncoding(..)
+    , genericToJSON, genericParseJSON, defaultOptions
+    )
 
 import Flight.Gap.Points.Distance
     (DistancePoints(..), LinearPoints(..), DifficultyPoints(..))
@@ -66,7 +69,23 @@ data Penalty a where
 data PointPenalty
     = PenaltyPoints Double
     | PenaltyFraction Double
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Show, Generic)
+
+pointPenaltyOptions :: Options
+pointPenaltyOptions =
+    defaultOptions
+        { sumEncoding = ObjectWithSingleField
+        , constructorTagModifier = \case
+            "PenaltyPoints" -> "penalty-points"
+            "PenaltyFraction" -> "penalty-fraction"
+            s -> s
+        }
+
+instance ToJSON PointPenalty where
+    toJSON = genericToJSON pointPenaltyOptions
+
+instance FromJSON PointPenalty where
+    parseJSON = genericParseJSON pointPenaltyOptions
 
 deriving instance Eq (Penalty a)
 deriving instance Show (Penalty a)
