@@ -479,6 +479,7 @@ cmp a b =
         ("speedSection", "startGates") -> LT
         ("speedSection", "stopped") -> LT
         ("speedSection", "taskTweak") -> LT
+        ("speedSection", "penalties") -> LT
         ("speedSection", "absent") -> LT
         ("speedSection", _) -> GT
 
@@ -488,12 +489,17 @@ cmp a b =
 
         ("startGates", "absent") -> LT
         ("startGates", "taskTweak") -> LT
+        ("startGates", "penalties") -> LT
         ("startGates", _) -> GT
 
         ("stopped", "taskTweak") -> LT
+        ("stopped", "penalties") -> LT
         ("stopped", _) -> GT
 
+        ("taskTweak", "penalties") -> LT
         ("taskTweak", _) -> GT
+
+        ("penalties", _) -> GT
 
         ("absent", "didFlyNoTracklog") -> LT
         ("absent", _) -> GT
