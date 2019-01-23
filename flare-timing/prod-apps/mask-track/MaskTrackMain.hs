@@ -320,7 +320,7 @@ writeMask
                         raceTime
                         pilots
 
-            let (lcMin, lead) = compLeading rowsLeadingStep lsWholeTask tasks
+            let (lcMin, lead) = compLeading rowsLeadingStep lsSpeedSubset tasks
 
             let lcScaling =
                     [
