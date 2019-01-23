@@ -64,8 +64,8 @@ data Penalty a where
     NoGoalPg :: Penalty Pg
 
 data PointPenalty
-    = PenaltyPoints Integer
-    | PenaltyFraction Rational
+    = PenaltyPoints Double
+    | PenaltyFraction Double
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 deriving instance Eq (Penalty a)
@@ -165,9 +165,9 @@ taskPoints = tallyPoints
 
 applyPointPenalty :: PointPenalty-> TaskPoints -> TaskPoints
 applyPointPenalty (PenaltyPoints n) (TaskPoints p) =
-    TaskPoints $ p - (n % 1)
+    TaskPoints $ p - (toRational n)
 applyPointPenalty (PenaltyFraction n) (TaskPoints p) =
-    TaskPoints $ p - p * n
+    TaskPoints $ p - p * (toRational n)
 
 availablePoints :: TaskValidity -> Weights -> (Points, TaskPoints)
 availablePoints (TaskValidity tv) Weights{..} =

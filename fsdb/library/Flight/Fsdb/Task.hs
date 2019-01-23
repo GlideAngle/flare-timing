@@ -104,9 +104,9 @@ xpPointPenalty =
         (hasName "penalty" <+> hasName "penalty_points")
     $ xpWrap
         ( \case
-            (0, 0) -> []
-            (frac, 0) -> [PenaltyFraction frac]
-            (0, pts) -> [PenaltyPoints pts]
+            (0.0, 0.0) -> []
+            (frac, 0.0) -> [PenaltyFraction frac]
+            (0.0, pts) -> [PenaltyPoints pts]
             (frac, pts) ->
                 [ PenaltyFraction frac
                 , PenaltyPoints pts
@@ -124,10 +124,10 @@ xpPointPenalty =
 
             in
                 case (p, pp) of
-                    (Just (PenaltyFraction x), Nothing) -> (x, 0)
-                    (Nothing, Just (PenaltyPoints y)) -> (0, y)
+                    (Just (PenaltyFraction x), Nothing) -> (x, 0.0)
+                    (Nothing, Just (PenaltyPoints y)) -> (0.0, y)
                     (Just (PenaltyFraction x), Just (PenaltyPoints y)) -> (x, y)
-                    _ -> (0, 0)
+                    _ -> (0.0, 0.0)
         )
     $ xpPair
         (xpAttr "penalty" xpPrim)
