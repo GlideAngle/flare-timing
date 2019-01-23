@@ -9,7 +9,7 @@ module Flight.Fsdb.Task
 
 import Data.Time.Clock (addUTCTime)
 import Data.Maybe (catMaybes, maybeToList)
-import Data.List (sort, sortOn, nub)
+import Data.List (sort, sortOn, nub, find)
 import Control.Monad (join)
 import Data.Map.Strict (Map, fromList, findWithDefault)
 import Data.UnitsOfMeasure ((/:), u, convert, unQuantity)
@@ -101,7 +101,7 @@ xpPointPenalty :: PU [PointPenalty]
 xpPointPenalty =
     xpElem "FsResultPenalty"
     $ xpFilterAttr
-        ( hasName "penalty" <+> hasName "penalty_points")
+        (hasName "penalty" <+> hasName "penalty_points")
     $ xpWrap
         ( \case
             (0, 0) -> []
@@ -111,7 +111,23 @@ xpPointPenalty =
                 [ PenaltyFraction frac
                 , PenaltyPoints pts
                 ]
-        , const (0, 0)
+        , \xs ->
+            let p =
+                    find
+                        (\case PenaltyFraction _ -> True; PenaltyPoints _ -> False)
+                        xs
+
+                pp =
+                    find
+                        (\case PenaltyFraction _ -> False; PenaltyPoints _ -> True)
+                        xs
+
+            in
+                case (p, pp) of
+                    (Just (PenaltyFraction x), Nothing) -> (x, 0)
+                    (Nothing, Just (PenaltyPoints y)) -> (0, y)
+                    (Just (PenaltyFraction x), Just (PenaltyPoints y)) -> (x, y)
+                    _ -> (0, 0)
         )
     $ xpPair
         (xpAttr "penalty" xpPrim)
