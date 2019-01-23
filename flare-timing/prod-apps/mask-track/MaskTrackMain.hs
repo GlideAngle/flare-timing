@@ -18,6 +18,7 @@ import Data.UnitsOfMeasure ((-:), u, convert, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import System.FilePath (takeFileName)
 
+import Flight.LatLng (QAlt)
 import Flight.Route (OptimalRoute(..))
 import qualified Flight.Comp as Cmp (Nominal(..))
 import Flight.Comp
@@ -66,7 +67,7 @@ import qualified Flight.Track.Distance as Track (awardByFrac)
 import Flight.Track.Lead (compLeading)
 import Flight.Track.Mask (FlyCut(..), FlyClipping(..), Masking(..), RaceTime(..))
 import Flight.Track.Speed (TrackSpeed(..))
-import Flight.Kml (MarkedFixes(..))
+import Flight.Kml (LatLngAlt(..), MarkedFixes(..))
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
@@ -95,7 +96,7 @@ import Flight.Score
     )
 import Flight.Span.Math (Math(..))
 import MaskTrackOptions (description)
-import Stats (TimeStats(..), FlightStats(..), DashPathInputs(..), nullStats)
+import Stats (TimeStats(..), FlightStats(..), DashPathInputs(..), nullStats, altToAlt)
 
 main :: IO ()
 main = do
@@ -262,6 +263,7 @@ writeMask
 
             -- Distances (ds) of the landout spot.
             let dsLand :: [[(Pilot, TrackDistance Land)]] = landDistances <$> yss
+            let dsAlt :: [[(Pilot, QAlt Double [u| m |])]] = landAltitudes <$> yss
 
             -- Arrivals (as).
             let as :: [[(Pilot, TrackArrival)]] = arrivals <$> yss
@@ -378,6 +380,7 @@ writeMask
                     , gsSpeed = fromMaybe [] <$> (fmap . fmap) snd gsVs
                     , nigh = dsNigh
                     , land = dsLand
+                    , altStopped = dsAlt
                     }
 
 awardByFrac
@@ -401,6 +404,11 @@ includeTask tasks = if null tasks then const True else (`elem` tasks)
 landTaskTicked :: [(Pilot, FlightStats k)] -> [(Pilot, _)]
 landTaskTicked xs =
     (\(p, FlightStats{..}) -> (p, statDash)) <$> xs
+
+landAltitudes :: [(Pilot, FlightStats k)] -> [(Pilot, QAlt Double [u| m |])]
+landAltitudes xs =
+    catMaybes
+    $ fmap (\(p, FlightStats{..}) -> (p,) <$> statAlt) xs
 
 landDistances :: [(Pilot, FlightStats k)] -> [(Pilot, TrackDistance Land)]
 landDistances xs =
@@ -494,7 +502,13 @@ flown' dTaskF flying math tags tasks iTask@(IxTask i) mf@MarkedFixes{mark0} p =
                     tickedStats {statTimeRank = Just $ TimeStats a b c}
 
                 _ ->
-                    tickedStats {statLand = Just $ landDistance task'}
+                    tickedStats
+                        { statLand = Just $ landDistance task'
+                        , statAlt =
+                            case reverse ys of
+                                [] -> Nothing
+                                y : _ -> Just . altToAlt $ altGps y
+                        }
 
     where
         maybeTask = tasks ^? element (i - 1)
@@ -503,6 +517,7 @@ flown' dTaskF flying math tags tasks iTask@(IxTask i) mf@MarkedFixes{mark0} p =
         ssTime = Lookup.pilotTime (tagPilotTime tags) mf iTask [] speedSection' p
         gsTime = Lookup.pilotTime (tagPilotTime tags) mf iTask startGates' speedSection' p
         arrivalRank = Lookup.arrivalRank (tagArrivalRank tags) mf iTask speedSection' p
+        FlyCut{uncut = MarkedFixes{fixes = ys}} = clipToFlown xs
 
         xs =
             FlyCut
@@ -535,4 +550,3 @@ flown' dTaskF flying math tags tasks iTask@(IxTask i) mf@MarkedFixes{mark0} p =
             case tasks ^? element (fromIntegral i - 1) of
                 Nothing -> Nothing
                 Just Task{..} -> speedSection
-

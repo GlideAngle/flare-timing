@@ -3,15 +3,21 @@ module Stats
     , FlightStats(..)
     , DashPathInputs(..)
     , nullStats
+    , altToAlt
     ) where
 
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
+import Flight.LatLng (QAlt, Alt(..))
+import Flight.Kml (Altitude(..))
 import Flight.Track.Distance (TrackDistance(..), Land)
 import Flight.Mask (RaceSections(..))
 import Flight.Comp.Distance (DashPathInputs(..))
 import Flight.Score (PilotTime(..), PositionAtEss(..))
+
+altToAlt :: Altitude -> QAlt Double [u| m |]
+altToAlt (Altitude x) = Alt . MkQuantity . fromIntegral $ x
 
 data TimeStats =
     TimeStats
@@ -26,6 +32,7 @@ data FlightStats k =
     FlightStats
         { statTimeRank :: Maybe TimeStats
         , statLand :: Maybe (TrackDistance Land)
+        , statAlt :: Maybe (QAlt Double [u| m |])
         , statDash :: DashPathInputs k
         }
 
@@ -34,6 +41,7 @@ nullStats =
     FlightStats
         { statTimeRank = Nothing
         , statLand = Nothing
+        , statAlt = Nothing
         , statDash =
             DashPathInputs
                 { dashTask = Nothing

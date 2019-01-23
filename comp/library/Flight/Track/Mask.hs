@@ -24,6 +24,7 @@ import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 
 import Flight.Distance (QTaskDistance)
+import Flight.LatLng (QAlt)
 import Flight.Comp (OpenClose(..), FirstLead(..), FirstStart(..), LastArrival(..))
 import Flight.Score
     ( Pilot(..)
@@ -111,6 +112,8 @@ data Masking =
         , land :: [[(Pilot, TrackDistance Land)]]
         -- ^ For each task, the distance of the landing spot for each pilot
         -- landing out.
+        , altStopped :: [[(Pilot, QAlt Double [u| m |])]]
+        -- ^ For each task, the altitude of each pilot at the score back time.
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
@@ -337,7 +340,10 @@ cmp a b =
         ("nigh", "gsSpeed") -> GT
         ("nigh", _) -> LT
 
+        ("land", "altStopped") -> LT
         ("land", _) -> GT
+
+        ("altStopped", _) -> GT
 
         ("coef", _) -> LT
         ("time", _) -> LT

@@ -21,6 +21,7 @@ import System.FilePath (takeFileName)
 import Data.UnitsOfMeasure ((/:), u, convert, unQuantity)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
+import Flight.LatLng (QAlt)
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
@@ -206,6 +207,7 @@ points'
         , gsSpeed
         , nigh
         , land
+        , altStopped
         }
     Landing
         { difficulty = landoutDifficulty
@@ -416,6 +418,12 @@ points'
             | ys <- arrival
             ]
 
+        stoppedAlts :: [[(Pilot, Maybe (QAlt Double [u| m |]))]] =
+            [ let ys' = (fmap . fmap) (const Nothing) ys in (xs ++ ys')
+            | xs <- (fmap . fmap . fmap) Just altStopped
+            | ys <- arrival
+            ]
+
         difficultyDistancePointsDf :: [[(Pilot, DifficultyPoints)]] =
             [ maybe
                 []
@@ -567,7 +575,7 @@ points'
               in
                   rankByTotal . sortScores
                   $ fmap (tallyDf gates)
-                  A.<$> collateDf diffs linears ls as ts ds ssEs gsEs gs
+                  A.<$> collateDf diffs linears ls as ts alts ds ssEs gsEs gs
             | diffs <- difficultyDistancePointsDf
             | linears <- nighDistancePointsDf
             | ls <- leadingPoints
@@ -585,6 +593,7 @@ points'
                 (fmap . fmap)
                     ((fmap . fmap) (PilotDistance . MkQuantity))
                     landDistance
+            | alts <- stoppedAlts
             | ssEs <- elapsedTime ssSpeed
             | gsEs <- elapsedTime gsSpeed
             | gs <- tags
@@ -763,13 +772,15 @@ collateDf
     -> [(Pilot, LeadingPoints)]
     -> [(Pilot, ArrivalPoints)]
     -> [(Pilot, TimePoints)]
+    -> [(Pilot, Maybe alt)]
     -> [(Pilot, (Maybe a, Maybe a, Maybe a))]
     -> [(Pilot, Maybe b)]
     -> [(Pilot, Maybe c)]
     -> [(Pilot, Maybe d)]
-    -> [(Pilot, (Maybe d, (Maybe c, (Maybe b, ((Maybe a, Maybe a, Maybe a), Gap.Points)))))]
-collateDf diffs linears ls as ts ds ssEs gsEs gs =
+    -> [(Pilot, (Maybe alt, (Maybe d, (Maybe c, (Maybe b, ((Maybe a, Maybe a, Maybe a), Gap.Points))))))]
+collateDf diffs linears ls as ts alts ds ssEs gsEs gs =
     Map.toList
+    $ Map.intersectionWith (,) malts
     $ Map.intersectionWith (,) mg
     $ Map.intersectionWith (,) mgsEs
     $ Map.intersectionWith (,) mssEs
@@ -784,6 +795,7 @@ collateDf diffs linears ls as ts ds ssEs gsEs gs =
         ml = Map.fromList ls
         ma = Map.fromList as
         mt = Map.fromList ts
+        malts = Map.fromList alts
         md = Map.fromList ds
         mssEs = Map.fromList ssEs
         mgsEs = Map.fromList gsEs
@@ -855,18 +867,21 @@ startEnd RaceSections{race} =
 tallyDf
     :: [StartGate]
     ->
-        ( Maybe StartEndTags
+        ( Maybe (QAlt Double [u| m |])
         ,
-            ( Maybe (PilotTime (Quantity Double [u| h |]))
+            ( Maybe StartEndTags
             ,
                 ( Maybe (PilotTime (Quantity Double [u| h |]))
                 ,
-                    (
-                        ( Maybe (PilotDistance (Quantity Double [u| km |]))
-                        , Maybe (PilotDistance (Quantity Double [u| km |]))
-                        , Maybe (PilotDistance (Quantity Double [u| km |]))
+                    ( Maybe (PilotTime (Quantity Double [u| h |]))
+                    ,
+                        (
+                            ( Maybe (PilotDistance (Quantity Double [u| km |]))
+                            , Maybe (PilotDistance (Quantity Double [u| km |]))
+                            , Maybe (PilotDistance (Quantity Double [u| km |]))
+                            )
+                        , Gap.Points
                         )
-                    , Gap.Points
                     )
                 )
             )
@@ -874,20 +889,23 @@ tallyDf
     -> Breakdown
 tallyDf
     startGates
-    ( g
+    ( alt
     ,
-        ( gsT
+        ( g
         ,
-            ( ssT
+            ( gsT
             ,
-                ( (dS, dN, dL)
-                , x@Gap.Points
-                    { reach = LinearPoints r
-                    , effort = DifficultyPoints dp
-                    , leading = LeadingPoints l
-                    , arrival = ArrivalPoints a
-                    , time = TimePoints tp
-                    }
+                ( ssT
+                ,
+                    ( (dS, dN, dL)
+                    , x@Gap.Points
+                        { reach = LinearPoints r
+                        , effort = DifficultyPoints dp
+                        , leading = LeadingPoints l
+                        , arrival = ArrivalPoints a
+                        , time = TimePoints tp
+                        }
+                    )
                 )
             )
         )
@@ -910,6 +928,7 @@ tallyDf
         , place = TaskPlacing 0
         , reachDistance = dN
         , landedDistance = dL
+        , stoppedAlt = alt
         }
     where
         ss' = getTagTime unStart
@@ -940,6 +959,7 @@ tallyDfNoTrack
         , place = TaskPlacing 0
         , reachDistance = dP
         , landedDistance = dP
+        , stoppedAlt = Nothing
         }
     where
         dP = PilotDistance <$> do

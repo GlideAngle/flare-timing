@@ -22,6 +22,7 @@ import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
+import Flight.LatLng (QAlt)
 import Flight.Field (FieldOrdering(..))
 import Flight.Score
     ( GoalRatio, TaskPlacing, TaskPoints, Points
@@ -68,6 +69,8 @@ data Breakdown =
           -- are awarded from this distance.
         , landedDistance :: Maybe (PilotDistance (Quantity Double [u| km |]))
           -- ^ The distance along the course to where the pilot landed.
+        , stoppedAlt :: Maybe (QAlt Double [u| m |])
+          -- ^ The altitude of the pilot at the stopped task score back time.
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
@@ -119,7 +122,10 @@ cmp a b =
         ("reachDistance", "velocity") -> GT
         ("reachDistance", _) -> LT
 
+        ("landedDistance", "stoppedAlt") -> LT
         ("landedDistance", _) -> GT
+
+        ("stoppedAlt", _) -> GT
 
         -- Velocity fields
         ("ss", _) -> LT

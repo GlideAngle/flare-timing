@@ -24,6 +24,7 @@ module WireTypes.Point
     , Weights(..)
     -- * Showing Breakdown
     , showPilotDistance
+    , showPilotAlt
     -- * Showing Points
     , showDistancePoints
     , showLinearPoints
@@ -104,6 +105,10 @@ instance FromJSON PilotDistance where
 showPilotDistance :: PilotDistance -> T.Text
 showPilotDistance (PilotDistance d) =
     T.pack . printf "%.3f" $ d
+
+showPilotAlt :: String -> T.Text
+showPilotAlt s =
+    T.pack s
 
 data TaskPlacing
     = TaskPlacing Integer
@@ -270,6 +275,7 @@ data Breakdown =
         , velocity :: Maybe Velocity
         , reachDistance :: Maybe PilotDistance
         , landedDistance :: Maybe PilotDistance
+        , stoppedAlt :: Maybe String
         }
     deriving (Eq, Ord, Show, Generic, FromJSON)
 
