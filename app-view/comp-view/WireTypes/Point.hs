@@ -8,6 +8,7 @@ module WireTypes.Point
     , GoalRatio(..)
     , PilotDistance(..)
     , PilotTime(..)
+    , Alt(..)
     , PilotVelocity(..)
     , DistancePoints(..)
     , LinearPoints(..)
@@ -94,6 +95,17 @@ newtype TimePoints = TimePoints Double
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (FromJSON)
 
+newtype Alt = Alt Double
+    deriving (Eq, Ord, Show, Generic)
+
+instance FromJSON Alt where
+    parseJSON x@(String _) = do
+        s <- reverse . T.unpack <$> parseJSON x
+        case s of
+            'm' : ' ' : xs -> return . Alt . read . reverse $ xs
+            _ -> empty
+    parseJSON _ = empty
+
 instance FromJSON PilotDistance where
     parseJSON x@(String _) = do
         s <- reverse . T.unpack <$> parseJSON x
@@ -106,9 +118,9 @@ showPilotDistance :: PilotDistance -> T.Text
 showPilotDistance (PilotDistance d) =
     T.pack . printf "%.3f" $ d
 
-showPilotAlt :: String -> T.Text
-showPilotAlt s =
-    T.pack s
+showPilotAlt :: Alt -> T.Text
+showPilotAlt (Alt a) =
+    T.pack . printf "%.0f" $ a
 
 data TaskPlacing
     = TaskPlacing Integer
@@ -275,7 +287,7 @@ data Breakdown =
         , velocity :: Maybe Velocity
         , reachDistance :: Maybe PilotDistance
         , landedDistance :: Maybe PilotDistance
-        , stoppedAlt :: Maybe String
+        , stoppedAlt :: Maybe Alt
         }
     deriving (Eq, Ord, Show, Generic, FromJSON)
 
