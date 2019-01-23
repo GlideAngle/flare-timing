@@ -18,6 +18,7 @@ import Flight.Fsdb
     , parseScoreBack
     , parseTasks
     , parseTaskPilotGroups
+    , parseTaskPilotPenalties
     , parseTaskFolders
     , parseTracks
     )
@@ -32,6 +33,7 @@ import Flight.Comp
     , Tweak(..)
     , Task(..)
     , TaskFolder(..)
+    , Pilot(..)
     , PilotGroup(..)
     , PilotTrackLogFile(..)
     , fsdbToComp
@@ -43,7 +45,7 @@ import Flight.Distance (SpanLatLng)
 import Flight.Zone (Zone(..), Radius(..), center)
 import qualified Flight.Zone.Raw as Raw (RawZone(..), Give(..), zoneGive)
 import Flight.Zone.MkZones (Discipline(..), Zones(..))
-import Flight.Score (ScoreBackTime(..))
+import Flight.Score (ScoreBackTime(..), PointPenalty)
 import Flight.Scribe (writeComp)
 import Flight.Mask (separatedRawZones)
 import ExtractInputOptions (CmdOptions(..), mkOptions, mkEarthModel)
@@ -177,6 +179,11 @@ fsdbTaskPilotGroups (FsdbXml contents) = do
     ts <- lift $ parseTaskPilotGroups contents
     ExceptT $ return ts
 
+fsdbTaskPilotPenalties :: FsdbXml -> ExceptT String IO [[(Pilot, [PointPenalty])]]
+fsdbTaskPilotPenalties (FsdbXml contents) = do
+    ts <- lift $ parseTaskPilotPenalties contents
+    ExceptT $ return ts
+
 fsdbTaskFolders :: FsdbXml -> ExceptT String IO [TaskFolder]
 fsdbTaskFolders (FsdbXml contents) = do
     fs <- lift $ parseTaskFolders contents
@@ -199,12 +206,17 @@ fsdbSettings dm zg fsdbXml = do
     sb <- fsdbScoreBack fsdbXml
     ts <- fsdbTasks hgOrPg tw sb fsdbXml
     pgs <- fsdbTaskPilotGroups fsdbXml
+    pns <- fsdbTaskPilotPenalties fsdbXml
     fs <- fsdbTaskFolders fsdbXml
     tps <- fsdbTracks fsdbXml
 
     let ts' =
-            [ t{zones = z{raw = Raw.zoneGive separated zg rz}}
+            [ t
+                { zones = z{raw = Raw.zoneGive separated zg rz}
+                , penalties = pn
+                }
             | t@Task{zones = z@Zones{raw = rz}} <- ts
+            | pn <- pns
             ]
 
     let msg =

@@ -28,6 +28,7 @@ import Flight.Score
     ( GoalRatio, TaskPlacing, TaskPoints, Points
     , Validity, ValidityWorking, Weights
     , Pilot, PilotTime, PilotDistance, PilotVelocity
+    , PointPenalty
     )
 import Flight.Comp (StartGate)
 
@@ -91,6 +92,7 @@ data Allocation =
         { goalRatio :: GoalRatio
         , weight :: Weights
         , points :: Points
+        , penalties :: [PointPenalty]
         , taskPoints :: TaskPoints
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)

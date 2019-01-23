@@ -125,6 +125,7 @@ module Flight.Score
     , Hg
     , Pg
     , Penalty(..)
+    , PointPenalty(..)
     , DistancePoints(..)
     , LinearPoints(..)
     , DifficultyPoints(..)

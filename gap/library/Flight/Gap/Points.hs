@@ -11,6 +11,7 @@ module Flight.Gap.Points
     , Hg
     , Pg
     , Penalty(..)
+    , PointPenalty(..)
     , Points(..)
     , zeroPoints
     , taskPoints
@@ -65,7 +66,7 @@ data Penalty a where
 data PointPenalty
     = PenaltyPoints Integer
     | PenaltyFraction Rational
-    deriving (Show)
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 deriving instance Eq (Penalty a)
 deriving instance Show (Penalty a)

@@ -92,6 +92,7 @@ import Flight.Score
     , Pilot(..)
     , LwScaling(..)
     , AwScaling(..)
+    , PointPenalty(..)
     )
 import Flight.Earth.Ellipsoid (Ellipsoid(..))
 
@@ -332,6 +333,7 @@ data Task k =
         , startGates :: [StartGate]
         , stopped :: Maybe TaskStop
         , taskTweak :: Maybe Tweak
+        , penalties :: [(Pilot, [PointPenalty])]
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)

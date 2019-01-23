@@ -374,8 +374,11 @@ points'
             | maybeTask <- maybeTasks
             ]
 
-        allocs =
-            [ uncurry (Allocation gr w) . (`availablePoints` w) <$> v
+        allocs :: [Maybe Allocation]=
+            [ do
+                v' <- v
+                let (pts, taskPoints) = availablePoints v' w
+                return $ Allocation gr w pts [] taskPoints
             | gr <- grs
             | w <- ws
             | v <- (fmap . fmap) Gap.task validities

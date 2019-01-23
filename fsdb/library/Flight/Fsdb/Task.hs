@@ -1,11 +1,16 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module Flight.Fsdb.Task (parseTasks, parseTaskPilotGroups) where
+module Flight.Fsdb.Task
+    ( parseTasks
+    , parseTaskPilotGroups
+    , parseTaskPilotPenalties
+    ) where
 
 import Data.Time.Clock (addUTCTime)
-import Data.Maybe (catMaybes)
+import Data.Maybe (catMaybes, maybeToList)
 import Data.List (sort, sortOn, nub)
+import Control.Monad (join)
 import Data.Map.Strict (Map, fromList, findWithDefault)
 import Data.UnitsOfMeasure ((/:), u, convert, unQuantity)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
@@ -60,7 +65,7 @@ import Flight.Comp
     , PilotGroup(..), DfNoTrack(..)
     , Task(..), TaskStop(..), StartGate(..), OpenClose(..), Tweak(..)
     )
-import Flight.Score (ScoreBackTime(..))
+import Flight.Score (ScoreBackTime(..), PointPenalty(..))
 import Flight.Fsdb.Pilot (getCompPilot)
 import Flight.Fsdb.Internal.XmlPickle (xpNewtypeRational, xpNewtypeQuantity)
 import Flight.Fsdb.Tweak (xpTweak)
@@ -91,6 +96,26 @@ instance (u ~ Quantity Double [u| m |]) => XmlPickler (Alt u) where
 
 instance (u ~ Quantity Double [u| km |]) => XmlPickler (TaskDistance u) where
     xpickle = xpNewtypeQuantity
+
+xpPointPenalty :: PU [PointPenalty]
+xpPointPenalty =
+    xpElem "FsResultPenalty"
+    $ xpFilterAttr
+        ( hasName "penalty" <+> hasName "penalty_points")
+    $ xpWrap
+        ( \case
+            (0, 0) -> []
+            (frac, 0) -> [PenaltyFraction frac]
+            (0, pts) -> [PenaltyPoints pts]
+            (frac, pts) ->
+                [ PenaltyFraction frac
+                , PenaltyPoints pts
+                ]
+        , const (0, 0)
+        )
+    $ xpPair
+        (xpAttr "penalty" xpPrim)
+        (xpAttr "penalty_points" xpPrim)
 
 xpDecelerator :: PU Decelerator
 xpDecelerator =
@@ -443,6 +468,7 @@ getTask discipline compTweak sb =
                             TaskStateCancel _ -> Nothing)
                         taskState
                 , taskTweak = if tw == compTweak then compTweak else tw
+                , penalties = []
                 }
             where
                 -- NOTE: If all time zones are the same then collapse.
@@ -525,6 +551,46 @@ getTask discipline compTweak sb =
             >>> hasName "FsScoreFormula"
             >>> arr (unpickleDoc $ xpTweak discipline))
 
+getTaskPilotPenalties :: ArrowXml a => [Pilot] -> a XmlTree ([(Pilot, [PointPenalty])])
+getTaskPilotPenalties pilots =
+    getChildren
+    >>> deep (hasName "FsTask")
+    >>> getPenalty
+    where
+        kps = keyPilots pilots
+
+        -- <FsParticipant id="91">
+        --    <FsFlightData tracklog_filename="" />
+        -- <FsParticipant id="85">
+        --    <FsFlightData distance="95.030" tracklog_filename="" />
+        getPenalty =
+            ( getChildren
+            >>> hasName "FsParticipants"
+            >>> listA getDidIncur
+            )
+            -- NOTE: If a task is created when there are no participants
+            -- then the FsTask/FsParticipants element is omitted.
+            `orElse` constA []
+            where
+                getDidIncur =
+                    getChildren
+                    >>> hasName "FsParticipant"
+                        `containing`
+                        ( getChildren
+                        >>> hasName "FsResultPenalty"
+                        >>> hasAttr "penalty"
+                        >>> hasAttr "penalty_points")
+                    >>> getAttrValue "id"
+                    &&& getResultPenalty
+                    >>> arr (\(pid, ps) ->
+                        let ps' = join $ maybeToList ps in
+                        (unKeyPilot (keyMap kps) . PilotId $ pid, ps'))
+
+                getResultPenalty =
+                    getChildren
+                    >>> hasName "FsResultPenalty"
+                    >>> arr (unpickleDoc xpPointPenalty)
+
 parseTasks
     :: Discipline
     -> Maybe Tweak
@@ -543,8 +609,14 @@ parseTaskPilotGroups contents = do
     xs <- runX $ doc >>> getTaskPilotGroup ps
     return $ Right xs
 
+parseTaskPilotPenalties :: String -> IO (Either String [[(Pilot, [PointPenalty])]])
+parseTaskPilotPenalties contents = do
+    let doc = readString [ withValidate no, withWarnings no ] contents
+    ps <- runX $ doc >>> getCompPilot
+    xs <- runX $ doc >>> getTaskPilotPenalties ps
+    return $ Right xs
+
 parseUtcTime :: String -> UTCTime
 parseUtcTime =
     -- NOTE: %F is %Y-%m-%d, %T is %H:%M:%S and %z is -HHMM or -HH:MM
     parseTimeOrError False defaultTimeLocale "%FT%T%Z"
-

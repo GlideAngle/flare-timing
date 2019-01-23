@@ -14,6 +14,7 @@ module Flight.Fsdb
     , parseScoreBack
     , parseTasks
     , parseTaskPilotGroups
+    , parseTaskPilotPenalties
     , parsePilots
     , parseTracks
     , parseTaskFolders
