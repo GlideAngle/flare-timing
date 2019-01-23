@@ -43,7 +43,8 @@ import qualified Data.Text as T (Text, pack, unpack)
 import Data.Scientific (Scientific, toRealFloat, fromRationalRepetend)
 import WireTypes.Zone (RawZone, Zones(..))
 import WireTypes.ZoneKind
-import WireTypes.Point (StartGate(..))
+import WireTypes.Pilot (Pilot)
+import WireTypes.Point (StartGate(..), PointPenalty)
 
 type Name = String
 
@@ -269,6 +270,7 @@ data Task =
         , zoneTimes :: [OpenClose]
         , startGates :: [StartGate]
         , stopped :: Maybe TaskStop
+        , penalties :: [(Pilot, [PointPenalty])]
         }
     deriving (Eq, Ord, Generic, FromJSON)
 

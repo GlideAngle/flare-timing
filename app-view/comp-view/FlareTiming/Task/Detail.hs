@@ -8,7 +8,8 @@ import Data.Time.LocalTime (TimeZone)
 
 import WireTypes.ZoneKind (Shape(..))
 import WireTypes.Pilot
-    (Pilot(..), Nyp(..), Dnf(..), DfNoTrack(..), nullPilot)
+    (Pilot(..), Nyp(..), Dnf(..), DfNoTrack(..), Penal(..), nullPilot)
+import qualified WireTypes.Comp as Comp
 import WireTypes.Comp
     ( UtcOffset(..), Nominal(..), Comp(..), Task(..), TaskStop(..), ScoreBackTime
     , getRaceRawZones, getStartGates, getOpenShape, getSpeedSection
@@ -145,6 +146,7 @@ taskDetail ix@(IxTask _) cs ns task vy a = do
     let hgOrPg = discipline . head <$> cs
     let free' = free . head <$> ns
     let sgs = startGates <$> task
+    let penal = Penal . Comp.penalties <$> task
     pb <- getPostBuild
     sDf <- holdDyn [] =<< getTaskScore ix pb
     vw <- holdDyn Nothing =<< getTaskValidityWorking ix pb
@@ -188,7 +190,7 @@ taskDetail ix@(IxTask _) cs ns task vy a = do
 
                     return ()
 
-                TaskTabAbsent -> tableAbsent ix nyp dnf dfNt
+                TaskTabAbsent -> tableAbsent ix nyp dnf dfNt penal
                 TaskTabValidity -> viewValidity vy vw
 
                 TaskTabScore -> tableScore utc hgOrPg free' sgs ln dnf dfNt vy wg ps tp sDf)

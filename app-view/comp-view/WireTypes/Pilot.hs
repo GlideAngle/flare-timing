@@ -6,6 +6,7 @@ module WireTypes.Pilot
     , Dnf(..)
     , DfNoTrack(..)
     , Nyp(..)
+    , Penal(..)
     , getPilotId
     , getPilotName
     , nullPilot
@@ -13,6 +14,10 @@ module WireTypes.Pilot
 
 import GHC.Generics (Generic)
 import Data.Aeson (FromJSON(..))
+import WireTypes.Point (PointPenalty)
+
+-- | The group of pilots that were penalized for a task.
+newtype Penal = Penal {unPenal :: [(Pilot, [PointPenalty])]}
 
 -- | The group of pilots that did not fly a task.
 newtype Dnf = Dnf {unDnf :: [Pilot]}

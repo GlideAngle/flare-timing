@@ -23,6 +23,7 @@ module WireTypes.Point
     , ArrivalWeight(..)
     , TimeWeight(..)
     , Weights(..)
+    , PointPenalty(..)
     -- * Showing Breakdown
     , showPilotDistance
     , showPilotAlt
@@ -45,7 +46,10 @@ import Text.Printf (printf)
 import Control.Applicative (empty)
 import Data.Time.Clock (UTCTime)
 import GHC.Generics (Generic)
-import Data.Aeson (Value(..), FromJSON(..))
+import Data.Aeson
+    ( Value(..), FromJSON(..), Options(..), SumEncoding(..)
+    , genericParseJSON, defaultOptions
+    )
 import qualified Data.Text as T (Text, pack, unpack)
 
 newtype StartGate = StartGate UTCTime
@@ -113,6 +117,24 @@ instance FromJSON PilotDistance where
             'm' : 'k' : ' ' : xs -> return . PilotDistance . read . reverse $ xs
             _ -> empty
     parseJSON _ = empty
+
+data PointPenalty
+    = PenaltyPoints Double
+    | PenaltyFraction Double
+    deriving (Eq, Ord, Show, Generic)
+
+pointPenaltyOptions :: Options
+pointPenaltyOptions =
+    defaultOptions
+        { sumEncoding = ObjectWithSingleField
+        , constructorTagModifier = \case
+            "PenaltyPoints" -> "penalty-points"
+            "PenaltyFraction" -> "penalty-fraction"
+            s -> s
+        }
+
+instance FromJSON PointPenalty where
+    parseJSON = genericParseJSON pointPenaltyOptions
 
 showPilotDistance :: PilotDistance -> T.Text
 showPilotDistance (PilotDistance d) =
@@ -296,6 +318,7 @@ data Allocation =
         { goalRatio :: GoalRatio
         , weight :: Weights
         , points :: Points
+        , penalties :: [PointPenalty]
         , taskPoints :: TaskPoints
         }
     deriving (Eq, Ord, Show, Generic, FromJSON)
