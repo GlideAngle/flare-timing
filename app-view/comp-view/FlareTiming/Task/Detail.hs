@@ -193,7 +193,7 @@ taskDetail ix@(IxTask _) cs ns task vy a = do
                 TaskTabAbsent -> tableAbsent ix nyp dnf dfNt penal
                 TaskTabValidity -> viewValidity vy vw
 
-                TaskTabScore -> tableScore utc hgOrPg free' sgs ln dnf dfNt vy wg ps tp sDf)
+                TaskTabScore -> tableScore utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf)
             <$> tab
 
     return $ switchDyn (leftmost <$> es)

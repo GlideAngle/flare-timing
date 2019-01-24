@@ -41,6 +41,7 @@ import WireTypes.Validity
     , showTimeValidity
     , showTaskValidity
     )
+import WireTypes.ValidityWorking (ValidityWorking(..), TimeValidityWorking(..))
 import WireTypes.Comp (UtcOffset(..), Discipline(..), MinimumDistance(..))
 import WireTypes.Pilot (Pilot(..), Dnf(..), DfNoTrack(..))
 import FlareTiming.Pilot (showPilotName)
@@ -66,12 +67,13 @@ tableScore
     -> Dynamic t Dnf
     -> Dynamic t DfNoTrack
     -> Dynamic t (Maybe Vy.Validity)
+    -> Dynamic t (Maybe ValidityWorking)
     -> Dynamic t (Maybe Wg.Weights)
     -> Dynamic t (Maybe Pt.Points)
     -> Dynamic t (Maybe TaskPoints)
     -> Dynamic t [(Pilot, Breakdown)]
     -> m ()
-tableScore utcOffset hgOrPg free sgs ln dnf' dfNt vy wg pt tp sDfs = do
+tableScore utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt tp sDfs = do
     let dnf = unDnf <$> dnf'
     lenDnf :: Int <- sample . current $ length <$> dnf
     lenDfs :: Int <- sample . current $ length <$> sDfs
@@ -87,6 +89,31 @@ tableScore utcOffset hgOrPg free sgs ln dnf' dfNt vy wg pt tp sDfs = do
             ffor2 hgOrPg sgs (\x gs ->
                 let y = T.pack . show $ x in
                 y <> (if null gs then " " else " sg ") <> tc)
+
+    let thTimePointsClass =
+            let tpc = "th-time-points" in
+            ffor2 hgOrPg vw (\x vw' ->
+                maybe
+                    tpc
+                    (\ValidityWorking{time = TimeValidityWorking{..}} ->
+                        case (x, gsBestTime) of
+                            (HangGliding, Nothing) -> "gr-zero " <> tpc
+                            (HangGliding, Just _) -> tpc
+                            (Paragliding, Nothing) -> "gr-zero " <> tpc
+                            (Paragliding, Just _) -> tpc)
+                    vw')
+
+    let thArrivalPointsClass =
+            let tpc = "th-arrival-points" in
+            ffor2 hgOrPg vw (\x vw' ->
+                maybe
+                    tpc
+                    (\ValidityWorking{time = TimeValidityWorking{..}} ->
+                        case (x, gsBestTime) of
+                            (HangGliding, Nothing) -> "gr-zero " <> tpc
+                            (HangGliding, Just _) -> tpc
+                            (Paragliding, _) -> tpc)
+                    vw')
 
     _ <- elDynClass "table" tableClass $ do
         el "thead" $ do
@@ -122,8 +149,8 @@ tableScore utcOffset hgOrPg free sgs ln dnf' dfNt vy wg pt tp sDfs = do
 
                 elClass "th" "th-distance-points" $ text "Subtotal"
                 elClass "th" "th-lead-points" $ text "Lead"
-                elClass "th" "th-time-points" $ text "Time"
-                elClass "th" "th-arrival-points" $ text "Arrival"
+                elDynClass "th" thTimePointsClass $ text "Time"
+                elDynClass "th" thArrivalPointsClass $ text "Arrival"
                 elClass "th" "th-total-points" $ text "Total"
 
             elClass "tr" "tr-validity" $ do
@@ -306,7 +333,7 @@ tableScore utcOffset hgOrPg free sgs ln dnf' dfNt vy wg pt tp sDfs = do
                     el "tr" . tdFoot $ do
                             text "With no "
                             elClass "span" "sg not" $ text "gate"
-                            text " to start "
+                            text " to start the speed section "
                             elClass "span" "sg not" $ text "time"
                             text ", the pace clock starts ticking whenever the pilot starts."
                 else return ())
