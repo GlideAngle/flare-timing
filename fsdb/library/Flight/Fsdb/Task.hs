@@ -575,10 +575,8 @@ getTaskPilotPenalties pilots =
     where
         kps = keyPilots pilots
 
-        -- <FsParticipant id="91">
-        --    <FsFlightData tracklog_filename="" />
-        -- <FsParticipant id="85">
-        --    <FsFlightData distance="95.030" tracklog_filename="" />
+        -- <FsParticipant id="28">
+        --    <FsResultPenalty penalty="0" penalty_points="-253" penalty_reason="" />
         getPenalty =
             ( getChildren
             >>> hasName "FsParticipants"
@@ -592,10 +590,20 @@ getTaskPilotPenalties pilots =
                     getChildren
                     >>> hasName "FsParticipant"
                         `containing`
-                        ( getChildren
+                        (( getChildren
                         >>> hasName "FsResultPenalty"
                         >>> hasAttr "penalty"
                         >>> hasAttr "penalty_points")
+                        -- NOTE: (>>>) is logical and (<+>) is logical or.
+                        -- "A logical and can be formed by a1 >>> a2 , a locical or by a1 <+> a2"
+                        -- SEE: http://hackage.haskell.org/package/hxt-9.3.1.16/docs/Text-XML-HXT-Arrow-XmlArrow.html
+                        -- NOTE: Avoid penalties with no non-zero value.
+                        -- <FsParticipant id="88">
+                        --   <FsResultPenalty penalty="0" penalty_points="0" penalty_reason="" />
+                        `notContaining`
+                        ( hasAttrValue "penalty" (== "0")
+                        >>> hasAttrValue "penalty_points" (== "0")
+                        ))
                     >>> getAttrValue "id"
                     &&& getResultPenalty
                     >>> arr (\(pid, ps) ->
