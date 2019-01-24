@@ -90,30 +90,43 @@ tableScore utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt tp sDfs = do
                 let y = T.pack . show $ x in
                 y <> (if null gs then " " else " sg ") <> tc)
 
-    let thTimePointsClass =
-            let tpc = "th-time-points" in
-            ffor2 hgOrPg vw (\x vw' ->
-                maybe
-                    tpc
-                    (\ValidityWorking{time = TimeValidityWorking{..}} ->
-                        case (x, gsBestTime) of
-                            (HangGliding, Nothing) -> "gr-zero " <> tpc
-                            (HangGliding, Just _) -> tpc
-                            (Paragliding, Nothing) -> "gr-zero " <> tpc
-                            (Paragliding, Just _) -> tpc)
-                    vw')
+    let cTimePoints =
+            let thc = "th-time-points"
+                tdc = "td-time-points"
+            in
+                ffor2 hgOrPg vw (\x vw' ->
+                    maybe
+                        (thc, tdc)
+                        (\ValidityWorking{time = TimeValidityWorking{..}} ->
+                            case (x, gsBestTime) of
+                                (HangGliding, Nothing) ->
+                                    ( "gr-zero " <> thc
+                                    , "gr-zero " <> tdc
+                                    )
+                                (HangGliding, Just _) -> (thc, tdc)
+                                (Paragliding, Nothing) ->
+                                    ( "gr-zero " <> thc
+                                    , "gr-zero " <> tdc
+                                    )
+                                (Paragliding, Just _) -> (thc, tdc))
+                        vw')
 
-    let thArrivalPointsClass =
-            let tpc = "th-arrival-points" in
-            ffor2 hgOrPg vw (\x vw' ->
-                maybe
-                    tpc
-                    (\ValidityWorking{time = TimeValidityWorking{..}} ->
-                        case (x, gsBestTime) of
-                            (HangGliding, Nothing) -> "gr-zero " <> tpc
-                            (HangGliding, Just _) -> tpc
-                            (Paragliding, _) -> tpc)
-                    vw')
+    let cArrivalPoints =
+            let thc = "th-arrival-points"
+                tdc = "td-arrival-points"
+            in
+                ffor2 hgOrPg vw (\x vw' ->
+                    maybe
+                        (thc, tdc)
+                        (\ValidityWorking{time = TimeValidityWorking{..}} ->
+                            case (x, gsBestTime) of
+                                (HangGliding, Nothing) ->
+                                    ( "gr-zero " <> thc
+                                    , "gr-zero " <> tdc
+                                    )
+                                (HangGliding, Just _) -> (thc, tdc)
+                                (Paragliding, _) -> (thc, tdc))
+                        vw')
 
     _ <- elDynClass "table" tableClass $ do
         el "thead" $ do
@@ -149,8 +162,8 @@ tableScore utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt tp sDfs = do
 
                 elClass "th" "th-distance-points" $ text "Subtotal"
                 elClass "th" "th-lead-points" $ text "Lead"
-                elDynClass "th" thTimePointsClass $ text "Time"
-                elDynClass "th" thArrivalPointsClass $ text "Arrival"
+                elDynClass "th" (fst <$> cTimePoints) $ text "Time"
+                elDynClass "th" (fst <$> cArrivalPoints) $ text "Arrival"
                 elClass "th" "th-total-points" $ text "Total"
 
             elClass "tr" "tr-validity" $ do
@@ -304,7 +317,18 @@ tableScore utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt tp sDfs = do
                     <$> tp
 
         _ <- el "tbody" $ do
-            _ <- simpleList sDfs (pointRow utcOffset free dfNt pt tp)
+            _ <-
+                simpleList
+                    sDfs
+                    (pointRow
+                        (snd <$> cTimePoints)
+                        (snd <$> cArrivalPoints)
+                        utcOffset
+                        free
+                        dfNt
+                        pt
+                        tp)
+
             dnfRows dnfPlacing dnf'
             return ()
 
@@ -342,14 +366,16 @@ tableScore utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt tp sDfs = do
 
 pointRow
     :: MonadWidget t m
-    => Dynamic t UtcOffset
+    => Dynamic t T.Text
+    -> Dynamic t T.Text
+    -> Dynamic t UtcOffset
     -> Dynamic t MinimumDistance
     -> Dynamic t DfNoTrack
     -> Dynamic t (Maybe Pt.Points)
     -> Dynamic t (Maybe TaskPoints)
     -> Dynamic t (Pilot, Breakdown)
     -> m ()
-pointRow utcOffset free dfNt pt tp x = do
+pointRow cTime cArrival utcOffset free dfNt pt tp x = do
     let tz = timeZone <$> utcOffset
     let pilot = fst <$> x
     let b = snd <$> x
@@ -400,8 +426,8 @@ pointRow utcOffset free dfNt pt tp x = do
         elClass "td" "td-effort-points" . dynText $ showMax Pt.effort showDifficultyPoints pt points
         elClass "td" "td-distance-points" . dynText $ showMax Pt.distance showDistancePoints pt points
         elClass "td" "td-leading-points" . dynText $ showMax Pt.leading showLeadingPoints pt points
-        elClass "td" "td-time-points" . dynText $ showMax Pt.time showTimePoints pt points
-        elClass "td" "td-arrival-points" . dynText $ showMax Pt.arrival showArrivalPoints pt points
+        elDynClass "td" cTime . dynText $ showMax Pt.time showTimePoints pt points
+        elDynClass "td" cArrival . dynText $ showMax Pt.arrival showArrivalPoints pt points
 
         elClass "td" "td-total-points" . dynText $ zipDynWith showTaskPoints tp (total <$> b)
 
