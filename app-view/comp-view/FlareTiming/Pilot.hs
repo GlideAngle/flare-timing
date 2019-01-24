@@ -28,7 +28,7 @@ rowPenal
     => Dynamic t (Pilot, [PointPenalty])
     -> m ()
 rowPenal ppp = do
-    let td = el "td" . text . T.pack . printf "%.3f"
+    let td = elClass "td" "td-penalty" . text . T.pack . printf "%.3f"
     dyn_ $ ffor ppp (\(pilot, ps) -> el "tr" $ do
         let p =
                 find

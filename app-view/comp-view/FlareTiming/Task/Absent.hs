@@ -143,8 +143,8 @@ tableAbsent ix nyp' dnf' dfNt' penal' = do
                                             el "tr" $ do
                                                 el "th" $ text "Id"
                                                 el "th" $ text "Name"
-                                                el "th" $ text "Fraction"
-                                                el "th" $ text "Point"
+                                                elClass "th" "th-penalty" $ text "Fraction"
+                                                elClass "th" "th-penalty" $ text "Point"
 
                                         el "tbody" $ simpleList penal rowPenal
 
