@@ -343,7 +343,7 @@ tableScore utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt tp sDfs = do
             foot "‖ \"Time\" is the time across the speed section from time zero of the start gate taken."
             foot "¶ \"Pace\" is the time across the speed section from the time of crossing the start for the last time."
             foot "☞ Pilots without a tracklog but given a distance by the scorer."
-            dyn_ . ffor hgOrPg $ (\case
+            dyn_ $ ffor hgOrPg (\case
                 HangGliding -> return ()
                 Paragliding -> do
                     el "tr" . tdFoot $ do
@@ -352,7 +352,7 @@ tableScore utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt tp sDfs = do
                     el "tr" . tdFoot $ do
                             elClass "span" "pg not" $ text "Effort"
                             text " or distance difficulty is not scored for paragliding.")
-            dyn_ . ffor sgs $ (\gs ->
+            dyn_ $ ffor sgs (\gs ->
                 if null gs then do
                     el "tr" . tdFoot $ do
                             text "With no "
@@ -361,6 +361,22 @@ tableScore utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt tp sDfs = do
                             elClass "span" "sg not" $ text "time"
                             text ", the pace clock starts ticking whenever the pilot starts."
                 else return ())
+            dyn_ $ ffor hgOrPg (\case
+                HangGliding ->
+                    dyn_ $ ffor vw (\vw' ->
+                        maybe
+                            (return ())
+                            (\ValidityWorking{time = TimeValidityWorking{..}} ->
+                                case gsBestTime of
+                                    Just _ -> return ()
+                                    Nothing -> el "tr" . tdFoot $ do
+                                        text "No one made it through the speed section to get "
+                                        elClass "span" "gr-zero" $ text "time"
+                                        text " points.")
+                            vw'
+                        )
+                Paragliding -> do
+                    return ())
 
     return ()
 
