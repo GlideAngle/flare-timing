@@ -361,6 +361,18 @@ tableScore utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt tp sDfs = do
                             elClass "span" "sg not" $ text "time"
                             text ", the pace clock starts ticking whenever the pilot starts."
                 else return ())
+            dyn_ $ ffor vw (\vw' ->
+                maybe
+                    (return ())
+                    (\ValidityWorking{time = TimeValidityWorking{..}} ->
+                        case gsBestTime of
+                            Just _ -> return ()
+                            Nothing -> el "tr" . tdFoot $ do
+                                text "No one made it through the speed section to get "
+                                elClass "span" "gr-zero" $ text "time"
+                                text " points.")
+                    vw'
+                )
             dyn_ $ ffor hgOrPg (\case
                 HangGliding ->
                     dyn_ $ ffor vw (\vw' ->
@@ -371,7 +383,7 @@ tableScore utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt tp sDfs = do
                                     Just _ -> return ()
                                     Nothing -> el "tr" . tdFoot $ do
                                         text "No one made it through the speed section to get "
-                                        elClass "span" "gr-zero" $ text "time"
+                                        elClass "span" "gr-zero" $ text "arrival"
                                         text " points.")
                             vw'
                         )
