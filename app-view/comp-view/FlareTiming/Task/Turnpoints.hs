@@ -54,11 +54,17 @@ tableTask utcOffset x taskLegs = do
                     return ()
 
         elClass "div" "tile is-parent is-3" $ do
-            elClass "article" "tile is-child box" $ do
-                elClass "p" "title" $ text "Start Gates"
-                elClass "div" "content" $ do
-                    tableStartGates tz gs
-                    return ()
+            if null gs
+                then
+                    elClass "article" "tile is-child notification is-warning" $ do
+                        elClass "p" "title" $ text "Start Gates"
+                        el "p" $ text "There are no start gates."
+                else
+                    elClass "article" "tile is-child box" $ do
+                        elClass "p" "title" $ text "Start Gates"
+                        elClass "div" "content" $ do
+                            tableStartGates tz gs
+                            return ()
 
 tableTurnpoints
     :: MonadWidget t m
