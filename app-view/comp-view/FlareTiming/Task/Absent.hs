@@ -28,6 +28,7 @@ tableAbsent ix nyp' dnf' dfNt' penal' = do
         elClass "div" "tile is-parent" $ do
             elClass "article" "tile is-child box" $ do
                 elClass "p" "title" $ text "ABS"
+                elClass "p" "subtitle" $ text "absent"
                 elClass "div" "content" $ do
                     _ <- elClass "table" "table" $ do
                             el "thead" $ do
@@ -45,6 +46,7 @@ tableAbsent ix nyp' dnf' dfNt' penal' = do
         elClass "div" "tile is-parent" $ do
             elClass "article" "tile is-child box" $ do
                 elClass "p" "title" $ text "DNF"
+                elClass "p" "subtitle" $ text "did not fly"
                 elClass "div" "content" $ do
                     _ <- elClass "table" "table" $ do
                             el "thead" $ do
@@ -61,7 +63,8 @@ tableAbsent ix nyp' dnf' dfNt' penal' = do
 
         elClass "div" "tile is-parent" $ do
             elClass "article" "tile is-child box" $ do
-                elClass "p" "title" $ text "DF no track"
+                elClass "p" "title" $ text "DF"
+                elClass "p" "subtitle" $ text "no track"
                 elClass "div" "content" $ do
                     _ <- elClass "table" "table" $ do
                             el "thead" $ do
@@ -79,6 +82,7 @@ tableAbsent ix nyp' dnf' dfNt' penal' = do
         elClass "div" "tile is-parent" $ do
             elClass "article" "tile is-child box" $ do
                 elClass "p" "title" $ text "NYP"
+                elClass "p" "subtitle" $ text "not yet processed"
                 elClass "div" "content" $ do
                     _ <- elClass "table" "table" $ do
                             el "thead" $ do
@@ -96,6 +100,7 @@ tableAbsent ix nyp' dnf' dfNt' penal' = do
         elClass "div" "tile is-parent" $ do
             elClass "article" "tile is-child box" $ do
                 elClass "p" "title" $ text "Penal"
+                elClass "p" "subtitle" $ text "point adjustments"
                 elClass "div" "content" $ do
                     _ <- elClass "table" "table" $ do
                             el "thead" $ do
