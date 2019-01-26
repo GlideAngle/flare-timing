@@ -17,7 +17,7 @@ import Control.Lens ((^?), element)
 import qualified Flight.Zone.Raw as Raw (RawZone(..))
 import Flight.Distance (SpanLatLng)
 import Flight.Comp (Task(..), Zones(..))
-import Flight.Track.Cross (ZoneIdx(..))
+import Flight.Track.Time (ZoneIdx(..))
 import Flight.Units ()
 import Flight.Mask.Internal.Zone
     ( TaskZone(..)

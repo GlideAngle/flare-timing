@@ -28,8 +28,9 @@ import Flight.Distance (SpanLatLng)
 import Flight.Kml (Latitude(..), Longitude(..), MarkedFixes(..))
 import qualified Flight.Kml as Kml
     (LatLngAlt(..), Fix, FixMark(..), Seconds(..))
+import Flight.Track.Time (ZoneIdx(..))
 import Flight.Track.Cross
-    ( ZoneIdx(..), Fix(..), ZoneCross(..), Seconds(..)
+    ( Fix(..), ZoneCross(..), Seconds(..)
     , FlyingSection, TrackFlyingSection(..), RetroActive(..)
     )
 import Flight.Track.Mask (FlyClipping(..), FlyCut(..))

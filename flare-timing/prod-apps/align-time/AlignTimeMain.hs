@@ -19,7 +19,9 @@ import System.FilePath ((</>), takeFileName)
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
-import Flight.Track.Time (LeadTick(..), RaceTick(..), TimeRow(..), timeHeaders)
+import Flight.Track.Time
+    ( FixIdx(..), ZoneIdx(..), LeadTick(..), RaceTick(..), TimeRow(..)
+    , timeHeaders)
 import Flight.Comp
     ( FileType(CompInput)
     , AlignDir(..)
@@ -212,7 +214,8 @@ mkTimeRow _ _ _ (_, Nothing) = Nothing
 mkTimeRow lead start leg (Just Fix{fix, time, lat, lng}, Just d) =
     Just
         TimeRow
-            { fix = fix
+            { fixIdx = FixIdx fix
+            , zoneIdx = ZoneIdx fix
             , leg = leg
 
             , tickLead =

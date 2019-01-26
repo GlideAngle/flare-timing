@@ -8,7 +8,7 @@ import Prelude hiding (span)
 import Data.UnitsOfMeasure (u)
 
 import Flight.Comp (SpeedSection)
-import Flight.Track.Cross (ZoneIdx(..))
+import Flight.Track.Time (ZoneIdx(..))
 import Flight.Units ()
 import Flight.Distance (QTaskDistance, PathDistance(..))
 import Flight.Task (Zs(..), distanceEdgeToEdge, fromZs)

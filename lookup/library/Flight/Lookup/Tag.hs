@@ -24,7 +24,7 @@ import Flight.Comp
     , LastArrival(..)
     , SpeedSection
     )
-import Flight.Track.Cross (ZoneIdx(..))
+import Flight.Track.Time (ZoneIdx(..))
 import Flight.Track.Tag
     ( Tagging(..), TrackTime(..), TrackTag(..), PilotTrackTag(..)
     , firstLead, lastArrival

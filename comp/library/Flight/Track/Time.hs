@@ -16,6 +16,8 @@ module Flight.Track.Time
     , TickRow(..)
     , LeadArrival(..)
     , LeadClose(..)
+    , FixIdx(..)
+    , ZoneIdx(..)
     , leadingArea
     , leadingSum
     , minLeading
@@ -64,6 +66,18 @@ import Flight.Score
 import Flight.Distance (QTaskDistance, TaskDistance(..))
 import Flight.Comp (SpeedSection)
 
+-- | The index of a fix within the whole track.
+newtype FixIdx = FixIdx Int
+    deriving (Eq, Ord, Generic, Show)
+    deriving anyclass (ToJSON, FromJSON)
+    deriving newtype (Num, ToField, FromField)
+
+-- | The index of a fix for a leg, that section of the tracklog between one zone and the next.
+newtype ZoneIdx = ZoneIdx Int
+    deriving (Eq, Ord, Generic, Show)
+    deriving anyclass (ToJSON, FromJSON)
+    deriving newtype (Num, ToField, FromField)
+
 -- | Seconds from first speed zone crossing irrespective of start time.
 newtype LeadTick = LeadTick Double
     deriving (Eq, Ord, Generic)
@@ -85,16 +99,18 @@ instance Show RaceTick where
 newtype LeadingDistance = LeadingDistance (Quantity Double [u| km |])
 
 timeHeaders :: [String]
-timeHeaders = ["fix", "leg", "time", "lat", "lng", "tickLead", "tickRace", "distance"]
+timeHeaders = ["fixIdx", "zoneIdx", "leg", "time", "lat", "lng", "tickLead", "tickRace", "distance"]
 
 tickHeaders :: [String]
-tickHeaders = ["fix", "leg", "tickLead", "tickRace", "distance", "area"]
+tickHeaders = ["fixIdx", "zoneIdx" , "leg", "tickLead", "tickRace", "distance", "area"]
 
 -- | A fix but indexed off the first crossing time.
 data TimeRow =
     TimeRow
-        { fix :: Int
-        -- ^ The fix number.
+        { fixIdx :: FixIdx
+        -- ^ The fix number for the whole track.
+        , zoneIdx :: ZoneIdx
+        -- ^ The fix number for this leg.
         , leg :: Int
         -- ^ Leg of the task.
         , tickLead :: Maybe LeadTick
@@ -115,8 +131,10 @@ data TimeRow =
 -- | A fix but indexed off the first crossing time.
 data TickRow =
     TickRow
-        { fix :: Int
-        -- ^ The fix number.
+        { fixIdx :: FixIdx
+        -- ^ The fix number for the whole track.
+        , zoneIdx :: ZoneIdx
+        -- ^ The fix number for this leg.
         , leg :: Int
         -- ^ Leg of the task
         , tickLead :: Maybe LeadTick
@@ -149,7 +167,8 @@ instance ToNamedRecord TimeRow where
         where
             local =
                 namedRecord
-                    [ namedField "fix" fix
+                    [ namedField "fixIdx" fixIdx
+                    , namedField "zoneIdx" zoneIdx
                     , namedField "leg" leg
                     , namedField "tickLead" tickLead
                     , namedField "tickRace" tickRace
@@ -157,14 +176,14 @@ instance ToNamedRecord TimeRow where
                     , namedField "distance" d
                     ]
 
-
             time' = unquote . unpack . encode $ time
             d = unquote . unpack . encode $ distance
 
 instance FromNamedRecord TimeRow where
     parseNamedRecord m =
         TimeRow <$>
-        m .: "fix" <*>
+        m .: "fixIdx" <*>
+        m .: "zoneIdx" <*>
         m .: "leg" <*>
         m .: "tickLead" <*>
         m .: "tickRace" <*>
@@ -178,7 +197,8 @@ instance FromNamedRecord TimeRow where
 instance ToNamedRecord TickRow where
     toNamedRecord TickRow{..} =
         namedRecord
-            [ namedField "fix" fix
+            [ namedField "fixIdx" fixIdx
+            , namedField "zoneIdx" zoneIdx
             , namedField "leg" leg
             , namedField "tickLead" tickLead
             , namedField "tickRace" tickRace
@@ -192,7 +212,8 @@ instance ToNamedRecord TickRow where
 instance FromNamedRecord TickRow where
     parseNamedRecord m =
         TickRow <$>
-        m .: "fix" <*>
+        m .: "fixIdx" <*>
+        m .: "zoneIdx" <*>
         m .: "leg" <*>
         m .: "tickLead" <*>
         m .: "tickRace" <*>
@@ -363,9 +384,10 @@ taskToLeading (TaskDistance d) =
     LeadingDistance (convert d :: Quantity Double [u| km |])
 
 timeToTick :: TimeRow -> TickRow
-timeToTick TimeRow{fix, leg, tickLead, tickRace, distance} =
+timeToTick TimeRow{fixIdx, zoneIdx, leg, tickLead, tickRace, distance} =
     TickRow
-        { fix = fix
+        { fixIdx = fixIdx
+        , zoneIdx = zoneIdx
         , leg = leg
         , tickLead = tickLead
         , tickRace = tickRace
