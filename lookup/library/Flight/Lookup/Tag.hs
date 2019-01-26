@@ -24,8 +24,9 @@ import Flight.Comp
     , LastArrival(..)
     , SpeedSection
     )
+import Flight.Track.Cross (ZoneIdx(..))
 import Flight.Track.Tag
-    (Tagging(..), TrackTime(..), TrackTag(..), PilotTrackTag(..)
+    ( Tagging(..), TrackTime(..), TrackTag(..), PilotTrackTag(..)
     , firstLead, lastArrival
     )
 import Flight.Mask (Ticked, RaceSections(..), slice, section)
@@ -93,7 +94,7 @@ tickedZones speedSection xs =
         , epilog = f epilog
         }
     where
-        f = catMaybes . takeWhile isJust
+        f = fmap ZoneIdx . catMaybes . takeWhile isJust
         RaceSections{..} = section speedSection $ (fmap . fmap) fix xs
 
 tickedPilot :: SpeedSection -> PilotTrackTag -> Maybe Ticked

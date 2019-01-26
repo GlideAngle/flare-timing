@@ -18,6 +18,7 @@ module Flight.Track.Cross
     , Fix(..)
     , RetroActive(..)
     , FlyingSection
+    , ZoneIdx(..)
     , trackLogErrors
     ) where
 
@@ -29,6 +30,10 @@ import Flight.Pilot (TrackFileFail(..))
 import Flight.LatLng.Raw (RawLat, RawLng)
 import Flight.Field (FieldOrdering(..))
 import Flight.Score (Pilot(..))
+
+newtype ZoneIdx = ZoneIdx Int
+    deriving (Eq, Ord, Show)
+    deriving newtype Num
 
 -- | A pair into the list of fixes marking those deemed logged while flying.
 -- These could be indices, seconds offsets or UTC times.

@@ -22,13 +22,14 @@ import Data.Maybe (listToMaybe)
 import Data.List (nub, group, elemIndex, findIndex)
 import Data.List.Split (split, whenElt, keepDelimsL, chop)
 import Control.Lens ((^?), element)
+import Control.Arrow (first)
 
 import Flight.Distance (SpanLatLng)
 import Flight.Kml (Latitude(..), Longitude(..), MarkedFixes(..))
 import qualified Flight.Kml as Kml
     (LatLngAlt(..), Fix, FixMark(..), Seconds(..))
 import Flight.Track.Cross
-    ( Fix(..), ZoneCross(..), Seconds(..)
+    ( ZoneIdx(..), Fix(..), ZoneCross(..), Seconds(..)
     , FlyingSection, TrackFlyingSection(..), RetroActive(..)
     )
 import Flight.Track.Mask (FlyClipping(..), FlyCut(..))
@@ -131,10 +132,10 @@ madeGoal span zoneToCyl Task{zones} MarkedFixes{fixes} =
                      False
 
 -- | Prove from the fixes and mark that the crossing exits.
-prove :: [Kml.Fix] -> UTCTime -> Int -> Int -> [Bool] -> Maybe ZoneCross
-prove fixes mark0 i j bs = do
-    fixM <- fixes ^? element i
-    fixN <- fixes ^? element j
+prove :: [Kml.Fix] -> UTCTime -> ZoneIdx -> ZoneIdx -> [Bool] -> Maybe ZoneCross
+prove fixes mark0 i@(ZoneIdx i') j@(ZoneIdx j') bs = do
+    fixM <- fixes ^? element i'
+    fixN <- fixes ^? element j'
     let fs = [f i fixM, f j fixN]
     return ZoneCross { crossingPair = fs
                      , inZone = bs
@@ -689,7 +690,7 @@ scoredCrossings
             maybe
                 xs
                 (\(ii, _) -> (fmap . fmap) (reindex ii) xs)
-                scoredIndices
+                (first ZoneIdx <$> scoredIndices)
 
         nominees = NomineeCrossings $ f <$> xs'
 

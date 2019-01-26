@@ -17,6 +17,7 @@ import Control.Lens ((^?), element)
 import qualified Flight.Zone.Raw as Raw (RawZone(..))
 import Flight.Distance (SpanLatLng)
 import Flight.Comp (Task(..), Zones(..))
+import Flight.Track.Cross (ZoneIdx(..))
 import Flight.Units ()
 import Flight.Mask.Internal.Zone
     ( TaskZone(..)
@@ -42,23 +43,25 @@ insideZone
     => SpanLatLng a
     -> TaskZone a
     -> [TrackZone a]
-    -> Maybe Int
+    -> Maybe ZoneIdx
 insideZone span (TaskZone z) =
-    findIndex (\(TrackZone x) -> not $ separatedZones span [x, z])
+    fmap ZoneIdx
+    . findIndex (\(TrackZone x) -> not $ separatedZones span [x, z])
 
 outsideZone
     :: (Real a, Fractional a)
     => SpanLatLng a
     -> TaskZone a
     -> [TrackZone a]
-    -> Maybe Int
+    -> Maybe ZoneIdx
 outsideZone span (TaskZone z) =
-    findIndex (\(TrackZone x) -> separatedZones span [x, z])
+    fmap ZoneIdx
+    . findIndex (\(TrackZone x) -> separatedZones span [x, z])
 
 zoneSingle
-    :: (span -> zone -> [x] -> Maybe Int)
-    -> (span -> zone -> [x] -> Maybe Int)
-    -> (Int -> Int -> crossing)
+    :: (span -> zone -> [x] -> Maybe ZoneIdx)
+    -> (span -> zone -> [x] -> Maybe ZoneIdx)
+    -> (ZoneIdx -> ZoneIdx -> crossing)
     -> span
     -> zone
     -> [x]
@@ -66,12 +69,12 @@ zoneSingle
 zoneSingle f g ctor span z xs =
     case g span z xs of
         Nothing -> []
-        Just j ->
+        Just j@(ZoneIdx j') ->
             case f span z . reverse $ ys of
                 Just 0 -> [ctor (j - 1) j]
                 _ -> []
             where
-                ys = take j xs
+                ys = take j' xs
 
 -- | Finds the first pair of points, one outside the zone and the next inside.
 -- Searches the fixes in order.
@@ -92,7 +95,7 @@ exitsSingle  =
     zoneSingle insideZone outsideZone ZoneExit
 
 reindex
-    :: Int -- ^ The length of the track, the number of fixes
+    :: ZoneIdx -- ^ The length of the track, the number of fixes
     -> Either ZoneEntry ZoneExit
     -> Either ZoneEntry ZoneExit
 reindex n (Right (ZoneExit i j)) =
@@ -121,8 +124,8 @@ entersSeq span z xs =
         [] ->
             []
 
-        (hit@(ZoneEntry _ j) : _) ->
-            Left hit : (reindex j <$> exitsSeq span z (drop j xs))
+        (hit@(ZoneEntry _ jIdx@(ZoneIdx j)) : _) ->
+            Left hit : (reindex jIdx <$> exitsSeq span z (drop j xs))
 
 -- | Find the sequence of @take _ [exit, entry.., exit, entry]@ going forward.
 exitsSeq
@@ -134,8 +137,8 @@ exitsSeq span z xs =
         [] ->
             []
 
-        (hit@(ZoneExit _ j) : _) ->
-            Right hit : (reindex j <$> entersSeq span z (drop j xs))
+        (hit@(ZoneExit _ jIdx@(ZoneIdx j)) : _) ->
+            Right hit : (reindex jIdx <$> entersSeq span z (drop j xs))
 
 -- | A start zone is either entry or exit when all other zones are entry.
 -- If I must fly into the start cylinder to reach the next turnpoint then

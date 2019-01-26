@@ -8,10 +8,11 @@ import Prelude hiding (span)
 import Data.UnitsOfMeasure (u)
 
 import Flight.Comp (SpeedSection)
+import Flight.Track.Cross (ZoneIdx(..))
 import Flight.Units ()
 import Flight.Distance (QTaskDistance, PathDistance(..))
 import Flight.Task (Zs(..), distanceEdgeToEdge, fromZs)
-import Flight.Mask.Internal.Zone (ZoneIdx, TaskZone(..), TrackZone(..), slice)
+import Flight.Mask.Internal.Zone (TaskZone(..), TrackZone(..), slice)
 import Flight.Mask.Internal.Race (Sliver(..), RaceSections(..), Ticked, cons, mm30)
 
 -- | The distance to goal given the zones have been ticked.

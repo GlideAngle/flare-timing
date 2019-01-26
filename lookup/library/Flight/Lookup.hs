@@ -33,8 +33,8 @@ import Flight.Comp
 import qualified Flight.Comp as Cmp (openClose)
 import Flight.Score (PositionAtEss(..), PilotTime(..))
 import Flight.Track.Mask (RaceTime(..), racing)
-import Flight.Track.Cross (TrackFlyingSection(..))
-import Flight.Mask (ZoneIdx, RaceSections(..))
+import Flight.Track.Cross (ZoneIdx, TrackFlyingSection(..))
+import Flight.Mask (RaceSections(..))
 import qualified Flight.Track.Speed as Speed (pilotTime)
 import Flight.Lookup.Cross (FlyingLookup(..))
 import Flight.Lookup.Tag

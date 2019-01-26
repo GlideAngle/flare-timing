@@ -14,12 +14,11 @@ import Data.UnitsOfMeasure ((-:), u, fromRational', toRational')
 import Flight.Kml (MarkedFixes(..))
 import qualified Flight.Kml as Kml (Fix)
 import Flight.Track.Time (TimeRow(..))
-import Flight.Track.Cross (Fix(..))
+import Flight.Track.Cross (ZoneIdx(..), Fix(..))
 import Flight.Track.Mask (FlyCut(..), FlyClipping(..))
 import Flight.Comp (Task(..), Zones(..))
 import Flight.Units ()
-import Flight.Mask.Internal.Zone
-    (ZoneIdx, TaskZone(..), fixFromFix, fixToPoint, rowToPoint)
+import Flight.Mask.Internal.Zone (TaskZone(..), fixFromFix, fixToPoint, rowToPoint)
 import Flight.Mask.Internal.Race (Sliver(..), Ticked)
 import Flight.Mask.Internal.Dash (dashPathToGoalR, dashToGoalR)
 import qualified Flight.Zone.Raw as Raw (RawZone(..))
@@ -170,7 +169,7 @@ dashDistanceFlown
         FlyCut{uncut = MarkedFixes{fixes}} = clipToFlown flyCut
 
 index :: [a] -> [(ZoneIdx, a)]
-index = zip [1 .. ]
+index = zip $ ZoneIdx <$> [1 .. ]
 
 togoAtLanding
     :: Math

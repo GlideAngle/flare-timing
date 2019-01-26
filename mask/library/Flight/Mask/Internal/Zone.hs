@@ -1,6 +1,5 @@
 module Flight.Mask.Internal.Zone
-    ( ZoneIdx
-    , ZoneEntry(..)
+    ( ZoneEntry(..)
     , ZoneExit(..)
     , Crossing
     , TaskZone(..)
@@ -32,11 +31,9 @@ import Flight.Zone (Radius(..), Zone(..))
 import Flight.Zone.MkZones (sliceZones)
 import qualified Flight.Zone.Raw as Raw (RawZone(..))
 import Flight.Track.Time (TimeRow(..))
-import Flight.Track.Cross (Fix(..))
+import Flight.Track.Cross (Fix(..), ZoneIdx(..))
 import Flight.Comp (SpeedSection)
 import Flight.Units ()
-
-type ZoneIdx = Int
 
 data ZoneEntry = ZoneEntry ZoneIdx ZoneIdx deriving (Eq, Show)
 data ZoneExit = ZoneExit ZoneIdx ZoneIdx deriving (Eq, Show)
@@ -80,8 +77,8 @@ toLL (lat, lng) =
         x' = Lat . MkQuantity $ realToFrac x
         y' = Lng . MkQuantity $ realToFrac y
 
-fixFromFix :: UTCTime -> Int -> Kml.Fix -> Fix
-fixFromFix mark0 i x =
+fixFromFix :: UTCTime -> ZoneIdx -> Kml.Fix -> Fix
+fixFromFix mark0 (ZoneIdx i) x =
     -- SEE: https://ocharles.org.uk/blog/posts/2013-12-15-24-days-of-hackage-time.html
     Fix { fix = i
         , time = fromInteger secs `addUTCTime` mark0
