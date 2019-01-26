@@ -20,7 +20,7 @@ import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
 import Flight.Track.Time
-    ( FixIdx(..), ZoneIdx(..), LeadTick(..), RaceTick(..), TimeRow(..)
+    ( FixIdx(..), ZoneIdx(..), LegIdx(..), LeadTick(..), RaceTick(..), TimeRow(..)
     , timeHeaders)
 import Flight.Comp
     ( FileType(CompInput)
@@ -65,8 +65,6 @@ import Flight.Lookup.Tag
     (TickLookup(..), TagLookup(..), tagTicked, tagPilotTag)
 import AlignTimeOptions (description)
 import Flight.Span.Double (zoneToCylF, spanF, csF, cutF, dppF, csegF)
-
-type Leg = Int
 
 unTaskDistance :: QTaskDistance Double [u| m |] -> Double
 unTaskDistance (TaskDistance d) =
@@ -195,7 +193,7 @@ writePilotTimes compFile iTask (pilot, rows) = do
 mkTimeRows
     :: Maybe FirstLead
     -> Maybe FirstStart
-    -> Leg
+    -> LegIdx
     -> Maybe [(Maybe Fix, Maybe (QTaskDistance Double [u| m |]))]
     -> [TimeRow]
 mkTimeRows _ _ _ Nothing = []
@@ -205,18 +203,18 @@ mkTimeRows lead start leg (Just xs) =
 mkTimeRow
     :: Maybe FirstLead
     -> Maybe FirstStart
-    -> Int
+    -> LegIdx
     -> (Maybe Fix, Maybe (QTaskDistance Double [u| m |]))
     -> Maybe TimeRow
 mkTimeRow Nothing _ _ _ = Nothing
 mkTimeRow _ _ _ (Nothing, _) = Nothing
 mkTimeRow _ _ _ (_, Nothing) = Nothing
-mkTimeRow lead start leg (Just Fix{fix, time, lat, lng}, Just d) =
+mkTimeRow lead start legIdx (Just Fix{fix, time, lat, lng}, Just d) =
     Just
         TimeRow
             { fixIdx = FixIdx fix
             , zoneIdx = ZoneIdx fix
-            , leg = leg
+            , legIdx = legIdx
 
             , tickLead =
                 LeadTick
@@ -259,7 +257,7 @@ group
                     mkTimeRow
                         firstLead'
                         firstStart'
-                        end
+                        (LegIdx end)
                         (Just f, Just $ TaskDistance [u| 0m |]))
                 )
                 endZoneTag
@@ -307,18 +305,18 @@ group
                 zs =
                     concat $ zipWith
                         (\j x ->
-                            let (leg, reticked) = retick ticked start j
+                            let (leg, reticked) = retick ticked (LegIdx start) j
                             in legDistances ssOnly reticked times task leg x)
-                        [0 .. ]
+                        (LegIdx <$> [0 .. ])
                         ys
     where
         (TickLookup lookupTicked) = tagTicked (Just tags)
         (TagLookup lookupZoneTags) = tagPilotTag (Just tags)
 
 -- | For a given leg, only so many race zones can be ticked.
-retick :: Ticked -> Int -> Int -> (Int, Ticked)
-retick rs@RaceSections{prolog, race} start leg =
-    (leg + delta, rs')
+retick :: Ticked -> LegIdx -> LegIdx -> (LegIdx, Ticked)
+retick rs@RaceSections{prolog, race} (LegIdx start) (LegIdx leg) =
+    (LegIdx $ leg + delta, rs')
     where
         -- NOTE: Some pilots get towed up outside the start circle. Make an
         -- adjustment between the start and the zones in the prolog ticked.
@@ -329,7 +327,7 @@ allLegDistances
     :: Ticked
     -> TrackTime
     -> Task k
-    -> Leg
+    -> LegIdx
     -> FlyCut UTCTime MarkedFixes
     -> [TimeRow]
 allLegDistances ticked times task@Task{speedSection, zoneTimes} leg xs =
@@ -352,7 +350,7 @@ legDistances
     -> Ticked
     -> TrackTime
     -> Task k
-    -> Leg
+    -> LegIdx
     -> FlyCut UTCTime MarkedFixes
     -> [TimeRow]
 legDistances False ticked times task leg xs=
@@ -361,7 +359,7 @@ legDistances False ticked times task leg xs=
 legDistances True ticked times task@Task{speedSection} leg xs =
     if excludeLeg then [] else allLegDistances ticked times task leg xs
     where
-        leg' = fromIntegral leg
+        LegIdx leg' = leg
 
         excludeLeg =
             maybe

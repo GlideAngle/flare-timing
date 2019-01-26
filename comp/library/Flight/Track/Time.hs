@@ -18,6 +18,7 @@ module Flight.Track.Time
     , LeadClose(..)
     , FixIdx(..)
     , ZoneIdx(..)
+    , LegIdx(..)
     , leadingArea
     , leadingSum
     , minLeading
@@ -78,6 +79,12 @@ newtype ZoneIdx = ZoneIdx Int
     deriving anyclass (ToJSON, FromJSON)
     deriving newtype (Num, ToField, FromField)
 
+-- | The index of a leg.
+newtype LegIdx = LegIdx Int
+    deriving (Eq, Ord, Generic, Show)
+    deriving anyclass (ToJSON, FromJSON)
+    deriving newtype (Num, ToField, FromField)
+
 -- | Seconds from first speed zone crossing irrespective of start time.
 newtype LeadTick = LeadTick Double
     deriving (Eq, Ord, Generic)
@@ -99,10 +106,10 @@ instance Show RaceTick where
 newtype LeadingDistance = LeadingDistance (Quantity Double [u| km |])
 
 timeHeaders :: [String]
-timeHeaders = ["fixIdx", "zoneIdx", "leg", "time", "lat", "lng", "tickLead", "tickRace", "distance"]
+timeHeaders = ["fixIdx", "zoneIdx", "legIdx", "time", "lat", "lng", "tickLead", "tickRace", "distance"]
 
 tickHeaders :: [String]
-tickHeaders = ["fixIdx", "zoneIdx" , "leg", "tickLead", "tickRace", "distance", "area"]
+tickHeaders = ["fixIdx", "zoneIdx" , "legIdx", "tickLead", "tickRace", "distance", "area"]
 
 -- | A fix but indexed off the first crossing time.
 data TimeRow =
@@ -111,7 +118,7 @@ data TimeRow =
         -- ^ The fix number for the whole track.
         , zoneIdx :: ZoneIdx
         -- ^ The fix number for this leg.
-        , leg :: Int
+        , legIdx :: LegIdx
         -- ^ Leg of the task.
         , tickLead :: Maybe LeadTick
         -- ^ Seconds from first lead.
@@ -135,7 +142,7 @@ data TickRow =
         -- ^ The fix number for the whole track.
         , zoneIdx :: ZoneIdx
         -- ^ The fix number for this leg.
-        , leg :: Int
+        , legIdx :: LegIdx
         -- ^ Leg of the task
         , tickLead :: Maybe LeadTick
         -- ^ Seconds from first lead.
@@ -169,7 +176,7 @@ instance ToNamedRecord TimeRow where
                 namedRecord
                     [ namedField "fixIdx" fixIdx
                     , namedField "zoneIdx" zoneIdx
-                    , namedField "leg" leg
+                    , namedField "legIdx" legIdx
                     , namedField "tickLead" tickLead
                     , namedField "tickRace" tickRace
                     , namedField "time" time'
@@ -184,7 +191,7 @@ instance FromNamedRecord TimeRow where
         TimeRow <$>
         m .: "fixIdx" <*>
         m .: "zoneIdx" <*>
-        m .: "leg" <*>
+        m .: "legIdx" <*>
         m .: "tickLead" <*>
         m .: "tickRace" <*>
         t <*>
@@ -199,7 +206,7 @@ instance ToNamedRecord TickRow where
         namedRecord
             [ namedField "fixIdx" fixIdx
             , namedField "zoneIdx" zoneIdx
-            , namedField "leg" leg
+            , namedField "legIdx" legIdx
             , namedField "tickLead" tickLead
             , namedField "tickRace" tickRace
             , namedField "distance" (f distance)
@@ -214,7 +221,7 @@ instance FromNamedRecord TickRow where
         TickRow <$>
         m .: "fixIdx" <*>
         m .: "zoneIdx" <*>
-        m .: "leg" <*>
+        m .: "legIdx" <*>
         m .: "tickLead" <*>
         m .: "tickRace" <*>
         m .: "distance" <*>
@@ -244,7 +251,7 @@ leadingSum (Just _) (Just (start, _)) xs =
     where
         ys =
             (\TickRow{area = LeadingAreaStep a} -> a)
-            <$> filter (\TickRow{leg} -> leg >= start) xs
+            <$> filter (\TickRow{legIdx = LegIdx ix} -> ix >= start) xs
 
 leadingArea
     :: (Int -> Leg)
@@ -288,9 +295,9 @@ leadingArea
 
 toLcPoint :: (Int -> Leg) -> TickRow -> Maybe LcPoint
 toLcPoint _ TickRow{tickLead = Nothing} = Nothing
-toLcPoint toLeg TickRow{leg, tickLead = Just (LeadTick t), distance} =
+toLcPoint toLeg TickRow{legIdx = (LegIdx ix), tickLead = Just (LeadTick t), distance} =
     Just LcPoint
-        { leg = toLeg leg
+        { leg = toLeg ix
         , mark = TaskTime . MkQuantity . toRational $ t
         , togo = DistanceToEss . MkQuantity . toRational $ distance
         }
@@ -384,11 +391,11 @@ taskToLeading (TaskDistance d) =
     LeadingDistance (convert d :: Quantity Double [u| km |])
 
 timeToTick :: TimeRow -> TickRow
-timeToTick TimeRow{fixIdx, zoneIdx, leg, tickLead, tickRace, distance} =
+timeToTick TimeRow{..} =
     TickRow
         { fixIdx = fixIdx
         , zoneIdx = zoneIdx
-        , leg = leg
+        , legIdx = legIdx
         , tickLead = tickLead
         , tickRace = tickRace
         , distance = distance
