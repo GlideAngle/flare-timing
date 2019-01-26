@@ -198,21 +198,28 @@ mkTimeRows
     -> [TimeRow]
 mkTimeRows _ _ _ Nothing = []
 mkTimeRows lead start leg (Just xs) =
-    catMaybes $ mkTimeRow lead start leg <$> xs
+    catMaybes
+    [ mkTimeRow lead start leg fixIdx fix d
+    | fixIdx <- FixIdx <$> [1..]
+    | fix <- fst <$> xs
+    | d <- snd <$> xs
+    ]
 
 mkTimeRow
     :: Maybe FirstLead
     -> Maybe FirstStart
     -> LegIdx
-    -> (Maybe Fix, Maybe (QTaskDistance Double [u| m |]))
+    -> FixIdx
+    -> Maybe Fix
+    -> Maybe (QTaskDistance Double [u| m |])
     -> Maybe TimeRow
-mkTimeRow Nothing _ _ _ = Nothing
-mkTimeRow _ _ _ (Nothing, _) = Nothing
-mkTimeRow _ _ _ (_, Nothing) = Nothing
-mkTimeRow lead start legIdx (Just Fix{fix, time, lat, lng}, Just d) =
+mkTimeRow Nothing _ _ _ _ _ = Nothing
+mkTimeRow _ _ _ _ Nothing _ = Nothing
+mkTimeRow _ _ _ _ _ Nothing = Nothing
+mkTimeRow lead start legIdx fixIdx (Just Fix{fix, time, lat, lng}) (Just d) =
     Just
         TimeRow
-            { fixIdx = FixIdx fix
+            { fixIdx = fixIdx
             , zoneIdx = ZoneIdx fix
             , legIdx = legIdx
 
@@ -258,19 +265,21 @@ group
                         firstLead'
                         firstStart'
                         (LegIdx end)
-                        (Just f, Just $ TaskDistance [u| 0m |]))
+                        (FixIdx 0)
+                        (Just f)
+                        (Just $ TaskDistance [u| 0m |]))
                 )
                 endZoneTag
             where
-                scoredRange :: FlyingSection UTCTime =
+                scoredTimeRange :: FlyingSection UTCTime =
                     fromMaybe
                         (Just (mark0, mark0))
                         (fmap scoredTimes . (\f -> f iTask p) =<< lookupFlying)
 
                 -- NOTE: Ensure we're only considering scored subset of flying time.
-                scoredFixes =
+                scoredMarkedFixes =
                     FlyCut
-                        { cut = scoredRange
+                        { cut = scoredTimeRange
                         , uncut = mf
                         }
 
@@ -283,9 +292,9 @@ group
                     =<< openClose ss (zoneTimes task)
 
                 xs :: [MarkedFixes]
-                xs = groupByLeg spanF zoneToCylF task scoredFixes
+                xs = groupByLeg spanF zoneToCylF task scoredMarkedFixes
 
-                ys = FlyCut scoredRange <$> xs
+                yss = FlyCut scoredTimeRange <$> xs
 
                 ticked =
                     fromMaybe (RaceSections [] [] [])
@@ -301,14 +310,26 @@ group
 
                     listToMaybe . take 1 . drop (end - start) $ us
 
-                zs :: [TimeRow]
+                zs' :: [TimeRow]
+                zs' =
+                    concat
+                    [
+                        let (leg, reticked) = retick ticked (LegIdx start) j in
+                        legDistances ssOnly reticked times task leg ys
+                    | j <- LegIdx <$> [0 .. ]
+                    | ys <- yss
+                    ]
+
+                scoredFixIdx :: FlyingSection Int =
+                    fromMaybe
+                        (Just (0, 0))
+                        (fmap scoredFixes . (\f -> f iTask p) =<< lookupFlying)
+
                 zs =
-                    concat $ zipWith
-                        (\j x ->
-                            let (leg, reticked) = retick ticked (LegIdx start) j
-                            in legDistances ssOnly reticked times task leg x)
-                        (LegIdx <$> [0 .. ])
-                        ys
+                    [ z{fixIdx = FixIdx $ ix + 1}
+                    | z <- zs'
+                    | ix <- [(maybe 0 fst scoredFixIdx) ..]
+                    ]
     where
         (TickLookup lookupTicked) = tagTicked (Just tags)
         (TagLookup lookupZoneTags) = tagPilotTag (Just tags)
