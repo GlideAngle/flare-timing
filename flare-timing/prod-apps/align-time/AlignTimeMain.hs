@@ -19,7 +19,7 @@ import System.FilePath ((</>), takeFileName)
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
-import Flight.Track.Time (LeadTick(..), RaceTick(..), TimeRow(..))
+import Flight.Track.Time (LeadTick(..), RaceTick(..), TimeRow(..), timeHeaders)
 import Flight.Comp
     ( FileType(CompInput)
     , AlignDir(..)
@@ -71,9 +71,6 @@ unTaskDistance (TaskDistance d) =
     fromRational $ dpRound 3 dKm
     where 
         MkQuantity dKm = toRational' $ convert d :: Quantity _ [u| km |]
-
-headers :: [String]
-headers = ["leg", "time", "lat", "lng", "tickLead", "tickRace", "distance"]
 
 main :: IO ()
 main = do
@@ -187,7 +184,7 @@ includeTask tasks = if null tasks then const True else (`elem` tasks)
 writePilotTimes :: CompInputFile -> Int -> (Pilot, [TimeRow]) -> IO ()
 writePilotTimes compFile iTask (pilot, rows) = do
     _ <- createDirectoryIfMissing True dOut
-    _ <- writeAlignTime (AlignTimeFile $ dOut </> f) headers rows
+    _ <- writeAlignTime (AlignTimeFile $ dOut </> f) timeHeaders rows
     return ()
     where
         dir = compFileToCompDir compFile
@@ -212,10 +209,11 @@ mkTimeRow
 mkTimeRow Nothing _ _ _ = Nothing
 mkTimeRow _ _ _ (Nothing, _) = Nothing
 mkTimeRow _ _ _ (_, Nothing) = Nothing
-mkTimeRow lead start leg (Just Fix{time, lat, lng}, Just d) =
+mkTimeRow lead start leg (Just Fix{fix, time, lat, lng}, Just d) =
     Just
         TimeRow
-            { leg = leg
+            { fix = fix
+            , leg = leg
 
             , tickLead =
                 LeadTick

@@ -9,7 +9,7 @@ import Control.Monad.Except (MonadIO, liftIO)
 import Control.Monad (zipWithM)
 import qualified Data.ByteString.Lazy as BL
 import Data.Csv
-    (Header
+    ( Header
     , EncodeOptions(..)
     , decodeByName
     , encodeByNameWith

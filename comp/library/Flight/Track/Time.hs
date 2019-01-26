@@ -21,6 +21,8 @@ module Flight.Track.Time
     , minLeading
     , taskToLeading
     , discard
+    , timeHeaders
+    , tickHeaders
     ) where
 
 import Prelude hiding (seq)
@@ -82,10 +84,18 @@ instance Show RaceTick where
 
 newtype LeadingDistance = LeadingDistance (Quantity Double [u| km |])
 
+timeHeaders :: [String]
+timeHeaders = ["fix", "leg", "time", "lat", "lng", "tickLead", "tickRace", "distance"]
+
+tickHeaders :: [String]
+tickHeaders = ["fix", "leg", "tickLead", "tickRace", "distance", "area"]
+
 -- | A fix but indexed off the first crossing time.
 data TimeRow =
     TimeRow
-        { leg :: Int
+        { fix :: Int
+        -- ^ The fix number.
+        , leg :: Int
         -- ^ Leg of the task.
         , tickLead :: Maybe LeadTick
         -- ^ Seconds from first lead.
@@ -105,7 +115,9 @@ data TimeRow =
 -- | A fix but indexed off the first crossing time.
 data TickRow =
     TickRow
-        { leg :: Int
+        { fix :: Int
+        -- ^ The fix number.
+        , leg :: Int
         -- ^ Leg of the task
         , tickLead :: Maybe LeadTick
         -- ^ Seconds from first lead.
@@ -137,7 +149,8 @@ instance ToNamedRecord TimeRow where
         where
             local =
                 namedRecord
-                    [ namedField "leg" leg
+                    [ namedField "fix" fix
+                    , namedField "leg" leg
                     , namedField "tickLead" tickLead
                     , namedField "tickRace" tickRace
                     , namedField "time" time'
@@ -151,6 +164,7 @@ instance ToNamedRecord TimeRow where
 instance FromNamedRecord TimeRow where
     parseNamedRecord m =
         TimeRow <$>
+        m .: "fix" <*>
         m .: "leg" <*>
         m .: "tickLead" <*>
         m .: "tickRace" <*>
@@ -164,7 +178,8 @@ instance FromNamedRecord TimeRow where
 instance ToNamedRecord TickRow where
     toNamedRecord TickRow{..} =
         namedRecord
-            [ namedField "leg" leg
+            [ namedField "fix" fix
+            , namedField "leg" leg
             , namedField "tickLead" tickLead
             , namedField "tickRace" tickRace
             , namedField "distance" (f distance)
@@ -177,6 +192,7 @@ instance ToNamedRecord TickRow where
 instance FromNamedRecord TickRow where
     parseNamedRecord m =
         TickRow <$>
+        m .: "fix" <*>
         m .: "leg" <*>
         m .: "tickLead" <*>
         m .: "tickRace" <*>
@@ -347,9 +363,10 @@ taskToLeading (TaskDistance d) =
     LeadingDistance (convert d :: Quantity Double [u| km |])
 
 timeToTick :: TimeRow -> TickRow
-timeToTick TimeRow{leg, tickLead, tickRace, distance} =
+timeToTick TimeRow{fix, leg, tickLead, tickRace, distance} =
     TickRow
-        { leg = leg
+        { fix = fix
+        , leg = leg
         , tickLead = tickLead
         , tickRace = tickRace
         , distance = distance
@@ -386,4 +403,3 @@ discardFurther (x : y : ys)
     where
         d = distance :: (TickRow -> Double)
 discardFurther ys = ys
-

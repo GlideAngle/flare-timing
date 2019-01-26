@@ -50,7 +50,7 @@ import Flight.Comp
     , ensureExt
     , pilotNamed
     )
-import Flight.Track.Time (LeadClose(..), LeadArrival(..), discard)
+import Flight.Track.Time (LeadClose(..), LeadArrival(..), discard, tickHeaders)
 import Flight.Track.Mask (FlyCut(..), FlyClipping(..), RaceTime(..), racing)
 import Flight.Mask (checkTracks)
 import Flight.Scribe
@@ -59,9 +59,6 @@ import Flight.Lookup.Route (routeLength)
 import Flight.Lookup.Tag (TaskTimeLookup(..), tagTaskTime)
 import Flight.Score (Leg(..))
 import DiscardFurtherOptions (description)
-
-headers :: [String]
-headers = ["leg", "tickLead", "tickRace", "distance", "area"]
 
 main :: IO ()
 main = do
@@ -248,7 +245,7 @@ readFilterWrite
     rows <- readAlignTime (AlignTimeFile (dIn </> file))
     f . discard toLeg taskLength close arrival . snd $ rows
     where
-        f = writeDiscardFurther (DiscardFurtherFile $ dOut </> file) headers
+        f = writeDiscardFurther (DiscardFurtherFile $ dOut </> file) tickHeaders
         dir = compFileToCompDir compFile
         (AlignDir dIn, AlignTimeFile file) = alignPath dir i pilot
         (DiscardDir dOut) = discardDir dir i
