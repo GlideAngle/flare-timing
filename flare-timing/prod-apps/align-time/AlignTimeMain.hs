@@ -21,10 +21,10 @@ import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
 import Flight.Track.Time
     ( FixIdx(..), ZoneIdx(..), LegIdx(..), LeadTick(..), RaceTick(..), TimeRow(..)
-    , timeHeaders)
+    , alignTimeHeaders)
 import Flight.Comp
     ( FileType(CompInput)
-    , AlignDir(..)
+    , AlignTimeDir(..)
     , CompInputFile(..)
     , CrossZoneFile(..)
     , TagZoneFile(..)
@@ -41,7 +41,7 @@ import Flight.Comp
     , compToCross
     , crossToTag
     , compFileToCompDir
-    , alignPath
+    , alignTimePath
     , findCompInput
     , openClose
     , ensureExt
@@ -184,11 +184,11 @@ includeTask tasks = if null tasks then const True else (`elem` tasks)
 writePilotTimes :: CompInputFile -> Int -> (Pilot, [TimeRow]) -> IO ()
 writePilotTimes compFile iTask (pilot, rows) = do
     _ <- createDirectoryIfMissing True dOut
-    _ <- writeAlignTime (AlignTimeFile $ dOut </> f) timeHeaders rows
+    _ <- writeAlignTime (AlignTimeFile $ dOut </> f) alignTimeHeaders rows
     return ()
     where
         dir = compFileToCompDir compFile
-        (AlignDir dOut, AlignTimeFile f) = alignPath dir iTask pilot
+        (AlignTimeDir dOut, AlignTimeFile f) = alignTimePath dir iTask pilot
 
 mkTimeRows
     :: Maybe FirstLead

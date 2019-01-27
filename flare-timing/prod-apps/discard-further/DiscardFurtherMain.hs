@@ -18,8 +18,8 @@ import qualified Flight.Comp as Cmp (openClose)
 import Flight.Route (OptimalRoute(..))
 import Flight.Comp
     ( FileType(CompInput)
-    , DiscardDir(..)
-    , AlignDir(..)
+    , DiscardFurtherDir(..)
+    , AlignTimeDir(..)
     , CompInputFile(..)
     , TagZoneFile(..)
     , TaskLengthFile(..)
@@ -43,14 +43,14 @@ import Flight.Comp
     , compToTaskLength
     , compToCross
     , crossToTag
-    , discardDir
-    , alignPath
+    , discardFurtherDir
+    , alignTimePath
     , findCompInput
     , speedSectionToLeg
     , ensureExt
     , pilotNamed
     )
-import Flight.Track.Time (LeadClose(..), LeadArrival(..), discard, tickHeaders)
+import Flight.Track.Time (LeadClose(..), LeadArrival(..), discard, discardFurtherHeaders)
 import Flight.Track.Mask (FlyCut(..), FlyClipping(..), RaceTime(..), racing)
 import Flight.Mask (checkTracks)
 import Flight.Scribe
@@ -245,10 +245,10 @@ readFilterWrite
     rows <- readAlignTime (AlignTimeFile (dIn </> file))
     f . discard toLeg taskLength close arrival . snd $ rows
     where
-        f = writeDiscardFurther (DiscardFurtherFile $ dOut </> file) tickHeaders
+        f = writeDiscardFurther (DiscardFurtherFile $ dOut </> file) discardFurtherHeaders
         dir = compFileToCompDir compFile
-        (AlignDir dIn, AlignTimeFile file) = alignPath dir i pilot
-        (DiscardDir dOut) = discardDir dir i
+        (AlignTimeDir dIn, AlignTimeFile file) = alignTimePath dir i pilot
+        (DiscardFurtherDir dOut) = discardFurtherDir dir i
         taskLength = (fmap wholeTaskDistance . ($ iTask)) =<< lookupTaskLength
         close = LeadClose <$> leadClose raceTime
         arrival = LeadArrival <$> leadArrival raceTime

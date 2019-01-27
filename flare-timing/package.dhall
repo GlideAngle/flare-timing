@@ -115,6 +115,29 @@ in    defs
               , source-dirs =
                   "prod-apps/tag-zone"
               }
+          , unpack-track =
+              { dependencies =
+                    deps
+                  # [ "lens"
+                    , "time"
+                    , "siggy-chardust"
+                    , "safe-exceptions"
+                    , "flight-kml"
+                    , "flight-mask"
+                    , "flight-lookup"
+                    ]
+              , ghc-options =
+                  [ "-rtsopts"
+                  , "-threaded"
+                  , "-with-rtsopts=-N"
+                  , "-Wall"
+                  , "-fplugin Data.UnitsOfMeasure.Plugin"
+                  ]
+              , main =
+                  "UnpackTrackMain.hs"
+              , source-dirs =
+                  "prod-apps/unpack-track"
+              }
           , align-time =
               { dependencies =
                     deps

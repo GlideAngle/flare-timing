@@ -12,6 +12,7 @@ module Flight.Track.Time
     ( LeadingDistance(..)
     , LeadTick(..)
     , RaceTick(..)
+    , TrackRow(..)
     , TimeRow(..)
     , TickRow(..)
     , LeadArrival(..)
@@ -24,8 +25,9 @@ module Flight.Track.Time
     , minLeading
     , taskToLeading
     , discard
-    , timeHeaders
-    , tickHeaders
+    , unpackTrackHeaders
+    , alignTimeHeaders
+    , discardFurtherHeaders
     ) where
 
 import Prelude hiding (seq)
@@ -105,49 +107,65 @@ instance Show RaceTick where
 
 newtype LeadingDistance = LeadingDistance (Quantity Double [u| km |])
 
-timeHeaders :: [String]
-timeHeaders = ["fixIdx", "zoneIdx", "legIdx", "time", "lat", "lng", "tickLead", "tickRace", "distance"]
+unpackTrackHeaders :: [String]
+unpackTrackHeaders = ["fixIdx", "time", "lat", "lng"]
 
-tickHeaders :: [String]
-tickHeaders = ["fixIdx", "zoneIdx" , "legIdx", "tickLead", "tickRace", "distance", "area"]
+alignTimeHeaders :: [String]
+alignTimeHeaders = ["fixIdx", "time", "lat", "lng", "tickLead", "tickRace", "zoneIdx", "legIdx", "distance"]
 
--- | A fix but indexed off the first crossing time.
-data TimeRow =
-    TimeRow
+discardFurtherHeaders :: [String]
+discardFurtherHeaders = ["fixIdx", "tickLead", "tickRace", "zoneIdx", "legIdx", "distance", "area"]
+
+data TrackRow =
+    TrackRow
         { fixIdx :: FixIdx
         -- ^ The fix number for the whole track.
-        , zoneIdx :: ZoneIdx
-        -- ^ The fix number for this leg.
-        , legIdx :: LegIdx
-        -- ^ Leg of the task.
-        , tickLead :: Maybe LeadTick
-        -- ^ Seconds from first lead.
-        , tickRace :: Maybe RaceTick
-        -- ^ Seconds from first start.
         , time :: UTCTime
         -- ^ Time of the fix
         , lat :: RawLat
         -- ^ Latitude of the fix
         , lng :: RawLng
         -- ^ Longitude of the fix
+        }
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+
+-- | A fix but with time as elapsed time from the first crossing time.
+data TimeRow =
+    TimeRow
+        { fixIdx :: FixIdx
+        -- ^ The fix number for the whole track.
+        , time :: UTCTime
+        -- ^ Time of the fix
+        , lat :: RawLat
+        -- ^ Latitude of the fix
+        , lng :: RawLng
+        -- ^ Longitude of the fix
+        , tickLead :: Maybe LeadTick
+        -- ^ Seconds from first lead.
+        , tickRace :: Maybe RaceTick
+        -- ^ Seconds from first start.
+        , zoneIdx :: ZoneIdx
+        -- ^ The fix number for this leg.
+        , legIdx :: LegIdx
+        -- ^ Leg of the task.
         , distance :: Double
         -- ^ Distance to goal in km
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
--- | A fix but indexed off the first crossing time.
+-- | A fix but with time as elapsed time from the first crossing time.
 data TickRow =
     TickRow
         { fixIdx :: FixIdx
         -- ^ The fix number for the whole track.
-        , zoneIdx :: ZoneIdx
-        -- ^ The fix number for this leg.
-        , legIdx :: LegIdx
-        -- ^ Leg of the task
         , tickLead :: Maybe LeadTick
         -- ^ Seconds from first lead.
         , tickRace :: Maybe RaceTick
         -- ^ Seconds from first start.
+        , zoneIdx :: ZoneIdx
+        -- ^ The fix number for this leg.
+        , legIdx :: LegIdx
+        -- ^ Leg of the task
         , distance :: Double
         -- ^ Distance to goal in km.
         , area :: LeadingAreaStep
@@ -168,6 +186,28 @@ parseTime :: Maybe String -> UTCTime
 parseTime Nothing = read ""
 parseTime (Just s) = fromMaybe (read "") $ decode . pack . quote $ s
 
+instance ToNamedRecord TrackRow where
+    toNamedRecord TrackRow{..} =
+        unions [local, toNamedRecord lat, toNamedRecord lng]
+        where
+            local =
+                namedRecord
+                    [ namedField "fixIdx" fixIdx
+                    , namedField "time" time'
+                    ]
+
+            time' = unquote . unpack . encode $ time
+
+instance FromNamedRecord TrackRow where
+    parseNamedRecord m =
+        TrackRow <$>
+        m .: "fixIdx" <*>
+        t <*>
+        m .: "lat" <*>
+        m .: "lng"
+        where
+            t = parseTime <$> m .: "time"
+
 instance ToNamedRecord TimeRow where
     toNamedRecord TimeRow{..} =
         unions [local, toNamedRecord lat, toNamedRecord lng]
@@ -175,11 +215,11 @@ instance ToNamedRecord TimeRow where
             local =
                 namedRecord
                     [ namedField "fixIdx" fixIdx
-                    , namedField "zoneIdx" zoneIdx
-                    , namedField "legIdx" legIdx
                     , namedField "tickLead" tickLead
                     , namedField "tickRace" tickRace
                     , namedField "time" time'
+                    , namedField "zoneIdx" zoneIdx
+                    , namedField "legIdx" legIdx
                     , namedField "distance" d
                     ]
 
@@ -190,13 +230,13 @@ instance FromNamedRecord TimeRow where
     parseNamedRecord m =
         TimeRow <$>
         m .: "fixIdx" <*>
-        m .: "zoneIdx" <*>
-        m .: "legIdx" <*>
-        m .: "tickLead" <*>
-        m .: "tickRace" <*>
         t <*>
         m .: "lat" <*>
         m .: "lng" <*>
+        m .: "tickLead" <*>
+        m .: "tickRace" <*>
+        m .: "zoneIdx" <*>
+        m .: "legIdx" <*>
         m .: "distance"
         where
             t = parseTime <$> m .: "time"
@@ -205,10 +245,10 @@ instance ToNamedRecord TickRow where
     toNamedRecord TickRow{..} =
         namedRecord
             [ namedField "fixIdx" fixIdx
-            , namedField "zoneIdx" zoneIdx
-            , namedField "legIdx" legIdx
             , namedField "tickLead" tickLead
             , namedField "tickRace" tickRace
+            , namedField "zoneIdx" zoneIdx
+            , namedField "legIdx" legIdx
             , namedField "distance" (f distance)
             , namedField "area" (g area)
             ]
@@ -220,10 +260,10 @@ instance FromNamedRecord TickRow where
     parseNamedRecord m =
         TickRow <$>
         m .: "fixIdx" <*>
-        m .: "zoneIdx" <*>
-        m .: "legIdx" <*>
         m .: "tickLead" <*>
         m .: "tickRace" <*>
+        m .: "zoneIdx" <*>
+        m .: "legIdx" <*>
         m .: "distance" <*>
         m .: "area"
 

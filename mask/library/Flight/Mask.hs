@@ -40,6 +40,7 @@ module Flight.Mask
     , togoAtLanding
     , madeAtLanding
     , separatedRawZones
+    , fixFromFix
     ) where
 
 import Flight.Mask.Tag
@@ -47,7 +48,7 @@ import Flight.Mask.Distance
 import Flight.Mask.Time
 import Flight.Mask.Tracks
 import Flight.Mask.Internal.Zone
-    (TaskZone, zoneToCylinder, slice, separatedRawZones)
+    (TaskZone, zoneToCylinder, slice, separatedRawZones, fixFromFix)
 import Flight.Mask.Internal.Race
     ( FlyClipSection(..)
     , Sliver(..)

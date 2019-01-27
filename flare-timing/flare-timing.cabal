@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 64b43bca6a94fae6f30a82b5fc831a43d80feebcd343f105bda1686078f94407
+-- hash: 91d81cc59589d69fec9da2081c4b29af3f8a0b1f00df2a2d4a855af2223155ff
 
 name:           flare-timing
 version:        0.1.0
@@ -414,4 +414,41 @@ executable test-kml-parser
     , flight-comp
     , flight-kml
     , raw-strings-qq
+  default-language: Haskell2010
+
+executable unpack-track
+  main-is: UnpackTrackMain.hs
+  other-modules:
+      UnpackTrackOptions
+      Paths_flare_timing
+  hs-source-dirs:
+      prod-apps/unpack-track
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  ghc-options: -Wall -Werror -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
+  build-depends:
+      aeson
+    , base >=4.10.1.0 && <5
+    , bytestring
+    , clock
+    , cmdargs
+    , directory
+    , filemanip
+    , filepath
+    , flight-cmd
+    , flight-comp
+    , flight-kml
+    , flight-latlng
+    , flight-lookup
+    , flight-mask
+    , flight-scribe
+    , formatting
+    , lens
+    , mtl
+    , raw-strings-qq
+    , safe-exceptions
+    , siggy-chardust
+    , time
+    , transformers
+    , uom-plugin
+    , yaml
   default-language: Haskell2010

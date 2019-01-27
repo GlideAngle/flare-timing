@@ -8,14 +8,16 @@ module Flight.Path
     , TaskLengthFile(..)
     , CrossZoneFile(..)
     , TagZoneFile(..)
+    , UnpackTrackFile(..)
     , AlignTimeFile(..)
     , DiscardFurtherFile(..)
     , MaskTrackFile(..)
     , LandOutFile(..)
     , GapPointFile(..)
     , CompDir(..)
-    , AlignDir(..)
-    , DiscardDir(..)
+    , UnpackTrackDir(..)
+    , AlignTimeDir(..)
+    , DiscardFurtherDir(..)
     , fsdbToComp
     , compToTaskLength
     , compToCross
@@ -24,10 +26,12 @@ module Flight.Path
     , compToPoint
     , crossToTag
     , compFileToCompDir
-    , alignDir
-    , discardDir
-    , alignPath
-    , discardPath
+    , unpackTrackDir
+    , alignTimeDir
+    , discardFurtherDir
+    , unpackTrackPath
+    , alignTimePath
+    , discardFurtherPath
     , findFsdb
     , findCompInput
     , findCrossZone
@@ -75,11 +79,17 @@ newtype CrossZoneFile = CrossZoneFile FilePath
 -- | The path to a tag zone file.
 newtype TagZoneFile = TagZoneFile FilePath
 
+-- | The path to as unpack track directory for a single task.
+newtype UnpackTrackDir = UnpackTrackDir FilePath
+
 -- | The path to as align time directory for a single task.
-newtype AlignDir = AlignDir FilePath
+newtype AlignTimeDir = AlignTimeDir FilePath
 
 -- | The path to as discard further directory for a single task.
-newtype DiscardDir = DiscardDir FilePath
+newtype DiscardFurtherDir = DiscardFurtherDir FilePath
+
+-- | The path to as unpack track file.
+newtype UnpackTrackFile = UnpackTrackFile FilePath
 
 -- | The path to as align time file.
 newtype AlignTimeFile = AlignTimeFile FilePath
@@ -132,21 +142,29 @@ pilotPath :: Pilot -> FilePath
 pilotPath (Pilot (PilotId k, PilotName s)) =
     s ++ " " ++ k
 
-alignPath :: CompDir -> Int -> Pilot -> (AlignDir, AlignTimeFile)
-alignPath dir task pilot =
-    (alignDir dir task, AlignTimeFile $ pilotPath pilot <.> "csv")
+unpackTrackPath :: CompDir -> Int -> Pilot -> (UnpackTrackDir, UnpackTrackFile)
+unpackTrackPath dir task pilot =
+    (unpackTrackDir dir task, UnpackTrackFile $ pilotPath pilot <.> "csv")
 
-discardPath :: CompDir -> Int -> Pilot -> (DiscardDir, DiscardFurtherFile)
-discardPath dir task pilot =
-    (discardDir dir task, DiscardFurtherFile $ pilotPath pilot <.> "csv")
+alignTimePath :: CompDir -> Int -> Pilot -> (AlignTimeDir, AlignTimeFile)
+alignTimePath dir task pilot =
+    (alignTimeDir dir task, AlignTimeFile $ pilotPath pilot <.> "csv")
 
-alignDir :: CompDir -> Int -> AlignDir
-alignDir comp task =
-    AlignDir $ dotDir comp "align-time" task
+discardFurtherPath :: CompDir -> Int -> Pilot -> (DiscardFurtherDir, DiscardFurtherFile)
+discardFurtherPath dir task pilot =
+    (discardFurtherDir dir task, DiscardFurtherFile $ pilotPath pilot <.> "csv")
 
-discardDir :: CompDir -> Int -> DiscardDir
-discardDir comp task =
-    DiscardDir $ dotDir comp "discard-further" task
+unpackTrackDir :: CompDir -> Int -> UnpackTrackDir
+unpackTrackDir comp task =
+    UnpackTrackDir $ dotDir comp "unpack-track" task
+
+alignTimeDir :: CompDir -> Int -> AlignTimeDir
+alignTimeDir comp task =
+    AlignTimeDir $ dotDir comp "align-time" task
+
+discardFurtherDir :: CompDir -> Int -> DiscardFurtherDir
+discardFurtherDir comp task =
+    DiscardFurtherDir $ dotDir comp "discard-further" task
 
 dotDir :: CompDir -> FilePath -> Int -> FilePath
 dotDir (CompDir dir) name task =
@@ -160,6 +178,7 @@ data FileType
     | TaskLength
     | CrossZone
     | TagZone
+    | UnpackTrack
     | AlignTime
     | DiscardFurther
     | MaskTrack
@@ -174,8 +193,9 @@ ext CompInput = ".comp-input.yaml"
 ext TaskLength = ".task-length.yaml"
 ext CrossZone = ".cross-zone.yaml"
 ext TagZone = ".tag-zone.yaml"
-ext AlignTime = ".align-time.yaml"
-ext DiscardFurther = ".discard-further.yaml"
+ext UnpackTrack = ".unpack-track.csv"
+ext AlignTime = ".align-time.csv"
+ext DiscardFurther = ".discard-further.csv"
 ext MaskTrack = ".mask-track.yaml"
 ext LandOut = ".land-out.yaml"
 ext GapPoint = ".gap-point.yaml"
@@ -188,8 +208,9 @@ ensureExt CompInput = flip replaceExtensions "comp-input.yaml"
 ensureExt TaskLength = flip replaceExtensions "task-length.yaml"
 ensureExt CrossZone = flip replaceExtensions "cross-zone.yaml"
 ensureExt TagZone = flip replaceExtensions "tag-zone.yaml"
-ensureExt AlignTime = flip replaceExtensions "align-time.yaml"
-ensureExt DiscardFurther = flip replaceExtensions "discard-further.yaml"
+ensureExt UnpackTrack = flip replaceExtensions "unpack-track.csv"
+ensureExt AlignTime = flip replaceExtensions "align-time.csv"
+ensureExt DiscardFurther = flip replaceExtensions "discard-further.csv"
 ensureExt MaskTrack = flip replaceExtensions "mask-track.yaml"
 ensureExt LandOut = flip replaceExtensions "land-out.yaml"
 ensureExt GapPoint = flip replaceExtensions "gap-point.yaml"

@@ -1,4 +1,4 @@
-module Flight.Discard
+module Flight.DiscardFurther
     ( readDiscardFurther
     , writeDiscardFurther
     , readCompBestDistances
@@ -26,19 +26,19 @@ import Flight.Comp
     ( IxTask(..)
     , Pilot(..)
     , CompInputFile(..)
-    , AlignDir(..)
+    , AlignTimeDir(..)
     , AlignTimeFile(..)
     , DiscardFurtherFile(..)
-    , DiscardDir(..)
+    , DiscardFurtherDir(..)
     , AlignTimeFile(..)
     , DiscardFurtherFile(..)
     , RoutesLookupTaskDistance(..)
     , TaskRouteDistance(..)
-    , discardDir
-    , alignPath
+    , discardFurtherDir
+    , alignTimePath
     , compFileToCompDir
     )
-import Flight.Align (readAlignTime)
+import Flight.AlignTime (readAlignTime)
 import Flight.Score (Leg)
 
 readDiscardFurther
@@ -93,8 +93,8 @@ readPilotBestDistance compFile (IxTask iTask) pilot = do
     return $ (pilot,) <$> lastRow rows
     where
         dir = compFileToCompDir compFile
-        (_, AlignTimeFile file) = alignPath dir iTask pilot
-        (DiscardDir dOut) = discardDir dir iTask
+        (_, AlignTimeFile file) = alignTimePath dir iTask pilot
+        (DiscardFurtherDir dOut) = discardFurtherDir dir iTask
 
 readCompLeading
     :: RoutesLookupTaskDistance
@@ -129,7 +129,7 @@ readTaskLeading lengths compFile select iTask@(IxTask i) toLeg raceTime ps =
     return $ zip ps xs
     where
         dir = compFileToCompDir compFile
-        (DiscardDir dOut) = discardDir dir i
+        (DiscardFurtherDir dOut) = discardFurtherDir dir i
 
 readPilotLeading
     :: RoutesLookupTaskDistance
@@ -151,7 +151,7 @@ readPilotLeading
     return $ (V.toList . discard toLeg taskLength close arrival) rows
     where
         dir = compFileToCompDir compFile
-        (AlignDir dIn, AlignTimeFile file) = alignPath dir i pilot
+        (AlignTimeDir dIn, AlignTimeFile file) = alignTimePath dir i pilot
         taskLength = (fmap wholeTaskDistance . ($ iTask)) =<< lookupTaskLength
 
         close = do

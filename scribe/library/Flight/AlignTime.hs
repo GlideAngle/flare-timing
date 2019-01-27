@@ -1,4 +1,4 @@
-module Flight.Align
+module Flight.AlignTime
     ( readAlignTime
     , writeAlignTime
     , readCompTimeRows
@@ -27,9 +27,9 @@ import Flight.Comp
     , AlignTimeFile(..)
     , Pilot(..)
     , IxTask(..)
-    , AlignDir(..)
+    , AlignTimeDir(..)
     , AlignTimeFile(..)
-    , alignPath
+    , alignTimePath
     , compFileToCompDir
     )
 
@@ -86,4 +86,4 @@ readPilotTimeRow compFile (IxTask iTask) pilot mark = do
         rows
     where
         dir = compFileToCompDir compFile
-        (AlignDir dirIn, AlignTimeFile file) = alignPath dir iTask pilot
+        (AlignTimeDir dirIn, AlignTimeFile file) = alignTimePath dir iTask pilot

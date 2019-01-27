@@ -6,8 +6,9 @@ module Flight.Scribe
     , readMasking, writeMasking
     , readLanding, writeLanding
     , readPointing, writePointing
-    , module Flight.Align
-    , module Flight.Discard
+    , module Flight.UnpackTrack
+    , module Flight.AlignTime
+    , module Flight.DiscardFurther
     ) where
 
 import Control.Exception.Safe (MonadThrow)
@@ -33,8 +34,9 @@ import Flight.Comp
     , GapPointFile(..)
     , CompSettings(..)
     )
-import Flight.Align
-import Flight.Discard
+import Flight.UnpackTrack
+import Flight.AlignTime
+import Flight.DiscardFurther
 
 readComp
     :: (MonadThrow m, MonadIO m)
