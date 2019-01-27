@@ -55,7 +55,7 @@ import Flight.Mask
 import Flight.Track.Cross (FlyingSection, Fix(..), TrackFlyingSection(..))
 import Flight.Track.Mask (FlyCut(..))
 import Flight.Track.Tag (Tagging(..), TrackTime(..), firstLead, firstStart)
-import Flight.Kml (MarkedFixes(..))
+import Flight.Kml (MarkedFixes(..), timeToFixIdx)
 import Data.Ratio.Rounding (dpRound)
 import Flight.Distance (QTaskDistance, TaskDistance(..))
 import Flight.Scribe (readComp, readCrossing, readTagging, writeAlignTime)
@@ -320,15 +320,10 @@ group
                     | ys <- yss
                     ]
 
-                scoredFixIdx :: FlyingSection Int =
-                    fromMaybe
-                        (Just (0, 0))
-                        (fmap scoredFixes . (\f -> f iTask p) =<< lookupFlying)
-
-                zs =
-                    [ z{fixIdx = FixIdx $ ix + 1}
-                    | z <- zs'
-                    | ix <- [(maybe 0 fst scoredFixIdx) ..]
+                -- REVIEW: This lookup from time to fix is slow but correct.
+                zs :: [TimeRow] =
+                    [ z{fixIdx = FixIdx . fromMaybe 0 $ (+ 1) <$> timeToFixIdx t mf}
+                    | z@TimeRow{time = t} <- zs'
                     ]
     where
         (TickLookup lookupTicked) = tagTicked (Just tags)

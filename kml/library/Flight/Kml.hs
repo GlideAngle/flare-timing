@@ -33,6 +33,7 @@ module Flight.Kml
     , mkPosition
     , Fix(..)
     , MarkedFixes(..)
+    , timeToFixIdx
 
     -- * Parsing
     , parse
@@ -75,6 +76,7 @@ import Flight.Types
     , Longitude(..)
     , Altitude(..)
     , mkPosition
+    , timeToFixIdx
     )
 import Flight.Kml.Internal
 

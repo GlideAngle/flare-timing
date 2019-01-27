@@ -9,9 +9,11 @@
     , Altitude(..)
     , MarkedFixes(..)
     , mkPosition
+    , timeToFixIdx
     ) where
 
-import Data.Time.Clock (UTCTime)
+import Data.Time.Clock (UTCTime, diffUTCTime)
+import Data.List (findIndex)
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 
@@ -132,3 +134,9 @@ data MarkedFixes =
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
+-- | Finds the 0-based index of the fix.
+timeToFixIdx :: UTCTime -> MarkedFixes -> Maybe Int
+timeToFixIdx t MarkedFixes{mark0, fixes} =
+    findIndex ((== s) . fixMark) fixes
+    where
+        s = Seconds . round $ t `diffUTCTime` mark0
