@@ -57,12 +57,13 @@ import Flight.Comp
 ixTasks :: [IxTask]
 ixTasks = IxTask <$> [ 1 .. ]
 
-pilotTrack :: (K.MarkedFixes -> a)
-           -> PilotTrackLogFile
-           -> ExceptT
-               (Pilot, TrackFileFail)
-               IO
-               (Pilot, a)
+pilotTrack
+    :: (K.MarkedFixes -> a)
+    -> PilotTrackLogFile
+    -> ExceptT
+        (Pilot, TrackFileFail)
+        IO
+        (Pilot, a)
 pilotTrack _ (PilotTrackLogFile p Nothing) =
     ExceptT . return $ Left (p, TrackLogFileNotSet)
 pilotTrack f (PilotTrackLogFile p (Just (TrackLogFile file))) = do
@@ -100,13 +101,14 @@ pilotTrack f (PilotTrackLogFile p (Just (TrackLogFile file))) = do
 
     ExceptT . return . bimap (p,) (p,) $ x
 
-taskPilotTracks :: (IxTask -> K.MarkedFixes -> a)
-                -> [ (IxTask, [ PilotTrackLogFile ]) ]
-                -> IO
-                    [[ Either
-                        (Pilot, TrackFileFail)
-                        (Pilot, a)
-                    ]]
+taskPilotTracks
+    :: (IxTask -> K.MarkedFixes -> a)
+    -> [ (IxTask, [ PilotTrackLogFile ]) ]
+    -> IO
+        [[ Either
+            (Pilot, TrackFileFail)
+            (Pilot, a)
+        ]]
 taskPilotTracks _ [] =
     return []
 taskPilotTracks f xs =
@@ -114,20 +116,22 @@ taskPilotTracks f xs =
         sequence $ runExceptT . pilotTrack (f i) <$> ts)
         <$> xs
 
-pilotTracks :: (IxTask -> K.MarkedFixes -> a)
-            -> [[ PilotTrackLogFile ]]
-            -> IO
-                [[ Either
-                    (Pilot, TrackFileFail)
-                    (Pilot, a)
-                ]]
+pilotTracks
+    :: (IxTask -> K.MarkedFixes -> a)
+    -> [[ PilotTrackLogFile ]]
+    -> IO
+        [[ Either
+            (Pilot, TrackFileFail)
+            (Pilot, a)
+        ]]
 pilotTracks _ [] = return []
 pilotTracks f tasks =
     taskPilotTracks f (zip ixTasks tasks) 
 
-filterPilots :: [ Pilot ]
-             -> [[ PilotTrackLogFile ]]
-             -> [[ PilotTrackLogFile ]]
+filterPilots
+    :: [ Pilot ]
+    -> [[ PilotTrackLogFile ]]
+    -> [[ PilotTrackLogFile ]]
 
 filterPilots [] xs = xs
 filterPilots pilots xs =
@@ -140,19 +144,21 @@ filterPilots pilots xs =
                 if pilot `elem` pilots then Just x else Nothing)
             <$> ys
 
-filterTasks :: [ IxTask ]
-            -> [[ PilotTrackLogFile ]]
-            -> [[ PilotTrackLogFile ]]
+filterTasks
+    :: [ IxTask ]
+    -> [[ PilotTrackLogFile ]]
+    -> [[ PilotTrackLogFile ]]
 
 filterTasks [] xs = xs
 filterTasks tasks xs =
     zipWith (\i ys ->
         if i `elem` tasks then ys else []) ixTasks xs
 
-makeAbsolute :: FilePath
-             -> TaskFolder
-             -> PilotTrackLogFile
-             -> PilotTrackLogFile
+makeAbsolute
+    :: FilePath
+    -> TaskFolder
+    -> PilotTrackLogFile
+    -> PilotTrackLogFile
 makeAbsolute _ _ x@(PilotTrackLogFile _ Nothing) = x
 makeAbsolute
     dir
