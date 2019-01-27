@@ -56,8 +56,8 @@ data Sliver a =
         , angleCut :: AngleCut a
         }
 
--- | Without know which zones have been ticked, a function that uses a crossing
--- predicate to work out a distance.
+-- | Without knowing which zones have been ticked, a function that uses a
+-- crossing predicate to work out a distance.
 type Reach a b c
     = (a -> TrackZone b)
     -> SpeedSection
