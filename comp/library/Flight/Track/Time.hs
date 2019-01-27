@@ -25,9 +25,7 @@ module Flight.Track.Time
     , minLeading
     , taskToLeading
     , discard
-    , unpackTrackHeaders
-    , alignTimeHeaders
-    , discardFurtherHeaders
+    , allHeaders
     ) where
 
 import Prelude hiding (seq)
@@ -107,14 +105,17 @@ instance Show RaceTick where
 
 newtype LeadingDistance = LeadingDistance (Quantity Double [u| km |])
 
-unpackTrackHeaders :: [String]
-unpackTrackHeaders = ["fixIdx", "time", "lat", "lng"]
+-- WARNING: I suspect cassava doesn't support repeated column names.
 
-alignTimeHeaders :: [String]
-alignTimeHeaders = ["fixIdx", "time", "lat", "lng", "tickLead", "tickRace", "zoneIdx", "legIdx", "distance"]
-
-discardFurtherHeaders :: [String]
-discardFurtherHeaders = ["fixIdx", "tickLead", "tickRace", "zoneIdx", "legIdx", "distance", "area"]
+-- | To enable easy CSV comparison, each CSV file has the same headers but for
+-- some files these columns are empty of data. The file comparisons I'm
+-- interested in are unpack-track with align-time and align-time with
+-- discard-further.
+allHeaders :: [String]
+allHeaders =
+    ["fixIdx", "time", "lat", "lng"]
+    ++ ["tickLead", "tickRace", "zoneIdx", "legIdx", "distance"]
+    ++ ["area"]
 
 data TrackRow =
     TrackRow
@@ -188,12 +189,28 @@ parseTime (Just s) = fromMaybe (read "") $ decode . pack . quote $ s
 
 instance ToNamedRecord TrackRow where
     toNamedRecord TrackRow{..} =
-        unions [local, toNamedRecord lat, toNamedRecord lng]
+        unions [local, toNamedRecord lat, toNamedRecord lng, dummyTime, dummyTick]
         where
             local =
                 namedRecord
                     [ namedField "fixIdx" fixIdx
                     , namedField "time" time'
+                    ]
+
+            -- NOTE: Fields in TimeRow not in TrackRow.
+            dummyTime =
+                namedRecord
+                    [ namedField "tickLead" ("" :: String)
+                    , namedField "tickRace" ("" :: String)
+                    , namedField "zoneIdx" ("" :: String)
+                    , namedField "legIdx" ("" :: String)
+                    , namedField "distance" ("" :: String)
+                    ]
+
+            -- NOTE: Fields in TickRow that are not in TrackRow.
+            dummyTick =
+                namedRecord
+                    [ namedField "area" ("" :: String)
                     ]
 
             time' = unquote . unpack . encode $ time
@@ -210,7 +227,7 @@ instance FromNamedRecord TrackRow where
 
 instance ToNamedRecord TimeRow where
     toNamedRecord TimeRow{..} =
-        unions [local, toNamedRecord lat, toNamedRecord lng]
+        unions [local, toNamedRecord lat, toNamedRecord lng, dummyTick]
         where
             local =
                 namedRecord
@@ -221,6 +238,12 @@ instance ToNamedRecord TimeRow where
                     , namedField "zoneIdx" zoneIdx
                     , namedField "legIdx" legIdx
                     , namedField "distance" d
+                    ]
+
+            -- NOTE: Fields in TickRow that are not in TimeRow.
+            dummyTick =
+                namedRecord
+                    [ namedField "area" ("" :: String)
                     ]
 
             time' = unquote . unpack . encode $ time
@@ -243,16 +266,27 @@ instance FromNamedRecord TimeRow where
 
 instance ToNamedRecord TickRow where
     toNamedRecord TickRow{..} =
-        namedRecord
-            [ namedField "fixIdx" fixIdx
-            , namedField "tickLead" tickLead
-            , namedField "tickRace" tickRace
-            , namedField "zoneIdx" zoneIdx
-            , namedField "legIdx" legIdx
-            , namedField "distance" (f distance)
-            , namedField "area" (g area)
-            ]
+        unions [local, dummyTrack]
         where
+            local =
+                namedRecord
+                    [ namedField "fixIdx" fixIdx
+                    , namedField "tickLead" tickLead
+                    , namedField "tickRace" tickRace
+                    , namedField "zoneIdx" zoneIdx
+                    , namedField "legIdx" legIdx
+                    , namedField "distance" (f distance)
+                    , namedField "area" (g area)
+                    ]
+
+            -- NOTE: Fields in TrackRow that are not in TickRow.
+            dummyTrack =
+                namedRecord
+                    [ namedField "time" ("" :: String)
+                    , namedField "lat" ("" :: String)
+                    , namedField "lng" ("" :: String)
+                    ]
+
             f = unquote . unpack . encode
             g (LeadingAreaStep x) = f $ fromRational x
 
@@ -434,10 +468,10 @@ timeToTick :: TimeRow -> TickRow
 timeToTick TimeRow{..} =
     TickRow
         { fixIdx = fixIdx
-        , zoneIdx = zoneIdx
-        , legIdx = legIdx
         , tickLead = tickLead
         , tickRace = tickRace
+        , zoneIdx = zoneIdx
+        , legIdx = legIdx
         , distance = distance
         , area = LeadingAreaStep 0
         }

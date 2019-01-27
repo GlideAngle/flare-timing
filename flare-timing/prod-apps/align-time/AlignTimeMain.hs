@@ -21,7 +21,7 @@ import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
 import Flight.Track.Time
     ( FixIdx(..), ZoneIdx(..), LegIdx(..), LeadTick(..), RaceTick(..), TimeRow(..)
-    , alignTimeHeaders)
+    , allHeaders)
 import Flight.Comp
     ( FileType(CompInput)
     , AlignTimeDir(..)
@@ -184,7 +184,7 @@ includeTask tasks = if null tasks then const True else (`elem` tasks)
 writePilotTimes :: CompInputFile -> Int -> (Pilot, [TimeRow]) -> IO ()
 writePilotTimes compFile iTask (pilot, rows) = do
     _ <- createDirectoryIfMissing True dOut
-    _ <- writeAlignTime (AlignTimeFile $ dOut </> f) alignTimeHeaders rows
+    _ <- writeAlignTime (AlignTimeFile $ dOut </> f) allHeaders rows
     return ()
     where
         dir = compFileToCompDir compFile
