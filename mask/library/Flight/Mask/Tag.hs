@@ -916,6 +916,10 @@ groupByLeg span zoneToCyl task flyCut =
         split (keepDelimsL $ whenElt (\x -> elem (Just x) d)) c
         ["abcdefghijklmn","o","opqrstuvwxyz"]
 
+        let d = [Just 'a', Just 'e', Just 'i', Just 'o', Just 'u']
+        split (keepDelimsL $ whenElt (\x -> elem (Just x) d)) a
+        ["","abcd","efgh","ijklmn","opqrst","uvwxyz"]
+
         -}
 
         -- TODO: Find out when and how pilots end up with duplicate fixes.
