@@ -537,8 +537,8 @@ stationary x y =
 -- I got;
 --
 -- zls = [1,4483]
-fly :: Kml.LatLngAlt a => [a] -> FlyingSection Int
-fly ys =
+flyingSection :: Kml.LatLngAlt a => [a] -> FlyingSection Int
+flyingSection ys =
     if null zls then Nothing else
     case elemIndex (maximum zls) zls of
         Nothing -> Nothing
@@ -626,7 +626,7 @@ madeZones span zoneToCyl task mf@MarkedFixes{mark0, fixes} =
                 (\(RetroActive t) ->
                     let fc = FlyCut{cut =Just(mark0, t), uncut = mf}
                         FlyCut{uncut = MarkedFixes{fixes = fixes'}} = clipToFlown fc
-                        indices' = fly fixes'
+                        indices' = flyingSection fixes'
                         seconds' = secondsRange fixes' indices'
                         times' = timeRange mark0 seconds'
                     in
@@ -648,7 +648,7 @@ madeZones span zoneToCyl task mf@MarkedFixes{mark0, fixes} =
         len = length fixes
 
         loggedIndices = Just (0, len - 1)
-        flyingIndices = fly fixes
+        flyingIndices = flyingSection fixes
 
         loggedSeconds = secondsRange fixes loggedIndices
         flyingSeconds = secondsRange fixes flyingIndices
