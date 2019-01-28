@@ -314,8 +314,8 @@ group
                 zs' =
                     concat
                     [
-                        let leg = retick ticked (LegIdx start) j in
-                        legDistances ssOnly ticked times task leg ys
+                        let (leg, reticked) = retick ticked (LegIdx start) j in
+                        legDistances ssOnly reticked times task leg ys
                     | j <- LegIdx <$> [0 .. ]
                     | ys <- yss
                     ]
@@ -330,13 +330,14 @@ group
         (TagLookup lookupZoneTags) = tagPilotTag (Just tags)
 
 -- | For a given leg, only so many race zones can be ticked.
-retick :: Ticked -> LegIdx -> LegIdx -> LegIdx
-retick RaceSections{prolog} (LegIdx start) (LegIdx leg) =
-    LegIdx $ leg + delta
+retick :: Ticked -> LegIdx -> LegIdx -> (LegIdx, Ticked)
+retick rs@RaceSections{prolog, race} (LegIdx start) (LegIdx leg) =
+    (LegIdx $ leg + delta, rs')
     where
         -- NOTE: Some pilots get towed up outside the start circle. Make an
         -- adjustment between the start and the zones in the prolog ticked.
         delta = (start - 1) - length prolog
+        rs' = rs { race = take (leg - start + 1) race }
 
 allLegDistances
     :: Ticked
