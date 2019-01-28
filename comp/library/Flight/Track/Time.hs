@@ -525,7 +525,7 @@ commentOnFixRange pilot xs =
             ++ show fix0
             ++ ".."
             ++ show fixN
-            ++ "] 'flying' fixes for "
+            ++ "] fixes for "
             ++ show pilot
 
         ys ->
