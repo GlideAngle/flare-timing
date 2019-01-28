@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3926ba89a86e0b3572b966cf19544344c0077dedd527c2de8f44f19b34fe36dd
+-- hash: 474bfd0cf8d82942beaae758bc6607bc1e99adf0610ed2898c3cb13b2e392067
 
 name:           flight-comp
 version:        0.1.0
@@ -46,6 +46,7 @@ library
   other-modules:
       Flight.Path
       Flight.Pilot
+      Flight.Track.Range
       Paths_flight_comp
   hs-source-dirs:
       library
@@ -94,6 +95,7 @@ test-suite comp
       Flight.Track.Lead
       Flight.Track.Mask
       Flight.Track.Point
+      Flight.Track.Range
       Flight.Track.Speed
       Flight.Track.Tag
       Flight.Track.Time
@@ -130,6 +132,60 @@ test-suite comp
     , tasty-hunit
     , tasty-quickcheck
     , tasty-smallcheck
+    , text
+    , time
+    , unordered-containers
+    , uom-plugin
+    , vector
+  default-language: Haskell2010
+
+test-suite doctest
+  type: exitcode-stdio-1.0
+  main-is: DocTest.hs
+  other-modules:
+      Flight.Comp
+      Flight.Path
+      Flight.Pilot
+      Flight.Track.Arrival
+      Flight.Track.Cross
+      Flight.Track.Distance
+      Flight.Track.Land
+      Flight.Track.Lead
+      Flight.Track.Mask
+      Flight.Track.Point
+      Flight.Track.Range
+      Flight.Track.Speed
+      Flight.Track.Tag
+      Flight.Track.Time
+      Paths_flight_comp
+  hs-source-dirs:
+      library
+      test-suite-doctest
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base >=4.10.1.0 && <5
+    , bytestring
+    , cassava
+    , containers
+    , detour-via-sci
+    , detour-via-uom
+    , directory
+    , doctest
+    , filemanip
+    , filepath
+    , flight-earth
+    , flight-gap
+    , flight-latlng
+    , flight-route
+    , flight-units
+    , flight-zone
+    , lens
+    , mtl
+    , path
+    , scientific
+    , split
     , text
     , time
     , unordered-containers

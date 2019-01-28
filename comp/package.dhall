@@ -76,5 +76,15 @@ in    defs
                 , source-dirs =
                     [ "library", "test-suite-comp" ]
                 }
+            , doctest =
+                { dependencies =
+                    [ "doctest" ]
+                , ghc-options =
+                    [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
+                , main =
+                    "DocTest.hs"
+                , source-dirs =
+                    [ "library", "test-suite-doctest" ]
+                }
             }
       }

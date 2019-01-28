@@ -69,6 +69,7 @@ import Flight.Score
     )
 import Flight.Distance (QTaskDistance, TaskDistance(..))
 import Flight.Comp (SpeedSection)
+import Flight.Track.Range (asRanges)
 
 instance Show FixIdx where show (FixIdx x) = show x
 instance Show ZoneIdx where show (ZoneIdx x) = show x
@@ -535,7 +536,7 @@ commentOnFixRange pilot xs =
             ++ "] "
             ++ show pilot
             ++ " is missing fixes "
-            ++ show ys
+            ++ show (asRanges ys)
     where
         fix0 = minimum xs
         fixN = maximum xs
