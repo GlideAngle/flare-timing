@@ -516,24 +516,25 @@ discardFurther ys = ys
 
 commentOnFixRange :: Pilot -> [FixIdx] -> String
 commentOnFixRange pilot [] =
-    show pilot ++ " has *NO* 'flying' fixes"
+    "*NO* 'flying' fixes for " ++ show pilot
 commentOnFixRange pilot xs =
     case [fix0 .. fixN] \\ xs of
         [] ->
-            show pilot
-            ++ " has 'flying' fixes ["
+            "["
             ++ show fix0
             ++ ".."
             ++ show fixN
-            ++ "]"
+            ++ "] 'flying' fixes for "
+            ++ show pilot
 
         ys ->
-            show pilot
-            ++ " from ["
+            "From ["
             ++ show fix0
             ++ ".."
             ++ show fixN
-            ++ "] we're missing fixes "
+            ++ "] "
+            ++ show pilot
+            ++ " is missing fixes "
             ++ show ys
     where
         fix0 = minimum xs
