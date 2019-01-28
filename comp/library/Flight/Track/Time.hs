@@ -26,6 +26,7 @@ module Flight.Track.Time
     , taskToLeading
     , discard
     , allHeaders
+    , commentOnFixRange
     ) where
 
 import Prelude hiding (seq)
@@ -36,6 +37,7 @@ import Data.Csv
     , (.:)
     , namedRecord, namedField
     )
+import Data.List ((\\))
 import Data.List.Split (wordsBy)
 import Data.ByteString.Lazy.Char8 (unpack, pack)
 import Data.HashMap.Strict (unions)
@@ -61,6 +63,7 @@ import Flight.Score
     , LengthOfSs(..)
     , TaskDeadline(..)
     , EssTime(..)
+    , Pilot
     , areaSteps
     , showSecs
     )
@@ -510,3 +513,28 @@ discardFurther (x : y : ys)
     where
         d = distance :: (TickRow -> Double)
 discardFurther ys = ys
+
+commentOnFixRange :: Pilot -> [FixIdx] -> String
+commentOnFixRange pilot [] =
+    show pilot ++ " has *NO* 'flying' fixes"
+commentOnFixRange pilot xs =
+    case [fix0 .. fixN] \\ xs of
+        [] ->
+            show pilot
+            ++ " has 'flying' fixes ["
+            ++ show fix0
+            ++ ".."
+            ++ show fixN
+            ++ "]"
+
+        ys ->
+            show pilot
+            ++ " from ["
+            ++ show fix0
+            ++ ".."
+            ++ show fixN
+            ++ "] we're missing fixes "
+            ++ show ys
+    where
+        fix0 = minimum xs
+        fixN = maximum xs

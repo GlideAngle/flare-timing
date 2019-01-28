@@ -16,7 +16,9 @@ import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
 import Flight.Track.Time
-    (FixIdx(..), ZoneIdx(..), TrackRow(..), allHeaders)
+    ( FixIdx(..), ZoneIdx(..), TrackRow(..)
+    , allHeaders, commentOnFixRange
+    )
 import Flight.Comp
     ( FileType(CompInput)
     , UnpackTrackDir(..)
@@ -128,6 +130,7 @@ includeTask tasks = if null tasks then const True else (`elem` tasks)
 
 writePilotTimes :: CompInputFile -> Int -> (Pilot, [TrackRow]) -> IO ()
 writePilotTimes compFile iTask (pilot, rows) = do
+    putStrLn . commentOnFixRange pilot $ fixIdx <$> rows
     _ <- createDirectoryIfMissing True dOut
     _ <- writeUnpackTrack (UnpackTrackFile $ dOut </> f) allHeaders rows
     return ()
