@@ -9,6 +9,7 @@ import System.Clock (getTime, Clock(Monotonic))
 import Data.Time.Clock (UTCTime, diffUTCTime)
 import Control.Lens ((^?), element)
 import Data.Maybe (catMaybes, fromMaybe, listToMaybe)
+import Data.List ((\\))
 import Control.Monad (mapM_, when, zipWithM_)
 import Control.Exception.Safe (catchIO)
 import Data.UnitsOfMeasure (u, convert, toRational')
@@ -183,6 +184,29 @@ includeTask tasks = if null tasks then const True else (`elem` tasks)
 
 writePilotTimes :: CompInputFile -> Int -> (Pilot, [TimeRow]) -> IO ()
 writePilotTimes compFile iTask (pilot, rows) = do
+    let xs = fixIdx <$> rows
+    let fix0 = minimum xs
+    let fixN = maximum xs
+    case [fix0 .. fixN] \\ xs of
+        [] ->
+            putStrLn
+            $ show pilot
+            ++ " has 'flying' fixes ["
+            ++ show fix0
+            ++ ".."
+            ++ show fixN
+            ++ "]"
+
+        ys ->
+            putStrLn
+            $ show pilot
+            ++ " from ["
+            ++ show fix0
+            ++ ".."
+            ++ show fixN
+            ++ "] we're missing fixes "
+            ++ show ys
+        
     _ <- createDirectoryIfMissing True dOut
     _ <- writeAlignTime (AlignTimeFile $ dOut </> f) allHeaders rows
     return ()
