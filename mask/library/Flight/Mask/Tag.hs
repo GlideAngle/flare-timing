@@ -922,7 +922,11 @@ groupByLeg span zoneToCyl task flyCut =
 
         -}
 
-        -- TODO: Find out when and how pilots end up with duplicate fixes.
+        -- WARNING: Pilots can end up with duplicate timestamps when they are
+        -- logging at a sub-second rate. For IGC files the HMS and ss fields are
+        -- in the same B record but in different locations. If the parser does
+        -- not know about the sub-second field then it will parse multiple fixes
+        -- with the same HMS time.
         uniqueFixes = nub fixes
 
         ys :: [[Kml.Fix]]
