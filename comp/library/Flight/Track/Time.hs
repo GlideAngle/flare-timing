@@ -67,21 +67,25 @@ import Flight.Score
 import Flight.Distance (QTaskDistance, TaskDistance(..))
 import Flight.Comp (SpeedSection)
 
+instance Show FixIdx where show (FixIdx x) = show x
+instance Show ZoneIdx where show (ZoneIdx x) = show x
+instance Show LegIdx where show (LegIdx x) = show x
+
 -- | The index of a fix within the whole track.
 newtype FixIdx = FixIdx Int
-    deriving (Eq, Ord, Generic, Show)
+    deriving (Eq, Ord, Generic)
     deriving anyclass (ToJSON, FromJSON)
-    deriving newtype (Num, ToField, FromField)
+    deriving newtype (Enum, Num, ToField, FromField)
 
 -- | The index of a fix for a leg, that section of the tracklog between one zone and the next.
 newtype ZoneIdx = ZoneIdx Int
-    deriving (Eq, Ord, Generic, Show)
+    deriving (Eq, Ord, Generic)
     deriving anyclass (ToJSON, FromJSON)
     deriving newtype (Num, ToField, FromField)
 
 -- | The index of a leg.
 newtype LegIdx = LegIdx Int
-    deriving (Eq, Ord, Generic, Show)
+    deriving (Eq, Ord, Generic)
     deriving anyclass (ToJSON, FromJSON)
     deriving newtype (Num, ToField, FromField)
 
@@ -92,7 +96,7 @@ newtype LeadTick = LeadTick Double
     deriving newtype (Num, ToField, FromField)
 
 instance Show LeadTick where
-    show (LeadTick t) = showSecs . toRational $ t
+    show (LeadTick t) = showSecs $ toRational t
 
 -- | Seconds from first speed zone crossing made at or after the start time.
 newtype RaceTick = RaceTick Double
@@ -101,7 +105,7 @@ newtype RaceTick = RaceTick Double
     deriving newtype (Num, ToField, FromField)
 
 instance Show RaceTick where
-    show (RaceTick t) = showSecs . toRational $ t
+    show (RaceTick t) = showSecs $ toRational t
 
 newtype LeadingDistance = LeadingDistance (Quantity Double [u| km |])
 

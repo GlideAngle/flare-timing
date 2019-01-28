@@ -13,18 +13,22 @@ module Flight.Gap.Pilots
 import Data.Aeson (ToJSON(..), FromJSON(..))
 import GHC.Generics (Generic)
 
+instance Show PilotId where show (PilotId x) = show x
+instance Show PilotName where show (PilotName x) = show x
+instance Show Pilot where show (Pilot x) = show x
+
 newtype PilotId =
     PilotId String 
-    deriving (Eq, Ord, Show, Generic)
+    deriving (Eq, Ord, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
 newtype PilotName =
     PilotName String
-    deriving (Eq, Ord, Show, Generic)
+    deriving (Eq, Ord, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
 newtype Pilot = Pilot (PilotId, PilotName)
-    deriving (Eq, Show, Generic)
+    deriving (Eq, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
 -- | Order by name then by id.
