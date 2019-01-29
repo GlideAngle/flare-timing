@@ -5,20 +5,24 @@ let
   inherit (nixpkgs) pkgs;
 
   f = { mkDerivation, aeson, base, bytestring, cmdargs, directory
-      , filemanip, filepath, flight-comp, hlint, mtl, raw-strings-qq
-      , servant, servant-server, stdenv, system-filepath, transformers
-      , wai, wai-cors, warp, yaml
+      , filemanip, filepath, flight-cmd, flight-comp, flight-gap
+      , flight-kml, flight-latlng, flight-mask, flight-route
+      , flight-scribe, hlint, mtl, raw-strings-qq, safe-exceptions
+      , servant, servant-server, siggy-chardust, stdenv, transformers
+      , uom-plugin, wai, wai-cors, wai-extra, warp, yaml
       }:
       mkDerivation {
-        pname = "www-flare-timing";
+        pname = "app-serve";
         version = "0.1.0";
         src = ./.;
         isLibrary = false;
         isExecutable = true;
         executableHaskellDepends = [
           aeson base bytestring cmdargs directory filemanip filepath
-          flight-comp mtl raw-strings-qq servant servant-server
-          system-filepath transformers wai wai-cors warp yaml
+          flight-cmd flight-comp flight-gap flight-kml flight-latlng
+          flight-mask flight-route flight-scribe mtl raw-strings-qq
+          safe-exceptions servant servant-server siggy-chardust transformers
+          uom-plugin wai wai-cors wai-extra warp yaml
         ];
         testHaskellDepends = [ base flight-comp hlint ];
         homepage = "https://github.com/blockscope/flare-timing#readme";

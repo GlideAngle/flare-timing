@@ -9,7 +9,7 @@ let
       }:
       mkDerivation {
         pname = "detour-via-uom";
-        version = "1.0.0";
+        version = "1.0.1";
         src = ./.;
         libraryHaskellDepends = [
           aeson base cassava detour-via-sci newtype scientific uom-plugin

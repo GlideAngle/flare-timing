@@ -24,8 +24,7 @@ import Development.Shake.FilePath ((<.>), (</>), dropFileName)
 -- | The names of the hlint tests
 flyPkgs :: [String]
 flyPkgs =
-    [ "time"
-    , "cmd"
+    [ "cmd"
     , "comp"
     , "earth"
     , "fsdb"
@@ -39,6 +38,7 @@ flyPkgs =
     , "scribe"
     , "span"
     , "task"
+    , "time"
     , "track"
     , "units"
     , "zone"

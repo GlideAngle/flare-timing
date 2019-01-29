@@ -5,8 +5,7 @@ let
   inherit (nixpkgs) pkgs;
 
   f = { mkDerivation, base, cmdargs, directory, filemanip, filepath
-      , flight-span, mtl, raw-strings-qq, stdenv, system-filepath
-      , transformers
+      , flight-span, mtl, raw-strings-qq, stdenv, transformers
       }:
       mkDerivation {
         pname = "flight-cmd";
@@ -14,7 +13,7 @@ let
         src = ./.;
         libraryHaskellDepends = [
           base cmdargs directory filemanip filepath flight-span mtl
-          raw-strings-qq system-filepath transformers
+          raw-strings-qq transformers
         ];
         homepage = "https://github.com/blockscope/flare-timing#readme";
         description = "Command line options";

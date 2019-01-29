@@ -1,8 +1,8 @@
 { mkDerivation, aeson, base, bytestring, cassava, containers
 , detour-via-sci, directory, filemanip, filepath, flight-comp
 , flight-gap, flight-latlng, flight-route, flight-zone, mtl, path
-, scientific, split, stdenv, time, unordered-containers, vector
-, yaml
+, safe-exceptions, scientific, split, stdenv, time
+, unordered-containers, vector, yaml
 }:
 mkDerivation {
   pname = "flight-scribe";
@@ -11,8 +11,8 @@ mkDerivation {
   libraryHaskellDepends = [
     aeson base bytestring cassava containers detour-via-sci directory
     filemanip filepath flight-comp flight-gap flight-latlng
-    flight-route flight-zone mtl path scientific split time
-    unordered-containers vector yaml
+    flight-route flight-zone mtl path safe-exceptions scientific split
+    time unordered-containers vector yaml
   ];
   doHaddock = false;
   doCheck = false;

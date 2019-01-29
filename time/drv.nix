@@ -4,26 +4,29 @@ let
 
   inherit (nixpkgs) pkgs;
 
-  f = { mkDerivation, base, bytestring, cmdargs, containers
-      , detour-via-sci, directory, fgl, filepath, flight-comp
-      , flight-earth, flight-gap, flight-kml, flight-latlng, flight-route
-      , flight-scribe, flight-span, flight-task, flight-track
-      , flight-units, flight-zone, lens, mtl, numbers, path
-      , siggy-chardust, split, stdenv, time, uom-plugin, yaml
+  f = { mkDerivation, aeson, base, Cabal, Diff, directory, filepath
+      , flight-comp, flight-kml, flight-latlng, flight-lookup
+      , flight-mask, flight-scribe, lens, microlens, mtl, prettyprinter
+      , safe-exceptions, siggy-chardust, stdenv, tasty, tasty-golden
+      , text, time, transformers, uom-plugin, utf8-string, vector
       }:
       mkDerivation {
-        pname = "flight-mask";
+        pname = "flight-time";
         version = "0.1.0";
         src = ./.;
         libraryHaskellDepends = [
-          base bytestring cmdargs containers detour-via-sci directory fgl
-          filepath flight-comp flight-earth flight-gap flight-kml
-          flight-latlng flight-route flight-scribe flight-span flight-task
-          flight-track flight-units flight-zone lens mtl numbers path
-          siggy-chardust split time uom-plugin yaml
+          base directory filepath flight-comp flight-kml flight-latlng
+          flight-lookup flight-mask flight-scribe lens mtl safe-exceptions
+          siggy-chardust time uom-plugin
+        ];
+        testHaskellDepends = [
+          aeson base Cabal Diff directory filepath flight-comp flight-kml
+          flight-latlng flight-lookup flight-mask flight-scribe lens
+          microlens mtl prettyprinter safe-exceptions siggy-chardust tasty
+          tasty-golden text time transformers uom-plugin utf8-string vector
         ];
         homepage = "https://github.com/blockscope/flare-timing#readme";
-        description = "Track logs masked by competition task zones";
+        description = "Align times of competing pilot's tracklogs";
         license = stdenv.lib.licenses.mpl20;
       };
 

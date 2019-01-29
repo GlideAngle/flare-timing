@@ -9,7 +9,7 @@ let
       }:
       mkDerivation {
         pname = "detour-via-sci";
-        version = "1.0.0";
+        version = "1.0.1";
         src = ./.;
         libraryHaskellDepends = [
           aeson base cassava newtype scientific siggy-chardust

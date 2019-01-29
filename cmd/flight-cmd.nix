@@ -1,6 +1,5 @@
 { mkDerivation, base, cmdargs, directory, filemanip, filepath
-, flight-span, mtl, raw-strings-qq, stdenv, system-filepath
-, transformers
+, flight-span, mtl, raw-strings-qq, stdenv, transformers
 }:
 mkDerivation {
   pname = "flight-cmd";
@@ -8,7 +7,7 @@ mkDerivation {
   src = ./.;
   libraryHaskellDepends = [
     base cmdargs directory filemanip filepath flight-span mtl
-    raw-strings-qq system-filepath transformers
+    raw-strings-qq transformers
   ];
   doHaddock = false;
   doCheck = false;

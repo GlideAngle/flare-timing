@@ -7,8 +7,8 @@ let
   f = { mkDerivation, aeson, base, containers, detour-via-sci
       , detour-via-uom, flight-units, newtype, scientific, siggy-chardust
       , smallcheck, statistics, stdenv, tasty, tasty-hunit
-      , tasty-quickcheck, tasty-smallcheck, template-haskell, uom-plugin
-      , vector
+      , tasty-quickcheck, tasty-smallcheck, template-haskell, text
+      , uom-plugin, vector
       }:
       mkDerivation {
         pname = "flight-gap";
@@ -16,13 +16,13 @@ let
         src = ./.;
         libraryHaskellDepends = [
           aeson base containers detour-via-sci detour-via-uom flight-units
-          newtype scientific siggy-chardust statistics template-haskell
+          newtype scientific siggy-chardust statistics template-haskell text
           uom-plugin vector
         ];
         testHaskellDepends = [
           aeson base containers detour-via-sci detour-via-uom flight-units
           newtype scientific siggy-chardust smallcheck statistics tasty
-          tasty-hunit tasty-quickcheck tasty-smallcheck template-haskell
+          tasty-hunit tasty-quickcheck tasty-smallcheck template-haskell text
           uom-plugin vector
         ];
         homepage = "https://github.com/blockscope/flare-timing#readme";

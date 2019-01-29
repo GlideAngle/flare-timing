@@ -8,9 +8,9 @@ let
       , containers, directory, filemanip, filepath, flight-cmd
       , flight-comp, flight-earth, flight-fsdb, flight-gap, flight-igc
       , flight-kml, flight-latlng, flight-lookup, flight-mask
-      , flight-route, flight-scribe, flight-span, flight-units
-      , flight-zone, formatting, lens, mtl, raw-strings-qq
-      , siggy-chardust, stdenv, system-filepath, time, transformers
+      , flight-route, flight-scribe, flight-span, flight-time
+      , flight-units, flight-zone, formatting, lens, mtl, raw-strings-qq
+      , safe-exceptions, siggy-chardust, stdenv, time, transformers
       , uom-plugin, yaml
       }:
       mkDerivation {
@@ -23,9 +23,9 @@ let
           aeson base bytestring clock cmdargs containers directory filemanip
           filepath flight-cmd flight-comp flight-earth flight-fsdb flight-gap
           flight-igc flight-kml flight-latlng flight-lookup flight-mask
-          flight-route flight-scribe flight-span flight-units flight-zone
-          formatting lens mtl raw-strings-qq siggy-chardust system-filepath
-          time transformers uom-plugin yaml
+          flight-route flight-scribe flight-span flight-time flight-units
+          flight-zone formatting lens mtl raw-strings-qq safe-exceptions
+          siggy-chardust time transformers uom-plugin yaml
         ];
         homepage = "https://github.com/blockscope/flare-timing#readme";
         description = "A collection of apps and libraries for scoring hang gliding and paragliding competitions";
