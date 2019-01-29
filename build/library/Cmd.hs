@@ -72,6 +72,7 @@ pkgs :: [Pkg]
 pkgs =
     [ "detour-via-sci"
     , "detour-via-uom"
+    , "flight-time"
     , "flight-cmd"
     , "flight-comp"
     , "flight-earth"
@@ -110,6 +111,7 @@ docTestPkgs :: [Pkg]
 docTestPkgs =
     [ "detour-via-sci"
     , "detour-via-uom"
+    , "flight-comp"
     , "flight-kml"
     , "siggy-chardust"
     ] 

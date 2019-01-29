@@ -1,0 +1,97 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.dhall by hpack version 0.31.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: fd561f3928eea853517a12ba9a34bfba3b58e9239171c8d640db7d7961fca88a
+
+name:           flight-time
+version:        0.1.0
+synopsis:       Align times of competing pilot's tracklogs.
+description:    From a defined start, align the times of pilots on track so that we can then work out the leading points.
+category:       Data
+homepage:       https://github.com/blockscope/flare-timing#readme
+bug-reports:    https://github.com/blockscope/flare-timing/issues
+author:         Phil de Joux
+maintainer:     phil.dejoux@blockscope.com
+copyright:      © 2017-2018 Phil de Joux, © 2017-2018 Block Scope Limited
+license:        MPL-2.0
+license-file:   LICENSE.md
+tested-with:    GHC == 8.2.2
+build-type:     Simple
+extra-source-files:
+    package.dhall
+    changelog.md
+    README.md
+
+source-repository head
+  type: git
+  location: https://github.com/blockscope/flare-timing
+  subdir: time
+
+library
+  exposed-modules:
+      Flight.Time.Align
+  other-modules:
+      Paths_flight_time
+  hs-source-dirs:
+      library
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin
+  build-depends:
+      base >=4.10.1.0 && <5
+    , directory
+    , filepath
+    , flight-comp
+    , flight-kml
+    , flight-latlng
+    , flight-lookup
+    , flight-mask
+    , flight-scribe
+    , lens
+    , mtl
+    , safe-exceptions
+    , siggy-chardust
+    , time
+    , uom-plugin
+  default-language: Haskell2010
+
+test-suite golden
+  type: exitcode-stdio-1.0
+  main-is: Golden.hs
+  other-modules:
+      Paths_flight_time
+  hs-source-dirs:
+      test/golden/src
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin
+  build-depends:
+      Cabal
+    , Diff
+    , aeson
+    , base
+    , directory
+    , filepath
+    , flight-comp
+    , flight-kml
+    , flight-latlng
+    , flight-lookup
+    , flight-mask
+    , flight-scribe
+    , flight-time
+    , lens
+    , microlens
+    , mtl
+    , prettyprinter
+    , safe-exceptions
+    , siggy-chardust
+    , tasty
+    , tasty-golden
+    , text
+    , time
+    , transformers
+    , uom-plugin
+    , utf8-string
+    , vector
+  default-language: Haskell2010

@@ -26,6 +26,7 @@ dhallCabal =
     [ ("detour-via-sci", "detour-via-sci")
     , ("detour-via-uom", "detour-via-uom")
     , ("build", "build-flare-timing")
+    , ("time", "flight-time")
     , ("cmd", "flight-cmd")
     , ("comp", "flight-comp")
     , ("earth", "flight-earth")

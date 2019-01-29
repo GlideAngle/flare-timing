@@ -30,6 +30,7 @@ in  let deps =
             , "flight-comp"
             , "flight-latlng"
             , "flight-scribe"
+            , "flight-time"
             ]
 
 in    defs

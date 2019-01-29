@@ -19,6 +19,7 @@ packages:
 - span
 - task
 - tasty-compare
+- time
 - track
 - units
 - zone

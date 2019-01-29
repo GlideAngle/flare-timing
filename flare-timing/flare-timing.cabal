@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 91d81cc59589d69fec9da2081c4b29af3f8a0b1f00df2a2d4a855af2223155ff
+-- hash: 0cefbdf97d20901af4428770a085e3cf1cb8641df8cdc9073645a3f957bd01ec
 
 name:           flare-timing
 version:        0.1.0
@@ -55,6 +55,7 @@ executable align-time
     , flight-lookup
     , flight-mask
     , flight-scribe
+    , flight-time
     , formatting
     , lens
     , mtl
@@ -92,6 +93,7 @@ executable cross-zone
     , flight-mask
     , flight-scribe
     , flight-span
+    , flight-time
     , flight-units
     , flight-zone
     , formatting
@@ -131,6 +133,7 @@ executable discard-further
     , flight-mask
     , flight-route
     , flight-scribe
+    , flight-time
     , formatting
     , mtl
     , raw-strings-qq
@@ -166,6 +169,7 @@ executable extract-input
     , flight-latlng
     , flight-mask
     , flight-scribe
+    , flight-time
     , flight-zone
     , formatting
     , mtl
@@ -202,6 +206,7 @@ executable gap-point
     , flight-mask
     , flight-route
     , flight-scribe
+    , flight-time
     , flight-zone
     , formatting
     , mtl
@@ -236,6 +241,7 @@ executable land-out
     , flight-gap
     , flight-latlng
     , flight-scribe
+    , flight-time
     , formatting
     , mtl
     , raw-strings-qq
@@ -275,6 +281,7 @@ executable mask-track
     , flight-route
     , flight-scribe
     , flight-span
+    , flight-time
     , formatting
     , lens
     , mtl
@@ -309,6 +316,7 @@ executable tag-zone
     , flight-latlng
     , flight-mask
     , flight-scribe
+    , flight-time
     , formatting
     , mtl
     , raw-strings-qq
@@ -342,6 +350,7 @@ executable task-length
     , flight-latlng
     , flight-route
     , flight-scribe
+    , flight-time
     , formatting
     , mtl
     , raw-strings-qq
@@ -441,6 +450,7 @@ executable unpack-track
     , flight-lookup
     , flight-mask
     , flight-scribe
+    , flight-time
     , formatting
     , lens
     , mtl
