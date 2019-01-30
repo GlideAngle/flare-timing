@@ -123,8 +123,8 @@ goldenTestSet title compFile@(CompInputFile compPath) unpackTrackFiles = do
                         alignTimeFile
                         (writeAlignTime tsks ix p flyingLookup t unpackTrackFile)
                     | unpackTrackFile <- unpackTrackFiles
+                    , p <- pilotNamed cs [PilotName "Rohan Holtkamp", PilotName "Pimoz Gricar"]
                     , let alignTimeFile = alignTimePath unpackTrackFile
-                    , let (p : _) = pilotNamed cs [PilotName "Rohan Holtkamp"]
                     , let tsks = tasks cs
                     , let ix = IxTask 1
                     ]
