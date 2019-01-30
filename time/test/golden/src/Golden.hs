@@ -2,14 +2,21 @@
 
 module Main (main) where
 
-import Data.Vector (Vector)
-import System.FilePath ((</>), (<.>) , takeFileName, takeBaseName, takeDirectory)
+import Data.Time.Clock (diffUTCTime)
+import qualified Data.Vector as V (toList)
+import System.FilePath
+    ( (</>), (<.>)
+    , takeFileName, takeBaseName, dropExtension, takeExtension, takeDirectory
+    )
 import Control.Exception.Safe (catchIO)
 import Test.Tasty (defaultMain, TestTree, testGroup)
 import Test.Tasty.Golden (findByExtension)
 import Test.Tasty.Golden (goldenVsFile)
 
-import Flight.Kml (MarkedFixes(..))
+import Flight.LatLng.Raw (RawLat(..), RawLng(..))
+import Flight.Kml (MarkedFixes(..), Seconds(..), mkPosition)
+import qualified Flight.Kml as Kml
+    (Fix(..), Latitude(..), Longitude(..), Altitude(..))
 import Flight.Track.Tag (Tagging(..))
 import Flight.Track.Time (TrackRow(..), allHeaders)
 import Flight.Comp
@@ -37,7 +44,13 @@ main =
 
 goldenTests :: IO TestTree
 goldenTests = do
-    ci : _ <- findByExtension [".comp-input.yaml"] "test/golden/test-files/real-world/Forbes/2012"
+    yamls <- findByExtension [".yaml"] "test/golden/test-files/real-world/Forbes/2012"
+
+    let (ci : _) =
+            filter
+                (\f -> ".comp-input" == (takeExtension $ dropExtension f))
+                yamls
+
     rs <- findByExtension [".csv"] "test/golden/test-files/real-world/Forbes/2012/.flare-timing/unpack-track"
     rg <- goldenTestSet "real-world examples" (CompInputFile ci) rs
     return $ testGroup "golden tests" [rg]
@@ -113,13 +126,36 @@ writeAlignTime tasks ix p lookupFlying tags unpackTrackFile = do
     case unpackTrack of
         Nothing -> putStrLn $ "Couldn't read the file " ++ unpackTrackFile
         Just (_, rows) -> do
-            let mf = trackToMarkedFixes rows
-            let xs = group False lookupFlying tags tasks ix mf p
-            _ <- Scribe.writeAlignTime outFile allHeaders xs
-            return ()
+            case trackToMarkedFixes $ V.toList rows of
+                Nothing -> do
+                    putStrLn "No fixes"
+                    return ()
+                Just mf -> do
+                    let xs = group False lookupFlying tags tasks ix mf p
+                    _ <- Scribe.writeAlignTime outFile allHeaders xs
+                    return ()
     where
         inFile = UnpackTrackFile unpackTrackFile
         outFile = AlignTimeFile $ alignTimePath unpackTrackFile
 
-trackToMarkedFixes :: Vector TrackRow -> MarkedFixes
-trackToMarkedFixes = undefined
+trackToMarkedFixes :: [TrackRow] -> Maybe MarkedFixes
+trackToMarkedFixes [] = Nothing
+trackToMarkedFixes xs@(TrackRow{time = t0} : _) =
+    Just $
+    MarkedFixes
+        { mark0 = t0
+        , fixes = ys
+        }
+    where
+        ys =
+            [
+                Kml.Fix
+                    { fixMark = Seconds . round $ t `diffUTCTime` t0
+                    , fix = mkPosition (lat'', lng'', alt'')
+                    , fixAltBaro = Nothing
+                    }
+            | TrackRow{time = t, lat = RawLat lat', lng = RawLng lng'} <- xs
+            , let lat'' = Kml.Latitude lat'
+            , let lng'' = Kml.Longitude lng'
+            , let alt'' = Kml.Altitude 0
+            ]
