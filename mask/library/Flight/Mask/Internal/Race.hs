@@ -6,7 +6,6 @@ module Flight.Mask.Internal.Race
     , Reach
     , FlyCut(..)
     , section
-    , cons
     , mm30
     ) where
 
@@ -84,9 +83,6 @@ section (Just (s', e')) xs =
         }
     where
         (s, e) = (s' - 1, e' - 1)
-
-cons :: (a -> TrackZone b) -> a -> [Zone b] -> [Zone b]
-cons mkZone x zs = unTrackZone (mkZone x) : zs
 
 instance FlyClipping UTCTime [TimeRow] where
     clipToFlown x@FlyCut{cut = Nothing} =

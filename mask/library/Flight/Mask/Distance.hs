@@ -120,7 +120,7 @@ revindex = reverse . index
 -- control zones.
 lastFixToGoal
     :: (Real a, Fractional a)
-    => Ticked
+    => Ticked -- ^ The zones ticked
     -> Sliver a
     -> (Raw.RawZone -> TaskZone a)
     -> Task k
