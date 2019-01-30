@@ -28,11 +28,10 @@ import qualified Flight.Kml as Kml
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.LatLng.Raw (RawLat(..), RawLng(..))
 import Flight.Zone (Radius(..), Zone(..))
-import Flight.Zone.MkZones (sliceZones)
+import Flight.Zone.SpeedSection (SpeedSection, sliceZones)
 import qualified Flight.Zone.Raw as Raw (RawZone(..))
 import Flight.Track.Time (ZoneIdx(..), TimeRow(..))
 import Flight.Track.Cross (Fix(..))
-import Flight.Comp (SpeedSection)
 import Flight.Units ()
 
 data ZoneEntry = ZoneEntry ZoneIdx ZoneIdx deriving (Eq, Show)

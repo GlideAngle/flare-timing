@@ -49,7 +49,7 @@ import Flight.Route.TrackLine
     )
 import Flight.Route.Optimal (emptyOptimal)
 import Flight.Earth.Ellipsoid (wgs84)
-import Flight.Zone.MkZones (SpeedSection, sliceZones)
+import Flight.Zone.SpeedSection (SpeedSection, sliceZones)
 
 trackLines :: Bool -> [Zone Rational] -> GeoLines
 trackLines excludeWaypoints zs =

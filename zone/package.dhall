@@ -36,6 +36,7 @@ in    defs
               , "Flight.Zone.TaskZones"
               , "Flight.Zone.Path"
               , "Flight.Zone.Raw"
+              , "Flight.Zone.SpeedSection"
               , "Flight.Zone.Cylinder"
               ]
           }
@@ -59,6 +60,16 @@ in    defs
                     "Spec.hs"
                 , source-dirs =
                     [ "library", "test-suite-serial" ]
+                }
+            , doctest =
+                { dependencies =
+                    [ "doctest" ]
+                , ghc-options =
+                    [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
+                , main =
+                    "DocTest.hs"
+                , source-dirs =
+                    [ "library", "test-suite-doctest" ]
                 }
             }
       }

@@ -7,9 +7,7 @@ module Flight.Zone.MkZones
     , EssVsGoal(..)
     , GoalLine(..)
     , Zones(..)
-    , SpeedSection
     , mkZones
-    , sliceZones
     ) where
 
 import GHC.Generics (Generic)
@@ -31,15 +29,7 @@ import Flight.Zone.Internal.ZoneKind
     )
 import Flight.Zone.TaskZones
     (TaskZones, ToZoneKind, raceZoneKinds, openZoneKinds)
-
--- | A 1-based index into the list of control zones marking the speed section.
-type SpeedSection = Maybe (Int, Int)
-
--- | Slice the speed section from a list.
-sliceZones :: SpeedSection -> [a] -> [a]
-sliceZones = \case
-    Nothing -> id
-    Just (s', e') -> let (s, e) = (s' - 1, e' - 1) in take (e - s + 1) . drop s
+import Flight.Zone.SpeedSection (SpeedSection)
 
 data Discipline
     = HangGliding

@@ -44,6 +44,30 @@ main =
 
 goldenTests :: IO TestTree
 goldenTests = do
+    x <- keyForbes2012
+    y <- rwForbes2012
+    return $
+        testGroup
+            ""
+            [ testGroup "key" [x]
+            , testGroup "real-world" [y]
+            ]
+
+keyForbes2012 :: IO TestTree
+keyForbes2012 = do
+    yamls <- findByExtension [".yaml"] "test/golden/test-files/key/Forbes/2012"
+
+    let (ci : _) =
+            filter
+                (\f -> ".comp-input" == (takeExtension $ dropExtension f))
+                yamls
+
+    rs <- findByExtension [".csv"] "test/golden/test-files/key/Forbes/2012/.flare-timing/unpack-track"
+    rg <- goldenTestSet "key forbes 2012" (CompInputFile ci) rs
+    return $ testGroup "golden tests" [rg]
+
+rwForbes2012 :: IO TestTree
+rwForbes2012 = do
     yamls <- findByExtension [".yaml"] "test/golden/test-files/real-world/Forbes/2012"
 
     let (ci : _) =
@@ -52,7 +76,7 @@ goldenTests = do
                 yamls
 
     rs <- findByExtension [".csv"] "test/golden/test-files/real-world/Forbes/2012/.flare-timing/unpack-track"
-    rg <- goldenTestSet "real-world examples" (CompInputFile ci) rs
+    rg <- goldenTestSet "real-world forbes 2012" (CompInputFile ci) rs
     return $ testGroup "golden tests" [rg]
 
 goldenTestSet :: String -> CompInputFile -> [FilePath] -> IO TestTree

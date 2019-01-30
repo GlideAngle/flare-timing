@@ -22,7 +22,7 @@ import Flight.Distance
     (QTaskDistance, TaskDistance(..), PathDistance(..), SpanLatLng)
 import Flight.Zone (Zone(..))
 import Flight.Zone.Path (distancePointToPoint)
-import Flight.Zone.MkZones (SpeedSection, sliceZones)
+import Flight.Zone.SpeedSection (SpeedSection, sliceZones)
 import Flight.TaskTrack.Internal (convertLatLng, legDistances, addTaskDistance, fromR)
 
 data GeoLines =

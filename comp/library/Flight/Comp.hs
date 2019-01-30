@@ -73,7 +73,8 @@ import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Zone (QRadius)
-import Flight.Zone.MkZones (Zones(..), Discipline(..), SpeedSection)
+import Flight.Zone.SpeedSection (SpeedSection)
+import Flight.Zone.MkZones (Zones(..), Discipline(..))
 import Flight.Zone.Raw (Give, showZone)
 import Flight.Field (FieldOrdering(..))
 import Flight.Pilot
