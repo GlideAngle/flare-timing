@@ -40,7 +40,6 @@ import Flight.Comp
     , LandOutFile(..)
     , Pilot
     , PilotGroup(dnf, didFlyNoTracklog)
-    , SpeedSection
     , StartGate(..)
     , StartEnd(..)
     , Task(..)
@@ -72,6 +71,7 @@ import qualified Flight.Track.Land as Cmp (Landing(..))
 import Flight.Scribe
     (readComp, readRoute, readTagging, readMasking, readLanding, writePointing)
 import Flight.Mask (RaceSections(..), section)
+import Flight.Zone.SpeedSection (SpeedSection)
 import Flight.Zone.MkZones (Discipline(..))
 import Flight.Lookup.Route (routeLength)
 import qualified Flight.Lookup as Lookup (compRoutes)

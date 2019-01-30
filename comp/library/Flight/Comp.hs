@@ -24,7 +24,6 @@ module Flight.Comp
     , TaskStop(..)
     , IxTask(..)
     , Zones(..)
-    , SpeedSection
     , StartGate(..)
     , OpenClose(..)
     , FirstLead(..)

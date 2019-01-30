@@ -15,6 +15,7 @@ import Data.List (find, elemIndex)
 import Data.Maybe (catMaybes, listToMaybe, isJust)
 import Control.Lens ((^?), element)
 import qualified Flight.Kml as Kml (MarkedFixes(..))
+import Flight.Zone.SpeedSection (SpeedSection)
 import Flight.Comp
     ( IxTask(..)
     , Pilot(..)
@@ -22,7 +23,6 @@ import Flight.Comp
     , StartEndMark
     , FirstLead(..)
     , LastArrival(..)
-    , SpeedSection
     )
 import Flight.Track.Time (ZoneIdx(..))
 import Flight.Track.Tag

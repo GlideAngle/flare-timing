@@ -68,7 +68,7 @@ import Flight.Score
     , showSecs
     )
 import Flight.Distance (QTaskDistance, TaskDistance(..))
-import Flight.Comp (SpeedSection)
+import Flight.Zone.SpeedSection (SpeedSection)
 import Flight.Track.Range (asRanges)
 
 instance Show FixIdx where show (FixIdx x) = show x

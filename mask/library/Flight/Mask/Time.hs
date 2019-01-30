@@ -10,9 +10,9 @@ import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Distance (SpanLatLng)
+import Flight.Zone.SpeedSection (SpeedSection)
 import Flight.Kml (Fix, Seconds(..), FixMark(..), MarkedFixes(..))
-import Flight.Comp
-    (Task(..), Zones(..), SpeedSection, OpenClose(..), StartGate(..))
+import Flight.Comp (Task(..), Zones(..), OpenClose(..), StartGate(..))
 import Flight.Score (PilotTime(..))
 import Flight.Units ()
 import Flight.Mask.Tag (madeGoal)
