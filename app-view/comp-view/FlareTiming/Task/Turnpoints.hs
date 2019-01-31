@@ -92,11 +92,11 @@ tableTurnpoints tz x taskLegs = do
     let dd = ffor3 legs' legsSum' flipSum' $ zipWith3 (,,)
     let ys = ffor3 oc dd zs $ zipWith3 (,,)
 
-    _ <- elClass "table" "table is-striped" $ do
+    _ <- elClass "table" "table" $ do
             el "thead" $ do
                 el "tr" $ do
                     el "th" $ text "#"
-                    elClass "th" "th-tp-distance-task" $ text "Task"
+                    elClass "th" "th-tp-distance-task" $ text "Distance"
                     elClass "th" "th-tp-name" $ text "Name"
                     elClass "th" "th-tp-radius" $ text "Radius"
                     elClass "th" "th-tp-give" $ text "Give §"
@@ -189,7 +189,7 @@ row tz len ss iz = do
             (1, _) -> return ()
             (_, TaskDistance 0) -> return ()
             (_, leg') ->
-                el "tr" $ do
+                elClass "tr" "tr-tp-distance-leg" $ do
                     el "td" $ text ""
                     elClass "td" "td-tp-distance-leg" . text $ showTaskDistance leg'
                     elAttr "td" ("colspan" =: "9") $ text "")
