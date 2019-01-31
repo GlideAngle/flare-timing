@@ -48,10 +48,15 @@ data ProjectedTrackLine =
 data PlanarTrackLine =
     PlanarTrackLine
         { distance :: QTaskDistance Double [u| m |]
+        -- ^ The total distance of the track
         , mappedZones :: [UtmZone]
         , mappedPoints :: [EastingNorthing]
         , legs :: [QTaskDistance Double [u| m |]]
+        -- ^ The distances between each turnpoint
         , legsSum :: [QTaskDistance Double [u| m |]]
+        -- ^ The sum of leg distances from start to finish
+        , flipSum :: [QTaskDistance Double [u| m |]]
+        -- ^ The sum of leg distances from finish to start
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
@@ -60,9 +65,14 @@ data PlanarTrackLine =
 data TrackLine =
     TrackLine
         { distance :: QTaskDistance Double [u| m |]
+        -- ^ The total distance of the track
         , waypoints :: [RawLatLng]
         , legs :: [QTaskDistance Double [u| m |]]
+        -- ^ The distances between each turnpoint
         , legsSum :: [QTaskDistance Double [u| m |]]
+        -- ^ The sum of leg distances from start to finish
+        , flipSum :: [QTaskDistance Double [u| m |]]
+        -- ^ The sum of leg distances from finish to start
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
@@ -79,6 +89,7 @@ speedSubset ss TrackLine{..} =
         , waypoints = sliceZones ss waypoints
         , legs = legs'
         , legsSum = scanl1 addTaskDistance legs'
+        , flipSum = reverse $ scanl1 addTaskDistance legs'
         }
 
 pathVertices
@@ -94,7 +105,8 @@ instance ToTrackLine Double (PathDistance Double) where
             { distance = d
             , waypoints = if excludeWaypoints then [] else xs
             , legs = ds
-            , legsSum = dsSum
+            , legsSum = scanl1 addTaskDistance ds
+            , flipSum = reverse $ scanl1 addTaskDistance $ reverse ds
             }
         where
             d :: QTaskDistance Double [u| m |]
@@ -116,16 +128,14 @@ instance ToTrackLine Double (PathDistance Double) where
                     span
                     (Point <$> vertices' :: [Zone Double])
 
-            dsSum :: [QTaskDistance Double [u| m |]]
-            dsSum = scanl1 addTaskDistance ds
-
 instance ToTrackLine Rational (PathDistance Rational) where
     toTrackLine span excludeWaypoints ed =
         TrackLine
             { distance = fromR d
             , waypoints = if excludeWaypoints then [] else xs
             , legs = fromR <$> ds
-            , legsSum = fromR <$> dsSum
+            , legsSum = fromR <$> scanl1 addTaskDistance ds
+            , flipSum = reverse $ fromR <$> scanl1 addTaskDistance (reverse ds)
             }
         where
             d :: QTaskDistance Rational [u| m |]
@@ -146,6 +156,3 @@ instance ToTrackLine Rational (PathDistance Rational) where
                     distancePointToPoint
                     span
                     (Point <$> vertices' :: [Zone Rational])
-
-            dsSum :: [QTaskDistance Rational [u| m |]]
-            dsSum = scanl1 addTaskDistance ds

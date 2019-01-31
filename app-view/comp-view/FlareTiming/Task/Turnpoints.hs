@@ -82,20 +82,22 @@ tableTurnpoints tz x taskLegs = do
 
     len <- sample . current $ fromIntegral . length <$> zs
 
-    (legs', legsSum') <- sample . current $ ffor ss (\ss' ->
+    (legs', legsSum', flipSum') <- sample . current $ ffor ss (\ss' ->
             let pad = case ss' of Just _ -> speedPad ss'; _ -> openPad
                 pl = (maybe unknownLegs (pad . legs)) <$> taskLegs
                 ps = (maybe unknownLegs (pad . legsSum)) <$> taskLegs
-            in (pl, ps))
+                pf = (maybe unknownLegs ((<> [zero]) . flipSum)) <$> taskLegs
+            in (pl, ps, pf))
 
-    let dd = zipDynWith zip legs' legsSum'
-    let ys = ffor3 oc dd zs $ zipWith3 (\a b c -> (a, b, c))
+    let dd = ffor3 legs' legsSum' flipSum' $ zipWith3 (,,)
+    let ys = ffor3 oc dd zs $ zipWith3 (,,)
 
     _ <- elClass "table" "table is-striped" $ do
             el "thead" $ do
                 el "tr" $ do
                     el "th" $ text "#"
                     elClass "th" "th-tp-distance-task" $ text "Task"
+                    elClass "th" "th-tp-distance-flip" $ text "Flip"
                     elClass "th" "th-tp-name" $ text "Name"
                     elClass "th" "th-tp-radius" $ text "Radius"
                     elClass "th" "th-tp-give" $ text "Give §"
@@ -170,7 +172,7 @@ row
     => TimeZone
     -> Integer
     -> Dynamic t SpeedSection
-    -> Dynamic t (Integer, (OpenClose, (TaskDistance, TaskDistance), RawZone))
+    -> Dynamic t (Integer, (OpenClose, (TaskDistance, TaskDistance, TaskDistance), RawZone))
     -> m ()
 row tz len ss iz = do
     let i = fst <$> iz
@@ -178,8 +180,9 @@ row tz len ss iz = do
     rowIntro <- sample . current $ zipDynWith (rowText len) ss i
     let x = snd <$> iz
     let oc = (\(a, _, _) -> a) <$> x
-    let l = (\(_, (b1, _), _) -> b1) <$> x
-    let s = (\(_, (_, b2), _) -> b2) <$> x
+    let l = (\(_, (b1, _, _), _) -> b1) <$> x
+    let legSum = (\(_, (_, b2, _), _) -> b2) <$> x
+    let flipSum = (\(_, (_, _, b3), _) -> b3) <$> x
     let z = (\(_, _, c) -> c) <$> x
 
     _ <- dyn $ ffor2 i l (\ix leg ->
@@ -194,7 +197,8 @@ row tz len ss iz = do
 
     elDynClass "tr" rowTextColor $ do
         el "td" $ dynText $ (\ix -> (T.pack . show $ ix) <> rowIntro) <$> i
-        elClass "td" "td-tp-distance-task" . dynText $ showTaskDistance <$> s
+        elClass "td" "td-tp-distance-task" . dynText $ showTaskDistance <$> legSum
+        elClass "td" "td-tp-distance-flip" . dynText $ showTaskDistance <$> flipSum
         elClass "td" "td-tp-name" . dynText $ TP.getName <$> z
         elClass "td" "td-tp-radius" . dynText $ TP.getRadius <$> z
         elClass "td" "td-tp-give" . dynText $ TP.getGive <$> z

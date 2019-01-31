@@ -223,6 +223,7 @@ goByProj excludeWaypoints zs = do
                     roundEastNorth 3 . fromUTMRefEastNorth <$> es
                 , legs = fromR <$> legs'
                 , legsSum = fromR <$> scanl1 addTaskDistance legs'
+                , flipSum = reverse $ fromR <$> scanl1 addTaskDistance (reverse legs')
                 } :: PlanarTrackLine
 
     return
@@ -238,7 +239,8 @@ goByPoint excludeWaypoints zs =
         { distance = fromR d
         , waypoints = if excludeWaypoints then [] else xs
         , legs = fromR <$> ds
-        , legsSum = fromR <$> dsSum
+        , legsSum = fromR <$> scanl1 addTaskDistance ds
+        , flipSum = reverse $ fromR <$> scanl1 addTaskDistance (reverse ds)
         }
     where
         d :: QTaskDistance Rational [u| m |]
@@ -258,9 +260,6 @@ goByPoint excludeWaypoints zs =
                 distancePointToPoint
                 spanS
                 (Point <$> edgesSum' :: [Zone Rational])
-
-        dsSum :: [QTaskDistance Rational [u| m |]]
-        dsSum = scanl1 addTaskDistance ds
 
 distanceEdgeSphere
     :: CostSegment Rational

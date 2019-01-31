@@ -47,6 +47,7 @@ data TrackLine =
         , waypoints :: [RawLatLng]
         , legs :: [TaskDistance]
         , legsSum :: [TaskDistance]
+        , flipSum :: [TaskDistance]
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass FromJSON
@@ -56,6 +57,7 @@ data PlanarTrackLine =
         { distance :: TaskDistance
         , legs :: [TaskDistance]
         , legsSum :: [TaskDistance]
+        , flipSum :: [TaskDistance]
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass FromJSON
@@ -79,6 +81,7 @@ data TaskLegs =
     TaskLegs
         { legs :: [TaskDistance]
         , legsSum :: [TaskDistance]
+        , flipSum :: [TaskDistance]
         }
 
 taskLength :: OptimalRoute (Maybe TrackLine) -> Maybe TaskLength
@@ -99,6 +102,7 @@ taskLegs OptimalRoute{..} =
         TaskLegs
             { legs = legs
             , legsSum = legsSum
+            , flipSum = flipSum
             })
     <$> taskRoute
 
