@@ -84,12 +84,21 @@ cmpFields a b =
 
         -- PlanarTrackLine fields
         ("distance", _) -> LT
+
         ("legs", "distance") -> GT
         ("legs", _) -> LT
+
         ("legsSum", "distance") -> GT
         ("legsSum", "legs") -> GT
         ("legsSum", _) -> LT
+
+        ("flipSum", "distance") -> GT
+        ("flipSum", "legs") -> GT
+        ("flipSum", "legsSum") -> GT
+        ("flipSum", _) -> LT
+
         ("wayPoints", _) -> GT
+
         ("mappedPoints", "distance") -> GT
         ("mappedPoints", "legs") -> GT
         ("mappedPoints", "legsSum") -> GT
