@@ -32,7 +32,6 @@ import Flight.TaskTrack.Internal
     , fromUTMRefEastNorth
     , fromUTMRefZone
     , legDistances
-    , addTaskDistance
     , convertLatLng
     , toPoint
     , toCylinder
@@ -41,7 +40,7 @@ import Flight.Task (Zs(..), CostSegment, AngleCut(..) , fromZs, distanceEdgeToEd
 import Flight.Route.TrackLine
     ( ToTrackLine(..), GeoLines(..)
     , TrackLine(..), ProjectedTrackLine(..), PlanarTrackLine(..)
-    , speedSubset
+    , speedSubset, sumLegs, flipSumLegs
     )
 import Flight.Route.Optimal (emptyOptimal)
 import Flight.Earth.Ellipsoid (wgs84)
@@ -217,8 +216,8 @@ goByProj excludeWaypoints zs = do
                     -- northing are in units of metres.
                     roundEastNorth 3 . fromUTMRefEastNorth <$> es
                 , legs = legs'
-                , legsSum = scanl1 addTaskDistance legs'
-                , flipSum = reverse $ scanl1 addTaskDistance $ reverse legs'
+                , legsSum = sumLegs legs'
+                , flipSum = flipSumLegs legs'
                 } :: PlanarTrackLine
 
     return
@@ -234,8 +233,8 @@ goByPoint excludeWaypoints zs =
         { distance = d
         , waypoints = if excludeWaypoints then [] else xs
         , legs = ds
-        , legsSum = scanl1 addTaskDistance ds
-        , flipSum = reverse $ scanl1 addTaskDistance $ reverse ds
+        , legsSum = sumLegs ds
+        , flipSum = flipSumLegs ds
         }
     where
         d :: QTaskDistance Double [u| m |]

@@ -7,6 +7,8 @@ module Flight.Route.TrackLine
     , PlanarTrackLine(..)
     , GeoLines(..)
     , speedSubset
+    , sumLegs
+    , flipSumLegs
     ) where
 
 import Prelude hiding (span)
@@ -24,6 +26,12 @@ import Flight.Zone (Zone(..))
 import Flight.Zone.Path (distancePointToPoint)
 import Flight.Zone.SpeedSection (SpeedSection, sliceZones)
 import Flight.TaskTrack.Internal (convertLatLng, legDistances, addTaskDistance, fromR)
+
+sumLegs :: [QTaskDistance Double [u| m |]] -> [QTaskDistance Double [u| m |]]
+sumLegs = scanl1 addTaskDistance
+
+flipSumLegs :: [QTaskDistance Double [u| m |]] -> [QTaskDistance Double [u| m |]]
+flipSumLegs = reverse . scanl1 addTaskDistance . reverse
 
 data GeoLines =
     GeoLines
@@ -88,8 +96,8 @@ speedSubset ss TrackLine{..} =
         { distance = foldl' addTaskDistance (TaskDistance zero) legs'
         , waypoints = sliceZones ss waypoints
         , legs = legs'
-        , legsSum = scanl1 addTaskDistance legs'
-        , flipSum = reverse $ scanl1 addTaskDistance legs'
+        , legsSum = sumLegs legs'
+        , flipSum = flipSumLegs legs'
         }
 
 pathVertices
@@ -105,8 +113,8 @@ instance ToTrackLine Double (PathDistance Double) where
             { distance = d
             , waypoints = if excludeWaypoints then [] else xs
             , legs = ds
-            , legsSum = scanl1 addTaskDistance ds
-            , flipSum = reverse $ scanl1 addTaskDistance $ reverse ds
+            , legsSum = sumLegs ds
+            , flipSum = flipSumLegs ds
             }
         where
             d :: QTaskDistance Double [u| m |]
@@ -134,8 +142,8 @@ instance ToTrackLine Rational (PathDistance Rational) where
             { distance = fromR d
             , waypoints = if excludeWaypoints then [] else xs
             , legs = fromR <$> ds
-            , legsSum = fromR <$> scanl1 addTaskDistance ds
-            , flipSum = reverse $ fromR <$> scanl1 addTaskDistance (reverse ds)
+            , legsSum = sumLegs $ fromR <$> ds
+            , flipSum = flipSumLegs $ fromR <$> ds
             }
         where
             d :: QTaskDistance Rational [u| m |]
