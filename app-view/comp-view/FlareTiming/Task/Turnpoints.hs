@@ -110,7 +110,7 @@ tableTurnpoints tz x taskLegs = do
             _ <- el "tbody" $ do
                 simpleList (fmap (zip [1..]) ys) (row tz len ss)
 
-            let tr = el "tr" . elAttr "td" ("colspan" =: "10")
+            let tr = el "tr" . elAttr "td" ("colspan" =: "11")
             el "tfoot" $ do
                 dyn_ . ffor2 goal open $ (\g o ->
                     case (g, o) of
@@ -193,7 +193,7 @@ row tz len ss iz = do
                 el "tr" $ do
                     el "td" $ text ""
                     elClass "td" "td-tp-distance-leg" . text $ showTaskDistance leg'
-                    elAttr "td" ("colspan" =: "8") $ text "")
+                    elAttr "td" ("colspan" =: "9") $ text "")
 
     elDynClass "tr" rowTextColor $ do
         el "td" $ dynText $ (\ix -> (T.pack . show $ ix) <> rowIntro) <$> i
