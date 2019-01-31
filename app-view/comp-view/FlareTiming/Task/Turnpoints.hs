@@ -121,6 +121,9 @@ tableTurnpoints tz x taskLegs = do
                         (Just _, Just _) -> return ()
                         (Nothing, Nothing) -> return ())
                 tr $ text " § Give in the radius once the tolerance has been applied"
+                tr $ text " ↑  The distance from the turnpoint back to launch"
+                tr $ text " ↓  The distance from the turnpoint forward to goal"
+                tr $ text " ↕ The leg distance between turnpoints"
 
     return ()
 
