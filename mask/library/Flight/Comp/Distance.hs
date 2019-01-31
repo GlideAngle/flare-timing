@@ -182,6 +182,7 @@ distanceOnlyLine d =
         , waypoints = []
         , legs = []
         , legsSum = []
+        , flipSum = []
         }
 
 pathToGo
