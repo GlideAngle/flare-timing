@@ -300,15 +300,17 @@ table.pg .td-effort-points, table.pg .td-arrival-points
 tr.tr-tp-distance-leg td
     background-color: $table-striped-row-even-background-color;
 
-.td-tp-distance-leg::before
+.td-tp-distance-leg::after
     @extend .has-text-info
-    content: "↕ ";
+    @extend .has-text-weight-bold;
+    content: " ↕";
 
-.td-tp-distance-task::before
-    content: "↑ ";
+.td-tp-distance-task::after
+    content: " ↑";
 
-.td-tp-distance-flip::before
-    content: "↓ ";
+.td-tp-distance-flip::after
+    content: " ↓";
+    @extend .has-text-weight-bold;
 
 .td-tp-radius
     @extend .has-text-right;
