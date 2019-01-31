@@ -97,7 +97,6 @@ tableTurnpoints tz x taskLegs = do
                 el "tr" $ do
                     el "th" $ text "#"
                     elClass "th" "th-tp-distance-task" $ text "Task"
-                    elClass "th" "th-tp-distance-flip" $ text "Flip"
                     elClass "th" "th-tp-name" $ text "Name"
                     elClass "th" "th-tp-radius" $ text "Radius"
                     elClass "th" "th-tp-give" $ text "Give §"
@@ -110,7 +109,7 @@ tableTurnpoints tz x taskLegs = do
             _ <- el "tbody" $ do
                 simpleList (fmap (zip [1..]) ys) (row tz len ss)
 
-            let tr = el "tr" . elAttr "td" ("colspan" =: "11")
+            let tr = el "tr" . elAttr "td" ("colspan" =: "10")
             el "tfoot" $ do
                 dyn_ . ffor2 goal open $ (\g o ->
                     case (g, o) of
@@ -198,7 +197,6 @@ row tz len ss iz = do
     elDynClass "tr" rowTextColor $ do
         el "td" $ dynText $ (\ix -> (T.pack . show $ ix) <> rowIntro) <$> i
         elClass "td" "td-tp-distance-task" . dynText $ showTaskDistance <$> legSum
-        elClass "td" "td-tp-distance-flip" . dynText $ showTaskDistance <$> flipSum
         elClass "td" "td-tp-name" . dynText $ TP.getName <$> z
         elClass "td" "td-tp-radius" . dynText $ TP.getRadius <$> z
         elClass "td" "td-tp-give" . dynText $ TP.getGive <$> z
@@ -207,6 +205,11 @@ row tz len ss iz = do
         elClass "td" "td-tp-open" . dynText $ showOpen tz <$> oc
         elClass "td" "td-tp-close" . dynText $ showClose tz <$> oc
         elClass "td" "td-tp-altitude" . dynText $ TP.getAlt <$> z
+
+    elDynClass "tr" rowTextColor $ do
+        el "td" $ text ""
+        elClass "td" "td-tp-distance-flip" . dynText $ showTaskDistance <$> flipSum
+        elAttr "td" ("colspan" =: "9") $ text ""
 
 rowColor :: SpeedSection -> Integer -> T.Text
 rowColor Nothing _ = ""

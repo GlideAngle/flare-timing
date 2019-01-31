@@ -286,12 +286,26 @@ table.pg .td-effort-points, table.pg .td-arrival-points
     @extend .has-text-left;
 
 .td-tp-distance-leg
-    @extend .has-text-right;
     @extend .has-text-info;
 
-.td-tp-distance-task, .td-tp-distance-flip
+.td-tp-distance-leg, .td-tp-distance-task, .td-tp-distance-flip
     @extend .has-text-right;
+
+.td-tp-distance-task
     @extend .has-text-weight-bold;
+
+.td-tp-distance-flip
+    @extend .has-text-danger
+
+.td-tp-distance-leg::before
+    @extend .has-text-info
+    content: "↕ ";
+
+.td-tp-distance-task::before
+    content: "↑ ";
+
+.td-tp-distance-flip::before
+    content: "↓ ";
 
 .td-tp-radius
     @extend .has-text-right;
