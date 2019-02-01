@@ -1,7 +1,8 @@
 { mkDerivation, aeson, aeson-pretty, base, bytestring
-, detour-via-sci, detour-via-uom, flight-latlng, flight-units, here
-, newtype, scientific, siggy-chardust, stdenv, tasty
-, tasty-discover, tasty-golden, tasty-hspec, text, uom-plugin, yaml
+, detour-via-sci, detour-via-uom, doctest, flight-latlng
+, flight-units, here, newtype, scientific, siggy-chardust, stdenv
+, tasty, tasty-discover, tasty-golden, tasty-hspec, text
+, uom-plugin, yaml
 }:
 mkDerivation {
   pname = "flight-zone";
@@ -13,8 +14,9 @@ mkDerivation {
   ];
   testHaskellDepends = [
     aeson aeson-pretty base bytestring detour-via-sci detour-via-uom
-    flight-latlng flight-units here newtype scientific siggy-chardust
-    tasty tasty-discover tasty-golden tasty-hspec text uom-plugin yaml
+    doctest flight-latlng flight-units here newtype scientific
+    siggy-chardust tasty tasty-discover tasty-golden tasty-hspec text
+    uom-plugin yaml
   ];
   testToolDepends = [ tasty-discover ];
   doHaddock = false;

@@ -16,6 +16,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import System.Directory (createDirectoryIfMissing)
 import System.FilePath ((</>))
 
+import Flight.Clip (FlyingSection, FlyCut(..))
 import Flight.Track.Time
     ( FixIdx(..), ZoneIdx(..), LegIdx(..), LeadTick(..), RaceTick(..), TimeRow(..)
     , allHeaders, commentOnFixRange
@@ -41,8 +42,7 @@ import Flight.Mask
     ( FnIxTask, RaceSections(..), Ticked
     , checkTracks, groupByLeg, dashDistancesToGoal
     )
-import Flight.Track.Cross (FlyingSection, Fix(..), TrackFlyingSection(..))
-import Flight.Track.Time (FlyCut(..))
+import Flight.Track.Cross (Fix(..), TrackFlyingSection(..))
 import Flight.Track.Tag (Tagging(..), TrackTime(..), firstLead, firstStart)
 import Flight.Kml (MarkedFixes(..), timeToFixIdx)
 import Data.Ratio.Rounding (dpRound)

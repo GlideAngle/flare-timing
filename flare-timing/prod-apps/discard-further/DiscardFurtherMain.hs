@@ -11,6 +11,7 @@ import Control.Exception.Safe (catchIO)
 import System.Directory (createDirectoryIfMissing)
 import System.FilePath ((</>), takeFileName)
 
+import Flight.Clip (FlyCut(..), FlyClipping(..))
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
@@ -50,8 +51,7 @@ import Flight.Comp
     , ensureExt
     , pilotNamed
     )
-import Flight.Track.Time
-    (FlyCut(..), FlyClipping(..), LeadClose(..), LeadArrival(..), discard, allHeaders)
+import Flight.Track.Time (LeadClose(..), LeadArrival(..), discard, allHeaders)
 import Flight.Track.Mask (RaceTime(..), racing)
 import Flight.Mask (checkTracks)
 import Flight.Scribe

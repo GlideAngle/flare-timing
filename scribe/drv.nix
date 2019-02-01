@@ -5,9 +5,9 @@ let
   inherit (nixpkgs) pkgs;
 
   f = { mkDerivation, aeson, base, bytestring, cassava, containers
-      , detour-via-sci, directory, filemanip, filepath, flight-comp
-      , flight-gap, flight-latlng, flight-route, flight-zone, mtl, path
-      , safe-exceptions, scientific, split, stdenv, time
+      , detour-via-sci, directory, filemanip, filepath, flight-clip
+      , flight-comp, flight-gap, flight-latlng, flight-route, flight-zone
+      , mtl, path, safe-exceptions, scientific, split, stdenv, time
       , unordered-containers, vector, yaml
       }:
       mkDerivation {
@@ -16,7 +16,7 @@ let
         src = ./.;
         libraryHaskellDepends = [
           aeson base bytestring cassava containers detour-via-sci directory
-          filemanip filepath flight-comp flight-gap flight-latlng
+          filemanip filepath flight-clip flight-comp flight-gap flight-latlng
           flight-route flight-zone mtl path safe-exceptions scientific split
           time unordered-containers vector yaml
         ];

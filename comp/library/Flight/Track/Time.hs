@@ -20,8 +20,6 @@ module Flight.Track.Time
     , FixIdx(..)
     , ZoneIdx(..)
     , LegIdx(..)
-    , FlyCut(..)
-    , FlyClipping(..)
     , leadingArea
     , leadingSum
     , minLeading
@@ -52,6 +50,7 @@ import Data.Vector (Vector)
 import qualified Data.Vector as V (fromList, toList)
 
 import Flight.Units ()
+import Flight.Clip (FlyCut(..), FlyClipping(..))
 import Flight.LatLng.Raw (RawLat, RawLng)
 import Flight.Score
     ( LeadingAreaStep(..)
@@ -72,19 +71,6 @@ import Flight.Score
 import Flight.Distance (QTaskDistance, TaskDistance(..))
 import Flight.Zone.SpeedSection (SpeedSection)
 import Flight.Track.Range (asRanges)
-import Flight.Track.Cross (FlyingSection)
-
--- | The subset of the fixes that can be considered flown or scored.
-data FlyCut a b =
-    FlyCut
-        { cut :: FlyingSection a
-        , uncut :: b
-        }
-    deriving Show
-
-class FlyClipping a b where
-    clipToFlown :: FlyCut a b -> FlyCut a b
-    clipIndices :: FlyCut a b -> [Int]
 
 instance Show FixIdx where show (FixIdx x) = show x
 instance Show ZoneIdx where show (ZoneIdx x) = show x

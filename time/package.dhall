@@ -23,6 +23,7 @@ in    defs
             , "safe-exceptions"
             , "time"
             , "uom-plugin"
+            , "flight-clip"
             , "flight-comp"
             , "flight-kml"
             , "flight-latlng"

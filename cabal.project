@@ -8,6 +8,7 @@ packages:
     build\
     detour-via-sci\
     detour-via-uom\
+    clip\
     cmd\
     comp\
     earth\

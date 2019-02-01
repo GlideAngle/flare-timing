@@ -18,6 +18,7 @@ import Data.UnitsOfMeasure ((-:), u, convert, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import System.FilePath (takeFileName)
 
+import Flight.Clip (FlyCut(..), FlyClipping(..))
 import Flight.LatLng (QAlt)
 import Flight.Route (OptimalRoute(..))
 import qualified Flight.Comp as Cmp (Nominal(..))
@@ -60,7 +61,6 @@ import Flight.Mask
 import Flight.Comp.Distance (compDistance, compNigh)
 import Flight.Track.Tag (Tagging)
 import qualified Flight.Track.Time as Time (TimeRow(..), TickRow(..))
-import Flight.Track.Time (FlyCut(..), FlyClipping(..))
 import Flight.Track.Arrival (TrackArrival(..))
 import Flight.Track.Distance
     (TrackDistance(..), AwardedDistance(..), Clamp(..), Land)

@@ -23,6 +23,7 @@ in    defs
             , "time"
             , "bytestring"
             , "utf8-string"
+            , "flight-clip"
             , "flight-comp"
             , "flight-kml"
             , "flight-igc"

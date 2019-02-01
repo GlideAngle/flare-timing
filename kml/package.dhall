@@ -29,6 +29,7 @@ in    defs
             , "time"
             , "detour-via-sci"
             , "siggy-chardust"
+            , "flight-clip"
             ]
       , library =
           { source-dirs =

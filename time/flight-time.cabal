@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: fd561f3928eea853517a12ba9a34bfba3b58e9239171c8d640db7d7961fca88a
+-- hash: 8c725b65214e6c5a1fc256263c5f8c625f41a7f8180188cd41249271e07a677a
 
 name:           flight-time
 version:        0.1.0
@@ -43,6 +43,7 @@ library
       base >=4.10.1.0 && <5
     , directory
     , filepath
+    , flight-clip
     , flight-comp
     , flight-kml
     , flight-latlng
@@ -73,6 +74,7 @@ test-suite golden
     , base
     , directory
     , filepath
+    , flight-clip
     , flight-comp
     , flight-kml
     , flight-latlng

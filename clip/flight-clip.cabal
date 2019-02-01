@@ -4,14 +4,14 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 4fbc4946712ff8fd4c5b1f152624ef926708af242cec4ee97addf7f26ff77d4b
+-- hash: 98b4436612a14203211e87cf0ae7b726d38aec855817c078eeedba6e520b372c
 
-name:           flight-track
-version:        0.1.0
-synopsis:       Hang gliding and paragliding competition track logs.
-description:    Reading track logs for each pilot in each task of a competition.
-category:       Data
-homepage:       https://github.com/blockscope/flare-timing#readme
+name:           flight-clip
+version:        1.1.0
+synopsis:       Clipping a pilot's tracklogs.
+description:    Provides types and typeclasses for clipping a tracklog.
+category:       Data, Parsing, Flight
+homepage:       https://github.com/blockscope/flare-timing/tree/master/clip#readme
 bug-reports:    https://github.com/blockscope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
@@ -28,30 +28,18 @@ extra-source-files:
 source-repository head
   type: git
   location: https://github.com/blockscope/flare-timing
-  subdir: track
+  subdir: clip
 
 library
   exposed-modules:
-      Flight.TrackLog
+      Flight.Clip
   other-modules:
-      Paths_flight_track
+      Paths_flight_clip
   hs-source-dirs:
       library
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
   ghc-options: -Wall -Werror
   build-depends:
       base >=4.10.1.0 && <5
-    , bytestring
-    , containers
-    , directory
-    , filepath
-    , flight-clip
-    , flight-comp
-    , flight-igc
-    , flight-kml
-    , mtl
-    , path
-    , split
     , time
-    , utf8-string
   default-language: Haskell2010

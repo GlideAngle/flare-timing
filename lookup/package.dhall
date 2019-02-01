@@ -31,14 +31,15 @@ in    deps
             , "lens"
             , "mtl"
             , "uom-plugin"
-            , "detour-via-sci"
-            , "flight-latlng"
-            , "flight-zone"
-            , "flight-route"
-            , "flight-gap"
+            , "flight-clip"
             , "flight-comp"
+            , "flight-latlng"
+            , "flight-gap"
             , "flight-kml"
             , "flight-mask"
+            , "flight-route"
+            , "flight-zone"
+            , "detour-via-sci"
             ]
       , library =
           { source-dirs =

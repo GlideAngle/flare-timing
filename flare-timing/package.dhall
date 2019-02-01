@@ -166,6 +166,7 @@ in    defs
               { dependencies =
                     deps
                   # [ "safe-exceptions"
+                    , "flight-clip"
                     , "flight-route"
                     , "flight-gap"
                     , "flight-mask"
@@ -190,12 +191,13 @@ in    defs
                     , "lens"
                     , "siggy-chardust"
                     , "safe-exceptions"
-                    , "flight-span"
-                    , "flight-kml"
-                    , "flight-route"
+                    , "flight-clip"
                     , "flight-gap"
-                    , "flight-mask"
+                    , "flight-kml"
                     , "flight-lookup"
+                    , "flight-mask"
+                    , "flight-route"
+                    , "flight-span"
                     ]
               , ghc-options =
                   [ "-rtsopts"

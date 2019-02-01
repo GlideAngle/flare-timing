@@ -31,11 +31,12 @@ in    defs
             , "yaml"
             , "vector"
             , "detour-via-sci"
-            , "flight-latlng"
-            , "flight-zone"
-            , "flight-route"
-            , "flight-gap"
+            , "flight-clip"
             , "flight-comp"
+            , "flight-gap"
+            , "flight-latlng"
+            , "flight-route"
+            , "flight-zone"
             ]
       , library =
           { source-dirs = "library", exposed-modules = "Flight.Scribe" }

@@ -21,6 +21,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 
+import Flight.Clip (FlyCut(..), FlyClipping(..))
 import Flight.Distance (QTaskDistance)
 import Flight.LatLng (QAlt)
 import Flight.Comp (OpenClose(..), FirstLead(..), FirstStart(..), LastArrival(..))
@@ -38,7 +39,6 @@ import Flight.Track.Speed (TrackSpeed(..))
 import Flight.Track.Arrival (TrackArrival(..))
 import Flight.Track.Lead (TrackLead(..))
 import Flight.Track.Distance (TrackDistance(..), Nigh, Land)
-import Flight.Track.Time (FlyCut(..), FlyClipping(..))
 
 -- | For each task, the masking for that task.
 data Masking =

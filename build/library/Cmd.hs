@@ -72,7 +72,7 @@ pkgs :: [Pkg]
 pkgs =
     [ "detour-via-sci"
     , "detour-via-uom"
-    , "flight-time"
+    , "flight-clip"
     , "flight-cmd"
     , "flight-comp"
     , "flight-earth"
@@ -88,10 +88,11 @@ pkgs =
     , "siggy-chardust"
     , "flight-span"
     , "flight-task"
-    , "tasty-compare"
+    , "flight-time"
     , "flight-track"
     , "flight-units"
     , "flight-zone"
+    , "tasty-compare"
     ]
 
 -- | The pairs are names of the pkg and test.

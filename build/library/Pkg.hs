@@ -26,7 +26,6 @@ dhallCabal =
     [ ("detour-via-sci", "detour-via-sci")
     , ("detour-via-uom", "detour-via-uom")
     , ("build", "build-flare-timing")
-    , ("time", "flight-time")
     , ("cmd", "flight-cmd")
     , ("comp", "flight-comp")
     , ("earth", "flight-earth")
@@ -43,12 +42,13 @@ dhallCabal =
     , ("siggy-chardust", "siggy-chardust")
     , ("span", "flight-span")
     , ("task", "flight-task")
-    , ("tasty-compare", "tasty-compare")
+    , ("time", "flight-time")
     , ("track", "flight-track")
     , ("units", "flight-units")
     , ("zone", "flight-zone")
     , ("app-serve", "app-serve")
     , ("app-view", "app-view")
+    , ("tasty-compare", "tasty-compare")
     ] 
 
 dhallRootImports :: [String]

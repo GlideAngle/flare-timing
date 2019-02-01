@@ -15,9 +15,11 @@
     ) where
 
 import Data.Time.Clock (UTCTime, addUTCTime, diffUTCTime)
-import Data.List (findIndex)
+import Data.List (findIndex, findIndices)
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
+
+import Flight.Clip (FlyCut(..), FlyClipping(..), FlyClipSection(..))
 
 import Data.Via.Scientific
     ( DefaultDecimalPlaces(..)
@@ -135,6 +137,37 @@ data MarkedFixes =
         , fixes :: [Fix] -- ^ The fixes of the track log.
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+
+betweenFixMark :: FixMark a => Seconds -> Seconds -> a -> Bool
+betweenFixMark s0 s1 x =
+    let s = mark x in s0 <= s && s <= s1
+
+instance FlyClipping UTCTime MarkedFixes where
+    clipToFlown x@FlyCut{cut = Nothing, uncut} =
+        x{uncut = uncut{fixes = []}}
+
+    clipToFlown x@FlyCut{cut = Just (t0, t1), uncut = mf@MarkedFixes{mark0, fixes}} =
+        x{uncut = mf{fixes = filter (betweenFixMark s0 s1) fixes}}
+        where
+            s0 = Seconds . round $ t0 `diffUTCTime` mark0
+            s1 = Seconds . round $ t1 `diffUTCTime` mark0
+
+    clipIndices FlyCut{cut = Nothing} = []
+
+    clipIndices FlyCut{cut = Just (t0, t1), uncut = MarkedFixes{mark0, fixes}} =
+        findIndices (betweenFixMark s0 s1) fixes
+        where
+            s0 = Seconds . round $ t0 `diffUTCTime` mark0
+            s1 = Seconds . round $ t1 `diffUTCTime` mark0
+
+instance FlyClipSection UTCTime MarkedFixes Int where
+    clipSection x =
+        case (xs, reverse xs) of
+            ([], _) -> Nothing
+            (_, []) -> Nothing
+            (i : _, j : _) -> Just (i, j)
+        where
+            xs = clipIndices x
 
 -- | Finds the 0-based index of the fix.
 timeToFixIdx :: UTCTime -> MarkedFixes -> Maybe Int

@@ -11,16 +11,11 @@ module Flight.Mask.Internal.Race
 
 import Data.Ratio ((%))
 
-import Data.Time.Clock (UTCTime, diffUTCTime)
-import Data.List (findIndices)
-
+import Flight.Clip (FlyCut(..), FlyClipSection(..))
 import Flight.Distance (SpanLatLng, TaskDistance(..))
-import Flight.Kml (FixMark(mark), MarkedFixes(..), Seconds(..))
 import Flight.Zone.SpeedSection (SpeedSection)
 import Flight.Zone.Cylinder (CircumSample, Tolerance(..))
-import Flight.Track.Time (ZoneIdx(..), TimeRow(..))
-import Flight.Track.Cross (FlyingSection)
-import Flight.Track.Time (FlyCut(..), FlyClipping(..))
+import Flight.Track.Time (ZoneIdx(..))
 import Flight.Units ()
 import Flight.Task (CostSegment, DistancePointToPoint, AngleCut(..))
 import Flight.Mask.Internal.Zone (TaskZone(..), TrackZone(..))
@@ -82,37 +77,3 @@ section (Just (s', e')) xs =
         }
     where
         (s, e) = (s' - 1, e' - 1)
-
-instance FlyClipping UTCTime MarkedFixes where
-    clipToFlown x@FlyCut{cut = Nothing, uncut} =
-        x{uncut = uncut{fixes = []}}
-
-    clipToFlown x@FlyCut{cut = Just (t0, t1), uncut = mf@MarkedFixes{mark0, fixes}} =
-        x{uncut = mf{fixes = filter (betweenFixMark s0 s1) fixes}}
-        where
-            s0 = Seconds . round $ t0 `diffUTCTime` mark0
-            s1 = Seconds . round $ t1 `diffUTCTime` mark0
-
-    clipIndices FlyCut{cut = Nothing} = []
-
-    clipIndices FlyCut{cut = Just (t0, t1), uncut = MarkedFixes{mark0, fixes}} =
-        findIndices (betweenFixMark s0 s1) fixes
-        where
-            s0 = Seconds . round $ t0 `diffUTCTime` mark0
-            s1 = Seconds . round $ t1 `diffUTCTime` mark0
-
-class (FlyClipping a b) => FlyClipSection a b c where
-    clipSection :: FlyCut a b -> FlyingSection c
-
-instance FlyClipSection UTCTime MarkedFixes Int where
-    clipSection x =
-        case (xs, reverse xs) of
-            ([], _) -> Nothing
-            (_, []) -> Nothing
-            (i : _, j : _) -> Just (i, j)
-        where
-            xs = clipIndices x
-
-betweenFixMark :: FixMark a => Seconds -> Seconds -> a -> Bool
-betweenFixMark s0 s1 x =
-    let s = mark x in s0 <= s && s <= s1

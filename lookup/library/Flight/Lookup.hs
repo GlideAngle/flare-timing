@@ -14,9 +14,9 @@ import Control.Monad (join)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
+import Flight.Clip (FlyingSection)
 import Flight.Kml (MarkedFixes(..))
 import Flight.Zone.SpeedSection (SpeedSection)
-import Flight.Track.Cross (FlyingSection)
 import Flight.Comp
     ( IxTask(..)
     , Task(..)

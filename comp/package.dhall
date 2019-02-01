@@ -35,12 +35,13 @@ in    defs
             , "vector"
             , "detour-via-sci"
             , "detour-via-uom"
-            , "flight-units"
-            , "flight-latlng"
+            , "flight-clip"
             , "flight-earth"
-            , "flight-zone"
-            , "flight-route"
+            , "flight-latlng"
             , "flight-gap"
+            , "flight-route"
+            , "flight-zone"
+            , "flight-units"
             ]
       , library =
           { source-dirs =

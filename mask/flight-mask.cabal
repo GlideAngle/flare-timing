@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: bc4c48842b83bcfb2df020fe2214568e983dde0d2d43b5f187b53376e992be56
+-- hash: 63a70bc9d89e91abc04648b2317704a1c87ab1d93ad69a76ce34c97b6b8ef32c
 
 name:           flight-mask
 version:        0.1.0
@@ -61,6 +61,7 @@ library
     , directory
     , fgl
     , filepath
+    , flight-clip
     , flight-comp
     , flight-earth
     , flight-gap
@@ -119,6 +120,7 @@ test-suite doctest
     , doctest
     , fgl
     , filepath
+    , flight-clip
     , flight-comp
     , flight-earth
     , flight-gap
