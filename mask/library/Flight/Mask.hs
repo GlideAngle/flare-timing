@@ -43,6 +43,7 @@ module Flight.Mask
     , fixFromFix
     ) where
 
+import Flight.Mask.Group
 import Flight.Mask.Tag
 import Flight.Mask.Distance
 import Flight.Mask.Time

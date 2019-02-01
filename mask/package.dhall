@@ -54,8 +54,22 @@ in    defs
               , "Flight.Comp.Distance"
               , "Flight.Span.Double"
               , "Flight.Span.Rational"
+              , "Flight.Mask.Internal.Race"
+              , "Flight.Mask.Internal.Zone"
+              , "Flight.Mask.Tag"
               ]
           }
       , tests =
-          ./../default-tests.dhall
+            ./../default-tests.dhall
+          ⫽ { doctest =
+                { dependencies =
+                    [ "doctest" ]
+                , ghc-options =
+                    [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
+                , main =
+                    "DocTest.hs"
+                , source-dirs =
+                    [ "library", "test-suite-doctest" ]
+                }
+            }
       }

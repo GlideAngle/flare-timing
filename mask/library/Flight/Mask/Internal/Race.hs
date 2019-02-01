@@ -16,7 +16,6 @@ import Data.List (findIndices)
 
 import Flight.Distance (SpanLatLng, TaskDistance(..))
 import Flight.Kml (FixMark(mark), MarkedFixes(..), Seconds(..))
-import Flight.Zone (Zone(..))
 import Flight.Zone.SpeedSection (SpeedSection)
 import Flight.Zone.Cylinder (CircumSample, Tolerance(..))
 import Flight.Track.Time (ZoneIdx(..), TimeRow(..))

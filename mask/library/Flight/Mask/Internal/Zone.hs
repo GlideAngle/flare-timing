@@ -1,5 +1,8 @@
 module Flight.Mask.Internal.Zone
-    ( ZoneEntry(..)
+    ( MadeZones(..)
+    , SelectedCrossings(..)
+    , NomineeCrossings(..)
+    , ZoneEntry(..)
     , ZoneExit(..)
     , Crossing
     , TaskZone(..)
@@ -31,8 +34,23 @@ import Flight.Zone (Radius(..), Zone(..))
 import Flight.Zone.SpeedSection (SpeedSection, sliceZones)
 import qualified Flight.Zone.Raw as Raw (RawZone(..))
 import Flight.Track.Time (ZoneIdx(..), TimeRow(..))
-import Flight.Track.Cross (Fix(..))
+import Flight.Track.Cross (Fix(..), ZoneCross(..), TrackFlyingSection(..))
 import Flight.Units ()
+
+data MadeZones =
+    MadeZones
+        { flying :: TrackFlyingSection
+        , selectedCrossings :: SelectedCrossings
+        , nomineeCrossings :: NomineeCrossings
+        }
+
+newtype SelectedCrossings =
+    SelectedCrossings { unSelectedCrossings :: [Maybe ZoneCross] }
+    deriving Show
+
+newtype NomineeCrossings =
+    NomineeCrossings { unNomineeCrossings :: [[Maybe ZoneCross]] }
+    deriving Show
 
 data ZoneEntry = ZoneEntry ZoneIdx ZoneIdx deriving (Eq, Show)
 data ZoneExit = ZoneExit ZoneIdx ZoneIdx deriving (Eq, Show)

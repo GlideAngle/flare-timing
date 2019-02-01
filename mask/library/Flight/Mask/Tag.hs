@@ -10,22 +10,21 @@ module Flight.Mask.Tag
     , launched
     , madeGoal
     , started
-    , groupByLeg
     , trimOrdLists
     , nullFlying
     ) where
 
 import Prelude hiding (span)
-import Data.Time.Clock (UTCTime, addUTCTime)
+import Data.Time.Clock (UTCTime)
 import qualified Data.List as List (span)
 import Data.Maybe (listToMaybe)
 import Data.List (nub, group, elemIndex, findIndex)
-import Data.List.Split (split, whenElt, keepDelimsL, chop)
+import Data.List.Split (chop)
 import Control.Lens ((^?), element)
 import Control.Arrow (first)
 
 import Flight.Distance (SpanLatLng)
-import Flight.Kml (Latitude(..), Longitude(..), MarkedFixes(..))
+import Flight.Kml (Latitude(..), Longitude(..), MarkedFixes(..), secondsToUtc)
 import qualified Flight.Kml as Kml
     (LatLngAlt(..), Fix, FixMark(..), Seconds(..))
 import Flight.Track.Time (ZoneIdx(..))
@@ -38,7 +37,10 @@ import Flight.Comp (IxTask(..), Task(..), TaskStop(..), Zones(..))
 import Flight.Units ()
 import Flight.Mask.Internal.Race ()
 import Flight.Mask.Internal.Zone
-    ( ZoneEntry(..)
+    ( MadeZones(..)
+    , SelectedCrossings(..)
+    , NomineeCrossings(..)
+    , ZoneEntry(..)
     , ZoneExit(..)
     , Crossing
     , TaskZone(..)
@@ -57,13 +59,6 @@ import Flight.Mask.Internal.Cross
     , reindex
     )
 import qualified Flight.Zone.Raw as Raw (RawZone(..))
-
-data MadeZones =
-    MadeZones
-        { flying :: TrackFlyingSection
-        , selectedCrossings :: SelectedCrossings
-        , nomineeCrossings :: NomineeCrossings
-        }
 
 nullFlying :: TrackFlyingSection
 nullFlying =
@@ -167,14 +162,6 @@ tagZones =
             case (crossingPair, inZone) of
                 ([x, y], [a, b]) -> crossingTag (x, y) (a, b)
                 _ -> Nothing
-
-newtype SelectedCrossings =
-    SelectedCrossings { unSelectedCrossings :: [Maybe ZoneCross] }
-    deriving Show
-
-newtype NomineeCrossings =
-    NomineeCrossings { unNomineeCrossings :: [[Maybe ZoneCross]] }
-    deriving Show
 
 stationary :: Kml.LatLngAlt a => a -> a -> Bool
 stationary x y =
@@ -858,80 +845,3 @@ proveCrossing fixes mark0 (Right (ZoneExit m n)) =
 
 proveCrossing fixes mark0 (Left (ZoneEntry m n)) =
     prove fixes mark0 m n [False, True]
-
-secondsToUtc :: UTCTime -> Kml.Seconds -> UTCTime
-secondsToUtc mark0 (Kml.Seconds secs) =
-    fromInteger secs `addUTCTime` mark0
-
-fixToUtc :: UTCTime -> Kml.Fix -> UTCTime
-fixToUtc mark0 x =
-    secondsToUtc mark0 $ Kml.mark x
-
--- | Groups fixes by legs of the task.
-groupByLeg
-    :: (Real a, Fractional a, FlyClipping UTCTime MarkedFixes)
-    => SpanLatLng a
-    -> (Raw.RawZone -> TaskZone a)
-    -> Task k
-    -> FlyCut UTCTime MarkedFixes
-    -> [MarkedFixes]
-groupByLeg span zoneToCyl task flyCut =
-    (\zs -> mf{fixes = zs}) <$> ys
-    where
-        FlyCut{uncut = mf@MarkedFixes{mark0, fixes}} = clipToFlown flyCut
-
-        xs :: [Maybe Fix]
-        xs =
-            tagZones . unSelectedCrossings . selectedCrossings
-            $ madeZones span zoneToCyl task mf
-
-        ts :: [Maybe UTCTime]
-        ts = (fmap . fmap) time xs
-
-        {-
-
-        NOTE: A small ghci session showing splitting.
-        let a = ['a' .. 'z']
-        "abcdefghijklmnopqrstuvwxyz"
-
-        let b = [Nothing, Just 'c', Just 't', Nothing]
-        [Nothing,Just 'c',Just 't',Nothing]
-
-        split (whenElt (\x -> elem (Just x) b)) a
-        ["ab","c","defghijklmnopqrs","t","uvwxyz"]
-
-        split (keepDelimsR $ whenElt (\x -> elem (Just x) b)) a
-        ["abc","defghijklmnopqrst","uvwxyz"]
-
-        split (keepDelimsL $ whenElt (\x -> elem (Just x) b)) a
-        ["ab","cdefghijklmnopqrs","tuvwxyz"]
-
-        WARNING: The list is expected to have no duplicates.
-        let c = ['a' .. 'o'] ++ ['o' .. 'z']
-        "abcdefghijklmnoopqrstuvwxyz"
-
-        let d = [Just 'o']
-        [Just 'o']
-
-        split (keepDelimsL $ whenElt (\x -> elem (Just x) d)) c
-        ["abcdefghijklmn","o","opqrstuvwxyz"]
-
-        let d = [Just 'a', Just 'e', Just 'i', Just 'o', Just 'u']
-        split (keepDelimsL $ whenElt (\x -> elem (Just x) d)) a
-        ["","abcd","efgh","ijklmn","opqrst","uvwxyz"]
-
-        -}
-
-        -- WARNING: Pilots can end up with duplicate timestamps when they are
-        -- logging at a sub-second rate. For IGC files the HMS and ss fields are
-        -- in the same B record but in different locations. If the parser does
-        -- not know about the sub-second field then it will parse multiple fixes
-        -- with the same HMS time.
-        uniqueFixes = nub fixes
-
-        ys :: [[Kml.Fix]]
-        ys =
-            split
-                (keepDelimsL
-                $ whenElt (\x -> (Just $ fixToUtc mark0 x) `elem` ts))
-                uniqueFixes

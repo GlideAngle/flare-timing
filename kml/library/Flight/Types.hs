@@ -10,9 +10,11 @@
     , MarkedFixes(..)
     , mkPosition
     , timeToFixIdx
+    , secondsToUtc
+    , fixToUtc
     ) where
 
-import Data.Time.Clock (UTCTime, diffUTCTime)
+import Data.Time.Clock (UTCTime, addUTCTime, diffUTCTime)
 import Data.List (findIndex)
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
@@ -140,3 +142,11 @@ timeToFixIdx t MarkedFixes{mark0, fixes} =
     findIndex ((== s) . fixMark) fixes
     where
         s = Seconds . round $ t `diffUTCTime` mark0
+
+secondsToUtc :: UTCTime -> Seconds -> UTCTime
+secondsToUtc mark0 (Seconds secs) =
+    fromInteger secs `addUTCTime` mark0
+
+fixToUtc :: UTCTime -> Fix -> UTCTime
+fixToUtc mark0 x =
+    secondsToUtc mark0 $ mark x
