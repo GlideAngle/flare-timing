@@ -20,6 +20,8 @@ module Flight.Track.Time
     , FixIdx(..)
     , ZoneIdx(..)
     , LegIdx(..)
+    , FlyCut(..)
+    , FlyClipping(..)
     , leadingArea
     , leadingSum
     , minLeading
@@ -37,7 +39,7 @@ import Data.Csv
     , (.:)
     , namedRecord, namedField
     )
-import Data.List ((\\))
+import Data.List ((\\), findIndices)
 import Data.List.Split (wordsBy)
 import Data.ByteString.Lazy.Char8 (unpack, pack)
 import Data.HashMap.Strict (unions)
@@ -70,6 +72,19 @@ import Flight.Score
 import Flight.Distance (QTaskDistance, TaskDistance(..))
 import Flight.Zone.SpeedSection (SpeedSection)
 import Flight.Track.Range (asRanges)
+import Flight.Track.Cross (FlyingSection)
+
+-- | The subset of the fixes that can be considered flown or scored.
+data FlyCut a b =
+    FlyCut
+        { cut :: FlyingSection a
+        , uncut :: b
+        }
+    deriving Show
+
+class FlyClipping a b where
+    clipToFlown :: FlyCut a b -> FlyCut a b
+    clipIndices :: FlyCut a b -> [Int]
 
 instance Show FixIdx where show (FixIdx x) = show x
 instance Show ZoneIdx where show (ZoneIdx x) = show x
@@ -161,6 +176,22 @@ data TimeRow =
         -- ^ Distance to goal in km
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+
+betweenTimeRow :: UTCTime -> UTCTime -> TimeRow -> Bool
+betweenTimeRow t0 t1 TimeRow{time = t} =
+    t0 <= t && t <= t1 
+
+instance FlyClipping UTCTime [TimeRow] where
+    clipToFlown x@FlyCut{cut = Nothing} =
+        x{uncut = []}
+
+    clipToFlown x@FlyCut{cut = Just (t0, t1), uncut = xs} =
+        x{uncut = filter (betweenTimeRow t0 t1) xs}
+
+    clipIndices FlyCut{cut = Nothing} = []
+
+    clipIndices FlyCut{cut = Just (t0, t1), uncut = xs} =
+        findIndices (betweenTimeRow t0 t1) xs
 
 -- | A fix but with time as elapsed time from the first crossing time.
 data TickRow =

@@ -20,7 +20,7 @@ import Flight.Zone.SpeedSection (SpeedSection)
 import Flight.Zone.Cylinder (CircumSample, Tolerance(..))
 import Flight.Track.Time (ZoneIdx(..), TimeRow(..))
 import Flight.Track.Cross (FlyingSection)
-import Flight.Track.Mask (FlyCut(..), FlyClipping(..))
+import Flight.Track.Time (FlyCut(..), FlyClipping(..))
 import Flight.Units ()
 import Flight.Task (CostSegment, DistancePointToPoint, AngleCut(..))
 import Flight.Mask.Internal.Zone (TaskZone(..), TrackZone(..))
@@ -83,18 +83,6 @@ section (Just (s', e')) xs =
     where
         (s, e) = (s' - 1, e' - 1)
 
-instance FlyClipping UTCTime [TimeRow] where
-    clipToFlown x@FlyCut{cut = Nothing} =
-        x{uncut = []}
-
-    clipToFlown x@FlyCut{cut = Just (t0, t1), uncut = xs} =
-        x{uncut = filter (betweenTimeRow t0 t1) xs}
-
-    clipIndices FlyCut{cut = Nothing} = []
-
-    clipIndices FlyCut{cut = Just (t0, t1), uncut = xs} =
-        findIndices (betweenTimeRow t0 t1) xs
-
 instance FlyClipping UTCTime MarkedFixes where
     clipToFlown x@FlyCut{cut = Nothing, uncut} =
         x{uncut = uncut{fixes = []}}
@@ -124,10 +112,6 @@ instance FlyClipSection UTCTime MarkedFixes Int where
             (i : _, j : _) -> Just (i, j)
         where
             xs = clipIndices x
-
-betweenTimeRow :: UTCTime -> UTCTime -> TimeRow -> Bool
-betweenTimeRow t0 t1 TimeRow{time = t} =
-    t0 <= t && t <= t1 
 
 betweenFixMark :: FixMark a => Seconds -> Seconds -> a -> Bool
 betweenFixMark s0 s1 x =

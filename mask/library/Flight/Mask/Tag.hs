@@ -27,12 +27,11 @@ import Flight.Distance (SpanLatLng)
 import Flight.Kml (Latitude(..), Longitude(..), MarkedFixes(..), secondsToUtc)
 import qualified Flight.Kml as Kml
     (LatLngAlt(..), Fix, FixMark(..), Seconds(..))
-import Flight.Track.Time (ZoneIdx(..))
+import Flight.Track.Time (ZoneIdx(..), FlyClipping(..), FlyCut(..))
 import Flight.Track.Cross
     ( Fix(..), ZoneCross(..), Seconds(..)
     , FlyingSection, TrackFlyingSection(..), RetroActive(..)
     )
-import Flight.Track.Mask (FlyClipping(..), FlyCut(..))
 import Flight.Comp (IxTask(..), Task(..), TaskStop(..), Zones(..))
 import Flight.Units ()
 import Flight.Mask.Internal.Race ()

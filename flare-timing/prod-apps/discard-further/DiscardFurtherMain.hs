@@ -50,8 +50,9 @@ import Flight.Comp
     , ensureExt
     , pilotNamed
     )
-import Flight.Track.Time (LeadClose(..), LeadArrival(..), discard, allHeaders)
-import Flight.Track.Mask (FlyCut(..), FlyClipping(..), RaceTime(..), racing)
+import Flight.Track.Time
+    (FlyCut(..), FlyClipping(..), LeadClose(..), LeadArrival(..), discard, allHeaders)
+import Flight.Track.Mask (RaceTime(..), racing)
 import Flight.Mask (checkTracks)
 import Flight.Scribe
     (readComp, readRoute, readTagging, readAlignTime, writeDiscardFurther)

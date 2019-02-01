@@ -42,7 +42,7 @@ import Flight.Mask
     , checkTracks, groupByLeg, dashDistancesToGoal
     )
 import Flight.Track.Cross (FlyingSection, Fix(..), TrackFlyingSection(..))
-import Flight.Track.Mask (FlyCut(..))
+import Flight.Track.Time (FlyCut(..))
 import Flight.Track.Tag (Tagging(..), TrackTime(..), firstLead, firstStart)
 import Flight.Kml (MarkedFixes(..), timeToFixIdx)
 import Data.Ratio.Rounding (dpRound)
