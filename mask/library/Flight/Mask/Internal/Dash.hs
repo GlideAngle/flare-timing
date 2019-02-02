@@ -98,11 +98,11 @@ zsToCheck
     -> a
     -> [Zone b]
     -> [Zone b]
-zsToCheck Sliver{..} mkZone x zsNotTicked =
+zsToCheck sliver@Sliver{..} mkZone x zsNotTicked =
     let z = unTrackZone $ mkZone x in
     case zsNotTicked of
         [] -> z : zsNotTicked
         (z0 : zs') ->
             if separatedZones span [z, z0]
                 then z : zsNotTicked
-                else z : zs'
+                else zsToCheck sliver mkZone x zs'

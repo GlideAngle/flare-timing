@@ -21,6 +21,7 @@ in    defs
             , "lens"
             , "mtl"
             , "safe-exceptions"
+            , "these"
             , "time"
             , "uom-plugin"
             , "flight-clip"

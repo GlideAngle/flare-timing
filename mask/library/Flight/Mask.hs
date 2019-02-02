@@ -20,6 +20,7 @@ module Flight.Mask
     , MadeZones(..)
     , Sliver(..)
     , FlyClipSection(..)
+    , GroupLeg(..)
     , countFixes
     , checkTracks
     , madeZones

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 63a70bc9d89e91abc04648b2317704a1c87ab1d93ad69a76ce34c97b6b8ef32c
+-- hash: 0216472cd7dfca2c2f0a8dc51a5c1d4ccfbbdc621e40c7f24458d04a38bc5192
 
 name:           flight-mask
 version:        0.1.0
@@ -81,6 +81,7 @@ library
     , safe-exceptions
     , siggy-chardust
     , split
+    , these
     , time
     , uom-plugin
     , yaml
@@ -140,6 +141,7 @@ test-suite doctest
     , safe-exceptions
     , siggy-chardust
     , split
+    , these
     , time
     , uom-plugin
     , yaml

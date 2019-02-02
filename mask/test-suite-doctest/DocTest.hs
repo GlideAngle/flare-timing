@@ -7,6 +7,8 @@ arguments =
     [ "-XNamedFieldPuns"
     , "-XFlexibleContexts"
     , "-XMonoLocalBinds"
+    , "-XMultiWayIf"
+    , "-XParallelListComp"
     , "-isrc"
     , "library/Flight/Mask/Group.hs"
     ]

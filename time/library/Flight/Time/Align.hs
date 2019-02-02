@@ -8,6 +8,7 @@ module Flight.Time.Align
 
 import Data.Time.Clock (UTCTime, diffUTCTime)
 import Control.Lens ((^?), element)
+import Data.These
 import Data.Maybe (catMaybes, fromMaybe, listToMaybe)
 import Control.Monad (mapM_, when, zipWithM_)
 import Control.Exception.Safe (catchIO)
@@ -39,7 +40,7 @@ import Flight.Comp
     )
 import qualified Flight.Mask as Mask (Sliver(..))
 import Flight.Mask
-    ( FnIxTask, RaceSections(..), Ticked
+    ( FnIxTask, RaceSections(..), GroupLeg(..), Ticked
     , checkTracks, groupByLeg, dashDistancesToGoal
     )
 import Flight.Track.Cross (Fix(..), TrackFlyingSection(..))
@@ -222,7 +223,7 @@ group
                     (\OpenClose{open} -> firstStart ss open firstTimes)
                     =<< openClose ss (zoneTimes task)
 
-                xs :: [(LegIdx, MarkedFixes)]
+                xs :: [(Maybe GroupLeg, MarkedFixes)]
                 xs = groupByLeg spanF zoneToCylF task scoredMarkedFixes
 
                 yss = (fmap $ FlyCut scoredTimeRange) <$> xs
@@ -245,8 +246,19 @@ group
                 zs' =
                     concat
                     [
-                        let (_, reticked) = retick ticked (LegIdx start) leg in
-                        legDistances ssOnly reticked times task leg ys
+                        case leg of
+                            Nothing -> []
+                            Just (GroupLeg{groupLeg = That (LegIdx legR)}) ->
+                                let legL = LegIdx $ legR - 1
+                                    (_, reticked) = retick ticked (LegIdx start) legL
+                                in legDistances ssOnly reticked times task legL ys
+                            Just (GroupLeg{groupLeg = These legL _}) ->
+                                let (_, reticked) = retick ticked (LegIdx start) legL
+                                in legDistances ssOnly reticked times task legL ys
+                            Just (GroupLeg{groupLeg = This legL}) ->
+                                let (_, reticked) = retick ticked (LegIdx start) legL in
+                                legDistances ssOnly reticked times task legL ys
+
                     | (leg, ys) <- yss
                     ]
 
