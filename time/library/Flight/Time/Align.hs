@@ -222,10 +222,10 @@ group
                     (\OpenClose{open} -> firstStart ss open firstTimes)
                     =<< openClose ss (zoneTimes task)
 
-                xs :: [MarkedFixes]
+                xs :: [(LegIdx, MarkedFixes)]
                 xs = groupByLeg spanF zoneToCylF task scoredMarkedFixes
 
-                yss = FlyCut scoredTimeRange <$> xs
+                yss = (fmap $ FlyCut scoredTimeRange) <$> xs
 
                 ticked =
                     fromMaybe (RaceSections [] [] [])
@@ -245,10 +245,9 @@ group
                 zs' =
                     concat
                     [
-                        let (leg, reticked) = retick ticked (LegIdx start) j in
+                        let (_, reticked) = retick ticked (LegIdx start) leg in
                         legDistances ssOnly reticked times task leg ys
-                    | j <- LegIdx <$> [0 .. ]
-                    | ys <- yss
+                    | (leg, ys) <- yss
                     ]
 
                 -- REVIEW: This lookup from time to fix is slow but correct.
