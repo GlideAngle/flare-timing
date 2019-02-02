@@ -2,6 +2,16 @@ The [latest
 version](https://github.com/BlockScope/flare-timing/blob/master/app-view/changelog.md)
 of this changelog.
 
+# Associate Fixes with Legs
+## app-view-0.9
+
+* Better identify which leg each fix belongs to.
+* Show the distances to goal in the turnpoints table.
+* Show the penalties associated with each pilot.
+* Parse when leading and arrival points are off for a task.
+* Show the pilots altitude at the score back time for a stopped task.
+* Remove duplicate fixes in the tracklog due to ignored sub-second logging.
+
 # Leading Points
 ## app-view-0.8
 
