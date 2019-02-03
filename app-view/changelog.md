@@ -2,6 +2,11 @@ The [latest
 version](https://github.com/BlockScope/flare-timing/blob/master/app-view/changelog.md)
 of this changelog.
 
+# Give a Little
+## app-view-0.9
+
+* Score with the give in turnpoint radius.
+
 # Associate Fixes with Legs
 ## app-view-0.9
 
