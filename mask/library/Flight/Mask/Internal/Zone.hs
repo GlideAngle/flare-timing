@@ -32,7 +32,7 @@ import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.LatLng.Raw (RawLat(..), RawLng(..))
 import Flight.Zone (Radius(..), Zone(..))
 import Flight.Zone.SpeedSection (SpeedSection, sliceZones)
-import qualified Flight.Zone.Raw as Raw (RawZone(..))
+import Flight.Zone.Raw (RawZone(..))
 import Flight.Track.Time (ZoneIdx(..), TimeRow(..))
 import Flight.Track.Cross (Fix(..), ZoneCross(..), TrackFlyingSection(..))
 import Flight.Units ()
@@ -119,21 +119,17 @@ rowToPoint
     TimeRow{lat = RawLat lat, lng = RawLng lng} =
     TrackZone $ Point (toLL (lat, lng))
 
-zoneToCylinder :: (Eq a, Ord a, Fractional a) => Raw.RawZone -> TaskZone a
-zoneToCylinder z =
+zoneToCylinder :: (Eq a, Ord a, Fractional a) => RawZone -> TaskZone a
+zoneToCylinder RawZone{lat = RawLat lat, lng = RawLng lng, radius = Radius r} =
     TaskZone $ Cylinder (Radius r') (toLL(lat, lng))
     where
         r' = fromRational' . toRational' $ r
 
-        Radius r = Raw.radius z
-        RawLat lat = Raw.lat z
-        RawLng lng = Raw.lng z
-
 separatedRawZones
     :: (Ord a, Fractional a)
     => (Zone a -> Zone a -> Bool)
-    -> Raw.RawZone
-    -> Raw.RawZone
+    -> RawZone
+    -> RawZone
     -> Bool
 separatedRawZones f x y =
     f x' y'
