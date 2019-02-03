@@ -17,6 +17,7 @@ module Flight.Mask.Internal.Zone
     ) where
 
 import Data.Time.Clock (UTCTime, addUTCTime)
+import Data.Maybe (fromMaybe)
 import Data.UnitsOfMeasure (u, convert, fromRational', toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
@@ -120,9 +121,10 @@ rowToPoint
     TrackZone $ Point (toLL (lat, lng))
 
 zoneToCylinder :: (Eq a, Ord a, Fractional a) => RawZone -> TaskZone a
-zoneToCylinder RawZone{lat = RawLat lat, lng = RawLng lng, radius = Radius r} =
+zoneToCylinder RawZone{lat = RawLat lat, lng = RawLng lng, radius, give} =
     TaskZone $ Cylinder (Radius r') (toLL(lat, lng))
     where
+        Radius r = fromMaybe radius give
         r' = fromRational' . toRational' $ r
 
 separatedRawZones
