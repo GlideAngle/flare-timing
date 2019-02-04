@@ -793,7 +793,7 @@ collateDf diffs linears ls as ts penals alts ds ssEs gsEs gs =
     $ Map.intersectionWith (,) mgsEs
     $ Map.intersectionWith (,) mssEs
     $ Map.intersectionWith (,) md
-    $ Map.intersectionWith (,) ps'
+    $ Map.intersectionWith (,) (mergePenalties md $ Map.fromList penals)
     $ Map.intersectionWith glueDiff mDiff
     $ Map.intersectionWith glueLinear mLinear
     $ Map.intersectionWith glueTime mt
@@ -809,14 +809,6 @@ collateDf diffs linears ls as ts penals alts ds ssEs gsEs gs =
         mssEs = Map.fromList ssEs
         mgsEs = Map.fromList gsEs
         mg = Map.fromList gs
-        ps = Map.fromList penals
-        ps' =
-            Map.merge
-                (Map.mapMissing (\_ _ -> []))
-                (Map.preserveMissing)
-                (Map.zipWithMatched (\_ _ y -> y))
-                md 
-                ps
 
 collateDfNoTrack
     :: [(Pilot, DifficultyPoints)]
@@ -827,21 +819,21 @@ collateDfNoTrack
 collateDfNoTrack diffs linears penals (DfNoTrack ds) =
     Map.toList
     $ Map.intersectionWith (,) md
-    $ Map.intersectionWith (,) ps'
+    $ Map.intersectionWith (,) (mergePenalties md $ Map.fromList penals)
     $ Map.intersectionWith glueDiff mDiff
     $ zeroLinear <$> mLinear
     where
         mDiff = Map.fromList diffs
         mLinear = Map.fromList linears
         md = Map.fromList ds
-        ps = Map.fromList penals
-        ps' =
-            Map.merge
-                (Map.mapMissing (\_ _ -> []))
-                (Map.preserveMissing)
-                (Map.zipWithMatched (\_ _ y -> y))
-                md 
-                ps
+
+-- | Merge maps so that each pilot has a list of penalties, possibly an empty one.
+mergePenalties :: Map Pilot a -> Map Pilot [PointPenalty] -> Map Pilot [PointPenalty]
+mergePenalties =
+    Map.merge
+        (Map.mapMissing (\_ _ -> []))
+        (Map.preserveMissing)
+        (Map.zipWithMatched (\_ _ y -> y))
 
 glueDiff :: DifficultyPoints -> Gap.Points -> Gap.Points
 glueDiff
