@@ -15,11 +15,12 @@ module Flight.Gap.Points
     , Points(..)
     , zeroPoints
     , taskPoints
-    , applyPointPenalty
+    , applyPointPenalties
     , availablePoints
     ) where
 
 import Data.Ratio ((%))
+import Data.List (partition, foldl')
 import GHC.Generics (Generic)
 import Data.Aeson
     ( ToJSON(..), FromJSON(..), Options(..), SumEncoding(..)
@@ -182,10 +183,23 @@ jumpTheGun (SecondsPerPoint secs) (JumpedTheGun jump) (TaskPoints pts) =
 taskPoints :: forall a. Maybe (Penalty a) -> Points -> TaskPoints
 taskPoints = tallyPoints
 
-applyPointPenalty :: PointPenalty-> TaskPoints -> TaskPoints
-applyPointPenalty (PenaltyPoints n) (TaskPoints p) =
+-- | Applies the penalties, fractional ones before absolute ones.
+applyPointPenalties :: [PointPenalty] -> TaskPoints -> TaskPoints
+applyPointPenalties xs ps =
+    foldl' f (foldl' f ps fracs) points
+    where
+        f = applyPointPenalty
+        (fracs, points) =
+            partition
+                (\case
+                    PenaltyFraction _ -> True
+                    PenaltyPoints _ -> False)
+                xs
+
+applyPointPenalty :: TaskPoints -> PointPenalty -> TaskPoints
+applyPointPenalty (TaskPoints p) (PenaltyPoints n) =
     TaskPoints $ p - (toRational n)
-applyPointPenalty (PenaltyFraction n) (TaskPoints p) =
+applyPointPenalty (TaskPoints p) (PenaltyFraction n) =
     TaskPoints $ p - p * (toRational n)
 
 availablePoints :: TaskValidity -> Weights -> (Points, TaskPoints)

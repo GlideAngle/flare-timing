@@ -12,6 +12,7 @@ import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Data.Map (Map)
 import qualified Data.Map.Strict as Map
+import qualified Data.Map.Merge.Strict as Map
 import Data.List (sortBy, groupBy)
 import Control.Applicative (liftA2)
 import qualified Control.Applicative as A ((<$>))
@@ -86,12 +87,13 @@ import Flight.Score
     , ArrivalFraction(..), SpeedFraction(..)
     , DistancePoints(..), LinearPoints(..), DifficultyPoints(..)
     , LeadingPoints(..), ArrivalPoints(..), TimePoints(..)
+    , PointPenalty
     , TaskPlacing(..), TaskPoints(..), PilotVelocity(..), PilotTime(..)
     , IxChunk(..), ChunkDifficulty(..)
     , distanceWeight, reachWeight, effortWeight
     , leadingWeight, arrivalWeight, timeWeight
     , taskValidity, launchValidity, distanceValidity, timeValidity
-    , availablePoints
+    , availablePoints, applyPointPenalties
     , toIxChunk
     )
 import qualified Flight.Score as Gap (Validity(..), Points(..), Weights(..))
@@ -378,7 +380,7 @@ points'
             [ do
                 v' <- v
                 let (pts, taskPoints) = availablePoints v' w
-                return $ Allocation gr w pts [] taskPoints
+                return $ Allocation gr w pts taskPoints
             | gr <- grs
             | w <- ws
             | v <- (fmap . fmap) Gap.task validities
@@ -578,7 +580,7 @@ points'
               in
                   rankByTotal . sortScores
                   $ fmap (tallyDf gates)
-                  A.<$> collateDf diffs linears ls as ts alts ds ssEs gsEs gs
+                  A.<$> collateDf diffs linears ls as ts penals alts ds ssEs gsEs gs
             | diffs <- difficultyDistancePointsDf
             | linears <- nighDistancePointsDf
             | ls <- leadingPoints
@@ -601,16 +603,18 @@ points'
             | gsEs <- elapsedTime gsSpeed
             | gs <- tags
             | gates <- startGates <$> tasks
+            | penals <- penals <$> tasks
             ]
 
         scoreDfNoTrack :: [[(Pilot, Breakdown)]] =
             [ rankByTotal . sortScores
               $ fmap (tallyDfNoTrack lWholeTask)
-              A.<$> collateDfNoTrack diffs linears dsAward
+              A.<$> collateDfNoTrack diffs linears penals dsAward
             | diffs <- difficultyDistancePointsDfNoTrack
             | linears <- nighDistancePointsDfNoTrack
             | dsAward <- dfNtss
             | lWholeTask <- lsWholeTask
+            | penals <- penals <$> tasks
             ]
 
         score :: [[(Pilot, Breakdown)]] =
@@ -775,19 +779,21 @@ collateDf
     -> [(Pilot, LeadingPoints)]
     -> [(Pilot, ArrivalPoints)]
     -> [(Pilot, TimePoints)]
+    -> [(Pilot, [PointPenalty])]
     -> [(Pilot, Maybe alt)]
     -> [(Pilot, (Maybe a, Maybe a, Maybe a))]
     -> [(Pilot, Maybe b)]
     -> [(Pilot, Maybe c)]
     -> [(Pilot, Maybe d)]
-    -> [(Pilot, (Maybe alt, (Maybe d, (Maybe c, (Maybe b, ((Maybe a, Maybe a, Maybe a), Gap.Points))))))]
-collateDf diffs linears ls as ts alts ds ssEs gsEs gs =
+    -> [(Pilot, (Maybe alt, (Maybe d, (Maybe c, (Maybe b, ((Maybe a, Maybe a, Maybe a), ([PointPenalty], Gap.Points)))))))]
+collateDf diffs linears ls as ts penals alts ds ssEs gsEs gs =
     Map.toList
     $ Map.intersectionWith (,) malts
     $ Map.intersectionWith (,) mg
     $ Map.intersectionWith (,) mgsEs
     $ Map.intersectionWith (,) mssEs
     $ Map.intersectionWith (,) md
+    $ Map.intersectionWith (,) ps'
     $ Map.intersectionWith glueDiff mDiff
     $ Map.intersectionWith glueLinear mLinear
     $ Map.intersectionWith glueTime mt
@@ -803,21 +809,39 @@ collateDf diffs linears ls as ts alts ds ssEs gsEs gs =
         mssEs = Map.fromList ssEs
         mgsEs = Map.fromList gsEs
         mg = Map.fromList gs
+        ps = Map.fromList penals
+        ps' =
+            Map.merge
+                (Map.mapMissing (\_ _ -> []))
+                (Map.preserveMissing)
+                (Map.zipWithMatched (\_ _ y -> y))
+                md 
+                ps
 
 collateDfNoTrack
     :: [(Pilot, DifficultyPoints)]
     -> [(Pilot, LinearPoints)]
+    -> [(Pilot, [PointPenalty])]
     -> DfNoTrack
-    -> [(Pilot, (Maybe AwardedDistance, Gap.Points))]
-collateDfNoTrack diffs linears (DfNoTrack ds) =
+    -> [(Pilot, (Maybe AwardedDistance, ([PointPenalty], Gap.Points)))]
+collateDfNoTrack diffs linears penals (DfNoTrack ds) =
     Map.toList
     $ Map.intersectionWith (,) md
+    $ Map.intersectionWith (,) ps'
     $ Map.intersectionWith glueDiff mDiff
     $ zeroLinear <$> mLinear
     where
         mDiff = Map.fromList diffs
         mLinear = Map.fromList linears
         md = Map.fromList ds
+        ps = Map.fromList penals
+        ps' =
+            Map.merge
+                (Map.mapMissing (\_ _ -> []))
+                (Map.preserveMissing)
+                (Map.zipWithMatched (\_ _ y -> y))
+                md 
+                ps
 
 glueDiff :: DifficultyPoints -> Gap.Points -> Gap.Points
 glueDiff
@@ -883,7 +907,10 @@ tallyDf
                             , Maybe (PilotDistance (Quantity Double [u| km |]))
                             , Maybe (PilotDistance (Quantity Double [u| km |]))
                             )
-                        , Gap.Points
+                        ,
+                            ( [PointPenalty]
+                            , Gap.Points
+                            )
                         )
                     )
                 )
@@ -901,20 +928,27 @@ tallyDf
                 ( ssT
                 ,
                     ( (dS, dN, dL)
-                    , x@Gap.Points
-                        { reach = LinearPoints r
-                        , effort = DifficultyPoints dp
-                        , leading = LeadingPoints l
-                        , arrival = ArrivalPoints a
-                        , time = TimePoints tp
-                        }
+                    ,
+                        ( penalties
+                        , x@Gap.Points
+                            { reach = LinearPoints r
+                            , effort = DifficultyPoints dp
+                            , leading = LeadingPoints l
+                            , arrival = ArrivalPoints a
+                            , time = TimePoints tp
+                            }
+                        )
                     )
                 )
             )
         )
     ) =
     Breakdown
-        { velocity =
+        { place = TaskPlacing 0
+        , total = applyPointPenalties penalties total
+        , penalties = penalties
+        , breakdown = x
+        , velocity =
             Just
             $ zeroVelocity
                 { ss = ss'
@@ -926,14 +960,12 @@ tallyDf
                 , ssVelocity = liftA2 mkVelocity dS ssT
                 , gsVelocity = liftA2 mkVelocity dS gsT
                 }
-        , breakdown = x
-        , total = TaskPoints $ r + dp + l + a + tp
-        , place = TaskPlacing 0
         , reachDistance = dN
         , landedDistance = dL
         , stoppedAlt = alt
         }
     where
+        total = TaskPoints $ r + dp + l + a + tp
         ss' = getTagTime unStart
         es' = getTagTime unEnd
         getTagTime accessor =
@@ -942,29 +974,34 @@ tallyDf
 
 tallyDfNoTrack
     :: Maybe (QTaskDistance Double [u| m |])
-    -> (Maybe AwardedDistance, Gap.Points)
+    -> (Maybe AwardedDistance, ([PointPenalty], Gap.Points))
     -> Breakdown
 tallyDfNoTrack
     td'
     ( dAward'
-    , x@Gap.Points
-        { reach = LinearPoints r
-        , effort = DifficultyPoints dp
-        , leading = LeadingPoints l
-        , arrival = ArrivalPoints a
-        , time = TimePoints tp
-        }
+    ,
+        ( penalties
+        , x@Gap.Points
+            { reach = LinearPoints r
+            , effort = DifficultyPoints dp
+            , leading = LeadingPoints l
+            , arrival = ArrivalPoints a
+            , time = TimePoints tp
+            }
+        )
     ) =
     Breakdown
-        { velocity = Nothing
+        { place = TaskPlacing 0
+        , total = applyPointPenalties penalties total
+        , penalties = penalties
         , breakdown = x
-        , total = TaskPoints $ r + dp + l + a + tp
-        , place = TaskPlacing 0
+        , velocity = Nothing
         , reachDistance = dP
         , landedDistance = dP
         , stoppedAlt = Nothing
         }
     where
+        total = TaskPoints $ r + dp + l + a + tp
         dP = PilotDistance <$> do
                 td <- td'
                 dAward <- dAward'

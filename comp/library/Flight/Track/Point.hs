@@ -62,6 +62,9 @@ data Breakdown =
     Breakdown
         { place :: TaskPlacing
         , total :: TaskPoints
+        -- ^ The total points, the sum of the parts in the breakdown with any
+        -- penalties applied, with fractional ones applied before absolute ones.
+        , penalties :: [PointPenalty]
         , breakdown :: Points
         , velocity :: Maybe Velocity
         , reachDistance :: Maybe (PilotDistance (Quantity Double [u| km |]))
@@ -92,7 +95,6 @@ data Allocation =
         { goalRatio :: GoalRatio
         , weight :: Weights
         , points :: Points
-        , penalties :: [PointPenalty]
         , taskPoints :: TaskPoints
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
@@ -109,17 +111,24 @@ cmp a b =
         ("total", "place") -> GT
         ("total", _) -> LT
 
+        ("penalties", "place") -> GT
+        ("penalties", "total") -> GT
+        ("penalties", _) -> LT
+
         ("breakdown", "place") -> GT
         ("breakdown", "total") -> GT
+        ("breakdown", "penalties") -> GT
         ("breakdown", _) -> LT
 
         ("velocity", "place") -> GT
         ("velocity", "total") -> GT
+        ("velocity", "penalties") -> GT
         ("velocity", "breakdown") -> GT
         ("velocity", _) -> LT
 
         ("reachDistance", "place") -> GT
         ("reachDistance", "total") -> GT
+        ("reachDistance", "penalties") -> GT
         ("reachDistance", "breakdown") -> GT
         ("reachDistance", "velocity") -> GT
         ("reachDistance", _) -> LT

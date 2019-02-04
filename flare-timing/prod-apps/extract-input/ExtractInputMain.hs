@@ -213,7 +213,7 @@ fsdbSettings dm zg fsdbXml = do
     let ts' =
             [ t
                 { zones = z{raw = Raw.zoneGive separated zg rz}
-                , penalties = pn
+                , penals = pn
                 }
             | t@Task{zones = z@Zones{raw = rz}} <- ts
             | pn <- pns

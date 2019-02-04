@@ -484,7 +484,7 @@ getTask discipline compTweak sb =
                             TaskStateCancel _ -> Nothing)
                         taskState
                 , taskTweak = if tw == compTweak then compTweak else tw
-                , penalties = []
+                , penals = []
                 }
             where
                 -- NOTE: If all time zones are the same then collapse.

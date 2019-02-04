@@ -146,7 +146,7 @@ taskDetail ix@(IxTask _) cs ns task vy a = do
     let hgOrPg = discipline . head <$> cs
     let free' = free . head <$> ns
     let sgs = startGates <$> task
-    let penal = Penal . Comp.penalties <$> task
+    let penal = Penal . Comp.penals <$> task
     pb <- getPostBuild
     sDf <- holdDyn [] =<< getTaskScore ix pb
     vw <- holdDyn Nothing =<< getTaskValidityWorking ix pb

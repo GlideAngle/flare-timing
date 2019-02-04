@@ -333,7 +333,7 @@ data Task k =
         , startGates :: [StartGate]
         , stopped :: Maybe TaskStop
         , taskTweak :: Maybe Tweak
-        , penalties :: [(Pilot, [PointPenalty])]
+        , penals :: [(Pilot, [PointPenalty])]
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
@@ -479,7 +479,7 @@ cmp a b =
         ("speedSection", "startGates") -> LT
         ("speedSection", "stopped") -> LT
         ("speedSection", "taskTweak") -> LT
-        ("speedSection", "penalties") -> LT
+        ("speedSection", "penals") -> LT
         ("speedSection", "absent") -> LT
         ("speedSection", _) -> GT
 
@@ -489,17 +489,17 @@ cmp a b =
 
         ("startGates", "absent") -> LT
         ("startGates", "taskTweak") -> LT
-        ("startGates", "penalties") -> LT
+        ("startGates", "penals") -> LT
         ("startGates", _) -> GT
 
         ("stopped", "taskTweak") -> LT
-        ("stopped", "penalties") -> LT
+        ("stopped", "penals") -> LT
         ("stopped", _) -> GT
 
-        ("taskTweak", "penalties") -> LT
+        ("taskTweak", "penals") -> LT
         ("taskTweak", _) -> GT
 
-        ("penalties", _) -> GT
+        ("penals", _) -> GT
 
         ("absent", "didFlyNoTracklog") -> LT
         ("absent", _) -> GT
