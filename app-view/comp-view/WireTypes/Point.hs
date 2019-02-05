@@ -318,7 +318,6 @@ data Allocation =
         { goalRatio :: GoalRatio
         , weight :: Weights
         , points :: Points
-        , penalties :: [PointPenalty]
         , taskPoints :: TaskPoints
         }
     deriving (Eq, Ord, Show, Generic, FromJSON)
