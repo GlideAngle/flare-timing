@@ -25,11 +25,11 @@ rowPilot x = do
 
 rowPenal
     :: MonadWidget t m
-    => Dynamic t (Pilot, [PointPenalty])
+    => Dynamic t (Pilot, [PointPenalty], String)
     -> m ()
 rowPenal ppp = do
     let td = elClass "td" "td-penalty" . text . T.pack . printf "%.3f"
-    dyn_ $ ffor ppp (\(pilot, ps) -> el "tr" $ do
+    dyn_ $ ffor ppp (\(pilot, ps, reason) -> el "tr" $ do
         let p =
                 find
                     (\case PenaltyFraction _ -> True; PenaltyPoints _ -> False)
@@ -54,7 +54,8 @@ rowPenal ppp = do
                 td y
             _ -> do
                 el "td" $ text ""
-                el "td" $ text "")
+                el "td" $ text ""
+        el "td" . text $ T.pack reason)
 
 showPilotId :: Pilot -> T.Text
 showPilotId (Pilot (PilotId x, _)) = T.pack x

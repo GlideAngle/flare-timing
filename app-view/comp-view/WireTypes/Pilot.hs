@@ -17,7 +17,7 @@ import Data.Aeson (FromJSON(..))
 import WireTypes.Point (PointPenalty)
 
 -- | The group of pilots that were penalized for a task.
-newtype Penal = Penal {unPenal :: [(Pilot, [PointPenalty])]}
+newtype Penal = Penal {unPenal :: [(Pilot, [PointPenalty], String)]}
 
 -- | The group of pilots that did not fly a task.
 newtype Dnf = Dnf {unDnf :: [Pilot]}

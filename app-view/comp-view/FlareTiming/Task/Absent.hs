@@ -100,56 +100,58 @@ tableAbsent ix nyp' dnf' dfNt' penal' = do
                                             $ "Unlike DNF pilots, these pilots do not decrease launch validity. When a task is not at full distance validity, if any one of the NYP pilots flew further then the task validity will increase when they are processed. Likewise for time validity and the fastest pilots being NYP."
                         )
 
-        elClass "div" "tile is-parent" $
-            dyn_ $ ffor dfNt (\dfNt'' ->
-                if null dfNt''
-                    then
-                        elClass "article" "tile is-child notification is-warning" $ do
-                            elClass "p" "title" $ text "DF"
-                            elClass "p" "subtitle" $ text "no track"
-                            el "p" $ text "There are no DF-no-track pilots"
-                    else
-                        elClass "article" "tile is-child box" $ do
-                            elClass "p" "title" $ text "DF"
-                            elClass "p" "subtitle" $ text "no track"
-                            elClass "div" "content" $ do
-                                _ <- elClass "table" "table is-striped is-narrow" $ do
-                                        el "thead" $ do
-                                            el "tr" $ do
-                                                el "th" $ text "Id"
-                                                el "th" $ text "Name"
+        elClass "div" "tile is-vertical is-8" $
+            elClass "div" "tile" $
+                elClass "div" "tile is-parent is-vertical" $ do
+                    dyn_ $ ffor dfNt (\dfNt'' ->
+                        if null dfNt''
+                            then
+                                elClass "article" "tile is-child notification is-warning" $ do
+                                    elClass "p" "title" $ text "DF"
+                                    elClass "p" "subtitle" $ text "no track"
+                                    el "p" $ text "There are no DF-no-track pilots"
+                            else
+                                elClass "article" "tile is-child box" $ do
+                                    elClass "p" "title" $ text "DF"
+                                    elClass "p" "subtitle" $ text "no track"
+                                    elClass "div" "content" $ do
+                                        _ <- elClass "table" "table is-striped is-narrow" $ do
+                                                el "thead" $ do
+                                                    el "tr" $ do
+                                                        el "th" $ text "Id"
+                                                        el "th" $ text "Name"
 
-                                        el "tbody" $ simpleList dfNt rowPilot
+                                                el "tbody" $ simpleList dfNt rowPilot
 
-                                el "p" . text
-                                    $ "These pilots get awarded minimum distance."
-                )
+                                        el "p" . text
+                                            $ "These pilots get awarded minimum distance."
+                        )
 
-        elClass "div" "tile is-parent" $
-            dyn_ $ ffor penal (\penal'' ->
-                if null penal''
-                    then
-                        elClass "article" "tile is-child notification is-warning" $ do
-                            elClass "p" "title" $ text "Penal"
-                            elClass "p" "subtitle" $ text "point adjustments"
-                            el "p" $ text "There are no penalties"
-                    else
-                        elClass "article" "tile is-child box" $ do
-                            elClass "p" "title" $ text "Penal"
-                            elClass "p" "subtitle" $ text "point adjustments"
-                            elClass "div" "content" $ do
-                                _ <- elClass "table" "table is-striped is-narrow" $ do
-                                        el "thead" $ do
-                                            el "tr" $ do
-                                                el "th" $ text "Id"
-                                                el "th" $ text "Name"
-                                                elClass "th" "th-penalty" $ text "Fraction"
-                                                elClass "th" "th-penalty" $ text "Point"
+                    dyn_ $ ffor penal (\penal'' ->
+                        if null penal''
+                            then
+                                elClass "article" "tile is-child notification is-warning" $ do
+                                    elClass "p" "title" $ text "Penal"
+                                    elClass "p" "subtitle" $ text "point adjustments"
+                                    el "p" $ text "There are no penalties"
+                            else
+                                elClass "article" "tile is-child box" $ do
+                                    elClass "p" "title" $ text "Penal"
+                                    elClass "p" "subtitle" $ text "point adjustments"
+                                    elClass "div" "content" $ do
+                                        _ <- elClass "table" "table is-striped is-narrow" $ do
+                                                el "thead" $ do
+                                                    el "tr" $ do
+                                                        el "th" $ text "Id"
+                                                        el "th" $ text "Name"
+                                                        elClass "th" "th-penalty" $ text "Fraction"
+                                                        elClass "th" "th-penalty" $ text "Point"
+                                                        elClass "th" "th-penalty-reason" $ text "Reason"
 
-                                        el "tbody" $ simpleList penal rowPenal
+                                                el "tbody" $ simpleList penal rowPenal
 
-                                el "p" . text
-                                    $ "These pilots were penalized or rewarded with a negative penalty."
-                )
+                                        el "p" . text
+                                            $ "These pilots were penalized or rewarded with a negative penalty."
+                        )
 
     return ()
