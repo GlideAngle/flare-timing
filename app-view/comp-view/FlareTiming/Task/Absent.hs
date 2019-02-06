@@ -127,7 +127,7 @@ tableAbsent ix ln nyp' dnf' dfNt' penal' = do
                                                 el "tbody" $ simpleList dfNt (rowDfNt ln)
 
                                         el "p" . text
-                                            $ "These pilots get awarded minimum distance."
+                                            $ "These pilots get awarded at least minimum distance."
                         )
 
                     dyn_ $ ffor penal (\penal'' ->
