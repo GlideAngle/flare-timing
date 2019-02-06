@@ -415,7 +415,7 @@ pointRow cTime cArrival utcOffset free dfNt pt tp x = do
 
     let classPilot = ffor2 pilot dfNt (\p (DfNoTrack ps) ->
                         let n = showPilotName p in
-                        if p `elem` ps
+                        if p `elem` (fst <$> ps)
                            then ("pilot-dfnt", n <> " ☞ ")
                            else ("", n))
 

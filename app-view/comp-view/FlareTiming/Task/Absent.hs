@@ -3,20 +3,22 @@ module FlareTiming.Task.Absent (tableAbsent) where
 import Prelude hiding (abs)
 import Reflex.Dom
 
+import WireTypes.Route (TaskLength(..))
 import WireTypes.Pilot (Nyp(..), Dnf(..), DfNoTrack(..), Penal(..))
 import FlareTiming.Events (IxTask(..))
 import FlareTiming.Comms (getTaskPilotAbs)
-import FlareTiming.Pilot (rowPilot, rowPenal)
+import FlareTiming.Pilot (rowPilot, rowDfNt, rowPenal)
 
 tableAbsent
     :: MonadWidget t m
     => IxTask
+    -> Dynamic t (Maybe TaskLength)
     -> Dynamic t Nyp
     -> Dynamic t Dnf
     -> Dynamic t DfNoTrack
     -> Dynamic t Penal
     -> m ()
-tableAbsent ix nyp' dnf' dfNt' penal' = do
+tableAbsent ix ln nyp' dnf' dfNt' penal' = do
     pb <- getPostBuild
     let nyp = unNyp <$> nyp'
     let dnf = unDnf <$> dnf'
@@ -120,8 +122,9 @@ tableAbsent ix nyp' dnf' dfNt' penal' = do
                                                     el "tr" $ do
                                                         el "th" $ text "Id"
                                                         el "th" $ text "Name"
+                                                        elClass "th" "th-awarded-reach" $ text "Reach"
 
-                                                el "tbody" $ simpleList dfNt rowPilot
+                                                el "tbody" $ simpleList dfNt (rowDfNt ln)
 
                                         el "p" . text
                                             $ "These pilots get awarded minimum distance."

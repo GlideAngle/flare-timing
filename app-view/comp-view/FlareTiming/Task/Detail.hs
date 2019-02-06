@@ -190,7 +190,7 @@ taskDetail ix@(IxTask _) cs ns task vy a = do
 
                     return ()
 
-                TaskTabAbsent -> tableAbsent ix nyp dnf dfNt penal
+                TaskTabAbsent -> tableAbsent ix ln nyp dnf dfNt penal
                 TaskTabValidity -> viewValidity vy vw
 
                 TaskTabScore -> tableScore utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf)

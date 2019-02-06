@@ -43,6 +43,7 @@ import Flight.Scribe (readComp, readRoute, readCrossing, readPointing)
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.ServeOptions (CmdServeOptions(..), mkOptions)
+import Flight.Track.Distance (AwardedDistance)
 import Flight.Comp
     ( FileType(CompInput)
     , CompSettings(..)
@@ -184,7 +185,7 @@ type GapPointApi k =
     :<|> "comp-input" :> Capture "task" Int :> "pilot-dnf"
         :> Get '[JSON] [Pilot]
     :<|> "comp-input" :> Capture "task" Int :> "pilot-dfnt"
-        :> Get '[JSON] [Pilot]
+        :> Get '[JSON] [(Pilot, Maybe AwardedDistance)]
     :<|> "gap-point" :> Capture "task" Int :> "pilot-nyp"
         :> Get '[JSON] [Pilot]
     :<|> "gap-point" :> Capture "task" Int :> "pilot-df"
@@ -585,11 +586,11 @@ getTaskPilotDnf ii = do
         PilotGroup{..} : _ -> return dnf
         _ -> throwError $ errTaskBounds ii
 
-getTaskPilotDfNoTrack :: Int -> AppT k IO [Pilot]
+getTaskPilotDfNoTrack :: Int -> AppT k IO [(Pilot, Maybe AwardedDistance)]
 getTaskPilotDfNoTrack ii = do
     pgs <- pilotGroups <$> asks compSettings
     case drop (ii - 1) pgs of
-        PilotGroup{didFlyNoTracklog = DfNoTrack zs} : _ -> return $ fst <$> zs
+        PilotGroup{didFlyNoTracklog = DfNoTrack zs} : _ -> return zs
         _ -> throwError $ errTaskBounds ii
 
 nyp

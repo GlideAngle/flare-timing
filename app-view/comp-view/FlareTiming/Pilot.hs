@@ -2,6 +2,7 @@ module FlareTiming.Pilot
     ( showPilotId
     , showPilotName
     , rowPilot
+    , rowDfNt
     , rowPenal
     ) where
 
@@ -10,7 +11,8 @@ import qualified Data.Text as T (Text, pack)
 import Data.List (find)
 import Text.Printf (printf)
 
-import WireTypes.Pilot (Pilot(..), PilotId(..), PilotName(..))
+import WireTypes.Route (TaskLength(..), TaskDistance(..))
+import WireTypes.Pilot (Pilot(..), PilotId(..), PilotName(..), AwardedDistance(..))
 import WireTypes.Point (PointPenalty(..))
 
 rowPilot
@@ -22,6 +24,26 @@ rowPilot x = do
     el "tr" $ do
         td $ showPilotId <$> x
         td $ showPilotName <$> x
+
+awardedReach :: Maybe TaskLength -> Maybe AwardedDistance -> T.Text
+awardedReach Nothing _ = ""
+awardedReach _ Nothing = ""
+awardedReach
+    (Just TaskLength{taskRoute = TaskDistance td})
+    (Just (AwardedDistance ad)) =
+    T.pack . printf "%.3f km" $ td * ad
+
+rowDfNt
+    :: MonadWidget t m
+    => Dynamic t (Maybe TaskLength)
+    -> Dynamic t (Pilot, Maybe AwardedDistance)
+    -> m ()
+rowDfNt ln' pd = do
+    dyn_ $ ffor2 ln' pd (\ln (p, d) ->
+        el "tr" $ do
+            el "td" . text $ showPilotId p
+            el "td" . text $ showPilotName p
+            elClass "td" "td-awarded-reach" . text $ awardedReach ln d)
 
 rowPenal
     :: MonadWidget t m

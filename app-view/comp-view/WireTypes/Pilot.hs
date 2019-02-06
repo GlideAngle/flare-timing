@@ -7,6 +7,7 @@ module WireTypes.Pilot
     , DfNoTrack(..)
     , Nyp(..)
     , Penal(..)
+    , AwardedDistance(..)
     , getPilotId
     , getPilotName
     , nullPilot
@@ -22,8 +23,16 @@ newtype Penal = Penal {unPenal :: [(Pilot, [PointPenalty], String)]}
 -- | The group of pilots that did not fly a task.
 newtype Dnf = Dnf {unDnf :: [Pilot]}
 
+data AwardedDistance = AwardedDistance {awardedFrac :: Double}
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (FromJSON)
+
 -- | The group of pilots that did fly but do not have a track log.
-newtype DfNoTrack = DfNoTrack {unDfNoTrack :: [Pilot]}
+newtype DfNoTrack =
+    DfNoTrack
+        {unDfNoTrack :: [(Pilot, Maybe AwardedDistance)]}
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (FromJSON)
 
 -- | The group of pilots not yet processed.
 newtype Nyp = Nyp {unNyp :: [Pilot]}
