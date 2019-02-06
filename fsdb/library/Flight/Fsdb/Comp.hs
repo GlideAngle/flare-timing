@@ -4,6 +4,7 @@ import Text.XML.HXT.Arrow.Pickle
     ( PU(..)
     , unpickleDoc', xpWrap, xp9Tuple, xpFilterAttr, xpDefault
     , xpElem, xpTrees, xpAttr, xpPrim, xpInt, xpOption, xpText
+    , xpTextAttr
     )
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
 import Text.XML.HXT.Core
@@ -67,12 +68,12 @@ xpComp =
             )
         )
     $ xp9Tuple
-        (xpAttr "id" xpText)
-        (xpAttr "name" xpText)
+        (xpTextAttr "id")
+        (xpTextAttr "name")
         (xpDefault HangGliding $ xpAttr "discipline" xpPrim)
-        (xpAttr "location" xpText)
-        (xpAttr "from" xpText)
-        (xpAttr "to" xpText)
+        (xpTextAttr "location")
+        (xpTextAttr "from")
+        (xpTextAttr "to")
         (xpAttr "utc_offset" xpInt)
         (xpOption $ xpAttr "score_back" xpPrim)
         xpTrees

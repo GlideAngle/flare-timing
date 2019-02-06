@@ -182,7 +182,7 @@ xpDecelerator =
             $ xpWrap (NoDecelerator, \(NoDecelerator s) -> s)
             $ xpSeq'
                 (xpAttrFixed "final_glide_decelerator" "none")
-                (xpAttr "no_final_glide_decelerator_reason" xpText)
+                (xpTextAttr "no_final_glide_decelerator_reason")
 
 xpZone :: PU Z.RawZone
 xpZone =
@@ -199,7 +199,7 @@ xpZone =
         , \Z.RawZone{..} -> (zoneName, lat, lng, radius, alt)
         )
     $ xp5Tuple
-        (xpAttr "id" xpText)
+        (xpTextAttr "id")
         (xpAttr "lat" xpickle)
         (xpAttr "lon" xpickle)
         (xpAttr "radius" xpickle)
@@ -234,8 +234,8 @@ xpOpenClose =
         , \OpenClose{..} -> (show open, show close)
         )
     $ xpPair
-        (xpAttr "open" xpText)
-        (xpAttr "close" xpText)
+        (xpTextAttr "open")
+        (xpTextAttr "close")
 
 xpStartGate :: PU StartGate
 xpStartGate =
@@ -245,7 +245,7 @@ xpStartGate =
         ( StartGate . parseUtcTime
         , \(StartGate open) -> show open
         )
-    $ xpAttr "open" xpText
+    $ xpTextAttr "open"
 
 xpSpeedSection :: PU (Int, Int)
 xpSpeedSection =
@@ -282,7 +282,7 @@ xpStopped =
                 )
             $ xpSeq'
                 (xpAttrFixed "task_state" "REGULAR")
-                (xpAttr "stop_time" xpText)
+                (xpTextAttr "stop_time")
 
         c =
             xpFilterAttr (hasName "task_state" <+> hasName "stop_time")
@@ -292,7 +292,7 @@ xpStopped =
                 )
             $ xpSeq'
                 (xpAttrFixed "task_state" "CANCELLED")
-                (xpAttr "stop_time" xpText)
+                (xpTextAttr "stop_time")
 
         s =
             xpFilterAttr (hasName "task_state" <+> hasName "stop_time")
@@ -302,7 +302,7 @@ xpStopped =
                 )
             $ xpSeq'
                 (xpAttrFixed "task_state" "STOPPED")
-                (xpAttr "stop_time" xpText)
+                (xpTextAttr "stop_time")
 
 xpAwardedDistance :: PU (QTaskDistance Double [u| km |])
 xpAwardedDistance =
