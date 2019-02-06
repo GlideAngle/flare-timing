@@ -8,9 +8,8 @@ module Flight.Fsdb.Task
     ) where
 
 import Data.Time.Clock (addUTCTime)
-import Data.Maybe (catMaybes, maybeToList)
+import Data.Maybe (catMaybes, fromMaybe)
 import Data.List (sort, sortOn, nub, find)
-import Control.Monad (join)
 import Data.Map.Strict (Map, fromList, findWithDefault)
 import Data.UnitsOfMeasure ((/:), u, convert, unQuantity)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
@@ -18,7 +17,7 @@ import Text.XML.HXT.Arrow.Pickle
     ( XmlPickler(..), PU(..)
     , xpickle, unpickleDoc, xpWrap, xpFilterAttr, xpElem, xpAttr, xpAlt
     , xpText, xpPair, xpTriple, xp5Tuple, xpInt, xpTrees, xpAttrFixed, xpSeq'
-    , xpPrim, xpAttrImplied
+    , xpPrim, xpAttrImplied, xpTextAttr
     )
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
 import Text.XML.HXT.Core
@@ -97,21 +96,27 @@ instance (u ~ Quantity Double [u| m |]) => XmlPickler (Alt u) where
 instance (u ~ Quantity Double [u| km |]) => XmlPickler (TaskDistance u) where
     xpickle = xpNewtypeQuantity
 
-xpPointPenalty :: PU [PointPenalty]
+xpPointPenalty :: PU ([PointPenalty], String)
 xpPointPenalty =
     xpElem "FsResultPenalty"
     $ xpFilterAttr
-        (hasName "penalty" <+> hasName "penalty_points")
+        ( hasName "penalty"
+        <+> hasName "penalty_points"
+        <+> hasName "penalty_reason"
+        )
     $ xpWrap
         ( \case
-            (0.0, 0.0) -> []
-            (frac, 0.0) -> [PenaltyFraction frac]
-            (0.0, pts) -> [PenaltyPoints pts]
-            (frac, pts) ->
-                [ PenaltyFraction frac
-                , PenaltyPoints pts
-                ]
-        , \xs ->
+            (0.0, 0.0, s) -> ([], s)
+            (frac, 0.0, s) -> ([PenaltyFraction frac], s)
+            (0.0, pts, s) -> ([PenaltyPoints pts], s)
+            (frac, pts, s) ->
+                (
+                    [ PenaltyFraction frac
+                    , PenaltyPoints pts
+                    ]
+                , s
+                )
+        , \(xs, s) ->
             let p =
                     find
                         (\case PenaltyFraction _ -> True; PenaltyPoints _ -> False)
@@ -124,14 +129,15 @@ xpPointPenalty =
 
             in
                 case (p, pp) of
-                    (Just (PenaltyFraction x), Nothing) -> (x, 0.0)
-                    (Nothing, Just (PenaltyPoints y)) -> (0.0, y)
-                    (Just (PenaltyFraction x), Just (PenaltyPoints y)) -> (x, y)
-                    _ -> (0.0, 0.0)
+                    (Just (PenaltyFraction x), Nothing) -> (x, 0.0, s)
+                    (Nothing, Just (PenaltyPoints y)) -> (0.0, y, s)
+                    (Just (PenaltyFraction x), Just (PenaltyPoints y)) -> (x, y, s)
+                    _ -> (0.0, 0.0, s)
         )
-    $ xpPair
+    $ xpTriple
         (xpAttr "penalty" xpPrim)
         (xpAttr "penalty_points" xpPrim)
+        (xpTextAttr "penalty_reason")
 
 xpDecelerator :: PU Decelerator
 xpDecelerator =
@@ -567,7 +573,10 @@ getTask discipline compTweak sb =
             >>> hasName "FsScoreFormula"
             >>> arr (unpickleDoc $ xpTweak discipline))
 
-getTaskPilotPenalties :: ArrowXml a => [Pilot] -> a XmlTree ([(Pilot, [PointPenalty])])
+getTaskPilotPenalties
+    :: ArrowXml a
+    => [Pilot]
+    -> a XmlTree ([(Pilot, [PointPenalty], String)])
 getTaskPilotPenalties pilots =
     getChildren
     >>> deep (hasName "FsTask")
@@ -593,7 +602,8 @@ getTaskPilotPenalties pilots =
                         (( getChildren
                         >>> hasName "FsResultPenalty"
                         >>> hasAttr "penalty"
-                        >>> hasAttr "penalty_points")
+                        >>> hasAttr "penalty_points"
+                        >>> hasAttr "penalty_reason")
                         -- NOTE: (>>>) is logical and (<+>) is logical or.
                         -- "A logical and can be formed by a1 >>> a2 , a locical or by a1 <+> a2"
                         -- SEE: http://hackage.haskell.org/package/hxt-9.3.1.16/docs/Text-XML-HXT-Arrow-XmlArrow.html
@@ -606,9 +616,9 @@ getTaskPilotPenalties pilots =
                         ))
                     >>> getAttrValue "id"
                     &&& getResultPenalty
-                    >>> arr (\(pid, ps) ->
-                        let ps' = join $ maybeToList ps in
-                        (unKeyPilot (keyMap kps) . PilotId $ pid, ps'))
+                    >>> arr (\(pid, x) ->
+                        let (ps, s) = fromMaybe ([], "") x in
+                        (unKeyPilot (keyMap kps) . PilotId $ pid, ps, s))
 
                 getResultPenalty =
                     getChildren
@@ -633,7 +643,9 @@ parseTaskPilotGroups contents = do
     xs <- runX $ doc >>> getTaskPilotGroup ps
     return $ Right xs
 
-parseTaskPilotPenalties :: String -> IO (Either String [[(Pilot, [PointPenalty])]])
+parseTaskPilotPenalties
+    :: String
+    -> IO (Either String [[(Pilot, [PointPenalty], String)]])
 parseTaskPilotPenalties contents = do
     let doc = readString [ withValidate no, withWarnings no ] contents
     ps <- runX $ doc >>> getCompPilot

@@ -270,7 +270,7 @@ data Task =
         , zoneTimes :: [OpenClose]
         , startGates :: [StartGate]
         , stopped :: Maybe TaskStop
-        , penals :: [(Pilot, [PointPenalty])]
+        , penals :: [(Pilot, [PointPenalty], String)]
         }
     deriving (Eq, Ord, Generic, FromJSON)
 

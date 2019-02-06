@@ -65,6 +65,7 @@ data Breakdown =
         -- ^ The total points, the sum of the parts in the breakdown with any
         -- penalties applied, with fractional ones applied before absolute ones.
         , penalties :: [PointPenalty]
+        , penaltyReason :: String
         , breakdown :: Points
         , velocity :: Maybe Velocity
         , reachDistance :: Maybe (PilotDistance (Quantity Double [u| km |]))
@@ -115,20 +116,28 @@ cmp a b =
         ("penalties", "total") -> GT
         ("penalties", _) -> LT
 
+        ("penaltyReason", "place") -> GT
+        ("penaltyReason", "total") -> GT
+        ("penaltyReason", "penalties") -> GT
+        ("penaltyReason", _) -> LT
+
         ("breakdown", "place") -> GT
         ("breakdown", "total") -> GT
         ("breakdown", "penalties") -> GT
+        ("breakdown", "penaltyReason") -> GT
         ("breakdown", _) -> LT
 
         ("velocity", "place") -> GT
         ("velocity", "total") -> GT
         ("velocity", "penalties") -> GT
+        ("velocity", "penaltyReason") -> GT
         ("velocity", "breakdown") -> GT
         ("velocity", _) -> LT
 
         ("reachDistance", "place") -> GT
         ("reachDistance", "total") -> GT
         ("reachDistance", "penalties") -> GT
+        ("reachDistance", "penaltyReason") -> GT
         ("reachDistance", "breakdown") -> GT
         ("reachDistance", "velocity") -> GT
         ("reachDistance", _) -> LT

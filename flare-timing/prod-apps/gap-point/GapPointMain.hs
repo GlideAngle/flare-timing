@@ -779,13 +779,35 @@ collateDf
     -> [(Pilot, LeadingPoints)]
     -> [(Pilot, ArrivalPoints)]
     -> [(Pilot, TimePoints)]
-    -> [(Pilot, [PointPenalty])]
+    -> [(Pilot, [PointPenalty], String)]
     -> [(Pilot, Maybe alt)]
     -> [(Pilot, (Maybe a, Maybe a, Maybe a))]
     -> [(Pilot, Maybe b)]
     -> [(Pilot, Maybe c)]
     -> [(Pilot, Maybe d)]
-    -> [(Pilot, (Maybe alt, (Maybe d, (Maybe c, (Maybe b, ((Maybe a, Maybe a, Maybe a), ([PointPenalty], Gap.Points)))))))]
+    -> [
+            ( Pilot
+            ,
+                ( Maybe alt
+                ,
+                    ( Maybe d
+                    ,
+                        ( Maybe c
+                        ,
+                            ( Maybe b
+                            ,
+                                ( (Maybe a, Maybe a, Maybe a)
+                                ,
+                                    ( ([PointPenalty], String)
+                                    , Gap.Points
+                                    )
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+        ]
 collateDf diffs linears ls as ts penals alts ds ssEs gsEs gs =
     Map.toList
     $ Map.intersectionWith (,) malts
@@ -793,7 +815,7 @@ collateDf diffs linears ls as ts penals alts ds ssEs gsEs gs =
     $ Map.intersectionWith (,) mgsEs
     $ Map.intersectionWith (,) mssEs
     $ Map.intersectionWith (,) md
-    $ Map.intersectionWith (,) (mergePenalties md $ Map.fromList penals)
+    $ Map.intersectionWith (,) (mergePenalties md $ Map.fromList penals')
     $ Map.intersectionWith glueDiff mDiff
     $ Map.intersectionWith glueLinear mLinear
     $ Map.intersectionWith glueTime mt
@@ -809,29 +831,37 @@ collateDf diffs linears ls as ts penals alts ds ssEs gsEs gs =
         mssEs = Map.fromList ssEs
         mgsEs = Map.fromList gsEs
         mg = Map.fromList gs
+        penals' = tuplePenalty <$> penals
 
 collateDfNoTrack
     :: [(Pilot, DifficultyPoints)]
     -> [(Pilot, LinearPoints)]
-    -> [(Pilot, [PointPenalty])]
+    -> [(Pilot, [PointPenalty], String)]
     -> DfNoTrack
-    -> [(Pilot, (Maybe AwardedDistance, ([PointPenalty], Gap.Points)))]
+    -> [(Pilot, (Maybe AwardedDistance, (([PointPenalty], String), Gap.Points)))]
 collateDfNoTrack diffs linears penals (DfNoTrack ds) =
     Map.toList
     $ Map.intersectionWith (,) md
-    $ Map.intersectionWith (,) (mergePenalties md $ Map.fromList penals)
+    $ Map.intersectionWith (,) (mergePenalties md $ Map.fromList penals')
     $ Map.intersectionWith glueDiff mDiff
     $ zeroLinear <$> mLinear
     where
         mDiff = Map.fromList diffs
         mLinear = Map.fromList linears
         md = Map.fromList ds
+        penals' = tuplePenalty <$> penals
+
+tuplePenalty :: (a, b, c) -> (a, (b, c))
+tuplePenalty (a, b, c) = (a, (b, c))
 
 -- | Merge maps so that each pilot has a list of penalties, possibly an empty one.
-mergePenalties :: Map Pilot a -> Map Pilot [PointPenalty] -> Map Pilot [PointPenalty]
+mergePenalties
+    :: Map Pilot a
+    -> Map Pilot ([PointPenalty], String)
+    -> Map Pilot ([PointPenalty], String)
 mergePenalties =
     Map.merge
-        (Map.mapMissing (\_ _ -> []))
+        (Map.mapMissing (\_ _ -> ([], "")))
         (Map.preserveMissing)
         (Map.zipWithMatched (\_ _ y -> y))
 
@@ -900,7 +930,7 @@ tallyDf
                             , Maybe (PilotDistance (Quantity Double [u| km |]))
                             )
                         ,
-                            ( [PointPenalty]
+                            ( ([PointPenalty], String)
                             , Gap.Points
                             )
                         )
@@ -921,7 +951,7 @@ tallyDf
                 ,
                     ( (dS, dN, dL)
                     ,
-                        ( penalties
+                        ( (penalties, penaltyReason)
                         , x@Gap.Points
                             { reach = LinearPoints r
                             , effort = DifficultyPoints dp
@@ -939,6 +969,7 @@ tallyDf
         { place = TaskPlacing 0
         , total = applyPointPenalties penalties total
         , penalties = penalties
+        , penaltyReason = penaltyReason
         , breakdown = x
         , velocity =
             Just
@@ -966,13 +997,13 @@ tallyDf
 
 tallyDfNoTrack
     :: Maybe (QTaskDistance Double [u| m |])
-    -> (Maybe AwardedDistance, ([PointPenalty], Gap.Points))
+    -> (Maybe AwardedDistance, (([PointPenalty], String), Gap.Points))
     -> Breakdown
 tallyDfNoTrack
     td'
     ( dAward'
     ,
-        ( penalties
+        ( (penalties, penaltyReason)
         , x@Gap.Points
             { reach = LinearPoints r
             , effort = DifficultyPoints dp
@@ -986,6 +1017,7 @@ tallyDfNoTrack
         { place = TaskPlacing 0
         , total = applyPointPenalties penalties total
         , penalties = penalties
+        , penaltyReason = penaltyReason
         , breakdown = x
         , velocity = Nothing
         , reachDistance = dP

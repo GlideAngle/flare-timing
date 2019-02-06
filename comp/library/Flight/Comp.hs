@@ -333,7 +333,7 @@ data Task k =
         , startGates :: [StartGate]
         , stopped :: Maybe TaskStop
         , taskTweak :: Maybe Tweak
-        , penals :: [(Pilot, [PointPenalty])]
+        , penals :: [(Pilot, [PointPenalty], String)]
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)

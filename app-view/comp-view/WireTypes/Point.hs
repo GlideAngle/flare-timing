@@ -305,6 +305,8 @@ data Breakdown =
     Breakdown
         { place :: TaskPlacing
         , total :: TaskPoints
+        , penalties :: [PointPenalty]
+        , penaltyReason :: String
         , breakdown :: Points
         , velocity :: Maybe Velocity
         , reachDistance :: Maybe PilotDistance
