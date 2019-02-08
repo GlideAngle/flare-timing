@@ -41,6 +41,8 @@ import Flight.Comp
     , MadeGoal(..)
     , LandedOut(..)
     , DfNoTrack(..)
+    , StartGate(..)
+    , StartEnd(..)
     , compToTaskLength
     , compToCross
     , compToMask
@@ -60,6 +62,7 @@ import Flight.Mask
     )
 import Flight.Comp.Distance (compDistance, compNigh)
 import Flight.Track.Tag (Tagging)
+import Flight.Track.Time (AwardedVelocity(..))
 import qualified Flight.Track.Time as Time (TimeRow(..), TickRow(..))
 import Flight.Track.Arrival (TrackArrival(..))
 import Flight.Track.Distance
@@ -67,7 +70,7 @@ import Flight.Track.Distance
 import qualified Flight.Track.Distance as Track (awardByFrac)
 import Flight.Track.Lead (compLeading)
 import Flight.Track.Mask (Masking(..), RaceTime(..))
-import Flight.Track.Speed (TrackSpeed(..))
+import Flight.Track.Speed (TrackSpeed(..), pilotTime)
 import Flight.Kml (LatLngAlt(..), MarkedFixes(..))
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
@@ -237,7 +240,7 @@ writeMask
             let yssDfNt :: [[(Pilot, FlightStats _)]] =
                     [
                         fmap
-                        (\Cmp.DfNoTrackPilot{pilot = p, awardedReach = dA} ->
+                        (\Cmp.DfNoTrackPilot{pilot = p, awardedReach = dA, awardedVelocity = AwardedVelocity{ss, es}} ->
                             let dm :: Quantity Double [u| m |] = convert dMin
 
                                 d = TaskDistance
@@ -250,10 +253,32 @@ writeMask
                                             return $ max a dm)
                                         dA
 
-                            in (p, nullStats{statLand = madeAwarded <$> lTask <*> d}))
+                                sLand = madeAwarded <$> lTask <*> d
+
+                                sTime =
+                                    case (ss, es) of
+                                        (Just ss', Just _) ->
+                                            let se = StartEnd ss' es
+                                                ssT = pilotTime [StartGate ss'] se
+                                                gsT = pilotTime gates se
+                                            in
+                                                do
+                                                    ssT' <- ssT
+                                                    gsT' <- gsT
+                                                    return
+                                                        TimeStats
+                                                            { ssTime = ssT'
+                                                            , gsTime = gsT'
+                                                            -- TODO: Workout arrival rank for DF no track pilots.
+                                                            , positionAtEss = PositionAtEss 43
+                                                            }
+                                        _ -> Nothing
+
+                            in (p, nullStats{statLand = sLand, statTimeRank = sTime}))
                         dfNts
                     | DfNoTrack dfNts <- dfNtss
                     | lTask <- (fmap. fmap) wholeTaskDistance lsTask'
+                    | gates <- startGates <$> tasks
                     ]
 
             let yss = zipWith (++) yssDf yssDfNt
