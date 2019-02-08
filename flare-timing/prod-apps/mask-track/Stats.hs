@@ -25,7 +25,7 @@ data TimeStats =
           -- ^ The time taken from the start.
         , gsTime :: PilotTime (Quantity Double [u| h |])
           -- ^ The time taken from the start gate.
-        , positionAtEss :: PositionAtEss
+        , positionAtEss :: Maybe PositionAtEss
         }
 
 data FlightStats k =

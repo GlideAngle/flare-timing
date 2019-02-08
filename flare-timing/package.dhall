@@ -236,7 +236,6 @@ in    defs
                     , "flight-lookup"
                     , "flight-mask"
                     , "flight-route"
-                    , "siggy-chardust"
                     ]
               , ghc-options =
                   [ "-rtsopts"

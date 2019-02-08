@@ -4,7 +4,7 @@
 
 import Data.Ratio ((%))
 import Data.Maybe (fromMaybe)
-import Data.Function ((&), on)
+import Data.Function ((&))
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
 import qualified Formatting as Fmt ((%), fprint)
@@ -13,7 +13,7 @@ import System.Clock (getTime, Clock(Monotonic))
 import Data.Map (Map)
 import qualified Data.Map.Strict as Map
 import qualified Data.Map.Merge.Strict as Map
-import Data.List (sortBy, groupBy)
+import Data.List (sortBy)
 import Control.Applicative (liftA2)
 import qualified Control.Applicative as A ((<$>))
 import Control.Monad (mapM_, join)
@@ -71,6 +71,7 @@ import Flight.Track.Speed (pilotTime, startGateTaken)
 import qualified Flight.Track.Speed as Speed (TrackSpeed(..))
 import Flight.Track.Mask (Masking(..))
 import Flight.Track.Land (Landing(..))
+import Flight.Track.Place (rankByTotal)
 import Flight.Track.Point
     (Velocity(..), Breakdown(..), Pointing(..), Allocation(..))
 import qualified Flight.Track.Land as Cmp (Landing(..))
@@ -103,7 +104,6 @@ import Flight.Score
     )
 import qualified Flight.Score as Gap (Validity(..), Points(..), Weights(..))
 import GapPointOptions (description)
-import Data.Ratio.Rounding (dpRound)
 
 type StartEndTags = StartEnd (Maybe Fix) Fix
 
@@ -639,46 +639,11 @@ points'
             | ys <- scoreDfNoTrack
             ]
 
-reIndex :: [(Integer, [a])] -> [(Integer, [a])]
-reIndex xs =
-    zipWith3
-        (\i zs o ->
-            -- NOTE: Use j so that we get; 1,2=,2=,4 and not 1,3=,3=,4.
-            let j = fromIntegral $ length zs - 1
-            in (i + (fromIntegral o) - j, zs))
-        ixs
-        ys
-        offsets
-    where
-        (ixs, ys) = unzip xs
-        lens = (\y -> (length y) - 1) <$> ys
-        offsets = scanl1 (+) lens
-
--- SEE: https://stackoverflow.com/questions/51572782/how-to-create-a-ranking-based-on-a-list-of-scores-in-haskell
--- SEE: https://stackoverflow.com/questions/15412027/haskell-equivalent-to-scalas-groupby
-rankByTotal :: [(Pilot, Breakdown)] -> [(Pilot, Breakdown)]
-rankByTotal xs =
-    [ (rankScore f ii) <$> y
-    | (ii, ys) <-
-                reIndex
-                . zip [1..]
-                . groupBy ((==) `on` truncateTaskPoints . total . snd)
-                $ xs
-    , let f = if length ys == 1 then TaskPlacing else TaskPlacingEqual
-    , y <- ys
-    ]
-
 sortScores :: [(Pilot, Breakdown)] -> [(Pilot, Breakdown)]
 sortScores =
     sortBy
         (\(_, Breakdown{total = a}) (_, Breakdown{total = b}) ->
             b `compare` a)
-
-truncateTaskPoints :: TaskPoints -> Integer
-truncateTaskPoints (TaskPoints x) = truncate . dpRound 0 $ x
-
-rankScore :: (Integer -> TaskPlacing) -> Integer -> Breakdown -> Breakdown
-rankScore f ii b = b{place = f ii}
 
 zeroPoints :: Gap.Points
 zeroPoints =

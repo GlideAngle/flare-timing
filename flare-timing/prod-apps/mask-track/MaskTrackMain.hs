@@ -3,7 +3,7 @@
 
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
-import Data.Maybe (fromMaybe, catMaybes)
+import Data.Maybe (fromMaybe, catMaybes, isJust)
 import Data.List (sortOn)
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map (fromList)
@@ -13,6 +13,7 @@ import System.Clock (getTime, Clock(Monotonic))
 import Control.Arrow (second)
 import Control.Lens ((^?), element)
 import Control.Exception.Safe (MonadThrow, catchIO)
+import Control.Monad (join)
 import Control.Monad.Except (MonadIO)
 import Data.UnitsOfMeasure ((-:), u, convert, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
@@ -269,8 +270,7 @@ writeMask
                                                         TimeStats
                                                             { ssTime = ssT'
                                                             , gsTime = gsT'
-                                                            -- TODO: Workout arrival rank for DF no track pilots.
-                                                            , positionAtEss = PositionAtEss 43
+                                                            , positionAtEss = Nothing
                                                             }
                                         _ -> Nothing
 
@@ -281,7 +281,7 @@ writeMask
                     | gates <- startGates <$> tasks
                     ]
 
-            let yss = zipWith (++) yssDf yssDfNt
+            let yss = zipWith rankByArrival yssDf yssDfNt
 
             -- Zones (zs) of the task and zones ticked.
             let zsTaskTicked :: [Map Pilot _] =
@@ -449,7 +449,7 @@ arrivals xs =
         ys :: [(Pilot, PositionAtEss)]
         ys =
             catMaybes
-            $ (\(p, FlightStats{..}) -> (p,) . positionAtEss <$> statTimeRank)
+            $ (\(p, FlightStats{..}) -> (p,) <$> (join $ positionAtEss <$> statTimeRank))
             <$> xs
 
         pilots :: PilotsAtEss
@@ -524,7 +524,7 @@ flown' dTaskF flying math tags tasks iTask@(IxTask i) mf@MarkedFixes{mark0} p =
 
         Just task' ->
             case (ssTime, gsTime, arrivalRank) of
-                (Just a, Just b, Just c) ->
+                (Just a, Just b, c@(Just _)) ->
                     tickedStats {statTimeRank = Just $ TimeStats a b c}
 
                 _ ->
@@ -576,3 +576,18 @@ flown' dTaskF flying math tags tasks iTask@(IxTask i) mf@MarkedFixes{mark0} p =
             case tasks ^? element (fromIntegral i - 1) of
                 Nothing -> Nothing
                 Just Task{..} -> speedSection
+
+rankByArrival
+    :: [(Pilot, FlightStats _)]
+    -> [(Pilot, FlightStats _)]
+    -> [(Pilot, FlightStats _)]
+rankByArrival xs ys =
+    case any isJust yTs of
+        False -> xs ++ ys
+        True ->
+            xs ++ ys
+    where
+        yTs = statTimeRank . snd <$> ys
+        -- TODO: Rank by arrival, setting PositionAtESS.
+        -- xGs = (fmap gsTime) . statTimeRank . snd <$> xs
+        -- yGs = fmap gsTime <$> yTs
