@@ -8,6 +8,7 @@ module FlareTiming.Pilot
 
 import Reflex.Dom
 import qualified Data.Text as T (Text, pack)
+import Data.Maybe (fromMaybe)
 import Data.List (find)
 import Text.Printf (printf)
 import Data.Time.LocalTime (TimeZone)
@@ -31,14 +32,10 @@ rowPilot x = do
         td $ showPilotId <$> x
         td $ showPilotName <$> x
 
-showReach :: Maybe TaskLength -> Maybe AwardedDistance -> T.Text
-showReach Nothing _ = ""
-showReach _ Nothing = ""
-showReach
-    (Just TaskLength{taskRoute = TaskDistance td})
-    (Just (AwardedDistance ad)) =
-    if ad == 0 then "" else
-    T.pack . printf "%.3f km" $ td * ad
+showReach :: TaskLength -> AwardedDistance -> T.Text
+showReach TaskLength{taskRoute = TaskDistance td} (AwardedDistance ad)
+    | ad == 0 = ""
+    | otherwise = T.pack . printf "%.3f km" $ td * ad
 
 showSs :: TimeZone -> AwardedVelocity -> T.Text
 showSs tz AwardedVelocity{ss = Just t} = showT tz t
@@ -62,7 +59,7 @@ rowDfNt utcOffset ln' pd = do
             el "td" . text $ showPilotName p
             elClass "td" "td-awarded-start" . text $ showSs tz v
             elClass "td" "td-awarded-end" . text $ showEs tz v
-            elClass "td" "td-awarded-reach" . text $ showReach ln d)
+            elClass "td" "td-awarded-reach" . text . fromMaybe "" $ showReach <$> ln <*> d)
 
 rowPenal
     :: MonadWidget t m
