@@ -538,4 +538,26 @@ cmp a b =
         ("giveFraction", _) -> LT
         ("giveDistance", _) -> GT
 
+        -- DfNoTrackPilot fields
+        ("pilot", "awardedReach") -> LT
+        ("pilot", "awardedVelocity") -> LT
+
+        ("awardedReach", "awardedVelocity") -> LT
+        ("awardedReach", _) -> GT
+
+        ("awardedVelocity", _) -> GT
+
+        -- AwardedDistance fields
+        ("awardedMade", "awardedTask") -> LT
+        ("awardedMade", "awardedFrac") -> LT
+
+        ("awardedTask", "awardedMade") -> GT
+        ("awardedTask", "awardedFrac") -> LT
+
+        ("awardedFrac", _) -> GT
+
+        -- AwardedVelocity fields
+        ("ss", "es") -> LT
+        ("es", "ss") -> GT
+
         _ -> compare a b
