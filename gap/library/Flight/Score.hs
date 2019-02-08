@@ -199,6 +199,7 @@ import Flight.Gap.Distance.Fraction
 import Flight.Gap.Distance.Chunk
 import Flight.Gap.Distance.Difficulty
 import Flight.Gap.Leading
+import Flight.Gap.Place.Task
 import Flight.Gap.Points.Arrival
 import Flight.Gap.Points.Distance
 import Flight.Gap.Points.Leading
