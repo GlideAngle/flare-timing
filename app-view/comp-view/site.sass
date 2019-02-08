@@ -120,10 +120,10 @@ body, input, button, select, textarea
 .th-placing
     @extend .has-text-right;
 
-.th-start-start, .th-start-gate
+.th-start-start, .th-start-gate, .th-awarded-Ss
     @extend .has-text-centered;
 
-.th-end
+.th-end, .th-awarded-Es
     @extend .has-text-centered;
 
 .th-pace
@@ -191,7 +191,11 @@ table:not(.sg) .td-start-start
 table.sg .td-start-gate
     @extend .has-text-success;
 
-.td-end
+.td-awarded-Ss
+    @extend .has-text-centered;
+    @extend .has-text-success;
+
+.td-end, .td-awarded-Es
     @extend .has-text-centered;
     @extend .has-text-danger;
 
