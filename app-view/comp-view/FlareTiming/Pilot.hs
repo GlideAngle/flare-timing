@@ -37,6 +37,7 @@ showReach _ Nothing = ""
 showReach
     (Just TaskLength{taskRoute = TaskDistance td})
     (Just (AwardedDistance ad)) =
+    if ad == 0 then "" else
     T.pack . printf "%.3f km" $ td * ad
 
 showSs :: TimeZone -> AwardedVelocity -> T.Text
