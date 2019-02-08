@@ -124,8 +124,8 @@ tableAbsent utc ix ln nyp' dnf' dfNt' penal' = do
                                                     el "tr" $ do
                                                         el "th" $ text "Id"
                                                         el "th" $ text "Name"
-                                                        elClass "th" "th-awarded-Ss" $ text "Start"
-                                                        elClass "th" "th-awarded-Es" $ text "End"
+                                                        elClass "th" "th-awarded-start" $ text "Start"
+                                                        elClass "th" "th-awarded-end" $ text "End"
                                                         elClass "th" "th-awarded-reach" $ text "Reach"
 
                                                 el "tbody" $ simpleList dfNt (rowDfNt utc ln)

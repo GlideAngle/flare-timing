@@ -60,8 +60,8 @@ rowDfNt utcOffset ln' pd = do
         el "tr" $ do
             el "td" . text $ showPilotId p
             el "td" . text $ showPilotName p
-            elClass "td" "td-awarded-Ss" . text $ showSs tz v
-            elClass "td" "td-awarded-Es" . text $ showEs tz v
+            elClass "td" "td-awarded-start" . text $ showSs tz v
+            elClass "td" "td-awarded-end" . text $ showEs tz v
             elClass "td" "td-awarded-reach" . text $ showReach ln d)
 
 rowPenal
