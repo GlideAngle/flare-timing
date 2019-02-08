@@ -61,10 +61,14 @@ import Flight.Comp
 import Flight.Track.Cross (Fix(..))
 import Flight.Track.Tag (Tagging(..), PilotTrackTag(..), TrackTag(..))
 import Flight.Track.Distance
-    (TrackDistance(..), AwardedDistance(..), Clamp(..), Nigh, Land, awardByFrac)
+    ( TrackDistance(..), AwardedDistance(..), Clamp(..), Nigh, Land
+    , awardByFrac
+    )
+import Flight.Track.Time (AwardedVelocity(..))
 import Flight.Track.Lead (TrackLead(..))
 import Flight.Track.Arrival (TrackArrival(..))
-import qualified Flight.Track.Speed as Speed (TrackSpeed(..), startGateTaken)
+import Flight.Track.Speed (pilotTime, startGateTaken)
+import qualified Flight.Track.Speed as Speed (TrackSpeed(..))
 import Flight.Track.Mask (Masking(..))
 import Flight.Track.Land (Landing(..))
 import Flight.Track.Point
@@ -248,8 +252,12 @@ points'
         -- Task lengths (ls).
         iTasks = IxTask <$> [1 .. length tss]
         lsTask' = Lookup.compRoutes routes iTasks
+
         lsWholeTask :: [Maybe (QTaskDistance Double [u| m |])] =
             (fmap . fmap) wholeTaskDistance lsTask'
+
+        lsSpeedTask :: [Maybe (QTaskDistance Double [u| m |])] =
+            (fmap . fmap) speedSubsetDistance lsTask'
 
         -- NOTE: If there is no best distance, then either the task wasn't run
         -- or it has not been scored yet.
@@ -614,12 +622,14 @@ points'
 
         scoreDfNoTrack :: [[(Pilot, Breakdown)]] =
             [ rankByTotal . sortScores
-              $ fmap (tallyDfNoTrack lWholeTask)
+              $ fmap (tallyDfNoTrack gates lSpeedTask lWholeTask)
               A.<$> collateDfNoTrack diffs linears penals dsAward
             | diffs <- difficultyDistancePointsDfNoTrack
             | linears <- nighDistancePointsDfNoTrack
             | dsAward <- dfNtss
+            | lSpeedTask <- lsSpeedTask
             | lWholeTask <- lsWholeTask
+            | gates <- startGates <$> tasks
             | penals <- penals <$> tasks
             ]
 
@@ -844,7 +854,7 @@ collateDfNoTrack
     -> [(Pilot, LinearPoints)]
     -> [(Pilot, [PointPenalty], String)]
     -> DfNoTrack
-    -> [(Pilot, (Maybe AwardedDistance, (([PointPenalty], String), Gap.Points)))]
+    -> [(Pilot, ((Maybe AwardedDistance, AwardedVelocity), (([PointPenalty], String), Gap.Points)))]
 collateDfNoTrack diffs linears penals (DfNoTrack ds) =
     Map.toList
     $ Map.intersectionWith (,) md
@@ -854,8 +864,13 @@ collateDfNoTrack diffs linears penals (DfNoTrack ds) =
     where
         mDiff = Map.fromList diffs
         mLinear = Map.fromList linears
-        md = Map.fromList $ (\Cmp.DfNoTrackPilot{pilot = p, awardedReach = aw} -> (p, aw)) <$> ds
         penals' = tuplePenalty <$> penals
+
+        md =
+            Map.fromList
+            $ (\Cmp.DfNoTrackPilot{pilot = p, awardedReach = aw, awardedVelocity = av} ->
+                (p, (aw, av)))
+            <$> ds
 
 tuplePenalty :: (a, b, c) -> (a, (b, c))
 tuplePenalty (a, b, c) = (a, (b, c))
@@ -981,7 +996,7 @@ tallyDf
             Just
             $ zeroVelocity
                 { ss = ss'
-                , gs = Speed.startGateTaken startGates =<< ss'
+                , gs = startGateTaken startGates =<< ss'
                 , es = es'
                 , ssDistance = dS
                 , ssElapsed = ssT
@@ -1002,12 +1017,16 @@ tallyDf
             <$> (accessor =<< g)
 
 tallyDfNoTrack
-    :: Maybe (QTaskDistance Double [u| m |])
-    -> (Maybe AwardedDistance, (([PointPenalty], String), Gap.Points))
+    :: [StartGate]
+    -> Maybe (QTaskDistance Double [u| m |]) -- ^ Speed section distance
+    -> Maybe (QTaskDistance Double [u| m |]) -- ^ Whole task distance
+    -> ((Maybe AwardedDistance, AwardedVelocity), (([PointPenalty], String), Gap.Points))
     -> Breakdown
 tallyDfNoTrack
-    td'
-    ( dAward'
+    startGates
+    dS'
+    dT'
+    ( (aw', AwardedVelocity{ss, es})
     ,
         ( (penalties, penaltyReason)
         , x@Gap.Points
@@ -1025,7 +1044,27 @@ tallyDfNoTrack
         , penalties = penalties
         , penaltyReason = penaltyReason
         , breakdown = x
-        , velocity = Nothing
+
+        , velocity =
+            case (ss, es) of
+                (Just ss', Just _) ->
+                    let se = StartEnd ss' es
+                        ssT = pilotTime [StartGate ss'] se
+                        gsT = pilotTime startGates se
+                    in
+                        Just
+                        $ zeroVelocity
+                            { ss = ss
+                            , gs = startGateTaken startGates =<< ss
+                            , es = es
+                            , ssDistance = dS
+                            , ssElapsed = ssT
+                            , gsElapsed = gsT
+                            , ssVelocity = liftA2 mkVelocity dS ssT
+                            , gsVelocity = liftA2 mkVelocity dS gsT
+                            }
+                _ -> Nothing
+
         , reachDistance = dP
         , landedDistance = dP
         , stoppedAlt = Nothing
@@ -1033,6 +1072,10 @@ tallyDfNoTrack
     where
         total = TaskPoints $ r + dp + l + a + tp
         dP = PilotDistance <$> do
-                td <- td'
-                dAward <- dAward'
-                return $ awardByFrac (Clamp False) td dAward
+                dT <- dT'
+                aw <- aw'
+                return $ awardByFrac (Clamp False) dT aw
+
+        dS = PilotDistance <$> do
+                TaskDistance d <- dS'
+                return $ convert d
