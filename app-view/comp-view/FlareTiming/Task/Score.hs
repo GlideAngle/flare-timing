@@ -44,6 +44,7 @@ import WireTypes.Validity
 import WireTypes.ValidityWorking (ValidityWorking(..), TimeValidityWorking(..))
 import WireTypes.Comp (UtcOffset(..), Discipline(..), MinimumDistance(..))
 import WireTypes.Pilot (Pilot(..), Dnf(..), DfNoTrack(..))
+import qualified WireTypes.Pilot as Pilot (DfNoTrackPilot(..))
 import FlareTiming.Pilot (showPilotName)
 import FlareTiming.Time (showHmsForHours, showT, timeZone)
 
@@ -415,7 +416,7 @@ pointRow cTime cArrival utcOffset free dfNt pt tp x = do
 
     let classPilot = ffor2 pilot dfNt (\p (DfNoTrack ps) ->
                         let n = showPilotName p in
-                        if p `elem` (fst <$> ps)
+                        if p `elem` (Pilot.pilot <$> ps)
                            then ("pilot-dfnt", n <> " ☞ ")
                            else ("", n))
 

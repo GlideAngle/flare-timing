@@ -8,17 +8,19 @@ import WireTypes.Pilot (Nyp(..), Dnf(..), DfNoTrack(..), Penal(..))
 import FlareTiming.Events (IxTask(..))
 import FlareTiming.Comms (getTaskPilotAbs)
 import FlareTiming.Pilot (rowPilot, rowDfNt, rowPenal)
+import WireTypes.Comp (UtcOffset(..))
 
 tableAbsent
     :: MonadWidget t m
-    => IxTask
+    => Dynamic t UtcOffset
+    -> IxTask
     -> Dynamic t (Maybe TaskLength)
     -> Dynamic t Nyp
     -> Dynamic t Dnf
     -> Dynamic t DfNoTrack
     -> Dynamic t Penal
     -> m ()
-tableAbsent ix ln nyp' dnf' dfNt' penal' = do
+tableAbsent utc ix ln nyp' dnf' dfNt' penal' = do
     pb <- getPostBuild
     let nyp = unNyp <$> nyp'
     let dnf = unDnf <$> dnf'
@@ -122,9 +124,11 @@ tableAbsent ix ln nyp' dnf' dfNt' penal' = do
                                                     el "tr" $ do
                                                         el "th" $ text "Id"
                                                         el "th" $ text "Name"
+                                                        elClass "th" "th-awarded-Ss" $ text "Start"
+                                                        elClass "th" "th-awarded-Es" $ text "End"
                                                         elClass "th" "th-awarded-reach" $ text "Reach"
 
-                                                el "tbody" $ simpleList dfNt (rowDfNt ln)
+                                                el "tbody" $ simpleList dfNt (rowDfNt utc ln)
 
                                         el "p" . text
                                             $ "These pilots get awarded at least minimum distance."

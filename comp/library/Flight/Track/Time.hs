@@ -9,7 +9,8 @@ Stability   : experimental
 Track fixes indexed on when the first pilot starts the speed section.
 -}
 module Flight.Track.Time
-    ( LeadingDistance(..)
+    ( AwardedVelocity(..)
+    , LeadingDistance(..)
     , LeadTick(..)
     , RaceTick(..)
     , TrackRow(..)
@@ -71,6 +72,14 @@ import Flight.Score
 import Flight.Distance (QTaskDistance, TaskDistance(..))
 import Flight.Zone.SpeedSection (SpeedSection)
 import Flight.Track.Range (asRanges)
+
+data AwardedVelocity =
+    AwardedVelocity
+        { ss :: Maybe UTCTime
+        , es :: Maybe UTCTime
+        }
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
 
 instance Show FixIdx where show (FixIdx x) = show x
 instance Show ZoneIdx where show (ZoneIdx x) = show x

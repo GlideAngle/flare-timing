@@ -16,7 +16,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Text.XML.HXT.Arrow.Pickle
     ( XmlPickler(..), PU(..)
     , xpickle, unpickleDoc, xpWrap, xpFilterAttr, xpElem, xpAttr, xpAlt
-    , xpText, xpPair, xpTriple, xp5Tuple, xpInt, xpTrees, xpAttrFixed, xpSeq'
+    , xpPair, xpTriple, xp5Tuple, xpInt, xpTrees, xpAttrFixed, xpSeq'
     , xpPrim, xpAttrImplied, xpTextAttr
     )
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
@@ -58,10 +58,11 @@ import Flight.Zone.MkZones
     , mkZones
     )
 import qualified Flight.Zone.Raw as Z (RawZone(..))
+import Flight.Track.Time (AwardedVelocity(..))
 import Flight.Track.Distance (AwardedDistance(..))
 import Flight.Comp
     ( PilotId(..), PilotName(..), Pilot(..)
-    , PilotGroup(..), DfNoTrack(..)
+    , PilotGroup(..), DfNoTrack(..), DfNoTrackPilot(..)
     , Task(..), TaskStop(..), StartGate(..), OpenClose(..), Tweak(..)
     )
 import Flight.Score (ScoreBackTime(..), PointPenalty(..))
@@ -310,6 +311,21 @@ xpAwardedDistance =
     $ xpFilterAttr (hasName "distance")
     $ xpAttr "distance" xpickle
 
+xpAwardedTime :: PU AwardedVelocity
+xpAwardedTime =
+    xpElem "FsFlightData"
+    $ xpFilterAttr (hasName "started_ss" <+> hasName "finished_ss")
+    $ xpWrap
+        ( \(t0, tN) ->
+                AwardedVelocity
+                    (if null t0 then Nothing else Just $ parseUtcTime t0)
+                    (if null tN then Nothing else Just $ parseUtcTime tN)
+        , \AwardedVelocity{..} -> (maybe "" show ss, maybe "" show ss)
+        )
+    $ xpPair
+        (xpTextAttr "started_ss")
+        (xpTextAttr "finished_ss")
+
 isGoalLine :: FsGoal -> GoalLine
 isGoalLine (FsGoal "LINE") = GoalLine
 isGoalLine _ = GoalNotLine
@@ -324,23 +340,27 @@ taskKmToMetres (TaskDistance d) = TaskDistance . convert $ d
 
 asAward
     :: String
-    -> (Pilot, Maybe (QTaskDistance Double [u| km |]))
-    -> (Pilot, Maybe AwardedDistance)
-asAward t' (p, m') =
-    (p, awarded)
+    -> (Pilot, Maybe (QTaskDistance Double [u| km |]), Maybe AwardedVelocity)
+    -> DfNoTrackPilot
+asAward t' (p, m', v) =
+    DfNoTrackPilot
+        { pilot = p
+        , awardedReach = reach
+        , awardedVelocity = fromMaybe (AwardedVelocity Nothing Nothing) v
+        }
     where
-        awarded = do
+        reach = do
             -- TODO: Use unpickling for FsTaskScoreParams/@task_distance.
             -- WARNING: Having some trouble with unpickling task distance.
             -- Going with simple read for now.
             let td :: Double = read t'
             let t@(TaskDistance qt) = taskKmToMetres . TaskDistance . MkQuantity $ td
-            m@(TaskDistance qm) <- taskKmToMetres <$> m'
+            m@(TaskDistance qr) <- taskKmToMetres <$> m'
 
             return $ AwardedDistance
                 { awardedMade = m
                 , awardedTask = t
-                , awardedFrac = unQuantity $ qm /: qt
+                , awardedFrac = unQuantity $ qr /: qt
                 }
 
 getTaskPilotGroup :: ArrowXml a => [Pilot] -> a XmlTree (PilotGroup)
@@ -359,7 +379,7 @@ getTaskPilotGroup ps =
                 , dnf = sort dnf
                 , didFlyNoTracklog =
                     DfNoTrack
-                    $ sortOn fst
+                    $ sortOn pilot
                     $ asAward t <$> nt
                 }
 
@@ -425,12 +445,20 @@ getTaskPilotGroup ps =
                         >>> hasAttrValue "tracklog_filename" (== ""))
                     >>> getAttrValue "id"
                     &&& getAwardedDistance
-                    >>> arr (\(pid, m) -> (unKeyPilot (keyMap kps) . PilotId $ pid, m))
+                    &&& getAwardedTime
+                    >>> arr (\(pid, (ad, at)) -> (unKeyPilot (keyMap kps) . PilotId $ pid, ad, at))
 
         getAwardedDistance =
             (getChildren
             >>> hasName "FsFlightData"
             >>> arr (unpickleDoc xpAwardedDistance)
+            )
+            `orElse` constA Nothing
+
+        getAwardedTime =
+            (getChildren
+            >>> hasName "FsFlightData"
+            >>> arr (unpickleDoc xpAwardedTime)
             )
             `orElse` constA Nothing
 

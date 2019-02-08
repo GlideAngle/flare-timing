@@ -28,6 +28,7 @@ import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
 import Flight.Distance (QTaskDistance, TaskDistance(..), unTaskDistanceAsKm)
 import Flight.Route (OptimalRoute(..))
+import qualified Flight.Comp as Cmp (DfNoTrackPilot(..))
 import Flight.Comp
     ( FileType(CompInput)
     , CompInputFile(..)
@@ -397,7 +398,10 @@ points'
             ]
 
         nighDistanceDfNoTrack :: [[(Pilot, Maybe Double)]] =
-            [ (fmap . fmap) (madeAwarded free lWholeTask) xs
+            [
+                (\Cmp.DfNoTrackPilot{pilot = p, awardedReach = aw} ->
+                    (p, madeAwarded free lWholeTask aw))
+                <$> xs
             | DfNoTrack xs <- dfNtss
             | lWholeTask <- lsWholeTask
             ]
@@ -465,7 +469,9 @@ points'
                                HangGliding -> madeDifficultyDfNoTrack free lWholeTask ld'
                                Paragliding -> const $ DifficultyFraction 0.0
 
-                        xs' = (fmap . fmap) f xs
+                        xs' =
+                            (\Cmp.DfNoTrackPilot{pilot = p, awardedReach = aw} -> (p, f aw))
+                            <$> xs
                     in
                         (fmap . fmap)
                         (applyDifficulty ps')
@@ -848,7 +854,7 @@ collateDfNoTrack diffs linears penals (DfNoTrack ds) =
     where
         mDiff = Map.fromList diffs
         mLinear = Map.fromList linears
-        md = Map.fromList ds
+        md = Map.fromList $ (\Cmp.DfNoTrackPilot{pilot = p, awardedReach = aw} -> (p, aw)) <$> ds
         penals' = tuplePenalty <$> penals
 
 tuplePenalty :: (a, b, c) -> (a, (b, c))

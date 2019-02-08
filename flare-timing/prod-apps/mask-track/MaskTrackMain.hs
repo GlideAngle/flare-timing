@@ -21,7 +21,7 @@ import System.FilePath (takeFileName)
 import Flight.Clip (FlyCut(..), FlyClipping(..))
 import Flight.LatLng (QAlt)
 import Flight.Route (OptimalRoute(..))
-import qualified Flight.Comp as Cmp (Nominal(..))
+import qualified Flight.Comp as Cmp (Nominal(..), DfNoTrackPilot(..))
 import Flight.Comp
     ( FileType(CompInput)
     , CompInputFile(..)
@@ -208,7 +208,7 @@ writeMask
             let dfNtss = didFlyNoTracklog <$> pilotGroups
 
             let fssDf =
-                    [ let ps = fst <$> dfNts in
+                    [ let ps = Cmp.pilot <$> dfNts in
                       filter
                           ( not
                           . (`elem` ps)
@@ -237,7 +237,7 @@ writeMask
             let yssDfNt :: [[(Pilot, FlightStats _)]] =
                     [
                         fmap
-                        (\(p, dA) ->
+                        (\Cmp.DfNoTrackPilot{pilot = p, awardedReach = dA} ->
                             let dm :: Quantity Double [u| m |] = convert dMin
 
                                 d = TaskDistance

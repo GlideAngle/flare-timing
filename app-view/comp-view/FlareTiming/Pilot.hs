@@ -10,10 +10,16 @@ import Reflex.Dom
 import qualified Data.Text as T (Text, pack)
 import Data.List (find)
 import Text.Printf (printf)
+import Data.Time.LocalTime (TimeZone)
 
 import WireTypes.Route (TaskLength(..), TaskDistance(..))
-import WireTypes.Pilot (Pilot(..), PilotId(..), PilotName(..), AwardedDistance(..))
+import WireTypes.Pilot
+    ( Pilot(..), PilotId(..), PilotName(..)
+    , AwardedDistance(..), AwardedVelocity(..), DfNoTrackPilot(..)
+    )
 import WireTypes.Point (PointPenalty(..))
+import WireTypes.Comp (UtcOffset(..))
+import FlareTiming.Time (showT, timeZone)
 
 rowPilot
     :: MonadWidget t m
@@ -25,25 +31,37 @@ rowPilot x = do
         td $ showPilotId <$> x
         td $ showPilotName <$> x
 
-awardedReach :: Maybe TaskLength -> Maybe AwardedDistance -> T.Text
-awardedReach Nothing _ = ""
-awardedReach _ Nothing = ""
-awardedReach
+showReach :: Maybe TaskLength -> Maybe AwardedDistance -> T.Text
+showReach Nothing _ = ""
+showReach _ Nothing = ""
+showReach
     (Just TaskLength{taskRoute = TaskDistance td})
     (Just (AwardedDistance ad)) =
     T.pack . printf "%.3f km" $ td * ad
 
+showSs :: TimeZone -> AwardedVelocity -> T.Text
+showSs tz AwardedVelocity{ss = Just t} = showT tz t
+showSs _ _ = ""
+
+showEs :: TimeZone -> AwardedVelocity -> T.Text
+showEs tz AwardedVelocity{es = Just t} = showT tz t
+showEs _ _ = ""
+
 rowDfNt
     :: MonadWidget t m
-    => Dynamic t (Maybe TaskLength)
-    -> Dynamic t (Pilot, Maybe AwardedDistance)
+    => Dynamic t UtcOffset
+    -> Dynamic t (Maybe TaskLength)
+    -> Dynamic t DfNoTrackPilot
     -> m ()
-rowDfNt ln' pd = do
-    dyn_ $ ffor2 ln' pd (\ln (p, d) ->
+rowDfNt utcOffset ln' pd = do
+    let tz' = timeZone <$> utcOffset
+    dyn_ $ ffor3 tz' ln' pd (\tz ln DfNoTrackPilot{pilot = p, awardedReach = d, awardedVelocity = v} ->
         el "tr" $ do
             el "td" . text $ showPilotId p
             el "td" . text $ showPilotName p
-            elClass "td" "td-awarded-reach" . text $ awardedReach ln d)
+            elClass "td" "td-awarded-Ss" . text $ showSs tz v
+            elClass "td" "td-awarded-Es" . text $ showEs tz v
+            elClass "td" "td-awarded-reach" . text $ showReach ln d)
 
 rowPenal
     :: MonadWidget t m

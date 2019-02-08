@@ -5,14 +5,17 @@ module WireTypes.Pilot
     , PilotName(..)
     , Dnf(..)
     , DfNoTrack(..)
+    , DfNoTrackPilot(..)
     , Nyp(..)
     , Penal(..)
     , AwardedDistance(..)
+    , AwardedVelocity(..)
     , getPilotId
     , getPilotName
     , nullPilot
     ) where
 
+import Data.Time.Clock (UTCTime)
 import GHC.Generics (Generic)
 import Data.Aeson (FromJSON(..))
 import WireTypes.Point (PointPenalty)
@@ -27,10 +30,27 @@ data AwardedDistance = AwardedDistance {awardedFrac :: Double}
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (FromJSON)
 
+data AwardedVelocity =
+    AwardedVelocity
+        { ss :: Maybe UTCTime
+        , es :: Maybe UTCTime
+        }
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (FromJSON)
+
+data DfNoTrackPilot =
+    DfNoTrackPilot
+        { pilot :: Pilot
+        , awardedReach :: Maybe AwardedDistance
+        , awardedVelocity :: AwardedVelocity
+        }
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (FromJSON)
+
 -- | The group of pilots that did fly but do not have a track log.
 newtype DfNoTrack =
     DfNoTrack
-        {unDfNoTrack :: [(Pilot, Maybe AwardedDistance)]}
+        {unDfNoTrack :: [DfNoTrackPilot]}
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (FromJSON)
 

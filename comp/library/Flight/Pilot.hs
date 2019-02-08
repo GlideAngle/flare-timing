@@ -6,6 +6,7 @@ module Flight.Pilot
     , TrackFileFail(..)
     , Dnf(..)
     , Nyp(..)
+    , DfNoTrackPilot(..)
     , DfNoTrack(..)
     , LandedOut(..)
     , MadeGoal(..)
@@ -17,6 +18,7 @@ import Data.Aeson
     , defaultOptions, genericToJSON, genericParseJSON
     )
 import Flight.Score (Pilot)
+import Flight.Track.Time (AwardedVelocity)
 import Flight.Track.Distance (AwardedDistance)
 
 -- | The group of pilots that did not fly a task.
@@ -25,10 +27,18 @@ newtype Dnf = Dnf {unDnf :: [Pilot]}
 -- | The group of pilots not yet processed.
 newtype Nyp = Nyp {unNyp :: [Pilot]}
 
+data DfNoTrackPilot =
+    DfNoTrackPilot
+        { pilot :: Pilot
+        , awardedReach :: Maybe AwardedDistance
+        , awardedVelocity :: AwardedVelocity
+        }
+    deriving (Eq, Ord, Show, Generic, FromJSON, ToJSON)
+
 -- | The group of pilots that flew but did not submit a tracklog.
 newtype DfNoTrack =
     DfNoTrack
-        {unDfNoTrack :: [(Pilot, Maybe AwardedDistance)]}
+        {unDfNoTrack :: [DfNoTrackPilot]}
     deriving (Eq, Ord, Show, Generic)
 
 instance ToJSON DfNoTrack where
@@ -46,7 +56,7 @@ newtype MadeGoal = MadeGoal {unMadeGoal :: [Pilot]}
 data PilotTaskStatus
     = ABS -- ^ Absent
     | DF -- ^ Did fly
-    | DFNoTrack -- ^ Did fly, no tracklog and will get minimum distance.
+    | DFNoTrack -- ^ Did fly but with no tracklog for scoring.
     | DNF -- ^ Did not fly
     | NYP -- ^ Not yet processed
     deriving (Eq, Ord, Show, Generic, FromJSON, ToJSON)

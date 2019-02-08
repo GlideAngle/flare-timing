@@ -43,7 +43,6 @@ import Flight.Scribe (readComp, readRoute, readCrossing, readPointing)
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.ServeOptions (CmdServeOptions(..), mkOptions)
-import Flight.Track.Distance (AwardedDistance)
 import Flight.Comp
     ( FileType(CompInput)
     , CompSettings(..)
@@ -59,6 +58,7 @@ import Flight.Comp
     , PilotTaskStatus(..)
     , PilotGroup(..)
     , DfNoTrack(..)
+    , DfNoTrackPilot(..)
     , Nyp(..)
     , CompInputFile(..)
     , TaskLengthFile(..)
@@ -185,7 +185,7 @@ type GapPointApi k =
     :<|> "comp-input" :> Capture "task" Int :> "pilot-dnf"
         :> Get '[JSON] [Pilot]
     :<|> "comp-input" :> Capture "task" Int :> "pilot-dfnt"
-        :> Get '[JSON] [(Pilot, Maybe AwardedDistance)]
+        :> Get '[JSON] [DfNoTrackPilot]
     :<|> "gap-point" :> Capture "task" Int :> "pilot-nyp"
         :> Get '[JSON] [Pilot]
     :<|> "gap-point" :> Capture "task" Int :> "pilot-df"
@@ -586,7 +586,7 @@ getTaskPilotDnf ii = do
         PilotGroup{..} : _ -> return dnf
         _ -> throwError $ errTaskBounds ii
 
-getTaskPilotDfNoTrack :: Int -> AppT k IO [(Pilot, Maybe AwardedDistance)]
+getTaskPilotDfNoTrack :: Int -> AppT k IO [DfNoTrackPilot]
 getTaskPilotDfNoTrack ii = do
     pgs <- pilotGroups <$> asks compSettings
     case drop (ii - 1) pgs of
@@ -599,7 +599,8 @@ nyp
     -> [(Pilot, b)]
     -> Nyp
 nyp ps PilotGroup{absent = xs, dnf = ys, didFlyNoTracklog = DfNoTrack zs} cs =
-    let (cs', _) = unzip cs in Nyp $ ps \\ (xs ++ ys ++ (fst <$> zs) ++ cs')
+    let (cs', _) = unzip cs in
+    Nyp $ ps \\ (xs ++ ys ++ (pilot <$> zs) ++ cs')
 
 status
     :: PilotGroup
@@ -610,7 +611,7 @@ status PilotGroup{absent = xs, dnf = ys, didFlyNoTracklog = DfNoTrack zs} cs p =
     if | p `elem` xs -> ABS
        | p `elem` ys -> DNF
        | p `elem` cs -> DF
-       | p `elem` (fst <$> zs) -> DFNoTrack
+       | p `elem` (pilot <$> zs) -> DFNoTrack
        | otherwise -> NYP
 
 getTaskPilotNyp :: Int -> AppT k IO [Pilot]

@@ -48,6 +48,7 @@ module Flight.Comp
     , Dnf(..)
     , Nyp(..)
     , DfNoTrack(..)
+    , DfNoTrackPilot(..)
     , LandedOut(..)
     , MadeGoal(..)
     , pilotNamed
