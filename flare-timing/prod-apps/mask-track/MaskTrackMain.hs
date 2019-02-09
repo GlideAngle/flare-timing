@@ -93,7 +93,7 @@ import Flight.Scribe
 import Flight.Lookup.Route (routeLength)
 import qualified Flight.Score as Gap (bestTime')
 import Flight.Score
-    ( PilotsAtEss(..), PositionAtEss(..)
+    ( PilotsAtEss(..), ArrivalPlacing(..)
     , BestTime(..), PilotTime(..)
     , MinimumDistance(..)
     , LengthOfSs(..)
@@ -446,7 +446,7 @@ arrivals :: [(Pilot, FlightStats k)] -> [(Pilot, TrackArrival)]
 arrivals xs =
     sortOn (rank . snd) $ (fmap . fmap) f ys
     where
-        ys :: [(Pilot, PositionAtEss)]
+        ys :: [(Pilot, ArrivalPlacing)]
         ys =
             catMaybes
             $ (\(p, FlightStats{..}) -> (p,) <$> (join $ positionAtEss <$> statTimeRank))

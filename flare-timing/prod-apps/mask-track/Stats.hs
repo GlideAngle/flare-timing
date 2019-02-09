@@ -14,7 +14,7 @@ import Flight.Kml (Altitude(..))
 import Flight.Track.Distance (TrackDistance(..), Land)
 import Flight.Mask (RaceSections(..))
 import Flight.Comp.Distance (DashPathInputs(..))
-import Flight.Score (PilotTime(..), PositionAtEss(..))
+import Flight.Score (PilotTime(..), ArrivalPlacing(..))
 
 altToAlt :: Altitude -> QAlt Double [u| m |]
 altToAlt (Altitude x) = Alt . MkQuantity . fromIntegral $ x
@@ -25,7 +25,7 @@ data TimeStats =
           -- ^ The time taken from the start.
         , gsTime :: PilotTime (Quantity Double [u| h |])
           -- ^ The time taken from the start gate.
-        , positionAtEss :: Maybe PositionAtEss
+        , positionAtEss :: Maybe ArrivalPlacing
         }
 
 data FlightStats k =

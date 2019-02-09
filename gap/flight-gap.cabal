@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 9efefec1ca50fef95b73a55b4e679a521044e34599f1ed2576fe9187fb27024b
+-- hash: 47a05e8d06b55e88f7ae710595a1ceb80d64c2d9aaae3ff362dc16d4ab9e4d2f
 
 name:           flight-gap
 version:        0.1.0
@@ -48,6 +48,7 @@ library
       Flight.Gap.Distance.Sum
       Flight.Gap.Leading
       Flight.Gap.Pilots
+      Flight.Gap.Place.Arrival
       Flight.Gap.Place.Task
       Flight.Gap.Points
       Flight.Gap.Points.Arrival
@@ -101,6 +102,81 @@ library
     , vector
   default-language: Haskell2010
 
+test-suite doctest
+  type: exitcode-stdio-1.0
+  main-is: DocTest.hs
+  other-modules:
+      Flight.Gap.Allot
+      Flight.Gap.Distance.Best
+      Flight.Gap.Distance.Chunk
+      Flight.Gap.Distance.Difficulty
+      Flight.Gap.Distance.Fraction
+      Flight.Gap.Distance.Linear
+      Flight.Gap.Distance.Max
+      Flight.Gap.Distance.Min
+      Flight.Gap.Distance.Nominal
+      Flight.Gap.Distance.Pilot
+      Flight.Gap.Distance.Relative
+      Flight.Gap.Distance.Sum
+      Flight.Gap.Leading
+      Flight.Gap.Pilots
+      Flight.Gap.Place.Arrival
+      Flight.Gap.Place.Task
+      Flight.Gap.Points
+      Flight.Gap.Points.Arrival
+      Flight.Gap.Points.Distance
+      Flight.Gap.Points.Leading
+      Flight.Gap.Points.Task
+      Flight.Gap.Points.Time
+      Flight.Gap.Ratio
+      Flight.Gap.Ratio.Arrival
+      Flight.Gap.Ratio.Goal
+      Flight.Gap.Ratio.Launch
+      Flight.Gap.Ratio.Leading
+      Flight.Gap.Ratio.Speed
+      Flight.Gap.Stopped
+      Flight.Gap.Time.Best
+      Flight.Gap.Time.Nominal
+      Flight.Gap.Time.Pilot
+      Flight.Gap.Time.ScoreBack
+      Flight.Gap.Time.Velocity
+      Flight.Gap.Validity
+      Flight.Gap.Validity.Area
+      Flight.Gap.Validity.Distance
+      Flight.Gap.Validity.Launch
+      Flight.Gap.Validity.Task
+      Flight.Gap.Validity.Time
+      Flight.Gap.Weight.Arrival
+      Flight.Gap.Weight.Distance
+      Flight.Gap.Weight.GoalRatio
+      Flight.Gap.Weight.Leading
+      Flight.Gap.Weight.Time
+      Flight.Gap.Weighting
+      Flight.Score
+      Paths_flight_gap
+  hs-source-dirs:
+      library
+      test-suite-doctest
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -fno-warn-partial-type-signatures -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base >=4.10.1.0 && <5
+    , containers
+    , detour-via-sci
+    , detour-via-uom
+    , doctest
+    , flight-units
+    , newtype
+    , scientific
+    , siggy-chardust
+    , statistics
+    , template-haskell
+    , text
+    , uom-plugin
+    , vector
+  default-language: Haskell2010
+
 test-suite score
   type: exitcode-stdio-1.0
   main-is: Score.hs
@@ -119,6 +195,7 @@ test-suite score
       Flight.Gap.Distance.Sum
       Flight.Gap.Leading
       Flight.Gap.Pilots
+      Flight.Gap.Place.Arrival
       Flight.Gap.Place.Task
       Flight.Gap.Points
       Flight.Gap.Points.Arrival

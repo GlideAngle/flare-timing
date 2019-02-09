@@ -31,7 +31,7 @@ import Flight.Comp
     , StartEnd(..)
     )
 import qualified Flight.Comp as Cmp (openClose)
-import Flight.Score (PositionAtEss(..), PilotTime(..))
+import Flight.Score (ArrivalPlacing(..), PilotTime(..))
 import Flight.Track.Mask (RaceTime(..), racing)
 import Flight.Track.Cross (TrackFlyingSection(..))
 import Flight.Track.Time (ZoneIdx)
@@ -59,9 +59,9 @@ arrivalRank
     -> IxTask
     -> SpeedSection
     -> Pilot
-    -> Maybe PositionAtEss
+    -> Maybe ArrivalPlacing
 arrivalRank (ArrivalRankLookup get) mf iTask speedSection p =
-    PositionAtEss . toInteger
+    ArrivalPlacing . toInteger
     <$> ((\f -> f iTask speedSection p mf) =<< get)
 
 pilotTime

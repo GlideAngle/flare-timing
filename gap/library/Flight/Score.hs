@@ -56,7 +56,6 @@ module Flight.Score
     , arrivalWeight
     , timeWeight
     -- * Fractional allotment of arrival points
-    , PositionAtEss(..)
     , ArrivalFraction(..)
     , arrivalFraction
     -- * Fractional allotment of time points
@@ -117,6 +116,9 @@ module Flight.Score
     , madeGoal
     , cleanTrack
     , showSecs
+    -- * Places
+    , ArrivalPlacing(..)
+    , TaskPlacing(..)
     -- * Tallying points 
     , LaunchToSssPoints(..)
     , MinimumDistancePoints(..)
@@ -132,7 +134,6 @@ module Flight.Score
     , LeadingPoints(..)
     , ArrivalPoints(..)
     , TimePoints(..)
-    , TaskPlacing(..)
     , TaskPoints(..)
     , Points(..)
     , zeroPoints
@@ -199,6 +200,7 @@ import Flight.Gap.Distance.Fraction
 import Flight.Gap.Distance.Chunk
 import Flight.Gap.Distance.Difficulty
 import Flight.Gap.Leading
+import Flight.Gap.Place.Arrival
 import Flight.Gap.Place.Task
 import Flight.Gap.Points.Arrival
 import Flight.Gap.Points.Distance

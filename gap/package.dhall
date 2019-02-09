@@ -1,6 +1,6 @@
-    let deps = ./../defaults.dhall
+    let defs = ./../defaults.dhall
 
-in    deps
+in    defs
     ⫽ ./../default-extensions.dhall
     ⫽ { name =
           "flight-gap"
@@ -18,7 +18,7 @@ in    deps
           , "-fno-warn-partial-type-signatures"
           ]
       , dependencies =
-            deps.dependencies
+            defs.dependencies
           # [ "containers"
             , "vector"
             , "statistics"
@@ -67,6 +67,16 @@ in    deps
                     "Score.hs"
                 , source-dirs =
                     [ "library", "test-suite-score" ]
+                }
+            , doctest =
+                { dependencies =
+                    defs.dependencies # [ "doctest" ]
+                , ghc-options =
+                    [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
+                , main =
+                    "DocTest.hs"
+                , source-dirs =
+                    [ "library", "test-suite-doctest" ]
                 }
             }
       }

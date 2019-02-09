@@ -12,12 +12,12 @@ module Flight.Track.Arrival (TrackArrival(..)) where
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 
-import Flight.Score (PositionAtEss(..), ArrivalFraction(..))
+import Flight.Score (ArrivalPlacing(..), ArrivalFraction(..))
 
 -- ^ If arrived at goal then arrival rank and fraction.
 data TrackArrival =
     TrackArrival
-        { rank :: PositionAtEss
+        { rank :: ArrivalPlacing
         , frac :: ArrivalFraction
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
