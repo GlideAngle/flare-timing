@@ -799,10 +799,8 @@ collateDf diffs linears ls as ts penals alts ds ssEs gsEs gs =
     $ Map.intersectionWith (,) mssEs
     $ Map.intersectionWith (,) md
     $ Map.intersectionWith (,) (mergePenalties md $ Map.fromList penals')
-    $ Map.intersectionWith glueDiff mDiff
-    $ Map.intersectionWith glueLinear mLinear
-    $ Map.intersectionWith glueTime mt
-    $ Map.intersectionWith glueLA ml ma
+    $ Map.intersectionWith glueLeading ml
+    $ Map.unionWith mergeSpeed mdl mta
     where
         mDiff = Map.fromList diffs
         mLinear = Map.fromList linears
@@ -815,6 +813,14 @@ collateDf diffs linears ls as ts penals alts ds ssEs gsEs gs =
         mgsEs = Map.fromList gsEs
         mg = Map.fromList gs
         penals' = tuplePenalty <$> penals
+
+        mdl =
+            Map.intersectionWith glueDiff mDiff
+            $ zeroLinear <$> mLinear
+
+        mta =
+            Map.intersectionWith glueTime mt
+            $ zeroArrival <$> ma
 
 collateDfNoTrack
     :: [(Pilot, DifficultyPoints)]
@@ -838,10 +844,7 @@ collateDfNoTrack diffs linears as ts penals (DfNoTrack ds) =
     Map.toList
     $ Map.intersectionWith (,) md
     $ Map.intersectionWith (,) (mergePenalties md $ Map.fromList penals')
-    $ Map.intersectionWith glueDiff mDiff
-    $ Map.intersectionWith glueLinear mLinear
-    $ Map.intersectionWith glueTime mt
-    $ glueA <$> ma
+    $ Map.unionWith mergeSpeed mdl mta
     where
         mDiff = Map.fromList diffs
         mLinear = Map.fromList linears
@@ -854,6 +857,14 @@ collateDfNoTrack diffs linears as ts penals (DfNoTrack ds) =
             $ (\Cmp.DfNoTrackPilot{pilot = p, awardedReach = aw, awardedVelocity = av} ->
                 (p, (aw, av)))
             <$> ds
+
+        mdl =
+            Map.intersectionWith glueDiff mDiff
+            $ zeroLinear <$> mLinear
+
+        mta =
+            Map.intersectionWith glueTime mt
+            $ zeroArrival <$> ma
 
 tuplePenalty :: (a, b, c) -> (a, (b, c))
 tuplePenalty (a, b, c) = (a, (b, c))
@@ -869,6 +880,16 @@ mergePenalties =
         (Map.preserveMissing)
         (Map.zipWithMatched (\_ _ y -> y))
 
+mergeSpeed :: Gap.Points -> Gap.Points -> Gap.Points
+mergeSpeed g Gap.Points{Gap.time = t, Gap.arrival = a} =
+    g{Gap.time = t, Gap.arrival = a}
+
+zeroLinear :: LinearPoints -> Gap.Points
+zeroLinear r = zeroPoints {Gap.reach = r}
+
+zeroArrival :: ArrivalPoints -> Gap.Points
+zeroArrival a = zeroPoints {Gap.arrival = a}
+
 glueDiff :: DifficultyPoints -> Gap.Points -> Gap.Points
 glueDiff
     effort@(DifficultyPoints diff)
@@ -878,14 +899,8 @@ glueDiff
         , Gap.distance = DistancePoints $ diff + linear
         }
 
-glueLinear :: LinearPoints -> Gap.Points -> Gap.Points
-glueLinear r p = p {Gap.reach = r}
-
-glueA :: ArrivalPoints -> Gap.Points
-glueA a = zeroPoints {Gap.arrival = a}
-
-glueLA :: LeadingPoints -> ArrivalPoints -> Gap.Points
-glueLA l a = zeroPoints {Gap.leading = l, Gap.arrival = a}
+glueLeading :: LeadingPoints -> Gap.Points -> Gap.Points
+glueLeading l p = p{Gap.leading = l}
 
 glueTime :: TimePoints -> Gap.Points -> Gap.Points
 glueTime t p = p {Gap.time = t}
