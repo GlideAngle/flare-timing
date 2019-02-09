@@ -599,7 +599,6 @@ rankByArrival xsDf xsDfNt =
             | (ii, ys) <-
                         reIndex
                         . zip [1..]
-                        -- TODO: If race to goal use gsTime, if elapsed time use ssTime.
                         . groupBy ((==) `on` (fmap Stats.esMark) . statTimeRank . snd)
                         $ xs
             , let f =
