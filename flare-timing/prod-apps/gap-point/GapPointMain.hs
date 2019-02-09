@@ -623,10 +623,11 @@ points'
         scoreDfNoTrack :: [[(Pilot, Breakdown)]] =
             [ rankByTotal . sortScores
               $ fmap (tallyDfNoTrack gates lSpeedTask lWholeTask)
-              A.<$> collateDfNoTrack diffs linears as penals dsAward
+              A.<$> collateDfNoTrack diffs linears as ts penals dsAward
             | diffs <- difficultyDistancePointsDfNoTrack
             | linears <- nighDistancePointsDfNoTrack
             | as <- arrivalPoints
+            | ts <- timePoints gsSpeed
             | dsAward <- dfNtss
             | lSpeedTask <- lsSpeedTask
             | lWholeTask <- lsWholeTask
@@ -819,6 +820,7 @@ collateDfNoTrack
     :: [(Pilot, DifficultyPoints)]
     -> [(Pilot, LinearPoints)]
     -> [(Pilot, ArrivalPoints)]
+    -> [(Pilot, TimePoints)]
     -> [(Pilot, [PointPenalty], String)]
     -> DfNoTrack
     -> [
@@ -832,17 +834,19 @@ collateDfNoTrack
                 )
             )
         ]
-collateDfNoTrack diffs linears as penals (DfNoTrack ds) =
+collateDfNoTrack diffs linears as ts penals (DfNoTrack ds) =
     Map.toList
     $ Map.intersectionWith (,) md
     $ Map.intersectionWith (,) (mergePenalties md $ Map.fromList penals')
     $ Map.intersectionWith glueDiff mDiff
     $ Map.intersectionWith glueLinear mLinear
+    $ Map.intersectionWith glueTime mt
     $ glueA <$> ma
     where
         mDiff = Map.fromList diffs
         mLinear = Map.fromList linears
         ma = Map.fromList as
+        mt = Map.fromList ts
         penals' = tuplePenalty <$> penals
 
         md =
