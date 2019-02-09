@@ -3,6 +3,7 @@ module Flight.Lookup
     , scoredTimeRange
     , arrivalRank
     , pilotTime
+    , pilotEssTime
     , ticked
     , compRoutes
     , compRaceTimes
@@ -36,7 +37,7 @@ import Flight.Track.Mask (RaceTime(..), racing)
 import Flight.Track.Cross (TrackFlyingSection(..))
 import Flight.Track.Time (ZoneIdx)
 import Flight.Mask (RaceSections(..))
-import qualified Flight.Track.Speed as Speed (pilotTime)
+import qualified Flight.Track.Speed as Speed (pilotTime, pilotEssTime)
 import Flight.Lookup.Cross (FlyingLookup(..))
 import Flight.Lookup.Tag
     (ArrivalRankLookup(..), TaskTimeLookup(..), TimeLookup(..), TickLookup(..))
@@ -76,6 +77,18 @@ pilotTime (TimeLookup get) mf iTask startGates speedSection p =
     Speed.pilotTime startGates
     =<< ((\f -> f iTask speedSection p mf) =<< get)
 
+pilotEssTime
+    :: TimeLookup
+    -> MarkedFixes
+    -> IxTask
+    -> [StartGate]
+    -> SpeedSection
+    -> Pilot
+    -> Maybe UTCTime
+pilotEssTime (TimeLookup get) mf iTask startGates speedSection p =
+    Speed.pilotEssTime startGates
+    =<< ((\f -> f iTask speedSection p mf) =<< get)
+
 ticked
     :: TickLookup
     -> MarkedFixes
@@ -102,7 +115,6 @@ compTimes (TaskTimeLookup get) iTasks tasks =
     | i <- iTasks
     | s <- speedSection <$> tasks
     ]
-
 
 compRaceTimes :: TaskTimeLookup -> [IxTask] -> [Task k] -> [Maybe RaceTime]
 compRaceTimes getTaskTime iTasks tasks =

@@ -623,9 +623,10 @@ points'
         scoreDfNoTrack :: [[(Pilot, Breakdown)]] =
             [ rankByTotal . sortScores
               $ fmap (tallyDfNoTrack gates lSpeedTask lWholeTask)
-              A.<$> collateDfNoTrack diffs linears penals dsAward
+              A.<$> collateDfNoTrack diffs linears as penals dsAward
             | diffs <- difficultyDistancePointsDfNoTrack
             | linears <- nighDistancePointsDfNoTrack
+            | as <- arrivalPoints
             | dsAward <- dfNtss
             | lSpeedTask <- lsSpeedTask
             | lWholeTask <- lsWholeTask
@@ -817,18 +818,31 @@ collateDf diffs linears ls as ts penals alts ds ssEs gsEs gs =
 collateDfNoTrack
     :: [(Pilot, DifficultyPoints)]
     -> [(Pilot, LinearPoints)]
+    -> [(Pilot, ArrivalPoints)]
     -> [(Pilot, [PointPenalty], String)]
     -> DfNoTrack
-    -> [(Pilot, ((Maybe AwardedDistance, AwardedVelocity), (([PointPenalty], String), Gap.Points)))]
-collateDfNoTrack diffs linears penals (DfNoTrack ds) =
+    -> [
+            (Pilot
+            ,
+                ( (Maybe AwardedDistance, AwardedVelocity)
+                ,
+                    ( ([PointPenalty], String)
+                    , Gap.Points
+                    )
+                )
+            )
+        ]
+collateDfNoTrack diffs linears as penals (DfNoTrack ds) =
     Map.toList
     $ Map.intersectionWith (,) md
     $ Map.intersectionWith (,) (mergePenalties md $ Map.fromList penals')
     $ Map.intersectionWith glueDiff mDiff
-    $ zeroLinear <$> mLinear
+    $ Map.intersectionWith glueLinear mLinear
+    $ glueA <$> ma
     where
         mDiff = Map.fromList diffs
         mLinear = Map.fromList linears
+        ma = Map.fromList as
         penals' = tuplePenalty <$> penals
 
         md =
@@ -863,8 +877,8 @@ glueDiff
 glueLinear :: LinearPoints -> Gap.Points -> Gap.Points
 glueLinear r p = p {Gap.reach = r}
 
-zeroLinear :: LinearPoints -> Gap.Points
-zeroLinear r = zeroPoints {Gap.reach = r}
+glueA :: ArrivalPoints -> Gap.Points
+glueA a = zeroPoints {Gap.arrival = a}
 
 glueLA :: LeadingPoints -> ArrivalPoints -> Gap.Points
 glueLA l a = zeroPoints {Gap.leading = l, Gap.arrival = a}

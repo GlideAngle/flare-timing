@@ -3,8 +3,9 @@
 
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
+import Data.Function (on)
 import Data.Maybe (fromMaybe, catMaybes, isJust)
-import Data.List (sortOn)
+import Data.List (sortOn, groupBy, partition)
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map (fromList)
 import Formatting ((%), fprint)
@@ -63,6 +64,7 @@ import Flight.Mask
     )
 import Flight.Comp.Distance (compDistance, compNigh)
 import Flight.Track.Tag (Tagging)
+import Flight.Track.Place (reIndex)
 import Flight.Track.Time (AwardedVelocity(..))
 import qualified Flight.Track.Time as Time (TimeRow(..), TickRow(..))
 import Flight.Track.Arrival (TrackArrival(..))
@@ -78,7 +80,9 @@ import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
 import Flight.Lookup.Cross (FlyingLookup(..), crossFlying)
 import qualified Flight.Lookup as Lookup
-    (scoredTimeRange, arrivalRank, pilotTime, ticked, compRoutes, compRaceTimes)
+    ( scoredTimeRange, arrivalRank, ticked, compRoutes, compRaceTimes
+    , pilotTime, pilotEssTime
+    )
 import Flight.Lookup.Tag
     ( TaskTimeLookup(..)
     , tagTaskTime
@@ -258,7 +262,7 @@ writeMask
 
                                 sTime =
                                     case (ss, es) of
-                                        (Just ss', Just _) ->
+                                        (Just ss', Just es') ->
                                             let se = StartEnd ss' es
                                                 ssT = pilotTime [StartGate ss'] se
                                                 gsT = pilotTime gates se
@@ -270,6 +274,7 @@ writeMask
                                                         TimeStats
                                                             { ssTime = ssT'
                                                             , gsTime = gsT'
+                                                            , esMark = es'
                                                             , positionAtEss = Nothing
                                                             }
                                         _ -> Nothing
@@ -281,7 +286,11 @@ writeMask
                     | gates <- startGates <$> tasks
                     ]
 
-            let yss = zipWith rankByArrival yssDf yssDfNt
+            let yss =
+                    [ rankByArrival ysDf ysDfNt
+                    | ysDf <- yssDf
+                    | ysDfNt <- yssDfNt
+                    ]
 
             -- Zones (zs) of the task and zones ticked.
             let zsTaskTicked :: [Map Pilot _] =
@@ -523,9 +532,9 @@ flown' dTaskF flying math tags tasks iTask@(IxTask i) mf@MarkedFixes{mark0} p =
         Nothing -> nullStats
 
         Just task' ->
-            case (ssTime, gsTime, arrivalRank) of
-                (Just a, Just b, c@(Just _)) ->
-                    tickedStats {statTimeRank = Just $ TimeStats a b c}
+            case (ssTime, gsTime, esTime, arrivalRank) of
+                (Just a, Just b, Just e, c@(Just _)) ->
+                    tickedStats {statTimeRank = Just $ TimeStats a b e c}
 
                 _ ->
                     tickedStats
@@ -540,6 +549,7 @@ flown' dTaskF flying math tags tasks iTask@(IxTask i) mf@MarkedFixes{mark0} p =
         maybeTask = tasks ^? element (i - 1)
 
         ticked = Lookup.ticked (tagTicked tags) mf iTask speedSection' p
+        esTime = Lookup.pilotEssTime (tagPilotTime tags) mf iTask [] speedSection' p
         ssTime = Lookup.pilotTime (tagPilotTime tags) mf iTask [] speedSection' p
         gsTime = Lookup.pilotTime (tagPilotTime tags) mf iTask startGates' speedSection' p
         arrivalRank = Lookup.arrivalRank (tagArrivalRank tags) mf iTask speedSection' p
@@ -581,13 +591,37 @@ rankByArrival
     :: [(Pilot, FlightStats _)]
     -> [(Pilot, FlightStats _)]
     -> [(Pilot, FlightStats _)]
-rankByArrival xs ys =
+rankByArrival xsDf xsDfNt =
     case any isJust yTs of
-        False -> xs ++ ys
+        False -> xs
         True ->
-            xs ++ ys
+            [ (rankArrival f ii ) <$> y
+            | (ii, ys) <-
+                        reIndex
+                        . zip [1..]
+                        -- TODO: If race to goal use gsTime, if elapsed time use ssTime.
+                        . groupBy ((==) `on` (fmap Stats.esMark) . statTimeRank . snd)
+                        $ xs
+            , let f =
+                    if length ys == 1
+                        then ArrivalPlacing
+                        else (\x -> ArrivalPlacingEqual x (fromIntegral $ length ys))
+            , y <- ys
+            ]
+            ++ xsLandout
     where
-        yTs = statTimeRank . snd <$> ys
-        -- TODO: Rank by arrival, setting PositionAtESS.
-        -- xGs = (fmap gsTime) . statTimeRank . snd <$> xs
-        -- yGs = fmap gsTime <$> yTs
+        yTs = statTimeRank . snd <$> xsDfNt
+
+        xs :: [(Pilot, FlightStats _)]
+        xs =
+            sortOn ((fmap Stats.esMark) . statTimeRank . snd)
+            $ xsArrived
+
+        (xsArrived, xsLandout) =
+            partition (\(_, FlightStats{statTimeRank = r}) -> isJust r)
+            $ xsDf ++ xsDfNt
+
+rankArrival :: (Integer -> ArrivalPlacing) -> Integer -> FlightStats _ -> FlightStats _ 
+rankArrival _ _ x@FlightStats{statTimeRank = Nothing} = x
+rankArrival f ii x@FlightStats{statTimeRank = Just y} =
+    x{statTimeRank = Just y{positionAtEss = Just $ f ii}}

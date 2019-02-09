@@ -9,6 +9,7 @@ Task placing.
 -}
 module Flight.Track.Place
     ( rankByTotal
+    , reIndex
     ) where
 
 import Data.Function (on)

@@ -191,6 +191,7 @@ in    defs
                     , "lens"
                     , "siggy-chardust"
                     , "safe-exceptions"
+                    , "time"
                     , "flight-clip"
                     , "flight-gap"
                     , "flight-kml"

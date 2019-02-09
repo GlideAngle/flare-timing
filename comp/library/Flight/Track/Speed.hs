@@ -10,6 +10,7 @@ The speed of a pilot's track.
 module Flight.Track.Speed
     ( TrackSpeed(..)
     , pilotTime
+    , pilotEssTime
     , startGateTaken
     ) where
 
@@ -48,6 +49,20 @@ pilotTime gs StartEnd{unStart, unEnd = Just end} =
 
         hrs :: UTCTime -> Quantity Double [u| h |]
         hrs = convert . secs
+
+-- | The time the pilot ticked the end of the speed section.
+pilotEssTime
+    :: [StartGate]
+    -> StartEndMark
+    -> Maybe UTCTime
+pilotEssTime _ StartEnd{unEnd = Nothing} =
+    Nothing
+pilotEssTime [] StartEnd{unEnd = e@(Just _)} =
+    e
+pilotEssTime gs StartEnd{unStart, unEnd = e@(Just _)} =
+    case startGateTaken gs unStart of
+        Nothing -> Nothing
+        Just _ -> e
 
 -- | The start gate the pilot took.
 startGateTaken
