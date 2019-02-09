@@ -19,6 +19,25 @@ import Flight.Track.Point (Breakdown(..))
 import Flight.Score (Pilot(..), TaskPoints(..), TaskPlacing(..))
 import Data.Ratio.Rounding (dpRound)
 
+-- | Reindexing produces 1,2=,2=,4 and not 1,2=,2=,3 or 1,3=,3=,4.
+-- >>> reIndex []
+-- []
+--
+-- 1=,1=,3,4,5
+-- >>> reIndex [(1,[1,1]),(2,[2]),(3,[3]),(4,[4])]
+-- [(1,[1,1]),(3,[2]),(4,[3]),(5,[4])]
+--
+-- 1,2=,2=,2=,2=,2=,2=,8=,8=,10
+-- >>> reIndex [(1,[1]),(2,[2,2,2,2,2,2]),(3,[3,3]),(4,[4])]
+-- [(1,[1]),(2,[2,2,2,2,2,2]),(8,[3,3]),(10,[4])]
+--
+-- 1,2=,2=,4
+-- >>> reIndex [(1,[1]),(3,[2,2]),(4,[3])]
+-- [(1,[1]),(2,[2,2]),(4,[3])]
+--
+-- 1,2=,2=,4
+-- >>> reIndex [(3,[1]),(2,[2,2]),(1,[3])]
+-- [(1,[1]),(2,[2,2]),(4,[3])]
 reIndex :: [(Integer, [a])] -> [(Integer, [a])]
 reIndex xs =
     zipWith3
@@ -26,11 +45,11 @@ reIndex xs =
             -- NOTE: Use j so that we get; 1,2=,2=,4 and not 1,3=,3=,4.
             let j = fromIntegral $ length zs - 1
             in (i + (fromIntegral o) - j, zs))
-        ixs
+        [1..]
         ys
         offsets
     where
-        (ixs, ys) = unzip xs
+        (_, ys) = unzip xs
         lens = (\y -> (length y) - 1) <$> ys
         offsets = scanl1 (+) lens
 
