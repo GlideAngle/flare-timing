@@ -593,7 +593,7 @@ rankByArrival
     -> [(Pilot, FlightStats _)]
 rankByArrival xsDf xsDfNt =
     case any isJust yTs of
-        False -> xs
+        False -> xsDf ++ xsDfNt
         True ->
             [ (rankArrival f ii ) <$> y
             | (ii, ys) <-
