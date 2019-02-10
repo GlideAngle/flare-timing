@@ -29,6 +29,8 @@ import Data.Maybe (catMaybes)
 import Data.UnitsOfMeasure ((-:), u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
+import Data.Via.Scientific (DecimalPlaces(..), deriveDecimalPlaces)
+import Data.Via.UnitsOfMeasure (ViaQ(..))
 import Flight.Units ()
 import Flight.Ratio (pattern (:%))
 import Flight.Gap.Ratio.Leading
@@ -60,7 +62,18 @@ newtype TaskDeadline = TaskDeadline (Quantity Rational [u| s |])
 
 -- | The distance in km to the end of the speed section.
 newtype DistanceToEss = DistanceToEss (Quantity Rational [u| km |])
-    deriving (Eq, Ord, Show)
+    deriving (Eq, Ord)
+
+instance
+    (q ~ Quantity Rational [u| km |])
+    => Newtype DistanceToEss q where
+    pack = DistanceToEss
+    unpack (DistanceToEss a) = a
+
+deriveDecimalPlaces (DecimalPlaces 3) ''DistanceToEss
+
+instance Show DistanceToEss where
+    show x = show $ ViaQ x
 
 -- | The length of the speed section in km.
 newtype LengthOfSs = LengthOfSs (Quantity Rational [u| km |])
