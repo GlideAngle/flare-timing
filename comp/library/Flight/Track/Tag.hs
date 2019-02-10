@@ -51,6 +51,8 @@ data TrackTime =
         -- ^ For each zone, the ordered times of each tag.
         , zonesRankPilot :: [[Pilot]]
         -- ^ For each zone, the ordered pilots of each tag.
+        , lastLanding :: Maybe UTCTime
+        -- ^ For the task, the time of the last landing of any pilot.
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
@@ -128,8 +130,10 @@ cmp a b =
         ("lng", _) -> GT
 
         ("zonesSum", _) -> LT
+
         ("zonesFirst", "zonesSum") -> GT
         ("zonesFirst", _) -> LT
+
         ("zonesLast", "zonesSum") -> GT
         ("zonesLast", "zonesFirst") -> GT
         ("zonesLast", _) -> LT
@@ -138,6 +142,11 @@ cmp a b =
         ("zonesRankTime", "zonesFirst") -> GT
         ("zonesRankTime", "zonesLast") -> GT
         ("zonesRankTime", _) -> LT
+
+        ("zonesRankPilot", "lastLanding") -> LT
         ("zonesRankPilot", _) -> GT
+
+        ("lastLanding", _) -> GT
+
         _ -> compare a b
 

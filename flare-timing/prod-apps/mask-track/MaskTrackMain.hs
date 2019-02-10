@@ -84,8 +84,8 @@ import qualified Flight.Lookup as Lookup
     , pilotTime, pilotEssTime
     )
 import Flight.Lookup.Tag
-    ( TaskTimeLookup(..)
-    , tagTaskTime
+    ( TaskLeadingLookup(..)
+    , tagTaskLeading
     , tagArrivalRank
     , tagPilotTime
     , tagTicked
@@ -169,7 +169,7 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
             writeMask
                 cs
                 lookupTaskLength
-                (tagTaskTime tagging)
+                (tagTaskLeading tagging)
                 (IxTask <$> task)
                 (pilotNamed cs $ PilotName <$> pilot)
                 compFile
@@ -178,7 +178,7 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
 writeMask
     :: CompSettings k
     -> RoutesLookupTaskDistance
-    -> TaskTimeLookup
+    -> TaskLeadingLookup
     -> [IxTask]
     -> [Pilot]
     -> CompInputFile
@@ -200,7 +200,7 @@ writeMask
         , pilotGroups
         }
     routes
-    lookupTaskTime
+    lookupTaskLeading
     selectTasks selectPilots compFile f = do
 
     checks <-
@@ -343,7 +343,7 @@ writeMask
                                             })
                                 (retroactive <$> stopped task)
 
-                    | crt <- Lookup.compRaceTimes lookupTaskTime iTasks tasks
+                    | crt <- Lookup.compRaceTimes lookupTaskLeading iTasks tasks
                     | task <- tasks
                     ]
 

@@ -1,10 +1,13 @@
 module Flight.Lookup.Tag
     ( TaskTimeLookup(..)
+    , TaskLeadingLookup(..)
     , ArrivalRankLookup(..)
     , TimeLookup(..)
+    , LeadingLookup(..)
     , TagLookup(..)
     , TickLookup(..)
     , tagTaskTime
+    , tagTaskLeading
     , tagArrivalRank
     , tagPilotTime
     , tagPilotTag
@@ -21,6 +24,8 @@ import Flight.Comp
     , Pilot(..)
     , StartEnd(..)
     , StartEndMark
+    , StartEndDown(..)
+    , StartEndDownMark
     , FirstLead(..)
     , LastArrival(..)
     )
@@ -35,11 +40,27 @@ import Flight.Track.Cross (Fix(fix, time))
 type TaskTaggingLookup a = IxTask -> SpeedSection -> Maybe a
 
 newtype TaskTimeLookup = TaskTimeLookup (Maybe (TaskTaggingLookup StartEndMark))
+newtype TaskLeadingLookup = TaskLeadingLookup (Maybe (TaskTaggingLookup StartEndDownMark))
 
 type TaggingLookup a = IxTask -> SpeedSection -> Pilot -> Kml.MarkedFixes -> Maybe a
 
 tagTaskTime :: Maybe Tagging -> TaskTimeLookup
 tagTaskTime = TaskTimeLookup . (fmap taskTimeElapsed)
+
+tagTaskLeading :: Maybe Tagging -> TaskLeadingLookup
+tagTaskLeading = TaskLeadingLookup . (fmap taskLeadingTimes)
+
+taskLeadingTimes
+    :: Tagging
+    -> IxTask
+    -> SpeedSection
+    -> Maybe StartEndDownMark
+taskLeadingTimes _ _ Nothing = Nothing
+taskLeadingTimes x (IxTask i) ss = do
+    TrackTime{zonesFirst, zonesLast, lastLanding} <- timing x ^? element (fromIntegral i - 1)
+    FirstLead start <- firstLead ss zonesFirst
+    let end = (\(LastArrival a) -> a) <$> lastArrival ss zonesLast
+    return $ StartEndDown start end lastLanding
 
 taskTimeElapsed
     :: Tagging
@@ -55,6 +76,7 @@ taskTimeElapsed x (IxTask i) ss = do
 
 newtype ArrivalRankLookup = ArrivalRankLookup (Maybe (TaggingLookup Int))
 newtype TimeLookup = TimeLookup (Maybe (TaggingLookup StartEndMark))
+newtype LeadingLookup = LeadingLookup (Maybe (TaggingLookup StartEndDownMark))
 newtype TagLookup = TagLookup (Maybe (TaggingLookup [Maybe Fix]))
 newtype TickLookup = TickLookup (Maybe (TaggingLookup Ticked))
 

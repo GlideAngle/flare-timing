@@ -20,7 +20,7 @@ import Data.Vector (Vector)
 import qualified Data.Vector as V (fromList, toList, null, last)
 
 import Flight.Track.Time
-    (TickRow(..), LeadClose(..), LeadArrival(..), discard)
+    (TickRow(..), LeadClose(..), LeadAllDown(..), LeadArrival(..), discard)
 import Flight.Track.Mask (RaceTime(..))
 import Flight.Comp
     ( IxTask(..)
@@ -148,7 +148,7 @@ readPilotLeading
 
     (_, rows) <- readAlignTime (AlignTimeFile (dIn </> file))
 
-    return $ (V.toList . discard toLeg taskLength close arrival) rows
+    return $ (V.toList . discard toLeg taskLength close down arrival) rows
     where
         dir = compFileToCompDir compFile
         (AlignTimeDir dIn, AlignTimeFile file) = alignTimePath dir i pilot
@@ -157,6 +157,10 @@ readPilotLeading
         close = do
             c <- leadClose raceTime
             return $ LeadClose c
+
+        down = do
+            d <- leadAllDown raceTime
+            return $ LeadAllDown d
 
         arrival = do
             a <- leadArrival raceTime

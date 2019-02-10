@@ -33,13 +33,14 @@ import Flight.Comp
     , Pilot(..)
     , TrackFileFail
     , IxTask(..)
-    , StartEnd(..)
-    , StartEndMark
+    , StartEndDown(..)
+    , StartEndDownMark
     , RoutesLookupTaskDistance(..)
     , TaskRouteDistance(..)
     , FirstLead(..)
     , FirstStart(..)
     , LastArrival(..)
+    , LastDown(..)
     , compFileToCompDir
     , compToTaskLength
     , compToCross
@@ -51,13 +52,14 @@ import Flight.Comp
     , ensureExt
     , pilotNamed
     )
-import Flight.Track.Time (LeadClose(..), LeadArrival(..), discard, allHeaders)
+import Flight.Track.Time
+    (LeadClose(..), LeadAllDown(..), LeadArrival(..), discard, allHeaders)
 import Flight.Track.Mask (RaceTime(..), racing)
 import Flight.Mask (checkTracks)
 import Flight.Scribe
     (readComp, readRoute, readTagging, readAlignTime, writeDiscardFurther)
 import Flight.Lookup.Route (routeLength)
-import Flight.Lookup.Tag (TaskTimeLookup(..), tagTaskTime)
+import Flight.Lookup.Tag (TaskLeadingLookup(..), tagTaskLeading)
 import Flight.Score (Leg(..))
 import DiscardFurtherOptions (description)
 
@@ -112,7 +114,7 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
             filterTime
                 cs
                 (routeLength taskRoute taskRouteSpeedSubset routes)
-                (tagTaskTime tagging)
+                (tagTaskLeading tagging)
                 compFile
                 (IxTask <$> task)
                 (pilotNamed cs $ PilotName <$> pilot)
@@ -121,7 +123,7 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
 filterTime
     :: CompSettings k
     -> RoutesLookupTaskDistance
-    -> TaskTimeLookup
+    -> TaskLeadingLookup
     -> CompInputFile
     -> [IxTask]
     -> [Pilot]
@@ -133,7 +135,7 @@ filterTime
 filterTime
     CompSettings{tasks}
     lengths
-    (TaskTimeLookup lookupTaskTime)
+    (TaskLeadingLookup lookupTaskLeading)
     compFile selectTasks selectPilots f = do
 
     checks <-
@@ -153,30 +155,35 @@ filterTime
 
             let iTasks = IxTask <$> [1 .. length taskPilots]
 
-            let raceStartEnd :: [Maybe StartEndMark] =
+            let raceTs :: [Maybe StartEndDownMark] =
                     join <$>
-                    [ ($ s) . ($ i) <$> lookupTaskTime
+                    [ ($ s) . ($ i) <$> lookupTaskLeading
                     | i <- iTasks
                     | s <- speedSection <$> tasks
                     ]
 
             let raceFirstLead :: [Maybe FirstLead] =
-                    (fmap . fmap) (FirstLead . unStart) raceStartEnd
+                    (fmap . fmap) (FirstLead . unStart) raceTs
 
             let raceFirstStart :: [Maybe FirstStart] =
-                    (fmap . fmap) (FirstStart . unStart) raceStartEnd
+                    (fmap . fmap) (FirstStart . unStart) raceTs
 
             let raceLastArrival :: [Maybe LastArrival] =
                     join
-                    <$> (fmap . fmap) (fmap LastArrival . unEnd) raceStartEnd
+                    <$> (fmap . fmap) (fmap LastArrival . unEnd) raceTs
+
+            let raceLastDown :: [Maybe LastDown] =
+                    join
+                    <$> (fmap . fmap) (fmap LastDown . unDown) raceTs
 
             let compRaceTimes :: [Maybe RaceTime] =
-                    [ racing (Cmp.openClose ss zt) fl fs la
+                    [ racing (Cmp.openClose ss zt) fl fs la ld
                     | ss <- speedSection <$> tasks
                     | zt <- zoneTimes <$> tasks
                     | fl <- raceFirstLead
                     | fs <- raceFirstStart
                     | la <- raceLastArrival
+                    | ld <- raceLastDown
                     ]
 
             let raceTime =
@@ -244,7 +251,7 @@ readFilterWrite
     when (selectTask iTask) $ do
     _ <- createDirectoryIfMissing True dOut
     rows <- readAlignTime (AlignTimeFile (dIn </> file))
-    f . discard toLeg taskLength close arrival . snd $ rows
+    f . discard toLeg taskLength close down arrival . snd $ rows
     where
         f = writeDiscardFurther (DiscardFurtherFile $ dOut </> file) allHeaders
         dir = compFileToCompDir compFile
@@ -252,4 +259,5 @@ readFilterWrite
         (DiscardFurtherDir dOut) = discardFurtherDir dir i
         taskLength = (fmap wholeTaskDistance . ($ iTask)) =<< lookupTaskLength
         close = LeadClose <$> leadClose raceTime
+        down = LeadAllDown <$> leadAllDown raceTime
         arrival = LeadArrival <$> leadArrival raceTime

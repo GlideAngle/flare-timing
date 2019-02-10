@@ -7,7 +7,7 @@ import Formatting.Clock (timeSpecs)
 import Data.Time.Clock (UTCTime)
 import System.Clock (getTime, Clock(Monotonic))
 import Data.Maybe (catMaybes, fromMaybe)
-import Data.List (transpose, sortOn)
+import Data.List (transpose, sortOn, sort)
 import Control.Monad (mapM_)
 import Control.Exception.Safe (catchIO)
 import System.FilePath (takeFileName)
@@ -26,7 +26,9 @@ import Flight.Comp
     , ensureExt
     )
 import Flight.Track.Cross
-    (Crossing(..), TrackCross(..), PilotTrackCross(..), Fix(..))
+    ( Crossing(..), TrackCross(..), TrackFlyingSection(..)
+    , PilotTrackCross(..), Fix(..)
+    )
 import Flight.Track.Tag
     (Tagging(..), TrackTime(..), TrackTag(..), PilotTrackTag(..))
 import Flight.Scribe (readCrossing, writeTagging)
@@ -66,7 +68,7 @@ go crossFile@(CrossZoneFile crossPath) = do
 
     case cs of
         Nothing -> putStrLn "Couldn't read the crossings."
-        Just Crossing{crossing} -> do
+        Just Crossing{crossing, flying} -> do
             let pss :: [[PilotTrackTag]] =
                     (fmap . fmap)
                         (\case
@@ -74,26 +76,48 @@ go crossFile@(CrossZoneFile crossPath) = do
                                 PilotTrackTag p Nothing
 
                             PilotTrackCross p (Just xs) ->
-                                PilotTrackTag p (Just $ flown xs))
+                                PilotTrackTag p (Just $ flownTag xs))
                         crossing
 
+            let tss :: [[Maybe UTCTime]] =
+                    (fmap . fmap)
+                        (\case
+                            (_, Nothing) -> Nothing
+                            (_, Just x) -> flownTime x)
+                        flying
+
+            let times =
+                    [ timed ps ts
+                    | ps <- pss
+                    | ts <- tss
+                    ]
+
             let tagZone =
-                    Tagging { timing = timed <$> pss
+                    Tagging { timing = times
                             , tagging = pss
                             }
 
             writeTagging (crossToTag crossFile) tagZone
 
-timed :: [PilotTrackTag] -> TrackTime
-timed xs =
+timed :: [PilotTrackTag] -> [Maybe UTCTime] -> TrackTime
+timed xs ys =
     TrackTime
         { zonesSum = length <$> rankTime
         , zonesFirst = firstTag <$> zs'
         , zonesLast = lastTag <$> zs'
         , zonesRankTime = rankTime
         , zonesRankPilot = (fmap . fmap) fst rs'
+        , lastLanding = down
         }
     where
+        down =
+            case catMaybes ys of
+                [] -> Nothing
+                ts ->
+                    case reverse $ sort ts of
+                        [] -> Nothing
+                        (t : _) -> Just t
+
         zs :: [[Maybe UTCTime]]
         zs = fromMaybe [] . tagTimes <$> xs
 
@@ -158,8 +182,12 @@ tagTimes (PilotTrackTag _ Nothing) = Nothing
 tagTimes (PilotTrackTag _ (Just xs)) =
     Just $ fmap time <$> zonesTag xs
 
-flown :: TrackCross -> TrackTag
-flown TrackCross{zonesCrossSelected} =
+flownTag :: TrackCross -> TrackTag
+flownTag TrackCross{zonesCrossSelected} =
     TrackTag
         { zonesTag = tagZones zonesCrossSelected
         }
+
+flownTime :: TrackFlyingSection -> Maybe UTCTime
+flownTime TrackFlyingSection{flyingTimes = Nothing} = Nothing
+flownTime TrackFlyingSection{flyingTimes = Just (_, t)} = Just t

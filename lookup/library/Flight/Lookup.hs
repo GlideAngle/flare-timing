@@ -25,11 +25,12 @@ import Flight.Comp
     , RoutesLookupTaskDistance(..)
     , TaskRouteDistance
     , StartGate
-    , StartEndMark
     , FirstStart(..)
     , FirstLead(..)
     , LastArrival(..)
-    , StartEnd(..)
+    , LastDown(..)
+    , StartEndDown(..)
+    , StartEndDownMark
     )
 import qualified Flight.Comp as Cmp (openClose)
 import Flight.Score (ArrivalPlacing(..), PilotTime(..))
@@ -40,7 +41,9 @@ import Flight.Mask (RaceSections(..))
 import qualified Flight.Track.Speed as Speed (pilotTime, pilotEssTime)
 import Flight.Lookup.Cross (FlyingLookup(..))
 import Flight.Lookup.Tag
-    (ArrivalRankLookup(..), TaskTimeLookup(..), TimeLookup(..), TickLookup(..))
+    ( ArrivalRankLookup(..) , TaskLeadingLookup(..)
+    , TimeLookup(..), TickLookup(..)
+    )
 
 flyingTimeRange :: FlyingLookup -> UTCTime -> IxTask -> Pilot -> FlyingSection UTCTime
 flyingTimeRange (FlyingLookup get) mark0 iTask p =
@@ -108,33 +111,38 @@ compRoutes
 compRoutes (RoutesLookupTaskDistance get) iTasks =
     (\i -> ((\g -> g i) =<< get)) <$> iTasks
 
-compTimes :: TaskTimeLookup -> [IxTask] -> [Task k] -> [Maybe StartEndMark]
-compTimes (TaskTimeLookup get) iTasks tasks =
+compTimes :: TaskLeadingLookup -> [IxTask] -> [Task k] -> [Maybe StartEndDownMark]
+compTimes (TaskLeadingLookup get) iTasks tasks =
     join <$>
     [ ($ s) . ($ i) <$> get
     | i <- iTasks
     | s <- speedSection <$> tasks
     ]
 
-compRaceTimes :: TaskTimeLookup -> [IxTask] -> [Task k] -> [Maybe RaceTime]
-compRaceTimes getTaskTime iTasks tasks =
-    [ racing (Cmp.openClose ss zt) fl fs la
+compRaceTimes :: TaskLeadingLookup -> [IxTask] -> [Task k] -> [Maybe RaceTime]
+compRaceTimes getTaskLeading iTasks tasks =
+    [ racing (Cmp.openClose ss zt) fl fs la ld
     | ss <- speedSection <$> tasks
     | zt <- zoneTimes <$> tasks
     | fl <- raceFirstLead
     | fs <- raceFirstStart
     | la <- raceLastArrival
+    | ld <- raceLastDown
     ]
     where
-        raceStartEnd :: [Maybe StartEndMark] =
-                compTimes getTaskTime iTasks tasks
+        xs :: [Maybe StartEndDownMark] =
+                compTimes getTaskLeading iTasks tasks
 
         raceFirstLead :: [Maybe FirstLead] =
-                (fmap . fmap) (FirstLead . unStart) raceStartEnd
+                (fmap . fmap) (FirstLead . unStart) xs
 
         raceFirstStart :: [Maybe FirstStart] =
-                (fmap . fmap) (FirstStart . unStart) raceStartEnd
+                (fmap . fmap) (FirstStart . unStart) xs
 
         raceLastArrival :: [Maybe LastArrival] =
                 join
-                <$> (fmap . fmap) (fmap LastArrival . unEnd) raceStartEnd
+                <$> (fmap . fmap) (fmap LastArrival . unEnd) xs
+
+        raceLastDown :: [Maybe LastDown] =
+                join
+                <$> (fmap . fmap) (fmap LastDown . unDown) xs

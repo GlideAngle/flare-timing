@@ -1,3 +1,5 @@
+{-# LANGUAGE DuplicateRecordFields #-}
+
 {-|
 Module      : Data.Flight.Comp
 Copyright   : (c) Block Scope Limited 2017
@@ -29,8 +31,11 @@ module Flight.Comp
     , FirstLead(..)
     , FirstStart(..)
     , LastArrival(..)
+    , LastDown(..)
     , StartEnd(..)
     , StartEndMark
+    , StartEndDown(..)
+    , StartEndDownMark
     , RoutesLookupTaskDistance(..)
     , TaskRouteDistance(..)
     , showTask
@@ -115,6 +120,11 @@ newtype LastArrival = LastArrival UTCTime
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
+-- | The time of the last landing.
+newtype LastDown = LastDown UTCTime
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
+
 -- | A race task can be started and not finished if no one makes goal.
 data StartEnd a b =
     StartEnd
@@ -123,7 +133,16 @@ data StartEnd a b =
         }
     deriving Show
 
+data StartEndDown a b =
+    StartEndDown
+        { unStart :: a
+        , unEnd :: Maybe b
+        , unDown :: Maybe b
+        }
+    deriving Show
+
 type StartEndMark = StartEnd UTCTime UTCTime
+type StartEndDownMark = StartEndDown UTCTime UTCTime
 
 -- | 1-based indices of a task in a competition.
 newtype IxTask = IxTask Int deriving (Eq, Show)

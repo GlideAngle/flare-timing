@@ -14,7 +14,7 @@ module Flight.Track.Mask
     ) where
 
 import Data.Maybe (fromMaybe)
-import Data.Time.Clock (UTCTime, diffUTCTime)
+import Data.Time.Clock (UTCTime, diffUTCTime, addUTCTime)
 import Data.String (IsString())
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
@@ -24,7 +24,8 @@ import Data.Aeson (ToJSON(..), FromJSON(..))
 import Flight.Clip (FlyCut(..), FlyClipping(..))
 import Flight.Distance (QTaskDistance)
 import Flight.LatLng (QAlt)
-import Flight.Comp (OpenClose(..), FirstLead(..), FirstStart(..), LastArrival(..))
+import Flight.Comp
+    (OpenClose(..), FirstLead(..), FirstStart(..), LastArrival(..), LastDown(..))
 import Flight.Score
     ( Pilot(..)
     , PilotsAtEss(..)
@@ -95,6 +96,8 @@ data RaceTime =
         , lastArrival :: Maybe LastArrival
         , leadArrival :: Maybe EssTime
         -- ^ When the last pilot arrives at goal, seconds from the time of first lead.
+        , leadAllDown :: Maybe EssTime
+        -- ^ When the last pilot lands, seconds from the time of first lead.
         , leadClose :: Maybe EssTime
         -- ^ When the task closes, seconds from the time of first lead.
         , tickClose :: Maybe EssTime
@@ -119,18 +122,25 @@ instance FlyClipping UTCTime RaceTime where
             -- TODO: Review whether there is not a better and more explicit
             -- way to cut short the task deadline when calculating leading
             -- area.
-            last' = Just . LastArrival $
+            lastArrival' = Just . LastArrival $
                     maybe (close oc) (\(LastArrival t) -> min t1 t) lastArrival
 
-            uc = racing (Just oc) firstLead firstStart last'
+            lastDown = LastDown <$> do
+                FirstLead lead <- firstLead
+                EssTime down <- leadAllDown 
+                let secs = fromIntegral (round (fromRational down :: Double) :: Integer)
+                return $ secs `addUTCTime` lead
+
+            uc = racing (Just oc) firstLead firstStart lastArrival' lastDown
 
 racing
     :: Maybe OpenClose
     -> Maybe FirstLead
     -> Maybe FirstStart
     -> Maybe LastArrival
+    -> Maybe LastDown
     -> Maybe RaceTime
-racing oc firstLead firstStart lastArrival = do
+racing oc firstLead firstStart lastArrival lastDown = do
     OpenClose{open, close} <- oc
     return
         RaceTime
@@ -144,6 +154,11 @@ racing oc firstLead firstStart lastArrival = do
                 FirstLead lead <- firstLead
                 LastArrival end <- lastArrival
                 return $ end `diffUTCTime` lead
+
+            , leadAllDown = EssTime . toRational <$> do
+                FirstLead lead <- firstLead
+                LastDown down <- lastDown
+                return $ down `diffUTCTime` lead
 
             , leadClose = EssTime . toRational <$> do
                 FirstLead lead <- firstLead

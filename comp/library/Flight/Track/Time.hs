@@ -16,6 +16,7 @@ module Flight.Track.Time
     , TrackRow(..)
     , TimeRow(..)
     , TickRow(..)
+    , LeadAllDown(..)
     , LeadArrival(..)
     , LeadClose(..)
     , FixIdx(..)
@@ -365,21 +366,24 @@ leadingArea
     :: (Int -> Leg)
     -> Maybe (QTaskDistance Double [u| m |])
     -> Maybe LeadClose
+    -> Maybe LeadAllDown
     -> Maybe LeadArrival
     -> [TickRow]
     -> [TickRow]
 
-leadingArea _ _ _ _ [] = []
+leadingArea _ _ _ _ _ [] = []
 
--- NOTE: Everyone has bombed and no one has lead out from the start.
-leadingArea _ _ Nothing _ _ = []
-
-leadingArea _ Nothing _ _ xs = xs
+leadingArea _ _ _ Nothing _ xs = xs
+leadingArea _ _ Nothing _ _ xs = xs
+leadingArea _ Nothing _ _ _ xs = xs
 
 leadingArea
     toLeg
     (Just (TaskDistance td))
-    close@(Just (LeadClose (EssTime tt))) arrival rows =
+    close@(Just (LeadClose (EssTime tt)))
+    down
+    arrival
+    rows =
     [ r{area = step}
     | r <- rows
     | step <- seq
@@ -394,7 +398,7 @@ leadingArea
             areaSteps
                 (TaskDeadline $ MkQuantity tt)
                 (LengthOfSs . MkQuantity . toRational $ d)
-                (toLcTrack toLeg close arrival rows)
+                (toLcTrack toLeg close down arrival rows)
 
         extraRow = maybeToList $ do
             lr <- lastRow
@@ -409,6 +413,9 @@ toLcPoint toLeg TickRow{legIdx = (LegIdx ix), tickLead = Just (LeadTick t), dist
         , mark = TaskTime . MkQuantity . toRational $ t
         , togo = DistanceToEss . MkQuantity . toRational $ distance
         }
+
+-- | The time of last landing among all pilots, in seconds from first lead.
+newtype LeadAllDown = LeadAllDown EssTime
 
 -- | The time of last arrival at goal, in seconds from first lead.
 newtype LeadArrival = LeadArrival EssTime
@@ -425,29 +432,39 @@ instance Show LeadClose where
 toLcTrack
     :: (Int -> Leg)
     -> Maybe LeadClose
+    -> Maybe LeadAllDown
     -> Maybe LeadArrival
     -> [TickRow]
     -> LcTrack
-toLcTrack toLeg tr ta xs =
+toLcTrack toLeg tc td ta xs =
     x{seq = reverse seq}
     where
-        x@LcSeq{seq} = toLcTrackRev toLeg tr ta $ reverse xs
+        x@LcSeq{seq} = toLcTrackRev toLeg tc td ta $ reverse xs
 
 toLcTrackRev
     :: (Int -> Leg)
     -> Maybe LeadClose
+    -> Maybe LeadAllDown
     -> Maybe LeadArrival
     -> [TickRow]
     -> LcTrack
 
 -- NOTE: Everyone has bombed and no one has lead out from the start.
-toLcTrackRev _ Nothing _ _ = LcSeq{seq = [], extra = Nothing}
+toLcTrackRev _ Nothing _ _ _ = LcSeq{seq = [], extra = Nothing}
+toLcTrackRev _ _ Nothing _ _ = LcSeq{seq = [], extra = Nothing}
+toLcTrackRev _ _ _ _ [] = LcSeq{seq = [], extra = Nothing}
 
-toLcTrackRev _ _ _ [] = LcSeq{seq = [], extra = Nothing}
+toLcTrackRev
+    _
+    (Just (LeadClose _))
+    (Just (LeadAllDown _))
+    (Just (LeadArrival _))
+    (TickRow{tickLead = Nothing} : _) = LcSeq{seq = [], extra = Nothing}
 
 toLcTrackRev
     toLeg
     (Just (LeadClose close))
+    (Just (LeadAllDown down))
     Nothing
     xs@(TickRow{distance} : _) =
         -- NOTE: Everyone has landed out.
@@ -456,29 +473,34 @@ toLcTrackRev
         xs' = catMaybes $ toLcPoint toLeg <$> xs
 
         y = landOutRow
-                close
+                (min down close)
                 (DistanceToEss . MkQuantity . toRational $ distance)
 
 toLcTrackRev
     toLeg
-    (Just (LeadClose close))
+    (Just (LeadClose _))
+    (Just (LeadAllDown _))
     (Just (LeadArrival arrive))
-    xs@(TickRow{tickLead, distance} : _) =
-        -- NOTE: If distance <= 0 then goal was made.
-        if distance <= 0
-            then LcSeq{seq = xs', extra = Nothing}
-            else LcSeq{seq = xs', extra = Just y}
+    xs@(TickRow{tickLead = Just (LeadTick t), distance} : _)
+        -- NOTE: If distance <= 0 then ESS was made.
+        | distance <= 0 = LcSeq{seq = xs', extra = Nothing}
+        -- NOTE: Landed out before the last pilot made ESS.
+        | t' < arrive = LcSeq{seq = xs', extra = Just yEarly}
+        -- NOTE: Landed out after the last pilot made ESS.
+        | otherwise = LcSeq{seq = xs', extra = Just yLate}
     where
         xs' = catMaybes $ toLcPoint toLeg <$> xs
+        t' = EssTime $ toRational t
 
-        t' =
-            case tickLead of
-                Nothing -> arrive
-                (Just (LeadTick t)) -> EssTime $ toRational t
+        yEarly =
+                landOutRow
+                    arrive
+                    (DistanceToEss . MkQuantity . toRational $ distance)
 
-        y = landOutRow
-                (min close . max arrive $ t')
-                (DistanceToEss . MkQuantity . toRational $ distance)
+        yLate =
+                landOutRow
+                    t'
+                    (DistanceToEss . MkQuantity . toRational $ distance)
 
 landOutRow :: EssTime -> DistanceToEss -> LcPoint
 landOutRow (EssTime t) d =
@@ -508,12 +530,13 @@ discard
     :: (Int -> Leg)
     -> Maybe (QTaskDistance Double [u| m |])
     -> Maybe LeadClose
+    -> Maybe LeadAllDown
     -> Maybe LeadArrival
     -> Vector TimeRow
     -> Vector TickRow
-discard toLeg dRace close arrival xs =
+discard toLeg dRace close down arrival xs =
     V.fromList
-    . leadingArea toLeg dRace close arrival
+    . leadingArea toLeg dRace close down arrival
     . discardFurther
     . dropZeros
     . V.toList
