@@ -449,20 +449,14 @@ toLcTrackRev
     toLeg
     (Just (LeadClose close))
     Nothing
-    xs@(TickRow{tickLead, distance} : _) =
+    xs@(TickRow{distance} : _) =
         -- NOTE: Everyone has landed out.
-        LcSeq
-            { seq = catMaybes $ Just y : (toLcPoint toLeg <$> xs)
-            , extra = Nothing
-            }
+        LcSeq{seq = xs', extra = Just y}
     where
-        t' =
-            case tickLead of
-              Nothing -> close
-              (Just (LeadTick t)) -> EssTime $ toRational t
+        xs' = catMaybes $ toLcPoint toLeg <$> xs
 
         y = landOutRow
-                (min close t')
+                close
                 (DistanceToEss . MkQuantity . toRational $ distance)
 
 toLcTrackRev
@@ -479,8 +473,8 @@ toLcTrackRev
 
         t' =
             case tickLead of
-              Nothing -> arrive
-              (Just (LeadTick t)) -> EssTime $ toRational t
+                Nothing -> arrive
+                (Just (LeadTick t)) -> EssTime $ toRational t
 
         y = landOutRow
                 (min close . max arrive $ t')
