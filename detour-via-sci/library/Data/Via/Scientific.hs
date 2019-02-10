@@ -33,6 +33,7 @@ module Data.Via.Scientific
     , toSci
     -- * Deriving instances with Template Haskell
     , deriveDecimalPlaces
+    , deriveShowViaSci
     , deriveJsonViaSci
     , deriveCsvViaSci
     ) where
@@ -143,7 +144,11 @@ data ViaSci n where
 
 deriving instance (Eq n) => Eq (ViaSci n)
 deriving instance (Ord n) => Ord (ViaSci n)
-deriving instance (Show n) => Show (ViaSci n)
+
+instance
+    (DefaultDecimalPlaces n, Newtype n Rational)
+    => Show (ViaSci n) where
+    show (ViaSci x) = show $ toSci (defdp x) (unpack x)
 
 instance
     (DefaultDecimalPlaces n, Newtype n Rational)
@@ -178,6 +183,20 @@ deriveDecimalPlaces dp name =
         instance DefaultDecimalPlaces $(conT name) where
             defdp _ = $(lift dp)
         |]
+
+-- | Derives an instance of 'Show' wrapping the value with 'ViaSci' before
+-- showing.
+-- 
+-- >>> deriveShowViaSci ''Lat
+-- ...
+deriveShowViaSci :: Name -> Q [Dec]
+deriveShowViaSci name =
+    [d|
+        instance Show $a where
+            show x = show $ ViaSci x
+        |]
+    where
+        a = conT name
 
 -- | Derives an instance of 'ToJSON' wrapping the value with 'ViaSci' before
 -- encoding. Similarly the value is decoded as 'ViaSci' and then unwrapped in
@@ -234,7 +253,7 @@ deriveCsvViaSci name =
 -- Let's say we have a latitude that is a @newtype@ 'Rational' number but we
 -- want it to be encoded to JSON with a fixed number of decimal places.
 --
--- >>> newtype Lat = Lat Rational deriving (Eq, Ord, Show)
+-- >>> newtype Lat = Lat Rational deriving (Eq, Ord)
 --
 -- Types going 'ViaSci' also need to be instances of 'DefaultDecimalPlaces' and
 -- 'Newtype'.
@@ -249,6 +268,8 @@ deriveCsvViaSci name =
 --     toJSON x = toJSON $ ViaSci x
 -- instance FromJSON Lat where
 --     parseJSON o = do ViaSci x <- parseJSON o; return x
+-- instance Show Lat where
+--     show x = show $ ViaSci x
 -- :}
 --
 -- >>> let x = 1122334455667788 % 10000000000000000

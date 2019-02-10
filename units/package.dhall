@@ -23,6 +23,8 @@ in    defs
             , "formatting"
             , "uom-plugin"
             , "siggy-chardust"
+            , "detour-via-sci"
+            , "newtype"
             ]
       , library =
           { source-dirs =

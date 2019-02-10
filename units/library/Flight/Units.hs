@@ -6,11 +6,13 @@ module Flight.Units
     , realToFrac'
     ) where
 
-import Data.UnitsOfMeasure (u, convert, fromRational')
+import Control.Newtype (Newtype(..))
+import Data.UnitsOfMeasure (Unit, u, convert, fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Data.Bifunctor.Flip (Flip(..))
 import Data.Ratio.Rounding (dpRound)
 
+import Data.Via.Scientific (DecimalPlaces(..), DefaultDecimalPlaces(..))
 import Flight.Units.Angle ()
 
 [u| s, m |]
@@ -38,3 +40,10 @@ showRadian b = show dbl
         deg = convert b :: Quantity Rational [u| deg |]
         Flip rounded = dpRound 3 <$> Flip deg
         MkQuantity dbl = fromRational' rounded :: Quantity Double [u| deg |]
+
+instance (u ~ [u| km |]) => DefaultDecimalPlaces (Quantity a u) where
+    defdp _ = DecimalPlaces 3
+
+instance Newtype (Quantity a (u :: Unit)) a where
+    pack = MkQuantity
+    unpack (MkQuantity a) = a

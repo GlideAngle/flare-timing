@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 25a4eebb9e7421b84440ebe7d7d8eeeaa07bcf05a6402435d4701cad5178a515
+-- hash: 8eb8cdad5d8b91bda49080a201fa93410c71dc15a793ffeab72ee4172c59b8e5
 
 name:           flight-units
 version:        0.1.0
@@ -45,8 +45,10 @@ library
   build-depends:
       base >=4.10.1.0 && <5
     , bifunctors
+    , detour-via-sci
     , fixed
     , formatting
+    , newtype
     , numbers
     , siggy-chardust
     , text

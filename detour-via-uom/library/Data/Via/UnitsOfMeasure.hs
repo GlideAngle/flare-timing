@@ -101,6 +101,15 @@ instance
     , Real a
     , KnownUnit (Unpack u)
     )
+    => Show (ViaQ n a u) where
+    show (ViaQ x) = show . showQ $ x
+
+instance
+    ( DefaultDecimalPlaces n
+    , Newtype n (Quantity a u)
+    , Real a
+    , KnownUnit (Unpack u)
+    )
     => ToJSON (ViaQ n a u) where
     toJSON (ViaQ x) = toJSON . showQ $ x
 
