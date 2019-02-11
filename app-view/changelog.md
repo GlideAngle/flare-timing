@@ -3,9 +3,16 @@ version](https://github.com/BlockScope/flare-timing/blob/master/app-view/changel
 of this changelog.
 
 # Give a Little
-## app-view-0.9
+## app-view-0.10
 
 * Score with the give in turnpoint radius.
+* Use the last pilot landing time in leading points calculations and allow for
+  leading points when no pilots complete the speed section.
+* Pilots with no tracks can be assigned speed section times by the scorer and
+  thereby get time points and arrival points. Show these assignments.
+* Apply percentage and absolute point penalties to pilot scores and show the
+  penalty reason.
+* Pilots can share arrival position.
 
 # Associate Fixes with Legs
 ## app-view-0.9
