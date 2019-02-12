@@ -166,7 +166,7 @@ taskDetail ix@(IxTask _) cs ns task vy a = do
     es <- simpleList cs (crumbTask task)
     tab <- tabsTask
 
-    _ <- widgetHold (tableTask utc task legs) $
+    _ <- widgetHold (viewPlot) $
             (\case
                 TaskTabGeo -> tableGeo ix
 
