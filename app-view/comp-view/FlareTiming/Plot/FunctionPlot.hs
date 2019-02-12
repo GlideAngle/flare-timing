@@ -16,7 +16,34 @@ import WireTypes.Pilot (PilotName(..))
 newtype Plot = Plot { unPlot :: JSVal }
 
 foreign import javascript unsafe
-    "functionPlot({target: '#plot', data: [{ fn: 'x^2' }] })"
+    "functionPlot(\
+    \{ target: '#plot'\
+    \, width: 800\
+    \, height: 400\
+    \, xAxis: {label: 'Fraction of Pilots in Goal', domain: [0, 1]}\
+    \, yAxis: {label: 'Fraction of Available Points', domain: [0, 1]}\
+    \, data: [{\
+    \    fn: '0.9 - 1.665*x + 1.713*x^2 - 0.587*x^3'\
+    \  , nSamples: 101\
+    \  , color: 'blue'\
+    \  , graphType: 'scatter'\
+    \  },{\
+    \    fn: '(1 - (0.9 - 1.665*x + 1.713*x^2 - 0.587*x^3))/8 * 1.4'\
+    \  , nSamples: 101\
+    \  , color: 'red'\
+    \  , graphType: 'scatter'\
+    \  },{\
+    \    fn: '(1 - (0.9 - 1.665*x + 1.713*x^2 - 0.587*x^3))/8'\
+    \  , nSamples: 101\
+    \  , color: 'purple'\
+    \  , graphType: 'scatter'\
+    \  },{\
+    \    fn: '1 - ((0.9 - 1.665*x + 1.713*x^2 - 0.587*x^3) + (1 - (0.9 - 1.665*x + 1.713*x^2 - 0.587*x^3))/8 * 1.4) + (1 - (0.9 - 1.665*x + 1.713*x^2 - 0.587*x^3))/8'\
+    \  , nSamples: 101\
+    \  , color: 'green'\
+    \  , graphType: 'scatter'\
+    \  }\
+    \]})"
     plot_ :: JSVal -> IO JSVal
 
 plot :: IsElement e => e -> IO Plot
