@@ -20,28 +20,29 @@ foreign import javascript unsafe
     \{ target: '#plot'\
     \, width: 800\
     \, height: 400\
+    \, disableZoom: true\
     \, xAxis: {label: 'Fraction of Pilots in Goal', domain: [0, 1]}\
     \, yAxis: {label: 'Fraction of Available Points', domain: [0, 1]}\
     \, data: [{\
     \    fn: '0.9 - 1.665*x + 1.713*x^2 - 0.587*x^3'\
     \  , nSamples: 101\
     \  , color: 'blue'\
-    \  , graphType: 'scatter'\
+    \  , graphType: 'polyline'\
     \  },{\
     \    fn: '(1 - (0.9 - 1.665*x + 1.713*x^2 - 0.587*x^3))/8 * 1.4'\
     \  , nSamples: 101\
     \  , color: 'red'\
-    \  , graphType: 'scatter'\
+    \  , graphType: 'polyline'\
     \  },{\
     \    fn: '(1 - (0.9 - 1.665*x + 1.713*x^2 - 0.587*x^3))/8'\
     \  , nSamples: 101\
     \  , color: 'purple'\
-    \  , graphType: 'scatter'\
+    \  , graphType: 'polyline'\
     \  },{\
     \    fn: '1 - ((0.9 - 1.665*x + 1.713*x^2 - 0.587*x^3) + (1 - (0.9 - 1.665*x + 1.713*x^2 - 0.587*x^3))/8 * 1.4) + (1 - (0.9 - 1.665*x + 1.713*x^2 - 0.587*x^3))/8'\
     \  , nSamples: 101\
     \  , color: 'green'\
-    \  , graphType: 'scatter'\
+    \  , graphType: 'polyline'\
     \  }\
     \]})"
     plot_ :: JSVal -> IO JSVal
