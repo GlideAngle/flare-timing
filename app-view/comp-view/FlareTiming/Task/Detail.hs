@@ -27,6 +27,7 @@ import FlareTiming.Comms
 import FlareTiming.Breadcrumb (crumbTask)
 import FlareTiming.Events (IxTask(..))
 import FlareTiming.Map.View (viewMap)
+import FlareTiming.Plot.View (viewPlot)
 import qualified FlareTiming.Turnpoint as TP (getName)
 import FlareTiming.Task.Tab (TaskTab(..), tabsTask)
 import FlareTiming.Task.Score (tableScore)
@@ -195,7 +196,7 @@ taskDetail ix@(IxTask _) cs ns task vy a = do
 
                 TaskTabScore -> tableScore utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf
 
-                TaskTabSplit -> text $ "TODO: Split")
+                TaskTabSplit -> viewPlot)
             <$> tab
 
     return $ switchDyn (leftmost <$> es)
