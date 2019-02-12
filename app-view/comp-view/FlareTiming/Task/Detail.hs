@@ -193,7 +193,9 @@ taskDetail ix@(IxTask _) cs ns task vy a = do
                 TaskTabAbsent -> tableAbsent utc ix ln nyp dnf dfNt penal
                 TaskTabValidity -> viewValidity vy vw
 
-                TaskTabScore -> tableScore utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf)
+                TaskTabScore -> tableScore utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf
+
+                TaskTabSplit -> text $ "TODO: Split")
             <$> tab
 
     return $ switchDyn (leftmost <$> es)
