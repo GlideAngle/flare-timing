@@ -20,6 +20,7 @@ newtype Plot = Plot { unPlot :: JSVal }
 foreign import javascript unsafe
     "functionPlot(\
     \{ target: '#hg-plot'\
+    \, title: 'Split of Available Points'\
     \, width: 360\
     \, height: 400\
     \, disableZoom: true\
@@ -61,6 +62,7 @@ hgPlot e (GoalRatio gr) = do
 foreign import javascript unsafe
     "functionPlot(\
     \{ target: '#pg-plot'\
+    \, title: 'Split of Available Points'\
     \, width: 360\
     \, height: 400\
     \, disableZoom: true\
