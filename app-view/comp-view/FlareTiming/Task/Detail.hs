@@ -141,7 +141,7 @@ taskDetail
     -> Dynamic t (Maybe Allocation)
     -> m (Event t IxTask)
 
-taskDetail ix@(IxTask _) cs ns task vy a = do
+taskDetail ix@(IxTask _) cs ns task vy alloc = do
     let utc = utcOffset . head <$> cs
     let sb = scoreBack . head <$> cs
     let hgOrPg = discipline . head <$> cs
@@ -158,15 +158,15 @@ taskDetail ix@(IxTask _) cs ns task vy a = do
     let ln = taskLength <$> routes
     let legs = taskLegs <$> routes
 
-    let ps = (fmap . fmap) points a
-    let tp = (fmap . fmap) taskPoints a
-    let wg = (fmap . fmap) weight a
+    let ps = (fmap . fmap) points alloc
+    let tp = (fmap . fmap) taskPoints alloc
+    let wg = (fmap . fmap) weight alloc
 
     taskTileZones utc sb task ln
     es <- simpleList cs (crumbTask task)
     tab <- tabsTask
 
-    _ <- widgetHold (viewPlot) $
+    _ <- widgetHold (viewPlot alloc) $
             (\case
                 TaskTabGeo -> tableGeo ix
 
@@ -196,7 +196,7 @@ taskDetail ix@(IxTask _) cs ns task vy a = do
 
                 TaskTabScore -> tableScore utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf
 
-                TaskTabSplit -> viewPlot)
+                TaskTabSplit -> viewPlot alloc)
             <$> tab
 
     return $ switchDyn (leftmost <$> es)

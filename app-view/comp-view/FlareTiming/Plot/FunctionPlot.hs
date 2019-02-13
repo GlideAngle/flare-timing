@@ -11,7 +11,7 @@ import GHCJS.Types (JSVal, JSString)
 import GHCJS.DOM.Element (IsElement)
 import GHCJS.DOM.Types (Element(..), toElement, toJSString, toJSVal)
 
-import WireTypes.Pilot (PilotName(..))
+import WireTypes.Point (GoalRatio(..))
 
 -- SEE: https://gist.github.com/ali-abrar/fa2adbbb7ee64a0295cb
 newtype Plot = Plot { unPlot :: JSVal }
@@ -44,13 +44,18 @@ foreign import javascript unsafe
     \  , nSamples: 101\
     \  , color: 'green'\
     \  , graphType: 'polyline'\
-    \  }\
-    \]})"
-    hgPlot_ :: JSVal -> IO JSVal
+    \  }]\
+    \, annotations: [{\
+    \    x: $2\
+    \  , text: 'pilots in goal'\
+    \  }]\
+    \})"
+    hgPlot_ :: JSVal -> JSVal -> IO JSVal
 
-hgPlot :: IsElement e => e -> IO Plot
-hgPlot e =
-    Plot <$> (hgPlot_ . unElement . toElement $ e)
+hgPlot :: IsElement e => e -> GoalRatio -> IO Plot
+hgPlot e (GoalRatio gr) = do
+    gr' <- toJSVal gr
+    Plot <$> hgPlot_ (unElement . toElement $ e) gr'
 
 foreign import javascript unsafe
     "functionPlot(\
@@ -75,10 +80,15 @@ foreign import javascript unsafe
     \  , nSamples: 101\
     \  , color: 'green'\
     \  , graphType: 'polyline'\
-    \  }\
-    \]})"
-    pgPlot_ :: JSVal -> IO JSVal
+    \  }]\
+    \, annotations: [{\
+    \    x: $2\
+    \  , text: 'pilots in goal'\
+    \  }]\
+    \})"
+    pgPlot_ :: JSVal -> JSVal -> IO JSVal
 
-pgPlot :: IsElement e => e -> IO Plot
-pgPlot e =
-    Plot <$> (pgPlot_ . unElement . toElement $ e)
+pgPlot :: IsElement e => e -> GoalRatio -> IO Plot
+pgPlot e (GoalRatio gr) = do
+    gr' <- toJSVal gr
+    Plot <$> pgPlot_ (unElement . toElement $ e) gr'
