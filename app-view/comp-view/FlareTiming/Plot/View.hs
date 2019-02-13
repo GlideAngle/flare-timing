@@ -41,6 +41,16 @@ hgPlot alloc' = do
                 return ())
             ]
 
+    el "ul" $ do
+        elClass "li" "legend-distance" $
+            text "○ distance"
+        elClass "li" "legend-time" $
+            text "○ time"
+        elClass "li" "legend-leading" $
+            text "○ leading"
+        elClass "li" "legend-arrival" $
+            text "○ arrival"
+
     return ()
 
 pgPlot
@@ -58,5 +68,13 @@ pgPlot alloc' = do
                 _ <- P.pgPlot (_element_raw elPlot) gr w
                 return ())
             ]
+
+    el "ul" $ do
+        elClass "li" "legend-distance" $
+            text "○ distance"
+        elClass "li" "legend-time" $
+            text "○ time"
+        elClass "li" "legend-leading" $
+            text "○ leading"
 
     return ()
