@@ -15,10 +15,15 @@ viewPlot
     -> Dynamic t (Maybe Allocation)
     -> m ()
 viewPlot hgOrPg alloc = do
-    _ <- dyn $ ffor hgOrPg (\case
-            HangGliding -> hgPlot alloc
-            Paragliding -> pgPlot alloc)
-    return ()
+    elClass "div" "tile is-ancestor" $ do
+        elClass "div" "tile is-4" $
+            elClass "div" "tile" $
+                elClass "div" "tile is-parent" $
+                    elClass "article" "tile is-child box" $ do
+                        _ <- dyn $ ffor hgOrPg (\case
+                                HangGliding -> hgPlot alloc
+                                Paragliding -> pgPlot alloc)
+                        return ()
 
 hgPlot
     :: MonadWidget t m
