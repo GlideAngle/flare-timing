@@ -7,7 +7,7 @@ import Control.Monad.IO.Class (liftIO)
 import qualified FlareTiming.Plot.FunctionPlot as P (hgPlot, pgPlot)
 
 import WireTypes.Comp (Discipline(..))
-import WireTypes.Point (Allocation(..), GoalRatio(..))
+import WireTypes.Point (Allocation(..), GoalRatio(..), zeroWeights)
 
 viewPlot
     :: MonadWidget t m
@@ -31,7 +31,8 @@ hgPlot alloc' = do
     rec performEvent_ $ leftmost
             [ ffor pb (\_ -> liftIO $ do
                 let gr = maybe (GoalRatio 0) goalRatio alloc
-                _ <- P.hgPlot (_element_raw elPlot) gr
+                let w = maybe zeroWeights weight alloc
+                _ <- P.hgPlot (_element_raw elPlot) gr w
                 return ())
             ]
 
@@ -48,7 +49,8 @@ pgPlot alloc' = do
     rec performEvent_ $ leftmost
             [ ffor pb (\_ -> liftIO $ do
                 let gr = maybe (GoalRatio 0) goalRatio alloc
-                _ <- P.pgPlot (_element_raw elPlot) gr
+                let w = maybe zeroWeights weight alloc
+                _ <- P.pgPlot (_element_raw elPlot) gr w
                 return ())
             ]
 

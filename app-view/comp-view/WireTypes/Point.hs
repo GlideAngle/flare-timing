@@ -40,6 +40,7 @@ module WireTypes.Point
     , showArrivalWeight
     , showTimeWeight
     , showLeadingWeight
+    , zeroWeights
     ) where
 
 import Text.Printf (printf)
@@ -267,6 +268,15 @@ showArrivalWeight (ArrivalWeight p) = T.pack . pprWg $ p
 
 showTimeWeight :: TimeWeight -> T.Text
 showTimeWeight (TimeWeight p) = T.pack . pprWg $ p
+
+zeroWeights :: Weights
+zeroWeights =
+    Weights
+        { distance = DistanceWeight 0
+        , leading = LeadingWeight 0
+        , arrival = ArrivalWeight 0
+        , time = TimeWeight 0
+        }
 
 data Weights =
     Weights
