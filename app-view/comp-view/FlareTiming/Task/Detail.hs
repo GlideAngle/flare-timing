@@ -148,6 +148,7 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
     let free' = free . head <$> ns
     let sgs = startGates <$> task
     let penal = Penal . Comp.penals <$> task
+    let tweak = Comp.taskTweak <$> task
     pb <- getPostBuild
     sDf <- holdDyn [] =<< getTaskScore ix pb
     vw <- holdDyn Nothing =<< getTaskValidityWorking ix pb
@@ -166,7 +167,7 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
     es <- simpleList cs (crumbTask task)
     tab <- tabsTask
 
-    _ <- widgetHold (viewPlot hgOrPg alloc) $
+    _ <- widgetHold (viewPlot hgOrPg tweak alloc) $
             (\case
                 TaskTabGeo -> tableGeo ix
 
@@ -196,7 +197,7 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
 
                 TaskTabScore -> tableScore utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf
 
-                TaskTabSplit -> viewPlot hgOrPg alloc)
+                TaskTabSplit -> viewPlot hgOrPg tweak alloc)
             <$> tab
 
     return $ switchDyn (leftmost <$> es)

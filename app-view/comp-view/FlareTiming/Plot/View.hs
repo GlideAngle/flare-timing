@@ -8,7 +8,7 @@ import qualified Data.Text as T (Text, pack)
 import Control.Monad.IO.Class (liftIO)
 import qualified FlareTiming.Plot.FunctionPlot as P (hgPlot, pgPlot)
 
-import WireTypes.Comp (Discipline(..))
+import WireTypes.Comp (Discipline(..), Tweak(..))
 import WireTypes.Point
     ( GoalRatio(..)
     , Allocation(..)
@@ -23,17 +23,18 @@ import WireTypes.Point
 viewPlot
     :: MonadWidget t m
     => Dynamic t Discipline
+    -> Dynamic t (Maybe Tweak)
     -> Dynamic t (Maybe Allocation)
     -> m ()
-viewPlot hgOrPg alloc = do
+viewPlot hgOrPg tweak alloc = do
     elClass "div" "tile is-ancestor" $ do
         elClass "div" "tile is-4" $
             elClass "div" "tile" $
                 elClass "div" "tile is-parent" $
                     elClass "article" "tile is-child box" $ do
                         _ <- dyn $ ffor hgOrPg (\case
-                                HangGliding -> hgPlot alloc
-                                Paragliding -> pgPlot alloc)
+                                HangGliding -> hgPlot tweak alloc
+                                Paragliding -> pgPlot tweak alloc)
                         return ()
 
 textf :: String -> Double -> T.Text
@@ -41,9 +42,11 @@ textf fmt d = T.pack $ printf fmt d
 
 hgPlot
     :: MonadWidget t m
-    => Dynamic t (Maybe Allocation)
+    => Dynamic t (Maybe Tweak)
+    -> Dynamic t (Maybe Allocation)
     -> m ()
-hgPlot alloc' = do
+hgPlot tweak' alloc' = do
+    tweak <- sample . current $ tweak'
     alloc <- sample . current $ alloc'
     let w = maybe zeroWeights weight alloc
     pb <- delay 1 =<< getPostBuild
@@ -51,7 +54,7 @@ hgPlot alloc' = do
     rec performEvent_ $ leftmost
             [ ffor pb (\_ -> liftIO $ do
                 let gr = maybe (GoalRatio 0) goalRatio alloc
-                _ <- P.hgPlot (_element_raw elPlot) gr w
+                _ <- P.hgPlot (_element_raw elPlot) tweak gr w
                 return ())
             ]
 
@@ -76,9 +79,11 @@ hgPlot alloc' = do
 
 pgPlot
     :: MonadWidget t m
-    => Dynamic t (Maybe Allocation)
+    => Dynamic t (Maybe Tweak)
+    -> Dynamic t (Maybe Allocation)
     -> m ()
-pgPlot alloc' = do
+pgPlot tweak' alloc' = do
+    tweak <- sample . current $ tweak'
     alloc <- sample . current $ alloc'
     let w = maybe zeroWeights weight alloc
     pb <- delay 1 =<< getPostBuild
@@ -86,7 +91,7 @@ pgPlot alloc' = do
     rec performEvent_ $ leftmost
             [ ffor pb (\_ -> liftIO $ do
                 let gr = maybe (GoalRatio 0) goalRatio alloc
-                _ <- P.pgPlot (_element_raw elPlot) gr w
+                _ <- P.pgPlot (_element_raw elPlot) tweak gr w
                 return ())
             ]
 

@@ -15,6 +15,9 @@ module WireTypes.Comp
     , EarthMath(..)
     , Ellipsoid(..)
     , EarthModel(..)
+    , Tweak(..)
+    , LwScaling(..)
+    , AwScaling(..)
     , getAllRawZones
     , getRaceRawZones
     , getGoalShape
@@ -254,6 +257,22 @@ data Nominal =
         }
     deriving (Generic, FromJSON)
 
+newtype LwScaling = LwScaling Double
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass FromJSON
+
+newtype AwScaling = AwScaling Double
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass FromJSON
+
+data Tweak =
+    Tweak
+        { leadingWeightScaling :: Maybe LwScaling
+        , arrivalWeightScaling :: Maybe AwScaling
+        }
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (FromJSON)
+
 data TaskStop =
     TaskStop
         { announced :: UTCTime
@@ -270,6 +289,7 @@ data Task =
         , zoneTimes :: [OpenClose]
         , startGates :: [StartGate]
         , stopped :: Maybe TaskStop
+        , taskTweak :: Maybe Tweak
         , penals :: [(Pilot, [PointPenalty], String)]
         }
     deriving (Eq, Ord, Generic, FromJSON)
