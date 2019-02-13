@@ -86,8 +86,8 @@ distanceWeight (GoalRatio gr) =
     - (587 % 1000) * gr * gr * gr
 
 lwDistanceWeight :: DistanceWeight -> Rational
-lwDistanceWeight (DistanceWeight (n :% d)) =
-    ((d - n) % (8 * d)) * (14 % 10)
+lwDistanceWeight (DistanceWeight dw) =
+    (1 - dw) * (1 % 8) * (14 % 10)
 
 leadingWeight :: Lw -> LeadingWeight
 leadingWeight (LwHg dw) =
