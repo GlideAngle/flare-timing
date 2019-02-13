@@ -166,7 +166,7 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
     es <- simpleList cs (crumbTask task)
     tab <- tabsTask
 
-    _ <- widgetHold (viewPlot alloc) $
+    _ <- widgetHold (viewPlot hgOrPg alloc) $
             (\case
                 TaskTabGeo -> tableGeo ix
 
@@ -196,7 +196,7 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
 
                 TaskTabScore -> tableScore utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf
 
-                TaskTabSplit -> viewPlot alloc)
+                TaskTabSplit -> viewPlot hgOrPg alloc)
             <$> tab
 
     return $ switchDyn (leftmost <$> es)

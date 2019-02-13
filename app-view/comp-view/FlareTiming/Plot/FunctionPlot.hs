@@ -2,14 +2,15 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 
 module FlareTiming.Plot.FunctionPlot
-    ( hgPlot
+    ( Plot(..)
+    , hgPlot
     , pgPlot
     ) where
 
 import Prelude hiding (map, log)
-import GHCJS.Types (JSVal, JSString)
+import GHCJS.Types (JSVal)
 import GHCJS.DOM.Element (IsElement)
-import GHCJS.DOM.Types (Element(..), toElement, toJSString, toJSVal)
+import GHCJS.DOM.Types (Element(..), toElement, toJSVal)
 
 import WireTypes.Point (GoalRatio(..))
 
