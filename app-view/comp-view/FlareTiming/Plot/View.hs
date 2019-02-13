@@ -50,7 +50,7 @@ hgPlot tweak' alloc' = do
     alloc <- sample . current $ alloc'
     let w = maybe zeroWeights weight alloc
     pb <- delay 1 =<< getPostBuild
-    (elPlot, _) <- elAttr' "div" (("id" =: "hg-plot") <> ("style" =: "height: 400px;width: 50%")) $ return ()
+    (elPlot, _) <- elAttr' "div" (("id" =: "hg-plot") <> ("style" =: "height: 360px;width: 360px")) $ return ()
     rec performEvent_ $ leftmost
             [ ffor pb (\_ -> liftIO $ do
                 let gr = maybe (GoalRatio 0) goalRatio alloc
@@ -87,7 +87,7 @@ pgPlot tweak' alloc' = do
     alloc <- sample . current $ alloc'
     let w = maybe zeroWeights weight alloc
     pb <- delay 1 =<< getPostBuild
-    (elPlot, _) <- elAttr' "div" (("id" =: "pg-plot") <> ("style" =: "height: 400px;width: 50%")) $ return ()
+    (elPlot, _) <- elAttr' "div" (("id" =: "pg-plot") <> ("style" =: "height: 360px;width: 360px")) $ return ()
     rec performEvent_ $ leftmost
             [ ffor pb (\_ -> liftIO $ do
                 let gr = maybe (GoalRatio 0) goalRatio alloc

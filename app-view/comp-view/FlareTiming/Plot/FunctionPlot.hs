@@ -31,7 +31,7 @@ foreign import javascript unsafe
     \{ target: '#hg-plot'\
     \, title: 'Split of Available Points'\
     \, width: 360\
-    \, height: 400\
+    \, height: 360\
     \, disableZoom: true\
     \, xAxis: {label: 'Fraction of Pilots in Goal', domain: [0, 1]}\
     \, yAxis: {domain: [0, 1]}\
@@ -123,7 +123,7 @@ foreign import javascript unsafe
     \{ target: '#pg-plot'\
     \, title: 'Split of Available Points'\
     \, width: 360\
-    \, height: 400\
+    \, height: 360\
     \, disableZoom: true\
     \, xAxis: {label: 'Fraction of Pilots in Goal', domain: [0, 1]}\
     \, yAxis: {domain: [0, 1]}\
