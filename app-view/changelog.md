@@ -2,6 +2,14 @@ The [latest
 version](https://github.com/BlockScope/flare-timing/blob/master/app-view/changelog.md)
 of this changelog.
 
+# Split of Available Points
+## app-view-0.11
+
+* Add a plot of curves showing how the weighting for distance points, for time
+  points, for arrival points and for leading points changes in relation to the
+  goal ratio. On this show a vertical line showing the weights of the task at
+  hand.
+
 # Give a Little
 ## app-view-0.10
 
