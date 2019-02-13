@@ -24,7 +24,7 @@ foreign import javascript unsafe
     \, height: 400\
     \, disableZoom: true\
     \, xAxis: {label: 'Fraction of Pilots in Goal', domain: [0, 1]}\
-    \, yAxis: {label: 'Fraction of Available Points', domain: [0, 1]}\
+    \, yAxis: {domain: [0, 1]}\
     \, data: [{\
     \    fn: '0.9 - 1.665*x + 1.713*x^2 - 0.587*x^3'\
     \  , nSamples: 101\
@@ -65,7 +65,7 @@ foreign import javascript unsafe
     \, height: 400\
     \, disableZoom: true\
     \, xAxis: {label: 'Fraction of Pilots in Goal', domain: [0, 1]}\
-    \, yAxis: {label: 'Fraction of Available Points', domain: [0, 1]}\
+    \, yAxis: {domain: [0, 1]}\
     \, data: [{\
     \    fn: '0.9 - 1.665*x + 1.713*x^2 - 0.587*x^3'\
     \  , nSamples: 101\
