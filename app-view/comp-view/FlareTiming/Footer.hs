@@ -13,6 +13,28 @@ attribution =
         $ text "Block Scope"
 
     el "br" $ return ()
+
+    text "("
+    elAttr
+        "a"
+        ("href" =: "http://www.flaretiming.com/about.html" <> "target" =: "_blank")
+        $ text "About"
+
+    text ", "
+    elAttr
+        "a"
+        ("href" =: "http://www.flaretiming.com/disclaim.html" <> "target" =: "_blank")
+        $ text "Disclaimer"
+
+    text ", "
+    elAttr
+        "a"
+        ("href" =: "http://www.flaretiming.com/blog.html" <> "target" =: "_blank")
+        $ text "Blog"
+
+    text ")"
+    el "br" $ return ()
+    el "br" $ return ()
     text "Map data © "
 
     elAttr
