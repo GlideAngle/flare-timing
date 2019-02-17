@@ -10,7 +10,8 @@ module Flight.Gap.Ratio.Leading
 import "newtype" Control.Newtype (Newtype(..))
 import Data.Via.Scientific
     ( DecimalPlaces(..)
-    , deriveDecimalPlaces, deriveShowViaSci, deriveJsonViaSci, deriveCsvViaSci
+    , deriveDecimalPlaces, deriveShowValueViaSci
+    , deriveJsonViaSci, deriveCsvViaSci
     )
 
 newtype LeadingAreaScaling = LeadingAreaScaling Rational
@@ -32,7 +33,7 @@ instance Newtype LeadingAreaStep Rational where
     unpack (LeadingAreaStep a) = a
 
 deriveDecimalPlaces (DecimalPlaces 8) ''LeadingAreaStep
-deriveShowViaSci ''LeadingAreaStep
+deriveShowValueViaSci ''LeadingAreaStep
 deriveJsonViaSci ''LeadingAreaStep
 deriveCsvViaSci ''LeadingAreaStep
 

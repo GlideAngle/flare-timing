@@ -33,11 +33,13 @@ module Data.Via.Scientific
     , toSci
     -- * Deriving instances with Template Haskell
     , deriveDecimalPlaces
+    , deriveShowValueViaSci
     , deriveShowViaSci
     , deriveJsonViaSci
     , deriveCsvViaSci
     ) where
 
+import Data.Typeable (Typeable)
 import Control.Newtype (Newtype(..))
 import Control.Applicative (empty)
 import Data.Aeson (ToJSON(..), FromJSON(..), Value(Number))
@@ -186,14 +188,28 @@ deriveDecimalPlaces dp name =
 
 -- | Derives an instance of 'Show' wrapping the value with 'ViaSci' before
 -- showing.
--- 
+--
+-- >>> deriveShowValueViaSci ''Lat
+-- ...
+deriveShowValueViaSci :: Name -> Q [Dec]
+deriveShowValueViaSci name =
+    [d|
+        instance Show $a where
+            show x = show $ ViaSci x
+        |]
+    where
+        a = conT name
+
+-- | Derives an instance of 'Show' wrapping the value with 'ViaSci' before
+-- showing and showing the type name. The type should derive @Typeable@.
+--
 -- >>> deriveShowViaSci ''Lat
 -- ...
 deriveShowViaSci :: Name -> Q [Dec]
 deriveShowViaSci name =
     [d|
-        instance Show $a where
-            show x = show $ ViaSci x
+        instance Typeable $a => Show $a where
+            show x = show (typeOf x) ++ " " ++ show (ViaSci x)
         |]
     where
         a = conT name

@@ -1,10 +1,12 @@
 module Flight.Gap.Validity.Area (NominalDistanceArea(..)) where
 
+import Data.Typeable (Typeable, typeOf)
 import "newtype" Control.Newtype (Newtype(..))
-import Data.Via.Scientific (DecimalPlaces(..), deriveDecimalPlaces, deriveJsonViaSci)
+import Data.Via.Scientific
+    (DecimalPlaces(..), deriveDecimalPlaces, deriveJsonViaSci, deriveShowViaSci)
 
 newtype NominalDistanceArea = NominalDistanceArea Rational
-    deriving (Eq, Ord, Show)
+    deriving (Eq, Ord, Typeable)
 
 instance Newtype NominalDistanceArea Rational where
     pack = NominalDistanceArea
@@ -12,3 +14,4 @@ instance Newtype NominalDistanceArea Rational where
 
 deriveDecimalPlaces (DecimalPlaces 8) ''NominalDistanceArea
 deriveJsonViaSci ''NominalDistanceArea
+deriveShowViaSci ''NominalDistanceArea
