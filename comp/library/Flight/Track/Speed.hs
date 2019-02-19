@@ -14,6 +14,7 @@ module Flight.Track.Speed
     , startGateTaken
     ) where
 
+import Data.List.NonEmpty (NonEmpty(..), nonEmpty)
 import Data.Time.Clock (UTCTime, diffUTCTime)
 import Data.UnitsOfMeasure (u, convert, fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
@@ -21,7 +22,7 @@ import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 
 import Flight.Comp (StartEnd(..), StartEndMark, StartGate(..))
-import Flight.Score (SpeedFraction(..), PilotTime(..))
+import Flight.Score (SpeedFraction(..), PilotTime(..), JumpedTheGun(..))
 import Flight.Units ()
 
 -- ^ If arrived at goal then speed fraction.
@@ -37,44 +38,44 @@ pilotTime
     :: [StartGate]
     -> StartEndMark
     -> Maybe (PilotTime (Quantity Double [u| h |]))
-pilotTime _ StartEnd{unEnd = Nothing} =
-    Nothing
-pilotTime gs StartEnd{unStart, unEnd = Just end} =
-    case startGateTaken gs unStart of
-        Nothing -> Just . PilotTime $ hrs unStart
-        Just (StartGate g) -> Just . PilotTime $ hrs g
-    where
-        secs :: UTCTime -> Quantity Double [u| s |]
-        secs t = fromRational' . MkQuantity . toRational $ diffUTCTime end t
+pilotTime _ StartEnd{unEnd = Nothing} = Nothing
+pilotTime [] StartEnd{unStart, unEnd = Just end} =
+    Just . PilotTime $ hrs unStart end
+pilotTime gs StartEnd{unStart, unEnd = Just end} = do
+    gs' <- nonEmpty gs
+    let (_, StartGate g) = startGateTaken gs' unStart
+    return . PilotTime $ hrs g end
 
-        hrs :: UTCTime -> Quantity Double [u| h |]
-        hrs = convert . secs
+secs :: UTCTime -> UTCTime -> Quantity Double [u| s |]
+secs start end = fromRational' . MkQuantity . toRational $ diffUTCTime end start
+
+hrs :: UTCTime -> UTCTime -> Quantity Double [u| h |]
+hrs start end = convert $ secs start end
 
 -- | The time the pilot ticked the end of the speed section.
 pilotEssTime
     :: [StartGate]
     -> StartEndMark
-    -> Maybe UTCTime
-pilotEssTime _ StartEnd{unEnd = Nothing} =
-    Nothing
-pilotEssTime [] StartEnd{unEnd = e@(Just _)} =
-    e
+    -> (Maybe (JumpedTheGun (Quantity Double [u| s |])), Maybe UTCTime)
+pilotEssTime _ StartEnd{unEnd = Nothing} = (Nothing, Nothing)
 pilotEssTime gs StartEnd{unStart, unEnd = e@(Just _)} =
-    case startGateTaken gs unStart of
-        Nothing -> Nothing
-        Just _ -> e
+    maybe
+        (Nothing, e)
+        (\gs' -> (const e) <$> (startGateTaken gs' unStart))
+        (nonEmpty gs)
 
 -- | The start gate the pilot took.
 startGateTaken
-    :: [StartGate]
+    :: NonEmpty StartGate
     -> UTCTime
     -- ^ The time the pilot crossed the start
-    -> Maybe StartGate
+    -> (Maybe (JumpedTheGun (Quantity Double [u| s |])), StartGate)
 startGateTaken gs t =
     case gs of
-        [] -> Nothing
-        [g] -> Just g
-        sg0@(StartGate g0) : sg1@(StartGate g1) : gs' ->
-            if | t < g0 -> Just sg0 -- TODO: Flag as jump-the-gun.
-               | t < g1 -> Just sg0
-               | otherwise -> startGateTaken (sg1 : gs') t
+        sg0@(StartGate g0) :| [] ->
+            if | t < g0 -> (Just . JumpedTheGun $ secs t g0, sg0)
+               | otherwise -> (Nothing, sg0)
+        sg0@(StartGate g0) :| (sg1@(StartGate g1) : gs') ->
+            if | t < g0 -> (Just . JumpedTheGun $ secs t g0, sg0)
+               | t < g1 -> (Nothing, sg0)
+               | otherwise -> startGateTaken (sg1 :| gs') t

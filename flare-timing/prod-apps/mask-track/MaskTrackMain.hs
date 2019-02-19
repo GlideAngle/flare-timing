@@ -549,7 +549,7 @@ flown' dTaskF flying math tags tasks iTask@(IxTask i) mf@MarkedFixes{mark0} p =
         maybeTask = tasks ^? element (i - 1)
 
         ticked = Lookup.ticked (tagTicked tags) mf iTask speedSection' p
-        esTime = Lookup.pilotEssTime (tagPilotTime tags) mf iTask [] speedSection' p
+        (_, esTime) = Lookup.pilotEssTime (tagPilotTime tags) mf iTask [] speedSection' p
         ssTime = Lookup.pilotTime (tagPilotTime tags) mf iTask [] speedSection' p
         gsTime = Lookup.pilotTime (tagPilotTime tags) mf iTask startGates' speedSection' p
         arrivalRank = Lookup.arrivalRank (tagArrivalRank tags) mf iTask speedSection' p

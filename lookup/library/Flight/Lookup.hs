@@ -33,7 +33,7 @@ import Flight.Comp
     , StartEndDownMark
     )
 import qualified Flight.Comp as Cmp (openClose)
-import Flight.Score (ArrivalPlacing(..), PilotTime(..))
+import Flight.Score (ArrivalPlacing(..), PilotTime(..), JumpedTheGun(..))
 import Flight.Track.Mask (RaceTime(..), racing)
 import Flight.Track.Cross (TrackFlyingSection(..))
 import Flight.Track.Time (ZoneIdx)
@@ -87,10 +87,12 @@ pilotEssTime
     -> [StartGate]
     -> SpeedSection
     -> Pilot
-    -> Maybe UTCTime
+    -> (Maybe (JumpedTheGun (Quantity Double [u| s |])), Maybe UTCTime)
 pilotEssTime (TimeLookup get) mf iTask startGates speedSection p =
-    Speed.pilotEssTime startGates
-    =<< ((\f -> f iTask speedSection p mf) =<< get)
+    maybe
+        (Nothing, Nothing)
+        (Speed.pilotEssTime startGates)
+        ((\f -> f iTask speedSection p mf) =<< get)
 
 ticked
     :: TickLookup

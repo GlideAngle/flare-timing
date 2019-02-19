@@ -3,6 +3,7 @@
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
 import Data.Ratio ((%))
+import Data.List.NonEmpty (nonEmpty)
 import Data.Maybe (fromMaybe)
 import Data.Function ((&))
 import System.Environment (getProgName)
@@ -297,16 +298,6 @@ points'
             | s <- dSums
             ]
 
-        workings :: [Maybe ValidityWorking] =
-            [ do
-                lv' <- lv
-                dv' <- dv
-                ValidityWorking lv' dv' <$> tv
-            | lv <- snd <$> lvs
-            | dv <- snd <$> dvs
-            | tv <- snd <$> tvs
-            ]
-
         tvs =
             let f =
                     (fmap . fmap)
@@ -324,6 +315,16 @@ points'
                 | gsT <- f gsBestTime
                 | d <- (\(MaximumDistance x) -> BestDistance x) <$> dBests
                 ]
+
+        workings :: [Maybe ValidityWorking] =
+            [ do
+                lv' <- lv
+                dv' <- dv
+                ValidityWorking lv' dv' <$> tv
+            | lv <- snd <$> lvs
+            | dv <- snd <$> dvs
+            | tv <- snd <$> tvs
+            ]
 
         grs =
             [ GoalRatio $ n % dfs
@@ -994,7 +995,7 @@ tallyDf
             Just
             $ zeroVelocity
                 { ss = ss'
-                , gs = startGateTaken startGates =<< ss'
+                , gs = gs
                 , es = es'
                 , ssDistance = dS
                 , ssElapsed = ssT
@@ -1007,6 +1008,11 @@ tallyDf
         , stoppedAlt = alt
         }
     where
+        gs = snd <$> do
+                ss'' <- ss'
+                gs' <- nonEmpty startGates
+                return $ startGateTaken gs' ss''
+
         total = TaskPoints $ r + dp + l + a + tp
         ss' = getTagTime unStart
         es' = getTagTime unEnd
@@ -1053,7 +1059,7 @@ tallyDfNoTrack
                         Just
                         $ zeroVelocity
                             { ss = ss
-                            , gs = startGateTaken startGates =<< ss
+                            , gs = gs
                             , es = es
                             , ssDistance = dS
                             , ssElapsed = ssT
@@ -1068,6 +1074,11 @@ tallyDfNoTrack
         , stoppedAlt = Nothing
         }
     where
+        gs = snd <$> do
+                ss' <- ss
+                gs' <- nonEmpty startGates
+                return $ startGateTaken gs' ss'
+
         total = TaskPoints $ r + dp + l + a + tp
         dP = PilotDistance <$> do
                 dT <- dT'

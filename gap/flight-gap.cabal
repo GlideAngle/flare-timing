@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 47a05e8d06b55e88f7ae710595a1ceb80d64c2d9aaae3ff362dc16d4ab9e4d2f
+-- hash: dbea35e6f080ee84532401e2b6fa6d5e2958fb6314c99461ac2b57d082f81fd7
 
 name:           flight-gap
 version:        0.1.0
@@ -64,6 +64,7 @@ library
       Flight.Gap.Ratio.Speed
       Flight.Gap.Stopped
       Flight.Gap.Time.Best
+      Flight.Gap.Time.Early
       Flight.Gap.Time.Nominal
       Flight.Gap.Time.Pilot
       Flight.Gap.Time.ScoreBack
@@ -136,6 +137,7 @@ test-suite doctest
       Flight.Gap.Ratio.Speed
       Flight.Gap.Stopped
       Flight.Gap.Time.Best
+      Flight.Gap.Time.Early
       Flight.Gap.Time.Nominal
       Flight.Gap.Time.Pilot
       Flight.Gap.Time.ScoreBack
@@ -211,6 +213,7 @@ test-suite score
       Flight.Gap.Ratio.Speed
       Flight.Gap.Stopped
       Flight.Gap.Time.Best
+      Flight.Gap.Time.Early
       Flight.Gap.Time.Nominal
       Flight.Gap.Time.Pilot
       Flight.Gap.Time.ScoreBack

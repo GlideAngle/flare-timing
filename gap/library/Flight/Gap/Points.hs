@@ -26,6 +26,8 @@ import Data.Aeson
     ( ToJSON(..), FromJSON(..), Options(..), SumEncoding(..)
     , genericToJSON, genericParseJSON, defaultOptions
     )
+import Data.UnitsOfMeasure ((/:), u, toRational')
+import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Gap.Points.Distance
     (DistancePoints(..), LinearPoints(..), DifficultyPoints(..))
@@ -40,19 +42,10 @@ import Flight.Gap.Weight.Distance
 import Flight.Gap.Weight.Leading (LeadingWeight(..))
 import Flight.Gap.Weight.Arrival (ArrivalWeight(..))
 import Flight.Gap.Weight.Time (TimeWeight(..))
+import Flight.Gap.Time.Early (JumpedTheGun(..), SecondsPerPoint(..))
 
 newtype LaunchToSssPoints = LaunchToSssPoints Rational deriving (Eq, Show)
 newtype MinimumDistancePoints = MinimumDistancePoints Rational deriving (Eq, Show)
-
--- | Jumped the gun by this many seconds.
-newtype JumpedTheGun = JumpedTheGun Rational deriving (Eq, Show)
-
--- | For this many seconds, loose 1 point.
-newtype SecondsPerPoint = SecondsPerPoint Rational deriving (Eq, Show)
-
--- | A jump of this many seconds incurs the maximum penalty, the score for
--- minimum distance.
-newtype JumpTheGunLimit = JumpTheGunLimit Rational deriving (Eq, Show)
 
 newtype NoGoal = NoGoal Bool deriving (Eq, Show)
 
@@ -61,8 +54,17 @@ data Pg = Pg deriving (Show)
 
 data Penalty a where
     JumpedTooEarly :: MinimumDistancePoints -> Penalty Hg
-    Jumped :: SecondsPerPoint -> JumpedTheGun -> Penalty Hg
-    JumpedNoGoal :: SecondsPerPoint -> JumpedTheGun -> Penalty Hg
+
+    Jumped
+        :: SecondsPerPoint (Quantity Double [u| s |])
+        -> JumpedTheGun (Quantity Double [u| s |])
+        -> Penalty Hg
+
+    JumpedNoGoal
+        :: SecondsPerPoint (Quantity Double [u| s |])
+        -> JumpedTheGun (Quantity Double [u| s |])
+        -> Penalty Hg
+
     NoGoalHg :: Penalty Hg
     Early :: LaunchToSssPoints -> Penalty Pg
     NoGoalPg :: Penalty Pg
@@ -176,9 +178,14 @@ tallyPoints (Just NoGoalPg) =
         } ->
         TaskPoints $ linear + diff + l
 
-jumpTheGun :: SecondsPerPoint -> JumpedTheGun -> TaskPoints -> TaskPoints
+jumpTheGun
+    :: SecondsPerPoint (Quantity Double [u| s |])
+    -> JumpedTheGun (Quantity Double [u| s |])
+    -> TaskPoints
+    -> TaskPoints
 jumpTheGun (SecondsPerPoint secs) (JumpedTheGun jump) (TaskPoints pts) =
-    TaskPoints $ max 0 (pts - jump / secs)
+    let (MkQuantity penalty) = toRational' $ jump /: secs in
+    TaskPoints $ max 0 (pts - penalty)
 
 taskPoints :: forall a. Maybe (Penalty a) -> Points -> TaskPoints
 taskPoints = tallyPoints
