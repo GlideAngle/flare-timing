@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d874ebda48388c1acaf308db0011715ab8c7f34d77fe6fd635ad7d1daad5c9be
+-- hash: a7458eee07bda37c3ee962649dffe24a26c792fbdfd0b17e89bfe095be8dfc62
 
 name:           flight-comp
 version:        0.1.0
@@ -44,10 +44,10 @@ library
       Flight.Track.Arrival
       Flight.Track.Lead
       Flight.Track.Distance
+      Flight.Track.Range
   other-modules:
       Flight.Path
       Flight.Pilot
-      Flight.Track.Range
       Paths_flight_comp
   hs-source-dirs:
       library

@@ -60,6 +60,7 @@ in    defs
               , "Flight.Track.Arrival"
               , "Flight.Track.Lead"
               , "Flight.Track.Distance"
+              , "Flight.Track.Range"
               ]
           }
       , tests =

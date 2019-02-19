@@ -18,7 +18,7 @@ import Prelude hiding (readFile)
 import Data.ByteString.UTF8 (toString)
 import Data.ByteString (readFile)
 import Data.Ratio ((%))
-import Data.Time.Clock (UTCTime(..), diffUTCTime, secondsToDiffTime)
+import Data.Time.Clock (UTCTime(..), diffUTCTime, addUTCTime)
 import Data.Time.Calendar
 import Data.Bifunctor (bimap)
 import Data.Maybe (catMaybes, listToMaybe)
@@ -43,7 +43,7 @@ import Flight.Igc
     , Year(..), Month(..), Day(..), Hour(..), HMS(..)
     , Lat(..), Lng(..), Altitude(..), AltGps(..), AltBaro(..)
     , IgcRecord(..)
-    , isMark, isFix
+    , isMark, isFix, addHoursIgc
     )
 import Flight.Comp
     ( Pilot(..)
@@ -53,6 +53,7 @@ import Flight.Comp
     , TaskFolder(..)
     , IxTask(..)
     )
+import Flight.Track.Range (asRollovers)
 
 ixTasks :: [IxTask]
 ixTasks = IxTask <$> [ 1 .. ]
@@ -179,6 +180,30 @@ igcEqOrEqOnTime :: IgcRecord -> IgcRecord -> Bool
 igcEqOrEqOnTime (B t0 _ _ _ _) (B t1 _ _ _ _) = t0 == t1
 igcEqOrEqOnTime a b = a == b
 
+-- | The B record only records time of day. If the sequence is not increasing
+-- then for every rollback add a bump 24 hrs.
+--
+-- >>> asRollovers [7,9,2,3]
+-- [[7,9],[2,3]]
+bumpOverIgc :: [Flight.Igc.IgcRecord] -> [Flight.Igc.IgcRecord]
+bumpOverIgc xs =
+    bumpOver
+        (flip $ addHoursIgc . Hour . show)
+        [0 :: Integer, 24..]
+        xs
+
+-- | Apply a bump from a list every time there is a roll over.
+--
+-- >>> bumpOver (+) [0,10..] [7,9,2,3,1]
+-- [7,9,12,13,21]
+bumpOver :: Ord a => (a -> b -> a) -> [b] -> [a] -> [a]
+bumpOver add ns xs =
+    concat
+    [ (`add` n) <$> ys
+    | ys <- asRollovers xs
+    | n <- ns
+    ]
+
 -- |
 -- >>> line 1 igcScott
 -- "HFDTE080417\r\n"
@@ -192,10 +217,10 @@ igcMarkedFixes xs =
             . filter isMark
             $ xs
 
-        ys = filter isFix xs
+        ys = bumpOverIgc $ filter isFix xs
 
         -- NOTE: Some loggers will be using sub-second logging. The columns in
-        -- the B record holding the s or ss, tenths or hundredtGhs of a second,
+        -- the B record holding the s or ss, tenths or hundredths of a second,
         -- are specified in the I record. Whether parsing IGC files at the
         -- second or sub-second granularity, we need to avoid having fixes with
         -- identical time stamps hence the nubBy here.
@@ -221,6 +246,11 @@ extract HFDTEDATE{} = Nothing
 extract HFDTE{} = Nothing
 extract (B hms lat lng alt altGps) = Just (hms, (lat, lng, alt, altGps))
 
+-- | Combines date with time of day to get a @UTCTime@.
+-- >>> stamp ("08", "07", "17") ((HMS (Hour "02") (Minute "37") (Second "56")), "")
+-- (2017-07-08 02:37:56 UTC,"")
+-- >>> stamp ("08", "07", "17") ((HMS (Hour "26") (Minute "37") (Second "56")), "")
+-- (2017-07-09 02:37:56 UTC,"")
 stamp :: (String, String, String) -> (HMS, a) -> (UTCTime, a)
 stamp (dd, mm, yy) (HMS (Hour hr) (Minute minute) (Second sec), a) =
     (utc, a)
@@ -233,9 +263,9 @@ stamp (dd, mm, yy) (HMS (Hour hr) (Minute minute) (Second sec), a) =
         minute' = read minute :: Integer
         sec' = read sec :: Integer
         utc =
-            UTCTime
-            (fromGregorian y m d)
-            (secondsToDiffTime $ 60 * ((60 * hr') + minute') + sec')
+            (fromInteger $ 60 * ((60 * hr') + minute') + sec')
+            `addUTCTime`
+            (UTCTime (fromGregorian y m d) 0)
 
 unStamp
     :: Maybe UTCTime
@@ -246,7 +276,7 @@ unStamp Nothing xs@((t, _) : _) = unStamp (Just t) xs
 unStamp (Just mark0) xs =
     K.MarkedFixes
         { K.mark0 = mark0
-        , K.fixes = toFix mark0 <$> xs 
+        , K.fixes = toFix mark0 <$> xs
         }
 
 toFix :: UTCTime -> (UTCTime, (Lat, Lng, AltBaro, Maybe AltGps)) -> K.Fix

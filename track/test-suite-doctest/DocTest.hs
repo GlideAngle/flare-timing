@@ -8,6 +8,7 @@ arguments =
     , "library/Flight/TrackLog.hs"
     , "-XScopedTypeVariables"
     , "-XTupleSections"
+    , "-XParallelListComp"
     ]
 
 main :: IO ()

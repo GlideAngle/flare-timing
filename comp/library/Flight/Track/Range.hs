@@ -1,4 +1,4 @@
-module Flight.Track.Range (asRanges) where
+module Flight.Track.Range (asRanges, asRollovers) where
 
 import Data.List (findIndex)
 import Data.List.Split (chop)
@@ -30,4 +30,31 @@ asRanges zs =
                     ((x0, let (xN : _) = reverse (take i xs) in xN)
                     , drop i xs
                     ))
+        zs
+
+-- | Splits the list every time there's a decrement.
+-- >>> asRollovers []
+-- []
+-- >>> asRollovers [1]
+-- [[1]]
+-- >>> asRollovers [1,2]
+-- [[1,2]]
+-- >>> asRollovers [0..9]
+-- [[0,1,2,3,4,5,6,7,8,9]]
+-- >>> asRollovers [7,8,9,1,2,3]
+-- [[7,8,9],[1,2,3]]
+-- >>> asRollovers [7,8,9,1,2,3,3,2,1]
+-- [[7,8,9],[1,2,3,3],[2],[1]]
+-- >>> asRollovers [7,8,9,1,2,3,3,2,1,1,2,3,7,8,9]
+-- [[7,8,9],[1,2,3,3],[2],[1,1,2,3,7,8,9]]
+asRollovers :: Ord a => [a] -> [[a]]
+asRollovers [] = []
+asRollovers [x, y] = if x <= y then [[x, y]] else [[x],[y]]
+asRollovers zs =
+    chop
+        (\xs@(x0 : _) ->
+            let xys = zip (x0 : xs) xs in
+            case findIndex (\(x, y) -> y < x) xys of
+                Nothing -> (xs, [])
+                Just i -> (take i xs, drop i xs))
         zs
