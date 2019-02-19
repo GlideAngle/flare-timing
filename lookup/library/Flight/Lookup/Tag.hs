@@ -39,8 +39,13 @@ import Flight.Track.Cross (Fix(fix, time))
 
 type TaskTaggingLookup a = IxTask -> SpeedSection -> Maybe a
 
-newtype TaskTimeLookup = TaskTimeLookup (Maybe (TaskTaggingLookup StartEndMark))
-newtype TaskLeadingLookup = TaskLeadingLookup (Maybe (TaskTaggingLookup StartEndDownMark))
+newtype TaskTimeLookup =
+    TaskTimeLookup
+        (Maybe (TaskTaggingLookup StartEndMark))
+
+newtype TaskLeadingLookup =
+    TaskLeadingLookup
+        (Maybe (TaskTaggingLookup StartEndDownMark))
 
 type TaggingLookup a = IxTask -> SpeedSection -> Pilot -> Kml.MarkedFixes -> Maybe a
 
