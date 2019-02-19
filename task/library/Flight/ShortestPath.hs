@@ -112,6 +112,12 @@ shortestPath span distancePointToPoint cs builder angleCut tolerance xs =
             distance
                 span distancePointToPoint cs builder angleCut tolerance xs
 
+dedup :: Eq a => [a] -> [a]
+dedup [] = []
+dedup [x] = [x]
+dedup (x : y : ys)
+    | x == y = dedup (y : ys)
+    | otherwise = x : dedup (y : ys)
 
 distance
     :: (Real a, Fractional a)
@@ -126,7 +132,9 @@ distance
 distance _ _ _ _ _ _ [] = (Z0, [])
 distance _ _ _ _ _ _ [_] = (Z1, [])
 distance span distancePointToPoint cs builder cut tolerance xs
-    | not $ separatedZones span xs = (ZxNotSeparated, [])
+    -- NOTE: Allow duplicates as some tasks are set that way but otherwise
+    -- zones must be separated.
+    | not $ separatedZones span $ dedup xs = (ZxNotSeparated, [])
     | otherwise =
         first Zs $
         case dist of

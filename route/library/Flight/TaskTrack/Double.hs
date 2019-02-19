@@ -259,7 +259,7 @@ distanceEdgeSphere
     :: CostSegment Double
     -> [Zone Double]
     -> Zs (PathDistance Double)
-distanceEdgeSphere segCost = 
+distanceEdgeSphere segCost =
     distanceEdgeToEdge spanS distancePointToPoint segCost cs cut mm30
 
 distanceEdgeEllipsoid
