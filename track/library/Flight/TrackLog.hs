@@ -179,6 +179,9 @@ igcEqOrEqOnTime :: IgcRecord -> IgcRecord -> Bool
 igcEqOrEqOnTime (B t0 _ _ _ _) (B t1 _ _ _ _) = t0 == t1
 igcEqOrEqOnTime a b = a == b
 
+-- |
+-- >>> line 1 igcScott
+-- "HFDTE080417\r\n"
 igcMarkedFixes :: [Flight.Igc.IgcRecord] -> K.MarkedFixes
 igcMarkedFixes xs =
     maybe nullMarkedFixes (`mark` zs) date
@@ -192,7 +195,7 @@ igcMarkedFixes xs =
         ys = filter isFix xs
 
         -- NOTE: Some loggers will be using sub-second logging. The columns in
-        -- the B record holding the s or ss, tenths or hundredths of a second,
+        -- the B record holding the s or ss, tenths or hundredtGhs of a second,
         -- are specified in the I record. Whether parsing IGC files at the
         -- second or sub-second granularity, we need to avoid having fixes with
         -- identical time stamps hence the nubBy here.
@@ -280,3 +283,20 @@ readAltBaro (AltBaro (Altitude alt)) = K.Altitude (read alt :: Integer)
 
 readAltGps :: AltGps -> K.Altitude
 readAltGps (AltGps (Altitude alt)) = K.Altitude (read alt :: Integer)
+
+-- $setup
+-- >>> :set -XTemplateHaskell
+-- >>> import Language.Haskell.TH
+-- >>> import qualified Language.Haskell.TH.Syntax as TH (lift)
+-- >>> import Flight.Igc
+-- :{
+-- embedStr :: IO String -> ExpQ
+-- embedStr readStr = TH.lift =<< runIO readStr
+-- :}
+--
+-- >>> line n = unlines . take 1 . drop n . lines
+-- 
+-- >>> fileScott  = "./test-suite-doctest/Scott Barrett.20170409-071936.7601.19.igc"
+--
+-- >>> igcScott = $(embedStr (System.IO.readFile fileScott))
+

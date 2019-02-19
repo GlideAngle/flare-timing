@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 4fbc4946712ff8fd4c5b1f152624ef926708af242cec4ee97addf7f26ff77d4b
+-- hash: a70b9342898a11a7fda2cdfdf5dcff5f61bdeb5d0ca9cb9e551cd37c01dcfc60
 
 name:           flight-track
 version:        0.1.0
@@ -24,6 +24,7 @@ extra-source-files:
     package.dhall
     changelog.md
     README.md
+    test-suite-doctest/Scott Barrett.20170409-071936.7601.19.igc
 
 source-repository head
   type: git
@@ -44,6 +45,35 @@ library
     , bytestring
     , containers
     , directory
+    , filepath
+    , flight-clip
+    , flight-comp
+    , flight-igc
+    , flight-kml
+    , mtl
+    , path
+    , split
+    , time
+    , utf8-string
+  default-language: Haskell2010
+
+test-suite doctest
+  type: exitcode-stdio-1.0
+  main-is: DocTest.hs
+  other-modules:
+      Flight.TrackLog
+      Paths_flight_track
+  hs-source-dirs:
+      library
+      test-suite-doctest
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  ghc-options: -Wall -Werror -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      base >=4.10.1.0 && <5
+    , bytestring
+    , containers
+    , directory
+    , doctest
     , filepath
     , flight-clip
     , flight-comp
