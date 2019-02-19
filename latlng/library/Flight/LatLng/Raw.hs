@@ -17,6 +17,7 @@ import Data.Csv
 import Data.Via.Scientific
     ( dpDegree, fromSci, toSci, showSci
     , deriveDecimalPlaces, deriveJsonViaSci, deriveCsvViaSci
+    , deriveShowValueViaSci
     )
 
 data RawLatLng =
@@ -24,7 +25,11 @@ data RawLatLng =
         { lat :: RawLat
         , lng :: RawLng
         }
-    deriving (Eq, Ord, Show)
+    deriving (Eq, Ord)
+
+instance Show RawLatLng where
+    show RawLatLng{lat, lng} =
+        "(" ++ showLat lat ++ "," ++ showLng lng ++ ")"
 
 instance ToJSON RawLatLng where
     toJSON RawLatLng{..} =
@@ -35,17 +40,8 @@ instance FromJSON RawLatLng where
         <$> v .: "lat"
         <*> v .: "lng"
 
-newtype RawLat = RawLat Rational deriving (Eq, Ord, Show)
-newtype RawLng = RawLng Rational deriving (Eq, Ord, Show)
-
-deriveDecimalPlaces dpDegree ''RawLat
-deriveDecimalPlaces dpDegree ''RawLng
-
-deriveJsonViaSci ''RawLat
-deriveJsonViaSci ''RawLng
-
-deriveCsvViaSci ''RawLat
-deriveCsvViaSci ''RawLng
+newtype RawLat = RawLat Rational deriving (Eq, Ord)
+newtype RawLng = RawLng Rational deriving (Eq, Ord)
 
 instance Newtype RawLat Rational where
     pack = RawLat
@@ -75,15 +71,28 @@ instance FromNamedRecord RawLng where
 showLat :: RawLat -> String
 showLat (RawLat lat') =
     if x < 0
-       then showSci dpDegree (negate x) ++ " S"
-       else showSci dpDegree x ++ " N"
+       then showSci dpDegree (negate x) ++ "°S"
+       else showSci dpDegree x ++ "°N"
     where
         x = toSci dpDegree lat'
 
 showLng :: RawLng -> String
 showLng (RawLng lng') =
     if x < 0
-       then showSci dpDegree (negate x) ++ " W"
-       else showSci dpDegree x ++ " E"
+       then showSci dpDegree (negate x) ++ "°W"
+       else showSci dpDegree x ++ "°E"
     where
         x = toSci dpDegree lng'
+
+deriveDecimalPlaces dpDegree ''RawLat
+deriveDecimalPlaces dpDegree ''RawLng
+
+deriveJsonViaSci ''RawLat
+deriveJsonViaSci ''RawLng
+
+deriveShowValueViaSci ''RawLat
+deriveShowValueViaSci ''RawLng
+
+deriveCsvViaSci ''RawLat
+deriveCsvViaSci ''RawLng
+
