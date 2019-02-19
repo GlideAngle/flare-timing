@@ -33,12 +33,14 @@ module Flight.Igc
     , Month(..)
     , Day(..)
     , Nth(..)
+    , addHoursIgc
     -- * Record classification
     , isMark
     , isFix
     ) where
 
 import Prelude hiding (readFile)
+import Text.Printf (printf)
 import Data.ByteString.UTF8 (toString)
 import Data.ByteString (readFile)
 import Data.List (partition)
@@ -153,6 +155,24 @@ instance Show IgcRecord where
         concat ["20", y, "-", m, "-", d]
     show Ignore = ""
 
+-- |
+-- >>> addHoursHms (Hour "0") (HMS (Hour "0") (Minute "0") (Second "0"))
+-- 00:00:00
+-- >>> addHoursHms (Hour "00") (HMS (Hour "00") (Minute "00") (Second "00"))
+-- 00:00:00
+-- >>> addHoursHms (Hour "24") (HMS (Hour "12") (Minute "34") (Second "56"))
+-- 36:34:56
+addHoursHms :: Hour -> HMS -> HMS
+addHoursHms
+    (Hour h)
+    (HMS (Hour hh) mm ss) =
+    let hh' = (read hh :: Integer) + (read h :: Integer) in
+    HMS (Hour $ show hh') mm ss
+
+addHoursIgc :: Hour -> IgcRecord -> IgcRecord
+addHoursIgc h (B hms' lat' lng' ab ag) = B (addHoursHms h hms') lat' lng' ab ag
+addHoursIgc _ x = x
+
 showDegree :: String -> String
 showDegree d = d ++ "°"
 
@@ -162,7 +182,11 @@ showMinute m = m
 
 showHMS :: HMS -> String
 showHMS (HMS (Hour hh) (Minute mm) (Second ss)) =
-    hh ++ ":" ++ mm ++ ":" ++ ss
+    printf
+        "%.2d:%.2d:%.2d"
+        (read hh :: Integer)
+        (read mm :: Integer)
+        (read ss :: Integer)
 
 showLat :: Lat -> String
 showLat (LatN (Degree d) (Minute m)) =
