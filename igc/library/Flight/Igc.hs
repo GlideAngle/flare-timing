@@ -201,7 +201,14 @@ showLng (LngE (Degree d) (Minute  m)) =
     showDegree d ++ " " ++ showMinute m ++ " E"
 
 ltrimZero :: String -> String
-ltrimZero = dropWhile ('0' ==)
+ltrimZero ('-' : s) =
+    case '-' : ltrimZero s of
+        "-0" -> "0"
+        s' -> s'
+ltrimZero s =
+    case dropWhile ('0' ==) s of
+        "" -> "0"
+        s' -> s'
 
 instance Show HMS where
     show = showHMS
@@ -310,14 +317,42 @@ lng = do
 -- |
 -- >>> parseTest altBaro "00244"
 -- 244m
+--
+-- >>> parseTest altBaro "00000"
+-- 0m
+--
+-- >>> parseTest altBaro "-0000"
+-- 0m
+--
+-- >>> parseTest altBaro "-0001"
+-- -1m
 altBaro :: ParsecT Void String Identity AltBaro
-altBaro = AltBaro . Altitude <$> count 5 digitChar
+altBaro =
+    AltBaro . Altitude
+    <$>
+        ( count 5 digitChar
+        <|> (char '-' >> (("-" ++) <$> count 4 digitChar))
+        )
 
 -- |
 -- >>> parseTest altGps "00244"
 -- 244m
+--
+-- >>> parseTest altGps "00000"
+-- 0m
+--
+-- >>> parseTest altGps "-0000"
+-- 0m
+--
+-- >>> parseTest altGps "-0001"
+-- -1m
 altGps :: ParsecT Void String Identity AltGps
-altGps = AltGps . Altitude <$> count 5 digitChar
+altGps =
+    AltGps . Altitude
+    <$>
+        ( count 5 digitChar
+        <|> (char '-' >> (("-" ++) <$> count 4 digitChar))
+        )
 
 -- |
 -- >>> parseTest alt "A0024400241000"
@@ -325,6 +360,12 @@ altGps = AltGps . Altitude <$> count 5 digitChar
 --
 -- >>> parseTest alt "V0024400241000"
 -- (244m,Just 241m)
+--
+-- >>> parseTest alt "A-000100043"
+-- (-1m,Just 43m)
+--
+-- >>> parseTest alt "A-0001-0043"
+-- (-1m,Just -43m)
 alt :: ParsecT Void String Identity (AltBaro, Maybe AltGps)
 alt = do
     _ <- oneOf ("AV" :: String)
@@ -346,6 +387,12 @@ SEE: http://carrier.csi.cam.ac.uk/forsterlewis/soaring/igc_file_format/
 -- |
 -- >>> parseTest fix "B0200223321354S14756057EA0024400241000\n"
 -- 02:00:22 33° 21.354' S 147° 56.057' E 244m (Just 241m)
+--
+-- >>> parseTest fix "B1700582832124N08150806WA0000000042\n"
+-- 17:00:58 28° 32.124' N 081° 50.806' W 0m (Just 42m)
+--
+-- >>> parseTest fix "B1701282832124N08150806WA-000100043\n"
+-- 17:01:28 28° 32.124' N 081° 50.806' W -1m (Just 43m)
 fix :: ParsecT Void String Identity IgcRecord
 fix = do
     _ <- char 'B'
