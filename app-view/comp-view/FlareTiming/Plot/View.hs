@@ -48,12 +48,12 @@ hgPlot
 hgPlot tweak' alloc' = do
     tweak <- sample . current $ tweak'
     alloc <- sample . current $ alloc'
+    let gr@(GoalRatio gr') = maybe (GoalRatio 0) goalRatio alloc
     let w = maybe zeroWeights weight alloc
     pb <- delay 1 =<< getPostBuild
     (elPlot, _) <- elAttr' "div" (("id" =: "hg-plot") <> ("style" =: "height: 360px;width: 360px")) $ return ()
     rec performEvent_ $ leftmost
             [ ffor pb (\_ -> liftIO $ do
-                let gr = maybe (GoalRatio 0) goalRatio alloc
                 _ <- P.hgPlot (_element_raw elPlot) tweak gr w
                 return ())
             ]
@@ -65,15 +65,23 @@ hgPlot tweak' alloc' = do
             , time = TimeWeight t
             } = w
 
-    el "ul" $ do
-        elClass "li" "legend-distance" . text $
-            textf "○ %.3f weight on distance" d
-        elClass "li" "legend-time" . text $
-            textf "○ %.3f weight on time" t
-        elClass "li" "legend-leading" . text $
-            textf "○ %.3f weight on leading" l
-        elClass "li" "legend-arrival" . text $
-            textf "○ %.3f weight on arrival" a
+    elClass "div" "level" $ do
+        elClass "div" "level-left" $
+            elClass "div" "level-item" $
+                el "ul" $ do
+                    elClass "li" "legend-goal-ratio" . text $
+                        textf "%.3f arrival ratio ⇒" gr'
+        elClass "div" "level-right" $
+            elClass "div" "level-item" $
+                el "ul" $ do
+                    elClass "li" "legend-distance" . text $
+                        textf "○ %.3f weight on distance" d
+                    elClass "li" "legend-time" . text $
+                        textf "○ %.3f weight on time" t
+                    elClass "li" "legend-leading" . text $
+                        textf "○ %.3f weight on leading" l
+                    elClass "li" "legend-arrival" . text $
+                        textf "○ %.3f weight on arrival" a
 
     return ()
 
