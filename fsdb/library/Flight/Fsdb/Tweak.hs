@@ -80,7 +80,6 @@ xpTweak discipline =
                         Just (AwScaling 0) -> False
                         Just (AwScaling _) -> True
                         Nothing -> True
-                  
 
             in (lp, lw, ap)
         )

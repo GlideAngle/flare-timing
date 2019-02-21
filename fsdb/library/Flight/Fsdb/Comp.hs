@@ -3,8 +3,7 @@ module Flight.Fsdb.Comp (parseComp) where
 import Text.XML.HXT.Arrow.Pickle
     ( PU(..)
     , unpickleDoc', xpWrap, xp9Tuple, xpFilterAttr, xpDefault
-    , xpElem, xpTrees, xpAttr, xpPrim, xpInt, xpOption, xpText
-    , xpTextAttr
+    , xpElem, xpTrees, xpAttr, xpPrim, xpInt, xpOption, xpTextAttr
     )
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
 import Text.XML.HXT.Core
