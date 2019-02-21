@@ -326,7 +326,7 @@ map
             mapLayer <-
                 -- SEE: http://leaflet-extras.github.io/leaflet-providers/preview/
                 L.tileLayer
-                    "http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
+                    "http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     17
 
             let len = length xs

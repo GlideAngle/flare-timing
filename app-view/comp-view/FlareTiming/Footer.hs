@@ -42,29 +42,7 @@ attribution =
         ("href" =: "http://www.openstreetmap.org/copyright" <> "target" =: "_blank")
         $ text "OpenStreetMap"
 
-    text ", "
-
-    elAttr
-        "a"
-        ("href" =: "http://viewfinderpanoramas.org" <> "target" =: "_blank")
-        $ text "SRTM"
-
-    el "br" $ return ()
-    text "Map style © "
-
-    elAttr
-        "a" ("href" =: "https://opentopomap.org" <> "target" =: "_blank")
-        $ text "OpenTopoMap"
-
-    text " ("
-
-    elAttr
-        "a"
-        ("href" =: "https://creativecommons.org/licenses/by-sa/3.0/" <> "target" =: "_blank")
-        $ text "CC-BY-SA"
-
-    text ")"
-
+    text " contributors"
 
 footer :: MonadWidget t m => m ()
 footer =
