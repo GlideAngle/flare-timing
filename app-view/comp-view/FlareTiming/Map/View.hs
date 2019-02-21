@@ -30,6 +30,7 @@ import qualified FlareTiming.Map.Leaflet as L
     , layerGroup
     , layerGroupAddToMap
     , tileLayer
+    , tileLayerAddToMap
     , marker
     , markerPopup
     , mapInvalidateSize
@@ -368,6 +369,8 @@ map
             -- can also be hidden via the layers control. The course line is
             -- not added by default but can be shown via the layers control.
             L.layerGroupAddToMap taskRouteGroup lmap
+
+            L.tileLayerAddToMap mapLayer lmap
 
             layers <-
                 L.layersControl

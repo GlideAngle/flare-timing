@@ -201,6 +201,8 @@ tileLayer src maxZoom =
     TileLayer <$> tileLayer_ (toJSString src) maxZoom
 
 -- | Adds the tile layer to the map. The layers control does this too.
+-- If this call is made before setting up the layers control then the map layer
+-- will be checked and shown.
 tileLayerAddToMap :: TileLayer -> Map -> IO ()
 tileLayerAddToMap x lmap = addToMap_ (unTileLayer x) (unMap lmap)
 
