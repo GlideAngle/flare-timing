@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c019215b357be804b198d39a0044bea83c331b07fbcb2b8ad027e7b2f76513a6
+-- hash: 81c3d1336ac76a27e089b58fb9649ec8843a2d7e9c5f0e120703c03aca5a2735
 
 name:           flight-fsdb
 version:        0.1.0
@@ -35,7 +35,6 @@ library
       Flight.Fsdb
   other-modules:
       Flight.Fsdb.Comp
-      Flight.Fsdb.Internal.Parse
       Flight.Fsdb.Internal.XmlPickle
       Flight.Fsdb.Nominal
       Flight.Fsdb.Pilot
@@ -68,13 +67,12 @@ library
     , uom-plugin
   default-language: Haskell2010
 
-test-suite parse
+test-suite doctest
   type: exitcode-stdio-1.0
-  main-is: Parse.hs
+  main-is: DocTest.hs
   other-modules:
       Flight.Fsdb
       Flight.Fsdb.Comp
-      Flight.Fsdb.Internal.Parse
       Flight.Fsdb.Internal.XmlPickle
       Flight.Fsdb.Nominal
       Flight.Fsdb.Pilot
@@ -84,7 +82,7 @@ test-suite parse
       Paths_flight_fsdb
   hs-source-dirs:
       library
-      test-suite-parse
+      test-suite-doctest
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
   ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
   build-depends:
@@ -92,6 +90,7 @@ test-suite parse
     , base >=4.10.1.0 && <5
     , containers
     , detour-via-sci
+    , doctest
     , flight-comp
     , flight-gap
     , flight-latlng
@@ -103,12 +102,7 @@ test-suite parse
     , newtype
     , path
     , scientific
-    , smallcheck
     , split
-    , tasty
-    , tasty-hunit
-    , tasty-quickcheck
-    , tasty-smallcheck
     , time
     , uom-plugin
   default-language: Haskell2010

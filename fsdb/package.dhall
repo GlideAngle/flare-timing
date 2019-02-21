@@ -38,20 +38,15 @@ in    defs
           { source-dirs = "library", exposed-modules = "Flight.Fsdb" }
       , tests =
             ./../default-tests.dhall
-          ⫽ { parse =
+          ⫽ { doctest =
                 { dependencies =
-                    [ "tasty"
-                    , "tasty-hunit"
-                    , "tasty-quickcheck"
-                    , "tasty-smallcheck"
-                    , "smallcheck"
-                    ]
+                    defs.dependencies # [ "doctest" ]
                 , ghc-options =
                     [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
                 , main =
-                    "Parse.hs"
+                    "DocTest.hs"
                 , source-dirs =
-                    [ "library", "test-suite-parse" ]
+                    [ "library", "test-suite-doctest" ]
                 }
             }
       }
