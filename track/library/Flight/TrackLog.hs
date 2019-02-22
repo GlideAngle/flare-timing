@@ -326,7 +326,7 @@ readAltGps (AltGps (Altitude alt)) = K.Altitude (read alt :: Integer)
 --
 -- >>> line n = unlines . take 1 . drop n . lines
 -- 
--- >>> fileScott  = "./test-suite-doctest/Scott Barrett.20170409-071936.7601.19.igc"
+-- >>> fileScott  = "./test-suite-doctest/Scott-Barrett.20170409-071936.7601.19.igc"
 --
 -- >>> igcScott = $(embedStr (System.IO.readFile fileScott))
 
