@@ -51,7 +51,8 @@ decimal_
     => m a
 decimal_ = lexeme L.decimal
 
--- |
+-- | Parser for decimal degrees.
+--
 -- >>> parseTest ddd "33.21354"
 -- 33.21354
 --
@@ -64,7 +65,8 @@ ddd = do
 
     return $ degSign degs
 
--- |
+-- | Parser for degrees and decimal minutes.
+--
 -- >>> "33 " ++ show (0.21354 * 60)
 -- "33 12.8124"
 --
@@ -82,7 +84,8 @@ dmm = do
 
     return $ degSign degs
 
--- |
+-- | Parser for degrees minutes and decimal seconds.
+--
 -- >>> "33 12 " ++ show (0.8124 * 60)
 -- "33 12 48.744"
 --
@@ -101,7 +104,9 @@ dms = do
 
     return $ degSign degs
 
--- |
+-- | Parser that can handle decimal degrees, degress and decimal minutes or
+-- degrees, minutes and decimal seconds.
+--
 -- >>> parseTest deg "33.21354"
 -- 33.21354
 --
