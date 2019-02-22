@@ -40,7 +40,7 @@ in    defs
             ./../default-tests.dhall
           ⫽ { doctest =
                 { dependencies =
-                    defs.dependencies # [ "doctest" ]
+                    defs.dependencies # [ "doctest", "hxt-pickle-utils" ]
                 , ghc-options =
                     [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
                 , main =

@@ -67,7 +67,7 @@ import Flight.Comp
     )
 import Flight.Score (ScoreBackTime(..), PointPenalty(..))
 import Flight.Fsdb.Pilot (getCompPilot)
-import Flight.Fsdb.Internal.XmlPickle (xpNewtypeQuantity, xpNewtypeLat, xpNewtypeLng)
+import Flight.Fsdb.Internal.XmlPickle (xpNewtypeQuantity)
 import Flight.Fsdb.Tweak (xpTweak)
 
 -- | The attribute //FsTaskDefinition@goal.
@@ -84,12 +84,6 @@ keyMap = fromList . fmap (\(KeyPilot x) -> x)
 unKeyPilot :: Map PilotId Pilot -> PilotId -> Pilot
 unKeyPilot ps k@(PilotId ip) =
     findWithDefault (Pilot (k, PilotName ip)) k ps
-
-instance XmlPickler RawLat where
-    xpickle = xpNewtypeLat
-
-instance XmlPickler RawLng where
-    xpickle = xpNewtypeLng
 
 instance (u ~ Quantity Double [u| m |]) => XmlPickler (Alt u) where
     xpickle = xpNewtypeQuantity

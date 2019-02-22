@@ -17,7 +17,7 @@ module Flight.Kml
     (
     -- * Usage
     -- $use
-    
+
     -- * The newtypes
       Seconds(..)
     , Latitude(..)

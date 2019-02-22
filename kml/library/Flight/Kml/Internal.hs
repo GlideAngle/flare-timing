@@ -2,12 +2,12 @@
     (
     -- * Internal Usage
     -- $internal-use
-    
+
     -- ** Display of a fix
       showLatLngAlt
     , showLngLatAlt
     , showTimeAlt
-    
+
     -- ** Length and range
     , fixesLength
     , fixesSecondsRange
@@ -140,7 +140,7 @@ pFixes = do
     return xs
 
 -- | Parse the list of time offsets.
--- 
+--
 -- >>> parseTimeOffsets "0 2 4 6 8 10 12 14 16 18 20 22 24 26 28 30"
 -- [0s,2s,4s,6s,8s,10s,12s,14s,16s,18s,20s,22s,24s,26s,28s,30s]
 parseTimeOffsets :: String -> [Seconds]

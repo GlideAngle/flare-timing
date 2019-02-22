@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 81c3d1336ac76a27e089b58fb9649ec8843a2d7e9c5f0e120703c03aca5a2735
+-- hash: fe66067c4c8ce4c2e62a74b0de13230cd59be23356c1556975680a5a7ff64d0c
 
 name:           flight-fsdb
 version:        0.1.0
@@ -35,6 +35,7 @@ library
       Flight.Fsdb
   other-modules:
       Flight.Fsdb.Comp
+      Flight.Fsdb.Internal.Parse
       Flight.Fsdb.Internal.XmlPickle
       Flight.Fsdb.Nominal
       Flight.Fsdb.Pilot
@@ -73,6 +74,7 @@ test-suite doctest
   other-modules:
       Flight.Fsdb
       Flight.Fsdb.Comp
+      Flight.Fsdb.Internal.Parse
       Flight.Fsdb.Internal.XmlPickle
       Flight.Fsdb.Nominal
       Flight.Fsdb.Pilot
@@ -97,6 +99,7 @@ test-suite doctest
     , flight-units
     , flight-zone
     , hxt
+    , hxt-pickle-utils
     , hxt-xpath
     , megaparsec
     , newtype

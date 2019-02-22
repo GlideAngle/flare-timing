@@ -206,7 +206,7 @@ bumpOver add ns xs =
 
 -- |
 -- >>> line 1 igcScott
--- "HFDTE080417\r\n"
+-- "HFDTE080417\n"
 igcMarkedFixes :: [Flight.Igc.IgcRecord] -> K.MarkedFixes
 igcMarkedFixes xs =
     maybe nullMarkedFixes (`mark` zs) date
