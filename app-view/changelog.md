@@ -2,6 +2,19 @@ The [latest
 version](https://github.com/BlockScope/flare-timing/blob/master/app-view/changelog.md)
 of this changelog.
 
+# Duplicate Zones and Angle Formats
+## app-view-0.12
+
+* Fix a bug showing turnpoints when the first zone starts the speed section.
+* When time rolls over in a sequence of IGC B records, bump the date.
+* Allow for negative altitudes in IGC B records.
+* Allow duplicate zones when working out task distance.
+* Detect when pilots jump the gun. The penalty is not yet applied.
+* Show the arrival ratio in the legend of the split points plot.
+* Show the tiles by default on the map.
+* Switch from opentopomap to openstreetmap for the tiles on the map.
+* Parse the lat and lng of turnpoints in `*.fsdb` files as ddd or dmm or dms.
+
 # Split of Available Points
 ## app-view-0.11
 
