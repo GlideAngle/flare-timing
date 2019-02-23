@@ -1,10 +1,9 @@
 {-# LANGUAGE JavaScriptFFI #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
 
-module FlareTiming.Plot.Weight.Plot
+module FlareTiming.Plot.Arrival.Plot
     ( Plot(..)
     , hgPlot
-    , pgPlot
     ) where
 
 import Prelude hiding (map, log)
@@ -28,9 +27,9 @@ newtype Plot = Plot { unPlot :: JSVal }
 
 foreign import javascript unsafe
     "functionPlot(\
-    \{ target: '#hg-plot-weight'\
+    \{ target: '#hg-plot-arrival'\
     \, title: 'Split of Available Points'\
-    \, width: 320\
+    \, width: 360\
     \, height: 360\
     \, disableZoom: true\
     \, xAxis: {label: 'Fraction of Pilots in Goal', domain: [0, 1]}\
@@ -117,79 +116,6 @@ hgPlot
     t' <- toJSVal t
 
     Plot <$> hgPlot_ (unElement . toElement $ e) lw' aw' gr' d' l' a' t'
-
-foreign import javascript unsafe
-    "functionPlot(\
-    \{ target: '#pg-plot-weight'\
-    \, title: 'Split of Available Points'\
-    \, width: 320\
-    \, height: 360\
-    \, disableZoom: true\
-    \, xAxis: {label: 'Fraction of Pilots in Goal', domain: [0, 1]}\
-    \, yAxis: {domain: [0, 1]}\
-    \, data: [{\
-    \    fn: '0.9 - 1.665*x + 1.713*x^2 - 0.587*x^3'\
-    \  , nSamples: 101\
-    \  , color: 'blue'\
-    \  , graphType: 'polyline'\
-    \  },{\
-    \    points: [[$3, $4]]\
-    \  , fnType: 'points'\
-    \  , color: 'blue'\
-    \  , attr: { r: 3 }\
-    \  , graphType: 'scatter' \
-    \  },{\
-    \    fn: '(1 - (0.9 - 1.665*x + 1.713*x^2 - 0.587*x^3))/8 * 1.4 * ' + $2\
-    \  , nSamples: 101\
-    \  , color: 'red'\
-    \  , graphType: 'polyline'\
-    \  },{\
-    \    points: [[$3, $5]]\
-    \  , fnType: 'points'\
-    \  , color: 'red'\
-    \  , attr: { r: 3 }\
-    \  , graphType: 'scatter' \
-    \  },{\
-    \    fn: '1 - ((0.9 - 1.665*x + 1.713*x^2 - 0.587*x^3) + (1 - (0.9 - 1.665*x + 1.713*x^2 - 0.587*x^3))/8 * 1.4 * ' + $2 + ')'\
-    \  , nSamples: 101\
-    \  , color: 'green'\
-    \  , graphType: 'polyline'\
-    \  },{\
-    \    points: [[$3, $6]]\
-    \  , fnType: 'points'\
-    \  , color: 'green'\
-    \  , attr: { r: 3 }\
-    \  , graphType: 'scatter' \
-    \  }]\
-    \, annotations: [{\
-    \    x: $3\
-    \  , text: 'pilots in goal'\
-    \  }]\
-    \})"
-    pgPlot_ :: JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> IO JSVal
-
-pgPlot
-    :: IsElement e
-    => e -> Maybe Tweak -> GoalRatio -> Weights -> IO Plot
-pgPlot
-    e
-    tw
-    (GoalRatio gr)
-    Weights
-        { distance = DistanceWeight d
-        , leading = LeadingWeight l
-        , time = TimeWeight t
-        } = do
-
-    let Tweak{leadingWeightScaling = Just (LwScaling lw)} = scaling Paragliding tw
-
-    lw' <- toJSVal lw
-    gr' <- toJSVal gr
-    d' <- toJSVal d
-    l' <- toJSVal l
-    t' <- toJSVal t
-
-    Plot <$> pgPlot_ (unElement . toElement $ e) lw' gr' d' l' t'
 
 scaling :: Discipline -> Maybe Tweak -> Tweak
 scaling HangGliding Nothing =
