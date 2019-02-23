@@ -1,4 +1,4 @@
-module FlareTiming.Plot.Weight (hgPlot, pgPlot) where
+module FlareTiming.Plot.Weight.View (hgPlot, pgPlot) where
 
 import Text.Printf (printf)
 import Reflex.Dom
@@ -6,7 +6,7 @@ import Reflex.Time (delay)
 import qualified Data.Text as T (Text, pack)
 
 import Control.Monad.IO.Class (liftIO)
-import qualified FlareTiming.Plot.FunctionPlot as P (hgPlot, pgPlot)
+import qualified FlareTiming.Plot.Weight.Plot as P (hgPlot, pgPlot)
 
 import WireTypes.Comp (Tweak(..))
 import WireTypes.Point

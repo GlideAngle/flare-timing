@@ -1,7 +1,7 @@
 {-# LANGUAGE JavaScriptFFI #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
 
-module FlareTiming.Plot.FunctionPlot
+module FlareTiming.Plot.Weight.Plot
     ( Plot(..)
     , hgPlot
     , pgPlot

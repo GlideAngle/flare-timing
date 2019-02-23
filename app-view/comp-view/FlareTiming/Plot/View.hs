@@ -4,7 +4,7 @@ import Reflex.Dom
 
 import WireTypes.Comp (Discipline(..), Tweak(..))
 import WireTypes.Point (Allocation(..))
-import FlareTiming.Plot.Weight (hgPlot, pgPlot)
+import FlareTiming.Plot.Weight.View (hgPlot, pgPlot)
 
 viewPlot
     :: MonadWidget t m
