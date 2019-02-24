@@ -24,7 +24,26 @@ katexNewLine = " \\\\\\\\ "
 
 hookWorking :: Vy.Validity -> ValidityWorking -> T.Text
 hookWorking v ValidityWorking{launch = l, distance = d, time = t} =
-    launchWorking v l <> distanceWorking v d <> timeWorking v t
+    taskWorking v <> launchWorking v l <> distanceWorking v d <> timeWorking v t
+
+taskWorking :: Vy.Validity -> T.Text
+taskWorking v =
+    "katex.render("
+    <> "\"\\\\begin{aligned} "
+    <> "validity &= l * d * t"
+    <> katexNewLine
+    <> " &= "
+    <> (Vy.showLaunchValidity . Vy.launch $ v)
+    <> " * "
+    <> (Vy.showDistanceValidity . Vy.distance $ v)
+    <> " * "
+    <> (Vy.showTimeValidity . Vy.time $ v)
+    <> katexNewLine
+    <> " &= "
+    <> (Vy.showTaskValidity . Vy.task $ v)
+    <> " \\\\end{aligned}\""
+    <> ", getElementById('task-working')"
+    <> ", {throwOnError: false});"
 
 launchWorking :: Vy.Validity -> LaunchValidityWorking -> T.Text
 launchWorking v w@LaunchValidityWorking{flying = f} =
@@ -229,7 +248,7 @@ viewDay
     elClass "div" "card" $ do
         elClass "div" "card-content" $ do
             elClass "h2" "title is-4" . text
-                $ "Day Quality = " <> Vy.showTaskValidity task
+                $ "Task Validity = " <> Vy.showTaskValidity task
             elClass "div" "field is-grouped is-grouped-multiline" $ do
                 elClass "div" "control" $ do
                     elClass "div" "tags has-addons" $ do
@@ -246,6 +265,11 @@ viewDay
                         elClass "span" "tag" $ do text "t = time validity"
                         elClass "span" "tag is-primary" . text
                             $ Vy.showTimeValidity tv
+
+            elAttr
+                "div"
+                ("id" =: "task-working")
+                (text "")
 
     return ()
 
