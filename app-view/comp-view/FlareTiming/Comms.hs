@@ -22,6 +22,7 @@ module FlareTiming.Comms
     , getTaskPilotDfNoTrack
     , getTaskPilotTrack
     , getTaskPilotTrackFlyingSection
+    , getTaskArrival
     , emptyRoute
     ) where
 
@@ -32,6 +33,7 @@ import qualified Data.Text as T (Text, pack)
 import Control.Monad.IO.Class (MonadIO)
 
 import WireTypes.Comp (Comp(..), Nominal(..), Task(..))
+import WireTypes.Arrival (TrackArrival)
 import WireTypes.Route
 import WireTypes.Pilot
     ( PilotTaskStatus(..), Pilot(..), PilotId(..)
@@ -139,6 +141,9 @@ getAllocation = get "/gap-point/allocation"
 
 getTaskScore :: GetIxTask' t m [(Pilot, Breakdown)]
 getTaskScore = getIxTask "gap-point" "score"
+
+getTaskArrival :: GetIxTask' t m [(Pilot, TrackArrival)]
+getTaskArrival = getIxTask "mask-track" "arrival"
 
 getTaskValidityWorking :: GetIxTask' t m (Maybe ValidityWorking)
 getTaskValidityWorking = getIxTask "gap-point" "validity-working"

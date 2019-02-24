@@ -22,7 +22,8 @@ import WireTypes.Validity (Validity(..))
 import qualified WireTypes.ValidityWorking as VW
     (ValidityWorking(..), LaunchValidityWorking(..))
 import FlareTiming.Comms
-    ( getTaskScore, getTaskValidityWorking, getTaskLengthSphericalEdge
+    ( getTaskScore, getTaskArrival
+    , getTaskValidityWorking, getTaskLengthSphericalEdge
     , getTaskPilotDnf, getTaskPilotNyp, getTaskPilotDfNoTrack
     , getTaskPilotTrack, getTaskPilotTrackFlyingSection, emptyRoute
     )
@@ -153,6 +154,7 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
     let tweak = Comp.taskTweak <$> task
     pb <- getPostBuild
     sDf <- holdDyn [] =<< getTaskScore ix pb
+    av <- holdDyn [] =<< getTaskArrival ix pb
     vw <- holdDyn Nothing =<< getTaskValidityWorking ix pb
     nyp <- holdDyn (Nyp []) =<< getTaskPilotNyp ix pb
     dnf <- holdDyn (Dnf []) =<< getTaskPilotDnf ix pb
@@ -171,7 +173,7 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
     es <- simpleList cs (crumbTask task)
     tab <- tabsTask
 
-    _ <- widgetHold (viewPlot hgOrPg pf tweak alloc) $
+    _ <- widgetHold (viewPlot hgOrPg pf tweak alloc av) $
             (\case
                 TaskTabGeo -> tableGeo ix
 
@@ -201,7 +203,7 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
 
                 TaskTabScore -> tableScore utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf
 
-                TaskTabSplit -> viewPlot hgOrPg pf tweak alloc)
+                TaskTabSplit -> viewPlot hgOrPg pf tweak alloc av)
             <$> tab
 
     return $ switchDyn (leftmost <$> es)
