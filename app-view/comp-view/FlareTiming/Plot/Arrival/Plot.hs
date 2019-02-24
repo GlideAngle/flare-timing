@@ -29,6 +29,7 @@ foreign import javascript unsafe
     \, data: [{\
     \    points: $3\
     \  , fnType: 'points'\
+    \  , range: [1, $2]\
     \  , graphType: 'scatter'\
     \  }]\
     \, annotations: [{\
