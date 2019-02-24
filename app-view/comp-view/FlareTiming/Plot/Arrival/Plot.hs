@@ -24,36 +24,49 @@ foreign import javascript unsafe
     \, width: 360\
     \, height: 360\
     \, disableZoom: true\
-    \, xAxis: {label: 'Arrival Position', domain: [0, $2 + 1]}\
+    \, xAxis: {label: 'Arrival Placing', domain: [0, $2 + 1]}\
     \, yAxis: {domain: [0, 1.01]}\
     \, data: [{\
+    \    fn: '0.2 + 0.037*(1 - (x - 1)/' + $2 + ') + 0.13*(1 - (x - 1)/' + $2 + ')^2 + 0.633*(1 - (x - 1)/' + $2 + ')^3'\
+    \  , nSamples: 101\
+    \  , color: 'blue'\
+    \  , range: [1, $2]\
+    \  , graphType: 'polyline'\
+    \  },{\
     \    points: $3\
     \  , fnType: 'points'\
+    \  , color: 'blue'\
+    \  , attr: { r: 2 }\
+    \  , range: [1, $2]\
+    \  , graphType: 'scatter'\
+    \  },{\
+    \    points: $4\
+    \  , fnType: 'points'\
+    \  , color: 'red'\
+    \  , attr: { r: 3 }\
     \  , range: [1, $2]\
     \  , graphType: 'scatter'\
     \  }]\
     \, annotations: [{\
     \    y: 0.2\
-    \  , text: 'minimum fraction awarded'\
+    \  , text: 'minimum possible fraction'\
     \  }]\
     \})"
-    hgPlot_ :: JSVal -> JSVal -> JSVal -> IO JSVal
+    hgPlot_ :: JSVal -> JSVal -> JSVal -> JSVal -> IO JSVal
 
-hgPlot :: IsElement e => e -> PilotsFlying -> GoalRatio -> IO Plot
-hgPlot e (PilotsFlying pf) (GoalRatio gr) = do
+hgPlot
+    :: IsElement e
+    => e
+    -> PilotsFlying
+    -> GoalRatio
+    -> [[Double]]
+    -> [[Double]]
+    -> IO Plot
+hgPlot e (PilotsFlying pf) (GoalRatio gr) xs ys = do
     let n :: Integer = truncate $ gr * fromIntegral pf
-    let xy :: [[Double]] = [[fromIntegral x, fn n x] | x <- [1..n]]
 
     n' <- toJSVal (fromIntegral n :: Double)
-    xy' <- toJSValListOf xy
+    xs' <- toJSValListOf xs
+    ys' <- toJSValListOf ys
 
-    Plot <$> hgPlot_ (unElement . toElement $ e) n' xy'
-
-fn :: Integer -> Integer -> Double
-fn n x' = 0.2 + 0.037 * y + 0.13 * y**2 + 0.633 * y**3
-    where
-        x :: Double
-        x = fromIntegral x'
-
-        y :: Double
-        y = 1.0 - (x - 1.0) / (fromIntegral n)
+    Plot <$> hgPlot_ (unElement . toElement $ e) n' xs' ys'
