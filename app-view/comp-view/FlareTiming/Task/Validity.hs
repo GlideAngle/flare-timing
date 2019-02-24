@@ -247,8 +247,14 @@ viewDay
     ValidityWorking{launch = LaunchValidityWorking{..}} = do
     elClass "div" "card" $ do
         elClass "div" "card-content" $ do
-            elClass "h2" "title is-4" . text
-                $ "Task Validity = " <> Vy.showTaskValidity task
+            elClass "p" "level subtitle is-6" $ do
+                elClass "span" "level-item level-left" $
+                    elClass "h2" "title is-4" . text
+                        $ "Task Validity* = " <> Vy.showTaskValidity task
+
+                elClass "span" "level-item level-right" $
+                    text "* Day Quality"
+
             elClass "div" "field is-grouped is-grouped-multiline" $ do
                 elClass "div" "control" $ do
                     elClass "div" "tags has-addons" $ do
