@@ -15,7 +15,7 @@ tablePilot
 tablePilot ts = do
     pb <- getPostBuild
     xs <- holdDyn [] =<< getPilotsStatus pb
-    _ <- elClass "table" "table is-bordered" $
+    _ <- elClass "table" "table is-bordered is-striped" $ do
             el "thead" $ do
                 el "tr" $ do
                     el "th" $ text "Id"
@@ -25,6 +25,7 @@ tablePilot ts = do
 
                     return ()
 
+            el "tbody" $ do
                 simpleList xs (uncurry rowPilotStatus . splitDynPure)
     return ()
 
