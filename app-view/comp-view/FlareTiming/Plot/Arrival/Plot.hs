@@ -10,6 +10,7 @@ import Prelude hiding (map, log)
 import GHCJS.Types (JSVal)
 import GHCJS.DOM.Element (IsElement)
 import GHCJS.DOM.Types (Element(..), toElement, toJSVal, toJSValListOf)
+import Data.List (nub)
 
 import WireTypes.ValidityWorking (PilotsFlying(..))
 import WireTypes.Point (GoalRatio(..))
@@ -69,7 +70,7 @@ hgPlot e _ _ xs ys = do
     let xy :: [[Double]] = [[x', fn n x'] | x <- [1 .. 10 * n], let x' = 0.1 * fromIntegral x]
     xy' <- toJSValListOf xy
     xs' <- toJSValListOf xs
-    ys' <- toJSValListOf ys
+    ys' <- toJSValListOf $ nub ys
 
     Plot <$> hgPlot_ (unElement . toElement $ e) n' xy' xs' ys'
 
