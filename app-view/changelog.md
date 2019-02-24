@@ -6,6 +6,7 @@ of this changelog.
 ## app-view-0.13
 
 * Plot the arrival point distribution.
+* Show the working for task validity.
 
 # Duplicate Zones and Angle Formats
 ## app-view-0.12
