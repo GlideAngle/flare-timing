@@ -30,7 +30,7 @@ taskWorking :: Vy.Validity -> T.Text
 taskWorking v =
     "katex.render("
     <> "\"\\\\begin{aligned} "
-    <> "validity &= l * d * t"
+    <> "validity &= lv * dv * tv"
     <> katexNewLine
     <> " &= "
     <> (Vy.showLaunchValidity . Vy.launch $ v)
@@ -258,17 +258,17 @@ viewDay
             elClass "div" "field is-grouped is-grouped-multiline" $ do
                 elClass "div" "control" $ do
                     elClass "div" "tags has-addons" $ do
-                        elClass "span" "tag" $ do text "l = launch validity"
+                        elClass "span" "tag" $ do text "lv = launch validity"
                         elClass "span" "tag is-info" . text
                             $ Vy.showLaunchValidity lv
                 elClass "div" "control" $ do
                     elClass "div" "tags has-addons" $ do
-                        elClass "span" "tag" $ do text "d = distance validity"
+                        elClass "span" "tag" $ do text "dv = distance validity"
                         elClass "span" "tag is-success" . text
                             $ Vy.showDistanceValidity dv
                 elClass "div" "control" $ do
                     elClass "div" "tags has-addons" $ do
-                        elClass "span" "tag" $ do text "t = time validity"
+                        elClass "span" "tag" $ do text "tv = time validity"
                         elClass "span" "tag is-primary" . text
                             $ Vy.showTimeValidity tv
 
