@@ -2,6 +2,11 @@ The [latest
 version](https://github.com/BlockScope/flare-timing/blob/master/app-view/changelog.md)
 of this changelog.
 
+# Arrival Point Distribution
+## app-view-0.13
+
+* Plot the arrival point distribution.
+
 # Duplicate Zones and Angle Formats
 ## app-view-0.12
 
