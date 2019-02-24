@@ -30,7 +30,8 @@ import FlareTiming.Comms
 import FlareTiming.Breadcrumb (crumbTask)
 import FlareTiming.Events (IxTask(..))
 import FlareTiming.Map.View (viewMap)
-import FlareTiming.Plot.View (viewPlot)
+import FlareTiming.Plot.Weight (weightPlot)
+import FlareTiming.Plot.Arrival (arrivalPlot)
 import qualified FlareTiming.Turnpoint as TP (getName)
 import FlareTiming.Task.Tab (TaskTab(..), tabsTask)
 import FlareTiming.Task.Score (tableScore)
@@ -173,11 +174,13 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
     es <- simpleList cs (crumbTask task)
     tab <- tabsTask
 
-    _ <- widgetHold (viewPlot hgOrPg pf tweak alloc av) $
+    _ <- widgetHold (weightPlot hgOrPg tweak alloc) $
             (\case
-                TaskTabGeo -> tableGeo ix
+                TaskTabGeo ->
+                    tableGeo ix
 
-                TaskTabTask -> tableTask utc task legs
+                TaskTabTask ->
+                    tableTask utc task legs
 
                 TaskTabMap -> mdo
                     p <- viewMap ix task routes pt
@@ -198,15 +201,23 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
 
                     return ()
 
-                TaskTabAbsent -> tableAbsent utc ix ln nyp dnf dfNt penal
-                TaskTabValidity -> viewValidity vy vw
+                TaskTabAbsent ->
+                    tableAbsent utc ix ln nyp dnf dfNt penal
 
-                TaskTabScore -> tableScore utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf
+                TaskTabValidity ->
+                    viewValidity vy vw
 
-                TaskTabSplit -> viewPlot hgOrPg pf tweak alloc av
+                TaskTabScore ->
+                    tableScore utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf
 
-                TaskTabArrive -> text "TODO: Arrive"
-                TaskTabLead -> text "TODO: Lead")
+                TaskTabSplit ->
+                    weightPlot hgOrPg tweak alloc
+
+                TaskTabArrive ->
+                    arrivalPlot hgOrPg pf alloc av
+
+                TaskTabLead ->
+                    text "TODO: Lead")
             <$> tab
 
     return $ switchDyn (leftmost <$> es)
