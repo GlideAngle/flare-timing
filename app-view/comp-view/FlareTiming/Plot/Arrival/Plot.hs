@@ -31,6 +31,10 @@ foreign import javascript unsafe
     \  , fnType: 'points'\
     \  , graphType: 'scatter'\
     \  }]\
+    \, annotations: [{\
+    \    y: 0.2\
+    \  , text: 'minimum fraction awarded'\
+    \  }]\
     \})"
     hgPlot_ :: JSVal -> JSVal -> JSVal -> IO JSVal
 
