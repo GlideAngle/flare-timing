@@ -25,7 +25,7 @@ hgPlot (Just pf) alloc av = do
     let gr = maybe (GoalRatio 0) goalRatio alloc
     pb <- delay 1 =<< getPostBuild
 
-    elClass "div" "level" $ do
+    elAttr "div" (("class" =: "level") <> ("style" =: "align-items:flex-start;")) $ do
         elClass "div" "level-left" $
             elClass "div" "level-item" $ do
                 (elPlot, _) <- elAttr' "div" (("id" =: "hg-plot-arrival") <> ("style" =: "height: 360px;width: 360px")) $ return ()
