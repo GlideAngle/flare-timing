@@ -154,7 +154,7 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
     let tweak = Comp.taskTweak <$> task
     pb <- getPostBuild
     sDf <- holdDyn [] =<< getTaskScore ix pb
-    av <- holdDyn [] =<< getTaskArrival ix pb
+    av <- holdDyn Nothing =<< (fmap Just <$> getTaskArrival ix pb)
     vw <- holdDyn Nothing =<< getTaskValidityWorking ix pb
     nyp <- holdDyn (Nyp []) =<< getTaskPilotNyp ix pb
     dnf <- holdDyn (Dnf []) =<< getTaskPilotDnf ix pb

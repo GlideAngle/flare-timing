@@ -1,5 +1,6 @@
 module FlareTiming.Plot.View (viewPlot) where
 
+import Data.Maybe (fromMaybe)
 import Reflex.Dom
 
 import WireTypes.Arrival (TrackArrival(..))
@@ -16,7 +17,7 @@ viewPlot
     -> Dynamic t (Maybe PilotsFlying)
     -> Dynamic t (Maybe Tweak)
     -> Dynamic t (Maybe Allocation)
-    -> Dynamic t [(Pilot, TrackArrival)]
+    -> Dynamic t (Maybe [(Pilot, TrackArrival)])
     -> m ()
 viewPlot hgOrPg pf tweak alloc av = do
     elClass "div" "tile is-ancestor" $ do
@@ -36,14 +37,19 @@ viewPlot hgOrPg pf tweak alloc av = do
                     elClass "div" "tile" $
                         elClass "div" "tile is-parent" $ do
                             _ <- dyn $ ffor av (\case
-                                    [] ->
+                                    Nothing ->
+                                        elClass "article" "tile is-child notification is-warning" $ do
+                                            elClass "p" "title" $ text "Arrivals"
+                                            el "p" $ text "Loading arrivals ..."
+
+                                    Just [] ->
                                         elClass "article" "tile is-child notification is-warning" $ do
                                             elClass "p" "title" $ text "Arrivals"
                                             el "p" $ text "No pilots made it to the end of the speed section. There are no arrivals"
 
                                     _ ->
                                         elClass "article" "tile is-child box" $
-                                            A.hgPlot pf' alloc' av)
+                                            A.hgPlot pf' alloc' (fromMaybe [] <$> av))
 
                             return ())
 
