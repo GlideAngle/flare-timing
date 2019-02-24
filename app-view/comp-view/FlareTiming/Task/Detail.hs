@@ -203,7 +203,10 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
 
                 TaskTabScore -> tableScore utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf
 
-                TaskTabSplit -> viewPlot hgOrPg pf tweak alloc av)
+                TaskTabSplit -> viewPlot hgOrPg pf tweak alloc av
+
+                TaskTabArrive -> text "TODO: Arrive"
+                TaskTabLead -> text "TODO: Lead")
             <$> tab
 
     return $ switchDyn (leftmost <$> es)

@@ -11,6 +11,8 @@ data TaskTab
     | TaskTabValidity
     | TaskTabScore
     | TaskTabSplit
+    | TaskTabArrive
+    | TaskTabLead
 
 tabsTask
     :: MonadWidget t m
@@ -18,90 +20,142 @@ tabsTask
 tabsTask =
     elClass "div" "tabs" $
         el "ul" $ mdo
-            (g, _) <- elDynClass' "li" gClass $ el "a" (text "Geo")
-            (t, _) <- elDynClass' "li" tClass $ el "a" (text "Task")
-            (m, _) <- elDynClass' "li" mClass $ el "a" (text "Map")
-            (a, _) <- elDynClass' "li" aClass $ el "a" (text "Pilots")
-            (v, _) <- elDynClass' "li" vClass $ el "a" (text "Valid")
-            (s, _) <- elDynClass' "li" sClass $ el "a" (text "Score")
-            (p, _) <- elDynClass' "li" pClass $ el "a" (text "Split")
+            (geo, _) <- elDynClass' "li" gClass $ el "a" (text "Geo")
+            (task, _) <- elDynClass' "li" tClass $ el "a" (text "Task")
+            (map, _) <- elDynClass' "li" mClass $ el "a" (text "Map")
+            (absent, _) <- elDynClass' "li" aClass $ el "a" (text "Pilots")
+            (valid, _) <- elDynClass' "li" vClass $ el "a" (text "Valid")
+            (score, _) <- elDynClass' "li" sClass $ el "a" (text "Score")
+            (split, _) <- elDynClass' "li" pClass $ el "a" (text "Split")
+            (arrive, _) <- elDynClass' "li" arClass $ el "a" (text "Arrive")
+            (lead, _) <- elDynClass' "li" lClass $ el "a" (text "Lead")
 
-            let eg = (const TaskTabGeo) <$> domEvent Click g
-            let et = (const TaskTabTask) <$> domEvent Click t
-            let em = (const TaskTabMap) <$> domEvent Click m
-            let ea = (const TaskTabAbsent) <$> domEvent Click a
-            let ev = (const TaskTabValidity) <$> domEvent Click v
-            let es = (const TaskTabScore) <$> domEvent Click s
-            let ep = (const TaskTabSplit) <$> domEvent Click p
+            let eGeo = (const TaskTabGeo) <$> domEvent Click geo
+            let eTask = (const TaskTabTask) <$> domEvent Click task
+            let eMap = (const TaskTabMap) <$> domEvent Click map
+            let eAbs = (const TaskTabAbsent) <$> domEvent Click absent
+            let eValid = (const TaskTabValidity) <$> domEvent Click valid
+            let eScore = (const TaskTabScore) <$> domEvent Click score
+            let eSplit = (const TaskTabSplit) <$> domEvent Click split
+            let eArrive = (const TaskTabArrive) <$> domEvent Click arrive
+            let eLead = (const TaskTabLead) <$> domEvent Click lead
 
             gClass <- holdDyn "" . leftmost $
-                            [ "is-active" <$ eg
-                            , "" <$ ev
-                            , "" <$ es
-                            , "" <$ et
-                            , "" <$ em
-                            , "" <$ ea
-                            , "" <$ ep
+                            [ "is-active" <$ eGeo
+                            , "" <$ eValid
+                            , "" <$ eScore
+                            , "" <$ eTask
+                            , "" <$ eMap
+                            , "" <$ eAbs
+                            , "" <$ eSplit
+                            , "" <$ eArrive
+                            , "" <$ eLead
                             ]
 
             tClass <- holdDyn "" . leftmost $
-                            [ "" <$ eg
-                            , "" <$ ev
-                            , "" <$ es
-                            , "is-active" <$ et
-                            , "" <$ em
-                            , "" <$ ea
-                            , "" <$ ep
+                            [ "" <$ eGeo
+                            , "" <$ eValid
+                            , "" <$ eScore
+                            , "is-active" <$ eTask
+                            , "" <$ eMap
+                            , "" <$ eAbs
+                            , "" <$ eSplit
+                            , "" <$ eArrive
+                            , "" <$ eLead
                             ]
 
             mClass <- holdDyn "" . leftmost $
-                            [ "" <$ eg
-                            , "" <$ ev
-                            , "" <$ es
-                            , "" <$ et
-                            , "is-active" <$ em
-                            , "" <$ ea
-                            , "" <$ ep
+                            [ "" <$ eGeo
+                            , "" <$ eValid
+                            , "" <$ eScore
+                            , "" <$ eTask
+                            , "is-active" <$ eMap
+                            , "" <$ eAbs
+                            , "" <$ eSplit
+                            , "" <$ eArrive
+                            , "" <$ eLead
                             ]
 
             aClass <- holdDyn "" . leftmost $
-                            [ "" <$ eg
-                            , "" <$ ev
-                            , "" <$ es
-                            , "" <$ et
-                            , "" <$ em
-                            , "is-active" <$ ea
-                            , "" <$ ep
+                            [ "" <$ eGeo
+                            , "" <$ eValid
+                            , "" <$ eScore
+                            , "" <$ eTask
+                            , "" <$ eMap
+                            , "is-active" <$ eAbs
+                            , "" <$ eSplit
+                            , "" <$ eArrive
+                            , "" <$ eLead
                             ]
 
             vClass <- holdDyn "" . leftmost $
-                            [ "" <$ eg
-                            , "is-active" <$ ev
-                            , "" <$ es
-                            , "" <$ et
-                            , "" <$ em
-                            , "" <$ ea
-                            , "" <$ ep
+                            [ "" <$ eGeo
+                            , "is-active" <$ eValid
+                            , "" <$ eScore
+                            , "" <$ eTask
+                            , "" <$ eMap
+                            , "" <$ eAbs
+                            , "" <$ eSplit
+                            , "" <$ eArrive
+                            , "" <$ eLead
                             ]
 
             sClass <- holdDyn "" . leftmost $
-                            [ "" <$ eg
-                            , "" <$ ev
-                            , "is-active" <$ es
-                            , "" <$ et
-                            , "" <$ em
-                            , "" <$ ea
-                            , "" <$ ep
+                            [ "" <$ eGeo
+                            , "" <$ eValid
+                            , "is-active" <$ eScore
+                            , "" <$ eTask
+                            , "" <$ eMap
+                            , "" <$ eAbs
+                            , "" <$ eSplit
+                            , "" <$ eArrive
+                            , "" <$ eLead
                             ]
 
             pClass <- holdDyn "is-active" . leftmost $
-                            [ "" <$ eg
-                            , "" <$ ev
-                            , "" <$ es
-                            , "" <$ et
-                            , "" <$ em
-                            , "" <$ ea
-                            , "is-active" <$ ep
+                            [ "" <$ eGeo
+                            , "" <$ eValid
+                            , "" <$ eScore
+                            , "" <$ eTask
+                            , "" <$ eMap
+                            , "" <$ eAbs
+                            , "is-active" <$ eSplit
+                            , "" <$ eArrive
+                            , "" <$ eLead
                             ]
 
-            return . leftmost $ [eg, et, em, ea, ev, es, ep]
+            arClass <- holdDyn "" . leftmost $
+                            [ "" <$ eGeo
+                            , "" <$ eValid
+                            , "" <$ eScore
+                            , "" <$ eTask
+                            , "" <$ eMap
+                            , "" <$ eAbs
+                            , "" <$ eSplit
+                            , "is-active" <$ eArrive
+                            , "" <$ eLead
+                            ]
+
+            lClass <- holdDyn "" . leftmost $
+                            [ "" <$ eGeo
+                            , "" <$ eValid
+                            , "" <$ eScore
+                            , "" <$ eTask
+                            , "" <$ eMap
+                            , "" <$ eAbs
+                            , "" <$ eSplit
+                            , "" <$ eArrive
+                            , "is-active" <$ eLead
+                            ]
+
+            return . leftmost $
+                [ eGeo
+                , eTask
+                , eMap
+                , eAbs
+                , eValid
+                , eScore
+                , eSplit
+                , eArrive
+                , eLead
+                ]
