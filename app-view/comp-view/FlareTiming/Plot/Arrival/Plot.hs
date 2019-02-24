@@ -27,20 +27,20 @@ foreign import javascript unsafe
     \, xAxis: {label: 'Arrival Placing', domain: [0, $2 + 1]}\
     \, yAxis: {domain: [0, 1.01]}\
     \, data: [{\
-    \    fn: '0.2 + 0.037*(1 - (x - 1)/' + $2 + ') + 0.13*(1 - (x - 1)/' + $2 + ')^2 + 0.633*(1 - (x - 1)/' + $2 + ')^3'\
-    \  , nSamples: 101\
+    \    points: $3\
+    \  , fnType: 'points'\
     \  , color: 'blue'\
     \  , range: [1, $2]\
     \  , graphType: 'polyline'\
     \  },{\
-    \    points: $3\
+    \    points: $4\
     \  , fnType: 'points'\
     \  , color: 'blue'\
     \  , attr: { r: 2 }\
     \  , range: [1, $2]\
     \  , graphType: 'scatter'\
     \  },{\
-    \    points: $4\
+    \    points: $5\
     \  , fnType: 'points'\
     \  , color: 'red'\
     \  , attr: { r: 3 }\
@@ -52,7 +52,7 @@ foreign import javascript unsafe
     \  , text: 'minimum possible fraction'\
     \  }]\
     \})"
-    hgPlot_ :: JSVal -> JSVal -> JSVal -> JSVal -> IO JSVal
+    hgPlot_ :: JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> IO JSVal
 
 hgPlot
     :: IsElement e
@@ -62,11 +62,19 @@ hgPlot
     -> [[Double]]
     -> [[Double]]
     -> IO Plot
-hgPlot e (PilotsFlying pf) (GoalRatio gr) xs ys = do
-    let n :: Integer = truncate $ gr * fromIntegral pf
+hgPlot e _ _ xs ys = do
+    let n :: Integer = fromIntegral $ length xs + length ys
 
     n' <- toJSVal (fromIntegral n :: Double)
+    let xy :: [[Double]] = [[x', fn n x'] | x <- [1 .. 10 * n], let x' = 0.1 * fromIntegral x]
+    xy' <- toJSValListOf xy
     xs' <- toJSValListOf xs
     ys' <- toJSValListOf ys
 
-    Plot <$> hgPlot_ (unElement . toElement $ e) n' xs' ys'
+    Plot <$> hgPlot_ (unElement . toElement $ e) n' xy' xs' ys'
+
+fn :: Integer -> Double -> Double
+fn n x = 0.2 + 0.037 * y + 0.13 * y**2 + 0.633 * y**3
+    where
+        y :: Double
+        y = 1.0 - (x - 1.0) / (fromIntegral n)
