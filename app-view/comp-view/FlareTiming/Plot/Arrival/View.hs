@@ -25,27 +25,20 @@ hgPlot (Just pf) alloc av = do
     let gr = maybe (GoalRatio 0) goalRatio alloc
     pb <- delay 1 =<< getPostBuild
 
-    _ <- dyn $ ffor av (\case
-            [] ->
-                elClass "article" "tile is-child notification is-warning" $ do
-                    elClass "p" "title" $ text "Arrivals"
-                    el "p" $ text "No pilots made it to the end of the speed section. There are no arrivals"
+    elClass "div" "level" $ do
+        elClass "div" "level-left" $
+            elClass "div" "level-item" $ do
+                (elPlot, _) <- elAttr' "div" (("id" =: "hg-plot-arrival") <> ("style" =: "height: 360px;width: 360px")) $ return ()
+                rec performEvent_ $ leftmost
+                        [ ffor pb (\_ -> liftIO $ do
+                            _ <- P.hgPlot (_element_raw elPlot) pf gr
+                            return ())
+                        ]
 
-            _ ->
-                elClass "div" "level" $ do
-                    elClass "div" "level-left" $
-                        elClass "div" "level-item" $ do
-                            (elPlot, _) <- elAttr' "div" (("id" =: "hg-plot-arrival") <> ("style" =: "height: 360px;width: 360px")) $ return ()
-                            rec performEvent_ $ leftmost
-                                    [ ffor pb (\_ -> liftIO $ do
-                                        _ <- P.hgPlot (_element_raw elPlot) pf gr
-                                        return ())
-                                    ]
+                return ()
 
-                            return ()
-
-                    elClass "div" "level-right" $
-                        elClass "div" "level-item" $ tablePilot av)
+        elClass "div" "level-right" $
+            elClass "div" "level-item" $ tablePilot av
 
     return ()
 

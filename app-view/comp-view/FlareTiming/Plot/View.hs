@@ -31,11 +31,20 @@ viewPlot hgOrPg pf tweak alloc av = do
                         return ()
 
         _ <- dyn $ ffor3 hgOrPg pf alloc (\hgOrPg' pf' alloc' ->
-                if hgOrPg' /= HangGliding then return () else do
-                    elClass "div" "tile is-8" $
-                        elClass "div" "tile" $
-                            elClass "div" "tile is-parent" $
-                                elClass "article" "tile is-child box" $
-                                    A.hgPlot pf' alloc' av)
+            if hgOrPg' /= HangGliding then return () else
+                elClass "div" "tile is-8" $
+                    elClass "div" "tile" $
+                        elClass "div" "tile is-parent" $ do
+                            _ <- dyn $ ffor av (\case
+                                    [] ->
+                                        elClass "article" "tile is-child notification is-warning" $ do
+                                            elClass "p" "title" $ text "Arrivals"
+                                            el "p" $ text "No pilots made it to the end of the speed section. There are no arrivals"
+
+                                    _ ->
+                                        elClass "article" "tile is-child box" $
+                                            A.hgPlot pf' alloc' av)
+
+                            return ())
 
         return ()
