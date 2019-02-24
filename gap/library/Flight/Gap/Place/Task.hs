@@ -7,7 +7,13 @@ import Data.Aeson (Value(..), ToJSON(..), FromJSON(..))
 data TaskPlacing
     = TaskPlacing Integer
     | TaskPlacingEqual Integer
-    deriving (Eq, Ord, Show)
+    deriving (Eq, Show)
+
+instance Ord TaskPlacing where
+    compare (TaskPlacing a) (TaskPlacing b) = compare a b
+    compare (TaskPlacingEqual a) (TaskPlacingEqual b) = compare a b
+    compare (TaskPlacing a) (TaskPlacingEqual b) = compare a b
+    compare (TaskPlacingEqual a) (TaskPlacing b) = compare a b
 
 instance ToJSON TaskPlacing where
     toJSON (TaskPlacing x) = String . T.pack $ show x

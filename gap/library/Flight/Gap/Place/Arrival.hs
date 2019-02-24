@@ -8,7 +8,13 @@ import Data.Aeson (Value(..), ToJSON(..), FromJSON(..))
 data ArrivalPlacing
     = ArrivalPlacing Integer -- ^ The nth place
     | ArrivalPlacingEqual Integer Integer -- ^ This placing shared with n other pilots
-    deriving (Eq, Ord, Show)
+    deriving (Eq, Show)
+
+instance Ord ArrivalPlacing where
+    compare (ArrivalPlacing a) (ArrivalPlacing b) = compare a b
+    compare (ArrivalPlacingEqual a _) (ArrivalPlacingEqual b _) = compare a b
+    compare (ArrivalPlacing a) (ArrivalPlacingEqual b _) = compare a b
+    compare (ArrivalPlacingEqual a _) (ArrivalPlacing b) = compare a b
 
 instance ToJSON ArrivalPlacing where
     toJSON (ArrivalPlacing x) = String . T.pack $ show x
