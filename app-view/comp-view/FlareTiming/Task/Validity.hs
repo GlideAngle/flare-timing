@@ -8,7 +8,9 @@ import Text.Printf (printf)
 import qualified Data.Text as T (Text, pack)
 
 import qualified WireTypes.Validity as Vy
-    (Validity(..), showLaunchValidity, showDistanceValidity, showTimeValidity)
+    ( Validity(..)
+    , showTaskValidity, showLaunchValidity, showDistanceValidity, showTimeValidity
+    )
 import WireTypes.ValidityWorking
     ( ValidityWorking(..)
     , LaunchValidityWorking(..)
@@ -204,6 +206,8 @@ viewValidity vy vw = do
                     (text "Show Working")
 
                 spacer
+                viewDay v w
+                spacer
                 viewLaunch v w
                 spacer
                 viewDistance v w
@@ -211,6 +215,37 @@ viewValidity vy vw = do
                 viewTime v w
                 spacer
                 return ())
+
+    return ()
+
+viewDay
+    :: DomBuilder t m
+    => Vy.Validity
+    -> ValidityWorking
+    -> m ()
+viewDay
+    Vy.Validity{task, launch = lv, distance = dv, time = tv}
+    ValidityWorking{launch = LaunchValidityWorking{..}} = do
+    elClass "div" "card" $ do
+        elClass "div" "card-content" $ do
+            elClass "h2" "title is-4" . text
+                $ "Day Quality = " <> Vy.showTaskValidity task
+            elClass "div" "field is-grouped is-grouped-multiline" $ do
+                elClass "div" "control" $ do
+                    elClass "div" "tags has-addons" $ do
+                        elClass "span" "tag" $ do text "l = launch validity"
+                        elClass "span" "tag is-info" . text
+                            $ Vy.showLaunchValidity lv
+                elClass "div" "control" $ do
+                    elClass "div" "tags has-addons" $ do
+                        elClass "span" "tag" $ do text "d = distance validity"
+                        elClass "span" "tag is-success" . text
+                            $ Vy.showDistanceValidity dv
+                elClass "div" "control" $ do
+                    elClass "div" "tags has-addons" $ do
+                        elClass "span" "tag" $ do text "t = time validity"
+                        elClass "span" "tag is-primary" . text
+                            $ Vy.showTimeValidity tv
 
     return ()
 
