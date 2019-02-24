@@ -19,6 +19,8 @@ import WireTypes.Route (TaskLength(..), taskLength, taskLegs, showTaskDistance)
 import WireTypes.Cross (TrackFlyingSection(..))
 import WireTypes.Point (Allocation(..))
 import WireTypes.Validity (Validity(..))
+import qualified WireTypes.ValidityWorking as VW
+    (ValidityWorking(..), LaunchValidityWorking(..))
 import FlareTiming.Comms
     ( getTaskScore, getTaskValidityWorking, getTaskLengthSphericalEdge
     , getTaskPilotDnf, getTaskPilotNyp, getTaskPilotDfNoTrack
@@ -163,11 +165,13 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
     let tp = (fmap . fmap) taskPoints alloc
     let wg = (fmap . fmap) weight alloc
 
+    let pf = (fmap . fmap) (VW.flying . VW.launch) vw
+
     taskTileZones utc sb task ln
     es <- simpleList cs (crumbTask task)
     tab <- tabsTask
 
-    _ <- widgetHold (viewPlot hgOrPg tweak alloc) $
+    _ <- widgetHold (viewPlot hgOrPg pf tweak alloc) $
             (\case
                 TaskTabGeo -> tableGeo ix
 
@@ -197,7 +201,7 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
 
                 TaskTabScore -> tableScore utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf
 
-                TaskTabSplit -> viewPlot hgOrPg tweak alloc)
+                TaskTabSplit -> viewPlot hgOrPg pf tweak alloc)
             <$> tab
 
     return $ switchDyn (leftmost <$> es)
