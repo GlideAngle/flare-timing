@@ -1,13 +1,10 @@
 module FlareTiming.Plot.Weight (weightPlot) where
 
-import Data.Maybe (fromMaybe)
 import Reflex.Dom
 
 import WireTypes.Comp (Discipline(..), Tweak(..))
 import WireTypes.Point (Allocation(..))
 import FlareTiming.Plot.Weight.View as W (hgPlot, pgPlot)
-import FlareTiming.Plot.Arrival.View as A (hgPlot)
-import WireTypes.Pilot (Pilot(..))
 
 weightPlot
     :: MonadWidget t m

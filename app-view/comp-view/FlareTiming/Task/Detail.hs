@@ -22,7 +22,7 @@ import WireTypes.Validity (Validity(..))
 import qualified WireTypes.ValidityWorking as VW
     (ValidityWorking(..), LaunchValidityWorking(..))
 import FlareTiming.Comms
-    ( getTaskScore, getTaskArrival
+    ( getTaskScore, getTaskArrival, getTaskLead
     , getTaskValidityWorking, getTaskLengthSphericalEdge
     , getTaskPilotDnf, getTaskPilotNyp, getTaskPilotDfNoTrack
     , getTaskPilotTrack, getTaskPilotTrackFlyingSection, emptyRoute
@@ -32,6 +32,7 @@ import FlareTiming.Events (IxTask(..))
 import FlareTiming.Map.View (viewMap)
 import FlareTiming.Plot.Weight (weightPlot)
 import FlareTiming.Plot.Arrival (arrivalPlot)
+import FlareTiming.Plot.Lead (leadPlot)
 import qualified FlareTiming.Turnpoint as TP (getName)
 import FlareTiming.Task.Tab (TaskTab(..), tabsTask)
 import FlareTiming.Task.Score (tableScore)
@@ -156,6 +157,7 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
     pb <- getPostBuild
     sDf <- holdDyn [] =<< getTaskScore ix pb
     av <- holdDyn Nothing =<< (fmap Just <$> getTaskArrival ix pb)
+    ld <- holdDyn Nothing =<< (fmap Just <$> getTaskLead ix pb)
     vw <- holdDyn Nothing =<< getTaskValidityWorking ix pb
     nyp <- holdDyn (Nyp []) =<< getTaskPilotNyp ix pb
     dnf <- holdDyn (Dnf []) =<< getTaskPilotDnf ix pb
@@ -217,7 +219,7 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
                     arrivalPlot hgOrPg pf alloc av
 
                 TaskTabLead ->
-                    text "TODO: Lead")
+                    leadPlot hgOrPg ld)
             <$> tab
 
     return $ switchDyn (leftmost <$> es)

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 2977ff455c6fd96fcf03b911ce74a54289df6417b9eb1671f0076d4db7cfdf2f
+-- hash: ce0d2ddd539714499e22ad66a44ebe5c6e02a61070ed872e1672305124ec8a13
 
 name:           app-view
 version:        0.1.0
@@ -49,6 +49,9 @@ executable comp-view
       FlareTiming.Plot.Arrival
       FlareTiming.Plot.Arrival.Plot
       FlareTiming.Plot.Arrival.View
+      FlareTiming.Plot.Lead
+      FlareTiming.Plot.Lead.Plot
+      FlareTiming.Plot.Lead.View
       FlareTiming.Plot.Weight
       FlareTiming.Plot.Weight.Plot
       FlareTiming.Plot.Weight.View
@@ -67,6 +70,7 @@ executable comp-view
       WireTypes.Arrival
       WireTypes.Comp
       WireTypes.Cross
+      WireTypes.Lead
       WireTypes.Pilot
       WireTypes.Point
       WireTypes.Route

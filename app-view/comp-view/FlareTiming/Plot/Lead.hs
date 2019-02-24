@@ -1,43 +1,39 @@
-module FlareTiming.Plot.Arrival (arrivalPlot) where
+module FlareTiming.Plot.Lead (leadPlot) where
 
 import Data.Maybe (fromMaybe)
 import Reflex.Dom
 
-import WireTypes.Arrival (TrackArrival(..))
+import WireTypes.Lead (TrackLead(..))
 import WireTypes.Comp (Discipline(..))
-import WireTypes.ValidityWorking (PilotsFlying(..))
-import WireTypes.Point (Allocation(..))
-import FlareTiming.Plot.Arrival.View as A (hgPlot)
+import FlareTiming.Plot.Lead.View as A (hgPlot)
 import WireTypes.Pilot (Pilot(..))
 
-arrivalPlot
+leadPlot
     :: MonadWidget t m
     => Dynamic t Discipline
-    -> Dynamic t (Maybe PilotsFlying)
-    -> Dynamic t (Maybe Allocation)
-    -> Dynamic t (Maybe [(Pilot, TrackArrival)])
+    -> Dynamic t (Maybe [(Pilot, TrackLead)])
     -> m ()
-arrivalPlot hgOrPg pf alloc av = do
+leadPlot hgOrPg ld = do
     elClass "div" "tile is-ancestor" $ do
-        _ <- dyn $ ffor3 hgOrPg pf alloc (\hgOrPg' pf' alloc' ->
+        _ <- dyn $ ffor hgOrPg (\hgOrPg' ->
             if hgOrPg' /= HangGliding then return () else
-                elClass "div" "tile is-8" $
+                elClass "div" "tile is-12" $
                     elClass "div" "tile" $
                         elClass "div" "tile is-parent" $ do
-                            _ <- dyn $ ffor av (\case
+                            _ <- dyn $ ffor ld (\case
                                     Nothing ->
                                         elClass "article" "tile is-child box" $ do
-                                            elClass "p" "title" $ text "Arrivals"
+                                            elClass "p" "title" $ text "Leading"
                                             el "p" $ text "Loading arrivals ..."
 
                                     Just [] ->
                                         elClass "article" "tile is-child notification is-warning" $ do
-                                            elClass "p" "title" $ text "Arrivals"
+                                            elClass "p" "title" $ text "Leading"
                                             el "p" $ text "No pilots made it to the end of the speed section. There are no arrivals"
 
                                     _ ->
                                         elClass "article" "tile is-child box" $
-                                            A.hgPlot pf' alloc' (fromMaybe [] <$> av))
+                                            A.hgPlot (fromMaybe [] <$> ld))
 
                             return ())
 
