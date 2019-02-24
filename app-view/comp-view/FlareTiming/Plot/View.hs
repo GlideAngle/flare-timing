@@ -38,7 +38,7 @@ viewPlot hgOrPg pf tweak alloc av = do
                         elClass "div" "tile is-parent" $ do
                             _ <- dyn $ ffor av (\case
                                     Nothing ->
-                                        elClass "article" "tile is-child notification is-warning" $ do
+                                        elClass "article" "tile is-child box" $ do
                                             elClass "p" "title" $ text "Arrivals"
                                             el "p" $ text "Loading arrivals ..."
 
