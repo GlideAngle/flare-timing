@@ -30,6 +30,7 @@ import System.FilePath (takeFileName)
 import qualified Flight.Track.Cross as Cg (Crossing(..))
 import Flight.Track.Cross (TrackFlyingSection(..))
 import Flight.Track.Arrival (TrackArrival(..))
+import Flight.Track.Lead (TrackLead(..))
 import Flight.Track.Mask (Masking(..))
 import Flight.Track.Point
     (Pointing(..), Velocity(..), Allocation(..), Breakdown(..))
@@ -206,6 +207,9 @@ type GapPointApi k =
     :<|> "mask-track" :> (Capture "task" Int) :> "arrival"
         :> Get '[JSON] [(Pilot, TrackArrival)]
 
+    :<|> "mask-track" :> (Capture "task" Int) :> "lead"
+        :> Get '[JSON] [(Pilot, TrackLead)]
+
 compInputApi :: Proxy (CompInputApi k)
 compInputApi = Proxy
 
@@ -357,6 +361,7 @@ serverGapPointApi cfg =
         :<|> getTaskPilotTrack
         :<|> getTaskPilotTrackFlyingSection
         :<|> getTaskArrival
+        :<|> getTaskLead
     where
         c = asks compSettings
         p = asks pointing
@@ -720,6 +725,17 @@ getTaskPilotTrackFlyingSection ii pilotId = do
 getTaskArrival :: Int -> AppT k IO [(Pilot, TrackArrival)]
 getTaskArrival ii = do
     xs' <- fmap arrival <$> asks masking
+    case xs' of
+        Just xs ->
+            case drop (ii - 1) xs of
+                x : _ -> return x
+                _ -> throwError $ errTaskBounds ii
+
+        _ -> throwError $ errTaskStep "mask-track" ii
+
+getTaskLead :: Int -> AppT k IO [(Pilot, TrackLead)]
+getTaskLead ii = do
+    xs' <- fmap lead <$> asks masking
     case xs' of
         Just xs ->
             case drop (ii - 1) xs of
