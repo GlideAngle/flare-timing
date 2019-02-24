@@ -8,7 +8,6 @@ import Control.Applicative (empty)
 import GHC.Generics (Generic)
 import Data.Aeson (Value(..), FromJSON(..))
 import qualified Data.Text as T (unpack)
-import Data.List.Split (splitOn)
 
 newtype ArrivalFraction = ArrivalFraction Double
     deriving (Eq, Ord, Show, Generic)
@@ -23,12 +22,10 @@ instance FromJSON ArrivalPlacing where
     parseJSON x@(String _) = do
         s <- T.unpack <$> parseJSON x
         case reverse s of
-            '=' : digits ->
-                case splitOn " " $ reverse digits of
-                    [m, n] ->
-                        let m' = read m
-                            n' = read n
-                        in return $ ArrivalPlacingEqual m' n'
+            '=' : pair ->
+                case reverse pair of
+                    xy@('(' : _) ->
+                        let (m, n) = read xy in return $ ArrivalPlacingEqual m n
 
                     _ -> empty
 
