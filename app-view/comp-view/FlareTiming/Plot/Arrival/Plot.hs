@@ -27,13 +27,13 @@ foreign import javascript unsafe
     \, data: [{\
     \    points: $3\
     \  , fnType: 'points'\
-    \  , color: 'blue'\
+    \  , color: 'purple'\
     \  , range: [1, $2]\
     \  , graphType: 'polyline'\
     \  },{\
     \    points: $4\
     \  , fnType: 'points'\
-    \  , color: 'blue'\
+    \  , color: 'purple'\
     \  , attr: { r: 2 }\
     \  , range: [1, $2]\
     \  , graphType: 'scatter'\
