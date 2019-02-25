@@ -27,10 +27,25 @@ tabsTask =
             (absent, _) <- elDynClass' "li" absentClass $ el "a" (text "Pilots")
             (valid, _) <- elDynClass' "li" validClass $ el "a" (text "Valid")
             (score, _) <- elDynClass' "li" scoreClass $ el "a" (text "Score")
-            (split, _) <- elDynClass' "li" splitClass $ el "a" (text "Split")
-            (arrive, _) <- elDynClass' "li" arriveClass $ el "a" (text "Arrive")
-            (lead, _) <- elDynClass' "li" leadClass $ el "a" (text "Lead")
-            (time, _) <- elDynClass' "li" timeClass $ el "a" (text "Time")
+
+            (split, _) <- elDynClass' "li" splitClass . el "a" $ do
+                            elClass "span" "legend-distance" $ text "▩"
+                            elClass "span" "legend-arrival" $ text "▩"
+                            elClass "span" "legend-leading" $ text "▩"
+                            elClass "span" "legend-time" $ text "▩"
+                            text "Split"
+
+            (arrive, _) <- elDynClass' "li" arriveClass . el "a" $ do
+                            elClass "span" "legend-arrival" $ text "▩"
+                            text "Arrive"
+
+            (lead, _) <- elDynClass' "li" leadClass . el "a" $ do
+                            elClass "span" "legend-leading" $ text "▩"
+                            text "Lead"
+
+            (time, _) <- elDynClass' "li" timeClass . el "a" $ do
+                            elClass "span" "legend-time" $ text "▩"
+                            text "Time"
 
             let eGeo = (const TaskTabGeo) <$> domEvent Click geo
             let eTask = (const TaskTabTask) <$> domEvent Click task

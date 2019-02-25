@@ -40,7 +40,7 @@ foreign import javascript unsafe
     \  },{\
     \    points: $5\
     \  , fnType: 'points'\
-    \  , color: '#984ea3'\
+    \  , color: '#e41a1c'\
     \  , attr: { r: 4 }\
     \  , range: [1, $2]\
     \  , graphType: 'scatter'\
