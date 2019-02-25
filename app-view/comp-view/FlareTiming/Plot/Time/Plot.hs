@@ -45,22 +45,22 @@ hgPlot
     -> (Double, Double)
     -> [[Double]]
     -> IO Plot
-hgPlot e (lcMin, lcMax) xs = do
-    let delta = (lcMax - lcMin) / 200
+hgPlot e (tMin, tMax) xs = do
+    let delta = (tMax - tMin) / 200
 
     let xy :: [[Double]] =
-            [ [x', fn lcMin x']
+            [ [x', fn tMin x']
             | x <- [0 :: Integer .. 199]
-            , let x' = lcMin + delta * fromIntegral x
+            , let x' = tMin + delta * fromIntegral x
             ]
 
-    lcMin' <- toJSVal lcMin
-    lcMax' <- toJSVal lcMax
+    tMin' <- toJSVal tMin
+    tMax' <- toJSVal tMax
     xy' <- toJSValListOf xy
     xs' <- toJSValListOf $ nub xs
 
-    Plot <$> hgPlot_ (unElement . toElement $ e) lcMin' lcMax' xy' xs'
+    Plot <$> hgPlot_ (unElement . toElement $ e) tMin' tMax' xy' xs'
 
 fn :: Double -> Double -> Double
-fn lcMin x =
-    max 0.0 $ 1.0 - ((x - lcMin)**2/lcMin**(1.0/2.0))**(1.0/3.0)
+fn tMin x =
+    max 0.0 $ 1.0 - ((x - tMin)**2/tMin**(1.0/2.0))**(1.0/3.0)
