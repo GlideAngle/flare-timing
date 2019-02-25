@@ -94,10 +94,10 @@ pgPlot tweak' alloc' = do
 
     el "ul" $ do
         elClass "li" "legend-distance" . text $
-            textf "○ %.3f weight on distance" d
+            textf "▩ %.3f weight on distance" d
         elClass "li" "legend-time" . text $
-            textf "○ %.3f weight on time" t
+            textf "▩ %.3f weight on time" t
         elClass "li" "legend-leading" . text $
-            textf "○ %.3f weight on leading" l
+            textf "▩ %.3f weight on leading" l
 
     return ()
