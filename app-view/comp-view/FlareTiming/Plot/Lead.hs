@@ -5,7 +5,7 @@ import Reflex.Dom
 
 import WireTypes.Lead (TrackLead(..))
 import WireTypes.Comp (Discipline(..))
-import FlareTiming.Plot.Lead.View as A (hgPlot)
+import FlareTiming.Plot.Lead.View (hgPlot)
 import WireTypes.Pilot (Pilot(..))
 
 leadPlot
@@ -33,7 +33,7 @@ leadPlot hgOrPg ld = do
 
                                     _ ->
                                         elClass "article" "tile is-child box" $
-                                            A.hgPlot (fromMaybe [] <$> ld))
+                                            hgPlot (fromMaybe [] <$> ld))
 
                             return ())
 

@@ -24,6 +24,7 @@ module FlareTiming.Comms
     , getTaskPilotTrackFlyingSection
     , getTaskArrival
     , getTaskLead
+    , getTaskTime
     , emptyRoute
     ) where
 
@@ -36,6 +37,7 @@ import Control.Monad.IO.Class (MonadIO)
 import WireTypes.Comp (Comp(..), Nominal(..), Task(..))
 import WireTypes.Arrival (TrackArrival)
 import WireTypes.Lead (TrackLead)
+import WireTypes.Speed (TrackSpeed)
 import WireTypes.Route
 import WireTypes.Pilot
     ( PilotTaskStatus(..), Pilot(..), PilotId(..)
@@ -149,6 +151,9 @@ getTaskArrival = getIxTask "mask-track" "arrival"
 
 getTaskLead :: GetIxTask' t m [(Pilot, TrackLead)]
 getTaskLead = getIxTask "mask-track" "lead"
+
+getTaskTime :: GetIxTask' t m [(Pilot, TrackSpeed)]
+getTaskTime = getIxTask "mask-track" "time"
 
 getTaskValidityWorking :: GetIxTask' t m (Maybe ValidityWorking)
 getTaskValidityWorking = getIxTask "gap-point" "validity-working"
