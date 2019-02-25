@@ -26,6 +26,11 @@ import WireTypes.Point
 -- SEE: https://gist.github.com/ali-abrar/fa2adbbb7ee64a0295cb
 newtype Plot = Plot { unPlot :: JSVal }
 
+-- SEE: http://colorbrewer2.org/#type=qualitative&scheme=Set1&n=4
+-- red #e41a1c
+-- blue #377eb8
+-- green #4daf4a
+-- purple #984ea3
 foreign import javascript unsafe
     "functionPlot(\
     \{ target: '#hg-plot-weight'\
@@ -38,34 +43,34 @@ foreign import javascript unsafe
     \, data: [{\
     \    fn: '0.9 - 1.665*x + 1.713*x^2 - 0.587*x^3'\
     \  , nSamples: 101\
-    \  , color: 'blue'\
+    \  , color: '#377eb8'\
     \  , graphType: 'polyline'\
     \  },{\
     \    points: [[$4, $5]]\
     \  , fnType: 'points'\
-    \  , color: 'blue'\
+    \  , color: '#377eb8'\
     \  , attr: { r: 3 }\
     \  , graphType: 'scatter' \
     \  },{\
     \    fn: '(1 - (0.9 - 1.665*x + 1.713*x^2 - 0.587*x^3))/8 * 1.4 * ' + $2\
     \  , nSamples: 101\
-    \  , color: 'red'\
+    \  , color: '#e41a1c'\
     \  , graphType: 'polyline'\
     \  },{\
     \    points: [[$4, $6]]\
     \  , fnType: 'points'\
-    \  , color: 'red'\
+    \  , color: '#e41a1c'\
     \  , attr: { r: 3 }\
     \  , graphType: 'scatter' \
     \  },{\
     \    fn: '(1 - (0.9 - 1.665*x + 1.713*x^2 - 0.587*x^3))/8 * ' + $3\
     \  , nSamples: 101\
-    \  , color: 'purple'\
+    \  , color: '#984ea3'\
     \  , graphType: 'polyline'\
     \  },{\
     \    points: [[$4, $7]]\
     \  , fnType: 'points'\
-    \  , color: 'purple'\
+    \  , color: '#984ea3'\
     \  , attr: { r: 3 }\
     \  , graphType: 'scatter' \
     \  },{\
@@ -73,12 +78,12 @@ foreign import javascript unsafe
     \        + '(1 - (0.9 - 1.665*x + 1.713*x^2 - 0.587*x^3))/8 * 1.4 * ' + $2 + ' + '\
     \        + '(1 - (0.9 - 1.665*x + 1.713*x^2 - 0.587*x^3))/8 * ' + $3 + ')'\
     \  , nSamples: 101\
-    \  , color: 'green'\
+    \  , color: '#4daf4a'\
     \  , graphType: 'polyline'\
     \  },{\
     \    points: [[$4, $8]]\
     \  , fnType: 'points'\
-    \  , color: 'green'\
+    \  , color: '#4daf4a'\
     \  , attr: { r: 3 }\
     \  , graphType: 'scatter' \
     \  }]\

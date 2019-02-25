@@ -27,21 +27,21 @@ foreign import javascript unsafe
     \, data: [{\
     \    points: $3\
     \  , fnType: 'points'\
-    \  , color: 'purple'\
+    \  , color: '#984ea3'\
     \  , range: [1, $2]\
     \  , graphType: 'polyline'\
     \  },{\
     \    points: $4\
     \  , fnType: 'points'\
-    \  , color: 'purple'\
+    \  , color: '#984ea3'\
     \  , attr: { r: 2 }\
     \  , range: [1, $2]\
     \  , graphType: 'scatter'\
     \  },{\
     \    points: $5\
     \  , fnType: 'points'\
-    \  , color: 'red'\
-    \  , attr: { r: 3 }\
+    \  , color: '#984ea3'\
+    \  , attr: { r: 4 }\
     \  , range: [1, $2]\
     \  , graphType: 'scatter'\
     \  }]\
