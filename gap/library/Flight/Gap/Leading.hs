@@ -345,7 +345,7 @@ leadingCoefficients deadline@(TaskDeadline maxTaskTime) len tracks =
         csSorted = sortBy (\x y -> fst x `compare` fst y) csMerged
 
 leadingDenominator :: Rational -> Double
-leadingDenominator cMin = fromRational cMin ** (1 / 2)
+leadingDenominator cMin = fromRational cMin ** (1.0 / 2.0)
 
 leadingFraction :: LeadingCoefficient -> LeadingCoefficient -> LeadingFraction
 leadingFraction (LeadingCoefficient 0) _ =
@@ -357,7 +357,7 @@ leadingFraction (LeadingCoefficient cMin) (LeadingCoefficient c) =
     where
         numerator = fromRational $ c - cMin :: Double
         denominator = leadingDenominator cMin
-        frac = (numerator / denominator) ** (2 / 3)
+        frac = (numerator ** 2.0 / denominator) ** (1.0 / 3.0)
         lf = (1 % 1) - toRational frac
 
 allZero :: [LcTrack] -> [LeadingFraction]
