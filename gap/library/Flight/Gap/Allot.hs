@@ -108,11 +108,11 @@ speedFraction
     -> PilotTime (Quantity Double [u| h |])
     -> SpeedFraction
 speedFraction (BestTime best') (PilotTime t') =
-    SpeedFraction $ max (0 % 1) sf
+    SpeedFraction $ max 0 sf
     where
         MkQuantity best = toRational' best'
         MkQuantity t = toRational' t'
         numerator = fromRational $ t - best :: Double
         denominator = fromRational best ** (1/2)
         frac = (numerator ** 2 / denominator) ** (1/3)
-        sf = (1 % 1) - toRational frac
+        sf = 1 - toRational frac
