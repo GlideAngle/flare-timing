@@ -2,12 +2,13 @@ The [latest
 version](https://github.com/BlockScope/flare-timing/blob/master/app-view/changelog.md)
 of this changelog.
 
-# Arrival Point Distribution
+# Fractional Point Plots
 ## app-view-0.13
 
-* Plot the arrival point distribution.
+* Add plots for time, arrival and leading point fractions.
 * Show the working for task validity.
-* Fix an error transcribing the lead fraction formula to code.
+* Fix errors transcribing the time fraction and leading fraction formulae to code.
+* Use color swatches with plot tabs.
 
 # Duplicate Zones and Angle Formats
 ## app-view-0.12
