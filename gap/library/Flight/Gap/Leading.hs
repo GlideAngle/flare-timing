@@ -173,7 +173,7 @@ areaSteps
     -> LcArea
 areaSteps _ (LengthOfSs [u| 0 % 1 km |]) LcSeq{seq = xs} =
     LcSeq
-        { seq = const (LeadingAreaStep $ 0 % 1) <$> xs
+        { seq = const (LeadingAreaStep 0) <$> xs
         , extra = Nothing
         }
 
@@ -189,7 +189,7 @@ areaSteps
     track@LcSeq{seq = xs', extra}
     | dl <= [u| 1s |] =
         LcSeq
-            { seq = const (LeadingAreaStep $ 0 % 1) <$> xs'
+            { seq = const (LeadingAreaStep 0) <$> xs'
             , extra = Nothing
             }
     | otherwise =
@@ -311,7 +311,7 @@ leadingCoefficients deadline@(TaskDeadline maxTaskTime) len tracks =
 
         lcE :: LcTrack -> LeadingCoefficient
         lcE track@LcSeq{seq = xs} =
-            if null xs then LeadingCoefficient $ 0 % 1 else
+            if null xs then LeadingCoefficient 0 else
             LeadingCoefficient $ a + b
             where
                 (LeadingCoefficient a) = lc track
@@ -325,7 +325,7 @@ leadingCoefficients deadline@(TaskDeadline maxTaskTime) len tracks =
 
         lcL :: LcTrack -> LeadingCoefficient
         lcL track@LcSeq{seq = xs} =
-            if null xs then LeadingCoefficient $ 0 % 1 else
+            if null xs then LeadingCoefficient 0 else
             LeadingCoefficient $ a + b
             where
                 (LeadingCoefficient a) = lc track
@@ -345,23 +345,23 @@ leadingCoefficients deadline@(TaskDeadline maxTaskTime) len tracks =
         csSorted = sortBy (\x y -> fst x `compare` fst y) csMerged
 
 leadingDenominator :: Rational -> Double
-leadingDenominator cMin = fromRational cMin ** (1.0 / 2.0)
+leadingDenominator cMin = fromRational cMin ** (1/2)
 
 leadingFraction :: LeadingCoefficient -> LeadingCoefficient -> LeadingFraction
 leadingFraction (LeadingCoefficient 0) _ =
-    LeadingFraction $ 0 % 1
+    LeadingFraction $ 0
 leadingFraction _ (LeadingCoefficient 0) =
-    LeadingFraction $ 0 % 1
+    LeadingFraction $ 0
 leadingFraction (LeadingCoefficient cMin) (LeadingCoefficient c) =
-    LeadingFraction $ max (0 % 1) lf
+    LeadingFraction $ max 0 lf
     where
         numerator = fromRational $ c - cMin :: Double
         denominator = leadingDenominator cMin
-        frac = (numerator ** 2.0 / denominator) ** (1.0 / 3.0)
+        frac = (numerator ** 2 / denominator) ** (1/3)
         lf = (1 % 1) - toRational frac
 
 allZero :: [LcTrack] -> [LeadingFraction]
-allZero tracks = const (LeadingFraction $ 0 % 1) <$> tracks
+allZero tracks = const (LeadingFraction 0) <$> tracks
 
 -- | Calculate the leading factor for all tracks.
 leadingFractions :: TaskDeadline -> LengthOfSs -> [LcTrack] -> [LeadingFraction]
@@ -377,5 +377,5 @@ leadingFractions deadlines lens tracks =
         cs = leadingCoefficients deadlines lens tracks
         csNonZero = filter (\(LeadingCoefficient x) -> x > 0) cs
         cMin =
-            if null csNonZero then 0 % 1
-                              else minimum $ (\(LeadingCoefficient x) -> x) <$> csNonZero
+            if null csNonZero then 0 else
+                minimum $ (\(LeadingCoefficient x) -> x) <$> csNonZero
