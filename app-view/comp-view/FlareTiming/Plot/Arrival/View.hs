@@ -10,8 +10,6 @@ import Control.Monad.IO.Class (liftIO)
 import qualified FlareTiming.Plot.Arrival.Plot as P (hgPlot)
 
 import WireTypes.Arrival (TrackArrival(..), ArrivalPlacing(..), ArrivalFraction(..))
-import WireTypes.ValidityWorking (PilotsFlying(..))
-import WireTypes.Point (GoalRatio(..), Allocation(..))
 import WireTypes.Pilot (Pilot(..))
 import FlareTiming.Pilot (showPilotName)
 
@@ -34,13 +32,9 @@ xy TrackArrival{rank = ArrivalPlacingEqual x _, frac = ArrivalFraction y} =
 
 hgPlot
     :: MonadWidget t m
-    => Maybe PilotsFlying
-    -> Maybe Allocation
-    -> Dynamic t [(Pilot, TrackArrival)]
+    => Dynamic t [(Pilot, TrackArrival)]
     -> m ()
-hgPlot Nothing _ _ = return ()
-hgPlot (Just pf) alloc av = do
-    let gr = maybe (GoalRatio 0) goalRatio alloc
+hgPlot av = do
     pb <- delay 1 =<< getPostBuild
 
     elAttr "div" (("class" =: "level") <> ("style" =: "align-items:flex-start;")) $ do
@@ -50,7 +44,7 @@ hgPlot (Just pf) alloc av = do
                 rec performEvent_ $ leftmost
                         [ ffor pb (\_ -> liftIO $ do
                             let (soloPlaces, equalPlaces) = placings . snd . unzip $ av'
-                            _ <- P.hgPlot (_element_raw elPlot) pf gr soloPlaces equalPlaces
+                            _ <- P.hgPlot (_element_raw elPlot) soloPlaces equalPlaces
                             return ())
                         ]
 

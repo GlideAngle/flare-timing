@@ -12,9 +12,6 @@ import GHCJS.DOM.Element (IsElement)
 import GHCJS.DOM.Types (Element(..), toElement, toJSVal, toJSValListOf)
 import Data.List (nub)
 
-import WireTypes.ValidityWorking (PilotsFlying(..))
-import WireTypes.Point (GoalRatio(..))
-
 -- SEE: https://gist.github.com/ali-abrar/fa2adbbb7ee64a0295cb
 newtype Plot = Plot { unPlot :: JSVal }
 
@@ -58,12 +55,10 @@ foreign import javascript unsafe
 hgPlot
     :: IsElement e
     => e
-    -> PilotsFlying
-    -> GoalRatio
     -> [[Double]]
     -> [[Double]]
     -> IO Plot
-hgPlot e _ _ xs ys = do
+hgPlot e xs ys = do
     let n :: Integer = fromIntegral $ length xs + length ys
 
     n' <- toJSVal (fromIntegral n :: Double)

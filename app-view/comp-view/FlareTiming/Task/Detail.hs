@@ -19,8 +19,6 @@ import WireTypes.Route (TaskLength(..), taskLength, taskLegs, showTaskDistance)
 import WireTypes.Cross (TrackFlyingSection(..))
 import WireTypes.Point (Allocation(..))
 import WireTypes.Validity (Validity(..))
-import qualified WireTypes.ValidityWorking as VW
-    (ValidityWorking(..), LaunchValidityWorking(..))
 import FlareTiming.Comms
     ( getTaskScore, getTaskArrival, getTaskLead
     , getTaskValidityWorking, getTaskLengthSphericalEdge
@@ -170,8 +168,6 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
     let tp = (fmap . fmap) taskPoints alloc
     let wg = (fmap . fmap) weight alloc
 
-    let pf = (fmap . fmap) (VW.flying . VW.launch) vw
-
     taskTileZones utc sb task ln
     es <- simpleList cs (crumbTask task)
     tab <- tabsTask
@@ -216,7 +212,7 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
                     weightPlot hgOrPg tweak alloc
 
                 TaskTabArrive ->
-                    arrivalPlot hgOrPg pf alloc av
+                    arrivalPlot hgOrPg av
 
                 TaskTabLead ->
                     leadPlot hgOrPg ld)
