@@ -217,7 +217,7 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
                     arrivalPlot hgOrPg av
 
                 TaskTabLead ->
-                    leadPlot hgOrPg ld
+                    leadPlot ld
 
                 TaskTabTime  ->
                     timePlot hgOrPg sd)
