@@ -12,7 +12,7 @@ import WireTypes.Speed (TrackSpeed(..), SpeedFraction(..))
 import WireTypes.Pilot (Pilot(..))
 import WireTypes.Point (PilotTime(..))
 import FlareTiming.Pilot (showPilotName)
-import FlareTiming.Time (showHmsForHours)
+import FlareTiming.Time (showHmsForHours, showHours)
 
 placings :: [TrackSpeed] -> [[Double]]
 placings = fmap xy
@@ -63,7 +63,8 @@ tablePilot xs = do
     _ <- elClass "table" "table is-striped" $ do
             el "thead" $ do
                 el "tr" $ do
-                    el "th" $ text "Time"
+                    el "th" $ text "Hours"
+                    el "th" $ text "HH:MM:SS"
                     el "th" $ text "Fraction"
                     el "th" $ text "Name"
 
@@ -81,14 +82,18 @@ rowSpeed
     -> m ()
 rowSpeed p tm = do
     el "tr" $ do
-        el "td" . dynText $ showTime . time <$> tm
+        el "td" . dynText $ showHr . time <$> tm
+        el "td" . dynText $ showHms . time <$> tm
         el "td" . dynText $ showFrac . frac <$> tm
         el "td" . dynText $ showPilotName <$> p
 
         return ()
 
-showTime :: PilotTime -> T.Text
-showTime (PilotTime x) = showHmsForHours x
+showHr :: PilotTime -> T.Text
+showHr (PilotTime x) = showHours x
+
+showHms :: PilotTime -> T.Text
+showHms (PilotTime x) = showHmsForHours x
 
 showFrac :: SpeedFraction -> T.Text
 showFrac (SpeedFraction x) = T.pack $ printf "%.3f" x

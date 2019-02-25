@@ -1,5 +1,6 @@
 module FlareTiming.Time
     ( showHmsForHours
+    , showHours
     , showT
     , timeZone
     ) where
@@ -14,6 +15,10 @@ import WireTypes.Comp (UtcOffset(..))
 
 show2i :: Integer -> String
 show2i = printf "%02d"
+
+showHours :: Double -> T.Text
+showHours hr =
+    T.pack $ printf "%.03f" hr
 
 showHmsForHours :: Double -> T.Text
 showHmsForHours hr =
