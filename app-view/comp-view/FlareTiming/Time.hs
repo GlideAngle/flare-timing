@@ -5,7 +5,7 @@ module FlareTiming.Time
     ) where
 
 import Prelude hiding (min)
-import qualified Data.Text as T (Text, pack, unpack, breakOn)
+import qualified Data.Text as T (Text, pack)
 import Text.Printf (printf)
 import Data.Time.Clock (UTCTime)
 import Data.Time.Format (formatTime, defaultTimeLocale)
@@ -15,12 +15,10 @@ import WireTypes.Comp (UtcOffset(..))
 show2i :: Integer -> String
 show2i = printf "%02d"
 
-showHmsForHours :: T.Text -> T.Text
-showHmsForHours t =
+showHmsForHours :: Double -> T.Text
+showHmsForHours hr =
     T.pack $ show2i hr' ++ ":" ++ show2i min' ++ ":" ++ show2i sec'
     where
-        hrStr = T.unpack . fst . T.breakOn " h" $ t
-        hr = read hrStr :: Double
         sec = round $ 3600 * hr
         (hr', min) = sec `divMod` 3600
         (min', sec') = min `divMod` 60

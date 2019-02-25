@@ -541,13 +541,13 @@ showEs _ _ = ""
 
 showSsVelocityTime :: Velocity -> T.Text
 showSsVelocityTime Velocity{ssElapsed = Just (PilotTime t)} =
-    showHmsForHours . T.pack $ t
+    showHmsForHours t
 
 showSsVelocityTime _ = ""
 
 showGsVelocityTime :: Velocity -> T.Text
 showGsVelocityTime Velocity{gsElapsed = Just (PilotTime t)} =
-    showHmsForHours . T.pack $ t
+    showHmsForHours t
 
 showGsVelocityTime _ = ""
 

@@ -14,7 +14,7 @@ newtype SpeedFraction = SpeedFraction Double
 
 data TrackSpeed =
     TrackSpeed
-        { time :: PilotTime String
+        { time :: PilotTime
         , frac :: SpeedFraction
         }
     deriving (Eq, Ord, Show, Generic)

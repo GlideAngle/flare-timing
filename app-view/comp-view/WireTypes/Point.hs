@@ -61,9 +61,8 @@ newtype GoalRatio = GoalRatio Double
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (FromJSON)
 
-newtype PilotTime a = PilotTime a
-    deriving (Eq, Ord, Show, Generic)
-    deriving anyclass (FromJSON)
+newtype PilotTime = PilotTime Double
+    deriving (Eq, Ord, Show)
 
 newtype PilotDistance = PilotDistance Double
     deriving (Eq, Ord, Show, Generic)
@@ -102,6 +101,14 @@ newtype TimePoints = TimePoints Double
 
 newtype Alt = Alt Double
     deriving (Eq, Ord, Show, Generic)
+
+instance FromJSON PilotTime where
+    parseJSON x@(String _) = do
+        s <- reverse . T.unpack <$> parseJSON x
+        case s of
+            'h' : ' ' : xs -> return . PilotTime . read . reverse $ xs
+            _ -> empty
+    parseJSON _ = empty
 
 instance FromJSON Alt where
     parseJSON x@(String _) = do
@@ -297,9 +304,9 @@ data Velocity =
           -- start gates. This is the opening time of the start gate that the
           -- pilot took.
         , es :: Maybe UTCTime
-        , ssElapsed :: Maybe (PilotTime String)
+        , ssElapsed :: Maybe PilotTime
           -- ^ The elapsed time from the moment the pilot crossed the start.
-        , gsElapsed :: Maybe (PilotTime String)
+        , gsElapsed :: Maybe PilotTime
           -- ^ The elapsed time from the start gate. Always as long as
           -- @ssElapsed@.
         , ssDistance :: Maybe PilotDistance

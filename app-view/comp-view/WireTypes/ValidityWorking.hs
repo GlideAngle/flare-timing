@@ -21,10 +21,9 @@ module WireTypes.ValidityWorking
     , NominalTime(..)
     ) where
 
-import Text.Printf (printf)
 import Control.Applicative (empty)
 import GHC.Generics (Generic)
-import qualified Data.Text as T (pack, unpack)
+import qualified Data.Text as T (unpack)
 import Data.Aeson (Value(..), FromJSON(..))
 
 import FlareTiming.Time (showHmsForHours)
@@ -155,7 +154,7 @@ newtype NominalTime = NominalTime Double
     deriving (Eq, Ord)
 
 instance Show BestTime where
-    show (BestTime x) = T.unpack . showHmsForHours . T.pack . printf "%f h" $ x
+    show (BestTime x) = T.unpack $ showHmsForHours x
 
 instance Show BestDistance where
     show (BestDistance x) = show x ++ " km"
