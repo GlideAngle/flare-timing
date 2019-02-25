@@ -12,6 +12,7 @@ arguments =
     , "library/Flight/Gap/Time/Pilot.hs"
     , "library/Flight/Gap/Allot.hs"
     , "library/Flight/Gap/Pilots.hs"
+    , "library/Flight/Gap/Equation.hs"
     , "-XDataKinds"
     , "-XDeriveAnyClass"
     , "-XDeriveGeneric"
