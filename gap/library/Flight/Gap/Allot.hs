@@ -10,7 +10,7 @@ module Flight.Gap.Allot
 
 import Data.Ratio ((%))
 import qualified Data.List as List (minimum)
-import Data.UnitsOfMeasure (u, toRational')
+import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
@@ -20,6 +20,7 @@ import Flight.Gap.Time.Best (BestTime(..))
 import Flight.Gap.Time.Pilot (PilotTime(..))
 import Flight.Gap.Ratio.Arrival (ArrivalFraction(..))
 import Flight.Gap.Ratio.Speed (SpeedFraction(..))
+import Flight.Gap.Equation (powerFraction)
 
 -- | Given the placing and the number of pilots making the end of the speed
 -- section, work out the arrival fraction.
@@ -107,12 +108,5 @@ speedFraction
     :: BestTime (Quantity Double [u| h |])
     -> PilotTime (Quantity Double [u| h |])
     -> SpeedFraction
-speedFraction (BestTime best') (PilotTime t') =
-    SpeedFraction $ max 0 sf
-    where
-        MkQuantity best = toRational' best'
-        MkQuantity t = toRational' t'
-        numerator = fromRational $ t - best :: Double
-        denominator = fromRational best ** (1/2)
-        frac = (numerator ** 2 / denominator) ** (1/3)
-        sf = 1 - toRational frac
+speedFraction (BestTime (MkQuantity tMin)) (PilotTime (MkQuantity t)) =
+    SpeedFraction . toRational $ powerFraction tMin t

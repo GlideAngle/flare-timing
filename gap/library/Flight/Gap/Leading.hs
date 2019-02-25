@@ -37,6 +37,7 @@ import Flight.Gap.Ratio.Leading
     ( LeadingAreaScaling(..), LeadingAreaStep(..)
     , LeadingCoefficient(..), LeadingFraction(..)
     )
+import Flight.Gap.Equation (powerFraction)
 
 -- | Time in seconds from the moment the first pilot crossed the start of the speed
 -- section.
@@ -347,18 +348,15 @@ leadingCoefficients deadline@(TaskDeadline maxTaskTime) len tracks =
 leadingDenominator :: Rational -> Double
 leadingDenominator cMin = fromRational cMin ** (1/2)
 
-leadingFraction :: LeadingCoefficient -> LeadingCoefficient -> LeadingFraction
-leadingFraction (LeadingCoefficient 0) _ =
-    LeadingFraction $ 0
-leadingFraction _ (LeadingCoefficient 0) =
-    LeadingFraction $ 0
-leadingFraction (LeadingCoefficient cMin) (LeadingCoefficient c) =
-    LeadingFraction $ max 0 lf
+leadingFraction
+    :: LeadingCoefficient
+    -> LeadingCoefficient
+    -> LeadingFraction
+leadingFraction (LeadingCoefficient lcMin) (LeadingCoefficient lc) =
+    LeadingFraction . toRational $ powerFraction lcMin' lc'
     where
-        numerator = fromRational $ c - cMin :: Double
-        denominator = leadingDenominator cMin
-        frac = (numerator ** 2 / denominator) ** (1/3)
-        lf = (1 % 1) - toRational frac
+        lcMin' = fromRational lcMin
+        lc' = fromRational lc
 
 allZero :: [LcTrack] -> [LeadingFraction]
 allZero tracks = const (LeadingFraction 0) <$> tracks
