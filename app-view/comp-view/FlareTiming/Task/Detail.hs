@@ -220,7 +220,7 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
                     leadPlot ld
 
                 TaskTabTime  ->
-                    timePlot hgOrPg sd)
+                    timePlot sd)
             <$> tab
 
     return $ switchDyn (leftmost <$> es)
