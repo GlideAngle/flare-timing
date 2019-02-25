@@ -7,6 +7,7 @@ of this changelog.
 
 * Plot the arrival point distribution.
 * Show the working for task validity.
+* Fix an error transcribing the lead fraction formula to code.
 
 # Duplicate Zones and Angle Formats
 ## app-view-0.12
