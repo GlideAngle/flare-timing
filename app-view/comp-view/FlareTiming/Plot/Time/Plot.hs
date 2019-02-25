@@ -17,12 +17,12 @@ newtype Plot = Plot { unPlot :: JSVal }
 
 foreign import javascript unsafe
     "functionPlot(\
-    \{ target: '#hg-plot-lead'\
+    \{ target: '#hg-plot-speed'\
     \, title: 'Time Point Distribution'\
     \, width: 720\
     \, height: 460\
     \, disableZoom: true\
-    \, xAxis: {label: 'Time', domain: [$2 - 1, $3 + 1]}\
+    \, xAxis: {label: 'Time (Hours)', domain: [$2 - 0.083, $3 + 0.083]}\
     \, yAxis: {domain: [-0.1, 1.01]}\
     \, data: [{\
     \    points: $4\
