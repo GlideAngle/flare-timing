@@ -215,7 +215,10 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
                     arrivalPlot hgOrPg av
 
                 TaskTabLead ->
-                    leadPlot hgOrPg ld)
+                    leadPlot hgOrPg ld
+
+                TaskTabTime  ->
+                    text "TODO: time plot")
             <$> tab
 
     return $ switchDyn (leftmost <$> es)
