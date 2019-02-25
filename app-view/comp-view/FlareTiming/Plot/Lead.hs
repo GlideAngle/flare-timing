@@ -11,7 +11,7 @@ leadPlot
     :: MonadWidget t m
     => Dynamic t (Maybe [(Pilot, TrackLead)])
     -> m ()
-leadPlot ld = do
+leadPlot ld =
     elClass "div" "tile is-ancestor" $
         elClass "div" "tile is-12" $
             elClass "div" "tile" $

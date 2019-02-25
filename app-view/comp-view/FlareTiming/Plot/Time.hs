@@ -11,7 +11,7 @@ timePlot
     :: MonadWidget t m
     => Dynamic t (Maybe [(Pilot, TrackSpeed)])
     -> m ()
-timePlot tm = do
+timePlot tm =
     elClass "div" "tile is-ancestor" $
         elClass "div" "tile is-12" $
             elClass "div" "tile" $
