@@ -25,7 +25,6 @@ timeRange :: [TrackSpeed] -> (Double, Double)
 timeRange xs =
     (minimum ys, maximum ys)
     where
-        -- TODO: Parse pilot time as an hour, not a string.
         ys = (\TrackSpeed{time = PilotTime x} -> x) <$> xs
 
 hgPlot
