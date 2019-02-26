@@ -54,7 +54,7 @@ hgPlot e (tMin, tMax) xs = do
             ]
 
     -- NOTE: 0.083 hr = 5 min
-    let pad = (\x -> if x == 0 then 0.083 else x) . abs $ (tMax - tMin) / 40
+    let pad = (\case 0 -> 0.083; x -> x) . abs $ (tMax - tMin) / 40
     tMin' <- toJSVal $ tMin - pad
     tMax' <- toJSVal $ tMax + pad
 

@@ -53,7 +53,7 @@ hgPlot e (lcMin, lcMax) xs = do
             , let x' = lcMin + step * fromIntegral x
             ]
 
-    let pad = (\x -> if x == 0 then 1.0 else x) . abs $ (lcMax - lcMin) / 40
+    let pad = (\case 0 -> 1.0; x -> x) . abs $ (lcMax - lcMin) / 40
     lcMin' <- toJSVal $ lcMin - pad
     lcMax' <- toJSVal $ lcMax + pad
     xy' <- toJSValListOf xy
