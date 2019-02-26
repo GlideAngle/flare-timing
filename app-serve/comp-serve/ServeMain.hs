@@ -29,6 +29,7 @@ import System.FilePath (takeFileName)
 
 import qualified Flight.Track.Cross as Cg (Crossing(..))
 import Flight.Track.Cross (TrackFlyingSection(..))
+import Flight.Track.Distance (TrackReach(..))
 import Flight.Track.Arrival (TrackArrival(..))
 import Flight.Track.Lead (TrackLead(..))
 import Flight.Track.Speed (TrackSpeed(..))
@@ -205,6 +206,9 @@ type GapPointApi k =
     :<|> "cross-zone" :> "track-flying-section" :> (Capture "task" Int) :> (Capture "pilot" String)
         :> Get '[JSON] TrackFlyingSection
 
+    :<|> "mask-track" :> (Capture "task" Int) :> "reach"
+        :> Get '[JSON] [(Pilot, TrackReach)]
+
     :<|> "mask-track" :> (Capture "task" Int) :> "arrival"
         :> Get '[JSON] [(Pilot, TrackArrival)]
 
@@ -364,6 +368,7 @@ serverGapPointApi cfg =
         :<|> getTaskPilotDf
         :<|> getTaskPilotTrack
         :<|> getTaskPilotTrackFlyingSection
+        :<|> getTaskReach
         :<|> getTaskArrival
         :<|> getTaskLead
         :<|> getTaskTime
@@ -726,6 +731,17 @@ getTaskPilotTrackFlyingSection ii pilotId = do
                         Just (_, Just y) -> return y
                         _ -> throwError $ errPilotTrackNotFound ix pilot
                 _ -> throwError $ errPilotTrackNotFound ix pilot
+
+getTaskReach :: Int -> AppT k IO [(Pilot, TrackReach)]
+getTaskReach ii = do
+    xs' <- fmap reachRank <$> asks masking
+    case xs' of
+        Just xs ->
+            case drop (ii - 1) xs of
+                x : _ -> return x
+                _ -> throwError $ errTaskBounds ii
+
+        _ -> throwError $ errTaskStep "mask-track" ii
 
 getTaskArrival :: Int -> AppT k IO [(Pilot, TrackArrival)]
 getTaskArrival ii = do
