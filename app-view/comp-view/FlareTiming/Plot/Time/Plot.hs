@@ -49,7 +49,7 @@ hgPlot e (tMin, tMax) xs = do
     let xy :: [[Double]] =
             [ [x', fn tMin x']
             | x <- [0 :: Integer .. 199]
-            , let step = (tMax - tMin) / 200
+            , let step = abs $ (tMax - tMin) / 200
             , let x' = tMin + step * fromIntegral x
             ]
 
