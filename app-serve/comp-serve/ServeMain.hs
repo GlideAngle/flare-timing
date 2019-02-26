@@ -729,7 +729,7 @@ getTaskPilotTrackFlyingSection ii pilotId = do
 
 getTaskArrival :: Int -> AppT k IO [(Pilot, TrackArrival)]
 getTaskArrival ii = do
-    xs' <- fmap arrival <$> asks masking
+    xs' <- fmap arrivalRank <$> asks masking
     case xs' of
         Just xs ->
             case drop (ii - 1) xs of
@@ -740,7 +740,7 @@ getTaskArrival ii = do
 
 getTaskLead :: Int -> AppT k IO [(Pilot, TrackLead)]
 getTaskLead ii = do
-    xs' <- fmap lead <$> asks masking
+    xs' <- fmap leadRank <$> asks masking
     case xs' of
         Just xs ->
             case drop (ii - 1) xs of

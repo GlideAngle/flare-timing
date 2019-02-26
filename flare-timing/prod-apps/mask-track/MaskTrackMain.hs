@@ -69,7 +69,9 @@ import Flight.Track.Time (AwardedVelocity(..))
 import qualified Flight.Track.Time as Time (TimeRow(..), TickRow(..))
 import Flight.Track.Arrival (TrackArrival(..))
 import Flight.Track.Distance
-    (TrackDistance(..), AwardedDistance(..), Clamp(..), Land)
+    ( TrackDistance(..), TrackReach(..), AwardedDistance(..)
+    , Clamp(..), Nigh, Land
+    )
 import qualified Flight.Track.Distance as Track (awardByFrac)
 import Flight.Track.Lead (compLeading)
 import Flight.Track.Mask (Masking(..), RaceTime(..))
@@ -99,9 +101,9 @@ import qualified Flight.Score as Gap (bestTime')
 import Flight.Score
     ( PilotsAtEss(..), ArrivalPlacing(..)
     , BestTime(..), PilotTime(..)
-    , MinimumDistance(..)
-    , LengthOfSs(..)
-    , arrivalFraction, speedFraction, areaScaling
+    , MinimumDistance(..), PilotDistance(..), BestDistance(..)
+    , LinearFraction(..), LengthOfSs(..)
+    , arrivalFraction, speedFraction, linearFraction, areaScaling
     )
 import Flight.Span.Math (Math(..))
 import MaskTrackOptions (description)
@@ -394,7 +396,40 @@ writeMask
                         (includeTask selectTasks)
                         (catMaybes <$> rowTicks)
 
-            let dsNigh = compNigh lsWholeTask zsTaskTicked dsNighRows
+            let dsNigh :: [[(Pilot, TrackDistance Nigh)]] =
+                    compNigh lsWholeTask zsTaskTicked dsNighRows
+
+            let rs :: [[(Pilot, TrackReach)]] =
+                    [
+                        sortOn
+                            ( negate
+                            . (\TrackReach{frac = LinearFraction lf} -> lf)
+                            . snd
+                            )
+                        $ catMaybes
+                        $
+                            (\case
+                                (_, Nothing) -> Nothing
+                                (a, Just b) -> Just (a, b))
+                            . (fmap (\TrackDistance{made} -> do
+                                    TaskDistance b <- dBest
+                                    td@(TaskDistance d) <- made
+
+                                    let bd :: BestDistance (Quantity Double [u| km |]) =
+                                            BestDistance $ convert b
+                                    let pd :: PilotDistance (Quantity Double [u| km |]) =
+                                            PilotDistance $ convert d
+
+                                    return
+                                        TrackReach
+                                            { reach = td
+                                            , frac = linearFraction bd pd
+                                            }))
+                            <$> ds
+
+                    | dBest <- dsBest
+                    | ds <- dsNigh
+                    ]
 
             writeMasking
                 (compToMask compFile)
@@ -409,8 +444,9 @@ writeMask
                     , sumDistance = dsSum
                     , leadScaling = lcScaling
                     , leadCoefMin = lcMin
-                    , lead = lead
-                    , arrival = as
+                    , leadRank = lead
+                    , arrivalRank = as
+                    , reachRank = rs
                     , ssSpeed = fromMaybe [] <$> (fmap . fmap) snd ssVs
                     , gsSpeed = fromMaybe [] <$> (fmap . fmap) snd gsVs
                     , nigh = dsNigh

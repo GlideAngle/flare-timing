@@ -5,6 +5,8 @@ module Flight.Gap.Distance.Linear
     , bestDistance'
     ) where
 
+import "newtype" Control.Newtype (Newtype(..))
+import Data.Via.Scientific (DecimalPlaces(..), deriveDecimalPlaces, deriveJsonViaSci)
 import Data.Ratio ((%))
 import Data.UnitsOfMeasure (u, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
@@ -14,7 +16,15 @@ import Flight.Units ()
 import Flight.Gap.Distance.Best (BestDistance(..))
 import Flight.Gap.Distance.Pilot (PilotDistance(..))
 
-newtype LinearFraction = LinearFraction Rational deriving (Eq, Ord, Show)
+newtype LinearFraction = LinearFraction Rational
+    deriving (Eq, Ord, Show)
+
+instance Newtype LinearFraction Rational where
+    pack = LinearFraction
+    unpack (LinearFraction a) = a
+
+deriveDecimalPlaces (DecimalPlaces 8) ''LinearFraction
+deriveJsonViaSci ''LinearFraction
 
 -- | The linear fraction for distance.
 linearFraction

@@ -9,6 +9,7 @@ The distance standing of a pilot's track in comparison to other pilots landing o
 -}
 module Flight.Track.Distance
     ( TrackDistance(..)
+    , TrackReach(..)
     , AwardedDistance(..)
     , Clamp(..)
     , Nigh
@@ -23,6 +24,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Distance (TaskDistance(..), QTaskDistance)
 import Flight.Route (TrackLine(..))
+import Flight.Score (LinearFraction(..))
 
 type Nigh = TrackLine
 type Land = QTaskDistance Double [u| m |]
@@ -49,6 +51,14 @@ data TrackDistance a =
         -- ^ The distance to goal.
         , made :: Maybe (QTaskDistance Double [u| m |])
         -- ^ The task distance minus the distance to goal.
+        }
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (FromJSON, ToJSON)
+
+data TrackReach =
+    TrackReach
+        { reach :: QTaskDistance Double [u| m |]
+        , frac :: LinearFraction
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (FromJSON, ToJSON)

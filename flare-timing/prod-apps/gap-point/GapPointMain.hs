@@ -209,8 +209,8 @@ points'
         , sumDistance
         , ssBestTime
         , gsBestTime
-        , lead
-        , arrival
+        , leadRank
+        , arrivalRank
         , ssSpeed
         , gsSpeed
         , nigh
@@ -403,7 +403,7 @@ points'
               in (xs' ++ ys')
             | bd <- (fmap . fmap) unTaskDistanceAsKm bestDistance
             | xs <- nigh
-            | ys <- arrival
+            | ys <- arrivalRank
             ]
 
         nighDistanceDfNoTrack :: [[(Pilot, Maybe Double)]] =
@@ -423,7 +423,7 @@ points'
               in (xs' ++ ys')
             | sd <- (fmap . fmap) unTaskDistanceAsKm taskSpeedDistance
             | xs <- nigh
-            | ys <- arrival
+            | ys <- arrivalRank
             ]
 
         -- NOTE: Pilots either get to goal or have a landing distance.
@@ -433,13 +433,13 @@ points'
               in (xs' ++ ys')
             | bd <- (fmap . fmap) unTaskDistanceAsKm bestDistance
             | xs <- land
-            | ys <- arrival
+            | ys <- arrivalRank
             ]
 
         stoppedAlts :: [[(Pilot, Maybe (QAlt Double [u| m |]))]] =
             [ let ys' = (fmap . fmap) (const Nothing) ys in (xs ++ ys')
             | xs <- (fmap . fmap . fmap) Just altStopped
-            | ys <- arrival
+            | ys <- arrivalRank
             ]
 
         difficultyDistancePointsDf :: [[(Pilot, DifficultyPoints)]] =
@@ -464,7 +464,7 @@ points'
                 ps
             | ps <- (fmap . fmap) points allocs
             | xs <- land
-            | ys <- arrival
+            | ys <- arrivalRank
             | ld <- landoutDifficulty
             ]
 
@@ -527,7 +527,7 @@ points'
                 ps
             | ps <- (fmap . fmap) points allocs
             | xs <- nigh
-            | ys <- lead
+            | ys <- leadRank
             ]
 
         arrivalPoints :: [[(Pilot, ArrivalPoints)]] =
@@ -544,7 +544,7 @@ points'
                 ps
             | ps <- (fmap . fmap) points allocs
             | xs <- nigh
-            | ys <- arrival
+            | ys <- arrivalRank
             ]
 
         timePoints :: _ -> [[(Pilot, TimePoints)]] =

@@ -39,7 +39,7 @@ import Flight.Units ()
 import Flight.Track.Speed (TrackSpeed(..))
 import Flight.Track.Arrival (TrackArrival(..))
 import Flight.Track.Lead (TrackLead(..))
-import Flight.Track.Distance (TrackDistance(..), Nigh, Land)
+import Flight.Track.Distance (TrackDistance(..), TrackReach(..), Nigh, Land)
 
 -- | For each task, the masking for that task.
 data Masking =
@@ -64,10 +64,12 @@ data Masking =
         -- ^ For each task, the scaling of leading area.
         , leadCoefMin :: [Maybe LeadingCoefficient]
         -- ^ For each task, the minimum of all pilot's leading coefficient.
-        , lead :: [[(Pilot, TrackLead)]]
+        , leadRank :: [[(Pilot, TrackLead)]]
         -- ^ For each task, the rank order of leading and leading fraction.
-        , arrival :: [[(Pilot, TrackArrival)]]
+        , arrivalRank :: [[(Pilot, TrackArrival)]]
         -- ^ For each task, the rank order of arrival at goal and arrival fraction.
+        , reachRank :: [[(Pilot, TrackReach)]]
+        -- ^ For each task, the rank order of reach and linear distance fraction.
         , ssSpeed :: [[(Pilot, TrackSpeed)]]
         -- ^ For each task, for each pilot making goal, their time for the
         -- speed section and speed fraction, ignoring any start gates.
@@ -276,28 +278,41 @@ cmp a b =
         ("leadCoefMin", "leadScaling") -> GT
         ("leadCoefMin", _) -> LT
 
-        ("lead", "pilotsAtEss") -> GT
-        ("lead", "raceTime") -> GT
-        ("lead", "ssBestTime") -> GT
-        ("lead", "gsBestTime") -> GT
-        ("lead", "taskDistance") -> GT
-        ("lead", "bestDistance") -> GT
-        ("lead", "sumDistance") -> GT
-        ("lead", "leadScaling") -> GT
-        ("lead", "leadCoefMin") -> GT
-        ("lead", _) -> LT
+        ("leadRank", "pilotsAtEss") -> GT
+        ("leadRank", "raceTime") -> GT
+        ("leadRank", "ssBestTime") -> GT
+        ("leadRank", "gsBestTime") -> GT
+        ("leadRank", "taskDistance") -> GT
+        ("leadRank", "bestDistance") -> GT
+        ("leadRank", "sumDistance") -> GT
+        ("leadRank", "leadRankScaling") -> GT
+        ("leadRank", "leadRankCoefMin") -> GT
+        ("leadRank", _) -> LT
 
-        ("arrival", "pilotsAtEss") -> GT
-        ("arrival", "raceTime") -> GT
-        ("arrival", "ssBestTime") -> GT
-        ("arrival", "gsBestTime") -> GT
-        ("arrival", "taskDistance") -> GT
-        ("arrival", "bestDistance") -> GT
-        ("arrival", "sumDistance") -> GT
-        ("arrival", "leadScaling") -> GT
-        ("arrival", "leadCoefMin") -> GT
-        ("arrival", "lead") -> GT
-        ("arrival", _) -> LT
+        ("arrivalRank", "pilotsAtEss") -> GT
+        ("arrivalRank", "raceTime") -> GT
+        ("arrivalRank", "ssBestTime") -> GT
+        ("arrivalRank", "gsBestTime") -> GT
+        ("arrivalRank", "taskDistance") -> GT
+        ("arrivalRank", "bestDistance") -> GT
+        ("arrivalRank", "sumDistance") -> GT
+        ("arrivalRank", "leadScaling") -> GT
+        ("arrivalRank", "leadCoefMin") -> GT
+        ("arrivalRank", "lead") -> GT
+        ("arrivalRank", _) -> LT
+
+        ("reachRank", "pilotsAtEss") -> GT
+        ("reachRank", "raceTime") -> GT
+        ("reachRank", "ssBestTime") -> GT
+        ("reachRank", "gsBestTime") -> GT
+        ("reachRank", "taskDistance") -> GT
+        ("reachRank", "bestDistance") -> GT
+        ("reachRank", "sumDistance") -> GT
+        ("reachRank", "leadScaling") -> GT
+        ("reachRank", "leadCoefMin") -> GT
+        ("reachRank", "leadRank") -> GT
+        ("reachRank", "arrivalRank") -> GT
+        ("reachRank", _) -> LT
 
         ("ssSpeed", "pilotsAtEss") -> GT
         ("ssSpeed", "raceTime") -> GT
@@ -308,8 +323,9 @@ cmp a b =
         ("ssSpeed", "sumDistance") -> GT
         ("ssSpeed", "leadScaling") -> GT
         ("ssSpeed", "leadCoefMin") -> GT
-        ("ssSpeed", "lead") -> GT
-        ("ssSpeed", "arrival") -> GT
+        ("ssSpeed", "leadRank") -> GT
+        ("ssSpeed", "arrivalRank") -> GT
+        ("ssSpeed", "reachRank") -> GT
         ("ssSpeed", _) -> LT
 
         ("gsSpeed", "pilotsAtEss") -> GT
@@ -321,8 +337,9 @@ cmp a b =
         ("gsSpeed", "sumDistance") -> GT
         ("gsSpeed", "leadScaling") -> GT
         ("gsSpeed", "leadCoefMin") -> GT
-        ("gsSpeed", "lead") -> GT
-        ("gsSpeed", "arrival") -> GT
+        ("gsSpeed", "leadRank") -> GT
+        ("gsSpeed", "arrivalRank") -> GT
+        ("gsSpeed", "reachRank") -> GT
         ("gsSpeed", "ssSpeed") -> GT
         ("gsSpeed", _) -> LT
 
@@ -335,8 +352,9 @@ cmp a b =
         ("nigh", "sumDistance") -> GT
         ("nigh", "leadScaling") -> GT
         ("nigh", "leadCoefMin") -> GT
-        ("nigh", "lead") -> GT
-        ("nigh", "arrival") -> GT
+        ("nigh", "leadRank") -> GT
+        ("nigh", "arrivalRank") -> GT
+        ("nigh", "reachRank") -> GT
         ("nigh", "ssSpeed") -> GT
         ("nigh", "gsSpeed") -> GT
         ("nigh", _) -> LT
