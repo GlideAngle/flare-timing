@@ -11,9 +11,10 @@ data TaskTab
     | TaskTabValidity
     | TaskTabScore
     | TaskTabSplit
-    | TaskTabArrive
-    | TaskTabLead
+    | TaskTabReach
     | TaskTabTime
+    | TaskTabLead
+    | TaskTabArrive
 
 tabsTask
     :: MonadWidget t m
@@ -35,6 +36,10 @@ tabsTask =
                             elClass "span" "legend-arrival" $ text "▩"
                             text "Split"
 
+            (reach, _) <- elDynClass' "li" reachClass . el "a" $ do
+                            elClass "span" "legend-distance" $ text "▩"
+                            text "Reach"
+
             (time, _) <- elDynClass' "li" timeClass . el "a" $ do
                             elClass "span" "legend-time" $ text "▩"
                             text "Time"
@@ -54,6 +59,7 @@ tabsTask =
             let eValid = (const TaskTabValidity) <$> domEvent Click valid
             let eScore = (const TaskTabScore) <$> domEvent Click score
             let eSplit = (const TaskTabSplit) <$> domEvent Click split
+            let eReach = (const TaskTabReach) <$> domEvent Click reach
             let eTime = (const TaskTabTime) <$> domEvent Click time
             let eLead = (const TaskTabLead) <$> domEvent Click lead
             let eArrive = (const TaskTabArrive) <$> domEvent Click arrive
@@ -66,6 +72,7 @@ tabsTask =
                             , "" <$ eMap
                             , "" <$ eAbs
                             , "" <$ eSplit
+                            , "" <$ eReach
                             , "" <$ eTime
                             , "" <$ eLead
                             , "" <$ eArrive
@@ -79,6 +86,7 @@ tabsTask =
                             , "" <$ eMap
                             , "" <$ eAbs
                             , "" <$ eSplit
+                            , "" <$ eReach
                             , "" <$ eTime
                             , "" <$ eLead
                             , "" <$ eArrive
@@ -92,6 +100,7 @@ tabsTask =
                             , "is-active" <$ eMap
                             , "" <$ eAbs
                             , "" <$ eSplit
+                            , "" <$ eReach
                             , "" <$ eTime
                             , "" <$ eLead
                             , "" <$ eArrive
@@ -105,6 +114,7 @@ tabsTask =
                             , "" <$ eMap
                             , "is-active" <$ eAbs
                             , "" <$ eSplit
+                            , "" <$ eReach
                             , "" <$ eTime
                             , "" <$ eLead
                             , "" <$ eArrive
@@ -118,6 +128,7 @@ tabsTask =
                             , "" <$ eMap
                             , "" <$ eAbs
                             , "" <$ eSplit
+                            , "" <$ eReach
                             , "" <$ eTime
                             , "" <$ eLead
                             , "" <$ eArrive
@@ -131,6 +142,7 @@ tabsTask =
                             , "" <$ eMap
                             , "" <$ eAbs
                             , "" <$ eSplit
+                            , "" <$ eReach
                             , "" <$ eTime
                             , "" <$ eLead
                             , "" <$ eArrive
@@ -144,6 +156,21 @@ tabsTask =
                             , "" <$ eMap
                             , "" <$ eAbs
                             , "is-active" <$ eSplit
+                            , "" <$ eReach
+                            , "" <$ eTime
+                            , "" <$ eLead
+                            , "" <$ eArrive
+                            ]
+
+            reachClass <- holdDyn "" . leftmost $
+                            [ "" <$ eGeo
+                            , "" <$ eValid
+                            , "" <$ eScore
+                            , "" <$ eTask
+                            , "" <$ eMap
+                            , "" <$ eAbs
+                            , "" <$ eSplit
+                            , "is-active" <$ eReach
                             , "" <$ eTime
                             , "" <$ eLead
                             , "" <$ eArrive
@@ -157,6 +184,7 @@ tabsTask =
                             , "" <$ eMap
                             , "" <$ eAbs
                             , "" <$ eSplit
+                            , "" <$ eReach
                             , "is-active" <$ eTime
                             , "" <$ eLead
                             , "" <$ eArrive
@@ -170,6 +198,7 @@ tabsTask =
                             , "" <$ eMap
                             , "" <$ eAbs
                             , "" <$ eSplit
+                            , "" <$ eReach
                             , "" <$ eTime
                             , "is-active" <$ eLead
                             , "" <$ eArrive
@@ -183,6 +212,7 @@ tabsTask =
                             , "" <$ eMap
                             , "" <$ eAbs
                             , "" <$ eSplit
+                            , "" <$ eReach
                             , "" <$ eTime
                             , "" <$ eLead
                             , "is-active" <$ eArrive
@@ -196,6 +226,7 @@ tabsTask =
                 , eValid
                 , eScore
                 , eSplit
+                , eReach
                 , eTime
                 , eLead
                 , eArrive
