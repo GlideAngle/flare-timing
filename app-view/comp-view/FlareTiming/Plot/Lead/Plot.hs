@@ -22,7 +22,7 @@ foreign import javascript unsafe
     \, width: 720\
     \, height: 460\
     \, disableZoom: true\
-    \, xAxis: {label: 'Leading Coefficient', domain: [$2 - 1, $3 + 1]}\
+    \, xAxis: {label: 'Leading Coefficient', domain: [$2, $3]}\
     \, yAxis: {domain: [-0.1, 1.01]}\
     \, data: [{\
     \    points: $4\
@@ -46,16 +46,16 @@ hgPlot
     -> [[Double]]
     -> IO Plot
 hgPlot e (lcMin, lcMax) xs = do
-    let delta = (lcMax - lcMin) / 200
-
     let xy :: [[Double]] =
             [ [x', fn lcMin x']
             | x <- [0 :: Integer .. 199]
-            , let x' = lcMin + delta * fromIntegral x
+            , let step = (lcMax - lcMin) / 200
+            , let x' = lcMin + step * fromIntegral x
             ]
 
-    lcMin' <- toJSVal lcMin
-    lcMax' <- toJSVal lcMax
+    let pad = (lcMax - lcMin) / 40
+    lcMin' <- toJSVal $ lcMin - pad
+    lcMax' <- toJSVal $ lcMax + pad
     xy' <- toJSValListOf xy
     xs' <- toJSValListOf $ nub xs
 
