@@ -7,6 +7,7 @@ of this changelog.
 
 * Default the x-domain when there is one data point to plot.
 * Pad the x-domain of the plots relative to the range of the data.
+* Add a reach plot.
 
 # Fractional Point Plots
 ## app-view-0.13
