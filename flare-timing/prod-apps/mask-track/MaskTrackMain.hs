@@ -399,14 +399,9 @@ writeMask
             let dsNigh :: [[(Pilot, TrackDistance Nigh)]] =
                     compNigh lsWholeTask zsTaskTicked dsNighRows
 
-            let rs :: [[(Pilot, TrackReach)]] =
+            let rsNigh :: [[(Pilot, TrackReach)]] =
                     [
-                        sortOn
-                            ( negate
-                            . (\TrackReach{frac = LinearFraction lf} -> lf)
-                            . snd
-                            )
-                        $ catMaybes
+                        catMaybes
                         $
                             (\case
                                 (_, Nothing) -> Nothing
@@ -429,6 +424,40 @@ writeMask
 
                     | dBest <- dsBest
                     | ds <- dsNigh
+                    ]
+
+            let rsArrive :: [[(Pilot, TrackReach)]] =
+                    [
+                        case dBest of
+                            Nothing -> []
+                            Just td@(TaskDistance b) ->
+                                let bd :: BestDistance (Quantity Double [u| km |]) =
+                                        BestDistance $ convert b
+
+                                    pd :: PilotDistance (Quantity Double [u| km |]) =
+                                        PilotDistance $ convert b
+
+                                    tr =
+                                        TrackReach
+                                            { reach = td
+                                            , frac = linearFraction bd pd
+                                            }
+                                in (flip (,)) tr <$> ps
+
+                    | dBest <- dsBest
+                    | ps <- psArriving
+                    ]
+
+            let rs :: [[(Pilot, TrackReach)]] =
+                    [
+                        sortOn
+                            ( negate
+                            . (\TrackReach{frac = LinearFraction lf} -> lf)
+                            . snd
+                            )
+                        $ xs ++ ys
+                    | xs <- rsArrive
+                    | ys <- rsNigh
                     ]
 
             writeMasking
