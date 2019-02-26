@@ -62,7 +62,12 @@ hgPlot e xs ys = do
     let n :: Integer = fromIntegral $ length xs + length ys
 
     n' <- toJSVal (fromIntegral n :: Double)
-    let xy :: [[Double]] = [[x', fn n x'] | x <- [1 .. 10 * n], let x' = 0.1 * fromIntegral x]
+    let xy :: [[Double]] =
+            [ [x', fn n x']
+            | x <- [1 .. 10 * n]
+            , let x' = 0.1 * fromIntegral x
+            ]
+
     xy' <- toJSValListOf xy
     xs' <- toJSValListOf xs
     ys' <- toJSValListOf $ nub ys
