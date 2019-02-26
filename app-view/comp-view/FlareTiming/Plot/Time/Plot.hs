@@ -22,7 +22,7 @@ foreign import javascript unsafe
     \, width: 720\
     \, height: 460\
     \, disableZoom: true\
-    \, xAxis: {label: 'Time (Hours)', domain: [$2 - 0.083, $3 + 0.083]}\
+    \, xAxis: {label: 'Time (Hours)', domain: [$2, $3]}\
     \, yAxis: {domain: [-0.1, 1.01]}\
     \, data: [{\
     \    points: $4\
@@ -46,16 +46,17 @@ hgPlot
     -> [[Double]]
     -> IO Plot
 hgPlot e (tMin, tMax) xs = do
-    let delta = (tMax - tMin) / 200
-
     let xy :: [[Double]] =
             [ [x', fn tMin x']
             | x <- [0 :: Integer .. 199]
-            , let x' = tMin + delta * fromIntegral x
+            , let step = (tMax - tMin) / 200
+            , let x' = tMin + step * fromIntegral x
             ]
 
-    tMin' <- toJSVal tMin
-    tMax' <- toJSVal tMax
+    let pad = (tMax - tMin) / 40
+    tMin' <- toJSVal $ tMin - pad
+    tMax' <- toJSVal $ tMax + pad
+
     xy' <- toJSValListOf xy
     xs' <- toJSValListOf $ nub xs
 
