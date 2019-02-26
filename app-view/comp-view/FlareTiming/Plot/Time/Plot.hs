@@ -53,7 +53,8 @@ hgPlot e (tMin, tMax) xs = do
             , let x' = tMin + step * fromIntegral x
             ]
 
-    let pad = (tMax - tMin) / 40
+    -- NOTE: 0.083 hr = 5 min
+    let pad = (\x -> if x == 0 then 0.083 else x) . abs $ (tMax - tMin) / 40
     tMin' <- toJSVal $ tMin - pad
     tMax' <- toJSVal $ tMax + pad
 
