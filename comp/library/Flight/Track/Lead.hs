@@ -34,7 +34,8 @@ data TrackLead =
         { coef :: LeadingCoefficient
         , frac :: LeadingFraction
         }
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (FromJSON, ToJSON)
 
 compLeading
     :: [[(Pilot, [Time.TickRow])]]

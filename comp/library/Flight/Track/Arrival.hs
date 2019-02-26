@@ -20,4 +20,5 @@ data TrackArrival =
         { rank :: ArrivalPlacing
         , frac :: ArrivalFraction
         }
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (FromJSON, ToJSON)

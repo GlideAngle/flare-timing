@@ -40,7 +40,8 @@ data AwardedDistance =
         , awardedFrac :: Double
         -- ^ The fraction of the task distance awarded to the pilot.
         }
-    deriving (Eq, Ord, Show, Generic, FromJSON, ToJSON)
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (FromJSON, ToJSON)
 
 data TrackDistance a =
     TrackDistance
