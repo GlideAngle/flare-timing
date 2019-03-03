@@ -36,6 +36,7 @@ import FlareTiming.Plot.Time (timePlot)
 import qualified FlareTiming.Turnpoint as TP (getName)
 import FlareTiming.Nav.TabTask (TaskTab(..), tabsTask)
 import FlareTiming.Nav.TabPlot (PlotTab(..), tabsPlot)
+import FlareTiming.Nav.TabBasis (BasisTab(..), tabsBasis)
 import FlareTiming.Task.Score (tableScore)
 import FlareTiming.Task.Geo (tableGeo)
 import FlareTiming.Task.Turnpoints (tableTask)
@@ -176,14 +177,11 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
     taskTileZones utc sb task ln
     es <- simpleList cs (crumbTask task)
     tabTask <- tabsTask
+    let taskTable = tableTask utc task legs
 
-    _ <- widgetHold (tableTask utc task legs) $
+    _ <- widgetHold taskTable $
             (\case
-                TaskTabGeo ->
-                    tableGeo ix
-
-                TaskTabTask ->
-                    tableTask utc task legs
+                TaskTabTask -> taskTable
 
                 TaskTabMap -> mdo
                     p <- viewMap ix task routes pt
@@ -204,25 +202,33 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
 
                     return ()
 
-                TaskTabAbsent ->
-                    tableAbsent utc ix ln nyp dnf dfNt penal
-
-                TaskTabValidity ->
-                    viewValidity vy vw
-
                 TaskTabScore ->
                     tableScore utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf
 
                 TaskTabPlot -> do
                     tabPlot <- tabsPlot
-                    _ <- widgetHold (weightPlot hgOrPg tweak alloc) $
+                    let plotSplit = weightPlot hgOrPg tweak alloc
+                    _ <- widgetHold (plotSplit) $
                             (\case
-                                PlotTabSplit -> weightPlot hgOrPg tweak alloc
+                                PlotTabSplit -> plotSplit
                                 PlotTabReach -> reachPlot rh
                                 PlotTabArrive -> arrivalPlot hgOrPg av
                                 PlotTabLead -> leadPlot ld
                                 PlotTabTime -> timePlot sd)
                             <$> tabPlot
+
+                    return ()
+
+                TaskTabBasis -> do
+                    tabBasis <- tabsBasis
+                    let basisAbsent = tableAbsent utc ix ln nyp dnf dfNt penal
+                    _ <- widgetHold basisAbsent $
+                            (\case
+                                BasisTabAbsent -> basisAbsent
+                                BasisTabValidity -> viewValidity vy vw
+                                BasisTabGeo -> tableGeo ix)
+
+                            <$> tabBasis
 
                     return ())
 
