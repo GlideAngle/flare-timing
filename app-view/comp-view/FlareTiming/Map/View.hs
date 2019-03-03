@@ -308,6 +308,10 @@ map
 
                         l0 <- L.trackLine t0 "black"
                         g0 <- L.layerGroup l0 []
+
+                        -- NOTE: Adding the track now so that it displays.
+                        L.layerGroupAddToMap g0 lmap'
+
                         L.addOverlay layers' (PilotName (pn <> " scored"), g0)
                         L.layersExpand layers'
 
