@@ -10,11 +10,7 @@ data TaskTab
     | TaskTabAbsent
     | TaskTabValidity
     | TaskTabScore
-    | TaskTabSplit
-    | TaskTabReach
-    | TaskTabTime
-    | TaskTabLead
-    | TaskTabArrive
+    | TaskTabPlot
 
 tabsTask
     :: MonadWidget t m
@@ -28,29 +24,7 @@ tabsTask =
             (absent, _) <- elDynClass' "li" absentClass $ el "a" (text "Pilots")
             (valid, _) <- elDynClass' "li" validClass $ el "a" (text "Valid")
             (score, _) <- elDynClass' "li" scoreClass $ el "a" (text "Score")
-
-            (split, _) <- elDynClass' "li" splitClass . el "a" $ do
-                            elClass "span" "legend-distance" $ text "▩"
-                            elClass "span" "legend-time" $ text "▩"
-                            elClass "span" "legend-leading" $ text "▩"
-                            elClass "span" "legend-arrival" $ text "▩"
-                            text "Split"
-
-            (reach, _) <- elDynClass' "li" reachClass . el "a" $ do
-                            elClass "span" "legend-distance" $ text "▩"
-                            text "Reach"
-
-            (time, _) <- elDynClass' "li" timeClass . el "a" $ do
-                            elClass "span" "legend-time" $ text "▩"
-                            text "Time"
-
-            (lead, _) <- elDynClass' "li" leadClass . el "a" $ do
-                            elClass "span" "legend-leading" $ text "▩"
-                            text "Lead"
-
-            (arrive, _) <- elDynClass' "li" arriveClass . el "a" $ do
-                            elClass "span" "legend-arrival" $ text "▩"
-                            text "Arrive"
+            (plot, _) <- elDynClass' "li" splitClass $ el "a" (text "Plot")
 
             let eGeo = (const TaskTabGeo) <$> domEvent Click geo
             let eTask = (const TaskTabTask) <$> domEvent Click task
@@ -58,11 +32,7 @@ tabsTask =
             let eAbs = (const TaskTabAbsent) <$> domEvent Click absent
             let eValid = (const TaskTabValidity) <$> domEvent Click valid
             let eScore = (const TaskTabScore) <$> domEvent Click score
-            let eSplit = (const TaskTabSplit) <$> domEvent Click split
-            let eReach = (const TaskTabReach) <$> domEvent Click reach
-            let eTime = (const TaskTabTime) <$> domEvent Click time
-            let eLead = (const TaskTabLead) <$> domEvent Click lead
-            let eArrive = (const TaskTabArrive) <$> domEvent Click arrive
+            let ePlot = (const TaskTabPlot) <$> domEvent Click plot
 
             geoClass <- holdDyn "" . leftmost $
                             [ "is-active" <$ eGeo
@@ -71,25 +41,17 @@ tabsTask =
                             , "" <$ eTask
                             , "" <$ eMap
                             , "" <$ eAbs
-                            , "" <$ eSplit
-                            , "" <$ eReach
-                            , "" <$ eTime
-                            , "" <$ eLead
-                            , "" <$ eArrive
+                            , "" <$ ePlot
                             ]
 
-            taskClass <- holdDyn "" . leftmost $
+            taskClass <- holdDyn "is-active" . leftmost $
                             [ "" <$ eGeo
                             , "" <$ eValid
                             , "" <$ eScore
                             , "is-active" <$ eTask
                             , "" <$ eMap
                             , "" <$ eAbs
-                            , "" <$ eSplit
-                            , "" <$ eReach
-                            , "" <$ eTime
-                            , "" <$ eLead
-                            , "" <$ eArrive
+                            , "" <$ ePlot
                             ]
 
             mapClass <- holdDyn "" . leftmost $
@@ -99,11 +61,7 @@ tabsTask =
                             , "" <$ eTask
                             , "is-active" <$ eMap
                             , "" <$ eAbs
-                            , "" <$ eSplit
-                            , "" <$ eReach
-                            , "" <$ eTime
-                            , "" <$ eLead
-                            , "" <$ eArrive
+                            , "" <$ ePlot
                             ]
 
             absentClass <- holdDyn "" . leftmost $
@@ -113,11 +71,7 @@ tabsTask =
                             , "" <$ eTask
                             , "" <$ eMap
                             , "is-active" <$ eAbs
-                            , "" <$ eSplit
-                            , "" <$ eReach
-                            , "" <$ eTime
-                            , "" <$ eLead
-                            , "" <$ eArrive
+                            , "" <$ ePlot
                             ]
 
             validClass <- holdDyn "" . leftmost $
@@ -127,11 +81,7 @@ tabsTask =
                             , "" <$ eTask
                             , "" <$ eMap
                             , "" <$ eAbs
-                            , "" <$ eSplit
-                            , "" <$ eReach
-                            , "" <$ eTime
-                            , "" <$ eLead
-                            , "" <$ eArrive
+                            , "" <$ ePlot
                             ]
 
             scoreClass <- holdDyn "" . leftmost $
@@ -141,81 +91,17 @@ tabsTask =
                             , "" <$ eTask
                             , "" <$ eMap
                             , "" <$ eAbs
-                            , "" <$ eSplit
-                            , "" <$ eReach
-                            , "" <$ eTime
-                            , "" <$ eLead
-                            , "" <$ eArrive
+                            , "" <$ ePlot
                             ]
 
-            splitClass <- holdDyn "is-active" . leftmost $
+            splitClass <- holdDyn "" . leftmost $
                             [ "" <$ eGeo
                             , "" <$ eValid
                             , "" <$ eScore
                             , "" <$ eTask
                             , "" <$ eMap
                             , "" <$ eAbs
-                            , "is-active" <$ eSplit
-                            , "" <$ eReach
-                            , "" <$ eTime
-                            , "" <$ eLead
-                            , "" <$ eArrive
-                            ]
-
-            reachClass <- holdDyn "" . leftmost $
-                            [ "" <$ eGeo
-                            , "" <$ eValid
-                            , "" <$ eScore
-                            , "" <$ eTask
-                            , "" <$ eMap
-                            , "" <$ eAbs
-                            , "" <$ eSplit
-                            , "is-active" <$ eReach
-                            , "" <$ eTime
-                            , "" <$ eLead
-                            , "" <$ eArrive
-                            ]
-
-            timeClass <- holdDyn "" . leftmost $
-                            [ "" <$ eGeo
-                            , "" <$ eValid
-                            , "" <$ eScore
-                            , "" <$ eTask
-                            , "" <$ eMap
-                            , "" <$ eAbs
-                            , "" <$ eSplit
-                            , "" <$ eReach
-                            , "is-active" <$ eTime
-                            , "" <$ eLead
-                            , "" <$ eArrive
-                            ]
-
-            leadClass <- holdDyn "" . leftmost $
-                            [ "" <$ eGeo
-                            , "" <$ eValid
-                            , "" <$ eScore
-                            , "" <$ eTask
-                            , "" <$ eMap
-                            , "" <$ eAbs
-                            , "" <$ eSplit
-                            , "" <$ eReach
-                            , "" <$ eTime
-                            , "is-active" <$ eLead
-                            , "" <$ eArrive
-                            ]
-
-            arriveClass <- holdDyn "" . leftmost $
-                            [ "" <$ eGeo
-                            , "" <$ eValid
-                            , "" <$ eScore
-                            , "" <$ eTask
-                            , "" <$ eMap
-                            , "" <$ eAbs
-                            , "" <$ eSplit
-                            , "" <$ eReach
-                            , "" <$ eTime
-                            , "" <$ eLead
-                            , "is-active" <$ eArrive
+                            , "is-active" <$ ePlot
                             ]
 
             return . leftmost $
@@ -225,9 +111,5 @@ tabsTask =
                 , eAbs
                 , eValid
                 , eScore
-                , eSplit
-                , eReach
-                , eTime
-                , eLead
-                , eArrive
+                , ePlot
                 ]

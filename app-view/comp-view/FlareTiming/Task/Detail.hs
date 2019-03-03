@@ -35,6 +35,7 @@ import FlareTiming.Plot.Lead (leadPlot)
 import FlareTiming.Plot.Time (timePlot)
 import qualified FlareTiming.Turnpoint as TP (getName)
 import FlareTiming.Task.Tab (TaskTab(..), tabsTask)
+import FlareTiming.Plot.Tab (PlotTab(..), tabsPlot)
 import FlareTiming.Task.Score (tableScore)
 import FlareTiming.Task.Geo (tableGeo)
 import FlareTiming.Task.Turnpoints (tableTask)
@@ -174,9 +175,9 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
 
     taskTileZones utc sb task ln
     es <- simpleList cs (crumbTask task)
-    tab <- tabsTask
+    tabTask <- tabsTask
 
-    _ <- widgetHold (weightPlot hgOrPg tweak alloc) $
+    _ <- widgetHold (tableTask utc task legs) $
             (\case
                 TaskTabGeo ->
                     tableGeo ix
@@ -212,21 +213,20 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
                 TaskTabScore ->
                     tableScore utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf
 
-                TaskTabSplit ->
-                    weightPlot hgOrPg tweak alloc
+                TaskTabPlot -> do
+                    tabPlot <- tabsPlot
+                    _ <- widgetHold (weightPlot hgOrPg tweak alloc) $
+                            (\case
+                                PlotTabSplit -> weightPlot hgOrPg tweak alloc
+                                PlotTabReach -> reachPlot rh
+                                PlotTabArrive -> arrivalPlot hgOrPg av
+                                PlotTabLead -> leadPlot ld
+                                PlotTabTime -> timePlot sd)
+                            <$> tabPlot
 
-                TaskTabReach ->
-                    reachPlot rh
+                    return ())
 
-                TaskTabArrive ->
-                    arrivalPlot hgOrPg av
-
-                TaskTabLead ->
-                    leadPlot ld
-
-                TaskTabTime  ->
-                    timePlot sd)
-            <$> tab
+            <$> tabTask
 
     return $ switchDyn (leftmost <$> es)
 
