@@ -1,4 +1,4 @@
-module FlareTiming.Plot.Tab (PlotTab(..), tabsPlot) where
+module FlareTiming.Nav.TabPlot (PlotTab(..), tabsPlot) where
 
 import Reflex
 import Reflex.Dom

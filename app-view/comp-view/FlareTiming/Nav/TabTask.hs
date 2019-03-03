@@ -1,4 +1,4 @@
-module FlareTiming.Task.Tab (TaskTab(..), tabsTask) where
+module FlareTiming.Nav.TabTask (TaskTab(..), tabsTask) where
 
 import Reflex
 import Reflex.Dom
