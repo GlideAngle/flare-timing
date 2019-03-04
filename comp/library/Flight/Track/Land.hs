@@ -37,13 +37,23 @@ data TrackEffort =
     TrackEffort
         { effort :: QTaskDistance Double [u| m |]
         , frac :: DifficultyFraction
+        -- ^ This is a fraction of the possible effort points, not of the
+        -- possible distance points.
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (FromJSON, ToJSON)
 
 chunkEffort :: ChunkDifficulty -> [(Pilot, TrackEffort)]
-chunkEffort ChunkDifficulty{downs, downers, frac} =
-    [ (pilot, TrackEffort{effort = TaskDistance $ convert d, frac = frac})
+chunkEffort ChunkDifficulty{downs, downers, frac = DifficultyFraction df} =
+    [
+        ( pilot
+        , TrackEffort
+            { effort = TaskDistance $ convert d
+            -- NOTE: Make maximum track effort unit, 1. Difficulty points are
+            -- half of the distance points so we need to double the fraction.
+            , frac = DifficultyFraction $ 2 * df
+            }
+        )
     | PilotDistance d <- downs
     | pilot <- downers
     ]
