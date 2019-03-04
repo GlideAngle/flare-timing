@@ -20,7 +20,8 @@ import WireTypes.Cross (TrackFlyingSection(..))
 import WireTypes.Point (Allocation(..))
 import WireTypes.Validity (Validity(..))
 import FlareTiming.Comms
-    ( getTaskScore, getTaskReach, getTaskArrival, getTaskLead, getTaskTime
+    ( getTaskScore, getTaskReach, getTaskEffort
+    , getTaskArrival, getTaskLead, getTaskTime
     , getTaskValidityWorking, getTaskLengthSphericalEdge
     , getTaskPilotDnf, getTaskPilotNyp, getTaskPilotDfNoTrack
     , getTaskPilotTrack, getTaskPilotTrackFlyingSection, emptyRoute
@@ -30,6 +31,7 @@ import FlareTiming.Events (IxTask(..))
 import FlareTiming.Map.View (viewMap)
 import FlareTiming.Plot.Weight (weightPlot)
 import FlareTiming.Plot.Reach (reachPlot)
+import FlareTiming.Plot.Effort (effortPlot)
 import FlareTiming.Plot.Arrival (arrivalPlot)
 import FlareTiming.Plot.Lead (leadPlot)
 import FlareTiming.Plot.Time (timePlot)
@@ -159,6 +161,7 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
     pb <- getPostBuild
     sDf <- holdDyn [] =<< getTaskScore ix pb
     rh <- holdDyn Nothing =<< (fmap Just <$> getTaskReach ix pb)
+    ef <- holdDyn Nothing =<< (fmap Just <$> getTaskEffort ix pb)
     av <- holdDyn Nothing =<< (fmap Just <$> getTaskArrival ix pb)
     ld <- holdDyn Nothing =<< (fmap Just <$> getTaskLead ix pb)
     sd <- holdDyn Nothing =<< (fmap Just <$> getTaskTime ix pb)
@@ -212,6 +215,7 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
                             (\case
                                 PlotTabSplit -> plotSplit
                                 PlotTabReach -> reachPlot rh
+                                PlotTabEffort -> effortPlot ef
                                 PlotTabArrive -> arrivalPlot hgOrPg av
                                 PlotTabLead -> leadPlot ld
                                 PlotTabTime -> timePlot sd)
