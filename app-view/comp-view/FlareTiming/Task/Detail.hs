@@ -215,7 +215,7 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
                             (\case
                                 PlotTabSplit -> plotSplit
                                 PlotTabReach -> reachPlot rh
-                                PlotTabEffort -> effortPlot ef
+                                PlotTabEffort -> effortPlot hgOrPg ef
                                 PlotTabArrive -> arrivalPlot hgOrPg av
                                 PlotTabLead -> leadPlot ld
                                 PlotTabTime -> timePlot sd)

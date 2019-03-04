@@ -19,7 +19,7 @@ arrivalPlot hgOrPg av = do
             if hgOrPg' /= HangGliding
                then
                     elClass "article" "tile is-child notification is-warning" $ do
-                        elClass "p" "title" $ text "Arrivals"
+                        elClass "p" "title" $ text "Arrive"
                         el "p" $ text "Arrival place is not scored in paragliding."
                else
                     elClass "div" "tile is-8" $
