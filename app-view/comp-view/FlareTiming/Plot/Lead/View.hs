@@ -36,7 +36,7 @@ hgPlot ld = do
     elAttr "div" (("class" =: "level") <> ("style" =: "align-items:flex-start;")) $ do
         elClass "div" "level-left" $
             elClass "div" "level-item" $ do
-                (elPlot, _) <- elAttr' "div" (("id" =: "hg-plot-lead") <> ("style" =: "height: 460px;width: 720px")) $ return ()
+                (elPlot, _) <- elAttr' "div" (("id" =: "hg-plot-lead") <> ("style" =: "height: 460px;width: 640px")) $ return ()
                 rec performEvent_ $ leftmost
                         [ ffor pb (\_ -> liftIO $ do
                             let xs = snd . unzip $ ld'

@@ -19,7 +19,7 @@ foreign import javascript unsafe
     "functionPlot(\
     \{ target: '#hg-plot-effort'\
     \, title: 'Effort Point Distribution'\
-    \, width: 720\
+    \, width: 640\
     \, height: 460\
     \, disableZoom: true\
     \, xAxis: {label: 'Landout (km)', domain: [$2, $3]}\

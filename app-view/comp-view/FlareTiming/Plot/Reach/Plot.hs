@@ -19,7 +19,7 @@ foreign import javascript unsafe
     "functionPlot(\
     \{ target: '#hg-plot-reach'\
     \, title: 'Reach Point Distribution'\
-    \, width: 720\
+    \, width: 640\
     \, height: 460\
     \, disableZoom: true\
     \, xAxis: {label: 'Reach (km)', domain: [$2, $3]}\
