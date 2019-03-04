@@ -35,7 +35,7 @@ arrivalPlot hgOrPg av = do
 
                             Just [] ->
                                 elClass "article" "tile is-child notification is-warning" $ do
-                                    elClass "p" "title" $ text "Arrivals"
+                                    elClass "p" "title" $ text "Arrive"
                                     el "p" $ text "No pilots made it to the end of the speed section. There are no arrivals"
 
                             _ ->
