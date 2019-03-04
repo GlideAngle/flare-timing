@@ -2,6 +2,11 @@ The [latest
 version](https://github.com/BlockScope/flare-timing/blob/master/app-view/changelog.md)
 of this changelog.
 
+# Effort Plot
+## app-view-0.16
+
+* Add a plot for effort.
+
 # Fewer Tabs
 ## app-view-0.15
 
