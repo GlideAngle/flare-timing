@@ -37,23 +37,23 @@ hgPlot
 hgPlot av = do
     pb <- delay 1 =<< getPostBuild
 
-    elAttr "div" (("class" =: "level") <> ("style" =: "align-items:flex-start;")) $ do
-        elClass "div" "level-left" $
-            elClass "div" "level-item" $ do
-                (elPlot, _) <- elAttr' "div" (("id" =: "hg-plot-arrival") <> ("style" =: "height: 360px;width: 360px")) $ return ()
-                rec performEvent_ $ leftmost
-                        [ ffor pb (\_ -> liftIO $ do
-                            let (soloPlaces, equalPlaces) = placings . snd . unzip $ av'
-                            _ <- P.hgPlot (_element_raw elPlot) soloPlaces equalPlaces
-                            return ())
-                        ]
+    elClass "div" "tile is-ancestor" $ do
+        elClass "div" "tile" $
+            elClass "div" "tile is-parent" $
+                elClass "div" "tile is-child" $ do
+                    (elPlot, _) <- elAttr' "div" (("id" =: "hg-plot-arrival") <> ("style" =: "height: 360px;width: 360px")) $ return ()
+                    rec performEvent_ $ leftmost
+                            [ ffor pb (\_ -> liftIO $ do
+                                let (soloPlaces, equalPlaces) = placings . snd . unzip $ av'
+                                _ <- P.hgPlot (_element_raw elPlot) soloPlaces equalPlaces
+                                return ())
+                            ]
 
-                    av' <- sample . current $ av
+                        av' <- sample . current $ av
 
-                return ()
+                    return ()
 
-        elClass "div" "level-right" $
-            elClass "div" "level-item" $ tablePilot av
+        elClass "div" "tile is-child" $ tablePilot av
 
     return ()
 

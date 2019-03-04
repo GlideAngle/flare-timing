@@ -34,23 +34,23 @@ hgPlot
 hgPlot tm = do
     pb <- delay 1 =<< getPostBuild
 
-    elAttr "div" (("class" =: "level") <> ("style" =: "align-items:flex-start;")) $ do
-        elClass "div" "level-left" $
-            elClass "div" "level-item" $ do
-                (elPlot, _) <- elAttr' "div" (("id" =: "hg-plot-speed") <> ("style" =: "height: 460px;width: 640px")) $ return ()
-                rec performEvent_ $ leftmost
-                        [ ffor pb (\_ -> liftIO $ do
-                            let xs = snd . unzip $ tm'
-                            _ <- P.hgPlot (_element_raw elPlot) (timeRange xs) (placings xs)
-                            return ())
-                        ]
+    elClass "div" "tile is-ancestor" $ do
+        elClass "div" "tile" $
+            elClass "div" "tile is-parent" $
+                elClass "div" "tile is-child" $ do
+                    (elPlot, _) <- elAttr' "div" (("id" =: "hg-plot-speed") <> ("style" =: "height: 460px;width: 640px")) $ return ()
+                    rec performEvent_ $ leftmost
+                            [ ffor pb (\_ -> liftIO $ do
+                                let xs = snd . unzip $ tm'
+                                _ <- P.hgPlot (_element_raw elPlot) (timeRange xs) (placings xs)
+                                return ())
+                            ]
 
-                    tm' <- sample . current $ tm
+                        tm' <- sample . current $ tm
 
-                return ()
+                    return ()
 
-        elClass "div" "level-right" $
-            elClass "div" "level-item" $ tablePilot tm
+        elClass "div" "tile is-child" $ tablePilot tm
 
     return ()
 
