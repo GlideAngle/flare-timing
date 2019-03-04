@@ -27,12 +27,12 @@ foreign import javascript unsafe
     \, data: [{\
     \    points: $4\
     \  , fnType: 'points'\
-    \  , color: '#377eb8'\
+    \  , color: '#ff7f00'\
     \  , graphType: 'polyline'\
     \  },{\
     \    points: $5\
     \  , fnType: 'points'\
-    \  , color: '#377eb8'\
+    \  , color: '#ff7f00'\
     \  , attr: { r: 2 }\
     \  , graphType: 'scatter'\
     \  }]\

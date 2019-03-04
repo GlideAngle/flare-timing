@@ -57,7 +57,7 @@ hgPlot tweak' alloc' = do
         elClass "div" "level-right" $
             elClass "div" "level-item" $
                 el "ul" $ do
-                    elClass "li" "legend-distance" . text $
+                    elClass "li" "legend-reach" . text $
                         textf "▩ %.3f weight on distance" d
                     elClass "li" "legend-time" . text $
                         textf "▩ %.3f weight on time" t

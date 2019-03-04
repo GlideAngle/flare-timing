@@ -30,7 +30,7 @@ tabsPlot =
                             text "Reach"
 
             (effort, _) <- elDynClass' "li" effortClass . el "a" $ do
-                            elClass "span" "legend-efort" $ text "▩"
+                            elClass "span" "legend-effort" $ text "▩"
                             text "Effort"
 
             (time, _) <- elDynClass' "li" timeClass . el "a" $ do

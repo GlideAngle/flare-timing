@@ -26,11 +26,12 @@ import WireTypes.Point
 -- SEE: https://gist.github.com/ali-abrar/fa2adbbb7ee64a0295cb
 newtype Plot = Plot { unPlot :: JSVal }
 
--- SEE: http://colorbrewer2.org/#type=qualitative&scheme=Set1&n=4
+-- SEE: http://colorbrewer2.org/#type=qualitative&scheme=Set1&n=5
 -- red #e41a1c
 -- blue #377eb8
 -- green #4daf4a
 -- purple #984ea3
+-- orange #ff7f00
 foreign import javascript unsafe
     "functionPlot(\
     \{ target: '#hg-plot-weight'\
