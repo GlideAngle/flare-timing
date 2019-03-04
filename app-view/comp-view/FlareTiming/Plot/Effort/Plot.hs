@@ -46,21 +46,26 @@ hgPlot
     -> [[Double]]
     -> IO Plot
 hgPlot e (dMin, dMax) xs = do
+    -- NOTE: Some pilots landout heading away from goal at the start and will
+    -- have made negative distance along the course. Don't draw the line in the
+    -- negative xy quadrant.
+    let dMin' = max 0 dMin
+
     let xy :: [[Double]] =
             [ [x', fn dMax x']
             | x <- [0 :: Integer .. 199]
-            , let step = abs $ (dMax - dMin) / 200
-            , let x' = dMin + step * fromIntegral x
+            , let step = abs $ (dMax - dMin') / 200
+            , let x' = dMin' + step * fromIntegral x
             ]
 
-    let pad = (\case 0 -> 1; x -> x) . abs $ (dMax - dMin) / 40
-    dMin' <- toJSVal $ dMin - pad
+    let pad = (\case 0 -> 1; x -> x) . abs $ (dMax - dMin') / 40
+    dMin'' <- toJSVal $ dMin' - pad
     dMax' <- toJSVal $ dMax + pad
 
     xy' <- toJSValListOf xy
     xs' <- toJSValListOf $ nub xs
 
-    Plot <$> hgPlot_ (unElement . toElement $ e) dMin' dMax' xy' xs'
+    Plot <$> hgPlot_ (unElement . toElement $ e) dMin'' dMax' xy' xs'
 
 fn :: Double -> Double -> Double
 fn 0 _ = 0
