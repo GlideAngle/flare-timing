@@ -370,8 +370,7 @@ cmp a b =
         ("frac", _) -> GT
 
         ("madeGoal", _) -> LT
-        ("arrivalRank", "madeGoal") -> GT
-        ("arrivalRank", _) -> LT
+
         ("timeToGoal", "madeGoal") -> GT
         ("timeToGoal", "arrivalRank") -> GT
         ("timeToGoal", _) -> LT
