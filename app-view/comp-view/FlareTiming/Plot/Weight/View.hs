@@ -49,22 +49,20 @@ hgPlot tweak' alloc' = do
             } = w
 
     elClass "div" "level" $ do
-        elClass "div" "level-left" $
-            elClass "div" "level-item" $
-                el "ul" $ do
-                    elClass "li" "legend-goal-ratio" . text $
-                        textf "%.3f arrival ratio ⇒" gr'
-        elClass "div" "level-right" $
-            elClass "div" "level-item" $
-                el "ul" $ do
-                    elClass "li" "legend-reach" . text $
-                        textf "▩ %.3f weight on distance" d
-                    elClass "li" "legend-time" . text $
-                        textf "▩ %.3f weight on time" t
-                    elClass "li" "legend-leading" . text $
-                        textf "▩ %.3f weight on leading" l
-                    elClass "li" "legend-arrival" . text $
-                        textf "▩ %.3f weight on arrival" a
+        elClass "div" "level-item" $
+            el "ul" $
+                elClass "li" "legend-goal-ratio" . text $
+                    textf "%.3f arrival ratio ⇒" gr'
+        elClass "div" "level-item" $
+            el "ul" $ do
+                elClass "li" "legend-reach" . text $
+                    textf "▩ %.3f weight on distance" d
+                elClass "li" "legend-time" . text $
+                    textf "▩ %.3f weight on time" t
+                elClass "li" "legend-leading" . text $
+                    textf "▩ %.3f weight on leading" l
+                elClass "li" "legend-arrival" . text $
+                    textf "▩ %.3f weight on arrival" a
 
     return ()
 
