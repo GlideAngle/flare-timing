@@ -9,22 +9,59 @@ Tracks masked with task control zones.
 -}
 module Flight.Track.Land
     ( Landing(..)
+    , TrackEffort(..)
+    , effortRank
     ) where
 
+import Data.List (sortOn)
 import Data.String (IsString())
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
-import Data.UnitsOfMeasure (u)
+import Data.UnitsOfMeasure (u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Field (FieldOrdering(..))
+import Flight.Distance (QTaskDistance, TaskDistance(..))
 import Flight.Score
     ( Lookahead
     , SumOfDifficulty
-    , ChunkDifficulty
+    , ChunkDifficulty(..)
     , MinimumDistance(..)
     , BestDistance(..)
+    , PilotDistance(..)
+    , DifficultyFraction(..)
+    , Pilot(..)
     )
+
+data TrackEffort =
+    TrackEffort
+        { effort :: QTaskDistance Double [u| m |]
+        , frac :: DifficultyFraction
+        }
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (FromJSON, ToJSON)
+
+chunkEffort :: ChunkDifficulty -> [(Pilot, TrackEffort)]
+chunkEffort ChunkDifficulty{downs, downers, frac} =
+    [ (pilot, TrackEffort{effort = TaskDistance $ convert d, frac = frac})
+    | PilotDistance d <- downs
+    | pilot <- downers
+    ]
+
+effortRank :: Landing -> [[(Pilot, TrackEffort)]]
+effortRank Landing{difficulty} =
+    [ maybe
+        []
+        ( sortOn
+            ( (\TrackEffort{frac = DifficultyFraction x} -> negate x)
+            . snd
+            )
+        . concat
+        . fmap chunkEffort
+        )
+        d
+    | d <- difficulty
+    ]
 
 -- | For each task, the masking for that task.
 data Landing =
