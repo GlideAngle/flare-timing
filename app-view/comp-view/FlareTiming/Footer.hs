@@ -5,7 +5,7 @@ import Reflex.Dom
 attribution :: MonadWidget t m => m () 
 attribution =
     elClass "div" "is-size-7" $ do
-    elAttr "strong" ("title" =: "app-view-0.15 2019-03-04T08:56") $ text "Flare Timing"
+    elAttr "strong" ("title" =: "app-view-0.16 2019-03-04T16:05") $ text "Flare Timing"
     text " by "
     elAttr
         "a"
