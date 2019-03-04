@@ -33,23 +33,23 @@ hgPlot
 hgPlot ld = do
     pb <- delay 1 =<< getPostBuild
 
-    elAttr "div" (("class" =: "level") <> ("style" =: "align-items:flex-start;")) $ do
-        elClass "div" "level-left" $
-            elClass "div" "level-item" $ do
-                (elPlot, _) <- elAttr' "div" (("id" =: "hg-plot-lead") <> ("style" =: "height: 460px;width: 640px")) $ return ()
-                rec performEvent_ $ leftmost
-                        [ ffor pb (\_ -> liftIO $ do
-                            let xs = snd . unzip $ ld'
-                            _ <- P.hgPlot (_element_raw elPlot) (lcRange xs) (placings xs)
-                            return ())
-                        ]
+    elClass "div" "tile is-ancestor" $ do
+        elClass "div" "tile" $ do
+            elClass "div" "tile is-parent" $ do
+                elClass "div" "tile is-child" $ do
+                    (elPlot, _) <- elAttr' "div" (("id" =: "hg-plot-lead") <> ("style" =: "height: 460px;width: 640px")) $ return ()
+                    rec performEvent_ $ leftmost
+                            [ ffor pb (\_ -> liftIO $ do
+                                let xs = snd . unzip $ ld'
+                                _ <- P.hgPlot (_element_raw elPlot) (lcRange xs) (placings xs)
+                                return ())
+                            ]
 
-                    ld' <- sample . current $ ld
+                        ld' <- sample . current $ ld
 
-                return ()
+                    return ()
 
-        elClass "div" "level-right" $
-            elClass "div" "level-item" $ tablePilot ld
+            elClass "div" "tile is-child" $ tablePilot ld
 
     return ()
 
