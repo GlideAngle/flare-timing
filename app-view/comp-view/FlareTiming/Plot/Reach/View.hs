@@ -33,9 +33,10 @@ hgPlot
 hgPlot tm = do
     pb <- delay 1 =<< getPostBuild
 
-    elAttr "div" (("class" =: "level") <> ("style" =: "align-items:flex-start;")) $ do
-        elClass "div" "level-left" $
-            elClass "div" "level-item" $ do
+    elClass "div" "tile is-ancestor" $ do
+        elClass "div" "tile" $
+            elClass "div" "tile is-parent" $
+                elClass "div" "tile is-child" $ do
                 (elPlot, _) <- elAttr' "div" (("id" =: "hg-plot-reach") <> ("style" =: "height: 460px;width: 640px")) $ return ()
                 rec performEvent_ $ leftmost
                         [ ffor pb (\_ -> liftIO $ do
@@ -48,8 +49,7 @@ hgPlot tm = do
 
                 return ()
 
-        elClass "div" "level-right" $
-            elClass "div" "level-item" $ tablePilot tm
+        elClass "div" "tile is-child" $ tablePilot tm
 
     return ()
 

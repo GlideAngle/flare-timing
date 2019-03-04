@@ -34,8 +34,8 @@ hgPlot tm = do
     pb <- delay 1 =<< getPostBuild
 
     elClass "div" "tile is-ancestor" $ do
-        elClass "div" "tile" $ do
-            elClass "div" "tile is-parent is-vertical" $ do
+        elClass "div" "tile" $
+            elClass "div" "tile is-parent is-vertical" $
                 elClass "div" "tile is-child" $ do
                     (elPlot, _) <- elAttr' "div" (("id" =: "hg-plot-effort") <> ("style" =: "height: 460px;width: 640px")) $ return ()
                     rec performEvent_ $ leftmost

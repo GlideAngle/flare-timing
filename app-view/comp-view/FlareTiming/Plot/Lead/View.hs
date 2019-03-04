@@ -34,8 +34,8 @@ hgPlot ld = do
     pb <- delay 1 =<< getPostBuild
 
     elClass "div" "tile is-ancestor" $ do
-        elClass "div" "tile" $ do
-            elClass "div" "tile is-parent" $ do
+        elClass "div" "tile" $
+            elClass "div" "tile is-parent" $
                 elClass "div" "tile is-child" $ do
                     (elPlot, _) <- elAttr' "div" (("id" =: "hg-plot-lead") <> ("style" =: "height: 460px;width: 640px")) $ return ()
                     rec performEvent_ $ leftmost
@@ -49,7 +49,7 @@ hgPlot ld = do
 
                     return ()
 
-            elClass "div" "tile is-child" $ tablePilot ld
+        elClass "div" "tile is-child" $ tablePilot ld
 
     return ()
 
