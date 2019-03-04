@@ -2,6 +2,12 @@ The [latest
 version](https://github.com/BlockScope/flare-timing/blob/master/app-view/changelog.md)
 of this changelog.
 
+# Fewer Tabs
+## app-view-0.15
+
+* Reduce the number of top level tabs to `Task | Map | Score | Plot | Basis`.
+* Select the pilot tracklog for display on the map when fetched.
+
 # Singular Plots
 ## app-view-0.14
 
