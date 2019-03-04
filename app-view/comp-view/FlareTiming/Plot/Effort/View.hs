@@ -33,23 +33,30 @@ hgPlot
 hgPlot tm = do
     pb <- delay 1 =<< getPostBuild
 
-    elAttr "div" (("class" =: "level") <> ("style" =: "align-items:flex-start;")) $ do
-        elClass "div" "level-left" $
-            elClass "div" "level-item" $ do
-                (elPlot, _) <- elAttr' "div" (("id" =: "hg-plot-effort") <> ("style" =: "height: 460px;width: 640px")) $ return ()
-                rec performEvent_ $ leftmost
-                        [ ffor pb (\_ -> liftIO $ do
-                            let xs = snd . unzip $ tm'
-                            _ <- P.hgPlot (_element_raw elPlot) (timeRange xs) (placings xs)
-                            return ())
-                        ]
+    elClass "div" "tile is-ancestor" $ do
+        elClass "div" "tile" $ do
+            elClass "div" "tile is-parent is-vertical" $ do
+                elClass "div" "tile is-child" $ do
+                    (elPlot, _) <- elAttr' "div" (("id" =: "hg-plot-effort") <> ("style" =: "height: 460px;width: 640px")) $ return ()
+                    rec performEvent_ $ leftmost
+                            [ ffor pb (\_ -> liftIO $ do
+                                let xs = snd . unzip $ tm'
+                                _ <- P.hgPlot (_element_raw elPlot) (timeRange xs) (placings xs)
+                                return ())
+                            ]
 
-                    tm' <- sample . current $ tm
+                        elClass "div" "level" $
+                            elClass "div" "level-item" $
+                                el "ul" $
+                                    el"li" $ do
+                                        elClass "span" "legend-effort" $ text "- - -"
+                                        text " line of constant effort"
 
-                return ()
+                        tm' <- sample . current $ tm
 
-        elClass "div" "level-right" $
-            elClass "div" "level-item" $ tablePilot tm
+                    return ()
+
+        elClass "div" "tile is-child" $ tablePilot tm
 
     return ()
 
