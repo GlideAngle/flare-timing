@@ -93,7 +93,7 @@ pgPlot tweak' alloc' = do
             } = w
 
     el "ul" $ do
-        elClass "li" "legend-distance" . text $
+        elClass "li" "legend-reach" . text $
             textf "▩ %.3f weight on distance" d
         elClass "li" "legend-time" . text $
             textf "▩ %.3f weight on time" t
