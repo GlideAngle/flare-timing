@@ -18,7 +18,7 @@ timePlot tm =
                 elClass "div" "tile is-parent" $ do
                     _ <- dyn $ ffor tm (\case
                             Nothing ->
-                                elClass "article" "tile is-child box" $ do
+                                elClass "article" "tile is-child" $ do
                                     elClass "p" "title" $ text "Time"
                                     el "p" $ text "Loading times ..."
 
@@ -28,7 +28,7 @@ timePlot tm =
                                     el "p" $ text "No pilots made it to the end of the speed section. There are no arrivals and no time."
 
                             _ ->
-                                elClass "article" "tile is-child box" $
+                                elClass "article" "tile is-child" $
                                     hgPlot (fromMaybe [] <$> tm))
 
                     return ()

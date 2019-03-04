@@ -27,7 +27,7 @@ arrivalPlot hgOrPg av = do
                 elClass "div" "tile is-parent is-vertical" $ do
                     _ <- dyn $ ffor av (\case
                             Nothing ->
-                                elClass "article" "tile is-child box" $ do
+                                elClass "article" "tile is-child" $ do
                                     elClass "p" "title" $ text "Arrivals"
                                     el "p" $ text "Loading arrivals ..."
 
@@ -54,7 +54,7 @@ arrivalPlot hgOrPg av = do
                                        else
                                             return ())
 
-                                elClass "article" "tile is-child box" $
+                                elClass "article" "tile is-child" $
                                     hgPlot (fromMaybe [] <$> av)
 
                                 return ())

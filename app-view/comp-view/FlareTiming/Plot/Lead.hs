@@ -18,7 +18,7 @@ leadPlot ld =
                 elClass "div" "tile is-parent" $ do
                     _ <- dyn $ ffor ld (\case
                             Nothing ->
-                                elClass "article" "tile is-child box" $ do
+                                elClass "article" "tile is-child" $ do
                                     elClass "p" "title" $ text "Leading"
                                     el "p" $ text "Loading arrivals ..."
 
@@ -28,7 +28,7 @@ leadPlot ld =
                                     el "p" $ text "No pilots made it to the end of the speed section. There are no arrivals"
 
                             _ ->
-                                elClass "article" "tile is-child box" $
+                                elClass "article" "tile is-child" $
                                     hgPlot (fromMaybe [] <$> ld))
 
                     return ()

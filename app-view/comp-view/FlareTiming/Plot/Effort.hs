@@ -29,7 +29,7 @@ effortPlot hgOrPg rh =
 
                     _ <- dyn $ ffor rh (\case
                             Nothing ->
-                                elClass "article" "tile is-child box" $ do
+                                elClass "article" "tile is-child" $ do
                                     elClass "p" "title" $ text "Time"
                                     el "p" $ text "Loading effort ..."
 
@@ -39,7 +39,7 @@ effortPlot hgOrPg rh =
                                     el "p" $ text "No pilots started. There are no distances."
 
                             _ ->
-                                elClass "article" "tile is-child box" $
+                                elClass "article" "tile is-child" $
                                     hgPlot (fromMaybe [] <$> rh))
 
                     return ()

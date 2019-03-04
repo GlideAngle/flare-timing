@@ -18,7 +18,7 @@ reachPlot rh =
                 elClass "div" "tile is-parent" $ do
                     _ <- dyn $ ffor rh (\case
                             Nothing ->
-                                elClass "article" "tile is-child box" $ do
+                                elClass "article" "tile is-child" $ do
                                     elClass "p" "title" $ text "Time"
                                     el "p" $ text "Loading reach ..."
 
@@ -28,7 +28,7 @@ reachPlot rh =
                                     el "p" $ text "No pilots started. There are no distances reached."
 
                             _ ->
-                                elClass "article" "tile is-child box" $
+                                elClass "article" "tile is-child" $
                                     hgPlot (fromMaybe [] <$> rh))
 
                     return ()

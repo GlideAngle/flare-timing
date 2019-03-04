@@ -17,7 +17,7 @@ weightPlot hgOrPg tweak alloc = do
         elClass "div" "tile is-4" $
             elClass "div" "tile" $
                 elClass "div" "tile is-parent" $
-                    elClass "article" "tile is-child box" $ do
+                    elClass "article" "tile is-child" $ do
                         _ <- dyn $ ffor hgOrPg (\case
                                 HangGliding -> W.hgPlot tweak alloc
                                 Paragliding -> W.pgPlot tweak alloc)
