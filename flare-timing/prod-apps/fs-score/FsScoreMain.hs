@@ -10,7 +10,7 @@ import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
 import Flight.Fsdb (parseScores)
-import Flight.Track.Point (FsPointing(..))
+import Flight.Track.Point (NormPointing(..))
 import Flight.Comp
     ( FileType(Fsdb)
     , FsdbFile(..)
@@ -41,7 +41,7 @@ drive o = do
     if null files then putStrLn "Couldn't find any input files."
                   else mapM_ go files
     end <- getTime Monotonic
-    fprint ("Extracting expected scores completed in " % timeSpecs % "\n") start end
+    fprint ("Extracting expected or normative scores completed in " % timeSpecs % "\n") start end
 
 go :: FsdbFile -> IO ()
 go fsdbFile@(FsdbFile fsdbPath) = do
@@ -50,12 +50,12 @@ go fsdbFile@(FsdbFile fsdbPath) = do
     settings <- runExceptT $ fsdbSettings (FsdbXml contents')
     either print (writeScore (fsdbToScore fsdbFile)) settings
 
-fsdbScores :: FsdbXml -> ExceptT String IO FsPointing
+fsdbScores :: FsdbXml -> ExceptT String IO NormPointing
 fsdbScores (FsdbXml contents) = do
     fs <- lift $ parseScores contents
     ExceptT $ return fs
 
-fsdbSettings :: FsdbXml -> ExceptT String IO FsPointing
+fsdbSettings :: FsdbXml -> ExceptT String IO NormPointing
 fsdbSettings fsdbXml = do
     sb <- fsdbScores fsdbXml
     return sb

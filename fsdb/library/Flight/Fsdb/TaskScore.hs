@@ -29,13 +29,13 @@ import Text.XML.HXT.Core
     , hasAttr
     )
 
-import Flight.Track.Point (FsPointing(..), FsBreakdown(..))
+import Flight.Track.Point (NormPointing(..), NormBreakdown(..))
 import Flight.Comp (PilotId(..), Pilot(..))
 import Flight.Score (TaskPoints(..), TaskPlacing(..))
 import Flight.Fsdb.Pilot (getCompPilot)
 import Flight.Fsdb.KeyPilot (unKeyPilot, keyPilots, keyMap)
 
-xpRankScore :: PU FsBreakdown
+xpRankScore :: PU NormBreakdown
 xpRankScore =
     xpElem "FsResult"
     $ xpFilterAttr
@@ -44,11 +44,11 @@ xpRankScore =
         )
     $ xpWrap
         ( \(rnk, pts) ->
-            FsBreakdown
+            NormBreakdown
                 { place = TaskPlacing . fromIntegral $ rnk
                 , total = TaskPoints . toRational $ pts
                 }
-        , \FsBreakdown
+        , \NormBreakdown
                 { place = TaskPlacing rnk
                 , total = TaskPoints pts
                 } -> (fromIntegral rnk, round pts)
@@ -57,7 +57,7 @@ xpRankScore =
         (xpAttr "rank" xpInt)
         (xpAttr "points" xpInt)
 
-getScore :: ArrowXml a => [Pilot] -> a XmlTree [(Pilot, Maybe FsBreakdown)]
+getScore :: ArrowXml a => [Pilot] -> a XmlTree [(Pilot, Maybe NormBreakdown)]
 getScore pilots =
     getChildren
     >>> deep (hasName "FsTask")
@@ -95,7 +95,7 @@ getScore pilots =
                     >>> arr (unpickleDoc xpRankScore)
 
 
-parseScores :: String -> IO (Either String FsPointing)
+parseScores :: String -> IO (Either String NormPointing)
 parseScores contents = do
     let doc = readString [ withValidate no, withWarnings no ] contents
     ps <- runX $ doc >>> getCompPilot
@@ -111,4 +111,4 @@ parseScores contents = do
             | xs <- xss
             ]
 
-    return . Right . FsPointing $ ys
+    return . Right . NormPointing $ ys

@@ -11,9 +11,9 @@ Task points.
 -}
 module Flight.Track.Point
     ( Velocity(..)
-    , FsBreakdown(..)
+    , NormBreakdown(..)
     , Breakdown(..)
-    , FsPointing(..)
+    , NormPointing(..)
     , Pointing(..)
     , Allocation(..)
     ) where
@@ -62,10 +62,10 @@ data Velocity =
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
--- | The breakdown of the score for a pilot for a task extracted from the
--- *.fsdb file.
-data FsBreakdown =
-    FsBreakdown
+-- | The breakdown of the expected or normative score for a pilot for a task
+-- extracted from the *.fsdb file.
+data NormBreakdown =
+    NormBreakdown
         { place :: TaskPlacing
         , total :: TaskPoints
         }
@@ -92,10 +92,11 @@ data Breakdown =
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
--- | For each task, the points for that task as scored by FS.
-data FsPointing =
-    FsPointing
-        { score :: [[(Pilot, FsBreakdown)]]
+-- | For each task, the expected or normative points for that task as scored by
+-- FS.
+data NormPointing =
+    NormPointing
+        { score :: [[(Pilot, NormBreakdown)]]
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
@@ -123,7 +124,7 @@ data Allocation =
 instance FieldOrdering Pointing where
     fieldOrder _ = cmp
 
-instance FieldOrdering FsPointing where
+instance FieldOrdering NormPointing where
     fieldOrder _ = cmp
 
 cmp :: (Ord a, IsString a) => a -> a -> Ordering

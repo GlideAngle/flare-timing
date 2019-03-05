@@ -23,7 +23,7 @@ import Flight.Track.Tag (Tagging(..))
 import Flight.Track.Cross (Crossing)
 import Flight.Track.Mask (Masking)
 import Flight.Track.Land (Landing)
-import Flight.Track.Point (Pointing, FsPointing)
+import Flight.Track.Point (Pointing, NormPointing)
 import Flight.Field (FieldOrdering(..))
 import Flight.Comp
     ( CompInputFile(..)
@@ -57,12 +57,12 @@ writeComp (CompInputFile path) compInput = do
 readScore
     :: (MonadThrow m, MonadIO m)
     => NormScoreFile
-    -> m FsPointing
+    -> m NormPointing
 readScore (NormScoreFile path) = do
     contents <- liftIO $ BS.readFile path
     decodeThrow contents
 
-writeScore :: NormScoreFile -> FsPointing -> IO ()
+writeScore :: NormScoreFile -> NormPointing -> IO ()
 writeScore (NormScoreFile path) pointing = do
     let cfg = Y.setConfCompare (fieldOrder pointing) Y.defConfig
     let yaml = Y.encodePretty cfg pointing
