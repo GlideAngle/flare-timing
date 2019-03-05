@@ -20,7 +20,8 @@ import WireTypes.Cross (TrackFlyingSection(..))
 import WireTypes.Point (Allocation(..))
 import WireTypes.Validity (Validity(..))
 import FlareTiming.Comms
-    ( getTaskScore, getTaskReach, getTaskEffort
+    ( getTaskScore, getTaskNormScore
+    , getTaskReach, getTaskEffort
     , getTaskArrival, getTaskLead, getTaskTime
     , getTaskValidityWorking, getTaskLengthSphericalEdge
     , getTaskPilotDnf, getTaskPilotNyp, getTaskPilotDfNoTrack
@@ -160,6 +161,7 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
     let tweak = Comp.taskTweak <$> task
     pb <- getPostBuild
     sDf <- holdDyn [] =<< getTaskScore ix pb
+    ns <- holdDyn [] =<< getTaskNormScore ix pb
     rh <- holdDyn Nothing =<< (fmap Just <$> getTaskReach ix pb)
     ef <- holdDyn Nothing =<< (fmap Just <$> getTaskEffort ix pb)
     av <- holdDyn Nothing =<< (fmap Just <$> getTaskArrival ix pb)
@@ -206,7 +208,7 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
                     return ()
 
                 TaskTabScore ->
-                    tableScore utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf
+                    tableScore utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf ns
 
                 TaskTabPlot -> do
                     tabPlot <- tabsPlot

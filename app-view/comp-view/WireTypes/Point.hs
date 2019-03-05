@@ -3,6 +3,7 @@
 module WireTypes.Point
     ( StartGate(..)
     , Velocity(..)
+    , NormBreakdown(..)
     , Breakdown(..)
     , Allocation(..)
     , GoalRatio(..)
@@ -318,6 +319,13 @@ data Velocity =
         }
     deriving (Eq, Ord, Show, Generic, FromJSON)
 
+data NormBreakdown =
+    NormBreakdown
+        { place :: TaskPlacing
+        , total :: TaskPoints
+        }
+    deriving (Eq, Ord, Show, Generic, FromJSON)
+
 data Breakdown =
     Breakdown
         { place :: TaskPlacing
@@ -333,7 +341,7 @@ data Breakdown =
     deriving (Eq, Ord, Show, Generic, FromJSON)
 
 data Allocation =
-    Allocation 
+    Allocation
         { goalRatio :: GoalRatio
         , weight :: Weights
         , points :: Points

@@ -7,6 +7,7 @@ import qualified Data.Text as T (Text, pack, breakOn)
 import Data.Time.LocalTime (TimeZone)
 
 import WireTypes.Route (TaskLength(..), showTaskDistance)
+import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import qualified WireTypes.Point as Pt (Points(..), StartGate(..))
 import qualified WireTypes.Point as Wg (Weights(..))
 import qualified WireTypes.Validity as Vy (Validity(..))
@@ -73,8 +74,9 @@ tableScore
     -> Dynamic t (Maybe Pt.Points)
     -> Dynamic t (Maybe TaskPoints)
     -> Dynamic t [(Pilot, Breakdown)]
+    -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> m ()
-tableScore utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt tp sDfs = do
+tableScore utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt tp sDfs _ = do
     let dnf = unDnf <$> dnf'
     lenDnf :: Int <- sample . current $ length <$> dnf
     lenDfs :: Int <- sample . current $ length <$> sDfs
