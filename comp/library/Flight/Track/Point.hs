@@ -1,3 +1,5 @@
+{-# LANGUAGE DuplicateRecordFields #-}
+
 {-|
 Module      : Flight.Track.Point
 Copyright   : (c) Block Scope Limited 2017
@@ -9,7 +11,9 @@ Task points.
 -}
 module Flight.Track.Point
     ( Velocity(..)
+    , FsBreakdown(..)
     , Breakdown(..)
+    , FsPointing(..)
     , Pointing(..)
     , Allocation(..)
     ) where
@@ -58,6 +62,15 @@ data Velocity =
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
+-- | The breakdown of the score for a pilot for a task extracted from the
+-- *.fsdb file.
+data FsBreakdown =
+    FsBreakdown
+        { place :: TaskPlacing
+        , total :: TaskPoints
+        }
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+
 data Breakdown =
     Breakdown
         { place :: TaskPlacing
@@ -79,9 +92,16 @@ data Breakdown =
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
+-- | For each task, the points for that task as scored by FS.
+data FsPointing =
+    FsPointing
+        { score :: [[(Pilot, FsBreakdown)]]
+        }
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+
 -- | For each task, the points for that task.
 data Pointing =
-    Pointing 
+    Pointing
         { validityWorking :: [Maybe ValidityWorking]
         , validity :: [Maybe Validity]
         , allocation :: [Maybe Allocation]
@@ -101,6 +121,9 @@ data Allocation =
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 instance FieldOrdering Pointing where
+    fieldOrder _ = cmp
+
+instance FieldOrdering FsPointing where
     fieldOrder _ = cmp
 
 cmp :: (Ord a, IsString a) => a -> a -> Ordering

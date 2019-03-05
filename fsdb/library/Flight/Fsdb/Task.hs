@@ -10,7 +10,6 @@ module Flight.Fsdb.Task
 import Data.Time.Clock (addUTCTime)
 import Data.Maybe (catMaybes, fromMaybe)
 import Data.List (sort, sortOn, nub, find)
-import Data.Map.Strict (Map, fromList, findWithDefault)
 import Data.UnitsOfMeasure ((/:), u, convert, unQuantity)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Text.XML.HXT.Arrow.Pickle
@@ -61,7 +60,7 @@ import qualified Flight.Zone.Raw as Z (RawZone(..))
 import Flight.Track.Time (AwardedVelocity(..))
 import Flight.Track.Distance (AwardedDistance(..))
 import Flight.Comp
-    ( PilotId(..), PilotName(..), Pilot(..)
+    ( PilotId(..), Pilot(..)
     , PilotGroup(..), DfNoTrack(..), DfNoTrackPilot(..)
     , Task(..), TaskStop(..), StartGate(..), OpenClose(..), Tweak(..)
     )
@@ -69,21 +68,13 @@ import Flight.Score (ScoreBackTime(..), PointPenalty(..))
 import Flight.Fsdb.Pilot (getCompPilot)
 import Flight.Fsdb.Internal.XmlPickle (xpNewtypeQuantity)
 import Flight.Fsdb.Tweak (xpTweak)
+import Flight.Fsdb.KeyPilot (unKeyPilot, keyPilots, keyMap)
 
 -- | The attribute //FsTaskDefinition@goal.
 newtype FsGoal = FsGoal String
 
-newtype KeyPilot = KeyPilot (PilotId, Pilot)
-
 instance (u ~ Quantity Double [u| m |]) => XmlPickler (Radius u) where
     xpickle = xpNewtypeQuantity
-
-keyMap :: [KeyPilot] -> Map PilotId Pilot
-keyMap = fromList . fmap (\(KeyPilot x) -> x)
-
-unKeyPilot :: Map PilotId Pilot -> PilotId -> Pilot
-unKeyPilot ps k@(PilotId ip) =
-    findWithDefault (Pilot (k, PilotName ip)) k ps
 
 instance (u ~ Quantity Double [u| m |]) => XmlPickler (Alt u) where
     xpickle = xpNewtypeQuantity
@@ -323,9 +314,6 @@ xpAwardedTime =
 isGoalLine :: FsGoal -> GoalLine
 isGoalLine (FsGoal "LINE") = GoalLine
 isGoalLine _ = GoalNotLine
-
-keyPilots :: Functor f => f Pilot -> f KeyPilot
-keyPilots ps = (\x@(Pilot (k, _)) -> KeyPilot (k, x)) <$> ps
 
 taskKmToMetres
     :: QTaskDistance Double [u| km |]

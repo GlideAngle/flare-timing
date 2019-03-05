@@ -5,6 +5,7 @@ module Flight.Path
     , FsdbFile(..)
     , FsdbXml(..)
     , CompInputFile(..)
+    , ExpectedScoreFile(..)
     , TaskLengthFile(..)
     , CrossZoneFile(..)
     , TagZoneFile(..)
@@ -19,6 +20,7 @@ module Flight.Path
     , AlignTimeDir(..)
     , DiscardFurtherDir(..)
     , fsdbToComp
+    , fsdbToScore
     , compToTaskLength
     , compToCross
     , compToMask
@@ -34,6 +36,7 @@ module Flight.Path
     , discardFurtherPath
     , findFsdb
     , findCompInput
+    , findExpectedScore
     , findCrossZone
     , findIgc
     , findKml
@@ -69,6 +72,9 @@ newtype CompDir = CompDir FilePath
 
 -- | The path to a competition file.
 newtype CompInputFile = CompInputFile FilePath
+
+-- | The path to a competition expected score file.
+newtype ExpectedScoreFile = ExpectedScoreFile FilePath
 
 -- | The path to a task length file.
 newtype TaskLengthFile = TaskLengthFile FilePath
@@ -109,6 +115,10 @@ newtype GapPointFile = GapPointFile FilePath
 fsdbToComp :: FsdbFile -> CompInputFile
 fsdbToComp (FsdbFile p) =
     CompInputFile $ replaceExtension p (ext CompInput)
+
+fsdbToScore :: FsdbFile -> ExpectedScoreFile
+fsdbToScore (FsdbFile p) =
+    ExpectedScoreFile $ replaceExtension p (ext ExpectedScore)
 
 compFileToCompDir :: CompInputFile -> CompDir
 compFileToCompDir (CompInputFile p) =
@@ -175,6 +185,7 @@ data FileType
     | Kml
     | Igc
     | CompInput
+    | ExpectedScore
     | TaskLength
     | CrossZone
     | TagZone
@@ -190,6 +201,7 @@ ext Fsdb = ".fsdb"
 ext Kml = ".kml"
 ext Igc = ".igc"
 ext CompInput = ".comp-input.yaml"
+ext ExpectedScore = ".expected-score.yaml"
 ext TaskLength = ".task-length.yaml"
 ext CrossZone = ".cross-zone.yaml"
 ext TagZone = ".tag-zone.yaml"
@@ -205,6 +217,7 @@ ensureExt Fsdb = flip replaceExtensions "fsdb"
 ensureExt Kml = id
 ensureExt Igc = id
 ensureExt CompInput = flip replaceExtensions "comp-input.yaml"
+ensureExt ExpectedScore = flip replaceExtensions "expected-score.yaml"
 ensureExt TaskLength = flip replaceExtensions "task-length.yaml"
 ensureExt CrossZone = flip replaceExtensions "cross-zone.yaml"
 ensureExt TagZone = flip replaceExtensions "tag-zone.yaml"
@@ -220,6 +233,9 @@ findFsdb' dir = fmap FsdbFile <$> findFiles Fsdb dir
 
 findCompInput' :: FilePath -> IO [CompInputFile]
 findCompInput' dir = fmap CompInputFile <$> findFiles CompInput dir
+
+findExpectedScore' :: FilePath -> IO [ExpectedScoreFile]
+findExpectedScore' dir = fmap ExpectedScoreFile <$> findFiles ExpectedScore dir
 
 findCrossZone' :: FilePath -> IO [CrossZoneFile]
 findCrossZone' dir = fmap CrossZoneFile <$> findFiles CrossZone dir
@@ -245,6 +261,12 @@ findCompInput
     => o
     -> IO [CompInputFile]
 findCompInput = findFileType CompInput findCompInput' CompInputFile
+
+findExpectedScore
+    :: (HasField "dir" o String, HasField "file" o String)
+    => o
+    -> IO [ExpectedScoreFile]
+findExpectedScore = findFileType ExpectedScore findExpectedScore' ExpectedScoreFile
 
 findCrossZone
     :: (HasField "dir" o String, HasField "file" o String)

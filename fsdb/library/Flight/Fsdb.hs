@@ -18,6 +18,7 @@ module Flight.Fsdb
     , parsePilots
     , parseTracks
     , parseTaskFolders
+    , parseScores
     ) where
 
 import Flight.Fsdb.Comp
@@ -25,4 +26,5 @@ import Flight.Fsdb.Nominal
 import Flight.Fsdb.Tweak
 import Flight.Fsdb.Stopped
 import Flight.Fsdb.Task
+import Flight.Fsdb.TaskScore
 import Flight.Fsdb.Pilot

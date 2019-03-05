@@ -1,5 +1,6 @@
 module Flight.Scribe
     ( readComp, writeComp
+    , readScore, writeScore
     , readRoute, writeRoute
     , readCrossing , writeCrossing
     , readTagging, writeTagging
@@ -22,10 +23,11 @@ import Flight.Track.Tag (Tagging(..))
 import Flight.Track.Cross (Crossing)
 import Flight.Track.Mask (Masking)
 import Flight.Track.Land (Landing)
-import Flight.Track.Point (Pointing)
+import Flight.Track.Point (Pointing, FsPointing)
 import Flight.Field (FieldOrdering(..))
 import Flight.Comp
     ( CompInputFile(..)
+    , ExpectedScoreFile(..)
     , TaskLengthFile(..)
     , CrossZoneFile(..)
     , TagZoneFile(..)
@@ -50,6 +52,20 @@ writeComp :: CompInputFile -> CompSettings k -> IO ()
 writeComp (CompInputFile path) compInput = do
     let cfg = Y.setConfCompare (fieldOrder compInput) Y.defConfig
     let yaml = Y.encodePretty cfg compInput
+    BS.writeFile path yaml
+
+readScore
+    :: (MonadThrow m, MonadIO m)
+    => ExpectedScoreFile
+    -> m FsPointing
+readScore (ExpectedScoreFile path) = do
+    contents <- liftIO $ BS.readFile path
+    decodeThrow contents
+
+writeScore :: ExpectedScoreFile -> FsPointing -> IO ()
+writeScore (ExpectedScoreFile path) pointing = do
+    let cfg = Y.setConfCompare (fieldOrder pointing) Y.defConfig
+    let yaml = Y.encodePretty cfg pointing
     BS.writeFile path yaml
 
 readRoute

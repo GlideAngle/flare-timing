@@ -149,7 +149,7 @@ fsdbTweak discipline (FsdbXml contents) = do
             let msg = "Expected only one set of tweaks for the comp"
             lift $ print msg
             throwE msg
-            
+
 fsdbScoreBack
     :: FsdbXml
     -> ExceptT String IO (Maybe (ScoreBackTime (Quantity Double [u| s |])))
