@@ -62,6 +62,22 @@ in    defs
               , source-dirs =
                   "prod-apps/extract-input"
               }
+          , fs-score =
+              { dependencies =
+                    deps
+                  # [ "flight-earth"
+                    , "flight-fsdb"
+                    , "flight-gap"
+                    , "flight-mask"
+                    , "flight-zone"
+                    ]
+              , ghc-options =
+                  [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
+              , main =
+                  "FsScoreMain.hs"
+              , source-dirs =
+                  "prod-apps/fs-score"
+              }
           , task-length =
               { dependencies =
                   deps # [ "safe-exceptions", "flight-route" ]
