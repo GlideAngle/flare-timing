@@ -35,6 +35,7 @@ import Flight.Track.Arrival (TrackArrival(..))
 import Flight.Track.Lead (TrackLead(..))
 import Flight.Track.Speed (TrackSpeed(..))
 import Flight.Track.Mask (Masking(..))
+import qualified Flight.Track.Point as Norm (NormPointing(..), NormBreakdown(..))
 import Flight.Track.Point
     (Pointing(..), Velocity(..), Allocation(..), Breakdown(..))
 import qualified Flight.Score as Wg (Weights(..))
@@ -46,7 +47,9 @@ import Flight.Score
     , DistanceValidity(..), LaunchValidity(..), TaskValidity(..), TimeValidity(..)
     )
 import Flight.Scribe
-    (readComp, readRoute, readCrossing, readMasking, readLanding, readPointing)
+    ( readComp, readScore
+    , readRoute, readCrossing, readMasking, readLanding, readPointing
+    )
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.ServeOptions (CmdServeOptions(..), mkOptions)
@@ -73,7 +76,9 @@ import Flight.Comp
     , MaskTrackFile(..)
     , LandOutFile(..)
     , GapPointFile(..)
+    , NormScoreFile(..)
     , findCompInput
+    , compToScore
     , compToTaskLength
     , compToCross
     , compToMask
@@ -100,6 +105,7 @@ data Config k
         , masking :: Maybe Masking
         , landing :: Maybe Landing
         , pointing :: Maybe Pointing
+        , norming :: Maybe Norm.NormPointing
         }
 
 newtype AppT k m a =
@@ -163,6 +169,9 @@ type GapPointApi k =
         :> Get '[JSON] [Task k]
     :<|> "comp-input" :> "pilots"
         :> Get '[JSON] [Pilot]
+
+    :<|> "fs-score" :> (Capture "task" Int) :> "score"
+        :> Get '[JSON] [(Pilot, Norm.NormBreakdown)]
 
     :<|> "task-length" :> Capture "task" Int :> "spherical-edge"
         :> Get '[JSON] (OptimalRoute (Maybe TrackLine))
@@ -259,12 +268,14 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
     let maskFile@(MaskTrackFile maskPath) = compToMask compFile
     let landFile@(LandOutFile landPath) = compToLand compFile
     let pointFile@(GapPointFile pointPath) = compToPoint compFile
+    let normFile@(NormScoreFile normPath) = compToScore compFile
     putStrLn $ "Reading competition & pilots DNF from '" ++ takeFileName compPath ++ "'"
     putStrLn $ "Reading flying time range from '" ++ takeFileName crossPath ++ "'"
     putStrLn $ "Reading task length from '" ++ takeFileName lenPath ++ "'"
     putStrLn $ "Reading arrivals from '" ++ takeFileName maskPath ++ "'"
     putStrLn $ "Reading land outs from '" ++ takeFileName landPath ++ "'"
     putStrLn $ "Reading scores from '" ++ takeFileName pointPath ++ "'"
+    putStrLn $ "Reading expected or normative scores from '" ++ takeFileName normPath ++ "'"
 
     compSettings <-
         catchIO
@@ -296,20 +307,17 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
             (Just <$> readPointing pointFile)
             (const $ return Nothing)
 
-    case (compSettings, routes, crossing, masking, landing, pointing) of
-        (Nothing, _, _, _, _, _) -> putStrLn "Couldn't read the comp settings"
-        (Just cs, Nothing, _, _, _, _) ->
-            f =<< mkCompInputApp (Config compFile cs Nothing Nothing Nothing Nothing Nothing)
-        (Just cs, rt@(Just _), Nothing, _, _, _) ->
-            f =<< mkTaskLengthApp (Config compFile cs rt Nothing Nothing Nothing Nothing)
-        (Just cs, rt@(Just _), _, Nothing, _, _) ->
-            f =<< mkTaskLengthApp (Config compFile cs rt Nothing Nothing Nothing Nothing)
-        (Just cs, rt@(Just _), _, _, Nothing, _) ->
-            f =<< mkTaskLengthApp (Config compFile cs rt Nothing Nothing Nothing Nothing)
-        (Just cs, rt@(Just _), _, _, _, Nothing) ->
-            f =<< mkTaskLengthApp (Config compFile cs rt Nothing Nothing Nothing Nothing)
-        (Just cs, rt@(Just _), cg@(Just _), mg@(Just _), lo@(Just _), gp@(Just _)) ->
-            f =<< mkGapPointApp (Config compFile cs rt cg mg lo gp)
+    norming <-
+        catchIO
+            (Just <$> readScore normFile)
+            (const $ return Nothing)
+
+    case (compSettings, routes, crossing, masking, landing, pointing, norming) of
+        (Nothing, _, _, _, _, _, _) -> putStrLn "Couldn't read the comp settings"
+        (Just cs, rt@(Just _), cg@(Just _), mg@(Just _), lo@(Just _), gp@(Just _), ns@(Just _)) ->
+            f =<< mkGapPointApp (Config compFile cs rt cg mg lo gp ns)
+        (Just cs, _, _, _, _, _, _) ->
+            f =<< mkCompInputApp (Config compFile cs Nothing Nothing Nothing Nothing Nothing Nothing)
     where
         -- NOTE: Add gzip with wai gzip middleware.
         -- SEE: https://github.com/haskell-servant/servant/issues/786
@@ -366,6 +374,7 @@ serverGapPointApi cfg =
         :<|> nominal <$> c
         :<|> tasks <$> c
         :<|> getPilots <$> c
+        :<|> getTaskNormScore
         :<|> getTaskRouteSphericalEdge
         :<|> getTaskRouteEllipsoidEdge
         :<|> getTaskRouteProjectedSphericalEdge
@@ -759,6 +768,17 @@ getTaskReach ii = do
                 _ -> throwError $ errTaskBounds ii
 
         _ -> throwError $ errTaskStep "mask-track" ii
+
+getTaskNormScore :: Int -> AppT k IO [(Pilot, Norm.NormBreakdown)]
+getTaskNormScore ii = do
+    xs' <- fmap Norm.score <$> asks norming
+    case xs' of
+        Just xs ->
+            case drop (ii - 1) xs of
+                x : _ -> return x
+                _ -> throwError $ errTaskBounds ii
+
+        _ -> throwError $ errTaskStep "fs-score" ii
 
 getTaskEffort :: Int -> AppT k IO [(Pilot, TrackEffort)]
 getTaskEffort ii = do

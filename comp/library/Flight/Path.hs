@@ -21,6 +21,7 @@ module Flight.Path
     , DiscardFurtherDir(..)
     , fsdbToComp
     , fsdbToScore
+    , compToScore
     , compToTaskLength
     , compToCross
     , compToMask
@@ -119,6 +120,10 @@ fsdbToComp (FsdbFile p) =
 fsdbToScore :: FsdbFile -> NormScoreFile
 fsdbToScore (FsdbFile p) =
     NormScoreFile $ replaceExtension p (ext NormScore)
+
+compToScore :: CompInputFile -> NormScoreFile
+compToScore (CompInputFile p) =
+    NormScoreFile $ flip replaceExtension (ext NormScore) $ dropExtension p
 
 compFileToCompDir :: CompInputFile -> CompDir
 compFileToCompDir (CompInputFile p) =
