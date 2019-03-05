@@ -137,6 +137,7 @@ tableScore utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt tp sDfs _ = do
             el "tr" $ do
                 elAttr "th" ("colspan" =: "12") $ text ""
                 elAttr "th" ("colspan" =: "7" <> "class" =: "th-points") $ text "Points"
+                elAttr "th" ("colspan" =: "2" <> "rowspan" =: "2" <> "class" =: "th-expected") $ text "Expected"
 
             el "tr" $ do
                 elAttr "th" ("rowspan" =: "2" <> "class" =: "th-placing") $ text "#"
@@ -168,6 +169,8 @@ tableScore utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt tp sDfs _ = do
                 elDynClass "th" (fst <$> cTimePoints) $ text "Time"
                 elDynClass "th" (fst <$> cArrivalPoints) $ text "Arrival"
                 elClass "th" "th-total-points" $ text "Total"
+                elClass "th" "th-expected th-total-points" $ text "Total"
+                elClass "th" "th-expected th-placing" $ text "#"
 
             elClass "tr" "tr-validity" $ do
 
@@ -215,6 +218,9 @@ tableScore utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt tp sDfs _ = do
                         )
                     <$> vy
 
+                thSpace
+                thSpace
+
             elClass "tr" "tr-weight" $ do
                 elAttr "th" ("colspan" =: "2" <> "class" =: "th-weight") $ text "Weights"
                 elAttr "th" ("colspan" =: "10") $ text ""
@@ -254,6 +260,8 @@ tableScore utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt tp sDfs _ = do
                         )
                     <$> wg
 
+                thSpace
+                thSpace
                 thSpace
 
             elClass "tr" "tr-allocation" $ do
@@ -319,6 +327,9 @@ tableScore utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt tp sDfs _ = do
                         (\x -> showTaskPoints (Just x) x)
                     <$> tp
 
+                thSpace
+                thSpace
+
         _ <- el "tbody" $ do
             _ <-
                 simpleList
@@ -335,7 +346,7 @@ tableScore utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt tp sDfs _ = do
             dnfRows dnfPlacing dnf'
             return ()
 
-        let tdFoot = elAttr "td" ("colspan" =: "19")
+        let tdFoot = elAttr "td" ("colspan" =: "21")
         let foot = el "tr" . tdFoot . text
 
         el "tfoot" $ do
@@ -462,6 +473,8 @@ pointRow cTime cArrival utcOffset free dfNt pt tp x = do
         elDynClass "td" cArrival . dynText $ showMax Pt.arrival showArrivalPoints pt points
 
         elClass "td" "td-total-points" . dynText $ zipDynWith showTaskPoints tp (total <$> b)
+        elClass "td" "td-total-points" $ text ""
+        elClass "td" "td-placing" $ text ""
 
 dnfRows
     :: MonadWidget t m
@@ -499,7 +512,7 @@ dnfRow place rows pilot = do
                     elAttr
                         "td"
                         ( "rowspan" =: (T.pack $ show n)
-                        <> "colspan" =: "16"
+                        <> "colspan" =: "18"
                         <> "class" =: "td-dnf"
                         )
                         $ text "DNF"
@@ -510,6 +523,8 @@ dnfRow place rows pilot = do
         elClass "td" "td-pilot" . dynText $ showPilotName <$> pilot
         dnfMega
         elClass "td" "td-total-points" $ text "0"
+        elClass "td" "td-total-points" $ text ""
+        elClass "td" "td-placing" $ text ""
         return ()
 
 showMax
