@@ -7,6 +7,8 @@ import Control.Monad (mapM_)
 import Control.Monad.Except (ExceptT(..), runExceptT, lift)
 
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
+import Flight.Cmd.Options (ProgramName(..))
+import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
 import Flight.Fsdb (parseScores)
 import Flight.Track.Point (FsPointing(..))
 import Flight.Comp
@@ -18,19 +20,19 @@ import Flight.Comp
     , ensureExt
     )
 import Flight.Scribe (writeScore)
-import FsScoreOptions (CmdOptions(..), mkOptions)
+import FsScoreOptions (description)
 
 main :: IO ()
 main = do
     name <- getProgName
-    options <- cmdArgs $ mkOptions name
+    options <- cmdArgs $ mkOptions (ProgramName name) description Nothing
 
     let lf = LenientFile {coerceFile = ensureExt Fsdb}
     err <- checkPaths lf options
 
     maybe (drive options) putStrLn err
 
-drive :: CmdOptions -> IO ()
+drive :: CmdBatchOptions -> IO ()
 drive o = do
     -- SEE: http://chrisdone.com/posts/measuring-duration-in-haskell
     start <- getTime Monotonic
