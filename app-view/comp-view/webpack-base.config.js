@@ -4,6 +4,7 @@ var ExtractTextPlugin = require('extract-text-webpack-plugin');
 var extractScss = new ExtractTextPlugin({ filename: 'styles.css' });
 
 module.exports = {
+    mode: 'production',
     entry: {
         app: path.join(__dirname, '.', 'app.js')
     },

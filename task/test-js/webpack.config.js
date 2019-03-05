@@ -2,6 +2,7 @@ var webpack = require("webpack");
 var path = require('path');
 
 module.exports = {
+    mode: 'development',
     entry: {
         'app-vincenty': path.join(__dirname, '.', 'app-vincenty.js'),
         'app-spherical': path.join(__dirname, '.', 'app-spherical.js')
