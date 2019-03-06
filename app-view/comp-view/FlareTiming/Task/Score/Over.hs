@@ -1,4 +1,4 @@
-module FlareTiming.Task.Score (tableScore) where
+module FlareTiming.Task.Score.Over (tableScoreOver) where
 
 import Prelude hiding (min)
 import Text.Printf (printf)
@@ -62,7 +62,7 @@ speedSection =
                 ss = showTaskDistance taskRouteSpeedSubset
             in printf "Speed Section (%s of %s)" ss tr)
 
-tableScore
+tableScoreOver
     :: MonadWidget t m
     => Dynamic t UtcOffset
     -> Dynamic t Discipline
@@ -79,7 +79,7 @@ tableScore
     -> Dynamic t [(Pilot, Breakdown)]
     -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> m ()
-tableScore utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt tp sDfs sEx = do
+tableScoreOver utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt tp sDfs sEx = do
     let dnf = unDnf <$> dnf'
     lenDnf :: Int <- sample . current $ length <$> dnf
     lenDfs :: Int <- sample . current $ length <$> sDfs

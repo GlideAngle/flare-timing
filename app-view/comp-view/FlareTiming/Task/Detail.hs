@@ -41,7 +41,10 @@ import FlareTiming.Nav.TabTask (TaskTab(..), tabsTask)
 import FlareTiming.Nav.TabScore (ScoreTab(..), tabsScore)
 import FlareTiming.Nav.TabPlot (PlotTab(..), tabsPlot)
 import FlareTiming.Nav.TabBasis (BasisTab(..), tabsBasis)
-import FlareTiming.Task.Score (tableScore)
+import FlareTiming.Task.Score.Over (tableScoreOver)
+import FlareTiming.Task.Score.Point (tableScorePoint)
+import FlareTiming.Task.Score.Speed (tableScoreSpeed)
+import FlareTiming.Task.Score.Distance (tableScoreDistance)
 import FlareTiming.Task.Geo (tableGeo)
 import FlareTiming.Task.Turnpoints (tableTask)
 import FlareTiming.Task.Absent (tableAbsent)
@@ -210,13 +213,16 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
 
                 TaskTabScore -> do
                     tabScore <- tabsScore
-                    let scoreView = tableScore utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx
-                    _ <- widgetHold scoreView $
+                    let scoreOver = tableScoreOver utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx
+                    _ <- widgetHold scoreOver $
                             (\case
-                                ScoreTabOver -> scoreView
-                                ScoreTabPoint -> scoreView
-                                ScoreTabSpeed -> scoreView
-                                ScoreTabDistance -> scoreView)
+                                ScoreTabOver -> scoreOver
+                                ScoreTabPoint ->
+                                    tableScorePoint utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx
+                                ScoreTabSpeed ->
+                                    tableScoreSpeed utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx
+                                ScoreTabDistance ->
+                                    tableScoreDistance utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx)
 
                             <$> tabScore
 
