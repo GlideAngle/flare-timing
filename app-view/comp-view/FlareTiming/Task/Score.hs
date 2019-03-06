@@ -5,6 +5,7 @@ import Text.Printf (printf)
 import Reflex.Dom
 import qualified Data.Text as T (Text, pack, breakOn)
 import Data.Time.LocalTime (TimeZone)
+import qualified Data.Map.Strict as Map
 
 import WireTypes.Route (TaskLength(..), showTaskDistance)
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
@@ -76,7 +77,7 @@ tableScore
     -> Dynamic t [(Pilot, Breakdown)]
     -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> m ()
-tableScore utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt tp sDfs _ = do
+tableScore utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt tp sDfs sEx = do
     let dnf = unDnf <$> dnf'
     lenDnf :: Int <- sample . current $ length <$> dnf
     lenDfs :: Int <- sample . current $ length <$> sDfs
@@ -341,7 +342,8 @@ tableScore utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt tp sDfs _ = do
                         free
                         dfNt
                         pt
-                        tp)
+                        tp
+                        (Map.fromList <$> sEx))
 
             dnfRows dnfPlacing dnf'
             return ()
@@ -416,14 +418,25 @@ pointRow
     -> Dynamic t DfNoTrack
     -> Dynamic t (Maybe Pt.Points)
     -> Dynamic t (Maybe TaskPoints)
+    -> Dynamic t (Map.Map Pilot Norm.NormBreakdown)
     -> Dynamic t (Pilot, Breakdown)
     -> m ()
-pointRow cTime cArrival utcOffset free dfNt pt tp x = do
+pointRow cTime cArrival utcOffset free dfNt pt tp sEx x = do
     let tz = timeZone <$> utcOffset
     let pilot = fst <$> x
-    let b = snd <$> x
-    let alt = stoppedAlt <$> b
-    let reach = reachDistance <$> b
+    let xB = snd <$> x
+    (yRank, yScore) <-
+            sample . current $ ffor2 pilot sEx (\pilot' sEx' ->
+                case Map.lookup pilot' sEx' of
+                    Nothing -> ("", "")
+                    Just
+                        Norm.NormBreakdown
+                            { place = nth
+                            , total = TaskPoints pts
+                            } -> (showRank nth, T.pack . show $ pts))
+
+    let alt = stoppedAlt <$> xB
+    let reach = reachDistance <$> xB
     let points = breakdown . snd <$> x
     let v = velocity . snd <$> x
 
@@ -448,7 +461,7 @@ pointRow cTime cArrival utcOffset free dfNt pt tp x = do
                 pd)
 
     elDynClass "tr" (fst <$> classPilot) $ do
-        elClass "td" "td-placing" . dynText $ showRank . place <$> b
+        elClass "td" "td-placing" . dynText $ showRank . place <$> xB
         elClass "td" "td-pilot" . dynText $ snd <$> classPilot
         elClass "td" "td-start-start" . dynText $ (maybe "" . showSs) <$> tz <*> v
         elClass "td" "td-start-gate" . dynText $ (maybe "" . showGs) <$> tz <*> v
@@ -463,7 +476,7 @@ pointRow cTime cArrival utcOffset free dfNt pt tp x = do
         elClass "td" "td-alt-distance" . dynText
             $ maybe "" showPilotAlt <$> alt
         elDynClass "td" (snd . fst <$> awardFree) . dynText
-            $ maybe "" showPilotDistance . landedDistance <$> b
+            $ maybe "" showPilotDistance . landedDistance <$> xB
 
         elClass "td" "td-reach-points" . dynText $ showMax Pt.reach showLinearPoints pt points
         elClass "td" "td-effort-points" . dynText $ showMax Pt.effort showDifficultyPoints pt points
@@ -472,9 +485,9 @@ pointRow cTime cArrival utcOffset free dfNt pt tp x = do
         elDynClass "td" cTime . dynText $ showMax Pt.time showTimePoints pt points
         elDynClass "td" cArrival . dynText $ showMax Pt.arrival showArrivalPoints pt points
 
-        elClass "td" "td-total-points" . dynText $ zipDynWith showTaskPoints tp (total <$> b)
-        elClass "td" "td-total-points" $ text ""
-        elClass "td" "td-placing" $ text ""
+        elClass "td" "td-total-points" . dynText $ zipDynWith showTaskPoints tp (total <$> xB)
+        elClass "td" "td-total-points" . text $ yScore
+        elClass "td" "td-placing" . text $ yRank
 
 dnfRows
     :: MonadWidget t m
