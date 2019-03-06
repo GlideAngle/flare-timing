@@ -528,7 +528,7 @@ dnfRow place rows pilot = do
                     elAttr
                         "td"
                         ( "rowspan" =: (T.pack $ show n)
-                        <> "colspan" =: "18"
+                        <> "colspan" =: "16"
                         <> "class" =: "td-dnf"
                         )
                         $ text "DNF"
