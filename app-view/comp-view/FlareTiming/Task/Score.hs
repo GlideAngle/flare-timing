@@ -140,10 +140,10 @@ tableScore utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt tp sDfs sEx = do
             el "tr" $ do
                 elAttr "th" ("colspan" =: "13") $ text ""
                 elAttr "th" ("colspan" =: "7" <> "class" =: "th-points") $ text "Points"
-                elAttr "th" ("colspan" =: "2" <> "rowspan" =: "2" <> "class" =: "th-expected") $ text "Expected"
+                elAttr "th" ("colspan" =: "2" <> "rowspan" =: "2" <> "class" =: "th-norm") $ text "Expected"
 
             el "tr" $ do
-                elAttr "th" ("rowspan" =: "2" <> "class" =: "th-placing") $ text "#"
+                elAttr "th" ("rowspan" =: "2" <> "class" =: "th-norm th-placing") $ text "#"
                 elAttr "th" ("rowspan" =: "2" <> "class" =: "th-placing") $ text "#"
                 elAttr "th" ("rowspan" =: "2" <> "class" =: "th-pilot") $ text "Pilot"
                 elAttr "th" ("colspan" =: "6" <> "class" =: "th-speed-section") . dynText
@@ -173,8 +173,8 @@ tableScore utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt tp sDfs sEx = do
                 elDynClass "th" (fst <$> cTimePoints) $ text "Time"
                 elDynClass "th" (fst <$> cArrivalPoints) $ text "Arrival"
                 elClass "th" "th-total-points" $ text "Total"
-                elClass "th" "th-expected th-total-points" $ text "Total"
-                elClass "th" "th-expected th-diff" $ text "Δ"
+                elClass "th" "th-norm th-total-points" $ text "Total"
+                elClass "th" "th-norm th-diff" $ text "Δ"
 
             elClass "tr" "tr-validity" $ do
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-launch-validity") . dynText $
@@ -463,7 +463,7 @@ pointRow cTime cArrival utcOffset free dfNt pt tp sEx x = do
                 pd)
 
     elDynClass "tr" (fst <$> classPilot) $ do
-        elClass "td" "td-placing" . text $ yRank
+        elClass "td" "td-norm td-placing" . text $ yRank
         elClass "td" "td-placing" . dynText $ showRank . place <$> xB
         elClass "td" "td-pilot" . dynText $ snd <$> classPilot
         elClass "td" "td-start-start" . dynText $ (maybe "" . showSs) <$> tz <*> v
@@ -489,8 +489,8 @@ pointRow cTime cArrival utcOffset free dfNt pt tp sEx x = do
         elDynClass "td" cArrival . dynText $ showMax Pt.arrival showArrivalPoints pt points
 
         elClass "td" "td-total-points" . dynText $ zipDynWith showTaskPoints tp (total <$> xB)
-        elClass "td" "td-total-points" . text $ yScore
-        elClass "td" "td-total-points" . text $ yDiff
+        elClass "td" "td-norm td-total-points" . text $ yScore
+        elClass "td" "td-norm td-total-points" . text $ yDiff
 
 dnfRows
     :: MonadWidget t m
@@ -535,13 +535,13 @@ dnfRow place rows pilot = do
                     return ()
 
     elClass "tr" "tr-dnf" $ do
-        elClass "td" "td-placing" $ text ""
+        elClass "td" "td-norm td-placing" $ text ""
         elClass "td" "td-placing" . text $ showRank place
         elClass "td" "td-pilot" . dynText $ showPilotName <$> pilot
         dnfMega
         elClass "td" "td-total-points" $ text "0"
-        elClass "td" "td-total-points" $ text ""
-        elClass "td" "td-total-points" $ text ""
+        elClass "td" "td-norm td-total-points" $ text ""
+        elClass "td" "td-norm td-total-points" $ text ""
         return ()
 
 showMax
