@@ -31,6 +31,7 @@ import WireTypes.Point
     , showLeadingPoints
     , showTimePoints
     , showTaskPoints
+    , showTaskPointsDiff
     , showRounded
 
     , showDistanceWeight
@@ -426,15 +427,15 @@ pointRow cTime cArrival utcOffset free dfNt pt tp sEx x = do
     let tz = timeZone <$> utcOffset
     let pilot = fst <$> x
     let xB = snd <$> x
-    (yRank, yScore) <-
-            sample . current $ ffor2 pilot sEx (\pilot' sEx' ->
+    (yRank, yScore, yDiff) <- sample . current
+                $ ffor3 pilot sEx x (\pilot' sEx' (_, Breakdown{total = p}) ->
                 case Map.lookup pilot' sEx' of
-                    Nothing -> ("", "")
+                    Nothing -> ("", "", "")
                     Just
                         Norm.NormBreakdown
                             { place = nth
-                            , total = TaskPoints pts
-                            } -> (showRank nth, showRounded pts))
+                            , total = p'@(TaskPoints pts)
+                            } -> (showRank nth, showRounded pts, showTaskPointsDiff p p'))
 
     let alt = stoppedAlt <$> xB
     let reach = reachDistance <$> xB
@@ -489,7 +490,7 @@ pointRow cTime cArrival utcOffset free dfNt pt tp sEx x = do
 
         elClass "td" "td-total-points" . dynText $ zipDynWith showTaskPoints tp (total <$> xB)
         elClass "td" "td-total-points" . text $ yScore
-        elClass "td" "" $ text ""
+        elClass "td" "td-total-points" . text $ yDiff
 
 dnfRows
     :: MonadWidget t m

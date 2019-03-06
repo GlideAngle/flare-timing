@@ -36,6 +36,7 @@ module WireTypes.Point
     , showTimePoints
     , showLeadingPoints
     , showTaskPoints
+    , showTaskPointsDiff
     , showRounded
     -- * Showing Weights
     , showDistanceWeight
@@ -238,6 +239,11 @@ showLeadingPoints task (LeadingPoints p) =
 showTaskPoints :: Maybe TaskPoints -> TaskPoints -> T.Text
 showTaskPoints task (TaskPoints p) =
     showMaxRounded p (\(TaskPoints x) -> x) task
+
+showTaskPointsDiff :: TaskPoints -> TaskPoints -> T.Text
+showTaskPointsDiff (TaskPoints expected) (TaskPoints actual)
+    | actual == expected = "="
+    | otherwise = T.pack $ printf "%+.0f" (actual - expected)
 
 data Points =
     Points 
