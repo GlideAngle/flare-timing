@@ -38,6 +38,7 @@ import FlareTiming.Plot.Lead (leadPlot)
 import FlareTiming.Plot.Time (timePlot)
 import qualified FlareTiming.Turnpoint as TP (getName)
 import FlareTiming.Nav.TabTask (TaskTab(..), tabsTask)
+import FlareTiming.Nav.TabScore (ScoreTab(..), tabsScore)
 import FlareTiming.Nav.TabPlot (PlotTab(..), tabsPlot)
 import FlareTiming.Nav.TabBasis (BasisTab(..), tabsBasis)
 import FlareTiming.Task.Score (tableScore)
@@ -207,8 +208,19 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
 
                     return ()
 
-                TaskTabScore ->
-                    tableScore utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx
+                TaskTabScore -> do
+                    tabScore <- tabsScore
+                    let scoreView = tableScore utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx
+                    _ <- widgetHold scoreView $
+                            (\case
+                                ScoreTabOver -> scoreView
+                                ScoreTabPoint -> scoreView
+                                ScoreTabSpeed -> scoreView
+                                ScoreTabDistance -> scoreView)
+
+                            <$> tabScore
+
+                    return ()
 
                 TaskTabPlot -> do
                     tabPlot <- tabsPlot

@@ -23,20 +23,20 @@ tabsBasis =
             let eGeo = (const BasisTabGeo) <$> domEvent Click geo
 
             absentClass <- holdDyn "is-active" . leftmost $
-                            [ "" <$ eValid
-                            , "is-active" <$ eAbs
+                            [ "is-active" <$ eAbs
+                            , "" <$ eValid
                             , "" <$ eGeo
                             ]
 
             validClass <- holdDyn "" . leftmost $
-                            [ "is-active" <$ eValid
-                            , "" <$ eAbs
+                            [ "" <$ eAbs
+                            , "is-active" <$ eValid
                             , "" <$ eGeo
                             ]
 
             geoClass <- holdDyn "" . leftmost $
-                            [ "" <$ eValid
-                            , "" <$ eAbs
+                            [ "" <$ eAbs
+                            , "" <$ eValid
                             , "is-active" <$ eGeo
                             ]
 
