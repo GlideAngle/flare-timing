@@ -213,15 +213,15 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
 
                 TaskTabScore -> do
                     tabScore <- tabsScore
-                    let tableScoreHold = tableScorePoint utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx
+                    let tableScoreHold = tableScoreSpeed utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx
                     _ <- widgetHold tableScoreHold $
                             (\case
                                 ScoreTabOver ->
                                     tableScoreOver utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx
                                 ScoreTabPoint ->
-                                    tableScoreHold
+                                    tableScorePoint utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx
                                 ScoreTabSpeed ->
-                                    tableScoreSpeed utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx
+                                    tableScoreHold
                                 ScoreTabDistance ->
                                     tableScoreDistance utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx)
 
