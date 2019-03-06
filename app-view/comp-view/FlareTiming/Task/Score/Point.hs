@@ -138,7 +138,7 @@ tableScorePoint utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt tp sDfs sEx =
         el "thead" $ do
 
             el "tr" $ do
-                elAttr "th" ("colspan" =: "7") $ text ""
+                elAttr "th" ("colspan" =: "3") $ text ""
                 elAttr "th" ("colspan" =: "7" <> "class" =: "th-points") $ text "Points"
                 elAttr "th" ("colspan" =: "2" <> "rowspan" =: "2" <> "class" =: "th-norm") $ text "Expected"
 
@@ -146,16 +146,11 @@ tableScorePoint utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt tp sDfs sEx =
                 elAttr "th" ("rowspan" =: "2" <> "class" =: "th-norm th-placing") $ text "#"
                 elAttr "th" ("rowspan" =: "2" <> "class" =: "th-placing") $ text "#"
                 elAttr "th" ("rowspan" =: "2" <> "class" =: "th-pilot") $ text "Pilot"
-                elAttr "th" ("colspan" =: "4" <> "class" =: "th-distance") $ text "Distance Flown"
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance-points-breakdown") $ text "Points for Distance"
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-other-points") $ text ""
                 elClass "th" "th-total-points" $ text ""
 
             el "tr" $ do
-                elClass "th" "th-min-distance" $ text "Min"
-                elClass "th" "th-best-distance" $ text "Reach †"
-                elClass "th" "th-alt-distance" $ text "Alt"
-                elClass "th" "th-landed-distance" $ text "Landed"
                 elClass "th" "th-reach-points" $ text "Reach ‡"
                 elClass "th" "th-effort-points" $ text "Effort §"
 
@@ -178,8 +173,6 @@ tableScorePoint utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt tp sDfs sEx =
                         . Vy.launch
                         )
                     <$> vy
-
-                elAttr "th" ("colspan" =: "4") $ text ""
 
                 thSpace
                 thSpace
@@ -217,7 +210,6 @@ tableScorePoint utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt tp sDfs sEx =
 
             elClass "tr" "tr-weight" $ do
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-weight") $ text "Weights"
-                elAttr "th" ("colspan" =: "4") $ text ""
 
                 thSpace
                 thSpace
@@ -260,10 +252,6 @@ tableScorePoint utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt tp sDfs sEx =
 
             elClass "tr" "tr-allocation" $ do
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-allocation") $ text "Available Points (Units)"
-                elClass "th" "th-min-distance-units" $ text "(km)"
-                elClass "th" "th-best-distance-units" $ text "(km)"
-                elClass "th" "th-alt-distance-units" $ text "(m)"
-                elClass "th" "th-landed-distance-units" $ text "(km)"
 
                 elClass "th" "th-reach-alloc" . dynText $
                     maybe
@@ -456,14 +444,6 @@ pointRow cTime cArrival utcOffset free dfNt pt tp sEx x = do
         elClass "td" "td-placing" . dynText $ showRank . place <$> xB
         elClass "td" "td-pilot" . dynText $ snd <$> classPilot
 
-        elClass "td" "td-min-distance" . dynText $ snd <$> awardFree
-        elDynClass "td" (fst . fst <$> awardFree) . dynText
-            $ maybe "" showPilotDistance <$> reach
-        elClass "td" "td-alt-distance" . dynText
-            $ maybe "" showPilotAlt <$> alt
-        elDynClass "td" (snd . fst <$> awardFree) . dynText
-            $ maybe "" showPilotDistance . landedDistance <$> xB
-
         elClass "td" "td-reach-points" . dynText $ showMax Pt.reach showLinearPoints pt points
         elClass "td" "td-effort-points" . dynText $ showMax Pt.effort showDifficultyPoints pt points
         elClass "td" "td-distance-points" . dynText $ showMax Pt.distance showDistancePoints pt points
@@ -511,7 +491,7 @@ dnfRow place rows pilot = do
                     elAttr
                         "td"
                         ( "rowspan" =: (T.pack $ show n)
-                        <> "colspan" =: "10"
+                        <> "colspan" =: "6"
                         <> "class" =: "td-dnf"
                         )
                         $ text "DNF"
