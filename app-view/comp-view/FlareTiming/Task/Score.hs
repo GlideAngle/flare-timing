@@ -31,6 +31,7 @@ import WireTypes.Point
     , showLeadingPoints
     , showTimePoints
     , showTaskPoints
+    , showRounded
 
     , showDistanceWeight
     , showArrivalWeight
@@ -433,7 +434,7 @@ pointRow cTime cArrival utcOffset free dfNt pt tp sEx x = do
                         Norm.NormBreakdown
                             { place = nth
                             , total = TaskPoints pts
-                            } -> (showRank nth, T.pack . show $ pts))
+                            } -> (showRank nth, showRounded pts))
 
     let alt = stoppedAlt <$> xB
     let reach = reachDistance <$> xB

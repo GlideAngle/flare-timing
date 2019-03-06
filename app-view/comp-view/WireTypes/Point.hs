@@ -36,6 +36,7 @@ module WireTypes.Point
     , showTimePoints
     , showLeadingPoints
     , showTaskPoints
+    , showRounded
     -- * Showing Weights
     , showDistanceWeight
     , showArrivalWeight
@@ -195,6 +196,9 @@ showMaxRounded
     -> Maybe b
     -> T.Text
 showMaxRounded = showMax' (show . (\x -> round x :: Integer))
+
+showRounded :: (Show a, RealFrac a) => a -> T.Text
+showRounded = T.pack . show . (\x -> round x :: Integer)
 
 showMax
     :: (Show a, RealFrac a)
