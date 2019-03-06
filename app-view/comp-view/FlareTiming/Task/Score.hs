@@ -137,11 +137,12 @@ tableScore utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt tp sDfs sEx = do
         el "thead" $ do
 
             el "tr" $ do
-                elAttr "th" ("colspan" =: "12") $ text ""
+                elAttr "th" ("colspan" =: "13") $ text ""
                 elAttr "th" ("colspan" =: "7" <> "class" =: "th-points") $ text "Points"
                 elAttr "th" ("colspan" =: "2" <> "rowspan" =: "2" <> "class" =: "th-expected") $ text "Expected"
 
             el "tr" $ do
+                elAttr "th" ("rowspan" =: "2" <> "class" =: "th-placing") $ text "#"
                 elAttr "th" ("rowspan" =: "2" <> "class" =: "th-placing") $ text "#"
                 elAttr "th" ("rowspan" =: "2" <> "class" =: "th-pilot") $ text "Pilot"
                 elAttr "th" ("colspan" =: "6" <> "class" =: "th-speed-section") . dynText
@@ -172,11 +173,10 @@ tableScore utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt tp sDfs sEx = do
                 elDynClass "th" (fst <$> cArrivalPoints) $ text "Arrival"
                 elClass "th" "th-total-points" $ text "Total"
                 elClass "th" "th-expected th-total-points" $ text "Total"
-                elClass "th" "th-expected th-placing" $ text "#"
+                elClass "th" "th-expected th-diff" $ text "Δ"
 
             elClass "tr" "tr-validity" $ do
-
-                elAttr "th" ("colspan" =: "2" <> "class" =: "th-launch-validity") . dynText $
+                elAttr "th" ("colspan" =: "3" <> "class" =: "th-launch-validity") . dynText $
                     maybe
                         ""
                         ( (\v ->
@@ -224,7 +224,7 @@ tableScore utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt tp sDfs sEx = do
                 thSpace
 
             elClass "tr" "tr-weight" $ do
-                elAttr "th" ("colspan" =: "2" <> "class" =: "th-weight") $ text "Weights"
+                elAttr "th" ("colspan" =: "3" <> "class" =: "th-weight") $ text "Weights"
                 elAttr "th" ("colspan" =: "10") $ text ""
 
                 thSpace
@@ -267,7 +267,7 @@ tableScore utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt tp sDfs sEx = do
                 thSpace
 
             elClass "tr" "tr-allocation" $ do
-                elAttr "th" ("colspan" =: "2" <> "class" =: "th-allocation") $ text "Available Points (Units)"
+                elAttr "th" ("colspan" =: "3" <> "class" =: "th-allocation") $ text "Available Points (Units)"
                 elAttr "th" ("colspan" =: "5") $ text ""
                 elClass "th" "th-speed-units" $ text "(km/h)"
                 elClass "th" "th-min-distance-units" $ text "(km)"
@@ -349,7 +349,7 @@ tableScore utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt tp sDfs sEx = do
             dnfRows dnfPlacing dnf'
             return ()
 
-        let tdFoot = elAttr "td" ("colspan" =: "21")
+        let tdFoot = elAttr "td" ("colspan" =: "22")
         let foot = el "tr" . tdFoot . text
 
         el "tfoot" $ do
@@ -462,6 +462,7 @@ pointRow cTime cArrival utcOffset free dfNt pt tp sEx x = do
                 pd)
 
     elDynClass "tr" (fst <$> classPilot) $ do
+        elClass "td" "td-placing" . text $ yRank
         elClass "td" "td-placing" . dynText $ showRank . place <$> xB
         elClass "td" "td-pilot" . dynText $ snd <$> classPilot
         elClass "td" "td-start-start" . dynText $ (maybe "" . showSs) <$> tz <*> v
@@ -488,7 +489,7 @@ pointRow cTime cArrival utcOffset free dfNt pt tp sEx x = do
 
         elClass "td" "td-total-points" . dynText $ zipDynWith showTaskPoints tp (total <$> xB)
         elClass "td" "td-total-points" . text $ yScore
-        elClass "td" "td-placing" . text $ yRank
+        elClass "td" "" $ text ""
 
 dnfRows
     :: MonadWidget t m
@@ -533,12 +534,13 @@ dnfRow place rows pilot = do
                     return ()
 
     elClass "tr" "tr-dnf" $ do
+        elClass "td" "td-placing" $ text ""
         elClass "td" "td-placing" . text $ showRank place
         elClass "td" "td-pilot" . dynText $ showPilotName <$> pilot
         dnfMega
         elClass "td" "td-total-points" $ text "0"
         elClass "td" "td-total-points" $ text ""
-        elClass "td" "td-placing" $ text ""
+        elClass "td" "td-total-points" $ text ""
         return ()
 
 showMax
