@@ -3,11 +3,10 @@ module FlareTiming.Task.Score.Over (tableScoreOver) where
 import Prelude hiding (min)
 import Text.Printf (printf)
 import Reflex.Dom
-import qualified Data.Text as T (Text, pack, breakOn)
-import Data.Time.LocalTime (TimeZone)
+import qualified Data.Text as T (Text, pack)
 import qualified Data.Map.Strict as Map
 
-import WireTypes.Route (TaskLength(..), showTaskDistance)
+import WireTypes.Route (TaskLength(..))
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import qualified WireTypes.Point as Pt (Points(..), StartGate(..))
 import qualified WireTypes.Point as Wg (Weights(..))
@@ -16,9 +15,6 @@ import WireTypes.Point
     ( TaskPlacing(..)
     , TaskPoints(..)
     , Breakdown(..)
-    , Velocity(..)
-    , PilotTime(..)
-    , PilotVelocity(..)
     , PilotDistance(..)
 
     , showPilotDistance
@@ -50,17 +46,8 @@ import WireTypes.Comp (UtcOffset(..), Discipline(..), MinimumDistance(..))
 import WireTypes.Pilot (Pilot(..), Dnf(..), DfNoTrack(..))
 import qualified WireTypes.Pilot as Pilot (DfNoTrackPilot(..))
 import FlareTiming.Pilot (showPilotName)
-import FlareTiming.Time (showHmsForHours, showT, timeZone)
-
-speedSection :: Maybe TaskLength -> T.Text
-speedSection =
-    T.pack
-    . maybe
-        "Speed Section"
-        (\TaskLength{..} ->
-            let tr = showTaskDistance taskRoute
-                ss = showTaskDistance taskRouteSpeedSubset
-            in printf "Speed Section (%s of %s)" ss tr)
+import FlareTiming.Time (timeZone)
+import FlareTiming.Task.Score.Show
 
 tableScoreOver
     :: MonadWidget t m
@@ -147,7 +134,7 @@ tableScoreOver utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt tp sDfs sEx = 
                 elAttr "th" ("rowspan" =: "2" <> "class" =: "th-placing") $ text "#"
                 elAttr "th" ("rowspan" =: "2" <> "class" =: "th-pilot") $ text "Pilot"
                 elAttr "th" ("colspan" =: "6" <> "class" =: "th-speed-section") . dynText
-                    $ speedSection <$> ln
+                    $ showSpeedSection <$> ln
                 elAttr "th" ("colspan" =: "4" <> "class" =: "th-distance") $ text "Distance Flown"
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance-points-breakdown") $ text "Points for Distance"
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-other-points") $ text ""
@@ -543,49 +530,3 @@ dnfRow place rows pilot = do
         elClass "td" "td-norm td-total-points" $ text ""
         elClass "td" "td-norm td-total-points" $ text ""
         return ()
-
-showMax
-    :: (Reflex t, Functor f)
-    => (a -> b)
-    -> (f b -> b -> c)
-    -> Dynamic t (f a)
-    -> Dynamic t a
-    -> Dynamic t c
-showMax getField f pt points =
-    zipDynWith
-        f
-        ((fmap . fmap) getField pt)
-        (getField <$> points)
-
-showRank :: TaskPlacing -> T.Text
-showRank (TaskPlacing p) = T.pack . show $ p
-showRank (TaskPlacingEqual p) = T.pack $ show p ++ "="
-
-showSs :: TimeZone -> Velocity -> T.Text
-showSs tz Velocity{ss = Just t} = showT tz t
-showSs _ _ = ""
-
-showGs :: TimeZone -> Velocity -> T.Text
-showGs tz Velocity{gs = Just (Pt.StartGate t)} = showT tz t
-showGs _ _ = ""
-
-showEs :: TimeZone -> Velocity -> T.Text
-showEs tz Velocity{es = Just t} = showT tz t
-showEs _ _ = ""
-
-showSsVelocityTime :: Velocity -> T.Text
-showSsVelocityTime Velocity{ssElapsed = Just (PilotTime t)} =
-    showHmsForHours t
-
-showSsVelocityTime _ = ""
-
-showGsVelocityTime :: Velocity -> T.Text
-showGsVelocityTime Velocity{gsElapsed = Just (PilotTime t)} =
-    showHmsForHours t
-
-showGsVelocityTime _ = ""
-
-showVelocityVelocity :: Velocity -> T.Text
-showVelocityVelocity Velocity{gsVelocity = Just (PilotVelocity v)} =
-    fst . T.breakOn " km / h" . T.pack $ v
-showVelocityVelocity _ = ""

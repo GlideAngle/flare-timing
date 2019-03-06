@@ -1,13 +1,11 @@
 module FlareTiming.Task.Score.Point (tableScorePoint) where
 
 import Prelude hiding (min)
-import Text.Printf (printf)
 import Reflex.Dom
-import qualified Data.Text as T (Text, pack, breakOn)
-import Data.Time.LocalTime (TimeZone)
+import qualified Data.Text as T (Text, pack)
 import qualified Data.Map.Strict as Map
 
-import WireTypes.Route (TaskLength(..), showTaskDistance)
+import WireTypes.Route (TaskLength(..))
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import qualified WireTypes.Point as Pt (Points(..), StartGate(..))
 import qualified WireTypes.Point as Wg (Weights(..))
@@ -16,13 +14,6 @@ import WireTypes.Point
     ( TaskPlacing(..)
     , TaskPoints(..)
     , Breakdown(..)
-    , Velocity(..)
-    , PilotTime(..)
-    , PilotVelocity(..)
-    , PilotDistance(..)
-
-    , showPilotDistance
-    , showPilotAlt
 
     , showLinearPoints
     , showDifficultyPoints
@@ -50,17 +41,7 @@ import WireTypes.Comp (UtcOffset(..), Discipline(..), MinimumDistance(..))
 import WireTypes.Pilot (Pilot(..), Dnf(..), DfNoTrack(..))
 import qualified WireTypes.Pilot as Pilot (DfNoTrackPilot(..))
 import FlareTiming.Pilot (showPilotName)
-import FlareTiming.Time (showHmsForHours, showT, timeZone)
-
-speedSection :: Maybe TaskLength -> T.Text
-speedSection =
-    T.pack
-    . maybe
-        "Speed Section"
-        (\TaskLength{..} ->
-            let tr = showTaskDistance taskRoute
-                ss = showTaskDistance taskRouteSpeedSubset
-            in printf "Speed Section (%s of %s)" ss tr)
+import FlareTiming.Task.Score.Show
 
 tableScorePoint
     :: MonadWidget t m
@@ -79,7 +60,7 @@ tableScorePoint
     -> Dynamic t [(Pilot, Breakdown)]
     -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> m ()
-tableScorePoint utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt tp sDfs sEx = do
+tableScorePoint utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sEx = do
     let dnf = unDnf <$> dnf'
     lenDnf :: Int <- sample . current $ length <$> dnf
     lenDfs :: Int <- sample . current $ length <$> sDfs
@@ -400,8 +381,7 @@ pointRow
     -> Dynamic t (Map.Map Pilot Norm.NormBreakdown)
     -> Dynamic t (Pilot, Breakdown)
     -> m ()
-pointRow cTime cArrival utcOffset free dfNt pt tp sEx x = do
-    let tz = timeZone <$> utcOffset
+pointRow cTime cArrival _utcOffset _free dfNt pt tp sEx x = do
     let pilot = fst <$> x
     let xB = snd <$> x
     (yRank, yScore, yDiff) <- sample . current
@@ -414,30 +394,13 @@ pointRow cTime cArrival utcOffset free dfNt pt tp sEx x = do
                             , total = p'@(TaskPoints pts)
                             } -> (showRank nth, showRounded pts, showTaskPointsDiff p p'))
 
-    let alt = stoppedAlt <$> xB
-    let reach = reachDistance <$> xB
     let points = breakdown . snd <$> x
-    let v = velocity . snd <$> x
 
     let classPilot = ffor2 pilot dfNt (\p (DfNoTrack ps) ->
                         let n = showPilotName p in
                         if p `elem` (Pilot.pilot <$> ps)
                            then ("pilot-dfnt", n <> " ☞ ")
                            else ("", n))
-
-    let awardFree = ffor2 free reach (\(MinimumDistance f) pd ->
-            let c = ("td-best-distance", "td-landed-distance") in
-            maybe
-                (c, "")
-                (\(PilotDistance r) ->
-                    if r >= f then (c, "") else
-                       let c' =
-                               ( fst c <> " award-free"
-                               , snd c <> " award-free"
-                               )
-
-                       in (c', T.pack $ printf "%.1f" f))
-                pd)
 
     elDynClass "tr" (fst <$> classPilot) $ do
         elClass "td" "td-norm td-placing" . text $ yRank
@@ -506,49 +469,3 @@ dnfRow place rows pilot = do
         elClass "td" "td-norm td-total-points" $ text ""
         elClass "td" "td-norm td-total-points" $ text ""
         return ()
-
-showMax
-    :: (Reflex t, Functor f)
-    => (a -> b)
-    -> (f b -> b -> c)
-    -> Dynamic t (f a)
-    -> Dynamic t a
-    -> Dynamic t c
-showMax getField f pt points =
-    zipDynWith
-        f
-        ((fmap . fmap) getField pt)
-        (getField <$> points)
-
-showRank :: TaskPlacing -> T.Text
-showRank (TaskPlacing p) = T.pack . show $ p
-showRank (TaskPlacingEqual p) = T.pack $ show p ++ "="
-
-showSs :: TimeZone -> Velocity -> T.Text
-showSs tz Velocity{ss = Just t} = showT tz t
-showSs _ _ = ""
-
-showGs :: TimeZone -> Velocity -> T.Text
-showGs tz Velocity{gs = Just (Pt.StartGate t)} = showT tz t
-showGs _ _ = ""
-
-showEs :: TimeZone -> Velocity -> T.Text
-showEs tz Velocity{es = Just t} = showT tz t
-showEs _ _ = ""
-
-showSsVelocityTime :: Velocity -> T.Text
-showSsVelocityTime Velocity{ssElapsed = Just (PilotTime t)} =
-    showHmsForHours t
-
-showSsVelocityTime _ = ""
-
-showGsVelocityTime :: Velocity -> T.Text
-showGsVelocityTime Velocity{gsElapsed = Just (PilotTime t)} =
-    showHmsForHours t
-
-showGsVelocityTime _ = ""
-
-showVelocityVelocity :: Velocity -> T.Text
-showVelocityVelocity Velocity{gsVelocity = Just (PilotVelocity v)} =
-    fst . T.breakOn " km / h" . T.pack $ v
-showVelocityVelocity _ = ""
