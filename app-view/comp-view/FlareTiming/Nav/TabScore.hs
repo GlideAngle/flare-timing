@@ -25,14 +25,14 @@ tabsScore =
             let eSpeed = (const ScoreTabSpeed) <$> domEvent Click speed
             let eDist = (const ScoreTabDistance) <$> domEvent Click dist
 
-            overClass <- holdDyn "is-active" . leftmost $
+            overClass <- holdDyn "" . leftmost $
                             [ "is-active" <$ eOver
                             , "" <$ ePoint
                             , "" <$ eSpeed
                             , "" <$ eDist
                             ]
 
-            pointClass <- holdDyn "" . leftmost $
+            pointClass <- holdDyn "is-active" . leftmost $
                             [ "" <$ eOver
                             , "is-active" <$ ePoint
                             , "" <$ eSpeed

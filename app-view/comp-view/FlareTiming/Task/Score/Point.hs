@@ -138,7 +138,7 @@ tableScorePoint utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt tp sDfs sEx =
         el "thead" $ do
 
             el "tr" $ do
-                elAttr "th" ("colspan" =: "13") $ text ""
+                elAttr "th" ("colspan" =: "7") $ text ""
                 elAttr "th" ("colspan" =: "7" <> "class" =: "th-points") $ text "Points"
                 elAttr "th" ("colspan" =: "2" <> "rowspan" =: "2" <> "class" =: "th-norm") $ text "Expected"
 
@@ -146,21 +146,12 @@ tableScorePoint utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt tp sDfs sEx =
                 elAttr "th" ("rowspan" =: "2" <> "class" =: "th-norm th-placing") $ text "#"
                 elAttr "th" ("rowspan" =: "2" <> "class" =: "th-placing") $ text "#"
                 elAttr "th" ("rowspan" =: "2" <> "class" =: "th-pilot") $ text "Pilot"
-                elAttr "th" ("colspan" =: "6" <> "class" =: "th-speed-section") . dynText
-                    $ speedSection <$> ln
                 elAttr "th" ("colspan" =: "4" <> "class" =: "th-distance") $ text "Distance Flown"
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance-points-breakdown") $ text "Points for Distance"
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-other-points") $ text ""
                 elClass "th" "th-total-points" $ text ""
 
             el "tr" $ do
-                elClass "th" "th-start-start" $ text "Start"
-                elClass "th" "th-start-gate" $ text "Gate"
-                elClass "th" "th-end" $ text "End"
-                elClass "th" "th-time" $ text "Time ‖"
-                elClass "th" "th-pace" $ text "Pace ¶"
-                elClass "th" "th-speed" $ text "Velocity"
-
                 elClass "th" "th-min-distance" $ text "Min"
                 elClass "th" "th-best-distance" $ text "Reach †"
                 elClass "th" "th-alt-distance" $ text "Alt"
@@ -188,7 +179,7 @@ tableScorePoint utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt tp sDfs sEx =
                         )
                     <$> vy
 
-                elAttr "th" ("colspan" =: "10") $ text ""
+                elAttr "th" ("colspan" =: "4") $ text ""
 
                 thSpace
                 thSpace
@@ -226,7 +217,7 @@ tableScorePoint utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt tp sDfs sEx =
 
             elClass "tr" "tr-weight" $ do
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-weight") $ text "Weights"
-                elAttr "th" ("colspan" =: "10") $ text ""
+                elAttr "th" ("colspan" =: "4") $ text ""
 
                 thSpace
                 thSpace
@@ -269,8 +260,6 @@ tableScorePoint utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt tp sDfs sEx =
 
             elClass "tr" "tr-allocation" $ do
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-allocation") $ text "Available Points (Units)"
-                elAttr "th" ("colspan" =: "5") $ text ""
-                elClass "th" "th-speed-units" $ text "(km/h)"
                 elClass "th" "th-min-distance-units" $ text "(km)"
                 elClass "th" "th-best-distance-units" $ text "(km)"
                 elClass "th" "th-alt-distance-units" $ text "(m)"
@@ -350,7 +339,7 @@ tableScorePoint utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt tp sDfs sEx =
             dnfRows dnfPlacing dnf'
             return ()
 
-        let tdFoot = elAttr "td" ("colspan" =: "22")
+        let tdFoot = elAttr "td" ("colspan" =: "16")
         let foot = el "tr" . tdFoot . text
 
         el "tfoot" $ do
@@ -466,12 +455,6 @@ pointRow cTime cArrival utcOffset free dfNt pt tp sEx x = do
         elClass "td" "td-norm td-placing" . text $ yRank
         elClass "td" "td-placing" . dynText $ showRank . place <$> xB
         elClass "td" "td-pilot" . dynText $ snd <$> classPilot
-        elClass "td" "td-start-start" . dynText $ (maybe "" . showSs) <$> tz <*> v
-        elClass "td" "td-start-gate" . dynText $ (maybe "" . showGs) <$> tz <*> v
-        elClass "td" "td-end" . dynText $ (maybe "" . showEs) <$> tz <*> v
-        elClass "td" "td-time" . dynText $ maybe "" showGsVelocityTime <$> v
-        elClass "td" "td-pace" . dynText $ maybe "" showSsVelocityTime <$> v
-        elClass "td" "td-speed" . dynText $ maybe "" showVelocityVelocity <$> v
 
         elClass "td" "td-min-distance" . dynText $ snd <$> awardFree
         elDynClass "td" (fst . fst <$> awardFree) . dynText
@@ -528,7 +511,7 @@ dnfRow place rows pilot = do
                     elAttr
                         "td"
                         ( "rowspan" =: (T.pack $ show n)
-                        <> "colspan" =: "16"
+                        <> "colspan" =: "10"
                         <> "class" =: "td-dnf"
                         )
                         $ text "DNF"
