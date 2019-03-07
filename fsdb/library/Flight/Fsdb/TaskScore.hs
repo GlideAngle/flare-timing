@@ -4,7 +4,7 @@ import Data.Maybe (catMaybes)
 import Text.XML.HXT.Arrow.Pickle
     ( PU(..)
     , unpickleDoc, xpWrap, xpFilterAttr, xpElem, xpAttr
-    , xpInt, xpPrim, xp6Tuple
+    , xpInt, xpPrim, xp8Tuple, xpTextAttr, xpOption
     )
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
 import Text.XML.HXT.Core
@@ -40,6 +40,7 @@ import Flight.Score
     )
 import Flight.Fsdb.Pilot (getCompPilot)
 import Flight.Fsdb.KeyPilot (unKeyPilot, keyPilots, keyMap)
+import Flight.Fsdb.Internal.Parse (parseUtcTime)
 
 dToR :: Double -> Rational
 dToR = toRational
@@ -54,9 +55,11 @@ xpRankScore =
         <+> hasName "leading_points"
         <+> hasName "arrival_points"
         <+> hasName "time_points"
+        <+> hasName "started_ss"
+        <+> hasName "finished_ss"
         )
     $ xpWrap
-        ( \(r, p, d, l, a, t) ->
+        ( \(r, p, d, l, a, t, ss, es) ->
             NormBreakdown
                 { place = TaskPlacing . fromIntegral $ r
                 , total = TaskPoints . toRational $ p
@@ -64,6 +67,8 @@ xpRankScore =
                 , leading = LeadingPoints . dToR $ l
                 , arrival = ArrivalPoints . dToR $ a
                 , time = TimePoints . dToR $ t
+                , ss = parseUtcTime <$> ss
+                , es = parseUtcTime <$> es
                 }
         , \NormBreakdown
                 { place = TaskPlacing r
@@ -72,6 +77,8 @@ xpRankScore =
                 , leading = LeadingPoints l
                 , arrival = ArrivalPoints a
                 , time = TimePoints t
+                , ss
+                , es
                 } ->
                     ( fromIntegral r
                     , round p
@@ -79,15 +86,19 @@ xpRankScore =
                     , fromRational l
                     , fromRational a
                     , fromRational t
+                    , show <$> ss
+                    , show <$> es
                     )
         )
-    $ xp6Tuple
+    $ xp8Tuple
         (xpAttr "rank" xpInt)
         (xpAttr "points" xpInt)
         (xpAttr "distance_points" xpPrim)
         (xpAttr "leading_points" xpPrim)
         (xpAttr "arrival_points" xpPrim)
         (xpAttr "time_points" xpPrim)
+        (xpOption $ xpTextAttr "started_ss")
+        (xpOption $ xpTextAttr "finished_ss")
 
 getScore :: ArrowXml a => [Pilot] -> a XmlTree [(Pilot, Maybe NormBreakdown)]
 getScore pilots =

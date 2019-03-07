@@ -74,6 +74,8 @@ data NormBreakdown =
         , leading :: LeadingPoints
         , arrival :: ArrivalPoints
         , time :: TimePoints
+        , ss :: Maybe UTCTime
+        , es :: Maybe UTCTime
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
@@ -128,13 +130,48 @@ data Allocation =
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 instance FieldOrdering Pointing where
-    fieldOrder _ = cmp
+    fieldOrder _ = cmpPointing
 
 instance FieldOrdering NormPointing where
-    fieldOrder _ = cmp
+    fieldOrder _ = cmpNorm
 
-cmp :: (Ord a, IsString a) => a -> a -> Ordering
-cmp a b =
+cmpNorm :: (Ord a, IsString a) => a -> a -> Ordering
+cmpNorm a b =
+    case (a, b) of
+        ("place", _) -> LT
+
+        ("total", "place") -> GT
+        ("total", _) -> LT
+
+        ("distance", "place") -> GT
+        ("distance", "total") -> GT
+        ("distance", _) -> LT
+
+        ("leading", "place") -> GT
+        ("leading", "total") -> GT
+        ("leading", "distance") -> GT
+        ("leading", _) -> LT
+
+        ("arrival", "place") -> GT
+        ("arrival", "total") -> GT
+        ("arrival", "distance") -> GT
+        ("arrival", "leading") -> GT
+        ("arrival", _) -> LT
+
+        ("time", "place") -> GT
+        ("time", "total") -> GT
+        ("time", "distance") -> GT
+        ("time", "leading") -> GT
+        ("time", "arrival") -> GT
+        ("time", _) -> LT
+
+        ("ss", "es") -> LT
+        ("ss", _) -> GT
+
+        ("es", _) -> GT
+
+cmpPointing :: (Ord a, IsString a) => a -> a -> Ordering
+cmpPointing a b =
     case (a, b) of
         -- Breakdown fields
         ("place", _) -> LT

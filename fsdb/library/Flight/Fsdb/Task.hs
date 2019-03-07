@@ -45,7 +45,6 @@ import Text.XML.HXT.Core
     , neg
     )
 import Data.Time.Clock (UTCTime)
-import Data.Time.Format (parseTimeOrError, defaultTimeLocale)
 
 import Flight.Units ()
 import Flight.Distance (TaskDistance(..), QTaskDistance)
@@ -66,6 +65,7 @@ import Flight.Comp
     )
 import Flight.Score (ScoreBackTime(..), PointPenalty(..))
 import Flight.Fsdb.Pilot (getCompPilot)
+import Flight.Fsdb.Internal.Parse (parseUtcTime)
 import Flight.Fsdb.Internal.XmlPickle (xpNewtypeQuantity)
 import Flight.Fsdb.Tweak (xpTweak)
 import Flight.Fsdb.KeyPilot (unKeyPilot, keyPilots, keyMap)
@@ -661,8 +661,3 @@ parseTaskPilotPenalties contents = do
     ps <- runX $ doc >>> getCompPilot
     xs <- runX $ doc >>> getTaskPilotPenalties ps
     return $ Right xs
-
-parseUtcTime :: String -> UTCTime
-parseUtcTime =
-    -- NOTE: %F is %Y-%m-%d, %T is %H:%M:%S and %z is -HHMM or -HH:MM
-    parseTimeOrError False defaultTimeLocale "%FT%T%Z"
