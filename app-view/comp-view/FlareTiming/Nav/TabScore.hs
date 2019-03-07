@@ -39,14 +39,14 @@ tabsScore =
                             , "" <$ eDist
                             ]
 
-            speedClass <- holdDyn "" . leftmost $
+            speedClass <- holdDyn "is-active" . leftmost $
                             [ "" <$ eOver
                             , "" <$ ePoint
                             , "is-active" <$ eSpeed
                             , "" <$ eDist
                             ]
 
-            distClass <- holdDyn "is-active" . leftmost $
+            distClass <- holdDyn "" . leftmost $
                             [ "" <$ eOver
                             , "" <$ ePoint
                             , "" <$ eSpeed
