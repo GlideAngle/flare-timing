@@ -20,12 +20,12 @@ import WireTypes.Point
     , showPilotDistance
     , showPilotAlt
 
-    , showLinearPoints
-    , showDifficultyPoints
-    , showDistancePoints
-    , showArrivalPoints
-    , showLeadingPoints
-    , showTimePoints
+    , showTaskLinearPoints
+    , showTaskDifficultyPoints
+    , showTaskDistancePoints
+    , showTaskArrivalPoints
+    , showTaskLeadingPoints
+    , showTaskTimePoints
     , showTaskPoints
     , showTaskPointsDiff
     , showRounded
@@ -266,7 +266,7 @@ tableScoreOver utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt tp sDfs sEx = 
                 elClass "th" "th-reach-alloc" . dynText $
                     maybe
                         ""
-                        ( (\x -> showLinearPoints (Just x) x)
+                        ( (\x -> showTaskLinearPoints (Just x) x)
                         . Pt.reach
                         )
                     <$> pt
@@ -274,7 +274,7 @@ tableScoreOver utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt tp sDfs sEx = 
                 elClass "th" "th-effort-alloc" . dynText $
                     maybe
                         ""
-                        ( (\x -> showDifficultyPoints (Just x) x)
+                        ( (\x -> showTaskDifficultyPoints (Just x) x)
                         . Pt.effort
                         )
                     <$> pt
@@ -282,7 +282,7 @@ tableScoreOver utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt tp sDfs sEx = 
                 elClass "th" "th-distance-alloc" . dynText $
                     maybe
                         ""
-                        ( (\x -> showDistancePoints (Just x) x)
+                        ( (\x -> showTaskDistancePoints (Just x) x)
                         . Pt.distance
                         )
                     <$> pt
@@ -290,7 +290,7 @@ tableScoreOver utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt tp sDfs sEx = 
                 elClass "th" "th-leading-alloc" . dynText $
                     maybe
                         ""
-                        ( (\x -> showLeadingPoints (Just x) x)
+                        ( (\x -> showTaskLeadingPoints (Just x) x)
                         . Pt.leading
                         )
                     <$> pt
@@ -298,7 +298,7 @@ tableScoreOver utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt tp sDfs sEx = 
                 elClass "th" "th-time-alloc" . dynText $
                     maybe
                         ""
-                        ( (\x -> showTimePoints (Just x) x)
+                        ( (\x -> showTaskTimePoints (Just x) x)
                         . Pt.time
                         )
                     <$> pt
@@ -306,7 +306,7 @@ tableScoreOver utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt tp sDfs sEx = 
                 elClass "th" "th-arrival-alloc" . dynText $
                     maybe
                         ""
-                        ( (\x -> showArrivalPoints (Just x) x)
+                        ( (\x -> showTaskArrivalPoints (Just x) x)
                         . Pt.arrival
                         )
                     <$> pt
@@ -468,14 +468,22 @@ pointRow cTime cArrival utcOffset free dfNt pt tp sEx x = do
         elDynClass "td" (snd . fst <$> awardFree) . dynText
             $ maybe "" showPilotDistance . landedDistance <$> xB
 
-        elClass "td" "td-reach-points" . dynText $ showMax Pt.reach showLinearPoints pt points
-        elClass "td" "td-effort-points" . dynText $ showMax Pt.effort showDifficultyPoints pt points
-        elClass "td" "td-distance-points" . dynText $ showMax Pt.distance showDistancePoints pt points
-        elClass "td" "td-leading-points" . dynText $ showMax Pt.leading showLeadingPoints pt points
-        elDynClass "td" cTime . dynText $ showMax Pt.time showTimePoints pt points
-        elDynClass "td" cArrival . dynText $ showMax Pt.arrival showArrivalPoints pt points
+        elClass "td" "td-reach-points" . dynText
+            $ showMax Pt.reach showTaskLinearPoints pt points
+        elClass "td" "td-effort-points" . dynText
+            $ showMax Pt.effort showTaskDifficultyPoints pt points
+        elClass "td" "td-distance-points" . dynText
+            $ showMax Pt.distance showTaskDistancePoints pt points
+        elClass "td" "td-leading-points" . dynText
+            $ showMax Pt.leading showTaskLeadingPoints pt points
+        elDynClass "td" cTime . dynText
+            $ showMax Pt.time showTaskTimePoints pt points
+        elDynClass "td" cArrival . dynText
+            $ showMax Pt.arrival showTaskArrivalPoints pt points
 
-        elClass "td" "td-total-points" . dynText $ zipDynWith showTaskPoints tp (total <$> xB)
+        elClass "td" "td-total-points" . dynText
+            $ zipDynWith showTaskPoints tp (total <$> xB)
+
         elClass "td" "td-norm td-total-points" . text $ yScore
         elClass "td" "td-norm td-total-points" . text $ yDiff
 

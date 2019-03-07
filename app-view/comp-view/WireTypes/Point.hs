@@ -29,15 +29,23 @@ module WireTypes.Point
     , showPilotDistance
     , showPilotAlt
     -- * Showing Points
+    , showTaskDistancePoints
+    , showTaskLinearPoints
+    , showTaskDifficultyPoints
+    , showTaskArrivalPoints
+    , showTaskTimePoints
+    , showTaskLeadingPoints
+    , showTaskPoints
+    , showRounded
+    , showTaskPointsDiff
     , showDistancePoints
-    , showLinearPoints
-    , showDifficultyPoints
+    , showLeadingPoints
     , showArrivalPoints
     , showTimePoints
-    , showLeadingPoints
-    , showTaskPoints
-    , showTaskPointsDiff
-    , showRounded
+    , showDistancePointsDiff
+    , showLeadingPointsDiff
+    , showArrivalPointsDiff
+    , showTimePointsDiff
     -- * Showing Weights
     , showDistanceWeight
     , showArrivalWeight
@@ -212,33 +220,65 @@ showMax = showMax' show
 showMaxDistance :: Double -> (b -> Double) -> Maybe b -> T.Text
 showMaxDistance = showMax' $ printf "%.3f"
 
-showDistancePoints :: Maybe DistancePoints -> DistancePoints -> T.Text
-showDistancePoints task (DistancePoints p) =
+showTaskDistancePoints :: Maybe DistancePoints -> DistancePoints -> T.Text
+showTaskDistancePoints task (DistancePoints p) =
     showMaxDistance p (\(DistancePoints x) -> x) task
 
-showLinearPoints :: Maybe LinearPoints -> LinearPoints -> T.Text
-showLinearPoints task (LinearPoints p) =
+showTaskLinearPoints :: Maybe LinearPoints -> LinearPoints -> T.Text
+showTaskLinearPoints task (LinearPoints p) =
     showMaxDistance p (\(LinearPoints x) -> x) task
 
-showDifficultyPoints :: Maybe DifficultyPoints -> DifficultyPoints -> T.Text
-showDifficultyPoints task (DifficultyPoints p) =
+showTaskDifficultyPoints :: Maybe DifficultyPoints -> DifficultyPoints -> T.Text
+showTaskDifficultyPoints task (DifficultyPoints p) =
     showMaxDistance p (\(DifficultyPoints x) -> x) task
 
-showArrivalPoints :: Maybe ArrivalPoints -> ArrivalPoints -> T.Text
-showArrivalPoints task (ArrivalPoints p) =
+showTaskArrivalPoints :: Maybe ArrivalPoints -> ArrivalPoints -> T.Text
+showTaskArrivalPoints task (ArrivalPoints p) =
     showMax p (\(ArrivalPoints x) -> x) task
 
-showTimePoints :: Maybe TimePoints -> TimePoints -> T.Text
-showTimePoints task (TimePoints p) =
+showTaskTimePoints :: Maybe TimePoints -> TimePoints -> T.Text
+showTaskTimePoints task (TimePoints p) =
     showMax p (\(TimePoints x) -> x) task
 
-showLeadingPoints :: Maybe LeadingPoints -> LeadingPoints -> T.Text
-showLeadingPoints task (LeadingPoints p) =
+showTaskLeadingPoints :: Maybe LeadingPoints -> LeadingPoints -> T.Text
+showTaskLeadingPoints task (LeadingPoints p) =
     showMax p (\(LeadingPoints x) -> x) task
 
 showTaskPoints :: Maybe TaskPoints -> TaskPoints -> T.Text
 showTaskPoints task (TaskPoints p) =
     showMaxRounded p (\(TaskPoints x) -> x) task
+
+showDistancePoints :: DistancePoints -> T.Text
+showDistancePoints (DistancePoints p) = T.pack $ printf "%.1f" p
+
+showLeadingPoints :: LeadingPoints -> T.Text
+showLeadingPoints (LeadingPoints p) = T.pack $ printf "%.1f" p
+
+showArrivalPoints :: ArrivalPoints -> T.Text
+showArrivalPoints (ArrivalPoints p) = T.pack $ printf "%.1f" p
+
+showTimePoints :: TimePoints -> T.Text
+showTimePoints (TimePoints p) = T.pack $ printf "%.1f" p
+
+showDistancePointsDiff :: DistancePoints -> DistancePoints -> T.Text
+showDistancePointsDiff (DistancePoints expected) (DistancePoints actual)
+    | actual == expected = "="
+    | otherwise = T.pack $ printf "%+.1f" (actual - expected)
+
+showLeadingPointsDiff :: LeadingPoints -> LeadingPoints -> T.Text
+showLeadingPointsDiff (LeadingPoints expected) (LeadingPoints actual)
+    | actual == expected = "="
+    | otherwise = T.pack $ printf "%+.1f" (actual - expected)
+
+showArrivalPointsDiff :: ArrivalPoints -> ArrivalPoints -> T.Text
+showArrivalPointsDiff (ArrivalPoints expected) (ArrivalPoints actual)
+    | actual == expected = "="
+    | otherwise = T.pack $ printf "%+.1f" (actual - expected)
+
+showTimePointsDiff :: TimePoints -> TimePoints -> T.Text
+showTimePointsDiff (TimePoints expected) (TimePoints actual)
+    | actual == expected = "="
+    | otherwise = T.pack $ printf "%+.1f" (actual - expected)
 
 showTaskPointsDiff :: TaskPoints -> TaskPoints -> T.Text
 showTaskPointsDiff (TaskPoints expected) (TaskPoints actual)
@@ -333,6 +373,10 @@ data NormBreakdown =
     NormBreakdown
         { place :: TaskPlacing
         , total :: TaskPoints
+        , distance :: DistancePoints
+        , leading :: LeadingPoints
+        , arrival :: ArrivalPoints
+        , time :: TimePoints
         }
     deriving (Eq, Ord, Show, Generic, FromJSON)
 
