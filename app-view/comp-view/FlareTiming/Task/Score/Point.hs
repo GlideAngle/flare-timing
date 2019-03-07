@@ -545,7 +545,7 @@ dnfRow
     -> Dynamic t Pilot
     -> m ()
 dnfRow place rows pilot = do
-    let dnfMega =
+    let dnfMajor =
             case rows of
                 Nothing -> return ()
                 Just n -> do
@@ -558,12 +558,24 @@ dnfRow place rows pilot = do
                         $ text "DNF"
                     return ()
 
+    let dnfMinor =
+            case rows of
+                Nothing -> return ()
+                Just n -> do
+                    elAttr
+                        "td"
+                        ( "rowspan" =: (T.pack $ show n)
+                        <> "colspan" =: "2"
+                        <> "class" =: "td-dnf"
+                        )
+                        $ text "DNF"
+                    return ()
+
     elClass "tr" "tr-dnf" $ do
         elClass "td" "td-norm td-placing" $ text ""
         elClass "td" "td-placing" . text $ showRank place
         elClass "td" "td-pilot" . dynText $ showPilotName <$> pilot
-        dnfMega
+        dnfMajor
         elClass "td" "td-total-points" $ text "0"
-        elClass "td" "td-norm td-total-points" $ text ""
-        elClass "td" "td-norm td-total-points" $ text ""
+        dnfMinor
         return ()
