@@ -131,15 +131,24 @@ tableScorePoint utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sEx 
             el "tr" $ do
                 elAttr "th" ("colspan" =: "3") $ text ""
                 elAttr "th" ("colspan" =: "15" <> "class" =: "th-points") $ text "Points"
-                elAttr "th" ("colspan" =: "2" <> "rowspan" =: "2" <> "class" =: "th-norm") $ text "Expected"
+                elAttr "th" ("colspan" =: "3") $ text ""
 
             el "tr" $ do
                 elAttr "th" ("rowspan" =: "2" <> "class" =: "th-norm th-placing") $ text "#"
                 elAttr "th" ("rowspan" =: "2" <> "class" =: "th-placing") $ text "#"
                 elAttr "th" ("rowspan" =: "2" <> "class" =: "th-pilot") $ text "Pilot"
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance-points-breakdown") $ text "Points for Distance"
-                elAttr "th" ("colspan" =: "11" <> "class" =: "th-other-points") $ text ""
+
+                elAttr "th" ("colspan" =: "2" <> "class" =: "th-norm") $ text "Norm"
+                thSpace
+                elAttr "th" ("colspan" =: "2" <> "class" =: "th-norm") $ text "Norm"
+                thSpace
+                elAttr "th" ("colspan" =: "2" <> "class" =: "th-norm") $ text "Norm"
+                thSpace
+                elAttr "th" ("colspan" =: "2" <> "class" =: "th-norm") $ text "Norm"
+
                 elClass "th" "th-total-points" $ text ""
+                elAttr "th" ("colspan" =: "2" <> "class" =: "th-norm") $ text "Norm"
 
             el "tr" $ do
                 elClass "th" "th-reach-points" $ text "Reach ‡"
