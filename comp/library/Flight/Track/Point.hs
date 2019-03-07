@@ -29,7 +29,9 @@ import Flight.Units ()
 import Flight.LatLng (QAlt)
 import Flight.Field (FieldOrdering(..))
 import Flight.Score
-    ( GoalRatio, TaskPlacing, TaskPoints, Points
+    ( GoalRatio, TaskPlacing
+    , TaskPoints, Points
+    , DistancePoints, LeadingPoints, ArrivalPoints, TimePoints
     , Validity, ValidityWorking, Weights
     , Pilot, PilotTime, PilotDistance, PilotVelocity
     , PointPenalty
@@ -68,6 +70,10 @@ data NormBreakdown =
     NormBreakdown
         { place :: TaskPlacing
         , total :: TaskPoints
+        , distance :: DistancePoints
+        , leading :: LeadingPoints
+        , arrival :: ArrivalPoints
+        , time :: TimePoints
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
