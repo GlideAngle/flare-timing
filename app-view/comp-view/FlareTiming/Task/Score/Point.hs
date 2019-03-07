@@ -446,6 +446,7 @@ pointRow
 pointRow cTime cArrival _utcOffset _free dfNt pt tp sEx x = do
     let pilot = fst <$> x
     let xB = snd <$> x
+
     (yRank, yScore, yDiff, yDistance, yDistanceDiff, yLeading, yLeadingDiff, yArrival, yArrivalDiff, yTime, yTimeDiff) <- sample . current
                 $ ffor3 pilot sEx x (\pilot' sEx' (_, Breakdown{total = p, breakdown = Points{distance = d, leading = l, arrival = a, time = t}}) ->
                 case Map.lookup pilot' sEx' of

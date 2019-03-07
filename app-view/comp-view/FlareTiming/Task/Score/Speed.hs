@@ -2,20 +2,23 @@ module FlareTiming.Task.Score.Speed (tableScoreSpeed) where
 
 import Prelude hiding (min)
 import Reflex.Dom
+import Data.Maybe (fromMaybe)
 import qualified Data.Text as T (pack)
+import qualified Data.Map.Strict as Map
 
 import WireTypes.Route (TaskLength(..))
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
-import qualified WireTypes.Point as Pt (Points(..), StartGate(..))
+import qualified WireTypes.Point as Pt (Points(..))
 import qualified WireTypes.Point as Wg (Weights(..))
 import qualified WireTypes.Validity as Vy (Validity(..))
-import WireTypes.Point (TaskPlacing(..), TaskPoints(..), Breakdown(..))
+import WireTypes.Point
+    (TaskPlacing(..), TaskPoints(..), Breakdown(..), Velocity(..), StartGate(..))
 import WireTypes.ValidityWorking (ValidityWorking(..), TimeValidityWorking(..))
 import WireTypes.Comp (UtcOffset(..), Discipline(..), MinimumDistance(..))
 import WireTypes.Pilot (Pilot(..), Dnf(..), DfNoTrack(..))
 import qualified WireTypes.Pilot as Pilot (DfNoTrackPilot(..))
 import FlareTiming.Pilot (showPilotName)
-import FlareTiming.Time (timeZone)
+import FlareTiming.Time (timeZone, showT, showTDiff)
 import FlareTiming.Task.Score.Show
 
 tableScoreSpeed
@@ -23,7 +26,7 @@ tableScoreSpeed
     => Dynamic t UtcOffset
     -> Dynamic t Discipline
     -> Dynamic t MinimumDistance
-    -> Dynamic t [Pt.StartGate]
+    -> Dynamic t [StartGate]
     -> Dynamic t (Maybe TaskLength)
     -> Dynamic t Dnf
     -> Dynamic t DfNoTrack
@@ -35,7 +38,7 @@ tableScoreSpeed
     -> Dynamic t [(Pilot, Breakdown)]
     -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> m ()
-tableScoreSpeed utcOffset hgOrPg _free sgs ln dnf' dfNt _vy vw _wg _pt _tp sDfs _sEx = do
+tableScoreSpeed utcOffset hgOrPg _free sgs ln dnf' dfNt _vy vw _wg _pt _tp sDfs sEx = do
     let dnf = unDnf <$> dnf'
     lenDnf :: Int <- sample . current $ length <$> dnf
     lenDfs :: Int <- sample . current $ length <$> sDfs
@@ -56,24 +59,37 @@ tableScoreSpeed utcOffset hgOrPg _free sgs ln dnf' dfNt _vy vw _wg _pt _tp sDfs 
             el "tr" $ do
                 elAttr "th" ("rowspan" =: "2" <> "class" =: "th-placing") $ text "#"
                 elAttr "th" ("rowspan" =: "2" <> "class" =: "th-pilot") $ text "Pilot"
-                elAttr "th" ("colspan" =: "6" <> "class" =: "th-speed-section") . dynText
+                elAttr "th" ("colspan" =: "10" <> "class" =: "th-speed-section") . dynText
                     $ showSpeedSection <$> ln
 
             el "tr" $ do
                 elClass "th" "th-start-start" $ text "Start"
+                elClass "th" "th-norm th-start" $ text "Start"
+                elClass "th" "th-norm th-diff" $ text "Δ"
+
                 elClass "th" "th-start-gate" $ text "Gate"
+
                 elClass "th" "th-end" $ text "End"
+                elClass "th" "th-norm th-end" $ text "End"
+                elClass "th" "th-norm th-diff" $ text "Δ"
+
                 elClass "th" "th-time" $ text "Time ‖"
                 elClass "th" "th-pace" $ text "Pace ¶"
                 elClass "th" "th-speed" $ text "Velocity"
 
         _ <- el "tbody" $ do
-            _ <- simpleList sDfs (pointRow utcOffset dfNt)
+            _ <-
+                simpleList
+                    sDfs
+                    (pointRow
+                        utcOffset
+                        dfNt
+                        (Map.fromList <$> sEx))
 
             dnfRows dnfPlacing dnf'
             return ()
 
-        let tdFoot = elAttr "td" ("colspan" =: "8")
+        let tdFoot = elAttr "td" ("colspan" =: "14")
         let foot = el "tr" . tdFoot . text
 
         el "tfoot" $ do
@@ -138,10 +154,12 @@ pointRow
     :: MonadWidget t m
     => Dynamic t UtcOffset
     -> Dynamic t DfNoTrack
+    -> Dynamic t (Map.Map Pilot Norm.NormBreakdown)
     -> Dynamic t (Pilot, Breakdown)
     -> m ()
-pointRow utcOffset dfNt x = do
+pointRow utcOffset dfNt sEx x = do
     let tz = timeZone <$> utcOffset
+    tz' <- sample . current $ timeZone <$> utcOffset
     let pilot = fst <$> x
     let xB = snd <$> x
     let v = velocity . snd <$> x
@@ -152,12 +170,38 @@ pointRow utcOffset dfNt x = do
                            then ("pilot-dfnt", n <> " ☞ ")
                            else ("", n))
 
+    (ySs, ySsDiff, yEs, yEsDiff) <- sample . current
+                $ ffor3 pilot sEx x (\pilot' sEx' (_, Breakdown{velocity = v'}) ->
+                case (v', Map.lookup pilot' sEx') of
+                    (Just Velocity{ss, gs, es}, Just Norm.NormBreakdown {ss = ss', es = es'}) ->
+                        let start =
+                                case (ss, gs) of
+                                    (Just _, _) -> ss
+                                    (_, Just (StartGate g)) -> Just g
+                                    _ -> Nothing
+                        in
+                            ( maybe "" (showT tz') ss'
+                            , fromMaybe "" (showTDiff <$> ss' <*> start)
+                            , maybe "" (showT tz') es'
+                            , fromMaybe "" (showTDiff <$> es' <*> es)
+                            )
+
+                    _ -> ("", "", "", ""))
+
     elDynClass "tr" (fst <$> classPilot) $ do
         elClass "td" "td-placing" . dynText $ showRank . place <$> xB
         elClass "td" "td-pilot" . dynText $ snd <$> classPilot
+
         elClass "td" "td-start-start" . dynText $ (maybe "" . showSs) <$> tz <*> v
+        elClass "td" "td-norm td-norm-start" . text $ ySs
+        elClass "td" "td-norm td-diff" . text $ ySsDiff
+
         elClass "td" "td-start-gate" . dynText $ (maybe "" . showGs) <$> tz <*> v
+
         elClass "td" "td-end" . dynText $ (maybe "" . showEs) <$> tz <*> v
+        elClass "td" "td-norm td-norm-end" . text $ yEs
+        elClass "td" "td-norm td-diff" . text $ yEsDiff
+
         elClass "td" "td-time" . dynText $ maybe "" showGsVelocityTime <$> v
         elClass "td" "td-pace" . dynText $ maybe "" showSsVelocityTime <$> v
         elClass "td" "td-speed" . dynText $ maybe "" showVelocityVelocity <$> v
@@ -198,7 +242,7 @@ dnfRow place rows pilot = do
                     elAttr
                         "td"
                         ( "rowspan" =: (T.pack $ show n)
-                        <> "colspan" =: "2"
+                        <> "colspan" =: "10"
                         <> "class" =: "td-dnf"
                         )
                         $ text "DNF"

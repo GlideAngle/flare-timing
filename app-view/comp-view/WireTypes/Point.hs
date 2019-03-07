@@ -377,6 +377,8 @@ data NormBreakdown =
         , leading :: LeadingPoints
         , arrival :: ArrivalPoints
         , time :: TimePoints
+        , ss :: Maybe UTCTime
+        , es :: Maybe UTCTime
         }
     deriving (Eq, Ord, Show, Generic, FromJSON)
 
