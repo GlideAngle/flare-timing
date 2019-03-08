@@ -82,7 +82,9 @@ xpRankScore =
                 , time = TimePoints . dToR $ t
                 , ss = parseUtcTime <$> ss
                 , es = parseUtcTime <$> es
-                , ssElapsed = toPilotTime . parseHmsTime <$> ssE
+                , ssElapsed =
+                    if ssE == Just "00:00:00" then Nothing else
+                    toPilotTime . parseHmsTime <$> ssE
                 }
         , \NormBreakdown
                 { place = TaskPlacing r
