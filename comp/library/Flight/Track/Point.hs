@@ -76,6 +76,7 @@ data NormBreakdown =
         , time :: TimePoints
         , ss :: Maybe UTCTime
         , es :: Maybe UTCTime
+        , ssElapsed :: Maybe (PilotTime (Quantity Double [u| h |]))
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
@@ -166,9 +167,15 @@ cmpNorm a b =
         ("time", _) -> LT
 
         ("ss", "es") -> LT
+        ("ss", "ssElapsed") -> LT
         ("ss", _) -> GT
 
+        ("es", "ssElapsed") -> LT
         ("es", _) -> GT
+
+        ("ssElapsed", _) -> GT
+
+        _ -> compare a b
 
 cmpPointing :: (Ord a, IsString a) => a -> a -> Ordering
 cmpPointing a b =

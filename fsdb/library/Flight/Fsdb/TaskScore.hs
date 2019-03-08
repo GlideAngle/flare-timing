@@ -1,10 +1,14 @@
 module Flight.Fsdb.TaskScore (parseScores) where
 
+import Data.UnitsOfMeasure (u, convert, fromRational')
+import Data.UnitsOfMeasure.Internal (Quantity(..))
+import Data.Time.LocalTime (TimeOfDay, timeOfDayToTime)
 import Data.Maybe (catMaybes)
+
 import Text.XML.HXT.Arrow.Pickle
     ( PU(..)
     , unpickleDoc, xpWrap, xpFilterAttr, xpElem, xpAttr
-    , xpInt, xpPrim, xp8Tuple, xpTextAttr, xpOption
+    , xpInt, xpPrim, xp9Tuple, xpTextAttr, xpOption
     )
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
 import Text.XML.HXT.Core
@@ -37,13 +41,21 @@ import Flight.Score
     , LeadingPoints(..)
     , ArrivalPoints(..)
     , TimePoints(..)
+    , PilotTime(..)
     )
 import Flight.Fsdb.Pilot (getCompPilot)
 import Flight.Fsdb.KeyPilot (unKeyPilot, keyPilots, keyMap)
-import Flight.Fsdb.Internal.Parse (parseUtcTime)
+import Flight.Fsdb.Internal.Parse (parseUtcTime, parseHmsTime)
 
 dToR :: Double -> Rational
 dToR = toRational
+
+toPilotTime :: TimeOfDay -> PilotTime (Quantity Double [u| h |])
+toPilotTime x =
+    PilotTime $ convert secs
+    where
+        secs :: Quantity Double [u| s |]
+        secs = fromRational' . MkQuantity . toRational $ timeOfDayToTime x
 
 xpRankScore :: PU NormBreakdown
 xpRankScore =
@@ -57,9 +69,10 @@ xpRankScore =
         <+> hasName "time_points"
         <+> hasName "started_ss"
         <+> hasName "finished_ss"
+        <+> hasName "ss_time"
         )
     $ xpWrap
-        ( \(r, p, d, l, a, t, ss, es) ->
+        ( \(r, p, d, l, a, t, ss, es, ssE) ->
             NormBreakdown
                 { place = TaskPlacing . fromIntegral $ r
                 , total = TaskPoints . toRational $ p
@@ -69,6 +82,7 @@ xpRankScore =
                 , time = TimePoints . dToR $ t
                 , ss = parseUtcTime <$> ss
                 , es = parseUtcTime <$> es
+                , ssElapsed = toPilotTime . parseHmsTime <$> ssE
                 }
         , \NormBreakdown
                 { place = TaskPlacing r
@@ -79,6 +93,7 @@ xpRankScore =
                 , time = TimePoints t
                 , ss
                 , es
+                , ssElapsed
                 } ->
                     ( fromIntegral r
                     , round p
@@ -88,9 +103,10 @@ xpRankScore =
                     , fromRational t
                     , show <$> ss
                     , show <$> es
+                    , show <$> ssElapsed
                     )
         )
-    $ xp8Tuple
+    $ xp9Tuple
         (xpAttr "rank" xpInt)
         (xpAttr "points" xpInt)
         (xpAttr "distance_points" xpPrim)
@@ -99,6 +115,7 @@ xpRankScore =
         (xpAttr "time_points" xpPrim)
         (xpOption $ xpTextAttr "started_ss")
         (xpOption $ xpTextAttr "finished_ss")
+        (xpOption $ xpTextAttr "ss_time")
 
 getScore :: ArrowXml a => [Pilot] -> a XmlTree [(Pilot, Maybe NormBreakdown)]
 getScore pilots =

@@ -7,9 +7,11 @@ module Flight.Fsdb.Internal.Parse
     , dmm
     , dms
     , parseUtcTime
+    , parseHmsTime
     ) where
 
 import Data.Time.Clock (UTCTime)
+import Data.Time.LocalTime (TimeOfDay)
 import Data.Time.Format (parseTimeOrError, defaultTimeLocale)
 import Text.Megaparsec hiding (parse)
 import Text.Megaparsec.Char
@@ -18,7 +20,6 @@ import qualified Text.Megaparsec as P
 import Data.Functor.Identity
 
 -- |
---
 -- >>> parseUtcTime "2012-01-05T12:00:00+11:00"
 -- 2012-01-05 01:00:00 UTC
 --
@@ -37,6 +38,25 @@ parseUtcTime :: String -> UTCTime
 parseUtcTime =
     -- NOTE: %F is %Y-%m-%d, %T is %H:%M:%S and %z is -HHMM or -HH:MM
     parseTimeOrError False defaultTimeLocale "%FT%T%Z"
+
+-- |
+-- >>> parseHmsTime "12:00:00"
+-- 12:00:00
+--
+-- >>> parseHmsTime "14:30:55"
+-- 14:30:55
+--
+-- >>> parseHmsTime "17:50:09"
+-- 17:50:09
+--
+-- >>> parseHmsTime "14:00:00"
+-- 14:00:00
+--
+-- >>> parseHmsTime "17:46:43"
+-- 17:46:43
+parseHmsTime :: String -> TimeOfDay
+parseHmsTime =
+    parseTimeOrError False defaultTimeLocale "%T"
 
 type Parser = Parsec String String
 
