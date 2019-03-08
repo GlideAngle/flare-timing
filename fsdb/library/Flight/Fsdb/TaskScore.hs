@@ -8,7 +8,7 @@ import Data.Maybe (catMaybes)
 import Text.XML.HXT.Arrow.Pickle
     ( PU(..)
     , unpickleDoc, xpWrap, xpFilterAttr, xpElem, xpAttr
-    , xpInt, xpPrim, xp9Tuple, xpTextAttr, xpOption
+    , xpInt, xpPrim, xp10Tuple, xpTextAttr, xpOption
     )
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
 import Text.XML.HXT.Core
@@ -33,6 +33,8 @@ import Text.XML.HXT.Core
     , hasAttr
     )
 
+import Flight.Distance (TaskDistance(..))
+import Flight.Track.Distance (AwardedDistance(..))
 import Flight.Track.Point (NormPointing(..), NormBreakdown(..))
 import Flight.Comp (PilotId(..), Pilot(..))
 import Flight.Score
@@ -46,6 +48,7 @@ import Flight.Score
 import Flight.Fsdb.Pilot (getCompPilot)
 import Flight.Fsdb.KeyPilot (unKeyPilot, keyPilots, keyMap)
 import Flight.Fsdb.Internal.Parse (parseUtcTime, parseHmsTime)
+import Flight.Fsdb.Distance (asAwardReach, taskMetresToKm, taskKmToMetres)
 
 dToR :: Double -> Rational
 dToR = toRational
@@ -70,13 +73,14 @@ xpRankScore =
         <+> hasName "started_ss"
         <+> hasName "finished_ss"
         <+> hasName "ss_time"
+        <+> hasName "distance"
         )
     $ xpWrap
-        ( \(r, p, d, l, a, t, ss, es, ssE) ->
+        ( \(r, p, dp, l, a, t, ss, es, ssE, dM) ->
             NormBreakdown
                 { place = TaskPlacing . fromIntegral $ r
                 , total = TaskPoints . toRational $ p
-                , distance = DistancePoints . dToR $ d
+                , distance = DistancePoints . dToR $ dp
                 , leading = LeadingPoints . dToR $ l
                 , arrival = ArrivalPoints . dToR $ a
                 , time = TimePoints . dToR $ t
@@ -85,30 +89,34 @@ xpRankScore =
                 , ssElapsed =
                     if ssE == Just "00:00:00" then Nothing else
                     toPilotTime . parseHmsTime <$> ssE
+                , distanceMade = taskKmToMetres . TaskDistance . MkQuantity $ dM
+                , distanceFrac = 0
                 }
         , \NormBreakdown
                 { place = TaskPlacing r
                 , total = TaskPoints p
-                , distance = DistancePoints d
+                , distance = DistancePoints dp
                 , leading = LeadingPoints l
                 , arrival = ArrivalPoints a
                 , time = TimePoints t
                 , ss
                 , es
                 , ssElapsed
+                , distanceMade = TaskDistance (MkQuantity d)
                 } ->
                     ( fromIntegral r
                     , round p
-                    , fromRational d
+                    , fromRational dp
                     , fromRational l
                     , fromRational a
                     , fromRational t
                     , show <$> ss
                     , show <$> es
                     , show <$> ssElapsed
+                    , d
                     )
         )
-    $ xp9Tuple
+    $ xp10Tuple
         (xpAttr "rank" xpInt)
         (xpAttr "points" xpInt)
         (xpAttr "distance_points" xpPrim)
@@ -118,12 +126,24 @@ xpRankScore =
         (xpOption $ xpTextAttr "started_ss")
         (xpOption $ xpTextAttr "finished_ss")
         (xpOption $ xpTextAttr "ss_time")
+        (xpAttr "distance" xpPrim)
 
 getScore :: ArrowXml a => [Pilot] -> a XmlTree [(Pilot, Maybe NormBreakdown)]
 getScore pilots =
     getChildren
     >>> deep (hasName "FsTask")
-    >>> getPoint
+    >>> getTaskDistance
+    &&& getPoint
+    >>> arr (\(td, xs) ->
+        [
+            (,) p $ do
+                n@NormBreakdown{distanceMade = dm} <- x
+                let dKm = taskMetresToKm dm
+                AwardedDistance{awardedFrac = frac} <- asAwardReach td (Just dKm)
+                return $ n{distanceFrac = frac}
+
+        | (p, x) <- xs
+        ])
     where
         kps = keyPilots pilots
 
@@ -150,6 +170,7 @@ getScore pilots =
                         >>> hasAttr "leading_points"
                         >>> hasAttr "arrival_points"
                         >>> hasAttr "time_points"
+                        >>> hasAttr "distance"
                         )
                     >>> getAttrValue "id"
                     &&& getResultScore
@@ -159,6 +180,11 @@ getScore pilots =
                     getChildren
                     >>> hasName "FsResult"
                     >>> arr (unpickleDoc xpRankScore)
+
+        getTaskDistance =
+            getChildren
+            >>> hasName "FsTaskScoreParams"
+            >>> getAttrValue "task_distance"
 
 
 parseScores :: String -> IO (Either String NormPointing)

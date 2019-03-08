@@ -36,6 +36,7 @@ import Flight.Score
     , Pilot, PilotTime, PilotDistance, PilotVelocity
     , PointPenalty
     )
+import Flight.Track.Distance (Land)
 import Flight.Comp (StartGate)
 
 data Velocity =
@@ -77,6 +78,8 @@ data NormBreakdown =
         , ss :: Maybe UTCTime
         , es :: Maybe UTCTime
         , ssElapsed :: Maybe (PilotTime (Quantity Double [u| h |]))
+        , distanceMade :: Land
+        , distanceFrac :: Double
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
@@ -168,12 +171,23 @@ cmpNorm a b =
 
         ("ss", "es") -> LT
         ("ss", "ssElapsed") -> LT
+        ("ss", "distanceMade") -> LT
+        ("ss", "distanceFrac") -> LT
         ("ss", _) -> GT
 
         ("es", "ssElapsed") -> LT
+        ("es", "distanceMade") -> LT
+        ("es", "distanceFrac") -> LT
         ("es", _) -> GT
 
+        ("ssElapsed", "distanceMade") -> LT
+        ("ssElapsed", "distanceFrac") -> LT
         ("ssElapsed", _) -> GT
+
+        ("distanceMade", "distanceFrac") -> LT
+        ("distanceMade", _) -> GT
+
+        ("distanceFrac", _) -> GT
 
         _ -> compare a b
 

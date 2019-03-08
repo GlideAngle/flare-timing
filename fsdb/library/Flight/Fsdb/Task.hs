@@ -10,7 +10,7 @@ module Flight.Fsdb.Task
 import Data.Time.Clock (addUTCTime)
 import Data.Maybe (catMaybes, fromMaybe)
 import Data.List (sort, sortOn, nub, find)
-import Data.UnitsOfMeasure ((/:), u, convert, unQuantity)
+import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Text.XML.HXT.Arrow.Pickle
     ( XmlPickler(..), PU(..)
@@ -57,7 +57,6 @@ import Flight.Zone.MkZones
     )
 import qualified Flight.Zone.Raw as Z (RawZone(..))
 import Flight.Track.Time (AwardedVelocity(..))
-import Flight.Track.Distance (AwardedDistance(..))
 import Flight.Comp
     ( PilotId(..), Pilot(..)
     , PilotGroup(..), DfNoTrack(..), DfNoTrackPilot(..)
@@ -69,6 +68,7 @@ import Flight.Fsdb.Internal.Parse (parseUtcTime)
 import Flight.Fsdb.Internal.XmlPickle (xpNewtypeQuantity)
 import Flight.Fsdb.Tweak (xpTweak)
 import Flight.Fsdb.KeyPilot (unKeyPilot, keyPilots, keyMap)
+import Flight.Fsdb.Distance (asAwardReach)
 
 -- | The attribute //FsTaskDefinition@goal.
 newtype FsGoal = FsGoal String
@@ -315,35 +315,16 @@ isGoalLine :: FsGoal -> GoalLine
 isGoalLine (FsGoal "LINE") = GoalLine
 isGoalLine _ = GoalNotLine
 
-taskKmToMetres
-    :: QTaskDistance Double [u| km |]
-    -> QTaskDistance Double [u| m |]
-taskKmToMetres (TaskDistance d) = TaskDistance . convert $ d
-
 asAward
     :: String
     -> (Pilot, Maybe (QTaskDistance Double [u| km |]), Maybe AwardedVelocity)
     -> DfNoTrackPilot
-asAward t' (p, m', v) =
+asAward t' (p, m, v) =
     DfNoTrackPilot
         { pilot = p
-        , awardedReach = reach
+        , awardedReach = asAwardReach t' m
         , awardedVelocity = fromMaybe (AwardedVelocity Nothing Nothing) v
         }
-    where
-        reach = do
-            -- TODO: Use unpickling for FsTaskScoreParams/@task_distance.
-            -- WARNING: Having some trouble with unpickling task distance.
-            -- Going with simple read for now.
-            let td :: Double = read t'
-            let t@(TaskDistance qt) = taskKmToMetres . TaskDistance . MkQuantity $ td
-            m@(TaskDistance qr) <- taskKmToMetres <$> m'
-
-            return $ AwardedDistance
-                { awardedMade = m
-                , awardedTask = t
-                , awardedFrac = unQuantity $ qr /: qt
-                }
 
 getTaskPilotGroup :: ArrowXml a => [Pilot] -> a XmlTree (PilotGroup)
 getTaskPilotGroup ps =
