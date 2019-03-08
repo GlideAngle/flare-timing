@@ -85,5 +85,5 @@ zoneGive separatedZones g (x : xs) =
 
 f:: (RawZone -> RawZone -> Bool) -> Give -> RawZone -> RawZone -> RawZone
 f _ _ RawZone{give = Nothing} y = y
-f separatedZones zg x@RawZone{give = Just g, radius = r} y =
+f separatedZones zg x@RawZone{give = Just _} y =
     if separatedZones x y then entry zg y else exit zg y
