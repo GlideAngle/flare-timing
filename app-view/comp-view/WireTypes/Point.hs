@@ -379,6 +379,7 @@ data NormBreakdown =
         , time :: TimePoints
         , ss :: Maybe UTCTime
         , es :: Maybe UTCTime
+        , ssElapsed :: Maybe PilotTime
         }
     deriving (Eq, Ord, Show, Generic, FromJSON)
 

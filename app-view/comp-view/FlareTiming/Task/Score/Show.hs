@@ -5,6 +5,8 @@ module FlareTiming.Task.Score.Show
     , showSs
     , showGs
     , showEs
+    , showPilotTime
+    , showPilotTimeDiff
     , showSsVelocityTime
     , showGsVelocityTime
     , showVelocityVelocity
@@ -64,6 +66,19 @@ showGs _ _ = ""
 showEs :: TimeZone -> Velocity -> T.Text
 showEs tz Velocity{es = Just t} = showT tz t
 showEs _ _ = ""
+
+showPilotTime :: PilotTime -> T.Text
+showPilotTime (PilotTime t) = showHmsForHours t
+
+showPilotTimeDiff :: PilotTime -> PilotTime -> T.Text
+showPilotTimeDiff (PilotTime expected) (PilotTime actual)
+    | actual == expected = "="
+    | otherwise =
+        let hrs = actual - expected in
+        if hrs < 0 then
+            "-" <> showHmsForHours (negate hrs)
+        else
+            "+" <> showHmsForHours hrs
 
 showSsVelocityTime :: Velocity -> T.Text
 showSsVelocityTime Velocity{ssElapsed = Just (PilotTime t)} =
