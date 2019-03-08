@@ -176,8 +176,8 @@ pointRow utcOffset dfNt sEx x = do
                     (Just Velocity{ss, gs, es}, Just Norm.NormBreakdown {ss = ss', es = es'}) ->
                         let start =
                                 case (ss, gs) of
-                                    (Just _, _) -> ss
                                     (_, Just (StartGate g)) -> Just g
+                                    (Just _, _) -> ss
                                     _ -> Nothing
                         in
                             ( maybe "" (showT tz') ss'
