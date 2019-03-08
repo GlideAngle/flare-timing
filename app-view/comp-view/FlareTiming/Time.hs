@@ -37,11 +37,9 @@ showT tz =
 
 showTDiff :: UTCTime -> UTCTime -> T.Text
 showTDiff expected actual =
-    if hrs < 0 then
-        "-" <> showHmsForHours (negate hrs)
-    else
-        "+" <> showHmsForHours hrs
-
+    if | expected == actual -> "="
+       | hrs < 0 -> "-" <> showHmsForHours (negate hrs)
+       | otherwise -> "+" <> showHmsForHours hrs
     where
         secs :: Integer
         secs = round $ actual `diffUTCTime` expected
