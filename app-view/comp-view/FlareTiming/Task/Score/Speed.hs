@@ -65,13 +65,13 @@ tableScoreSpeed utcOffset hgOrPg _free sgs ln dnf' dfNt _vy vw _wg _pt _tp sDfs 
             el "tr" $ do
                 elClass "th" "th-start-start" $ text "Start"
                 elClass "th" "th-norm th-start" $ text "Start"
-                elClass "th" "th-norm th-diff" $ text "Δ"
+                elClass "th" "th-norm th-time-diff" $ text "Δ"
 
                 elClass "th" "th-start-gate" $ text "Gate"
 
                 elClass "th" "th-end" $ text "End"
                 elClass "th" "th-norm th-end" $ text "End"
-                elClass "th" "th-norm th-diff" $ text "Δ"
+                elClass "th" "th-norm th-time-diff" $ text "Δ"
 
                 elClass "th" "th-time" $ text "Time ‖"
                 elClass "th" "th-pace" $ text "Pace ¶"
@@ -194,13 +194,13 @@ pointRow utcOffset dfNt sEx x = do
 
         elClass "td" "td-start-start" . dynText $ (maybe "" . showSs) <$> tz <*> v
         elClass "td" "td-norm td-norm-start" . text $ ySs
-        elClass "td" "td-norm td-diff" . text $ ySsDiff
+        elClass "td" "td-norm td-time-diff" . text $ ySsDiff
 
         elClass "td" "td-start-gate" . dynText $ (maybe "" . showGs) <$> tz <*> v
 
         elClass "td" "td-end" . dynText $ (maybe "" . showEs) <$> tz <*> v
         elClass "td" "td-norm td-norm-end" . text $ yEs
-        elClass "td" "td-norm td-diff" . text $ yEsDiff
+        elClass "td" "td-norm td-time-diff" . text $ yEsDiff
 
         elClass "td" "td-time" . dynText $ maybe "" showGsVelocityTime <$> v
         elClass "td" "td-pace" . dynText $ maybe "" showSsVelocityTime <$> v

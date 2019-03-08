@@ -41,6 +41,13 @@ body, input, button, select, textarea
 .td-norm, .th-diff
     @extend .has-text-right;
 
+.td-norm.td-norm-start, .td-norm.td-norm-end, .th-norm.th-start, .th-norm.th-time-diff, .td-norm.td-time-diff
+    @extend .has-text-centered;
+
+.td-norm-start, .td-norm-end
+    background-color: $info;
+    color: $info-invert;
+
 .th-total-points
     @extend .is-primary;
     @extend .has-text-right;
@@ -187,10 +194,6 @@ tr.pilot-dfnt .td-pilot
 
 .td-start-start
     @extend .has-text-centered;
-
-.td-norm-start, .td-norm-end
-    background-color: $info;
-    color: $info-invert;
 
 table:not(.sg) .td-start-start
     @extend .has-text-success;
