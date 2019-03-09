@@ -22,7 +22,7 @@ result*
 **/_build/**
 **/_static/**
 **/_template/**
-dist*
+dist-*
 .ghc.*
 *.local
 ghc-*
