@@ -155,24 +155,24 @@ tableScorePoint utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sEx 
                 elClass "th" "th-effort-points" $ text "Effort §"
 
                 elClass "th" "th-distance-points" $ text "Subtotal"
-                elClass "th" "th-norm th-distance-points" $ text "Distance"
-                elClass "th" "th-norm th-diff" $ text "Δ"
+                elClass "th" "th-norm th-distance-points" $ text "✓ Subtotal"
+                elClass "th" "th-norm th-diff" $ text "Δ Subtotal"
 
                 elClass "th" "th-lead-points" $ text "Lead"
-                elClass "th" "th-norm th-time-points" $ text "Lead"
-                elClass "th" "th-norm th-diff" $ text "Δ"
+                elClass "th" "th-norm th-time-points" $ text "✓ Lead"
+                elClass "th" "th-norm th-diff" $ text "Δ Lead"
 
                 elDynClass "th" (fst <$> cTimePoints) $ text "Time"
-                elClass "th" "th-norm th-time-points" $ text "Time"
-                elClass "th" "th-norm th-diff" $ text "Δ"
+                elClass "th" "th-norm th-time-points" $ text "✓ Time"
+                elClass "th" "th-norm th-diff" $ text "Δ Time"
 
                 elDynClass "th" (fst <$> cArrivalPoints) $ text "Arrival"
-                elClass "th" "th-norm th-arrival-points" $ text "Arrival"
-                elClass "th" "th-norm th-diff" $ text "Δ"
+                elClass "th" "th-norm th-arrival-points" $ text "✓ Arrival"
+                elClass "th" "th-norm th-diff" $ text "Δ Arrival"
 
                 elClass "th" "th-total-points" $ text "Total"
-                elClass "th" "th-norm th-total-points" $ text "Total"
-                elClass "th" "th-norm th-diff" $ text "Δ"
+                elClass "th" "th-norm th-total-points" $ text "✓ Total"
+                elClass "th" "th-norm th-diff" $ text "Δ Total"
 
             elClass "tr" "tr-validity" $ do
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-launch-validity") . dynText $
@@ -381,6 +381,8 @@ tableScorePoint utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sEx 
             foot "‖ \"Time\" is the time across the speed section from time zero of the start gate taken."
             foot "¶ \"Pace\" is the time across the speed section from the time of crossing the start for the last time."
             foot "☞ Pilots without a tracklog but given a distance by the scorer."
+            foot "✓ An expected value as calculated by the official scoring program, FS."
+            foot "Δ A difference between a value and an expected value."
             dyn_ $ ffor hgOrPg (\case
                 HangGliding -> return ()
                 Paragliding -> do

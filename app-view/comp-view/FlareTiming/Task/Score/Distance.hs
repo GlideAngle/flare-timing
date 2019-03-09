@@ -76,14 +76,14 @@ tableScoreDistance utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt _tp sDfs s
                 elAttr "th" ("rowspan" =: "2" <> "class" =: "th-pilot") $ text "Pilot"
                 elAttr "th" ("colspan" =: "6" <> "class" =: "th-distance") $ text "Distance Flown"
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance-points-breakdown") $ text "Points for Distance"
-                elAttr "th" ("colspan" =: "2" <> "class" =: "th-norm") $ text "FS Points for Distance"
+                elAttr "th" ("colspan" =: "2" <> "class" =: "th-norm") $ text "✓ Points for Distance"
 
             el "tr" $ do
                 elClass "th" "th-min-distance" $ text "Min"
 
                 elClass "th" "th-best-distance" $ text "Reach †"
-                elClass "th" "th-norm th-best-distance" $ text "FS Reach ◎"
-                elClass "th" "th-norm th-diff" $ text "Δ"
+                elClass "th" "th-norm th-best-distance" $ text "✓ Reach"
+                elClass "th" "th-norm th-diff" $ text "Δ Reach"
 
                 elClass "th" "th-alt-distance" $ text "Alt"
                 elClass "th" "th-landed-distance" $ text "Landed"
@@ -91,8 +91,8 @@ tableScoreDistance utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt _tp sDfs s
                 elClass "th" "th-effort-points" $ text "Effort §"
 
                 elClass "th" "th-distance-points" $ text "Subtotal"
-                elClass "th" "th-norm th-distance-points" $ text "Distance"
-                elClass "th" "th-norm th-diff" $ text "Δ"
+                elClass "th" "th-norm th-distance-points" $ text "✓ Subtotal"
+                elClass "th" "th-norm th-diff" $ text "Δ Subtotal"
 
             elClass "tr" "tr-validity" $ do
                 elAttr "th" ("colspan" =: "2" <> "class" =: "th-launch-validity") . dynText $
@@ -196,6 +196,8 @@ tableScoreDistance utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt _tp sDfs s
             foot "‖ \"Time\" is the time across the speed section from time zero of the start gate taken."
             foot "¶ \"Pace\" is the time across the speed section from the time of crossing the start for the last time."
             foot "☞ Pilots without a tracklog but given a distance by the scorer."
+            foot "✓ An expected value as calculated by the official scoring program, FS."
+            foot "Δ A difference between a value and an expected value."
             dyn_ $ ffor hgOrPg (\case
                 HangGliding -> return ()
                 Paragliding -> do
