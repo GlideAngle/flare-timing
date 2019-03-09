@@ -20,8 +20,6 @@ import WireTypes.Point
     , showPilotDistance
     , showPilotAlt
 
-    , showTaskLinearPoints
-    , showTaskDifficultyPoints
     , showTaskDistancePoints
     , showTaskArrivalPoints
     , showTaskLeadingPoints
@@ -115,7 +113,7 @@ tableScoreOver utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt tp sDfs sEx 
 
             el "tr" $ do
                 elAttr "th" ("colspan" =: "13") $ text ""
-                elAttr "th" ("colspan" =: "7" <> "class" =: "th-points") $ text "Points"
+                elAttr "th" ("colspan" =: "5" <> "class" =: "th-points") $ text "Points"
                 elAttr "th" ("colspan" =: "2" <> "rowspan" =: "2" <> "class" =: "th-norm") $ text "✓ Points"
 
             el "tr" $ do
@@ -125,7 +123,6 @@ tableScoreOver utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt tp sDfs sEx 
                 elAttr "th" ("colspan" =: "6" <> "class" =: "th-speed-section") . dynText
                     $ showSpeedSection <$> ln
                 elAttr "th" ("colspan" =: "4" <> "class" =: "th-distance") $ text "Distance Flown"
-                elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance-points-breakdown") $ text "Points for Distance"
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-other-points") $ text ""
                 elClass "th" "th-total-points" $ text ""
 
@@ -141,10 +138,8 @@ tableScoreOver utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt tp sDfs sEx 
                 elClass "th" "th-best-distance" $ text "Reach †"
                 elClass "th" "th-alt-distance" $ text "Alt"
                 elClass "th" "th-landed-distance" $ text "Landed"
-                elClass "th" "th-reach-points" $ text "Reach ‡"
-                elClass "th" "th-effort-points" $ text "Effort §"
 
-                elClass "th" "th-distance-points" $ text "Subtotal"
+                elClass "th" "th-distance-points" $ text "Distance"
                 elClass "th" "th-lead-points" $ text "Lead"
                 elDynClass "th" (fst <$> cTimePoints) $ text "Time"
                 elDynClass "th" (fst <$> cArrivalPoints) $ text "Arrival"
@@ -160,22 +155,6 @@ tableScoreOver utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt tp sDfs sEx 
                 elClass "th" "th-best-distance-units" $ text "(km)"
                 elClass "th" "th-alt-distance-units" $ text "(m)"
                 elClass "th" "th-landed-distance-units" $ text "(km)"
-
-                elClass "th" "th-reach-alloc" . dynText $
-                    maybe
-                        ""
-                        ( (\x -> showTaskLinearPoints (Just x) x)
-                        . Pt.reach
-                        )
-                    <$> pt
-
-                elClass "th" "th-effort-alloc" . dynText $
-                    maybe
-                        ""
-                        ( (\x -> showTaskDifficultyPoints (Just x) x)
-                        . Pt.effort
-                        )
-                    <$> pt
 
                 elClass "th" "th-distance-alloc" . dynText $
                     maybe
@@ -235,7 +214,7 @@ tableScoreOver utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt tp sDfs sEx 
             dnfRows dnfPlacing dnf'
             return ()
 
-        let tdFoot = elAttr "td" ("colspan" =: "22")
+        let tdFoot = elAttr "td" ("colspan" =: "20")
         let foot = el "tr" . tdFoot . text
 
         el "tfoot" $ do
@@ -368,10 +347,6 @@ pointRow cTime cArrival utcOffset free dfNt pt tp sEx x = do
         elDynClass "td" (snd . fst <$> awardFree) . dynText
             $ maybe "" showPilotDistance . landedDistance <$> xB
 
-        elClass "td" "td-reach-points" . dynText
-            $ showMax Pt.reach showTaskLinearPoints pt points
-        elClass "td" "td-effort-points" . dynText
-            $ showMax Pt.effort showTaskDifficultyPoints pt points
         elClass "td" "td-distance-points" . dynText
             $ showMax Pt.distance showTaskDistancePoints pt points
         elClass "td" "td-leading-points" . dynText
@@ -423,7 +398,7 @@ dnfRow place rows pilot = do
                     elAttr
                         "td"
                         ( "rowspan" =: (T.pack $ show n)
-                        <> "colspan" =: "16"
+                        <> "colspan" =: "14"
                         <> "class" =: "td-dnf"
                         )
                         $ text "DNF"
