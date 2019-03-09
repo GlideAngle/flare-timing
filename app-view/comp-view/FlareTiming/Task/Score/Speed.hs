@@ -103,10 +103,6 @@ tableScoreSpeed utcOffset hgOrPg _free sgs ln dnf' dfNt _vy vw _wg _pt _tp sDfs 
         let foot = el "tr" . tdFoot . text
 
         el "tfoot" $ do
-            foot "* Any points so annotated are the maximum attainable."
-            foot "† How far along the course, reaching goal or elsewhere. The distance reached in the air can be further than the distance at landing."
-            foot "‡ Points award for reach are also called linear distance points."
-            foot "§ Points award for effort are also called distance difficulty points."
             foot "‖ \"Time\" is the time across the speed section from time zero of the start gate taken."
             foot "¶ \"Pace\" is the time across the speed section from the time of crossing the start for the last time."
             foot "☞ Pilots without a tracklog but given a distance by the scorer."
