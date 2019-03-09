@@ -29,17 +29,6 @@ import WireTypes.Point
     , showTaskPoints
     , showTaskPointsDiff
     , showRounded
-
-    , showDistanceWeight
-    , showArrivalWeight
-    , showLeadingWeight
-    , showTimeWeight
-    )
-import WireTypes.Validity
-    ( showLaunchValidity
-    , showDistanceValidity
-    , showTimeValidity
-    , showTaskValidity
     )
 import WireTypes.ValidityWorking (ValidityWorking(..), TimeValidityWorking(..))
 import WireTypes.Comp (UtcOffset(..), Discipline(..), MinimumDistance(..))
@@ -66,7 +55,7 @@ tableScoreOver
     -> Dynamic t [(Pilot, Breakdown)]
     -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> m ()
-tableScoreOver utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt tp sDfs sEx = do
+tableScoreOver utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt tp sDfs sEx = do
     let dnf = unDnf <$> dnf'
     lenDnf :: Int <- sample . current $ length <$> dnf
     lenDfs :: Int <- sample . current $ length <$> sDfs
@@ -162,97 +151,6 @@ tableScoreOver utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt tp sDfs sEx = 
                 elClass "th" "th-total-points" $ text "Total"
                 elClass "th" "th-norm th-total-points" $ text "✓-Total"
                 elClass "th" "th-norm th-diff" $ text "Δ-Total"
-
-            elClass "tr" "tr-validity" $ do
-                elAttr "th" ("colspan" =: "3" <> "class" =: "th-launch-validity") . dynText $
-                    maybe
-                        ""
-                        ( (\v ->
-                            "Validity (Launch = "
-                            <> showLaunchValidity v
-                            <> ")")
-                        . Vy.launch
-                        )
-                    <$> vy
-
-                elAttr "th" ("colspan" =: "10") $ text ""
-
-                thSpace
-                thSpace
-
-                elClass "th" "th-distance-validity" . dynText $
-                    maybe
-                        ""
-                        ( showDistanceValidity
-                        . Vy.distance
-                        )
-                    <$> vy
-
-                thSpace
-
-                elClass "th" "th-time-validity" . dynText $
-                    maybe
-                        ""
-                        ( showTimeValidity
-                        . Vy.time
-                        )
-                    <$> vy
-
-                thSpace
-
-                elClass "th" "th-task-validity" . dynText $
-                    maybe
-                        ""
-                        ( showTaskValidity
-                        . Vy.task
-                        )
-                    <$> vy
-
-                thSpace
-                thSpace
-
-            elClass "tr" "tr-weight" $ do
-                elAttr "th" ("colspan" =: "3" <> "class" =: "th-weight") $ text "Weights"
-                elAttr "th" ("colspan" =: "10") $ text ""
-
-                thSpace
-                thSpace
-
-                elClass "th" "th-distance-weight" . dynText $
-                    maybe
-                        ""
-                        ( showDistanceWeight
-                        . Wg.distance
-                        )
-                    <$> wg
-
-                elClass "th" "th-leading-weight" . dynText$
-                    maybe
-                        ""
-                        ( showLeadingWeight
-                        . Wg.leading
-                        )
-                    <$> wg
-
-                elClass "th" "th-time-weight" . dynText$
-                    maybe
-                        ""
-                        ( showTimeWeight
-                        . Wg.time
-                        )
-                    <$> wg
-
-                elClass "th" "th-arrival-weight" . dynText$
-                    maybe
-                        ""
-                        ( showArrivalWeight
-                        . Wg.arrival
-                        )
-                    <$> wg
-
-                thSpace
-                thSpace
-                thSpace
 
             elClass "tr" "tr-allocation" $ do
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-allocation") $ text "Available Points (Units)"
