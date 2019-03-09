@@ -55,8 +55,6 @@ tableScoreDistance utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt _tp sDfs 
             . fromIntegral
             $ lenDfs + 1
 
-    let thSpace = elClass "th" "th-space" $ text ""
-
     let tableClass =
             let tc = "table is-striped is-narrow is-fullwidth" in
             ffor2 hgOrPg sgs (\x gs ->
@@ -136,9 +134,6 @@ tableScoreDistance utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt _tp sDfs 
                         . Pt.reach
                         )
                     <$> pt
-
-                thSpace
-                thSpace
 
                 elClass "th" "th-effort-alloc" . dynText $
                     maybe
