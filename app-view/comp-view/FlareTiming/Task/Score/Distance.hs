@@ -241,6 +241,8 @@ pointRow
     -> m ()
 pointRow _utcOffset free ln dfNt pt sEx x = do
     td <- sample . current $ (fmap . fmap) taskRoute ln
+    MinimumDistance free' <- sample . current $ free
+
     let pilot = fst <$> x
     let xB = snd <$> x
 
@@ -254,28 +256,31 @@ pointRow _utcOffset free ln dfNt pt sEx x = do
                            then ("pilot-dfnt", n <> " ☞ ")
                            else ("", n))
 
-    let awardFree = ffor2 free reach (\(MinimumDistance f) pd ->
+    let awardFree = ffor reach (\pd ->
             let c = ("td-best-distance", "td-landed-distance") in
             maybe
                 (c, "")
                 (\(PilotDistance r) ->
-                    if r >= f then (c, "") else
+                    if r >= free' then (c, "") else
                        let c' =
                                ( fst c <> " award-free"
                                , snd c <> " award-free"
                                )
 
-                       in (c', T.pack $ printf "%.1f" f))
+                       in (c', T.pack $ printf "%.1f" free'))
                 pd)
 
     (yReach, yReachDiff) <- sample . current
                 $ ffor3 pilot sEx x (\pilot' sEx' (_, Breakdown{reachDistance = dM'}) ->
                 case (td, Map.lookup pilot' sEx') of
                     (Just (TaskDistance dTask), Just Norm.NormBreakdown {distanceFrac = dF}) ->
-                        let dR = PilotDistance $ dF * dTask in
-                        ( showPilotDistance dR
-                        , maybe "" (showPilotDistanceDiff dR) dM'
-                        )
+                        let r = dF * dTask
+                            dR = PilotDistance $ max r free'
+                            dM'' = if r >= free' then dM' else Just dR
+                        in
+                            ( showPilotDistance dR
+                            , maybe "" (showPilotDistanceDiff dR) dM''
+                            )
 
                     _ -> ("", ""))
 
