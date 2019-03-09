@@ -27,6 +27,7 @@ module WireTypes.Point
     , PointPenalty(..)
     -- * Showing Breakdown
     , showPilotDistance
+    , showPilotDistanceDiff
     , showPilotAlt
     -- * Showing Points
     , showTaskDistancePoints
@@ -159,6 +160,11 @@ showPilotDistance :: PilotDistance -> T.Text
 showPilotDistance (PilotDistance d) =
     T.pack . printf "%.3f" $ d
 
+showPilotDistanceDiff :: PilotDistance -> PilotDistance -> T.Text
+showPilotDistanceDiff (PilotDistance expected) (PilotDistance actual)
+    | actual == expected = "="
+    | otherwise = T.pack . printf "%.3f" $ actual - expected
+
 showPilotAlt :: Alt -> T.Text
 showPilotAlt (Alt a) =
     T.pack . printf "%.0f" $ a
@@ -286,7 +292,7 @@ showTaskPointsDiff (TaskPoints expected) (TaskPoints actual)
     | otherwise = T.pack $ printf "%+.0f" (actual - expected)
 
 data Points =
-    Points 
+    Points
         { reach :: LinearPoints
         , effort :: DifficultyPoints
         , distance :: DistancePoints
@@ -380,6 +386,8 @@ data NormBreakdown =
         , ss :: Maybe UTCTime
         , es :: Maybe UTCTime
         , ssElapsed :: Maybe PilotTime
+        , distanceMade :: PilotDistance
+        , distanceFrac :: Double
         }
     deriving (Eq, Ord, Show, Generic, FromJSON)
 

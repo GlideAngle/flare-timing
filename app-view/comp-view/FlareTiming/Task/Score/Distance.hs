@@ -3,6 +3,7 @@ module FlareTiming.Task.Score.Distance (tableScoreDistance) where
 import Text.Printf (printf)
 import Reflex.Dom
 import qualified Data.Text as T (pack)
+import qualified Data.Map.Strict as Map
 
 import WireTypes.Route (TaskLength(..))
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
@@ -15,6 +16,7 @@ import WireTypes.Point
     , Breakdown(..)
     , PilotDistance(..)
     , showPilotDistance
+    , showPilotDistanceDiff
     , showPilotAlt
     , showTaskLinearPoints
     , showTaskDifficultyPoints
@@ -46,7 +48,7 @@ tableScoreDistance
     -> Dynamic t [(Pilot, Breakdown)]
     -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> m ()
-tableScoreDistance utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt _tp sDfs _sEx = do
+tableScoreDistance utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt _tp sDfs sEx = do
     let dnf = unDnf <$> dnf'
     lenDnf :: Int <- sample . current $ length <$> dnf
     lenDfs :: Int <- sample . current $ length <$> sDfs
@@ -159,7 +161,8 @@ tableScoreDistance utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt _tp sDfs 
                         utcOffset
                         free
                         dfNt
-                        pt)
+                        pt
+                        (Map.fromList <$> sEx))
 
             dnfRows dnfPlacing dnf'
             return ()
@@ -231,9 +234,10 @@ pointRow
     -> Dynamic t MinimumDistance
     -> Dynamic t DfNoTrack
     -> Dynamic t (Maybe Pt.Points)
+    -> Dynamic t (Map.Map Pilot Norm.NormBreakdown)
     -> Dynamic t (Pilot, Breakdown)
     -> m ()
-pointRow _utcOffset free dfNt pt x = do
+pointRow _utcOffset free dfNt pt sEx x = do
     let pilot = fst <$> x
     let xB = snd <$> x
 
@@ -261,6 +265,16 @@ pointRow _utcOffset free dfNt pt x = do
                        in (c', T.pack $ printf "%.1f" f))
                 pd)
 
+    (yReach, yReachDiff) <- sample . current
+                $ ffor3 pilot sEx x (\pilot' sEx' (_, Breakdown{reachDistance = dM'}) ->
+                case Map.lookup pilot' sEx' of
+                    Just Norm.NormBreakdown {distanceMade = dM} ->
+                            ( showPilotDistance dM
+                            , maybe "" (showPilotDistanceDiff dM) dM'
+                            )
+
+                    _ -> ("", ""))
+
     elDynClass "tr" (fst <$> classPilot) $ do
         elClass "td" "td-placing" . dynText $ showRank . place <$> xB
         elClass "td" "td-pilot" . dynText $ snd <$> classPilot
@@ -269,8 +283,8 @@ pointRow _utcOffset free dfNt pt x = do
 
         elDynClass "td" (fst . fst <$> awardFree) . dynText
             $ maybe "" showPilotDistance <$> reach
-        elClass "td" "td-norm td-best-distance" $ text ""
-        elClass "td" "td-norm td-diff" $ text ""
+        elClass "td" "td-norm td-best-distance" $ text yReach
+        elClass "td" "td-norm td-diff" $ text yReachDiff
 
         elClass "td" "td-alt-distance" . dynText
             $ maybe "" showPilotAlt <$> alt
