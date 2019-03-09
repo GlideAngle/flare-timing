@@ -5,7 +5,7 @@ import Reflex.Dom
 import qualified Data.Text as T (pack)
 import qualified Data.Map.Strict as Map
 
-import WireTypes.Route (TaskLength(..))
+import WireTypes.Route (TaskLength(..), TaskDistance(..))
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import qualified WireTypes.Point as Pt (Points(..), StartGate(..))
 import qualified WireTypes.Point as Wg (Weights(..))
@@ -48,7 +48,7 @@ tableScoreDistance
     -> Dynamic t [(Pilot, Breakdown)]
     -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> m ()
-tableScoreDistance utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt _tp sDfs sEx = do
+tableScoreDistance utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt _tp sDfs sEx = do
     let dnf = unDnf <$> dnf'
     lenDnf :: Int <- sample . current $ length <$> dnf
     lenDfs :: Int <- sample . current $ length <$> sDfs
@@ -160,6 +160,7 @@ tableScoreDistance utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt _tp sDfs 
                     (pointRow
                         utcOffset
                         free
+                        ln
                         dfNt
                         pt
                         (Map.fromList <$> sEx))
@@ -232,12 +233,14 @@ pointRow
     :: MonadWidget t m
     => Dynamic t UtcOffset
     -> Dynamic t MinimumDistance
+    -> Dynamic t (Maybe TaskLength)
     -> Dynamic t DfNoTrack
     -> Dynamic t (Maybe Pt.Points)
     -> Dynamic t (Map.Map Pilot Norm.NormBreakdown)
     -> Dynamic t (Pilot, Breakdown)
     -> m ()
-pointRow _utcOffset free dfNt pt sEx x = do
+pointRow _utcOffset free ln dfNt pt sEx x = do
+    td <- sample . current $ (fmap . fmap) taskRoute ln
     let pilot = fst <$> x
     let xB = snd <$> x
 
@@ -267,11 +270,12 @@ pointRow _utcOffset free dfNt pt sEx x = do
 
     (yReach, yReachDiff) <- sample . current
                 $ ffor3 pilot sEx x (\pilot' sEx' (_, Breakdown{reachDistance = dM'}) ->
-                case Map.lookup pilot' sEx' of
-                    Just Norm.NormBreakdown {distanceMade = dM} ->
-                            ( showPilotDistance dM
-                            , maybe "" (showPilotDistanceDiff dM) dM'
-                            )
+                case (td, Map.lookup pilot' sEx') of
+                    (Just (TaskDistance dTask), Just Norm.NormBreakdown {distanceFrac = dF}) ->
+                        let dR = PilotDistance $ dF * dTask in
+                        ( showPilotDistance dR
+                        , maybe "" (showPilotDistanceDiff dR) dM'
+                        )
 
                     _ -> ("", ""))
 
