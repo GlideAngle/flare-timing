@@ -248,7 +248,7 @@ pointRow _utcOffset free ln dfNt pt sEx x = do
 
     let alt = stoppedAlt <$> xB
     let reach = reachDistance <$> xB
-    let points = breakdown . snd <$> x
+    let points = breakdown <$> xB
 
     let classPilot = ffor2 pilot dfNt (\p (DfNoTrack ps) ->
                         let n = showPilotName p in
@@ -276,7 +276,10 @@ pointRow _utcOffset free ln dfNt pt sEx x = do
                     (Just (TaskDistance dTask), Just Norm.NormBreakdown {distanceFrac = dF}) ->
                         let r = dF * dTask
                             dR = PilotDistance $ max r free'
-                            dM'' = if r >= free' then dM' else Just dR
+                            dM'' =
+                                PilotDistance
+                                . (\(PilotDistance r') -> max r' free')
+                                <$> dM'
                         in
                             ( showPilotDistance dR
                             , maybe "" (showPilotDistanceDiff dR) dM''
