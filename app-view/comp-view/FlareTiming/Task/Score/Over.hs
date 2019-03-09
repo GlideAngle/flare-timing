@@ -127,7 +127,7 @@ tableScoreOver utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt tp sDfs sEx = 
             el "tr" $ do
                 elAttr "th" ("colspan" =: "13") $ text ""
                 elAttr "th" ("colspan" =: "7" <> "class" =: "th-points") $ text "Points"
-                elAttr "th" ("colspan" =: "2" <> "rowspan" =: "2" <> "class" =: "th-norm") $ text "Expected"
+                elAttr "th" ("colspan" =: "2" <> "rowspan" =: "2" <> "class" =: "th-norm") $ text "✓ Points"
 
             el "tr" $ do
                 elAttr "th" ("rowspan" =: "2" <> "class" =: "th-norm th-placing") $ text "#"
@@ -160,8 +160,8 @@ tableScoreOver utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt tp sDfs sEx = 
                 elDynClass "th" (fst <$> cTimePoints) $ text "Time"
                 elDynClass "th" (fst <$> cArrivalPoints) $ text "Arrival"
                 elClass "th" "th-total-points" $ text "Total"
-                elClass "th" "th-norm th-total-points" $ text "✓ Total"
-                elClass "th" "th-norm th-diff" $ text "Δ Total"
+                elClass "th" "th-norm th-total-points" $ text "✓-Total"
+                elClass "th" "th-norm th-diff" $ text "Δ-Total"
 
             elClass "tr" "tr-validity" $ do
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-launch-validity") . dynText $

@@ -82,8 +82,8 @@ tableScoreDistance utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt _tp sDfs s
                 elClass "th" "th-min-distance" $ text "Min"
 
                 elClass "th" "th-best-distance" $ text "Reach †"
-                elClass "th" "th-norm th-best-distance" $ text "✓ Reach"
-                elClass "th" "th-norm th-diff" $ text "Δ Reach"
+                elClass "th" "th-norm th-best-distance" $ text "✓-Reach"
+                elClass "th" "th-norm th-diff" $ text "Δ-Reach"
 
                 elClass "th" "th-alt-distance" $ text "Alt"
                 elClass "th" "th-landed-distance" $ text "Landed"
@@ -91,8 +91,8 @@ tableScoreDistance utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt _tp sDfs s
                 elClass "th" "th-effort-points" $ text "Effort §"
 
                 elClass "th" "th-distance-points" $ text "Subtotal"
-                elClass "th" "th-norm th-distance-points" $ text "✓ Subtotal"
-                elClass "th" "th-norm th-diff" $ text "Δ Subtotal"
+                elClass "th" "th-norm th-distance-points" $ text "✓-Subtotal"
+                elClass "th" "th-norm th-diff" $ text "Δ-Subtotal"
 
             elClass "tr" "tr-validity" $ do
                 elAttr "th" ("colspan" =: "2" <> "class" =: "th-launch-validity") . dynText $

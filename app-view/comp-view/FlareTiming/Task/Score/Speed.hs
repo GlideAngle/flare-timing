@@ -67,24 +67,24 @@ tableScoreSpeed utcOffset hgOrPg _free sgs ln dnf' dfNt _vy vw _wg _pt _tp sDfs 
                 elClass "th" "th-start-start" $ text "Start"
 
                 elClass "th" "th-norm th-start" . dynText
-                    $ ffor sgs (\case [] -> "✓ Start"; _ -> "✓ Gate")
+                    $ ffor sgs (\case [] -> "✓-Start"; _ -> "✓-Gate")
 
                 elClass "th" "th-norm th-time-diff" . dynText
-                    $ ffor sgs (\case [] -> "Δ Start"; _ -> "Δ Gate")
+                    $ ffor sgs (\case [] -> "Δ-Start"; _ -> "Δ-Gate")
 
                 elClass "th" "th-start-gate" $ text "Gate"
 
                 elClass "th" "th-end" $ text "End"
-                elClass "th" "th-norm th-end" $ text "✓ End"
-                elClass "th" "th-norm th-time-diff" $ text "Δ End"
+                elClass "th" "th-norm th-end" $ text "✓-End"
+                elClass "th" "th-norm th-time-diff" $ text "Δ-End"
 
                 elClass "th" "th-time" $ text "Time ‖"
 
                 elClass "th" "th-norm th-norm-pace" . dynText
-                    $ ffor sgs (\case [] -> "✓ Pace"; _ -> "✓ Time")
+                    $ ffor sgs (\case [] -> "✓-Pace"; _ -> "✓-Time")
 
                 elClass "th" "th-norm th-time-diff" $ dynText
-                    $ ffor sgs (\case [] -> "Δ Pace"; _ -> "Δ Time")
+                    $ ffor sgs (\case [] -> "Δ-Pace"; _ -> "Δ-Time")
 
                 elClass "th" "th-pace" $ text "Pace ¶"
                 elClass "th" "th-speed" $ text "Velocity"
