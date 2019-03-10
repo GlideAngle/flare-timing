@@ -24,9 +24,7 @@ import WireTypes.Point
     , showTaskLinearPoints
     , showTaskDifficultyPoints
     , showTaskDistancePoints
-    , showDistanceWeight
     )
-import WireTypes.Validity (showLaunchValidity, showDistanceValidity)
 import WireTypes.ValidityWorking (ValidityWorking(..), TimeValidityWorking(..))
 import WireTypes.Comp (UtcOffset(..), Discipline(..), MinimumDistance(..))
 import WireTypes.Pilot (Pilot(..), Dnf(..), DfNoTrack(..))
@@ -51,7 +49,7 @@ tableScoreDistance
     -> Dynamic t [(Pilot, Breakdown)]
     -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> m ()
-tableScoreDistance utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt _tp sDfs sEx = do
+tableScoreDistance utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs sEx = do
     let dnf = unDnf <$> dnf'
     lenDnf :: Int <- sample . current $ length <$> dnf
     lenDfs :: Int <- sample . current $ length <$> sDfs
@@ -94,46 +92,6 @@ tableScoreDistance utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt _tp sDfs s
                 elClass "th" "th-distance-points" $ text "Subtotal"
                 elClass "th" "th-norm th-distance-points" $ text "✓-Distance"
                 elClass "th" "th-norm th-diff" $ text "Δ-Distance"
-
-            elClass "tr" "tr-validity" $ do
-                elAttr "th" ("colspan" =: "2" <> "class" =: "th-launch-validity") . dynText $
-                    maybe
-                        ""
-                        ( (\v ->
-                            "Validity (Launch = "
-                            <> showLaunchValidity v
-                            <> ")")
-                        . Vy.launch
-                        )
-                    <$> vy
-
-                elAttr "th" ("colspan" =: "8") $ text ""
-
-                elClass "th" "th-distance-validity" . dynText $
-                    maybe
-                        ""
-                        ( showDistanceValidity
-                        . Vy.distance
-                        )
-                    <$> vy
-
-                thSpace
-                thSpace
-
-            elClass "tr" "tr-weight" $ do
-                elAttr "th" ("colspan" =: "2" <> "class" =: "th-weight") $ text "Weights"
-                elAttr "th" ("colspan" =: "8") $ text ""
-
-                elClass "th" "th-distance-weight" . dynText $
-                    maybe
-                        ""
-                        ( showDistanceWeight
-                        . Wg.distance
-                        )
-                    <$> wg
-
-                thSpace
-                thSpace
 
             elClass "tr" "tr-allocation" $ do
                 elAttr "th" ("colspan" =: "2" <> "class" =: "th-allocation") $ text "Available Points (Units)"
