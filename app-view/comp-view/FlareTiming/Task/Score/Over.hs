@@ -281,13 +281,13 @@ pointRow cTime cArrival utcOffset free dfNt pt tp sEx x = do
     let pilot = fst <$> x
     let xB = snd <$> x
     (yRank, yScore, yDiff) <- sample . current
-                $ ffor3 pilot sEx x (\pilot' sEx' (_, Breakdown{total = p}) ->
+                $ ffor3 pilot sEx x (\pilot' sEx' (_, Breakdown{total = p'}) ->
                 case Map.lookup pilot' sEx' of
                     Nothing -> ("", "", "")
                     Just
                         Norm.NormBreakdown
                             { place = nth
-                            , total = p'@(TaskPoints pts)
+                            , total = p@(TaskPoints pts)
                             } -> (showRank nth, showRounded pts, showTaskPointsDiff p p'))
 
     let reach = reachDistance <$> xB
