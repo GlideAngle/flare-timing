@@ -117,7 +117,7 @@ tableScoreOver utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt tp sDfs sEx 
                     $ showSpeedSection <$> ln
                 elAttr "th" ("colspan" =: "4" <> "class" =: "th-distance") $ text "Distance Flown"
                 elAttr "th" ("colspan" =: "5" <> "class" =: "th-points") $ text "Points"
-                elAttr "th" ("colspan" =: "2" <> "class" =: "th-norm") $ text "✓ Points"
+                elAttr "th" ("colspan" =: "2") $ text ""
 
             el "tr" $ do
                 elClass "th" "th-norm th-placing" $ text "#"
