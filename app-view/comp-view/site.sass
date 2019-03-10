@@ -29,8 +29,13 @@ body, input, button, select, textarea
     @extend .is-link;
 
 .th-distance-points
-    @extend .is-link;
     @extend .has-text-right;
+
+#score-points .th-distance-points, #score-distance .th-distance-points
+    @extend .is-link;
+
+#score-points .th-norm.th-distance-points, #score-distance .th-norm.th-distance-points
+    @extend .is-black;
 
 .th-points
     @extend .is-primary;
@@ -45,10 +50,12 @@ body, input, button, select, textarea
     @extend .has-text-centered;
 
 .th-total-points
-    @extend .is-primary;
     @extend .has-text-right;
 
-.table th.th-norm.th-distance-points, .table th.th-norm.th-total-points
+#score-overview .th-total-points
+    @extend .is-primary;
+
+#score-overview .th-norm.th-total-points, #score-points .th-norm.th-total-points, .th-norm.th-total-points
     @extend .is-black;
 
 .tr-weight
