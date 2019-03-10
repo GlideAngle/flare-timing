@@ -158,12 +158,12 @@ instance FromJSON PointPenalty where
 
 showPilotDistance :: PilotDistance -> T.Text
 showPilotDistance (PilotDistance d) =
-    T.pack . printf "%.3f" $ d
+    T.pack . printf "%.1f" $ d
 
 showPilotDistanceDiff :: PilotDistance -> PilotDistance -> T.Text
 showPilotDistanceDiff (PilotDistance expected) (PilotDistance actual)
-    | printf "%.3f" actual == (printf "%.3f" expected :: String) = "="
-    | otherwise = T.pack . printf "%.3f" $ actual - expected
+    | printf "%.1f" actual == (printf "%.1f" expected :: String) = "="
+    | otherwise = T.pack . printf "%.1f" $ actual - expected
 
 showPilotAlt :: Alt -> T.Text
 showPilotAlt (Alt a) =
