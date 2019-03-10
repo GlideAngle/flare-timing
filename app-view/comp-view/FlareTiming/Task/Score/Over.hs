@@ -112,9 +112,7 @@ tableScoreOver utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt tp sDfs sEx 
         el "thead" $ do
 
             el "tr" $ do
-                elAttr "th" ("rowspan" =: "2" <> "class" =: "th-norm th-placing") $ text "#"
-                elAttr "th" ("rowspan" =: "2" <> "class" =: "th-placing") $ text "#"
-                elAttr "th" ("rowspan" =: "2" <> "class" =: "th-pilot") $ text "Pilot"
+                elAttr "th" ("colspan" =: "3") $ text ""
                 elAttr "th" ("colspan" =: "6" <> "class" =: "th-speed-section") . dynText
                     $ showSpeedSection <$> ln
                 elAttr "th" ("colspan" =: "4" <> "class" =: "th-distance") $ text "Distance Flown"
@@ -122,6 +120,9 @@ tableScoreOver utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt tp sDfs sEx 
                 elAttr "th" ("colspan" =: "2" <> "class" =: "th-norm") $ text "✓ Points"
 
             el "tr" $ do
+                elClass "th" "th-norm th-placing" $ text "#"
+                elClass "th" "th-placing" $ text "#"
+                elClass "th" "th-pilot" $ text "Pilot"
                 elClass "th" "th-start-start" $ text "Start"
                 elClass "th" "th-start-gate" $ text "Gate"
                 elClass "th" "th-end" $ text "End"
