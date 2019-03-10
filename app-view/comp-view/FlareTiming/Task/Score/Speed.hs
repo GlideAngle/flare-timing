@@ -58,12 +58,13 @@ tableScoreSpeed utcOffset hgOrPg _free sgs ln dnf' dfNt _vy vw _wg _pt _tp sDfs 
         el "thead" $ do
 
             el "tr" $ do
-                elAttr "th" ("rowspan" =: "2" <> "class" =: "th-placing") $ text "#"
-                elAttr "th" ("rowspan" =: "2" <> "class" =: "th-pilot") $ text "Pilot"
+                elAttr "th" ("colspan" =: "2") $ text ""
                 elAttr "th" ("colspan" =: "12" <> "class" =: "th-speed-section") . dynText
                     $ showSpeedSection <$> ln
 
             el "tr" $ do
+                elClass "th" "th-placing" $ text "#"
+                elClass "th" "th-pilot" $ text "Pilot"
                 elClass "th" "th-start-start" $ text "Start"
 
                 elClass "th" "th-norm th-start" . dynText
