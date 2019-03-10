@@ -214,7 +214,7 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
                 TaskTabScore -> do
                     tabScore <- tabsScore
                     let tableScoreHold =
-                            elAttr "div" ("id" =: "score-distance") $
+                            elAttr "div" ("id" =: "score-overview") $
                                 tableScoreOver utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx
                     _ <- widgetHold tableScoreHold $
                             (\case
@@ -227,7 +227,7 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
                                     elAttr "div" ("id" =: "score-speed") $
                                         tableScoreSpeed utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx
                                 ScoreTabDistance ->
-                                    elAttr "div" ("id" =: "score-overview") $
+                                    elAttr "div" ("id" =: "score-distance") $
                                         tableScoreDistance utc hgOrPg free' sgs ln dnf dfNt vy vw wg ps tp sDf sEx)
 
                             <$> tabScore
