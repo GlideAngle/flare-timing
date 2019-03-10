@@ -16,10 +16,7 @@ import WireTypes.Point
     , TaskPoints(..)
     , Breakdown(..)
     , PilotDistance(..)
-
     , showPilotDistance
-    , showPilotAlt
-
     , showTaskDistancePoints
     , showTaskArrivalPoints
     , showTaskLeadingPoints
@@ -115,7 +112,7 @@ tableScoreOver utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt tp sDfs sEx 
                 elAttr "th" ("colspan" =: "3") $ text ""
                 elAttr "th" ("colspan" =: "6" <> "class" =: "th-speed-section") . dynText
                     $ showSpeedSection <$> ln
-                elAttr "th" ("colspan" =: "4" <> "class" =: "th-distance") $ text "Distance Flown"
+                elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance") $ text "Distance Flown"
                 elAttr "th" ("colspan" =: "5" <> "class" =: "th-points") $ text "Points"
                 elAttr "th" ("colspan" =: "2") $ text ""
 
@@ -132,7 +129,6 @@ tableScoreOver utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt tp sDfs sEx 
 
                 elClass "th" "th-min-distance" $ text "Min"
                 elClass "th" "th-best-distance" $ text "Reach †"
-                elClass "th" "th-alt-distance" $ text "Alt"
                 elClass "th" "th-landed-distance" $ text "Landed"
 
                 elClass "th" "th-distance-points" $ text "Distance"
@@ -149,7 +145,6 @@ tableScoreOver utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt tp sDfs sEx 
                 elClass "th" "th-speed-units" $ text "(km/h)"
                 elClass "th" "th-min-distance-units" $ text "(km)"
                 elClass "th" "th-best-distance-units" $ text "(km)"
-                elClass "th" "th-alt-distance-units" $ text "(m)"
                 elClass "th" "th-landed-distance-units" $ text "(km)"
 
                 elClass "th" "th-distance-alloc" . dynText $
@@ -210,7 +205,7 @@ tableScoreOver utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt tp sDfs sEx 
             dnfRows dnfPlacing dnf'
             return ()
 
-        let tdFoot = elAttr "td" ("colspan" =: "20")
+        let tdFoot = elAttr "td" ("colspan" =: "19")
         let foot = el "tr" . tdFoot . text
 
         el "tfoot" $ do
@@ -299,7 +294,6 @@ pointRow cTime cArrival utcOffset free dfNt pt tp sEx x = do
                             , total = p'@(TaskPoints pts)
                             } -> (showRank nth, showRounded pts, showTaskPointsDiff p p'))
 
-    let alt = stoppedAlt <$> xB
     let reach = reachDistance <$> xB
     let points = breakdown . snd <$> x
     let v = velocity . snd <$> x
@@ -338,8 +332,6 @@ pointRow cTime cArrival utcOffset free dfNt pt tp sEx x = do
         elClass "td" "td-min-distance" . dynText $ snd <$> awardFree
         elDynClass "td" (fst . fst <$> awardFree) . dynText
             $ maybe "" showPilotDistance <$> reach
-        elClass "td" "td-alt-distance" . dynText
-            $ maybe "" showPilotAlt <$> alt
         elDynClass "td" (snd . fst <$> awardFree) . dynText
             $ maybe "" showPilotDistance . landedDistance <$> xB
 
@@ -394,7 +386,7 @@ dnfRow place rows pilot = do
                     elAttr
                         "td"
                         ( "rowspan" =: (T.pack $ show n)
-                        <> "colspan" =: "14"
+                        <> "colspan" =: "13"
                         <> "class" =: "td-dnf"
                         )
                         $ text "DNF"
