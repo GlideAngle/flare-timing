@@ -112,7 +112,7 @@ tableScoreOver utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt tp sDfs sEx 
                 elAttr "th" ("colspan" =: "3") $ text ""
                 elAttr "th" ("colspan" =: "6" <> "class" =: "th-speed-section") . dynText
                     $ showSpeedSection <$> ln
-                elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance") $ text "Distance Flown"
+                elAttr "th" ("colspan" =: "2" <> "class" =: "th-distance") $ text "Distance Flown"
                 elAttr "th" ("colspan" =: "5" <> "class" =: "th-points") $ text "Points"
                 elAttr "th" ("colspan" =: "2") $ text ""
 
@@ -129,7 +129,6 @@ tableScoreOver utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt tp sDfs sEx 
 
                 elClass "th" "th-min-distance" $ text "Min"
                 elClass "th" "th-best-distance" $ text "Reach †"
-                elClass "th" "th-landed-distance" $ text "Landed"
 
                 elClass "th" "th-distance-points" $ text "Distance"
                 elClass "th" "th-lead-points" $ text "Lead"
@@ -145,7 +144,6 @@ tableScoreOver utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt tp sDfs sEx 
                 elClass "th" "th-speed-units" $ text "(km/h)"
                 elClass "th" "th-min-distance-units" $ text "(km)"
                 elClass "th" "th-best-distance-units" $ text "(km)"
-                elClass "th" "th-landed-distance-units" $ text "(km)"
 
                 elClass "th" "th-distance-alloc" . dynText $
                     maybe
@@ -205,7 +203,7 @@ tableScoreOver utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt tp sDfs sEx 
             dnfRows dnfPlacing dnf'
             return ()
 
-        let tdFoot = elAttr "td" ("colspan" =: "19")
+        let tdFoot = elAttr "td" ("colspan" =: "18")
         let foot = el "tr" . tdFoot . text
 
         el "tfoot" $ do
@@ -305,16 +303,12 @@ pointRow cTime cArrival utcOffset free dfNt pt tp sEx x = do
                            else ("", n))
 
     let awardFree = ffor2 free reach (\(MinimumDistance f) pd ->
-            let c = ("td-best-distance", "td-landed-distance") in
+            let c = "td-best-distance" in
             maybe
                 (c, "")
                 (\(PilotDistance r) ->
                     if r >= f then (c, "") else
-                       let c' =
-                               ( fst c <> " award-free"
-                               , snd c <> " award-free"
-                               )
-
+                       let c' = c <> " award-free"
                        in (c', T.pack $ printf "%.1f" f))
                 pd)
 
@@ -330,10 +324,8 @@ pointRow cTime cArrival utcOffset free dfNt pt tp sEx x = do
         elClass "td" "td-speed" . dynText $ maybe "" showVelocityVelocity <$> v
 
         elClass "td" "td-min-distance" . dynText $ snd <$> awardFree
-        elDynClass "td" (fst . fst <$> awardFree) . dynText
+        elDynClass "td" (fst <$> awardFree) . dynText
             $ maybe "" showPilotDistance <$> reach
-        elDynClass "td" (snd . fst <$> awardFree) . dynText
-            $ maybe "" showPilotDistance . landedDistance <$> xB
 
         elClass "td" "td-distance-points" . dynText
             $ showMax Pt.distance showTaskDistancePoints pt points
@@ -386,7 +378,7 @@ dnfRow place rows pilot = do
                     elAttr
                         "td"
                         ( "rowspan" =: (T.pack $ show n)
-                        <> "colspan" =: "13"
+                        <> "colspan" =: "12"
                         <> "class" =: "td-dnf"
                         )
                         $ text "DNF"
