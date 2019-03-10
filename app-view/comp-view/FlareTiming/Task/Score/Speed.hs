@@ -88,7 +88,7 @@ tableScoreSpeed utcOffset hgOrPg _free sgs ln dnf' dfNt _vy vw _wg _pt _tp sDfs 
                     $ ffor sgs (\case [] -> "Δ-Pace"; _ -> "Δ-Time")
 
                 elClass "th" "th-pace" $ text "Pace ¶"
-                elClass "th" "th-speed" $ text "Velocity"
+                elClass "th" "th-speed" $ text "Velocity (km/h)"
 
         _ <- el "tbody" $ do
             _ <-
