@@ -72,13 +72,14 @@ tableScoreDistance utcOffset hgOrPg free sgs ln dnf' dfNt vy vw wg pt _tp sDfs s
         el "thead" $ do
 
             el "tr" $ do
-                elAttr "th" ("rowspan" =: "2" <> "class" =: "th-placing") $ text "#"
-                elAttr "th" ("rowspan" =: "2" <> "class" =: "th-pilot") $ text "Pilot"
+                elAttr "th" ("colspan" =: "2") $ text ""
                 elAttr "th" ("colspan" =: "6" <> "class" =: "th-distance") $ text "Distance Flown"
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance-points-breakdown") $ text "Points for Distance"
                 elAttr "th" ("colspan" =: "2") $ text ""
 
             el "tr" $ do
+                elClass "th" "th-placing" $ text "#"
+                elClass "th" "th-pilot" $ text "Pilot"
                 elClass "th" "th-min-distance" $ text "Min"
 
                 elClass "th" "th-best-distance" $ text "Reach †"
