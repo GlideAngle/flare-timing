@@ -120,7 +120,7 @@ tableScoreOver utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt tp sDfs sEx 
                 elAttr "th" ("colspan" =: "2") $ text ""
 
             el "tr" $ do
-                elClass "th" "th-norm th-placing" $ text "#"
+                elClass "th" "th-norm th-placing" $ text "✓"
                 elClass "th" "th-placing" $ text "#"
                 elClass "th" "th-pilot" $ text "Pilot"
                 elClass "th" "th-start-start" $ text "Start"

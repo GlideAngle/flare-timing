@@ -134,7 +134,7 @@ tableScorePoint utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sEx 
                 elAttr "th" ("colspan" =: "11") $ text ""
 
             el "tr" $ do
-                elClass "th" "th-norm th-placing" $ text "#"
+                elClass "th" "th-norm th-placing" $ text "✓"
                 elClass "th" "th-placing" $ text "#"
                 elClass "th" "th-pilot" $ text "Pilot"
                 elClass "th" "th-reach-points" $ text "Reach ‡"
