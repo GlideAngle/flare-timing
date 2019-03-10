@@ -12,10 +12,9 @@ module FlareTiming.Task.Score.Show
     , showVelocityVelocity
     ) where
 
-import Prelude hiding (min)
 import Text.Printf (printf)
 import Reflex.Dom
-import qualified Data.Text as T (Text, pack, breakOn)
+import qualified Data.Text as T (Text, pack)
 import Data.Time.LocalTime (TimeZone)
 
 import WireTypes.Route (TaskLength(..), showTaskDistance)
@@ -94,5 +93,5 @@ showGsVelocityTime _ = ""
 
 showVelocityVelocity :: Velocity -> T.Text
 showVelocityVelocity Velocity{gsVelocity = Just (PilotVelocity v)} =
-    fst . T.breakOn " km / h" . T.pack $ v
+    T.pack . printf "%.1f" $ v
 showVelocityVelocity _ = ""

@@ -79,9 +79,8 @@ newtype PilotTime = PilotTime Double
 newtype PilotDistance = PilotDistance Double
     deriving (Eq, Ord, Show, Generic)
 
-newtype PilotVelocity a = PilotVelocity a
+newtype PilotVelocity = PilotVelocity Double
     deriving (Eq, Ord, Show, Generic)
-    deriving anyclass (FromJSON)
 
 newtype NominalGoal = NominalGoal Double
     deriving (Eq, Ord, Show, Generic)
@@ -135,6 +134,14 @@ instance FromJSON PilotDistance where
         s <- reverse . T.unpack <$> parseJSON x
         case s of
             'm' : 'k' : ' ' : xs -> return . PilotDistance . read . reverse $ xs
+            _ -> empty
+    parseJSON _ = empty
+
+instance FromJSON PilotVelocity where
+    parseJSON x@(String _) = do
+        s <- reverse . T.unpack <$> parseJSON x
+        case s of
+            'h' : ' ' : '/' : ' ' : 'm' : 'k' : ' ' : xs -> return . PilotVelocity . read . reverse $ xs
             _ -> empty
     parseJSON _ = empty
 
@@ -368,9 +375,9 @@ data Velocity =
           -- @ssElapsed@.
         , ssDistance :: Maybe PilotDistance
           -- ^ The distance the pilot made, not exceeding goal.
-        , ssVelocity :: Maybe (PilotVelocity String)
+        , ssVelocity :: Maybe PilotVelocity
           -- ^ The velocity from the time the started the speed section.
-        , gsVelocity :: Maybe (PilotVelocity String)
+        , gsVelocity :: Maybe PilotVelocity
           -- ^ The velocity from the start gate time.
         }
     deriving (Eq, Ord, Show, Generic, FromJSON)
