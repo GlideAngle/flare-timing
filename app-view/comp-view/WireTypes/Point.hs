@@ -224,7 +224,7 @@ showMax
 showMax = showMax' show
 
 showMaxDistance :: Double -> (b -> Double) -> Maybe b -> T.Text
-showMaxDistance = showMax' $ printf "%.3f"
+showMaxDistance = showMax' $ printf "%.1f"
 
 showTaskDistancePoints :: Maybe DistancePoints -> DistancePoints -> T.Text
 showTaskDistancePoints task (DistancePoints p) =
