@@ -275,28 +275,38 @@ showTimePoints (TimePoints p) = T.pack $ printf "%.1f" p
 
 showDistancePointsDiff :: DistancePoints -> DistancePoints -> T.Text
 showDistancePointsDiff (DistancePoints expected) (DistancePoints actual)
-    | actual == expected = "="
-    | otherwise = T.pack $ printf "%+.1f" (actual - expected)
+    | f actual == f expected = "="
+    | otherwise = T.pack . f $ actual - expected
+    where
+        f = printf "%+.1f"
 
 showLeadingPointsDiff :: LeadingPoints -> LeadingPoints -> T.Text
 showLeadingPointsDiff (LeadingPoints expected) (LeadingPoints actual)
-    | actual == expected = "="
-    | otherwise = T.pack $ printf "%+.1f" (actual - expected)
+    | f actual == f expected = "="
+    | otherwise = T.pack . f $ actual - expected
+    where
+        f = printf "%+.1f"
 
 showArrivalPointsDiff :: ArrivalPoints -> ArrivalPoints -> T.Text
 showArrivalPointsDiff (ArrivalPoints expected) (ArrivalPoints actual)
-    | actual == expected = "="
-    | otherwise = T.pack $ printf "%+.1f" (actual - expected)
+    | f actual == f expected = "="
+    | otherwise = T.pack . f $ actual - expected
+    where
+        f = printf "%+.1f"
 
 showTimePointsDiff :: TimePoints -> TimePoints -> T.Text
 showTimePointsDiff (TimePoints expected) (TimePoints actual)
-    | actual == expected = "="
-    | otherwise = T.pack $ printf "%+.1f" (actual - expected)
+    | f actual == f expected = "="
+    | otherwise = T.pack . f $ actual - expected
+    where
+        f = printf "%+.1f"
 
 showTaskPointsDiff :: TaskPoints -> TaskPoints -> T.Text
 showTaskPointsDiff (TaskPoints expected) (TaskPoints actual)
-    | actual == expected = "="
-    | otherwise = T.pack $ printf "%+.0f" (actual - expected)
+    | f actual == f expected = "="
+    | otherwise = T.pack . f $ actual - expected
+    where
+        f = printf "%+.0f"
 
 data Points =
     Points
