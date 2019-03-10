@@ -133,16 +133,15 @@ tableScorePoint utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sEx 
                 elAttr "th" ("rowspan" =: "2" <> "class" =: "th-placing") $ text "#"
                 elAttr "th" ("rowspan" =: "2" <> "class" =: "th-pilot") $ text "Pilot"
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance-points-breakdown") $ text "Points for Distance"
-                elAttr "th" ("colspan" =: "2" <> "class" =: "th-norm") $ text "✓ Points for Distance"
-                elAttr "th" ("colspan" =: "9") $ text ""
+                elAttr "th" ("colspan" =: "11") $ text ""
 
             el "tr" $ do
                 elClass "th" "th-reach-points" $ text "Reach ‡"
                 elClass "th" "th-effort-points" $ text "Effort §"
 
                 elClass "th" "th-distance-points" $ text "Subtotal"
-                elClass "th" "th-norm th-distance-points" $ text "✓-Subtotal"
-                elClass "th" "th-norm th-diff" $ text "Δ-Subtotal"
+                elClass "th" "th-norm th-distance-points" $ text "✓-Distance"
+                elClass "th" "th-norm th-diff" $ text "Δ-Distance"
 
                 elClass "th" "th-lead-points" $ text "Lead"
                 elClass "th" "th-norm th-time-points" $ text "✓-Lead"
