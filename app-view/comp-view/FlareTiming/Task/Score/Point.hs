@@ -268,7 +268,7 @@ tableScorePoint utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sEx 
                 thSpace
 
             elClass "tr" "tr-allocation" $ do
-                elAttr "th" ("colspan" =: "3" <> "class" =: "th-allocation") $ text "Available Points (Units)"
+                elAttr "th" ("colspan" =: "3" <> "class" =: "th-allocation") $ text "Available Points"
 
                 elClass "th" "th-reach-alloc" . dynText $
                     maybe
