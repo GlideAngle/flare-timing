@@ -131,8 +131,8 @@ tableScoreOver utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt tp sDfs sEx 
                 elClass "th" "th-best-distance" $ text "Reach †"
 
                 elClass "th" "th-distance-points" $ text "Distance"
-                elClass "th" "th-leading-points" $ text "Lead"
                 elDynClass "th" (fst <$> cTimePoints) $ text "Time"
+                elClass "th" "th-leading-points" $ text "Lead"
                 elDynClass "th" (fst <$> cArrivalPoints) $ text "Arrival"
                 elClass "th" "th-total-points" $ text "Total"
                 elClass "th" "th-norm th-total-points" $ text "✓-Total"
@@ -153,19 +153,19 @@ tableScoreOver utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt tp sDfs sEx 
                         )
                     <$> pt
 
-                elClass "th" "th-leading-alloc" . dynText $
-                    maybe
-                        ""
-                        ( (\x -> showTaskLeadingPoints (Just x) x)
-                        . Pt.leading
-                        )
-                    <$> pt
-
                 elClass "th" "th-time-alloc" . dynText $
                     maybe
                         ""
                         ( (\x -> showTaskTimePoints (Just x) x)
                         . Pt.time
+                        )
+                    <$> pt
+
+                elClass "th" "th-leading-alloc" . dynText $
+                    maybe
+                        ""
+                        ( (\x -> showTaskLeadingPoints (Just x) x)
+                        . Pt.leading
                         )
                     <$> pt
 
@@ -327,10 +327,10 @@ pointRow cTime cArrival utcOffset free dfNt pt tp sEx x = do
 
         elClass "td" "td-distance-points" . dynText
             $ showMax Pt.distance showTaskDistancePoints pt points
-        elClass "td" "td-leading-points" . dynText
-            $ showMax Pt.leading showTaskLeadingPoints pt points
         elDynClass "td" cTime . dynText
             $ showMax Pt.time showTaskTimePoints pt points
+        elClass "td" "td-leading-points" . dynText
+            $ showMax Pt.leading showTaskLeadingPoints pt points
         elDynClass "td" cArrival . dynText
             $ showMax Pt.arrival showTaskArrivalPoints pt points
 
