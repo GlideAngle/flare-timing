@@ -2,6 +2,17 @@ The [latest
 version](https://github.com/BlockScope/flare-timing/blob/master/app-view/changelog.md)
 of this changelog.
 
+# Side-by-Side Score Check
+## app-view-0.17
+
+* Parse the `*.fsdb` for scores.
+* Add an `Overview | Points | Speed | Distance` set of child tabs beneath the
+  `Score` tab. On the **Overview** table display the ranking and total points
+  from FS side-by-side with the scores from flare-timing. On the **Points**
+  table show side-by-side breakdown of points between FS and flare-timing. On
+  the **Speed** table do the same for the components of velocity and on the
+  **Distance** table do the same for the components of distance points.
+
 # Effort Plot
 ## app-view-0.16
 
