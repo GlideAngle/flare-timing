@@ -31,15 +31,6 @@ body, input, button, select, textarea
 .th-distance-points
     @extend .has-text-right;
 
-#score-points .th-distance-points, #score-distance .th-distance-points
-    @extend .is-link;
-
-#score-points .th-norm.th-distance-points, #score-distance .th-norm.th-distance-points
-    @extend .is-black;
-
-#score-points .th-norm.th-leading-points, #score-points .th-norm.th-time-points, #score-points .th-norm.th-arrival-points
-    @extend .is-black;
-
 .th-points
     @extend .is-primary;
 
@@ -54,12 +45,6 @@ body, input, button, select, textarea
 
 .th-total-points
     @extend .has-text-right;
-
-#score-overview .th-total-points
-    @extend .is-primary;
-
-#score-overview .th-norm.th-total-points, #score-points .th-norm.th-total-points, .th-norm.th-total-points
-    @extend .is-black;
 
 .tr-weight
     @extend .is-italic;
@@ -458,26 +443,31 @@ $arrival-invert: $primary-invert;
 .legend-arrival
     color: $arrival;
 
+#score-overview .th-distance-points, #score-overview .td-distance-points,
 #score-points .th-distance-points, #score-points .td-distance-points
     color: $reach-invert;
     border-color: $reach;
     background-color: $reach;
 
+#score-overview .th-time-points, #score-overview .td-time-points,
 #score-points .th-time-points, #score-points .td-time-points
     color: $time-invert;
     border-color: $time;
     background-color: $time;
 
+#score-overview .th-leading-points, #score-overview .td-leading-points,
 #score-points .th-leading-points, #score-points .td-leading-points
     color: $leading-invert;
     border-color: $leading;
     background-color: $leading;
 
+#score-overview .th-arrival-points, #score-overview .td-arrival-points,
 #score-points .th-arrival-points, #score-points .td-arrival-points
     color: $arrival-invert;
     border-color: $arrival;
     background-color: $arrival;
 
+#score-overview .th-total-points, #score-overview .td-total-points,
 #score-points .th-total-points, #score-points .td-total-points
     @extend .is-primary;
 
@@ -493,10 +483,19 @@ $arrival-invert: $primary-invert;
 #score-points .th-norm.th-total-points
     @extend .has-text-right;
 
+#score-points .th-norm.th-distance-points,
+#score-points .th-norm.th-time-points,
+#score-points .th-norm.th-leading-points,
+#score-points .th-norm.th-arrival-points,
+#score-overview .th-norm.th-total-points,
+#score-points .th-norm.th-total-points
+    @extend .is-black;
+
 #score-points .td-norm.td-distance-points,
 #score-points .td-norm.td-time-points,
 #score-points .td-norm.td-leading-points,
 #score-points .td-norm.td-arrival-points,
+#score-overview .td-norm.td-total-points,
 #score-points .td-norm.td-total-points
     @extend .is-black;
 

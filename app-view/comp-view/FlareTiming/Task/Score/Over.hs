@@ -113,8 +113,7 @@ tableScoreOver utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt tp sDfs sEx 
                 elAttr "th" ("colspan" =: "6" <> "class" =: "th-speed-section") . dynText
                     $ showSpeedSection <$> ln
                 elAttr "th" ("colspan" =: "2" <> "class" =: "th-distance") $ text "Distance Flown"
-                elAttr "th" ("colspan" =: "5" <> "class" =: "th-points") $ text "Points"
-                elAttr "th" ("colspan" =: "2") $ text ""
+                elAttr "th" ("colspan" =: "7" <> "class" =: "th-points") $ text "Points"
 
             el "tr" $ do
                 elClass "th" "th-norm th-placing" $ text "✓"
@@ -135,8 +134,8 @@ tableScoreOver utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt tp sDfs sEx 
                 elClass "th" "th-leading-points" $ text "Lead"
                 elDynClass "th" (fst <$> cArrivalPoints) $ text "Arrival"
                 elClass "th" "th-total-points" $ text "Total"
-                elClass "th" "th-norm th-total-points" $ text "✓-Total"
-                elClass "th" "th-norm th-diff" $ text "Δ-Total"
+                elClass "th" "th-norm th-total-points" $ text "✓"
+                elClass "th" "th-norm th-diff" $ text "Δ"
 
             elClass "tr" "tr-allocation" $ do
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-allocation") $ text "Available Points (Units)"
