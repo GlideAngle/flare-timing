@@ -65,7 +65,7 @@ tablePilot xs = do
                     el "th" $ text "Hours"
                     el "th" $ text "HH:MM:SS"
                     el "th" $ text "Fraction"
-                    el "th" $ text "Name"
+                    el "th" $ text "Pilot"
 
                     return ()
 

@@ -67,7 +67,7 @@ tablePilot xs = do
                 el "tr" $ do
                     el "th" $ text "#"
                     el "th" $ text "Fraction"
-                    el "th" $ text "Name"
+                    el "th" $ text "Pilot"
 
                     return ()
 

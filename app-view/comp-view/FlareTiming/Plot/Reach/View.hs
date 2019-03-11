@@ -63,7 +63,7 @@ tablePilot xs = do
                 el "tr" $ do
                     elClass "th" "th-plot-reach" $ text "Reach (km)"
                     el "th" $ text "Fraction"
-                    el "th" $ text "Name"
+                    el "th" $ text "Pilot"
 
                     return ()
 
