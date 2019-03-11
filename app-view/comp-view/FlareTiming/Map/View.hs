@@ -13,6 +13,7 @@ module FlareTiming.Map.View (viewMap) where
 import Prelude hiding (map)
 import Text.Printf (printf)
 import Reflex.Dom
+import Data.Time.LocalTime (TimeZone)
 
 import qualified Data.Text as T (Text, pack)
 import Reflex.Time (delay)
@@ -48,7 +49,7 @@ import qualified FlareTiming.Map.Leaflet as L
     )
 import WireTypes.Cross (TrackFlyingSection(..), Fix(..))
 import WireTypes.Pilot (Pilot(..), PilotName(..), getPilotName, nullPilot)
-import WireTypes.Comp (Task(..), SpeedSection, getAllRawZones)
+import WireTypes.Comp (UtcOffset(..), Task(..), SpeedSection, getAllRawZones)
 import WireTypes.Zone
     (Zones(..), RawZone(..), RawLatLng(..), RawLat(..), RawLng(..))
 import WireTypes.ZoneKind (Radius(..))
@@ -60,6 +61,7 @@ import WireTypes.Route
 import qualified FlareTiming.Turnpoint as TP (getName)
 import FlareTiming.Comms (getTaskPilotDf)
 import FlareTiming.Events (IxTask(..))
+import FlareTiming.Time (timeZone, showTime)
 
 data ZoomOrPan = Zoom | Pan deriving Show
 
@@ -189,11 +191,20 @@ marker _ latLng = do
     L.markerPopup mark $ showLatLng latLng
     return mark
 
-tagMarker :: Fix -> IO L.Marker
-tagMarker Fix{lat = RawLat lat, lng = RawLng lng} = do
+tagMarker :: TimeZone -> Fix -> IO L.Marker
+tagMarker tz Fix{fix, time, lat = RawLat lat, lng = RawLng lng} = do
     let latLng = (fromRational lat, fromRational lng)
     mark <- L.marker latLng
-    L.markerPopup mark $ showLatLng latLng
+
+    let msg =
+            "#"
+            ++ show fix
+            ++ " at "
+            ++ showTime tz time
+            ++ "<br>"
+            ++ showLatLng latLng
+
+    L.markerPopup mark msg
     return mark
 
 turnpoint
@@ -223,16 +234,18 @@ rawToLL RawLatLng{lat = RawLat lat', lng = RawLng lng'} =
 
 viewMap
     :: MonadWidget t m
-    => IxTask
+    => Dynamic t UtcOffset
+    -> IxTask
     -> Dynamic t Task
     -> Dynamic t (OptimalRoute (Maybe TrackLine))
     -> Event t ((Pilot, Maybe TrackFlyingSection), ([[Double]], [Maybe Fix]))
     -> m (Event t Pilot)
-viewMap ix task route pilotFlyingTrack = do
+viewMap utcOffset ix task route pilotFlyingTrack = do
     task' <- sample . current $ task
     route' <- sample . current $ route
 
     map
+        utcOffset
         ix
         task'
         (optimalTaskRoute route')
@@ -242,7 +255,8 @@ viewMap ix task route pilotFlyingTrack = do
 
 map
     :: MonadWidget t m
-    => IxTask
+    => Dynamic t UtcOffset
+    -> IxTask
     -> Task
     -> TaskRoute
     -> TaskRouteSubset
@@ -250,22 +264,23 @@ map
     -> Event t ((Pilot, Maybe TrackFlyingSection), ([[Double]], [Maybe Fix]))
     -> m (Event t Pilot)
 
-map _ Task{zones = Zones{raw = []}} _ _ _ _ = do
+map _ _ Task{zones = Zones{raw = []}} _ _ _ _ = do
     el "p" $ text "The task has no turnpoints."
     return never
 
-map _ _ (TaskRoute []) _ _ _ = do
+map _ _ _ (TaskRoute []) _ _ _ = do
     return never
 
-map _ _ _ (TaskRouteSubset []) _ _ = do
+map _ _ _ _ (TaskRouteSubset []) _ _ = do
     el "p" $ text "The optimal task route speed section has no turnpoints."
     return never
 
-map _ _ _ _ (SpeedRoute []) _ = do
+map _ _ _ _ _ (SpeedRoute []) _ = do
     el "p" $ text "The optimal route through only the speed section has no turnpoints."
     return never
 
 map
+    utcOffset
     ix
     task@Task{zones = Zones{raw = xs}, speedSection}
     (TaskRoute taskRoute)
@@ -276,6 +291,7 @@ map
     let tpNames = fmap (\RawZone{..} -> TurnpointName zoneName) xs
     pb <- delay 1 =<< getPostBuild
 
+    tz <- sample . current $ timeZone <$> utcOffset
     pilots <- holdDyn [] =<< getTaskPilotDf ix pb
     (zoomOrPan, evZoom, activePilot)
         <- taskZoneButtons task pilots $ () <$ pilotFlyingTrack
@@ -313,7 +329,7 @@ map
                         let t0 = take n pts
                         let t1 = drop n pts
 
-                        tagMarks <- sequence $ tagMarker <$> catMaybes tags
+                        tagMarks <- sequence $ tagMarker tz <$> catMaybes tags
 
                         l0 <- L.trackLine t0 "black"
                         g0 <- L.layerGroup l0 tagMarks

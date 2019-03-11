@@ -196,7 +196,7 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
                 TaskTabTask -> taskTable
 
                 TaskTabMap -> mdo
-                    p <- viewMap ix task routes pt
+                    p <- viewMap utc ix task routes pt
                     p' <- holdDyn nullPilot p
 
                     tfs <- getTaskPilotTrackFlyingSection ix p

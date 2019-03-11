@@ -1,6 +1,7 @@
 module FlareTiming.Time
     ( showHmsForHours
     , showHours
+    , showTime
     , showT
     , showTDiff
     , timeZone
@@ -29,11 +30,14 @@ showHmsForHours hr =
         (hr', min) = sec `divMod` 3600
         (min', sec') = min `divMod` 60
 
+showTime :: TimeZone -> UTCTime -> String
+showTime tz =
+    formatTime defaultTimeLocale "%T"
+    . utcToLocalTime tz
+
 showT :: TimeZone -> UTCTime -> T.Text
 showT tz =
-    T.pack
-    . formatTime defaultTimeLocale "%T"
-    . utcToLocalTime tz
+    T.pack . showTime tz
 
 showTDiff :: UTCTime -> UTCTime -> T.Text
 showTDiff expected actual =
