@@ -191,13 +191,15 @@ marker _ latLng = do
     L.markerPopup mark $ showLatLng latLng
     return mark
 
-tagMarker :: TimeZone -> Fix -> IO L.Marker
-tagMarker tz Fix{fix, time, lat = RawLat lat, lng = RawLng lng} = do
+tagMarker :: PilotName -> TimeZone -> Fix -> IO L.Marker
+tagMarker (PilotName pn) tz Fix{fix, time, lat = RawLat lat, lng = RawLng lng} = do
     let latLng = (fromRational lat, fromRational lng)
     mark <- L.marker latLng
 
     let msg =
-            "#"
+            pn
+            ++ "<br>"
+            ++ "#"
             ++ show fix
             ++ " at "
             ++ showTime tz time
@@ -324,12 +326,12 @@ map
                             , scoredFixes = Just (j0, jN)
                             } -> liftIO $ do
 
-                        let PilotName pn = getPilotName p
+                        let pn@(PilotName pn') = getPilotName p
                         let n = jN - (j0 - i)
                         let t0 = take n pts
                         let t1 = drop n pts
 
-                        tagMarks <- sequence $ tagMarker tz <$> catMaybes tags
+                        tagMarks <- sequence $ tagMarker pn tz <$> catMaybes tags
 
                         l0 <- L.trackLine t0 "black"
                         g0 <- L.layerGroup l0 tagMarks
@@ -337,12 +339,12 @@ map
                         -- NOTE: Adding the track now so that it displays.
                         L.layerGroupAddToMap g0 lmap'
 
-                        L.addOverlay layers' (PilotName (pn <> " scored"), g0)
+                        L.addOverlay layers' (PilotName (pn' <> " scored"), g0)
                         L.layersExpand layers'
 
                         l1 <- L.discardLine t1 "black"
                         g1 <- L.layerGroup l1 []
-                        L.addOverlay layers' (PilotName (pn <> " not scored"), g1)
+                        L.addOverlay layers' (PilotName (pn' <> " not scored"), g1)
                         L.layersExpand layers'
 
                         return ())
