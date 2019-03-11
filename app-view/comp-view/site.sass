@@ -458,30 +458,45 @@ $arrival-invert: $primary-invert;
 .legend-arrival
     color: $arrival;
 
-#score-points .th-distance-points
+#score-points .th-distance-points, #score-points .td-distance-points
     color: $reach-invert;
     border-color: $reach;
     background-color: $reach;
-    @extend .has-text-left;
 
-#score-points .th-time-points
+#score-points .th-time-points, #score-points .td-time-points
     color: $time-invert;
     border-color: $time;
     background-color: $time;
-    @extend .has-text-left;
 
-#score-points .th-leading-points
+#score-points .th-leading-points, #score-points .td-leading-points
     color: $leading-invert;
     border-color: $leading;
     background-color: $leading;
-    @extend .has-text-left;
 
-#score-points .th-arrival-points
+#score-points .th-arrival-points, #score-points .td-arrival-points
     color: $arrival-invert;
     border-color: $arrival;
     background-color: $arrival;
-    @extend .has-text-left;
 
+#score-points .th-total-points, #score-points .td-total-points
+    @extend .is-primary;
+
+#score-points .th-time-points,
+#score-points .th-leading-points,
+#score-points .th-arrival-points,
 #score-points .th-total-points
     @extend .has-text-left;
-    @extend .is-primary;
+
+#score-points .th-norm.th-time-points,
+#score-points .th-norm.th-leading-points,
+#score-points .th-norm.th-arrival-points,
+#score-points .th-norm.th-total-points
+    @extend .has-text-right;
+
+#score-points .td-norm.td-distance-points,
+#score-points .td-norm.td-time-points,
+#score-points .td-norm.td-leading-points,
+#score-points .td-norm.td-arrival-points,
+#score-points .td-norm.td-total-points
+    @extend .is-black;
+
