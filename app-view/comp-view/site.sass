@@ -6,6 +6,23 @@ $family-serif: "Merriweather", "Georgia", serif
 $family-primary: $family-serif
 @import "~bulma/bulma.sass";
 
+// SEE: http://colorbrewer2.org/#type=qualitative&scheme=Set1&n=5
+// red #e41a1c
+// blue #377eb8
+// green #4daf4a
+// purple #984ea3
+// orange #ff7f00
+$reach: #377eb8;
+$effort: #ff7f00;
+$time: #4daf4a;
+$leading: #e41a1c;
+$arrival: #984ea3;
+
+$reach-invert: $primary-invert;
+$time-invert: $primary-invert;
+$leading-invert: $primary-invert;
+$arrival-invert: $primary-invert;
+
 body, input, button, select, textarea
     font-family: 'Open Sans', monospace;
 
@@ -15,11 +32,15 @@ body, input, button, select, textarea
 .box span.tag
     border-radius: 0;
 
-.th-speed-section
-    @extend .is-link;
+th.th-speed-section
+    color: $time-invert;
+    border-bottom-color: $time;
+    background-color: $time;
 
-.th-speed
-    @extend .is-link;
+th.th-speed
+    color: $time-invert;
+    border-bottom-color: $time;
+    background-color: $time;
     @extend .has-text-right;
 
 .th-distance
@@ -410,23 +431,6 @@ table td.td-geo-plane, table td.td-geo-pythagorus
 
 .function-plot .title
     font-size: 14px;
-
-// SEE: http://colorbrewer2.org/#type=qualitative&scheme=Set1&n=5
-// red #e41a1c
-// blue #377eb8
-// green #4daf4a
-// purple #984ea3
-// orange #ff7f00
-$reach: #377eb8;
-$effort: #ff7f00;
-$time: #4daf4a;
-$leading: #e41a1c;
-$arrival: #984ea3;
-
-$reach-invert: $primary-invert;
-$time-invert: $primary-invert;
-$leading-invert: $primary-invert;
-$arrival-invert: $primary-invert;
 
 .legend-reach
     color: $reach;
