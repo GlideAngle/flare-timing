@@ -25,7 +25,10 @@ import FlareTiming.Comms
     , getTaskArrival, getTaskLead, getTaskTime
     , getTaskValidityWorking, getTaskLengthSphericalEdge
     , getTaskPilotDnf, getTaskPilotNyp, getTaskPilotDfNoTrack
-    , getTaskPilotTrack, getTaskPilotTrackFlyingSection, emptyRoute
+    , getTaskPilotTrack
+    , getTaskPilotTrackFlyingSection
+    , getTaskPilotTag
+    , emptyRoute
     )
 import FlareTiming.Breadcrumb (crumbTask)
 import FlareTiming.Events (IxTask(..))
@@ -201,13 +204,18 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
 
                     trk <- getTaskPilotTrack ix p
                     trk' <- holdDyn [] trk
-                    trk'' <- holdUniqDyn trk'
+
+                    tag <- getTaskPilotTag ix p
+                    tag' <- holdDyn [] tag
+
+                    let tt = zipDynWith (,) trk' tag'
+                    tt' <- holdUniqDyn tt
 
                     ptfs <- holdUniqDyn $ zipDynWith (,) p' tfs'
 
                     let pt =
                             push readyTrack
-                            $ attachPromptlyDyn ptfs (updated trk'')
+                            $ attachPromptlyDyn ptfs (updated tt')
 
                     return ()
 
@@ -270,11 +278,12 @@ taskDetail IxTaskNone _ _ _ _ _ = return never
 
 readyTrack
     :: Monad m
-    => ((Pilot, Maybe TrackFlyingSection), [a])
-    -> m (Maybe ((Pilot, Maybe TrackFlyingSection), [a]))
-readyTrack x@((p, t), xs)
+    => ((Pilot, Maybe TrackFlyingSection), ([a], [b]))
+    -> m (Maybe ((Pilot, Maybe TrackFlyingSection), ([a], [b])))
+readyTrack x@((p, t), (xs, ys))
     | p == nullPilot = return Nothing
     | null xs = return Nothing
+    | null ys = return Nothing
     | otherwise = return $
         case t of
             Nothing -> Nothing

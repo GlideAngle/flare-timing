@@ -46,7 +46,7 @@ import qualified FlareTiming.Map.Leaflet as L
     , layersExpand
     , addOverlay
     )
-import WireTypes.Cross (TrackFlyingSection(..))
+import WireTypes.Cross (TrackFlyingSection(..), Fix(..))
 import WireTypes.Pilot (Pilot(..), PilotName(..), getPilotName, nullPilot)
 import WireTypes.Comp (Task(..), SpeedSection, getAllRawZones)
 import WireTypes.Zone
@@ -189,6 +189,13 @@ marker _ latLng = do
     L.markerPopup mark $ showLatLng latLng
     return mark
 
+tagMarker :: Fix -> IO L.Marker
+tagMarker Fix{lat = RawLat lat, lng = RawLng lng} = do
+    let latLng = (fromRational lat, fromRational lng)
+    mark <- L.marker latLng
+    L.markerPopup mark $ showLatLng latLng
+    return mark
+
 turnpoint
     :: TurnpointName
     -> Color
@@ -219,7 +226,7 @@ viewMap
     => IxTask
     -> Dynamic t Task
     -> Dynamic t (OptimalRoute (Maybe TrackLine))
-    -> Event t ((Pilot, Maybe TrackFlyingSection), [[Double]])
+    -> Event t ((Pilot, Maybe TrackFlyingSection), ([[Double]], [Maybe Fix]))
     -> m (Event t Pilot)
 viewMap ix task route pilotFlyingTrack = do
     task' <- sample . current $ task
@@ -240,7 +247,7 @@ map
     -> TaskRoute
     -> TaskRouteSubset
     -> SpeedRoute
-    -> Event t ((Pilot, Maybe TrackFlyingSection), [[Double]])
+    -> Event t ((Pilot, Maybe TrackFlyingSection), ([[Double]], [Maybe Fix]))
     -> m (Event t Pilot)
 
 map _ Task{zones = Zones{raw = []}} _ _ _ _ = do
@@ -290,7 +297,7 @@ map
 
                 return ())
 
-            , ffor pilotFlyingTrack (\((p, sections), pts) ->
+            , ffor pilotFlyingTrack (\((p, sections), (pts, tags)) ->
                 if p == nullPilot || null pts then return () else
                 case sections of
                     Nothing -> return ()
@@ -306,8 +313,10 @@ map
                         let t0 = take n pts
                         let t1 = drop n pts
 
+                        tagMarks <- sequence $ tagMarker <$> catMaybes tags
+
                         l0 <- L.trackLine t0 "black"
-                        g0 <- L.layerGroup l0 []
+                        g0 <- L.layerGroup l0 tagMarks
 
                         -- NOTE: Adding the track now so that it displays.
                         L.layerGroupAddToMap g0 lmap'

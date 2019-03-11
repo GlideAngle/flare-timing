@@ -22,6 +22,7 @@ module FlareTiming.Comms
     , getTaskPilotDfNoTrack
     , getTaskPilotTrack
     , getTaskPilotTrackFlyingSection
+    , getTaskPilotTag
     , getTaskReach
     , getTaskEffort
     , getTaskNormScore
@@ -250,6 +251,31 @@ getTaskPilotTrackFlyingSection (IxTask ii) ev = do
         u (PilotId pid) =
             mapUri
             $ "/cross-zone/track-flying-section/"
+            <> (T.pack . show $ ii)
+            <> "/"
+            <> (T.pack pid)
+
+    let req' md = XhrRequest "GET" (u md) def
+    rsp <- performRequestAsync . fmap req' $ getPilotId <$> ev
+    return $ fmapMaybe decodeXhrResponse rsp
+
+getTaskPilotTag
+    ::
+        ( MonadIO (Performable m)
+        , HasJSContext (Performable m)
+        , PerformEvent t m
+        , TriggerEvent t m
+        , FromJSON a
+        )
+   => IxTask
+   -> Event t Pilot
+   -> m (Event t a)
+getTaskPilotTag IxTaskNone _ = return never
+getTaskPilotTag (IxTask ii) ev = do
+    let u :: PilotId -> T.Text
+        u (PilotId pid) =
+            mapUri
+            $ "/tag-zone/"
             <> (T.pack . show $ ii)
             <> "/"
             <> (T.pack pid)
