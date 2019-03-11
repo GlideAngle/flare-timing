@@ -432,42 +432,54 @@ table td.td-geo-plane, table td.td-geo-pythagorus
 // green #4daf4a
 // purple #984ea3
 // orange #ff7f00
+$reach: #377eb8;
+$effort: #ff7f00;
+$time: #4daf4a;
+$leading: #e41a1c;
+$arrival: #984ea3;
+
+$reach-invert: $primary-invert;
+$time-invert: $primary-invert;
+$leading-invert: $primary-invert;
+$arrival-invert: $primary-invert;
+
 .legend-reach
-    color: #377eb8;
+    color: $reach;
 
 .legend-effort
-    color: #ff7f00;
+    color: $effort;
 
 .legend-time
-    color: #4daf4a;
+    color: $time;
 
 .legend-leading
-    color: #e41a1c;
+    color: $leading;
 
 .legend-arrival
-    color: #984ea3;
+    color: $arrival;
 
 #score-points .th-distance-points
-    border-color: #ff7f00;
-    background-color: #ff7f00;
+    color: $reach-invert;
+    border-color: $reach;
+    background-color: $reach;
     @extend .has-text-left;
 
 #score-points .th-time-points
-    color: $white-bis;
-    border-color: #4daf4a;
-    background-color: #4daf4a;
+    color: $time-invert;
+    border-color: $time;
+    background-color: $time;
     @extend .has-text-left;
 
 #score-points .th-leading-points
-    color: $white-bis;
-    border-color: #e41a1c;
-    background-color: #e41a1c;
+    color: $leading-invert;
+    border-color: $leading;
+    background-color: $leading;
     @extend .has-text-left;
 
 #score-points .th-arrival-points
-    color: $white-bis;
-    border-color: #984ea3;
-    background-color: #984ea3;
+    color: $arrival-invert;
+    border-color: $arrival;
+    background-color: $arrival;
     @extend .has-text-left;
 
 #score-points .th-total-points
