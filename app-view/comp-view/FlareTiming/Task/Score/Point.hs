@@ -132,8 +132,8 @@ tableScorePoint utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sEx 
                 elAttr "th" ("colspan" =: "3") $ text ""
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance-points-breakdown") $ text "Points for Distance"
                 elAttr "th" ("colspan" =: "2" <> "class" =: "th-distance-points") $ text ""
-                elAttr "th" ("colspan" =: "3" <> "class" =: "th-leading-points") $ text "Lead"
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-time-points") $ text "Time"
+                elAttr "th" ("colspan" =: "3" <> "class" =: "th-leading-points") $ text "Lead"
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-arrival-points") $ text "Arrival"
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-total-points") $ text "Total"
 
@@ -148,12 +148,12 @@ tableScorePoint utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sEx 
                 elClass "th" "th-norm th-distance-points" $ text "✓"
                 elClass "th" "th-norm th-diff" $ text "Δ"
 
-                elClass "th" "th-leading-points" $ text ""
-                elClass "th" "th-norm th-leading-points" $ text "✓"
-                elClass "th" "th-norm th-diff" $ text "Δ"
-
                 elDynClass "th" (fst <$> cTimePoints) $ text ""
                 elClass "th" "th-norm th-time-points" $ text "✓"
+                elClass "th" "th-norm th-diff" $ text "Δ"
+
+                elClass "th" "th-leading-points" $ text ""
+                elClass "th" "th-norm th-leading-points" $ text "✓"
                 elClass "th" "th-norm th-diff" $ text "Δ"
 
                 elDynClass "th" (fst <$> cArrivalPoints) $ text ""
@@ -189,9 +189,6 @@ tableScorePoint utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sEx 
 
                 thSpace
                 thSpace
-                thSpace
-                thSpace
-                thSpace
 
                 elClass "th" "th-time-validity" . dynText $
                     maybe
@@ -201,6 +198,9 @@ tableScorePoint utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sEx 
                         )
                     <$> vy
 
+                thSpace
+                thSpace
+                thSpace
                 thSpace
                 thSpace
                 thSpace
@@ -235,22 +235,22 @@ tableScorePoint utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sEx 
                 thSpace
                 thSpace
 
-                elClass "th" "th-leading-weight" . dynText$
+                elClass "th" "th-time-weight" . dynText$
                     maybe
                         ""
-                        ( showLeadingWeight
-                        . Wg.leading
+                        ( showTimeWeight
+                        . Wg.time
                         )
                     <$> wg
 
                 thSpace
                 thSpace
 
-                elClass "th" "th-time-weight" . dynText$
+                elClass "th" "th-leading-weight" . dynText$
                     maybe
                         ""
-                        ( showTimeWeight
-                        . Wg.time
+                        ( showLeadingWeight
+                        . Wg.leading
                         )
                     <$> wg
 
@@ -301,22 +301,22 @@ tableScorePoint utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sEx 
                 thSpace
                 thSpace
 
-                elClass "th" "th-leading-alloc" . dynText $
+                elClass "th" "th-time-alloc" . dynText $
                     maybe
                         ""
-                        ( (\x -> showTaskLeadingPoints (Just x) x)
-                        . Pt.leading
+                        ( (\x -> showTaskTimePoints (Just x) x)
+                        . Pt.time
                         )
                     <$> pt
 
                 thSpace
                 thSpace
 
-                elClass "th" "th-time-alloc" . dynText $
+                elClass "th" "th-leading-alloc" . dynText $
                     maybe
                         ""
-                        ( (\x -> showTaskTimePoints (Just x) x)
-                        . Pt.time
+                        ( (\x -> showTaskLeadingPoints (Just x) x)
+                        . Pt.leading
                         )
                     <$> pt
 
@@ -485,15 +485,15 @@ pointRow cTime cArrival _utcOffset _free dfNt pt tp sEx x = do
         elClass "td" "td-norm td-distance-points" . text $ yDistance
         elClass "td" "td-norm td-distance-points" . text $ yDistanceDiff
 
-        elClass "td" "td-leading-points" . dynText
-            $ showMax Pt.leading showTaskLeadingPoints pt points
-        elClass "td" "td-norm td-leading-points" . text $ yLeading
-        elClass "td" "td-norm td-leading-points" . text $ yLeadingDiff
-
         elDynClass "td" cTime . dynText
             $ showMax Pt.time showTaskTimePoints pt points
         elClass "td" "td-norm td-time-points" . text $ yTime
         elClass "td" "td-norm td-time-points" . text $ yTimeDiff
+
+        elClass "td" "td-leading-points" . dynText
+            $ showMax Pt.leading showTaskLeadingPoints pt points
+        elClass "td" "td-norm td-leading-points" . text $ yLeading
+        elClass "td" "td-norm td-leading-points" . text $ yLeadingDiff
 
         elDynClass "td" cArrival . dynText
             $ showMax Pt.arrival showTaskArrivalPoints pt points
