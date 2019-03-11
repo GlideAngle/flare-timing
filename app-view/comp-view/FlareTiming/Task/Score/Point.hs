@@ -131,7 +131,11 @@ tableScorePoint utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sEx 
             el "tr" $ do
                 elAttr "th" ("colspan" =: "3") $ text ""
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance-points-breakdown") $ text "Points for Distance"
-                elAttr "th" ("colspan" =: "11") $ text ""
+                elAttr "th" ("colspan" =: "2" <> "class" =: "th-distance-points") $ text ""
+                elAttr "th" ("colspan" =: "3" <> "class" =: "th-leading-points") $ text "Lead"
+                elAttr "th" ("colspan" =: "3" <> "class" =: "th-time-points") $ text "Time"
+                elAttr "th" ("colspan" =: "3" <> "class" =: "th-arrival-points") $ text "Arrival"
+                elAttr "th" ("colspan" =: "3" <> "class" =: "th-total-points") $ text "Total"
 
             el "tr" $ do
                 elClass "th" "th-norm th-placing" $ text "✓"
@@ -141,24 +145,24 @@ tableScorePoint utcOffset hgOrPg free sgs _ln dnf' dfNt vy vw wg pt tp sDfs sEx 
                 elClass "th" "th-effort-points" $ text "Effort §"
 
                 elClass "th" "th-distance-points" $ text "Subtotal"
-                elClass "th" "th-norm th-distance-points" $ text "✓-Distance"
-                elClass "th" "th-norm th-diff" $ text "Δ-Distance"
+                elClass "th" "th-norm th-distance-points" $ text "✓"
+                elClass "th" "th-norm th-diff" $ text "Δ"
 
-                elClass "th" "th-lead-points" $ text "Lead"
-                elClass "th" "th-norm th-time-points" $ text "✓-Lead"
-                elClass "th" "th-norm th-diff" $ text "Δ-Lead"
+                elClass "th" "th-leading-points" $ text ""
+                elClass "th" "th-norm th-leading-points" $ text "✓"
+                elClass "th" "th-norm th-diff" $ text "Δ"
 
-                elDynClass "th" (fst <$> cTimePoints) $ text "Time"
-                elClass "th" "th-norm th-time-points" $ text "✓-Time"
-                elClass "th" "th-norm th-diff" $ text "Δ-Time"
+                elDynClass "th" (fst <$> cTimePoints) $ text ""
+                elClass "th" "th-norm th-time-points" $ text "✓"
+                elClass "th" "th-norm th-diff" $ text "Δ"
 
-                elDynClass "th" (fst <$> cArrivalPoints) $ text "Arrival"
-                elClass "th" "th-norm th-arrival-points" $ text "✓-Arrival"
-                elClass "th" "th-norm th-diff" $ text "Δ-Arrival"
+                elDynClass "th" (fst <$> cArrivalPoints) $ text ""
+                elClass "th" "th-norm th-arrival-points" $ text "✓"
+                elClass "th" "th-norm th-diff" $ text "Δ"
 
-                elClass "th" "th-total-points" $ text "Total"
-                elClass "th" "th-norm th-total-points" $ text "✓-Total"
-                elClass "th" "th-norm th-diff" $ text "Δ-Total"
+                elClass "th" "th-total-points" $ text ""
+                elClass "th" "th-norm th-total-points" $ text "✓"
+                elClass "th" "th-norm th-diff" $ text "Δ"
 
             elClass "tr" "tr-validity" $ do
                 elAttr "th" ("colspan" =: "3" <> "class" =: "th-launch-validity") . dynText $

@@ -131,7 +131,7 @@ tableScoreOver utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt tp sDfs sEx 
                 elClass "th" "th-best-distance" $ text "Reach †"
 
                 elClass "th" "th-distance-points" $ text "Distance"
-                elClass "th" "th-lead-points" $ text "Lead"
+                elClass "th" "th-leading-points" $ text "Lead"
                 elDynClass "th" (fst <$> cTimePoints) $ text "Time"
                 elDynClass "th" (fst <$> cArrivalPoints) $ text "Arrival"
                 elClass "th" "th-total-points" $ text "Total"

@@ -37,6 +37,9 @@ body, input, button, select, textarea
 #score-points .th-norm.th-distance-points, #score-distance .th-norm.th-distance-points
     @extend .is-black;
 
+#score-points .th-norm.th-leading-points, #score-points .th-norm.th-time-points, #score-points .th-norm.th-arrival-points
+    @extend .is-black;
+
 .th-points
     @extend .is-primary;
 
@@ -170,7 +173,7 @@ table:not(.sg) .th-start-gate, table:not(.sg) .th-time
 .th-effort-points
     @extend .has-text-right;
 
-.th-lead-points
+.th-leading-points
     @extend .has-text-right;
 
 .th-time-points
@@ -417,11 +420,11 @@ table td.td-geo-plane, table td.td-geo-pythagorus
     @extend .has-text-right;
 
 .function-plot .top-right-legend
-  font-size: 10px;
-  fill: transparent;
+    font-size: 10px;
+    fill: transparent;
 
 .function-plot .title
-  font-size: 14px;
+    font-size: 14px;
 
 // SEE: http://colorbrewer2.org/#type=qualitative&scheme=Set1&n=5
 // red #e41a1c
@@ -430,16 +433,43 @@ table td.td-geo-plane, table td.td-geo-pythagorus
 // purple #984ea3
 // orange #ff7f00
 .legend-reach
-  color: #377eb8;
+    color: #377eb8;
 
 .legend-effort
-  color: #ff7f00;
+    color: #ff7f00;
 
 .legend-time
-  color: #4daf4a;
+    color: #4daf4a;
 
 .legend-leading
-  color: #e41a1c;
+    color: #e41a1c;
 
 .legend-arrival
-  color: #984ea3;
+    color: #984ea3;
+
+#score-points .th-distance-points
+    border-color: #ff7f00;
+    background-color: #ff7f00;
+    @extend .has-text-left;
+
+#score-points .th-time-points
+    color: $white-bis;
+    border-color: #4daf4a;
+    background-color: #4daf4a;
+    @extend .has-text-left;
+
+#score-points .th-leading-points
+    color: $white-bis;
+    border-color: #e41a1c;
+    background-color: #e41a1c;
+    @extend .has-text-left;
+
+#score-points .th-arrival-points
+    color: $white-bis;
+    border-color: #984ea3;
+    background-color: #984ea3;
+    @extend .has-text-left;
+
+#score-points .th-total-points
+    @extend .has-text-left;
+    @extend .is-primary;
