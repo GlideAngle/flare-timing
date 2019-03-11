@@ -16,7 +16,7 @@ import Servant
     , (:>)
     , errBody, err400, hoistServer, serve, throwError
     )
-import  Network.Wai.Middleware.Gzip (gzip, def)
+import Network.Wai.Middleware.Gzip (gzip, def)
 import System.IO (hPutStrLn, stderr)
 import Control.Exception.Safe (MonadThrow, catchIO)
 import Control.Monad (join)
@@ -27,7 +27,8 @@ import qualified Data.ByteString.Lazy.Char8 as LBS (pack)
 
 import System.FilePath (takeFileName)
 
-import qualified Flight.Track.Cross as Cg (Crossing(..))
+import qualified Flight.Track.Cross as Cg (Crossing(..), Fix(..))
+import qualified Flight.Track.Tag as Tg (Tagging(..), PilotTrackTag(..))
 import Flight.Track.Cross (TrackFlyingSection(..))
 import Flight.Track.Distance (TrackReach(..))
 import Flight.Track.Land (Landing(..), TrackEffort(..), effortRank)
@@ -48,7 +49,7 @@ import Flight.Score
     )
 import Flight.Scribe
     ( readComp, readScore
-    , readRoute, readCrossing, readMasking, readLanding, readPointing
+    , readRoute, readCrossing, readTagging, readMasking, readLanding, readPointing
     )
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
@@ -73,6 +74,7 @@ import Flight.Comp
     , CompInputFile(..)
     , TaskLengthFile(..)
     , CrossZoneFile(..)
+    , TagZoneFile(..)
     , MaskTrackFile(..)
     , LandOutFile(..)
     , GapPointFile(..)
@@ -84,6 +86,7 @@ import Flight.Comp
     , compToMask
     , compToLand
     , compToPoint
+    , crossToTag
     , ensureExt
     )
 import Flight.Route
@@ -92,7 +95,7 @@ import Flight.Route
     )
 import Flight.Mask (checkTracks)
 import ServeOptions (description)
-import ServeTrack (RawLatLngTrack(..))
+import ServeTrack (RawLatLngTrack(..), tagToTrack)
 import Data.Ratio.Rounding (dpRound)
 import Flight.Distance (QTaskDistance)
 
@@ -102,6 +105,7 @@ data Config k
         , compSettings :: CompSettings k
         , routing :: Maybe [Maybe TaskTrack]
         , crossing :: Maybe Cg.Crossing
+        , tagging :: Maybe Tg.Tagging
         , masking :: Maybe Masking
         , landing :: Maybe Landing
         , pointing :: Maybe Pointing
@@ -219,6 +223,9 @@ type GapPointApi k =
     :<|> "cross-zone" :> "track-flying-section" :> (Capture "task" Int) :> (Capture "pilot" String)
         :> Get '[JSON] TrackFlyingSection
 
+    :<|> "tag-zone" :> (Capture "task" Int) :> (Capture "pilot" String)
+        :> Get '[JSON] [Maybe Cg.Fix]
+
     :<|> "mask-track" :> (Capture "task" Int) :> "reach"
         :> Get '[JSON] [(Pilot, TrackReach)]
 
@@ -265,13 +272,15 @@ go :: CmdServeOptions -> CompInputFile -> IO ()
 go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
     let lenFile@(TaskLengthFile lenPath) = compToTaskLength compFile
     let crossFile@(CrossZoneFile crossPath) = compToCross compFile
+    let tagFile@(TagZoneFile tagPath) = crossToTag crossFile
     let maskFile@(MaskTrackFile maskPath) = compToMask compFile
     let landFile@(LandOutFile landPath) = compToLand compFile
     let pointFile@(GapPointFile pointPath) = compToPoint compFile
     let normFile@(NormScoreFile normPath) = compToScore compFile
+    putStrLn $ "Reading task length from '" ++ takeFileName lenPath ++ "'"
     putStrLn $ "Reading competition & pilots DNF from '" ++ takeFileName compPath ++ "'"
     putStrLn $ "Reading flying time range from '" ++ takeFileName crossPath ++ "'"
-    putStrLn $ "Reading task length from '" ++ takeFileName lenPath ++ "'"
+    putStrLn $ "Reading zone tags from '" ++ takeFileName tagPath ++ "'"
     putStrLn $ "Reading arrivals from '" ++ takeFileName maskPath ++ "'"
     putStrLn $ "Reading land outs from '" ++ takeFileName landPath ++ "'"
     putStrLn $ "Reading scores from '" ++ takeFileName pointPath ++ "'"
@@ -290,6 +299,11 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
     crossing <-
         catchIO
             (Just <$> readCrossing crossFile)
+            (const $ return Nothing)
+
+    tagging <-
+        catchIO
+            (Just <$> readTagging tagFile)
             (const $ return Nothing)
 
     masking <-
@@ -312,12 +326,12 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
             (Just <$> readScore normFile)
             (const $ return Nothing)
 
-    case (compSettings, routes, crossing, masking, landing, pointing, norming) of
-        (Nothing, _, _, _, _, _, _) -> putStrLn "Couldn't read the comp settings"
-        (Just cs, rt@(Just _), cg@(Just _), mg@(Just _), lo@(Just _), gp@(Just _), ns@(Just _)) ->
-            f =<< mkGapPointApp (Config compFile cs rt cg mg lo gp ns)
-        (Just cs, _, _, _, _, _, _) ->
-            f =<< mkCompInputApp (Config compFile cs Nothing Nothing Nothing Nothing Nothing Nothing)
+    case (compSettings, routes, crossing, tagging, masking, landing, pointing, norming) of
+        (Nothing, _, _, _, _, _, _, _) -> putStrLn "Couldn't read the comp settings"
+        (Just cs, rt@(Just _), cg@(Just _), tg@(Just _), mg@(Just _), lo@(Just _), gp@(Just _), ns@(Just _)) ->
+            f =<< mkGapPointApp (Config compFile cs rt cg tg mg lo gp ns)
+        (Just cs, _, _, _, _, _, _, _) ->
+            f =<< mkCompInputApp (Config compFile cs Nothing Nothing Nothing Nothing Nothing Nothing Nothing)
     where
         -- NOTE: Add gzip with wai gzip middleware.
         -- SEE: https://github.com/haskell-servant/servant/issues/786
@@ -393,6 +407,7 @@ serverGapPointApi cfg =
         :<|> getTaskPilotDf
         :<|> getTaskPilotTrack
         :<|> getTaskPilotTrackFlyingSection
+        :<|> getTaskPilotTag
         :<|> getTaskReach
         :<|> getTaskArrival
         :<|> getTaskLead
@@ -755,6 +770,24 @@ getTaskPilotTrackFlyingSection ii pilotId = do
                 fs : _ ->
                     case find (isPilot . fst) fs of
                         Just (_, Just y) -> return y
+                        _ -> throwError $ errPilotTrackNotFound ix pilot
+                _ -> throwError $ errPilotTrackNotFound ix pilot
+
+getTaskPilotTag :: Int -> String -> AppT k IO [Maybe Cg.Fix]
+getTaskPilotTag ii pilotId = do
+    let jj = ii - 1
+    let ix = IxTask ii
+    let pilot = PilotId pilotId
+    fss <- fmap Tg.tagging <$> asks tagging
+    let isPilot (Tg.PilotTrackTag (Pilot (pid, _)) _) = pid == PilotId pilotId
+
+    case fss of
+        Nothing -> throwError $ errPilotNotFound pilot
+        Just fss' -> do
+            case take 1 $ drop jj fss' of
+                fs : _ ->
+                    case find isPilot fs of
+                        Just y -> return $ tagToTrack y
                         _ -> throwError $ errPilotTrackNotFound ix pilot
                 _ -> throwError $ errPilotTrackNotFound ix pilot
 
