@@ -72,8 +72,7 @@ tableScoreDistance utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs
             el "tr" $ do
                 elAttr "th" ("colspan" =: "2") $ text ""
                 elAttr "th" ("colspan" =: "6" <> "class" =: "th-distance") $ text "Distance Flown"
-                elAttr "th" ("colspan" =: "3" <> "class" =: "th-distance-points-breakdown") $ text "Points for Distance"
-                elAttr "th" ("colspan" =: "2") $ text ""
+                elAttr "th" ("colspan" =: "5" <> "class" =: "th-distance-points-breakdown") $ text "Points for Distance"
 
             el "tr" $ do
                 elClass "th" "th-placing" $ text "#"
@@ -90,8 +89,8 @@ tableScoreDistance utcOffset hgOrPg free sgs ln dnf' dfNt _vy vw _wg pt _tp sDfs
                 elClass "th" "th-effort-points" $ text "Effort §"
 
                 elClass "th" "th-distance-points" $ text "Subtotal"
-                elClass "th" "th-norm th-distance-points" $ text "✓-Distance"
-                elClass "th" "th-norm th-diff" $ text "Δ-Distance"
+                elClass "th" "th-norm th-distance-points" $ text "✓"
+                elClass "th" "th-norm th-diff" $ text "Δ"
 
             elClass "tr" "tr-allocation" $ do
                 elAttr "th" ("colspan" =: "2" <> "class" =: "th-allocation") $ text "Available Points (Units)"
