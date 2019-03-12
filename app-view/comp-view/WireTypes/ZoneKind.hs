@@ -22,10 +22,10 @@ import qualified Data.Text as T
 import Data.Scientific (Scientific, toRealFloat, fromRationalRepetend)
 
 newtype RawLat = RawLat Rational
-    deriving (Eq, Ord, Show)
+    deriving (Eq, Ord)
 
 newtype RawLng = RawLng Rational
-    deriving (Eq, Ord, Show)
+    deriving (Eq, Ord)
 
 fromSci :: Scientific -> Rational
 fromSci x = toRational (toRealFloat x :: Double)
@@ -49,6 +49,9 @@ showLat (RawLat x) = (show . toSci $ x) ++ " °"
 
 showLng :: RawLng -> String
 showLng (RawLng x) = (show . toSci $ x) ++ " °"
+
+instance Show RawLat where show = showLat
+instance Show RawLng where show = showLng
 
 newtype Target = Target (RawLat, RawLng)
     deriving (Eq, Ord, Show)
