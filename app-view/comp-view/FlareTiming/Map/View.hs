@@ -19,13 +19,13 @@ import qualified Data.Text as T (Text, pack)
 import Reflex.Time (delay)
 import Data.Maybe (catMaybes, listToMaybe)
 import qualified Data.Map as Map
-import Data.List (zipWith4)
 import Control.Monad (sequence)
 import Control.Monad.IO.Class (liftIO)
 
 import qualified FlareTiming.Map.Leaflet as L
     ( Marker(..)
     , Circle(..)
+    , Semicircle(..)
     , map
     , mapSetView
     , layerGroup
@@ -37,6 +37,8 @@ import qualified FlareTiming.Map.Leaflet as L
     , mapInvalidateSize
     , circle
     , circleAddToMap
+    , semicircle
+    , semicircleAddToMap
     , trackLine
     , discardLine
     , routeLine
@@ -49,10 +51,13 @@ import qualified FlareTiming.Map.Leaflet as L
     )
 import WireTypes.Cross (TrackFlyingSection(..), Fix(..))
 import WireTypes.Pilot (Pilot(..), PilotName(..), getPilotName, nullPilot)
-import WireTypes.Comp (UtcOffset(..), Task(..), SpeedSection, getAllRawZones)
+import WireTypes.Comp
+    ( UtcOffset(..), Task(..), SpeedSection
+    , getGoalShape, getAllRawZones
+    )
 import WireTypes.Zone
     (Zones(..), RawZone(..), RawLatLng(..), RawLat(..), RawLng(..))
-import WireTypes.ZoneKind (Radius(..))
+import WireTypes.ZoneKind (Radius(..), Shape(..))
 import WireTypes.Route
     ( OptimalRoute, TrackLine
     , TaskRoute(..), TaskRouteSubset(..), SpeedRoute(..)
@@ -209,18 +214,31 @@ tagMarker (PilotName pn) tz Fix{fix, time, lat = RawLat lat, lng = RawLng lng} =
     L.markerPopup mark msg
     return mark
 
-turnpoint
-    :: TurnpointName
-    -> Color
-    -> (Double, Double)
-    -> (Radius, Maybe Radius)
-    -> IO (L.Marker, (L.Circle, Maybe L.Circle))
-turnpoint (TurnpointName tpName) (Color color) latLng (Radius r, g) = do
+tpMarker :: TurnpointName -> (Double, Double) -> IO L.Marker
+tpMarker (TurnpointName tpName) latLng = do
     xMark <- L.marker latLng
     L.markerPopup xMark tpName
+    return xMark
+
+tpCircle
+    :: Color
+    -> (Double, Double)
+    -> (Radius, Maybe Radius)
+    -> IO (L.Circle, Maybe L.Circle)
+tpCircle (Color color) latLng (Radius r, g) = do
     xCyl <- L.circle latLng r color False True
     yCyl <- sequence $ (\(Radius y) -> L.circle latLng y color True False) <$> g
-    return (xMark, (xCyl, yCyl))
+    return (xCyl, yCyl)
+
+tpLine
+    :: Color
+    -> (Double, Double)
+    -> (Radius, Maybe Radius)
+    -> IO (L.Semicircle, Maybe L.Semicircle)
+tpLine (Color color) latLng (Radius r, g) = do
+    xCyl <- L.semicircle latLng r color False True
+    yCyl <- sequence $ (\(Radius y) -> L.semicircle latLng y color True False) <$> g
+    return (xCyl, yCyl)
 
 zoneToLL :: RawZone -> (Double, Double)
 zoneToLL RawZone{lat = RawLat lat', lng = RawLng lng'} =
@@ -254,6 +272,13 @@ viewMap utcOffset ix task route pilotFlyingTrack = do
         (optimalTaskRouteSubset route')
         (optimalSpeedRoute route')
         pilotFlyingTrack
+
+splitZones :: Task -> ([RawZone], [RawZone])
+splitZones task@Task{zones = Zones{raw = xs}} =
+    case (getGoalShape task, reverse xs) of
+        (Just Circle, _) -> (xs, [])
+        (_, []) -> (xs, [])
+        (_, y : ys) -> (reverse ys, [y])
 
 map
     :: MonadWidget t m
@@ -360,29 +385,54 @@ map
                     "http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     17
 
-            let len = length xs
-            let cs = zoneColors len speedSection
+            let xsLen = length xs
+            let cs = zoneColors xsLen speedSection
+            let (xsCircle, xsLine) = splitZones task
+            let (csCircle, csLine) =
+                    let csLen = length xsCircle in (take csLen cs, drop csLen cs)
 
-            let xPts :: [(Double, Double)] = fmap zoneToLL xs
+            let pts :: [(Double, Double)] = fmap zoneToLL xs
+            let ptsCircle :: [(Double, Double)] = fmap zoneToLL xsCircle
+            let ptsLine :: [(Double, Double)] = fmap zoneToLL xsLine
+
             let ptsTaskRoute :: [(Double, Double)] = fmap rawToLL taskRoute
             let ptsTaskRouteSubset :: [(Double, Double)] = fmap rawToLL taskRouteSubset
             let ptsSpeedRoute :: [(Double, Double)] = fmap rawToLL speedRoute
 
-            xMarks <-
+            tpMarks <-
                 sequence $
-                    zipWith4
-                        turnpoint
+                    zipWith
+                        tpMarker
                         tpNames
-                        cs
-                        xPts
-                        ((\x -> (radius x, give x)) <$> xs)
+                        pts
 
-            _ <- sequence $ ((flip L.circleAddToMap) lmap . fst . snd) <$> xMarks
+            tpCircles <-
+                sequence $
+                    zipWith3
+                        tpCircle
+                        csCircle
+                        ptsCircle
+                        ((\x -> (radius x, give x)) <$> xsCircle)
 
-            let giveCyls = catMaybes $ snd . snd <$> xMarks
-            _ <- sequence $ (flip L.circleAddToMap) lmap <$> giveCyls
+            _ <- sequence $ ((flip L.circleAddToMap) lmap . fst) <$> tpCircles
 
-            courseLine <- L.routeLine xPts "gray"
+            let giveCircles = catMaybes $ snd <$> tpCircles
+            _ <- sequence $ (flip L.circleAddToMap) lmap <$> giveCircles
+
+            tpLines <-
+                sequence $
+                    zipWith3
+                        tpLine
+                        csLine
+                        ptsLine
+                        ((\x -> (radius x, give x)) <$> xsLine)
+
+            _ <- sequence $ ((flip L.semicircleAddToMap) lmap . fst) <$> tpLines
+
+            let giveLines = catMaybes $ snd <$> tpLines
+            _ <- sequence $ (flip L.semicircleAddToMap) lmap <$> giveLines
+
+            courseLine <- L.routeLine pts "gray"
             taskRouteLine <- L.routeLine ptsTaskRoute "red"
             taskRouteSubsetLine <- L.routeLine ptsTaskRouteSubset "green"
             speedRouteLine <- L.routeLine ptsSpeedRoute "magenta"
@@ -391,7 +441,7 @@ map
             taskRouteSubsetMarks <- sequence $ zipWith marker cs ptsTaskRouteSubset
             speedRouteMarks <- sequence $ zipWith marker cs ptsSpeedRoute
 
-            courseGroup <- L.layerGroup courseLine $ fst <$> xMarks
+            courseGroup <- L.layerGroup courseLine tpMarks
             taskRouteGroup <- L.layerGroup taskRouteLine taskRouteMarks
             taskRouteSubsetGroup <- L.layerGroup taskRouteSubsetLine taskRouteSubsetMarks
             speedRouteGroup <- L.layerGroup speedRouteLine speedRouteMarks

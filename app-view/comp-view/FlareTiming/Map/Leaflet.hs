@@ -6,6 +6,7 @@ module FlareTiming.Map.Leaflet
     , TileLayer(..)
     , Marker(..)
     , Circle(..)
+    , Semicircle(..)
     , LatLngBounds
     , map
     , mapSetView
@@ -17,6 +18,8 @@ module FlareTiming.Map.Leaflet
     , markerPopup
     , circle
     , circleAddToMap
+    , semicircle
+    , semicircleAddToMap
     , trackLine
     , discardLine
     , routeLine
@@ -47,6 +50,7 @@ newtype LayerGroup = LayerGroup { unLayerGroup :: JSVal }
 newtype TileLayer = TileLayer { unTileLayer :: JSVal }
 newtype Marker = Marker { unMarker :: JSVal }
 newtype Circle = Circle { unCircle :: JSVal }
+newtype Semicircle = Semicircle { unSemicircle :: JSVal }
 newtype Polyline = Polyline { unPolyline :: JSVal }
 newtype LatLngBounds = LatLngBounds { unLatLngBounds :: JSVal }
 newtype Layers = Layers { unLayers :: JSVal }
@@ -105,6 +109,10 @@ foreign import javascript unsafe
 foreign import javascript unsafe
     "L['circle']([$1, $2], {radius: $3, color: $4, opacity: 0.6, weight: 1, stroke: $5, fill: $6})"
     circle_ :: Double -> Double -> Double -> JSString -> Bool -> Bool -> IO JSVal
+
+foreign import javascript unsafe
+    "L['semiCircle']([$1, $2], {radius: $3, color: $4, opacity: 0.6, weight: 1, stroke: $5, fill: $6}).setDirection(90, 180)"
+    semicircle_ :: Double -> Double -> Double -> JSString -> Bool -> Bool -> IO JSVal
 
 foreign import javascript unsafe
     "L['polyline']($1, {color: $2, opacity: 0.6, dashArray: '20,15', lineJoin: 'round'})"
@@ -223,6 +231,13 @@ circle (lat, lng) radius color stroke fill =
 
 circleAddToMap :: Circle -> Map -> IO ()
 circleAddToMap x lmap = addToMap_ (unCircle x) (unMap lmap)
+
+semicircle :: (Double, Double) -> Double -> String -> Bool -> Bool -> IO Semicircle
+semicircle (lat, lng) radius color stroke fill =
+    Semicircle <$> semicircle_ lat lng radius (toJSString color) stroke fill
+
+semicircleAddToMap :: Semicircle -> Map -> IO ()
+semicircleAddToMap x lmap = addToMap_ (unSemicircle x) (unMap lmap)
 
 routeLine :: [(Double, Double)] -> String -> IO Polyline
 routeLine xs color = do
