@@ -280,6 +280,9 @@ splitZones :: Task -> ([RawZone], [(AzimuthFwd, RawZone)])
 splitZones task@Task{zones = Zones{raw = xs}} =
     case (getGoalShape task, reverse xs) of
         (Just Circle, _) -> (xs, [])
+        (Just Cylinder, _) -> (xs, [])
+        (Just (Vector _), _) -> (xs, [])
+        (Just Star, _) -> (xs, [])
         (_, []) -> (xs, [])
         (_, [_]) -> (xs, [])
         (_, y@RawZone{lat = yLat, lng = yLng} : ys@(RawZone{lat, lng} : _)) ->
