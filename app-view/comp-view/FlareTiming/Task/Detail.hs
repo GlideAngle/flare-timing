@@ -200,22 +200,23 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
                     p' <- holdDyn nullPilot p
 
                     tfs <- getTaskPilotTrackFlyingSection ix p
-                    tfs' <- holdDyn Nothing tfs
-
-                    trk <- getTaskPilotTrack ix p
-                    trk' <- holdDyn [] trk
-
-                    tag <- getTaskPilotTag ix p
-                    tag' <- holdDyn [] tag
-
-                    let tt = zipDynWith (,) trk' tag'
-                    tt' <- holdUniqDyn tt
+                    tfs' <- holdDyn (nullPilot, Nothing) (attachPromptlyDyn p' tfs)
 
                     ptfs <- holdUniqDyn $ zipDynWith (,) p' tfs'
 
+                    tag <- getTaskPilotTag ix p
+                    tag' <- holdDyn (nullPilot, []) (attachPromptlyDyn p' tag)
+                    tag'' <- holdUniqDyn tag'
+
+                    trk <- getTaskPilotTrack ix p
+                    trk' <- holdDyn (nullPilot, []) (attachPromptlyDyn p' trk)
+                    trk'' <- holdUniqDyn trk'
+
+                    tt <- holdUniqDyn $ zipDynWith (,) trk'' tag''
+
                     let pt =
                             push readyTrack
-                            $ attachPromptlyDyn ptfs (updated tt')
+                            $ attachPromptlyDyn ptfs (updated tt)
 
                     return ()
 
@@ -278,10 +279,14 @@ taskDetail IxTaskNone _ _ _ _ _ = return never
 
 readyTrack
     :: Monad m
-    => ((Pilot, Maybe TrackFlyingSection), ([a], [b]))
-    -> m (Maybe ((Pilot, Maybe TrackFlyingSection), ([a], [b])))
-readyTrack x@((p, t), (xs, ys))
+    => ((Pilot, (Pilot, Maybe TrackFlyingSection)), ((Pilot, [a]), (Pilot, [b])))
+    -> m (Maybe ((Pilot, (Pilot, Maybe TrackFlyingSection)), ((Pilot, [a]), (Pilot, [b]))))
+readyTrack x@((p, (tq, t)), ((xq, xs), (yq, ys)))
     | p == nullPilot = return Nothing
+    | tq == nullPilot = return Nothing
+    | xq == nullPilot = return Nothing
+    | yq == nullPilot = return Nothing
+    | p /= tq || p /= xq || p /= yq = return Nothing
     | null xs = return Nothing
     | null ys = return Nothing
     | otherwise = return $

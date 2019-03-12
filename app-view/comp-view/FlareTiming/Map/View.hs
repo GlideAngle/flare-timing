@@ -240,7 +240,7 @@ viewMap
     -> IxTask
     -> Dynamic t Task
     -> Dynamic t (OptimalRoute (Maybe TrackLine))
-    -> Event t ((Pilot, Maybe TrackFlyingSection), ([[Double]], [Maybe Fix]))
+    -> Event t ((Pilot, (Pilot, Maybe TrackFlyingSection)), ((Pilot, [[Double]]), (Pilot, [Maybe Fix])))
     -> m (Event t Pilot)
 viewMap utcOffset ix task route pilotFlyingTrack = do
     task' <- sample . current $ task
@@ -263,7 +263,7 @@ map
     -> TaskRoute
     -> TaskRouteSubset
     -> SpeedRoute
-    -> Event t ((Pilot, Maybe TrackFlyingSection), ([[Double]], [Maybe Fix]))
+    -> Event t ((Pilot, (Pilot, Maybe TrackFlyingSection)), ((Pilot, [[Double]]), (Pilot, [Maybe Fix])))
     -> m (Event t Pilot)
 
 map _ _ Task{zones = Zones{raw = []}} _ _ _ _ = do
@@ -315,7 +315,7 @@ map
 
                 return ())
 
-            , ffor pilotFlyingTrack (\((p, sections), (pts, tags)) ->
+            , ffor pilotFlyingTrack (\((p, (_, sections)), ((_, pts), (_, tags))) ->
                 if p == nullPilot || null pts then return () else
                 case sections of
                     Nothing -> return ()
