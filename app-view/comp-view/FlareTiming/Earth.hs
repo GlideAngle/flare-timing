@@ -1,26 +1,40 @@
-module FlareTiming.Earth (azimuthFwd) where
+module FlareTiming.Earth
+    ( AzimuthFwd(..)
+    , azimuthFwd
+    , azimuthFlip
+    ) where
+
+import WireTypes.Zone (RawLat(..), RawLng(..), RawLatLng(..))
+
+newtype AzimuthFwd = AzimuthFwd Double
 
 -- SEE: https://www.movable-type.co.uk/scripts/latlong.html
 azimuthFwd
     :: RawLatLng
     -> RawLatLng
-    -> Maybe Double
+    -> Maybe AzimuthFwd
 azimuthFwd
-    RawLatLng{lat = RawLat xLatF, lng = RawLng xLngF}
-    RawLatLng{lat = RawLat yLatF, lng = RawLng yLngF} =
-    Just . degToRad $ atan2 x y
+    RawLatLng{lat = RawLat xLat, lng = RawLng xLng}
+    RawLatLng{lat = RawLat yLat, lng = RawLng yLng} =
+    Just . AzimuthFwd $ az
     where
-        xLatF' = radToDeg xLatF
-        yLatF' = radToDeg yLatF
-        xLngF' = radToDeg xLngF
-        yLngF' = radToDeg yLngF
+        degToRad' = degToRad . fromRational
+        xLat' = degToRad' xLat
+        yLat' = degToRad' yLat
+        xLng' = degToRad' xLng
+        yLng' = degToRad' yLng
 
-        deltaLng = yLngF' - xLngF'
-        x = sin deltaLng * cos yLatF'
-        y = cos xLatF' * sin yLatF' - sin xLatF' * cos yLatF' * cos deltaLng
+        deltaLng = yLng' - xLng'
+        x = sin deltaLng * cos yLat'
+        y = cos xLat' * sin yLat' - sin xLat' * cos yLat' * cos deltaLng
+        az = radToDeg $ atan2 x y
 
 degToRad :: Floating a => a -> a
-degToRad a = a / pi * 180
+degToRad a = a / 180 * pi
 
 radToDeg :: Floating a => a -> a
-radToDeg a = a / 180 * pi
+radToDeg a = a / pi * 180
+
+azimuthFlip :: AzimuthFwd -> AzimuthFwd
+azimuthFlip (AzimuthFwd az) =
+    AzimuthFwd . (fromIntegral :: Integer -> Double) $ round (az + 180) `rem` 360

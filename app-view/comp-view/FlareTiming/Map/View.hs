@@ -18,6 +18,7 @@ import Data.Time.LocalTime (TimeZone)
 import qualified Data.Text as T (Text, pack)
 import Reflex.Time (delay)
 import Data.Maybe (catMaybes, listToMaybe)
+import Data.List (zipWith4)
 import qualified Data.Map as Map
 import Control.Monad (sequence)
 import Control.Monad.IO.Class (liftIO)
@@ -67,6 +68,7 @@ import qualified FlareTiming.Turnpoint as TP (getName)
 import FlareTiming.Comms (getTaskPilotDf)
 import FlareTiming.Events (IxTask(..))
 import FlareTiming.Time (timeZone, showTime)
+import FlareTiming.Earth (AzimuthFwd(..), azimuthFwd, azimuthFlip)
 
 data ZoomOrPan = Zoom | Pan deriving Show
 
@@ -225,19 +227,20 @@ tpCircle
     -> (Double, Double)
     -> (Radius, Maybe Radius)
     -> IO (L.Circle, Maybe L.Circle)
-tpCircle (Color color) latLng (Radius r, g) = do
-    xCyl <- L.circle latLng r color False True
-    yCyl <- sequence $ (\(Radius y) -> L.circle latLng y color True False) <$> g
+tpCircle (Color color) latLng (Radius rx, g) = do
+    xCyl <- L.circle latLng rx color False True
+    yCyl <- sequence $ (\(Radius ry) -> L.circle latLng ry color True False) <$> g
     return (xCyl, yCyl)
 
 tpLine
     :: Color
     -> (Double, Double)
     -> (Radius, Maybe Radius)
+    -> AzimuthFwd
     -> IO (L.Semicircle, Maybe L.Semicircle)
-tpLine (Color color) latLng (Radius r, g) = do
-    xCyl <- L.semicircle latLng r color False True
-    yCyl <- sequence $ (\(Radius y) -> L.semicircle latLng y color True False) <$> g
+tpLine (Color color) latLng (Radius rx, g) az = do
+    xCyl <- L.semicircle latLng rx az color False True
+    yCyl <- sequence $ (\(Radius ry) -> L.semicircle latLng ry az color True False) <$> g
     return (xCyl, yCyl)
 
 zoneToLL :: RawZone -> (Double, Double)
@@ -273,12 +276,16 @@ viewMap utcOffset ix task route pilotFlyingTrack = do
         (optimalSpeedRoute route')
         pilotFlyingTrack
 
-splitZones :: Task -> ([RawZone], [RawZone])
+splitZones :: Task -> ([RawZone], [(AzimuthFwd, RawZone)])
 splitZones task@Task{zones = Zones{raw = xs}} =
     case (getGoalShape task, reverse xs) of
         (Just Circle, _) -> (xs, [])
         (_, []) -> (xs, [])
-        (_, y : ys) -> (reverse ys, [y])
+        (_, [_]) -> (xs, [])
+        (_, y@RawZone{lat = yLat, lng = yLng} : ys@(RawZone{lat, lng} : _)) ->
+            case azimuthFwd (RawLatLng yLat yLng) (RawLatLng lat lng) of
+                Nothing -> (xs, [])
+                Just az -> (reverse ys, [(azimuthFlip az, y)])
 
 map
     :: MonadWidget t m
@@ -393,7 +400,7 @@ map
 
             let pts :: [(Double, Double)] = fmap zoneToLL xs
             let ptsCircle :: [(Double, Double)] = fmap zoneToLL xsCircle
-            let ptsLine :: [(Double, Double)] = fmap zoneToLL xsLine
+            let ptsLine :: [(Double, Double)] = fmap zoneToLL $ snd <$> xsLine
 
             let ptsTaskRoute :: [(Double, Double)] = fmap rawToLL taskRoute
             let ptsTaskRouteSubset :: [(Double, Double)] = fmap rawToLL taskRouteSubset
@@ -421,11 +428,12 @@ map
 
             tpLines <-
                 sequence $
-                    zipWith3
+                    zipWith4
                         tpLine
                         csLine
                         ptsLine
-                        ((\x -> (radius x, give x)) <$> xsLine)
+                        ((\x -> (radius x, give x)) . snd <$> xsLine)
+                        (fst <$> xsLine)
 
             _ <- sequence $ ((flip L.semicircleAddToMap) lmap . fst) <$> tpLines
 

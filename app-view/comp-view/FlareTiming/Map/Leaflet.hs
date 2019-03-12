@@ -43,6 +43,7 @@ import GHCJS.DOM.Element (IsElement)
 import GHCJS.DOM.Types (Element(..), toElement, toJSString, toJSVal)
 
 import WireTypes.Pilot (PilotName(..))
+import FlareTiming.Earth (AzimuthFwd(..))
 
 -- SEE: https://gist.github.com/ali-abrar/fa2adbbb7ee64a0295cb
 newtype Map = Map { unMap :: JSVal }
@@ -111,8 +112,8 @@ foreign import javascript unsafe
     circle_ :: Double -> Double -> Double -> JSString -> Bool -> Bool -> IO JSVal
 
 foreign import javascript unsafe
-    "L['semiCircle']([$1, $2], {radius: $3, color: $4, opacity: 0.6, weight: 1, stroke: $5, fill: $6}).setDirection(90, 180)"
-    semicircle_ :: Double -> Double -> Double -> JSString -> Bool -> Bool -> IO JSVal
+    "L['semiCircle']([$1, $2], {radius: $3, color: $5, opacity: 0.6, weight: 1, stroke: $6, fill: $7}).setDirection($4, 180)"
+    semicircle_ :: Double -> Double -> Double -> Double -> JSString -> Bool -> Bool -> IO JSVal
 
 foreign import javascript unsafe
     "L['polyline']($1, {color: $2, opacity: 0.6, dashArray: '20,15', lineJoin: 'round'})"
@@ -232,9 +233,16 @@ circle (lat, lng) radius color stroke fill =
 circleAddToMap :: Circle -> Map -> IO ()
 circleAddToMap x lmap = addToMap_ (unCircle x) (unMap lmap)
 
-semicircle :: (Double, Double) -> Double -> String -> Bool -> Bool -> IO Semicircle
-semicircle (lat, lng) radius color stroke fill =
-    Semicircle <$> semicircle_ lat lng radius (toJSString color) stroke fill
+semicircle
+    :: (Double, Double)
+    -> Double
+    -> AzimuthFwd
+    -> String
+    -> Bool
+    -> Bool
+    -> IO Semicircle
+semicircle (lat, lng) radius (AzimuthFwd az) color stroke fill =
+    Semicircle <$> semicircle_ lat lng radius az (toJSString color) stroke fill
 
 semicircleAddToMap :: Semicircle -> Map -> IO ()
 semicircleAddToMap x lmap = addToMap_ (unSemicircle x) (unMap lmap)
