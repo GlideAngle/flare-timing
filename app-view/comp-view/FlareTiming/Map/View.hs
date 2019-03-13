@@ -50,7 +50,7 @@ import qualified FlareTiming.Map.Leaflet as L
     , layersExpand
     , addOverlay
     )
-import WireTypes.Cross (TrackFlyingSection(..), Fix(..))
+import WireTypes.Cross (TrackFlyingSection(..), InterpolatedFix(..), ZoneTag(..))
 import WireTypes.Pilot (Pilot(..), PilotName(..), getPilotName, nullPilot)
 import WireTypes.Comp
     ( UtcOffset(..), Task(..), SpeedSection
@@ -198,8 +198,19 @@ marker _ latLng = do
     L.markerPopup mark $ showLatLng latLng
     return mark
 
-tagMarker :: PilotName -> TimeZone -> Fix -> IO L.Marker
-tagMarker (PilotName pn) tz Fix{fix, time, lat = RawLat lat, lng = RawLng lng} = do
+tagMarker :: PilotName -> TimeZone -> ZoneTag -> IO L.Marker
+tagMarker
+    (PilotName pn)
+    tz
+    ZoneTag
+        { inter =
+            InterpolatedFix
+                { fixFrac
+                , time
+                , lat = RawLat lat
+                , lng = RawLng lng
+                }
+        } = do
     let latLng = (fromRational lat, fromRational lng)
     mark <- L.marker latLng
 
@@ -207,7 +218,7 @@ tagMarker (PilotName pn) tz Fix{fix, time, lat = RawLat lat, lng = RawLng lng} =
             pn
             ++ "<br>"
             ++ "#"
-            ++ show fix
+            ++ show fixFrac
             ++ " at "
             ++ showTime tz time
             ++ "<br>"
@@ -261,7 +272,7 @@ viewMap
     -> IxTask
     -> Dynamic t Task
     -> Dynamic t (OptimalRoute (Maybe TrackLine))
-    -> Event t ((Pilot, (Pilot, Maybe TrackFlyingSection)), ((Pilot, [[Double]]), (Pilot, [Maybe Fix])))
+    -> Event t ((Pilot, (Pilot, Maybe TrackFlyingSection)), ((Pilot, [[Double]]), (Pilot, [Maybe ZoneTag])))
     -> m (Event t Pilot)
 viewMap utcOffset ix task route pilotFlyingTrack = do
     task' <- sample . current $ task
@@ -298,7 +309,7 @@ map
     -> TaskRoute
     -> TaskRouteSubset
     -> SpeedRoute
-    -> Event t ((Pilot, (Pilot, Maybe TrackFlyingSection)), ((Pilot, [[Double]]), (Pilot, [Maybe Fix])))
+    -> Event t ((Pilot, (Pilot, Maybe TrackFlyingSection)), ((Pilot, [[Double]]), (Pilot, [Maybe ZoneTag])))
     -> m (Event t Pilot)
 
 map _ _ Task{zones = Zones{raw = []}} _ _ _ _ = do

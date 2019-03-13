@@ -1,7 +1,12 @@
+{-# LANGUAGE DuplicateRecordFields #-}
+
 module WireTypes.Cross
     ( FlyingSection
     , TrackFlyingSection(..)
     , Fix(..)
+    , InterpolatedFix(..)
+    , ZoneTag(..)
+    , ZoneCross(..)
     ) where
 
 import Data.Time.Clock (UTCTime)
@@ -25,6 +30,32 @@ data Fix =
         , time :: UTCTime
         , lat :: RawLat
         , lng :: RawLng
+        }
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (FromJSON)
+
+data InterpolatedFix =
+    InterpolatedFix
+        { fixFrac :: Double
+        , time :: UTCTime
+        , lat :: RawLat
+        , lng :: RawLng
+        }
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (FromJSON)
+
+data ZoneTag =
+    ZoneTag
+        { inter :: InterpolatedFix
+        , cross :: ZoneCross
+        }
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (FromJSON)
+
+data ZoneCross =
+    ZoneCross
+        { crossingPair :: [Fix]
+        , inZone :: [Bool]
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (FromJSON)
