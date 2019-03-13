@@ -16,22 +16,28 @@ import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..), Extension(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
 
-import Flight.Mask (tagZones)
+import Flight.Zone.Raw (RawZone)
+import Flight.Mask (TaskZone, tagZones, zoneToCylinder)
 import Flight.Comp
-    ( FileType(CrossZone)
+    ( FileType(CompInput)
     , Pilot(..)
+    , CompSettings(..)
+    , CompInputFile(..)
     , CrossZoneFile(..)
+    , Task(..)
+    , Zones(..)
+    , compToCross
     , crossToTag
-    , findCrossZone
+    , findCompInput
     , ensureExt
     )
 import Flight.Track.Cross
     ( Crossing(..), TrackCross(..), TrackFlyingSection(..)
-    , PilotTrackCross(..), Fix(..)
+    , PilotTrackCross(..), InterpolatedFix(..), ZoneTag(..)
     )
 import Flight.Track.Tag
     (Tagging(..), TrackTime(..), TrackTag(..), PilotTrackTag(..))
-import Flight.Scribe (readCrossing, writeTagging)
+import Flight.Scribe (readComp, readCrossing, writeTagging)
 import TagZoneOptions (description)
 
 main :: IO ()
@@ -40,9 +46,9 @@ main = do
     options <- cmdArgs $ mkOptions
                             (ProgramName name)
                             description
-                            (Just $ Extension "*.cross-zone.yaml")
+                            (Just $ Extension "*.comp-input.yaml")
 
-    let lf = LenientFile {coerceFile = ensureExt CrossZone}
+    let lf = LenientFile {coerceFile = ensureExt CompInput}
     err <- checkPaths lf options
 
     maybe (drive options) putStrLn err
@@ -51,33 +57,46 @@ drive :: CmdBatchOptions -> IO ()
 drive o = do
     -- SEE: http://chrisdone.com/posts/measuring-duration-in-haskell
     start <- getTime Monotonic
-    files <- findCrossZone o
+    files <- findCompInput o
     if null files then putStrLn "Couldn't find any input files."
                   else mapM_ go files
     end <- getTime Monotonic
     fprint ("Tagging zones completed in " % timeSpecs % "\n") start end
 
-go :: CrossZoneFile -> IO ()
-go crossFile@(CrossZoneFile crossPath) = do
+go :: CompInputFile -> IO ()
+go compFile@(CompInputFile compPath) = do
+    let crossFile@(CrossZoneFile crossPath) = compToCross compFile
+    putStrLn $ "Reading tasks from '" ++ takeFileName compPath ++ "'"
     putStrLn $ "Reading zone crossings from '" ++ takeFileName crossPath ++ "'"
 
     cs <-
         catchIO
+            (Just <$> readComp compFile)
+            (const $ return Nothing)
+
+    cgs <-
+        catchIO
             (Just <$> readCrossing crossFile)
             (const $ return Nothing)
 
-    case cs of
-        Nothing -> putStrLn "Couldn't read the crossings."
-        Just Crossing{crossing, flying} -> do
+    case (cs, cgs) of
+        (Nothing, _) -> putStrLn "Couldn't read the comp settings."
+        (_, Nothing) -> putStrLn "Couldn't read the crossings."
+        (Just CompSettings{tasks}, Just Crossing{crossing, flying}) -> do
             let pss :: [[PilotTrackTag]] =
-                    (fmap . fmap)
+                    [
                         (\case
                             PilotTrackCross p Nothing ->
                                 PilotTrackTag p Nothing
 
                             PilotTrackCross p (Just xs) ->
-                                PilotTrackTag p (Just $ flownTag xs))
-                        crossing
+                                PilotTrackTag p (Just $ flownTag zs' xs))
+                        <$> cg
+
+                    | Task{zones = Zones{raw = zs}} <- tasks
+                    , let zs' = (zoneToCylinder :: RawZone -> TaskZone Double) <$> zs
+                    | cg <- crossing
+                    ]
 
             let tss :: [[Maybe UTCTime]] =
                     (fmap . fmap)
@@ -180,12 +199,12 @@ lastTag xs =
 tagTimes :: PilotTrackTag -> Maybe [Maybe UTCTime]
 tagTimes (PilotTrackTag _ Nothing) = Nothing
 tagTimes (PilotTrackTag _ (Just xs)) =
-    Just $ fmap time <$> zonesTag xs
+    Just $ fmap (time . inter) <$> zonesTag xs
 
-flownTag :: TrackCross -> TrackTag
-flownTag TrackCross{zonesCrossSelected} =
+flownTag :: [TaskZone a] -> TrackCross -> TrackTag
+flownTag zs TrackCross{zonesCrossSelected} =
     TrackTag
-        { zonesTag = tagZones zonesCrossSelected
+        { zonesTag = tagZones zs zonesCrossSelected
         }
 
 flownTime :: TrackFlyingSection -> Maybe UTCTime

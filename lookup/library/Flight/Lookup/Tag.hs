@@ -35,7 +35,7 @@ import Flight.Track.Tag
     , firstLead, lastArrival
     )
 import Flight.Mask (Ticked, RaceSections(..), slice, section)
-import Flight.Track.Cross (Fix(fix, time))
+import Flight.Track.Cross (InterpolatedFix(..), ZoneTag(..))
 
 type TaskTaggingLookup a = IxTask -> SpeedSection -> Maybe a
 
@@ -82,7 +82,7 @@ taskTimeElapsed x (IxTask i) ss = do
 newtype ArrivalRankLookup = ArrivalRankLookup (Maybe (TaggingLookup Int))
 newtype TimeLookup = TimeLookup (Maybe (TaggingLookup StartEndMark))
 newtype LeadingLookup = LeadingLookup (Maybe (TaggingLookup StartEndDownMark))
-newtype TagLookup = TagLookup (Maybe (TaggingLookup [Maybe Fix]))
+newtype TagLookup = TagLookup (Maybe (TaggingLookup [Maybe ZoneTag]))
 newtype TickLookup = TickLookup (Maybe (TaggingLookup Ticked))
 
 tagTicked :: Maybe Tagging -> TickLookup
@@ -113,7 +113,7 @@ ticked x (IxTask i) speedSection pilot _ =
             =<< find (\(PilotTrackTag p _) -> p == pilot) xs
 
 -- | The time of the first and last fix in the list.
-tickedZones :: SpeedSection -> [Maybe Fix] -> Ticked
+tickedZones :: SpeedSection -> [Maybe ZoneTag] -> Ticked
 tickedZones speedSection xs =
     RaceSections
         { prolog = f prolog
@@ -122,7 +122,9 @@ tickedZones speedSection xs =
         }
     where
         f = fmap ZoneIdx . catMaybes . takeWhile isJust
-        RaceSections{..} = section speedSection $ (fmap . fmap) fix xs
+        RaceSections{..} =
+            section speedSection
+            $ (fmap . fmap) (round . fixFrac . inter) xs
 
 tickedPilot :: SpeedSection -> PilotTrackTag -> Maybe Ticked
 tickedPilot _ (PilotTrackTag _ Nothing) = Nothing
@@ -145,12 +147,12 @@ timeElapsed x (IxTask i) speedSection pilot _ =
             =<< find (\(PilotTrackTag p _) -> p == pilot) xs
 
 -- | The time of the first and last fix in the list.
-startEnd :: [Maybe Fix] -> Maybe StartEndMark
+startEnd :: [Maybe ZoneTag] -> Maybe StartEndMark
 startEnd xs = do
     ys <- sequence xs
     start <- listToMaybe $ take 1 ys
     end <- listToMaybe $ take 1 $ reverse ys
-    return $ StartEnd (time start) (Just $ time end)
+    return $ StartEnd (time . inter $ start) (Just . time . inter $ end)
 
 timeElapsedPilot :: SpeedSection -> PilotTrackTag -> Maybe StartEndMark
 timeElapsedPilot _ (PilotTrackTag _ Nothing) = Nothing
@@ -164,7 +166,7 @@ tagged
     -> SpeedSection
     -> Pilot
     -> Kml.MarkedFixes
-    -> Maybe [Maybe Fix]
+    -> Maybe [Maybe ZoneTag]
 tagged _ _ Nothing _ _ = Nothing
 tagged x (IxTask i) speedSection pilot _ =
     case tagging x ^? element (fromIntegral i - 1) of
@@ -173,7 +175,7 @@ tagged x (IxTask i) speedSection pilot _ =
             taggedPilot speedSection
             <$> find (\(PilotTrackTag p _) -> p == pilot) xs
 
-taggedPilot :: SpeedSection -> PilotTrackTag -> [Maybe Fix]
+taggedPilot :: SpeedSection -> PilotTrackTag -> [Maybe ZoneTag]
 taggedPilot _ (PilotTrackTag _ Nothing) = []
 taggedPilot Nothing _ = []
 taggedPilot speedSection (PilotTrackTag _ (Just TrackTag{zonesTag})) =

@@ -24,7 +24,7 @@ import Data.Aeson (ToJSON(..), FromJSON(..))
 import Flight.Zone.SpeedSection (SpeedSection)
 import Flight.Score (Pilot(..))
 import Flight.Comp (FirstLead(..), FirstStart(..), LastArrival(..))
-import Flight.Track.Cross (Fix)
+import Flight.Track.Cross (ZoneTag)
 import Flight.Field (FieldOrdering(..))
 
 -- | For each task, the timing and tagging for that task.
@@ -98,7 +98,7 @@ lastArrival (Just (_, lastRaceLeg)) ts =
 -- | For a single track, the interpolated fix for each zone tagged.
 newtype TrackTag =
     TrackTag
-        { zonesTag :: [Maybe Fix]
+        { zonesTag :: [Maybe ZoneTag]
         -- ^ The interpolated fix tagging each made zone.
         }
     deriving (Eq, Ord, Show, Generic)
@@ -118,6 +118,12 @@ instance FieldOrdering Tagging where
 cmp :: (Ord a, IsString a) => a -> a -> Ordering
 cmp a b =
     case (a, b) of
+        ("inter", _) -> LT
+        ("cross", _) -> GT
+
+        ("fixFrac", _) -> LT
+        (_, "fixFrac") -> GT
+
         ("timing", _) -> LT
         ("tagging", _) -> GT
 

@@ -43,7 +43,7 @@ import Flight.Mask
     ( FnIxTask, RaceSections(..), GroupLeg(..), Ticked
     , checkTracks, groupByLeg, dashDistancesToGoal
     )
-import Flight.Track.Cross (Fix(..), TrackFlyingSection(..))
+import Flight.Track.Cross (Fix(..), ZoneTag(..), TrackFlyingSection(..), asIfFix)
 import Flight.Track.Tag (Tagging(..), TrackTime(..), firstLead, firstStart)
 import Flight.Kml (MarkedFixes(..), timeToFixIdx)
 import Data.Ratio.Rounding (dpRound)
@@ -201,7 +201,7 @@ group
                         (Just f)
                         (Just $ TaskDistance [u| 0m |]))
                 )
-                endZoneTag
+                (asIfFix <$> endZoneTag)
             where
                 scoredTimeRange :: FlyingSection UTCTime =
                     fromMaybe
@@ -232,12 +232,12 @@ group
                     fromMaybe (RaceSections [] [] [])
                     $ (\f -> f iTask ss p mf) =<< lookupTicked
 
-                endZoneTag :: Maybe Fix
+                endZoneTag :: Maybe ZoneTag
                 endZoneTag = do
-                    ts :: [Maybe Fix]
+                    ts :: [Maybe ZoneTag]
                         <- (\f -> f iTask ss p mf) =<< lookupZoneTags
 
-                    us :: [Fix]
+                    us :: [ZoneTag]
                         <- sequence ts
 
                     listToMaybe . take 1 . drop (end - start) $ us

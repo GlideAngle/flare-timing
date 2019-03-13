@@ -1,3 +1,5 @@
+{-# LANGUAGE DuplicateRecordFields #-}
+
 {-|
 Module      : Flight.Track.Cross
 Copyright   : (c) Block Scope Limited 2017
@@ -13,11 +15,14 @@ module Flight.Track.Cross
     , TrackFlyingSection(..)
     , TrackCross(..)
     , PilotTrackCross(..)
+    , InterpolatedFix(..)
+    , ZoneTag(..)
     , ZoneCross(..)
     , TrackLogError(..)
     , Fix(..)
     , RetroActive(..)
     , trackLogErrors
+    , asIfFix
     ) where
 
 import Data.String (IsString())
@@ -143,6 +148,41 @@ data Fix =
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
+
+-- | An interpolated fix.
+data InterpolatedFix =
+    InterpolatedFix
+        { fixFrac :: Double
+        -- ^ The fractional and 0-based index into the list of fixes from the
+        -- track log representing how far between the two base fixes the
+        -- interpolated point is.
+        , time :: UTCTime
+        -- ^ The interpolated time.
+        , lat :: RawLat
+        -- ^ The interpolated latitude in decimal degrees, +ve is N and -ve is S.
+        , lng :: RawLng
+        -- ^ The interpolated longitude in decimal degrees, +ve is E and -ve is W.
+        }
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
+
+-- | A crossing between two fixes.
+data ZoneTag =
+    ZoneTag
+        { inter :: InterpolatedFix
+        , cross :: ZoneCross
+        }
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
+
+asIfFix :: ZoneTag -> Fix
+asIfFix ZoneTag{inter = InterpolatedFix{fixFrac, time, lat, lng}} =
+    Fix
+        { fix = round fixFrac
+        , time = time
+        , lat = lat
+        , lng = lng
+        }
 
 -- | A pair of fixes that cross a zone.
 data ZoneCross =

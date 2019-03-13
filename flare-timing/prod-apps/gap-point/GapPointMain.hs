@@ -59,7 +59,7 @@ import Flight.Comp
     , findCompInput
     , ensureExt
     )
-import Flight.Track.Cross (Fix(..))
+import Flight.Track.Cross (InterpolatedFix(..), ZoneTag(..))
 import Flight.Track.Tag (Tagging(..), PilotTrackTag(..), TrackTag(..))
 import Flight.Track.Distance
     ( TrackDistance(..), AwardedDistance(..), Clamp(..), Nigh, Land
@@ -106,7 +106,7 @@ import Flight.Score
 import qualified Flight.Score as Gap (Validity(..), Points(..), Weights(..))
 import GapPointOptions (description)
 
-type StartEndTags = StartEnd (Maybe Fix) Fix
+type StartEndTags = StartEnd (Maybe ZoneTag) ZoneTag
 
 main :: IO ()
 main = do
@@ -926,7 +926,7 @@ mkVelocity
 mkVelocity (PilotDistance d) (PilotTime t) =
     PilotVelocity $ d /: t
 
-startEnd :: RaceSections (Maybe Fix) -> StartEndTags
+startEnd :: RaceSections (Maybe ZoneTag) -> StartEndTags
 startEnd RaceSections{race} =
     case (race, reverse race) of
         ([], _) -> StartEnd Nothing Nothing
@@ -1017,7 +1017,7 @@ tallyDf
         ss' = getTagTime unStart
         es' = getTagTime unEnd
         getTagTime accessor =
-            (time :: Fix -> _)
+            ((time :: InterpolatedFix -> _) . inter)
             <$> (accessor =<< g)
 
 tallyDfNoTrack

@@ -22,6 +22,7 @@ import Data.List (nub, group, elemIndex, findIndex)
 import Data.List.Split (chop)
 import Control.Lens ((^?), element)
 import Control.Arrow (first)
+import Control.Monad (join)
 
 import Flight.Clip (FlyingSection, FlyCut(..), FlyClipping(..))
 import Flight.Distance (SpanLatLng)
@@ -29,8 +30,8 @@ import Flight.Kml (Latitude(..), Longitude(..), MarkedFixes(..), secondsToUtc)
 import qualified Flight.Kml as Kml
     (LatLngAlt(..), Fix, FixMark(..), Seconds(..))
 import Flight.Track.Cross
-    ( Fix(..), ZoneCross(..), Seconds(..)
-    , TrackFlyingSection(..), RetroActive(..)
+    ( Fix(..), InterpolatedFix(..), ZoneCross(..), ZoneTag(..)
+    , Seconds(..), TrackFlyingSection(..), RetroActive(..)
     )
 import Flight.Track.Time (ZoneIdx(..))
 import Flight.Comp (IxTask(..), Task(..), TaskStop(..), Zones(..))
@@ -140,27 +141,33 @@ prove fixes mark0 i@(ZoneIdx i') j@(ZoneIdx j') bs = do
         f = fixFromFix mark0
 
 -- | Given two points on either side of a zone, what is the crossing tag.
-crossingTag :: (Fix, Fix) -> (Bool, Bool) -> Maybe Fix
+crossingTag :: TaskZone a -> (Fix, Fix) -> (Bool, Bool) -> Maybe InterpolatedFix
 
-crossingTag (fixM, _) (True, False) =
+crossingTag _ (Fix{fix, time, lat, lng}, _) (True, False) =
     -- TODO: Interpolate between crossing points. For now I just take the point on
     -- the inside.
-    Just fixM
+    Just $ InterpolatedFix{fixFrac = fromIntegral fix, time = time, lat = lat, lng = lng}
 
-crossingTag (_, fixN) (False, True) =
-    Just fixN
+crossingTag _ (_, Fix{fix, time, lat, lng}) (False, True) =
+    Just $ InterpolatedFix{fixFrac = fromIntegral fix, time = time, lat = lat, lng = lng}
 
-crossingTag _ _ =
+crossingTag _ _ _ =
     Nothing
 
-tagZones :: [Maybe ZoneCross] -> [Maybe Fix]
-tagZones =
-    fmap (>>= f)
+tagZones :: [TaskZone a] -> [Maybe ZoneCross] -> [Maybe ZoneTag]
+tagZones zs cs =
+    [ join $ f z <$> c
+    | z <- zs
+    | c <- cs
+    ]
     where
-        f :: ZoneCross -> Maybe Fix
-        f ZoneCross{crossingPair, inZone} =
+        f :: TaskZone a -> ZoneCross -> Maybe ZoneTag
+        f z c@ZoneCross{crossingPair, inZone} =
             case (crossingPair, inZone) of
-                ([x, y], [a, b]) -> crossingTag (x, y) (a, b)
+                ([x, y], [a, b]) -> do
+                    i <- crossingTag z (x, y) (a, b)
+                    return $ ZoneTag{inter = i, cross = c}
+
                 _ -> Nothing
 
 stationary :: Kml.LatLngAlt a => a -> a -> Bool
@@ -551,7 +558,7 @@ jumpGap (x : 1 : y : xs)
     | x > 1 && y > 1 = ([x, 1, y], xs)
 jumpGap (x : xs) = ([x], xs)
 jumpGap [] = ([], [])
- 
+
 secondsRange
     :: Kml.FixMark a
     => [a]

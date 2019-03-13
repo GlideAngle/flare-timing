@@ -11,9 +11,9 @@ import Flight.Clip (FlyCut(..), FlyClipping(..))
 import Flight.Distance (SpanLatLng)
 import Flight.Kml (MarkedFixes(..), fixToUtc)
 import qualified Flight.Kml as Kml (Fix)
-import Flight.Track.Cross (Fix(..))
+import Flight.Track.Cross (InterpolatedFix(..), ZoneTag(..))
 import Flight.Track.Time (LegIdx(..))
-import Flight.Comp (Task(..))
+import Flight.Comp (Task(..), Zones(..))
 import Flight.Units ()
 import Flight.Mask.Internal.Race ()
 import Flight.Mask.Internal.Zone
@@ -112,7 +112,7 @@ groupByLeg
     -> Task k
     -> FlyCut UTCTime MarkedFixes
     -> [(Maybe GroupLeg, MarkedFixes)]
-groupByLeg span zoneToCyl task flyCut =
+groupByLeg span zoneToCyl task@Task{zones = Zones{raw = zs}} flyCut =
     [
         let g =
                 case (nthR, zerothL) of
@@ -178,13 +178,13 @@ groupByLeg span zoneToCyl task flyCut =
     where
         FlyCut{uncut = mf@MarkedFixes{mark0, fixes}} = clipToFlown flyCut
 
-        xs :: [Maybe Fix]
+        xs :: [Maybe ZoneTag]
         xs =
-            tagZones . unSelectedCrossings . selectedCrossings
+            tagZones (zoneToCyl <$> zs) . unSelectedCrossings . selectedCrossings
             $ madeZones span zoneToCyl task mf
 
         ts :: [Maybe UTCTime]
-        ts = (fmap . fmap) time xs
+        ts = (fmap . fmap) (time . inter) xs
 
         timeToLeg :: Map.Map (Maybe UTCTime) LegIdx
         timeToLeg = Map.fromList $ zip ts (LegIdx <$> [1..])
