@@ -7,6 +7,7 @@ module Flight.Mask.Interpolate
     ) where
 
 import Prelude hiding (span)
+import Data.Ratio ((%))
 import Data.Time.Clock (NominalDiffTime, addUTCTime, diffUTCTime)
 import Data.UnitsOfMeasure (u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
@@ -19,10 +20,10 @@ import Flight.Units ()
 import Flight.Distance (SpanLatLng, TaskDistance(..), PathDistance(..))
 import Flight.Task (Zs(..), distanceEdgeToEdge)
 import Flight.Mask.Internal.Zone (TaskZone(..), fixToRadLL)
-import Flight.Mask.Internal.Race (mm30)
 import Flight.Span.Sliver (Sliver(..))
 import Flight.Zone (Zone(..))
 import Flight.Zone.Path (distancePointToPoint)
+import Flight.Zone.Cylinder (Tolerance(..))
 
 class TagInterpolate a b | a -> b where
     interpolate
@@ -57,7 +58,9 @@ tagInterpolate Sliver{..} (TaskZone z) x y =
     vertices <$> ee
     where
         zs' = [Point x, z, Point y]
-        ee = distanceEdgeToEdge span dpp cseg cs angleCut mm30 zs'
+        ee = distanceEdgeToEdge span dpp cseg cs angleCut tolerance zs'
+
+        tolerance = Tolerance . fromRational $ 1 % 10000
 
 tagFractionate
     :: forall a. (Real a, Fractional a)
