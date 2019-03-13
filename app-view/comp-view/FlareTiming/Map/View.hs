@@ -249,7 +249,7 @@ tagMarkers
             pn
             ++ "<br>"
             ++ "#"
-            ++ show fixFrac
+            ++ printf "%.2f" fixFrac
             ++ " at "
             ++ showTime tz time
             ++ "<br>"
