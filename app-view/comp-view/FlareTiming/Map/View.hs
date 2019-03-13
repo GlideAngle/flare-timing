@@ -50,7 +50,11 @@ import qualified FlareTiming.Map.Leaflet as L
     , layersExpand
     , addOverlay
     )
-import WireTypes.Cross (TrackFlyingSection(..), InterpolatedFix(..), ZoneTag(..))
+import WireTypes.Cross
+    ( TrackFlyingSection(..)
+    , Fix(..), InterpolatedFix(..)
+    , ZoneCross(..), ZoneTag(..)
+    )
 import WireTypes.Pilot (Pilot(..), PilotName(..), getPilotName, nullPilot)
 import WireTypes.Comp
     ( UtcOffset(..), Task(..), SpeedSection
@@ -198,9 +202,35 @@ marker _ latLng = do
     L.markerPopup mark $ showLatLng latLng
     return mark
 
-tagMarker :: PilotName -> TimeZone -> ZoneTag -> IO L.Marker
-tagMarker
+fixMarker :: PilotName -> TimeZone -> Fix -> IO L.Marker
+fixMarker
     (PilotName pn)
+    tz
+    Fix
+        { fix
+        , time
+        , lat = RawLat lat
+        , lng = RawLng lng
+        } = do
+    let latLng = (fromRational lat, fromRational lng)
+    fixMark <- L.marker latLng
+
+    let msg =
+            pn
+            ++ "<br>"
+            ++ "#"
+            ++ show fix
+            ++ " at "
+            ++ showTime tz time
+            ++ "<br>"
+            ++ showLatLng latLng
+
+    L.markerPopup fixMark msg
+    return fixMark
+
+tagMarkers :: PilotName -> TimeZone -> ZoneTag -> IO [L.Marker]
+tagMarkers
+    p@(PilotName pn)
     tz
     ZoneTag
         { inter =
@@ -210,9 +240,10 @@ tagMarker
                 , lat = RawLat lat
                 , lng = RawLng lng
                 }
+        , cross = ZoneCross{crossingPair = xy}
         } = do
     let latLng = (fromRational lat, fromRational lng)
-    mark <- L.marker latLng
+    tagMark <- L.marker latLng
 
     let msg =
             pn
@@ -224,8 +255,15 @@ tagMarker
             ++ "<br>"
             ++ showLatLng latLng
 
-    L.markerPopup mark msg
-    return mark
+    L.markerPopup tagMark msg
+
+    case xy of
+        [x, y] -> do
+            xMark <- fixMarker p tz x
+            yMark <- fixMarker p tz y
+            return [xMark, tagMark, yMark]
+
+        _ -> return [tagMark]
 
 tpMarker :: TurnpointName -> (Double, Double) -> IO L.Marker
 tpMarker (TurnpointName tpName) latLng = do
@@ -377,10 +415,10 @@ map
                         let t0 = take n pts
                         let t1 = drop n pts
 
-                        tagMarks <- sequence $ tagMarker pn tz <$> catMaybes tags
+                        tagMarks <- sequence $ tagMarkers pn tz <$> catMaybes tags
 
                         l0 <- L.trackLine t0 "black"
-                        g0 <- L.layerGroup l0 tagMarks
+                        g0 <- L.layerGroup l0 $ concat tagMarks
 
                         -- NOTE: Adding the track now so that it displays.
                         L.layerGroupAddToMap g0 lmap'
