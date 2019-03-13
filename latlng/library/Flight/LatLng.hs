@@ -12,6 +12,7 @@ module Flight.LatLng
     , RadToDeg
     , AzimuthFwd
     , AzimuthRev
+    , degPairToRadLL
     , degToRadLL
     , radToDegLL
     , fromDMS
@@ -67,6 +68,20 @@ instance
     (KnownUnit (Unpack u), Show (QLat a u), Show (QLng a u))
     => Show (LatLng a u) where
     show (LatLng (lat, lng)) = "(" ++ show lat ++ ", " ++ show lng ++ ")"
+
+-- | The input pair is in degrees while the output is in radians.
+degPairToRadLL :: Fractional a => (Rational, Rational) -> LatLng a [u| rad |]
+degPairToRadLL (lat, lng) =
+    LatLng (x', y')
+    where
+        lat' = MkQuantity lat :: Quantity Rational [u| deg |]
+        lng' = MkQuantity lng :: Quantity Rational [u| deg |]
+
+        (MkQuantity x) = convert lat' :: Quantity Rational [u| rad |]
+        (MkQuantity y) = convert lng' :: Quantity Rational [u| rad |]
+
+        x' = Lat . MkQuantity $ realToFrac x
+        y' = Lng . MkQuantity $ realToFrac y
 
 -- | Conversion of a lat/lng pair from degrees to radians.
 degToRadLL :: DegToRad a -> LatLng a [u| deg |] -> LatLng a [u| rad |]

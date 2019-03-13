@@ -119,6 +119,37 @@ dedup (x : y : ys)
     | x == y = dedup (y : ys)
     | otherwise = x : dedup (y : ys)
 
+distanceUnchecked
+    :: (Real a, Fractional a)
+    => SpanLatLng a
+    -> DistancePointToPoint a
+    -> CircumSample a
+    -> GraphBuilder a
+    -> AngleCut a
+    -> Tolerance a
+    -> [Zone a]
+    -> (Zs (PathCost a), [LatLng a [u| rad |]])
+distanceUnchecked span distancePointToPoint cs builder cut tolerance xs =
+    first Zs $
+    case dist of
+        Nothing -> (PathCost pointwise, edgesSum')
+        Just d@(PathCost pcd) ->
+            if pcd < pointwise
+                then (d, point <$> zs)
+                else (PathCost pointwise, edgesSum')
+    where
+        (TaskDistance (MkQuantity pointwise)) =
+            edgesSum $ distancePointToPoint span xs
+
+        edgesSum' = center <$> xs
+        sp = SampleParams { spSamples = Samples 5, spTolerance = tolerance }
+
+        -- NOTE: I need to add a zone at each end to define the start and
+        -- end for the shortest path. Once the shortest path is found
+        -- I then need to undo the padding.
+        (_, ys) = loop builder cs sp cut 6 Nothing Nothing $ pad xs
+        (dist, zs) = unpad span distancePointToPoint ys
+
 distance
     :: (Real a, Fractional a)
     => SpanLatLng a
@@ -131,30 +162,19 @@ distance
     -> (Zs (PathCost a), [LatLng a [u| rad |]])
 distance _ _ _ _ _ _ [] = (Z0, [])
 distance _ _ _ _ _ _ [_] = (Z1, [])
+
+-- NOTE: Drop the separation requirement when working out the distance from
+-- point to point tagging one intervening zone as this is used in interpolating
+-- the exact tagging point and time between fixes.
+distance span distancePointToPoint cs builder cut tolerance xs@[Point _, _, Point _] =
+    distanceUnchecked span distancePointToPoint cs builder cut tolerance xs
+
+-- NOTE: Allow duplicates as some tasks are set that way but otherwise zones
+-- must be separated.
 distance span distancePointToPoint cs builder cut tolerance xs
-    -- NOTE: Allow duplicates as some tasks are set that way but otherwise
-    -- zones must be separated.
-    | not $ separatedZones span $ dedup xs = (ZxNotSeparated, [])
-    | otherwise =
-        first Zs $
-        case dist of
-            Nothing -> (PathCost pointwise, edgesSum')
-            Just d@(PathCost pcd) ->
-                if pcd < pointwise
-                    then (d, point <$> zs)
-                    else (PathCost pointwise, edgesSum')
-        where
-            (TaskDistance (MkQuantity pointwise)) =
-                edgesSum $ distancePointToPoint span xs
+    | not . separatedZones span . dedup $ xs = (ZxNotSeparated, [])
+    | otherwise = distanceUnchecked span distancePointToPoint cs builder cut tolerance xs
 
-            edgesSum' = center <$> xs
-            sp = SampleParams { spSamples = Samples 5, spTolerance = tolerance }
-
-            -- NOTE: I need to add a zone at each end to define the start and
-            -- end for the shortest path. Once the shortest path is found
-            -- I then need to undo the padding.
-            (_, ys) = loop builder cs sp cut 6 Nothing Nothing $ pad xs
-            (dist, zs) = unpad span distancePointToPoint ys
 
 pad :: Ord a => [Zone a] -> [Zone a]
 pad xs =

@@ -40,7 +40,7 @@ import Flight.Comp
     )
 import qualified Flight.Mask as Mask (Sliver(..))
 import Flight.Mask
-    ( FnIxTask, RaceSections(..), GroupLeg(..), Ticked
+    ( FnIxTask, RaceSections(..), GroupLeg(..), Ticked, Sliver(..)
     , checkTracks, groupByLeg, dashDistancesToGoal
     )
 import Flight.Track.Cross (Fix(..), ZoneTag(..), TrackFlyingSection(..), asIfFix)
@@ -224,7 +224,7 @@ group
                     =<< openClose ss (zoneTimes task)
 
                 xs :: [(Maybe GroupLeg, MarkedFixes)]
-                xs = groupByLeg spanF zoneToCylF task scoredMarkedFixes
+                xs = groupByLeg sliver zoneToCylF task scoredMarkedFixes
 
                 yss = (fmap $ FlyCut scoredTimeRange) <$> xs
 
@@ -270,6 +270,7 @@ group
     where
         (TickLookup lookupTicked) = tagTicked (Just tags)
         (TagLookup lookupZoneTags) = tagPilotTag (Just tags)
+        sliver = Sliver spanF dppF csegF csF cutF
 
 -- | For a given leg, only so many race zones can be ticked.
 retick :: Ticked -> LegIdx -> LegIdx -> (LegIdx, Ticked)

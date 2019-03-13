@@ -1,6 +1,5 @@
 module Flight.Mask.Internal.Race
     ( FlyClipSection(..)
-    , Sliver(..)
     , Ticked
     , RaceSections(..)
     , Reach
@@ -12,12 +11,11 @@ module Flight.Mask.Internal.Race
 import Data.Ratio ((%))
 
 import Flight.Clip (FlyCut(..), FlyClipSection(..))
-import Flight.Distance (SpanLatLng, TaskDistance(..))
+import Flight.Distance (TaskDistance(..))
 import Flight.Zone.SpeedSection (SpeedSection)
-import Flight.Zone.Cylinder (CircumSample, Tolerance(..))
+import Flight.Zone.Cylinder (Tolerance(..))
 import Flight.Track.Time (ZoneIdx(..))
 import Flight.Units ()
-import Flight.Task (CostSegment, DistancePointToPoint, AngleCut(..))
 import Flight.Mask.Internal.Zone (TaskZone(..), TrackZone(..))
 import Flight.Mask.Internal.Cross (CrossingPredicate)
 
@@ -39,15 +37,6 @@ data RaceSections a =
         -- ^ Zones crossed after the end of the speed section.
         }
         deriving Show
-
-data Sliver a =
-    Sliver
-        { span :: SpanLatLng a
-        , dpp :: DistancePointToPoint a
-        , cseg :: CostSegment a
-        , cs :: CircumSample a
-        , angleCut :: AngleCut a
-        }
 
 -- | Without knowing which zones have been ticked, a function that uses a
 -- crossing predicate to work out a distance.

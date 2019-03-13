@@ -9,6 +9,7 @@ module Flight.Mask.Internal.Zone
     , TrackZone(..)
     , OrdCrossing(..)
     , slice
+    , fixToRadLL
     , fixToPoint
     , rowToPoint
     , fixFromFix
@@ -18,8 +19,7 @@ module Flight.Mask.Internal.Zone
 
 import Data.Time.Clock (UTCTime, addUTCTime)
 import Data.Maybe (fromMaybe)
-import Data.UnitsOfMeasure (u, convert, fromRational', toRational')
-import Data.UnitsOfMeasure.Internal (Quantity(..))
+import Data.UnitsOfMeasure (u, fromRational', toRational')
 
 import qualified Flight.Kml as Kml
     ( Fix
@@ -29,7 +29,7 @@ import qualified Flight.Kml as Kml
     , LatLngAlt(..)
     , FixMark(..)
     )
-import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
+import Flight.LatLng (LatLng(..), degPairToRadLL)
 import Flight.LatLng.Raw (RawLat(..), RawLng(..))
 import Flight.Zone (Radius(..), Zone(..))
 import Flight.Zone.SpeedSection (SpeedSection, sliceZones)
@@ -81,19 +81,9 @@ newtype TrackZone a = TrackZone { unTrackZone :: Zone a }
 slice :: SpeedSection -> [a] -> [a]
 slice = sliceZones
 
--- | The input pair is in degrees while the output is in radians.
-toLL :: Fractional a => (Rational, Rational) -> LatLng a [u| rad |]
-toLL (lat, lng) =
-    LatLng (x', y')
-    where
-        lat' = MkQuantity lat :: Quantity Rational [u| deg |]
-        lng' = MkQuantity lng :: Quantity Rational [u| deg |]
-
-        (MkQuantity x) = convert lat' :: Quantity Rational [u| rad |]
-        (MkQuantity y) = convert lng' :: Quantity Rational [u| rad |]
-
-        x' = Lat . MkQuantity $ realToFrac x
-        y' = Lng . MkQuantity $ realToFrac y
+fixToRadLL :: Fractional a => Fix -> LatLng a [u| rad |]
+fixToRadLL Fix{lat = RawLat lat, lng = RawLng lng} =
+    degPairToRadLL (lat, lng)
 
 fixFromFix :: UTCTime -> ZoneIdx -> Kml.Fix -> Fix
 fixFromFix mark0 (ZoneIdx i) x =
@@ -110,7 +100,7 @@ fixFromFix mark0 (ZoneIdx i) x =
 
 fixToPoint :: (Eq a, Ord a, Fractional a) => Kml.Fix -> TrackZone a
 fixToPoint fix =
-    TrackZone $ Point (toLL (lat, lng))
+    TrackZone $ Point (degPairToRadLL (lat, lng))
     where
         Kml.Latitude lat = Kml.lat fix
         Kml.Longitude lng = Kml.lng fix
@@ -118,11 +108,11 @@ fixToPoint fix =
 rowToPoint :: (Eq a, Ord a, Fractional a) => TimeRow -> TrackZone a
 rowToPoint
     TimeRow{lat = RawLat lat, lng = RawLng lng} =
-    TrackZone $ Point (toLL (lat, lng))
+    TrackZone $ Point (degPairToRadLL (lat, lng))
 
 zoneToCylinder :: (Eq a, Ord a, Fractional a) => RawZone -> TaskZone a
 zoneToCylinder RawZone{lat = RawLat lat, lng = RawLng lng, radius, give} =
-    TaskZone $ Cylinder (Radius r') (toLL(lat, lng))
+    TaskZone $ Cylinder (Radius r') (degPairToRadLL(lat, lng))
     where
         Radius r = fromMaybe radius give
         r' = fromRational' . toRational' $ r

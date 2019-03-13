@@ -30,12 +30,13 @@ import Flight.Kml (Latitude(..), Longitude(..), MarkedFixes(..), secondsToUtc)
 import qualified Flight.Kml as Kml
     (LatLngAlt(..), Fix, FixMark(..), Seconds(..))
 import Flight.Track.Cross
-    ( Fix(..), InterpolatedFix(..), ZoneCross(..), ZoneTag(..)
+    ( ZoneCross(..), ZoneTag(..)
     , Seconds(..), TrackFlyingSection(..), RetroActive(..)
     )
 import Flight.Track.Time (ZoneIdx(..))
 import Flight.Comp (IxTask(..), Task(..), TaskStop(..), Zones(..))
 import Flight.Units ()
+import qualified Flight.Zone.Raw as Raw (RawZone(..))
 import Flight.Mask.Internal.Race ()
 import Flight.Mask.Internal.Zone
     ( MadeZones(..)
@@ -59,7 +60,7 @@ import Flight.Mask.Internal.Cross
     , exitsSeq
     , reindex
     )
-import qualified Flight.Zone.Raw as Raw (RawZone(..))
+import Flight.Mask.Interpolate (TagInterpolate(..), crossingTag)
 
 nullFlying :: TrackFlyingSection
 nullFlying =
@@ -140,32 +141,22 @@ prove fixes mark0 i@(ZoneIdx i') j@(ZoneIdx j') bs = do
     where
         f = fixFromFix mark0
 
--- | Given two points on either side of a zone, what is the crossing tag.
-crossingTag :: TaskZone a -> (Fix, Fix) -> (Bool, Bool) -> Maybe InterpolatedFix
-
-crossingTag _ (Fix{fix, time, lat, lng}, _) (True, False) =
-    -- TODO: Interpolate between crossing points. For now I just take the point on
-    -- the inside.
-    Just $ InterpolatedFix{fixFrac = fromIntegral fix, time = time, lat = lat, lng = lng}
-
-crossingTag _ (_, Fix{fix, time, lat, lng}) (False, True) =
-    Just $ InterpolatedFix{fixFrac = fromIntegral fix, time = time, lat = lat, lng = lng}
-
-crossingTag _ _ _ =
-    Nothing
-
-tagZones :: [TaskZone a] -> [Maybe ZoneCross] -> [Maybe ZoneTag]
-tagZones zs cs =
-    [ join $ f z <$> c
+tagZones
+    :: (Real b, Fractional b, TagInterpolate a b)
+    => a
+    -> [TaskZone b]
+    -> [Maybe ZoneCross]
+    -> [Maybe ZoneTag]
+tagZones f zs cs =
+    [ join $ g z <$> c
     | z <- zs
     | c <- cs
     ]
     where
-        f :: TaskZone a -> ZoneCross -> Maybe ZoneTag
-        f z c@ZoneCross{crossingPair, inZone} =
+        g z c@ZoneCross{crossingPair, inZone} =
             case (crossingPair, inZone) of
                 ([x, y], [a, b]) -> do
-                    i <- crossingTag z (x, y) (a, b)
+                    i <- crossingTag f z (x, y) (a, b)
                     return $ ZoneTag{inter = i, cross = c}
 
                 _ -> Nothing

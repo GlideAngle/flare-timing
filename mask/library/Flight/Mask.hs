@@ -21,6 +21,7 @@ module Flight.Mask
     , Sliver(..)
     , FlyClipSection(..)
     , GroupLeg(..)
+    , TagInterpolate(..)
     , countFixes
     , checkTracks
     , madeZones
@@ -49,11 +50,12 @@ import Flight.Mask.Tag
 import Flight.Mask.Distance
 import Flight.Mask.Time
 import Flight.Mask.Tracks
+import Flight.Mask.Interpolate
+import Flight.Span.Sliver (Sliver(..))
 import Flight.Mask.Internal.Zone
     (TaskZone, zoneToCylinder, slice, separatedRawZones, fixFromFix)
 import Flight.Mask.Internal.Race
     ( FlyClipSection(..)
-    , Sliver(..)
     , Ticked
     , RaceSections(..)
     , section

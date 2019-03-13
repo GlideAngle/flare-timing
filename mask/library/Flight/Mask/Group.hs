@@ -8,7 +8,6 @@ import Data.List.Split (split, whenElt, keepDelimsL, keepDelimsR)
 import qualified Data.Map as Map
 
 import Flight.Clip (FlyCut(..), FlyClipping(..))
-import Flight.Distance (SpanLatLng)
 import Flight.Kml (MarkedFixes(..), fixToUtc)
 import qualified Flight.Kml as Kml (Fix)
 import Flight.Track.Cross (InterpolatedFix(..), ZoneTag(..))
@@ -21,6 +20,7 @@ import Flight.Mask.Internal.Zone
     , SelectedCrossings(..)
     , TaskZone(..)
     )
+import Flight.Mask.Interpolate (TagInterpolate(..))
 import Flight.Mask.Tag (tagZones, madeZones)
 import qualified Flight.Zone.Raw as Raw (RawZone(..))
 
@@ -106,13 +106,18 @@ data GroupLeg =
 -- >>> split (whenElt (\x -> elem (Just x) vowels)) aooz
 -- ["","a","bcd","e","fgh","i","jklmn","o","","o","pqrst","u","vwxyz"]
 groupByLeg
-    :: (Real a, Fractional a, FlyClipping UTCTime MarkedFixes)
-    => SpanLatLng a
-    -> (Raw.RawZone -> TaskZone a)
+    ::
+        ( Real b
+        , Fractional b
+        , FlyClipping UTCTime MarkedFixes
+        , TagInterpolate a b
+        )
+    => a
+    -> (Raw.RawZone -> TaskZone b)
     -> Task k
     -> FlyCut UTCTime MarkedFixes
     -> [(Maybe GroupLeg, MarkedFixes)]
-groupByLeg span zoneToCyl task@Task{zones = Zones{raw = zs}} flyCut =
+groupByLeg tagInterp zoneToCyl task@Task{zones = Zones{raw = zs}} flyCut =
     [
         let g =
                 case (nthR, zerothL) of
@@ -180,8 +185,10 @@ groupByLeg span zoneToCyl task@Task{zones = Zones{raw = zs}} flyCut =
 
         xs :: [Maybe ZoneTag]
         xs =
-            tagZones (zoneToCyl <$> zs) . unSelectedCrossings . selectedCrossings
-            $ madeZones span zoneToCyl task mf
+            tagZones tagInterp (zoneToCyl <$> zs)
+            . unSelectedCrossings
+            . selectedCrossings
+            $ madeZones (spanner tagInterp) zoneToCyl task mf
 
         ts :: [Maybe UTCTime]
         ts = (fmap . fmap) (time . inter) xs

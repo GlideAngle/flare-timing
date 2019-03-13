@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 0216472cd7dfca2c2f0a8dc51a5c1d4ccfbbdc621e40c7f24458d04a38bc5192
+-- hash: d9804d6f5993c526772e7399a60eb5cd7d13fd0e48b525700f2cb91aacc213d2
 
 name:           flight-mask
 version:        0.1.0
@@ -45,8 +45,10 @@ library
       Flight.Mask.Internal.Cross
       Flight.Mask.Internal.Dash
       Flight.Mask.Internal.Dot
+      Flight.Mask.Interpolate
       Flight.Mask.Time
       Flight.Mask.Tracks
+      Flight.Span.Sliver
       Paths_flight_mask
   hs-source-dirs:
       library
@@ -100,11 +102,13 @@ test-suite doctest
       Flight.Mask.Internal.Dot
       Flight.Mask.Internal.Race
       Flight.Mask.Internal.Zone
+      Flight.Mask.Interpolate
       Flight.Mask.Tag
       Flight.Mask.Time
       Flight.Mask.Tracks
       Flight.Span.Double
       Flight.Span.Rational
+      Flight.Span.Sliver
       Paths_flight_mask
   hs-source-dirs:
       library

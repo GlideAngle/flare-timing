@@ -17,7 +17,11 @@ import Flight.Cmd.Options (ProgramName(..), Extension(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
 
 import Flight.Zone.Raw (RawZone)
-import Flight.Mask (TaskZone, tagZones, zoneToCylinder)
+import Flight.Span.Double (spanF, csF, cutF, dppF, csegF)
+import Flight.Mask
+    ( TaskZone, Sliver(..), TagInterpolate(..)
+    , tagZones, zoneToCylinder
+    )
 import Flight.Comp
     ( FileType(CompInput)
     , Pilot(..)
@@ -90,7 +94,7 @@ go compFile@(CompInputFile compPath) = do
                                 PilotTrackTag p Nothing
 
                             PilotTrackCross p (Just xs) ->
-                                PilotTrackTag p (Just $ flownTag zs' xs))
+                                PilotTrackTag p (Just $ flownTag sliver zs' xs))
                         <$> cg
 
                     | Task{zones = Zones{raw = zs}} <- tasks
@@ -201,12 +205,21 @@ tagTimes (PilotTrackTag _ Nothing) = Nothing
 tagTimes (PilotTrackTag _ (Just xs)) =
     Just $ fmap (time . inter) <$> zonesTag xs
 
-flownTag :: [TaskZone a] -> TrackCross -> TrackTag
-flownTag zs TrackCross{zonesCrossSelected} =
+flownTag
+    :: (Real b, Fractional b, TagInterpolate a b)
+    => a
+    -> [TaskZone b]
+    -> TrackCross
+    -> TrackTag
+flownTag tagInterp zs TrackCross{zonesCrossSelected} =
     TrackTag
-        { zonesTag = tagZones zs zonesCrossSelected
+        { zonesTag = tagZones tagInterp zs zonesCrossSelected
         }
+    where
 
 flownTime :: TrackFlyingSection -> Maybe UTCTime
 flownTime TrackFlyingSection{flyingTimes = Nothing} = Nothing
 flownTime TrackFlyingSection{flyingTimes = Just (_, t)} = Just t
+
+sliver :: Sliver Double
+sliver = Sliver spanF dppF csegF csF cutF

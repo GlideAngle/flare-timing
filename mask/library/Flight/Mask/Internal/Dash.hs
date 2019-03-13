@@ -13,9 +13,10 @@ import Flight.Units ()
 import Flight.Distance (QTaskDistance, PathDistance(..))
 import Flight.Task (Zs(..), distanceEdgeToEdge, fromZs)
 import Flight.Mask.Internal.Zone (TaskZone(..), TrackZone(..), slice)
-import Flight.Mask.Internal.Race (Sliver(..), RaceSections(..), Ticked, mm30)
+import Flight.Mask.Internal.Race (RaceSections(..), Ticked, mm30)
 import Flight.Earth.Sphere.Separated (separatedZones)
 import Flight.Zone (Zone(..))
+import Flight.Span.Sliver (Sliver(..))
 
 -- | The distance to goal given the zones have been ticked.
 dashToGoal
