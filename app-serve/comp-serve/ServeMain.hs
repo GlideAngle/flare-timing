@@ -27,9 +27,9 @@ import qualified Data.ByteString.Lazy.Char8 as LBS (pack)
 
 import System.FilePath (takeFileName)
 
-import qualified Flight.Track.Cross as Cg (Crossing(..), Fix(..))
+import qualified Flight.Track.Cross as Cg (Crossing(..))
 import qualified Flight.Track.Tag as Tg (Tagging(..), PilotTrackTag(..))
-import Flight.Track.Cross (TrackFlyingSection(..))
+import Flight.Track.Cross (TrackFlyingSection(..), ZoneTag(..))
 import Flight.Track.Distance (TrackReach(..))
 import Flight.Track.Land (Landing(..), TrackEffort(..), effortRank)
 import Flight.Track.Arrival (TrackArrival(..))
@@ -224,7 +224,7 @@ type GapPointApi k =
         :> Get '[JSON] TrackFlyingSection
 
     :<|> "tag-zone" :> (Capture "task" Int) :> (Capture "pilot" String)
-        :> Get '[JSON] [Maybe Cg.Fix]
+        :> Get '[JSON] [Maybe ZoneTag]
 
     :<|> "mask-track" :> (Capture "task" Int) :> "reach"
         :> Get '[JSON] [(Pilot, TrackReach)]
@@ -773,7 +773,7 @@ getTaskPilotTrackFlyingSection ii pilotId = do
                         _ -> throwError $ errPilotTrackNotFound ix pilot
                 _ -> throwError $ errPilotTrackNotFound ix pilot
 
-getTaskPilotTag :: Int -> String -> AppT k IO [Maybe Cg.Fix]
+getTaskPilotTag :: Int -> String -> AppT k IO [Maybe ZoneTag]
 getTaskPilotTag ii pilotId = do
     let jj = ii - 1
     let ix = IxTask ii
