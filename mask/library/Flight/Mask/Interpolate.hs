@@ -72,7 +72,7 @@ tagFractionate Sliver{..} (Zs [x, xy, y]) =
     where
         f xs = edgesSum $ distancePointToPoint span xs
         TaskDistance (MkQuantity d0) = f [Point x, Point xy]
-        TaskDistance (MkQuantity d1) = f [Point y, Point xy]
+        TaskDistance (MkQuantity d1) = f [Point x, Point y]
 
 tagFractionate _ _ = Nothing
 
