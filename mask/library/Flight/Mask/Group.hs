@@ -6,11 +6,13 @@ import Data.These
 import Data.List (nub)
 import Data.List.Split (split, whenElt, keepDelimsL, keepDelimsR)
 import qualified Data.Map as Map
+import Control.Monad (join)
 
 import Flight.Clip (FlyCut(..), FlyClipping(..))
 import Flight.Kml (MarkedFixes(..), fixToUtc)
 import qualified Flight.Kml as Kml (Fix)
-import Flight.Track.Cross (InterpolatedFix(..), ZoneTag(..))
+import Flight.Track.Cross
+    (Fix(..), ZoneCross(..), ZoneTag(..))
 import Flight.Track.Time (LegIdx(..))
 import Flight.Comp (Task(..), Zones(..))
 import Flight.Units ()
@@ -191,7 +193,16 @@ groupByLeg tagInterp zoneToCyl task@Task{zones = Zones{raw = zs}} flyCut =
             $ madeZones (spanner tagInterp) zoneToCyl task mf
 
         ts :: [Maybe UTCTime]
-        ts = (fmap . fmap) (time . inter) xs
+        ts =
+            [
+                join $ do
+                    ZoneTag{cross = ZoneCross{crossingPair = xy}} <- x
+                    case xy of
+                      [_, Fix{time}] -> return $ Just time
+                      _ -> return Nothing
+
+            | x <- xs
+          ]
 
         timeToLeg :: Map.Map (Maybe UTCTime) LegIdx
         timeToLeg = Map.fromList $ zip ts (LegIdx <$> [1..])
