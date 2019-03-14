@@ -1,5 +1,6 @@
 module FlareTiming.Time
     ( showHmsForHours
+    , hoursToRoundSecs
     , showHours
     , showTime
     , showT
@@ -19,8 +20,10 @@ show2i :: Integer -> String
 show2i = printf "%02d"
 
 showHours :: Double -> T.Text
-showHours hr =
-    T.pack $ printf "%.03f" hr
+showHours hr = T.pack $ printf "%.03f" hr
+
+hoursToRoundSecs :: Double -> Integer
+hoursToRoundSecs hr = round $ 3600 * hr
 
 showHmsForHours :: Double -> T.Text
 showHmsForHours hr =
@@ -36,12 +39,11 @@ showTime tz =
     . utcToLocalTime tz
 
 showT :: TimeZone -> UTCTime -> T.Text
-showT tz =
-    T.pack . showTime tz
+showT tz = T.pack . showTime tz
 
 showTDiff :: UTCTime -> UTCTime -> T.Text
 showTDiff expected actual =
-    if | expected == actual -> "="
+    if | secs == 0 -> "="
        | hrs < 0 -> "-" <> showHmsForHours (negate hrs)
        | otherwise -> "+" <> showHmsForHours hrs
     where
