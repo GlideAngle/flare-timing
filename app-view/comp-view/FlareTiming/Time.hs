@@ -1,7 +1,9 @@
 module FlareTiming.Time
     ( showHmsForHours
+    , hoursToSecs
     , hoursToRoundSecs
     , showHours
+    , showSignedSecs
     , showTime
     , showT
     , showTDiff
@@ -22,8 +24,16 @@ show2i = printf "%02d"
 showHours :: Double -> T.Text
 showHours hr = T.pack $ printf "%.03f" hr
 
+showSignedSecs :: Double -> T.Text
+showSignedSecs s
+  | s < 0 = T.pack $ printf "-00:00:0%.3f" (abs s)
+  | otherwise = T.pack $ printf "+00:00:0%.3f" s
+
+hoursToSecs :: Double -> Double
+hoursToSecs hr = 3600 * hr
+
 hoursToRoundSecs :: Double -> Integer
-hoursToRoundSecs hr = round $ 3600 * hr
+hoursToRoundSecs = round . hoursToSecs
 
 showHmsForHours :: Double -> T.Text
 showHmsForHours hr =
@@ -43,14 +53,20 @@ showT tz = T.pack . showTime tz
 
 showTDiff :: UTCTime -> UTCTime -> T.Text
 showTDiff expected actual =
-    if | secs == 0 -> "="
+    if | roundSecs == 0 -> "="
+       | abs secs < 1 -> showSignedSecs $ fromRational secs
        | hrs < 0 -> "-" <> showHmsForHours (negate hrs)
        | otherwise -> "+" <> showHmsForHours hrs
     where
-        secs :: Integer
-        secs = round $ actual `diffUTCTime` expected
+        diff = actual `diffUTCTime` expected
 
-        hrs = fromIntegral secs / 3600.0
+        roundSecs :: Integer
+        roundSecs = round diff
+
+        secs :: Rational
+        secs = toRational diff
+
+        hrs = (fromRational secs) / 3600.0
 
 timeZone :: UtcOffset -> TimeZone
 timeZone UtcOffset{timeZoneMinutes = tzMins} = minutesToTimeZone tzMins

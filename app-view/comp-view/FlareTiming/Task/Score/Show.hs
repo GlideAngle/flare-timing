@@ -25,7 +25,8 @@ import WireTypes.Point
     , PilotTime(..)
     , PilotVelocity(..)
     )
-import FlareTiming.Time (showHmsForHours, showT, hoursToRoundSecs)
+import FlareTiming.Time
+    (showHmsForHours, showT, showSignedSecs, hoursToSecs, hoursToRoundSecs)
 
 showSpeedSection :: Maybe TaskLength -> T.Text
 showSpeedSection =
@@ -73,12 +74,12 @@ showPilotTimeDiff :: PilotTime -> PilotTime -> T.Text
 showPilotTimeDiff (PilotTime expected) (PilotTime actual)
     | actual == expected = "="
     | hoursToRoundSecs actual == hoursToRoundSecs expected = "="
-    | otherwise =
-        let hrs = actual - expected in
-        if hrs < 0 then
-            "-" <> showHmsForHours (negate hrs)
-        else
-            "+" <> showHmsForHours hrs
+    | abs secs < 1 = showSignedSecs secs
+    | hrs < 0 = "-" <> showHmsForHours (negate hrs)
+    | otherwise = "+" <> showHmsForHours hrs
+        where
+            hrs = actual - expected
+            secs = hoursToSecs hrs
 
 showSsVelocityTime :: Velocity -> T.Text
 showSsVelocityTime Velocity{ssElapsed = Just (PilotTime t)} =
