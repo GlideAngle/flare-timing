@@ -3,15 +3,19 @@ module FlareTiming.Plot.Time (timePlot) where
 import Data.Maybe (fromMaybe)
 import Reflex.Dom
 
+import qualified WireTypes.Point as Norm (NormBreakdown(..))
+import WireTypes.Point (StartGate)
 import WireTypes.Speed (TrackSpeed(..))
-import FlareTiming.Plot.Time.View (hgPlot)
 import WireTypes.Pilot (Pilot(..))
+import FlareTiming.Plot.Time.View (hgPlot)
 
 timePlot
     :: MonadWidget t m
-    => Dynamic t (Maybe [(Pilot, TrackSpeed)])
+    => Dynamic t [StartGate]
+    -> Dynamic t [(Pilot, Norm.NormBreakdown)]
+    -> Dynamic t (Maybe [(Pilot, TrackSpeed)])
     -> m ()
-timePlot tm =
+timePlot sgs sEx tm =
     elClass "div" "tile is-ancestor" $
         elClass "div" "tile is-12" $
             elClass "div" "tile" $
@@ -29,6 +33,6 @@ timePlot tm =
 
                             _ ->
                                 elClass "article" "tile is-child" $
-                                    hgPlot (fromMaybe [] <$> tm))
+                                    hgPlot sgs sEx (fromMaybe [] <$> tm))
 
                     return ()

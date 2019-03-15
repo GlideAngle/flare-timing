@@ -253,7 +253,7 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
                                 PlotTabEffort -> effortPlot hgOrPg ef
                                 PlotTabArrive -> arrivalPlot hgOrPg av
                                 PlotTabLead -> leadPlot ld
-                                PlotTabTime -> timePlot sd)
+                                PlotTabTime -> timePlot sgs sEx sd)
                             <$> tabPlot
 
                     return ()

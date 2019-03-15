@@ -3,16 +3,20 @@ module FlareTiming.Plot.Time.View (hgPlot) where
 import Text.Printf (printf)
 import Reflex.Dom
 import Reflex.Time (delay)
+import Data.Maybe (fromMaybe)
 import qualified Data.Text as T (Text, pack)
+import qualified Data.Map.Strict as Map
 
 import Control.Monad.IO.Class (liftIO)
 import qualified FlareTiming.Plot.Time.Plot as P (hgPlot)
 
+import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import WireTypes.Speed (TrackSpeed(..), SpeedFraction(..))
 import WireTypes.Pilot (Pilot(..))
-import WireTypes.Point (PilotTime(..))
+import WireTypes.Point (PilotTime(..), StartGate)
 import FlareTiming.Pilot (showPilotName)
-import FlareTiming.Time (showHmsForHours, showHours)
+import FlareTiming.Time (showHmsForHours, showHours, showT, showTDiff)
+import FlareTiming.Task.Score.Show
 
 placings :: [TrackSpeed] -> [[Double]]
 placings = fmap xy
@@ -29,9 +33,11 @@ timeRange xs =
 
 hgPlot
     :: MonadWidget t m
-    => Dynamic t [(Pilot, TrackSpeed)]
+    => Dynamic t [StartGate]
+    -> Dynamic t [(Pilot, Norm.NormBreakdown)]
+    -> Dynamic t [(Pilot, TrackSpeed)]
     -> m ()
-hgPlot tm = do
+hgPlot sgs sEx tm = do
     pb <- delay 1 =<< getPostBuild
 
     elClass "div" "tile is-ancestor" $ do
@@ -50,41 +56,63 @@ hgPlot tm = do
 
                     return ()
 
-        elClass "div" "tile is-child" $ tablePilot tm
+        elClass "div" "tile is-child" $ tablePilot sgs sEx tm
 
     return ()
 
 tablePilot
     :: MonadWidget t m
-    => Dynamic t [(Pilot, TrackSpeed)]
+    => Dynamic t [StartGate]
+    -> Dynamic t [(Pilot, Norm.NormBreakdown)]
+    -> Dynamic t [(Pilot, TrackSpeed)]
     -> m ()
-tablePilot xs = do
+tablePilot sgs sEx xs = do
+    let sEx' = Map.fromList <$> sEx
     _ <- elClass "table" "table is-striped" $ do
             el "thead" $ do
                 el "tr" $ do
-                    el "th" $ text "Hours"
+                    el "th" $ text "H.hhh"
                     el "th" $ text "HH:MM:SS"
+                    elClass "th" "th-norm th-norm-pace" . dynText
+                        $ ffor sgs (\case [] -> "✓-Pace"; _ -> "✓-Time")
+
+                    elClass "th" "th-norm th-time-diff" $ dynText
+                        $ ffor sgs (\case [] -> "Δ-Pace"; _ -> "Δ-Time")
+
                     el "th" $ text "Fraction"
                     el "th" $ text "Pilot"
 
                     return ()
 
             el "tbody" $ do
-                simpleList xs (uncurry rowSpeed . splitDynPure)
+                simpleList xs (uncurry (rowSpeed sEx') . splitDynPure)
 
     return ()
 
 rowSpeed
     :: MonadWidget t m
-    => Dynamic t Pilot
+    => Dynamic t (Map.Map Pilot Norm.NormBreakdown)
+    -> Dynamic t Pilot
     -> Dynamic t TrackSpeed
     -> m ()
-rowSpeed p tm = do
+rowSpeed sEx pilot tm = do
+    (yEl, yElDiff) <- sample . current
+                $ ffor3 pilot sEx tm (\pilot' sEx' TrackSpeed{time = elap} ->
+                case Map.lookup pilot' sEx' of
+                    Just Norm.NormBreakdown {ssElapsed = elap'} ->
+                        ( maybe "" showPilotTime elap'
+                        , maybe "" (flip showPilotTimeDiff elap) elap'
+                        )
+
+                    _ -> ("", ""))
+
     el "tr" $ do
         el "td" . dynText $ showHr . time <$> tm
         el "td" . dynText $ showHms . time <$> tm
+        elClass "td" "td-norm td-norm-pace" . text $ yEl
+        elClass "td" "td-norm td-time-diff" . text $ yElDiff
         el "td" . dynText $ showFrac . frac <$> tm
-        el "td" . dynText $ showPilotName <$> p
+        el "td" . dynText $ showPilotName <$> pilot
 
         return ()
 
