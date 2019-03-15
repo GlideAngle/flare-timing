@@ -467,6 +467,25 @@ ignore = do
 -- ... plus 13175 other B records
 -- <BLANKLINE>
 --
+-- >>> line 1 igcScott
+-- "HFDTE080417\n"
+--
+-- >>> line 1 igcGordon
+-- "HFDTE020118\n"
+--
+-- >>> parse igcScott
+-- Right 2017-04-08
+-- 02:37:56 27° 09.269' S 151° 14.965' E 0m (Just 1004m)
+-- 02:37:58 27° 09.274' S 151° 14.971' E 0m (Just 1010m)
+-- ... plus 9733 other B records
+-- <BLANKLINE>
+--
+-- >>> parse igcGordon
+-- Right 2018-01-02
+-- 00:44:29 33° 21.373' S 147° 56.064' E 285m (Just 0m)
+-- 00:44:30 33° 21.369' S 147° 56.061' E 285m (Just 0m)
+-- ... plus 30026 other B records
+-- <BLANKLINE>
 parse
    :: String -- ^ A string to parse
    -> Either (ParseErrorBundle String Void) [IgcRecord]
@@ -495,4 +514,10 @@ parseFromFile fname =
 --
 -- >>> igcHFDTEDATE = $(embedStr (System.IO.readFile fileHFDTEDATE))
 -- >>> igcHFDTE = $(embedStr (System.IO.readFile fileHFDTE))
+--
+-- >>> fileScott = "./test-suite-doctest/Scott-Barrett.20170409-071936.7601.19.igc"
+-- >>> fileGordon = "./test-suite-doctest/Gordon_Rigg.20180103-111847.6433.8.igc"
+--
+-- >>> igcScott = $(embedStr (System.IO.readFile fileScott))
+-- >>> igcGordon = $(embedStr (System.IO.readFile fileGordon))
 
