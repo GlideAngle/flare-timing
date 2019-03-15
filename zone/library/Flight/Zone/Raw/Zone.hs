@@ -83,7 +83,12 @@ zoneGive _ g [x] = [exit g x]
 zoneGive separatedZones g (x : xs) =
     scanl1 (f separatedZones g) (exit g x : xs)
 
+-- | Give or turnpoint tolerance around an exit cylinder is troublesome. Pilots
+-- will often get high outside the start and then fly back into the cylinder
+-- before taking a start gate. In this way these cylinders are both exit and
+-- entry cylinders. Give is not applied to exit cylinders until we find what
+-- to do when applying the tolerance to them.
 f:: (RawZone -> RawZone -> Bool) -> Give -> RawZone -> RawZone -> RawZone
 f _ _ RawZone{give = Nothing} y = y
 f separatedZones zg x@RawZone{give = Just _} y =
-    if separatedZones x y then entry zg y else exit zg y
+    if separatedZones x y then entry zg y else y
