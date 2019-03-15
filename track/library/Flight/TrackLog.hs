@@ -43,7 +43,7 @@ import Flight.Igc
     , Year(..), Month(..), Day(..), Hour(..), HMS(..)
     , Lat(..), Lng(..), Altitude(..), AltGps(..), AltBaro(..)
     , IgcRecord(..)
-    , isMark, isFix, addHoursIgc
+    , isMark, isFix
     )
 import Flight.Comp
     ( Pilot(..)
@@ -53,7 +53,7 @@ import Flight.Comp
     , TaskFolder(..)
     , IxTask(..)
     )
-import Flight.Track.Range (asRollovers)
+import Flight.Igc (igcEqOrEqOnTime, igcBumpOver)
 
 ixTasks :: [IxTask]
 ixTasks = IxTask <$> [ 1 .. ]
@@ -176,34 +176,6 @@ makeAbsolute
 nullMarkedFixes :: K.MarkedFixes
 nullMarkedFixes = K.MarkedFixes (UTCTime (ModifiedJulianDay 0) 0) []
 
-igcEqOrEqOnTime :: IgcRecord -> IgcRecord -> Bool
-igcEqOrEqOnTime (B t0 _ _ _ _) (B t1 _ _ _ _) = t0 == t1
-igcEqOrEqOnTime a b = a == b
-
--- | The B record only records time of day. If the sequence is not increasing
--- then for every rollback add a bump 24 hrs.
---
--- >>> asRollovers [7,9,2,3]
--- [[7,9],[2,3]]
-bumpOverIgc :: [Flight.Igc.IgcRecord] -> [Flight.Igc.IgcRecord]
-bumpOverIgc xs =
-    bumpOver
-        (flip $ addHoursIgc . Hour . show)
-        [0 :: Integer, 24..]
-        xs
-
--- | Apply a bump from a list every time there is a roll over.
---
--- >>> bumpOver (+) [0,10..] [7,9,2,3,1]
--- [7,9,12,13,21]
-bumpOver :: Ord a => (a -> b -> a) -> [b] -> [a] -> [a]
-bumpOver add ns xs =
-    concat
-    [ (`add` n) <$> ys
-    | ys <- asRollovers xs
-    | n <- ns
-    ]
-
 igcMarkedFixes :: [Flight.Igc.IgcRecord] -> K.MarkedFixes
 igcMarkedFixes xs =
     maybe nullMarkedFixes (`mark` zs) date
@@ -214,7 +186,7 @@ igcMarkedFixes xs =
             . filter isMark
             $ xs
 
-        ys = bumpOverIgc $ filter isFix xs
+        ys = igcBumpOver $ filter isFix xs
 
         -- NOTE: Some loggers will be using sub-second logging. The columns in
         -- the B record holding the s or ss, tenths or hundredths of a second,

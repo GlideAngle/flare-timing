@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: dbaae0f568b25d4943462b13086927fdfca114153881d79ce87adb1c9cfe88b4
+-- hash: 1666739a67ca5c70d5828e33f6acef6445288227159b70fc3229cb2401e986f1
 
 name:           flight-igc
 version:        2.0.0
@@ -38,6 +38,7 @@ library
   exposed-modules:
       Flight.Igc
   other-modules:
+      Flight.Igc.Fix
       Flight.Igc.Parse
       Flight.Igc.Record
       Paths_flight_igc
@@ -48,6 +49,7 @@ library
   build-depends:
       base >=4.10.1.0 && <5
     , bytestring
+    , flight-clip
     , megaparsec
     , utf8-string
   default-language: Haskell2010
@@ -57,6 +59,7 @@ test-suite doctest
   main-is: DocTest.hs
   other-modules:
       Flight.Igc
+      Flight.Igc.Fix
       Flight.Igc.Parse
       Flight.Igc.Record
       Paths_flight_igc
@@ -69,6 +72,7 @@ test-suite doctest
       base >=4.10.1.0 && <5
     , bytestring
     , doctest
+    , flight-clip
     , megaparsec
     , utf8-string
   default-language: Haskell2010

@@ -5,7 +5,7 @@ import Test.DocTest (doctest)
 arguments :: [String]
 arguments =
     [ "-isrc"
-    , "library/Flight/Track/Place.hs"
+    , "library/Flight/Track/Range.hs"
     ]
 
 main :: IO ()

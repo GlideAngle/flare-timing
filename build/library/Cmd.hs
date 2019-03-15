@@ -112,9 +112,12 @@ docTestPkgs :: [Pkg]
 docTestPkgs =
     [ "detour-via-sci"
     , "detour-via-uom"
+    , "siggy-chardust"
+    , "flight-clip"
     , "flight-comp"
     , "flight-kml"
-    , "siggy-chardust"
+    , "flight-igc"
+    , "flight-track"
     ] 
 
 -- | The names of the test app executables.

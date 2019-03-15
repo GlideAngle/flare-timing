@@ -17,13 +17,24 @@ in    defs
       , homepage =
           "https://github.com/blockscope/flare-timing/tree/master/clip#readme"
       , dependencies =
-            defs.dependencies
-          # [ "time" ]
+          defs.dependencies # [ "split", "time" ]
       , library =
           { source-dirs =
               "library"
           , exposed-modules =
-              [ "Flight.Clip" ]
+              [ "Flight.Clip", "Flight.Track.Range" ]
           }
-      , tests = ./../default-tests.dhall
+      , tests =
+            ./../default-tests.dhall
+          ⫽ { doctest =
+                { dependencies =
+                    [ "doctest" ]
+                , ghc-options =
+                    [ "-rtsopts", "-threaded", "-with-rtsopts=-N" ]
+                , main =
+                    "DocTest.hs"
+                , source-dirs =
+                    [ "library", "test-suite-doctest" ]
+                }
+            }
       }

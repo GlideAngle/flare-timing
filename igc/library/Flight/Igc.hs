@@ -37,7 +37,11 @@ module Flight.Igc
     -- * Record classification
     , isMark
     , isFix
+    -- * Fix Checking and Conversion
+    , igcEqOrEqOnTime
+    , igcBumpOver
     ) where
 
 import Flight.Igc.Record
 import Flight.Igc.Parse
+import Flight.Igc.Fix
