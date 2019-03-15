@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 4ca48e9a7ac0991ea5493bfcfef43d294c235ffdac0d679368aae41296860e85
+-- hash: 2bfb13fb43609f0df0c5ba31a425e30ccfa3297839d6624dcc237ddf13cb5401
 
 name:           flight-igc
 version:        2.0.0
@@ -38,6 +38,8 @@ library
   exposed-modules:
       Flight.Igc
   other-modules:
+      Flight.Igc.Parse
+      Flight.Igc.Record
       Paths_flight_igc
   hs-source-dirs:
       library
@@ -55,6 +57,8 @@ test-suite doctest
   main-is: DocTest.hs
   other-modules:
       Flight.Igc
+      Flight.Igc.Parse
+      Flight.Igc.Record
       Paths_flight_igc
   hs-source-dirs:
       library

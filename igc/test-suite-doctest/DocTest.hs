@@ -5,7 +5,8 @@ import Test.DocTest (doctest)
 arguments :: [String]
 arguments =
     [ "-isrc"
-    , "library/Flight/Igc.hs"
+    , "library/Flight/Igc/Record.hs"
+    , "library/Flight/Igc/Parse.hs"
     , "-XFlexibleContexts"
     , "-XFlexibleInstances"
     , "-XGADTs"
