@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1d61776b249048db33e7bf2acfbcd7be74677042847d92510a7d13aed8507dd7
+-- hash: d9fc805d3766be4d3c1d5b8c52df03431e82104df8ab8c57ff689701c1593c30
 
 name:           flight-earth
 version:        0.1.0
@@ -15,7 +15,7 @@ homepage:       https://github.com/blockscope/flare-timing#readme
 bug-reports:    https://github.com/blockscope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
-copyright:      © 2017-2018 Phil de Joux, © 2017-2018 Block Scope Limited
+copyright:      © 2017-2019 Phil de Joux, © 2017-2019 Block Scope Limited
 license:        MPL-2.0
 license-file:   LICENSE.md
 tested-with:    GHC == 8.2.2

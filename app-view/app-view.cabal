@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a39b0deeb192b77272268f3870156da88553d8b16fbe8433976ecf2b98a53e14
+-- hash: 63b5c4e119ddad2dd87c9d0c1cc206fd906739c587f4c48e8d9cc8a63570ca9b
 
 name:           app-view
 version:        0.1.0
@@ -15,7 +15,7 @@ homepage:       https://github.com/blockscope/flare-timing#readme
 bug-reports:    https://github.com/blockscope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
-copyright:      © 2017-2018 Phil de Joux, © 2017-2018 Block Scope Limited
+copyright:      © 2017-2019 Phil de Joux, © 2017-2019 Block Scope Limited
 license:        MPL-2.0
 license-file:   LICENSE.md
 tested-with:    GHC == 8.2.2

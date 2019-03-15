@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1ad216fb3a3f77807b2c3a0880ea9cffdf0897a62794d9a92b7a5166b7ad6c5c
+-- hash: 72b7d90bc96e676b5f20f250947bb29b9967b771f418f2255a534a3c6d835a65
 
 name:           flight-cmd
 version:        0.1.0
@@ -15,7 +15,7 @@ homepage:       https://github.com/blockscope/flare-timing#readme
 bug-reports:    https://github.com/blockscope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
-copyright:      © 2017-2018 Phil de Joux, © 2017-2018 Block Scope Limited
+copyright:      © 2017-2019 Phil de Joux, © 2017-2019 Block Scope Limited
 license:        MPL-2.0
 license-file:   LICENSE.md
 tested-with:    GHC == 8.2.2

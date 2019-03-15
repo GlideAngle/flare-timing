@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 529dd5e6761570e4056fe50ccee7eee93d45c771c1071b95781af6400efd9235
+-- hash: 7a17a29bf03bf6a72c8fa4fd5ccab8c3da1638a8c415e3b15b898e1a83a284d9
 
 name:           flight-scribe
 version:        0.1.0
@@ -15,7 +15,7 @@ homepage:       https://github.com/blockscope/flare-timing#readme
 bug-reports:    https://github.com/blockscope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
-copyright:      © 2017-2018 Phil de Joux, © 2017-2018 Block Scope Limited
+copyright:      © 2017-2019 Phil de Joux, © 2017-2019 Block Scope Limited
 license:        MPL-2.0
 license-file:   LICENSE.md
 tested-with:    GHC == 8.2.2

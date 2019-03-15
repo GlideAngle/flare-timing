@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 2bfb13fb43609f0df0c5ba31a425e30ccfa3297839d6624dcc237ddf13cb5401
+-- hash: dbaae0f568b25d4943462b13086927fdfca114153881d79ce87adb1c9cfe88b4
 
 name:           flight-igc
 version:        2.0.0
@@ -15,7 +15,7 @@ homepage:       https://github.com/blockscope/flare-timing#readme
 bug-reports:    https://github.com/blockscope/flare-timing/issues
 author:         Phil de Joux
 maintainer:     phil.dejoux@blockscope.com
-copyright:      © 2017-2018 Phil de Joux, © 2017-2018 Block Scope Limited
+copyright:      © 2017-2019 Phil de Joux, © 2017-2019 Block Scope Limited
 license:        MPL-2.0
 license-file:   LICENSE.md
 tested-with:    GHC == 8.2.2

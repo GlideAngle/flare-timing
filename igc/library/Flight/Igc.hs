@@ -1,8 +1,8 @@
 {-|
 Module: Flight.Igc
 Copyright:
-    © 2018 Phil de Joux
-    © 2018 Block Scope Limited
+    © 2017-2019 Phil de Joux
+    © 2017-2019 Block Scope Limited
 License: MPL-2.0
 Maintainer: Phil de Joux <phil.dejoux@blockscope.com>
 Stability: experimental
