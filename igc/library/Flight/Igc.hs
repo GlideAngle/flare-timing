@@ -240,10 +240,12 @@ showIgcSummarize xs =
     where
         summarize [] = "no B records"
         summarize [ x ] = unlines [ show x, "... and no other B records" ]
-        summarize (x : y : _) = unlines [ show x
-                                        , show y
-                                        ,"... plus " ++ show (length xs) ++ " other B records"
-                                        ]
+        summarize (x : y : _) =
+            unlines
+                [ show x
+                , show y
+                ,"... plus " ++ show (length xs) ++ " other B records"
+                ]
 
 instance {-# OVERLAPPING #-} Show [ IgcRecord ] where
     show = showIgcSummarize
