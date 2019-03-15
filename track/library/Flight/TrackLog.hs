@@ -219,10 +219,10 @@ bumpOver add ns xs =
 -- ...
 --
 -- >>> parse igcGordon
- -- Right 2018-01-02
- -- 00:44:29 33° 21.373' S 147° 56.064' E 285m (Just 0m)
- -- 00:44:30 33° 21.369' S 147° 56.061' E 285m (Just 0m)
- -- ... plus 30026 other B records
+-- Right 2018-01-02
+-- 00:44:29 33° 21.373' S 147° 56.064' E 285m (Just 0m)
+-- 00:44:30 33° 21.369' S 147° 56.061' E 285m (Just 0m)
+-- ... plus 30026 other B records
 -- ...
 igcMarkedFixes :: [Flight.Igc.IgcRecord] -> K.MarkedFixes
 igcMarkedFixes xs =
