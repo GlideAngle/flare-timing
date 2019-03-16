@@ -109,9 +109,7 @@ unStampTime
     :: Maybe UTCTime
     -> [(UTCTime, (Lat, Lng, AltBaro, Maybe AltGps))]
     -> [UTCTime]
-unStampTime _ [] = []
-unStampTime Nothing xs@((t, _) : _) = unStampTime (Just t) xs
-unStampTime (Just mark0) xs = toFixTime mark0 <$> xs
+unStampTime _ xs = fst <$> xs
 
 unStampTick
     :: Maybe UTCTime
@@ -119,14 +117,10 @@ unStampTick
     -> [Second]
 unStampTick _ [] = []
 unStampTick Nothing xs@((t, _) : _) = unStampTick (Just t) xs
-unStampTick (Just mark0) xs = toFixTick mark0 <$> xs
+unStampTick (Just mark0) xs = toFixTick mark0 . fst <$> xs
 
-toFixTime :: UTCTime -> (UTCTime, a) -> UTCTime
-toFixTime _ (t, _) = t
-
-toFixTick :: UTCTime -> (UTCTime, a) -> Second
-toFixTick mark0 (t, _) =
-    Second . round $ t `diffUTCTime` mark0
+toFixTick :: UTCTime -> UTCTime -> Second
+toFixTick mark0 t = Second . round $ t `diffUTCTime` mark0
 
 -- $setup
 -- >>> import Test.QuickCheck
