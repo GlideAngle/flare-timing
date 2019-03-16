@@ -98,7 +98,18 @@ stamp (Year yy, Month mm, Day dd) (HMS (Hour hr) (MinuteOfTime minute) (Second s
             `addUTCTime`
             (UTCTime (fromGregorian y mm dd) 0)
 
+-- TODO: Why is Scott's tracklog not sorted when marked for time or ticks?
+
 -- |
+-- >>> let xs = markTimes markSasha fixesSasha in xs == sort xs
+-- True
+--
+-- >>> let xs = markTimes markBrad fixesBrad in xs == sort xs
+-- True
+--
+-- >>> let xs = markTimes markScott fixesScott in xs == sort xs
+-- False
+--
 -- >>> let xs = markTimes markGordon fixesGordon in xs == sort xs
 -- True
 --
@@ -117,6 +128,15 @@ markTimes :: IgcRecord -> [IgcRecord] -> [UTCTime]
 markTimes = mark unStampTime
 
 -- |
+-- >>> let xs = markTicks markSasha fixesSasha in xs == sort xs
+-- True
+--
+-- >>> let xs = markTicks markBrad fixesBrad in xs == sort xs
+-- True
+--
+-- >>> let xs = markTicks markScott fixesScott in xs == sort xs
+-- False
+--
 -- >>> let xs = markTicks markGordon fixesGordon in xs == sort xs
 -- True
 --
