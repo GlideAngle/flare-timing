@@ -62,6 +62,9 @@ mark f (HFDTE (Day dd) (Month mm) (Year yy)) xs =
         ys = catMaybes $ extract <$> xs
         ts = [stamp (dd, mm, yy) y | y <- ys]
 
+-- |
+-- prop> not (isFix x) == (extract x == Nothing)
+-- prop> isFix x == (extract x /= Nothing)
 extract :: IgcRecord -> Maybe IgcFix
 extract Ignore = Nothing
 extract HFDTEDATE{} = Nothing
@@ -88,3 +91,6 @@ stamp (dd, mm, yy) (HMS (Hour hr) (Minute minute) (Second sec), a) =
             (fromInteger $ 60 * ((60 * hr') + minute') + sec')
             `addUTCTime`
             (UTCTime (fromGregorian y m d) 0)
+
+-- $setup
+-- >>> import Test.QuickCheck

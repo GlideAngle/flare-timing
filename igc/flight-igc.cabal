@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e9f03f53ff1d9c866df1effbc10c47999f2574758e98d64bd437dd7cbe5959ba
+-- hash: 5fde0ce3313c02c66ff055b05c1dcb592030d2e692e9b8e16e15720091e44058
 
 name:           flight-igc
 version:        2.0.0
@@ -47,10 +47,12 @@ library
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
   ghc-options: -Wall -Werror
   build-depends:
-      base >=4.10.1.0 && <5
+      QuickCheck
+    , base >=4.10.1.0 && <5
     , bytestring
     , flight-clip
     , megaparsec
+    , tasty-quickcheck
     , time
     , utf8-string
   default-language: Haskell2010
@@ -70,11 +72,13 @@ test-suite doctest
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
   ghc-options: -Wall -Werror -rtsopts -threaded -with-rtsopts=-N
   build-depends:
-      base >=4.10.1.0 && <5
+      QuickCheck
+    , base >=4.10.1.0 && <5
     , bytestring
     , doctest
     , flight-clip
     , megaparsec
+    , tasty-quickcheck
     , time
     , utf8-string
   default-language: Haskell2010

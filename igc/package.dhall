@@ -18,7 +18,14 @@ in    defs
           defs.extra-source-files # [ "**/*.igc" ]
       , dependencies =
             defs.dependencies
-          # [ "bytestring", "flight-clip", "megaparsec", "time", "utf8-string" ]
+          # [ "bytestring"
+            , "flight-clip"
+            , "megaparsec"
+            , "QuickCheck"
+            , "tasty-quickcheck"
+            , "time"
+            , "utf8-string"
+            ]
       , library =
           { source-dirs = "library", exposed-modules = "Flight.Igc" }
       , tests =

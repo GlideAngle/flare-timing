@@ -26,6 +26,8 @@ module Flight.Igc.Record
 import Prelude hiding (readFile)
 import Text.Printf (printf)
 import Data.List (partition)
+import Test.Tasty.QuickCheck (Arbitrary(..))
+import Test.QuickCheck.Gen
 
 -- | An altitude in metres
 newtype Altitude = Altitude String
@@ -131,6 +133,83 @@ instance Show IgcRecord where
     show (HFDTE (Day d) (Month m) (Year y)) =
         concat ["20", y, "-", m, "-", d]
     show Ignore = ""
+
+instance Arbitrary Hour where
+    arbitrary = do
+        h :: Int <- arbitrary
+        return . Hour $ show h
+
+instance Arbitrary Minute where
+    arbitrary = do
+        h :: Int <- arbitrary
+        return . Minute $ show h
+
+instance Arbitrary Second where
+    arbitrary = do
+        h :: Int <- arbitrary
+        return . Second $ show h
+
+instance Arbitrary HMS where
+    arbitrary = do
+        h <- arbitrary
+        m <- arbitrary
+        s <- arbitrary
+        return $ HMS h m s
+
+instance Arbitrary Lat where
+    arbitrary =
+        oneof
+             [ do
+                 d <- Degree <$> arbitrary
+                 m <- Minute <$> arbitrary
+                 return $ LatN d m
+
+             , do
+                 d <- Degree <$> arbitrary
+                 m <- Minute <$> arbitrary
+                 return $ LatS d m
+            ]
+
+instance Arbitrary Lng where
+    arbitrary =
+        oneof
+             [ do
+                 d <- Degree <$> arbitrary
+                 m <- Minute <$> arbitrary
+                 return $ LngE d m
+
+             , do
+                 d <- Degree <$> arbitrary
+                 m <- Minute <$> arbitrary
+                 return $ LngW d m
+            ]
+
+instance Arbitrary IgcRecord where
+    arbitrary =
+        oneof
+             [ do
+                 hms <- arbitrary
+                 lat <- arbitrary
+                 lng <- arbitrary
+                 altBaro <- AltBaro . Altitude <$> arbitrary
+                 altGps <- (fmap $ AltGps . Altitude) <$> arbitrary
+                 return $ B hms lat lng altBaro altGps
+
+             , do
+                 d <- Day <$> arbitrary
+                 m <- Month <$> arbitrary
+                 y <- Year <$> arbitrary
+                 n <- Nth <$> arbitrary
+                 return $ HFDTEDATE d m y n
+
+             , do
+                 d <- Day <$> arbitrary
+                 m <- Month <$> arbitrary
+                 y <- Year <$> arbitrary
+                 return $ HFDTE d m y
+
+             , return Ignore
+             ]
 
 -- |
 -- >>> addHoursHms (Hour "0") (HMS (Hour "0") (Minute "0") (Second "0"))
@@ -242,7 +321,6 @@ isFix B{} = True
 isFix HFDTEDATE{} = False
 isFix HFDTE{} = False
 isFix Ignore = False
-
 
 {--
 B: record type is a basic tracklog record

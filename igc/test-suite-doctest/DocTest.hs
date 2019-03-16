@@ -7,9 +7,13 @@ arguments =
     [ "-isrc"
     , "library/Flight/Igc/Record.hs"
     , "library/Flight/Igc/Parse.hs"
+    , "library/Flight/Igc/Fix.hs"
     , "-XFlexibleContexts"
     , "-XFlexibleInstances"
     , "-XGADTs"
+    , "-XParallelListComp"
+    , "-XScopedTypeVariables"
+    , "-XDeriveGeneric"
     ]
 
 main :: IO ()
