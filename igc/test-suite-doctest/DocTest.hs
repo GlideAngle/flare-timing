@@ -15,6 +15,7 @@ arguments =
     , "-XScopedTypeVariables"
     , "-XDeriveGeneric"
     , "-XNamedFieldPuns"
+    , "-XMultiWayIf"
     ]
 
 main :: IO ()

@@ -52,7 +52,7 @@ import Flight.Comp
     , TaskFolder(..)
     , IxTask(..)
     )
-import Flight.Igc (igcEqOrEqOnTime, igcBumpOver)
+import Flight.Igc (eqOnTime, bumpOver)
 import qualified Flight.Igc as Igc (mark)
 
 ixTasks :: [IxTask]
@@ -186,15 +186,27 @@ igcMarkedFixes xs =
             . filter isMark
             $ xs
 
-        ys = igcBumpOver $ filter isFix xs
+        ys = bumpOver $ filter isFix xs
 
         -- NOTE: Some loggers will be using sub-second logging. The columns in
         -- the B record holding the s or ss, tenths or hundredths of a second,
         -- are specified in the I record. Whether parsing IGC files at the
         -- second or sub-second granularity, we need to avoid having fixes with
         -- identical time stamps hence the nubBy here.
-        zs = nubBy igcEqOrEqOnTime ys
+        zs = nubBy eqOnTime ys
 
+-- |
+-- >>> let xs = markTimes markGordon fixesGordon in xs == sort xs
+-- True
+--
+-- >>> let xs = markTicks markGordon fixesGordon in xs == sort xs
+-- True
+--
+-- >>> let xs = markTimes markGordon fixesGordon in (head xs, head $ reverse xs)
+-- (2018-01-02 00:44:29 UTC,2018-01-02 09:07:43 UTC)
+--
+-- >>> let xs = markTicks markGordon fixesGordon in (head xs, head $ reverse xs)
+-- (00:00:00,08:23:14)
 mark :: IgcRecord -> [IgcRecord] -> K.MarkedFixes
 mark = Igc.mark unStamp
 
@@ -244,3 +256,21 @@ readAltBaro (AltBaro (Altitude alt)) = K.Altitude $ fromIntegral alt
 
 readAltGps :: AltGps -> K.Altitude
 readAltGps (AltGps (Altitude alt)) = K.Altitude $ fromIntegral alt
+
+-- $setup
+-- >>> :set -XTemplateHaskell
+-- >>> import Test.QuickCheck
+-- >>> import Data.List
+-- >>> import Language.Haskell.TH
+-- >>> import qualified Language.Haskell.TH.Syntax as TH (lift)
+-- >>> import Flight.Igc (parse, markTicks, markTimes)
+-- :{
+-- embedStr :: IO String -> ExpQ
+-- embedStr readStr = TH.lift =<< runIO readStr
+-- :}
+--
+-- >>> line n = unlines . take 1 . drop n . lines
+--
+-- >>> fileGordon = "./test-suite-doctest/Gordon_Rigg.20180103-111847.6433.8.igc"
+--
+-- >>> (markGordon : _, (fixesGordon, _)) = let (Right xs) = parse $(embedStr (System.IO.readFile fileGordon)) in (partition isFix <$> partition isMark xs)

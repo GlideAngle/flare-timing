@@ -1,6 +1,6 @@
 module Flight.Igc.Fix
-    ( igcEqOrEqOnTime
-    , igcBumpOver
+    ( eqOnTime
+    , bumpOver
     , extract
     , mark
     , markTimes
@@ -12,38 +12,79 @@ import Data.Time.Calendar (fromGregorian)
 import Data.Bifunctor (first)
 import Data.Maybe (catMaybes)
 import Flight.Igc.Record
-import Flight.Track.Range (asRollovers)
+import Flight.Track.Range (asRollovers, asRolloversBy)
 
 type Fix t a = (t, a)
 type IgcFix = Fix HMS Pos
 
--- |
--- prop> igcEqOrEqOnTime x x == True
-igcEqOrEqOnTime :: IgcRecord -> IgcRecord -> Bool
-igcEqOrEqOnTime B{hms = t0} B{hms = t1} = t0 == t1
-igcEqOrEqOnTime a b = a == b
+-- | Are two B records equal on time or are records of other types equal?
+--
+-- prop> eqOnTime x x == True
+eqOnTime :: IgcRecord -> IgcRecord -> Bool
+eqOnTime B{hms = t0} B{hms = t1} = t0 == t1
+eqOnTime a b = a == b
+
+seconds :: HMS -> Second
+seconds (HMS (Hour h) (MinuteOfTime m) (Second s)) =
+    Second $ s + m * 60 + h * 3600
+
+secondsDiff :: HMS -> HMS -> Second
+secondsDiff t1 t0 =
+    Second $ s1 - s0
+    where
+        Second s1 = seconds t1
+        Second s0 = seconds t0
+
+secondsCompare :: HMS -> HMS -> Ordering
+secondsCompare t0 t1 =
+    s0 `compare` s1
+    where
+        Second s0 = seconds t0
+        Second s1 = seconds t1
+
+-- | Are two B records increasing in time save for some allowable slippage?
+slipFwdOnTime :: Second -> IgcRecord -> IgcRecord -> Ordering
+slipFwdOnTime slip B{hms = t0} B{hms = t1} =
+    if | secondsDiff t1 t0 > Second 0 -> LT
+       | secondsDiff t0 t1 < slip -> LT
+       | otherwise -> secondsCompare t0 t1
+slipFwdOnTime _ a b = a `compare` b
 
 -- | The B record only records time of day. If the sequence is not increasing
 -- then for every rollback add a bump 24 hrs.
 --
 -- >>> asRollovers [7,9,2,3]
 -- [[7,9],[2,3]]
-igcBumpOver :: [IgcRecord] -> [IgcRecord]
-igcBumpOver xs =
-    bumpOver
+bumpOver :: [IgcRecord] -> [IgcRecord]
+bumpOver xs =
+    _bumpOverBy (slipFwdOnTime $ Second 3600)
         (flip $ addHoursIgc . Hour)
         [0 :: Int, 24..]
         xs
 
 -- | Apply a bump from a list every time there is a roll over.
 --
--- >>> bumpOver (+) [0,10..] [7,9,2,3,1]
+-- >>> _bumpOver (+) [0,10..] [7,9,2,3,1]
 -- [7,9,12,13,21]
-bumpOver :: Ord a => (a -> b -> a) -> [b] -> [a] -> [a]
-bumpOver add ns xs =
+_bumpOver :: Ord a => (a -> b -> a) -> [b] -> [a] -> [a]
+_bumpOver add ns xs =
     concat
     [ (`add` n) <$> ys
     | ys <- asRollovers xs
+    | n <- ns
+    ]
+
+_bumpOverBy
+    :: Ord a
+    => (a -> a -> Ordering)
+    -> (a -> b -> a)
+    -> [b]
+    -> [a]
+    -> [a]
+_bumpOverBy p add ns xs =
+    concat
+    [ (`add` n) <$> ys
+    | ys <- asRolloversBy p xs
     | n <- ns
     ]
 

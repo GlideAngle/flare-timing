@@ -1,4 +1,4 @@
-module Flight.Track.Range (asRanges, asRollovers) where
+module Flight.Track.Range (asRanges, asRollovers, asRolloversBy) where
 
 import Data.List (findIndex)
 import Data.List.Split (chop)
@@ -55,6 +55,18 @@ asRollovers zs =
         (\xs@(x0 : _) ->
             let xys = zip (x0 : xs) xs in
             case findIndex (\(x, y) -> y < x) xys of
+                Nothing -> (xs, [])
+                Just i -> (take i xs, drop i xs))
+        zs
+
+asRolloversBy :: Ord a => (a -> a -> Ordering) -> [a] -> [[a]]
+asRolloversBy _ [] = []
+asRolloversBy p [x, y] = if x `p` y /= GT then [[x, y]] else [[x],[y]]
+asRolloversBy p zs =
+    chop
+        (\xs@(x0 : _) ->
+            let xys = zip (x0 : xs) xs in
+            case findIndex (\(x, y) -> y `p` x == LT) xys of
                 Nothing -> (xs, [])
                 Just i -> (take i xs, drop i xs))
         zs

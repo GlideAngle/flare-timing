@@ -39,10 +39,12 @@ module Flight.Igc
     , isMark
     , isFix
     -- * Fix Checking and Conversion
-    , igcEqOrEqOnTime
-    , igcBumpOver
+    , eqOnTime
+    , bumpOver
     , extract
     , mark
+    , markTimes
+    , markTicks
     ) where
 
 import Flight.Igc.Record
