@@ -26,8 +26,7 @@ module Flight.Igc.Record
 import Prelude hiding (readFile)
 import Text.Printf (printf)
 import Data.List (partition)
-import Test.Tasty.QuickCheck (Arbitrary(..))
-import Test.QuickCheck.Gen
+import Test.Tasty.QuickCheck (Arbitrary(..), frequency, oneof)
 
 -- | An altitude in metres
 newtype Altitude = Altitude String

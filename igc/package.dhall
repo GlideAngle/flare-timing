@@ -21,7 +21,6 @@ in    defs
           # [ "bytestring"
             , "flight-clip"
             , "megaparsec"
-            , "QuickCheck"
             , "tasty-quickcheck"
             , "time"
             , "utf8-string"

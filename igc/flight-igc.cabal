@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 5fde0ce3313c02c66ff055b05c1dcb592030d2e692e9b8e16e15720091e44058
+-- hash: 61bd2296a10503e8f890c4ccf5f4ba226d72574d21200423a1042798b86c514f
 
 name:           flight-igc
 version:        2.0.0
@@ -47,8 +47,7 @@ library
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
   ghc-options: -Wall -Werror
   build-depends:
-      QuickCheck
-    , base >=4.10.1.0 && <5
+      base >=4.10.1.0 && <5
     , bytestring
     , flight-clip
     , megaparsec
@@ -72,8 +71,7 @@ test-suite doctest
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
   ghc-options: -Wall -Werror -rtsopts -threaded -with-rtsopts=-N
   build-depends:
-      QuickCheck
-    , base >=4.10.1.0 && <5
+      base >=4.10.1.0 && <5
     , bytestring
     , doctest
     , flight-clip
