@@ -38,9 +38,9 @@ line = do
 -- 02:00:22
 timeHHMMSS :: ParsecT Void String Identity HMS
 timeHHMMSS = do
-    hh <- Hour <$> count 2 digitChar
+    hh <- Hour . read <$> count 2 digitChar
     mm <- Minute <$> count 2 digitChar
-    ss <- Second <$> count 2 digitChar
+    ss <- Second . read <$> count 2 digitChar
     return $ HMS hh mm ss
 
 -- |

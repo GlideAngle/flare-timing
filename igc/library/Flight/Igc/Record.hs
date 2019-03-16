@@ -31,7 +31,7 @@ newtype Altitude = Altitude String
     deriving (Eq, Ord)
 
 -- | An hour of time.
-newtype Hour = Hour String
+newtype Hour = Hour Int
     deriving (Eq, Ord)
 
 -- | A minute of time or a minute of a degree. If a minute of a degree, the
@@ -41,7 +41,7 @@ newtype Minute = Minute String
     deriving (Eq, Ord)
 
 -- | A second of time.
-newtype Second = Second String
+newtype Second = Second Int
     deriving (Eq, Ord)
 
 -- | A whole degree of angle. May have leading zeros. Has no decimal part.
@@ -147,9 +147,7 @@ instance Show IgcRecord where
     show Ignore = ""
 
 instance Arbitrary Hour where
-    arbitrary = do
-        h :: Int <- arbitrary
-        return . Hour $ show h
+    arbitrary = Hour <$> arbitrary
 
 instance Arbitrary Minute where
     arbitrary = do
@@ -157,9 +155,7 @@ instance Arbitrary Minute where
         return . Minute $ show h
 
 instance Arbitrary Second where
-    arbitrary = do
-        h :: Int <- arbitrary
-        return . Second $ show h
+    arbitrary = Second <$> arbitrary
 
 instance Arbitrary HMS where
     arbitrary = do
@@ -229,18 +225,16 @@ instance Arbitrary IgcRecord where
                      return $ HFDTE ymd
 
 -- |
--- >>> addHoursHms (Hour "0") (HMS (Hour "0") (Minute "0") (Second "0"))
+-- >>> addHoursHms (Hour 0) (HMS (Hour 0) (Minute "0") (Second 0))
 -- 00:00:00
--- >>> addHoursHms (Hour "00") (HMS (Hour "00") (Minute "00") (Second "00"))
--- 00:00:00
--- >>> addHoursHms (Hour "24") (HMS (Hour "12") (Minute "34") (Second "56"))
+--
+-- >>> addHoursHms (Hour 24) (HMS (Hour 12) (Minute "34") (Second 56))
 -- 36:34:56
 addHoursHms :: Hour -> HMS -> HMS
 addHoursHms
     (Hour h)
     (HMS (Hour hh) mm ss) =
-    let hh' = (read hh :: Integer) + (read h :: Integer) in
-    HMS (Hour $ show hh') mm ss
+    HMS (Hour $ hh + h) mm ss
 
 addHoursIgc :: Hour -> IgcRecord -> IgcRecord
 addHoursIgc h x@B{hms} = x{hms = addHoursHms h hms}
@@ -255,11 +249,7 @@ showMinute m = m
 
 showHMS :: HMS -> String
 showHMS (HMS (Hour hh) (Minute mm) (Second ss)) =
-    printf
-        "%.2d:%.2d:%.2d"
-        (read hh :: Integer)
-        (read mm :: Integer)
-        (read ss :: Integer)
+    printf "%02d:%02d:%02d" hh (read mm :: Int) ss
 
 showLat :: Lat -> String
 showLat (LatN (Degree d) (Minute m)) =

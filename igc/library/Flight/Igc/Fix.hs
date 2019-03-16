@@ -29,8 +29,8 @@ igcEqOrEqOnTime a b = a == b
 igcBumpOver :: [IgcRecord] -> [IgcRecord]
 igcBumpOver xs =
     bumpOver
-        (flip $ addHoursIgc . Hour . show)
-        [0 :: Integer, 24..]
+        (flip $ addHoursIgc . Hour)
+        [0 :: Int, 24..]
         xs
 
 -- | Apply a bump from a list every time there is a roll over.
@@ -77,10 +77,10 @@ extract HFDTE{} = Nothing
 extract B{hms, pos} = Just (hms, pos)
 
 -- | Combines date with time of day to get a @UTCTime@.
--- >>> stamp (Year 17, Month 7, Day 8) (HMS (Hour "02") (Minute "37") (Second "56"))
+-- >>> stamp (Year 17, Month 7, Day 8) (HMS (Hour 2) (Minute "37") (Second 56))
 -- 2017-07-08 02:37:56 UTC
--- 
--- >>> stamp (Year 17, Month 7, Day 8) (HMS (Hour "26") (Minute "37") (Second "56"))
+--
+-- >>> stamp (Year 17, Month 7, Day 8) (HMS (Hour 26) (Minute "37") (Second 56))
 -- 2017-07-09 02:37:56 UTC
 stamp :: (Year, Month, Day) -> HMS -> UTCTime
 stamp (Year yy, Month mm, Day dd) (HMS (Hour hr) (Minute minute) (Second sec)) =
@@ -88,9 +88,9 @@ stamp (Year yy, Month mm, Day dd) (HMS (Hour hr) (Minute minute) (Second sec)) =
     where
         -- TODO: Test with an IGC file from the 20th Century.
         y = 2000 + fromIntegral yy :: Integer
-        hr' = read hr :: Integer
+        hr' = fromIntegral hr
         minute' = read minute :: Integer
-        sec' = read sec :: Integer
+        sec' = fromIntegral sec
         utc =
             (fromInteger $ 60 * ((60 * hr') + minute') + sec')
             `addUTCTime`
