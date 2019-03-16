@@ -147,12 +147,16 @@ fix = do
 dateHFDTEDATE :: ParsecT Void String Identity IgcRecord
 dateHFDTEDATE = do
     _ <- string "HFDTEDATE:"
+
     dd <- Day <$> count 2 digitChar
     mm <- Month <$> count 2 digitChar
     yy <- Year <$> count 2 digitChar
+    let ymd = YMD {year = yy, month = mm, day = dd}
+
     _ <- string ","
     nn <- Nth <$> count 2 digitChar
-    return $ HFDTEDATE dd mm yy nn
+
+    return $ HFDTEDATE {ymd = ymd, nth = nn}
 
 -- |
 -- >>> parseTest dateHFDTE "HFDTE0301181"
@@ -160,10 +164,13 @@ dateHFDTEDATE = do
 dateHFDTE :: ParsecT Void String Identity IgcRecord
 dateHFDTE = do
     _ <- string "HFDTE"
+
     dd <- Day <$> count 2 digitChar
     mm <- Month <$> count 2 digitChar
     yy <- Year <$> count 2 digitChar
-    return $ HFDTE dd mm yy
+    let ymd = YMD {year = yy, month = mm, day = dd}
+
+    return $ HFDTE ymd
 
 ignore :: ParsecT Void String Identity IgcRecord
 ignore = do

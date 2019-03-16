@@ -16,6 +16,8 @@ type Fix t a = (t, a)
 type Pos = (Lat, Lng, AltBaro, Maybe AltGps)
 type IgcFix = Fix HMS Pos
 
+-- |
+-- prop> igcEqOrEqOnTime x x == True
 igcEqOrEqOnTime :: IgcRecord -> IgcRecord -> Bool
 igcEqOrEqOnTime (B t0 _ _ _ _) (B t1 _ _ _ _) = t0 == t1
 igcEqOrEqOnTime a b = a == b
@@ -54,12 +56,12 @@ mark
     -> b
 mark _ Ignore _ = mempty
 mark _ B{} _ = mempty
-mark f (HFDTEDATE (Day dd) (Month mm) (Year yy) _) xs =
+mark f HFDTEDATE{ymd = YMD{year = Year yy, month = Month mm, day = Day dd}} xs =
     f Nothing ts
     where
         ys = catMaybes $ extract <$> xs
         ts = [stamp (dd, mm, yy) `first` y | y <- ys]
-mark f (HFDTE (Day dd) (Month mm) (Year yy)) xs =
+mark f (HFDTE YMD{year = Year yy, month = Month mm, day = Day dd}) xs =
     f Nothing ts
     where
         ys = catMaybes $ extract <$> xs

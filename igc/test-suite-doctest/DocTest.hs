@@ -14,6 +14,7 @@ arguments =
     , "-XParallelListComp"
     , "-XScopedTypeVariables"
     , "-XDeriveGeneric"
+    , "-XNamedFieldPuns"
     ]
 
 main :: IO ()

@@ -2,6 +2,7 @@ module Flight.Igc.Record
     (
     -- * Data
       IgcRecord(..)
+    , YMD(..)
     , HMS(..)
     , Lat(..)
     , Lng(..)
@@ -90,6 +91,13 @@ newtype Day = Day String
 newtype Nth = Nth String
     deriving (Eq, Ord)
 
+data YMD = YMD {year :: Year, month :: Month, day :: Day}
+    deriving (Eq, Ord)
+
+instance Show YMD where
+    show YMD{year = Year y, month = Month m, day = Day d} =
+        concat ["20", y, "-", m, "-", d]
+
 -- |
 -- The record types are:
 --
@@ -111,9 +119,9 @@ data IgcRecord
     -- | A location fix
     = B HMS Lat Lng AltBaro (Maybe AltGps)
     -- | The newer date header record
-    | HFDTEDATE Day Month Year Nth
+    | HFDTEDATE {ymd :: YMD, nth :: Nth}
     -- | The older date header record
-    | HFDTE Day Month Year
+    | HFDTE YMD
     -- | Any other record type is ignored
     | Ignore
     deriving (Eq, Ord)
@@ -127,10 +135,9 @@ instance Show IgcRecord where
          , show altB
          , "(" ++ show altG ++ ")"
          ]
-    show (HFDTEDATE (Day d) (Month m) (Year y) (Nth n)) =
-        concat ["20", y, "-", m, "-", d, ", ", n]
-    show (HFDTE (Day d) (Month m) (Year y)) =
-        concat ["20", y, "-", m, "-", d]
+    show (HFDTEDATE {ymd, nth = Nth n}) =
+        concat [show ymd, ", ", n]
+    show (HFDTE ymd) = show ymd
     show Ignore = ""
 
 instance Arbitrary Hour where
@@ -204,14 +211,16 @@ instance Arbitrary IgcRecord where
                      d <- Day <$> arbitrary
                      m <- Month <$> arbitrary
                      y <- Year <$> arbitrary
+                     let ymd = YMD {year = y, month = m, day = d}
                      n <- Nth <$> arbitrary
-                     return $ HFDTEDATE d m y n
+                     return $ HFDTEDATE {ymd = ymd, nth = n}
 
             d2 = do
                      d <- Day <$> arbitrary
                      m <- Month <$> arbitrary
                      y <- Year <$> arbitrary
-                     return $ HFDTE d m y
+                     let ymd = YMD {year = y, month = m, day = d}
+                     return $ HFDTE ymd
 
 -- |
 -- >>> addHoursHms (Hour "0") (HMS (Hour "0") (Minute "0") (Second "0"))
