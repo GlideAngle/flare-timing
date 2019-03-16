@@ -45,7 +45,7 @@ newtype Second = Second Int
     deriving (Eq, Ord)
 
 -- | A whole degree of angle. May have leading zeros. Has no decimal part.
-newtype Degree = Degree String
+newtype Degree = Degree Int
     deriving (Eq, Ord)
 
 -- | A time with hours, minutes and seconds.
@@ -240,28 +240,31 @@ addHoursIgc :: Hour -> IgcRecord -> IgcRecord
 addHoursIgc h x@B{hms} = x{hms = addHoursHms h hms}
 addHoursIgc _ x = x
 
-showDegree :: String -> String
-showDegree d = d ++ "°"
+showDegreeOfLat :: Degree -> String
+showDegreeOfLat (Degree d) = printf "%02d°" d
+
+showDegreeOfLng :: Degree -> String
+showDegreeOfLng (Degree d) = printf "%03d°" d
 
 showMinute :: String -> String
 showMinute (m0 : m1 : m) = [m0, m1] ++ "." ++ m ++ "'"
-showMinute m = m 
+showMinute m = m
 
 showHMS :: HMS -> String
 showHMS (HMS (Hour hh) (Minute mm) (Second ss)) =
     printf "%02d:%02d:%02d" hh (read mm :: Int) ss
 
 showLat :: Lat -> String
-showLat (LatN (Degree d) (Minute m)) =
-    showDegree d ++ " " ++ showMinute m ++ " N"
-showLat (LatS (Degree d) (Minute  m)) =
-    showDegree d ++ " " ++ showMinute m ++ " S"
+showLat (LatN d (Minute m)) =
+    showDegreeOfLat d ++ " " ++ showMinute m ++ " N"
+showLat (LatS d (Minute  m)) =
+    showDegreeOfLat d ++ " " ++ showMinute m ++ " S"
 
 showLng :: Lng -> String
-showLng (LngW (Degree d) (Minute  m)) =
-    showDegree d ++ " " ++ showMinute m ++ " W"
-showLng (LngE (Degree d) (Minute  m)) =
-    showDegree d ++ " " ++ showMinute m ++ " E"
+showLng (LngW d (Minute  m)) =
+    showDegreeOfLng d ++ " " ++ showMinute m ++ " W"
+showLng (LngE d (Minute  m)) =
+    showDegreeOfLng d ++ " " ++ showMinute m ++ " E"
 
 ltrimZero :: String -> String
 ltrimZero ('-' : s) =

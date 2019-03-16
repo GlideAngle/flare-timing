@@ -48,7 +48,7 @@ timeHHMMSS = do
 -- 33° 21.354' S
 lat :: ParsecT Void String Identity Lat
 lat = do
-    degs <- Degree <$> count 2 digitChar
+    degs <- Degree . read <$> count 2 digitChar
     mins <- Minute <$> count 5 digitChar
     f <- const LatN <$> char 'N' <|> const LatS <$> char 'S'
     return $ f degs mins
@@ -58,7 +58,7 @@ lat = do
 -- 147° 56.057' E
 lng :: ParsecT Void String Identity Lng
 lng = do
-    degs <- Degree <$> count 3 digitChar
+    degs <- Degree . read <$> count 3 digitChar
     mins <- Minute <$> count 5 digitChar
     f <- const LngW <$> char 'W' <|> const LngE <$> char 'E'
     return $ f degs mins
