@@ -9,6 +9,7 @@ arguments =
     , "-XScopedTypeVariables"
     , "-XTupleSections"
     , "-XParallelListComp"
+    , "-XNamedFieldPuns"
     ]
 
 main :: IO ()

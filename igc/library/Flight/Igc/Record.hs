@@ -10,7 +10,8 @@ module Flight.Igc.Record
     , Altitude(..)
     , Degree(..)
     , Hour(..)
-    , Minute(..)
+    , MinuteOfTime(..)
+    , MinuteOfAngle(..)
     , Second(..)
     , Year(..)
     , Month(..)
@@ -34,10 +35,12 @@ newtype Altitude = Altitude String
 newtype Hour = Hour Int
     deriving (Eq, Ord)
 
--- | A minute of time or a minute of a degree. If a minute of a degree, the
--- first two chars are whole minutes and the following chars are the decimal
--- part. No decimal point character is included.
-newtype Minute = Minute String
+-- | A minute of time.
+newtype MinuteOfTime = MinuteOfTime Int
+    deriving (Eq, Ord)
+
+-- | Thousandths of a minute of angle.
+newtype MinuteOfAngle = MinuteOfAngle {unThousandths :: Int}
     deriving (Eq, Ord)
 
 -- | A second of time.
@@ -49,19 +52,19 @@ newtype Degree = Degree Int
     deriving (Eq, Ord)
 
 -- | A time with hours, minutes and seconds.
-data HMS = HMS Hour Minute Second
+data HMS = HMS Hour MinuteOfTime Second
     deriving (Eq, Ord)
 
 -- | A latitude with degrees and minutes.
 data Lat
-    = LatN Degree Minute -- ^ North
-    | LatS Degree Minute -- ^ South
+    = LatN Degree MinuteOfAngle -- ^ North
+    | LatS Degree MinuteOfAngle -- ^ South
     deriving (Eq, Ord)
 
 -- | A longitude with degrees and minutes.
 data Lng
-    = LngW Degree Minute -- ^ West
-    | LngE Degree Minute -- ^ East
+    = LngW Degree MinuteOfAngle -- ^ West
+    | LngE Degree MinuteOfAngle -- ^ East
     deriving (Eq, Ord)
 
 -- | Pressure altitude in metres
@@ -149,10 +152,14 @@ instance Show IgcRecord where
 instance Arbitrary Hour where
     arbitrary = Hour <$> arbitrary
 
-instance Arbitrary Minute where
-    arbitrary = do
-        h :: Int <- arbitrary
-        return . Minute $ show h
+instance Arbitrary Degree where
+    arbitrary = Degree <$> arbitrary
+
+instance Arbitrary MinuteOfTime where
+    arbitrary = MinuteOfTime <$> arbitrary
+
+instance Arbitrary MinuteOfAngle where
+    arbitrary = MinuteOfAngle <$> arbitrary
 
 instance Arbitrary Second where
     arbitrary = Second <$> arbitrary
@@ -168,13 +175,13 @@ instance Arbitrary Lat where
     arbitrary =
         oneof
              [ do
-                 d <- Degree <$> arbitrary
-                 m <- Minute <$> arbitrary
+                 d <- arbitrary
+                 m <- arbitrary
                  return $ LatN d m
 
              , do
-                 d <- Degree <$> arbitrary
-                 m <- Minute <$> arbitrary
+                 d <- arbitrary
+                 m <- arbitrary
                  return $ LatS d m
             ]
 
@@ -182,13 +189,13 @@ instance Arbitrary Lng where
     arbitrary =
         oneof
              [ do
-                 d <- Degree <$> arbitrary
-                 m <- Minute <$> arbitrary
+                 d <- arbitrary
+                 m <- arbitrary
                  return $ LngE d m
 
              , do
-                 d <- Degree <$> arbitrary
-                 m <- Minute <$> arbitrary
+                 d <- arbitrary
+                 m <- arbitrary
                  return $ LngW d m
             ]
 
@@ -225,10 +232,10 @@ instance Arbitrary IgcRecord where
                      return $ HFDTE ymd
 
 -- |
--- >>> addHoursHms (Hour 0) (HMS (Hour 0) (Minute "0") (Second 0))
+-- >>> addHoursHms (Hour 0) (HMS (Hour 0) (MinuteOfTime 0) (Second 0))
 -- 00:00:00
 --
--- >>> addHoursHms (Hour 24) (HMS (Hour 12) (Minute "34") (Second 56))
+-- >>> addHoursHms (Hour 24) (HMS (Hour 12) (MinuteOfTime 34) (Second 56))
 -- 36:34:56
 addHoursHms :: Hour -> HMS -> HMS
 addHoursHms
@@ -246,24 +253,24 @@ showDegreeOfLat (Degree d) = printf "%02d°" d
 showDegreeOfLng :: Degree -> String
 showDegreeOfLng (Degree d) = printf "%03d°" d
 
-showMinute :: String -> String
-showMinute (m0 : m1 : m) = [m0, m1] ++ "." ++ m ++ "'"
-showMinute m = m
+showMinute :: MinuteOfAngle -> String
+showMinute (MinuteOfAngle thousandths) =
+    printf "%06.3f'" $ (fromIntegral thousandths :: Double) / 1000
 
 showHMS :: HMS -> String
-showHMS (HMS (Hour hh) (Minute mm) (Second ss)) =
-    printf "%02d:%02d:%02d" hh (read mm :: Int) ss
+showHMS (HMS (Hour hh) (MinuteOfTime mm) (Second ss)) =
+    printf "%02d:%02d:%02d" hh mm ss
 
 showLat :: Lat -> String
-showLat (LatN d (Minute m)) =
+showLat (LatN d m) =
     showDegreeOfLat d ++ " " ++ showMinute m ++ " N"
-showLat (LatS d (Minute  m)) =
+showLat (LatS d m) =
     showDegreeOfLat d ++ " " ++ showMinute m ++ " S"
 
 showLng :: Lng -> String
-showLng (LngW d (Minute  m)) =
+showLng (LngW d m) =
     showDegreeOfLng d ++ " " ++ showMinute m ++ " W"
-showLng (LngE d (Minute  m)) =
+showLng (LngE d m) =
     showDegreeOfLng d ++ " " ++ showMinute m ++ " E"
 
 ltrimZero :: String -> String

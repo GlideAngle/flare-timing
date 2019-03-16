@@ -77,19 +77,19 @@ extract HFDTE{} = Nothing
 extract B{hms, pos} = Just (hms, pos)
 
 -- | Combines date with time of day to get a @UTCTime@.
--- >>> stamp (Year 17, Month 7, Day 8) (HMS (Hour 2) (Minute "37") (Second 56))
+-- >>> stamp (Year 17, Month 7, Day 8) (HMS (Hour 2) (MinuteOfTime 37) (Second 56))
 -- 2017-07-08 02:37:56 UTC
 --
--- >>> stamp (Year 17, Month 7, Day 8) (HMS (Hour 26) (Minute "37") (Second 56))
+-- >>> stamp (Year 17, Month 7, Day 8) (HMS (Hour 26) (MinuteOfTime 37) (Second 56))
 -- 2017-07-09 02:37:56 UTC
 stamp :: (Year, Month, Day) -> HMS -> UTCTime
-stamp (Year yy, Month mm, Day dd) (HMS (Hour hr) (Minute minute) (Second sec)) =
+stamp (Year yy, Month mm, Day dd) (HMS (Hour hr) (MinuteOfTime minute) (Second sec)) =
     utc
     where
         -- TODO: Test with an IGC file from the 20th Century.
         y = 2000 + fromIntegral yy :: Integer
         hr' = fromIntegral hr
-        minute' = read minute :: Integer
+        minute' = fromIntegral minute
         sec' = fromIntegral sec
         utc =
             (fromInteger $ 60 * ((60 * hr') + minute') + sec')

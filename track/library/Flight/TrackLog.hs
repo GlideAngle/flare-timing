@@ -39,7 +39,7 @@ import System.FilePath
 import qualified Flight.Kml as K
 import qualified Flight.Igc as I (parse)
 import Flight.Igc
-    ( Degree(..), Minute(..)
+    ( Degree(..), MinuteOfAngle(..)
     , Lat(..), Lng(..), Altitude(..), AltGps(..), AltBaro(..)
     , IgcRecord(..)
     , isMark, isFix
@@ -224,12 +224,12 @@ toFix mark0 (t, (lat, lng, altBaro, altGps)) =
         , K.fixAltBaro = readAltGps <$> altGps
         }
 
-readDegMin :: Degree -> Minute -> Rational
-readDegMin (Degree d) (Minute m) =
+readDegMin :: Degree -> MinuteOfAngle -> Rational
+readDegMin (Degree d) MinuteOfAngle{unThousandths} =
     d' % 1 + toRational m' / 60000
     where
         d' = fromIntegral d
-        m' = read m :: Double
+        m' = fromIntegral unThousandths :: Integer
 
 readLat :: Lat -> K.Latitude
 readLat (LatN d m) = K.Latitude $ readDegMin d m

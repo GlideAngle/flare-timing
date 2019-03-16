@@ -39,7 +39,7 @@ line = do
 timeHHMMSS :: ParsecT Void String Identity HMS
 timeHHMMSS = do
     hh <- Hour . read <$> count 2 digitChar
-    mm <- Minute <$> count 2 digitChar
+    mm <- MinuteOfTime . read <$> count 2 digitChar
     ss <- Second . read <$> count 2 digitChar
     return $ HMS hh mm ss
 
@@ -49,7 +49,7 @@ timeHHMMSS = do
 lat :: ParsecT Void String Identity Lat
 lat = do
     degs <- Degree . read <$> count 2 digitChar
-    mins <- Minute <$> count 5 digitChar
+    mins <- MinuteOfAngle . read <$> count 5 digitChar
     f <- const LatN <$> char 'N' <|> const LatS <$> char 'S'
     return $ f degs mins
 
@@ -59,7 +59,7 @@ lat = do
 lng :: ParsecT Void String Identity Lng
 lng = do
     degs <- Degree . read <$> count 3 digitChar
-    mins <- Minute <$> count 5 digitChar
+    mins <- MinuteOfAngle . read <$> count 5 digitChar
     f <- const LngW <$> char 'W' <|> const LngE <$> char 'E'
     return $ f degs mins
 
