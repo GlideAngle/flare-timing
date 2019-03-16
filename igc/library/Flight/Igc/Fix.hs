@@ -98,10 +98,15 @@ stamp (Year yy, Month mm, Day dd) (HMS (Hour hr) (MinuteOfTime minute) (Second s
             `addUTCTime`
             (UTCTime (fromGregorian y mm dd) 0)
 
-
+-- |
+-- >>> let xs = markTimes markGordon fixesGordon in xs == sort xs
+-- True
 markTimes :: IgcRecord -> [IgcRecord] -> [UTCTime]
 markTimes = mark unStampTime
 
+-- |
+-- >>> let xs = markTicks markGordon fixesGordon in xs == sort xs
+-- True
 markTicks :: IgcRecord -> [IgcRecord] -> [Second]
 markTicks = mark unStampTick
 
@@ -123,4 +128,25 @@ toFixTick :: UTCTime -> UTCTime -> Second
 toFixTick mark0 t = Second . round $ t `diffUTCTime` mark0
 
 -- $setup
+-- >>> :set -XTemplateHaskell
 -- >>> import Test.QuickCheck
+-- >>> import Data.List
+-- >>> import Language.Haskell.TH
+-- >>> import Language.Haskell.TH.Syntax (lift)
+-- >>> import Flight.Igc.Parse (parse)
+-- :{
+-- embedStr :: IO String -> ExpQ
+-- embedStr readStr = lift =<< runIO readStr
+-- :}
+--
+-- >>> line n = unlines . take 1 . drop n . lines
+--
+-- >>> fileSasha  = "./test-suite-doctest/Sasha-Serebrennikova.20180103-121306.30169.72.igc"
+-- >>> fileBrad  = "./test-suite-doctest/Brad-Porter.20180104-095852.36822.34.igc"
+-- >>> fileScott = "./test-suite-doctest/Scott-Barrett.20170409-071936.7601.19.igc"
+-- >>> fileGordon = "./test-suite-doctest/Gordon_Rigg.20180103-111847.6433.8.igc"
+--
+-- >>> (markSasha : _, (fixesSasha, _)) = let (Right xs) = parse $(embedStr (System.IO.readFile fileSasha)) in (partition isFix <$> partition isMark xs)
+-- >>> (markBrad : _, (fixesBrad, _)) = let (Right xs) = parse $(embedStr (System.IO.readFile fileBrad)) in (partition isFix <$> partition isMark xs)
+-- >>> (markScott : _, (fixesScott, _)) = let (Right xs) = parse $(embedStr (System.IO.readFile fileScott)) in (partition isFix <$> partition isMark xs)
+-- >>> (markGordon : _, (fixesGordon, _)) = let (Right xs) = parse $(embedStr (System.IO.readFile fileGordon)) in (partition isFix <$> partition isMark xs)
