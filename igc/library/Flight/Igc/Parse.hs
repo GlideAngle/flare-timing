@@ -77,7 +77,7 @@ lng = do
 -- -1m
 altBaro :: ParsecT Void String Identity AltBaro
 altBaro =
-    AltBaro . Altitude
+    AltBaro . Altitude . read
     <$>
         ( count 5 digitChar
         <|> (char '-' >> (("-" ++) <$> count 4 digitChar))
@@ -97,7 +97,7 @@ altBaro =
 -- -1m
 altGps :: ParsecT Void String Identity AltGps
 altGps =
-    AltGps . Altitude
+    AltGps . Altitude . read
     <$>
         ( count 5 digitChar
         <|> (char '-' >> (("-" ++) <$> count 4 digitChar))

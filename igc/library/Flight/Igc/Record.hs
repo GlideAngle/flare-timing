@@ -27,8 +27,8 @@ import Text.Printf (printf)
 import Data.List (partition)
 import Test.Tasty.QuickCheck (Arbitrary(..), frequency, oneof)
 
--- | An altitude in metres
-newtype Altitude = Altitude String
+-- | An altitude in metres.
+newtype Altitude = Altitude Int
     deriving (Eq, Ord)
 
 -- | An hour of time.
@@ -273,16 +273,6 @@ showLng (LngW d m) =
 showLng (LngE d m) =
     showDegreeOfLng d ++ " " ++ showMinute m ++ " E"
 
-ltrimZero :: String -> String
-ltrimZero ('-' : s) =
-    case '-' : ltrimZero s of
-        "-0" -> "0"
-        s' -> s'
-ltrimZero s =
-    case dropWhile ('0' ==) s of
-        "" -> "0"
-        s' -> s'
-
 instance Show HMS where
     show = showHMS
 
@@ -293,10 +283,10 @@ instance Show Lng where
     show = showLng
 
 instance Show AltBaro where
-    show (AltBaro (Altitude x)) = ltrimZero x ++ "m"
+    show (AltBaro (Altitude x)) = show x ++ "m"
 
 instance Show AltGps where
-    show (AltGps (Altitude x)) = ltrimZero x ++ "m"
+    show (AltGps (Altitude x)) = show x ++ "m"
 
 showIgc :: [ IgcRecord ] -> String
 showIgc xs =

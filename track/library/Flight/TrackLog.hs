@@ -240,7 +240,7 @@ readLng (LngE d m) = K.Longitude $ readDegMin d m
 readLng (LngW d m) = K.Longitude . negate $ readDegMin d m
 
 readAltBaro :: AltBaro -> K.Altitude
-readAltBaro (AltBaro (Altitude alt)) = K.Altitude (read alt :: Integer)
+readAltBaro (AltBaro (Altitude alt)) = K.Altitude $ fromIntegral alt
 
 readAltGps :: AltGps -> K.Altitude
-readAltGps (AltGps (Altitude alt)) = K.Altitude (read alt :: Integer)
+readAltGps (AltGps (Altitude alt)) = K.Altitude $ fromIntegral alt
