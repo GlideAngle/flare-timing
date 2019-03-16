@@ -40,6 +40,8 @@ module Flight.Igc
     -- * Fix Checking and Conversion
     , igcEqOrEqOnTime
     , igcBumpOver
+    , extract
+    , mark
     ) where
 
 import Flight.Igc.Record

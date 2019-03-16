@@ -14,8 +14,8 @@
     , fixToUtc
     ) where
 
-import Data.Time.Clock (UTCTime, addUTCTime, diffUTCTime)
-import Data.List (findIndex, findIndices)
+import Data.Time.Clock (UTCTime(..), addUTCTime, diffUTCTime)
+import Data.List (findIndex, findIndices, sort, nub)
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 
@@ -137,6 +137,23 @@ data MarkedFixes =
         , fixes :: [Fix] -- ^ The fixes of the track log.
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+
+instance Monoid MarkedFixes where
+    mempty = MarkedFixes (UTCTime (toEnum 0) 0) []
+    mappend
+        mfx@MarkedFixes{mark0 = mx, fixes = xs}
+        mfy@MarkedFixes{mark0 = my, fixes = ys}
+          | mx == my = mfx{fixes = sort . nub $ xs ++ ys}
+          | xs == [] = mfy
+          | ys == [] = mfx
+          | otherwise =
+              let diff = my `diffUTCTime` mx
+                  xs' =
+                      (\x@Fix{fixMark = Seconds secs} ->
+                          x{fixMark = Seconds $ secs + round diff})
+                      <$> xs
+
+              in mfy{fixes = sort . nub $ xs' ++ ys}
 
 betweenFixMark :: FixMark a => Seconds -> Seconds -> a -> Bool
 betweenFixMark s0 s1 x =

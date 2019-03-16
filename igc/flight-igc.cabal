@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1666739a67ca5c70d5828e33f6acef6445288227159b70fc3229cb2401e986f1
+-- hash: e9f03f53ff1d9c866df1effbc10c47999f2574758e98d64bd437dd7cbe5959ba
 
 name:           flight-igc
 version:        2.0.0
@@ -51,6 +51,7 @@ library
     , bytestring
     , flight-clip
     , megaparsec
+    , time
     , utf8-string
   default-language: Haskell2010
 
@@ -74,5 +75,6 @@ test-suite doctest
     , doctest
     , flight-clip
     , megaparsec
+    , time
     , utf8-string
   default-language: Haskell2010

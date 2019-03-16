@@ -18,7 +18,7 @@ import Prelude hiding (readFile)
 import Data.ByteString.UTF8 (toString)
 import Data.ByteString (readFile)
 import Data.Ratio ((%))
-import Data.Time.Clock (UTCTime(..), diffUTCTime, addUTCTime)
+import Data.Time.Clock (UTCTime(..), diffUTCTime)
 import Data.Time.Calendar
 import Data.Bifunctor (bimap)
 import Data.Maybe (catMaybes, listToMaybe)
@@ -39,8 +39,7 @@ import System.FilePath
 import qualified Flight.Kml as K
 import qualified Flight.Igc as I (parse)
 import Flight.Igc
-    ( Degree(..), Minute(..), Second(..)
-    , Year(..), Month(..), Day(..), Hour(..), HMS(..)
+    ( Degree(..), Minute(..)
     , Lat(..), Lng(..), Altitude(..), AltGps(..), AltBaro(..)
     , IgcRecord(..)
     , isMark, isFix
@@ -54,6 +53,7 @@ import Flight.Comp
     , IxTask(..)
     )
 import Flight.Igc (igcEqOrEqOnTime, igcBumpOver)
+import qualified Flight.Igc as Igc (mark)
 
 ixTasks :: [IxTask]
 ixTasks = IxTask <$> [ 1 .. ]
@@ -196,45 +196,7 @@ igcMarkedFixes xs =
         zs = nubBy igcEqOrEqOnTime ys
 
 mark :: IgcRecord -> [IgcRecord] -> K.MarkedFixes
-mark Ignore _ = nullMarkedFixes
-mark B{} _ = nullMarkedFixes
-mark (HFDTEDATE (Day dd) (Month mm) (Year yy) _) xs =
-    unStamp Nothing ts
-    where
-        ys = catMaybes $ extract <$> xs
-        ts = stamp (dd, mm, yy) <$> ys
-mark (HFDTE (Day dd) (Month mm) (Year yy)) xs =
-    unStamp Nothing ts
-    where
-        ys = catMaybes $ extract <$> xs
-        ts = stamp (dd, mm, yy) <$> ys
-
-extract :: IgcRecord -> Maybe (HMS, (Lat, Lng, AltBaro, Maybe AltGps))
-extract Ignore = Nothing
-extract HFDTEDATE{} = Nothing
-extract HFDTE{} = Nothing
-extract (B hms lat lng alt altGps) = Just (hms, (lat, lng, alt, altGps))
-
--- | Combines date with time of day to get a @UTCTime@.
--- >>> stamp ("08", "07", "17") ((HMS (Hour "02") (Minute "37") (Second "56")), "")
--- (2017-07-08 02:37:56 UTC,"")
--- >>> stamp ("08", "07", "17") ((HMS (Hour "26") (Minute "37") (Second "56")), "")
--- (2017-07-09 02:37:56 UTC,"")
-stamp :: (String, String, String) -> (HMS, a) -> (UTCTime, a)
-stamp (dd, mm, yy) (HMS (Hour hr) (Minute minute) (Second sec), a) =
-    (utc, a)
-    where
-        -- TODO: Test with an IGC file from the 20th Century.
-        y = read ("20" ++ yy) :: Integer
-        m = read mm :: Int
-        d = read dd :: Int
-        hr' = read hr :: Integer
-        minute' = read minute :: Integer
-        sec' = read sec :: Integer
-        utc =
-            (fromInteger $ 60 * ((60 * hr') + minute') + sec')
-            `addUTCTime`
-            (UTCTime (fromGregorian y m d) 0)
+mark = Igc.mark unStamp
 
 unStamp
     :: Maybe UTCTime
