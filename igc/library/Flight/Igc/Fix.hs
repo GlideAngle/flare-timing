@@ -7,6 +7,7 @@ module Flight.Igc.Fix
 
 import Data.Time.Clock (UTCTime(..), addUTCTime)
 import Data.Time.Calendar (fromGregorian)
+import Data.Bifunctor (first)
 import Data.Maybe (catMaybes)
 import Flight.Igc.Record
 import Flight.Track.Range (asRollovers)
@@ -43,6 +44,8 @@ bumpOver add ns xs =
     | n <- ns
     ]
 
+-- | The B records have time of day in seconds. This function combines date
+-- with time of day, marking each fix with a date and time.
 mark
     :: Monoid b
     => (Maybe a -> [(UTCTime, Pos)] -> b)
@@ -55,14 +58,15 @@ mark f (HFDTEDATE (Day dd) (Month mm) (Year yy) _) xs =
     f Nothing ts
     where
         ys = catMaybes $ extract <$> xs
-        ts = [stamp (dd, mm, yy) y | y <- ys]
+        ts = [stamp (dd, mm, yy) `first` y | y <- ys]
 mark f (HFDTE (Day dd) (Month mm) (Year yy)) xs =
     f Nothing ts
     where
         ys = catMaybes $ extract <$> xs
-        ts = [stamp (dd, mm, yy) y | y <- ys]
+        ts = [stamp (dd, mm, yy) `first` y | y <- ys]
 
--- |
+-- | Extracts B record data as type @IgcFix@.
+--
 -- prop> not (isFix x) == (extract x == Nothing)
 -- prop> isFix x == (extract x /= Nothing)
 extract :: IgcRecord -> Maybe IgcFix
@@ -72,13 +76,14 @@ extract HFDTE{} = Nothing
 extract (B hms lat lng alt altGps) = Just (hms, (lat, lng, alt, altGps))
 
 -- | Combines date with time of day to get a @UTCTime@.
--- >>> stamp ("08", "07", "17") ((HMS (Hour "02") (Minute "37") (Second "56")), "")
--- (2017-07-08 02:37:56 UTC,"")
--- >>> stamp ("08", "07", "17") ((HMS (Hour "26") (Minute "37") (Second "56")), "")
--- (2017-07-09 02:37:56 UTC,"")
-stamp :: (String, String, String) -> (HMS, a) -> (UTCTime, a)
-stamp (dd, mm, yy) (HMS (Hour hr) (Minute minute) (Second sec), a) =
-    (utc, a)
+-- >>> stamp ("08", "07", "17") (HMS (Hour "02") (Minute "37") (Second "56"))
+-- 2017-07-08 02:37:56 UTC
+-- 
+-- >>> stamp ("08", "07", "17") (HMS (Hour "26") (Minute "37") (Second "56"))
+-- 2017-07-09 02:37:56 UTC
+stamp :: (String, String, String) -> HMS -> UTCTime
+stamp (dd, mm, yy) (HMS (Hour hr) (Minute minute) (Second sec)) =
+    utc
     where
         -- TODO: Test with an IGC file from the 20th Century.
         y = read ("20" ++ yy) :: Integer
