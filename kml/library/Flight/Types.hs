@@ -14,6 +14,8 @@
     , fixToUtc
     ) where
 
+import Prelude hiding (min)
+import Text.Printf (printf)
 import Data.Time.Clock (UTCTime(..), addUTCTime, diffUTCTime)
 import Data.List (findIndex, findIndices, sort, nub)
 import GHC.Generics (Generic)
@@ -136,7 +138,30 @@ data MarkedFixes =
         { mark0 :: UTCTime -- ^ The UTC time of the first fix.
         , fixes :: [Fix] -- ^ The fixes of the track log.
         }
-    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Generic, ToJSON, FromJSON)
+
+instance Show MarkedFixes where
+    show MarkedFixes{fixes = []} =
+        let s = showHmsForSecs 0 in "(" ++ s ++ "," ++ s ++ ")"
+
+    show MarkedFixes{fixes = Fix{fixMark} : []} =
+        let s = showHmsForSecs fixMark in "(" ++ s ++ "," ++ s ++ ")"
+
+    show MarkedFixes{fixes = Fix{fixMark = x0} : xs} =
+        let start = showHmsForSecs x0 in
+        case reverse xs of
+            Fix{fixMark = xN} : _ ->
+                "(" ++ start ++ "," ++ showHmsForSecs xN ++ ")"
+            _ ->
+                "(" ++ start ++ ",???)"
+
+showHmsForSecs :: Seconds -> String
+showHmsForSecs (Seconds sec) =
+    show2i hr' ++ ":" ++ show2i min' ++ ":" ++ show2i sec'
+    where
+        show2i = printf "%02d"
+        (hr', min) = sec `divMod` 3600
+        (min', sec') = min `divMod` 60
 
 instance Monoid MarkedFixes where
     mempty = MarkedFixes (UTCTime (toEnum 0) 0) []

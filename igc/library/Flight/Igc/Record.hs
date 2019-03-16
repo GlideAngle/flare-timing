@@ -58,7 +58,6 @@ showHmsForSecs sec =
         (hr', min) = sec `divMod` 3600
         (min', sec') = min `divMod` 60
 
-
 -- | A whole degree of angle. May have leading zeros. Has no decimal part.
 newtype Degree = Degree Int
     deriving (Eq, Ord)

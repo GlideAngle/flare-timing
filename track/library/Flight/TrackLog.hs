@@ -207,6 +207,9 @@ igcMarkedFixes xs =
 --
 -- >>> let xs = markTicks markGordon fixesGordon in (head xs, head $ reverse xs)
 -- (00:00:00,08:23:14)
+--
+-- >>> mark markGordon fixesGordon
+-- (00:00:00,08:23:14)
 mark :: IgcRecord -> [IgcRecord] -> K.MarkedFixes
 mark = Igc.mark unStamp
 
