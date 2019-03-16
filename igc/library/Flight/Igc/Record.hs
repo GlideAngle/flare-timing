@@ -174,30 +174,16 @@ instance Arbitrary HMS where
 instance Arbitrary Lat where
     arbitrary =
         oneof
-             [ do
-                 d <- arbitrary
-                 m <- arbitrary
-                 return $ LatN d m
-
-             , do
-                 d <- arbitrary
-                 m <- arbitrary
-                 return $ LatS d m
-            ]
+             [ LatN <$> arbitrary <*> arbitrary
+             , LatS <$> arbitrary <*> arbitrary
+             ]
 
 instance Arbitrary Lng where
     arbitrary =
         oneof
-             [ do
-                 d <- arbitrary
-                 m <- arbitrary
-                 return $ LngE d m
-
-             , do
-                 d <- arbitrary
-                 m <- arbitrary
-                 return $ LngW d m
-            ]
+             [ LngE <$> arbitrary <*> arbitrary
+             , LngW <$> arbitrary <*> arbitrary
+             ]
 
 instance Arbitrary IgcRecord where
     arbitrary =
