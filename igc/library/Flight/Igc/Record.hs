@@ -186,30 +186,33 @@ instance Arbitrary Lng where
 
 instance Arbitrary IgcRecord where
     arbitrary =
-        oneof
-             [ do
-                 hms <- arbitrary
-                 lat <- arbitrary
-                 lng <- arbitrary
-                 altBaro <- AltBaro . Altitude <$> arbitrary
-                 altGps <- (fmap $ AltGps . Altitude) <$> arbitrary
-                 return $ B hms lat lng altBaro altGps
+        frequency
+            [ (9997, b)
+            , (1, d1)
+            , (1, d2)
+            , (1, return Ignore)
+            ]
+        where
+            b = do
+                     hms <- arbitrary
+                     lat <- arbitrary
+                     lng <- arbitrary
+                     altBaro <- AltBaro . Altitude <$> arbitrary
+                     altGps <- (fmap $ AltGps . Altitude) <$> arbitrary
+                     return $ B hms lat lng altBaro altGps
 
-             , do
-                 d <- Day <$> arbitrary
-                 m <- Month <$> arbitrary
-                 y <- Year <$> arbitrary
-                 n <- Nth <$> arbitrary
-                 return $ HFDTEDATE d m y n
+            d1 = do
+                     d <- Day <$> arbitrary
+                     m <- Month <$> arbitrary
+                     y <- Year <$> arbitrary
+                     n <- Nth <$> arbitrary
+                     return $ HFDTEDATE d m y n
 
-             , do
-                 d <- Day <$> arbitrary
-                 m <- Month <$> arbitrary
-                 y <- Year <$> arbitrary
-                 return $ HFDTE d m y
-
-             , return Ignore
-             ]
+            d2 = do
+                     d <- Day <$> arbitrary
+                     m <- Month <$> arbitrary
+                     y <- Year <$> arbitrary
+                     return $ HFDTE d m y
 
 -- |
 -- >>> addHoursHms (Hour "0") (HMS (Hour "0") (Minute "0") (Second "0"))
