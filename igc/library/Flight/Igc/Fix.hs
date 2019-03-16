@@ -101,12 +101,36 @@ stamp (Year yy, Month mm, Day dd) (HMS (Hour hr) (MinuteOfTime minute) (Second s
 -- |
 -- >>> let xs = markTimes markGordon fixesGordon in xs == sort xs
 -- True
+--
+-- >>> let xs = markTimes markSasha fixesSasha in (head xs, head $ reverse xs)
+-- (2018-01-03 03:13:00 UTC,2018-01-03 06:57:50 UTC)
+--
+-- >>> let xs = markTimes markBrad fixesBrad in (head xs, head $ reverse xs)
+-- (2018-01-03 04:05:47 UTC,2018-01-03 06:13:55 UTC)
+--
+-- >>> let xs = markTimes markScott fixesScott in (head xs, head $ reverse xs)
+-- (2017-04-08 02:37:56 UTC,2017-04-08 06:49:57 UTC)
+--
+-- >>> let xs = markTimes markGordon fixesGordon in (head xs, head $ reverse xs)
+-- (2018-01-02 00:44:29 UTC,2018-01-02 09:07:43 UTC)
 markTimes :: IgcRecord -> [IgcRecord] -> [UTCTime]
 markTimes = mark unStampTime
 
 -- |
 -- >>> let xs = markTicks markGordon fixesGordon in xs == sort xs
 -- True
+--
+-- >>> let xs = markTicks markSasha fixesSasha in (head xs, head $ reverse xs)
+-- (00:00:00,03:44:50)
+--
+-- >>> let xs = markTicks markBrad fixesBrad in (head xs, head $ reverse xs)
+-- (00:00:00,02:08:08)
+--
+-- >>> let xs = markTicks markScott fixesScott in (head xs, head $ reverse xs)
+-- (00:00:00,04:12:01)
+--
+-- >>> let xs = markTicks markGordon fixesGordon in (head xs, head $ reverse xs)
+-- (00:00:00,08:23:14)
 markTicks :: IgcRecord -> [IgcRecord] -> [Second]
 markTicks = mark unStampTick
 

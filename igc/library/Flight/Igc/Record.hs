@@ -22,7 +22,7 @@ module Flight.Igc.Record
     , isFix
     ) where
 
-import Prelude hiding (readFile)
+import Prelude hiding (readFile, min)
 import Text.Printf (printf)
 import Data.List (partition)
 import Test.Tasty.QuickCheck (Arbitrary(..), frequency, oneof)
@@ -46,6 +46,18 @@ newtype MinuteOfAngle = MinuteOfAngle {unThousandths :: Int}
 -- | A second of time.
 newtype Second = Second Int
     deriving (Eq, Ord)
+
+instance Show Second where
+    show (Second s) = showHmsForSecs s
+
+showHmsForSecs :: Int -> String
+showHmsForSecs sec =
+    show2i hr' ++ ":" ++ show2i min' ++ ":" ++ show2i sec'
+    where
+        show2i = printf "%02d"
+        (hr', min) = sec `divMod` 3600
+        (min', sec') = min `divMod` 60
+
 
 -- | A whole degree of angle. May have leading zeros. Has no decimal part.
 newtype Degree = Degree Int
