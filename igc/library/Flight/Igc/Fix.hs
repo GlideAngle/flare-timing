@@ -55,16 +55,16 @@ mark
     -> b
 mark _ Ignore _ = mempty
 mark _ B{} _ = mempty
-mark f HFDTEDATE{ymd = YMD{year = Year yy, month = Month mm, day = Day dd}} xs =
+mark f HFDTEDATE{ymd = YMD{year = yy, month = mm, day = dd}} xs =
     f Nothing ts
     where
         ys = catMaybes $ extract <$> xs
-        ts = [stamp (dd, mm, yy) `first` y | y <- ys]
-mark f (HFDTE YMD{year = Year yy, month = Month mm, day = Day dd}) xs =
+        ts = [stamp (yy, mm, dd) `first` y | y <- ys]
+mark f (HFDTE YMD{year = yy, month = mm, day = dd}) xs =
     f Nothing ts
     where
         ys = catMaybes $ extract <$> xs
-        ts = [stamp (dd, mm, yy) `first` y | y <- ys]
+        ts = [stamp (yy, mm, dd) `first` y | y <- ys]
 
 -- | Extracts B record data as type @IgcFix@.
 --
@@ -77,26 +77,24 @@ extract HFDTE{} = Nothing
 extract B{hms, pos} = Just (hms, pos)
 
 -- | Combines date with time of day to get a @UTCTime@.
--- >>> stamp ("08", "07", "17") (HMS (Hour "02") (Minute "37") (Second "56"))
+-- >>> stamp (Year 17, Month 7, Day 8) (HMS (Hour "02") (Minute "37") (Second "56"))
 -- 2017-07-08 02:37:56 UTC
 -- 
--- >>> stamp ("08", "07", "17") (HMS (Hour "26") (Minute "37") (Second "56"))
+-- >>> stamp (Year 17, Month 7, Day 8) (HMS (Hour "26") (Minute "37") (Second "56"))
 -- 2017-07-09 02:37:56 UTC
-stamp :: (String, String, String) -> HMS -> UTCTime
-stamp (dd, mm, yy) (HMS (Hour hr) (Minute minute) (Second sec)) =
+stamp :: (Year, Month, Day) -> HMS -> UTCTime
+stamp (Year yy, Month mm, Day dd) (HMS (Hour hr) (Minute minute) (Second sec)) =
     utc
     where
         -- TODO: Test with an IGC file from the 20th Century.
-        y = read ("20" ++ yy) :: Integer
-        m = read mm :: Int
-        d = read dd :: Int
+        y = 2000 + fromIntegral yy :: Integer
         hr' = read hr :: Integer
         minute' = read minute :: Integer
         sec' = read sec :: Integer
         utc =
             (fromInteger $ 60 * ((60 * hr') + minute') + sec')
             `addUTCTime`
-            (UTCTime (fromGregorian y m d) 0)
+            (UTCTime (fromGregorian y mm dd) 0)
 
 -- $setup
 -- >>> import Test.QuickCheck

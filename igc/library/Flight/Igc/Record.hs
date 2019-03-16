@@ -73,15 +73,15 @@ newtype AltGps = AltGps Altitude
     deriving (Eq, Ord)
 
 -- | A two digit character year
-newtype Year = Year String
+newtype Year = Year Int
     deriving (Eq, Ord)
 
 -- | A two digit character month
-newtype Month = Month String
+newtype Month = Month Int
     deriving (Eq, Ord)
 
 -- | A two digit character year
-newtype Day = Day String
+newtype Day = Day Int
     deriving (Eq, Ord)
 
 -- | A two digit character item index
@@ -93,7 +93,14 @@ data YMD = YMD {year :: Year, month :: Month, day :: Day}
 
 instance Show YMD where
     show YMD{year = Year y, month = Month m, day = Day d} =
-        concat ["20", y, "-", m, "-", d]
+        concat
+            [ "20"
+            , printf "%02d" y
+            , "-"
+            , printf "%02d" m
+            , "-"
+            , printf "%02d" d
+            ]
 
 type Pos = (Lat, Lng, AltBaro, Maybe AltGps)
 

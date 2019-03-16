@@ -148,9 +148,9 @@ dateHFDTEDATE :: ParsecT Void String Identity IgcRecord
 dateHFDTEDATE = do
     _ <- string "HFDTEDATE:"
 
-    dd <- Day <$> count 2 digitChar
-    mm <- Month <$> count 2 digitChar
-    yy <- Year <$> count 2 digitChar
+    dd <- Day . read <$> count 2 digitChar
+    mm <- Month . read <$> count 2 digitChar
+    yy <- Year . read <$> count 2 digitChar
     let ymd = YMD {year = yy, month = mm, day = dd}
 
     _ <- string ","
@@ -165,9 +165,9 @@ dateHFDTE :: ParsecT Void String Identity IgcRecord
 dateHFDTE = do
     _ <- string "HFDTE"
 
-    dd <- Day <$> count 2 digitChar
-    mm <- Month <$> count 2 digitChar
-    yy <- Year <$> count 2 digitChar
+    dd <- Day . read <$> count 2 digitChar
+    mm <- Month . read <$> count 2 digitChar
+    yy <- Year . read <$> count 2 digitChar
     let ymd = YMD {year = yy, month = mm, day = dd}
 
     return $ HFDTE ymd
