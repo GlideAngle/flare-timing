@@ -228,7 +228,7 @@ readDegMin :: Degree -> Minute -> Rational
 readDegMin (Degree d) (Minute m) =
     d' % 1 + toRational m' / 60000
     where
-        d' = read d :: Integer
+        d' = fromIntegral d
         m' = read m :: Double
 
 readLat :: Lat -> K.Latitude
