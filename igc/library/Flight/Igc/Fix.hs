@@ -13,13 +13,12 @@ import Flight.Igc.Record
 import Flight.Track.Range (asRollovers)
 
 type Fix t a = (t, a)
-type Pos = (Lat, Lng, AltBaro, Maybe AltGps)
 type IgcFix = Fix HMS Pos
 
 -- |
 -- prop> igcEqOrEqOnTime x x == True
 igcEqOrEqOnTime :: IgcRecord -> IgcRecord -> Bool
-igcEqOrEqOnTime (B t0 _ _ _ _) (B t1 _ _ _ _) = t0 == t1
+igcEqOrEqOnTime B{hms = t0} B{hms = t1} = t0 == t1
 igcEqOrEqOnTime a b = a == b
 
 -- | The B record only records time of day. If the sequence is not increasing
@@ -75,7 +74,7 @@ extract :: IgcRecord -> Maybe IgcFix
 extract Ignore = Nothing
 extract HFDTEDATE{} = Nothing
 extract HFDTE{} = Nothing
-extract (B hms lat lng alt altGps) = Just (hms, (lat, lng, alt, altGps))
+extract B{hms, pos} = Just (hms, pos)
 
 -- | Combines date with time of day to get a @UTCTime@.
 -- >>> stamp ("08", "07", "17") (HMS (Hour "02") (Minute "37") (Second "56"))

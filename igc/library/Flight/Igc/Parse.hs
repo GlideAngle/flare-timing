@@ -34,10 +34,10 @@ line = do
     return line'
 
 -- |
--- >>> parseTest hms "0200223"
+-- >>> parseTest timeHHMMSS "0200223"
 -- 02:00:22
-hms :: ParsecT Void String Identity HMS
-hms = do
+timeHHMMSS :: ParsecT Void String Identity HMS
+timeHHMMSS = do
     hh <- Hour <$> count 2 digitChar
     mm <- Minute <$> count 2 digitChar
     ss <- Second <$> count 2 digitChar
@@ -134,12 +134,12 @@ alt = do
 fix :: ParsecT Void String Identity IgcRecord
 fix = do
     _ <- char 'B'
-    hms' <- hms
+    hms' <- timeHHMMSS
     lat' <- lat
     lng' <- lng
     (altBaro', altGps') <- alt
     _ <- many (noneOf ("\n" :: String))
-    return $ B hms' lat' lng' altBaro' altGps'
+    return $ B hms' (lat', lng',  altBaro',  altGps')
 
 -- |
 -- >>> parseTest dateHFDTEDATE "HFDTEDATE:030118,01"

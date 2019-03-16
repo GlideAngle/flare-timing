@@ -1,14 +1,12 @@
 module Flight.Igc.Record
-    (
-    -- * Data
-      IgcRecord(..)
+    ( IgcRecord(..)
     , YMD(..)
     , HMS(..)
+    , Pos
     , Lat(..)
     , Lng(..)
     , AltBaro(..)
     , AltGps(..)
-    -- * Types
     , Altitude(..)
     , Degree(..)
     , Hour(..)
@@ -19,7 +17,6 @@ module Flight.Igc.Record
     , Day(..)
     , Nth(..)
     , addHoursIgc
-    -- * Record classification
     , isMark
     , isFix
     ) where
@@ -98,6 +95,8 @@ instance Show YMD where
     show YMD{year = Year y, month = Month m, day = Day d} =
         concat ["20", y, "-", m, "-", d]
 
+type Pos = (Lat, Lng, AltBaro, Maybe AltGps)
+
 -- |
 -- The record types are:
 --
@@ -117,7 +116,7 @@ instance Show YMD where
 -- Other letters are spare for future record types.
 data IgcRecord
     -- | A location fix
-    = B HMS Lat Lng AltBaro (Maybe AltGps)
+    = B {hms :: HMS, pos :: Pos}
     -- | The newer date header record
     | HFDTEDATE {ymd :: YMD, nth :: Nth}
     -- | The older date header record
@@ -127,9 +126,9 @@ data IgcRecord
     deriving (Eq, Ord)
 
 instance Show IgcRecord where
-    show (B t lat' lng' altB altG) =
+    show B{hms, pos = (lat', lng', altB, altG)} =
          unwords
-         [ show t
+         [ show hms
          , show lat'
          , show lng'
          , show altB
@@ -205,7 +204,7 @@ instance Arbitrary IgcRecord where
                      lng <- arbitrary
                      altBaro <- AltBaro . Altitude <$> arbitrary
                      altGps <- (fmap $ AltGps . Altitude) <$> arbitrary
-                     return $ B hms lat lng altBaro altGps
+                     return $ B hms (lat, lng, altBaro, altGps)
 
             d1 = do
                      d <- Day <$> arbitrary
@@ -237,7 +236,7 @@ addHoursHms
     HMS (Hour $ show hh') mm ss
 
 addHoursIgc :: Hour -> IgcRecord -> IgcRecord
-addHoursIgc h (B hms' lat' lng' ab ag) = B (addHoursHms h hms') lat' lng' ab ag
+addHoursIgc h x@B{hms} = x{hms = addHoursHms h hms}
 addHoursIgc _ x = x
 
 showDegree :: String -> String
