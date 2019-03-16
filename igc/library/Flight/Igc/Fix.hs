@@ -3,9 +3,11 @@ module Flight.Igc.Fix
     , igcBumpOver
     , extract
     , mark
+    , markTimes
+    , markTicks
     ) where
 
-import Data.Time.Clock (UTCTime(..), addUTCTime)
+import Data.Time.Clock (UTCTime(..), addUTCTime, diffUTCTime)
 import Data.Time.Calendar (fromGregorian)
 import Data.Bifunctor (first)
 import Data.Maybe (catMaybes)
@@ -95,6 +97,36 @@ stamp (Year yy, Month mm, Day dd) (HMS (Hour hr) (MinuteOfTime minute) (Second s
             (fromInteger $ 60 * ((60 * hr') + minute') + sec')
             `addUTCTime`
             (UTCTime (fromGregorian y mm dd) 0)
+
+
+markTimes :: IgcRecord -> [IgcRecord] -> [UTCTime]
+markTimes = mark unStampTime
+
+markTicks :: IgcRecord -> [IgcRecord] -> [Second]
+markTicks = mark unStampTick
+
+unStampTime
+    :: Maybe UTCTime
+    -> [(UTCTime, (Lat, Lng, AltBaro, Maybe AltGps))]
+    -> [UTCTime]
+unStampTime _ [] = []
+unStampTime Nothing xs@((t, _) : _) = unStampTime (Just t) xs
+unStampTime (Just mark0) xs = toFixTime mark0 <$> xs
+
+unStampTick
+    :: Maybe UTCTime
+    -> [(UTCTime, (Lat, Lng, AltBaro, Maybe AltGps))]
+    -> [Second]
+unStampTick _ [] = []
+unStampTick Nothing xs@((t, _) : _) = unStampTick (Just t) xs
+unStampTick (Just mark0) xs = toFixTick mark0 <$> xs
+
+toFixTime :: UTCTime -> (UTCTime, a) -> UTCTime
+toFixTime _ (t, _) = t
+
+toFixTick :: UTCTime -> (UTCTime, a) -> Second
+toFixTick mark0 (t, _) =
+    Second . round $ t `diffUTCTime` mark0
 
 -- $setup
 -- >>> import Test.QuickCheck
