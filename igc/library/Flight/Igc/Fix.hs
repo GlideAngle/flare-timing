@@ -57,7 +57,9 @@ slipFwdOnTime _ a b = a `compare` b
 -- [[7,9],[2,3]]
 bumpOver :: [IgcRecord] -> [IgcRecord]
 bumpOver xs =
-    _bumpOverBy (slipFwdOnTime $ Second 3600)
+    -- TODO: Investigate using slippage. This is switched off for now by
+    -- setting it to zero.
+    _bumpOverBy (slipFwdOnTime $ Second 0)
         (flip $ addHoursIgc . Hour)
         [0 :: Int, 24..]
         xs

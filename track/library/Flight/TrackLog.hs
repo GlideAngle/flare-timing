@@ -52,7 +52,7 @@ import Flight.Comp
     , TaskFolder(..)
     , IxTask(..)
     )
-import Flight.Igc (eqOnTime, bumpOver)
+import Flight.Igc (eqOnTime)
 import qualified Flight.Igc as Igc (mark)
 
 ixTasks :: [IxTask]
@@ -186,7 +186,10 @@ igcMarkedFixes xs =
             . filter isMark
             $ xs
 
-        ys = bumpOver $ filter isFix xs
+        -- TODO: Further investigate bumping over the day but for now it seems
+        -- to have more negative consequences than positive ones.
+        -- ys = bumpOver $ filter isFix xs
+        ys = filter isFix xs
 
         -- NOTE: Some loggers will be using sub-second logging. The columns in
         -- the B record holding the s or ss, tenths or hundredths of a second,
