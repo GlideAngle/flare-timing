@@ -33,8 +33,9 @@ import Flight.Score
     , TaskPoints, Points
     , DistancePoints, LeadingPoints, ArrivalPoints, TimePoints
     , Validity, ValidityWorking, Weights
-    , Pilot, PilotTime, PilotDistance, PilotVelocity
+    , Pilot, BestTime, PilotTime, PilotDistance, PilotVelocity
     , PointPenalty
+    , SpeedFraction
     )
 import Flight.Track.Distance (Land)
 import Flight.Comp (StartGate)
@@ -75,11 +76,12 @@ data NormBreakdown =
         , leading :: LeadingPoints
         , arrival :: ArrivalPoints
         , time :: TimePoints
-        , ss :: Maybe UTCTime
-        , es :: Maybe UTCTime
-        , ssElapsed :: Maybe (PilotTime (Quantity Double [u| h |]))
         , distanceMade :: Land
         , distanceFrac :: Double
+        , ss :: Maybe UTCTime
+        , es :: Maybe UTCTime
+        , timeElapsed :: Maybe (PilotTime (Quantity Double [u| h |]))
+        , timeFrac :: SpeedFraction
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
@@ -108,7 +110,8 @@ data Breakdown =
 -- FS.
 data NormPointing =
     NormPointing
-        { score :: [[(Pilot, NormBreakdown)]]
+        { bestTime :: [Maybe (BestTime (Quantity Double [u| h |]))]
+        , score :: [[(Pilot, NormBreakdown)]]
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
@@ -169,25 +172,35 @@ cmpNorm a b =
         ("time", "arrival") -> GT
         ("time", _) -> LT
 
-        ("ss", "es") -> LT
-        ("ss", "ssElapsed") -> LT
-        ("ss", "distanceMade") -> LT
-        ("ss", "distanceFrac") -> LT
-        ("ss", _) -> GT
-
-        ("es", "ssElapsed") -> LT
-        ("es", "distanceMade") -> LT
-        ("es", "distanceFrac") -> LT
-        ("es", _) -> GT
-
-        ("ssElapsed", "distanceMade") -> LT
-        ("ssElapsed", "distanceFrac") -> LT
-        ("ssElapsed", _) -> GT
-
         ("distanceMade", "distanceFrac") -> LT
+        ("distanceMade", "ss") -> LT
+        ("distanceMade", "es") -> LT
+        ("distanceMade", "timeElapsed") -> LT
+        ("distanceMade", "timeFrac") -> LT
         ("distanceMade", _) -> GT
 
+        ("distanceFrac", "ss") -> LT
+        ("distanceFrac", "es") -> LT
+        ("distanceFrac", "timeElapsed") -> LT
+        ("distanceFrac", "timeFrac") -> LT
         ("distanceFrac", _) -> GT
+
+        ("ss", "es") -> LT
+        ("ss", "timeElapsed") -> LT
+        ("ss", "timeFrac") -> LT
+        ("ss", _) -> GT
+
+        ("es", "timeElapsed") -> LT
+        ("es", "timeFrac") -> LT
+        ("es", _) -> GT
+
+        ("timeElapsed", "timeFrac") -> LT
+        ("timeElapsed", _) -> GT
+
+        ("timeFrac", _) -> GT
+
+        ("bestTime", _) -> LT
+        ("score", _) -> GT
 
         _ -> compare a b
 

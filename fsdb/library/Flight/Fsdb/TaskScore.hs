@@ -44,6 +44,7 @@ import Flight.Score
     , ArrivalPoints(..)
     , TimePoints(..)
     , PilotTime(..)
+    , SpeedFraction(..)
     )
 import Flight.Fsdb.Pilot (getCompPilot)
 import Flight.Fsdb.KeyPilot (unKeyPilot, keyPilots, keyMap)
@@ -76,7 +77,7 @@ xpRankScore =
         <+> hasName "distance"
         )
     $ xpWrap
-        ( \(r, p, dp, l, a, t, ss, es, ssE, dM) ->
+        ( \(r, p, dp, l, a, t, dM, ss, es, ssE) ->
             NormBreakdown
                 { place = TaskPlacing . fromIntegral $ r
                 , total = TaskPoints . toRational $ p
@@ -84,13 +85,14 @@ xpRankScore =
                 , leading = LeadingPoints . dToR $ l
                 , arrival = ArrivalPoints . dToR $ a
                 , time = TimePoints . dToR $ t
-                , ss = parseUtcTime <$> ss
-                , es = parseUtcTime <$> es
-                , ssElapsed =
-                    if ssE == Just "00:00:00" then Nothing else
-                    toPilotTime . parseHmsTime <$> ssE
                 , distanceMade = taskKmToMetres . TaskDistance . MkQuantity $ dM
                 , distanceFrac = 0
+                , ss = parseUtcTime <$> ss
+                , es = parseUtcTime <$> es
+                , timeElapsed =
+                    if ssE == Just "00:00:00" then Nothing else
+                    toPilotTime . parseHmsTime <$> ssE
+                , timeFrac = SpeedFraction 0
                 }
         , \NormBreakdown
                 { place = TaskPlacing r
@@ -99,10 +101,10 @@ xpRankScore =
                 , leading = LeadingPoints l
                 , arrival = ArrivalPoints a
                 , time = TimePoints t
+                , distanceMade = TaskDistance (MkQuantity d)
                 , ss
                 , es
-                , ssElapsed
-                , distanceMade = TaskDistance (MkQuantity d)
+                , timeElapsed
                 } ->
                     ( fromIntegral r
                     , round p
@@ -110,10 +112,10 @@ xpRankScore =
                     , fromRational l
                     , fromRational a
                     , fromRational t
+                    , d
                     , show <$> ss
                     , show <$> es
-                    , show <$> ssElapsed
-                    , d
+                    , show <$> timeElapsed
                     )
         )
     $ xp10Tuple
@@ -123,10 +125,10 @@ xpRankScore =
         (xpAttr "leading_points" xpPrim)
         (xpAttr "arrival_points" xpPrim)
         (xpAttr "time_points" xpPrim)
+        (xpAttr "distance" xpPrim)
         (xpOption $ xpTextAttr "started_ss")
         (xpOption $ xpTextAttr "finished_ss")
         (xpOption $ xpTextAttr "ss_time")
-        (xpAttr "distance" xpPrim)
 
 getScore :: ArrowXml a => [Pilot] -> a XmlTree [(Pilot, Maybe NormBreakdown)]
 getScore pilots =
@@ -192,7 +194,7 @@ parseScores contents = do
     let doc = readString [ withValidate no, withWarnings no ] contents
     ps <- runX $ doc >>> getCompPilot
     xss <- runX $ doc >>> getScore ps
-    let ys =
+    let yss =
             [
                 catMaybes
                 $ (\case
@@ -203,4 +205,6 @@ parseScores contents = do
             | xs <- xss
             ]
 
-    return . Right . NormPointing $ ys
+    let tss = const Nothing <$> yss
+
+    return . Right $ NormPointing{bestTime = tss, score = yss}

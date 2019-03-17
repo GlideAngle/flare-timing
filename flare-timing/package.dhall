@@ -65,7 +65,8 @@ in    defs
           , fs-score =
               { dependencies =
                     deps
-                  # [ "flight-earth"
+                  # [ "containers"
+                    , "flight-earth"
                     , "flight-fsdb"
                     , "flight-gap"
                     , "flight-mask"
