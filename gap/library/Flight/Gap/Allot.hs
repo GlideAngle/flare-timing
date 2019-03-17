@@ -104,9 +104,129 @@ bestTime' xs =
     where
         PilotTime t = List.minimum xs
 
+-- |
+-- >>> printf "%.3f" t1
+-- 5.306
+--
+-- >>> printf "%.3f" t2
+-- 5.324
+--
+-- >>> printf "%.3f" t3
+-- 5.336
+--
+-- >>> printf "%.3f" t4
+-- 5.632
+--
+-- >>> printf "%.3f" t5
+-- 5.765
+--
+-- >>> printf "%.3f" t6
+-- 5.811
+--
+-- >>> printf "%.3f" t7
+-- 5.833
+--
+-- >>> printf "%.3f" t8
+-- 6.046
+--
+-- >>> printf "%.3f" t9
+-- 6.047
+--
+-- >>> printf "%.3f" t10
+-- 6.201
+--
+-- >>> printf "%.3f" t11
+-- 6.289
+--
+-- >>> printf "%.3f" t12
+-- 6.471
+--
+-- >>> printf "%.3f" t13
+-- 6.628
+--
+-- >>> printf "%.3f" t14
+-- 6.633
+--
+-- >>> printf "%.3f" t15
+-- 6.648
+--
+-- >>> printf "%.3f" t16
+-- 6.718
+--
+-- >>> showFrac $ speedFraction (BestTime (MkQuantity t1)) (PilotTime (MkQuantity t1))
+-- 1.000
+--
+-- >>> showFrac $ speedFraction (BestTime (MkQuantity t1)) (PilotTime (MkQuantity t2))
+-- 0.948
+--
+-- >>> showFrac $ speedFraction (BestTime (MkQuantity t1)) (PilotTime (MkQuantity t3))
+-- 0.927
+--
+-- >>> showFrac $ speedFraction (BestTime (MkQuantity t1)) (PilotTime (MkQuantity t4))
+-- 0.641
+--
+-- >>> showFrac $ speedFraction (BestTime (MkQuantity t1)) (PilotTime (MkQuantity t5))
+-- 0.550
+--
+-- >>> showFrac $ speedFraction (BestTime (MkQuantity t1)) (PilotTime (MkQuantity t6))
+-- 0.520
+--
+-- >>> showFrac $ speedFraction (BestTime (MkQuantity t1)) (PilotTime (MkQuantity t7))
+-- 0.506
+--
+-- >>> showFrac $ speedFraction (BestTime (MkQuantity t1)) (PilotTime (MkQuantity t8))
+-- 0.381
+--
+-- >>> showFrac $ speedFraction (BestTime (MkQuantity t1)) (PilotTime (MkQuantity t9))
+-- 0.380
+--
+-- >>> showFrac $ speedFraction (BestTime (MkQuantity t1)) (PilotTime (MkQuantity t10))
+-- 0.297
+--
+-- >>> showFrac $ speedFraction (BestTime (MkQuantity t1)) (PilotTime (MkQuantity t11))
+-- 0.252
+--
+-- >>> showFrac $ speedFraction (BestTime (MkQuantity t1)) (PilotTime (MkQuantity t12))
+-- 0.162
+--
+-- >>> showFrac $ speedFraction (BestTime (MkQuantity t1)) (PilotTime (MkQuantity t13))
+-- 0.088
+--
+-- >>> showFrac $ speedFraction (BestTime (MkQuantity t1)) (PilotTime (MkQuantity t14))
+-- 0.086
+--
+-- >>> showFrac $ speedFraction (BestTime (MkQuantity t1)) (PilotTime (MkQuantity t15))
+-- 0.079
+--
+-- >>> showFrac $ speedFraction (BestTime (MkQuantity t1)) (PilotTime (MkQuantity t16))
+-- 0.047
 speedFraction
     :: BestTime (Quantity Double [u| h |])
     -> PilotTime (Quantity Double [u| h |])
     -> SpeedFraction
 speedFraction (BestTime (MkQuantity tMin)) (PilotTime (MkQuantity t)) =
     SpeedFraction . toRational $ powerFraction tMin t
+
+-- $setup
+-- >>> import Text.Printf (printf)
+--
+-- >>> hmsToHH hh mm ss = let secs = fromIntegral $ ss + mm * 60 + hh * 3600 in secs / 3600
+-- >>> showFrac (SpeedFraction x) = printf "%.3f" $ fromRational x
+--
+-- These are the times for the pilots making goal at Forbes 2018, task 4.
+-- >>> t1 = hmsToHH 5 18 23
+-- >>> t2 = hmsToHH 5 19 27
+-- >>> t3 = hmsToHH 5 20 11
+-- >>> t4 = hmsToHH 5 37 57
+-- >>> t5 = hmsToHH 5 45 55
+-- >>> t6 = hmsToHH 5 48 41
+-- >>> t7 = hmsToHH 5 50  0
+-- >>> t8 = hmsToHH 6  2 44
+-- >>> t9 = hmsToHH 6  2 49
+-- >>> t10 = hmsToHH 6 12  3
+-- >>> t11 = hmsToHH 6 17 19
+-- >>> t12 = hmsToHH 6 28 16
+-- >>> t13 = hmsToHH 6 37 42
+-- >>> t14 = hmsToHH 6 37 58
+-- >>> t15 = hmsToHH 6 38 51
+-- >>> t16 = hmsToHH 6 43  3
