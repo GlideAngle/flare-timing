@@ -184,7 +184,7 @@ pointRow utcOffset dfNt sEx x = do
     (ySs, ySsDiff, yEs, yEsDiff, yEl, yElDiff) <- sample . current
                 $ ffor3 pilot sEx x (\pilot' sEx' (_, Breakdown{velocity = v'}) ->
                 case (v', Map.lookup pilot' sEx') of
-                    (Just Velocity{ss, gs, es, gsElapsed = gsElap, ssElapsed = ssElap}, Just Norm.NormBreakdown {ss = ss', es = es', ssElapsed = elap'}) ->
+                    (Just Velocity{ss, gs, es, gsElapsed = gsElap, ssElapsed = ssElap}, Just Norm.NormBreakdown {ss = ss', es = es', timeElapsed = elap'}) ->
                         let (start, elap) =
                                 case (ss, gs) of
                                     (_, Just (StartGate g)) -> (Just g, gsElap)

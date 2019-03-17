@@ -8,7 +8,6 @@ module WireTypes.Point
     , Allocation(..)
     , GoalRatio(..)
     , PilotDistance(..)
-    , PilotTime(..)
     , Alt(..)
     , PilotVelocity(..)
     , DistancePoints(..)
@@ -64,6 +63,7 @@ import Data.Aeson
     , genericParseJSON, defaultOptions
     )
 import qualified Data.Text as T (Text, pack, unpack)
+import WireTypes.Speed (PilotTime, SpeedFraction)
 
 newtype StartGate = StartGate UTCTime
     deriving (Eq, Ord, Show, Generic)
@@ -72,9 +72,6 @@ newtype StartGate = StartGate UTCTime
 newtype GoalRatio = GoalRatio Double
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (FromJSON)
-
-newtype PilotTime = PilotTime Double
-    deriving (Eq, Ord, Show)
 
 newtype PilotDistance = PilotDistance Double
     deriving (Eq, Ord, Show, Generic)
@@ -112,14 +109,6 @@ newtype TimePoints = TimePoints Double
 
 newtype Alt = Alt Double
     deriving (Eq, Ord, Show, Generic)
-
-instance FromJSON PilotTime where
-    parseJSON x@(String _) = do
-        s <- reverse . T.unpack <$> parseJSON x
-        case s of
-            'h' : ' ' : xs -> return . PilotTime . read . reverse $ xs
-            _ -> empty
-    parseJSON _ = empty
 
 instance FromJSON Alt where
     parseJSON x@(String _) = do
@@ -400,11 +389,12 @@ data NormBreakdown =
         , leading :: LeadingPoints
         , arrival :: ArrivalPoints
         , time :: TimePoints
-        , ss :: Maybe UTCTime
-        , es :: Maybe UTCTime
-        , ssElapsed :: Maybe PilotTime
         , distanceMade :: PilotDistance
         , distanceFrac :: Double
+        , ss :: Maybe UTCTime
+        , es :: Maybe UTCTime
+        , timeElapsed :: Maybe PilotTime
+        , timeFrac :: SpeedFraction
         }
     deriving (Eq, Ord, Show, Generic, FromJSON)
 
