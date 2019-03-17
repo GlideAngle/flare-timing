@@ -196,20 +196,17 @@ igcMarkedFixes xs =
         zs = nubBy eqOnTime ys
 
 -- |
--- >>> let xs = markTimes markGordon fixesGordon in xs == sort xs
--- True
+-- >>> mark markSasha fixesSasha
+-- ((2018-01-03 03:13:00 UTC,2018-01-03 06:57:50 UTC),(00:00:00,03:44:50))
 --
--- >>> let xs = markTicks markGordon fixesGordon in xs == sort xs
--- True
+-- >>> mark markBrad fixesBrad
+-- ((2018-01-03 04:05:47 UTC,2018-01-03 06:13:55 UTC),(00:00:00,02:08:08))
 --
--- >>> let xs = markTimes markGordon fixesGordon in (head xs, head $ reverse xs)
--- (2018-01-02 00:44:29 UTC,2018-01-02 09:07:43 UTC)
---
--- >>> let xs = markTicks markGordon fixesGordon in (head xs, head $ reverse xs)
--- (00:00:00,08:23:14)
+-- >>> mark markScott fixesScott
+-- ((2017-04-08 02:37:56 UTC,2017-04-08 06:49:57 UTC),(00:00:00,04:12:01))
 --
 -- >>> mark markGordon fixesGordon
--- (00:00:00,08:23:14)
+-- ((2018-01-02 00:44:29 UTC,2018-01-02 09:07:43 UTC),(00:00:00,08:23:14))
 mark :: IgcRecord -> [IgcRecord] -> K.MarkedFixes
 mark = Igc.mark unStamp
 
@@ -274,6 +271,12 @@ readAltGps (AltGps (Altitude alt)) = K.Altitude $ fromIntegral alt
 --
 -- >>> line n = unlines . take 1 . drop n . lines
 --
+-- >>> fileSasha  = "./test-suite-doctest/Sasha-Serebrennikova.20180103-121306.30169.72.igc"
+-- >>> fileBrad  = "./test-suite-doctest/Brad-Porter.20180104-095852.36822.34.igc"
+-- >>> fileScott = "./test-suite-doctest/Scott-Barrett.20170409-071936.7601.19.igc"
 -- >>> fileGordon = "./test-suite-doctest/Gordon_Rigg.20180103-111847.6433.8.igc"
 --
+-- >>> (markSasha : _, (fixesSasha, _)) = let (Right xs) = parse $(embedStr (System.IO.readFile fileSasha)) in (partition isFix <$> partition isMark xs)
+-- >>> (markBrad : _, (fixesBrad, _)) = let (Right xs) = parse $(embedStr (System.IO.readFile fileBrad)) in (partition isFix <$> partition isMark xs)
+-- >>> (markScott : _, (fixesScott, _)) = let (Right xs) = parse $(embedStr (System.IO.readFile fileScott)) in (partition isFix <$> partition isMark xs)
 -- >>> (markGordon : _, (fixesGordon, _)) = let (Right xs) = parse $(embedStr (System.IO.readFile fileGordon)) in (partition isFix <$> partition isMark xs)

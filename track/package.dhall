@@ -12,6 +12,8 @@ in    defs
           "Data"
       , github =
           "blockscope/flare-timing/track"
+      , extra-source-files =
+          defs.extra-source-files # [ "**/*.igc" ]
       , dependencies =
             defs.dependencies
           # [ "split"

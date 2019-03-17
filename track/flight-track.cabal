@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: fed18354e14e29b4328605ec0b4220a3b02a04a5d25130e91ef8c427733f2135
+-- hash: b86799b09b5e70c7967e465aa616a975b2c74cb90eb8946e1c888d8e1824f9c4
 
 name:           flight-track
 version:        0.1.0
@@ -24,6 +24,10 @@ extra-source-files:
     package.dhall
     changelog.md
     README.md
+    test-suite-doctest/Brad-Porter.20180104-095852.36822.34.igc
+    test-suite-doctest/Gordon_Rigg.20180103-111847.6433.8.igc
+    test-suite-doctest/Sasha-Serebrennikova.20180103-121306.30169.72.igc
+    test-suite-doctest/Scott-Barrett.20170409-071936.7601.19.igc
 
 source-repository head
   type: git

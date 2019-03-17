@@ -140,20 +140,23 @@ data MarkedFixes =
         }
     deriving (Eq, Ord, Generic, ToJSON, FromJSON)
 
+showMarkFix :: UTCTime -> Seconds -> String
+showMarkFix mark0 fixMark =
+    let s = showHmsForSecs fixMark in
+    "((" ++ show mark0 ++ "," ++ show mark0 ++ "),(" ++ s ++ "," ++ s ++ "))"
+
 instance Show MarkedFixes where
-    show MarkedFixes{fixes = []} =
-        let s = showHmsForSecs 0 in "(" ++ s ++ "," ++ s ++ ")"
+    show MarkedFixes{mark0, fixes = []} = showMarkFix mark0 0
+    show MarkedFixes{mark0, fixes = Fix{fixMark} : []} = showMarkFix mark0 fixMark
 
-    show MarkedFixes{fixes = Fix{fixMark} : []} =
-        let s = showHmsForSecs fixMark in "(" ++ s ++ "," ++ s ++ ")"
-
-    show MarkedFixes{fixes = Fix{fixMark = x0} : xs} =
+    show MarkedFixes{mark0 = m0, fixes = Fix{fixMark = x0} : xs} =
         let start = showHmsForSecs x0 in
         case reverse xs of
-            Fix{fixMark = xN} : _ ->
-                "(" ++ start ++ "," ++ showHmsForSecs xN ++ ")"
+            Fix{fixMark = xN@(Seconds n)} : _ ->
+                let mN = fromIntegral n `addUTCTime` m0 in
+                "((" ++ show m0 ++ "," ++ show mN ++ "),(" ++ start ++ "," ++ showHmsForSecs xN ++ "))"
             _ ->
-                "(" ++ start ++ ",???)"
+                showMarkFix m0 x0
 
 showHmsForSecs :: Seconds -> String
 showHmsForSecs (Seconds sec) =
