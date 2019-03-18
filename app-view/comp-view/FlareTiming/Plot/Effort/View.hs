@@ -48,7 +48,7 @@ hgPlot tm = do
                         elClass "div" "level" $
                             elClass "div" "level-item" $
                                 el "ul" $
-                                    el"li" $ do
+                                    el "li" $ do
                                         elClass "span" "legend-effort" $ text "- - -"
                                         text " line of constant effort"
 

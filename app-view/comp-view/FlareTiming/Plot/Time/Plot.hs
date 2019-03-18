@@ -30,6 +30,12 @@ foreign import javascript unsafe
     \  , color: '#4daf4a'\
     \  , graphType: 'polyline'\
     \  },{\
+    \    points: $6\
+    \  , fnType: 'points'\
+    \  , color: '#4daf4a'\
+    \  , attr: { stroke-dasharray: '5,5' }\
+    \  , graphType: 'polyline'\
+    \  },{\
     \    points: $5\
     \  , fnType: 'points'\
     \  , color: '#4daf4a'\
@@ -37,7 +43,7 @@ foreign import javascript unsafe
     \  , graphType: 'scatter'\
     \  }]\
     \})"
-    hgPlot_ :: JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> IO JSVal
+    hgPlot_ :: JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> IO JSVal
 
 hgPlot
     :: IsElement e
@@ -46,8 +52,15 @@ hgPlot
     -> [[Double]]
     -> IO Plot
 hgPlot e (tMin, tMax) xs = do
-    let xy :: [[Double]] =
-            [ [x', fn tMin x']
+    let xyfn :: [[Double]] =
+            [ [x', fnGAP tMin x']
+            | x <- [0 :: Integer .. 199]
+            , let step = abs $ (tMax - tMin) / 200
+            , let x' = tMin + step * fromIntegral x
+            ]
+
+    let xyfnFS :: [[Double]] =
+            [ [x', fnFS tMin x']
             | x <- [0 :: Integer .. 199]
             , let step = abs $ (tMax - tMin) / 200
             , let x' = tMin + step * fromIntegral x
@@ -58,11 +71,18 @@ hgPlot e (tMin, tMax) xs = do
     tMin' <- toJSVal $ tMin - pad
     tMax' <- toJSVal $ tMax + pad
 
-    xy' <- toJSValListOf xy
+    xyfn' <- toJSValListOf xyfn
+    xyfnFS' <- toJSValListOf xyfnFS
     xs' <- toJSValListOf $ nub xs
 
-    Plot <$> hgPlot_ (unElement . toElement $ e) tMin' tMax' xy' xs'
+    Plot <$> hgPlot_ (unElement . toElement $ e) tMin' tMax' xyfn' xs' xyfnFS'
 
-fn :: Double -> Double -> Double
-fn tMin x =
-    max 0.0 $ 1.0 - ((x - tMin)**2/tMin**(1.0/2.0))**(1.0/3.0)
+-- | The equation from the GAP rules.
+fnGAP :: Double -> Double -> Double
+fnGAP tMin t =
+    max 0.0 $ 1.0 - ((t - tMin)**2/tMin**(1.0/2.0))**(1.0/3.0)
+
+-- | The equation from the FS implementation.
+fnFS :: Double -> Double -> Double
+fnFS tMin t =
+    max 0.0 $ 1.0 - ((t - tMin)/tMin**(1.0/2.0))**(2.0/3.0)

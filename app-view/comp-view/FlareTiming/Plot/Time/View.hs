@@ -51,6 +51,16 @@ hgPlot sgs sEx tm = do
                                 return ())
                             ]
 
+                        elClass "div" "level" $
+                            elClass "div" "level-item" $
+                                el "ul" $ do
+                                    el "li" $ do
+                                        elClass "span" "legend-time" $ text "─"
+                                        text " GAP equation"
+                                    el "li" $ do
+                                        elClass "span" "legend-time" $ text "- -"
+                                        text " FS equation"
+
                         tm' <- sample . current $ tm
 
                     return ()
