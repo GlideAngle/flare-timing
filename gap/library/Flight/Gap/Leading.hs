@@ -166,7 +166,7 @@ cleanTrack len = towardsGoal . positiveTime . initialOffside len
 --      In the pattern:
 --        LengthOfSs (MkQuantity 0 :: Quantity Integer (Data.UnitsOfMeasure.Internal.MkUnit "km"))
 
--- | Calculate the leading coefficient for a single track.
+-- | Calculate the leading area for a single track.
 areaSteps
     :: TaskDeadline
     -> LengthOfSs
