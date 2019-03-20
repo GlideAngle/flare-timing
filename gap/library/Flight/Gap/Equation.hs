@@ -4,16 +4,10 @@ module Flight.Gap.Equation
 
 -- |
 -- prop> powerFraction 0 x == 0
--- True
---
 -- prop> powerFraction x 0 == 0
--- True
---
 -- prop> powerFraction x y >= 0
--- True
---
 -- prop> powerFraction x y <= 1
--- True
+-- False
 powerFraction :: Double -> Double -> Double
 powerFraction 0 _ = 0
 powerFraction _ 0 = 0
