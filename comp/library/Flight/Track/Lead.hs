@@ -17,12 +17,13 @@ import Data.Maybe (catMaybes)
 import Data.List (sortOn)
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
-import Data.UnitsOfMeasure (u)
+import Data.UnitsOfMeasure (u, zero)
+import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Distance (QTaskDistance)
 import Flight.Comp (Pilot, Task(..))
 import Flight.Score
-    ( LeadingCoefficient(..), LeadingFraction(..), LwScaling(..)
+    ( LeadingArea(..), LeadingFraction(..), LwScaling(..)
     , leadingFraction
     )
 import Flight.Track.Time (taskToLeading, leadingSum, minLeading)
@@ -31,7 +32,7 @@ import Flight.Zone.MkZones (Discipline(..))
 
 data TrackLead =
     TrackLead
-        { coef :: LeadingCoefficient
+        { coef :: LeadingArea (Quantity Double [u| (km^2)*s |])
         , frac :: LeadingFraction
         }
     deriving (Eq, Ord, Show, Generic)
@@ -41,28 +42,31 @@ compLeading
     :: [[(Pilot, [Time.TickRow])]]
     -> [Maybe (QTaskDistance Double [u| m |])]
     -> [Task k]
-    -> ([Maybe LeadingCoefficient], [[(Pilot, TrackLead)]])
+    ->
+        ( [Maybe (LeadingArea (Quantity Double [u| (km^2)*s |]))]
+        , [[(Pilot, TrackLead)]]
+        )
 compLeading rowsLeadingStep lsTask tasks' =
     (lcMins, lead)
     where
-        rowsLeadingSum' :: [[(Pilot, Maybe LeadingCoefficient)]] =
+        rowsLeadingSum' :: [[(Pilot, Maybe (LeadingArea (Quantity Double [u| (km^2)*s |])))]] =
                     [ (fmap . fmap) (leadingSum l s) xs
                     | l <- (fmap . fmap) taskToLeading lsTask
                     | s <- speedSection <$> tasks'
                     | xs <- rowsLeadingStep
                     ]
 
-        rowsLeadingSum :: [[(Pilot, LeadingCoefficient)]] =
+        rowsLeadingSum :: [[(Pilot, LeadingArea (Quantity Double [u| (km^2)*s |]))]] =
                 catMaybes
                 <$> (fmap . fmap) floatMaybe rowsLeadingSum'
 
+        lcMins :: [Maybe (LeadingArea (Quantity Double [u| (km^2)*s |]))]
         lcMins =
                 minLeading
                 <$> (fmap . fmap) snd rowsLeadingSum
 
         lead :: [[(Pilot, TrackLead)]] =
-                sortOn ((\TrackLead{coef = LeadingCoefficient c} ->
-                    c) . snd)
+                sortOn ((\TrackLead{coef = LeadingArea c} -> c) . snd)
                 <$>
                 [(fmap . fmap)
                     (\lc ->

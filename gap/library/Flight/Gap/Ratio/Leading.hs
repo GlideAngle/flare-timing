@@ -1,6 +1,5 @@
 module Flight.Gap.Ratio.Leading
     ( LeadingAreaScaling(..)
-    , LeadingCoefficient(..)
     , LeadingFraction(..)
     , EssTime(..)
     , LwScaling(..)
@@ -22,17 +21,6 @@ instance Newtype LeadingAreaScaling Rational where
 deriveDecimalPlaces (DecimalPlaces 14) ''LeadingAreaScaling
 deriveJsonViaSci ''LeadingAreaScaling
 deriveCsvViaSci ''LeadingAreaScaling
-
-newtype LeadingCoefficient = LeadingCoefficient Rational
-    deriving (Eq, Ord, Show)
-
-instance Newtype LeadingCoefficient Rational where
-    pack = LeadingCoefficient
-    unpack (LeadingCoefficient a) = a
-
-deriveDecimalPlaces (DecimalPlaces 8) ''LeadingCoefficient
-deriveJsonViaSci ''LeadingCoefficient
-deriveCsvViaSci ''LeadingCoefficient
 
 newtype LeadingFraction = LeadingFraction Rational
     deriving (Eq, Ord, Show)

@@ -1,4 +1,4 @@
-module Flight.Gap.Area.Leading (LeadingAreaStep(..)) where
+module Flight.Gap.Area.Leading (LeadingArea(..)) where
 
 import "newtype" Control.Newtype (Newtype(..))
 import Data.Aeson (ToJSON(..), FromJSON(..))
@@ -10,34 +10,34 @@ import Flight.Units ()
 import Data.Via.Scientific (DefaultDecimalPlaces(..), DecimalPlaces(..))
 import Data.Via.UnitsOfMeasure (ViaQ(..))
 
-newtype LeadingAreaStep a = LeadingAreaStep a
+newtype LeadingArea a = LeadingArea a
     deriving (Eq, Ord, Show)
 
 instance
     (q ~ Quantity Double [u| (km^2)*s |])
-    => DefaultDecimalPlaces (LeadingAreaStep q) where
+    => DefaultDecimalPlaces (LeadingArea q) where
     defdp _ = DecimalPlaces 8
 
 instance
     (q ~ Quantity Double [u| (km^2)*s |])
-    => Newtype (LeadingAreaStep q) q where
-    pack = LeadingAreaStep
-    unpack (LeadingAreaStep a) = a
+    => Newtype (LeadingArea q) q where
+    pack = LeadingArea
+    unpack (LeadingArea a) = a
 
-instance (q ~ Quantity Double [u| (km^2)*s |]) => ToJSON (LeadingAreaStep q) where
+instance (q ~ Quantity Double [u| (km^2)*s |]) => ToJSON (LeadingArea q) where
     toJSON x = toJSON $ ViaQ x
 
-instance (q ~ Quantity Double [u| (km^2)*s |]) => FromJSON (LeadingAreaStep q) where
+instance (q ~ Quantity Double [u| (km^2)*s |]) => FromJSON (LeadingArea q) where
     parseJSON o = do
         ViaQ x <- parseJSON o
         return x
 
 instance
     (q ~ Quantity Double [u| (km^2)*s |])
-      => ToField (LeadingAreaStep q) where
-    toField (LeadingAreaStep (MkQuantity x)) = toField x
+      => ToField (LeadingArea q) where
+    toField (LeadingArea (MkQuantity x)) = toField x
 
 instance
     (q ~ Quantity Double [u| (km^2)*s |])
-      => FromField (LeadingAreaStep q) where
-    parseField x = LeadingAreaStep . MkQuantity <$> parseField x
+      => FromField (LeadingArea q) where
+    parseField x = LeadingArea . MkQuantity <$> parseField x

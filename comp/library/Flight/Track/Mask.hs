@@ -31,7 +31,7 @@ import Flight.Score
     , PilotsAtEss(..)
     , BestTime(..)
     , LeadingAreaScaling(..)
-    , LeadingCoefficient(..)
+    , LeadingArea(..)
     , EssTime(..)
     )
 import Flight.Field (FieldOrdering(..))
@@ -62,7 +62,7 @@ data Masking =
         -- ^ For each task, the sum of all distance flown over minimum distance.
         , leadScaling :: [Maybe LeadingAreaScaling]
         -- ^ For each task, the scaling of leading area.
-        , leadCoefMin :: [Maybe LeadingCoefficient]
+        , leadCoefMin :: [Maybe (LeadingArea (Quantity Double [u| (km^2)*s |]))]
         -- ^ For each task, the minimum of all pilot's leading coefficient.
         , leadRank :: [[(Pilot, TrackLead)]]
         -- ^ For each task, the rank order of leading and leading fraction.

@@ -46,7 +46,7 @@ import Data.HashMap.Strict (unions)
 import Data.Time.Clock (UTCTime)
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..), encode, decode)
-import Data.UnitsOfMeasure (u, convert, zero)
+import Data.UnitsOfMeasure ((+:), u, convert, zero)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Data.Vector (Vector)
 import qualified Data.Vector as V (fromList, toList)
@@ -55,8 +55,7 @@ import Flight.Units ()
 import Flight.Clip (FlyCut(..), FlyClipping(..))
 import Flight.LatLng.Raw (RawLat, RawLng)
 import Flight.Score
-    ( LeadingAreaStep(..)
-    , LeadingCoefficient(..)
+    ( LeadingArea(..)
     , TaskTime(..)
     , DistanceToEss(..)
     , Leg(..)
@@ -204,7 +203,7 @@ data TickRow =
         -- ^ Leg of the task
         , distance :: Double
         -- ^ Distance to goal in km.
-        , area :: LeadingAreaStep (Quantity Double [u| (km^2)*s |])
+        , area :: LeadingArea (Quantity Double [u| (km^2)*s |])
         -- ^ Leading coefficient area step.
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
@@ -335,7 +334,9 @@ instance FromNamedRecord TickRow where
         m .: "distance" <*>
         m .: "area"
 
-minLeading :: [LeadingCoefficient] -> Maybe LeadingCoefficient
+minLeading
+    :: [LeadingArea (Quantity Double [u| (km^2)*s |])]
+    -> Maybe (LeadingArea (Quantity Double [u| (km^2)*s |]))
 minLeading xs =
     if null xs then Nothing else Just $ minimum xs
 
@@ -346,24 +347,25 @@ leadingSum
     :: Maybe LeadingDistance
     -> SpeedSection
     -> [TickRow]
-    -> Maybe LeadingCoefficient
+    -> Maybe (LeadingArea (Quantity Double [u| (km^2)*s |]))
 leadingSum Nothing _ _ = Nothing
 leadingSum _ _ [] = Nothing
 leadingSum (Just _) Nothing xs =
-    Just . LeadingCoefficient $ sum ys
+    Just . LeadingArea $ sum' ys
     where
         ys =
-            (\TickRow{area = LeadingAreaStep (MkQuantity a)} ->
-                toRational a)
+            (\TickRow{area = LeadingArea a} -> a)
             <$> xs
 leadingSum (Just _) (Just (start, _)) xs =
     if null ys then Nothing else
-    Just . LeadingCoefficient $ sum ys
+    Just . LeadingArea $ sum' ys
     where
         ys =
-            (\TickRow{area = LeadingAreaStep (MkQuantity a)} ->
-                toRational a)
+            (\TickRow{area = LeadingArea a} -> a)
             <$> filter (\TickRow{legIdx = LegIdx ix} -> ix >= start) xs
+
+sum' :: [Quantity Double u] -> Quantity Double u
+sum' = foldr (+:) zero
 
 leadingArea
     :: (Int -> Leg)
@@ -526,7 +528,7 @@ timeToTick TimeRow{..} =
         , zoneIdx = zoneIdx
         , legIdx = legIdx
         , distance = distance
-        , area = LeadingAreaStep zero
+        , area = LeadingArea zero
         }
 
 discard

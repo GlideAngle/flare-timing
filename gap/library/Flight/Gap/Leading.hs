@@ -26,16 +26,16 @@ import Control.Arrow (second)
 import Data.Ratio ((%))
 import Data.List (partition, sortBy)
 import Data.Maybe (catMaybes)
-import Data.UnitsOfMeasure ((-:), (*:), u, zero, fromRational')
+import Data.UnitsOfMeasure
+    ((-:), (*:), (+:), u, unQuantity, zero, fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Data.Via.Scientific (DecimalPlaces(..), deriveDecimalPlaces)
 import Data.Via.UnitsOfMeasure (ViaQ(..))
 import Flight.Units ()
 import Flight.Ratio (pattern (:%))
-import Flight.Gap.Ratio.Leading
-    (LeadingAreaScaling(..), LeadingCoefficient(..), LeadingFraction(..))
-import Flight.Gap.Area.Leading (LeadingAreaStep(..))
+import Flight.Gap.Ratio.Leading (LeadingAreaScaling(..), LeadingFraction(..))
+import Flight.Gap.Area.Leading (LeadingArea(..))
 import Flight.Gap.Equation (powerFraction)
 
 -- | Time in seconds from the moment the first pilot crossed the start of the speed
@@ -106,7 +106,7 @@ data LcSeq a =
 -- of the speed section.
 type LcTrack = LcSeq LcPoint
 
-type LcArea = LcSeq (LeadingAreaStep (Quantity Double [u| (km^2)*s |]))
+type LcArea = LcSeq (LeadingArea (Quantity Double [u| (km^2)*s |]))
 
 madeGoal :: LcTrack -> Bool
 madeGoal LcSeq{seq = xs} =
@@ -173,7 +173,7 @@ areaSteps
     -> LcArea
 areaSteps _ (LengthOfSs [u| 0 % 1 km |]) LcSeq{seq = xs} =
     LcSeq
-        { seq = const (LeadingAreaStep zero) <$> xs
+        { seq = const (LeadingArea zero) <$> xs
         , extra = Nothing
         }
 
@@ -189,18 +189,18 @@ areaSteps
     track@LcSeq{seq = xs', extra}
     | dl <= [u| 1s |] =
         LcSeq
-            { seq = const (LeadingAreaStep zero) <$> xs'
+            { seq = const (LeadingArea zero) <$> xs'
             , extra = Nothing
             }
     | otherwise =
         LcSeq
             { seq =
-                LeadingAreaStep
+                LeadingArea
                 . (scale $ areaScaling len)
                 <$> steps
 
             , extra =
-                LeadingAreaStep
+                LeadingArea
                 . (scale $ areaScaling len)
                 . g
                 <$> extra
@@ -264,8 +264,8 @@ scale
     :: LeadingAreaScaling
     -> Quantity Rational [u| (km^2)*s |]
     -> Quantity Double [u| (km^2)*s |]
-scale (LeadingAreaScaling scaling) q =
-    fromRational' $ q *: MkQuantity scaling
+scale (LeadingAreaScaling scaling) (MkQuantity q) =
+    MkQuantity . fromRational $ q * scaling
 
 areaScaling :: LengthOfSs -> LeadingAreaScaling
 areaScaling (LengthOfSs (MkQuantity len)) =
@@ -276,18 +276,20 @@ leadingCoefficient
     :: TaskDeadline
     -> LengthOfSs
     -> LcTrack
-    -> LeadingCoefficient
+    -> LeadingArea (Quantity Double [u| (km^2)*s |])
 leadingCoefficient deadline len xs =
-    LeadingCoefficient . toRational . sum
-    $ (\(LeadingAreaStep (MkQuantity x)) -> x)
+    LeadingArea $ sum'
+    $ (\(LeadingArea x) -> x)
     <$> seq (areaSteps deadline len xs)
+    where
+        sum' = foldr (+:) zero
 
 -- | Calculate the leading coefficient for all tracks.
 leadingCoefficients
     :: TaskDeadline
     -> LengthOfSs
     -> [LcTrack]
-    -> [LeadingCoefficient]
+    -> [LeadingArea (Quantity Double [u| (km^2)*s |])]
 leadingCoefficients deadline@(TaskDeadline maxTaskTime) len tracks =
     snd <$> csSorted
     where
@@ -318,76 +320,93 @@ leadingCoefficients deadline@(TaskDeadline maxTaskTime) len tracks =
                     all (\LcPoint{mark = TaskTime t} -> t < tEss) xs)
                 xsLandedOut
 
-        lc :: LcTrack -> LeadingCoefficient
+        lc :: LcTrack -> LeadingArea (Quantity Double [u| (km^2)*s |])
         lc = leadingCoefficient deadline len
 
-        csMadeGoal :: [(Int, LeadingCoefficient)]
+        csMadeGoal :: [(Int, LeadingArea (Quantity Double [u| (km^2)*s |]))]
         csMadeGoal = second lc <$> xsMadeGoal
 
-        lcE :: LcTrack -> LeadingCoefficient
+        lcE :: LcTrack -> LeadingArea (Quantity Double [u| (km^2)*s |])
         lcE track@LcSeq{seq = xs} =
-            if null xs then LeadingCoefficient 0 else
-            LeadingCoefficient $ a + b
+            if null xs then LeadingArea zero else
+            LeadingArea $ a +: b
             where
-                (LeadingCoefficient a) = lc track
+                (LeadingArea a) = lc track
                 b =
-                    (\LcPoint{togo = DistanceToEss (MkQuantity d)} ->
-                        essTime * d * d)
+                    (\LcPoint{togo = DistanceToEss d} ->
+                        fromRational' $ MkQuantity essTime *: d *: d)
                     $ last xs
 
-        csEarly :: [(Int, LeadingCoefficient)]
+        csEarly :: [(Int, LeadingArea (Quantity Double [u| (km^2)*s |]))]
         csEarly = second lcE <$> xsEarly
 
-        lcL :: LcTrack -> LeadingCoefficient
+        lcL :: LcTrack -> LeadingArea (Quantity Double [u| (km^2)*s |])
         lcL track@LcSeq{seq = xs} =
-            if null xs then LeadingCoefficient 0 else
-            LeadingCoefficient $ a + b
+            if null xs then LeadingArea zero else
+            LeadingArea $ a +: b
             where
-                (LeadingCoefficient a) = lc track
+                (LeadingArea a) = lc track
                 b =
-                    (\LcPoint{ mark = TaskTime (MkQuantity t)
-                             , togo = DistanceToEss (MkQuantity d)
-                             } -> t * d * d)
+                    (\LcPoint{ mark = TaskTime t
+                             , togo = DistanceToEss d
+                             } -> fromRational' $ t *: d *: d)
                     $ last xs
 
-        csLate :: [(Int, LeadingCoefficient)]
+        csLate :: [(Int, LeadingArea (Quantity Double [u| (km^2)*s |]))]
         csLate = second lcL <$> xsLate
 
-        csMerged :: [(Int, LeadingCoefficient)]
-        csMerged = mconcat [ csMadeGoal, csEarly, csLate ]
+        csMerged :: [(Int, LeadingArea (Quantity Double [u| (km^2)*s |]))]
+        csMerged = mconcat [csMadeGoal, csEarly, csLate]
 
-        csSorted :: [(Int, LeadingCoefficient)]
+        csSorted :: [(Int, LeadingArea (Quantity Double [u| (km^2)*s |]))]
         csSorted = sortBy (\x y -> fst x `compare` fst y) csMerged
 
-leadingDenominator :: Rational -> Double
-leadingDenominator cMin = fromRational cMin ** (1/2)
+leadingDenominator :: Quantity Double [u| (km^2)*s |] -> Double
+leadingDenominator (MkQuantity cMin) = cMin ** (1/2)
 
 leadingFraction
-    :: LeadingCoefficient
-    -> LeadingCoefficient
+    :: LeadingArea (Quantity Double [u| (km^2)*s |])
+    -> LeadingArea (Quantity Double [u| (km^2)*s |])
     -> LeadingFraction
-leadingFraction (LeadingCoefficient lcMin) (LeadingCoefficient lc) =
-    LeadingFraction . toRational $ powerFraction lcMin' lc'
-    where
-        lcMin' = fromRational lcMin
-        lc' = fromRational lc
+leadingFraction (LeadingArea (MkQuantity lcMin)) (LeadingArea (MkQuantity lc)) =
+    LeadingFraction . toRational $ powerFraction lcMin lc
 
 allZero :: [LcTrack] -> [LeadingFraction]
 allZero tracks = const (LeadingFraction 0) <$> tracks
 
 -- | Calculate the leading factor for all tracks.
-leadingFractions :: TaskDeadline -> LengthOfSs -> [LcTrack] -> [LeadingFraction]
+leadingFractions
+    :: TaskDeadline
+    -> LengthOfSs
+    -> [LcTrack]
+    -> [LeadingFraction]
 leadingFractions (TaskDeadline (MkQuantity 0)) _ tracks =
     allZero tracks
 leadingFractions _ (LengthOfSs (MkQuantity 0)) tracks =
     allZero tracks
 leadingFractions deadlines lens tracks =
-    if cMin == 0 || leadingDenominator cMin == 0
-       then allZero tracks
-       else leadingFraction (LeadingCoefficient cMin) <$> cs
+    if | cMin == zero' -> allZero tracks
+       | leadingDenominator cMin == 0 -> allZero tracks
+       | otherwise -> leadingFraction (LeadingArea cMin) <$> cs
     where
+        cs :: [LeadingArea (Quantity Double [u| (km^2)*s |])]
         cs = leadingCoefficients deadlines lens tracks
-        csNonZero = filter (\(LeadingCoefficient x) -> x > 0) cs
+
+        csNonZero :: [LeadingArea (Quantity Double [u| (km^2)*s |])]
+        csNonZero = filter gtZero cs
+
+        cMin :: Quantity Double [u| (km^2)*s |]
         cMin =
-            if null csNonZero then 0 else
-                minimum $ (\(LeadingCoefficient x) -> x) <$> csNonZero
+            if null csNonZero then zero' else
+                minimum $ (\(LeadingArea x) -> x) <$> csNonZero
+
+        zero' :: Quantity Double [u| (km^2)*s |]
+        zero' =
+            (zero :: Quantity _ [u| km |])
+            *:
+            (zero :: Quantity _ [u| km |])
+            *:
+            (zero :: Quantity _ [u| s |])
+
+        gtZero :: LeadingArea (Quantity Double [u| (km^2)*s |]) -> Bool
+        gtZero (LeadingArea (MkQuantity x)) = x > 0
