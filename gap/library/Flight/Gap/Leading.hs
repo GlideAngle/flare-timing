@@ -26,7 +26,7 @@ import Control.Arrow (second)
 import Data.Ratio ((%))
 import Data.List (partition, sortBy)
 import Data.Maybe (catMaybes)
-import Data.UnitsOfMeasure ((-:), u)
+import Data.UnitsOfMeasure ((-:), (*:), u, zero, fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Data.Via.Scientific (DecimalPlaces(..), deriveDecimalPlaces)
@@ -34,9 +34,8 @@ import Data.Via.UnitsOfMeasure (ViaQ(..))
 import Flight.Units ()
 import Flight.Ratio (pattern (:%))
 import Flight.Gap.Ratio.Leading
-    ( LeadingAreaScaling(..), LeadingAreaStep(..)
-    , LeadingCoefficient(..), LeadingFraction(..)
-    )
+    (LeadingAreaScaling(..), LeadingCoefficient(..), LeadingFraction(..))
+import Flight.Gap.Area.Leading (LeadingAreaStep(..))
 import Flight.Gap.Equation (powerFraction)
 
 -- | Time in seconds from the moment the first pilot crossed the start of the speed
@@ -107,7 +106,7 @@ data LcSeq a =
 -- of the speed section.
 type LcTrack = LcSeq LcPoint
 
-type LcArea = LcSeq LeadingAreaStep
+type LcArea = LcSeq (LeadingAreaStep (Quantity Double [u| (km^2)*s |]))
 
 madeGoal :: LcTrack -> Bool
 madeGoal LcSeq{seq = xs} =
@@ -123,10 +122,10 @@ towardsGoal :: LcTrack -> LcTrack
 towardsGoal x@LcSeq{seq = xs}
     | null xs = x
     | otherwise =
-        x{seq = catMaybes $ zipWith f (zero : xs) xs}
+        x{seq = catMaybes $ zipWith f (zeroth : xs) xs}
         where
             LcPoint{mark = TaskTime tN, togo = dist} = head xs
-            zero =
+            zeroth =
                 LcPoint
                     { leg = PrologLeg 0
                     , mark = TaskTime $ tN -: [u| 1 s |]
@@ -174,7 +173,7 @@ areaSteps
     -> LcArea
 areaSteps _ (LengthOfSs [u| 0 % 1 km |]) LcSeq{seq = xs} =
     LcSeq
-        { seq = const (LeadingAreaStep 0) <$> xs
+        { seq = const (LeadingAreaStep zero) <$> xs
         , extra = Nothing
         }
 
@@ -190,13 +189,21 @@ areaSteps
     track@LcSeq{seq = xs', extra}
     | dl <= [u| 1s |] =
         LcSeq
-            { seq = const (LeadingAreaStep 0) <$> xs'
+            { seq = const (LeadingAreaStep zero) <$> xs'
             , extra = Nothing
             }
     | otherwise =
         LcSeq
-            { seq = LeadingAreaStep . (* (unpack $ areaScaling len)) <$> steps
-            , extra = LeadingAreaStep . (* (unpack $ areaScaling len)) . g <$> extra
+            { seq =
+                LeadingAreaStep
+                . (scale $ areaScaling len)
+                <$> steps
+
+            , extra =
+                LeadingAreaStep
+                . (scale $ areaScaling len)
+                . g
+                <$> extra
             }
         where
             withinDeadline :: LcTrack
@@ -210,29 +217,29 @@ areaSteps
                     [] -> []
                     (y : _) -> y : ys
 
-            f :: LcPoint -> LcPoint -> Rational
+            f :: LcPoint -> LcPoint -> Quantity _ [u| (km^2)*s |]
             f
                 LcPoint
-                    { mark = TaskTime (MkQuantity tM)
-                    , togo = DistanceToEss (MkQuantity dM)
+                    { mark = TaskTime tM
+                    , togo = DistanceToEss dM
                     }
                 LcPoint
                     { leg
-                    , mark = TaskTime (MkQuantity tN)
-                    , togo = DistanceToEss (MkQuantity dN)
+                    , mark = TaskTime tN
+                    , togo = DistanceToEss dN
                     }
-                | tM == tN = 0
-                | tN < 0 = 0
-                | not (isRaceLeg leg) = 0
-                | otherwise = tN * (dM * dM - dN * dN)
+                | tM == tN = zero
+                | tN < zero = zero
+                | not (isRaceLeg leg) = zero
+                | otherwise = tN *: (dM *: dM -: dN *: dN)
 
-            g :: LcPoint -> Rational
+            g :: LcPoint -> Quantity _ [u| (km^2)*s |]
             g LcPoint
-                { mark = TaskTime (MkQuantity t)
-                , togo = DistanceToEss (MkQuantity d)
-                } = t * d * d
+                { mark = TaskTime t
+                , togo = DistanceToEss d
+                } = t *: d *: d
 
-            steps :: [Rational]
+            steps :: [Quantity _ [u| (km^2)*s |]]
             steps = zipWith f ys' ys
 
 isRaceLeg :: Leg -> Bool
@@ -253,6 +260,13 @@ clampToEss x@LcSeq{seq} =
         clamp p@LcPoint{togo = DistanceToEss dist} =
             p{togo = DistanceToEss $ max [u| 0 km |] dist}
 
+scale
+    :: LeadingAreaScaling
+    -> Quantity Rational [u| (km^2)*s |]
+    -> Quantity Double [u| (km^2)*s |]
+scale (LeadingAreaScaling scaling) q =
+    fromRational' $ q *: MkQuantity scaling
+
 areaScaling :: LengthOfSs -> LeadingAreaScaling
 areaScaling (LengthOfSs (MkQuantity len)) =
     let (n :% d) = len * len in LeadingAreaScaling $ (1 % 1800) * (d % n)
@@ -265,7 +279,7 @@ leadingCoefficient
     -> LeadingCoefficient
 leadingCoefficient deadline len xs =
     LeadingCoefficient . toRational . sum
-    $ (\(LeadingAreaStep x) -> x)
+    $ (\(LeadingAreaStep (MkQuantity x)) -> x)
     <$> seq (areaSteps deadline len xs)
 
 -- | Calculate the leading coefficient for all tracks.

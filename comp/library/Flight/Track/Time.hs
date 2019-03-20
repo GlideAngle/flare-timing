@@ -46,7 +46,7 @@ import Data.HashMap.Strict (unions)
 import Data.Time.Clock (UTCTime)
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..), encode, decode)
-import Data.UnitsOfMeasure (u, convert)
+import Data.UnitsOfMeasure (u, convert, zero)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Data.Vector (Vector)
 import qualified Data.Vector as V (fromList, toList)
@@ -204,7 +204,7 @@ data TickRow =
         -- ^ Leg of the task
         , distance :: Double
         -- ^ Distance to goal in km.
-        , area :: LeadingAreaStep
+        , area :: LeadingAreaStep (Quantity Double [u| (km^2)*s |])
         -- ^ Leading coefficient area step.
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
@@ -311,7 +311,7 @@ instance ToNamedRecord TickRow where
                     , namedField "zoneIdx" zoneIdx
                     , namedField "legIdx" legIdx
                     , namedField "distance" (f distance)
-                    , namedField "area" (g area)
+                    , namedField "area" area
                     ]
 
             -- NOTE: Fields in TrackRow that are not in TickRow.
@@ -323,7 +323,6 @@ instance ToNamedRecord TickRow where
                     ]
 
             f = unquote . unpack . encode
-            g (LeadingAreaStep x) = f $ fromRational x
 
 instance FromNamedRecord TickRow where
     parseNamedRecord m =
@@ -353,13 +352,17 @@ leadingSum _ _ [] = Nothing
 leadingSum (Just _) Nothing xs =
     Just . LeadingCoefficient $ sum ys
     where
-        ys = (\TickRow{area = LeadingAreaStep a} -> a) <$> xs
+        ys =
+            (\TickRow{area = LeadingAreaStep (MkQuantity a)} ->
+                toRational a)
+            <$> xs
 leadingSum (Just _) (Just (start, _)) xs =
     if null ys then Nothing else
     Just . LeadingCoefficient $ sum ys
     where
         ys =
-            (\TickRow{area = LeadingAreaStep a} -> a)
+            (\TickRow{area = LeadingAreaStep (MkQuantity a)} ->
+                toRational a)
             <$> filter (\TickRow{legIdx = LegIdx ix} -> ix >= start) xs
 
 leadingArea
@@ -523,7 +526,7 @@ timeToTick TimeRow{..} =
         , zoneIdx = zoneIdx
         , legIdx = legIdx
         , distance = distance
-        , area = LeadingAreaStep 0
+        , area = LeadingAreaStep zero
         }
 
 discard

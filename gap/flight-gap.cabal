@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e27e97a99bf7ba89203ab3d707ca1f4590b1ec5a4c3abd67c9b4e2da3a985f4b
+-- hash: 02e2a494631ae40f420a023a750b0a5d74b279d5eecea45ac55b7eaab8c5c00a
 
 name:           flight-gap
 version:        0.1.0
@@ -35,6 +35,7 @@ library
       Flight.Score
   other-modules:
       Flight.Gap.Allot
+      Flight.Gap.Area.Leading
       Flight.Gap.Distance.Best
       Flight.Gap.Distance.Chunk
       Flight.Gap.Distance.Difficulty
@@ -90,6 +91,7 @@ library
   build-depends:
       aeson
     , base >=4.10.1.0 && <5
+    , cassava
     , containers
     , detour-via-sci
     , detour-via-uom
@@ -109,6 +111,7 @@ test-suite doctest
   main-is: DocTest.hs
   other-modules:
       Flight.Gap.Allot
+      Flight.Gap.Area.Leading
       Flight.Gap.Distance.Best
       Flight.Gap.Distance.Chunk
       Flight.Gap.Distance.Difficulty
@@ -166,6 +169,7 @@ test-suite doctest
   build-depends:
       aeson
     , base >=4.10.1.0 && <5
+    , cassava
     , containers
     , detour-via-sci
     , detour-via-uom
@@ -186,6 +190,7 @@ test-suite score
   main-is: Score.hs
   other-modules:
       Flight.Gap.Allot
+      Flight.Gap.Area.Leading
       Flight.Gap.Distance.Best
       Flight.Gap.Distance.Chunk
       Flight.Gap.Distance.Difficulty
@@ -257,6 +262,7 @@ test-suite score
   build-depends:
       aeson
     , base
+    , cassava
     , containers
     , detour-via-sci
     , detour-via-uom

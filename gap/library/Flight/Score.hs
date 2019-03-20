@@ -178,6 +178,7 @@ module Flight.Score
     , PilotsFlying(..)
     ) where
 
+import Flight.Gap.Area.Leading
 import Flight.Gap.Ratio
 import Flight.Gap.Allot
 import Flight.Gap.Pilots

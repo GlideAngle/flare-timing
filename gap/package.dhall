@@ -23,6 +23,7 @@ in    defs
             , "vector"
             , "statistics"
             , "aeson"
+            , "cassava"
             , "newtype"
             , "scientific"
             , "uom-plugin"
