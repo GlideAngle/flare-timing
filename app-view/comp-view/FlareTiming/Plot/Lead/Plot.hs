@@ -30,6 +30,12 @@ foreign import javascript unsafe
     \  , color: '#e41a1c'\
     \  , graphType: 'polyline'\
     \  },{\
+    \    points: $6\
+    \  , fnType: 'points'\
+    \  , color: '#e41a1c'\
+    \  , attr: { stroke-dasharray: '5,5' }\
+    \  , graphType: 'polyline'\
+    \  },{\
     \    points: $5\
     \  , fnType: 'points'\
     \  , color: '#e41a1c'\
@@ -37,7 +43,7 @@ foreign import javascript unsafe
     \  , graphType: 'scatter'\
     \  }]\
     \})"
-    hgPlot_ :: JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> IO JSVal
+    hgPlot_ :: JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> IO JSVal
 
 hgPlot
     :: IsElement e
@@ -46,21 +52,34 @@ hgPlot
     -> [[Double]]
     -> IO Plot
 hgPlot e (lcMin, lcMax) xs = do
-    let xy :: [[Double]] =
-            [ [x', fn lcMin x']
+    let xyfn :: [[Double]] =
+            [ [x', fnGAP lcMin x']
             | x <- [0 :: Integer .. 199]
             , let step = abs $ (lcMax - lcMin) / 200
             , let x' = lcMin + step * fromIntegral x
             ]
 
+    let xyfnFS :: [[Double]] =
+            [ [x', fnFS lcMin x']
+            | x <- [0 :: Integer .. 199]
+            , let step = abs $ (lcMax - lcMin) / 200
+            , let x' = lcMin + step * fromIntegral x
+            ]
     let pad = (\case 0 -> 1.0; x -> x) . abs $ (lcMax - lcMin) / 40
     lcMin' <- toJSVal $ lcMin - pad
     lcMax' <- toJSVal $ lcMax + pad
-    xy' <- toJSValListOf xy
+    xyfn' <- toJSValListOf xyfn
+    xyfnFS' <- toJSValListOf xyfnFS
     xs' <- toJSValListOf $ nub xs
 
-    Plot <$> hgPlot_ (unElement . toElement $ e) lcMin' lcMax' xy' xs'
+    Plot <$> hgPlot_ (unElement . toElement $ e) lcMin' lcMax' xyfn' xs' xyfnFS'
 
-fn :: Double -> Double -> Double
-fn lcMin x =
-    max 0.0 $ 1.0 - ((x - lcMin)**2/lcMin**(1.0/2.0))**(1.0/3.0)
+-- | The equation from the GAP rules.
+fnGAP :: Double -> Double -> Double
+fnGAP lcMin lc =
+    max 0.0 $ 1.0 - ((lc - lcMin)**2/lcMin**(1.0/2.0))**(1.0/3.0)
+
+-- | The equation from the FS implementation.
+fnFS :: Double -> Double -> Double
+fnFS lcMin lc =
+    max 0.0 $ 1.0 - ((lc - lcMin)/lcMin**(1.0/2.0))**(2.0/3.0)

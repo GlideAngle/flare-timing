@@ -45,6 +45,16 @@ hgPlot ld = do
                                 return ())
                             ]
 
+                        elClass "div" "level" $
+                            elClass "div" "level-item" $
+                                el "ul" $ do
+                                    el "li" $ do
+                                        elClass "span" "legend-leading" $ text "─"
+                                        text " GAP equation"
+                                    el "li" $ do
+                                        elClass "span" "legend-leading" $ text "- -"
+                                        text " FS equation"
+
                         ld' <- sample . current $ ld
 
                     return ()
