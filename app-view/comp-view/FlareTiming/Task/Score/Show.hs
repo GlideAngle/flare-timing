@@ -9,6 +9,7 @@ module FlareTiming.Task.Score.Show
     , showPilotTimeDiff
     , showPilotLeadingCoef
     , showPilotLeadingCoefDiff
+    , showPilotLeadingFracDiff
     , showSsVelocityTime
     , showGsVelocityTime
     , showVelocityVelocity
@@ -22,7 +23,7 @@ import Data.Time.LocalTime (TimeZone)
 import WireTypes.Route (TaskLength(..), showTaskDistance)
 import qualified WireTypes.Point as Pt (StartGate(..))
 import WireTypes.Speed (PilotTime(..))
-import WireTypes.Lead (LeadingCoefficient(..))
+import WireTypes.Lead (LeadingCoefficient(..), LeadingFraction(..))
 import WireTypes.Point (TaskPlacing(..), Velocity(..), PilotVelocity(..))
 import FlareTiming.Time
     (showHmsForHours, showT, showSignedSecs, hoursToSecs, hoursToRoundSecs)
@@ -68,12 +69,17 @@ showEs _ _ = ""
 
 showPilotLeadingCoef :: LeadingCoefficient -> T.Text
 showPilotLeadingCoef (LeadingCoefficient lc) =
-    T.pack $ printf "%+.3f" lc
+    T.pack $ printf "%+.4f" lc
 
 showPilotLeadingCoefDiff :: LeadingCoefficient -> LeadingCoefficient -> T.Text
 showPilotLeadingCoefDiff (LeadingCoefficient expected) (LeadingCoefficient actual)
     | actual == expected = "="
-    | otherwise = T.pack $ printf "%+.3f" (actual - expected)
+    | otherwise = T.pack $ printf "%+.4f" (actual - expected)
+
+showPilotLeadingFracDiff :: LeadingFraction -> LeadingFraction -> T.Text
+showPilotLeadingFracDiff (LeadingFraction expected) (LeadingFraction actual)
+    | actual == expected = "="
+    | otherwise = T.pack $ printf "%+.4f" (actual - expected)
 
 showPilotTime :: PilotTime -> T.Text
 showPilotTime (PilotTime t) = showHmsForHours t
