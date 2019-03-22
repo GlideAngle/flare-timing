@@ -36,6 +36,7 @@ import Flight.Score
     , Pilot, BestTime, PilotTime, PilotDistance, PilotVelocity
     , PointPenalty
     , SpeedFraction
+    , LeadingArea(..), LeadingCoef(..), LeadingFraction(..)
     )
 import Flight.Track.Distance (Land)
 import Flight.Comp (StartGate)
@@ -82,6 +83,9 @@ data NormBreakdown =
         , es :: Maybe UTCTime
         , timeElapsed :: Maybe (PilotTime (Quantity Double [u| h |]))
         , timeFrac :: SpeedFraction
+        , leadingArea :: LeadingArea (Quantity Double [u| (km^2)*s |])
+        , leadingCoef :: LeadingCoef (Quantity Double [u| 1 |])
+        , leadingFrac :: LeadingFraction
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
@@ -175,29 +179,56 @@ cmpNorm a b =
         ("distanceMade", "distanceFrac") -> LT
         ("distanceMade", "ss") -> LT
         ("distanceMade", "es") -> LT
+        ("distanceMade", "leadingArea") -> LT
+        ("distanceMade", "leadingCoef") -> LT
+        ("distanceMade", "leadingFrac") -> LT
         ("distanceMade", "timeElapsed") -> LT
         ("distanceMade", "timeFrac") -> LT
         ("distanceMade", _) -> GT
 
         ("distanceFrac", "ss") -> LT
         ("distanceFrac", "es") -> LT
+        ("distanceFrac", "leadingArea") -> LT
+        ("distanceFrac", "leadingCoef") -> LT
+        ("distanceFrac", "leadingFrac") -> LT
         ("distanceFrac", "timeElapsed") -> LT
         ("distanceFrac", "timeFrac") -> LT
         ("distanceFrac", _) -> GT
 
         ("ss", "es") -> LT
+        ("ss", "leadingArea") -> LT
+        ("ss", "leadingCoef") -> LT
+        ("ss", "leadingFrac") -> LT
         ("ss", "timeElapsed") -> LT
         ("ss", "timeFrac") -> LT
         ("ss", _) -> GT
 
+        ("es", "leadingArea") -> LT
+        ("es", "leadingCoef") -> LT
+        ("es", "leadingFrac") -> LT
         ("es", "timeElapsed") -> LT
         ("es", "timeFrac") -> LT
         ("es", _) -> GT
 
+        ("timeElapsed", "leadingArea") -> LT
+        ("timeElapsed", "leadingCoef") -> LT
+        ("timeElapsed", "leadingFrac") -> LT
         ("timeElapsed", "timeFrac") -> LT
         ("timeElapsed", _) -> GT
 
+        ("timeFrac", "leadingArea") -> LT
+        ("timeFrac", "leadingCoef") -> LT
+        ("timeFrac", "leadingFrac") -> LT
         ("timeFrac", _) -> GT
+
+        ("leadingArea", "leadingCoef") -> LT
+        ("leadingArea", "leadingFrac") -> LT
+        ("leadingArea", _) -> GT
+
+        ("leadingCoef", "leadingFrac") -> LT
+        ("leadingCoef", _) -> GT
+
+        ("leadingFrac", _) -> GT
 
         ("bestTime", _) -> LT
         ("score", _) -> GT

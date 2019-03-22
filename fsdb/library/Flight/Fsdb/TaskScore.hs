@@ -1,6 +1,6 @@
 module Flight.Fsdb.TaskScore (parseScores) where
 
-import Data.UnitsOfMeasure (u, convert, fromRational')
+import Data.UnitsOfMeasure (u, zero, convert, fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Data.Time.LocalTime (TimeOfDay, timeOfDayToTime)
 import Data.Maybe (catMaybes)
@@ -8,7 +8,7 @@ import Data.Maybe (catMaybes)
 import Text.XML.HXT.Arrow.Pickle
     ( PU(..)
     , unpickleDoc, xpWrap, xpFilterAttr, xpElem, xpAttr
-    , xpInt, xpPrim, xp10Tuple, xpTextAttr, xpOption
+    , xpInt, xpPrim, xpPair, xp10Tuple, xpTextAttr, xpOption
     )
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
 import Text.XML.HXT.Core
@@ -45,6 +45,7 @@ import Flight.Score
     , TimePoints(..)
     , PilotTime(..)
     , SpeedFraction(..)
+    , LeadingArea(..), LeadingCoef(..), LeadingFraction(..)
     )
 import Flight.Fsdb.Pilot (getCompPilot)
 import Flight.Fsdb.KeyPilot (unKeyPilot, keyPilots, keyMap)
@@ -93,6 +94,9 @@ xpRankScore =
                     if ssE == Just "00:00:00" then Nothing else
                     toPilotTime . parseHmsTime <$> ssE
                 , timeFrac = SpeedFraction 0
+                , leadingArea = LeadingArea zero
+                , leadingCoef = LeadingCoef zero
+                , leadingFrac = LeadingFraction 0
                 }
         , \NormBreakdown
                 { place = TaskPlacing r
@@ -129,6 +133,14 @@ xpRankScore =
         (xpOption $ xpTextAttr "started_ss")
         (xpOption $ xpTextAttr "finished_ss")
         (xpOption $ xpTextAttr "ss_time")
+
+xpLeading :: PU (Int, Double)
+xpLeading =
+    xpElem "FsFlightData"
+    $ xpFilterAttr (hasName "iv" <+> hasName "lc")
+    $ xpPair
+        (xpAttr "iv" xpInt)
+        (xpAttr "lc" xpPrim)
 
 getScore :: ArrowXml a => [Pilot] -> a XmlTree [(Pilot, Maybe NormBreakdown)]
 getScore pilots =
@@ -176,18 +188,34 @@ getScore pilots =
                         )
                     >>> getAttrValue "id"
                     &&& getResultScore
-                    >>> arr (\(pid, x) -> (unKeyPilot (keyMap kps) . PilotId $ pid, x))
+                    &&& getLeading
+                    >>> arr (\(pid, (x, ld)) ->
+                        ( unKeyPilot (keyMap kps) . PilotId $ pid
+                        , do
+                            norm <- x
+                            (a, c) <- ld
+                            return $
+                                norm
+                                    { leadingArea = LeadingArea . MkQuantity . fromIntegral $ a
+                                    , leadingCoef = LeadingCoef . MkQuantity $ c
+                                    }
+                        ))
 
                 getResultScore =
                     getChildren
                     >>> hasName "FsResult"
                     >>> arr (unpickleDoc xpRankScore)
 
+        getLeading =
+            (getChildren
+            >>> hasName "FsFlightData"
+            >>> arr (unpickleDoc xpLeading)
+            )
+
         getTaskDistance =
             getChildren
             >>> hasName "FsTaskScoreParams"
             >>> getAttrValue "task_distance"
-
 
 parseScores :: String -> IO (Either String NormPointing)
 parseScores contents = do
