@@ -1,4 +1,4 @@
-module Flight.Gap.Area.Leading
+module Flight.Gap.Leading.Area
     ( LeadingArea(..)
     , LeadingAreaUnits
     , zeroLeadingAreaUnits

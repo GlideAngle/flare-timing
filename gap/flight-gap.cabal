@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 63c95fac000cb2409e45c004ca0e64e0200ed6e14770dd3eceba82696acb0131
+-- hash: 485b1ced41a356bbe04fb92799c790a2c1a2aa45c64ea57daaf591ec68eb08ab
 
 name:           flight-gap
 version:        0.1.0
@@ -35,8 +35,6 @@ library
       Flight.Score
   other-modules:
       Flight.Gap.Allot
-      Flight.Gap.Area.Leading
-      Flight.Gap.Area.Scaling
       Flight.Gap.Distance.Best
       Flight.Gap.Distance.Chunk
       Flight.Gap.Distance.Difficulty
@@ -50,6 +48,9 @@ library
       Flight.Gap.Distance.Sum
       Flight.Gap.Equation
       Flight.Gap.Leading
+      Flight.Gap.Leading.Area
+      Flight.Gap.Leading.Coef
+      Flight.Gap.Leading.Scaling
       Flight.Gap.Pilots
       Flight.Gap.Place.Arrival
       Flight.Gap.Place.Task
@@ -112,8 +113,6 @@ test-suite doctest
   main-is: DocTest.hs
   other-modules:
       Flight.Gap.Allot
-      Flight.Gap.Area.Leading
-      Flight.Gap.Area.Scaling
       Flight.Gap.Distance.Best
       Flight.Gap.Distance.Chunk
       Flight.Gap.Distance.Difficulty
@@ -127,6 +126,9 @@ test-suite doctest
       Flight.Gap.Distance.Sum
       Flight.Gap.Equation
       Flight.Gap.Leading
+      Flight.Gap.Leading.Area
+      Flight.Gap.Leading.Coef
+      Flight.Gap.Leading.Scaling
       Flight.Gap.Pilots
       Flight.Gap.Place.Arrival
       Flight.Gap.Place.Task
@@ -192,8 +194,6 @@ test-suite score
   main-is: Score.hs
   other-modules:
       Flight.Gap.Allot
-      Flight.Gap.Area.Leading
-      Flight.Gap.Area.Scaling
       Flight.Gap.Distance.Best
       Flight.Gap.Distance.Chunk
       Flight.Gap.Distance.Difficulty
@@ -207,6 +207,9 @@ test-suite score
       Flight.Gap.Distance.Sum
       Flight.Gap.Equation
       Flight.Gap.Leading
+      Flight.Gap.Leading.Area
+      Flight.Gap.Leading.Coef
+      Flight.Gap.Leading.Scaling
       Flight.Gap.Pilots
       Flight.Gap.Place.Arrival
       Flight.Gap.Place.Task

@@ -25,6 +25,7 @@ in    defs
             , "filemanip"
             , "lens"
             , "mtl"
+            , "newtype"
             , "path"
             , "scientific"
             , "split"

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 5b329991e69cbcc90c4d84310cc8b0515a58f61bc8867728a15003a942ec4868
+-- hash: d040bea02a80eddd78222dfc7f56060a7e9ae2fb1133aa9d025b307f1d53a3db
 
 name:           flight-comp
 version:        0.1.0
@@ -72,6 +72,7 @@ library
     , flight-zone
     , lens
     , mtl
+    , newtype
     , path
     , scientific
     , siggy-chardust
@@ -127,6 +128,7 @@ test-suite comp
     , flight-zone
     , lens
     , mtl
+    , newtype
     , path
     , scientific
     , siggy-chardust
@@ -188,6 +190,7 @@ test-suite doctest
     , flight-zone
     , lens
     , mtl
+    , newtype
     , path
     , scientific
     , siggy-chardust

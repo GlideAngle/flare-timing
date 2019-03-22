@@ -1,7 +1,8 @@
-module Flight.Gap.Area.Scaling
+module Flight.Gap.Leading.Scaling
     ( LeadingAreaScaling(..)
     , AreaToCoef(..)
     , AreaToCoefUnits
+    , CoefUnits
     ) where
 
 import "newtype" Control.Newtype (Newtype(..))
@@ -16,7 +17,8 @@ import Flight.Units ()
 newtype LeadingAreaScaling = LeadingAreaScaling Rational
     deriving (Eq, Ord, Show)
 
-type AreaToCoefUnits = Quantity Double [u| 1/((km^2)*s) |]
+type AreaToCoefUnits = Quantity Rational [u| 1/((km^2)*s) |]
+type CoefUnits = Quantity Rational [u| 1 |]
 
 newtype AreaToCoef a = AreaToCoef a
     deriving (Eq, Ord, Show)

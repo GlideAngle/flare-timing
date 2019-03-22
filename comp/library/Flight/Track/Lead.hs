@@ -13,26 +13,29 @@ module Flight.Track.Lead
     , lwScalingDefault
     ) where
 
+import "newtype" Control.Newtype (Newtype(..))
 import Data.Maybe (catMaybes)
 import Data.List (sortOn)
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
-import Data.UnitsOfMeasure (u)
+import Data.UnitsOfMeasure (u, zero, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Distance (QTaskDistance)
 import Flight.Comp (Pilot, Task(..))
 import Flight.Score
-    ( LeadingArea(..), LeadingFraction(..), LwScaling(..)
-    , leadingFraction
+    ( LeadingArea(..), LeadingCoef(..), LeadingFraction(..)
+    , LwScaling(..)
+    , leadingFraction, areaToCoef, mkCoef
     )
-import Flight.Track.Time (taskToLeading, leadingSum, minLeading)
+import Flight.Track.Time (taskToLeading, leadingAreaSum, minLeadingCoef)
 import qualified Flight.Track.Time as Time (TickRow(..))
 import Flight.Zone.MkZones (Discipline(..))
 
 data TrackLead =
     TrackLead
-        { coef :: LeadingArea (Quantity Double [u| (km^2)*s |])
+        { area :: LeadingArea (Quantity Double [u| (km^2)*s |])
+        , coef :: LeadingCoef (Quantity Double [u| 1 |])
         , frac :: LeadingFraction
         }
     deriving (Eq, Ord, Show, Generic)
@@ -43,35 +46,50 @@ compLeading
     -> [Maybe (QTaskDistance Double [u| m |])]
     -> [Task k]
     ->
-        ( [Maybe (LeadingArea (Quantity Double [u| (km^2)*s |]))]
+        ( [Maybe (LeadingCoef (Quantity Double [u| 1 |]))]
         , [[(Pilot, TrackLead)]]
         )
 compLeading rowsLeadingStep lsTask tasks' =
     (lcMins, lead)
     where
-        rowsLeadingSum' :: [[(Pilot, Maybe (LeadingArea (Quantity Double [u| (km^2)*s |])))]] =
-                    [ (fmap . fmap) (leadingSum l s) xs
-                    | l <- (fmap . fmap) taskToLeading lsTask
-                    | s <- speedSection <$> tasks'
-                    | xs <- rowsLeadingStep
-                    ]
+        ks :: [Quantity Rational [u| (km^2)*s |] -> Quantity Double [u| 1 |]]
+        ks =
+                [ maybe
+                    (const [u| 1 |])
+                    (mkCoef . areaToCoef)
+                    l
 
-        rowsLeadingSum :: [[(Pilot, LeadingArea (Quantity Double [u| (km^2)*s |]))]] =
+                | l <- (fmap . fmap) taskToLeading lsTask
+                ]
+
+        ass' :: [[(Pilot, Maybe (LeadingArea (Quantity Double [u| (km^2)*s |])))]] =
+                [ (fmap . fmap) (leadingAreaSum l s) xs
+                | l <- (fmap . fmap) taskToLeading lsTask
+                | s <- speedSection <$> tasks'
+                | xs <- rowsLeadingStep
+                ]
+
+        ass :: [[(Pilot, LeadingArea (Quantity Double [u| (km^2)*s |]))]] =
                 catMaybes
-                <$> (fmap . fmap) floatMaybe rowsLeadingSum'
+                <$> (fmap . fmap) floatMaybe ass'
 
-        lcMins :: [Maybe (LeadingArea (Quantity Double [u| (km^2)*s |]))]
-        lcMins =
-                minLeading
-                <$> (fmap . fmap) snd rowsLeadingSum
+        css :: [[(Pilot, LeadingCoef (Quantity Double [u| 1 |]))]] =
+                [ (fmap $ LeadingCoef . k . toRational' . unpack) <$> as
+                | k <- ks
+                | as <- ass
+                ]
+
+        lcMins :: [Maybe (LeadingCoef (Quantity Double [u| 1 |]))]
+        lcMins = minLeadingCoef <$> (fmap . fmap) snd css
 
         lead :: [[(Pilot, TrackLead)]] =
-                sortOn ((\TrackLead{coef = LeadingArea c} -> c) . snd)
+                sortOn ((\TrackLead{coef = LeadingCoef c} -> c) . snd)
                 <$>
                 [(fmap . fmap)
                     (\lc ->
                         TrackLead
-                            { coef = lc
+                            { area = LeadingArea zero
+                            , coef = lc
                             , frac =
                                 maybe
                                     (LeadingFraction 0)
@@ -80,7 +98,7 @@ compLeading rowsLeadingStep lsTask tasks' =
                             })
                     xs
                 | lcMin <- lcMins
-                | xs <- rowsLeadingSum
+                | xs <- css
                 ]
 
 floatMaybe :: (a, Maybe b) -> Maybe (a, b)

@@ -30,7 +30,7 @@ import Flight.Score
     ( Pilot(..)
     , PilotsAtEss(..)
     , BestTime(..)
-    , LeadingArea(..)
+    , LeadingCoef(..)
     , AreaToCoef(..)
     , EssTime(..)
     )
@@ -60,9 +60,9 @@ data Masking =
         -- ^ For each task, the best distance made.
         , sumDistance :: [Maybe (QTaskDistance Double [u| m |])]
         -- ^ For each task, the sum of all distance flown over minimum distance.
-        , leadAreaToCoef :: [Maybe (AreaToCoef (Quantity Double [u| 1/((km^2)*s)|]))]
+        , leadAreaToCoef :: [Maybe (AreaToCoef (Quantity Rational [u| 1/((km^2)*s)|]))]
         -- ^ For each task, the scaling of leading area.
-        , leadCoefMin :: [Maybe (LeadingArea (Quantity Double [u| (km^2)*s |]))]
+        , leadCoefMin :: [Maybe (LeadingCoef (Quantity Double [u| 1 |]))]
         -- ^ For each task, the minimum of all pilot's leading coefficient.
         , leadRank :: [[(Pilot, TrackLead)]]
         -- ^ For each task, the rank order of leading and leading fraction.

@@ -10,7 +10,6 @@ Track fixes indexed on when the first pilot starts the speed section.
 -}
 module Flight.Track.Time
     ( AwardedVelocity(..)
-    , LeadingDistance(..)
     , LeadTick(..)
     , RaceTick(..)
     , TrackRow(..)
@@ -23,8 +22,8 @@ module Flight.Track.Time
     , ZoneIdx(..)
     , LegIdx(..)
     , leadingArea
-    , leadingSum
-    , minLeading
+    , leadingAreaSum
+    , minLeadingCoef
     , taskToLeading
     , discard
     , allHeaders
@@ -46,7 +45,7 @@ import Data.HashMap.Strict (unions)
 import Data.Time.Clock (UTCTime)
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..), encode, decode)
-import Data.UnitsOfMeasure ((+:), u, convert, zero)
+import Data.UnitsOfMeasure ((+:), u, convert, zero, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Data.Vector (Vector)
 import qualified Data.Vector as V (fromList, toList)
@@ -56,6 +55,7 @@ import Flight.Clip (FlyCut(..), FlyClipping(..))
 import Flight.LatLng.Raw (RawLat, RawLng)
 import Flight.Score
     ( LeadingArea(..)
+    , LeadingCoef(..)
     , TaskTime(..)
     , DistanceToEss(..)
     , Leg(..)
@@ -120,8 +120,6 @@ newtype RaceTick = RaceTick Double
 
 instance Show RaceTick where
     show (RaceTick t) = showSecs $ toRational t
-
-newtype LeadingDistance = LeadingDistance (Quantity Double [u| km |])
 
 -- WARNING: I suspect cassava doesn't support repeated column names.
 
@@ -334,29 +332,29 @@ instance FromNamedRecord TickRow where
         m .: "distance" <*>
         m .: "area"
 
-minLeading
-    :: [LeadingArea (Quantity Double [u| (km^2)*s |])]
-    -> Maybe (LeadingArea (Quantity Double [u| (km^2)*s |]))
-minLeading xs =
+minLeadingCoef
+    :: [LeadingCoef (Quantity Double [u| 1 |])]
+    -> Maybe (LeadingCoef (Quantity Double [u| 1 |]))
+minLeadingCoef xs =
     if null xs then Nothing else Just $ minimum xs
 
 -- TODO: The GAP guide says that the best distance for zeroth time is the
 -- leading distance. Describe how this interacts with the distance to goal of
 -- the first point on course.
-leadingSum
-    :: Maybe LeadingDistance
+leadingAreaSum
+    :: Maybe LengthOfSs
     -> SpeedSection
     -> [TickRow]
     -> Maybe (LeadingArea (Quantity Double [u| (km^2)*s |]))
-leadingSum Nothing _ _ = Nothing
-leadingSum _ _ [] = Nothing
-leadingSum (Just _) Nothing xs =
+leadingAreaSum Nothing _ _ = Nothing
+leadingAreaSum _ _ [] = Nothing
+leadingAreaSum (Just _) Nothing xs =
     Just . LeadingArea $ sum' ys
     where
         ys =
             (\TickRow{area = LeadingArea a} -> a)
             <$> xs
-leadingSum (Just _) (Just (start, _)) xs =
+leadingAreaSum (Just _) (Just (start, _)) xs =
     if null ys then Nothing else
     Just . LeadingArea $ sum' ys
     where
@@ -515,9 +513,9 @@ landOutRow (EssTime t) d =
         , togo = d
         }
 
-taskToLeading :: QTaskDistance Double [u| m |] -> LeadingDistance
+taskToLeading :: QTaskDistance Double [u| m |] -> LengthOfSs
 taskToLeading (TaskDistance d) =
-    LeadingDistance (convert d :: Quantity Double [u| km |])
+    LengthOfSs . toRational' $ (convert d :: Quantity Double [u| km |])
 
 timeToTick :: TimeRow -> TickRow
 timeToTick TimeRow{..} =
