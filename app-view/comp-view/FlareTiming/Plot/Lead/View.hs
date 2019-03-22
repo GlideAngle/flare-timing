@@ -4,14 +4,18 @@ import Text.Printf (printf)
 import Reflex.Dom
 import Reflex.Time (delay)
 import qualified Data.Text as T (Text, pack)
+import qualified Data.Map.Strict as Map
 
 import Control.Monad.IO.Class (liftIO)
 import qualified FlareTiming.Plot.Lead.Plot as P (hgPlot)
 
 import WireTypes.Lead
     (TrackLead(..), LeadingCoefficient(..), LeadingFraction(..))
+import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import WireTypes.Pilot (Pilot(..))
+import WireTypes.Point (LeadingPoints(..))
 import FlareTiming.Pilot (showPilotName)
+import FlareTiming.Task.Score.Show
 
 placings :: [TrackLead] -> [[Double]]
 placings = fmap xy
@@ -28,9 +32,10 @@ lcRange xs =
 
 hgPlot
     :: MonadWidget t m
-    => Dynamic t [(Pilot, TrackLead)]
+    => Dynamic t [(Pilot, Norm.NormBreakdown)]
+    -> Dynamic t [(Pilot, TrackLead)]
     -> m ()
-hgPlot ld = do
+hgPlot sEx ld = do
     pb <- delay 1 =<< getPostBuild
 
     elClass "div" "tile is-ancestor" $ do
@@ -59,39 +64,71 @@ hgPlot ld = do
 
                     return ()
 
-        elClass "div" "tile is-child" $ tablePilot ld
+        elClass "div" "tile is-child" $ tablePilot sEx ld
 
     return ()
 
 tablePilot
     :: MonadWidget t m
-    => Dynamic t [(Pilot, TrackLead)]
+    => Dynamic t [(Pilot, Norm.NormBreakdown)]
+    -> Dynamic t [(Pilot, TrackLead)]
     -> m ()
-tablePilot xs = do
+tablePilot sEx xs = do
+    let pts = fmap ((\(LeadingPoints x) -> x) . Norm.leading . snd) <$> sEx
+    let maxPts = ffor pts (\case [] -> 0; pts' -> maximum pts')
+    let sEx' = Map.fromList <$> sEx
     _ <- elClass "table" "table is-striped" $ do
             el "thead" $ do
                 el "tr" $ do
-                    el "th" $ text "Coefficent"
-                    el "th" $ text "Fraction"
+                    el "th" $ text "Coef"
+                    elClass "th" "th-norm" $ text "✓-Coef"
+                    elClass "th" "th-norm" $ text "Δ-Coef"
+                    el "th" $ text "Frac"
+                    elClass "th" "th-norm" $ text "✓-Frac"
+                    elClass "th" "th-norm" $ text "Δ-Frac"
                     el "th" $ text "Pilot"
 
                     return ()
 
             el "tbody" $ do
-                simpleList xs (uncurry rowLead . splitDynPure)
+                simpleList xs (uncurry (rowLead maxPts sEx') . splitDynPure)
 
     return ()
 
 rowLead
     :: MonadWidget t m
-    => Dynamic t Pilot
+    => Dynamic t Double
+    -> Dynamic t (Map.Map Pilot Norm.NormBreakdown)
+    -> Dynamic t Pilot
     -> Dynamic t TrackLead
     -> m ()
-rowLead p av = do
+rowLead maxPts sEx pilot av = do
+    maxPts' <- sample . current $ maxPts
+    (yCoef, yCoefDiff, yFrac, pFrac) <- sample . current
+                $ ffor3 pilot sEx av (\pilot' sEx' TrackLead{coef = coef} ->
+                    case Map.lookup pilot' sEx' of
+                        Just
+                            Norm.NormBreakdown
+                                { leading = (LeadingPoints pts)
+                                , leadingCoef = coef'
+                                , leadingFrac = lf
+                                } ->
+                            ( showPilotLeadingCoef coef'
+                            , showPilotLeadingCoefDiff coef' coef
+                            , showFrac lf
+                            , showFrac . LeadingFraction $ pts / maxPts'
+                            )
+
+                        _ -> ("", "", "", ""))
+
     el "tr" $ do
         el "td" . dynText $ showCoef . coef <$> av
+        elClass "td" "td-norm td-norm-pace" . text $ yCoef
+        elClass "td" "td-norm td-time-diff" . text $ yCoefDiff
         el "td" . dynText $ showFrac . frac <$> av
-        el "td" . dynText $ showPilotName <$> p
+        elClass "td" "td-norm" . text $ yFrac
+        elClass "td" "td-norm" . text $ pFrac
+        el "td" . dynText $ showPilotName <$> pilot
 
         return ()
 

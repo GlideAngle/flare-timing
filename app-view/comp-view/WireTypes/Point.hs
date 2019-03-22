@@ -15,6 +15,7 @@ module WireTypes.Point
     , DifficultyPoints(..)
     , ArrivalPoints(..)
     , TimePoints(..)
+    , LeadingPoints(..)
     , TaskPlacing(..)
     , TaskPoints(..)
     , Points(..)
@@ -64,6 +65,7 @@ import Data.Aeson
     )
 import qualified Data.Text as T (Text, pack, unpack)
 import WireTypes.Speed (PilotTime, SpeedFraction)
+import WireTypes.Lead (LeadingFraction, LeadingArea, LeadingCoefficient)
 
 newtype StartGate = StartGate UTCTime
     deriving (Eq, Ord, Show, Generic)
@@ -395,6 +397,9 @@ data NormBreakdown =
         , es :: Maybe UTCTime
         , timeElapsed :: Maybe PilotTime
         , timeFrac :: SpeedFraction
+        , leadingArea :: LeadingArea
+        , leadingCoef :: LeadingCoefficient
+        , leadingFrac :: LeadingFraction
         }
     deriving (Eq, Ord, Show, Generic, FromJSON)
 

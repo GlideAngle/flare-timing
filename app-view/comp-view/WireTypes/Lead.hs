@@ -1,5 +1,6 @@
 module WireTypes.Lead
-    ( LeadingFraction(..)
+    ( LeadingArea(..)
+    , LeadingFraction(..)
     , LeadingCoefficient(..)
     , TrackLead(..)
     ) where
@@ -11,13 +12,18 @@ newtype LeadingFraction = LeadingFraction Double
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (FromJSON)
 
+newtype LeadingArea = LeadingArea Double
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (FromJSON)
+
 newtype LeadingCoefficient = LeadingCoefficient Double
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (FromJSON)
 
 data TrackLead =
     TrackLead
-        { coef :: LeadingCoefficient
+        { area :: LeadingArea
+        , coef :: LeadingCoefficient
         , frac :: LeadingFraction
         }
     deriving (Eq, Ord, Show, Generic)
