@@ -30,7 +30,7 @@ newtype LeadingArea a = LeadingArea a
 instance
     (q ~ LeadingAreaUnits)
     => DefaultDecimalPlaces (LeadingArea q) where
-    defdp _ = DecimalPlaces 8
+    defdp _ = DecimalPlaces 4
 
 instance
     (q ~ LeadingAreaUnits)
