@@ -6,10 +6,7 @@ module WireTypes.Speed
 
 import Control.Applicative (empty)
 import GHC.Generics (Generic)
-import Data.Aeson (FromJSON(..))
-import Data.Aeson
-    ( Value(..)
-    )
+import Data.Aeson (FromJSON(..), Value(..))
 import qualified Data.Text as T (unpack)
 
 newtype SpeedFraction = SpeedFraction Double
