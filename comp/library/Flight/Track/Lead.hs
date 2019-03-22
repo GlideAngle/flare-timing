@@ -85,20 +85,27 @@ compLeading rowsLeadingStep lsTask tasks' =
         lead :: [[(Pilot, TrackLead)]] =
                 sortOn ((\TrackLead{coef = LeadingCoef c} -> c) . snd)
                 <$>
-                [(fmap . fmap)
-                    (\lc ->
-                        TrackLead
-                            { area = LeadingArea zero
-                            , coef = lc
+                [
+                    [
+                        ( p
+                        , TrackLead
+                            { area = a
+                            , coef = c
                             , frac =
                                 maybe
                                     (LeadingFraction 0)
-                                    (`leadingFraction` lc)
+                                    (`leadingFraction` c)
                                     lcMin
-                            })
-                    xs
+                            }
+                        )
+
+                    | (_, a) <- as
+                    | (p, c) <- cs
+                    ]
+
                 | lcMin <- lcMins
-                | xs <- css
+                | as <- ass
+                | cs <- css
                 ]
 
 floatMaybe :: (a, Maybe b) -> Maybe (a, b)
