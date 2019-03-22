@@ -5,14 +5,15 @@ module Flight.Gap.Leading.Coef
     ) where
 
 import "newtype" Control.Newtype (Newtype(..))
-import Data.Aeson (ToJSON(..), FromJSON(..))
+import Control.Applicative (empty)
+import Data.Aeson (ToJSON(..), FromJSON(..), Value(Number))
 import Data.Csv (ToField(..), FromField(..))
-import Data.UnitsOfMeasure (u, zero)
+import Data.UnitsOfMeasure (u, zero, unQuantity)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
-import Data.Via.Scientific (DefaultDecimalPlaces(..), DecimalPlaces(..))
-import Data.Via.UnitsOfMeasure (ViaQ(..))
+import Data.Via.Scientific
+    (DefaultDecimalPlaces(..), DecimalPlaces(..), fromSci, toSci)
 
 type LeadingCoefUnits = Quantity Double [u| 1 |]
 
@@ -34,12 +35,18 @@ instance
     unpack (LeadingCoef a) = a
 
 instance (q ~ LeadingCoefUnits) => ToJSON (LeadingCoef q) where
-    toJSON x = toJSON $ ViaQ x
+    toJSON x@(LeadingCoef q) =
+        let c :: Double
+            c = unQuantity q
+
+        in Number $ toSci (defdp x) (toRational c)
 
 instance (q ~ LeadingCoefUnits) => FromJSON (LeadingCoef q) where
-    parseJSON o = do
-        ViaQ x <- parseJSON o
-        return x
+    parseJSON x@(Number _) =
+        LeadingCoef . MkQuantity . fromRational . fromSci
+        <$> parseJSON x
+
+    parseJSON _ = empty
 
 instance
     (q ~ LeadingCoefUnits)
