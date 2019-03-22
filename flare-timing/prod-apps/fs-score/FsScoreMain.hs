@@ -17,7 +17,7 @@ import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
 import Flight.Fsdb (parseScores)
 import Flight.Track.Speed (TrackSpeed)
-import qualified Flight.Track.Speed as Track (TrackSpeed(..))
+import qualified Flight.Track.Speed as Time (TrackSpeed(..))
 import Flight.Track.Point (NormPointing(..), NormBreakdown(..))
 import Flight.Comp
     ( FileType(Fsdb)
@@ -29,7 +29,11 @@ import Flight.Comp
     , ensureExt
     )
 import qualified Flight.Score as Gap (bestTime')
-import Flight.Score (BestTime(..), PilotTime(..), speedFraction)
+import Flight.Score
+    ( BestTime(..), PilotTime(..), LeadingFraction(..)
+    , LeadingPoints(..)
+    , speedFraction
+    )
 import Flight.Scribe (writeScore)
 import FsScoreOptions (description)
 
@@ -73,9 +77,7 @@ normScores fsdbXml = do
     let vss :: [Maybe (BestTime (Quantity Double [u| h |]), [(Pilot, TrackSpeed)])] =
             times <$> xss
 
-    let ts = (fmap . fmap) fst vss
-
-    let yss =
+    let tss =
             [
                 reverse . sortOn (total . snd) $
                 maybe
@@ -86,9 +88,9 @@ normScores fsdbXml = do
                             case Map.lookup p vMap of
                                 Nothing -> px
                                 Just
-                                    Track.TrackSpeed
-                                        { Track.time = tt
-                                        , Track.frac = tf
+                                    Time.TrackSpeed
+                                        { Time.time = tt
+                                        , Time.frac = tf
                                         } -> (p, x{timeElapsed = Just tt, timeFrac = tf})
                         | px@(p, x) <- xs
                         ])
@@ -98,7 +100,53 @@ normScores fsdbXml = do
             | vs <- (fmap . fmap) snd vss
             ]
 
-    return $ NormPointing{bestTime = ts, score = yss}
+    let css =
+            [
+                maybe
+                    ts
+                    (\cs ->
+                        [ (p, t{leadingFrac = c})
+                        | (_, c) <- cs
+                        | (p, t) <- ts
+                        ]
+                    )
+                    (leads ts)
+
+            | ts <- tss
+            ]
+
+    return $
+        NormPointing
+            { bestTime = (fmap . fmap) fst vss
+            , score = css
+            }
+
+leads
+    :: [(Pilot, NormBreakdown)]
+    -> Maybe [(Pilot, LeadingFraction)]
+leads xs =
+    (\ lf -> second (g lf) <$> ys)
+    <$> maxLeadingPoints cs
+    where
+        ys :: [(Pilot, LeadingPoints)]
+        ys = (\(p, NormBreakdown{leading = c}) -> (p,c)) <$> xs
+
+        cs :: [LeadingPoints]
+        cs = snd <$> ys
+
+        g lcMin lc = leadingFraction lcMin lc
+
+leadingFraction
+    :: LeadingPoints
+    -> LeadingPoints
+    -> LeadingFraction
+leadingFraction (LeadingPoints maxPts) (LeadingPoints pts)
+    | maxPts == 0 = LeadingFraction 0
+    | otherwise = LeadingFraction . toRational $ pts / maxPts
+
+maxLeadingPoints :: [LeadingPoints] -> Maybe LeadingPoints
+maxLeadingPoints [] = Nothing
+maxLeadingPoints xs = Just $ maximum xs
 
 times
     :: [(Pilot, NormBreakdown)]
@@ -117,7 +165,7 @@ times xs =
         ts = snd <$> ys
 
         g best t =
-            Track.TrackSpeed
-                { Track.time = t
-                , Track.frac = speedFraction best t
+            Time.TrackSpeed
+                { Time.time = t
+                , Time.frac = speedFraction best t
                 }

@@ -15,10 +15,10 @@ module Flight.Gap.Leading
     , areaSteps
     , mkCoef
     , leadingCoefficient
+    , leadingFraction
     , leadingFractions
     , clampToEss
     , clampToDeadline
-    , leadingFraction
     , showSecs
     ) where
 
