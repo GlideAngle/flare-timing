@@ -102,15 +102,13 @@ rowLead
     -> Dynamic t Pilot
     -> Dynamic t TrackLead
     -> m ()
-rowLead maxPts sEx pilot av = do
-    maxPts' <- sample . current $ maxPts
+rowLead _maxPts sEx pilot av = do
     (yCoef, yCoefDiff, yFrac, pFrac) <- sample . current
                 $ ffor3 pilot sEx av (\pilot' sEx' TrackLead{coef = coef, frac = lf} ->
                     case Map.lookup pilot' sEx' of
                         Just
                             Norm.NormBreakdown
-                                { leading = (LeadingPoints pts)
-                                , leadingCoef = coef'
+                                { leadingCoef = coef'
                                 , leadingFrac = lf'
                                 } ->
                             ( showPilotLeadingCoef coef'
@@ -133,8 +131,8 @@ rowLead maxPts sEx pilot av = do
         return ()
 
 showCoef :: LeadingCoefficient -> T.Text
-showCoef (LeadingCoefficient lc) = T.pack $ printf "%.4f" lc
+showCoef (LeadingCoefficient lc) = T.pack $ printf "%.3f" lc
 
 showFrac :: LeadingFraction -> T.Text
-showFrac (LeadingFraction x) = T.pack $ printf "%.4f" x
+showFrac (LeadingFraction x) = T.pack $ printf "%.3f" x
 
