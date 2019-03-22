@@ -364,7 +364,10 @@ cmp a b =
 
         ("altStopped", _) -> GT
 
+        ("area", _) -> LT
+        ("coef", "area") -> GT
         ("coef", _) -> LT
+
         ("time", _) -> LT
         ("rank", _) -> LT
         ("frac", _) -> GT
