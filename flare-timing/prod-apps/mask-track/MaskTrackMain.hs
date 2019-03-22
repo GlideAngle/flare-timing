@@ -103,7 +103,7 @@ import Flight.Score
     , BestTime(..), PilotTime(..)
     , MinimumDistance(..), PilotDistance(..), BestDistance(..)
     , LinearFraction(..), LengthOfSs(..)
-    , arrivalFraction, speedFraction, linearFraction, areaScaling
+    , arrivalFraction, speedFraction, linearFraction, areaToCoef
     )
 import Flight.Span.Math (Math(..))
 import MaskTrackOptions (description)
@@ -359,9 +359,9 @@ writeMask
 
             let (lcMin, lead) = compLeading rowsLeadingStep lsSpeedSubset tasks
 
-            let lcScaling =
+            let lcAreaToCoef =
                     [
-                        areaScaling
+                        areaToCoef
                         . LengthOfSs
                         . (\(TaskDistance d) -> convert . toRational' $ d)
                         <$> ssLen
@@ -471,7 +471,7 @@ writeMask
                     , taskSpeedDistance = lsSpeedSubset
                     , bestDistance = dsBest
                     , sumDistance = dsSum
-                    , leadScaling = lcScaling
+                    , leadAreaToCoef = lcAreaToCoef
                     , leadCoefMin = lcMin
                     , leadRank = lead
                     , arrivalRank = as

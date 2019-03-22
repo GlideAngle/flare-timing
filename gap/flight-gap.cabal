@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 02e2a494631ae40f420a023a750b0a5d74b279d5eecea45ac55b7eaab8c5c00a
+-- hash: 63c95fac000cb2409e45c004ca0e64e0200ed6e14770dd3eceba82696acb0131
 
 name:           flight-gap
 version:        0.1.0
@@ -36,6 +36,7 @@ library
   other-modules:
       Flight.Gap.Allot
       Flight.Gap.Area.Leading
+      Flight.Gap.Area.Scaling
       Flight.Gap.Distance.Best
       Flight.Gap.Distance.Chunk
       Flight.Gap.Distance.Difficulty
@@ -112,6 +113,7 @@ test-suite doctest
   other-modules:
       Flight.Gap.Allot
       Flight.Gap.Area.Leading
+      Flight.Gap.Area.Scaling
       Flight.Gap.Distance.Best
       Flight.Gap.Distance.Chunk
       Flight.Gap.Distance.Difficulty
@@ -191,6 +193,7 @@ test-suite score
   other-modules:
       Flight.Gap.Allot
       Flight.Gap.Area.Leading
+      Flight.Gap.Area.Scaling
       Flight.Gap.Distance.Best
       Flight.Gap.Distance.Chunk
       Flight.Gap.Distance.Difficulty

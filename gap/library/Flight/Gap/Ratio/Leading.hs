@@ -1,6 +1,5 @@
 module Flight.Gap.Ratio.Leading
-    ( LeadingAreaScaling(..)
-    , LeadingFraction(..)
+    ( LeadingFraction(..)
     , EssTime(..)
     , LwScaling(..)
     ) where
@@ -10,17 +9,6 @@ import Data.Via.Scientific
     ( DecimalPlaces(..)
     , deriveDecimalPlaces, deriveJsonViaSci, deriveCsvViaSci
     )
-
-newtype LeadingAreaScaling = LeadingAreaScaling Rational
-    deriving (Eq, Ord, Show)
-
-instance Newtype LeadingAreaScaling Rational where
-    pack = LeadingAreaScaling
-    unpack (LeadingAreaScaling a) = a
-
-deriveDecimalPlaces (DecimalPlaces 14) ''LeadingAreaScaling
-deriveJsonViaSci ''LeadingAreaScaling
-deriveCsvViaSci ''LeadingAreaScaling
 
 newtype LeadingFraction = LeadingFraction Rational
     deriving (Eq, Ord, Show)

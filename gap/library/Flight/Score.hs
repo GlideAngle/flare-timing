@@ -103,11 +103,12 @@ module Flight.Score
     , LengthOfSs(..)
     , LeadingAreaScaling(..)
     , LeadingArea(..)
+    , AreaToCoef(..)
     , LeadingFraction(..)
     , EssTime(..)
     , clampToEss
     , clampToDeadline
-    , areaScaling
+    , areaToCoef
     , areaSteps
     , leadingFraction
     , leadingFractions
@@ -178,6 +179,7 @@ module Flight.Score
     ) where
 
 import Flight.Gap.Area.Leading
+import Flight.Gap.Area.Scaling
 import Flight.Gap.Ratio
 import Flight.Gap.Allot
 import Flight.Gap.Pilots
