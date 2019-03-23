@@ -10,7 +10,7 @@ import Control.Monad.IO.Class (liftIO)
 import qualified FlareTiming.Plot.Lead.Plot as P (hgPlot)
 
 import WireTypes.Lead
-    (TrackLead(..), LeadingCoefficient(..), LeadingFraction(..))
+    (TrackLead(..), LeadingArea(..), LeadingCoefficient(..), LeadingFraction(..))
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import WireTypes.Pilot (Pilot(..))
 import WireTypes.Point (LeadingPoints(..))
@@ -80,6 +80,9 @@ tablePilot sEx xs = do
     _ <- elClass "table" "table is-striped" $ do
             el "thead" $ do
                 el "tr" $ do
+                    el "th" $ text "Area"
+                    elClass "th" "th-norm" $ text "✓-Area"
+                    elClass "th" "th-norm" $ text "Δ-Area"
                     el "th" $ text "Coef"
                     elClass "th" "th-norm" $ text "✓-Coef"
                     elClass "th" "th-norm" $ text "Δ-Coef"
@@ -103,25 +106,33 @@ rowLead
     -> Dynamic t TrackLead
     -> m ()
 rowLead _maxPts sEx pilot av = do
-    (yCoef, yCoefDiff, yFrac, pFrac) <- sample . current
-                $ ffor3 pilot sEx av (\pilot' sEx' TrackLead{coef = coef, frac = lf} ->
+    (yArea, yAreaDiff, yCoef, yCoefDiff, yFrac, pFrac) <- sample . current
+                $ ffor3 pilot sEx av (\pilot' sEx' TrackLead{area, coef, frac} ->
                     case Map.lookup pilot' sEx' of
                         Just
                             Norm.NormBreakdown
-                                { leadingCoef = coef'
-                                , leadingFrac = lf'
+                                { leadingArea = area'
+                                , leadingCoef = coef'
+                                , leadingFrac = frac'
                                 } ->
-                            ( showPilotLeadingCoef coef'
-                            , showPilotLeadingCoefDiff coef' coef
-                            , showFrac lf'
-                            , showPilotLeadingFracDiff lf' lf
+                            ( showArea area'
+                            , showAreaDiff area' area
+
+                            , showCoef coef'
+                            , showCoefDiff coef' coef
+
+                            , showFrac frac'
+                            , showFracDiff frac' frac
                             )
 
-                        _ -> ("", "", "", ""))
+                        _ -> ("", "", "", "", "", ""))
 
     el "tr" $ do
+        el "td" . dynText $ showArea . area <$> av
+        elClass "td" "td-norm td-norm" . text $ yArea
+        elClass "td" "td-norm td-time-diff" . text $ yAreaDiff
         el "td" . dynText $ showCoef . coef <$> av
-        elClass "td" "td-norm td-norm-pace" . text $ yCoef
+        elClass "td" "td-norm td-norm" . text $ yCoef
         elClass "td" "td-norm td-time-diff" . text $ yCoefDiff
         el "td" . dynText $ showFrac . frac <$> av
         elClass "td" "td-norm" . text $ yFrac
@@ -130,9 +141,28 @@ rowLead _maxPts sEx pilot av = do
 
         return ()
 
+showArea :: LeadingArea -> T.Text
+showArea (LeadingArea a) = T.pack $ printf "%.0f" a
+
 showCoef :: LeadingCoefficient -> T.Text
 showCoef (LeadingCoefficient lc) = T.pack $ printf "%.3f" lc
 
 showFrac :: LeadingFraction -> T.Text
 showFrac (LeadingFraction x) = T.pack $ printf "%.3f" x
+
+showAreaDiff :: LeadingArea -> LeadingArea -> T.Text
+showAreaDiff (LeadingArea expected) (LeadingArea actual)
+    | actual == expected = "="
+    | otherwise = T.pack $ printf "%+.0f" (actual - expected)
+
+showCoefDiff :: LeadingCoefficient -> LeadingCoefficient -> T.Text
+showCoefDiff (LeadingCoefficient expected) (LeadingCoefficient actual)
+    | actual == expected = "="
+    | otherwise = T.pack $ printf "%+.3f" (actual - expected)
+
+showFracDiff :: LeadingFraction -> LeadingFraction -> T.Text
+showFracDiff (LeadingFraction expected) (LeadingFraction actual)
+    | actual == expected = "="
+    | otherwise = T.pack $ printf "%+.3f" (actual - expected)
+
 
