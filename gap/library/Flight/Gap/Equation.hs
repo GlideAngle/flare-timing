@@ -16,4 +16,7 @@ powerFraction c x =
     where
         numerator = x - c
         denominator = c ** (1/2)
-        frac = (numerator ** 2 / denominator) ** (1/3)
+        frac = (numerator / denominator) ** (2/3)
+        -- REVIEW: The above is the formula that is used by FS while the
+        -- commented one is the formula from the published GAP doc.
+        -- frac = (numerator ** 2 / denominator) ** (1/3)
