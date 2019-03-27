@@ -42,8 +42,8 @@ in    defs
             , "flight-latlng"
             , "flight-gap"
             , "flight-route"
-            , "flight-zone"
             , "flight-units"
+            , "flight-zone"
             ]
       , library =
           { source-dirs =

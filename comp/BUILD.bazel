@@ -12,20 +12,22 @@ haskell_toolchain(
 )
 
 haskell_import(name = "base")
-haskell_import(name = "split")
-haskell_import(name = "path")
 haskell_import(name = "aeson")
-haskell_import(name = "scientific")
-haskell_import(name = "containers")
-haskell_import(name = "unordered-containers")
-haskell_import(name = "time")
-haskell_import(name = "cassava")
 haskell_import(name = "bytestring")
+haskell_import(name = "cassava")
+haskell_import(name = "containers")
 haskell_import(name = "directory")
 haskell_import(name = "filepath")
 haskell_import(name = "filemanip")
 haskell_import(name = "lens")
 haskell_import(name = "mtl")
+haskell_import(name = "newtype")
+haskell_import(name = "path")
+haskell_import(name = "scientific")
+haskell_import(name = "split")
+haskell_import(name = "text")
+haskell_import(name = "time")
+haskell_import(name = "unordered-containers")
 haskell_import(name = "uom-plugin")
 haskell_import(name = "vector")
 
@@ -40,28 +42,34 @@ haskell_library(
         ] + DEFAULT_EXTENSIONS,
     deps = [
         ":base",
-        ":split",
-        ":path",
         ":aeson",
-        ":scientific",
-        ":containers",
-        ":unordered-containers",
-        ":time",
-        ":cassava",
         ":bytestring",
+        ":cassava",
+        ":containers",
         ":directory",
         ":filepath",
         ":filemanip",
         ":lens",
         ":mtl",
+        ":newtype",
+        ":path",
+        ":scientific",
+        ":split",
+        ":text",
+        ":time",
+        ":unordered-containers",
         ":uom-plugin",
         ":vector",
+        "//siggy-chardust:siggy-chardust",
         "//detour-via-sci:detour-via-sci",
-        "//units:flight-units",
+        "//detour-via-uom:detour-via-uom",
+        "//clip:flight-clip",
+        "//earth:flight-earth",
         "//latlng:flight-latlng",
-        "//zone:flight-zone",
-        "//route:flight-route",
         "//gap:flight-gap",
+        "//route:flight-route",
+        "//units:flight-units",
+        "//zone:flight-zone",
         ],
     visibility = ["//visibility:public"],
 )

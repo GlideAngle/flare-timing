@@ -13,7 +13,7 @@ haskell_toolchain(
 
 haskell_import(name = "base")
 haskell_import(name = "split")
-haskell_import(name = "parsec")
+haskell_import(name = "megaparsec")
 haskell_import(name = "hxt")
 haskell_import(name = "path")
 haskell_import(name = "hxt-xpath")
@@ -31,7 +31,7 @@ haskell_library(
     deps = [
         ":base",
         ":split",
-        ":parsec",
+        ":megaparsec",
         ":hxt",
         ":path",
         ":hxt-xpath",
@@ -39,6 +39,7 @@ haskell_library(
         ":time",
         "//detour-via-sci:detour-via-sci",
         "//siggy-chardust:siggy-chardust",
+        "//clip:flight-clip",
         ],
     visibility = ["//visibility:public"],
 )

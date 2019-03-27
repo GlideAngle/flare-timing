@@ -12,8 +12,10 @@ haskell_toolchain(
 )
 
 haskell_import(name = "base")
-haskell_import(name = "parsec")
 haskell_import(name = "bytestring")
+haskell_import(name = "megaparsec")
+haskell_import(name = "tasty-quickcheck")
+haskell_import(name = "time")
 haskell_import(name = "utf8-string")
 
 haskell_library(
@@ -26,9 +28,12 @@ haskell_library(
         ] + DEFAULT_EXTENSIONS,
     deps = [
         ":base",
-        ":parsec",
         ":bytestring",
+        ":megaparsec",
+        ":tasty-quickcheck",
+        ":time",
         ":utf8-string",
+        "//clip:flight-clip",
         ],
     visibility = ["//visibility:public"],
 )

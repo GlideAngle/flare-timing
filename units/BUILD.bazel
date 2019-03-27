@@ -18,6 +18,7 @@ haskell_import(name = "bifunctors")
 haskell_import(name = "text")
 haskell_import(name = "formatting")
 haskell_import(name = "uom-plugin")
+haskell_import(name = "newtype")
 
 haskell_library(
     name = "flight-units",
@@ -37,6 +38,8 @@ haskell_library(
         ":formatting",
         ":uom-plugin",
         "//siggy-chardust:siggy-chardust",
+        "//detour-via-sci:detour-via-sci",
+        ":newtype",
         ],
     visibility = ["//visibility:public"],
 )

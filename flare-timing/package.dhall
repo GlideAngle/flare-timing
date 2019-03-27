@@ -2,30 +2,30 @@
 
 in  let depsTest =
             defs.dependencies
-          # [ "directory"
-            , "filepath"
+          # [ "cmdargs"
+           , "directory"
             , "filemanip"
+            , "filepath"
             , "raw-strings-qq"
-            , "cmdargs"
             , "flight-cmd"
             , "flight-comp"
             ]
 
 in  let deps =
             defs.dependencies
-          # [ "directory"
-            , "filepath"
-            , "filemanip"
-            , "raw-strings-qq"
-            , "cmdargs"
-            , "mtl"
-            , "transformers"
-            , "yaml"
-            , "aeson"
-            , "uom-plugin"
+          # [ "aeson"
             , "bytestring"
             , "clock"
+            , "cmdargs"
+            , "directory"
+            , "filemanip"
+            , "filepath"
             , "formatting"
+            , "mtl"
+            , "raw-strings-qq"
+            , "transformers"
+            , "uom-plugin"
+            , "yaml"
             , "flight-cmd"
             , "flight-comp"
             , "flight-latlng"
@@ -98,13 +98,13 @@ in    defs
               { dependencies =
                     deps
                   # [ "lens"
-                    , "siggy-chardust"
                     , "safe-exceptions"
+                    , "siggy-chardust"
+                    , "flight-earth"
+                    , "flight-mask"
                     , "flight-span"
                     , "flight-units"
                     , "flight-zone"
-                    , "flight-earth"
-                    , "flight-mask"
                     ]
               , ghc-options =
                   [ "-rtsopts"
@@ -121,7 +121,7 @@ in    defs
           , tag-zone =
               { dependencies =
                     deps
-                  # [ "time", "safe-exceptions", "flight-mask", "flight-zone" ]
+                  # [ "safe-exceptions", "time", "flight-mask", "flight-zone" ]
               , ghc-options =
                   [ "-rtsopts"
                   , "-threaded"
@@ -138,12 +138,12 @@ in    defs
               { dependencies =
                     deps
                   # [ "lens"
-                    , "time"
-                    , "siggy-chardust"
                     , "safe-exceptions"
+                    , "siggy-chardust"
+                    , "time"
                     , "flight-kml"
-                    , "flight-mask"
                     , "flight-lookup"
+                    , "flight-mask"
                     ]
               , ghc-options =
                   [ "-rtsopts"
@@ -165,8 +165,8 @@ in    defs
                     , "siggy-chardust"
                     , "safe-exceptions"
                     , "flight-kml"
-                    , "flight-mask"
                     , "flight-lookup"
+                    , "flight-mask"
                     ]
               , ghc-options =
                   [ "-rtsopts"
@@ -185,10 +185,10 @@ in    defs
                     deps
                   # [ "safe-exceptions"
                     , "flight-clip"
-                    , "flight-route"
                     , "flight-gap"
-                    , "flight-mask"
                     , "flight-lookup"
+                    , "flight-mask"
+                    , "flight-route"
                     ]
               , ghc-options =
                   [ "-rtsopts"
@@ -250,11 +250,11 @@ in    defs
                     deps
                   # [ "containers"
                     , "safe-exceptions"
-                    , "flight-zone"
                     , "flight-gap"
                     , "flight-lookup"
                     , "flight-mask"
                     , "flight-route"
+                    , "flight-zone"
                     ]
               , ghc-options =
                   [ "-rtsopts"

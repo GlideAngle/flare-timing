@@ -95,11 +95,41 @@ nixpkgs_package(
           license = stdenv.lib.licenses.bsd3;
         };
 
+      megaparsec-drv =
+        { mkDerivation, base, bytestring, case-insensitive, containers
+        , criterion, deepseq, hspec, hspec-expectations, mtl
+        , parser-combinators, QuickCheck, scientific, stdenv, text
+        , transformers, weigh
+        }:
+        mkDerivation {
+          pname = "megaparsec";
+          version = "7.0.4";
+          sha256 = "325ba5cee8cdef91e351fb2db0b38562f8345b0bcdfed97045671357501de8c1";
+          libraryHaskellDepends = [
+            base bytestring case-insensitive containers deepseq mtl
+            parser-combinators scientific text transformers
+          ];
+          testHaskellDepends = [
+            base bytestring case-insensitive containers hspec
+            hspec-expectations mtl parser-combinators QuickCheck scientific
+            text transformers
+          ];
+          benchmarkHaskellDepends = [
+            base containers criterion deepseq text weigh
+          ];
+          doHaddock = false;
+          doCheck = false;
+          homepage = "https://github.com/mrkkrp/megaparsec";
+          description = "Monadic parser combinators";
+          license = stdenv.lib.licenses.bsd2;
+        };
+
       hcoord = pkgs.haskellPackages.callPackage hcoord-drv {};
       hcoord-utm = pkgs.haskellPackages.callPackage hcoord-utm-drv {};
+      megaparsec = pkgs.haskellPackages.callPackage megaparsec-drv {};
 
       config =
-        { 
+        {
           allowUnsupportedSystem = true;
           allowUnfree = true;
 
@@ -111,6 +141,7 @@ nixpkgs_package(
 
                 hcoord = super.callPackage hcoord-drv {};
                 hcoord-utm = super.callPackage hcoord-utm-drv {};
+                megaparsec = super.callPackage megaparsec-drv {};
               });
             };
           };
@@ -130,9 +161,9 @@ nixpkgs_package(
           newtype numbers
           path
           raw-strings-qq
-          scientific servant servant-server
+          safe-exceptions scientific servant servant-server
           siggy-chardust smallcheck split statistics system-filepath
-          tasty-hunit tasty-quickcheck template-haskell time transformers
+          tasty-hunit tasty-quickcheck template-haskell these time transformers
           uom-plugin utf8-string
           wai wai-cors
           yaml

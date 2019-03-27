@@ -12,20 +12,20 @@ haskell_toolchain(
 )
 
 haskell_import(name = "base")
-haskell_import(name = "split")
-haskell_import(name = "path")
 haskell_import(name = "aeson")
-haskell_import(name = "scientific")
-haskell_import(name = "containers")
-haskell_import(name = "unordered-containers")
-haskell_import(name = "time")
-haskell_import(name = "cassava")
 haskell_import(name = "bytestring")
+haskell_import(name = "cassava")
+haskell_import(name = "containers")
 haskell_import(name = "directory")
-haskell_import(name = "filepath")
 haskell_import(name = "filemanip")
+haskell_import(name = "filepath")
 haskell_import(name = "lens")
 haskell_import(name = "mtl")
+haskell_import(name = "path")
+haskell_import(name = "scientific")
+haskell_import(name = "split")
+haskell_import(name = "time")
+haskell_import(name = "unordered-containers")
 haskell_import(name = "uom-plugin")
 
 haskell_library(
@@ -39,29 +39,30 @@ haskell_library(
         ] + DEFAULT_EXTENSIONS,
     deps = [
         ":base",
-        ":split",
-        ":path",
         ":aeson",
-        ":scientific",
-        ":containers",
-        ":unordered-containers",
-        ":time",
-        ":cassava",
         ":bytestring",
+        ":cassava",
+        ":containers",
         ":directory",
-        ":filepath",
         ":filemanip",
+        ":filepath",
         ":lens",
         ":mtl",
+        ":path",
+        ":scientific",
+        ":split",
+        ":time",
+        ":unordered-containers",
         ":uom-plugin",
-        "//detour-via-sci:detour-via-sci",
-        "//latlng:flight-latlng",
-        "//zone:flight-zone",
-        "//route:flight-route",
-        "//gap:flight-gap",
+        "//clip:flight-clip",
         "//comp:flight-comp",
+        "//gap:flight-gap",
         "//kml:flight-kml",
+        "//latlng:flight-latlng",
         "//mask:flight-mask",
+        "//route:flight-route",
+        "//zone:flight-zone",
+        "//detour-via-sci:detour-via-sci",
         ],
     visibility = ["//visibility:public"],
 )

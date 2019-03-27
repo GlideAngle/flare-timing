@@ -11,24 +11,24 @@ haskell_toolchain(
     version = "8.2.2",
 )
 
-haskell_import(name = "base")
-haskell_import(name = "directory")
-haskell_import(name = "filepath")
-haskell_import(name = "system-filepath")
-haskell_import(name = "filemanip")
-haskell_import(name = "raw-strings-qq")
-haskell_import(name = "cmdargs")
-haskell_import(name = "mtl")
-haskell_import(name = "transformers")
-haskell_import(name = "yaml")
 haskell_import(name = "aeson")
-haskell_import(name = "uom-plugin")
+haskell_import(name = "base")
 haskell_import(name = "bytestring")
 haskell_import(name = "clock")
+haskell_import(name = "cmdargs")
+haskell_import(name = "containers")
+haskell_import(name = "directory")
+haskell_import(name = "filemanip")
+haskell_import(name = "filepath")
 haskell_import(name = "formatting")
 haskell_import(name = "lens")
+haskell_import(name = "mtl")
+haskell_import(name = "raw-strings-qq")
+haskell_import(name = "safe-exceptions")
 haskell_import(name = "time")
-haskell_import(name = "containers")
+haskell_import(name = "transformers")
+haskell_import(name = "uom-plugin")
+haskell_import(name = "yaml")
 
 COMPILER_FLAGS = [
     "-rtsopts",
@@ -40,24 +40,24 @@ COMPILER_FLAGS = [
 
 DEPS = [
     ":base",
-    ":directory",
-    ":filepath",
-    ":system-filepath",
-    ":filemanip",
-    ":raw-strings-qq",
-    ":cmdargs",
-    ":mtl",
-    ":transformers",
-    ":yaml",
     ":aeson",
-    ":uom-plugin",
     ":bytestring",
     ":clock",
+    ":cmdargs",
+    ":directory",
+    ":filepath",
+    ":filemanip",
     ":formatting",
+    ":mtl",
+    ":raw-strings-qq",
+    ":transformers",
+    ":yaml",
+    ":uom-plugin",
     "//cmd:flight-cmd",
     "//comp:flight-comp",
     "//latlng:flight-latlng",
     "//scribe:flight-scribe",
+    "//time:flight-time",
     ]
 
 haskell_binary(
@@ -65,9 +65,26 @@ haskell_binary(
     srcs = glob(["prod-apps/extract-input/**/*.hs"]),
     compiler_flags = COMPILER_FLAGS,
     deps = DEPS + [
-        "//zone:flight-zone",
-        "//gap:flight-gap",
+        "//earth:flight-earth",
         "//fsdb:flight-fsdb",
+        "//gap:flight-gap",
+        "//mask:flight-mask",
+        "//zone:flight-zone",
+        ],
+    visibility = ["//visibility:public"],
+)
+
+haskell_binary(
+    name = "fs-score",
+    srcs = glob(["prod-apps/extract-input/**/*.hs"]),
+    compiler_flags = COMPILER_FLAGS,
+    deps = DEPS + [
+        ":containers",
+        "//earth:flight-earth",
+        "//fsdb:flight-fsdb",
+        "//gap:flight-gap",
+        "//mask:flight-mask",
+        "//zone:flight-zone",
         ],
     visibility = ["//visibility:public"],
 )
@@ -77,6 +94,7 @@ haskell_binary(
     srcs = glob(["prod-apps/task-length/**/*.hs"]),
     compiler_flags = COMPILER_FLAGS,
     deps = DEPS + [
+        ":safe-exceptions",
         "//route:flight-route",
         ],
     visibility = ["//visibility:public"],
@@ -88,11 +106,13 @@ haskell_binary(
     compiler_flags = COMPILER_FLAGS,
     deps = DEPS + [
         ":lens",
+        ":safe-exceptions",
+        "//siggy-chardust:siggy-chardust",
+        "//earth:flight-earth",
         "//span:flight-span",
+        "//mask:flight-mask",
         "//units:flight-units",
         "//zone:flight-zone",
-        "//earth:flight-earth",
-        "//mask:flight-mask",
         ],
     visibility = ["//visibility:public"],
 )
@@ -102,7 +122,25 @@ haskell_binary(
     srcs = glob(["prod-apps/tag-zone/**/*.hs"]),
     compiler_flags = COMPILER_FLAGS,
     deps = DEPS + [
+        ":safe-exceptions",
         ":time",
+        "//mask:flight-mask",
+        "//zone:flight-zone",
+        ],
+    visibility = ["//visibility:public"],
+)
+
+haskell_binary(
+    name = "unpack-track",
+    srcs = glob(["prod-apps/unpack-track/**/*.hs"]),
+    compiler_flags = COMPILER_FLAGS,
+    deps = DEPS + [
+        ":lens",
+        ":safe-exceptions",
+        ":time",
+        "//siggy-chardust:siggy-chardust",
+        "//kml:flight-kml",
+        "//lookup:flight-lookup",
         "//mask:flight-mask",
         ],
     visibility = ["//visibility:public"],
@@ -114,11 +152,12 @@ haskell_binary(
     compiler_flags = COMPILER_FLAGS,
     deps = DEPS + [
         ":lens",
+        ":safe-exceptions",
         ":time",
-        "//siggy-chardust:siggy-chardust",
         "//kml:flight-kml",
-        "//mask:flight-mask",
         "//lookup:flight-lookup",
+        "//mask:flight-mask",
+        "//siggy-chardust:siggy-chardust",
         ],
     visibility = ["//visibility:public"],
 )
@@ -128,9 +167,12 @@ haskell_binary(
     srcs = glob(["prod-apps/discard-further/**/*.hs"]),
     compiler_flags = COMPILER_FLAGS,
     deps = DEPS + [
+        ":safe-exceptions",
+        "//clip:flight-clip",
         "//gap:flight-gap",
-        "//mask:flight-mask",
         "//lookup:flight-lookup",
+        "//mask:flight-mask",
+        "//route:flight-route",
         ],
     visibility = ["//visibility:public"],
 )
@@ -142,12 +184,16 @@ haskell_binary(
     deps = DEPS + [
         ":containers",
         ":lens",
-        "//siggy-chardust:siggy-chardust",
-        "//span:flight-span",
-        "//kml:flight-kml",
+        ":safe-exceptions",
+        ":time",
+        "//clip:flight-clip",
         "//gap:flight-gap",
-        "//mask:flight-mask",
+        "//kml:flight-kml",
         "//lookup:flight-lookup",
+        "//mask:flight-mask",
+        "//route:flight-route",
+        "//span:flight-span",
+        "//siggy-chardust:siggy-chardust",
         ],
     visibility = ["//visibility:public"],
 )
@@ -157,6 +203,7 @@ haskell_binary(
     srcs = glob(["prod-apps/land-out/**/*.hs"]),
     compiler_flags = COMPILER_FLAGS,
     deps = DEPS + [
+        ":safe-exceptions",
         "//gap:flight-gap",
         ],
     visibility = ["//visibility:public"],
@@ -168,9 +215,12 @@ haskell_binary(
     compiler_flags = COMPILER_FLAGS,
     deps = DEPS + [
         ":containers",
-        "//zone:flight-zone",
+        ":safe-exceptions",
         "//gap:flight-gap",
+        "//lookup:flight-lookup",
         "//mask:flight-mask",
+        "//route:flight-route",
+        "//zone:flight-zone",
         ],
     visibility = ["//visibility:public"],
 )
@@ -184,11 +234,11 @@ COMPILER_FLAGS_TEST = [
 
 DEPS_TEST = [
     ":base",
-    ":filepath",
-    ":system-filepath",
-    ":filemanip",
-    ":raw-strings-qq",
     ":cmdargs",
+    ":directory",
+    ":filemanip",
+    ":filepath",
+    ":raw-strings-qq",
     "//cmd:flight-cmd",
     "//comp:flight-comp",
     ]

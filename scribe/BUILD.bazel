@@ -25,6 +25,7 @@ haskell_import(name = "directory")
 haskell_import(name = "filepath")
 haskell_import(name = "filemanip")
 haskell_import(name = "mtl")
+haskell_import(name = "safe-exceptions")
 haskell_import(name = "yaml")
 haskell_import(name = "vector")
 
@@ -51,14 +52,16 @@ haskell_library(
         ":filepath",
         ":filemanip",
         ":mtl",
+        ":safe-exceptions",
         ":yaml",
         ":vector",
         "//detour-via-sci:detour-via-sci",
-        "//latlng:flight-latlng",
-        "//zone:flight-zone",
-        "//route:flight-route",
-        "//gap:flight-gap",
+        "//clip:flight-clip",
         "//comp:flight-comp",
+        "//gap:flight-gap",
+        "//latlng:flight-latlng",
+        "//route:flight-route",
+        "//zone:flight-zone",
         ],
     visibility = ["//visibility:public"],
 )

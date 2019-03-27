@@ -12,20 +12,22 @@ haskell_toolchain(
 )
 
 haskell_import(name = "base")
-haskell_import(name = "split")
-haskell_import(name = "path")
+haskell_import(name = "bytestring")
+haskell_import(name = "cmdargs")
 haskell_import(name = "containers")
-haskell_import(name = "mtl")
 haskell_import(name = "directory")
 haskell_import(name = "filepath")
-haskell_import(name = "time")
-haskell_import(name = "lens")
-haskell_import(name = "bytestring")
-haskell_import(name = "yaml")
-haskell_import(name = "uom-plugin")
 haskell_import(name = "fgl")
-haskell_import(name = "cmdargs")
+haskell_import(name = "lens")
+haskell_import(name = "mtl")
 haskell_import(name = "numbers")
+haskell_import(name = "path")
+haskell_import(name = "safe-exceptions")
+haskell_import(name = "split")
+haskell_import(name = "these")
+haskell_import(name = "time")
+haskell_import(name = "uom-plugin")
+haskell_import(name = "yaml")
 
 haskell_library(
     name = "flight-mask",
@@ -38,33 +40,36 @@ haskell_library(
         ] + DEFAULT_EXTENSIONS,
     deps = [
         ":base",
-        ":split",
-        ":path",
+        ":bytestring",
+        ":cmdargs",
         ":containers",
-        ":mtl",
         ":directory",
         ":filepath",
-        ":time",
-        ":lens",
-        ":bytestring",
-        ":yaml",
-        ":uom-plugin",
         ":fgl",
-        ":cmdargs",
+        ":lens",
+        ":mtl",
         ":numbers",
-        "//detour-via-sci:detour-via-sci",
-        "//span:flight-span",
-        "//units:flight-units",
+        ":path",
+        ":safe-exceptions",
+        ":split",
+        ":these",
+        ":time",
+        ":uom-plugin",
+        ":yaml",
+        "//clip:flight-clip",
         "//comp:flight-comp",
+        "//earth:flight-earth",
+        "//gap:flight-gap",
         "//kml:flight-kml",
         "//latlng:flight-latlng",
-        "//zone:flight-zone",
         "//route:flight-route",
-        "//track:flight-track",
-        "//earth:flight-earth",
-        "//task:flight-task",
-        "//gap:flight-gap",
         "//scribe:flight-scribe",
+        "//span:flight-span",
+        "//task:flight-task",
+        "//track:flight-track",
+        "//units:flight-units",
+        "//zone:flight-zone",
+        "//detour-via-sci:detour-via-sci",
         "//siggy-chardust:siggy-chardust",
         ],
     visibility = ["//visibility:public"],

@@ -13,15 +13,10 @@ haskell_toolchain(
 
 haskell_import(name = "base")
 haskell_import(name = "split")
-haskell_import(name = "parsec")
-haskell_import(name = "hxt")
-haskell_import(name = "path")
-haskell_import(name = "hxt-xpath")
-haskell_import(name = "aeson")
 haskell_import(name = "time")
 
 haskell_library(
-    name = "flight-kml",
+    name = "flight-clip",
     srcs = glob(["library/**/*.hs"]),
     src_strip_prefix = "library",
     compiler_flags = [
@@ -31,14 +26,7 @@ haskell_library(
     deps = [
         ":base",
         ":split",
-        ":parsec",
-        ":hxt",
-        ":path",
-        ":hxt-xpath",
-        ":aeson",
         ":time",
-        "//detour-via-sci:detour-via-sci",
-        "//siggy-chardust:siggy-chardust",
         ],
     visibility = ["//visibility:public"],
 )

@@ -12,23 +12,17 @@ haskell_toolchain(
 )
 
 haskell_import(name = "base")
-haskell_import(name = "split")
-haskell_import(name = "path")
-haskell_import(name = "containers")
-haskell_import(name = "mtl")
 haskell_import(name = "directory")
 haskell_import(name = "filepath")
-haskell_import(name = "time")
 haskell_import(name = "lens")
-haskell_import(name = "bytestring")
-haskell_import(name = "yaml")
+haskell_import(name = "mtl")
+haskell_import(name = "safe-exceptions")
+haskell_import(name = "these")
+haskell_import(name = "time")
 haskell_import(name = "uom-plugin")
-haskell_import(name = "fgl")
-haskell_import(name = "cmdargs")
-haskell_import(name = "numbers")
 
 haskell_library(
-    name = "flight-mask",
+    name = "flight-time",
     srcs = glob(["library/**/*.hs"]),
     src_strip_prefix = "library",
     compiler_flags = [
@@ -38,32 +32,20 @@ haskell_library(
         ] + DEFAULT_EXTENSIONS,
     deps = [
         ":base",
-        ":split",
-        ":path",
-        ":containers",
-        ":mtl",
         ":directory",
         ":filepath",
-        ":time",
         ":lens",
-        ":bytestring",
-        ":yaml",
+        ":mtl",
+        ":safe-exceptions",
+        ":these",
+        ":time",
         ":uom-plugin",
-        ":fgl",
-        ":cmdargs",
-        ":numbers",
-        "//detour-via-sci:detour-via-sci",
-        "//span:flight-span",
-        "//units:flight-units",
+        "//clip:flight-clip",
         "//comp:flight-comp",
         "//kml:flight-kml",
         "//latlng:flight-latlng",
-        "//zone:flight-zone",
-        "//route:flight-route",
-        "//track:flight-track",
-        "//earth:flight-earth",
-        "//task:flight-task",
-        "//gap:flight-gap",
+        "//lookup:flight-lookup",
+        "//mask:flight-mask",
         "//scribe:flight-scribe",
         "//siggy-chardust:siggy-chardust",
         ],

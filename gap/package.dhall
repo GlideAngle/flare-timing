@@ -19,16 +19,16 @@ in    defs
           ]
       , dependencies =
             defs.dependencies
-          # [ "containers"
-            , "vector"
-            , "statistics"
-            , "aeson"
-            , "cassava"
+          # [ "aeson"
+              , "cassava"
+           , "containers"
             , "newtype"
             , "scientific"
-            , "uom-plugin"
+            , "statistics"
             , "template-haskell"
             , "text"
+            , "uom-plugin"
+            , "vector"
             , "detour-via-sci"
             , "detour-via-uom"
             , "siggy-chardust"

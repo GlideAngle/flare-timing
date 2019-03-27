@@ -12,14 +12,16 @@ haskell_toolchain(
 )
 
 haskell_import(name = "base")
-haskell_import(name = "containers")
-haskell_import(name = "vector")
-haskell_import(name = "statistics")
 haskell_import(name = "aeson")
+haskell_import(name = "cassava")
+haskell_import(name = "containers")
 haskell_import(name = "newtype")
 haskell_import(name = "scientific")
-haskell_import(name = "uom-plugin")
+haskell_import(name = "statistics")
 haskell_import(name = "template-haskell")
+haskell_import(name = "text")
+haskell_import(name = "uom-plugin")
+haskell_import(name = "vector")
 
 haskell_library(
     name = "flight-gap",
@@ -33,14 +35,16 @@ haskell_library(
         ] + DEFAULT_EXTENSIONS,
     deps = [
         ":base",
-        ":containers",
-        ":vector",
-        ":statistics",
         ":aeson",
+        ":cassava",
+        ":containers",
         ":newtype",
         ":scientific",
+        ":statistics",
         ":template-haskell",
+        ":text",
         ":uom-plugin",
+        ":vector",
         "//siggy-chardust:siggy-chardust",
         "//detour-via-sci:detour-via-sci",
         "//detour-via-uom:detour-via-uom",
