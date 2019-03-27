@@ -1,27 +1,31 @@
 workspace(name = "flare_timing")
 
-RULES_HASKELL_VERSION = "18a37091a23806ad3dd42867b3ec62b9b4b4eaea"
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
 http_archive(
-    name = "io_tweag_rules_haskell",
-    strip_prefix = "rules_haskell-{}".format(RULES_HASKELL_VERSION),
-    urls = ["https://github.com/tweag/rules_haskell/archive/{}.tar.gz".format(RULES_HASKELL_VERSION)],
+  name = "io_tweag_rules_haskell",
+  strip_prefix = "rules_haskell-0.8",
+  urls = ["https://github.com/tweag/rules_haskell/archive/v0.8.tar.gz"]
 )
 
 load("@io_tweag_rules_haskell//haskell:repositories.bzl", "haskell_repositories")
-
 haskell_repositories()
+
+rules_nixpkgs_version = "c232b296e795ad688854ff3d3d2de6e7ad45f0b4"
+rules_nixpkgs_sha256 = "5883ea01f3075354ab622cfe82542da01fe2b57a48f4c3f7610b4d14a3fced11"
 
 http_archive(
     name = "io_tweag_rules_nixpkgs",
-    strip_prefix = "rules_nixpkgs-0.2.3",
-    urls = ["https://github.com/tweag/rules_nixpkgs/archive/v0.2.3.tar.gz"],
-    sha256 = "2647bc9d5476fba95d9b4cc300be1ba9ad353e4e33bee01e041886aa4f4b554a",
+    sha256 = rules_nixpkgs_sha256,
+    strip_prefix = "rules_nixpkgs-%s" % rules_nixpkgs_version,
+    urls = ["https://github.com/tweag/rules_nixpkgs/archive/%s.tar.gz" % rules_nixpkgs_version],
 )
 
 load(
     "@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl",
     "nixpkgs_git_repository",
     "nixpkgs_package",
+    "nixpkgs_cc_configure",
 )
 
 nixpkgs_git_repository(
@@ -169,6 +173,11 @@ nixpkgs_package(
           yaml
         ])
   """,
+    attribute_path = "haskell.compiler.ghc822",
+    repository = "@nixpkgs",
+)
+
+nixpkgs_cc_configure(
     repository = "@nixpkgs",
 )
 
