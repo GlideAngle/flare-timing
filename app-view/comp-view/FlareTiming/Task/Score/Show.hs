@@ -20,7 +20,6 @@ import Data.Time.LocalTime (TimeZone)
 import WireTypes.Route (TaskLength(..), showTaskDistance)
 import qualified WireTypes.Point as Pt (StartGate(..))
 import WireTypes.Speed (PilotTime(..))
-import WireTypes.Lead (LeadingCoefficient(..), LeadingFraction(..))
 import WireTypes.Point (TaskPlacing(..), Velocity(..), PilotVelocity(..))
 import FlareTiming.Time
     (showHmsForHours, showT, showSignedSecs, hoursToSecs, hoursToRoundSecs)

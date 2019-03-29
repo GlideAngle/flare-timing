@@ -15,7 +15,6 @@ import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import WireTypes.Pilot (Pilot(..))
 import WireTypes.Point (LeadingPoints(..))
 import FlareTiming.Pilot (showPilotName)
-import FlareTiming.Task.Score.Show
 
 placings :: [TrackLead] -> [[Double]]
 placings = fmap xy
@@ -80,16 +79,21 @@ tablePilot sEx xs = do
     _ <- elClass "table" "table is-striped" $ do
             el "thead" $ do
                 el "tr" $ do
-                    el "th" $ text "Area"
-                    elClass "th" "th-norm" $ text "✓-Area"
-                    elClass "th" "th-norm" $ text "Δ-Area"
-                    el "th" $ text "Coef"
-                    elClass "th" "th-norm" $ text "✓-Coef"
-                    elClass "th" "th-norm" $ text "Δ-Coef"
-                    el "th" $ text "Frac"
-                    elClass "th" "th-norm" $ text "✓-Frac"
-                    elClass "th" "th-norm" $ text "Δ-Frac"
+                    elAttr "th" ("colspan" =: "3") $ text "Area"
+                    elAttr "th" ("colspan" =: "3") $ text "Coefficient"
+                    elAttr "th" ("colspan" =: "3") $ text "Fraction"
                     el "th" $ text "Pilot"
+                el "tr" $ do
+                    el "th" $ text ""
+                    elClass "th" "th-norm" $ text "✓"
+                    elClass "th" "th-norm" $ text "Δ"
+                    el "th" $ text ""
+                    elClass "th" "th-norm" $ text "✓"
+                    elClass "th" "th-norm" $ text "Δ"
+                    el "th" $ text ""
+                    elClass "th" "th-norm" $ text "✓"
+                    elClass "th" "th-norm" $ text "Δ"
+                    el "th" $ text ""
 
                     return ()
 
