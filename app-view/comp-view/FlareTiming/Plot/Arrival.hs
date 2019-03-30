@@ -5,7 +5,7 @@ import Reflex.Dom
 import qualified Data.Text as T (Text)
 
 import WireTypes.Arrival (TrackArrival(..))
-import WireTypes.Comp (Discipline(..))
+import WireTypes.Comp (Discipline(..), Tweak(..), AwScaling(..))
 import FlareTiming.Plot.Arrival.View (hgPlot)
 import WireTypes.Pilot (Pilot(..))
 
@@ -18,9 +18,10 @@ noArrivals = "No pilots made it to the end of the speed section. There are no ar
 arrivalPlot
     :: MonadWidget t m
     => Dynamic t Discipline
+    -> Dynamic t (Maybe Tweak)
     -> Dynamic t (Maybe [(Pilot, TrackArrival)])
     -> m ()
-arrivalPlot hgOrPg av = do
+arrivalPlot hgOrPg tweak av = do
     elClass "div" "tile is-ancestor" $
         elClass "div" "tile is-12" $
             elClass "div" "tile" $
@@ -54,7 +55,15 @@ arrivalPlot hgOrPg av = do
                                        else
                                             return ())
 
-                                elClass "article" "tile is-child" $
+                                let notice =
+                                        elClass "article" "notification is-warning" $
+                                            el "p" $ text "No points will be awarded for arrival order."
+
+                                elClass "article" "tile is-child" $ do
+                                    _ <- dyn $ ffor tweak (\case
+                                        Just Tweak{arrivalWeightScaling = Just (AwScaling 0)} -> notice
+                                        _ -> return ())
+
                                     hgPlot (fromMaybe [] <$> av)
 
                                 return ())

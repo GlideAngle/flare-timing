@@ -77,9 +77,8 @@ tablePilot
     -> m ()
 tablePilot tweak sEx xs = do
     _ <- dyn $ ffor tweak (\case
-        Nothing -> tablePilotSimple xs
         Just Tweak{leadingWeightScaling = Just (LwScaling 0)} -> tablePilotSimple xs
-        Just _ -> tablePilotCompare tweak sEx xs)
+        _ -> tablePilotCompare tweak sEx xs)
 
     return ()
 

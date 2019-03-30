@@ -38,9 +38,8 @@ leadPlot tweak sEx ld =
 
                                 elClass "article" "tile is-child" $ do
                                     _ <- dyn $ ffor tweak (\case
-                                        Nothing -> notice
                                         Just Tweak{leadingWeightScaling = Just (LwScaling 0)} -> notice
-                                        Just _ -> return ())
+                                        _ -> return ())
 
                                     hgPlot tweak sEx (fromMaybe [] <$> ld))
 
