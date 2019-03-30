@@ -42,7 +42,7 @@ import Flight.Igc
     ( Degree(..), MinuteOfAngle(..)
     , Lat(..), Lng(..), Altitude(..), AltGps(..), AltBaro(..)
     , IgcRecord(..)
-    , isMark, isFix
+    , isMark, isFix, bumpOver
     )
 import Flight.Comp
     ( Pilot(..)
@@ -186,10 +186,7 @@ igcMarkedFixes xs =
             . filter isMark
             $ xs
 
-        -- TODO: Further investigate bumping over the day but for now it seems
-        -- to have more negative consequences than positive ones.
-        -- ys = bumpOver $ filter isFix xs
-        ys = filter isFix xs
+        ys = bumpOver $ filter isFix xs
 
         -- NOTE: Some loggers will be using sub-second logging. The columns in
         -- the B record holding the s or ss, tenths or hundredths of a second,

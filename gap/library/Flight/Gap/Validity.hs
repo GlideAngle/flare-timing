@@ -57,7 +57,7 @@ data ValidityWorking =
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 data DistanceValidityWorking =
-    DistanceValidityWorking 
+    DistanceValidityWorking
         { sum :: SumOfDistance (Quantity Double [u| km |])
         , flying :: PilotsFlying
         , area :: NominalDistanceArea
@@ -266,7 +266,7 @@ distanceValidity
     nd@(NominalDistance dNom')
     nFly
     md@(MinimumDistance dMin')
-    bd 
+    bd
     dSum
     | dNom < dMin =
         ( DistanceValidity (1 % 1)
