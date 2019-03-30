@@ -3,6 +3,7 @@ module FlareTiming.Plot.Lead (leadPlot) where
 import Data.Maybe (fromMaybe)
 import Reflex.Dom
 
+import WireTypes.Comp (Tweak(..))
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import WireTypes.Lead (TrackLead(..))
 import FlareTiming.Plot.Lead.View (hgPlot)
@@ -10,10 +11,11 @@ import WireTypes.Pilot (Pilot(..))
 
 leadPlot
     :: MonadWidget t m
-    => Dynamic t [(Pilot, Norm.NormBreakdown)]
+    => Dynamic t (Maybe Tweak)
+    -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> Dynamic t (Maybe [(Pilot, TrackLead)])
     -> m ()
-leadPlot sEx ld =
+leadPlot tweak sEx ld =
     elClass "div" "tile is-ancestor" $
         elClass "div" "tile is-12" $
             elClass "div" "tile" $
@@ -31,6 +33,6 @@ leadPlot sEx ld =
 
                             _ ->
                                 elClass "article" "tile is-child" $
-                                    hgPlot sEx (fromMaybe [] <$> ld))
+                                    hgPlot tweak sEx (fromMaybe [] <$> ld))
 
                     return ()

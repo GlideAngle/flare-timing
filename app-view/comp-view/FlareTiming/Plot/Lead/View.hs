@@ -9,6 +9,7 @@ import qualified Data.Map.Strict as Map
 import Control.Monad.IO.Class (liftIO)
 import qualified FlareTiming.Plot.Lead.Plot as P (hgPlot)
 
+import WireTypes.Comp (Tweak(..), LwScaling(..))
 import WireTypes.Lead
     (TrackLead(..), LeadingArea(..), LeadingCoefficient(..), LeadingFraction(..))
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
@@ -31,10 +32,11 @@ lcRange xs =
 
 hgPlot
     :: MonadWidget t m
-    => Dynamic t [(Pilot, Norm.NormBreakdown)]
+    => Dynamic t (Maybe Tweak)
+    -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> Dynamic t [(Pilot, TrackLead)]
     -> m ()
-hgPlot sEx ld = do
+hgPlot tweak sEx ld = do
     pb <- delay 1 =<< getPostBuild
 
     elClass "div" "tile is-ancestor" $ do
@@ -63,16 +65,65 @@ hgPlot sEx ld = do
 
                     return ()
 
-        elClass "div" "tile is-child" $ tablePilot sEx ld
+        elClass "div" "tile is-child" $ tablePilot tweak sEx ld
 
     return ()
 
 tablePilot
     :: MonadWidget t m
-    => Dynamic t [(Pilot, Norm.NormBreakdown)]
+    => Dynamic t (Maybe Tweak)
+    -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> Dynamic t [(Pilot, TrackLead)]
     -> m ()
-tablePilot sEx xs = do
+tablePilot tweak sEx xs = do
+    _ <- dyn $ ffor tweak (\case
+        Nothing -> tablePilotSimple xs
+        Just Tweak{leadingWeightScaling = Just (LwScaling 0)} -> tablePilotSimple xs
+        Just _ -> tablePilotCompare tweak sEx xs)
+
+    return ()
+
+tablePilotSimple
+    :: MonadWidget t m
+    => Dynamic t [(Pilot, TrackLead)]
+    -> m ()
+tablePilotSimple xs = do
+    _ <- elClass "table" "table is-striped" $ do
+            el "thead" $ do
+                el "tr" $ do
+                    el "th" $ text "Area"
+                    el "th" $ text "Coef"
+                    el "th" $ text "Frac"
+                    el "th" $ text "Pilot"
+
+                    return ()
+
+            el "tbody" $ do
+                simpleList xs (uncurry rowLeadSimple . splitDynPure)
+
+    return ()
+
+rowLeadSimple
+    :: MonadWidget t m
+    => Dynamic t Pilot
+    -> Dynamic t TrackLead
+    -> m ()
+rowLeadSimple pilot av = do
+    el "tr" $ do
+        el "td" . dynText $ showArea . area <$> av
+        el "td" . dynText $ showCoef . coef <$> av
+        el "td" . dynText $ showFrac . frac <$> av
+        el "td" . dynText $ showPilotName <$> pilot
+
+        return ()
+
+tablePilotCompare
+    :: MonadWidget t m
+    => Dynamic t (Maybe Tweak)
+    -> Dynamic t [(Pilot, Norm.NormBreakdown)]
+    -> Dynamic t [(Pilot, TrackLead)]
+    -> m ()
+tablePilotCompare _ sEx xs = do
     let pts = fmap ((\(LeadingPoints x) -> x) . Norm.leading . snd) <$> sEx
     let maxPts = ffor pts (\case [] -> 0; pts' -> maximum pts')
     let sEx' = Map.fromList <$> sEx
@@ -98,18 +149,18 @@ tablePilot sEx xs = do
                     return ()
 
             el "tbody" $ do
-                simpleList xs (uncurry (rowLead maxPts sEx') . splitDynPure)
+                simpleList xs (uncurry (rowLeadCompare maxPts sEx') . splitDynPure)
 
     return ()
 
-rowLead
+rowLeadCompare
     :: MonadWidget t m
     => Dynamic t Double
     -> Dynamic t (Map.Map Pilot Norm.NormBreakdown)
     -> Dynamic t Pilot
     -> Dynamic t TrackLead
     -> m ()
-rowLead _maxPts sEx pilot av = do
+rowLeadCompare _maxPts sEx pilot av = do
     (yArea, yAreaDiff, yCoef, yCoefDiff, yFrac, pFrac) <- sample . current
                 $ ffor3 pilot sEx av (\pilot' sEx' TrackLead{area, coef, frac} ->
                     case Map.lookup pilot' sEx' of
