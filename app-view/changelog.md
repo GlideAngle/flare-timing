@@ -2,6 +2,23 @@ The [latest
 version](https://github.com/BlockScope/flare-timing/blob/master/app-view/changelog.md)
 of this changelog.
 
+# Interpolate Zone Tagging
+## app-view-0.18
+
+* Find that GAP and FS use different equations for working out the speed
+  fraction and leading fraction. Show the curve of the equation in the GAP
+  rules but use the same equation as FS.
+* Add a column for leading area in the table alongside the leading point
+  distribution graph and compare area, coefficient and fraction with norms.
+* When the HH:MM:SS field of IGC B records decrease bump the YYYY-MM-DD.
+* Don't apply give to exit cylinders as pilots often fly back into them to take
+  a start. They're flown as both entry and exit cylinders.
+* When comparing data to norms, if the numbers aren't exactly the same but the
+  rounded display of numbers are then display "=" instead.
+* Interpolate zone tagging and show pairs of fixes that straddle a zone and the
+  tag point as separate markers on the map.
+* Draw line goals on the map as semicircles.
+
 # Side-by-Side Score Check
 ## app-view-0.17
 
