@@ -4,12 +4,6 @@
 
 let
 
-  # NOTE: While I could use a pinned version of nixpkgs, with vernix I can
-  # side-step some problems by pinning and tweaking packages here. I can also
-  # jail break and skip the docs or testing if need be.
-  #
-  # If I want to use the pinned nixpkgs then that setup is;
-  # pkgs = import ../nix/nixpkgs.nix { inherit config; };
   pkgs = import nixpkgs { inherit config; };
 
   config = {
@@ -22,15 +16,46 @@ let
           ${ghcver} = p.haskell.packages.${ghcver}.override {
             overrides = self: super: with p.haskell.lib; rec {
               fetchgit = p.fetchgit;
+               app-serve = dontHaddock (super.callPackage (
+                 { mkDerivation, aeson, base, bytestring, cmdargs, directory
+                 , filemanip, filepath, flight-cmd, flight-comp, flight-gap
+                 , flight-kml, flight-latlng, flight-mask, flight-route
+                 , flight-scribe, hlint, mtl, raw-strings-qq, safe-exceptions
+                 , servant, servant-server, siggy-chardust, stdenv, transformers
+                 , uom-plugin, wai, wai-cors, wai-extra, warp, yaml
+                 }:
+                 mkDerivation {
+                   pname = "app-serve";
+                   version = "0.1.0";
+                   src = ../app-serve;
+                   isLibrary = false;
+                   isExecutable = true;
+                   executableHaskellDepends = [
+                     aeson base bytestring cmdargs directory filemanip filepath
+                     flight-cmd flight-comp flight-gap flight-kml flight-latlng
+                     flight-mask flight-route flight-scribe mtl raw-strings-qq
+                     safe-exceptions servant servant-server siggy-chardust transformers
+                     uom-plugin wai wai-cors wai-extra warp yaml
+                   ];
+                   testHaskellDepends = [ base flight-comp hlint ];
+                   homepage = "https://github.com/blockscope/flare-timing#readme";
+                   description = "A collection of apps and libraries for scoring hang gliding and paragliding competitions";
+                   license = stdenv.lib.licenses.mpl20;
+                 }
+                 ) {});
                build-flare-timing = super.callPackage (
-                 { mkDerivation, ansi-terminal, base, shake, stdenv, time }:
+                 { mkDerivation, ansi-terminal, base, dhall, raw-strings-qq, shake
+                 , stdenv, text, time
+                 }:
                  mkDerivation {
                    pname = "build-flare-timing";
                    version = "0.1.0";
                    src = ../build;
                    isLibrary = false;
                    isExecutable = true;
-                   executableHaskellDepends = [ ansi-terminal base shake time ];
+                   executableHaskellDepends = [
+                     ansi-terminal base dhall raw-strings-qq shake text time
+                   ];
                    homepage = "https://github.com/blockscope/flare-timing#readme";
                    description = "A shake build of flare-timing";
                    license = stdenv.lib.licenses.mpl20;
@@ -42,7 +67,7 @@ let
                  }:
                  mkDerivation {
                    pname = "detour-via-sci";
-                   version = "1.0.0";
+                   version = "1.0.1";
                    src = ../detour-via-sci;
                    libraryHaskellDepends = [
                      aeson base cassava newtype scientific siggy-chardust
@@ -63,7 +88,7 @@ let
                  }:
                  mkDerivation {
                    pname = "detour-via-uom";
-                   version = "1.0.0";
+                   version = "1.0.1";
                    src = ../detour-via-uom;
                    libraryHaskellDepends = [
                      aeson base cassava detour-via-sci newtype scientific uom-plugin
@@ -79,12 +104,13 @@ let
                  ) {});
                flare-timing = dontHaddock (super.callPackage (
                  { mkDerivation, aeson, base, bytestring, clock, cmdargs, containers
-                 , directory, filemanip, filepath, flight-cmd, flight-comp
-                 , flight-earth, flight-fsdb, flight-gap, flight-igc, flight-kml
-                 , flight-latlng, flight-lookup, flight-mask, flight-route
-                 , flight-scribe, flight-span, flight-units, flight-zone, formatting
-                 , lens, mtl, raw-strings-qq, siggy-chardust, stdenv, time
-                 , transformers, uom-plugin, yaml
+                 , directory, filemanip, filepath, flight-clip, flight-cmd
+                 , flight-comp, flight-earth, flight-fsdb, flight-gap, flight-igc
+                 , flight-kml, flight-latlng, flight-lookup, flight-mask
+                 , flight-route, flight-scribe, flight-span, flight-time
+                 , flight-units, flight-zone, formatting, lens, mtl, raw-strings-qq
+                 , safe-exceptions, siggy-chardust, stdenv, time, transformers
+                 , uom-plugin, yaml
                  }:
                  mkDerivation {
                    pname = "flare-timing";
@@ -94,10 +120,11 @@ let
                    isExecutable = true;
                    executableHaskellDepends = [
                      aeson base bytestring clock cmdargs containers directory filemanip
-                     filepath flight-cmd flight-comp flight-earth flight-fsdb flight-gap
-                     flight-igc flight-kml flight-latlng flight-lookup flight-mask
-                     flight-route flight-scribe flight-span flight-units flight-zone
-                     formatting lens mtl raw-strings-qq siggy-chardust time transformers
+                     filepath flight-clip flight-cmd flight-comp flight-earth
+                     flight-fsdb flight-gap flight-igc flight-kml flight-latlng
+                     flight-lookup flight-mask flight-route flight-scribe flight-span
+                     flight-time flight-units flight-zone formatting lens mtl
+                     raw-strings-qq safe-exceptions siggy-chardust time transformers
                      uom-plugin yaml
                    ];
                    homepage = "https://github.com/blockscope/flare-timing#readme";
@@ -105,6 +132,19 @@ let
                    license = stdenv.lib.licenses.mpl20;
                  }
                  ) {});
+               flight-clip = super.callPackage (
+                 { mkDerivation, base, doctest, split, stdenv, time }:
+                 mkDerivation {
+                   pname = "flight-clip";
+                   version = "1.1.0";
+                   src = ../clip;
+                   libraryHaskellDepends = [ base split time ];
+                   testHaskellDepends = [ base doctest split time ];
+                   homepage = "https://github.com/blockscope/flare-timing/tree/master/clip#readme";
+                   description = "Clipping a pilot's tracklogs";
+                   license = stdenv.lib.licenses.mpl20;
+                 }
+                 ) {};
                flight-cmd = super.callPackage (
                  { mkDerivation, base, cmdargs, directory, filemanip, filepath
                  , flight-span, mtl, raw-strings-qq, stdenv, transformers
@@ -124,28 +164,31 @@ let
                  ) {};
                flight-comp = dontHaddock (super.callPackage (
                  { mkDerivation, aeson, base, bytestring, cassava, containers
-                 , detour-via-sci, directory, filemanip, filepath, flight-gap
-                 , flight-latlng, flight-route, flight-units, flight-zone, lens, mtl
-                 , path, scientific, smallcheck, split, stdenv, tasty, tasty-hunit
-                 , tasty-quickcheck, tasty-smallcheck, time, unordered-containers
-                 , uom-plugin, vector
+                 , detour-via-sci, detour-via-uom, directory, doctest, filemanip
+                 , filepath, flight-clip, flight-earth, flight-gap, flight-latlng
+                 , flight-route, flight-units, flight-zone, lens, mtl, newtype, path
+                 , scientific, siggy-chardust, smallcheck, split, stdenv, tasty
+                 , tasty-hunit, tasty-quickcheck, tasty-smallcheck, text, time
+                 , unordered-containers, uom-plugin, vector
                  }:
                  mkDerivation {
                    pname = "flight-comp";
                    version = "0.1.0";
                    src = ../comp;
                    libraryHaskellDepends = [
-                     aeson base bytestring cassava containers detour-via-sci directory
-                     filemanip filepath flight-gap flight-latlng flight-route
-                     flight-units flight-zone lens mtl path scientific split time
-                     unordered-containers uom-plugin vector
+                     aeson base bytestring cassava containers detour-via-sci
+                     detour-via-uom directory filemanip filepath flight-clip
+                     flight-earth flight-gap flight-latlng flight-route flight-units
+                     flight-zone lens mtl newtype path scientific siggy-chardust split
+                     text time unordered-containers uom-plugin vector
                    ];
                    testHaskellDepends = [
-                     aeson base bytestring cassava containers detour-via-sci directory
-                     filemanip filepath flight-gap flight-latlng flight-route
-                     flight-units flight-zone lens mtl path scientific smallcheck split
-                     tasty tasty-hunit tasty-quickcheck tasty-smallcheck time
-                     unordered-containers uom-plugin vector
+                     aeson base bytestring cassava containers detour-via-sci
+                     detour-via-uom directory doctest filemanip filepath flight-clip
+                     flight-earth flight-gap flight-latlng flight-route flight-units
+                     flight-zone lens mtl newtype path scientific siggy-chardust
+                     smallcheck split tasty tasty-hunit tasty-quickcheck
+                     tasty-smallcheck text time unordered-containers uom-plugin vector
                    ];
                    homepage = "https://github.com/blockscope/flare-timing#readme";
                    description = "Hang gliding and paragliding competition scoring inputs";
@@ -153,26 +196,26 @@ let
                  }
                  ) {});
                flight-earth = dontCheck (dontHaddock (super.callPackage (
-                 { mkDerivation, aeson, base, bifunctors, detour-via-sci, fgl
-                 , flight-latlng, flight-units, flight-zone, hcoord, hcoord-utm, mtl
-                 , numbers, scientific, siggy-chardust, smallcheck, stdenv, tasty
-                 , tasty-compare, tasty-hunit, tasty-quickcheck, tasty-smallcheck
-                 , uom-plugin
+                 { mkDerivation, aeson, base, bifunctors, detour-via-sci
+                 , detour-via-uom, fgl, flight-latlng, flight-units, flight-zone
+                 , hcoord, hcoord-utm, mtl, numbers, scientific, siggy-chardust
+                 , smallcheck, stdenv, tasty, tasty-compare, tasty-hunit
+                 , tasty-quickcheck, tasty-smallcheck, uom-plugin
                  }:
                  mkDerivation {
                    pname = "flight-earth";
                    version = "0.1.0";
                    src = ../earth;
                    libraryHaskellDepends = [
-                     aeson base bifunctors detour-via-sci fgl flight-latlng flight-units
-                     flight-zone hcoord hcoord-utm mtl numbers scientific siggy-chardust
-                     uom-plugin
+                     aeson base bifunctors detour-via-sci detour-via-uom fgl
+                     flight-latlng flight-units flight-zone hcoord hcoord-utm mtl
+                     numbers scientific siggy-chardust uom-plugin
                    ];
                    testHaskellDepends = [
-                     aeson base bifunctors detour-via-sci fgl flight-latlng flight-units
-                     flight-zone hcoord hcoord-utm mtl numbers scientific siggy-chardust
-                     smallcheck tasty tasty-compare tasty-hunit tasty-quickcheck
-                     tasty-smallcheck uom-plugin
+                     aeson base bifunctors detour-via-sci detour-via-uom fgl
+                     flight-latlng flight-units flight-zone hcoord hcoord-utm mtl
+                     numbers scientific siggy-chardust smallcheck tasty tasty-compare
+                     tasty-hunit tasty-quickcheck tasty-smallcheck uom-plugin
                    ];
                    homepage = "https://github.com/blockscope/flare-timing#readme";
                    description = "Distances on the WGS84 ellipsoid, the FAI sphere and the UTM projection";
@@ -180,11 +223,10 @@ let
                  }
                  ) {}));
                flight-fsdb = dontHaddock (super.callPackage (
-                 { mkDerivation, aeson, base, containers, detour-via-sci
+                 { mkDerivation, aeson, base, containers, detour-via-sci, doctest
                  , flight-comp, flight-gap, flight-latlng, flight-units, flight-zone
-                 , hxt, hxt-xpath, megaparsec, newtype, path, scientific, smallcheck
-                 , split, stdenv, tasty, tasty-hunit, tasty-quickcheck
-                 , tasty-smallcheck, time, uom-plugin
+                 , hxt, hxt-pickle-utils, hxt-xpath, megaparsec, newtype, path
+                 , scientific, split, stdenv, time, uom-plugin
                  }:
                  mkDerivation {
                    pname = "flight-fsdb";
@@ -196,10 +238,9 @@ let
                      newtype path scientific split time uom-plugin
                    ];
                    testHaskellDepends = [
-                     aeson base containers detour-via-sci flight-comp flight-gap
-                     flight-latlng flight-units flight-zone hxt hxt-xpath megaparsec
-                     newtype path scientific smallcheck split tasty tasty-hunit
-                     tasty-quickcheck tasty-smallcheck time uom-plugin
+                     aeson base containers detour-via-sci doctest flight-comp flight-gap
+                     flight-latlng flight-units flight-zone hxt hxt-pickle-utils
+                     hxt-xpath megaparsec newtype path scientific split time uom-plugin
                    ];
                    homepage = "https://github.com/blockscope/flare-timing#readme";
                    description = "A parser for fsdb, the database XML format of FS";
@@ -207,26 +248,26 @@ let
                  }
                  ) {});
                flight-gap = dontCheck (dontHaddock (super.callPackage (
-                 { mkDerivation, aeson, base, containers, detour-via-sci
-                 , detour-via-uom, flight-units, newtype, scientific, siggy-chardust
-                 , smallcheck, statistics, stdenv, tasty, tasty-hunit
-                 , tasty-quickcheck, tasty-smallcheck, template-haskell, uom-plugin
-                 , vector
+                 { mkDerivation, aeson, base, cassava, containers, detour-via-sci
+                 , detour-via-uom, doctest, flight-units, newtype, scientific
+                 , siggy-chardust, smallcheck, statistics, stdenv, tasty
+                 , tasty-hunit, tasty-quickcheck, tasty-smallcheck, template-haskell
+                 , text, uom-plugin, vector
                  }:
                  mkDerivation {
                    pname = "flight-gap";
                    version = "0.1.0";
                    src = ../gap;
                    libraryHaskellDepends = [
-                     aeson base containers detour-via-sci detour-via-uom flight-units
-                     newtype scientific siggy-chardust statistics template-haskell
-                     uom-plugin vector
+                     aeson base cassava containers detour-via-sci detour-via-uom
+                     flight-units newtype scientific siggy-chardust statistics
+                     template-haskell text uom-plugin vector
                    ];
                    testHaskellDepends = [
-                     aeson base containers detour-via-sci detour-via-uom flight-units
-                     newtype scientific siggy-chardust smallcheck statistics tasty
-                     tasty-hunit tasty-quickcheck tasty-smallcheck template-haskell
-                     uom-plugin vector
+                     aeson base cassava containers detour-via-sci detour-via-uom doctest
+                     flight-units newtype scientific siggy-chardust smallcheck
+                     statistics tasty tasty-hunit tasty-quickcheck tasty-smallcheck
+                     template-haskell text uom-plugin vector
                    ];
                    homepage = "https://github.com/blockscope/flare-timing#readme";
                    description = "GAP Scoring";
@@ -234,35 +275,45 @@ let
                  }
                  ) {}));
                flight-igc = super.callPackage (
-                 { mkDerivation, base, bytestring, parsec, stdenv, utf8-string }:
+                 { mkDerivation, base, bytestring, doctest, flight-clip, megaparsec
+                 , stdenv, tasty-quickcheck, time, utf8-string
+                 }:
                  mkDerivation {
                    pname = "flight-igc";
-                   version = "1.0.0";
+                   version = "2.0.0";
                    src = ../igc;
-                   libraryHaskellDepends = [ base bytestring parsec utf8-string ];
+                   libraryHaskellDepends = [
+                     base bytestring flight-clip megaparsec tasty-quickcheck time
+                     utf8-string
+                   ];
+                   testHaskellDepends = [
+                     base bytestring doctest flight-clip megaparsec tasty-quickcheck
+                     time utf8-string
+                   ];
                    homepage = "https://github.com/blockscope/flare-timing#readme";
                    description = "A parser for IGC files";
                    license = stdenv.lib.licenses.mpl20;
                  }
                  ) {};
                flight-kml = super.callPackage (
-                 { mkDerivation, aeson, base, detour-via-sci, doctest, hxt
-                 , hxt-xpath, parsec, path, raw-strings-qq, siggy-chardust
+                 { mkDerivation, aeson, base, detour-via-sci, doctest, flight-clip
+                 , hxt, hxt-xpath, megaparsec, path, raw-strings-qq, siggy-chardust
                  , smallcheck, split, stdenv, tasty, tasty-hunit, tasty-quickcheck
                  , tasty-smallcheck, template-haskell, time
                  }:
                  mkDerivation {
                    pname = "flight-kml";
-                   version = "1.0.1";
+                   version = "1.1.0";
                    src = ../kml;
                    libraryHaskellDepends = [
-                     aeson base detour-via-sci hxt hxt-xpath parsec path siggy-chardust
-                     split time
+                     aeson base detour-via-sci flight-clip hxt hxt-xpath megaparsec path
+                     siggy-chardust split time
                    ];
                    testHaskellDepends = [
-                     aeson base detour-via-sci doctest hxt hxt-xpath parsec path
-                     raw-strings-qq siggy-chardust smallcheck split tasty tasty-hunit
-                     tasty-quickcheck tasty-smallcheck template-haskell time
+                     aeson base detour-via-sci doctest flight-clip hxt hxt-xpath
+                     megaparsec path raw-strings-qq siggy-chardust smallcheck split
+                     tasty tasty-hunit tasty-quickcheck tasty-smallcheck
+                     template-haskell time
                    ];
                    homepage = "https://github.com/blockscope/flare-timing/tree/master/kml#readme";
                    description = "Parsing of pilot tracklogs dumped as KML";
@@ -291,10 +342,10 @@ let
                  ) {});
                flight-lookup = dontHaddock (super.callPackage (
                  { mkDerivation, aeson, base, bytestring, cassava, containers
-                 , detour-via-sci, directory, filemanip, filepath, flight-comp
-                 , flight-gap, flight-kml, flight-latlng, flight-mask, flight-route
-                 , flight-zone, lens, mtl, path, scientific, split, stdenv, time
-                 , unordered-containers, uom-plugin
+                 , detour-via-sci, directory, filemanip, filepath, flight-clip
+                 , flight-comp, flight-gap, flight-kml, flight-latlng, flight-mask
+                 , flight-route, flight-zone, lens, mtl, path, scientific, split
+                 , stdenv, time, unordered-containers, uom-plugin
                  }:
                  mkDerivation {
                    pname = "flight-lookup";
@@ -302,9 +353,9 @@ let
                    src = ../lookup;
                    libraryHaskellDepends = [
                      aeson base bytestring cassava containers detour-via-sci directory
-                     filemanip filepath flight-comp flight-gap flight-kml flight-latlng
-                     flight-mask flight-route flight-zone lens mtl path scientific split
-                     time unordered-containers uom-plugin
+                     filemanip filepath flight-clip flight-comp flight-gap flight-kml
+                     flight-latlng flight-mask flight-route flight-zone lens mtl path
+                     scientific split time unordered-containers uom-plugin
                    ];
                    homepage = "https://github.com/blockscope/flare-timing#readme";
                    description = "Hang gliding and paragliding competition data access";
@@ -313,11 +364,12 @@ let
                  ) {});
                flight-mask = dontHaddock (super.callPackage (
                  { mkDerivation, base, bytestring, cmdargs, containers
-                 , detour-via-sci, directory, fgl, filepath, flight-comp
-                 , flight-earth, flight-gap, flight-kml, flight-latlng, flight-route
-                 , flight-scribe, flight-span, flight-task, flight-track
-                 , flight-units, flight-zone, lens, mtl, numbers, path
-                 , siggy-chardust, split, stdenv, time, uom-plugin, yaml
+                 , detour-via-sci, directory, doctest, fgl, filepath, flight-clip
+                 , flight-comp, flight-earth, flight-gap, flight-kml, flight-latlng
+                 , flight-route, flight-scribe, flight-span, flight-task
+                 , flight-track, flight-units, flight-zone, lens, mtl, numbers, path
+                 , safe-exceptions, siggy-chardust, split, stdenv, these, time
+                 , uom-plugin, yaml
                  }:
                  mkDerivation {
                    pname = "flight-mask";
@@ -325,10 +377,18 @@ let
                    src = ../mask;
                    libraryHaskellDepends = [
                      base bytestring cmdargs containers detour-via-sci directory fgl
-                     filepath flight-comp flight-earth flight-gap flight-kml
+                     filepath flight-clip flight-comp flight-earth flight-gap flight-kml
                      flight-latlng flight-route flight-scribe flight-span flight-task
                      flight-track flight-units flight-zone lens mtl numbers path
-                     siggy-chardust split time uom-plugin yaml
+                     safe-exceptions siggy-chardust split these time uom-plugin yaml
+                   ];
+                   testHaskellDepends = [
+                     base bytestring cmdargs containers detour-via-sci directory doctest
+                     fgl filepath flight-clip flight-comp flight-earth flight-gap
+                     flight-kml flight-latlng flight-route flight-scribe flight-span
+                     flight-task flight-track flight-units flight-zone lens mtl numbers
+                     path safe-exceptions siggy-chardust split these time uom-plugin
+                     yaml
                    ];
                    homepage = "https://github.com/blockscope/flare-timing#readme";
                    description = "Track logs masked by competition task zones";
@@ -357,10 +417,10 @@ let
                  ) {}));
                flight-scribe = super.callPackage (
                  { mkDerivation, aeson, base, bytestring, cassava, containers
-                 , detour-via-sci, directory, filemanip, filepath, flight-comp
-                 , flight-gap, flight-latlng, flight-route, flight-zone, mtl, path
-                 , scientific, split, stdenv, time, unordered-containers, vector
-                 , yaml
+                 , detour-via-sci, directory, filemanip, filepath, flight-clip
+                 , flight-comp, flight-gap, flight-latlng, flight-route, flight-zone
+                 , mtl, path, safe-exceptions, scientific, split, stdenv, time
+                 , unordered-containers, vector, yaml
                  }:
                  mkDerivation {
                    pname = "flight-scribe";
@@ -368,9 +428,9 @@ let
                    src = ../scribe;
                    libraryHaskellDepends = [
                      aeson base bytestring cassava containers detour-via-sci directory
-                     filemanip filepath flight-comp flight-gap flight-latlng
-                     flight-route flight-zone mtl path scientific split time
-                     unordered-containers vector yaml
+                     filemanip filepath flight-clip flight-comp flight-gap flight-latlng
+                     flight-route flight-zone mtl path safe-exceptions scientific split
+                     time unordered-containers vector yaml
                    ];
                    homepage = "https://github.com/blockscope/flare-timing#readme";
                    description = "Hang gliding and paragliding competition scoring files";
@@ -416,18 +476,51 @@ let
                    license = stdenv.lib.licenses.mpl20;
                  }
                  ) {}));
+               flight-time = dontCheck (dontHaddock (super.callPackage (
+                 { mkDerivation, aeson, base, Cabal, Diff, directory, filepath
+                 , flight-clip, flight-comp, flight-kml, flight-latlng
+                 , flight-lookup, flight-mask, flight-scribe, lens, microlens, mtl
+                 , prettyprinter, safe-exceptions, siggy-chardust, stdenv, tasty
+                 , tasty-golden, text, these, time, transformers, uom-plugin
+                 , utf8-string, vector
+                 }:
+                 mkDerivation {
+                   pname = "flight-time";
+                   version = "0.1.0";
+                   src = ../time;
+                   libraryHaskellDepends = [
+                     base directory filepath flight-clip flight-comp flight-kml
+                     flight-latlng flight-lookup flight-mask flight-scribe lens mtl
+                     safe-exceptions siggy-chardust these time uom-plugin
+                   ];
+                   testHaskellDepends = [
+                     aeson base Cabal Diff directory filepath flight-clip flight-comp
+                     flight-kml flight-latlng flight-lookup flight-mask flight-scribe
+                     lens microlens mtl prettyprinter safe-exceptions siggy-chardust
+                     tasty tasty-golden text these time transformers uom-plugin
+                     utf8-string vector
+                   ];
+                   homepage = "https://github.com/blockscope/flare-timing#readme";
+                   description = "Align times of competing pilot's tracklogs";
+                   license = stdenv.lib.licenses.mpl20;
+                 }
+                 ) {}));
                flight-track = super.callPackage (
-                 { mkDerivation, base, bytestring, containers, directory, filepath
-                 , flight-comp, flight-igc, flight-kml, mtl, path, split, stdenv
-                 , time, utf8-string
+                 { mkDerivation, base, bytestring, containers, directory, doctest
+                 , filepath, flight-clip, flight-comp, flight-igc, flight-kml, mtl
+                 , path, split, stdenv, time, utf8-string
                  }:
                  mkDerivation {
                    pname = "flight-track";
                    version = "0.1.0";
                    src = ../track;
                    libraryHaskellDepends = [
-                     base bytestring containers directory filepath flight-comp
-                     flight-igc flight-kml mtl path split time utf8-string
+                     base bytestring containers directory filepath flight-clip
+                     flight-comp flight-igc flight-kml mtl path split time utf8-string
+                   ];
+                   testHaskellDepends = [
+                     base bytestring containers directory doctest filepath flight-clip
+                     flight-comp flight-igc flight-kml mtl path split time utf8-string
                    ];
                    homepage = "https://github.com/blockscope/flare-timing#readme";
                    description = "Hang gliding and paragliding competition track logs";
@@ -435,16 +528,16 @@ let
                  }
                  ) {};
                flight-units = dontHaddock (super.callPackage (
-                 { mkDerivation, base, bifunctors, fixed, formatting, numbers
-                 , siggy-chardust, stdenv, text, uom-plugin
+                 { mkDerivation, base, bifunctors, detour-via-sci, fixed, formatting
+                 , newtype, numbers, siggy-chardust, stdenv, text, uom-plugin
                  }:
                  mkDerivation {
                    pname = "flight-units";
                    version = "0.1.0";
                    src = ../units;
                    libraryHaskellDepends = [
-                     base bifunctors fixed formatting numbers siggy-chardust text
-                     uom-plugin
+                     base bifunctors detour-via-sci fixed formatting newtype numbers
+                     siggy-chardust text uom-plugin
                    ];
                    homepage = "https://github.com/blockscope/flare-timing#readme";
                    description = "Units used in hang gliding and paragliding competitions";
@@ -453,9 +546,10 @@ let
                  ) {});
                flight-zone = dontHaddock (super.callPackage (
                  { mkDerivation, aeson, aeson-pretty, base, bytestring
-                 , detour-via-sci, detour-via-uom, flight-latlng, flight-units, here
-                 , newtype, scientific, siggy-chardust, stdenv, tasty
-                 , tasty-discover, tasty-golden, tasty-hspec, text, uom-plugin, yaml
+                 , detour-via-sci, detour-via-uom, doctest, flight-latlng
+                 , flight-units, here, newtype, scientific, siggy-chardust, stdenv
+                 , tasty, tasty-discover, tasty-golden, tasty-hspec, text
+                 , uom-plugin, yaml
                  }:
                  mkDerivation {
                    pname = "flight-zone";
@@ -467,8 +561,9 @@ let
                    ];
                    testHaskellDepends = [
                      aeson aeson-pretty base bytestring detour-via-sci detour-via-uom
-                     flight-latlng flight-units here newtype scientific siggy-chardust
-                     tasty tasty-discover tasty-golden tasty-hspec text uom-plugin yaml
+                     doctest flight-latlng flight-units here newtype scientific
+                     siggy-chardust tasty tasty-discover tasty-golden tasty-hspec text
+                     uom-plugin yaml
                    ];
                    testToolDepends = [ tasty-discover ];
                    homepage = "https://github.com/blockscope/flare-timing#readme";
@@ -568,29 +663,6 @@ let
                    license = stdenv.lib.licenses.bsd3;
                  }
                  ) {}));
-               www-flare-timing = dontHaddock (super.callPackage (
-                 { mkDerivation, aeson, base, bytestring, cmdargs, directory
-                 , filemanip, filepath, flight-comp, hlint, mtl, raw-strings-qq
-                 , servant, servant-server, stdenv, transformers, wai, wai-cors
-                 , warp, yaml
-                 }:
-                 mkDerivation {
-                   pname = "www-flare-timing";
-                   version = "0.1.0";
-                   src = ../www;
-                   isLibrary = false;
-                   isExecutable = true;
-                   executableHaskellDepends = [
-                     aeson base bytestring cmdargs directory filemanip filepath
-                     flight-comp mtl raw-strings-qq servant servant-server transformers
-                     wai wai-cors warp yaml
-                   ];
-                   testHaskellDepends = [ base flight-comp hlint ];
-                   homepage = "https://github.com/blockscope/flare-timing#readme";
-                   description = "A collection of apps and libraries for scoring hang gliding and paragliding competitions";
-                   license = stdenv.lib.licenses.mpl20;
-                 }
-                 ) {});
             };
           };
         };
@@ -616,10 +688,12 @@ let
   drvForSystem = s: n: v: if builtins.hasAttr s v then builtins.getAttr s v else v;
 
   projpkgs = {
+    app-serve = pkgs.haskell.packages.${ghcver}.app-serve;
     build-flare-timing = pkgs.haskell.packages.${ghcver}.build-flare-timing;
     detour-via-sci = pkgs.haskell.packages.${ghcver}.detour-via-sci;
     detour-via-uom = pkgs.haskell.packages.${ghcver}.detour-via-uom;
     flare-timing = pkgs.haskell.packages.${ghcver}.flare-timing;
+    flight-clip = pkgs.haskell.packages.${ghcver}.flight-clip;
     flight-cmd = pkgs.haskell.packages.${ghcver}.flight-cmd;
     flight-comp = pkgs.haskell.packages.${ghcver}.flight-comp;
     flight-earth = pkgs.haskell.packages.${ghcver}.flight-earth;
@@ -634,6 +708,7 @@ let
     flight-scribe = pkgs.haskell.packages.${ghcver}.flight-scribe;
     flight-span = pkgs.haskell.packages.${ghcver}.flight-span;
     flight-task = pkgs.haskell.packages.${ghcver}.flight-task;
+    flight-time = pkgs.haskell.packages.${ghcver}.flight-time;
     flight-track = pkgs.haskell.packages.${ghcver}.flight-track;
     flight-units = pkgs.haskell.packages.${ghcver}.flight-units;
     flight-zone = pkgs.haskell.packages.${ghcver}.flight-zone;
@@ -642,27 +717,26 @@ let
     siggy-chardust = pkgs.haskell.packages.${ghcver}.siggy-chardust;
     tasty-compare = pkgs.haskell.packages.${ghcver}.tasty-compare;
     uom-plugin = pkgs.haskell.packages.${ghcver}.uom-plugin;
-    www-flare-timing = pkgs.haskell.packages.${ghcver}.www-flare-timing;
   };
 
 in projpkgs
 
 # Usage:
 #
-#   For any of the primary packages defined above (e.g. build-flare-timing),
+#   For any of the primary packages defined above (e.g. app-serve),
 #   one of the following can be done:
 #
-#   $ nix-build -A build-flare-timing flare-timing-project.nix
+#   $ nix-build -A app-serve flare-timing-project.nix
 #     <generates "result" link in local directory>
 #
-#   $ nix-build -A build-flare-timing.env flare-timing-project.nix
+#   $ nix-build -A app-serve.env flare-timing-project.nix
 #   nix-shell$ <dev environment for "cabal build">
 #
-#   $ git clone build-flare-timing
-#   $ cd build-flare-timing
+#   $ git clone app-serve
+#   $ cd app-serve
 #   $ cat > shell.nix << EOF
 #   { ghcver ? "ghc822" }:
-#   (import /Users/pdejoux/dev/src/blockscope/flare-timing-vernix/vernix/flare-timing-project.nix { inherit ghcver; }).build-flare-timing.env
+#   (import /Users/pdejoux/dev/src/blockscope/flare-timing/vernix/flare-timing-project.nix { inherit ghcver; }).app-serve.env
 #   EOF
 #   $
 #          ... and then simply:

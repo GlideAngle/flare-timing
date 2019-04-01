@@ -9,6 +9,7 @@ package_spec  =  [
     HaskellPackage("detour-via-uom", ft(subpath = "detour-via-uom"), Local("../detour-via-uom"), dontCheck = True),
     HaskellPackage("tasty-compare", ft(subpath = "tasty-compare"), Local("../tasty-compare")),
 
+    HaskellPackage("flight-clip", ft(subpath = "clip"), Local("../clip")),
     HaskellPackage("flight-cmd", ft(subpath = "cmd"), Local("../cmd")),
     HaskellPackage("flight-comp", ft(subpath = "comp"), Local("../comp"), dontHaddock = True),
     HaskellPackage("flight-earth", ft(subpath = "earth"), Local("../earth"), dontCheck = True, dontHaddock = True),
@@ -23,13 +24,14 @@ package_spec  =  [
     HaskellPackage("flight-scribe", ft(subpath = "scribe"), Local("../scribe")),
     HaskellPackage("flight-span", ft(subpath = "span"), Local("../span")),
     HaskellPackage("flight-task", ft(subpath = "task"), Local("../task"), dontCheck = True, dontHaddock = True),
+    HaskellPackage("flight-time", ft(subpath = "time"), Local("../time"), dontCheck = True, dontHaddock = True),
     HaskellPackage("flight-track", ft(subpath = "track"), Local("../track")),
     HaskellPackage("flight-units", ft(subpath = "units"), Local("../units"), dontHaddock = True),
     HaskellPackage("flight-zone", ft(subpath = "zone"), Local("../zone"), dontHaddock = True),
 
     HaskellPackage("build-flare-timing", ft(subpath = "build"), Local("../build"),),
     HaskellPackage("flare-timing", ft(subpath = "flare-timing"), Local("../flare-timing"), dontHaddock = True),
-    HaskellPackage("www-flare-timing", ft(subpath = "www"), Local("../www"), dontHaddock = True),
+    HaskellPackage("app-serve", ft(subpath = "app-serve"), Local("../app-serve"), dontHaddock = True),
 
     HaskellPackage("hcoord", hc(subpath = "hcoord"), version = "3c3859dac5da111e57a6de09764ffdb127197c4a", dontCheck = True),
     HaskellPackage("hcoord-utm", hc(subpath = "hcoord-utm"), version = "3c3859dac5da111e57a6de09764ffdb127197c4a", dontCheck = True),
