@@ -517,18 +517,20 @@ build`](https://docs.haskellstack.org) and executables installed with;
     Copied executables to /.../flare-timing/__shake-build:
     - align-time
     - build-flare-timing
+    - comp-serve
     - cross-zone
     - discard-further
     - extract-input
+    - fs-score
     - gap-point
     - land-out
-    - make-travis-yml
     - mask-track
     - tag-zone
     - task-length
     - test-fsdb-parser
     - test-igc-parser
     - test-kml-parser
+    - unpack-track
 
 Individual packages can be built by specifying either the folder or the package
 name;
