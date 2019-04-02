@@ -847,11 +847,11 @@ The `doctest` targets can be run individually too;
 > ./stack-shake-build.sh stack-doctest-flight-kml
 ...
 # stack (for stack-doctest-flight-kml)
-flight-kml-1.0.0: test (suite: doctest)
+flight-kml-1.1.0: test (suite: doctest)
 
 Examples: 57  Tried: 57  Errors: 0  Failures: 0
 
-flight-kml-1.0.0: Test suite doctest passed
+flight-kml-1.1.0: Test suite doctest passed
 Build completed in 0:09m
 ```
 
