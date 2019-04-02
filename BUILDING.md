@@ -55,10 +55,10 @@ The results of those builds;
     > ls units/result/lib/ghc-8.2.2/
     flight-units-0.1.0   package.conf.d       x86_64-osx-ghc-8.2.2
     > ls flare-timing/result/bin
-    align-time       extract-input    mask-track       test-fsdb-parser
-    cross-zone       gap-point        tag-zone         test-igc-parser
-    discard-further  land-out         task-length      test-kml-parser
-    > ls www/result/bin
+    align-time       extract-input    land-out         task-length      test-kml-parser
+    cross-zone       fs-score         mask-track       test-fsdb-parser unpack-track
+    discard-further  gap-point        tag-zone         test-igc-parser
+    > ls app-serve/result/bin
     comp-serve
 
 ## Building with Vernix
