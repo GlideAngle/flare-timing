@@ -11,7 +11,7 @@ package_spec  =  [
 
     HaskellPackage("flight-clip", ft(subpath = "clip"), Local("../clip")),
     HaskellPackage("flight-cmd", ft(subpath = "cmd"), Local("../cmd")),
-    HaskellPackage("flight-comp", ft(subpath = "comp"), Local("../comp"), dontHaddock = True),
+    HaskellPackage("flight-comp", ft(subpath = "comp"), Local("../comp"), dontCheck = True, dontHaddock = True),
     HaskellPackage("flight-earth", ft(subpath = "earth"), Local("../earth"), dontCheck = True, dontHaddock = True),
     HaskellPackage("flight-fsdb", ft(subpath = "fsdb"), Local("../fsdb"), dontHaddock = True),
     HaskellPackage("flight-gap", ft(subpath = "gap"), Local("../gap"), dontCheck = True, dontHaddock = True),
@@ -19,7 +19,7 @@ package_spec  =  [
     HaskellPackage("flight-kml", ft(subpath = "kml"), Local("../kml")),
     HaskellPackage("flight-latlng", ft(subpath = "latlng"), Local("../latlng"), dontHaddock = True),
     HaskellPackage("flight-lookup", ft(subpath = "lookup"), Local("../lookup"), dontHaddock = True),
-    HaskellPackage("flight-mask", ft(subpath = "mask"), Local("../mask"), dontHaddock = True),
+    HaskellPackage("flight-mask", ft(subpath = "mask"), Local("../mask"), dontCheck = True, dontHaddock = True),
     HaskellPackage("flight-route", ft(subpath = "route"), Local("../route"), dontCheck = True, dontHaddock = True),
     HaskellPackage("flight-scribe", ft(subpath = "scribe"), Local("../scribe")),
     HaskellPackage("flight-span", ft(subpath = "span"), Local("../span")),
@@ -27,13 +27,17 @@ package_spec  =  [
     HaskellPackage("flight-time", ft(subpath = "time"), Local("../time"), dontCheck = True, dontHaddock = True),
     HaskellPackage("flight-track", ft(subpath = "track"), Local("../track")),
     HaskellPackage("flight-units", ft(subpath = "units"), Local("../units"), dontHaddock = True),
-    HaskellPackage("flight-zone", ft(subpath = "zone"), Local("../zone"), dontHaddock = True),
+    HaskellPackage("flight-zone", ft(subpath = "zone"), Local("../zone"), dontCheck = True, dontHaddock = True),
 
-    HaskellPackage("build-flare-timing", ft(subpath = "build"), Local("../build"),),
     HaskellPackage("flare-timing", ft(subpath = "flare-timing"), Local("../flare-timing"), dontHaddock = True),
-    HaskellPackage("app-serve", ft(subpath = "app-serve"), Local("../app-serve"), dontHaddock = True),
+    HaskellPackage("app-serve", ft(subpath = "app-serve"), Local("../app-serve"), dontCheck = True, dontHaddock = True),
 
     HaskellPackage("hcoord", hc(subpath = "hcoord"), version = "3c3859dac5da111e57a6de09764ffdb127197c4a", dontCheck = True),
     HaskellPackage("hcoord-utm", hc(subpath = "hcoord-utm"), version = "3c3859dac5da111e57a6de09764ffdb127197c4a", dontCheck = True),
+
+    HaskellPackage("hxt-xpath", version = "9.1.2.2", dontCheck = True, dontHaddock = True),
     HaskellPackage("uom-plugin", version = "0.3.0.0", dontCheck = True, jailBreak = True),
+    HaskellPackage("doctest", version = "0.15.0", dontCheck = True, dontHaddock = True),
+    HaskellPackage("megaparsec", version = "7.0.4", dontCheck = True, dontHaddock = True),
+    HaskellPackage("parser-combinators", version = "1.0.0", dontCheck = True, dontHaddock = True),
 ]

@@ -16,7 +16,7 @@ let
           ${ghcver} = p.haskell.packages.${ghcver}.override {
             overrides = self: super: with p.haskell.lib; rec {
               fetchgit = p.fetchgit;
-               app-serve = dontHaddock (super.callPackage (
+               app-serve = dontCheck (dontHaddock (super.callPackage (
                  { mkDerivation, aeson, base, bytestring, cmdargs, directory
                  , filemanip, filepath, flight-cmd, flight-comp, flight-gap
                  , flight-kml, flight-latlng, flight-mask, flight-route
@@ -42,25 +42,7 @@ let
                    description = "A collection of apps and libraries for scoring hang gliding and paragliding competitions";
                    license = stdenv.lib.licenses.mpl20;
                  }
-                 ) {});
-               build-flare-timing = super.callPackage (
-                 { mkDerivation, ansi-terminal, base, dhall, raw-strings-qq, shake
-                 , stdenv, text, time
-                 }:
-                 mkDerivation {
-                   pname = "build-flare-timing";
-                   version = "0.1.0";
-                   src = ../build;
-                   isLibrary = false;
-                   isExecutable = true;
-                   executableHaskellDepends = [
-                     ansi-terminal base dhall raw-strings-qq shake text time
-                   ];
-                   homepage = "https://github.com/blockscope/flare-timing#readme";
-                   description = "A shake build of flare-timing";
-                   license = stdenv.lib.licenses.mpl20;
-                 }
-                 ) {};
+                 ) {}));
                detour-via-sci = super.callPackage (
                  { mkDerivation, aeson, base, cassava, doctest, newtype, scientific
                  , siggy-chardust, stdenv, template-haskell
@@ -102,6 +84,36 @@ let
                    license = stdenv.lib.licenses.mpl20;
                  }
                  ) {});
+               doctest = dontCheck (dontHaddock (super.callPackage (
+                 { mkDerivation, base, base-compat, code-page, deepseq, directory
+                 , filepath, ghc, ghc-paths, hspec, HUnit, mockery, process
+                 , QuickCheck, setenv, silently, stdenv, stringbuilder, syb
+                 , transformers, with-location
+                 }:
+                 mkDerivation {
+                   pname = "doctest";
+                   version = "0.15.0";
+                   sha256 = "f1ae62f740fbf287e067283cebdc3cd9eef447e8e52865efebeb67c418a2818d";
+                   isLibrary = true;
+                   isExecutable = true;
+                   libraryHaskellDepends = [
+                     base base-compat code-page deepseq directory filepath ghc ghc-paths
+                     process syb transformers
+                   ];
+                   executableHaskellDepends = [
+                     base base-compat code-page deepseq directory filepath ghc ghc-paths
+                     process syb transformers
+                   ];
+                   testHaskellDepends = [
+                     base base-compat code-page deepseq directory filepath ghc ghc-paths
+                     hspec HUnit mockery process QuickCheck setenv silently
+                     stringbuilder syb transformers with-location
+                   ];
+                   homepage = "https://github.com/sol/doctest#readme";
+                   description = "Test interactive Haskell examples";
+                   license = stdenv.lib.licenses.mit;
+                 }
+                 ) {}));
                flare-timing = dontHaddock (super.callPackage (
                  { mkDerivation, aeson, base, bytestring, clock, cmdargs, containers
                  , directory, filemanip, filepath, flight-clip, flight-cmd
@@ -162,7 +174,7 @@ let
                    license = stdenv.lib.licenses.mpl20;
                  }
                  ) {};
-               flight-comp = dontHaddock (super.callPackage (
+               flight-comp = dontCheck (dontHaddock (super.callPackage (
                  { mkDerivation, aeson, base, bytestring, cassava, containers
                  , detour-via-sci, detour-via-uom, directory, doctest, filemanip
                  , filepath, flight-clip, flight-earth, flight-gap, flight-latlng
@@ -194,7 +206,7 @@ let
                    description = "Hang gliding and paragliding competition scoring inputs";
                    license = stdenv.lib.licenses.mpl20;
                  }
-                 ) {});
+                 ) {}));
                flight-earth = dontCheck (dontHaddock (super.callPackage (
                  { mkDerivation, aeson, base, bifunctors, detour-via-sci
                  , detour-via-uom, fgl, flight-latlng, flight-units, flight-zone
@@ -362,7 +374,7 @@ let
                    license = stdenv.lib.licenses.mpl20;
                  }
                  ) {});
-               flight-mask = dontHaddock (super.callPackage (
+               flight-mask = dontCheck (dontHaddock (super.callPackage (
                  { mkDerivation, base, bytestring, cmdargs, containers
                  , detour-via-sci, directory, doctest, fgl, filepath, flight-clip
                  , flight-comp, flight-earth, flight-gap, flight-kml, flight-latlng
@@ -394,7 +406,7 @@ let
                    description = "Track logs masked by competition task zones";
                    license = stdenv.lib.licenses.mpl20;
                  }
-                 ) {});
+                 ) {}));
                flight-route = dontCheck (dontHaddock (super.callPackage (
                  { mkDerivation, aeson, base, bifunctors, detour-via-sci
                  , flight-earth, flight-latlng, flight-task, flight-units
@@ -544,7 +556,7 @@ let
                    license = stdenv.lib.licenses.mpl20;
                  }
                  ) {});
-               flight-zone = dontHaddock (super.callPackage (
+               flight-zone = dontCheck (dontHaddock (super.callPackage (
                  { mkDerivation, aeson, aeson-pretty, base, bytestring
                  , detour-via-sci, detour-via-uom, doctest, flight-latlng
                  , flight-units, here, newtype, scientific, siggy-chardust, stdenv
@@ -570,7 +582,7 @@ let
                    description = "Control zones to fly";
                    license = stdenv.lib.licenses.mpl20;
                  }
-                 ) {});
+                 ) {}));
                hcoord = dontCheck (super.callPackage (
                  { mkDerivation, base, data-default, fetchgit, hlint, HUnit, ieee754
                  , mtl, stdenv
@@ -615,6 +627,61 @@ let
                    license = stdenv.lib.licenses.bsd3;
                  }
                  ) {});
+               hxt-xpath = dontCheck (dontHaddock (super.callPackage (
+                 { mkDerivation, base, containers, directory, filepath, hxt, parsec
+                 , stdenv
+                 }:
+                 mkDerivation {
+                   pname = "hxt-xpath";
+                   version = "9.1.2.2";
+                   sha256 = "50377cb5fc17a31091ef41d648cb26ce8d8bd52f9dc639e5b654b118804e9872";
+                   libraryHaskellDepends = [
+                     base containers directory filepath hxt parsec
+                   ];
+                   homepage = "https://github.com/UweSchmidt/hxt";
+                   description = "The XPath modules for HXT";
+                   license = "unknown";
+                 }
+                 ) {}));
+               megaparsec = dontCheck (dontHaddock (super.callPackage (
+                 { mkDerivation, base, bytestring, case-insensitive, containers
+                 , criterion, deepseq, hspec, hspec-expectations, mtl
+                 , parser-combinators, QuickCheck, scientific, stdenv, text
+                 , transformers, weigh
+                 }:
+                 mkDerivation {
+                   pname = "megaparsec";
+                   version = "7.0.4";
+                   sha256 = "325ba5cee8cdef91e351fb2db0b38562f8345b0bcdfed97045671357501de8c1";
+                   libraryHaskellDepends = [
+                     base bytestring case-insensitive containers deepseq mtl
+                     parser-combinators scientific text transformers
+                   ];
+                   testHaskellDepends = [
+                     base bytestring case-insensitive containers hspec
+                     hspec-expectations mtl parser-combinators QuickCheck scientific
+                     text transformers
+                   ];
+                   benchmarkHaskellDepends = [
+                     base containers criterion deepseq text weigh
+                   ];
+                   homepage = "https://github.com/mrkkrp/megaparsec";
+                   description = "Monadic parser combinators";
+                   license = stdenv.lib.licenses.bsd2;
+                 }
+                 ) {}));
+               parser-combinators = dontCheck (dontHaddock (super.callPackage (
+                 { mkDerivation, base, stdenv }:
+                 mkDerivation {
+                   pname = "parser-combinators";
+                   version = "1.0.0";
+                   sha256 = "e54c8d6071bc67866dffb661e5f56de6d632f40abdfe76b9f56a734ca76e8edf";
+                   libraryHaskellDepends = [ base ];
+                   homepage = "https://github.com/mrkkrp/parser-combinators";
+                   description = "Lightweight package providing commonly useful parser combinators";
+                   license = stdenv.lib.licenses.bsd3;
+                 }
+                 ) {}));
                siggy-chardust = super.callPackage (
                  { mkDerivation, base, doctest, smallcheck, stdenv, tasty
                  , tasty-hunit, tasty-quickcheck, tasty-smallcheck
@@ -689,9 +756,9 @@ let
 
   projpkgs = {
     app-serve = pkgs.haskell.packages.${ghcver}.app-serve;
-    build-flare-timing = pkgs.haskell.packages.${ghcver}.build-flare-timing;
     detour-via-sci = pkgs.haskell.packages.${ghcver}.detour-via-sci;
     detour-via-uom = pkgs.haskell.packages.${ghcver}.detour-via-uom;
+    doctest = pkgs.haskell.packages.${ghcver}.doctest;
     flare-timing = pkgs.haskell.packages.${ghcver}.flare-timing;
     flight-clip = pkgs.haskell.packages.${ghcver}.flight-clip;
     flight-cmd = pkgs.haskell.packages.${ghcver}.flight-cmd;
@@ -714,6 +781,9 @@ let
     flight-zone = pkgs.haskell.packages.${ghcver}.flight-zone;
     hcoord = pkgs.haskell.packages.${ghcver}.hcoord;
     hcoord-utm = pkgs.haskell.packages.${ghcver}.hcoord-utm;
+    hxt-xpath = pkgs.haskell.packages.${ghcver}.hxt-xpath;
+    megaparsec = pkgs.haskell.packages.${ghcver}.megaparsec;
+    parser-combinators = pkgs.haskell.packages.${ghcver}.parser-combinators;
     siggy-chardust = pkgs.haskell.packages.${ghcver}.siggy-chardust;
     tasty-compare = pkgs.haskell.packages.${ghcver}.tasty-compare;
     uom-plugin = pkgs.haskell.packages.${ghcver}.uom-plugin;

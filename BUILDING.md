@@ -84,6 +84,7 @@ Package     siggy-chardust: ../siggy-chardust
 Package     detour-via-sci: ../detour-via-sci
 Package     detour-via-uom: ../detour-via-uom
 Package      tasty-compare: ../tasty-compare
+Package        flight-clip: ../clip
 Package         flight-cmd: ../cmd
 Package        flight-comp: ../comp
 Package       flight-earth: ../earth
@@ -98,16 +99,20 @@ Package       flight-route: ../route
 Package      flight-scribe: ../scribe
 Package        flight-span: ../span
 Package        flight-task: ../task
+Package        flight-time: ../time
 Package       flight-track: ../track
 Package       flight-units: ../units
 Package        flight-zone: ../zone
-Package build-flare-timing: ../build
 Package       flare-timing: ../flare-timing
-Package   www-flare-timing: ../www
+Package          app-serve: ../app-serve
 Package             hcoord: 3c3859dac5da111e57a6de09764ffdb127197c4a https://github.com/blockscope/hcoord.git 3c3859dac5da111e57a6de09764ffdb127197c4a
 Package         hcoord-utm: 3c3859dac5da111e57a6de09764ffdb127197c4a https://github.com/blockscope/hcoord.git 3c3859dac5da111e57a6de09764ffdb127197c4a
+Package          hxt-xpath: 9.1.2.2 hackage
+Package         uom-plugin: 0.3.0.0 hackage
+Package            doctest: 0.15.0 hackage
+Package         megaparsec: 7.0.4 hackage
+Package parser-combinators: 1.0.0 hackage
 Package         summarygen: ./flare-timing-project.nix
-
 [nix-shell:~/.../flare-timing]$ exit
 vernix>
 ```
@@ -123,32 +128,38 @@ To build them all;
 
 ```
 vernix> nix-build flare-timing-project.nix
-/nix/store/1jmxp02pilgv75m97jbwqbjr45ygrx64-build-flare-timing-0.1.0
-/nix/store/af50w303188zgcfqpb5fs58gi4i8l5lz-detour-via-sci-1.0.0
-/nix/store/r257q05zgqxhkkv9adh3if84dsyzgzp2-detour-via-uom-1.0.0
-/nix/store/mlz7g0wp1w5n655d2iyy0wb3xaw6yhiq-flare-timing-0.1.0
-/nix/store/pprpyxr3m3l2f627zh88i8zbxzkhgl8g-flight-cmd-0.1.0
-/nix/store/jibhjmp5n3qmz6kpv96zbqnp7vch8jgv-flight-comp-0.1.0
-/nix/store/7gq31vxkqkfxx6930aq4gnydga54y8bz-flight-earth-0.1.0
-/nix/store/6kwlpdjchj2n3y4y1hq10g9sgnwgh4w2-flight-fsdb-0.1.0
-/nix/store/x13lr5yp8ypqb7gj2brpxxlmj2ih1b0d-flight-gap-0.1.0
-/nix/store/g8cx487wwasvjz37sgvs85xi8k0s5kl4-flight-igc-1.0.0
-/nix/store/bmh3br716la4pqmkakynd1bpgv3fjhs4-flight-kml-1.0.1
-/nix/store/y9gm6lc89v1cqbmggg670as5bbb2xci1-flight-latlng-0.1.0
-/nix/store/z9lfcc8srlqp84r2lj356kb2nc2fskvq-flight-lookup-0.1.0
-/nix/store/yss2gvakr90g6a8785j9qnj2gcy5vyia-flight-mask-0.1.0
-/nix/store/yi89z0msqnj9c77rlsb8gq4jima1n9xv-flight-route-0.1.0
-/nix/store/7dzj6amz52b2x02r7yv7ir2g0l71sy9p-flight-scribe-0.1.0
-/nix/store/bx08r12zpmm2rm34r26gi0808yv6p0q3-flight-span-0.1.0
-/nix/store/31dpda9zh9rlb2nq3ayrc869hxr8r7mc-flight-task-0.1.0
-/nix/store/98h8jj4ywqdgm3fvv6gmfrxgcl84hq3y-flight-track-0.1.0
-/nix/store/wn64njmi1vkalh496sp86c4a0ynqg28b-flight-units-0.1.0
-/nix/store/w9j6wh5iinn3rri8wbx7l52xk566y6l5-flight-zone-0.1.0
-/nix/store/n0w4g1d2ipmsq1qwspnlp8ji8anmpcbl-hcoord-3c3859dac5da111e57a6de09764ffdb127197c4a
-/nix/store/9v8h9imr3sndd90z86mp9wj73s6vwf73-hcoord-utm-3c3859dac5da111e57a6de09764ffdb127197c4a
-/nix/store/qfpjz0xj9f2dkpdrflwfjwhnixwlaivh-siggy-chardust-1.0.0
-/nix/store/7jlrh9kb8s7pvj0pzakd3pqk31d69sb4-tasty-compare-0.1.0
-/nix/store/1cgyqwfjqc3sv9jnv2pwri1r8ac1nar1-www-flare-timing-0.1.0
+/nix/store/sxfb6nkhvahngkxpydr3mknmk1fhlxlg-app-serve-0.1.0
+/nix/store/s9savg6szykm7bb7cj5c93n63qf6pqiq-detour-via-sci-1.0.1
+/nix/store/qwb2lfn0x5grb1d6fs1qyrsm0hdddima-detour-via-uom-1.0.1
+/nix/store/h55yipm6w9i3mkh1w1a833nkr154m0mn-doctest-0.15.0
+/nix/store/19q4sycdqrxzx1d9q0k0gr00jp1a6b8l-flare-timing-0.1.0
+/nix/store/c8df4xyvl47ybgw85x0jv6h15sjkni40-flight-clip-1.1.0
+/nix/store/a3w2r4q3wgfa2703iq53z3xnj204azmf-flight-cmd-0.1.0
+/nix/store/fqvsimyx8k28yy0j84c780wzqb1phadg-flight-comp-0.1.0
+/nix/store/8vla5l4lifbgw3a1d0i5wss33s0knqpi-flight-earth-0.1.0
+/nix/store/d2p1cy1701rp2pfsgqr28kyv70c4y4ch-flight-fsdb-0.1.0
+/nix/store/vs6sibri5xbk9wqnl8jn3cyz79xm0lnb-flight-gap-0.1.0
+/nix/store/rwv7a4xjlp94l5rscrhi56pfn430ffp0-flight-igc-2.0.0
+/nix/store/li9q6c5h3xblajw73pvd23azh0hnzhbs-flight-kml-1.1.0
+/nix/store/aa2ig6y1n9nb432445nid10lrsm22pjp-flight-latlng-0.1.0
+/nix/store/mh08dgx2xjccxjzyj5q18bxswsbisf8r-flight-lookup-0.1.0
+/nix/store/am05dii1jrcv2pc7xy3lyjjbmfkzjsxn-flight-mask-0.1.0
+/nix/store/78akv62nnb661v5i76zrz3m50bjd8s67-flight-route-0.1.0
+/nix/store/6hnbmkfs2bs4xfij6h65lshwbzpl87xg-flight-scribe-0.1.0
+/nix/store/kbz230px5ny2mkkbf78x7mw6iv36zy04-flight-span-0.1.0
+/nix/store/1g6drpkwa4v25gp8bpl0irn9smcmhp2a-flight-task-0.1.0
+/nix/store/3016d2za8m4nmdz2xwlz2h4k2fwyvsik-flight-time-0.1.0
+/nix/store/qck7243g10lm8gaw674psnxxc6djysd8-flight-track-0.1.0
+/nix/store/h0y870qhh1mch7fnc714x5c3hg318n4w-flight-units-0.1.0
+/nix/store/7rbchfa287rg5ci5igsbzvjd6bkjszfj-flight-zone-0.1.0
+/nix/store/hw77056rarpvf9wdy1zhdl5v3q9c8myd-hcoord-3c3859dac5da111e57a6de09764ffdb127197c4a
+/nix/store/50azqjngn4n2akmnah144iagx3jsrz7f-hcoord-utm-3c3859dac5da111e57a6de09764ffdb127197c4a
+/nix/store/55v4xzfa7a1wbx1kmympx190gwy8sxj9-hxt-xpath-9.1.2.2
+/nix/store/gdzcsg7vnw002wxab9qlfsfhmbqmcn6g-megaparsec-7.0.4
+/nix/store/7xg6scax0x9npmhhjpwjaayby6fcjv3h-parser-combinators-1.0.0
+/nix/store/7y19jq5zl1wav2na2dsq4mvpqv7vb6v9-siggy-chardust-1.0.0
+/nix/store/rwni563by4q7a922dk9acpv39qkczdhn-tasty-compare-0.1.0
+/nix/store/79ragih9f2mdszjk8yj5ghydh7g4iy35-uom-plugin-0.3.0.0
 ```
 
 ## Building within Nix with Cabal
