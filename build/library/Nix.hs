@@ -9,7 +9,7 @@ module Nix
 
 import Development.Shake
     ( Rules
-    , CmdOption(Shell, Cwd)
+    , CmdOption(Shell, Cwd, EchoStdout)
     , (%>)
     , phony
     , cmd
@@ -71,28 +71,36 @@ buildRules = do
              , "nix-build-tasty-compare"
              , "nix-build-flare-timing"
              , "nix-build-app-serve"
-             , "nix-build-app-view"
              ]
              ++
-             (prefix "nix-flight-" <$> flyPkgs))
+             (prefix "nix-build-flight-" <$> flyPkgs))
 
     phony' "detour-via-sci"
     phony' "detour-via-uom"
     phony' "siggy-chardust"
     phony' "tasty-compare"
     phony' "flare-timing"
-    phony "nix-build-app-serve" $ cmd (Cwd "app-serve") Shell "nix build"
-    phony "nix-build-app-view" $ cmd (Cwd "app-view") Shell "nix build"
+    phony' "app-serve"
+
+    -- WARNING: webkitgtk is marked as insecure, refusing to evaluate.
+    -- This is an indirect dependency of app-view.
+    -- phony' "app-view"
 
     where
-        phony' s = do phony (prefix "nix-build-" s) $ cmd (Cwd s) Shell "nix build"
+        phony' s = do
+            phony (prefix "nix-build-" s) $
+                cmd
+                    (EchoStdout True)
+                    (Cwd s)
+                    ["nix-build"]
 
         buildRule :: String -> Rules ()
         buildRule s =
             phony ("nix-build-flight-" ++ s) $
                 cmd
-                    (Cwd s) 
-                    Shell "nix build"
+                    (EchoStdout True)
+                    (Cwd s)
+                    ["nix-build"]
 
 fromCabalRules :: Rules ()
 fromCabalRules = do
