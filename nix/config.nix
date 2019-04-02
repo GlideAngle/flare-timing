@@ -17,6 +17,19 @@
     haskellPackages = pkgs.haskell.packages.${compiler}.override {
       overrides = pkgs.lib.composeExtensions (old.overrides or (_: _: {})) (self: super:
       {
+        app-serve =
+          super.callPackage ../app-serve/app-serve.nix
+            { siggy-chardust = self.siggy-chardust;
+              flight-cmd = self.flight-cmd;
+              flight-comp = self.flight-comp;
+              flight-gap = self.flight-gap;
+              flight-kml = self.flight-kml;
+              flight-latlng = self.flight-latlng;
+              flight-mask = self.flight-mask;
+              flight-route = self.flight-route;
+              flight-scribe = self.flight-scribe;
+            };
+
         detour-via-sci =
           super.callPackage ../detour-via-sci/detour-via-sci.nix
             { siggy-chardust = self.siggy-chardust; };
@@ -27,7 +40,8 @@
 
         flare-timing =
           super.callPackage ../flare-timing/flare-timing.nix
-            { flight-cmd = self.flight-cmd;
+            { flight-clip = self.flight-clip;
+              flight-cmd = self.flight-cmd;
               flight-comp = self.flight-comp;
               flight-earth = self.flight-earth;
               flight-fsdb = self.flight-fsdb;
@@ -40,9 +54,12 @@
               flight-route = self.flight-route;
               flight-span = self.flight-span;
               flight-scribe = self.flight-scribe;
+              flight-time = self.flight-time;
               flight-units = self.flight-units;
               flight-zone = self.flight-zone;
             };
+
+        flight-clip = super.callPackage ../clip/flight-clip.nix {};
 
         flight-cmd = super.callPackage ../cmd/flight-cmd.nix
               { flight-span = self.flight-span; };
@@ -50,8 +67,10 @@
         flight-comp =
           super.callPackage ../comp/flight-comp.nix
             { detour-via-sci = self.detour-via-sci;
-              flight-latlng = self.flight-latlng;
+              flight-clip = self.flight-clip;
+              flight-earth = self.flight-earth;
               flight-gap = self.flight-gap;
+              flight-latlng = self.flight-latlng;
               flight-route = self.flight-route;
               flight-units = self.flight-units;
               flight-zone = self.flight-zone;
@@ -61,10 +80,12 @@
           super.callPackage ../earth/flight-earth.nix
             { siggy-chardust = self.siggy-chardust;
               detour-via-sci = self.detour-via-sci;
-              flight-units = self.flight-units;
+              detour-via-uom = self.detour-via-sci;
               flight-latlng = self.flight-latlng;
+              flight-units = self.flight-units;
               flight-zone = self.flight-zone;
               tasty-compare = self.tasty-compare;
+              hcoord = self.hcoord;
               hcoord-utm = self.hcoord-utm;
             };
 
@@ -72,8 +93,8 @@
           super.callPackage ../fsdb/flight-fsdb.nix
             { detour-via-sci = self.detour-via-sci;
               flight-comp = self.flight-comp;
-              flight-latlng = self.flight-latlng;
               flight-gap = self.flight-gap;
+              flight-latlng = self.flight-latlng;
               flight-units = self.flight-units;
               flight-zone = self.flight-zone;
             };
@@ -86,12 +107,16 @@
               flight-units = self.flight-units;
             };
 
-        flight-igc = super.callPackage ../igc/flight-igc.nix {};
+        flight-igc =
+          super.callPackage ../igc/flight-igc.nix
+            { flight-clip = self.flight-clip; };
+
 
         flight-kml =
           super.callPackage ../kml/flight-kml.nix
             { siggy-chardust = self.siggy-chardust;
               detour-via-sci = self.detour-via-sci;
+              flight-clip = self.flight-clip;
             };
 
         flight-latlng =
@@ -105,6 +130,7 @@
         flight-lookup =
           super.callPackage ../lookup/flight-lookup.nix
             { detour-via-sci = self.detour-via-sci;
+              flight-clip = self.flight-clip;
               flight-comp = self.flight-comp;
               flight-gap = self.flight-gap;
               flight-kml = self.flight-kml;
@@ -118,7 +144,7 @@
           super.callPackage ../mask/flight-mask.nix
             { siggy-chardust = self.siggy-chardust;
               detour-via-sci = self.detour-via-sci;
-              flight-span = self.flight-span;
+              flight-clip = self.flight-clip;
               flight-comp = self.flight-comp;
               flight-earth = self.flight-earth;
               flight-gap = self.flight-gap;
@@ -126,6 +152,7 @@
               flight-latlng = self.flight-latlng;
               flight-route = self.flight-route;
               flight-scribe = self.flight-scribe;
+              flight-span = self.flight-span;
               flight-task = self.flight-task;
               flight-track = self.flight-track;
               flight-units = self.flight-units;
@@ -147,9 +174,10 @@
         flight-scribe =
           super.callPackage ../scribe/flight-scribe.nix
             { detour-via-sci = self.detour-via-sci;
+              flight-clip = self.flight-clip;
               flight-comp = self.flight-comp;
-              flight-latlng = self.flight-latlng;
               flight-gap = self.flight-gap;
+              flight-latlng = self.flight-latlng;
               flight-route = self.flight-route;
               flight-zone = self.flight-zone;
             };
@@ -167,16 +195,31 @@
               tasty-compare = self.flight-tasty-compare;
             };
 
+        flight-time =
+          super.callPackage ../time/flight-time.nix
+            { siggy-chardust = self.siggy-chardust;
+              flight-clip = self.flight-clip;
+              flight-comp = self.flight-comp;
+              flight-kml = self.flight-kml;
+              flight-latlng = self.flight-latlng;
+              flight-lookup = self.flight-lookup;
+              flight-mask = self.flight-mask;
+              flight-scribe = self.flight-scribe;
+            };
+
         flight-track =
           super.callPackage ../track/flight-track.nix
-            { flight-comp = self.flight-comp;
+            { flight-clip = self.flight-clip;
+              flight-comp = self.flight-comp;
               flight-kml = self.flight-kml;
               flight-igc = self.flight-igc;
             };
 
         flight-units =
           super.callPackage ../units/flight-units.nix
-            { siggy-chardust = self.siggy-chardust; };
+            { siggy-chardust = self.siggy-chardust;
+              detour-via-sci = self.detour-via-sci;
+            };
 
         flight-zone =
           super.callPackage ../zone/flight-zone.nix
@@ -187,15 +230,11 @@
               flight-latlng = self.flight-latlng;
             };
 
+        megaparsec = super.callPackage ./megaparsec.nix {};
         hcoord = super.callPackage ./hcoord.nix {};
         hcoord-utm = super.callPackage ./hcoord-utm.nix {};
         siggy-chardust = super.callPackage ../siggy-chardust/siggy-chardust.nix {};
         tasty-compare = super.callPackage ../tasty-compare/tasty-compare.nix {};
-
-        www-flare-timing =
-          super.callPackage ../www/www-flare-timing.nix
-            { flight-comp = self.flight-comp; };
-
       });
     };
   };

@@ -28,11 +28,11 @@ in    defs
             , "newtype"
             , "uom-plugin"
             , "detour-via-sci"
+            , "flight-comp"
+            , "flight-gap"
             , "flight-latlng"
             , "flight-units"
             , "flight-zone"
-            , "flight-comp"
-            , "flight-gap"
             ]
       , library =
           { source-dirs = "library", exposed-modules = "Flight.Fsdb" }

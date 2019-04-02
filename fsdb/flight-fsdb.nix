@@ -1,8 +1,7 @@
-{ mkDerivation, aeson, base, containers, detour-via-sci
+{ mkDerivation, aeson, base, containers, detour-via-sci, doctest
 , flight-comp, flight-gap, flight-latlng, flight-units, flight-zone
-, hxt, hxt-xpath, megaparsec, newtype, path, scientific, smallcheck
-, split, stdenv, tasty, tasty-hunit, tasty-quickcheck
-, tasty-smallcheck, time, uom-plugin
+, hxt, hxt-pickle-utils, hxt-xpath, megaparsec, newtype, path
+, scientific, split, stdenv, time, uom-plugin
 }:
 mkDerivation {
   pname = "flight-fsdb";
@@ -14,10 +13,9 @@ mkDerivation {
     newtype path scientific split time uom-plugin
   ];
   testHaskellDepends = [
-    aeson base containers detour-via-sci flight-comp flight-gap
-    flight-latlng flight-units flight-zone hxt hxt-xpath megaparsec
-    newtype path scientific smallcheck split tasty tasty-hunit
-    tasty-quickcheck tasty-smallcheck time uom-plugin
+    aeson base containers detour-via-sci doctest flight-comp flight-gap
+    flight-latlng flight-units flight-zone hxt hxt-pickle-utils
+    hxt-xpath megaparsec newtype path scientific split time uom-plugin
   ];
   doHaddock = false;
   doCheck = false;

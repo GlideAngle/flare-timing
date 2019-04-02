@@ -5,7 +5,37 @@ useful are published to hackage and stackage.
 
 ## Building with Nix
 Wherever there's a `.cabal` file, there's a matching `default.nix` that enables
-a [nix build](https://nixos.org/nix/manual/#sec-building-simple).
+a [nix build](https://nixos.org/nix/manual/#sec-building-simple). There's
+a build target to update the `*.nix` file for each package:
+
+    > ./stack-shake-build.sh cabal2nix
+    # cabal2nix (for cabal2nix-zone)
+    # cabal2nix (for cabal2nix-units)
+    # cabal2nix (for cabal2nix-track)
+    # cabal2nix (for cabal2nix-time)
+    # cabal2nix (for cabal2nix-task)
+    # cabal2nix (for cabal2nix-span)
+    # cabal2nix (for cabal2nix-scribe)
+    # cabal2nix (for cabal2nix-route)
+    # cabal2nix (for cabal2nix-mask)
+    # cabal2nix (for cabal2nix-lookup)
+    # cabal2nix (for cabal2nix-latlng)
+    # cabal2nix (for cabal2nix-kml)
+    # cabal2nix (for cabal2nix-igc)
+    # cabal2nix (for cabal2nix-gap)
+    # cabal2nix (for cabal2nix-fsdb)
+    # cabal2nix (for cabal2nix-earth)
+    # cabal2nix (for cabal2nix-comp)
+    # cabal2nix (for cabal2nix-cmd)
+    # cabal2nix (for cabal2nix-clip)
+    # cabal2nix (for cabal2nix-app-view)
+    # cabal2nix (for cabal2nix-app-serve)
+    # cabal2nix (for cabal2nix-flare-timing)
+    # cabal2nix (for cabal2nix-tasty-compare)
+    # cabal2nix (for cabal2nix-siggy-chardust)
+    # cabal2nix (for cabal2nix-detour-via-uom)
+    # cabal2nix (for cabal2nix-detour-via-sci)
+    Build completed in 0:01m
 
 Building the [`flight-units`](units) library, the command line apps and web
 server with nix;
