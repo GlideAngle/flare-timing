@@ -3,7 +3,7 @@
 in  let depsTest =
             defs.dependencies
           # [ "cmdargs"
-           , "directory"
+            , "directory"
             , "filemanip"
             , "filepath"
             , "raw-strings-qq"

@@ -670,7 +670,96 @@ both `dhall` and `hpack-dhall` need to be installed.
 
 ```
 > stack install dhall hpack-dhall --stack-yaml=stack-dhall.yaml
+Copied executables to /Users/.../flare-timing/__shake-build:
+- dhall
+- dhall-hpack-cabal
+- dhall-hpack-dhall
+- dhall-hpack-json
+- dhall-hpack-yaml
+
 > ./stack-shake-build.sh cabal-files
+# dhall (for dhall-format-tasty-compare)
+# dhall-hpack-cabal (for hpack-dhall-tasty-compare)
+tasty-compare.cabal is up-to-date
+# dhall (for dhall-format-app-view)
+# dhall-hpack-cabal (for hpack-dhall-app-view)
+app-view.cabal is up-to-date
+# dhall (for dhall-format-app-serve)
+# dhall-hpack-cabal (for hpack-dhall-app-serve)
+app-serve.cabal is up-to-date
+# dhall (for dhall-format-zone)
+# dhall-hpack-cabal (for hpack-dhall-zone)
+flight-zone.cabal is up-to-date
+# dhall (for dhall-format-units)
+# dhall-hpack-cabal (for hpack-dhall-units)
+flight-units.cabal is up-to-date
+# dhall (for dhall-format-track)
+# dhall-hpack-cabal (for hpack-dhall-track)
+flight-track.cabal is up-to-date
+# dhall (for dhall-format-time)
+# dhall-hpack-cabal (for hpack-dhall-time)
+flight-time.cabal is up-to-date
+# dhall (for dhall-format-task)
+# dhall-hpack-cabal (for hpack-dhall-task)
+flight-task.cabal is up-to-date
+# dhall (for dhall-format-span)
+# dhall-hpack-cabal (for hpack-dhall-span)
+flight-span.cabal is up-to-date
+# dhall (for dhall-format-siggy-chardust)
+# dhall-hpack-cabal (for hpack-dhall-siggy-chardust)
+siggy-chardust.cabal is up-to-date
+# dhall (for dhall-format-scribe)
+# dhall-hpack-cabal (for hpack-dhall-scribe)
+flight-scribe.cabal is up-to-date
+# dhall (for dhall-format-route)
+# dhall-hpack-cabal (for hpack-dhall-route)
+flight-route.cabal is up-to-date
+# dhall (for dhall-format-mask)
+# dhall-hpack-cabal (for hpack-dhall-mask)
+flight-mask.cabal is up-to-date
+# dhall (for dhall-format-lookup)
+# dhall-hpack-cabal (for hpack-dhall-lookup)
+flight-lookup.cabal is up-to-date
+# dhall (for dhall-format-latlng)
+# dhall-hpack-cabal (for hpack-dhall-latlng)
+flight-latlng.cabal is up-to-date
+# dhall (for dhall-format-kml)
+# dhall-hpack-cabal (for hpack-dhall-kml)
+flight-kml.cabal is up-to-date
+# dhall (for dhall-format-igc)
+# dhall-hpack-cabal (for hpack-dhall-igc)
+flight-igc.cabal is up-to-date
+# dhall (for dhall-format-gap)
+# dhall-hpack-cabal (for hpack-dhall-gap)
+flight-gap.cabal is up-to-date
+# dhall (for dhall-format-fsdb)
+# dhall-hpack-cabal (for hpack-dhall-fsdb)
+flight-fsdb.cabal is up-to-date
+# dhall (for dhall-format-flare-timing)
+# dhall-hpack-cabal (for hpack-dhall-flare-timing)
+flare-timing.cabal is up-to-date
+# dhall (for dhall-format-earth)
+# dhall-hpack-cabal (for hpack-dhall-earth)
+flight-earth.cabal is up-to-date
+# dhall (for dhall-format-comp)
+# dhall-hpack-cabal (for hpack-dhall-comp)
+flight-comp.cabal is up-to-date
+# dhall (for dhall-format-clip)
+# dhall-hpack-cabal (for hpack-dhall-clip)
+flight-clip.cabal is up-to-date
+# dhall (for dhall-format-cmd)
+# dhall-hpack-cabal (for hpack-dhall-cmd)
+flight-cmd.cabal is up-to-date
+# dhall (for dhall-format-build)
+# dhall-hpack-cabal (for hpack-dhall-build)
+build-flare-timing.cabal is up-to-date
+# dhall (for dhall-format-detour-via-uom)
+# dhall-hpack-cabal (for hpack-dhall-detour-via-uom)
+detour-via-uom.cabal is up-to-date
+# dhall (for dhall-format-detour-via-sci)
+# dhall-hpack-cabal (for hpack-dhall-detour-via-sci)
+detour-via-sci.cabal is up-to-date
+Build completed in 0:02m
 ```
 
 There are three shell scripts for building the shake build using `stack`,
