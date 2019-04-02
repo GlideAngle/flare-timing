@@ -9,8 +9,8 @@ let
       , flight-comp, flight-earth, flight-gap, flight-kml, flight-latlng
       , flight-route, flight-scribe, flight-span, flight-task
       , flight-track, flight-units, flight-zone, lens, mtl, numbers, path
-      , safe-exceptions, siggy-chardust, split, stdenv, time, uom-plugin
-      , yaml
+      , safe-exceptions, siggy-chardust, split, stdenv, these, time
+      , uom-plugin, yaml
       }:
       mkDerivation {
         pname = "flight-mask";
@@ -21,14 +21,15 @@ let
           filepath flight-clip flight-comp flight-earth flight-gap flight-kml
           flight-latlng flight-route flight-scribe flight-span flight-task
           flight-track flight-units flight-zone lens mtl numbers path
-          safe-exceptions siggy-chardust split time uom-plugin yaml
+          safe-exceptions siggy-chardust split these time uom-plugin yaml
         ];
         testHaskellDepends = [
           base bytestring cmdargs containers detour-via-sci directory doctest
           fgl filepath flight-clip flight-comp flight-earth flight-gap
           flight-kml flight-latlng flight-route flight-scribe flight-span
           flight-task flight-track flight-units flight-zone lens mtl numbers
-          path safe-exceptions siggy-chardust split time uom-plugin yaml
+          path safe-exceptions siggy-chardust split these time uom-plugin
+          yaml
         ];
         homepage = "https://github.com/blockscope/flare-timing#readme";
         description = "Track logs masked by competition task zones";

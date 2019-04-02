@@ -5,7 +5,37 @@ useful are published to hackage and stackage.
 
 ## Building with Nix
 Wherever there's a `.cabal` file, there's a matching `default.nix` that enables
-a [nix build](https://nixos.org/nix/manual/#sec-building-simple).
+a [nix build](https://nixos.org/nix/manual/#sec-building-simple). There's
+a build target to update the `*.nix` file for each package:
+
+    > ./stack-shake-build.sh cabal2nix
+    # cabal2nix (for cabal2nix-zone)
+    # cabal2nix (for cabal2nix-units)
+    # cabal2nix (for cabal2nix-track)
+    # cabal2nix (for cabal2nix-time)
+    # cabal2nix (for cabal2nix-task)
+    # cabal2nix (for cabal2nix-span)
+    # cabal2nix (for cabal2nix-scribe)
+    # cabal2nix (for cabal2nix-route)
+    # cabal2nix (for cabal2nix-mask)
+    # cabal2nix (for cabal2nix-lookup)
+    # cabal2nix (for cabal2nix-latlng)
+    # cabal2nix (for cabal2nix-kml)
+    # cabal2nix (for cabal2nix-igc)
+    # cabal2nix (for cabal2nix-gap)
+    # cabal2nix (for cabal2nix-fsdb)
+    # cabal2nix (for cabal2nix-earth)
+    # cabal2nix (for cabal2nix-comp)
+    # cabal2nix (for cabal2nix-cmd)
+    # cabal2nix (for cabal2nix-clip)
+    # cabal2nix (for cabal2nix-app-view)
+    # cabal2nix (for cabal2nix-app-serve)
+    # cabal2nix (for cabal2nix-flare-timing)
+    # cabal2nix (for cabal2nix-tasty-compare)
+    # cabal2nix (for cabal2nix-siggy-chardust)
+    # cabal2nix (for cabal2nix-detour-via-uom)
+    # cabal2nix (for cabal2nix-detour-via-sci)
+    Build completed in 0:01m
 
 Building the [`flight-units`](units) library, the command line apps and web
 server with nix;
@@ -25,10 +55,10 @@ The results of those builds;
     > ls units/result/lib/ghc-8.2.2/
     flight-units-0.1.0   package.conf.d       x86_64-osx-ghc-8.2.2
     > ls flare-timing/result/bin
-    align-time       extract-input    mask-track       test-fsdb-parser
-    cross-zone       gap-point        tag-zone         test-igc-parser
-    discard-further  land-out         task-length      test-kml-parser
-    > ls www/result/bin
+    align-time       extract-input    land-out         task-length      test-kml-parser
+    cross-zone       fs-score         mask-track       test-fsdb-parser unpack-track
+    discard-further  gap-point        tag-zone         test-igc-parser
+    > ls app-serve/result/bin
     comp-serve
 
 ## Building with Vernix
@@ -517,18 +547,20 @@ build`](https://docs.haskellstack.org) and executables installed with;
     Copied executables to /.../flare-timing/__shake-build:
     - align-time
     - build-flare-timing
+    - comp-serve
     - cross-zone
     - discard-further
     - extract-input
+    - fs-score
     - gap-point
     - land-out
-    - make-travis-yml
     - mask-track
     - tag-zone
     - task-length
     - test-fsdb-parser
     - test-igc-parser
     - test-kml-parser
+    - unpack-track
 
 Individual packages can be built by specifying either the folder or the package
 name;
@@ -613,11 +645,17 @@ a `shell.nix` and `drv.nix` with a nix derivation created with
 [cabal2nix](https://github.com/NixOS/cabal2nix).
 
 ```
+> stack install cabal2nix --stack-yaml=stack-cabal2nix.yaml
+Copied executables to /Users/.../flare-timing/__shake-build:
+- cabal2nix
+- hackage2nix
+
 > ./stack-shake-build.sh nix-shell
 
 # cabal2nix (for zone/drv.nix)
 # cabal2nix (for units/drv.nix)
 # cabal2nix (for track/drv.nix)
+# cabal2nix (for time/drv.nix)
 # cabal2nix (for task/drv.nix)
 # cabal2nix (for span/drv.nix)
 # cabal2nix (for scribe/drv.nix)
@@ -632,7 +670,9 @@ a `shell.nix` and `drv.nix` with a nix derivation created with
 # cabal2nix (for earth/drv.nix)
 # cabal2nix (for comp/drv.nix)
 # cabal2nix (for cmd/drv.nix)
-# cabal2nix (for www/drv.nix)
+# cabal2nix (for clip/drv.nix)
+# cabal2nix (for app-view/drv.nix)
+# cabal2nix (for app-serve/drv.nix)
 # cabal2nix (for flare-timing/drv.nix)
 # cabal2nix (for tasty-compare/drv.nix)
 # cabal2nix (for siggy-chardust/drv.nix)
@@ -660,7 +700,96 @@ both `dhall` and `hpack-dhall` need to be installed.
 
 ```
 > stack install dhall hpack-dhall --stack-yaml=stack-dhall.yaml
+Copied executables to /Users/.../flare-timing/__shake-build:
+- dhall
+- dhall-hpack-cabal
+- dhall-hpack-dhall
+- dhall-hpack-json
+- dhall-hpack-yaml
+
 > ./stack-shake-build.sh cabal-files
+# dhall (for dhall-format-tasty-compare)
+# dhall-hpack-cabal (for hpack-dhall-tasty-compare)
+tasty-compare.cabal is up-to-date
+# dhall (for dhall-format-app-view)
+# dhall-hpack-cabal (for hpack-dhall-app-view)
+app-view.cabal is up-to-date
+# dhall (for dhall-format-app-serve)
+# dhall-hpack-cabal (for hpack-dhall-app-serve)
+app-serve.cabal is up-to-date
+# dhall (for dhall-format-zone)
+# dhall-hpack-cabal (for hpack-dhall-zone)
+flight-zone.cabal is up-to-date
+# dhall (for dhall-format-units)
+# dhall-hpack-cabal (for hpack-dhall-units)
+flight-units.cabal is up-to-date
+# dhall (for dhall-format-track)
+# dhall-hpack-cabal (for hpack-dhall-track)
+flight-track.cabal is up-to-date
+# dhall (for dhall-format-time)
+# dhall-hpack-cabal (for hpack-dhall-time)
+flight-time.cabal is up-to-date
+# dhall (for dhall-format-task)
+# dhall-hpack-cabal (for hpack-dhall-task)
+flight-task.cabal is up-to-date
+# dhall (for dhall-format-span)
+# dhall-hpack-cabal (for hpack-dhall-span)
+flight-span.cabal is up-to-date
+# dhall (for dhall-format-siggy-chardust)
+# dhall-hpack-cabal (for hpack-dhall-siggy-chardust)
+siggy-chardust.cabal is up-to-date
+# dhall (for dhall-format-scribe)
+# dhall-hpack-cabal (for hpack-dhall-scribe)
+flight-scribe.cabal is up-to-date
+# dhall (for dhall-format-route)
+# dhall-hpack-cabal (for hpack-dhall-route)
+flight-route.cabal is up-to-date
+# dhall (for dhall-format-mask)
+# dhall-hpack-cabal (for hpack-dhall-mask)
+flight-mask.cabal is up-to-date
+# dhall (for dhall-format-lookup)
+# dhall-hpack-cabal (for hpack-dhall-lookup)
+flight-lookup.cabal is up-to-date
+# dhall (for dhall-format-latlng)
+# dhall-hpack-cabal (for hpack-dhall-latlng)
+flight-latlng.cabal is up-to-date
+# dhall (for dhall-format-kml)
+# dhall-hpack-cabal (for hpack-dhall-kml)
+flight-kml.cabal is up-to-date
+# dhall (for dhall-format-igc)
+# dhall-hpack-cabal (for hpack-dhall-igc)
+flight-igc.cabal is up-to-date
+# dhall (for dhall-format-gap)
+# dhall-hpack-cabal (for hpack-dhall-gap)
+flight-gap.cabal is up-to-date
+# dhall (for dhall-format-fsdb)
+# dhall-hpack-cabal (for hpack-dhall-fsdb)
+flight-fsdb.cabal is up-to-date
+# dhall (for dhall-format-flare-timing)
+# dhall-hpack-cabal (for hpack-dhall-flare-timing)
+flare-timing.cabal is up-to-date
+# dhall (for dhall-format-earth)
+# dhall-hpack-cabal (for hpack-dhall-earth)
+flight-earth.cabal is up-to-date
+# dhall (for dhall-format-comp)
+# dhall-hpack-cabal (for hpack-dhall-comp)
+flight-comp.cabal is up-to-date
+# dhall (for dhall-format-clip)
+# dhall-hpack-cabal (for hpack-dhall-clip)
+flight-clip.cabal is up-to-date
+# dhall (for dhall-format-cmd)
+# dhall-hpack-cabal (for hpack-dhall-cmd)
+flight-cmd.cabal is up-to-date
+# dhall (for dhall-format-build)
+# dhall-hpack-cabal (for hpack-dhall-build)
+build-flare-timing.cabal is up-to-date
+# dhall (for dhall-format-detour-via-uom)
+# dhall-hpack-cabal (for hpack-dhall-detour-via-uom)
+detour-via-uom.cabal is up-to-date
+# dhall (for dhall-format-detour-via-sci)
+# dhall-hpack-cabal (for hpack-dhall-detour-via-sci)
+detour-via-sci.cabal is up-to-date
+Build completed in 0:02m
 ```
 
 There are three shell scripts for building the shake build using `stack`,
@@ -690,31 +819,56 @@ There's a target for building all `doctest` tests;
 
 ```
 > ./stack-shake-build.sh stack-doctest
+# stack (for stack-doctest-flight-track)
+flight-track-0.1.0: test (suite: doctest)
+
+Examples: 19  Tried: 19  Errors: 0  Failures: 0
+
+flight-track-0.1.0: Test suite doctest passed
+# stack (for stack-doctest-flight-igc)
+flight-igc-2.0.0: test (suite: doctest)
+
+Examples: 87  Tried: 87  Errors: 0  Failures: 0
+
+flight-igc-2.0.0: Test suite doctest passed
+# stack (for stack-doctest-flight-kml)
+flight-kml-1.1.0: test (suite: doctest)
+
+Examples: 57  Tried: 57  Errors: 0  Failures: 0
+
+flight-kml-1.1.0: Test suite doctest passed
+# stack (for stack-doctest-flight-comp)
+flight-comp-0.1.0: test (suite: doctest)
+
+Examples: 5  Tried: 5  Errors: 0  Failures: 0
+
+flight-comp-0.1.0: Test suite doctest passed
+# stack (for stack-doctest-flight-clip)
+flight-clip-1.1.0: test (suite: doctest)
+
+Examples: 12  Tried: 12  Errors: 0  Failures: 0
+
+flight-clip-1.1.0: Test suite doctest passed
 # stack (for stack-doctest-siggy-chardust)
 siggy-chardust-1.0.0: test (suite: doctest)
 
 Examples: 35  Tried: 35  Errors: 0  Failures: 0
 
 siggy-chardust-1.0.0: Test suite doctest passed
-# stack (for stack-doctest-flight-kml)
-flight-kml-1.0.0: test (suite: doctest)
-
-Examples: 57  Tried: 57  Errors: 0  Failures: 0
-
-flight-kml-1.0.0: Test suite doctest passed
 # stack (for stack-doctest-detour-via-uom)
-detour-via-uom-1.0.0: test (suite: doctest)
+...
+detour-via-uom-1.0.1: test (suite: doctest)
 
-Examples: 27  Tried: 27  Errors: 0  Failures: 0
+Examples: 30  Tried: 30  Errors: 0  Failures: 0
 
-detour-via-uom-1.0.0: Test suite doctest passed
+detour-via-uom-1.0.1: Test suite doctest passed
 # stack (for stack-doctest-detour-via-sci)
-detour-via-sci-1.0.0: test (suite: doctest)
+detour-via-sci-1.0.1: test (suite: doctest)
 
-Examples: 44  Tried: 44  Errors: 0  Failures: 0
+Examples: 50  Tried: 50  Errors: 0  Failures: 0
 
-detour-via-sci-1.0.0: Test suite doctest passed
-Build completed in 0:21m
+detour-via-sci-1.0.1: Test suite doctest passed
+Build completed in 8:27m
 ```
 
 The `doctest` targets can be run individually too;
@@ -723,11 +877,11 @@ The `doctest` targets can be run individually too;
 > ./stack-shake-build.sh stack-doctest-flight-kml
 ...
 # stack (for stack-doctest-flight-kml)
-flight-kml-1.0.0: test (suite: doctest)
+flight-kml-1.1.0: test (suite: doctest)
 
 Examples: 57  Tried: 57  Errors: 0  Failures: 0
 
-flight-kml-1.0.0: Test suite doctest passed
+flight-kml-1.1.0: Test suite doctest passed
 Build completed in 0:09m
 ```
 
@@ -767,11 +921,13 @@ Command line inputs;
 * [`flight-span`](span)
 
 The competition and scoring;
+* [`flight-clip`](clip)
 * [`flight-comp`](comp)
 * [`flight-gap`](gap)
 * [`flight-lookup`](lookup)
 * [`flight-mask`](mask)
 * [`flight-task`](task)
+* [`flight-time`](time)
 * [`flight-route`](route)
 
 To do with files read from and written to during scoring;

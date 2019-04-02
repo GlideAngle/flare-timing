@@ -5,10 +5,10 @@ let
   inherit (nixpkgs) pkgs;
 
   f = { mkDerivation, aeson, base, bytestring, cassava, containers
-      , detour-via-sci, directory, filemanip, filepath, flight-comp
-      , flight-gap, flight-kml, flight-latlng, flight-mask, flight-route
-      , flight-zone, lens, mtl, path, scientific, split, stdenv, time
-      , unordered-containers, uom-plugin
+      , detour-via-sci, directory, filemanip, filepath, flight-clip
+      , flight-comp, flight-gap, flight-kml, flight-latlng, flight-mask
+      , flight-route, flight-zone, lens, mtl, path, scientific, split
+      , stdenv, time, unordered-containers, uom-plugin
       }:
       mkDerivation {
         pname = "flight-lookup";
@@ -16,9 +16,9 @@ let
         src = ./.;
         libraryHaskellDepends = [
           aeson base bytestring cassava containers detour-via-sci directory
-          filemanip filepath flight-comp flight-gap flight-kml flight-latlng
-          flight-mask flight-route flight-zone lens mtl path scientific split
-          time unordered-containers uom-plugin
+          filemanip filepath flight-clip flight-comp flight-gap flight-kml
+          flight-latlng flight-mask flight-route flight-zone lens mtl path
+          scientific split time unordered-containers uom-plugin
         ];
         homepage = "https://github.com/blockscope/flare-timing#readme";
         description = "Hang gliding and paragliding competition data access";

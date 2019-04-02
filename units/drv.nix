@@ -4,16 +4,17 @@ let
 
   inherit (nixpkgs) pkgs;
 
-  f = { mkDerivation, base, bifunctors, fixed, formatting, numbers
-      , siggy-chardust, stdenv, text, uom-plugin
+  f = { mkDerivation, base, bifunctors, detour-via-sci, fixed
+      , formatting, newtype, numbers, siggy-chardust, stdenv, text
+      , uom-plugin
       }:
       mkDerivation {
         pname = "flight-units";
         version = "0.1.0";
         src = ./.;
         libraryHaskellDepends = [
-          base bifunctors fixed formatting numbers siggy-chardust text
-          uom-plugin
+          base bifunctors detour-via-sci fixed formatting newtype numbers
+          siggy-chardust text uom-plugin
         ];
         homepage = "https://github.com/blockscope/flare-timing#readme";
         description = "Units used in hang gliding and paragliding competitions";

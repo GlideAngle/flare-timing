@@ -20,8 +20,8 @@ in    defs
       , dependencies =
             defs.dependencies
           # [ "aeson"
-              , "cassava"
-           , "containers"
+            , "cassava"
+            , "containers"
             , "newtype"
             , "scientific"
             , "statistics"

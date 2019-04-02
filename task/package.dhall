@@ -25,10 +25,10 @@ in    defs
             , "mtl"
             , "detour-via-sci"
             , "siggy-chardust"
-            , "flight-units"
-            , "flight-latlng"
-            , "flight-zone"
             , "flight-earth"
+            , "flight-latlng"
+            , "flight-units"
+            , "flight-zone"
             ]
       , library =
           { source-dirs = "library", exposed-modules = "Flight.Task" }

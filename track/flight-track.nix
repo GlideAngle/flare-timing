@@ -1,6 +1,6 @@
-{ mkDerivation, base, bytestring, containers, directory, filepath
-, flight-clip, flight-comp, flight-igc, flight-kml, mtl, path
-, split, stdenv, time, utf8-string
+{ mkDerivation, base, bytestring, containers, directory, doctest
+, filepath, flight-clip, flight-comp, flight-igc, flight-kml, mtl
+, path, split, stdenv, time, utf8-string
 }:
 mkDerivation {
   pname = "flight-track";
@@ -8,6 +8,10 @@ mkDerivation {
   src = ./.;
   libraryHaskellDepends = [
     base bytestring containers directory filepath flight-clip
+    flight-comp flight-igc flight-kml mtl path split time utf8-string
+  ];
+  testHaskellDepends = [
+    base bytestring containers directory doctest filepath flight-clip
     flight-comp flight-igc flight-kml mtl path split time utf8-string
   ];
   doHaddock = false;
