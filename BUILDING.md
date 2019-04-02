@@ -891,11 +891,13 @@ Command line inputs;
 * [`flight-span`](span)
 
 The competition and scoring;
+* [`flight-clip`](clip)
 * [`flight-comp`](comp)
 * [`flight-gap`](gap)
 * [`flight-lookup`](lookup)
 * [`flight-mask`](mask)
 * [`flight-task`](task)
+* [`flight-time`](time)
 * [`flight-route`](route)
 
 To do with files read from and written to during scoring;
