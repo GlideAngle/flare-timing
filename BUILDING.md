@@ -789,31 +789,56 @@ There's a target for building all `doctest` tests;
 
 ```
 > ./stack-shake-build.sh stack-doctest
+# stack (for stack-doctest-flight-track)
+flight-track-0.1.0: test (suite: doctest)
+
+Examples: 19  Tried: 19  Errors: 0  Failures: 0
+
+flight-track-0.1.0: Test suite doctest passed
+# stack (for stack-doctest-flight-igc)
+flight-igc-2.0.0: test (suite: doctest)
+
+Examples: 87  Tried: 87  Errors: 0  Failures: 0
+
+flight-igc-2.0.0: Test suite doctest passed
+# stack (for stack-doctest-flight-kml)
+flight-kml-1.1.0: test (suite: doctest)
+
+Examples: 57  Tried: 57  Errors: 0  Failures: 0
+
+flight-kml-1.1.0: Test suite doctest passed
+# stack (for stack-doctest-flight-comp)
+flight-comp-0.1.0: test (suite: doctest)
+
+Examples: 5  Tried: 5  Errors: 0  Failures: 0
+
+flight-comp-0.1.0: Test suite doctest passed
+# stack (for stack-doctest-flight-clip)
+flight-clip-1.1.0: test (suite: doctest)
+
+Examples: 12  Tried: 12  Errors: 0  Failures: 0
+
+flight-clip-1.1.0: Test suite doctest passed
 # stack (for stack-doctest-siggy-chardust)
 siggy-chardust-1.0.0: test (suite: doctest)
 
 Examples: 35  Tried: 35  Errors: 0  Failures: 0
 
 siggy-chardust-1.0.0: Test suite doctest passed
-# stack (for stack-doctest-flight-kml)
-flight-kml-1.0.0: test (suite: doctest)
-
-Examples: 57  Tried: 57  Errors: 0  Failures: 0
-
-flight-kml-1.0.0: Test suite doctest passed
 # stack (for stack-doctest-detour-via-uom)
-detour-via-uom-1.0.0: test (suite: doctest)
+...
+detour-via-uom-1.0.1: test (suite: doctest)
 
-Examples: 27  Tried: 27  Errors: 0  Failures: 0
+Examples: 30  Tried: 30  Errors: 0  Failures: 0
 
-detour-via-uom-1.0.0: Test suite doctest passed
+detour-via-uom-1.0.1: Test suite doctest passed
 # stack (for stack-doctest-detour-via-sci)
-detour-via-sci-1.0.0: test (suite: doctest)
+detour-via-sci-1.0.1: test (suite: doctest)
 
-Examples: 44  Tried: 44  Errors: 0  Failures: 0
+Examples: 50  Tried: 50  Errors: 0  Failures: 0
 
-detour-via-sci-1.0.0: Test suite doctest passed
-Build completed in 0:21m
+detour-via-sci-1.0.1: Test suite doctest passed
+Build completed in 8:27m
 ```
 
 The `doctest` targets can be run individually too;
