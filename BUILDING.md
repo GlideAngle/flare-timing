@@ -615,11 +615,17 @@ a `shell.nix` and `drv.nix` with a nix derivation created with
 [cabal2nix](https://github.com/NixOS/cabal2nix).
 
 ```
+> stack install cabal2nix --stack-yaml=stack-cabal2nix.yaml
+Copied executables to /Users/.../flare-timing/__shake-build:
+- cabal2nix
+- hackage2nix
+
 > ./stack-shake-build.sh nix-shell
 
 # cabal2nix (for zone/drv.nix)
 # cabal2nix (for units/drv.nix)
 # cabal2nix (for track/drv.nix)
+# cabal2nix (for time/drv.nix)
 # cabal2nix (for task/drv.nix)
 # cabal2nix (for span/drv.nix)
 # cabal2nix (for scribe/drv.nix)
@@ -634,7 +640,9 @@ a `shell.nix` and `drv.nix` with a nix derivation created with
 # cabal2nix (for earth/drv.nix)
 # cabal2nix (for comp/drv.nix)
 # cabal2nix (for cmd/drv.nix)
-# cabal2nix (for www/drv.nix)
+# cabal2nix (for clip/drv.nix)
+# cabal2nix (for app-view/drv.nix)
+# cabal2nix (for app-serve/drv.nix)
 # cabal2nix (for flare-timing/drv.nix)
 # cabal2nix (for tasty-compare/drv.nix)
 # cabal2nix (for siggy-chardust/drv.nix)

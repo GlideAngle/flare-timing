@@ -5,10 +5,9 @@ let
   inherit (nixpkgs) pkgs;
 
   f = { mkDerivation, aeson, base, containers, detour-via-sci
-      , flight-comp, flight-gap, flight-latlng, flight-units, flight-zone
-      , hxt, hxt-xpath, megaparsec, newtype, path, scientific, smallcheck
-      , split, stdenv, tasty, tasty-hunit, tasty-quickcheck
-      , tasty-smallcheck, time, uom-plugin
+      , doctest, flight-comp, flight-gap, flight-latlng, flight-units
+      , flight-zone, hxt, hxt-pickle-utils, hxt-xpath, megaparsec
+      , newtype, path, scientific, split, stdenv, time, uom-plugin
       }:
       mkDerivation {
         pname = "flight-fsdb";
@@ -20,10 +19,9 @@ let
           newtype path scientific split time uom-plugin
         ];
         testHaskellDepends = [
-          aeson base containers detour-via-sci flight-comp flight-gap
-          flight-latlng flight-units flight-zone hxt hxt-xpath megaparsec
-          newtype path scientific smallcheck split tasty tasty-hunit
-          tasty-quickcheck tasty-smallcheck time uom-plugin
+          aeson base containers detour-via-sci doctest flight-comp flight-gap
+          flight-latlng flight-units flight-zone hxt hxt-pickle-utils
+          hxt-xpath megaparsec newtype path scientific split time uom-plugin
         ];
         homepage = "https://github.com/blockscope/flare-timing#readme";
         description = "A parser for fsdb, the database XML format of FS";
