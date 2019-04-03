@@ -8,6 +8,7 @@ module Flight.Zone.MkZones
     , GoalLine(..)
     , Zones(..)
     , mkZones
+    , unkindZones
     ) where
 
 import GHC.Generics (Generic)
@@ -21,6 +22,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Flight.Units ()
 import Flight.LatLng (LatLng(..), Lat(..), Lng(..), QAlt)
 import Flight.Zone.Raw (RawZone)
+import qualified Flight.Zone.Zone as Z (Zone(..), toCylinder)
 import Flight.Zone (QAltTime, QIncline, Incline(..))
 import Flight.Zone.Internal.ZoneKind
     ( ZoneKind(..), Race, OpenDistance
@@ -28,7 +30,7 @@ import Flight.Zone.Internal.ZoneKind
     , EssAllowedZone, GoalAllowedZone
     )
 import Flight.Zone.TaskZones
-    (TaskZones, ToZoneKind, raceZoneKinds, openZoneKinds)
+    (TaskZones(..), ToZoneKind, raceZoneKinds, openZoneKinds)
 import Flight.Zone.SpeedSection (SpeedSection)
 
 data Discipline
@@ -266,3 +268,25 @@ mkZones discipline goalLine decel _ speed@(Just _) alts zs =
         ts = replicate tsLen tk
         es = replicate esLen tk
         g = raceZoneKinds ps ts ek es gk
+
+unkindZones :: Zones -> [Z.Zone Double]
+unkindZones Zones{raceKind = Just (TzEssIsGoal ps ts g)} =
+    (unkind <$> (ps ++ ts)) ++ [unkind g]
+unkindZones Zones{raceKind = Just (TzEssIsNotGoal ps rs e es g)} =
+    (unkind <$> (ps ++ rs)) ++ [unkind e] ++ (unkind <$> es) ++ [unkind g]
+unkindZones Zones{openKind = Just (TzOpenDistance ps ts o)} =
+    (unkind <$> (ps ++ ts)) ++ [unkind o]
+unkindZones Zones{raw} = Z.toCylinder <$> raw
+
+unkind :: ZoneKind g Double -> Z.Zone Double
+unkind (Point x) = Z.Point x
+unkind (Vector _ _ x) = Z.Point x
+unkind (Star r x) = Z.Cylinder r x
+unkind (Cylinder r x) = Z.Cylinder r x
+unkind (CutCone _ r x _) = Z.Cylinder r x
+unkind (CutSemiCone _ r x _) = Z.Cylinder r x
+unkind (CutCylinder _ r x _) = Z.Cylinder r x
+unkind (CutSemiCylinder _ r x _) = Z.Cylinder r x
+unkind (Line r x) = Z.Line r x
+unkind (Circle r x) = Z.Cylinder r x
+unkind (SemiCircle r x) = Z.Cylinder r x

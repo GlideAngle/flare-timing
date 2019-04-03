@@ -171,7 +171,7 @@ data ZoneKind k a where
         -> ZoneKind k a
 
     -- | A goal line perpendicular to the course line.
-    Line 
+    Line
         :: (Eq a, Ord a, EssAllowedZone k, GoalAllowedZone k)
         => QRadius a [u| m |]
         -> LatLng a [u| rad |]
@@ -351,7 +351,7 @@ instance
 
             , do
                 vc <- o .: "vector"
-                Vector . Right 
+                Vector . Right
                     <$> vc .: "bearing"
                     <*> vc .: "radius"
                     <*> vc .: "center"

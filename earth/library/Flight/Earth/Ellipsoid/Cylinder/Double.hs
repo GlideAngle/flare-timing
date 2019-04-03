@@ -175,18 +175,18 @@ circum x r tc =
 --
 -- The points of the compass are divided by the number of samples requested.
 circumSample :: CircumSample Double
-circumSample SampleParams{..} (ArcSweep (Bearing (MkQuantity bearing))) zp zone =
+circumSample SampleParams{..} (ArcSweep (Bearing (MkQuantity bearing))) arc0 _zoneM zoneN =
     ys
     where
         nNum = unSamples spSamples
         half = nNum `div` 2
         step = bearing / (fromInteger nNum)
-        mid = maybe 0 (\ZonePoint{radial = Bearing (MkQuantity b)} -> b) zp
+        mid = maybe 0 (\ZonePoint{radial = Bearing (MkQuantity b)} -> b) arc0
 
         zone' :: Zone Double
         zone' =
-            case zp of
-              Nothing -> zone
+            case arc0 of
+              Nothing -> zoneN
               Just ZonePoint{..} -> sourceZone
 
         xs :: [TrueCourse Double]

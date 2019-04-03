@@ -26,6 +26,8 @@ module Flight.Zone
     , Zone(..)
     , RawZoneToZone
     , rawZonesToZones
+    , toCylinder
+    , rawToLatLng
     ) where
 
 import Flight.Zone.Radius (Radius(..), QRadius)
@@ -35,6 +37,7 @@ import Flight.Zone.Incline (Incline(..), QIncline)
 import Flight.Zone.Zone
     ( HasArea(..), Zone(..), RawZoneToZone
     , center, radius, showZoneDMS, rawZonesToZones
+    , toCylinder, rawToLatLng
     )
 import Flight.Zone.Convert
     ( fromRationalLatLng, toRationalLatLng

@@ -20,6 +20,8 @@ type CircumSample a
     -- circle's circumference from which to sample points.
     -> Maybe (ZonePoint a)
     -- ^ This point will be in the middle of the arc of the sample.
+    -> Maybe (Zone a)
+    -- ^ The previous zone along the course.
     -> Zone a
     -- ^ The zone from which we're trying to find points on an arc.
     -> ([ZonePoint a], [TrueCourse a])
@@ -33,12 +35,13 @@ sample
     -> SampleParams a
     -> ArcSweep a [u| rad |]
     -> Maybe (ZonePoint a)
+    -> Maybe (Zone a)
     -> Zone a
     -> [ZonePoint a]
-sample _ _ _ _ px@(Point x) = [ZonePoint px x (Bearing zero) (Radius (MkQuantity 0))]
-sample _ _ _ _ px@(Vector _ x) = [ZonePoint px x (Bearing zero) (Radius (MkQuantity 0))]
-sample circumSample sp b zs z@Cylinder{} = fst $ circumSample sp b zs z
-sample circumSample sp b zs z@Conical{} = fst $ circumSample sp b zs z
-sample circumSample sp b zs z@Line{} = fst $ circumSample sp b zs z
-sample circumSample sp b zs z@Circle{} = fst $ circumSample sp b zs z
-sample circumSample sp b zs z@SemiCircle{} = fst $ circumSample sp b zs z
+sample _ _ _ _ _ px@(Point x) = [ZonePoint px x (Bearing zero) (Radius (MkQuantity 0))]
+sample _ _ _ _ _ px@(Vector _ x) = [ZonePoint px x (Bearing zero) (Radius (MkQuantity 0))]
+sample circumSample sp b arc0 zM zN@Cylinder{} = fst $ circumSample sp b arc0 zM zN
+sample circumSample sp b arc0 zM zN@Conical{} = fst $ circumSample sp b arc0 zM zN
+sample circumSample sp b arc0 zM zN@Line{} = fst $ circumSample sp b arc0 zM zN
+sample circumSample sp b arc0 zM zN@Circle{} = fst $ circumSample sp b arc0 zM zN
+sample circumSample sp b arc0 zM zN@SemiCircle{} = fst $ circumSample sp b arc0 zM zN

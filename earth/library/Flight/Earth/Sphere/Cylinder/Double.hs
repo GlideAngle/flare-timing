@@ -87,19 +87,28 @@ circum
 --
 -- The points of the compass are divided by the number of samples requested.
 circumSample :: CircumSample Double
-circumSample SampleParams{..} (ArcSweep (Bearing (MkQuantity bearing))) zp zone
+circumSample SampleParams{..} (ArcSweep (Bearing (MkQuantity bearing))) arc0 zoneM zoneN
     | bearing < 0 || bearing > 2 * pi = fail "Arc sweep must be in the range 0..2π radians."
-    | otherwise = ys
+    | otherwise =
+        case (zoneM, zoneN) of
+            (Nothing, _) -> ys
+            (Just _, Point _) -> ys
+            (Just _, Vector _ _) -> ys
+            (Just _, Cylinder _ _) -> ys
+            (Just _, Conical _ _ _) -> ys
+            (Just _, Line _ _) -> ys
+            (Just _, Circle _ _) -> ys
+            (Just _, SemiCircle _ _) -> ys
     where
         nNum = unSamples spSamples
         half = nNum `div` 2
         step = bearing / (fromInteger nNum)
-        mid = maybe 0 (\ZonePoint{radial = Bearing (MkQuantity b)} -> b) zp
+        mid = maybe 0 (\ZonePoint{radial = Bearing (MkQuantity b)} -> b) arc0
 
         zone' :: Zone Double
         zone' =
-            case zp of
-              Nothing -> zone
+            case arc0 of
+              Nothing -> zoneN
               Just ZonePoint{..} -> sourceZone
 
         xs :: [TrueCourse Double]

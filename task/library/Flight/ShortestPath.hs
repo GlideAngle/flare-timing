@@ -9,7 +9,7 @@ module Flight.ShortestPath
     , DistancePointToPoint
     , AngleCut(..)
     , buildGraph
-    , shortestPath 
+    , shortestPath
     , fromZs
     ) where
 
@@ -266,10 +266,16 @@ buildGraph f cs sp b zs xs =
         nodes' =
             case zs of
                 Nothing ->
-                    sample cs sp b Nothing <$> xs
+                    [ sample cs sp b Nothing xM xN
+                    | xM <- Nothing : (Just <$> xs)
+                    | xN <- xs
+                    ]
 
                 Just zs' ->
-                    (\z -> sample cs sp b (Just z) (sourceZone z)) <$> zs'
+                    [ sample cs sp b (Just zN) xM (sourceZone zN)
+                    | xM <- Nothing : (Just <$> xs)
+                    | zN <- zs'
+                    ]
 
         len :: Int
         len = sum $ map length nodes'

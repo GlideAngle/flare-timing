@@ -8,9 +8,7 @@ module Flight.TaskTrack.Internal
     , legDistances
     , addTaskDistance
     , convertLatLng
-    , rawToLatLng
     , toPoint
-    , toCylinder
     , fromR
     ) where
 
@@ -23,7 +21,7 @@ import Flight.Units ()
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.LatLng.Raw (RawLat(..), RawLng(..), RawLatLng(..))
 import Data.Ratio.Rounding (dpRound)
-import Flight.Zone (Zone(..), QRadius, Radius(..), fromRationalZone)
+import Flight.Zone (Zone(..), QRadius, Radius(..), fromRationalZone, rawToLatLng)
 import Flight.Zone.Raw (RawZone(..))
 import Flight.Zone.Cylinder (Tolerance(..))
 import Flight.Distance
@@ -90,35 +88,7 @@ convertLatLng (LatLng (Lat eLat, Lng eLng)) =
         MkQuantity eLng' =
             convert eLng :: Quantity _ [u| deg |]
 
-rawToLatLng :: Fractional a
-            => RawLat
-            -> RawLng
-            -> LatLng a [u| rad |]
-rawToLatLng (RawLat lat') (RawLng lng') =
-    LatLng (Lat latRad, Lng lngRad)
-    where
-        latDeg :: Quantity _ [u| deg |]
-        latDeg = MkQuantity $ fromRational lat'
-
-        lngDeg :: Quantity _ [u| deg |]
-        lngDeg = MkQuantity $ fromRational lng'
-
-        latRad = convert latDeg :: Quantity _ [u| rad |]
-        lngRad = convert lngDeg :: Quantity _ [u| rad |]
-
-rawToRadius
-    :: Fractional a
-    => Radius (Quantity Double [u| m |])
-    -> QRadius a [u| m |]
-rawToRadius (Radius r) =
-    Radius . fromRational' . toRational' $ r
-
 toPoint :: (Eq a, Ord a, Fractional a) => RawLatLng -> Zone a
 toPoint RawLatLng{..} =
     fromRationalZone . Point $ rawToLatLng lat lng
 
-toCylinder :: (Eq a, Ord a, Num a, Fractional a) => RawZone -> Zone a
-toCylinder RawZone{..} =
-    Cylinder
-        (rawToRadius radius)
-        (rawToLatLng lat lng)

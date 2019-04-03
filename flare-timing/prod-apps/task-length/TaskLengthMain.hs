@@ -11,7 +11,6 @@ import Flight.Comp
     ( FileType(CompInput)
     , CompSettings(tasks)
     , Task(zones, speedSection)
-    , Zones(..)
     , CompInputFile(..)
     , compToTaskLength
     , findCompInput
@@ -19,6 +18,7 @@ import Flight.Comp
     )
 import Flight.TaskTrack.Double (taskTracks)
 import Flight.Scribe (readComp, writeRoute)
+import Flight.Zone.MkZones (unkindZones)
 import TaskLengthOptions (CmdOptions(..), mkOptions)
 
 main :: IO ()
@@ -50,7 +50,7 @@ go CmdOptions{..} compFile@(CompInputFile compPath) = do
     where
         f compInput = do
             let ixs = speedSection <$> tasks compInput
-            let zss = raw . zones <$> tasks compInput
+            let zss = unkindZones . zones <$> tasks compInput
             let includeTask = if null task then const True else flip elem task
 
             writeRoute

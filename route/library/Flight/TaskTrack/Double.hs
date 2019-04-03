@@ -14,7 +14,6 @@ import Flight.LatLng.Raw (RawLatLng(..))
 import Flight.Distance (QTaskDistance, PathDistance(..), SpanLatLng)
 import Flight.Zone (Zone(..), Bearing(..), ArcSweep(..), center)
 import Flight.Zone.Path (distancePointToPoint, costSegment)
-import Flight.Zone.Raw (RawZone(..))
 import Flight.Zone.Cylinder (CircumSample)
 import Flight.Earth.Flat (zoneToProjectedEastNorth)
 import Flight.Earth.Flat.Projected.Double (costEastNorth)
@@ -34,7 +33,6 @@ import Flight.TaskTrack.Internal
     , legDistances
     , convertLatLng
     , toPoint
-    , toCylinder
     )
 import Flight.Task (Zs(..), CostSegment, AngleCut(..) , fromZs, distanceEdgeToEdge)
 import Flight.Route.TrackLine
@@ -66,7 +64,7 @@ taskTracks
     -> (Int -> Bool) -- ^ Process the nth task?
     -> TaskDistanceMeasure
     -> [SpeedSection] -- ^ Speed section of each task.
-    -> [[RawZone]] -- ^ Zones of each task.
+    -> [[Zone Double]] -- ^ Zones of each task.
     -> [Maybe TaskTrack]
 taskTracks excludeWaypoints b tdm =
     zipWith3
@@ -77,9 +75,9 @@ taskTrack
     :: Bool
     -> TaskDistanceMeasure
     -> SpeedSection
-    -> [RawZone] -- ^ A single task is a sequence of control zones.
+    -> [Zone Double] -- ^ A single task is a sequence of control zones.
     -> TaskTrack
-taskTrack excludeWaypoints tdm ss zsRaw =
+taskTrack excludeWaypoints tdm ss zsTask =
     case tdm of
         TaskDistanceByAllMethods ->
             TaskTrack
@@ -168,9 +166,6 @@ taskTrack excludeWaypoints tdm ss zsRaw =
                         }
                 }
     where
-        zsTask :: [Zone Double]
-        zsTask = toCylinder <$> zsRaw
-
         zsSpeedSection :: [Zone Double]
         zsSpeedSection = sliceZones ss zsTask
 
@@ -266,7 +261,7 @@ distanceEdgeEllipsoid
     :: CostSegment Double
     -> [Zone Double]
     -> Zs (PathDistance Double)
-distanceEdgeEllipsoid segCost = 
+distanceEdgeEllipsoid segCost =
     distanceEdgeToEdge spanE distancePointToPoint segCost cs cut mm30
 
 cs :: CircumSample Double

@@ -88,7 +88,7 @@ zoneGive separatedZones g (x : xs) =
 -- before taking a start gate. In this way these cylinders are both exit and
 -- entry cylinders. Give is not applied to exit cylinders until we find what
 -- to do when applying the tolerance to them.
-f:: (RawZone -> RawZone -> Bool) -> Give -> RawZone -> RawZone -> RawZone
+f :: (RawZone -> RawZone -> Bool) -> Give -> RawZone -> RawZone -> RawZone
 f _ _ RawZone{give = Nothing} y = y
 f separatedZones zg x@RawZone{give = Just _} y =
     if separatedZones x y then entry zg y else y

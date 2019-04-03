@@ -15,7 +15,7 @@ import Flight.LatLng (LatLng(..))
 import Flight.LatLng.Raw (RawLatLng(..))
 import Flight.LatLng.Rational (Epsilon(..), defEps)
 import Flight.Distance (QTaskDistance, PathDistance(..), SpanLatLng)
-import Flight.Zone (Zone(..), Bearing(..), ArcSweep(..), center)
+import Flight.Zone (Zone(..), Bearing(..), ArcSweep(..), center, toCylinder)
 import Flight.Zone.Path (distancePointToPoint, costSegment)
 import Flight.Zone.Raw (RawZone(..))
 import Flight.Zone.Cylinder (CircumSample)
@@ -37,7 +37,6 @@ import Flight.TaskTrack.Internal
     , legDistances
     , convertLatLng
     , toPoint
-    , toCylinder
     , fromR
     )
 import Flight.Task (Zs(..), CostSegment, AngleCut(..), fromZs, distanceEdgeToEdge)

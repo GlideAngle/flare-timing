@@ -1,16 +1,20 @@
+{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
+
 module Flight.Zone.Zone
     ( HasArea(..), Zone(..), RawZoneToZone
     , center, radius, showZoneDMS, rawZonesToZones
+    , toCylinder, rawToLatLng
     ) where
 
 import Data.Foldable (asum)
 import Data.Aeson
     (ToJSON(..), FromJSON(..), (.:), (.=), object, withObject)
-import Data.UnitsOfMeasure (u, fromRational', zero)
+import Data.UnitsOfMeasure (u, convert, toRational', fromRational', zero)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
 import Flight.Units.DegMinSec (fromQ)
+import qualified Flight.LatLng.Raw as Raw (RawLat(..), RawLng(..))
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..), fromDMS)
 import Flight.Zone.Radius (Radius(..), QRadius)
 import Flight.Zone.Bearing (Bearing(..), QBearing)
@@ -57,7 +61,7 @@ data Zone a where
         -> Zone a
 
     -- | A goal line perpendicular to the course line.
-    Line 
+    Line
         :: (Eq a, Ord a)
         => QRadius a [u| m |]
         -> LatLng a [u| rad |]
@@ -247,7 +251,6 @@ radius (Line r _) = r
 radius (Circle r _) = r
 radius (SemiCircle r _) = r
 
-
 type RawZoneToZone =
     QRadius Double [u| m |] -> LatLng Double [u| rad |] -> Zone Double
 
@@ -271,3 +274,29 @@ rawZonesToZones goal xs =
 
                     qLng :: Quantity Double [u| deg |]
                     qLng = fromRational' $ MkQuantity lng'
+
+rawToLatLng :: Fractional a => Raw.RawLat -> Raw.RawLng -> LatLng a [u| rad |]
+rawToLatLng (Raw.RawLat lat') (Raw.RawLng lng') =
+    LatLng (Lat latRad, Lng lngRad)
+    where
+        latDeg :: Quantity _ [u| deg |]
+        latDeg = MkQuantity $ fromRational lat'
+
+        lngDeg :: Quantity _ [u| deg |]
+        lngDeg = MkQuantity $ fromRational lng'
+
+        latRad = convert latDeg :: Quantity _ [u| rad |]
+        lngRad = convert lngDeg :: Quantity _ [u| rad |]
+
+rawToRadius
+    :: Fractional a
+    => Radius (Quantity Double [u| m |])
+    -> QRadius a [u| m |]
+rawToRadius (Radius r) =
+    Radius . fromRational' . toRational' $ r
+
+toCylinder :: (Eq a, Ord a, Num a, Fractional a) => Raw.RawZone -> Zone a
+toCylinder Raw.RawZone{Raw.radius = r, ..} =
+    Cylinder
+        (rawToRadius r)
+        (rawToLatLng lat lng)
