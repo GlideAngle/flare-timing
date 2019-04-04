@@ -2,9 +2,10 @@ module Flight.Earth.Sphere.Cylinder.Double (circumSample) where
 
 import Data.Fixed (mod')
 import Data.Maybe (catMaybes)
-import Data.UnitsOfMeasure ((-:), u, convert, unQuantity, abs')
+import Data.UnitsOfMeasure ((-:), u, unQuantity, abs')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
+import Flight.Units.Angle (halfPi)
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.Zone
     ( Zone(..)
@@ -129,9 +130,6 @@ circumSample SampleParams{..} (ArcSweep (Bearing (MkQuantity bearing))) arc0 zon
 
         ys :: ([ZonePoint Double], [TrueCourse Double])
         ys = unzip $ getClose' 10 (Radius (MkQuantity 0)) (circumR r) <$> xs
-
-halfPi :: Quantity Double [u| rad |]
-halfPi = convert [u| 90 deg |]
 
 onLine
     :: Maybe (Quantity Double [u| rad |])
