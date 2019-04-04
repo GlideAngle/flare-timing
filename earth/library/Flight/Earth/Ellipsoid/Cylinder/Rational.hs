@@ -24,7 +24,7 @@ import Flight.Zone
     , toRationalLatLng
     )
 import Flight.Zone.Path (distancePointToPoint)
-import Flight.Earth.Ellipsoid.PointToPoint.Rational (distanceVincenty)
+import Flight.Earth.Ellipsoid.PointToPoint.Rational (distanceVincenty, azimuthFwd)
 import Flight.Distance (TaskDistance(..), PathDistance(..))
 import Flight.Zone.Cylinder
     ( TrueCourse(..)
@@ -43,10 +43,11 @@ import Flight.Earth.Ellipsoid
     (Ellipsoid(..), VincentyDirect(..), VincentyAccuracy(..)
     , defaultVincentyAccuracy, wgs84, flattening, polarRadius
     )
-import qualified Flight.Earth.Ellipsoid.PointToPoint.Rational as F (atan2')
 import qualified Flight.Earth.Ellipsoid.Cylinder.Double as Dbl (vincentyDirect)
 import Flight.Earth.Geodesy (DirectProblem(..), DirectSolution(..))
 import Flight.Earth.Ellipsoid.Cylinder.Double (cos2)
+import qualified Flight.Earth.Math as F (atan2')
+import Flight.Earth.ZoneShape (onLine)
 
 iterateVincenty
     :: Epsilon
@@ -283,9 +284,21 @@ circum e x r tc =
 --
 -- The points of the compass are divided by the number of samples requested.
 circumSample :: CircumSample Rational
-circumSample SampleParams{..} (ArcSweep (Bearing (MkQuantity bearing))) arc0 _zoneM zoneN =
-    (fromRationalZonePoint <$> fst ys, snd ys)
+circumSample SampleParams{..} (ArcSweep (Bearing (MkQuantity bearing))) arc0 zoneM zoneN
+    | bearing < 0 || bearing > 2 * F.pi eps = fail "Arc sweep must be in the range 0..2π radians."
+    | otherwise =
+        case (zoneM, zoneN) of
+            (Nothing, _) -> ys
+            (Just _, Point _) -> ys
+            (Just _, Vector _ _) -> ys
+            (Just _, Cylinder _ _) -> ys
+            (Just _, Conical _ _ _) -> ys
+            (Just m, Line _ x) ->
+                let y = center m in onLine (azimuthFwd defEps wgs84 x y) ys
+            (Just _, Circle _ _) -> ys
+            (Just _, SemiCircle _ _) -> ys
     where
+        (Epsilon eps) = defEps
         nNum = unSamples spSamples
         half = nNum `div` 2
         step = bearing / (fromInteger nNum)
@@ -313,8 +326,10 @@ circumSample SampleParams{..} (ArcSweep (Bearing (MkQuantity bearing))) arc0 _zo
 
         getClose' = getClose defEps zone' ptCenter limitRadius' spTolerance
 
-        ys :: ([ZonePoint Rational], [TrueCourse Rational])
-        ys = unzip $ getClose' 10 (Radius (MkQuantity 0)) (circumR r) <$> xs
+        ys' :: ([ZonePoint Rational], [TrueCourse Rational])
+        ys' = unzip $ getClose' 10 (Radius (MkQuantity 0)) (circumR r) <$> xs
+
+        ys = (fromRationalZonePoint <$> fst ys', snd ys')
 
 getClose :: Epsilon
          -> Zone Rational

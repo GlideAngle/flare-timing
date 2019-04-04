@@ -20,7 +20,7 @@ import Flight.Zone
     , realToFracZone
     )
 import Flight.Zone.Path (distancePointToPoint)
-import Flight.Earth.Flat.PointToPoint.Double (distanceEuclidean)
+import Flight.Earth.Flat.PointToPoint.Double (distanceEuclidean, azimuthFwd)
 import Flight.Distance (TaskDistance(..), PathDistance(..))
 import Flight.Zone.Cylinder
     ( TrueCourse(..)
@@ -35,6 +35,7 @@ import Flight.Zone.Cylinder
     , sourceZone
     )
 import Flight.Earth.Flat.Projected.Internal (zoneToProjectedEastNorth)
+import Flight.Earth.ZoneShape (onLine)
 
 fromHcLatLng :: HCLL.LatLng -> LatLng Double [u| rad |]
 fromHcLatLng HCLL.LatLng{latitude, longitude} =
@@ -114,8 +115,19 @@ translate (Radius (MkQuantity rRadius)) (TrueCourse (MkQuantity rtc)) x =
 --
 -- The points of the compass are divided by the number of samples requested.
 circumSample :: CircumSample Double
-circumSample SampleParams{..} (ArcSweep (Bearing (MkQuantity bearing))) arc0 _zoneM zoneN =
-    ys
+circumSample SampleParams{..} (ArcSweep (Bearing (MkQuantity bearing))) arc0 zoneM zoneN
+    | bearing < 0 || bearing > 2 * pi = fail "Arc sweep must be in the range 0..2π radians."
+    | otherwise =
+        case (zoneM, zoneN) of
+            (Nothing, _) -> ys
+            (Just _, Point _) -> ys
+            (Just _, Vector _ _) -> ys
+            (Just _, Cylinder _ _) -> ys
+            (Just _, Conical _ _ _) -> ys
+            (Just m, Line _ x) ->
+                let y = center m in onLine (azimuthFwd x y) ys
+            (Just _, Circle _ _) -> ys
+            (Just _, SemiCircle _ _) -> ys
     where
         nNum = unSamples spSamples
         half = nNum `div` 2

@@ -2,9 +2,9 @@
 
 module Flight.Earth.Ellipsoid.PointToPoint.Double
     ( distanceVincenty
+    , vincentyInverse
     , azimuthFwd
     , azimuthRev
-    , vincentyInverse
     ) where
 
 import Data.Fixed (mod')

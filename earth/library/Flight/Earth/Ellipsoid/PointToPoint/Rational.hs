@@ -3,16 +3,15 @@
 module Flight.Earth.Ellipsoid.PointToPoint.Rational
     ( distanceVincenty
     , vincentyInverse
-    , atan2'
+    , azimuthFwd
+    , azimuthRev
     ) where
 
-import Data.Ratio ((%))
 import qualified Data.Number.FixedFunctions as F
 import Data.UnitsOfMeasure (u, convert, fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import Flight.Ratio (pattern (:%))
-import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
+import Flight.LatLng (Lat(..), Lng(..), LatLng(..), AzimuthFwd, AzimuthRev)
 import Flight.LatLng.Rational (Epsilon(..))
 import Flight.Zone (Radius(..), toRationalLatLng)
 import Flight.Distance (QTaskDistance, TaskDistance(..), SpanLatLng)
@@ -21,30 +20,7 @@ import Flight.Earth.Ellipsoid
     , defaultVincentyAccuracy, flattening, polarRadius, toRationalEllipsoid
     )
 import Flight.Earth.Geodesy (InverseProblem(..), InverseSolution(..))
-
-mod' :: Rational -> Rational -> Rational
-mod' (a :% b) (c :% d) =
-    ((d * a) `mod` (b * c)) % (b * d)
-
-normalizeLng :: Epsilon -> Rational -> Rational
-normalizeLng (Epsilon eps) lng =
-   lng `mod'` (2 * F.pi eps)
-
--- | The numbers package doesn't have atan₂.
--- SEE: https://hackage.haskell.org/package/base
--- SEE: https://stackoverflow.com/questions/₂83406/what-is-the-difference-between-atan-and-atan₂-in-c
-atan2' :: Epsilon -> Rational -> Rational -> Rational
-atan2' e@(Epsilon eps) y x
-    | x > 0 = atan' $ y / x
-    | x == 0 && y > 0 = pi' / 2
-    | x <  0 && y > 0 = pi' + atan' (y / x)
-    | x <= 0 && y < 0 = negate $ atan2' e (-y) x
-    | y == 0 = pi'
-    | x == 0 && y == 0 = y
-    | otherwise = atan' $ y / x
-    where
-        atan' = F.atan eps
-        pi' = F.pi eps
+import Flight.Earth.Math
 
 vincentyInverse
     :: Epsilon
@@ -147,6 +123,28 @@ distanceVincenty epsilon ellipsoid x y =
         VincentyInverseAntipodal -> tooFar
         VincentyInverseAbnormal _ -> tooFar
         VincentyInverse InverseSolution{s} -> s
+
+azimuthFwd
+    :: (Real a, Fractional a, Show a)
+    => Epsilon
+    -> Ellipsoid a
+    -> AzimuthFwd a
+azimuthFwd eps e x y =
+    case distanceVincenty' eps e (InverseProblem x y) of
+        VincentyInverseAntipodal -> Nothing
+        VincentyInverseAbnormal _ -> Nothing
+        VincentyInverse InverseSolution{α₁} -> Just α₁
+
+azimuthRev
+    :: (Real a, Fractional a, Show a)
+    => Epsilon
+    -> Ellipsoid a
+    -> AzimuthRev a
+azimuthRev eps e x y =
+    case distanceVincenty' eps e (InverseProblem x y) of
+        VincentyInverseAntipodal -> Nothing
+        VincentyInverseAbnormal _ -> Nothing
+        VincentyInverse InverseSolution{α₂} -> α₂
 
 distanceVincenty'
     :: (Real a, Fractional a)

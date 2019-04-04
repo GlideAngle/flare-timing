@@ -1,4 +1,7 @@
-module Flight.Earth.Flat.Projected.Rational (costEastNorth) where
+module Flight.Earth.Flat.Projected.Rational
+    ( costEastNorth
+    , azimuths
+    ) where
 
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
@@ -42,3 +45,26 @@ costEastNorth x y =
     PathDistance { edgesSum = tooFar
                  , vertices = center . toRationalZone <$> [x, y]
                  }
+
+azimuths
+    :: (Real a, Eq b, Fractional b)
+    => Zone a
+    -> Zone a
+    -> Maybe (Quantity b [u| rad |], Quantity b [u| rad |])
+azimuths x@(Point _) y@(Point _) =
+    case (zoneToProjectedEastNorth x, zoneToProjectedEastNorth y) of
+        (Right xEN, Right yEN) ->
+            Just (f . azFwd $ distAz, f . azRev $ distAz)
+            where
+                distAz :: DistanceAzimuth Double
+                distAz = pythagorean xEN yEN
+
+        _ -> Nothing
+
+    where
+        f (MkQuantity q) = MkQuantity $ realToFrac q
+
+azimuths x y =
+    azimuths (f x) (f y)
+    where
+        f = Point . center

@@ -20,7 +20,7 @@ import Flight.Zone
     , realToFracLatLng
     )
 import Flight.Zone.Path (distancePointToPoint)
-import Flight.Earth.Ellipsoid.PointToPoint.Double (distanceVincenty)
+import Flight.Earth.Ellipsoid.PointToPoint.Double (distanceVincenty, azimuthFwd)
 import Flight.Distance (TaskDistance(..), PathDistance(..))
 import Flight.Zone.Cylinder
     ( TrueCourse(..)
@@ -39,6 +39,7 @@ import Flight.Earth.Ellipsoid
     , defaultVincentyAccuracy, wgs84, flattening, polarRadius
     )
 import Flight.Earth.Geodesy (DirectProblem(..), DirectSolution(..))
+import Flight.Earth.ZoneShape (onLine)
 
 cos2 :: (Num a, Num p) => (p -> a) -> p -> p -> (a, a)
 cos2 cos' σ1 σ = (cos2σm, cos²2σm)
@@ -175,8 +176,19 @@ circum x r tc =
 --
 -- The points of the compass are divided by the number of samples requested.
 circumSample :: CircumSample Double
-circumSample SampleParams{..} (ArcSweep (Bearing (MkQuantity bearing))) arc0 _zoneM zoneN =
-    ys
+circumSample SampleParams{..} (ArcSweep (Bearing (MkQuantity bearing))) arc0 zoneM zoneN
+    | bearing < 0 || bearing > 2 * pi = fail "Arc sweep must be in the range 0..2π radians."
+    | otherwise =
+        case (zoneM, zoneN) of
+            (Nothing, _) -> ys
+            (Just _, Point _) -> ys
+            (Just _, Vector _ _) -> ys
+            (Just _, Cylinder _ _) -> ys
+            (Just _, Conical _ _ _) -> ys
+            (Just m, Line _ x) ->
+                let y = center m in onLine (azimuthFwd wgs84 x y) ys
+            (Just _, Circle _ _) -> ys
+            (Just _, SemiCircle _ _) -> ys
     where
         nNum = unSamples spSamples
         half = nNum `div` 2

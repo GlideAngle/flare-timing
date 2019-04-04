@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d9fc805d3766be4d3c1d5b8c52df03431e82104df8ab8c57ff689701c1593c30
+-- hash: d44002d71a9308abd030a455378a706cdf5a4d6c9545b9cae3d3886e96f6c6b9
 
 name:           flight-earth
 version:        0.1.0
@@ -55,6 +55,8 @@ library
       Flight.Earth.Flat.PointToPoint.Double
       Flight.Earth.Flat.PointToPoint.Rational
       Flight.Earth.Flat.Projected.Internal
+      Flight.Earth.Math
+      Flight.Earth.ZoneShape
       Paths_flight_earth
   hs-source-dirs:
       library
@@ -99,12 +101,14 @@ test-suite earth
       Flight.Earth.Flat.Projected.Rational
       Flight.Earth.Flat.Separated
       Flight.Earth.Geodesy
+      Flight.Earth.Math
       Flight.Earth.Sphere
       Flight.Earth.Sphere.Cylinder.Double
       Flight.Earth.Sphere.Cylinder.Rational
       Flight.Earth.Sphere.PointToPoint.Double
       Flight.Earth.Sphere.PointToPoint.Rational
       Flight.Earth.Sphere.Separated
+      Flight.Earth.ZoneShape
       Distance
       Ellipsoid.Coincident
       Ellipsoid.Cylinder.Inner

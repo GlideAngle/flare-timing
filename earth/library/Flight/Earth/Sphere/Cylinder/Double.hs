@@ -1,11 +1,9 @@
 module Flight.Earth.Sphere.Cylinder.Double (circumSample) where
 
 import Data.Fixed (mod')
-import Data.Maybe (catMaybes)
-import Data.UnitsOfMeasure ((-:), u, unQuantity, abs')
+import Data.UnitsOfMeasure (u, unQuantity)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import Flight.Units.Angle (halfPi)
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.Zone
     ( Zone(..)
@@ -33,6 +31,7 @@ import Flight.Zone.Cylinder
     , sourceZone
     )
 import Flight.Earth.Sphere (earthRadius)
+import Flight.Earth.ZoneShape (onLine)
 
 -- | Using a method from the
 -- <http://www.edwilliams.org/avform.htm#LL Aviation Formulary>
@@ -98,7 +97,8 @@ circumSample SampleParams{..} (ArcSweep (Bearing (MkQuantity bearing))) arc0 zon
             (Just _, Vector _ _) -> ys
             (Just _, Cylinder _ _) -> ys
             (Just _, Conical _ _ _) -> ys
-            (Just m, Line _ x) -> let y = center m in onLine (azimuthFwd x y) ys
+            (Just m, Line _ x) ->
+                let y = center m in onLine (azimuthFwd x y) ys
             (Just _, Circle _ _) -> ys
             (Just _, SemiCircle _ _) -> ys
     where
@@ -130,18 +130,6 @@ circumSample SampleParams{..} (ArcSweep (Bearing (MkQuantity bearing))) arc0 zon
 
         ys :: ([ZonePoint Double], [TrueCourse Double])
         ys = unzip $ getClose' 10 (Radius (MkQuantity 0)) (circumR r) <$> xs
-
-onLine
-    :: Maybe (Quantity Double [u| rad |])
-    -> ([ZonePoint Double], [TrueCourse Double])
-    -> ([ZonePoint Double], [TrueCourse Double])
-onLine Nothing xs = xs
-onLine (Just theta) (xs, cs) =
-    unzip . catMaybes $
-    [ if (abs' (b -: theta)) < halfPi then Nothing else Just (x, c)
-    | x@ZonePoint{radial = Bearing b} <- xs
-    | c <- cs
-    ]
 
 getClose
     :: Zone Double

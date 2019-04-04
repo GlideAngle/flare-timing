@@ -21,7 +21,7 @@ import Flight.Zone
     , toRationalZone
     )
 import Flight.Zone.Path (distancePointToPoint)
-import Flight.Earth.Flat.PointToPoint.Rational (distanceEuclidean)
+import Flight.Earth.Flat.PointToPoint.Rational (distanceEuclidean, azimuthFwd)
 import Flight.Distance (TaskDistance(..), PathDistance(..))
 import Flight.Zone.Cylinder
     ( TrueCourse(..)
@@ -37,6 +37,7 @@ import Flight.Zone.Cylinder
     , fromRationalZonePoint
     )
 import Flight.Earth.Flat.Projected.Internal (zoneToProjectedEastNorth)
+import Flight.Earth.ZoneShape (onLine)
 
 fromHcLatLng :: HCLL.LatLng -> LatLng Rational [u| rad |]
 fromHcLatLng HCLL.LatLng{latitude, longitude} =
@@ -108,9 +109,21 @@ translate
 --
 -- The points of the compass are divided by the number of samples requested.
 circumSample :: CircumSample Rational
-circumSample SampleParams{..} (ArcSweep (Bearing (MkQuantity bearing))) arc0 _zoneM zoneN =
-    (fromRationalZonePoint <$> fst ys, snd ys)
+circumSample SampleParams{..} (ArcSweep (Bearing (MkQuantity bearing))) arc0 zoneM zoneN
+    | bearing < 0 || bearing > 2 * F.pi eps = fail "Arc sweep must be in the range 0..2π radians."
+    | otherwise =
+        case (zoneM, zoneN) of
+            (Nothing, _) -> ys
+            (Just _, Point _) -> ys
+            (Just _, Vector _ _) -> ys
+            (Just _, Cylinder _ _) -> ys
+            (Just _, Conical _ _ _) -> ys
+            (Just m, Line _ x) ->
+                let y = center m in onLine (azimuthFwd x y) ys
+            (Just _, Circle _ _) -> ys
+            (Just _, SemiCircle _ _) -> ys
     where
+        (Epsilon eps) = defEps
         nNum = unSamples spSamples
         half = nNum `div` 2
         step = bearing / (fromInteger nNum)
@@ -138,8 +151,10 @@ circumSample SampleParams{..} (ArcSweep (Bearing (MkQuantity bearing))) arc0 _zo
 
         getClose' = getClose defEps zone' ptCenter limitRadius' spTolerance
 
-        ys :: ([ZonePoint Rational], [TrueCourse Rational])
-        ys = unzip $ getClose' 10 (Radius (MkQuantity 0)) (circumR r) <$> xs
+        ys' :: ([ZonePoint Rational], [TrueCourse Rational])
+        ys' = unzip $ getClose' 10 (Radius (MkQuantity 0)) (circumR r) <$> xs
+
+        ys = (fromRationalZonePoint <$> fst ys', snd ys')
 
 getClose :: Epsilon
          -> Zone Rational
@@ -178,7 +193,7 @@ getClose epsilon zone' ptCenter limitRadius spTolerance trys yr@(Radius (MkQuant
                          (Radius (MkQuantity offset'))
                          f'
                          x
-                 
+
              LT ->
                  if d > toRational (limitRadius - unTolerance spTolerance)
                  then (zp', x)
@@ -208,7 +223,7 @@ getClose epsilon zone' ptCenter limitRadius spTolerance trys yr@(Radius (MkQuant
                         , radial = Bearing tc
                         , orbit = yr
                         } :: ZonePoint Rational
-                       
+
         (TaskDistance (MkQuantity d)) =
             edgesSum
             $ distancePointToPoint
