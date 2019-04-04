@@ -4,7 +4,7 @@
 module Flight.Units.Angle (Angle(..), halfPi) where
 
 import Data.Fixed (mod')
-import Data.UnitsOfMeasure ((+:), u, convert)
+import Data.UnitsOfMeasure ((+:), u, convert, fromRational', toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Data.UnitsOfMeasure.Convert (Convertible)
 
@@ -31,13 +31,34 @@ instance Convertible u [u| deg |] => Angle (Quantity Double u) where
             (MkQuantity d) = convert d' :: Quantity Double [u| deg |]
 
     rotate rotation d' =
-        normalize . fromQuantity $ d +: r
+        normalize . convert $ d +: r
         where
             r :: Quantity Double [u| deg |]
-            r = toQuantity rotation
+            r = convert rotation
 
             d :: Quantity Double [u| deg |]
-            d = toQuantity d'
+            d = convert d'
 
     fromQuantity = convert
     toQuantity = convert
+
+instance Convertible u [u| deg |] => Angle (Quantity Rational u) where
+    normalize d' =
+        convert n
+        where
+            n :: Quantity Rational [u| deg |]
+            n = MkQuantity $ d `mod'` 360.0
+
+            (MkQuantity d) = convert d' :: Quantity Rational [u| deg |]
+
+    rotate rotation d' =
+        normalize . convert $ d +: r
+        where
+            r :: Quantity Rational [u| deg |]
+            r = convert rotation
+
+            d :: Quantity Rational [u| deg |]
+            d = convert d'
+
+    fromQuantity = toRational' . convert
+    toQuantity = convert . fromRational'
