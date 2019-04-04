@@ -14,9 +14,9 @@ normalizeLng :: Epsilon -> Rational -> Rational
 normalizeLng (Epsilon eps) lng =
    lng `mod'` (2 * F.pi eps)
 
--- | The numbers package doesn't have atan₂.
+-- | The numbers package doesn't have atan2.
 -- SEE: https://hackage.haskell.org/package/base
--- SEE: https://stackoverflow.com/questions/₂83406/what-is-the-difference-between-atan-and-atan₂-in-c
+-- SEE: https://stackoverflow.com/questions/283406/what-is-the-difference-between-atan-and-atan2-in-c
 atan2' :: Epsilon -> Rational -> Rational -> Rational
 atan2' e@(Epsilon eps) y x
     | x > 0 = atan' $ y / x
