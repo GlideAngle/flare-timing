@@ -20,7 +20,7 @@ import Flight.Earth.Ellipsoid
     , defaultVincentyAccuracy, flattening, polarRadius, toRationalEllipsoid
     )
 import Flight.Earth.Geodesy (InverseProblem(..), InverseSolution(..))
-import Flight.Earth.Math
+import Flight.Earth.Math (normalizeLng, atan2')
 
 vincentyInverse
     :: Epsilon

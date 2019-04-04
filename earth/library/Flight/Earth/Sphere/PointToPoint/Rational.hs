@@ -20,7 +20,7 @@ import Flight.Zone (toRationalLatLng)
 import Flight.Distance (TaskDistance(..), SpanLatLng)
 import Flight.Zone (Radius(..))
 import Flight.Earth.Sphere (earthRadius)
-import Flight.Earth.Math
+import Flight.Earth.Math (atan2')
 
 haversine
     :: Epsilon
