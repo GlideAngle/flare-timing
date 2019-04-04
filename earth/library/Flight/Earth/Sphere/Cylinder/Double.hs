@@ -1,7 +1,8 @@
 module Flight.Earth.Sphere.Cylinder.Double (circumSample) where
 
 import Data.Fixed (mod')
-import Data.UnitsOfMeasure (u, unQuantity)
+import Data.Maybe (catMaybes)
+import Data.UnitsOfMeasure ((-:), u, convert, unQuantity, abs')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
@@ -16,7 +17,7 @@ import Flight.Zone
     , realToFracZone
     )
 import Flight.Zone.Path (distancePointToPoint)
-import Flight.Earth.Sphere.PointToPoint.Double (distanceHaversine)
+import Flight.Earth.Sphere.PointToPoint.Double (distanceHaversine, azimuthFwd)
 import Flight.Distance (TaskDistance(..), PathDistance(..))
 import Flight.Zone.Cylinder
     ( TrueCourse(..)
@@ -96,7 +97,7 @@ circumSample SampleParams{..} (ArcSweep (Bearing (MkQuantity bearing))) arc0 zon
             (Just _, Vector _ _) -> ys
             (Just _, Cylinder _ _) -> ys
             (Just _, Conical _ _ _) -> ys
-            (Just _, Line _ _) -> ys
+            (Just m, Line _ x) -> let y = center m in onLine (azimuthFwd x y) ys
             (Just _, Circle _ _) -> ys
             (Just _, SemiCircle _ _) -> ys
     where
@@ -128,6 +129,21 @@ circumSample SampleParams{..} (ArcSweep (Bearing (MkQuantity bearing))) arc0 zon
 
         ys :: ([ZonePoint Double], [TrueCourse Double])
         ys = unzip $ getClose' 10 (Radius (MkQuantity 0)) (circumR r) <$> xs
+
+halfPi :: Quantity Double [u| rad |]
+halfPi = convert [u| 90 deg |]
+
+onLine
+    :: Maybe (Quantity Double [u| rad |])
+    -> ([ZonePoint Double], [TrueCourse Double])
+    -> ([ZonePoint Double], [TrueCourse Double])
+onLine Nothing xs = xs
+onLine (Just theta) (xs, cs) =
+    unzip . catMaybes $
+    [ if (abs' (b -: theta)) < halfPi then Nothing else Just (x, c)
+    | x@ZonePoint{radial = Bearing b} <- xs
+    | c <- cs
+    ]
 
 getClose
     :: Zone Double
