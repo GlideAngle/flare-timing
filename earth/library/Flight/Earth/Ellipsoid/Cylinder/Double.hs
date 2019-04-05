@@ -39,7 +39,7 @@ import Flight.Earth.Ellipsoid
     , defaultVincentyAccuracy, wgs84, flattening, polarRadius
     )
 import Flight.Earth.Geodesy (DirectProblem(..), DirectSolution(..))
-import Flight.Earth.ZoneShape (onLine)
+import Flight.Earth.ZoneShape.Double (PointOnRadial, onLine)
 
 cos2 :: (Num a, Num p) => (p -> a) -> p -> p -> (a, a)
 cos2 cos' σ1 σ = (cos2σm, cos²2σm)
@@ -186,7 +186,7 @@ circumSample SampleParams{..} (ArcSweep (Bearing (MkQuantity bearing))) arc0 zon
             (Just _, Cylinder _ _) -> ys
             (Just _, Conical _ _ _) -> ys
             (Just m, Line _ x) ->
-                let y = center m in onLine (azimuthFwd wgs84 x y) ys
+                let y = center m in onLine mkLinePt (azimuthFwd wgs84 x y) ys
             (Just _, Circle _ _) -> ys
             (Just _, SemiCircle _ _) -> ys
     where
@@ -215,6 +215,10 @@ circumSample SampleParams{..} (ArcSweep (Bearing (MkQuantity bearing))) arc0 zon
         circumR = circum ptCenter
 
         getClose' = getClose zone' ptCenter limitRadius spTolerance
+
+        mkLinePt :: PointOnRadial
+        mkLinePt _ (Bearing b) rLine =
+            (circumR rLine) (TrueCourse b)
 
         ys :: ([ZonePoint Double], [TrueCourse Double])
         ys = unzip $ getClose' 10 (Radius (MkQuantity 0)) (circumR r) <$> xs
@@ -254,7 +258,7 @@ getClose zone' ptCenter limitRadius spTolerance trys yr@(Radius (MkQuantity offs
                          (Radius (MkQuantity offset'))
                          f'
                          x
-                 
+
              LT ->
                  if d > (limitRadius - unTolerance spTolerance)
                  then (zp', x)

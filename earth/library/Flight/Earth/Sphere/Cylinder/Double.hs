@@ -31,17 +31,18 @@ import Flight.Zone.Cylinder
     , sourceZone
     )
 import Flight.Earth.Sphere (earthRadius)
-import Flight.Earth.ZoneShape (onLine)
+import Flight.Earth.ZoneShape.Double (PointOnRadial, onLine)
 
 -- | Using a method from the
 -- <http://www.edwilliams.org/avform.htm#LL Aviation Formulary>
 -- a point on a cylinder wall is found by going out to the distance of the
 -- radius on the given radial true course 'rtc'.
-circum :: Real a
-       => LatLng a [u| rad |]
-       -> QRadius a [u| m |]
-       -> TrueCourse a
-       -> LatLng Double [u| rad |]
+circum
+    :: Real a
+    => LatLng a [u| rad |]
+    -> QRadius a [u| m |]
+    -> TrueCourse a
+    -> LatLng Double [u| rad |]
 circum
     (LatLng (Lat (MkQuantity latRadian'), Lng (MkQuantity lngRadian')))
     (Radius (MkQuantity rRadius))
@@ -68,7 +69,7 @@ circum
         dlng = atan ((sin tc * sin d * cos lat) / (cos d - sin lat * sin lat))
 
         a = lng - dlng + pi
-        b = 2 * pi 
+        b = 2 * pi
 
         lng' :: Double
         lng' = mod' a b - pi
@@ -98,7 +99,7 @@ circumSample SampleParams{..} (ArcSweep (Bearing (MkQuantity bearing))) arc0 zon
             (Just _, Cylinder _ _) -> ys
             (Just _, Conical _ _ _) -> ys
             (Just m, Line _ x) ->
-                let y = center m in onLine (azimuthFwd x y) ys
+                let y = center m in onLine mkLinePt (azimuthFwd x y) ys
             (Just _, Circle _ _) -> ys
             (Just _, SemiCircle _ _) -> ys
     where
@@ -127,6 +128,10 @@ circumSample SampleParams{..} (ArcSweep (Bearing (MkQuantity bearing))) arc0 zon
         circumR = circum ptCenter
 
         getClose' = getClose zone' ptCenter limitRadius spTolerance
+
+        mkLinePt :: PointOnRadial
+        mkLinePt _ (Bearing b) rLine =
+            (circumR rLine) (TrueCourse b)
 
         ys :: ([ZonePoint Double], [TrueCourse Double])
         ys = unzip $ getClose' 10 (Radius (MkQuantity 0)) (circumR r) <$> xs

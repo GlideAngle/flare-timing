@@ -35,7 +35,7 @@ import Flight.Zone.Cylinder
     , sourceZone
     )
 import Flight.Earth.Flat.Projected.Internal (zoneToProjectedEastNorth)
-import Flight.Earth.ZoneShape (onLine)
+import Flight.Earth.ZoneShape.Double (PointOnRadial, onLine)
 
 fromHcLatLng :: HCLL.LatLng -> LatLng Double [u| rad |]
 fromHcLatLng HCLL.LatLng{latitude, longitude} =
@@ -125,7 +125,7 @@ circumSample SampleParams{..} (ArcSweep (Bearing (MkQuantity bearing))) arc0 zon
             (Just _, Cylinder _ _) -> ys
             (Just _, Conical _ _ _) -> ys
             (Just m, Line _ x) ->
-                let y = center m in onLine (azimuthFwd x y) ys
+                let y = center m in onLine mkLinePt (azimuthFwd x y) ys
             (Just _, Circle _ _) -> ys
             (Just _, SemiCircle _ _) -> ys
     where
@@ -154,6 +154,10 @@ circumSample SampleParams{..} (ArcSweep (Bearing (MkQuantity bearing))) arc0 zon
         circumR = circum ptCenter
 
         getClose' = getClose zone' ptCenter limitRadius spTolerance
+
+        mkLinePt :: PointOnRadial
+        mkLinePt _ (Bearing b) rLine =
+            (circumR rLine) (TrueCourse b)
 
         ys :: ([ZonePoint Double], [TrueCourse Double])
         ys = unzip $ getClose' 10 (Radius (MkQuantity 0)) (circumR r) <$> xs

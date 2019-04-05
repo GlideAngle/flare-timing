@@ -18,7 +18,7 @@ import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Data.Maybe (catMaybes)
 import Control.Arrow (first)
-import Data.Graph.Inductive.Query.SP (LRTree, spTree) 
+import Data.Graph.Inductive.Query.SP (LRTree, spTree)
 import Data.Graph.Inductive.Internal.RootPath (getDistance, getLPathNodes)
 import Data.Graph.Inductive.Graph
     (Graph(nodeRange, mkGraph), Node, Path, LEdge, match)
@@ -177,7 +177,6 @@ distance span distancePointToPoint cs builder cut tolerance xs
     | not . separatedZones span . dedup $ xs = (ZxNotSeparated, [])
     | otherwise = distanceUnchecked (Samples 5) 6 span distancePointToPoint cs builder cut tolerance xs
 
-
 pad :: Ord a => [Zone a] -> [Zone a]
 pad xs =
     z0 : (xs ++ [zN])
@@ -242,12 +241,8 @@ loop builder cs sp cut@AngleCut{sweep, nextSweep} n _ zs xs =
             catMaybes $
             (\p ->
                 case match p gr of
-                     (Nothing, _) ->
-                         Nothing
-
-                     (Just (_, _, zonePoint, _), _) ->
-                         Just zonePoint
-            )
+                     (Nothing, _) -> Nothing
+                     (Just (_, _, zonePoint, _), _) -> Just zonePoint)
             <$> ps
 
 buildGraph

@@ -47,7 +47,7 @@ import qualified Flight.Earth.Ellipsoid.Cylinder.Double as Dbl (vincentyDirect)
 import Flight.Earth.Geodesy (DirectProblem(..), DirectSolution(..))
 import Flight.Earth.Ellipsoid.Cylinder.Double (cos2)
 import qualified Flight.Earth.Math as F (atan2')
-import Flight.Earth.ZoneShape (onLine)
+import Flight.Earth.ZoneShape.Rational (PointOnRadial, onLine)
 
 iterateVincenty
     :: Epsilon
@@ -294,7 +294,7 @@ circumSample SampleParams{..} (ArcSweep (Bearing (MkQuantity bearing))) arc0 zon
             (Just _, Cylinder _ _) -> ys
             (Just _, Conical _ _ _) -> ys
             (Just m, Line _ x) ->
-                let y = center m in onLine (azimuthFwd defEps wgs84 x y) ys
+                let y = center m in onLine defEps mkLinePt (azimuthFwd defEps wgs84 x y) ys
             (Just _, Circle _ _) -> ys
             (Just _, SemiCircle _ _) -> ys
     where
@@ -325,6 +325,10 @@ circumSample SampleParams{..} (ArcSweep (Bearing (MkQuantity bearing))) arc0 zon
         circumR = circum defEps ptCenter
 
         getClose' = getClose defEps zone' ptCenter limitRadius' spTolerance
+
+        mkLinePt :: PointOnRadial
+        mkLinePt _ (Bearing b) rLine =
+            (circumR rLine) (TrueCourse b)
 
         ys' :: ([ZonePoint Rational], [TrueCourse Rational])
         ys' = unzip $ getClose' 10 (Radius (MkQuantity 0)) (circumR r) <$> xs

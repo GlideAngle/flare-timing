@@ -34,7 +34,7 @@ import Flight.Zone.Cylinder
     , fromRationalZonePoint
     )
 import Flight.Earth.Sphere (earthRadius)
-import Flight.Earth.ZoneShape (onLine)
+import Flight.Earth.ZoneShape.Rational (PointOnRadial, onLine)
 
 -- | Using a method from the
 -- <http://www.edwilliams.org/avform.htm#LL Aviation Formulary>
@@ -102,7 +102,7 @@ circumSample SampleParams{..} (ArcSweep (Bearing (MkQuantity bearing))) arc0 zon
             (Just _, Cylinder _ _) -> ys
             (Just _, Conical _ _ _) -> ys
             (Just m, Line _ x) ->
-                let y = center m in onLine (azimuthFwd defEps x y) ys
+                let y = center m in onLine defEps mkLinePt (azimuthFwd defEps x y) ys
             (Just _, Circle _ _) -> ys
             (Just _, SemiCircle _ _) -> ys
     where
@@ -133,6 +133,10 @@ circumSample SampleParams{..} (ArcSweep (Bearing (MkQuantity bearing))) arc0 zon
         circumR = circum defEps ptCenter
 
         getClose' = getClose defEps zone' ptCenter limitRadius' spTolerance
+
+        mkLinePt :: PointOnRadial
+        mkLinePt _ (Bearing b) rLine =
+            (circumR rLine) (TrueCourse b)
 
         ys' :: ([ZonePoint Rational], [TrueCourse Rational])
         ys' = unzip $ getClose' 10 (Radius (MkQuantity 0)) (circumR r) <$> xs
