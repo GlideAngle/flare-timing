@@ -38,14 +38,47 @@ onLine mkPt (Just theta) (xs, cs) =
     ]
 
 -- |
+-- >>> angleDiff [u| 0 rad |] [u| 0 rad |]
+-- [u| 0.0 rad |]
+--
+-- >>> angleDiff [u| 0 rad |] (pi *: [u| 2 rad |])
+-- [u| 1.3877787807814457e-16 rad |]
+--
+-- >>> angleDiff (pi *: [u| 2 rad |]) [u| 0 rad |]
+-- [u| 6.283185307179586 rad |]
+--
 -- >>> angleDiffDeg [u| 0 deg |] [u| 0 deg |]
 -- [u| 0.0 deg |]
 --
 -- >>> angleDiffDeg [u| 360 deg |] [u| 0 deg |]
--- [u| 0.0 deg |]
+-- [u| 360.0 deg |]
 --
 -- >>> angleDiffDeg [u| 0 deg |] [u| 360 deg |]
--- [u| 0.0 deg |]
+-- [u| 7.951386703658792e-15 deg |]
+--
+-- >>> angleDiffDeg [u| -360 deg |] [u| 0 deg |]
+-- [u| 7.951386703658792e-15 deg |]
+--
+-- >>> angleDiffDeg [u| 0 deg |] [u| -360 deg |]
+-- [u| 360.0 deg |]
+--
+-- >>> angleDiffDeg [u| 90 deg |] [u| 0 deg |]
+-- [u| 90.0 deg |]
+--
+-- >>> angleDiffDeg [u| 180 deg |] [u| 0 deg |]
+-- [u| 180.0 deg |]
+--
+-- >>> angleDiffDeg [u| 270 deg |] [u| 0 deg |]
+-- [u| 270.0 deg |]
+--
+-- >>> angleDiffDeg [u| 0 deg |] [u| 90 deg |]
+-- [u| 270.0 deg |]
+--
+-- >>> angleDiffDeg [u| 0 deg |] [u| 180 deg |]
+-- [u| 180.0 deg |]
+--
+-- >>> angleDiffDeg [u| 0 deg |] [u| 270 deg |]
+-- [u| 90.0 deg |]
 angleDiff
     :: (Real a, Fractional a, Show a)
     => Quantity a [u| rad |]
@@ -98,7 +131,7 @@ ontoLine mkPt theta delta x@ZonePoint{sourceZone = z}
 -- >>> :set -XTypeOperators
 -- >>> :set -XTypeFamilies
 -- >>> :set -XUndecidableInstances
--- >>> import Data.UnitsOfMeasure (u, convert)
+-- >>> import Data.UnitsOfMeasure ((*:), u, convert)
 --
 -- >>> :{
 -- angleDiffDeg
