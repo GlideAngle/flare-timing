@@ -38,47 +38,47 @@ onLine mkPt (Just theta) (xs, cs) =
     ]
 
 -- |
--- >>> angleDiff [u| 0 rad |] [u| 0 rad |]
--- [u| 0.0 rad |]
+-- >>> round' $ angleDiff [u| 0 rad |] [u| 0 rad |]
+-- [u| 0 rad |]
 --
--- >>> angleDiff [u| 0 rad |] (pi *: [u| 2 rad |])
--- [u| 1.3877787807814457e-16 rad |]
+-- >>> round' $ angleDiff [u| 0 rad |] (pi *: [u| 2 rad |])
+-- [u| 0 rad |]
 --
 -- >>> angleDiff (pi *: [u| 2 rad |]) [u| 0 rad |]
 -- [u| 6.283185307179586 rad |]
 --
--- >>> angleDiffDeg [u| 0 deg |] [u| 0 deg |]
--- [u| 0.0 deg |]
+-- >>> round' $ angleDiffDeg [u| 0 deg |] [u| 0 deg |]
+-- [u| 0 deg |]
 --
--- >>> angleDiffDeg [u| 360 deg |] [u| 0 deg |]
--- [u| 360.0 deg |]
+-- >>> round' $ angleDiffDeg [u| 360 deg |] [u| 0 deg |]
+-- [u| 360 deg |]
 --
--- >>> angleDiffDeg [u| 0 deg |] [u| 360 deg |]
--- [u| 7.951386703658792e-15 deg |]
+-- >>> round' $ angleDiffDeg [u| 0 deg |] [u| 360 deg |]
+-- [u| 0 deg |]
 --
--- >>> angleDiffDeg [u| -360 deg |] [u| 0 deg |]
--- [u| 7.951386703658792e-15 deg |]
+-- >>> round' $ angleDiffDeg [u| -360 deg |] [u| 0 deg |]
+-- [u| 0 deg |]
 --
--- >>> angleDiffDeg [u| 0 deg |] [u| -360 deg |]
--- [u| 360.0 deg |]
+-- >>> round' $ angleDiffDeg [u| 0 deg |] [u| -360 deg |]
+-- [u| 360 deg |]
 --
--- >>> angleDiffDeg [u| 90 deg |] [u| 0 deg |]
--- [u| 90.0 deg |]
+-- >>> round' $ angleDiffDeg [u| 90 deg |] [u| 0 deg |]
+-- [u| 90 deg |]
 --
--- >>> angleDiffDeg [u| 180 deg |] [u| 0 deg |]
--- [u| 180.0 deg |]
+-- >>> round' $ angleDiffDeg [u| 180 deg |] [u| 0 deg |]
+-- [u| 180 deg |]
 --
--- >>> angleDiffDeg [u| 270 deg |] [u| 0 deg |]
--- [u| 270.0 deg |]
+-- >>> round' $ angleDiffDeg [u| 270 deg |] [u| 0 deg |]
+-- [u| 270 deg |]
 --
--- >>> angleDiffDeg [u| 0 deg |] [u| 90 deg |]
--- [u| 270.0 deg |]
+-- >>> round' $ angleDiffDeg [u| 0 deg |] [u| 90 deg |]
+-- [u| 270 deg |]
 --
--- >>> angleDiffDeg [u| 0 deg |] [u| 180 deg |]
--- [u| 180.0 deg |]
+-- >>> round' $ angleDiffDeg [u| 0 deg |] [u| 180 deg |]
+-- [u| 180 deg |]
 --
--- >>> angleDiffDeg [u| 0 deg |] [u| 270 deg |]
--- [u| 90.0 deg |]
+-- >>> round' $ angleDiffDeg [u| 0 deg |] [u| 270 deg |]
+-- [u| 90 deg |]
 angleDiff
     :: (Real a, Fractional a, Show a)
     => Quantity a [u| rad |]
@@ -140,4 +140,9 @@ ontoLine mkPt theta delta x@ZonePoint{sourceZone = z}
 --    -> Quantity a [u| deg |]
 --    -> Quantity a [u| deg |]
 -- angleDiffDeg x y = convert $ angleDiff (convert x) (convert y)
+-- :}
+--
+-- >>> :{
+-- round' :: (RealFrac a, Integral b) => Quantity a u -> Quantity b u
+-- round' (MkQuantity x) = MkQuantity (round x)
 -- :}
