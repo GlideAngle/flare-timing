@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 6b06e10ad4435e39db8dc286a06e7d7041d301ef77bd74be73f625788eafb5cc
+-- hash: 7321b0f868ee0f532d00eafdac672d08002d5d4c3e62a3288d09bb45d51c6061
 
 name:           flight-earth
 version:        0.1.0
@@ -69,6 +69,61 @@ library
     , bifunctors
     , detour-via-sci
     , detour-via-uom
+    , fgl
+    , flight-latlng
+    , flight-units
+    , flight-zone
+    , hcoord
+    , hcoord-utm
+    , mtl
+    , numbers
+    , scientific
+    , siggy-chardust
+    , uom-plugin
+  default-language: Haskell2010
+
+test-suite doctest
+  type: exitcode-stdio-1.0
+  main-is: DocTest.hs
+  other-modules:
+      Flight.Earth.Ellipsoid
+      Flight.Earth.Ellipsoid.Cylinder.Double
+      Flight.Earth.Ellipsoid.Cylinder.Rational
+      Flight.Earth.Ellipsoid.PointToPoint.Double
+      Flight.Earth.Ellipsoid.PointToPoint.Rational
+      Flight.Earth.Ellipsoid.Separated
+      Flight.Earth.Flat
+      Flight.Earth.Flat.Cylinder.Double
+      Flight.Earth.Flat.Cylinder.Rational
+      Flight.Earth.Flat.PointToPoint.Double
+      Flight.Earth.Flat.PointToPoint.Rational
+      Flight.Earth.Flat.Projected.Double
+      Flight.Earth.Flat.Projected.Internal
+      Flight.Earth.Flat.Projected.Rational
+      Flight.Earth.Flat.Separated
+      Flight.Earth.Geodesy
+      Flight.Earth.Math
+      Flight.Earth.Sphere
+      Flight.Earth.Sphere.Cylinder.Double
+      Flight.Earth.Sphere.Cylinder.Rational
+      Flight.Earth.Sphere.PointToPoint.Double
+      Flight.Earth.Sphere.PointToPoint.Rational
+      Flight.Earth.Sphere.Separated
+      Flight.Earth.ZoneShape.Double
+      Flight.Earth.ZoneShape.Rational
+      Paths_flight_earth
+  hs-source-dirs:
+      library
+      test-suite-doctest
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  ghc-options: -Wall -fplugin Data.UnitsOfMeasure.Plugin -rtsopts -threaded -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base >=4.10.1.0 && <5
+    , bifunctors
+    , detour-via-sci
+    , detour-via-uom
+    , doctest
     , fgl
     , flight-latlng
     , flight-units

@@ -37,6 +37,15 @@ onLine mkPt (Just theta) (xs, cs) =
     | c <- cs
     ]
 
+-- |
+-- >>> angleDiffDeg [u| 0 deg |] [u| 0 deg |]
+-- [u| 0.0 deg |]
+--
+-- >>> angleDiffDeg [u| 360 deg |] [u| 0 deg |]
+-- [u| 0.0 deg |]
+--
+-- >>> angleDiffDeg [u| 0 deg |] [u| 360 deg |]
+-- [u| 0.0 deg |]
 angleDiff
     :: (Real a, Fractional a, Show a)
     => Quantity a [u| rad |]
@@ -77,3 +86,25 @@ ontoLine mkPt theta delta x@ZonePoint{sourceZone = z}
         o = center z
         Radius (MkQuantity r) = radius z
         MkQuantity angle = delta
+
+-- $setup
+-- >>> :set -XTemplateHaskell
+-- >>> :set -XQuasiQuotes
+-- >>> :set -XDataKinds
+-- >>> :set -XFlexibleContexts
+-- >>> :set -XFlexibleInstances
+-- >>> :set -XMultiParamTypeClasses
+-- >>> :set -XScopedTypeVariables
+-- >>> :set -XTypeOperators
+-- >>> :set -XTypeFamilies
+-- >>> :set -XUndecidableInstances
+-- >>> import Data.UnitsOfMeasure (u, convert)
+--
+-- >>> :{
+-- angleDiffDeg
+--    :: (Real a, Fractional a, Show a)
+--    => Quantity a [u| deg |]
+--    -> Quantity a [u| deg |]
+--    -> Quantity a [u| deg |]
+-- angleDiffDeg x y = convert $ angleDiff (convert x) (convert y)
+-- :}
