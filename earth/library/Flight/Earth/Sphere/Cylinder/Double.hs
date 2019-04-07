@@ -36,10 +36,12 @@ import Flight.Earth.ZoneShape.Double (PointOnRadial, onLine)
 -- <http://www.edwilliams.org/avform.htm#LL Aviation Formulary>
 -- a point on a cylinder wall is found by going out to the distance of the
 -- radius on the given radial true course 'rtc'.
+-- <https://www.movable-type.co.uk/scripts/latlong.html Movable Type Scripts>
+-- has working examples in Javascript backed HTML pages.
 --
 -- >>> circumDeg (LatLng (Lat [u| -32.46363 deg |], Lng [u| 148.989 deg |])) (Radius [u| 286.27334927563106 m |]) [u| 332.30076790172313 deg |]
 -- (-32.46135051411138°, 148.98758167886174°)
--- 
+--
 -- >>> circumDeg (LatLng (Lat [u| -32.46363 deg |], Lng [u| 148.989 deg |])) (Radius [u| 177.23328234645362 m |]) [u| 152.30076790172313 deg |]
 -- (-32.46504123330422°, 148.9898781257936°)
 circum
@@ -54,13 +56,8 @@ circum
     (TrueCourse (MkQuantity tc)) =
     LatLng (Lat (MkQuantity φ2), Lng (MkQuantity λ2))
     where
-        φ1 :: Double
         φ1 = realToFrac lat
-
-        λ1 :: Double
         λ1 = realToFrac lng
-
-        θ :: Double
         θ = realToFrac tc
 
         δ = let Radius (MkQuantity bigR) = earthRadius in realToFrac r / bigR
