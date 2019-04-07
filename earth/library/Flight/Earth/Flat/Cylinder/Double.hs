@@ -156,8 +156,7 @@ circumSample SampleParams{..} (ArcSweep (Bearing (MkQuantity bearing))) arc0 zon
         getClose' = getClose zone' ptCenter limitRadius spTolerance
 
         mkLinePt :: PointOnRadial
-        mkLinePt _ (Bearing b) rLine =
-            (circumR rLine) (TrueCourse b)
+        mkLinePt _ (Bearing b) rLine = circumR rLine $ TrueCourse b
 
         ys :: ([ZonePoint Double], [TrueCourse Double])
         ys = unzip $ getClose' 10 (Radius (MkQuantity 0)) (circumR r) <$> xs

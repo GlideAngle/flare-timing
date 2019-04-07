@@ -1,7 +1,6 @@
 module Flight.Earth.Sphere.Cylinder.Double (circumSample) where
 
-import Data.Fixed (mod')
-import Data.UnitsOfMeasure (u, unQuantity)
+import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
@@ -37,6 +36,12 @@ import Flight.Earth.ZoneShape.Double (PointOnRadial, onLine)
 -- <http://www.edwilliams.org/avform.htm#LL Aviation Formulary>
 -- a point on a cylinder wall is found by going out to the distance of the
 -- radius on the given radial true course 'rtc'.
+--
+-- >>> circumDeg (LatLng (Lat [u| -32.46363 deg |], Lng [u| 148.989 deg |])) (Radius [u| 286.27334927563106 m |]) [u| 332.30076790172313 deg |]
+-- (-32.46135051411138°, 148.98758167886174°)
+-- 
+-- >>> circumDeg (LatLng (Lat [u| -32.46363 deg |], Lng [u| 148.989 deg |])) (Radius [u| 177.23328234645362 m |]) [u| 152.30076790172313 deg |]
+-- (-32.46504123330422°, 148.9898781257936°)
 circum
     :: Real a
     => LatLng a [u| rad |]
@@ -44,43 +49,24 @@ circum
     -> TrueCourse a
     -> LatLng Double [u| rad |]
 circum
-    (LatLng (Lat (MkQuantity latRadian'), Lng (MkQuantity lngRadian')))
-    (Radius (MkQuantity rRadius))
-    (TrueCourse (MkQuantity rtc)) =
-    LatLng (Lat lat'', Lng lng'')
+    (LatLng (Lat (MkQuantity lat), Lng (MkQuantity lng)))
+    (Radius (MkQuantity r))
+    (TrueCourse (MkQuantity tc)) =
+    LatLng (Lat (MkQuantity φ2), Lng (MkQuantity λ2))
     where
-        lat :: Double
-        lat = realToFrac latRadian'
+        φ1 :: Double
+        φ1 = realToFrac lat
 
-        lng :: Double
-        lng = realToFrac lngRadian'
+        λ1 :: Double
+        λ1 = realToFrac lng
 
-        MkQuantity tc = MkQuantity $ realToFrac rtc
+        θ :: Double
+        θ = realToFrac tc
 
-        radius' :: Double
-        radius' = realToFrac rRadius
+        δ = let Radius (MkQuantity bigR) = earthRadius in realToFrac r / bigR
 
-        Radius rEarth = earthRadius
-        bigR = unQuantity rEarth
-
-        lat' :: Double
-        lat' = asin (sin lat * cos d + cos lat * sin d * cos tc)
-
-        dlng = atan ((sin tc * sin d * cos lat) / (cos d - sin lat * sin lat))
-
-        a = lng - dlng + pi
-        b = 2 * pi
-
-        lng' :: Double
-        lng' = mod' a b - pi
-
-        d = radius' / bigR
-
-        lat'' :: Quantity Double [u| rad |]
-        lat'' = MkQuantity lat'
-
-        lng'' :: Quantity Double [u| rad |]
-        lng'' = MkQuantity lng'
+        φ2 = asin $ sin φ1 * cos δ + cos φ1 * sin δ * cos θ
+        λ2 = λ1 + atan2 (sin θ * sin δ * cos φ1) (cos δ - sin φ1 * sin φ2)
 
 -- | Generates a pair of lists, the lat/lng of each generated point
 -- and its distance from the center. It will generate 'samples' number of such
@@ -130,8 +116,7 @@ circumSample SampleParams{..} (ArcSweep (Bearing (MkQuantity bearing))) arc0 zon
         getClose' = getClose zone' ptCenter limitRadius spTolerance
 
         mkLinePt :: PointOnRadial
-        mkLinePt _ (Bearing b) rLine =
-            (circumR rLine) (TrueCourse b)
+        mkLinePt _ (Bearing b) rLine = circumR rLine $ TrueCourse b
 
         ys :: ([ZonePoint Double], [TrueCourse Double])
         ys = unzip $ getClose' 10 (Radius (MkQuantity 0)) (circumR r) <$> xs
@@ -208,3 +193,30 @@ getClose zone' ptCenter limitRadius spTolerance trys yr@(Radius (MkQuantity offs
             $ distancePointToPoint
                 distanceHaversine
                 (realToFracZone <$> [Point ptCenter, Point y])
+
+-- $setup
+-- >>> :set -XTemplateHaskell
+-- >>> :set -XQuasiQuotes
+-- >>> :set -XDataKinds
+-- >>> :set -XFlexibleContexts
+-- >>> :set -XFlexibleInstances
+-- >>> :set -XMultiParamTypeClasses
+-- >>> :set -XScopedTypeVariables
+-- >>> :set -XTypeOperators
+-- >>> :set -XTypeFamilies
+-- >>> :set -XUndecidableInstances
+-- >>> :set -fno-warn-partial-type-signatures
+-- 
+-- >>> import Data.UnitsOfMeasure ((*:), u, convert)
+-- >>> import Flight.LatLng (radToDegLL, degToRadLL)
+--
+-- >>> :{
+-- circumDeg
+--    :: RealFrac a
+--    => LatLng a [u| deg |]
+--    -> QRadius a [u| m |]
+--    -> (Quantity a [u| deg |])
+--    -> LatLng Double [u| deg |]
+-- circumDeg ll r tc =
+--     radToDegLL convert $ circum (degToRadLL convert ll) r (TrueCourse ((convert tc) :: Quantity _ [u| rad |]))
+-- :}
