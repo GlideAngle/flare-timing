@@ -16,11 +16,12 @@ module Flight.LatLng
     , degToRadLL
     , radToDegLL
     , fromDMS
+    , opposite
     ) where
 
 import GHC.Generics (Generic)
 import Data.Aeson (FromJSON(..), ToJSON(..))
-import Data.UnitsOfMeasure (KnownUnit, Unpack, u, convert)
+import Data.UnitsOfMeasure ((+:), KnownUnit, Unpack, u, convert, negate')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Data.UnitsOfMeasure.Convert (Convertible)
 import Test.SmallCheck.Series as SC (Serial(..), cons2, decDepth)
@@ -28,6 +29,7 @@ import Test.Tasty.QuickCheck as QC (Arbitrary(..), arbitraryBoundedRandom)
 
 import Flight.Units ()
 import Flight.Units.DegMinSec (DMS(..), toDeg)
+import Flight.Units.Angle (Angle(..))
 import Flight.LatLng.Alt (QAlt, Alt(..))
 import Flight.LatLng.Lat (QLat, Lat(..))
 import Flight.LatLng.Lng (QLng, Lng(..))
@@ -50,6 +52,17 @@ type AzimuthRev a
 newtype LatLng a u = LatLng (QLat a u, QLng a u) deriving (Eq, Ord, Generic)
 deriving anyclass instance (ToJSON (QLat a u), ToJSON (QLng a u)) => ToJSON (LatLng a u)
 deriving anyclass instance (FromJSON (QLat a u), FromJSON (QLng a u)) => FromJSON (LatLng a u)
+
+-- | A point on the opposite side of the Earth.
+opposite
+    :: (Real a, Fractional a, Angle (Quantity a [u| rad |]))
+    => LatLng a [u| rad |]
+    -> LatLng a [u| rad |]
+opposite (LatLng (Lat lat, Lng lng)) =
+    LatLng (Lat lat', Lng lng')
+    where
+        lat' = negate' lat
+        lng' = normalize $ lng +: (convert [u| 180 deg |])
 
 fromDMS :: (DMS, DMS) -> LatLng Double [u| rad |]
 fromDMS (lat, lng) =
