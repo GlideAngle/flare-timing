@@ -14,6 +14,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
 import Flight.Units.DegMinSec (fromQ)
+import Flight.Units.Angle (Angle(..))
 import qualified Flight.LatLng.Raw as Raw (RawLat(..), RawLng(..))
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..), fromDMS)
 import Flight.Zone.Radius (Radius(..), QRadius)
@@ -85,13 +86,26 @@ data Zone a where
 
 deriving instance Eq (Zone a)
 deriving instance Ord (Zone a)
-deriving instance
-    ( Show (QIncline a [u| rad |])
-    , Show (QBearing a [u| rad |])
-    , Show (QRadius a [u| m |])
-    , Show (LatLng a [u| rad |])
-    )
-    => Show (Zone a)
+
+showLL :: Real a => LatLng a [u| rad |] -> String
+showLL (LatLng (Lat lat, Lng lng)) =
+    show (lat', lng')
+    where
+        lat' :: Quantity Double [u| deg |]
+        lat' = fromQuantity . fromRational' . toRational' $ lat
+
+        lng' :: Quantity Double [u| deg |]
+        lng' = fromQuantity . fromRational' . toRational' $ lng
+
+
+instance Real a => Show (Zone a) where
+    show (Point x) = "Point" ++ showLL x
+    show (Vector _ x) = "Vector" ++ showLL x
+    show (Cylinder _ x) = "Cylinder" ++ showLL x
+    show (Conical _ _ x) = "Conical" ++ showLL x
+    show (Line _ x) = "Line" ++ showLL x
+    show (Circle _ x) = "Circle" ++ showLL x
+    show (SemiCircle _ x) = "SemiCircle" ++ showLL x
 
 instance (Ord a, Num a) => HasArea (Zone a) where
     hasArea (Point _) = False
