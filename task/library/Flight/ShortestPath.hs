@@ -133,7 +133,7 @@ distanceUnchecked
     -> (Zs (PathCost a), [LatLng a [u| rad |]])
 distanceUnchecked samples n span distancePointToPoint cs builder cut tolerance xs =
     first Zs $
-    case dist' of
+    case dist of
         Nothing -> (PathCost pointwise, edgesSum')
         Just d@(PathCost pcd) ->
             if pcd < pointwise
@@ -152,25 +152,25 @@ distanceUnchecked samples n span distancePointToPoint cs builder cut tolerance x
         -- end for the shortest path. Once the shortest path is found
         -- I then need to undo the padding.
         pass1@(_, ys) = f $ pad xs
-        (_, zs) = unpad span distancePointToPoint ys
+        upad1@(_, zs) = unpad span distancePointToPoint ys
 
         -- NOTE: I need another pass for when the last zone is a line so that
         -- I can reuse the penultimate point on the optimal path. This way
         -- I won't always be selecting the center of the line zone as the last
         -- point.
-        (_, ys') =
-            let pass1' = f . pad $ Point . point <$> ys in
+        (dist, zs') =
             case reverse xs of
                 (xN@(Line _ _) : _) ->
                     let zPts = Point . point <$> zs in
                     case (zPts, reverse zPts) of
                         (v : _, _ : wPts@(w : _)) ->
-                            let xs' = v : (reverse (w : xN : wPts)) in
-                            f $ pad xs'
-                        _ -> pass1'
-                _ -> pass1'
+                            let xs' = v : (reverse (w : xN : wPts))
+                                g = unpad span distancePointToPoint
+                                (_, ys') = f $ pad xs'
+                            in g . snd . g $ ys'
 
-        (dist', zs') = let g = unpad span distancePointToPoint in g . snd . g $ ys'
+                        _ -> upad1
+                _ -> upad1
 
 distance
     :: (Real a, Fractional a)
