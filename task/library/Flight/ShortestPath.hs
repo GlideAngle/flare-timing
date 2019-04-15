@@ -162,7 +162,7 @@ distanceUnchecked samples n span distancePointToPoint cs builder cut tolerance x
                     let zPts = Point . point <$> zs in
                     case (zPts, reverse zPts) of
                         (v : _, _ : wPts@(w : _)) ->
-                            let xs' = v : reverse wPts ++ [xN, w] in
+                            let xs' = v : (reverse (w : xN : wPts)) in
                             loop builder cs sp cut n Nothing Nothing $ pad xs'
                         _ -> pass1
                 _ -> pass1
