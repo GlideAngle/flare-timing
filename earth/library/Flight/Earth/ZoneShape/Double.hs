@@ -28,11 +28,7 @@ onLine
 onLine _ Nothing xs = xs
 onLine mkPt (Just theta) (xs, cs) =
     unzip $
-    [
-        let delta = angleDiff b theta in
-        if delta < deg90 || delta > deg270
-           then (ontoLine mkPt theta delta x, c)
-           else (x, c)
+    [ let delta = angleDiff b theta in (ontoLine mkPt theta delta x, c)
     | x@ZonePoint{radial = Bearing b} <- xs
     | c <- cs
     ]
