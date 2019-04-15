@@ -146,10 +146,12 @@ distanceUnchecked samples n span distancePointToPoint cs builder cut tolerance x
         edgesSum' = center <$> xs
         sp = SampleParams{spSamples = samples, spTolerance = tolerance}
 
+        f = loop builder cs sp cut n Nothing Nothing
+
         -- NOTE: I need to add a zone at each end to define the start and
         -- end for the shortest path. Once the shortest path is found
         -- I then need to undo the padding.
-        pass1@(_, ys) = loop builder cs sp cut n Nothing Nothing $ pad xs
+        pass1@(_, ys) = f $ pad xs
         (_, zs) = unpad span distancePointToPoint ys
 
         -- NOTE: I need another pass for when the last zone is a line so that
@@ -157,17 +159,18 @@ distanceUnchecked samples n span distancePointToPoint cs builder cut tolerance x
         -- I won't always be selecting the center of the line zone as the last
         -- point.
         (_, ys') =
+            let pass1' = f . pad $ Point . point <$> ys in
             case reverse xs of
                 (xN@(Line _ _) : _) ->
                     let zPts = Point . point <$> zs in
                     case (zPts, reverse zPts) of
                         (v : _, _ : wPts@(w : _)) ->
                             let xs' = v : (reverse (w : xN : wPts)) in
-                            loop builder cs sp cut n Nothing Nothing $ pad xs'
-                        _ -> pass1
-                _ -> pass1
+                            f $ pad xs'
+                        _ -> pass1'
+                _ -> pass1'
 
-        (dist', zs') = let f = unpad span distancePointToPoint in f . snd . f $ ys'
+        (dist', zs') = let g = unpad span distancePointToPoint in g . snd . g $ ys'
 
 distance
     :: (Real a, Fractional a)
