@@ -144,7 +144,7 @@ vincentyDirect
 
         a² = a * a
         b² = b * b
-        u² = cos²α * (a² - b²) / b² 
+        u² = cos²α * (a² - b²) / b²
 
 circum
     :: (Real a, Fractional a, RealFloat a)
