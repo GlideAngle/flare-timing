@@ -23,7 +23,7 @@ import FlareTiming.Comms
     ( getTaskScore, getTaskNormScore
     , getTaskReach, getTaskEffort
     , getTaskArrival, getTaskLead, getTaskTime
-    , getTaskValidityWorking, getTaskLengthSphericalEdge
+    , getTaskValidityWorking, getTaskLengthSphericalEdge, getTaskLengthEllipsoidEdge
     , getTaskPilotDnf, getTaskPilotNyp, getTaskPilotDfNoTrack
     , getTaskPilotTrack
     , getTaskPilotTrackFlyingSection
@@ -178,9 +178,10 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
     nyp <- holdDyn (Nyp []) =<< getTaskPilotNyp ix pb
     dnf <- holdDyn (Dnf []) =<< getTaskPilotDnf ix pb
     dfNt <- holdDyn (DfNoTrack []) =<< getTaskPilotDfNoTrack ix pb
-    routes <- holdDyn emptyRoute =<< getTaskLengthSphericalEdge ix pb
-    let ln = taskLength <$> routes
-    let legs = taskLegs <$> routes
+    sphericalRoutes <- holdDyn emptyRoute =<< getTaskLengthSphericalEdge ix pb
+    ellipsoidRoutes <- holdDyn emptyRoute =<< getTaskLengthEllipsoidEdge ix pb
+    let ln = taskLength <$> sphericalRoutes
+    let legs = taskLegs <$> sphericalRoutes
 
     let ps = (fmap . fmap) points alloc
     let tp = (fmap . fmap) taskPoints alloc
@@ -196,7 +197,7 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
                 TaskTabTask -> taskTable
 
                 TaskTabMap -> mdo
-                    p <- viewMap utc ix task routes pt
+                    p <- viewMap utc ix task sphericalRoutes ellipsoidRoutes pt
                     p' <- holdDyn nullPilot p
 
                     tfs <- getTaskPilotTrackFlyingSection ix p

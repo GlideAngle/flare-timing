@@ -82,14 +82,27 @@ foreign import javascript unsafe
 
 foreign import javascript unsafe
     "L.control.layers(\
-    \{ 'Course line (point to point)': $3\
-    \, 'Course line (shortest route)': $4\
-    \, 'Speed section (course line subset)': $5\
-    \, 'Speed section (task waypoints subset)': $6\
+    \{ 'Course line (spherical: point to point)': $3\
+    \, 'Course line (spherical: shortest route)': $4\
+    \, 'Speed section (spherical: course line subset)': $5\
+    \, 'Speed section (spherical: task waypoints subset)': $6\
+    \, 'Course line (ellipsoid: shortest route)': $7\
+    \, 'Speed section (ellipsoid: course line subset)': $8\
+    \, 'Speed section (ellipsoid: task waypoints subset)': $9\
     \}\
     \, { 'Map': $1\
     \}).addTo($2)"
-    layersControl_ :: JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> IO JSVal
+    layersControl_
+        :: JSVal
+        -> JSVal
+        -> JSVal
+        -> JSVal
+        -> JSVal
+        -> JSVal
+        -> JSVal
+        -> JSVal
+        -> JSVal
+        -> IO JSVal
 
 foreign import javascript unsafe
     "$1.addOverlay($2, $3)"
@@ -176,19 +189,28 @@ layersControl
     :: TileLayer
     -> Map
     -> LayerGroup -- ^ Point to point course line
-    -> LayerGroup -- ^ Optimal route of the course
-    -> LayerGroup -- ^ Subset of the optimal route's course line
-    -> LayerGroup -- ^ Optimal route through the waypoints of the speed section
+    -> LayerGroup -- ^ Optimal spherical route of the course
+    -> LayerGroup -- ^ Subset of the optimal spherical route's course line
+    -> LayerGroup -- ^ Optimal spherical route through the waypoints of the speed section
+    -> LayerGroup -- ^ Optimal ellipsoid route of the course
+    -> LayerGroup -- ^ Subset of the optimal ellipsoid route's course line
+    -> LayerGroup -- ^ Optimal ellipsoid route through the waypoints of the speed section
     -> IO Layers
-layersControl x lmap course taskRoute taskRouteSubset speedRoute = do
+layersControl
+    x lmap course
+    taskSphericalRoute taskSphericalRouteSubset speedSphericalRoute
+    taskEllipsoidRoute taskEllipsoidRouteSubset speedEllipsoidRoute = do
     layers <-
         layersControl_
             (unTileLayer x)
             (unMap lmap)
             (unLayerGroup course)
-            (unLayerGroup taskRoute)
-            (unLayerGroup taskRouteSubset)
-            (unLayerGroup speedRoute)
+            (unLayerGroup taskSphericalRoute)
+            (unLayerGroup taskSphericalRouteSubset)
+            (unLayerGroup speedSphericalRoute)
+            (unLayerGroup taskEllipsoidRoute)
+            (unLayerGroup taskEllipsoidRouteSubset)
+            (unLayerGroup speedEllipsoidRoute)
 
     return $ Layers layers
 
