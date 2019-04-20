@@ -12,6 +12,7 @@ module WireTypes.Route
     , SpeedRoute(..)
     , taskLength
     , taskLegs
+    , planarRoute
     , optimalTaskRoute
     , optimalTaskRouteSubset
     , optimalSpeedRoute
@@ -109,6 +110,9 @@ taskLegs OptimalRoute{..} =
 newtype TaskRoute = TaskRoute [RawLatLng]
 newtype TaskRouteSubset = TaskRouteSubset [RawLatLng]
 newtype SpeedRoute = SpeedRoute [RawLatLng]
+
+planarRoute :: Maybe TrackLine -> TaskRoute
+planarRoute taskRoute = TaskRoute $ maybe [] waypoints taskRoute
 
 optimalTaskRoute :: OptimalRoute (Maybe TrackLine) -> TaskRoute
 optimalTaskRoute OptimalRoute{..} = TaskRoute $ maybe [] waypoints taskRoute

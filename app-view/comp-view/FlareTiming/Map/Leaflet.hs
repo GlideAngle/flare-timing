@@ -82,18 +82,20 @@ foreign import javascript unsafe
 
 foreign import javascript unsafe
     "L.control.layers(\
-    \{ 'Course line (spherical: point to point)': $3\
-    \, 'Course line (spherical: shortest route)': $4\
-    \, 'Speed section (spherical: course line subset)': $5\
-    \, 'Speed section (spherical: task waypoints subset)': $6\
-    \, 'Course line (ellipsoid: shortest route)': $7\
-    \, 'Speed section (ellipsoid: course line subset)': $8\
-    \, 'Speed section (ellipsoid: task waypoints subset)': $9\
+    \{ 'Spherical: Course line (point to point)': $3\
+    \, 'Spherical: Course line (shortest route)': $4\
+    \, 'Spherical: Speed section (course line subset)': $5\
+    \, 'Spherical: Speed section (task waypoints subset)': $6\
+    \, 'Ellipsoid: Course line (shortest route)': $7\
+    \, 'Ellipsoid: Speed section (course line subset)': $8\
+    \, 'Ellipsoid: Speed section (task waypoints subset)': $9\
+    \, 'Planar: Course line (shortest route)': $10\
     \}\
     \, { 'Map': $1\
     \}).addTo($2)"
     layersControl_
         :: JSVal
+        -> JSVal
         -> JSVal
         -> JSVal
         -> JSVal
@@ -195,11 +197,13 @@ layersControl
     -> LayerGroup -- ^ Optimal ellipsoid route of the course
     -> LayerGroup -- ^ Subset of the optimal ellipsoid route's course line
     -> LayerGroup -- ^ Optimal ellipsoid route through the waypoints of the speed section
+    -> LayerGroup -- ^ Planar route of the course
     -> IO Layers
 layersControl
     x lmap course
     taskSphericalRoute taskSphericalRouteSubset speedSphericalRoute
-    taskEllipsoidRoute taskEllipsoidRouteSubset speedEllipsoidRoute = do
+    taskEllipsoidRoute taskEllipsoidRouteSubset speedEllipsoidRoute
+    taskPlanarRoute = do
     layers <-
         layersControl_
             (unTileLayer x)
@@ -211,6 +215,7 @@ layersControl
             (unLayerGroup taskEllipsoidRoute)
             (unLayerGroup taskEllipsoidRouteSubset)
             (unLayerGroup speedEllipsoidRoute)
+            (unLayerGroup taskPlanarRoute)
 
     return $ Layers layers
 
