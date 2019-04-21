@@ -7,7 +7,6 @@ module Flight.Earth.Ellipsoid.Cylinder.Double
 import Data.UnitsOfMeasure ((+:), (-:), u, unQuantity)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import Flight.Units.Angle (Angle(..))
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.Zone
     ( Zone(..)
@@ -21,7 +20,7 @@ import Flight.Zone
     , realToFracLatLng
     )
 import Flight.Zone.Path (distancePointToPoint)
-import Flight.Earth.Ellipsoid.PointToPoint.Double (distanceVincenty, azimuthFwd)
+import Flight.Earth.Ellipsoid.PointToPoint.Double (distanceVincenty)
 import Flight.Distance (TaskDistance(..), PathDistance(..))
 import Flight.Zone.Cylinder
     ( TrueCourse(..)
@@ -205,7 +204,9 @@ circumSample SampleParams{..} (ArcSweep (Bearing (MkQuantity bearing))) arc0 zon
         cs =
                 let lhs = [mid - (fromInteger n) * step | n <- [1 .. half]]
                     rhs = [mid + (fromInteger n) * step | n <- [1 .. half]]
-                in lhs ++ (mid : rhs)
+                -- NOTE: The reverse of the LHS is not needed for correct
+                -- operation but it helps when tracing.
+                in reverse lhs ++ (mid : rhs)
 
         (θ, xs) =
             (fmap . fmap) (TrueCourse . MkQuantity) $
@@ -215,21 +216,19 @@ circumSample SampleParams{..} (ArcSweep (Bearing (MkQuantity bearing))) arc0 zon
                 (Just _, Vector _ _) -> (Nothing, cs)
                 (Just _, Cylinder _ _) -> (Nothing, cs)
                 (Just _, Conical _ _ _) -> (Nothing, cs)
-                (Just m, Line _ _ x) ->
+                (Just _, Line Nothing _ _) -> (Nothing, cs)
+                (Just _, Line (Just (Bearing az)) _ _) ->
                     -- NOTE: For a line we don't want to miss a likely local
                     -- minimum where the line intersects the circle so let's
                     -- add those true courses explicitly now at 90° and 270°
                     -- from the azimuth.
-                    case normalize <$> azimuthFwd wgs84 x (center m) of
-                        Nothing -> (Nothing, cs)
-                        az@(Just q) ->
-                            (az,) $
-                            if bearing < 2 * pi
-                               then cs
-                               else
-                                    unQuantity (q +: deg90)
-                                    : unQuantity (q -: deg90)
-                                    : cs
+                    (Just az,) $
+                    if bearing < 2 * pi
+                       then cs
+                       else
+                            unQuantity (az +: deg90)
+                            : unQuantity (az -: deg90)
+                            : cs
 
                 (Just _, Circle _ _) -> (Nothing, cs)
                 (Just _, SemiCircle _ _ _) -> (Nothing, cs)
@@ -248,15 +247,16 @@ circumSample SampleParams{..} (ArcSweep (Bearing (MkQuantity bearing))) arc0 zon
         ys :: ([ZonePoint Double], [TrueCourse Double])
         ys = unzip $ getClose' 10 (Radius (MkQuantity 0)) (circumR r) <$> xs
 
-getClose :: Zone Double
-         -> LatLng Double [u| rad |] -- ^ The center point.
-         -> Double -- ^ The limit radius.
-         -> Tolerance Double
-         -> Int -- ^ How many tries.
-         -> QRadius Double [u| m |] -- ^ How far from the center.
-         -> (TrueCourse Double -> LatLng Double [u| rad |]) -- ^ A point from the origin on this radial
-         -> TrueCourse Double -- ^ The true course for this radial.
-         -> (ZonePoint Double, TrueCourse Double)
+getClose
+    :: Zone Double
+    -> LatLng Double [u| rad |] -- ^ The center point.
+    -> Double -- ^ The limit radius.
+    -> Tolerance Double
+    -> Int -- ^ How many tries.
+    -> QRadius Double [u| m |] -- ^ How far from the center.
+    -> (TrueCourse Double -> LatLng Double [u| rad |]) -- ^ A point from the origin on this radial
+    -> TrueCourse Double -- ^ The true course for this radial.
+    -> (ZonePoint Double, TrueCourse Double)
 getClose zone' ptCenter limitRadius spTolerance trys yr@(Radius (MkQuantity offset)) f x@(TrueCourse tc)
     | trys <= 0 = (zp', x)
     | unTolerance spTolerance <= 0 = (zp', x)

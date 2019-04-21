@@ -167,16 +167,17 @@ circumSample SampleParams{..} (ArcSweep (Bearing (MkQuantity bearing))) arc0 zon
 
         ys = (fromRationalZonePoint <$> fst ys', snd ys')
 
-getClose :: Epsilon
-         -> Zone Rational
-         -> LatLng Rational [u| rad |] -- ^ The center point.
-         -> Rational -- ^ The limit radius.
-         -> Tolerance Rational
-         -> Int -- ^ How many tries.
-         -> QRadius Rational [u| m |] -- ^ How far from the center.
-         -> (TrueCourse Rational -> LatLng Rational [u| rad |]) -- ^ A point from the origin on this radial
-         -> TrueCourse Rational -- ^ The true course for this radial.
-         -> (ZonePoint Rational, TrueCourse Rational)
+getClose
+    :: Epsilon
+    -> Zone Rational
+    -> LatLng Rational [u| rad |] -- ^ The center point.
+    -> Rational -- ^ The limit radius.
+    -> Tolerance Rational
+    -> Int -- ^ How many tries.
+    -> QRadius Rational [u| m |] -- ^ How far from the center.
+    -> (TrueCourse Rational -> LatLng Rational [u| rad |]) -- ^ A point from the origin on this radial
+    -> TrueCourse Rational -- ^ The true course for this radial.
+    -> (ZonePoint Rational, TrueCourse Rational)
 getClose epsilon zone' ptCenter limitRadius spTolerance trys yr@(Radius (MkQuantity offset)) f x@(TrueCourse tc)
     | trys <= 0 = (zp', x)
     | unTolerance spTolerance <= 0 = (zp', x)

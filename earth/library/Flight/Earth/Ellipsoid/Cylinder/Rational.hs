@@ -5,7 +5,7 @@ module Flight.Earth.Ellipsoid.Cylinder.Rational
     ) where
 
 import qualified Data.Number.FixedFunctions as F
-import Data.UnitsOfMeasure (u, convert, fromRational', toRational')
+import Data.UnitsOfMeasure ((+:), (-:), u, convert, unQuantity, fromRational', toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
@@ -24,7 +24,7 @@ import Flight.Zone
     , toRationalLatLng
     )
 import Flight.Zone.Path (distancePointToPoint)
-import Flight.Earth.Ellipsoid.PointToPoint.Rational (distanceVincenty, azimuthFwd)
+import Flight.Earth.Ellipsoid.PointToPoint.Rational (distanceVincenty)
 import Flight.Distance (TaskDistance(..), PathDistance(..))
 import Flight.Zone.Cylinder
     ( TrueCourse(..)
@@ -47,7 +47,7 @@ import qualified Flight.Earth.Ellipsoid.Cylinder.Double as Dbl (vincentyDirect)
 import Flight.Earth.Geodesy (DirectProblem(..), DirectSolution(..))
 import Flight.Earth.Ellipsoid.Cylinder.Double (cos2)
 import qualified Flight.Earth.Math as F (atan2')
-import Flight.Earth.ZoneShape.Rational (PointOnRadial, onLine)
+import Flight.Earth.ZoneShape.Rational (PointOnRadial, onLine, deg90)
 
 iterateVincenty
     :: Epsilon
@@ -293,8 +293,7 @@ circumSample SampleParams{..} (ArcSweep (Bearing (MkQuantity bearing))) arc0 zon
             (Just _, Vector _ _) -> ys
             (Just _, Cylinder _ _) -> ys
             (Just _, Conical _ _ _) -> ys
-            (Just m, Line _ _ x) ->
-                let y = center m in onLine defEps mkLinePt (azimuthFwd defEps wgs84 x y) ys
+            (Just _, Line _ _ _) -> onLine defEps mkLinePt θ ys
             (Just _, Circle _ _) -> ys
             (Just _, SemiCircle _ _ _) -> ys
     where
@@ -310,12 +309,38 @@ circumSample SampleParams{..} (ArcSweep (Bearing (MkQuantity bearing))) arc0 zon
               Nothing -> zoneN
               Just ZonePoint{..} -> sourceZone
 
-        xs :: [TrueCourse Rational]
-        xs =
-            TrueCourse . MkQuantity <$>
+        cs :: [Rational]
+        cs =
                 let lhs = [mid - (fromInteger n) * step | n <- [1 .. half]]
                     rhs = [mid + (fromInteger n) * step | n <- [1 .. half]]
-                in lhs ++ (mid : rhs)
+                -- NOTE: The reverse of the LHS is not needed for correct
+                -- operation but it helps when tracing.
+                in reverse lhs ++ (mid : rhs)
+
+        (θ, xs) =
+            (fmap . fmap) (TrueCourse . MkQuantity) $
+            case (zoneM, zoneN) of
+                (Nothing, _) -> (Nothing, cs)
+                (Just _, Point _) -> (Nothing, cs)
+                (Just _, Vector _ _) -> (Nothing, cs)
+                (Just _, Cylinder _ _) -> (Nothing, cs)
+                (Just _, Conical _ _ _) -> (Nothing, cs)
+                (Just _, Line Nothing _ _) -> (Nothing, cs)
+                (Just _, Line (Just (Bearing az)) _ _) ->
+                    -- NOTE: For a line we don't want to miss a likely local
+                    -- minimum where the line intersects the circle so let's
+                    -- add those true courses explicitly now at 90° and 270°
+                    -- from the azimuth.
+                    (Just az,) $
+                    if bearing < 2 * F.pi eps
+                       then cs
+                       else
+                            unQuantity (az +: deg90)
+                            : unQuantity (az -: deg90)
+                            : cs
+
+                (Just _, Circle _ _) -> (Nothing, cs)
+                (Just _, SemiCircle _ _ _) -> (Nothing, cs)
 
         (Radius (MkQuantity limitRadius)) = radius zone'
         limitRadius' = toRational limitRadius
@@ -327,24 +352,24 @@ circumSample SampleParams{..} (ArcSweep (Bearing (MkQuantity bearing))) arc0 zon
         getClose' = getClose defEps zone' ptCenter limitRadius' spTolerance
 
         mkLinePt :: PointOnRadial
-        mkLinePt _ (Bearing b) rLine =
-            (circumR rLine) (TrueCourse b)
+        mkLinePt _ (Bearing b) rLine = circumR rLine $ TrueCourse b
 
         ys' :: ([ZonePoint Rational], [TrueCourse Rational])
         ys' = unzip $ getClose' 10 (Radius (MkQuantity 0)) (circumR r) <$> xs
 
         ys = (fromRationalZonePoint <$> fst ys', snd ys')
 
-getClose :: Epsilon
-         -> Zone Rational
-         -> LatLng Rational [u| rad |] -- ^ The center point.
-         -> Rational -- ^ The limit radius.
-         -> Tolerance Rational
-         -> Int -- ^ How many tries.
-         -> QRadius Rational [u| m |] -- ^ How far from the center.
-         -> (TrueCourse Rational -> LatLng Rational [u| rad |]) -- ^ A point from the origin on this radial
-         -> TrueCourse Rational -- ^ The true course for this radial.
-         -> (ZonePoint Rational, TrueCourse Rational)
+getClose
+    :: Epsilon
+    -> Zone Rational
+    -> LatLng Rational [u| rad |] -- ^ The center point.
+    -> Rational -- ^ The limit radius.
+    -> Tolerance Rational
+    -> Int -- ^ How many tries.
+    -> QRadius Rational [u| m |] -- ^ How far from the center.
+    -> (TrueCourse Rational -> LatLng Rational [u| rad |]) -- ^ A point from the origin on this radial
+    -> TrueCourse Rational -- ^ The true course for this radial.
+    -> (ZonePoint Rational, TrueCourse Rational)
 getClose epsilon zone' ptCenter limitRadius spTolerance trys yr@(Radius (MkQuantity offset)) f x@(TrueCourse tc)
     | trys <= 0 = (zp', x)
     | unTolerance spTolerance <= 0 = (zp', x)
