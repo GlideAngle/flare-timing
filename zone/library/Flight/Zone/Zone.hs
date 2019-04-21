@@ -64,7 +64,9 @@ data Zone a where
     -- | A goal line perpendicular to the course line.
     Line
         :: (Eq a, Ord a)
-        => QRadius a [u| m |]
+        => Maybe (QBearing a [u| rad |])
+        -- ^ The reverse azimuth back to the center of the previous zone.
+        -> QRadius a [u| m |]
         -> LatLng a [u| rad |]
         -> Zone a
 
@@ -80,7 +82,9 @@ data Zone a where
     -- a cylinder.
     SemiCircle
         :: (Eq a, Ord a)
-        => QRadius a [u| m |]
+        => Maybe (QBearing a [u| rad |])
+        -- ^ The reverse azimuth back to the center of the previous zone.
+        -> QRadius a [u| m |]
         -> LatLng a [u| rad |]
         -> Zone a
 
@@ -103,18 +107,18 @@ instance Real a => Show (Zone a) where
     show (Vector _ x) = "Vector" ++ showLL x
     show (Cylinder _ x) = "Cylinder" ++ showLL x
     show (Conical _ _ x) = "Conical" ++ showLL x
-    show (Line _ x) = "Line" ++ showLL x
+    show (Line _ _ x) = "Line" ++ showLL x
     show (Circle _ x) = "Circle" ++ showLL x
-    show (SemiCircle _ x) = "SemiCircle" ++ showLL x
+    show (SemiCircle _ _ x) = "SemiCircle" ++ showLL x
 
 instance (Ord a, Num a) => HasArea (Zone a) where
     hasArea (Point _) = False
     hasArea (Vector _ _) = False
     hasArea (Cylinder (Radius x) _) = x > zero
     hasArea (Conical _ (Radius x) _) = x > zero
-    hasArea (Line (Radius x) _) = x > zero
+    hasArea (Line _ (Radius x) _) = x > zero
     hasArea (Circle (Radius x) _) = x > zero
-    hasArea (SemiCircle (Radius x) _) = x > zero
+    hasArea (SemiCircle _ (Radius x) _) = x > zero
 
 instance
     ( ToJSON (LatLng a [u| rad |])
@@ -145,7 +149,7 @@ instance
             , "center" .= toJSON x
             ]
         ]
-    toJSON (Line r x) = object
+    toJSON (Line _ r x) = object
         [ "line" .= object
             [ "radius" .= toJSON r
             , "center" .= toJSON x
@@ -158,7 +162,7 @@ instance
             ]
         ]
 
-    toJSON (SemiCircle r x) = object
+    toJSON (SemiCircle _ r x) = object
         [ "semicircle" .= object
             [ "radius" .= toJSON r
             , "center" .= toJSON x
@@ -199,7 +203,7 @@ instance
 
             , do
                 ln <- o .: "line"
-                Line
+                Line Nothing
                     <$> ln .: "radius"
                     <*> ln .: "center"
 
@@ -211,7 +215,7 @@ instance
 
             , do
                 sc <- o .: "semicircle"
-                SemiCircle
+                SemiCircle Nothing
                     <$> sc .: "radius"
                     <*> sc .: "center"
 
@@ -236,13 +240,13 @@ showZoneDMS (Conical (Incline i) r (LatLng (Lat x, Lng y))) =
     ++ " "
     ++ show (fromQ x, fromQ y)
 
-showZoneDMS (Line r (LatLng (Lat x, Lng y))) =
+showZoneDMS (Line _ r (LatLng (Lat x, Lng y))) =
     "Line " ++ show r ++ " " ++ show (fromQ x, fromQ y)
 
 showZoneDMS (Circle r (LatLng (Lat x, Lng y))) =
     "Circle " ++ show r ++ " " ++ show (fromQ x, fromQ y)
 
-showZoneDMS (SemiCircle r (LatLng (Lat x, Lng y))) =
+showZoneDMS (SemiCircle _ r (LatLng (Lat x, Lng y))) =
     "SemiCircle " ++ show r ++ " " ++ show (fromQ x, fromQ y)
 
 -- | The effective center point of a zone.
@@ -251,9 +255,9 @@ center (Point x) = x
 center (Vector _ x) = x
 center (Cylinder _ x) = x
 center (Conical _ _ x) = x
-center (Line _ x) = x
+center (Line _ _ x) = x
 center (Circle _ x) = x
-center (SemiCircle _ x) = x
+center (SemiCircle _ _ x) = x
 
 -- | The effective radius of a zone.
 radius :: Num a => Zone a -> QRadius a [u| m |]
@@ -261,9 +265,9 @@ radius (Point _) = Radius [u| 0m |]
 radius (Vector _ _) = Radius [u| 0m |]
 radius (Cylinder r _) = r
 radius (Conical _ r _) = r
-radius (Line r _) = r
+radius (Line _ r _) = r
 radius (Circle r _) = r
-radius (SemiCircle r _) = r
+radius (SemiCircle _ r _) = r
 
 type RawZoneToZone =
     QRadius Double [u| m |] -> LatLng Double [u| rad |] -> Zone Double

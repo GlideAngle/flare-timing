@@ -41,11 +41,11 @@ distanceEdgeToEdge span distancePointToPoint cseg cs =
         builder :: GraphBuilder _
         builder = buildGraph connector
 
--- | NOTE: The shortest path may traverse a cylinder so I include
--- edges within a cylinder as well as edges to the next cylinder.
 connectNodes :: (Eq a, Ord a) => CostSegment a -> NodeConnector a
 connectNodes cost xs ys =
-    [ f x1 x2 | x1 <- xs, x2 <- xs ]
+    -- NOTE: The shortest path may traverse a cylinder so I include edges
+    -- within a cylinder as well as edges to the next cylinder.
+    [ f x1 x2 | x1 <- xs, x2 <- xs, x1 /= x2 ]
     ++
     [ f x y | x <- xs, y <- ys ]
     where

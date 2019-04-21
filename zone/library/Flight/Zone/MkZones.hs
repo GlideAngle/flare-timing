@@ -287,6 +287,6 @@ unkind (CutCone _ r x _) = Z.Cylinder r x
 unkind (CutSemiCone _ r x _) = Z.Cylinder r x
 unkind (CutCylinder _ r x _) = Z.Cylinder r x
 unkind (CutSemiCylinder _ r x _) = Z.Cylinder r x
-unkind (Line r x) = Z.Line r x
+unkind (Line r x) = Z.Line Nothing r x
 unkind (Circle r x) = Z.Cylinder r x
 unkind (SemiCircle r x) = Z.Cylinder r x

@@ -147,12 +147,13 @@ distanceUnchecked samples n span distancePointToPoint cs builder cut tolerance x
         sp = SampleParams{spSamples = samples, spTolerance = tolerance}
 
         f = loop builder cs sp cut n Nothing Nothing
+        g = unpad span distancePointToPoint
 
         -- NOTE: I need to add a zone at each end to define the start and
         -- end for the shortest path. Once the shortest path is found
         -- I then need to undo the padding.
-        pass1@(_, ys) = f $ pad xs
-        upad1@(_, zs) = unpad span distancePointToPoint ys
+        (_, ys) = f $ pad xs
+        pass1@(_, zs) = g ys
 
         -- NOTE: I need another pass for when the last zone is a line so that
         -- I can reuse the penultimate point on the optimal path. This way
@@ -160,17 +161,18 @@ distanceUnchecked samples n span distancePointToPoint cs builder cut tolerance x
         -- point.
         (dist, zs') =
             case reverse xs of
-                (xN@(Line _ _) : _) ->
+                ((Line Nothing _ _) : _) -> error "Need a line with azimuth or normal set."
+                (xN@(Line (Just _) _ _) : _) ->
                     let zPts = Point . point <$> zs in
                     case (zPts, reverse zPts) of
-                        (v : _, _ : wPts@(w : _)) ->
-                            let xs' = v : (reverse (w : xN : wPts))
-                                g = unpad span distancePointToPoint
-                                (_, ys') = f $ pad xs'
-                            in g . snd . g $ ys'
+                        (v : _, _ : ws@(w : _)) ->
+                            let vs = v : (reverse (w : xN : ws))
+                                (_, ys') = f $ pad vs
+                            in
+                                g . snd . g $ ys'
 
-                        _ -> upad1
-                _ -> upad1
+                        _ -> pass1
+                _ -> pass1
 
 distance
     :: (Real a, Fractional a)

@@ -1,4 +1,6 @@
-module Flight.Earth.ZoneShape.Double (PointOnRadial, onLine) where
+{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
+
+module Flight.Earth.ZoneShape.Double (PointOnRadial, onLine, deg90, deg270) where
 
 import Data.UnitsOfMeasure
     ((*:), (+:), (-:), u, fromRational', toRational')
@@ -93,28 +95,30 @@ ontoLine
     -> Quantity Double [u| rad |]
     -> ZonePoint Double
     -> ZonePoint Double
-ontoLine mkPt theta delta x@ZonePoint{sourceZone = z}
-    | delta < deg90 =
+ontoLine mkPt θ δ x@ZonePoint{sourceZone = z}
+    -- NOTE: When δ < 90 then the candidate intercept with the circle is to the
+    -- right of the trackline between zone centers.
+    | δ <= deg90 =
         let d = sin angle
-            b' = theta +: deg90
+            b = θ +: deg90
             r' = MkQuantity $ d * r
-            yPt = mkPt o (Bearing b') (Radius r')
         in
-            x{point = yPt}
+            x{point = mkPt o (Bearing b) (Radius r')}
 
-    | delta > deg270 =
+    -- NOTE: When δ > 270 then the candidate intercept with the circle is to
+    -- the left of the trackline between zone centers.
+    | δ >= deg270 =
         let d = negate $ sin angle
-            b' = theta -: deg90
+            b = θ -: deg90
             r' = MkQuantity $ d * r
-            yPt = mkPt o (Bearing b') (Radius r')
         in
-            x{point = yPt}
+            x{point = mkPt o (Bearing b) (Radius r')}
 
     | otherwise = x
     where
         o = center z
         Radius (MkQuantity r) = radius z
-        MkQuantity angle = delta
+        (MkQuantity angle) = δ
 
 -- $setup
 -- >>> :set -XTemplateHaskell

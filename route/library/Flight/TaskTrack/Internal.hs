@@ -13,7 +13,7 @@ module Flight.TaskTrack.Internal
     ) where
 
 import Prelude hiding (span)
-import Data.UnitsOfMeasure ((+:), u, convert, fromRational', toRational')
+import Data.UnitsOfMeasure ((+:), u, convert, fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import qualified UTMRef as HC (UTMRef(..))
 
@@ -21,8 +21,7 @@ import Flight.Units ()
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.LatLng.Raw (RawLat(..), RawLng(..), RawLatLng(..))
 import Data.Ratio.Rounding (dpRound)
-import Flight.Zone (Zone(..), QRadius, Radius(..), fromRationalZone, rawToLatLng)
-import Flight.Zone.Raw (RawZone(..))
+import Flight.Zone (Zone(..), fromRationalZone, rawToLatLng)
 import Flight.Zone.Cylinder (Tolerance(..))
 import Flight.Distance
     (QTaskDistance, TaskDistance(..), PathDistance(..), SpanLatLng)
@@ -32,7 +31,7 @@ import Flight.Task (DistancePointToPoint)
 fromR :: QTaskDistance Rational [u| m |] -> QTaskDistance Double [u| m |]
 fromR (TaskDistance d) = TaskDistance . fromRational' $ d
 
-mm30 :: Num a => Tolerance a 
+mm30 :: Num a => Tolerance a
 mm30 = Tolerance 30
 
 roundEastNorth :: Integer -> EastingNorthing -> EastingNorthing

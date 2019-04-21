@@ -7,6 +7,7 @@ import Control.Monad (mapM_)
 import System.FilePath (takeFileName)
 
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
+import Flight.Units.Angle (Angle(..))
 import Flight.Comp
     ( FileType(CompInput)
     , CompSettings(tasks)
@@ -19,6 +20,8 @@ import Flight.Comp
 import Flight.TaskTrack.Double (taskTracks)
 import Flight.Scribe (readComp, writeRoute)
 import Flight.Zone.MkZones (unkindZones)
+import Flight.Zone (Zone(..), Bearing(..), center)
+import Flight.Earth.Sphere.PointToPoint.Double (azimuthFwd)
 import TaskLengthOptions (CmdOptions(..), mkOptions)
 
 main :: IO ()
@@ -50,9 +53,25 @@ go CmdOptions{..} compFile@(CompInputFile compPath) = do
     where
         f compInput = do
             let ixs = speedSection <$> tasks compInput
-            let zss = unkindZones . zones <$> tasks compInput
+            let zss = unlineZones . unkindZones . zones <$> tasks compInput
             let includeTask = if null task then const True else flip elem task
 
             writeRoute
                 (compToTaskLength compFile)
                 (taskTracks noTaskWaypoints includeTask measure ixs zss)
+
+-- | Make sure all Line and SemiCircle zones have their normals fixed.
+unlineZones :: [Zone Double] -> [Zone Double]
+unlineZones zs =
+    -- WARNING: Assume for now that lines and semicircles are only at goal.
+    -- TODO: Handle lines and semicircles at the end of the speed section.
+    case reverse zs of
+        (Line Nothing r o) : xM : xs ->
+            let az = Bearing . normalize <$> azimuthFwd o (center xM) in
+            reverse $ (Line az r o) : xM : xs
+
+        (SemiCircle Nothing r o) : xM : xs ->
+            let az = Bearing . normalize <$> azimuthFwd o (center xM) in
+            reverse $ (SemiCircle az r o) : xM : xs
+
+        _ -> zs

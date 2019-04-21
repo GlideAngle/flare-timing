@@ -1,6 +1,6 @@
 module Flight.Earth.Sphere.Cylinder.Double (circumSample) where
 
-import Data.UnitsOfMeasure (u)
+import Data.UnitsOfMeasure ((+:), (-:), u, unQuantity)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
@@ -15,7 +15,7 @@ import Flight.Zone
     , realToFracZone
     )
 import Flight.Zone.Path (distancePointToPoint)
-import Flight.Earth.Sphere.PointToPoint.Double (distanceHaversine, azimuthFwd)
+import Flight.Earth.Sphere.PointToPoint.Double (distanceHaversine)
 import Flight.Distance (TaskDistance(..), PathDistance(..))
 import Flight.Zone.Cylinder
     ( TrueCourse(..)
@@ -30,7 +30,7 @@ import Flight.Zone.Cylinder
     , sourceZone
     )
 import Flight.Earth.Sphere (earthRadius)
-import Flight.Earth.ZoneShape.Double (PointOnRadial, onLine)
+import Flight.Earth.ZoneShape.Double (PointOnRadial, onLine, deg90)
 
 -- | Using a method from the
 -- <http://www.edwilliams.org/avform.htm#LL Aviation Formulary>
@@ -81,10 +81,9 @@ circumSample SampleParams{..} (ArcSweep (Bearing (MkQuantity bearing))) arc0 zon
             (Just _, Vector _ _) -> ys
             (Just _, Cylinder _ _) -> ys
             (Just _, Conical _ _ _) -> ys
-            (Just m, Line _ x) ->
-                let y = center m in onLine mkLinePt (azimuthFwd x y) ys
+            (Just _, Line _ _ _) -> onLine mkLinePt θ ys
             (Just _, Circle _ _) -> ys
-            (Just _, SemiCircle _ _) -> ys
+            (Just _, SemiCircle _ _ _) -> ys
     where
         nNum = unSamples spSamples
         half = nNum `div` 2
@@ -97,12 +96,38 @@ circumSample SampleParams{..} (ArcSweep (Bearing (MkQuantity bearing))) arc0 zon
               Nothing -> zoneN
               Just ZonePoint{..} -> sourceZone
 
-        xs :: [TrueCourse Double]
-        xs =
-            TrueCourse . MkQuantity <$>
+        cs :: [Double]
+        cs =
                 let lhs = [mid - (fromInteger n) * step | n <- [1 .. half]]
                     rhs = [mid + (fromInteger n) * step | n <- [1 .. half]]
-                in lhs ++ (mid : rhs)
+                -- NOTE: The reverse of the LHS is not needed for correct
+                -- operation but it helps when tracing.
+                in reverse lhs ++ (mid : rhs)
+
+        (θ, xs) =
+            (fmap . fmap) (TrueCourse . MkQuantity) $
+            case (zoneM, zoneN) of
+                (Nothing, _) -> (Nothing, cs)
+                (Just _, Point _) -> (Nothing, cs)
+                (Just _, Vector _ _) -> (Nothing, cs)
+                (Just _, Cylinder _ _) -> (Nothing, cs)
+                (Just _, Conical _ _ _) -> (Nothing, cs)
+                (Just _, Line Nothing _ _) -> (Nothing, cs)
+                (Just _, Line (Just (Bearing az)) _ _) ->
+                    -- NOTE: For a line we don't want to miss a likely local
+                    -- minimum where the line intersects the circle so let's
+                    -- add those true courses explicitly now at 90° and 270°
+                    -- from the azimuth.
+                    (Just az,) $
+                    if bearing < 2 * pi
+                       then cs
+                       else
+                            unQuantity (az +: deg90)
+                            : unQuantity (az -: deg90)
+                            : cs
+
+                (Just _, Circle _ _) -> (Nothing, cs)
+                (Just _, SemiCircle _ _ _) -> (Nothing, cs)
 
         r :: QRadius Double [u| m |]
         r@(Radius (MkQuantity limitRadius)) = radius zone'

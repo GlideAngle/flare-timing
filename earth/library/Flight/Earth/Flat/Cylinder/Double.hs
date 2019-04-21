@@ -124,10 +124,10 @@ circumSample SampleParams{..} (ArcSweep (Bearing (MkQuantity bearing))) arc0 zon
             (Just _, Vector _ _) -> ys
             (Just _, Cylinder _ _) -> ys
             (Just _, Conical _ _ _) -> ys
-            (Just m, Line _ x) ->
+            (Just m, Line _ _ x) ->
                 let y = center m in onLine mkLinePt (azimuthFwd x y) ys
             (Just _, Circle _ _) -> ys
-            (Just _, SemiCircle _ _) -> ys
+            (Just _, SemiCircle _ _ _) -> ys
     where
         nNum = unSamples spSamples
         half = nNum `div` 2

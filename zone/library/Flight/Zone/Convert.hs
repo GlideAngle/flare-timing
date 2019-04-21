@@ -11,9 +11,21 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Flight.Units (realToFrac')
 import Flight.LatLng (QLat, Lat(..), QLng, Lng(..), LatLng(..))
 import Flight.Zone.Radius (Radius(..), QRadius)
-import Flight.Zone.Bearing (Bearing(..))
+import Flight.Zone.Bearing (Bearing(..), QBearing)
 import Flight.Zone.Incline (Incline(..))
 import Flight.Zone.Zone (Zone(..))
+
+fromRationalBearing :: Fractional a => QBearing Rational u -> QBearing a u
+fromRationalBearing (Bearing r) =
+    Bearing $ fromRational' r
+
+toRationalBearing :: Real a => QBearing a u -> QBearing Rational u
+toRationalBearing (Bearing r) =
+    Bearing $ toRational' r
+
+realToFracBearing :: (Real a, Fractional b) => QBearing a u -> QBearing b u
+realToFracBearing (Bearing r) =
+    Bearing $ realToFrac' r
 
 fromRationalRadius :: Fractional a => QRadius Rational u -> QRadius a u
 fromRationalRadius (Radius r) =
@@ -81,14 +93,20 @@ fromRationalZone (Conical (Incline i) r x) =
         (fromRationalRadius r)
         (fromRationalLatLng x)
 
-fromRationalZone (Line r x) =
-    Line (fromRationalRadius r) (fromRationalLatLng x)
+fromRationalZone (Line az r x) =
+    Line
+        (fromRationalBearing <$> az)
+        (fromRationalRadius r)
+        (fromRationalLatLng x)
 
 fromRationalZone (Circle r x) =
     Circle (fromRationalRadius r) (fromRationalLatLng x)
 
-fromRationalZone (SemiCircle r x) =
-    SemiCircle (fromRationalRadius r) (fromRationalLatLng x)
+fromRationalZone (SemiCircle az r x) =
+    SemiCircle
+        (fromRationalBearing <$> az)
+        (fromRationalRadius r)
+        (fromRationalLatLng x)
 
 toRationalZone :: Real a => Zone a -> Zone Rational
 toRationalZone (Point x) =
@@ -106,14 +124,20 @@ toRationalZone (Conical (Incline i) r x) =
         (toRationalRadius r)
         (toRationalLatLng x)
 
-toRationalZone (Line r x) =
-    Line (toRationalRadius r) (toRationalLatLng x)
+toRationalZone (Line az r x) =
+    Line
+        (toRationalBearing <$> az)
+        (toRationalRadius r)
+        (toRationalLatLng x)
 
 toRationalZone (Circle r x) =
     Circle (toRationalRadius r) (toRationalLatLng x)
 
-toRationalZone (SemiCircle r x) =
-    SemiCircle (toRationalRadius r) (toRationalLatLng x)
+toRationalZone (SemiCircle az r x) =
+    SemiCircle
+        (toRationalBearing <$> az)
+        (toRationalRadius r)
+        (toRationalLatLng x)
 
 realToFracZone
     :: (Real a, Eq b, Ord b, Fractional b)
@@ -133,11 +157,17 @@ realToFracZone (Conical (Incline (MkQuantity i)) r x) =
         (realToFracRadius r)
         (realToFracLatLng x)
 
-realToFracZone (Line r x) =
-    Line (realToFracRadius r) (realToFracLatLng x)
+realToFracZone (Line az r x) =
+    Line
+        (realToFracBearing <$> az)
+        (realToFracRadius r)
+        (realToFracLatLng x)
 
 realToFracZone (Circle r x) =
     Circle (realToFracRadius r) (realToFracLatLng x)
 
-realToFracZone (SemiCircle r x) =
-    SemiCircle (realToFracRadius r) (realToFracLatLng x)
+realToFracZone (SemiCircle az r x) =
+    SemiCircle
+        (realToFracBearing <$> az)
+        (realToFracRadius r)
+        (realToFracLatLng x)

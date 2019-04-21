@@ -4,9 +4,10 @@ module Flight.Earth.Ellipsoid.Cylinder.Double
     , cos2
     ) where
 
-import Data.UnitsOfMeasure (u)
+import Data.UnitsOfMeasure ((+:), (-:), u, unQuantity)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
+import Flight.Units.Angle (Angle(..))
 import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
 import Flight.Zone
     ( Zone(..)
@@ -39,7 +40,7 @@ import Flight.Earth.Ellipsoid
     , defaultVincentyAccuracy, wgs84, flattening, polarRadius
     )
 import Flight.Earth.Geodesy (DirectProblem(..), DirectSolution(..))
-import Flight.Earth.ZoneShape.Double (PointOnRadial, onLine)
+import Flight.Earth.ZoneShape.Double (PointOnRadial, onLine, deg90)
 
 cos2 :: (Num a, Num p) => (p -> a) -> p -> p -> (a, a)
 cos2 cos' σ1 σ = (cos2σm, cos²2σm)
@@ -185,10 +186,9 @@ circumSample SampleParams{..} (ArcSweep (Bearing (MkQuantity bearing))) arc0 zon
             (Just _, Vector _ _) -> ys
             (Just _, Cylinder _ _) -> ys
             (Just _, Conical _ _ _) -> ys
-            (Just m, Line _ x) ->
-                let y = center m in onLine mkLinePt (azimuthFwd wgs84 x y) ys
+            (Just _, Line _ _ _) -> onLine mkLinePt θ ys
             (Just _, Circle _ _) -> ys
-            (Just _, SemiCircle _ _) -> ys
+            (Just _, SemiCircle _ _ _) -> ys
     where
         nNum = unSamples spSamples
         half = nNum `div` 2
@@ -201,12 +201,38 @@ circumSample SampleParams{..} (ArcSweep (Bearing (MkQuantity bearing))) arc0 zon
               Nothing -> zoneN
               Just ZonePoint{..} -> sourceZone
 
-        xs :: [TrueCourse Double]
-        xs =
-            TrueCourse . MkQuantity <$>
+        cs :: [Double]
+        cs =
                 let lhs = [mid - (fromInteger n) * step | n <- [1 .. half]]
                     rhs = [mid + (fromInteger n) * step | n <- [1 .. half]]
                 in lhs ++ (mid : rhs)
+
+        (θ, xs) =
+            (fmap . fmap) (TrueCourse . MkQuantity) $
+            case (zoneM, zoneN) of
+                (Nothing, _) -> (Nothing, cs)
+                (Just _, Point _) -> (Nothing, cs)
+                (Just _, Vector _ _) -> (Nothing, cs)
+                (Just _, Cylinder _ _) -> (Nothing, cs)
+                (Just _, Conical _ _ _) -> (Nothing, cs)
+                (Just m, Line _ _ x) ->
+                    -- NOTE: For a line we don't want to miss a likely local
+                    -- minimum where the line intersects the circle so let's
+                    -- add those true courses explicitly now at 90° and 270°
+                    -- from the azimuth.
+                    case normalize <$> azimuthFwd wgs84 x (center m) of
+                        Nothing -> (Nothing, cs)
+                        az@(Just q) ->
+                            (az,) $
+                            if bearing < 2 * pi
+                               then cs
+                               else
+                                    unQuantity (q +: deg90)
+                                    : unQuantity (q -: deg90)
+                                    : cs
+
+                (Just _, Circle _ _) -> (Nothing, cs)
+                (Just _, SemiCircle _ _ _) -> (Nothing, cs)
 
         r :: QRadius Double [u| m |]
         r@(Radius (MkQuantity limitRadius)) = radius zone'
