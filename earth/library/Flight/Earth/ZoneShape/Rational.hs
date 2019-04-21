@@ -1,4 +1,4 @@
-module Flight.Earth.ZoneShape.Rational (PointOnRadial, onLine) where
+module Flight.Earth.ZoneShape.Rational (PointOnRadial, onLine, deg90) where
 
 import qualified Data.Number.FixedFunctions as F
 import Data.UnitsOfMeasure
@@ -55,25 +55,27 @@ ontoLine
     -> Quantity Rational [u| rad |]
     -> ZonePoint Rational
     -> ZonePoint Rational
-ontoLine (Epsilon eps) mkPt theta delta x@ZonePoint{sourceZone = z}
-    | delta < deg90 =
+ontoLine (Epsilon eps) mkPt θ δ x@ZonePoint{sourceZone = z}
+    -- NOTE: When δ < 90 then the candidate intercept with the circle is to the
+    -- right of the trackline between zone centers.
+    | δ <= deg90 =
         let d = F.sin eps angle
-            b' = theta +: deg90
+            b = θ +: deg90
             r' = MkQuantity $ d * r
-            yPt = mkPt o (Bearing b') (Radius r')
         in
-            x{point = yPt}
+            x{point = mkPt o (Bearing b) (Radius r')}
 
-    | delta > deg270 =
+    -- NOTE: When δ > 270 then the candidate intercept with the circle is to
+    -- the left of the trackline between zone centers.
+    | δ >= deg270 =
         let d = negate $ F.sin eps angle
-            b' = theta -: deg90
+            b = θ -: deg90
             r' = MkQuantity $ d * r
-            yPt = mkPt o (Bearing b') (Radius r')
         in
-            x{point = yPt}
+            x{point = mkPt o (Bearing b) (Radius r')}
 
     | otherwise = x
     where
         o = center z
         Radius (MkQuantity r) = radius z
-        MkQuantity angle = delta
+        (MkQuantity angle) = δ

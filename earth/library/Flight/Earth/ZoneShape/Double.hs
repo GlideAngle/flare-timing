@@ -1,6 +1,4 @@
-{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
-
-module Flight.Earth.ZoneShape.Double (PointOnRadial, onLine, deg90, deg270) where
+module Flight.Earth.ZoneShape.Double (PointOnRadial, onLine, deg90) where
 
 import Data.UnitsOfMeasure
     ((*:), (+:), (-:), u, fromRational', toRational')
