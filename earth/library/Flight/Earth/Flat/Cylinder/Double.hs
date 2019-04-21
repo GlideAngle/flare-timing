@@ -2,7 +2,7 @@ module Flight.Earth.Flat.Cylinder.Double (circumSample) where
 
 import Data.Functor.Identity (runIdentity)
 import Control.Monad.Except (runExceptT)
-import Data.UnitsOfMeasure (u, convert)
+import Data.UnitsOfMeasure ((+:), (-:), u, convert, unQuantity)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import qualified UTMRef as HCEN (UTMRef(..), toLatLng)
 import qualified LatLng as HCLL (LatLng(..))
@@ -20,7 +20,7 @@ import Flight.Zone
     , realToFracZone
     )
 import Flight.Zone.Path (distancePointToPoint)
-import Flight.Earth.Flat.PointToPoint.Double (distanceEuclidean, azimuthFwd)
+import Flight.Earth.Flat.PointToPoint.Double (distanceEuclidean)
 import Flight.Distance (TaskDistance(..), PathDistance(..))
 import Flight.Zone.Cylinder
     ( TrueCourse(..)
@@ -35,7 +35,7 @@ import Flight.Zone.Cylinder
     , sourceZone
     )
 import Flight.Earth.Flat.Projected.Internal (zoneToProjectedEastNorth)
-import Flight.Earth.ZoneShape.Double (PointOnRadial, onLine)
+import Flight.Earth.ZoneShape.Double (PointOnRadial, onLine, deg90)
 
 fromHcLatLng :: HCLL.LatLng -> LatLng Double [u| rad |]
 fromHcLatLng HCLL.LatLng{latitude, longitude} =
@@ -124,8 +124,7 @@ circumSample SampleParams{..} (ArcSweep (Bearing (MkQuantity bearing))) arc0 zon
             (Just _, Vector _ _) -> ys
             (Just _, Cylinder _ _) -> ys
             (Just _, Conical _ _ _) -> ys
-            (Just m, Line _ _ x) ->
-                let y = center m in onLine mkLinePt (azimuthFwd x y) ys
+            (Just _, Line _ _ _) -> onLine mkLinePt θ ys
             (Just _, Circle _ _) -> ys
             (Just _, SemiCircle _ _ _) -> ys
     where
@@ -140,12 +139,38 @@ circumSample SampleParams{..} (ArcSweep (Bearing (MkQuantity bearing))) arc0 zon
               Nothing -> zoneN
               Just ZonePoint{..} -> sourceZone
 
-        xs :: [TrueCourse Double]
-        xs =
-            TrueCourse . MkQuantity <$>
+        cs :: [Double]
+        cs =
                 let lhs = [mid - (fromInteger n) * step | n <- [1 .. half]]
                     rhs = [mid + (fromInteger n) * step | n <- [1 .. half]]
-                in lhs ++ (mid : rhs)
+                -- NOTE: The reverse of the LHS is not needed for correct
+                -- operation but it helps when tracing.
+                in reverse lhs ++ (mid : rhs)
+
+        (θ, xs) =
+            (fmap . fmap) (TrueCourse . MkQuantity) $
+            case (zoneM, zoneN) of
+                (Nothing, _) -> (Nothing, cs)
+                (Just _, Point _) -> (Nothing, cs)
+                (Just _, Vector _ _) -> (Nothing, cs)
+                (Just _, Cylinder _ _) -> (Nothing, cs)
+                (Just _, Conical _ _ _) -> (Nothing, cs)
+                (Just _, Line Nothing _ _) -> (Nothing, cs)
+                (Just _, Line (Just (Bearing az)) _ _) ->
+                    -- NOTE: For a line we don't want to miss a likely local
+                    -- minimum where the line intersects the circle so let's
+                    -- add those true courses explicitly now at 90° and 270°
+                    -- from the azimuth.
+                    (Just az,) $
+                    if bearing < 2 * pi
+                       then cs
+                       else
+                            unQuantity (az +: deg90)
+                            : unQuantity (az -: deg90)
+                            : cs
+
+                (Just _, Circle _ _) -> (Nothing, cs)
+                (Just _, SemiCircle _ _ _) -> (Nothing, cs)
 
         r :: QRadius Double [u| m |]
         r@(Radius (MkQuantity limitRadius)) = radius zone'
@@ -196,7 +221,7 @@ getClose zone' ptCenter limitRadius spTolerance trys yr@(Radius (MkQuantity offs
                          (Radius (MkQuantity offset'))
                          f'
                          x
-                 
+
              LT ->
                  if d > (limitRadius - unTolerance spTolerance)
                  then (zp', x)
@@ -226,7 +251,7 @@ getClose zone' ptCenter limitRadius spTolerance trys yr@(Radius (MkQuantity offs
                         , radial = Bearing tc
                         , orbit = yr
                         } :: ZonePoint Double
-                       
+
         (TaskDistance (MkQuantity d)) =
             edgesSum
             $ distancePointToPoint
