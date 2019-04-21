@@ -1,11 +1,11 @@
-module Flight.Earth.ZoneShape.Rational (PointOnRadial, onLine, deg90) where
+module Flight.Earth.ZoneShape.Rational (PointOnRadial, onLine) where
 
 import qualified Data.Number.FixedFunctions as F
 import Data.UnitsOfMeasure
-    ((*:), (+:), (-:), u, abs', fromRational', toRational')
+    ((+:), (-:), u, abs', fromRational', toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import Flight.Units.Angle (Angle(..), halfPi)
+import Flight.Units.Angle (Angle(..), deg90, deg270)
 import Flight.LatLng.Rational (Epsilon(..))
 import Flight.LatLng (LatLng(..))
 import Flight.Zone (Bearing(..), Radius(..), center, radius)
@@ -16,12 +16,6 @@ type PointOnRadial
     -> Bearing (Quantity Rational [u| rad |])
     -> Radius (Quantity Rational [u| m |])
     -> LatLng Rational [u| rad |]
-
-deg90 :: (Real a, Fractional a) => Quantity a [u| rad |]
-deg90 = halfPi
-
-deg270 :: (Real a, Fractional a) => Quantity a [u| rad |]
-deg270 = 3 *: halfPi
 
 onLine
     :: Epsilon

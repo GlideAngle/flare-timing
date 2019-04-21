@@ -1,10 +1,10 @@
 {-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
-module Flight.Units.Angle (Angle(..), halfPi) where
+module Flight.Units.Angle (Angle(..), halfPi, deg90, deg270) where
 
 import Data.Fixed (mod')
-import Data.UnitsOfMeasure ((+:), u, convert, fromRational', toRational')
+import Data.UnitsOfMeasure ((+:), (*:), u, convert, fromRational', toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Data.UnitsOfMeasure.Convert (Convertible)
 
@@ -14,6 +14,12 @@ import Data.UnitsOfMeasure.Convert (Convertible)
 
 halfPi :: (Real a, Fractional a) => Quantity a [u| rad |]
 halfPi = convert [u| 90 deg |]
+
+deg90 :: (Real a, Fractional a) => Quantity a [u| rad |]
+deg90 = halfPi
+
+deg270 :: (Real a, Fractional a) => Quantity a [u| rad |]
+deg270 = 3 *: halfPi
 
 class Angle a where
     normalize :: a -> a

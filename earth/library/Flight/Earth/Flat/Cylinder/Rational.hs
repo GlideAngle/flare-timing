@@ -3,7 +3,7 @@ module Flight.Earth.Flat.Cylinder.Rational (circumSample) where
 import Data.Functor.Identity (runIdentity)
 import Control.Monad.Except (runExceptT)
 import qualified Data.Number.FixedFunctions as F
-import Data.UnitsOfMeasure ((+:), (-:), u, convert, unQuantity)
+import Data.UnitsOfMeasure (u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import qualified UTMRef as HCEN (UTMRef(..), toLatLng)
 import qualified LatLng as HCLL (LatLng(..))
@@ -27,7 +27,6 @@ import Flight.Zone.Cylinder
     ( TrueCourse(..)
     , ZonePoint(..)
     , Tolerance(..)
-    , Samples(..)
     , SampleParams(..)
     , CircumSample
     , orbit
@@ -35,9 +34,10 @@ import Flight.Zone.Cylinder
     , point
     , sourceZone
     , fromRationalZonePoint
+    , sampleAngles
     )
 import Flight.Earth.Flat.Projected.Internal (zoneToProjectedEastNorth)
-import Flight.Earth.ZoneShape.Rational (PointOnRadial, onLine, deg90)
+import Flight.Earth.ZoneShape.Rational (PointOnRadial, onLine)
 
 fromHcLatLng :: HCLL.LatLng -> LatLng Rational [u| rad |]
 fromHcLatLng HCLL.LatLng{latitude, longitude} =
@@ -109,7 +109,7 @@ translate
 --
 -- The points of the compass are divided by the number of samples requested.
 circumSample :: CircumSample Rational
-circumSample SampleParams{..} (ArcSweep (Bearing (MkQuantity bearing))) arc0 zoneM zoneN
+circumSample sp@SampleParams{..} arcSweep@(ArcSweep (Bearing (MkQuantity bearing))) arc0 zoneM zoneN
     | bearing < 0 || bearing > 2 * F.pi eps = fail "Arc sweep must be in the range 0..2π radians."
     | otherwise =
         case (zoneM, zoneN) of
@@ -123,10 +123,6 @@ circumSample SampleParams{..} (ArcSweep (Bearing (MkQuantity bearing))) arc0 zon
             (Just _, SemiCircle _ _ _) -> ys
     where
         (Epsilon eps) = defEps
-        nNum = unSamples spSamples
-        half = nNum `div` 2
-        step = bearing / (fromInteger nNum)
-        mid = maybe 0 (\ZonePoint{radial = Bearing (MkQuantity b)} -> b) arc0
 
         zone' :: Zone Rational
         zone' =
@@ -134,38 +130,7 @@ circumSample SampleParams{..} (ArcSweep (Bearing (MkQuantity bearing))) arc0 zon
               Nothing -> zoneN
               Just ZonePoint{..} -> sourceZone
 
-        cs :: [Rational]
-        cs =
-                let lhs = [mid - (fromInteger n) * step | n <- [1 .. half]]
-                    rhs = [mid + (fromInteger n) * step | n <- [1 .. half]]
-                -- NOTE: The reverse of the LHS is not needed for correct
-                -- operation but it helps when tracing.
-                in reverse lhs ++ (mid : rhs)
-
-        (θ, xs) =
-            (fmap . fmap) (TrueCourse . MkQuantity) $
-            case (zoneM, zoneN) of
-                (Nothing, _) -> (Nothing, cs)
-                (Just _, Point _) -> (Nothing, cs)
-                (Just _, Vector _ _) -> (Nothing, cs)
-                (Just _, Cylinder _ _) -> (Nothing, cs)
-                (Just _, Conical _ _ _) -> (Nothing, cs)
-                (Just _, Line Nothing _ _) -> (Nothing, cs)
-                (Just _, Line (Just (Bearing az)) _ _) ->
-                    -- NOTE: For a line we don't want to miss a likely local
-                    -- minimum where the line intersects the circle so let's
-                    -- add those true courses explicitly now at 90° and 270°
-                    -- from the azimuth.
-                    (Just az,) $
-                    if bearing < 2 * F.pi eps
-                       then cs
-                       else
-                            unQuantity (az +: deg90)
-                            : unQuantity (az -: deg90)
-                            : cs
-
-                (Just _, Circle _ _) -> (Nothing, cs)
-                (Just _, SemiCircle _ _ _) -> (Nothing, cs)
+        (θ, xs) = sampleAngles (F.pi eps) sp arcSweep arc0 zoneM zoneN
 
         (Radius (MkQuantity limitRadius)) = radius zone'
         limitRadius' = toRational limitRadius
