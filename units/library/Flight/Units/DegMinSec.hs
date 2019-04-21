@@ -2,6 +2,7 @@
 
 module Flight.Units.DegMinSec
     ( DMS(..)
+    , DMS_(..)
     , toDeg
     , toQDeg
     , toQRad
@@ -12,6 +13,7 @@ import Prelude hiding (min)
 import Data.Fixed (mod')
 import Data.Text.Lazy (unpack)
 import Formatting (format)
+import Text.Printf (printf)
 import qualified Formatting.ShortFormatters as Fmt (sf)
 import Data.UnitsOfMeasure ((+:), u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
@@ -24,6 +26,12 @@ newtype DMS = DMS (Int, Int, Double) deriving Eq
 instance Show DMS where
     show = showDMS
 
+-- | Like @DMS@ but with fewer decimal places in the seconds when shown.
+newtype DMS_ = DMS_ (Int, Int, Double) deriving Eq
+
+instance Show DMS_ where
+    show (DMS_ x) = showDMS_ (DMS x)
+
 secToShow :: Double -> String
 secToShow sec =
     if fromIntegral isec == sec
@@ -33,11 +41,20 @@ secToShow sec =
         isec :: Int
         isec = floor sec
 
+secToShow_ :: Double -> String
+secToShow_ sec =
+    if fromIntegral isec == sec
+        then show (abs isec)
+        else printf "%.1f" (abs sec)
+    where
+        isec :: Int
+        isec = floor sec
+
 showDMS :: DMS -> String
 showDMS (DMS (deg, 0, 0)) =
     show deg ++ "°"
 showDMS (DMS (0, 0, sec)) =
-    secToShow sec ++ "''"
+    secToShow_ sec ++ "''"
 showDMS dms@(DMS (deg, min, 0)) =
     signSymbolDMS dms
     ++ show (abs deg)
@@ -57,6 +74,32 @@ showDMS dms@(DMS (deg, min, sec)) =
     ++ show (abs min)
     ++ "'"
     ++ secToShow sec
+    ++ "''"
+
+showDMS_ :: DMS -> String
+showDMS_ (DMS (deg, 0, 0)) =
+    show deg ++ "°"
+showDMS_ (DMS (0, 0, sec)) =
+    secToShow sec ++ "''"
+showDMS_ dms@(DMS (deg, min, 0)) =
+    signSymbolDMS dms
+    ++ show (abs deg)
+    ++ "°"
+    ++ show (abs min)
+    ++ "'"
+showDMS_ dms@(DMS (0, min, sec)) =
+    signSymbolDMS dms
+    ++ show (abs min)
+    ++ "'"
+    ++ secToShow_ sec
+    ++ "''"
+showDMS_ dms@(DMS (deg, min, sec)) =
+    signSymbolDMS dms
+    ++ show (abs deg)
+    ++ "°"
+    ++ show (abs min)
+    ++ "'"
+    ++ secToShow_ sec
     ++ "''"
 
 toDeg :: DMS -> Double
@@ -123,6 +166,12 @@ instance Angle DMS where
 
     fromQuantity = fromQ
     toQuantity = convert . toQDeg
+
+instance Angle DMS_ where
+    normalize (DMS_ x) = let (DMS y) = normalize (DMS x) in DMS_ y
+    rotate (DMS_ r) (DMS_ x) = let (DMS y) = rotate (DMS r) (DMS x) in DMS_ y
+    fromQuantity x = let DMS y = fromQ x in DMS_ y
+    toQuantity (DMS_ x) = toQuantity (DMS x)
 
 instance Ord DMS where
     x <= y = x' <= y'
