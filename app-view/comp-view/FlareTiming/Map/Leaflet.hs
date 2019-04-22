@@ -92,6 +92,9 @@ foreign import javascript unsafe
     \, 'Planar: Course line (shortest route)': $10\
     \}\
     \, { 'Map': $1\
+    \}\
+    \, { 'sortLayers': true\
+    \, 'sortFunction': function (m, n, b, a) { return a < b ? -1 : (b < a ? 1 : 0); }\
     \}).addTo($2)"
     layersControl_
         :: JSVal
