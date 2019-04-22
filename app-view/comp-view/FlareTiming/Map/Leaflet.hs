@@ -209,24 +209,24 @@ layersControl
         gs =
             [ course
             , taskSphericalRoute
-            , taskSphericalRouteSubset
-            , speedSphericalRoute
             , taskEllipsoidRoute
-            , taskEllipsoidRouteSubset
-            , speedEllipsoidRoute
             , taskPlanarRoute
+            , taskSphericalRouteSubset
+            , taskEllipsoidRouteSubset
+            , speedSphericalRoute
+            , speedEllipsoidRoute
             ]
 
         ns :: [String]
         ns =
-            [ "Spherical: Course line (point to point)"
-            , "Spherical: Course line (shortest route)"
-            , "Spherical: Speed section (course line subset)"
-            , "Spherical: Speed section (task waypoints subset)"
-            , "Ellipsoid: Course line (shortest route)"
-            , "Ellipsoid: Speed section (course line subset)"
-            , "Ellipsoid: Speed section (task waypoints subset)"
-            , "Planar: Course line (shortest route)"
+            [ "Task"
+            , "Path (spherical)"
+            , "Path (ellipsoid)"
+            , "Path (planar)"
+            , "Race (spherical subset of path)"
+            , "Race (ellipsoid subset of path)"
+            , "Race (spherical subset of waypoints)"
+            , "Race (ellipsoid subset of waypoints)"
             ]
 
 addOverlay
