@@ -40,7 +40,8 @@ module FlareTiming.Map.Leaflet
 import Prelude hiding (map, log)
 import GHCJS.Types (JSVal, JSString)
 import GHCJS.DOM.Element (IsElement)
-import GHCJS.DOM.Types (Element(..), toElement, toJSString, toJSVal)
+import GHCJS.DOM.Types
+    (ToJSVal(..), Element(..), toElement, toJSString, toJSVal, toJSValListOf)
 
 import WireTypes.Pilot (PilotName(..))
 import FlareTiming.Earth (AzimuthFwd(..))
@@ -55,6 +56,9 @@ newtype Semicircle = Semicircle { unSemicircle :: JSVal }
 newtype Polyline = Polyline { unPolyline :: JSVal }
 newtype LatLngBounds = LatLngBounds { unLatLngBounds :: JSVal }
 newtype Layers = Layers { unLayers :: JSVal }
+
+instance ToJSVal LayerGroup where
+    toJSVal = return . unLayerGroup
 
 foreign import javascript unsafe
     "L['map']($1)"
@@ -82,32 +86,21 @@ foreign import javascript unsafe
 
 foreign import javascript unsafe
     "L.control.layers(\
-    \{ 'Spherical: Course line (point to point)': $3\
-    \, 'Spherical: Course line (shortest route)': $4\
-    \, 'Spherical: Speed section (course line subset)': $5\
-    \, 'Spherical: Speed section (task waypoints subset)': $6\
-    \, 'Ellipsoid: Course line (shortest route)': $7\
-    \, 'Ellipsoid: Speed section (course line subset)': $8\
-    \, 'Ellipsoid: Speed section (task waypoints subset)': $9\
-    \, 'Planar: Course line (shortest route)': $10\
-    \}\
-    \, { 'Map': $1\
-    \}\
+    \ (function () {\
+    \ var o = {};\
+    \ var ks = $3;\
+    \ var vs = $4;\
+    \ ks.forEach(function (k, i){o[k] = vs[i];});\
+    \ return o;\
+    \})()\
+    \, { 'Map': $1}\
     \, { 'sortLayers': true\
-    \, 'sortFunction': function (m, n, b, a) { return a < b ? -1 : (b < a ? 1 : 0); }\
-    \}).addTo($2)"
-    layersControl_
-        :: JSVal
-        -> JSVal
-        -> JSVal
-        -> JSVal
-        -> JSVal
-        -> JSVal
-        -> JSVal
-        -> JSVal
-        -> JSVal
-        -> JSVal
-        -> IO JSVal
+    \, 'sortFunction': function (m, n, i, j) {\
+    \ var a = $3.indexOf(i);\
+    \ var b = $3.indexOf(j);\
+    \ return a < b ? -1 : (b < a ? 1 : 0);\
+    \}}).addTo($2)"
+    layersControl_ :: JSVal -> JSVal -> JSVal -> JSVal -> IO JSVal
 
 foreign import javascript unsafe
     "$1.addOverlay($2, $3)"
@@ -206,21 +199,35 @@ layersControl
     x lmap course
     taskSphericalRoute taskSphericalRouteSubset speedSphericalRoute
     taskEllipsoidRoute taskEllipsoidRouteSubset speedEllipsoidRoute
-    taskPlanarRoute = do
-    layers <-
-        layersControl_
-            (unTileLayer x)
-            (unMap lmap)
-            (unLayerGroup course)
-            (unLayerGroup taskSphericalRoute)
-            (unLayerGroup taskSphericalRouteSubset)
-            (unLayerGroup speedSphericalRoute)
-            (unLayerGroup taskEllipsoidRoute)
-            (unLayerGroup taskEllipsoidRouteSubset)
-            (unLayerGroup speedEllipsoidRoute)
-            (unLayerGroup taskPlanarRoute)
 
-    return $ Layers layers
+    taskPlanarRoute = do
+        ns' <- toJSValListOf ns
+        gs' <- toJSValListOf gs
+        layers <- layersControl_ (unTileLayer x) (unMap lmap) ns' gs'
+        return $ Layers layers
+    where
+        gs =
+            [ course
+            , taskSphericalRoute
+            , taskSphericalRouteSubset
+            , speedSphericalRoute
+            , taskEllipsoidRoute
+            , taskEllipsoidRouteSubset
+            , speedEllipsoidRoute
+            , taskPlanarRoute
+            ]
+
+        ns :: [String]
+        ns =
+            [ "Spherical: Course line (point to point)"
+            , "Spherical: Course line (shortest route)"
+            , "Spherical: Speed section (course line subset)"
+            , "Spherical: Speed section (task waypoints subset)"
+            , "Ellipsoid: Course line (shortest route)"
+            , "Ellipsoid: Speed section (course line subset)"
+            , "Ellipsoid: Speed section (task waypoints subset)"
+            , "Planar: Course line (shortest route)"
+            ]
 
 addOverlay
     :: Layers
