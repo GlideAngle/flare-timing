@@ -7,6 +7,7 @@ of this changelog.
 
 * Sample line goals as semicircles when figuring out the optimal path.
 * Sort and rename the base layers in the map to:
+
     Task
     Path (spherical)
     Path (ellipsoid)
