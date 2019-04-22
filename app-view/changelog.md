@@ -8,14 +8,14 @@ of this changelog.
 * Sample line goals as semicircles when figuring out the optimal path.
 * Sort and rename the base layers in the map to:
 
-    Task
-    Path (spherical)
-    Path (ellipsoid)
-    Path (planar)
-    Race (spherical subset of path)
-    Race (ellipsoid subset of path)
-    Race (spherical subset of waypoints)
-    Race (ellipsoid subset of waypoints)
+        Task
+        Path (spherical)
+        Path (ellipsoid)
+        Path (planar)
+        Race (spherical subset of path)
+        Race (ellipsoid subset of path)
+        Race (spherical subset of waypoints)
+        Race (ellipsoid subset of waypoints)
 
 # Interpolate Zone Tagging
 ## app-view-0.18
