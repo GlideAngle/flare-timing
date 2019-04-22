@@ -6,7 +6,7 @@ of this changelog.
 ## app-view-0.19
 
 * Sample line goals as semicircles when figuring out the optimal path.
-* Sort and rename the base layers in the map to:
+* Sort and rename the base layers of the map to:
 
         Task
         Path (spherical)
