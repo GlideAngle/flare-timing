@@ -2,6 +2,11 @@ The [latest
 version](https://github.com/BlockScope/flare-timing/blob/master/app-view/changelog.md)
 of this changelog.
 
+# Making a Line Goal
+## app-view-0.19
+
+* Sample line goals as semicircles when figuring out the optimal path.
+
 # Interpolate Zone Tagging
 ## app-view-0.18
 
