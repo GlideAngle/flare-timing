@@ -1,5 +1,5 @@
 module Flight.Span.Rational
-    ( zoneToCylR
+    ( fromZonesR
     , azimuthR
     , spanR
     , csR
@@ -26,8 +26,8 @@ import Flight.Task (AngleCut(..))
 import Flight.Mask.Internal.Zone (TaskZone, zonesToTaskZones)
 import Flight.LatLng.Rational (Epsilon(..), defEps)
 
-zoneToCylR :: AzimuthFwd Rational -> Zones -> [TaskZone Rational]
-zoneToCylR = zonesToTaskZones
+fromZonesR :: AzimuthFwd Rational -> Zones -> [TaskZone Rational]
+fromZonesR = zonesToTaskZones
 
 azimuthR :: AzimuthFwd Rational
 azimuthR = Rat.azimuthFwd defEps

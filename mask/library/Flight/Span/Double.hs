@@ -1,5 +1,5 @@
 module Flight.Span.Double
-    ( zoneToCylF
+    ( fromZonesF
     , azimuthF
     , spanF
     , csF
@@ -24,8 +24,8 @@ import qualified Flight.Earth.Sphere.Cylinder.Double as Dbl (circumSample)
 import Flight.Task (AngleCut(..))
 import Flight.Mask.Internal.Zone (TaskZone, zonesToTaskZones)
 
-zoneToCylF :: AzimuthFwd Double -> Zones -> [TaskZone Double]
-zoneToCylF = zonesToTaskZones
+fromZonesF :: AzimuthFwd Double -> Zones -> [TaskZone Double]
+fromZonesF = zonesToTaskZones
 
 azimuthF :: AzimuthFwd Double
 azimuthF = Dbl.azimuthFwd

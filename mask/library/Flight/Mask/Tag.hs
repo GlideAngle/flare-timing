@@ -98,13 +98,13 @@ started
     -> SpanLatLng a
     -> (Raw.RawZone -> TaskZone a)
     -> FnTask k Bool
-started az span zoneToCyl Task{speedSection, zones} MarkedFixes{fixes} =
+started az span fromZones Task{speedSection, zones} MarkedFixes{fixes} =
     case slice speedSection (raw zones) of
         [] ->
             False
 
         z : _ ->
-            let ez = exitsSeq az span (zoneToCyl z) (fixToPoint <$> fixes)
+            let ez = exitsSeq az span (fromZones z) (fixToPoint <$> fixes)
             in case ez of
                  Right (ZoneExit _ _) : _ ->
                      True
@@ -118,8 +118,8 @@ madeGoal
     -> SpanLatLng a
     -> (Zones -> [TaskZone a])
     -> FnTask k Bool
-madeGoal az span zoneToCyl Task{zones} MarkedFixes{fixes} =
-    let zs = zoneToCyl zones in
+madeGoal az span fromZones Task{zones} MarkedFixes{fixes} =
+    let zs = fromZones zones in
     case reverse zs of
         [] ->
             False
@@ -593,7 +593,7 @@ madeZones
     -> Task k
     -> MarkedFixes
     -> MadeZones
-madeZones az span zoneToCyl task mf@MarkedFixes{mark0, fixes} =
+madeZones az span fromZones task mf@MarkedFixes{mark0, fixes} =
     MadeZones
         { flying = flying'
         , selectedCrossings = selected
@@ -650,7 +650,7 @@ madeZones az span zoneToCyl task mf@MarkedFixes{mark0, fixes} =
             scoredCrossings
                 az
                 span
-                zoneToCyl
+                fromZones
                 task
                 mf
                 (scoredFixes flying')
@@ -668,7 +668,7 @@ scoredCrossings
 scoredCrossings
     az
     span
-    zoneToCyl
+    fromZones
     task@Task{zones}
     MarkedFixes{mark0, fixes}
     scoredIndices =
@@ -697,7 +697,7 @@ scoredCrossings
         selectors :: [[Crossing] -> Maybe Crossing]
         selectors =
             (\x ->
-                let b = isStartExit az span zoneToCyl x
+                let b = isStartExit az span fromZones x
                 in crossingSelectors b x) task
 
         prover = proveCrossing fixes mark0
@@ -708,13 +708,13 @@ scoredCrossings
 
         fs =
             (\x ->
-                let b = isStartExit az span zoneToCyl x
+                let b = isStartExit az span fromZones x
                 in crossingPredicates az span b x) task
 
         xs =
             tickedZones
                 fs
-                (zoneToCyl zones)
+                (fromZones zones)
                 (fixToPoint <$> fixesScored)
 
         f :: [Crossing] -> [Maybe ZoneCross]

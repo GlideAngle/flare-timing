@@ -118,7 +118,7 @@ groupByLeg
     -> Task k
     -> FlyCut UTCTime MarkedFixes
     -> [(Maybe GroupLeg, MarkedFixes)]
-groupByLeg tagInterp zoneToCyl task@Task{zones} flyCut =
+groupByLeg tagInterp fromZones task@Task{zones} flyCut =
     [
         let g =
                 case (nthR, zerothL) of
@@ -186,10 +186,10 @@ groupByLeg tagInterp zoneToCyl task@Task{zones} flyCut =
 
         xs :: [Maybe ZoneTag]
         xs =
-            tagZones tagInterp (zoneToCyl zones)
+            tagZones tagInterp (fromZones zones)
             . unSelectedCrossings
             . selectedCrossings
-            $ madeZones (azimuth tagInterp) (spanner tagInterp) zoneToCyl task mf
+            $ madeZones (azimuth tagInterp) (spanner tagInterp) fromZones task mf
 
         ts :: [Maybe UTCTime]
         ts =

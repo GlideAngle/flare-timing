@@ -32,17 +32,17 @@ timeFlown
     -> Task k
     -> MarkedFixes
     -> Maybe (PilotTime (Quantity Double [u| h |]))
-timeFlown az span zoneToCyl task@Task{speedSection, zones, zoneTimes, startGates} xs =
+timeFlown az span fromZones task@Task{speedSection, zones, zoneTimes, startGates} xs =
     if null zs || not atGoal then Nothing else
     flownDuration az span speedSection fs zs zoneTimes startGates xs
     where
         fs =
             (\x ->
-                let b = isStartExit az span zoneToCyl x
+                let b = isStartExit az span fromZones x
                 in crossingPredicates az span b x) task
 
-        zs = zoneToCyl zones
-        atGoal = madeGoal az span zoneToCyl task xs
+        zs = fromZones zones
+        atGoal = madeGoal az span fromZones task xs
 
 flownDuration
     :: (Real a, Fractional a)

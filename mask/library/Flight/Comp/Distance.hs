@@ -33,7 +33,7 @@ import Flight.Task (fromZs)
 import Flight.Mask (dashPathToGoalTimeRows)
 import Flight.Mask.Internal.Race (Ticked, FlyCut(..))
 import Flight.Span.Sliver (Sliver(..))
-import Flight.Span.Double (zoneToCylF, azimuthF, spanF, csF, cutF, dppF, csegF)
+import Flight.Span.Double (fromZonesF, azimuthF, spanF, csF, cutF, dppF, csegF)
 
 data DashPathInputs k =
     DashPathInputs
@@ -203,7 +203,7 @@ pathToGo DashPathInputs{..} x@Time.TimeRow{time} d =
                 path = dashPathToGoalTimeRows
                         dashTicked
                         (Sliver azimuthF spanF dppF csegF csF cutF)
-                        (zoneToCylF azimuthF)
+                        (fromZonesF azimuthF)
                         dashTask'
                         FlyCut{cut = Just (time, time), uncut = [x]}
 

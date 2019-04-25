@@ -25,20 +25,20 @@ dotToGoal
     -> Maybe (TaskDistance b)
     -- ^ Nothing indicates no such task or a task with no zones.
 dotToGoal
-    az span zoneToCyl dvz
+    az span fromZones dvz
     task@Task{speedSection, zones}
     MarkedFixes{fixes} =
     if null zs
        then Nothing
        else dvz fixToPoint speedSection fs zs fixes
     where
-        zs = zoneToCyl zones
+        zs = fromZones zones
 
         fs =
             (\x ->
                 crossingPredicates
                     az
                     span
-                    (isStartExit az span zoneToCyl x)
+                    (isStartExit az span fromZones x)
                     x)
             task

@@ -160,13 +160,13 @@ isStartExit
     -> (Zones -> [TaskZone a])
     -> Task k
     -> Bool
-isStartExit az span zoneToCyl Task{speedSection, zones} =
+isStartExit az span fromZones Task{speedSection, zones} =
     case speedSection of
         Nothing ->
             False
 
         Just (i, _) ->
-            let zs = zoneToCyl zones in
+            let zs = fromZones zones in
             case (zs ^? element (i - 1), zs ^? element i) of
                 (Just start, Just tp1) ->
                     separatedZones az span
