@@ -9,7 +9,7 @@ import Data.UnitsOfMeasure ((/:), u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
-import Flight.LatLng (LatLng(..))
+import Flight.LatLng (AzimuthFwd, LatLng(..))
 import Flight.LatLng.Raw (RawLatLng(..))
 import Flight.Distance (QTaskDistance, PathDistance(..), SpanLatLng)
 import Flight.Zone (Zone(..), Bearing(..), ArcSweep(..), center)
@@ -18,6 +18,8 @@ import Flight.Zone.Cylinder (CircumSample)
 import Flight.Earth.Flat (zoneToProjectedEastNorth)
 import Flight.Earth.Flat.Projected.Double (costEastNorth)
 import Flight.Earth.Sphere.Cylinder.Double (circumSample)
+import qualified Flight.Earth.Sphere.PointToPoint.Double as S (azimuthFwd)
+import qualified Flight.Earth.Ellipsoid.PointToPoint.Double as E (azimuthFwd)
 import Flight.Earth.Sphere.PointToPoint.Double (distanceHaversine)
 import Flight.Earth.Ellipsoid.PointToPoint.Double (distanceVincenty)
 import Flight.Route
@@ -255,17 +257,23 @@ distanceEdgeSphere
     -> [Zone Double]
     -> Zs (PathDistance Double)
 distanceEdgeSphere segCost =
-    distanceEdgeToEdge spanS distancePointToPoint segCost cs cut mm30
+    distanceEdgeToEdge azimuthS spanS distancePointToPoint segCost cs cut mm30
 
 distanceEdgeEllipsoid
     :: CostSegment Double
     -> [Zone Double]
     -> Zs (PathDistance Double)
 distanceEdgeEllipsoid segCost =
-    distanceEdgeToEdge spanE distancePointToPoint segCost cs cut mm30
+    distanceEdgeToEdge azimuthE spanE distancePointToPoint segCost cs cut mm30
 
 cs :: CircumSample Double
 cs = circumSample
+
+azimuthS :: AzimuthFwd Double
+azimuthS = S.azimuthFwd
+
+azimuthE :: AzimuthFwd Double
+azimuthE = E.azimuthFwd wgs84
 
 -- | Span on a flat projected plane.
 spanF :: SpanLatLng Double

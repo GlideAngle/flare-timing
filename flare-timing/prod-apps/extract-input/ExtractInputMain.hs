@@ -47,23 +47,24 @@ import qualified Flight.Zone.Raw as Raw (RawZone(..), Give(..), zoneGive)
 import Flight.Zone.MkZones (Discipline(..), Zones(..))
 import Flight.Score (ScoreBackTime(..), PointPenalty)
 import Flight.Scribe (writeComp)
-import Flight.Mask (separatedRawZones)
+import Flight.Mask (zoneToCylinder)
 import ExtractInputOptions (CmdOptions(..), mkOptions, mkEarthModel)
 
-import qualified Flight.Earth.Sphere.PointToPoint.Double as Dbl (distanceHaversine)
+import qualified Flight.Earth.Sphere.PointToPoint.Double as Dbl
+    (azimuthFwd, distanceHaversine)
 import qualified Flight.Earth.Sphere.Separated as S (separatedZones)
 
 spanD :: SpanLatLng Double
 spanD = Dbl.distanceHaversine
 
 sepD :: [Zone Double] -> Bool
-sepD = S.separatedZones spanD
+sepD = S.separatedZones Dbl.azimuthFwd spanD
 
 separated :: Raw.RawZone -> Raw.RawZone -> Bool
-separated =
-    separatedRawZones f
-    where
-        f x y = sepD [x, y] && sepD [Point $ center x, y]
+separated x y =
+    let x' = zoneToCylinder x
+        y' = zoneToCylinder y
+    in sepD [x', y'] && sepD [Point $ center x', y']
 
 main :: IO ()
 main = do

@@ -4,8 +4,8 @@ module Flight.Mask.Internal.Dot (dotToGoal) where
 
 import Prelude hiding (span)
 
+import Flight.LatLng (AzimuthFwd)
 import Flight.Kml (MarkedFixes(..))
-import qualified Flight.Zone.Raw as Raw (RawZone(..))
 import Flight.Comp (Task(..), Zones(..))
 import Flight.Units ()
 import Flight.Distance (TaskDistance(..), SpanLatLng)
@@ -16,29 +16,29 @@ import Flight.Mask.Internal.Cross (crossingPredicates, isStartExit)
 -- | The distance to goal checking for each crossing.
 dotToGoal
     :: (Real b, Fractional b)
-    => SpanLatLng b
-    -> (Raw.RawZone -> TaskZone b)
+    => AzimuthFwd a
+    -> SpanLatLng b
+    -> (Zones -> [TaskZone b])
     -> Reach _ _ _
     -> Task k
     -> MarkedFixes
     -> Maybe (TaskDistance b)
     -- ^ Nothing indicates no such task or a task with no zones.
 dotToGoal
-    span zoneToCyl dvz
-    task@Task{speedSection, zones = Zones{raw = zs}}
+    az span zoneToCyl dvz
+    task@Task{speedSection, zones}
     MarkedFixes{fixes} =
-    if null zs then Nothing else
-    dvz
-        fixToPoint
-        speedSection
-        fs
-        (zoneToCyl <$> zs)
-        fixes 
+    if null zs
+       then Nothing
+       else dvz fixToPoint speedSection fs zs fixes
     where
+        zs = zoneToCyl zones
+
         fs =
             (\x ->
                 crossingPredicates
+                    az
                     span
-                    (isStartExit span zoneToCyl x)
+                    (isStartExit az span zoneToCyl x)
                     x)
             task

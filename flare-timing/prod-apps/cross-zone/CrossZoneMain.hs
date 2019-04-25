@@ -23,6 +23,7 @@ import Flight.Comp
     , Pilot(..)
     , TrackFileFail(..)
     , IxTask(..)
+    , Zones
     , compToCross
     , findCompInput
     , ensureExt
@@ -37,9 +38,10 @@ import Flight.Track.Cross
     , trackLogErrors
     )
 import Flight.LatLng.Rational (defEps)
-import Flight.Zone.Raw (RawZone)
-import qualified Flight.Earth.Sphere.PointToPoint.Rational as Rat (distanceHaversine)
-import qualified Flight.Earth.Sphere.PointToPoint.Double as Dbl (distanceHaversine)
+import qualified Flight.Earth.Sphere.PointToPoint.Rational as Rat
+    (azimuthFwd, distanceHaversine)
+import qualified Flight.Earth.Sphere.PointToPoint.Double as Dbl
+    (azimuthFwd, distanceHaversine)
 import Flight.Mask
     ( TaskZone
     , FnIxTask
@@ -51,7 +53,7 @@ import Flight.Mask
     , unNomineeCrossings
     , checkTracks
     , madeZones
-    , zoneToCylinder
+    , zonesToTaskZones
     , nullFlying
     )
 import Flight.Scribe (readComp, writeCrossing)
@@ -209,10 +211,14 @@ flownTask :: Math -> FnTask k MadeZones
 flownTask =
     \case
         Rational ->
+            let az = Rat.azimuthFwd defEps in
             madeZones
+                az
                 (Rat.distanceHaversine defEps)
-                (zoneToCylinder :: RawZone -> TaskZone Rational)
+                (zonesToTaskZones az :: Zones -> [TaskZone Rational])
         Floating ->
+            let az = Dbl.azimuthFwd in
             madeZones
+                az
                 Dbl.distanceHaversine
-                (zoneToCylinder :: RawZone -> TaskZone Double)
+                (zonesToTaskZones az :: Zones -> [TaskZone Double])

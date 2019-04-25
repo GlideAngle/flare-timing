@@ -52,7 +52,7 @@ import Flight.Scribe (writeAlignTime)
 import Flight.Lookup.Cross (FlyingLookup(..))
 import Flight.Lookup.Tag
     (TickLookup(..), TagLookup(..), tagTicked, tagPilotTag)
-import Flight.Span.Double (zoneToCylF, spanF, csF, cutF, dppF, csegF)
+import Flight.Span.Double (zoneToCylF, azimuthF, spanF, csF, cutF, dppF, csegF)
 
 unTaskDistance :: QTaskDistance Double [u| m |] -> Double
 unTaskDistance (TaskDistance d) =
@@ -224,7 +224,7 @@ group
                     =<< openClose ss (zoneTimes task)
 
                 xs :: [(Maybe GroupLeg, MarkedFixes)]
-                xs = groupByLeg sliver zoneToCylF task scoredMarkedFixes
+                xs = groupByLeg sliver (zoneToCylF azimuthF) task scoredMarkedFixes
 
                 yss = (fmap $ FlyCut scoredTimeRange) <$> xs
 
@@ -270,7 +270,7 @@ group
     where
         (TickLookup lookupTicked) = tagTicked (Just tags)
         (TagLookup lookupZoneTags) = tagPilotTag (Just tags)
-        sliver = Sliver spanF dppF csegF csF cutF
+        sliver = Sliver azimuthF spanF dppF csegF csF cutF
 
 -- | For a given leg, only so many race zones can be ticked.
 retick :: Ticked -> LegIdx -> LegIdx -> (LegIdx, Ticked)
@@ -293,9 +293,9 @@ allLegDistances ticked times task@Task{speedSection, zoneTimes} leg xs =
     mkTimeRows lead start leg xs'
     where
         xs' :: Maybe [(Maybe Fix, Maybe (QTaskDistance Double [u| m |]))]
-        xs' = dashDistancesToGoal ticked sliver zoneToCylF task xs
+        xs' = dashDistancesToGoal ticked sliver (zoneToCylF azimuthF) task xs
 
-        sliver = Mask.Sliver spanF dppF csegF csF cutF
+        sliver = Mask.Sliver azimuthF spanF dppF csegF csF cutF
         ts = zonesFirst times
 
         lead = firstLead speedSection ts

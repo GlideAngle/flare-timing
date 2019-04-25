@@ -14,13 +14,14 @@ module Flight.Mask.Internal.Zone
     , rowToPoint
     , fixFromFix
     , zoneToCylinder
-    , separatedRawZones
+    , zonesToTaskZones
     ) where
 
 import Data.Time.Clock (UTCTime, addUTCTime)
 import Data.Maybe (fromMaybe)
-import Data.UnitsOfMeasure (u, fromRational', toRational')
+import Data.UnitsOfMeasure (Quantity, u, fromRational', toRational')
 
+import Flight.Units.Angle (Angle(..))
 import qualified Flight.Kml as Kml
     ( Fix
     , Seconds(..)
@@ -29,11 +30,12 @@ import qualified Flight.Kml as Kml
     , LatLngAlt(..)
     , FixMark(..)
     )
-import Flight.LatLng (LatLng(..), degPairToRadLL)
+import Flight.LatLng (AzimuthFwd, LatLng(..), degPairToRadLL)
 import Flight.LatLng.Raw (RawLat(..), RawLng(..))
-import Flight.Zone (Radius(..), Zone(..))
+import Flight.Zone (Radius(..), Zone(..), realToFracZone, unlineZones)
 import Flight.Zone.SpeedSection (SpeedSection, sliceZones)
 import Flight.Zone.Raw (RawZone(..))
+import Flight.Zone.MkZones (Zones(..), unkindZones)
 import Flight.Track.Time (ZoneIdx(..), TimeRow(..))
 import Flight.Track.Cross (Fix(..), ZoneCross(..), TrackFlyingSection(..))
 import Flight.Units ()
@@ -110,21 +112,24 @@ rowToPoint
     TimeRow{lat = RawLat lat, lng = RawLng lng} =
     TrackZone $ Point (degPairToRadLL (lat, lng))
 
-zoneToCylinder :: (Eq a, Ord a, Fractional a) => RawZone -> TaskZone a
+zoneToCylinder :: (Eq a, Ord a, Fractional a) => RawZone -> Zone a
 zoneToCylinder RawZone{lat = RawLat lat, lng = RawLng lng, radius, give} =
-    TaskZone $ Cylinder (Radius r') (degPairToRadLL(lat, lng))
+    Cylinder (Radius r') (degPairToRadLL(lat, lng))
     where
         Radius r = fromMaybe radius give
         r' = fromRational' . toRational' $ r
 
-separatedRawZones
-    :: (Ord a, Fractional a)
-    => (Zone a -> Zone a -> Bool)
-    -> RawZone
-    -> RawZone
-    -> Bool
-separatedRawZones f x y =
-    f x' y'
-    where
-        x' = unTaskZone . zoneToCylinder $ x
-        y' = unTaskZone . zoneToCylinder $ y
+zonesToTaskZones
+    :: (Ord a, Fractional a, Angle (Quantity a [u| rad |]))
+    => AzimuthFwd a
+    -> Zones
+    -> [TaskZone a]
+
+zonesToTaskZones az zs@Zones{raceKind = Just _} =
+    TaskZone <$> unlineZones az (realToFracZone <$> unkindZones zs)
+
+zonesToTaskZones az zs@Zones{openKind = Just _} =
+    TaskZone <$> unlineZones az (realToFracZone <$> unkindZones zs)
+
+zonesToTaskZones _ Zones{raw} =
+    TaskZone . zoneToCylinder <$> raw

@@ -12,7 +12,7 @@ import Data.Time.Clock (NominalDiffTime, addUTCTime, diffUTCTime)
 import Data.UnitsOfMeasure (u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
-import Flight.LatLng (Lat(..), Lng(..), LatLng(..))
+import Flight.LatLng (AzimuthFwd, Lat(..), Lng(..), LatLng(..))
 import Flight.LatLng.Raw (RawLat(..), RawLng(..))
 import qualified Flight.Track.Cross as Cg (Fix(..))
 import Flight.Track.Cross (InterpolatedFix(..))
@@ -41,11 +41,13 @@ class TagInterpolate a b | a -> b where
         -> Maybe (LatLng b [u| rad |], Double)
 
     spanner :: a -> SpanLatLng b
+    azimuth :: a -> AzimuthFwd b
 
 instance TagInterpolate (Sliver a) a where
     interpolate sliver z x y = tagInterpolate sliver z x y
     fractionate sliver zs = tagFractionate sliver zs
     spanner Sliver{..} = span
+    azimuth Sliver{..} = az
 
 tagInterpolate
     :: forall a. (Real a, Fractional a)
@@ -58,7 +60,7 @@ tagInterpolate Sliver{..} (TaskZone z) x y =
     vertices <$> ee
     where
         zs' = [Point x, z, Point y]
-        ee = distanceEdgeToEdge span dpp cseg cs angleCut tolerance zs'
+        ee = distanceEdgeToEdge az span dpp cseg cs angleCut tolerance zs'
 
         tolerance = Tolerance . fromRational $ 1 % 10000
 

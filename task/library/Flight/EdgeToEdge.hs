@@ -6,6 +6,7 @@ import Prelude hiding (span)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Data.Graph.Inductive.Graph (Node, LEdge)
 
+import Flight.LatLng (AzimuthFwd)
 import Flight.Zone (Zone(..))
 import Flight.Zone.Cylinder (Tolerance, ZonePoint(..), CircumSample)
 import Flight.Units ()
@@ -24,7 +25,8 @@ import Flight.Distance (TaskDistance(..), PathDistance(..), SpanLatLng)
 
 distanceEdgeToEdge
     :: (Real a, Fractional a)
-    => SpanLatLng a
+    => AzimuthFwd a
+    -> SpanLatLng a
     -> DistancePointToPoint a
     -> CostSegment a
     -> CircumSample a
@@ -32,8 +34,8 @@ distanceEdgeToEdge
     -> Tolerance a
     -> [Zone a]
     -> Zs (PathDistance a)
-distanceEdgeToEdge span distancePointToPoint cseg cs =
-    shortestPath span distancePointToPoint cs builder
+distanceEdgeToEdge az span distancePointToPoint cseg cs =
+    shortestPath az span distancePointToPoint cs builder
     where
         connector :: NodeConnector _
         connector = connectNodes cseg

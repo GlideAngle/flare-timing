@@ -25,6 +25,7 @@ import Control.Arrow (first)
 import Control.Monad (join)
 
 import Flight.Clip (FlyingSection, FlyCut(..), FlyClipping(..))
+import Flight.LatLng (AzimuthFwd)
 import Flight.Distance (SpanLatLng)
 import Flight.Kml (Latitude(..), Longitude(..), MarkedFixes(..), secondsToUtc)
 import qualified Flight.Kml as Kml
@@ -93,16 +94,17 @@ launched _ MarkedFixes{fixes} =
 
 started
     :: (Real a, Fractional a)
-    => SpanLatLng a
+    => AzimuthFwd a
+    -> SpanLatLng a
     -> (Raw.RawZone -> TaskZone a)
     -> FnTask k Bool
-started span zoneToCyl Task{speedSection, zones} MarkedFixes{fixes} =
+started az span zoneToCyl Task{speedSection, zones} MarkedFixes{fixes} =
     case slice speedSection (raw zones) of
         [] ->
             False
 
         z : _ ->
-            let ez = exitsSeq span (zoneToCyl z) (fixToPoint <$> fixes)
+            let ez = exitsSeq az span (zoneToCyl z) (fixToPoint <$> fixes)
             in case ez of
                  Right (ZoneExit _ _) : _ ->
                      True
@@ -112,16 +114,18 @@ started span zoneToCyl Task{speedSection, zones} MarkedFixes{fixes} =
 
 madeGoal
     :: (Real a, Fractional a)
-    => SpanLatLng a
-    -> (Raw.RawZone -> TaskZone a)
+    => AzimuthFwd a
+    -> SpanLatLng a
+    -> (Zones -> [TaskZone a])
     -> FnTask k Bool
-madeGoal span zoneToCyl Task{zones} MarkedFixes{fixes} =
-    case reverse (raw zones) of
+madeGoal az span zoneToCyl Task{zones} MarkedFixes{fixes} =
+    let zs = zoneToCyl zones in
+    case reverse zs of
         [] ->
             False
 
         z : _ ->
-            let ez = entersSeq span (zoneToCyl z) (fixToPoint <$> fixes)
+            let ez = entersSeq az span z (fixToPoint <$> fixes)
             in case ez of
                  Left (ZoneEntry _ _) : _ ->
                      True
@@ -583,12 +587,13 @@ jumpGaps xs =
 
 madeZones
     :: (Real a, Fractional a)
-    => SpanLatLng a
-    -> (Raw.RawZone -> TaskZone a)
+    => AzimuthFwd a
+    -> SpanLatLng a
+    -> (Zones -> [TaskZone a])
     -> Task k
     -> MarkedFixes
     -> MadeZones
-madeZones span zoneToCyl task mf@MarkedFixes{mark0, fixes} =
+madeZones az span zoneToCyl task mf@MarkedFixes{mark0, fixes} =
     MadeZones
         { flying = flying'
         , selectedCrossings = selected
@@ -643,6 +648,7 @@ madeZones span zoneToCyl task mf@MarkedFixes{mark0, fixes} =
 
         (selected, nominees) =
             scoredCrossings
+                az
                 span
                 zoneToCyl
                 task
@@ -652,16 +658,18 @@ madeZones span zoneToCyl task mf@MarkedFixes{mark0, fixes} =
 -- | Finds the crossings in the scored flying section.
 scoredCrossings
     :: (Real a, Fractional a)
-    => SpanLatLng a
-    -> (Raw.RawZone -> TaskZone a)
+    => AzimuthFwd a
+    -> SpanLatLng a
+    -> (Zones -> [TaskZone a])
     -> Task k
     -> MarkedFixes
     -> FlyingSection Int -- ^ The flying section to score
     -> (SelectedCrossings, NomineeCrossings)
 scoredCrossings
+    az
     span
     zoneToCyl
-    task@Task{zones = Zones{raw = zs}}
+    task@Task{zones}
     MarkedFixes{mark0, fixes}
     scoredIndices =
     (selected, nominees)
@@ -689,7 +697,7 @@ scoredCrossings
         selectors :: [[Crossing] -> Maybe Crossing]
         selectors =
             (\x ->
-                let b = isStartExit span zoneToCyl x
+                let b = isStartExit az span zoneToCyl x
                 in crossingSelectors b x) task
 
         prover = proveCrossing fixes mark0
@@ -700,13 +708,13 @@ scoredCrossings
 
         fs =
             (\x ->
-                let b = isStartExit span zoneToCyl x
-                in crossingPredicates span b x) task
+                let b = isStartExit az span zoneToCyl x
+                in crossingPredicates az span b x) task
 
         xs =
             tickedZones
                 fs
-                (zoneToCyl <$> zs)
+                (zoneToCyl zones)
                 (fixToPoint <$> fixesScored)
 
         f :: [Crossing] -> [Maybe ZoneCross]

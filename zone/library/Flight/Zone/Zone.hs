@@ -3,7 +3,7 @@
 module Flight.Zone.Zone
     ( HasArea(..), Zone(..), RawZoneToZone
     , center, radius, showZoneDMS, rawZonesToZones
-    , toCylinder, rawToLatLng
+    , toCylinder, rawToLatLng, unlineZones
     ) where
 
 import Data.Foldable (asum)
@@ -16,7 +16,7 @@ import Flight.Units ()
 import Flight.Units.DegMinSec (fromQ)
 import Flight.Units.Angle (Angle(..))
 import qualified Flight.LatLng.Raw as Raw (RawLat(..), RawLng(..))
-import Flight.LatLng (Lat(..), Lng(..), LatLng(..), fromDMS)
+import Flight.LatLng (AzimuthFwd, Lat(..), Lng(..), LatLng(..), fromDMS)
 import Flight.Zone.Radius (Radius(..), QRadius)
 import Flight.Zone.Bearing (Bearing(..), QBearing)
 import Flight.Zone.Incline (Incline(..), QIncline)
@@ -318,3 +318,19 @@ toCylinder Raw.RawZone{Raw.radius = r, ..} =
     Cylinder
         (rawToRadius r)
         (rawToLatLng lat lng)
+
+-- | Make sure all Line and SemiCircle zones have their normals fixed.
+unlineZones :: (Angle (Quantity a [u| rad |])) => AzimuthFwd a -> [Zone a] -> [Zone a]
+unlineZones azimuthFwd zs =
+    -- WARNING: Assume for now that lines and semicircles are only at goal.
+    -- TODO: Handle lines and semicircles at the end of the speed section.
+    case reverse zs of
+        (Line Nothing r o) : xM : xs ->
+            let az = Bearing . normalize <$> azimuthFwd o (center xM) in
+            reverse $ (Line az r o) : xM : xs
+
+        (SemiCircle Nothing r o) : xM : xs ->
+            let az = Bearing . normalize <$> azimuthFwd o (center xM) in
+            reverse $ (SemiCircle az r o) : xM : xs
+
+        _ -> zs

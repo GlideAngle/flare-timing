@@ -16,11 +16,10 @@ import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..), Extension(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
 
-import Flight.Zone.Raw (RawZone)
-import Flight.Span.Double (spanF, csF, cutF, dppF, csegF)
+import Flight.Span.Double (azimuthF, spanF, csF, cutF, dppF, csegF)
 import Flight.Mask
     ( TaskZone, Sliver(..), TagInterpolate(..)
-    , tagZones, zoneToCylinder
+    , tagZones, zonesToTaskZones
     )
 import Flight.Comp
     ( FileType(CompInput)
@@ -29,7 +28,6 @@ import Flight.Comp
     , CompInputFile(..)
     , CrossZoneFile(..)
     , Task(..)
-    , Zones(..)
     , compToCross
     , crossToTag
     , findCompInput
@@ -94,11 +92,11 @@ go compFile@(CompInputFile compPath) = do
                                 PilotTrackTag p Nothing
 
                             PilotTrackCross p (Just xs) ->
-                                PilotTrackTag p (Just $ flownTag sliver zs' xs))
+                                PilotTrackTag p (Just $ flownTag sliver zs xs))
                         <$> cg
 
-                    | Task{zones = Zones{raw = zs}} <- tasks
-                    , let zs' = (zoneToCylinder :: RawZone -> TaskZone Double) <$> zs
+                    | Task{zones} <- tasks
+                    , let zs = zonesToTaskZones azimuthF zones
                     | cg <- crossing
                     ]
 
@@ -222,4 +220,4 @@ flownTime TrackFlyingSection{flyingTimes = Nothing} = Nothing
 flownTime TrackFlyingSection{flyingTimes = Just (_, t)} = Just t
 
 sliver :: Sliver Double
-sliver = Sliver spanF dppF csegF csF cutF
+sliver = Sliver azimuthF spanF dppF csegF csF cutF

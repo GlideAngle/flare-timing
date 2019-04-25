@@ -1,5 +1,6 @@
 module Flight.Span.Rational
     ( zoneToCylR
+    , azimuthR
     , spanR
     , csR
     , cutR
@@ -12,19 +13,24 @@ import Data.UnitsOfMeasure ((/:))
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import qualified Data.Number.FixedFunctions as F
 
+import Flight.LatLng (AzimuthFwd)
 import Flight.Distance (PathDistance, SpanLatLng)
 import Flight.Zone (Zone, Bearing(..), ArcSweep(..))
+import Flight.Zone.MkZones (Zones)
 import Flight.Zone.Path (distancePointToPoint, costSegment)
-import Flight.Zone.Raw (RawZone)
 import Flight.Zone.Cylinder (CircumSample)
-import qualified Flight.Earth.Sphere.PointToPoint.Rational as Rat (distanceHaversine)
+import qualified Flight.Earth.Sphere.PointToPoint.Rational as Rat
+    (azimuthFwd, distanceHaversine)
 import qualified Flight.Earth.Sphere.Cylinder.Rational as Rat (circumSample)
 import Flight.Task (AngleCut(..))
-import Flight.Mask.Internal.Zone (TaskZone, zoneToCylinder)
+import Flight.Mask.Internal.Zone (TaskZone, zonesToTaskZones)
 import Flight.LatLng.Rational (Epsilon(..), defEps)
 
-zoneToCylR :: RawZone -> TaskZone Rational
-zoneToCylR = zoneToCylinder
+zoneToCylR :: AzimuthFwd Rational -> Zones -> [TaskZone Rational]
+zoneToCylR = zonesToTaskZones
+
+azimuthR :: AzimuthFwd Rational
+azimuthR = Rat.azimuthFwd defEps
 
 spanR :: SpanLatLng Rational
 spanR = Rat.distanceHaversine defEps

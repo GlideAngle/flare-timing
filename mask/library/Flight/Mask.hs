@@ -36,12 +36,12 @@ module Flight.Mask
     , dashPathToGoalTimeRows
     , timeFlown
     , zoneToCylinder
+    , zonesToTaskZones
     , slice
     , section
     , nullFlying
     , togoAtLanding
     , madeAtLanding
-    , separatedRawZones
     , fixFromFix
     ) where
 
@@ -53,7 +53,7 @@ import Flight.Mask.Tracks
 import Flight.Mask.Interpolate
 import Flight.Span.Sliver (Sliver(..))
 import Flight.Mask.Internal.Zone
-    (TaskZone, zoneToCylinder, slice, separatedRawZones, fixFromFix)
+    (TaskZone, zoneToCylinder, zonesToTaskZones, slice, fixFromFix)
 import Flight.Mask.Internal.Race
     ( FlyClipSection(..)
     , Ticked

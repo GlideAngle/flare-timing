@@ -66,7 +66,7 @@ dashPathToGoalR
     zs
     ((_, x) : _) =
     -- NOTE: Didn't make the start so skip the start.
-    distanceEdgeToEdge span dpp cseg cs angleCut mm30 zs'
+    distanceEdgeToEdge az span dpp cseg cs angleCut mm30 zs'
     where
         -- TODO: Don't assume end of speed section is goal.
         zsSpeed = slice speedSection zs
@@ -83,7 +83,7 @@ dashPathToGoalR
     -- NOTE: I don't consider all fixes from last turnpoint made
     -- so this distance is the distance from the very last fix when
     -- at times on this leg the pilot may have been closer to goal.
-    distanceEdgeToEdge span dpp cseg cs angleCut mm30 zs'
+    distanceEdgeToEdge az span dpp cseg cs angleCut mm30 zs'
     where
         -- TODO: Don't assume end of speed section is goal.
         zsSpeed = slice speedSection zs
@@ -104,6 +104,6 @@ zsToCheck sliver@Sliver{..} mkZone x zsNotTicked =
     case zsNotTicked of
         [] -> z : zsNotTicked
         (z0 : zs') ->
-            if separatedZones span [z, z0]
+            if separatedZones az span [z, z0]
                 then z : zsNotTicked
                 else zsToCheck sliver mkZone x zs'

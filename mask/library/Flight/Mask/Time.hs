@@ -9,6 +9,7 @@ import Data.Ratio ((%))
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
+import Flight.LatLng (AzimuthFwd)
 import Flight.Distance (SpanLatLng)
 import Flight.Zone.SpeedSection (SpeedSection)
 import Flight.Kml (Fix, Seconds(..), FixMark(..), MarkedFixes(..))
@@ -22,45 +23,48 @@ import Flight.Mask.Internal.Zone
     )
 import Flight.Mask.Internal.Cross
     (CrossingPredicate, entersSeq, exitsSeq, isStartExit, crossingPredicates)
-import qualified Flight.Zone.Raw as Raw (RawZone(..))
 
 timeFlown
     :: (Real a, Fractional a)
-    => SpanLatLng a
-    -> (Raw.RawZone -> TaskZone a)
+    => AzimuthFwd a
+    -> SpanLatLng a
+    -> (Zones -> [TaskZone a])
     -> Task k
     -> MarkedFixes
     -> Maybe (PilotTime (Quantity Double [u| h |]))
-timeFlown span zoneToCyl task@Task{speedSection, zones, zoneTimes, startGates} xs =
-    if null (raw zones) || not atGoal then Nothing else
-    flownDuration span speedSection fs cs zoneTimes startGates xs
+timeFlown az span zoneToCyl task@Task{speedSection, zones, zoneTimes, startGates} xs =
+    if null zs || not atGoal then Nothing else
+    flownDuration az span speedSection fs zs zoneTimes startGates xs
     where
         fs =
             (\x ->
-                let b = isStartExit span zoneToCyl x
-                in crossingPredicates span b x) task
+                let b = isStartExit az span zoneToCyl x
+                in crossingPredicates az span b x) task
 
-        cs = zoneToCyl <$> raw zones
-        atGoal = madeGoal span zoneToCyl task xs
+        zs = zoneToCyl zones
+        atGoal = madeGoal az span zoneToCyl task xs
 
-flownDuration :: (Real a, Fractional a)
-              => SpanLatLng a
-              -> SpeedSection
-              -> [CrossingPredicate a Crossing]
-              -> [TaskZone a]
-              -> [OpenClose]
-              -> [StartGate]
-              -> MarkedFixes
-              -> Maybe (PilotTime (Quantity Double [u| h |]))
-flownDuration span speedSection fs zs os gs MarkedFixes{mark0, fixes}
+flownDuration
+    :: (Real a, Fractional a)
+    => AzimuthFwd a
+    -> SpanLatLng a
+    -> SpeedSection
+    -> [CrossingPredicate a Crossing]
+    -> [TaskZone a]
+    -> [OpenClose]
+    -> [StartGate]
+    -> MarkedFixes
+    -> Maybe (PilotTime (Quantity Double [u| h |]))
+flownDuration az span speedSection fs zs os gs MarkedFixes{mark0, fixes}
     | null zs = Nothing
     | null fixes = Nothing
     | otherwise =
-        durationViaZones span fixToPoint mark speedSection fs zs os gs mark0 fixes
+        durationViaZones az span fixToPoint mark speedSection fs zs os gs mark0 fixes
 
 durationViaZones
     :: (Real a, Fractional a)
-    => SpanLatLng a
+    => AzimuthFwd a
+    -> SpanLatLng a
     -> (Fix -> TrackZone a)
     -> (Fix -> Seconds)
     -> SpeedSection
@@ -71,7 +75,7 @@ durationViaZones
     -> UTCTime
     -> [Fix]
     -> Maybe (PilotTime (Quantity Double [u| h |]))
-durationViaZones span mkZone atTime speedSection _ zs os gs t0 xs =
+durationViaZones az span mkZone atTime speedSection _ zs os gs t0 xs =
     if null xs then Nothing else
     case (osSpeed, zsSpeed, reverse zsSpeed) of
         ([], _, _) -> Nothing
@@ -100,7 +104,7 @@ durationViaZones span mkZone atTime speedSection _ zs os gs t0 xs =
             where
                 exits' :: (Fix, (TrackZone _, TrackZone _)) -> Bool
                 exits' (_, (zx, zy)) =
-                    case exitsSeq span z0 [zx, zy] of
+                    case exitsSeq az span z0 [zx, zy] of
                         Right (ZoneExit _ _) : _ ->
                             True
 
@@ -109,7 +113,7 @@ durationViaZones span mkZone atTime speedSection _ zs os gs t0 xs =
 
                 enters' :: (Fix, (TrackZone _, TrackZone _)) -> Bool
                 enters' (_, (zx, zy)) =
-                    case entersSeq span zN [zx, zy] of
+                    case entersSeq az span zN [zx, zy] of
                         Left (ZoneEntry _ _) : _ ->
                             True
 

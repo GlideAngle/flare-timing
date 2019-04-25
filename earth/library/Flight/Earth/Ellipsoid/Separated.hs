@@ -3,14 +3,15 @@
 module Flight.Earth.Ellipsoid.Separated (separatedZones) where
 
 import Prelude hiding (span)
+import Data.Maybe (fromMaybe)
 import Data.UnitsOfMeasure ((+:), (-:), (*:), u, unQuantity, recip')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Units ()
-import Flight.Zone (Zone(..), Radius(..), radius)
+import Flight.Zone (Zone(..), Radius(..), Bearing(..), radius)
 import Flight.Zone.Path (distancePointToPoint)
 import Flight.Distance (TaskDistance(..), PathDistance(..), SpanLatLng)
-import Flight.LatLng (QLat, Lat(..), QLng, Lng(..), LatLng(..))
+import Flight.LatLng (AzimuthFwd, QLat, Lat(..), QLng, Lng(..), LatLng(..))
 import Flight.Earth.Ellipsoid (Ellipsoid(..), polarRadius)
 
 boundingBoxSeparated
@@ -88,28 +89,38 @@ boxSeparated
 separated
     :: (Real a, Fractional a)
     => Ellipsoid a
+    -> AzimuthFwd a
     -> SpanLatLng a
     -> Zone a
     -> Zone a
     -> Bool
 
-separated _ _ x@(Point _) y@(Point _) =
+separated _ _ _ x@(Point _) y@(Point _) =
     x /= y
 
-separated ellipsoid span x y@(Point _) =
-    separated ellipsoid span y x
+separated ellipsoid az span x y@(Point _) =
+    separated ellipsoid az span y x
 
-separated
-    ellipsoid
-    span
-    x@(Point _)
-    y@(Cylinder r _) =
+separated ellipsoid _ span x@(Point _) y@(Cylinder r _) =
     boundingBoxSeparated ellipsoid x y || d > ry
     where
         (Radius ry) = r
         (TaskDistance d) = edgesSum $ distancePointToPoint span [x, y]
 
-separated _ span x@(Point _) y =
+separated _ _ _ (Point _) (Line Nothing _ _) =
+    error "A line's azimuth should be set."
+
+separated ellipsoid azimuthFwd span x@(Point xc) y@(Line (Just (Bearing θ)) r yc) =
+    boundingBoxSeparated ellipsoid x y || not (d < ry && overLine)
+    where
+        (Radius ry) = r
+        (TaskDistance d) = edgesSum $ distancePointToPoint span [x, y]
+        overLine = fromMaybe False $ do
+            az <- azimuthFwd yc xc
+            let (MkQuantity δ) = θ -: az
+            return $ sin (realToFrac δ :: Double) < 0
+
+separated _ _ span x@(Point _) y =
     d > ry
     where
         (Radius ry) = radius y
@@ -117,7 +128,7 @@ separated _ span x@(Point _) y =
 
 -- | Consider cylinders separated if one fits inside the other or if they don't
 -- touch.
-separated _ span xc@(Cylinder (Radius xR) x) yc@(Cylinder (Radius yR) y)
+separated _ _ span xc@(Cylinder (Radius xR) x) yc@(Cylinder (Radius yR) y)
     | x == y = xR /= yR
     | dxy + minR < maxR = True
     | otherwise = clearlySeparated span xc yc
@@ -131,7 +142,7 @@ separated _ span xc@(Cylinder (Radius xR) x) yc@(Cylinder (Radius yR) y)
         (MkQuantity minR) = min xR yR
         (MkQuantity maxR) = max xR yR
 
-separated _ span x y =
+separated _ _ span x y =
     clearlySeparated span x y
 
 -- | Are the control zones separated? This a prerequisite to being able to work
@@ -143,11 +154,12 @@ separated _ span x y =
 separatedZones
     :: (Real a, Fractional a)
     => Ellipsoid a
+    -> AzimuthFwd a
     -> SpanLatLng a
     -> [Zone a]
     -> Bool
-separatedZones ellipsoid span xs =
-    and $ zipWith (separated ellipsoid span) xs (tail xs)
+separatedZones ellipsoid azFwd span xs =
+    and $ zipWith (separated ellipsoid azFwd span) xs (tail xs)
 
 clearlySeparated :: Real a => SpanLatLng a -> Zone a -> Zone a -> Bool
 clearlySeparated span x y =

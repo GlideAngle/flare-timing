@@ -14,7 +14,7 @@ import Data.Maybe (listToMaybe)
 import Data.List (nub, sort, findIndex)
 import Control.Lens ((^?), element)
 
-import qualified Flight.Zone.Raw as Raw (RawZone(..))
+import Flight.LatLng (AzimuthFwd)
 import Flight.Distance (SpanLatLng)
 import Flight.Comp (Task(..), Zones(..))
 import Flight.Track.Time (ZoneIdx(..))
@@ -40,37 +40,40 @@ type CrossingPredicate a b
 
 insideZone
     :: (Real a, Fractional a)
-    => SpanLatLng a
+    => AzimuthFwd a
+    -> SpanLatLng a
     -> TaskZone a
     -> [TrackZone a]
     -> Maybe ZoneIdx
-insideZone span (TaskZone z) =
+insideZone az span (TaskZone z) =
     fmap ZoneIdx
-    . findIndex (\(TrackZone x) -> not $ separatedZones span [x, z])
+    . findIndex (\(TrackZone x) -> not $ separatedZones az span [x, z])
 
 outsideZone
     :: (Real a, Fractional a)
-    => SpanLatLng a
+    => AzimuthFwd a
+    -> SpanLatLng a
     -> TaskZone a
     -> [TrackZone a]
     -> Maybe ZoneIdx
-outsideZone span (TaskZone z) =
+outsideZone az span (TaskZone z) =
     fmap ZoneIdx
-    . findIndex (\(TrackZone x) -> separatedZones span [x, z])
+    . findIndex (\(TrackZone x) -> separatedZones az span [x, z])
 
 zoneSingle
-    :: (span -> zone -> [x] -> Maybe ZoneIdx)
-    -> (span -> zone -> [x] -> Maybe ZoneIdx)
+    :: (az -> span -> zone -> [x] -> Maybe ZoneIdx)
+    -> (az -> span -> zone -> [x] -> Maybe ZoneIdx)
     -> (ZoneIdx -> ZoneIdx -> crossing)
+    -> az
     -> span
     -> zone
     -> [x]
     -> [crossing]
-zoneSingle f g ctor span z xs =
-    case g span z xs of
+zoneSingle f g ctor az span z xs =
+    case g az span z xs of
         Nothing -> []
         Just j@(ZoneIdx j') ->
-            case f span z . reverse $ ys of
+            case f az span z . reverse $ ys of
                 Just 0 -> [ctor (j - 1) j]
                 _ -> []
             where
@@ -80,7 +83,8 @@ zoneSingle f g ctor span z xs =
 -- Searches the fixes in order.
 entersSingle
     :: (Real a, Fractional a)
-    => SpanLatLng a
+    => AzimuthFwd a
+    -> SpanLatLng a
     -> CrossingPredicate a ZoneEntry
 entersSingle =
     zoneSingle outsideZone insideZone ZoneEntry
@@ -89,7 +93,8 @@ entersSingle =
 -- Searches the fixes in order.
 exitsSingle
     :: (Real a, Fractional a)
-    => SpanLatLng a
+    => AzimuthFwd a
+    -> SpanLatLng a
     -> CrossingPredicate a ZoneExit
 exitsSingle  =
     zoneSingle insideZone outsideZone ZoneExit
@@ -106,39 +111,42 @@ reindex n (Left (ZoneEntry i j)) =
 
 crossSeq
     :: (Real a, Fractional a)
-    => SpanLatLng a
+    => AzimuthFwd a
+    -> SpanLatLng a
     -> CrossingPredicate a Crossing
-crossSeq span z xs =
+crossSeq az span z xs =
     unOrdCrossing <$> (nub . sort $ enters ++ exits)
     where
-        enters = OrdCrossing <$> entersSeq span z xs
-        exits = OrdCrossing <$> exitsSeq span z xs
+        enters = OrdCrossing <$> entersSeq az span z xs
+        exits = OrdCrossing <$> exitsSeq az span z xs
 
 -- | Find the sequence of @take _ [entry, exit, .., entry, exit]@ going forward.
 entersSeq
     :: (Real a, Fractional a)
-    => SpanLatLng a
+    => AzimuthFwd a
+    -> SpanLatLng a
     -> CrossingPredicate a Crossing
-entersSeq span z xs =
-    case entersSingle span z xs of
+entersSeq az span z xs =
+    case entersSingle az span z xs of
         [] ->
             []
 
         (hit@(ZoneEntry _ jIdx@(ZoneIdx j)) : _) ->
-            Left hit : (reindex jIdx <$> exitsSeq span z (drop j xs))
+            Left hit : (reindex jIdx <$> exitsSeq az span z (drop j xs))
 
 -- | Find the sequence of @take _ [exit, entry.., exit, entry]@ going forward.
 exitsSeq
     :: (Real a, Fractional a)
-    => SpanLatLng a
+    => AzimuthFwd a
+    -> SpanLatLng a
     -> CrossingPredicate a Crossing
-exitsSeq span z xs =
-    case exitsSingle span z xs of
+exitsSeq az span z xs =
+    case exitsSingle az span z xs of
         [] ->
             []
 
         (hit@(ZoneExit _ jIdx@(ZoneIdx j)) : _) ->
-            Right hit : (reindex jIdx <$> entersSeq span z (drop j xs))
+            Right hit : (reindex jIdx <$> entersSeq az span z (drop j xs))
 
 -- | A start zone is either entry or exit when all other zones are entry.
 -- If I must fly into the start cylinder to reach the next turnpoint then
@@ -147,22 +155,22 @@ exitsSeq span z xs =
 -- completely separate from the next turnpoint.
 isStartExit
     :: (Real a, Fractional a)
-    => SpanLatLng a
-    -> (Raw.RawZone
-    -> TaskZone a)
+    => AzimuthFwd a
+    -> SpanLatLng a
+    -> (Zones -> [TaskZone a])
     -> Task k
     -> Bool
-isStartExit span zoneToCyl Task{speedSection, zones} =
+isStartExit az span zoneToCyl Task{speedSection, zones} =
     case speedSection of
         Nothing ->
             False
 
         Just (i, _) ->
-            let zs = raw zones in
+            let zs = zoneToCyl zones in
             case (zs ^? element (i - 1), zs ^? element i) of
                 (Just start, Just tp1) ->
-                    separatedZones span
-                    $ unTaskZone . zoneToCyl
+                    separatedZones az span
+                    $ unTaskZone
                     <$> [start, tp1]
 
                 _ ->
@@ -188,12 +196,13 @@ isStartExit span zoneToCyl Task{speedSection, zones} =
 -- 148.505133,-32.764317,0 147.913967,-33.363200,448 147.913883,-33.363433,448 147.913817,-33.363633,448 147.913400,-33.364217,448 
 crossingPredicates
     :: (Real a, Fractional a)
-    => SpanLatLng a
+    => AzimuthFwd a
+    -> SpanLatLng a
     -> Bool -- ^ Is the start an exit cylinder?
     -> Task k
     -> [CrossingPredicate a Crossing]
-crossingPredicates span _ Task{zones} =
-    const (crossSeq span) <$> raw zones
+crossingPredicates az span _ Task{zones} =
+    const (crossSeq az span) <$> raw zones
 
 -- | If the zone is an exit, then take the last crossing otherwise take the
 -- first crossing.

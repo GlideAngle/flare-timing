@@ -24,7 +24,6 @@ import Flight.Mask.Internal.Zone
     )
 import Flight.Mask.Interpolate (TagInterpolate(..))
 import Flight.Mask.Tag (tagZones, madeZones)
-import qualified Flight.Zone.Raw as Raw (RawZone(..))
 
 data GroupLeg =
     GroupLeg
@@ -115,11 +114,11 @@ groupByLeg
         , TagInterpolate a b
         )
     => a
-    -> (Raw.RawZone -> TaskZone b)
+    -> (Zones -> [TaskZone b])
     -> Task k
     -> FlyCut UTCTime MarkedFixes
     -> [(Maybe GroupLeg, MarkedFixes)]
-groupByLeg tagInterp zoneToCyl task@Task{zones = Zones{raw = zs}} flyCut =
+groupByLeg tagInterp zoneToCyl task@Task{zones} flyCut =
     [
         let g =
                 case (nthR, zerothL) of
@@ -187,10 +186,10 @@ groupByLeg tagInterp zoneToCyl task@Task{zones = Zones{raw = zs}} flyCut =
 
         xs :: [Maybe ZoneTag]
         xs =
-            tagZones tagInterp (zoneToCyl <$> zs)
+            tagZones tagInterp (zoneToCyl zones)
             . unSelectedCrossings
             . selectedCrossings
-            $ madeZones (spanner tagInterp) zoneToCyl task mf
+            $ madeZones (azimuth tagInterp) (spanner tagInterp) zoneToCyl task mf
 
         ts :: [Maybe UTCTime]
         ts =

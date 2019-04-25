@@ -3,15 +3,16 @@
 module Flight.Earth.Flat.Separated (separatedZones) where
 
 import Prelude hiding (span)
-import Data.UnitsOfMeasure ((+:), u)
+import Data.Maybe (fromMaybe)
+import Data.UnitsOfMeasure ((+:), (-:), u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import qualified UTMRef as HC (easting, northing)
 
 import Flight.Units ()
-import Flight.Zone (Zone(..), Radius(..), radius)
+import Flight.Zone (Zone(..), Radius(..), Bearing(..), radius)
 import Flight.Zone.Path (distancePointToPoint)
 import Flight.Distance (TaskDistance(..), PathDistance(..), SpanLatLng)
-import Flight.LatLng (LatLng(..))
+import Flight.LatLng (AzimuthFwd, LatLng(..))
 import Flight.Earth.Flat.Projected.Internal (zoneToProjectedEastNorth)
 
 boundingBoxSeparated
@@ -48,28 +49,40 @@ boxSeparated (MkQuantity r', yLL) xLL =
     where
         r = realToFrac r'
 
-separated :: (Real a, Fractional a)
-          => SpanLatLng a
-          -> Zone a
-          -> Zone a
-          -> Bool
+separated
+    :: (Real a, Fractional a)
+    => AzimuthFwd a
+    -> SpanLatLng a
+    -> Zone a
+    -> Zone a
+    -> Bool
 
-separated _ x@(Point _) y@(Point _) =
+separated _ _ x@(Point _) y@(Point _) =
     x /= y
 
-separated span x y@(Point _) =
-    separated span y x
+separated az span x y@(Point _) =
+    separated az span y x
 
-separated
-    span
-    x@(Point _)
-    y@(Cylinder r _) =
+separated _ span x@(Point _) y@(Cylinder r _) =
     boundingBoxSeparated x y || d > ry
     where
         (Radius ry) = r
         (TaskDistance d) = edgesSum $ distancePointToPoint span [x, y]
 
-separated span x@(Point _) y =
+separated _ _ (Point _) (Line Nothing _ _) =
+    error "A line's azimuth should be set."
+
+separated azimuthFwd span x@(Point xc) y@(Line (Just (Bearing θ)) r yc) =
+    boundingBoxSeparated x y || not (d < ry && overLine)
+    where
+        (Radius ry) = r
+        (TaskDistance d) = edgesSum $ distancePointToPoint span [x, y]
+        overLine = fromMaybe False $ do
+            az <- azimuthFwd yc xc
+            let (MkQuantity δ) = θ -: az
+            return $ sin (realToFrac δ :: Double) < 0
+
+separated _ span x@(Point _) y =
     d > ry
     where
         (Radius ry) = radius y
@@ -77,7 +90,7 @@ separated span x@(Point _) y =
 
 -- | Consider cylinders separated if one fits inside the other or if they don't
 -- touch.
-separated span xc@(Cylinder (Radius xR) x) yc@(Cylinder (Radius yR) y)
+separated _ span xc@(Cylinder (Radius xR) x) yc@(Cylinder (Radius yR) y)
     | x == y = xR /= yR
     | dxy + minR < maxR = True
     | otherwise = clearlySeparated span xc yc
@@ -91,7 +104,7 @@ separated span xc@(Cylinder (Radius xR) x) yc@(Cylinder (Radius yR) y)
         (MkQuantity minR) = min xR yR
         (MkQuantity maxR) = max xR yR
 
-separated span x y =
+separated _ span x y =
     clearlySeparated span x y
 
 -- | Are the control zones separated? This a prerequisite to being able to work
@@ -100,9 +113,14 @@ separated span x y =
 -- distance between them. This will be seen where the smaller concentric cylinder
 -- marks the launch and the larger one, as an exit cylinder, marks the start of the
 -- speed section.
-separatedZones :: (Real a, Fractional a) => SpanLatLng a -> [Zone a] -> Bool
-separatedZones span xs =
-    and $ zipWith (separated span) xs (tail xs)
+separatedZones
+    :: (Real a, Fractional a)
+    => AzimuthFwd a
+    -> SpanLatLng a
+    -> [Zone a]
+    -> Bool
+separatedZones azFwd span xs =
+    and $ zipWith (separated azFwd span) xs (tail xs)
 
 clearlySeparated :: Real a => SpanLatLng a -> Zone a -> Zone a -> Bool
 clearlySeparated span x y =

@@ -21,19 +21,18 @@ import Flight.Units ()
 import Flight.Mask.Internal.Zone (TaskZone(..), fixFromFix, fixToPoint, rowToPoint)
 import Flight.Mask.Internal.Race (Ticked)
 import Flight.Mask.Internal.Dash (dashPathToGoalR, dashToGoalR)
-import qualified Flight.Zone.Raw as Raw (RawZone(..))
 import Flight.Distance (PathDistance(..), QTaskDistance, TaskDistance(..))
 import Flight.Task (Zs(..), fromZs)
 import Flight.Span.Math (Math(..))
 import Flight.Span.Sliver (Sliver(..))
-import Flight.Span.Double (zoneToCylF, spanF, csF, cutF, dppF, csegF)
-import Flight.Span.Rational (zoneToCylR, spanR, csR, cutR, dppR, csegR)
+import Flight.Span.Double (zoneToCylF, azimuthF, spanF, csF, cutF, dppF, csegF)
+import Flight.Span.Rational (zoneToCylR, azimuthR, spanR, csR, cutR, dppR, csegR)
 
 dashDistancesToGoal
     :: (Real a, Fractional a, FlyClipping UTCTime MarkedFixes)
     => Ticked
     -> Sliver a
-    -> (Raw.RawZone -> TaskZone a)
+    -> (Zones -> [TaskZone a])
     -> Task k
     -> FlyCut UTCTime MarkedFixes
     -> Maybe [(Maybe Fix, Maybe (QTaskDistance a [u| m |]))]
@@ -66,7 +65,7 @@ dashDistanceToGoal
     :: (Real a, Fractional a, FlyClipping UTCTime MarkedFixes)
     => Ticked
     -> Sliver a
-    -> (Raw.RawZone -> TaskZone a)
+    -> (Zones -> [TaskZone a])
     -> Task k
     -> FlyCut UTCTime MarkedFixes
     -> Maybe (QTaskDistance a [u| m |])
@@ -80,7 +79,7 @@ dashPathToGoalTimeRows
     :: (Real a, Fractional a, FlyClipping UTCTime [TimeRow])
     => Ticked
     -> Sliver a
-    -> (Raw.RawZone -> TaskZone a)
+    -> (Zones -> [TaskZone a])
     -> Task k
     -> FlyCut UTCTime [TimeRow]
     -> Zs (PathDistance a)
@@ -91,7 +90,7 @@ dashPathToGoalTimeRows
     if null (raw zones) then Z0 else
     dashPathToGoalR ticked sliver rowToPoint speedSection zs ixs
     where
-        zs = zoneToCyl <$> raw zones
+        zs = zoneToCyl zones
         ixs = revindex fixes
         FlyCut{uncut = fixes} = clipToFlown flyCut
 
@@ -99,7 +98,7 @@ dashPathToGoalMarkedFixes
     :: (Real a, Fractional a, FlyClipping UTCTime MarkedFixes)
     => Ticked
     -> Sliver a
-    -> (Raw.RawZone -> TaskZone a)
+    -> (Zones -> [TaskZone a])
     -> Task k
     -> FlyCut UTCTime MarkedFixes
     -> Zs (PathDistance a)
@@ -110,7 +109,7 @@ dashPathToGoalMarkedFixes
     if null (raw zones) then Z0 else
     dashPathToGoalR ticked sliver fixToPoint speedSection zs ixs
     where
-        zs = zoneToCyl <$> raw zones
+        zs = zoneToCyl zones
         ixs = revindex fixes
         FlyCut{uncut = MarkedFixes{fixes}} = clipToFlown flyCut
 
@@ -123,7 +122,7 @@ lastFixToGoal
     :: (Real a, Fractional a)
     => Ticked -- ^ The zones ticked
     -> Sliver a
-    -> (Raw.RawZone -> TaskZone a)
+    -> (Zones -> [TaskZone a])
     -> Task k
     -> UTCTime
     -> [(ZoneIdx, Kml.Fix)]
@@ -140,7 +139,7 @@ lastFixToGoal
         ((i, y) : _) -> (Just $ fixFromFix mark0 i y, d)
     where
         d = dashToGoalR ticked sliver fixToPoint speedSection zs iys
-        zs = zoneToCyl <$> raw zones
+        zs = zoneToCyl zones
         iys = reverse ixs
 
 dashDistanceFlown
@@ -148,7 +147,7 @@ dashDistanceFlown
     => QTaskDistance a [u| m |]
     -> Ticked
     -> Sliver a
-    -> (Raw.RawZone -> TaskZone a)
+    -> (Zones -> [TaskZone a])
     -> Task k
     -> FlyCut UTCTime MarkedFixes
     -> Maybe (QTaskDistance a [u| m |])
@@ -157,15 +156,15 @@ dashDistanceFlown
     ticked
     sliver
     zoneToCyl
-    Task{speedSection, zones = Zones{raw = zs}}
+    Task{speedSection, zones}
     flyCut =
     if null zs then Nothing else do
         TaskDistance dPilot
-            <- dashToGoalR ticked sliver fixToPoint speedSection zs' ixs
+            <- dashToGoalR ticked sliver fixToPoint speedSection zs ixs
 
         return . TaskDistance $ dTask -: dPilot
     where
-        zs' = zoneToCyl <$> zs
+        zs = zoneToCyl zones
         ixs = reverse . index $ fixes
         FlyCut{uncut = MarkedFixes{fixes}} = clipToFlown flyCut
 
@@ -183,15 +182,19 @@ togoAtLanding math ticked task xs =
         Floating ->
             dashDistanceToGoal
                 ticked
-                (Sliver spanF dppF csegF csF cutF)
-                zoneToCylF task xs
+                (Sliver azimuthF spanF dppF csegF csF cutF)
+                (zoneToCylF azimuthF)
+                task
+                xs
 
         Rational ->
             fromR <$>
             dashDistanceToGoal
                 ticked
-                (Sliver spanR dppR csegR csR cutR)
-                zoneToCylR task xs
+                (Sliver azimuthR spanR dppR csegR csR cutR)
+                (zoneToCylR azimuthR)
+                task
+                xs
     where
         fromR :: QTaskDistance Rational [u| m |] -> QTaskDistance Double [u| m |]
         fromR (TaskDistance d) = TaskDistance . fromRational' $ d
@@ -209,15 +212,19 @@ madeAtLanding math dTaskF@(TaskDistance td) ticked task xs =
             dashDistanceFlown
                 dTaskF
                 ticked
-                (Sliver spanF dppF csegF csF cutF)
-                zoneToCylF task xs
+                (Sliver azimuthF spanF dppF csegF csF cutF)
+                (zoneToCylF azimuthF)
+                task
+                xs
 
         Rational ->
             (\(TaskDistance d) -> TaskDistance . fromRational' $ d) <$>
             dashDistanceFlown
                 dTaskR
                 ticked
-                (Sliver spanR dppR csegR csR cutR)
-                zoneToCylR task xs
+                (Sliver azimuthR spanR dppR csegR csR cutR)
+                (zoneToCylR azimuthR)
+                task
+                xs
     where
         dTaskR = TaskDistance $ toRational' td

@@ -24,7 +24,7 @@ import Data.Graph.Inductive.Graph
     (Graph(nodeRange, mkGraph), Node, Path, LEdge, match)
 import Data.Graph.Inductive.PatriciaTree (Gr)
 
-import Flight.LatLng (LatLng(..))
+import Flight.LatLng (AzimuthFwd, LatLng(..))
 import Flight.Zone (Zone(..), ArcSweep(..), center)
 import Flight.Zone.Cylinder
     ( Tolerance(..)
@@ -83,7 +83,8 @@ data AngleCut a =
 
 shortestPath
     :: (Real a, Fractional a)
-    => SpanLatLng a
+    => AzimuthFwd a
+    -> SpanLatLng a
     -> DistancePointToPoint a
     -> CircumSample a
     -> GraphBuilder a
@@ -91,9 +92,9 @@ shortestPath
     -> Tolerance a
     -> [Zone a]
     -> Zs (PathDistance a)
-shortestPath _ _ _ _ _ _ [] = Z0
-shortestPath _ _ _ _ _ _ [_] = Z1
-shortestPath span distancePointToPoint cs builder angleCut tolerance xs =
+shortestPath _ _ _ _ _ _ _ [] = Z0
+shortestPath _ _ _ _ _ _ _ [_] = Z1
+shortestPath az span distancePointToPoint cs builder angleCut tolerance xs =
     case xs of
         [] -> Z0
         [_] -> Z1
@@ -110,7 +111,7 @@ shortestPath span distancePointToPoint cs builder angleCut tolerance xs =
     where
         zd =
             distance
-                span distancePointToPoint cs builder angleCut tolerance xs
+                az span distancePointToPoint cs builder angleCut tolerance xs
 
 dedup :: Eq a => [a] -> [a]
 dedup [] = []
@@ -161,7 +162,8 @@ distanceUnchecked samples n span distancePointToPoint cs builder cut tolerance x
         -- point.
         (dist, zs') =
             case reverse xs of
-                ((Line Nothing _ _) : _) -> error "Need a line with azimuth or normal set."
+                ((Line Nothing _ _) : _) ->
+                    error "Need a line with azimuth or normal set."
                 (xN@(Line (Just _) _ _) : _) ->
                     let zPts = Point . point <$> zs in
                     case (zPts, reverse zPts) of
@@ -176,7 +178,8 @@ distanceUnchecked samples n span distancePointToPoint cs builder cut tolerance x
 
 distance
     :: (Real a, Fractional a)
-    => SpanLatLng a
+    => AzimuthFwd a
+    -> SpanLatLng a
     -> DistancePointToPoint a
     -> CircumSample a
     -> GraphBuilder a
@@ -184,19 +187,19 @@ distance
     -> Tolerance a
     -> [Zone a]
     -> (Zs (PathCost a), [LatLng a [u| rad |]])
-distance _ _ _ _ _ _ [] = (Z0, [])
-distance _ _ _ _ _ _ [_] = (Z1, [])
+distance _ _ _ _ _ _ _ [] = (Z0, [])
+distance _ _ _ _ _ _ _ [_] = (Z1, [])
 
 -- NOTE: Drop the separation requirement when working out the distance from
 -- point to point tagging one intervening zone as this is used in interpolating
 -- the exact tagging point and time between fixes.
-distance span distancePointToPoint cs builder cut tolerance xs@[Point _, _, Point _] =
+distance _ span distancePointToPoint cs builder cut tolerance xs@[Point _, _, Point _] =
     distanceUnchecked (Samples 5) 20 span distancePointToPoint cs builder cut tolerance xs
 
 -- NOTE: Allow duplicates as some tasks are set that way but otherwise zones
 -- must be separated.
-distance span distancePointToPoint cs builder cut tolerance xs
-    | not . separatedZones span . dedup $ xs = (ZxNotSeparated, [])
+distance az span distancePointToPoint cs builder cut tolerance xs
+    | not . separatedZones az span . dedup $ xs = (ZxNotSeparated, [])
     | otherwise = distanceUnchecked (Samples 5) 6 span distancePointToPoint cs builder cut tolerance xs
 
 pad :: Ord a => [Zone a] -> [Zone a]
