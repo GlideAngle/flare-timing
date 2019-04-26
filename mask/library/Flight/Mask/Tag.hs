@@ -37,7 +37,6 @@ import Flight.Track.Cross
 import Flight.Track.Time (ZoneIdx(..))
 import Flight.Comp (IxTask(..), Task(..), TaskStop(..), Zones(..))
 import Flight.Units ()
-import qualified Flight.Zone.Raw as Raw (RawZone(..))
 import Flight.Mask.Internal.Race ()
 import Flight.Mask.Internal.Zone
     ( MadeZones(..)
@@ -96,15 +95,15 @@ started
     :: (Real a, Fractional a)
     => AzimuthFwd a
     -> SpanLatLng a
-    -> (Raw.RawZone -> TaskZone a)
+    -> (Zones -> [TaskZone a])
     -> FnTask k Bool
 started az span fromZones Task{speedSection, zones} MarkedFixes{fixes} =
-    case slice speedSection (raw zones) of
+    case slice speedSection (fromZones zones) of
         [] ->
             False
 
         z : _ ->
-            let ez = exitsSeq az span (fromZones z) (fixToPoint <$> fixes)
+            let ez = exitsSeq az span z (fixToPoint <$> fixes)
             in case ez of
                  Right (ZoneExit _ _) : _ ->
                      True
