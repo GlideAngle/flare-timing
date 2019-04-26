@@ -112,7 +112,7 @@ separated azimuthFwd span x@(Point xc) y@(Line (Just (Bearing θ)) r yc) =
         overLine = fromMaybe False $ do
             az <- azimuthFwd yc xc
             let (MkQuantity δ) = θ -: az
-            return $ sin (realToFrac δ :: Double) < 0
+            return $ cos (realToFrac δ :: Double) < 0
 
 separated _ span x@(Point _) y =
     d > ry
