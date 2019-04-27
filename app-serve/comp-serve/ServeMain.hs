@@ -327,12 +327,15 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
             (const $ return Nothing)
 
     case (compSettings, routes, crossing, tagging, masking, landing, pointing, norming) of
-        (Nothing, _, _, _, _, _, _, _) -> putStrLn "Couldn't read the comp settings"
+        (Nothing, _, _, _, _, _, _, _) ->
+            putStrLn "Couldn't read the comp settings"
         (Just cs, rt@(Just _), cg@(Just _), tg@(Just _), mg@(Just _), lo@(Just _), gp@(Just _), ns@(Just _)) ->
             f =<< mkGapPointApp (Config compFile cs rt cg tg mg lo gp ns)
-        (Just cs, rt@(Just _), _, _, _, _, _, _) ->
+        (Just cs, rt@(Just _), _, _, _, _, _, _) -> do
+            putStrLn "WARNING: Only serving comp inputs and task lengths"
             f =<< mkTaskLengthApp (Config compFile cs rt Nothing Nothing Nothing Nothing Nothing Nothing)
-        (Just cs, _, _, _, _, _, _, _) ->
+        (Just cs, _, _, _, _, _, _, _) -> do
+            putStrLn "WARNING: Only serving comp inputs"
             f =<< mkCompInputApp (Config compFile cs Nothing Nothing Nothing Nothing Nothing Nothing Nothing)
     where
         -- NOTE: Add gzip with wai gzip middleware.
