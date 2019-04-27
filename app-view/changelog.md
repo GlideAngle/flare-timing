@@ -17,6 +17,8 @@ of this changelog.
         Race (spherical subset of waypoints)
         Race (ellipsoid subset of waypoints)
 * Detect crossings of line goals.
+* Show the list of tasks even when task lengths have not been computed.
+* Show the task name in the list of tasks.
 
 # Interpolate Zone Tagging
 ## app-view-0.18
