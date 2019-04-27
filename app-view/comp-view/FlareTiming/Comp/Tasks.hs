@@ -19,18 +19,28 @@ taskList
     => Dynamic t [TaskDistance]
     -> Dynamic t [Task]
     -> m (Event t IxTask)
-taskList lens xs = do
-    let ixs = zip (IxTask <$> [1..]) <$> xs
-    ys <- elClass "ol" "ol-tasks" $ simpleList ixs (liTask lens)
-    return $ switchDyn (listToIxTask <$> ys)
+taskList ds' xs = do
+    ev <- dyn $ ffor ds' (\ds -> do
+            if null ds
+                then
+                    elClass "article" "tile is-child" $ do
+                        elClass "article" "notification is-warning" $
+                            el "p" $ text "No distances are available for tasks."
+                else
+                    return ()
+
+            let ixs = zip (IxTask <$> [1..]) <$> xs
+            ys <- elClass "ol" "ol-tasks" $ simpleList ixs (liTask ds)
+            return $ switchDyn (listToIxTask <$> ys))
+
+    switchHold never ev
 
 liTask
     :: MonadWidget t m
-    => Dynamic t [TaskDistance]
+    => [TaskDistance]
     -> Dynamic t (IxTask, Task)
     -> m (Event t ())
-liTask ds' x' = do
-    ds <- sample . current $ ds'
+liTask ds x' = do
     (ix, x) <- sample . current $ x'
     case ix of
         IxTaskNone -> return never

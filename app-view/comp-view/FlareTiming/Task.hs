@@ -29,12 +29,12 @@ view () = do
     xs <- holdDyn [] =<< getTasks pb
 
     let bothLists = zipDynWith (,) ls xs
-    let bothNotNull = ffor2 ls xs (\ls' xs' -> not $ null ls' || null xs')
+    let xsNotNull = ffor xs (\xs' -> not $ null xs')
 
     lxs <-
             holdDyn ([], [])
             $ tag (current bothLists)
-            $ gate (current bothNotNull)
+            $ gate (current xsNotNull)
             $ leftmost
                 [ () <$ updated ls
                 , () <$ updated xs
