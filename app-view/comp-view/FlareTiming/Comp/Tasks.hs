@@ -2,7 +2,7 @@ module FlareTiming.Comp.Tasks (taskList) where
 
 import Reflex
 import Reflex.Dom
-import qualified Data.Text as T (intercalate)
+import qualified Data.Text as T (pack, intercalate)
 
 import FlareTiming.Events (IxTask(..))
 import WireTypes.Comp (Task(..), getRaceRawZones)
@@ -40,7 +40,7 @@ liTask
     -> Dynamic t (IxTask, Task)
     -> m (Event t ())
 liTask ds x' = do
-    (ix, x) <- sample . current $ x'
+    (ix, x@Task{taskName}) <- sample . current $ x'
     case ix of
         IxTaskNone -> return never
         IxTask i -> do
@@ -54,6 +54,8 @@ liTask ds x' = do
                     el' "li" $ do
                         el "a" . text
                             $ T.intercalate " - " ns
+                        text " "
+                        text (T.pack taskName)
                         text " "
                         text $ d
 
