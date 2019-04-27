@@ -16,6 +16,7 @@ of this changelog.
         Race (ellipsoid subset of path)
         Race (spherical subset of waypoints)
         Race (ellipsoid subset of waypoints)
+* Detect crossings of line goals.
 
 # Interpolate Zone Tagging
 ## app-view-0.18
