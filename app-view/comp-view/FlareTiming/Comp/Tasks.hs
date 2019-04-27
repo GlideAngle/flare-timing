@@ -54,9 +54,8 @@ liTask ds x' = do
                     el' "li" $ do
                         el "a" . text
                             $ T.intercalate " - " ns
-                        text " "
-                        text (T.pack taskName)
-                        text " "
-                        text $ d
+                        elClass "div" "tags has-addons" $ do
+                            elClass "span" "tag is-white" $ text (T.pack taskName)
+                            elClass "span" "tag is-white" $ text d
 
             return $ domEvent Click e
