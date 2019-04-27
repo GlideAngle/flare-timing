@@ -23,9 +23,8 @@ taskList ds' xs = do
     ev <- dyn $ ffor ds' (\ds -> do
             if null ds
                 then
-                    elClass "article" "tile is-child" $ do
-                        elClass "article" "notification is-warning" $
-                            el "p" $ text "No distances are available for tasks."
+                    elClass "article" "notification is-warning" $
+                        el "p" $ text "No distances are available for tasks."
                 else
                     return ()
 
