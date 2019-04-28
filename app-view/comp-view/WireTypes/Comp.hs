@@ -328,12 +328,11 @@ getEssShape :: Task -> Maybe Shape
 getEssShape Task{zones = Zones{raceKind}} =
     join $
     (\case
-        TzEssIsGoal _ -> Nothing
+        TzEssIsGoal (ZoneKind e) -> Just e
         TzEssIsNotGoal (ZoneKind e) _ -> Just e
         TzOpenDistance _ -> Nothing)
     <$>
     raceKind
-
 
 getOpenShape :: Task -> Maybe Shape
 getOpenShape Task{zones = Zones{openKind}} =
