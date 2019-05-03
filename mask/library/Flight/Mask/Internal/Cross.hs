@@ -11,6 +11,7 @@ module Flight.Mask.Internal.Cross
 
 import Prelude hiding (span)
 import Data.Maybe (listToMaybe)
+import Data.Either (isRight)
 import Data.List (nub, sort, findIndex)
 import Control.Lens ((^?), element)
 
@@ -209,12 +210,13 @@ crossingPredicates az span _ Task{zones} =
 crossingSelectors
     :: Bool -- ^ Is the start an exit cylinder?
     -> Task k
-    -> [[a] -> Maybe a] -- ^ A crossing selector for each zone.
+    -> [[Crossing] -> Maybe Crossing] -- ^ A crossing selector for each zone.
 crossingSelectors startIsExit Task{speedSection, zones} =
     zipWith
         (\ i _ ->
-            if i == start && startIsExit then selectLast
-                                         else selectFirst)
+            if i == start && startIsExit
+               then selectLast . filter isRight
+               else selectFirst)
         [1 .. ]
         (raw zones)
     where
