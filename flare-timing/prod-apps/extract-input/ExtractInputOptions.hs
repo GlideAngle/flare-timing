@@ -84,7 +84,7 @@ mkOptions programName =
         , giveFraction = def
         &= explicit
         &= name "give-fraction"
-        &= help "How much give as a fraction, eg. 0.05% = 0.0005?"
+        &= help "How much give as a fraction, 0.005 or 0.0001?"
         &= groupname "Give when crossing zones"
 
         , giveDistance = def
