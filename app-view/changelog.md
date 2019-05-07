@@ -2,6 +2,12 @@ The [latest
 version](https://github.com/BlockScope/flare-timing/blob/master/app-view/changelog.md)
 of this changelog.
 
+# Crossings Exiting Exit Zones
+## app-view-0.20
+
+* Only consider crossings that are exiting exit zones.
+* Compare arrival fractions between flare-timing and FS.
+
 # Making a Line Goal
 ## app-view-0.19
 
