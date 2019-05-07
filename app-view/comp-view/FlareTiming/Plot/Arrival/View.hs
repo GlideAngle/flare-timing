@@ -98,12 +98,10 @@ rowArrival
     -> m ()
 rowArrival sEx p av = do
     (yFrac, diffFrac) <- sample . current
-                $ ffor3 p sEx av (\p' sEx' TrackArrival{frac = (ArrivalFraction f)} ->
+                $ ffor3 p sEx av (\p' sEx' TrackArrival{frac = f} ->
                     case Map.lookup p' sEx' of
-                        Just Norm.NormBreakdown {arrivalFrac = af@(ArrivalFraction f')} ->
-                            ( showFrac af
-                            , showFrac . ArrivalFraction $ f - f'
-                            )
+                        Just Norm.NormBreakdown {arrivalFrac = f'} ->
+                            ( showFrac f', showFracDiff f' f)
 
                         _ -> ("", ""))
 
@@ -122,3 +120,10 @@ showRank (ArrivalPlacingEqual p _) = T.pack $ show p ++ "="
 
 showFrac :: ArrivalFraction -> T.Text
 showFrac (ArrivalFraction x) = T.pack $ printf "%.3f" x
+
+showFracDiff :: ArrivalFraction -> ArrivalFraction -> T.Text
+showFracDiff (ArrivalFraction expected) (ArrivalFraction actual)
+    | f actual == f expected = "="
+    | otherwise = f (actual - expected)
+    where
+        f = T.pack . printf "%+.3f"

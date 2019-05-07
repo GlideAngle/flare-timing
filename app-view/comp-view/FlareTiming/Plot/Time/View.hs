@@ -155,4 +155,3 @@ showHms (PilotTime x) = showHmsForHours x
 
 showFrac :: SpeedFraction -> T.Text
 showFrac (SpeedFraction x) = T.pack $ printf "%.3f" x
-

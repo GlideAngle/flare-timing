@@ -206,17 +206,23 @@ showFrac (LeadingFraction x) = T.pack $ printf "%.3f" x
 
 showAreaDiff :: LeadingArea -> LeadingArea -> T.Text
 showAreaDiff (LeadingArea expected) (LeadingArea actual)
-    | actual == expected = "="
-    | otherwise = T.pack $ printf "%+.0f" (actual - expected)
+    | f actual == f expected = "="
+    | otherwise = f (actual - expected)
+    where
+        f = T.pack . printf "%+.0f"
 
 showCoefDiff :: LeadingCoefficient -> LeadingCoefficient -> T.Text
 showCoefDiff (LeadingCoefficient expected) (LeadingCoefficient actual)
-    | actual == expected = "="
-    | otherwise = T.pack $ printf "%+.3f" (actual - expected)
+    | f actual == f expected = "="
+    | otherwise = f (actual - expected)
+    where
+        f = T.pack . printf "%+.3f"
 
 showFracDiff :: LeadingFraction -> LeadingFraction -> T.Text
 showFracDiff (LeadingFraction expected) (LeadingFraction actual)
-    | actual == expected = "="
-    | otherwise = T.pack $ printf "%+.3f" (actual - expected)
+    | f actual == f expected = "="
+    | otherwise = f (actual - expected)
+    where
+        f = T.pack . printf "%+.3f"
 
 
