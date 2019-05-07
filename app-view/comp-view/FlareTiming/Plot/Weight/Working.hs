@@ -43,6 +43,7 @@ weightWorking :: Weights -> Points -> T.Text
 weightWorking _ _ =
     "katex.render("
     <> "\"\\\\begin{aligned} "
+    <> katexNewLine
     <> " gr &= \\\\frac{pg}{pf}"
     <> katexNewLine
     <> katexNewLine
@@ -74,6 +75,7 @@ pointWorking
         } =
     "katex.render("
     <> "\"\\\\begin{aligned} "
+    <> katexNewLine
     <> " k &= 1000 * tv"
     <> katexNewLine
     <> (" &= 1000 * " <> Vy.showTaskValidity tv)
