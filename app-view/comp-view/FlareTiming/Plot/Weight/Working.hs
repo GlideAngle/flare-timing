@@ -37,10 +37,16 @@ katexNewLine = " \\\\\\\\ "
 
 hookWorking :: Vy.TaskValidity -> Weights -> Points -> T.Text
 hookWorking tv w p =
-    weightWorking w p <> pointWorking tv w p
+    weightWorking w <> pointWorking tv w p
 
-weightWorking :: Weights -> Points -> T.Text
-weightWorking _ _ =
+weightWorking :: Weights -> T.Text
+weightWorking
+    Weights
+        { distance = DistanceWeight dw
+        , arrival = ArrivalWeight aw
+        , leading = LeadingWeight lw
+        , time = TimeWeight tw
+        } =
     "katex.render("
     <> "\"\\\\begin{aligned} "
     <> katexNewLine
@@ -50,17 +56,27 @@ weightWorking _ _ =
 
     <> " dw &= 0.9 - 1.665 * gr + 1.713 * gr^2 - 0.587 * gr^3"
     <> katexNewLine
+    <> (" &= " <> textf "%.3f" dw)
+    <> katexNewLine
     <> katexNewLine
 
     <> " lw &= \\\\frac{1 - dw}{8} * 1.4"
+    <> katexNewLine
+    <> (" &= " <> textf "%.3f" lw)
     <> katexNewLine
     <> katexNewLine
 
     <> " aw &= \\\\frac{1 - dw}{8}"
     <> katexNewLine
+    <> (" &= " <> textf "%.3f" aw)
+    <> katexNewLine
     <> katexNewLine
 
     <> " tw &= 1 - dw - lw - aw"
+    <> katexNewLine
+    <> (" &= 1 - " <> (T.pack $ printf "%.3f - %.3f - %.3f" dw lw aw))
+    <> katexNewLine
+    <> (" &= " <> textf "%.3f" tw)
     <> " \\\\end{aligned}\""
     <> ", getElementById('alloc-weight-working')"
     <> ", {throwOnError: false});"
