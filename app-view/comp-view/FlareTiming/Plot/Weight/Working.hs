@@ -35,12 +35,12 @@ textf fmt d = T.pack $ printf fmt d
 katexNewLine :: T.Text
 katexNewLine = " \\\\\\\\ "
 
-hookWorking :: Tweak -> Allocation -> T.Text
-hookWorking tw al =
-    weightWorking tw al <> pointWorking tw al
+hookWorking :: Points -> T.Text
+hookWorking pts =
+    weightWorking pts <> pointWorking pts
 
-weightWorking :: Tweak -> Allocation -> T.Text
-weightWorking _ _ =
+weightWorking :: Points -> T.Text
+weightWorking _ =
     "katex.render("
     <> "\"\\\\begin{aligned} "
     <> " gr &= \\\\frac{pg}{pf}"
@@ -57,20 +57,45 @@ weightWorking _ _ =
     <> ", getElementById('alloc-weight-working')"
     <> ", {throwOnError: false});"
 
-pointWorking :: Tweak -> Allocation -> T.Text
-pointWorking _ _ =
+pointWorking :: Points -> T.Text
+pointWorking
+    Points
+        { distance = DistancePoints dp
+        , arrival = ArrivalPoints ap
+        , leading = LeadingPoints lp
+        , time = TimePoints tp
+        } =
     "katex.render("
     <> "\"\\\\begin{aligned} "
     <> " k &= 1000 * tv"
     <> katexNewLine
+    <> katexNewLine
+
     <> " dp &= k * dw"
     <> katexNewLine
+    <> " &= "
+    <> textf "%.3f" dp
+    <> katexNewLine
+    <> katexNewLine
+
     <> " lp &= k * lw"
     <> katexNewLine
+    <> " &= "
+    <> textf "%.3f" lp
+    <> katexNewLine
+    <> katexNewLine
+
     <> " ap &= k * aw"
     <> katexNewLine
+    <> " &= "
+    <> textf "%.3f" ap
+    <> katexNewLine
+    <> katexNewLine
+
     <> " tp &= k * tw"
     <> katexNewLine
+    <> " &= "
+    <> textf "%.3f" tp
     <> " \\\\end{aligned}\""
     <> ", getElementById('alloc-point-working')"
     <> ", {throwOnError: false});"
@@ -104,7 +129,7 @@ viewWeightWorking hgOrPg vy' vw' tw' al' = do
                             , time = TimeWeight tw
                             } = weight alloc
 
-                    let Points
+                    let pts@Points
                             { distance = DistancePoints dp
                             , arrival = ArrivalPoints ap
                             , leading = LeadingPoints lp
@@ -113,7 +138,7 @@ viewWeightWorking hgOrPg vy' vw' tw' al' = do
 
                     elAttr
                         "a"
-                        (("class" =: "button") <> ("onclick" =: hookWorking tweak alloc))
+                        (("class" =: "button") <> ("onclick" =: hookWorking pts))
                         (text "Show Working")
 
                     spacer
