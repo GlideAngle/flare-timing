@@ -62,11 +62,15 @@ weightWorking
 
     <> " lw &= \\\\frac{1 - dw}{8} * 1.4"
     <> katexNewLine
+    <> (" &= \\\\frac{1 - " <> textf "%.3f" dw <> "}{8} * 1.4")
+    <> katexNewLine
     <> (" &= " <> textf "%.3f" lw)
     <> katexNewLine
     <> katexNewLine
 
     <> " aw &= \\\\frac{1 - dw}{8}"
+    <> katexNewLine
+    <> " &= \\\\frac{1 - " <> textf "%.3f" dw <> "}{8}"
     <> katexNewLine
     <> (" &= " <> textf "%.3f" aw)
     <> katexNewLine
