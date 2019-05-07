@@ -5,6 +5,7 @@ import Reflex.Dom
 import WireTypes.Comp (Discipline(..), Tweak(..))
 import WireTypes.Point (Allocation(..))
 import FlareTiming.Plot.Weight.View as W (hgPlot, pgPlot)
+import FlareTiming.Plot.Weight.Working as W (viewWeightWorking)
 
 weightPlot
     :: MonadWidget t m
@@ -19,8 +20,13 @@ weightPlot hgOrPg tweak alloc = do
                 elClass "div" "tile is-parent" $
                     elClass "article" "tile is-child" $ do
                         _ <- dyn $ ffor hgOrPg (\case
-                                HangGliding -> W.hgPlot tweak alloc
-                                Paragliding -> W.pgPlot tweak alloc)
+                                HangGliding -> do
+                                    W.hgPlot tweak alloc
+                                    viewWeightWorking HangGliding tweak alloc
+
+                                Paragliding -> do
+                                    W.pgPlot tweak alloc
+                                    viewWeightWorking Paragliding tweak alloc)
 
                         return ()
         return ()
