@@ -36,7 +36,11 @@ katexNewLine :: T.Text
 katexNewLine = " \\\\\\\\ "
 
 hookWorking :: Tweak -> Allocation -> T.Text
-hookWorking tweak alloc =
+hookWorking tw al =
+    weightWorking tw al <> pointWorking tw al
+
+weightWorking :: Tweak -> Allocation -> T.Text
+weightWorking _ _ =
     "katex.render("
     <> "\"\\\\begin{aligned} "
     <> " gr &= \\\\frac{pg}{pf}"
@@ -49,10 +53,15 @@ hookWorking tweak alloc =
     <> " aw &= \\\\frac{1 - dw}{8}"
     <> katexNewLine
     <> " tw &= 1 - dw - lw - aw"
-    <> katexNewLine
-    <> katexNewLine
+    <> " \\\\end{aligned}\""
+    <> ", getElementById('alloc-weight-working')"
+    <> ", {throwOnError: false});"
+
+pointWorking :: Tweak -> Allocation -> T.Text
+pointWorking _ _ =
+    "katex.render("
+    <> "\"\\\\begin{aligned} "
     <> " p &= 1000 * tv"
-    <> katexNewLine
     <> katexNewLine
     <> " dp &= p * dw"
     <> katexNewLine
@@ -63,7 +72,7 @@ hookWorking tweak alloc =
     <> " tp &= p * tw"
     <> katexNewLine
     <> " \\\\end{aligned}\""
-    <> ", getElementById('alloc-working')"
+    <> ", getElementById('alloc-point-working')"
     <> ", {throwOnError: false});"
 
 spacer :: DomBuilder t m => m ()
@@ -159,6 +168,11 @@ viewWeightWorking hgOrPg vy' vw' tw' al' = do
                                         elClass "span" "tag is-warning" . text
                                             $ textf "%.3f" aw
 
+                            elAttr
+                                "div"
+                                ("id" =: "alloc-weight-working")
+                                (text "")
+
                     spacer
 
                     elClass "div" "card" $ do
@@ -189,10 +203,10 @@ viewWeightWorking hgOrPg vy' vw' tw' al' = do
                                         elClass "span" "tag is-warning" . text
                                             $ textf "%.3f" ap
 
-                                elAttr
-                                    "div"
-                                    ("id" =: "alloc-working")
-                                    (text "")
+                            elAttr
+                                "div"
+                                ("id" =: "alloc-point-working")
+                                (text "")
 
                     return ())
         return ())
