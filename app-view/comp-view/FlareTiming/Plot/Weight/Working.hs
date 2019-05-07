@@ -7,7 +7,7 @@ import Data.String (IsString)
 import Text.Printf (printf)
 import qualified Data.Text as T (Text, pack)
 
-import qualified WireTypes.Validity as Vy (Validity(..), showTaskValidity)
+import qualified WireTypes.Validity as Vy (Validity(..), TaskValidity(..), showTaskValidity)
 import WireTypes.ValidityWorking
     ( ValidityWorking(..)
     , LaunchValidityWorking(..)
@@ -35,12 +35,12 @@ textf fmt d = T.pack $ printf fmt d
 katexNewLine :: T.Text
 katexNewLine = " \\\\\\\\ "
 
-hookWorking :: Points -> T.Text
-hookWorking pts =
-    weightWorking pts <> pointWorking pts
+hookWorking :: Vy.TaskValidity -> Weights -> Points -> T.Text
+hookWorking tv w p =
+    weightWorking w p <> pointWorking tv w p
 
-weightWorking :: Points -> T.Text
-weightWorking _ =
+weightWorking :: Weights -> Points -> T.Text
+weightWorking _ _ =
     "katex.render("
     <> "\"\\\\begin{aligned} "
     <> " gr &= \\\\frac{pg}{pf}"
@@ -57,8 +57,15 @@ weightWorking _ =
     <> ", getElementById('alloc-weight-working')"
     <> ", {throwOnError: false});"
 
-pointWorking :: Points -> T.Text
+pointWorking :: Vy.TaskValidity -> Weights -> Points -> T.Text
 pointWorking
+    tv@(Vy.TaskValidity tv')
+    Weights
+        { distance = DistanceWeight dw
+        , arrival = ArrivalWeight aw
+        , leading = LeadingWeight lw
+        , time = TimeWeight tw
+        }
     Points
         { distance = DistancePoints dp
         , arrival = ArrivalPoints ap
@@ -69,36 +76,46 @@ pointWorking
     <> "\"\\\\begin{aligned} "
     <> " k &= 1000 * tv"
     <> katexNewLine
+    <> (" &= 1000 * " <> Vy.showTaskValidity tv)
+    <> katexNewLine
+    <> (" &= " <> k)
+    <> katexNewLine
     <> katexNewLine
 
     <> " dp &= k * dw"
     <> katexNewLine
-    <> " &= "
-    <> textf "%.3f" dp
+    <> (" &= " <> k <> textf " * %.3f" dw)
+    <> katexNewLine
+    <> (" &= " <> textf "%.3f" dp)
     <> katexNewLine
     <> katexNewLine
 
     <> " lp &= k * lw"
     <> katexNewLine
-    <> " &= "
-    <> textf "%.3f" lp
+    <> (" &= " <> k <> textf " * %.3f" lw)
+    <> katexNewLine
+    <> (" &= " <> textf "%.3f" lp)
     <> katexNewLine
     <> katexNewLine
 
     <> " ap &= k * aw"
     <> katexNewLine
-    <> " &= "
-    <> textf "%.3f" ap
+    <> (" &= " <> k <> textf " * %.3f" aw)
+    <> katexNewLine
+    <> (" &= " <> textf "%.3f" ap)
     <> katexNewLine
     <> katexNewLine
 
     <> " tp &= k * tw"
     <> katexNewLine
-    <> " &= "
-    <> textf "%.3f" tp
+    <> (" &= " <> k <> textf " * %.3f" tw)
+    <> katexNewLine
+    <> (" &= " <> textf "%.3f" tp)
     <> " \\\\end{aligned}\""
     <> ", getElementById('alloc-point-working')"
     <> ", {throwOnError: false});"
+    where
+        k = textf "%.0f" $ 1000.0 * tv'
 
 spacer :: DomBuilder t m => m ()
 spacer = elClass "div" "spacer" $ return ()
@@ -122,7 +139,7 @@ viewWeightWorking hgOrPg vy' vw' tw' al' = do
                 (Just Vy.Validity{task}, Just ValidityWorking{launch = LaunchValidityWorking{flying}}, Just tweak, Just alloc) -> do
                     let (GoalRatio gr) = goalRatio alloc
 
-                    let Weights
+                    let wts@Weights
                             { distance = DistanceWeight dw
                             , arrival = ArrivalWeight aw
                             , leading = LeadingWeight lw
@@ -138,7 +155,7 @@ viewWeightWorking hgOrPg vy' vw' tw' al' = do
 
                     elAttr
                         "a"
-                        (("class" =: "button") <> ("onclick" =: hookWorking pts))
+                        (("class" =: "button") <> ("onclick" =: hookWorking task wts pts))
                         (text "Show Working")
 
                     spacer
