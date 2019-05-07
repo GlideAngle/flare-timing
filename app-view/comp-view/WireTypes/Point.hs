@@ -64,6 +64,7 @@ import Data.Aeson
     , genericParseJSON, defaultOptions
     )
 import qualified Data.Text as T (Text, pack, unpack)
+import WireTypes.Arrival (ArrivalFraction)
 import WireTypes.Speed (PilotTime, SpeedFraction)
 import WireTypes.Lead (LeadingFraction, LeadingArea, LeadingCoefficient)
 
@@ -400,6 +401,7 @@ data NormBreakdown =
         , leadingArea :: LeadingArea
         , leadingCoef :: LeadingCoefficient
         , leadingFrac :: LeadingFraction
+        , arrivalFrac :: ArrivalFraction
         }
     deriving (Eq, Ord, Show, Generic, FromJSON)
 

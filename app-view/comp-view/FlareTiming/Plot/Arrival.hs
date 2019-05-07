@@ -4,6 +4,7 @@ import Data.Maybe (fromMaybe)
 import Reflex.Dom
 import qualified Data.Text as T (Text)
 
+import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import WireTypes.Arrival (TrackArrival(..))
 import WireTypes.Comp (Discipline(..), Tweak(..), AwScaling(..))
 import FlareTiming.Plot.Arrival.View (hgPlot)
@@ -19,9 +20,10 @@ arrivalPlot
     :: MonadWidget t m
     => Dynamic t Discipline
     -> Dynamic t (Maybe Tweak)
+    -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> Dynamic t (Maybe [(Pilot, TrackArrival)])
     -> m ()
-arrivalPlot hgOrPg tweak av = do
+arrivalPlot hgOrPg tweak sEx av = do
     elClass "div" "tile is-ancestor" $
         elClass "div" "tile is-12" $
             elClass "div" "tile" $
@@ -64,7 +66,7 @@ arrivalPlot hgOrPg tweak av = do
                                         Just Tweak{arrivalWeightScaling = Just (AwScaling 0)} -> notice
                                         _ -> return ())
 
-                                    hgPlot (fromMaybe [] <$> av)
+                                    hgPlot sEx (fromMaybe [] <$> av)
 
                                 return ())
 

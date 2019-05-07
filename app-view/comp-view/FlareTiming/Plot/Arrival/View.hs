@@ -5,10 +5,12 @@ import Reflex.Dom
 import Reflex.Time (delay)
 import qualified Data.Text as T (Text, pack)
 import Data.List (partition)
+import qualified Data.Map.Strict as Map
 
 import Control.Monad.IO.Class (liftIO)
 import qualified FlareTiming.Plot.Arrival.Plot as P (hgPlot)
 
+import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import WireTypes.Arrival (TrackArrival(..), ArrivalPlacing(..), ArrivalFraction(..))
 import WireTypes.Pilot (Pilot(..))
 import FlareTiming.Pilot (showPilotName)
@@ -32,9 +34,10 @@ xy TrackArrival{rank = ArrivalPlacingEqual x _, frac = ArrivalFraction y} =
 
 hgPlot
     :: MonadWidget t m
-    => Dynamic t [(Pilot, TrackArrival)]
+    => Dynamic t [(Pilot, Norm.NormBreakdown)]
+    -> Dynamic t [(Pilot, TrackArrival)]
     -> m ()
-hgPlot av = do
+hgPlot sEx av = do
     pb <- delay 1 =<< getPostBuild
 
     elClass "div" "tile is-ancestor" $ do
@@ -53,38 +56,62 @@ hgPlot av = do
 
                     return ()
 
-        elClass "div" "tile is-child" $ tablePilot av
+        elClass "div" "tile is-child" $ tablePilot sEx av
 
     return ()
 
 tablePilot
     :: MonadWidget t m
-    => Dynamic t [(Pilot, TrackArrival)]
+    => Dynamic t [(Pilot, Norm.NormBreakdown)]
+    -> Dynamic t [(Pilot, TrackArrival)]
     -> m ()
-tablePilot xs = do
+tablePilot sEx xs = do
+    let sEx' = Map.fromList <$> sEx
     _ <- elClass "table" "table is-striped" $ do
             el "thead" $ do
                 el "tr" $ do
+                    elAttr "th" ("colspan" =: "2") $ text ""
+                    elAttr "th" ("colspan" =: "2" <> "class" =: "th-norm")
+                        $ text "Fraction"
+
+                    el "th" $ text ""
+
+                el "tr" $ do
                     el "th" $ text "#"
                     el "th" $ text "Fraction"
+                    elClass "th" "th-norm th-norm-arrival" $ text "✓"
+                    elClass "th" "th-norm th-arrival-diff" $ text "Δ"
                     el "th" $ text "Pilot"
 
                     return ()
 
             el "tbody" $ do
-                simpleList xs (uncurry rowArrival . splitDynPure)
+                simpleList xs (uncurry (rowArrival sEx') . splitDynPure)
 
     return ()
 
 rowArrival
     :: MonadWidget t m
-    => Dynamic t Pilot
+    => Dynamic t (Map.Map Pilot Norm.NormBreakdown)
+    -> Dynamic t Pilot
     -> Dynamic t TrackArrival
     -> m ()
-rowArrival p av = do
+rowArrival sEx p av = do
+    (yFrac, diffFrac) <- sample . current
+                $ ffor3 p sEx av (\p' sEx' TrackArrival{frac = (ArrivalFraction f)} ->
+                    case Map.lookup p' sEx' of
+                        Just Norm.NormBreakdown {arrivalFrac = af@(ArrivalFraction f')} ->
+                            ( showFrac af
+                            , showFrac . ArrivalFraction $ f - f'
+                            )
+
+                        _ -> ("", ""))
+
     el "tr" $ do
         el "td" . dynText $ showRank . rank <$> av
         el "td" . dynText $ showFrac . frac <$> av
+        elClass "td" "td-norm" . text $ yFrac
+        elClass "td" "td-norm" . text $ diffFrac
         el "td" . dynText $ showPilotName <$> p
 
         return ()
@@ -95,4 +122,3 @@ showRank (ArrivalPlacingEqual p _) = T.pack $ show p ++ "="
 
 showFrac :: ArrivalFraction -> T.Text
 showFrac (ArrivalFraction x) = T.pack $ printf "%.3f" x
-
