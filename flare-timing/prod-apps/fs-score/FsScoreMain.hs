@@ -30,8 +30,9 @@ import Flight.Comp
     )
 import qualified Flight.Score as Gap (bestTime')
 import Flight.Score
-    ( BestTime(..), PilotTime(..), LeadingFraction(..)
-    , LeadingPoints(..)
+    ( BestTime(..), PilotTime(..)
+    , LeadingFraction(..), LeadingPoints(..)
+    , ArrivalFraction(..), ArrivalPoints(..)
     , speedFraction
     )
 import Flight.Scribe (writeScore)
@@ -100,13 +101,13 @@ normScores fsdbXml = do
             | vs <- (fmap . fmap) snd vss
             ]
 
-    let css =
+    let lss =
             [
                 maybe
                     ts
-                    (\cs ->
+                    (\ls ->
                         [ (p, t{leadingFrac = c})
-                        | (_, c) <- cs
+                        | (_, c) <- ls
                         | (p, t) <- ts
                         ]
                     )
@@ -115,15 +116,50 @@ normScores fsdbXml = do
             | ts <- tss
             ]
 
+    let ass =
+            [
+                maybe
+                    ls
+                    (\as ->
+                        [ (p, t{arrivalFrac = c})
+                        | (_, c) <- as
+                        | (p, t) <- ls
+                        ]
+                    )
+                    (arrivals ls)
+
+            | ls <- lss
+            ]
+
     return $
         NormPointing
             { bestTime = (fmap . fmap) fst vss
-            , score = css
+            , score = ass
             }
 
-leads
-    :: [(Pilot, NormBreakdown)]
-    -> Maybe [(Pilot, LeadingFraction)]
+arrivals :: [(Pilot, NormBreakdown)] -> Maybe [(Pilot, ArrivalFraction)]
+arrivals xs =
+    (\ lf -> second (g lf) <$> ys)
+    <$> maxArrivalPoints cs
+    where
+        ys :: [(Pilot, ArrivalPoints)]
+        ys = (\(p, NormBreakdown{arrival = c}) -> (p,c)) <$> xs
+
+        cs :: [ArrivalPoints]
+        cs = snd <$> ys
+
+        g arMax ar = arrivalFraction arMax ar
+
+arrivalFraction :: ArrivalPoints -> ArrivalPoints -> ArrivalFraction
+arrivalFraction (ArrivalPoints maxPts) (ArrivalPoints pts)
+    | maxPts == 0 = ArrivalFraction 0
+    | otherwise = ArrivalFraction . toRational $ pts / maxPts
+
+maxArrivalPoints :: [ArrivalPoints] -> Maybe ArrivalPoints
+maxArrivalPoints [] = Nothing
+maxArrivalPoints xs = Just $ maximum xs
+
+leads :: [(Pilot, NormBreakdown)] -> Maybe [(Pilot, LeadingFraction)]
 leads xs =
     (\ lf -> second (g lf) <$> ys)
     <$> maxLeadingPoints cs
@@ -136,10 +172,7 @@ leads xs =
 
         g lcMin lc = leadingFraction lcMin lc
 
-leadingFraction
-    :: LeadingPoints
-    -> LeadingPoints
-    -> LeadingFraction
+leadingFraction :: LeadingPoints -> LeadingPoints -> LeadingFraction
 leadingFraction (LeadingPoints maxPts) (LeadingPoints pts)
     | maxPts == 0 = LeadingFraction 0
     | otherwise = LeadingFraction . toRational $ pts / maxPts

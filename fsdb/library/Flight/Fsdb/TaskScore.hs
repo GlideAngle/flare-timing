@@ -45,6 +45,7 @@ import Flight.Score
     , TimePoints(..)
     , PilotTime(..)
     , SpeedFraction(..)
+    , ArrivalFraction(..)
     , LeadingArea(..), LeadingCoef(..), LeadingFraction(..)
     )
 import Flight.Fsdb.Pilot (getCompPilot)
@@ -97,6 +98,7 @@ xpRankScore =
                 , leadingArea = LeadingArea zero
                 , leadingCoef = LeadingCoef zero
                 , leadingFrac = LeadingFraction 0
+                , arrivalFrac = ArrivalFraction 0
                 }
         , \NormBreakdown
                 { place = TaskPlacing r
