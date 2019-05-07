@@ -15,7 +15,7 @@ tabsBasis =
     elClass "div" "tabs" $
         el "ul" $ mdo
             (absent, _) <- elDynClass' "li" absentClass $ el "a" (text "Pilots")
-            (valid, _) <- elDynClass' "li" validClass $ el "a" (text "Valid")
+            (valid, _) <- elDynClass' "li" validClass $ el "a" (text "Validity")
             (geo, _) <- elDynClass' "li" geoClass $ el "a" (text "Geo")
 
             let eAbs = (const BasisTabAbsent) <$> domEvent Click absent
