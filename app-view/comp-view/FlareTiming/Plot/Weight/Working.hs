@@ -47,12 +47,19 @@ weightWorking _ _ =
     <> " gr &= \\\\frac{pg}{pf}"
     <> katexNewLine
     <> katexNewLine
+
     <> " dw &= 0.9 - 1.665 * gr + 1.713 * gr^2 - 0.587 * gr^3"
     <> katexNewLine
+    <> katexNewLine
+
     <> " lw &= \\\\frac{1 - dw}{8} * 1.4"
     <> katexNewLine
+    <> katexNewLine
+
     <> " aw &= \\\\frac{1 - dw}{8}"
     <> katexNewLine
+    <> katexNewLine
+
     <> " tw &= 1 - dw - lw - aw"
     <> " \\\\end{aligned}\""
     <> ", getElementById('alloc-weight-working')"
