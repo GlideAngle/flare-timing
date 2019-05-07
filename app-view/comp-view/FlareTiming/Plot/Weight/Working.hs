@@ -21,6 +21,11 @@ import WireTypes.Point
     , ArrivalWeight(..)
     , LeadingWeight(..)
     , TimeWeight(..)
+    , Points(..)
+    , DistancePoints(..)
+    , ArrivalPoints(..)
+    , LeadingPoints(..)
+    , TimePoints(..)
     , zeroWeights
     )
 
@@ -90,6 +95,13 @@ viewWeightWorking hgOrPg vy' vw' tw' al' = do
                             , time = TimeWeight tw
                             } = weight alloc
 
+                    let Points
+                            { distance = DistancePoints dp
+                            , arrival = ArrivalPoints ap
+                            , leading = LeadingPoints lp
+                            , time = TimePoints tp
+                            } = points alloc
+
                     elAttr
                         "a"
                         (("class" =: "button") <> ("onclick" =: hookWorking tweak alloc))
@@ -107,23 +119,25 @@ viewWeightWorking hgOrPg vy' vw' tw' al' = do
                                 elClass "div" "control" $ do
                                     elClass "div" "tags has-addons" $ do
                                         elClass "span" "tag" $ do text "tv = task validity"
-                                        elClass "span" "tag is-info" . text
+                                        elClass "span" "tag is-black" . text
                                             $ Vy.showTaskValidity task
                                 elClass "div" "control" $ do
                                     elClass "div" "tags has-addons" $ do
                                         elClass "span" "tag" $ do text "gr = goal ratio"
-                                        elClass "span" "tag is-success" . text
+                                        elClass "span" "tag is-primary" . text
                                             $ textf "%.3f" gr
                                 elClass "div" "control" $ do
                                     elClass "div" "tags has-addons" $ do
-                                        elClass "span" "tag" $ do text "pg = pilots in goal"
-                                        elClass "span" "tag is-primary" . text
-                                            $ ""
+                                        elClass "span" "tag" $ do text "pf = pilots flying"
+                                        elClass "span" "tag is-danger" . text
+                                            $ (T.pack . show $ flying)
                                 elClass "div" "control" $ do
                                     elClass "div" "tags has-addons" $ do
-                                        elClass "span" "tag" $ do text "pf = pilots flying"
-                                        elClass "span" "tag is-primary" . text
-                                            $ (T.pack . show $ flying)
+                                        elClass "span" "tag" $ do text "pg = pilots in goal"
+                                        elClass "span" "tag is-warning" . text
+                                            $ ""
+
+                            elClass "div" "field is-grouped is-grouped-multiline" $ do
                                 elClass "div" "control" $ do
                                     elClass "div" "tags has-addons" $ do
                                         elClass "span" "tag" $ do text "dw = distance weight"
@@ -142,7 +156,7 @@ viewWeightWorking hgOrPg vy' vw' tw' al' = do
                                 elClass "div" "control" $ do
                                     elClass "div" "tags has-addons" $ do
                                         elClass "span" "tag" $ do text "aw = arrival weight"
-                                        elClass "span" "tag is-black" . text
+                                        elClass "span" "tag is-warning" . text
                                             $ textf "%.3f" aw
 
                     spacer
@@ -157,23 +171,23 @@ viewWeightWorking hgOrPg vy' vw' tw' al' = do
                                 elClass "div" "control" $ do
                                     elClass "div" "tags has-addons" $ do
                                         elClass "span" "tag" $ do text "dp = distance points"
-                                        elClass "span" "tag is-primary" . text
-                                            $ ""
-                                elClass "div" "control" $ do
-                                    elClass "div" "tags has-addons" $ do
-                                        elClass "span" "tag" $ do text "lp = leading points"
-                                        elClass "span" "tag is-primary" . text
-                                            $ ""
-                                elClass "div" "control" $ do
-                                    elClass "div" "tags has-addons" $ do
-                                        elClass "span" "tag" $ do text "ap = arrival points"
-                                        elClass "span" "tag is-primary" . text
-                                            $ ""
+                                        elClass "span" "tag is-info" . text
+                                            $ textf "%.3f" dp
                                 elClass "div" "control" $ do
                                     elClass "div" "tags has-addons" $ do
                                         elClass "span" "tag" $ do text "tp = time points"
-                                        elClass "span" "tag is-primary" . text
-                                            $ ""
+                                        elClass "span" "tag is-success" . text
+                                            $ textf "%.3f" tp
+                                elClass "div" "control" $ do
+                                    elClass "div" "tags has-addons" $ do
+                                        elClass "span" "tag" $ do text "lp = leading points"
+                                        elClass "span" "tag is-danger" . text
+                                            $ textf "%.3f" lp
+                                elClass "div" "control" $ do
+                                    elClass "div" "tags has-addons" $ do
+                                        elClass "span" "tag" $ do text "ap = arrival points"
+                                        elClass "span" "tag is-warning" . text
+                                            $ textf "%.3f" ap
 
                                 elAttr
                                     "div"
