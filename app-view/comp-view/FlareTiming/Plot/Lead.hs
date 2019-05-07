@@ -34,7 +34,7 @@ leadPlot tweak sEx ld =
                             _ -> do
                                 let notice =
                                         elClass "article" "notification is-warning" $
-                                            el "p" $ text "No points will be awarded for leading."
+                                            el "p" $ text "No points awarded for leading."
 
                                 elClass "article" "tile is-child" $ do
                                     _ <- dyn $ ffor tweak (\case
