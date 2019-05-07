@@ -86,7 +86,7 @@ pointWorking
     <> katexNewLine
     <> (" &= " <> k <> textf " * %.3f" dw)
     <> katexNewLine
-    <> (" &= " <> textf "%.3f" dp)
+    <> (" &= " <> textf "%.2f" dp)
     <> katexNewLine
     <> katexNewLine
 
@@ -94,7 +94,7 @@ pointWorking
     <> katexNewLine
     <> (" &= " <> k <> textf " * %.3f" lw)
     <> katexNewLine
-    <> (" &= " <> textf "%.3f" lp)
+    <> (" &= " <> textf "%.2f" lp)
     <> katexNewLine
     <> katexNewLine
 
@@ -102,7 +102,7 @@ pointWorking
     <> katexNewLine
     <> (" &= " <> k <> textf " * %.3f" aw)
     <> katexNewLine
-    <> (" &= " <> textf "%.3f" ap)
+    <> (" &= " <> textf "%.2f" ap)
     <> katexNewLine
     <> katexNewLine
 
@@ -110,7 +110,7 @@ pointWorking
     <> katexNewLine
     <> (" &= " <> k <> textf " * %.3f" tw)
     <> katexNewLine
-    <> (" &= " <> textf "%.3f" tp)
+    <> (" &= " <> textf "%.2f" tp)
     <> " \\\\end{aligned}\""
     <> ", getElementById('alloc-point-working')"
     <> ", {throwOnError: false});"
@@ -230,22 +230,22 @@ viewWeightWorking hgOrPg vy' vw' tw' al' = do
                                     elClass "div" "tags has-addons" $ do
                                         elClass "span" "tag" $ do text "dp = distance points"
                                         elClass "span" "tag is-info" . text
-                                            $ textf "%.3f" dp
+                                            $ textf "%.2f" dp
                                 elClass "div" "control" $ do
                                     elClass "div" "tags has-addons" $ do
                                         elClass "span" "tag" $ do text "tp = time points"
                                         elClass "span" "tag is-success" . text
-                                            $ textf "%.3f" tp
+                                            $ textf "%.2f" tp
                                 elClass "div" "control" $ do
                                     elClass "div" "tags has-addons" $ do
                                         elClass "span" "tag" $ do text "lp = leading points"
                                         elClass "span" "tag is-danger" . text
-                                            $ textf "%.3f" lp
+                                            $ textf "%.2f" lp
                                 elClass "div" "control" $ do
                                     elClass "div" "tags has-addons" $ do
                                         elClass "span" "tag" $ do text "ap = arrival points"
                                         elClass "span" "tag is-warning" . text
-                                            $ textf "%.3f" ap
+                                            $ textf "%.2f" ap
 
                             elAttr
                                 "div"
