@@ -61,15 +61,15 @@ pointWorking :: Tweak -> Allocation -> T.Text
 pointWorking _ _ =
     "katex.render("
     <> "\"\\\\begin{aligned} "
-    <> " p &= 1000 * tv"
+    <> " k &= 1000 * tv"
     <> katexNewLine
-    <> " dp &= p * dw"
+    <> " dp &= k * dw"
     <> katexNewLine
-    <> " lp &= p * lw"
+    <> " lp &= k * lw"
     <> katexNewLine
-    <> " ap &= p * aw"
+    <> " ap &= k * aw"
     <> katexNewLine
-    <> " tp &= p * tw"
+    <> " tp &= k * tw"
     <> katexNewLine
     <> " \\\\end{aligned}\""
     <> ", getElementById('alloc-point-working')"
@@ -127,11 +127,6 @@ viewWeightWorking hgOrPg vy' vw' tw' al' = do
                             elClass "div" "field is-grouped is-grouped-multiline" $ do
                                 elClass "div" "control" $ do
                                     elClass "div" "tags has-addons" $ do
-                                        elClass "span" "tag" $ do text "tv = task validity"
-                                        elClass "span" "tag is-black" . text
-                                            $ Vy.showTaskValidity task
-                                elClass "div" "control" $ do
-                                    elClass "div" "tags has-addons" $ do
                                         elClass "span" "tag" $ do text "gr = goal ratio"
                                         elClass "span" "tag is-primary" . text
                                             $ textf "%.3f" gr
@@ -180,6 +175,13 @@ viewWeightWorking hgOrPg vy' vw' tw' al' = do
                             elClass "p" "subtitle is-6" $ do
                                 el "span" $
                                     elClass "h2" "title is-4" $ text "Points"
+
+                            elClass "div" "field is-grouped is-grouped-multiline" $ do
+                                elClass "div" "control" $ do
+                                    elClass "div" "tags has-addons" $ do
+                                        elClass "span" "tag" $ do text "tv = task validity"
+                                        elClass "span" "tag is-black" . text
+                                            $ Vy.showTaskValidity task
 
                             elClass "div" "field is-grouped is-grouped-multiline" $ do
                                 elClass "div" "control" $ do
