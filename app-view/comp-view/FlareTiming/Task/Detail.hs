@@ -250,7 +250,7 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
 
                 TaskTabPlot -> do
                     tabPlot <- tabsPlot
-                    let plotSplit = weightPlot hgOrPg tweak alloc
+                    let plotSplit = weightPlot hgOrPg vy tweak alloc
                     _ <- widgetHold (plotSplit) $
                             (\case
                                 PlotTabSplit -> plotSplit
