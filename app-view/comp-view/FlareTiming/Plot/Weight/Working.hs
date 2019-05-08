@@ -13,8 +13,9 @@ import WireTypes.ValidityWorking
     , LaunchValidityWorking(..)
     , DistanceValidityWorking(..)
     , PilotsFlying(..)
+    , MaximumDistance(..)
     )
-import WireTypes.Route (TaskLength(..), showTaskDistance)
+import WireTypes.Route (TaskLength(..), TaskDistance(..), showTaskDistance)
 import WireTypes.Comp (Discipline(..), Tweak(..))
 import WireTypes.Point
     ( GoalRatio(..)
@@ -43,17 +44,28 @@ hookWorking
     -> Vy.TaskValidity
     -> PilotsFlying
     -> GoalRatio
+    -> TaskDistance
+    -> MaximumDistance
     -> Weights
     -> Points
     -> T.Text
-hookWorking hgOrPg tv pf gr w p =
-    weightWorking hgOrPg pf gr w <> pointWorking tv w p
+hookWorking hgOrPg tv pf gr td bd w p =
+    weightWorking hgOrPg pf gr td bd w <> pointWorking tv w p
 
-weightWorking :: Discipline -> PilotsFlying -> GoalRatio -> Weights -> T.Text
+weightWorking
+    :: Discipline
+    -> PilotsFlying
+    -> GoalRatio
+    -> TaskDistance
+    -> MaximumDistance
+    -> Weights
+    -> T.Text
 weightWorking
     hgOrPg
     (PilotsFlying pf)
     (GoalRatio gr)
+    (TaskDistance td)
+    (MaximumDistance bd)
     Weights
         { distance = DistanceWeight dw
         , arrival = ArrivalWeight aw
@@ -77,7 +89,7 @@ weightWorking
     <> katexNewLine
     <> katexNewLine
 
-    <> katexLeadingWeight hgOrPg lw
+    <> katexLeadingWeight hgOrPg gr lw
     <> katexNewLine
     <> katexNewLine
 
@@ -111,15 +123,21 @@ weightWorking
             <> katexNewLine
             <> (" &= " <> textf "%.3f" dw)
 
-        katexLeadingWeight _ 0 =
+        katexLeadingWeight _ _ 0 =
             " lw &= 0"
-        katexLeadingWeight HangGliding lw' =
+        katexLeadingWeight HangGliding _gr lw' =
             " lw &= \\\\frac{1 - dw}{8} * 1.4"
             <> katexNewLine
             <> (" &= \\\\frac{1 - " <> textf "%.3f" dw <> "}{8} * 1.4")
             <> katexNewLine
             <> (" &= " <> textf "%.3f" lw')
-        katexLeadingWeight Paragliding lw' =
+        katexLeadingWeight Paragliding 0 lw' =
+            " lw &= \\\\frac{bd}{td} * 0.1"
+            <> katexNewLine
+            <> (" &= \\\\frac{" <> textf "%.3f" bd <> "}{" <> textf "%.3f" td <> "} * 0.1")
+            <> katexNewLine
+            <> (" &= " <> textf "%.3f" lw')
+        katexLeadingWeight Paragliding _gr lw' =
             " lw &= \\\\frac{1 - dw}{8} * 1.4 * 2"
             <> katexNewLine
             -- TODO: Use scaling factor for leading weight.
@@ -253,7 +271,7 @@ viewWeightWorking hgOrPg vy' vw' tw' al' ln' = do
                             }
                     , Just tweak
                     , Just alloc
-                    , Just TaskLength{taskRoute}
+                    , Just TaskLength{taskRoute = td}
                     ) -> do
 
                     let gr@(GoalRatio gr') = goalRatio alloc
@@ -276,7 +294,7 @@ viewWeightWorking hgOrPg vy' vw' tw' al' ln' = do
 
                     elAttr
                         "a"
-                        (("class" =: "button") <> ("onclick" =: hookWorking hgOrPg task pf gr wts pts))
+                        (("class" =: "button") <> ("onclick" =: hookWorking hgOrPg task pf gr td bd wts pts))
                         (text "Show Working")
 
                     spacer
@@ -311,7 +329,7 @@ viewWeightWorking hgOrPg vy' vw' tw' al' ln' = do
                                             elClass "div" "tags has-addons" $ do
                                                 elClass "span" "tag" $ do text "td = task distance"
                                                 elClass "span" "tag is-info"
-                                                    $ text (showTaskDistance taskRoute)
+                                                    $ text (showTaskDistance td)
                                         elClass "div" "control" $ do
                                             elClass "div" "tags has-addons" $ do
                                                 elClass "span" "tag" $ do text "bd = best distance"
