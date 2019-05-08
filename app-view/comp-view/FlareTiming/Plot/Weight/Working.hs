@@ -71,11 +71,7 @@ weightWorking
 
     <> " dw &= 0.9 - 1.665 * gr + 1.713 * gr^2 - 0.587 * gr^3"
     <> katexNewLine
-    <> (" &= 0.9 - 1.665 * " <> (T.pack $ printf "%.3f + 1.713 * %.3f - 0.587 * %.3f" gr gr2 gr3))
-    <> katexNewLine
-    <> (" &= 0.9 - " <> (T.pack $ printf "%.3f + %.3f - %.3f" dw1 dw2 dw3))
-    <> katexNewLine
-    <> (" &= " <> textf "%.3f" dw)
+    <> katexDistanceWeight gr
     <> katexNewLine
     <> katexNewLine
 
@@ -103,6 +99,15 @@ weightWorking
             " &= 0"
         katexGoalRatio gr' =
             " &= " <> textf "%.3f" gr'
+
+        katexDistanceWeight 0 =
+            " &= 0.9"
+        katexDistanceWeight _gr =
+            (" &= 0.9 - 1.665 * " <> (T.pack $ printf "%.3f + 1.713 * %.3f - 0.587 * %.3f" gr gr2 gr3))
+            <> katexNewLine
+            <> (" &= 0.9 - " <> (T.pack $ printf "%.3f + %.3f - %.3f" dw1 dw2 dw3))
+            <> katexNewLine
+            <> (" &= " <> textf "%.3f" dw)
 
         katexLeadingWeight 0 =
             " lw &= 0"
