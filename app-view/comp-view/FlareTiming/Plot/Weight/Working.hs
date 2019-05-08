@@ -35,12 +35,13 @@ textf fmt d = T.pack $ printf fmt d
 katexNewLine :: T.Text
 katexNewLine = " \\\\\\\\ "
 
-hookWorking :: Vy.TaskValidity -> Weights -> Points -> T.Text
-hookWorking tv w p =
-    weightWorking w <> pointWorking tv w p
+hookWorking :: Vy.TaskValidity -> GoalRatio -> Weights -> Points -> T.Text
+hookWorking tv gr w p =
+    weightWorking gr w <> pointWorking tv w p
 
-weightWorking :: Weights -> T.Text
+weightWorking :: GoalRatio -> Weights -> T.Text
 weightWorking
+    (GoalRatio gr)
     Weights
         { distance = DistanceWeight dw
         , arrival = ArrivalWeight aw
@@ -51,6 +52,8 @@ weightWorking
     <> "\"\\\\begin{aligned} "
     <> katexNewLine
     <> " gr &= \\\\frac{pg}{pf}"
+    <> katexNewLine
+    <> (" &= " <> textf "%.3f" gr)
     <> katexNewLine
     <> katexNewLine
 
@@ -166,7 +169,7 @@ viewWeightWorking hgOrPg vy' vw' tw' al' = do
                 (_, _, Nothing, _) -> text "Loading competition tweaks ..."
                 (_, _, _, Nothing) -> text "Loading allocations ..."
                 (Just Vy.Validity{task}, Just ValidityWorking{launch = LaunchValidityWorking{flying}}, Just tweak, Just alloc) -> do
-                    let (GoalRatio gr) = goalRatio alloc
+                    let gr@(GoalRatio gr') = goalRatio alloc
 
                     let wts@Weights
                             { distance = DistanceWeight dw
@@ -184,7 +187,7 @@ viewWeightWorking hgOrPg vy' vw' tw' al' = do
 
                     elAttr
                         "a"
-                        (("class" =: "button") <> ("onclick" =: hookWorking task wts pts))
+                        (("class" =: "button") <> ("onclick" =: hookWorking task gr wts pts))
                         (text "Show Working")
 
                     spacer
@@ -200,7 +203,7 @@ viewWeightWorking hgOrPg vy' vw' tw' al' = do
                                     elClass "div" "tags has-addons" $ do
                                         elClass "span" "tag" $ do text "gr = goal ratio"
                                         elClass "span" "tag is-primary" . text
-                                            $ textf "%.3f" gr
+                                            $ textf "%.3f" gr'
                                 elClass "div" "control" $ do
                                     elClass "div" "tags has-addons" $ do
                                         elClass "span" "tag" $ do text "pf = pilots flying"
