@@ -14,6 +14,7 @@ import WireTypes.ValidityWorking
     , DistanceValidityWorking(..)
     , PilotsFlying(..)
     )
+import WireTypes.Route (TaskLength(..), showTaskDistance)
 import WireTypes.Comp (Discipline(..), Tweak(..))
 import WireTypes.Point
     ( GoalRatio(..)
@@ -195,15 +196,17 @@ viewWeightWorking
     -> Dynamic t (Maybe ValidityWorking)
     -> Dynamic t (Maybe Tweak)
     -> Dynamic t (Maybe Allocation)
+    -> Dynamic t (Maybe TaskLength)
     -> m ()
-viewWeightWorking hgOrPg vy' vw' tw' al' = do
+viewWeightWorking hgOrPg vy' vw' tw' al' ln' = do
     _ <- dyn $ ffor3 vy' vw' tw' (\vy vw tw -> do
-        _ <- dyn $ ffor al' (\al ->
-            case (vy, vw, tw, al) of
-                (Nothing, _, _, _) -> text "Loading validity ..."
-                (_, Nothing, _, _) -> text "Loading validity working ..."
-                (_, _, Nothing, _) -> text "Loading competition tweaks ..."
-                (_, _, _, Nothing) -> text "Loading allocations ..."
+        _ <- dyn $ ffor2 al' ln' (\al ln ->
+            case (vy, vw, tw, al, ln) of
+                (Nothing, _, _, _, _) -> text "Loading validity ..."
+                (_, Nothing, _, _, _) -> text "Loading validity working ..."
+                (_, _, Nothing, _, _) -> text "Loading competition tweaks ..."
+                (_, _, _, Nothing, _) -> text "Loading allocations ..."
+                (_, _, _, _, Nothing) -> text "Loading task length ..."
                 ( Just Vy.Validity{task}
                     , Just
                         ValidityWorking
@@ -214,6 +217,7 @@ viewWeightWorking hgOrPg vy' vw' tw' al' = do
                             }
                     , Just tweak
                     , Just alloc
+                    , Just TaskLength{taskRoute}
                     ) -> do
 
                     let gr@(GoalRatio gr') = goalRatio alloc
@@ -270,8 +274,8 @@ viewWeightWorking hgOrPg vy' vw' tw' al' = do
                                         elClass "div" "control" $ do
                                             elClass "div" "tags has-addons" $ do
                                                 elClass "span" "tag" $ do text "td = task distance"
-                                                elClass "span" "tag is-info" . text
-                                                    $ ""
+                                                elClass "span" "tag is-info"
+                                                    $ text (showTaskDistance taskRoute)
                                         elClass "div" "control" $ do
                                             elClass "div" "tags has-addons" $ do
                                                 elClass "span" "tag" $ do text "bd = best distance"

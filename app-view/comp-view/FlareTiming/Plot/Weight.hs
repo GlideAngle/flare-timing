@@ -4,6 +4,7 @@ import Reflex.Dom
 
 import qualified WireTypes.Validity as Vy (Validity(..))
 import WireTypes.ValidityWorking (ValidityWorking(..))
+import WireTypes.Route (TaskLength(..))
 import WireTypes.Comp (Discipline(..), Tweak(..))
 import WireTypes.Point (Allocation(..))
 import FlareTiming.Plot.Weight.View as W (hgPlot, pgPlot)
@@ -16,8 +17,9 @@ weightPlot
     -> Dynamic t (Maybe ValidityWorking)
     -> Dynamic t (Maybe Tweak)
     -> Dynamic t (Maybe Allocation)
+    -> Dynamic t (Maybe TaskLength)
     -> m ()
-weightPlot hgOrPg vy vw tweak alloc = do
+weightPlot hgOrPg vy vw tweak alloc ln = do
     elClass "div" "tile is-ancestor" $ do
         elClass "div" "tile" $
             elClass "div" "tile is-4 is-parent" $
@@ -29,7 +31,7 @@ weightPlot hgOrPg vy vw tweak alloc = do
                     return ()
 
         elClass "div" "tile is-8 is-child" $ do
-            _ <- dyn $ ffor hgOrPg (\x -> viewWeightWorking x vy vw tweak alloc)
+            _ <- dyn $ ffor hgOrPg (\x -> viewWeightWorking x vy vw tweak alloc ln)
             return ()
 
     return ()
