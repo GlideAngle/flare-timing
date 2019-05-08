@@ -83,15 +83,11 @@ weightWorking
     <> katexNewLine
     <> katexNewLine
 
-    <> " aw &= \\\\frac{1 - dw}{8}"
-    <> katexNewLine
-    <> " &= \\\\frac{1 - " <> textf "%.3f" dw <> "}{8}"
-    <> katexNewLine
-    <> (" &= " <> textf "%.3f" aw)
+    <> katexArrivalWeight aw
     <> katexNewLine
     <> katexNewLine
 
-    <> katexTimeWeight lw
+    <> katexTimeWeight lw aw
     <> " \\\\end{aligned}\""
     <> ", getElementById('alloc-weight-working')"
     <> ", {throwOnError: false});"
@@ -105,23 +101,44 @@ weightWorking
 
         katexLeadingWeight 0 =
             " lw &= 0"
-        katexLeadingWeight _lw =
+        katexLeadingWeight lw' =
             " lw &= \\\\frac{1 - dw}{8} * 1.4"
             <> katexNewLine
             <> (" &= \\\\frac{1 - " <> textf "%.3f" dw <> "}{8} * 1.4")
             <> katexNewLine
-            <> (" &= " <> textf "%.3f" lw)
+            <> (" &= " <> textf "%.3f" lw')
 
-        katexTimeWeight 0 =
+        katexArrivalWeight 0 =
+            " aw &= 0"
+        katexArrivalWeight aw' =
+            " aw &= \\\\frac{1 - dw}{8}"
+            <> katexNewLine
+            <> " &= \\\\frac{1 - " <> textf "%.3f" dw <> "}{8}"
+            <> katexNewLine
+            <> (" &= " <> textf "%.3f" aw')
+
+        katexTimeWeight 0 0 =
             " tw &= 1 - dw - lw - aw"
             <> katexNewLine
-            <> (" &= 1 - " <> (T.pack $ printf "%.3f - 0 - %.3f" dw aw))
+            <> (" &= 1 - " <> (T.pack $ printf "%.3f - 0 - 0" dw))
             <> katexNewLine
             <> (" &= " <> textf "%.3f" tw)
-        katexTimeWeight _lw =
+        katexTimeWeight lw' 0 =
             " tw &= 1 - dw - lw - aw"
             <> katexNewLine
-            <> (" &= 1 - " <> (T.pack $ printf "%.3f - %.3f - %.3f" dw lw aw))
+            <> (" &= 1 - " <> (T.pack $ printf "%.3f - %.3f - 0" dw lw'))
+            <> katexNewLine
+            <> (" &= " <> textf "%.3f" tw)
+        katexTimeWeight 0 aw' =
+            " tw &= 1 - dw - lw - aw"
+            <> katexNewLine
+            <> (" &= 1 - " <> (T.pack $ printf "%.3f - 0 - %.3f" dw aw'))
+            <> katexNewLine
+            <> (" &= " <> textf "%.3f" tw)
+        katexTimeWeight lw' aw' =
+            " tw &= 1 - dw - lw - aw"
+            <> katexNewLine
+            <> (" &= 1 - " <> (T.pack $ printf "%.3f - %.3f - %.3f" dw lw' aw'))
             <> katexNewLine
             <> (" &= " <> textf "%.3f" tw)
 
