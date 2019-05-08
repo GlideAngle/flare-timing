@@ -39,17 +39,19 @@ katexNewLine :: T.Text
 katexNewLine = " \\\\\\\\ "
 
 hookWorking
-    :: Vy.TaskValidity
+    :: Discipline
+    -> Vy.TaskValidity
     -> PilotsFlying
     -> GoalRatio
     -> Weights
     -> Points
     -> T.Text
-hookWorking tv pf gr w p =
-    weightWorking pf gr w <> pointWorking tv w p
+hookWorking hgOrPg tv pf gr w p =
+    weightWorking hgOrPg pf gr w <> pointWorking tv w p
 
-weightWorking :: PilotsFlying -> GoalRatio -> Weights -> T.Text
+weightWorking :: Discipline -> PilotsFlying -> GoalRatio -> Weights -> T.Text
 weightWorking
+    hgOrPg
     (PilotsFlying pf)
     (GoalRatio gr)
     Weights
@@ -75,7 +77,7 @@ weightWorking
     <> katexNewLine
     <> katexNewLine
 
-    <> katexLeadingWeight lw
+    <> katexLeadingWeight hgOrPg lw
     <> katexNewLine
     <> katexNewLine
 
@@ -109,12 +111,19 @@ weightWorking
             <> katexNewLine
             <> (" &= " <> textf "%.3f" dw)
 
-        katexLeadingWeight 0 =
+        katexLeadingWeight _ 0 =
             " lw &= 0"
-        katexLeadingWeight lw' =
+        katexLeadingWeight HangGliding lw' =
             " lw &= \\\\frac{1 - dw}{8} * 1.4"
             <> katexNewLine
             <> (" &= \\\\frac{1 - " <> textf "%.3f" dw <> "}{8} * 1.4")
+            <> katexNewLine
+            <> (" &= " <> textf "%.3f" lw')
+        katexLeadingWeight Paragliding lw' =
+            " lw &= \\\\frac{1 - dw}{8} * 1.4 * 2"
+            <> katexNewLine
+            -- TODO: Use scaling factor for leading weight.
+            <> (" &= \\\\frac{1 - " <> textf "%.3f" dw <> "}{8} * 1.4 * 2")
             <> katexNewLine
             <> (" &= " <> textf "%.3f" lw')
 
@@ -267,7 +276,7 @@ viewWeightWorking hgOrPg vy' vw' tw' al' ln' = do
 
                     elAttr
                         "a"
-                        (("class" =: "button") <> ("onclick" =: hookWorking task pf gr wts pts))
+                        (("class" =: "button") <> ("onclick" =: hookWorking hgOrPg task pf gr wts pts))
                         (text "Show Working")
 
                     spacer
