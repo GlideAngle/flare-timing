@@ -39,6 +39,10 @@ textf fmt d = T.pack $ printf fmt d
 katexNewLine :: T.Text
 katexNewLine = " \\\\\\\\ "
 
+katexCheck :: Bool -> T.Text
+katexCheck False = "\\\\color{red}\\\\text{!}"
+katexCheck True = "\\\\color{blue}\\\\checkmark"
+
 hookWorking
     :: Discipline
     -> Vy.TaskValidity
@@ -80,6 +84,7 @@ weightWorking
     <> (" &= \\\\frac{" <> (textf "%.0f" pg) <> "}{" <> (T.pack . show $ pf) <> "}")
     <> katexNewLine
     <> katexGoalRatio gr
+    <> katexCheck (gr' == gr)
     <> katexNewLine
     <> katexNewLine
 
@@ -102,12 +107,15 @@ weightWorking
     <> ", getElementById('alloc-weight-working')"
     <> ", {throwOnError: false});"
     where
+        pg = gr * fromIntegral pf
+        gr' = pg / fromIntegral pf
+
         gr2 = gr * gr
         gr3 = gr * gr2
         dw1 = 1.665 * gr
         dw2 = 1.713 * gr2
         dw3 = 0.587 * gr3
-        pg = gr * fromIntegral pf
+        dw' = 0.9 - dw1 + dw2 - dw3
 
         katexGoalRatio 0 =
             " &= 0"
@@ -116,12 +124,14 @@ weightWorking
 
         katexDistanceWeight 0 =
             " &= 0.9"
+            <> katexCheck True
         katexDistanceWeight _gr =
             (" &= 0.9 - 1.665 * " <> (T.pack $ printf "%.3f + 1.713 * %.3f - 0.587 * %.3f" gr gr2 gr3))
             <> katexNewLine
             <> (" &= 0.9 - " <> (T.pack $ printf "%.3f + %.3f - %.3f" dw1 dw2 dw3))
             <> katexNewLine
             <> (" &= " <> textf "%.3f" dw)
+            <> katexCheck (dw' == dw)
 
         leadingWeightCases =
             " lw &="
@@ -162,6 +172,7 @@ weightWorking
 
         katexArrivalWeight 0 =
             " aw &= 0"
+            <> katexCheck True
         katexArrivalWeight aw' =
             " aw &= \\\\frac{1 - dw}{8}"
             <> katexNewLine
