@@ -11,6 +11,7 @@ import qualified WireTypes.Validity as Vy (Validity(..), TaskValidity(..), showT
 import WireTypes.ValidityWorking
     ( ValidityWorking(..)
     , LaunchValidityWorking(..)
+    , DistanceValidityWorking(..)
     , PilotsFlying(..)
     )
 import WireTypes.Comp (Discipline(..), Tweak(..))
@@ -196,14 +197,25 @@ viewWeightWorking
     -> Dynamic t (Maybe Allocation)
     -> m ()
 viewWeightWorking hgOrPg vy' vw' tw' al' = do
-    _ <- dyn $ ffor3 vy' tw' al' (\vy tw al -> do
-        _ <- dyn $ ffor vw' (\vw ->
+    _ <- dyn $ ffor3 vy' vw' tw' (\vy vw tw -> do
+        _ <- dyn $ ffor al' (\al ->
             case (vy, vw, tw, al) of
                 (Nothing, _, _, _) -> text "Loading validity ..."
                 (_, Nothing, _, _) -> text "Loading validity working ..."
                 (_, _, Nothing, _) -> text "Loading competition tweaks ..."
                 (_, _, _, Nothing) -> text "Loading allocations ..."
-                (Just Vy.Validity{task}, Just ValidityWorking{launch = LaunchValidityWorking{flying = pf@(PilotsFlying pf')}}, Just tweak, Just alloc) -> do
+                ( Just Vy.Validity{task}
+                    , Just
+                        ValidityWorking
+                            { launch =
+                                LaunchValidityWorking { flying = pf@(PilotsFlying pf')}
+                            , distance =
+                                DistanceValidityWorking{bestDistance = bd}
+                            }
+                    , Just tweak
+                    , Just alloc
+                    ) -> do
+
                     let gr@(GoalRatio gr') = goalRatio alloc
 
                     let wts@Weights
@@ -251,6 +263,22 @@ viewWeightWorking hgOrPg vy' vw' tw' al' = do
                                         elClass "span" "tag" $ do text "pg = pilots in goal"
                                         elClass "span" "tag is-warning" . text
                                             $ textf "%.0f" pg
+
+                            if hgOrPg == Paragliding
+                                then
+                                    elClass "div" "field is-grouped is-grouped-multiline" $ do
+                                        elClass "div" "control" $ do
+                                            elClass "div" "tags has-addons" $ do
+                                                elClass "span" "tag" $ do text "td = task distance"
+                                                elClass "span" "tag is-info" . text
+                                                    $ ""
+                                        elClass "div" "control" $ do
+                                            elClass "div" "tags has-addons" $ do
+                                                elClass "span" "tag" $ do text "bd = best distance"
+                                                elClass "span" "tag is-dark"
+                                                    $ text (T.pack . show $ bd)
+                            else
+                                return ()
 
                             elClass "div" "field is-grouped is-grouped-multiline" $ do
                                 elClass "div" "control" $ do
