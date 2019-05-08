@@ -61,7 +61,7 @@ weightWorking
     <> katexNewLine
     <> " gr &= \\\\frac{pg}{pf}"
     <> katexNewLine
-    <> (" &= \\\\frac{pg}{" <> (T.pack . show $ pf) <> "}")
+    <> (" &= \\\\frac{" <> (textf "%.0f" pg) <> "}{" <> (T.pack . show $ pf) <> "}")
     <> katexNewLine
     <> (" &= " <> textf "%.3f" gr)
     <> katexNewLine
@@ -107,6 +107,7 @@ weightWorking
         dw1 = 1.665 * gr
         dw2 = 1.713 * gr2
         dw3 = 0.587 * gr3
+        pg = gr * fromIntegral pf
 
 pointWorking :: Vy.TaskValidity -> Weights -> Points -> T.Text
 pointWorking
@@ -188,7 +189,7 @@ viewWeightWorking hgOrPg vy' vw' tw' al' = do
                 (_, Nothing, _, _) -> text "Loading validity working ..."
                 (_, _, Nothing, _) -> text "Loading competition tweaks ..."
                 (_, _, _, Nothing) -> text "Loading allocations ..."
-                (Just Vy.Validity{task}, Just ValidityWorking{launch = LaunchValidityWorking{flying = pf}}, Just tweak, Just alloc) -> do
+                (Just Vy.Validity{task}, Just ValidityWorking{launch = LaunchValidityWorking{flying = pf@(PilotsFlying pf')}}, Just tweak, Just alloc) -> do
                     let gr@(GoalRatio gr') = goalRatio alloc
 
                     let wts@Weights
@@ -204,6 +205,8 @@ viewWeightWorking hgOrPg vy' vw' tw' al' = do
                             , leading = LeadingPoints lp
                             , time = TimePoints tp
                             } = points alloc
+
+                    let pg = gr' * fromIntegral pf'
 
                     elAttr
                         "a"
@@ -233,7 +236,7 @@ viewWeightWorking hgOrPg vy' vw' tw' al' = do
                                     elClass "div" "tags has-addons" $ do
                                         elClass "span" "tag" $ do text "pg = pilots in goal"
                                         elClass "span" "tag is-warning" . text
-                                            $ ""
+                                            $ textf "%.0f" pg
 
                             elClass "div" "field is-grouped is-grouped-multiline" $ do
                                 elClass "div" "control" $ do
