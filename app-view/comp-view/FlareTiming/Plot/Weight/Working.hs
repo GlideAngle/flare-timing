@@ -77,11 +77,7 @@ weightWorking
     <> katexNewLine
     <> katexNewLine
 
-    <> " lw &= \\\\frac{1 - dw}{8} * 1.4"
-    <> katexNewLine
-    <> (" &= \\\\frac{1 - " <> textf "%.3f" dw <> "}{8} * 1.4")
-    <> katexNewLine
-    <> (" &= " <> textf "%.3f" lw)
+    <> katexLeadingWeight lw
     <> katexNewLine
     <> katexNewLine
 
@@ -93,11 +89,7 @@ weightWorking
     <> katexNewLine
     <> katexNewLine
 
-    <> " tw &= 1 - dw - lw - aw"
-    <> katexNewLine
-    <> (" &= 1 - " <> (T.pack $ printf "%.3f - %.3f - %.3f" dw lw aw))
-    <> katexNewLine
-    <> (" &= " <> textf "%.3f" tw)
+    <> katexTimeWeight lw
     <> " \\\\end{aligned}\""
     <> ", getElementById('alloc-weight-working')"
     <> ", {throwOnError: false});"
@@ -108,6 +100,28 @@ weightWorking
         dw2 = 1.713 * gr2
         dw3 = 0.587 * gr3
         pg = gr * fromIntegral pf
+
+        katexLeadingWeight 0 =
+            " lw &= 0"
+        katexLeadingWeight _lw =
+            " lw &= \\\\frac{1 - dw}{8} * 1.4"
+            <> katexNewLine
+            <> (" &= \\\\frac{1 - " <> textf "%.3f" dw <> "}{8} * 1.4")
+            <> katexNewLine
+            <> (" &= " <> textf "%.3f" lw)
+
+        katexTimeWeight 0 =
+            " tw &= 1 - dw - lw - aw"
+            <> katexNewLine
+            <> (" &= 1 - " <> (T.pack $ printf "%.3f - 0 - %.3f" dw aw))
+            <> katexNewLine
+            <> (" &= " <> textf "%.3f" tw)
+        katexTimeWeight _lw =
+            " tw &= 1 - dw - lw - aw"
+            <> katexNewLine
+            <> (" &= 1 - " <> (T.pack $ printf "%.3f - %.3f - %.3f" dw lw aw))
+            <> katexNewLine
+            <> (" &= " <> textf "%.3f" tw)
 
 pointWorking :: Vy.TaskValidity -> Weights -> Points -> T.Text
 pointWorking
