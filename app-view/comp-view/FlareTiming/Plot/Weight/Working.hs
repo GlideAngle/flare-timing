@@ -95,6 +95,7 @@ weightWorking
     <> katexNewLine
 
     <> katexLeadingWeight hgOrPg gr lw
+    <> katexCheck (lw' == lw)
     <> katexNewLine
     <> katexNewLine
 
@@ -116,6 +117,12 @@ weightWorking
         dw2 = 1.713 * gr2
         dw3 = 0.587 * gr3
         dw' = 0.9 - dw1 + dw2 - dw3
+
+        lw' =
+            case (hgOrPg, gr) of
+                (Paragliding, 0) -> bd / td * 0.1
+                (Paragliding, _) -> ((1 - dw') / 8) * 1.4 * 2
+                (HangGliding, _) -> ((1 - dw') / 8) * 1.4
 
         katexGoalRatio 0 =
             " &= 0"
