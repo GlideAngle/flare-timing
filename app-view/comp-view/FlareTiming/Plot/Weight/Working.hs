@@ -101,10 +101,12 @@ weightWorking
     <> katexNewLine
 
     <> katexArrivalWeight aw
+    <> katexCheck (textf "%.3f" aw' == textf "%.3f" aw)
     <> katexNewLine
     <> katexNewLine
 
     <> katexTimeWeight lw aw
+    <> katexCheck (textf "%.3f" tw' == textf "%.3f" tw)
     <> " \\\\end{aligned}\""
     <> ", getElementById('alloc-weight-working')"
     <> ", {throwOnError: false});"
@@ -124,6 +126,10 @@ weightWorking
                 (Paragliding, 0) -> bd / td * 0.1
                 (Paragliding, _) -> ((1 - dw') / 8) * 1.4 * 2
                 (HangGliding, _) -> ((1 - dw') / 8) * 1.4
+
+        aw' = if aw == 0 then 0 else (1 - dw') / 8
+
+        tw' = 1 - dw' - lw' - aw'
 
         katexGoalRatio 0 =
             " &= 0"
