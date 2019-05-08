@@ -65,7 +65,7 @@ weightWorking
     <> katexNewLine
     <> (" &= \\\\frac{" <> (textf "%.0f" pg) <> "}{" <> (T.pack . show $ pf) <> "}")
     <> katexNewLine
-    <> (" &= " <> textf "%.3f" gr)
+    <> katexGoalRatio gr
     <> katexNewLine
     <> katexNewLine
 
@@ -98,6 +98,11 @@ weightWorking
         dw2 = 1.713 * gr2
         dw3 = 0.587 * gr3
         pg = gr * fromIntegral pf
+
+        katexGoalRatio 0 =
+            " &= 0"
+        katexGoalRatio gr' =
+            " &= " <> textf "%.3f" gr'
 
         katexLeadingWeight 0 =
             " lw &= 0"
