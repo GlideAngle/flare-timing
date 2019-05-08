@@ -11,6 +11,7 @@ import qualified WireTypes.Validity as Vy (Validity(..), TaskValidity(..), showT
 import WireTypes.ValidityWorking
     ( ValidityWorking(..)
     , LaunchValidityWorking(..)
+    , PilotsFlying(..)
     )
 import WireTypes.Comp (Discipline(..), Tweak(..))
 import WireTypes.Point
@@ -35,12 +36,19 @@ textf fmt d = T.pack $ printf fmt d
 katexNewLine :: T.Text
 katexNewLine = " \\\\\\\\ "
 
-hookWorking :: Vy.TaskValidity -> GoalRatio -> Weights -> Points -> T.Text
-hookWorking tv gr w p =
-    weightWorking gr w <> pointWorking tv w p
+hookWorking
+    :: Vy.TaskValidity
+    -> PilotsFlying
+    -> GoalRatio
+    -> Weights
+    -> Points
+    -> T.Text
+hookWorking tv pf gr w p =
+    weightWorking pf gr w <> pointWorking tv w p
 
-weightWorking :: GoalRatio -> Weights -> T.Text
+weightWorking :: PilotsFlying -> GoalRatio -> Weights -> T.Text
 weightWorking
+    (PilotsFlying pf)
     (GoalRatio gr)
     Weights
         { distance = DistanceWeight dw
@@ -52,6 +60,8 @@ weightWorking
     <> "\"\\\\begin{aligned} "
     <> katexNewLine
     <> " gr &= \\\\frac{pg}{pf}"
+    <> katexNewLine
+    <> (" &= \\\\frac{pg}{" <> (T.pack . show $ pf) <> "}")
     <> katexNewLine
     <> (" &= " <> textf "%.3f" gr)
     <> katexNewLine
@@ -178,7 +188,7 @@ viewWeightWorking hgOrPg vy' vw' tw' al' = do
                 (_, Nothing, _, _) -> text "Loading validity working ..."
                 (_, _, Nothing, _) -> text "Loading competition tweaks ..."
                 (_, _, _, Nothing) -> text "Loading allocations ..."
-                (Just Vy.Validity{task}, Just ValidityWorking{launch = LaunchValidityWorking{flying}}, Just tweak, Just alloc) -> do
+                (Just Vy.Validity{task}, Just ValidityWorking{launch = LaunchValidityWorking{flying = pf}}, Just tweak, Just alloc) -> do
                     let gr@(GoalRatio gr') = goalRatio alloc
 
                     let wts@Weights
@@ -197,7 +207,7 @@ viewWeightWorking hgOrPg vy' vw' tw' al' = do
 
                     elAttr
                         "a"
-                        (("class" =: "button") <> ("onclick" =: hookWorking task gr wts pts))
+                        (("class" =: "button") <> ("onclick" =: hookWorking task pf gr wts pts))
                         (text "Show Working")
 
                     spacer
@@ -218,7 +228,7 @@ viewWeightWorking hgOrPg vy' vw' tw' al' = do
                                     elClass "div" "tags has-addons" $ do
                                         elClass "span" "tag" $ do text "pf = pilots flying"
                                         elClass "span" "tag is-danger" . text
-                                            $ (T.pack . show $ flying)
+                                            $ (T.pack . show $ pf)
                                 elClass "div" "control" $ do
                                     elClass "div" "tags has-addons" $ do
                                         elClass "span" "tag" $ do text "pg = pilots in goal"
