@@ -107,6 +107,7 @@ weightWorking
 
     <> katexArrivalWeight aw
     <> katexCheck "%.3f" (Recalc aw') (Expect aw)
+    <> (if hgOrPg == HangGliding then "" else "\\\\color{grey}\\\\text{ always zero for paragliding}")
     <> katexNewLine
     <> katexNewLine
 
