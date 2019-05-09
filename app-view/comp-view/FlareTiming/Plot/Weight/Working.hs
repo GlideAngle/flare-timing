@@ -151,7 +151,9 @@ weightWorking
             <> katexNewLine
             <> (" &= " <> textf "%.3f" dw')
 
-        leadingWeightCases =
+        leadingWeightCases HangGliding =
+            " lw &= \\\\frac{1 - dw}{8} * 1.4"
+        leadingWeightCases Paragliding =
             " lw &="
             <> " \\\\begin{cases}"
             <> " \\\\dfrac{bd}{td} * 0.1"
@@ -165,22 +167,21 @@ weightWorking
 
         katexLeadingWeight _ _ 0 =
             " lw &= 0"
-        katexLeadingWeight HangGliding _gr lw' =
-            leadingWeightCases
-            <> " &= \\\\frac{1 - dw}{8} * 1.4"
+        katexLeadingWeight dp@HangGliding _gr lw' =
+            leadingWeightCases dp
             <> katexNewLine
             <> (" &= \\\\frac{1 - " <> textf "%.3f" dw' <> "}{8} * 1.4")
             <> katexNewLine
             <> (" &= " <> textf "%.3f" lw')
-        katexLeadingWeight Paragliding 0 lw' =
-            leadingWeightCases
+        katexLeadingWeight dp@Paragliding 0 lw' =
+            leadingWeightCases dp
             <> " &= \\\\frac{bd}{td} * 0.1"
             <> katexNewLine
             <> (" &= \\\\frac{" <> textf "%.3f" bd <> "}{" <> textf "%.3f" td <> "} * 0.1")
             <> katexNewLine
             <> (" &= " <> textf "%.3f" lw')
-        katexLeadingWeight Paragliding _gr lw' =
-            leadingWeightCases
+        katexLeadingWeight dp@Paragliding _gr lw' =
+            leadingWeightCases dp
             <> " &= \\\\frac{1 - dw}{8} * 1.4 * 2"
             <> katexNewLine
             -- TODO: Use scaling factor for leading weight.
