@@ -14,7 +14,7 @@ import WireTypes.ValidityWorking
     , MaximumDistance(..)
     )
 import WireTypes.Route (TaskLength(..), TaskDistance(..), showTaskDistance)
-import WireTypes.Comp (Discipline(..), Tweak(..))
+import WireTypes.Comp (Discipline(..), Tweak(..), LwScaling(..))
 import WireTypes.Point
     ( GoalRatio(..)
     , Allocation(..)
@@ -50,18 +50,20 @@ hookWorking
     -> Vy.TaskValidity
     -> PilotsFlying
     -> GoalRatio
+    -> Maybe LwScaling
     -> TaskDistance
     -> MaximumDistance
     -> Weights
     -> Points
     -> T.Text
-hookWorking hgOrPg tv pf gr td bd w p =
-    weightWorking hgOrPg pf gr td bd w <> pointWorking tv w p
+hookWorking hgOrPg tv pf gr lws td bd w p =
+    weightWorking hgOrPg pf gr lws td bd w <> pointWorking tv w p
 
 weightWorking
     :: Discipline
     -> PilotsFlying
     -> GoalRatio
+    -> Maybe LwScaling
     -> TaskDistance
     -> MaximumDistance
     -> Weights
@@ -70,6 +72,7 @@ weightWorking
     hgOrPg
     (PilotsFlying pf)
     (GoalRatio gr)
+    lws
     (TaskDistance td)
     (MaximumDistance bd)
     Weights
@@ -127,7 +130,7 @@ weightWorking
             if lw == 0 then 0 else
             case (hgOrPg, gr) of
                 (Paragliding, 0) -> bd / td * 0.1
-                (Paragliding, _) -> ((1 - dw') / 8) * 1.4 * 2
+                (Paragliding, _) -> ((1 - dw') / 8) * 1.4 * (maybe 1 (\(LwScaling x) -> x) $ lws)
                 (HangGliding, _) -> ((1 - dw') / 8) * 1.4
 
         aw' = if aw == 0 then 0 else (1 - dw') / 8
@@ -157,7 +160,7 @@ weightWorking
             <> " &\\\\text{if gr = 0}"
             <> katexNewLine
             <> katexNewLine
-            <> " \\\\dfrac{1 - dw}{8} * 1.4 * 2"
+            <> " \\\\dfrac{1 - dw}{8} * 1.4 * lws"
             <> " &\\\\text{otherwise}"
             <> " \\\\end{cases}"
             <> katexNewLine
@@ -179,10 +182,10 @@ weightWorking
             <> (" &= " <> textf "%.3f" lw')
         katexLeadingWeight dp@Paragliding _gr _lw =
             leadingWeightCases dp
-            <> " &= \\\\frac{1 - dw}{8} * 1.4 * 2"
+            <> " &= \\\\frac{1 - dw}{8} * 1.4 * lws"
             <> katexNewLine
             -- TODO: Use scaling factor for leading weight.
-            <> (" &= \\\\frac{1 - " <> textf "%.3f" dw' <> "}{8} * 1.4 * 2")
+            <> (" &= \\\\frac{1 - " <> textf "%.3f" dw' <> "}{8} * 1.4" <> maybe "" (\(LwScaling x) -> textf "* %.3f" x) lws)
             <> katexNewLine
             <> (" &= " <> textf "%.3f" lw')
 
@@ -341,7 +344,9 @@ viewWeightWorking hgOrPg vy' vw' twk' al' ln' = do
 
                     elAttr
                         "a"
-                        (("class" =: "button") <> ("onclick" =: hookWorking hgOrPg task pf gr td bd wts pts))
+                        (  ("class" =: "button")
+                        <> ("onclick" =: hookWorking hgOrPg task pf gr lwScaling td bd wts pts)
+                        )
                         (text "Show Working")
 
                     spacer
