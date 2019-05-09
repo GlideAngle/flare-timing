@@ -107,7 +107,6 @@ weightWorking
 
     <> katexArrivalWeight aw
     <> katexCheck "%.3f" (Recalc aw') (Expect aw)
-    <> (if hgOrPg == HangGliding then "" else "\\\\color{grey}\\\\text{ always zero for paragliding}")
     <> katexNewLine
     <> katexNewLine
 
@@ -166,6 +165,17 @@ weightWorking
             <> " \\\\end{cases}"
             <> katexNewLine
 
+        arrivalWeightCases =
+            " aw &="
+            <> " \\\\begin{cases}"
+            <> " \\\\dfrac{1 - dw}{8}"
+            <> " &\\\\text{if hang gliding}"
+            <> katexNewLine
+            <> " 0"
+            <> " &\\\\text{if paragliding}"
+            <> " \\\\end{cases}"
+            <> katexNewLine
+
         katexLeadingWeight _ _ 0 =
             " lw &= 0"
         katexLeadingWeight dp@HangGliding _gr _lw =
@@ -191,9 +201,11 @@ weightWorking
             <> (" &= " <> textf "%.3f" lw')
 
         katexArrivalWeight 0 =
-            " aw &= 0"
+            arrivalWeightCases
+            <> " &= 0"
         katexArrivalWeight _aw =
-            " aw &= \\\\frac{1 - dw}{8}"
+            arrivalWeightCases
+            <> " &= \\\\frac{1 - dw}{8}"
             <> katexNewLine
             <> " &= \\\\frac{1 - " <> textf "%.3f" dw' <> "}{8}"
             <> katexNewLine
