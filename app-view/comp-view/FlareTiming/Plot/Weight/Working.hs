@@ -100,7 +100,7 @@ weightWorking
     <> katexNewLine
     <> katexNewLine
 
-    <> katexLeadingWeight hgOrPg gr lw
+    <> katexLeadingWeight hgOrPg gr
     <> katexCheck "%.3f" (Recalc lw') (Expect lw)
     <> katexNewLine
     <> katexNewLine
@@ -152,7 +152,7 @@ weightWorking
             <> (" &= " <> textf "%.3f" dw')
 
         leadingWeightCases HangGliding =
-            " lw &= \\\\frac{1 - dw}{8} * 1.4"
+            " lw &= \\\\frac{1 - dw}{8} * 1.4 * lws"
         leadingWeightCases Paragliding =
             " lw &="
             <> " \\\\begin{cases}"
@@ -176,27 +176,25 @@ weightWorking
             <> " \\\\end{cases}"
             <> katexNewLine
 
-        katexLeadingWeight _ _ 0 =
-            " lw &= 0"
-        katexLeadingWeight dp@HangGliding _gr _lw =
+        katexLeadingWeight dp@HangGliding _gr =
             leadingWeightCases dp
             <> katexNewLine
-            <> (" &= \\\\frac{1 - " <> textf "%.3f" dw' <> "}{8} * 1.4")
+            <> (" &= \\\\frac{1 - " <> textf "%.3f" dw' <> "}{8} * 1.4" <> maybe "" (\(LwScaling x) -> if x == 0 then "* 0" else textf "* %.3f" x) lws)
             <> katexNewLine
             <> (" &= " <> textf "%.3f" lw')
-        katexLeadingWeight dp@Paragliding 0 _lw =
+        katexLeadingWeight dp@Paragliding 0 =
             leadingWeightCases dp
             <> " &= \\\\frac{bd}{td} * 0.1"
             <> katexNewLine
             <> (" &= \\\\frac{" <> textf "%.3f" bd <> "}{" <> textf "%.3f" td <> "} * 0.1")
             <> katexNewLine
             <> (" &= " <> textf "%.3f" lw')
-        katexLeadingWeight dp@Paragliding _gr _lw =
+        katexLeadingWeight dp@Paragliding _gr =
             leadingWeightCases dp
             <> " &= \\\\frac{1 - dw}{8} * 1.4 * lws"
             <> katexNewLine
             -- TODO: Use scaling factor for leading weight.
-            <> (" &= \\\\frac{1 - " <> textf "%.3f" dw' <> "}{8} * 1.4" <> maybe "" (\(LwScaling x) -> textf "* %.3f" x) lws)
+            <> (" &= \\\\frac{1 - " <> textf "%.3f" dw' <> "}{8} * 1.4" <> maybe "" (\(LwScaling x) -> if x == 0 then "* 0" else textf "* %.3f" x) lws)
             <> katexNewLine
             <> (" &= " <> textf "%.3f" lw')
 
