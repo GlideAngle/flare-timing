@@ -266,9 +266,11 @@ newtype AwScaling = AwScaling Double
     deriving anyclass FromJSON
 
 instance Show LwScaling where
+    show (LwScaling 0) = "0"
     show (LwScaling x) = show x
 
 instance Show AwScaling where
+    show (AwScaling 0) = "0"
     show (AwScaling x) = show x
 
 data Tweak =
