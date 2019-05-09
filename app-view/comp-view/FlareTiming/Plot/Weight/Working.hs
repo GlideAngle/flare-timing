@@ -39,9 +39,14 @@ textf fmt d = T.pack $ printf fmt d
 katexNewLine :: T.Text
 katexNewLine = " \\\\\\\\ "
 
-katexCheck :: Bool -> T.Text
-katexCheck False = "\\\\color{red}\\\\text{!}"
-katexCheck True = "\\\\color{blue}\\\\checkmark"
+newtype Expect a = Expect a
+newtype Recalc a = Recalc a
+
+katexCheck :: String -> Recalc Double -> Expect Double -> T.Text
+katexCheck fmt (Recalc x) (Expect y) =
+    if (printf fmt x :: String) == printf fmt y
+        then " \\\\color{blue}\\\\checkmark"
+        else " \\\\color{red}\\\\neq " <> textf fmt y
 
 hookWorking
     :: Discipline
@@ -84,29 +89,29 @@ weightWorking
     <> (" &= \\\\frac{" <> (textf "%.0f" pg) <> "}{" <> (T.pack . show $ pf) <> "}")
     <> katexNewLine
     <> katexGoalRatio gr
-    <> katexCheck (textf "%.3f" gr' == textf "%.3f" gr)
+    <> katexCheck "%.3f" (Recalc gr') (Expect gr)
     <> katexNewLine
     <> katexNewLine
 
     <> " dw &= 0.9 - 1.665 * gr + 1.713 * gr^2 - 0.587 * gr^3"
     <> katexNewLine
     <> katexDistanceWeight gr
-    <> katexCheck (textf "%.3f" dw' == textf "%.3f" dw)
+    <> katexCheck "%.3f" (Recalc dw') (Expect dw)
     <> katexNewLine
     <> katexNewLine
 
     <> katexLeadingWeight hgOrPg gr lw
-    <> katexCheck (textf "%.3f" lw' == textf "%.3f" lw)
+    <> katexCheck "%.3f" (Recalc lw') (Expect lw)
     <> katexNewLine
     <> katexNewLine
 
     <> katexArrivalWeight aw
-    <> katexCheck (textf "%.3f" aw' == textf "%.3f" aw)
+    <> katexCheck "%.3f" (Recalc aw') (Expect aw)
     <> katexNewLine
     <> katexNewLine
 
     <> katexTimeWeight lw aw
-    <> katexCheck (textf "%.3f" tw' == textf "%.3f" tw)
+    <> katexCheck "%.3f" (Recalc tw') (Expect tw)
     <> " \\\\end{aligned}\""
     <> ", getElementById('alloc-weight-working')"
     <> ", {throwOnError: false});"
@@ -122,6 +127,7 @@ weightWorking
         dw' = 0.9 - dw1 + dw2 - dw3
 
         lw' =
+            if lw == 0 then 0 else
             case (hgOrPg, gr) of
                 (Paragliding, 0) -> bd / td * 0.1
                 (Paragliding, _) -> ((1 - dw') / 8) * 1.4 * 2
@@ -143,7 +149,7 @@ weightWorking
             <> katexNewLine
             <> (" &= 0.9 - " <> (T.pack $ printf "%.3f + %.3f - %.3f" dw1 dw2 dw3))
             <> katexNewLine
-            <> (" &= " <> textf "%.3f" dw)
+            <> (" &= " <> textf "%.3f" dw')
 
         leadingWeightCases =
             " lw &="
@@ -163,7 +169,7 @@ weightWorking
             leadingWeightCases
             <> " &= \\\\frac{1 - dw}{8} * 1.4"
             <> katexNewLine
-            <> (" &= \\\\frac{1 - " <> textf "%.3f" dw <> "}{8} * 1.4")
+            <> (" &= \\\\frac{1 - " <> textf "%.3f" dw' <> "}{8} * 1.4")
             <> katexNewLine
             <> (" &= " <> textf "%.3f" lw')
         katexLeadingWeight Paragliding 0 lw' =
@@ -178,7 +184,7 @@ weightWorking
             <> " &= \\\\frac{1 - dw}{8} * 1.4 * 2"
             <> katexNewLine
             -- TODO: Use scaling factor for leading weight.
-            <> (" &= \\\\frac{1 - " <> textf "%.3f" dw <> "}{8} * 1.4 * 2")
+            <> (" &= \\\\frac{1 - " <> textf "%.3f" dw' <> "}{8} * 1.4 * 2")
             <> katexNewLine
             <> (" &= " <> textf "%.3f" lw')
 
@@ -187,34 +193,34 @@ weightWorking
         katexArrivalWeight aw' =
             " aw &= \\\\frac{1 - dw}{8}"
             <> katexNewLine
-            <> " &= \\\\frac{1 - " <> textf "%.3f" dw <> "}{8}"
+            <> " &= \\\\frac{1 - " <> textf "%.3f" dw' <> "}{8}"
             <> katexNewLine
             <> (" &= " <> textf "%.3f" aw')
 
         katexTimeWeight 0 0 =
             " tw &= 1 - dw - lw - aw"
             <> katexNewLine
-            <> (" &= 1 - " <> (T.pack $ printf "%.3f - 0 - 0" dw))
+            <> (" &= 1 - " <> (T.pack $ printf "%.3f - 0 - 0" dw'))
             <> katexNewLine
-            <> (" &= " <> textf "%.3f" tw)
+            <> (" &= " <> textf "%.3f" tw')
         katexTimeWeight lw' 0 =
             " tw &= 1 - dw - lw - aw"
             <> katexNewLine
-            <> (" &= 1 - " <> (T.pack $ printf "%.3f - %.3f - 0" dw lw'))
+            <> (" &= 1 - " <> (T.pack $ printf "%.3f - %.3f - 0" dw' lw'))
             <> katexNewLine
-            <> (" &= " <> textf "%.3f" tw)
+            <> (" &= " <> textf "%.3f" tw')
         katexTimeWeight 0 aw' =
             " tw &= 1 - dw - lw - aw"
             <> katexNewLine
-            <> (" &= 1 - " <> (T.pack $ printf "%.3f - 0 - %.3f" dw aw'))
+            <> (" &= 1 - " <> (T.pack $ printf "%.3f - 0 - %.3f" dw' aw'))
             <> katexNewLine
-            <> (" &= " <> textf "%.3f" tw)
+            <> (" &= " <> textf "%.3f" tw')
         katexTimeWeight lw' aw' =
             " tw &= 1 - dw - lw - aw"
             <> katexNewLine
-            <> (" &= 1 - " <> (T.pack $ printf "%.3f - %.3f - %.3f" dw lw' aw'))
+            <> (" &= 1 - " <> (T.pack $ printf "%.3f - %.3f - %.3f" dw' lw' aw'))
             <> katexNewLine
-            <> (" &= " <> textf "%.3f" tw)
+            <> (" &= " <> textf "%.3f" tw')
 
 pointWorking :: Vy.TaskValidity -> Weights -> Points -> T.Text
 pointWorking
