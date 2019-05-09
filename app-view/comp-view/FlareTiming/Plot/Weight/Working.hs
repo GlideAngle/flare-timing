@@ -1,9 +1,7 @@
 module FlareTiming.Plot.Weight.Working (viewWeightWorking) where
 
-import Text.Printf (printf)
 import Reflex
 import Reflex.Dom
-import Data.String (IsString)
 import Text.Printf (printf)
 import qualified Data.Text as T (Text, pack)
 
@@ -30,7 +28,6 @@ import WireTypes.Point
     , ArrivalPoints(..)
     , LeadingPoints(..)
     , TimePoints(..)
-    , zeroWeights
     )
 
 textf :: String -> Double -> T.Text
@@ -296,10 +293,10 @@ viewWeightWorking
     -> Dynamic t (Maybe Allocation)
     -> Dynamic t (Maybe TaskLength)
     -> m ()
-viewWeightWorking hgOrPg vy' vw' tw' al' ln' = do
-    _ <- dyn $ ffor3 vy' vw' tw' (\vy vw tw -> do
+viewWeightWorking hgOrPg vy' vw' twk' al' ln' = do
+    _ <- dyn $ ffor3 vy' vw' twk' (\vy vw twk -> do
         _ <- dyn $ ffor2 al' ln' (\al ln ->
-            case (vy, vw, tw, al, ln) of
+            case (vy, vw, twk, al, ln) of
                 (Nothing, _, _, _, _) -> text "Loading validity ..."
                 (_, Nothing, _, _, _) -> text "Loading validity working ..."
                 (_, _, Nothing, _, _) -> text "Loading competition tweaks ..."
@@ -313,7 +310,11 @@ viewWeightWorking hgOrPg vy' vw' tw' al' ln' = do
                             , distance =
                                 DistanceValidityWorking{bestDistance = bd}
                             }
-                    , Just tweak
+                    , Just
+                        Tweak
+                            { leadingWeightScaling = lwScaling
+                            , arrivalWeightScaling = awScaling
+                            }
                     , Just alloc
                     , Just TaskLength{taskRoute = td}
                     ) -> do
@@ -335,6 +336,8 @@ viewWeightWorking hgOrPg vy' vw' tw' al' ln' = do
                             } = points alloc
 
                     let pg = gr' * fromIntegral pf'
+                    let lwS = show lwScaling
+                    let awS = show awScaling
 
                     elAttr
                         "a"
@@ -352,9 +355,9 @@ viewWeightWorking hgOrPg vy' vw' tw' al' ln' = do
                             elClass "div" "field is-grouped is-grouped-multiline" $ do
                                 elClass "div" "control" $ do
                                     elClass "div" "tags has-addons" $ do
-                                        elClass "span" "tag" $ do text "gr = goal ratio"
-                                        elClass "span" "tag is-primary" . text
-                                            $ textf "%.3f" gr'
+                                        elClass "span" "tag" $ do text "pg = pilots in goal"
+                                        elClass "span" "tag is-warning" . text
+                                            $ textf "%.0f" pg
                                 elClass "div" "control" $ do
                                     elClass "div" "tags has-addons" $ do
                                         elClass "span" "tag" $ do text "pf = pilots flying"
@@ -362,9 +365,9 @@ viewWeightWorking hgOrPg vy' vw' tw' al' ln' = do
                                             $ (T.pack . show $ pf)
                                 elClass "div" "control" $ do
                                     elClass "div" "tags has-addons" $ do
-                                        elClass "span" "tag" $ do text "pg = pilots in goal"
-                                        elClass "span" "tag is-warning" . text
-                                            $ textf "%.0f" pg
+                                        elClass "span" "tag" $ do text "gr = goal ratio"
+                                        elClass "span" "tag is-primary" . text
+                                            $ textf "%.3f" gr'
 
                             if hgOrPg == Paragliding
                                 then
@@ -381,6 +384,18 @@ viewWeightWorking hgOrPg vy' vw' tw' al' ln' = do
                                                     $ text (T.pack . show $ bd)
                             else
                                 return ()
+
+                            elClass "div" "field is-grouped is-grouped-multiline" $ do
+                                elClass "div" "control" $ do
+                                    elClass "div" "tags has-addons" $ do
+                                        elClass "span" "tag" $ do text "lws = leading weight scaling"
+                                        elClass "span" "tag is-info" . text
+                                            $ T.pack lwS
+                                elClass "div" "control" $ do
+                                    elClass "div" "tags has-addons" $ do
+                                        elClass "span" "tag" $ do text "aws = arrival weight scaling"
+                                        elClass "span" "tag is-success" . text
+                                            $ T.pack awS
 
                             elClass "div" "field is-grouped is-grouped-multiline" $ do
                                 elClass "div" "control" $ do

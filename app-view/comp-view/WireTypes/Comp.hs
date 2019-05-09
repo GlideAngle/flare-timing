@@ -258,12 +258,18 @@ data Nominal =
     deriving (Generic, FromJSON)
 
 newtype LwScaling = LwScaling Double
-    deriving (Eq, Ord, Show, Generic)
+    deriving (Eq, Ord, Generic)
     deriving anyclass FromJSON
 
 newtype AwScaling = AwScaling Double
-    deriving (Eq, Ord, Show, Generic)
+    deriving (Eq, Ord, Generic)
     deriving anyclass FromJSON
+
+instance Show LwScaling where
+    show (LwScaling x) = show x
+
+instance Show AwScaling where
+    show (AwScaling x) = show x
 
 data Tweak =
     Tweak
