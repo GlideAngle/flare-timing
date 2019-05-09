@@ -14,7 +14,7 @@ import WireTypes.ValidityWorking
     , MaximumDistance(..)
     )
 import WireTypes.Route (TaskLength(..), TaskDistance(..), showTaskDistance)
-import WireTypes.Comp (Discipline(..), Tweak(..), LwScaling(..))
+import WireTypes.Comp (Discipline(..), Tweak(..), LwScaling(..), AwScaling(..))
 import WireTypes.Point
     ( GoalRatio(..)
     , Allocation(..)
@@ -51,19 +51,21 @@ hookWorking
     -> PilotsFlying
     -> GoalRatio
     -> Maybe LwScaling
+    -> Maybe AwScaling
     -> TaskDistance
     -> MaximumDistance
     -> Weights
     -> Points
     -> T.Text
-hookWorking hgOrPg tv pf gr lws td bd w p =
-    weightWorking hgOrPg pf gr lws td bd w <> pointWorking tv w p
+hookWorking hgOrPg tv pf gr lws aws td bd w p =
+    weightWorking hgOrPg pf gr lws aws td bd w <> pointWorking tv w p
 
 weightWorking
     :: Discipline
     -> PilotsFlying
     -> GoalRatio
     -> Maybe LwScaling
+    -> Maybe AwScaling
     -> TaskDistance
     -> MaximumDistance
     -> Weights
@@ -73,6 +75,7 @@ weightWorking
     (PilotsFlying pf)
     (GoalRatio gr)
     lws
+    aws
     (TaskDistance td)
     (MaximumDistance bd)
     Weights
@@ -105,7 +108,8 @@ weightWorking
     <> katexNewLine
     <> katexNewLine
 
-    <> katexArrivalWeight aw
+    <> arrivalWeightCases
+    <> katexArrivalWeight hgOrPg
     <> katexCheck "%.3f" (Recalc aw') (Expect aw)
     <> katexNewLine
     <> katexNewLine
@@ -168,7 +172,7 @@ weightWorking
         arrivalWeightCases =
             " aw &="
             <> " \\\\begin{cases}"
-            <> " \\\\dfrac{1 - dw}{8}"
+            <> " \\\\dfrac{1 - dw}{8} * aws"
             <> " &\\\\text{if hang gliding}"
             <> katexNewLine
             <> " 0"
@@ -198,14 +202,12 @@ weightWorking
             <> katexNewLine
             <> (" &= " <> textf "%.3f" lw')
 
-        katexArrivalWeight 0 =
-            arrivalWeightCases
-            <> " &= 0"
-        katexArrivalWeight _aw =
-            arrivalWeightCases
-            <> " &= \\\\frac{1 - dw}{8}"
+        katexArrivalWeight Paragliding =
+            " &= 0"
+        katexArrivalWeight HangGliding =
+            " &= \\\\frac{1 - dw}{8} * aws"
             <> katexNewLine
-            <> " &= \\\\frac{1 - " <> textf "%.3f" dw' <> "}{8}"
+            <> (" &= \\\\frac{1 - " <> textf "%.3f" dw' <> "}{8}" <> maybe "" (\(AwScaling x) -> if x == 0 then "* 0" else textf "* %.3f" x) aws)
             <> katexNewLine
             <> (" &= " <> textf "%.3f" aw')
 
@@ -356,7 +358,7 @@ viewWeightWorking hgOrPg vy' vw' twk' al' ln' = do
                     elAttr
                         "a"
                         (  ("class" =: "button")
-                        <> ("onclick" =: hookWorking hgOrPg task pf gr lwScaling td bd wts pts)
+                        <> ("onclick" =: hookWorking hgOrPg task pf gr lwScaling awScaling td bd wts pts)
                         )
                         (text "Show Working")
 
