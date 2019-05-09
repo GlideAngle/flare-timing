@@ -360,14 +360,14 @@ viewWeightWorking hgOrPg vy' vw' twk' al' ln' = do
                             elClass "div" "field is-grouped is-grouped-multiline" $ do
                                 elClass "div" "control" $ do
                                     elClass "div" "tags has-addons" $ do
+                                        elClass "span" "tag" $ do text "pf = pilots flying"
+                                        elClass "span" "tag is-dark" . text
+                                            $ (T.pack . show $ pf)
+                                elClass "div" "control" $ do
+                                    elClass "div" "tags has-addons" $ do
                                         elClass "span" "tag" $ do text "pg = pilots in goal"
                                         elClass "span" "tag is-warning" . text
                                             $ textf "%.0f" pg
-                                elClass "div" "control" $ do
-                                    elClass "div" "tags has-addons" $ do
-                                        elClass "span" "tag" $ do text "pf = pilots flying"
-                                        elClass "span" "tag is-danger" . text
-                                            $ (T.pack . show $ pf)
                                 elClass "div" "control" $ do
                                     elClass "div" "tags has-addons" $ do
                                         elClass "span" "tag" $ do text "gr = goal ratio"
@@ -394,12 +394,12 @@ viewWeightWorking hgOrPg vy' vw' twk' al' ln' = do
                                 elClass "div" "control" $ do
                                     elClass "div" "tags has-addons" $ do
                                         elClass "span" "tag" $ do text "lws = leading weight scaling"
-                                        elClass "span" "tag is-info" . text
+                                        elClass "span" "tag is-danger" . text
                                             $ T.pack lwS
                                 elClass "div" "control" $ do
                                     elClass "div" "tags has-addons" $ do
                                         elClass "span" "tag" $ do text "aws = arrival weight scaling"
-                                        elClass "span" "tag is-success" . text
+                                        elClass "span" "tag is-warning" . text
                                             $ T.pack awS
 
                             elClass "div" "field is-grouped is-grouped-multiline" $ do
