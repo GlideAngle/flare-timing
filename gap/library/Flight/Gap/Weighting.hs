@@ -5,6 +5,7 @@ module Flight.Gap.Weighting
     , Rw(..)
     , Ew(..)
     , DistanceRatio(..)
+    , distanceRatio
     , distanceWeight
     , reachWeight
     , effortWeight
@@ -16,6 +17,9 @@ module Flight.Gap.Weighting
 import Data.Ratio ((%))
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
+import Data.UnitsOfMeasure ((/:), u, unQuantity, toRational', zero)
+import Data.UnitsOfMeasure.Convert (Convertible)
+import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Ratio (pattern (:%))
 import Flight.Gap.Weight.GoalRatio (GoalRatio(..))
@@ -41,6 +45,15 @@ data Weights =
 -- | Best distance versus task distance.
 newtype DistanceRatio = DistanceRatio Rational deriving (Eq, Show)
 
+distanceRatio
+    :: (RealFrac a, Convertible u [u| m |])
+    => Quantity a u
+    -> Quantity a u
+    -> DistanceRatio
+distanceRatio bd td =
+    if td == zero then DistanceRatio 0 else
+    DistanceRatio . unQuantity . toRational' $ bd /: td
+
 -- | Leading weight varies between disciplines and in paragliding its
 -- calculation inputs change depending on whether any pilots make goal or not.
 data Lw
@@ -62,7 +75,6 @@ data Rw
     = RwHg DistanceWeight
     | RwPg DistanceWeight
     deriving Show
-
 -- | Effort weight is only for hang gliding.
 data Ew
     = EwHg DistanceWeight

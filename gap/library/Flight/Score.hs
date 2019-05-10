@@ -49,6 +49,7 @@ module Flight.Score
     , Rw(..)
     , Ew(..)
     , Weights(..)
+    , distanceRatio
     , distanceWeight
     , reachWeight
     , effortWeight

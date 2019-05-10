@@ -97,7 +97,7 @@ import Flight.Score
     , PointPenalty
     , TaskPlacing(..), TaskPoints(..), PilotVelocity(..), PilotTime(..)
     , IxChunk(..), ChunkDifficulty(..)
-    , distanceWeight, reachWeight, effortWeight
+    , distanceRatio, distanceWeight, reachWeight, effortWeight
     , leadingWeight, arrivalWeight, timeWeight
     , taskValidity, launchValidity, distanceValidity, timeValidity
     , availablePoints, applyPointPenalties
@@ -345,15 +345,22 @@ points'
 
         lws =
             [
+                leadingWeight $
                 maybe
-                    (if discipline == HangGliding
-                        then leadingWeight (LwHg dw)
-                        else leadingWeight (LwPg dw))
-                    (\k -> leadingWeight (LwScaled k dw))
+                    (if | discipline == HangGliding -> LwHg dw
+                        | gr == GoalRatio 0 -> LwPgZ $ distanceRatio bd td
+                        | otherwise -> LwPg dw)
+                    (\k ->
+                        if | discipline == HangGliding -> LwScaled k dw
+                           | gr == GoalRatio 0 -> LwPgZ $ distanceRatio bd td
+                           | otherwise -> LwScaled k dw)
                     (join $ leadingWeightScaling <$> tw)
 
+            | gr <- grs
             | dw <- dws
             | tw <- taskTweak <$> tasks
+            | bd <- maybe [u| 0.0 km |] (MkQuantity . unTaskDistanceAsKm) <$> bestDistance
+            | td <- maybe [u| 0.0 km |] (MkQuantity . unTaskDistanceAsKm) <$> lsWholeTask
             ]
 
         aws =
