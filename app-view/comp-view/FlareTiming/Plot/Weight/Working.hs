@@ -29,6 +29,7 @@ import WireTypes.Point
     , LeadingPoints(..)
     , TimePoints(..)
     )
+import Data.Ratio.Rounding (dpRound)
 
 textf :: String -> Double -> T.Text
 textf fmt d = T.pack $ printf fmt d
@@ -39,11 +40,20 @@ katexNewLine = " \\\\\\\\ "
 newtype Expect a = Expect a
 newtype Recalc a = Recalc a
 
-katexCheck :: String -> Recalc Double -> Expect Double -> T.Text
-katexCheck fmt (Recalc x) (Expect y) =
-    if (printf fmt x :: String) == printf fmt y
+katexCheck :: Integer -> Recalc Double -> Expect Double -> T.Text
+katexCheck dp (Recalc x') (Expect y') =
+    if (printf "%.*f" dp x :: String) == printf "%.*f" dp y
         then " \\\\color{blue}\\\\checkmark"
-        else " \\\\color{red}\\\\neq " <> textf fmt y
+        else " \\\\color{red}\\\\neq " <> (T.pack $ printf "%.*f" dp y)
+    where
+        -- WARNING: The rounding of printf may not be as you expect.
+        -- > printf "%.3f, %.3f" 0.37251 0.3725
+        -- 0.373, 0.372
+        f :: Double -> Double
+        f = fromRational . dpRound dp . toRational
+
+        x = f x'
+        y = f y'
 
 hookWorking
     :: Discipline
@@ -92,30 +102,30 @@ weightWorking
     <> (" &= \\\\frac{" <> (textf "%.0f" pg) <> "}{" <> (T.pack . show $ pf) <> "}")
     <> katexNewLine
     <> katexGoalRatio gr
-    <> katexCheck "%.3f" (Recalc gr') (Expect gr)
+    <> katexCheck 3 (Recalc gr') (Expect gr)
     <> katexNewLine
     <> katexNewLine
 
     <> " dw &= 0.9 - 1.665 * gr + 1.713 * gr^2 - 0.587 * gr^3"
     <> katexNewLine
     <> katexDistanceWeight gr
-    <> katexCheck "%.3f" (Recalc dw') (Expect dw)
+    <> katexCheck 3 (Recalc dw') (Expect dw)
     <> katexNewLine
     <> katexNewLine
 
     <> katexLeadingWeight hgOrPg gr
-    <> katexCheck "%.3f" (Recalc lw') (Expect lw)
+    <> katexCheck 3 (Recalc lw') (Expect lw)
     <> katexNewLine
     <> katexNewLine
 
     <> arrivalWeightCases
     <> katexArrivalWeight hgOrPg
-    <> katexCheck "%.3f" (Recalc aw') (Expect aw)
+    <> katexCheck 3 (Recalc aw') (Expect aw)
     <> katexNewLine
     <> katexNewLine
 
     <> katexTimeWeight lw aw
-    <> katexCheck "%.3f" (Recalc tw') (Expect tw)
+    <> katexCheck 3 (Recalc tw') (Expect tw)
     <> " \\\\end{aligned}\""
     <> ", getElementById('alloc-weight-working')"
     <> ", {throwOnError: false});"
