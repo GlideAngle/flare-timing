@@ -7,6 +7,9 @@ of this changelog.
 
 * Only consider crossings that are exiting exit zones.
 * Compare arrival fractions between flare-timing and FS.
+* Show the working for weight calculations next to the split plot.
+* For paragliding, when the goal ratio is zero use a tenth of the distance
+  ratio for the leading weight.
 
 # Making a Line Goal
 ## app-view-0.19
