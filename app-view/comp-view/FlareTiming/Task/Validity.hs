@@ -219,7 +219,7 @@ stopWorking v w@TimeValidityWorking{gsBestTime = bt} =
     <> " b &= \\\\frac{ls}{f}"
     <> katexNewLine
     <> katexNewLine
-    <> " x &="
+    <> " validity &="
     <> " \\\\begin{cases}"
     <> " 1"
     <> " &\\\\text{if at least one pilot reached ESS}"
@@ -475,7 +475,9 @@ viewStop
     -> m ()
 viewStop
     Vy.Validity{time = v}
-    ValidityWorking{time = TimeValidityWorking{..}} = do
+    ValidityWorking
+        { distance = DistanceValidityWorking{..}
+        } = do
     elClass "div" "card" $ do
         elClass "div" "card-content" $ do
             elClass "h2" "title is-4" . text
@@ -483,20 +485,14 @@ viewStop
             elClass "div" "field is-grouped is-grouped-multiline" $ do
                 elClass "div" "control" $ do
                     elClass "div" "tags has-addons" $ do
-                        elClass "span" "tag" $ do text "ss best time"
+                        elClass "span" "tag" $ do text "f = pilots flying"
                         elClass "span" "tag is-info"
-                            $ text (T.pack . show $ ssBestTime)
+                            $ text (T.pack . show $ flying)
                 elClass "div" "control" $ do
                     elClass "div" "tags has-addons" $ do
-                        elClass "span" "tag" $ do text "bt = gs best time"
-                        elClass "span" "tag is-success"
-                            $ text (T.pack . show $ gsBestTime)
-                elClass "div" "control" $ do
-                    elClass "div" "tags has-addons" $ do
-                        elClass "span" "tag" $ do text "nt = nominal time"
-                        elClass "span" "tag is-primary"
-                            $ text (T.pack . show $ nominalTime)
-            elClass "div" "field is-grouped is-grouped-multiline" $ do
+                        elClass "span" "tag" $ do text "ls = pilots landed before stop time"
+                        elClass "span" "tag is-warning"
+                            $ text ""
                 elClass "div" "control" $ do
                     elClass "div" "tags has-addons" $ do
                         elClass "span" "tag" $ do text "bd = best distance"
@@ -504,17 +500,13 @@ viewStop
                             $ text (T.pack . show $ bestDistance)
                 elClass "div" "control" $ do
                     elClass "div" "tags has-addons" $ do
-                        elClass "span" "tag" $ do text "nd = nominal distance"
-                        elClass "span" "tag is-dark"
-                            $ text (T.pack . show $ nominalDistance)
+                        elClass "span" "tag" $ do text "ed = launch to ESS distance"
+                        elClass "span" "tag is-success"
+                            $ text ""
 
             elAttr
                 "div"
                 ("id" =: "stop-working")
                 (text "")
-
-            elClass "div" "notification" $ do
-                el "p" $ text "ss best time = the best time ignoring start gates"
-                el "p" $ text "gs best time = the best time from the start gate taken"
 
     return ()
