@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 8eb63b0ef4ee38075f504fd9c9eddd6a01f8c15e28c760ab39688a6105b31f31
+-- hash: 9b9eb6a56be257a3765ef9053641aace066a8c20f7216bb3bcf56e63b855841a
 
 name:           app-serve
 version:        0.1.0
@@ -48,6 +48,7 @@ executable comp-serve
     , directory
     , filemanip
     , filepath
+    , flight-clip
     , flight-cmd
     , flight-comp
     , flight-gap
@@ -62,6 +63,7 @@ executable comp-serve
     , servant
     , servant-server
     , siggy-chardust
+    , time
     , transformers
     , uom-plugin
     , wai

@@ -1,4 +1,5 @@
 import Prelude hiding (abs)
+import Data.Time.Clock (UTCTime)
 import System.Environment (getProgName)
 import Text.Printf (printf)
 import System.Console.CmdArgs.Implicit (cmdArgs)
@@ -29,6 +30,7 @@ import qualified Data.ByteString.Lazy.Char8 as LBS (pack)
 
 import System.FilePath (takeFileName)
 
+import Flight.Clip (FlyingSection)
 import qualified Flight.Track.Cross as Cg (Crossing(..))
 import qualified Flight.Track.Tag as Tg (Tagging(..), PilotTrackTag(..))
 import Flight.Track.Cross (TrackFlyingSection(..), ZoneTag(..))
@@ -233,6 +235,9 @@ type GapPointApi k =
     :<|> "cross-zone" :> "track-flying-section" :> (Capture "task" Int) :> (Capture "pilot" String)
         :> Get '[JSON] TrackFlyingSection
 
+    :<|> "cross-zone" :> "flying-times" :> (Capture "task" Int)
+        :> Get '[JSON] [(Pilot, FlyingSection UTCTime)]
+
     :<|> "tag-zone" :> (Capture "task" Int) :> (Capture "pilot" String)
         :> Get '[JSON] [Maybe ZoneTag]
 
@@ -425,6 +430,7 @@ serverGapPointApi cfg =
         :<|> getTaskPilotDf
         :<|> getTaskPilotTrack
         :<|> getTaskPilotTrackFlyingSection
+        :<|> getTaskFlyingSectionTimes
         :<|> getTaskPilotTag
         :<|> getTaskReachStats
         :<|> getTaskReach
@@ -791,6 +797,26 @@ getTaskPilotTrackFlyingSection ii pilotId = do
                         Just (_, Just y) -> return y
                         _ -> throwError $ errPilotTrackNotFound ix pilot
                 _ -> throwError $ errPilotTrackNotFound ix pilot
+
+getTaskFlyingSectionTimes :: Int -> AppT k IO [(Pilot, FlyingSection UTCTime)]
+getTaskFlyingSectionTimes ii = do
+    let jj = ii - 1
+    fss <- fmap Cg.flying <$> asks crossing
+
+    case fss of
+        Just fss' -> do
+            case take 1 $ drop jj fss' of
+                fs : _ ->
+                    return . catMaybes $
+                        -- NOTE: Use of sequence on a tuple.
+                        -- > sequence (1, Nothing)
+                        -- Nothing
+                        -- > sequence (1, Just 2)
+                        -- Just (1, 2)
+                        [sequence pt | pt <- (fmap . fmap . fmap) flyingTimes fs]
+                _ -> throwError $ errTaskBounds ii
+
+        _ -> throwError $ errTaskStep "cross-zone" ii
 
 getTaskPilotTag :: Int -> String -> AppT k IO [Maybe ZoneTag]
 getTaskPilotTag ii pilotId = do
