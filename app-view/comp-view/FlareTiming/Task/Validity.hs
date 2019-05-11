@@ -24,7 +24,11 @@ katexNewLine = " \\\\\\\\ "
 
 hookWorking :: Vy.Validity -> ValidityWorking -> T.Text
 hookWorking v ValidityWorking{launch = l, distance = d, time = t} =
-    taskWorking v <> launchWorking v l <> distanceWorking v d <> timeWorking v t
+    taskWorking v
+    <> launchWorking v l
+    <> distanceWorking v d
+    <> timeWorking v t
+    <> stopWorking v t
 
 taskWorking :: Vy.Validity -> T.Text
 taskWorking v =
@@ -205,6 +209,39 @@ timeWorking v w@TimeValidityWorking{gsBestTime = bt} =
     <> ", getElementById('time-working')"
     <> ", {throwOnError: false});"
 
+stopWorking :: Vy.Validity -> TimeValidityWorking -> T.Text
+stopWorking v w@TimeValidityWorking{gsBestTime = bt} =
+    "katex.render("
+    <> "\"\\\\begin{aligned} "
+    <> " x &="
+    <> " \\\\begin{cases}"
+    <> " \\\\dfrac{bt}{nt}"
+    <> " &\\\\text{if at least one pilot reached ESS}"
+    <> katexNewLine
+    <> katexNewLine
+    <> " \\\\dfrac{bd}{nd}"
+    <> " &\\\\text{if no pilots reached ESS}"
+    <> " \\\\end{cases}"
+    <> katexNewLine
+    <> timeWorkingCase bt
+    <> katexNewLine
+    <> timeWorkingSub w
+    <> katexNewLine
+    <> katexNewLine
+    <> " y &= \\\\min(1, x)"
+    <> katexNewLine
+    <> katexNewLine
+    <> " z &= -0.271 + 2.912 * y - 2.098 * y^2 + 0.457 * y^3"
+    <> katexNewLine
+    <> katexNewLine
+    <> "validity &= \\\\max(0, \\\\min(1, z))"
+    <> katexNewLine
+    <> " &= "
+    <> (Vy.showTimeValidity . Vy.time $ v)
+    <> " \\\\end{aligned}\""
+    <> ", getElementById('stop-working')"
+    <> ", {throwOnError: false});"
+
 spacer :: DomBuilder t m => m ()
 spacer = elClass "div" "spacer" $ return ()
 
@@ -232,6 +269,8 @@ viewValidity vy vw = do
                 viewDistance v w
                 spacer
                 viewTime v w
+                spacer
+                viewStop v w
                 spacer
                 return ())
 
@@ -415,6 +454,57 @@ viewTime
             elAttr
                 "div"
                 ("id" =: "time-working")
+                (text "")
+
+            elClass "div" "notification" $ do
+                el "p" $ text "ss best time = the best time ignoring start gates"
+                el "p" $ text "gs best time = the best time from the start gate taken"
+
+    return ()
+
+viewStop
+    :: DomBuilder t m
+    => Vy.Validity
+    -> ValidityWorking
+    -> m ()
+viewStop
+    Vy.Validity{time = v}
+    ValidityWorking{time = TimeValidityWorking{..}} = do
+    elClass "div" "card" $ do
+        elClass "div" "card-content" $ do
+            elClass "h2" "title is-4" . text
+                $ "Stopped Task Validity = " <> Vy.showTimeValidity v
+            elClass "div" "field is-grouped is-grouped-multiline" $ do
+                elClass "div" "control" $ do
+                    elClass "div" "tags has-addons" $ do
+                        elClass "span" "tag" $ do text "ss best time"
+                        elClass "span" "tag is-info"
+                            $ text (T.pack . show $ ssBestTime)
+                elClass "div" "control" $ do
+                    elClass "div" "tags has-addons" $ do
+                        elClass "span" "tag" $ do text "bt = gs best time"
+                        elClass "span" "tag is-success"
+                            $ text (T.pack . show $ gsBestTime)
+                elClass "div" "control" $ do
+                    elClass "div" "tags has-addons" $ do
+                        elClass "span" "tag" $ do text "nt = nominal time"
+                        elClass "span" "tag is-primary"
+                            $ text (T.pack . show $ nominalTime)
+            elClass "div" "field is-grouped is-grouped-multiline" $ do
+                elClass "div" "control" $ do
+                    elClass "div" "tags has-addons" $ do
+                        elClass "span" "tag" $ do text "bd = best distance"
+                        elClass "span" "tag is-dark"
+                            $ text (T.pack . show $ bestDistance)
+                elClass "div" "control" $ do
+                    elClass "div" "tags has-addons" $ do
+                        elClass "span" "tag" $ do text "nd = nominal distance"
+                        elClass "span" "tag is-dark"
+                            $ text (T.pack . show $ nominalDistance)
+
+            elAttr
+                "div"
+                ("id" =: "stop-working")
                 (text "")
 
             elClass "div" "notification" $ do
