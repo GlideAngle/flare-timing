@@ -220,9 +220,9 @@ stopWorkingCase :: (Semigroup p, IsString p) => Maybe a -> p
 stopWorkingCase (Just _) = " &= 1"
 stopWorkingCase Nothing = " &= \\\\min(1, a + b^3)"
 
-stopWorkingSubA :: DistanceValidityWorking -> ReachStats -> T.Text
+stopWorkingSubA :: DistanceValidityWorking -> ReachStats -> TaskDistance -> T.Text
 
-stopWorkingSubA DistanceValidityWorking{..} ReachStats{..} =
+stopWorkingSubA DistanceValidityWorking{..} ReachStats{..} td =
     " &= \\\\sqrt{\\\\frac{"
     <> bd
     <> " - "
@@ -236,7 +236,7 @@ stopWorkingSubA DistanceValidityWorking{..} ReachStats{..} =
     <> "}{5}}}"
     where
         bd = T.pack . show $ bestDistance
-        ed = "ed"
+        ed = showTaskDistance td
         mr = showPilotDistance reachMean <> "km"
         sr = showPilotDistance reachStdDev <> "km"
 
@@ -259,12 +259,12 @@ stopWorking
     -> ReachStats
     -> TaskDistance
     -> T.Text
-stopWorking v dw TimeValidityWorking{gsBestTime = bt} reachStats _ =
+stopWorking v dw TimeValidityWorking{gsBestTime = bt} reachStats td =
     "katex.render("
     <> "\"\\\\begin{aligned} "
     <> " a &= \\\\sqrt{\\\\frac{bd - \\\\overline{reach}}{ed - bd + 1} + \\\\sqrt{\\\\frac{\\\\sigma(reach)}{5}}}"
     <> katexNewLine
-    <> stopWorkingSubA dw reachStats
+    <> stopWorkingSubA dw reachStats td
     <> katexNewLine
     <> katexNewLine
     <> " b &= \\\\frac{ls}{f}"
