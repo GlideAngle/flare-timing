@@ -224,19 +224,21 @@ stopWorkingSubA :: DistanceValidityWorking -> T.Text
 stopWorkingSubA DistanceValidityWorking{..} =
     " &= \\\\sqrt{\\\\frac{"
     <> bd
-    <> " - \\\\overline{"
-    <> fd
-    <> "}}{"
+    <> " - "
+    <> mr
+    <> "}{"
     <> ed
     <> " - "
     <> bd
-    <> " + 1}} + \\\\sqrt{\\\\frac{\\\\sigma("
-    <> fd
-    <> ")}{5}}"
+    <> " + 1}} + \\\\sqrt{\\\\frac{"
+    <> sr
+    <> "}{5}}"
     where
         bd = T.pack . show $ bestDistance
         fd = "fd"
         ed = "ed"
+        mr = "\\\\overline{reach}"
+        sr = "\\\\sigma(reach)"
 
 stopWorkingSubB :: DistanceValidityWorking -> T.Text
 
@@ -254,7 +256,7 @@ stopWorking :: Vy.Validity -> DistanceValidityWorking -> TimeValidityWorking -> 
 stopWorking v dw TimeValidityWorking{gsBestTime = bt} =
     "katex.render("
     <> "\"\\\\begin{aligned} "
-    <> " a &= \\\\sqrt{\\\\frac{bd - \\\\overline{fd}}{ed - bd + 1}} + \\\\sqrt{\\\\frac{\\\\sigma(fd)}{5}}"
+    <> " a &= \\\\sqrt{\\\\frac{bd - \\\\overline{reach}}{ed - bd + 1}} + \\\\sqrt{\\\\frac{\\\\sigma(reach)}{5}}"
     <> katexNewLine
     <> stopWorkingSubA dw
     <> katexNewLine
