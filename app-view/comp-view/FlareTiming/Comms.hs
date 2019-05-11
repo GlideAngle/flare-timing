@@ -22,6 +22,7 @@ module FlareTiming.Comms
     , getTaskPilotDfNoTrack
     , getTaskPilotTrack
     , getTaskPilotTrackFlyingSection
+    , getTaskFlyingSectionTimes
     , getTaskPilotTag
     , getTaskReachStats
     , getTaskReach
@@ -33,12 +34,14 @@ module FlareTiming.Comms
     , emptyRoute
     ) where
 
+import Data.Time.Clock (UTCTime)
 import Reflex
 import Reflex.Dom
 import Data.Aeson (FromJSON)
 import qualified Data.Text as T (Text, pack)
 import Control.Monad.IO.Class (MonadIO)
 
+import WireTypes.Cross (FlyingSection)
 import WireTypes.Comp (Comp(..), Nominal(..), Task(..))
 import WireTypes.Reach (TrackReach, ReachStats)
 import WireTypes.Effort (TrackEffort)
@@ -174,6 +177,9 @@ getTaskLead = getIxTask "mask-track" "lead"
 
 getTaskTime :: GetIxTask' t m [(Pilot, TrackSpeed)]
 getTaskTime = getIxTask "mask-track" "time"
+
+getTaskFlyingSectionTimes :: GetIxTask' t m [(Pilot, FlyingSection UTCTime)]
+getTaskFlyingSectionTimes = getIxTask "cross-zone" "flying-times"
 
 getTaskValidityWorking :: GetIxTask' t m (Maybe ValidityWorking)
 getTaskValidityWorking = getIxTask "gap-point" "validity-working"

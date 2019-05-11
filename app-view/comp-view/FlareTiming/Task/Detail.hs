@@ -29,7 +29,7 @@ import FlareTiming.Comms
     , getTaskLengthProjectedEdgeSpherical
     , getTaskPilotDnf, getTaskPilotNyp, getTaskPilotDfNoTrack
     , getTaskPilotTrack
-    , getTaskPilotTrackFlyingSection
+    , getTaskPilotTrackFlyingSection, getTaskFlyingSectionTimes
     , getTaskPilotTag
     , emptyRoute
     )
@@ -178,6 +178,7 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
     av <- holdDyn Nothing =<< (fmap Just <$> getTaskArrival ix pb)
     ld <- holdDyn Nothing =<< (fmap Just <$> getTaskLead ix pb)
     sd <- holdDyn Nothing =<< (fmap Just <$> getTaskTime ix pb)
+    ft <- holdDyn Nothing =<< (fmap Just <$> getTaskFlyingSectionTimes ix pb)
     vw <- holdDyn Nothing =<< getTaskValidityWorking ix pb
     nyp <- holdDyn (Nyp []) =<< getTaskPilotNyp ix pb
     dnf <- holdDyn (Dnf []) =<< getTaskPilotDnf ix pb
@@ -272,7 +273,7 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
                     _ <- widgetHold basisAbsent $
                             (\case
                                 BasisTabAbsent -> basisAbsent
-                                BasisTabValidity -> viewValidity vy vw reachStats reach lnStop landedStop
+                                BasisTabValidity -> viewValidity vy vw reachStats reach lnStop landedStop ft
                                 BasisTabGeo -> tableGeo ix)
 
                             <$> tabBasis

@@ -2,6 +2,7 @@ module FlareTiming.Task.Validity (viewValidity) where
 
 import Prelude hiding (sum)
 import Data.Maybe (fromMaybe)
+import Data.Time.Clock (UTCTime)
 import Reflex
 import Reflex.Dom
 import Data.String (IsString)
@@ -19,6 +20,7 @@ import WireTypes.ValidityWorking
     , TimeValidityWorking(..)
     , BestTime(..)
     )
+import WireTypes.Cross (FlyingSection)
 import WireTypes.Route (TaskDistance(..), showTaskDistance)
 import WireTypes.Reach (TrackReach(..), ReachStats(..))
 import WireTypes.Point (showPilotDistance)
@@ -308,17 +310,19 @@ viewValidity
     -> Dynamic t (Maybe [(Pilot, TrackReach)])
     -> Dynamic t (Maybe TaskDistance)
     -> Dynamic t (Maybe Int)
+    -> Dynamic t (Maybe [(Pilot, FlyingSection UTCTime)])
     -> m ()
-viewValidity vy vw reachStats reach td landed = do
+viewValidity vy vw reachStats reach td landed ft = do
     _ <- dyn $ ffor3 vy vw reachStats (\vy' vw' reachStats' ->
-        dyn $ ffor2 td landed (\td' landed' ->
-            case (vy', vw', reachStats', td', landed') of
-                (Nothing, _, _, _, _) -> text "Loading validity ..."
-                (_, Nothing, _, _, _) -> text "Loading validity workings ..."
-                (_, _, Nothing, _, _) -> text "Loading reach stats ..."
-                (_, _, _, Nothing, _) -> text "Loading stopped task distance ..."
-                (_, _, _, _, Nothing) -> text "Loading out landings ..."
-                (Just v, Just w, Just r, Just d, Just lo) -> do
+        dyn $ ffor3 td landed ft (\td' landed' ft' ->
+            case (vy', vw', reachStats', td', landed', ft') of
+                (Nothing, _, _, _, _, _) -> text "Loading validity ..."
+                (_, Nothing, _, _, _, _) -> text "Loading validity workings ..."
+                (_, _, Nothing, _, _, _) -> text "Loading reach stats ..."
+                (_, _, _, Nothing, _, _) -> text "Loading stopped task distance ..."
+                (_, _, _, _, Nothing, _) -> text "Loading out landings ..."
+                (_, _, _, _, _, Nothing) -> text "Loading flying times ..."
+                (Just v, Just w, Just r, Just d, Just lo, Just _) -> do
                     elAttr
                         "a"
                         (("class" =: "button") <> ("onclick" =: hookWorking v w r d lo))

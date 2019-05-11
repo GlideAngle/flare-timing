@@ -235,7 +235,7 @@ type GapPointApi k =
     :<|> "cross-zone" :> "track-flying-section" :> (Capture "task" Int) :> (Capture "pilot" String)
         :> Get '[JSON] TrackFlyingSection
 
-    :<|> "cross-zone" :> "flying-times" :> (Capture "task" Int)
+    :<|> "cross-zone" :> (Capture "task" Int) :> "flying-times"
         :> Get '[JSON] [(Pilot, FlyingSection UTCTime)]
 
     :<|> "tag-zone" :> (Capture "task" Int) :> (Capture "pilot" String)
