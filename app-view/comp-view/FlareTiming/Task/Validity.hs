@@ -19,6 +19,7 @@ import WireTypes.ValidityWorking
     , TimeValidityWorking(..)
     , BestTime(..)
     )
+import WireTypes.Route (TaskDistance(..), showTaskDistance)
 import WireTypes.Reach (TrackReach(..), ReachStats(..))
 import WireTypes.Point (showPilotDistance)
 import WireTypes.Pilot (Pilot(..))
@@ -27,13 +28,13 @@ import FlareTiming.Pilot (showPilotName)
 katexNewLine :: T.Text
 katexNewLine = " \\\\\\\\ "
 
-hookWorking :: Vy.Validity -> ValidityWorking -> ReachStats -> T.Text
-hookWorking v ValidityWorking{launch = l, distance = d, time = t} r =
+hookWorking :: Vy.Validity -> ValidityWorking -> ReachStats -> TaskDistance -> T.Text
+hookWorking v ValidityWorking{launch = l, distance = d, time = t} r td =
     taskWorking v
     <> launchWorking v l
     <> distanceWorking v d
     <> timeWorking v t
-    <> stopWorking v d t r
+    <> stopWorking v d t r td
 
 taskWorking :: Vy.Validity -> T.Text
 taskWorking v =
@@ -256,8 +257,9 @@ stopWorking
     -> DistanceValidityWorking
     -> TimeValidityWorking
     -> ReachStats
+    -> TaskDistance
     -> T.Text
-stopWorking v dw TimeValidityWorking{gsBestTime = bt} reachStats =
+stopWorking v dw TimeValidityWorking{gsBestTime = bt} reachStats _ =
     "katex.render("
     <> "\"\\\\begin{aligned} "
     <> " a &= \\\\sqrt{\\\\frac{bd - \\\\overline{reach}}{ed - bd + 1} + \\\\sqrt{\\\\frac{\\\\sigma(reach)}{5}}}"
@@ -297,31 +299,34 @@ viewValidity
     -> Dynamic t (Maybe ValidityWorking)
     -> Dynamic t (Maybe ReachStats)
     -> Dynamic t (Maybe [(Pilot, TrackReach)])
+    -> Dynamic t (Maybe TaskDistance)
     -> m ()
-viewValidity vy vw reachStats reach = do
+viewValidity vy vw reachStats reach td = do
     _ <- dyn $ ffor3 vy vw reachStats (\vy' vw' reachStats' ->
-        case (vy', vw', reachStats') of
-            (Nothing, _, _) -> text "Loading validity ..."
-            (_, Nothing, _) -> text "Loading validity workings ..."
-            (_, _, Nothing) -> text "Loading reach stats ..."
-            (Just v, Just w, Just r) -> do
-                elAttr
-                    "a"
-                    (("class" =: "button") <> ("onclick" =: hookWorking v w r))
-                    (text "Show Working")
+        dyn $ ffor td (\td' ->
+            case (vy', vw', reachStats', td') of
+                (Nothing, _, _, _) -> text "Loading validity ..."
+                (_, Nothing, _, _) -> text "Loading validity workings ..."
+                (_, _, Nothing, _) -> text "Loading reach stats ..."
+                (_, _, _, Nothing) -> text "Loading stopped task distance ..."
+                (Just v, Just w, Just r, Just d) -> do
+                    elAttr
+                        "a"
+                        (("class" =: "button") <> ("onclick" =: hookWorking v w r d))
+                        (text "Show Working")
 
-                spacer
-                viewDay v w
-                spacer
-                viewLaunch v w
-                spacer
-                viewDistance v w
-                spacer
-                viewTime v w
-                spacer
-                viewStop v w reachStats (fromMaybe [] <$> reach)
-                spacer
-                return ())
+                    spacer
+                    viewDay v w
+                    spacer
+                    viewLaunch v w
+                    spacer
+                    viewDistance v w
+                    spacer
+                    viewTime v w
+                    spacer
+                    viewStop v w reachStats (fromMaybe [] <$> reach) d
+                    spacer
+                    return ()))
 
     return ()
 
@@ -517,6 +522,7 @@ viewStop
     -> ValidityWorking
     -> Dynamic t (Maybe ReachStats)
     -> Dynamic t [(Pilot, TrackReach)]
+    -> TaskDistance
     -> m ()
 viewStop
     Vy.Validity{time = v}
@@ -524,7 +530,8 @@ viewStop
         { distance = DistanceValidityWorking{..}
         }
     reachStats
-    reach = do
+    reach
+    td = do
     elClass "div" "card" $ do
         elClass "div" "card-content" $ do
             elClass "h2" "title is-4" . text
@@ -548,8 +555,8 @@ viewStop
                 elClass "div" "control" $ do
                     elClass "div" "tags has-addons" $ do
                         elClass "span" "tag" $ do text "ed = launch to ESS distance"
-                        elClass "span" "tag is-success"
-                            $ text ""
+                        elClass "span" "tag is-success" . text
+                            $ showTaskDistance td
                 _ <- dyn $ ffor reachStats (\case
                     Nothing -> return ()
                     Just ReachStats{..} ->

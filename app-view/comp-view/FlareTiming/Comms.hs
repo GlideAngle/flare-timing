@@ -73,6 +73,7 @@ emptyRoute =
         { taskRoute = Nothing
         , taskRouteSpeedSubset = Nothing
         , speedRoute = Nothing
+        , stopRoute = Nothing
         }
 
 type GetConstraint t m a b =

@@ -15,7 +15,7 @@ import WireTypes.Comp
     , getRaceRawZones, getStartGates, getOpenShape, getSpeedSection
     , showScoreBackTime
     )
-import WireTypes.Route (TaskLength(..), taskLength, taskLegs, showTaskDistance)
+import WireTypes.Route (TaskLength(..), stopTaskLength, taskLength, taskLegs, showTaskDistance)
 import WireTypes.Cross (TrackFlyingSection(..))
 import WireTypes.Point (Allocation(..))
 import WireTypes.Validity (Validity(..))
@@ -186,6 +186,7 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
     ellipsoidRoutes <- holdDyn emptyRoute =<< getTaskLengthEllipsoidEdge ix pb
     planarRoutes <- holdDyn Nothing =<< getTaskLengthProjectedEdgeSpherical ix pb
     let ln = taskLength <$> sphericalRoutes
+    let lnStop = stopTaskLength <$> sphericalRoutes
     let legs = taskLegs <$> sphericalRoutes
 
     let ps = (fmap . fmap) points alloc
@@ -270,7 +271,7 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
                     _ <- widgetHold basisAbsent $
                             (\case
                                 BasisTabAbsent -> basisAbsent
-                                BasisTabValidity -> viewValidity vy vw reachStats reach
+                                BasisTabValidity -> viewValidity vy vw reachStats reach lnStop
                                 BasisTabGeo -> tableGeo ix)
 
                             <$> tabBasis

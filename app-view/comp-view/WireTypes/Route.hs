@@ -10,6 +10,7 @@ module WireTypes.Route
     , TaskRoute(..)
     , TaskRouteSubset(..)
     , SpeedRoute(..)
+    , stopTaskLength
     , taskLength
     , taskLegs
     , planarRoute
@@ -68,6 +69,7 @@ data OptimalRoute a =
         { taskRoute :: a
         , taskRouteSpeedSubset :: a
         , speedRoute :: a
+        , stopRoute :: a
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass FromJSON
@@ -106,6 +108,10 @@ taskLegs OptimalRoute{..} =
             , flipSum = flipSum
             })
     <$> taskRoute
+
+stopTaskLength :: OptimalRoute (Maybe TrackLine) -> Maybe TaskDistance
+stopTaskLength OptimalRoute{..} =
+    (\TrackLine{..} -> distance) <$> stopRoute
 
 newtype TaskRoute = TaskRoute [RawLatLng]
 newtype TaskRouteSubset = TaskRouteSubset [RawLatLng]
