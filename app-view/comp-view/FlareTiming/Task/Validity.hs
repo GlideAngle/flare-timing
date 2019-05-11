@@ -27,13 +27,13 @@ import FlareTiming.Pilot (showPilotName)
 katexNewLine :: T.Text
 katexNewLine = " \\\\\\\\ "
 
-hookWorking :: Vy.Validity -> ValidityWorking -> T.Text
-hookWorking v ValidityWorking{launch = l, distance = d, time = t} =
+hookWorking :: Vy.Validity -> ValidityWorking -> ReachStats -> T.Text
+hookWorking v ValidityWorking{launch = l, distance = d, time = t} r =
     taskWorking v
     <> launchWorking v l
     <> distanceWorking v d
     <> timeWorking v t
-    <> stopWorking v d t
+    <> stopWorking v d t r
 
 taskWorking :: Vy.Validity -> T.Text
 taskWorking v =
@@ -219,9 +219,9 @@ stopWorkingCase :: (Semigroup p, IsString p) => Maybe a -> p
 stopWorkingCase (Just _) = " &= 1"
 stopWorkingCase Nothing = " &= \\\\min(1, a + b^3)"
 
-stopWorkingSubA :: DistanceValidityWorking -> T.Text
+stopWorkingSubA :: DistanceValidityWorking -> ReachStats -> T.Text
 
-stopWorkingSubA DistanceValidityWorking{..} =
+stopWorkingSubA DistanceValidityWorking{..} ReachStats{..} =
     " &= \\\\sqrt{\\\\frac{"
     <> bd
     <> " - "
@@ -236,8 +236,8 @@ stopWorkingSubA DistanceValidityWorking{..} =
     where
         bd = T.pack . show $ bestDistance
         ed = "ed"
-        mr = "\\\\overline{reach}"
-        sr = "\\\\sigma(reach)"
+        mr = showPilotDistance reachMean <> "km"
+        sr = showPilotDistance reachStdDev <> "km"
 
 stopWorkingSubB :: DistanceValidityWorking -> T.Text
 
@@ -251,13 +251,18 @@ stopWorkingSubB DistanceValidityWorking{..} =
         ls = "ls"
         f = T.pack . show $ flying
 
-stopWorking :: Vy.Validity -> DistanceValidityWorking -> TimeValidityWorking -> T.Text
-stopWorking v dw TimeValidityWorking{gsBestTime = bt} =
+stopWorking
+    :: Vy.Validity
+    -> DistanceValidityWorking
+    -> TimeValidityWorking
+    -> ReachStats
+    -> T.Text
+stopWorking v dw TimeValidityWorking{gsBestTime = bt} reachStats =
     "katex.render("
     <> "\"\\\\begin{aligned} "
     <> " a &= \\\\sqrt{\\\\frac{bd - \\\\overline{reach}}{ed - bd + 1} + \\\\sqrt{\\\\frac{\\\\sigma(reach)}{5}}}"
     <> katexNewLine
-    <> stopWorkingSubA dw
+    <> stopWorkingSubA dw reachStats
     <> katexNewLine
     <> katexNewLine
     <> " b &= \\\\frac{ls}{f}"
@@ -294,14 +299,15 @@ viewValidity
     -> Dynamic t (Maybe [(Pilot, TrackReach)])
     -> m ()
 viewValidity vy vw reachStats reach = do
-    _ <- dyn $ ffor2 vy vw (\vy' vw' ->
-        case (vy', vw') of
-            (Nothing, _) -> text "Loading validity ..."
-            (_, Nothing) -> text "Loading validity workings ..."
-            (Just v, Just w) -> do
+    _ <- dyn $ ffor3 vy vw reachStats (\vy' vw' reachStats' ->
+        case (vy', vw', reachStats') of
+            (Nothing, _, _) -> text "Loading validity ..."
+            (_, Nothing, _) -> text "Loading validity workings ..."
+            (_, _, Nothing) -> text "Loading reach stats ..."
+            (Just v, Just w, Just r) -> do
                 elAttr
                     "a"
-                    (("class" =: "button") <> ("onclick" =: hookWorking v w))
+                    (("class" =: "button") <> ("onclick" =: hookWorking v w r))
                     (text "Show Working")
 
                 spacer
