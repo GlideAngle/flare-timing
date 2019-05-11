@@ -322,7 +322,7 @@ pointRow cTime cArrival utcOffset free dfNt pt tp sEx x = do
 
         elClass "td" "td-min-distance" . dynText $ snd <$> awardFree
         elDynClass "td" (fst <$> awardFree) . dynText
-            $ maybe "" showPilotDistance <$> reach
+            $ maybe "" (showPilotDistance 1) <$> reach
 
         elClass "td" "td-distance-points" . dynText
             $ showMax Pt.distance showTaskDistancePoints pt points

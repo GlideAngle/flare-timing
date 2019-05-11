@@ -237,8 +237,8 @@ stopWorkingSubA DistanceValidityWorking{..} ReachStats{..} td =
     where
         bd = T.pack . show $ bestDistance
         ed = showTaskDistance td
-        mr = showPilotDistance reachMean <> "km"
-        sr = showPilotDistance reachStdDev <> "km"
+        mr = showPilotDistance 3 reachMean <> "km"
+        sr = showPilotDistance 3 reachStdDev <> "km"
 
 stopWorkingSubB :: DistanceValidityWorking -> T.Text
 
@@ -565,12 +565,12 @@ viewStop
                                 elClass "div" "tags has-addons" $ do
                                     elClass "span" "tag" $ do text "mean reach"
                                     elClass "span" "tag is-primary" . text
-                                        $ showPilotDistance reachMean <> " km"
+                                        $ showPilotDistance 3 reachMean <> " km"
                             elClass "div" "control" $ do
                                 elClass "div" "tags has-addons" $ do
                                     elClass "span" "tag" $ do text "reach standard deviation"
                                     elClass "span" "tag is-primary" . text
-                                        $ showPilotDistance reachStdDev <> " km")
+                                        $ showPilotDistance 3 reachStdDev <> " km")
 
                 return ()
 
@@ -609,7 +609,7 @@ rowReach
     -> m ()
 rowReach p tm = do
     el "tr" $ do
-        elClass "td" "td-plot-reach" . dynText $ showPilotDistance . reach <$> tm
+        elClass "td" "td-plot-reach" . dynText $ showPilotDistance 3 . reach <$> tm
         el "td" . dynText $ showPilotName <$> p
 
         return ()

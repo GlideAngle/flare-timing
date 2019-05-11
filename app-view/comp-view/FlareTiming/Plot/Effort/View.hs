@@ -86,7 +86,7 @@ rowEffort
     -> m ()
 rowEffort p tm = do
     el "tr" $ do
-        elClass "td" "td-plot-effort" . dynText $ showPilotDistance . effort <$> tm
+        elClass "td" "td-plot-effort" . dynText $ (showPilotDistance 1) . effort <$> tm
         el "td" . dynText $ showFrac . frac <$> tm
         el "td" . dynText $ showPilotName <$> p
 

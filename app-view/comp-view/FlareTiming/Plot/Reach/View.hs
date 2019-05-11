@@ -79,7 +79,7 @@ rowReach
     -> m ()
 rowReach p tm = do
     el "tr" $ do
-        elClass "td" "td-plot-reach" . dynText $ showPilotDistance . reach <$> tm
+        elClass "td" "td-plot-reach" . dynText $ (showPilotDistance 1) . reach <$> tm
         el "td" . dynText $ showFrac . frac <$> tm
         el "td" . dynText $ showPilotName <$> p
 

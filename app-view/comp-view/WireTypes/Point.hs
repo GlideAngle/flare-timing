@@ -155,9 +155,9 @@ pointPenaltyOptions =
 instance FromJSON PointPenalty where
     parseJSON = genericParseJSON pointPenaltyOptions
 
-showPilotDistance :: PilotDistance -> T.Text
-showPilotDistance (PilotDistance d) =
-    T.pack . printf "%.1f" $ d
+showPilotDistance :: Int -> PilotDistance -> T.Text
+showPilotDistance dp (PilotDistance d) =
+    T.pack $ printf "%.*f" dp d
 
 showPilotDistanceDiff :: PilotDistance -> PilotDistance -> T.Text
 showPilotDistanceDiff (PilotDistance expected) (PilotDistance actual)

@@ -256,7 +256,7 @@ pointRow _utcOffset free ln dfNt pt sEx x = do
                                 . (\(PilotDistance r') -> max r' free')
                                 <$> dM'
                         in
-                            ( showPilotDistance dR
+                            ( showPilotDistance 1 dR
                             , maybe "" (showPilotDistanceDiff dR) dM''
                             , showDistancePoints d'
                             , showDistancePointsDiff d' d
@@ -271,14 +271,14 @@ pointRow _utcOffset free ln dfNt pt sEx x = do
         elClass "td" "td-min-distance" . dynText $ snd <$> awardFree
 
         elDynClass "td" (fst . fst <$> awardFree) . dynText
-            $ maybe "" showPilotDistance <$> reach
+            $ maybe "" (showPilotDistance 1) <$> reach
         elClass "td" "td-norm td-best-distance" $ text yReach
         elClass "td" "td-norm td-diff" $ text yReachDiff
 
         elClass "td" "td-alt-distance" . dynText
             $ maybe "" showPilotAlt <$> alt
         elDynClass "td" (snd . fst <$> awardFree) . dynText
-            $ maybe "" showPilotDistance . landedDistance <$> xB
+            $ maybe "" (showPilotDistance 1) . landedDistance <$> xB
 
         elClass "td" "td-reach-points" . dynText
             $ showMax Pt.reach showTaskLinearPoints pt points
