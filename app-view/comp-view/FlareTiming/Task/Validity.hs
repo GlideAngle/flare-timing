@@ -28,7 +28,7 @@ hookWorking v ValidityWorking{launch = l, distance = d, time = t} =
     <> launchWorking v l
     <> distanceWorking v d
     <> timeWorking v t
-    <> stopWorking v t
+    <> stopWorking v d t
 
 taskWorking :: Vy.Validity -> T.Text
 taskWorking v =
@@ -214,14 +214,49 @@ stopWorkingCase :: (Semigroup p, IsString p) => Maybe a -> p
 stopWorkingCase (Just _) = " &= 1"
 stopWorkingCase Nothing = " &= \\\\min(1, a + b^3)"
 
-stopWorking :: Vy.Validity -> TimeValidityWorking -> T.Text
-stopWorking v w@TimeValidityWorking{gsBestTime = bt} =
+stopWorkingSubA :: DistanceValidityWorking -> T.Text
+
+stopWorkingSubA DistanceValidityWorking{..} =
+    " &= \\\\sqrt{\\\\frac{"
+    <> bd
+    <> " - \\\\overline{"
+    <> fd
+    <> "}}{"
+    <> ed
+    <> " - "
+    <> bd
+    <> " + 1}} + \\\\sqrt{\\\\frac{\\\\sigma("
+    <> fd
+    <> ")}{5}}"
+    where
+        bd = T.pack . show $ bestDistance
+        fd = "fd"
+        ed = "ed"
+
+stopWorkingSubB :: DistanceValidityWorking -> T.Text
+
+stopWorkingSubB DistanceValidityWorking{..} =
+    " &= \\\\frac{"
+    <> ls
+    <> "}{"
+    <> f
+    <> "}"
+    where
+        ls = "ls"
+        f = T.pack . show $ flying
+
+stopWorking :: Vy.Validity -> DistanceValidityWorking -> TimeValidityWorking -> T.Text
+stopWorking v dw TimeValidityWorking{gsBestTime = bt} =
     "katex.render("
     <> "\"\\\\begin{aligned} "
     <> " a &= \\\\sqrt{\\\\frac{bd - \\\\overline{fd}}{ed - bd + 1}} + \\\\sqrt{\\\\frac{\\\\sigma(fd)}{5}}"
     <> katexNewLine
+    <> stopWorkingSubA dw
+    <> katexNewLine
     <> katexNewLine
     <> " b &= \\\\frac{ls}{f}"
+    <> katexNewLine
+    <> stopWorkingSubB dw
     <> katexNewLine
     <> katexNewLine
     <> " validity &="
@@ -235,8 +270,6 @@ stopWorking v w@TimeValidityWorking{gsBestTime = bt} =
     <> " \\\\end{cases}"
     <> katexNewLine
     <> stopWorkingCase bt
-    <> katexNewLine
-    <> timeWorkingSub w
     <> katexNewLine
     <> " &= "
     <> (Vy.showTimeValidity . Vy.time $ v)
