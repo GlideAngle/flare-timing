@@ -68,6 +68,10 @@ data Masking =
         -- ^ For each task, the rank order of leading and leading fraction.
         , arrivalRank :: [[(Pilot, TrackArrival)]]
         -- ^ For each task, the rank order of arrival at goal and arrival fraction.
+        , reachMean :: [QTaskDistance Double [u| m |]]
+        -- ^ For each task, the mean of reach.
+        , reachStdDev :: [QTaskDistance Double [u| m |]]
+        -- ^ For each task, the standard deviation of reach.
         , reachRank :: [[(Pilot, TrackReach)]]
         -- ^ For each task, the rank order of reach and linear distance fraction.
         , ssSpeed :: [[(Pilot, TrackSpeed)]]
@@ -301,6 +305,33 @@ cmp a b =
         ("arrivalRank", "lead") -> GT
         ("arrivalRank", _) -> LT
 
+        ("reachMean", "pilotsAtEss") -> GT
+        ("reachMean", "raceTime") -> GT
+        ("reachMean", "ssBestTime") -> GT
+        ("reachMean", "gsBestTime") -> GT
+        ("reachMean", "taskDistance") -> GT
+        ("reachMean", "bestDistance") -> GT
+        ("reachMean", "sumDistance") -> GT
+        ("reachMean", "leadAreaToCoef") -> GT
+        ("reachMean", "leadCoefMin") -> GT
+        ("reachMean", "leadRank") -> GT
+        ("reachMean", "arrivalRank") -> GT
+        ("reachMean", _) -> LT
+
+        ("reachStdDev", "pilotsAtEss") -> GT
+        ("reachStdDev", "raceTime") -> GT
+        ("reachStdDev", "ssBestTime") -> GT
+        ("reachStdDev", "gsBestTime") -> GT
+        ("reachStdDev", "taskDistance") -> GT
+        ("reachStdDev", "bestDistance") -> GT
+        ("reachStdDev", "sumDistance") -> GT
+        ("reachStdDev", "leadAreaToCoef") -> GT
+        ("reachStdDev", "leadCoefMin") -> GT
+        ("reachStdDev", "leadRank") -> GT
+        ("reachStdDev", "arrivalRank") -> GT
+        ("reachStdDev", "reachMean") -> GT
+        ("reachStdDev", _) -> LT
+
         ("reachRank", "pilotsAtEss") -> GT
         ("reachRank", "raceTime") -> GT
         ("reachRank", "ssBestTime") -> GT
@@ -312,6 +343,8 @@ cmp a b =
         ("reachRank", "leadCoefMin") -> GT
         ("reachRank", "leadRank") -> GT
         ("reachRank", "arrivalRank") -> GT
+        ("reachRank", "reachMean") -> GT
+        ("reachRank", "reachStdDev") -> GT
         ("reachRank", _) -> LT
 
         ("ssSpeed", "pilotsAtEss") -> GT
@@ -325,6 +358,8 @@ cmp a b =
         ("ssSpeed", "leadCoefMin") -> GT
         ("ssSpeed", "leadRank") -> GT
         ("ssSpeed", "arrivalRank") -> GT
+        ("ssSpeed", "reachMean") -> GT
+        ("ssSpeed", "reachStdDev") -> GT
         ("ssSpeed", "reachRank") -> GT
         ("ssSpeed", _) -> LT
 
@@ -339,6 +374,8 @@ cmp a b =
         ("gsSpeed", "leadCoefMin") -> GT
         ("gsSpeed", "leadRank") -> GT
         ("gsSpeed", "arrivalRank") -> GT
+        ("gsSpeed", "reachMean") -> GT
+        ("gsSpeed", "reachStdDev") -> GT
         ("gsSpeed", "reachRank") -> GT
         ("gsSpeed", "ssSpeed") -> GT
         ("gsSpeed", _) -> LT
@@ -354,6 +391,8 @@ cmp a b =
         ("nigh", "leadCoefMin") -> GT
         ("nigh", "leadRank") -> GT
         ("nigh", "arrivalRank") -> GT
+        ("nigh", "reachMean") -> GT
+        ("nigh", "reachStdDev") -> GT
         ("nigh", "reachRank") -> GT
         ("nigh", "ssSpeed") -> GT
         ("nigh", "gsSpeed") -> GT

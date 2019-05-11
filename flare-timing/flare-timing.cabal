@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 898c44dbf2465beb0755762b2c6eb32da098d14c82f7b2b91e0d346f6172cd51
+-- hash: ac10a932bd44b2ed4dc81111c3c1d1197356d64a1144c52e0b4d3760731695bb
 
 name:           flare-timing
 version:        0.1.0
@@ -326,9 +326,11 @@ executable mask-track
     , raw-strings-qq
     , safe-exceptions
     , siggy-chardust
+    , statistics
     , time
     , transformers
     , uom-plugin
+    , vector
     , yaml
   default-language: Haskell2010
 

@@ -16,9 +16,11 @@ import Control.Lens ((^?), element)
 import Control.Exception.Safe (MonadThrow, catchIO)
 import Control.Monad (join)
 import Control.Monad.Except (MonadIO)
-import Data.UnitsOfMeasure ((-:), u, convert, toRational')
+import Data.UnitsOfMeasure ((-:), u, convert, toRational', unQuantity)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import System.FilePath (takeFileName)
+import Statistics.Sample (mean, stdDev)
+import qualified Data.Vector as V (fromList)
 
 import Flight.Clip (FlyCut(..), FlyClipping(..))
 import Flight.LatLng (QAlt)
@@ -448,7 +450,7 @@ writeMask
                     | ps <- psArriving
                     ]
 
-            let rs :: [[(Pilot, TrackReach)]] =
+            let rss :: [[(Pilot, TrackReach)]] =
                     [
                         sortOn
                             ( negate
@@ -459,6 +461,10 @@ writeMask
                     | xs <- rsArrive
                     | ys <- rsNigh
                     ]
+
+            let rssRaw = [V.fromList [unQuantity r | (_, TrackReach{reach = TaskDistance r}) <- rs] | rs <- rss]
+            let rsMean :: [QTaskDistance Double [u| m |]] = TaskDistance . MkQuantity . mean <$> rssRaw
+            let rsStdDev  :: [QTaskDistance Double [u| m |]] = TaskDistance . MkQuantity . stdDev <$> rssRaw
 
             writeMasking
                 (compToMask compFile)
@@ -475,7 +481,9 @@ writeMask
                     , leadCoefMin = lcMin
                     , leadRank = lead
                     , arrivalRank = as
-                    , reachRank = rs
+                    , reachMean = rsMean
+                    , reachStdDev = rsStdDev
+                    , reachRank = rss
                     , ssSpeed = fromMaybe [] <$> (fmap . fmap) snd ssVs
                     , gsSpeed = fromMaybe [] <$> (fmap . fmap) snd gsVs
                     , nigh = dsNigh
