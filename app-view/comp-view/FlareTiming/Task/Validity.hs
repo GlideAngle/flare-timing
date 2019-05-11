@@ -1,6 +1,7 @@
 module FlareTiming.Task.Validity (viewValidity) where
 
 import Prelude hiding (sum)
+import Data.Maybe (fromMaybe)
 import Reflex
 import Reflex.Dom
 import Data.String (IsString)
@@ -18,6 +19,10 @@ import WireTypes.ValidityWorking
     , TimeValidityWorking(..)
     , BestTime(..)
     )
+import WireTypes.Reach (TrackReach(..))
+import WireTypes.Point (showPilotDistance)
+import WireTypes.Pilot (Pilot(..))
+import FlareTiming.Pilot (showPilotName)
 
 katexNewLine :: T.Text
 katexNewLine = " \\\\\\\\ "
@@ -284,10 +289,11 @@ viewValidity
     :: MonadWidget t m
     => Dynamic t (Maybe Vy.Validity)
     -> Dynamic t (Maybe ValidityWorking)
+    -> Dynamic t (Maybe [(Pilot, TrackReach)])
     -> m ()
-viewValidity vy vw = do
-    _ <- dyn $ ffor2 vy vw (\x y ->
-        case (x, y) of
+viewValidity vy vw rh = do
+    _ <- dyn $ ffor2 vy vw (\vy' vw' ->
+        case (vy', vw') of
             (Nothing, _) -> text "Loading validity ..."
             (_, Nothing) -> text "Loading validity workings ..."
             (Just v, Just w) -> do
@@ -305,7 +311,7 @@ viewValidity vy vw = do
                 spacer
                 viewTime v w
                 spacer
-                viewStop v w
+                viewStop v w (fromMaybe [] <$> rh)
                 spacer
                 return ())
 
@@ -498,15 +504,17 @@ viewTime
     return ()
 
 viewStop
-    :: DomBuilder t m
+    :: MonadWidget t m
     => Vy.Validity
     -> ValidityWorking
+    -> Dynamic t [(Pilot, TrackReach)]
     -> m ()
 viewStop
     Vy.Validity{time = v}
     ValidityWorking
         { distance = DistanceValidityWorking{..}
-        } = do
+        }
+    rs = do
     elClass "div" "card" $ do
         elClass "div" "card-content" $ do
             elClass "h2" "title is-4" . text
@@ -538,4 +546,35 @@ viewStop
                 ("id" =: "stop-working")
                 (text "")
 
+            elClass "div" "tile is-child" $ tablePilotReach rs
     return ()
+
+tablePilotReach
+    :: MonadWidget t m
+    => Dynamic t [(Pilot, TrackReach)]
+    -> m ()
+tablePilotReach xs = do
+    _ <- elClass "table" "table is-striped" $ do
+            el "thead" $ do
+                el "tr" $ do
+                    elClass "th" "th-plot-reach" $ text "Reach (km)"
+                    el "th" $ text "Pilot"
+
+                    return ()
+
+            el "tbody" $ do
+                simpleList xs (uncurry rowReach . splitDynPure)
+
+    return ()
+
+rowReach
+    :: MonadWidget t m
+    => Dynamic t Pilot
+    -> Dynamic t TrackReach
+    -> m ()
+rowReach p tm = do
+    el "tr" $ do
+        elClass "td" "td-plot-reach" . dynText $ showPilotDistance . reach <$> tm
+        el "td" . dynText $ showPilotName <$> p
+
+        return ()

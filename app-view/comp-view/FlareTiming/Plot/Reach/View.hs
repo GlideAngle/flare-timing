@@ -49,15 +49,15 @@ hgPlot tm = do
 
                 return ()
 
-        elClass "div" "tile is-child" $ tablePilot tm
+        elClass "div" "tile is-child" $ tablePilotReach tm
 
     return ()
 
-tablePilot
+tablePilotReach
     :: MonadWidget t m
     => Dynamic t [(Pilot, TrackReach)]
     -> m ()
-tablePilot xs = do
+tablePilotReach xs = do
     _ <- elClass "table" "table is-striped" $ do
             el "thead" $ do
                 el "tr" $ do
