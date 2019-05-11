@@ -75,7 +75,7 @@ effortRank Landing{difficulty} =
 
 -- | For each task, the masking for that task.
 data Landing =
-    Landing 
+    Landing
         { minDistance :: MinimumDistance (Quantity Double [u| km |])
         -- ^ The mimimum distance, set once for the comp. All pilots landing
         -- before this distance get this distance. The 100m segments start from

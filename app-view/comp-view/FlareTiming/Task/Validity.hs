@@ -28,13 +28,19 @@ import FlareTiming.Pilot (showPilotName)
 katexNewLine :: T.Text
 katexNewLine = " \\\\\\\\ "
 
-hookWorking :: Vy.Validity -> ValidityWorking -> ReachStats -> TaskDistance -> T.Text
-hookWorking v ValidityWorking{launch = l, distance = d, time = t} r td =
+hookWorking
+    :: Vy.Validity
+    -> ValidityWorking
+    -> ReachStats
+    -> TaskDistance
+    -> Int
+    -> T.Text
+hookWorking v ValidityWorking{launch = l, distance = d, time = t} r td landed =
     taskWorking v
     <> launchWorking v l
     <> distanceWorking v d
     <> timeWorking v t
-    <> stopWorking v d t r td
+    <> stopWorking v d t r td landed
 
 taskWorking :: Vy.Validity -> T.Text
 taskWorking v =
@@ -240,16 +246,16 @@ stopWorkingSubA DistanceValidityWorking{..} ReachStats{..} td =
         mr = showPilotDistance 3 reachMean <> "km"
         sr = showPilotDistance 3 reachStdDev <> "km"
 
-stopWorkingSubB :: DistanceValidityWorking -> T.Text
+stopWorkingSubB :: DistanceValidityWorking -> Int -> T.Text
 
-stopWorkingSubB DistanceValidityWorking{..} =
+stopWorkingSubB DistanceValidityWorking{..} landed =
     " &= \\\\frac{"
     <> ls
     <> "}{"
     <> f
     <> "}"
     where
-        ls = "ls"
+        ls = T.pack . show $ landed
         f = T.pack . show $ flying
 
 stopWorking
@@ -258,8 +264,9 @@ stopWorking
     -> TimeValidityWorking
     -> ReachStats
     -> TaskDistance
+    -> Int
     -> T.Text
-stopWorking v dw TimeValidityWorking{gsBestTime = bt} reachStats td =
+stopWorking v dw TimeValidityWorking{gsBestTime = bt} reachStats td landed =
     "katex.render("
     <> "\"\\\\begin{aligned} "
     <> " a &= \\\\sqrt{\\\\frac{bd - \\\\overline{reach}}{ed - bd + 1} + \\\\sqrt{\\\\frac{\\\\sigma(reach)}{5}}}"
@@ -269,7 +276,7 @@ stopWorking v dw TimeValidityWorking{gsBestTime = bt} reachStats td =
     <> katexNewLine
     <> " b &= \\\\frac{ls}{f}"
     <> katexNewLine
-    <> stopWorkingSubB dw
+    <> stopWorkingSubB dw landed
     <> katexNewLine
     <> katexNewLine
     <> " validity &="
@@ -300,19 +307,21 @@ viewValidity
     -> Dynamic t (Maybe ReachStats)
     -> Dynamic t (Maybe [(Pilot, TrackReach)])
     -> Dynamic t (Maybe TaskDistance)
+    -> Dynamic t (Maybe Int)
     -> m ()
-viewValidity vy vw reachStats reach td = do
+viewValidity vy vw reachStats reach td landed = do
     _ <- dyn $ ffor3 vy vw reachStats (\vy' vw' reachStats' ->
-        dyn $ ffor td (\td' ->
-            case (vy', vw', reachStats', td') of
-                (Nothing, _, _, _) -> text "Loading validity ..."
-                (_, Nothing, _, _) -> text "Loading validity workings ..."
-                (_, _, Nothing, _) -> text "Loading reach stats ..."
-                (_, _, _, Nothing) -> text "Loading stopped task distance ..."
-                (Just v, Just w, Just r, Just d) -> do
+        dyn $ ffor2 td landed (\td' landed' ->
+            case (vy', vw', reachStats', td', landed') of
+                (Nothing, _, _, _, _) -> text "Loading validity ..."
+                (_, Nothing, _, _, _) -> text "Loading validity workings ..."
+                (_, _, Nothing, _, _) -> text "Loading reach stats ..."
+                (_, _, _, Nothing, _) -> text "Loading stopped task distance ..."
+                (_, _, _, _, Nothing) -> text "Loading out landings ..."
+                (Just v, Just w, Just r, Just d, Just lo) -> do
                     elAttr
                         "a"
-                        (("class" =: "button") <> ("onclick" =: hookWorking v w r d))
+                        (("class" =: "button") <> ("onclick" =: hookWorking v w r d lo))
                         (text "Show Working")
 
                     spacer
@@ -324,7 +333,7 @@ viewValidity vy vw reachStats reach td = do
                     spacer
                     viewTime v w
                     spacer
-                    viewStop v w reachStats (fromMaybe [] <$> reach) d
+                    viewStop v w reachStats (fromMaybe [] <$> reach) d lo
                     spacer
                     return ()))
 
@@ -523,6 +532,7 @@ viewStop
     -> Dynamic t (Maybe ReachStats)
     -> Dynamic t [(Pilot, TrackReach)]
     -> TaskDistance
+    -> Int
     -> m ()
 viewStop
     Vy.Validity{time = v}
@@ -531,7 +541,8 @@ viewStop
         }
     reachStats
     reach
-    td = do
+    td
+    landed = do
     elClass "div" "card" $ do
         elClass "div" "card-content" $ do
             elClass "h2" "title is-4" . text
@@ -546,7 +557,7 @@ viewStop
                     elClass "div" "tags has-addons" $ do
                         elClass "span" "tag" $ do text "ls = pilots landed before stop time"
                         elClass "span" "tag is-warning"
-                            $ text ""
+                            $ text (T.pack . show $ landed)
                 elClass "div" "control" $ do
                     elClass "div" "tags has-addons" $ do
                         elClass "span" "tag" $ do text "bd = best distance"
