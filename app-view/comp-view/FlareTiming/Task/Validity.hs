@@ -213,13 +213,19 @@ stopWorking :: Vy.Validity -> TimeValidityWorking -> T.Text
 stopWorking v w@TimeValidityWorking{gsBestTime = bt} =
     "katex.render("
     <> "\"\\\\begin{aligned} "
+    <> " a &= \\\\sqrt{\\\\frac{bd - \\\\overline{fd}}{ed - bd + 1}} + \\\\sqrt{\\\\frac{\\\\sigma(fd)}{5}}"
+    <> katexNewLine
+    <> katexNewLine
+    <> " b &= \\\\frac{ls}{f}"
+    <> katexNewLine
+    <> katexNewLine
     <> " x &="
     <> " \\\\begin{cases}"
-    <> " \\\\dfrac{bt}{nt}"
+    <> " 1"
     <> " &\\\\text{if at least one pilot reached ESS}"
     <> katexNewLine
     <> katexNewLine
-    <> " \\\\dfrac{bd}{nd}"
+    <> " \\\\min(1, a + b^3)"
     <> " &\\\\text{if no pilots reached ESS}"
     <> " \\\\end{cases}"
     <> katexNewLine
