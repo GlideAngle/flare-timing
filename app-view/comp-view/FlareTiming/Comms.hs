@@ -23,6 +23,7 @@ module FlareTiming.Comms
     , getTaskPilotTrack
     , getTaskPilotTrackFlyingSection
     , getTaskPilotTag
+    , getTaskReachStats
     , getTaskReach
     , getTaskEffort
     , getTaskNormScore
@@ -39,7 +40,7 @@ import qualified Data.Text as T (Text, pack)
 import Control.Monad.IO.Class (MonadIO)
 
 import WireTypes.Comp (Comp(..), Nominal(..), Task(..))
-import WireTypes.Reach (TrackReach)
+import WireTypes.Reach (TrackReach, ReachStats)
 import WireTypes.Effort (TrackEffort)
 import WireTypes.Arrival (TrackArrival)
 import WireTypes.Lead (TrackLead)
@@ -151,6 +152,9 @@ getAllocation = get "/gap-point/allocation"
 
 getTaskScore :: GetIxTask' t m [(Pilot, Breakdown)]
 getTaskScore = getIxTask "gap-point" "score"
+
+getTaskReachStats :: GetIxTask' t m ReachStats
+getTaskReachStats = getIxTask "mask-track" "reach-stats"
 
 getTaskReach :: GetIxTask' t m [(Pilot, TrackReach)]
 getTaskReach = getIxTask "mask-track" "reach"

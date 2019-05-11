@@ -21,7 +21,7 @@ import WireTypes.Point (Allocation(..))
 import WireTypes.Validity (Validity(..))
 import FlareTiming.Comms
     ( getTaskScore, getTaskNormScore
-    , getTaskReach, getTaskEffort
+    , getTaskReachStats, getTaskReach, getTaskEffort
     , getTaskArrival, getTaskLead, getTaskTime
     , getTaskValidityWorking
     , getTaskLengthSphericalEdge
@@ -172,7 +172,8 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
     pb <- getPostBuild
     sDf <- holdDyn [] =<< getTaskScore ix pb
     sEx <- holdDyn [] =<< getTaskNormScore ix pb
-    rh <- holdDyn Nothing =<< (fmap Just <$> getTaskReach ix pb)
+    reachStats <- holdDyn Nothing =<< (fmap Just <$> getTaskReachStats ix pb)
+    reach <- holdDyn Nothing =<< (fmap Just <$> getTaskReach ix pb)
     ef <- holdDyn Nothing =<< (fmap Just <$> getTaskEffort ix pb)
     av <- holdDyn Nothing =<< (fmap Just <$> getTaskArrival ix pb)
     ld <- holdDyn Nothing =<< (fmap Just <$> getTaskLead ix pb)
@@ -254,7 +255,7 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
                     _ <- widgetHold (plotSplit) $
                             (\case
                                 PlotTabSplit -> plotSplit
-                                PlotTabReach -> reachPlot rh
+                                PlotTabReach -> reachPlot reach
                                 PlotTabEffort -> effortPlot hgOrPg ef
                                 PlotTabArrive -> arrivalPlot hgOrPg tweak sEx av
                                 PlotTabLead -> leadPlot tweak sEx ld
@@ -269,7 +270,7 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
                     _ <- widgetHold basisAbsent $
                             (\case
                                 BasisTabAbsent -> basisAbsent
-                                BasisTabValidity -> viewValidity vy vw rh
+                                BasisTabValidity -> viewValidity vy vw reachStats reach
                                 BasisTabGeo -> tableGeo ix)
 
                             <$> tabBasis

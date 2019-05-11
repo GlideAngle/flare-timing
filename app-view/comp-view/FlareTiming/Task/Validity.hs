@@ -19,7 +19,7 @@ import WireTypes.ValidityWorking
     , TimeValidityWorking(..)
     , BestTime(..)
     )
-import WireTypes.Reach (TrackReach(..))
+import WireTypes.Reach (TrackReach(..), ReachStats(..))
 import WireTypes.Point (showPilotDistance)
 import WireTypes.Pilot (Pilot(..))
 import FlareTiming.Pilot (showPilotName)
@@ -235,7 +235,6 @@ stopWorkingSubA DistanceValidityWorking{..} =
     <> "}{5}}"
     where
         bd = T.pack . show $ bestDistance
-        fd = "fd"
         ed = "ed"
         mr = "\\\\overline{reach}"
         sr = "\\\\sigma(reach)"
@@ -291,9 +290,10 @@ viewValidity
     :: MonadWidget t m
     => Dynamic t (Maybe Vy.Validity)
     -> Dynamic t (Maybe ValidityWorking)
+    -> Dynamic t (Maybe ReachStats)
     -> Dynamic t (Maybe [(Pilot, TrackReach)])
     -> m ()
-viewValidity vy vw rh = do
+viewValidity vy vw reachStats reach = do
     _ <- dyn $ ffor2 vy vw (\vy' vw' ->
         case (vy', vw') of
             (Nothing, _) -> text "Loading validity ..."
@@ -313,7 +313,7 @@ viewValidity vy vw rh = do
                 spacer
                 viewTime v w
                 spacer
-                viewStop v w (fromMaybe [] <$> rh)
+                viewStop v w reachStats (fromMaybe [] <$> reach)
                 spacer
                 return ())
 
@@ -509,6 +509,7 @@ viewStop
     :: MonadWidget t m
     => Vy.Validity
     -> ValidityWorking
+    -> Dynamic t (Maybe ReachStats)
     -> Dynamic t [(Pilot, TrackReach)]
     -> m ()
 viewStop
@@ -516,7 +517,8 @@ viewStop
     ValidityWorking
         { distance = DistanceValidityWorking{..}
         }
-    rs = do
+    reachStats
+    reach = do
     elClass "div" "card" $ do
         elClass "div" "card-content" $ do
             elClass "h2" "title is-4" . text
@@ -542,13 +544,31 @@ viewStop
                         elClass "span" "tag" $ do text "ed = launch to ESS distance"
                         elClass "span" "tag is-success"
                             $ text ""
+                _ <- dyn $ ffor reachStats (\case
+                    Nothing -> return ()
+                    Just ReachStats{..} ->
+                        elClass "div" "field is-grouped is-grouped-multiline" $ do
+                            elClass "div" "control" $ do
+                                elClass "div" "tags has-addons" $ do
+                                    elClass "span" "tag" $ do text "mean reach"
+                                    elClass "span" "tag is-primary" . text
+                                        $ showPilotDistance reachMean <> " km"
+                            elClass "div" "control" $ do
+                                elClass "div" "tags has-addons" $ do
+                                    elClass "span" "tag" $ do text "reach standard deviation"
+                                    elClass "span" "tag is-primary" . text
+                                        $ showPilotDistance reachStdDev <> " km")
+
+                return ()
+
+            spacer
 
             elAttr
                 "div"
                 ("id" =: "stop-working")
                 (text "")
 
-            elClass "div" "tile is-child" $ tablePilotReach rs
+            elClass "div" "tile is-child" $ tablePilotReach reach
     return ()
 
 tablePilotReach

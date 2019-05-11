@@ -6,6 +6,8 @@ import Data.Maybe (isNothing, catMaybes)
 import Data.List ((\\), nub, sort, find)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
+import GHC.Generics (Generic)
+import Data.Aeson (ToJSON(..))
 import Network.Wai (Application)
 import Network.Wai.Middleware.Cors (simpleCors)
 import Network.Wai.Handler.Warp
@@ -35,6 +37,7 @@ import Flight.Track.Land (Landing(..), TrackEffort(..), effortRank)
 import Flight.Track.Arrival (TrackArrival(..))
 import Flight.Track.Lead (TrackLead(..))
 import Flight.Track.Speed (TrackSpeed(..))
+import qualified Flight.Track.Mask as Mask (Masking(..))
 import Flight.Track.Mask (Masking(..))
 import qualified Flight.Track.Point as Norm (NormPointing(..), NormBreakdown(..))
 import Flight.Track.Point
@@ -125,6 +128,13 @@ newtype AppT k m a =
         , MonadIO
         , MonadThrow
         )
+
+data ReachStats =
+    ReachStats
+        { reachMean :: QTaskDistance Double [u| m |]
+        , reachStdDev :: QTaskDistance Double [u| m |]
+        }
+    deriving (Generic, ToJSON)
 
 type CompInputApi k =
     "comp-input" :> "comps"
@@ -225,6 +235,9 @@ type GapPointApi k =
 
     :<|> "tag-zone" :> (Capture "task" Int) :> (Capture "pilot" String)
         :> Get '[JSON] [Maybe ZoneTag]
+
+    :<|> "mask-track" :> (Capture "task" Int) :> "reach-stats"
+        :> Get '[JSON] ReachStats
 
     :<|> "mask-track" :> (Capture "task" Int) :> "reach"
         :> Get '[JSON] [(Pilot, TrackReach)]
@@ -413,6 +426,7 @@ serverGapPointApi cfg =
         :<|> getTaskPilotTrack
         :<|> getTaskPilotTrackFlyingSection
         :<|> getTaskPilotTag
+        :<|> getTaskReachStats
         :<|> getTaskReach
         :<|> getTaskArrival
         :<|> getTaskLead
@@ -795,6 +809,18 @@ getTaskPilotTag ii pilotId = do
                         Just y -> return $ tagToTrack y
                         _ -> throwError $ errPilotTrackNotFound ix pilot
                 _ -> throwError $ errPilotTrackNotFound ix pilot
+
+getTaskReachStats :: Int -> AppT k IO ReachStats
+getTaskReachStats ii = do
+    xs' <- fmap Mask.reachMean <$> asks masking
+    ys' <- fmap Mask.reachStdDev <$> asks masking
+    case (xs', ys') of
+        (Just xs, Just ys) ->
+            case (drop (ii - 1) xs, drop (ii - 1) ys) of
+                (x : _, y : _) -> return $ ReachStats {reachMean = x, reachStdDev = y}
+                _ -> throwError $ errTaskBounds ii
+
+        _ -> throwError $ errTaskStep "mask-track" ii
 
 getTaskReach :: Int -> AppT k IO [(Pilot, TrackReach)]
 getTaskReach ii = do
