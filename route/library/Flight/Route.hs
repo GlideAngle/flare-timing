@@ -109,6 +109,10 @@ cmpFields a b =
         ("taskRoute", _) -> LT
         ("taskRouteSpeedSubset", "taskRoute") -> LT
         ("taskRouteSpeedSubset", _) -> LT
+
+        ("speedRoute", "stopRoute") -> LT
         ("speedRoute", _) -> GT
+
+        ("stopRoute", _) -> GT
 
         _ -> compare a b

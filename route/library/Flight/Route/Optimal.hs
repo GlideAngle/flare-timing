@@ -17,6 +17,9 @@ data OptimalRoute a =
         , speedRoute :: a
         -- ^ The optimal route for the zones in the speed section with no
         -- regard to the other zones.
+        , stopRoute :: a
+        -- ^ Those legs of the optimal route for the task from launch to the
+        -- end of the speed section alone, needed for stopped task validity.
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
@@ -27,4 +30,5 @@ emptyOptimal =
         { taskRoute = Nothing
         , taskRouteSpeedSubset = Nothing
         , speedRoute = Nothing
+        , stopRoute = Nothing
         }
