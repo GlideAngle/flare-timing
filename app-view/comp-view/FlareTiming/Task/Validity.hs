@@ -209,6 +209,11 @@ timeWorking v w@TimeValidityWorking{gsBestTime = bt} =
     <> ", getElementById('time-working')"
     <> ", {throwOnError: false});"
 
+
+stopWorkingCase :: (Semigroup p, IsString p) => Maybe a -> p
+stopWorkingCase (Just _) = " &= 1"
+stopWorkingCase Nothing = " &= \\\\min(1, a + b^3)"
+
 stopWorking :: Vy.Validity -> TimeValidityWorking -> T.Text
 stopWorking v w@TimeValidityWorking{gsBestTime = bt} =
     "katex.render("
@@ -229,18 +234,9 @@ stopWorking v w@TimeValidityWorking{gsBestTime = bt} =
     <> " &\\\\text{if no pilots reached ESS}"
     <> " \\\\end{cases}"
     <> katexNewLine
-    <> timeWorkingCase bt
+    <> stopWorkingCase bt
     <> katexNewLine
     <> timeWorkingSub w
-    <> katexNewLine
-    <> katexNewLine
-    <> " y &= \\\\min(1, x)"
-    <> katexNewLine
-    <> katexNewLine
-    <> " z &= -0.271 + 2.912 * y - 2.098 * y^2 + 0.457 * y^3"
-    <> katexNewLine
-    <> katexNewLine
-    <> "validity &= \\\\max(0, \\\\min(1, z))"
     <> katexNewLine
     <> " &= "
     <> (Vy.showTimeValidity . Vy.time $ v)
