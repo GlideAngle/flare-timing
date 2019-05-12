@@ -229,9 +229,14 @@ timeWorking v w@TimeValidityWorking{gsBestTime = bt} =
     <> ", {throwOnError: false});"
 
 
-stopWorkingCase :: (Semigroup p, IsString p) => Maybe a -> p
-stopWorkingCase (Just _) = " &= 1"
-stopWorkingCase Nothing = " &= \\\\min(1, a + b^3)"
+stopWorkingCase :: Maybe a -> Double -> T.Text
+stopWorkingCase (Just _) _ = " &= 1"
+stopWorkingCase Nothing b =
+    " &= \\\\min(1, a + b^3)"
+    <> katexNewLine
+    <> " &= \\\\min(1, a + " <> b' <> ")"
+    where
+        b' = T.pack . printf "%.3f" $ b**3
 
 stopWorkingSubA :: DistanceValidityWorking -> ReachStats -> TaskDistance -> T.Text
 
@@ -253,9 +258,9 @@ stopWorkingSubA DistanceValidityWorking{..} ReachStats{..} td =
         mr = showPilotDistance 3 reachMean <> "km"
         sr = showPilotDistance 3 reachStdDev <> "km"
 
-stopWorkingSubB :: DistanceValidityWorking -> Int -> T.Text
+stopWorkingSubB :: DistanceValidityWorking -> Int -> Double -> T.Text
 
-stopWorkingSubB DistanceValidityWorking{flying = PilotsFlying pf} landed =
+stopWorkingSubB DistanceValidityWorking{flying = PilotsFlying pf} landed b' =
     " &= \\\\frac{"
     <> ls
     <> "}{"
@@ -266,7 +271,7 @@ stopWorkingSubB DistanceValidityWorking{flying = PilotsFlying pf} landed =
     where
         ls = T.pack . show $ landed
         f = T.pack . show $ pf
-        b = T.pack $ printf "%.3f" (fromIntegral landed / (fromIntegral pf :: Double))
+        b = T.pack $ printf "%.3f" b'
 
 stopWorking
     :: Vy.Validity
@@ -276,7 +281,14 @@ stopWorking
     -> TaskDistance
     -> Int
     -> T.Text
-stopWorking v dw TimeValidityWorking{gsBestTime = bt} reachStats td landed =
+stopWorking
+    v
+    dw@DistanceValidityWorking{flying = PilotsFlying pf}
+    TimeValidityWorking{gsBestTime = bt}
+    reachStats
+    td
+    landed =
+
     "katex.render("
     <> "\"\\\\begin{aligned} "
     <> " a &= \\\\sqrt{\\\\frac{bd - \\\\overline{reach}}{ed - bd + 1} + \\\\sqrt{\\\\frac{\\\\sigma(reach)}{5}}}"
@@ -286,7 +298,7 @@ stopWorking v dw TimeValidityWorking{gsBestTime = bt} reachStats td landed =
     <> katexNewLine
     <> " b &= \\\\frac{ls}{f}"
     <> katexNewLine
-    <> stopWorkingSubB dw landed
+    <> stopWorkingSubB dw landed b
     <> katexNewLine
     <> katexNewLine
     <> " validity &="
@@ -299,13 +311,15 @@ stopWorking v dw TimeValidityWorking{gsBestTime = bt} reachStats td landed =
     <> " &\\\\text{if no pilots reached ESS}"
     <> " \\\\end{cases}"
     <> katexNewLine
-    <> stopWorkingCase bt
+    <> stopWorkingCase bt b
     <> katexNewLine
     <> " &= "
     <> (Vy.showTimeValidity . Vy.time $ v)
     <> " \\\\end{aligned}\""
     <> ", getElementById('stop-working')"
     <> ", {throwOnError: false});"
+    where
+        b = fromIntegral landed / (fromIntegral pf :: Double)
 
 spacer :: DomBuilder t m => m ()
 spacer = elClass "div" "spacer" $ return ()
