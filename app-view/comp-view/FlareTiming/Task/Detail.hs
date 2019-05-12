@@ -188,7 +188,6 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
     planarRoutes <- holdDyn Nothing =<< getTaskLengthProjectedEdgeSpherical ix pb
     let ln = taskLength <$> sphericalRoutes
     let lnStop = stopTaskLength <$> sphericalRoutes
-    let landedStop = fmap length <$> ef
     let legs = taskLegs <$> sphericalRoutes
 
     let ps = (fmap . fmap) points alloc
@@ -273,7 +272,7 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
                     _ <- widgetHold basisAbsent $
                             (\case
                                 BasisTabAbsent -> basisAbsent
-                                BasisTabValidity -> viewValidity utc task vy vw reachStats reach lnStop landedStop ft
+                                BasisTabValidity -> viewValidity utc task vy vw reachStats reach lnStop ft
                                 BasisTabGeo -> tableGeo ix)
 
                             <$> tabBasis

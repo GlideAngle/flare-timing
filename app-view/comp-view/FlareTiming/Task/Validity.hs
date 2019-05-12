@@ -315,22 +315,29 @@ viewValidity
     -> Dynamic t (Maybe ReachStats)
     -> Dynamic t (Maybe [(Pilot, TrackReach)])
     -> Dynamic t (Maybe TaskDistance)
-    -> Dynamic t (Maybe Int)
     -> Dynamic t (Maybe [(Pilot, FlyingSection UTCTime)])
     -> m ()
-viewValidity utcOffset task vy vw reachStats reach td landed flyingTimes = do
+viewValidity utcOffset task vy vw reachStats reach td flyingTimes = do
+    let (landedByStop, stillFlying) =
+            splitDynPure
+            $ ffor2 task (fromMaybe [] <$> flyingTimes) (\Task{stopped} ft ->
+                maybe
+                    (ft, [])
+                    (\TaskStop{retroactive = t} ->
+                        partition (maybe False ((< t) . snd) . snd) ft)
+                    stopped)
+
     _ <- dyn $ ffor3 vy vw reachStats (\vy' vw' reachStats' ->
-        dyn $ ffor2 td landed (\td' landed' ->
-            case (vy', vw', reachStats', td', landed') of
-                (Nothing, _, _, _, _) -> text "Loading validity ..."
-                (_, Nothing, _, _, _) -> text "Loading validity workings ..."
-                (_, _, Nothing, _, _) -> text "Loading reach stats ..."
-                (_, _, _, Nothing, _) -> text "Loading stopped task distance ..."
-                (_, _, _, _, Nothing) -> text "Loading out landings ..."
-                (Just v, Just w, Just r, Just d, Just lo) -> do
+        dyn $ ffor2 td landedByStop (\td' lo ->
+            case (vy', vw', reachStats', td') of
+                (Nothing, _, _, _) -> text "Loading validity ..."
+                (_, Nothing, _, _) -> text "Loading validity workings ..."
+                (_, _, Nothing, _) -> text "Loading reach stats ..."
+                (_, _, _, Nothing) -> text "Loading stopped task distance ..."
+                (Just v, Just w, Just r, Just d) -> do
                     elAttr
                         "a"
-                        (("class" =: "button") <> ("onclick" =: hookWorking v w r d lo))
+                        (("class" =: "button") <> ("onclick" =: hookWorking v w r d (length lo)))
                         (text "Show Working")
 
                     spacer
@@ -345,14 +352,13 @@ viewValidity utcOffset task vy vw reachStats reach td landed flyingTimes = do
 
                     viewStop
                         utcOffset
-                        task
                         v
                         w
                         reachStats
                         (fromMaybe [] <$> reach)
                         d
-                        lo
-                        (fromMaybe [] <$> flyingTimes)
+                        landedByStop
+                        stillFlying
 
                     spacer
                     return ()))
@@ -548,18 +554,16 @@ viewTime
 viewStop
     :: MonadWidget t m
     => Dynamic t UtcOffset
-    -> Dynamic t Task
     -> Vy.Validity
     -> ValidityWorking
     -> Dynamic t (Maybe ReachStats)
     -> Dynamic t [(Pilot, TrackReach)]
     -> TaskDistance
-    -> Int
+    -> Dynamic t [(Pilot, FlyingSection UTCTime)]
     -> Dynamic t [(Pilot, FlyingSection UTCTime)]
     -> m ()
 viewStop
     utcOffset
-    task
     Vy.Validity{time = v}
     ValidityWorking
         { distance = DistanceValidityWorking{..}
@@ -567,16 +571,8 @@ viewStop
     reachStats
     reach
     td
-    landed
-    flyingTimes = do
-
-    let (landedByStop, stillFlying) =
-            splitDynPure $ ffor2 task flyingTimes (\Task{stopped} ft ->
-                maybe
-                    (ft, [])
-                    (\TaskStop{retroactive = t} ->
-                        partition (maybe True ((< t) . snd) . snd) ft)
-                    stopped)
+    landedByStop
+    stillFlying = do
 
     elClass "div" "card" $ do
         elClass "div" "card-content" $ do
@@ -588,11 +584,12 @@ viewStop
                         elClass "span" "tag" $ do text "f = pilots flying"
                         elClass "span" "tag is-info"
                             $ text (T.pack . show $ flying)
-                elClass "div" "control" $ do
-                    elClass "div" "tags has-addons" $ do
-                        elClass "span" "tag" $ do text "ls = pilots landed before stop time"
-                        elClass "span" "tag is-warning"
-                            $ text (T.pack . show $ landed)
+                _ <- dyn $ ffor landedByStop (\xs -> do
+                    elClass "div" "control" $ do
+                        elClass "div" "tags has-addons" $ do
+                            elClass "span" "tag" $ do text "ls = pilots landed before stop time"
+                            elClass "span" "tag is-warning"
+                                $ text (T.pack . show $ length xs))
                 elClass "div" "control" $ do
                     elClass "div" "tags has-addons" $ do
                         elClass "span" "tag" $ do text "bd = best distance"
