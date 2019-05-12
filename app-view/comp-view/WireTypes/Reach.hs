@@ -23,7 +23,9 @@ data TrackReach =
 
 data ReachStats =
     ReachStats
-        { reachMean :: PilotDistance
+        { flownMean :: PilotDistance
+        , flownStdDev :: PilotDistance
+        , reachMean :: PilotDistance
         , reachStdDev :: PilotDistance
         }
     deriving (Eq, Ord, Show, Generic)

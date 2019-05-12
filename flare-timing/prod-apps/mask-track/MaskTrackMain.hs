@@ -466,6 +466,10 @@ writeMask
             let rsMean :: [QTaskDistance Double [u| m |]] = TaskDistance . MkQuantity . mean <$> rssRaw
             let rsStdDev  :: [QTaskDistance Double [u| m |]] = TaskDistance . MkQuantity . stdDev <$> rssRaw
 
+            let fssRaw = [V.fromList [unQuantity $ max r (convert dMin) | (_, TrackReach{reach = TaskDistance r}) <- rs] | rs <- rss]
+            let fsMean :: [QTaskDistance Double [u| m |]] = TaskDistance . MkQuantity . mean <$> fssRaw
+            let fsStdDev  :: [QTaskDistance Double [u| m |]] = TaskDistance . MkQuantity . stdDev <$> fssRaw
+
             writeMasking
                 (compToMask compFile)
                 Masking
@@ -481,6 +485,8 @@ writeMask
                     , leadCoefMin = lcMin
                     , leadRank = lead
                     , arrivalRank = as
+                    , flownMean = fsMean
+                    , flownStdDev = fsStdDev
                     , reachMean = rsMean
                     , reachStdDev = rsStdDev
                     , reachRank = rss

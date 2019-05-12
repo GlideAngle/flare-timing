@@ -247,29 +247,29 @@ stopWorkingSubA :: DistanceValidityWorking -> ReachStats -> TaskDistance -> (Dou
 stopWorkingSubA
     DistanceValidityWorking{bestDistance = bd@(MaximumDistance bd')}
     ReachStats
-        { reachMean = mr@(PilotDistance mr')
-        , reachStdDev = sr@(PilotDistance sr')
+        { flownMean = mf@(PilotDistance mf')
+        , flownStdDev = sf@(PilotDistance sf')
         }
     td@(TaskDistance td') = (z, eqn) where
         eqn =
             " &= \\\\sqrt{\\\\frac{"
             <> bd''
             <> " - "
-            <> mr''
+            <> mf''
             <> "}{"
             <> ed
             <> " - "
             <> bd''
             <> " + 1} * \\\\sqrt{\\\\frac{"
-            <> sr''
+            <> sf''
             <> "}{5}}}"
             <> katexNewLine
             <> " &= \\\\sqrt{\\\\frac{"
-            <> textf (bd' - mr')
+            <> textf (bd' - mf')
             <> "}{"
             <> textf (td' - bd' + 1)
             <> "} * \\\\sqrt{"
-            <> textf (sr' / 5)
+            <> textf (sf' / 5)
             <> "}}"
             <> katexNewLine
             <> " &= \\\\sqrt{"
@@ -282,16 +282,16 @@ stopWorkingSubA
 
         bd'' = T.pack $ show bd
         ed = showTaskDistance td
-        mr'' = showPilotDistance 3 mr <> "km"
-        sr'' = showPilotDistance 3 sr <> "km"
+        mf'' = showPilotDistance 3 mf <> "km"
+        sf'' = showPilotDistance 3 sf <> "km"
 
         textf = T.pack . printf "%.3f"
         x' = textf x
         y' = textf y
         z' = textf z
 
-        x = (bd' - mr') / (td' - bd' + 1)
-        y = sqrt $ sr' / 5
+        x = (bd' - mf') / (td' - bd' + 1)
+        y = sqrt $ sf' / 5
         z = sqrt $ x * y
 
 stopWorkingSubB :: DistanceValidityWorking -> Int -> Double -> T.Text
@@ -325,7 +325,7 @@ stopWorking
 
     "katex.render("
     <> "\"\\\\begin{aligned} "
-    <> " a &= \\\\sqrt{\\\\frac{bd - \\\\overline{reach}}{ed - bd + 1} * \\\\sqrt{\\\\frac{\\\\sigma(reach)}{5}}}"
+    <> " a &= \\\\sqrt{\\\\frac{bd - \\\\overline{flown}}{ed - bd + 1} * \\\\sqrt{\\\\frac{\\\\sigma(flown)}{5}}}"
     <> katexNewLine
     <> eqnA
     <> katexNewLine
@@ -655,17 +655,27 @@ viewStop
                             $ showTaskDistance td
                 _ <- dyn $ ffor reachStats (\case
                     Nothing -> return ()
-                    Just ReachStats{..} ->
+                    Just ReachStats{..} -> do
                         elClass "div" "field is-grouped is-grouped-multiline" $ do
                             elClass "div" "control" $ do
                                 elClass "div" "tags has-addons" $ do
-                                    elClass "span" "tag" $ do text "mean reach"
+                                    elClass "span" "tag" $ do text "mean flown"
                                     elClass "span" "tag is-primary" . text
+                                        $ showPilotDistance 3 flownMean <> " km"
+                            elClass "div" "control" $ do
+                                elClass "div" "tags has-addons" $ do
+                                    elClass "span" "tag" $ do text "flown standard deviation"
+                                    elClass "span" "tag is-primary" . text
+                                        $ showPilotDistance 3 flownStdDev <> " km"
+                            elClass "div" "control" $ do
+                                elClass "div" "tags has-addons" $ do
+                                    elClass "span" "tag" $ do text "mean reach"
+                                    elClass "span" "tag is-danger" . text
                                         $ showPilotDistance 3 reachMean <> " km"
                             elClass "div" "control" $ do
                                 elClass "div" "tags has-addons" $ do
                                     elClass "span" "tag" $ do text "reach standard deviation"
-                                    elClass "span" "tag is-primary" . text
+                                    elClass "span" "tag is-danger" . text
                                         $ showPilotDistance 3 reachStdDev <> " km")
 
                 return ()

@@ -133,7 +133,9 @@ newtype AppT k m a =
 
 data ReachStats =
     ReachStats
-        { reachMean :: QTaskDistance Double [u| m |]
+        { flownMean :: QTaskDistance Double [u| m |]
+        , flownStdDev :: QTaskDistance Double [u| m |]
+        , reachMean :: QTaskDistance Double [u| m |]
         , reachStdDev :: QTaskDistance Double [u| m |]
         }
     deriving (Generic, ToJSON)
@@ -839,12 +841,23 @@ getTaskPilotTag ii pilotId = do
 
 getTaskReachStats :: Int -> AppT k IO ReachStats
 getTaskReachStats ii = do
+    vs' <- fmap Mask.flownMean <$> asks masking
+    ws' <- fmap Mask.flownStdDev <$> asks masking
     xs' <- fmap Mask.reachMean <$> asks masking
     ys' <- fmap Mask.reachStdDev <$> asks masking
-    case (xs', ys') of
-        (Just xs, Just ys) ->
-            case (drop (ii - 1) xs, drop (ii - 1) ys) of
-                (x : _, y : _) -> return $ ReachStats {reachMean = x, reachStdDev = y}
+    case (vs', ws', xs', ys') of
+        (Just vs, Just ws, Just xs, Just ys) ->
+            let f = drop (ii - 1) in
+            case (f vs, f ws, f xs,  ys) of
+                (v : _, w : _, x : _, y : _) ->
+                    return
+                        ReachStats
+                            { flownMean = v
+                            , flownStdDev = w
+                            , reachMean = x
+                            , reachStdDev = y
+                            }
+
                 _ -> throwError $ errTaskBounds ii
 
         _ -> throwError $ errTaskStep "mask-track" ii
