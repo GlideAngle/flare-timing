@@ -48,7 +48,7 @@ hookWorking v ValidityWorking{launch = l, distance = d, time = t} r td landed =
     <> launchWorking v l
     <> distanceWorking v d
     <> timeWorking v t
-    <> stopWorking v d t r td landed
+    <> stopWorking d t r td landed
 
 taskWorking :: Vy.Validity -> T.Text
 taskWorking v =
@@ -230,16 +230,19 @@ timeWorking v w@TimeValidityWorking{gsBestTime = bt} =
     <> ", {throwOnError: false});"
 
 
-stopWorkingCase :: Maybe a -> Double -> T.Text
-stopWorkingCase (Just _) _ = " &= 1"
-stopWorkingCase Nothing b =
-    " &= \\\\min(1, a + b^3)"
-    <> katexNewLine
-    <> " &= \\\\min(1, a + " <> b' <> ")"
-    where
-        b' = T.pack . printf "%.3f" $ b**3
+stopWorkingCase :: Maybe a -> Double -> Double -> (Double, T.Text)
+stopWorkingCase (Just _) _ _ = (1, " &= 1")
+stopWorkingCase Nothing a b = (min 1 (a + b3), eqn) where
+        eqn =
+            " &= \\\\min(1, a + b^3)"
+            <> katexNewLine
+            <> " &= \\\\min(1, " <> a' <> " + " <> b' <> ")"
 
-stopWorkingSubA :: DistanceValidityWorking -> ReachStats -> TaskDistance -> T.Text
+        b3 = b**3
+        b' = T.pack $ printf "%.3f" b3
+        a' = T.pack $ printf "%.3f" a
+
+stopWorkingSubA :: DistanceValidityWorking -> ReachStats -> TaskDistance -> (Double, T.Text)
 
 stopWorkingSubA
     DistanceValidityWorking{bestDistance = bd@(MaximumDistance bd')}
@@ -247,36 +250,36 @@ stopWorkingSubA
         { reachMean = mr@(PilotDistance mr')
         , reachStdDev = sr@(PilotDistance sr')
         }
-    td@(TaskDistance td') =
+    td@(TaskDistance td') = (z, eqn) where
+        eqn =
+            " &= \\\\sqrt{\\\\frac{"
+            <> bd''
+            <> " - "
+            <> mr''
+            <> "}{"
+            <> ed
+            <> " - "
+            <> bd''
+            <> " + 1} * \\\\sqrt{\\\\frac{"
+            <> sr''
+            <> "}{5}}}"
+            <> katexNewLine
+            <> " &= \\\\sqrt{\\\\frac{"
+            <> textf (bd' - mr')
+            <> "}{"
+            <> textf (td' - bd' + 1)
+            <> "} * \\\\sqrt{"
+            <> textf (sr' / 5)
+            <> "}}"
+            <> katexNewLine
+            <> " &= \\\\sqrt{"
+            <> x'
+            <> " * "
+            <> y'
+            <> "}"
+            <> katexNewLine
+            <> (" &= " <> z')
 
-    " &= \\\\sqrt{\\\\frac{"
-    <> bd''
-    <> " - "
-    <> mr''
-    <> "}{"
-    <> ed
-    <> " - "
-    <> bd''
-    <> " + 1} * \\\\sqrt{\\\\frac{"
-    <> sr''
-    <> "}{5}}}"
-    <> katexNewLine
-    <> " &= \\\\sqrt{\\\\frac{"
-    <> textf (bd' - mr')
-    <> "}{"
-    <> textf (td' - bd' + 1)
-    <> "} * \\\\sqrt{"
-    <> textf (sr' / 5)
-    <> "}}"
-    <> katexNewLine
-    <> " &= \\\\sqrt{"
-    <> x'
-    <> " * "
-    <> y'
-    <> "}"
-    <> katexNewLine
-    <> (" &= " <> z')
-    where
         bd'' = T.pack $ show bd
         ed = showTaskDistance td
         mr'' = showPilotDistance 3 mr <> "km"
@@ -307,15 +310,13 @@ stopWorkingSubB DistanceValidityWorking{flying = PilotsFlying pf} landed b' =
         b = T.pack $ printf "%.3f" b'
 
 stopWorking
-    :: Vy.Validity
-    -> DistanceValidityWorking
+    :: DistanceValidityWorking
     -> TimeValidityWorking
     -> ReachStats
     -> TaskDistance
     -> Int
     -> T.Text
 stopWorking
-    v
     dw@DistanceValidityWorking{flying = PilotsFlying pf}
     TimeValidityWorking{gsBestTime = bt}
     reachStats
@@ -326,7 +327,7 @@ stopWorking
     <> "\"\\\\begin{aligned} "
     <> " a &= \\\\sqrt{\\\\frac{bd - \\\\overline{reach}}{ed - bd + 1} * \\\\sqrt{\\\\frac{\\\\sigma(reach)}{5}}}"
     <> katexNewLine
-    <> stopWorkingSubA dw reachStats td
+    <> eqnA
     <> katexNewLine
     <> katexNewLine
     <> " b &= \\\\frac{ls}{f}"
@@ -344,15 +345,16 @@ stopWorking
     <> " &\\\\text{if no pilots reached ESS}"
     <> " \\\\end{cases}"
     <> katexNewLine
-    <> stopWorkingCase bt b
+    <> eqnV
     <> katexNewLine
-    <> " &= "
-    <> (Vy.showTimeValidity . Vy.time $ v)
+    <> (" &= " <> (T.pack $ printf "%.3f" v))
     <> " \\\\end{aligned}\""
     <> ", getElementById('stop-working')"
     <> ", {throwOnError: false});"
     where
         b = fromIntegral landed / (fromIntegral pf :: Double)
+        (a, eqnA) = stopWorkingSubA dw reachStats td
+        (v, eqnV) = stopWorkingCase bt a b
 
 spacer :: DomBuilder t m => m ()
 spacer = elClass "div" "spacer" $ return ()
@@ -674,6 +676,8 @@ viewStop
                 "div"
                 ("id" =: "stop-working")
                 (text "")
+
+            spacer
 
             elClass "div" "tile is-ancestor" $ do
                 elClass "div" "tile is-vertical is-6" $
