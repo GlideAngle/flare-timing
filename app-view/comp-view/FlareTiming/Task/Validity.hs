@@ -3,6 +3,7 @@ module FlareTiming.Task.Validity (viewValidity) where
 import Prelude hiding (sum)
 import Data.Maybe (fromMaybe)
 import Data.Time.Clock (UTCTime)
+import Data.Time.LocalTime (TimeZone)
 import Reflex
 import Reflex.Dom
 import Data.String (IsString)
@@ -25,7 +26,9 @@ import WireTypes.Route (TaskDistance(..), showTaskDistance)
 import WireTypes.Reach (TrackReach(..), ReachStats(..))
 import WireTypes.Point (showPilotDistance)
 import WireTypes.Pilot (Pilot(..))
+import WireTypes.Comp (UtcOffset(..))
 import FlareTiming.Pilot (showPilotName)
+import FlareTiming.Time (timeZone, showTime)
 
 katexNewLine :: T.Text
 katexNewLine = " \\\\\\\\ "
@@ -304,7 +307,8 @@ spacer = elClass "div" "spacer" $ return ()
 
 viewValidity
     :: MonadWidget t m
-    => Dynamic t (Maybe Vy.Validity)
+    => Dynamic t UtcOffset
+    -> Dynamic t (Maybe Vy.Validity)
     -> Dynamic t (Maybe ValidityWorking)
     -> Dynamic t (Maybe ReachStats)
     -> Dynamic t (Maybe [(Pilot, TrackReach)])
@@ -312,17 +316,16 @@ viewValidity
     -> Dynamic t (Maybe Int)
     -> Dynamic t (Maybe [(Pilot, FlyingSection UTCTime)])
     -> m ()
-viewValidity vy vw reachStats reach td landed ft = do
+viewValidity utcOffset vy vw reachStats reach td landed flyingTimes = do
     _ <- dyn $ ffor3 vy vw reachStats (\vy' vw' reachStats' ->
-        dyn $ ffor3 td landed ft (\td' landed' ft' ->
-            case (vy', vw', reachStats', td', landed', ft') of
-                (Nothing, _, _, _, _, _) -> text "Loading validity ..."
-                (_, Nothing, _, _, _, _) -> text "Loading validity workings ..."
-                (_, _, Nothing, _, _, _) -> text "Loading reach stats ..."
-                (_, _, _, Nothing, _, _) -> text "Loading stopped task distance ..."
-                (_, _, _, _, Nothing, _) -> text "Loading out landings ..."
-                (_, _, _, _, _, Nothing) -> text "Loading flying times ..."
-                (Just v, Just w, Just r, Just d, Just lo, Just _) -> do
+        dyn $ ffor2 td landed (\td' landed' ->
+            case (vy', vw', reachStats', td', landed') of
+                (Nothing, _, _, _, _) -> text "Loading validity ..."
+                (_, Nothing, _, _, _) -> text "Loading validity workings ..."
+                (_, _, Nothing, _, _) -> text "Loading reach stats ..."
+                (_, _, _, Nothing, _) -> text "Loading stopped task distance ..."
+                (_, _, _, _, Nothing) -> text "Loading out landings ..."
+                (Just v, Just w, Just r, Just d, Just lo) -> do
                     elAttr
                         "a"
                         (("class" =: "button") <> ("onclick" =: hookWorking v w r d lo))
@@ -337,7 +340,17 @@ viewValidity vy vw reachStats reach td landed ft = do
                     spacer
                     viewTime v w
                     spacer
-                    viewStop v w reachStats (fromMaybe [] <$> reach) d lo
+
+                    viewStop
+                        utcOffset
+                        v
+                        w
+                        reachStats
+                        (fromMaybe [] <$> reach)
+                        d
+                        lo
+                        (fromMaybe [] <$> flyingTimes)
+
                     spacer
                     return ()))
 
@@ -531,14 +544,17 @@ viewTime
 
 viewStop
     :: MonadWidget t m
-    => Vy.Validity
+    => Dynamic t UtcOffset
+    -> Vy.Validity
     -> ValidityWorking
     -> Dynamic t (Maybe ReachStats)
     -> Dynamic t [(Pilot, TrackReach)]
     -> TaskDistance
     -> Int
+    -> Dynamic t [(Pilot, FlyingSection UTCTime)]
     -> m ()
 viewStop
+    utcOffset
     Vy.Validity{time = v}
     ValidityWorking
         { distance = DistanceValidityWorking{..}
@@ -546,7 +562,8 @@ viewStop
     reachStats
     reach
     td
-    landed = do
+    landed
+    flyingTimes = do
     elClass "div" "card" $ do
         elClass "div" "card-content" $ do
             elClass "h2" "title is-4" . text
@@ -596,8 +613,43 @@ viewStop
                 ("id" =: "stop-working")
                 (text "")
 
+            elClass "div" "tile is-child" $ tablePilotFlyingTimes utcOffset flyingTimes
             elClass "div" "tile is-child" $ tablePilotReach reach
     return ()
+
+tablePilotFlyingTimes
+    :: MonadWidget t m
+    => Dynamic t UtcOffset
+    -> Dynamic t [(Pilot, FlyingSection UTCTime)]
+    -> m ()
+tablePilotFlyingTimes utcOffset xs = do
+    tz <- sample . current $ timeZone <$> utcOffset
+    _ <- elClass "table" "table is-striped" $ do
+            el "thead" $ do
+                el "tr" $ do
+                    el "th" $ text "Landed At"
+                    el "th" $ text "Pilot"
+
+                    return ()
+
+            el "tbody" $ do
+                simpleList xs (uncurry (rowFlyingTimes tz) . splitDynPure)
+
+    return ()
+
+rowFlyingTimes
+    :: MonadWidget t m
+    => TimeZone
+    -> Dynamic t Pilot
+    -> Dynamic t (FlyingSection UTCTime)
+    -> m ()
+rowFlyingTimes tz p tm = do
+    let t = maybe "-" (T.pack . showTime tz . snd) <$> tm
+    el "tr" $ do
+        el "td" $ dynText t
+        el "td" . dynText $ showPilotName <$> p
+
+        return ()
 
 tablePilotReach
     :: MonadWidget t m
