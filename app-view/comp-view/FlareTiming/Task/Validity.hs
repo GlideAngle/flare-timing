@@ -21,6 +21,7 @@ import WireTypes.ValidityWorking
     , DistanceValidityWorking(..)
     , TimeValidityWorking(..)
     , BestTime(..)
+    , PilotsFlying(..)
     )
 import WireTypes.Cross (FlyingSection)
 import WireTypes.Route (TaskDistance(..), showTaskDistance)
@@ -254,15 +255,18 @@ stopWorkingSubA DistanceValidityWorking{..} ReachStats{..} td =
 
 stopWorkingSubB :: DistanceValidityWorking -> Int -> T.Text
 
-stopWorkingSubB DistanceValidityWorking{..} landed =
+stopWorkingSubB DistanceValidityWorking{flying = PilotsFlying pf} landed =
     " &= \\\\frac{"
     <> ls
     <> "}{"
     <> f
     <> "}"
+    <> katexNewLine
+    <> (" &= " <> b)
     where
         ls = T.pack . show $ landed
-        f = T.pack . show $ flying
+        f = T.pack . show $ pf
+        b = T.pack $ printf "%.3f" (fromIntegral landed / (fromIntegral pf :: Double))
 
 stopWorking
     :: Vy.Validity
