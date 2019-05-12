@@ -613,8 +613,30 @@ viewStop
                 ("id" =: "stop-working")
                 (text "")
 
-            elClass "div" "tile is-child" $ tablePilotFlyingTimes utcOffset flyingTimes
-            elClass "div" "tile is-child" $ tablePilotReach reach
+            elClass "div" "tile is-ancestor" $ do
+                elClass "div" "tile is-vertical is-6" $
+                    elClass "div" "tile" $
+                        elClass "div" "tile is-parent is-vertical" $ do
+                            elClass "article" "tile is-child box" $ do
+                                elClass "p" "title" $ text "Landed"
+                                elClass "p" "subtitle" $ text "landed before stop"
+                                elClass "div" "content"
+                                    $ tablePilotFlyingTimes utcOffset flyingTimes
+
+                            elClass "article" "tile is-child box" $ do
+                                elClass "p" "title" $ text "Flying"
+                                elClass "p" "subtitle" $ text "still flying at stop"
+                                elClass "div" "content"
+                                    $ tablePilotFlyingTimes utcOffset flyingTimes
+
+                elClass "div" "tile is-vertical is-6" $
+                    elClass "div" "tile" $
+                        elClass "div" "tile is-parent is-vertical" $ do
+                            elClass "article" "tile is-child box" $ do
+                                elClass "p" "title" $ text "Reach"
+                                elClass "p" "subtitle" $ text "reach at stop"
+                                elClass "div" "content"
+                                    $ tablePilotReach reach
     return ()
 
 tablePilotFlyingTimes
@@ -627,7 +649,7 @@ tablePilotFlyingTimes utcOffset xs = do
     _ <- elClass "table" "table is-striped" $ do
             el "thead" $ do
                 el "tr" $ do
-                    el "th" $ text "Landed At"
+                    el "th" $ text "Landed"
                     el "th" $ text "Pilot"
 
                     return ()
