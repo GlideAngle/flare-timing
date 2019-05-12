@@ -572,10 +572,11 @@ viewStop
 
     let (landedByStop, stillFlying) =
             splitDynPure $ ffor2 task flyingTimes (\Task{stopped} ft ->
-                case stopped of
-                    Nothing -> (ft, [])
-                    Just TaskStop{retroactive = t} ->
+                maybe
+                    (ft, [])
+                    (\TaskStop{retroactive = t} ->
                         partition (maybe True ((< t) . snd) . snd) ft)
+                    stopped)
 
     elClass "div" "card" $ do
         elClass "div" "card-content" $ do
