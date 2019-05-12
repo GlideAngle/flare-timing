@@ -257,9 +257,17 @@ stopWorkingSubA
     <> ed
     <> " - "
     <> bd''
-    <> " + 1} + \\\\sqrt{\\\\frac{"
+    <> " + 1} * \\\\sqrt{\\\\frac{"
     <> sr''
     <> "}{5}}}"
+    <> katexNewLine
+    <> " &= \\\\sqrt{\\\\frac{"
+    <> textf (bd' - mr')
+    <> "}{"
+    <> textf (td' - bd' + 1)
+    <> "} * \\\\sqrt{"
+    <> textf (sr' / 5)
+    <> "}}"
     <> katexNewLine
     <> " &= \\\\sqrt{"
     <> x'
@@ -316,7 +324,7 @@ stopWorking
 
     "katex.render("
     <> "\"\\\\begin{aligned} "
-    <> " a &= \\\\sqrt{\\\\frac{bd - \\\\overline{reach}}{ed - bd + 1} + \\\\sqrt{\\\\frac{\\\\sigma(reach)}{5}}}"
+    <> " a &= \\\\sqrt{\\\\frac{bd - \\\\overline{reach}}{ed - bd + 1} * \\\\sqrt{\\\\frac{\\\\sigma(reach)}{5}}}"
     <> katexNewLine
     <> stopWorkingSubA dw reachStats td
     <> katexNewLine
