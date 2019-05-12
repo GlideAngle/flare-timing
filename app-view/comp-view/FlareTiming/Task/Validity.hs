@@ -22,11 +22,12 @@ import WireTypes.ValidityWorking
     , TimeValidityWorking(..)
     , BestTime(..)
     , PilotsFlying(..)
+    , MaximumDistance(..)
     )
 import WireTypes.Cross (FlyingSection)
 import WireTypes.Route (TaskDistance(..), showTaskDistance)
 import WireTypes.Reach (TrackReach(..), ReachStats(..))
-import WireTypes.Point (showPilotDistance)
+import WireTypes.Point (PilotDistance(..), showPilotDistance)
 import WireTypes.Pilot (Pilot(..))
 import WireTypes.Comp (Task(..), UtcOffset(..), TaskStop(..))
 import FlareTiming.Pilot (showPilotName)
@@ -240,23 +241,47 @@ stopWorkingCase Nothing b =
 
 stopWorkingSubA :: DistanceValidityWorking -> ReachStats -> TaskDistance -> T.Text
 
-stopWorkingSubA DistanceValidityWorking{..} ReachStats{..} td =
+stopWorkingSubA
+    DistanceValidityWorking{bestDistance = bd@(MaximumDistance bd')}
+    ReachStats
+        { reachMean = mr@(PilotDistance mr')
+        , reachStdDev = sr@(PilotDistance sr')
+        }
+    td@(TaskDistance td') =
+
     " &= \\\\sqrt{\\\\frac{"
-    <> bd
+    <> bd''
     <> " - "
-    <> mr
+    <> mr''
     <> "}{"
     <> ed
     <> " - "
-    <> bd
+    <> bd''
     <> " + 1} + \\\\sqrt{\\\\frac{"
-    <> sr
+    <> sr''
     <> "}{5}}}"
+    <> katexNewLine
+    <> " &= \\\\sqrt{"
+    <> x'
+    <> " * "
+    <> y'
+    <> "}"
+    <> katexNewLine
+    <> (" &= " <> z')
     where
-        bd = T.pack . show $ bestDistance
+        bd'' = T.pack $ show bd
         ed = showTaskDistance td
-        mr = showPilotDistance 3 reachMean <> "km"
-        sr = showPilotDistance 3 reachStdDev <> "km"
+        mr'' = showPilotDistance 3 mr <> "km"
+        sr'' = showPilotDistance 3 sr <> "km"
+
+        textf = T.pack . printf "%.3f"
+        x' = textf x
+        y' = textf y
+        z' = textf z
+
+        x = (bd' - mr') / (td' - bd' + 1)
+        y = sqrt $ sr' / 5
+        z = sqrt $ x * y
 
 stopWorkingSubB :: DistanceValidityWorking -> Int -> Double -> T.Text
 
