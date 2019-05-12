@@ -4,7 +4,7 @@ import System.Environment (getProgName)
 import Text.Printf (printf)
 import System.Console.CmdArgs.Implicit (cmdArgs)
 import Data.Maybe (isNothing, catMaybes)
-import Data.List ((\\), nub, sort, find)
+import Data.List ((\\), nub, sort, sortOn, find)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import GHC.Generics (Generic)
@@ -807,7 +807,8 @@ getTaskFlyingSectionTimes ii = do
         Just fss' -> do
             case take 1 $ drop jj fss' of
                 fs : _ ->
-                    return . catMaybes $
+                    -- NOTE: Sort by landing time.
+                    return . sortOn (fmap snd . snd) . catMaybes $
                         -- NOTE: Use of sequence on a tuple.
                         -- > sequence (1, Nothing)
                         -- Nothing
