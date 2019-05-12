@@ -9,6 +9,7 @@ import Reflex.Dom
 import Data.String (IsString)
 import Text.Printf (printf)
 import qualified Data.Text as T (Text, pack)
+import Data.List (partition)
 
 import qualified WireTypes.Validity as Vy
     ( Validity(..)
@@ -26,7 +27,7 @@ import WireTypes.Route (TaskDistance(..), showTaskDistance)
 import WireTypes.Reach (TrackReach(..), ReachStats(..))
 import WireTypes.Point (showPilotDistance)
 import WireTypes.Pilot (Pilot(..))
-import WireTypes.Comp (UtcOffset(..))
+import WireTypes.Comp (Task(..), UtcOffset(..), TaskStop(..))
 import FlareTiming.Pilot (showPilotName)
 import FlareTiming.Time (timeZone, showTime)
 
@@ -308,6 +309,7 @@ spacer = elClass "div" "spacer" $ return ()
 viewValidity
     :: MonadWidget t m
     => Dynamic t UtcOffset
+    -> Dynamic t Task
     -> Dynamic t (Maybe Vy.Validity)
     -> Dynamic t (Maybe ValidityWorking)
     -> Dynamic t (Maybe ReachStats)
@@ -316,7 +318,7 @@ viewValidity
     -> Dynamic t (Maybe Int)
     -> Dynamic t (Maybe [(Pilot, FlyingSection UTCTime)])
     -> m ()
-viewValidity utcOffset vy vw reachStats reach td landed flyingTimes = do
+viewValidity utcOffset task vy vw reachStats reach td landed flyingTimes = do
     _ <- dyn $ ffor3 vy vw reachStats (\vy' vw' reachStats' ->
         dyn $ ffor2 td landed (\td' landed' ->
             case (vy', vw', reachStats', td', landed') of
@@ -343,6 +345,7 @@ viewValidity utcOffset vy vw reachStats reach td landed flyingTimes = do
 
                     viewStop
                         utcOffset
+                        task
                         v
                         w
                         reachStats
@@ -545,6 +548,7 @@ viewTime
 viewStop
     :: MonadWidget t m
     => Dynamic t UtcOffset
+    -> Dynamic t Task
     -> Vy.Validity
     -> ValidityWorking
     -> Dynamic t (Maybe ReachStats)
@@ -555,6 +559,7 @@ viewStop
     -> m ()
 viewStop
     utcOffset
+    task
     Vy.Validity{time = v}
     ValidityWorking
         { distance = DistanceValidityWorking{..}
@@ -564,6 +569,14 @@ viewStop
     td
     landed
     flyingTimes = do
+
+    let (landedByStop, stillFlying) =
+            splitDynPure $ ffor2 task flyingTimes (\Task{stopped} ft ->
+                case stopped of
+                    Nothing -> (ft, [])
+                    Just TaskStop{retroactive = t} ->
+                        partition (maybe True ((< t) . snd) . snd) ft)
+
     elClass "div" "card" $ do
         elClass "div" "card-content" $ do
             elClass "h2" "title is-4" . text
@@ -621,13 +634,13 @@ viewStop
                                 elClass "p" "title" $ text "Landed"
                                 elClass "p" "subtitle" $ text "landed before stop"
                                 elClass "div" "content"
-                                    $ tablePilotFlyingTimes utcOffset flyingTimes
+                                    $ tablePilotFlyingTimes utcOffset landedByStop
 
                             elClass "article" "tile is-child box" $ do
                                 elClass "p" "title" $ text "Flying"
                                 elClass "p" "subtitle" $ text "still flying at stop"
                                 elClass "div" "content"
-                                    $ tablePilotFlyingTimes utcOffset flyingTimes
+                                    $ tablePilotFlyingTimes utcOffset stillFlying
 
                 elClass "div" "tile is-vertical is-6" $
                     elClass "div" "tile" $
