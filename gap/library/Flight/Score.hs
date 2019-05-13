@@ -126,7 +126,7 @@ module Flight.Score
     -- * Places
     , ArrivalPlacing(..)
     , TaskPlacing(..)
-    -- * Tallying points 
+    -- * Tallying points
     , LaunchToSssPoints(..)
     , MinimumDistancePoints(..)
     , SecondsPerPoint(..)
@@ -147,7 +147,10 @@ module Flight.Score
     , taskPoints
     , applyPointPenalties
     , availablePoints
-    -- * Stopped task 
+    -- * Stopped task
+    , LaunchToEss(..)
+    , FlownMean(..)
+    , FlownStdDev(..)
     , TaskStopTime(..)
     , AnnouncedTime(..)
     , ScoreBackTime(..)
@@ -177,6 +180,7 @@ module Flight.Score
     , PilotsLaunched(..)
     , PilotsPresent(..)
     , PilotsFlying(..)
+    , PilotsLanded(..)
     ) where
 
 import Flight.Gap.Leading.Area

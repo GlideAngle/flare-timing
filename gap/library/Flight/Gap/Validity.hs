@@ -12,6 +12,9 @@ module Flight.Gap.Validity
     , TimeValidityWorking(..)
     , StopValidity(..)
     , StopValidityWorking(..)
+    , LaunchToEss(..)
+    , FlownMean(..)
+    , FlownStdDev(..)
     , launchValidity
     , distanceValidity
     , timeValidity

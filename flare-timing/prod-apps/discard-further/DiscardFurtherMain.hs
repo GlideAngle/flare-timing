@@ -113,7 +113,7 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
         (Just cs, Just _, Just _) ->
             filterTime
                 cs
-                (routeLength taskRoute taskRouteSpeedSubset routes)
+                (routeLength taskRoute taskRouteSpeedSubset stopRoute routes)
                 (tagTaskLeading tagging)
                 compFile
                 (IxTask <$> task)

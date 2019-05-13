@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ac10a932bd44b2ed4dc81111c3c1d1197356d64a1144c52e0b4d3760731695bb
+-- hash: 87ae61b78599cc25fc18852f7dd14ce0a99e9523b6ff59c7c27e494f09287591
 
 name:           flare-timing
 version:        0.1.0
@@ -250,6 +250,7 @@ executable gap-point
     , mtl
     , raw-strings-qq
     , safe-exceptions
+    , time
     , transformers
     , uom-plugin
     , yaml

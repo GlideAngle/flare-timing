@@ -50,7 +50,8 @@ import Flight.Score
     ( PilotVelocity(..)
     , DistanceWeight(..), ReachWeight(..), EffortWeight(..)
     , LeadingWeight(..), ArrivalWeight(..), TimeWeight(..)
-    , DistanceValidity(..), LaunchValidity(..), TaskValidity(..), TimeValidity(..)
+    , DistanceValidity(..), LaunchValidity(..), TimeValidity(..)
+    , TaskValidity(..), StopValidity(..)
     )
 import Flight.Scribe
     ( readComp, readScore
@@ -492,12 +493,16 @@ roundValidity
         , distance = DistanceValidity dy
         , time = TimeValidity ty
         , task = TaskValidity ky
+        , stop = sy'
         } =
     Vy.Validity
         { launch = LaunchValidity $ dpVy ly
         , distance = DistanceValidity $ dpVy dy
         , time = TimeValidity $ dpVy ty
         , task = TaskValidity $ dpVy ky
+        , stop = do
+            StopValidity sy <- sy'
+            return $ StopValidity $ dpVy sy
         }
 
 roundAllocation:: Allocation -> Allocation

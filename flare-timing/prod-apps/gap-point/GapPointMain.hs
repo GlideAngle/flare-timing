@@ -10,11 +10,12 @@ import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
 import qualified Formatting as Fmt ((%), fprint)
 import Formatting.Clock (timeSpecs)
+import Data.Time.Clock (UTCTime)
 import System.Clock (getTime, Clock(Monotonic))
 import Data.Map (Map)
 import qualified Data.Map.Strict as Map
 import qualified Data.Map.Merge.Strict as Map
-import Data.List (sortBy)
+import Data.List (sortBy, partition)
 import Control.Applicative (liftA2)
 import qualified Control.Applicative as A ((<$>))
 import Control.Monad (mapM_, join)
@@ -38,6 +39,7 @@ import Flight.Comp
     , Comp(..)
     , Nominal(..)
     , Tweak(..)
+    , CrossZoneFile(..)
     , TagZoneFile(..)
     , MaskTrackFile(..)
     , LandOutFile(..)
@@ -46,6 +48,7 @@ import Flight.Comp
     , StartGate(..)
     , StartEnd(..)
     , Task(..)
+    , TaskStop(..)
     , DfNoTrack(..)
     , RoutesLookupTaskDistance(..)
     , TaskRouteDistance(..)
@@ -59,7 +62,8 @@ import Flight.Comp
     , findCompInput
     , ensureExt
     )
-import Flight.Track.Cross (InterpolatedFix(..), ZoneTag(..))
+import Flight.Track.Cross
+    (InterpolatedFix(..), Crossing(..), ZoneTag(..), TrackFlyingSection(..))
 import Flight.Track.Tag (Tagging(..), PilotTrackTag(..), TrackTag(..))
 import Flight.Track.Distance
     ( TrackDistance(..), AwardedDistance(..), Clamp(..), Nigh, Land
@@ -77,19 +81,23 @@ import Flight.Track.Point
     (Velocity(..), Breakdown(..), Pointing(..), Allocation(..))
 import qualified Flight.Track.Land as Cmp (Landing(..))
 import Flight.Scribe
-    (readComp, readRoute, readTagging, readMasking, readLanding, writePointing)
+    ( readComp, readRoute
+    , readCrossing, readTagging
+    , readMasking, readLanding
+    , writePointing
+    )
 import Flight.Mask (RaceSections(..), section)
 import Flight.Zone.SpeedSection (SpeedSection)
 import Flight.Zone.MkZones (Discipline(..))
 import Flight.Lookup.Route (routeLength)
 import qualified Flight.Lookup as Lookup (compRoutes)
 import Flight.Score
-    ( MinimumDistance(..), MaximumDistance(..)
+    ( MinimumDistance(..), MaximumDistance(..), LaunchToEss(..)
     , BestDistance(..), SumOfDistance(..), PilotDistance(..)
-    , PilotsAtEss(..), PilotsPresent(..), PilotsFlying(..)
+    , PilotsAtEss(..), PilotsPresent(..), PilotsFlying(..), PilotsLanded(..)
     , GoalRatio(..), Lw(..), Aw(..), Rw(..), Ew(..)
     , NominalTime(..), BestTime(..)
-    , Validity(..), ValidityWorking(..)
+    , Validity(..), ValidityWorking(..), StopValidity(..)
     , DifficultyFraction(..), LeadingFraction(..)
     , ArrivalFraction(..), SpeedFraction(..)
     , DistancePoints(..), LinearPoints(..), DifficultyPoints(..)
@@ -97,9 +105,10 @@ import Flight.Score
     , PointPenalty
     , TaskPlacing(..), TaskPoints(..), PilotVelocity(..), PilotTime(..)
     , IxChunk(..), ChunkDifficulty(..)
+    , FlownMean(..), FlownStdDev(..)
     , distanceRatio, distanceWeight, reachWeight, effortWeight
     , leadingWeight, arrivalWeight, timeWeight
-    , taskValidity, launchValidity, distanceValidity, timeValidity
+    , taskValidity, launchValidity, distanceValidity, timeValidity, stopValidity
     , availablePoints, applyPointPenalties
     , toIxChunk
     )
@@ -131,12 +140,14 @@ drive o = do
 go :: CmdBatchOptions -> CompInputFile -> IO ()
 go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
     let lenFile@(TaskLengthFile lenPath) = compToTaskLength compFile
+    let crossFile@(CrossZoneFile crossPath) = compToCross compFile
     let tagFile@(TagZoneFile tagPath) = crossToTag . compToCross $ compFile
     let maskFile@(MaskTrackFile maskPath) = compToMask compFile
     let landFile@(LandOutFile landPath) = compToLand compFile
     let pointFile = compToPoint compFile
     putStrLn $ "Reading task length from '" ++ takeFileName lenPath ++ "'"
     putStrLn $ "Reading pilots ABS & DNF from task from '" ++ takeFileName compPath ++ "'"
+    putStrLn $ "Reading zone crossings from '" ++ takeFileName crossPath ++ "'"
     putStrLn $ "Reading start and end zone tagging from '" ++ takeFileName tagPath ++ "'"
     putStrLn $ "Reading masked tracks from '" ++ takeFileName maskPath ++ "'"
     putStrLn $ "Reading distance difficulty from '" ++ takeFileName landPath ++ "'"
@@ -146,7 +157,12 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
             (Just <$> readComp compFile)
             (const $ return Nothing)
 
-    tagging <-
+    cgs <-
+        catchIO
+            (Just <$> readCrossing crossFile)
+            (const $ return Nothing)
+
+    tgs <-
         catchIO
             (Just <$> readTagging tagFile)
             (const $ return Nothing)
@@ -166,20 +182,27 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
             (Just <$> readRoute lenFile)
             (const $ return Nothing)
 
-    let lookupTaskLength = routeLength taskRoute taskRouteSpeedSubset routes
+    let lookupTaskLength =
+            routeLength
+                taskRoute
+                taskRouteSpeedSubset
+                stopRoute
+                routes
 
-    case (compSettings, tagging, masking, landing, routes) of
-        (Nothing, _, _, _, _) -> putStrLn "Couldn't read the comp settings."
-        (_, Nothing, _, _, _) -> putStrLn "Couldn't read the taggings."
-        (_, _, Nothing, _, _) -> putStrLn "Couldn't read the maskings."
-        (_, _, _, Nothing, _) -> putStrLn "Couldn't read the land outs."
-        (_, _, _, _, Nothing) -> putStrLn "Couldn't read the routes."
-        (Just cs, Just tg, Just mk, Just lg, Just _) ->
-            writePointing pointFile $ points' cs lookupTaskLength tg mk lg
+    case (compSettings, cgs, tgs, masking, landing, routes) of
+        (Nothing, _, _, _, _, _) -> putStrLn "Couldn't read the comp settings."
+        (_, Nothing, _, _, _, _) -> putStrLn "Couldn't read the crossings."
+        (_, _, Nothing, _, _, _) -> putStrLn "Couldn't read the taggings."
+        (_, _, _, Nothing, _, _) -> putStrLn "Couldn't read the maskings."
+        (_, _, _, _, Nothing, _) -> putStrLn "Couldn't read the land outs."
+        (_, _, _, _, _, Nothing) -> putStrLn "Couldn't read the routes."
+        (Just cs, Just cg, Just tg, Just mk, Just lg, Just _) ->
+            writePointing pointFile $ points' cs lookupTaskLength cg tg mk lg
 
 points'
     :: CompSettings k
     -> RoutesLookupTaskDistance
+    -> Crossing
     -> Tagging
     -> Masking
     -> Cmp.Landing
@@ -201,6 +224,7 @@ points'
         , pilotGroups
         }
     routes
+    Crossing{flying}
     Tagging{tagging}
     Masking
         { pilotsAtEss
@@ -211,6 +235,8 @@ points'
         , gsBestTime
         , leadRank
         , arrivalRank
+        , flownMean
+        , flownStdDev
         , ssSpeed
         , gsSpeed
         , nigh
@@ -260,6 +286,9 @@ points'
         lsSpeedTask :: [Maybe (QTaskDistance Double [u| m |])] =
             (fmap . fmap) speedSubsetDistance lsTask'
 
+        lsLaunchToEssTask :: [Maybe (QTaskDistance Double [u| m |])] =
+            (fmap . fmap) launchToEssDistance lsTask'
+
         -- NOTE: If there is no best distance, then either the task wasn't run
         -- or it has not been scored yet.
         maybeTasks :: [a -> Maybe a]
@@ -289,11 +318,11 @@ points'
             [ distanceValidity
                 gNom
                 dNom
-                (PilotsFlying dfs)
+                pf
                 free
                 b
                 s
-            | dfs <- dfss
+            | pf <- PilotsFlying <$> dfss
             | b <- dBests
             | s <- dSums
             ]
@@ -385,11 +414,51 @@ points'
             | aw <- aws
             ]
 
-        validities =
-            [ maybeTask $ Validity (taskValidity lv dv tv Nothing) lv dv tv Nothing
+        pfss :: [[(Pilot, Maybe UTCTime)]] =
+            [
+                [ (p, join $ (fmap snd . flyingTimes) <$> tfs)
+                | (p, tfs) <- fts
+                ]
+            | fts <- flying
+            ]
+
+        pls :: [([(Pilot, Maybe UTCTime)], [(Pilot, Maybe UTCTime)])] =
+            [
+                case stopped of
+                    Nothing -> ([], [])
+                    Just TaskStop{retroactive = t} ->
+                        partition
+                            ((maybe True (< t)) . snd)
+                            pfs
+
+            | pfs <- pfss
+            | Task{stopped} <-tasks
+            ]
+
+        svs :: [Maybe StopValidity] =
+            [
+                do
+                    _ <- sp
+                    ed' <- ed
+                    let pl = PilotsLanded . fromIntegral $ length landedByStop
+                    return $ stopValidity pf pe pl fm fsd bd ed'
+
+            | sp <- stopped <$> tasks
+            | pf <- PilotsFlying <$> dfss
+            | pe <- pilotsAtEss
+            | landedByStop <- (fmap snd . fst) <$> pls
+            | fm <- (\(TaskDistance td) -> FlownMean $ convert td) <$> flownMean
+            | fsd <- (\(TaskDistance td) -> FlownStdDev $ convert td) <$> flownStdDev
+            | bd <- (\(MaximumDistance x) -> BestDistance x) <$> dBests
+            | ed <- (fmap . fmap) (\(TaskDistance td) -> LaunchToEss $ convert td) lsLaunchToEssTask
+            ]
+
+        validities :: [Maybe Validity] =
+            [ maybeTask $ Validity (taskValidity lv dv tv sv) lv dv tv sv
             | lv <- fst <$> lvs
             | dv <- fst <$> dvs
             | tv <- fst <$> tvs
+            | sv <- svs
             | maybeTask <- maybeTasks
             ]
 

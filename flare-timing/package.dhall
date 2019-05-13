@@ -258,6 +258,7 @@ in    defs
                     deps
                   # [ "containers"
                     , "safe-exceptions"
+                    , "time"
                     , "flight-gap"
                     , "flight-lookup"
                     , "flight-mask"

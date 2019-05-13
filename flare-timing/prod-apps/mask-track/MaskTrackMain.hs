@@ -162,7 +162,7 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
             (const $ return Nothing)
 
     let flyingLookup = crossFlying crossing
-    let lookupTaskLength = routeLength taskRoute taskRouteSpeedSubset routes
+    let lookupTaskLength = routeLength taskRoute taskRouteSpeedSubset stopRoute routes
 
     case (compSettings, crossing, tagging, routes) of
         (Nothing, _, _, _) -> putStrLn "Couldn't read the comp settings."
