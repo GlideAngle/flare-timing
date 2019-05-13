@@ -26,12 +26,15 @@ module Flight.Score
     , TimeValidityWorking(..)
     , DistanceValidity(..)
     , DistanceValidityWorking(..)
+    , StopValidity(..)
+    , StopValidityWorking(..)
     , TaskValidity(..)
     , Validity(..)
     , ValidityWorking(..)
     , launchValidity
     , distanceValidity
     , timeValidity
+    , stopValidity
     , taskValidity
     -- * Weighting
     , GoalRatio(..)
@@ -155,10 +158,6 @@ module Flight.Score
     , canScoreStopped
     , MaximumDistance(..)
     , SumOfDistance(..)
-    , DistanceLaunchToEss(..)
-    , DistanceFlown(..)
-    , StoppedValidity(..)
-    , stoppedValidity
     , TaskType(..)
     , StartGates(..)
     , ScoreTimeWindow(..)
@@ -176,8 +175,6 @@ module Flight.Score
     -- * Pilot counts
     , PilotsAtEss(..)
     , PilotsLaunched(..)
-    , PilotsInGoalAtStop(..)
-    , PilotsLandedBeforeStop(..)
     , PilotsPresent(..)
     , PilotsFlying(..)
     ) where

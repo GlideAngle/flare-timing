@@ -7,10 +7,6 @@ module Flight.Gap.Stopped
     , CanScoreStopped(..)
     , stopTaskTime
     , canScoreStopped
-    , DistanceLaunchToEss(..)
-    , DistanceFlown(..)
-    , StoppedValidity(..)
-    , stoppedValidity
     , TaskType(..)
     , StartGates(..)
     , ScoreTimeWindow(..)
@@ -24,18 +20,15 @@ module Flight.Gap.Stopped
     ) where
 
 import Data.Ratio ((%))
-import Statistics.Sample (mean, stdDev)
 import Control.Arrow (second)
 import Data.List (partition, sortBy)
-import qualified Data.Vector as V
 import qualified Data.Map as Map
 import Data.UnitsOfMeasure (u, convert, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Gap.Points (Hg, Pg)
 import Flight.Gap.Leading (TaskTime(..))
-import Flight.Gap.Pilots
-    (PilotsLaunched(..), PilotsLandedBeforeStop(..), PilotsInGoalAtStop(..))
+import Flight.Gap.Pilots (PilotsAtEss(..))
 import Flight.Gap.Time.ScoreBack (ScoreBackTime(..))
 
 newtype TaskStopTime = TaskStopTime Rational deriving (Eq, Ord, Show)
@@ -67,17 +60,17 @@ stopTaskTime (SingleGateStop (AnnouncedTime at)) =
     TaskStopTime $ at - ((15 * 60) % 1)
 
 data CanScoreStopped a where
-    Womens :: PilotsInGoalAtStop -> TaskStopTime -> CanScoreStopped Hg
-    GoalOrDuration :: PilotsInGoalAtStop -> TaskStopTime -> CanScoreStopped Hg
+    Womens :: PilotsAtEss -> TaskStopTime -> CanScoreStopped Hg
+    GoalOrDuration :: PilotsAtEss -> TaskStopTime -> CanScoreStopped Hg
     FromGetGo :: TaskStopTime -> CanScoreStopped Pg
     FromLastStart :: [TaskTime] -> TaskStopTime -> CanScoreStopped Pg
 
 deriving instance Show (CanScoreStopped a)
 
 canScoreStopped :: forall a. CanScoreStopped a -> Bool
-canScoreStopped (Womens (PilotsInGoalAtStop n) (TaskStopTime t)) =
+canScoreStopped (Womens (PilotsAtEss n) (TaskStopTime t)) =
     n > 0 || t >= 60 * 60
-canScoreStopped (GoalOrDuration (PilotsInGoalAtStop n) (TaskStopTime t)) =
+canScoreStopped (GoalOrDuration (PilotsAtEss n) (TaskStopTime t)) =
     n > 0 || t >= 90 * 60
 canScoreStopped (FromGetGo (TaskStopTime t)) =
     t >= 60 * 60
@@ -87,67 +80,6 @@ canScoreStopped (FromLastStart xs (TaskStopTime t)) =
     (t - lastStart) >= 60 * 60
     where
         lastStart = maximum $ (\(TaskTime (MkQuantity x)) -> x) <$> xs
-
-newtype StoppedValidity = StoppedValidity Rational deriving (Eq, Show)
-newtype DistanceFlown = DistanceFlown Rational deriving (Eq, Show)
-newtype DistanceLaunchToEss = DistanceLaunchToEss Rational deriving (Eq, Show)
-
-stoppedValidity
-    :: PilotsLaunched
-    -> PilotsLandedBeforeStop
-    -> DistanceLaunchToEss
-    -> [DistanceFlown]
-    -> StoppedValidity
-stoppedValidity _ _ _ [] =
-    StoppedValidity 0
-stoppedValidity
-    (PilotsLaunched launched)
-    (PilotsLandedBeforeStop landed)
-    (DistanceLaunchToEss dist)
-    xs
-    | launched <= 0 =
-        StoppedValidity 0
-    | landed > launched =
-        StoppedValidity 0
-    | maxFlown >= fromRational dist =
-        StoppedValidity 1
-    | otherwise =
-        StoppedValidity $ min 1 validity
-        where
-            validity :: Rational
-            validity = toRational $ (a * b) ** (1 / 2) + c ** 3
-
-            numerator :: Double
-            numerator = maxFlown - zsMean
-
-            denominator :: Double 
-            denominator = fromRational dist - maxFlown + 1
-
-            a :: Double 
-            a = numerator / denominator
-
-            b :: Double 
-            b = (zsStdDev / 5) ** (1 / 2)
-
-            c :: Double 
-            c = (fromIntegral landed / fromIntegral launched) ** (1 / 3)
-
-            ys :: [Rational]
-            ys = (\(DistanceFlown x) -> x) <$> xs
-
-            zs :: [Double]
-            zs = fromRational <$> ys
-
-            vs = V.fromList zs
-
-            zsMean :: Double
-            zsMean = mean vs
-
-            zsStdDev :: Double
-            zsStdDev = stdDev vs
-
-            maxFlown :: Double
-            maxFlown = fromRational $ maximum ys
 
 newtype StartGates = StartGates Int deriving (Eq, Ord, Show)
 data TaskType = RaceToGoal | ElapsedTime deriving (Eq, Ord, Show)

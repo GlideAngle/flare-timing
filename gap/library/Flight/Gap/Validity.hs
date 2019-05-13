@@ -10,19 +10,24 @@ module Flight.Gap.Validity
     , LaunchValidityWorking(..)
     , DistanceValidityWorking(..)
     , TimeValidityWorking(..)
+    , StopValidity(..)
+    , StopValidityWorking(..)
     , launchValidity
     , distanceValidity
     , timeValidity
     , taskValidity
+    , stopValidity
     ) where
 
 import Data.Ratio ((%))
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
-import Data.UnitsOfMeasure (u, convert, toRational')
+import Data.UnitsOfMeasure
+    ((+:), (-:), (*:), (/:), u, convert, toRational', sqrt', unQuantity)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.Ratio (pattern (:%))
+import Flight.Gap.Distance.Stop (FlownMean(..), FlownStdDev(..), LaunchToEss(..))
 import Flight.Gap.Distance.Nominal (NominalDistance(..))
 import Flight.Gap.Distance.Best (BestDistance(..))
 import Flight.Gap.Distance.Min (MinimumDistance(..))
@@ -33,26 +38,30 @@ import Flight.Gap.Validity.Launch (LaunchValidity(..))
 import Flight.Gap.Validity.Distance (DistanceValidity(..))
 import Flight.Gap.Validity.Time (TimeValidity(..))
 import Flight.Gap.Validity.Task (TaskValidity(..))
+import Flight.Gap.Validity.Stop (StopValidity(..))
 import Flight.Gap.Ratio.Launch (NominalLaunch(..))
 import Flight.Gap.Ratio.Goal (NominalGoal(..))
 import Flight.Gap.Time.Nominal (NominalTime(..))
 import Flight.Gap.Time.Best (BestTime(..))
-import Flight.Gap.Pilots (PilotsPresent(..), PilotsFlying(..))
+import Flight.Gap.Pilots
+    (PilotsPresent(..), PilotsFlying(..), PilotsAtEss(..), PilotsLanded(..))
 
 data Validity =
-    Validity 
+    Validity
         { task :: TaskValidity
         , launch :: LaunchValidity
         , distance :: DistanceValidity
         , time :: TimeValidity
+        , stop :: Maybe StopValidity
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 data ValidityWorking =
-    ValidityWorking 
+    ValidityWorking
         { launch :: LaunchValidityWorking
         , distance :: DistanceValidityWorking
         , time :: TimeValidityWorking
+        , stop :: Maybe StopValidityWorking
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
@@ -69,7 +78,7 @@ data DistanceValidityWorking =
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 data LaunchValidityWorking =
-    LaunchValidityWorking 
+    LaunchValidityWorking
         { flying :: PilotsFlying
         , present :: PilotsPresent
         , nominalLaunch :: NominalLaunch
@@ -77,7 +86,7 @@ data LaunchValidityWorking =
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
 data TimeValidityWorking =
-    TimeValidityWorking 
+    TimeValidityWorking
         { ssBestTime :: Maybe (BestTime (Quantity Double [u| h |]))
         -- ^ For each task, the best time ignoring start gates.
         , gsBestTime :: Maybe (BestTime (Quantity Double [u| h |]))
@@ -85,6 +94,18 @@ data TimeValidityWorking =
         , bestDistance :: BestDistance (Quantity Double [u| km |])
         , nominalTime :: NominalTime (Quantity Double [u| h |])
         , nominalDistance :: NominalDistance (Quantity Double [u| km |])
+        }
+    deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
+
+data StopValidityWorking =
+    StopValidityWorking
+        { pilotsAtEss :: PilotsAtEss
+        , stillFlying :: PilotsFlying
+        , flying :: PilotsFlying
+        , flownMean :: FlownMean (Quantity Double [u| km |])
+        , flownStdDev :: FlownStdDev (Quantity Double [u| km |])
+        , bestDistance :: BestDistance (Quantity Double [u| km |])
+        , launchToEssDistance :: LaunchToEss (Quantity Double [u| km |])
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
@@ -300,7 +321,7 @@ distanceValidity
     | otherwise =
         ( DistanceValidity . min 1 $ dvr area nFly dSum
         , Just $ DistanceValidityWorking dSum nFly area ng nd md bd
-        ) 
+        )
     where
         MkQuantity dNom = toRational' dNom'
         MkQuantity dMin = toRational' dMin'
@@ -315,10 +336,35 @@ distanceValidity
         area :: NominalDistanceArea
         area = NominalDistanceArea $ (a + b) * (1 % 2)
 
+stopValidity
+    :: PilotsFlying
+    -> PilotsAtEss
+    -> PilotsLanded
+    -> FlownMean (Quantity Double [u| km |])
+    -> FlownStdDev (Quantity Double [u| km |])
+    -> BestDistance (Quantity Double [u| km |])
+    -> LaunchToEss (Quantity Double [u| km |])
+    -> StopValidity
+stopValidity
+    (PilotsFlying flying)
+    (PilotsAtEss ess)
+    (PilotsLanded landed)
+    (FlownMean flownMean)
+    (FlownStdDev flownStdDev)
+    (BestDistance bd)
+    (LaunchToEss ed)
+    | ess > 0 = StopValidity 1
+    | otherwise =
+        StopValidity $ min 1 (toRational $ unQuantity a + b**3)
+        where
+            a = sqrt' (((bd -: flownMean) /: (ed -: bd +: [u| 1 km |])) *: sqrt' (flownStdDev /: [u| 5 km |]))
+            b = fromIntegral landed / (fromIntegral flying :: Double)
+
 taskValidity
     :: LaunchValidity
     -> DistanceValidity
     -> TimeValidity
+    -> Maybe StopValidity
     -> TaskValidity
-taskValidity (LaunchValidity l) (DistanceValidity d) (TimeValidity t) =
-    TaskValidity $ l * t * d
+taskValidity (LaunchValidity l) (DistanceValidity d) (TimeValidity t) sv =
+    TaskValidity $ maybe (l * t * d) (\(StopValidity s) -> l * t * d * s) sv

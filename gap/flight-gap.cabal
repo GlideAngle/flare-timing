@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 485b1ced41a356bbe04fb92799c790a2c1a2aa45c64ea57daaf591ec68eb08ab
+-- hash: 7fdfcedfd65395aff3faab293f60842a6ecc6e883ac81b7b78a3e9b4b0d48a51
 
 name:           flight-gap
 version:        0.1.0
@@ -45,6 +45,7 @@ library
       Flight.Gap.Distance.Nominal
       Flight.Gap.Distance.Pilot
       Flight.Gap.Distance.Relative
+      Flight.Gap.Distance.Stop
       Flight.Gap.Distance.Sum
       Flight.Gap.Equation
       Flight.Gap.Leading
@@ -77,6 +78,7 @@ library
       Flight.Gap.Validity.Area
       Flight.Gap.Validity.Distance
       Flight.Gap.Validity.Launch
+      Flight.Gap.Validity.Stop
       Flight.Gap.Validity.Task
       Flight.Gap.Validity.Time
       Flight.Gap.Weight.Arrival
@@ -101,11 +103,9 @@ library
     , newtype
     , scientific
     , siggy-chardust
-    , statistics
     , template-haskell
     , text
     , uom-plugin
-    , vector
   default-language: Haskell2010
 
 test-suite doctest
@@ -123,6 +123,7 @@ test-suite doctest
       Flight.Gap.Distance.Nominal
       Flight.Gap.Distance.Pilot
       Flight.Gap.Distance.Relative
+      Flight.Gap.Distance.Stop
       Flight.Gap.Distance.Sum
       Flight.Gap.Equation
       Flight.Gap.Leading
@@ -155,6 +156,7 @@ test-suite doctest
       Flight.Gap.Validity.Area
       Flight.Gap.Validity.Distance
       Flight.Gap.Validity.Launch
+      Flight.Gap.Validity.Stop
       Flight.Gap.Validity.Task
       Flight.Gap.Validity.Time
       Flight.Gap.Weight.Arrival
@@ -182,11 +184,9 @@ test-suite doctest
     , newtype
     , scientific
     , siggy-chardust
-    , statistics
     , template-haskell
     , text
     , uom-plugin
-    , vector
   default-language: Haskell2010
 
 test-suite score
@@ -204,6 +204,7 @@ test-suite score
       Flight.Gap.Distance.Nominal
       Flight.Gap.Distance.Pilot
       Flight.Gap.Distance.Relative
+      Flight.Gap.Distance.Stop
       Flight.Gap.Distance.Sum
       Flight.Gap.Equation
       Flight.Gap.Leading
@@ -236,6 +237,7 @@ test-suite score
       Flight.Gap.Validity.Area
       Flight.Gap.Validity.Distance
       Flight.Gap.Validity.Launch
+      Flight.Gap.Validity.Stop
       Flight.Gap.Validity.Task
       Flight.Gap.Validity.Time
       Flight.Gap.Weight.Arrival

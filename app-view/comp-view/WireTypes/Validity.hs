@@ -50,7 +50,7 @@ showTaskValidity :: TaskValidity -> T.Text
 showTaskValidity (TaskValidity v) = T.pack . pprVy $ v
 
 data Validity =
-    Validity 
+    Validity
         { task :: TaskValidity
         , launch :: LaunchValidity
         , distance :: DistanceValidity

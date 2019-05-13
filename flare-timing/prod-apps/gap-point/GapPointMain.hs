@@ -320,7 +320,7 @@ points'
             [ do
                 lv' <- lv
                 dv' <- dv
-                ValidityWorking lv' dv' <$> tv
+                (flip (ValidityWorking lv' dv') Nothing) <$> tv
             | lv <- snd <$> lvs
             | dv <- snd <$> dvs
             | tv <- snd <$> tvs
@@ -386,7 +386,7 @@ points'
             ]
 
         validities =
-            [ maybeTask $ Validity (taskValidity lv dv tv) lv dv tv
+            [ maybeTask $ Validity (taskValidity lv dv tv Nothing) lv dv tv Nothing
             | lv <- fst <$> lvs
             | dv <- fst <$> dvs
             | tv <- fst <$> tvs
