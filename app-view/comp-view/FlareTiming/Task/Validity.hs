@@ -13,7 +13,8 @@ import Data.List (partition)
 
 import qualified WireTypes.Validity as Vy
     ( Validity(..)
-    , showTaskValidity, showLaunchValidity, showDistanceValidity, showTimeValidity
+    , showTaskValidity
+    , showLaunchValidity, showDistanceValidity, showTimeValidity, showStopValidity
     )
 import WireTypes.ValidityWorking
     ( ValidityWorking(..)
@@ -424,7 +425,7 @@ viewDay
     -> ValidityWorking
     -> m ()
 viewDay
-    Vy.Validity{task, launch = lv, distance = dv, time = tv}
+    Vy.Validity{task, launch = lv, distance = dv, time = tv, stop = sv}
     ValidityWorking{launch = LaunchValidityWorking{..}} = do
     elClass "div" "card" $ do
         elClass "div" "card-content" $ do
@@ -452,6 +453,11 @@ viewDay
                         elClass "span" "tag" $ do text "tv = time validity"
                         elClass "span" "tag is-primary" . text
                             $ Vy.showTimeValidity tv
+                elClass "div" "control" $ do
+                    elClass "div" "tags has-addons" $ do
+                        elClass "span" "tag" $ do text "sv = stop validity"
+                        elClass "span" "tag is-danger" . text
+                            $ maybe "Nothing" (("Just " <>) . Vy.showStopValidity) sv
 
             elAttr
                 "div"
@@ -615,9 +621,10 @@ viewStop
     -> Dynamic t [(Pilot, FlyingSection UTCTime)]
     -> Dynamic t [(Pilot, FlyingSection UTCTime)]
     -> m ()
+viewStop _ Vy.Validity{stop = Nothing} _ _ _ _ _ _ = return ()
 viewStop
     utcOffset
-    Vy.Validity{time = v}
+    Vy.Validity{stop = Just v}
     ValidityWorking
         { distance = DistanceValidityWorking{..}
         }
@@ -630,7 +637,7 @@ viewStop
     elClass "div" "card" $ do
         elClass "div" "card-content" $ do
             elClass "h2" "title is-4" . text
-                $ "Stopped Task Validity = " <> Vy.showTimeValidity v
+                $ "Stop Validity = " <> Vy.showStopValidity v
             elClass "div" "field is-grouped is-grouped-multiline" $ do
                 elClass "div" "control" $ do
                     elClass "div" "tags has-addons" $ do

@@ -6,11 +6,13 @@ module WireTypes.Validity
     , LaunchValidity(..)
     , DistanceValidity(..)
     , TimeValidity(..)
+    , StopValidity(..)
     -- * Showing Validities
     , showLaunchValidity
     , showDistanceValidity
     , showTimeValidity
     , showTaskValidity
+    , showStopValidity
     ) where
 
 import Text.Printf (printf)
@@ -34,6 +36,10 @@ newtype TimeValidity = TimeValidity Double
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (FromJSON)
 
+newtype StopValidity = StopValidity Double
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (FromJSON)
+
 pprVy :: Double -> String
 pprVy = printf "%.3f"
 
@@ -49,11 +55,15 @@ showTimeValidity (TimeValidity v) = T.pack . pprVy $ v
 showTaskValidity :: TaskValidity -> T.Text
 showTaskValidity (TaskValidity v) = T.pack . pprVy $ v
 
+showStopValidity :: StopValidity -> T.Text
+showStopValidity (StopValidity v) = T.pack . pprVy $ v
+
 data Validity =
     Validity
         { task :: TaskValidity
         , launch :: LaunchValidity
         , distance :: DistanceValidity
         , time :: TimeValidity
+        , stop :: Maybe StopValidity
         }
     deriving (Eq, Ord, Show, Generic, FromJSON)
