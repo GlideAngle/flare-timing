@@ -344,6 +344,7 @@ stopValidity
     :: PilotsFlying
     -> PilotsAtEss
     -> PilotsLanded
+    -> PilotsFlying
     -> FlownMean (Quantity Double [u| km |])
     -> FlownStdDev (Quantity Double [u| km |])
     -> BestDistance (Quantity Double [u| km |])
@@ -352,7 +353,8 @@ stopValidity
 stopValidity
     pf@(PilotsFlying flying)
     pe@(PilotsAtEss ess)
-    pl@(PilotsLanded landed)
+    landedByStop@(PilotsLanded landed)
+    stillFlying
     fm@(FlownMean flownMean)
     fd@(FlownStdDev flownStdDev)
     bd'@(BestDistance bd)
@@ -363,8 +365,8 @@ stopValidity
             , Just
                 StopValidityWorking
                     { pilotsAtEss = pe
-                    , landed = pl
-                    , stillFlying = PilotsFlying $ flying - landed
+                    , landed = landedByStop
+                    , stillFlying = stillFlying
                     , flying = pf
                     , flownMean = fm
                     , flownStdDev = fd

@@ -4,7 +4,7 @@
 
 import Data.Ratio ((%))
 import Data.List.NonEmpty (nonEmpty)
-import Data.Maybe (fromMaybe)
+import Data.Maybe (fromMaybe, catMaybes)
 import Data.Function ((&))
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
@@ -416,25 +416,27 @@ points'
             | aw <- aws
             ]
 
-        pfss :: [[(Pilot, Maybe UTCTime)]] =
+        -- NOTE: Limited to the pilots we have landing times for.
+        plss :: [[(Pilot, UTCTime)]] =
             [
-                [ (p, join $ (fmap snd . flyingTimes) <$> tfs)
+                catMaybes
+                [ sequence (p, join $ (fmap snd . flyingTimes) <$> tfs)
                 | (p, tfs) <- fts
                 ]
             | fts <- flying
             ]
 
-        pls :: [([(Pilot, Maybe UTCTime)], [(Pilot, Maybe UTCTime)])] =
+        pls :: [([(Pilot, UTCTime)], [(Pilot, UTCTime)])] =
             [
                 case stopped of
                     Nothing -> ([], [])
                     Just TaskStop{retroactive = t} ->
                         partition
-                            ((maybe True (< t)) . snd)
+                            ((< t) . snd)
                             pfs
 
-            | pfs <- pfss
-            | Task{stopped} <-tasks
+            | pfs <- plss
+            | Task{stopped} <- tasks
             ]
 
         svs :: [Maybe (StopValidity, Maybe StopValidityWorking)] =
@@ -442,13 +444,15 @@ points'
                 do
                     _ <- sp
                     ed' <- ed
-                    let pl = PilotsLanded . fromIntegral $ length landedByStop
-                    return $ stopValidity pf pe pl fm fsd bd ed'
+                    let ls = PilotsLanded . fromIntegral . length $ snd <$> landedByStop
+                    let sf = PilotsFlying . fromIntegral . length $ snd <$> stillFlying
+                    return $ stopValidity pf pe ls sf fm fsd bd ed'
 
             | sp <- stopped <$> tasks
             | pf <- PilotsFlying <$> dfss
             | pe <- pilotsAtEss
-            | landedByStop <- (fmap snd . fst) <$> pls
+            | landedByStop <- fst <$> pls
+            | stillFlying <- snd <$> pls
 
             | fm <-
                 (\(TaskDistance td) ->
