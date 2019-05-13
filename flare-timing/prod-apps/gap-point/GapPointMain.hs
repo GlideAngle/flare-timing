@@ -451,8 +451,7 @@ points'
             | sp <- stopped <$> tasks
             | pf <- PilotsFlying <$> dfss
             | pe <- pilotsAtEss
-            | landedByStop <- fst <$> pls
-            | stillFlying <- snd <$> pls
+            | (landedByStop, stillFlying) <- pls
 
             | fm <-
                 (\(TaskDistance td) ->
