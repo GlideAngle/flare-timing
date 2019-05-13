@@ -97,7 +97,8 @@ import Flight.Score
     , PilotsAtEss(..), PilotsPresent(..), PilotsFlying(..), PilotsLanded(..)
     , GoalRatio(..), Lw(..), Aw(..), Rw(..), Ew(..)
     , NominalTime(..), BestTime(..)
-    , Validity(..), ValidityWorking(..), StopValidity(..)
+    , Validity(..), ValidityWorking(..)
+    , StopValidity(..), StopValidityWorking
     , DifficultyFraction(..), LeadingFraction(..)
     , ArrivalFraction(..), SpeedFraction(..)
     , DistancePoints(..), LinearPoints(..), DifficultyPoints(..)
@@ -349,10 +350,11 @@ points'
             [ do
                 lv' <- lv
                 dv' <- dv
-                (flip (ValidityWorking lv' dv') Nothing) <$> tv
+                (flip (ValidityWorking lv' dv') sv) <$> tv
             | lv <- snd <$> lvs
             | dv <- snd <$> dvs
             | tv <- snd <$> tvs
+            | sv <- (join . fmap snd) <$> svs
             ]
 
         grs =
@@ -435,7 +437,7 @@ points'
             | Task{stopped} <-tasks
             ]
 
-        svs :: [Maybe StopValidity] =
+        svs :: [Maybe (StopValidity, Maybe StopValidityWorking)] =
             [
                 do
                     _ <- sp
@@ -447,10 +449,21 @@ points'
             | pf <- PilotsFlying <$> dfss
             | pe <- pilotsAtEss
             | landedByStop <- (fmap snd . fst) <$> pls
-            | fm <- (\(TaskDistance td) -> FlownMean $ convert td) <$> flownMean
-            | fsd <- (\(TaskDistance td) -> FlownStdDev $ convert td) <$> flownStdDev
+
+            | fm <-
+                (\(TaskDistance td) ->
+                    FlownMean $ convert td) <$> flownMean
+
+            | fsd <-
+                (\(TaskDistance td) ->
+                    FlownStdDev $ convert td) <$> flownStdDev
+
             | bd <- (\(MaximumDistance x) -> BestDistance x) <$> dBests
-            | ed <- (fmap . fmap) (\(TaskDistance td) -> LaunchToEss $ convert td) lsLaunchToEssTask
+
+            | ed <-
+                (fmap . fmap)
+                    (\(TaskDistance td) -> LaunchToEss $ convert td)
+                    lsLaunchToEssTask
             ]
 
         validities :: [Maybe Validity] =
@@ -458,7 +471,7 @@ points'
             | lv <- fst <$> lvs
             | dv <- fst <$> dvs
             | tv <- fst <$> tvs
-            | sv <- svs
+            | sv <- fmap fst <$> svs
             | maybeTask <- maybeTasks
             ]
 

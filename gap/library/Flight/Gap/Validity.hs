@@ -103,6 +103,7 @@ data TimeValidityWorking =
 data StopValidityWorking =
     StopValidityWorking
         { pilotsAtEss :: PilotsAtEss
+        , landed :: PilotsLanded
         , stillFlying :: PilotsFlying
         , flying :: PilotsFlying
         , flownMean :: FlownMean (Quantity Double [u| km |])
@@ -347,18 +348,30 @@ stopValidity
     -> FlownStdDev (Quantity Double [u| km |])
     -> BestDistance (Quantity Double [u| km |])
     -> LaunchToEss (Quantity Double [u| km |])
-    -> StopValidity
+    -> (StopValidity, Maybe StopValidityWorking)
 stopValidity
-    (PilotsFlying flying)
-    (PilotsAtEss ess)
-    (PilotsLanded landed)
-    (FlownMean flownMean)
-    (FlownStdDev flownStdDev)
-    (BestDistance bd)
-    (LaunchToEss ed)
-    | ess > 0 = StopValidity 1
+    pf@(PilotsFlying flying)
+    pe@(PilotsAtEss ess)
+    pl@(PilotsLanded landed)
+    fm@(FlownMean flownMean)
+    fd@(FlownStdDev flownStdDev)
+    bd'@(BestDistance bd)
+    ed'@(LaunchToEss ed)
+    | ess > 0 = (StopValidity 1, Nothing)
     | otherwise =
-        StopValidity $ min 1 (toRational $ unQuantity a + b**3)
+            ( StopValidity $ min 1 (toRational $ unQuantity a + b**3)
+            , Just
+                StopValidityWorking
+                    { pilotsAtEss = pe
+                    , landed = pl
+                    , stillFlying = PilotsFlying $ flying - landed
+                    , flying = pf
+                    , flownMean = fm
+                    , flownStdDev = fd
+                    , bestDistance = bd'
+                    , launchToEssDistance = ed'
+                    }
+            )
         where
             a = sqrt' (((bd -: flownMean) /: (ed -: bd +: [u| 1 km |])) *: sqrt' (flownStdDev /: [u| 5 km |]))
             b = fromIntegral landed / (fromIntegral flying :: Double)
