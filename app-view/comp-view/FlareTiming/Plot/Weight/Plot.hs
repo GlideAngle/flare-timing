@@ -1,17 +1,14 @@
 {-# LANGUAGE JavaScriptFFI #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
 
-module FlareTiming.Plot.Weight.Plot
-    ( Plot(..)
-    , hgPlot
-    , pgPlot
-    ) where
+module FlareTiming.Plot.Weight.Plot (hgPlot, pgPlot) where
 
 import Prelude hiding (map, log)
 import GHCJS.Types (JSVal)
 import GHCJS.DOM.Element (IsElement)
 import GHCJS.DOM.Types (Element(..), toElement, toJSVal)
 import Data.Maybe (fromMaybe)
+import FlareTiming.Plot.Foreign (Plot(..))
 
 import WireTypes.Comp (Discipline(..), Tweak(..), LwScaling(..), AwScaling(..))
 import WireTypes.Point
@@ -22,9 +19,6 @@ import WireTypes.Point
     , TimeWeight(..)
     , Weights(..)
     )
-
--- SEE: https://gist.github.com/ali-abrar/fa2adbbb7ee64a0295cb
-newtype Plot = Plot { unPlot :: JSVal }
 
 -- SEE: http://colorbrewer2.org/#type=qualitative&scheme=Set1&n=5
 -- red #e41a1c

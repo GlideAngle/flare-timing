@@ -1,10 +1,7 @@
 {-# LANGUAGE JavaScriptFFI #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
 
-module FlareTiming.Plot.Valid.Plot
-    ( Plot(..)
-    , hgPlot
-    ) where
+module FlareTiming.Plot.Valid.Plot (launchPlot) where
 
 import Prelude hiding (map, log)
 import GHCJS.Types (JSVal, JSString)
@@ -16,9 +13,7 @@ import WireTypes.ValidityWorking
     ( LaunchValidityWorking(..)
     , PilotsFlying(..), PilotsPresent(..), NominalLaunch(..)
     )
-
--- SEE: https://gist.github.com/ali-abrar/fa2adbbb7ee64a0295cb
-newtype Plot = Plot { unPlot :: JSVal }
+import FlareTiming.Plot.Foreign (Plot(..))
 
 foreign import javascript unsafe
     "functionPlot(\
@@ -46,8 +41,8 @@ foreign import javascript unsafe
     \})"
     hgPlot_ :: JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSString -> IO JSVal
 
-hgPlot :: IsElement e => e -> LaunchValidity -> LaunchValidityWorking -> IO Plot
-hgPlot
+launchPlot :: IsElement e => e -> LaunchValidity -> LaunchValidityWorking -> IO Plot
+launchPlot
     e
     (LaunchValidity y)
     LaunchValidityWorking
@@ -59,7 +54,7 @@ hgPlot
     let pp' :: Double = fromIntegral pp
 
     let xy :: [[Double]] =
-            [ [x', fn d x']
+            [ [x', fnLaunch d x']
             | x <- [0 .. 10 * pp]
             , let x' = 0.1 * fromIntegral x
             , let d = pp' * nl
@@ -74,7 +69,7 @@ hgPlot
 
     Plot <$> hgPlot_ (unElement . toElement $ e) xy' x' y' pp'' (toJSString msg)
 
-fn :: Double -> Double -> Double
-fn d n = 0.027 * x + 2.917 * x**2 - 1.944 * x**3
+fnLaunch :: Double -> Double -> Double
+fnLaunch d n = 0.027 * x + 2.917 * x**2 - 1.944 * x**3
     where
         x = min 1 $ n / d

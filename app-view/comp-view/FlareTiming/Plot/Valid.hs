@@ -4,7 +4,7 @@ import Reflex.Dom
 
 import WireTypes.Validity (Validity(..))
 import WireTypes.ValidityWorking (ValidityWorking(..))
-import FlareTiming.Plot.Valid.View (hgPlot)
+import FlareTiming.Plot.Valid.View (launchValidityPlot)
 
 validPlot
     :: MonadWidget t m
@@ -18,7 +18,7 @@ validPlot vy vw = do
                 elClass "article" "tile is-child" $ do
                     _ <- dyn $ ffor2 vy vw (\vy' vw' -> do
                         case (vy', vw') of
-                            (Just vy'', Just vw'') -> hgPlot vy'' vw''
+                            (Just vy'', Just vw'') -> launchValidityPlot vy'' vw''
                             _ -> return ())
 
                     return ()

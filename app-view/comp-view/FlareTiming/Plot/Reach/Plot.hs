@@ -1,19 +1,14 @@
 {-# LANGUAGE JavaScriptFFI #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
 
-module FlareTiming.Plot.Reach.Plot
-    ( Plot(..)
-    , hgPlot
-    ) where
+module FlareTiming.Plot.Reach.Plot (hgPlot) where
 
 import Prelude hiding (map, log)
 import GHCJS.Types (JSVal)
 import GHCJS.DOM.Element (IsElement)
 import GHCJS.DOM.Types (Element(..), toElement, toJSVal, toJSValListOf)
 import Data.List (nub)
-
--- SEE: https://gist.github.com/ali-abrar/fa2adbbb7ee64a0295cb
-newtype Plot = Plot { unPlot :: JSVal }
+import FlareTiming.Plot.Foreign (Plot(..))
 
 foreign import javascript unsafe
     "functionPlot(\
