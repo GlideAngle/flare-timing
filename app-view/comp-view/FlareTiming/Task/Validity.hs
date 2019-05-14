@@ -56,6 +56,7 @@ taskWorking v =
     "katex.render("
     <> "\"\\\\begin{aligned} "
     <> "validity &= lv * dv * tv"
+    <> (maybe "" (const " * sv") (Vy.stop v))
     <> katexNewLine
     <> " &= "
     <> (Vy.showLaunchValidity . Vy.launch $ v)
@@ -63,6 +64,7 @@ taskWorking v =
     <> (Vy.showDistanceValidity . Vy.distance $ v)
     <> " * "
     <> (Vy.showTimeValidity . Vy.time $ v)
+    <> (maybe "" (\sv -> " * " <> Vy.showStopValidity sv) (Vy.stop v))
     <> katexNewLine
     <> " &= "
     <> (Vy.showTaskValidity . Vy.task $ v)
