@@ -42,7 +42,6 @@ foreign import javascript unsafe
     \  , color: '#000000'\
     \  , attr: { r: 3 }\
     \  , graphType: 'scatter' \
-    \  },{\
     \  }]\
     \})"
     hgPlot_ :: JSVal -> JSVal -> JSVal -> JSVal -> IO JSVal
