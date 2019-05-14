@@ -7,7 +7,7 @@ import qualified Data.Text as T (Text)
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import WireTypes.Arrival (TrackArrival(..))
 import WireTypes.Comp (Discipline(..), Tweak(..), AwScaling(..))
-import FlareTiming.Plot.Arrival.View (hgPlot)
+import FlareTiming.Plot.Valid.View (hgPlot)
 import WireTypes.Pilot (Pilot(..))
 
 noPg :: T.Text
