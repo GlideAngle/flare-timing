@@ -39,9 +39,10 @@ import FlareTiming.Map.View (viewMap)
 import FlareTiming.Plot.Weight (weightPlot)
 import FlareTiming.Plot.Reach (reachPlot)
 import FlareTiming.Plot.Effort (effortPlot)
-import FlareTiming.Plot.Arrival (arrivalPlot)
-import FlareTiming.Plot.Lead (leadPlot)
 import FlareTiming.Plot.Time (timePlot)
+import FlareTiming.Plot.Lead (leadPlot)
+import FlareTiming.Plot.Arrival (arrivalPlot)
+import FlareTiming.Plot.Valid (validPlot)
 import qualified FlareTiming.Turnpoint as TP (getName)
 import FlareTiming.Nav.TabTask (TaskTab(..), tabsTask)
 import FlareTiming.Nav.TabScore (ScoreTab(..), tabsScore)
@@ -262,7 +263,7 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
                                 PlotTabTime -> timePlot sgs sEx sd
                                 PlotTabLead -> leadPlot tweak sEx ld
                                 PlotTabArrive -> arrivalPlot hgOrPg tweak sEx av
-                                PlotTabValid -> text "TODO: Validity Plots"
+                                PlotTabValid -> validPlot hgOrPg tweak sEx av
                             )
                             <$> tabPlot
 
