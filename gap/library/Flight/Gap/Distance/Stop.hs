@@ -19,7 +19,7 @@ newtype LaunchToEss a = LaunchToEss a
 instance
     (q ~ Quantity Double [u| km |])
     => DefaultDecimalPlaces (LaunchToEss q) where
-    defdp _ = DecimalPlaces 1
+    defdp _ = DecimalPlaces 3
 
 instance
     (q ~ Quantity Double [u| km |])
@@ -41,7 +41,7 @@ newtype FlownMean a = FlownMean a
 instance
     (q ~ Quantity Double [u| km |])
     => DefaultDecimalPlaces (FlownMean q) where
-    defdp _ = DecimalPlaces 1
+    defdp _ = DecimalPlaces 3
 
 instance
     (q ~ Quantity Double [u| km |])
@@ -63,7 +63,7 @@ newtype FlownStdDev a = FlownStdDev a
 instance
     (q ~ Quantity Double [u| km |])
     => DefaultDecimalPlaces (FlownStdDev q) where
-    defdp _ = DecimalPlaces 1
+    defdp _ = DecimalPlaces 3
 
 instance
     (q ~ Quantity Double [u| km |])
