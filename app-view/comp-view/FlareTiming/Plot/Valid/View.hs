@@ -39,7 +39,7 @@ timeValidityPlot
     => Validity
     -> ValidityWorking
     -> m ()
-timeValidityPlot Validity{launch = vy} ValidityWorking{launch = vw} = do
+timeValidityPlot Validity{time = vy} ValidityWorking{time = vw} = do
     pb <- delay 1 =<< getPostBuild
 
     elClass "div" "tile is-ancestor" $ do

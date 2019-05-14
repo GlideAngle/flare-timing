@@ -8,10 +8,12 @@ import GHCJS.Types (JSVal, JSString)
 import GHCJS.DOM.Element (IsElement)
 import GHCJS.DOM.Types (Element(..), toElement, toJSString, toJSVal, toJSValListOf)
 
-import WireTypes.Validity (LaunchValidity(..))
+import WireTypes.Validity (LaunchValidity(..), TimeValidity(..))
 import WireTypes.ValidityWorking
-    ( LaunchValidityWorking(..)
+    ( LaunchValidityWorking(..), TimeValidityWorking(..)
     , PilotsFlying(..), PilotsPresent(..), NominalLaunch(..)
+    , BestTime(..), NominalTime(..)
+    , BestDistance(..), NominalDistance(..)
     )
 import FlareTiming.Plot.Foreign (Plot(..))
 
@@ -81,7 +83,7 @@ launchPlot
 
     let xy :: [[Double]] =
             [ [x', fnLaunch d x']
-            | x <- [0 .. 10 * pp]
+            | x <- [0 .. 9 * pp]
             , let x' = 0.1 * fromIntegral x
             , let d = pp' * nl
             ]
@@ -100,35 +102,63 @@ fnLaunch d n = 0.027 * x + 2.917 * x**2 - 1.944 * x**3
     where
         x = min 1 $ n / d
 
-timePlot :: IsElement e => e -> LaunchValidity -> LaunchValidityWorking -> IO Plot
-timePlot
+timePlot :: IsElement e => e -> TimeValidity -> TimeValidityWorking -> IO Plot
+timePlot e vy TimeValidityWorking{gsBestTime = Just bt, ..} =
+    timeTime e vy bt nominalTime
+timePlot e vy TimeValidityWorking{ssBestTime = Just bt, ..} =
+    timeTime e vy bt nominalTime
+timePlot e vy TimeValidityWorking{..} =
+    timeDistance e vy bestDistance nominalDistance
+
+timeTime :: IsElement e => e -> TimeValidity -> BestTime -> NominalTime -> IO Plot
+timeTime
     e
-    (LaunchValidity y)
-    LaunchValidityWorking
-        { flying = PilotsFlying pf
-        , present = PilotsPresent pp
-        , nominalLaunch = NominalLaunch nl
-        } = do
-    let pf' :: Double = fromIntegral pf
-    let pp' :: Double = fromIntegral pp
+    (TimeValidity y)
+    (BestTime bt)
+    (NominalTime nt) = do
+
+    let xMax = max bt nt
 
     let xy :: [[Double]] =
-            [ [x', fnTime d x']
-            | x <- [0 .. 10 * pp]
-            , let x' = 0.1 * fromIntegral x
-            , let d = pp' * nl
+            [ [x', fnTime nt x']
+            | x <- [0 .. 99 :: Integer]
+            , let x' = 0.01 * fromIntegral x * xMax
             ]
 
     xy' <- toJSValListOf xy
 
-    x' <- toJSVal pf'
+    x' <- toJSVal bt
     y' <- toJSVal y
-    pp'' <- toJSVal pp'
-    let msg = "Pilots Flying (" ++ show pf ++ " out of " ++ show pp ++ ")"
+    xMax' <- toJSVal xMax
+    let msg = "BestTime (h)" :: String
 
-    Plot <$> plotTime_ (unElement . toElement $ e) xy' x' y' pp'' (toJSString msg)
+    Plot <$> plotTime_ (unElement . toElement $ e) xy' x' y' xMax' (toJSString msg)
+
+timeDistance :: IsElement e => e -> TimeValidity -> BestDistance -> NominalDistance -> IO Plot
+timeDistance
+    e
+    (TimeValidity y)
+    (BestDistance bd)
+    (NominalDistance nd) = do
+
+    let xMax = max bd nd
+
+    let xy :: [[Double]] =
+            [ [x', fnTime nd x']
+            | x <- [0 .. 99 :: Integer]
+            , let x' = 0.01 * fromIntegral x * xMax
+            ]
+
+    xy' <- toJSValListOf xy
+
+    x' <- toJSVal bd
+    y' <- toJSVal y
+    xMax' <- toJSVal xMax
+    let msg = "BestDistance (km)" :: String
+
+    Plot <$> plotTime_ (unElement . toElement $ e) xy' x' y' xMax' (toJSString msg)
 
 fnTime :: Double -> Double -> Double
-fnTime d n = 0.027 * x + 2.917 * x**2 - 1.944 * x**3
+fnTime d n = max 0 $ min 1 $ 0 - 0.271 + 2.912 * x - 2.098 * x**2 + 0.457 * x**3
     where
         x = min 1 $ n / d
