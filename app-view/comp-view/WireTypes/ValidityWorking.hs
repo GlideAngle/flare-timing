@@ -6,6 +6,7 @@ module WireTypes.ValidityWorking
     , LaunchValidityWorking(..)
     , PilotsPresent(..)
     , PilotsFlying(..)
+    , NominalLaunch(..)
     -- * Distance Validity Working
     , DistanceValidityWorking(..)
     , SumOfDistance(..)
