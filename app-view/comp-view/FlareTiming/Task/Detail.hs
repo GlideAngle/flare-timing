@@ -259,9 +259,11 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
                                 PlotTabSplit -> plotSplit
                                 PlotTabReach -> reachPlot reach
                                 PlotTabEffort -> effortPlot hgOrPg ef
-                                PlotTabArrive -> arrivalPlot hgOrPg tweak sEx av
+                                PlotTabTime -> timePlot sgs sEx sd
                                 PlotTabLead -> leadPlot tweak sEx ld
-                                PlotTabTime -> timePlot sgs sEx sd)
+                                PlotTabArrive -> arrivalPlot hgOrPg tweak sEx av
+                                PlotTabValid -> text "TODO: Validity Plots"
+                            )
                             <$> tabPlot
 
                     return ()

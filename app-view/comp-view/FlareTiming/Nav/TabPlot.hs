@@ -10,6 +10,7 @@ data PlotTab
     | PlotTabTime
     | PlotTabLead
     | PlotTabArrive
+    | PlotTabValid
 
 tabsPlot
     :: MonadWidget t m
@@ -45,12 +46,17 @@ tabsPlot =
                             elClass "span" "legend-arrival" $ text "▩"
                             text "Arrive"
 
+            (valid, _) <- elDynClass' "li" validClass . el "a" $ do
+                            elClass "span" "legend-valid" $ text "▩"
+                            text "Validity"
+
             let eSplit = (const PlotTabSplit) <$> domEvent Click split
             let eReach = (const PlotTabReach) <$> domEvent Click reach
             let eEffort = (const PlotTabEffort) <$> domEvent Click effort
             let eTime = (const PlotTabTime) <$> domEvent Click time
             let eLead = (const PlotTabLead) <$> domEvent Click lead
             let eArrive = (const PlotTabArrive) <$> domEvent Click arrive
+            let eValid = (const PlotTabValid) <$> domEvent Click valid
 
             splitClass <- holdDyn "is-active" . leftmost $
                             [ "is-active" <$ eSplit
@@ -59,6 +65,7 @@ tabsPlot =
                             , "" <$ eTime
                             , "" <$ eLead
                             , "" <$ eArrive
+                            , "" <$ eValid
                             ]
 
             reachClass <- holdDyn "" . leftmost $
@@ -68,6 +75,7 @@ tabsPlot =
                             , "" <$ eTime
                             , "" <$ eLead
                             , "" <$ eArrive
+                            , "" <$ eValid
                             ]
 
             effortClass <- holdDyn "" . leftmost $
@@ -77,6 +85,7 @@ tabsPlot =
                             , "" <$ eTime
                             , "" <$ eLead
                             , "" <$ eArrive
+                            , "" <$ eValid
                             ]
 
             timeClass <- holdDyn "" . leftmost $
@@ -86,6 +95,7 @@ tabsPlot =
                             , "is-active" <$ eTime
                             , "" <$ eLead
                             , "" <$ eArrive
+                            , "" <$ eValid
                             ]
 
             leadClass <- holdDyn "" . leftmost $
@@ -95,6 +105,7 @@ tabsPlot =
                             , "" <$ eTime
                             , "is-active" <$ eLead
                             , "" <$ eArrive
+                            , "" <$ eValid
                             ]
 
             arriveClass <- holdDyn "" . leftmost $
@@ -104,6 +115,17 @@ tabsPlot =
                             , "" <$ eTime
                             , "" <$ eLead
                             , "is-active" <$ eArrive
+                            , "" <$ eValid
+                            ]
+
+            validClass <- holdDyn "" . leftmost $
+                            [ "" <$ eSplit
+                            , "" <$ eReach
+                            , "" <$ eEffort
+                            , "" <$ eTime
+                            , "" <$ eLead
+                            , "" <$ eArrive
+                            , "is-active" <$ eValid
                             ]
 
             return . leftmost $
@@ -113,4 +135,5 @@ tabsPlot =
                 , eTime
                 , eLead
                 , eArrive
+                , eValid
                 ]
