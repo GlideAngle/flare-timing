@@ -7,9 +7,9 @@ module FlareTiming.Plot.Valid.Plot
     ) where
 
 import Prelude hiding (map, log)
-import GHCJS.Types (JSVal)
+import GHCJS.Types (JSVal, JSString)
 import GHCJS.DOM.Element (IsElement)
-import GHCJS.DOM.Types (Element(..), toElement, toJSVal, toJSValListOf)
+import GHCJS.DOM.Types (Element(..), toElement, toJSString, toJSVal, toJSValListOf)
 
 import WireTypes.Validity (LaunchValidity(..))
 import WireTypes.ValidityWorking
@@ -27,13 +27,13 @@ foreign import javascript unsafe
     \, width: 360\
     \, height: 360\
     \, disableZoom: true\
-    \, xAxis: {label: 'Launch Validity Ratio', domain: [-0.05, 1.05]}\
+    \, xAxis: {label: $6, domain: [-0.5, $5 + 0.5]}\
     \, yAxis: {domain: [-0.05, 1.05]}\
     \, data: [{\
     \    points: $2\
     \  , fnType: 'points'\
     \  , color: '#000000'\
-    \  , range: [0, 1]\
+    \  , range: [0, $5]\
     \  , attr: { stroke-dasharray: '5,5' }\
     \  , graphType: 'polyline'\
     \  },{\
@@ -44,7 +44,7 @@ foreign import javascript unsafe
     \  , graphType: 'scatter' \
     \  }]\
     \})"
-    hgPlot_ :: JSVal -> JSVal -> JSVal -> JSVal -> IO JSVal
+    hgPlot_ :: JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSString -> IO JSVal
 
 hgPlot :: IsElement e => e -> LaunchValidity -> LaunchValidityWorking -> IO Plot
 hgPlot
@@ -55,20 +55,26 @@ hgPlot
         , present = PilotsPresent pp
         , nominalLaunch = NominalLaunch nl
         } = do
+    let pf' :: Double = fromIntegral pf
+    let pp' :: Double = fromIntegral pp
 
     let xy :: [[Double]] =
-            [ [x', fn x']
-            | x <- [0 :: Integer .. 100]
-            , let x' = 0.01 * fromIntegral x
+            [ [x', fn d x']
+            | x <- [0 .. 10 * pp]
+            , let x' = 0.1 * fromIntegral x
+            , let d = pp' * nl
             ]
 
     xy' <- toJSValListOf xy
 
-    let x = min 1 $ (fromIntegral pf) / (fromIntegral pp * nl)
-    x' <- toJSVal x
+    x' <- toJSVal pf'
     y' <- toJSVal y
+    pp'' <- toJSVal pp'
+    let msg = "Pilots Flying (" ++ show pf ++ " out of " ++ show pp ++ ")"
 
-    Plot <$> hgPlot_ (unElement . toElement $ e) xy' x' y'
+    Plot <$> hgPlot_ (unElement . toElement $ e) xy' x' y' pp'' (toJSString msg)
 
-fn :: Double -> Double
-fn x = 0.027 * x + 2.917 * x**2 - 1.944 * x**3
+fn :: Double -> Double -> Double
+fn d n = 0.027 * x + 2.917 * x**2 - 1.944 * x**3
+    where
+        x = min 1 $ n / d
