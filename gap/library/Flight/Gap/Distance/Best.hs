@@ -15,7 +15,7 @@ newtype BestDistance a = BestDistance a
 instance
     (q ~ Quantity Double [u| km |])
     => DefaultDecimalPlaces (BestDistance q) where
-    defdp _ = DecimalPlaces 1
+    defdp _ = DecimalPlaces 3
 
 instance
     (q ~ Quantity Double [u| km |])

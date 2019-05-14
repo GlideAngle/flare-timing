@@ -15,7 +15,7 @@ newtype MinimumDistance a = MinimumDistance a
 instance
     (q ~ Quantity Double [u| km |])
     => DefaultDecimalPlaces (MinimumDistance q) where
-    defdp _ = DecimalPlaces 1
+    defdp _ = DecimalPlaces 3
 
 instance
     (q ~ Quantity Double [u| km |])
