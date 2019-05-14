@@ -1,7 +1,7 @@
 {-# LANGUAGE JavaScriptFFI #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
 
-module FlareTiming.Plot.Weight.Plot (hgPlot, pgPlot) where
+module FlareTiming.Plot.Weight.Plot (hgWeightPlot, pgWeightPlot) where
 
 import Prelude hiding (map, log)
 import GHCJS.Types (JSVal)
@@ -89,10 +89,10 @@ foreign import javascript unsafe
     \})"
     hgPlot_ :: JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> IO JSVal
 
-hgPlot
+hgWeightPlot
     :: IsElement e
     => e -> Maybe Tweak -> GoalRatio -> Weights -> IO Plot
-hgPlot
+hgWeightPlot
     e
     tw
     (GoalRatio gr)
@@ -168,10 +168,10 @@ foreign import javascript unsafe
     \})"
     pgPlot_ :: JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> IO JSVal
 
-pgPlot
+pgWeightPlot
     :: IsElement e
     => e -> Maybe Tweak -> GoalRatio -> Weights -> IO Plot
-pgPlot
+pgWeightPlot
     e
     tw
     (GoalRatio gr)

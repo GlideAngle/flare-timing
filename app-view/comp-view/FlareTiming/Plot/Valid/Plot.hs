@@ -39,7 +39,7 @@ foreign import javascript unsafe
     \  , graphType: 'scatter' \
     \  }]\
     \})"
-    hgPlot_ :: JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSString -> IO JSVal
+    plot_ :: JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSString -> IO JSVal
 
 launchPlot :: IsElement e => e -> LaunchValidity -> LaunchValidityWorking -> IO Plot
 launchPlot
@@ -67,7 +67,7 @@ launchPlot
     pp'' <- toJSVal pp'
     let msg = "Pilots Flying (" ++ show pf ++ " out of " ++ show pp ++ ")"
 
-    Plot <$> hgPlot_ (unElement . toElement $ e) xy' x' y' pp'' (toJSString msg)
+    Plot <$> plot_ (unElement . toElement $ e) xy' x' y' pp'' (toJSString msg)
 
 fnLaunch :: Double -> Double -> Double
 fnLaunch d n = 0.027 * x + 2.917 * x**2 - 1.944 * x**3

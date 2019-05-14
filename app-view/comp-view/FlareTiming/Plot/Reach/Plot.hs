@@ -1,7 +1,7 @@
 {-# LANGUAGE JavaScriptFFI #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
 
-module FlareTiming.Plot.Reach.Plot (hgPlot) where
+module FlareTiming.Plot.Reach.Plot (reachPlot) where
 
 import Prelude hiding (map, log)
 import GHCJS.Types (JSVal)
@@ -32,15 +32,15 @@ foreign import javascript unsafe
     \  , graphType: 'scatter'\
     \  }]\
     \})"
-    hgPlot_ :: JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> IO JSVal
+    plot_ :: JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> IO JSVal
 
-hgPlot
+reachPlot
     :: IsElement e
     => e
     -> (Double, Double)
     -> [[Double]]
     -> IO Plot
-hgPlot e (dMin, dMax) xs = do
+reachPlot e (dMin, dMax) xs = do
     let xy :: [[Double]] =
             [ [x', fn dMax x']
             | x <- [0 :: Integer .. 199]
@@ -55,7 +55,7 @@ hgPlot e (dMin, dMax) xs = do
     xy' <- toJSValListOf xy
     xs' <- toJSValListOf $ nub xs
 
-    Plot <$> hgPlot_ (unElement . toElement $ e) dMin' dMax' xy' xs'
+    Plot <$> plot_ (unElement . toElement $ e) dMin' dMax' xy' xs'
 
 fn :: Double -> Double -> Double
 fn 0 _ = 0

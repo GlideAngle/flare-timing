@@ -1,4 +1,4 @@
-module FlareTiming.Plot.Weight.View (hgPlot, pgPlot) where
+module FlareTiming.Plot.Weight.View (hgWeightPlot, pgWeightPlot) where
 
 import Text.Printf (printf)
 import Reflex.Dom
@@ -6,7 +6,7 @@ import Reflex.Time (delay)
 import qualified Data.Text as T (Text, pack)
 
 import Control.Monad.IO.Class (liftIO)
-import qualified FlareTiming.Plot.Weight.Plot as P (hgPlot, pgPlot)
+import qualified FlareTiming.Plot.Weight.Plot as P (hgWeightPlot, pgWeightPlot)
 
 import WireTypes.Comp (Tweak(..))
 import WireTypes.Point
@@ -23,12 +23,12 @@ import WireTypes.Point
 textf :: String -> Double -> T.Text
 textf fmt d = T.pack $ printf fmt d
 
-hgPlot
+hgWeightPlot
     :: MonadWidget t m
     => Dynamic t (Maybe Tweak)
     -> Dynamic t (Maybe Allocation)
     -> m ()
-hgPlot tweak' alloc' = do
+hgWeightPlot tweak' alloc' = do
     tweak <- sample . current $ tweak'
     alloc <- sample . current $ alloc'
     let gr@(GoalRatio gr') = maybe (GoalRatio 0) goalRatio alloc
@@ -37,7 +37,7 @@ hgPlot tweak' alloc' = do
     (elPlot, _) <- elAttr' "div" (("id" =: "hg-plot-weight") <> ("style" =: "height: 360px;width: 320px")) $ return ()
     rec performEvent_ $ leftmost
             [ ffor pb (\_ -> liftIO $ do
-                _ <- P.hgPlot (_element_raw elPlot) tweak gr w
+                _ <- P.hgWeightPlot (_element_raw elPlot) tweak gr w
                 return ())
             ]
 
@@ -66,12 +66,12 @@ hgPlot tweak' alloc' = do
 
     return ()
 
-pgPlot
+pgWeightPlot
     :: MonadWidget t m
     => Dynamic t (Maybe Tweak)
     -> Dynamic t (Maybe Allocation)
     -> m ()
-pgPlot tweak' alloc' = do
+pgWeightPlot tweak' alloc' = do
     tweak <- sample . current $ tweak'
     alloc <- sample . current $ alloc'
     let w = maybe zeroWeights weight alloc
@@ -80,7 +80,7 @@ pgPlot tweak' alloc' = do
     rec performEvent_ $ leftmost
             [ ffor pb (\_ -> liftIO $ do
                 let gr = maybe (GoalRatio 0) goalRatio alloc
-                _ <- P.pgPlot (_element_raw elPlot) tweak gr w
+                _ <- P.pgWeightPlot (_element_raw elPlot) tweak gr w
                 return ())
             ]
 

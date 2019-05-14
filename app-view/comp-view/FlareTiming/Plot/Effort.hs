@@ -5,7 +5,7 @@ import Reflex.Dom
 
 import WireTypes.Effort (TrackEffort(..))
 import WireTypes.Comp (Discipline(..))
-import FlareTiming.Plot.Effort.View (hgPlot)
+import qualified FlareTiming.Plot.Effort.View as V (effortPlot)
 import WireTypes.Pilot (Pilot(..))
 
 effortPlot
@@ -40,6 +40,6 @@ effortPlot hgOrPg rh =
 
                             _ ->
                                 elClass "article" "tile is-child" $
-                                    hgPlot (fromMaybe [] <$> rh))
+                                    V.effortPlot (fromMaybe [] <$> rh))
 
                     return ()

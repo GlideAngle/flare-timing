@@ -6,7 +6,7 @@ import Reflex.Dom
 import WireTypes.Comp (Tweak(..), LwScaling(..))
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import WireTypes.Lead (TrackLead(..))
-import FlareTiming.Plot.Lead.View (hgPlot)
+import qualified FlareTiming.Plot.Lead.View as V (leadPlot)
 import WireTypes.Pilot (Pilot(..))
 
 leadPlot
@@ -41,6 +41,6 @@ leadPlot tweak sEx ld =
                                         Just Tweak{leadingWeightScaling = Just (LwScaling 0)} -> notice
                                         _ -> return ())
 
-                                    hgPlot tweak sEx (fromMaybe [] <$> ld))
+                                    V.leadPlot tweak sEx (fromMaybe [] <$> ld))
 
                     return ()

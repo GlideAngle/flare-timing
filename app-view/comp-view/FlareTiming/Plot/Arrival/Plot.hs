@@ -45,7 +45,7 @@ foreign import javascript unsafe
     \  , text: 'minimum possible fraction'\
     \  }]\
     \})"
-    hgPlot_ :: JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> IO JSVal
+    plot_ :: JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> IO JSVal
 
 hgPlot
     :: IsElement e
@@ -67,7 +67,7 @@ hgPlot e xs ys = do
     xs' <- toJSValListOf xs
     ys' <- toJSValListOf $ nub ys
 
-    Plot <$> hgPlot_ (unElement . toElement $ e) n' xy' xs' ys'
+    Plot <$> plot_ (unElement . toElement $ e) n' xy' xs' ys'
 
 fn :: Integer -> Double -> Double
 fn n x = 0.2 + 0.037 * y + 0.13 * y**2 + 0.633 * y**3

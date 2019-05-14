@@ -1,4 +1,4 @@
-module FlareTiming.Plot.Arrival.View (hgPlot) where
+module FlareTiming.Plot.Arrival.View (arrivalPlot) where
 
 import Text.Printf (printf)
 import Reflex.Dom
@@ -32,12 +32,12 @@ xy TrackArrival{rank = ArrivalPlacing x, frac = ArrivalFraction y} =
 xy TrackArrival{rank = ArrivalPlacingEqual x _, frac = ArrivalFraction y} =
     [fromIntegral x, y]
 
-hgPlot
+arrivalPlot
     :: MonadWidget t m
     => Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> Dynamic t [(Pilot, TrackArrival)]
     -> m ()
-hgPlot sEx av = do
+arrivalPlot sEx av = do
     pb <- delay 1 =<< getPostBuild
 
     elClass "div" "tile is-ancestor" $ do

@@ -1,7 +1,7 @@
 {-# LANGUAGE JavaScriptFFI #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
 
-module FlareTiming.Plot.Effort.Plot (hgPlot) where
+module FlareTiming.Plot.Effort.Plot (effortPlot) where
 
 import Prelude hiding (map, log)
 import GHCJS.Types (JSVal)
@@ -33,15 +33,15 @@ foreign import javascript unsafe
     \  , graphType: 'scatter'\
     \  }]\
     \})"
-    hgPlot_ :: JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> IO JSVal
+    plot_ :: JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> IO JSVal
 
-hgPlot
+effortPlot
     :: IsElement e
     => e
     -> (Double, Double)
     -> [[Double]]
     -> IO Plot
-hgPlot e (dMin, dMax) xs = do
+effortPlot e (dMin, dMax) xs = do
     -- NOTE: Some pilots landout heading away from goal at the start and will
     -- have made negative distance along the course. Don't draw the line in the
     -- negative xy quadrant.
@@ -61,7 +61,7 @@ hgPlot e (dMin, dMax) xs = do
     xy' <- toJSValListOf xy
     xs' <- toJSValListOf $ nub xs
 
-    Plot <$> hgPlot_ (unElement . toElement $ e) dMin'' dMax' xy' xs'
+    Plot <$> plot_ (unElement . toElement $ e) dMin'' dMax' xy' xs'
 
 fn :: Double -> Double -> Double
 fn 0 _ = 0

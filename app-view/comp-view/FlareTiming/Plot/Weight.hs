@@ -7,7 +7,7 @@ import WireTypes.ValidityWorking (ValidityWorking(..))
 import WireTypes.Route (TaskLength(..))
 import WireTypes.Comp (Discipline(..), Tweak(..))
 import WireTypes.Point (Allocation(..))
-import FlareTiming.Plot.Weight.View as W (hgPlot, pgPlot)
+import FlareTiming.Plot.Weight.View as W (hgWeightPlot, pgWeightPlot)
 import FlareTiming.Plot.Weight.Working as W (viewWeightWorking)
 
 weightPlot
@@ -25,8 +25,8 @@ weightPlot hgOrPg vy vw tweak alloc ln = do
             elClass "div" "tile is-4 is-parent" $
                 elClass "article" "tile is-child" $ do
                     _ <- dyn $ ffor hgOrPg (\case
-                            HangGliding -> W.hgPlot tweak alloc
-                            Paragliding -> W.pgPlot tweak alloc)
+                            HangGliding -> W.hgWeightPlot tweak alloc
+                            Paragliding -> W.pgWeightPlot tweak alloc)
 
                     return ()
 

@@ -4,7 +4,7 @@ import Data.Maybe (fromMaybe)
 import Reflex.Dom
 
 import WireTypes.Reach (TrackReach(..))
-import FlareTiming.Plot.Reach.View (hgPlot)
+import qualified FlareTiming.Plot.Reach.View as V (reachPlot)
 import WireTypes.Pilot (Pilot(..))
 
 reachPlot
@@ -29,6 +29,6 @@ reachPlot rh =
 
                             _ ->
                                 elClass "article" "tile is-child" $
-                                    hgPlot (fromMaybe [] <$> rh))
+                                    V.reachPlot (fromMaybe [] <$> rh))
 
                     return ()

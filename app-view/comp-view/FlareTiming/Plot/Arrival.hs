@@ -7,7 +7,7 @@ import qualified Data.Text as T (Text)
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import WireTypes.Arrival (TrackArrival(..))
 import WireTypes.Comp (Discipline(..), Tweak(..), AwScaling(..))
-import FlareTiming.Plot.Arrival.View (hgPlot)
+import qualified FlareTiming.Plot.Arrival.View as V (arrivalPlot)
 import WireTypes.Pilot (Pilot(..))
 
 noPg :: T.Text
@@ -66,7 +66,7 @@ arrivalPlot hgOrPg tweak sEx av = do
                                         Just Tweak{arrivalWeightScaling = Just (AwScaling 0)} -> notice
                                         _ -> return ())
 
-                                    hgPlot sEx (fromMaybe [] <$> av)
+                                    V.arrivalPlot sEx (fromMaybe [] <$> av)
 
                                 return ())
 

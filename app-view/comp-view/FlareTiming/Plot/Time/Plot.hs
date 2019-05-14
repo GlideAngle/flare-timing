@@ -1,7 +1,7 @@
 {-# LANGUAGE JavaScriptFFI #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
 
-module FlareTiming.Plot.Time.Plot (hgPlot) where
+module FlareTiming.Plot.Time.Plot (timePlot) where
 
 import Prelude hiding (map, log)
 import GHCJS.Types (JSVal)
@@ -38,15 +38,15 @@ foreign import javascript unsafe
     \  , graphType: 'scatter'\
     \  }]\
     \})"
-    hgPlot_ :: JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> IO JSVal
+    plot_ :: JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> IO JSVal
 
-hgPlot
+timePlot
     :: IsElement e
     => e
     -> (Double, Double)
     -> [[Double]]
     -> IO Plot
-hgPlot e (tMin, tMax) xs = do
+timePlot e (tMin, tMax) xs = do
     let xyfn :: [[Double]] =
             [ [x', fnGAP tMin x']
             | x <- [0 :: Integer .. 199]
@@ -70,7 +70,7 @@ hgPlot e (tMin, tMax) xs = do
     xyfnFS' <- toJSValListOf xyfnFS
     xs' <- toJSValListOf $ nub xs
 
-    Plot <$> hgPlot_ (unElement . toElement $ e) tMin' tMax' xyfn' xs' xyfnFS'
+    Plot <$> plot_ (unElement . toElement $ e) tMin' tMax' xyfn' xs' xyfnFS'
 
 -- | The equation from the GAP rules.
 fnGAP :: Double -> Double -> Double

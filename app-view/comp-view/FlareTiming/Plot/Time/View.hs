@@ -1,4 +1,4 @@
-module FlareTiming.Plot.Time.View (hgPlot) where
+module FlareTiming.Plot.Time.View (timePlot) where
 
 import Text.Printf (printf)
 import Reflex.Dom
@@ -7,7 +7,7 @@ import qualified Data.Text as T (Text, pack)
 import qualified Data.Map.Strict as Map
 
 import Control.Monad.IO.Class (liftIO)
-import qualified FlareTiming.Plot.Time.Plot as P (hgPlot)
+import qualified FlareTiming.Plot.Time.Plot as P (timePlot)
 
 import qualified WireTypes.Point as Norm (NormBreakdown(..))
 import WireTypes.Speed (TrackSpeed(..), PilotTime(..), SpeedFraction(..))
@@ -30,13 +30,13 @@ timeRange xs =
     where
         ys = (\TrackSpeed{time = PilotTime x} -> x) <$> xs
 
-hgPlot
+timePlot
     :: MonadWidget t m
     => Dynamic t [StartGate]
     -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> Dynamic t [(Pilot, TrackSpeed)]
     -> m ()
-hgPlot sgs sEx tm = do
+timePlot sgs sEx tm = do
     pb <- delay 1 =<< getPostBuild
 
     elClass "div" "tile is-ancestor" $ do
@@ -47,7 +47,7 @@ hgPlot sgs sEx tm = do
                     rec performEvent_ $ leftmost
                             [ ffor pb (\_ -> liftIO $ do
                                 let xs = snd . unzip $ tm'
-                                _ <- P.hgPlot (_element_raw elPlot) (timeRange xs) (placings xs)
+                                _ <- P.timePlot (_element_raw elPlot) (timeRange xs) (placings xs)
                                 return ())
                             ]
 

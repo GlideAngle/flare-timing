@@ -1,4 +1,4 @@
-module FlareTiming.Plot.Lead.View (hgPlot) where
+module FlareTiming.Plot.Lead.View (leadPlot) where
 
 import Text.Printf (printf)
 import Reflex.Dom
@@ -7,7 +7,7 @@ import qualified Data.Text as T (Text, pack)
 import qualified Data.Map.Strict as Map
 
 import Control.Monad.IO.Class (liftIO)
-import qualified FlareTiming.Plot.Lead.Plot as P (hgPlot)
+import qualified FlareTiming.Plot.Lead.Plot as P (leadPlot)
 
 import WireTypes.Comp (Tweak(..), LwScaling(..))
 import WireTypes.Lead
@@ -30,13 +30,13 @@ lcRange xs =
     where
         ys = (\TrackLead{coef = LeadingCoefficient x} -> x) <$> xs
 
-hgPlot
+leadPlot
     :: MonadWidget t m
     => Dynamic t (Maybe Tweak)
     -> Dynamic t [(Pilot, Norm.NormBreakdown)]
     -> Dynamic t [(Pilot, TrackLead)]
     -> m ()
-hgPlot tweak sEx ld = do
+leadPlot tweak sEx ld = do
     pb <- delay 1 =<< getPostBuild
 
     elClass "div" "tile is-ancestor" $ do
@@ -47,7 +47,7 @@ hgPlot tweak sEx ld = do
                     rec performEvent_ $ leftmost
                             [ ffor pb (\_ -> liftIO $ do
                                 let xs = snd . unzip $ ld'
-                                _ <- P.hgPlot (_element_raw elPlot) (lcRange xs) (placings xs)
+                                _ <- P.leadPlot (_element_raw elPlot) (lcRange xs) (placings xs)
                                 return ())
                             ]
 

@@ -1,4 +1,4 @@
-module FlareTiming.Plot.Reach.View (hgPlot) where
+module FlareTiming.Plot.Reach.View (reachPlot) where
 
 import Text.Printf (printf)
 import Reflex.Dom
@@ -6,7 +6,7 @@ import Reflex.Time (delay)
 import qualified Data.Text as T (Text, pack)
 
 import Control.Monad.IO.Class (liftIO)
-import qualified FlareTiming.Plot.Reach.Plot as P (hgPlot)
+import qualified FlareTiming.Plot.Reach.Plot as P (reachPlot)
 
 import WireTypes.Reach (TrackReach(..), ReachFraction(..))
 import WireTypes.Pilot (Pilot(..))
@@ -26,11 +26,11 @@ timeRange xs =
     where
         ys = (\TrackReach{reach = PilotDistance x} -> x) <$> xs
 
-hgPlot
+reachPlot
     :: MonadWidget t m
     => Dynamic t [(Pilot, TrackReach)]
     -> m ()
-hgPlot tm = do
+reachPlot tm = do
     pb <- delay 1 =<< getPostBuild
 
     elClass "div" "tile is-ancestor" $ do
@@ -41,7 +41,7 @@ hgPlot tm = do
                 rec performEvent_ $ leftmost
                         [ ffor pb (\_ -> liftIO $ do
                             let xs = snd . unzip $ tm'
-                            _ <- P.hgPlot (_element_raw elPlot) (timeRange xs) (placings xs)
+                            _ <- P.reachPlot (_element_raw elPlot) (timeRange xs) (placings xs)
                             return ())
                         ]
 
