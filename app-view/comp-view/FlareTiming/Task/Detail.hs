@@ -263,7 +263,7 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
                                 PlotTabTime -> timePlot sgs sEx sd
                                 PlotTabLead -> leadPlot tweak sEx ld
                                 PlotTabArrive -> arrivalPlot hgOrPg tweak sEx av
-                                PlotTabValid -> validPlot hgOrPg tweak sEx av
+                                PlotTabValid -> validPlot
                             )
                             <$> tabPlot
 

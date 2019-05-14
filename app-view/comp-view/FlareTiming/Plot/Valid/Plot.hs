@@ -9,73 +9,41 @@ module FlareTiming.Plot.Valid.Plot
 import Prelude hiding (map, log)
 import GHCJS.Types (JSVal)
 import GHCJS.DOM.Element (IsElement)
-import GHCJS.DOM.Types (Element(..), toElement, toJSVal, toJSValListOf)
-import Data.List (nub)
+import GHCJS.DOM.Types (Element(..), toElement, toJSValListOf)
 
 -- SEE: https://gist.github.com/ali-abrar/fa2adbbb7ee64a0295cb
 newtype Plot = Plot { unPlot :: JSVal }
 
 foreign import javascript unsafe
     "functionPlot(\
-    \{ target: '#hg-plot-arrival'\
-    \, title: 'Arrival Point Distribution'\
+    \{ target: '#hg-plot-valid-launch'\
+    \, title: 'Launch Validity'\
     \, width: 360\
     \, height: 360\
     \, disableZoom: true\
-    \, xAxis: {label: 'Arrival Placing', domain: [0, $2 + 1]}\
+    \, xAxis: {label: 'Launch Validity Ratio', domain: [0, 1]}\
     \, yAxis: {domain: [0, 1.01]}\
     \, data: [{\
-    \    points: $3\
+    \    points: $2\
     \  , fnType: 'points'\
-    \  , color: '#984ea3'\
-    \  , range: [1, $2]\
+    \  , color: '#000000'\
+    \  , range: [0, 1]\
     \  , graphType: 'polyline'\
-    \  },{\
-    \    points: $4\
-    \  , fnType: 'points'\
-    \  , color: '#984ea3'\
-    \  , attr: { r: 2 }\
-    \  , range: [1, $2]\
-    \  , graphType: 'scatter'\
-    \  },{\
-    \    points: $5\
-    \  , fnType: 'points'\
-    \  , color: '#e41a1c'\
-    \  , attr: { r: 4 }\
-    \  , range: [1, $2]\
-    \  , graphType: 'scatter'\
-    \  }]\
-    \, annotations: [{\
-    \    y: 0.2\
-    \  , text: 'minimum possible fraction'\
     \  }]\
     \})"
-    hgPlot_ :: JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> IO JSVal
+    hgPlot_ :: JSVal -> JSVal -> IO JSVal
 
-hgPlot
-    :: IsElement e
-    => e
-    -> [[Double]]
-    -> [[Double]]
-    -> IO Plot
-hgPlot e xs ys = do
-    let n :: Integer = fromIntegral $ length xs + length ys
-
-    n' <- toJSVal (fromIntegral n :: Double)
+hgPlot :: IsElement e => e -> IO Plot
+hgPlot e = do
     let xy :: [[Double]] =
-            [ [x', fn n x']
-            | x <- [1 .. 10 * n]
-            , let x' = 0.1 * fromIntegral x
+            [ [x', fn x']
+            | x <- [0 :: Integer .. 100]
+            , let x' = 0.01 * fromIntegral x
             ]
 
     xy' <- toJSValListOf xy
-    xs' <- toJSValListOf xs
-    ys' <- toJSValListOf $ nub ys
 
-    Plot <$> hgPlot_ (unElement . toElement $ e) n' xy' xs' ys'
+    Plot <$> hgPlot_ (unElement . toElement $ e) xy'
 
-fn :: Integer -> Double -> Double
-fn n x = 0.2 + 0.037 * y + 0.13 * y**2 + 0.633 * y**3
-    where
-        y :: Double
-        y = 1.0 - (x - 1.0) / (fromIntegral n)
+fn :: Double -> Double
+fn x = 0.027 * x + 2.917 * x**2 - 1.944 * x**3
