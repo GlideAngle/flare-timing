@@ -197,18 +197,12 @@ foreign import javascript unsafe
     \  , attr: { r: 3 }\
     \  , graphType: 'scatter' \
     \  }]\
-    \, annotations: [{\
-    \    x: $7\
-    \  , text: $8\
-    \  }]\
     \})"
     plotStopByLanded_
         :: JSVal
         -> JSVal
         -> JSVal
         -> JSVal
-        -> JSVal
-        -> JSString
         -> JSVal
         -> JSString
         -> IO JSVal
@@ -441,11 +435,12 @@ stopByLandedPlot
     e
     (StopValidity y)
     vw@StopValidityWorking
-        { flownMean = PilotDistance dMean
-        , bestDistance = BestDistance bd
+        { flying = PilotsFlying pf
+        , landed = PilotsLanded landedByStop
         } = do
 
-    let xMax = bd
+    let xLanded = fromIntegral landedByStop :: Double
+    let xMax = fromIntegral pf
 
     let xy :: [[Double]] =
             [ [x' , fnStopByLanded vw x']
@@ -455,11 +450,10 @@ stopByLandedPlot
 
     xy' <- toJSValListOf xy
 
-    x' <- toJSVal dMean
+    x' <- toJSVal xLanded
     y' <- toJSVal y
     xMax' <- toJSVal xMax
-    let msg = "Mean Flown Distance (km)" :: String
-    let msgBest = "Best Flown Distance" :: String
+    let msg = "Pilots Landed before Stop" :: String
 
     Plot <$>
         plotStopByLanded_
@@ -469,22 +463,20 @@ stopByLandedPlot
             y'
             xMax'
             (toJSString msg)
-            xMax'
-            (toJSString msgBest)
 
 fnStopByLanded :: StopValidityWorking -> Double -> Double
 fnStopByLanded
     StopValidityWorking
         { pilotsAtEss = PilotsAtEss ess
-        , landed = PilotsLanded landed
         , flying = PilotsFlying flying
+        , flownMean = PilotDistance flownMean
         , flownStdDev = PilotDistance flownStdDev
         , bestDistance = BestDistance bd
         , launchToEssDistance = LaunchToEss ed
         }
-    flownMean
+    landed
     | ess > 0 = 1
     | otherwise = min 1 $ a + b**3
         where
             a = sqrt (((bd - flownMean) / (ed - bd + 1)) * sqrt (flownStdDev / 5))
-            b = fromIntegral landed / (fromIntegral flying :: Double)
+            b = landed / (fromIntegral flying :: Double)
