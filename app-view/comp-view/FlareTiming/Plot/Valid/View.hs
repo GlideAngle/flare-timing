@@ -88,7 +88,9 @@ stopValidityPlot
     => Validity
     -> ValidityWorking
     -> m ()
-stopValidityPlot Validity{distance = vy} ValidityWorking{distance = vw} = do
+stopValidityPlot Validity{stop = Nothing} _ = return ()
+stopValidityPlot _ ValidityWorking{stop = Nothing} = return ()
+stopValidityPlot Validity{stop = Just vy} ValidityWorking{stop = Just vw} = do
     pb <- delay 1 =<< getPostBuild
 
     elClass "div" "tile is-ancestor" $ do

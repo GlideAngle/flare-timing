@@ -38,7 +38,7 @@ import FlareTiming.Time (showHmsForHours)
 import WireTypes.Point (PilotDistance(..))
 
 data ValidityWorking =
-    ValidityWorking 
+    ValidityWorking
         { launch :: LaunchValidityWorking
         , distance :: DistanceValidityWorking
         , time :: TimeValidityWorking
@@ -47,7 +47,7 @@ data ValidityWorking =
     deriving (Eq, Ord, Show, Generic, FromJSON)
 
 data LaunchValidityWorking =
-    LaunchValidityWorking 
+    LaunchValidityWorking
         { flying :: PilotsFlying
         , present :: PilotsPresent
         , nominalLaunch :: NominalLaunch
@@ -68,7 +68,7 @@ newtype NominalLaunch = NominalLaunch Double
     deriving newtype (Show, FromJSON)
 
 data DistanceValidityWorking =
-    DistanceValidityWorking 
+    DistanceValidityWorking
         { sum :: SumOfDistance
         , flying :: PilotsFlying
         , area :: NominalDistanceArea
@@ -145,7 +145,7 @@ instance FromJSON MaximumDistance where
     parseJSON _ = empty
 
 data TimeValidityWorking =
-    TimeValidityWorking 
+    TimeValidityWorking
         { ssBestTime :: Maybe BestTime
         , gsBestTime :: Maybe BestTime
         , bestDistance :: BestDistance

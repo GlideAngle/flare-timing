@@ -20,7 +20,9 @@ import WireTypes.ValidityWorking
     , BestDistance(..), NominalDistance(..)
     , SumOfDistance(..), NominalDistanceArea(..)
     , MinimumDistance(..)
+    , PilotsAtEss(..), PilotsLanded(..), LaunchToEss(..)
     )
+import WireTypes.Point (PilotDistance(..))
 import FlareTiming.Plot.Foreign (Plot(..))
 
 foreign import javascript unsafe
@@ -150,18 +152,12 @@ foreign import javascript unsafe
     \  , attr: { r: 3 }\
     \  , graphType: 'scatter' \
     \  }]\
-    \, annotations: [{\
-    \    x: $7\
-    \  , text: $8\
-    \  }]\
     \})"
     plotStop_
         :: JSVal
         -> JSVal
         -> JSVal
         -> JSVal
-        -> JSVal
-        -> JSString
         -> JSVal
         -> JSString
         -> IO JSVal
@@ -336,35 +332,29 @@ fnReach (MinimumDistance dMin) d n
     | n < dMin = 0
     | otherwise = min 1 $ (n - dMin) / d
 
-stopPlot :: IsElement e => e -> DistanceValidity -> DistanceValidityWorking -> IO Plot
+stopPlot :: IsElement e => e -> StopValidity -> StopValidityWorking -> IO Plot
 stopPlot
     e
-    (DistanceValidity y)
-    DistanceValidityWorking
-        { sum = SumOfDistance dSum
-        , flying = PilotsFlying pf
-        , area = NominalDistanceArea nda
-        , minimumDistance = dMin@(MinimumDistance dMin')
+    (StopValidity y)
+    vw@StopValidityWorking
+        { flownMean = PilotDistance dMean
+        , bestDistance = BestDistance bd
         } = do
-    let pf' :: Double = fromIntegral pf
-    let dMean = dSum / pf'
-    let xMax = max dMean nda
+
+    let xMax = bd
 
     let xy :: [[Double]] =
-            [ [x' , fnStop dMin nda x']
+            [ [x' , fnStop vw x']
             | x <- [0 .. 199 :: Integer]
-            , let x' = 0.005 * fromIntegral x * (xMax + dMin')
+            , let x' = 0.005 * fromIntegral x * xMax
             ]
 
     xy' <- toJSValListOf xy
 
-    x' <- toJSVal $ y * (if y < 1 then nda else dMean) + dMin'
+    x' <- toJSVal dMean
     y' <- toJSVal y
-    xMax' <- toJSVal $ xMax + dMin'
+    xMax' <- toJSVal xMax
     let msg = "Mean Distance (km)" :: String
-
-    dMin'' <- toJSVal dMin'
-    let msgMin = "Minimum Distance" :: String
 
     Plot <$>
         plotStop_
@@ -374,11 +364,20 @@ stopPlot
             y'
             xMax'
             (toJSString msg)
-            dMin''
-            (toJSString msgMin)
 
-fnStop :: MinimumDistance -> Double -> Double -> Double
-fnStop (MinimumDistance dMin) d n
-    | d == 0 = 0
-    | n < dMin = 0
-    | otherwise = min 1 $ (n - dMin) / d
+fnStop :: StopValidityWorking -> Double -> Double
+fnStop
+    StopValidityWorking
+        { pilotsAtEss = PilotsAtEss ess
+        , landed = PilotsLanded landed
+        , flying = PilotsFlying flying
+        , flownStdDev = PilotDistance flownStdDev
+        , bestDistance = BestDistance bd
+        , launchToEssDistance = LaunchToEss ed
+        }
+    flownMean
+    | ess > 0 = 1
+    | otherwise = min 1 $ a + b**3
+        where
+            a = sqrt (((bd - flownMean) / (ed - bd + 1)) * sqrt (flownStdDev / 5))
+            b = fromIntegral landed / (fromIntegral flying :: Double)
