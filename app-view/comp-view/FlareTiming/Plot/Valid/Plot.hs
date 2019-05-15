@@ -139,7 +139,7 @@ foreign import javascript unsafe
 foreign import javascript unsafe
     "functionPlot(\
     \{ target: '#hg-plot-valid-stop-by-reach'\
-    \, title: 'Stop Validity vs Distance'\
+    \, title: 'Stop Validity vs Reach'\
     \, width: 360\
     \, height: 360\
     \, disableZoom: true\
@@ -187,14 +187,14 @@ foreign import javascript unsafe
     \, data: [{\
     \    points: $2\
     \  , fnType: 'points'\
-    \  , color: '#377eb8'\
+    \  , color: '#984ea3'\
     \  , range: [0, $5]\
     \  , attr: { stroke-dasharray: '5,5' }\
     \  , graphType: 'polyline'\
     \  },{\
     \    points: [[$3, $4]]\
     \  , fnType: 'points'\
-    \  , color: '#377eb8'\
+    \  , color: '#984ea3'\
     \  , attr: { r: 3 }\
     \  , graphType: 'scatter' \
     \  }]\
@@ -220,14 +220,14 @@ foreign import javascript unsafe
     \, data: [{\
     \    points: $2\
     \  , fnType: 'points'\
-    \  , color: '#377eb8'\
+    \  , color: '#ff7f00'\
     \  , range: [0, $5]\
     \  , attr: { stroke-dasharray: '5,5' }\
     \  , graphType: 'polyline'\
     \  },{\
     \    points: [[$3, $4]]\
     \  , fnType: 'points'\
-    \  , color: '#377eb8'\
+    \  , color: '#ff7f00'\
     \  , attr: { r: 3 }\
     \  , graphType: 'scatter' \
     \  }]\
