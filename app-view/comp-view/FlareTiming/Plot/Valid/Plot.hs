@@ -255,7 +255,7 @@ reachPlot
 
     xy' <- toJSValListOf xy
 
-    x' <- toJSVal $ y * nda + dMin'
+    x' <- toJSVal $ y * (if y < 1 then nda else dMean) + dMin'
     y' <- toJSVal y
     xMax' <- toJSVal $ xMax + dMin'
     let msg = "Mean Distance (km)" :: String
