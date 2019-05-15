@@ -1,16 +1,20 @@
 {-# LANGUAGE JavaScriptFFI #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
 
-module FlareTiming.Plot.Valid.Plot (launchPlot, timePlot, reachPlot) where
+module FlareTiming.Plot.Valid.Plot (launchPlot, timePlot, reachPlot, stopPlot) where
 
 import Prelude hiding (map, log)
 import GHCJS.Types (JSVal, JSString)
 import GHCJS.DOM.Element (IsElement)
 import GHCJS.DOM.Types (Element(..), toElement, toJSString, toJSVal, toJSValListOf)
 
-import WireTypes.Validity (LaunchValidity(..), TimeValidity(..), DistanceValidity(..))
+import WireTypes.Validity
+    (LaunchValidity(..), TimeValidity(..), DistanceValidity(..), StopValidity(..))
 import WireTypes.ValidityWorking
-    ( LaunchValidityWorking(..), TimeValidityWorking(..), DistanceValidityWorking(..)
+    ( LaunchValidityWorking(..)
+    , TimeValidityWorking(..)
+    , DistanceValidityWorking(..)
+    , StopValidityWorking(..)
     , PilotsFlying(..), PilotsPresent(..), NominalLaunch(..)
     , BestTime(..), NominalTime(..)
     , BestDistance(..), NominalDistance(..)
@@ -113,6 +117,45 @@ foreign import javascript unsafe
     \  }]\
     \})"
     plotReach_
+        :: JSVal
+        -> JSVal
+        -> JSVal
+        -> JSVal
+        -> JSVal
+        -> JSString
+        -> JSVal
+        -> JSString
+        -> IO JSVal
+
+foreign import javascript unsafe
+    "functionPlot(\
+    \{ target: '#hg-plot-valid-stop'\
+    \, title: 'Stop Validity'\
+    \, width: 360\
+    \, height: 360\
+    \, disableZoom: true\
+    \, xAxis: {label: $6, domain: [0 - $5 * 0.05, $5 * 1.05]}\
+    \, yAxis: {domain: [-0.05, 1.05]}\
+    \, data: [{\
+    \    points: $2\
+    \  , fnType: 'points'\
+    \  , color: '#377eb8'\
+    \  , range: [0, $5]\
+    \  , attr: { stroke-dasharray: '5,5' }\
+    \  , graphType: 'polyline'\
+    \  },{\
+    \    points: [[$3, $4]]\
+    \  , fnType: 'points'\
+    \  , color: '#377eb8'\
+    \  , attr: { r: 3 }\
+    \  , graphType: 'scatter' \
+    \  }]\
+    \, annotations: [{\
+    \    x: $7\
+    \  , text: $8\
+    \  }]\
+    \})"
+    plotStop_
         :: JSVal
         -> JSVal
         -> JSVal
@@ -289,6 +332,53 @@ reachPlot
 
 fnReach :: MinimumDistance -> Double -> Double -> Double
 fnReach (MinimumDistance dMin) d n
+    | d == 0 = 0
+    | n < dMin = 0
+    | otherwise = min 1 $ (n - dMin) / d
+
+stopPlot :: IsElement e => e -> DistanceValidity -> DistanceValidityWorking -> IO Plot
+stopPlot
+    e
+    (DistanceValidity y)
+    DistanceValidityWorking
+        { sum = SumOfDistance dSum
+        , flying = PilotsFlying pf
+        , area = NominalDistanceArea nda
+        , minimumDistance = dMin@(MinimumDistance dMin')
+        } = do
+    let pf' :: Double = fromIntegral pf
+    let dMean = dSum / pf'
+    let xMax = max dMean nda
+
+    let xy :: [[Double]] =
+            [ [x' , fnStop dMin nda x']
+            | x <- [0 .. 199 :: Integer]
+            , let x' = 0.005 * fromIntegral x * (xMax + dMin')
+            ]
+
+    xy' <- toJSValListOf xy
+
+    x' <- toJSVal $ y * (if y < 1 then nda else dMean) + dMin'
+    y' <- toJSVal y
+    xMax' <- toJSVal $ xMax + dMin'
+    let msg = "Mean Distance (km)" :: String
+
+    dMin'' <- toJSVal dMin'
+    let msgMin = "Minimum Distance" :: String
+
+    Plot <$>
+        plotStop_
+            (unElement . toElement $ e)
+            xy'
+            x'
+            y'
+            xMax'
+            (toJSString msg)
+            dMin''
+            (toJSString msgMin)
+
+fnStop :: MinimumDistance -> Double -> Double -> Double
+fnStop (MinimumDistance dMin) d n
     | d == 0 = 0
     | n < dMin = 0
     | otherwise = min 1 $ (n - dMin) / d

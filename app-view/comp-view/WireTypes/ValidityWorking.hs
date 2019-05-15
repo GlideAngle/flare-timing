@@ -20,20 +20,29 @@ module WireTypes.ValidityWorking
     , BestTime(..)
     , BestDistance(..)
     , NominalTime(..)
+    -- * Stop Validity Working
+    , StopValidityWorking(..)
+    , PilotsAtEss(..)
+    , PilotsLanded(..)
+    , LaunchToEss(..)
+    , showLaunchToEss
     ) where
 
+import Text.Printf (printf)
 import Control.Applicative (empty)
 import GHC.Generics (Generic)
-import qualified Data.Text as T (unpack)
+import qualified Data.Text as T (Text, pack, unpack)
 import Data.Aeson (Value(..), FromJSON(..))
 
 import FlareTiming.Time (showHmsForHours)
+import WireTypes.Point (PilotDistance(..))
 
 data ValidityWorking =
     ValidityWorking 
         { launch :: LaunchValidityWorking
         , distance :: DistanceValidityWorking
         , time :: TimeValidityWorking
+        , stop :: Maybe StopValidityWorking
         }
     deriving (Eq, Ord, Show, Generic, FromJSON)
 
@@ -186,3 +195,40 @@ instance FromJSON NominalTime where
             'h' : ' ' : xs -> return . NominalTime . read . reverse $ xs
             _ -> empty
     parseJSON _ = empty
+
+data StopValidityWorking =
+    StopValidityWorking
+        { pilotsAtEss :: PilotsAtEss
+        , landed :: PilotsLanded
+        , stillFlying :: PilotsFlying
+        , flying :: PilotsFlying
+        , flownMean :: PilotDistance
+        , flownStdDev :: PilotDistance
+        , bestDistance :: BestDistance
+        , launchToEssDistance :: LaunchToEss
+        }
+    deriving (Eq, Ord, Show, Generic, FromJSON)
+
+newtype PilotsLanded = PilotsLanded Integer
+    deriving (Eq, Ord)
+    deriving newtype (Show, FromJSON)
+
+newtype PilotsAtEss = PilotsAtEss Integer
+    deriving (Eq, Ord)
+    deriving newtype (Show, FromJSON)
+
+newtype LaunchToEss = LaunchToEss Double
+    deriving (Eq, Ord, Show, Generic)
+
+instance FromJSON LaunchToEss where
+    parseJSON x@(String _) = do
+        s <- reverse . T.unpack <$> parseJSON x
+        case s of
+            'm' : 'k' : ' ' : xs -> return . LaunchToEss . read . reverse $ xs
+            _ -> empty
+    parseJSON _ = empty
+
+showLaunchToEss :: LaunchToEss -> T.Text
+showLaunchToEss (LaunchToEss d) =
+    T.pack . printf "%.3f km" $ d
+
