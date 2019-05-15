@@ -1,19 +1,21 @@
 {-# LANGUAGE JavaScriptFFI #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
 
-module FlareTiming.Plot.Valid.Plot (launchPlot, timePlot) where
+module FlareTiming.Plot.Valid.Plot (launchPlot, timePlot, reachPlot) where
 
 import Prelude hiding (map, log)
 import GHCJS.Types (JSVal, JSString)
 import GHCJS.DOM.Element (IsElement)
 import GHCJS.DOM.Types (Element(..), toElement, toJSString, toJSVal, toJSValListOf)
 
-import WireTypes.Validity (LaunchValidity(..), TimeValidity(..))
+import WireTypes.Validity (LaunchValidity(..), TimeValidity(..), DistanceValidity(..))
 import WireTypes.ValidityWorking
-    ( LaunchValidityWorking(..), TimeValidityWorking(..)
+    ( LaunchValidityWorking(..), TimeValidityWorking(..), DistanceValidityWorking(..)
     , PilotsFlying(..), PilotsPresent(..), NominalLaunch(..)
     , BestTime(..), NominalTime(..)
     , BestDistance(..), NominalDistance(..)
+    , SumOfDistance(..), NominalDistanceArea(..), NominalGoal(..)
+    , MinimumDistance(..), MaximumDistance(..)
     )
 import FlareTiming.Plot.Foreign (Plot(..))
 
@@ -81,6 +83,32 @@ foreign import javascript unsafe
         -> JSVal
         -> JSString
         -> IO JSVal
+
+foreign import javascript unsafe
+    "functionPlot(\
+    \{ target: '#hg-plot-valid-reach'\
+    \, title: 'Reach Validity'\
+    \, width: 360\
+    \, height: 360\
+    \, disableZoom: true\
+    \, xAxis: {label: $6, domain: [0 - $5 * 0.05, $5 * 1.05]}\
+    \, yAxis: {domain: [-0.1, 1.1]}\
+    \, data: [{\
+    \    points: $2\
+    \  , fnType: 'points'\
+    \  , color: '#377eb8'\
+    \  , range: [0, $5]\
+    \  , attr: { stroke-dasharray: '5,5' }\
+    \  , graphType: 'polyline'\
+    \  },{\
+    \    points: [[$3, $4]]\
+    \  , fnType: 'points'\
+    \  , color: '#377eb8'\
+    \  , attr: { r: 3 }\
+    \  , graphType: 'scatter' \
+    \  }]\
+    \})"
+    plotReach_ :: JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSString -> IO JSVal
 
 launchPlot :: IsElement e => e -> LaunchValidity -> LaunchValidityWorking -> IO Plot
 launchPlot
@@ -204,3 +232,42 @@ fnTime :: Double -> Double -> Double
 fnTime d n = max 0 $ min 1 $ 0 - 0.271 + 2.912 * x - 2.098 * x**2 + 0.457 * x**3
     where
         x = min 1 $ n / d
+
+reachPlot :: IsElement e => e -> DistanceValidity -> DistanceValidityWorking -> IO Plot
+reachPlot
+    e
+    (DistanceValidity y)
+    DistanceValidityWorking
+        { sum = SumOfDistance dSum
+        , flying = PilotsFlying pf
+        , area = NominalDistanceArea nda
+        } = do
+    let pf' :: Double = fromIntegral pf
+    let dMean = dSum / pf'
+    let xMax = max dMean nda
+
+    let xy :: [[Double]] =
+            [ [x', fnReach nda x']
+            | x <- [0 .. 199 :: Integer]
+            , let x' = 0.005 * fromIntegral x * xMax
+            ]
+
+    xy' <- toJSValListOf xy
+
+    x' <- toJSVal $ y * nda
+    y' <- toJSVal y
+    xMax' <- toJSVal xMax
+    let msg = "Mean Distance over Minimum (km)" :: String
+
+    Plot <$>
+        plotReach_
+            (unElement . toElement $ e)
+            xy'
+            x'
+            y'
+            xMax'
+            (toJSString msg)
+
+fnReach :: Double -> Double -> Double
+fnReach 0 _ = 0
+fnReach d n = min 1 $ n / d
