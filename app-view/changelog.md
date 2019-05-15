@@ -11,7 +11,7 @@ of this changelog.
 * For paragliding, when the goal ratio is zero use a tenth of the distance
   ratio for the leading weight.
 * Show the stopped task validity.
-* Add plots for launch and time validity.
+* Add plots for launch, distance and time validity.
 
 # Making a Line Goal
 ## app-view-0.19
