@@ -152,12 +152,18 @@ foreign import javascript unsafe
     \  , attr: { r: 3 }\
     \  , graphType: 'scatter' \
     \  }]\
+    \, annotations: [{\
+    \    x: $7\
+    \  , text: $8\
+    \  }]\
     \})"
     plotStop_
         :: JSVal
         -> JSVal
         -> JSVal
         -> JSVal
+        -> JSVal
+        -> JSString
         -> JSVal
         -> JSString
         -> IO JSVal
@@ -355,6 +361,7 @@ stopPlot
     y' <- toJSVal y
     xMax' <- toJSVal xMax
     let msg = "Mean Distance (km)" :: String
+    let msgBest = "Best Distance" :: String
 
     Plot <$>
         plotStop_
@@ -364,6 +371,8 @@ stopPlot
             y'
             xMax'
             (toJSString msg)
+            xMax'
+            (toJSString msgBest)
 
 fnStop :: StopValidityWorking -> Double -> Double
 fnStop
