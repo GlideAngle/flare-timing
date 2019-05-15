@@ -2,7 +2,8 @@ module FlareTiming.Plot.Valid.View
     ( launchValidityPlot
     , timeValidityPlot
     , reachValidityPlot
-    , stopValidityPlot
+    , stopByReachValidityPlot
+    , stopByLandedValidityPlot
     ) where
 
 import Reflex.Dom
@@ -12,7 +13,7 @@ import Control.Monad.IO.Class (liftIO)
 import WireTypes.Validity (Validity(..))
 import WireTypes.ValidityWorking (ValidityWorking(..))
 import qualified FlareTiming.Plot.Valid.Plot as P
-    (launchPlot, timePlot, reachPlot, stopPlot)
+    (launchPlot, timePlot, reachPlot, stopByReachPlot, stopByLandedPlot)
 
 launchValidityPlot
     :: MonadWidget t m
@@ -83,24 +84,49 @@ reachValidityPlot Validity{distance = vy} ValidityWorking{distance = vw} = do
 
     return ()
 
-stopValidityPlot
+stopByReachValidityPlot
     :: MonadWidget t m
     => Validity
     -> ValidityWorking
     -> m ()
-stopValidityPlot Validity{stop = Nothing} _ = return ()
-stopValidityPlot _ ValidityWorking{stop = Nothing} = return ()
-stopValidityPlot Validity{stop = Just vy} ValidityWorking{stop = Just vw} = do
+stopByReachValidityPlot Validity{stop = Nothing} _ = return ()
+stopByReachValidityPlot _ ValidityWorking{stop = Nothing} = return ()
+stopByReachValidityPlot Validity{stop = Just vy} ValidityWorking{stop = Just vw} = do
     pb <- delay 1 =<< getPostBuild
 
     elClass "div" "tile is-ancestor" $ do
         elClass "div" "tile" $
             elClass "div" "tile is-parent" $
                 elClass "div" "tile is-child" $ do
-                    (elPlot, _) <- elAttr' "div" (("id" =: "hg-plot-valid-stop") <> ("style" =: "height: 360px;width: 360px")) $ return ()
+                    (elPlot, _) <- elAttr' "div" (("id" =: "hg-plot-valid-stop-by-reach") <> ("style" =: "height: 360px;width: 360px")) $ return ()
                     rec performEvent_ $ leftmost
                             [ ffor pb (\_ -> liftIO $ do
-                                _ <- P.stopPlot (_element_raw elPlot) vy vw
+                                _ <- P.stopByReachPlot (_element_raw elPlot) vy vw
+                                return ())
+                            ]
+
+                    return ()
+
+    return ()
+
+stopByLandedValidityPlot
+    :: MonadWidget t m
+    => Validity
+    -> ValidityWorking
+    -> m ()
+stopByLandedValidityPlot Validity{stop = Nothing} _ = return ()
+stopByLandedValidityPlot _ ValidityWorking{stop = Nothing} = return ()
+stopByLandedValidityPlot Validity{stop = Just vy} ValidityWorking{stop = Just vw} = do
+    pb <- delay 1 =<< getPostBuild
+
+    elClass "div" "tile is-ancestor" $ do
+        elClass "div" "tile" $
+            elClass "div" "tile is-parent" $
+                elClass "div" "tile is-child" $ do
+                    (elPlot, _) <- elAttr' "div" (("id" =: "hg-plot-valid-stop-by-landed") <> ("style" =: "height: 360px;width: 360px")) $ return ()
+                    rec performEvent_ $ leftmost
+                            [ ffor pb (\_ -> liftIO $ do
+                                _ <- P.stopByLandedPlot (_element_raw elPlot) vy vw
                                 return ())
                             ]
 

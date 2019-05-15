@@ -1,7 +1,13 @@
 {-# LANGUAGE JavaScriptFFI #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
 
-module FlareTiming.Plot.Valid.Plot (launchPlot, timePlot, reachPlot, stopPlot) where
+module FlareTiming.Plot.Valid.Plot
+    ( launchPlot
+    , timePlot
+    , reachPlot
+    , stopByReachPlot
+    , stopByLandedPlot
+    ) where
 
 import Prelude hiding (map, log)
 import GHCJS.Types (JSVal, JSString)
@@ -131,8 +137,8 @@ foreign import javascript unsafe
 
 foreign import javascript unsafe
     "functionPlot(\
-    \{ target: '#hg-plot-valid-stop'\
-    \, title: 'Stop Validity'\
+    \{ target: '#hg-plot-valid-stop-by-reach'\
+    \, title: 'Stop Validity versus Distance'\
     \, width: 360\
     \, height: 360\
     \, disableZoom: true\
@@ -157,7 +163,46 @@ foreign import javascript unsafe
     \  , text: $8\
     \  }]\
     \})"
-    plotStop_
+    plotStopByReach_
+        :: JSVal
+        -> JSVal
+        -> JSVal
+        -> JSVal
+        -> JSVal
+        -> JSString
+        -> JSVal
+        -> JSString
+        -> IO JSVal
+
+foreign import javascript unsafe
+    "functionPlot(\
+    \{ target: '#hg-plot-valid-stop-by-landed'\
+    \, title: 'Stop Validity versus Landed'\
+    \, width: 360\
+    \, height: 360\
+    \, disableZoom: true\
+    \, xAxis: {label: $6, domain: [0 - $5 * 0.05, $5 * 1.05]}\
+    \, yAxis: {domain: [-0.05, 1.05]}\
+    \, data: [{\
+    \    points: $2\
+    \  , fnType: 'points'\
+    \  , color: '#377eb8'\
+    \  , range: [0, $5]\
+    \  , attr: { stroke-dasharray: '5,5' }\
+    \  , graphType: 'polyline'\
+    \  },{\
+    \    points: [[$3, $4]]\
+    \  , fnType: 'points'\
+    \  , color: '#377eb8'\
+    \  , attr: { r: 3 }\
+    \  , graphType: 'scatter' \
+    \  }]\
+    \, annotations: [{\
+    \    x: $7\
+    \  , text: $8\
+    \  }]\
+    \})"
+    plotStopByLanded_
         :: JSVal
         -> JSVal
         -> JSVal
@@ -338,8 +383,8 @@ fnReach (MinimumDistance dMin) d n
     | n < dMin = 0
     | otherwise = min 1 $ (n - dMin) / d
 
-stopPlot :: IsElement e => e -> StopValidity -> StopValidityWorking -> IO Plot
-stopPlot
+stopByReachPlot :: IsElement e => e -> StopValidity -> StopValidityWorking -> IO Plot
+stopByReachPlot
     e
     (StopValidity y)
     vw@StopValidityWorking
@@ -350,7 +395,7 @@ stopPlot
     let xMax = bd
 
     let xy :: [[Double]] =
-            [ [x' , fnStop vw x']
+            [ [x' , fnStopByReach vw x']
             | x <- [0 .. 199 :: Integer]
             , let x' = 0.005 * fromIntegral x * xMax
             ]
@@ -364,7 +409,7 @@ stopPlot
     let msgBest = "Best Flown Distance" :: String
 
     Plot <$>
-        plotStop_
+        plotStopByReach_
             (unElement . toElement $ e)
             xy'
             x'
@@ -374,8 +419,61 @@ stopPlot
             xMax'
             (toJSString msgBest)
 
-fnStop :: StopValidityWorking -> Double -> Double
-fnStop
+fnStopByReach :: StopValidityWorking -> Double -> Double
+fnStopByReach
+    StopValidityWorking
+        { pilotsAtEss = PilotsAtEss ess
+        , landed = PilotsLanded landed
+        , flying = PilotsFlying flying
+        , flownStdDev = PilotDistance flownStdDev
+        , bestDistance = BestDistance bd
+        , launchToEssDistance = LaunchToEss ed
+        }
+    flownMean
+    | ess > 0 = 1
+    | otherwise = min 1 $ a + b**3
+        where
+            a = sqrt (((bd - flownMean) / (ed - bd + 1)) * sqrt (flownStdDev / 5))
+            b = fromIntegral landed / (fromIntegral flying :: Double)
+
+stopByLandedPlot :: IsElement e => e -> StopValidity -> StopValidityWorking -> IO Plot
+stopByLandedPlot
+    e
+    (StopValidity y)
+    vw@StopValidityWorking
+        { flownMean = PilotDistance dMean
+        , bestDistance = BestDistance bd
+        } = do
+
+    let xMax = bd
+
+    let xy :: [[Double]] =
+            [ [x' , fnStopByLanded vw x']
+            | x <- [0 .. 199 :: Integer]
+            , let x' = 0.005 * fromIntegral x * xMax
+            ]
+
+    xy' <- toJSValListOf xy
+
+    x' <- toJSVal dMean
+    y' <- toJSVal y
+    xMax' <- toJSVal xMax
+    let msg = "Mean Flown Distance (km)" :: String
+    let msgBest = "Best Flown Distance" :: String
+
+    Plot <$>
+        plotStopByLanded_
+            (unElement . toElement $ e)
+            xy'
+            x'
+            y'
+            xMax'
+            (toJSString msg)
+            xMax'
+            (toJSString msgBest)
+
+fnStopByLanded :: StopValidityWorking -> Double -> Double
+fnStopByLanded
     StopValidityWorking
         { pilotsAtEss = PilotsAtEss ess
         , landed = PilotsLanded landed

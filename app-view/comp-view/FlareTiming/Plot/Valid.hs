@@ -5,7 +5,12 @@ import Reflex.Dom
 import WireTypes.Validity (Validity(..))
 import WireTypes.ValidityWorking (ValidityWorking(..))
 import FlareTiming.Plot.Valid.View
-    (launchValidityPlot, timeValidityPlot, reachValidityPlot, stopValidityPlot)
+    ( launchValidityPlot
+    , timeValidityPlot
+    , reachValidityPlot
+    , stopByReachValidityPlot
+    , stopByLandedValidityPlot
+    )
 
 validPlot
     :: MonadWidget t m
@@ -14,38 +19,46 @@ validPlot
     -> m ()
 validPlot vy vw = do
     elClass "div" "tile is-ancestor" $ do
-        elClass "div" "tile" $
-            elClass "div" "tile is-4 is-parent" $ do
-                elClass "article" "tile is-child" $ do
-                    _ <- dyn $ ffor2 vy vw (\vy' vw' -> do
-                        case (vy', vw') of
-                            (Just vy'', Just vw'') -> launchValidityPlot vy'' vw''
-                            _ -> return ())
+        elClass "div" "tile is-parent" $ do
+            elClass "article" "tile is-4 is-child" $ do
+                _ <- dyn $ ffor2 vy vw (\vy' vw' -> do
+                    case (vy', vw') of
+                        (Just vy'', Just vw'') -> launchValidityPlot vy'' vw''
+                        _ -> return ())
 
-                    return ()
+                return ()
 
-                elClass "article" "tile is-child" $ do
-                    _ <- dyn $ ffor2 vy vw (\vy' vw' -> do
-                        case (vy', vw') of
-                            (Just vy'', Just vw'') -> reachValidityPlot vy'' vw''
-                            _ -> return ())
+            elClass "article" "tile is-4 is-child" $ do
+                _ <- dyn $ ffor2 vy vw (\vy' vw' -> do
+                    case (vy', vw') of
+                        (Just vy'', Just vw'') -> reachValidityPlot vy'' vw''
+                        _ -> return ())
 
-                    return ()
+                return ()
 
-                elClass "article" "tile is-child" $ do
-                    _ <- dyn $ ffor2 vy vw (\vy' vw' -> do
-                        case (vy', vw') of
-                            (Just vy'', Just vw'') -> timeValidityPlot vy'' vw''
-                            _ -> return ())
+            elClass "article" "tile is-4 is-child" $ do
+                _ <- dyn $ ffor2 vy vw (\vy' vw' -> do
+                    case (vy', vw') of
+                        (Just vy'', Just vw'') -> timeValidityPlot vy'' vw''
+                        _ -> return ())
 
-                    return ()
+                return ()
 
-                elClass "article" "tile is-child" $ do
-                    _ <- dyn $ ffor2 vy vw (\vy' vw' -> do
-                        case (vy', vw') of
-                            (Just vy'', Just vw'') -> stopValidityPlot vy'' vw''
-                            _ -> return ())
+    elClass "div" "tile is-ancestor" $ do
+        elClass "div" "tile is-parent" $ do
+            elClass "article" "tile is-4 is-child" $ do
+                _ <- dyn $ ffor2 vy vw (\vy' vw' -> do
+                    case (vy', vw') of
+                        (Just vy'', Just vw'') -> stopByReachValidityPlot vy'' vw''
+                        _ -> return ())
 
-                    return ()
+                return ()
+            elClass "article" "tile is-4 is-child" $ do
+                _ <- dyn $ ffor2 vy vw (\vy' vw' -> do
+                    case (vy', vw') of
+                        (Just vy'', Just vw'') -> stopByLandedValidityPlot vy'' vw''
+                        _ -> return ())
+
+                return ()
 
     return ()
