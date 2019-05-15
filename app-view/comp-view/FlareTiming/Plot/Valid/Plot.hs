@@ -27,7 +27,7 @@ foreign import javascript unsafe
     \, height: 360\
     \, disableZoom: true\
     \, xAxis: {label: $6, domain: [0 - $5 * 0.05, $5 * 1.05]}\
-    \, yAxis: {domain: [-0.1, 1.1]}\
+    \, yAxis: {domain: [-0.05, 1.05]}\
     \, data: [{\
     \    points: $2\
     \  , fnType: 'points'\
@@ -92,7 +92,7 @@ foreign import javascript unsafe
     \, height: 360\
     \, disableZoom: true\
     \, xAxis: {label: $6, domain: [0 - $5 * 0.05, $5 * 1.05]}\
-    \, yAxis: {domain: [-0.1, 1.1]}\
+    \, yAxis: {domain: [-0.05, 1.05]}\
     \, data: [{\
     \    points: $2\
     \  , fnType: 'points'\
