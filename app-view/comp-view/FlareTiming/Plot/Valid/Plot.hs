@@ -14,8 +14,8 @@ import WireTypes.ValidityWorking
     , PilotsFlying(..), PilotsPresent(..), NominalLaunch(..)
     , BestTime(..), NominalTime(..)
     , BestDistance(..), NominalDistance(..)
-    , SumOfDistance(..), NominalDistanceArea(..), NominalGoal(..)
-    , MinimumDistance(..), MaximumDistance(..)
+    , SumOfDistance(..), NominalDistanceArea(..)
+    , MinimumDistance(..)
     )
 import FlareTiming.Plot.Foreign (Plot(..))
 
@@ -241,23 +241,24 @@ reachPlot
         { sum = SumOfDistance dSum
         , flying = PilotsFlying pf
         , area = NominalDistanceArea nda
+        , minimumDistance = dMin@(MinimumDistance dMin')
         } = do
     let pf' :: Double = fromIntegral pf
     let dMean = dSum / pf'
     let xMax = max dMean nda
 
     let xy :: [[Double]] =
-            [ [x', fnReach nda x']
+            [ [x' , fnReach dMin nda x']
             | x <- [0 .. 199 :: Integer]
-            , let x' = 0.005 * fromIntegral x * xMax
+            , let x' = 0.005 * fromIntegral x * (xMax + dMin')
             ]
 
     xy' <- toJSValListOf xy
 
-    x' <- toJSVal $ y * nda
+    x' <- toJSVal $ y * nda + dMin'
     y' <- toJSVal y
-    xMax' <- toJSVal xMax
-    let msg = "Mean Distance over Minimum (km)" :: String
+    xMax' <- toJSVal $ xMax + dMin'
+    let msg = "Mean Distance (km)" :: String
 
     Plot <$>
         plotReach_
@@ -268,6 +269,8 @@ reachPlot
             xMax'
             (toJSString msg)
 
-fnReach :: Double -> Double -> Double
-fnReach 0 _ = 0
-fnReach d n = min 1 $ n / d
+fnReach :: MinimumDistance -> Double -> Double -> Double
+fnReach (MinimumDistance dMin) d n
+    | d == 0 = 0
+    | n < dMin = 0
+    | otherwise = min 1 $ (n - dMin) / d
