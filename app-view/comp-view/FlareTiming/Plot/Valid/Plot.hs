@@ -520,12 +520,11 @@ stopByVaryPlot
     e
     (StopValidity y)
     vw@StopValidityWorking
-        { flying = PilotsFlying pf
-        , landed = PilotsLanded landedByStop
+        { flownStdDev = PilotDistance std
+        , bestDistance = BestDistance bd
         } = do
 
-    let xLanded = fromIntegral landedByStop :: Double
-    let xMax = fromIntegral pf
+    let xMax = bd
 
     let xy :: [[Double]] =
             [ [x' , fnStopByVary vw x']
@@ -535,10 +534,10 @@ stopByVaryPlot
 
     xy' <- toJSValListOf xy
 
-    x' <- toJSVal xLanded
+    x' <- toJSVal std
     y' <- toJSVal y
     xMax' <- toJSVal xMax
-    let msg = "Standard Deviation of Flown Distance" :: String
+    let msg = "Standard Deviation of Flown Distance (km)" :: String
 
     Plot <$>
         plotStopByVary_
@@ -553,15 +552,15 @@ fnStopByVary :: StopValidityWorking -> Double -> Double
 fnStopByVary
     StopValidityWorking
         { pilotsAtEss = PilotsAtEss ess
+        , landed = PilotsLanded landed
         , flying = PilotsFlying flying
         , flownMean = PilotDistance flownMean
-        , flownStdDev = PilotDistance flownStdDev
         , bestDistance = BestDistance bd
         , launchToEssDistance = LaunchToEss ed
         }
-    landed
+    flownStdDev
     | ess > 0 = 1
     | otherwise = min 1 $ a + b**3
         where
             a = sqrt (((bd - flownMean) / (ed - bd + 1)) * sqrt (flownStdDev / 5))
-            b = landed / (fromIntegral flying :: Double)
+            b = fromIntegral landed / (fromIntegral flying :: Double)
