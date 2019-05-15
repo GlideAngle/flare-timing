@@ -66,8 +66,21 @@ foreign import javascript unsafe
     \  , attr: { r: 3 }\
     \  , graphType: 'scatter' \
     \  }]\
+    \, annotations: [{\
+    \    x: $7\
+    \  , text: $8\
+    \  }]\
     \})"
-    plotTime_ :: JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSString -> IO JSVal
+    plotTime_
+        :: JSVal
+        -> JSVal
+        -> JSVal
+        -> JSVal
+        -> JSVal
+        -> JSString
+        -> JSVal
+        -> JSString
+        -> IO JSVal
 
 launchPlot :: IsElement e => e -> LaunchValidity -> LaunchValidityWorking -> IO Plot
 launchPlot
@@ -95,7 +108,14 @@ launchPlot
     pp'' <- toJSVal pp'
     let msg = "Pilots Flying (" ++ show pf ++ " out of " ++ show pp ++ ")"
 
-    Plot <$> plotLaunch_ (unElement . toElement $ e) xy' x' y' pp'' (toJSString msg)
+    Plot <$>
+        plotLaunch_
+            (unElement . toElement $ e)
+            xy'
+            x'
+            y'
+            pp''
+            (toJSString msg)
 
 fnLaunch :: Double -> Double -> Double
 fnLaunch d n = 0.027 * x + 2.917 * x**2 - 1.944 * x**3
@@ -131,8 +151,19 @@ timeTime
     y' <- toJSVal y
     xMax' <- toJSVal xMax
     let msg = "Best Time (h)" :: String
+    let msgNominal = "Nominal Time" :: String
+    nt' <- toJSVal nt
 
-    Plot <$> plotTime_ (unElement . toElement $ e) xy' x' y' xMax' (toJSString msg)
+    Plot <$>
+        plotTime_
+            (unElement . toElement $ e)
+            xy'
+            x'
+            y'
+            xMax'
+            (toJSString msg)
+            nt'
+            (toJSString msgNominal)
 
 timeDistance :: IsElement e => e -> TimeValidity -> BestDistance -> NominalDistance -> IO Plot
 timeDistance
@@ -155,8 +186,19 @@ timeDistance
     y' <- toJSVal y
     xMax' <- toJSVal xMax
     let msg = "Best Distance (km)" :: String
+    let msgNominal = "Nominal Distance" :: String
+    nd' <- toJSVal nd
 
-    Plot <$> plotTime_ (unElement . toElement $ e) xy' x' y' xMax' (toJSString msg)
+    Plot <$>
+        plotTime_
+            (unElement . toElement $ e)
+            xy'
+            x'
+            y'
+            xMax'
+            (toJSString msg)
+            nd'
+            (toJSString msgNominal)
 
 fnTime :: Double -> Double -> Double
 fnTime d n = max 0 $ min 1 $ 0 - 0.271 + 2.912 * x - 2.098 * x**2 + 0.457 * x**3
