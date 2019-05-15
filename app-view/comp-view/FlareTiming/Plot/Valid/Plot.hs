@@ -24,8 +24,8 @@ foreign import javascript unsafe
     \, width: 360\
     \, height: 360\
     \, disableZoom: true\
-    \, xAxis: {label: $6, domain: [-0.5, $5 + 0.5]}\
-    \, yAxis: {domain: [-0.05, 1.05]}\
+    \, xAxis: {label: $6, domain: [0 - $5 * 0.05, $5 * 1.05]}\
+    \, yAxis: {domain: [-0.1, 1.1]}\
     \, data: [{\
     \    points: $2\
     \  , fnType: 'points'\
@@ -50,19 +50,19 @@ foreign import javascript unsafe
     \, width: 360\
     \, height: 360\
     \, disableZoom: true\
-    \, xAxis: {label: $6, domain: [-0.5, $5 + 0.5]}\
+    \, xAxis: {label: $6, domain: [0 - $5 * 0.05, $5 * 1.05]}\
     \, yAxis: {domain: [-0.05, 1.05]}\
     \, data: [{\
     \    points: $2\
     \  , fnType: 'points'\
-    \  , color: '#000000'\
+    \  , color: '#4daf4a'\
     \  , range: [0, $5]\
     \  , attr: { stroke-dasharray: '5,5' }\
     \  , graphType: 'polyline'\
     \  },{\
     \    points: [[$3, $4]]\
     \  , fnType: 'points'\
-    \  , color: '#000000'\
+    \  , color: '#4daf4a'\
     \  , attr: { r: 3 }\
     \  , graphType: 'scatter' \
     \  }]\
@@ -83,8 +83,8 @@ launchPlot
 
     let xy :: [[Double]] =
             [ [x', fnLaunch d x']
-            | x <- [0 .. 9 * pp]
-            , let x' = 0.1 * fromIntegral x
+            | x <- [1 .. 199 * pp]
+            , let x' = 0.005 * fromIntegral x
             , let d = pp' * nl
             ]
 
@@ -121,8 +121,8 @@ timeTime
 
     let xy :: [[Double]] =
             [ [x', fnTime nt x']
-            | x <- [0 .. 99 :: Integer]
-            , let x' = 0.01 * fromIntegral x * xMax
+            | x <- [0 .. 199 :: Integer]
+            , let x' = 0.005 * fromIntegral x * xMax
             ]
 
     xy' <- toJSValListOf xy
@@ -130,7 +130,7 @@ timeTime
     x' <- toJSVal bt
     y' <- toJSVal y
     xMax' <- toJSVal xMax
-    let msg = "BestTime (h)" :: String
+    let msg = "Best Time (h)" :: String
 
     Plot <$> plotTime_ (unElement . toElement $ e) xy' x' y' xMax' (toJSString msg)
 
@@ -145,8 +145,8 @@ timeDistance
 
     let xy :: [[Double]] =
             [ [x', fnTime nd x']
-            | x <- [0 .. 99 :: Integer]
-            , let x' = 0.01 * fromIntegral x * xMax
+            | x <- [0 .. 199 :: Integer]
+            , let x' = 0.005 * fromIntegral x * xMax
             ]
 
     xy' <- toJSValListOf xy
@@ -154,7 +154,7 @@ timeDistance
     x' <- toJSVal bd
     y' <- toJSVal y
     xMax' <- toJSVal xMax
-    let msg = "BestDistance (km)" :: String
+    let msg = "Best Distance (km)" :: String
 
     Plot <$> plotTime_ (unElement . toElement $ e) xy' x' y' xMax' (toJSString msg)
 

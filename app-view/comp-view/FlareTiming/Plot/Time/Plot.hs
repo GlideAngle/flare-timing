@@ -49,14 +49,14 @@ timePlot
 timePlot e (tMin, tMax) xs = do
     let xyfn :: [[Double]] =
             [ [x', fnGAP tMin x']
-            | x <- [0 :: Integer .. 199]
+            | x <- [0 .. 199 :: Integer]
             , let step = abs $ (tMax - tMin) / 200
             , let x' = tMin + step * fromIntegral x
             ]
 
     let xyfnFS :: [[Double]] =
             [ [x', fnFS tMin x']
-            | x <- [0 :: Integer .. 199]
+            | x <- [0 .. 199 :: Integer]
             , let step = abs $ (tMax - tMin) / 200
             , let x' = tMin + step * fromIntegral x
             ]
