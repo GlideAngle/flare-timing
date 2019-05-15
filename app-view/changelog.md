@@ -10,6 +10,7 @@ of this changelog.
 * Show the working for weight calculations next to the split plot.
 * For paragliding, when the goal ratio is zero use a tenth of the distance
   ratio for the leading weight.
+* Show the stopped task validity.
 * Add plots for launch and time validity.
 
 # Making a Line Goal
