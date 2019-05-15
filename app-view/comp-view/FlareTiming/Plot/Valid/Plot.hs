@@ -271,7 +271,7 @@ timeDistance
     x' <- toJSVal bd
     y' <- toJSVal y
     xMax' <- toJSVal xMax
-    let msg = "Best Distance (km)" :: String
+    let msg = "Best Flown Distance (km)" :: String
     let msgNominal = "Nominal Distance" :: String
     nd' <- toJSVal nd
 
@@ -316,7 +316,7 @@ reachPlot
     x' <- toJSVal $ y * (if y < 1 then nda else dMean) + dMin'
     y' <- toJSVal y
     xMax' <- toJSVal $ xMax + dMin'
-    let msg = "Mean Distance (km)" :: String
+    let msg = "Mean Flown Distance (km)" :: String
 
     dMin'' <- toJSVal dMin'
     let msgMin = "Minimum Distance" :: String
@@ -360,8 +360,8 @@ stopPlot
     x' <- toJSVal dMean
     y' <- toJSVal y
     xMax' <- toJSVal xMax
-    let msg = "Mean Distance (km)" :: String
-    let msgBest = "Best Distance" :: String
+    let msg = "Mean Flown Distance (km)" :: String
+    let msgBest = "Best Flown Distance" :: String
 
     Plot <$>
         plotStop_
