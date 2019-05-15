@@ -107,8 +107,21 @@ foreign import javascript unsafe
     \  , attr: { r: 3 }\
     \  , graphType: 'scatter' \
     \  }]\
+    \, annotations: [{\
+    \    x: $7\
+    \  , text: $8\
+    \  }]\
     \})"
-    plotReach_ :: JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSString -> IO JSVal
+    plotReach_
+        :: JSVal
+        -> JSVal
+        -> JSVal
+        -> JSVal
+        -> JSVal
+        -> JSString
+        -> JSVal
+        -> JSString
+        -> IO JSVal
 
 launchPlot :: IsElement e => e -> LaunchValidity -> LaunchValidityWorking -> IO Plot
 launchPlot
@@ -260,6 +273,9 @@ reachPlot
     xMax' <- toJSVal $ xMax + dMin'
     let msg = "Mean Distance (km)" :: String
 
+    dMin'' <- toJSVal dMin'
+    let msgMin = "Minimum Distance" :: String
+
     Plot <$>
         plotReach_
             (unElement . toElement $ e)
@@ -268,6 +284,8 @@ reachPlot
             y'
             xMax'
             (toJSString msg)
+            dMin''
+            (toJSString msgMin)
 
 fnReach :: MinimumDistance -> Double -> Double -> Double
 fnReach (MinimumDistance dMin) d n
