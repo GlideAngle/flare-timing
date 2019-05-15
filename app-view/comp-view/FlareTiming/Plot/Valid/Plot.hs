@@ -7,6 +7,7 @@ module FlareTiming.Plot.Valid.Plot
     , reachPlot
     , stopByReachPlot
     , stopByLandedPlot
+    , stopByVaryPlot
     ) where
 
 import Prelude hiding (map, log)
@@ -138,7 +139,7 @@ foreign import javascript unsafe
 foreign import javascript unsafe
     "functionPlot(\
     \{ target: '#hg-plot-valid-stop-by-reach'\
-    \, title: 'Stop Validity versus Distance'\
+    \, title: 'Stop Validity vs Distance'\
     \, width: 360\
     \, height: 360\
     \, disableZoom: true\
@@ -177,7 +178,7 @@ foreign import javascript unsafe
 foreign import javascript unsafe
     "functionPlot(\
     \{ target: '#hg-plot-valid-stop-by-landed'\
-    \, title: 'Stop Validity versus Landed'\
+    \, title: 'Stop Validity vs Landed'\
     \, width: 360\
     \, height: 360\
     \, disableZoom: true\
@@ -199,6 +200,39 @@ foreign import javascript unsafe
     \  }]\
     \})"
     plotStopByLanded_
+        :: JSVal
+        -> JSVal
+        -> JSVal
+        -> JSVal
+        -> JSVal
+        -> JSString
+        -> IO JSVal
+
+foreign import javascript unsafe
+    "functionPlot(\
+    \{ target: '#hg-plot-valid-stop-by-vary'\
+    \, title: 'Stop Validity vs Spread'\
+    \, width: 360\
+    \, height: 360\
+    \, disableZoom: true\
+    \, xAxis: {label: $6, domain: [0 - $5 * 0.05, $5 * 1.05]}\
+    \, yAxis: {domain: [-0.05, 1.05]}\
+    \, data: [{\
+    \    points: $2\
+    \  , fnType: 'points'\
+    \  , color: '#377eb8'\
+    \  , range: [0, $5]\
+    \  , attr: { stroke-dasharray: '5,5' }\
+    \  , graphType: 'polyline'\
+    \  },{\
+    \    points: [[$3, $4]]\
+    \  , fnType: 'points'\
+    \  , color: '#377eb8'\
+    \  , attr: { r: 3 }\
+    \  , graphType: 'scatter' \
+    \  }]\
+    \})"
+    plotStopByVary_
         :: JSVal
         -> JSVal
         -> JSVal
@@ -466,6 +500,57 @@ stopByLandedPlot
 
 fnStopByLanded :: StopValidityWorking -> Double -> Double
 fnStopByLanded
+    StopValidityWorking
+        { pilotsAtEss = PilotsAtEss ess
+        , flying = PilotsFlying flying
+        , flownMean = PilotDistance flownMean
+        , flownStdDev = PilotDistance flownStdDev
+        , bestDistance = BestDistance bd
+        , launchToEssDistance = LaunchToEss ed
+        }
+    landed
+    | ess > 0 = 1
+    | otherwise = min 1 $ a + b**3
+        where
+            a = sqrt (((bd - flownMean) / (ed - bd + 1)) * sqrt (flownStdDev / 5))
+            b = landed / (fromIntegral flying :: Double)
+
+stopByVaryPlot :: IsElement e => e -> StopValidity -> StopValidityWorking -> IO Plot
+stopByVaryPlot
+    e
+    (StopValidity y)
+    vw@StopValidityWorking
+        { flying = PilotsFlying pf
+        , landed = PilotsLanded landedByStop
+        } = do
+
+    let xLanded = fromIntegral landedByStop :: Double
+    let xMax = fromIntegral pf
+
+    let xy :: [[Double]] =
+            [ [x' , fnStopByVary vw x']
+            | x <- [0 .. 199 :: Integer]
+            , let x' = 0.005 * fromIntegral x * xMax
+            ]
+
+    xy' <- toJSValListOf xy
+
+    x' <- toJSVal xLanded
+    y' <- toJSVal y
+    xMax' <- toJSVal xMax
+    let msg = "Standard Deviation of Flown Distance" :: String
+
+    Plot <$>
+        plotStopByVary_
+            (unElement . toElement $ e)
+            xy'
+            x'
+            y'
+            xMax'
+            (toJSString msg)
+
+fnStopByVary :: StopValidityWorking -> Double -> Double
+fnStopByVary
     StopValidityWorking
         { pilotsAtEss = PilotsAtEss ess
         , flying = PilotsFlying flying

@@ -10,6 +10,7 @@ import FlareTiming.Plot.Valid.View
     , reachValidityPlot
     , stopByReachValidityPlot
     , stopByLandedValidityPlot
+    , stopByVaryValidityPlot
     )
 
 validPlot
@@ -53,10 +54,19 @@ validPlot vy vw = do
                         _ -> return ())
 
                 return ()
+
             elClass "article" "tile is-4 is-child" $ do
                 _ <- dyn $ ffor2 vy vw (\vy' vw' -> do
                     case (vy', vw') of
                         (Just vy'', Just vw'') -> stopByLandedValidityPlot vy'' vw''
+                        _ -> return ())
+
+                return ()
+
+            elClass "article" "tile is-4 is-child" $ do
+                _ <- dyn $ ffor2 vy vw (\vy' vw' -> do
+                    case (vy', vw') of
+                        (Just vy'', Just vw'') -> stopByVaryValidityPlot vy'' vw''
                         _ -> return ())
 
                 return ()
