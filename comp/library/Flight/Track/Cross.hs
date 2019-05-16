@@ -221,12 +221,12 @@ cmp a b =
 
         ("fileUnread", _) -> GT
 
-        ("dnf", _) -> LT
+        ("suspectDnf", _) -> LT
 
-        ("flying", "dnf") -> GT
+        ("flying", "suspectDnf") -> GT
         ("flying", _) -> LT
 
-        ("crossings", "dnf") -> LT
+        ("crossings", "suspectDnf") -> LT
         ("crossings", "flying") -> LT
         ("crossings", _) -> LT
 
