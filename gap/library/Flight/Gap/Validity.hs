@@ -359,11 +359,13 @@ stopValidity
     fd@(FlownStdDev flownStdDev)
     bd'@(BestDistance bd)
     ed'@(LaunchToEss ed)
-    | ess > 0 = (StopValidity 1, Nothing)
-    | otherwise =
-            ( StopValidity $ min 1 (toRational $ unQuantity a + b**3)
-            , Just
-                StopValidityWorking
+    | ess > 0 = (StopValidity 1, Just w)
+    | otherwise = (StopValidity $ min 1 (toRational $ unQuantity a + b**3), Just w)
+        where
+            a = sqrt' (((bd -: flownMean) /: (ed -: bd +: [u| 1 km |])) *: sqrt' (flownStdDev /: [u| 5 km |]))
+            b = fromIntegral landed / (fromIntegral flying :: Double)
+
+            w = StopValidityWorking
                     { pilotsAtEss = pe
                     , landed = landedByStop
                     , stillFlying = stillFlying
@@ -373,10 +375,6 @@ stopValidity
                     , bestDistance = bd'
                     , launchToEssDistance = ed'
                     }
-            )
-        where
-            a = sqrt' (((bd -: flownMean) /: (ed -: bd +: [u| 1 km |])) *: sqrt' (flownStdDev /: [u| 5 km |]))
-            b = fromIntegral landed / (fromIntegral flying :: Double)
 
 taskValidity
     :: LaunchValidity
