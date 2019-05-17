@@ -21,6 +21,7 @@ module Flight.Track.Cross
     , TrackLogError(..)
     , Fix(..)
     , RetroActive(..)
+    , StopWindow(..)
     , trackLogErrors
     , asIfFix
     ) where
@@ -42,12 +43,33 @@ newtype RetroActive = RetroActive UTCTime
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
+data StopWindow =
+    StopWindow
+        { lastStarters :: [Pilot]
+        -- ^ The pilot or pilots last to start in an elapsed time race or
+        -- a race to goal task with multiple start gates. For race to goal
+        -- tasks with a single start gate @lastStarters@ will be an empty list.
+        , windowTimes :: FlyingSection UTCTime
+        -- ^ The scored window as a time range. For an elapsed time race or
+        -- a race to goal task with only one start gate this will be the range
+        -- from the start until the retroactive stop time.  For race to goal
+        -- task with multiple start gates this will be the time available
+        -- racing for the last pilot or pilots to start.
+        , windowSeconds :: Seconds
+        -- ^ The width of the time window.
+        }
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
+
+
 -- | For each task, the crossing for that task.
 data Crossing =
     Crossing
         { suspectDnf :: [[Pilot]]
         -- ^ For each task, the pilots whose tracklogs suggest they did not fly
         -- such as by having no fixes.
+        , stopWindow :: [Maybe StopWindow]
+        -- ^ The scored time window for a stopped task.
         , flying :: [[(Pilot, Maybe TrackFlyingSection)]]
         -- ^ For each task, the pilots' flying sections.
         , crossing :: [[PilotTrackCross]]
@@ -223,10 +245,15 @@ cmp a b =
 
         ("suspectDnf", _) -> LT
 
+        ("stopWindow", "suspectDnf") -> GT
+        ("stopWindow", _) -> LT
+
         ("flying", "suspectDnf") -> GT
+        ("flying", "stopWindow") -> GT
         ("flying", _) -> LT
 
         ("crossings", "suspectDnf") -> LT
+        ("crossings", "stopWindow") -> LT
         ("crossings", "flying") -> LT
         ("crossings", _) -> LT
 

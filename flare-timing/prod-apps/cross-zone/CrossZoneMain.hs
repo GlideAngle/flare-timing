@@ -23,6 +23,7 @@ import Flight.Comp
     , Pilot(..)
     , TrackFileFail(..)
     , IxTask(..)
+    , Task(..)
     , Zones
     , compToCross
     , findCompInput
@@ -35,6 +36,7 @@ import Flight.Track.Cross
     , TrackCross(..)
     , PilotTrackCross(..)
     , Crossing(..)
+    , StopWindow(..)
     , trackLogErrors
     )
 import Flight.LatLng.Rational (defEps)
@@ -81,7 +83,7 @@ drive o = do
     fprint ("Tracks crossing zones completed in " % timeSpecs % "\n") start end
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
-go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
+go co@CmdBatchOptions{pilot, task} compFile@(CompInputFile compPath) = do
     putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
 
     compSettings <-
@@ -89,77 +91,72 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
             (Just <$> readComp compFile)
             (const $ return Nothing)
 
-    maybe
-        (putStrLn "Couldn't read the comp settings.")
-        (\cs ->
-            writeCrossings
-                compFile
-                (IxTask <$> task)
-                (pilotNamed cs $ PilotName <$> pilot)
-                (checkAll math))
-        compSettings
+    case compSettings of
+        Nothing -> putStrLn "Couldn't read the comp settings."
+        Just cs@CompSettings{tasks} -> do
+            let ixs = IxTask <$> task
+            let ps = pilotNamed cs $ PilotName <$> pilot
+            tracks <-
+                catchIO
+                    (Just <$> (checkAll $ math co) compFile ixs ps)
+                    (const $ return Nothing)
+
+            case tracks of
+                Nothing -> putStrLn "Unable to read tracks for pilots."
+                Just ts -> writeCrossings compFile tasks ts
 
 writeCrossings
     :: CompInputFile
-    -> [IxTask]
-    -> [Pilot]
-    -> (CompInputFile
-          -> [IxTask]
-          -> [Pilot]
-          -> IO [[Either (Pilot, TrackFileFail) (Pilot, MadeZones)]])
+    -> [Task k]
+    -> [[Either (Pilot, TrackFileFail) (Pilot, MadeZones)]]
     -> IO ()
-writeCrossings compFile task pilot f = do
-    checks <-
-        catchIO
-            (Just <$> f compFile task pilot)
-            (const $ return Nothing)
+writeCrossings compFile tasks xs = do
+    let ys :: [([(Pilot, Maybe MadeZones)], [Maybe (Pilot, TrackFileFail)])] =
+            unzip <$>
+            (fmap . fmap)
+                (\case
+                    Left err@(p, _) ->
+                        ((p, Nothing), Just err)
 
-    case checks of
-        Nothing -> putStrLn "Unable to read tracks for pilots."
-        Just xs -> do
+                    Right (p, x) ->
+                        ((p, Just x), Nothing))
+                xs
 
-            let ys :: [([(Pilot, Maybe MadeZones)], [Maybe (Pilot, TrackFileFail)])] =
-                    unzip <$>
-                    (fmap . fmap)
-                        (\case
-                            Left err@(p, _) ->
-                                ((p, Nothing), Just err)
+    let pss = fst <$> ys
+    let ess = catMaybes . snd <$> ys
 
-                            Right (p, x) ->
-                                ((p, Just x), Nothing))
-                        xs
+    let pErrs :: [[Pilot]] =
+            [ fst <$> filter ((/= TrackLogFileNotSet) . snd) es
+            | es <- ess
+            ]
 
-            let pss = fst <$> ys
-            let ess = catMaybes . snd <$> ys
+    let stopWindows :: [Maybe StopWindow] =
+            const Nothing <$> tasks
 
-            let pErrs :: [[Pilot]] =
-                    [ fst <$> filter ((/= TrackLogFileNotSet) . snd) es
-                    | es <- ess
-                    ]
+    let flying = (fmap . fmap . fmap . fmap) madeZonesToFlying pss
 
-            let flying = (fmap . fmap . fmap . fmap) madeZonesToFlying pss
+    let notFlys :: [[Pilot]] =
+            [ fmap fst . filter snd
+              $ (fmap . fmap) (maybe False (not . flew)) fs
+            | fs <- flying
+            ]
 
-            let notFlys :: [[Pilot]] =
-                    [ fmap fst . filter snd
-                      $ (fmap . fmap) (maybe False (not . flew)) fs
-                    | fs <- flying
-                    ]
+    let dnfs =
+            [ sort . nub $ es ++ ns
+            | es <- pErrs
+            | ns <- notFlys
+            ]
 
-            let dnfs =
-                    [ sort . nub $ es ++ ns
-                    | es <- pErrs
-                    | ns <- notFlys
-                    ]
+    let crossZone =
+            Crossing
+                { suspectDnf = dnfs
+                , stopWindow = stopWindows
+                , flying = flying
+                , crossing = (fmap . fmap) crossings pss
+                , trackLogError = trackLogErrors <$> ess
+                }
 
-            let crossZone =
-                    Crossing
-                        { suspectDnf = dnfs
-                        , flying = flying
-                        , crossing = (fmap . fmap) crossings pss
-                        , trackLogError = trackLogErrors <$> ess
-                        }
-
-            writeCrossing (compToCross compFile) crossZone
+    writeCrossing (compToCross compFile) crossZone
 
 madeZonesToCross :: MadeZones -> TrackCross
 madeZonesToCross x =
