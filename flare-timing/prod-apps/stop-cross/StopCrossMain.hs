@@ -6,12 +6,18 @@ import System.Console.CmdArgs.Implicit (cmdArgs)
 import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
-import Data.Time.Clock (diffUTCTime)
+import Data.Time.Clock (UTCTime, diffUTCTime)
 import Control.Exception.Safe (catchIO)
 import System.FilePath (takeFileName)
 
-import Flight.Track.Cross (Crossing(..), Seconds(..), TrackFlyingSection(..))
-import Flight.Track.Tag (Tagging(..), TrackTime(..), PilotTrackTag(..))
+import Flight.Clip (FlyingSection)
+import Flight.Track.Cross
+    ( Crossing(..), Seconds(..), TrackFlyingSection(..)
+    , ZoneTag(..), InterpolatedFix(..)
+    )
+import Flight.Track.Tag
+    ( Tagging(..), TrackTime(..), PilotTrackTag(..), TrackTag(..))
+import qualified Flight.Track.Stop as Stop (StopTrackFlyingSection(..))
 import Flight.Track.Stop
     ( StopWindow(..), FreezeFrame(..), StopTrackFlyingSection(..)
     , tardyElapsed, tardyGate, stopClipByDuration, stopClipByGate
@@ -136,7 +142,7 @@ writeStop CompSettings{tasks} tagFile Crossing{flying} Tagging{timing, tagging} 
             | TrackTime{zonesLast, zonesRankTime = zts, zonesRankPilot = zps} <- timing
             ]
 
-    let sfs :: [[(Pilot, Maybe StopTrackFlyingSection)]] =
+    let sfss :: [[(Pilot, Maybe StopTrackFlyingSection)]] =
             [
                 [ (p,) $ do
                     StopWindow{windowSeconds = clipSecs} <- sw
@@ -164,11 +170,11 @@ writeStop CompSettings{tasks} tagFile Crossing{flying} Tagging{timing, tagging} 
                                         return (Seconds w0, Seconds $ w0 + round delta)
                                     }
 
-                | (p, tfs) <- pts
+                | (p, tfs) <- pfs
                 ]
 
             | Task{startGates = gs} <- tasks
-            | pts <- flying
+            | pfs <- flying
             | sw <- sws
             ]
 
@@ -178,16 +184,36 @@ writeStop CompSettings{tasks} tagFile Crossing{flying} Tagging{timing, tagging} 
             ]
 
     let tags :: [[PilotTrackTag]] =
-            [ tgs
-            | tgs <- tagging
+            [
+                if sw == Nothing then pts else
+                [
+                    PilotTrackTag p $ do
+                        TrackTag{zonesTag = zs} <- tt
+                        sf' <- sf
+                        let zs' = clipByTime (Stop.scoredTimes sf') <$> zs
+                        return $ TrackTag{zonesTag = zs'}
+
+                | PilotTrackTag p tt <- pts
+                | (_, sf) <- sfs
+                ]
+
+            | sw <- sws
+            | pts <- tagging
+            | sfs <- sfss
             ]
 
     let frame =
             FreezeFrame
                 { stopWindow = sws
-                , stopFlying = sfs
+                , stopFlying = sfss
                 , timing = times'
                 , tagging = tags
                 }
 
     writeFreezeFrame (tagToStop tagFile) frame
+
+clipByTime :: FlyingSection UTCTime -> Maybe ZoneTag -> Maybe ZoneTag
+clipByTime Nothing x = x
+clipByTime _ Nothing = Nothing
+clipByTime (Just (_, t1)) zt@(Just ZoneTag{inter = InterpolatedFix{time = t}}) =
+    if t > t1 then Nothing else zt
