@@ -31,9 +31,8 @@ import Flight.Kml (Latitude(..), Longitude(..), MarkedFixes(..), secondsToUtc)
 import qualified Flight.Kml as Kml
     (LatLngAlt(..), Fix, FixMark(..), Seconds(..))
 import Flight.Track.Cross
-    ( ZoneCross(..), ZoneTag(..)
-    , Seconds(..), TrackFlyingSection(..), RetroActive(..)
-    )
+    (ZoneCross(..), ZoneTag(..), Seconds(..), TrackFlyingSection(..))
+import Flight.Track.Stop (RetroActive(..))
 import Flight.Track.Time (ZoneIdx(..))
 import Flight.Comp (IxTask(..), Task(..), TaskStop(..), Zones(..))
 import Flight.Units ()

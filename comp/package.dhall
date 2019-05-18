@@ -52,6 +52,7 @@ in    defs
               [ "Flight.Comp"
               , "Flight.Track.Cross"
               , "Flight.Track.Tag"
+              , "Flight.Track.Stop"
               , "Flight.Track.Time"
               , "Flight.Track.Mask"
               , "Flight.Track.Land"

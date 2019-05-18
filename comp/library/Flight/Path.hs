@@ -9,6 +9,7 @@ module Flight.Path
     , TaskLengthFile(..)
     , CrossZoneFile(..)
     , TagZoneFile(..)
+    , StopTaskFile(..)
     , UnpackTrackFile(..)
     , AlignTimeFile(..)
     , DiscardFurtherFile(..)
@@ -28,6 +29,7 @@ module Flight.Path
     , compToLand
     , compToPoint
     , crossToTag
+    , tagToStop
     , compFileToCompDir
     , unpackTrackDir
     , alignTimeDir
@@ -85,6 +87,9 @@ newtype CrossZoneFile = CrossZoneFile FilePath
 
 -- | The path to a tag zone file.
 newtype TagZoneFile = TagZoneFile FilePath
+
+-- | The path to a stop task file.
+newtype StopTaskFile = StopTaskFile FilePath
 
 -- | The path to as unpack track directory for a single task.
 newtype UnpackTrackDir = UnpackTrackDir FilePath
@@ -153,6 +158,10 @@ crossToTag :: CrossZoneFile -> TagZoneFile
 crossToTag (CrossZoneFile p) =
     TagZoneFile $ flip replaceExtension (ext TagZone) $ dropExtension p
 
+tagToStop :: TagZoneFile -> StopTaskFile
+tagToStop (TagZoneFile p) =
+    StopTaskFile $ flip replaceExtension (ext StopTask) $ dropExtension p
+
 pilotPath :: Pilot -> FilePath
 pilotPath (Pilot (PilotId k, PilotName s)) =
     s ++ " " ++ k
@@ -194,6 +203,7 @@ data FileType
     | TaskLength
     | CrossZone
     | TagZone
+    | StopTask
     | UnpackTrack
     | AlignTime
     | DiscardFurther
@@ -210,6 +220,7 @@ ext NormScore = ".norm-score.yaml"
 ext TaskLength = ".task-length.yaml"
 ext CrossZone = ".cross-zone.yaml"
 ext TagZone = ".tag-zone.yaml"
+ext StopTask = ".stop-task.yaml"
 ext UnpackTrack = ".unpack-track.csv"
 ext AlignTime = ".align-time.csv"
 ext DiscardFurther = ".discard-further.csv"
@@ -226,6 +237,7 @@ ensureExt NormScore = flip replaceExtensions "norm-score.yaml"
 ensureExt TaskLength = flip replaceExtensions "task-length.yaml"
 ensureExt CrossZone = flip replaceExtensions "cross-zone.yaml"
 ensureExt TagZone = flip replaceExtensions "tag-zone.yaml"
+ensureExt StopTask = flip replaceExtensions "stop-task.yaml"
 ensureExt UnpackTrack = flip replaceExtensions "unpack-track.csv"
 ensureExt AlignTime = flip replaceExtensions "align-time.csv"
 ensureExt DiscardFurther = flip replaceExtensions "discard-further.csv"

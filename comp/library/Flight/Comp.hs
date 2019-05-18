@@ -30,6 +30,7 @@ module Flight.Comp
     , OpenClose(..)
     , FirstLead(..)
     , FirstStart(..)
+    , LastStart(..)
     , LastArrival(..)
     , LastDown(..)
     , StartEnd(..)
@@ -111,6 +112,12 @@ newtype FirstLead = FirstLead UTCTime
 -- | The time of first start of the speed section. This won't exist if everyone
 -- jumps the gun.
 newtype FirstStart = FirstStart UTCTime
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
+
+-- | The time of last start of the speed section. This won't exist if everyone
+-- jumps the gun.
+newtype LastStart = LastStart UTCTime
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
 

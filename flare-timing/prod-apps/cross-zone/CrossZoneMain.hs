@@ -32,11 +32,10 @@ import Flight.Comp
     )
 import Flight.Units ()
 import Flight.Track.Cross
-    (TrackFlyingSection(..)
+    ( TrackFlyingSection(..)
     , TrackCross(..)
     , PilotTrackCross(..)
     , Crossing(..)
-    , StopWindow(..)
     , trackLogErrors
     )
 import Flight.LatLng.Rational (defEps)
@@ -110,7 +109,7 @@ writeCrossings
     -> [Task k]
     -> [[Either (Pilot, TrackFileFail) (Pilot, MadeZones)]]
     -> IO ()
-writeCrossings compFile tasks xs = do
+writeCrossings compFile _ xs = do
     let ys :: [([(Pilot, Maybe MadeZones)], [Maybe (Pilot, TrackFileFail)])] =
             unzip <$>
             (fmap . fmap)
@@ -130,9 +129,6 @@ writeCrossings compFile tasks xs = do
             | es <- ess
             ]
 
-    let stopWindows :: [Maybe StopWindow] =
-            const Nothing <$> tasks
-
     let flying = (fmap . fmap . fmap . fmap) madeZonesToFlying pss
 
     let notFlys :: [[Pilot]] =
@@ -150,7 +146,6 @@ writeCrossings compFile tasks xs = do
     let crossZone =
             Crossing
                 { suspectDnf = dnfs
-                , stopWindow = stopWindows
                 , flying = flying
                 , crossing = (fmap . fmap) crossings pss
                 , trackLogError = trackLogErrors <$> ess

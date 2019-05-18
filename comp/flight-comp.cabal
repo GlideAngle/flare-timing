@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d040bea02a80eddd78222dfc7f56060a7e9ae2fb1133aa9d025b307f1d53a3db
+-- hash: 260066bf759f14c5fe971cb64a095e582c31641c99ea6e52aba51a20983169bb
 
 name:           flight-comp
 version:        0.1.0
@@ -35,6 +35,7 @@ library
       Flight.Comp
       Flight.Track.Cross
       Flight.Track.Tag
+      Flight.Track.Stop
       Flight.Track.Time
       Flight.Track.Mask
       Flight.Track.Land
@@ -100,6 +101,7 @@ test-suite comp
       Flight.Track.Place
       Flight.Track.Point
       Flight.Track.Speed
+      Flight.Track.Stop
       Flight.Track.Tag
       Flight.Track.Time
       Paths_flight_comp
@@ -161,6 +163,7 @@ test-suite doctest
       Flight.Track.Place
       Flight.Track.Point
       Flight.Track.Speed
+      Flight.Track.Stop
       Flight.Track.Tag
       Flight.Track.Time
       Paths_flight_comp

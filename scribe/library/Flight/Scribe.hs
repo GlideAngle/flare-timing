@@ -4,6 +4,7 @@ module Flight.Scribe
     , readRoute, writeRoute
     , readCrossing , writeCrossing
     , readTagging, writeTagging
+    , readStopTagging, writeStopTagging
     , readMasking, writeMasking
     , readLanding, writeLanding
     , readPointing, writePointing
@@ -19,8 +20,9 @@ import Data.Yaml (decodeThrow)
 import qualified Data.Yaml.Pretty as Y
 
 import Flight.Route (TaskTrack(..), cmpFields)
-import Flight.Track.Tag (Tagging(..))
 import Flight.Track.Cross (Crossing)
+import Flight.Track.Tag (Tagging(..))
+import Flight.Track.Stop (StopTagging(..))
 import Flight.Track.Mask (Masking)
 import Flight.Track.Land (Landing)
 import Flight.Track.Point (Pointing, NormPointing)
@@ -31,6 +33,7 @@ import Flight.Comp
     , TaskLengthFile(..)
     , CrossZoneFile(..)
     , TagZoneFile(..)
+    , StopTaskFile(..)
     , MaskTrackFile(..)
     , LandOutFile(..)
     , GapPointFile(..)
@@ -109,6 +112,20 @@ writeTagging :: TagZoneFile -> Tagging -> IO ()
 writeTagging (TagZoneFile path) tagZone = do
     let cfg = Y.setConfCompare (fieldOrder tagZone) Y.defConfig
     let yaml = Y.encodePretty cfg tagZone
+    BS.writeFile path yaml
+
+readStopTagging
+    :: (MonadThrow m, MonadIO m)
+    => StopTaskFile
+    -> m StopTagging
+readStopTagging (StopTaskFile path) = do
+    contents <- liftIO $ BS.readFile path
+    decodeThrow contents
+
+writeStopTagging :: StopTaskFile -> StopTagging -> IO ()
+writeStopTagging (StopTaskFile path) stopTask = do
+    let cfg = Y.setConfCompare (fieldOrder stopTask) Y.defConfig
+    let yaml = Y.encodePretty cfg stopTask
     BS.writeFile path yaml
 
 readMasking

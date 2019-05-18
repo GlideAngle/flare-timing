@@ -140,6 +140,27 @@ in    defs
               , source-dirs =
                   "prod-apps/tag-zone"
               }
+          , stop-task =
+              { dependencies =
+                    deps
+                  # [ "safe-exceptions"
+                    , "time"
+                    , "flight-clip"
+                    , "flight-mask"
+                    , "flight-zone"
+                    ]
+              , ghc-options =
+                  [ "-rtsopts"
+                  , "-threaded"
+                  , "-with-rtsopts=-N"
+                  , "-Wall"
+                  , "-fplugin Data.UnitsOfMeasure.Plugin"
+                  ]
+              , main =
+                  "StopTaskMain.hs"
+              , source-dirs =
+                  "prod-apps/stop-task"
+              }
           , unpack-track =
               { dependencies =
                     deps

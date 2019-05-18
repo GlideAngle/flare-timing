@@ -38,7 +38,9 @@ import Flight.Track.Cross
     , PilotTrackCross(..), InterpolatedFix(..), ZoneTag(..)
     )
 import Flight.Track.Tag
-    (Tagging(..), TrackTime(..), TrackTag(..), PilotTrackTag(..))
+    ( ZonesFirstTag(..), ZonesLastTag(..)
+    , Tagging(..), TrackTime(..), TrackTag(..), PilotTrackTag(..)
+    )
 import Flight.Scribe (readComp, readCrossing, writeTagging)
 import TagZoneOptions (description)
 
@@ -113,10 +115,7 @@ go compFile@(CompInputFile compPath) = do
                     | ts <- tss
                     ]
 
-            let tagZone =
-                    Tagging { timing = times
-                            , tagging = pss
-                            }
+            let tagZone = Tagging{timing = times, tagging = pss}
 
             writeTagging (crossToTag crossFile) tagZone
 
@@ -124,8 +123,8 @@ timed :: [PilotTrackTag] -> [Maybe UTCTime] -> TrackTime
 timed xs ys =
     TrackTime
         { zonesSum = length <$> rankTime
-        , zonesFirst = firstTag <$> zs'
-        , zonesLast = lastTag <$> zs'
+        , zonesFirst = ZonesFirstTag $ firstTag <$> zs'
+        , zonesLast = ZonesLastTag $ lastTag <$> zs'
         , zonesRankTime = rankTime
         , zonesRankPilot = (fmap . fmap) fst rs'
         , lastLanding = down

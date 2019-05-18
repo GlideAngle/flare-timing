@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 87ae61b78599cc25fc18852f7dd14ce0a99e9523b6ff59c7c27e494f09287591
+-- hash: 3d6f42cd5910d11dfb11a19d12df782f490eca763ca82e3b4c4370db8e16f1dc
 
 name:           flare-timing
 version:        0.1.0
@@ -332,6 +332,42 @@ executable mask-track
     , transformers
     , uom-plugin
     , vector
+    , yaml
+  default-language: Haskell2010
+
+executable stop-task
+  main-is: StopTaskMain.hs
+  other-modules:
+      StopTaskOptions
+      Paths_flare_timing
+  hs-source-dirs:
+      prod-apps/stop-task
+  default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
+  ghc-options: -Wall -Werror -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
+  build-depends:
+      aeson
+    , base >=4.10.1.0 && <5
+    , bytestring
+    , clock
+    , cmdargs
+    , directory
+    , filemanip
+    , filepath
+    , flight-clip
+    , flight-cmd
+    , flight-comp
+    , flight-latlng
+    , flight-mask
+    , flight-scribe
+    , flight-time
+    , flight-zone
+    , formatting
+    , mtl
+    , raw-strings-qq
+    , safe-exceptions
+    , time
+    , transformers
+    , uom-plugin
     , yaml
   default-language: Haskell2010
 

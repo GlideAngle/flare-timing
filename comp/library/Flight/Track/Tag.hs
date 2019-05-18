@@ -12,15 +12,20 @@ module Flight.Track.Tag
     , TrackTime(..)
     , TrackTag(..)
     , PilotTrackTag(..)
+    , ZonesFirstTag(..)
+    , ZonesLastTag(..)
     , firstLead
     , firstStart
     , lastArrival
     ) where
 
+import Data.Maybe (listToMaybe)
 import Data.String (IsString())
 import Data.Time.Clock (UTCTime)
+import Control.Monad (join)
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
+
 import Flight.Zone.SpeedSection (SpeedSection)
 import Flight.Score (Pilot(..))
 import Flight.Comp (FirstLead(..), FirstStart(..), LastArrival(..))
@@ -38,14 +43,24 @@ data Tagging =
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
+-- | The first tagging of each zone.
+newtype ZonesFirstTag = ZonesFirstTag [Maybe UTCTime]
+    deriving (Eq, Ord, Show, Generic)
+    deriving newtype (ToJSON, FromJSON)
+
+-- | The last tagging of each zone.
+newtype ZonesLastTag = ZonesLastTag [Maybe UTCTime]
+    deriving (Eq, Ord, Show, Generic)
+    deriving newtype (ToJSON, FromJSON)
+
 -- | The timing and tagging for a single task.
 data TrackTime =
     TrackTime
         { zonesSum :: [Int]
         -- ^ For each zone, the number of pilots tagging the zone.
-        , zonesFirst :: [Maybe UTCTime]
+        , zonesFirst :: ZonesFirstTag
         -- ^ For each zone, the time of the first tag.
-        , zonesLast :: [Maybe UTCTime]
+        , zonesLast :: ZonesLastTag
         -- ^ For each zone, the time of the last tag.
         , zonesRankTime :: [[UTCTime]]
         -- ^ For each zone, the ordered times of each tag.
@@ -57,18 +72,18 @@ data TrackTime =
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
-firstLead :: SpeedSection -> [Maybe UTCTime] -> Maybe FirstLead
-firstLead _ [] = Nothing
-firstLead Nothing (t : _) = FirstLead <$> t
-firstLead (Just (leg, _)) ts =
+firstLead :: SpeedSection -> ZonesFirstTag -> Maybe FirstLead
+firstLead _ (ZonesFirstTag []) = Nothing
+firstLead Nothing (ZonesFirstTag (t : _)) = FirstLead <$> t
+firstLead (Just (leg, _)) (ZonesFirstTag ts) =
     FirstLead <$>
     case drop (leg - 1) ts of
         [] -> Nothing
         (t : _) -> t
 
-firstStart :: SpeedSection -> UTCTime -> [Maybe UTCTime] -> Maybe FirstStart
-firstStart _ _ [] = Nothing
-firstStart speedSection startTime times =
+firstStart :: SpeedSection -> UTCTime -> ZonesFirstTag -> Maybe FirstStart
+firstStart _ _ (ZonesFirstTag []) = Nothing
+firstStart speedSection startTime (ZonesFirstTag times) =
     -- > or $ Just True
     -- True
     -- > or $ Just False
@@ -86,14 +101,11 @@ firstStart speedSection startTime times =
                 [] -> Nothing
                 (t : _) -> t
 
-lastArrival :: SpeedSection -> [Maybe UTCTime] -> Maybe LastArrival
-lastArrival _ [] = Nothing
-lastArrival Nothing (t : _) = LastArrival <$> t
-lastArrival (Just (_, lastRaceLeg)) ts =
-    LastArrival <$>
-    case reverse . drop (lastRaceLeg - 1) $ ts of
-        [] -> Nothing
-        (t : _) -> t
+lastArrival :: SpeedSection -> ZonesLastTag -> Maybe LastArrival
+lastArrival _ (ZonesLastTag []) = Nothing
+lastArrival Nothing (ZonesLastTag (t : _)) = LastArrival <$> t
+lastArrival (Just (_, lastRaceLeg)) (ZonesLastTag ts) =
+    LastArrival <$> (join . listToMaybe $ drop (lastRaceLeg - 1) ts)
 
 -- | For a single track, the interpolated fix for each zone tagged.
 newtype TrackTag =
