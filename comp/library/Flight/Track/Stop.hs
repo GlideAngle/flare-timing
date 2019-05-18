@@ -9,18 +9,21 @@ Tracks tagging task control zones for stopped tasks taking consideration of
 a restricted time window for scoring.
 -}
 module Flight.Track.Stop
-    ( StopTagging(..)
+    ( RetroActive(..)
+    , StopTagging(..)
     , StopWindow(..)
-    , RetroActive(..)
+    , StopTrackFlyingSection(..)
     , tardyElapsed
     , tardyGate
+    , stopClipByDuration
+    , stopClipByGate
     ) where
 
 import Data.List.NonEmpty (nonEmpty)
 import Data.Maybe (listToMaybe)
 import Data.List (sort)
 import Data.String (IsString())
-import Data.Time.Clock (UTCTime)
+import Data.Time.Clock (UTCTime, addUTCTime)
 import Control.Monad (join)
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
@@ -58,11 +61,24 @@ data StopWindow =
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
+-- | For a single track, the flying section.
+data StopTrackFlyingSection =
+    StopTrackFlyingSection
+        { scoredSeconds :: FlyingSection Seconds
+        -- ^ The scored section as second offsets from the first fix.
+        , scoredTimes :: FlyingSection UTCTime
+        -- ^ The scored section as a time range.
+        }
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
+
 -- | For each task, the timing and tagging for that task.
 data StopTagging =
     StopTagging
         { stopWindow :: [Maybe StopWindow]
         -- ^ The scored time window for a stopped task.
+        , stopFlying :: [[(Pilot, Maybe StopTrackFlyingSection)]]
+        -- ^ For each task, the pilots' flying sections.
         , timing :: [TrackTime]
           -- ^ For each made zone, the first and last tag.
         , tagging :: [[PilotTrackTag]]
@@ -89,12 +105,38 @@ tardyGate gs ss ts _ = do
     lastStart <- listToMaybe . reverse $ sort starts
     return . snd $ startGateTaken gs' lastStart
 
+stopClipByDuration :: Seconds -> FlyingSection UTCTime -> FlyingSection UTCTime
+stopClipByDuration (Seconds n) x = do
+    (s, e) <- x
+    return (s, min e $ (fromIntegral n) `addUTCTime` s)
+
+stopClipByGate :: Seconds -> [StartGate] -> FlyingSection UTCTime -> FlyingSection UTCTime
+stopClipByGate (Seconds n) ((StartGate g) : []) x = do
+    (s, e) <- x
+    return (s, min e $ (fromIntegral n) `addUTCTime` g)
+stopClipByGate (Seconds n) gs x = do
+    (s, e) <- x
+    gs' <- nonEmpty gs
+    let StartGate g = snd $ startGateTaken gs' s
+    return (s, min e $ (fromIntegral n) `addUTCTime` g)
+
 instance FieldOrdering StopTagging where
     fieldOrder _ = cmp
 
 cmp :: (Ord a, IsString a) => a -> a -> Ordering
 cmp a b =
     case (a, b) of
+        ("stopWindow", _) -> LT
+
+        ("stopFlying", "stopWindow") -> GT
+        ("stopFlying", _) -> LT
+
+        ("timing", "stopWindow") -> GT
+        ("timing", "stopFlying") -> GT
+        ("timing", _) -> LT
+
+        ("tagging", _) -> GT
+
 
         ("lastStarters", _) -> LT
 
@@ -110,9 +152,6 @@ cmp a b =
 
         ("fixFrac", _) -> LT
         (_, "fixFrac") -> GT
-
-        ("timing", _) -> LT
-        ("tagging", _) -> GT
 
         ("fix", _) -> LT
         ("time", "fix") -> GT

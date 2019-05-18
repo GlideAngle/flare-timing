@@ -10,9 +10,12 @@ import Data.Time.Clock (diffUTCTime)
 import Control.Exception.Safe (catchIO)
 import System.FilePath (takeFileName)
 
-import Flight.Track.Cross (Crossing(..), Seconds(..))
+import Flight.Track.Cross (Crossing(..), Seconds(..), TrackFlyingSection(..))
 import Flight.Track.Tag (Tagging(..), TrackTime(..), PilotTrackTag(..))
-import Flight.Track.Stop (StopWindow(..), StopTagging(..), tardyElapsed, tardyGate)
+import Flight.Track.Stop
+    ( StopWindow(..), StopTagging(..), StopTrackFlyingSection(..)
+    , tardyElapsed, tardyGate, stopClipByDuration, stopClipByGate
+    )
 import Flight.Comp
     ( FileType(CompInput)
     , CompInputFile(..)
@@ -23,6 +26,7 @@ import Flight.Comp
     , Task(..)
     , StartGate(..)
     , LastStart(..)
+    , Pilot
     , compToCross
     , crossToTag
     , tagToStop
@@ -86,7 +90,7 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
             writeStop cs tagFile cg tg
 
 writeStop :: CompSettings k -> TagZoneFile -> Crossing -> Tagging -> IO ()
-writeStop CompSettings{tasks} tagFile _ Tagging{timing, tagging} = do
+writeStop CompSettings{tasks} tagFile Crossing{flying} Tagging{timing, tagging} = do
 
     let sws :: [Maybe StopWindow] =
             [
@@ -132,6 +136,42 @@ writeStop CompSettings{tasks} tagFile _ Tagging{timing, tagging} = do
             | TrackTime{zonesLast, zonesRankTime = zts, zonesRankPilot = zps} <- timing
             ]
 
+    let sfs :: [[(Pilot, Maybe StopTrackFlyingSection)]] =
+            [
+                [ (p,) $ do
+                    StopWindow{windowSeconds = clipSecs} <- sw
+                    TrackFlyingSection{scoredTimes = ts, scoredSeconds} <- tfs
+                    case gs of
+                        [] -> do
+                            (t0, t1) <- stopClipByDuration clipSecs ts
+                            let delta = t1 `diffUTCTime` t0
+                            return
+                                StopTrackFlyingSection
+                                    { scoredTimes = Just (t0, t1)
+                                    , scoredSeconds = do
+                                        (Seconds w0, _) <- scoredSeconds
+                                        return (Seconds w0, Seconds $ w0 + round delta)
+                                    }
+
+                        _ -> do
+                            (t0, t1) <- stopClipByGate clipSecs gs ts
+                            let delta = t1 `diffUTCTime` t0
+                            return
+                                StopTrackFlyingSection
+                                    { scoredTimes = Just (t0, t1)
+                                    , scoredSeconds = do
+                                        (Seconds w0, _) <- scoredSeconds
+                                        return (Seconds w0, Seconds $ w0 + round delta)
+                                    }
+
+                | (p, tfs) <- pts
+                ]
+
+            | Task{startGates = gs} <- tasks
+            | pts <- flying
+            | sw <- sws
+            ]
+
     let times' :: [TrackTime] =
             [ ts
             | ts <- timing
@@ -142,5 +182,12 @@ writeStop CompSettings{tasks} tagFile _ Tagging{timing, tagging} = do
             | tgs <- tagging
             ]
 
-    let stopTask = StopTagging{timing = times', tagging = tags, stopWindow = sws}
+    let stopTask =
+            StopTagging
+                { stopWindow = sws
+                , stopFlying = sfs
+                , timing = times'
+                , tagging = tags
+                }
+
     writeStopTagging (tagToStop tagFile) stopTask
