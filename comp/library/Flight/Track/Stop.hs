@@ -95,6 +95,16 @@ instance FieldOrdering StopTagging where
 cmp :: (Ord a, IsString a) => a -> a -> Ordering
 cmp a b =
     case (a, b) of
+
+        ("lastStarters", _) -> LT
+
+        ("windowTimes", "lastStarters") -> GT
+        ("windowTimes", _) -> LT
+
+        ("windowSeconds", "lastStarters") -> GT
+        ("windowSeconds", "windowTimes") -> GT
+        ("windowSeconds", _) -> LT
+
         ("inter", _) -> LT
         ("cross", _) -> GT
 
