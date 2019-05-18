@@ -140,15 +140,10 @@ in    defs
               , source-dirs =
                   "prod-apps/tag-zone"
               }
-          , stop-task =
+          , stop-cross =
               { dependencies =
                     deps
-                  # [ "safe-exceptions"
-                    , "time"
-                    , "flight-clip"
-                    , "flight-mask"
-                    , "flight-zone"
-                    ]
+                  # [ "safe-exceptions", "time", "flight-clip", "flight-zone" ]
               , ghc-options =
                   [ "-rtsopts"
                   , "-threaded"
@@ -157,9 +152,9 @@ in    defs
                   , "-fplugin Data.UnitsOfMeasure.Plugin"
                   ]
               , main =
-                  "StopTaskMain.hs"
+                  "StopCrossMain.hs"
               , source-dirs =
-                  "prod-apps/stop-task"
+                  "prod-apps/stop-cross"
               }
           , unpack-track =
               { dependencies =

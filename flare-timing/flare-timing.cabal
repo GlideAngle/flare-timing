@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3d6f42cd5910d11dfb11a19d12df782f490eca763ca82e3b4c4370db8e16f1dc
+-- hash: 366b3180c79f9df13abac9e504d8216edd0e0598a01f82f3429fded4dbd20db0
 
 name:           flare-timing
 version:        0.1.0
@@ -335,13 +335,13 @@ executable mask-track
     , yaml
   default-language: Haskell2010
 
-executable stop-task
-  main-is: StopTaskMain.hs
+executable stop-cross
+  main-is: StopCrossMain.hs
   other-modules:
-      StopTaskOptions
+      StopCrossOptions
       Paths_flare_timing
   hs-source-dirs:
-      prod-apps/stop-task
+      prod-apps/stop-cross
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
   ghc-options: -Wall -Werror -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:
@@ -357,7 +357,6 @@ executable stop-task
     , flight-cmd
     , flight-comp
     , flight-latlng
-    , flight-mask
     , flight-scribe
     , flight-time
     , flight-zone

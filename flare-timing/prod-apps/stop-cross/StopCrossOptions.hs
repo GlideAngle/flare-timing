@@ -1,4 +1,4 @@
-module StopTaskOptions (description) where
+module StopCrossOptions (description) where
 
 import Text.RawString.QQ (r)
 import Flight.Cmd.Options (Description(..))

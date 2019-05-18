@@ -13,7 +13,7 @@ import System.FilePath (takeFileName)
 import Flight.Track.Cross (Crossing(..), Seconds(..), TrackFlyingSection(..))
 import Flight.Track.Tag (Tagging(..), TrackTime(..), PilotTrackTag(..))
 import Flight.Track.Stop
-    ( StopWindow(..), StopTagging(..), StopTrackFlyingSection(..)
+    ( StopWindow(..), FreezeFrame(..), StopTrackFlyingSection(..)
     , tardyElapsed, tardyGate, stopClipByDuration, stopClipByGate
     )
 import Flight.Comp
@@ -36,8 +36,8 @@ import Flight.Comp
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
-import Flight.Scribe (readComp, readCrossing, readTagging, writeStopTagging)
-import StopTaskOptions (description)
+import Flight.Scribe (readComp, readCrossing, readTagging, writeFreezeFrame)
+import StopCrossOptions (description)
 
 main :: IO ()
 main = do
@@ -182,12 +182,12 @@ writeStop CompSettings{tasks} tagFile Crossing{flying} Tagging{timing, tagging} 
             | tgs <- tagging
             ]
 
-    let stopTask =
-            StopTagging
+    let frame =
+            FreezeFrame
                 { stopWindow = sws
                 , stopFlying = sfs
                 , timing = times'
                 , tagging = tags
                 }
 
-    writeStopTagging (tagToStop tagFile) stopTask
+    writeFreezeFrame (tagToStop tagFile) frame
