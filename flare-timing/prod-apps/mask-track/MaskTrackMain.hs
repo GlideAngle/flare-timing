@@ -30,8 +30,8 @@ import Flight.Comp
     ( FileType(CompInput)
     , CompInputFile(..)
     , TaskLengthFile(..)
-    , CrossZoneFile(..)
     , TagZoneFile(..)
+    , StopCrossFile(..)
     , CompSettings(..)
     , PilotName(..)
     , Pilot(..)
@@ -51,6 +51,7 @@ import Flight.Comp
     , compToCross
     , compToMask
     , crossToTag
+    , tagToStop
     , findCompInput
     , speedSectionToLeg
     , ensureExt
@@ -82,7 +83,7 @@ import Flight.Kml (LatLngAlt(..), MarkedFixes(..))
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
-import Flight.Lookup.Cross (FlyingLookup(..), crossFlying)
+import Flight.Lookup.Stop (ScoredLookup(..), stopFlying)
 import qualified Flight.Lookup as Lookup
     ( scoredTimeRange, arrivalRank, ticked, compRoutes, compRaceTimes
     , pilotTime, pilotEssTime
@@ -95,7 +96,7 @@ import Flight.Lookup.Tag
     , tagTicked
     )
 import Flight.Scribe
-    ( readComp, readRoute, readCrossing, readTagging, writeMasking
+    ( readComp, readRoute, readTagging, readFreezeFrame, writeMasking
     , readCompLeading, readCompBestDistances, readCompTimeRows
     )
 import Flight.Lookup.Route (routeLength)
@@ -134,21 +135,16 @@ drive o = do
 go :: CmdBatchOptions -> CompInputFile -> IO ()
 go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
     let lenFile@(TaskLengthFile lenPath) = compToTaskLength compFile
-    let crossFile@(CrossZoneFile crossPath) = compToCross compFile
     let tagFile@(TagZoneFile tagPath) = crossToTag . compToCross $ compFile
+    let stopFile@(StopCrossFile stopPath) = tagToStop tagFile
     putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
     putStrLn $ "Reading task length from '" ++ takeFileName lenPath ++ "'"
-    putStrLn $ "Reading flying time range from '" ++ takeFileName crossPath ++ "'"
     putStrLn $ "Reading zone tags from '" ++ takeFileName tagPath ++ "'"
+    putStrLn $ "Reading scored times from '" ++ takeFileName stopPath ++ "'"
 
     compSettings <-
         catchIO
             (Just <$> readComp compFile)
-            (const $ return Nothing)
-
-    crossing <-
-        catchIO
-            (Just <$> readCrossing crossFile)
             (const $ return Nothing)
 
     tagging <-
@@ -156,18 +152,23 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
             (Just <$> readTagging tagFile)
             (const $ return Nothing)
 
+    stopping <-
+        catchIO
+            (Just <$> readFreezeFrame stopFile)
+            (const $ return Nothing)
+
     routes <-
         catchIO
             (Just <$> readRoute lenFile)
             (const $ return Nothing)
 
-    let flyingLookup = crossFlying crossing
+    let scoredLookup = stopFlying stopping
     let lookupTaskLength = routeLength taskRoute taskRouteSpeedSubset stopRoute routes
 
-    case (compSettings, crossing, tagging, routes) of
+    case (compSettings, tagging, stopping, routes) of
         (Nothing, _, _, _) -> putStrLn "Couldn't read the comp settings."
-        (_, Nothing, _, _) -> putStrLn "Couldn't read the crossings."
-        (_, _, Nothing, _) -> putStrLn "Couldn't read the taggings."
+        (_, Nothing, _, _) -> putStrLn "Couldn't read the taggings."
+        (_, _, Nothing, _) -> putStrLn "Couldn't read the scored frame."
         (_, _, _, Nothing) -> putStrLn "Couldn't read the routes."
         (Just cs, Just _, Just _, Just _) ->
             writeMask
@@ -177,7 +178,7 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
                 (IxTask <$> task)
                 (pilotNamed cs $ PilotName <$> pilot)
                 compFile
-                (check math lookupTaskLength flyingLookup tagging)
+                (check math lookupTaskLength scoredLookup tagging)
 
 writeMask
     :: CompSettings k
@@ -576,7 +577,7 @@ check
     :: (MonadThrow m, MonadIO m)
     => Math
     -> RoutesLookupTaskDistance
-    -> FlyingLookup
+    -> ScoredLookup
     -> Maybe Tagging
     -> CompInputFile
     -> [IxTask]
@@ -589,7 +590,7 @@ check math lengths flying tags = checkTracks $ \CompSettings{tasks} ->
 flown
     :: Math
     -> RoutesLookupTaskDistance
-    -> FlyingLookup
+    -> ScoredLookup
     -> Maybe Tagging
     -> FnIxTask k (Pilot -> FlightStats k)
 flown math (RoutesLookupTaskDistance lookupTaskLength) flying tags tasks iTask fixes =
@@ -602,7 +603,7 @@ flown math (RoutesLookupTaskDistance lookupTaskLength) flying tags tasks iTask f
 
 flown'
     :: QTaskDistance Double [u| m |]
-    -> FlyingLookup
+    -> ScoredLookup
     -> Math
     -> Maybe Tagging
     -> FnIxTask k (Pilot -> FlightStats k)

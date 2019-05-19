@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 7d81715993a4f82d1f8d4ce507da56d61a1736858224b6128d3227d80ae29ba5
+-- hash: 54a5ade73a1c4121d2b9769f401df7299103bdd10eab393e53ed59557fda2ea5
 
 name:           flight-lookup
 version:        0.1.0
@@ -35,6 +35,7 @@ library
       Flight.Lookup.Route
       Flight.Lookup.Cross
       Flight.Lookup.Tag
+      Flight.Lookup.Stop
       Flight.Lookup
   other-modules:
       Paths_flight_lookup

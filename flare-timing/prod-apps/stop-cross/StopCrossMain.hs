@@ -3,6 +3,7 @@
 
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
+import Data.Function ((&))
 import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
@@ -17,9 +18,9 @@ import Flight.Track.Cross
     )
 import Flight.Track.Tag
     ( Tagging(..), TrackTime(..), PilotTrackTag(..), TrackTag(..))
-import qualified Flight.Track.Stop as Stop (StopTrackFlyingSection(..))
+import qualified Flight.Track.Stop as Stop (TrackScoredSection(..))
 import Flight.Track.Stop
-    ( StopWindow(..), FreezeFrame(..), StopTrackFlyingSection(..)
+    ( StopWindow(..), FreezeFrame(..), TrackScoredSection(..)
     , tardyElapsed, tardyGate, stopClipByDuration, stopClipByGate
     )
 import Flight.Comp
@@ -142,33 +143,45 @@ writeStop CompSettings{tasks} tagFile Crossing{flying} Tagging{timing, tagging} 
             | TrackTime{zonesLast, zonesRankTime = zts, zonesRankPilot = zps} <- timing
             ]
 
-    let sfss :: [[(Pilot, Maybe StopTrackFlyingSection)]] =
+    let sfss :: [[(Pilot, Maybe TrackScoredSection)]] =
             [
-                [ (p,) $ do
-                    StopWindow{windowSeconds = clipSecs} <- sw
-                    TrackFlyingSection{scoredTimes = ts, scoredSeconds} <- tfs
-                    case gs of
-                        [] -> do
-                            (t0, t1) <- stopClipByDuration clipSecs ts
-                            let delta = t1 `diffUTCTime` t0
-                            return
-                                StopTrackFlyingSection
-                                    { scoredTimes = Just (t0, t1)
-                                    , scoredSeconds = do
-                                        (Seconds w0, _) <- scoredSeconds
-                                        return (Seconds w0, Seconds $ w0 + round delta)
-                                    }
+                [ (p,) $ sw & \case
+                    Nothing -> do
+                        TrackFlyingSection{flyingTimes, flyingSeconds} <- tfs
 
-                        _ -> do
-                            (t0, t1) <- stopClipByGate clipSecs gs ts
-                            let delta = t1 `diffUTCTime` t0
-                            return
-                                StopTrackFlyingSection
-                                    { scoredTimes = Just (t0, t1)
-                                    , scoredSeconds = do
-                                        (Seconds w0, _) <- scoredSeconds
-                                        return (Seconds w0, Seconds $ w0 + round delta)
-                                    }
+                        return
+                            TrackScoredSection
+                                { scoredTimes = flyingTimes
+                                , scoredSeconds = flyingSeconds
+                                }
+
+                    _ -> do
+                        StopWindow{windowSeconds = clipSecs} <- sw
+                        TrackFlyingSection{flyingTimes = ts, flyingSeconds} <- tfs
+                        case gs of
+                            [] -> do
+                                (t0, t1) <- stopClipByDuration clipSecs ts
+                                let delta = t1 `diffUTCTime` t0
+
+                                return
+                                    TrackScoredSection
+                                        { scoredTimes = Just (t0, t1)
+                                        , scoredSeconds = do
+                                            (Seconds w0, _) <- flyingSeconds
+                                            return (Seconds w0, Seconds $ w0 + round delta)
+                                        }
+
+                            _ -> do
+                                (t0, t1) <- stopClipByGate clipSecs gs ts
+                                let delta = t1 `diffUTCTime` t0
+
+                                return
+                                    TrackScoredSection
+                                        { scoredTimes = Just (t0, t1)
+                                        , scoredSeconds = do
+                                            (Seconds w0, _) <- flyingSeconds
+                                            return (Seconds w0, Seconds $ w0 + round delta)
+                                        }
 
                 | (p, tfs) <- pfs
                 ]

@@ -43,13 +43,14 @@ import Flight.Mask
     ( FnIxTask, RaceSections(..), GroupLeg(..), Ticked, Sliver(..)
     , checkTracks, groupByLeg, dashDistancesToGoal
     )
-import Flight.Track.Cross (Fix(..), ZoneTag(..), TrackFlyingSection(..), asIfFix)
+import Flight.Track.Cross (Fix(..), ZoneTag(..), asIfFix)
 import Flight.Track.Tag (Tagging(..), TrackTime(..), firstLead, firstStart)
+import Flight.Track.Stop (TrackScoredSection(..))
 import Flight.Kml (MarkedFixes(..), timeToFixIdx)
 import Data.Ratio.Rounding (dpRound)
 import Flight.Distance (QTaskDistance, TaskDistance(..))
 import Flight.Scribe (writeAlignTime)
-import Flight.Lookup.Cross (FlyingLookup(..))
+import Flight.Lookup.Stop(ScoredLookup(..))
 import Flight.Lookup.Tag
     (TickLookup(..), TagLookup(..), tagTicked, tagPilotTag)
 import Flight.Span.Double (fromZonesF, azimuthF, spanF, csF, cutF, dppF, csegF)
@@ -94,7 +95,7 @@ writeTime selectTasks selectPilots compFile f = do
 
 checkAll
     :: Bool -- ^ Exclude zones outside speed section
-    -> FlyingLookup
+    -> ScoredLookup
     -> Tagging
     -> CompInputFile
     -> [IxTask]
@@ -106,8 +107,8 @@ checkAll
                  (Pilot, Pilot -> [TimeRow])
              ]
          ]
-checkAll ssOnly flyingLookup tagging =
-    checkTracks (\CompSettings{tasks} -> group ssOnly flyingLookup tagging tasks)
+checkAll ssOnly scoredLookup tagging =
+    checkTracks (\CompSettings{tasks} -> group ssOnly scoredLookup tagging tasks)
 
 includeTask :: [IxTask] -> IxTask -> Bool
 includeTask tasks = if null tasks then const True else (`elem` tasks)
@@ -175,12 +176,12 @@ mkTimeRow lead start legIdx fixIdx (Just Fix{fix, time, lat, lng}) (Just d) =
 
 group
     :: Bool -- ^ Exclude zones outside speed section
-    -> FlyingLookup
+    -> ScoredLookup
     -> Tagging
     -> FnIxTask k (Pilot -> [TimeRow])
 group
     ssOnly
-    (FlyingLookup lookupFlying)
+    (ScoredLookup lookupScored)
     tags@Tagging{timing}
     tasks iTask@(IxTask i)
     mf@MarkedFixes{mark0} p =
@@ -206,7 +207,7 @@ group
                 scoredTimeRange :: FlyingSection UTCTime =
                     fromMaybe
                         (Just (mark0, mark0))
-                        (fmap scoredTimes . (\f -> f iTask p) =<< lookupFlying)
+                        (fmap scoredTimes . (\f -> f iTask p) =<< lookupScored)
 
                 -- NOTE: Ensure we're only considering scored subset of flying time.
                 scoredMarkedFixes =

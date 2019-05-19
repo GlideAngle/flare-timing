@@ -36,10 +36,12 @@ import qualified Flight.Comp as Cmp (openClose)
 import Flight.Score (ArrivalPlacing(..), PilotTime(..), JumpedTheGun(..))
 import Flight.Track.Mask (RaceTime(..), racing)
 import Flight.Track.Cross (TrackFlyingSection(..))
+import Flight.Track.Stop (TrackScoredSection(..))
 import Flight.Track.Time (ZoneIdx)
 import Flight.Mask (RaceSections(..))
 import qualified Flight.Track.Speed as Speed (pilotTime, pilotEssTime)
 import Flight.Lookup.Cross (FlyingLookup(..))
+import Flight.Lookup.Stop (ScoredLookup(..))
 import Flight.Lookup.Tag
     ( ArrivalRankLookup(..) , TaskLeadingLookup(..)
     , TimeLookup(..), TickLookup(..)
@@ -51,8 +53,8 @@ flyingTimeRange (FlyingLookup get) mark0 iTask p =
         (Just (mark0, mark0))
         (fmap flyingTimes . (\f -> f iTask p) =<< get)
 
-scoredTimeRange :: FlyingLookup -> UTCTime -> IxTask -> Pilot -> FlyingSection UTCTime
-scoredTimeRange (FlyingLookup get) mark0 iTask p =
+scoredTimeRange :: ScoredLookup -> UTCTime -> IxTask -> Pilot -> FlyingSection UTCTime
+scoredTimeRange (ScoredLookup get) mark0 iTask p =
     fromMaybe
         (Just (mark0, mark0))
         (fmap scoredTimes . (\f -> f iTask p) =<< get)

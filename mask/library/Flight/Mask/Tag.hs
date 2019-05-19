@@ -24,7 +24,7 @@ import Control.Lens ((^?), element)
 import Control.Arrow (first)
 import Control.Monad (join)
 
-import Flight.Clip (FlyingSection, FlyCut(..), FlyClipping(..))
+import Flight.Clip (FlyingSection)
 import Flight.LatLng (AzimuthFwd)
 import Flight.Distance (SpanLatLng)
 import Flight.Kml (Latitude(..), Longitude(..), MarkedFixes(..), secondsToUtc)
@@ -32,9 +32,8 @@ import qualified Flight.Kml as Kml
     (LatLngAlt(..), Fix, FixMark(..), Seconds(..))
 import Flight.Track.Cross
     (ZoneCross(..), ZoneTag(..), Seconds(..), TrackFlyingSection(..))
-import Flight.Track.Stop (RetroActive(..))
 import Flight.Track.Time (ZoneIdx(..))
-import Flight.Comp (IxTask(..), Task(..), TaskStop(..), Zones(..))
+import Flight.Comp (IxTask(..), Task(..), Zones(..))
 import Flight.Units ()
 import Flight.Mask.Internal.Race ()
 import Flight.Mask.Internal.Zone
@@ -66,13 +65,10 @@ nullFlying =
     TrackFlyingSection
         { loggedFixes = Nothing
         , flyingFixes = Nothing
-        , scoredFixes = Nothing
         , loggedSeconds = Nothing
         , flyingSeconds = Nothing
-        , scoredSeconds = Nothing
         , loggedTimes = Nothing
         , flyingTimes = Nothing
-        , scoredTimes = Nothing
         }
 
 -- | A masking produces a value from a task and tracklog fixes.
@@ -583,6 +579,7 @@ jumpGaps xs =
     where
         ys = sum <$> chop jumpGap xs
 
+-- | The zones that are made without regard to the stopped time of stopped tasks.
 madeZones
     :: (Real a, Fractional a)
     => AzimuthFwd a
@@ -599,39 +596,14 @@ madeZones az span fromZones task mf@MarkedFixes{mark0, fixes} =
         }
     where
         flying' =
-            maybe
                 TrackFlyingSection
                     { loggedFixes = Just len
                     , flyingFixes = flyingIndices
-                    , scoredFixes = flyingIndices
                     , loggedSeconds = snd <$> loggedSeconds
                     , flyingSeconds = flyingSeconds
-                    , scoredSeconds = flyingSeconds
                     , loggedTimes = loggedTimes
                     , flyingTimes = flyingTimes
-                    , scoredTimes = flyingTimes
                     }
-                (\(RetroActive t) ->
-                    let fc = FlyCut{cut =Just(mark0, t), uncut = mf}
-                        FlyCut{uncut = MarkedFixes{fixes = fixes'}} = clipToFlown fc
-                        indices' = flyingSection fixes'
-                        seconds' = secondsRange fixes' indices'
-                        times' = timeRange mark0 seconds'
-                    in
-                        TrackFlyingSection
-                            { loggedFixes = Just len
-                            , flyingFixes = flyingIndices
-                            , scoredFixes = indices'
-                            , loggedSeconds = snd <$> loggedSeconds
-                            , flyingSeconds = flyingSeconds
-                            , scoredSeconds = seconds'
-                            , loggedTimes = loggedTimes
-                            , flyingTimes = flyingTimes
-                            , scoredTimes = times'
-                            })
-                retro
-
-        retro = RetroActive . retroactive <$> stopped task
 
         len = length fixes
 
@@ -645,44 +617,45 @@ madeZones az span fromZones task mf@MarkedFixes{mark0, fixes} =
         flyingTimes = timeRange mark0 flyingSeconds
 
         (selected, nominees) =
-            scoredCrossings
+            flyingCrossings
                 az
                 span
                 fromZones
                 task
                 mf
-                (scoredFixes flying')
+                (flyingFixes flying')
 
--- | Finds the crossings in the scored flying section.
-scoredCrossings
+-- | Finds the crossings in the flying section. All of these crossings may not
+-- be included in the scored section of the flight and will be clipped later.
+flyingCrossings
     :: (Real a, Fractional a)
     => AzimuthFwd a
     -> SpanLatLng a
     -> (Zones -> [TaskZone a])
     -> Task k
     -> MarkedFixes
-    -> FlyingSection Int -- ^ The flying section to score
+    -> FlyingSection Int -- ^ The fix indices of hte flying section
     -> (SelectedCrossings, NomineeCrossings)
-scoredCrossings
+flyingCrossings
     az
     span
     fromZones
     task@Task{zones}
     MarkedFixes{mark0, fixes}
-    scoredIndices =
+    indices =
     (selected, nominees)
     where
-        fixesScored =
+        keptFixes =
             maybe
                 fixes
                 (\(m, n) -> take (n - m) $ drop m fixes)
-                scoredIndices
+                indices
 
         xs' =
             maybe
                 xs
                 (\(ii, _) -> (fmap . fmap) (reindex ii) xs)
-                (first ZoneIdx <$> scoredIndices)
+                (first ZoneIdx <$> indices)
 
         nominees = NomineeCrossings $ f <$> xs'
 
@@ -713,7 +686,7 @@ scoredCrossings
             tickedZones
                 fs
                 (fromZones zones)
-                (fixToPoint <$> fixesScored)
+                (fixToPoint <$> keptFixes)
 
         f :: [Crossing] -> [Maybe ZoneCross]
         f [] = []

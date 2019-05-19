@@ -69,20 +69,14 @@ data TrackFlyingSection =
         -- ^ The number of logged fixes.
         , flyingFixes :: FlyingSection Int
         -- ^ The flying section as indices into the list of fixes.
-        , scoredFixes :: FlyingSection Int
-        -- ^ A stopped task may cut the flying fixes short.
         , loggedSeconds :: Maybe Seconds
         -- ^ The number of seconds logging fixes.
         , flyingSeconds :: FlyingSection Seconds
         -- ^ The flying section as second offsets from the first fix.
-        , scoredSeconds :: FlyingSection Seconds
-        -- ^ The scored section as second offsets from the first fix.
         , loggedTimes :: FlyingSection UTCTime
         -- ^ The time range of all fixes logged, not just those flown.
         , flyingTimes :: FlyingSection UTCTime
         -- ^ The flying section as a time range.
-        , scoredTimes :: FlyingSection UTCTime
-        -- ^ The scored section as a time range.
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)

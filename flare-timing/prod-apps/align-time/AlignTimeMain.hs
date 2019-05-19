@@ -16,18 +16,19 @@ import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
 import Flight.Comp
     ( FileType(CompInput)
     , CompInputFile(..)
-    , CrossZoneFile(..)
     , TagZoneFile(..)
+    , StopCrossFile(..)
     , PilotName(..)
     , IxTask(..)
     , compToCross
     , crossToTag
+    , tagToStop
     , findCompInput
     , ensureExt
     , pilotNamed
     )
-import Flight.Scribe (readComp, readCrossing, readTagging)
-import Flight.Lookup.Cross (crossFlying)
+import Flight.Scribe (readComp, readTagging, readFreezeFrame)
+import Flight.Lookup.Stop (stopFlying)
 import AlignTimeOptions (description)
 import Flight.Time.Align (checkAll, writeTime)
 
@@ -53,20 +54,15 @@ drive o = do
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
 go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
-    let crossFile@(CrossZoneFile crossPath) = compToCross compFile
     let tagFile@(TagZoneFile tagPath) = crossToTag . compToCross $ compFile
+    let stopFile@(StopCrossFile stopPath) = tagToStop tagFile
     putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
-    putStrLn $ "Reading flying time range from '" ++ takeFileName crossPath ++ "'"
     putStrLn $ "Reading zone tags from '" ++ takeFileName tagPath ++ "'"
+    putStrLn $ "Reading scored times from '" ++ takeFileName stopPath ++ "'"
 
     compSettings <-
         catchIO
             (Just <$> readComp compFile)
-            (const $ return Nothing)
-
-    crossing <-
-        catchIO
-            (Just <$> readCrossing crossFile)
             (const $ return Nothing)
 
     tagging <-
@@ -74,16 +70,21 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
             (Just <$> readTagging tagFile)
             (const $ return Nothing)
 
-    let flyingLookup = crossFlying crossing
+    stopping <-
+        catchIO
+            (Just <$> readFreezeFrame stopFile)
+            (const $ return Nothing)
 
-    case (compSettings, crossing, tagging) of
+    let scoredLookup = stopFlying stopping
+
+    case (compSettings, tagging, stopping) of
         (Nothing, _, _) -> putStrLn "Couldn't read the comp settings."
-        (_, Nothing, _) -> putStrLn "Couldn't read the crossings."
-        (_, _, Nothing) -> putStrLn "Couldn't read the taggings."
-        (Just cs, Just _, Just t) ->
+        (_, Nothing, _) -> putStrLn "Couldn't read the taggings."
+        (_, _, Nothing) -> putStrLn "Couldn't read the scored frame."
+        (Just cs, Just t, Just _) ->
             let f =
                     writeTime
                         (IxTask <$> task)
                         (pilotNamed cs $ PilotName <$> pilot)
                         (CompInputFile compPath)
-            in (f . checkAll speedSectionOnly flyingLookup) t
+            in (f . checkAll speedSectionOnly scoredLookup) t

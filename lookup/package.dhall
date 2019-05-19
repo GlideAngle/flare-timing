@@ -48,6 +48,7 @@ in    deps
               [ "Flight.Lookup.Route"
               , "Flight.Lookup.Cross"
               , "Flight.Lookup.Tag"
+              , "Flight.Lookup.Stop"
               , "Flight.Lookup"
               ]
           }

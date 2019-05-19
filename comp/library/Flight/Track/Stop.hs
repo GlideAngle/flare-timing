@@ -12,7 +12,7 @@ module Flight.Track.Stop
     ( RetroActive(..)
     , FreezeFrame(..)
     , StopWindow(..)
-    , StopTrackFlyingSection(..)
+    , TrackScoredSection(..)
     , tardyElapsed
     , tardyGate
     , stopClipByDuration
@@ -61,9 +61,9 @@ data StopWindow =
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
--- | For a single track, the flying section.
-data StopTrackFlyingSection =
-    StopTrackFlyingSection
+-- | For a single track, the scored section.
+data TrackScoredSection =
+    TrackScoredSection
         { scoredSeconds :: FlyingSection Seconds
         -- ^ The scored section as second offsets from the first fix.
         , scoredTimes :: FlyingSection UTCTime
@@ -77,8 +77,8 @@ data FreezeFrame =
     FreezeFrame
         { stopWindow :: [Maybe StopWindow]
         -- ^ The scored time window for a stopped task.
-        , stopFlying :: [[(Pilot, Maybe StopTrackFlyingSection)]]
-        -- ^ For each task, the pilots' flying sections.
+        , stopFlying :: [[(Pilot, Maybe TrackScoredSection)]]
+        -- ^ For each task, the pilots' flying section that is scored.
         , timing :: [TrackTime]
           -- ^ For each made zone, the first and last tag.
         , tagging :: [[PilotTrackTag]]
