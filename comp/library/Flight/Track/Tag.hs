@@ -17,10 +17,12 @@ module Flight.Track.Tag
     , firstLead
     , firstStart
     , lastArrival
+    , timed
     ) where
 
-import Data.Maybe (listToMaybe)
+import Data.Maybe (listToMaybe, fromMaybe, catMaybes)
 import Data.String (IsString())
+import Data.List (transpose, sortOn, sort)
 import Data.Time.Clock (UTCTime)
 import Control.Monad (join)
 import GHC.Generics (Generic)
@@ -29,7 +31,7 @@ import Data.Aeson (ToJSON(..), FromJSON(..))
 import Flight.Zone.SpeedSection (SpeedSection)
 import Flight.Score (Pilot(..))
 import Flight.Comp (FirstLead(..), FirstStart(..), LastArrival(..))
-import Flight.Track.Cross (ZoneTag)
+import Flight.Track.Cross (InterpolatedFix(..), ZoneTag(..))
 import Flight.Field (FieldOrdering(..))
 
 -- | For each task, the timing and tagging for that task.
@@ -71,6 +73,92 @@ data TrackTime =
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
+
+timed
+    :: [PilotTrackTag]
+    -> [Maybe UTCTime] -- ^ The end of each pilot's flying time.
+    -> TrackTime
+timed xs ys =
+    TrackTime
+        { zonesSum = length <$> rankTime
+        , zonesFirst = ZonesFirstTag $ firstTag <$> zs'
+        , zonesLast = ZonesLastTag $ lastTag <$> zs'
+        , zonesRankTime = rankTime
+        , zonesRankPilot = (fmap . fmap) fst rs'
+        , lastLanding = down
+        }
+    where
+        down =
+            case catMaybes ys of
+                [] -> Nothing
+                ts ->
+                    case reverse $ sort ts of
+                        [] -> Nothing
+                        (t : _) -> Just t
+
+        zs :: [[Maybe UTCTime]]
+        zs = fromMaybe [] . tagTimes <$> xs
+
+        zs' :: [[Maybe UTCTime]]
+        zs' = transpose zs
+
+        rs :: [[Maybe (Pilot, UTCTime)]]
+        rs = transpose $ rankByTag xs
+
+        rs' :: [[(Pilot, UTCTime)]]
+        rs' = sortOnTag <$> rs
+
+        rankTime = (fmap . fmap) snd rs'
+
+sortOnTag :: forall a. [Maybe (a, UTCTime)] -> [(a, UTCTime)]
+sortOnTag xs = sortOn snd $ catMaybes xs
+
+firstTag :: [Maybe UTCTime] -> Maybe UTCTime
+firstTag xs =
+    if null ys then Nothing else Just $ minimum ys
+    where
+        ys = catMaybes xs
+
+lastTag :: [Maybe UTCTime] -> Maybe UTCTime
+lastTag xs =
+    if null ys then Nothing else Just $ maximum ys
+    where
+        ys = catMaybes xs
+
+-- | Gets the pilots zone tag times.
+tagTimes :: PilotTrackTag -> Maybe [Maybe UTCTime]
+tagTimes (PilotTrackTag _ Nothing) = Nothing
+tagTimes (PilotTrackTag _ (Just xs)) =
+    Just $ fmap (time . inter) <$> zonesTag xs
+
+-- | Rank the pilots tagging each zone in a single task.
+rankByTag
+    :: [PilotTrackTag]
+    -- ^ The list of pilots flying the task and the zones they tagged.
+    -> [[Maybe (Pilot, UTCTime)]]
+    -- ^ For each zone in the task, the sorted list of tag ordered pairs of
+    -- pilots and their tag times.
+rankByTag xs =
+    (fmap . fmap) g zss
+    where
+        -- A list of pilots and maybe their tagged zones.
+        ys :: [(Pilot, Maybe [Maybe UTCTime])]
+        ys = (\t@(PilotTrackTag p _) -> (p, tagTimes t)) <$> xs
+
+        f :: (Pilot, Maybe [Maybe UTCTime]) -> Maybe [(Pilot, Maybe UTCTime)]
+        f (p, ts) = do
+            ts' <- ts
+            return $ (,) p <$> ts'
+
+        -- For each zone, an unsorted list of pilots.
+        zss :: [[(Pilot, Maybe UTCTime)]]
+        zss = catMaybes $ f <$> ys
+
+        -- Associate the pilot with each zone.
+        g :: (Pilot, Maybe UTCTime) -> Maybe (Pilot, UTCTime)
+        g (p, t) = do
+            t' <- t
+            return (p, t')
 
 firstLead :: SpeedSection -> ZonesFirstTag -> Maybe FirstLead
 firstLead _ (ZonesFirstTag []) = Nothing

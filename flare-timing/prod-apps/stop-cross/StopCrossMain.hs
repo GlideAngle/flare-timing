@@ -17,11 +17,11 @@ import Flight.Track.Cross
     , ZoneTag(..), InterpolatedFix(..)
     )
 import Flight.Track.Tag
-    ( Tagging(..), TrackTime(..), PilotTrackTag(..), TrackTag(..))
+    ( Tagging(..), TrackTime(..), PilotTrackTag(..), TrackTag(..), timed)
 import qualified Flight.Track.Stop as Stop (TrackScoredSection(..))
 import Flight.Track.Stop
     ( StopWindow(..), FreezeFrame(..), TrackScoredSection(..)
-    , tardyElapsed, tardyGate, stopClipByDuration, stopClipByGate
+    , tardyElapsed, tardyGate, stopClipByDuration, stopClipByGate, endOfScored
     )
 import Flight.Comp
     ( FileType(CompInput)
@@ -191,12 +191,7 @@ writeStop CompSettings{tasks} tagFile Crossing{flying} Tagging{timing, tagging} 
             | sw <- sws
             ]
 
-    let times' :: [TrackTime] =
-            [ ts
-            | ts <- timing
-            ]
-
-    let tags :: [[PilotTrackTag]] =
+    let tagss :: [[PilotTrackTag]] =
             [
                 if sw == Nothing then pts else
                 [
@@ -215,12 +210,18 @@ writeStop CompSettings{tasks} tagFile Crossing{flying} Tagging{timing, tagging} 
             | sfs <- sfss
             ]
 
+    let timess :: [TrackTime] =
+            [ timed ts fs
+            | ts <- tagss
+            | fs <- fmap (endOfScored . snd) <$> sfss
+            ]
+
     let frame =
             FreezeFrame
                 { stopWindow = sws
                 , stopFlying = sfss
-                , timing = times'
-                , tagging = tags
+                , timing = timess
+                , tagging = tagss
                 }
 
     writeFreezeFrame (tagToStop tagFile) frame

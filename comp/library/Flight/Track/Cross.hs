@@ -22,10 +22,12 @@ module Flight.Track.Cross
     , Fix(..)
     , trackLogErrors
     , asIfFix
+    , endOfFlying
     ) where
 
 import Data.String (IsString())
 import Data.Time.Clock (UTCTime)
+import Control.Monad (join)
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..))
 
@@ -161,6 +163,9 @@ data ZoneTag =
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
+
+endOfFlying :: Maybe TrackFlyingSection -> Maybe UTCTime
+endOfFlying = join . fmap (fmap snd . flyingTimes)
 
 asIfFix :: ZoneTag -> Fix
 asIfFix ZoneTag{inter = InterpolatedFix{fixFrac, time, lat, lng}} =

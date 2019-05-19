@@ -17,6 +17,7 @@ module Flight.Track.Stop
     , tardyGate
     , stopClipByDuration
     , stopClipByGate
+    , endOfScored
     ) where
 
 import Data.List.NonEmpty (nonEmpty)
@@ -86,6 +87,9 @@ data FreezeFrame =
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
+
+endOfScored :: Maybe TrackScoredSection -> Maybe UTCTime
+endOfScored = join . fmap (fmap snd . scoredTimes)
 
 -- | Find the last crossing of the start of an elapsed time task.
 tardyElapsed :: SpeedSection -> ZonesLastTag -> Maybe LastStart
