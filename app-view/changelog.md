@@ -12,6 +12,10 @@ of this changelog.
   ratio for the leading weight.
 * Show the stopped task validity.
 * Add plots for launch, distance and time validity.
+* Add a series of three plots for stop validity relative to mean reach, the
+  spread of reach and the number of pilots landed before the task is stopped.
+* Peg the data frame for each pilot's track to the scored time window for
+  stopped tasks.
 
 # Making a Line Goal
 ## app-view-0.19
