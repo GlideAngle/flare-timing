@@ -65,7 +65,9 @@ data StopWindow =
 -- | For a single track, the scored section.
 data TrackScoredSection =
     TrackScoredSection
-        { scoredSeconds :: FlyingSection Seconds
+        { scoredFixes :: FlyingSection Int
+        -- ^ The scored section as indices into the list of fixes.
+        , scoredSeconds :: FlyingSection Seconds
         -- ^ The scored section as second offsets from the first fix.
         , scoredTimes :: FlyingSection UTCTime
         -- ^ The scored section as a time range.

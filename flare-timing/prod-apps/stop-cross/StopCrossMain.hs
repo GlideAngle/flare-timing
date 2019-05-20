@@ -1,6 +1,9 @@
 ﻿{-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
+import Prelude hiding (head, last)
+import Data.Maybe (fromMaybe)
+import Data.List.NonEmpty (nonEmpty, head, last)
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
 import Data.Function ((&))
@@ -8,6 +11,7 @@ import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Data.Time.Clock (UTCTime, diffUTCTime)
+import Control.Monad (join)
 import Control.Exception.Safe (catchIO)
 import System.FilePath (takeFileName)
 
@@ -19,6 +23,7 @@ import Flight.Track.Cross
 import Flight.Track.Tag
     ( Tagging(..), TrackTime(..), PilotTrackTag(..), TrackTag(..), timed)
 import qualified Flight.Track.Stop as Stop (TrackScoredSection(..))
+import Flight.Track.Time (FixIdx(..), TrackRow(..))
 import Flight.Track.Stop
     ( StopWindow(..), FreezeFrame(..), TrackScoredSection(..)
     , tardyElapsed, tardyGate, stopClipByDuration, stopClipByGate, endOfScored
@@ -43,7 +48,8 @@ import Flight.Comp
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
-import Flight.Scribe (readComp, readCrossing, readTagging, writeFreezeFrame)
+import Flight.Scribe
+    (readComp, readCrossing, readTagging, writeFreezeFrame, readCompTrackRows)
 import StopCrossOptions (description)
 
 main :: IO ()
@@ -93,11 +99,21 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
         (Nothing, _, _) -> putStrLn "Couldn't read the comp settings."
         (_, Nothing, _) -> putStrLn "Couldn't read the crossings."
         (_, _, Nothing) -> putStrLn "Couldn't read the taggings."
-        (Just cs, Just cg, Just tg) ->
-            writeStop cs tagFile cg tg
+        (Just cs, Just cg, Just tg) -> writeStop cs compFile tagFile cg tg
 
-writeStop :: CompSettings k -> TagZoneFile -> Crossing -> Tagging -> IO ()
-writeStop CompSettings{tasks} tagFile Crossing{flying} Tagging{timing, tagging} = do
+writeStop
+    :: CompSettings k
+    -> CompInputFile
+    -> TagZoneFile
+    -> Crossing
+    -> Tagging
+    -> IO ()
+writeStop
+    CompSettings{tasks}
+    compFile
+    tagFile
+    Crossing{flying}
+    Tagging{timing, tagging} = do
 
     let sws :: [Maybe StopWindow] =
             [
@@ -143,15 +159,22 @@ writeStop CompSettings{tasks} tagFile Crossing{flying} Tagging{timing, tagging} 
             | TrackTime{zonesLast, zonesRankTime = zts, zonesRankPilot = zps} <- timing
             ]
 
+    let ps = (fmap . fmap) fst flying
+    trackss :: Maybe [[Maybe (Pilot, [TrackRow])]] <-
+        catchIO
+            (Just <$> readCompTrackRows compFile (const True) ps)
+            (const $ return Nothing)
+
     let sfss :: [[(Pilot, Maybe TrackScoredSection)]] =
             [
                 [ (p,) $ sw & \case
                     Nothing -> do
-                        TrackFlyingSection{flyingTimes, flyingSeconds} <- tfs
+                        TrackFlyingSection{flyingFixes, flyingTimes, flyingSeconds} <- tfs
 
                         return
                             TrackScoredSection
-                                { scoredTimes = flyingTimes
+                                { scoredFixes = flyingFixes
+                                , scoredTimes = flyingTimes
                                 , scoredSeconds = flyingSeconds
                                 }
 
@@ -162,10 +185,14 @@ writeStop CompSettings{tasks} tagFile Crossing{flying} Tagging{timing, tagging} 
                             [] -> do
                                 (t0, t1) <- stopClipByDuration clipSecs ts
                                 let delta = t1 `diffUTCTime` t0
+                                let st = Just (t0, t1)
+                                let track = snd <$> pt
+                                let si = join $ scoredIndices st <$> track
 
                                 return
                                     TrackScoredSection
-                                        { scoredTimes = Just (t0, t1)
+                                        { scoredFixes = si
+                                        , scoredTimes = st
                                         , scoredSeconds = do
                                             (Seconds w0, _) <- flyingSeconds
                                             return (Seconds w0, Seconds $ w0 + round delta)
@@ -174,21 +201,27 @@ writeStop CompSettings{tasks} tagFile Crossing{flying} Tagging{timing, tagging} 
                             _ -> do
                                 (t0, t1) <- stopClipByGate clipSecs gs ts
                                 let delta = t1 `diffUTCTime` t0
+                                let st = Just (t0, t1)
+                                let track = snd <$> pt
+                                let si = join $ scoredIndices st <$> track
 
                                 return
                                     TrackScoredSection
-                                        { scoredTimes = Just (t0, t1)
+                                        { scoredFixes = si
+                                        , scoredTimes = st
                                         , scoredSeconds = do
                                             (Seconds w0, _) <- flyingSeconds
                                             return (Seconds w0, Seconds $ w0 + round delta)
                                         }
 
                 | (p, tfs) <- pfs
+                | pt <- tracks
                 ]
 
             | Task{startGates = gs} <- tasks
             | pfs <- flying
             | sw <- sws
+            | tracks :: [Maybe (Pilot, [TrackRow])] <- fromMaybe (repeat $ repeat Nothing) trackss
             ]
 
     let tagss :: [[PilotTrackTag]] =
@@ -231,3 +264,12 @@ clipByTime Nothing x = x
 clipByTime _ Nothing = Nothing
 clipByTime (Just (_, t1)) zt@(Just ZoneTag{inter = InterpolatedFix{time = t}}) =
     if t > t1 then Nothing else zt
+
+scoredIndices :: FlyingSection UTCTime -> [TrackRow] -> FlyingSection Int
+scoredIndices section xs = do
+    (t0, t1) <- section
+    xsGE <- nonEmpty $ filter (\TrackRow{time = t} -> t >= t0) xs
+    xsLT <- nonEmpty $ filter (\TrackRow{time = t} -> t < t1) xs
+    let FixIdx f0 = fixIdx $ head xsGE
+    let FixIdx f1 = fixIdx $ last xsLT
+    return (f0, f1)
