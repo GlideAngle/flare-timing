@@ -140,7 +140,7 @@ in    defs
               , source-dirs =
                   "prod-apps/tag-zone"
               }
-          , stop-cross =
+          , peg-frame =
               { dependencies =
                     deps
                   # [ "containers"
@@ -157,9 +157,9 @@ in    defs
                   , "-fplugin Data.UnitsOfMeasure.Plugin"
                   ]
               , main =
-                  "StopCrossMain.hs"
+                  "PegFrameMain.hs"
               , source-dirs =
-                  "prod-apps/stop-cross"
+                  "prod-apps/peg-frame"
               }
           , unpack-track =
               { dependencies =

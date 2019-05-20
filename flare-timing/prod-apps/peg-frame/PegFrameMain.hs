@@ -52,7 +52,7 @@ import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
 import Flight.Scribe
     (readComp, readCrossing, readTagging, writeFraming, readCompTrackRows)
-import StopCrossOptions (description)
+import PegFrameOptions (description)
 
 main :: IO ()
 main = do

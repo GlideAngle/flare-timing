@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ae0cbe9e03493f5d406571780836bd02e8427a887a8779a6f08be24997a22728
+-- hash: a06297c52eae032eb316a325d2732115c1c9cc0d83fe5c43e706b9a9c9af209e
 
 name:           flare-timing
 version:        0.1.0
@@ -335,13 +335,13 @@ executable mask-track
     , yaml
   default-language: Haskell2010
 
-executable stop-cross
-  main-is: StopCrossMain.hs
+executable peg-frame
+  main-is: PegFrameMain.hs
   other-modules:
-      StopCrossOptions
+      PegFrameOptions
       Paths_flare_timing
   hs-source-dirs:
-      prod-apps/stop-cross
+      prod-apps/peg-frame
   default-extensions: DataKinds DeriveFunctor DeriveGeneric DeriveAnyClass DerivingStrategies DisambiguateRecordFields FlexibleContexts FlexibleInstances GeneralizedNewtypeDeriving GADTs LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PackageImports ParallelListComp PartialTypeSignatures PatternSynonyms QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators TypeSynonymInstances TupleSections UndecidableInstances
   ghc-options: -Wall -Werror -rtsopts -threaded -with-rtsopts=-N -Wall -fplugin Data.UnitsOfMeasure.Plugin
   build-depends:

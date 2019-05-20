@@ -1,11 +1,11 @@
-module StopCrossOptions (description) where
+module PegFrameOptions (description) where
 
 import Text.RawString.QQ (r)
 import Flight.Cmd.Options (Description(..))
 
 description :: Description
 description = Description [r|
-For stopped tasks, clip tracks to the scored time window.
+For all tasks but stopped tasks especially, clip tracks to the scored time window.
 
 Where 'c' is the comp name, 'p' is the pilot name, '.' is the folder with
 competition inputs and k is a folder path specified in the inputs for
