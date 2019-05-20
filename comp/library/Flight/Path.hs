@@ -9,7 +9,7 @@ module Flight.Path
     , TaskLengthFile(..)
     , CrossZoneFile(..)
     , TagZoneFile(..)
-    , StopCrossFile(..)
+    , PegFrameFile(..)
     , UnpackTrackFile(..)
     , AlignTimeFile(..)
     , DiscardFurtherFile(..)
@@ -29,7 +29,7 @@ module Flight.Path
     , compToLand
     , compToPoint
     , crossToTag
-    , tagToStop
+    , tagToPeg
     , compFileToCompDir
     , unpackTrackDir
     , alignTimeDir
@@ -89,7 +89,7 @@ newtype CrossZoneFile = CrossZoneFile FilePath
 newtype TagZoneFile = TagZoneFile FilePath
 
 -- | The path to a stop task file.
-newtype StopCrossFile = StopCrossFile FilePath
+newtype PegFrameFile = PegFrameFile FilePath
 
 -- | The path to as unpack track directory for a single task.
 newtype UnpackTrackDir = UnpackTrackDir FilePath
@@ -158,9 +158,9 @@ crossToTag :: CrossZoneFile -> TagZoneFile
 crossToTag (CrossZoneFile p) =
     TagZoneFile $ flip replaceExtension (ext TagZone) $ dropExtension p
 
-tagToStop :: TagZoneFile -> StopCrossFile
-tagToStop (TagZoneFile p) =
-    StopCrossFile $ flip replaceExtension (ext StopCross) $ dropExtension p
+tagToPeg :: TagZoneFile -> PegFrameFile
+tagToPeg (TagZoneFile p) =
+    PegFrameFile $ flip replaceExtension (ext PegFrame) $ dropExtension p
 
 pilotPath :: Pilot -> FilePath
 pilotPath (Pilot (PilotId k, PilotName s)) =
@@ -203,7 +203,7 @@ data FileType
     | TaskLength
     | CrossZone
     | TagZone
-    | StopCross
+    | PegFrame
     | UnpackTrack
     | AlignTime
     | DiscardFurther
@@ -220,7 +220,7 @@ ext NormScore = ".norm-score.yaml"
 ext TaskLength = ".task-length.yaml"
 ext CrossZone = ".cross-zone.yaml"
 ext TagZone = ".tag-zone.yaml"
-ext StopCross = ".stop-cross.yaml"
+ext PegFrame = ".peg-frame.yaml"
 ext UnpackTrack = ".unpack-track.csv"
 ext AlignTime = ".align-time.csv"
 ext DiscardFurther = ".discard-further.csv"
@@ -237,7 +237,7 @@ ensureExt NormScore = flip replaceExtensions "norm-score.yaml"
 ensureExt TaskLength = flip replaceExtensions "task-length.yaml"
 ensureExt CrossZone = flip replaceExtensions "cross-zone.yaml"
 ensureExt TagZone = flip replaceExtensions "tag-zone.yaml"
-ensureExt StopCross = flip replaceExtensions "stop-cross.yaml"
+ensureExt PegFrame = flip replaceExtensions "peg-frame.yaml"
 ensureExt UnpackTrack = flip replaceExtensions "unpack-track.csv"
 ensureExt AlignTime = flip replaceExtensions "align-time.csv"
 ensureExt DiscardFurther = flip replaceExtensions "discard-further.csv"

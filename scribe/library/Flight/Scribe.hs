@@ -33,7 +33,7 @@ import Flight.Comp
     , TaskLengthFile(..)
     , CrossZoneFile(..)
     , TagZoneFile(..)
-    , StopCrossFile(..)
+    , PegFrameFile(..)
     , MaskTrackFile(..)
     , LandOutFile(..)
     , GapPointFile(..)
@@ -116,14 +116,14 @@ writeTagging (TagZoneFile path) tagZone = do
 
 readFraming
     :: (MonadThrow m, MonadIO m)
-    => StopCrossFile
+    => PegFrameFile
     -> m Framing
-readFraming (StopCrossFile path) = do
+readFraming (PegFrameFile path) = do
     contents <- liftIO $ BS.readFile path
     decodeThrow contents
 
-writeFraming :: StopCrossFile -> Framing -> IO ()
-writeFraming (StopCrossFile path) stopTask = do
+writeFraming :: PegFrameFile -> Framing -> IO ()
+writeFraming (PegFrameFile path) stopTask = do
     let cfg = Y.setConfCompare (fieldOrder stopTask) Y.defConfig
     let yaml = Y.encodePretty cfg stopTask
     BS.writeFile path yaml

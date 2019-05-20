@@ -43,7 +43,7 @@ import Flight.Comp
     , Pilot
     , compToCross
     , crossToTag
-    , tagToStop
+    , tagToPeg
     , findCompInput
     , ensureExt
     )
@@ -261,7 +261,7 @@ writeStop
                 , tagging = tagss
                 }
 
-    writeFraming (tagToStop tagFile) frame
+    writeFraming (tagToPeg tagFile) frame
 
 clipByTime :: FlyingSection UTCTime -> Maybe ZoneTag -> Maybe ZoneTag
 clipByTime Nothing x = x

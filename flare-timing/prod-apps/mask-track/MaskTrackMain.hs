@@ -31,7 +31,7 @@ import Flight.Comp
     , CompInputFile(..)
     , TaskLengthFile(..)
     , TagZoneFile(..)
-    , StopCrossFile(..)
+    , PegFrameFile(..)
     , CompSettings(..)
     , PilotName(..)
     , Pilot(..)
@@ -51,7 +51,7 @@ import Flight.Comp
     , compToCross
     , compToMask
     , crossToTag
-    , tagToStop
+    , tagToPeg
     , findCompInput
     , speedSectionToLeg
     , ensureExt
@@ -136,7 +136,7 @@ go :: CmdBatchOptions -> CompInputFile -> IO ()
 go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
     let lenFile@(TaskLengthFile lenPath) = compToTaskLength compFile
     let tagFile@(TagZoneFile tagPath) = crossToTag . compToCross $ compFile
-    let stopFile@(StopCrossFile stopPath) = tagToStop tagFile
+    let stopFile@(PegFrameFile stopPath) = tagToPeg tagFile
     putStrLn $ "Reading competition from '" ++ takeFileName compPath ++ "'"
     putStrLn $ "Reading task length from '" ++ takeFileName lenPath ++ "'"
     putStrLn $ "Reading zone tags from '" ++ takeFileName tagPath ++ "'"

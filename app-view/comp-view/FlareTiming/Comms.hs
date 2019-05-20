@@ -287,7 +287,7 @@ getTaskPilotTrackScoredSection (IxTask ii) ev = do
     let u :: PilotId -> T.Text
         u (PilotId pid) =
             mapUri
-            $ "/stop-cross/track-scored-section/"
+            $ "/peg-frame/track-scored-section/"
             <> (T.pack . show $ ii)
             <> "/"
             <> (T.pack pid)

@@ -84,7 +84,7 @@ import Flight.Comp
     , TaskLengthFile(..)
     , CrossZoneFile(..)
     , TagZoneFile(..)
-    , StopCrossFile(..)
+    , PegFrameFile(..)
     , MaskTrackFile(..)
     , LandOutFile(..)
     , GapPointFile(..)
@@ -97,7 +97,7 @@ import Flight.Comp
     , compToLand
     , compToPoint
     , crossToTag
-    , tagToStop
+    , tagToPeg
     , ensureExt
     )
 import Flight.Route
@@ -244,7 +244,7 @@ type GapPointApi k =
     :<|> "cross-zone" :> "track-flying-section" :> (Capture "task" Int) :> (Capture "pilot" String)
         :> Get '[JSON] TrackFlyingSection
 
-    :<|> "stop-cross" :> "track-scored-section" :> (Capture "task" Int) :> (Capture "pilot" String)
+    :<|> "peg-frame" :> "track-scored-section" :> (Capture "task" Int) :> (Capture "pilot" String)
         :> Get '[JSON] TrackScoredSection
 
     :<|> "cross-zone" :> (Capture "task" Int) :> "flying-times"
@@ -303,7 +303,7 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
     let lenFile@(TaskLengthFile lenPath) = compToTaskLength compFile
     let crossFile@(CrossZoneFile crossPath) = compToCross compFile
     let tagFile@(TagZoneFile tagPath) = crossToTag crossFile
-    let stopFile@(StopCrossFile stopPath) = tagToStop tagFile
+    let stopFile@(PegFrameFile stopPath) = tagToPeg tagFile
     let maskFile@(MaskTrackFile maskPath) = compToMask compFile
     let landFile@(LandOutFile landPath) = compToLand compFile
     let pointFile@(GapPointFile pointPath) = compToPoint compFile
