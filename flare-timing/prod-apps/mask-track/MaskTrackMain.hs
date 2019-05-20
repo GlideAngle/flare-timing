@@ -96,7 +96,7 @@ import Flight.Lookup.Tag
     , tagTicked
     )
 import Flight.Scribe
-    ( readComp, readRoute, readTagging, readFreezeFrame, writeMasking
+    ( readComp, readRoute, readTagging, readFraming, writeMasking
     , readCompLeading, readCompBestDistances, readCompTimeRows
     )
 import Flight.Lookup.Route (routeLength)
@@ -154,7 +154,7 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
 
     stopping <-
         catchIO
-            (Just <$> readFreezeFrame stopFile)
+            (Just <$> readFraming stopFile)
             (const $ return Nothing)
 
     routes <-

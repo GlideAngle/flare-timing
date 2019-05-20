@@ -21,5 +21,4 @@ flyingTask :: C.Crossing -> IxTask -> Pilot -> Maybe TrackFlyingSection
 flyingTask C.Crossing{flying = xs} (IxTask i) pilot =
     case xs ^? element (fromIntegral i - 1) of
         Nothing -> Nothing
-        Just ys ->
-            snd =<< find (\(p, _) -> p == pilot) ys
+        Just ys -> snd =<< find (\(p, _) -> p == pilot) ys

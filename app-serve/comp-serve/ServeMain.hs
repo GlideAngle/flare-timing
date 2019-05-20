@@ -33,7 +33,9 @@ import System.FilePath (takeFileName)
 import Flight.Clip (FlyingSection)
 import qualified Flight.Track.Cross as Cg (Crossing(..))
 import qualified Flight.Track.Tag as Tg (Tagging(..), PilotTrackTag(..))
+import qualified Flight.Track.Stop as Sp (Framing(..))
 import Flight.Track.Cross (TrackFlyingSection(..), ZoneTag(..))
+import Flight.Track.Stop (TrackScoredSection(..))
 import Flight.Track.Distance (TrackReach(..))
 import Flight.Track.Land (Landing(..), TrackEffort(..), effortRank)
 import Flight.Track.Arrival (TrackArrival(..))
@@ -55,7 +57,8 @@ import Flight.Score
     )
 import Flight.Scribe
     ( readComp, readScore
-    , readRoute, readCrossing, readTagging, readMasking, readLanding, readPointing
+    , readRoute, readCrossing, readTagging, readFraming
+    , readMasking, readLanding, readPointing
     )
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
@@ -81,6 +84,7 @@ import Flight.Comp
     , TaskLengthFile(..)
     , CrossZoneFile(..)
     , TagZoneFile(..)
+    , StopCrossFile(..)
     , MaskTrackFile(..)
     , LandOutFile(..)
     , GapPointFile(..)
@@ -93,6 +97,7 @@ import Flight.Comp
     , compToLand
     , compToPoint
     , crossToTag
+    , tagToStop
     , ensureExt
     )
 import Flight.Route
@@ -112,6 +117,7 @@ data Config k
         , routing :: Maybe [Maybe TaskTrack]
         , crossing :: Maybe Cg.Crossing
         , tagging :: Maybe Tg.Tagging
+        , framing :: Maybe Sp.Framing
         , masking :: Maybe Masking
         , landing :: Maybe Landing
         , pointing :: Maybe Pointing
@@ -238,6 +244,9 @@ type GapPointApi k =
     :<|> "cross-zone" :> "track-flying-section" :> (Capture "task" Int) :> (Capture "pilot" String)
         :> Get '[JSON] TrackFlyingSection
 
+    :<|> "stop-cross" :> "track-scored-section" :> (Capture "task" Int) :> (Capture "pilot" String)
+        :> Get '[JSON] TrackScoredSection
+
     :<|> "cross-zone" :> (Capture "task" Int) :> "flying-times"
         :> Get '[JSON] [(Pilot, FlyingSection UTCTime)]
 
@@ -294,6 +303,7 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
     let lenFile@(TaskLengthFile lenPath) = compToTaskLength compFile
     let crossFile@(CrossZoneFile crossPath) = compToCross compFile
     let tagFile@(TagZoneFile tagPath) = crossToTag crossFile
+    let stopFile@(StopCrossFile stopPath) = tagToStop tagFile
     let maskFile@(MaskTrackFile maskPath) = compToMask compFile
     let landFile@(LandOutFile landPath) = compToLand compFile
     let pointFile@(GapPointFile pointPath) = compToPoint compFile
@@ -302,6 +312,7 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
     putStrLn $ "Reading competition & pilots DNF from '" ++ takeFileName compPath ++ "'"
     putStrLn $ "Reading flying time range from '" ++ takeFileName crossPath ++ "'"
     putStrLn $ "Reading zone tags from '" ++ takeFileName tagPath ++ "'"
+    putStrLn $ "Reading scored section from '" ++ takeFileName stopPath ++ "'"
     putStrLn $ "Reading arrivals from '" ++ takeFileName maskPath ++ "'"
     putStrLn $ "Reading land outs from '" ++ takeFileName landPath ++ "'"
     putStrLn $ "Reading scores from '" ++ takeFileName pointPath ++ "'"
@@ -327,6 +338,11 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
             (Just <$> readTagging tagFile)
             (const $ return Nothing)
 
+    framing <-
+        catchIO
+            (Just <$> readFraming stopFile)
+            (const $ return Nothing)
+
     masking <-
         catchIO
             (Just <$> readMasking maskFile)
@@ -347,17 +363,17 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
             (Just <$> readScore normFile)
             (const $ return Nothing)
 
-    case (compSettings, routes, crossing, tagging, masking, landing, pointing, norming) of
-        (Nothing, _, _, _, _, _, _, _) ->
+    case (compSettings, routes, crossing, tagging, framing, masking, landing, pointing, norming) of
+        (Nothing, _, _, _, _, _, _, _, _) ->
             putStrLn "Couldn't read the comp settings"
-        (Just cs, rt@(Just _), cg@(Just _), tg@(Just _), mg@(Just _), lo@(Just _), gp@(Just _), ns@(Just _)) ->
-            f =<< mkGapPointApp (Config compFile cs rt cg tg mg lo gp ns)
-        (Just cs, rt@(Just _), _, _, _, _, _, _) -> do
+        (Just cs, rt@(Just _), cg@(Just _), tg@(Just _), fm@(Just _), mg@(Just _), lo@(Just _), gp@(Just _), ns@(Just _)) ->
+            f =<< mkGapPointApp (Config compFile cs rt cg tg fm mg lo gp ns)
+        (Just cs, rt@(Just _), _, _, _, _, _, _, _) -> do
             putStrLn "WARNING: Only serving comp inputs and task lengths"
-            f =<< mkTaskLengthApp (Config compFile cs rt Nothing Nothing Nothing Nothing Nothing Nothing)
-        (Just cs, _, _, _, _, _, _, _) -> do
+            f =<< mkTaskLengthApp (Config compFile cs rt Nothing Nothing Nothing Nothing Nothing Nothing Nothing)
+        (Just cs, _, _, _, _, _, _, _, _) -> do
             putStrLn "WARNING: Only serving comp inputs"
-            f =<< mkCompInputApp (Config compFile cs Nothing Nothing Nothing Nothing Nothing Nothing Nothing)
+            f =<< mkCompInputApp (Config compFile cs Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing)
     where
         -- NOTE: Add gzip with wai gzip middleware.
         -- SEE: https://github.com/haskell-servant/servant/issues/786
@@ -433,6 +449,7 @@ serverGapPointApi cfg =
         :<|> getTaskPilotDf
         :<|> getTaskPilotTrack
         :<|> getTaskPilotTrackFlyingSection
+        :<|> getTaskPilotTrackScoredSection
         :<|> getTaskFlyingSectionTimes
         :<|> getTaskPilotTag
         :<|> getTaskReachStats
@@ -793,6 +810,24 @@ getTaskPilotTrackFlyingSection ii pilotId = do
     let ix = IxTask ii
     let pilot = PilotId pilotId
     fss <- fmap Cg.flying <$> asks crossing
+    let isPilot (Pilot (pid, _)) = pid == PilotId pilotId
+
+    case fss of
+        Nothing -> throwError $ errPilotNotFound pilot
+        Just fss' -> do
+            case take 1 $ drop jj fss' of
+                fs : _ ->
+                    case find (isPilot . fst) fs of
+                        Just (_, Just y) -> return y
+                        _ -> throwError $ errPilotTrackNotFound ix pilot
+                _ -> throwError $ errPilotTrackNotFound ix pilot
+
+getTaskPilotTrackScoredSection :: Int -> String -> AppT k IO TrackScoredSection
+getTaskPilotTrackScoredSection ii pilotId = do
+    let jj = ii - 1
+    let ix = IxTask ii
+    let pilot = PilotId pilotId
+    fss <- fmap Sp.stopFlying <$> asks framing
     let isPilot (Pilot (pid, _)) = pid == PilotId pilotId
 
     case fss of

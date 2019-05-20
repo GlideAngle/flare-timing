@@ -10,7 +10,7 @@ a restricted time window for scoring.
 -}
 module Flight.Track.Stop
     ( RetroActive(..)
-    , FreezeFrame(..)
+    , Framing(..)
     , StopWindow(..)
     , TrackScoredSection(..)
     , tardyElapsed
@@ -75,9 +75,10 @@ data TrackScoredSection =
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
--- | For each task, the timing and tagging for that task.
-data FreezeFrame =
-    FreezeFrame
+-- | For each task, the timing and tagging for that task that includes
+-- restriction of time if the task was stopped.
+data Framing =
+    Framing
         { stopWindow :: [Maybe StopWindow]
         -- ^ The scored time window for a stopped task.
         , stopFlying :: [[(Pilot, Maybe TrackScoredSection)]]
@@ -126,7 +127,7 @@ stopClipByGate (Seconds n) gs x = do
     let StartGate g = snd $ startGateTaken gs' s
     return (s, min e $ (fromIntegral n) `addUTCTime` g)
 
-instance FieldOrdering FreezeFrame where
+instance FieldOrdering Framing where
     fieldOrder _ = cmp
 
 cmp :: (Ord a, IsString a) => a -> a -> Ordering

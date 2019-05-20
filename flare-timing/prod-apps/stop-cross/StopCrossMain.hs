@@ -27,7 +27,7 @@ import Flight.Track.Tag
 import qualified Flight.Track.Stop as Stop (TrackScoredSection(..))
 import Flight.Track.Time (FixIdx(..), TrackRow(..))
 import Flight.Track.Stop
-    ( StopWindow(..), FreezeFrame(..), TrackScoredSection(..)
+    ( StopWindow(..), Framing(..), TrackScoredSection(..)
     , tardyElapsed, tardyGate, stopClipByDuration, stopClipByGate, endOfScored
     )
 import Flight.Comp
@@ -51,7 +51,7 @@ import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
 import Flight.Scribe
-    (readComp, readCrossing, readTagging, writeFreezeFrame, readCompTrackRows)
+    (readComp, readCrossing, readTagging, writeFraming, readCompTrackRows)
 import StopCrossOptions (description)
 
 main :: IO ()
@@ -254,14 +254,14 @@ writeStop
             ]
 
     let frame =
-            FreezeFrame
+            Framing
                 { stopWindow = sws
                 , stopFlying = sfss
                 , timing = timess
                 , tagging = tagss
                 }
 
-    writeFreezeFrame (tagToStop tagFile) frame
+    writeFraming (tagToStop tagFile) frame
 
 clipByTime :: FlyingSection UTCTime -> Maybe ZoneTag -> Maybe ZoneTag
 clipByTime Nothing x = x
@@ -276,4 +276,4 @@ scoredIndices section xs = do
     xsLT <- nonEmpty $ filter (\TrackRow{time = t} -> t < t1) xs
     let FixIdx f0 = fixIdx $ head xsGE
     let FixIdx f1 = fixIdx $ last xsLT
-    return (f0, f1)
+    return (max 0 $ f0 - 1, f1)
