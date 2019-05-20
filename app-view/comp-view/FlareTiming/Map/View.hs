@@ -52,6 +52,7 @@ import qualified FlareTiming.Map.Leaflet as L
     )
 import WireTypes.Cross
     ( TrackFlyingSection(..)
+    , TrackScoredSection(..)
     , Fix(..), InterpolatedFix(..)
     , ZoneCross(..), ZoneTag(..)
     )
@@ -313,7 +314,19 @@ viewMap
     -> Dynamic t (OptimalRoute (Maybe TrackLine))
     -> Dynamic t (OptimalRoute (Maybe TrackLine))
     -> Dynamic t (Maybe TrackLine)
-    -> Event t ((Pilot, (Pilot, Maybe TrackFlyingSection)), ((Pilot, [[Double]]), (Pilot, [Maybe ZoneTag])))
+    -> Event t
+        (
+            (Pilot
+            ,
+                ( (Pilot, Maybe TrackFlyingSection)
+                , (Pilot, Maybe TrackScoredSection)
+                )
+            )
+        ,
+            ( (Pilot, [[Double]])
+            , (Pilot, [Maybe ZoneTag])
+            )
+        )
     -> m (Event t Pilot)
 viewMap utcOffset ix task sRoute eRoute pRoute pilotFlyingTrack = do
     task' <- sample . current $ task
@@ -360,7 +373,19 @@ map
     -> TaskRouteSubset
     -> SpeedRoute
     -> TaskRoute
-    -> Event t ((Pilot, (Pilot, Maybe TrackFlyingSection)), ((Pilot, [[Double]]), (Pilot, [Maybe ZoneTag])))
+    -> Event t
+        (
+            (Pilot
+            ,
+                ( (Pilot, Maybe TrackFlyingSection)
+                , (Pilot, Maybe TrackScoredSection)
+                )
+            )
+        ,
+            ( (Pilot, [[Double]])
+            , (Pilot, [Maybe ZoneTag])
+            )
+        )
     -> m (Event t Pilot)
 
 map _ _ Task{zones = Zones{raw = []}} _ _ _ _ _ _ _ _ = do
@@ -416,16 +441,15 @@ map
 
                 return ())
 
-            , ffor pilotFlyingTrack (\((p, (_, sections)), ((_, pts), (_, tags))) ->
+            , ffor pilotFlyingTrack (\((p, ((_, flying), (_, scored))), ((_, pts), (_, tags))) ->
                 if p == nullPilot || null pts then return () else
-                case sections of
-                    Nothing -> return ()
-                    Just TrackFlyingSection{flyingFixes = Nothing} -> return ()
-                    Just TrackFlyingSection{scoredFixes = Nothing} -> return ()
-                    Just TrackFlyingSection
-                            { flyingFixes = Just (i, _)
-                            , scoredFixes = Just (j0, jN)
-                            } -> liftIO $ do
+                case (flying, scored) of
+                    (Nothing, _) -> return ()
+                    (_, Nothing) -> return ()
+                    (Just TrackFlyingSection{flyingFixes = Nothing}, _) -> return ()
+                    (_, Just TrackScoredSection{scoredFixes = Nothing}) -> return ()
+                    (Just TrackFlyingSection{flyingFixes = Just (i, _)}
+                        , Just TrackScoredSection{scoredFixes = Just (j0, jN)}) -> liftIO $ do
 
                         let pn@(PilotName pn') = getPilotName p
                         let n = jN - (j0 - i)

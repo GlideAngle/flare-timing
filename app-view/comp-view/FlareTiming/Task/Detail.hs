@@ -16,7 +16,7 @@ import WireTypes.Comp
     , showScoreBackTime
     )
 import WireTypes.Route (TaskLength(..), stopTaskLength, taskLength, taskLegs, showTaskDistance)
-import WireTypes.Cross (TrackFlyingSection(..))
+import WireTypes.Cross (TrackFlyingSection(..), TrackScoredSection(..))
 import WireTypes.Point (Allocation(..))
 import WireTypes.Validity (Validity(..))
 import FlareTiming.Comms
@@ -30,6 +30,7 @@ import FlareTiming.Comms
     , getTaskPilotDnf, getTaskPilotNyp, getTaskPilotDfNoTrack
     , getTaskPilotTrack
     , getTaskPilotTrackFlyingSection, getTaskFlyingSectionTimes
+    , getTaskPilotTrackScoredSection
     , getTaskPilotTag
     , emptyRoute
     )
@@ -211,7 +212,11 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
                     tfs <- getTaskPilotTrackFlyingSection ix p
                     tfs' <- holdDyn (nullPilot, Nothing) (attachPromptlyDyn p' tfs)
 
-                    ptfs <- holdUniqDyn $ zipDynWith (,) p' tfs'
+                    tss <- getTaskPilotTrackScoredSection ix p
+                    tss' <- holdDyn (nullPilot, Nothing) (attachPromptlyDyn p' tss)
+
+                    tts <- holdUniqDyn $ zipDynWith (,) tfs' tss'
+                    ptfs <- holdUniqDyn $ zipDynWith (,) p' tts
 
                     tag <- getTaskPilotTag ix p
                     tag' <- holdDyn (nullPilot, []) (attachPromptlyDyn p' tag)
@@ -290,19 +295,47 @@ taskDetail IxTaskNone _ _ _ _ _ = return never
 
 readyTrack
     :: Monad m
-    => ((Pilot, (Pilot, Maybe TrackFlyingSection)), ((Pilot, [a]), (Pilot, [b])))
-    -> m (Maybe ((Pilot, (Pilot, Maybe TrackFlyingSection)), ((Pilot, [a]), (Pilot, [b]))))
-readyTrack x@((p, (tq, t)), ((xq, xs), (yq, ys)))
+    =>
+        (
+            ( Pilot
+            ,
+                ( (Pilot, Maybe TrackFlyingSection)
+                , (Pilot, Maybe TrackScoredSection)
+                )
+            )
+        ,
+            ( (Pilot, [a])
+            , (Pilot, [b])
+            )
+        )
+    -> m
+        (Maybe
+            (
+                ( Pilot
+                ,
+                    ( (Pilot, Maybe TrackFlyingSection)
+                    , (Pilot, Maybe TrackScoredSection)
+                    )
+                )
+            ,
+                ( (Pilot, [a])
+                , (Pilot, [b])
+                )
+            )
+        )
+readyTrack x@((p, ((fq, tf), (sq, ts))), ((xq, xs), (yq, ys)))
     | p == nullPilot = return Nothing
-    | tq == nullPilot = return Nothing
+    | fq == nullPilot = return Nothing
+    | sq == nullPilot = return Nothing
     | xq == nullPilot = return Nothing
     | yq == nullPilot = return Nothing
-    | p /= tq || p /= xq || p /= yq = return Nothing
+    | p /= fq || p /= sq || p /= xq || p /= yq = return Nothing
     | null xs = return Nothing
     | null ys = return Nothing
     | otherwise = return $
-        case t of
-            Nothing -> Nothing
-            Just TrackFlyingSection{flyingFixes = Nothing} -> Nothing
-            Just TrackFlyingSection{scoredFixes = Nothing} -> Nothing
-            Just _ -> Just x
+        case (tf, ts) of
+            (Nothing, _) -> Nothing
+            (_, Nothing) -> Nothing
+            (Just TrackFlyingSection{flyingFixes = Nothing}, _) -> Nothing
+            (_, Just TrackScoredSection{scoredFixes = Nothing}) -> Nothing
+            (Just _, Just _) -> Just x

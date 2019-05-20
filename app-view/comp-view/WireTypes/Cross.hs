@@ -3,6 +3,7 @@
 module WireTypes.Cross
     ( FlyingSection
     , TrackFlyingSection(..)
+    , TrackScoredSection(..)
     , Fix(..)
     , InterpolatedFix(..)
     , ZoneTag(..)
@@ -20,7 +21,13 @@ data TrackFlyingSection =
     TrackFlyingSection
         { loggedFixes :: Maybe Int
         , flyingFixes :: FlyingSection Int
-        , scoredFixes :: FlyingSection Int
+        }
+    deriving (Eq, Ord, Show, Generic)
+    deriving anyclass (FromJSON)
+
+data TrackScoredSection =
+    TrackScoredSection
+        { scoredFixes :: FlyingSection Int
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (FromJSON)
