@@ -143,7 +143,12 @@ in    defs
           , stop-cross =
               { dependencies =
                     deps
-                  # [ "safe-exceptions", "time", "flight-clip", "flight-zone" ]
+                  # [ "containers"
+                    , "safe-exceptions"
+                    , "time"
+                    , "flight-clip"
+                    , "flight-zone"
+                    ]
               , ghc-options =
                   [ "-rtsopts"
                   , "-threaded"

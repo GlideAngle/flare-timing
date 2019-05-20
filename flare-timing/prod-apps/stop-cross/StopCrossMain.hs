@@ -2,7 +2,7 @@
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
 import Prelude hiding (head, last)
-import Data.Maybe (fromMaybe)
+import Data.Maybe (catMaybes)
 import Data.List.NonEmpty (nonEmpty, head, last)
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
@@ -14,6 +14,8 @@ import Data.Time.Clock (UTCTime, diffUTCTime)
 import Control.Monad (join)
 import Control.Exception.Safe (catchIO)
 import System.FilePath (takeFileName)
+import Data.Map (Map)
+import qualified Data.Map.Strict as Map
 
 import Flight.Clip (FlyingSection)
 import Flight.Track.Cross
@@ -160,10 +162,13 @@ writeStop
             ]
 
     let ps = (fmap . fmap) fst flying
-    trackss :: Maybe [[Maybe (Pilot, [TrackRow])]] <-
+    trackss' :: Maybe [[Maybe (Pilot, [TrackRow])]] <-
         catchIO
             (Just <$> readCompTrackRows compFile (const True) ps)
             (const $ return Nothing)
+
+    let trackss :: [Map Pilot [TrackRow]] =
+            maybe (repeat $ Map.empty) (fmap (Map.fromList . catMaybes)) trackss'
 
     let sfss :: [[(Pilot, Maybe TrackScoredSection)]] =
             [
@@ -186,7 +191,7 @@ writeStop
                                 (t0, t1) <- stopClipByDuration clipSecs ts
                                 let delta = t1 `diffUTCTime` t0
                                 let st = Just (t0, t1)
-                                let track = snd <$> pt
+                                let track = Map.lookup p tracks
                                 let si = join $ scoredIndices st <$> track
 
                                 return
@@ -202,7 +207,7 @@ writeStop
                                 (t0, t1) <- stopClipByGate clipSecs gs ts
                                 let delta = t1 `diffUTCTime` t0
                                 let st = Just (t0, t1)
-                                let track = snd <$> pt
+                                let track = Map.lookup p tracks
                                 let si = join $ scoredIndices st <$> track
 
                                 return
@@ -215,13 +220,12 @@ writeStop
                                         }
 
                 | (p, tfs) <- pfs
-                | pt <- tracks
                 ]
 
             | Task{startGates = gs} <- tasks
             | pfs <- flying
             | sw <- sws
-            | tracks :: [Maybe (Pilot, [TrackRow])] <- fromMaybe (repeat $ repeat Nothing) trackss
+            | tracks <- trackss
             ]
 
     let tagss :: [[PilotTrackTag]] =
