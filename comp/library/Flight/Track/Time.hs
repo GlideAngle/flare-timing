@@ -138,13 +138,13 @@ data TrackRow =
         { fixIdx :: FixIdx
         -- ^ The fix number for the whole track.
         , time :: UTCTime
-        -- ^ Time of the fix
+        -- ^ Time of the fix.
         , lat :: RawLat
-        -- ^ Latitude of the fix
+        -- ^ Latitude of the fix.
         , lng :: RawLng
-        -- ^ Longitude of the fix
+        -- ^ Longitude of the fix.
         , alt :: RawAlt
-        -- ^ Altitude of the fix
+        -- ^ Altitude of the fix.
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
@@ -154,13 +154,13 @@ data TimeRow =
         { fixIdx :: FixIdx
         -- ^ The fix number for the whole track.
         , time :: UTCTime
-        -- ^ Time of the fix
+        -- ^ Time of the fix.
         , lat :: RawLat
-        -- ^ Latitude of the fix
+        -- ^ Latitude of the fix.
         , lng :: RawLng
-        -- ^ Longitude of the fix
+        -- ^ Longitude of the fix.
         , alt :: RawAlt
-        -- ^ Altitude of the fix
+        -- ^ Altitude of the fix.
         , tickLead :: Maybe LeadTick
         -- ^ Seconds from first lead.
         , tickRace :: Maybe RaceTick
@@ -195,6 +195,8 @@ data TickRow =
     TickRow
         { fixIdx :: FixIdx
         -- ^ The fix number for the whole track.
+        , alt :: RawAlt
+        -- ^ Altitude of the fix.
         , tickLead :: Maybe LeadTick
         -- ^ Seconds from first lead.
         , tickRace :: Maybe RaceTick
@@ -322,6 +324,7 @@ instance ToNamedRecord TickRow where
             local =
                 namedRecord
                     [ namedField "fixIdx" fixIdx
+                    , namedField "alt" alt
                     , namedField "tickLead" tickLead
                     , namedField "tickRace" tickRace
                     , namedField "zoneIdx" zoneIdx
@@ -336,7 +339,6 @@ instance ToNamedRecord TickRow where
                     [ namedField "time" ("" :: String)
                     , namedField "lat" ("" :: String)
                     , namedField "lng" ("" :: String)
-                    , namedField "alt" ("" :: String)
                     ]
 
             f = unquote . unpack . encode
@@ -345,6 +347,7 @@ instance FromNamedRecord TickRow where
     parseNamedRecord m =
         TickRow <$>
         m .: "fixIdx" <*>
+        m .: "alt" <*>
         m .: "tickLead" <*>
         m .: "tickRace" <*>
         m .: "zoneIdx" <*>
@@ -541,6 +544,7 @@ timeToTick :: TimeRow -> TickRow
 timeToTick TimeRow{..} =
     TickRow
         { fixIdx = fixIdx
+        , alt = alt
         , tickLead = tickLead
         , tickRace = tickRace
         , zoneIdx = zoneIdx
