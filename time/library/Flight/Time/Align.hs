@@ -58,7 +58,7 @@ import Flight.Span.Double (fromZonesF, azimuthF, spanF, csF, cutF, dppF, csegF)
 unTaskDistance :: QTaskDistance Double [u| m |] -> Double
 unTaskDistance (TaskDistance d) =
     fromRational $ dpRound 3 dKm
-    where 
+    where
         MkQuantity dKm = toRational' $ convert d :: Quantity _ [u| km |]
 
 writeTime
@@ -149,7 +149,7 @@ mkTimeRow
 mkTimeRow Nothing _ _ _ _ _ = Nothing
 mkTimeRow _ _ _ _ Nothing _ = Nothing
 mkTimeRow _ _ _ _ _ Nothing = Nothing
-mkTimeRow lead start legIdx fixIdx (Just Fix{fix, time, lat, lng}) (Just d) =
+mkTimeRow lead start legIdx fixIdx (Just Fix{..}) (Just d) =
     Just
         TimeRow
             { fixIdx = fixIdx
@@ -171,6 +171,7 @@ mkTimeRow lead start legIdx fixIdx (Just Fix{fix, time, lat, lng}) (Just d) =
             , time = time
             , lat = lat
             , lng = lng
+            , alt = alt
             , distance = unTaskDistance d
             }
 

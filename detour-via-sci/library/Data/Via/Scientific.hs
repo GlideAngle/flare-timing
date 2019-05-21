@@ -27,6 +27,7 @@ module Data.Via.Scientific
     , ViaSci(..)
     , DefaultDecimalPlaces(..)
     , dpDegree
+    , dpAlt
     , showSci
     -- * Conversions
     , fromSci
@@ -65,6 +66,10 @@ import Data.Ratio.Rounding (dpRound)
 --     * 434.96 µm at 67° N/S
 dpDegree :: DecimalPlaces
 dpDegree = DecimalPlaces 8
+
+-- | A choice of decimal places for altitude in metres.
+dpAlt :: DecimalPlaces
+dpAlt = DecimalPlaces 2
 
 -- NOTE: For deriving Lift, see https://ghc.haskell.org/trac/ghc/ticket/14296
 -- | A positive number of decimal places.

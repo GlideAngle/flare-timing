@@ -52,7 +52,7 @@ import qualified Data.Vector as V (fromList, toList)
 
 import Flight.Units ()
 import Flight.Clip (FlyCut(..), FlyClipping(..))
-import Flight.LatLng.Raw (RawLat, RawLng)
+import Flight.LatLng.Raw (RawLat, RawLng, RawAlt)
 import Flight.Score
     ( LeadingArea(..)
     , LeadingCoef(..)
@@ -129,7 +129,7 @@ instance Show RaceTick where
 -- discard-further.
 allHeaders :: [String]
 allHeaders =
-    ["fixIdx", "time", "lat", "lng"]
+    ["fixIdx", "time", "lat", "lng", "alt"]
     ++ ["tickLead", "tickRace", "zoneIdx", "legIdx", "distance"]
     ++ ["area"]
 
@@ -143,6 +143,8 @@ data TrackRow =
         -- ^ Latitude of the fix
         , lng :: RawLng
         -- ^ Longitude of the fix
+        , alt :: RawAlt
+        -- ^ Altitude of the fix
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
@@ -157,6 +159,8 @@ data TimeRow =
         -- ^ Latitude of the fix
         , lng :: RawLng
         -- ^ Longitude of the fix
+        , alt :: RawAlt
+        -- ^ Altitude of the fix
         , tickLead :: Maybe LeadTick
         -- ^ Seconds from first lead.
         , tickRace :: Maybe RaceTick
@@ -221,7 +225,14 @@ parseTime (Just s) = fromMaybe (read "") $ decode . pack . quote $ s
 
 instance ToNamedRecord TrackRow where
     toNamedRecord TrackRow{..} =
-        unions [local, toNamedRecord lat, toNamedRecord lng, dummyTime, dummyTick]
+        unions
+            [ local
+            , toNamedRecord lat
+            , toNamedRecord lng
+            , toNamedRecord alt
+            , dummyTime
+            , dummyTick
+            ]
         where
             local =
                 namedRecord
@@ -253,13 +264,20 @@ instance FromNamedRecord TrackRow where
         m .: "fixIdx" <*>
         t <*>
         m .: "lat" <*>
-        m .: "lng"
+        m .: "lng" <*>
+        m .: "alt"
         where
             t = parseTime <$> m .: "time"
 
 instance ToNamedRecord TimeRow where
     toNamedRecord TimeRow{..} =
-        unions [local, toNamedRecord lat, toNamedRecord lng, dummyTick]
+        unions
+            [ local
+            , toNamedRecord lat
+            , toNamedRecord lng
+            , toNamedRecord alt
+            , dummyTick
+            ]
         where
             local =
                 namedRecord
@@ -288,6 +306,7 @@ instance FromNamedRecord TimeRow where
         t <*>
         m .: "lat" <*>
         m .: "lng" <*>
+        m .: "alt" <*>
         m .: "tickLead" <*>
         m .: "tickRace" <*>
         m .: "zoneIdx" <*>
@@ -317,6 +336,7 @@ instance ToNamedRecord TickRow where
                     [ namedField "time" ("" :: String)
                     , namedField "lat" ("" :: String)
                     , namedField "lng" ("" :: String)
+                    , namedField "alt" ("" :: String)
                     ]
 
             f = unquote . unpack . encode

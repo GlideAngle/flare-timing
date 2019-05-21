@@ -1,11 +1,13 @@
 ﻿module Flight.LatLng.Raw
     ( RawLat(..)
     , RawLng(..)
+    , RawAlt(..)
     , RawLatLng(..)
     , fromSci
     , toSci
     , showLat
     , showLng
+    , showAlt
     ) where
 
 import "newtype" Control.Newtype (Newtype(..))
@@ -15,7 +17,7 @@ import qualified Data.Csv as Csv ((.:))
 import Data.Csv
     (ToNamedRecord(..), FromNamedRecord(..), namedRecord, namedField)
 import Data.Via.Scientific
-    ( dpDegree, fromSci, toSci, showSci
+    ( dpDegree, dpAlt, fromSci, toSci, showSci
     , deriveDecimalPlaces, deriveJsonViaSci, deriveCsvViaSci
     , deriveShowValueViaSci
     )
@@ -42,6 +44,7 @@ instance FromJSON RawLatLng where
 
 newtype RawLat = RawLat Rational deriving (Eq, Ord)
 newtype RawLng = RawLng Rational deriving (Eq, Ord)
+newtype RawAlt = RawAlt Rational deriving (Eq, Ord)
 
 instance Newtype RawLat Rational where
     pack = RawLat
@@ -51,22 +54,36 @@ instance Newtype RawLng Rational where
     pack = RawLng
     unpack (RawLng a) = a
 
-csvSci :: Rational -> String
-csvSci = showSci dpDegree . toSci dpDegree
+instance Newtype RawAlt Rational where
+    pack = RawAlt
+    unpack (RawAlt a) = a
+
+csvSciLL :: Rational -> String
+csvSciLL = showSci dpDegree . toSci dpDegree
+
+csvSciAlt :: Rational -> String
+csvSciAlt = showSci dpAlt . toSci dpAlt
 
 instance ToNamedRecord RawLat where
     toNamedRecord (RawLat x) =
-        namedRecord [ namedField "lat" $ csvSci x ]
+        namedRecord [ namedField "lat" $ csvSciLL x ]
 
 instance ToNamedRecord RawLng where
     toNamedRecord (RawLng x) =
-        namedRecord [ namedField "lng" $ csvSci x ]
+        namedRecord [ namedField "lng" $ csvSciLL x ]
+
+instance ToNamedRecord RawAlt where
+    toNamedRecord (RawAlt x) =
+        namedRecord [ namedField "alt" $ csvSciAlt x ]
 
 instance FromNamedRecord RawLat where
     parseNamedRecord m = RawLat . fromSci <$> m Csv..: "lat"
 
 instance FromNamedRecord RawLng where
-    parseNamedRecord m = RawLng . fromSci <$> m Csv..: "lat"
+    parseNamedRecord m = RawLng . fromSci <$> m Csv..: "lng"
+
+instance FromNamedRecord RawAlt where
+    parseNamedRecord m = RawAlt . fromSci <$> m Csv..: "alt"
 
 showLat :: RawLat -> String
 showLat (RawLat lat') =
@@ -84,15 +101,24 @@ showLng (RawLng lng') =
     where
         x = toSci dpDegree lng'
 
+showAlt :: RawAlt -> String
+showAlt (RawAlt alt') =
+    showSci dpAlt x ++ "m"
+    where
+        x = toSci dpAlt alt'
+
 deriveDecimalPlaces dpDegree ''RawLat
 deriveDecimalPlaces dpDegree ''RawLng
+deriveDecimalPlaces dpAlt ''RawAlt
 
 deriveJsonViaSci ''RawLat
 deriveJsonViaSci ''RawLng
+deriveJsonViaSci ''RawAlt
 
 deriveShowValueViaSci ''RawLat
 deriveShowValueViaSci ''RawLng
+deriveShowValueViaSci ''RawAlt
 
 deriveCsvViaSci ''RawLat
 deriveCsvViaSci ''RawLng
-
+deriveCsvViaSci ''RawAlt

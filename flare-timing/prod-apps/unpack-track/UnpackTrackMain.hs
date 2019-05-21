@@ -77,7 +77,7 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
                 (IxTask <$> task)
                 (pilotNamed cs $ PilotName <$> pilot)
                 (CompInputFile compPath)
-                checkAll 
+                checkAll
 
 writeTime
     :: [IxTask]
@@ -139,12 +139,13 @@ writePilotTimes compFile iTask (pilot, rows) = do
         (UnpackTrackDir dOut, UnpackTrackFile f) = unpackTrackPath dir iTask pilot
 
 mkTrackRow :: Fix -> TrackRow
-mkTrackRow Fix{fix, time, lat, lng} =
+mkTrackRow Fix{fix, time, lat, lng, alt} =
     TrackRow
         { fixIdx = FixIdx fix
         , time = time
         , lat = lat
         , lng = lng
+        , alt = alt
         }
 
 dump :: FnIxTask k (Pilot -> [TrackRow])

@@ -27,11 +27,12 @@ import qualified Flight.Kml as Kml
     , Seconds(..)
     , Latitude(..)
     , Longitude(..)
+    , Altitude(..)
     , LatLngAlt(..)
     , FixMark(..)
     )
 import Flight.LatLng (AzimuthFwd, LatLng(..), degPairToRadLL)
-import Flight.LatLng.Raw (RawLat(..), RawLng(..))
+import Flight.LatLng.Raw (RawLat(..), RawLng(..), RawAlt(..))
 import Flight.Zone (Radius(..), Zone(..), realToFracZone, unlineZones)
 import Flight.Zone.SpeedSection (SpeedSection, sliceZones)
 import Flight.Zone.Raw (RawZone(..))
@@ -94,11 +95,13 @@ fixFromFix mark0 (ZoneIdx i) x =
         , time = fromInteger secs `addUTCTime` mark0
         , lat = RawLat lat
         , lng = RawLng lng
+        , alt = RawAlt $ toRational alt
         }
     where
         Kml.Seconds secs = Kml.mark x
         Kml.Latitude lat = Kml.lat x
         Kml.Longitude lng = Kml.lng x
+        Kml.Altitude alt = Kml.altGps x
 
 fixToPoint :: (Eq a, Ord a, Fractional a) => Kml.Fix -> TrackZone a
 fixToPoint fix =

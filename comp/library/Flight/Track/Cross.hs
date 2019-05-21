@@ -33,7 +33,7 @@ import Data.Aeson (ToJSON(..), FromJSON(..))
 
 import Flight.Clip (FlyingSection)
 import Flight.Pilot (TrackFileFail(..))
-import Flight.LatLng.Raw (RawLat, RawLng)
+import Flight.LatLng.Raw (RawLat, RawLng, RawAlt)
 import Flight.Field (FieldOrdering(..))
 import Flight.Score (Pilot(..))
 
@@ -134,6 +134,8 @@ data Fix =
         -- ^ The latitude in decimal degrees, +ve is N and -ve is S.
         , lng :: RawLng
         -- ^ The longitude in decimal degrees, +ve is E and -ve is W.
+        , alt :: RawAlt
+        -- ^ The altitude in decimal degrees, +ve is E and -ve is W.
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
@@ -151,6 +153,8 @@ data InterpolatedFix =
         -- ^ The interpolated latitude in decimal degrees, +ve is N and -ve is S.
         , lng :: RawLng
         -- ^ The interpolated longitude in decimal degrees, +ve is E and -ve is W.
+        , alt :: RawAlt
+        -- ^ The interpolated altitude in decimal degrees, +ve is E and -ve is W.
         }
     deriving (Eq, Ord, Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
@@ -168,12 +172,13 @@ endOfFlying :: Maybe TrackFlyingSection -> Maybe UTCTime
 endOfFlying = join . fmap (fmap snd . flyingTimes)
 
 asIfFix :: ZoneTag -> Fix
-asIfFix ZoneTag{inter = InterpolatedFix{fixFrac, time, lat, lng}} =
+asIfFix ZoneTag{inter = InterpolatedFix{fixFrac, time, lat, lng, alt}} =
     Fix
         { fix = round fixFrac
         , time = time
         , lat = lat
         , lng = lng
+        , alt = alt
         }
 
 -- | A pair of fixes that cross a zone.
@@ -238,7 +243,10 @@ cmp a b =
         ("lat", "fix") -> GT
         ("lat", "time") -> GT
         ("lat", _) -> LT
+
+        ("lng", "alt") -> LT
         ("lng", _) -> GT
+        ("alt", _) -> GT
 
         ("loggedFixes", _) -> LT
 

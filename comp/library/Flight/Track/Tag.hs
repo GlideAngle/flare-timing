@@ -233,7 +233,10 @@ cmp a b =
         ("lat", "fix") -> GT
         ("lat", "time") -> GT
         ("lat", _) -> LT
+
+        ("lng", "alt") -> LT
         ("lng", _) -> GT
+        ("alt", _) -> GT
 
         ("zonesSum", _) -> LT
 

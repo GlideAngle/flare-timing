@@ -9,11 +9,11 @@ module Flight.Mask.Interpolate
 import Prelude hiding (span)
 import Data.Ratio ((%))
 import Data.Time.Clock (NominalDiffTime, addUTCTime, diffUTCTime)
-import Data.UnitsOfMeasure (u, convert)
+import Data.UnitsOfMeasure ((+:), (-:), (*:), u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
 import Flight.LatLng (AzimuthFwd, Lat(..), Lng(..), LatLng(..))
-import Flight.LatLng.Raw (RawLat(..), RawLng(..))
+import Flight.LatLng.Raw (RawLat(..), RawLng(..), RawAlt(..))
 import qualified Flight.Track.Cross as Cg (Fix(..))
 import Flight.Track.Cross (InterpolatedFix(..))
 import Flight.Units ()
@@ -42,6 +42,16 @@ class TagInterpolate a b | a -> b where
 
     spanner :: a -> SpanLatLng b
     azimuth :: a -> AzimuthFwd b
+
+-- TODO: Find out why this cannot be implemented in terms of Quantity a u
+linearInterpolate
+    :: Num a
+    => a
+    -> Quantity a [u| m |]
+    -> Quantity a [u| m |]
+    -> Quantity a [u| m |]
+linearInterpolate frac q0 q1 =
+    ((MkQuantity frac :: Quantity _ [u| 1 |]) *: (q1 -: q0)) +: q0
 
 instance TagInterpolate (Sliver a) a where
     interpolate sliver z x y = tagInterpolate sliver z x y
@@ -87,11 +97,20 @@ crossingTag
     -> (Bool, Bool)
     -> Maybe InterpolatedFix
 
-crossingTag f z (m@Cg.Fix{fix, time = t0}, n@Cg.Fix{time = t1}) inZones
+crossingTag
+    f
+    z
+    ( m@Cg.Fix{fix, time = t0, alt = RawAlt a0}
+    , n@Cg.Fix{time = t1, alt = RawAlt a1}
+    )
+    inZones
 
     | inZones == (True, False) || inZones == (False, True) = do
         let pts = interpolate f z (fixToRadLL m) (fixToRadLL n)
         (LatLng (Lat xLat, Lng xLng), frac) <- fractionate f pts
+        let a0' :: Quantity _ [u| m |] = MkQuantity (fromRational a0)
+        let a1' :: Quantity _ [u| m |] = MkQuantity (fromRational a1)
+        let MkQuantity xAlt = linearInterpolate frac a0' a1'
 
         let MkQuantity xLat' = convert xLat :: Quantity _ [u| deg |]
         let MkQuantity xLng' = convert xLng :: Quantity _ [u| deg |]
@@ -104,6 +123,7 @@ crossingTag f z (m@Cg.Fix{fix, time = t0}, n@Cg.Fix{time = t1}) inZones
                 , time = secs' `addUTCTime` t0
                 , lat = RawLat . fromRational . toRational $ xLat'
                 , lng = RawLng . fromRational . toRational $ xLng'
+                , alt = RawAlt . fromRational . toRational $ xAlt
                 }
 
     | otherwise = Nothing
