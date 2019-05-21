@@ -130,7 +130,7 @@ instance Show RaceTick where
 allHeaders :: [String]
 allHeaders =
     ["fixIdx", "time", "lat", "lng", "alt"]
-    ++ ["tickLead", "tickRace", "zoneIdx", "legIdx", "distance"]
+    ++ ["tickLead", "tickRace", "zoneIdx", "legIdx", "togo"]
     ++ ["area"]
 
 data TrackRow =
@@ -169,8 +169,8 @@ data TimeRow =
         -- ^ The fix number for this leg.
         , legIdx :: LegIdx
         -- ^ Leg of the task.
-        , distance :: Double
-        -- ^ Distance to goal in km
+        , togo :: Double
+        -- ^ The distance yet to go to make goal in km.
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)
 
@@ -203,8 +203,8 @@ data TickRow =
         -- ^ The fix number for this leg.
         , legIdx :: LegIdx
         -- ^ Leg of the task
-        , distance :: Double
-        -- ^ Distance to goal in km.
+        , togo :: Double
+        -- ^ The distance yet to go to make goal in km.
         , area :: LeadingArea (Quantity Double [u| (km^2)*s |])
         -- ^ Leading coefficient area step.
         }
@@ -247,7 +247,7 @@ instance ToNamedRecord TrackRow where
                     , namedField "tickRace" ("" :: String)
                     , namedField "zoneIdx" ("" :: String)
                     , namedField "legIdx" ("" :: String)
-                    , namedField "distance" ("" :: String)
+                    , namedField "togo" ("" :: String)
                     ]
 
             -- NOTE: Fields in TickRow that are not in TrackRow.
@@ -287,7 +287,7 @@ instance ToNamedRecord TimeRow where
                     , namedField "time" time'
                     , namedField "zoneIdx" zoneIdx
                     , namedField "legIdx" legIdx
-                    , namedField "distance" d
+                    , namedField "togo" d
                     ]
 
             -- NOTE: Fields in TickRow that are not in TimeRow.
@@ -297,7 +297,7 @@ instance ToNamedRecord TimeRow where
                     ]
 
             time' = unquote . unpack . encode $ time
-            d = unquote . unpack . encode $ distance
+            d = unquote . unpack . encode $ togo
 
 instance FromNamedRecord TimeRow where
     parseNamedRecord m =
@@ -311,7 +311,7 @@ instance FromNamedRecord TimeRow where
         m .: "tickRace" <*>
         m .: "zoneIdx" <*>
         m .: "legIdx" <*>
-        m .: "distance"
+        m .: "togo"
         where
             t = parseTime <$> m .: "time"
 
@@ -326,7 +326,7 @@ instance ToNamedRecord TickRow where
                     , namedField "tickRace" tickRace
                     , namedField "zoneIdx" zoneIdx
                     , namedField "legIdx" legIdx
-                    , namedField "distance" (f distance)
+                    , namedField "togo" (f togo)
                     , namedField "area" area
                     ]
 
@@ -349,7 +349,7 @@ instance FromNamedRecord TickRow where
         m .: "tickRace" <*>
         m .: "zoneIdx" <*>
         m .: "legIdx" <*>
-        m .: "distance" <*>
+        m .: "togo" <*>
         m .: "area"
 
 minLeadingCoef
@@ -430,11 +430,11 @@ leadingArea
 
 toLcPoint :: (Int -> Leg) -> TickRow -> Maybe LcPoint
 toLcPoint _ TickRow{tickLead = Nothing} = Nothing
-toLcPoint toLeg TickRow{legIdx = (LegIdx ix), tickLead = Just (LeadTick t), distance} =
+toLcPoint toLeg TickRow{legIdx = (LegIdx ix), tickLead = Just (LeadTick t), togo} =
     Just LcPoint
         { leg = toLeg ix
         , mark = TaskTime . MkQuantity . toRational $ t
-        , togo = DistanceToEss . MkQuantity . toRational $ distance
+        , togo = DistanceToEss . MkQuantity . toRational $ togo
         }
 
 -- | The time of last landing among all pilots, in seconds from first lead.
@@ -489,7 +489,7 @@ toLcTrackRev
     (Just (LeadClose close))
     (Just (LeadAllDown down))
     Nothing
-    xs@(TickRow{distance} : _) =
+    xs@(TickRow{togo} : _) =
         -- NOTE: Everyone has landed out.
         LcSeq{seq = xs', extra = Just y}
     where
@@ -497,16 +497,16 @@ toLcTrackRev
 
         y = landOutRow
                 (min down close)
-                (DistanceToEss . MkQuantity . toRational $ distance)
+                (DistanceToEss . MkQuantity . toRational $ togo)
 
 toLcTrackRev
     toLeg
     (Just (LeadClose _))
     (Just (LeadAllDown _))
     (Just (LeadArrival arrive))
-    xs@(TickRow{tickLead = Just (LeadTick t), distance} : _)
-        -- NOTE: If distance <= 0 then ESS was made.
-        | distance <= 0 = LcSeq{seq = xs', extra = Nothing}
+    xs@(TickRow{tickLead = Just (LeadTick t), togo} : _)
+        -- NOTE: If distance to go <= 0 then ESS was made.
+        | togo <= 0 = LcSeq{seq = xs', extra = Nothing}
         -- NOTE: Landed out before the last pilot made ESS.
         | t' < arrive = LcSeq{seq = xs', extra = Just yEarly}
         -- NOTE: Landed out after the last pilot made ESS.
@@ -518,12 +518,12 @@ toLcTrackRev
         yEarly =
                 landOutRow
                     arrive
-                    (DistanceToEss . MkQuantity . toRational $ distance)
+                    (DistanceToEss . MkQuantity . toRational $ togo)
 
         yLate =
                 landOutRow
                     t'
-                    (DistanceToEss . MkQuantity . toRational $ distance)
+                    (DistanceToEss . MkQuantity . toRational $ togo)
 
 landOutRow :: EssTime -> DistanceToEss -> LcPoint
 landOutRow (EssTime t) d =
@@ -545,7 +545,7 @@ timeToTick TimeRow{..} =
         , tickRace = tickRace
         , zoneIdx = zoneIdx
         , legIdx = legIdx
-        , distance = distance
+        , togo = togo
         , area = LeadingArea zero
         }
 
@@ -565,12 +565,12 @@ discard toLeg dRace close down arrival xs =
     . V.toList
     $ timeToTick <$> xs
 
--- | Drop any rows where the distance is zero.
+-- | Drop any rows where the distance togo is zero.
 dropZeros :: [TickRow] -> [TickRow]
 dropZeros =
     dropWhile ((== 0) . d)
     where
-        d = distance :: (TickRow -> Double)
+        d = togo :: (TickRow -> Double)
 
 -- | Discard fixes further from goal than any previous fix.
 discardFurther :: [TickRow] -> [TickRow]
@@ -578,7 +578,7 @@ discardFurther (x : y : ys)
     | d x <= d y = discardFurther (x : ys)
     | otherwise = x : discardFurther (y : ys)
     where
-        d = distance :: (TickRow -> Double)
+        d = togo :: (TickRow -> Double)
 discardFurther ys = ys
 
 commentOnFixRange :: Pilot -> [FixIdx] -> String

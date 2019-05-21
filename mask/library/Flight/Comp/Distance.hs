@@ -154,27 +154,27 @@ nighTrackLine
     -> (Pilot, Time.TimeRow)
     -> (Pilot, TrackDistance Nigh)
 
-nighTrackLine Nothing _ (p, Time.TimeRow{distance}) =
+nighTrackLine Nothing _ (p, Time.TimeRow{togo = d}) =
     (p,) TrackDistance
-        { togo = Just . distanceOnlyLine . fromKm $ distance
+        { togo = Just . distanceOnlyLine . fromKm $ d
         , made = Nothing
         }
 
 nighTrackLine
     (Just (TaskDistance td))
     zsTaskTicked
-    (p, row@Time.TimeRow{distance}) =
+    (p, row@Time.TimeRow{togo = d}) =
     (p,) TrackDistance
         { togo = Just line
-        , made = Just . TaskDistance $ td -: togo
+        , made = Just . TaskDistance $ td -: togo'
         }
     where
-        togo = fromKm distance
+        togo' = fromKm d
 
         line =
             case Map.lookup p zsTaskTicked of
-                Nothing -> distanceOnlyLine togo
-                Just dpi -> pathToGo dpi row togo
+                Nothing -> distanceOnlyLine togo'
+                Just dpi -> pathToGo dpi row togo'
 
 distanceOnlyLine :: Quantity Double [u| m |] -> TrackLine
 distanceOnlyLine d =
@@ -229,19 +229,19 @@ madeDistance
     -> Time.TickRow
     -> TrackDistance Land
 
-madeDistance Nothing Time.TickRow{distance} =
+madeDistance Nothing Time.TickRow{togo = d} =
     TrackDistance
-        { togo = Just . TaskDistance . togoFromKms $ distance
+        { togo = Just . TaskDistance . togoFromKms $ d
         , made = Nothing
         }
 
-madeDistance (Just (TaskDistance td)) Time.TickRow{distance} =
+madeDistance (Just (TaskDistance td)) Time.TickRow{togo = d} =
     TrackDistance
         { togo = Just . TaskDistance $ togo'
         , made = Just . TaskDistance $ td -: togo'
         }
     where
-        togo' = togoFromKms distance
+        togo' = togoFromKms d
 
 togoFromKms :: Double -> Quantity Double [u| m |]
 togoFromKms d =

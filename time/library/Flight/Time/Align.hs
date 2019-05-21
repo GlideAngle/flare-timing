@@ -172,7 +172,7 @@ mkTimeRow lead start legIdx fixIdx (Just Fix{..}) (Just d) =
             , lat = lat
             , lng = lng
             , alt = alt
-            , distance = unTaskDistance d
+            , togo = unTaskDistance d
             }
 
 group
