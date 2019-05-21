@@ -179,10 +179,10 @@ betweenTimeRow t0 t1 TimeRow{time = t} =
     t0 <= t && t <= t1 
 
 instance FlyClipping UTCTime [TimeRow] where
-    clipToFlown x@FlyCut{cut = Nothing} =
+    clipToCut x@FlyCut{cut = Nothing} =
         x{uncut = []}
 
-    clipToFlown x@FlyCut{cut = Just (t0, t1), uncut = xs} =
+    clipToCut x@FlyCut{cut = Just (t0, t1), uncut = xs} =
         x{uncut = filter (betweenTimeRow t0 t1) xs}
 
     clipIndices FlyCut{cut = Nothing} = []

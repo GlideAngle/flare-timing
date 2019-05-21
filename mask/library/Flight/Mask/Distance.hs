@@ -59,7 +59,7 @@ dashDistancesToGoal
     where
         lfg = lastFixToGoal ticked sliver
         ixs = index fixes
-        FlyCut{uncut = MarkedFixes{mark0, fixes}} = clipToFlown flyCut
+        FlyCut{uncut = MarkedFixes{mark0, fixes}} = clipToCut flyCut
 
 dashDistanceToGoal
     :: (Real a, Fractional a, FlyClipping UTCTime MarkedFixes)
@@ -92,7 +92,7 @@ dashPathToGoalTimeRows
     where
         zs = fromZones zones
         ixs = revindex fixes
-        FlyCut{uncut = fixes} = clipToFlown flyCut
+        FlyCut{uncut = fixes} = clipToCut flyCut
 
 dashPathToGoalMarkedFixes
     :: (Real a, Fractional a, FlyClipping UTCTime MarkedFixes)
@@ -111,7 +111,7 @@ dashPathToGoalMarkedFixes
     where
         zs = fromZones zones
         ixs = revindex fixes
-        FlyCut{uncut = MarkedFixes{fixes}} = clipToFlown flyCut
+        FlyCut{uncut = MarkedFixes{fixes}} = clipToCut flyCut
 
 revindex :: [a] -> [(ZoneIdx, a)]
 revindex = reverse . index
@@ -166,7 +166,7 @@ dashDistanceFlown
     where
         zs = fromZones zones
         ixs = reverse . index $ fixes
-        FlyCut{uncut = MarkedFixes{fixes}} = clipToFlown flyCut
+        FlyCut{uncut = MarkedFixes{fixes}} = clipToCut flyCut
 
 index :: [a] -> [(ZoneIdx, a)]
 index = zip $ ZoneIdx <$> [1 .. ]

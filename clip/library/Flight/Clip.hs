@@ -29,7 +29,7 @@ data FlyCut a b =
     deriving Show
 
 class FlyClipping a b where
-    clipToFlown :: FlyCut a b -> FlyCut a b
+    clipToCut :: FlyCut a b -> FlyCut a b
     clipIndices :: FlyCut a b -> [Int]
 
 class (FlyClipping a b) => FlyClipSection a b c where

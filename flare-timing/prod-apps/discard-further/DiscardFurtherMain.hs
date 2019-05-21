@@ -193,7 +193,7 @@ filterTime
                             maybe
                                 rt
                                 (\stp ->
-                                    uncut . clipToFlown $
+                                    uncut . clipToCut $
                                         FlyCut
                                             { cut = Just (openTask, min stp closeTask)
                                             , uncut = rt

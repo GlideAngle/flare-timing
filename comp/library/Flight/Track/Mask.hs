@@ -121,8 +121,8 @@ data RaceTime =
 
 instance FlyClipping UTCTime RaceTime where
     clipIndices _ = []
-    clipToFlown x@FlyCut{cut = Nothing} = x
-    clipToFlown x@FlyCut{cut = Just (_, t1), uncut = y@RaceTime{..}} =
+    clipToCut x@FlyCut{cut = Nothing} = x
+    clipToCut x@FlyCut{cut = Just (_, t1), uncut = y@RaceTime{..}} =
         x{uncut = fromMaybe y uc}
         where
             oc =

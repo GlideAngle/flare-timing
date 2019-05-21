@@ -188,10 +188,10 @@ betweenFixMark s0 s1 x =
     let s = mark x in s0 <= s && s <= s1
 
 instance FlyClipping UTCTime MarkedFixes where
-    clipToFlown x@FlyCut{cut = Nothing, uncut} =
+    clipToCut x@FlyCut{cut = Nothing, uncut} =
         x{uncut = uncut{fixes = []}}
 
-    clipToFlown x@FlyCut{cut = Just (t0, t1), uncut = mf@MarkedFixes{mark0, fixes}} =
+    clipToCut x@FlyCut{cut = Just (t0, t1), uncut = mf@MarkedFixes{mark0, fixes}} =
         x{uncut = mf{fixes = filter (betweenFixMark s0 s1) fixes}}
         where
             s0 = Seconds . round $ t0 `diffUTCTime` mark0

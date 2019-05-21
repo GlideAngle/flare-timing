@@ -182,7 +182,7 @@ groupByLeg tagInterp fromZones task@Task{zones} flyCut =
                     Just (t, Map.lookup (Just t) timeToLeg)
     ]
     where
-        FlyCut{uncut = mf@MarkedFixes{mark0, fixes}} = clipToFlown flyCut
+        FlyCut{uncut = mf@MarkedFixes{mark0, fixes}} = clipToCut flyCut
 
         xs :: [Maybe ZoneTag]
         xs =

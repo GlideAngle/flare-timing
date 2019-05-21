@@ -341,7 +341,7 @@ writeMask
                             maybe
                                 rt
                                 (\stp ->
-                                    uncut . clipToFlown $
+                                    uncut . clipToCut $
                                         FlyCut
                                             { cut = Just (openTask, min stp closeTask)
                                             , uncut = rt
@@ -633,7 +633,7 @@ flown' dTaskF flying math tags tasks iTask@(IxTask i) mf@MarkedFixes{mark0} p =
         ssTime = Lookup.pilotTime (tagPilotTime tags) mf iTask [] speedSection' p
         gsTime = Lookup.pilotTime (tagPilotTime tags) mf iTask startGates' speedSection' p
         arrivalRank = Lookup.arrivalRank (tagArrivalRank tags) mf iTask speedSection' p
-        FlyCut{uncut = MarkedFixes{fixes = ys}} = clipToFlown xs
+        FlyCut{uncut = MarkedFixes{fixes = ys}} = clipToCut xs
 
         xs =
             FlyCut
