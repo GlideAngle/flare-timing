@@ -53,7 +53,9 @@ import Flight.Comp
     , pilotNamed
     )
 import Flight.Track.Time
-    (LeadClose(..), LeadAllDown(..), LeadArrival(..), discard, allHeaders)
+    ( LeadClose(..), LeadAllDown(..), LeadArrival(..)
+    , copyTimeToTick, discard, allHeaders
+    )
 import Flight.Track.Mask (RaceTime(..), racing)
 import Flight.Mask (checkTracks)
 import Flight.Scribe
@@ -251,7 +253,7 @@ readFilterWrite
     when (selectTask iTask) $ do
     _ <- createDirectoryIfMissing True dOut
     rows <- readAlignTime (AlignTimeFile (dIn </> file))
-    f . discard toLeg taskLength close down arrival . snd $ rows
+    f . discard copyTimeToTick toLeg taskLength close down arrival . snd $ rows
     where
         f = writeDiscardFurther (DiscardFurtherFile $ dOut </> file) allHeaders
         dir = compFileToCompDir compFile

@@ -68,7 +68,7 @@ import Flight.Mask
 import Flight.Comp.Distance (compDistance, compNigh)
 import Flight.Track.Tag (Tagging)
 import Flight.Track.Place (reIndex)
-import Flight.Track.Time (AwardedVelocity(..))
+import Flight.Track.Time (AwardedVelocity(..), copyTimeToTick)
 import qualified Flight.Track.Time as Time (TimeRow(..), TickRow(..))
 import Flight.Track.Arrival (TrackArrival(..))
 import Flight.Track.Distance
@@ -354,7 +354,10 @@ writeMask
 
             rowsLeadingStep :: [[(Pilot, [Time.TickRow])]]
                 <- readCompLeading
-                        routes compFile (includeTask selectTasks)
+                        copyTimeToTick
+                        routes
+                        compFile
+                        (includeTask selectTasks)
                         (IxTask <$> [1 .. ])
                         (speedSectionToLeg . speedSection <$> tasks)
                         raceTime

@@ -20,7 +20,9 @@ import Data.Vector (Vector)
 import qualified Data.Vector as V (fromList, toList, null, last)
 
 import Flight.Track.Time
-    (TickRow(..), LeadClose(..), LeadAllDown(..), LeadArrival(..), discard)
+    ( TickRow(..), LeadClose(..), LeadAllDown(..), LeadArrival(..), TimeToTick
+    , discard
+    )
 import Flight.Track.Mask (RaceTime(..))
 import Flight.Comp
     ( IxTask(..)
@@ -97,7 +99,8 @@ readPilotBestDistance compFile (IxTask iTask) pilot = do
         (DiscardFurtherDir dOut) = discardFurtherDir dir iTask
 
 readCompLeading
-    :: RoutesLookupTaskDistance
+    :: TimeToTick
+    -> RoutesLookupTaskDistance
     -> CompInputFile
     -> (IxTask -> Bool)
     -> [IxTask]
@@ -105,16 +108,17 @@ readCompLeading
     -> [Maybe RaceTime]
     -> [[Pilot]]
     -> IO [[(Pilot, [TickRow])]]
-readCompLeading lengths compFile select tasks toLeg raceTimes pilots =
+readCompLeading timeToTick lengths compFile select tasks toLeg raceTimes pilots =
     sequence $ zipWith4
-        (readTaskLeading lengths compFile select)
+        (readTaskLeading timeToTick lengths compFile select)
         tasks
         toLeg
         raceTimes
         pilots
 
 readTaskLeading
-    :: RoutesLookupTaskDistance
+    :: TimeToTick
+    -> RoutesLookupTaskDistance
     -> CompInputFile
     -> (IxTask -> Bool)
     -> IxTask
@@ -122,25 +126,27 @@ readTaskLeading
     -> Maybe RaceTime
     -> [Pilot]
     -> IO [(Pilot, [TickRow])]
-readTaskLeading lengths compFile select iTask@(IxTask i) toLeg raceTime ps =
+readTaskLeading timeToTick lengths compFile select iTask@(IxTask i) toLeg raceTime ps =
     if not (select iTask) then return [] else do
     _ <- createDirectoryIfMissing True dOut
-    xs <- mapM (readPilotLeading lengths compFile iTask toLeg raceTime) ps
+    xs <- mapM (readPilotLeading timeToTick lengths compFile iTask toLeg raceTime) ps
     return $ zip ps xs
     where
         dir = compFileToCompDir compFile
         (DiscardFurtherDir dOut) = discardFurtherDir dir i
 
 readPilotLeading
-    :: RoutesLookupTaskDistance
+    :: TimeToTick
+    -> RoutesLookupTaskDistance
     -> CompInputFile
     -> IxTask
     -> (Int -> Leg)
     -> Maybe RaceTime
     -> Pilot
     -> IO [TickRow]
-readPilotLeading _ _ _ _ Nothing _ = return []
+readPilotLeading _ _ _ _ _ Nothing _ = return []
 readPilotLeading
+    timeToTick
     (RoutesLookupTaskDistance lookupTaskLength)
     compFile iTask@(IxTask i) toLeg
     (Just raceTime)
@@ -148,7 +154,7 @@ readPilotLeading
 
     (_, rows) <- readAlignTime (AlignTimeFile (dIn </> file))
 
-    return $ (V.toList . discard toLeg taskLength close down arrival) rows
+    return $ (V.toList . discard timeToTick toLeg taskLength close down arrival) rows
     where
         dir = compFileToCompDir compFile
         (AlignTimeDir dIn, AlignTimeFile file) = alignTimePath dir i pilot

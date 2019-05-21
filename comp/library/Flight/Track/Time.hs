@@ -21,6 +21,7 @@ module Flight.Track.Time
     , FixIdx(..)
     , ZoneIdx(..)
     , LegIdx(..)
+    , TimeToTick
     , leadingArea
     , leadingAreaSum
     , minLeadingCoef
@@ -28,6 +29,7 @@ module Flight.Track.Time
     , discard
     , allHeaders
     , commentOnFixRange
+    , copyTimeToTick
     ) where
 
 import Prelude hiding (seq)
@@ -540,8 +542,10 @@ taskToLeading :: QTaskDistance Double [u| m |] -> LengthOfSs
 taskToLeading (TaskDistance d) =
     LengthOfSs . toRational' $ (convert d :: Quantity Double [u| km |])
 
-timeToTick :: TimeRow -> TickRow
-timeToTick TimeRow{..} =
+type TimeToTick = TimeRow -> TickRow
+
+copyTimeToTick :: TimeToTick
+copyTimeToTick TimeRow{..} =
     TickRow
         { fixIdx = fixIdx
         , alt = alt
@@ -554,14 +558,18 @@ timeToTick TimeRow{..} =
         }
 
 discard
-    :: (Int -> Leg)
+    :: TimeToTick
+    -- ^ A function that converts the type of row. This is a good time to
+    -- convert altitude to distance when giving an altitude bonus in a stopped
+    -- task.
+    -> (Int -> Leg)
     -> Maybe (QTaskDistance Double [u| m |])
     -> Maybe LeadClose
     -> Maybe LeadAllDown
     -> Maybe LeadArrival
     -> Vector TimeRow
     -> Vector TickRow
-discard toLeg dRace close down arrival xs =
+discard timeToTick toLeg dRace close down arrival xs =
     V.fromList
     . leadingArea toLeg dRace close down arrival
     . discardFurther
