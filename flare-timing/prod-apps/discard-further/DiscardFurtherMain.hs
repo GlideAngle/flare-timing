@@ -141,7 +141,7 @@ filterTime
         -> IO [[Either (Pilot, _) (Pilot, _)]])
     -> IO ()
 filterTime
-    CompSettings{tasks, comp = Comp{discipline = hgOrPg}}
+    CompSettings{comp = Comp{discipline = hgOrPg}, tasks}
     lengths
     (TaskLeadingLookup lookupTaskLeading)
     compFile selectTasks selectPilots f = do

@@ -5,7 +5,6 @@ module Flight.DiscardFurther
     , readCompLeading
     ) where
 
-import Data.List (zipWith4)
 import Control.Exception.Safe (MonadThrow, throwString)
 import Control.Monad.Except (MonadIO, liftIO)
 import Control.Monad (zipWithM)
@@ -99,7 +98,7 @@ readPilotBestDistance compFile (IxTask iTask) pilot = do
         (DiscardFurtherDir dOut) = discardFurtherDir dir iTask
 
 readCompLeading
-    :: TimeToTick
+    :: [TimeToTick]
     -> RoutesLookupTaskDistance
     -> CompInputFile
     -> (IxTask -> Bool)
@@ -108,13 +107,20 @@ readCompLeading
     -> [Maybe RaceTime]
     -> [[Pilot]]
     -> IO [[(Pilot, [TickRow])]]
-readCompLeading timeToTick lengths compFile select tasks toLeg raceTimes pilots =
-    sequence $ zipWith4
-        (readTaskLeading timeToTick lengths compFile select)
-        tasks
-        toLeg
-        raceTimes
-        pilots
+readCompLeading timeToTicks lengths compFile select tasks toLegs raceTimes pilots =
+    sequence
+        [
+            (readTaskLeading timeToTick lengths compFile select)
+                task
+                toLeg
+                rt
+                ps
+        | timeToTick <- timeToTicks
+        | task <- tasks
+        | toLeg <- toLegs
+        | rt <- raceTimes
+        | ps <- pilots
+        ]
 
 readTaskLeading
     :: TimeToTick

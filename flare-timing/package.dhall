@@ -247,6 +247,7 @@ in    defs
                     , "flight-mask"
                     , "flight-route"
                     , "flight-span"
+                    , "flight-zone"
                     ]
               , ghc-options =
                   [ "-rtsopts"
