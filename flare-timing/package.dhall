@@ -140,27 +140,6 @@ in    defs
               , source-dirs =
                   "prod-apps/tag-zone"
               }
-          , peg-frame =
-              { dependencies =
-                    deps
-                  # [ "containers"
-                    , "safe-exceptions"
-                    , "time"
-                    , "flight-clip"
-                    , "flight-zone"
-                    ]
-              , ghc-options =
-                  [ "-rtsopts"
-                  , "-threaded"
-                  , "-with-rtsopts=-N"
-                  , "-Wall"
-                  , "-fplugin Data.UnitsOfMeasure.Plugin"
-                  ]
-              , main =
-                  "PegFrameMain.hs"
-              , source-dirs =
-                  "prod-apps/peg-frame"
-              }
           , unpack-track =
               { dependencies =
                     deps
@@ -183,6 +162,27 @@ in    defs
                   "UnpackTrackMain.hs"
               , source-dirs =
                   "prod-apps/unpack-track"
+              }
+          , peg-frame =
+              { dependencies =
+                    deps
+                  # [ "containers"
+                    , "safe-exceptions"
+                    , "time"
+                    , "flight-clip"
+                    , "flight-zone"
+                    ]
+              , ghc-options =
+                  [ "-rtsopts"
+                  , "-threaded"
+                  , "-with-rtsopts=-N"
+                  , "-Wall"
+                  , "-fplugin Data.UnitsOfMeasure.Plugin"
+                  ]
+              , main =
+                  "PegFrameMain.hs"
+              , source-dirs =
+                  "prod-apps/peg-frame"
               }
           , align-time =
               { dependencies =
@@ -216,6 +216,7 @@ in    defs
                     , "flight-lookup"
                     , "flight-mask"
                     , "flight-route"
+                    , "flight-zone"
                     ]
               , ghc-options =
                   [ "-rtsopts"

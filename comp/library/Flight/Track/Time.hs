@@ -30,6 +30,7 @@ module Flight.Track.Time
     , allHeaders
     , commentOnFixRange
     , copyTimeToTick
+    , altBonus
     ) where
 
 import Prelude hiding (seq)
@@ -47,14 +48,18 @@ import Data.HashMap.Strict (unions)
 import Data.Time.Clock (UTCTime)
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON(..), FromJSON(..), encode, decode)
-import Data.UnitsOfMeasure ((+:), u, convert, zero, toRational')
+import Data.UnitsOfMeasure
+    ( (+:), (-:), (*:), (/:)
+    , u, unQuantity, convert, zero, toRational'
+    )
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Data.Vector (Vector)
 import qualified Data.Vector as V (fromList, toList)
 
 import Flight.Units ()
 import Flight.Clip (FlyCut(..), FlyClipping(..))
-import Flight.LatLng.Raw (RawLat, RawLng, RawAlt)
+import Flight.LatLng (QAlt, Alt(..))
+import Flight.LatLng.Raw (RawLat, RawLng, RawAlt(..))
 import Flight.Score
     ( LeadingArea(..)
     , LeadingCoef(..)
@@ -68,12 +73,14 @@ import Flight.Score
     , TaskDeadline(..)
     , EssTime(..)
     , Pilot
+    , GlideRatio(..)
     , areaSteps
     , showSecs
     )
 import Flight.Distance (QTaskDistance, TaskDistance(..))
 import Flight.Zone.SpeedSection (SpeedSection)
 import Flight.Track.Range (asRanges)
+import Data.Ratio.Rounding (dpRound)
 
 data AwardedVelocity =
     AwardedVelocity
@@ -93,7 +100,8 @@ newtype FixIdx = FixIdx Int
     deriving anyclass (ToJSON, FromJSON)
     deriving newtype (Enum, Num, ToField, FromField)
 
--- | The index of a fix for a leg, that section of the tracklog between one zone and the next.
+-- | The index of a fix for a leg, that section of the tracklog between one
+-- zone and the next.
 newtype ZoneIdx = ZoneIdx Int
     deriving (Eq, Ord, Generic)
     deriving anyclass (ToJSON, FromJSON)
@@ -556,6 +564,43 @@ copyTimeToTick TimeRow{..} =
         , togo = togo
         , area = LeadingArea zero
         }
+
+altBonus :: GlideRatio -> QAlt Double [u| m |] -> TimeToTick
+altBonus (GlideRatio gr) (Alt qAltGoal) row@TimeRow{alt = RawAlt a, ..} =
+    if qAlt <= qAltGoal then copyTimeToTick row else
+    TickRow
+        { fixIdx = fixIdx
+        , alt = RawAlt $ toRational alt'
+        , tickLead = tickLead
+        , tickRace = tickRace
+        , zoneIdx = zoneIdx
+        , legIdx = legIdx
+        , togo = togo'
+        , area = LeadingArea zero
+        }
+    where
+        qAlt :: Quantity Double [u| m |]
+        qAlt = MkQuantity $ fromRational a
+
+        diffAlt :: Quantity Double [u| m |]
+        diffAlt= qAlt -: qAltGoal
+
+        qTogo :: Quantity Double [u| km |]
+        qTogo = MkQuantity togo
+
+        diffTogo :: Quantity Double [u| m |]
+        diffTogo = convert qTogo
+
+        gr' = fromRational gr
+        diffAltAsReach = gr' *: diffAlt
+        diffTogoAsAlt = diffTogo /: gr'
+
+        (alt', togo') =
+            if diffTogo < diffAltAsReach then (unQuantity $ qAlt -: diffTogoAsAlt, 0) else
+            let d :: Quantity Double [u| km |]
+                d = convert $ diffTogo -: diffAltAsReach
+            -- TODO: Stop rounding of togo in altBonus.
+            in (unQuantity $ qAltGoal, fromRational . dpRound 3 . toRational $ unQuantity d)
 
 discard
     :: TimeToTick

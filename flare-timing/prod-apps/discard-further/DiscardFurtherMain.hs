@@ -1,6 +1,9 @@
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-import Data.List (zipWith4)
+import Prelude hiding (last)
+import Data.Function ((&))
+import Data.Maybe (fromMaybe)
+import Data.List.NonEmpty (nonEmpty, last)
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
 import Formatting ((%), fprint)
@@ -15,6 +18,8 @@ import Flight.Clip (FlyCut(..), FlyClipping(..))
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
+import Flight.Zone.MkZones (Zones(..), Discipline(..))
+import Flight.Zone.Raw (RawZone(..))
 import qualified Flight.Comp as Cmp (openClose)
 import Flight.Route (OptimalRoute(..))
 import Flight.Comp
@@ -27,6 +32,7 @@ import Flight.Comp
     , AlignTimeFile(..)
     , DiscardFurtherFile(..)
     , CompSettings(..)
+    , Comp(..)
     , TaskStop(..)
     , Task(..)
     , PilotName(..)
@@ -53,8 +59,8 @@ import Flight.Comp
     , pilotNamed
     )
 import Flight.Track.Time
-    ( LeadClose(..), LeadAllDown(..), LeadArrival(..)
-    , copyTimeToTick, discard, allHeaders
+    ( TimeToTick, LeadClose(..), LeadAllDown(..), LeadArrival(..)
+    , altBonus, copyTimeToTick, discard, allHeaders
     )
 import Flight.Track.Mask (RaceTime(..), racing)
 import Flight.Mask (checkTracks)
@@ -62,7 +68,7 @@ import Flight.Scribe
     (readComp, readRoute, readTagging, readAlignTime, writeDiscardFurther)
 import Flight.Lookup.Route (routeLength)
 import Flight.Lookup.Tag (TaskLeadingLookup(..), tagTaskLeading)
-import Flight.Score (Leg(..))
+import Flight.Score (Leg(..), GlideRatio(..))
 import DiscardFurtherOptions (description)
 
 main :: IO ()
@@ -135,7 +141,7 @@ filterTime
         -> IO [[Either (Pilot, _) (Pilot, _)]])
     -> IO ()
 filterTime
-    CompSettings{tasks}
+    CompSettings{tasks, comp = Comp{discipline = hgOrPg}}
     lengths
     (TaskLeadingLookup lookupTaskLeading)
     compFile selectTasks selectPilots f = do
@@ -206,21 +212,37 @@ filterTime
                     | task <- tasks
                     ]
 
-            sequence_ $ zipWith4
-                (\ n toLeg rt pilots ->
-                        mapM_
+            let glideRatio = GlideRatio $ hgOrPg & \case HangGliding -> 5; Paragliding -> 4
+
+            let altBonuses :: [TimeToTick] =
+                    [
+                        fromMaybe copyTimeToTick $ do
+                            _ <- stopped
+                            zs' <- nonEmpty zs
+                            let RawZone{alt} = last zs'
+                            altBonus glideRatio <$> alt
+
+                    | Task{stopped, zones = Zones{raw = zs}} <- tasks
+                    ]
+
+            sequence_
+                [
+                    mapM_
                         (readFilterWrite
+                            timeToTick
                             lengths
                             compFile
                             (includeTask selectTasks)
                             n
                             toLeg
                             rt)
-                        pilots)
-                (IxTask <$> [1 .. ])
-                (speedSectionToLeg . speedSection <$> tasks)
-                raceTime
-                taskPilots
+                        pilots
+                | n <- (IxTask <$> [1 .. ])
+                | toLeg <- speedSectionToLeg . speedSection <$> tasks
+                | rt <- raceTime
+                | pilots <- taskPilots
+                | timeToTick <- altBonuses
+                ]
 
 checkAll
     :: CompInputFile
@@ -236,7 +258,8 @@ includeTask :: [IxTask] -> IxTask -> Bool
 includeTask tasks = if null tasks then const True else (`elem` tasks)
 
 readFilterWrite
-    :: RoutesLookupTaskDistance
+    :: TimeToTick
+    -> RoutesLookupTaskDistance
     -> CompInputFile
     -> (IxTask -> Bool)
     -> IxTask
@@ -244,8 +267,9 @@ readFilterWrite
     -> Maybe RaceTime
     -> Pilot
     -> IO ()
-readFilterWrite _ _ _ _ _ Nothing _ = return ()
+readFilterWrite _ _ _ _ _ _ Nothing _ = return ()
 readFilterWrite
+    timeToTick
     (RoutesLookupTaskDistance lookupTaskLength)
     compFile
     selectTask
@@ -253,7 +277,7 @@ readFilterWrite
     when (selectTask iTask) $ do
     _ <- createDirectoryIfMissing True dOut
     rows <- readAlignTime (AlignTimeFile (dIn </> file))
-    f . discard copyTimeToTick toLeg taskLength close down arrival . snd $ rows
+    f . discard timeToTick toLeg taskLength close down arrival . snd $ rows
     where
         f = writeDiscardFurther (DiscardFurtherFile $ dOut </> file) allHeaders
         dir = compFileToCompDir compFile

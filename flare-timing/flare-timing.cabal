@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a06297c52eae032eb316a325d2732115c1c9cc0d83fe5c43e706b9a9c9af209e
+-- hash: d9da1ed4ce30b9437f49b7d400102510e493a42c5638555566d2df5667a8c3c2
 
 name:           flare-timing
 version:        0.1.0
@@ -135,6 +135,7 @@ executable discard-further
     , flight-route
     , flight-scribe
     , flight-time
+    , flight-zone
     , formatting
     , mtl
     , raw-strings-qq
