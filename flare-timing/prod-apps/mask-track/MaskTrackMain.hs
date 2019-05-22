@@ -4,7 +4,7 @@
 import Prelude hiding (last)
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
-import Data.Function ((&), on)
+import Data.Function (on)
 import Data.Maybe (fromMaybe, catMaybes, isJust)
 import Data.List.NonEmpty (nonEmpty, last)
 import Data.List (sortOn, groupBy, partition)
@@ -26,7 +26,7 @@ import qualified Data.Vector as V (fromList)
 
 import Flight.Clip (FlyCut(..), FlyClipping(..))
 import Flight.LatLng (QAlt)
-import Flight.Zone.MkZones (Zones(..), Discipline(..))
+import Flight.Zone.MkZones (Zones(..))
 import Flight.Zone.Raw (RawZone(..))
 import Flight.Route (OptimalRoute(..))
 import qualified Flight.Comp as Cmp (Nominal(..), DfNoTrackPilot(..))
@@ -74,7 +74,7 @@ import Flight.Comp.Distance (compDistance, compNigh)
 import Flight.Track.Tag (Tagging)
 import Flight.Track.Place (reIndex)
 import Flight.Track.Time
-    (TimeToTick, AwardedVelocity(..), altBonus, copyTimeToTick)
+    (TimeToTick, AwardedVelocity(..), glideRatio, altBonus, copyTimeToTick)
 import qualified Flight.Track.Time as Time (TimeRow(..), TickRow(..))
 import Flight.Track.Arrival (TrackArrival(..))
 import Flight.Track.Distance
@@ -112,7 +112,6 @@ import Flight.Score
     , BestTime(..), PilotTime(..)
     , MinimumDistance(..), PilotDistance(..), BestDistance(..)
     , LinearFraction(..), LengthOfSs(..)
-    , GlideRatio(..)
     , arrivalFraction, speedFraction, linearFraction, areaToCoef
     )
 import Flight.Span.Math (Math(..))
@@ -360,15 +359,13 @@ writeMask
                     | task <- tasks
                     ]
 
-            let glideRatio = GlideRatio $ hgOrPg & \case HangGliding -> 5; Paragliding -> 4
-
             let altBonuses :: [TimeToTick] =
                     [
                         fromMaybe copyTimeToTick $ do
                             _ <- stopped
                             zs' <- nonEmpty zs
                             let RawZone{alt} = last zs'
-                            altBonus glideRatio <$> alt
+                            altBonus (glideRatio hgOrPg) <$> alt
 
                     | Task{stopped, zones = Zones{raw = zs}} <- tasks
                     ]

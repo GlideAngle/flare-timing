@@ -31,9 +31,11 @@ module Flight.Track.Time
     , commentOnFixRange
     , copyTimeToTick
     , altBonus
+    , glideRatio
     ) where
 
 import Prelude hiding (seq)
+import Data.Function ((&))
 import Data.Maybe (fromMaybe, catMaybes, maybeToList, listToMaybe)
 import Data.Csv
     ( ToNamedRecord(..), FromNamedRecord(..)
@@ -78,6 +80,7 @@ import Flight.Score
     , showSecs
     )
 import Flight.Distance (QTaskDistance, TaskDistance(..))
+import Flight.Zone.MkZones (Discipline(..))
 import Flight.Zone.SpeedSection (SpeedSection)
 import Flight.Track.Range (asRanges)
 import Data.Ratio.Rounding (dpRound)
@@ -564,6 +567,10 @@ copyTimeToTick TimeRow{..} =
         , togo = togo
         , area = LeadingArea zero
         }
+
+glideRatio :: Discipline -> GlideRatio
+glideRatio hgOrPg =
+    GlideRatio $ hgOrPg & \case HangGliding -> 5; Paragliding -> 4
 
 altBonus :: GlideRatio -> QAlt Double [u| m |] -> TimeToTick
 altBonus (GlideRatio gr) (Alt qAltGoal) row@TimeRow{alt = RawAlt a, ..} =

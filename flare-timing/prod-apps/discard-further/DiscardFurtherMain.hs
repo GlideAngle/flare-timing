@@ -1,7 +1,6 @@
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
 import Prelude hiding (last)
-import Data.Function ((&))
 import Data.Maybe (fromMaybe)
 import Data.List.NonEmpty (nonEmpty, last)
 import System.Environment (getProgName)
@@ -18,7 +17,7 @@ import Flight.Clip (FlyCut(..), FlyClipping(..))
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
-import Flight.Zone.MkZones (Zones(..), Discipline(..))
+import Flight.Zone.MkZones (Zones(..))
 import Flight.Zone.Raw (RawZone(..))
 import qualified Flight.Comp as Cmp (openClose)
 import Flight.Route (OptimalRoute(..))
@@ -60,7 +59,7 @@ import Flight.Comp
     )
 import Flight.Track.Time
     ( TimeToTick, LeadClose(..), LeadAllDown(..), LeadArrival(..)
-    , altBonus, copyTimeToTick, discard, allHeaders
+    , glideRatio, altBonus, copyTimeToTick, discard, allHeaders
     )
 import Flight.Track.Mask (RaceTime(..), racing)
 import Flight.Mask (checkTracks)
@@ -68,7 +67,7 @@ import Flight.Scribe
     (readComp, readRoute, readTagging, readAlignTime, writeDiscardFurther)
 import Flight.Lookup.Route (routeLength)
 import Flight.Lookup.Tag (TaskLeadingLookup(..), tagTaskLeading)
-import Flight.Score (Leg(..), GlideRatio(..))
+import Flight.Score (Leg(..))
 import DiscardFurtherOptions (description)
 
 main :: IO ()
@@ -212,15 +211,13 @@ filterTime
                     | task <- tasks
                     ]
 
-            let glideRatio = GlideRatio $ hgOrPg & \case HangGliding -> 5; Paragliding -> 4
-
             let altBonuses :: [TimeToTick] =
                     [
                         fromMaybe copyTimeToTick $ do
                             _ <- stopped
                             zs' <- nonEmpty zs
                             let RawZone{alt} = last zs'
-                            altBonus glideRatio <$> alt
+                            altBonus (glideRatio hgOrPg) <$> alt
 
                     | Task{stopped, zones = Zones{raw = zs}} <- tasks
                     ]
