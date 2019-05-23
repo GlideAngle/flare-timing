@@ -6,7 +6,6 @@ import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
 import Data.Function (on)
 import Data.Maybe (fromMaybe, catMaybes, isJust)
-import Data.List.NonEmpty (nonEmpty, last)
 import Data.List (sortOn, groupBy, partition)
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map (fromList)
@@ -26,8 +25,6 @@ import qualified Data.Vector as V (fromList)
 
 import Flight.Clip (FlyCut(..), FlyClipping(..))
 import Flight.LatLng (QAlt)
-import Flight.Zone.MkZones (Zones(..))
-import Flight.Zone.Raw (RawZone(..))
 import Flight.Route (OptimalRoute(..))
 import qualified Flight.Comp as Cmp (Nominal(..), DfNoTrackPilot(..))
 import Flight.Comp
@@ -40,7 +37,6 @@ import Flight.Comp
     , PilotName(..)
     , Pilot(..)
     , PilotGroup(didFlyNoTracklog)
-    , Comp(..)
     , TaskStop(..)
     , Task(..)
     , IxTask(..)
@@ -74,7 +70,7 @@ import Flight.Comp.Distance (compDistance, compNigh)
 import Flight.Track.Tag (Tagging)
 import Flight.Track.Place (reIndex)
 import Flight.Track.Time
-    (TimeToTick, AwardedVelocity(..), glideRatio, altBonus, copyTimeToTick)
+    (TimeToTick, AwardedVelocity(..), copyTimeToTick)
 import qualified Flight.Track.Time as Time (TimeRow(..), TickRow(..))
 import Flight.Track.Arrival (TrackArrival(..))
 import Flight.Track.Distance
@@ -207,7 +203,6 @@ writeMask
 writeMask
     CompSettings
         { nominal = Cmp.Nominal{free = free@(MinimumDistance dMin)}
-        , comp = Comp{discipline = hgOrPg}
         , tasks
         , pilotGroups
         }
@@ -257,7 +252,11 @@ writeMask
             let yssDfNt :: [[(Pilot, FlightStats _)]] =
                     [
                         fmap
-                        (\Cmp.DfNoTrackPilot{pilot = p, awardedReach = dA, awardedVelocity = AwardedVelocity{ss, es}} ->
+                        (\Cmp.DfNoTrackPilot
+                            { pilot = p
+                            , awardedReach = dA
+                            , awardedVelocity = AwardedVelocity{ss, es}
+                            } ->
                             let dm :: Quantity Double [u| m |] = convert dMin
 
                                 d = TaskDistance
@@ -359,20 +358,13 @@ writeMask
                     | task <- tasks
                     ]
 
-            let altBonuses :: [TimeToTick] =
-                    [
-                        fromMaybe copyTimeToTick $ do
-                            _ <- stopped
-                            zs' <- nonEmpty zs
-                            let RawZone{alt} = last zs'
-                            altBonus (glideRatio hgOrPg) <$> alt
-
-                    | Task{stopped, zones = Zones{raw = zs}} <- tasks
-                    ]
+            -- NOTE: Leading point calculations use the reach without altitude
+            -- bonus applied.
+            let nullAltBonuses :: [TimeToTick] = const copyTimeToTick <$> tasks
 
             rowsLeadingStep :: [[(Pilot, [Time.TickRow])]]
                 <- readCompLeading
-                        altBonuses
+                        nullAltBonuses
                         routes
                         compFile
                         (includeTask selectTasks)
@@ -484,11 +476,21 @@ writeMask
                     | ys <- rsNigh
                     ]
 
-            let rssRaw = [V.fromList [unQuantity r | (_, TrackReach{reach = TaskDistance r}) <- rs] | rs <- rss]
+            let rssRaw =
+                    [ V.fromList
+                        [ unQuantity r | (_, TrackReach{reach = TaskDistance r}) <- rs]
+                    | rs <- rss
+                    ]
+
             let rsMean :: [QTaskDistance Double [u| m |]] = TaskDistance . MkQuantity . mean <$> rssRaw
             let rsStdDev  :: [QTaskDistance Double [u| m |]] = TaskDistance . MkQuantity . stdDev <$> rssRaw
 
-            let fssRaw = [V.fromList [unQuantity $ max r (convert dMin) | (_, TrackReach{reach = TaskDistance r}) <- rs] | rs <- rss]
+            let fssRaw =
+                    [ V.fromList
+                        [ unQuantity $ max r (convert dMin) | (_, TrackReach{reach = TaskDistance r}) <- rs]
+                    | rs <- rss
+                    ]
+
             let fsMean :: [QTaskDistance Double [u| m |]] = TaskDistance . MkQuantity . mean <$> fssRaw
             let fsStdDev  :: [QTaskDistance Double [u| m |]] = TaskDistance . MkQuantity . stdDev <$> fssRaw
 
@@ -603,8 +605,7 @@ check
     -> CompInputFile
     -> [IxTask]
     -> [Pilot]
-    -> m
-        [[Either (Pilot, TrackFileFail) (Pilot, Pilot -> FlightStats k)]]
+    -> m [[Either (Pilot, TrackFileFail) (Pilot, Pilot -> FlightStats k)]]
 check math lengths flying tags = checkTracks $ \CompSettings{tasks} ->
     flown math lengths flying tags tasks
 
