@@ -70,7 +70,7 @@ import Flight.Comp.Distance (compDistance, compNigh)
 import Flight.Track.Tag (Tagging)
 import Flight.Track.Place (reIndex)
 import Flight.Track.Time
-    (TimeToTick, AwardedVelocity(..), copyTimeToTick)
+    (TimeToTick, TickToTick, AwardedVelocity(..), copyTimeToTick)
 import qualified Flight.Track.Time as Time (TimeRow(..), TickRow(..))
 import Flight.Track.Arrival (TrackArrival(..))
 import Flight.Track.Distance
@@ -361,10 +361,12 @@ writeMask
             -- NOTE: Leading point calculations use the reach without altitude
             -- bonus applied.
             let nullAltBonuses :: [TimeToTick] = const copyTimeToTick <$> tasks
+            let nullTickToTicks :: [TickToTick] = const id <$> tasks
 
             rowsLeadingStep :: [[(Pilot, [Time.TickRow])]]
                 <- readCompLeading
                         nullAltBonuses
+                        nullTickToTicks
                         routes
                         compFile
                         (includeTask selectTasks)

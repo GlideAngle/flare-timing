@@ -22,6 +22,7 @@ module Flight.Track.Time
     , ZoneIdx(..)
     , LegIdx(..)
     , TimeToTick
+    , TickToTick
     , leadingArea
     , leadingAreaSum
     , minLeadingCoef
@@ -30,7 +31,8 @@ module Flight.Track.Time
     , allHeaders
     , commentOnFixRange
     , copyTimeToTick
-    , altBonus
+    , altBonusTimeToTick
+    , altBonusTickToTick
     , glideRatio
     ) where
 
@@ -84,6 +86,9 @@ import Flight.Zone.MkZones (Discipline(..))
 import Flight.Zone.SpeedSection (SpeedSection)
 import Flight.Track.Range (asRanges)
 import Data.Ratio.Rounding (dpRound)
+
+type TimeToTick = TimeRow -> TickRow
+type TickToTick = TickRow -> TickRow
 
 data AwardedVelocity =
     AwardedVelocity
@@ -553,8 +558,6 @@ taskToLeading :: QTaskDistance Double [u| m |] -> LengthOfSs
 taskToLeading (TaskDistance d) =
     LengthOfSs . toRational' $ (convert d :: Quantity Double [u| km |])
 
-type TimeToTick = TimeRow -> TickRow
-
 copyTimeToTick :: TimeToTick
 copyTimeToTick TimeRow{..} =
     TickRow
@@ -572,8 +575,45 @@ glideRatio :: Discipline -> GlideRatio
 glideRatio hgOrPg =
     GlideRatio $ hgOrPg & \case HangGliding -> 5; Paragliding -> 4
 
-altBonus :: GlideRatio -> QAlt Double [u| m |] -> TimeToTick
-altBonus (GlideRatio gr) (Alt qAltGoal) row@TimeRow{alt = RawAlt a, ..} =
+altBonusTickToTick :: GlideRatio -> QAlt Double [u| m |] -> TickToTick
+altBonusTickToTick (GlideRatio gr) (Alt qAltGoal) row@TickRow{alt = RawAlt a, ..} =
+    if qAlt <= qAltGoal then row else
+    TickRow
+        { fixIdx = fixIdx
+        , alt = RawAlt $ toRational alt'
+        , tickLead = tickLead
+        , tickRace = tickRace
+        , zoneIdx = zoneIdx
+        , legIdx = legIdx
+        , togo = togo'
+        , area = LeadingArea zero
+        }
+    where
+        qAlt :: Quantity Double [u| m |]
+        qAlt = MkQuantity $ fromRational a
+
+        diffAlt :: Quantity Double [u| m |]
+        diffAlt= qAlt -: qAltGoal
+
+        qTogo :: Quantity Double [u| km |]
+        qTogo = MkQuantity togo
+
+        diffTogo :: Quantity Double [u| m |]
+        diffTogo = convert qTogo
+
+        gr' = fromRational gr
+        diffAltAsReach = gr' *: diffAlt
+        diffTogoAsAlt = diffTogo /: gr'
+
+        (alt', togo') =
+            if diffTogo < diffAltAsReach then (unQuantity $ qAlt -: diffTogoAsAlt, 0) else
+            let d :: Quantity Double [u| km |]
+                d = convert $ diffTogo -: diffAltAsReach
+            -- TODO: Stop rounding of togo in altBonus.
+            in (unQuantity $ qAltGoal, fromRational . dpRound 3 . toRational $ unQuantity d)
+
+altBonusTimeToTick :: GlideRatio -> QAlt Double [u| m |] -> TimeToTick
+altBonusTimeToTick (GlideRatio gr) (Alt qAltGoal) row@TimeRow{alt = RawAlt a, ..} =
     if qAlt <= qAltGoal then copyTimeToTick row else
     TickRow
         { fixIdx = fixIdx
@@ -611,9 +651,10 @@ altBonus (GlideRatio gr) (Alt qAltGoal) row@TimeRow{alt = RawAlt a, ..} =
 
 discard
     :: TimeToTick
-    -- ^ A function that converts the type of row. This is a good time to
-    -- convert altitude to distance when giving an altitude bonus in a stopped
-    -- task.
+    -- ^ A function that converts the type of row. This is applied before rows
+    -- are discarded.
+    -> TickToTick
+    -- ^ A function that converts rows after discarding.
     -> (Int -> Leg)
     -> Maybe (QTaskDistance Double [u| m |])
     -> Maybe LeadClose
@@ -621,13 +662,14 @@ discard
     -> Maybe LeadArrival
     -> Vector TimeRow
     -> Vector TickRow
-discard timeToTick toLeg dRace close down arrival xs =
+discard timeToTick tickToTick toLeg dRace close down arrival =
     V.fromList
     . leadingArea toLeg dRace close down arrival
+    . fmap tickToTick
     . discardFurther
     . dropZeros
     . V.toList
-    $ timeToTick <$> xs
+    . fmap timeToTick
 
 -- | Drop any rows where the distance togo is zero.
 dropZeros :: [TickRow] -> [TickRow]

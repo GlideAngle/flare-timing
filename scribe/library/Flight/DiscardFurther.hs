@@ -1,6 +1,8 @@
 module Flight.DiscardFurther
     ( readDiscardFurther
     , writeDiscardFurther
+    , writePegThenDiscard
+    , writeDiscardThenPeg
     , readCompBestDistances
     , readCompLeading
     ) where
@@ -19,7 +21,8 @@ import Data.Vector (Vector)
 import qualified Data.Vector as V (fromList, toList, null, last)
 
 import Flight.Track.Time
-    ( TickRow(..), LeadClose(..), LeadAllDown(..), LeadArrival(..), TimeToTick
+    ( TickRow(..), LeadClose(..), LeadAllDown(..), LeadArrival(..)
+    , TimeToTick, TickToTick
     , discard
     )
 import Flight.Track.Mask (RaceTime(..))
@@ -30,9 +33,9 @@ import Flight.Comp
     , AlignTimeDir(..)
     , AlignTimeFile(..)
     , DiscardFurtherFile(..)
+    , PegThenDiscardFile(..)
+    , DiscardThenPegFile(..)
     , DiscardFurtherDir(..)
-    , AlignTimeFile(..)
-    , DiscardFurtherFile(..)
     , RoutesLookupTaskDistance(..)
     , TaskRouteDistance(..)
     , discardFurtherDir
@@ -52,6 +55,22 @@ readDiscardFurther (DiscardFurtherFile csvPath) = do
 
 writeDiscardFurther :: DiscardFurtherFile -> [String] -> Vector TickRow -> IO ()
 writeDiscardFurther (DiscardFurtherFile path) headers xs =
+    L.writeFile path rows
+    where
+        opts = defaultEncodeOptions {encUseCrLf = False}
+        hs = V.fromList $ S.pack <$> headers
+        rows = encodeByNameWith opts hs $ V.toList xs
+
+writePegThenDiscard :: PegThenDiscardFile -> [String] -> Vector TickRow -> IO ()
+writePegThenDiscard (PegThenDiscardFile path) headers xs =
+    L.writeFile path rows
+    where
+        opts = defaultEncodeOptions {encUseCrLf = False}
+        hs = V.fromList $ S.pack <$> headers
+        rows = encodeByNameWith opts hs $ V.toList xs
+
+writeDiscardThenPeg :: DiscardThenPegFile -> [String] -> Vector TickRow -> IO ()
+writeDiscardThenPeg (DiscardThenPegFile path) headers xs =
     L.writeFile path rows
     where
         opts = defaultEncodeOptions {encUseCrLf = False}
@@ -99,6 +118,7 @@ readPilotBestDistance compFile (IxTask iTask) pilot = do
 
 readCompLeading
     :: [TimeToTick]
+    -> [TickToTick]
     -> RoutesLookupTaskDistance
     -> CompInputFile
     -> (IxTask -> Bool)
@@ -107,15 +127,16 @@ readCompLeading
     -> [Maybe RaceTime]
     -> [[Pilot]]
     -> IO [[(Pilot, [TickRow])]]
-readCompLeading timeToTicks lengths compFile select tasks toLegs raceTimes pilots =
+readCompLeading timeToTicks tickToTicks lengths compFile select tasks toLegs raceTimes pilots =
     sequence
         [
-            (readTaskLeading timeToTick lengths compFile select)
+            (readTaskLeading timeToTick tickToTick lengths compFile select)
                 task
                 toLeg
                 rt
                 ps
         | timeToTick <- timeToTicks
+        | tickToTick <- tickToTicks
         | task <- tasks
         | toLeg <- toLegs
         | rt <- raceTimes
@@ -124,6 +145,7 @@ readCompLeading timeToTicks lengths compFile select tasks toLegs raceTimes pilot
 
 readTaskLeading
     :: TimeToTick
+    -> TickToTick
     -> RoutesLookupTaskDistance
     -> CompInputFile
     -> (IxTask -> Bool)
@@ -132,10 +154,10 @@ readTaskLeading
     -> Maybe RaceTime
     -> [Pilot]
     -> IO [(Pilot, [TickRow])]
-readTaskLeading timeToTick lengths compFile select iTask@(IxTask i) toLeg raceTime ps =
+readTaskLeading timeToTick tickToTick lengths compFile select iTask@(IxTask i) toLeg raceTime ps =
     if not (select iTask) then return [] else do
     _ <- createDirectoryIfMissing True dOut
-    xs <- mapM (readPilotLeading timeToTick lengths compFile iTask toLeg raceTime) ps
+    xs <- mapM (readPilotLeading timeToTick tickToTick lengths compFile iTask toLeg raceTime) ps
     return $ zip ps xs
     where
         dir = compFileToCompDir compFile
@@ -143,6 +165,7 @@ readTaskLeading timeToTick lengths compFile select iTask@(IxTask i) toLeg raceTi
 
 readPilotLeading
     :: TimeToTick
+    -> TickToTick
     -> RoutesLookupTaskDistance
     -> CompInputFile
     -> IxTask
@@ -150,9 +173,10 @@ readPilotLeading
     -> Maybe RaceTime
     -> Pilot
     -> IO [TickRow]
-readPilotLeading _ _ _ _ _ Nothing _ = return []
+readPilotLeading _ _ _ _ _ _ Nothing _ = return []
 readPilotLeading
     timeToTick
+    tickToTick
     (RoutesLookupTaskDistance lookupTaskLength)
     compFile iTask@(IxTask i) toLeg
     (Just raceTime)
@@ -160,7 +184,7 @@ readPilotLeading
 
     (_, rows) <- readAlignTime (AlignTimeFile (dIn </> file))
 
-    return $ (V.toList . discard timeToTick toLeg taskLength close down arrival) rows
+    return $ (V.toList . discard timeToTick tickToTick toLeg taskLength close down arrival) rows
     where
         dir = compFileToCompDir compFile
         (AlignTimeDir dIn, AlignTimeFile file) = alignTimePath dir i pilot

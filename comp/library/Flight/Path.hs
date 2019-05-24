@@ -13,6 +13,8 @@ module Flight.Path
     , UnpackTrackFile(..)
     , AlignTimeFile(..)
     , DiscardFurtherFile(..)
+    , PegThenDiscardFile(..)
+    , DiscardThenPegFile(..)
     , MaskTrackFile(..)
     , LandOutFile(..)
     , GapPointFile(..)
@@ -20,6 +22,8 @@ module Flight.Path
     , UnpackTrackDir(..)
     , AlignTimeDir(..)
     , DiscardFurtherDir(..)
+    , PegThenDiscardDir(..)
+    , DiscardThenPegDir(..)
     , fsdbToComp
     , fsdbToScore
     , compToScore
@@ -34,6 +38,8 @@ module Flight.Path
     , unpackTrackDir
     , alignTimeDir
     , discardFurtherDir
+    , pegThenDiscardDir
+    , discardThenPegDir
     , unpackTrackPath
     , alignTimePath
     , discardFurtherPath
@@ -91,14 +97,20 @@ newtype TagZoneFile = TagZoneFile FilePath
 -- | The path to a stop task file.
 newtype PegFrameFile = PegFrameFile FilePath
 
--- | The path to as unpack track directory for a single task.
+-- | The path to an unpack track directory for a single task.
 newtype UnpackTrackDir = UnpackTrackDir FilePath
 
--- | The path to as align time directory for a single task.
+-- | The path to an align time directory for a single task.
 newtype AlignTimeDir = AlignTimeDir FilePath
 
--- | The path to as discard further directory for a single task.
+-- | The path to a discard further directory for a single task.
 newtype DiscardFurtherDir = DiscardFurtherDir FilePath
+
+-- | The path to a peg then discard directory for a single task.
+newtype PegThenDiscardDir = PegThenDiscardDir FilePath
+
+-- | The path to a discard then discard directory for a single task.
+newtype DiscardThenPegDir = DiscardThenPegDir FilePath
 
 -- | The path to as unpack track file.
 newtype UnpackTrackFile = UnpackTrackFile FilePath
@@ -108,6 +120,12 @@ newtype AlignTimeFile = AlignTimeFile FilePath
 
 -- | The path to a discard further file.
 newtype DiscardFurtherFile = DiscardFurtherFile FilePath
+
+-- | The path to a peg then discard file.
+newtype PegThenDiscardFile = PegThenDiscardFile FilePath
+
+-- | The path to a discard then peg file.
+newtype DiscardThenPegFile = DiscardThenPegFile FilePath
 
 -- | The path to as mask track file.
 newtype MaskTrackFile = MaskTrackFile FilePath
@@ -190,6 +208,14 @@ discardFurtherDir :: CompDir -> Int -> DiscardFurtherDir
 discardFurtherDir comp task =
     DiscardFurtherDir $ dotDir comp "discard-further" task
 
+pegThenDiscardDir :: CompDir -> Int -> PegThenDiscardDir
+pegThenDiscardDir comp task =
+    PegThenDiscardDir $ dotDir comp "peg-then-discard" task
+
+discardThenPegDir :: CompDir -> Int -> DiscardThenPegDir
+discardThenPegDir comp task =
+    DiscardThenPegDir $ dotDir comp "discard-then-peg" task
+
 dotDir :: CompDir -> FilePath -> Int -> FilePath
 dotDir (CompDir dir) name task =
     dir </> ".flare-timing" </> name </> "task-" ++ show task
@@ -207,6 +233,8 @@ data FileType
     | UnpackTrack
     | AlignTime
     | DiscardFurther
+    | PegThenDiscard
+    | DiscardThenPeg
     | MaskTrack
     | LandOut
     | GapPoint
@@ -224,6 +252,8 @@ ext PegFrame = ".peg-frame.yaml"
 ext UnpackTrack = ".unpack-track.csv"
 ext AlignTime = ".align-time.csv"
 ext DiscardFurther = ".discard-further.csv"
+ext PegThenDiscard = ".peg-then-discard.csv"
+ext DiscardThenPeg = ".discard-then-peg.csv"
 ext MaskTrack = ".mask-track.yaml"
 ext LandOut = ".land-out.yaml"
 ext GapPoint = ".gap-point.yaml"
@@ -241,6 +271,8 @@ ensureExt PegFrame = flip replaceExtensions "peg-frame.yaml"
 ensureExt UnpackTrack = flip replaceExtensions "unpack-track.csv"
 ensureExt AlignTime = flip replaceExtensions "align-time.csv"
 ensureExt DiscardFurther = flip replaceExtensions "discard-further.csv"
+ensureExt PegThenDiscard = flip replaceExtensions "peg-then-discard.csv"
+ensureExt DiscardThenPeg = flip replaceExtensions "discard-then-peg.csv"
 ensureExt MaskTrack = flip replaceExtensions "mask-track.yaml"
 ensureExt LandOut = flip replaceExtensions "land-out.yaml"
 ensureExt GapPoint = flip replaceExtensions "gap-point.yaml"

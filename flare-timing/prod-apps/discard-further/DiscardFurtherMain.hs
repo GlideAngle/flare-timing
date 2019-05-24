@@ -24,12 +24,16 @@ import Flight.Route (OptimalRoute(..))
 import Flight.Comp
     ( FileType(CompInput)
     , DiscardFurtherDir(..)
+    , PegThenDiscardDir(..)
+    , DiscardThenPegDir(..)
     , AlignTimeDir(..)
     , CompInputFile(..)
     , TagZoneFile(..)
     , TaskLengthFile(..)
     , AlignTimeFile(..)
     , DiscardFurtherFile(..)
+    , PegThenDiscardFile(..)
+    , DiscardThenPegFile(..)
     , CompSettings(..)
     , Comp(..)
     , TaskStop(..)
@@ -51,6 +55,8 @@ import Flight.Comp
     , compToCross
     , crossToTag
     , discardFurtherDir
+    , pegThenDiscardDir
+    , discardThenPegDir
     , alignTimePath
     , findCompInput
     , speedSectionToLeg
@@ -58,13 +64,16 @@ import Flight.Comp
     , pilotNamed
     )
 import Flight.Track.Time
-    ( TimeToTick, LeadClose(..), LeadAllDown(..), LeadArrival(..)
-    , glideRatio, altBonus, copyTimeToTick, discard, allHeaders
+    ( TimeToTick, TickToTick, LeadClose(..), LeadAllDown(..), LeadArrival(..)
+    , glideRatio, altBonusTimeToTick, altBonusTickToTick, copyTimeToTick
+    , discard, allHeaders
     )
 import Flight.Track.Mask (RaceTime(..), racing)
 import Flight.Mask (checkTracks)
 import Flight.Scribe
-    (readComp, readRoute, readTagging, readAlignTime, writeDiscardFurther)
+    ( readComp, readRoute, readTagging, readAlignTime
+    , writeDiscardFurther, writePegThenDiscard, writeDiscardThenPeg
+    )
 import Flight.Lookup.Route (routeLength)
 import Flight.Lookup.Tag (TaskLeadingLookup(..), tagTaskLeading)
 import Flight.Score (Leg(..))
@@ -211,22 +220,12 @@ filterTime
                     | task <- tasks
                     ]
 
-            let altBonuses :: [TimeToTick] =
-                    [
-                        fromMaybe copyTimeToTick $ do
-                            _ <- stopped
-                            zs' <- nonEmpty zs
-                            let RawZone{alt} = last zs'
-                            altBonus (glideRatio hgOrPg) <$> alt
-
-                    | Task{stopped, zones = Zones{raw = zs}} <- tasks
-                    ]
-
             sequence_
                 [
                     mapM_
-                        (readFilterWrite
-                            timeToTick
+                        (readAlignTimeWriteDiscardFurther
+                            copyTimeToTick
+                            id
                             lengths
                             compFile
                             (includeTask selectTasks)
@@ -238,24 +237,83 @@ filterTime
                 | toLeg <- speedSectionToLeg . speedSection <$> tasks
                 | rt <- raceTime
                 | pilots <- taskPilots
-                | timeToTick <- altBonuses
+                ]
+
+            let altBonusesOnTime :: [TimeToTick] =
+                    [
+                        fromMaybe copyTimeToTick $ do
+                            _ <- stopped
+                            zs' <- nonEmpty zs
+                            let RawZone{alt} = last zs'
+                            altBonusTimeToTick (glideRatio hgOrPg) <$> alt
+
+                    | Task{stopped, zones = Zones{raw = zs}} <- tasks
+                    ]
+
+            sequence_
+                [
+                    mapM_
+                        (readAlignTimeWritePegThenDiscard
+                            timeToTick
+                            id
+                            lengths
+                            compFile
+                            (includeTask selectTasks)
+                            n
+                            toLeg
+                            rt)
+                        pilots
+                | n <- (IxTask <$> [1 .. ])
+                | toLeg <- speedSectionToLeg . speedSection <$> tasks
+                | rt <- raceTime
+                | pilots <- taskPilots
+                | timeToTick <- altBonusesOnTime
+                ]
+
+            let altBonusesOnTick :: [TickToTick] =
+                    [
+                        fromMaybe id $ do
+                            _ <- stopped
+                            zs' <- nonEmpty zs
+                            let RawZone{alt} = last zs'
+                            altBonusTickToTick (glideRatio hgOrPg) <$> alt
+
+                    | Task{stopped, zones = Zones{raw = zs}} <- tasks
+                    ]
+
+            sequence_
+                [
+                    mapM_
+                        (readAlignTimeWriteDiscardThenPeg
+                            copyTimeToTick
+                            timeToTime
+                            lengths
+                            compFile
+                            (includeTask selectTasks)
+                            n
+                            toLeg
+                            rt)
+                        pilots
+                | n <- (IxTask <$> [1 .. ])
+                | toLeg <- speedSectionToLeg . speedSection <$> tasks
+                | rt <- raceTime
+                | pilots <- taskPilots
+                | timeToTime <- altBonusesOnTick
                 ]
 
 checkAll
     :: CompInputFile
     -> [IxTask]
     -> [Pilot]
-    -> IO
-         [
-             [Either (Pilot, TrackFileFail) (Pilot, ())]
-         ]
+    -> IO [[Either (Pilot, TrackFileFail) (Pilot, ())]]
 checkAll = checkTracks $ \CompSettings{tasks} -> (\ _ _ _ -> ()) tasks
 
 includeTask :: [IxTask] -> IxTask -> Bool
 includeTask tasks = if null tasks then const True else (`elem` tasks)
 
-readFilterWrite
+readAlignTimeWriteDiscardFurther
     :: TimeToTick
+    -> TickToTick
     -> RoutesLookupTaskDistance
     -> CompInputFile
     -> (IxTask -> Bool)
@@ -264,9 +322,10 @@ readFilterWrite
     -> Maybe RaceTime
     -> Pilot
     -> IO ()
-readFilterWrite _ _ _ _ _ _ Nothing _ = return ()
-readFilterWrite
+readAlignTimeWriteDiscardFurther _ _ _ _ _ _ _ Nothing _ = return ()
+readAlignTimeWriteDiscardFurther
     timeToTick
+    tickToTick
     (RoutesLookupTaskDistance lookupTaskLength)
     compFile
     selectTask
@@ -274,12 +333,78 @@ readFilterWrite
     when (selectTask iTask) $ do
     _ <- createDirectoryIfMissing True dOut
     rows <- readAlignTime (AlignTimeFile (dIn </> file))
-    f . discard timeToTick toLeg taskLength close down arrival . snd $ rows
+    f . discard timeToTick tickToTick toLeg taskLength close down arrival . snd $ rows
     where
         f = writeDiscardFurther (DiscardFurtherFile $ dOut </> file) allHeaders
         dir = compFileToCompDir compFile
         (AlignTimeDir dIn, AlignTimeFile file) = alignTimePath dir i pilot
         (DiscardFurtherDir dOut) = discardFurtherDir dir i
+        taskLength = (fmap wholeTaskDistance . ($ iTask)) =<< lookupTaskLength
+        close = LeadClose <$> leadClose raceTime
+        down = LeadAllDown <$> leadAllDown raceTime
+        arrival = LeadArrival <$> leadArrival raceTime
+
+readAlignTimeWritePegThenDiscard
+    :: TimeToTick
+    -> TickToTick
+    -> RoutesLookupTaskDistance
+    -> CompInputFile
+    -> (IxTask -> Bool)
+    -> IxTask
+    -> (Int -> Leg)
+    -> Maybe RaceTime
+    -> Pilot
+    -> IO ()
+readAlignTimeWritePegThenDiscard _ _ _ _ _ _ _ Nothing _ = return ()
+readAlignTimeWritePegThenDiscard
+    timeToTick
+    tickToTick
+    (RoutesLookupTaskDistance lookupTaskLength)
+    compFile
+    selectTask
+    iTask@(IxTask i) toLeg (Just raceTime) pilot =
+    when (selectTask iTask) $ do
+    _ <- createDirectoryIfMissing True dOut
+    rows <- readAlignTime (AlignTimeFile (dIn </> file))
+    f . discard timeToTick tickToTick toLeg taskLength close down arrival . snd $ rows
+    where
+        f = writePegThenDiscard (PegThenDiscardFile $ dOut </> file) allHeaders
+        dir = compFileToCompDir compFile
+        (AlignTimeDir dIn, AlignTimeFile file) = alignTimePath dir i pilot
+        (PegThenDiscardDir dOut) = pegThenDiscardDir dir i
+        taskLength = (fmap wholeTaskDistance . ($ iTask)) =<< lookupTaskLength
+        close = LeadClose <$> leadClose raceTime
+        down = LeadAllDown <$> leadAllDown raceTime
+        arrival = LeadArrival <$> leadArrival raceTime
+
+readAlignTimeWriteDiscardThenPeg
+    :: TimeToTick
+    -> TickToTick
+    -> RoutesLookupTaskDistance
+    -> CompInputFile
+    -> (IxTask -> Bool)
+    -> IxTask
+    -> (Int -> Leg)
+    -> Maybe RaceTime
+    -> Pilot
+    -> IO ()
+readAlignTimeWriteDiscardThenPeg _ _ _ _ _ _ _ Nothing _ = return ()
+readAlignTimeWriteDiscardThenPeg
+    timeToTick
+    tickToTick
+    (RoutesLookupTaskDistance lookupTaskLength)
+    compFile
+    selectTask
+    iTask@(IxTask i) toLeg (Just raceTime) pilot =
+    when (selectTask iTask) $ do
+    _ <- createDirectoryIfMissing True dOut
+    rows <- readAlignTime (AlignTimeFile (dIn </> file))
+    f . discard timeToTick tickToTick toLeg taskLength close down arrival . snd $ rows
+    where
+        f = writeDiscardThenPeg (DiscardThenPegFile $ dOut </> file) allHeaders
+        dir = compFileToCompDir compFile
+        (AlignTimeDir dIn, AlignTimeFile file) = alignTimePath dir i pilot
+        (DiscardThenPegDir dOut) = discardThenPegDir dir i
         taskLength = (fmap wholeTaskDistance . ($ iTask)) =<< lookupTaskLength
         close = LeadClose <$> leadClose raceTime
         down = LeadAllDown <$> leadAllDown raceTime
