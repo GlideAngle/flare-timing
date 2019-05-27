@@ -17,8 +17,7 @@ scoring proceeds in steps  [#]_;
 #. Peg out the time range of each track log that will be scored with
    `peg-frame <https://github.com/BlockScope/flare-timing/tree/master/flare-timing/prod-apps/peg-frame>`__.
 
-#. Interpolate between crossing fixes for the time and place where a
-   track tags a zone with
+#. Interpolate between crossing fixes with
    `tag-zone <https://github.com/BlockScope/flare-timing/tree/master/flare-timing/prod-apps/tag-zone>`__.
 
 #. Index fixes from the time of first crossing with
