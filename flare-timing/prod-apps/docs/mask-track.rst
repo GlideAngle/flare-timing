@@ -6,6 +6,7 @@ distances and fractions we’ll need later for the points. So far we have
 leading, arrival and speed fractions but we still need to look at where
 pilots landed to have the distance fractions.
 
+.. highlight:: yaml
 ::
 
     pilotsAtEss:
