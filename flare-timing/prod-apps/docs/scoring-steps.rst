@@ -47,11 +47,17 @@ track logs, scoring proceeds in steps  [#]_;
 
 If hosting the web app then the following two steps are needed too:
 
-#. Extract the outputs with
-   `fs-score <https://github.com/BlockScope/flare-timing/tree/master/flare-timing/prod-apps/fs-score>`__ used for comparing the outputs of ``flare-timing`` and FS.
+#. Extract the scores and some of the workings of FS with `fs-score
+   <https://github.com/BlockScope/flare-timing/tree/master/flare-timing/prod-apps/fs-score>`__.
+   These values and differences are shown as extra columns in tables
+   side-by-side with ``flare-timing`` values. This is a quick way to spot
+   discrepancies between the two GAP scoring implementations.
 
 #. Unpack track logs to a flat list of time with latitude and longitude with
-   `unpack-track <https://github.com/BlockScope/flare-timing/tree/master/flare-timing/prod-apps/unpack-track>`__ . This data supplies the pilot tracks that can be downloaded and shown on the map.
+   `unpack-track
+   <https://github.com/BlockScope/flare-timing/tree/master/flare-timing/prod-apps/unpack-track>`__
+   . This data supplies the pilot tracks that can be downloaded and shown on
+   the map.
 
 
 .. [#]
