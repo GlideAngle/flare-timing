@@ -1,9 +1,11 @@
 Extracting Inputs
 =================
 
-In the ``*.fsdb`` FS keeps both inputs and outputs. We’re only
-interested in a subset of the input data, just enough to do the
-scoring [#]_;
+We can extract the inputs for scoring from the competition's ``*.fsdb``. FS
+keeps both inputs and outputs in this file. It is XML without a schema. We’re
+only interested in a subset of the input data, just enough to do the scoring
+[#]_.  Other data useful to running a competition but not required for scoring
+we ignore.
 
 Competition
     id, name, location, dates and UTC offset.
