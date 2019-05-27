@@ -6,6 +6,7 @@ the best distance and the best time and the sum of the distance flown. From the
 ratio of pilots making goal we can work out the weights and then with the
 validities we can work out the available points.
 
+.. highlight:: yaml
 ::
 
     validityWorking:

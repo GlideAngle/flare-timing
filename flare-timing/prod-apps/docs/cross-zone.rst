@@ -11,6 +11,7 @@ For example we might consider within ± 1m altitude or within ±
 1/10,000th of a degree of latitude or longitude to be in the same
 location and not likely recorded during flight.
 
+.. highlight:: yaml
 ::
 
     flying:

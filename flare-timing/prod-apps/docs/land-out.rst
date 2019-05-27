@@ -7,6 +7,7 @@ chunk with a landing, we have its relative difficulty. Taking the sum of
 these under a moving window we have difficulty fractions to award to
 pilots.
 
+.. highlight:: yaml
 ::
 
     minDistance: 5.0 km

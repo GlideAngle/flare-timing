@@ -15,6 +15,7 @@ This optimal path found on the
 Earth model for the competition is the edge to edge optimal route. Routes are
 shown with waypoints, segment distances [#]_ and total distance.
 
+.. highlight:: yaml
 ::
 
     taskRoutes:

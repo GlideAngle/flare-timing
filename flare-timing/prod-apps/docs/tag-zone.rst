@@ -5,6 +5,7 @@ Between the pair of fixes straddling a control zone, we need to
 interpolate the point at which the pilot is most likely to have crossed
 and the time of this tagging of the turnpoint [#]_.
 
+.. highlight:: yaml
 ::
 
     tagging:
