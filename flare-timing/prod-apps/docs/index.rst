@@ -21,8 +21,7 @@ for everything to be checked by hand.
    task-length
    cross-zone
    tag-zone
-   align-time
-   discard-further
+   track-csv
    mask-track
    land-out
    gap-point
