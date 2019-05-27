@@ -2,14 +2,14 @@ Tracing an Optimal Route
 ------------------------
 
 To find the best route ``flare-timing`` constructs a graph and finds the
-shortest path connecting the nodes. It puts nodes on turnpoint cylinder
-arc boundaries and uses the haversine distance as the cost of connecting
-nodes in the network. It would be expensive to construct and evaluate a
-large network with the accuracy required so in an iterative process, as
-the arc of the circle is shortened, getting closer to the optimal
-crossing point, the density of nodes is increased. All happening on the
-FAI sphere, this is the edge to edge optimal route. Routes are shown
-with waypoints, segment distances  [#]_ and total distance.
+shortest path connecting the nodes. It puts nodes on turnpoint cylinder arc
+boundaries and uses the competition specific math for working out distances on
+the Earth as the cost of connecting nodes in the network. It would be expensive
+to construct and evaluate a large network with the accuracy required so in an
+iterative process. At each iteration the arc of the circle is shortened and the
+density of nodes is increased. This optimal path found on the Earth model for
+the competition is the edge to edge optimal route. Routes are shown with
+waypoints, segment distances [#]_ and total distance.
 
 ::
 
@@ -68,10 +68,10 @@ centers of each control zone. This is the point to point distance.
         - lat: -33.36099999
           lng: 147.93149998
 
-Knowing that FS uses a plane to work out the shortest route in two
-dimensions, on the the Universal Transverse Mercator projection, we can
-also do that with our graph algorithm. We end up with waypoints, optimal
-on the plane but possibly sub-optimal on the sphere.
+Knowing that FS uses a plane to work out the shortest route in two dimensions
+on the the Universal Transverse Mercator projection, we can also do that with
+our graph algorithm. We end up with waypoints, optimal on the plane but
+possibly sub-optimal on the sphere or ellipsoid model of Earth.
 
 ::
 
