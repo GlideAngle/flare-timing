@@ -17,11 +17,17 @@ track logs, scoring proceeds in steps  [#]_;
 #. Extract the inputs with
    `extract-input <https://github.com/BlockScope/flare-timing/tree/master/flare-timing/prod-apps/extract-input>`__.
 
+#. Extract the outputs with
+   `fs-score <https://github.com/BlockScope/flare-timing/tree/master/flare-timing/prod-apps/fs-score>`__. This step is not strictly needed for scoring but is useful for comparing the outputs of ``flare-timing`` and FS.
+
 #. Trace the route of the shortest path to fly a task with
    `task-length <https://github.com/BlockScope/flare-timing/tree/master/flare-timing/prod-apps/task-length>`__.
 
 #. Find pairs of fixes crossing over zones with
    `cross-zone <https://github.com/BlockScope/flare-timing/tree/master/flare-timing/prod-apps/cross-zone>`__.
+
+#. Peg out the time range of each track log that will be scored with
+   `peg-frame <https://github.com/BlockScope/flare-timing/tree/master/flare-timing/prod-apps/peg-frame>`__.
 
 #. Interpolate between crossing fixes for the time and place where a
    track tags a zone with
