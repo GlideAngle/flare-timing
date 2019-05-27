@@ -8,19 +8,24 @@ only interested in a subset of the input data, just enough to do the scoring
 we ignore.
 
 Competition
-    id, name, location, dates and UTC offset.
+    id, name, location, date range and UTC offset, discipline, Earth model and
+    geometry math, stopped task score back time and turnpoint tolerance,
+    scaling for arrival and leading weights.
 
 Nominal
     launch, goal, time, distance and minimal distance.
 
 Task
-    name and type of task, zones, speed section, start gates and pilots.
+    name and kind of task, zones, speed section, start gates and pilots, if and
+    when stopped, scaling for arrival and leading weights and any penalties.
 
 Zone
-    name, latitude, longitude, altitude and radius.
+    name, latitude, longitude, altitude, open and close times, radius, shape.
 
 Pilot
-    name and either absentee status or track log file name.
+    name and track log file name normally but can be marked as absent or did
+    not fly or flew having no track log sometimes being awarded distance or
+    time manually by the scorer.
 
 Something to be aware of when parsing ``XML`` of ``*.fsdb`` is that
 attributes may be missing and in that case we’ll have to infer the
