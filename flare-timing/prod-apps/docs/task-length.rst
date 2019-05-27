@@ -5,11 +5,15 @@ To find the best route ``flare-timing`` constructs a graph and finds the
 shortest path connecting the nodes. It puts nodes on turnpoint cylinder arc
 boundaries and uses the competition specific math for working out distances on
 the Earth as the cost of connecting nodes in the network. It would be expensive
-to construct and evaluate a large network with the accuracy required so in an
-iterative process. At each iteration the arc of the circle is shortened and the
-density of nodes is increased. This optimal path found on the Earth model for
-the competition is the edge to edge optimal route. Routes are shown with
-waypoints, segment distances [#]_ and total distance.
+to construct and evaluate a large network with the accuracy required so it is
+done iteratively. At each iteration the arc of the circle bounding a zone is
+shortened and the density of nodes is increased. For goal line zones the nodes
+are selected in pretty much the same way except that points on the arc are
+projected down onto the line.
+
+This optimal path found on the
+Earth model for the competition is the edge to edge optimal route. Routes are
+shown with waypoints, segment distances [#]_ and total distance.
 
 ::
 
