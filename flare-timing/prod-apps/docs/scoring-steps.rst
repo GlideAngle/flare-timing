@@ -17,9 +17,6 @@ track logs, scoring proceeds in steps  [#]_;
 #. Extract the inputs with
    `extract-input <https://github.com/BlockScope/flare-timing/tree/master/flare-timing/prod-apps/extract-input>`__.
 
-#. Extract the outputs with
-   `fs-score <https://github.com/BlockScope/flare-timing/tree/master/flare-timing/prod-apps/fs-score>`__. This step is not strictly needed for scoring but is useful for comparing the outputs of ``flare-timing`` and FS.
-
 #. Trace the route of the shortest path to fly a task with
    `task-length <https://github.com/BlockScope/flare-timing/tree/master/flare-timing/prod-apps/task-length>`__.
 
@@ -47,6 +44,15 @@ track logs, scoring proceeds in steps  [#]_;
 
 #. Score the competition with
    `gap-point <https://github.com/BlockScope/flare-timing/tree/master/flare-timing/prod-apps/gap-point>`__.
+
+If hosting the web app then the following two steps are needed too:
+
+#. Extract the outputs with
+   `fs-score <https://github.com/BlockScope/flare-timing/tree/master/flare-timing/prod-apps/fs-score>`__ used for comparing the outputs of ``flare-timing`` and FS.
+
+#. Unpack track logs to a flat list of time with latitude and longitude with
+   `unpack-track <https://github.com/BlockScope/flare-timing/tree/master/flare-timing/prod-apps/unpack-track>`__ . This data supplies the pilot tracks that can be downloaded and shown on the map.
+
 
 .. [#]
    Reuse of inputs is not shown in :numref:`score-steps` as this would clutter
