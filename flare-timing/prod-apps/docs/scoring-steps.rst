@@ -1,18 +1,9 @@
 Scoring Steps
 -------------
 
-Let’s now walk through the process of scoring with ``flare-timing``, see
-:numref:`score-steps`, and look at snippets of the files it writes.
-
-.. _score-steps:
-.. figure:: score-steps.png
-    :align: center
-    :height: 100px
-    
-    Scoring as numbered steps from original inputs to ``*.csv`` or ``*.yaml`` outputs.
-
-Starting with an ``*.fsdb`` comp and related ``*.igc`` or ``*.kml``
-track logs, scoring proceeds in steps  [#]_;
+Let’s now walk through the process of scoring with ``flare-timing``.  Starting
+from an ``*.fsdb`` competition with related ``*.igc`` or ``*.kml`` track logs,
+scoring proceeds in steps  [#]_;
 
 #. Extract the inputs with
    `extract-input <https://github.com/BlockScope/flare-timing/tree/master/flare-timing/prod-apps/extract-input>`__.
