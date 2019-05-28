@@ -2,7 +2,6 @@ module Flight.DiscardFurther
     ( readDiscardFurther
     , writeDiscardFurther
     , writePegThenDiscard
-    , writeDiscardThenPeg
     , readCompBestDistances
     , readCompLeading
     ) where
@@ -34,7 +33,6 @@ import Flight.Comp
     , AlignTimeFile(..)
     , DiscardFurtherFile(..)
     , PegThenDiscardFile(..)
-    , DiscardThenPegFile(..)
     , DiscardFurtherDir(..)
     , RoutesLookupTaskDistance(..)
     , TaskRouteDistance(..)
@@ -63,14 +61,6 @@ writeDiscardFurther (DiscardFurtherFile path) headers xs =
 
 writePegThenDiscard :: PegThenDiscardFile -> [String] -> Vector TickRow -> IO ()
 writePegThenDiscard (PegThenDiscardFile path) headers xs =
-    L.writeFile path rows
-    where
-        opts = defaultEncodeOptions {encUseCrLf = False}
-        hs = V.fromList $ S.pack <$> headers
-        rows = encodeByNameWith opts hs $ V.toList xs
-
-writeDiscardThenPeg :: DiscardThenPegFile -> [String] -> Vector TickRow -> IO ()
-writeDiscardThenPeg (DiscardThenPegFile path) headers xs =
     L.writeFile path rows
     where
         opts = defaultEncodeOptions {encUseCrLf = False}
