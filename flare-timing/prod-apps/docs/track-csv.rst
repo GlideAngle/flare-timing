@@ -9,8 +9,26 @@ headers so that they can be compared easily. These headers are:
 
     fixIdx,time,lat,lng,alt,tickLead,tickRace,zoneIdx,legIdx,togo,area
 
-Unpack Tracks
--------------
+The steps for processing track logs proceeds as follows:
+
+#. Unpack track logs with
+   `unpack-track <https://github.com/BlockScope/flare-timing/tree/master/flare-timing/prod-apps/unpack-track>`__.
+
+#. Index fixes from the time of first crossing with
+   `align-time <https://github.com/BlockScope/flare-timing/tree/master/flare-timing/prod-apps/align-time>`__.
+
+#. Discard fixes that get further from goal and note leading area with
+   `discard-further <https://github.com/BlockScope/flare-timing/tree/master/flare-timing/prod-apps/discard-further>`__.
+
+#. Discard fixes after first applying any distance for altitude bonus
+   with
+   `peg-then-discard <https://github.com/BlockScope/flare-timing/tree/master/flare-timing/prod-apps/peg-then-discard>`__.
+
+#. Discard fixes before applying any distance for altitude bonus
+   `discard-then-peg <https://github.com/BlockScope/flare-timing/tree/master/flare-timing/prod-apps/discard-then-peg>`__.
+
+Unpacking Tracks
+----------------
 
 The ``*.igc`` file format has a header record for the date with fix records
 offset in seconds from this.
@@ -66,7 +84,7 @@ The ``unpack-track`` step sets values for these fields:
 Aligning Tracks by Elapsed Time
 -------------------------------
 
-Next we align the tracks in time elapsed from the first start and work out the
+We align the tracks in time elapsed from the first start and work out the
 distance flown for each fix. All fields are set except area so by this stage we
 know which leg of the course a fix is associated with, the ``legIdx``, and
 which fix it is within a leg, the ``zoneIdx``. The ``tickLead`` and
@@ -80,9 +98,42 @@ which fix it is within a leg, the ``zoneIdx``. The ``tickLead`` and
 Discarding Fixes further from Goal
 ----------------------------------
 
-Then we discard any fixes that get further from goal so that ``togo`` always
-decreases and work out the leading area for each increment of distance.
+We discard any fixes that get further from goal so that ``togo`` always
+decreases and work out the leading area for each increment of distance. This is
+the track log data used for time and leading points.
 
 ::
 
     fixIdx,time,lat,lng,alt,tickLead,tickRace,zoneIdx,legIdx,togo,area
+
+When no pilot makes it through the speed section no time points are awarded.
+The last row holds the minimum ``togo`` value.  When subtracted from the task
+length this gives a pilot's distance flown or reach. The maximum reach, the
+task best distance, is compared to the competition's nominal distance to
+determine the time validity for tasks where no pilot makes it through the speed
+section.
+
+Peg and then Discard
+--------------------
+
+When circling in thermals altitude gains are often uneven. Sharing a thermal
+with another pilot we'll see them go up and down relative to us around the
+turn. The GAP rules say that an altitude bonus distance is calculated for each
+fix in a pilots track log. From this it would be right to apply the bonus
+before discarding fixes.
+::
+
+    fixIdx,time,lat,lng,alt,tickLead,tickRace,zoneIdx,legIdx,togo,area
+
+Discard and then Peg
+--------------------
+
+What if the altitude bonus was applied after discarding fixes further from
+goal? We could potentially end up with negative slivers of leading area unless
+fixes are again discarded when the distance togo increases.
+
+::
+
+    fixIdx,time,lat,lng,alt,tickLead,tickRace,zoneIdx,legIdx,togo,area
+                                                                  ^^^^
+                                                                  sometimes negative
