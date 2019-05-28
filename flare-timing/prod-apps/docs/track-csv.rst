@@ -129,8 +129,9 @@ Discard and then Peg
 --------------------
 
 What if the altitude bonus was applied after discarding fixes further from
-goal? We could potentially end up with negative slivers of leading area unless
-fixes are again discarded when the distance togo increases.
+goal? We could potentially end up with negative slivers of leading area. In any
+case altitude bonus distance is ignored for the purpose of calculating leading
+area.
 
 ::
 
