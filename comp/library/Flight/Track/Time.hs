@@ -665,9 +665,9 @@ discard
 discard timeToTick tickToTick toLeg dRace close down arrival =
     V.fromList
     . leadingArea toLeg dRace close down arrival
-    . fmap tickToTick
     . discardFurther
     . dropZeros
+    . fmap tickToTick
     . V.toList
     . fmap timeToTick
 
