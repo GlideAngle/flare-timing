@@ -1,10 +1,11 @@
 Crossing Zones and Sectioning Tracks
 ====================================
 
-For each pilot track, we need to work out which zones have been crossed and
-then select from these crossings the tagging of each zone. Taking into account
-the timing restriction of the task we can section the times and fixes selecting
-the subset of these that will be scored.
+For each pilot track, we need to work out which zones have been crossed with
+``cross-zone`` and then select from these crossings the tagging of each zone
+with ``tag-zone``. Taking into account the timing restriction of the task we
+can section the times and fixes selecting the subset of these that will be
+scored with ``peg-frame``.
 
 Finding Zone Crossings
 ----------------------
@@ -170,6 +171,68 @@ the count of taggings and the pilots.
         - - ...
       lastLanding: 2012-01-14T08:41:04Z
 
+Sectioning the Scoring Window
+-----------------------------
+
+With the scored section of the track log in hand we can select from the zone
+taggings those that will be scored and update the task timings [#]_.
+
+::
+
+    stopWindow:
+    - lastStarters: []
+      windowTimes:
+      - 2018-05-24T10:30:00Z
+      - 2018-05-24T12:18:00Z
+      windowSeconds: 6480
+    - lastStarters: []
+      windowTimes:
+      - 2018-05-26T11:00:00Z
+      - 2018-05-26T12:05:00Z
+      windowSeconds: 3900
+    - null
+    stopFlying:
+          ...
+      - - - '37'
+          - Igor Eržen
+        - scoredFixes:
+          - 40
+          - 1323
+          scoredSeconds:
+          - 40
+          - 1323
+          scoredTimes:
+          - 2018-05-24T11:19:48Z
+          - 2018-05-24T11:41:11
+          ...
+      - - - '37'
+          - Igor Eržen
+        - scoredFixes:
+          - 47
+          - 4507
+          scoredSeconds:
+          - 47
+          - 4507
+          scoredTimes:
+          - 2018-05-26T10:48:26Z
+          - 2018-05-26T12:02:46
+          ...
+      - - - '37'
+          - Igor Eržen
+        - scoredFixes:
+          - 45
+          - 6955
+          scoredSeconds:
+          - 45
+          - 6955
+          scoredTimes:
+          - 2018-05-27T10:35:29Z
+          - 2018-05-27T12:30:39Z
+          ...
+    timing: ...
+    tagging: ...
+
+
 .. [#]
    Some pilots’ track logs will have initial values way off from the
    location of the device. I suspect that the GPS logger is remembering
@@ -182,3 +245,8 @@ the count of taggings and the pilots.
 
 .. [#]
    On a triangle course early fixes may cross goal.
+
+.. [#]
+   The competition shown in most examples had no stopped tasks so this snippet
+   is from the workings for scoring the 2018 XC Dalmatian Paragliding Open. In
+   this competition the first two of three tasks were stopped.
