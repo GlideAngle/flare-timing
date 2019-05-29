@@ -1,9 +1,9 @@
 Masking Task over Track
 -----------------------
 
-Taking what we now know about the tracks and the task, we have times,
-distances and fractions we’ll need later for the points. So far we have
-leading, arrival and speed fractions but we still need to look at where
+Taking what we now know about the tracks and the task, we have times, distances
+and fractions we’ll need later for the points. So far we have leading, arrival,
+speed and distance made or reach fractions but we still need to look at where
 pilots landed to have the distance difficulty or effort fractions.
 
 .. highlight:: yaml
