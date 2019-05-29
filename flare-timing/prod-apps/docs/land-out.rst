@@ -10,61 +10,65 @@ pilots.
 .. highlight:: yaml
 ::
 
-    minDistance: 5.0 km
+    minDistance: 5.000 km
     bestDistance:
-    - 159.3 km
+    ...
+    - 158.865 km
     landout:
-    - 55
+    ...
+    - 63
     lookahead:
-    - 87
+    ...
+    - 76
     sumOfDifficulty:
-    - 268
-    - - chunk: 20
-        startChunk: 6.9 km
-        endChunk: 7.0 km
-        endAhead: 15.7 km
-        down: 1
-        downward: 2
-        rel: 3.73134e-3
-        frac: 3.73134e-3
-      - chunk: 85
-        startChunk: 13.4 km
-        endChunk: 13.5 km
-        endAhead: 22.1 km
-        down: 1
+    ...
+    - 266
+    difficulty:
+    ...
+    - - chunk: 0
+        startChunk: 5.0 km
+        endChunk: 5.0 km
+        endAhead: 12.6 km
+        down: 3
+        downs:
+        - 5.000 km
+        - 5.000 km
+        - 5.000 km
+        downers:
+        - - '32'
+          - Kathryn O'Riordan
+        - - '64'
+          - Gustavo Carvalho
+        - - '28'
+          - Evgeniya Laritskaya
         downward: 3
-        rel: 5.59701e-3
-        frac: 9.32835e-3
-      - chunk: 121
-        startChunk: 17.0 km
-        endChunk: 17.1 km
-        endAhead: 25.8 km
+        rel: 5.6391e-3
+        frac: 5.6391e-3
+        ...
+      - chunk: 304
+        startChunk: 35.3 km
+        endChunk: 35.4 km
+        endAhead: 43.0 km
         down: 1
-        downward: 5
-        rel: 9.32835e-3
-        frac: 1.865671e-2
-      ...
-      - chunk: 1483
-        startChunk: 153.2 km
-        endChunk: 153.3 km
-        endAhead: 162.0 km
-        down: 1
-        downward: 3
-        rel: 5.59701e-3
-        frac: 0.49440298
-      - chunk: 1486
-        startChunk: 153.5 km
-        endChunk: 153.5 km
-        endAhead: 162.3 km
-        down: 1
-        downward: 2
-        rel: 3.73134e-3
-        frac: 0.49813432
-      - chunk: 1499
-        startChunk: 154.8 km
-        endChunk: 154.9 km
-        endAhead: 163.6 km
-        down: 1
+        downs:
+        - 35.388 km
+        downers:
+        - - '53'
+          - Hadewych van Kempen
         downward: 1
-        rel: 1.86567e-3
-        frac: 0.5
+        rel: 1.8797e-3
+        frac: 4.887218e-2
+      - chunk: 411
+        startChunk: 46.0 km
+        endChunk: 46.1 km
+        endAhead: 53.7 km
+        down: 1
+        downs:
+        - 46.041 km
+        downers:
+        - - '40'
+          - Phil de Joux
+        downward: 5
+        rel: 9.3985e-3
+        frac: 5.827068e-2
+        ...
