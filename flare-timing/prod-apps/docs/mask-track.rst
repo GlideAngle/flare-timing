@@ -3,8 +3,8 @@ Masking Task over Track
 
 Taking what we now know about the tracks and the task, we have times, distances
 and fractions we’ll need later for the points. So far we have leading, arrival,
-speed and distance made or reach fractions but we still need to look at where
-pilots landed to have the distance difficulty or effort fractions.
+speed and reach [#]_ fractions but we still need to look at where pilots landed
+to have the effort [#]_  fractions.
 
 .. highlight:: yaml
 ::
@@ -204,7 +204,6 @@ are not included in this list of pilots that are nigh.
 
 Where did pilots land along the course?
 
-
 ::
 
     land:
@@ -230,3 +229,6 @@ Where did pilots land along the course?
         - togo: 123.477146 km
           made: 35.387605 km
       ...
+
+.. [#] Reach is the distance made.
+.. [#] Effort is the distance difficulty.
