@@ -14,11 +14,11 @@ scoring proceeds in steps  [#]_;
 #. Find pairs of fixes crossing over zones with
    `cross-zone <https://github.com/BlockScope/flare-timing/tree/master/flare-timing/prod-apps/cross-zone>`__.
 
-#. Peg out the time range of each track log that will be scored with
-   `peg-frame <https://github.com/BlockScope/flare-timing/tree/master/flare-timing/prod-apps/peg-frame>`__.
-
 #. Interpolate between crossing fixes with
    `tag-zone <https://github.com/BlockScope/flare-timing/tree/master/flare-timing/prod-apps/tag-zone>`__.
+
+#. Peg out the time range of each track log that will be scored with
+   `peg-frame <https://github.com/BlockScope/flare-timing/tree/master/flare-timing/prod-apps/peg-frame>`__.
 
 #. Index fixes from the time of first crossing with
    `align-time <https://github.com/BlockScope/flare-timing/tree/master/flare-timing/prod-apps/align-time>`__.
@@ -51,6 +51,7 @@ If hosting the web app then the following two steps are needed too:
 
 
 .. [#]
-   Reuse of inputs is not shown in :numref:`score-steps` as this would clutter
-   the diagram too much. For instance ``*.kml`` and ``*.igc`` track logs are
-   also needed as inputs for the align step.
+   In this list, any step can use the inputs or outputs from a previous step.
+   For instance ``*.kml`` and ``*.igc`` track logs are needed as inputs for the
+   cross-zone, align-time and unpack-track steps. The app of each step logs the
+   inputs they're using.
