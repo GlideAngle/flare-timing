@@ -48,6 +48,11 @@ pilots landed to have the distance fractions.
     leadCoefMin:
     ...
     - 4.12428993
+
+We have the lead and arrival fractions:
+
+::
+
     leadRank:
     ...
     - - - - '23'
@@ -81,6 +86,12 @@ pilots landed to have the distance fractions.
         - rank: '3'
           frac: 0.85799451
       ...
+
+If the task is stopped we'll need some statistics to work out the stopped task
+validity:
+
+::
+
     flownMean:
     ...
     - 117.935977 km
@@ -93,6 +104,11 @@ pilots landed to have the distance fractions.
     reachStdDev:
     ...
     - 49.749145 km
+
+We have the reach and speed fractions:
+
+::
+
     reachRank:
     ...
     - - - - '23'
@@ -124,8 +140,9 @@ pilots landed to have the distance fractions.
           frac: 0.75871917
       ...
 
-For those landing out, how close or nigh were they to goal and where did
-they land?
+For those landing out, how close or nigh were they to goal, what was their
+reach? Pilots that arrived at goal have a reach equal to the task distance and
+are not included in this list of pilots that are nigh.
 
 ::
 
@@ -184,6 +201,9 @@ they land?
               lng: 147.93033075
           made: 35.676751 km
     ...
+
+Where did pilots land along the course?
+
 
 ::
 
