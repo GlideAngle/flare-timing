@@ -9,28 +9,34 @@ and the time of this tagging of the turnpoint [#]_.
 ::
 
     tagging:
-      - - Gerolf Heinrichs
+      - - - '23'
+          - Gerolf Heinrichs
         - zonesTag:
-          - fix: 294
-            time: 2012-01-14T02:19:41Z
-            lat: -33.36058598
-            lng: 147.93161599
-          - fix: 1367
-            time: 2012-01-14T03:31:13Z
-            lat: -33.41472398
-            lng: 147.846
-          - fix: 2208
-            time: 2012-01-14T04:27:17Z
-            lat: -33.708522
-            lng: 147.530401
-          - fix: 3915
-            time: 2012-01-14T06:21:05Z
-            lat: -33.13216898
-            lng: 147.57301598
-          - fix: 4712
-            time: 2012-01-14T07:14:13Z
-            lat: -33.35934198
-            lng: 147.928741
+          - inter: ...
+          - inter: ...
+          - inter: ...
+          - inter: ...
+          - inter:
+              fixFrac: 4714.903706113713
+              time: 2012-01-14T07:14:24.614824454852Z
+              lat: -33.36096338
+              lng: 147.93153381
+              alt: 372.48
+            cross:
+              crossingPair:
+              - fix: 4714
+                time: 2012-01-14T07:14:21Z
+                lat: -33.360479
+                lng: 147.931166
+                alt: 377
+              - fix: 4715
+                time: 2012-01-14T07:14:25Z
+                lat: -33.361015
+                lng: 147.931573
+                alt: 372
+              inZone:
+              - false
+              - true
 
 Sorting the list of tagging times, we can show the first and last times,
 the count of taggings and the pilots.
