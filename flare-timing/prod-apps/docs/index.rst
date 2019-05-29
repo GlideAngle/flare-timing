@@ -19,8 +19,7 @@ for everything to be checked by hand.
    scoring-steps
    extract-input
    task-length
-   cross-zone
-   tag-zone
+   cross-section
    track-csv
    mask-track
    land-out
