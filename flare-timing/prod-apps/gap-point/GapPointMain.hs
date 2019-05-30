@@ -41,7 +41,11 @@ import Flight.Comp
     , Tweak(..)
     , CrossZoneFile(..)
     , TagZoneFile(..)
-    , MaskTrackFile(..)
+    , MaskArrivalFile(..)
+    , MaskEffortFile(..)
+    , MaskLeadFile(..)
+    , MaskReachFile(..)
+    , MaskSpeedFile(..)
     , LandOutFile(..)
     , Pilot
     , PilotGroup(dnf, didFlyNoTracklog)
@@ -56,7 +60,11 @@ import Flight.Comp
     , compToTaskLength
     , compToCross
     , crossToTag
-    , compToMask
+    , compToMaskArrival
+    , compToMaskEffort
+    , compToMaskLead
+    , compToMaskReach
+    , compToMaskSpeed
     , compToLand
     , compToPoint
     , findCompInput
@@ -74,7 +82,13 @@ import Flight.Track.Lead (TrackLead(..))
 import Flight.Track.Arrival (TrackArrival(..))
 import Flight.Track.Speed (pilotTime, startGateTaken)
 import qualified Flight.Track.Speed as Speed (TrackSpeed(..))
-import Flight.Track.Mask (Masking(..))
+import Flight.Track.Mask
+    ( MaskingArrival(..)
+    , MaskingEffort(..)
+    , MaskingLead(..)
+    , MaskingReach(..)
+    , MaskingSpeed(..)
+    )
 import Flight.Track.Land (Landing(..))
 import Flight.Track.Place (rankByTotal)
 import Flight.Track.Point
@@ -83,7 +97,12 @@ import qualified Flight.Track.Land as Cmp (Landing(..))
 import Flight.Scribe
     ( readComp, readRoute
     , readCrossing, readTagging
-    , readMasking, readLanding
+    , readMaskingArrival
+    , readMaskingEffort
+    , readMaskingLead
+    , readMaskingReach
+    , readMaskingSpeed
+    , readLanding
     , writePointing
     )
 import Flight.Mask (RaceSections(..), section)
@@ -143,14 +162,22 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
     let lenFile@(TaskLengthFile lenPath) = compToTaskLength compFile
     let crossFile@(CrossZoneFile crossPath) = compToCross compFile
     let tagFile@(TagZoneFile tagPath) = crossToTag . compToCross $ compFile
-    let maskFile@(MaskTrackFile maskPath) = compToMask compFile
+    let maskArrivalFile@(MaskArrivalFile maskArrivalPath) = compToMaskArrival compFile
+    let maskEffortFile@(MaskEffortFile maskEffortPath) = compToMaskEffort compFile
+    let maskLeadFile@(MaskLeadFile maskLeadPath) = compToMaskLead compFile
+    let maskReachFile@(MaskReachFile maskReachPath) = compToMaskReach compFile
+    let maskSpeedFile@(MaskSpeedFile maskSpeedPath) = compToMaskSpeed compFile
     let landFile@(LandOutFile landPath) = compToLand compFile
     let pointFile = compToPoint compFile
     putStrLn $ "Reading task length from '" ++ takeFileName lenPath ++ "'"
     putStrLn $ "Reading pilots ABS & DNF from task from '" ++ takeFileName compPath ++ "'"
     putStrLn $ "Reading zone crossings from '" ++ takeFileName crossPath ++ "'"
     putStrLn $ "Reading start and end zone tagging from '" ++ takeFileName tagPath ++ "'"
-    putStrLn $ "Reading masked tracks from '" ++ takeFileName maskPath ++ "'"
+    putStrLn $ "Reading arrivals from '" ++ takeFileName maskArrivalPath ++ "'"
+    putStrLn $ "Reading effort from '" ++ takeFileName maskEffortPath ++ "'"
+    putStrLn $ "Reading leading from '" ++ takeFileName maskLeadPath ++ "'"
+    putStrLn $ "Reading reach from '" ++ takeFileName maskReachPath ++ "'"
+    putStrLn $ "Reading speed from '" ++ takeFileName maskSpeedPath ++ "'"
     putStrLn $ "Reading distance difficulty from '" ++ takeFileName landPath ++ "'"
 
     compSettings <-
@@ -168,9 +195,29 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
             (Just <$> readTagging tagFile)
             (const $ return Nothing)
 
-    masking <-
+    ma <-
         catchIO
-            (Just <$> readMasking maskFile)
+            (Just <$> readMaskingArrival maskArrivalFile)
+            (const $ return Nothing)
+
+    me <-
+        catchIO
+            (Just <$> readMaskingEffort maskEffortFile)
+            (const $ return Nothing)
+
+    ml <-
+        catchIO
+            (Just <$> readMaskingLead maskLeadFile)
+            (const $ return Nothing)
+
+    mr <-
+        catchIO
+            (Just <$> readMaskingReach maskReachFile)
+            (const $ return Nothing)
+
+    ms <-
+        catchIO
+            (Just <$> readMaskingSpeed maskSpeedFile)
             (const $ return Nothing)
 
     landing <-
@@ -190,22 +237,30 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
                 stopRoute
                 routes
 
-    case (compSettings, cgs, tgs, masking, landing, routes) of
-        (Nothing, _, _, _, _, _) -> putStrLn "Couldn't read the comp settings."
-        (_, Nothing, _, _, _, _) -> putStrLn "Couldn't read the crossings."
-        (_, _, Nothing, _, _, _) -> putStrLn "Couldn't read the taggings."
-        (_, _, _, Nothing, _, _) -> putStrLn "Couldn't read the maskings."
-        (_, _, _, _, Nothing, _) -> putStrLn "Couldn't read the land outs."
-        (_, _, _, _, _, Nothing) -> putStrLn "Couldn't read the routes."
-        (Just cs, Just cg, Just tg, Just mk, Just lg, Just _) ->
-            writePointing pointFile $ points' cs lookupTaskLength cg tg mk lg
+    case (compSettings, cgs, tgs, ma, me, ml, mr, ms, landing, routes) of
+        (Nothing, _, _, _, _, _, _, _, _, _) -> putStrLn "Couldn't read the comp settings."
+        (_, Nothing, _, _, _, _, _, _, _, _) -> putStrLn "Couldn't read the crossings."
+        (_, _, Nothing, _, _, _, _, _, _, _) -> putStrLn "Couldn't read the taggings."
+        (_, _, _, Nothing, _, _, _, _, _, _) -> putStrLn "Couldn't read the masking arrivals."
+        (_, _, _, _, Nothing, _, _, _, _, _) -> putStrLn "Couldn't read the masking effort."
+        (_, _, _, _, _, Nothing, _, _, _, _) -> putStrLn "Couldn't read the masking leading."
+        (_, _, _, _, _, _, Nothing, _, _, _) -> putStrLn "Couldn't read the masking reach."
+        (_, _, _, _, _, _, _, Nothing, _, _) -> putStrLn "Couldn't read the masking speed."
+        (_, _, _, _, _, _, _, _, Nothing, _) -> putStrLn "Couldn't read the land outs."
+        (_, _, _, _, _, _, _, _, _, Nothing) -> putStrLn "Couldn't read the routes."
+        (Just cs, Just cg, Just tg, Just mA, Just mE, Just mL, Just mR, Just mS, Just lg, Just _) ->
+            writePointing pointFile $ points' cs lookupTaskLength cg tg mA mE mL mR mS lg
 
 points'
     :: CompSettings k
     -> RoutesLookupTaskDistance
     -> Crossing
     -> Tagging
-    -> Masking
+    -> MaskingArrival
+    -> MaskingEffort
+    -> MaskingLead
+    -> MaskingReach
+    -> MaskingSpeed
     -> Cmp.Landing
     -> Pointing
 points'
@@ -227,21 +282,30 @@ points'
     routes
     Crossing{flying}
     Tagging{tagging}
-    Masking
+    MaskingArrival
         { pilotsAtEss
-        , taskSpeedDistance
-        , bestDistance
-        , sumDistance
-        , ssBestTime
-        , gsBestTime
-        , leadRank
         , arrivalRank
+        }
+    MaskingEffort
+        { bestEffort
+        , land
+        }
+    MaskingLead
+        { sumDistance
+        , leadRank
+        }
+    MaskingReach
+        { bestReach
         , flownMean
         , flownStdDev
+        , nigh
+        }
+    MaskingSpeed
+        { ssBestTime
+        , gsBestTime
+        , taskSpeedDistance
         , ssSpeed
         , gsSpeed
-        , nigh
-        , land
         , altStopped
         }
     Landing
@@ -294,7 +358,7 @@ points'
         -- or it has not been scored yet.
         maybeTasks :: [a -> Maybe a]
         maybeTasks =
-            [ if null ds then const Nothing else Just | ds <- bestDistance ]
+            [ if null ds then const Nothing else Just | ds <- bestReach ]
 
         lvs =
             [ launchValidity
@@ -307,7 +371,7 @@ points'
 
         dBests :: [MaximumDistance (Quantity Double [u| km |])] =
             [ MaximumDistance . MkQuantity $ fromMaybe 0 b
-            | b <- (fmap . fmap) unTaskDistanceAsKm bestDistance
+            | b <- (fmap . fmap) unTaskDistanceAsKm bestReach
             ]
 
         dSums :: [SumOfDistance (Quantity Double [u| km |])] =
@@ -390,7 +454,7 @@ points'
             | gr <- grs
             | dw <- dws
             | tw <- taskTweak <$> tasks
-            | bd <- maybe [u| 0.0 km |] (MkQuantity . unTaskDistanceAsKm) <$> bestDistance
+            | bd <- maybe [u| 0.0 km |] (MkQuantity . unTaskDistanceAsKm) <$> bestReach
             | td <- maybe [u| 0.0 km |] (MkQuantity . unTaskDistanceAsKm) <$> lsWholeTask
             ]
 
@@ -493,7 +557,7 @@ points'
             [ let xs' = (fmap . fmap) madeNigh xs
                   ys' = (fmap . fmap) (const bd) ys
               in (xs' ++ ys')
-            | bd <- (fmap . fmap) unTaskDistanceAsKm bestDistance
+            | bd <- (fmap . fmap) unTaskDistanceAsKm bestReach
             | xs <- nigh
             | ys <- arrivalRank
             ]
@@ -523,7 +587,7 @@ points'
             [ let xs' = (fmap . fmap) madeLand xs
                   ys' = (fmap . fmap) (const bd) ys
               in (xs' ++ ys')
-            | bd <- (fmap . fmap) unTaskDistanceAsKm bestDistance
+            | bd <- (fmap . fmap) unTaskDistanceAsKm bestEffort
             | xs <- land
             | ys <- arrivalRank
             ]
@@ -590,7 +654,7 @@ points'
                 []
                 (\ps' -> (fmap . fmap) (applyLinear free bd ps') ds)
                 ps
-            | bd <- bestDistance
+            | bd <- bestReach
             | ps <- (fmap . fmap) points allocs
             | ds <- nighDistanceDf
             ]
@@ -600,7 +664,7 @@ points'
                 []
                 (\ps' -> (fmap . fmap) (applyLinear free bd ps') ds)
                 ps
-            | bd <- bestDistance
+            | bd <- bestReach
             | ps <- (fmap . fmap) points allocs
             | ds <- nighDistanceDfNoTrack
             ]

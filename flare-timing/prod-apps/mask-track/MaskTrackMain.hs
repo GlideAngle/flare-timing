@@ -50,7 +50,11 @@ import Flight.Comp
     , StartEnd(..)
     , compToTaskLength
     , compToCross
-    , compToMask
+    , compToMaskArrival
+    , compToMaskEffort
+    , compToMaskLead
+    , compToMaskReach
+    , compToMaskSpeed
     , crossToTag
     , tagToPeg
     , findCompInput
@@ -79,7 +83,14 @@ import Flight.Track.Distance
     )
 import qualified Flight.Track.Distance as Track (awardByFrac)
 import Flight.Track.Lead (compLeading)
-import Flight.Track.Mask (Masking(..), RaceTime(..))
+import Flight.Track.Mask
+    ( MaskingArrival(..)
+    , MaskingEffort(..)
+    , MaskingLead(..)
+    , MaskingReach(..)
+    , MaskingSpeed(..)
+    , RaceTime(..)
+    )
 import Flight.Track.Speed (TrackSpeed(..), pilotTime)
 import Flight.Kml (LatLngAlt(..), MarkedFixes(..))
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
@@ -98,7 +109,12 @@ import Flight.Lookup.Tag
     , tagTicked
     )
 import Flight.Scribe
-    ( readComp, readRoute, readTagging, readFraming, writeMasking
+    ( readComp, readRoute, readTagging, readFraming
+    , writeMaskingArrival
+    , writeMaskingEffort
+    , writeMaskingLead
+    , writeMaskingReach
+    , writeMaskingSpeed
     , readCompLeading, readCompBestDistances, readCompTimeRows
     )
 import Flight.Lookup.Route (routeLength)
@@ -496,30 +512,51 @@ writeMask
             let fsMean :: [QTaskDistance Double [u| m |]] = TaskDistance . MkQuantity . mean <$> fssRaw
             let fsStdDev  :: [QTaskDistance Double [u| m |]] = TaskDistance . MkQuantity . stdDev <$> fssRaw
 
-            writeMasking
-                (compToMask compFile)
-                Masking
+            writeMaskingArrival
+                (compToMaskArrival compFile)
+                MaskingArrival
                     { pilotsAtEss = PilotsAtEss . toInteger . length <$> as
-                    , raceTime = raceTime
-                    , ssBestTime = ssBestTime
-                    , gsBestTime = gsBestTime
-                    , taskDistance = lsWholeTask
-                    , taskSpeedDistance = lsSpeedSubset
-                    , bestDistance = dsBest
+                    , arrivalRank = as
+                    }
+
+            writeMaskingEffort
+                (compToMaskEffort compFile)
+                MaskingEffort
+                    { bestEffort = dsBest
+                    , land = dsLand
+                    }
+
+            writeMaskingLead
+                (compToMaskLead compFile)
+                MaskingLead
+                    { raceTime = raceTime
                     , sumDistance = dsSum
                     , leadAreaToCoef = lcAreaToCoef
                     , leadCoefMin = lcMin
                     , leadRank = lead
-                    , arrivalRank = as
+                    }
+
+            writeMaskingReach
+                (compToMaskReach compFile)
+                MaskingReach
+                    { bestReach = dsBest
                     , flownMean = fsMean
                     , flownStdDev = fsStdDev
                     , reachMean = rsMean
                     , reachStdDev = rsStdDev
                     , reachRank = rss
+                    , nigh = dsNigh
+                    }
+
+            writeMaskingSpeed
+                (compToMaskSpeed compFile)
+                MaskingSpeed
+                    { ssBestTime = ssBestTime
+                    , gsBestTime = gsBestTime
+                    , taskDistance = lsWholeTask
+                    , taskSpeedDistance = lsSpeedSubset
                     , ssSpeed = fromMaybe [] <$> (fmap . fmap) snd ssVs
                     , gsSpeed = fromMaybe [] <$> (fmap . fmap) snd gsVs
-                    , nigh = dsNigh
-                    , land = dsLand
                     , altStopped = dsAlt
                     }
 

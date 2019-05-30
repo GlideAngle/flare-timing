@@ -19,17 +19,17 @@ import Flight.Comp
     , CompInputFile(..)
     , CompSettings(..)
     , Nominal(..)
-    , MaskTrackFile(..)
-    , compToMask
+    , MaskEffortFile(..)
+    , compToMaskEffort
     , compToLand
     , findCompInput
     , ensureExt
     )
 import Flight.Distance (unTaskDistanceAsKm)
 import Flight.Track.Distance (TrackDistance(..))
-import Flight.Track.Mask (Masking(..))
+import Flight.Track.Mask (MaskingEffort(..))
 import qualified Flight.Track.Land as Cmp (Landing(..))
-import Flight.Scribe (readComp, readMasking, writeLanding)
+import Flight.Scribe (readComp, readMaskingEffort, writeLanding)
 import Flight.Score
     ( BestDistance(..)
     , PilotDistance(..)
@@ -63,7 +63,7 @@ drive o = do
 
 go :: CmdBatchOptions -> CompInputFile -> IO ()
 go CmdBatchOptions{..} compFile = do
-    let maskFile@(MaskTrackFile maskPath) = compToMask compFile
+    let maskFile@(MaskEffortFile maskPath) = compToMaskEffort compFile
     let landFile = compToLand compFile
     putStrLn $ "Reading land outs from '" ++ takeFileName maskPath ++ "'"
 
@@ -74,7 +74,7 @@ go CmdBatchOptions{..} compFile = do
 
     masking <-
         catchIO
-            (Just <$> readMasking maskFile)
+            (Just <$> readMaskingEffort maskFile)
             (const $ return Nothing)
 
     case (compSettings, masking) of
@@ -82,8 +82,8 @@ go CmdBatchOptions{..} compFile = do
         (_, Nothing) -> putStrLn "Couldn't read the maskings."
         (Just cs, Just mk) -> writeLanding landFile $ difficulty cs mk
 
-difficulty :: CompSettings k -> Masking -> Cmp.Landing
-difficulty CompSettings{nominal} Masking{bestDistance, land} =
+difficulty :: CompSettings k -> MaskingEffort -> Cmp.Landing
+difficulty CompSettings{nominal} MaskingEffort{bestEffort, land} =
     Cmp.Landing
         { minDistance = md
         , bestDistance = bests
@@ -109,7 +109,7 @@ difficulty CompSettings{nominal} Masking{bestDistance, land} =
 
         bests :: [Maybe (BestDistance (Quantity Double [u| km |]))]
         bests =
-            (fmap . fmap) (BestDistance . MkQuantity . unTaskDistanceAsKm) bestDistance
+            (fmap . fmap) (BestDistance . MkQuantity . unTaskDistanceAsKm) bestEffort
 
         ahead =
             [ flip Gap.lookahead ds <$> b

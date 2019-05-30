@@ -41,8 +41,14 @@ import Flight.Track.Land (Landing(..), TrackEffort(..), effortRank)
 import Flight.Track.Arrival (TrackArrival(..))
 import Flight.Track.Lead (TrackLead(..))
 import Flight.Track.Speed (TrackSpeed(..))
-import qualified Flight.Track.Mask as Mask (Masking(..))
-import Flight.Track.Mask (Masking(..))
+import qualified Flight.Track.Mask as Mask (MaskingReach(..))
+import Flight.Track.Mask
+    ( MaskingArrival(..)
+    , MaskingEffort(..)
+    , MaskingLead(..)
+    , MaskingReach(..)
+    , MaskingSpeed(..)
+    )
 import qualified Flight.Track.Point as Norm (NormPointing(..), NormBreakdown(..))
 import Flight.Track.Point
     (Pointing(..), Velocity(..), Allocation(..), Breakdown(..))
@@ -58,7 +64,12 @@ import Flight.Score
 import Flight.Scribe
     ( readComp, readScore
     , readRoute, readCrossing, readTagging, readFraming
-    , readMasking, readLanding, readPointing
+    , readMaskingArrival
+    , readMaskingEffort
+    , readMaskingLead
+    , readMaskingReach
+    , readMaskingSpeed
+    , readLanding, readPointing
     )
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
@@ -85,7 +96,11 @@ import Flight.Comp
     , CrossZoneFile(..)
     , TagZoneFile(..)
     , PegFrameFile(..)
-    , MaskTrackFile(..)
+    , MaskArrivalFile(..)
+    , MaskEffortFile(..)
+    , MaskLeadFile(..)
+    , MaskReachFile(..)
+    , MaskSpeedFile(..)
     , LandOutFile(..)
     , GapPointFile(..)
     , NormScoreFile(..)
@@ -93,7 +108,11 @@ import Flight.Comp
     , compToScore
     , compToTaskLength
     , compToCross
-    , compToMask
+    , compToMaskArrival
+    , compToMaskEffort
+    , compToMaskLead
+    , compToMaskReach
+    , compToMaskSpeed
     , compToLand
     , compToPoint
     , crossToTag
@@ -118,7 +137,11 @@ data Config k
         , crossing :: Maybe Cg.Crossing
         , tagging :: Maybe Tg.Tagging
         , framing :: Maybe Sp.Framing
-        , masking :: Maybe Masking
+        , maskingArrival :: Maybe MaskingArrival
+        , maskingEffort :: Maybe MaskingEffort
+        , maskingLead :: Maybe MaskingLead
+        , maskingReach :: Maybe MaskingReach
+        , maskingSpeed :: Maybe MaskingSpeed
         , landing :: Maybe Landing
         , pointing :: Maybe Pointing
         , norming :: Maybe Norm.NormPointing
@@ -304,7 +327,11 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
     let crossFile@(CrossZoneFile crossPath) = compToCross compFile
     let tagFile@(TagZoneFile tagPath) = crossToTag crossFile
     let stopFile@(PegFrameFile stopPath) = tagToPeg tagFile
-    let maskFile@(MaskTrackFile maskPath) = compToMask compFile
+    let maskArrivalFile@(MaskArrivalFile maskArrivalPath) = compToMaskArrival compFile
+    let maskEffortFile@(MaskEffortFile maskEffortPath) = compToMaskEffort compFile
+    let maskLeadFile@(MaskLeadFile maskLeadPath) = compToMaskLead compFile
+    let maskReachFile@(MaskReachFile maskReachPath) = compToMaskReach compFile
+    let maskSpeedFile@(MaskSpeedFile maskSpeedPath) = compToMaskSpeed compFile
     let landFile@(LandOutFile landPath) = compToLand compFile
     let pointFile@(GapPointFile pointPath) = compToPoint compFile
     let normFile@(NormScoreFile normPath) = compToScore compFile
@@ -313,7 +340,11 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
     putStrLn $ "Reading flying time range from '" ++ takeFileName crossPath ++ "'"
     putStrLn $ "Reading zone tags from '" ++ takeFileName tagPath ++ "'"
     putStrLn $ "Reading scored section from '" ++ takeFileName stopPath ++ "'"
-    putStrLn $ "Reading arrivals from '" ++ takeFileName maskPath ++ "'"
+    putStrLn $ "Reading arrivals from '" ++ takeFileName maskArrivalPath ++ "'"
+    putStrLn $ "Reading effort from '" ++ takeFileName maskEffortPath ++ "'"
+    putStrLn $ "Reading leading from '" ++ takeFileName maskLeadPath ++ "'"
+    putStrLn $ "Reading reach from '" ++ takeFileName maskReachPath ++ "'"
+    putStrLn $ "Reading speed from '" ++ takeFileName maskSpeedPath ++ "'"
     putStrLn $ "Reading land outs from '" ++ takeFileName landPath ++ "'"
     putStrLn $ "Reading scores from '" ++ takeFileName pointPath ++ "'"
     putStrLn $ "Reading expected or normative scores from '" ++ takeFileName normPath ++ "'"
@@ -343,9 +374,29 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
             (Just <$> readFraming stopFile)
             (const $ return Nothing)
 
-    masking <-
+    maskingArrival <-
         catchIO
-            (Just <$> readMasking maskFile)
+            (Just <$> readMaskingArrival maskArrivalFile)
+            (const $ return Nothing)
+
+    maskingEffort <-
+        catchIO
+            (Just <$> readMaskingEffort maskEffortFile)
+            (const $ return Nothing)
+
+    maskingLead <-
+        catchIO
+            (Just <$> readMaskingLead maskLeadFile)
+            (const $ return Nothing)
+
+    maskingReach <-
+        catchIO
+            (Just <$> readMaskingReach maskReachFile)
+            (const $ return Nothing)
+
+    maskingSpeed <-
+        catchIO
+            (Just <$> readMaskingSpeed maskSpeedFile)
             (const $ return Nothing)
 
     landing <-
@@ -363,17 +414,17 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
             (Just <$> readScore normFile)
             (const $ return Nothing)
 
-    case (compSettings, routes, crossing, tagging, framing, masking, landing, pointing, norming) of
-        (Nothing, _, _, _, _, _, _, _, _) ->
+    case (compSettings, routes, crossing, tagging, framing, maskingArrival, maskingEffort, maskingLead, maskingReach, maskingSpeed, landing, pointing, norming) of
+        (Nothing, _, _, _, _, _, _, _, _, _, _, _, _) ->
             putStrLn "Couldn't read the comp settings"
-        (Just cs, rt@(Just _), cg@(Just _), tg@(Just _), fm@(Just _), mg@(Just _), lo@(Just _), gp@(Just _), ns@(Just _)) ->
-            f =<< mkGapPointApp (Config compFile cs rt cg tg fm mg lo gp ns)
-        (Just cs, rt@(Just _), _, _, _, _, _, _, _) -> do
+        (Just cs, rt@(Just _), cg@(Just _), tg@(Just _), fm@(Just _), mA@(Just _), mE@(Just _), mL@(Just _), mR@(Just _), mS@(Just _), lo@(Just _), gp@(Just _), ns@(Just _)) ->
+            f =<< mkGapPointApp (Config compFile cs rt cg tg fm mA mE mL mR mS lo gp ns)
+        (Just cs, rt@(Just _), _, _, _, _, _, _, _, _, _, _, _) -> do
             putStrLn "WARNING: Only serving comp inputs and task lengths"
-            f =<< mkTaskLengthApp (Config compFile cs rt Nothing Nothing Nothing Nothing Nothing Nothing Nothing)
-        (Just cs, _, _, _, _, _, _, _, _) -> do
+            f =<< mkTaskLengthApp (Config compFile cs rt Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing)
+        (Just cs, _, _, _, _, _, _, _, _, _, _, _, _) -> do
             putStrLn "WARNING: Only serving comp inputs"
-            f =<< mkCompInputApp (Config compFile cs Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing)
+            f =<< mkCompInputApp (Config compFile cs Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing)
     where
         -- NOTE: Add gzip with wai gzip middleware.
         -- SEE: https://github.com/haskell-servant/servant/issues/786
@@ -881,10 +932,10 @@ getTaskPilotTag ii pilotId = do
 
 getTaskReachStats :: Int -> AppT k IO ReachStats
 getTaskReachStats ii = do
-    vs' <- fmap Mask.flownMean <$> asks masking
-    ws' <- fmap Mask.flownStdDev <$> asks masking
-    xs' <- fmap Mask.reachMean <$> asks masking
-    ys' <- fmap Mask.reachStdDev <$> asks masking
+    vs' <- fmap Mask.flownMean <$> asks maskingReach
+    ws' <- fmap Mask.flownStdDev <$> asks maskingReach
+    xs' <- fmap Mask.reachMean <$> asks maskingReach
+    ys' <- fmap Mask.reachStdDev <$> asks maskingReach
     case (vs', ws', xs', ys') of
         (Just vs, Just ws, Just xs, Just ys) ->
             let f = drop (ii - 1) in
@@ -904,7 +955,7 @@ getTaskReachStats ii = do
 
 getTaskReach :: Int -> AppT k IO [(Pilot, TrackReach)]
 getTaskReach ii = do
-    xs' <- fmap reachRank <$> asks masking
+    xs' <- fmap reachRank <$> asks maskingReach
     case xs' of
         Just xs ->
             case drop (ii - 1) xs of
@@ -937,7 +988,7 @@ getTaskEffort ii = do
 
 getTaskArrival :: Int -> AppT k IO [(Pilot, TrackArrival)]
 getTaskArrival ii = do
-    xs' <- fmap arrivalRank <$> asks masking
+    xs' <- fmap arrivalRank <$> asks maskingArrival
     case xs' of
         Just xs ->
             case drop (ii - 1) xs of
@@ -948,7 +999,7 @@ getTaskArrival ii = do
 
 getTaskLead :: Int -> AppT k IO [(Pilot, TrackLead)]
 getTaskLead ii = do
-    xs' <- fmap leadRank <$> asks masking
+    xs' <- fmap leadRank <$> asks maskingLead
     case xs' of
         Just xs ->
             case drop (ii - 1) xs of
@@ -959,7 +1010,7 @@ getTaskLead ii = do
 
 getTaskTime :: Int -> AppT k IO [(Pilot, TrackSpeed)]
 getTaskTime ii = do
-    xs' <- fmap gsSpeed <$> asks masking
+    xs' <- fmap gsSpeed <$> asks maskingSpeed
     case xs' of
         Just xs ->
             case drop (ii - 1) xs of

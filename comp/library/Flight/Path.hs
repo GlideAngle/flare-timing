@@ -14,7 +14,11 @@ module Flight.Path
     , AlignTimeFile(..)
     , DiscardFurtherFile(..)
     , PegThenDiscardFile(..)
-    , MaskTrackFile(..)
+    , MaskArrivalFile(..)
+    , MaskEffortFile(..)
+    , MaskLeadFile(..)
+    , MaskReachFile(..)
+    , MaskSpeedFile(..)
     , LandOutFile(..)
     , GapPointFile(..)
     , CompDir(..)
@@ -27,7 +31,11 @@ module Flight.Path
     , compToScore
     , compToTaskLength
     , compToCross
-    , compToMask
+    , compToMaskArrival
+    , compToMaskEffort
+    , compToMaskLead
+    , compToMaskReach
+    , compToMaskSpeed
     , compToLand
     , compToPoint
     , crossToTag
@@ -118,8 +126,20 @@ newtype DiscardFurtherFile = DiscardFurtherFile FilePath
 -- | The path to a peg then discard file.
 newtype PegThenDiscardFile = PegThenDiscardFile FilePath
 
--- | The path to as mask track file.
-newtype MaskTrackFile = MaskTrackFile FilePath
+-- | The path to as mask arrival file.
+newtype MaskArrivalFile = MaskArrivalFile FilePath
+
+-- | The path to as mask effort file.
+newtype MaskEffortFile = MaskEffortFile FilePath
+
+-- | The path to as mask lead file.
+newtype MaskLeadFile = MaskLeadFile FilePath
+
+-- | The path to as mask reach file.
+newtype MaskReachFile = MaskReachFile FilePath
+
+-- | The path to as mask speed file.
+newtype MaskSpeedFile = MaskSpeedFile FilePath
 
 -- | The path to as land out file.
 newtype LandOutFile = LandOutFile FilePath
@@ -151,9 +171,25 @@ compToCross :: CompInputFile -> CrossZoneFile
 compToCross (CompInputFile p) =
     CrossZoneFile $ flip replaceExtension (ext CrossZone) $ dropExtension p
 
-compToMask :: CompInputFile -> MaskTrackFile
-compToMask (CompInputFile p) =
-    MaskTrackFile $ flip replaceExtension (ext MaskTrack) $ dropExtension p
+compToMaskArrival :: CompInputFile -> MaskArrivalFile
+compToMaskArrival (CompInputFile p) =
+    MaskArrivalFile $ flip replaceExtension (ext MaskArrival) $ dropExtension p
+
+compToMaskEffort :: CompInputFile -> MaskEffortFile
+compToMaskEffort (CompInputFile p) =
+    MaskEffortFile $ flip replaceExtension (ext MaskEffort) $ dropExtension p
+
+compToMaskLead :: CompInputFile -> MaskLeadFile
+compToMaskLead (CompInputFile p) =
+    MaskLeadFile $ flip replaceExtension (ext MaskLead) $ dropExtension p
+
+compToMaskReach :: CompInputFile -> MaskReachFile
+compToMaskReach (CompInputFile p) =
+    MaskReachFile $ flip replaceExtension (ext MaskReach) $ dropExtension p
+
+compToMaskSpeed :: CompInputFile -> MaskSpeedFile
+compToMaskSpeed (CompInputFile p) =
+    MaskSpeedFile $ flip replaceExtension (ext MaskSpeed) $ dropExtension p
 
 compToLand :: CompInputFile -> LandOutFile
 compToLand (CompInputFile p) =
@@ -221,7 +257,11 @@ data FileType
     | AlignTime
     | DiscardFurther
     | PegThenDiscard
-    | MaskTrack
+    | MaskArrival
+    | MaskEffort
+    | MaskLead
+    | MaskReach
+    | MaskSpeed
     | LandOut
     | GapPoint
 
@@ -239,7 +279,11 @@ ext UnpackTrack = ".unpack-track.csv"
 ext AlignTime = ".align-time.csv"
 ext DiscardFurther = ".discard-further.csv"
 ext PegThenDiscard = ".peg-then-discard.csv"
-ext MaskTrack = ".mask-track.yaml"
+ext MaskArrival = ".mask-arrival.yaml"
+ext MaskEffort = ".mask-effort.yaml"
+ext MaskLead = ".mask-lead.yaml"
+ext MaskReach = ".mask-reach.yaml"
+ext MaskSpeed = ".mask-speed.yaml"
 ext LandOut = ".land-out.yaml"
 ext GapPoint = ".gap-point.yaml"
 
@@ -257,7 +301,11 @@ ensureExt UnpackTrack = flip replaceExtensions "unpack-track.csv"
 ensureExt AlignTime = flip replaceExtensions "align-time.csv"
 ensureExt DiscardFurther = flip replaceExtensions "discard-further.csv"
 ensureExt PegThenDiscard = flip replaceExtensions "peg-then-discard.csv"
-ensureExt MaskTrack = flip replaceExtensions "mask-track.yaml"
+ensureExt MaskArrival = flip replaceExtensions "mask-arrival.yaml"
+ensureExt MaskEffort = flip replaceExtensions "mask-effort.yaml"
+ensureExt MaskLead = flip replaceExtensions "mask-lead.yaml"
+ensureExt MaskReach = flip replaceExtensions "mask-reach.yaml"
+ensureExt MaskSpeed = flip replaceExtensions "mask-speed.yaml"
 ensureExt LandOut = flip replaceExtensions "land-out.yaml"
 ensureExt GapPoint = flip replaceExtensions "gap-point.yaml"
 

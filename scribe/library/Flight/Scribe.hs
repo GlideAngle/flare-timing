@@ -5,7 +5,11 @@ module Flight.Scribe
     , readCrossing , writeCrossing
     , readTagging, writeTagging
     , readFraming, writeFraming
-    , readMasking, writeMasking
+    , readMaskingArrival, writeMaskingArrival
+    , readMaskingEffort, writeMaskingEffort
+    , readMaskingLead, writeMaskingLead
+    , readMaskingReach, writeMaskingReach
+    , readMaskingSpeed, writeMaskingSpeed
     , readLanding, writeLanding
     , readPointing, writePointing
     , module Flight.UnpackTrack
@@ -23,7 +27,8 @@ import Flight.Route (TaskTrack(..), cmpFields)
 import Flight.Track.Cross (Crossing)
 import Flight.Track.Tag (Tagging(..))
 import Flight.Track.Stop (Framing(..))
-import Flight.Track.Mask (Masking)
+import Flight.Track.Mask
+    (MaskingArrival, MaskingEffort, MaskingLead, MaskingReach, MaskingSpeed)
 import Flight.Track.Land (Landing)
 import Flight.Track.Point (Pointing, NormPointing)
 import Flight.Field (FieldOrdering(..))
@@ -34,7 +39,11 @@ import Flight.Comp
     , CrossZoneFile(..)
     , TagZoneFile(..)
     , PegFrameFile(..)
-    , MaskTrackFile(..)
+    , MaskArrivalFile(..)
+    , MaskEffortFile(..)
+    , MaskLeadFile(..)
+    , MaskReachFile(..)
+    , MaskSpeedFile(..)
     , LandOutFile(..)
     , GapPointFile(..)
     , CompSettings(..)
@@ -128,16 +137,67 @@ writeFraming (PegFrameFile path) stopTask = do
     let yaml = Y.encodePretty cfg stopTask
     BS.writeFile path yaml
 
-readMasking
+readMaskingArrival
     :: (MonadThrow m, MonadIO m)
-    => MaskTrackFile
-    -> m Masking
-readMasking (MaskTrackFile path) = do
-    contents <- liftIO $ BS.readFile path
-    decodeThrow contents
+    => MaskArrivalFile
+    -> m MaskingArrival
+readMaskingArrival (MaskArrivalFile path) =
+    liftIO $ BS.readFile path >>= decodeThrow
 
-writeMasking :: MaskTrackFile -> Masking -> IO ()
-writeMasking (MaskTrackFile path) maskTrack = do
+readMaskingEffort
+    :: (MonadThrow m, MonadIO m)
+    => MaskEffortFile
+    -> m MaskingEffort
+readMaskingEffort (MaskEffortFile path) =
+    liftIO $ BS.readFile path >>= decodeThrow
+
+readMaskingLead
+    :: (MonadThrow m, MonadIO m)
+    => MaskLeadFile
+    -> m MaskingLead
+readMaskingLead (MaskLeadFile path) =
+    liftIO $ BS.readFile path >>= decodeThrow
+
+readMaskingReach
+    :: (MonadThrow m, MonadIO m)
+    => MaskReachFile
+    -> m MaskingReach
+readMaskingReach (MaskReachFile path) =
+    liftIO $ BS.readFile path >>= decodeThrow
+
+readMaskingSpeed
+    :: (MonadThrow m, MonadIO m)
+    => MaskSpeedFile
+    -> m MaskingSpeed
+readMaskingSpeed (MaskSpeedFile path) =
+    liftIO $ BS.readFile path >>= decodeThrow
+
+writeMaskingArrival :: MaskArrivalFile -> MaskingArrival -> IO ()
+writeMaskingArrival (MaskArrivalFile path) maskTrack = do
+    let cfg = Y.setConfCompare (fieldOrder maskTrack) Y.defConfig
+    let yaml = Y.encodePretty cfg maskTrack
+    BS.writeFile path yaml
+
+writeMaskingEffort :: MaskEffortFile -> MaskingEffort -> IO ()
+writeMaskingEffort (MaskEffortFile path) maskTrack = do
+    let cfg = Y.setConfCompare (fieldOrder maskTrack) Y.defConfig
+    let yaml = Y.encodePretty cfg maskTrack
+    BS.writeFile path yaml
+
+writeMaskingLead :: MaskLeadFile -> MaskingLead -> IO ()
+writeMaskingLead (MaskLeadFile path) maskTrack = do
+    let cfg = Y.setConfCompare (fieldOrder maskTrack) Y.defConfig
+    let yaml = Y.encodePretty cfg maskTrack
+    BS.writeFile path yaml
+
+writeMaskingReach :: MaskReachFile -> MaskingReach -> IO ()
+writeMaskingReach (MaskReachFile path) maskTrack = do
+    let cfg = Y.setConfCompare (fieldOrder maskTrack) Y.defConfig
+    let yaml = Y.encodePretty cfg maskTrack
+    BS.writeFile path yaml
+
+writeMaskingSpeed :: MaskSpeedFile -> MaskingSpeed -> IO ()
+writeMaskingSpeed (MaskSpeedFile path) maskTrack = do
     let cfg = Y.setConfCompare (fieldOrder maskTrack) Y.defConfig
     let yaml = Y.encodePretty cfg maskTrack
     BS.writeFile path yaml

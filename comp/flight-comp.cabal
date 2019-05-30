@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 260066bf759f14c5fe971cb64a095e582c31641c99ea6e52aba51a20983169bb
+-- hash: a2b04d9f0ebb946da84d04573564cf2caf53cb8798ee0957eb3d13ac305c4469
 
 name:           flight-comp
 version:        0.1.0
@@ -48,6 +48,12 @@ library
   other-modules:
       Flight.Path
       Flight.Pilot
+      Flight.Track.Mask.Arrival
+      Flight.Track.Mask.Cmp
+      Flight.Track.Mask.Effort
+      Flight.Track.Mask.Lead
+      Flight.Track.Mask.Reach
+      Flight.Track.Mask.Speed
       Paths_flight_comp
   hs-source-dirs:
       library
@@ -98,6 +104,12 @@ test-suite comp
       Flight.Track.Land
       Flight.Track.Lead
       Flight.Track.Mask
+      Flight.Track.Mask.Arrival
+      Flight.Track.Mask.Cmp
+      Flight.Track.Mask.Effort
+      Flight.Track.Mask.Lead
+      Flight.Track.Mask.Reach
+      Flight.Track.Mask.Speed
       Flight.Track.Place
       Flight.Track.Point
       Flight.Track.Speed
@@ -160,6 +172,12 @@ test-suite doctest
       Flight.Track.Land
       Flight.Track.Lead
       Flight.Track.Mask
+      Flight.Track.Mask.Arrival
+      Flight.Track.Mask.Cmp
+      Flight.Track.Mask.Effort
+      Flight.Track.Mask.Lead
+      Flight.Track.Mask.Reach
+      Flight.Track.Mask.Speed
       Flight.Track.Place
       Flight.Track.Point
       Flight.Track.Speed
