@@ -430,88 +430,6 @@ writeMask
                         (includeTask selectTasks)
                         (catMaybes <$> rowTicks)
 
-            let dsNigh :: [[(Pilot, TrackDistance Nigh)]] =
-                    compNigh lsWholeTask zsTaskTicked dsNighRows
-
-            let rsNigh :: [[(Pilot, TrackReach)]] =
-                    [
-                        catMaybes
-                        $
-                            (\case
-                                (_, Nothing) -> Nothing
-                                (a, Just b) -> Just (a, b))
-                            . (fmap (\TrackDistance{made} -> do
-                                    TaskDistance b <- dBest
-                                    td@(TaskDistance d) <- made
-
-                                    let bd :: BestDistance (Quantity Double [u| km |]) =
-                                            BestDistance $ convert b
-                                    let pd :: PilotDistance (Quantity Double [u| km |]) =
-                                            PilotDistance $ convert d
-
-                                    return
-                                        TrackReach
-                                            { reach = td
-                                            , frac = linearFraction bd pd
-                                            }))
-                            <$> ds
-
-                    | dBest <- dsBest
-                    | ds <- dsNigh
-                    ]
-
-            let rsArrive :: [[(Pilot, TrackReach)]] =
-                    [
-                        case dBest of
-                            Nothing -> []
-                            Just td@(TaskDistance b) ->
-                                let bd :: BestDistance (Quantity Double [u| km |]) =
-                                        BestDistance $ convert b
-
-                                    pd :: PilotDistance (Quantity Double [u| km |]) =
-                                        PilotDistance $ convert b
-
-                                    tr =
-                                        TrackReach
-                                            { reach = td
-                                            , frac = linearFraction bd pd
-                                            }
-                                in (flip (,)) tr <$> ps
-
-                    | dBest <- dsBest
-                    | ps <- psArriving
-                    ]
-
-            let rss :: [[(Pilot, TrackReach)]] =
-                    [
-                        sortOn
-                            ( negate
-                            . (\TrackReach{frac = LinearFraction lf} -> lf)
-                            . snd
-                            )
-                        $ xs ++ ys
-                    | xs <- rsArrive
-                    | ys <- rsNigh
-                    ]
-
-            let rssRaw =
-                    [ V.fromList
-                        [ unQuantity r | (_, TrackReach{reach = TaskDistance r}) <- rs]
-                    | rs <- rss
-                    ]
-
-            let rsMean :: [QTaskDistance Double [u| m |]] = TaskDistance . MkQuantity . mean <$> rssRaw
-            let rsStdDev  :: [QTaskDistance Double [u| m |]] = TaskDistance . MkQuantity . stdDev <$> rssRaw
-
-            let fssRaw =
-                    [ V.fromList
-                        [ unQuantity $ max r (convert dMin) | (_, TrackReach{reach = TaskDistance r}) <- rs]
-                    | rs <- rss
-                    ]
-
-            let fsMean :: [QTaskDistance Double [u| m |]] = TaskDistance . MkQuantity . mean <$> fssRaw
-            let fsStdDev  :: [QTaskDistance Double [u| m |]] = TaskDistance . MkQuantity . stdDev <$> fssRaw
-
             writeMaskingArrival
                 (compToMaskArrival compFile)
                 MaskingArrival
@@ -538,15 +456,7 @@ writeMask
 
             writeMaskingReach
                 (compToMaskReach compFile)
-                MaskingReach
-                    { bestReach = dsBest
-                    , flownMean = fsMean
-                    , flownStdDev = fsStdDev
-                    , reachMean = rsMean
-                    , reachStdDev = rsStdDev
-                    , reachRank = rss
-                    , nigh = dsNigh
-                    }
+                (maskReach free lsWholeTask zsTaskTicked dsBest dsNighRows psArriving)
 
             writeMaskingSpeed
                 (compToMaskSpeed compFile)
@@ -761,7 +671,108 @@ rankByArrival xsDf xsDfNt =
             partition (\(_, FlightStats{statTimeRank = r}) -> isJust r)
             $ xsDf ++ xsDfNt
 
-rankArrival :: (Integer -> ArrivalPlacing) -> Integer -> FlightStats _ -> FlightStats _ 
+rankArrival :: (Integer -> ArrivalPlacing) -> Integer -> FlightStats _ -> FlightStats _
 rankArrival _ _ x@FlightStats{statTimeRank = Nothing} = x
 rankArrival f ii x@FlightStats{statTimeRank = Just y} =
     x{statTimeRank = Just y{positionAtEss = Just $ f ii}}
+
+maskReach
+    :: MinimumDistance (Quantity Double [u| km |])
+    -> [Maybe (QTaskDistance Double [u| m |])]
+    -> [Map Pilot (DashPathInputs k)]
+    -> [Maybe (QTaskDistance Double [u| m |])]
+    -> [[Maybe (Pilot, Time.TimeRow)]]
+    -> [[Pilot]]
+    -> MaskingReach
+maskReach (MinimumDistance dMin) lsWholeTask zsTaskTicked dsBest dsNighRows psArriving =
+    MaskingReach
+        { bestReach = dsBest
+        , flownMean = fsMean
+        , flownStdDev = fsStdDev
+        , reachMean = rsMean
+        , reachStdDev = rsStdDev
+        , reachRank = rss
+        , nigh = dsNigh
+        }
+    where
+        dsNigh :: [[(Pilot, TrackDistance Nigh)]] =
+            compNigh lsWholeTask zsTaskTicked dsNighRows
+
+        rsNigh :: [[(Pilot, TrackReach)]] =
+            [
+                catMaybes
+                $
+                    (\case
+                        (_, Nothing) -> Nothing
+                        (a, Just b) -> Just (a, b))
+                    . (fmap (\TrackDistance{made} -> do
+                            TaskDistance b <- dBest
+                            td@(TaskDistance d) <- made
+
+                            let bd :: BestDistance (Quantity Double [u| km |]) =
+                                    BestDistance $ convert b
+                            let pd :: PilotDistance (Quantity Double [u| km |]) =
+                                    PilotDistance $ convert d
+
+                            return
+                                TrackReach
+                                    { reach = td
+                                    , frac = linearFraction bd pd
+                                    }))
+                    <$> ds
+
+            | dBest <- dsBest
+            | ds <- dsNigh
+            ]
+
+        rsArrive :: [[(Pilot, TrackReach)]] =
+            [
+                case dBest of
+                    Nothing -> []
+                    Just td@(TaskDistance b) ->
+                        let bd :: BestDistance (Quantity Double [u| km |]) =
+                                BestDistance $ convert b
+
+                            pd :: PilotDistance (Quantity Double [u| km |]) =
+                                PilotDistance $ convert b
+
+                            tr =
+                                TrackReach
+                                    { reach = td
+                                    , frac = linearFraction bd pd
+                                    }
+                        in (flip (,)) tr <$> ps
+
+            | dBest <- dsBest
+            | ps <- psArriving
+            ]
+
+        rss :: [[(Pilot, TrackReach)]] =
+            [
+                sortOn
+                    ( negate
+                    . (\TrackReach{frac = LinearFraction lf} -> lf)
+                    . snd
+                    )
+                $ xs ++ ys
+            | xs <- rsArrive
+            | ys <- rsNigh
+            ]
+
+        rssRaw =
+            [ V.fromList
+                [ unQuantity r | (_, TrackReach{reach = TaskDistance r}) <- rs]
+            | rs <- rss
+            ]
+
+        rsMean :: [QTaskDistance Double [u| m |]] = TaskDistance . MkQuantity . mean <$> rssRaw
+        rsStdDev  :: [QTaskDistance Double [u| m |]] = TaskDistance . MkQuantity . stdDev <$> rssRaw
+
+        fssRaw =
+            [ V.fromList
+                [ unQuantity $ max r (convert dMin) | (_, TrackReach{reach = TaskDistance r}) <- rs]
+            | rs <- rss
+            ]
+
+        fsMean :: [QTaskDistance Double [u| m |]] = TaskDistance . MkQuantity . mean <$> fssRaw
+        fsStdDev  :: [QTaskDistance Double [u| m |]] = TaskDistance . MkQuantity . stdDev <$> fssRaw
