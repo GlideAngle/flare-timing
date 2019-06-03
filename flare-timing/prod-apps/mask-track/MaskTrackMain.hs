@@ -33,7 +33,6 @@ import Flight.Comp
     , PilotName(..)
     , Pilot(..)
     , PilotGroup(didFlyNoTracklog)
-    , TaskStop(..)
     , Task(..)
     , IxTask(..)
     , TrackFileFail(..)
@@ -74,7 +73,6 @@ import Flight.Track.Distance
     , Clamp(..), Land
     )
 import qualified Flight.Track.Distance as Track (awardByFrac)
-import Flight.Track.Mask (RaceTime(..))
 import Flight.Track.Speed (pilotTime)
 import Flight.Kml (LatLngAlt(..), MarkedFixes(..))
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
@@ -82,7 +80,7 @@ import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
 import Flight.Lookup.Stop (ScoredLookup(..), stopFlying)
 import qualified Flight.Lookup as Lookup
-    ( scoredTimeRange, arrivalRank, ticked, compRoutes, compRaceTimes
+    ( scoredTimeRange, arrivalRank, ticked, compRoutes
     , pilotTime, pilotEssTime
     )
 import Flight.Lookup.Tag
@@ -111,7 +109,7 @@ import MaskTrackOptions (description)
 import Stats (TimeStats(..), FlightStats(..), DashPathInputs(..), nullStats, altToAlt)
 import MaskArrival (maskArrival)
 import MaskEffort (maskEffort)
-import MaskLead (maskLead)
+import MaskLead (maskLead, raceTimes)
 import MaskReach (maskReach)
 import MaskSpeed (maskSpeed)
 
@@ -329,30 +327,13 @@ writeMask
                     | pLs <- psLandingOut
                     ]
 
-            let raceTime =
-                    [ do
-                        rt@RaceTime{..} <- crt
-                        return $
-                            maybe
-                                rt
-                                (\stp ->
-                                    uncut . clipToCut $
-                                        FlyCut
-                                            { cut = Just (openTask, min stp closeTask)
-                                            , uncut = rt
-                                            })
-                                (retroactive <$> stopped task)
-
-                    | crt <- Lookup.compRaceTimes lookupTaskLeading iTasks tasks
-                    | task <- tasks
-                    ]
-
             -- NOTE: Leading point calculations use the reach without altitude
             -- bonus applied.
             let nullAltBonuses :: [TimeToTick] = const copyTimeToTick <$> tasks
             let nullTickToTicks :: [TickToTick] = const id <$> tasks
 
             let (gsBestTime, maskSpeed') = maskSpeed lsTask' yss
+            let raceTimes' = raceTimes lookupTaskLeading iTasks tasks
 
             rowsLeadingStep :: [[(Pilot, [Time.TickRow])]]
                 <- readCompLeading
@@ -363,14 +344,14 @@ writeMask
                         (includeTask selectTasks)
                         (IxTask <$> [1 .. ])
                         (speedSectionToLeg . speedSection <$> tasks)
-                        raceTime
+                        raceTimes'
                         pilots
 
             let (dsBest, rowTicks, maskLead') =
                     maskLead
                         free
                         tasks
-                        raceTime
+                        raceTimes'
                         lsTask'
                         psArriving
                         psLandingOut

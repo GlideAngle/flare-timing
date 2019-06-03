@@ -1,17 +1,22 @@
 ﻿{-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
-module MaskLead (maskLead) where
+module MaskLead (maskLead, raceTimes) where
 
 import Data.Maybe (catMaybes)
 import Data.UnitsOfMeasure (u, convert, toRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
+import Flight.Clip (FlyCut(..), FlyClipping(..))
 import Flight.Comp
     ( Pilot(..)
+    , IxTask(..)
     , Task(..)
+    , TaskStop(..)
     , TaskRouteDistance(..)
     , MadeGoal(..)
     , LandedOut(..)
     )
+import qualified Flight.Lookup as Lookup (compRaceTimes)
+import Flight.Lookup.Tag (TaskLeadingLookup(..))
 import Flight.Distance
     (QTaskDistance, TaskDistance(..), unTaskDistanceAsKm)
 import Flight.Comp.Distance (compDistance)
@@ -20,6 +25,25 @@ import qualified Flight.Track.Time as Time (TickRow(..))
 import Flight.Track.Lead (compLeading)
 import Flight.Track.Mask (MaskingLead(..), RaceTime(..))
 import Flight.Score (BestTime(..), MinimumDistance(..), LengthOfSs(..), areaToCoef)
+
+raceTimes :: TaskLeadingLookup -> [IxTask] -> [Task k] -> [Maybe RaceTime]
+raceTimes lookupTaskLeading iTasks tasks =
+    [ do
+        rt@RaceTime{..} <- crt
+        return $
+            maybe
+                rt
+                (\stp ->
+                    uncut . clipToCut $
+                        FlyCut
+                            { cut = Just (openTask, min stp closeTask)
+                            , uncut = rt
+                            })
+                (retroactive <$> stopped task)
+
+    | crt <- Lookup.compRaceTimes lookupTaskLeading iTasks tasks
+    | task <- tasks
+    ]
 
 maskLead
     :: (MinimumDistance (Quantity Double [u| km |]))
