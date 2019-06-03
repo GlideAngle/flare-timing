@@ -4,8 +4,8 @@ module Flight.DiscardFurther
     , writePegThenDiscard
     , readCompBestDistances
     , readCompLeading
-    , readAlignTimeWriteDiscardFurther
-    , readAlignTimeWritePegThenDiscard
+    , readPilotAlignTimeWriteDiscardFurther
+    , readPilotAlignTimeWritePegThenDiscard
     ) where
 
 import Control.Exception.Safe (MonadThrow, throwString)
@@ -110,7 +110,7 @@ readPilotBestDistance compFile (IxTask iTask) pilot = do
         (_, AlignTimeFile file) = alignTimePath dir iTask pilot
         (DiscardFurtherDir dOut) = discardFurtherDir dir iTask
 
-readAlignTimeWriteDiscardFurther
+readPilotAlignTimeWriteDiscardFurther
     :: TimeToTick
     -> TickToTick
     -> RoutesLookupTaskDistance
@@ -121,8 +121,8 @@ readAlignTimeWriteDiscardFurther
     -> Maybe RaceTime
     -> Pilot
     -> IO ()
-readAlignTimeWriteDiscardFurther _ _ _ _ _ _ _ Nothing _ = return ()
-readAlignTimeWriteDiscardFurther
+readPilotAlignTimeWriteDiscardFurther _ _ _ _ _ _ _ Nothing _ = return ()
+readPilotAlignTimeWriteDiscardFurther
     timeToTick
     tickToTick
     (RoutesLookupTaskDistance lookupTaskLength)
@@ -143,7 +143,7 @@ readAlignTimeWriteDiscardFurther
         down = LeadAllDown <$> leadAllDown raceTime
         arrival = LeadArrival <$> leadArrival raceTime
 
-readAlignTimeWritePegThenDiscard
+readPilotAlignTimeWritePegThenDiscard
     :: TimeToTick
     -> TickToTick
     -> RoutesLookupTaskDistance
@@ -154,8 +154,8 @@ readAlignTimeWritePegThenDiscard
     -> Maybe RaceTime
     -> Pilot
     -> IO ()
-readAlignTimeWritePegThenDiscard _ _ _ _ _ _ _ Nothing _ = return ()
-readAlignTimeWritePegThenDiscard
+readPilotAlignTimeWritePegThenDiscard _ _ _ _ _ _ _ Nothing _ = return ()
+readPilotAlignTimeWritePegThenDiscard
     timeToTick
     tickToTick
     (RoutesLookupTaskDistance lookupTaskLength)

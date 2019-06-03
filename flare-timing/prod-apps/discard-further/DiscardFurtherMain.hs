@@ -53,8 +53,8 @@ import Flight.Track.Mask (RaceTime(..), racing)
 import Flight.Mask (checkTracks)
 import Flight.Scribe
     ( readComp, readRoute, readTagging
-    , readAlignTimeWriteDiscardFurther
-    , readAlignTimeWritePegThenDiscard
+    , readPilotAlignTimeWriteDiscardFurther
+    , readPilotAlignTimeWritePegThenDiscard
     )
 import Flight.Lookup.Route (routeLength)
 import Flight.Lookup.Tag (TaskLeadingLookup(..), tagTaskLeading)
@@ -204,7 +204,7 @@ filterTime
             sequence_
                 [
                     mapM_
-                        (readAlignTimeWriteDiscardFurther
+                        (readPilotAlignTimeWriteDiscardFurther
                             copyTimeToTick
                             id
                             lengths
@@ -234,7 +234,7 @@ filterTime
             sequence_
                 [
                     mapM_
-                        (readAlignTimeWritePegThenDiscard
+                        (readPilotAlignTimeWritePegThenDiscard
                             timeToTick
                             id
                             lengths
