@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e833815af9857b3d1d218ff053c4e892535ea52d8505c407792ba605526c5727
+-- hash: a87ed5b4539673a94305253f6260f1c9184565983e6abc0e872c5a45c1542abf
 
 name:           flare-timing
 version:        0.1.0
@@ -293,6 +293,7 @@ executable land-out
 executable mask-track
   main-is: MaskTrackMain.hs
   other-modules:
+      Mask.Mask
       MaskArrival
       MaskEffort
       MaskLead
