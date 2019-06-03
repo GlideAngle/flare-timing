@@ -5,14 +5,13 @@ import Prelude hiding (last)
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
 import Data.Function (on)
-import Data.Maybe (fromMaybe, catMaybes, isJust)
+import Data.Maybe (catMaybes, isJust)
 import Data.List (sortOn, groupBy, partition)
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map (fromList)
 import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
-import Control.Arrow (second)
 import Control.Lens ((^?), element)
 import Control.Exception.Safe (MonadThrow, catchIO)
 import Control.Monad (join)
@@ -22,7 +21,6 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import System.FilePath (takeFileName)
 
 import Flight.Clip (FlyCut(..), FlyClipping(..))
-import Flight.LatLng (QAlt)
 import Flight.Route (OptimalRoute(..))
 import qualified Flight.Comp as Cmp (Nominal(..), DfNoTrackPilot(..))
 import Flight.Comp
@@ -85,10 +83,9 @@ import Flight.Track.Mask
     ( MaskingArrival(..)
     , MaskingEffort(..)
     , MaskingLead(..)
-    , MaskingSpeed(..)
     , RaceTime(..)
     )
-import Flight.Track.Speed (TrackSpeed(..), pilotTime)
+import Flight.Track.Speed (pilotTime)
 import Flight.Kml (LatLngAlt(..), MarkedFixes(..))
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
@@ -115,16 +112,15 @@ import Flight.Scribe
     , readCompLeading, readCompBestDistances, readCompTimeRows
     )
 import Flight.Lookup.Route (routeLength)
-import qualified Flight.Score as Gap (bestTime')
 import Flight.Score
-    ( PilotsAtEss(..), ArrivalPlacing(..)
-    , BestTime(..), PilotTime(..), MinimumDistance(..), LengthOfSs(..)
-    , arrivalFraction, speedFraction, areaToCoef
+    ( PilotsAtEss(..), ArrivalPlacing(..), MinimumDistance(..), LengthOfSs(..)
+    , arrivalFraction, areaToCoef
     )
 import Flight.Span.Math (Math(..))
 import MaskTrackOptions (description)
 import Stats (TimeStats(..), FlightStats(..), DashPathInputs(..), nullStats, altToAlt)
 import MaskReach (maskReach)
+import MaskSpeed (maskSpeed)
 
 main :: IO ()
 main = do
@@ -321,21 +317,10 @@ writeMask
 
             -- Distances (ds) of the landout spot.
             let dsLand :: [[(Pilot, TrackDistance Land)]] = landDistances <$> yss
-            let dsAlt :: [[(Pilot, QAlt Double [u| m |])]] = landAltitudes <$> yss
 
             -- Arrivals (as).
             let as :: [[(Pilot, TrackArrival)]] = arrivals <$> yss
 
-            -- Velocities (vs).
-            let ssVs :: [Maybe (BestTime (Quantity Double [u| h |]), [(Pilot, TrackSpeed)])] =
-                    times ssTime <$> yss
-
-            let gsVs :: [Maybe (BestTime (Quantity Double [u| h |]), [(Pilot, TrackSpeed)])] =
-                    times gsTime <$> yss
-
-            -- Times (ts).
-            let ssBestTime = (fmap . fmap) fst ssVs
-            let gsBestTime = (fmap . fmap) fst gsVs
 
             -- For each task, for each pilot, the row closest to goal.
             rows :: [[Maybe (Pilot, Time.TickRow)]]
@@ -398,6 +383,9 @@ writeMask
                     | ssLen <- lsSpeedSubset
                     ]
 
+
+            let (gsBestTime, maskSpeed') = maskSpeed lsTask' yss
+
             let (dsSumArriving, dsSumLandingOut, dsBest, rowTicks) =
                     compDistance
                         free
@@ -454,17 +442,7 @@ writeMask
                 (compToMaskReach compFile)
                 (maskReach free lsWholeTask zsTaskTicked dsBest dsNighRows psArriving)
 
-            writeMaskingSpeed
-                (compToMaskSpeed compFile)
-                MaskingSpeed
-                    { ssBestTime = ssBestTime
-                    , gsBestTime = gsBestTime
-                    , taskDistance = lsWholeTask
-                    , taskSpeedDistance = lsSpeedSubset
-                    , ssSpeed = fromMaybe [] <$> (fmap . fmap) snd ssVs
-                    , gsSpeed = fromMaybe [] <$> (fmap . fmap) snd gsVs
-                    , altStopped = dsAlt
-                    }
+            writeMaskingSpeed (compToMaskSpeed compFile) maskSpeed'
 
 awardByFrac
     :: Clamp
@@ -487,11 +465,6 @@ includeTask tasks = if null tasks then const True else (`elem` tasks)
 landTaskTicked :: [(Pilot, FlightStats k)] -> [(Pilot, _)]
 landTaskTicked xs =
     (\(p, FlightStats{..}) -> (p, statDash)) <$> xs
-
-landAltitudes :: [(Pilot, FlightStats k)] -> [(Pilot, QAlt Double [u| m |])]
-landAltitudes xs =
-    catMaybes
-    $ fmap (\(p, FlightStats{..}) -> (p,) <$> statAlt) xs
 
 landDistances :: [(Pilot, FlightStats k)] -> [(Pilot, TrackDistance Land)]
 landDistances xs =
@@ -516,29 +489,6 @@ arrivals xs =
             TrackArrival
                 { rank = position
                 , frac = arrivalFraction pilots position
-                }
-
-times
-    :: (TimeStats -> PilotTime (Quantity Double [u| h |]))
-    -> [(Pilot, FlightStats k)]
-    -> Maybe (BestTime (Quantity Double [u| h |]), [(Pilot, TrackSpeed)])
-times f xs =
-    (\ bt -> (bt, sortOn (time . snd) $ second (g bt) <$> ys))
-    <$> Gap.bestTime' ts
-    where
-        ys :: [(Pilot, PilotTime (Quantity Double [u| h |]))]
-        ys =
-            catMaybes
-            $ (\(p, FlightStats{..}) -> (p,) . f <$> statTimeRank)
-            <$> xs
-
-        ts :: [PilotTime (Quantity Double [u| h |])]
-        ts = snd <$> ys
-
-        g best t =
-            TrackSpeed
-                { time = t
-                , frac = speedFraction best t
                 }
 
 check
