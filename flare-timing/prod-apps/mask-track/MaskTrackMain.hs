@@ -16,7 +16,7 @@ import Control.Lens ((^?), element)
 import Control.Exception.Safe (MonadThrow, catchIO)
 import Control.Monad (join)
 import Control.Monad.Except (MonadIO)
-import Data.UnitsOfMeasure ((-:), u, convert, toRational')
+import Data.UnitsOfMeasure ((-:), u, convert)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import System.FilePath (takeFileName)
 
@@ -39,8 +39,6 @@ import Flight.Comp
     , TrackFileFail(..)
     , RoutesLookupTaskDistance(..)
     , TaskRouteDistance(..)
-    , MadeGoal(..)
-    , LandedOut(..)
     , DfNoTrack(..)
     , StartGate(..)
     , StartEnd(..)
@@ -58,15 +56,13 @@ import Flight.Comp
     , ensureExt
     , pilotNamed
     )
-import Flight.Distance
-    (QTaskDistance, TaskDistance(..), unTaskDistanceAsKm)
+import Flight.Distance (QTaskDistance, TaskDistance(..))
 import Flight.Mask
     ( FnIxTask
     , checkTracks
     , togoAtLanding
     , madeAtLanding
     )
-import Flight.Comp.Distance (compDistance)
 import Flight.Track.Tag (Tagging)
 import Flight.Track.Place (reIndex)
 import Flight.Track.Time
@@ -78,8 +74,7 @@ import Flight.Track.Distance
     , Clamp(..), Land
     )
 import qualified Flight.Track.Distance as Track (awardByFrac)
-import Flight.Track.Lead (compLeading)
-import Flight.Track.Mask (MaskingLead(..), RaceTime(..))
+import Flight.Track.Mask (RaceTime(..))
 import Flight.Track.Speed (pilotTime)
 import Flight.Kml (LatLngAlt(..), MarkedFixes(..))
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
@@ -108,14 +103,15 @@ import Flight.Scribe
     )
 import Flight.Lookup.Route (routeLength)
 import Flight.Score
-    ( PilotsAtEss(..), ArrivalPlacing(..), MinimumDistance(..), LengthOfSs(..)
-    , arrivalFraction, areaToCoef
+    ( PilotsAtEss(..), ArrivalPlacing(..), MinimumDistance(..)
+    , arrivalFraction
     )
 import Flight.Span.Math (Math(..))
 import MaskTrackOptions (description)
 import Stats (TimeStats(..), FlightStats(..), DashPathInputs(..), nullStats, altToAlt)
 import MaskArrival (maskArrival)
 import MaskEffort (maskEffort)
+import MaskLead (maskLead)
 import MaskReach (maskReach)
 import MaskSpeed (maskSpeed)
 
@@ -243,7 +239,6 @@ writeMask
             -- Task lengths (ls).
             let lsTask' = Lookup.compRoutes routes iTasks
             let lsWholeTask = (fmap . fmap) wholeTaskDistance lsTask'
-            let lsSpeedSubset = (fmap . fmap) speedSubsetDistance lsTask'
 
             let yssDf :: [[(Pilot, FlightStats _)]] =
                     [ fmap
@@ -357,6 +352,8 @@ writeMask
             let nullAltBonuses :: [TimeToTick] = const copyTimeToTick <$> tasks
             let nullTickToTicks :: [TickToTick] = const id <$> tasks
 
+            let (gsBestTime, maskSpeed') = maskSpeed lsTask' yss
+
             rowsLeadingStep :: [[(Pilot, [Time.TickRow])]]
                 <- readCompLeading
                         nullAltBonuses
@@ -369,41 +366,17 @@ writeMask
                         raceTime
                         pilots
 
-            let (lcMin, lead) = compLeading rowsLeadingStep lsSpeedSubset tasks
-
-            let lcAreaToCoef =
-                    [
-                        areaToCoef
-                        . LengthOfSs
-                        . (\(TaskDistance d) -> convert . toRational' $ d)
-                        <$> ssLen
-                    | ssLen <- lsSpeedSubset
-                    ]
-
-
-            let (gsBestTime, maskSpeed') = maskSpeed lsTask' yss
-
-            let (dsSumArriving, dsSumLandingOut, dsBest, rowTicks) =
-                    compDistance
+            let (dsBest, rowTicks, maskLead') =
+                    maskLead
                         free
-                        lsWholeTask
-                        (MadeGoal <$> psArriving)
-                        (LandedOut <$> psLandingOut)
+                        tasks
+                        raceTime
+                        lsTask'
+                        psArriving
+                        psLandingOut
                         gsBestTime
                         rows
-
-            -- NOTE: This is the sum of distance over minimum distance.
-            let dsSum =
-                    [
-                        (fmap $ TaskDistance . MkQuantity)
-                        . (\case 0 -> Nothing; x -> Just x)
-                        . sum
-                        . fmap unTaskDistanceAsKm
-                        . catMaybes
-                        $ [aSum, lSum]
-                    | aSum <- dsSumArriving
-                    | lSum <- dsSumLandingOut
-                    ]
+                        rowsLeadingStep
 
             dsNighRows :: [[Maybe (Pilot, Time.TimeRow)]]
                 <- readCompTimeRows
@@ -417,15 +390,7 @@ writeMask
                 (compToMaskEffort compFile)
                 (maskEffort dsBest dsLand)
 
-            writeMaskingLead
-                (compToMaskLead compFile)
-                MaskingLead
-                    { raceTime = raceTime
-                    , sumDistance = dsSum
-                    , leadAreaToCoef = lcAreaToCoef
-                    , leadCoefMin = lcMin
-                    , leadRank = lead
-                    }
+            writeMaskingLead (compToMaskLead compFile) maskLead'
 
             writeMaskingReach
                 (compToMaskReach compFile)
