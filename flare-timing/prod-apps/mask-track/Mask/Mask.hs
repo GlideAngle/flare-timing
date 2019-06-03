@@ -140,15 +140,13 @@ writeMask
                     (includeTask selectTasks)
                     ((fmap . fmap) fst dsLand)
 
-            -- NOTE: Leading point calculations use the reach without altitude
-            -- bonus applied.
-            let nullAltBonuses :: [TimeToTick] = const copyTimeToTick <$> tasks
-            let nullTickToTicks :: [TickToTick] = const id <$> tasks
-
             let (gsBestTime, maskSpeed') = maskSpeed lsTask' yss
             let raceTimes' = raceTimes lookupTaskLeading iTasks tasks
 
-            rowsLeadingStep :: [[(Pilot, [Time.TickRow])]]
+            let nullAltBonuses :: [TimeToTick] = const copyTimeToTick <$> tasks
+            let nullTickToTicks :: [TickToTick] = const id <$> tasks
+
+            nullAltRows :: [[(Pilot, [Time.TickRow])]]
                 <- readCompLeading
                         nullAltBonuses
                         nullTickToTicks
@@ -160,7 +158,7 @@ writeMask
                         raceTimes'
                         pilots
 
-            let (dsBest, rowTicks, maskLead') =
+            let (dsNullAltBest, nullAltRowTicks, nullAltLead) =
                     maskLead
                         free
                         tasks
@@ -170,27 +168,31 @@ writeMask
                         psLandingOut
                         gsBestTime
                         rows
-                        rowsLeadingStep
+                        nullAltRows
 
             dsNighRows :: [[Maybe (Pilot, Time.TimeRow)]]
                 <- readCompTimeRows
                         compFile
                         (includeTask selectTasks)
-                        (catMaybes <$> rowTicks)
+                        (catMaybes <$> nullAltRowTicks)
 
+            -- NOTE: For time and leading points do not use altitude bonus distances.
+            writeMaskingSpeed (compToMaskSpeed compFile) maskSpeed'
+            writeMaskingLead (compToMaskLead compFile) nullAltLead
+
+            -- REVIEW: Waiting on feedback on GAP rule question about altitude
+            -- bonus distance pushing a flight to goal so that it arrives.
             writeMaskingArrival (compToMaskArrival compFile) (maskArrival as)
 
+            -- TODO: Use altitude bonus distance for effort.
             writeMaskingEffort
                 (compToMaskEffort compFile)
-                (maskEffort dsBest dsLand)
+                (maskEffort dsNullAltBest dsLand)
 
-            writeMaskingLead (compToMaskLead compFile) maskLead'
-
+            -- TODO: Use altitude bonus distance for reach.
             writeMaskingReach
                 (compToMaskReach compFile)
-                (maskReach free lsWholeTask zsTaskTicked dsBest dsNighRows psArriving)
-
-            writeMaskingSpeed (compToMaskSpeed compFile) maskSpeed'
+                (maskReach free lsWholeTask zsTaskTicked dsNullAltBest dsNighRows psArriving)
 
 includeTask :: [IxTask] -> IxTask -> Bool
 includeTask tasks = if null tasks then const True else (`elem` tasks)
