@@ -27,6 +27,7 @@ import Flight.Comp
     , compToMaskLead
     , compToMaskReach
     , compToMaskSpeed
+    , compToBonusReach
     , speedSectionToLeg
     )
 import Flight.Distance (QTaskDistance)
@@ -59,6 +60,7 @@ import Flight.Scribe
     , writeMaskingLead
     , writeMaskingReach
     , writeMaskingSpeed
+    , writeBonusReach
     , readCompLeading, readCompBestDistances, readCompTimeRows
     )
 import Flight.Span.Math (Math(..))
@@ -189,9 +191,14 @@ writeMask
                 (compToMaskEffort compFile)
                 (maskEffort dsNullAltBest dsLand)
 
-            -- TODO: Use altitude bonus distance for reach.
+            -- NOTE: The reach without altitude bonus distance.
             writeMaskingReach
                 (compToMaskReach compFile)
+                (maskReach free lsWholeTask zsTaskTicked dsNullAltBest dsNighRows psArriving)
+
+            -- NOTE: The reach with altitude bonus distance.
+            writeBonusReach
+                (compToBonusReach compFile)
                 (maskReach free lsWholeTask zsTaskTicked dsNullAltBest dsNighRows psArriving)
 
 includeTask :: [IxTask] -> IxTask -> Bool

@@ -19,6 +19,7 @@ module Flight.Path
     , MaskLeadFile(..)
     , MaskReachFile(..)
     , MaskSpeedFile(..)
+    , BonusReachFile(..)
     , LandOutFile(..)
     , GapPointFile(..)
     , CompDir(..)
@@ -36,6 +37,7 @@ module Flight.Path
     , compToMaskLead
     , compToMaskReach
     , compToMaskSpeed
+    , compToBonusReach
     , compToLand
     , compToPoint
     , crossToTag
@@ -117,7 +119,7 @@ newtype PegThenDiscardDir = PegThenDiscardDir FilePath
 -- | The path to as unpack track file.
 newtype UnpackTrackFile = UnpackTrackFile FilePath
 
--- | The path to as align time file.
+-- | The path to an align time file.
 newtype AlignTimeFile = AlignTimeFile FilePath
 
 -- | The path to a discard further file.
@@ -126,20 +128,23 @@ newtype DiscardFurtherFile = DiscardFurtherFile FilePath
 -- | The path to a peg then discard file.
 newtype PegThenDiscardFile = PegThenDiscardFile FilePath
 
--- | The path to as mask arrival file.
+-- | The path to a mask arrival file.
 newtype MaskArrivalFile = MaskArrivalFile FilePath
 
--- | The path to as mask effort file.
+-- | The path to a mask effort file.
 newtype MaskEffortFile = MaskEffortFile FilePath
 
--- | The path to as mask lead file.
+-- | The path to a mask lead file.
 newtype MaskLeadFile = MaskLeadFile FilePath
 
--- | The path to as mask reach file.
+-- | The path to a mask reach file.
 newtype MaskReachFile = MaskReachFile FilePath
 
 -- | The path to as mask speed file.
 newtype MaskSpeedFile = MaskSpeedFile FilePath
+
+-- | The path to a mask reach with altitude bonus distance file.
+newtype BonusReachFile = BonusReachFile FilePath
 
 -- | The path to as land out file.
 newtype LandOutFile = LandOutFile FilePath
@@ -190,6 +195,10 @@ compToMaskReach (CompInputFile p) =
 compToMaskSpeed :: CompInputFile -> MaskSpeedFile
 compToMaskSpeed (CompInputFile p) =
     MaskSpeedFile $ flip replaceExtension (ext MaskSpeed) $ dropExtension p
+
+compToBonusReach :: CompInputFile -> BonusReachFile
+compToBonusReach (CompInputFile p) =
+    BonusReachFile $ flip replaceExtension (ext BonusReach) $ dropExtension p
 
 compToLand :: CompInputFile -> LandOutFile
 compToLand (CompInputFile p) =
@@ -262,6 +271,7 @@ data FileType
     | MaskLead
     | MaskReach
     | MaskSpeed
+    | BonusReach
     | LandOut
     | GapPoint
 
@@ -284,6 +294,7 @@ ext MaskEffort = ".mask-effort.yaml"
 ext MaskLead = ".mask-lead.yaml"
 ext MaskReach = ".mask-reach.yaml"
 ext MaskSpeed = ".mask-speed.yaml"
+ext BonusReach = ".bonus-reach.yaml"
 ext LandOut = ".land-out.yaml"
 ext GapPoint = ".gap-point.yaml"
 
@@ -306,6 +317,7 @@ ensureExt MaskEffort = flip replaceExtensions "mask-effort.yaml"
 ensureExt MaskLead = flip replaceExtensions "mask-lead.yaml"
 ensureExt MaskReach = flip replaceExtensions "mask-reach.yaml"
 ensureExt MaskSpeed = flip replaceExtensions "mask-speed.yaml"
+ensureExt BonusReach = flip replaceExtensions "bonus-reach.yaml"
 ensureExt LandOut = flip replaceExtensions "land-out.yaml"
 ensureExt GapPoint = flip replaceExtensions "gap-point.yaml"
 

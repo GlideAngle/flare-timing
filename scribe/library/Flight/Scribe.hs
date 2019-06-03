@@ -10,6 +10,7 @@ module Flight.Scribe
     , readMaskingLead, writeMaskingLead
     , readMaskingReach, writeMaskingReach
     , readMaskingSpeed, writeMaskingSpeed
+    , readBonusReach, writeBonusReach
     , readLanding, writeLanding
     , readPointing, writePointing
     , module Flight.UnpackTrack
@@ -44,6 +45,7 @@ import Flight.Comp
     , MaskLeadFile(..)
     , MaskReachFile(..)
     , MaskSpeedFile(..)
+    , BonusReachFile(..)
     , LandOutFile(..)
     , GapPointFile(..)
     , CompSettings(..)
@@ -172,6 +174,13 @@ readMaskingSpeed
 readMaskingSpeed (MaskSpeedFile path) =
     liftIO $ BS.readFile path >>= decodeThrow
 
+readBonusReach
+    :: (MonadThrow m, MonadIO m)
+    => BonusReachFile
+    -> m MaskingReach
+readBonusReach (BonusReachFile path) =
+    liftIO $ BS.readFile path >>= decodeThrow
+
 writeMaskingArrival :: MaskArrivalFile -> MaskingArrival -> IO ()
 writeMaskingArrival (MaskArrivalFile path) maskTrack = do
     let cfg = Y.setConfCompare (fieldOrder maskTrack) Y.defConfig
@@ -192,6 +201,12 @@ writeMaskingLead (MaskLeadFile path) maskTrack = do
 
 writeMaskingReach :: MaskReachFile -> MaskingReach -> IO ()
 writeMaskingReach (MaskReachFile path) maskTrack = do
+    let cfg = Y.setConfCompare (fieldOrder maskTrack) Y.defConfig
+    let yaml = Y.encodePretty cfg maskTrack
+    BS.writeFile path yaml
+
+writeBonusReach :: BonusReachFile -> MaskingReach -> IO ()
+writeBonusReach (BonusReachFile path) maskTrack = do
     let cfg = Y.setConfCompare (fieldOrder maskTrack) Y.defConfig
     let yaml = Y.encodePretty cfg maskTrack
     BS.writeFile path yaml
