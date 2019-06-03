@@ -79,11 +79,7 @@ import Flight.Track.Distance
     )
 import qualified Flight.Track.Distance as Track (awardByFrac)
 import Flight.Track.Lead (compLeading)
-import Flight.Track.Mask
-    ( MaskingEffort(..)
-    , MaskingLead(..)
-    , RaceTime(..)
-    )
+import Flight.Track.Mask (MaskingLead(..), RaceTime(..))
 import Flight.Track.Speed (pilotTime)
 import Flight.Kml (LatLngAlt(..), MarkedFixes(..))
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
@@ -119,6 +115,7 @@ import Flight.Span.Math (Math(..))
 import MaskTrackOptions (description)
 import Stats (TimeStats(..), FlightStats(..), DashPathInputs(..), nullStats, altToAlt)
 import MaskArrival (maskArrival)
+import MaskEffort (maskEffort)
 import MaskReach (maskReach)
 import MaskSpeed (maskSpeed)
 
@@ -418,10 +415,7 @@ writeMask
 
             writeMaskingEffort
                 (compToMaskEffort compFile)
-                MaskingEffort
-                    { bestEffort = dsBest
-                    , land = dsLand
-                    }
+                (maskEffort dsBest dsLand)
 
             writeMaskingLead
                 (compToMaskLead compFile)
