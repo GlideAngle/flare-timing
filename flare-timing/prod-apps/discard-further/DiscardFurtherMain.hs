@@ -8,10 +8,9 @@ import System.Console.CmdArgs.Implicit (cmdArgs)
 import Formatting ((%), fprint)
 import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
-import Control.Monad (join, mapM_, when)
+import Control.Monad (join, mapM_)
 import Control.Exception.Safe (catchIO)
-import System.Directory (createDirectoryIfMissing)
-import System.FilePath ((</>), takeFileName)
+import System.FilePath (takeFileName)
 
 import Flight.Clip (FlyCut(..), FlyClipping(..))
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
@@ -23,15 +22,9 @@ import qualified Flight.Comp as Cmp (openClose)
 import Flight.Route (OptimalRoute(..))
 import Flight.Comp
     ( FileType(CompInput)
-    , DiscardFurtherDir(..)
-    , PegThenDiscardDir(..)
-    , AlignTimeDir(..)
     , CompInputFile(..)
     , TagZoneFile(..)
     , TaskLengthFile(..)
-    , AlignTimeFile(..)
-    , DiscardFurtherFile(..)
-    , PegThenDiscardFile(..)
     , CompSettings(..)
     , Comp(..)
     , TaskStop(..)
@@ -43,36 +36,28 @@ import Flight.Comp
     , StartEndDown(..)
     , StartEndDownMark
     , RoutesLookupTaskDistance(..)
-    , TaskRouteDistance(..)
     , FirstLead(..)
     , FirstStart(..)
     , LastArrival(..)
     , LastDown(..)
-    , compFileToCompDir
     , compToTaskLength
     , compToCross
     , crossToTag
-    , discardFurtherDir
-    , pegThenDiscardDir
-    , alignTimePath
     , findCompInput
     , speedSectionToLeg
     , ensureExt
     , pilotNamed
     )
-import Flight.Track.Time
-    ( TimeToTick, TickToTick, LeadClose(..), LeadAllDown(..), LeadArrival(..)
-    , glideRatio, altBonusTimeToTick, copyTimeToTick, discard, allHeaders
-    )
+import Flight.Track.Time (TimeToTick, glideRatio, altBonusTimeToTick, copyTimeToTick)
 import Flight.Track.Mask (RaceTime(..), racing)
 import Flight.Mask (checkTracks)
 import Flight.Scribe
-    ( readComp, readRoute, readTagging, readAlignTime
-    , writeDiscardFurther, writePegThenDiscard
+    ( readComp, readRoute, readTagging
+    , readAlignTimeWriteDiscardFurther
+    , readAlignTimeWritePegThenDiscard
     )
 import Flight.Lookup.Route (routeLength)
 import Flight.Lookup.Tag (TaskLeadingLookup(..), tagTaskLeading)
-import Flight.Score (Leg(..))
 import DiscardFurtherOptions (description)
 
 main :: IO ()
@@ -275,69 +260,3 @@ checkAll = checkTracks $ \CompSettings{tasks} -> (\ _ _ _ -> ()) tasks
 
 includeTask :: [IxTask] -> IxTask -> Bool
 includeTask tasks = if null tasks then const True else (`elem` tasks)
-
-readAlignTimeWriteDiscardFurther
-    :: TimeToTick
-    -> TickToTick
-    -> RoutesLookupTaskDistance
-    -> CompInputFile
-    -> (IxTask -> Bool)
-    -> IxTask
-    -> (Int -> Leg)
-    -> Maybe RaceTime
-    -> Pilot
-    -> IO ()
-readAlignTimeWriteDiscardFurther _ _ _ _ _ _ _ Nothing _ = return ()
-readAlignTimeWriteDiscardFurther
-    timeToTick
-    tickToTick
-    (RoutesLookupTaskDistance lookupTaskLength)
-    compFile
-    selectTask
-    iTask@(IxTask i) toLeg (Just raceTime) pilot =
-    when (selectTask iTask) $ do
-    _ <- createDirectoryIfMissing True dOut
-    rows <- readAlignTime (AlignTimeFile (dIn </> file))
-    f . discard timeToTick tickToTick toLeg taskLength close down arrival . snd $ rows
-    where
-        f = writeDiscardFurther (DiscardFurtherFile $ dOut </> file) allHeaders
-        dir = compFileToCompDir compFile
-        (AlignTimeDir dIn, AlignTimeFile file) = alignTimePath dir i pilot
-        (DiscardFurtherDir dOut) = discardFurtherDir dir i
-        taskLength = (fmap wholeTaskDistance . ($ iTask)) =<< lookupTaskLength
-        close = LeadClose <$> leadClose raceTime
-        down = LeadAllDown <$> leadAllDown raceTime
-        arrival = LeadArrival <$> leadArrival raceTime
-
-readAlignTimeWritePegThenDiscard
-    :: TimeToTick
-    -> TickToTick
-    -> RoutesLookupTaskDistance
-    -> CompInputFile
-    -> (IxTask -> Bool)
-    -> IxTask
-    -> (Int -> Leg)
-    -> Maybe RaceTime
-    -> Pilot
-    -> IO ()
-readAlignTimeWritePegThenDiscard _ _ _ _ _ _ _ Nothing _ = return ()
-readAlignTimeWritePegThenDiscard
-    timeToTick
-    tickToTick
-    (RoutesLookupTaskDistance lookupTaskLength)
-    compFile
-    selectTask
-    iTask@(IxTask i) toLeg (Just raceTime) pilot =
-    when (selectTask iTask) $ do
-    _ <- createDirectoryIfMissing True dOut
-    rows <- readAlignTime (AlignTimeFile (dIn </> file))
-    f . discard timeToTick tickToTick toLeg taskLength close down arrival . snd $ rows
-    where
-        f = writePegThenDiscard (PegThenDiscardFile $ dOut </> file) allHeaders
-        dir = compFileToCompDir compFile
-        (AlignTimeDir dIn, AlignTimeFile file) = alignTimePath dir i pilot
-        (PegThenDiscardDir dOut) = pegThenDiscardDir dir i
-        taskLength = (fmap wholeTaskDistance . ($ iTask)) =<< lookupTaskLength
-        close = LeadClose <$> leadClose raceTime
-        down = LeadAllDown <$> leadAllDown raceTime
-        arrival = LeadArrival <$> leadArrival raceTime
