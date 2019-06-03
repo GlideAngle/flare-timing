@@ -80,8 +80,7 @@ import Flight.Track.Distance
 import qualified Flight.Track.Distance as Track (awardByFrac)
 import Flight.Track.Lead (compLeading)
 import Flight.Track.Mask
-    ( MaskingArrival(..)
-    , MaskingEffort(..)
+    ( MaskingEffort(..)
     , MaskingLead(..)
     , RaceTime(..)
     )
@@ -119,6 +118,7 @@ import Flight.Score
 import Flight.Span.Math (Math(..))
 import MaskTrackOptions (description)
 import Stats (TimeStats(..), FlightStats(..), DashPathInputs(..), nullStats, altToAlt)
+import MaskArrival (maskArrival)
 import MaskReach (maskReach)
 import MaskSpeed (maskSpeed)
 
@@ -414,12 +414,7 @@ writeMask
                         (includeTask selectTasks)
                         (catMaybes <$> rowTicks)
 
-            writeMaskingArrival
-                (compToMaskArrival compFile)
-                MaskingArrival
-                    { pilotsAtEss = PilotsAtEss . toInteger . length <$> as
-                    , arrivalRank = as
-                    }
+            writeMaskingArrival (compToMaskArrival compFile) (maskArrival as)
 
             writeMaskingEffort
                 (compToMaskEffort compFile)
