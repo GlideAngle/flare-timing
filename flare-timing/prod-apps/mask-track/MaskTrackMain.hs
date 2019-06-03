@@ -1,12 +1,9 @@
 ﻿{-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-import Prelude hiding (last)
 import System.Environment (getProgName)
 import System.Console.CmdArgs.Implicit (cmdArgs)
-import Data.Function (on)
-import Data.Maybe (catMaybes, isJust)
-import Data.List (sortOn, groupBy, partition)
+import Data.Maybe (catMaybes)
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map (fromList)
 import Formatting ((%), fprint)
@@ -14,15 +11,13 @@ import Formatting.Clock (timeSpecs)
 import System.Clock (getTime, Clock(Monotonic))
 import Control.Lens ((^?), element)
 import Control.Exception.Safe (MonadThrow, catchIO)
-import Control.Monad (join)
 import Control.Monad.Except (MonadIO)
-import Data.UnitsOfMeasure ((-:), u, convert)
-import Data.UnitsOfMeasure.Internal (Quantity(..))
+import Data.UnitsOfMeasure (u)
 import System.FilePath (takeFileName)
 
 import Flight.Clip (FlyCut(..), FlyClipping(..))
 import Flight.Route (OptimalRoute(..))
-import qualified Flight.Comp as Cmp (Nominal(..), DfNoTrackPilot(..))
+import qualified Flight.Comp as Cmp (Nominal(..))
 import Flight.Comp
     ( FileType(CompInput)
     , CompInputFile(..)
@@ -32,15 +27,11 @@ import Flight.Comp
     , CompSettings(..)
     , PilotName(..)
     , Pilot(..)
-    , PilotGroup(didFlyNoTracklog)
     , Task(..)
     , IxTask(..)
     , TrackFileFail(..)
     , RoutesLookupTaskDistance(..)
     , TaskRouteDistance(..)
-    , DfNoTrack(..)
-    , StartGate(..)
-    , StartEnd(..)
     , compToTaskLength
     , compToCross
     , compToMaskArrival
@@ -55,7 +46,7 @@ import Flight.Comp
     , ensureExt
     , pilotNamed
     )
-import Flight.Distance (QTaskDistance, TaskDistance(..))
+import Flight.Distance (QTaskDistance)
 import Flight.Mask
     ( FnIxTask
     , checkTracks
@@ -63,17 +54,10 @@ import Flight.Mask
     , madeAtLanding
     )
 import Flight.Track.Tag (Tagging)
-import Flight.Track.Place (reIndex)
-import Flight.Track.Time
-    (TimeToTick, TickToTick, AwardedVelocity(..), copyTimeToTick)
+import Flight.Track.Time (TimeToTick, TickToTick, copyTimeToTick)
 import qualified Flight.Track.Time as Time (TimeRow(..), TickRow(..))
 import Flight.Track.Arrival (TrackArrival(..))
-import Flight.Track.Distance
-    ( TrackDistance(..), AwardedDistance(..)
-    , Clamp(..), Land
-    )
-import qualified Flight.Track.Distance as Track (awardByFrac)
-import Flight.Track.Speed (pilotTime)
+import Flight.Track.Distance (TrackDistance(..), Land)
 import Flight.Kml (LatLngAlt(..), MarkedFixes(..))
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
@@ -100,18 +84,15 @@ import Flight.Scribe
     , readCompLeading, readCompBestDistances, readCompTimeRows
     )
 import Flight.Lookup.Route (routeLength)
-import Flight.Score
-    ( PilotsAtEss(..), ArrivalPlacing(..), MinimumDistance(..)
-    , arrivalFraction
-    )
 import Flight.Span.Math (Math(..))
 import MaskTrackOptions (description)
 import Stats (TimeStats(..), FlightStats(..), DashPathInputs(..), nullStats, altToAlt)
-import MaskArrival (maskArrival)
-import MaskEffort (maskEffort)
+import MaskArrival (maskArrival, arrivals)
+import MaskEffort (maskEffort, landDistances)
 import MaskLead (maskLead, raceTimes)
 import MaskReach (maskReach)
 import MaskSpeed (maskSpeed)
+import MaskPilots (maskPilots)
 
 main :: IO ()
 main = do
@@ -201,7 +182,7 @@ writeMask
     -> IO ()
 writeMask
     CompSettings
-        { nominal = Cmp.Nominal{free = free@(MinimumDistance dMin)}
+        { nominal = Cmp.Nominal{free}
         , tasks
         , pilotGroups
         }
@@ -219,98 +200,30 @@ writeMask
 
         Just fss -> do
 
-            let dfNtss = didFlyNoTracklog <$> pilotGroups
-
-            let fssDf =
-                    [ let ps = Cmp.pilot <$> dfNts in
-                      filter
-                          ( not
-                          . (`elem` ps)
-                          . (\case Left (p, _) -> p; Right (p, _) -> p))
-                          flights
-                    | flights <- fss
-                    | DfNoTrack dfNts <- dfNtss
-                    ]
-
             let iTasks = IxTask <$> [1 .. length fss]
 
             -- Task lengths (ls).
             let lsTask' = Lookup.compRoutes routes iTasks
             let lsWholeTask = (fmap . fmap) wholeTaskDistance lsTask'
 
-            let yssDf :: [[(Pilot, FlightStats _)]] =
-                    [ fmap
-                        (\case
-                            Left (p, _) -> (p, nullStats)
-                            Right (p, g) -> (p, g p))
-                        flights
-                    | flights <- fssDf
-                    ]
-
-            let yssDfNt :: [[(Pilot, FlightStats _)]] =
-                    [
-                        fmap
-                        (\Cmp.DfNoTrackPilot
-                            { pilot = p
-                            , awardedReach = dA
-                            , awardedVelocity = AwardedVelocity{ss, es}
-                            } ->
-                            let dm :: Quantity Double [u| m |] = convert dMin
-
-                                d = TaskDistance
-                                    <$> maybe
-                                        (Just dm)
-                                        (\dAward -> do
-                                            td <- lTask
-                                            let a = awardByFrac (Clamp True) td dAward
-
-                                            return $ max a dm)
-                                        dA
-
-                                sLand = madeAwarded <$> lTask <*> d
-
-                                sTime =
-                                    case (ss, es) of
-                                        (Just ss', Just es') ->
-                                            let se = StartEnd ss' es
-                                                ssT = pilotTime [StartGate ss'] se
-                                                gsT = pilotTime gates se
-                                            in
-                                                do
-                                                    ssT' <- ssT
-                                                    gsT' <- gsT
-                                                    return
-                                                        TimeStats
-                                                            { ssTime = ssT'
-                                                            , gsTime = gsT'
-                                                            , esMark = es'
-                                                            , positionAtEss = Nothing
-                                                            }
-                                        _ -> Nothing
-
-                            in (p, nullStats{statLand = sLand, statTimeRank = sTime}))
-                        dfNts
-                    | DfNoTrack dfNts <- dfNtss
-                    | lTask <- (fmap. fmap) wholeTaskDistance lsTask'
-                    | gates <- startGates <$> tasks
-                    ]
-
-            let yss =
-                    [ rankByArrival ysDf ysDfNt
-                    | ysDf <- yssDf
-                    | ysDfNt <- yssDfNt
-                    ]
-
-            -- Zones (zs) of the task and zones ticked.
-            let zsTaskTicked :: [Map Pilot _] =
-                    Map.fromList . landTaskTicked <$> yss
+            let yss = maskPilots free tasks lsTask' pilotGroups fss
 
             -- Distances (ds) of the landout spot.
             let dsLand :: [[(Pilot, TrackDistance Land)]] = landDistances <$> yss
+            let psLandingOut = (fmap . fmap) fst dsLand
 
             -- Arrivals (as).
             let as :: [[(Pilot, TrackArrival)]] = arrivals <$> yss
+            let psArriving = (fmap . fmap) fst as
 
+            let pilots =
+                    [ pAs ++ pLs
+                    | pAs <- psArriving
+                    | pLs <- psLandingOut
+                    ]
+
+            -- Zones (zs) of the task and zones ticked.
+            let zsTaskTicked :: [Map Pilot _] = Map.fromList . landTaskTicked <$> yss
 
             -- For each task, for each pilot, the row closest to goal.
             rows :: [[Maybe (Pilot, Time.TickRow)]]
@@ -318,14 +231,6 @@ writeMask
                     compFile
                     (includeTask selectTasks)
                     ((fmap . fmap) fst dsLand)
-
-            let psArriving = (fmap . fmap) fst as
-            let psLandingOut = (fmap . fmap) fst dsLand
-            let pilots =
-                    [ pAs ++ pLs
-                    | pAs <- psArriving
-                    | pLs <- psLandingOut
-                    ]
 
             -- NOTE: Leading point calculations use the reach without altitude
             -- bonus applied.
@@ -379,52 +284,12 @@ writeMask
 
             writeMaskingSpeed (compToMaskSpeed compFile) maskSpeed'
 
-awardByFrac
-    :: Clamp
-    -> QTaskDistance Double [u| m |]
-    -> AwardedDistance
-    -> Quantity Double [u| m |]
-awardByFrac c td a = convert $ Track.awardByFrac c td a
-
-madeAwarded :: QTaskDistance Double [u| m |] -> Land -> TrackDistance Land
-madeAwarded (TaskDistance td) d@(TaskDistance d') =
-    TrackDistance
-        { togo = Just . TaskDistance $ td -: d'
-        , made = Just d
-        }
-
 includeTask :: [IxTask] -> IxTask -> Bool
 includeTask tasks = if null tasks then const True else (`elem` tasks)
-
 
 landTaskTicked :: [(Pilot, FlightStats k)] -> [(Pilot, _)]
 landTaskTicked xs =
     (\(p, FlightStats{..}) -> (p, statDash)) <$> xs
-
-landDistances :: [(Pilot, FlightStats k)] -> [(Pilot, TrackDistance Land)]
-landDistances xs =
-    sortOn (togo . snd)
-    . catMaybes
-    $ fmap (\(p, FlightStats{..}) -> (p,) <$> statLand) xs
-
-arrivals :: [(Pilot, FlightStats k)] -> [(Pilot, TrackArrival)]
-arrivals xs =
-    sortOn (rank . snd) $ (fmap . fmap) f ys
-    where
-        ys :: [(Pilot, ArrivalPlacing)]
-        ys =
-            catMaybes
-            $ (\(p, FlightStats{..}) -> (p,) <$> (join $ positionAtEss <$> statTimeRank))
-            <$> xs
-
-        pilots :: PilotsAtEss
-        pilots = PilotsAtEss . toInteger $ length ys
-
-        f position =
-            TrackArrival
-                { rank = position
-                , frac = arrivalFraction pilots position
-                }
 
 check
     :: (MonadThrow m, MonadIO m)
@@ -518,41 +383,3 @@ flown' dTaskF flying math tags tasks iTask@(IxTask i) mf@MarkedFixes{mark0} p =
             case tasks ^? element (fromIntegral i - 1) of
                 Nothing -> Nothing
                 Just Task{..} -> speedSection
-
-rankByArrival
-    :: [(Pilot, FlightStats _)]
-    -> [(Pilot, FlightStats _)]
-    -> [(Pilot, FlightStats _)]
-rankByArrival xsDf xsDfNt =
-    case any isJust yTs of
-        False -> xsDf ++ xsDfNt
-        True ->
-            [ (rankArrival f ii ) <$> y
-            | (ii, ys) <-
-                        reIndex
-                        . zip [1..]
-                        . groupBy ((==) `on` (fmap Stats.esMark) . statTimeRank . snd)
-                        $ xs
-            , let f =
-                    if length ys == 1
-                        then ArrivalPlacing
-                        else (\x -> ArrivalPlacingEqual x (fromIntegral $ length ys))
-            , y <- ys
-            ]
-            ++ xsLandout
-    where
-        yTs = statTimeRank . snd <$> xsDfNt
-
-        xs :: [(Pilot, FlightStats _)]
-        xs =
-            sortOn ((fmap Stats.esMark) . statTimeRank . snd)
-            $ xsArrived
-
-        (xsArrived, xsLandout) =
-            partition (\(_, FlightStats{statTimeRank = r}) -> isJust r)
-            $ xsDf ++ xsDfNt
-
-rankArrival :: (Integer -> ArrivalPlacing) -> Integer -> FlightStats _ -> FlightStats _
-rankArrival _ _ x@FlightStats{statTimeRank = Nothing} = x
-rankArrival f ii x@FlightStats{statTimeRank = Just y} =
-    x{statTimeRank = Just y{positionAtEss = Just $ f ii}}
