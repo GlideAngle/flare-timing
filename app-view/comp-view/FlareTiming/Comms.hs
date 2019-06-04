@@ -27,6 +27,7 @@ module FlareTiming.Comms
     , getTaskPilotTag
     , getTaskReachStats
     , getTaskReach
+    , getTaskBonusReach
     , getTaskEffort
     , getTaskNormScore
     , getTaskArrival
@@ -163,6 +164,9 @@ getTaskReachStats = getIxTask "mask-track" "reach-stats"
 
 getTaskReach :: GetIxTask' t m [(Pilot, TrackReach)]
 getTaskReach = getIxTask "mask-track" "reach"
+
+getTaskBonusReach :: GetIxTask' t m [(Pilot, TrackReach)]
+getTaskBonusReach = getIxTask "mask-track" "bonus-reach"
 
 getTaskEffort :: GetIxTask' t m [(Pilot, TrackEffort)]
 getTaskEffort = getIxTask "land-out" "effort"

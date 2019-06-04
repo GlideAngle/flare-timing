@@ -10,25 +10,37 @@ import WireTypes.Pilot (Pilot(..))
 reachPlot
     :: MonadWidget t m
     => Dynamic t (Maybe [(Pilot, TrackReach)])
+    -> Dynamic t (Maybe [(Pilot, TrackReach)])
     -> m ()
-reachPlot rh =
+reachPlot reach' bonusReach' =
     elClass "div" "tile is-ancestor" $
         elClass "div" "tile is-12" $
             elClass "div" "tile" $
                 elClass "div" "tile is-parent" $ do
-                    _ <- dyn $ ffor rh (\case
-                            Nothing ->
-                                elClass "article" "tile is-child" $ do
-                                    elClass "p" "title" $ text "Time"
-                                    el "p" $ text "Loading reach ..."
+                    _ <- dyn $ ffor2 reach' bonusReach' (\reach bonusReach ->
+                            case (reach, bonusReach) of
+                                (Nothing, _) ->
+                                    elClass "article" "tile is-child" $ do
+                                        elClass "p" "title" $ text "Time"
+                                        el "p" $ text "Loading reach ..."
 
-                            Just [] ->
-                                elClass "article" "tile is-child notification is-warning" $ do
-                                    elClass "p" "title" $ text "Reach"
-                                    el "p" $ text "No pilots started. There are no distances reached."
+                                (_, Nothing) ->
+                                    elClass "article" "tile is-child" $ do
+                                        elClass "p" "title" $ text "Time"
+                                        el "p" $ text "Loading bonus reach ..."
 
-                            _ ->
-                                elClass "article" "tile is-child" $
-                                    V.reachPlot (fromMaybe [] <$> rh))
+                                (Just [], _) ->
+                                    elClass "article" "tile is-child notification is-warning" $ do
+                                        elClass "p" "title" $ text "Reach"
+                                        el "p" $ text "No pilots started. There are no distances reached."
+
+                                (_, Just []) ->
+                                    elClass "article" "tile is-child notification is-warning" $ do
+                                        elClass "p" "title" $ text "Reach"
+                                        el "p" $ text "No pilots started. There are no distances reached."
+
+                                _ ->
+                                    elClass "article" "tile is-child" $
+                                        V.reachPlot (fromMaybe [] <$> reach') (fromMaybe [] <$> bonusReach'))
 
                     return ()

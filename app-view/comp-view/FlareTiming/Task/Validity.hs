@@ -370,10 +370,11 @@ viewValidity
     -> Dynamic t (Maybe ValidityWorking)
     -> Dynamic t (Maybe ReachStats)
     -> Dynamic t (Maybe [(Pilot, TrackReach)])
+    -> Dynamic t (Maybe [(Pilot, TrackReach)])
     -> Dynamic t (Maybe TaskDistance)
     -> Dynamic t (Maybe [(Pilot, FlyingSection UTCTime)])
     -> m ()
-viewValidity utcOffset task vy vw reachStats reach td flyingTimes = do
+viewValidity utcOffset task vy vw reachStats reach _bonusReach td flyingTimes = do
     let (landedByStop, stillFlying) =
             splitDynPure
             $ ffor2 task (fromMaybe [] <$> flyingTimes) (\Task{stopped} ft ->
