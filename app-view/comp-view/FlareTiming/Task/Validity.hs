@@ -10,6 +10,8 @@ import Data.String (IsString)
 import Text.Printf (printf)
 import qualified Data.Text as T (Text, pack)
 import Data.List (partition)
+import Data.Map (Map)
+import qualified Data.Map.Strict as Map
 
 import qualified WireTypes.Validity as Vy
     ( Validity(..)
@@ -27,8 +29,8 @@ import WireTypes.ValidityWorking
     )
 import WireTypes.Cross (FlyingSection)
 import WireTypes.Route (TaskDistance(..), showTaskDistance)
-import WireTypes.Reach (TrackReach(..), ReachStats(..))
-import WireTypes.Point (PilotDistance(..), showPilotDistance)
+import WireTypes.Reach (TrackReach(..), ReachStats(..), ReachFraction(..))
+import WireTypes.Point (PilotDistance(..), showPilotDistance, showPilotDistanceDiff)
 import WireTypes.Pilot (Pilot(..))
 import WireTypes.Comp (Task(..), UtcOffset(..), TaskStop(..))
 import FlareTiming.Pilot (showPilotName)
@@ -374,7 +376,7 @@ viewValidity
     -> Dynamic t (Maybe TaskDistance)
     -> Dynamic t (Maybe [(Pilot, FlyingSection UTCTime)])
     -> m ()
-viewValidity utcOffset task vy vw reachStats reach _bonusReach td flyingTimes = do
+viewValidity utcOffset task vy vw reachStats reach bonusReach td flyingTimes = do
     let (landedByStop, stillFlying) =
             splitDynPure
             $ ffor2 task (fromMaybe [] <$> flyingTimes) (\Task{stopped} ft ->
@@ -413,6 +415,7 @@ viewValidity utcOffset task vy vw reachStats reach _bonusReach td flyingTimes = 
                         w
                         reachStats
                         (fromMaybe [] <$> reach)
+                        (fromMaybe [] <$> bonusReach)
                         d
                         landedByStop
                         stillFlying
@@ -620,11 +623,12 @@ viewStop
     -> ValidityWorking
     -> Dynamic t (Maybe ReachStats)
     -> Dynamic t [(Pilot, TrackReach)]
+    -> Dynamic t [(Pilot, TrackReach)]
     -> TaskDistance
     -> Dynamic t [(Pilot, FlyingSection UTCTime)]
     -> Dynamic t [(Pilot, FlyingSection UTCTime)]
     -> m ()
-viewStop _ Vy.Validity{stop = Nothing} _ _ _ _ _ _ = return ()
+viewStop _ Vy.Validity{stop = Nothing} _ _ _ _ _ _ _ = return ()
 viewStop
     utcOffset
     Vy.Validity{stop = Just v}
@@ -633,6 +637,7 @@ viewStop
         }
     reachStats
     reach
+    bonusReach
     td
     landedByStop
     stillFlying = do
@@ -722,7 +727,7 @@ viewStop
                                 elClass "p" "title" $ text "Reach"
                                 elClass "p" "subtitle" $ text "reach at stop"
                                 elClass "div" "content"
-                                    $ tablePilotReach reach
+                                    $ tablePilotReach reach bonusReach
     return ()
 
 tablePilotFlyingTimes
@@ -762,36 +767,77 @@ rowFlyingTimes tz p tm = do
 tablePilotReach
     :: MonadWidget t m
     => Dynamic t [(Pilot, TrackReach)]
+    -> Dynamic t [(Pilot, TrackReach)]
     -> m ()
-tablePilotReach xs = do
-    let tdFoot = elAttr "td" ("colspan" =: "2")
+tablePilotReach reach bonusReach = do
+    let tdFoot = elAttr "td" ("colspan" =: "6")
     let foot = el "tr" . tdFoot . text
 
     _ <- elClass "table" "table is-striped" $ do
             el "thead" $ do
                 el "tr" $ do
-                    elClass "th" "th-plot-reach" $ text "Reach (km)"
+                    elAttr "th" ("colspan" =: "3") $ text "Reach (km)"
+                    elAttr "th" ("colspan" =: "2") $ text "Fraction"
+                    el "th" $ text ""
+
+                    return ()
+
+            el "thead" $ do
+                el "tr" $ do
+                    elClass "th" "th-plot-reach" $ text "Flown"
+                    elClass "th" "th-plot-reach-bonus" $ text "Scored †"
+                    elClass "th" "th-plot-reach-bonus-diff" $ text "Δ"
+                    elClass "th" "th-plot-frac" $ text "Flown"
+                    elClass "th" "th-plot-frac-bonus" $ text "Scored ‡"
                     el "th" $ text "Pilot"
 
                     return ()
 
-            el "tbody" $ do
-                simpleList xs (uncurry rowReach . splitDynPure)
+            _ <- dyn $ ffor bonusReach (\br -> do
+                    let mapR = Map.fromList br
+
+                    el "tbody" $
+                        simpleList reach (uncurry (rowReachBonus mapR) . splitDynPure))
 
             el "tfoot" $ do
                 foot "† Reach as scored."
                 foot "Δ Altitude bonus reach."
-
+                foot "‡ The fraction of reach points as scored."
+            return ()
     return ()
 
-rowReach
+rowReachBonus
     :: MonadWidget t m
-    => Dynamic t Pilot
+    => Map Pilot TrackReach
+    -> Dynamic t Pilot
     -> Dynamic t TrackReach
     -> m ()
-rowReach p tm = do
+rowReachBonus mapR p r = do
+    (bReach, diffReach, bFrac) <- sample . current
+            $ ffor2 p r (\p' r' ->
+                case Map.lookup p' mapR of
+                    Just br ->
+                        let rBonus = reach $ br
+                            rFlown = reach $ r'
+                        in
+                            ( (showPilotDistance 1) $ reach br
+                            , showPilotDistanceDiff rFlown rBonus
+                            , showFrac . frac $ br
+                            )
+
+                    _ -> ("", "", ""))
+
     el "tr" $ do
-        elClass "td" "td-plot-reach" . dynText $ showPilotDistance 3 . reach <$> tm
-        el "td" . dynText $ showPilotName <$> p
+        elClass "td" "td-plot-reach" . dynText $ showPilotDistance 3 . reach <$> r
+        elClass "td" "td-plot-reach-bonus" $ text bReach
+        elClass "td" "td-plot-reach-bonus-diff" $ text diffReach
+
+        elClass "td" "td-plot-frac" . dynText $ showFrac . frac <$> r
+        elClass "td" "td-plot-frac-bonus" $ text bFrac
+
+        elClass "td" "td-pilot" . dynText $ showPilotName <$> p
 
         return ()
+
+showFrac :: ReachFraction -> T.Text
+showFrac (ReachFraction x) = T.pack $ printf "%.3f" x

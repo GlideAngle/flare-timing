@@ -185,7 +185,7 @@ rowReachBonus mapR p r = do
                     _ -> ("", "", ""))
 
     el "tr" $ do
-        elClass "td" "td-plot-reach" . dynText $ (showPilotDistance 1) . reach <$> r
+        elClass "td" "td-plot-reach" . dynText $ showPilotDistance 1 . reach <$> r
         elClass "td" "td-plot-reach-bonus" $ text bReach
         elClass "td" "td-plot-reach-bonus-diff" $ text diffReach
 
