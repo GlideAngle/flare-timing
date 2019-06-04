@@ -30,7 +30,7 @@ import WireTypes.ValidityWorking
 import WireTypes.Cross (FlyingSection)
 import WireTypes.Route (TaskDistance(..), showTaskDistance)
 import WireTypes.Reach (TrackReach(..), ReachStats(..), ReachFraction(..))
-import WireTypes.Point (PilotDistance(..), showPilotDistance, showPilotDistanceDiff)
+import WireTypes.Point (PilotDistance(..), showPilotDistance)
 import WireTypes.Pilot (Pilot(..))
 import WireTypes.Comp (Task(..), UtcOffset(..), TaskStop(..))
 import FlareTiming.Pilot (showPilotName)
@@ -770,14 +770,13 @@ tablePilotReach
     -> Dynamic t [(Pilot, TrackReach)]
     -> m ()
 tablePilotReach reach bonusReach = do
-    let tdFoot = elAttr "td" ("colspan" =: "6")
+    let tdFoot = elAttr "td" ("colspan" =: "4")
     let foot = el "tr" . tdFoot . text
 
     _ <- elClass "table" "table is-striped" $ do
             el "thead" $ do
                 el "tr" $ do
                     elAttr "th" ("colspan" =: "3") $ text "Reach (km)"
-                    elAttr "th" ("colspan" =: "2") $ text "Fraction"
                     el "th" $ text ""
 
                     return ()
@@ -787,8 +786,6 @@ tablePilotReach reach bonusReach = do
                     elClass "th" "th-plot-reach" $ text "Flown"
                     elClass "th" "th-plot-reach-bonus" $ text "Scored †"
                     elClass "th" "th-plot-reach-bonus-diff" $ text "Δ"
-                    elClass "th" "th-plot-frac" $ text "Flown"
-                    elClass "th" "th-plot-frac-bonus" $ text "Scored ‡"
                     el "th" $ text "Pilot"
 
                     return ()
@@ -802,7 +799,6 @@ tablePilotReach reach bonusReach = do
             el "tfoot" $ do
                 foot "† Reach as scored."
                 foot "Δ Altitude bonus reach."
-                foot "‡ The fraction of reach points as scored."
             return ()
     return ()
 
@@ -813,31 +809,29 @@ rowReachBonus
     -> Dynamic t TrackReach
     -> m ()
 rowReachBonus mapR p r = do
-    (bReach, diffReach, bFrac) <- sample . current
+    (bReach, diffReach) <- sample . current
             $ ffor2 p r (\p' r' ->
                 case Map.lookup p' mapR of
                     Just br ->
                         let rBonus = reach $ br
                             rFlown = reach $ r'
                         in
-                            ( (showPilotDistance 1) $ reach br
+                            ( showPilotDistance 3 $ reach br
                             , showPilotDistanceDiff rFlown rBonus
-                            , showFrac . frac $ br
                             )
 
-                    _ -> ("", "", ""))
+                    _ -> ("", ""))
 
     el "tr" $ do
         elClass "td" "td-plot-reach" . dynText $ showPilotDistance 3 . reach <$> r
         elClass "td" "td-plot-reach-bonus" $ text bReach
         elClass "td" "td-plot-reach-bonus-diff" $ text diffReach
 
-        elClass "td" "td-plot-frac" . dynText $ showFrac . frac <$> r
-        elClass "td" "td-plot-frac-bonus" $ text bFrac
-
-        elClass "td" "td-pilot" . dynText $ showPilotName <$> p
+        el "td" . dynText $ showPilotName <$> p
 
         return ()
 
-showFrac :: ReachFraction -> T.Text
-showFrac (ReachFraction x) = T.pack $ printf "%.3f" x
+showPilotDistanceDiff :: PilotDistance -> PilotDistance -> T.Text
+showPilotDistanceDiff (PilotDistance expected) (PilotDistance actual)
+    | printf "%.1f" actual == (printf "%.3f" expected :: String) = "="
+    | otherwise = T.pack . printf "%+.3f" $ actual - expected

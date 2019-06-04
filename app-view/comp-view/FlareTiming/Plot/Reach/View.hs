@@ -177,7 +177,7 @@ rowReachBonus mapR p r = do
                         let rBonus = reach $ br
                             rFlown = reach $ r'
                         in
-                            ( (showPilotDistance 1) $ reach br
+                            ( showPilotDistance 1 $ reach br
                             , showPilotDistanceDiff rFlown rBonus
                             , showFrac . frac $ br
                             )
