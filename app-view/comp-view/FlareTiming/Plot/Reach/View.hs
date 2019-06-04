@@ -65,9 +65,18 @@ tablePilotReach reach bonusReach = do
     _ <- elClass "table" "table is-striped" $ do
             el "thead" $ do
                 el "tr" $ do
-                    elClass "th" "th-plot-reach" $ text "Reach (km)"
-                    elClass "th" "th-plot-reach" $ text "Bonus Reach (km)"
-                    el "th" $ text "Fraction"
+                    elAttr "th" ("colspan" =: "2") $ text "Reach (km)"
+                    elAttr "th" ("colspan" =: "2") $ text "Fraction"
+                    el "th" $ text ""
+
+                    return ()
+
+            el "thead" $ do
+                el "tr" $ do
+                    elClass "th" "th-plot-reach" $ text "Flown"
+                    elClass "th" "th-plot-reach-bonus" $ text "Bonus"
+                    elClass "th" "th-plot-frac" $ text "Flown"
+                    elClass "th" "th-plot-frac-bonus" $ text "Bonus"
                     el "th" $ text "Pilot"
 
                     return ()
@@ -88,17 +97,24 @@ rowReach
     -> Dynamic t TrackReach
     -> m ()
 rowReach mapR p r = do
+    (bReach, bFrac) <- sample . current
+            $ ffor p (\p' ->
+                case Map.lookup p' mapR of
+                    Just br ->
+                        ( (showPilotDistance 1) . reach $ br
+                        , showFrac . frac $ br
+                        )
+
+                    _ -> ("", ""))
+
     el "tr" $ do
         elClass "td" "td-plot-reach" . dynText $ (showPilotDistance 1) . reach <$> r
+        elClass "td" "td-plot-reach-bonus" $ text bReach
 
-        _ <- dyn $ ffor p (\p' ->
-                elClass "td" "td-plot-reach" $
-                    case Map.lookup p' mapR of
-                        Nothing -> text ""
-                        Just br -> text . (showPilotDistance 1) . reach $ br)
+        elClass "td" "td-plot-frac" . dynText $ showFrac . frac <$> r
+        elClass "td" "td-plot-frac-bonus" $ text bFrac
 
-        el "td" . dynText $ showFrac . frac <$> r
-        el "td" . dynText $ showPilotName <$> p
+        elClass "td" "td-pilot" . dynText $ showPilotName <$> p
 
         return ()
 
