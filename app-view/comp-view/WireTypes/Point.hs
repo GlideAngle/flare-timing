@@ -162,7 +162,7 @@ showPilotDistance dp (PilotDistance d) =
 showPilotDistanceDiff :: PilotDistance -> PilotDistance -> T.Text
 showPilotDistanceDiff (PilotDistance expected) (PilotDistance actual)
     | printf "%.1f" actual == (printf "%.1f" expected :: String) = "="
-    | otherwise = T.pack . printf "%.1f" $ actual - expected
+    | otherwise = T.pack . printf "%+.1f" $ actual - expected
 
 showPilotAlt :: Alt -> T.Text
 showPilotAlt (Alt a) =

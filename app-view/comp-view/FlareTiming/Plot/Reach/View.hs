@@ -15,7 +15,7 @@ import qualified FlareTiming.Plot.Reach.Plot as P (reachPlot)
 import WireTypes.Comp (Task(..))
 import WireTypes.Reach (TrackReach(..), ReachFraction(..))
 import WireTypes.Pilot (Pilot(..))
-import WireTypes.Point (PilotDistance(..), showPilotDistance)
+import WireTypes.Point (PilotDistance(..), showPilotDistance, showPilotDistanceDiff)
 import FlareTiming.Pilot (showPilotName)
 
 placings :: [TrackReach] -> [[Double]]
@@ -167,12 +167,11 @@ rowReachBonus mapR p r = do
             $ ffor2 p r (\p' r' ->
                 case Map.lookup p' mapR of
                     Just br ->
-                        let PilotDistance rBonus = reach $ br
-                            PilotDistance rFlown = reach $ r'
-                            diffReach = rBonus - rFlown
+                        let rBonus = reach $ br
+                            rFlown = reach $ r'
                         in
                             ( (showPilotDistance 1) $ reach br
-                            , T.pack $ printf "%+.1f" diffReach
+                            , showPilotDistanceDiff rFlown rBonus
                             , showFrac . frac $ br
                             )
 
