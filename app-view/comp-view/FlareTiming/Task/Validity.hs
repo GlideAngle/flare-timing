@@ -833,5 +833,5 @@ rowReachBonus mapR p r = do
 
 showPilotDistanceDiff :: PilotDistance -> PilotDistance -> T.Text
 showPilotDistanceDiff (PilotDistance expected) (PilotDistance actual)
-    | printf "%.1f" actual == (printf "%.3f" expected :: String) = "="
+    | printf "%.3f" actual == (printf "%.3f" expected :: String) = "="
     | otherwise = T.pack . printf "%+.3f" $ actual - expected
