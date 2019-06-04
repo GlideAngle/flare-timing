@@ -46,6 +46,7 @@ import Flight.Comp
     , MaskLeadFile(..)
     , MaskReachFile(..)
     , MaskSpeedFile(..)
+    , BonusReachFile(..)
     , LandOutFile(..)
     , Pilot
     , PilotGroup(dnf, didFlyNoTracklog)
@@ -65,6 +66,7 @@ import Flight.Comp
     , compToMaskLead
     , compToMaskReach
     , compToMaskSpeed
+    , compToBonusReach
     , compToLand
     , compToPoint
     , findCompInput
@@ -102,6 +104,7 @@ import Flight.Scribe
     , readMaskingLead
     , readMaskingReach
     , readMaskingSpeed
+    , readBonusReach
     , readLanding
     , writePointing
     )
@@ -167,6 +170,7 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
     let maskLeadFile@(MaskLeadFile maskLeadPath) = compToMaskLead compFile
     let maskReachFile@(MaskReachFile maskReachPath) = compToMaskReach compFile
     let maskSpeedFile@(MaskSpeedFile maskSpeedPath) = compToMaskSpeed compFile
+    let bonusReachFile@(BonusReachFile bonusReachPath) = compToBonusReach compFile
     let landFile@(LandOutFile landPath) = compToLand compFile
     let pointFile = compToPoint compFile
     putStrLn $ "Reading task length from '" ++ takeFileName lenPath ++ "'"
@@ -177,6 +181,7 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
     putStrLn $ "Reading effort from '" ++ takeFileName maskEffortPath ++ "'"
     putStrLn $ "Reading leading from '" ++ takeFileName maskLeadPath ++ "'"
     putStrLn $ "Reading reach from '" ++ takeFileName maskReachPath ++ "'"
+    putStrLn $ "Reading bonus reach from '" ++ takeFileName bonusReachPath ++ "'"
     putStrLn $ "Reading speed from '" ++ takeFileName maskSpeedPath ++ "'"
     putStrLn $ "Reading distance difficulty from '" ++ takeFileName landPath ++ "'"
 
@@ -215,6 +220,11 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
             (Just <$> readMaskingReach maskReachFile)
             (const $ return Nothing)
 
+    br <-
+        catchIO
+            (Just <$> readBonusReach bonusReachFile)
+            (const $ return Nothing)
+
     ms <-
         catchIO
             (Just <$> readMaskingSpeed maskSpeedFile)
@@ -237,19 +247,20 @@ go CmdBatchOptions{..} compFile@(CompInputFile compPath) = do
                 stopRoute
                 routes
 
-    case (compSettings, cgs, tgs, ma, me, ml, mr, ms, landing, routes) of
-        (Nothing, _, _, _, _, _, _, _, _, _) -> putStrLn "Couldn't read the comp settings."
-        (_, Nothing, _, _, _, _, _, _, _, _) -> putStrLn "Couldn't read the crossings."
-        (_, _, Nothing, _, _, _, _, _, _, _) -> putStrLn "Couldn't read the taggings."
-        (_, _, _, Nothing, _, _, _, _, _, _) -> putStrLn "Couldn't read the masking arrivals."
-        (_, _, _, _, Nothing, _, _, _, _, _) -> putStrLn "Couldn't read the masking effort."
-        (_, _, _, _, _, Nothing, _, _, _, _) -> putStrLn "Couldn't read the masking leading."
-        (_, _, _, _, _, _, Nothing, _, _, _) -> putStrLn "Couldn't read the masking reach."
-        (_, _, _, _, _, _, _, Nothing, _, _) -> putStrLn "Couldn't read the masking speed."
-        (_, _, _, _, _, _, _, _, Nothing, _) -> putStrLn "Couldn't read the land outs."
-        (_, _, _, _, _, _, _, _, _, Nothing) -> putStrLn "Couldn't read the routes."
-        (Just cs, Just cg, Just tg, Just mA, Just mE, Just mL, Just mR, Just mS, Just lg, Just _) ->
-            writePointing pointFile $ points' cs lookupTaskLength cg tg mA mE mL mR mS lg
+    case (compSettings, cgs, tgs, ma, me, ml, mr, br, ms, landing, routes) of
+        (Nothing, _, _, _, _, _, _, _, _, _, _) -> putStrLn "Couldn't read the comp settings."
+        (_, Nothing, _, _, _, _, _, _, _, _, _) -> putStrLn "Couldn't read the crossings."
+        (_, _, Nothing, _, _, _, _, _, _, _, _) -> putStrLn "Couldn't read the taggings."
+        (_, _, _, Nothing, _, _, _, _, _, _, _) -> putStrLn "Couldn't read the masking arrivals."
+        (_, _, _, _, Nothing, _, _, _, _, _, _) -> putStrLn "Couldn't read the masking effort."
+        (_, _, _, _, _, Nothing, _, _, _, _, _) -> putStrLn "Couldn't read the masking leading."
+        (_, _, _, _, _, _, Nothing, _, _, _, _) -> putStrLn "Couldn't read the masking reach."
+        (_, _, _, _, _, _, _, Nothing, _, _, _) -> putStrLn "Couldn't read the bonus reach."
+        (_, _, _, _, _, _, _, _, Nothing, _, _) -> putStrLn "Couldn't read the masking speed."
+        (_, _, _, _, _, _, _, _, _, Nothing, _) -> putStrLn "Couldn't read the land outs."
+        (_, _, _, _, _, _, _, _, _, _, Nothing) -> putStrLn "Couldn't read the routes."
+        (Just cs, Just cg, Just tg, Just mA, Just mE, Just mL, Just mR, Just bR, Just mS, Just lg, Just _) ->
+            writePointing pointFile $ points' cs lookupTaskLength cg tg mA mE mL (mR, bR) mS lg
 
 points'
     :: CompSettings k
@@ -259,7 +270,7 @@ points'
     -> MaskingArrival
     -> MaskingEffort
     -> MaskingLead
-    -> MaskingReach
+    -> (MaskingReach, MaskingReach)
     -> MaskingSpeed
     -> Cmp.Landing
     -> Pointing
@@ -294,12 +305,14 @@ points'
         { sumDistance
         , leadRank
         }
-    MaskingReach
+    ( _
+    , MaskingReach
         { bestReach
         , flownMean
         , flownStdDev
         , nigh
         }
+    )
     MaskingSpeed
         { ssBestTime
         , gsBestTime
