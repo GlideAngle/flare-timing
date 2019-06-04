@@ -764,6 +764,9 @@ tablePilotReach
     => Dynamic t [(Pilot, TrackReach)]
     -> m ()
 tablePilotReach xs = do
+    let tdFoot = elAttr "td" ("colspan" =: "2")
+    let foot = el "tr" . tdFoot . text
+
     _ <- elClass "table" "table is-striped" $ do
             el "thead" $ do
                 el "tr" $ do
@@ -774,6 +777,10 @@ tablePilotReach xs = do
 
             el "tbody" $ do
                 simpleList xs (uncurry rowReach . splitDynPure)
+
+            el "tfoot" $ do
+                foot "† Reach as scored."
+                foot "Δ Altitude bonus reach."
 
     return ()
 
