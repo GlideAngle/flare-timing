@@ -1,6 +1,6 @@
 ﻿{-# OPTIONS_GHC -fplugin Data.UnitsOfMeasure.Plugin #-}
 
-module MaskReach (maskReach) where
+module Mask.Reach.Time (maskReachTime) where
 
 import Data.Maybe (catMaybes)
 import Data.List (sortOn)
@@ -12,7 +12,7 @@ import qualified Data.Vector as V (fromList)
 
 import Flight.Comp (Pilot(..))
 import Flight.Distance (QTaskDistance, TaskDistance(..))
-import Flight.Comp.Distance (compNigh)
+import Flight.Comp.Distance (compNighTime)
 import qualified Flight.Track.Time as Time (TimeRow(..))
 import Flight.Track.Distance (TrackDistance(..), TrackReach(..), Nigh)
 import Flight.Track.Mask (MaskingReach(..))
@@ -22,7 +22,7 @@ import Flight.Score
     )
 import Stats (DashPathInputs(..))
 
-maskReach
+maskReachTime
     :: MinimumDistance (Quantity Double [u| km |])
     -> [Maybe (QTaskDistance Double [u| m |])]
     -> [Map Pilot (DashPathInputs k)]
@@ -30,7 +30,7 @@ maskReach
     -> [[Maybe (Pilot, Time.TimeRow)]]
     -> [[Pilot]]
     -> MaskingReach
-maskReach (MinimumDistance dMin) lsWholeTask zsTaskTicked dsBest dsNighRows psArriving =
+maskReachTime (MinimumDistance dMin) lsWholeTask zsTaskTicked dsBest dsNighRows psArriving =
     MaskingReach
         { bestReach = dsBest
         , flownMean = fsMean
@@ -42,7 +42,7 @@ maskReach (MinimumDistance dMin) lsWholeTask zsTaskTicked dsBest dsNighRows psAr
         }
     where
         dsNigh :: [[(Pilot, TrackDistance Nigh)]] =
-            compNigh lsWholeTask zsTaskTicked dsNighRows
+            compNighTime lsWholeTask zsTaskTicked dsNighRows
 
         rsNigh :: [[(Pilot, TrackReach)]] =
             [

@@ -28,7 +28,6 @@ import Flight.Comp
     , compToMaskReach
     , compToMaskSpeed
     , compToBonusReach
-    , speedSectionToLeg
     )
 import Flight.Distance (QTaskDistance)
 import Flight.Mask
@@ -38,7 +37,6 @@ import Flight.Mask
     , madeAtLanding
     )
 import Flight.Track.Tag (Tagging)
-import Flight.Track.Time (TimeToTick, TickToTick, copyTimeToTick)
 import qualified Flight.Track.Time as Time (TimeRow(..), TickRow(..))
 import Flight.Track.Arrival (TrackArrival(..))
 import Flight.Track.Distance (TrackDistance(..), Land)
@@ -55,20 +53,24 @@ import Flight.Lookup.Tag
     , tagTicked
     )
 import Flight.Scribe
-    ( writeMaskingArrival
+    ( AltBonus(..)
+    , writeMaskingArrival
     , writeMaskingEffort
     , writeMaskingLead
     , writeMaskingReach
     , writeMaskingSpeed
     , writeBonusReach
-    , readCompLeading, readCompBestDistances, readCompTimeRows
+    , readCompBestDistances, readCompTimeRows
+    , readPilotDiscardFurther
+    , readPilotPegThenDiscard
     )
 import Flight.Span.Math (Math(..))
 import Stats (TimeStats(..), FlightStats(..), DashPathInputs(..), nullStats, altToAlt)
 import MaskArrival (maskArrival, arrivals)
 import MaskEffort (maskEffort, landDistances)
 import MaskLead (maskLead, raceTimes)
-import MaskReach (maskReach)
+import Mask.Reach.Time (maskReachTime)
+import Mask.Reach.Tick (maskReachTick)
 import MaskSpeed (maskSpeed)
 import MaskPilots (maskPilots)
 
@@ -135,30 +137,39 @@ writeMask
             -- Zones (zs) of the task and zones ticked.
             let zsTaskTicked :: [Map Pilot _] = Map.fromList . landTaskTicked <$> yss
 
+            let (gsBestTime, maskSpeed') = maskSpeed lsTask' yss
+            let raceTimes' = raceTimes lookupTaskLeading iTasks tasks
+
+            nullAltRows :: [[(Pilot, [Time.TickRow])]]
+                <-
+                    sequence $
+                    [ sequence [sequence (p, readPilotDiscardFurther compFile ix p) | p <- ps]
+                    | ix <- (IxTask <$> [1 .. ])
+                    | ps <- pilots
+                    ]
+
+            bonusAltRows :: [[(Pilot, [Time.TickRow])]]
+                <-
+                    sequence $
+                    [ sequence [sequence (p, readPilotPegThenDiscard compFile ix p) | p <- ps]
+                    | ix <- (IxTask <$> [1 .. ])
+                    | ps <- pilots
+                    ]
+
             -- For each task, for each pilot, the row closest to goal.
-            rows :: [[Maybe (Pilot, Time.TickRow)]]
+            nullAltRowsBest :: [[Maybe (Pilot, Time.TickRow)]]
                 <- readCompBestDistances
+                    (AltBonus False)
                     compFile
                     (includeTask selectTasks)
                     ((fmap . fmap) fst dsLand)
 
-            let (gsBestTime, maskSpeed') = maskSpeed lsTask' yss
-            let raceTimes' = raceTimes lookupTaskLeading iTasks tasks
-
-            let nullAltBonuses :: [TimeToTick] = const copyTimeToTick <$> tasks
-            let nullTickToTicks :: [TickToTick] = const id <$> tasks
-
-            nullAltRows :: [[(Pilot, [Time.TickRow])]]
-                <- readCompLeading
-                        nullAltBonuses
-                        nullTickToTicks
-                        routes
-                        compFile
-                        (includeTask selectTasks)
-                        (IxTask <$> [1 .. ])
-                        (speedSectionToLeg . speedSection <$> tasks)
-                        raceTimes'
-                        pilots
+            bonusAltRowsBest :: [[Maybe (Pilot, Time.TickRow)]]
+                <- readCompBestDistances
+                    (AltBonus True)
+                    compFile
+                    (includeTask selectTasks)
+                    ((fmap . fmap) fst dsLand)
 
             let (dsNullAltBest, nullAltRowTicks, nullAltLead) =
                     maskLead
@@ -169,14 +180,28 @@ writeMask
                         psArriving
                         psLandingOut
                         gsBestTime
-                        rows
+                        nullAltRowsBest
                         nullAltRows
 
-            dsNighRows :: [[Maybe (Pilot, Time.TimeRow)]]
+            let (dsBonusAltBest, _, _) =
+                    maskLead
+                        free
+                        tasks
+                        raceTimes'
+                        lsTask'
+                        psArriving
+                        psLandingOut
+                        gsBestTime
+                        bonusAltRowsBest
+                        bonusAltRows
+
+            dsNullAltNighRows :: [[Maybe (Pilot, Time.TimeRow)]]
                 <- readCompTimeRows
                         compFile
                         (includeTask selectTasks)
                         (catMaybes <$> nullAltRowTicks)
+
+            let dsBonusAltNighRows = bonusAltRowsBest
 
             -- NOTE: For time and leading points do not use altitude bonus distances.
             writeMaskingSpeed (compToMaskSpeed compFile) maskSpeed'
@@ -191,15 +216,16 @@ writeMask
                 (compToMaskEffort compFile)
                 (maskEffort dsNullAltBest dsLand)
 
+
             -- NOTE: The reach without altitude bonus distance.
             writeMaskingReach
                 (compToMaskReach compFile)
-                (maskReach free lsWholeTask zsTaskTicked dsNullAltBest dsNighRows psArriving)
+                (maskReachTime free lsWholeTask zsTaskTicked dsNullAltBest dsNullAltNighRows psArriving)
 
             -- NOTE: The reach with altitude bonus distance.
             writeBonusReach
                 (compToBonusReach compFile)
-                (maskReach free lsWholeTask zsTaskTicked dsNullAltBest dsNighRows psArriving)
+                (maskReachTick free lsWholeTask zsTaskTicked dsBonusAltBest dsBonusAltNighRows psArriving)
 
 includeTask :: [IxTask] -> IxTask -> Bool
 includeTask tasks = if null tasks then const True else (`elem` tasks)

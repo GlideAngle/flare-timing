@@ -50,6 +50,7 @@ module Flight.Path
     , unpackTrackPath
     , alignTimePath
     , discardFurtherPath
+    , pegThenDiscardPath
     , findFsdb
     , findCompInput
     , findNormScore
@@ -72,85 +73,85 @@ import qualified System.FilePath.Find as Find (FileType(..))
 import Flight.Score (PilotId(..), PilotName(..), Pilot(..))
 
 -- | The path to a *.igc file.
-newtype IgcFile = IgcFile FilePath
+newtype IgcFile = IgcFile FilePath deriving Show
 
 -- | The path to a *.kml file.
-newtype KmlFile = KmlFile FilePath
+newtype KmlFile = KmlFile FilePath deriving Show
 
 -- | The path to a competition *.fsdb file.
-newtype FsdbFile = FsdbFile FilePath
+newtype FsdbFile = FsdbFile FilePath deriving Show
 
 -- | The XML string contents of a *.fsdb file.
-newtype FsdbXml = FsdbXml String
+newtype FsdbXml = FsdbXml String deriving Show
 
 -- | The directory path of a competition file.
-newtype CompDir = CompDir FilePath
+newtype CompDir = CompDir FilePath deriving Show
 
 -- | The path to a competition file.
-newtype CompInputFile = CompInputFile FilePath
+newtype CompInputFile = CompInputFile FilePath deriving Show
 
 -- | The path to a competition expected score file.
-newtype NormScoreFile = NormScoreFile FilePath
+newtype NormScoreFile = NormScoreFile FilePath deriving Show
 
 -- | The path to a task length file.
-newtype TaskLengthFile = TaskLengthFile FilePath
+newtype TaskLengthFile = TaskLengthFile FilePath deriving Show
 
 -- | The path to a cross zone file.
-newtype CrossZoneFile = CrossZoneFile FilePath
+newtype CrossZoneFile = CrossZoneFile FilePath deriving Show
 
 -- | The path to a tag zone file.
-newtype TagZoneFile = TagZoneFile FilePath
+newtype TagZoneFile = TagZoneFile FilePath deriving Show
 
 -- | The path to a stop task file.
-newtype PegFrameFile = PegFrameFile FilePath
+newtype PegFrameFile = PegFrameFile FilePath deriving Show
 
 -- | The path to an unpack track directory for a single task.
-newtype UnpackTrackDir = UnpackTrackDir FilePath
+newtype UnpackTrackDir = UnpackTrackDir FilePath deriving Show
 
 -- | The path to an align time directory for a single task.
-newtype AlignTimeDir = AlignTimeDir FilePath
+newtype AlignTimeDir = AlignTimeDir FilePath deriving Show
 
 -- | The path to a discard further directory for a single task.
-newtype DiscardFurtherDir = DiscardFurtherDir FilePath
+newtype DiscardFurtherDir = DiscardFurtherDir FilePath deriving Show
 
 -- | The path to a peg then discard directory for a single task.
-newtype PegThenDiscardDir = PegThenDiscardDir FilePath
+newtype PegThenDiscardDir = PegThenDiscardDir FilePath deriving Show
 
 -- | The path to as unpack track file.
-newtype UnpackTrackFile = UnpackTrackFile FilePath
+newtype UnpackTrackFile = UnpackTrackFile FilePath deriving Show
 
 -- | The path to an align time file.
-newtype AlignTimeFile = AlignTimeFile FilePath
+newtype AlignTimeFile = AlignTimeFile FilePath deriving Show
 
 -- | The path to a discard further file.
-newtype DiscardFurtherFile = DiscardFurtherFile FilePath
+newtype DiscardFurtherFile = DiscardFurtherFile FilePath deriving Show
 
 -- | The path to a peg then discard file.
-newtype PegThenDiscardFile = PegThenDiscardFile FilePath
+newtype PegThenDiscardFile = PegThenDiscardFile FilePath deriving Show
 
 -- | The path to a mask arrival file.
-newtype MaskArrivalFile = MaskArrivalFile FilePath
+newtype MaskArrivalFile = MaskArrivalFile FilePath deriving Show
 
 -- | The path to a mask effort file.
-newtype MaskEffortFile = MaskEffortFile FilePath
+newtype MaskEffortFile = MaskEffortFile FilePath deriving Show
 
 -- | The path to a mask lead file.
-newtype MaskLeadFile = MaskLeadFile FilePath
+newtype MaskLeadFile = MaskLeadFile FilePath deriving Show
 
 -- | The path to a mask reach file.
-newtype MaskReachFile = MaskReachFile FilePath
+newtype MaskReachFile = MaskReachFile FilePath deriving Show
 
 -- | The path to as mask speed file.
-newtype MaskSpeedFile = MaskSpeedFile FilePath
+newtype MaskSpeedFile = MaskSpeedFile FilePath deriving Show
 
 -- | The path to a mask reach with altitude bonus distance file.
-newtype BonusReachFile = BonusReachFile FilePath
+newtype BonusReachFile = BonusReachFile FilePath deriving Show
 
 -- | The path to as land out file.
-newtype LandOutFile = LandOutFile FilePath
+newtype LandOutFile = LandOutFile FilePath deriving Show
 
 -- | The path to as gap point file.
-newtype GapPointFile = GapPointFile FilePath
+newtype GapPointFile = GapPointFile FilePath deriving Show
 
 fsdbToComp :: FsdbFile -> CompInputFile
 fsdbToComp (FsdbFile p) =
@@ -231,6 +232,10 @@ alignTimePath dir task pilot =
 discardFurtherPath :: CompDir -> Int -> Pilot -> (DiscardFurtherDir, DiscardFurtherFile)
 discardFurtherPath dir task pilot =
     (discardFurtherDir dir task, DiscardFurtherFile $ pilotPath pilot <.> "csv")
+
+pegThenDiscardPath :: CompDir -> Int -> Pilot -> (PegThenDiscardDir, PegThenDiscardFile)
+pegThenDiscardPath dir task pilot =
+    (pegThenDiscardDir dir task, PegThenDiscardFile $ pilotPath pilot <.> "csv")
 
 unpackTrackDir :: CompDir -> Int -> UnpackTrackDir
 unpackTrackDir comp task =

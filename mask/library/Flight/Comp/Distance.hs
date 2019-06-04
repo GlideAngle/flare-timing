@@ -10,7 +10,8 @@ Distances over all pilots.
 module Flight.Comp.Distance
     ( DashPathInputs(..)
     , compDistance
-    , compNigh
+    , compNighTime
+    , compNighTick
     ) where
 
 import Data.Maybe (mapMaybe, catMaybes, isJust)
@@ -129,13 +130,25 @@ compDistance dMin lsTask psArriving psLandingOut tsBest rows =
 
 -- | How near did a pilot get to goal during the flight. This can be closer
 -- to goal than the landing spot if the pilot flew away from goal to land.
-compNigh
+compNighTime
     :: [Maybe (QTaskDistance Double [u| m |])]
     -> [Map Pilot (DashPathInputs k)]
     -> [[Maybe (Pilot, Time.TimeRow)]]
     -> [[(Pilot, TrackDistance Nigh)]]
-compNigh lsTask zsTaskTicked rows =
-        [ nighTrackLine td zs <$> xs
+compNighTime lsTask zsTaskTicked rows =
+        [ timeNighTrackLine td zs <$> xs
+        | td <- lsTask
+        | zs <- zsTaskTicked
+        | xs <- (catMaybes <$> rows)
+        ]
+
+compNighTick
+    :: [Maybe (QTaskDistance Double [u| m |])]
+    -> [Map Pilot (DashPathInputs k)]
+    -> [[Maybe (Pilot, Time.TickRow)]]
+    -> [[(Pilot, TrackDistance Nigh)]]
+compNighTick lsTask zsTaskTicked rows =
+        [ tickNighTrackLine td zs <$> xs
         | td <- lsTask
         | zs <- zsTaskTicked
         | xs <- (catMaybes <$> rows)
@@ -148,19 +161,19 @@ fromKm d =
         d' :: Quantity Double [u| km |]
         d' = MkQuantity d
 
-nighTrackLine
+timeNighTrackLine
     :: Maybe (QTaskDistance Double [u| m |])
     -> Map Pilot (DashPathInputs k)
     -> (Pilot, Time.TimeRow)
     -> (Pilot, TrackDistance Nigh)
 
-nighTrackLine Nothing _ (p, Time.TimeRow{togo = d}) =
+timeNighTrackLine Nothing _ (p, Time.TimeRow{togo = d}) =
     (p,) TrackDistance
         { togo = Just . distanceOnlyLine . fromKm $ d
         , made = Nothing
         }
 
-nighTrackLine
+timeNighTrackLine
     (Just (TaskDistance td))
     zsTaskTicked
     (p, row@Time.TimeRow{togo = d}) =
@@ -175,6 +188,30 @@ nighTrackLine
             case Map.lookup p zsTaskTicked of
                 Nothing -> distanceOnlyLine togo'
                 Just dpi -> pathToGo dpi row togo'
+
+tickNighTrackLine
+    :: Maybe (QTaskDistance Double [u| m |])
+    -> Map Pilot (DashPathInputs k)
+    -> (Pilot, Time.TickRow)
+    -> (Pilot, TrackDistance Nigh)
+
+tickNighTrackLine Nothing _ (p, Time.TickRow{togo = d}) =
+    (p,) TrackDistance
+        { togo = Just . distanceOnlyLine . fromKm $ d
+        , made = Nothing
+        }
+
+tickNighTrackLine
+    (Just (TaskDistance td))
+    _
+    (p, Time.TickRow{togo = d}) =
+    (p,) TrackDistance
+        { togo = Just line
+        , made = Just . TaskDistance $ td -: togo'
+        }
+    where
+        togo' = fromKm d
+        line = distanceOnlyLine togo'
 
 distanceOnlyLine :: Quantity Double [u| m |] -> TrackLine
 distanceOnlyLine d =

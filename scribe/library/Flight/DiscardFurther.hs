@@ -1,11 +1,11 @@
 module Flight.DiscardFurther
-    ( readDiscardFurther
-    , writeDiscardFurther
-    , writePegThenDiscard
+    ( AltBonus(..)
     , readCompBestDistances
     , readCompLeading
     , readPilotAlignTimeWriteDiscardFurther
     , readPilotAlignTimeWritePegThenDiscard
+    , readPilotDiscardFurther
+    , readPilotPegThenDiscard
     ) where
 
 import Control.Exception.Safe (MonadThrow, throwString)
@@ -42,16 +42,28 @@ import Flight.Comp
     , discardFurtherDir
     , pegThenDiscardDir
     , alignTimePath
+    , discardFurtherPath
+    , pegThenDiscardPath
     , compFileToCompDir
     )
 import Flight.AlignTime (readAlignTime)
 import Flight.Score (Leg)
+
+data AltBonus = AltBonus Bool
 
 readDiscardFurther
     :: (MonadThrow m, MonadIO m)
     => DiscardFurtherFile
     -> m (Header, Vector TickRow)
 readDiscardFurther (DiscardFurtherFile csvPath) = do
+    contents <- liftIO $ BL.readFile csvPath
+    either throwString return $ decodeByName contents
+
+readPegThenDiscard
+    :: (MonadThrow m, MonadIO m)
+    => PegThenDiscardFile
+    -> m (Header, Vector TickRow)
+readPegThenDiscard (PegThenDiscardFile csvPath) = do
     contents <- liftIO $ BL.readFile csvPath
     either throwString return $ decodeByName contents
 
@@ -76,39 +88,46 @@ lastRow xs =
     if V.null xs then Nothing else Just $ V.last xs
 
 readCompBestDistances
-    :: CompInputFile
+    :: AltBonus
+    -> CompInputFile
     -> (IxTask -> Bool)
     -> [[Pilot]]
     -> IO [[Maybe (Pilot, TickRow)]]
-readCompBestDistances compFile includeTask =
+readCompBestDistances altBonus compFile includeTask =
     zipWithM
         (\ i ps ->
             if not (includeTask i)
                then return []
-               else readTaskBestDistances compFile i ps)
+               else readTaskBestDistances altBonus compFile i ps)
         (IxTask <$> [1 .. ])
 
 readTaskBestDistances
-    :: CompInputFile
+    :: AltBonus
+    -> CompInputFile
     -> IxTask
     -> [Pilot]
     -> IO [Maybe (Pilot, TickRow)]
-readTaskBestDistances compFile i =
-    mapM (readPilotBestDistance compFile i)
+readTaskBestDistances altBonus compFile i =
+    mapM (readPilotBestDistance altBonus compFile i)
 
 readPilotBestDistance
-    :: CompInputFile
+    :: AltBonus
+    -> CompInputFile
     -> IxTask
     -> Pilot
     -> IO (Maybe (Pilot, TickRow))
-readPilotBestDistance compFile (IxTask iTask) pilot = do
-    (_, rows) <- readDiscardFurther (DiscardFurtherFile (dOut </> file))
-
+readPilotBestDistance (AltBonus False) compFile (IxTask iTask) pilot = do
+    (_, rows) <- readDiscardFurther $ (DiscardFurtherFile $ path </> file)
     return $ (pilot,) <$> lastRow rows
     where
         dir = compFileToCompDir compFile
-        (_, AlignTimeFile file) = alignTimePath dir iTask pilot
-        (DiscardFurtherDir dOut) = discardFurtherDir dir iTask
+        (DiscardFurtherDir path, DiscardFurtherFile file) = discardFurtherPath dir iTask pilot
+readPilotBestDistance (AltBonus True) compFile (IxTask iTask) pilot = do
+    (_, rows) <- readPegThenDiscard (PegThenDiscardFile $ path </> file)
+    return $ (pilot,) <$> lastRow rows
+    where
+        dir = compFileToCompDir compFile
+        (PegThenDiscardDir path, PegThenDiscardFile file) = pegThenDiscardPath dir iTask pilot
 
 readPilotAlignTimeWriteDiscardFurther
     :: TimeToTick
@@ -175,6 +194,20 @@ readPilotAlignTimeWritePegThenDiscard
         close = LeadClose <$> leadClose raceTime
         down = LeadAllDown <$> leadAllDown raceTime
         arrival = LeadArrival <$> leadArrival raceTime
+
+readPilotDiscardFurther :: CompInputFile -> IxTask -> Pilot -> IO [TickRow]
+readPilotDiscardFurther compFile (IxTask i) pilot = do
+    let dir = compFileToCompDir compFile
+    let (DiscardFurtherDir path, DiscardFurtherFile file) = discardFurtherPath dir i pilot
+    (_, rows) <- readDiscardFurther (DiscardFurtherFile $ path </> file)
+    return $ V.toList rows
+
+readPilotPegThenDiscard :: CompInputFile -> IxTask -> Pilot -> IO [TickRow]
+readPilotPegThenDiscard compFile (IxTask i) pilot = do
+    let dir = compFileToCompDir compFile
+    let (PegThenDiscardDir path, PegThenDiscardFile file) = pegThenDiscardPath dir i pilot
+    (_, rows) <- readPegThenDiscard (PegThenDiscardFile $ path </> file)
+    return $ V.toList rows
 
 readCompLeading
     :: [TimeToTick]
