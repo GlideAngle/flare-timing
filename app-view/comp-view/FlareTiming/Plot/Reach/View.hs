@@ -127,6 +127,9 @@ tablePilotReachBonus
     -> Dynamic t [(Pilot, TrackReach)]
     -> m ()
 tablePilotReachBonus reach bonusReach = do
+    let tdFoot = elAttr "td" ("colspan" =: "6")
+    let foot = el "tr" . tdFoot . text
+
     _ <- elClass "table" "table is-striped" $ do
             el "thead" $ do
                 el "tr" $ do
@@ -139,10 +142,10 @@ tablePilotReachBonus reach bonusReach = do
             el "thead" $ do
                 el "tr" $ do
                     elClass "th" "th-plot-reach" $ text "Flown"
-                    elClass "th" "th-plot-reach-bonus" $ text "Scored"
+                    elClass "th" "th-plot-reach-bonus" $ text "Scored †"
                     elClass "th" "th-plot-reach-bonus-diff" $ text "Δ"
                     elClass "th" "th-plot-frac" $ text "Flown"
-                    elClass "th" "th-plot-frac-bonus" $ text "Scored"
+                    elClass "th" "th-plot-frac-bonus" $ text "Scored ‡"
                     el "th" $ text "Pilot"
 
                     return ()
@@ -153,6 +156,10 @@ tablePilotReachBonus reach bonusReach = do
                     el "tbody" $
                         simpleList reach (uncurry (rowReachBonus mapR) . splitDynPure))
 
+            el "tfoot" $ do
+                foot "† Reach as scored."
+                foot "Δ Altitude bonus reach."
+                foot "‡ The fraction of reach points as scored."
             return ()
     return ()
 
