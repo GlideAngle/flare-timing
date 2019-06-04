@@ -24,11 +24,11 @@ xy :: TrackReach -> [Double]
 xy TrackReach{reach = PilotDistance x, frac = ReachFraction y} =
     [x, y]
 
+rawReach :: TrackReach -> Double
+rawReach TrackReach{reach = PilotDistance x} = x
+
 timeRange :: [TrackReach] -> (Double, Double)
-timeRange xs =
-    (minimum ys, maximum ys)
-    where
-        ys = (\TrackReach{reach = PilotDistance x} -> x) <$> xs
+timeRange xs = let rXs = rawReach <$> xs in (minimum rXs, maximum rXs)
 
 reachPlot
     :: MonadWidget t m
@@ -47,11 +47,29 @@ reachPlot task reach bonusReach = do
                 rec performEvent_ $ leftmost
                         [ ffor pb (\_ -> liftIO $ do
                             let xs = snd . unzip $ reach'
-                            _ <- P.reachPlot (_element_raw elPlot) (timeRange xs) (placings xs)
+                            let ys = snd . unzip $ bonusReach'
+                            _ <-
+                                if isJust stopped then
+                                    P.reachPlot
+                                        (_element_raw elPlot)
+                                        (timeRange xs)
+                                        (placings xs)
+                                        (timeRange ys)
+                                        (placings ys)
+                                else
+                                    P.reachPlot
+                                        (_element_raw elPlot)
+                                        (timeRange xs)
+                                        (placings xs)
+                                        (timeRange ys)
+                                        []
+
                             return ())
                         ]
 
                     reach' <- sample . current $ reach
+                    Task{stopped} <- sample . current $ task
+                    bonusReach' <- sample . current $ bonusReach
 
                 return ()
 
@@ -78,8 +96,8 @@ tablePilotReach reach = do
 
                     return ()
 
-            el "tbody" $
-                simpleList reach (uncurry rowReach . splitDynPure)
+            _ <- el "tbody" $
+                    simpleList reach (uncurry rowReach . splitDynPure)
 
             return ()
     return ()

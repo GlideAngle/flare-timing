@@ -30,17 +30,25 @@ foreign import javascript unsafe
     \  , color: '#377eb8'\
     \  , attr: { r: 2 }\
     \  , graphType: 'scatter'\
+    \  },{\
+    \    points: $6\
+    \  , fnType: 'points'\
+    \  , color: '#4daf4a'\
+    \  , attr: { r: 2 }\
+    \  , graphType: 'scatter'\
     \  }]\
     \})"
-    plot_ :: JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> IO JSVal
+    plot_ :: JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> JSVal -> IO JSVal
 
 reachPlot
     :: IsElement e
     => e
     -> (Double, Double)
     -> [[Double]]
+    -> (Double, Double)
+    -> [[Double]]
     -> IO Plot
-reachPlot e (dMin, dMax) xs = do
+reachPlot e (dMin, dMax) xs (bMin, bMax) bs = do
     let xy :: [[Double]] =
             [ [x', fn dMax x']
             | x <- [0 :: Integer .. 199]
@@ -49,13 +57,14 @@ reachPlot e (dMin, dMax) xs = do
             ]
 
     let pad = (\case 0 -> 1; x -> x) . abs $ (dMax - dMin) / 40
-    dMin' <- toJSVal $ dMin - pad
-    dMax' <- toJSVal $ dMax + pad
+    dMin' <- toJSVal $ (min dMin bMin) - pad
+    dMax' <- toJSVal $ (max dMax bMax) + pad
 
     xy' <- toJSValListOf xy
     xs' <- toJSValListOf $ nub xs
+    bs' <- toJSValListOf $ nub bs
 
-    Plot <$> plot_ (unElement . toElement $ e) dMin' dMax' xy' xs'
+    Plot <$> plot_ (unElement . toElement $ e) dMin' dMax' xy' xs' bs'
 
 fn :: Double -> Double -> Double
 fn 0 _ = 0
