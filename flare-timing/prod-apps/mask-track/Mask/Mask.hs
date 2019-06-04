@@ -216,7 +216,6 @@ writeMask
                 (compToMaskEffort compFile)
                 (maskEffort dsNullAltBest dsLand)
 
-
             -- NOTE: The reach without altitude bonus distance.
             writeMaskingReach
                 (compToMaskReach compFile)
