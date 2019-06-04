@@ -69,6 +69,7 @@ import Flight.Scribe
     , readMaskingLead
     , readMaskingReach
     , readMaskingSpeed
+    , readBonusReach
     , readLanding, readPointing
     )
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
@@ -101,6 +102,7 @@ import Flight.Comp
     , MaskLeadFile(..)
     , MaskReachFile(..)
     , MaskSpeedFile(..)
+    , BonusReachFile(..)
     , LandOutFile(..)
     , GapPointFile(..)
     , NormScoreFile(..)
@@ -113,6 +115,7 @@ import Flight.Comp
     , compToMaskLead
     , compToMaskReach
     , compToMaskSpeed
+    , compToBonusReach
     , compToLand
     , compToPoint
     , crossToTag
@@ -142,6 +145,7 @@ data Config k
         , maskingLead :: Maybe MaskingLead
         , maskingReach :: Maybe MaskingReach
         , maskingSpeed :: Maybe MaskingSpeed
+        , bonusReach :: Maybe MaskingReach
         , landing :: Maybe Landing
         , pointing :: Maybe Pointing
         , norming :: Maybe Norm.NormPointing
@@ -282,6 +286,9 @@ type GapPointApi k =
     :<|> "mask-track" :> (Capture "task" Int) :> "reach"
         :> Get '[JSON] [(Pilot, TrackReach)]
 
+    :<|> "mask-track" :> (Capture "task" Int) :> "bonus-reach"
+        :> Get '[JSON] [(Pilot, TrackReach)]
+
     :<|> "mask-track" :> (Capture "task" Int) :> "arrival"
         :> Get '[JSON] [(Pilot, TrackArrival)]
 
@@ -332,6 +339,7 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
     let maskLeadFile@(MaskLeadFile maskLeadPath) = compToMaskLead compFile
     let maskReachFile@(MaskReachFile maskReachPath) = compToMaskReach compFile
     let maskSpeedFile@(MaskSpeedFile maskSpeedPath) = compToMaskSpeed compFile
+    let bonusReachFile@(BonusReachFile bonusReachPath) = compToBonusReach compFile
     let landFile@(LandOutFile landPath) = compToLand compFile
     let pointFile@(GapPointFile pointPath) = compToPoint compFile
     let normFile@(NormScoreFile normPath) = compToScore compFile
@@ -345,6 +353,7 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
     putStrLn $ "Reading leading from '" ++ takeFileName maskLeadPath ++ "'"
     putStrLn $ "Reading reach from '" ++ takeFileName maskReachPath ++ "'"
     putStrLn $ "Reading speed from '" ++ takeFileName maskSpeedPath ++ "'"
+    putStrLn $ "Reading bonus reach from '" ++ takeFileName bonusReachPath ++ "'"
     putStrLn $ "Reading land outs from '" ++ takeFileName landPath ++ "'"
     putStrLn $ "Reading scores from '" ++ takeFileName pointPath ++ "'"
     putStrLn $ "Reading expected or normative scores from '" ++ takeFileName normPath ++ "'"
@@ -394,6 +403,11 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
             (Just <$> readMaskingReach maskReachFile)
             (const $ return Nothing)
 
+    bonusReach <-
+        catchIO
+            (Just <$> readBonusReach bonusReachFile)
+            (const $ return Nothing)
+
     maskingSpeed <-
         catchIO
             (Just <$> readMaskingSpeed maskSpeedFile)
@@ -414,17 +428,17 @@ go CmdServeOptions{..} compFile@(CompInputFile compPath) = do
             (Just <$> readScore normFile)
             (const $ return Nothing)
 
-    case (compSettings, routes, crossing, tagging, framing, maskingArrival, maskingEffort, maskingLead, maskingReach, maskingSpeed, landing, pointing, norming) of
-        (Nothing, _, _, _, _, _, _, _, _, _, _, _, _) ->
+    case (compSettings, routes, crossing, tagging, framing, maskingArrival, maskingEffort, maskingLead, maskingReach, maskingSpeed, bonusReach, landing, pointing, norming) of
+        (Nothing, _, _, _, _, _, _, _, _, _, _, _, _, _) ->
             putStrLn "Couldn't read the comp settings"
-        (Just cs, rt@(Just _), cg@(Just _), tg@(Just _), fm@(Just _), mA@(Just _), mE@(Just _), mL@(Just _), mR@(Just _), mS@(Just _), lo@(Just _), gp@(Just _), ns@(Just _)) ->
-            f =<< mkGapPointApp (Config compFile cs rt cg tg fm mA mE mL mR mS lo gp ns)
-        (Just cs, rt@(Just _), _, _, _, _, _, _, _, _, _, _, _) -> do
+        (Just cs, rt@(Just _), cg@(Just _), tg@(Just _), fm@(Just _), mA@(Just _), mE@(Just _), mL@(Just _), mR@(Just _), mS@(Just _), bR@(Just _), lo@(Just _), gp@(Just _), ns@(Just _)) ->
+            f =<< mkGapPointApp (Config compFile cs rt cg tg fm mA mE mL mR mS bR lo gp ns)
+        (Just cs, rt@(Just _), _, _, _, _, _, _, _, _, _, _, _, _) -> do
             putStrLn "WARNING: Only serving comp inputs and task lengths"
-            f =<< mkTaskLengthApp (Config compFile cs rt Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing)
-        (Just cs, _, _, _, _, _, _, _, _, _, _, _, _) -> do
+            f =<< mkTaskLengthApp (Config compFile cs rt Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing)
+        (Just cs, _, _, _, _, _, _, _, _, _, _, _, _, _) -> do
             putStrLn "WARNING: Only serving comp inputs"
-            f =<< mkCompInputApp (Config compFile cs Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing)
+            f =<< mkCompInputApp (Config compFile cs Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing)
     where
         -- NOTE: Add gzip with wai gzip middleware.
         -- SEE: https://github.com/haskell-servant/servant/issues/786
@@ -505,6 +519,7 @@ serverGapPointApi cfg =
         :<|> getTaskPilotTag
         :<|> getTaskReachStats
         :<|> getTaskReach
+        :<|> getTaskBonusReach
         :<|> getTaskArrival
         :<|> getTaskLead
         :<|> getTaskTime
@@ -956,6 +971,17 @@ getTaskReachStats ii = do
 getTaskReach :: Int -> AppT k IO [(Pilot, TrackReach)]
 getTaskReach ii = do
     xs' <- fmap reachRank <$> asks maskingReach
+    case xs' of
+        Just xs ->
+            case drop (ii - 1) xs of
+                x : _ -> return x
+                _ -> throwError $ errTaskBounds ii
+
+        _ -> throwError $ errTaskStep "mask-track" ii
+
+getTaskBonusReach :: Int -> AppT k IO [(Pilot, TrackReach)]
+getTaskBonusReach ii = do
+    xs' <- fmap reachRank <$> asks bonusReach
     case xs' of
         Just xs ->
             case drop (ii - 1) xs of
