@@ -264,7 +264,7 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
                     _ <- widgetHold (plotSplit) $
                             (\case
                                 PlotTabSplit -> plotSplit
-                                PlotTabReach -> reachPlot reach bonusReach
+                                PlotTabReach -> reachPlot task reach bonusReach
                                 PlotTabEffort -> effortPlot hgOrPg ef
                                 PlotTabTime -> timePlot sgs sEx sd
                                 PlotTabLead -> leadPlot tweak sEx ld
