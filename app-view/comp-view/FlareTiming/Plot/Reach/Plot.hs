@@ -17,7 +17,7 @@ foreign import javascript unsafe
     \, width: 640\
     \, height: 460\
     \, disableZoom: true\
-    \, xAxis: {label: 'Reach (km)', domain: [$2, $3]}\
+    \, xAxis: {label: 'Flown Reach (km)', domain: [$2, $3]}\
     \, yAxis: {domain: [-0.1, 1.01]}\
     \, data: [{\
     \    points: $4\
@@ -45,10 +45,9 @@ reachPlot
     => e
     -> (Double, Double)
     -> [[Double]]
-    -> (Double, Double)
     -> [[Double]]
     -> IO Plot
-reachPlot e (dMin, dMax) xs (bMin, bMax) bs = do
+reachPlot e (dMin, dMax) xs bs = do
     let xy :: [[Double]] =
             [ [x', fn dMax x']
             | x <- [0 :: Integer .. 199]
@@ -57,8 +56,8 @@ reachPlot e (dMin, dMax) xs (bMin, bMax) bs = do
             ]
 
     let pad = (\case 0 -> 1; x -> x) . abs $ (dMax - dMin) / 40
-    dMin' <- toJSVal $ (min dMin bMin) - pad
-    dMax' <- toJSVal $ (max dMax bMax) + pad
+    dMin' <- toJSVal $ dMin - pad
+    dMax' <- toJSVal $ dMax + pad
 
     xy' <- toJSValListOf xy
     xs' <- toJSValListOf $ nub xs

@@ -5,6 +5,7 @@ import Text.Printf (printf)
 import Reflex.Dom
 import Reflex.Time (delay)
 import qualified Data.Text as T (Text, pack)
+import Data.List (sortOn)
 import Data.Map (Map)
 import qualified Data.Map.Strict as Map
 
@@ -30,6 +31,13 @@ rawReach TrackReach{reach = PilotDistance x} = x
 timeRange :: [TrackReach] -> (Double, Double)
 timeRange xs = let rXs = rawReach <$> xs in (minimum rXs, maximum rXs)
 
+reValue :: [(Pilot, TrackReach)] -> [(Pilot, TrackReach)] -> [[Double]]
+reValue pxs pys =
+    [ [x, y]
+    | (_, TrackReach{reach = PilotDistance x}) <- sortOn fst pxs
+    | (_, TrackReach{frac = ReachFraction y}) <- sortOn fst pys
+    ]
+
 reachPlot
     :: MonadWidget t m
     => Dynamic t Task
@@ -47,21 +55,19 @@ reachPlot task reach bonusReach = do
                 rec performEvent_ $ leftmost
                         [ ffor pb (\_ -> liftIO $ do
                             let xs = snd . unzip $ reach'
-                            let ys = snd . unzip $ bonusReach'
+                            let tt = timeRange xs
                             _ <-
                                 if isJust stopped then
                                     P.reachPlot
                                         (_element_raw elPlot)
-                                        (timeRange xs)
+                                        tt
                                         (placings xs)
-                                        (timeRange ys)
-                                        (placings ys)
+                                        (reValue reach' bonusReach')
                                 else
                                     P.reachPlot
                                         (_element_raw elPlot)
-                                        (timeRange xs)
+                                        tt
                                         (placings xs)
-                                        (timeRange ys)
                                         []
 
                             return ())
