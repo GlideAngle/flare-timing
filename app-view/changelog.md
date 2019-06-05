@@ -5,7 +5,7 @@ of this changelog.
 # Crossings Exiting Exit Zones
 ## app-view-0.20
 
-* Only consider crossings that are exiting exit zones.
+* Only consider crossings that are exiting exit zones and entering entry zones.
 * Compare arrival fractions between flare-timing and FS.
 * Show the working for weight calculations next to the split plot.
 * For paragliding, when the goal ratio is zero use a tenth of the distance
@@ -16,6 +16,9 @@ of this changelog.
   spread of reach and the number of pilots landed before the task is stopped.
 * Peg the data frame for each pilot's track to the scored time window for
   stopped tasks.
+* When the task is stopped, add a bonus distance to reach. Glide from the
+  altitude above goal to the altitude of goal for each fix of the track,
+  picking the shifted fix that is now closest to goal as the point reached.
 
 # Making a Line Goal
 ## app-view-0.19
