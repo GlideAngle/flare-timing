@@ -29,7 +29,7 @@ import WireTypes.ValidityWorking
     )
 import WireTypes.Cross (FlyingSection)
 import WireTypes.Route (TaskDistance(..), showTaskDistance)
-import WireTypes.Reach (TrackReach(..), ReachStats(..), ReachFraction(..))
+import WireTypes.Reach (TrackReach(..), ReachStats(..))
 import WireTypes.Point (PilotDistance(..), showPilotDistance)
 import WireTypes.Pilot (Pilot(..))
 import WireTypes.Comp (Task(..), UtcOffset(..), TaskStop(..))
