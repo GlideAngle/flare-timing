@@ -417,7 +417,7 @@ viewValidity utcOffset task vy vyNorm vw vwNorm reachStats reach bonusReach td f
                         spacer
                         viewDistance v w
                         spacer
-                        viewTime v w
+                        viewTime v vN w wN
                         spacer
 
                         viewStop
@@ -672,15 +672,38 @@ viewDistance
 viewTime
     :: DomBuilder t m
     => Vy.Validity
+    -> Vy.Validity
+    -> ValidityWorking
     -> ValidityWorking
     -> m ()
 viewTime
-    Vy.Validity{time = v}
-    ValidityWorking{time = TimeValidityWorking{..}} = do
+    Vy.Validity{time = tv}
+    Vy.Validity{time = tvN}
+    ValidityWorking
+        { time =
+            TimeValidityWorking
+                { ssBestTime
+                , gsBestTime = bt
+                , nominalTime = nt
+                , bestDistance = bd
+                , nominalDistance = nd
+                }
+        }
+    ValidityWorking
+        { time =
+            TimeValidityWorking
+                { gsBestTime = btN
+                , nominalTime = ntN
+                , bestDistance = bdN
+                , nominalDistance = ndN
+                }
+        }
+    = do
     elClass "div" "card" $ do
         elClass "div" "card-content" $ do
             elClass "h2" "title is-4" . text
-                $ "Time Validity = " <> Vy.showTimeValidity v
+                $ "Time Validity = " <> Vy.showTimeValidity tv
+
             elClass "div" "field is-grouped is-grouped-multiline" $ do
                 elClass "div" "control" $ do
                     elClass "div" "tags has-addons" $ do
@@ -691,23 +714,81 @@ viewTime
                     elClass "div" "tags has-addons" $ do
                         elClass "span" "tag" $ do text "bt = gs best time"
                         elClass "span" "tag is-success"
-                            $ text (T.pack . show $ gsBestTime)
+                            $ text (T.pack . show $ bt)
                 elClass "div" "control" $ do
                     elClass "div" "tags has-addons" $ do
                         elClass "span" "tag" $ do text "nt = nominal time"
                         elClass "span" "tag is-primary"
-                            $ text (T.pack . show $ nominalTime)
+                            $ text (T.pack . show $ nt)
             elClass "div" "field is-grouped is-grouped-multiline" $ do
                 elClass "div" "control" $ do
                     elClass "div" "tags has-addons" $ do
                         elClass "span" "tag" $ do text "bd = best distance"
                         elClass "span" "tag is-dark"
-                            $ text (T.pack . show $ bestDistance)
+                            $ text (T.pack . show $ bd)
                 elClass "div" "control" $ do
                     elClass "div" "tags has-addons" $ do
                         elClass "span" "tag" $ do text "nd = nominal distance"
                         elClass "span" "tag is-dark"
-                            $ text (T.pack . show $ nominalDistance)
+                            $ text (T.pack . show $ nd)
+
+            elClass "table" "table is-striped" $ do
+                el "thead" $ do
+                    el "tr" $ do
+                        elAttr "th" ("colspan" =: "3") $ text ""
+                        elClass "th" "th-norm validity" $ text "✓"
+                        elClass "th" "th-norm th-diff" $ text "Δ"
+
+                el "tbody" $ do
+                    el "tr" $ do
+                        el "td" $ text ""
+                        el "td" $ text "Section Best Time"
+                        elV . T.pack $ show ssBestTime
+                        elN $ ""
+                        elD $ ""
+                        return ()
+
+                    el "tr" $ do
+                        el "td" $ text "bt"
+                        el "td" $ text "Gate Best Time"
+                        elV . T.pack $ show bt
+                        elN . T.pack $ show btN
+                        elD $ ""
+                        return ()
+
+                    el "tr" $ do
+                        el "td" $ text "nt"
+                        el "td" $ text "Nominal Time"
+                        elV . T.pack $ show nt
+                        elN . T.pack $ show ntN
+                        elD $ ""
+                        return ()
+
+                    el "tr" $ do
+                        el "td" $ text "bd"
+                        el "td" $ text "Best Distance"
+                        elV . T.pack $ show bd
+                        elN . T.pack $ show bdN
+                        elD $ ""
+                        return ()
+
+                    el "tr" $ do
+                        el "td" $ text "nd"
+                        el "td" $ text "Nominal Distance"
+                        elV . T.pack $ show nd
+                        elN . T.pack $ show ndN
+                        elD $ ""
+                        return ()
+
+                    el "tr" $ do
+                        el "th" $ text ""
+                        el "th" $ text "Time Validity"
+                        elV $ Vy.showTimeValidity tv
+                        elN $ Vy.showTimeValidity tvN
+                        elD $ Vy.showTimeValidityDiff tvN tv
+                        return ()
+
+                return ()
 
             elAttr
                 "div"
