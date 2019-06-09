@@ -452,59 +452,59 @@ viewDay
                     el "tr" $ do
                         el "th" $ text ""
                         el "th" $ text ""
-                        el "th" $ text "Validity"
-                        elClass "th" "th-norm" $ text "✓"
+                        elClass "th" "validity" $ text "Validity"
+                        elClass "th" "th-norm validity" $ text "✓"
                         elClass "th" "th-norm th-diff" $ text "Δ"
 
                 el "tbody" $ do
                     el "tr" $ do
                         el "td" $ text "lv"
                         el "td" $ text "Launch"
-                        el "td" . text
+                        elClass "td" "validity" . text
                             $ Vy.showLaunchValidity lv
-                        el "td" . text
+                        elClass "td" "td-norm" . text
                             $ Vy.showLaunchValidity lvN
-                        el "td" $ text ""
+                        elClass "td" "td-norm td-diff" $ text ""
                         return ()
 
                     el "tr" $ do
                         el "td" $ text "dv"
                         el "td" $ text "Distance"
-                        el "td" . text
+                        elClass "td" "validity" . text
                             $ Vy.showDistanceValidity dv
-                        el "td" . text
+                        elClass "td" "td-norm" . text
                             $ Vy.showDistanceValidity dvN
-                        el "td" $ text ""
+                        elClass "td" "td-norm td-diff" $ text ""
                         return ()
 
                     el "tr" $ do
                         el "td" $ text "tv"
                         el "td" $ text "Time"
-                        el "td" . text
+                        elClass "td" "validity" . text
                             $ Vy.showTimeValidity tv
-                        el "td" . text
+                        elClass "td" "td-norm" . text
                             $ Vy.showTimeValidity tvN
-                        el "td" $ text ""
+                        elClass "td" "td-norm td-diff" $ text ""
                         return ()
 
                     el "tr" $ do
                         el "td" $ text "sv"
                         el "td" $ text "Stop"
-                        el "td" . text
+                        elClass "td" "validity" . text
                             $ maybe "Nothing" (("Just " <>) . Vy.showStopValidity) sv
-                        el "td" . text
+                        elClass "td" "td-norm" . text
                             $ maybe "Nothing" (("Just " <>) . Vy.showStopValidity) svN
-                        el "td" $ text ""
+                        elClass "td" "td-norm td-diff" $ text ""
                         return ()
 
                     el "tr" $ do
                         el "th" $ text ""
                         el "th" $ text "Task"
-                        el "th" . text
+                        elClass "th" "validity" . text
                             $ Vy.showTaskValidity dq
-                        el "th" . text
+                        elClass "th" "td-norm" . text
                             $ Vy.showTaskValidity dqN
-                        el "th" $ text ""
+                        elClass "td" "td-norm td-diff" $ text ""
                         return ()
 
                 let tdFoot = elAttr "td" ("colspan" =: "4")
