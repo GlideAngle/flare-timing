@@ -645,13 +645,19 @@ getTaskValidityWorking ii = do
 
 getNormTaskValidityWorking :: Int -> AppT k IO (Maybe Vw.ValidityWorking)
 getNormTaskValidityWorking ii = do
-    xs' <- fmap Norm.validityWorkingLaunch <$> asks norming
-    case xs' of
-        Just xs ->
-            case drop (ii - 1) xs of
-                lv : _ -> return $ do
+    ls' <- fmap Norm.validityWorkingLaunch <$> asks norming
+    ts' <- fmap Norm.validityWorkingTime <$> asks norming
+    case (ls', ts') of
+        (Just ls, Just ts) ->
+            case (drop (ii - 1) ls, drop (ii - 1) ts) of
+                (lv : _, tv : _) -> return $ do
                     lv' <- lv
-                    return $ nullValidityWorking{Vw.launch = lv'}
+                    tv' <- tv
+                    return $
+                        nullValidityWorking
+                            { Vw.launch = lv'
+                            , Vw.time = tv'
+                            }
 
                 _ -> throwError $ errTaskBounds ii
 
