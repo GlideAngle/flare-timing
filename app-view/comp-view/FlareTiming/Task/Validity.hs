@@ -369,6 +369,7 @@ viewValidity
     => Dynamic t UtcOffset
     -> Dynamic t Task
     -> Dynamic t (Maybe Vy.Validity)
+    -> Dynamic t (Maybe Vy.Validity)
     -> Dynamic t (Maybe ValidityWorking)
     -> Dynamic t (Maybe ReachStats)
     -> Dynamic t (Maybe [(Pilot, TrackReach)])
@@ -376,7 +377,7 @@ viewValidity
     -> Dynamic t (Maybe TaskDistance)
     -> Dynamic t (Maybe [(Pilot, FlyingSection UTCTime)])
     -> m ()
-viewValidity utcOffset task vy vw reachStats reach bonusReach td flyingTimes = do
+viewValidity utcOffset task vy vyNorm vw reachStats reach bonusReach td flyingTimes = do
     let (landedByStop, stillFlying) =
             splitDynPure
             $ ffor2 task (fromMaybe [] <$> flyingTimes) (\Task{stopped} ft ->
@@ -386,21 +387,22 @@ viewValidity utcOffset task vy vw reachStats reach bonusReach td flyingTimes = d
                         partition (maybe False ((< t) . snd) . snd) ft)
                     stopped)
 
-    _ <- dyn $ ffor3 vy vw reachStats (\vy' vw' reachStats' ->
-        dyn $ ffor2 td landedByStop (\td' lo ->
-            case (vy', vw', reachStats', td') of
-                (Nothing, _, _, _) -> text "Loading validity ..."
-                (_, Nothing, _, _) -> text "Loading validity workings ..."
-                (_, _, Nothing, _) -> text "Loading reach stats ..."
-                (_, _, _, Nothing) -> text "Loading stopped task distance ..."
-                (Just v, Just w, Just r, Just d) -> do
+    _ <- dyn $ ffor3 vy vyNorm vw (\vy' vyNorm' vw' ->
+        dyn $ ffor3 reachStats td landedByStop (\reachStats' td' lo ->
+            case (vy', vyNorm', vw', reachStats', td') of
+                (Nothing, _, _, _, _) -> text "Loading validity ..."
+                (_, Nothing, _, _, _) -> text "Loading expected validity from FS ..."
+                (_, _, Nothing, _, _) -> text "Loading validity workings ..."
+                (_, _, _, Nothing, _) -> text "Loading reach stats ..."
+                (_, _, _, _, Nothing) -> text "Loading stopped task distance ..."
+                (Just v, Just vN, Just w, Just r, Just d) -> do
                     elAttr
                         "a"
                         (("class" =: "button") <> ("onclick" =: hookWorking v w r d (length lo)))
                         (text "Show Working")
 
                     spacer
-                    viewDay v w
+                    viewDay v vN w
                     spacer
                     viewLaunch v w
                     spacer
@@ -428,10 +430,12 @@ viewValidity utcOffset task vy vw reachStats reach bonusReach td flyingTimes = d
 viewDay
     :: DomBuilder t m
     => Vy.Validity
+    -> Vy.Validity
     -> ValidityWorking
     -> m ()
 viewDay
     Vy.Validity{task, launch = lv, distance = dv, time = tv, stop = sv}
+    Vy.Validity{task = dqN, launch = lvN, distance = dvN, time = tvN, stop = svN}
     ValidityWorking{launch = LaunchValidityWorking{..}} = do
     elClass "div" "card" $ do
         elClass "div" "card-content" $ do
@@ -464,6 +468,28 @@ viewDay
                         elClass "span" "tag" $ do text "sv = stop validity"
                         elClass "span" "tag is-danger" . text
                             $ maybe "Nothing" (("Just " <>) . Vy.showStopValidity) sv
+
+            elClass "div" "field is-grouped is-grouped-multiline" $ do
+                elClass "div" "control" $ do
+                    elClass "div" "tags has-addons" $ do
+                        elClass "span" "tag" $ do text "lv = launch validity"
+                        elClass "span" "tag is-dark" . text
+                            $ Vy.showLaunchValidity lvN
+                elClass "div" "control" $ do
+                    elClass "div" "tags has-addons" $ do
+                        elClass "span" "tag" $ do text "dv = distance validity"
+                        elClass "span" "tag is-dark" . text
+                            $ Vy.showDistanceValidity dvN
+                elClass "div" "control" $ do
+                    elClass "div" "tags has-addons" $ do
+                        elClass "span" "tag" $ do text "tv = time validity"
+                        elClass "span" "tag is-dark" . text
+                            $ Vy.showTimeValidity tvN
+                elClass "div" "control" $ do
+                    elClass "div" "tags has-addons" $ do
+                        elClass "span" "tag" $ do text "sv = stop validity"
+                        elClass "span" "tag is-dark" . text
+                            $ maybe "Nothing" (("Just " <>) . Vy.showStopValidity) svN
 
             elAttr
                 "div"

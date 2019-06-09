@@ -7,6 +7,7 @@ module FlareTiming.Comms
     , getPilots
     , getPilotsStatus
     , getValidity
+    , getNormValidity
     , getAllocation
     , getTaskScore
     , getTaskValidityWorking
@@ -152,6 +153,9 @@ getPilotsStatus = get "/gap-point/pilots-status"
 
 getValidity :: Get t m [Maybe Validity]
 getValidity = get "/gap-point/validity"
+
+getNormValidity :: Get t m [Maybe Validity]
+getNormValidity = get "/fs-score/validity"
 
 getAllocation :: Get t m [Maybe Allocation]
 getAllocation = get "/gap-point/allocation"

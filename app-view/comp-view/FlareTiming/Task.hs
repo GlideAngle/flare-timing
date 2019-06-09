@@ -6,7 +6,10 @@ import Control.Monad (join)
 
 import FlareTiming.Events (IxTask(..))
 import FlareTiming.Comms
-    (getTasks, getTaskLengths, getComps, getNominals, getValidity, getAllocation)
+    ( getTasks, getTaskLengths, getComps, getNominals
+    , getValidity, getNormValidity
+    , getAllocation
+    )
 import FlareTiming.Comp.Detail (compDetail)
 import FlareTiming.Task.Detail (taskDetail)
 
@@ -44,6 +47,7 @@ view () = do
 
     cs <- holdDyn [] . fmap pure =<< getComps pb
     vs <- holdDyn [] =<< getValidity pb
+    nvs <- holdDyn [] =<< getNormValidity pb
     as <- holdDyn [] =<< getAllocation pb
 
     el "div" $ mdo
@@ -60,6 +64,7 @@ view () = do
                                 ns
                                 ((!! (ii - 1)) <$> xs)
                                 (join . nth (ii - 1) <$> vs)
+                                (join . nth (ii - 1) <$> nvs)
                                 (join . nth (ii - 1) <$> as))
                     <$> eIx
 

@@ -160,10 +160,11 @@ taskDetail
     -> Dynamic t [Nominal]
     -> Dynamic t Task
     -> Dynamic t (Maybe Validity)
+    -> Dynamic t (Maybe Validity)
     -> Dynamic t (Maybe Allocation)
     -> m (Event t IxTask)
 
-taskDetail ix@(IxTask _) cs ns task vy alloc = do
+taskDetail ix@(IxTask _) cs ns task vy vyNorm alloc = do
     let utc = utcOffset . head <$> cs
     let sb = scoreBack . head <$> cs
     let hgOrPg = discipline . head <$> cs
@@ -281,7 +282,7 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
                     _ <- widgetHold basisAbsent $
                             (\case
                                 BasisTabAbsent -> basisAbsent
-                                BasisTabValidity -> viewValidity utc task vy vw reachStats reach bonusReach lnStop ft
+                                BasisTabValidity -> viewValidity utc task vy vyNorm vw reachStats reach bonusReach lnStop ft
                                 BasisTabGeo -> tableGeo ix)
 
                             <$> tabBasis
@@ -292,7 +293,7 @@ taskDetail ix@(IxTask _) cs ns task vy alloc = do
 
     return $ switchDyn (leftmost <$> es)
 
-taskDetail IxTaskNone _ _ _ _ _ = return never
+taskDetail IxTaskNone _ _ _ _ _ _ = return never
 
 readyTrack
     :: Monad m
