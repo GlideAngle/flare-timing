@@ -18,11 +18,15 @@ module WireTypes.ValidityWorking
     , NominalDistance(..)
     , MinimumDistance(..)
     , MaximumDistance(..)
+    , showNominalDistance
     -- * Time Validity Working
     , TimeValidityWorking(..)
     , BestTime(..)
     , BestDistance(..)
     , NominalTime(..)
+    , showBestTime
+    , showNominalTime
+    , showBestDistance
     -- * Stop Validity Working
     , StopValidityWorking(..)
     , PilotsAtEss(..)
@@ -130,6 +134,10 @@ instance Show SumOfDistance where
 instance Show NominalDistance where
     show (NominalDistance x) = show x ++ " km"
 
+showNominalDistance :: NominalDistance -> T.Text
+showNominalDistance (NominalDistance x) =
+    T.pack $ printf "%.3f km" x
+
 instance Show MinimumDistance where
     show (MinimumDistance x) = show x ++ " km"
 
@@ -190,11 +198,22 @@ newtype NominalTime = NominalTime Double
 instance Show BestTime where
     show (BestTime x) = T.unpack $ showHmsForHours x
 
+showBestTime :: Maybe BestTime -> T.Text
+showBestTime Nothing = "-"
+showBestTime (Just (BestTime x)) = showHmsForHours x
+
 instance Show BestDistance where
     show (BestDistance x) = show x ++ " km"
 
+showBestDistance :: BestDistance -> T.Text
+showBestDistance (BestDistance x) =
+    T.pack $ printf "%.3f km" x
+
 instance Show NominalTime where
     show (NominalTime x) = show x ++ " h"
+
+showNominalTime :: NominalTime -> T.Text
+showNominalTime (NominalTime x) = showHmsForHours x
 
 instance FromJSON BestTime where
     parseJSON x@(String _) = do

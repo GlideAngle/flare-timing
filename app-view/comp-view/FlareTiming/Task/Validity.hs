@@ -32,6 +32,10 @@ import WireTypes.ValidityWorking
     , showPilotsPresentDiff
     , showPilotsFlyingDiff
     , showNominalLaunchDiff
+    , showNominalDistance
+    , showBestTime
+    , showNominalTime
+    , showBestDistance
     )
 import WireTypes.Cross (FlyingSection)
 import WireTypes.Route (TaskDistance(..), showTaskDistance)
@@ -715,7 +719,7 @@ viewTime
                     el "tr" $ do
                         el "td" $ text ""
                         el "td" $ text "Section Best Time †"
-                        elV . T.pack $ show ssBestTime
+                        elV $ showBestTime ssBestTime
                         elN $ ""
                         elD $ ""
                         return ()
@@ -723,32 +727,32 @@ viewTime
                     el "tr" $ do
                         el "td" $ text "bt"
                         el "td" $ text "Gate Best Time ‡"
-                        elV . T.pack $ show bt
-                        elN . T.pack $ show btN
+                        elV $ showBestTime bt
+                        elN $ showBestTime btN
                         elD $ ""
                         return ()
 
                     el "tr" $ do
                         el "td" $ text "nt"
                         el "td" $ text "Nominal Time"
-                        elV . T.pack $ show nt
-                        elN . T.pack $ show ntN
+                        elV $ showNominalTime nt
+                        elN $ showNominalTime ntN
                         elD $ ""
                         return ()
 
                     el "tr" $ do
                         el "td" $ text "bd"
                         el "td" $ text "Best Distance"
-                        elV . T.pack $ show bd
-                        elN . T.pack $ show bdN
+                        elV $ showBestDistance bd
+                        elN $ showBestDistance bdN
                         elD $ ""
                         return ()
 
                     el "tr" $ do
                         el "td" $ text "nd"
                         el "td" $ text "Nominal Distance"
-                        elV . T.pack $ show nd
-                        elN . T.pack $ show ndN
+                        elV $ showNominalDistance nd
+                        elN $ showNominalDistance ndN
                         elD $ ""
                         return ()
 
