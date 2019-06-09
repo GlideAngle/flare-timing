@@ -434,7 +434,7 @@ viewDay
     -> ValidityWorking
     -> m ()
 viewDay
-    Vy.Validity{task, launch = lv, distance = dv, time = tv, stop = sv}
+    Vy.Validity{task = dq, launch = lv, distance = dv, time = tv, stop = sv}
     Vy.Validity{task = dqN, launch = lvN, distance = dvN, time = tvN, stop = svN}
     ValidityWorking{launch = LaunchValidityWorking{..}} = do
     elClass "div" "card" $ do
@@ -442,7 +442,7 @@ viewDay
             elClass "p" "level subtitle is-6" $ do
                 elClass "span" "level-item level-left" $
                     elClass "h2" "title is-4" . text
-                        $ "Task Validity* = " <> Vy.showTaskValidity task
+                        $ "Task Validity* = " <> Vy.showTaskValidity dq
 
                 elClass "span" "level-item level-right" $
                     text "* Day Quality"
@@ -450,37 +450,69 @@ viewDay
             elClass "table" "table is-striped" $ do
                 el "thead" $ do
                     el "tr" $ do
-                        elAttr "th" ("colspan" =: "4") $ text "Validity"
-                    el "tr" $ do
-                        el "th" $ text "launch"
-                        el "th" $ text "distance"
-                        el "th" $ text "time"
-                        el "th" $ text "stop"
-
-                        return ()
+                        el "th" $ text ""
+                        el "th" $ text ""
+                        el "th" $ text "Validity"
+                        elClass "th" "th-norm" $ text "✓"
+                        elClass "th" "th-norm th-diff" $ text "Δ"
 
                 el "tbody" $ do
                     el "tr" $ do
+                        el "td" $ text "lv"
+                        el "td" $ text "Launch"
                         el "td" . text
                             $ Vy.showLaunchValidity lv
                         el "td" . text
-                            $ Vy.showDistanceValidity dv
-                        el "td" . text
-                            $ Vy.showTimeValidity tv
-                        el "td" . text
-                            $ maybe "Nothing" (("Just " <>) . Vy.showStopValidity) sv
+                            $ Vy.showLaunchValidity lvN
+                        el "td" $ text ""
                         return ()
 
                     el "tr" $ do
+                        el "td" $ text "dv"
+                        el "td" $ text "Distance"
                         el "td" . text
-                            $ Vy.showLaunchValidity lvN
+                            $ Vy.showDistanceValidity dv
                         el "td" . text
                             $ Vy.showDistanceValidity dvN
+                        el "td" $ text ""
+                        return ()
+
+                    el "tr" $ do
+                        el "td" $ text "tv"
+                        el "td" $ text "Time"
+                        el "td" . text
+                            $ Vy.showTimeValidity tv
                         el "td" . text
                             $ Vy.showTimeValidity tvN
+                        el "td" $ text ""
+                        return ()
+
+                    el "tr" $ do
+                        el "td" $ text "sv"
+                        el "td" $ text "Stop"
+                        el "td" . text
+                            $ maybe "Nothing" (("Just " <>) . Vy.showStopValidity) sv
                         el "td" . text
                             $ maybe "Nothing" (("Just " <>) . Vy.showStopValidity) svN
+                        el "td" $ text ""
                         return ()
+
+                    el "tr" $ do
+                        el "th" $ text ""
+                        el "th" $ text "Task"
+                        el "th" . text
+                            $ Vy.showTaskValidity dq
+                        el "th" . text
+                            $ Vy.showTaskValidity dqN
+                        el "th" $ text ""
+                        return ()
+
+                let tdFoot = elAttr "td" ("colspan" =: "4")
+                let foot = el "tr" . tdFoot . text
+
+                el "tfoot" $ do
+                    foot "✓ An expected value as calculated by the official scoring program, FS."
+                    foot "Δ A difference between a value and an expected value."
                     return ()
                 return ()
 
