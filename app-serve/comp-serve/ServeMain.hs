@@ -222,6 +222,9 @@ type GapPointApi k =
     :<|> "comp-input" :> "pilots"
         :> Get '[JSON] [Pilot]
 
+    :<|> "fs-score" :> "validity"
+        :> Get '[JSON] [Maybe Vy.Validity]
+
     :<|> "fs-score" :> (Capture "task" Int) :> "score"
         :> Get '[JSON] [(Pilot, Norm.NormBreakdown)]
 
@@ -495,6 +498,7 @@ serverGapPointApi cfg =
         :<|> nominal <$> c
         :<|> tasks <$> c
         :<|> getPilots <$> c
+        :<|> getNormValidity <$> n
         :<|> getTaskNormScore
         :<|> getTaskRouteSphericalEdge
         :<|> getTaskRouteEllipsoidEdge
@@ -527,6 +531,7 @@ serverGapPointApi cfg =
     where
         c = asks compSettings
         p = asks pointing
+        n = asks norming
 
 distinctPilots :: [[PilotTrackLogFile]] -> [Pilot]
 distinctPilots pss =
@@ -598,6 +603,10 @@ getPilots = distinctPilots . pilots
 getValidity :: Maybe Pointing -> [Maybe Vy.Validity]
 getValidity Nothing = []
 getValidity (Just p) = ((fmap . fmap) roundValidity) . validity $ p
+
+getNormValidity :: Maybe Norm.NormPointing -> [Maybe Vy.Validity]
+getNormValidity Nothing = []
+getNormValidity (Just p) = ((fmap . fmap) roundValidity) . Norm.validity $ p
 
 getAllocation :: Maybe Pointing -> [Maybe Allocation]
 getAllocation Nothing = []
