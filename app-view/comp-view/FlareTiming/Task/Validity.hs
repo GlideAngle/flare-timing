@@ -463,6 +463,10 @@ viewDay
                 let elN = elClass "td" "td-norm" . text
                 let elD = elClass "td" "td-norm td-diff" . text
 
+                let elV' = elClass "th" "validity" . text
+                let elN' = elClass "th" "td-norm" . text
+                let elD' = elClass "th" "td-norm td-diff" . text
+
                 el "tbody" $ do
                     el "tr" $ do
                         el "td" $ text "lv"
@@ -499,9 +503,9 @@ viewDay
                     el "tr" $ do
                         el "th" $ text ""
                         el "th" $ text "Task"
-                        elV $ Vy.showTaskValidity dq
-                        elN $ Vy.showTaskValidity dqN
-                        elD $ Vy.showTaskValidityDiff dqN dq
+                        elV' $ Vy.showTaskValidity dq
+                        elN' $ Vy.showTaskValidity dqN
+                        elD' $ Vy.showTaskValidityDiff dqN dq
                         return ()
 
                 let tdFoot = elAttr "td" ("colspan" =: "4")
