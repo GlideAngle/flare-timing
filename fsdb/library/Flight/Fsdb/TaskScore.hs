@@ -163,7 +163,7 @@ xpValidity =
         <+> hasName "stop_validity"
         )
     $ xpWrap
-        ( \xx@(dq, lv, dv, tv, sv) ->
+        ( \(dq, lv, dv, tv, sv) ->
             Validity
                 { task = TaskValidity $ dToR dq
                 , launch = LaunchValidity $ dToR lv
@@ -291,17 +291,7 @@ parseScores contents = do
     ps <- runX $ doc >>> getCompPilot
     xss <- runX $ doc >>> getScore ps
 
-    let yss =
-            [
-                catMaybes
-                $ (\case
-                    (a, Just b) -> Just (a, b)
-                    (_, Nothing) -> Nothing)
-                <$> xs
-
-            | xs <- xss
-            ]
-
+    let yss = [catMaybes $ sequence <$> xs| xs <- xss]
     let tss = const Nothing <$> yss
 
     vs :: [Either String Validity] <- runX $ doc >>> getValidity
