@@ -603,13 +603,6 @@ viewLaunch
                         elD $ Vy.showLaunchValidityDiff lvN lv
                         return ()
 
-                let tdFoot = elAttr "td" ("colspan" =: "4")
-                let foot = el "tr" . tdFoot . text
-
-                el "tfoot" $ do
-                    foot "✓ An expected value as calculated by the official scoring program, FS."
-                    foot "Δ A difference between a value and an expected value."
-                    return ()
                 return ()
 
             elAttr
