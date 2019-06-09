@@ -23,7 +23,7 @@ import FlareTiming.Comms
     ( getTaskScore, getTaskNormScore
     , getTaskReachStats, getTaskReach, getTaskBonusReach, getTaskEffort
     , getTaskArrival, getTaskLead, getTaskTime
-    , getTaskValidityWorking
+    , getTaskValidityWorking, getNormTaskValidityWorking
     , getTaskLengthSphericalEdge
     , getTaskLengthEllipsoidEdge
     , getTaskLengthProjectedEdgeSpherical
@@ -184,6 +184,7 @@ taskDetail ix@(IxTask _) cs ns task vy vyNorm alloc = do
     sd <- holdDyn Nothing =<< (fmap Just <$> getTaskTime ix pb)
     ft <- holdDyn Nothing =<< (fmap Just <$> getTaskFlyingSectionTimes ix pb)
     vw <- holdDyn Nothing =<< getTaskValidityWorking ix pb
+    vwNorm <- holdDyn Nothing =<< getNormTaskValidityWorking ix pb
     nyp <- holdDyn (Nyp []) =<< getTaskPilotNyp ix pb
     dnf <- holdDyn (Dnf []) =<< getTaskPilotDnf ix pb
     dfNt <- holdDyn (DfNoTrack []) =<< getTaskPilotDfNoTrack ix pb
@@ -282,7 +283,7 @@ taskDetail ix@(IxTask _) cs ns task vy vyNorm alloc = do
                     _ <- widgetHold basisAbsent $
                             (\case
                                 BasisTabAbsent -> basisAbsent
-                                BasisTabValidity -> viewValidity utc task vy vyNorm vw reachStats reach bonusReach lnStop ft
+                                BasisTabValidity -> viewValidity utc task vy vyNorm vw vwNorm reachStats reach bonusReach lnStop ft
                                 BasisTabGeo -> tableGeo ix)
 
                             <$> tabBasis

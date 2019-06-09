@@ -11,6 +11,7 @@ module FlareTiming.Comms
     , getAllocation
     , getTaskScore
     , getTaskValidityWorking
+    , getNormTaskValidityWorking
     , getTaskLengthSphericalEdge
     , getTaskLengthEllipsoidEdge
     , getTaskLengthProjectedEdgeSpherical
@@ -192,6 +193,9 @@ getTaskFlyingSectionTimes = getIxTask "cross-zone" "flying-times"
 
 getTaskValidityWorking :: GetIxTask' t m (Maybe ValidityWorking)
 getTaskValidityWorking = getIxTask "gap-point" "validity-working"
+
+getNormTaskValidityWorking :: GetIxTask' t m (Maybe ValidityWorking)
+getNormTaskValidityWorking = getIxTask "fs-score" "validity-working"
 
 getTaskLength_ :: T.Text -> IxTask -> Get t m b
 getTaskLength_ = getIxTask "task-length"

@@ -374,13 +374,14 @@ viewValidity
     -> Dynamic t (Maybe Vy.Validity)
     -> Dynamic t (Maybe Vy.Validity)
     -> Dynamic t (Maybe ValidityWorking)
+    -> Dynamic t (Maybe ValidityWorking)
     -> Dynamic t (Maybe ReachStats)
     -> Dynamic t (Maybe [(Pilot, TrackReach)])
     -> Dynamic t (Maybe [(Pilot, TrackReach)])
     -> Dynamic t (Maybe TaskDistance)
     -> Dynamic t (Maybe [(Pilot, FlyingSection UTCTime)])
     -> m ()
-viewValidity utcOffset task vy vyNorm vw reachStats reach bonusReach td flyingTimes = do
+viewValidity utcOffset task vy vyNorm vw vwNorm reachStats reach bonusReach td flyingTimes = do
     let (landedByStop, stillFlying) =
             splitDynPure
             $ ffor2 task (fromMaybe [] <$> flyingTimes) (\Task{stopped} ft ->
@@ -390,43 +391,45 @@ viewValidity utcOffset task vy vyNorm vw reachStats reach bonusReach td flyingTi
                         partition (maybe False ((< t) . snd) . snd) ft)
                     stopped)
 
-    _ <- dyn $ ffor3 vy vyNorm vw (\vy' vyNorm' vw' ->
-        dyn $ ffor3 reachStats td landedByStop (\reachStats' td' lo ->
-            case (vy', vyNorm', vw', reachStats', td') of
-                (Nothing, _, _, _, _) -> text "Loading validity ..."
-                (_, Nothing, _, _, _) -> text "Loading expected validity from FS ..."
-                (_, _, Nothing, _, _) -> text "Loading validity workings ..."
-                (_, _, _, Nothing, _) -> text "Loading reach stats ..."
-                (_, _, _, _, Nothing) -> text "Loading stopped task distance ..."
-                (Just v, Just vN, Just w, Just r, Just d) -> do
-                    elAttr
-                        "a"
-                        (("class" =: "button") <> ("onclick" =: hookWorking v w r d (length lo)))
-                        (text "Show Working")
+    _ <- dyn $ ffor2 vy vyNorm (\vy' vyNorm' ->
+        dyn $ ffor2 vw vwNorm (\vw' vwNorm' ->
+            dyn $ ffor3 reachStats td landedByStop (\reachStats' td' lo ->
+                case (vy', vyNorm', vw', vwNorm', reachStats', td') of
+                    (Nothing, _, _, _, _, _) -> text "Loading validity ..."
+                    (_, Nothing, _, _, _, _) -> text "Loading expected validity from FS ..."
+                    (_, _, Nothing, _, _, _) -> text "Loading validity workings ..."
+                    (_, _, _, Nothing, _, _) -> text "Loading expected validity workings from FS ..."
+                    (_, _, _, _, Nothing, _) -> text "Loading reach stats ..."
+                    (_, _, _, _, _, Nothing) -> text "Loading stopped task distance ..."
+                    (Just v, Just vN, Just w, Just wN, Just r, Just d) -> do
+                        elAttr
+                            "a"
+                            (("class" =: "button") <> ("onclick" =: hookWorking v w r d (length lo)))
+                            (text "Show Working")
 
-                    spacer
-                    viewDay v vN w
-                    spacer
-                    viewLaunch v w
-                    spacer
-                    viewDistance v w
-                    spacer
-                    viewTime v w
-                    spacer
+                        spacer
+                        viewDay v vN w
+                        spacer
+                        viewLaunch v vN w wN
+                        spacer
+                        viewDistance v w
+                        spacer
+                        viewTime v w
+                        spacer
 
-                    viewStop
-                        utcOffset
-                        v
-                        w
-                        reachStats
-                        (fromMaybe [] <$> reach)
-                        (fromMaybe [] <$> bonusReach)
-                        d
-                        landedByStop
-                        stillFlying
+                        viewStop
+                            utcOffset
+                            v
+                            w
+                            reachStats
+                            (fromMaybe [] <$> reach)
+                            (fromMaybe [] <$> bonusReach)
+                            d
+                            landedByStop
+                            stillFlying
 
-                    spacer
-                    return ()))
+                        spacer
+                        return ())))
 
     return ()
 
@@ -527,31 +530,91 @@ viewDay
 viewLaunch
     :: DomBuilder t m
     => Vy.Validity
+    -> Vy.Validity
+    -> ValidityWorking
     -> ValidityWorking
     -> m ()
 viewLaunch
-    Vy.Validity{launch = v}
-    ValidityWorking{launch = LaunchValidityWorking{..}} = do
+    Vy.Validity{launch = lv}
+    Vy.Validity{launch = lvN}
+    ValidityWorking
+        { launch =
+            LaunchValidityWorking
+                { flying
+                , present
+                , nominalLaunch
+                }
+        }
+    ValidityWorking
+        { launch =
+            LaunchValidityWorking
+                { flying = flyingN
+                , present = presentN
+                , nominalLaunch = nominalLaunchN
+                }
+        }
+    = do
     elClass "div" "card" $ do
         elClass "div" "card-content" $ do
             elClass "h2" "title is-4" . text
-                $ "Launch Validity = " <> Vy.showLaunchValidity v
-            elClass "div" "field is-grouped is-grouped-multiline" $ do
-                elClass "div" "control" $ do
-                    elClass "div" "tags has-addons" $ do
-                        elClass "span" "tag" $ do text "f = pilots flying"
-                        elClass "span" "tag is-info"
-                            $ text (T.pack . show $ flying)
-                elClass "div" "control" $ do
-                    elClass "div" "tags has-addons" $ do
-                        elClass "span" "tag" $ do text "p = pilots present"
-                        elClass "span" "tag is-success"
-                            $ text (T.pack . show $ present)
-                elClass "div" "control" $ do
-                    elClass "div" "tags has-addons" $ do
-                        elClass "span" "tag" $ do text "n = nominal launch"
-                        elClass "span" "tag is-primary"
-                            $ text (T.pack . show $ nominalLaunch)
+                $ "Launch Validity = " <> Vy.showLaunchValidity lv
+
+            elClass "table" "table is-striped" $ do
+                el "thead" $ do
+                    el "tr" $ do
+                        elAttr "th" ("colspan" =: "3") $ text ""
+                        elClass "th" "th-norm validity" $ text "✓"
+                        elClass "th" "th-norm th-diff" $ text "Δ"
+
+                let elV = elClass "td" "validity" . text
+                let elN = elClass "td" "td-norm" . text
+                let elD = elClass "td" "td-norm td-diff" . text
+
+                let elV' = elClass "th" "validity" . text
+                let elN' = elClass "th" "td-norm" . text
+                let elD' = elClass "th" "td-norm td-diff" . text
+
+                el "tbody" $ do
+                    el "tr" $ do
+                        el "td" $ text "f"
+                        el "td" $ text "Pilots Flying"
+                        elV . T.pack $ show flying
+                        elN . T.pack $ show flyingN
+                        elD $ ""
+                        return ()
+
+                    el "tr" $ do
+                        el "td" $ text "p"
+                        el "td" $ text "Pilots Present"
+                        elV . T.pack $ show present
+                        elN . T.pack $ show presentN
+                        elD $ ""
+                        return ()
+
+                    el "tr" $ do
+                        el "td" $ text "n"
+                        el "td" $ text "Nominal Launch"
+                        elV . T.pack $ show nominalLaunch
+                        elN . T.pack $ show nominalLaunchN
+                        elD $ ""
+                        return ()
+
+                    elClass "tr" "is-selected" $ do
+                        el "th" $ text ""
+                        el "th" $ text "Launch Validity"
+                        elV' $ Vy.showLaunchValidity lv
+                        elN' $ Vy.showLaunchValidity lvN
+                        elD' $ Vy.showLaunchValidityDiff lvN lv
+                        return ()
+
+                let tdFoot = elAttr "td" ("colspan" =: "4")
+                let foot = el "tr" . tdFoot . text
+
+                el "tfoot" $ do
+                    foot "✓ An expected value as calculated by the official scoring program, FS."
+                    foot "Δ A difference between a value and an expected value."
+                    return ()
+                return ()
 
             elAttr
                 "div"
