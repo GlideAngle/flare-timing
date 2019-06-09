@@ -704,34 +704,6 @@ viewTime
             elClass "h2" "title is-4" . text
                 $ "Time Validity = " <> Vy.showTimeValidity tv
 
-            elClass "div" "field is-grouped is-grouped-multiline" $ do
-                elClass "div" "control" $ do
-                    elClass "div" "tags has-addons" $ do
-                        elClass "span" "tag" $ do text "ss best time"
-                        elClass "span" "tag is-info"
-                            $ text (T.pack . show $ ssBestTime)
-                elClass "div" "control" $ do
-                    elClass "div" "tags has-addons" $ do
-                        elClass "span" "tag" $ do text "bt = gs best time"
-                        elClass "span" "tag is-success"
-                            $ text (T.pack . show $ bt)
-                elClass "div" "control" $ do
-                    elClass "div" "tags has-addons" $ do
-                        elClass "span" "tag" $ do text "nt = nominal time"
-                        elClass "span" "tag is-primary"
-                            $ text (T.pack . show $ nt)
-            elClass "div" "field is-grouped is-grouped-multiline" $ do
-                elClass "div" "control" $ do
-                    elClass "div" "tags has-addons" $ do
-                        elClass "span" "tag" $ do text "bd = best distance"
-                        elClass "span" "tag is-dark"
-                            $ text (T.pack . show $ bd)
-                elClass "div" "control" $ do
-                    elClass "div" "tags has-addons" $ do
-                        elClass "span" "tag" $ do text "nd = nominal distance"
-                        elClass "span" "tag is-dark"
-                            $ text (T.pack . show $ nd)
-
             elClass "table" "table is-striped" $ do
                 el "thead" $ do
                     el "tr" $ do
