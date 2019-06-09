@@ -2,6 +2,11 @@ The [latest
 version](https://github.com/BlockScope/flare-timing/blob/master/app-view/changelog.md)
 of this changelog.
 
+# Validity Compared
+## app-view-0.21
+
+* Compare task validities side-by-side with those of FS.
+
 # Stopped Validity and Bonus Reach
 ## app-view-0.20
 
