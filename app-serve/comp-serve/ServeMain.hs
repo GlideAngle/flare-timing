@@ -1,4 +1,5 @@
 import Prelude hiding (abs)
+import GHC.Records
 import Data.Time.Clock (UTCTime)
 import System.Environment (getProgName)
 import Text.Printf (printf)
@@ -498,7 +499,7 @@ serverGapPointApi cfg =
         :<|> nominal <$> c
         :<|> tasks <$> c
         :<|> getPilots <$> c
-        :<|> getNormValidity <$> n
+        :<|> getValidity <$> n
         :<|> getTaskNormScore
         :<|> getTaskRouteSphericalEdge
         :<|> getTaskRouteEllipsoidEdge
@@ -600,13 +601,9 @@ roundAllocation x@Allocation{..} =
 getPilots :: CompSettings k -> [Pilot]
 getPilots = distinctPilots . pilots
 
-getValidity :: Maybe Pointing -> [Maybe Vy.Validity]
+getValidity :: (HasField "validity" p [Maybe Vy.Validity]) => Maybe p -> [Maybe Vy.Validity]
 getValidity Nothing = []
-getValidity (Just p) = ((fmap . fmap) roundValidity) . validity $ p
-
-getNormValidity :: Maybe Norm.NormPointing -> [Maybe Vy.Validity]
-getNormValidity Nothing = []
-getNormValidity (Just p) = ((fmap . fmap) roundValidity) . Norm.validity $ p
+getValidity (Just p) = ((fmap . fmap) roundValidity) . getField @"validity" $ p
 
 getAllocation :: Maybe Pointing -> [Maybe Allocation]
 getAllocation Nothing = []
