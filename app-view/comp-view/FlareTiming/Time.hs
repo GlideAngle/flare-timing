@@ -7,13 +7,14 @@ module FlareTiming.Time
     , showTime
     , showT
     , showTDiff
+    , showNominalTDiff
     , timeZone
     ) where
 
 import Prelude hiding (min)
 import qualified Data.Text as T (Text, pack)
 import Text.Printf (printf)
-import Data.Time.Clock (UTCTime, diffUTCTime)
+import Data.Time.Clock (UTCTime, NominalDiffTime, diffUTCTime)
 import Data.Time.Format (formatTime, defaultTimeLocale)
 import Data.Time.LocalTime (TimeZone, minutesToTimeZone, utcToLocalTime)
 import WireTypes.Comp (UtcOffset(..))
@@ -52,14 +53,15 @@ showT :: TimeZone -> UTCTime -> T.Text
 showT tz = T.pack . showTime tz
 
 showTDiff :: UTCTime -> UTCTime -> T.Text
-showTDiff expected actual =
+showTDiff expected actual = showNominalTDiff $ actual `diffUTCTime` expected
+
+showNominalTDiff :: NominalDiffTime -> T.Text
+showNominalTDiff diff =
     if | roundSecs == 0 -> "="
        | abs secs < 1 -> showSignedSecs $ fromRational secs
        | hrs < 0 -> "-" <> showHmsForHours (negate hrs)
        | otherwise -> "+" <> showHmsForHours hrs
     where
-        diff = actual `diffUTCTime` expected
-
         roundSecs :: Integer
         roundSecs = round diff
 

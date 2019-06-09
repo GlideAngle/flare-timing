@@ -18,15 +18,15 @@ module WireTypes.ValidityWorking
     , NominalDistance(..)
     , MinimumDistance(..)
     , MaximumDistance(..)
-    , showNominalDistance
+    , showNominalDistance, showNominalDistanceDiff
     -- * Time Validity Working
     , TimeValidityWorking(..)
     , BestTime(..)
     , BestDistance(..)
     , NominalTime(..)
-    , showBestTime
-    , showNominalTime
-    , showBestDistance
+    , showBestTime, showBestTimeDiff
+    , showNominalTime, showNominalTimeDiff
+    , showBestDistance, showBestDistanceDiff
     -- * Stop Validity Working
     , StopValidityWorking(..)
     , PilotsAtEss(..)
@@ -41,7 +41,7 @@ import GHC.Generics (Generic)
 import qualified Data.Text as T (Text, pack, unpack)
 import Data.Aeson (Value(..), FromJSON(..))
 
-import FlareTiming.Time (showHmsForHours)
+import FlareTiming.Time (showHmsForHours, showNominalTDiff)
 import WireTypes.Point (PilotDistance(..))
 
 data ValidityWorking =
@@ -138,6 +138,13 @@ showNominalDistance :: NominalDistance -> T.Text
 showNominalDistance (NominalDistance x) =
     T.pack $ printf "%.3f km" x
 
+showNominalDistanceDiff :: NominalDistance -> NominalDistance -> T.Text
+showNominalDistanceDiff (NominalDistance expected) (NominalDistance actual)
+    | f actual == f expected = "="
+    | otherwise = T.pack . f $ actual - expected
+    where
+        f = printf "%+.3f"
+
 instance Show MinimumDistance where
     show (MinimumDistance x) = show x ++ " km"
 
@@ -202,6 +209,13 @@ showBestTime :: Maybe BestTime -> T.Text
 showBestTime Nothing = "-"
 showBestTime (Just (BestTime x)) = showHmsForHours x
 
+showBestTimeDiff :: Maybe BestTime -> Maybe BestTime -> T.Text
+showBestTimeDiff Nothing _ = "-"
+showBestTimeDiff _ Nothing = "-"
+showBestTimeDiff e@(Just (BestTime expected)) a@(Just (BestTime actual))
+    | showBestTime a == showBestTime e = "="
+    | otherwise = showNominalTDiff . realToFrac $ actual - expected
+
 instance Show BestDistance where
     show (BestDistance x) = show x ++ " km"
 
@@ -209,11 +223,21 @@ showBestDistance :: BestDistance -> T.Text
 showBestDistance (BestDistance x) =
     T.pack $ printf "%.3f km" x
 
+showBestDistanceDiff :: BestDistance -> BestDistance -> T.Text
+showBestDistanceDiff e@(BestDistance expected) a@(BestDistance actual)
+    | showBestDistance a == showBestDistance e = "="
+    | otherwise = T.pack . printf "%+.3f" $ actual - expected
+
 instance Show NominalTime where
     show (NominalTime x) = show x ++ " h"
 
 showNominalTime :: NominalTime -> T.Text
 showNominalTime (NominalTime x) = showHmsForHours x
+
+showNominalTimeDiff :: NominalTime -> NominalTime -> T.Text
+showNominalTimeDiff e@(NominalTime expected) a@(NominalTime actual)
+    | showNominalTime a == showNominalTime e = "="
+    | otherwise = showNominalTDiff . realToFrac $ actual - expected
 
 instance FromJSON BestTime where
     parseJSON x@(String _) = do

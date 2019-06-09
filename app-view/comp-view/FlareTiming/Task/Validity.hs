@@ -32,10 +32,10 @@ import WireTypes.ValidityWorking
     , showPilotsPresentDiff
     , showPilotsFlyingDiff
     , showNominalLaunchDiff
-    , showNominalDistance
-    , showBestTime
-    , showNominalTime
-    , showBestDistance
+    , showNominalDistance, showNominalDistanceDiff
+    , showBestTime, showBestTimeDiff
+    , showNominalTime, showNominalTimeDiff
+    , showBestDistance, showBestDistanceDiff
     )
 import WireTypes.Cross (FlyingSection)
 import WireTypes.Route (TaskDistance(..), showTaskDistance)
@@ -729,7 +729,7 @@ viewTime
                         el "td" $ text "Gate Best Time ‡"
                         elV $ showBestTime bt
                         elN $ showBestTime btN
-                        elD $ ""
+                        elD $ showBestTimeDiff btN bt
                         return ()
 
                     el "tr" $ do
@@ -737,7 +737,7 @@ viewTime
                         el "td" $ text "Nominal Time"
                         elV $ showNominalTime nt
                         elN $ showNominalTime ntN
-                        elD $ ""
+                        elD $ showNominalTimeDiff ntN nt
                         return ()
 
                     el "tr" $ do
@@ -745,7 +745,7 @@ viewTime
                         el "td" $ text "Best Distance"
                         elV $ showBestDistance bd
                         elN $ showBestDistance bdN
-                        elD $ ""
+                        elD $ showBestDistanceDiff bdN bd
                         return ()
 
                     el "tr" $ do
@@ -753,7 +753,7 @@ viewTime
                         el "td" $ text "Nominal Distance"
                         elV $ showNominalDistance nd
                         elN $ showNominalDistance ndN
-                        elD $ ""
+                        elD $ showNominalDistanceDiff ndN nd
                         return ()
 
                     el "tr" $ do
