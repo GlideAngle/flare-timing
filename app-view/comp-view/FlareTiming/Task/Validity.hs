@@ -447,49 +447,42 @@ viewDay
                 elClass "span" "level-item level-right" $
                     text "* Day Quality"
 
-            elClass "div" "field is-grouped is-grouped-multiline" $ do
-                elClass "div" "control" $ do
-                    elClass "div" "tags has-addons" $ do
-                        elClass "span" "tag" $ do text "lv = launch validity"
-                        elClass "span" "tag is-info" . text
-                            $ Vy.showLaunchValidity lv
-                elClass "div" "control" $ do
-                    elClass "div" "tags has-addons" $ do
-                        elClass "span" "tag" $ do text "dv = distance validity"
-                        elClass "span" "tag is-success" . text
-                            $ Vy.showDistanceValidity dv
-                elClass "div" "control" $ do
-                    elClass "div" "tags has-addons" $ do
-                        elClass "span" "tag" $ do text "tv = time validity"
-                        elClass "span" "tag is-primary" . text
-                            $ Vy.showTimeValidity tv
-                elClass "div" "control" $ do
-                    elClass "div" "tags has-addons" $ do
-                        elClass "span" "tag" $ do text "sv = stop validity"
-                        elClass "span" "tag is-danger" . text
-                            $ maybe "Nothing" (("Just " <>) . Vy.showStopValidity) sv
+            elClass "table" "table is-striped" $ do
+                el "thead" $ do
+                    el "tr" $ do
+                        elAttr "th" ("colspan" =: "4") $ text "Validity"
+                    el "tr" $ do
+                        el "th" $ text "launch"
+                        el "th" $ text "distance"
+                        el "th" $ text "time"
+                        el "th" $ text "stop"
 
-            elClass "div" "field is-grouped is-grouped-multiline" $ do
-                elClass "div" "control" $ do
-                    elClass "div" "tags has-addons" $ do
-                        elClass "span" "tag" $ do text "lv = launch validity"
-                        elClass "span" "tag is-dark" . text
+                        return ()
+
+                el "tbody" $ do
+                    el "tr" $ do
+                        el "td" . text
+                            $ Vy.showLaunchValidity lv
+                        el "td" . text
+                            $ Vy.showDistanceValidity dv
+                        el "td" . text
+                            $ Vy.showTimeValidity tv
+                        el "td" . text
+                            $ maybe "Nothing" (("Just " <>) . Vy.showStopValidity) sv
+                        return ()
+
+                    el "tr" $ do
+                        el "td" . text
                             $ Vy.showLaunchValidity lvN
-                elClass "div" "control" $ do
-                    elClass "div" "tags has-addons" $ do
-                        elClass "span" "tag" $ do text "dv = distance validity"
-                        elClass "span" "tag is-dark" . text
+                        el "td" . text
                             $ Vy.showDistanceValidity dvN
-                elClass "div" "control" $ do
-                    elClass "div" "tags has-addons" $ do
-                        elClass "span" "tag" $ do text "tv = time validity"
-                        elClass "span" "tag is-dark" . text
+                        el "td" . text
                             $ Vy.showTimeValidity tvN
-                elClass "div" "control" $ do
-                    elClass "div" "tags has-addons" $ do
-                        elClass "span" "tag" $ do text "sv = stop validity"
-                        elClass "span" "tag is-dark" . text
+                        el "td" . text
                             $ maybe "Nothing" (("Just " <>) . Vy.showStopValidity) svN
+                        return ()
+                    return ()
+                return ()
 
             elAttr
                 "div"
