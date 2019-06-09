@@ -88,8 +88,10 @@ showStopValidity Nothing = "-"
 showStopValidity (Just (StopValidity v)) = T.pack . pprVy $ v
 
 showStopValidityDiff :: Maybe StopValidity -> Maybe StopValidity -> T.Text
-showStopValidityDiff Nothing _ = ""
-showStopValidityDiff _ Nothing = ""
+showStopValidityDiff Nothing (Just (StopValidity 1)) = "="
+showStopValidityDiff (Just (StopValidity 1)) Nothing = "="
+showStopValidityDiff Nothing _ = "-"
+showStopValidityDiff _ Nothing = "-"
 showStopValidityDiff (Just (StopValidity expected)) (Just (StopValidity actual))
     | f actual == f expected = "="
     | otherwise = T.pack . f $ actual - expected
