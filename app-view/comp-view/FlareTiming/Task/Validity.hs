@@ -15,8 +15,11 @@ import qualified Data.Map.Strict as Map
 
 import qualified WireTypes.Validity as Vy
     ( Validity(..)
-    , showTaskValidity
-    , showLaunchValidity, showDistanceValidity, showTimeValidity, showStopValidity
+    , showTaskValidity, showTaskValidityDiff
+    , showLaunchValidity, showLaunchValidityDiff
+    , showDistanceValidity, showDistanceValidityDiff
+    , showTimeValidity, showTimeValidityDiff
+    , showStopValidity, showStopValidityDiff
     )
 import WireTypes.ValidityWorking
     ( ValidityWorking(..)
@@ -66,7 +69,7 @@ taskWorking v =
     <> (Vy.showDistanceValidity . Vy.distance $ v)
     <> " * "
     <> (Vy.showTimeValidity . Vy.time $ v)
-    <> (maybe "" (\sv -> " * " <> Vy.showStopValidity sv) (Vy.stop v))
+    <> (maybe "" (\sv -> " * " <> (Vy.showStopValidity $ Just sv)) (Vy.stop v))
     <> katexNewLine
     <> " &= "
     <> (Vy.showTaskValidity . Vy.task $ v)
@@ -466,7 +469,7 @@ viewDay
                         el "td" $ text "Launch"
                         elV $ Vy.showLaunchValidity lv
                         elN $ Vy.showLaunchValidity lvN
-                        elD $ ""
+                        elD $ Vy.showLaunchValidityDiff lvN lv
                         return ()
 
                     el "tr" $ do
@@ -474,7 +477,7 @@ viewDay
                         el "td" $ text "Distance"
                         elV $ Vy.showDistanceValidity dv
                         elN $ Vy.showDistanceValidity dvN
-                        elD $ ""
+                        elD $ Vy.showDistanceValidityDiff dvN dv
                         return ()
 
                     el "tr" $ do
@@ -482,15 +485,15 @@ viewDay
                         el "td" $ text "Time"
                         elV $ Vy.showTimeValidity tv
                         elN $ Vy.showTimeValidity tvN
-                        elD $ ""
+                        elD $ Vy.showTimeValidityDiff tvN tv
                         return ()
 
                     el "tr" $ do
                         el "td" $ text "sv"
                         el "td" $ text "Stop"
-                        elV $ maybe "Nothing" (("Just " <>) . Vy.showStopValidity) sv
-                        elN $ maybe "Nothing" (("Just " <>) . Vy.showStopValidity) svN
-                        elD $ ""
+                        elV $ Vy.showStopValidity sv
+                        elN $ Vy.showStopValidity svN
+                        elD $ Vy.showStopValidityDiff svN sv
                         return ()
 
                     el "tr" $ do
@@ -498,7 +501,7 @@ viewDay
                         el "th" $ text "Task"
                         elV $ Vy.showTaskValidity dq
                         elN $ Vy.showTaskValidity dqN
-                        elD $ ""
+                        elD $ Vy.showTaskValidityDiff dqN dq
                         return ()
 
                 let tdFoot = elAttr "td" ("colspan" =: "4")
@@ -676,7 +679,7 @@ viewStop
 viewStop _ Vy.Validity{stop = Nothing} _ _ _ _ _ _ _ = return ()
 viewStop
     utcOffset
-    Vy.Validity{stop = Just v}
+    Vy.Validity{stop = v}
     ValidityWorking
         { distance = DistanceValidityWorking{..}
         }
