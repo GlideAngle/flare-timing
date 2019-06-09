@@ -117,6 +117,7 @@ data Breakdown =
 data NormPointing =
     NormPointing
         { bestTime :: [Maybe (BestTime (Quantity Double [u| h |]))]
+        , validity :: [Maybe Validity]
         , score :: [[(Pilot, NormBreakdown)]]
         }
     deriving (Eq, Ord, Show, Generic, ToJSON, FromJSON)

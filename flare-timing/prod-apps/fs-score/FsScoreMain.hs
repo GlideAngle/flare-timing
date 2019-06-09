@@ -73,7 +73,7 @@ fsdbScores (FsdbXml contents) = do
 
 normScores :: FsdbXml -> ExceptT String IO NormPointing
 normScores fsdbXml = do
-    NormPointing{score = xss} <- fsdbScores fsdbXml
+    np@NormPointing{score = xss} <- fsdbScores fsdbXml
 
     let vss :: [Maybe (BestTime (Quantity Double [u| h |]), [(Pilot, TrackSpeed)])] =
             times <$> xss
@@ -131,11 +131,7 @@ normScores fsdbXml = do
             | ls <- lss
             ]
 
-    return $
-        NormPointing
-            { bestTime = (fmap . fmap) fst vss
-            , score = ass
-            }
+    return np{bestTime = (fmap . fmap) fst vss, score = ass}
 
 arrivals :: [(Pilot, NormBreakdown)] -> Maybe [(Pilot, ArrivalFraction)]
 arrivals xs =

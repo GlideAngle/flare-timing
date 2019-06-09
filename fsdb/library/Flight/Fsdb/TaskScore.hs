@@ -7,8 +7,10 @@ import Data.Maybe (catMaybes)
 
 import Text.XML.HXT.Arrow.Pickle
     ( PU(..)
-    , unpickleDoc, xpWrap, xpFilterAttr, xpElem, xpAttr
-    , xpInt, xpPrim, xpPair, xp10Tuple, xpTextAttr, xpOption
+    , unpickleDoc, unpickleDoc'
+    , xpWrap, xpElem, xpAttr
+    , xpFilterAttr, xpFilterCont
+    , xpInt, xpPrim, xpPair, xp5Tuple, xp10Tuple, xpTextAttr, xpOption
     )
 import Text.XML.HXT.DOM.TypeDefs (XmlTree)
 import Text.XML.HXT.Core
@@ -17,10 +19,9 @@ import Text.XML.HXT.Core
     , (&&&)
     , (>>>)
     , runX
-    , withValidate
-    , withWarnings
+    , no, yes
+    , withValidate, withWarnings, withRemoveWS
     , readString
-    , no
     , hasName
     , getChildren
     , getAttrValue
@@ -31,6 +32,7 @@ import Text.XML.HXT.Core
     , containing
     , orElse
     , hasAttr
+    , isAttr
     )
 
 import Flight.Distance (TaskDistance(..))
@@ -47,6 +49,8 @@ import Flight.Score
     , SpeedFraction(..)
     , ArrivalFraction(..)
     , LeadingArea(..), LeadingCoef(..), LeadingFraction(..)
+    , Validity(..), TaskValidity(..), StopValidity(..)
+    , LaunchValidity(..), DistanceValidity(..), TimeValidity(..)
     )
 import Flight.Fsdb.Pilot (getCompPilot)
 import Flight.Fsdb.KeyPilot (unKeyPilot, keyPilots, keyMap)
@@ -144,6 +148,51 @@ xpLeading =
         (xpAttr "iv" xpInt)
         (xpAttr "lc" xpPrim)
 
+xpValidity :: PU Validity
+xpValidity =
+    xpElem "FsTaskScoreParams"
+    -- WARNING: Filter only attributes, ignoring child elements such as
+    -- <FsTaskDistToTp tp_no="1" distance="0.000" />. If not then the pickling
+    -- will fail with "xpCheckEmptyContents: unprocessed XML content detected".
+    $ xpFilterCont(isAttr)
+    $ xpFilterAttr
+        ( hasName "day_quality"
+        <+> hasName "launch_validity"
+        <+> hasName "distance_validity"
+        <+> hasName "time_validity"
+        <+> hasName "stop_validity"
+        )
+    $ xpWrap
+        ( \xx@(dq, lv, dv, tv, sv) ->
+            Validity
+                { task = TaskValidity $ dToR dq
+                , launch = LaunchValidity $ dToR lv
+                , distance = DistanceValidity $ dToR dv
+                , time = TimeValidity $ dToR tv
+                , stop = StopValidity . dToR <$> sv
+                }
+        , \Validity
+                { task = TaskValidity dq
+                , launch = LaunchValidity lv
+                , distance = DistanceValidity dv
+                , time = TimeValidity tv
+                , stop = sv
+                } ->
+                    ( fromRational dq
+                    , fromRational lv
+                    , fromRational dv
+                    , fromRational tv
+                    , (\(StopValidity v) -> fromRational v) <$> sv
+                    )
+        )
+    $ xp5Tuple
+        (xpAttr "day_quality" xpPrim)
+        (xpAttr "launch_validity" xpPrim)
+        (xpAttr "distance_validity" xpPrim)
+        (xpAttr "time_validity" xpPrim)
+        (xpOption $ xpAttr "stop_validity" xpPrim)
+
+
 getScore :: ArrowXml a => [Pilot] -> a XmlTree [(Pilot, Maybe NormBreakdown)]
 getScore pilots =
     getChildren
@@ -209,21 +258,39 @@ getScore pilots =
                     >>> arr (unpickleDoc xpRankScore)
 
         getLeading =
-            (getChildren
+            getChildren
             >>> hasName "FsFlightData"
             >>> arr (unpickleDoc xpLeading)
-            )
 
         getTaskDistance =
             getChildren
             >>> hasName "FsTaskScoreParams"
             >>> getAttrValue "task_distance"
 
+getValidity :: ArrowXml a => a XmlTree (Either String Validity)
+getValidity =
+    getChildren
+    >>> deep (hasName "FsTask")
+    >>> getTaskValidity
+    where
+        getTaskValidity =
+            getChildren
+            >>> hasName "FsTaskScoreParams"
+            >>> arr (unpickleDoc' xpValidity)
+
 parseScores :: String -> IO (Either String NormPointing)
 parseScores contents = do
-    let doc = readString [ withValidate no, withWarnings no ] contents
+    let doc =
+            readString
+                [ withValidate no
+                , withWarnings no
+                , withRemoveWS yes
+                ]
+                contents
+
     ps <- runX $ doc >>> getCompPilot
     xss <- runX $ doc >>> getScore ps
+
     let yss =
             [
                 catMaybes
@@ -237,4 +304,11 @@ parseScores contents = do
 
     let tss = const Nothing <$> yss
 
-    return . Right $ NormPointing{bestTime = tss, score = yss}
+    vs :: [Either String Validity] <- runX $ doc >>> getValidity
+    return $
+        (\vs' -> NormPointing
+            { bestTime = tss
+            , validity = Just <$> vs'
+            , score = yss
+            })
+        <$> sequence vs
