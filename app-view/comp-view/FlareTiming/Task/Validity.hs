@@ -500,7 +500,7 @@ viewDay
                         elD $ Vy.showStopValidityDiff svN sv
                         return ()
 
-                    el "tr" $ do
+                    elClass "tr" "is-selected" $ do
                         el "th" $ text ""
                         el "th" $ text "Task"
                         elV' $ Vy.showTaskValidity dq
