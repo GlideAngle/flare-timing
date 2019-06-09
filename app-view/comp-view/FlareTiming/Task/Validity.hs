@@ -714,7 +714,7 @@ viewTime
                 el "tbody" $ do
                     el "tr" $ do
                         el "td" $ text ""
-                        el "td" $ text "Section Best Time"
+                        el "td" $ text "Section Best Time †"
                         elV . T.pack $ show ssBestTime
                         elN $ ""
                         elD $ ""
@@ -722,7 +722,7 @@ viewTime
 
                     el "tr" $ do
                         el "td" $ text "bt"
-                        el "td" $ text "Gate Best Time"
+                        el "td" $ text "Gate Best Time ‡"
                         elV . T.pack $ show bt
                         elN . T.pack $ show btN
                         elD $ ""
@@ -760,16 +760,18 @@ viewTime
                         elD $ Vy.showTimeValidityDiff tvN tv
                         return ()
 
-                return ()
+                let tdFoot = elAttr "td" ("colspan" =: "5")
+                let foot = el "tr" . tdFoot . text
+
+                el "tfoot" $ do
+                    foot "† The best time ignoring start gates."
+                    foot "‡ The best time from the start gate taken."
+                    return ()
 
             elAttr
                 "div"
                 ("id" =: "time-working")
                 (text "")
-
-            elClass "div" "notification" $ do
-                el "p" $ text "ss best time = the best time ignoring start gates"
-                el "p" $ text "gs best time = the best time from the start gate taken"
 
     return ()
 
