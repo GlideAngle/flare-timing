@@ -38,7 +38,7 @@ import Text.XML.HXT.Core
 import Flight.Distance (TaskDistance(..))
 import Flight.Track.Distance (AwardedDistance(..))
 import Flight.Track.Point (NormPointing(..), NormBreakdown(..))
-import Flight.Comp (PilotId(..), Pilot(..))
+import Flight.Comp (PilotId(..), Pilot(..), Nominal(..))
 import Flight.Score
     ( TaskPoints(..), TaskPlacing(..)
     , DistancePoints(..)
@@ -50,7 +50,10 @@ import Flight.Score
     , ArrivalFraction(..)
     , LeadingArea(..), LeadingCoef(..), LeadingFraction(..)
     , Validity(..), TaskValidity(..), StopValidity(..)
-    , LaunchValidity(..), DistanceValidity(..), TimeValidity(..)
+    , LaunchValidity(..), LaunchValidityWorking(..)
+    , DistanceValidity(..), TimeValidity(..)
+    , PilotsFlying(..), PilotsPresent(..)
+    , NominalLaunch(..)
     )
 import Flight.Fsdb.Pilot (getCompPilot)
 import Flight.Fsdb.KeyPilot (unKeyPilot, keyPilots, keyMap)
@@ -192,6 +195,28 @@ xpValidity =
         (xpAttr "time_validity" xpPrim)
         (xpOption $ xpAttr "stop_validity" xpPrim)
 
+xpLaunchValidityWorking :: NominalLaunch -> PU LaunchValidityWorking
+xpLaunchValidityWorking nl =
+    xpElem "FsTaskScoreParams"
+    $ xpFilterCont(isAttr)
+    $ xpFilterAttr
+        (hasName "no_of_pilots_flying" <+> hasName "no_of_pilots_present")
+    $ xpWrap
+        ( \(pf, pp) ->
+            LaunchValidityWorking
+                { flying = PilotsFlying $ fromIntegral pf
+                , present = PilotsPresent $ fromIntegral pp
+                , nominalLaunch = nl
+                }
+        , \LaunchValidityWorking
+                { flying = PilotsFlying pf
+                , present = PilotsPresent pp
+                } ->
+                    (fromIntegral pf, fromIntegral pp)
+        )
+    $ xpPair
+        (xpAttr "no_of_pilots_flying" xpInt)
+        (xpAttr "no_of_pilots_present" xpInt)
 
 getScore :: ArrowXml a => [Pilot] -> a XmlTree [(Pilot, Maybe NormBreakdown)]
 getScore pilots =
@@ -267,19 +292,32 @@ getScore pilots =
             >>> hasName "FsTaskScoreParams"
             >>> getAttrValue "task_distance"
 
-getValidity :: ArrowXml a => a XmlTree (Either String Validity)
-getValidity =
+getValidity
+    :: ArrowXml a
+    => NominalLaunch
+    -> a XmlTree (Either String (Validity, LaunchValidityWorking))
+getValidity nl =
     getChildren
     >>> deep (hasName "FsTask")
     >>> getTaskValidity
+    &&& getLaunchValidityWorking
+    >>> arr (\(tv, lw) -> do
+            tv' <- tv
+            lw' <- lw
+            return (tv', lw'))
     where
         getTaskValidity =
             getChildren
             >>> hasName "FsTaskScoreParams"
             >>> arr (unpickleDoc' xpValidity)
 
-parseScores :: String -> IO (Either String NormPointing)
-parseScores contents = do
+        getLaunchValidityWorking =
+            getChildren
+            >>> hasName "FsTaskScoreParams"
+            >>> arr (unpickleDoc' $ xpLaunchValidityWorking nl)
+
+parseScores :: Nominal -> String -> IO (Either String NormPointing)
+parseScores Nominal{launch = nl} contents = do
     let doc =
             readString
                 [ withValidate no
@@ -294,11 +332,13 @@ parseScores contents = do
     let yss = [catMaybes $ sequence <$> xs| xs <- xss]
     let tss = const Nothing <$> yss
 
-    vs :: [Either String Validity] <- runX $ doc >>> getValidity
+    gvs <- runX $ doc >>> getValidity nl
     return $
-        (\vs' -> NormPointing
+        (\(vs, lw) -> NormPointing
             { bestTime = tss
-            , validity = Just <$> vs'
+            , validityWorkingLaunch = Just <$> lw
+            , validity = Just <$> vs
             , score = yss
             })
-        <$> sequence vs
+        . unzip
+        <$> sequence gvs

@@ -8,6 +8,7 @@ import Data.List (sortOn)
 import qualified Data.Map.Strict as Map (fromList, lookup)
 import Control.Arrow (second)
 import Control.Monad (mapM_)
+import Control.Monad.Trans.Except (throwE)
 import Control.Monad.Except (ExceptT(..), runExceptT, lift)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
@@ -15,7 +16,7 @@ import Data.UnitsOfMeasure.Internal (Quantity(..))
 import Flight.Cmd.Paths (LenientFile(..), checkPaths)
 import Flight.Cmd.Options (ProgramName(..))
 import Flight.Cmd.BatchOptions (CmdBatchOptions(..), mkOptions)
-import Flight.Fsdb (parseScores)
+import Flight.Fsdb (parseNominal, parseScores)
 import Flight.Track.Speed (TrackSpeed)
 import qualified Flight.Track.Speed as Time (TrackSpeed(..))
 import Flight.Track.Point (NormPointing(..), NormBreakdown(..))
@@ -24,6 +25,7 @@ import Flight.Comp
     , FsdbFile(..)
     , FsdbXml(..)
     , Pilot(..)
+    , Nominal(..)
     , fsdbToScore
     , findFsdb
     , ensureExt
@@ -66,14 +68,26 @@ go fsdbFile@(FsdbFile fsdbPath) = do
     settings <- runExceptT $ normScores (FsdbXml contents')
     either print (writeScore (fsdbToScore fsdbFile)) settings
 
-fsdbScores :: FsdbXml -> ExceptT String IO NormPointing
-fsdbScores (FsdbXml contents) = do
-    fs <- lift $ parseScores contents
+fsdbNominal :: FsdbXml -> ExceptT String IO Nominal
+fsdbNominal (FsdbXml contents) = do
+    ns <- lift $ parseNominal contents
+    case ns of
+        Left msg -> ExceptT . return $ Left msg
+        Right [n] -> ExceptT . return $ Right n
+        _ -> do
+            let msg = "Expected only one set of nominals for the comp"
+            lift $ print msg
+            throwE msg
+
+fsdbScores :: Nominal -> FsdbXml -> ExceptT String IO NormPointing
+fsdbScores n (FsdbXml contents) = do
+    fs <- lift $ parseScores n contents
     ExceptT $ return fs
 
 normScores :: FsdbXml -> ExceptT String IO NormPointing
 normScores fsdbXml = do
-    np@NormPointing{score = xss} <- fsdbScores fsdbXml
+    n <- fsdbNominal fsdbXml
+    np@NormPointing{score = xss} <- fsdbScores n fsdbXml
 
     let vss :: [Maybe (BestTime (Quantity Double [u| h |]), [(Pilot, TrackSpeed)])] =
             times <$> xss
