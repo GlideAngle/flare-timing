@@ -436,6 +436,15 @@ viewValidity utcOffset task vy vyNorm vw vwNorm reachStats reach bonusReach td f
 
     return ()
 
+elV :: DomBuilder t m => T.Text -> m ()
+elV = elClass "td" "validity" . text
+
+elN :: DomBuilder t m => T.Text -> m ()
+elN = elClass "td" "td-norm" . text
+
+elD :: DomBuilder t m => T.Text -> m ()
+elD = elClass "td" "td-norm td-diff" . text
+
 viewDay
     :: DomBuilder t m
     => Vy.Validity
@@ -464,14 +473,6 @@ viewDay
                         elClass "th" "validity" $ text "Validity"
                         elClass "th" "th-norm validity" $ text "✓"
                         elClass "th" "th-norm th-diff" $ text "Δ"
-
-                let elV = elClass "td" "validity" . text
-                let elN = elClass "td" "td-norm" . text
-                let elD = elClass "td" "td-norm td-diff" . text
-
-                let elV' = elClass "th" "validity" . text
-                let elN' = elClass "th" "td-norm" . text
-                let elD' = elClass "th" "td-norm td-diff" . text
 
                 el "tbody" $ do
                     el "tr" $ do
@@ -506,12 +507,12 @@ viewDay
                         elD $ Vy.showStopValidityDiff svN sv
                         return ()
 
-                    elClass "tr" "is-selected" $ do
+                    el "tr" $ do
                         el "th" $ text ""
                         el "th" $ text "Task"
-                        elV' $ Vy.showTaskValidity dq
-                        elN' $ Vy.showTaskValidity dqN
-                        elD' $ Vy.showTaskValidityDiff dqN dq
+                        elV $ Vy.showTaskValidity dq
+                        elN $ Vy.showTaskValidity dqN
+                        elD $ Vy.showTaskValidityDiff dqN dq
                         return ()
 
                 let tdFoot = elAttr "td" ("colspan" =: "4")
@@ -569,14 +570,6 @@ viewLaunch
                         elClass "th" "th-norm validity" $ text "✓"
                         elClass "th" "th-norm th-diff" $ text "Δ"
 
-                let elV = elClass "td" "validity" . text
-                let elN = elClass "td" "td-norm" . text
-                let elD = elClass "td" "td-norm td-diff" . text
-
-                let elV' = elClass "th" "validity" . text
-                let elN' = elClass "th" "td-norm" . text
-                let elD' = elClass "th" "td-norm td-diff" . text
-
                 el "tbody" $ do
                     el "tr" $ do
                         el "td" $ text "f"
@@ -602,12 +595,12 @@ viewLaunch
                         elD $ showNominalLaunchDiff nominalLaunchN nominalLaunch
                         return ()
 
-                    elClass "tr" "is-selected" $ do
+                    el "tr" $ do
                         el "th" $ text ""
                         el "th" $ text "Launch Validity"
-                        elV' $ Vy.showLaunchValidity lv
-                        elN' $ Vy.showLaunchValidity lvN
-                        elD' $ Vy.showLaunchValidityDiff lvN lv
+                        elV $ Vy.showLaunchValidity lv
+                        elN $ Vy.showLaunchValidity lvN
+                        elD $ Vy.showLaunchValidityDiff lvN lv
                         return ()
 
                 let tdFoot = elAttr "td" ("colspan" =: "4")
