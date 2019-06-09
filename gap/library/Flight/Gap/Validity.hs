@@ -15,6 +15,7 @@ module Flight.Gap.Validity
     , LaunchToEss(..)
     , FlownMean(..)
     , FlownStdDev(..)
+    , NominalDistanceArea(..)
     , launchValidity
     , distanceValidity
     , timeValidity

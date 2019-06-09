@@ -31,6 +31,7 @@ module Flight.Score
     , TaskValidity(..)
     , Validity(..)
     , ValidityWorking(..)
+    , NominalDistanceArea(..)
     , launchValidity
     , distanceValidity
     , timeValidity

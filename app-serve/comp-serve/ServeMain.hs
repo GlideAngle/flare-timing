@@ -54,7 +54,8 @@ import qualified Flight.Track.Point as Norm (NormPointing(..), NormBreakdown(..)
 import Flight.Track.Point
     (Pointing(..), Velocity(..), Allocation(..), Breakdown(..))
 import qualified Flight.Score as Wg (Weights(..))
-import qualified Flight.Score as Vy (Validity(..), ValidityWorking(..))
+import qualified Flight.Score as Vy (Validity(..))
+import qualified Flight.Score as Vw (ValidityWorking(..))
 import Flight.Score
     ( PilotVelocity(..)
     , DistanceWeight(..), ReachWeight(..), EffortWeight(..)
@@ -128,10 +129,11 @@ import Flight.Route
     , TrackLine(..), ProjectedTrackLine(..), PlanarTrackLine(..)
     )
 import Flight.Mask (checkTracks)
-import ServeOptions (description)
-import ServeTrack (RawLatLngTrack(..), tagToTrack)
 import Data.Ratio.Rounding (dpRound)
 import Flight.Distance (QTaskDistance)
+import ServeOptions (description)
+import ServeTrack (RawLatLngTrack(..), tagToTrack)
+import ServeValidity (nullValidityWorking)
 
 data Config k
     = Config
@@ -226,6 +228,9 @@ type GapPointApi k =
     :<|> "fs-score" :> "validity"
         :> Get '[JSON] [Maybe Vy.Validity]
 
+    :<|> "fs-score" :> Capture "task" Int :> "validity-working"
+        :> Get '[JSON] (Maybe Vw.ValidityWorking)
+
     :<|> "fs-score" :> (Capture "task" Int) :> "score"
         :> Get '[JSON] [(Pilot, Norm.NormBreakdown)]
 
@@ -256,7 +261,7 @@ type GapPointApi k =
     :<|> "gap-point" :> Capture "task" Int :> "score"
         :> Get '[JSON] [(Pilot, Breakdown)]
     :<|> "gap-point" :> Capture "task" Int :> "validity-working"
-        :> Get '[JSON] (Maybe Vy.ValidityWorking)
+        :> Get '[JSON] (Maybe Vw.ValidityWorking)
 
     :<|> "comp-input" :> Capture "task" Int :> "pilot-abs"
         :> Get '[JSON] [Pilot]
@@ -500,6 +505,7 @@ serverGapPointApi cfg =
         :<|> tasks <$> c
         :<|> getPilots <$> c
         :<|> getValidity <$> n
+        :<|> getNormTaskValidityWorking
         :<|> getTaskNormScore
         :<|> getTaskRouteSphericalEdge
         :<|> getTaskRouteEllipsoidEdge
@@ -626,13 +632,27 @@ getTaskScore ii = do
 
         _ -> throwError $ errTaskStep "gap-point" ii
 
-getTaskValidityWorking :: Int -> AppT k IO (Maybe Vy.ValidityWorking)
+getTaskValidityWorking :: Int -> AppT k IO (Maybe Vw.ValidityWorking)
 getTaskValidityWorking ii = do
     xs' <- fmap validityWorking <$> asks pointing
     case xs' of
         Just xs ->
             case drop (ii - 1) xs of
                 x : _ -> return x
+                _ -> throwError $ errTaskBounds ii
+
+        _ -> throwError $ errTaskStep "gap-point" ii
+
+getNormTaskValidityWorking :: Int -> AppT k IO (Maybe Vw.ValidityWorking)
+getNormTaskValidityWorking ii = do
+    xs' <- fmap Norm.validityWorkingLaunch <$> asks norming
+    case xs' of
+        Just xs ->
+            case drop (ii - 1) xs of
+                lv : _ -> return $ do
+                    lv' <- lv
+                    return $ nullValidityWorking{Vw.launch = lv'}
+
                 _ -> throwError $ errTaskBounds ii
 
         _ -> throwError $ errTaskStep "gap-point" ii
