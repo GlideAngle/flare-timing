@@ -7,6 +7,9 @@ module WireTypes.ValidityWorking
     , PilotsPresent(..)
     , PilotsFlying(..)
     , NominalLaunch(..)
+    , showPilotsPresentDiff
+    , showPilotsFlyingDiff
+    , showNominalLaunchDiff
     -- * Distance Validity Working
     , DistanceValidityWorking(..)
     , SumOfDistance(..)
@@ -62,6 +65,27 @@ newtype PilotsPresent = PilotsPresent Integer
 newtype PilotsFlying = PilotsFlying Integer
     deriving (Eq, Ord)
     deriving newtype (Show, FromJSON)
+
+showPilotsPresentDiff :: PilotsPresent -> PilotsPresent -> T.Text
+showPilotsPresentDiff (PilotsPresent expected) (PilotsPresent actual)
+    | f actual == f expected = "="
+    | otherwise = T.pack . f $ actual - expected
+    where
+        f = printf "%+.3d"
+
+showPilotsFlyingDiff :: PilotsFlying -> PilotsFlying -> T.Text
+showPilotsFlyingDiff (PilotsFlying expected) (PilotsFlying actual)
+    | f actual == f expected = "="
+    | otherwise = T.pack . f $ actual - expected
+    where
+        f = printf "%+.3d"
+
+showNominalLaunchDiff :: NominalLaunch -> NominalLaunch -> T.Text
+showNominalLaunchDiff (NominalLaunch expected) (NominalLaunch actual)
+    | f actual == f expected = "="
+    | otherwise = T.pack . f $ actual - expected
+    where
+        f = printf "%+.2f"
 
 newtype NominalLaunch = NominalLaunch Double
     deriving (Eq, Ord)

@@ -29,6 +29,9 @@ import WireTypes.ValidityWorking
     , BestTime(..)
     , PilotsFlying(..)
     , MaximumDistance(..)
+    , showPilotsPresentDiff
+    , showPilotsFlyingDiff
+    , showNominalLaunchDiff
     )
 import WireTypes.Cross (FlyingSection)
 import WireTypes.Route (TaskDistance(..), showTaskDistance)
@@ -580,7 +583,7 @@ viewLaunch
                         el "td" $ text "Pilots Flying"
                         elV . T.pack $ show flying
                         elN . T.pack $ show flyingN
-                        elD $ ""
+                        elD $ showPilotsFlyingDiff flyingN flying
                         return ()
 
                     el "tr" $ do
@@ -588,7 +591,7 @@ viewLaunch
                         el "td" $ text "Pilots Present"
                         elV . T.pack $ show present
                         elN . T.pack $ show presentN
-                        elD $ ""
+                        elD $ showPilotsPresentDiff presentN present
                         return ()
 
                     el "tr" $ do
@@ -596,7 +599,7 @@ viewLaunch
                         el "td" $ text "Nominal Launch"
                         elV . T.pack $ show nominalLaunch
                         elN . T.pack $ show nominalLaunchN
-                        elD $ ""
+                        elD $ showNominalLaunchDiff nominalLaunchN nominalLaunch
                         return ()
 
                     elClass "tr" "is-selected" $ do
