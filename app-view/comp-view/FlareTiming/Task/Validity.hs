@@ -26,6 +26,7 @@ import WireTypes.ValidityWorking
     , LaunchValidityWorking(..)
     , DistanceValidityWorking(..)
     , TimeValidityWorking(..)
+    , StopValidityWorking(..)
     , BestTime(..)
     , PilotsFlying(..)
     , NominalGoal(..)
@@ -435,8 +436,8 @@ viewValidity utcOffset task vy vyNorm vw vwNorm reachStats reach bonusReach td f
 
                         viewStop
                             utcOffset
-                            v
-                            w
+                            v vN
+                            w wN
                             reachStats
                             (fromMaybe [] <$> reach)
                             (fromMaybe [] <$> bonusReach)
@@ -872,6 +873,8 @@ viewStop
     :: MonadWidget t m
     => Dynamic t UtcOffset
     -> Vy.Validity
+    -> Vy.Validity
+    -> ValidityWorking
     -> ValidityWorking
     -> Dynamic t (Maybe ReachStats)
     -> Dynamic t [(Pilot, TrackReach)]
@@ -880,12 +883,29 @@ viewStop
     -> Dynamic t [(Pilot, FlyingSection UTCTime)]
     -> Dynamic t [(Pilot, FlyingSection UTCTime)]
     -> m ()
-viewStop _ Vy.Validity{stop = Nothing} _ _ _ _ _ _ _ = return ()
+viewStop _ Vy.Validity{stop = Nothing} _ _ _ _ _ _ _ _ _ = return ()
+viewStop _ _ Vy.Validity{stop = Nothing} _ _ _ _ _ _ _ _ = return ()
+viewStop _ _ _ ValidityWorking{stop = Nothing} _ _ _ _ _ _ _ = return ()
+viewStop _ _ _ _ ValidityWorking{stop = Nothing} _ _ _ _ _ _ = return ()
 viewStop
     utcOffset
-    Vy.Validity{stop = v}
+    Vy.Validity{stop = sv}
+    Vy.Validity{stop = svN}
     ValidityWorking
-        { distance = DistanceValidityWorking{..}
+        { stop =
+            Just StopValidityWorking
+                { flying
+                , bestDistance = bd
+                , flownMean
+                , flownStdDev
+                }
+        }
+    ValidityWorking
+        { stop =
+            Just StopValidityWorking
+                { flying = flyingN
+                , bestDistance = bdN
+                }
         }
     reachStats
     reach
@@ -897,7 +917,42 @@ viewStop
     elClass "div" "card" $ do
         elClass "div" "card-content" $ do
             elClass "h2" "title is-4" . text
-                $ "Stop Validity = " <> Vy.showStopValidity v
+                $ "Stop Validity = " <> Vy.showStopValidity sv
+
+            elClass "table" "table is-striped" $ do
+                el "thead" $ do
+                    el "tr" $ do
+                        elAttr "th" ("colspan" =: "3") $ text ""
+                        elClass "th" "th-norm validity" $ text "✓"
+                        elClass "th" "th-norm th-diff" $ text "Δ"
+
+                el "tbody" $ do
+                    el "tr" $ do
+                        el "td" $ text "f"
+                        el "td" $ text "Pilots Flying"
+                        elV . T.pack $ show flying
+                        elN . T.pack $ show flyingN
+                        elD $ showPilotsFlyingDiff flyingN flying
+                        return ()
+
+                    el "tr" $ do
+                        el "th" $ text ""
+                        el "th" $ text "Stop Validity"
+                        elV $ Vy.showStopValidity sv
+                        elN $ Vy.showStopValidity svN
+                        elD $ Vy.showStopValidityDiff svN sv
+                        return ()
+
+                let tdFoot = elAttr "td" ("colspan" =: "5")
+                let foot = el "tr" . tdFoot . text
+
+                el "tfoot" $ do
+                    foot "† The mean of distances flown."
+                    foot "‡ The standard deviation of distances flown."
+                    return ()
+
+
+
             elClass "div" "field is-grouped is-grouped-multiline" $ do
                 elClass "div" "control" $ do
                     elClass "div" "tags has-addons" $ do
@@ -914,7 +969,7 @@ viewStop
                     elClass "div" "tags has-addons" $ do
                         elClass "span" "tag" $ do text "bd = best distance"
                         elClass "span" "tag is-dark"
-                            $ text (T.pack . show $ bestDistance)
+                            $ text (T.pack . show $ bd)
                 elClass "div" "control" $ do
                     elClass "div" "tags has-addons" $ do
                         elClass "span" "tag" $ do text "ed = launch to ESS distance"
