@@ -917,7 +917,7 @@ viewStop
     reachStats
     reach
     bonusReach
-    td
+    _td
     landedByStop
     stillFlying = do
 
@@ -1024,59 +1024,6 @@ viewStop
                     foot "† The mean of distances flown."
                     foot "‡ The standard deviation of distances flown."
                     return ()
-
-
-
-            elClass "div" "field is-grouped is-grouped-multiline" $ do
-                elClass "div" "control" $ do
-                    elClass "div" "tags has-addons" $ do
-                        elClass "span" "tag" $ do text "f = pilots flying"
-                        elClass "span" "tag is-info"
-                            $ text (T.pack . show $ flying)
-                _ <- dyn $ ffor landedByStop (\xs -> do
-                    elClass "div" "control" $ do
-                        elClass "div" "tags has-addons" $ do
-                            elClass "span" "tag" $ do text "ls = pilots landed before stop time"
-                            elClass "span" "tag is-warning"
-                                $ text (T.pack . show $ length xs))
-                elClass "div" "control" $ do
-                    elClass "div" "tags has-addons" $ do
-                        elClass "span" "tag" $ do text "bd = best distance"
-                        elClass "span" "tag is-dark"
-                            $ text (T.pack . show $ bd)
-                elClass "div" "control" $ do
-                    elClass "div" "tags has-addons" $ do
-                        elClass "span" "tag" $ do text "ed = launch to ESS distance"
-                        elClass "span" "tag is-success" . text
-                            $ showTaskDistance td
-                _ <- dyn $ ffor reachStats (\case
-                    Nothing -> return ()
-                    Just ReachStats{..} -> do
-                        elClass "div" "field is-grouped is-grouped-multiline" $ do
-                            elClass "div" "control" $ do
-                                elClass "div" "tags has-addons" $ do
-                                    elClass "span" "tag" $ do text "mean flown"
-                                    elClass "span" "tag is-primary" . text
-                                        $ showPilotDistance 3 flownMean <> " km"
-                            elClass "div" "control" $ do
-                                elClass "div" "tags has-addons" $ do
-                                    elClass "span" "tag" $ do text "flown standard deviation"
-                                    elClass "span" "tag is-primary" . text
-                                        $ showPilotDistance 3 flownStdDev <> " km"
-                            elClass "div" "control" $ do
-                                elClass "div" "tags has-addons" $ do
-                                    elClass "span" "tag" $ do text "mean reach"
-                                    elClass "span" "tag is-danger" . text
-                                        $ showPilotDistance 3 reachMean <> " km"
-                            elClass "div" "control" $ do
-                                elClass "div" "tags has-addons" $ do
-                                    elClass "span" "tag" $ do text "reach standard deviation"
-                                    elClass "span" "tag is-danger" . text
-                                        $ showPilotDistance 3 reachStdDev <> " km")
-
-                return ()
-
-            spacer
 
             elAttr
                 "div"
