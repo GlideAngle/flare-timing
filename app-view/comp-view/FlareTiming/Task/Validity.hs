@@ -36,6 +36,8 @@ import WireTypes.ValidityWorking
     , NominalDistanceArea(..)
     , showPilotsPresentDiff
     , showPilotsFlyingDiff
+    , showPilotsLandedDiff
+    , showPilotsAtEssDiff
     , showNominalLaunchDiff
     , showNominalGoal, showNominalGoalDiff
     , showBestTime, showBestTimeDiff
@@ -894,7 +896,9 @@ viewStop
     ValidityWorking
         { stop =
             Just StopValidityWorking
-                { flying
+                { pilotsAtEss
+                , flying
+                , landed
                 , bestDistance = bd
                 , flownMean
                 , flownStdDev
@@ -903,7 +907,9 @@ viewStop
     ValidityWorking
         { stop =
             Just StopValidityWorking
-                { flying = flyingN
+                { pilotsAtEss = pilotsAtEssN
+                , flying = flyingN
+                , landed = landedN
                 , bestDistance = bdN
                 }
         }
@@ -933,6 +939,22 @@ viewStop
                         elV . T.pack $ show flying
                         elN . T.pack $ show flyingN
                         elD $ showPilotsFlyingDiff flyingN flying
+                        return ()
+
+                    el "tr" $ do
+                        el "td" $ text "pe"
+                        el "td" $ text "Pilots at ESS"
+                        elV . T.pack $ show pilotsAtEss
+                        elN . T.pack $ show pilotsAtEssN
+                        elD $ showPilotsAtEssDiff pilotsAtEssN pilotsAtEss
+                        return ()
+
+                    el "tr" $ do
+                        el "td" $ text "ls"
+                        el "td" $ text "Pilots Landed before Stop"
+                        elV . T.pack $ show landed
+                        elN . T.pack $ show landedN
+                        elD $ showPilotsLandedDiff landedN landed
                         return ()
 
                     el "tr" $ do

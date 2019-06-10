@@ -38,6 +38,8 @@ module WireTypes.ValidityWorking
     , PilotsLanded(..)
     , LaunchToEss(..)
     , showLaunchToEss
+    , showPilotsLandedDiff
+    , showPilotsAtEssDiff
     ) where
 
 import Text.Printf (printf)
@@ -344,6 +346,20 @@ newtype PilotsAtEss = PilotsAtEss Integer
     deriving (Eq, Ord)
     deriving newtype (Show, FromJSON)
 
+showPilotsLandedDiff :: PilotsLanded -> PilotsLanded -> T.Text
+showPilotsLandedDiff (PilotsLanded expected) (PilotsLanded actual)
+    | f actual == f expected = "="
+    | otherwise = T.pack . f $ actual - expected
+    where
+        f = printf "%+.3d"
+
+showPilotsAtEssDiff :: PilotsAtEss -> PilotsAtEss -> T.Text
+showPilotsAtEssDiff (PilotsAtEss expected) (PilotsAtEss actual)
+    | f actual == f expected = "="
+    | otherwise = T.pack . f $ actual - expected
+    where
+        f = printf "%+.3d"
+
 newtype LaunchToEss = LaunchToEss Double
     deriving (Eq, Ord, Show, Generic)
 
@@ -358,4 +374,3 @@ instance FromJSON LaunchToEss where
 showLaunchToEss :: LaunchToEss -> T.Text
 showLaunchToEss (LaunchToEss d) =
     T.pack . printf "%.3f km" $ d
-
