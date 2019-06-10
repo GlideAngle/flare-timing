@@ -353,7 +353,7 @@ stopWorking
 
     "katex.render("
     <> "\"\\\\begin{aligned} "
-    <> " a &= \\\\sqrt{\\\\frac{bd - \\\\overline{flown}}{ed - bd + 1} * \\\\sqrt{\\\\frac{\\\\sigma(flown)}{5}}}"
+    <> " a &= \\\\sqrt{\\\\frac{bd - \\\\mu(flown)}{ed - bd + 1} * \\\\sqrt{\\\\frac{\\\\sigma(flown)}{5}}}"
     <> katexNewLine
     <> eqnA
     <> katexNewLine
@@ -986,24 +986,22 @@ viewStop
                                 , reachMean = reachMeanR
                                 } -> do
                         el "tr" $ do
-                            el "td" $ text ""
-                            el "td" $ text "Mean Reach †"
+                            elAttr "td" ("rowspan" =: "3") $ text "μ"
+                            el "td" $ text "Reach †"
                             elV $ showPilotDistance 3 reachMeanR <> " km"
                             elN $ "n/a"
                             elD $ ""
                             return ()
 
                         el "tr" $ do
-                            el "td" $ text ""
-                            el "td" $ text "Mean Flown ‡"
+                            el "td" $ text "Flown ‡"
                             elV $ showPilotDistance 3 flownMeanR <> " km"
                             elN $ "n/a"
                             elD $ ""
                             return ())
 
                     el "tr" $ do
-                        el "td" $ text ""
-                        el "td" $ text "Mean Extra ‖"
+                        el "td" $ text "Extra ‖"
                         elV $ showPilotDistance 3 flownMean <> " km"
                         elN $ showPilotDistance 3 flownMeanN <> " km"
                         elD $ ""
@@ -1017,24 +1015,22 @@ viewStop
                                 , reachStdDev = reachStdDevR
                                 } -> do
                         el "tr" $ do
-                            el "td" $ text ""
-                            el "td" $ text "Reach Standard Deviation †"
+                            elAttr "td" ("rowspan" =: "3") $ text "σ"
+                            el "td" $ text "Reach †"
                             elV $ showPilotDistance 3 reachStdDevR <> " km"
                             elN $ "n/a"
                             elD $ ""
                             return ()
 
                         el "tr" $ do
-                            el "td" $ text ""
-                            el "td" $ text "Flown Standard Deviation ‡"
+                            el "td" $ text "Flown ‡"
                             elV $ showPilotDistance 3 flownStdDevR <> " km"
                             elN $ "n/a"
                             elD $ ""
                             return ())
 
                     el "tr" $ do
-                        el "td" $ text ""
-                        el "td" $ text "Extra Standard Deviation ‖"
+                        el "td" $ text "Extra ‖"
                         elV $ showPilotDistance 3 flownStdDev <> " km"
                         elN $ showPilotDistance 3 flownStdDevN <> " km"
                         elD $ ""
@@ -1052,6 +1048,8 @@ viewStop
                 let foot = el "tr" . tdFoot . text
 
                 el "tfoot" $ do
+                    foot "μ Mean."
+                    foot "σ Standard Deviation."
                     foot "† With reach as small as actually flown."
                     foot "‡ With reach clamped below to be no smaller than minimum distance."
                     foot "‖ With altitude above goal converted to extra reach via glide."
