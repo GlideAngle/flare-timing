@@ -1160,12 +1160,6 @@ tablePilotReach
     -> Dynamic t [(Pilot, TrackReach)]
     -> m ()
 tablePilotReach reach bonusReach = do
-    reach' <- sample . current $ reach
-    let ds :: [Double] =
-            [ d
-            | (_, TrackReach{reach = PilotDistance d}) <- reach'
-            ]
-
     let tdFoot = elAttr "td" ("colspan" =: "5")
     let foot = el "tr" . tdFoot . text
 
@@ -1187,39 +1181,44 @@ tablePilotReach reach bonusReach = do
 
                     return ()
 
-            el "tbody" $ do
-                _ <- dyn $ ffor bonusReach (\br -> do
-                        let mapR = Map.fromList br
-                        simpleList reach (uncurry (rowReachBonus mapR) . splitDynPure))
+            _ <- el "tbody" . dyn $ ffor2 reach bonusReach (\r br -> do
+                    let rs = [d | (_, TrackReach{reach = PilotDistance d}) <- r]
+                    let bs = [d | (_, TrackReach{reach = PilotDistance d}) <- br]
+                    let mapR = Map.fromList br
 
-                el "tr" $ do
-                    el "th" $ text "∑"
-                    elClass "td" "td-plot-reach" . text . T.pack . printf "%.3f km"
-                        $ Stats.sum ds
-                    elClass "td" "td-plot-reach-bonus" $ text ""
-                    elClass "td" "td-plot-reach-bonus-diff" $ text ""
-                    el "td" $ text ""
+                    _ <- simpleList reach (uncurry (rowReachBonus mapR) . splitDynPure)
 
-                    return ()
+                    el "tr" $ do
+                        el "th" $ text "∑"
+                        elClass "td" "td-plot-reach" . text . T.pack . printf "%.3f"
+                            $ Stats.sum rs
+                        elClass "td" "td-plot-reach-bonus" . text . T.pack . printf "%.3f"
+                            $ Stats.sum bs
+                        elClass "td" "td-plot-reach-bonus-diff" $ text ""
+                        el "td" $ text ""
 
-                el "tr" $ do
-                    el "th" $ text "μ"
-                    elClass "td" "td-plot-reach" . text . T.pack . printf "%.3f km"
-                        $ Stats.mean ds
-                    elClass "td" "td-plot-reach-bonus" $ text ""
-                    elClass "td" "td-plot-reach-bonus-diff" $ text ""
-                    el "td" $ text ""
+                        return ()
 
-                    return ()
+                    el "tr" $ do
+                        el "th" $ text "μ"
+                        elClass "td" "td-plot-reach" . text . T.pack . printf "%.3f"
+                            $ Stats.mean rs
+                        elClass "td" "td-plot-reach-bonus" . text . T.pack . printf "%.3f"
+                            $ Stats.mean bs
+                        elClass "td" "td-plot-reach-bonus-diff" $ text ""
+                        el "td" $ text ""
 
-                el "tr" $ do
-                    el "th" $ text "σ"
-                    elClass "td" "td-plot-reach" $ text ""
-                    elClass "td" "td-plot-reach-bonus" $ text ""
-                    elClass "td" "td-plot-reach-bonus-diff" $ text ""
-                    el "td" $ text ""
+                        return ()
 
-                    return ()
+                    el "tr" $ do
+                        el "th" $ text "σ"
+                        elClass "td" "td-plot-reach" $ text ""
+                        elClass "td" "td-plot-reach-bonus" $ text ""
+                        elClass "td" "td-plot-reach-bonus-diff" $ text ""
+                        el "td" $ text ""
+
+                        return ()
+                    return ())
 
             el "tfoot" $ do
                 foot "† With reach clamped below to be no smaller than minimum distance."
