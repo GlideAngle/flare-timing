@@ -5,7 +5,7 @@ import System.Environment (getProgName)
 import Text.Printf (printf)
 import System.Console.CmdArgs.Implicit (cmdArgs)
 import Data.Maybe (isNothing, catMaybes)
-import Data.List ((\\), nub, sort, sortOn, find)
+import Data.List ((\\), nub, sort, sortOn, find, zip4)
 import Data.UnitsOfMeasure (u)
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 import GHC.Generics (Generic)
@@ -648,10 +648,11 @@ getNormTaskValidityWorking ii = do
     ls' <- fmap Norm.validityWorkingLaunch <$> asks norming
     ts' <- fmap Norm.validityWorkingTime <$> asks norming
     ds' <- fmap Norm.validityWorkingDistance <$> asks norming
-    case (ls', ts', ds') of
-        (Just ls, Just ts, Just ds) ->
-            case drop (ii - 1) $ zip3 ls ts ds of
-                (lv, tv, dv) : _ -> return $ do
+    ss' <- fmap Norm.validityWorkingStop <$> asks norming
+    case (ls', ts', ds', ss') of
+        (Just ls, Just ts, Just ds, Just ss) ->
+            case drop (ii - 1) $ zip4 ls ts ds ss of
+                (lv, tv, dv, sv) : _ -> return $ do
                     lv' <- lv
                     tv' <- tv
                     dv' <- dv
@@ -660,6 +661,7 @@ getNormTaskValidityWorking ii = do
                             { Vw.launch = lv'
                             , Vw.time = tv'
                             , Vw.distance = dv'
+                            , Vw.stop = sv
                             }
 
                 _ -> throwError $ errTaskBounds ii
