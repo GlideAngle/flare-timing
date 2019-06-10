@@ -654,43 +654,6 @@ viewDistance
         elClass "div" "card-content" $ do
             elClass "h2" "title is-4" . text
                 $ "Distance Validity = " <> Vy.showDistanceValidity dv
-            elClass "div" "field is-grouped is-grouped-multiline" $ do
-                elClass "div" "control" $ do
-                    elClass "div" "tags has-addons" $ do
-                        elClass "span" "tag" $ do text "f = pilots flying"
-                        elClass "span" "tag is-info"
-                            $ text (T.pack . show $ flying)
-                elClass "div" "control" $ do
-                    elClass "div" "tags has-addons" $ do
-                        elClass "span" "tag" $ do text "area"
-                        elClass "span" "tag is-success"
-                            $ text (T.pack . show $ area)
-                elClass "div" "control" $ do
-                    elClass "div" "tags has-addons" $ do
-                        elClass "span" "tag" $ do text "ng = nominal goal"
-                        elClass "span" "tag is-primary"
-                            $ text (T.pack . show $ ng)
-            elClass "div" "field is-grouped is-grouped-multiline" $ do
-                elClass "div" "control" $ do
-                    elClass "div" "tags has-addons" $ do
-                        elClass "span" "tag" $ do text "sum = sum of distance"
-                        elClass "span" "tag is-dark"
-                            $ text (T.pack . show $ sd)
-                elClass "div" "control" $ do
-                    elClass "div" "tags has-addons" $ do
-                        elClass "span" "tag" $ do text "nd = nominal distance"
-                        elClass "span" "tag is-dark"
-                            $ text (T.pack . show $ nd)
-                elClass "div" "control" $ do
-                    elClass "div" "tags has-addons" $ do
-                        elClass "span" "tag" $ do text "md = minimum distance"
-                        elClass "span" "tag is-dark"
-                            $ text (T.pack . show $ md)
-                elClass "div" "control" $ do
-                    elClass "div" "tags has-addons" $ do
-                        elClass "span" "tag" $ do text "bd = best distance"
-                        elClass "span" "tag is-dark"
-                            $ text (T.pack . show $ bd)
 
             elClass "table" "table is-striped" $ do
                 el "thead" $ do
