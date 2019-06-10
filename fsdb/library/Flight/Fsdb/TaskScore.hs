@@ -2,7 +2,7 @@ module Flight.Fsdb.TaskScore (parseScores) where
 
 import Data.Time.LocalTime (TimeOfDay, timeOfDayToTime)
 import Data.Maybe (catMaybes)
-import Data.List (unzip4)
+import Data.List (unzip5)
 import Data.UnitsOfMeasure (u, zero, convert, fromRational')
 import Data.UnitsOfMeasure.Internal (Quantity(..))
 
@@ -54,7 +54,10 @@ import Flight.Score
     , LaunchValidity(..), LaunchValidityWorking(..)
     , DistanceValidity(..), DistanceValidityWorking(..)
     , TimeValidity(..), TimeValidityWorking(..)
-    , PilotsFlying(..), PilotsPresent(..)
+    , StopValidityWorking(..)
+    , PilotsFlying(..), PilotsPresent(..), PilotsAtEss(..), PilotsLanded(..)
+    , FlownMean(..), FlownStdDev(..)
+    , LaunchToEss(..)
     , NominalGoal(..)
     , NominalLaunch(..)
     , NominalDistance(..), BestDistance(..)
@@ -292,6 +295,45 @@ xpDistanceValidityWorking ng nd md =
         (xpAttr "no_of_pilots_flying" xpInt)
         (xpAttr "best_dist" xpPrim)
 
+xpStopValidityWorking :: PU StopValidityWorking
+xpStopValidityWorking =
+    xpElem "FsTaskScoreParams"
+    $ xpFilterCont(isAttr)
+    $ xpFilterAttr
+        ( hasName "no_of_pilots_reaching_es"
+        <+> hasName "no_of_pilots_landed_before_stop"
+        <+> hasName "no_of_pilots_flying"
+        <+> hasName "best_dist"
+        <+> hasName "launch_to_ess_distance"
+        )
+    $ xpWrap
+        ( \(pe, pl, pf, bd, ed) ->
+            StopValidityWorking
+                { pilotsAtEss = PilotsAtEss $ fromIntegral pe
+                , landed = PilotsLanded $ fromIntegral pl
+                , stillFlying = PilotsFlying . fromIntegral $ pf - pl
+                , flying = PilotsFlying $ fromIntegral pf
+                , flownMean = FlownMean [u| 0 km |]
+                , flownStdDev = FlownStdDev [u| 0 km |]
+                , bestDistance = BestDistance $ MkQuantity bd
+                , launchToEssDistance = LaunchToEss $ MkQuantity ed
+                }
+        , \StopValidityWorking
+                { pilotsAtEss = PilotsAtEss pe
+                , landed = PilotsLanded pl
+                , flying = PilotsFlying pf
+                , bestDistance = BestDistance (MkQuantity bd)
+                , launchToEssDistance = LaunchToEss (MkQuantity ed)
+                } ->
+                    (fromIntegral pe, fromIntegral pl, fromIntegral pf, bd, ed)
+        )
+    $ xp5Tuple
+        (xpAttr "no_of_pilots_reaching_es" xpInt)
+        (xpAttr "no_of_pilots_landed_before_stop" xpInt)
+        (xpAttr "no_of_pilots_flying" xpInt)
+        (xpAttr "best_dist" xpPrim)
+        (xpAttr "launch_to_ess_distance" xpPrim)
+
 getScore :: ArrowXml a => [Pilot] -> a XmlTree [(Pilot, Maybe NormBreakdown)]
 getScore pilots =
     getChildren
@@ -380,6 +422,7 @@ getValidity
              , LaunchValidityWorking
              , TimeValidityWorking
              , DistanceValidityWorking
+             , StopValidityWorking
              )
          )
 getValidity ng nl nd md nt =
@@ -389,12 +432,14 @@ getValidity ng nl nd md nt =
     &&& getLaunchValidityWorking
     &&& getTimeValidityWorking
     &&& getDistanceValidityWorking
-    >>> arr (\(tv, (lw, (tw, dw))) -> do
+    &&& getStopValidityWorking
+    >>> arr (\(tv, (lw, (tw, (dw, sw)))) -> do
             tv' <- tv
             lw' <- lw
             tw' <- tw
             dw' <- dw
-            return (tv', lw', tw', dw'))
+            sw' <- sw
+            return (tv', lw', tw', dw', sw'))
     where
         getTaskValidity =
             getChildren
@@ -415,6 +460,11 @@ getValidity ng nl nd md nt =
             getChildren
             >>> hasName "FsTaskScoreParams"
             >>> arr (unpickleDoc' $ xpDistanceValidityWorking ng nd md)
+
+        getStopValidityWorking =
+            getChildren
+            >>> hasName "FsTaskScoreParams"
+            >>> arr (unpickleDoc' xpStopValidityWorking)
 
 parseScores :: Nominal -> String -> IO (Either String NormPointing)
 parseScores
@@ -442,13 +492,14 @@ parseScores
 
     gvs <- runX $ doc >>> getValidity ng nl nd md nt
     return $
-        (\(vs, lw, tw, dw) -> NormPointing
+        (\(vs, lw, tw, dw, sw) -> NormPointing
             { bestTime = tss
             , validityWorkingLaunch = Just <$> lw
             , validityWorkingTime = Just <$> tw
             , validityWorkingDistance = Just <$> dw
+            , validityWorkingStop = Just <$> sw
             , validity = Just <$> vs
             , score = yss
             })
-        . unzip4
+        . unzip5
         <$> sequence gvs

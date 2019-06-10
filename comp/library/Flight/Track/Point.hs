@@ -36,6 +36,7 @@ import Flight.Score
     , LaunchValidityWorking
     , TimeValidityWorking
     , DistanceValidityWorking
+    , StopValidityWorking
     , Pilot, BestTime, PilotTime, PilotDistance, PilotVelocity
     , PointPenalty
     , SpeedFraction
@@ -123,6 +124,7 @@ data NormPointing =
         , validityWorkingLaunch :: [Maybe LaunchValidityWorking]
         , validityWorkingTime :: [Maybe TimeValidityWorking]
         , validityWorkingDistance :: [Maybe DistanceValidityWorking]
+        , validityWorkingStop :: [Maybe StopValidityWorking]
         , validity :: [Maybe Validity]
         , score :: [[(Pilot, NormBreakdown)]]
         }
