@@ -979,26 +979,41 @@ viewStop
                         return ()
 
                     _ <- dyn $ ffor reachStats (\case
-                        Nothing -> return ()
+                        Nothing -> do
+                            el "tr" $ do
+                                elAttr "td" ("rowspan" =: "3") $ text "μ"
+                                el "td" $ text "Reach †"
+                                elV $ "n/a"
+                                elN $ "n/a"
+                                elD $ ""
+                                return ()
+
+                            el "tr" $ do
+                                el "td" $ text "Flown ‡"
+                                elV $ "n/a"
+                                elN $ "n/a"
+                                elD $ ""
+                                return ()
+
                         Just
                             ReachStats
                                 { flownMean = flownMeanR
                                 , reachMean = reachMeanR
                                 } -> do
-                        el "tr" $ do
-                            elAttr "td" ("rowspan" =: "3") $ text "μ"
-                            el "td" $ text "Reach †"
-                            elV $ showPilotDistance 3 reachMeanR <> " km"
-                            elN $ "n/a"
-                            elD $ ""
-                            return ()
+                            el "tr" $ do
+                                elAttr "td" ("rowspan" =: "3") $ text "μ"
+                                el "td" $ text "Reach †"
+                                elV $ showPilotDistance 3 reachMeanR <> " km"
+                                elN $ "n/a"
+                                elD $ ""
+                                return ()
 
-                        el "tr" $ do
-                            el "td" $ text "Flown ‡"
-                            elV $ showPilotDistance 3 flownMeanR <> " km"
-                            elN $ "n/a"
-                            elD $ ""
-                            return ())
+                            el "tr" $ do
+                                el "td" $ text "Flown ‡"
+                                elV $ showPilotDistance 3 flownMeanR <> " km"
+                                elN $ "n/a"
+                                elD $ ""
+                                return ())
 
                     el "tr" $ do
                         el "td" $ text "Extra ‖"
@@ -1008,26 +1023,41 @@ viewStop
                         return ()
 
                     _ <- dyn $ ffor reachStats (\case
-                        Nothing -> return ()
+                        Nothing -> do
+                            el "tr" $ do
+                                elAttr "td" ("rowspan" =: "3") $ text "σ"
+                                el "td" $ text "Reach †"
+                                elV $ "n/a"
+                                elN $ "n/a"
+                                elD $ ""
+                                return ()
+
+                            el "tr" $ do
+                                el "td" $ text "Flown ‡"
+                                elV $ "n/a"
+                                elN $ "n/a"
+                                elD $ ""
+                                return ()
+
                         Just
                             ReachStats
                                 { flownStdDev = flownStdDevR
                                 , reachStdDev = reachStdDevR
                                 } -> do
-                        el "tr" $ do
-                            elAttr "td" ("rowspan" =: "3") $ text "σ"
-                            el "td" $ text "Reach †"
-                            elV $ showPilotDistance 3 reachStdDevR <> " km"
-                            elN $ "n/a"
-                            elD $ ""
-                            return ()
+                            el "tr" $ do
+                                elAttr "td" ("rowspan" =: "3") $ text "σ"
+                                el "td" $ text "Reach †"
+                                elV $ showPilotDistance 3 reachStdDevR <> " km"
+                                elN $ "n/a"
+                                elD $ ""
+                                return ()
 
-                        el "tr" $ do
-                            el "td" $ text "Flown ‡"
-                            elV $ showPilotDistance 3 flownStdDevR <> " km"
-                            elN $ "n/a"
-                            elD $ ""
-                            return ())
+                            el "tr" $ do
+                                el "td" $ text "Flown ‡"
+                                elV $ showPilotDistance 3 flownStdDevR <> " km"
+                                elN $ "n/a"
+                                elD $ ""
+                                return ())
 
                     el "tr" $ do
                         el "td" $ text "Extra ‖"
