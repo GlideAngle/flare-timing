@@ -936,6 +936,14 @@ viewStop
                         return ()
 
                     el "tr" $ do
+                        el "td" $ text "bd"
+                        el "td" $ text "Best Distance"
+                        elV $ showBestDistance bd
+                        elN $ showBestDistance bdN
+                        elD $ showBestDistanceDiff bdN bd
+                        return ()
+
+                    el "tr" $ do
                         el "th" $ text ""
                         el "th" $ text "Stop Validity"
                         elV $ Vy.showStopValidity sv
