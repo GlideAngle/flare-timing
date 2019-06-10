@@ -978,14 +978,6 @@ viewStop
                         elD $ showLaunchToEssDiff edN ed
                         return ()
 
-                    el "tr" $ do
-                        el "td" $ text ""
-                        el "td" $ text "Mean Flown †"
-                        elV $ showPilotDistance 3 flownMean <> " km"
-                        elN $ showPilotDistance 3 flownMeanN <> " km"
-                        elD $ ""
-                        return ()
-
                     _ <- dyn $ ffor reachStats (\case
                         Nothing -> return ()
                         Just
@@ -995,25 +987,25 @@ viewStop
                                 } -> do
                         el "tr" $ do
                             el "td" $ text ""
-                            el "td" $ text "Mean Flown ‡"
-                            elV $ showPilotDistance 3 flownMeanR <> " km"
+                            el "td" $ text "Mean Reach †"
+                            elV $ showPilotDistance 3 reachMeanR <> " km"
                             elN $ "n/a"
                             elD $ ""
                             return ()
 
                         el "tr" $ do
                             el "td" $ text ""
-                            el "td" $ text "Mean Reach ‖"
-                            elV $ showPilotDistance 3 reachMeanR <> " km"
+                            el "td" $ text "Mean Flown ‡"
+                            elV $ showPilotDistance 3 flownMeanR <> " km"
                             elN $ "n/a"
                             elD $ ""
                             return ())
 
                     el "tr" $ do
                         el "td" $ text ""
-                        el "td" $ text "Flown Standard Deviation †"
-                        elV $ showPilotDistance 3 flownStdDev <> " km"
-                        elN $ showPilotDistance 3 flownStdDevN <> " km"
+                        el "td" $ text "Mean Flown ‖"
+                        elV $ showPilotDistance 3 flownMean <> " km"
+                        elN $ showPilotDistance 3 flownMeanN <> " km"
                         elD $ ""
                         return ()
 
@@ -1026,19 +1018,27 @@ viewStop
                                 } -> do
                         el "tr" $ do
                             el "td" $ text ""
-                            el "td" $ text "Flown Standard Deviation ‡"
-                            elV $ showPilotDistance 3 flownStdDevR <> " km"
+                            el "td" $ text "Reach Standard Deviation †"
+                            elV $ showPilotDistance 3 reachStdDevR <> " km"
                             elN $ "n/a"
                             elD $ ""
                             return ()
 
                         el "tr" $ do
                             el "td" $ text ""
-                            el "td" $ text "Reach Standard Deviation ‖"
-                            elV $ showPilotDistance 3 reachStdDevR <> " km"
+                            el "td" $ text "Flown Standard Deviation ‡"
+                            elV $ showPilotDistance 3 flownStdDevR <> " km"
                             elN $ "n/a"
                             elD $ ""
                             return ())
+
+                    el "tr" $ do
+                        el "td" $ text ""
+                        el "td" $ text "Flown Standard Deviation ‖"
+                        elV $ showPilotDistance 3 flownStdDev <> " km"
+                        elN $ showPilotDistance 3 flownStdDevN <> " km"
+                        elD $ ""
+                        return ()
 
                     el "tr" $ do
                         el "th" $ text ""
@@ -1052,9 +1052,9 @@ viewStop
                 let foot = el "tr" . tdFoot . text
 
                 el "tfoot" $ do
-                    foot "† Stats from ..."
-                    foot "‡ Stats from ..."
-                    foot "‖ Stats from ..."
+                    foot "† With reach as small as actually flown."
+                    foot "‡ With reach clamped below to be no smaller than minimum distance."
+                    foot "‖ With extra bonus distance from altitude extending reach."
                     return ()
 
             elAttr
