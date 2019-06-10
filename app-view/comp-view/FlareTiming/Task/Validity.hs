@@ -974,6 +974,41 @@ viewStop
                         elD $ showLaunchToEssDiff edN ed
                         return ()
 
+                    _ <- dyn $ ffor reachStats (\case
+                        Nothing -> return ()
+                        Just ReachStats{..} -> do
+                        el "tr" $ do
+                            el "td" $ text ""
+                            el "td" $ text "Mean Flown"
+                            elV $ showPilotDistance 3 flownMean <> " km"
+                            elN $ "n/a"
+                            elD $ ""
+                            return ()
+
+                        el "tr" $ do
+                            el "td" $ text ""
+                            el "td" $ text "Mean Reach"
+                            elV $ showPilotDistance 3 reachMean <> " km"
+                            elN $ "n/a"
+                            elD $ ""
+                            return ()
+
+                        el "tr" $ do
+                            el "td" $ text ""
+                            el "td" $ text "Flown Standard Deviation"
+                            elV $ showPilotDistance 3 flownStdDev <> " km"
+                            elN $ "n/a"
+                            elD $ ""
+                            return ()
+
+                        el "tr" $ do
+                            el "td" $ text ""
+                            el "td" $ text "Reach Standard Deviation"
+                            elV $ showPilotDistance 3 reachStdDev <> " km"
+                            elN $ "n/a"
+                            elD $ ""
+                            return ())
+
                     el "tr" $ do
                         el "th" $ text ""
                         el "th" $ text "Stop Validity"
