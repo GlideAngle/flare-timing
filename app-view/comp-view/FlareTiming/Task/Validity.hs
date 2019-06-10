@@ -1003,7 +1003,7 @@ viewStop
 
                     el "tr" $ do
                         el "td" $ text ""
-                        el "td" $ text "Mean Flown ‖"
+                        el "td" $ text "Mean Extra ‖"
                         elV $ showPilotDistance 3 flownMean <> " km"
                         elN $ showPilotDistance 3 flownMeanN <> " km"
                         elD $ ""
@@ -1034,7 +1034,7 @@ viewStop
 
                     el "tr" $ do
                         el "td" $ text ""
-                        el "td" $ text "Flown Standard Deviation ‖"
+                        el "td" $ text "Extra Standard Deviation ‖"
                         elV $ showPilotDistance 3 flownStdDev <> " km"
                         elN $ showPilotDistance 3 flownStdDevN <> " km"
                         elD $ ""
@@ -1054,7 +1054,7 @@ viewStop
                 el "tfoot" $ do
                     foot "† With reach as small as actually flown."
                     foot "‡ With reach clamped below to be no smaller than minimum distance."
-                    foot "‖ With extra bonus distance from altitude extending reach."
+                    foot "‖ With altitude above goal converted to extra reach via glide."
                     return ()
 
             elAttr
@@ -1143,8 +1143,8 @@ tablePilotReach reach bonusReach = do
 
             el "thead" $ do
                 el "tr" $ do
-                    elClass "th" "th-plot-reach" $ text "Flown"
-                    elClass "th" "th-plot-reach-bonus" $ text "Scored †"
+                    elClass "th" "th-plot-reach" $ text "Flown †"
+                    elClass "th" "th-plot-reach-bonus" $ text "Extra ‡"
                     elClass "th" "th-plot-reach-bonus-diff" $ text "Δ"
                     el "th" $ text "Pilot"
 
@@ -1157,7 +1157,8 @@ tablePilotReach reach bonusReach = do
                         simpleList reach (uncurry (rowReachBonus mapR) . splitDynPure))
 
             el "tfoot" $ do
-                foot "† Reach as scored."
+                foot "† With reach clamped below to be no smaller than minimum distance."
+                foot "‡ As scored with altitude above goal converted to extra reach via glide."
                 foot "Δ Altitude bonus reach."
             return ()
     return ()
