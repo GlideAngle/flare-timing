@@ -698,9 +698,9 @@ viewDistance
                     el "tr" $ do
                         el "td" $ text "nd"
                         el "td" $ text "Nominal Distance"
-                        elV . T.pack $ show nd
-                        elN . T.pack $ show ndN
-                        elD $ ""
+                        elV $ showNominalDistance nd
+                        elN $ showNominalDistance ndN
+                        elD $ showNominalDistanceDiff ndN nd
                         return ()
 
                     el "tr" $ do
