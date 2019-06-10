@@ -43,6 +43,7 @@ import WireTypes.ValidityWorking
     , showBestTime, showBestTimeDiff
     , showNominalTime, showNominalTimeDiff
     , showBestDistance, showBestDistanceDiff
+    , showLaunchToEss, showLaunchToEssDiff
     , showSumOfDistance, showSumOfDistanceDiff
     , showNominalDistance, showNominalDistanceDiff
     , showNominalDistanceArea, showNominalDistanceAreaDiff
@@ -900,8 +901,7 @@ viewStop
                 , flying
                 , landed
                 , bestDistance = bd
-                , flownMean
-                , flownStdDev
+                , launchToEssDistance = ed
                 }
         }
     ValidityWorking
@@ -911,6 +911,7 @@ viewStop
                 , flying = flyingN
                 , landed = landedN
                 , bestDistance = bdN
+                , launchToEssDistance = edN
                 }
         }
     reachStats
@@ -963,6 +964,14 @@ viewStop
                         elV $ showBestDistance bd
                         elN $ showBestDistance bdN
                         elD $ showBestDistanceDiff bdN bd
+                        return ()
+
+                    el "tr" $ do
+                        el "td" $ text "ed"
+                        el "td" $ text "Launch to ESS Distance"
+                        elV $ showLaunchToEss ed
+                        elN $ showLaunchToEss edN
+                        elD $ showLaunchToEssDiff edN ed
                         return ()
 
                     el "tr" $ do

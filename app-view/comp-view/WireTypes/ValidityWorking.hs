@@ -37,7 +37,7 @@ module WireTypes.ValidityWorking
     , PilotsAtEss(..)
     , PilotsLanded(..)
     , LaunchToEss(..)
-    , showLaunchToEss
+    , showLaunchToEss, showLaunchToEssDiff
     , showPilotsLandedDiff
     , showPilotsAtEssDiff
     ) where
@@ -374,3 +374,11 @@ instance FromJSON LaunchToEss where
 showLaunchToEss :: LaunchToEss -> T.Text
 showLaunchToEss (LaunchToEss d) =
     T.pack . printf "%.3f km" $ d
+
+showLaunchToEssDiff :: LaunchToEss -> LaunchToEss -> T.Text
+showLaunchToEssDiff (LaunchToEss expected) (LaunchToEss actual)
+    | f actual == f expected = "="
+    | otherwise = T.pack . f $ actual - expected
+    where
+        f = printf "%+.3f"
+
