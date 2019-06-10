@@ -381,4 +381,3 @@ showLaunchToEssDiff (LaunchToEss expected) (LaunchToEss actual)
     | otherwise = T.pack . f $ actual - expected
     where
         f = printf "%+.3f"
-

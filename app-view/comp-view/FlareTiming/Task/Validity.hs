@@ -900,6 +900,8 @@ viewStop
                 { pilotsAtEss
                 , flying
                 , landed
+                , flownMean
+                , flownStdDev
                 , bestDistance = bd
                 , launchToEssDistance = ed
                 }
@@ -910,6 +912,8 @@ viewStop
                 { pilotsAtEss = pilotsAtEssN
                 , flying = flyingN
                 , landed = landedN
+                , flownMean = flownMeanN
+                , flownStdDev = flownStdDevN
                 , bestDistance = bdN
                 , launchToEssDistance = edN
                 }
@@ -974,37 +978,64 @@ viewStop
                         elD $ showLaunchToEssDiff edN ed
                         return ()
 
+                    el "tr" $ do
+                        el "td" $ text ""
+                        el "td" $ text "Mean Flown †"
+                        elV $ showPilotDistance 3 flownMean <> " km"
+                        elN $ showPilotDistance 3 flownMeanN <> " km"
+                        elD $ ""
+                        return ()
+
                     _ <- dyn $ ffor reachStats (\case
                         Nothing -> return ()
-                        Just ReachStats{..} -> do
+                        Just
+                            ReachStats
+                                { flownMean = flownMeanR
+                                , reachMean = reachMeanR
+                                } -> do
                         el "tr" $ do
                             el "td" $ text ""
-                            el "td" $ text "Mean Flown"
-                            elV $ showPilotDistance 3 flownMean <> " km"
+                            el "td" $ text "Mean Flown ‡"
+                            elV $ showPilotDistance 3 flownMeanR <> " km"
                             elN $ "n/a"
                             elD $ ""
                             return ()
 
                         el "tr" $ do
                             el "td" $ text ""
-                            el "td" $ text "Mean Reach"
-                            elV $ showPilotDistance 3 reachMean <> " km"
+                            el "td" $ text "Mean Reach ‖"
+                            elV $ showPilotDistance 3 reachMeanR <> " km"
+                            elN $ "n/a"
+                            elD $ ""
+                            return ())
+
+                    el "tr" $ do
+                        el "td" $ text ""
+                        el "td" $ text "Flown Standard Deviation †"
+                        elV $ showPilotDistance 3 flownStdDev <> " km"
+                        elN $ showPilotDistance 3 flownStdDevN <> " km"
+                        elD $ ""
+                        return ()
+
+                    _ <- dyn $ ffor reachStats (\case
+                        Nothing -> return ()
+                        Just
+                            ReachStats
+                                { flownStdDev = flownStdDevR
+                                , reachStdDev = reachStdDevR
+                                } -> do
+                        el "tr" $ do
+                            el "td" $ text ""
+                            el "td" $ text "Flown Standard Deviation ‡"
+                            elV $ showPilotDistance 3 flownStdDevR <> " km"
                             elN $ "n/a"
                             elD $ ""
                             return ()
 
                         el "tr" $ do
                             el "td" $ text ""
-                            el "td" $ text "Flown Standard Deviation"
-                            elV $ showPilotDistance 3 flownStdDev <> " km"
-                            elN $ "n/a"
-                            elD $ ""
-                            return ()
-
-                        el "tr" $ do
-                            el "td" $ text ""
-                            el "td" $ text "Reach Standard Deviation"
-                            elV $ showPilotDistance 3 reachStdDev <> " km"
+                            el "td" $ text "Reach Standard Deviation ‖"
+                            elV $ showPilotDistance 3 reachStdDevR <> " km"
                             elN $ "n/a"
                             elD $ ""
                             return ())
@@ -1021,8 +1052,9 @@ viewStop
                 let foot = el "tr" . tdFoot . text
 
                 el "tfoot" $ do
-                    foot "† The mean of distances flown."
-                    foot "‡ The standard deviation of distances flown."
+                    foot "† Stats from ..."
+                    foot "‡ Stats from ..."
+                    foot "‖ Stats from ..."
                     return ()
 
             elAttr
