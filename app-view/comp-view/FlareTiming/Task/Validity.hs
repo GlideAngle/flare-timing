@@ -726,7 +726,7 @@ viewDistance
 
                     el "tr" $ do
                         el "td" $ text "sd"
-                        el "td" $ text "Sum of Distance"
+                        el "td" $ text "Sum of Distance †"
                         elV . T.pack $ show sd
                         elN . T.pack $ show sdN
                         elD $ ""
@@ -763,6 +763,11 @@ viewDistance
                         elN $ Vy.showDistanceValidity dvN
                         elD $ Vy.showDistanceValidityDiff dvN dv
                         return ()
+
+                let tdFoot = elAttr "td" ("colspan" =: "5")
+                let foot = el "tr" . tdFoot . text
+
+                el "tfoot" $ foot "† The sum of flown distance further than minimum distance."
 
             elAttr
                 "div"
