@@ -18,7 +18,11 @@ module WireTypes.ValidityWorking
     , NominalDistance(..)
     , MinimumDistance(..)
     , MaximumDistance(..)
+    , showNominalGoal, showNominalGoalDiff
+    , showSumOfDistance, showSumOfDistanceDiff
     , showNominalDistance, showNominalDistanceDiff
+    , showMinimumDistance, showMinimumDistanceDiff
+    , showMaximumDistance, showMaximumDistanceDiff
     -- * Time Validity Working
     , TimeValidityWorking(..)
     , BestTime(..)
@@ -119,6 +123,17 @@ newtype NominalGoal = NominalGoal Double
     deriving (Eq, Ord)
     deriving newtype (Show, FromJSON)
 
+showNominalGoal :: NominalGoal -> T.Text
+showNominalGoal (NominalGoal x) =
+    T.pack $ printf "%.2f" x
+
+showNominalGoalDiff :: NominalGoal -> NominalGoal -> T.Text
+showNominalGoalDiff (NominalGoal expected) (NominalGoal actual)
+    | f actual == f expected = "="
+    | otherwise = T.pack . f $ actual - expected
+    where
+        f = printf "%+.2f"
+
 newtype NominalDistance = NominalDistance Double
     deriving (Eq, Ord)
 
@@ -130,6 +145,17 @@ newtype MaximumDistance = MaximumDistance Double
 
 instance Show SumOfDistance where
     show (SumOfDistance x) = show x ++ " km"
+
+showSumOfDistance :: SumOfDistance -> T.Text
+showSumOfDistance (SumOfDistance x) =
+    T.pack $ printf "%.3f km" x
+
+showSumOfDistanceDiff :: SumOfDistance -> SumOfDistance -> T.Text
+showSumOfDistanceDiff (SumOfDistance expected) (SumOfDistance actual)
+    | f actual == f expected = "="
+    | otherwise = T.pack . f $ actual - expected
+    where
+        f = printf "%+.3f"
 
 instance Show NominalDistance where
     show (NominalDistance x) = show x ++ " km"
@@ -148,8 +174,30 @@ showNominalDistanceDiff (NominalDistance expected) (NominalDistance actual)
 instance Show MinimumDistance where
     show (MinimumDistance x) = show x ++ " km"
 
+showMinimumDistance :: MinimumDistance -> T.Text
+showMinimumDistance (MinimumDistance x) =
+    T.pack $ printf "%.3f km" x
+
+showMinimumDistanceDiff :: MinimumDistance -> MinimumDistance -> T.Text
+showMinimumDistanceDiff (MinimumDistance expected) (MinimumDistance actual)
+    | f actual == f expected = "="
+    | otherwise = T.pack . f $ actual - expected
+    where
+        f = printf "%+.3f"
+
 instance Show MaximumDistance where
     show (MaximumDistance x) = show x ++ " km"
+
+showMaximumDistance :: MaximumDistance -> T.Text
+showMaximumDistance (MaximumDistance x) =
+    T.pack $ printf "%.3f km" x
+
+showMaximumDistanceDiff :: MaximumDistance -> MaximumDistance -> T.Text
+showMaximumDistanceDiff (MaximumDistance expected) (MaximumDistance actual)
+    | f actual == f expected = "="
+    | otherwise = T.pack . f $ actual - expected
+    where
+        f = printf "%+.3f"
 
 instance FromJSON SumOfDistance where
     parseJSON x@(String _) = do

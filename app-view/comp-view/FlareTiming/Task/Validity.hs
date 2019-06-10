@@ -32,10 +32,14 @@ import WireTypes.ValidityWorking
     , showPilotsPresentDiff
     , showPilotsFlyingDiff
     , showNominalLaunchDiff
-    , showNominalDistance, showNominalDistanceDiff
+    , showNominalGoal, showNominalGoalDiff
     , showBestTime, showBestTimeDiff
     , showNominalTime, showNominalTimeDiff
     , showBestDistance, showBestDistanceDiff
+    , showSumOfDistance, showSumOfDistanceDiff
+    , showNominalDistance, showNominalDistanceDiff
+    , showMinimumDistance, showMinimumDistanceDiff
+    , showMaximumDistance, showMaximumDistanceDiff
     )
 import WireTypes.Cross (FlyingSection)
 import WireTypes.Route (TaskDistance(..), showTaskDistance)
@@ -682,17 +686,17 @@ viewDistance
                     el "tr" $ do
                         el "td" $ text "ng"
                         el "td" $ text "Nominal Goal"
-                        elV . T.pack $ show ng
-                        elN . T.pack $ show ngN
-                        elD $ ""
+                        elV $ showNominalGoal ng
+                        elN $ showNominalGoal ngN
+                        elD $ showNominalGoalDiff ngN ng
                         return ()
 
                     el "tr" $ do
                         el "td" $ text "sd"
                         el "td" $ text "Sum of Distance †"
-                        elV . T.pack $ show sd
-                        elN . T.pack $ show sdN
-                        elD $ ""
+                        elV $ showSumOfDistance sd
+                        elN $ showSumOfDistance sdN
+                        elD $ showSumOfDistanceDiff sdN sd
                         return ()
 
                     el "tr" $ do
@@ -706,17 +710,17 @@ viewDistance
                     el "tr" $ do
                         el "td" $ text "md"
                         el "td" $ text "Minimum Distance"
-                        elV . T.pack $ show md
-                        elN . T.pack $ show mdN
-                        elD $ ""
+                        elV $ showMinimumDistance md
+                        elN $ showMinimumDistance mdN
+                        elD $ showMinimumDistanceDiff mdN md
                         return ()
 
                     el "tr" $ do
                         el "td" $ text "bd"
                         el "td" $ text "Best Distance"
-                        elV . T.pack $ show bd
-                        elN . T.pack $ show bdN
-                        elD $ ""
+                        elV $ showMaximumDistance bd
+                        elN $ showMaximumDistance bdN
+                        elD $ showMaximumDistanceDiff bdN bd
                         return ()
 
                     el "tr" $ do
