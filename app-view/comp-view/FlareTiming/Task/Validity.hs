@@ -1,6 +1,7 @@
 module FlareTiming.Task.Validity (viewValidity) where
 
 import Prelude hiding (sum)
+import qualified Prelude as Stats (sum)
 import Data.Maybe (fromMaybe)
 import Data.Time.Clock (UTCTime)
 import Data.Time.LocalTime (TimeZone)
@@ -58,6 +59,7 @@ import WireTypes.Pilot (Pilot(..))
 import WireTypes.Comp (Task(..), UtcOffset(..), TaskStop(..))
 import FlareTiming.Pilot (showPilotName)
 import FlareTiming.Time (timeZone, showTime)
+import qualified FlareTiming.Statistics as Stats (mean)
 
 katexNewLine :: T.Text
 katexNewLine = " \\\\\\\\ "
@@ -1158,6 +1160,12 @@ tablePilotReach
     -> Dynamic t [(Pilot, TrackReach)]
     -> m ()
 tablePilotReach reach bonusReach = do
+    reach' <- sample . current $ reach
+    let ds :: [Double] =
+            [ d
+            | (_, TrackReach{reach = PilotDistance d}) <- reach'
+            ]
+
     let tdFoot = elAttr "td" ("colspan" =: "5")
     let foot = el "tr" . tdFoot . text
 
@@ -1186,7 +1194,8 @@ tablePilotReach reach bonusReach = do
 
                 el "tr" $ do
                     el "th" $ text "∑"
-                    elClass "td" "td-plot-reach" $ text ""
+                    elClass "td" "td-plot-reach" . text . T.pack . printf "%.3f km"
+                        $ Stats.sum ds
                     elClass "td" "td-plot-reach-bonus" $ text ""
                     elClass "td" "td-plot-reach-bonus-diff" $ text ""
                     el "td" $ text ""
@@ -1195,7 +1204,8 @@ tablePilotReach reach bonusReach = do
 
                 el "tr" $ do
                     el "th" $ text "μ"
-                    elClass "td" "td-plot-reach" $ text ""
+                    elClass "td" "td-plot-reach" . text . T.pack . printf "%.3f km"
+                        $ Stats.mean ds
                     elClass "td" "td-plot-reach-bonus" $ text ""
                     elClass "td" "td-plot-reach-bonus-diff" $ text ""
                     el "td" $ text ""
