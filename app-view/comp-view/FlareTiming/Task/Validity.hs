@@ -1184,6 +1184,7 @@ tablePilotReach reach bonusReach = do
             _ <- el "tbody" . dyn $ ffor2 reach bonusReach (\r br -> do
                     let rs = [d | (_, TrackReach{reach = PilotDistance d}) <- r]
                     let bs = [d | (_, TrackReach{reach = PilotDistance d}) <- br]
+                    let ds = zipWith (-) bs rs
                     let mapR = Map.fromList br
 
                     _ <- simpleList reach (uncurry (rowReachBonus mapR) . splitDynPure)
@@ -1195,8 +1196,9 @@ tablePilotReach reach bonusReach = do
                             $ Stats.sum rs
                         elClass "td" "td-plot-reach-bonus" . f
                             $ Stats.sum bs
-                        elClass "td" "td-plot-reach-bonus-diff" $ text ""
-                        el "td" $ text ""
+                        elClass "td" "td-plot-reach-bonus-diff" . f
+                            $ Stats.sum ds
+                        elAttr "td" ("rowspan" =: "3") $ text ""
 
                         return ()
 
@@ -1206,8 +1208,8 @@ tablePilotReach reach bonusReach = do
                             $ Stats.mean rs
                         elClass "td" "td-plot-reach-bonus" . f
                             $ Stats.mean bs
-                        elClass "td" "td-plot-reach-bonus-diff" $ text ""
-                        el "td" $ text ""
+                        elClass "td" "td-plot-reach-bonus-diff" . f
+                            $ Stats.mean ds
 
                         return ()
 
@@ -1217,8 +1219,8 @@ tablePilotReach reach bonusReach = do
                             $ Stats.stdDev rs
                         elClass "td" "td-plot-reach-bonus" . f
                             $ Stats.stdDev bs
-                        elClass "td" "td-plot-reach-bonus-diff" $ text ""
-                        el "td" $ text ""
+                        elClass "td" "td-plot-reach-bonus-diff" . f
+                            $ Stats.stdDev ds
 
                         return ()
                     return ())
