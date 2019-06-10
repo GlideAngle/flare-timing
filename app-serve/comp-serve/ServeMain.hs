@@ -650,8 +650,8 @@ getNormTaskValidityWorking ii = do
     ds' <- fmap Norm.validityWorkingDistance <$> asks norming
     case (ls', ts', ds') of
         (Just ls, Just ts, Just ds) ->
-            case (drop (ii - 1) ls, drop (ii - 1) ts, drop (ii - 1) ds) of
-                (lv : _, tv : _, dv : _) -> return $ do
+            case drop (ii - 1) $ zip3 ls ts ds of
+                (lv, tv, dv) : _ -> return $ do
                     lv' <- lv
                     tv' <- tv
                     dv' <- dv
