@@ -28,7 +28,11 @@ import WireTypes.ValidityWorking
     , TimeValidityWorking(..)
     , BestTime(..)
     , PilotsFlying(..)
+    , NominalGoal(..)
+    , MinimumDistance(..)
     , MaximumDistance(..)
+    , NominalDistance(..)
+    , NominalDistanceArea(..)
     , showPilotsPresentDiff
     , showPilotsFlyingDiff
     , showNominalLaunchDiff
@@ -38,6 +42,7 @@ import WireTypes.ValidityWorking
     , showBestDistance, showBestDistanceDiff
     , showSumOfDistance, showSumOfDistanceDiff
     , showNominalDistance, showNominalDistanceDiff
+    , showNominalDistanceArea, showNominalDistanceAreaDiff
     , showMinimumDistance, showMinimumDistanceDiff
     , showMaximumDistance, showMaximumDistanceDiff
     )
@@ -715,12 +720,26 @@ viewDistance
                         elD $ showMaximumDistanceDiff bdN bd
                         return ()
 
+                    let aN =
+                            let NominalGoal ng' = ngN
+                                NominalDistance nd' = ndN
+                                MinimumDistance md' = mdN
+                            in (ng' + 1) * (nd' - md')
+
+                    let bN =
+                            let NominalGoal ng' = ngN
+                                NominalDistance nd' = ndN
+                                MaximumDistance bd' = bdN
+                            in max 0 $ ng'* (bd' - nd')
+
+                    let areaN = NominalDistanceArea $ (aN + bN) / 2
+
                     el "tr" $ do
                         el "td" $ text "area"
                         el "th" $ text "Nominal Distance Area"
-                        elV . T.pack $ show area
-                        elN $ "n/a"
-                        elD $ ""
+                        elV $ showNominalDistanceArea area
+                        elN $ showNominalDistanceArea areaN
+                        elD $ showNominalDistanceAreaDiff areaN area
                         return ()
 
                     el "tr" $ do

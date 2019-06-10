@@ -21,6 +21,7 @@ module WireTypes.ValidityWorking
     , showNominalGoal, showNominalGoalDiff
     , showSumOfDistance, showSumOfDistanceDiff
     , showNominalDistance, showNominalDistanceDiff
+    , showNominalDistanceArea, showNominalDistanceAreaDiff
     , showMinimumDistance, showMinimumDistanceDiff
     , showMaximumDistance, showMaximumDistanceDiff
     -- * Time Validity Working
@@ -118,6 +119,17 @@ newtype SumOfDistance = SumOfDistance Double
 newtype NominalDistanceArea = NominalDistanceArea Double
     deriving (Eq, Ord)
     deriving newtype (Show, FromJSON)
+
+showNominalDistanceArea :: NominalDistanceArea -> T.Text
+showNominalDistanceArea (NominalDistanceArea x) =
+    T.pack $ printf "%.3f km" x
+
+showNominalDistanceAreaDiff :: NominalDistanceArea -> NominalDistanceArea -> T.Text
+showNominalDistanceAreaDiff (NominalDistanceArea expected) (NominalDistanceArea actual)
+    | f actual == f expected = "="
+    | otherwise = T.pack . f $ actual - expected
+    where
+        f = printf "%+.3f"
 
 newtype NominalGoal = NominalGoal Double
     deriving (Eq, Ord)
