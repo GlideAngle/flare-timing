@@ -981,7 +981,7 @@ viewStop
                     _ <- dyn $ ffor reachStats (\case
                         Nothing -> do
                             el "tr" $ do
-                                elAttr "td" ("rowspan" =: "3") $ text "μ"
+                                elAttr "th" ("rowspan" =: "3") $ text "μ"
                                 el "td" $ text "Reach †"
                                 elV $ "n/a"
                                 elN $ "n/a"
@@ -1001,7 +1001,7 @@ viewStop
                                 , reachMean = reachMeanR
                                 } -> do
                             el "tr" $ do
-                                elAttr "td" ("rowspan" =: "3") $ text "μ"
+                                elAttr "th" ("rowspan" =: "3") $ text "μ"
                                 el "td" $ text "Reach †"
                                 elV $ showPilotDistance 3 reachMeanR <> " km"
                                 elN $ "n/a"
@@ -1025,7 +1025,7 @@ viewStop
                     _ <- dyn $ ffor reachStats (\case
                         Nothing -> do
                             el "tr" $ do
-                                elAttr "td" ("rowspan" =: "3") $ text "σ"
+                                elAttr "th" ("rowspan" =: "3") $ text "σ"
                                 el "td" $ text "Reach †"
                                 elV $ "n/a"
                                 elN $ "n/a"
@@ -1045,7 +1045,7 @@ viewStop
                                 , reachStdDev = reachStdDevR
                                 } -> do
                             el "tr" $ do
-                                elAttr "td" ("rowspan" =: "3") $ text "σ"
+                                elAttr "th" ("rowspan" =: "3") $ text "σ"
                                 el "td" $ text "Reach †"
                                 elV $ showPilotDistance 3 reachStdDevR <> " km"
                                 elN $ "n/a"
@@ -1158,19 +1158,20 @@ tablePilotReach
     -> Dynamic t [(Pilot, TrackReach)]
     -> m ()
 tablePilotReach reach bonusReach = do
-    let tdFoot = elAttr "td" ("colspan" =: "4")
+    let tdFoot = elAttr "td" ("colspan" =: "5")
     let foot = el "tr" . tdFoot . text
 
     _ <- elClass "table" "table is-striped" $ do
             el "thead" $ do
                 el "tr" $ do
-                    elAttr "th" ("colspan" =: "3") $ text "Reach (km)"
+                    elAttr "th" ("colspan" =: "4") $ text "Reach (km)"
                     el "th" $ text ""
 
                     return ()
 
             el "thead" $ do
                 el "tr" $ do
+                    el "th" $ text ""
                     elClass "th" "th-plot-reach" $ text "Flown †"
                     elClass "th" "th-plot-reach-bonus" $ text "Extra ‡"
                     elClass "th" "th-plot-reach-bonus-diff" $ text "Δ"
@@ -1178,11 +1179,37 @@ tablePilotReach reach bonusReach = do
 
                     return ()
 
-            _ <- dyn $ ffor bonusReach (\br -> do
-                    let mapR = Map.fromList br
-
-                    el "tbody" $
+            el "tbody" $ do
+                _ <- dyn $ ffor bonusReach (\br -> do
+                        let mapR = Map.fromList br
                         simpleList reach (uncurry (rowReachBonus mapR) . splitDynPure))
+
+                el "tr" $ do
+                    el "th" $ text "∑"
+                    elClass "td" "td-plot-reach" $ text ""
+                    elClass "td" "td-plot-reach-bonus" $ text ""
+                    elClass "td" "td-plot-reach-bonus-diff" $ text ""
+                    el "td" $ text ""
+
+                    return ()
+
+                el "tr" $ do
+                    el "th" $ text "μ"
+                    elClass "td" "td-plot-reach" $ text ""
+                    elClass "td" "td-plot-reach-bonus" $ text ""
+                    elClass "td" "td-plot-reach-bonus-diff" $ text ""
+                    el "td" $ text ""
+
+                    return ()
+
+                el "tr" $ do
+                    el "th" $ text "σ"
+                    elClass "td" "td-plot-reach" $ text ""
+                    elClass "td" "td-plot-reach-bonus" $ text ""
+                    elClass "td" "td-plot-reach-bonus-diff" $ text ""
+                    el "td" $ text ""
+
+                    return ()
 
             el "tfoot" $ do
                 foot "† With reach clamped below to be no smaller than minimum distance."
@@ -1212,6 +1239,7 @@ rowReachBonus mapR p r = do
                     _ -> ("", ""))
 
     el "tr" $ do
+        el "td" $ text ""
         elClass "td" "td-plot-reach" . dynText $ showPilotDistance 3 . reach <$> r
         elClass "td" "td-plot-reach-bonus" $ text bReach
         elClass "td" "td-plot-reach-bonus-diff" $ text diffReach
